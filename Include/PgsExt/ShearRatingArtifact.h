@@ -57,7 +57,7 @@ public:
    pgsShearRatingArtifact& operator = (const pgsShearRatingArtifact& rOther);
 
    void SetPointOfInterest(const pgsPointOfInterest& poi);
-   const pgsPointOfInterest& GetGirderPointOfInterest() const;
+   const pgsPointOfInterest& GetPointOfInterest() const;
 
    void SetRatingType(pgsTypes::LoadRatingType ratingType);
    pgsTypes::LoadRatingType GetLoadRatingType() const;

@@ -8,7 +8,7 @@
 // Generated from the TEXTINCLUDE 2 resource.
 //
 #ifndef APSTUDIO_INVOKED
-#include <PGSuperVersion.h>
+#include "PGSuperVersion.h"
 #endif
 #include "afxres.h"
 
@@ -59,8 +59,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 3,0,0,3
- PRODUCTVERSION 3,0,0,3
+ FILEVERSION 3,0,0,4
+ PRODUCTVERSION 3,0,0,4
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -78,12 +78,12 @@ BEGIN
             VALUE "Comments", "A member of the Alternate Route Project"
             VALUE "CompanyName", "Washington State Department of Transportation"
             VALUE "FileDescription", "WSDOTAgent Module"
-            VALUE "FileVersion", "3.0.0.3"
+            VALUE "FileVersion", "3.0.0.4"
             VALUE "InternalName", "WSDOTAgent"
             VALUE "OriginalFilename", "PGSuperWSDOTAgent.DLL"
             VALUE "LegalCopyright", "Copyright © 1999-2013, Washington State Department of Transportation, All Rights Reserved"
             VALUE "ProductName", "PGSuper"
-            VALUE "ProductVersion", "3.0.0.3"
+            VALUE "ProductVersion", "3.0.0.4"
         END
     END
     BLOCK "VarFileInfo"
@@ -101,6 +101,9 @@ END
 IDR_WSDOTAGENT          REGISTRY                "WSDOTAgent.rgs"
 IDR_WSDOTAGENTIMP       REGISTRY                "WSDOTAgentImp.rgs"
 IDR_WSDOTCOMPONENTINFO  REGISTRY                "WSDOTComponentInfo.rgs"
+IDR_CURVELEXPORTER      REGISTRY                "CurvelExporter.rgs"
+IDR_CURVELIMPORTER      REGISTRY                "CurvelImporter.rgs"
+IDR_GENCOMPEXPORTER     REGISTRY                "GenCompExporter.rgs"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -110,6 +113,56 @@ IDR_WSDOTCOMPONENTINFO  REGISTRY                "WSDOTComponentInfo.rgs"
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
 IDI_WSDOT               ICON                    "res\\Wsdot.ico"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Bitmap
+//
+IDB_CURVEL              BITMAP                  "res\\Curvel.bmp"
+IDB_GENCOMP             BITMAP                  "res\\GenComp.bmp"
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_SELECT_POI DIALOGEX 0, 0, 380, 118
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Select Girder Section"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    LTEXT           "Select Location",IDC_STATIC,7,7,49,8
+    COMBOBOX        IDC_GROUP,7,20,73,80,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_GIRDER,94,20,80,80,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_INTERVAL,188,20,142,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Use slider to select a girder section",IDC_STATIC,7,42,112,8
+    CONTROL         "",IDC_SLIDER,"msctls_trackbar32",TBS_AUTOTICKS | WS_TABSTOP,7,54,366,23
+    LTEXT           "Static",IDC_LOCATION,7,82,366,8
+    DEFPUSHBUTTON   "OK",IDOK,215,97,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,269,97,50,14
+    PUSHBUTTON      "Help",IDC_HELPBTN,323,97,50,14
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO 
+BEGIN
+    IDD_SELECT_POI, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 373
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 111
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
 
 /////////////////////////////////////////////////////////////////////////////
 //

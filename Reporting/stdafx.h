@@ -30,7 +30,7 @@
 
 #include <Reporter\Reporter.h>
 
-#include <Reporting\ReportStyleHolder.h>
+#include <PgsExt\ReportStyleHolder.h>
 #include <Reporting\SpanGirderReportSpecification.h>
 #include <Reporting\ReportNotes.h>
 

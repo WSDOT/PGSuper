@@ -115,7 +115,7 @@ pgsRatingArtifact pgsLoadRater::Rate(const CGirderKey& girderKey,pgsTypes::LoadR
 void pgsLoadRater::MomentRating(const CGirderKey& girderKey,bool bPositiveMoment,pgsTypes::LoadRatingType ratingType,VehicleIndexType vehicleIdx,pgsRatingArtifact& ratingArtifact)
 {
    GET_IFACE(IPointOfInterest,pPOI);
-   std::vector<pgsPointOfInterest> vPOI( pPOI->GetPointsOfInterest(CSegmentKey(girderKey,ALL_SEGMENTS),POI_ERECTED_SEGMENT) );
+   std::vector<pgsPointOfInterest> vPOI( pPOI->GetPointsOfInterest(CSegmentKey(girderKey,ALL_SEGMENTS)) );
 
    std::vector<Float64> vDCmin, vDCmax;
    std::vector<Float64> vDWmin, vDWmax;
@@ -245,7 +245,7 @@ void pgsLoadRater::ShearRating(const CGirderKey& girderKey,pgsTypes::LoadRatingT
    pgsTypes::AnalysisType analysisType = pSpec->GetAnalysisType();
 
    GET_IFACE(IPointOfInterest,pPOI);
-   std::vector<pgsPointOfInterest> vPOI( pPOI->GetPointsOfInterest(CSegmentKey(girderKey,ALL_SEGMENTS),POI_ERECTED_SEGMENT) );
+   std::vector<pgsPointOfInterest> vPOI( pPOI->GetPointsOfInterest(CSegmentKey(girderKey,ALL_SEGMENTS)) );
 
    std::vector<sysSectionValue> vDCmin, vDCmax;
    std::vector<sysSectionValue> vDWmin, vDWmax;

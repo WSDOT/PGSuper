@@ -145,7 +145,7 @@
 #include <PgsExt\BridgeDescription2.h>
 #include <PgsExt\StatusItem.h>
 
-#include <Reporting\ReportStyleHolder.h>
+#include <PgsExt\ReportStyleHolder.h>
 
 // Transactions
 #include <PgsExt\EditBridge.h>
@@ -1585,7 +1585,7 @@ void CPGSuperDocBase::OnEffectiveFlangeWidth()
    CString strResponses(_T("Stop analysis if structure violates these limits\nIgnore these limits"));
 
    int choice = pEFW->IgnoreEffectiveFlangeWidthLimits() ? 1 : 0;
-   int new_choice = AfxChoose(_T("Effective Flange Width"),strQuestion,strResponses,TRUE,choice);
+   int new_choice = AfxChoose(_T("Effective Flange Width"),strQuestion,strResponses,choice,TRUE);
    if ( choice != new_choice && 0 <= new_choice )
    {
       txnEditEffectiveFlangeWidth* pTxn = new txnEditEffectiveFlangeWidth(pEFW->IgnoreEffectiveFlangeWidthLimits(),new_choice == 0 ? false : true);

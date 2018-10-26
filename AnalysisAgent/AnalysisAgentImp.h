@@ -648,9 +648,6 @@ private:
    Float64 GetSectionStress(SegmentModels& models,pgsTypes::StressLocation loc,const pgsPointOfInterest& poi);
    Float64 GetReactions(SegmentModels& model,PierIndexType pier,const CGirderKey& girderKey);
 
-   void GetLiveLoadSectionResults(const pgsPointOfInterest& poi,bamSectionResults* pMinResults,bamSectionResults* pMaxResults);
-   void GetLiveLoadReactions(PierIndexType pier,GirderIndexType gdr,bamReaction* pMin,bamReaction* pMax);
-   void GetDeflLiveLoadSectionResults(DeflectionLiveLoadType type, const pgsPointOfInterest& poi,bamSectionResults* pMinResults,bamSectionResults* pMaxResults);
    SegmentModelData* GetModelData(SegmentModels& models,const CSegmentKey& segmentKey);
 
    std::vector<sysSectionValue> GetShear(IntervalIndexType intervalIdx,ProductForceType type,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat, CombinationType cmbtype);

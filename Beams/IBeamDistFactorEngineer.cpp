@@ -30,7 +30,7 @@
 #include <PgsExt\BridgeDescription2.h>
 #include <PgsExt\StatusItem.h>
 #include <PgsExt\GirderLabel.h>
-#include <Reporting\ReportStyleHolder.h>
+#include <PgsExt\ReportStyleHolder.h>
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
 #include <EAF\EAFDisplayUnits.h>

@@ -63,7 +63,7 @@ void pgsMomentRatingArtifact::SetPointOfInterest(const pgsPointOfInterest& poi)
    m_POI = poi;
 }
 
-const pgsPointOfInterest& pgsMomentRatingArtifact::GetGirderPointOfInterest() const
+const pgsPointOfInterest& pgsMomentRatingArtifact::GetPointOfInterest() const
 {
    return m_POI;
 }

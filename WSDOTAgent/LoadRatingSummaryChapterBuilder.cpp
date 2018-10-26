@@ -22,7 +22,7 @@
 
 #include "StdAfx.h"
 #include "LoadRatingSummaryChapterBuilder.h"
-#include <Reporting\ReportStyleHolder.h>
+#include <PgsExt\ReportStyleHolder.h>
 #include <Reporting\SpanGirderReportSpecification.h>
 #include <Reporting\ReportNotes.h>
 
@@ -389,7 +389,7 @@ void CLoadRatingSummaryChapterBuilder::ReportRatingFactor(IBroker* pBroker,rptRc
 
       (*pTable)(row,2) << scalar.SetValue(pPositiveMoment->GetLiveLoadFactor());
 
-      pgsPointOfInterest poi( pPositiveMoment->GetGirderPointOfInterest() );
+      pgsPointOfInterest poi( pPositiveMoment->GetPointOfInterest() );
       const CSegmentKey& segmentKey = poi.GetSegmentKey();
 
       Float64 endSize = pBridge->GetSegmentStartEndDistance(segmentKey);
@@ -406,7 +406,7 @@ void CLoadRatingSummaryChapterBuilder::ReportRatingFactor(IBroker* pBroker,rptRc
 
       (*pTable)(row,2) << scalar.SetValue(pNegativeMoment->GetLiveLoadFactor());
 
-      pgsPointOfInterest poi( pNegativeMoment->GetGirderPointOfInterest() );
+      pgsPointOfInterest poi( pNegativeMoment->GetPointOfInterest() );
       const CSegmentKey& segmentKey = poi.GetSegmentKey();
 
       Float64 endSize = pBridge->GetSegmentStartEndDistance(segmentKey);
@@ -423,7 +423,7 @@ void CLoadRatingSummaryChapterBuilder::ReportRatingFactor(IBroker* pBroker,rptRc
 
       (*pTable)(row,2) << scalar.SetValue(pShear->GetLiveLoadFactor());
 
-      pgsPointOfInterest poi( pShear->GetGirderPointOfInterest() );
+      pgsPointOfInterest poi( pShear->GetPointOfInterest() );
       const CSegmentKey& segmentKey = poi.GetSegmentKey();
 
       Float64 endSize = pBridge->GetSegmentStartEndDistance(segmentKey);
@@ -440,7 +440,7 @@ void CLoadRatingSummaryChapterBuilder::ReportRatingFactor(IBroker* pBroker,rptRc
 
       (*pTable)(row,2) << scalar.SetValue(pStress->GetLiveLoadFactor());
 
-      pgsPointOfInterest poi(  pStress->GetGirderPointOfInterest() );
+      pgsPointOfInterest poi(  pStress->GetPointOfInterest() );
       const CSegmentKey& segmentKey = poi.GetSegmentKey();
 
       Float64 endSize = pBridge->GetSegmentStartEndDistance(segmentKey);
@@ -459,7 +459,7 @@ void CLoadRatingSummaryChapterBuilder::ReportRatingFactor(IBroker* pBroker,rptRc
 
       (*pTable)(row,2) << scalar.SetValue(pYieldStressPositiveMoment->GetLiveLoadFactor());
 
-      pgsPointOfInterest poi(  pYieldStressPositiveMoment->GetGirderPointOfInterest() );
+      pgsPointOfInterest poi(  pYieldStressPositiveMoment->GetPointOfInterest() );
       const CSegmentKey& segmentKey = poi.GetSegmentKey();
 
       Float64 endSize = pBridge->GetSegmentStartEndDistance(segmentKey);
@@ -483,7 +483,7 @@ void CLoadRatingSummaryChapterBuilder::ReportRatingFactor(IBroker* pBroker,rptRc
 
       (*pTable)(row,2) << scalar.SetValue(pYieldStressNegativeMoment->GetLiveLoadFactor());
 
-      pgsPointOfInterest poi(  pYieldStressNegativeMoment->GetGirderPointOfInterest() );
+      pgsPointOfInterest poi(  pYieldStressNegativeMoment->GetPointOfInterest() );
       const CSegmentKey& segmentKey = poi.GetSegmentKey();
 
       Float64 endSize = pBridge->GetSegmentStartEndDistance(segmentKey);
@@ -528,7 +528,7 @@ void CLoadRatingSummaryChapterBuilder::ReportRatingFactor2(IBroker* pBroker,rptR
          (*pTable)(row,1) << RF_PASS(rating_factor,RF);
 
 
-      pgsPointOfInterest poi(  pPositiveMoment->GetGirderPointOfInterest() );
+      pgsPointOfInterest poi(  pPositiveMoment->GetPointOfInterest() );
       const CSegmentKey& segmentKey = poi.GetSegmentKey();
 
       Float64 endSize = pBridge->GetSegmentStartEndDistance(segmentKey);
@@ -544,7 +544,7 @@ void CLoadRatingSummaryChapterBuilder::ReportRatingFactor2(IBroker* pBroker,rptR
          (*pTable)(row,1) << RF_PASS(rating_factor,RF);
 
 
-      pgsPointOfInterest poi( pNegativeMoment->GetGirderPointOfInterest() );
+      pgsPointOfInterest poi( pNegativeMoment->GetPointOfInterest() );
       const CSegmentKey& segmentKey = poi.GetSegmentKey();
 
       Float64 endSize = pBridge->GetSegmentStartEndDistance(segmentKey);
@@ -560,7 +560,7 @@ void CLoadRatingSummaryChapterBuilder::ReportRatingFactor2(IBroker* pBroker,rptR
          (*pTable)(row,1) << RF_PASS(rating_factor,RF);
 
 
-      pgsPointOfInterest poi( pShear->GetGirderPointOfInterest() );
+      pgsPointOfInterest poi( pShear->GetPointOfInterest() );
       const CSegmentKey& segmentKey = poi.GetSegmentKey();
 
       Float64 endSize = pBridge->GetSegmentStartEndDistance(segmentKey);
@@ -576,7 +576,7 @@ void CLoadRatingSummaryChapterBuilder::ReportRatingFactor2(IBroker* pBroker,rptR
          (*pTable)(row,1) << RF_PASS(rating_factor,RF);
 
 
-      pgsPointOfInterest poi( pStress->GetGirderPointOfInterest() );
+      pgsPointOfInterest poi( pStress->GetPointOfInterest() );
       const CSegmentKey& segmentKey = poi.GetSegmentKey();
 
       Float64 endSize = pBridge->GetSegmentStartEndDistance(segmentKey);

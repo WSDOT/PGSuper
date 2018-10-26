@@ -49,6 +49,7 @@ CBridgeDescDeckRebarGrid::CBridgeDescDeckRebarGrid()
 {
    m_bEnableTopMat    = TRUE;
    m_bEnableBottomMat = TRUE;
+   m_nContinuousPiers = 0;
 }
 
 CBridgeDescDeckRebarGrid::~CBridgeDescDeckRebarGrid()
@@ -261,6 +262,8 @@ void CBridgeDescDeckRebarGrid::CustomInit()
    ASSERT(pParent);
 
    pParent->EnableRemoveBtn( false ); // start off disabled
+
+   UpdatePierList();
 
 	GetParam( )->EnableUndo(TRUE);
 }

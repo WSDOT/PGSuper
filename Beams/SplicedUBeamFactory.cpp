@@ -28,7 +28,6 @@
 #include "UBeamDistFactorEngineer.h"
 #include "TimeStepLossEngineer.h"
 #include "StrandMoverImpl.h"
-#include <BridgeModeling\PrismaticGirderProfile.h>
 #include <sstream>
 #include <algorithm>
 

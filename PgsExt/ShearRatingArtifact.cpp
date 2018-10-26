@@ -63,7 +63,7 @@ void pgsShearRatingArtifact::SetPointOfInterest(const pgsPointOfInterest& poi)
    m_POI = poi;
 }
 
-const pgsPointOfInterest& pgsShearRatingArtifact::GetGirderPointOfInterest() const
+const pgsPointOfInterest& pgsShearRatingArtifact::GetPointOfInterest() const
 {
    return m_POI;
 }

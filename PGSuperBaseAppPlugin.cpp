@@ -145,7 +145,7 @@ void CPGSuperBaseAppPlugin::LoadRegistryValues()
 
    // defaults
    CString strVersion = theApp.GetVersion(true);
-   CString strFTPServer(_T("ftp://ftp.wsdot.wa.gov/public/bridge/Software/"));
+   CString strFTPServer(_T("ftp://ftp.wsdot.wa.gov/public/bridge/software"));
    CString strDefaultMasterLibraryURL;
    strDefaultMasterLibraryURL.Format(_T("%s/Version_%s/WSDOT.lbr"),strFTPServer,strVersion);
    CString strDefaultWorkgroupTemplateFolderURL;

@@ -57,7 +57,6 @@ extern CComModule _Module;
 // WBFL packages that this agent uses.
 #include <System\System.h>
 #include <Roark\Roark.h>
-#include <BridgeAnalysis\BridgeAnalysis.h>
 #include <Lrfd\Lrfd.h>
 
 //{{AFX_INSERT_LOCATION}}

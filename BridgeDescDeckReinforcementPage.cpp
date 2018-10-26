@@ -110,6 +110,9 @@ void CBridgeDescDeckReinforcementPage::DoDataExchange(CDataExchange* pDX)
    {
       if ( !m_Grid.GetRebarData(m_RebarData.NegMomentRebar) )
          pDX->Fail();
+
+      CBridgeDescDlg* pParent = (CBridgeDescDlg*)GetParent();
+      pParent->m_BridgeDesc.GetDeckDescription()->DeckRebarData = m_RebarData;
    }
    else
    {
@@ -152,6 +155,9 @@ BOOL CBridgeDescDeckReinforcementPage::OnInitDialog()
 
    CComboBox* pcbMaterial = (CComboBox*)GetDlgItem(IDC_MILD_STEEL_SELECTOR);
    FillRebarMaterialComboBox(pcbMaterial);
+
+   CBridgeDescDlg* pParent = (CBridgeDescDlg*)GetParent();
+   m_RebarData = pParent->m_BridgeDesc.GetDeckDescription()->DeckRebarData;
 
    CPropertyPage::OnInitDialog();
    
@@ -209,6 +215,8 @@ BOOL CBridgeDescDeckReinforcementPage::OnSetActive()
    BOOL bEnableBottom = TRUE;
    
    CBridgeDescDlg* pParent = (CBridgeDescDlg*)GetParent();
+
+   m_RebarData = pParent->m_BridgeDesc.GetDeckDescription()->DeckRebarData;
 
    if ( pParent->m_BridgeDesc.GetDeckDescription()->DeckType == pgsTypes::sdtNone )
    {

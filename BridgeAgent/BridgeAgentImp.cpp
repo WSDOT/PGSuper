@@ -69,12 +69,6 @@
 #include <IFace\DocumentType.h>
 #include <IFace\BeamFactory.h>
 
-#include <BridgeModeling\DrawSettings.h>
-
-#include <BridgeModeling\LrLayout.h>
-#include <BridgeModeling\LrFlexiZone.h>
-#include <BridgeModeling\LrRowPattern.h>
-
 #include <DesignConfigUtil.h>
 
 #include <algorithm>
@@ -3776,12 +3770,14 @@ void CBridgeAgentImp::LayoutPoiForShear(const CSegmentKey& segmentKey,Float64 se
       pgsPointOfInterest poi_15h( segmentKey, X, Xs, Xg, Xgp, POI_15H | POI_ERECTED_SEGMENT);
       m_PoiMgr.AddPointOfInterest(poi_15h);
 
-      X = left_end_dist + support_width/2 + 2.5*Hg;
-      Xs = X + start_offset;
-      Xgp = segmentOffset + Xs;
-      Xg = Xgp - first_segment_start_offset;
-      pgsPointOfInterest poi_25h( segmentKey, X, Xs, Xg, Xgp);
-      m_PoiMgr.AddPointOfInterest(poi_25h);
+#pragma Reminder("UPDATE: remove obsolete code")
+      // Not used in current PGSuper. Remove this code if it isn't needed
+      //X = left_end_dist + support_width/2 + 2.5*Hg;
+      //Xs = X + start_offset;
+      //Xgp = segmentOffset + Xs;
+      //Xg = Xgp - first_segment_start_offset;
+      //pgsPointOfInterest poi_25h( segmentKey, X, Xs, Xg, Xgp);
+      //m_PoiMgr.AddPointOfInterest(poi_25h);
 
       X = left_end_dist + support_width/2;
       Xs = X + start_offset;
@@ -3833,12 +3829,15 @@ void CBridgeAgentImp::LayoutPoiForShear(const CSegmentKey& segmentKey,Float64 se
       pgsPointOfInterest poi_15h( segmentKey, X, Xs, Xg, Xgp, POI_15H | POI_ERECTED_SEGMENT);
       m_PoiMgr.AddPointOfInterest(poi_15h);
 
-      X = segment_length - (end_size + support_width/2 + 2.5*Hg);
-      Xs = X + start_offset;
-      Xgp = Xs + segmentOffset;
-      Xg = Xgp - first_segment_start_offset;
-      pgsPointOfInterest poi_25h( segmentKey, X, Xs, Xg, Xgp);
-      m_PoiMgr.AddPointOfInterest(poi_25h);
+
+#pragma Reminder("UPDATE: remove obsolete code")
+      // Not used in current PGSuper. Remove this code if it isn't needed
+      //X = segment_length - (end_size + support_width/2 + 2.5*Hg);
+      //Xs = X + start_offset;
+      //Xgp = Xs + segmentOffset;
+      //Xg = Xgp - first_segment_start_offset;
+      //pgsPointOfInterest poi_25h( segmentKey, X, Xs, Xg, Xgp);
+      //m_PoiMgr.AddPointOfInterest(poi_25h);
 
       X = segment_length - (end_size + support_width/2);
       Xs = X + start_offset;
@@ -3877,7 +3876,7 @@ void CBridgeAgentImp::LayoutPoiForShear(const CSegmentKey& segmentKey,Float64 se
 #pragma Reminder("UPDATE: add other POI locations") 
          // there is enough information for Xs, Xgp, and Xg
 
-         pgsPointOfInterest poi(segmentKey, zStart);
+         pgsPointOfInterest poi(segmentKey, zStart, POI_STIRRUP_ZONE);
          m_PoiMgr.AddPointOfInterest(poi);
       }
    }
@@ -4155,7 +4154,7 @@ void CBridgeAgentImp::LayoutPoiForTemporarySupports(const CSegmentKey& segmentKe
       return; // no temporary supports
 
    Float64 segment_start_station, segment_end_station;
-   pSegment->GetStations(segment_start_station,segment_end_station);
+   pSegment->GetStations(&segment_start_station,&segment_end_station);
    std::vector<const CTemporarySupportData*>::iterator iter(tempSupports.begin());
    std::vector<const CTemporarySupportData*>::iterator iterEnd(tempSupports.end());
    for ( ; iter != iterEnd; iter++ )
@@ -4770,9 +4769,17 @@ void CBridgeAgentImp::GetGirderGroupPiers(GroupIndexType grpIdx,PierIndexType* p
 {
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
-   const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(grpIdx);
-   *pStartPierIdx = pGroup->GetPierIndex(pgsTypes::metStart);
-   *pEndPierIdx = pGroup->GetPierIndex(pgsTypes::metEnd);
+   if ( grpIdx == ALL_GROUPS )
+   {
+      *pStartPierIdx = 0;
+      *pEndPierIdx = pBridgeDesc->GetPierCount()-1;
+   }
+   else
+   {
+      const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(grpIdx);
+      *pStartPierIdx = pGroup->GetPierIndex(pgsTypes::metStart);
+      *pEndPierIdx = pGroup->GetPierIndex(pgsTypes::metEnd);
+   }
 }
 
 SpanIndexType CBridgeAgentImp::GetGirderGroupStartSpan(GroupIndexType grpIdx)
@@ -5851,7 +5858,7 @@ CSegmentKey CBridgeAgentImp::GetSegmentAtPier(PierIndexType pierIdx,const CGirde
       {
          const CPrecastSegmentData* pSegment = pGirder->GetSegment(segIdx);
          Float64 startStation,endStation;
-         pSegment->GetStations(startStation,endStation);
+         pSegment->GetStations(&startStation,&endStation);
 
          if ( ::InRange(startStation,pierStation,endStation) )
          {
@@ -7679,7 +7686,7 @@ void CBridgeAgentImp::GetTemporarySupportLocation(SupportIndexType tsIdx,GirderI
 
       // get the station boundary of the segment
       Float64 startStation, endStation;
-      pSegment->GetStations(startStation,endStation);
+      pSegment->GetStations(&startStation,&endStation);
 
       if ( IsEqual(tsStation,startStation) )
       {
@@ -13910,13 +13917,13 @@ Float64 CBridgeAgentImp::ConvertHarpedOffsetHp(LPCTSTR strGirderName,const Confi
 //   return vPoi;
 //}
 //
-//pgsPointOfInterest CBridgeAgentImp::GetGirderPointOfInterest(EventIndexType event,GirderIDType gdrID,Float64 distFromStart)
+//pgsPointOfInterest CBridgeAgentImp::GetPointOfInterest(EventIndexType event,GirderIDType gdrID,Float64 distFromStart)
 //{
 //   ValidateGirderPointsOfInterest(gdrID);
 //   return m_GirderPoiMgr.GetPointOfInterest(event,gdrID,INVALID_INDEX,distFromStart);
 //}
 //
-//pgsPointOfInterest CBridgeAgentImp::GetGirderPointOfInterest(GirderIDType gdrID,Float64 distFromStart)
+//pgsPointOfInterest CBridgeAgentImp::GetPointOfInterest(GirderIDType gdrID,Float64 distFromStart)
 //{
 //   ValidateGirderPointsOfInterest(gdrID);
 //   return m_GirderPoiMgr.GetPointOfInterest(gdrID,INVALID_INDEX,distFromStart);
@@ -14367,18 +14374,20 @@ Float64 CBridgeAgentImp::ConvertGirderPathCoordinateToGirderCoordinate(const CGi
    return Xg - CLPierToStartOfGirderDistance;
 }
 
-PoiAttributeType g_TargetAttributes;
+PoiAttributeType g_TargetAttribute;
+PoiAttributeType g_ExceptionAttribute;
 bool RemovePOI(const pgsPointOfInterest& poi)
 {
-   return poi.HasAttribute(g_TargetAttributes);
+   return poi.HasAttribute(g_TargetAttribute) && !poi.HasAttribute(g_ExceptionAttribute);
 }
 
-void CBridgeAgentImp::RemovePointsOfInterest(std::vector<pgsPointOfInterest>& vPOI,PoiAttributeType attributes)
+void CBridgeAgentImp::RemovePointsOfInterest(std::vector<pgsPointOfInterest>& vPoi,PoiAttributeType targetAttribute,PoiAttributeType exceptionAttribute)
 {
-   g_TargetAttributes = attributes;
-   std::vector<pgsPointOfInterest>::iterator new_end = std::remove_if(vPOI.begin(),vPOI.end(),RemovePOI);
-   std::vector<pgsPointOfInterest>::size_type newSize = new_end - vPOI.begin();
-   vPOI.resize(newSize);
+   g_TargetAttribute = targetAttribute;
+   g_ExceptionAttribute  = exceptionAttribute;
+   std::vector<pgsPointOfInterest>::iterator new_end = std::remove_if(vPoi.begin(),vPoi.end(),RemovePOI);
+   std::vector<pgsPointOfInterest>::size_type newSize = new_end - vPoi.begin();
+   vPoi.resize(newSize);
 }
 
 /////////////////////////////////////////////////////////////////////////
@@ -16736,7 +16745,7 @@ void CBridgeAgentImp::GetControlPoints(SupportIndexType tsIdx,IPoint2d** ppLeft,
    {
       const CPrecastSegmentData* pSegment = pGirder->GetSegment(segIdx);
       Float64 startStation,endStation;
-      pSegment->GetStations(startStation,endStation);
+      pSegment->GetStations(&startStation,&endStation);
       if ( ::InRange(startStation,tsStation,endStation) )
          break;
    }
@@ -21274,7 +21283,7 @@ SegmentIndexType CBridgeAgentImp::GetSegmentIndex(const CSplicedGirderData* pGir
    {
       const CPrecastSegmentData* pSegment = pGirder->GetSegment(segIdx);
       Float64 startStation,endStation;
-      pSegment->GetStations(startStation,endStation);
+      pSegment->GetStations(&startStation,&endStation);
 
       if ( ::InRange(startStation,station,endStation) )
          return segIdx;

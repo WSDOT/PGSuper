@@ -65,7 +65,7 @@ void CPierDisplayObjectEvents::EditPier(iDisplayObject* pDO)
    CDisplayView* pView = pDispMgr->GetView();
    CDocument* pDoc = pView->GetDocument();
 
-   ((CPGSuperDoc*)pDoc)->EditPierDescription(m_PierIdx,EPD_GENERAL);
+   ((CPGSuperDocBase*)pDoc)->EditPierDescription(m_PierIdx,EPD_GENERAL);
 }
 
 void CPierDisplayObjectEvents::SelectPier(iDisplayObject* pDO)
@@ -214,7 +214,7 @@ STDMETHODIMP_(bool) CPierDisplayObjectEvents::XEvents::OnContextMenu(iDisplayObj
       pList->GetDisplayMgr(&pDispMgr);
 
       CDisplayView* pView = pDispMgr->GetView();
-      CPGSuperDoc* pDoc = (CPGSuperDoc*)pView->GetDocument();
+      CPGSuperDocBase* pDoc = (CPGSuperDocBase*)pView->GetDocument();
 
       CEAFMenu* pMenu = CEAFMenu::CreateContextMenu(pDoc->GetPluginCommandManager());
       pMenu->LoadMenu(IDR_SELECTED_PIER_CONTEXT,NULL);
@@ -224,36 +224,61 @@ STDMETHODIMP_(bool) CPierDisplayObjectEvents::XEvents::OnContextMenu(iDisplayObj
       GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
       const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
       const CPierData2* pPier = pBridgeDesc->GetPier(pThis->m_PierIdx);
-      ATLASSERT(pPier->IsBoundaryPier());
 
-      // get all valid connect types for the pier represented by this display object
-      std::vector<pgsTypes::PierConnectionType> validConnectionTypes( pBridgeDesc->GetPierConnectionTypes(pThis->m_PierIdx) );
-
-      // Mapping between connection type and menu id
-      std::map<pgsTypes::PierConnectionType,UINT> menuIDs;
-      menuIDs.insert(std::make_pair(pgsTypes::Hinge,IDM_HINGE));
-      menuIDs.insert(std::make_pair(pgsTypes::Roller,IDM_ROLLER));
-      menuIDs.insert(std::make_pair(pgsTypes::ContinuousAfterDeck,IDM_CONTINUOUS_AFTERDECK));
-      menuIDs.insert(std::make_pair(pgsTypes::ContinuousBeforeDeck,IDM_CONTINUOUS_BEFOREDECK));
-      menuIDs.insert(std::make_pair(pgsTypes::IntegralAfterDeck,IDM_INTEGRAL_AFTERDECK));
-      menuIDs.insert(std::make_pair(pgsTypes::IntegralBeforeDeck,IDM_INTEGRAL_BEFOREDECK));
-      menuIDs.insert(std::make_pair(pgsTypes::IntegralAfterDeckHingeBack,IDM_INTEGRAL_AFTERDECK_HINGEBACK));
-      menuIDs.insert(std::make_pair(pgsTypes::IntegralBeforeDeckHingeBack,IDM_INTEGRAL_BEFOREDECK_HINGEBACK));
-      menuIDs.insert(std::make_pair(pgsTypes::IntegralAfterDeckHingeAhead,IDM_INTEGRAL_AFTERDECK_HINGEAHEAD));
-      menuIDs.insert(std::make_pair(pgsTypes::IntegralBeforeDeckHingeAhead,IDM_INTEGRAL_BEFOREDECK_HINGEAHEAD));
-
-
-      pMenu->AppendSeparator();
-
-      // Populate the menu
-      std::vector<pgsTypes::PierConnectionType>::iterator iter(validConnectionTypes.begin());
-      std::vector<pgsTypes::PierConnectionType>::iterator iterEnd(validConnectionTypes.end());
-      for ( ; iter != iterEnd; iter++ )
+      if ( pPier->IsBoundaryPier() )
       {
-         UINT nID = menuIDs[*iter]; // look up the ID for each valid connection type
-         pMenu->AppendMenu(nID ,CPierData2::AsString(*iter),NULL); // add it to the menu
+         // get all valid connection types for the pier represented by this display object
+         std::vector<pgsTypes::PierConnectionType> validConnectionTypes( pBridgeDesc->GetPierConnectionTypes(pThis->m_PierIdx) );
+
+         // Mapping between connection type and menu id
+         std::map<pgsTypes::PierConnectionType,UINT> menuIDs;
+         menuIDs.insert(std::make_pair(pgsTypes::Hinge,IDM_HINGE));
+         menuIDs.insert(std::make_pair(pgsTypes::Roller,IDM_ROLLER));
+         menuIDs.insert(std::make_pair(pgsTypes::ContinuousAfterDeck,IDM_CONTINUOUS_AFTERDECK));
+         menuIDs.insert(std::make_pair(pgsTypes::ContinuousBeforeDeck,IDM_CONTINUOUS_BEFOREDECK));
+         menuIDs.insert(std::make_pair(pgsTypes::IntegralAfterDeck,IDM_INTEGRAL_AFTERDECK));
+         menuIDs.insert(std::make_pair(pgsTypes::IntegralBeforeDeck,IDM_INTEGRAL_BEFOREDECK));
+         menuIDs.insert(std::make_pair(pgsTypes::IntegralAfterDeckHingeBack,IDM_INTEGRAL_AFTERDECK_HINGEBACK));
+         menuIDs.insert(std::make_pair(pgsTypes::IntegralBeforeDeckHingeBack,IDM_INTEGRAL_BEFOREDECK_HINGEBACK));
+         menuIDs.insert(std::make_pair(pgsTypes::IntegralAfterDeckHingeAhead,IDM_INTEGRAL_AFTERDECK_HINGEAHEAD));
+         menuIDs.insert(std::make_pair(pgsTypes::IntegralBeforeDeckHingeAhead,IDM_INTEGRAL_BEFOREDECK_HINGEAHEAD));
+
+         pMenu->AppendSeparator();
+
+         // Populate the menu
+         std::vector<pgsTypes::PierConnectionType>::iterator iter(validConnectionTypes.begin());
+         std::vector<pgsTypes::PierConnectionType>::iterator iterEnd(validConnectionTypes.end());
+         for ( ; iter != iterEnd; iter++ )
+         {
+            UINT nID = menuIDs[*iter]; // look up the ID for each valid connection type
+            pMenu->AppendMenu(nID ,CPierData2::AsString(*iter),NULL); // add it to the menu
+         }
+      }
+      else
+      {
+         // get all valid connection types for the pier represented by this display object
+         std::vector<pgsTypes::PierSegmentConnectionType> validConnectionTypes( pBridgeDesc->GetPierSegmentConnectionTypes(pThis->m_PierIdx) );
+
+         // Mapping between connection type and menu id
+         std::map<pgsTypes::PierSegmentConnectionType,UINT> menuIDs;
+         menuIDs.insert(std::make_pair(pgsTypes::psctContinousClosurePour,IDM_CONTINUOUS_CLOSURE));
+         menuIDs.insert(std::make_pair(pgsTypes::psctIntegralClosurePour,IDM_INTEGRAL_CLOSURE));
+         menuIDs.insert(std::make_pair(pgsTypes::psctContinuousSegment,IDM_CONTINUOUS_SEGMENT_AT_PIER));
+         menuIDs.insert(std::make_pair(pgsTypes::psctIntegralSegment,IDM_INTEGRAL_SEGMENT_AT_PIER));
+
+         pMenu->AppendSeparator();
+
+         // Populate the menu
+         std::vector<pgsTypes::PierSegmentConnectionType>::iterator iter(validConnectionTypes.begin());
+         std::vector<pgsTypes::PierSegmentConnectionType>::iterator iterEnd(validConnectionTypes.end());
+         for ( ; iter != iterEnd; iter++ )
+         {
+            UINT nID = menuIDs[*iter]; // look up the ID for each valid connection type
+            pMenu->AppendMenu(nID ,CPierData2::AsString(*iter),NULL); // add it to the menu
+         }
       }
 
+      // Let plug-ins add to the context menu
       std::map<IDType,IBridgePlanViewEventCallback*> callbacks = pDoc->GetBridgePlanViewCallbacks();
       std::map<IDType,IBridgePlanViewEventCallback*>::iterator cbiter;
       for ( cbiter = callbacks.begin(); cbiter != callbacks.end(); cbiter++ )

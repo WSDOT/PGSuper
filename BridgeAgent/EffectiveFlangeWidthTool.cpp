@@ -42,7 +42,7 @@
 #include "EffectiveFlangeWidthTool.h"
 #include "BridgeHelpers.h"
 #include <MathEx.h>
-#include <Reporting\ReportStyleHolder.h>
+#include <PgsExt\ReportStyleHolder.h>
 
 #include <EAF\EAFDisplayUnits.h>
 #include <IFace\Bridge.h>
@@ -419,15 +419,9 @@ HRESULT CEffectiveFlangeWidthTool::EffectiveFlangeWidthBySegmentDetails(IGeneric
       // (See C4.6.2.6.1, last paragraph on page 4-52... since provisions were developed for overhangs
       // < S/2, we will limit the overhang to S/2 for purposes for this calculation).
 
-      // get maximum girder spacing in this span
       PierIndexType startPierIdx = spanIdx;
       PierIndexType endPierIdx   = startPierIdx + 1;
-      std::vector<Float64> startSpacing = pBridge->GetGirderSpacing(startPierIdx,pgsTypes::Ahead,pgsTypes::AtPierLine,pgsTypes::NormalToItem);
-      std::vector<Float64> endSpacing   = pBridge->GetGirderSpacing(endPierIdx,  pgsTypes::Back, pgsTypes::AtPierLine,pgsTypes::NormalToItem);
-
-      ATLASSERT(startSpacing.size() == endSpacing.size());
-      SpacingIndexType nSpaces = startSpacing.size();
-      GirderIndexType nGirders = nSpaces+1;
+      GirderIndexType nGirders = pBridge->GetGirderCountBySpan(spanIdx);
 
       bool bOverhangCheckFailed = false;
 
@@ -437,26 +431,19 @@ HRESULT CEffectiveFlangeWidthTool::EffectiveFlangeWidthBySegmentDetails(IGeneric
 
       if ( 1 < nGirders )
       {
+         // get span length
+         Float64 L = pBridge->GetSpanLength(spanIdx,segmentKey.girderIndex);
 
-	      Float64 S1 = 0;
-	      Float64 S2 = 0;
-	      for ( SpacingIndexType spaceIdx = 0; spaceIdx < nSpaces; spaceIdx++ )
-	      {
-	         Float64 s;
-	
-	         // spacing at start pier
-	         s = startSpacing[spaceIdx];
-	         S1 = _cpp_max(s,S1);
-	
-	         // spacing at end pier
-	         s = endSpacing[spaceIdx];
-	         S2 = _cpp_max(s,S2);
-	      }
-	
-	      Float64 S = _cpp_max(S1,S2);
-	
-	      // get span length
-	      Float64 L = pBridge->GetSegmentSpanLength(segmentKey);
+         CSegmentKey startSegmentKey = pBridge->GetSegmentAtPier(startPierIdx,segmentKey);
+         CSegmentKey endSegmentKey   = pBridge->GetSegmentAtPier(endPierIdx,  segmentKey);
+
+         // Girder spacing normal to the CL girder is the tributary width
+         Float64 S1,S2;
+         TributaryFlangeWidthBySegment(bridge,gdrID,startSegmentKey.segmentIndex, 0.0,leftGdrID,rightGdrID,&S1);
+         TributaryFlangeWidthBySegment(bridge,gdrID,endSegmentKey.segmentIndex,   L,  leftGdrID,rightGdrID,&S2);
+
+         Float64 S = _cpp_max(S1,S2);
+
 	      if ( !pIEffFW->IgnoreEffectiveFlangeWidthLimits() && L/S < 2.0 )
 	      {
             //  ratio of span length to girder spacing is out of range
@@ -491,11 +478,11 @@ HRESULT CEffectiveFlangeWidthTool::EffectiveFlangeWidthBySegmentDetails(IGeneric
 	         {
 	            bOverhangCheckFailed = true;
 	            // force tributary area to be S/2
-	            if ( IsGE(S/2,left_overhang) )
-	               twLeft = S/2;
+	            if ( locationType == ltLeftExteriorGirder && IsGE(S/2,left_overhang) )
+	               twLeft = twRight;
 	
-	            if ( IsGE(S/2,right_overhang) )
-	               twRight = S/2;
+	            if ( locationType == ltRightExteriorGirder && IsGE(S/2,right_overhang) )
+	               twRight = twLeft;
 	
 	            // overhang is too big
 	            std::_tostringstream os;

@@ -415,8 +415,17 @@ void pgsDesigner2::GetHaunchDetails(const CSegmentKey& segmentKey,bool bUseConfi
          // slope of the line connecting the two exterior mating surfaces
          ATLASSERT( 2 <= nMatingSurfaces );
 
+         // this is at CL mating surface... we need out to out
          Float64 left_mating_surface_offset  = pGdr->GetMatingSurfaceLocation(poi,0);
          Float64 right_mating_surface_offset = pGdr->GetMatingSurfaceLocation(poi,nMatingSurfaces-1);
+
+         // width of mating surface
+         Float64 left_mating_surface_width  = pGdr->GetMatingSurfaceWidth(poi,0);
+         Float64 right_mating_surface_width = pGdr->GetMatingSurfaceWidth(poi,nMatingSurfaces-1);
+
+         // add half the width to get the offset to the outside edge of the top of the section
+         left_mating_surface_offset  += ::BinarySign(left_mating_surface_offset) * left_mating_surface_width/2;
+         right_mating_surface_offset += ::BinarySign(right_mating_surface_offset)* right_mating_surface_width/2;
 
          Float64 ya_left  = pAlignment->GetElevation(x,z+left_mating_surface_offset);
          Float64 ya_right = pAlignment->GetElevation(x,z+right_mating_surface_offset);
@@ -531,6 +540,16 @@ pgsGirderArtifact pgsDesigner2::Check(const CGirderKey& girderKey)
       // get the POI that will be used for spec checking
       std::vector<pgsPointOfInterest> pois( pIPoi->GetPointsOfInterest(segmentKey) );
       pIPoi->RemovePointsOfInterest(pois,POI_PIER); // don't spec check at intermediate piers
+#pragma Reminder("UPDATE: kludgy code")
+      // The POIs that are removed in the code below are so that the locations of flexural stress
+      // checks match those from previous versions of PGSuper. The original reason for removing them
+      // is to match regression test results. Though, one could argue that there isn't a need to
+      // perform stress checks at these locations, thereby making for quicker analysis
+      pIPoi->RemovePointsOfInterest(pois,POI_STIRRUP_ZONE);
+      pIPoi->RemovePointsOfInterest(pois,POI_15H);
+      pIPoi->RemovePointsOfInterest(pois,POI_CONCLOAD,POI_ERECTED_SEGMENT);
+      pIPoi->RemovePointsOfInterest(pois,POI_CRITSECTSHEAR1);
+      pIPoi->RemovePointsOfInterest(pois,POI_CRITSECTSHEAR2);
 
 
       pgsSegmentArtifact* pSegmentArtifact = gdrArtifact.GetSegmentArtifact(segIdx);
@@ -1283,6 +1302,7 @@ void pgsDesigner2::CheckStrandStresses(const CSegmentKey& segmentKey,pgsStrandSt
 
 void pgsDesigner2::CheckSegmentStresses(const CSegmentKey& segmentKey,const std::vector<pgsPointOfInterest>& vPoi,const StressCheckTask& task,pgsSegmentArtifact* pSegmentArtifact)
 {
+#pragma Reminder("UPDATE: remove obsolete code")
 /*
    USES_CONVERSION;
 
@@ -2073,7 +2093,7 @@ ZoneIndexType pgsDesigner2::GetCriticalSectionZone(const pgsPointOfInterest& poi
       CRITSECTDETAILS& csDetails(iter->first);
       CSegmentKey csSegmentKey = (csDetails.bAtFaceOfSupport ? csDetails.poiFaceOfSupport.GetSegmentKey() : csDetails.pCriticalSection->Poi.GetSegmentKey());
 
-      if ( csSegmentKey == poi.GetSegmentKey() && InRange(csDetails.Start,x,csDetails.End) )
+      if ( csSegmentKey == poi.GetSegmentKey() && (csDetails.Start < x && x < csDetails.End) )
          return (ZoneIndexType)(iter - m_CriticalSections.begin());
    }
 
@@ -2082,8 +2102,12 @@ ZoneIndexType pgsDesigner2::GetCriticalSectionZone(const pgsPointOfInterest& poi
 
 ZoneIndexType pgsDesigner2::GetSupportZoneIndex(const pgsPointOfInterest& poi)
 {
-   // Determines if a POI is between the CL Pier and the face of support
+   // Determines if a POI is in a support zone
+   // Support zones are between end of girder and FOS at end of girder and
+   // between CL Brg and FOS at intermediate supports.
 
+   // In previous versions of PGSuper, the Face of Support was considered to be
+   // outside of the support zone.
    if (poi.HasAttribute(POI_FACEOFSUPPORT) )
       return INVALID_INDEX; // face of support is not considered to be in the support zone
 
@@ -2094,7 +2118,7 @@ ZoneIndexType pgsDesigner2::GetSupportZoneIndex(const pgsPointOfInterest& poi)
    for ( ; iter != end; iter++ )
    {
       SUPPORTZONE supportZone = *iter;
-      if ( supportZone.Start < x && x < supportZone.End )
+      if ( InRange(supportZone.Start,x,supportZone.End) )
          return (ZoneIndexType)(iter - m_SupportZones.begin());
    }
 
@@ -3058,6 +3082,12 @@ void pgsDesigner2::CheckMomentCapacity(IntervalIndexType intervalIdx,pgsTypes::L
 
    // Get points of interest for evaluation
    std::vector<pgsPointOfInterest> vPoi( pIPoi->GetPointsOfInterest(CSegmentKey(girderKey,ALL_SEGMENTS)) );
+   std::vector<pgsPointOfInterest> vPoi2( pIPoi->GetCriticalSections(ls,girderKey) );
+   vPoi.insert(vPoi.end(),vPoi2.begin(),vPoi2.end());
+   std::sort(vPoi.begin(),vPoi.end());
+   std::vector<pgsPointOfInterest>::iterator newEnd( std::unique(vPoi.begin(),vPoi.end()));
+   vPoi.erase(newEnd,vPoi.end());
+
 
    GET_IFACE(IBridge,pBridge);
    std::vector<pgsPointOfInterest>::iterator poiIter(vPoi.begin());

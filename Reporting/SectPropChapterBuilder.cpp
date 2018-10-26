@@ -67,10 +67,24 @@ LPCTSTR CSectPropChapterBuilder::GetName() const
 rptChapter* CSectPropChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
 {
    CGirderReportSpecification* pGdrRptSpec = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
+   CGirderLineReportSpecification* pGdrLineRptSpec = dynamic_cast<CGirderLineReportSpecification*>(pRptSpec);
    CComPtr<IBroker> pBroker;
-   pGdrRptSpec->GetBroker(&pBroker);
+   CGirderKey girderKey;
 
-   const CGirderKey& girderKey(pGdrRptSpec->GetGirderKey());
+   if ( pGdrRptSpec )
+   {
+      pGdrRptSpec->GetBroker(&pBroker);
+      girderKey = pGdrRptSpec->GetGirderKey();
+   }
+   else if ( pGdrLineRptSpec)
+   {
+      pGdrLineRptSpec->GetBroker(&pBroker);
+      girderKey = pGdrLineRptSpec->GetGirderKey();
+   }
+   else
+   {
+      ATLASSERT(false); // not expecting a different kind of report spec
+   }
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 

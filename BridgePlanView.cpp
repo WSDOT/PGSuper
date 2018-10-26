@@ -1855,21 +1855,10 @@ void CBridgePlanView::BuildPierDisplayObjects()
       strMsg2.Format(_T("Station: %s\r\nDirection: %s\r\nSkew: %s"),FormatStation(pDisplayUnits->GetStationFormat(),station),FormatDirection(direction),FormatAngle(objSkew));
 
       CString strConnectionTip;
-      if ( pierIdx == 0 ) // first pier
-      {
+      if ( pPier->IsBoundaryPier() )
          strConnectionTip.Format(_T("Boundary Condition: %s"),CPierData2::AsString(pPier->GetPierConnectionType()));
-      }
-      else if ( pierIdx == nPiers-1 ) // last pier
-      {
-         strConnectionTip.Format(_T("Boundary Condition: %s"),CPierData2::AsString(pPier->GetPierConnectionType()));
-      }
-      else // intermediate pier
-      {
-         if ( pPier->IsBoundaryPier() )
-            strConnectionTip.Format(_T("Boundary Condition: %s"),CPierData2::AsString(pPier->GetPierConnectionType()));
-         else
-            strConnectionTip.Format(_T("Boundary Condition: %s"),CPierData2::AsString(pPier->GetSegmentConnectionType()));
-      }
+      else
+         strConnectionTip.Format(_T("Boundary Condition: %s"),CPierData2::AsString(pPier->GetSegmentConnectionType()));
 
       CString strMsg = strMsg1 + _T("\r\n\r\n") + strMsg2 + _T("\r\n") + strConnectionTip;
 
@@ -2429,6 +2418,7 @@ void CBridgePlanView::BuildTemporarySupportDisplayObjects()
       strategy_pier->SetDoFill(TRUE);
 
 #pragma Reminder("FIX: These are dummy vales...")
+      // See commented code block below
       Float64 left_offset = 0;
       Float64 right_offset = 0;
       Float64 left_overhang = 0.5;

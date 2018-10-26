@@ -120,8 +120,9 @@ interface IPointOfInterest : public IUnknown
    // Converts a girder path coordinate to a girder coordinate
    virtual Float64 ConvertGirderPathCoordinateToGirderCoordinate(const CGirderKey& girderKey,Float64 Xg) = 0;
 
-   // Removes all poi from the vector that have the specified attributes
-   virtual void RemovePointsOfInterest(std::vector<pgsPointOfInterest>& vPoi,PoiAttributeType attributes) = 0;
+   // Removes all poi from the vector that have the specified attribute unless the poi also has the
+   // exception attribute, in which case it is retained
+   virtual void RemovePointsOfInterest(std::vector<pgsPointOfInterest>& vPoi,PoiAttributeType targetAttribute,PoiAttributeType exceptionAttribute=0) = 0;
 };
 
 /*****************************************************************************

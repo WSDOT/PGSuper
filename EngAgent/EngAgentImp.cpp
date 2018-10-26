@@ -44,7 +44,7 @@
 #include <PsgLib\SpecLibraryEntry.h>
 #include <PsgLib\GirderLibraryEntry.h>
 
-#include <Reporting\ReportStyleHolder.h>
+#include <PgsExt\ReportStyleHolder.h>
 
 #include <Units\SysUnits.h>
 
@@ -1038,14 +1038,26 @@ std::vector<CRITSECTDETAILS> CEngAgentImp::CalculateShearCritSection(pgsTypes::L
          if ( face == pgsTypes::Ahead )
          {
             // CS/FOS is on ahead side of pier so zone goes from CL Bearing at start to CS location
-            csDetails.Start = pBridge->GetSegmentStartEndDistance(poiFaceOfSupport.GetSegmentKey());
+            // (If this is the first segment of the girder, CS-zone starts at start face of girder)
+            if ( poiFaceOfSupport.GetSegmentKey().segmentIndex == 0 )
+               csDetails.Start = 0.0;
+            else
+               csDetails.Start = pBridge->GetSegmentStartEndDistance(poiFaceOfSupport.GetSegmentKey());
+
             csDetails.End = csDetails.pCriticalSection->Poi.GetDistFromStart();
          }
          else
          {
             // CS/FOS is on back side of pier so zone goes from CS to CL Bearing at end
             csDetails.Start = csDetails.pCriticalSection->Poi.GetDistFromStart();
-            csDetails.End = pBridge->GetSegmentLength(poiFaceOfSupport.GetSegmentKey()) - pBridge->GetSegmentEndEndDistance(poiFaceOfSupport.GetSegmentKey());
+
+            // if this is the last segment in the girder, end the CS-zone at the end face of the girder
+            // otherwise end it at the CL Bearing
+            SegmentIndexType nSegments = pGroup->GetGirder(girderKey.girderIndex)->GetSegmentCount();
+            if( poiFaceOfSupport.GetSegmentKey().segmentIndex == nSegments-1 )
+               csDetails.End = pBridge->GetSegmentLength(poiFaceOfSupport.GetSegmentKey());
+            else
+               csDetails.End = pBridge->GetSegmentLength(poiFaceOfSupport.GetSegmentKey()) - pBridge->GetSegmentEndEndDistance(poiFaceOfSupport.GetSegmentKey());
          }
 
          csDetails.pCriticalSection->Poi.SetAttributes(attributes);

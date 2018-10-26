@@ -1,6 +1,7 @@
 // Microsoft Visual C++ generated resource script.
 //
 #include "resource.h"
+#include <EAF\EAFResources.h>
 
 #define APSTUDIO_READONLY_SYMBOLS
 /////////////////////////////////////////////////////////////////////////////
@@ -306,6 +307,7 @@ BEGIN
         MENUITEM "&Project Criteria...",        ID_PROJECT_SPEC
         MENUITEM "&Load Rating Options...",     ID_RATING_SPEC
         MENUITEM "En&vironment...",             ID_PROJECT_ENVIRONMENT
+        MENUITEM "Effective Flange Width...",   ID_PROJECT_EFFECTIVEFLANGEWIDTH
         MENUITEM "Losses...",                   ID_PROJECT_LOSSES
         MENUITEM SEPARATOR
         MENUITEM "Prope&rties...",              ID_FILE_PROJECT_PROPERTIES
@@ -3169,8 +3171,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 3,0,0,3
- PRODUCTVERSION 3,0,0,3
+ FILEVERSION 3,0,0,4
+ PRODUCTVERSION 3,0,0,4
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -3187,12 +3189,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "Washington State Department of Transportation"
             VALUE "FileDescription", "PGSuper"
-            VALUE "FileVersion", "3.0.0.3"
+            VALUE "FileVersion", "3.0.0.4"
             VALUE "InternalName", "PGSuper"
             VALUE "LegalCopyright", "Copyright © 1999-2013, Washington State Department of Transportation, All Rights Reserved"
             VALUE "OriginalFilename", "PGSuperAppPlugin.DLL"
             VALUE "ProductName", "PGSuper"
-            VALUE "ProductVersion", "3.0.0.3"
+            VALUE "ProductVersion", "3.0.0.4"
         END
     END
     BLOCK "VarFileInfo"
@@ -4343,16 +4345,20 @@ END
 
 STRINGTABLE 
 BEGIN
+    ID_PROJECT_ENVIRONMENT  "Specify environment conditions\nEnvironment"
+    ID_PROJECT_BRIDGEDESC   "Edit the Bridge\nEdit the Bridge Description"
+    ID_LOADS_LOADMODIFIERS  "Edit the load modifiers\nLoad modifiers"
+    ID_LEFTEND              "Cut section at left end of the girder"
     ID_RIGHTEND             "Cut section at right end of girder"
     ID_LEFT_HP              "Cut section at left harping point"
     ID_CENTER               "Cut section at center of girder"
     ID_RIGHT_HP             "Cut section at right harping point"
     ID_USER_CUT             "Enter a user defined cut location"
-    ID_VIEW_FACTOROFSAFETY  "View Factor of Safety graphs for Girder Stability\n\nGirder Stability"
 END
 
 STRINGTABLE 
 BEGIN
+    ID_VIEW_FACTOROFSAFETY  "View Factor of Safety graphs for Girder Stability\n\nGirder Stability"
     ID_VIEW_STABILITY       "View Factor of Safety graphs for Girder Stability\nGirder Stability View"
     ID_LOADS_LLDF           "Input distribution factors"
     ID_ADD_POINT_LOAD       "Add a concentrated load to the model"
@@ -4365,11 +4371,11 @@ BEGIN
     ID_ADD_MOMENT_LOAD      "Add a moment load to the model"
     ID_EDIT_PIER            "Edit this Pier\nEdit this Pier"
     ID_PROJECT_SPANDESC     "Edit the selected Span\nEdit the selected Span"
-    ID_PROJECT_PIERDESC     "Edit an abutment\\pier\nEdit an abutment\\pier"
 END
 
 STRINGTABLE 
 BEGIN
+    ID_PROJECT_PIERDESC     "Edit an abutment\\pier\nEdit an abutment\\pier"
     ID_DELETE               "Delete\nDelete"
     ID_INSERT               "Insert Span\nInsert Span"
     ID_INSERT_SPAN          "Insert Span\nInsert Span"
@@ -4377,7 +4383,21 @@ BEGIN
     ID_OPTIONS_HINTS        "Edit User Interface Hint Options\nHints"
     ID_OPTIONS_LABELS       "Set the format for girder labels\nEdit girder label format"
     ID_RATING_SPEC          "Edit load rating options for this project\nEdit Load Rating Options"
+END
+
+STRINGTABLE 
+BEGIN
     ID_MANAGE_PLUGINS       "Manage PGSuper Plug-ins and Extensions\nManage Plug-ins and Extensions"
+    ID_PROJECT_ANALYSIS     "Set the structural analysis method\nStructural Analysis Method"
+    ID_CONSTRUCTION_LOADS   "Add permanent construction loads for stay-in-place forms or other construction materials\nConstruction Loads"
+    ID_EDIT_GIRDERLINE      "Edit spliced girder\nEdit spliced girder"
+    ID_INSERT_TEMPORARY_SUPPORT 
+                            "Insert a Temporary Support\nInsert a Temporary Support"
+    ID_EDIT_TEMPORARY_SUPPORT 
+                            "Edit the selected Temporary Support\nEdit the selected Temporary Support"
+    ID_DELETE_TEMPORARY_SUPPORT 
+                            "Delete temporary support\nDelete Temporary Support"
+    ID_EDIT_TIMELINE        "Edit timeline\nEdit Timeline"
 END
 
 STRINGTABLE 
@@ -4414,33 +4434,14 @@ BEGIN
     ID_FILE_PROJECT_PROPERTIES 
                             "Shows the properties for the current project\nProject Properties"
     ID_VIEW_BRIDGEMODELEDITOR "Shows the Bridge Model\nBridge Model View"
+END
+
+STRINGTABLE 
+BEGIN
     ID_VIEW_GIRDEREDITOR    "Shows Detail View of a Girder\nGirder View"
     ID_VIEW_ANALYSISMODELEDITOR 
                             "Shows the Analysis Model View\nAnalysis Model View"
     ID_VIEW_LIBRARYEDITOR   "Shows the Library Editor\nEdit Library"
-END
-
-STRINGTABLE 
-BEGIN
-    IDS_ALIGNMENTOFFSET_FMT "The Bridge Line is an arbritrary reference line that can be used to locate elements of the bridge. Use a signed value (+/-xxx.xx) or a left/right indicator (xxx.xxx L|R) to locate the bridge line. Positive signed values indicate the Bridge Line is located to the right of the alignment.\nExample: -2.25 and 2.25 L locate the Bridge Line left of the alignment."
-END
-
-STRINGTABLE 
-BEGIN
-    ID_PROJECT_ANALYSIS     "Set the structural analysis method\nStructural Analysis Method"
-    ID_CONSTRUCTION_LOADS   "Add permanent construction loads for stay-in-place forms or other construction materials\nConstruction Loads"
-    ID_EDIT_GIRDERLINE      "Edit spliced girder\nEdit spliced girder"
-    ID_INSERT_TEMPORARY_SUPPORT 
-                            "Insert a Temporary Support\nInsert a Temporary Support"
-    ID_EDIT_TEMPORARY_SUPPORT 
-                            "Edit the selected Temporary Support\nEdit the selected Temporary Support"
-    ID_DELETE_TEMPORARY_SUPPORT 
-                            "Delete temporary support\nDelete Temporary Support"
-    ID_EDIT_TIMELINE        "Edit timeline\nEdit Timeline"
-END
-
-STRINGTABLE 
-BEGIN
     ID_VIEW_REPORTS         "View a report\nReports"
     ID_VIEWSETTINGS_BRIDGEMODELEDITOR "Bridge Model View Settings"
     ID_VIEWSETTINGS_GIRDEREDITOR "Girder View Settings"
@@ -4452,10 +4453,11 @@ BEGIN
     ID_PROJECT_DESIGNGIRDER "Run Preliminary Girder Designer\nPreliminary Girder Designer"
     ID_PROJECT_SPEC         "Choose the design and analysis criteria for your project\nSelect Project Criteria"
     ID_VIEW_ANALYSISRESULTS "View analysis results\nAnalysis Results"
-    ID_PROJECT_ENVIRONMENT  "Specify environment conditions\nEnvironment"
-    ID_PROJECT_BRIDGEDESC   "Edit the Bridge\nEdit the Bridge Description"
-    ID_LOADS_LOADMODIFIERS  "Edit the load modifiers\nLoad modifiers"
-    ID_LEFTEND              "Cut section at left end of the girder"
+END
+
+STRINGTABLE 
+BEGIN
+    IDS_ALIGNMENTOFFSET_FMT "The Bridge Line is an arbritrary reference line that can be used to locate elements of the bridge. Use a signed value (+/-xxx.xx) or a left/right indicator (xxx.xxx L|R) to locate the bridge line. Positive signed values indicate the Bridge Line is located to the right of the alignment.\nExample: -2.25 and 2.25 L locate the Bridge Line left of the alignment."
 END
 
 STRINGTABLE 

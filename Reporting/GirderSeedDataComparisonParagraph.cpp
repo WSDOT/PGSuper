@@ -22,7 +22,7 @@
 
 #include "stdafx.h"
 #include <Reporting\GirderSeedDataComparisonParagraph.h>
-#include <Reporting\ReportStyleHolder.h>
+#include <PgsExt\ReportStyleHolder.h>
 #include <IFace\Project.h>
 #include <PgsExt\BridgeDescription2.h>
 

@@ -74,8 +74,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 3,0,0,3
- PRODUCTVERSION 3,0,0,3
+ FILEVERSION 3,0,0,4
+ PRODUCTVERSION 3,0,0,4
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -93,12 +93,12 @@ BEGIN
             VALUE "Comments", "A member of the Alternate Route Project"
             VALUE "CompanyName", "Washington State Department of Transportation"
             VALUE "FileDescription", "psgLib DLL"
-            VALUE "FileVersion", "3.0.0.3"
+            VALUE "FileVersion", "3.0.0.4"
             VALUE "InternalName", "psgLib"
             VALUE "LegalCopyright", "Copyright © 1999-2013, Washington State Department of Transportation, All Rights Reserved"
             VALUE "OriginalFilename", "psgLib.DLL"
             VALUE "ProductName", "PGSuper"
-            VALUE "ProductVersion", "3.0.0.3"
+            VALUE "ProductVersion", "3.0.0.4"
         END
     END
     BLOCK "VarFileInfo"
@@ -2094,7 +2094,7 @@ BEGIN
         MENUITEM "&Save\tCtrl+S",               ID_FILE_SAVE
         MENUITEM "Save &As...",                 ID_FILE_SAVE_AS
         MENUITEM SEPARATOR
-        MENUITEM "&Import from PGSuper Project...", ID_FILE_IMPORT
+        MENUITEM "&Import from PGSuper/PGSplice Project...", ID_FILE_IMPORT
         MENUITEM SEPARATOR
         MENUITEM "Recent File",                 ID_FILE_MRU_FILE1, GRAYED
         MENUITEM SEPARATOR
@@ -2270,6 +2270,7 @@ BEGIN
     IDM_SMALL_ICONS         "View library entries using small icons\nSmall Icons"
     IDM_LIST_ICONS          "View library entries in a list\nList"
     IDM_RENAME_ENTRY        "Rename the selected entry\nRename the selected entry"
+    ID_FILE_IMPORT          "Import library entries from a PGSuper or PGSplice Project File"
     ID_EDIT_INSERTROW       "Insert a new row above the current location"
     ID_EDIT_DELETEROW       "Delete the current row"
     ID_EDIT_REMOVEROWS      "Delete the current row"
@@ -2339,7 +2340,6 @@ LANGUAGE 9, 1
 #if !defined NOGRID
 #include "grid\gxres.rc"               // Objective Grid resources
 #endif
-
 /////////////////////////////////////////////////////////////////////////////
 #endif    // not APSTUDIO_INVOKED
 

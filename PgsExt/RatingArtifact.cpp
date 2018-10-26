@@ -121,6 +121,12 @@ Float64 pgsRatingArtifact::GetMomentRatingFactorEx(bool bPositiveMoment,const pg
       }
    }
 
+   if ( *ppArtifact == NULL && 0 < pRatings->size() )
+   {
+      ATLASSERT(RF == DBL_MAX);
+      (*ppArtifact) = &(pRatings->front().second);
+   }
+
    return RF;
 }
 
@@ -145,6 +151,12 @@ Float64 pgsRatingArtifact::GetShearRatingFactorEx(const pgsShearRatingArtifact**
          RF = rating_factor;
          *ppArtifact = &artifact;
       }
+   }
+
+   if ( *ppArtifact == NULL && 0 < m_ShearRatings.size() )
+   {
+      ATLASSERT(RF == DBL_MAX);
+      (*ppArtifact) = &(m_ShearRatings.front().second);
    }
 
    return RF;
@@ -173,6 +185,12 @@ Float64 pgsRatingArtifact::GetStressRatingFactorEx(const pgsStressRatingArtifact
       }
    }
 
+   if ( *ppArtifact == NULL && 0 < m_StressRatings.size() )
+   {
+      ATLASSERT(RF == DBL_MAX);
+      (*ppArtifact) = &(m_StressRatings.front().second);
+   }
+
    return RF;
 }
 
@@ -198,6 +216,12 @@ Float64 pgsRatingArtifact::GetYieldStressRatioEx(bool bPositiveMoment,const pgsY
          RF = ratio;
          *ppArtifact = &artifact;
       }
+   }
+
+   if ( *ppArtifact == NULL && 0 < pRatios->size() )
+   {
+      ATLASSERT(RF == DBL_MAX);
+      (*ppArtifact) = &(pRatios->front().second);
    }
 
    return RF;

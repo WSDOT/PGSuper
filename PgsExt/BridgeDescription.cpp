@@ -696,6 +696,8 @@ void CBridgeDescription::Clear()
    }
    m_Spans.clear();
 
+   m_Deck.DeckEdgePoints.clear();
+   m_Deck.DeckRebarData.NegMomentRebar.clear();
 }
 
 void CBridgeDescription::CreateFirstSpan(const CPierData* pFirstPier,const CSpanData* pFirstSpan,const CPierData* pNextPier)
@@ -865,6 +867,15 @@ void CBridgeDescription::InsertSpan(PierIndexType refPierIdx,pgsTypes::PierFaceT
    ASSERT_VALID;
 }
 
+class RemoveNegMomentRebar
+{
+public:
+   RemoveNegMomentRebar(PierIndexType pierIdx) { m_PierIdx = pierIdx; }
+   bool operator()(CDeckRebarData::NegMomentRebarData& rebarData) { return rebarData.PierIdx == m_PierIdx; }
+private:
+   PierIndexType m_PierIdx;
+};
+
 void CBridgeDescription::RemoveSpan(SpanIndexType spanIdx,pgsTypes::RemovePierType rmPierType)
 {
    CSpanData* pPrevSpan = GetSpan(spanIdx-1);
@@ -876,6 +887,8 @@ void CBridgeDescription::RemoveSpan(SpanIndexType spanIdx,pgsTypes::RemovePierTy
 
    Float64 span_length = pSpan->GetSpanLength();
    PierIndexType removePierIdx;
+
+   PierIndexType nPiers = m_Piers.size(); // number of piers before removal
 
    Float64 removedPierStation;
    if ( rmPierType == pgsTypes::PrevPier )
@@ -900,6 +913,26 @@ void CBridgeDescription::RemoveSpan(SpanIndexType spanIdx,pgsTypes::RemovePierTy
       delete pSpan;
       delete pNextPier;
    }
+
+   // Remove negative rebar data at the pier that is being removed
+   PierIndexType rebarRemovePierIdx(removePierIdx);
+   if ( rebarRemovePierIdx == 0 )
+   {
+      // if the first pier is removed, the next pier becomes the first pier and it can't have neg moment
+      // rebar so remove the rebar from that pier;
+      rebarRemovePierIdx++;
+   }
+   else if ( rebarRemovePierIdx == nPiers-1 )
+   {
+      // if the last pier is removed, the next to last pier becomes the last pier and it can't have neg moment
+      // rebar so remove the rebar from that pier
+      rebarRemovePierIdx--;
+   }
+
+   std::vector<CDeckRebarData::NegMomentRebarData>::iterator begin(m_Deck.DeckRebarData.NegMomentRebar.begin());
+   std::vector<CDeckRebarData::NegMomentRebarData>::iterator end(m_Deck.DeckRebarData.NegMomentRebar.end());
+   std::vector<CDeckRebarData::NegMomentRebarData>::iterator last = std::remove_if(begin,end,RemoveNegMomentRebar(rebarRemovePierIdx));
+   m_Deck.DeckRebarData.NegMomentRebar.erase(last,end);
 
    // Fix up the span/pier points and update the span/pier index values
    RenumberSpans();

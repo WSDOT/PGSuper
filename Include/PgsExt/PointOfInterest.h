@@ -44,34 +44,6 @@ typedef Uint64 PoiAttributeType;
 
 // Start at bit 64 and work backwards
 
-// The following POI attributes are undefined/unused.
-// If a new attribute is needed, take it from this list
-// starting with the highest value
-//#define POI_UNDEFINED24            0x0000000400000000
-//#define POI_UNDEFINED23            0x0000000200000000
-//#define POI_UNDEFINED22            0x0000000100000000
-//#define POI_UNDEFINED21            0x0000000080000000
-//#define POI_UNDEFINED20            0x0000000040000000
-//#define POI_UNDEFINED19            0x0000000020000000
-//#define POI_UNDEFINED18            0x0000000010000000
-//#define POI_UNDEFINED17            0x0000000008000000
-//#define POI_UNDEFINED16            0x0000000004000000
-//#define POI_UNDEFINED15            0x0000000002000000
-//#define POI_UNDEFINED14            0x0000000001000000
-//#define POI_UNDEFINED13            0x0000000000800000
-//#define POI_UNDEFINED12            0x0000000000400000
-//#define POI_UNDEFINED11            0x0000000000200000
-//#define POI_UNDEFINED10            0x0000000000100000
-//#define POI_UNDEFINED9             0x0000000000080000
-//#define POI_UNDEFINED8             0x0000000000040000
-//#define POI_UNDEFINED7             0x0000000000020000
-//#define POI_UNDEFINED6             0x0000000000010000
-//#define POI_UNDEFINED5             0x0000000000008000
-//#define POI_UNDEFINED4             0x0000000000004000
-//#define POI_UNDEFINED3             0x0000000000002000
-//#define POI_UNDEFINED2             0x0000000000001000
-//#define POI_UNDEFINED1             0x0000000000000800
-
 // Reference
 #define POI_RELEASED_SEGMENT       0x8000000000000000 // segment at time of release
 #define POI_LIFT_SEGMENT           0x4000000000000000 // segment is being lifted
@@ -106,6 +78,36 @@ typedef Uint64 PoiAttributeType;
 #define POI_TEMPSUPPORT            0x0000002000000000
 #define POI_INTERMEDIATE_PIER      0x0000001000000000 // POI at a pier that occurs between the ends of a segment
 #define POI_PIER                   0x0000000800000000 // POI at a pier that occurs between groups
+#define POI_STIRRUP_ZONE           0x0000000400000000 // Stirrup Zone Boundary
+
+// The following POI attributes are undefined/unused.
+// If a new attribute is needed, take it from this list
+// starting with the highest value.
+// **** NOTE ****
+// If a new POI is defined, don't forget to update pgsPoiMgr::AndFind and pgsPoiMgr::OrFind
+//#define POI_UNDEFINED23            0x0000000200000000
+//#define POI_UNDEFINED22            0x0000000100000000
+//#define POI_UNDEFINED21            0x0000000080000000
+//#define POI_UNDEFINED20            0x0000000040000000
+//#define POI_UNDEFINED19            0x0000000020000000
+//#define POI_UNDEFINED18            0x0000000010000000
+//#define POI_UNDEFINED17            0x0000000008000000
+//#define POI_UNDEFINED16            0x0000000004000000
+//#define POI_UNDEFINED15            0x0000000002000000
+//#define POI_UNDEFINED14            0x0000000001000000
+//#define POI_UNDEFINED13            0x0000000000800000
+//#define POI_UNDEFINED12            0x0000000000400000
+//#define POI_UNDEFINED11            0x0000000000200000
+//#define POI_UNDEFINED10            0x0000000000100000
+//#define POI_UNDEFINED9             0x0000000000080000
+//#define POI_UNDEFINED8             0x0000000000040000
+//#define POI_UNDEFINED7             0x0000000000020000
+//#define POI_UNDEFINED6             0x0000000000010000
+//#define POI_UNDEFINED5             0x0000000000008000
+//#define POI_UNDEFINED4             0x0000000000004000
+//#define POI_UNDEFINED3             0x0000000000002000
+//#define POI_UNDEFINED2             0x0000000000001000
+//#define POI_UNDEFINED1             0x0000000000000800
 
 // The lower 12 bits are reserved for 10th point attributes
 #define POI_10L                    0x0000000000000400 //1.0L

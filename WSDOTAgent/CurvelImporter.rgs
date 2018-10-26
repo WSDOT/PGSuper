@@ -1,0 +1,26 @@
+HKCR
+{
+	WSDOTExtensions.CurvelImporter.1 = s 'Curvel Importer'
+	{
+		CLSID = s '{E56801AC-B583-4e9e-A2D8-2AA64079BE15}'
+	}
+	WSDOTExtensions.CurvelImporter = s 'Curvel Importer'
+	{
+		CLSID = s '{E56801AC-B583-4e9e-A2D8-2AA64079BE15}'
+		CurVer = s 'WSDOTExtensions.CurvelImporter.1'
+	}
+	NoRemove CLSID
+	{
+		ForceRemove {E56801AC-B583-4e9e-A2D8-2AA64079BE15} = s 'Curvel Importer'
+		{
+			ProgID = s 'WSDOTExtensions.CurvelImporter.1'
+			VersionIndependentProgID = s 'WSDOTExtensions.CurvelImporter'
+			ForceRemove 'Programmable'
+			InprocServer32 = s '%MODULE%'
+			{
+				val ThreadingModel = s 'Apartment'
+			}
+			'TypeLib' = s '{3B6BF48B-C530-486E-918F-7705E13D6330}'
+		}
+	}
+}

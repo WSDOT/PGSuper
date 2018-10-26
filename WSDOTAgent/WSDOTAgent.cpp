@@ -37,6 +37,7 @@
 
 // interfaces used in this DLL.... resolves symbols for the linker
 #include <WBFLCore_i.c>
+#include <WBFLUnitServer_i.c>
 #include <IReportManager.h>
 #include <IFace\StatusCenter.h>
 #include <EAF\EAFDisplayUnits.h>
@@ -49,6 +50,8 @@
 #include <IFace\GirderHandlingSpecCriteria.h>
 #include <IFace\RatingSpecification.h>
 #include <IFace\Intervals.h>
+#include <IFace\DocumentType.h>
+#include <IFace\Selection.h>
 
 #include <Plugins\BeamFamilyCLSID.h>
 
@@ -75,6 +78,30 @@ HRESULT RegisterAgent(bool bRegister)
       return hr;
 
    hr = sysComCatMgr::RegWithCategory(CLSID_WSDOTComponentInfo,CATID_PGSuperComponentInfo,bRegister);
+   if ( FAILED(hr) )
+      return hr;
+
+   hr = sysComCatMgr::RegWithCategory(CLSID_CurvelImporter,  CATID_PGSuperDataImporter,    bRegister);
+   if ( FAILED(hr) )
+      return hr;
+
+   hr = sysComCatMgr::RegWithCategory(CLSID_CurvelImporter,  CATID_PGSpliceDataImporter,    bRegister);
+   if ( FAILED(hr) )
+      return hr;
+
+   hr = sysComCatMgr::RegWithCategory(CLSID_CurvelExporter,  CATID_PGSuperDataExporter,    bRegister);
+   if ( FAILED(hr) )
+      return hr;
+
+   hr = sysComCatMgr::RegWithCategory(CLSID_CurvelExporter,  CATID_PGSpliceDataExporter,    bRegister);
+   if ( FAILED(hr) )
+      return hr;
+
+   hr = sysComCatMgr::RegWithCategory(CLSID_GenCompExporter,  CATID_PGSuperDataExporter,    bRegister);
+   if ( FAILED(hr) )
+      return hr;
+
+   hr = sysComCatMgr::RegWithCategory(CLSID_GenCompExporter,  CATID_PGSpliceDataExporter,    bRegister);
    if ( FAILED(hr) )
       return hr;
 

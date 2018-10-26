@@ -25,7 +25,7 @@
 #include "TxDOTOptionalDesignData.h"
 #include "TxDOTOptionalDesignUtilities.h"
 
-#include <Reporting\ReportStyleHolder.h>
+#include <PgsExt\ReportStyleHolder.h>
 #include <Reporting\SpanGirderReportSpecification.h>
 #include <Reporting\FlexuralStressCheckTable.h>
 #include <Reporting\ReportNotes.h>

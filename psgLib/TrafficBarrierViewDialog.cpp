@@ -31,7 +31,6 @@
 
 #include <GeomModel\IShape.h>
 #include <GeomModel\Circle.h>
-#include <BridgeModeling\GirderProfile.h>
 #include "PGSuperColors.h"
 
 #include <GeomModel\Polygon.h>

@@ -112,8 +112,8 @@ BEGIN_MESSAGE_MAP(CBridgeModelViewChildFrame, CSplitChildFrame)
 	ON_COMMAND(ID_INSERT_SPAN, OnInsertSpan)
 	ON_COMMAND(ID_INSERT_PIER, OnInsertPier)
 	//}}AFX_MSG_MAP
-   ON_COMMAND_RANGE(IDM_HINGE,IDM_INTEGRAL_BEFOREDECK_HINGEAHEAD,OnBoundaryCondition)
-   ON_UPDATE_COMMAND_UI_RANGE(IDM_HINGE,IDM_INTEGRAL_BEFOREDECK_HINGEAHEAD,OnUpdateBoundaryCondition)
+   ON_COMMAND_RANGE(IDM_HINGE,IDM_INTEGRAL_SEGMENT_AT_PIER,OnBoundaryCondition)
+   ON_UPDATE_COMMAND_UI_RANGE(IDM_HINGE,IDM_INTEGRAL_SEGMENT_AT_PIER,OnUpdateBoundaryCondition)
 	ON_MESSAGE(WM_HELP, OnCommandHelp)
    ON_NOTIFY(UDN_DELTAPOS, IDC_START_SPAN_SPIN, &CBridgeModelViewChildFrame::OnStartSpanChanged)
    ON_NOTIFY(UDN_DELTAPOS, IDC_END_SPAN_SPIN, &CBridgeModelViewChildFrame::OnEndSpanChanged)
@@ -647,19 +647,25 @@ void CBridgeModelViewChildFrame::OnBoundaryCondition(UINT nIDC)
    CBridgePlanView* pView = GetBridgePlanView();
 	if ( pView->GetSelectedPier(&pierIdx) )
    {
-      pgsTypes::PierConnectionType newConnectionType;
+      pgsTypes::PierConnectionType newPierConnectionType;
+      pgsTypes::PierSegmentConnectionType newSegmentConnectionType;
       switch( nIDC )
       {
-         case IDM_HINGE:                          newConnectionType = pgsTypes::Hinge;                        break;
-         case IDM_ROLLER:                         newConnectionType = pgsTypes::Roller;                       break;
-         case IDM_CONTINUOUS_AFTERDECK:           newConnectionType = pgsTypes::ContinuousAfterDeck;          break;
-         case IDM_CONTINUOUS_BEFOREDECK:          newConnectionType = pgsTypes::ContinuousBeforeDeck;         break;
-         case IDM_INTEGRAL_AFTERDECK:             newConnectionType = pgsTypes::IntegralAfterDeck;            break;
-         case IDM_INTEGRAL_BEFOREDECK:            newConnectionType = pgsTypes::IntegralBeforeDeck;           break;
-         case IDM_INTEGRAL_AFTERDECK_HINGEBACK:   newConnectionType = pgsTypes::IntegralAfterDeckHingeBack;   break;
-         case IDM_INTEGRAL_BEFOREDECK_HINGEBACK:  newConnectionType = pgsTypes::IntegralBeforeDeckHingeBack;  break;
-         case IDM_INTEGRAL_AFTERDECK_HINGEAHEAD:  newConnectionType = pgsTypes::IntegralAfterDeckHingeAhead;  break;
-         case IDM_INTEGRAL_BEFOREDECK_HINGEAHEAD: newConnectionType = pgsTypes::IntegralBeforeDeckHingeAhead; break;
+         case IDM_HINGE:                          newPierConnectionType = pgsTypes::Hinge;                        break;
+         case IDM_ROLLER:                         newPierConnectionType = pgsTypes::Roller;                       break;
+         case IDM_CONTINUOUS_AFTERDECK:           newPierConnectionType = pgsTypes::ContinuousAfterDeck;          break;
+         case IDM_CONTINUOUS_BEFOREDECK:          newPierConnectionType = pgsTypes::ContinuousBeforeDeck;         break;
+         case IDM_INTEGRAL_AFTERDECK:             newPierConnectionType = pgsTypes::IntegralAfterDeck;            break;
+         case IDM_INTEGRAL_BEFOREDECK:            newPierConnectionType = pgsTypes::IntegralBeforeDeck;           break;
+         case IDM_INTEGRAL_AFTERDECK_HINGEBACK:   newPierConnectionType = pgsTypes::IntegralAfterDeckHingeBack;   break;
+         case IDM_INTEGRAL_BEFOREDECK_HINGEBACK:  newPierConnectionType = pgsTypes::IntegralBeforeDeckHingeBack;  break;
+         case IDM_INTEGRAL_AFTERDECK_HINGEAHEAD:  newPierConnectionType = pgsTypes::IntegralAfterDeckHingeAhead;  break;
+         case IDM_INTEGRAL_BEFOREDECK_HINGEAHEAD: newPierConnectionType = pgsTypes::IntegralBeforeDeckHingeAhead; break;
+         case IDM_CONTINUOUS_CLOSURE:             newSegmentConnectionType = pgsTypes::psctContinousClosurePour;  break;
+         case IDM_INTEGRAL_CLOSURE:               newSegmentConnectionType = pgsTypes::psctIntegralClosurePour;   break;
+         case IDM_CONTINUOUS_SEGMENT_AT_PIER:     newSegmentConnectionType = pgsTypes::psctContinuousSegment;     break;
+         case IDM_INTEGRAL_SEGMENT_AT_PIER:       newSegmentConnectionType = pgsTypes::psctIntegralSegment;       break;
+
          default: ATLASSERT(0); // is there a new connection type?
       }
 
@@ -667,9 +673,19 @@ void CBridgeModelViewChildFrame::OnBoundaryCondition(UINT nIDC)
       EAFGetBroker(&pBroker);
 
       GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
-      pgsTypes::PierConnectionType oldConnectionType = pIBridgeDesc->GetPier(pierIdx)->GetPierConnectionType();
+      txnEditBoundaryConditions* pTxn;
 
-      txnEditBoundaryConditions* pTxn = new txnEditBoundaryConditions(pierIdx,oldConnectionType,newConnectionType);
+      const CPierData2* pPier = pIBridgeDesc->GetPier(pierIdx);
+      if ( pPier->IsBoundaryPier() )
+      {
+         pgsTypes::PierConnectionType oldConnectionType = pPier->GetPierConnectionType();
+         pTxn = new txnEditBoundaryConditions(pierIdx,oldConnectionType,newPierConnectionType);
+      }
+      else
+      {
+         pgsTypes::PierSegmentConnectionType oldConnectionType = pPier->GetSegmentConnectionType();
+         pTxn = new txnEditBoundaryConditions(pierIdx,oldConnectionType,newSegmentConnectionType);
+      }
       txnTxnManager::GetInstance()->Execute(pTxn);
    }
 }
@@ -684,20 +700,25 @@ void CBridgeModelViewChildFrame::OnUpdateBoundaryCondition(CCmdUI* pCmdUI)
       EAFGetBroker(&pBroker);
 #pragma Reminder("UPDATE: need to deal with InteriorPier, this is for BoundaryPier")
       GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
-      pgsTypes::PierConnectionType connectionType = pIBridgeDesc->GetPier(pierIdx)->GetPierConnectionType();
-
+      const CPierData2* pPier = pIBridgeDesc->GetPier(pierIdx);
+      pgsTypes::PierConnectionType pierConnectionType = pPier->GetPierConnectionType();
+      pgsTypes::PierSegmentConnectionType segmentConnectionType = pPier->GetSegmentConnectionType();
       switch( pCmdUI->m_nID )
       {
-         case IDM_HINGE:                          pCmdUI->SetCheck(connectionType == pgsTypes::Hinge);                        break;
-         case IDM_ROLLER:                         pCmdUI->SetCheck(connectionType == pgsTypes::Roller);                       break;
-         case IDM_CONTINUOUS_AFTERDECK:           pCmdUI->SetCheck(connectionType == pgsTypes::ContinuousAfterDeck);          break;
-         case IDM_CONTINUOUS_BEFOREDECK:          pCmdUI->SetCheck(connectionType == pgsTypes::ContinuousBeforeDeck);         break;
-         case IDM_INTEGRAL_AFTERDECK:             pCmdUI->SetCheck(connectionType == pgsTypes::IntegralAfterDeck);            break;
-         case IDM_INTEGRAL_BEFOREDECK:            pCmdUI->SetCheck(connectionType == pgsTypes::IntegralBeforeDeck);           break;
-         case IDM_INTEGRAL_AFTERDECK_HINGEBACK:   pCmdUI->SetCheck(connectionType == pgsTypes::IntegralAfterDeckHingeBack);   break;
-         case IDM_INTEGRAL_BEFOREDECK_HINGEBACK:  pCmdUI->SetCheck(connectionType == pgsTypes::IntegralBeforeDeckHingeBack);  break;
-         case IDM_INTEGRAL_AFTERDECK_HINGEAHEAD:  pCmdUI->SetCheck(connectionType == pgsTypes::IntegralAfterDeckHingeAhead);  break;
-         case IDM_INTEGRAL_BEFOREDECK_HINGEAHEAD: pCmdUI->SetCheck(connectionType == pgsTypes::IntegralBeforeDeckHingeAhead); break;
+         case IDM_HINGE:                          pCmdUI->SetCheck(pierConnectionType == pgsTypes::Hinge);                        break;
+         case IDM_ROLLER:                         pCmdUI->SetCheck(pierConnectionType == pgsTypes::Roller);                       break;
+         case IDM_CONTINUOUS_AFTERDECK:           pCmdUI->SetCheck(pierConnectionType == pgsTypes::ContinuousAfterDeck);          break;
+         case IDM_CONTINUOUS_BEFOREDECK:          pCmdUI->SetCheck(pierConnectionType == pgsTypes::ContinuousBeforeDeck);         break;
+         case IDM_INTEGRAL_AFTERDECK:             pCmdUI->SetCheck(pierConnectionType == pgsTypes::IntegralAfterDeck);            break;
+         case IDM_INTEGRAL_BEFOREDECK:            pCmdUI->SetCheck(pierConnectionType == pgsTypes::IntegralBeforeDeck);           break;
+         case IDM_INTEGRAL_AFTERDECK_HINGEBACK:   pCmdUI->SetCheck(pierConnectionType == pgsTypes::IntegralAfterDeckHingeBack);   break;
+         case IDM_INTEGRAL_BEFOREDECK_HINGEBACK:  pCmdUI->SetCheck(pierConnectionType == pgsTypes::IntegralBeforeDeckHingeBack);  break;
+         case IDM_INTEGRAL_AFTERDECK_HINGEAHEAD:  pCmdUI->SetCheck(pierConnectionType == pgsTypes::IntegralAfterDeckHingeAhead);  break;
+         case IDM_INTEGRAL_BEFOREDECK_HINGEAHEAD: pCmdUI->SetCheck(pierConnectionType == pgsTypes::IntegralBeforeDeckHingeAhead); break;
+         case IDM_CONTINUOUS_CLOSURE:             pCmdUI->SetCheck(segmentConnectionType == pgsTypes::psctContinousClosurePour);  break;
+         case IDM_INTEGRAL_CLOSURE:               pCmdUI->SetCheck(segmentConnectionType == pgsTypes::psctIntegralClosurePour);   break;
+         case IDM_CONTINUOUS_SEGMENT_AT_PIER:     pCmdUI->SetCheck(segmentConnectionType == pgsTypes::psctContinuousSegment);     break;
+         case IDM_INTEGRAL_SEGMENT_AT_PIER:       pCmdUI->SetCheck(segmentConnectionType == pgsTypes::psctIntegralSegment);       break;
          default: ATLASSERT(0); // is there a new connection type?
       }
    }

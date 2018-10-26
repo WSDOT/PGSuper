@@ -22,7 +22,7 @@
 
 #include "StdAfx.h"
 #include <Reporting\PGSuperChapterBuilder.h>
-#include <Reporting\ReportStyleHolder.h>
+#include <PgsExt\ReportStyleHolder.h>
 #include <Reporting\SpanGirderReportSpecification.h>
 
 #ifdef _DEBUG

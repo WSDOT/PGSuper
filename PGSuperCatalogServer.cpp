@@ -423,7 +423,7 @@ CPGSuperCatalogServer(_T("WSDOT"),srtInternetFtp,strExt)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
    CWinApp* pApp = AfxGetApp();
-   m_ServerAddress.Format(_T("%s/%s/"),_T("ftp://ftp.wsdot.wa.gov/public/bridge/software/"),pApp->m_pszProfileName);
+   m_ServerAddress.Format(_T("%s/%s/"),_T("ftp://ftp.wsdot.wa.gov/public/bridge/software"),pApp->m_pszProfileName);
    Init();
 }
 

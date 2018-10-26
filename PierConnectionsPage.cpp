@@ -613,7 +613,7 @@ void CPierConnectionsPage::OnCopyFromLibrary()
 	   }
 	
 	   CString strMsg(_T("Select a pre-defined connection from the list. Connection dimensions will be copied to both sides of intermediate piers."));
-	   int result = AfxChoose(_T("Copy Connection Data from Library"),strMsg,strNames,TRUE);
+	   int result = AfxChoose(_T("Copy Connection Data from Library"),strMsg,strNames,0,TRUE);
 	   if ( 0 <= result )
 	   {
 	      CDataExchange dx(this,TRUE);

@@ -24,7 +24,7 @@
 #include "stdafx.h"
 #include "ReportAgent_i.h"
 #include "PGSpliceReporterImp.h"
-#include <Reporting\ReportStyleHolder.h>
+#include <PgsExt\ReportStyleHolder.h>
 #include <Reporting\PGSpliceTitlePageBuilder.h>
 #include <Reporting\BrokerReportSpecificationBuilder.h>
 

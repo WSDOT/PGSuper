@@ -991,10 +991,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\ReportStyleHolder.cpp"
-				>
-			</File>
-			<File
 				RelativePath=".\RMultiGirderSelectDlg.cpp"
 				>
 			</File>
@@ -1620,10 +1616,6 @@
 			</File>
 			<File
 				RelativePath="..\Include\Reporting\ReportNotes.h"
-				>
-			</File>
-			<File
-				RelativePath="..\Include\Reporting\ReportStyleHolder.h"
 				>
 			</File>
 			<File

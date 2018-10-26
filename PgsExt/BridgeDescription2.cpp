@@ -728,7 +728,7 @@ void CBridgeDescription2::AppendSpan(const CSpanData2* pSpanData,const CPierData
    // new span/pier will be a copy of the last span/pier in the bridge. If bCreateNewGroup is true
    // a new girder group is created. This group will have the same number of girders as the last group
    // in the bridge. If the last group has more than one span, single segment girders will be created,
-   // otherwise the girders from the last group will be copied. If bCreateNewGrouop is false, the
+   // otherwise the girders from the last group will be copied. If bCreateNewGroup is false, the
    // last group in the bridge will be expanded and so will the girders in that group
 
    // INVALID_INDEX -> insert new span after the last pier
@@ -751,17 +751,27 @@ void CBridgeDescription2::InsertSpan(PierIndexType refPierIdx,pgsTypes::PierFace
    // If this fires, then the call to CreateFirstSpan hasn't been made yet
    ASSERT( 2 <= m_Piers.size() && 1 <= m_Spans.size() && 1 <= m_GirderGroups.size() ); 
 
-   // Negative span length means that we take stationing from piers - better have pier data
-   if ( newSpanLength <= 0 && pPierData == NULL )
-   {
-      // don't have a pier to get stationing from so just used a default length of 100ft
-      newSpanLength = ::ConvertToSysUnits(100.0,unitMeasure::Feet);
-   }
-
+   // get the refernece pier index
    if ( refPierIdx == INVALID_INDEX )
    {
       // append at end of bridge
       refPierIdx = m_Piers.size()-1;
+   }
+
+   // Negative span length means that we take stationing from piers - better have pier data
+   if ( newSpanLength <= 0 )
+   {
+      if ( pPierData == NULL )
+      {
+         ATLASSERT(false); // this should not happen... pPierData must reference a pier if newSpanLength is < 0.
+         // Just so we don't have problems in release builds, make the new span length 100 ft and keep going
+         newSpanLength = ::ConvertToSysUnits(100.0,unitMeasure::Feet);
+      }
+      else
+      {
+         // compute the length of the new span
+         newSpanLength = pPierData->GetStation() - m_Piers[refPierIdx]->GetStation();
+      }
    }
 
    // Index for our new span
@@ -1043,6 +1053,15 @@ void CBridgeDescription2::InsertSpan(PierIndexType refPierIdx,pgsTypes::PierFace
    ASSERT_VALID;
 }
 
+class RemoveNegMomentRebar
+{
+public:
+   RemoveNegMomentRebar(PierIndexType pierIdx) { m_PierIdx = pierIdx; }
+   bool operator()(CDeckRebarData::NegMomentRebarData& rebarData) { return rebarData.PierIdx == m_PierIdx; }
+private:
+   PierIndexType m_PierIdx;
+};
+
 void CBridgeDescription2::RemoveSpan(SpanIndexType spanIdx,pgsTypes::RemovePierType rmPierType)
 {
    // Removes a span and associated pier
@@ -1058,6 +1077,7 @@ void CBridgeDescription2::RemoveSpan(SpanIndexType spanIdx,pgsTypes::RemovePierT
 
    PierIndexType removePierIdx = (rmPierType == pgsTypes::PrevPier ? pPrevPier->GetIndex() : pNextPier->GetIndex());
    PierIDType    removePierID  = (rmPierType == pgsTypes::PrevPier ? pPrevPier->GetID()    : pNextPier->GetID());
+   PierIndexType nPiers = m_Piers.size(); // number of piers before removal
 
    //
    // remove all temporary supports that occur in this span
@@ -1150,6 +1170,26 @@ void CBridgeDescription2::RemoveSpan(SpanIndexType spanIdx,pgsTypes::RemovePierT
       delete pSpan;
       delete pNextPier;
    }
+
+   // Remove negative rebar data at the pier that is being removed
+   PierIndexType rebarRemovePierIdx(removePierIdx);
+   if ( rebarRemovePierIdx == 0 )
+   {
+      // if the first pier is removed, the next pier becomes the first pier and it can't have neg moment
+      // rebar so remove the rebar from that pier;
+      rebarRemovePierIdx++;
+   }
+   else if ( rebarRemovePierIdx == nPiers-1 )
+   {
+      // if the last pier is removed, the next to last pier becomes the last pier and it can't have neg moment
+      // rebar so remove the rebar from that pier
+      rebarRemovePierIdx--;
+   }
+
+   std::vector<CDeckRebarData::NegMomentRebarData>::iterator begin(m_Deck.DeckRebarData.NegMomentRebar.begin());
+   std::vector<CDeckRebarData::NegMomentRebarData>::iterator end(m_Deck.DeckRebarData.NegMomentRebar.end());
+   std::vector<CDeckRebarData::NegMomentRebarData>::iterator last = std::remove_if(begin,end,RemoveNegMomentRebar(rebarRemovePierIdx));
+   m_Deck.DeckRebarData.NegMomentRebar.erase(last,end);
 
    // Fix up the span/pier pointer and update the span/pier index values
    RenumberSpans();
@@ -1341,10 +1381,26 @@ void CBridgeDescription2::RemoveGirderGroup(GroupIndexType grpIdx)
       return; // there must always be one group
    }
 
-   // removes a girder group. spans are piers are moved into the next group
-   // if the last group is removed, then the spans and piers are moved into the previous group
    ATLASSERT(grpIdx != INVALID_INDEX);
    CGirderGroupData* pGroup = m_GirderGroups[grpIdx];
+
+   // This is going to remove the piers in the group, so remove the deck rebar
+   // at this pier
+   const CPierData2* pStartPier = pGroup->GetPier(pgsTypes::metStart);
+   const CPierData2* pEndPier   = pGroup->GetPier(pgsTypes::metEnd);
+   const CPierData2* pPier = pStartPier;
+   while ( pPier != pEndPier )
+   {
+      std::vector<CDeckRebarData::NegMomentRebarData>::iterator begin(m_Deck.DeckRebarData.NegMomentRebar.begin());
+      std::vector<CDeckRebarData::NegMomentRebarData>::iterator end(m_Deck.DeckRebarData.NegMomentRebar.end());
+      std::vector<CDeckRebarData::NegMomentRebarData>::iterator last = std::remove_if(begin,end,RemoveNegMomentRebar(pPier->GetIndex()));
+      m_Deck.DeckRebarData.NegMomentRebar.erase(last,end);
+
+      pPier = pPier->GetNextSpan()->GetNextPier();
+   }
+
+   // removes a girder group. spans are piers are moved into the next group
+   // if the last group is removed, then the spans and piers are moved into the previous group
 
    if ( grpIdx == m_GirderGroups.size()-1 )
    {
@@ -1387,7 +1443,7 @@ void CBridgeDescription2::RemoveGirderGroup(GroupIndexType grpIdx,pgsTypes::Remo
    SpanIndexType startSpanIdx = startPierIdx;
    SpanIndexType endSpanIdx   = endPierIdx-1;
 
-   // Adjust the pier indies so that the pier at there start or end is not removed
+   // Adjust the pier indies so that the pier at the start or end is not removed
    // Also adjust the piers at the ends of the adjacent groups
    if ( rmPierType == pgsTypes::PrevPier )
    {
@@ -1418,6 +1474,25 @@ void CBridgeDescription2::RemoveGirderGroup(GroupIndexType grpIdx,pgsTypes::Remo
    for ( PierIndexType pierIdx = startPierIdx; pierIdx <= endPierIdx; pierIdx++ )
    {
       CPierData2* pPier = m_Piers[pierIdx];
+
+      // remove deck negative moment rebar at this pier
+      PierIndexType removeRebarPierIdx = pPier->GetIndex();
+
+      // If this is the first pier in the bridge, the next pier becomes the first pier
+      // so remove the rebar at the next pier
+      if ( pPier->GetPrevSpan() == NULL )
+         removeRebarPierIdx++;
+
+      // If this is the last pier in the bridge, the next to last pier becomes the last pier
+      // so remove the rebar at the next to last pier
+      if ( pPier->GetNextSpan() == NULL )
+         removeRebarPierIdx--;
+
+      std::vector<CDeckRebarData::NegMomentRebarData>::iterator begin(m_Deck.DeckRebarData.NegMomentRebar.begin());
+      std::vector<CDeckRebarData::NegMomentRebarData>::iterator end(m_Deck.DeckRebarData.NegMomentRebar.end());
+      std::vector<CDeckRebarData::NegMomentRebarData>::iterator last = std::remove_if(begin,end,RemoveNegMomentRebar(removeRebarPierIdx));
+      m_Deck.DeckRebarData.NegMomentRebar.erase(last,end);
+
       RemovePierFromTimelineManager(pPier);
       delete pPier;
       pPier = NULL;
@@ -1822,6 +1897,7 @@ void CBridgeDescription2::Clear()
    m_GirderID      = 0;
 
    m_Deck.DeckEdgePoints.clear();
+   m_Deck.DeckRebarData.NegMomentRebar.clear();
 
    std::vector<CPierData2*>::iterator pierIter(m_Piers.begin());
    std::vector<CPierData2*>::iterator pierIterEnd(m_Piers.end());

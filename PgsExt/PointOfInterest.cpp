@@ -635,6 +635,9 @@ void pgsPointOfInterest::UpdateAttributeString()
    if ( sysFlags<PoiAttributeType>::IsSet(m_Attributes,POI_PIER) )
       os << _T("POI_PIER | ");
 
+   if ( sysFlags<PoiAttributeType>::IsSet(m_Attributes,POI_STIRRUP_ZONE) )
+      os << _T("POI_STIRRUP_ZONE | ");
+
    os << std::endl;
 
    m_strAttributes = os.str();

@@ -895,6 +895,7 @@ interface IBridgeDescription : IUnknown
    virtual void SetGirderCount(GroupIndexType grpIdx,GirderIndexType nGirders) = 0;
    virtual void SetGirderGroup(GroupIndexType grpIdx,const CGirderGroupData& girderGroup) = 0;
    virtual void SetBoundaryCondition(PierIndexType pierIdx,pgsTypes::PierConnectionType connectionType) = 0;
+   virtual void SetBoundaryCondition(PierIndexType pierIdx,pgsTypes::PierSegmentConnectionType connectionType) = 0;
 
    virtual void DeletePier(PierIndexType pierIdx,pgsTypes::PierFaceType faceForSpan) = 0;
    virtual void InsertSpan(PierIndexType refPierIdx,pgsTypes::PierFaceType pierFace,Float64 spanLength,const CSpanData2* pSpanData,const CPierData2* pPierData,bool bCreateNewGroup,EventIndexType eventIdx) = 0;

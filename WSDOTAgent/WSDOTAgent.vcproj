@@ -44,7 +44,7 @@
 			<Tool
 				Name="VCMIDLTool"
 				PreprocessorDefinitions="_DEBUG"
-				AdditionalIncludeDirectories="\ARP\WBFL\Include;&quot;\ARP\WBFL\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&quot;"
+				AdditionalIncludeDirectories="\ARP\WBFL\Include;&quot;\ARP\WBFL\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&quot;;\ARP\PGSuper\Include\Plugins"
 				MkTypLibCompatible="false"
 				TargetEnvironment="1"
 				GenerateStublessProxies="true"
@@ -58,7 +58,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories=".\;..\Include;\ARP\WBFL\Include;&quot;\ARP\WBFL\Include\$(PlatformName)&quot;;\ARP\BridgeLink\Include"
+				AdditionalIncludeDirectories=".\;..\Include;\ARP\WBFL\Include;&quot;\ARP\WBFL\Include\$(PlatformName)&quot;;\ARP\BridgeLink\Include;\ARP\PGSuper\Include\Plugins;\ARP\BridgeLinkBEToolbox\BEToolboxXML;\OpenBridgeML\Include;\OpenBridgeML\Schema"
 				PreprocessorDefinitions="WIN32;_WINDOWS;_DEBUG;_USRDLL;ENABLE_LOGGING"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -84,9 +84,10 @@
 				Name="VCLinkerTool"
 				RegisterOutput="true"
 				IgnoreImportLibrary="true"
+				AdditionalDependencies="OpenBridgeMLD.lib"
 				OutputFile="$(OutDir)\$(ProjectName).dll"
 				LinkIncremental="2"
-				AdditionalLibraryDirectories="&quot;\ARP\WBFL\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&quot;;&quot;\ARP\$(SolutionName)\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&quot;"
+				AdditionalLibraryDirectories="&quot;\ARP\WBFL\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&quot;;&quot;\ARP\$(SolutionName)\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&quot;;&quot;\OpenBridgeML\$(PlatformName)\$(ConfigurationName)&quot;"
 				ModuleDefinitionFile=".\WSDOTAgent.def"
 				GenerateDebugInformation="true"
 				SubSystem="2"
@@ -140,7 +141,7 @@
 			<Tool
 				Name="VCMIDLTool"
 				PreprocessorDefinitions="_DEBUG"
-				AdditionalIncludeDirectories="\ARP\WBFL\Include;&quot;\ARP\WBFL\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&quot;"
+				AdditionalIncludeDirectories="\ARP\WBFL\Include;&quot;\ARP\WBFL\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&quot;;\ARP\PGSuper\Include\Plugins"
 				MkTypLibCompatible="false"
 				TargetEnvironment="3"
 				GenerateStublessProxies="true"
@@ -153,7 +154,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories=".\;..\Include;\ARP\WBFL\Include;&quot;\ARP\WBFL\Include\$(PlatformName)&quot;;\ARP\BridgeLink\Include"
+				AdditionalIncludeDirectories=".\;..\Include;\ARP\WBFL\Include;&quot;\ARP\WBFL\Include\$(PlatformName)&quot;;\ARP\BridgeLink\Include;\ARP\PGSuper\Include\Plugins;\ARP\BridgeLinkBEToolbox\BEToolboxXML;\OpenBridgeML\Include;\OpenBridgeML\Schema"
 				PreprocessorDefinitions="WIN32;_WINDOWS;_DEBUG;_USRDLL;ENABLE_LOGGING"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -179,9 +180,10 @@
 				Name="VCLinkerTool"
 				RegisterOutput="true"
 				IgnoreImportLibrary="true"
+				AdditionalDependencies="OpenBridgeMLD.lib"
 				OutputFile="$(OutDir)\$(ProjectName).dll"
 				LinkIncremental="2"
-				AdditionalLibraryDirectories="&quot;\ARP\WBFL\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&quot;;&quot;\ARP\$(SolutionName)\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&quot;"
+				AdditionalLibraryDirectories="&quot;\ARP\WBFL\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&quot;;&quot;\ARP\$(SolutionName)\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&quot;;&quot;\OpenBridgeML\$(PlatformName)\$(ConfigurationName)&quot;"
 				ModuleDefinitionFile=".\WSDOTAgent.def"
 				GenerateDebugInformation="true"
 				SubSystem="2"
@@ -236,7 +238,7 @@
 			<Tool
 				Name="VCMIDLTool"
 				PreprocessorDefinitions="NDEBUG"
-				AdditionalIncludeDirectories="\ARP\WBFL\Include;&quot;\ARP\WBFL\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&quot;"
+				AdditionalIncludeDirectories="\ARP\WBFL\Include;&quot;\ARP\WBFL\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&quot;;\ARP\PGSuper\Include\Plugins"
 				MkTypLibCompatible="false"
 				TargetEnvironment="1"
 				GenerateStublessProxies="true"
@@ -254,7 +256,7 @@
 				EnableIntrinsicFunctions="true"
 				FavorSizeOrSpeed="1"
 				WholeProgramOptimization="true"
-				AdditionalIncludeDirectories=".\;..\Include;\ARP\WBFL\Include;&quot;\ARP\WBFL\Include\$(PlatformName)&quot;;\ARP\BridgeLink\Include"
+				AdditionalIncludeDirectories=".\;..\Include;\ARP\WBFL\Include;&quot;\ARP\WBFL\Include\$(PlatformName)&quot;;\ARP\BridgeLink\Include;\ARP\PGSuper\Include\Plugins;\ARP\BridgeLinkBEToolbox\BEToolboxXML;\OpenBridgeML\Include;\OpenBridgeML\Schema"
 				PreprocessorDefinitions="WIN32;_WINDOWS;NDEBUG;_USRDLL"
 				RuntimeLibrary="2"
 				UsePrecompiledHeader="2"
@@ -278,9 +280,10 @@
 				Name="VCLinkerTool"
 				RegisterOutput="true"
 				IgnoreImportLibrary="true"
+				AdditionalDependencies="OpenBridgeML.lib"
 				OutputFile="$(OutDir)\$(ProjectName).dll"
 				LinkIncremental="1"
-				AdditionalLibraryDirectories="&quot;\ARP\WBFL\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&quot;;&quot;\ARP\$(SolutionName)\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&quot;"
+				AdditionalLibraryDirectories="&quot;\ARP\WBFL\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&quot;;&quot;\ARP\$(SolutionName)\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&quot;;&quot;\OpenBridgeML\$(PlatformName)\$(ConfigurationName)&quot;"
 				ModuleDefinitionFile=".\WSDOTAgent.def"
 				GenerateDebugInformation="true"
 				SubSystem="2"
@@ -338,7 +341,7 @@
 			<Tool
 				Name="VCMIDLTool"
 				PreprocessorDefinitions="NDEBUG"
-				AdditionalIncludeDirectories="\ARP\WBFL\Include;&quot;\ARP\WBFL\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&quot;"
+				AdditionalIncludeDirectories="\ARP\WBFL\Include;&quot;\ARP\WBFL\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&quot;;\ARP\PGSuper\Include\Plugins"
 				MkTypLibCompatible="false"
 				TargetEnvironment="3"
 				GenerateStublessProxies="true"
@@ -355,7 +358,7 @@
 				EnableIntrinsicFunctions="true"
 				FavorSizeOrSpeed="1"
 				WholeProgramOptimization="true"
-				AdditionalIncludeDirectories=".\;..\Include;\ARP\WBFL\Include;&quot;\ARP\WBFL\Include\$(PlatformName)&quot;;\ARP\BridgeLink\Include"
+				AdditionalIncludeDirectories=".\;..\Include;\ARP\WBFL\Include;&quot;\ARP\WBFL\Include\$(PlatformName)&quot;;\ARP\BridgeLink\Include;\ARP\PGSuper\Include\Plugins;\ARP\BridgeLinkBEToolbox\BEToolboxXML;\OpenBridgeML\Include;\OpenBridgeML\Schema"
 				PreprocessorDefinitions="WIN32;_WINDOWS;NDEBUG;_USRDLL"
 				RuntimeLibrary="2"
 				UsePrecompiledHeader="2"
@@ -379,9 +382,10 @@
 				Name="VCLinkerTool"
 				RegisterOutput="true"
 				IgnoreImportLibrary="true"
+				AdditionalDependencies="OpenBridgeML.lib"
 				OutputFile="$(OutDir)\$(ProjectName).dll"
 				LinkIncremental="1"
-				AdditionalLibraryDirectories="&quot;\ARP\WBFL\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&quot;;&quot;\ARP\$(SolutionName)\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&quot;"
+				AdditionalLibraryDirectories="&quot;\ARP\WBFL\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&quot;;&quot;\ARP\$(SolutionName)\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&quot;;&quot;\OpenBridgeML\$(PlatformName)\$(ConfigurationName)&quot;"
 				ModuleDefinitionFile=".\WSDOTAgent.def"
 				GenerateDebugInformation="true"
 				SubSystem="2"
@@ -439,7 +443,7 @@
 			<Tool
 				Name="VCMIDLTool"
 				PreprocessorDefinitions="NDEBUG"
-				AdditionalIncludeDirectories="\ARP\WBFL\Include;&quot;\ARP\WBFL\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&quot;"
+				AdditionalIncludeDirectories="\ARP\WBFL\Include;&quot;\ARP\WBFL\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&quot;;\ARP\PGSuper\Include\Plugins"
 				MkTypLibCompatible="false"
 				TargetEnvironment="1"
 				GenerateStublessProxies="true"
@@ -457,7 +461,7 @@
 				EnableIntrinsicFunctions="true"
 				FavorSizeOrSpeed="1"
 				WholeProgramOptimization="true"
-				AdditionalIncludeDirectories=".\;..\Include;\ARP\WBFL\Include;&quot;\ARP\WBFL\Include\$(PlatformName)&quot;;\ARP\BridgeLink\Include"
+				AdditionalIncludeDirectories=".\;..\Include;\ARP\WBFL\Include;&quot;\ARP\WBFL\Include\$(PlatformName)&quot;;\ARP\BridgeLink\Include;\ARP\PGSuper\Include\Plugins;\ARP\BridgeLinkBEToolbox\BEToolboxXML;\OpenBridgeML\Include;\OpenBridgeML\Schema"
 				PreprocessorDefinitions="WIN32;_WINDOWS;NDEBUG;_USRDLL"
 				RuntimeLibrary="2"
 				UsePrecompiledHeader="2"
@@ -482,7 +486,7 @@
 				IgnoreImportLibrary="true"
 				OutputFile="$(OutDir)\$(ProjectName).dll"
 				LinkIncremental="1"
-				AdditionalLibraryDirectories="&quot;\ARP\WBFL\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&quot;;&quot;\ARP\$(SolutionName)\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&quot;"
+				AdditionalLibraryDirectories="&quot;\ARP\WBFL\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&quot;;&quot;\ARP\$(SolutionName)\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&quot;;&quot;\OpenBridgeML\$(PlatformName)\$(ConfigurationName)&quot;"
 				ModuleDefinitionFile=".\WSDOTAgent.def"
 				GenerateDebugInformation="true"
 				SubSystem="2"
@@ -540,7 +544,7 @@
 			<Tool
 				Name="VCMIDLTool"
 				PreprocessorDefinitions="NDEBUG"
-				AdditionalIncludeDirectories="\ARP\WBFL\Include;&quot;\ARP\WBFL\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&quot;"
+				AdditionalIncludeDirectories="\ARP\WBFL\Include;&quot;\ARP\WBFL\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&quot;;\ARP\PGSuper\Include\Plugins"
 				MkTypLibCompatible="false"
 				TargetEnvironment="3"
 				GenerateStublessProxies="true"
@@ -557,7 +561,7 @@
 				EnableIntrinsicFunctions="true"
 				FavorSizeOrSpeed="1"
 				WholeProgramOptimization="true"
-				AdditionalIncludeDirectories=".\;..\Include;\ARP\WBFL\Include;&quot;\ARP\WBFL\Include\$(PlatformName)&quot;;\ARP\BridgeLink\Include"
+				AdditionalIncludeDirectories=".\;..\Include;\ARP\WBFL\Include;&quot;\ARP\WBFL\Include\$(PlatformName)&quot;;\ARP\BridgeLink\Include;\ARP\PGSuper\Include\Plugins;\ARP\BridgeLinkBEToolbox\BEToolboxXML;\OpenBridgeML\Include;\OpenBridgeML\Schema"
 				PreprocessorDefinitions="WIN32;_WINDOWS;NDEBUG;_USRDLL"
 				RuntimeLibrary="2"
 				UsePrecompiledHeader="2"
@@ -582,7 +586,7 @@
 				IgnoreImportLibrary="true"
 				OutputFile="$(OutDir)\$(ProjectName).dll"
 				LinkIncremental="1"
-				AdditionalLibraryDirectories="&quot;\ARP\WBFL\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&quot;;&quot;\ARP\$(SolutionName)\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&quot;"
+				AdditionalLibraryDirectories="&quot;\ARP\WBFL\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&quot;;&quot;\ARP\$(SolutionName)\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&quot;;&quot;\OpenBridgeML\$(PlatformName)\$(ConfigurationName)&quot;"
 				ModuleDefinitionFile=".\WSDOTAgent.def"
 				GenerateDebugInformation="true"
 				SubSystem="2"
@@ -623,6 +627,14 @@
 			Filter="cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx"
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
+			<File
+				RelativePath=".\CurvelExporter.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\CurvelImporter.cpp"
+				>
+			</File>
 			<File
 				RelativePath=".\dllmain.cpp"
 				>
@@ -682,6 +694,10 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\GenCompExporter.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\GirderScheduleChapterBuilder.cpp"
 				>
 			</File>
@@ -695,6 +711,10 @@
 			</File>
 			<File
 				RelativePath=".\OutputSummaryChapter.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\SelectPOIDlg.cpp"
 				>
 			</File>
 			<File
@@ -776,7 +796,19 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
+				RelativePath=".\CurvelExporter.h"
+				>
+			</File>
+			<File
+				RelativePath=".\CurvelImporter.h"
+				>
+			</File>
+			<File
 				RelativePath=".\dllmain.h"
+				>
+			</File>
+			<File
+				RelativePath=".\GenCompExporter.h"
 				>
 			</File>
 			<File
@@ -800,6 +832,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\SelectPOIDlg.h"
+				>
+			</File>
+			<File
 				RelativePath=".\stdafx.h"
 				>
 			</File>
@@ -817,6 +853,18 @@
 			Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav"
 			UniqueIdentifier="{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}"
 			>
+			<File
+				RelativePath=".\CurvelExporter.rgs"
+				>
+			</File>
+			<File
+				RelativePath=".\CurvelImporter.rgs"
+				>
+			</File>
+			<File
+				RelativePath=".\GenCompExporter.rgs"
+				>
+			</File>
 			<File
 				RelativePath=".\res\Wsdot.ico"
 				>

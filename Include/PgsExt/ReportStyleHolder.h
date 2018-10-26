@@ -23,10 +23,8 @@
 #ifndef INCLUDED_REPORTSTYLEHOLDER_H_
 #define INCLUDED_REPORTSTYLEHOLDER_H_
 
-#include <Reporting\ReportingExp.h>
-#include <Reporter\Reporter.h>
-
-#include <MathEx.h>
+#include <PgsExt\PgsExtExp.h>
+#include <Reporter\RcTable.h>
 
 #define RPT_BEARING(_value_) rptRcString(_value_,true)
 #define RPT_ANGLE(_value_) rptRcString(_value_,true)
@@ -57,7 +55,7 @@ LOG
    rdp : 09.26.1997 : Created file
 *****************************************************************************/
 
-class REPORTINGCLASS pgsReportStyleHolder
+class PGSEXTCLASS pgsReportStyleHolder
 {
 public:
    // GROUP: LIFECYCLE

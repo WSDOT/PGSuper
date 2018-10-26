@@ -888,7 +888,7 @@ void CGirderModelElevationView::CreateIntermediateTemporarySupportDisplayObject(
       return; // no temporary supports
 
    Float64 segment_start_station, segment_end_station;
-   pSegment->GetStations(segment_start_station,segment_end_station);
+   pSegment->GetStations(&segment_start_station,&segment_end_station);
    std::vector<const CTemporarySupportData*>::iterator iter(tempSupports.begin());
    std::vector<const CTemporarySupportData*>::iterator iterEnd(tempSupports.end());
    for ( ; iter != iterEnd; iter++ )

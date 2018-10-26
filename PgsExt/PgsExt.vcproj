@@ -2674,6 +2674,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\ReportStyleHolder.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\SegmentActivity.cpp"
 				>
 			</File>
@@ -3426,6 +3430,10 @@
 			</File>
 			<File
 				RelativePath="..\Include\PgsExt\RemoveTemporarySupportsActivity.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Include\PgsExt\ReportStyleHolder.h"
 				>
 			</File>
 			<File

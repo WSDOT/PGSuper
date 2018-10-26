@@ -81,8 +81,8 @@ rptChapter* CUserDefinedLoadsChapterBuilder::Build(CReportSpecification* pRptSpe
    for ( GroupIndexType grpIdx = firstGroupIdx; grpIdx <= lastGroupIdx; grpIdx++ )
    {
       GirderIndexType nGirders = pBridge->GetGirderCount(grpIdx);
-      GirderIndexType firstGirderIdx = min(nGirders-1,(girderKey.girderIndex == ALL_GIRDERS ? 0 : girderKey.girderIndex));
-      GirderIndexType lastGirderIdx  = min(nGirders,  (girderKey.girderIndex == ALL_GIRDERS ? nGirders-1 : firstGirderIdx + 1));
+      GirderIndexType firstGirderIdx = (girderKey.girderIndex == ALL_GIRDERS ? 0 : girderKey.girderIndex);
+      GirderIndexType lastGirderIdx  = (girderKey.girderIndex == ALL_GIRDERS ? nGirders-1 : firstGirderIdx);
 
       SpanIndexType firstSpanIdx,lastSpanIdx;
       pBridge->GetGirderGroupSpans(grpIdx,&firstSpanIdx,&lastSpanIdx);

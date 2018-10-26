@@ -451,7 +451,7 @@ void CDistributedLoadDrawStrategyImpl::GetTLoadHeight(iCoordinateMap* pMap, long
    }
 
    // don't allow loads to shrink out of sight
-   long min_hgt = Round(SSIZE/10);
+   long min_hgt = Round(SSIZE/10.0);
    if (abs(*endHgt) < min_hgt && abs(*startHgt) < min_hgt)
    {
       *startHgt = ::BinarySign(*startHgt)*min_hgt;

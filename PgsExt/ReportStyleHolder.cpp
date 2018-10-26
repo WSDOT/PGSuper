@@ -20,8 +20,8 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-#include "stdafx.h"
-#include <Reporting\ReportStyleHolder.h>
+#include <PgsExt\PgsExtLib.h>
+#include <PgsExt\ReportStyleHolder.h>
 #include <ctype.h>
 
 #include <EAF\EAFUtilities.h>

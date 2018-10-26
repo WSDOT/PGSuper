@@ -65,7 +65,9 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-#define QUITE(_x_) (IsZero(_x_,0.0005) ? 0 : _x_)
+//#define QUITE(_x_) (IsZero(_x_,0.00005) ? 0 : _x_)
+#define QUITE(_x_) RoundOff(_x_,0.001)
+#define DISPLACEMENT(_x_) RoundOff(_x_,1.0)
 
 /////////////////////////////////////////////////////////////////////////////
 // CTestAgentImp
@@ -603,7 +605,7 @@ bool CTestAgentImp::RunHL93Test(std::_tofstream& resultsFile, std::_tofstream& p
    std::vector<pgsPointOfInterest> vPoi2( pIPoi->GetPointsOfInterest(segmentKey,POI_RELEASED_SEGMENT) );
    pIPoi->RemovePointsOfInterest(vPoi2,POI_0L);
    pIPoi->RemovePointsOfInterest(vPoi2,POI_10L);
-   std::vector<pgsPointOfInterest> vPoi3( pIPoi->GetPointsOfInterest(segmentKey,POI_PSXFER | POI_HARPINGPOINT, POIFIND_OR) );
+   std::vector<pgsPointOfInterest> vPoi3( pIPoi->GetPointsOfInterest(segmentKey,POI_PSXFER | POI_HARPINGPOINT | POI_BARDEVELOP, POIFIND_OR) );
    vPoi.insert(vPoi.end(),vPoi2.begin(),vPoi2.end());
    vPoi.insert(vPoi.end(),vPoi3.begin(),vPoi3.end());
    std::sort(vPoi.begin(),vPoi.end());
@@ -660,15 +662,15 @@ bool CTestAgentImp::RunHL93Test(std::_tofstream& resultsFile, std::_tofstream& p
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 32091, ")<<loc<<_T(", ")<< QUITE(nm) <<_T(", 7, ")<<gdrIdx<<std::endl;
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 32092, ")<<loc<<_T(", ")<< QUITE(ps) <<_T(", 7, ")<<gdrIdx<<std::endl;
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 32093, ")<<loc<<_T(", ")<< QUITE(ns) <<_T(", 7, ")<<gdrIdx<<std::endl;
-      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 32094, ")<<loc<<_T(", ")<< QUITE(-nd) <<_T(", 7, ")<<gdrIdx<<std::endl;
-      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 32095, ")<<loc<<_T(", ")<< QUITE(-pd) <<_T(", 7, ")<<gdrIdx<<std::endl;
+      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 32094, ")<<loc<<_T(", ")<< DISPLACEMENT(-nd) <<_T(", 7, ")<<gdrIdx<<std::endl;
+      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 32095, ")<<loc<<_T(", ")<< DISPLACEMENT(-pd) <<_T(", 7, ")<<gdrIdx<<std::endl;
 
       // deflection truck with full width stiffness
       pForce->GetDeflLiveLoadDisplacement( IProductForces::DesignTruckAlone, rpoi, bat, &nd, &pd );
       pd = ::ConvertFromSysUnits(pd, unitMeasure::Millimeter);
       nd = ::ConvertFromSysUnits(nd, unitMeasure::Millimeter);
-      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 32200, ")<<loc<<_T(", ")<< QUITE(-nd) <<_T(", 7, ")<<gdrIdx<<std::endl;
-      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 32201, ")<<loc<<_T(", ")<< QUITE(-pd) <<_T(", 7, ")<<gdrIdx<<std::endl;
+      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 32200, ")<<loc<<_T(", ")<< DISPLACEMENT(-nd) <<_T(", 7, ")<<gdrIdx<<std::endl;
+      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 32201, ")<<loc<<_T(", ")<< DISPLACEMENT(-pd) <<_T(", 7, ")<<gdrIdx<<std::endl;
 
    }
    return true;
@@ -748,12 +750,11 @@ bool CTestAgentImp::RunDeadLoadActionTest(std::_tofstream& resultsFile, std::_to
    std::vector<pgsPointOfInterest> vPoi2( pIPoi->GetPointsOfInterest(segmentKey,POI_RELEASED_SEGMENT) );
    pIPoi->RemovePointsOfInterest(vPoi2,POI_0L);
    pIPoi->RemovePointsOfInterest(vPoi2,POI_10L);
-   std::vector<pgsPointOfInterest> vPoi3( pIPoi->GetPointsOfInterest(segmentKey,POI_PSXFER | POI_HARPINGPOINT, POIFIND_OR) );
+   std::vector<pgsPointOfInterest> vPoi3( pIPoi->GetPointsOfInterest(segmentKey,POI_PSXFER | POI_HARPINGPOINT | POI_BARDEVELOP, POIFIND_OR) );
    vPoi.insert(vPoi.end(),vPoi2.begin(),vPoi2.end());
    vPoi.insert(vPoi.end(),vPoi3.begin(),vPoi3.end());
    std::sort(vPoi.begin(),vPoi.end());
-   std::vector<pgsPointOfInterest>::iterator newEnd( std::unique(vPoi.begin(),vPoi.end()));
-   vPoi.erase(newEnd,vPoi.end());
+   vPoi.erase(std::unique(vPoi.begin(),vPoi.end()),vPoi.end());
 
    GirderIndexType gdrIdx = segmentKey.girderIndex;
 
@@ -779,7 +780,7 @@ bool CTestAgentImp::RunDeadLoadActionTest(std::_tofstream& resultsFile, std::_to
       else
          resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30001, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pForce->GetShear( erectSegmentIntervalIdx, pftGirder, poi, bat ).Left(), unitMeasure::Newton)) <<    _T(", 1, ")<<gdrIdx<<std::endl;
 
-      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30002, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pForce->GetDisplacement( erectSegmentIntervalIdx, pftGirder, poi, bat ), unitMeasure::Millimeter)) <<_T(", 1, ")<<gdrIdx<<std::endl;
+      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30002, ")<<loc<<_T(", ")<< DISPLACEMENT(::ConvertFromSysUnits(pForce->GetDisplacement( erectSegmentIntervalIdx, pftGirder, poi, bat ), unitMeasure::Millimeter)) <<_T(", 1, ")<<gdrIdx<<std::endl;
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30200, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pForce->GetReaction( erectSegmentIntervalIdx, pftGirder, pierIdx, segmentKey, bat) , unitMeasure::Newton)) <<    _T(", 1, ")<<gdrIdx<<std::endl;
 
       // diaphragm
@@ -788,7 +789,7 @@ bool CTestAgentImp::RunDeadLoadActionTest(std::_tofstream& resultsFile, std::_to
          resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30010, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pForce->GetShear( castDeckIntervalIdx, pftDiaphragm, poi, bat ).Right(), unitMeasure::Newton)) <<    _T(", 1, ")<<gdrIdx<<std::endl;
       else
          resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30010, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pForce->GetShear( castDeckIntervalIdx, pftDiaphragm, poi, bat ).Left(), unitMeasure::Newton)) <<    _T(", 1, ")<<gdrIdx<<std::endl;
-      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30011, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pForce->GetDisplacement( castDeckIntervalIdx, pftDiaphragm, poi, bat ), unitMeasure::Millimeter)) <<_T(", 1, ")<<gdrIdx<<std::endl;
+      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30011, ")<<loc<<_T(", ")<< DISPLACEMENT(::ConvertFromSysUnits(pForce->GetDisplacement( castDeckIntervalIdx, pftDiaphragm, poi, bat ), unitMeasure::Millimeter)) <<_T(", 1, ")<<gdrIdx<<std::endl;
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30209, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pForce->GetReaction( castDeckIntervalIdx, pftDiaphragm, pierIdx, segmentKey, bat), unitMeasure::Newton)) <<    _T(", 1, ")<<gdrIdx<<std::endl;
 
       // ShearKey
@@ -797,7 +798,7 @@ bool CTestAgentImp::RunDeadLoadActionTest(std::_tofstream& resultsFile, std::_to
          resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30071, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pForce->GetShear( castDeckIntervalIdx, pftShearKey, poi, bat ).Right(), unitMeasure::Newton)) <<    _T(", 1, ")<<gdrIdx<<std::endl;
       else
          resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30071, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pForce->GetShear( castDeckIntervalIdx, pftShearKey, poi, bat ).Left(), unitMeasure::Newton)) <<    _T(", 1, ")<<gdrIdx<<std::endl;
-      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30072, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pForce->GetDisplacement( castDeckIntervalIdx, pftShearKey, poi, bat ), unitMeasure::Millimeter)) <<_T(", 1, ")<<gdrIdx<<std::endl;
+      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30072, ")<<loc<<_T(", ")<< DISPLACEMENT(::ConvertFromSysUnits(pForce->GetDisplacement( castDeckIntervalIdx, pftShearKey, poi, bat ), unitMeasure::Millimeter)) <<_T(", 1, ")<<gdrIdx<<std::endl;
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30270, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pForce->GetReaction( castDeckIntervalIdx, pftShearKey, pierIdx, segmentKey, bat), unitMeasure::Newton)) <<    _T(", 1, ")<<gdrIdx<<std::endl;
        
       // slab + slab pad
@@ -806,7 +807,7 @@ bool CTestAgentImp::RunDeadLoadActionTest(std::_tofstream& resultsFile, std::_to
          resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30013, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pForce->GetShear( castDeckIntervalIdx, pftSlab, poi, bat ).Right()           + pForce->GetShear( castDeckIntervalIdx, pftSlabPad, poi, bat ).Right(), unitMeasure::Newton)) <<    _T(", 1, ")<<gdrIdx<<std::endl;
       else
          resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30013, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pForce->GetShear( castDeckIntervalIdx, pftSlab, poi, bat ).Left()           + pForce->GetShear( castDeckIntervalIdx, pftSlabPad, poi, bat ).Left(), unitMeasure::Newton)) <<    _T(", 1, ")<<gdrIdx<<std::endl;
-      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30014, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pForce->GetDisplacement( castDeckIntervalIdx, pftSlab, poi, bat )            + pForce->GetDisplacement( castDeckIntervalIdx, pftSlabPad, poi, bat ), unitMeasure::Millimeter)) <<_T(", 1, ")<<gdrIdx<<std::endl;
+      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30014, ")<<loc<<_T(", ")<< DISPLACEMENT(::ConvertFromSysUnits(pForce->GetDisplacement( castDeckIntervalIdx, pftSlab, poi, bat )            + pForce->GetDisplacement( castDeckIntervalIdx, pftSlabPad, poi, bat ), unitMeasure::Millimeter)) <<_T(", 1, ")<<gdrIdx<<std::endl;
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30013, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pForce->GetReaction( castDeckIntervalIdx, pftSlab, pierIdx, segmentKey, bat) + pForce->GetReaction( castDeckIntervalIdx, pftSlabPad, pierIdx, segmentKey, bat), unitMeasure::Newton)) <<    _T(", 1, ")<<gdrIdx<<std::endl;
 
       // DC - BSS1
@@ -815,7 +816,7 @@ bool CTestAgentImp::RunDeadLoadActionTest(std::_tofstream& resultsFile, std::_to
          resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30037, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pForces->GetShear( lcDC, castDeckIntervalIdx, poi, ctCummulative, bat ).Right(), unitMeasure::Newton)) <<    _T(", 1, ")<<gdrIdx<<std::endl;
       else
          resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30037, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pForces->GetShear( lcDC, castDeckIntervalIdx, poi, ctCummulative, bat ).Left(), unitMeasure::Newton)) <<    _T(", 1, ")<<gdrIdx<<std::endl;
-      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30038, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pForces->GetDisplacement( lcDC, castDeckIntervalIdx, poi, ctCummulative, bat ), unitMeasure::Millimeter)) <<_T(", 1, ")<<gdrIdx<<std::endl;
+      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30038, ")<<loc<<_T(", ")<< DISPLACEMENT(::ConvertFromSysUnits(pForces->GetDisplacement( lcDC, castDeckIntervalIdx, poi, ctCummulative, bat ), unitMeasure::Millimeter)) <<_T(", 1, ")<<gdrIdx<<std::endl;
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30236, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pForces->GetReaction( lcDC, castDeckIntervalIdx, pierIdx, segmentKey, ctCummulative, bat ), unitMeasure::Newton)) <<    _T(", 1, ")<<gdrIdx<<std::endl;
 
       // DW - BSS1
@@ -824,7 +825,7 @@ bool CTestAgentImp::RunDeadLoadActionTest(std::_tofstream& resultsFile, std::_to
          resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30040, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pForces->GetShear( lcDW, castDeckIntervalIdx, poi, ctCummulative, bat ).Right(), unitMeasure::Newton)) <<    _T(", 1, ")<<gdrIdx<<std::endl;
       else
          resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30040, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pForces->GetShear( lcDW, castDeckIntervalIdx, poi, ctCummulative, bat ).Left(), unitMeasure::Newton)) <<    _T(", 1, ")<<gdrIdx<<std::endl;
-      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30041, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pForces->GetDisplacement( lcDW, castDeckIntervalIdx, poi, ctCummulative, bat ), unitMeasure::Millimeter)) <<_T(", 1, ")<<gdrIdx<<std::endl;
+      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30041, ")<<loc<<_T(", ")<< DISPLACEMENT(::ConvertFromSysUnits(pForces->GetDisplacement( lcDW, castDeckIntervalIdx, poi, ctCummulative, bat ), unitMeasure::Millimeter)) <<_T(", 1, ")<<gdrIdx<<std::endl;
 
       // overlay
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30042, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pForce->GetMoment( overlayIntervalIdx, pftOverlay,poi, bat ), unitMeasure::NewtonMillimeter)) << _T(", 1, ")<<gdrIdx<<std::endl;
@@ -832,7 +833,7 @@ bool CTestAgentImp::RunDeadLoadActionTest(std::_tofstream& resultsFile, std::_to
          resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30043, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pForce->GetShear( overlayIntervalIdx, pftOverlay, poi, bat ).Right(), unitMeasure::Newton)) <<    _T(", 1, ")<<gdrIdx<<std::endl;
       else
          resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30043, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pForce->GetShear( overlayIntervalIdx, pftOverlay, poi, bat ).Left(), unitMeasure::Newton)) <<    _T(", 1, ")<<gdrIdx<<std::endl;
-      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30044, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pForce->GetDisplacement( overlayIntervalIdx, pftOverlay, poi, bat ), unitMeasure::Millimeter)) <<_T(", 1, ")<<gdrIdx<<std::endl;
+      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30044, ")<<loc<<_T(", ")<< DISPLACEMENT(::ConvertFromSysUnits(pForce->GetDisplacement( overlayIntervalIdx, pftOverlay, poi, bat ), unitMeasure::Millimeter)) <<_T(", 1, ")<<gdrIdx<<std::endl;
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30242, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pForce->GetReaction( overlayIntervalIdx, pftOverlay, pierIdx, segmentKey, bat), unitMeasure::Newton)) <<    _T(", 1, ")<<gdrIdx<<std::endl;
 
       // barrier
@@ -841,7 +842,7 @@ bool CTestAgentImp::RunDeadLoadActionTest(std::_tofstream& resultsFile, std::_to
          resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30046, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pForce->GetShear( railingSystemIntervalIdx, pftTrafficBarrier, poi, bat ).Right(), unitMeasure::Newton)) <<    _T(", 1, ")<<gdrIdx<<std::endl;
       else
          resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30046, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pForce->GetShear( railingSystemIntervalIdx, pftTrafficBarrier, poi, bat ).Left(), unitMeasure::Newton)) <<    _T(", 1, ")<<gdrIdx<<std::endl;
-      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30047, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pForce->GetDisplacement( railingSystemIntervalIdx, pftTrafficBarrier, poi, bat ), unitMeasure::Millimeter)) <<_T(", 1, ")<<gdrIdx<<std::endl;
+      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30047, ")<<loc<<_T(", ")<< DISPLACEMENT(::ConvertFromSysUnits(pForce->GetDisplacement( railingSystemIntervalIdx, pftTrafficBarrier, poi, bat ), unitMeasure::Millimeter)) <<_T(", 1, ")<<gdrIdx<<std::endl;
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30245, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pForce->GetReaction( railingSystemIntervalIdx, pftTrafficBarrier, pierIdx, segmentKey, bat ), unitMeasure::Newton)) <<    _T(", 1, ")<<gdrIdx<<std::endl;
 
       // sidewalk
@@ -850,7 +851,7 @@ bool CTestAgentImp::RunDeadLoadActionTest(std::_tofstream& resultsFile, std::_to
          resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30049, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pForce->GetShear( railingSystemIntervalIdx, pftSidewalk, poi, bat ).Right(), unitMeasure::Newton)) <<    _T(", 1, ")<<gdrIdx<<std::endl;
       else
          resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30049, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pForce->GetShear( railingSystemIntervalIdx, pftSidewalk, poi, bat ).Left(), unitMeasure::Newton)) <<    _T(", 1, ")<<gdrIdx<<std::endl;
-      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30050, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pForce->GetDisplacement( railingSystemIntervalIdx, pftSidewalk, poi, bat ), unitMeasure::Millimeter)) <<_T(", 1, ")<<gdrIdx<<std::endl;
+      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30050, ")<<loc<<_T(", ")<< DISPLACEMENT(::ConvertFromSysUnits(pForce->GetDisplacement( railingSystemIntervalIdx, pftSidewalk, poi, bat ), unitMeasure::Millimeter)) <<_T(", 1, ")<<gdrIdx<<std::endl;
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30248, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pForce->GetReaction( railingSystemIntervalIdx, pftSidewalk, pierIdx, segmentKey, bat ), unitMeasure::Newton)) <<    _T(", 1, ")<<gdrIdx<<std::endl;
 
       // DC - BSS3
@@ -859,7 +860,7 @@ bool CTestAgentImp::RunDeadLoadActionTest(std::_tofstream& resultsFile, std::_to
          resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30058, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pForces->GetShear( lcDC, liveLoadIntervalIdx, poi, ctCummulative, bat ).Right(), unitMeasure::Newton)) <<    _T(", 1, ")<<gdrIdx<<std::endl;
       else
          resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30058, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pForces->GetShear( lcDC, liveLoadIntervalIdx, poi, ctCummulative, bat ).Left(), unitMeasure::Newton)) <<    _T(", 1, ")<<gdrIdx<<std::endl;
-      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30059, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pForces->GetDisplacement( lcDC, liveLoadIntervalIdx, poi, ctCummulative, bat ), unitMeasure::Millimeter)) <<_T(", 1, ")<<gdrIdx<<std::endl;
+      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30059, ")<<loc<<_T(", ")<< DISPLACEMENT(::ConvertFromSysUnits(pForces->GetDisplacement( lcDC, liveLoadIntervalIdx, poi, ctCummulative, bat ), unitMeasure::Millimeter)) <<_T(", 1, ")<<gdrIdx<<std::endl;
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30257, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pForces->GetReaction( lcDC, liveLoadIntervalIdx, pierIdx, segmentKey, ctCummulative, bat ), unitMeasure::Newton)) <<    _T(", 1, ")<<gdrIdx<<std::endl;
 
       // DW - BSS3
@@ -868,7 +869,7 @@ bool CTestAgentImp::RunDeadLoadActionTest(std::_tofstream& resultsFile, std::_to
          resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30061, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pForces->GetShear( lcDW, liveLoadIntervalIdx, poi, ctCummulative, bat ).Right(), unitMeasure::Newton)) <<    _T(", 1, ")<<gdrIdx<<std::endl;
       else
          resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30061, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pForces->GetShear( lcDW, liveLoadIntervalIdx, poi, ctCummulative, bat ).Left(), unitMeasure::Newton)) <<    _T(", 1, ")<<gdrIdx<<std::endl;
-      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30062, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pForces->GetDisplacement( lcDW, liveLoadIntervalIdx, poi, ctCummulative, bat ), unitMeasure::Millimeter)) <<_T(", 1, ")<<gdrIdx<<std::endl;
+      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30062, ")<<loc<<_T(", ")<< DISPLACEMENT(::ConvertFromSysUnits(pForces->GetDisplacement( lcDW, liveLoadIntervalIdx, poi, ctCummulative, bat ), unitMeasure::Millimeter)) <<_T(", 1, ")<<gdrIdx<<std::endl;
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30260, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pForces->GetReaction( lcDW, liveLoadIntervalIdx, pierIdx, segmentKey, ctCummulative, bat ), unitMeasure::Newton)) <<    _T(", 1, ")<<gdrIdx<<std::endl;
 
       // user loads - Moment
@@ -894,10 +895,10 @@ bool CTestAgentImp::RunDeadLoadActionTest(std::_tofstream& resultsFile, std::_to
       }
 
       // user loads - Displacement
-      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 122108, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pForce->GetDisplacement( castDeckIntervalIdx, pftUserDW, poi, bat ), unitMeasure::Millimeter)) <<_T(", 1, ")<<gdrIdx<<std::endl;
-      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 122109, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pForce->GetDisplacement( castDeckIntervalIdx, pftUserDC, poi, bat ), unitMeasure::Millimeter)) <<_T(", 1, ")<<gdrIdx<<std::endl;
-      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 122110, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pForce->GetDisplacement( compositeDeckIntervalIdx, pftUserDW, poi, bat ), unitMeasure::Millimeter)) <<_T(", 1, ")<<gdrIdx<<std::endl;
-      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 122111, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pForce->GetDisplacement( compositeDeckIntervalIdx, pftUserDC, poi, bat ), unitMeasure::Millimeter)) <<_T(", 1, ")<<gdrIdx<<std::endl;
+      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 122108, ")<<loc<<_T(", ")<< DISPLACEMENT(::ConvertFromSysUnits(pForce->GetDisplacement( castDeckIntervalIdx, pftUserDW, poi, bat ), unitMeasure::Millimeter)) <<_T(", 1, ")<<gdrIdx<<std::endl;
+      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 122109, ")<<loc<<_T(", ")<< DISPLACEMENT(::ConvertFromSysUnits(pForce->GetDisplacement( castDeckIntervalIdx, pftUserDC, poi, bat ), unitMeasure::Millimeter)) <<_T(", 1, ")<<gdrIdx<<std::endl;
+      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 122110, ")<<loc<<_T(", ")<< DISPLACEMENT(::ConvertFromSysUnits(pForce->GetDisplacement( compositeDeckIntervalIdx, pftUserDW, poi, bat ), unitMeasure::Millimeter)) <<_T(", 1, ")<<gdrIdx<<std::endl;
+      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 122111, ")<<loc<<_T(", ")<< DISPLACEMENT(::ConvertFromSysUnits(pForce->GetDisplacement( compositeDeckIntervalIdx, pftUserDC, poi, bat ), unitMeasure::Millimeter)) <<_T(", 1, ")<<gdrIdx<<std::endl;
 
       // user loads - Reaction
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 122112, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pForce->GetReaction( castDeckIntervalIdx, pftUserDW, pierIdx, segmentKey, bat ), unitMeasure::Newton)) <<_T(", 1, ")<<gdrIdx<<std::endl;
@@ -911,7 +912,7 @@ bool CTestAgentImp::RunDeadLoadActionTest(std::_tofstream& resultsFile, std::_to
          resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 122117, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pForce->GetShear( castDeckIntervalIdx, pftUserLLIM, poi, bat ).Right(), unitMeasure::Newton)) <<_T(", 1, ")<<gdrIdx<<std::endl;
       else
          resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 122117, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pForce->GetShear( castDeckIntervalIdx, pftUserLLIM, poi, bat ).Left(), unitMeasure::Newton)) <<_T(", 1, ")<<gdrIdx<<std::endl;
-      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 122118, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pForce->GetDisplacement( castDeckIntervalIdx, pftUserLLIM, poi, bat ), unitMeasure::Millimeter)) <<_T(", 1, ")<<gdrIdx<<std::endl;
+      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 122118, ")<<loc<<_T(", ")<< DISPLACEMENT(::ConvertFromSysUnits(pForce->GetDisplacement( castDeckIntervalIdx, pftUserLLIM, poi, bat ), unitMeasure::Millimeter)) <<_T(", 1, ")<<gdrIdx<<std::endl;
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 122119, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pForce->GetReaction( castDeckIntervalIdx, pftUserLLIM, pierIdx, segmentKey, bat ), unitMeasure::Newton)) <<_T(", 1, ")<<gdrIdx<<std::endl;
    }
 
@@ -1014,7 +1015,7 @@ bool CTestAgentImp::RunCombinedLoadActionTest(std::_tofstream& resultsFile, std:
    std::vector<pgsPointOfInterest> vPoi2( pIPoi->GetPointsOfInterest(segmentKey,POI_RELEASED_SEGMENT) );
    pIPoi->RemovePointsOfInterest(vPoi2,POI_0L);
    pIPoi->RemovePointsOfInterest(vPoi2,POI_10L);
-   std::vector<pgsPointOfInterest> vPoi3( pIPoi->GetPointsOfInterest(segmentKey,POI_PSXFER | POI_HARPINGPOINT, POIFIND_OR) );
+   std::vector<pgsPointOfInterest> vPoi3( pIPoi->GetPointsOfInterest(segmentKey,POI_PSXFER | POI_HARPINGPOINT | POI_BARDEVELOP, POIFIND_OR) );
    vPoi.insert(vPoi.end(),vPoi2.begin(),vPoi2.end());
    vPoi.insert(vPoi.end(),vPoi3.begin(),vPoi3.end());
    std::sort(vPoi.begin(),vPoi.end());
@@ -1062,8 +1063,8 @@ bool CTestAgentImp::RunCombinedLoadActionTest(std::_tofstream& resultsFile, std:
 
          pLsForces->GetDisplacement( pgsTypes::StrengthI, liveLoadIntervalIdx, poi, pgsTypes::MaxSimpleContinuousEnvelope, &dummy, &max );
          pLsForces->GetDisplacement( pgsTypes::StrengthI, liveLoadIntervalIdx, poi, pgsTypes::MinSimpleContinuousEnvelope, &min, &dummy );
-         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 34004, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(max, unitMeasure::Millimeter)) <<_T(", 8, ")<<gdrIdx<<std::endl;
-         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 34005, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(min, unitMeasure::Millimeter)) <<_T(", 8, ")<<gdrIdx<<std::endl;
+         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 34004, ")<<loc<<_T(", ")<< DISPLACEMENT(::ConvertFromSysUnits(max, unitMeasure::Millimeter)) <<_T(", 8, ")<<gdrIdx<<std::endl;
+         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 34005, ")<<loc<<_T(", ")<< DISPLACEMENT(::ConvertFromSysUnits(min, unitMeasure::Millimeter)) <<_T(", 8, ")<<gdrIdx<<std::endl;
 
          // Service I
          pLsForces->GetMoment( pgsTypes::ServiceI, liveLoadIntervalIdx, poi, pgsTypes::MaxSimpleContinuousEnvelope, &dummy, &max );
@@ -1086,8 +1087,8 @@ bool CTestAgentImp::RunCombinedLoadActionTest(std::_tofstream& resultsFile, std:
 
          pLsForces->GetDisplacement( pgsTypes::ServiceI, liveLoadIntervalIdx, poi, pgsTypes::MaxSimpleContinuousEnvelope, &dummy, &max );
          pLsForces->GetDisplacement( pgsTypes::ServiceI, liveLoadIntervalIdx, poi, pgsTypes::MinSimpleContinuousEnvelope, &min, &dummy );
-         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 34024, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(max, unitMeasure::Millimeter)) <<_T(", 8, ")<<gdrIdx<<std::endl;
-         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 34025, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(min, unitMeasure::Millimeter)) <<_T(", 8, ")<<gdrIdx<<std::endl;
+         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 34024, ")<<loc<<_T(", ")<< DISPLACEMENT(::ConvertFromSysUnits(max, unitMeasure::Millimeter)) <<_T(", 8, ")<<gdrIdx<<std::endl;
+         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 34025, ")<<loc<<_T(", ")<< DISPLACEMENT(::ConvertFromSysUnits(min, unitMeasure::Millimeter)) <<_T(", 8, ")<<gdrIdx<<std::endl;
 
          // Service III
          pLsForces->GetMoment( pgsTypes::ServiceIII, liveLoadIntervalIdx, poi, pgsTypes::MaxSimpleContinuousEnvelope, &dummy, &max );
@@ -1110,8 +1111,8 @@ bool CTestAgentImp::RunCombinedLoadActionTest(std::_tofstream& resultsFile, std:
 
          pLsForces->GetDisplacement( pgsTypes::ServiceIII, liveLoadIntervalIdx, poi, pgsTypes::MaxSimpleContinuousEnvelope, &dummy, &max );
          pLsForces->GetDisplacement( pgsTypes::ServiceIII, liveLoadIntervalIdx, poi, pgsTypes::MinSimpleContinuousEnvelope, &min, &dummy );
-         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 34036, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(max, unitMeasure::Millimeter)) <<_T(", 8, ")<<gdrIdx<<std::endl;
-         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 34037, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(min, unitMeasure::Millimeter)) <<_T(", 8, ")<<gdrIdx<<std::endl;
+         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 34036, ")<<loc<<_T(", ")<< DISPLACEMENT(::ConvertFromSysUnits(max, unitMeasure::Millimeter)) <<_T(", 8, ")<<gdrIdx<<std::endl;
+         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 34037, ")<<loc<<_T(", ")<< DISPLACEMENT(::ConvertFromSysUnits(min, unitMeasure::Millimeter)) <<_T(", 8, ")<<gdrIdx<<std::endl;
       }
       else
       {
@@ -1134,8 +1135,8 @@ bool CTestAgentImp::RunCombinedLoadActionTest(std::_tofstream& resultsFile, std:
          }
 
          pLsForces->GetDisplacement( pgsTypes::StrengthI, liveLoadIntervalIdx, poi, bat, &min, &max );
-         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 34004, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(max, unitMeasure::Millimeter)) <<_T(", 8, ")<<gdrIdx<<std::endl;
-         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 34005, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(min, unitMeasure::Millimeter)) <<_T(", 8, ")<<gdrIdx<<std::endl;
+         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 34004, ")<<loc<<_T(", ")<< DISPLACEMENT(::ConvertFromSysUnits(max, unitMeasure::Millimeter)) <<_T(", 8, ")<<gdrIdx<<std::endl;
+         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 34005, ")<<loc<<_T(", ")<< DISPLACEMENT(::ConvertFromSysUnits(min, unitMeasure::Millimeter)) <<_T(", 8, ")<<gdrIdx<<std::endl;
 
          // Service I
          pLsForces->GetMoment( pgsTypes::ServiceI, liveLoadIntervalIdx, poi, bat, &min, &max );
@@ -1155,8 +1156,8 @@ bool CTestAgentImp::RunCombinedLoadActionTest(std::_tofstream& resultsFile, std:
          }
 
          pLsForces->GetDisplacement( pgsTypes::ServiceI, liveLoadIntervalIdx, poi, bat, &min, &max );
-         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 34024, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(max, unitMeasure::Millimeter)) <<_T(", 8, ")<<gdrIdx<<std::endl;
-         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 34025, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(min, unitMeasure::Millimeter)) <<_T(", 8, ")<<gdrIdx<<std::endl;
+         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 34024, ")<<loc<<_T(", ")<< DISPLACEMENT(::ConvertFromSysUnits(max, unitMeasure::Millimeter)) <<_T(", 8, ")<<gdrIdx<<std::endl;
+         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 34025, ")<<loc<<_T(", ")<< DISPLACEMENT(::ConvertFromSysUnits(min, unitMeasure::Millimeter)) <<_T(", 8, ")<<gdrIdx<<std::endl;
 
          // Service III
          pLsForces->GetMoment( pgsTypes::ServiceIII, liveLoadIntervalIdx, poi, bat, &min, &max );
@@ -1176,8 +1177,8 @@ bool CTestAgentImp::RunCombinedLoadActionTest(std::_tofstream& resultsFile, std:
          }
 
          pLsForces->GetDisplacement( pgsTypes::ServiceIII, liveLoadIntervalIdx, poi, bat, &min, &max );
-         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 34036, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(max, unitMeasure::Millimeter)) <<_T(", 8, ")<<gdrIdx<<std::endl;
-         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 34037, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(min, unitMeasure::Millimeter)) <<_T(", 8, ")<<gdrIdx<<std::endl;
+         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 34036, ")<<loc<<_T(", ")<< DISPLACEMENT(::ConvertFromSysUnits(max, unitMeasure::Millimeter)) <<_T(", 8, ")<<gdrIdx<<std::endl;
+         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 34037, ")<<loc<<_T(", ")<< DISPLACEMENT(::ConvertFromSysUnits(min, unitMeasure::Millimeter)) <<_T(", 8, ")<<gdrIdx<<std::endl;
       }
    }
 
@@ -1403,17 +1404,14 @@ bool CTestAgentImp::RunPrestressedISectionTest(std::_tofstream& resultsFile, std
    // the older versions the same regression test results are reported making it easier to
    // compare results.
    std::vector<pgsPointOfInterest> vPoi( pIPoi->GetPointsOfInterest(segmentKey,POI_ERECTED_SEGMENT) );
-   pIPoi->RemovePointsOfInterest(vPoi,POI_CRITSECTSHEAR1 | POI_CRITSECTSHEAR2);
-   pIPoi->RemovePointsOfInterest(vPoi,POI_15H);
    std::vector<pgsPointOfInterest> vPoi2( pIPoi->GetPointsOfInterest(segmentKey,POI_RELEASED_SEGMENT) );
    pIPoi->RemovePointsOfInterest(vPoi2,POI_0L);
    pIPoi->RemovePointsOfInterest(vPoi2,POI_10L);
-   std::vector<pgsPointOfInterest> vPoi3( pIPoi->GetPointsOfInterest(segmentKey,POI_PSXFER | POI_HARPINGPOINT, POIFIND_OR) );
+   std::vector<pgsPointOfInterest> vPoi3( pIPoi->GetPointsOfInterest(segmentKey,POI_CRITSECTSHEAR1 | POI_PSXFER | POI_HARPINGPOINT | POI_BARDEVELOP | POI_STIRRUP_ZONE | POI_CONCLOAD, POIFIND_OR) );
    vPoi.insert(vPoi.end(),vPoi2.begin(),vPoi2.end());
    vPoi.insert(vPoi.end(),vPoi3.begin(),vPoi3.end());
    std::sort(vPoi.begin(),vPoi.end());
-   std::vector<pgsPointOfInterest>::iterator newEnd( std::unique(vPoi.begin(),vPoi.end()));
-   vPoi.erase(newEnd,vPoi.end());
+   vPoi.erase(std::unique(vPoi.begin(),vPoi.end()),vPoi.end());
 
    std::vector<pgsPointOfInterest>::iterator it(vPoi.begin());
    std::vector<pgsPointOfInterest>::iterator end(vPoi.end());
@@ -1566,8 +1564,8 @@ bool CTestAgentImp::RunPrestressedISectionTest(std::_tofstream& resultsFile, std
       resultsFile<<bridgeId<<", "<<pid<<", 50135, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(mcd.c, unitMeasure::Millimeter)) <<",15, "<<gdrIdx<<std::endl;
       resultsFile<<bridgeId<<", "<<pid<<", 50136, "<<loc<<", "<< QUITE(IsZero(mcd.de) ? 0 : mcd.c/mcd.de) <<",15, "<<gdrIdx<<std::endl;
       resultsFile<<bridgeId<<", "<<pid<<", 50139, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(mcd.de, unitMeasure::Millimeter)) <<",15, "<<gdrIdx<<std::endl;
-      resultsFile<<bridgeId<<", "<<pid<<", 50140, "<<loc<<", "<<QUITE(IsZero(mmcd.Mcr) ? 0 : mmcd.Mr/mmcd.Mcr)<<",15, "<<gdrIdx<<std::endl;
-      resultsFile<<bridgeId<<", "<<pid<<", 50141, "<<loc<<", "<<QUITE(IsZero(mmcd.Mu) ? 0 : mmcd.Mr/mmcd.Mu)<< ",15, "<<gdrIdx<<std::endl;
+      resultsFile<<bridgeId<<", "<<pid<<", 50140, "<<loc<<", "<< QUITE(IsZero(mmcd.Mcr) ? 0 : mmcd.Mr/mmcd.Mcr)<<",15, "<<gdrIdx<<std::endl;
+      resultsFile<<bridgeId<<", "<<pid<<", 50141, "<<loc<<", "<< QUITE(IsZero(mmcd.Mu) ? 0 : mmcd.Mr/mmcd.Mu)<< ",15, "<<gdrIdx<<std::endl;
 
 #pragma Reminder("BUG: added if block to make it through the regression tests... there is probably a bug")
       pCompositeCap = pGdrArtifact->FindNegativeMomentFlexuralCapacityArtifact(liveLoadIntervalIdx,pgsTypes::StrengthI,poi);
@@ -1614,10 +1612,11 @@ bool CTestAgentImp::RunPrestressedISectionTest(std::_tofstream& resultsFile, std
       // regression tests for PGSplice working
       if ( idx < pstirrup_artifact->GetStirrupCheckAtPoisArtifactCount( liveLoadIntervalIdx,pgsTypes::StrengthI ) )
       {
-         psArtifact = pstirrup_artifact->GetStirrupCheckAtPoisArtifact( liveLoadIntervalIdx, pgsTypes::StrengthI,idx );
+         psArtifact = pstirrup_artifact->GetStirrupCheckAtPoisArtifactAtPOI( liveLoadIntervalIdx, pgsTypes::StrengthI, poi.GetID() );
          ATLASSERT(psArtifact != NULL);
-         if ( psArtifact && IsEqual(::ConvertFromSysUnits(psArtifact->GetPointOfInterest().GetDistFromStart(), unitMeasure::Millimeter),loc))
+         if ( psArtifact )
          {
+            ATLASSERT(poi == psArtifact->GetPointOfInterest());
 #pragma Reminder("BUG: added if block to make it through the regression tests... there is probably a bug")
             pArtifact = psArtifact->GetLongReinfShearArtifact();
             if ( pArtifact )
@@ -1671,32 +1670,66 @@ bool CTestAgentImp::RunPrestressedISectionTest(std::_tofstream& resultsFile, std
       // at one time, the number of stress check artifacts matched the number of POIs that were retreived above...
       // that isn't true anymore and that messes up the code below. The if (idx < nArtifacts) is just to get initial
       // regression tests for PGSplice working
-      CollectionIndexType nArtifacts = pSegmentArtifact->GetFlexuralStressArtifactCount(castDeckIntervalIdx,pgsTypes::ServiceI,pgsTypes::Tension);
-      if ( idx < nArtifacts )
-      {
-         const pgsFlexuralStressArtifact* pStresses;
-         pStresses = pSegmentArtifact->GetFlexuralStressArtifact(castDeckIntervalIdx,pgsTypes::ServiceI,pgsTypes::Tension,idx);
-         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 122019, ")<<loc<<_T(", ")<<(int)(pStresses->Passed()?1:0)<<_T(", 15, ")<<gdrIdx<<std::endl;
-         pStresses = pSegmentArtifact->GetFlexuralStressArtifact(liveLoadIntervalIdx,pgsTypes::ServiceIII,pgsTypes::Tension,idx);
-         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 122023, ")<<loc<<_T(", ")<<(int)(pStresses->TopPassed()?1:0)<<_T(", 15, ")<<gdrIdx<<std::endl;
-         pStresses = pSegmentArtifact->GetFlexuralStressArtifact(castDeckIntervalIdx,pgsTypes::ServiceI,pgsTypes::Compression,idx);
-         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 122024, ")<<loc<<_T(", ")<<(int)(pStresses->Passed()?1:0)<<_T(", 15, ")<<gdrIdx<<std::endl;
-         pStresses = pSegmentArtifact->GetFlexuralStressArtifact(compositeDeckIntervalIdx,pgsTypes::ServiceI,pgsTypes::Compression,idx);
-         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 122025, ")<<loc<<_T(", ")<<(int)(pStresses->Passed()?1:0)<<_T(", 15, ")<<gdrIdx<<std::endl;
-         pStresses = pSegmentArtifact->GetFlexuralStressArtifact(liveLoadIntervalIdx,pgsTypes::ServiceI,pgsTypes::Compression,idx);
-         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 122026, ")<<loc<<_T(", ")<<(int)(pStresses->Passed()?1:0)<<_T(", 15, ")<<gdrIdx<<std::endl;
+      //CollectionIndexType nArtifacts = pSegmentArtifact->GetFlexuralStressArtifactCount(castDeckIntervalIdx,pgsTypes::ServiceI,pgsTypes::Tension);
+      //if ( idx < nArtifacts )
+      //{
+         const pgsFlexuralStressArtifact* pStressArtifact;
+         pStressArtifact = pSegmentArtifact->GetFlexuralStressArtifactAtPoi(castDeckIntervalIdx,pgsTypes::ServiceI,pgsTypes::Tension,poi.GetID());
+         if ( pStressArtifact )
+         {
+            ATLASSERT(IsEqual(loc,::ConvertFromSysUnits(poi.GetDistFromStart(), unitMeasure::Millimeter)));
+            resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 122019, ")<<loc<<_T(", ")<<(int)(pStressArtifact->Passed()?1:0)<<_T(", 15, ")<<gdrIdx<<std::endl;
+         }
+
+         pStressArtifact = pSegmentArtifact->GetFlexuralStressArtifactAtPoi(liveLoadIntervalIdx,pgsTypes::ServiceIII,pgsTypes::Tension,poi.GetID());
+         if ( pStressArtifact )
+         {
+            ATLASSERT(IsEqual(loc,::ConvertFromSysUnits(poi.GetDistFromStart(), unitMeasure::Millimeter)));
+            resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 122023, ")<<loc<<_T(", ")<<(int)(pStressArtifact->TopPassed()?1:0)<<_T(", 15, ")<<gdrIdx<<std::endl;
+         }
+
+         pStressArtifact = pSegmentArtifact->GetFlexuralStressArtifactAtPoi(castDeckIntervalIdx,pgsTypes::ServiceI,pgsTypes::Compression,poi.GetID());
+         if ( pStressArtifact )
+         {
+            ATLASSERT(IsEqual(loc,::ConvertFromSysUnits(poi.GetDistFromStart(), unitMeasure::Millimeter)));
+            resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 122024, ")<<loc<<_T(", ")<<(int)(pStressArtifact->Passed()?1:0)<<_T(", 15, ")<<gdrIdx<<std::endl;
+         }
+
+         pStressArtifact = pSegmentArtifact->GetFlexuralStressArtifactAtPoi(compositeDeckIntervalIdx,pgsTypes::ServiceI,pgsTypes::Compression,poi.GetID());
+         if ( pStressArtifact )
+         {
+            ATLASSERT(IsEqual(loc,::ConvertFromSysUnits(poi.GetDistFromStart(), unitMeasure::Millimeter)));
+            resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 122025, ")<<loc<<_T(", ")<<(int)(pStressArtifact->Passed()?1:0)<<_T(", 15, ")<<gdrIdx<<std::endl;
+
+         }
+
+         pStressArtifact = pSegmentArtifact->GetFlexuralStressArtifactAtPoi(liveLoadIntervalIdx,pgsTypes::ServiceI,pgsTypes::Compression,poi.GetID());
+         if ( pStressArtifact )
+         {
+            ATLASSERT(IsEqual(loc,::ConvertFromSysUnits(poi.GetDistFromStart(), unitMeasure::Millimeter)));
+            resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 122026, ")<<loc<<_T(", ")<<(int)(pStressArtifact->Passed()?1:0)<<_T(", 15, ")<<gdrIdx<<std::endl;
+         }
+
          if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims )
          {
-            pStresses = pSegmentArtifact->GetFlexuralStressArtifact(liveLoadIntervalIdx,pgsTypes::ServiceIA,pgsTypes::Compression,idx);
-            resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 122027, ")<<loc<<_T(", ")<<(int)(pStresses->Passed()?1:0)<<_T(", 15, ")<<gdrIdx<<std::endl;
+            pStressArtifact = pSegmentArtifact->GetFlexuralStressArtifactAtPoi(liveLoadIntervalIdx,pgsTypes::ServiceIA,pgsTypes::Compression,poi.GetID());
+            if ( pStressArtifact )
+            {
+               ATLASSERT(IsEqual(loc,::ConvertFromSysUnits(poi.GetDistFromStart(), unitMeasure::Millimeter)));
+               resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 122027, ")<<loc<<_T(", ")<<(int)(pStressArtifact->Passed()?1:0)<<_T(", 15, ")<<gdrIdx<<std::endl;
+            }
          }
          else
          {
-            pStresses = pSegmentArtifact->GetFlexuralStressArtifact(liveLoadIntervalIdx,pgsTypes::FatigueI,pgsTypes::Compression,idx);
-            resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 122027, ")<<loc<<_T(", ")<<(int)(pStresses->Passed()?1:0)<<_T(", 15, ")<<gdrIdx<<std::endl;
+            pStressArtifact = pSegmentArtifact->GetFlexuralStressArtifactAtPoi(liveLoadIntervalIdx,pgsTypes::FatigueI,pgsTypes::Compression,poi.GetID());
+            if ( pStressArtifact )
+            {
+               ATLASSERT(IsEqual(loc,::ConvertFromSysUnits(poi.GetDistFromStart(), unitMeasure::Millimeter)));
+               resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 122027, ")<<loc<<_T(", ")<<(int)(pStressArtifact->Passed()?1:0)<<_T(", 15, ")<<gdrIdx<<std::endl;
+            }
          }
-      }
-   }
+      //}
+   } // next POI
 
    // confinement
    const pgsConfinementArtifact& rconf = pstirrup_artifact->GetConfinementArtifact();
@@ -1765,7 +1798,7 @@ bool CTestAgentImp::RunHandlingTest(std::_tofstream& resultsFile, std::_tofstrea
       }
 
       GET_IFACE(IGirderLiftingPointsOfInterest,pGirderLiftingPointsOfInterest);
-      std::vector<pgsPointOfInterest> poi_vec( pGirderLiftingPointsOfInterest->GetLiftingPointsOfInterest(segmentKey,POI_MIDSPAN) );
+      std::vector<pgsPointOfInterest> poi_vec( pGirderLiftingPointsOfInterest->GetLiftingPointsOfInterest(segmentKey,POI_MIDSPAN | POI_LIFT_SEGMENT) );
       CHECK(poi_vec.size()==1);
       pgsPointOfInterest& poi = poi_vec[0];
 
@@ -1821,7 +1854,7 @@ bool CTestAgentImp::RunWsdotGirderScheduleTest(std::_tofstream& resultsFile, std
    pgsPointOfInterest pois(segmentKey,0.0);
 
    GET_IFACE(IPointOfInterest, pPointOfInterest );
-   std::vector<pgsPointOfInterest> pmid( pPointOfInterest->GetPointsOfInterest(segmentKey,POI_MIDSPAN) );
+   std::vector<pgsPointOfInterest> pmid( pPointOfInterest->GetPointsOfInterest(segmentKey,POI_MIDSPAN | POI_ERECTED_SEGMENT) );
    CHECK(pmid.size()==1);
 
    Float64 loc = pmid[0].GetDistFromStart();
@@ -2049,7 +2082,7 @@ bool CTestAgentImp::RunCamberTest(std::_tofstream& resultsFile, std::_tofstream&
    std::_tstring bridgeId = GetBridgeID();
 
    GET_IFACE(IPointOfInterest,pPointsOfInterest);
-   std::vector<pgsPointOfInterest> poi_vec( pPointsOfInterest->GetPointsOfInterest(segmentKey,POI_MIDSPAN) );
+   std::vector<pgsPointOfInterest> poi_vec( pPointsOfInterest->GetPointsOfInterest(segmentKey,POI_MIDSPAN | POI_ERECTED_SEGMENT) );
    CHECK(poi_vec.size()==1);
    pgsPointOfInterest& poi_midspan = poi_vec[0];
 
@@ -2111,6 +2144,7 @@ bool CTestAgentImp::RunFabOptimizationTest(std::_tofstream& resultsFile, std::_t
 
 bool CTestAgentImp::RunLoadRatingTest(std::_tofstream& resultsFile, std::_tofstream& poiFile, const CGirderKey& girderKey)
 {
+   USES_CONVERSION;
    std::_tstring pid      = GetProcessID();
    std::_tstring bridgeId = GetBridgeID();
 
@@ -2137,19 +2171,38 @@ bool CTestAgentImp::RunLoadRatingTest(std::_tofstream& resultsFile, std::_tofstr
          if ( pArtifact == NULL )
             continue;
 
-         Float64 RF = pArtifact->GetMomentRatingFactor(true);
-         resultsFile << bridgeId << _T(", ") << pid << _T(", 881001, ") << QUITE(RF) << _T(", ") << gdr << std::endl;
+         CComBSTR bstrRatingType = ::GetLiveLoadTypeName(ratingType);
+         std::_tstring strTruckName = pProductLoads->GetLiveLoadName(llType,vehIdx);
+         resultsFile << OLE2T(bstrRatingType) << _T(", ") << strTruckName << std::endl;
+
+         const pgsMomentRatingArtifact* pMomentArtifact = NULL;
+         Float64 RF = pArtifact->GetMomentRatingFactorEx(true,&pMomentArtifact);
+         if ( pMomentArtifact )
+         {
+            resultsFile << bridgeId << _T(", ") << pid << _T(", 881001, ") << QUITE(RF) << _T(", ") << gdr << std::endl;
+            resultsFile << bridgeId << _T(", ") << pid << _T(", 881001a, ") << QUITE(pMomentArtifact->GetPointOfInterest().GetDistFromStart()) << _T(", ") << gdr << std::endl;
+         }
 
          if ( bNegMoments )
          {
-            RF = pArtifact->GetMomentRatingFactor(false);
-            resultsFile << bridgeId << _T(", ") << pid << _T(", 881002, ") << QUITE(RF) << _T(", ") << gdr << std::endl;
+            pMomentArtifact = NULL;
+            RF = pArtifact->GetMomentRatingFactorEx(false,&pMomentArtifact);
+            if ( pMomentArtifact )
+            {
+	            resultsFile << bridgeId << _T(", ") << pid << _T(", 881002, ") << QUITE(RF) << _T(", ") << gdr << std::endl;
+               resultsFile << bridgeId << _T(", ") << pid << _T(", 881002a, ") << QUITE(pMomentArtifact->GetPointOfInterest().GetDistFromStart()) << _T(", ") << gdr << std::endl;
+            }
          }
          
          if ( pRatingSpec->RateForShear(ratingType) )
          {
-            RF = pArtifact->GetShearRatingFactor();
-            resultsFile << bridgeId << _T(", ") << pid << _T(", 881003, ") << QUITE(RF) << _T(", ") << gdr << std::endl;
+            const pgsShearRatingArtifact* pShearArtifact;
+            RF = pArtifact->GetShearRatingFactorEx(&pShearArtifact);
+            if ( pShearArtifact )
+            {
+               resultsFile << bridgeId << _T(", ") << pid << _T(", 881003, ") << QUITE(RF) << _T(", ") << gdr << std::endl;
+               resultsFile << bridgeId << _T(", ") << pid << _T(", 881003a, ") << QUITE(pShearArtifact->GetPointOfInterest().GetDistFromStart()) << _T(", ") << gdr << std::endl;
+            }
          }
 
          if ( pRatingSpec->RateForStress(ratingType) )

@@ -54,12 +54,10 @@ CBridgeDescDlg::~CBridgeDescDlg()
 void CBridgeDescDlg::SetBridgeDescription(const CBridgeDescription2& bridgeDesc)
 {
    m_BridgeDesc = bridgeDesc;
-   m_DeckRebarPage.m_RebarData = m_BridgeDesc.GetDeckDescription()->DeckRebarData;
 }
 
 const CBridgeDescription2& CBridgeDescDlg::GetBridgeDescription()
 {
-   m_BridgeDesc.GetDeckDescription()->DeckRebarData = m_DeckRebarPage.m_RebarData;
    return m_BridgeDesc;
 }
 
@@ -119,26 +117,5 @@ void CBridgeDescDlg::DoDataExchange(CDataExchange* pDX)
       // force the active page to update its data
       CPropertyPage* pPage = GetActivePage();
       pPage->UpdateData(TRUE);
-
-      // Do bridge-wide validation
-
-      // Make sure there isn't negative moment rebar at non-continuous piers
-      // (Note that the latest rebar data is still in the rebar page, not in the bridge model)
-      std::vector<CDeckRebarData::NegMomentRebarData>::iterator iter(m_DeckRebarPage.m_RebarData.NegMomentRebar.begin());
-      std::vector<CDeckRebarData::NegMomentRebarData>::iterator end(m_DeckRebarPage.m_RebarData.NegMomentRebar.end());
-      for ( ; iter != end; iter++ )
-      {
-         CDeckRebarData::NegMomentRebarData& nmRebarData = *iter;
-         CPierData2* pPier = m_BridgeDesc.GetPier(nmRebarData.PierIdx);
-         ATLASSERT(pPier->IsBoundaryPier());
-         pgsTypes::PierConnectionType connectionType = pPier->GetPierConnectionType();
-         if ( connectionType == pgsTypes::Hinge || connectionType == pgsTypes::Roller )
-         {
-            CString strMsg;
-            strMsg.Format(_T("Pier %d has a roller/hinge boundary condition. Supplemental deck reinforcement is not permitted at this pier. Change the boundary conditions or remove the supplemental reinforcement."),LABEL_PIER(nmRebarData.PierIdx));
-            AfxMessageBox(strMsg);
-            pDX->Fail();
-         }
-      }
    }
 }

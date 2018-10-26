@@ -237,6 +237,7 @@ public:
    virtual void SetGirderGroup(GroupIndexType grpIdx,const CGirderGroupData& girderGroup);
    virtual void SetGirderCount(GroupIndexType grpIdx,GirderIndexType nGirders);
    virtual void SetBoundaryCondition(PierIndexType pierIdx,pgsTypes::PierConnectionType connectionType);
+   virtual void SetBoundaryCondition(PierIndexType pierIdx,pgsTypes::PierSegmentConnectionType connectionType);
    virtual void DeletePier(PierIndexType pierIdx,pgsTypes::PierFaceType faceForSpan);
    virtual void InsertSpan(PierIndexType refPierIdx,pgsTypes::PierFaceType pierFace, Float64 spanLength, const CSpanData2* pSpanData,const CPierData2* pPierData,bool bCreateNewGroup,EventIndexType eventIdx);
    virtual void InsertTemporarySupport(CTemporarySupportData* pTSData,EventIndexType erectionEventIdx,EventIndexType removalEventIdx);
@@ -617,12 +618,17 @@ private:
    pgsTypes::SpecialPermitType m_SpecialPermitType;
    Float64 m_SystemFactorFlexure;
    Float64 m_SystemFactorShear;
-   Float64 m_gDC[12]; // use the IndexFromLimitState to access array
-   Float64 m_gDW[12]; // use the IndexFromLimitState to access array
-   Float64 m_gCR[12]; // use the IndexFromLimitState to access array
-   Float64 m_gSH[12]; // use the IndexFromLimitState to access array
-   Float64 m_gPS[12]; // use the IndexFromLimitState to access array
-   Float64 m_gLL[12]; // use the IndexFromLimitState to access array
+   // NOTE: the next group of arrays (m_gDC, m_gDW, etc) are larger than they need to be.
+   // This is because of a bug in earlier versions of PGSuper. In those version, data was
+   // stored beyond the end of the array. The size of the array has been incresed so that
+   // this error wont occur.
+   Float64 m_gDC[pgsTypes::LimitStateCount]; // use the IndexFromLimitState to access array
+   Float64 m_gDW[pgsTypes::LimitStateCount]; // use the IndexFromLimitState to access array
+   Float64 m_gCR[pgsTypes::LimitStateCount]; // use the IndexFromLimitState to access array
+   Float64 m_gSH[pgsTypes::LimitStateCount]; // use the IndexFromLimitState to access array
+   Float64 m_gPS[pgsTypes::LimitStateCount]; // use the IndexFromLimitState to access array
+   Float64 m_gLL[pgsTypes::LimitStateCount]; // use the IndexFromLimitState to access array
+
    Float64 m_AllowableTensionCoefficient[6]; // index is load rating type
    bool    m_bRateForStress[6]; // index is load rating type (for permit rating, it means to do the service I checks, otherwise service III)
    bool    m_bRateForShear[6]; // index is load rating type

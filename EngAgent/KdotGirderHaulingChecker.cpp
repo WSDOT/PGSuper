@@ -261,6 +261,7 @@ pgsHaulingAnalysisArtifact* pgsKdotGirderHaulingChecker::DesignHauling(const CSe
    Float64 loc = hardMinHaulingDistance;
 
    HANDLINGCONFIG shipping_config;
+   shipping_config.bIgnoreGirderConfig = false;
    shipping_config.GdrConfig = config;
 
    bool did_pass(false);

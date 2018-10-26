@@ -31,6 +31,7 @@ class txnEditBoundaryConditions : public txnTransaction
 {
 public:
    txnEditBoundaryConditions(PierIndexType pierIdx,pgsTypes::PierConnectionType oldBC,pgsTypes::PierConnectionType newBC);
+   txnEditBoundaryConditions(PierIndexType pierIdx,pgsTypes::PierSegmentConnectionType oldBC,pgsTypes::PierSegmentConnectionType newBC);
    virtual std::_tstring Name() const;
    virtual txnTransaction* CreateClone() const;
    virtual bool Execute();
@@ -40,8 +41,10 @@ public:
 
 private:
    bool DoExecute(int i);
+   bool m_bIsBoundaryPier;
    PierIndexType m_PierIdx;
-   pgsTypes::PierConnectionType m_ConnectionType[2];
+   pgsTypes::PierConnectionType m_PierConnectionType[2];
+   pgsTypes::PierSegmentConnectionType m_SegmentConnectionType[2];
 };
 
 #endif // INCLUDED_EDITBOUNDARYCONDITIONS_H_

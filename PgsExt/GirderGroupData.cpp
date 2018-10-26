@@ -307,6 +307,7 @@ void CGirderGroupData::SetGirderCount(GirderIndexType nGirders)
 
       CSplicedGirderData* pGirder = new CSplicedGirderData;
       pGirder->SetIndex(0);
+      pGirder->SetID( m_pBridge->GetNextGirderID() );
       pGirder->SetGirderGroup(this);
       m_Girders.push_back(pGirder);
 
@@ -379,6 +380,9 @@ void CGirderGroupData::RemoveGirders(GirderIndexType nGirders)
 void CGirderGroupData::Initialize(GirderIndexType nGirders)
 {
    Clear();
+
+   if ( nGirders == 0 )
+      return;
 
    CGirderGroupData* pPrevGroup = GetPrevGirderGroup();
    CGirderGroupData* pNextGroup = GetNextGirderGroup();

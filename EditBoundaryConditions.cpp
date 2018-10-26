@@ -33,9 +33,18 @@ static char THIS_FILE[] = __FILE__;
 
 txnEditBoundaryConditions::txnEditBoundaryConditions(PierIndexType pierIdx,pgsTypes::PierConnectionType oldBC,pgsTypes::PierConnectionType newBC)
 {
+   m_bIsBoundaryPier = true;
    m_PierIdx = pierIdx;
-   m_ConnectionType[0] = oldBC;
-   m_ConnectionType[1] = newBC;
+   m_PierConnectionType[0] = oldBC;
+   m_PierConnectionType[1] = newBC;
+}
+
+txnEditBoundaryConditions::txnEditBoundaryConditions(PierIndexType pierIdx,pgsTypes::PierSegmentConnectionType oldBC,pgsTypes::PierSegmentConnectionType newBC)
+{
+   m_bIsBoundaryPier = false;
+   m_PierIdx = pierIdx;
+   m_SegmentConnectionType[0] = oldBC;
+   m_SegmentConnectionType[1] = newBC;
 }
 
 std::_tstring txnEditBoundaryConditions::Name() const
@@ -45,7 +54,10 @@ std::_tstring txnEditBoundaryConditions::Name() const
 
 txnTransaction* txnEditBoundaryConditions::CreateClone() const
 {
-   return new txnEditBoundaryConditions(m_PierIdx,m_ConnectionType[0],m_ConnectionType[1]);
+   if ( m_bIsBoundaryPier )
+      return new txnEditBoundaryConditions(m_PierIdx,m_PierConnectionType[0],m_PierConnectionType[1]);
+   else
+      return new txnEditBoundaryConditions(m_PierIdx,m_SegmentConnectionType[0],m_SegmentConnectionType[1]);
 }
 
 bool txnEditBoundaryConditions::IsUndoable()
@@ -77,7 +89,16 @@ bool txnEditBoundaryConditions::DoExecute(int i)
    pEvents->HoldEvents();
 
    GET_IFACE2(pBroker,IBridgeDescription,pBridgeDesc);
-   pBridgeDesc->SetBoundaryCondition( m_PierIdx, m_ConnectionType[i] );
+   if ( m_bIsBoundaryPier )
+   {
+      ATLASSERT( pBridgeDesc->GetPier(m_PierIdx)->IsBoundaryPier() );
+      pBridgeDesc->SetBoundaryCondition( m_PierIdx, m_PierConnectionType[i] );
+   }
+   else
+   {
+      ATLASSERT( pBridgeDesc->GetPier(m_PierIdx)->IsInteriorPier() );
+      pBridgeDesc->SetBoundaryCondition( m_PierIdx, m_SegmentConnectionType[i] );
+   }
 
    pEvents->FirePendingEvents();
 

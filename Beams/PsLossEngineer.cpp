@@ -36,7 +36,7 @@
 #include <PsgLib\SpecLibraryEntry.h>
 #include <PsgLib\GirderLibraryEntry.h>
 
-#include <Reporting\ReportStyleHolder.h>
+#include <PgsExt\ReportStyleHolder.h>
 #include <PgsExt\GirderPointOfInterest.h>
 #include <PgsExt\StatusItem.h>
 #include <PgsExt\BridgeDescription2.h>

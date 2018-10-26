@@ -22,7 +22,7 @@
 
 #include "StdAfx.h"
 #include "OutputSummaryChapter.h"
-#include <Reporting\ReportStyleHolder.h>
+#include <PgsExt\ReportStyleHolder.h>
 #include <Reporting\SpanGirderReportSpecification.h>
 #include <Reporting\SectPropTable.h>
 #include <Reporting\SectPropTable2.h>

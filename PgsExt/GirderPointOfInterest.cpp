@@ -255,6 +255,15 @@ std::_tstring rptPointOfInterest::AsString() const
       nAttributes++;
    }
 
+   if ( m_POI.HasAttribute(POI_STIRRUP_ZONE) )
+   {
+      if ( 0 < nAttributes )
+         strAttrib += _T(", ");
+
+      strAttrib += _T("SZB");
+      nAttributes++;
+   }
+
    if ( m_POI.HasAttribute(POI_TEMPSUPPORT) )
    {
       if ( 0 < nAttributes )

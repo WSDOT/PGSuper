@@ -746,7 +746,7 @@ void CBridgeSectionView::BuildGirderDisplayObjects()
       {
          const CPrecastSegmentData* pSegment = pGirder->GetSegment(segIdx);
          Float64 startStation, endStation;
-         pSegment->GetStations(startStation,endStation);
+         pSegment->GetStations(&startStation,&endStation);
          if ( ::InRange(startStation,cut_station,endStation) )
          {
             // found the segment
@@ -765,7 +765,7 @@ void CBridgeSectionView::BuildGirderDisplayObjects()
 
       const CPrecastSegmentData* pSegment = pGirder->GetSegment(thisSegmentKey.segmentIndex);
       Float64 startStation, endStation;
-      pSegment->GetStations(startStation,endStation);
+      pSegment->GetStations(&startStation,&endStation);
 
       Float64 distFromStartOfSegment = segment_length*(cut_station - startStation)/(endStation - startStation);
       distFromStartOfSegment = ::ForceIntoRange(0.,distFromStartOfSegment,segment_length);

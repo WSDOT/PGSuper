@@ -85,14 +85,15 @@ private:
    SamePlace m_SamePlace;
 };
 
-class SameReference
+class SameAttribute
 {
 public:
-   SameReference(PoiAttributeType reference) : m_Reference(reference) {}
+   SameAttribute(PoiAttributeType targetAttribute,PoiAttributeType exceptAttribute) : m_TargetAttribute(targetAttribute), m_ExceptAttribute(exceptAttribute) {}
 
    bool operator()(const pgsPointOfInterest& other) const
    {
-      if ( other.HasAttribute(m_Reference) )
+      // return true if the poi has the target attribute, except if it has the exception attribute
+      if ( other.HasAttribute(m_TargetAttribute) && !other.HasAttribute(m_ExceptAttribute) )
       {
          return true;
       }
@@ -101,7 +102,8 @@ public:
    }
 
 private:
-   PoiAttributeType m_Reference;
+   PoiAttributeType m_TargetAttribute;
+   PoiAttributeType m_ExceptAttribute;
 };
 
 class FindByID
@@ -249,9 +251,9 @@ bool pgsPoiMgr::RemovePointOfInterest(const pgsPointOfInterest& poi,bool bConsid
    return false;
 }
 
-void pgsPoiMgr::RemovePointsOfInterest(PoiAttributeType poiReference)
+void pgsPoiMgr::RemovePointsOfInterest(PoiAttributeType targetAttribute,PoiAttributeType exceptionAttribute)
 {
-   std::vector<pgsPointOfInterest>::iterator newEnd( std::remove_if(m_Poi.begin(),m_Poi.end(),SameReference(poiReference)) );
+   std::vector<pgsPointOfInterest>::iterator newEnd( std::remove_if(m_Poi.begin(),m_Poi.end(),SameAttribute(targetAttribute,exceptionAttribute)) );
    m_Poi.erase(newEnd,m_Poi.end());
 
    ASSERTVALID;
@@ -488,12 +490,16 @@ bool pgsPoiMgr::AndFind(const pgsPointOfInterest& poi,const CSegmentKey& segment
        (sysFlags<PoiAttributeType>::IsSet(attrib,POI_H)               ? poi.IsAtH(poiReference)                     : true) &&
        (sysFlags<PoiAttributeType>::IsSet(attrib,POI_15H)             ? poi.IsAt15H(poiReference)                   : true) &&
        (sysFlags<PoiAttributeType>::IsSet(attrib,POI_PSXFER)          ? poi.HasAttribute(POI_PSXFER) : true) &&
+       (sysFlags<PoiAttributeType>::IsSet(attrib,POI_DECKBARCUTOFF)   ? poi.HasAttribute(POI_DECKBARCUTOFF) : true) &&
+       (sysFlags<PoiAttributeType>::IsSet(attrib,POI_BARCUTOFF)   ? poi.HasAttribute(POI_BARCUTOFF) : true) &&
+       (sysFlags<PoiAttributeType>::IsSet(attrib,POI_BARDEVELOP)   ? poi.HasAttribute(POI_BARDEVELOP) : true) &&
        (sysFlags<PoiAttributeType>::IsSet(attrib,POI_SECTCHANGE_RIGHTFACE) ? poi.HasAttribute(POI_SECTCHANGE_RIGHTFACE) : true) &&
        (sysFlags<PoiAttributeType>::IsSet(attrib,POI_SECTCHANGE_LEFTFACE) ? poi.HasAttribute(POI_SECTCHANGE_LEFTFACE) : true) &&
        (sysFlags<PoiAttributeType>::IsSet(attrib,POI_SECTCHANGE_TRANSITION) ? poi.HasAttribute(POI_SECTCHANGE_TRANSITION) : true) &&
        (sysFlags<PoiAttributeType>::IsSet(attrib,POI_FACEOFSUPPORT)   ? poi.HasAttribute(POI_FACEOFSUPPORT) : true) &&
        (sysFlags<PoiAttributeType>::IsSet(attrib,POI_INTERMEDIATE_PIER) ? poi.HasAttribute(POI_INTERMEDIATE_PIER) : true ) &&
        (sysFlags<PoiAttributeType>::IsSet(attrib,POI_PIER)   ? poi.HasAttribute(POI_PIER) : true) &&
+       (sysFlags<PoiAttributeType>::IsSet(attrib,POI_STIRRUP_ZONE)   ? poi.HasAttribute(POI_STIRRUP_ZONE) : true) &&
        (sysFlags<PoiAttributeType>::IsSet(attrib,POI_TEMPSUPPORT)   ? poi.HasAttribute(POI_TEMPSUPPORT) : true) &&
        (sysFlags<PoiAttributeType>::IsSet(attrib,POI_CLOSURE)   ? poi.HasAttribute(POI_CLOSURE) : true)
       )
@@ -577,15 +583,19 @@ bool pgsPoiMgr::OrFind(const pgsPointOfInterest& poi,const CSegmentKey& segmentK
     (sysFlags<PoiAttributeType>::IsSet(attrib,POI_15H)             ? poi.IsAt15H(poiReference)                   : false) ||
     (sysFlags<PoiAttributeType>::IsSet(attrib,POI_DEBOND)          ? poi.HasAttribute(POI_DEBOND) : false) ||
     (sysFlags<PoiAttributeType>::IsSet(attrib,POI_PSXFER)          ? poi.HasAttribute(POI_PSXFER) : false) ||
+    (sysFlags<PoiAttributeType>::IsSet(attrib,POI_DECKBARCUTOFF)   ? poi.HasAttribute(POI_DECKBARCUTOFF) : false) ||
+    (sysFlags<PoiAttributeType>::IsSet(attrib,POI_BARCUTOFF)   ? poi.HasAttribute(POI_BARCUTOFF) : false) ||
+    (sysFlags<PoiAttributeType>::IsSet(attrib,POI_BARDEVELOP)   ? poi.HasAttribute(POI_BARDEVELOP) : false) ||
     (sysFlags<PoiAttributeType>::IsSet(attrib,POI_SECTCHANGE_RIGHTFACE)      ? poi.HasAttribute(POI_SECTCHANGE_RIGHTFACE) : false) ||
     (sysFlags<PoiAttributeType>::IsSet(attrib,POI_SECTCHANGE_LEFTFACE)      ? poi.HasAttribute(POI_SECTCHANGE_LEFTFACE) : false) ||
     (sysFlags<PoiAttributeType>::IsSet(attrib,POI_SECTCHANGE_TRANSITION)      ? poi.HasAttribute(POI_SECTCHANGE_TRANSITION) : false) ||
     (sysFlags<PoiAttributeType>::IsSet(attrib,POI_FACEOFSUPPORT)   ? poi.HasAttribute(POI_FACEOFSUPPORT) : false) ||
     (sysFlags<PoiAttributeType>::IsSet(attrib,POI_INTERMEDIATE_PIER) ? poi.HasAttribute(POI_INTERMEDIATE_PIER) : false) ||
     (sysFlags<PoiAttributeType>::IsSet(attrib,POI_PIER)   ? poi.HasAttribute(POI_PIER) : false) ||
+    (sysFlags<PoiAttributeType>::IsSet(attrib,POI_STIRRUP_ZONE)   ? poi.HasAttribute(POI_STIRRUP_ZONE) : false) ||
     (sysFlags<PoiAttributeType>::IsSet(attrib,POI_TEMPSUPPORT)   ? poi.HasAttribute(POI_TEMPSUPPORT) : false) ||
     (sysFlags<PoiAttributeType>::IsSet(attrib,POI_CLOSURE)   ? poi.HasAttribute(POI_CLOSURE) : false)
-   )
+    )
    {
       // This poi matches the selection criteria. Add it to the vector
       return true;

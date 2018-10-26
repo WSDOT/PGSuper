@@ -22,7 +22,7 @@
 
 #include "stdafx.h"
 #include <Reporting\PGSuperTitlePageBuilder.h>
-#include <Reporting\ReportStyleHolder.h>
+#include <PgsExt\ReportStyleHolder.h>
 #include <Reporting\SpanGirderReportSpecification.h>
 #include <Reporting\LibraryUsageParagraph.h>
 #include <Reporting\GirderSeedDataComparisonParagraph.h>
@@ -322,6 +322,9 @@ rptChapter* CPGSuperTitlePageBuilder::Build(boost::shared_ptr<CReportSpecificati
          (*pTable)(row,0) << _T("PCS");
          (*pTable)(row++,1) << _T("Critical Section for Shear based on Permit (Strength II) Loads");
       }
+
+      (*pTable)(row,0) << _T("SZB");
+      (*pTable)(row++,1) << _T("Stirrup Zone Boundary");
 
       (*pTable)(row,0) << _T("H");
       (*pTable)(row++,1) << _T("H from end of girder or face of support");

@@ -83,8 +83,9 @@ public:
    // locations match.
    bool RemovePointOfInterest(const pgsPointOfInterest& poi,bool bConsiderAttributes=true);
 
-   // Removes all POIs that are associated with the specified reference
-   void RemovePointsOfInterest(PoiAttributeType poiReference);
+   // Removes all POIs that have the target attribute, except if it contains the exception attribute
+   // in which case it is not removed
+   void RemovePointsOfInterest(PoiAttributeType targetAttribute,PoiAttributeType exceptionAttribute=0);
 
    //------------------------------------------------------------------------
    // Removes all points of interest.

@@ -42,8 +42,6 @@
 
 #include <MathEx.h>
 
-#include <BridgeModeling\GirderProfile.h>
-
 #include <WBFLGeometry.h>
 #include <WBFLSections.h>
 #include <WBFLGenericBridge.h>

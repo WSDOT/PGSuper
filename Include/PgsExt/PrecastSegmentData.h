@@ -115,7 +115,7 @@ public:
    // pier or a temporary support. The support pointer is not NULL, the other pointer is NULL
    void GetStartSupport(const CPierData2** ppPier,const CTemporarySupportData** ppTS) const;
    void GetEndSupport(const CPierData2** ppPier,const CTemporarySupportData** ppTS) const;
-   void GetStations(Float64& startStation,Float64& endStation) const;
+   void GetStations(Float64* pStartStation,Float64* pEndStation) const;
 
    void GetSpacing(const CGirderSpacing2** ppStartSpacing,const CGirderSpacing2** ppEndSpacing) const;
 

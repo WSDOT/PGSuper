@@ -56,7 +56,7 @@ public:
    pgsMomentRatingArtifact& operator = (const pgsMomentRatingArtifact& rOther);
 
    void SetPointOfInterest(const pgsPointOfInterest& poi);
-   const pgsPointOfInterest& GetGirderPointOfInterest() const;
+   const pgsPointOfInterest& GetPointOfInterest() const;
 
    void SetRatingType(pgsTypes::LoadRatingType ratingType);
    pgsTypes::LoadRatingType GetLoadRatingType() const;

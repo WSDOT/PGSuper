@@ -33,7 +33,7 @@
 #include <PgsExt\BridgeDescription2.h>
 #include <PgsExt\LoadFactors.h>
 
-#include <Reporting\ReportStyleHolder.h>
+#include <PgsExt\ReportStyleHolder.h>
 #include <Reporting\ReportNotes.h>
 #include <PgsExt\GirderLabel.h>
 

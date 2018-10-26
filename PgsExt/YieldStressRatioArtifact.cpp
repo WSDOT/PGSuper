@@ -63,7 +63,7 @@ void pgsYieldStressRatioArtifact::SetPointOfInterest(const pgsPointOfInterest& p
    m_POI = poi;
 }
 
-const pgsPointOfInterest& pgsYieldStressRatioArtifact::GetGirderPointOfInterest() const
+const pgsPointOfInterest& pgsYieldStressRatioArtifact::GetPointOfInterest() const
 {
    return m_POI;
 }

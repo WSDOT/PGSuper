@@ -56,6 +56,8 @@ CSplicedGirderData::CSplicedGirderData()
 
    m_ConditionFactor = 1.0;
    m_ConditionFactorType = pgsTypes::cfGood;
+
+   Resize(1); 
 }
 
 CSplicedGirderData::CSplicedGirderData(const CSplicedGirderData& rOther)
@@ -96,6 +98,8 @@ CSplicedGirderData::CSplicedGirderData(CGirderGroupData* pGirderGroup)
 
    m_ConditionFactor = 1.0;
    m_ConditionFactorType = pgsTypes::cfGood;
+
+   Resize(1);
 }  
 
 CSplicedGirderData::~CSplicedGirderData()
@@ -176,12 +180,14 @@ void CSplicedGirderData::Resize(SegmentIndexType nSegments)
          }
          m_Segments.push_back(pNewSegment);
       }
-
-      //UpdateLinks();
-      //UpdateSegments();
    }
 
-   ATLASSERT(m_Segments.size()-1 == m_Closures.size());
+#if defined _DEBUG
+   if ( 1 < m_Segments.size() )
+   {
+      ATLASSERT(m_Segments.size()-1 == m_Closures.size());
+   }
+#endif
 }
 
 CSplicedGirderData& CSplicedGirderData::operator= (const CSplicedGirderData& rOther)
@@ -236,8 +242,6 @@ bool CSplicedGirderData::operator!=(const CSplicedGirderData& rOther) const
 
 void CSplicedGirderData::MakeCopy(const CSplicedGirderData& rOther,bool bCopyDataOnly)
 {
-   ASSERT_VALID;
-
    Resize(rOther.GetSegmentCount());
 
    // must have the same number of segments and closure pours
@@ -551,6 +555,8 @@ void CSplicedGirderData::UpdateSegments()
    for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
    {
       CPrecastSegmentData* pSegment = m_Segments[segIdx];
+      pSegment->SetIndex(segIdx);
+
       CClosurePourData* pLeftClosure  = pSegment->GetLeftClosure();
       CClosurePourData* pRightClosure = pSegment->GetRightClosure();
 
@@ -562,7 +568,7 @@ void CSplicedGirderData::UpdateSegments()
          pRightClosure->ResolveReferences();
 
       Float64 segmentStartStation, segmentEndStation;
-      pSegment->GetStations(segmentStartStation,segmentEndStation);
+      pSegment->GetStations(&segmentStartStation,&segmentEndStation);
 
       // increment start span until the segment begins in the start span
       while ( !(IsLE(prevSpanStart,segmentStartStation) && (segmentStartStation < prevSpanEnd)) )
@@ -587,6 +593,8 @@ void CSplicedGirderData::UpdateSegments()
          pSegment->SetID(m_pGirderGroup->GetBridgeDescription()->GetNextSegmentID());
       }
    }
+
+   ASSERT_VALID;
 }
 
 void CSplicedGirderData::SetClosurePour(CollectionIndexType idx,const CClosurePourData& closure)
@@ -827,9 +835,13 @@ void CSplicedGirderData::RemoveSpan(SpanIndexType spanIdx,pgsTypes::RemovePierTy
 
 void CSplicedGirderData::JoinSegmentsAtTemporarySupport(SupportIndexType tsIdx)
 {
+   // Before
+   //
    //                      tsIdx
    // ======================||========================||==================
    //      Segment                   Segment                 Segment
+   //
+   // After
    //
    // ================================================||==================
    //                     Segment                              Segment
@@ -880,16 +892,17 @@ void CSplicedGirderData::JoinSegmentsAtTemporarySupport(SupportIndexType tsIdx)
    }
 
    UpdateLinks();
-   ASSERT_VALID;
 }
 
 void CSplicedGirderData::SplitSegmentsAtTemporarySupport(SupportIndexType tsIdx)
 {
    // Before
+   //
    // ================================================||==================
    //                     Segment                              Segment
    //
    // After
+   //
    // ======================||========================||==================
    //      Segment        tsIdx      Segment                   Segment
 
@@ -907,7 +920,7 @@ void CSplicedGirderData::SplitSegmentsAtTemporarySupport(SupportIndexType tsIdx)
       CClosurePourData* pRightClosure = pSegment->GetRightClosure();
 
       Float64 startStation, endStation;
-      pSegment->GetStations(startStation,endStation);
+      pSegment->GetStations(&startStation,&endStation);
 
       if ( startStation <= tsStation && tsStation < endStation )
       {
@@ -976,13 +989,19 @@ void CSplicedGirderData::SplitSegmentsAtTemporarySupport(SupportIndexType tsIdx)
 
 void CSplicedGirderData::JoinSegmentsAtPier(PierIndexType pierIdx)
 {
+   // Before
+   //
    //                     pierIdx
    // ======================||========================||==================
    //      Segment                   Segment                 Segment
    //
+   // After
+   //
    // ================================================||==================
    //                     Segment                              Segment
 
+   // Search for the closure pour that is being removed from the model.
+   // The segments on each side of this closure need to be joined.
    std::vector<CPrecastSegmentData*>::iterator segIter(m_Segments.begin());
    std::vector<CClosurePourData*>::iterator closureIter(m_Closures.begin());
    std::vector<CClosurePourData*>::iterator closureIterEnd(m_Closures.end());
@@ -993,7 +1012,7 @@ void CSplicedGirderData::JoinSegmentsAtPier(PierIndexType pierIdx)
       if ( pPier && pPier->GetIndex() == pierIdx )
       {
          // we found the closure that is going away
-         // take the right hand segment with it
+         // take the right hand segment with it (remove the right hand segment from the model)
 
          // this should be an interior pier and its connection should be one of the continuous segment types
          ATLASSERT(pPier->IsInteriorPier());
@@ -1013,6 +1032,9 @@ void CSplicedGirderData::JoinSegmentsAtPier(PierIndexType pierIdx)
          if ( pRightSegment->GetRightClosure() )
             pRightSegment->GetRightClosure()->SetLeftSegment(pLeftSegment);
 
+         // the left segment now ends in the span where the right segment used to end
+         pLeftSegment->SetSpan(pgsTypes::metEnd,pRightSegment->GetSpan(pgsTypes::metEnd));
+
          delete pClosure;
          m_Closures.erase(closureIter);
 
@@ -1029,13 +1051,16 @@ void CSplicedGirderData::JoinSegmentsAtPier(PierIndexType pierIdx)
    }
 
    UpdateLinks();
-   ASSERT_VALID;
 }
 
 void CSplicedGirderData::SplitSegmentsAtPier(PierIndexType pierIdx)
 {
+   // Before
+   //
    // ================================================||==================
    //                     Segment                              Segment
+   //
+   // After
    //
    // ======================||========================||==================
    //      Segment      pierIdx      Segment                   Segment
@@ -1044,6 +1069,7 @@ void CSplicedGirderData::SplitSegmentsAtPier(PierIndexType pierIdx)
    const CPierData2* pPier = m_pGirderGroup->GetBridgeDescription()->GetPier(pierIdx);
    Float64 pierStation = pPier->GetStation();
 
+   // Search for segment that needs to be split
    std::vector<CPrecastSegmentData*>::iterator segIter(m_Segments.begin());
    std::vector<CPrecastSegmentData*>::iterator segIterEnd(m_Segments.end());
    std::vector<CClosurePourData*>::iterator closureIter(m_Closures.begin());
@@ -1054,7 +1080,7 @@ void CSplicedGirderData::SplitSegmentsAtPier(PierIndexType pierIdx)
       CClosurePourData* pRightClosure = pSegment->GetRightClosure();
 
       Float64 startStation, endStation;
-      pSegment->GetStations(startStation,endStation);
+      pSegment->GetStations(&startStation,&endStation);
 
       if ( startStation <= pierStation && pierStation < endStation )
       {
@@ -1118,7 +1144,6 @@ void CSplicedGirderData::SplitSegmentsAtPier(PierIndexType pierIdx)
    }
 
    UpdateLinks();
-   ASSERT_VALID;
 }
 
 void CSplicedGirderData::MergeSegmentsLeft(CPrecastSegmentData* pLeftSegment,const CPrecastSegmentData* pRightSegment)
@@ -1169,6 +1194,7 @@ void CSplicedGirderData::MergeSegmentsLeft(CPrecastSegmentData* pLeftSegment,con
       {
          if ( leftVariation != rightVariation )
          {
+#pragma Reminder("UPDATE: need to complete this")
             ATLASSERT(false); // not supported... need to merge into a general variation
          }
          else
@@ -1194,6 +1220,7 @@ void CSplicedGirderData::MergeSegmentsLeft(CPrecastSegmentData* pLeftSegment,con
             }
             else
             {
+#pragma Reminder("UPDATE: need to complete this")
                ATLASSERT(false); // not supported... need to merge into a general variation
             }
          }
@@ -1204,6 +1231,7 @@ void CSplicedGirderData::MergeSegmentsLeft(CPrecastSegmentData* pLeftSegment,con
               (leftVariation == pgsTypes::svtParabolic && rightVariation != pgsTypes::svtDoubleParabolic)
             )
          {
+#pragma Reminder("UPDATE: need to complete this")
             ATLASSERT(false); // not supported... need to merge into a general variation
          }
          else
@@ -1219,6 +1247,7 @@ void CSplicedGirderData::MergeSegmentsLeft(CPrecastSegmentData* pLeftSegment,con
       }
       else
       {
+#pragma Reminder("UPDATE: need to complete this")
          ATLASSERT(false); // not supported... need to merge into a general variation
       }
    }
@@ -1230,6 +1259,7 @@ void CSplicedGirderData::MergeSegmentsLeft(CPrecastSegmentData* pLeftSegment,con
               (leftVariation == pgsTypes::svtDoubleParabolic && rightVariation != pgsTypes::svtParabolic)
             )
          {
+#pragma Reminder("UPDATE: need to complete this")
             ATLASSERT(false); // not supported... need to merge into a general variation
          }
          else
@@ -1241,12 +1271,24 @@ void CSplicedGirderData::MergeSegmentsLeft(CPrecastSegmentData* pLeftSegment,con
       }
       else
       {
+#pragma Reminder("UPDATE: need to complete this")
+         ATLASSERT(false); // not supported... need to merge into a general variation
+      }
+   }
+   else if ( leftVariation == pgsTypes::svtNone )
+   {
+      if ( rightVariation != pgsTypes::svtNone )
+      {
+         // NOTE: Not 100% sure if a variation of None can't be merged with a right
+         // segment with other variations... think this through
+#pragma Reminder("UPDATE: need to complete this")
          ATLASSERT(false); // not supported... need to merge into a general variation
       }
    }
    else
    {
-      ATLASSERT(false); // variation not supported
+#pragma Reminder("UPDATE: need to complete this") // this is general segment variation
+      ATLASSERT(false); // should not get here. unknown variation type
    }
 
    ASSERT_VALID;
@@ -1263,7 +1305,7 @@ void CSplicedGirderData::SplitSegmentRight(CPrecastSegmentData* pLeftSegment,CPr
    const CGirderGroupData* pGroup = pGirder->GetGirderGroup();
 
    Float64 startStation,endStation;
-   pLeftSegment->GetStations(startStation,endStation);
+   pLeftSegment->GetStations(&startStation,&endStation);
    Float64 leftSegmentLength = endStation - startStation;
 
    Float64 newLeftSegmentLength = (splitStation-startStation);
@@ -1446,6 +1488,7 @@ void CSplicedGirderData::SplitSegmentRight(CPrecastSegmentData* pLeftSegment,CPr
    }
    else
    {
+#pragma Reminder("UPDATE: need to complete this")
       // General
       ATLASSERT(false); // general variation isn't supported yet
    }
@@ -1548,6 +1591,18 @@ void CSplicedGirderData::AssertValid()
 
       // segment starts/end in same span or ends in a later span
       _ASSERT( pSegment->GetSpanIndex(pgsTypes::metStart) <= pSegment->GetSpanIndex(pgsTypes::metEnd) );
+
+      // start location of segment must be same as or after the start location of the segment's start span
+      Float64 segStartLoc, segEndLoc;
+      pSegment->GetStations(&segStartLoc,&segEndLoc);
+      if (pStartSpan)
+      {
+         _ASSERT( ::IsLE(pStartSpan->GetPrevPier()->GetStation(),segStartLoc) );
+      }
+      if ( pEndSpan )
+      {
+         _ASSERT( ::IsGE(segEndLoc,pEndSpan->GetNextPier()->GetStation()) );
+      }
 
       CClosurePourData* pLeftClosure  = pSegment->GetLeftClosure();
       CClosurePourData* pRightClosure = pSegment->GetRightClosure();

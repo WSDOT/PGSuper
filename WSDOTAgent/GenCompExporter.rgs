@@ -1,0 +1,26 @@
+HKCR
+{
+	WSDOTExtensions.GenCompExporter.1 = s 'GenComp Exporter'
+	{
+		CLSID = s '{16A21688-25B4-4118-ABF4-DD6D4983A2CD}'
+	}
+	WSDOTExtensions.GenCompExporter = s 'GenComp Exporter'
+	{
+		CLSID = s '{16A21688-25B4-4118-ABF4-DD6D4983A2CD}'
+		CurVer = s 'WSDOTExtensions.GenCompExporter.1'
+	}
+	NoRemove CLSID
+	{
+		ForceRemove {16A21688-25B4-4118-ABF4-DD6D4983A2CD} = s 'GenComp Exporter'
+		{
+			ProgID = s 'WSDOTExtensions.GenCompExporter.1'
+			VersionIndependentProgID = s 'WSDOTExtensions.GenCompExporter'
+			ForceRemove 'Programmable'
+			InprocServer32 = s '%MODULE%'
+			{
+				val ThreadingModel = s 'Apartment'
+			}
+			'TypeLib' = s '{3B6BF48B-C530-486E-918F-7705E13D6330}'
+		}
+	}
+}

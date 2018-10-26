@@ -30,7 +30,6 @@
 #include "UBeamDistFactorEngineer.h"
 #include "PsBeamLossEngineer.h"
 #include "StrandMoverImpl.h"
-#include <BridgeModeling\PrismaticGirderProfile.h>
 #include <GeomModel\PrecastBeam.h>
 #include <MathEx.h>
 #include <sstream>

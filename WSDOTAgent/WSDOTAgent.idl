@@ -29,6 +29,7 @@
 import "oaidl.idl";
 import "ocidl.idl";
 import "WBFLCore.idl";
+import "PGSuperIEPlugin.idl";  // for the Importer/Exporter plugins
 
 [
 	uuid(3B6BF48B-C530-486E-918F-7705E13D6330),
@@ -55,4 +56,28 @@ library PGSuper
    {
 		[default] interface IUnknown;
    };
+	[
+		uuid(E89CC143-53C9-43df-B1B4-E522769DE29B),
+		helpstring("CurvelExporter Class")
+	]
+	coclass CurvelExporter
+	{
+		[default] interface IPGSuperDataExporter;
+	};
+	[
+		uuid(E56801AC-B583-4e9e-A2D8-2AA64079BE15),
+		helpstring("CurvelImporter Class")
+	]
+	coclass CurvelImporter
+	{
+		[default] interface IPGSuperDataImporter;
+	};
+	[
+		uuid(16A21688-25B4-4118-ABF4-DD6D4983A2CD),
+		helpstring("GenCompeExporter Class")
+	]
+	coclass GenCompExporter
+	{
+		[default] interface IPGSuperDataExporter;
+	};
 };

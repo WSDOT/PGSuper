@@ -260,6 +260,7 @@ pgsHaulingAnalysisArtifact* pgsWsdotGirderHaulingChecker::DesignHauling(const CS
    std::auto_ptr<pgsWsdotHaulingAnalysisArtifact> artifact(new pgsWsdotHaulingAnalysisArtifact);
 
    HANDLINGCONFIG shipping_config;
+   shipping_config.bIgnoreGirderConfig = false;
    shipping_config.GdrConfig = config;
 
    while ( loc < maxOverhang )

@@ -267,7 +267,7 @@ void CLibraryEditorDoc::OnImport()
 
 	// ask user for file name
    CFileDialog  fildlg(TRUE,_T("pgs"),NULL,OFN_FILEMUSTEXIST|OFN_HIDEREADONLY,
-                   _T("PGSuper Project File (*.pgs)|*.pgs||"));
+                   _T("PGSuper Project File (*.pgs)|*.pgs|PGSplice Project File (*.spl)|*.spl||"));
    INT_PTR stf = fildlg.DoModal();
    if (stf==IDOK)
    {
@@ -313,10 +313,11 @@ void CLibraryEditorDoc::OnImport()
          }
 
          // advance the structured load pointer to the correct point for agent
-         hr = pStrLoad->BeginUnit(_T("PGSuper"));
-         if ( FAILED(hr) )
+         HRESULT hrPGSuper  = pStrLoad->BeginUnit(_T("PGSuper"));
+         HRESULT hrPGSplice = pStrLoad->BeginUnit(_T("PGSplice"));
+         if ( FAILED(hrPGSuper) && FAILED(hrPGSplice) )
          {
-            HandleOpenDocumentError( hr, rPath );
+            HandleOpenDocumentError( hrPGSuper, rPath );
             ASSERT(FALSE);
          }
 

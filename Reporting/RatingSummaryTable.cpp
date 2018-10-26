@@ -229,7 +229,7 @@ rptRcTable* CRatingSummaryTable::BuildByLimitState(IBroker* pBroker,const CGirde
             if ( pMomentArtifact )
             {
                (*table)(row,col+1) << scalar.SetValue(pMomentArtifact->GetLiveLoadFactor());
-               const pgsPointOfInterest& poi = pMomentArtifact->GetGirderPointOfInterest();
+               const pgsPointOfInterest& poi = pMomentArtifact->GetPointOfInterest();
                const CSegmentKey& segmentKey = poi.GetSegmentKey();
                Float64 end_size = pBridge->GetSegmentStartEndDistance(segmentKey);
                
@@ -254,7 +254,7 @@ rptRcTable* CRatingSummaryTable::BuildByLimitState(IBroker* pBroker,const CGirde
                {
                   (*table)(row,col+1) << scalar.SetValue(pMomentArtifact->GetLiveLoadFactor());
 
-                  const pgsPointOfInterest& poi = pMomentArtifact->GetGirderPointOfInterest();
+                  const pgsPointOfInterest& poi = pMomentArtifact->GetPointOfInterest();
                   const CSegmentKey& segmentKey = poi.GetSegmentKey();
                   Float64 end_size = pBridge->GetSegmentStartEndDistance(segmentKey);
                   
@@ -281,7 +281,7 @@ rptRcTable* CRatingSummaryTable::BuildByLimitState(IBroker* pBroker,const CGirde
                {
                   (*table)(row,col+1) << scalar.SetValue(pShearArtifact->GetLiveLoadFactor());
 
-                  const pgsPointOfInterest& poi = pShearArtifact->GetGirderPointOfInterest();
+                  const pgsPointOfInterest& poi = pShearArtifact->GetPointOfInterest();
                   const CSegmentKey& segmentKey = poi.GetSegmentKey();
                   Float64 end_size = pBridge->GetSegmentStartEndDistance(segmentKey);
 
@@ -316,7 +316,7 @@ rptRcTable* CRatingSummaryTable::BuildByLimitState(IBroker* pBroker,const CGirde
             if ( pMomentArtifact )
             {
                (*table)(row,col+1) << scalar.SetValue(pMomentArtifact->GetLiveLoadFactor());
-               const pgsPointOfInterest& poi = pMomentArtifact->GetGirderPointOfInterest();
+               const pgsPointOfInterest& poi = pMomentArtifact->GetPointOfInterest();
                const CSegmentKey& segmentKey = poi.GetSegmentKey();
                Float64 end_size = pBridge->GetSegmentStartEndDistance(segmentKey);
                
@@ -341,7 +341,7 @@ rptRcTable* CRatingSummaryTable::BuildByLimitState(IBroker* pBroker,const CGirde
                {
                   (*table)(row,col+1) << scalar.SetValue(pMomentArtifact->GetLiveLoadFactor());
 
-                  const pgsPointOfInterest& poi = pMomentArtifact->GetGirderPointOfInterest();
+                  const pgsPointOfInterest& poi = pMomentArtifact->GetPointOfInterest();
                   const CSegmentKey& segmentKey = poi.GetSegmentKey();
                   Float64 end_size = pBridge->GetSegmentStartEndDistance(segmentKey);
                   
@@ -368,7 +368,7 @@ rptRcTable* CRatingSummaryTable::BuildByLimitState(IBroker* pBroker,const CGirde
                {
                   (*table)(row,col+1) << scalar.SetValue(pShearArtifact->GetLiveLoadFactor());
 
-                  const pgsPointOfInterest& poi = pShearArtifact->GetGirderPointOfInterest();
+                  const pgsPointOfInterest& poi = pShearArtifact->GetPointOfInterest();
                   const CSegmentKey& segmentKey = poi.GetSegmentKey();
                   Float64 end_size = pBridge->GetSegmentStartEndDistance(segmentKey);
 
@@ -408,7 +408,7 @@ rptRcTable* CRatingSummaryTable::BuildByLimitState(IBroker* pBroker,const CGirde
                   {
                      (*table)(row,col+1) << scalar.SetValue(pYieldStressArtifact->GetLiveLoadFactor());
 
-                     pgsPointOfInterest poi = pYieldStressArtifact->GetGirderPointOfInterest();
+                     pgsPointOfInterest poi = pYieldStressArtifact->GetPointOfInterest();
                      const CSegmentKey& segmentKey = poi.GetSegmentKey();
                      Float64 end_size = pBridge->GetSegmentStartEndDistance(segmentKey);
                      
@@ -431,7 +431,7 @@ rptRcTable* CRatingSummaryTable::BuildByLimitState(IBroker* pBroker,const CGirde
                   {
                      (*table)(row,col+1) << scalar.SetValue(pYieldStressArtifact->GetLiveLoadFactor());
 
-                     pgsPointOfInterest poi = pYieldStressArtifact->GetGirderPointOfInterest();
+                     pgsPointOfInterest poi = pYieldStressArtifact->GetPointOfInterest();
                      const CSegmentKey& otherSegmentKey = poi.GetSegmentKey();
                      Float64 end_size = pBridge->GetSegmentStartEndDistance(otherSegmentKey);
                      
@@ -457,7 +457,7 @@ rptRcTable* CRatingSummaryTable::BuildByLimitState(IBroker* pBroker,const CGirde
                   {
                      (*table)(row,col+1) << scalar.SetValue(pYieldStressArtifact->GetLiveLoadFactor());
 
-                     const pgsPointOfInterest& poi = pYieldStressArtifact->GetGirderPointOfInterest();
+                     const pgsPointOfInterest& poi = pYieldStressArtifact->GetPointOfInterest();
                      const CSegmentKey& segmentKey = poi.GetSegmentKey();
                      Float64 end_size = pBridge->GetSegmentStartEndDistance(segmentKey);
                      
@@ -518,7 +518,7 @@ rptRcTable* CRatingSummaryTable::BuildByLimitState(IBroker* pBroker,const CGirde
                {
                   (*table)(row,col+1) << scalar.SetValue(pStressArtifact->GetLiveLoadFactor());
 
-                  const pgsPointOfInterest& poi = pStressArtifact->GetGirderPointOfInterest();
+                  const pgsPointOfInterest& poi = pStressArtifact->GetPointOfInterest();
                   const CSegmentKey& segmentKey = poi.GetSegmentKey();
                   Float64 end_size = pBridge->GetSegmentStartEndDistance(segmentKey);
                   
@@ -710,35 +710,35 @@ rptRcTable* CRatingSummaryTable::BuildByVehicle(IBroker* pBroker,const CGirderKe
          ATLASSERT(vehIdx == pPositiveMoment->GetVehicleIndex());
          gLL = pPositiveMoment->GetLiveLoadFactor();
          strControlling = _T("Positive Moment");
-         poi = pPositiveMoment->GetGirderPointOfInterest();
+         poi = pPositiveMoment->GetPointOfInterest();
       }
       else if ( pNegativeMoment )
       {
          ATLASSERT(vehIdx == pNegativeMoment->GetVehicleIndex());
          gLL = pNegativeMoment->GetLiveLoadFactor();
          strControlling = _T("Negative Moment");
-         poi = pNegativeMoment->GetGirderPointOfInterest();
+         poi = pNegativeMoment->GetPointOfInterest();
       }
       else if ( pShear )
       {
          ATLASSERT(vehIdx == pShear->GetVehicleIndex());
          gLL = pShear->GetLiveLoadFactor();
          strControlling = _T("Shear");
-         poi = pShear->GetGirderPointOfInterest();
+         poi = pShear->GetPointOfInterest();
       }
       else if ( pStress )
       {
          ATLASSERT(vehIdx == pStress->GetVehicleIndex());
          gLL = pStress->GetLiveLoadFactor();
          strControlling = _T("Stress");
-         poi = pStress->GetGirderPointOfInterest();
+         poi = pStress->GetPointOfInterest();
       }
       else if ( pYieldStressPositiveMoment )
       {
          ATLASSERT(vehIdx == pYieldStressPositiveMoment->GetVehicleIndex());
          gLL = pYieldStressPositiveMoment->GetLiveLoadFactor();
          strControlling = _T("Yield Stress Positive Moment");
-         poi = pYieldStressPositiveMoment->GetGirderPointOfInterest();
+         poi = pYieldStressPositiveMoment->GetPointOfInterest();
          bIsStressRatio = true;
       }
       else if ( pYieldStressNegativeMoment )
@@ -746,7 +746,7 @@ rptRcTable* CRatingSummaryTable::BuildByVehicle(IBroker* pBroker,const CGirderKe
          ATLASSERT(vehIdx == pYieldStressNegativeMoment->GetVehicleIndex());
          gLL = pYieldStressNegativeMoment->GetLiveLoadFactor();
          strControlling = _T("Yield Stress Negative Moment");
-         poi = pYieldStressNegativeMoment->GetGirderPointOfInterest();
+         poi = pYieldStressNegativeMoment->GetPointOfInterest();
          bIsStressRatio = true;
       }
       else

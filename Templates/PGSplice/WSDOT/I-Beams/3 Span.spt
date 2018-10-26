@@ -8145,7 +8145,7 @@
           <SystemFactorShear>1</SystemFactorShear>
           <ADTT>-1</ADTT>
           <IncludePedestrianLiveLoad>0</IncludePedestrianLiveLoad>
-          <DesignInventoryRating version="2">
+          <DesignInventoryRating version="3">
             <Enabled>-1</Enabled>
             <DC_StrengthI>1</DC_StrengthI>
             <DW_StrengthI>1</DW_StrengthI>
@@ -8162,7 +8162,7 @@
             <AllowableTensionCoefficient>498.89952749010001</AllowableTensionCoefficient>
             <RateForShear>-1</RateForShear>
           </DesignInventoryRating>
-          <DesignOperatingRating version="2">
+          <DesignOperatingRating version="3">
             <Enabled>-1</Enabled>
             <DC_StrengthI>1</DC_StrengthI>
             <DW_StrengthI>1</DW_StrengthI>
@@ -8179,7 +8179,7 @@
             <AllowableTensionCoefficient>498.89952749010001</AllowableTensionCoefficient>
             <RateForShear>-1</RateForShear>
           </DesignOperatingRating>
-          <LegalRoutineRating version="2">
+          <LegalRoutineRating version="3">
             <Enabled>-1</Enabled>
             <DC_StrengthI>1.25</DC_StrengthI>
             <DW_StrengthI>1.5</DW_StrengthI>
@@ -8198,7 +8198,7 @@
             <RateForStress>-1</RateForStress>
             <ExcludeLegalLoadLaneLoading>0</ExcludeLegalLoadLaneLoading>
           </LegalRoutineRating>
-          <LegalSpecialRating version="2">
+          <LegalSpecialRating version="3">
             <Enabled>-1</Enabled>
             <DC_StrengthI>1</DC_StrengthI>
             <DW_StrengthI>1</DW_StrengthI>
@@ -8216,7 +8216,7 @@
             <RateForShear>-1</RateForShear>
             <RateForStress>-1</RateForStress>
           </LegalSpecialRating>
-          <PermitRoutineRating version="2">
+          <PermitRoutineRating version="3">
             <Enabled>-1</Enabled>
             <DC_StrengthII>1</DC_StrengthII>
             <DW_StrengthII>-1</DW_StrengthII>
@@ -8234,7 +8234,7 @@
             <RateForShear>-1</RateForShear>
             <RateForStress>-1</RateForStress>
           </PermitRoutineRating>
-          <PermitSpecialRating version="2">
+          <PermitSpecialRating version="3">
             <Enabled>-1</Enabled>
             <DC_StrengthII>1.5</DC_StrengthII>
             <DW_StrengthII>-1</DW_StrengthII>

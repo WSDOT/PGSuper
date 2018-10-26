@@ -405,7 +405,7 @@ void CPGSpliceDoc::OnEditTemporarySupport()
          strChoices += strChoice;
       }
 
-      int result = AfxChoose(_T("Select Temporary Support"),_T("Select temporary support to edit"),strChoices,TRUE);
+      int result = AfxChoose(_T("Select Temporary Support"),_T("Select temporary support to edit"),strChoices,0,TRUE);
       if ( 0 <= result )
          tsID = pBridgeDesc->GetTemporarySupport(result)->GetID();
    }

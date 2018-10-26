@@ -27,7 +27,7 @@
 #include "PGSuperUnits.h"
 
 #include <Reporting\ReportNotes.h>
-#include <Reporting\ReportStyleHolder.h>
+#include <PgsExt\ReportStyleHolder.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <PgsExt\GirderArtifact.h>
 

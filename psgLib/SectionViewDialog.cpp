@@ -32,7 +32,6 @@
 
 #include <GeomModel\IShape.h>
 #include <GeomModel\Circle.h>
-#include <BridgeModeling\GirderProfile.h>
 
 #include <GeomModel\Polygon.h>
 

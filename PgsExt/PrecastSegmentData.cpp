@@ -226,21 +226,21 @@ void CPrecastSegmentData::GetEndSupport(const CPierData2** ppPier,const CTempora
 }
 
 
-void CPrecastSegmentData::GetStations(Float64& startStation,Float64& endStation) const
+void CPrecastSegmentData::GetStations(Float64* pStartStation,Float64* pEndStation) const
 {
    const CPierData2* pPier = NULL;
    const CTemporarySupportData* pTS = NULL;
    GetStartSupport(&pPier,&pTS);
    if ( pPier )
-      startStation = pPier->GetStation();
+      *pStartStation = pPier->GetStation();
    else
-      startStation = pTS->GetStation();
+      *pStartStation = pTS->GetStation();
 
    GetEndSupport(&pPier,&pTS);
    if ( pPier )
-      endStation = pPier->GetStation();
+      *pEndStation = pPier->GetStation();
    else
-      endStation = pTS->GetStation();
+      *pEndStation = pTS->GetStation();
 }
 
 void CPrecastSegmentData::GetSpacing(const CGirderSpacing2** ppStartSpacing,const CGirderSpacing2** ppEndSpacing) const
@@ -401,7 +401,7 @@ std::vector<const CTemporarySupportData*> CPrecastSegmentData::GetTemporarySuppo
 
    // get intermediate temporary supports
    Float64 startStation,endStation;
-   GetStations(startStation,endStation);
+   GetStations(&startStation,&endStation);
 
    const CSpanData2* pSpan = GetSpan(pgsTypes::metStart);
    const CSpanData2* pEndSpan = GetSpan(pgsTypes::metEnd);
@@ -1015,7 +1015,7 @@ void CPrecastSegmentData::AssertValid()
 
    // Make sure the segment is not "reversed"
    Float64 startStation, endStation;
-   GetStations(startStation,endStation);
+   GetStations(&startStation,&endStation);
    ATLASSERT( startStation < endStation );
 
 #pragma Reminder("UPDATE: validate segment geometry")
