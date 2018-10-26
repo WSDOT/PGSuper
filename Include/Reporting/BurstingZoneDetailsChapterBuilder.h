@@ -52,7 +52,7 @@ class REPORTINGCLASS CSplittingZoneDetailsChapterBuilder : public CPGSuperChapte
 {
 public:
    // GROUP: LIFECYCLE
-   CSplittingZoneDetailsChapterBuilder();
+   CSplittingZoneDetailsChapterBuilder(bool bSelect = true);
 
    // GROUP: OPERATORS
    // GROUP: OPERATIONS

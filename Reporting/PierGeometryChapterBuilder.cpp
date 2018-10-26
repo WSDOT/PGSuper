@@ -50,7 +50,8 @@ void pier_geometry(IBroker*pBroker,rptChapter* pChapter,IEAFDisplayUnits* pDispl
 ////////////////////////// PUBLIC     ///////////////////////////////////////
 
 //======================== LIFECYCLE  =======================================
-CPierGeometryChapterBuilder::CPierGeometryChapterBuilder()
+CPierGeometryChapterBuilder::CPierGeometryChapterBuilder(bool bSelect) :
+CPGSuperChapterBuilder(bSelect)
 {
 }
 

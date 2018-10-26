@@ -66,7 +66,7 @@ class CInputSummaryChapter : public CPGSuperChapterBuilder
 {
 public:
    // GROUP: LIFECYCLE
-   CInputSummaryChapter();
+   CInputSummaryChapter(bool bSelect = true);
 
    // GROUP: OPERATORS
    // GROUP: OPERATIONS

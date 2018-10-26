@@ -23,7 +23,7 @@
 // CatalogServerDlg.cpp : implementation file
 //
 
-#include "stdafx.h"
+#include "PGSuperAppPlugin\stdafx.h"
 #include "PGSuperAppPlugin\PGSuperApp.h"
 #include "CatalogServerDlg.h"
 #include "ServerDefinitionDlg.h"
@@ -70,6 +70,8 @@ END_MESSAGE_MAP()
 
 void CCatalogServerDlg::OnAdd() 
 {
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
    CServerDefinitionDlg dlg(m_Servers);
    if ( dlg.DoModal() == IDOK )
    {
@@ -100,6 +102,8 @@ void CCatalogServerDlg::OnDelete()
 
 void CCatalogServerDlg::OnEdit() 
 {
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
    CListBox* pLB = (CListBox*)GetDlgItem(IDC_SERVERS);
    int idx = pLB->GetCurSel();
    if ( idx == LB_ERR )

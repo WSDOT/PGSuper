@@ -23,7 +23,7 @@
 // LiveLoadSelectDlg.cpp : implementation file
 //
 
-#include "stdafx.h"
+#include "PGSuperAppPlugin\stdafx.h"
 #include "PGSuperAppPlugin\Resource.h"
 #include "PGSuperAppPlugin\PGSuperApp.h"
 #include "LiveLoadSelectDlg.h"
@@ -190,6 +190,10 @@ BOOL CLiveLoadSelectDlg::OnInitDialog()
          m_ctlPermitLL.SetTopIndex(idx);
       }
    }
+
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+   HICON hIcon = (HICON)LoadImage(AfxGetResourceHandle(),MAKEINTRESOURCE(IDI_LIVELOAD),IMAGE_ICON,0,0,LR_DEFAULTSIZE);
+   SetIcon(hIcon,FALSE);
 
 	return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE

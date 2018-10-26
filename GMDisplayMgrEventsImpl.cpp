@@ -23,7 +23,7 @@
 // GMDisplayMgrEventsImpl.cpp : implementation file
 //
 
-#include "stdafx.h"
+#include "PGSuperAppPlugin\stdafx.h"
 #include "resource.h"
 #include "PGSuperAppPlugin\PGSuperApp.h"
 #include "GMDisplayMgrEventsImpl.h"

@@ -201,7 +201,8 @@ void write_bar_spacing_table(IBroker* pBroker,
 ////////////////////////// PUBLIC     ///////////////////////////////////////
 
 //======================== LIFECYCLE  =======================================
-CShearCapacityDetailsChapterBuilder::CShearCapacityDetailsChapterBuilder(bool bDesign,bool bRating)
+CShearCapacityDetailsChapterBuilder::CShearCapacityDetailsChapterBuilder(bool bDesign,bool bRating,bool bSelect) :
+CPGSuperChapterBuilder(bSelect)
 {
    m_bDesign = bDesign;
    m_bRating = bRating;

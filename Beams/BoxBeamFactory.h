@@ -72,6 +72,10 @@ public:
    virtual Float64 GetBeamWidth(const IBeamFactory::Dimensions& dimensions,pgsTypes::MemberEndType endType);
    virtual void GetAllowableSpacingRange(const IBeamFactory::Dimensions& dimensions,pgsTypes::SupportedDeckType sdt, pgsTypes::SupportedBeamSpacing sbs, double* minSpacing, double* maxSpacing);
 
+protected:
+   virtual bool ExcludeExteriorBeamShearKeys() { return false; }
+   virtual bool UseOverallWidth() { return false; }
+
 private:
    void GetDimensions(const IBeamFactory::Dimensions& dimensions,
                                     double& H1, 

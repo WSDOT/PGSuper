@@ -534,7 +534,9 @@ void CBoxBeamDistFactorEngineer::ReportMoment(rptParagraph* pPara,BOXBEAM_LLDFDE
       }
       else
       {
-         (*pPara) << rptRcImage(strImagePath + "Skew Correction for Moment Type C.gif") << rptNewLine;
+         Float64 skew_delta_max = ::ConvertToSysUnits( 10.0, unitMeasure::Degree );
+         if ( fabs(lldf.skew1 - lldf.skew2) < skew_delta_max )
+            (*pPara) << rptRcImage(strImagePath + "Skew Correction for Moment Type C.gif") << rptNewLine;
       }
       (*pPara) << "Skew Correction Factor: = " << scalar.SetValue(gM1.SkewCorrectionFactor) << rptNewLine;
       (*pPara) << rptNewLine;
@@ -630,7 +632,9 @@ void CBoxBeamDistFactorEngineer::ReportMoment(rptParagraph* pPara,BOXBEAM_LLDFDE
       }
       else
       {
-         (*pPara) << rptRcImage(strImagePath + "Skew Correction for Moment Type C.gif") << rptNewLine;
+         Float64 skew_delta_max = ::ConvertToSysUnits( 10.0, unitMeasure::Degree );
+         if ( fabs(lldf.skew1 - lldf.skew2) < skew_delta_max )
+            (*pPara) << rptRcImage(strImagePath + "Skew Correction for Moment Type C.gif") << rptNewLine;
       }
       (*pPara) << "Skew Correction Factor: = " << scalar.SetValue(gM1.SkewCorrectionFactor) << rptNewLine;
       (*pPara) << rptNewLine;

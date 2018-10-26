@@ -23,7 +23,7 @@
 // AlignmentDescriptionDlg.cpp : implementation file
 //
 
-#include "stdafx.h"
+#include "PGSuperAppPlugin\stdafx.h"
 #include "resource.h"
 #include "AlignmentDescriptionDlg.h"
 #include "htmlhelp\HelpTopics.hh"

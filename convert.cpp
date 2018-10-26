@@ -22,7 +22,7 @@
 
 // Machine generated IDispatch wrapper class(es) created with ClassWizard
 
-#include "stdafx.h"
+#include "PGSuperAppPlugin\stdafx.h"
 #include "convert.h"
 
 #ifdef _DEBUG

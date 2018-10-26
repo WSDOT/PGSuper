@@ -20,7 +20,7 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-#include "stdafx.h"
+#include "PGSuperAppPlugin\stdafx.h"
 #include "PGSuperCatalogServer.h"
 #include "PGSuperAppPlugin\PGSuperApp.h"
 #include "PGSuperTemplateManager.h"

@@ -23,8 +23,9 @@
 // BridgeDescDlg.cpp : implementation file
 //
 
-#include "stdafx.h"
+#include "PGSuperAppPlugin\stdafx.h"
 #include "PGSuperAppPlugin\PGSuperApp.h"
+#include "PGSuperAppPlugin\Resource.h"
 #include "BridgeDescDlg.h"
 
 #ifdef _DEBUG
@@ -89,3 +90,15 @@ END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
 // CBridgeDescDlg message handlers
+BOOL CBridgeDescDlg::OnInitDialog()
+{
+	CPropertySheet::OnInitDialog();
+
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+   HICON hIcon = (HICON)LoadImage(AfxGetResourceHandle(),MAKEINTRESOURCE(IDI_EDIT_BRIDGE),IMAGE_ICON,0,0,LR_DEFAULTSIZE);
+   SetIcon(hIcon,FALSE);
+
+	
+	return TRUE;  // return TRUE unless you set the focus to a control
+	              // EXCEPTION: OCX Property Pages should return FALSE
+}

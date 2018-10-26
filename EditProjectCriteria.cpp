@@ -20,7 +20,7 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-#include "StdAfx.h"
+#include "PGSuperAppPlugin\stdafx.h"
 #include "EditProjectCriteria.h"
 #include <IFace\Project.h> // for IEvents and ISpecification
 #include "PGSuperDoc.h" // for EAFGetBroker

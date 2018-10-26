@@ -46,7 +46,8 @@ CLASS
    CLoadRatingChapterBuilder
 ****************************************************************************/
 
-CLoadRatingChapterBuilder::CLoadRatingChapterBuilder()
+CLoadRatingChapterBuilder::CLoadRatingChapterBuilder(bool bSelect) :
+CPGSuperChapterBuilder(bSelect)
 {
 }
 
@@ -92,13 +93,17 @@ rptChapter* CLoadRatingChapterBuilder::Build(CReportSpecification* pRptSpec,Uint
       if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) )
       {
          (*pPara) << CRatingSummaryTable().BuildByVehicle(pBroker,gdrLineIdx, pgsTypes::lrLegal_Routine) << rptNewLine;
-         (*pPara) << CRatingSummaryTable().BuildLoadPosting(pBroker,gdrLineIdx, pgsTypes::lrLegal_Routine) << rptNewLine;
+         rptRcTable* pTable = CRatingSummaryTable().BuildLoadPosting(pBroker,gdrLineIdx, pgsTypes::lrLegal_Routine);
+         if ( pTable )
+            (*pPara) << pTable << rptNewLine;
       }
 
       if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
       {
          (*pPara) << CRatingSummaryTable().BuildByVehicle(pBroker,gdrLineIdx, pgsTypes::lrLegal_Special) << rptNewLine;
-         (*pPara) << CRatingSummaryTable().BuildLoadPosting(pBroker,gdrLineIdx, pgsTypes::lrLegal_Special) << rptNewLine;
+         rptRcTable* pTable = CRatingSummaryTable().BuildLoadPosting(pBroker,gdrLineIdx, pgsTypes::lrLegal_Special);
+         if ( pTable )
+            (*pPara) << pTable << rptNewLine;
       }
    }
 

@@ -15,6 +15,7 @@ public:
 
    CString GetVersion(bool bIncludeBuildNumber) const;
 
+   afx_msg void OnHelp();
 
 	DECLARE_MESSAGE_MAP()
 };

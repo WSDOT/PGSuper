@@ -422,11 +422,17 @@ rptParagraph* CTexasIBNSParagraphBuilder::Build(IBroker*	pBroker, SpanIndexType	
    {
       (*p_table)(++row,0) << "Live Load Distribution Factor for Moment";
       (*p_table)(row  ,1) << df.SetValue(pDistFact->GetMomentDistFactor(span,girder,pgsTypes::StrengthI));
+
+      (*p_table)(++row,0) << "Live Load Distribution Factor for Shear";
+      (*p_table)(row  ,1) << df.SetValue(pDistFact->GetShearDistFactor(span,girder,pgsTypes::StrengthI));
    }
    else
    {
       (*p_table)(++row,0) << "Live Load Distribution Factor for Moment (Strength and Service Limit States)";
       (*p_table)(row  ,1) << df.SetValue(pDistFact->GetMomentDistFactor(span,girder,pgsTypes::StrengthI));
+
+      (*p_table)(++row,0) << "Live Load Distribution Factor for Shear (Strength and Service Limit States)";
+      (*p_table)(row  ,1) << df.SetValue(pDistFact->GetShearDistFactor(span,girder,pgsTypes::StrengthI));
 
       (*p_table)(++row,0) << "Live Load Distribution Factor for Moment (Fatigue Limit States)";
       (*p_table)(row  ,1) << df.SetValue(pDistFact->GetMomentDistFactor(span,girder,pgsTypes::FatigueI));

@@ -41,7 +41,8 @@ CLASS
 ////////////////////////// PUBLIC     ///////////////////////////////////////
 
 //======================== LIFECYCLE  =======================================
-CLossesChapterBuilder::CLossesChapterBuilder()
+CLossesChapterBuilder::CLossesChapterBuilder(bool bSelect) :
+CPGSuperChapterBuilder(bSelect)
 {
 }
 

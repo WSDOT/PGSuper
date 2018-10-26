@@ -84,8 +84,8 @@ public:
 // IEAFCommandCallback
 public:
    virtual BOOL OnCommandMessage(UINT nID,int nCode,void* pExtra,AFX_CMDHANDLERINFO* pHandlerInfo);
-   virtual void GetStatusBarMessageString(UINT nID, CString& rMessage) const;
-   virtual void GetToolTipMessageString(UINT nID, CString& rMessage) const;
+   virtual BOOL GetStatusBarMessageString(UINT nID, CString& rMessage) const;
+   virtual BOOL GetToolTipMessageString(UINT nID, CString& rMessage) const;
 };
 
 OBJECT_ENTRY_AUTO(__uuidof(PGSuperProjectImporterAppPlugin), CPGSuperProjectImporterAppPlugin)

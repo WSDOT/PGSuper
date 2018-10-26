@@ -50,7 +50,7 @@ class CTexasStressChecksChapterBuilder : public CPGSuperChapterBuilder
 {
 public:
    // GROUP: LIFECYCLE
-   CTexasStressChecksChapterBuilder();
+   CTexasStressChecksChapterBuilder(bool bSelect = true);
 
    // GROUP: OPERATORS
    // GROUP: OPERATIONS

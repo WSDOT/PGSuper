@@ -65,7 +65,8 @@ void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker,SpanIndexType s
 void lifting(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType girder,IEAFDisplayUnits* pDisplayUnits);
 void hauling(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType girder,IEAFDisplayUnits* pDisplayUnits);
 
-COutputSummaryChapter::COutputSummaryChapter()
+COutputSummaryChapter::COutputSummaryChapter(bool bSelect) :
+CPGSuperChapterBuilder(bSelect)
 {
 }
 

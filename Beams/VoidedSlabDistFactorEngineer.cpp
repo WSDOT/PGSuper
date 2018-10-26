@@ -811,7 +811,9 @@ void CVoidedSlabDistFactorEngineer::ReportMoment(rptParagraph* pPara,VOIDEDSLAB_
       (*pPara) << Bold("Skew Correction") << rptNewLine;
       if(lldf.Method != LLDF_TXDOT)
       {
-         (*pPara) << rptRcImage(strImagePath + "Skew Correction for Moment Type C.gif") << rptNewLine;
+         Float64 skew_delta_max = ::ConvertToSysUnits( 10.0, unitMeasure::Degree );
+         if ( fabs(lldf.skew1 - lldf.skew2) < skew_delta_max )
+            (*pPara) << rptRcImage(strImagePath + "Skew Correction for Moment Type C.gif") << rptNewLine;
       }
 
       (*pPara) << "Skew Correction Factor: = " << scalar.SetValue(gM1.SkewCorrectionFactor) << rptNewLine;
@@ -932,7 +934,9 @@ void CVoidedSlabDistFactorEngineer::ReportMoment(rptParagraph* pPara,VOIDEDSLAB_
       (*pPara) << Bold("Skew Correction") << rptNewLine;
       if(lldf.Method != LLDF_TXDOT)
       {
-         (*pPara) << rptRcImage(strImagePath + "Skew Correction for Moment Type C.gif") << rptNewLine;
+         Float64 skew_delta_max = ::ConvertToSysUnits( 10.0, unitMeasure::Degree );
+         if ( fabs(lldf.skew1 - lldf.skew2) < skew_delta_max )
+            (*pPara) << rptRcImage(strImagePath + "Skew Correction for Moment Type C.gif") << rptNewLine;
       }
 
       (*pPara) << "Skew Correction Factor: = " << scalar.SetValue(gM1.SkewCorrectionFactor) << rptNewLine;

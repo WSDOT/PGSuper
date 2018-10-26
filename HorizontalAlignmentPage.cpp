@@ -23,7 +23,7 @@
 // HorizontalAlignmentPage.cpp : implementation file
 //
 
-#include "stdafx.h"
+#include "PGSuperAppPlugin\stdafx.h"
 #include "PGSuperAppPlugin\PGSuperApp.h"
 #include "HorizontalAlignmentPage.h"
 #include "AlignmentDescriptionDlg.h"

@@ -23,7 +23,7 @@
 // PierGirderSpacingPage.cpp : implementation file
 //
 
-#include "stdafx.h"
+#include "PGSuperAppPlugin\stdafx.h"
 #include "resource.h"
 #include "PGSuperDoc.h"
 #include "PierGirderSpacingPage.h"
@@ -923,6 +923,8 @@ void CPierGirderSpacingPage::ToggleGirderSpacingType()
 
 LRESULT CPierGirderSpacingPage::OnChangeSameGirderSpacing(WPARAM wParam,LPARAM lParam)
 {
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
    // changing from uniform to general, or general to uniform spacing
    pgsTypes::SupportedBeamSpacing oldGirderSpacingType = m_GirderSpacingType;
 

@@ -54,7 +54,7 @@ class REPORTINGCLASS CCritSectionChapterBuilder : public CPGSuperChapterBuilder
 {
 public:
    // GROUP: LIFECYCLE
-   CCritSectionChapterBuilder(bool bDesign,bool bRating);
+   CCritSectionChapterBuilder(bool bDesign,bool bRating,bool bSelect = true);
 
    // GROUP: OPERATORS
    // GROUP: OPERATIONS

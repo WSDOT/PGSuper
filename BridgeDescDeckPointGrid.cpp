@@ -23,7 +23,7 @@
 // BridgeDescDeckPointGrid.cpp : implementation file
 //
 
-#include "stdafx.h"
+#include "PGSuperAppPlugin\stdafx.h"
 #include "BridgeDescDeckPointGrid.h"
 #include "PGSuperDoc.h"
 #include "PGSuperUnits.h"

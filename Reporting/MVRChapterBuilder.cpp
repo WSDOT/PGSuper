@@ -67,7 +67,8 @@ CLASS
 ////////////////////////// PUBLIC     ///////////////////////////////////////
 
 //======================== LIFECYCLE  =======================================
-CMVRChapterBuilder::CMVRChapterBuilder(bool bDesign,bool bRating)
+CMVRChapterBuilder::CMVRChapterBuilder(bool bDesign,bool bRating,bool bSelect) :
+CPGSuperChapterBuilder(bSelect)
 {
    m_bDesign = bDesign;
    m_bRating = bRating;
@@ -233,6 +234,8 @@ rptChapter* CMVRChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 leve
       *p << "D1 = LRFD Design truck without lane load"<< rptNewLine;
       *p << "D2 = 0.25*(Design truck) + lane load"<< rptNewLine;
       *p << "D(Controlling) = Max(D1, D2)"<< rptNewLine;
+      *p << "EI = Bridge EI / Number of Lanes" << rptNewLine;
+      *p << "Live Load Distribution Factor = gM for Positive Moment" << rptNewLine;
       *p << rptNewLine;
    }
 

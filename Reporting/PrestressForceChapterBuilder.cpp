@@ -49,7 +49,8 @@ CLASS
 ////////////////////////// PUBLIC     ///////////////////////////////////////
 
 //======================== LIFECYCLE  =======================================
-CPrestressForceChapterBuilder::CPrestressForceChapterBuilder()
+CPrestressForceChapterBuilder::CPrestressForceChapterBuilder(bool bSelect) :
+CPGSuperChapterBuilder(bSelect)
 {
 }
 

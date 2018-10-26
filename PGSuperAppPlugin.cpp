@@ -20,7 +20,7 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-#include "stdafx.h"
+#include "PGSuperAppPlugin\stdafx.h"
 #include "PGSuperAppPlugin.h"
 #include "PGSuperCatCom.h"
 #include "resource.h"
@@ -73,7 +73,7 @@ void CPGSuperAppPlugin::ConfigurePlugins()
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
-   CPluginManagerDlg dlg("Manage Plugins and Extensions");
+   CPluginManagerDlg dlg("Manage PGSuper Plugins and Extensions");
    dlg.DoModal(); // this DoModal is correct... the dialog takes care of its own data
 }
 
@@ -127,7 +127,7 @@ void CPGSuperAppPlugin::IntegrateWithUI(BOOL bIntegrate)
       pFileMenu->InsertMenu(managePos+1,ID_CONFIGURE_PGSUPER,"Configure PGSuper...", this);
 
       // Append to the end of the Manage menu
-      pManageMenu->AppendMenu(ID_MANAGE_PLUGINS,"Manage PGSuper Plugins and Extensions...",this);
+      pManageMenu->AppendMenu(ID_MANAGE_PLUGINS,"PGSuper Plugins and Extensions...",this);
 
       // Alt+Ctrl+U
       pFrame->GetAcceleratorTable()->AddAccelKey(FALT | FCONTROL | FVIRTKEY, VK_U, ID_UPDATE_TEMPLATE,this);
@@ -147,7 +147,7 @@ CEAFDocTemplate* CPGSuperAppPlugin::CreateDocTemplate()
 
    CPGSuperDocTemplate* pTemplate = new CPGSuperDocTemplate(
 		IDR_BRIDGEMODELEDITOR,
-      NULL,
+      this,
 		RUNTIME_CLASS(CPGSuperDoc),
 		RUNTIME_CLASS(CBridgeModelViewChildFrame),
 		RUNTIME_CLASS(CBridgePlanView),
@@ -219,7 +219,7 @@ BOOL CPGSuperAppPlugin::OnCommandMessage(UINT nID,int nCode,void* pExtra,AFX_CMD
    return m_MyCmdTarget.OnCmdMsg(nID,nCode,pExtra,pHandlerInfo);
 }
 
-void CPGSuperAppPlugin::GetStatusBarMessageString(UINT nID, CString& rMessage) const
+BOOL CPGSuperAppPlugin::GetStatusBarMessageString(UINT nID, CString& rMessage) const
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
@@ -232,11 +232,13 @@ void CPGSuperAppPlugin::GetStatusBarMessageString(UINT nID, CString& rMessage) c
 	else
 	{
 		// not found
-		TRACE1("Warning: no message line prompt for ID %d.\n", nID);
+		TRACE1("Warning (CPGSuperAppPlugin): no message line prompt for ID %d.\n", nID);
 	}
+
+   return TRUE;
 }
 
-void CPGSuperAppPlugin::GetToolTipMessageString(UINT nID, CString& rMessage) const
+BOOL CPGSuperAppPlugin::GetToolTipMessageString(UINT nID, CString& rMessage) const
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
    CString string;
@@ -251,8 +253,10 @@ void CPGSuperAppPlugin::GetToolTipMessageString(UINT nID, CString& rMessage) con
 	else
 	{
 		// not found
-		TRACE1("Warning: no tool tip for ID %d.\n", nID);
+		TRACE1("Warning (CPGSuperAppPlugin): no tool tip for ID %d.\n", nID);
 	}
+
+   return TRUE;
 }
 
 void CPGSuperAppPlugin::UpdateTemplates()

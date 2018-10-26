@@ -60,7 +60,8 @@ CLASS
 ////////////////////////// PUBLIC     ///////////////////////////////////////
 
 //======================== LIFECYCLE  =======================================
-CTexasShearChapterBuilder::CTexasShearChapterBuilder()
+CTexasShearChapterBuilder::CTexasShearChapterBuilder(bool bSelect) :
+CPGSuperChapterBuilder(bSelect)
 {
 }
 

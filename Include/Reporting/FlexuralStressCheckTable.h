@@ -26,6 +26,7 @@
 #include <Reporting\ReportingExp.h>
 
 interface IEAFDisplayUnits;
+class pgsGirderArtifact;
 
 /*****************************************************************************
 CLASS 
@@ -72,7 +73,7 @@ public:
    // GROUP: OPERATIONS
 
    //------------------------------------------------------------------------
-   // Builds the stress table
+   // Builds the stress table and notes
    // NOTE: stress type is ignored for stages other than BSS3
    virtual void Build(rptChapter* pChapter,
                       IBroker* pBroker,SpanIndexType span,GirderIndexType girder,
@@ -80,6 +81,26 @@ public:
                       pgsTypes::Stage stage,
                       pgsTypes::LimitState ls,
                       pgsTypes::StressType stress=pgsTypes::Tension) const;
+
+   //------------------------------------------------------------------------
+   // Builds the notes above stress table
+   void BuildNotes(rptChapter* pChapter, const pgsGirderArtifact* gdrArtifact,
+                   IBroker* pBroker,SpanIndexType span,GirderIndexType girder,
+                   IEAFDisplayUnits* pDisplayUnits,
+                   pgsTypes::Stage stage,
+                   pgsTypes::LimitState ls,
+                   pgsTypes::StressType stress=pgsTypes::Tension) const;
+
+   //------------------------------------------------------------------------
+   // Builds the table only
+   void BuildTable(rptChapter* pChapter, const pgsGirderArtifact* gdrArtifact,
+                   IBroker* pBroker,SpanIndexType span,GirderIndexType girder,
+                   IEAFDisplayUnits* pDisplayUnits,
+                   pgsTypes::Stage stage,
+                   pgsTypes::LimitState ls,
+                   pgsTypes::StressType stress=pgsTypes::Tension) const;
+
+
    // GROUP: ACCESS
    // GROUP: INQUIRY
 

@@ -913,6 +913,8 @@ ROWCOL CGirderGlobalStrandGrid::GetRowsForEntries()
 
 bool CGirderGlobalStrandGrid::EditEntry(ROWCOL row, GlobalStrandGridEntry& entry, bool isNewEntry)
 {
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
    CEAFApp* pApp = EAFGetApp();
    const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
@@ -1016,6 +1018,8 @@ void CGirderGlobalStrandGrid::ReverseHarpedStrandOrder()
 
 void CGirderGlobalStrandGrid::GenerateStrandPositions()
 {
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
    CEAFApp* pApp = EAFGetApp();
    const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 

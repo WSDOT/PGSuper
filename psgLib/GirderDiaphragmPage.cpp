@@ -96,6 +96,8 @@ LRESULT CGirderDiaphragmPage::OnCommandHelp(WPARAM, LPARAM lParam)
 
 void CGirderDiaphragmPage::OnAdd()
 {
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
    CGirderMainSheet* pDad = (CGirderMainSheet*)GetParent();
 
    GirderLibraryEntry::DiaphragmLayoutRule rule; // new rule
@@ -113,6 +115,8 @@ void CGirderDiaphragmPage::OnAdd()
 
 void CGirderDiaphragmPage::OnEdit()
 {
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
    CGirderMainSheet* pDad = (CGirderMainSheet*)GetParent();
 
    CRowColArray rows;

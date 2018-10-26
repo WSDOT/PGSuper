@@ -20,7 +20,7 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-#include "StdAfx.h"
+#include "PGSuperAppPlugin\stdafx.h"
 #include "PGSuperDocProxyAgent.h"
 #include "PGSuperDoc.h"
 #include "PGSuperAppPlugin.h"
@@ -139,13 +139,9 @@ void CPGSuperDocProxyAgent::CreateToolBars()
    pToolBar->LoadToolBar(IDR_STDTOOLBAR,NULL); // don't use a command callback because these commands are handled by 
                                                // the standard MFC message routing
 
-   // Add a drop-down arrow to the Report button
-   // REF: http://www.codejock.com/support/articles/mfc/general/g_5.asp
-   pToolBar->SetExtendedStyle(TBSTYLE_EX_DRAWDDARROWS);
-   int idx = pToolBar->CommandToIndex(ID_VIEW_REPORTS,NULL);
-   DWORD dwStyle = pToolBar->GetButtonStyle(idx);
-   dwStyle |= BTNS_WHOLEDROPDOWN; //TBSTYLE_DROPDOWN;
-   pToolBar->SetButtonStyle(idx,dwStyle);
+   // Add a drop-down arrow to the Open and Report buttons
+   pToolBar->CreateDropDownButton(ID_FILE_OPEN,   NULL,BTNS_DROPDOWN);
+   pToolBar->CreateDropDownButton(ID_VIEW_REPORTS,NULL,BTNS_WHOLEDROPDOWN);
 
    m_LibToolBarID = pToolBars->CreateToolBar("Library");
    pToolBar = pToolBars->GetToolBar(m_LibToolBarID);
@@ -438,11 +434,12 @@ STDMETHODIMP CPGSuperDocProxyAgent::SetBroker(IBroker* pBroker)
 STDMETHODIMP CPGSuperDocProxyAgent::RegInterfaces()
 {
    CComQIPtr<IBrokerInitEx2> pBrokerInit(m_pBroker);
-   pBrokerInit->RegInterface( IID_IEditByUI,        this );
-   pBrokerInit->RegInterface( IID_ISelection,       this );
-   pBrokerInit->RegInterface( IID_IUIEvents,        this );
-   pBrokerInit->RegInterface( IID_IUpdateTemplates, this );
-   pBrokerInit->RegInterface( IID_IVersionInfo,     this );
+   pBrokerInit->RegInterface( IID_IEditByUI,         this );
+   pBrokerInit->RegInterface( IID_ISelection,        this );
+   pBrokerInit->RegInterface( IID_IUIEvents,         this );
+   pBrokerInit->RegInterface( IID_IUpdateTemplates,  this );
+   pBrokerInit->RegInterface( IID_IVersionInfo,      this );
+   pBrokerInit->RegInterface( IID_IRegisterViewEvents, this );
    return S_OK;
 }
 
@@ -555,12 +552,10 @@ HRESULT CPGSuperDocProxyAgent::OnGirderChanged(SpanIndexType span,GirderIndexTyp
    AFX_MANAGE_STATE(AfxGetAppModuleState());
    m_pPGSuperDoc->SetModifiedFlag();
 
-   CGirderHint* pHint = new CGirderHint;
-   pHint->lHint = lHint;
+   static CGirderHint hint;
+   hint.lHint = lHint;
 
-   FireEvent(NULL,HINT_GIRDERCHANGED,pHint);
-
-   delete pHint;
+   FireEvent(NULL,HINT_GIRDERCHANGED,&hint);
 
    return S_OK;
 }
@@ -909,4 +904,25 @@ CString CPGSuperDocProxyAgent::GetVersion(bool bIncludeBuildNumber)
    }
 
    return strVersion;
+}
+
+// IRegisterViewEvents
+Uint32 CPGSuperDocProxyAgent::RegisterBridgePlanViewCallback(IBridgePlanViewEventCallback* pCallback)
+{
+   return m_pPGSuperDoc->RegisterBridgePlanViewCallback(pCallback);
+}
+
+Uint32 CPGSuperDocProxyAgent::RegisterBridgeSectionViewCallback(IBridgeSectionViewEventCallback* pCallback)
+{
+   return m_pPGSuperDoc->RegisterBridgeSectionViewCallback(pCallback);
+}
+
+Uint32 CPGSuperDocProxyAgent::RegisterGirderElevationViewCallback(IGirderElevationViewEventCallback* pCallback)
+{
+   return m_pPGSuperDoc->RegisterGirderElevationViewCallback(pCallback);
+}
+
+Uint32 CPGSuperDocProxyAgent::RegisterGirderSectionViewCallback(IGirderSectionViewEventCallback* pCallback)
+{
+   return m_pPGSuperDoc->RegisterGirderSectionViewCallback(pCallback);
 }

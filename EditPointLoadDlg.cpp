@@ -22,7 +22,7 @@
 // EditPointLoadDlg.cpp : implementation file
 //
 
-#include "stdafx.h"
+#include "PGSuperAppPlugin\stdafx.h"
 #include "PGSuperAppPlugin\PGSuperApp.h"
 #include "EditPointLoadDlg.h"
 #include <IFace\Bridge.h>
@@ -148,7 +148,7 @@ BEGIN_MESSAGE_MAP(CEditPointLoadDlg, CDialog)
 	ON_CBN_SELCHANGE(IDC_LOADCASE, OnEditchangeLoadcase)
 	ON_CBN_SELCHANGE(IDC_SPANS, OnEditchangeSpans)
 	ON_CBN_SELCHANGE(IDC_GIRDERS, OnEditchangeGirders)
-	ON_BN_CLICKED(ID_HELP, OnHelp)
+	ON_COMMAND(ID_HELP, OnHelp)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -253,7 +253,11 @@ BOOL CEditPointLoadDlg::OnInitDialog()
    UpdateStageLoadCase();
    UpdateSpanLength();
 
-	return TRUE;  // return TRUE unless you set the focus to a control
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+   HICON hIcon = (HICON)LoadImage(AfxGetResourceHandle(),MAKEINTRESOURCE(IDI_POINT_LOAD),IMAGE_ICON,0,0,LR_DEFAULTSIZE);
+   SetIcon(hIcon,FALSE);
+
+   return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE
 }
 

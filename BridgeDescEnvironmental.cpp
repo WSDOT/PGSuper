@@ -23,7 +23,7 @@
 // BridgeDescEnvironmental.cpp : implementation file
 //
 
-#include "stdafx.h"
+#include "PGSuperAppPlugin\stdafx.h"
 #include "PGSuperAppPlugin\PGSuperApp.h"
 #include "BridgeDescEnvironmental.h"
 #include "BridgeDescDlg.h"

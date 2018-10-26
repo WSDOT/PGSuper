@@ -23,8 +23,9 @@
 // RatingOptionsDlg.cpp : implementation file
 //
 
-#include "stdafx.h"
+#include "PGSuperAppPlugin\stdafx.h"
 #include "PGSuperAppPlugin\PGSuperApp.h"
+#include "PGSuperAppPlugin\Resource.h"
 #include "RatingOptionsDlg.h"
 #include <IFace\Project.h>
 #include <IFace\RatingSpecification.h>
@@ -81,4 +82,18 @@ void CRatingOptionsDlg::Init()
    AddPage( &m_DesignPage );
    AddPage( &m_LegalPage );
    AddPage( &m_PermitPage );
+}
+
+
+BOOL CRatingOptionsDlg::OnInitDialog()
+{
+	CPropertySheet::OnInitDialog();
+
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+   HICON hIcon = (HICON)LoadImage(AfxGetResourceHandle(),MAKEINTRESOURCE(IDI_RF),IMAGE_ICON,0,0,LR_DEFAULTSIZE);
+   SetIcon(hIcon,FALSE);
+
+	
+	return TRUE;  // return TRUE unless you set the focus to a control
+	              // EXCEPTION: OCX Property Pages should return FALSE
 }

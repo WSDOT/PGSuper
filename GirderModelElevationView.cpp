@@ -23,7 +23,7 @@
 // GirderModelElevationView.cpp : implementation file
 //
 
-#include "stdafx.h"
+#include "PGSuperAppPlugin\stdafx.h"
 #include "resource.h"
 #include "PGSuperAppPlugin\PGSuperApp.h"
 #include "PGSuperDoc.h"
@@ -196,8 +196,8 @@ BEGIN_MESSAGE_MAP(CGirderModelElevationView, CDisplayView)
 	ON_COMMAND(ID_EDIT_GIRDER, OnEditGirder)
 	ON_COMMAND(ID_VIEWSETTINGS, OnViewSettings)
 	ON_COMMAND(ID_EDIT_STIRRUPS, OnEditStirrups)
-	ON_COMMAND(ID_GEV_CTX_EDIT_LOAD, OnGevCtxEditLoad)
-	ON_COMMAND(ID_GEV_CTX_DELETE_LOAD, OnGevCtxDeleteLoad)
+	ON_COMMAND(ID_EDIT_LOAD, OnGevCtxEditLoad)
+	ON_COMMAND(ID_DELETE_LOAD, OnGevCtxDeleteLoad)
 //	ON_WM_CONTEXTMENU()
 	ON_WM_MOUSEMOVE()
 	ON_WM_LBUTTONDBLCLK()
@@ -535,27 +535,27 @@ void CGirderModelElevationView::OnDropped(COleDataObject* pDataObject,DROPEFFECT
 }
 
 
-void CGirderModelElevationView::OnLButtonDown(UINT nFlags, CPoint point) 
-{
-   CDisplayView::OnLButtonDown(nFlags, point);
-}
-
-void CGirderModelElevationView::OnLButtonUp(UINT nFlags, CPoint point) 
-{
-   if ( GetCapture() == this )
-   {
-      ReleaseCapture();
-
-/*	Commented out because OnMouseMove is doing real time updates
-      // Update the cut location
-      Float64 x,y;
-      m_PointMapper.DPtoWP(m_ToolPosition,0,&x,&y);
-      m_pFrame->CutAt(x);
-*/
-   }
-
-   CDisplayView::OnLButtonUp(nFlags, point);
-}
+//void CGirderModelElevationView::OnLButtonDown(UINT nFlags, CPoint point) 
+//{
+//   CDisplayView::OnLButtonDown(nFlags, point);
+//}
+//
+//void CGirderModelElevationView::OnLButtonUp(UINT nFlags, CPoint point) 
+//{
+//   if ( GetCapture() == this )
+//   {
+//      ReleaseCapture();
+//
+///*	Commented out because OnMouseMove is doing real time updates
+//      // Update the cut location
+//      Float64 x,y;
+//      m_PointMapper.DPtoWP(m_ToolPosition,0,&x,&y);
+//      m_pFrame->CutAt(x);
+//*/
+//   }
+//
+//   CDisplayView::OnLButtonUp(nFlags, point);
+//}
 
 
 void CGirderModelElevationView::OnLeftEnd() 
@@ -1550,7 +1550,7 @@ void CGirderModelElevationView::BuildLegendDisplayObjects(CPGSuperDoc* pDoc, IBr
 {
    if (casesExist[UserLoads::DC] || casesExist[UserLoads::DW] || casesExist[UserLoads::LL_IM])
    {
-      long nold;
+      long nold(-1);
       if (!m_Legend)
       {
          m_Legend.CoCreateInstance(CLSID_LegendDisplayObject);

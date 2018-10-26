@@ -51,7 +51,7 @@ class REPORTINGCLASS CSectPropChapterBuilder : public CPGSuperChapterBuilder
 {
 public:
    // GROUP: LIFECYCLE
-   CSectPropChapterBuilder();
+   CSectPropChapterBuilder(bool bSelect = true);
 
    // GROUP: OPERATORS
    // GROUP: OPERATIONS

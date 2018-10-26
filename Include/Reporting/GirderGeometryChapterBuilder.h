@@ -51,7 +51,7 @@ class REPORTINGCLASS CGirderGeometryChapterBuilder : public CPGSuperChapterBuild
 {
 public:
    // GROUP: LIFECYCLE
-   CGirderGeometryChapterBuilder();
+   CGirderGeometryChapterBuilder(bool bSelect = true);
 
    // GROUP: OPERATORS
    // GROUP: OPERATIONS

@@ -47,7 +47,8 @@ CLASS
 ////////////////////////// PUBLIC     ///////////////////////////////////////
 
 //======================== LIFECYCLE  =======================================
-CDeckElevationChapterBuilder::CDeckElevationChapterBuilder()
+CDeckElevationChapterBuilder::CDeckElevationChapterBuilder(bool bSelect) :
+CPGSuperChapterBuilder(bSelect)
 {
 }
 

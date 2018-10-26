@@ -221,18 +221,21 @@ public:
    // diaphragm layout rule definition
    enum DiaphragmType { dtExternal, dtInternal };
    enum ConstructionType { ctCastingYard, ctBridgeSite };
+   enum DiaphragmWeightMethod { dwmCompute, dwmInput };
    struct DiaphragmLayoutRule
    {
       std::string Description;
-      double MinSpan;
-      double MaxSpan;
-      double Height;
-      double Thickness;
+      Float64 Weight;
+      DiaphragmWeightMethod Method;
+      Float64 MinSpan;
+      Float64 MaxSpan;
+      Float64 Height;
+      Float64 Thickness;
       DiaphragmType Type;
       ConstructionType Construction;
       MeasurementType MeasureType;
       MeasurementLocation MeasureLocation;
-      double Location;
+      Float64 Location;
 
       DiaphragmLayoutRule() :
       Description("New Rule")
@@ -246,20 +249,54 @@ public:
          MeasureType = mtFractionOfSpanLength;
          MeasureLocation = mlBearing;
          Location = 0.5;
+         Weight = 0;
+         Method = dwmCompute;
       };
 
       bool operator==(const DiaphragmLayoutRule& rOther) const
       {
-         return Description == rOther.Description &&
-                ::IsEqual(MinSpan,rOther.MinSpan) &&
-                ::IsEqual(MaxSpan,rOther.MaxSpan) &&
-                ::IsEqual(Height,rOther.Height) &&
-                ::IsEqual(Thickness,rOther.Thickness) &&
-                Type == rOther.Type &&
-                Construction == rOther.Construction &&
-                MeasureType == rOther.MeasureType &&
-                MeasureLocation == rOther.MeasureLocation &&
-                ::IsEqual(Location,rOther.Location);
+         if ( Description != rOther.Description )
+            return false;
+
+         if ( !::IsEqual(MinSpan,rOther.MinSpan) )
+            return false;
+
+         if ( !::IsEqual(MaxSpan,rOther.MaxSpan) )
+            return false;
+
+         if ( Type != rOther.Type )
+            return false;
+
+         if ( Construction != rOther.Construction )
+            return false;
+
+         if ( MeasureType != rOther.MeasureType )
+            return false;
+
+         if ( MeasureLocation != rOther.MeasureLocation )
+            return false;
+
+         if ( !::IsEqual(Location,rOther.Location) )
+            return false;
+
+         if ( Method != rOther.Method )
+            return false;
+
+         if ( Method == dwmCompute )
+         {
+            if ( !::IsEqual(Height,rOther.Height) )
+               return false;
+
+            if ( !::IsEqual(Thickness,rOther.Thickness) )
+               return false;
+         }
+         else
+         {
+            if ( !::IsEqual(Weight,rOther.Weight) )
+               return false;
+         }
+
+         return true;
       }
    };
    typedef std::vector<DiaphragmLayoutRule> DiaphragmLayoutRules;
@@ -362,6 +399,9 @@ public:
    double GetDimension(const std::string& name) const;
    void SetDimension(const std::string& name,double value,bool bAdjustStrands);
 
+   //------------------------------------------------------------------------
+   // Remove all strands
+   void ClearAllStrands();
 
    //------------------------------------------------------------------------
    // Get number of Coordinates for Straight strands 
@@ -369,12 +409,13 @@ public:
    StrandIndexType GetNumStraightStrandCoordinates() const;
 
    //------------------------------------------------------------------------
-   // Get locations for Straight strands
+   // Locations for Straight strands
    // Note that if the X location is greater than zero at either location,
    // two strands are located at +/- X. 
    // If X is zero at both locations, only one strand is located.
    // Y is measured from the bottom of the girder
    void GetStraightStrandCoordinates(StrandIndexType ssIndex, Float64* Xstart, Float64* Ystart, Float64* Xend, Float64* Yend, bool* canDebond) const;
+   StrandIndexType AddStraightStrandCoordinates(Float64 Xstart, Float64 Ystart, Float64 Xend, Float64 Yend, bool canDebond);
 
    //------------------------------------------------------------------------
    // Returns the maximum number of straight strands that can be used
@@ -399,6 +440,7 @@ public:
    // If X is zero at both locations, only one strand is located.
    // Y is measured from the bottom of the girder
    void GetHarpedStrandCoordinates(StrandIndexType hsIndex, Float64* Xstart,Float64* Ystart, Float64* Xhp, Float64* Yhp,Float64* Xend, Float64* Yend) const;
+   StrandIndexType AddHarpedStrandCoordinates(Float64 Xstart,Float64 Ystart, Float64 Xhp, Float64 Yhp,Float64 Xend, Float64 Yend);
 
    //------------------------------------------------------------------------
    // Returns the maximum number of harped strands that can be used
@@ -413,6 +455,7 @@ public:
    // If X is zero at both locations, only one strand is located.
    // Y is measured from the bottom of the girder
    void GetTemporaryStrandCoordinates(StrandIndexType ssIndex, Float64* Xstart, Float64* Ystart, Float64* Xend, Float64* Yend) const;
+   StrandIndexType AddTemporaryStrandCoordinates(Float64 Xstart, Float64 Ystart, Float64 Xend, Float64 Yend);
 
    //------------------------------------------------------------------------
    // Returns the maximum number of Temporary strands that can be used
@@ -431,6 +474,7 @@ public:
    // This is the strand type and the local index in the appropriate collection where
    // the strand can be found
    void GetGlobalStrandAtFill(StrandIndexType index, psStrandType* type, StrandIndexType* localIndex) const;
+   StrandIndexType AddGlobalStrandAtFill(psStrandType type,  StrandIndexType localIndex);
 
    //------------------------------------------------------------------------
    // Compute the number of straight and number of harped strands required for 
@@ -746,7 +790,7 @@ private:
       bool operator==(const GlobalStrand& rOther) const
       {return m_LocalSortOrder==rOther.m_LocalSortOrder && m_StrandType==rOther.m_StrandType;} 
 
-      Uint16       m_LocalSortOrder;
+      StrandIndexType m_LocalSortOrder;
       psStrandType m_StrandType;
    };
 

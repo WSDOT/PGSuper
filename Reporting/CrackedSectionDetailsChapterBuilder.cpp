@@ -54,7 +54,8 @@ void write_cracked_section_table(IBroker* pBroker,
                              rptChapter* pChapter,
                              bool bIncludeNegMoment);
 
-CCrackedSectionDetailsChapterBuilder::CCrackedSectionDetailsChapterBuilder()
+CCrackedSectionDetailsChapterBuilder::CCrackedSectionDetailsChapterBuilder(bool bSelect) :
+CPGSuperChapterBuilder(bSelect)
 {
 }
 

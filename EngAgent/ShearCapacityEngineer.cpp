@@ -420,6 +420,7 @@ bool pgsShearCapacityEngineer::GetGeneralInformation(pgsTypes::LimitState ls, pg
    double Mu = max(fabs(Mu_max),fabs(Mu_min));
 
    pscd->Mu = Mu;
+   pscd->RealMu = Mu;
 
    // Determine if the tension side is on the top half or bottom half of the girder
    // The flexural tension side is on the bottom when the maximum (positive) bending moment
@@ -547,11 +548,13 @@ bool pgsShearCapacityEngineer::GetInformation(pgsTypes::LimitState ls, pgsTypes:
       if ( Mu < MuMin )
       {
          pscd->Mu = MuSign*MuMin;
+         pscd->RealMu = MuSign*Mu;
          pscd->MuLimitUsed = true;
       }
       else
       {
          pscd->Mu = MuSign*Mu;
+         pscd->RealMu = MuSign*Mu;
          pscd->MuLimitUsed = false;
       }
    }
@@ -635,11 +638,13 @@ bool pgsShearCapacityEngineer::GetInformation(pgsTypes::LimitState ls, pgsTypes:
       if ( Mu < MuMin )
       {
          pscd->Mu = MuSign*MuMin;
+         pscd->RealMu = MuSign*Mu;
          pscd->MuLimitUsed = true;
       }
       else
       {
          pscd->Mu = MuSign*Mu;
+         pscd->RealMu = MuSign*Mu;
          pscd->MuLimitUsed = false;
       }
    }

@@ -43,6 +43,7 @@ IMPLEMENT_DYNAMIC(CMainFrame, CEAFMainFrame)
 BEGIN_MESSAGE_MAP(CMainFrame, CEAFMainFrame)
    //{{AFX_MSG_MAP(CMainFrame)
    ON_WM_CREATE()
+   //ON_WM_SYSCOMMAND()
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -66,6 +67,30 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
    return 0;
 }
 
+//void CMainFrame::OnSysCommand(UINT nID, LPARAM lParam)
+//{
+//    if(nID == SC_CLOSE)
+//    {
+//       // Prompt user if he really wants to quit, but only if document is not dirty.
+//       // Otherwise, MFC will give it's version of  "do you want to save?"
+//       CDocument* pdocument = (CDocument*)GetDocument();
+//       if (pdocument!=NULL)
+//       {
+//          if (FALSE==pdocument->IsModified())
+//          {
+//             int st = AfxMessageBox("Do you really want to quit?",MB_YESNO);
+//             if (st!=IDYES)
+//             {
+//                return; // don't quit
+//             }
+//          }
+//       }
+//    }
+//
+//    CEAFMainFrame::OnSysCommand(nID, lParam);
+//}
+
+
 /////////////////////////////////////////////////////////////////////////////
 // CMainFrame diagnostics
 
@@ -83,13 +108,3 @@ void CMainFrame::Dump(CDumpContext& dc) const
 
 /////////////////////////////////////////////////////////////////////////////
 // CMainFrame message handlers
-
-BOOL CMainFrame::PreCreateWindow(CREATESTRUCT& cs)
-{
-   if ( !CEAFMainFrame::PreCreateWindow(cs) )
-      return FALSE;
-
-   cs.style &= ~WS_VISIBLE;
-
-   return TRUE;
-}

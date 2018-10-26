@@ -23,7 +23,7 @@
 // BridgeDescRailingSystemPage.cpp : implementation file
 //
 
-#include "stdafx.h"
+#include "PGSuperAppPlugin\stdafx.h"
 #include "resource.h"
 #include "PGSuperDoc.h"
 #include "BridgeDescRailingSystemPage.h"
@@ -422,6 +422,8 @@ void CBridgeDescRailingSystemPage::OnRightInteriorBarrier()
 
 void CBridgeDescRailingSystemPage::OnLeftMoreProperties()
 {
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
    CConcreteDetailsDlg dlg;
 
    UpdateData(TRUE);
@@ -452,6 +454,8 @@ void CBridgeDescRailingSystemPage::OnLeftMoreProperties()
 
 void CBridgeDescRailingSystemPage::OnRightMoreProperties()
 {
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
    CConcreteDetailsDlg dlg;
 
    UpdateData(TRUE);

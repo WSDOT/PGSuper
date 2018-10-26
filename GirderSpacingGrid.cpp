@@ -23,7 +23,7 @@
 // GirderSpacingGrid.cpp : implementation file
 //
 
-#include "stdafx.h"
+#include "PGSuperAppPlugin\stdafx.h"
 #include "resource.h"
 #include "GirderSpacingGrid.h"
 

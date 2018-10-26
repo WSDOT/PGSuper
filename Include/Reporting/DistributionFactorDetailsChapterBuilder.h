@@ -53,7 +53,7 @@ class REPORTINGCLASS CDistributionFactorDetailsChapterBuilder : public CPGSuperC
 {
 public:
    // GROUP: LIFECYCLE
-   CDistributionFactorDetailsChapterBuilder();
+   CDistributionFactorDetailsChapterBuilder(bool bSelect = true);
 
    // GROUP: OPERATORS
    // GROUP: OPERATIONS

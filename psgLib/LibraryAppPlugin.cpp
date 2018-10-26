@@ -99,7 +99,7 @@ BOOL CLibraryAppPlugin::OnCommandMessage(UINT nID,int nCode,void* pExtra,AFX_CMD
    return m_MyCmdTarget.OnCmdMsg(nID,nCode,pExtra,pHandlerInfo);
 }
 
-void CLibraryAppPlugin::GetStatusBarMessageString(UINT nID, CString& rMessage) const
+BOOL CLibraryAppPlugin::GetStatusBarMessageString(UINT nID, CString& rMessage) const
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
@@ -114,9 +114,11 @@ void CLibraryAppPlugin::GetStatusBarMessageString(UINT nID, CString& rMessage) c
 		// not found
 		TRACE1("Warning: no message line prompt for ID %d.\n", nID);
 	}
+
+   return TRUE;
 }
 
-void CLibraryAppPlugin::GetToolTipMessageString(UINT nID, CString& rMessage) const
+BOOL CLibraryAppPlugin::GetToolTipMessageString(UINT nID, CString& rMessage) const
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
    CString string;
@@ -133,5 +135,7 @@ void CLibraryAppPlugin::GetToolTipMessageString(UINT nID, CString& rMessage) con
 		// not found
 		TRACE1("Warning: no tool tip for ID %d.\n", nID);
 	}
+
+   return TRUE;
 }
 

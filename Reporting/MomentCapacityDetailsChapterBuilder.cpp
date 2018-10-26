@@ -88,7 +88,8 @@ void write_over_reinforced_moment_data_table(IBroker* pBroker,
 ////////////////////////// PUBLIC     ///////////////////////////////////////
 
 //======================== LIFECYCLE  =======================================
-CMomentCapacityDetailsChapterBuilder::CMomentCapacityDetailsChapterBuilder(bool bReportCapacityOnly)
+CMomentCapacityDetailsChapterBuilder::CMomentCapacityDetailsChapterBuilder(bool bReportCapacityOnly,bool bSelect) :
+CPGSuperChapterBuilder(bSelect)
 {
    m_bCapacityOnly = bReportCapacityOnly;
 }

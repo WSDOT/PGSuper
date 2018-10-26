@@ -55,7 +55,8 @@ CLASS	CTexasIBNSChapterBuilder
 ////////////////////////// PUBLIC     ///////////////////////////////////////
 
 //======================== LIFECYCLE  =======================================
-CTexasIBNSChapterBuilder::CTexasIBNSChapterBuilder()
+CTexasIBNSChapterBuilder::CTexasIBNSChapterBuilder(bool bSelect) :
+CPGSuperChapterBuilder(bSelect)
 {
 }
 

@@ -24,7 +24,7 @@
 //
 //////////////////////////////////////////////////////////////////////
 
-#include "stdafx.h"
+#include "PGSuperAppPlugin\stdafx.h"
 #include "resource.h"
 #include "PGSuperDoc.h"
 #include "GirderDropSite.h"

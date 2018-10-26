@@ -23,7 +23,7 @@
 // PierDisplayObjectEvents.cpp : implementation file
 //
 
-#include "stdafx.h"
+#include "PGSuperAppPlugin\stdafx.h"
 #include "resource.h"
 #include "PGSuperAppPlugin\PGSuperApp.h"
 #include "PierDisplayObjectEvents.h"
@@ -196,11 +196,6 @@ STDMETHODIMP_(bool) CPierDisplayObjectEvents::XEvents::OnContextMenu(iDisplayObj
 
    if ( pDO->IsSelected() )
    {
-      CMenu menu;
-      menu.LoadMenu(IDR_SELECTED_PIER_CONTEXT);
-      CMenu* pSubMenu = menu.GetSubMenu(0);
-
-
       CComPtr<iDisplayList> pList;
       pDO->GetDisplayList(&pList);
 
@@ -210,6 +205,9 @@ STDMETHODIMP_(bool) CPierDisplayObjectEvents::XEvents::OnContextMenu(iDisplayObj
       CDisplayView* pView = pDispMgr->GetView();
       CPGSuperDoc* pDoc = (CPGSuperDoc*)pView->GetDocument();
 
+      CEAFMenu* pMenu = CEAFMenu::CreateContextMenu(pDoc->GetPluginCommandManager());
+      pMenu->LoadMenu(IDR_SELECTED_PIER_CONTEXT,NULL);
+
       CComPtr<IBroker> pBroker;
       pDoc->GetBroker(&pBroker);
       GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
@@ -217,29 +215,38 @@ STDMETHODIMP_(bool) CPierDisplayObjectEvents::XEvents::OnContextMenu(iDisplayObj
       const CPierData* pPier = pBridgeDesc->GetPier(pThis->m_PierIdx);
 
 
-      pSubMenu->AppendMenu(MF_SEPARATOR);
-      pSubMenu->AppendMenu(MF_STRING,IDM_HINGED,CPierData::AsString(pgsTypes::Hinged));
-      pSubMenu->AppendMenu(MF_STRING,IDM_ROLLER,CPierData::AsString(pgsTypes::Roller));
+      pMenu->AppendSeparator();
+      pMenu->AppendMenu(IDM_HINGED,CPierData::AsString(pgsTypes::Hinged),NULL);
+      pMenu->AppendMenu(IDM_ROLLER,CPierData::AsString(pgsTypes::Roller),NULL);
 
       if ( pPier->GetPrevSpan() && pPier->GetNextSpan() )
       {
-         pSubMenu->AppendMenu(MF_STRING,IDM_CONTINUOUS_AFTERDECK, CPierData::AsString(pgsTypes::ContinuousAfterDeck));
-         pSubMenu->AppendMenu(MF_STRING,IDM_CONTINUOUS_BEFOREDECK,CPierData::AsString(pgsTypes::ContinuousBeforeDeck));
+         pMenu->AppendMenu(IDM_CONTINUOUS_AFTERDECK, CPierData::AsString(pgsTypes::ContinuousAfterDeck),NULL);
+         pMenu->AppendMenu(IDM_CONTINUOUS_BEFOREDECK,CPierData::AsString(pgsTypes::ContinuousBeforeDeck),NULL);
       }
 
-      pSubMenu->AppendMenu(MF_STRING,IDM_INTEGRAL_AFTERDECK, CPierData::AsString(pgsTypes::IntegralAfterDeck));
-      pSubMenu->AppendMenu(MF_STRING,IDM_INTEGRAL_BEFOREDECK,CPierData::AsString(pgsTypes::IntegralBeforeDeck));
+      pMenu->AppendMenu(IDM_INTEGRAL_AFTERDECK, CPierData::AsString(pgsTypes::IntegralAfterDeck),NULL);
+      pMenu->AppendMenu(IDM_INTEGRAL_BEFOREDECK,CPierData::AsString(pgsTypes::IntegralBeforeDeck),NULL);
 
       if ( pPier->GetPrevSpan() && pPier->GetNextSpan() )
       {
-         pSubMenu->AppendMenu(MF_STRING,IDM_INTEGRAL_AFTERDECK_HINGEBACK,  CPierData::AsString(pgsTypes::IntegralAfterDeckHingeBack));
-         pSubMenu->AppendMenu(MF_STRING,IDM_INTEGRAL_BEFOREDECK_HINGEBACK, CPierData::AsString(pgsTypes::IntegralBeforeDeckHingeBack));
-         pSubMenu->AppendMenu(MF_STRING,IDM_INTEGRAL_AFTERDECK_HINGEAHEAD, CPierData::AsString(pgsTypes::IntegralAfterDeckHingeAhead));
-         pSubMenu->AppendMenu(MF_STRING,IDM_INTEGRAL_BEFOREDECK_HINGEAHEAD,CPierData::AsString(pgsTypes::IntegralBeforeDeckHingeAhead));
+         pMenu->AppendMenu(IDM_INTEGRAL_AFTERDECK_HINGEBACK,  CPierData::AsString(pgsTypes::IntegralAfterDeckHingeBack),NULL);
+         pMenu->AppendMenu(IDM_INTEGRAL_BEFOREDECK_HINGEBACK, CPierData::AsString(pgsTypes::IntegralBeforeDeckHingeBack),NULL);
+         pMenu->AppendMenu(IDM_INTEGRAL_AFTERDECK_HINGEAHEAD, CPierData::AsString(pgsTypes::IntegralAfterDeckHingeAhead),NULL);
+         pMenu->AppendMenu(IDM_INTEGRAL_BEFOREDECK_HINGEAHEAD,CPierData::AsString(pgsTypes::IntegralBeforeDeckHingeAhead),NULL);
       }
 
+      std::vector<IBridgePlanViewEventCallback*> callbacks = pDoc->GetBridgePlanViewCallbacks();
+      std::vector<IBridgePlanViewEventCallback*>::iterator iter;
+      for ( iter = callbacks.begin(); iter != callbacks.end(); iter++ )
+      {
+         IBridgePlanViewEventCallback* callback = *iter;
+         callback->OnPierContextMenu(pThis->m_PierIdx,pMenu);
+      }
 
-      pSubMenu->TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, point.x, point.y,pThis->m_pFrame);
+      pMenu->TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, point.x, point.y,pThis->m_pFrame);
+
+      delete pMenu;
 
       return true;
    }

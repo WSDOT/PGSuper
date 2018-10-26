@@ -201,6 +201,8 @@ void CTrafficBarrierDlg::OnDelete()
 
 void CTrafficBarrierDlg::OnView()
 {
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
    UpdateData(TRUE);
 
    TrafficBarrierEntry entry;

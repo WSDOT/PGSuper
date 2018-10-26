@@ -51,9 +51,16 @@ LOG
 class REPORTINGCLASS CPGSuperChapterBuilder : public CChapterBuilder
 {
 public:
+   CPGSuperChapterBuilder(bool bSelect);
+
    // returns 1
    virtual Uint16 GetMaxLevel() const;
    
    // creates a new chapter object and configures it with the correct style for PGSuper reports
    virtual rptChapter* Build(CReportSpecification* pRptSpec,Uint16 level) const;
+
+   virtual bool Select() const;
+
+protected:
+   bool m_bSelect;
 };

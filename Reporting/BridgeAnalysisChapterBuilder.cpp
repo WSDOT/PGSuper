@@ -72,7 +72,8 @@ CLASS
 ////////////////////////// PUBLIC     ///////////////////////////////////////
 
 //======================== LIFECYCLE  =======================================
-CBridgeAnalysisChapterBuilder::CBridgeAnalysisChapterBuilder(const char* strTitle,pgsTypes::AnalysisType analysisType)
+CBridgeAnalysisChapterBuilder::CBridgeAnalysisChapterBuilder(const char* strTitle,pgsTypes::AnalysisType analysisType,bool bSelect) :
+CPGSuperChapterBuilder(bSelect)
 {
    m_strTitle = strTitle;
    m_AnalysisType = analysisType;

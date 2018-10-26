@@ -23,7 +23,7 @@
 // CrownSlopeGrid.cpp : implementation file
 //
 
-#include "stdafx.h"
+#include "PGSuperAppPlugin\stdafx.h"
 #include "CrownSlopeGrid.h"
 #include "ProfilePage.h"
 #include "PGSuperUnits.h"

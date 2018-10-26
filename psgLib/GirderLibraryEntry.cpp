@@ -352,13 +352,22 @@ bool GirderLibraryEntry::SaveMe(sysIStructuredSave* pSave)
    for ( DiaphragmLayoutRules::const_iterator itd = m_DiaphragmLayoutRules.begin(); itd != m_DiaphragmLayoutRules.end(); itd++ )
    {
       const DiaphragmLayoutRule& dlr = *itd;
-      pSave->BeginUnit("DiaphragmLayoutRule",1.0);
+      pSave->BeginUnit("DiaphragmLayoutRule",2.0);
 
       pSave->Property("Description",dlr.Description.c_str());
       pSave->Property("MinSpan",dlr.MinSpan);
       pSave->Property("MaxSpan",dlr.MaxSpan);
-      pSave->Property("Height",dlr.Height);
-      pSave->Property("Thickness",dlr.Thickness);
+      pSave->Property("Method",(long)dlr.Method);
+      if ( dlr.Method == dwmCompute )
+      {
+         pSave->Property("Height",dlr.Height);
+         pSave->Property("Thickness",dlr.Thickness);
+      }
+      else
+      {
+         pSave->Property("Weight",dlr.Weight);
+      }
+
       pSave->Property("DiaphragmType",(long)dlr.Type);
       pSave->Property("ConstructionType",(long)dlr.Construction);
       pSave->Property("MeasurementType",(long)dlr.MeasureType);
@@ -637,6 +646,7 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
          rule1.Construction    = ctBridgeSite;
          rule1.Type = dtExternal;
          rule1.Location = 0.5;
+         rule1.Method = dwmCompute;
          m_DiaphragmLayoutRules.push_back(rule1);
 
          DiaphragmLayoutRule rule2a;
@@ -650,6 +660,7 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
          rule2a.Construction    = ctBridgeSite;
          rule2a.Type = dtExternal;
          rule2a.Location = 0.5;
+         rule2a.Method = dwmCompute;
          m_DiaphragmLayoutRules.push_back(rule2a);
 
          DiaphragmLayoutRule rule2b;
@@ -663,6 +674,7 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
          rule2b.Construction    = ctBridgeSite;
          rule2b.Type = dtExternal;
          rule2b.Location = 0.3333333333;
+         rule2b.Method = dwmCompute;
          m_DiaphragmLayoutRules.push_back(rule2b);
 
          DiaphragmLayoutRule rule3a;
@@ -676,6 +688,7 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
          rule3a.Construction    = ctBridgeSite;
          rule3a.Type = dtExternal;
          rule3a.Location = 0.5;
+         rule3a.Method = dwmCompute;
          m_DiaphragmLayoutRules.push_back(rule3a);
 
          DiaphragmLayoutRule rule3b;
@@ -689,6 +702,7 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
          rule3b.Construction    = ctBridgeSite;
          rule3b.Type = dtExternal;
          rule3b.Location = 0.25;
+         rule3b.Method = dwmCompute;
          m_DiaphragmLayoutRules.push_back(rule3b);
 
          bOldIntermediateDiaphragms = true;
@@ -1349,6 +1363,7 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
       while ( pLoad->BeginUnit("DiaphragmLayoutRule") )
       {
          DiaphragmLayoutRule dlr;
+         Float64 diaVersion = pLoad->GetVersion();
 
          if ( !pLoad->Property("Description",&dlr.Description) )
             THROW_LOAD(InvalidFileFormat,pLoad);
@@ -1359,11 +1374,38 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
          if ( !pLoad->Property("MaxSpan",&dlr.MaxSpan) )
             THROW_LOAD(InvalidFileFormat,pLoad);
 
-         if ( !pLoad->Property("Height",&dlr.Height) )
-            THROW_LOAD(InvalidFileFormat,pLoad);
+         if ( diaVersion < 2 )
+         {
+            if ( !pLoad->Property("Height",&dlr.Height) )
+               THROW_LOAD(InvalidFileFormat,pLoad);
 
-         if ( !pLoad->Property("Thickness",&dlr.Thickness) )
-            THROW_LOAD(InvalidFileFormat,pLoad);
+            if ( !pLoad->Property("Thickness",&dlr.Thickness) )
+               THROW_LOAD(InvalidFileFormat,pLoad);
+
+            dlr.Method = dwmCompute;
+         }
+         else
+         {
+            long value;
+            if ( !pLoad->Property("Method",&value) )
+               THROW_LOAD(InvalidFileFormat,pLoad);
+
+            dlr.Method = (DiaphragmWeightMethod)value;
+
+            if ( dlr.Method == dwmCompute )
+            {
+               if ( !pLoad->Property("Height",&dlr.Height) )
+                  THROW_LOAD(InvalidFileFormat,pLoad);
+
+               if ( !pLoad->Property("Thickness",&dlr.Thickness) )
+                  THROW_LOAD(InvalidFileFormat,pLoad);
+            }
+            else
+            {
+               if ( !pLoad->Property("Weight",&dlr.Weight) )
+                  THROW_LOAD(InvalidFileFormat,pLoad);
+            }
+         }
 
          long value;
          if ( !pLoad->Property("DiaphragmType",&value) )
@@ -2072,6 +2114,15 @@ void GirderLibraryEntry::SetDimension(const std::string& name,double value,bool 
    }
 }
 
+void GirderLibraryEntry::ClearAllStrands()
+{
+   m_StraightStrands.clear();
+   m_HarpedStrands.clear();
+   m_TemporaryStrands.clear();
+   m_GlobalStrandOrder.clear();
+}
+
+
 StrandIndexType GirderLibraryEntry::GetNumStraightStrandCoordinates() const
 {
    return m_StraightStrands.size();
@@ -2088,6 +2139,20 @@ void GirderLibraryEntry::GetStraightStrandCoordinates(StrandIndexType ssIndex, F
    *Xend      = strandLocation.m_Xend;
    *Yend      = strandLocation.m_Yend;
    *canDebond = strandLocation.m_bCanDebond;
+}
+
+StrandIndexType GirderLibraryEntry::AddStraightStrandCoordinates(Float64 Xstart, Float64 Ystart, Float64 Xend, Float64 Yend, bool canDebond)
+{
+   StraightStrandLocation strandLocation;
+   strandLocation.m_Xstart     = Xstart;
+   strandLocation.m_Ystart     = Ystart;
+   strandLocation.m_Xend       = Xend;
+   strandLocation.m_Yend       = Yend;
+   strandLocation.m_bCanDebond = canDebond;
+
+   m_StraightStrands.push_back(strandLocation);
+
+   return m_StraightStrands.size();
 }
 
 StrandIndexType GirderLibraryEntry::GetMaxStraightStrands() const
@@ -2120,6 +2185,21 @@ void GirderLibraryEntry::GetHarpedStrandCoordinates(StrandIndexType hsIndex, Flo
    *Yhp    = strandLocation.m_Yhp;
    *Xend   = strandLocation.m_Xend;
    *Yend   = strandLocation.m_Yend;
+}
+
+StrandIndexType GirderLibraryEntry::AddHarpedStrandCoordinates(Float64 Xstart,Float64 Ystart, Float64 Xhp, Float64 Yhp,Float64 Xend, Float64 Yend)
+{
+   HarpedStrandLocation strandLocation;
+   strandLocation.m_Xstart = Xstart;
+   strandLocation.m_Ystart = Ystart;
+   strandLocation.m_Xhp    = Xhp;
+   strandLocation.m_Yhp    = Yhp;
+   strandLocation.m_Xend   = Xend;
+   strandLocation.m_Yend   = Yend;
+
+   m_HarpedStrands.push_back(strandLocation);
+
+   return m_HarpedStrands.size();
 }
 
 StrandIndexType GirderLibraryEntry::GetMaxHarpedStrands() const
@@ -2168,6 +2248,18 @@ void GirderLibraryEntry::GetTemporaryStrandCoordinates(StrandIndexType tsIndex, 
    }
 }
 
+StrandIndexType GirderLibraryEntry::AddTemporaryStrandCoordinates(Float64 Xstart, Float64 Ystart, Float64 Xend, Float64 Yend)
+{
+   StraightStrandLocation strandLocation;
+   strandLocation.m_Xstart = Xstart;
+   strandLocation.m_Ystart = Ystart;
+   strandLocation.m_Xend   = Xend;
+   strandLocation.m_Yend   = Yend;
+
+   m_TemporaryStrands.push_back(strandLocation);
+   return m_TemporaryStrands.size();
+}
+
 StrandIndexType GirderLibraryEntry::GetMaxTemporaryStrands() const
 {
    StrandIndexType cStrands=0;
@@ -2194,6 +2286,16 @@ void GirderLibraryEntry::GetGlobalStrandAtFill(StrandIndexType index, psStrandTy
    const GlobalStrand& strand = m_GlobalStrandOrder[index];
    *type       = strand.m_StrandType;
    *localIndex = strand.m_LocalSortOrder;
+}
+
+StrandIndexType GirderLibraryEntry::AddGlobalStrandAtFill(psStrandType type,  StrandIndexType localIndex)
+{
+   GlobalStrand strand;
+   strand.m_StrandType = type;
+   strand.m_LocalSortOrder = localIndex;
+
+   m_GlobalStrandOrder.push_back(strand);
+   return m_GlobalStrandOrder.size();
 }
 
 bool GirderLibraryEntry::ComputeGlobalStrands(StrandIndexType totalNumStrands, StrandIndexType* numStraight, StrandIndexType* numHarped) const

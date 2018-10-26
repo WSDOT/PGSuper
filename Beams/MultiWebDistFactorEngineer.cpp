@@ -736,7 +736,10 @@ void CMultiWebDistFactorEngineer::ReportMoment(rptParagraph* pPara,MULTIWEB_LLDF
          if (lldf.connectedAsUnit)
          {
             (*pPara) << Bold("Skew Correction") << rptNewLine;
-            (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "Skew Correction for Moment SI.gif" : "Skew Correction for Moment US.gif")) << rptNewLine;
+            Float64 skew_delta_max = ::ConvertToSysUnits( 10.0, unitMeasure::Degree );
+            if ( fabs(lldf.skew1 - lldf.skew2) < skew_delta_max )
+               (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "Skew Correction for Moment SI.gif" : "Skew Correction for Moment US.gif")) << rptNewLine;
+
             (*pPara) << "Skew Correction Factor: = " << scalar.SetValue(gM1.SkewCorrectionFactor) << rptNewLine;
             (*pPara) << rptNewLine;
             (*pPara) << "Skew Corrected Factor: mg" << Super("ME") << Sub("1") << " = " << scalar.SetValue(gM1.mg);
@@ -903,7 +906,10 @@ void CMultiWebDistFactorEngineer::ReportMoment(rptParagraph* pPara,MULTIWEB_LLDF
          if (lldf.connectedAsUnit)
          {
             (*pPara) << Bold("Skew Correction") << rptNewLine;
-            (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "Skew Correction for Moment SI.gif" : "Skew Correction for Moment US.gif")) << rptNewLine;
+            Float64 skew_delta_max = ::ConvertToSysUnits( 10.0, unitMeasure::Degree );
+            if ( fabs(lldf.skew1 - lldf.skew2) < skew_delta_max )
+               (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "Skew Correction for Moment SI.gif" : "Skew Correction for Moment US.gif")) << rptNewLine;
+
             (*pPara) << "Skew Correction Factor: = " << scalar.SetValue(gM1.SkewCorrectionFactor) << rptNewLine;
             (*pPara) << rptNewLine;
             (*pPara) << "Skew Corrected Factor: mg" << Super("ME") << Sub("1") << " = " << scalar.SetValue(gM1.mg);

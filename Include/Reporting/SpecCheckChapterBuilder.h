@@ -50,7 +50,7 @@ class REPORTINGCLASS CSpecCheckChapterBuilder : public CPGSuperChapterBuilder
 {
 public:
    // GROUP: LIFECYCLE
-   CSpecCheckChapterBuilder();
+   CSpecCheckChapterBuilder(bool bSelect = true);
 
    // GROUP: OPERATORS
    // GROUP: OPERATIONS

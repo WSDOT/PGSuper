@@ -51,7 +51,7 @@ class REPORTINGCLASS CSpanDataChapterBuilder : public CPGSuperChapterBuilder
 {
 public:
    // GROUP: LIFECYCLE
-   CSpanDataChapterBuilder();
+   CSpanDataChapterBuilder(bool bSelect = true);
 
    // GROUP: OPERATORS
    // GROUP: OPERATIONS

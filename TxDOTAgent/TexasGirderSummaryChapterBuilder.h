@@ -48,7 +48,7 @@ class CTexasGirderSummaryChapterBuilder : public CPGSuperChapterBuilder
 {
 public:
    // GROUP: LIFECYCLE
-   CTexasGirderSummaryChapterBuilder();
+   CTexasGirderSummaryChapterBuilder(bool bSelect = true);
 
    // GROUP: OPERATORS
    // GROUP: OPERATIONS

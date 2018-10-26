@@ -113,15 +113,17 @@ void CLiveLoadDistributionFactorTable::Build(rptChapter* pChapter,
    }
    else
    {
-      pTable->SetNumberOfHeaderRows(3);
-      pTable->SetRowSpan(0,0,3);
+      pTable->SetNumberOfHeaderRows(2);
+      pTable->SetRowSpan(0,0,2);
       (*pTable)(0,0) << COLHDR(RPT_LFT_SUPPORT_LOCATION,   rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
       pTable->SetRowSpan(1,0,-1);
-      pTable->SetRowSpan(2,0,-1);
 
-      pTable->SetColumnSpan(0,1,8);
-      (*pTable)(0,1) << "Limit State";
-      pTable->SetColumnSpan(0,2,-1);
+      pTable->SetColumnSpan(0,1,4);
+      (*pTable)(0,1) << "Strength/Service";
+
+      pTable->SetColumnSpan(0,2,4);
+      (*pTable)(0,2) << "Fatigue/One Lane";
+
       pTable->SetColumnSpan(0,3,-1);
       pTable->SetColumnSpan(0,4,-1);
       pTable->SetColumnSpan(0,5,-1);
@@ -129,27 +131,14 @@ void CLiveLoadDistributionFactorTable::Build(rptChapter* pChapter,
       pTable->SetColumnSpan(0,7,-1);
       pTable->SetColumnSpan(0,8,-1);
 
-      pTable->SetColumnSpan(1,1,4);
-      (*pTable)(1,1) << "Strength/Service";
-
-      pTable->SetColumnSpan(1,2,4);
-      (*pTable)(1,2) << "Fatigue";
-
-      pTable->SetColumnSpan(1,3,-1);
-      pTable->SetColumnSpan(1,4,-1);
-      pTable->SetColumnSpan(1,5,-1);
-      pTable->SetColumnSpan(1,6,-1);
-      pTable->SetColumnSpan(1,7,-1);
-      pTable->SetColumnSpan(1,8,-1);
-
-      (*pTable)(2,1) << "+M";
-      (*pTable)(2,2) << "-M";
-      (*pTable)(2,3) << "V";
-      (*pTable)(2,4) << "R";
-      (*pTable)(2,5) << "+M";
-      (*pTable)(2,6) << "-M";
-      (*pTable)(2,7) << "V";
-      (*pTable)(2,8) << "R";
+      (*pTable)(1,1) << "+M";
+      (*pTable)(1,2) << "-M";
+      (*pTable)(1,3) << "V";
+      (*pTable)(1,4) << "R";
+      (*pTable)(1,5) << "+M";
+      (*pTable)(1,6) << "-M";
+      (*pTable)(1,7) << "V";
+      (*pTable)(1,8) << "R";
    }
 
    GET_IFACE2(pBroker,IPointOfInterest,pIPoi);

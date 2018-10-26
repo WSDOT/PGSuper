@@ -25,13 +25,6 @@
 #include <IFace\Bridge.h>
 #include <IFace\AnalysisResults.h>
 
-struct SectionData
-{
-   Float64 Location;
-
-   bool operator<(const SectionData& other) const { return Location < other.Location && !IsEqual(Location,other.Location); }
-};
-
 PoiIDType pgsGirderModelFactory::ms_FemModelPoiID = 0;
 
 pgsGirderModelFactory::pgsGirderModelFactory(void)
@@ -59,39 +52,27 @@ void pgsGirderModelFactory::CreateGirderModel(IBroker* pBroker,SpanIndexType spa
 
    // get all the cross section changes
    GET_IFACE2(pBroker,IPointOfInterest,pPOI);
-   std::vector<pgsPointOfInterest> xsPOI = pPOI->GetPointsOfInterest(spanIdx,gdrIdx,pgsTypes::CastingYard,POI_SECTCHANGE);
-
-   std::set<SectionData> section_data;
-   
-   // collect data for all section changes (we will put fem model joints here)
-   GET_IFACE2(pBroker,ISectProp2,pSectProp2);
-   std::vector<pgsPointOfInterest>::iterator iter;
-   for ( iter = xsPOI.begin(); iter != xsPOI.end(); iter++ )
-   {
-      pgsPointOfInterest poi = *iter;
-      SectionData sd;
-      sd.Location = poi.GetDistFromStart();
-
-      section_data.insert(sd);
-   }
+   std::vector<pgsPointOfInterest> xsPOI = pPOI->GetPointsOfInterest(spanIdx,gdrIdx,pgsTypes::CastingYard,POI_SECTCHANGE,POIFIND_OR);
 
    // add section data for the support locations
-   SectionData sd;
-   sd.Location = leftSupportLoc;
-   section_data.insert(sd);
+   if ( !IsEqual(leftSupportLoc,xsPOI.front().GetDistFromStart()) )
+      xsPOI.push_back(pgsPointOfInterest(spanIdx,gdrIdx,leftSupportLoc));
 
-   sd.Location = rightSupportLoc;
-   section_data.insert(sd);
+   if ( !IsEqual(rightSupportLoc,xsPOI.back().GetDistFromStart()) )
+      xsPOI.push_back(pgsPointOfInterest(spanIdx,gdrIdx,rightSupportLoc));
+
+   // sort the POI
+   std::sort(xsPOI.begin(),xsPOI.end());
 
    // layout the joints
    JointIDType jntID = 0;
    CComPtr<IFem2dJointCollection> joints;
    (*ppModel)->get_Joints(&joints);
-   std::set<SectionData>::iterator jointIter;
-   for ( jointIter = section_data.begin(); jointIter != section_data.end(); jointIter++ )
+   std::vector<pgsPointOfInterest>::iterator jointIter;
+   for ( jointIter = xsPOI.begin(); jointIter < xsPOI.end(); jointIter++ )
    {
-      SectionData sd = *jointIter;
-      if ( !bIncludeCantilevers && (sd.Location < leftSupportLoc || rightSupportLoc < sd.Location) )
+      pgsPointOfInterest poi = *jointIter;
+      if ( !bIncludeCantilevers && (poi.GetDistFromStart() < leftSupportLoc || rightSupportLoc < poi.GetDistFromStart()) )
       {
          // location is before or after the left/right support and we arn't modeling
          // the cantilevers... next joint
@@ -99,51 +80,75 @@ void pgsGirderModelFactory::CreateGirderModel(IBroker* pBroker,SpanIndexType spa
       }
 
       CComPtr<IFem2dJoint> jnt;
-      joints->Create(jntID++,sd.Location,0,&jnt);
+      joints->Create(jntID++,poi.GetDistFromStart(),0,&jnt);
 
       // set boundary conditions if this is a support joint
-      if ( IsEqual(sd.Location,leftSupportLoc) )
+      if ( IsEqual(poi.GetDistFromStart(),leftSupportLoc) )
       {
          jnt->Support();
          jnt->ReleaseDof(jrtFx);
          jnt->ReleaseDof(jrtMz);
       }
-      else if ( IsEqual(sd.Location,rightSupportLoc) )
+      else if ( IsEqual(poi.GetDistFromStart(),rightSupportLoc) )
       {
          jnt->Support();
          jnt->ReleaseDof(jrtMz);
       }
+
+      if ( poi.HasAttribute(pgsTypes::CastingYard,POI_SECTCHANGE_LEFTFACE) )
+      {
+         // jump over the right face
+         jointIter++;
+         if ( jointIter == xsPOI.end() )
+            break;
+      }
    }
 
    // create members
+   GET_IFACE2(pBroker,ISectProp2,pSectProp2);
+
    CComPtr<IFem2dMemberCollection> members;
    (*ppModel)->get_Members(&members);
 
    MemberIDType mbrID = 0;
    JointIDType prevJntID = 0;
    jntID = prevJntID + 1;
-   std::set<SectionData>::iterator prevJointIter = section_data.begin();
+   std::vector<pgsPointOfInterest>::iterator prevJointIter = xsPOI.begin();
    jointIter = prevJointIter;
    jointIter++;
-   for ( ; jointIter != section_data.end(); jointIter++, prevJointIter++, jntID++, prevJntID++ )
+   for ( ; jointIter < xsPOI.end(); jointIter++, prevJointIter++, jntID++, prevJntID++ )
    {
-      SectionData prevSD = *prevJointIter;
-      SectionData sd     = *jointIter;
+      pgsPointOfInterest prevPoi = *prevJointIter;
+      pgsPointOfInterest poi     = *jointIter;
 
-      if ( !bIncludeCantilevers && (prevSD.Location < leftSupportLoc || rightSupportLoc < prevSD.Location) )
+      if ( !bIncludeCantilevers && (prevPoi.GetDistFromStart() < leftSupportLoc || rightSupportLoc < prevPoi.GetDistFromStart()) )
       {
          // location is before or after the left/right support and we arn't modeling
          // the cantilevers... next member
          continue;
       }
 
-      // use properties at mid-point between section changes
-      pgsPointOfInterest between_sections_poi(pgsTypes::CastingYard,spanIdx,gdrIdx,(prevSD.Location + sd.Location)/2);
-      Float64 EI = E*pSectProp2->GetIx(pgsTypes::CastingYard, between_sections_poi);
-      Float64 EA = E*pSectProp2->GetAg(pgsTypes::CastingYard, between_sections_poi);
+      Float64 prevEI = E*pSectProp2->GetIx(pgsTypes::CastingYard,prevPoi);
+      Float64 prevEA = E*pSectProp2->GetAg(pgsTypes::CastingYard,prevPoi);
+
+      Float64 currEI = E*pSectProp2->GetIx(pgsTypes::CastingYard,poi);
+      Float64 currEA = E*pSectProp2->GetAg(pgsTypes::CastingYard,poi);
+
+      Float64 EI = (prevEI + currEI)/2;
+      Float64 EA = (prevEA + currEA)/2;
 
       CComPtr<IFem2dMember> member;
       members->Create(mbrID++,prevJntID,jntID,EA,EI,&member);
+
+      if ( poi.HasAttribute(pgsTypes::CastingYard,POI_SECTCHANGE_LEFTFACE) )
+      {
+         // if we are at an abrupt section change, jump ahead
+         prevJointIter++;
+         jointIter++;
+
+         if ( jointIter == xsPOI.end() )
+            break;
+      }
    }
 
    // apply loads
@@ -288,24 +293,24 @@ void pgsGirderModelFactory::CreateGirderModel(IBroker* pBroker,SpanIndexType spa
       DiaphragmLoad& diaphragmLoad = *diaLoadIter;
 
       mbrID = 0;
-      prevJointIter = section_data.begin();
+      prevJointIter = xsPOI.begin();
       jointIter = prevJointIter;
       jointIter++;
-      for ( ; jointIter != section_data.end(); jointIter++, prevJointIter++, mbrID++ )
+      for ( ; jointIter < xsPOI.end(); jointIter++, prevJointIter++, mbrID++ )
       {
-         SectionData prevSD = *prevJointIter;
-         SectionData sd     = *jointIter;
+         pgsPointOfInterest prevPoi = *prevJointIter;
+         pgsPointOfInterest poi     = *jointIter;
 
-         if ( !bIncludeCantilevers && (prevSD.Location < leftSupportLoc || rightSupportLoc < prevSD.Location) )
+         if ( !bIncludeCantilevers && (prevPoi.GetDistFromStart() < leftSupportLoc || rightSupportLoc < prevPoi.GetDistFromStart()) )
          {
             // location is before or after the left/right support and we arn't modeling
             // the cantilevers... next member
             continue;
          }
 
-         if ( InRange(prevSD.Location,diaphragmLoad.Loc,sd.Location) )
+         if ( InRange(prevPoi.GetDistFromStart(),diaphragmLoad.Loc,poi.GetDistFromStart()) )
          {
-            x = diaphragmLoad.Loc - prevSD.Location;
+            x = diaphragmLoad.Loc - prevPoi.GetDistFromStart();
             break;
          }
       }

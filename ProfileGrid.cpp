@@ -23,7 +23,7 @@
 // ProfileGrid.cpp : implementation file
 //
 
-#include "stdafx.h"
+#include "PGSuperAppPlugin\stdafx.h"
 #include "ProfileGrid.h"
 #include "ProfilePage.h"
 

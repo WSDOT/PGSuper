@@ -48,7 +48,8 @@ void FillRow(int row, rptRcTable* pTable, const std::string& rowtit, const lrfdI
 ////////////////////////// PUBLIC     ///////////////////////////////////////
 
 //======================== LIFECYCLE  =======================================
-CDistributionFactorDetailsChapterBuilder::CDistributionFactorDetailsChapterBuilder()
+CDistributionFactorDetailsChapterBuilder::CDistributionFactorDetailsChapterBuilder(bool bSelect) :
+CPGSuperChapterBuilder(bSelect)
 {
 }
 

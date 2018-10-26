@@ -272,6 +272,8 @@ void CBridgeAgentImp::Invalidate( Uint16 level )
       m_LeftBarrierShapes.clear();
       m_RightBarrierShapes.clear();
 
+      m_LeftSlabEdgeOffset.clear();
+      m_RightSlabEdgeOffset.clear();
 
       // remove our items from the status center
       GET_IFACE(IEAFStatusCenter,pStatusCenter);
@@ -348,45 +350,6 @@ void CBridgeAgentImp::ValidatePointsOfInterest(SpanIndexType span,GirderIndexTyp
       }
    }
 }
-
-//void CBridgeAgentImp::ValidateLiftingPointsOfInterest(SpanIndexType span,GirderIndexType gdr)
-//{
-//   // don't create lifting POI if lifting isn't enabled
-//   GET_IFACE(IGirderLiftingSpecCriteria,pGirderLiftingSpecCriteria);
-//   if (!pGirderLiftingSpecCriteria->IsLiftingCheckEnabled())
-//      return;
-//      
-//
-//   // Bridge model must be valid before we can layout the poi
-//   VALIDATE(BRIDGE);
-//
-//   SpanGirderHashType key = HashSpanGirder(span,gdr);
-//   std::set<SpanGirderHashType>::iterator found = m_LiftingPoiValidated.find( key );
-//   if ( found == m_LiftingPoiValidated.end() )
-//   {
-//      LayoutLiftingPoi( span, gdr, 10 );
-//      m_LiftingPoiValidated.insert(key);
-//   }
-//}
-//
-//void CBridgeAgentImp::ValidateHaulingPointsOfInterest(SpanIndexType span,GirderIndexType gdr)
-//{
-//   // don't create hauling POI if lifting isn't enabled
-//   GET_IFACE(IGirderHaulingSpecCriteria,pGirderHaulingSpecCriteria);
-//   if ( !pGirderHaulingSpecCriteria->IsHaulingCheckEnabled() )
-//      return;
-//
-//   // Bridge model must be valid before we can layout the poi
-//   VALIDATE(BRIDGE);
-//
-//   SpanGirderHashType key = HashSpanGirder(span,gdr);
-//   std::set<SpanGirderHashType>::iterator found = m_HaulingPoiValidated.find( key );
-//   if ( found == m_HaulingPoiValidated.end() )
-//   {
-//      LayoutHaulingPoi( span, gdr, 10 );
-//      m_HaulingPoiValidated.insert(key);
-//   }
-//}
 
 void CBridgeAgentImp::InvalidateConcrete()
 {
@@ -889,8 +852,8 @@ void CBridgeAgentImp::ValidatePointLoads()
             if (IsZero(rpl.m_Magnitude))
             {
                CString strMsg;
-               strMsg.Format("Magnitude of point load is zero - then why have it?");
-               pgsPointLoadStatusItem* pStatusItem = new pgsPointLoadStatusItem(ipl,m_LoadStatusGroupID,m_scidPointLoadError,strMsg);
+               strMsg.Format("Magnitude of point load is zero");
+               pgsPointLoadStatusItem* pStatusItem = new pgsPointLoadStatusItem(ipl,m_LoadStatusGroupID,m_scidPointLoadWarning,strMsg);
                pStatusCenter->Add(pStatusItem);
             }
 
@@ -1036,8 +999,8 @@ void CBridgeAgentImp::ValidateDistributedLoads()
                if (IsZero(rpl.m_WStart) && IsZero(rpl.m_WEnd))
                {
                   CString strMsg;
-                  strMsg.Format("Magnitude of Distributed load is zero - then why have it?");
-                  pgsDistributedLoadStatusItem* pStatusItem = new pgsDistributedLoadStatusItem(ipl,m_LoadStatusGroupID,m_scidDistributedLoadError,strMsg);
+                  strMsg.Format("Magnitude of Distributed load is zero");
+                  pgsDistributedLoadStatusItem* pStatusItem = new pgsDistributedLoadStatusItem(ipl,m_LoadStatusGroupID,m_scidDistributedLoadWarning,strMsg);
                   pStatusCenter->Add(pStatusItem);
                }
 
@@ -1054,8 +1017,8 @@ void CBridgeAgentImp::ValidateDistributedLoads()
                if (IsZero(rpl.m_WStart) && IsZero(rpl.m_WEnd))
                {
                   CString strMsg;
-                  strMsg.Format("Magnitude of Distributed load is zero - then why have it?");
-                  pgsDistributedLoadStatusItem* pStatusItem = new pgsDistributedLoadStatusItem(ipl,m_LoadStatusGroupID,m_scidDistributedLoadError,strMsg);
+                  strMsg.Format("Magnitude of Distributed load is zero");
+                  pgsDistributedLoadStatusItem* pStatusItem = new pgsDistributedLoadStatusItem(ipl,m_LoadStatusGroupID,m_scidDistributedLoadWarning,strMsg);
                   pStatusCenter->Add(pStatusItem);
                }
 
@@ -1209,8 +1172,8 @@ void CBridgeAgentImp::ValidateMomentLoads()
             if (IsZero(rpl.m_Magnitude))
             {
                CString strMsg;
-               strMsg.Format("Magnitude of moment load is zero - then why have it?");
-               pgsMomentLoadStatusItem* pStatusItem = new pgsMomentLoadStatusItem(ipl,m_LoadStatusGroupID,m_scidMomentLoadError,strMsg);
+               strMsg.Format("Magnitude of moment load is zero");
+               pgsMomentLoadStatusItem* pStatusItem = new pgsMomentLoadStatusItem(ipl,m_LoadStatusGroupID,m_scidMomentLoadWarning,strMsg);
                pStatusCenter->Add(pStatusItem);
             }
 
@@ -1885,6 +1848,14 @@ bool CBridgeAgentImp::BuildBridgeModel()
    if ( !LayoutTrafficBarriers(pBridgeDesc) )
       return false;
 
+   // Now that the basic input has been generated, updated the bridge model
+   // This will get all the geometry correct
+   m_Bridge->UpdateBridgeModel();
+
+   // With the geometry correct, layout the superstructure members (need span lengths)
+   if ( !LayoutSuperstructureMembers(pBridgeDesc) )
+      return false;
+
    // check bridge for errors - will throw an exception if there are errors
    CheckBridge();
 
@@ -2053,6 +2024,8 @@ bool CBridgeAgentImp::LayoutGirders(const CBridgeDescription* pBridgeDesc)
 
       span->put_GirderCount(nGirders);
 
+      const CGirderTypes* pGirderTypes = pSpan->GetGirderTypes();
+
       // create a girder for each girder line... set the girder spacing
 
       // store the girder spacing in an array and set it all at once
@@ -2188,18 +2161,54 @@ bool CBridgeAgentImp::LayoutGirders(const CBridgeDescription* pBridgeDesc)
          girder->SetHarpingPoints(hpLoc,hpLoc);
          girder->put_HarpingPointReference( HarpPointReference(hpref) );
          girder->put_HarpingPointMeasure( HarpPointMeasure(hpmeasure) );
+      
+
+         Float64 startHaunch = 0;
+         Float64 endHaunch   = 0;
+         if ( deckType != pgsTypes::sdtNone )
+         {
+            startHaunch = pGirderTypes->GetSlabOffset(gdrIdx,pgsTypes::metStart) - gross_slab_depth;
+            endHaunch   = pGirderTypes->GetSlabOffset(gdrIdx,pgsTypes::metEnd)   - gross_slab_depth;
+         }
+
+         // if these fire, something is really messed up
+         ATLASSERT( 0 <= startHaunch && startHaunch < 1e9 );
+         ATLASSERT( 0 <= endHaunch   && endHaunch   < 1e9 );
+
+         startSpacing->put_GirderHaunch(gdrIdx,startHaunch);
+         endSpacing->put_GirderHaunch(gdrIdx,endHaunch);
       }
 
       // set the spacing for all girders in this span now
       startSpacing->put_Spacings(startSpaces);
       endSpacing->put_Spacings(endSpaces);
-   
+   }
 
-      // now that all of the spaces are defined, set the girder line lengths
-      // in the superstructure members and set the start and end girder haunches
-      const CGirderTypes* pGirderTypes = pSpan->GetGirderTypes();
+   return true;
+}
 
-      for ( gdrIdx = 0; gdrIdx < nGirders; gdrIdx++ )
+bool CBridgeAgentImp::LayoutSuperstructureMembers(const CBridgeDescription* pBridgeDesc)
+{
+   // now that all of the spaces are defined, set the girder line lengths
+   // in the superstructure members
+
+   CComPtr<ISpanCollection> spans;
+   m_Bridge->get_Spans(&spans);
+
+   SpanIndexType nSpans;
+   spans->get_Count(&nSpans);
+
+   ATLASSERT(nSpans == pBridgeDesc->GetSpanCount() );
+
+   for ( SpanIndexType spanIdx = 0; spanIdx < nSpans; spanIdx++ )
+   {
+      CComPtr<ISpan> span;
+      spans->get_Item(spanIdx,&span);
+
+      GirderIndexType nGirders;
+      span->get_GirderCount(&nGirders);
+
+      for ( GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++ )
       {
          // get the superstructure member
          CComPtr<ISuperstructureMember> ssmbr;
@@ -2220,21 +2229,6 @@ bool CBridgeAgentImp::LayoutGirders(const CBridgeDescription* pBridgeDesc)
 
          // finally, layout the rebar for this girder
          LayoutGirderRebar(spanIdx,gdrIdx);
-
-         Float64 startHaunch = 0;
-         Float64 endHaunch   = 0;
-         if ( deckType != pgsTypes::sdtNone )
-         {
-            startHaunch = pGirderTypes->GetSlabOffset(gdrIdx,pgsTypes::metStart) - gross_slab_depth;
-            endHaunch   = pGirderTypes->GetSlabOffset(gdrIdx,pgsTypes::metEnd)   - gross_slab_depth;
-         }
-
-         // if these fire, something is really messed up
-         ATLASSERT( 0 <= startHaunch && startHaunch < 1e9 );
-         ATLASSERT( 0 <= endHaunch   && endHaunch   < 1e9 );
-
-         startSpacing->put_GirderHaunch(gdrIdx,startHaunch);
-         endSpacing->put_GirderHaunch(gdrIdx,endHaunch);
       }
    }
 
@@ -2271,9 +2265,9 @@ bool CBridgeAgentImp::LayoutDeck(const CBridgeDescription* pBridgeDesc)
       deck_material->put_Density(GetStrDensitySlab());
  
       deck->put_Material(deck_material);
+      m_Bridge->putref_Deck(deck);
    }
 
-   m_Bridge->putref_Deck(deck);
 
    return true;
 }
@@ -2351,6 +2345,10 @@ void CBridgeAgentImp::NoDeckEdgePoint(SpanIndexType spanIdx,PierIndexType pierId
 
 bool CBridgeAgentImp::LayoutNoDeck(const CBridgeDescription* pBridgeDesc,IBridgeDeck** ppDeck)
 {
+      // There isn't an explicit deck in this case, so layout of the composite slab must be done
+      // based on the girder geometry. Update the bridge model now so that the girder geometry is correct
+      m_Bridge->UpdateBridgeModel();
+
    HRESULT hr = S_OK;
    const CDeckDescription* pDeck = pBridgeDesc->GetDeckDescription();
    pgsTypes::SupportedDeckType deckType = pDeck->DeckType;
@@ -3865,11 +3863,8 @@ STDMETHODIMP CBridgeAgentImp::Init()
    m_scidConcreteStrengthWarning  = pStatusCenter->RegisterCallback(new pgsConcreteStrengthStatusCallback(m_pBroker,eafTypes::statusWarning));
    m_scidConcreteStrengthError    = pStatusCenter->RegisterCallback(new pgsConcreteStrengthStatusCallback(m_pBroker,eafTypes::statusError));
    m_scidPointLoadWarning         = pStatusCenter->RegisterCallback(new pgsPointLoadStatusCallback(m_pBroker,eafTypes::statusWarning));
-   m_scidPointLoadError           = pStatusCenter->RegisterCallback(new pgsPointLoadStatusCallback(m_pBroker,eafTypes::statusError));
    m_scidDistributedLoadWarning   = pStatusCenter->RegisterCallback(new pgsDistributedLoadStatusCallback(m_pBroker,eafTypes::statusWarning));
-   m_scidDistributedLoadError     = pStatusCenter->RegisterCallback(new pgsDistributedLoadStatusCallback(m_pBroker,eafTypes::statusError));
    m_scidMomentLoadWarning        = pStatusCenter->RegisterCallback(new pgsMomentLoadStatusCallback(m_pBroker,eafTypes::statusWarning));
-   m_scidMomentLoadError          = pStatusCenter->RegisterCallback(new pgsMomentLoadStatusCallback(m_pBroker,eafTypes::statusError));
 
    return S_OK;
 }
@@ -4477,6 +4472,23 @@ Float64 CBridgeAgentImp::GetGirderOffset(SpanIndexType span,GirderIndexType gdr,
    return offset;
 }
 
+void CBridgeAgentImp::GetPoint(SpanIndexType span,GirderIndexType gdr,Float64 distFromStartOfSpan,IPoint2d** ppPoint)
+{
+   VALIDATE( BRIDGE );
+   HRESULT hr = m_BridgeGeometryTool->Point(m_Bridge,span,gdr,distFromStartOfSpan,ppPoint);
+   ATLASSERT( SUCCEEDED(hr) );
+}
+
+void CBridgeAgentImp::GetPoint(const pgsPointOfInterest& poi,IPoint2d** ppPoint)
+{
+   SpanIndexType span  = poi.GetSpan();
+   GirderIndexType gdr = poi.GetGirder();
+
+   Float64 gdr_end_dist = GetGirderStartConnectionLength(span,gdr);
+   Float64 brg_offset = GetGirderStartBearingOffset(span,gdr);
+   GetPoint(span,gdr,poi.GetDistFromStart()+brg_offset - gdr_end_dist,ppPoint);
+}
+
 void CBridgeAgentImp::GetStationAndOffset(SpanIndexType span,GirderIndexType gdr,Float64 distFromStartOfSpan,Float64* pStation,Float64* pOffset)
 {
    VALIDATE( BRIDGE );
@@ -4968,8 +4980,17 @@ std::vector<IntermedateDiaphragm> CBridgeAgentImp::GetIntermediateDiaphragms(pgs
          continue; // this rule doesn't apply
 
       IntermedateDiaphragm diaphragm;
-      diaphragm.H = rule.Height;
-      diaphragm.T = rule.Thickness;
+      if ( rule.Method == GirderLibraryEntry::dwmInput )
+      {
+         diaphragm.m_bCompute = false;
+         diaphragm.P = rule.Weight;
+      }
+      else
+      {
+         diaphragm.m_bCompute = true;
+         diaphragm.H = rule.Height;
+         diaphragm.T = rule.Thickness;
+      }
 
       // determine location of diaphragm load (from the reference point - whatever that is, see below)
       Float64 location1 = rule.Location;
@@ -5019,10 +5040,10 @@ std::vector<IntermedateDiaphragm> CBridgeAgentImp::GetIntermediateDiaphragms(pgs
       gdrSpacing->get_SpacingAlongGirder(gdrIdx,location1, qcbLeft, &left_spacing);
       gdrSpacing->get_SpacingAlongGirder(gdrIdx,location1, qcbRight,&right_spacing);
 
-      // determine length (width) of the diaphragm
       if ( rule.Type == GirderLibraryEntry::dtExternal && stage == pgsTypes::BridgeSite1 )
       {
          // external diaphragms are only applied in the bridge site stage
+         // determine length (width) of the diaphragm
          Float64 W = 0;
          WebIndexType nWebs = pGirder->GetNumberOfWebs(spanIdx,gdrIdx);
 
@@ -5043,6 +5064,13 @@ std::vector<IntermedateDiaphragm> CBridgeAgentImp::GetIntermediateDiaphragms(pgs
 
          diaphragm.W = W/cos(skew);
 
+         if ( !diaphragm.m_bCompute )
+         {
+            // P is weight/length of external application
+            // make P the total weight here
+            diaphragm.P *= diaphragm.W;
+         }
+
          diaphragms.push_back(diaphragm);
          bDiaphragmAdded = true;
       }
@@ -5054,82 +5082,9 @@ std::vector<IntermedateDiaphragm> CBridgeAgentImp::GetIntermediateDiaphragms(pgs
               (rule.Construction == GirderLibraryEntry::ctBridgeSite  && stage == pgsTypes::BridgeSite1 )
             )
          {
-            Float64 W = 0;
-            WebIndexType nWebs = pGirder->GetNumberOfWebs(spanIdx,gdrIdx);
-            SpacingIndexType nSpaces = nWebs-1;
-
-            // add up the spacing between the centerlines of webs in the girder cross section
-            for ( SpacingIndexType spaceIdx = 0; spaceIdx < nSpaces; spaceIdx++ )
+            if ( diaphragm.m_bCompute )
             {
-               Float64 s = pGirder->GetWebSpacing(poi,spaceIdx);
-               W += s;
-            }
-
-            // deduct the thickness of the webs
-            for ( WebIndexType webIdx = 0; webIdx < nWebs; webIdx++ )
-            {
-               Float64 t = pGirder->GetWebThickness(poi,webIdx);
-
-               if ( webIdx == 0 || webIdx == nWebs-1 )
-                  W -= t/2;
-               else
-                  W -= t;
-            }
-
-            diaphragm.W = W/cos(skew);
-
-            diaphragms.push_back(diaphragm);
-            bDiaphragmAdded = true;
-         }
-      }
-
-
-      if ( !IsEqual(location1,location2) && bDiaphragmAdded )
-      {
-         // location the second diaphragm
-         diaphragm.Location = location2;
-         Float64 skew = (skew2-skew1)*location2/(start_brg_offset + span_length + end_brg_offset) + skew1;
-         pgsPointOfInterest poi(spanIdx,gdrIdx,location2);
-         bool bDiaphragmAdded = false;
-
-         gdrSpacing->get_SpacingAlongGirder(gdrIdx,location2, qcbLeft, &left_spacing);
-         gdrSpacing->get_SpacingAlongGirder(gdrIdx,location2, qcbRight,&right_spacing);
-
-         // determine length (width) of the diaphragm
-         if ( rule.Type == GirderLibraryEntry::dtExternal && stage == pgsTypes::BridgeSite1 )
-         {
-            // external diaphragms are only applied in the bridge site stage
-            Float64 W = 0;
-            WebIndexType nWebs = pGirder->GetNumberOfWebs(spanIdx,gdrIdx);
-
-            Float64 web_location_left  = pGirder->GetWebLocation(poi,0);
-            Float64 web_location_right = pGirder->GetWebLocation(poi,nWebs-1);
-
-            Float64 tweb_left  = pGirder->GetWebThickness(poi,0)/2;
-            Float64 tweb_right = pGirder->GetWebThickness(poi,nWebs-1)/2;
-
-            if ( bIsInterior )
-            {
-               W = (left_spacing/2 + right_spacing/2 - fabs(web_location_left) - tweb_left - fabs(web_location_right) - tweb_right);
-            }
-            else
-            {
-               W = (gdrIdx == 0 ? right_spacing/2 - fabs(web_location_right) - tweb_right : left_spacing/2 - fabs(web_location_left) - tweb_left );
-            }
-
-            diaphragm.W = W/cos(skew);
-
-            diaphragms.push_back(diaphragm);
-            bDiaphragmAdded = true;
-         }
-         else
-         {
-            // internal diaphragm
-            if (
-                 (rule.Construction == GirderLibraryEntry::ctCastingYard && stage == pgsTypes::CastingYard ) ||
-                 (rule.Construction == GirderLibraryEntry::ctBridgeSite  && stage == pgsTypes::BridgeSite1 )
-               )
-            {
+               // determine length (width) of the diaphragm
                Float64 W = 0;
                WebIndexType nWebs = pGirder->GetNumberOfWebs(spanIdx,gdrIdx);
                SpacingIndexType nSpaces = nWebs-1;
@@ -5153,6 +5108,94 @@ std::vector<IntermedateDiaphragm> CBridgeAgentImp::GetIntermediateDiaphragms(pgs
                }
 
                diaphragm.W = W/cos(skew);
+            }
+
+            diaphragms.push_back(diaphragm);
+            bDiaphragmAdded = true;
+         }
+      }
+
+
+      if ( !IsEqual(location1,location2) && bDiaphragmAdded )
+      {
+         // location the second diaphragm
+         diaphragm.Location = location2;
+         Float64 skew = (skew2-skew1)*location2/(start_brg_offset + span_length + end_brg_offset) + skew1;
+         pgsPointOfInterest poi(spanIdx,gdrIdx,location2);
+         bool bDiaphragmAdded = false;
+
+         gdrSpacing->get_SpacingAlongGirder(gdrIdx,location2, qcbLeft, &left_spacing);
+         gdrSpacing->get_SpacingAlongGirder(gdrIdx,location2, qcbRight,&right_spacing);
+
+         if ( rule.Type == GirderLibraryEntry::dtExternal && stage == pgsTypes::BridgeSite1 )
+         {
+            // external diaphragms are only applied in the bridge site stage
+            // determine length (width) of the diaphragm
+            Float64 W = 0;
+            WebIndexType nWebs = pGirder->GetNumberOfWebs(spanIdx,gdrIdx);
+
+            Float64 web_location_left  = pGirder->GetWebLocation(poi,0);
+            Float64 web_location_right = pGirder->GetWebLocation(poi,nWebs-1);
+
+            Float64 tweb_left  = pGirder->GetWebThickness(poi,0)/2;
+            Float64 tweb_right = pGirder->GetWebThickness(poi,nWebs-1)/2;
+
+            if ( bIsInterior )
+            {
+               W = (left_spacing/2 + right_spacing/2 - fabs(web_location_left) - tweb_left - fabs(web_location_right) - tweb_right);
+            }
+            else
+            {
+               W = (gdrIdx == 0 ? right_spacing/2 - fabs(web_location_right) - tweb_right : left_spacing/2 - fabs(web_location_left) - tweb_left );
+            }
+
+            diaphragm.W = W/cos(skew);
+
+            if ( !diaphragm.m_bCompute )
+            {
+               // P is weight/length of external application
+               // make P the total weight here
+               diaphragm.P *= diaphragm.W;
+            }
+
+            diaphragms.push_back(diaphragm);
+            bDiaphragmAdded = true;
+         }
+         else
+         {
+            // internal diaphragm
+            if (
+                 (rule.Construction == GirderLibraryEntry::ctCastingYard && stage == pgsTypes::CastingYard ) ||
+                 (rule.Construction == GirderLibraryEntry::ctBridgeSite  && stage == pgsTypes::BridgeSite1 )
+               )
+            {
+               if ( diaphragm.m_bCompute )
+               {
+                  // determine length (width) of the diaphragm
+                  Float64 W = 0;
+                  WebIndexType nWebs = pGirder->GetNumberOfWebs(spanIdx,gdrIdx);
+                  SpacingIndexType nSpaces = nWebs-1;
+
+                  // add up the spacing between the centerlines of webs in the girder cross section
+                  for ( SpacingIndexType spaceIdx = 0; spaceIdx < nSpaces; spaceIdx++ )
+                  {
+                     Float64 s = pGirder->GetWebSpacing(poi,spaceIdx);
+                     W += s;
+                  }
+
+                  // deduct the thickness of the webs
+                  for ( WebIndexType webIdx = 0; webIdx < nWebs; webIdx++ )
+                  {
+                     Float64 t = pGirder->GetWebThickness(poi,webIdx);
+
+                     if ( webIdx == 0 || webIdx == nWebs-1 )
+                        W -= t/2;
+                     else
+                        W -= t;
+                  }
+
+                  diaphragm.W = W/cos(skew);
+               }
 
                diaphragms.push_back(diaphragm);
                bDiaphragmAdded = true;
@@ -5493,21 +5536,35 @@ Float64 CBridgeAgentImp::GetRightSlabEdgeOffset(PierIndexType pier)
 
 Float64 CBridgeAgentImp::GetLeftSlabEdgeOffset(Float64 distFromStartOfBridge)
 {
+   std::map<Float64,Float64>::iterator found = m_LeftSlabEdgeOffset.find(distFromStartOfBridge);
+   if ( found != m_LeftSlabEdgeOffset.end() )
+      return found->second;
+
    VALIDATE( BRIDGE );
    Float64 station = GetPierStation(0);
    station += distFromStartOfBridge;
    Float64 offset;
    m_BridgeGeometryTool->DeckOffset(m_Bridge,station,NULL,qcbLeft,&offset);
+
+   m_LeftSlabEdgeOffset.insert(std::make_pair(distFromStartOfBridge,offset));
+
    return offset;
 }
 
 Float64 CBridgeAgentImp::GetRightSlabEdgeOffset(Float64 distFromStartOfBridge)
 {
+   std::map<Float64,Float64>::iterator found = m_RightSlabEdgeOffset.find(distFromStartOfBridge);
+   if ( found != m_RightSlabEdgeOffset.end() )
+      return found->second;
+
    VALIDATE( BRIDGE );
    Float64 station = GetPierStation(0);
    station += distFromStartOfBridge;
    Float64 offset;
    m_BridgeGeometryTool->DeckOffset(m_Bridge,station,NULL,qcbRight,&offset);
+
+   m_RightSlabEdgeOffset.insert(std::make_pair(distFromStartOfBridge,offset));
+
    return offset;
 }
 
@@ -5707,6 +5764,26 @@ void CBridgeAgentImp::GetSpanPerimeter(SpanIndexType spanIdx,Uint32 nPoints,IPoi
 
    (*points) = thePoints;
    (*points)->AddRef();
+}
+
+void CBridgeAgentImp::GetLeftSlabEdgePoint(Float64 station, IDirection* direction,IPoint2d** point)
+{
+   GetSlabEdgePoint(station,direction,qcbLeft,point);
+}
+
+void CBridgeAgentImp::GetLeftSlabEdgePoint(Float64 station, IDirection* direction,IPoint3d** point)
+{
+   GetSlabEdgePoint(station,direction,qcbLeft,point);
+}
+
+void CBridgeAgentImp::GetRightSlabEdgePoint(Float64 station, IDirection* direction,IPoint2d** point)
+{
+   GetSlabEdgePoint(station,direction,qcbRight,point);
+}
+
+void CBridgeAgentImp::GetRightSlabEdgePoint(Float64 station, IDirection* direction,IPoint3d** point)
+{
+   GetSlabEdgePoint(station,direction,qcbRight,point);
 }
 
 Float64 CBridgeAgentImp::GetPierStation(PierIndexType pierIdx)
@@ -9650,6 +9727,20 @@ std::vector<pgsPointOfInterest> CBridgeAgentImp::GetPointsOfInterest(SpanIndexTy
    return poi;
 }
 
+struct PoiBefore
+{
+   static bool Compare(const pgsPointOfInterest& poi) { return poi.GetDistFromStart() < PoiBefore::m_Before; }
+   static Float64 m_Before;
+};
+Float64 PoiBefore::m_Before = 0;
+
+struct PoiAfter
+{
+   static bool Compare(const pgsPointOfInterest& poi) { return PoiAfter::m_After < poi.GetDistFromStart(); }
+   static Float64 m_After;
+};
+Float64 PoiAfter::m_After = 0;
+
 std::vector<pgsPointOfInterest> CBridgeAgentImp::GetPointsOfInterest(SpanIndexType span,GirderIndexType gdr,pgsTypes::Stage stage,PoiAttributeType attrib,Uint32 mode)
 {
    // make sure we have POI before doing anything else
@@ -9692,6 +9783,28 @@ std::vector<pgsPointOfInterest> CBridgeAgentImp::GetPointsOfInterest(SpanIndexTy
       std::vector<pgsPointOfInterest> vPoi;
       m_PoiMgr.GetPointsOfInterest( spanIdx, gdrIdx, stage, attrib, mgrMode, &vPoi );
       poi.insert(poi.end(),vPoi.begin(),vPoi.end());
+
+      if ( StageCompare(pgsTypes::GirderPlacement,stage) <= 0 )
+      {
+         // remove all poi that are before the first bearing or after the last bearing
+         Float64 start_dist = GetGirderStartConnectionLength(spanIdx,gdrIdx);
+         Float64 end_dist   = GetGirderLength(spanIdx,gdrIdx) - GetGirderEndConnectionLength(spanIdx,gdrIdx);
+         PoiBefore::m_Before = start_dist;
+         PoiAfter::m_After   = end_dist;
+         std::vector<pgsPointOfInterest>::iterator found = std::find_if(poi.begin(),poi.end(),&PoiBefore::Compare);
+         while ( found != poi.end() )
+         {
+            poi.erase(found);
+            found = std::find_if(poi.begin(),poi.end(),&PoiBefore::Compare);
+         }
+
+         found = std::find_if(poi.begin(),poi.end(),&PoiAfter::Compare);
+         while ( found != poi.end() )
+         {
+            poi.erase(found);
+            found = std::find_if(poi.begin(),poi.end(),&PoiAfter::Compare);
+         }
+      }
    }
 
    return poi;
@@ -12907,4 +13020,35 @@ void CBridgeAgentImp::GetShapeProperties(pgsTypes::Stage stage,const pgsPointOfI
    s->get_ElasticProperties(&eprops);
 
    eprops->TransformProperties(Ecgdr,ppShapeProps);
+}
+
+void CBridgeAgentImp::GetSlabEdgePoint(Float64 station, IDirection* direction,DirectionType side,IPoint2d** point)
+{
+   VALIDATE(BRIDGE);
+
+   HRESULT hr = m_BridgeGeometryTool->DeckEdgePoint(m_Bridge,station,direction,side,point);
+   ATLASSERT(SUCCEEDED(hr));
+}
+
+void CBridgeAgentImp::GetSlabEdgePoint(Float64 station, IDirection* direction,DirectionType side,IPoint3d** point)
+{
+   VALIDATE(BRIDGE);
+
+   CComPtr<IPoint2d> pnt2d;
+   GetSlabEdgePoint(station,direction,side,&pnt2d);
+
+   Float64 x,y;
+   pnt2d->Location(&x,&y);
+
+   Float64 normal_station,offset;
+   GetStationAndOffset(pnt2d,&normal_station,&offset);
+
+   Float64 elev = GetElevation(normal_station,offset);
+
+   CComPtr<IPoint3d> pnt3d;
+   pnt3d.CoCreateInstance(CLSID_Point3d);
+   pnt3d->Move(x,y,elev);
+
+   (*point) = pnt3d;
+   (*point)->AddRef();
 }

@@ -60,7 +60,8 @@ CLASS
 ////////////////////////// PUBLIC     ///////////////////////////////////////
 
 //======================== LIFECYCLE  =======================================
-CTexasGirderSummaryChapterBuilder::CTexasGirderSummaryChapterBuilder()
+CTexasGirderSummaryChapterBuilder::CTexasGirderSummaryChapterBuilder(bool bSelect) :
+CPGSuperChapterBuilder(bSelect)
 {
 }
 

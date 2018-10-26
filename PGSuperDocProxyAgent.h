@@ -30,6 +30,7 @@
 #include <IFace\EditByUI.h>
 #include <IFace\RatingSpecification.h>
 #include <IFace\VersionInfo.h>
+#include <IFace\ViewEvents.h>
 #include <EAF\EAFDisplayUnits.h>
 
 #include "PGSuperStatusBar.h"
@@ -83,7 +84,8 @@ class CPGSuperDocProxyAgent :
    public IUpdateTemplates,
    public ISelection,
    public IEditByUI,
-   public IVersionInfo
+   public IVersionInfo,
+   public IRegisterViewEvents
 {
 public:
    CPGSuperDocProxyAgent();
@@ -106,6 +108,7 @@ BEGIN_COM_MAP(CPGSuperDocProxyAgent)
    COM_INTERFACE_ENTRY(ISelection)
    COM_INTERFACE_ENTRY(IEditByUI)
    COM_INTERFACE_ENTRY(IVersionInfo)
+   COM_INTERFACE_ENTRY(IRegisterViewEvents)
 END_COM_MAP()
 
 public:
@@ -215,6 +218,13 @@ public:
    virtual UINT GetStdToolBarID();
    virtual UINT GetLibToolBarID();
    virtual UINT GetHelpToolBarID();
+
+// IRegisterViewEvents
+public:
+   virtual Uint32 RegisterBridgePlanViewCallback(IBridgePlanViewEventCallback* pCallback);
+   virtual Uint32 RegisterBridgeSectionViewCallback(IBridgeSectionViewEventCallback* pCallback);
+   virtual Uint32 RegisterGirderElevationViewCallback(IGirderElevationViewEventCallback* pCallback);
+   virtual Uint32 RegisterGirderSectionViewCallback(IGirderSectionViewEventCallback* pCallback);
 
 private:
    DECLARE_AGENT_DATA;

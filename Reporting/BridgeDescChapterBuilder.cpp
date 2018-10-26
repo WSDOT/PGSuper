@@ -70,7 +70,8 @@ CLASS
 ////////////////////////// PUBLIC     ///////////////////////////////////////
 
 //======================== LIFECYCLE  =======================================
-CBridgeDescChapterBuilder::CBridgeDescChapterBuilder()
+CBridgeDescChapterBuilder::CBridgeDescChapterBuilder(bool bSelect) :
+CPGSuperChapterBuilder(bSelect)
 {
 }
 

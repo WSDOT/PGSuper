@@ -50,7 +50,8 @@ CLASS
 ////////////////////////// PUBLIC     ///////////////////////////////////////
 
 //======================== LIFECYCLE  =======================================
-CBearingDesignParametersChapterBuilder::CBearingDesignParametersChapterBuilder()
+CBearingDesignParametersChapterBuilder::CBearingDesignParametersChapterBuilder(bool bSelect) :
+CPGSuperChapterBuilder(bSelect)
 {
 }
 
@@ -191,7 +192,7 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(CReportSpecification* 
 
    GET_IFACE2(pBroker,ICamber,pCamber);
    GET_IFACE2(pBroker,IPointOfInterest,pPOI);
-   std::vector<pgsPointOfInterest> vPoi = pPOI->GetPointsOfInterest(span,girder,pgsTypes::BridgeSite3,POI_SECTCHANGE);
+   std::vector<pgsPointOfInterest> vPoi = pPOI->GetPointsOfInterest(span,girder,pgsTypes::BridgeSite3,POI_SECTCHANGE,POIFIND_OR);
    ATLASSERT( 2 <= vPoi.size() );
 
    PierIndexType pier = 0;

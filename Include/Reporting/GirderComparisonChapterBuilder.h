@@ -51,7 +51,7 @@ class REPORTINGCLASS CGirderComparisonChapterBuilder : public CPGSuperChapterBui
 {
 public:
    // GROUP: LIFECYCLE
-   CGirderComparisonChapterBuilder();
+   CGirderComparisonChapterBuilder(bool bSelect = true);
 
    // GROUP: OPERATORS
    // GROUP: OPERATIONS

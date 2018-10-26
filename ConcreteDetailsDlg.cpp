@@ -23,7 +23,7 @@
 // ConcreteDetailsDlg.cpp : implementation file
 //
 
-#include "stdafx.h"
+#include "PGSuperAppPlugin\stdafx.h"
 #include "resource.h"
 #include "PGSuperDoc.h"
 #include "PGSuperUnits.h"
@@ -263,6 +263,8 @@ CString CConcreteDetailsDlg::UpdateEc(const CString& strFc,const CString& strDen
 
 void CConcreteDetailsDlg::OnCopyMaterial() 
 {
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
 	CCopyConcreteEntry dlg(false, this);
    int result = dlg.DoModal();
    if ( result < 0 )

@@ -51,7 +51,8 @@ static char THIS_FILE[] = __FILE__;
 ////////////////////////// PUBLIC     ///////////////////////////////////////
 
 //======================== LIFECYCLE  =======================================
-CSpecCheckSummaryChapterBuilder::CSpecCheckSummaryChapterBuilder(bool referToDetailsReport):
+CSpecCheckSummaryChapterBuilder::CSpecCheckSummaryChapterBuilder(bool referToDetailsReport,bool bSelect):
+CPGSuperChapterBuilder(bSelect),
 m_ReferToDetailsReport(referToDetailsReport)
 {
 }
@@ -65,10 +66,6 @@ LPCTSTR CSpecCheckSummaryChapterBuilder::GetName() const
 
 rptChapter* CSpecCheckSummaryChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
 {
-   rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
-
-   rptParagraph* pPara = new rptParagraph;
-   *pChapter << pPara;
 
    CSpanGirderReportSpecification* pSGRptSpec = dynamic_cast<CSpanGirderReportSpecification*>(pRptSpec);
    CComPtr<IBroker> pBroker;
@@ -78,6 +75,20 @@ rptChapter* CSpecCheckSummaryChapterBuilder::Build(CReportSpecification* pRptSpe
 
    GET_IFACE2(pBroker,IArtifact,pIArtifact);
    const pgsGirderArtifact* pArtifact = pIArtifact->GetArtifact(span,gdr);
+
+   return BuildEx(pSGRptSpec, level, span, gdr, pArtifact);
+}
+
+rptChapter* CSpecCheckSummaryChapterBuilder::BuildEx(CSpanGirderReportSpecification* pSGRptSpec,Uint16 level,
+                                                     SpanIndexType span, GirderIndexType gdr, const pgsGirderArtifact* pArtifact) const
+{
+   CComPtr<IBroker> pBroker;
+   pSGRptSpec->GetBroker(&pBroker);
+
+   rptChapter* pChapter = CPGSuperChapterBuilder::Build(pSGRptSpec,level);
+
+   rptParagraph* pPara = new rptParagraph;
+   *pChapter << pPara;
 
    if( pArtifact->Passed() )
    {

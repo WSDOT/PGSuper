@@ -44,7 +44,8 @@ CLASS
    CLoadRatingDetailsChapterBuilder
 ****************************************************************************/
 
-CLoadRatingDetailsChapterBuilder::CLoadRatingDetailsChapterBuilder()
+CLoadRatingDetailsChapterBuilder::CLoadRatingDetailsChapterBuilder(bool bSelect) :
+CPGSuperChapterBuilder(bSelect)
 {
 }
 
@@ -133,7 +134,9 @@ void CLoadRatingDetailsChapterBuilder::ReportRatingDetails(rptChapter* pChapter,
             }
          }
 
-         if ( ratingType == pgsTypes::lrLegal_Routine || ratingType == pgsTypes::lrLegal_Special )
+         if ( (ratingType == pgsTypes::lrLegal_Routine || ratingType == pgsTypes::lrLegal_Special) && 
+               pRatingArtifact->GetRatingFactor() < 1 
+            )
          {
             LoadPostingDetails(pChapter,pBroker,gdrLineIdx,pRatingArtifact);
          }

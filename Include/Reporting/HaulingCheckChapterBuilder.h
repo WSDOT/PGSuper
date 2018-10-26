@@ -52,7 +52,7 @@ class REPORTINGCLASS CHaulingCheckChapterBuilder : public CPGSuperChapterBuilder
 {
 public:
    // GROUP: LIFECYCLE
-   CHaulingCheckChapterBuilder();
+   CHaulingCheckChapterBuilder(bool bSelect = true);
 
    // GROUP: OPERATORS
    // GROUP: OPERATIONS

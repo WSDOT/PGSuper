@@ -1,0 +1,25 @@
+HKCR
+{
+	PGSuper.TxDOTAppPlugin.1 = s 'TxDOT Optional Girder Analysis Component'
+	{
+		CLSID = s '{FB446ED8-EBFA-46a0-9D84-8E5DC53A371F}'
+	}
+	PGSuper.TxDOTAppPlugin = s 'TxDOT Optional Girder Analysis Component'
+	{
+		CLSID = s '{FB446ED8-EBFA-46a0-9D84-8E5DC53A371F}'
+		CurVer = s 'PGSuper.TxDOTAppPlugin.1'
+	}
+	NoRemove CLSID
+	{
+		ForceRemove {FB446ED8-EBFA-46a0-9D84-8E5DC53A371F} = s 'TxDOT Optional Girder Analysis Component'
+		{
+			ProgID = s 'PGSuper.TxDOTAppPlugin.1'
+			VersionIndependentProgID = s 'PGSuper.TxDOTAppPlugin'
+			InprocServer32 = s '%MODULE%'
+			{
+				val ThreadingModel = s 'Apartment'
+			}
+			'TypeLib' = s '{17D09C05-E1AC-42D5-9CFE-B72414564E26}'
+		}
+	}
+}

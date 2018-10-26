@@ -55,7 +55,8 @@ struct LocPair
 };
 
 //======================== LIFECYCLE  =======================================
-CCritSectionChapterBuilder::CCritSectionChapterBuilder(bool bDesign,bool bRating)
+CCritSectionChapterBuilder::CCritSectionChapterBuilder(bool bDesign,bool bRating,bool bSelect) :
+CPGSuperChapterBuilder(bSelect)
 {
    m_bDesign = bDesign;
    m_bRating = bRating;

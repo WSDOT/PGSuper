@@ -284,17 +284,17 @@ void CIBeamFactory::LayoutSectionChangePointsOfInterest(IBroker* pBroker,SpanInd
    ebLength     = GetDimension(pGirderEntry->GetDimensions(),"EndBlockLength");
    ebTransition = GetDimension(pGirderEntry->GetDimensions(),"EndBlockTransition");
 
-   PoiAttributeType attrib = POI_SECTCHANGE | POI_TABULAR | POI_GRAPHICAL;
+   PoiAttributeType attrib = POI_TABULAR | POI_GRAPHICAL;
 
    pgsPointOfInterest poiStart(span,gdr,0.00);
-   poiStart.AddStage(pgsTypes::CastingYard,attrib);
-   poiStart.AddStage(pgsTypes::Lifting,    attrib);
-   poiStart.AddStage(pgsTypes::Hauling,    attrib);
+   poiStart.AddStage(pgsTypes::CastingYard,POI_SECTCHANGE_RIGHTFACE | attrib);
+   poiStart.AddStage(pgsTypes::Lifting,    POI_SECTCHANGE_RIGHTFACE | attrib);
+   poiStart.AddStage(pgsTypes::Hauling,    POI_SECTCHANGE_RIGHTFACE | attrib);
 
    pgsPointOfInterest poiEnd(span,gdr,gdrLength);
-   poiEnd.AddStage(pgsTypes::CastingYard,attrib);
-   poiEnd.AddStage(pgsTypes::Lifting,    attrib);
-   poiEnd.AddStage(pgsTypes::Hauling,    attrib);
+   poiEnd.AddStage(pgsTypes::CastingYard,POI_SECTCHANGE_LEFTFACE | attrib);
+   poiEnd.AddStage(pgsTypes::Lifting,    POI_SECTCHANGE_LEFTFACE | attrib);
+   poiEnd.AddStage(pgsTypes::Hauling,    POI_SECTCHANGE_LEFTFACE | attrib);
 
    pPoiMgr->AddPointOfInterest(poiStart);
    pPoiMgr->AddPointOfInterest(poiEnd);
@@ -317,12 +317,12 @@ void CIBeamFactory::LayoutSectionChangePointsOfInterest(IBroker* pBroker,SpanInd
    poiStart.RemoveStage(pgsTypes::CastingYard);
    poiStart.RemoveStage(pgsTypes::Lifting);
    poiStart.RemoveStage(pgsTypes::Hauling);
-   poiStart.AddStages(stages,attrib);
+   poiStart.AddStages(stages,POI_SECTCHANGE_RIGHTFACE | attrib);
 
    poiEnd.RemoveStage(pgsTypes::CastingYard);
    poiEnd.RemoveStage(pgsTypes::Lifting);
    poiEnd.RemoveStage(pgsTypes::Hauling);
-   poiEnd.AddStages(stages,attrib);
+   poiEnd.AddStages(stages,POI_SECTCHANGE_LEFTFACE | attrib);
 
    pPoiMgr->AddPointOfInterest(poiStart);
    pPoiMgr->AddPointOfInterest(poiEnd);
@@ -330,46 +330,46 @@ void CIBeamFactory::LayoutSectionChangePointsOfInterest(IBroker* pBroker,SpanInd
 
    // end block transition points
    pgsPointOfInterest poiStartEndBlock1(span, gdr, ebLength);
-   poiStartEndBlock1.AddStage(pgsTypes::CastingYard,attrib | POI_ALLACTIONS);
-   poiStartEndBlock1.AddStage(pgsTypes::Lifting,    attrib | POI_ALLACTIONS);
-   poiStartEndBlock1.AddStage(pgsTypes::Hauling,    attrib | POI_ALLACTIONS);
+   poiStartEndBlock1.AddStage(pgsTypes::CastingYard,attrib | POI_SECTCHANGE_TRANSITION | POI_ALLACTIONS);
+   poiStartEndBlock1.AddStage(pgsTypes::Lifting,    attrib | POI_SECTCHANGE_TRANSITION | POI_ALLACTIONS);
+   poiStartEndBlock1.AddStage(pgsTypes::Hauling,    attrib | POI_SECTCHANGE_TRANSITION | POI_ALLACTIONS);
 
    pgsPointOfInterest poiStartEndBlock2(span, gdr, ebLength  + ebTransition);
-   poiStartEndBlock2.AddStage(pgsTypes::CastingYard,attrib | POI_ALLACTIONS);
-   poiStartEndBlock2.AddStage(pgsTypes::Lifting,    attrib | POI_ALLACTIONS);
-   poiStartEndBlock2.AddStage(pgsTypes::Hauling,    attrib | POI_ALLACTIONS);
+   poiStartEndBlock2.AddStage(pgsTypes::CastingYard,attrib | POI_SECTCHANGE_TRANSITION | POI_ALLACTIONS);
+   poiStartEndBlock2.AddStage(pgsTypes::Lifting,    attrib | POI_SECTCHANGE_TRANSITION | POI_ALLACTIONS);
+   poiStartEndBlock2.AddStage(pgsTypes::Hauling,    attrib | POI_SECTCHANGE_TRANSITION | POI_ALLACTIONS);
 
    pgsPointOfInterest poiEndEndBlock2(  span, gdr, gdrLength - ebLength - ebTransition);
-   poiEndEndBlock2.AddStage(pgsTypes::CastingYard,attrib | POI_ALLACTIONS);
-   poiEndEndBlock2.AddStage(pgsTypes::Lifting,    attrib | POI_ALLACTIONS);
-   poiEndEndBlock2.AddStage(pgsTypes::Hauling,    attrib | POI_ALLACTIONS);
+   poiEndEndBlock2.AddStage(pgsTypes::CastingYard,attrib | POI_SECTCHANGE_TRANSITION | POI_ALLACTIONS);
+   poiEndEndBlock2.AddStage(pgsTypes::Lifting,    attrib | POI_SECTCHANGE_TRANSITION | POI_ALLACTIONS);
+   poiEndEndBlock2.AddStage(pgsTypes::Hauling,    attrib | POI_SECTCHANGE_TRANSITION | POI_ALLACTIONS);
 
    pgsPointOfInterest poiEndEndBlock1(  span, gdr, gdrLength - ebLength);
-   poiEndEndBlock1.AddStage(pgsTypes::CastingYard,attrib | POI_ALLACTIONS);
-   poiEndEndBlock1.AddStage(pgsTypes::Lifting,    attrib | POI_ALLACTIONS);
-   poiEndEndBlock1.AddStage(pgsTypes::Hauling,    attrib | POI_ALLACTIONS);
+   poiEndEndBlock1.AddStage(pgsTypes::CastingYard,attrib | POI_SECTCHANGE_TRANSITION | POI_ALLACTIONS);
+   poiEndEndBlock1.AddStage(pgsTypes::Lifting,    attrib | POI_SECTCHANGE_TRANSITION | POI_ALLACTIONS);
+   poiEndEndBlock1.AddStage(pgsTypes::Hauling,    attrib | POI_SECTCHANGE_TRANSITION | POI_ALLACTIONS);
 
    // add end block transition to late stages if after start bearing
    if ( poiStart.GetDistFromStart() < poiStartEndBlock1.GetDistFromStart() )
-      poiStartEndBlock1.AddStages(stages,attrib);
+      poiStartEndBlock1.AddStages(stages,POI_SECTCHANGE_TRANSITION | attrib);
 
    pPoiMgr->AddPointOfInterest(poiStartEndBlock1);
 
    // add end block transition if after start bearing
    if ( poiStart.GetDistFromStart() < poiStartEndBlock2.GetDistFromStart() )
-      poiStartEndBlock2.AddStages(stages,attrib);
+      poiStartEndBlock2.AddStages(stages,POI_SECTCHANGE_TRANSITION | attrib);
 
    pPoiMgr->AddPointOfInterest(poiStartEndBlock2);
 
    // add end block transion if before end bearing
    if ( poiEndEndBlock2.GetDistFromStart() < poiEnd.GetDistFromStart() )
-      poiEndEndBlock2.AddStages(stages,attrib);
+      poiEndEndBlock2.AddStages(stages,POI_SECTCHANGE_TRANSITION | attrib);
 
    pPoiMgr->AddPointOfInterest(poiEndEndBlock2);
 
    // add end block transion if before end bearing
    if ( poiEndEndBlock1.GetDistFromStart() < poiEnd.GetDistFromStart() )
-      poiEndEndBlock1.AddStages(stages,attrib);
+      poiEndEndBlock1.AddStages(stages,POI_SECTCHANGE_TRANSITION | attrib);
 
    pPoiMgr->AddPointOfInterest(poiEndEndBlock1);
 }
@@ -710,7 +710,7 @@ Float64 CIBeamFactory::GetVolume(IBroker* pBroker,SpanIndexType spanIdx,GirderIn
    GET_IFACE2(pBroker,ISectProp2,pSectProp2);
    GET_IFACE2(pBroker,IPointOfInterest,pPOI);
 
-   std::vector<pgsPointOfInterest> vPOI = pPOI->GetPointsOfInterest(spanIdx,gdrIdx,pgsTypes::CastingYard,POI_SECTCHANGE);
+   std::vector<pgsPointOfInterest> vPOI = pPOI->GetPointsOfInterest(spanIdx,gdrIdx,pgsTypes::CastingYard,POI_SECTCHANGE,POIFIND_OR);
    ATLASSERT( 2 <= vPOI.size() );
    Float64 V = 0;
    std::vector<pgsPointOfInterest>::iterator iter = vPOI.begin();
@@ -738,7 +738,7 @@ Float64 CIBeamFactory::GetSurfaceArea(IBroker* pBroker,SpanIndexType spanIdx,Gir
    GET_IFACE2(pBroker,ISectProp2,pSectProp2);
    GET_IFACE2(pBroker,IPointOfInterest,pPOI);
 
-   std::vector<pgsPointOfInterest> vPOI = pPOI->GetPointsOfInterest(spanIdx,gdrIdx,pgsTypes::CastingYard,POI_SECTCHANGE);
+   std::vector<pgsPointOfInterest> vPOI = pPOI->GetPointsOfInterest(spanIdx,gdrIdx,pgsTypes::CastingYard,POI_SECTCHANGE,POIFIND_OR);
    ATLASSERT( 2 <= vPOI.size() );
    Float64 S = 0;
    std::vector<pgsPointOfInterest>::iterator iter = vPOI.begin();

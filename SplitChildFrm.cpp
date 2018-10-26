@@ -23,7 +23,7 @@
 // ChildFrm.cpp : implementation of the CSplitChildFrame class
 //
 
-#include "stdafx.h"
+#include "PGSuperAppPlugin\stdafx.h"
 #include "SplitChildFrm.h"
 
 #ifdef _DEBUG
@@ -76,6 +76,7 @@ IMPLEMENT_DYNAMIC(CSplitChildFrame, CChildFrame)
 BOOL CSplitChildFrame::OnCreateClient(LPCREATESTRUCT lpcs, CCreateContext* pContext) 
 {
    m_SplitterWnd.SetFirstPaneFraction(GetTopFrameFraction());
+
 
    // Create a splitter window with 2 rows and 1 column
    if ( !m_SplitterWnd.CreateStatic( this, 2, 1 ) )

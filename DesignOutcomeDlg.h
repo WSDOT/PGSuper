@@ -51,7 +51,6 @@ public:
 	CButton	m_Cancel;
 	CButton	m_Print;
 	CButton	m_Help;
-	CStatic	m_BrowserPlaceholder; // a static box that is a placeholder for the report browser window
 	//}}AFX_DATA
 
 

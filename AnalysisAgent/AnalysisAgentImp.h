@@ -490,7 +490,7 @@ private:
    void AddUserTruck(const std::string& strLLName,ILibrary* pLibrary,double IMtruck,double IMlane,IVehicularLoads* pVehicles);
    void AddDummyLiveLoad(IVehicularLoads* pVehicles);
 
-   void GetSectionResults(cyGirderModels& models,const pgsPointOfInterest& poi,Float64* pFx,Float64* pFy,Float64* pMz,Float64* pDx,Float64* pDy,Float64* pRz);
+   void GetSectionResults(cyGirderModels& models,const pgsPointOfInterest& poi,sysSectionValue* pFx,sysSectionValue* pFy,sysSectionValue* pMz,Float64* pDx,Float64* pDy,Float64* pRz);
    Float64 GetSectionStress(cyGirderModels& models,pgsTypes::StressLocation loc,const pgsPointOfInterest& poi);
    Float64 GetReactions(cyGirderModels& model,PierIndexType pier,GirderIndexType gdr);
 

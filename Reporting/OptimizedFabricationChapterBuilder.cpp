@@ -44,7 +44,8 @@ CLASS
 ////////////////////////// PUBLIC     ///////////////////////////////////////
 
 //======================== LIFECYCLE  =======================================
-COptimizedFabricationChapterBuilder::COptimizedFabricationChapterBuilder()
+COptimizedFabricationChapterBuilder::COptimizedFabricationChapterBuilder(bool bSelect) :
+CPGSuperChapterBuilder(bSelect)
 {
 }
 

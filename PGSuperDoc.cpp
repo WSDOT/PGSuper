@@ -22,7 +22,7 @@
 
 // PGSuperDoc.cpp : implementation of the CPGSuperDoc class
 //
-#include "stdafx.h"
+#include "PGSuperAppPlugin\stdafx.h"
 
 #include "PGSuperAppPlugin\PGSuperApp.h"
 
@@ -218,7 +218,7 @@ BEGIN_MESSAGE_MAP(CPGSuperDoc, CEAFBrokerDocument)
 	ON_COMMAND(IDM_EDIT_GIRDER, OnEditGirder)
 	ON_COMMAND(IDM_COPY_GIRDER_PROPS, OnCopyGirderProps)
 	ON_COMMAND(IDM_IMPORT_PROJECT_LIBRARY, OnImportProjectLibrary)
-	ON_COMMAND(ID_ADD_POINTLOAD, OnAddPointload)
+	ON_COMMAND(ID_ADD_POINT_LOAD, OnAddPointload)
 	ON_COMMAND(ID_ADD_DISTRIBUTED_LOAD, OnAddDistributedLoad)
 	ON_COMMAND(ID_ADD_MOMENT_LOAD, OnAddMomentLoad)
    ON_COMMAND(ID_CONSTRUCTION_LOADS,OnConstructionLoads)
@@ -605,6 +605,8 @@ bool CPGSuperDoc::EditGirderDescription(SpanIndexType span,GirderIndexType girde
 
 bool CPGSuperDoc::EditPointLoad(CollectionIndexType loadIdx)
 {
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
    GET_IFACE(IUserDefinedLoadData, pUserDefinedLoads);
    const CPointLoadData& loadData = pUserDefinedLoads->GetPointLoad(loadIdx);
 
@@ -626,6 +628,8 @@ bool CPGSuperDoc::EditPointLoad(CollectionIndexType loadIdx)
 
 bool CPGSuperDoc::EditDistributedLoad(CollectionIndexType loadIdx)
 {
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
    GET_IFACE(IUserDefinedLoadData, pUserDefinedLoads);
    const CDistributedLoadData& loadData = pUserDefinedLoads->GetDistributedLoad(loadIdx);
 
@@ -647,6 +651,8 @@ bool CPGSuperDoc::EditDistributedLoad(CollectionIndexType loadIdx)
 
 bool CPGSuperDoc::EditMomentLoad(CollectionIndexType loadIdx)
 {
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
    GET_IFACE(IUserDefinedLoadData, pUserDefinedLoads);
    const CMomentLoadData& loadData = pUserDefinedLoads->GetMomentLoad(loadIdx);
 
@@ -778,6 +784,54 @@ BOOL CPGSuperDoc::UpdateTemplates()
    return FALSE; // didn't really open a file
 }
 
+Uint32 CPGSuperDoc::RegisterBridgePlanViewCallback(IBridgePlanViewEventCallback* pCallback)
+{
+   Uint32 index = m_BridgePlanViewCallbacks.size();
+   m_BridgePlanViewCallbacks.push_back(pCallback);
+   return index;
+}
+
+std::vector<IBridgePlanViewEventCallback*> CPGSuperDoc::GetBridgePlanViewCallbacks()
+{
+   return m_BridgePlanViewCallbacks;
+}
+
+Uint32 CPGSuperDoc::RegisterBridgeSectionViewCallback(IBridgeSectionViewEventCallback* pCallback)
+{
+   Uint32 index = m_BridgeSectionViewCallbacks.size();
+   m_BridgeSectionViewCallbacks.push_back(pCallback);
+   return index;
+}
+
+std::vector<IBridgeSectionViewEventCallback*> CPGSuperDoc::GetBridgeSectionViewCallbacks()
+{
+   return m_BridgeSectionViewCallbacks;
+}
+
+Uint32 CPGSuperDoc::RegisterGirderElevationViewCallback(IGirderElevationViewEventCallback* pCallback)
+{
+   Uint32 index = m_GirderElevationViewCallbacks.size();
+   m_GirderElevationViewCallbacks.push_back(pCallback);
+   return index;
+}
+
+std::vector<IGirderElevationViewEventCallback*> CPGSuperDoc::GetGirderElevationViewCallbacks()
+{
+   return m_GirderElevationViewCallbacks;
+}
+
+Uint32 CPGSuperDoc::RegisterGirderSectionViewCallback(IGirderSectionViewEventCallback* pCallback)
+{
+   Uint32 index = m_GirderSectionViewCallbacks.size();
+   m_GirderSectionViewCallbacks.push_back(pCallback);
+   return index;
+}
+
+std::vector<IGirderSectionViewEventCallback*> CPGSuperDoc::GetGirderSectionViewCallbacks()
+{
+   return m_GirderSectionViewCallbacks;
+}
+
 BOOL CPGSuperDoc::OnNewDocumentFromTemplate(LPCTSTR lpszPathName)
 {
    if ( !CEAFDocument::OnNewDocumentFromTemplate(lpszPathName) )
@@ -877,45 +931,6 @@ BOOL CPGSuperDoc::OpenTheDocument(LPCTSTR lpszPathName)
    return TRUE;
 }
 
-HRESULT CPGSuperDoc::LoadTheDocument(IStructuredLoad* pStrLoad)
-{
-   // get the file version
-   HRESULT hr = pStrLoad->BeginUnit("PGSuper");
-   if ( FAILED(hr) )
-      return hr;
-
-   double ver;
-   pStrLoad->get_Version(&ver);
-   if ( 1.0 < ver )
-   {
-      CComVariant var;
-      var.vt = VT_BSTR;
-      pStrLoad->get_Property("Version",&var);
-   #if defined _DEBUG
-      USES_CONVERSION;
-      TRACE("Loading data saved with PGSuper Version %s\n",OLE2A(var.bstrVal));
-   }
-   else
-   {
-      TRACE("Loading data saved with PGSuper Version 2.1 or earlier\n");
-   #endif
-   } // clses the bracket for if ( 1.0 < ver )
-
-   return CEAFBrokerDocument::LoadTheDocument(pStrLoad);
-}
-
-HRESULT CPGSuperDoc::WriteTheDocument(IStructuredSave* pStrSave)
-{
-   // a unit to wrap the whole file with
-   pStrSave->BeginUnit("PGSuper", FILE_VERSION);
-   pStrSave->put_Property("Version",CComVariant(theApp.GetVersion(true)));
-
-   HRESULT hr = CEAFBrokerDocument::WriteTheDocument(pStrSave);
-
-   pStrSave->EndUnit(); // PGSuper
-
-   return hr;
-}
 
 long CPGSuperDoc::ConvertTheDocument(LPCTSTR lpszPathName, CString* prealFileName)
 {
@@ -989,27 +1004,58 @@ long CPGSuperDoc::ConvertTheDocument(LPCTSTR lpszPathName, CString* prealFileNam
    return E_FAIL;
 }
 
-HRESULT CPGSuperDoc::OpenDocumentRootNode(IStructuredSave* pStrSave)
+CString CPGSuperDoc::GetRootNodeName()
 {
-   // don't call baseclass
-   return S_OK;
+   return "PGSuper";
 }
 
-HRESULT CPGSuperDoc::CloseDocumentRootNode(IStructuredSave* pStrSave)
+Float64 CPGSuperDoc::GetRootNodeVersion()
 {
-   // don't call baseclass
-   return S_OK;
+   return FILE_VERSION;
+}
+
+HRESULT CPGSuperDoc::OpenDocumentRootNode(IStructuredSave* pStrSave)
+{
+  HRESULT hr = CEAFDocument::OpenDocumentRootNode(pStrSave);
+  if ( FAILED(hr) )
+     return hr;
+
+  hr = pStrSave->put_Property("Version",CComVariant(theApp.GetVersion(true)));
+  if ( FAILED(hr) )
+     return hr;
+
+  return S_OK;
 }
 
 HRESULT CPGSuperDoc::OpenDocumentRootNode(IStructuredLoad* pStrLoad)
 {
-   // don't call baseclass
-   return S_OK;
-}
+   HRESULT hr = CEAFDocument::OpenDocumentRootNode(pStrLoad);
+   if ( FAILED(hr) )
+      return hr;
 
-HRESULT CPGSuperDoc::CloseDocumentRootNode(IStructuredLoad* pStrLoad)
-{
-   // don't call baseclass
+   Float64 version;
+   hr = pStrLoad->get_Version(&version);
+   if ( FAILED(hr) )
+      return hr;
+
+   if ( 1.0 < version )
+   {
+      CComVariant var;
+      var.vt = VT_BSTR;
+      hr = pStrLoad->get_Property("Version",&var);
+      if ( FAILED(hr) )
+         return hr;
+
+   #if defined _DEBUG
+      USES_CONVERSION;
+      TRACE("Loading data saved with PGSuper Version %s\n",OLE2A(var.bstrVal));
+   }
+   else
+   {
+      TRACE("Loading data saved with PGSuper Version 2.1 or earlier\n");
+   #endif
+   } // clses the bracket for if ( 1.0 < version )
+
    return S_OK;
 }
 
@@ -1511,6 +1557,8 @@ void CPGSuperDoc::OnUpdateProjectAutoCalc(CCmdUI* pCmdUI)
 /*--------------------------------------------------------------------*/
 void CPGSuperDoc::OnExportToTemplateFile() 
 {
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
    // select inital directory to try and save in
    CString default_name = "PGSuper.pgt";
    CString initial_filespec;
@@ -1927,6 +1975,8 @@ void CPGSuperDoc::OnApplyCopyGirder(SpanGirderHashType fromHash,std::vector<Span
 
 void CPGSuperDoc::OnImportProjectLibrary() 
 {
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
 	// ask user for file name
    CFileDialog  fildlg(TRUE,"pgs",NULL,OFN_FILEMUSTEXIST|OFN_HIDEREADONLY,
                    "PGSuper Project File (*.pgs)|*.pgs||");
@@ -2292,6 +2342,8 @@ void CPGSuperDoc::OnEditSpan()
 
 void CPGSuperDoc::DeletePier(PierIndexType pierIdx)
 {
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
    // deleting a pier
 
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
@@ -2331,6 +2383,8 @@ void CPGSuperDoc::DeletePier(PierIndexType pierIdx)
 
 void CPGSuperDoc::DeleteSpan(SpanIndexType spanIdx)
 {
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
    // deleting a span
 
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
@@ -2533,7 +2587,7 @@ BOOL CPGSuperDoc::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDLERINFO
         if ( notify->pNMHDR->code == TBN_DROPDOWN )
         {
            if ( notify->pNMHDR->idFrom == m_pPGSuperDocProxyAgent->GetStdToolBarID() )
-              OnViewReports(notify->pNMHDR,notify->pResult); 
+              return OnViewReports(notify->pNMHDR,notify->pResult); 
 
            return TRUE; // message was handled
         }
@@ -2689,7 +2743,7 @@ void CPGSuperDoc::OnUpdateViewReports(CCmdUI* pCmdUI)
    pCmdUI->Enable(TRUE);
 }
 
-void CPGSuperDoc::OnViewReports(NMHDR* pnmhdr,LRESULT* plr) 
+BOOL CPGSuperDoc::OnViewReports(NMHDR* pnmhdr,LRESULT* plr) 
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
@@ -2697,7 +2751,7 @@ void CPGSuperDoc::OnViewReports(NMHDR* pnmhdr,LRESULT* plr)
    // It creates the drop down menu with the report names on it
    NMTOOLBAR* pnmtb = (NMTOOLBAR*)(pnmhdr);
    if ( pnmtb->iItem != ID_VIEW_REPORTS )
-      return; // not our button
+      return FALSE; // not our button
 
    CMenu menu;
    VERIFY( menu.LoadMenu(IDR_REPORTS) );
@@ -2718,6 +2772,8 @@ void CPGSuperDoc::OnViewReports(NMHDR* pnmhdr,LRESULT* plr)
    CPoint point(rect.left,rect.bottom);
    pToolBar->ClientToScreen(&point);
    contextMenu.TrackPopupMenu(TPM_LEFTALIGN | TPM_LEFTBUTTON, point.x,point.y, EAFGetMainFrame() );
+
+   return TRUE;
 }
 
 

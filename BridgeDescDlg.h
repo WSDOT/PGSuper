@@ -67,7 +67,8 @@ public:
 // Overrides
 	// ClassWizard generated virtual function overrides
 	//{{AFX_VIRTUAL(CBridgeDescDlg)
-	//}}AFX_VIRTUAL
+	virtual BOOL OnInitDialog();
+   //}}AFX_VIRTUAL
 
 // Implementation
 public:

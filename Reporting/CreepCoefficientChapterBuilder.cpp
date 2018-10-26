@@ -45,7 +45,8 @@ CLASS
 ////////////////////////// PUBLIC     ///////////////////////////////////////
 
 //======================== LIFECYCLE  =======================================
-CCreepCoefficientChapterBuilder::CCreepCoefficientChapterBuilder()
+CCreepCoefficientChapterBuilder::CCreepCoefficientChapterBuilder(bool bSelect) :
+CPGSuperChapterBuilder(bSelect)
 {
 }
 

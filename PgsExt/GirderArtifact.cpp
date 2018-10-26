@@ -127,6 +127,16 @@ const pgsFlexuralStressArtifact* pgsGirderArtifact::GetFlexuralStressArtifact(co
    return &(*found).second;
 }
 
+pgsFlexuralStressArtifact* pgsGirderArtifact::GetFlexuralStressArtifact(const pgsFlexuralStressArtifactKey& key)
+{
+   std::map<pgsFlexuralStressArtifactKey,pgsFlexuralStressArtifact>::iterator found;
+   found = m_FlexuralStressArtifacts.find( key );
+   if ( found == m_FlexuralStressArtifacts.end() )
+      return 0;
+
+   return &(*found).second;
+}
+
 void pgsGirderArtifact::AddFlexuralCapacityArtifact(const pgsFlexuralCapacityArtifactKey& key,
                                                   const pgsFlexuralCapacityArtifact& pmartifact,
                                                   const pgsFlexuralCapacityArtifact& nmartifact)

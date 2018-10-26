@@ -20,13 +20,14 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-#include "stdafx.h"
+#include "PGSuperAppPlugin\stdafx.h"
 #include "SectionCutDisplayImpl.h"
 #include "mfcdual.h"
 #include <MathEx.h>
 #include <MfcTools\MfcTools.h> 
 #include <PGSuperColors.h>
 #include <IFace\Bridge.h>
+#include "PGSuperDoc.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -438,6 +439,41 @@ STDMETHODIMP_(bool) CSectionCutDisplayImpl::XDisplayObjectEvents::OnKeyDown(iDis
 STDMETHODIMP_(bool) CSectionCutDisplayImpl::XDisplayObjectEvents::OnContextMenu(iDisplayObject* pDO,CWnd* pWnd,CPoint point)
 {
    METHOD_PROLOGUE(CSectionCutDisplayImpl,DisplayObjectEvents);
+
+   if ( pDO->IsSelected() )
+   {
+      CComPtr<iDisplayList> pList;
+      pDO->GetDisplayList(&pList);
+
+      CComPtr<iDisplayMgr> pDispMgr;
+      pList->GetDisplayMgr(&pDispMgr);
+
+      CDisplayView* pView = pDispMgr->GetView();
+      CPGSuperDoc* pDoc = (CPGSuperDoc*)pView->GetDocument();
+
+      std::vector<IBridgePlanViewEventCallback*> callbacks = pDoc->GetBridgePlanViewCallbacks();
+      if ( callbacks.size() == 0 )
+         return false;
+
+      CEAFMenu* pMenu = CEAFMenu::CreateContextMenu(pDoc->GetPluginCommandManager());
+      std::vector<IBridgePlanViewEventCallback*>::iterator iter;
+      for ( iter = callbacks.begin(); iter != callbacks.end(); iter++ )
+      {
+         IBridgePlanViewEventCallback* callback = *iter;
+         callback->OnAlignmentContextMenu(pMenu);
+      }
+
+      bool bResult = false;
+      if ( 0 < pMenu->GetMenuItemCount() )
+      {
+         pMenu->TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, point.x, point.y,pWnd);
+         bResult = true;
+      }
+
+      delete pMenu;
+
+      return bResult;
+   }
 
    return false;
 }

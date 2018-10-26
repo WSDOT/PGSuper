@@ -23,7 +23,7 @@
 // GirderDescRatingPage.cpp : implementation file
 //
 
-#include "stdafx.h"
+#include "PGSuperAppPlugin\stdafx.h"
 #include "PGSuperAppPlugin\PGSuperApp.h"
 #include "GirderDescRatingPage.h"
 #include "GirderDescDlg.h"

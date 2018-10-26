@@ -111,6 +111,11 @@ IDI_DISTRIBUTED_LOAD    ICON                    "..\\res\\distributed_load.ico"
 IDI_MOMENT_LOAD         ICON                    "..\\res\\moment.ico"
 IDR_PROJECTIMPORTER     ICON                    "..\\res\\Bridge2.ico"
 IDI_EARTH               ICON                    "..\\res\\Globe.ico"
+IDI_EDIT_BRIDGE         ICON                    "..\\res\\EditBridge.ico"
+IDI_EDIT_GIRDER         ICON                    "..\\res\\EditGirder.ico"
+IDI_LIVELOAD            ICON                    "..\\res\\LiveLoad.ico"
+IDI_RF                  ICON                    "..\\res\\RatingFactor.ico"
+IDI_COPY_PROPERTIES     ICON                    "..\\res\\CopyProperties.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -261,7 +266,7 @@ BEGIN
     END
     POPUP "L&oads",                         65535,MFT_STRING,MFS_ENABLED
     BEGIN
-        MENUITEM "Add &Point Load...",          ID_ADD_POINTLOAD,MFT_STRING,MFS_ENABLED
+        MENUITEM "Add &Point Load...",          ID_ADD_POINT_LOAD,MFT_STRING,MFS_ENABLED
         MENUITEM "Add &Distributed Load...",    ID_ADD_DISTRIBUTED_LOAD,MFT_STRING,MFS_ENABLED
         MENUITEM "Add &Moment Load...",         ID_ADD_MOMENT_LOAD,MFT_STRING,MFS_ENABLED
         MENUITEM "Edit &User Defined Loads",    ID_EDIT_USERLOADS,MFT_STRING,MFS_ENABLED
@@ -395,9 +400,9 @@ BEGIN
         MENUITEM "Design Girder (don't change Slab Offset)", ID_PROJECT_DESIGNGIRDERDIRECTHOLDSLABOFFSET
         MENUITEM "View Analysis Results",       ID_VIEW_ANALYSISRESULTS
         MENUITEM SEPARATOR
-        MENUITEM "Add Poi&nt Load...",          ID_GV_ADD_POINTLOAD
-        MENUITEM "Add &Distributed Load...",    ID_ADD_GV_DISTRIBUTED_LOAD
-        MENUITEM "Add End Moment Load...",      33231
+        MENUITEM "Add Poi&nt Load...",          ID_ADD_POINT_LOAD
+        MENUITEM "Add &Distributed Load...",    ID_ADD_DISTRIBUTED_LOAD
+        MENUITEM "Add End Moment Load...",      ID_ADD_MOMENT_LOAD
         MENUITEM SEPARATOR
         POPUP "Section &Cut"
         BEGIN
@@ -419,8 +424,8 @@ IDR_LOADS_CTX MENU
 BEGIN
     POPUP "Load Editing Context for Girder Elevation View"
     BEGIN
-        MENUITEM "&Edit Load",                  ID_GEV_CTX_EDIT_LOAD
-        MENUITEM "&Delete Load",                ID_GEV_CTX_DELETE_LOAD
+        MENUITEM "&Edit Load",                  ID_EDIT_LOAD
+        MENUITEM "&Delete Load",                ID_DELETE_LOAD
     END
 END
 
@@ -495,6 +500,16 @@ BEGIN
     POPUP "ReportContextMenu"
     BEGIN
         MENUITEM SEPARATOR
+    END
+END
+
+IDR_NEWLOADS MENU 
+BEGIN
+    POPUP "NewLoads"
+    BEGIN
+        MENUITEM "Add Point Load",              ID_ADD_POINT_LOAD
+        MENUITEM "Add Distributed Load",        ID_ADD_DISTRIBUTED_LOAD
+        MENUITEM "Add End Moment",              ID_ADD_MOMENT_LOAD
     END
 END
 
@@ -789,7 +804,7 @@ BEGIN
     COMBOBOX        IDC_BAR_SIZE,55,210,41,51,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
     LTEXT           "Last Zone Containing Confinement Steel:",IDC_STATIC,117,215,130,8
     COMBOBOX        IDC_LAST_ZONE,249,212,48,56,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
-    PUSHBUTTON      "..\\restore to Library Defaults",IDC_RESTORE_DEFAULTS,124,236,113,14
+    PUSHBUTTON      "Restore to Library Defaults",IDC_RESTORE_DEFAULTS,124,236,113,14
 END
 
 IDD_DESIGN_GIRDER DIALOGEX 0, 0, 282, 193
@@ -883,7 +898,7 @@ FONT 8, "MS Sans Serif", 0, 0, 0x1
 BEGIN
     DEFPUSHBUTTON   "Accept the Design",IDOK,7,223,93,14
     PUSHBUTTON      "Reject the Design",IDCANCEL,115,223,93,14
-    GROUPBOX        "Browser Placeholder",IDC_BROWSER,7,7,419,197,0,WS_EX_CLIENTEDGE
+    GROUPBOX        "Browser Placeholder",IDC_BROWSER,7,7,419,197,NOT WS_VISIBLE
     PUSHBUTTON      "Help",ID_HELP,320,223,50,14
     PUSHBUTTON      "&Print",IDC_PRINT,376,223,50,14
     LTEXT           "Update the Current Girder Parameters with the Proposed Design?",IDC_STATIC_TEXT,7,209,194,8
@@ -949,10 +964,10 @@ BEGIN
     PUSHBUTTON      "Help",IDHELP,162,92,50,14
 END
 
-IDD_EDIT_POINTLOAD DIALOG  0, 0, 394, 209
+IDD_EDIT_POINTLOAD DIALOGEX 0, 0, 394, 209
 STYLE DS_SETFONT | DS_MODALFRAME | DS_CONTEXTHELP | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Edit Point Load"
-FONT 8, "MS Sans Serif"
+FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
     GROUPBOX        "Applied In",IDC_STATIC,7,7,380,38
     LTEXT           "Load Case",IDC_STATIC,38,28,43,8
@@ -2021,8 +2036,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 2,3,0,4
- PRODUCTVERSION 2,3,0,4
+ FILEVERSION 2,3,0,5
+ PRODUCTVERSION 2,3,0,5
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -2039,12 +2054,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "Washington State Department of Transportation"
             VALUE "FileDescription", "PGSuper"
-            VALUE "FileVersion", "2.3.0.4"
+            VALUE "FileVersion", "2.3.0.5"
             VALUE "InternalName", "PGSuper"
             VALUE "LegalCopyright", "Copyright © 1999-2010, Washington State Department of Transportation, All Rights Reserved"
             VALUE "OriginalFilename", "PGSuperAppPlugin.DLL"
             VALUE "ProductName", "PGSuper"
-            VALUE "ProductVersion", "2.3.0.4"
+            VALUE "ProductVersion", "2.3.0.5"
         END
     END
     BLOCK "VarFileInfo"
@@ -2824,6 +2839,8 @@ BEGIN
     ID_EDIT_REPEAT          "Repeat the last action\nRepeat"
     ID_EDIT_REPLACE         "Replace specific text with different text\nReplace"
     ID_EDIT_SELECT_ALL      "Select the entire document\nSelect All"
+    ID_EDIT_UNDO            "Undo\nUndo"
+    ID_EDIT_REDO            "Redo\nRedo"
 END
 
 STRINGTABLE 
@@ -2870,20 +2887,18 @@ BEGIN
     ID_VIEW_FACTOROFSAFETY  "View Factor of Safety graphs for Girder Stability\n\nGirder Stability"
     ID_VIEW_STABILITY       "View Factor of Safety graphs for Girder Stability\nGirder Stability View"
     ID_LOADS_LLDF           "Input distribution factors"
-    ID_ADD_POINTLOAD        "Add a new point load to the model"
+    ID_ADD_POINT_LOAD       "Add a concentrated load to the model"
     ID_EDIT_USERLOADS       "Edit user-defined loads on the structure\nEdit user-defined loads"
-    ID_ADD_DISTRIBUTED_LOAD "Add a new distributed load to the model"
-    ID_GV_ADD_POINTLOAD     "Add a concentrated load to the girder"
-    ID_ADD_GV_DISTRIBUTED_LOAD "Add a distributed load to the girder"
-    ID_GEV_CTX_EDIT_LOAD    "Edit the selected load"
-    ID_GEV_CTX_DELETE_LOAD  "Delete the selected load"
+    ID_ADD_DISTRIBUTED_LOAD "Add a distributed load to the model"
+    ID_EDIT_LOAD            "Edit the selected load"
+    ID_DELETE_LOAD          "Delete the selected load"
 END
 
 STRINGTABLE 
 BEGIN
     ID_PROJECT_ALIGNMENT    "Edit Roadway Alignment and Profile\nEdit Roadway Alignment and Profile"
     ID_LIVE_LOADS           "Change which live loads are used for the analysis...\nSpecify Live Loads for Analysis"
-    ID_ADD_MOMENT_LOAD      "Add a new moment load to the model"
+    ID_ADD_MOMENT_LOAD      "Add a moment load to the model"
     ID_EDIT_PIER            "Edit Pier\nEdit Pier"
     ID_PROJECT_SPANDESC     "Edit the selected Span\nEdit the selected Span"
     ID_PROJECT_PIERDESC     "Edit the selected Pier\nEdit the selected Pier"
@@ -2907,7 +2922,6 @@ BEGIN
     ID_PROJECT_ANALYSIS     "Set the structural analysis method\nStructural Analysis Method"
     ID_HELP_INET_WSDOT      "Open the WSDOT Home Page at www.wsdot.wa.gov"
     ID_HELP_INET_PGSUPER    "Open the PGSuper Home Page\nPGSuper Online Resources"
-    ID_GV_ADD_MOMENT        "Add an end moment load to the girder"
 END
 
 STRINGTABLE 
@@ -3054,6 +3068,8 @@ BEGIN
     ID_VIEW_STATUSCENTER2   "View Status Center Window\nView Status Center Window"
     ID_VIEW_STATUSCENTER3   "View Status Center Window\nView Status Center Window"
     ID_APP_LEGAL            "Display PGSuper Legal Notices"
+    ID_UNITS_SI             "Change units to SI\nSI Units"
+    ID_UNITS_US             "Change units to US\nUS Units"
 END
 
 STRINGTABLE 

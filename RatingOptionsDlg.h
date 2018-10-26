@@ -42,6 +42,8 @@ public:
    CLegalRatingPage m_LegalPage;
    CPermitRatingPage m_PermitPage;
 
+   BOOL OnInitDialog();
+
    void GetLoadFactorToolTip(CString& strTip,pgsTypes::LimitState ls);
 
 protected:

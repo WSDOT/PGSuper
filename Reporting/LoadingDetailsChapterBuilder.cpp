@@ -41,6 +41,10 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
+// free functions
+static bool IsSlabLoadUniform(const std::vector<SlabLoad>& slabLoads, pgsTypes::SupportedDeckType deckType);
+static bool IsOverlayLoadUniform(const std::vector<OverlayLoad>& overlayLoads);
+
 /****************************************************************************
 CLASS
    CLoadingDetailsChapterBuilder
@@ -50,14 +54,16 @@ CLASS
 ////////////////////////// PUBLIC     ///////////////////////////////////////
 
 //======================== LIFECYCLE  =======================================
-CLoadingDetailsChapterBuilder::CLoadingDetailsChapterBuilder(bool bDesign,bool bRating):
+CLoadingDetailsChapterBuilder::CLoadingDetailsChapterBuilder(bool bDesign,bool bRating,bool bSelect):
+CPGSuperChapterBuilder(bSelect),
 m_bDesign(bDesign),
 m_bRating(bRating),
 m_bSimplifiedVersion(false)
 {
 }
 
-CLoadingDetailsChapterBuilder::CLoadingDetailsChapterBuilder(bool SimplifiedVersion,bool bDesign,bool bRating):
+CLoadingDetailsChapterBuilder::CLoadingDetailsChapterBuilder(bool SimplifiedVersion,bool bDesign,bool bRating,bool bSelect):
+CPGSuperChapterBuilder(bSelect),
 m_bDesign(bDesign),
 m_bRating(bRating),
 m_bSimplifiedVersion(SimplifiedVersion)
@@ -148,11 +154,15 @@ rptChapter* CLoadingDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,
             (*pPara) << pPara->GetName() << rptNewLine;
          }
 
+         // uniform loads
+         pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+         *pChapter << pPara;
+         *pPara << "Uniform Loads Applied Along the Entire Girder" << rptNewLine;
+
          pPara = new rptParagraph;
          *pChapter << pPara;
 
-         // uniform loads
-         p_table = pgsReportStyleHolder::CreateDefaultTable(2,"Uniform Loads Applied Along the Entire Girder");
+         p_table = pgsReportStyleHolder::CreateDefaultTable(2,"");
          *pPara << p_table << rptNewLine;
 
          p_table->SetColumnStyle(0, pgsReportStyleHolder::GetTableCellStyle( CB_NONE | CJ_LEFT) );
@@ -225,69 +235,124 @@ rptChapter* CLoadingDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,
             *pChapter << pPara;
             *pPara<< "Slab Load Applied Between Bearings"<<rptNewLine;
             
+            pgsTypes::SupportedDeckType deck_type = pBridge->GetDeckType();
+
+            std::vector<SlabLoad> slab_loads;
+            pProdLoads->GetMainSpanSlabLoad(spanIdx, gdrIdx, &slab_loads);
+
+            bool is_uniform = IsSlabLoadUniform(slab_loads, deck_type);
+
             pPara = new rptParagraph;
             *pChapter << pPara;
 
-            *pPara << "Slab Load is approximated with Linear Load Segments applied along the length of the girder" << rptNewLine;
+            if (is_uniform)
+            {
+               *pPara << "Slab Load is uniform along entire girder length."<<rptNewLine;
+            }
+            else
+            {
+               *pPara << "Slab Load is approximated with Linear Load Segments applied along the length of the girder" << rptNewLine;
+            }
+
             *pPara << "Haunch weight includes effects of roadway geometry but does not include a reduction for camber" << rptNewLine;
 
-            if ( pBridge->GetDeckType() == pgsTypes::sdtCompositeSIP )
+            if ( deck_type == pgsTypes::sdtCompositeSIP )
             {
-               p_table = pgsReportStyleHolder::CreateDefaultTable(5,"");
-               *pPara << p_table;
-
-               (*p_table)(0,0) << COLHDR("Location"<<rptNewLine<<"From Left Bearing",rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
-               (*p_table)(0,1) << COLHDR("Panel Weight",rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
-               (*p_table)(0,2) << COLHDR("Cast Slab Weight",rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
-               (*p_table)(0,3) << COLHDR("Haunch Weight",rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
-               (*p_table)(0,4) << COLHDR("Total Slab Weight",rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
-
-               std::vector<SlabLoad> slab_loads;
-               pProdLoads->GetMainSpanSlabLoad(spanIdx, gdrIdx, &slab_loads);
-
-               RowIndexType row = 1;
-               for ( std::vector<SlabLoad>::iterator i = slab_loads.begin(); i != slab_loads.end(); i++ )
+               if (is_uniform)
                {
-                  SlabLoad& slab_load = *i;
+                  p_table = pgsReportStyleHolder::CreateDefaultTable(2,"");
+                  *pPara << p_table << rptNewLine;
+                  p_table->SetColumnStyle(0, pgsReportStyleHolder::GetTableCellStyle( CB_NONE | CJ_LEFT) );
+                  p_table->SetStripeRowColumnStyle(0, pgsReportStyleHolder::GetTableStripeRowCellStyle( CB_NONE | CJ_LEFT) );
+                  (*p_table)(0,0) << "Load Type";
+                  (*p_table)(0,1) << COLHDR("w",rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
+                  RowIndexType row = p_table->GetNumberOfHeaderRows();
 
-                  Float64 location  = slab_load.Loc - end_size;
-                  Float64 main_load  = slab_load.MainSlabLoad;
-                  Float64 panel_load = slab_load.PanelLoad;
-                  Float64 pad_load   = slab_load.PadLoad;
-                  (*p_table)(row,0) << loc.SetValue(location);
-                  (*p_table)(row,1) << fpl.SetValue(-panel_load);
-                  (*p_table)(row,2) << fpl.SetValue(-main_load);
-                  (*p_table)(row,3) << fpl.SetValue(-pad_load);
-                  (*p_table)(row,4) << fpl.SetValue(-(main_load+pad_load));
+                  const SlabLoad& slab_load = *(slab_loads.begin());
 
-                  row++;
+                  (*p_table)(row,0) << "Panel Weight";
+                  (*p_table)(row++,1) << fpl.SetValue(-slab_load.PanelLoad);
+                  (*p_table)(row,0) << "Cast Slab Weight";
+                  (*p_table)(row++,1) << fpl.SetValue(-slab_load.MainSlabLoad);
+                  (*p_table)(row,0) << "Haunch Weight";
+                  (*p_table)(row++,1) << fpl.SetValue(-slab_load.PadLoad);
+                  (*p_table)(row,0) << "Total Slab Weight";
+                  (*p_table)(row++,1) << fpl.SetValue(-slab_load.MainSlabLoad-slab_load.PadLoad);
+               }
+               else
+               {
+                  p_table = pgsReportStyleHolder::CreateDefaultTable(5,"");
+                  *pPara << p_table;
+
+                  (*p_table)(0,0) << COLHDR("Location"<<rptNewLine<<"From Left Bearing",rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+                  (*p_table)(0,1) << COLHDR("Panel Weight",rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
+                  (*p_table)(0,2) << COLHDR("Cast Slab Weight",rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
+                  (*p_table)(0,3) << COLHDR("Haunch Weight",rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
+                  (*p_table)(0,4) << COLHDR("Total Slab Weight",rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
+
+                  RowIndexType row = 1;
+                  for ( std::vector<SlabLoad>::iterator i = slab_loads.begin(); i != slab_loads.end(); i++ )
+                  {
+                     SlabLoad& slab_load = *i;
+
+                     Float64 location  = slab_load.Loc - end_size;
+                     Float64 main_load  = slab_load.MainSlabLoad;
+                     Float64 panel_load = slab_load.PanelLoad;
+                     Float64 pad_load   = slab_load.PadLoad;
+                     (*p_table)(row,0) << loc.SetValue(location);
+                     (*p_table)(row,1) << fpl.SetValue(-panel_load);
+                     (*p_table)(row,2) << fpl.SetValue(-main_load);
+                     (*p_table)(row,3) << fpl.SetValue(-pad_load);
+                     (*p_table)(row,4) << fpl.SetValue(-(main_load+pad_load));
+
+                     row++;
+                  }
                }
             }
             else
             {
-               p_table = pgsReportStyleHolder::CreateDefaultTable(4,"");
-               *pPara << p_table;
-
-               (*p_table)(0,0) << COLHDR("Location"<<rptNewLine<<"From Left Bearing",rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
-               (*p_table)(0,1) << COLHDR("Main Slab Weight",rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
-               (*p_table)(0,2) << COLHDR("Haunch Weight",rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
-               (*p_table)(0,3) << COLHDR("Total Slab Weight",rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
-
-               std::vector<SlabLoad> slab_loads;
-               pProdLoads->GetMainSpanSlabLoad(spanIdx, gdrIdx, &slab_loads);
-
-               RowIndexType row = 1;
-               for (std::vector<SlabLoad>::iterator i = slab_loads.begin(); i!=slab_loads.end(); i++)
+               if (is_uniform)
                {
-                  SlabLoad& slab_load = *i;
-                  Float64 location = slab_load.Loc-end_size;
-                  Float64 main_load = slab_load.MainSlabLoad;
-                  Float64 pad_load  = slab_load.PadLoad;
-                  (*p_table)(row,0) << loc.SetValue(location);
-                  (*p_table)(row,1) << fpl.SetValue(-main_load);
-                  (*p_table)(row,2) << fpl.SetValue(-pad_load);
-                  (*p_table)(row,3) << fpl.SetValue(-(main_load+pad_load));
-                  row++;
+                  p_table = pgsReportStyleHolder::CreateDefaultTable(2,"");
+                  *pPara << p_table << rptNewLine;
+                  p_table->SetColumnStyle(0, pgsReportStyleHolder::GetTableCellStyle( CB_NONE | CJ_LEFT) );
+                  p_table->SetStripeRowColumnStyle(0, pgsReportStyleHolder::GetTableStripeRowCellStyle( CB_NONE | CJ_LEFT) );
+                  (*p_table)(0,0) << "Load Type";
+                  (*p_table)(0,1) << COLHDR("w",rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
+                  RowIndexType row = p_table->GetNumberOfHeaderRows();
+
+                  const SlabLoad& slab_load = *(slab_loads.begin());
+
+                  (*p_table)(row,0) << "Main Slab Weight";
+                  (*p_table)(row++,1) << fpl.SetValue(-slab_load.MainSlabLoad);
+                  (*p_table)(row,0) << "Haunch Weight";
+                  (*p_table)(row++,1) << fpl.SetValue(-slab_load.PadLoad);
+                  (*p_table)(row,0) << "Total Slab Weight";
+                  (*p_table)(row++,1) << fpl.SetValue(-slab_load.MainSlabLoad-slab_load.PadLoad);
+               }
+               else
+               {
+                  p_table = pgsReportStyleHolder::CreateDefaultTable(4,"");
+                  *pPara << p_table;
+
+                  (*p_table)(0,0) << COLHDR("Location"<<rptNewLine<<"From Left Bearing",rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+                  (*p_table)(0,1) << COLHDR("Main Slab Weight",rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
+                  (*p_table)(0,2) << COLHDR("Haunch Weight",rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
+                  (*p_table)(0,3) << COLHDR("Total Slab Weight",rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
+
+                  RowIndexType row = 1;
+                  for (std::vector<SlabLoad>::iterator i = slab_loads.begin(); i!=slab_loads.end(); i++)
+                  {
+                     SlabLoad& slab_load = *i;
+                     Float64 location = slab_load.Loc-end_size;
+                     Float64 main_load = slab_load.MainSlabLoad;
+                     Float64 pad_load  = slab_load.PadLoad;
+                     (*p_table)(row,0) << loc.SetValue(location);
+                     (*p_table)(row,1) << fpl.SetValue(-main_load);
+                     (*p_table)(row,2) << fpl.SetValue(-pad_load);
+                     (*p_table)(row,3) << fpl.SetValue(-(main_load+pad_load));
+                     row++;
+                  }
                }
             } // end if ( pBridge->GetDeckType() == pgsTypes::sdtCompositeSIP )
 
@@ -328,55 +393,79 @@ rptChapter* CLoadingDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,
          // overlay laod
          if ( pBridge->HasOverlay() )
          {
-            GET_IFACE2(pBroker, ISpecification, pSpec );
-            pgsTypes::OverlayLoadDistributionType olayd = pSpec->GetOverlayLoadDistributionType();
-
             pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
             *pChapter << pPara;
             *pPara << "Overlay" << rptNewLine;
-         
-            p_table = pgsReportStyleHolder::CreateDefaultTable(6,"");
-            *pPara << p_table;
+            pPara = new rptParagraph;
+            *pChapter << pPara;
 
-            (*p_table)(0,0) << COLHDR("Load Start,"<<rptNewLine<<"From Left Bearing",rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
-            (*p_table)(0,1) << COLHDR("Load End,"  <<rptNewLine<<"From Left Bearing",rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
-
-            if (olayd==pgsTypes::olDistributeTributaryWidth)
-            {
-               (*p_table)(0,2) << COLHDR("Start " << Sub2("W","trib"),rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
-               (*p_table)(0,3) << COLHDR("End "   << Sub2("W","trib"),rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
-            }
-            else
-            {
-               (*p_table)(0,2) << COLHDR("Start " << Sub2("W","cc"),rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
-               (*p_table)(0,3) << COLHDR("End "   << Sub2("W","cc"),rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
-            }
-
-            (*p_table)(0,4) << COLHDR("Start Weight",rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
-            (*p_table)(0,5) << COLHDR("End Weight",  rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
+            GET_IFACE2(pBroker, ISpecification, pSpec );
+            pgsTypes::OverlayLoadDistributionType olayd = pSpec->GetOverlayLoadDistributionType();
 
             std::vector<OverlayLoad> overlay_loads;
             pProdLoads->GetOverlayLoad(spanIdx, gdrIdx, &overlay_loads);
 
-            RowIndexType row = 1;
-            for (std::vector<OverlayLoad>::iterator i = overlay_loads.begin(); i != overlay_loads.end(); i++)
+            bool is_uniform = IsOverlayLoadUniform(overlay_loads);
+
+            if (is_uniform)
             {
-               OverlayLoad& load = *i;
-               Float64 x1 = load.StartLoc - end_size;
-               Float64 x2 = load.EndLoc   - end_size;
-               Float64 Wcc1 = load.StartWcc;
-               Float64 Wcc2 = load.EndWcc;
-               Float64 w1   = load.StartLoad;
-               Float64 w2   = load.EndLoad;
+               *pPara<<"Overlay load is uniform along entire girder length."<<rptNewLine;
 
-               (*p_table)(row,0) << loc.SetValue(x1);
-               (*p_table)(row,1) << loc.SetValue(x2);
-               (*p_table)(row,2) << loc.SetValue(Wcc1);
-               (*p_table)(row,3) << loc.SetValue(Wcc2);
-               (*p_table)(row,4) << fpl.SetValue(-w1);
-               (*p_table)(row,5) << fpl.SetValue(-w2);
+               p_table = pgsReportStyleHolder::CreateDefaultTable(2,"");
+               *pPara << p_table << rptNewLine;
+               p_table->SetColumnStyle(0, pgsReportStyleHolder::GetTableCellStyle( CB_NONE | CJ_LEFT) );
+               p_table->SetStripeRowColumnStyle(0, pgsReportStyleHolder::GetTableStripeRowCellStyle( CB_NONE | CJ_LEFT) );
+               (*p_table)(0,0) << "Load Type";
+               (*p_table)(0,1) << COLHDR("w",rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
+               RowIndexType row = p_table->GetNumberOfHeaderRows();
 
-               row++;
+               const OverlayLoad& ovl_load = *(overlay_loads.begin());
+
+               (*p_table)(row,0) << "Overlay Weight";
+               (*p_table)(row++,1) << fpl.SetValue(-ovl_load.StartLoad);
+            }
+            else
+            {
+               p_table = pgsReportStyleHolder::CreateDefaultTable(6,"");
+               *pPara << p_table;
+
+               (*p_table)(0,0) << COLHDR("Load Start,"<<rptNewLine<<"From Left Bearing",rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+               (*p_table)(0,1) << COLHDR("Load End,"  <<rptNewLine<<"From Left Bearing",rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+
+               if (olayd==pgsTypes::olDistributeTributaryWidth)
+               {
+                  (*p_table)(0,2) << COLHDR("Start " << Sub2("W","trib"),rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+                  (*p_table)(0,3) << COLHDR("End "   << Sub2("W","trib"),rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+               }
+               else
+               {
+                  (*p_table)(0,2) << COLHDR("Start " << Sub2("W","cc"),rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+                  (*p_table)(0,3) << COLHDR("End "   << Sub2("W","cc"),rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+               }
+
+               (*p_table)(0,4) << COLHDR("Start Weight",rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
+               (*p_table)(0,5) << COLHDR("End Weight",  rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
+
+               RowIndexType row = 1;
+               for (std::vector<OverlayLoad>::iterator i = overlay_loads.begin(); i != overlay_loads.end(); i++)
+               {
+                  OverlayLoad& load = *i;
+                  Float64 x1 = load.StartLoc - end_size;
+                  Float64 x2 = load.EndLoc   - end_size;
+                  Float64 Wcc1 = load.StartWcc;
+                  Float64 Wcc2 = load.EndWcc;
+                  Float64 w1   = load.StartLoad;
+                  Float64 w2   = load.EndLoad;
+
+                  (*p_table)(row,0) << loc.SetValue(x1);
+                  (*p_table)(row,1) << loc.SetValue(x2);
+                  (*p_table)(row,2) << loc.SetValue(Wcc1);
+                  (*p_table)(row,3) << loc.SetValue(Wcc2);
+                  (*p_table)(row,4) << fpl.SetValue(-w1);
+                  (*p_table)(row,5) << fpl.SetValue(-w2);
+
+                  row++;
+               }
             }
 
             pPara = new rptParagraph;
@@ -392,7 +481,7 @@ rptChapter* CLoadingDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,
             }
          } // end if overlay
 
-         // construction laod
+         // construction load
          GET_IFACE2(pBroker,IUserDefinedLoadData,pUserLoads);
          if ( !IsZero(pUserLoads->GetConstructionLoad()) )
          {
@@ -566,9 +655,18 @@ rptChapter* CLoadingDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,
                   IntermedateDiaphragm& dia = *iter;
 
                   (*p_table)(row,0) << loc.SetValue(rload.Loc);
-                  (*p_table)(row,1) << dim.SetValue(dia.H);
-                  (*p_table)(row,2) << dim.SetValue(dia.W);
-                  (*p_table)(row,3) << dim.SetValue(dia.T);
+                  if ( dia.m_bCompute )
+                  {
+                     (*p_table)(row,1) << dim.SetValue(dia.H);
+                     (*p_table)(row,2) << dim.SetValue(dia.W);
+                     (*p_table)(row,3) << dim.SetValue(dia.T);
+                  }
+                  else
+                  {
+                     (*p_table)(row,1) << "";
+                     (*p_table)(row,2) << "";
+                     (*p_table)(row,3) << "";
+                  }
                   (*p_table)(row,4) << force.SetValue(-rload.Load);
                   row++;
                }
@@ -610,9 +708,20 @@ rptChapter* CLoadingDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,
                   IntermedateDiaphragm& dia = *iter;
 
                   (*p_table)(row,0) << loc.SetValue(rload.Loc);
-                  (*p_table)(row,1) << dim.SetValue(dia.H);
-                  (*p_table)(row,2) << dim.SetValue(dia.W);
-                  (*p_table)(row,3) << dim.SetValue(dia.T);
+
+                  if ( dia.m_bCompute )
+                  {
+                     (*p_table)(row,1) << dim.SetValue(dia.H);
+                     (*p_table)(row,2) << dim.SetValue(dia.W);
+                     (*p_table)(row,3) << dim.SetValue(dia.T);
+                  }
+                  else
+                  {
+                     (*p_table)(row,1) << "";
+                     (*p_table)(row,2) << "";
+                     (*p_table)(row,3) << "";
+                  }
+
                   (*p_table)(row,4) << force.SetValue(-rload.Load);
                   row++;
                }
@@ -1290,7 +1399,7 @@ rptChapter* CLoadingDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,
 
 CChapterBuilder* CLoadingDetailsChapterBuilder::Clone() const
 {
-   return new CLoadingDetailsChapterBuilder(m_bSimplifiedVersion,m_bDesign,m_bRating);
+   return new CLoadingDetailsChapterBuilder(m_bSimplifiedVersion,m_bDesign,m_bRating,m_bSelect);
 }
 
 //======================== ACCESS     =======================================
@@ -1311,3 +1420,69 @@ CChapterBuilder* CLoadingDetailsChapterBuilder::Clone() const
 //======================== OPERATIONS =======================================
 //======================== ACCESS     =======================================
 //======================== INQUERY    =======================================
+
+static bool IsSlabLoadUniform(const std::vector<SlabLoad>& slabLoads, pgsTypes::SupportedDeckType deckType)
+{
+   bool is_pad = deckType==pgsTypes::sdtCompositeSIP;
+
+   Float64 main_load;
+   Float64 panel_load;
+   Float64 pad_load;
+
+   bool first=true;
+   for ( std::vector<SlabLoad>::const_iterator i = slabLoads.begin(); i != slabLoads.end(); i++ )
+   {
+      const SlabLoad& slab_load = *i;
+
+      if (first)
+      {
+         main_load  = slab_load.MainSlabLoad;
+         panel_load = slab_load.PanelLoad;
+         pad_load   = slab_load.PadLoad;
+         first = false;
+      }
+      else
+      {
+         // only takes one difference to be nonuniform
+         if (!IsEqual(main_load, slab_load.MainSlabLoad))
+            return false;
+
+         if (!IsEqual(panel_load, slab_load.PanelLoad))
+            return false;
+
+         if (is_pad && !IsEqual(pad_load, slab_load.PadLoad))
+            return false;
+      }
+   }
+
+   return true;
+}
+
+static bool IsOverlayLoadUniform(const std::vector<OverlayLoad>& overlayLoads)
+{
+   Float64 loadval;
+
+   bool first=true;
+   for ( std::vector<OverlayLoad>::const_iterator i = overlayLoads.begin(); i != overlayLoads.end(); i++ )
+   {
+      const OverlayLoad& load = *i;
+
+      if (first)
+      {
+         loadval = load.StartLoad;
+         first = false;
+      }
+      else
+      {
+         // only takes one difference to be nonuniform
+         if (!IsEqual(loadval, load.StartLoad))
+            return false;
+      }
+
+      if (!IsEqual(loadval, load.EndLoad))
+         return false;
+   }
+
+
+   return true;
+}

@@ -2524,7 +2524,8 @@ std::vector<pgsPointOfInterest> pgsStrandDesignTool::GetLiftingDesignPointsOfInt
       else
       {
          // We need to remove or unset pick point at existing location
-         m_PoiMgr.RemovePointOfInterest(poi);
+         // Use this form because it only evaluations location and not attributes
+         m_PoiMgr.RemovePointOfInterest(poi.GetSpan(),poi.GetGirder(),poi.GetDistFromStart());
 
          PoiAttributeType attributes = poi.GetAttributes(pgsTypes::Lifting);
          if ( attributes != POI_PICKPOINT )
@@ -2537,6 +2538,7 @@ std::vector<pgsPointOfInterest> pgsStrandDesignTool::GetLiftingDesignPointsOfInt
          }
       }
    }
+
 
    if (do_add_left)
    {

@@ -44,7 +44,8 @@ CLASS
 ////////////////////////// PUBLIC     ///////////////////////////////////////
 
 //======================== LIFECYCLE  =======================================
-CEffFlangeWidthDetailsChapterBuilder::CEffFlangeWidthDetailsChapterBuilder()
+CEffFlangeWidthDetailsChapterBuilder::CEffFlangeWidthDetailsChapterBuilder(bool bSelect) :
+CPGSuperChapterBuilder(bSelect)
 {
 }
 

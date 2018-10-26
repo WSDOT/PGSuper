@@ -20,7 +20,7 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-#include "stdafx.h"
+#include "PGSuperAppPlugin\stdafx.h"
 #include "BridgeSectionCutDisplayImpl.h"
 #include "BridgeModelViewChildFrame.h"
 #include <IFace\Alignment.h>

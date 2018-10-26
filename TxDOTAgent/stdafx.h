@@ -46,6 +46,9 @@
 #include <atlbase.h>
 #include <atlcom.h>
 #include <atlctl.h>
+#include <afxadv.h>
+
+#include <grid\gxall.h>
 
 #include <PGSuperAll.h>
 
@@ -53,9 +56,15 @@
 #include <WBFLTools.h>
 #include <IFace\Tools.h>
 
+#include <EAF\EAFUtilities.h>
+
 #include <ReportManager\ReportManager.h>
 #include <Reporting\PGSuperChapterBuilder.h>
 
 #include <PgsExt\GirderLabel.h>
+#include <afxdlgs.h>
+#include <afxcmn.h>
+
+static COLORREF TXDOT_BACK_COLOR = ::GetSysColor(COLOR_WINDOW);
 
 using namespace ATL;

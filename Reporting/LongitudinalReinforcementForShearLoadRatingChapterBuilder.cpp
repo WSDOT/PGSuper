@@ -46,7 +46,8 @@ CLASS
    CLongitudinalReinforcementForShearLoadRatingChapterBuilder
 ****************************************************************************/
 
-CLongitudinalReinforcementForShearLoadRatingChapterBuilder::CLongitudinalReinforcementForShearLoadRatingChapterBuilder()
+CLongitudinalReinforcementForShearLoadRatingChapterBuilder::CLongitudinalReinforcementForShearLoadRatingChapterBuilder(bool bSelect) :
+CPGSuperChapterBuilder(bSelect)
 {
 }
 

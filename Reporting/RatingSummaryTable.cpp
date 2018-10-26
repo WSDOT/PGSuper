@@ -707,6 +707,8 @@ rptRcTable* CRatingSummaryTable::BuildLoadPosting(IBroker* pBroker,GirderIndexTy
    (*table)(0,3) << COLHDR("Safe Load Capacity", rptForceUnitTag, pDisplayUnits->GetTonnageUnit());
    (*table)(0,4) << COLHDR("Safe Posting Load",  rptForceUnitTag, pDisplayUnits->GetTonnageUnit());
 
+   bool bLoadPostingRequired = false;
+
    RowIndexType row = table->GetNumberOfHeaderRows();
    VehicleIndexType nVehicles = pProductLoads->GetVehicleCount(llType);
    for ( VehicleIndexType vehIdx = 0; vehIdx < nVehicles; vehIdx++ )
@@ -733,6 +735,9 @@ rptRcTable* CRatingSummaryTable::BuildLoadPosting(IBroker* pBroker,GirderIndexTy
             (*table)(row,col++) << tonnage.SetValue(postingLoad);
          else
             (*table)(row,col++) << "-";
+
+         if ( RF < 1 )
+            bLoadPostingRequired = true;
       }
       else
       {
@@ -744,6 +749,12 @@ rptRcTable* CRatingSummaryTable::BuildLoadPosting(IBroker* pBroker,GirderIndexTy
       }
 
       row++;
+   }
+
+   if ( !bLoadPostingRequired )
+   {
+      delete table;
+      table = NULL;
    }
 
    return table;

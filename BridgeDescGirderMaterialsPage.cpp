@@ -23,7 +23,7 @@
 // BridgeDescGirderMaterialsPage.cpp : implementation file
 //
 
-#include "stdafx.h"
+#include "PGSuperAppPlugin\stdafx.h"
 #include "PGSuperAppPlugin\PGSuperApp.h"
 #include "PGSuperDoc.h"
 #include "PGSuperColors.h"
@@ -181,6 +181,8 @@ void CGirderDescGeneralPage::ExchangeConcreteData(CDataExchange* pDX)
 
 void CGirderDescGeneralPage::OnCopyMaterial() 
 {
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
 	CCopyConcreteEntry dlg(true, this);
    int result = dlg.DoModal();
 
@@ -400,6 +402,8 @@ void CGirderDescGeneralPage::UpdateEc()
 
 void CGirderDescGeneralPage::OnMoreConcreteProperties() 
 {
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
    CConcreteDetailsDlg dlg;
 
    CDataExchange dx(this,TRUE);
@@ -575,6 +579,8 @@ void CGirderDescGeneralPage::UpdateGirderTypeControls()
 
 LRESULT CGirderDescGeneralPage::OnChangeSlabOffsetType(WPARAM wParam,LPARAM lParam)
 {
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
    pgsTypes::SlabOffsetType temp = m_SlabOffsetType;
    m_SlabOffsetType = m_SlabOffsetTypeCache;
    m_SlabOffsetTypeCache = temp;

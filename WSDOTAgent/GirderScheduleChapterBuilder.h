@@ -64,7 +64,7 @@ class CGirderScheduleChapterBuilder : public CPGSuperChapterBuilder
 {
 public:
    // GROUP: LIFECYCLE
-   CGirderScheduleChapterBuilder();
+   CGirderScheduleChapterBuilder(bool bSelect = true);
 
    // GROUP: OPERATORS
    // GROUP: OPERATIONS

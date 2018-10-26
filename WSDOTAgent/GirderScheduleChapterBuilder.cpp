@@ -55,7 +55,8 @@ CLASS
 ////////////////////////// PUBLIC     ///////////////////////////////////////
 
 //======================== LIFECYCLE  =======================================
-CGirderScheduleChapterBuilder::CGirderScheduleChapterBuilder()
+CGirderScheduleChapterBuilder::CGirderScheduleChapterBuilder(bool bSelect) :
+CPGSuperChapterBuilder(bSelect)
 {
 }
 

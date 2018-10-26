@@ -29,7 +29,7 @@ interface IEAFDisplayUnits;
 class CLoadRatingSummaryChapterBuilder : public CPGSuperChapterBuilder
 {
 public:
-   CLoadRatingSummaryChapterBuilder();
+   CLoadRatingSummaryChapterBuilder(bool bSelect = true);
    virtual LPCTSTR GetName() const;
    virtual rptChapter* Build(CReportSpecification* pRptSpec,Uint16 level) const;
    virtual CChapterBuilder* Clone() const;

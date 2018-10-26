@@ -42,7 +42,8 @@ CLASS
 ////////////////////////// PUBLIC     ///////////////////////////////////////
 
 //======================== LIFECYCLE  =======================================
-CLiftingCheckChapterBuilder::CLiftingCheckChapterBuilder()
+CLiftingCheckChapterBuilder::CLiftingCheckChapterBuilder(bool bSelect) :
+CPGSuperChapterBuilder(bSelect)
 {
 }
 

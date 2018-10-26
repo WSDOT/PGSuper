@@ -235,9 +235,9 @@ void CSpecMainSheet::ExchangeCyData(CDataExchange* pDX)
    if (m_Entry.m_CyDoTensStressServMax)
       DDV_UnitValueGreaterThanZero(pDX, IDC_NORMAL_MAX_MAX2,m_Entry.m_CyTensStressServMax, pDisplayUnits->Stress );
 
-   DDX_UnitValueAndTag(pDX, IDC_NORMAL_MAX_SQRT3, IDC_NORMAL_MAX_SQRT_UNITS, m_Entry.m_CyTensStressServWithRebar, pDisplayUnits->Stress);
+   DDX_UnitValueAndTag(pDX, IDC_NORMAL_MAX_SQRT3, IDC_NORMAL_MAX_SQRT_UNITS, m_Entry.m_CyTensStressServWithRebar, pDisplayUnits->SqrtPressure);
    DDX_Text(pDX,IDC_CYS_TENS_BYLINE2,tag);
-   DDV_UnitValueZeroOrMore(pDX, IDC_CYS_TENS_BYLINE2,m_Entry.m_CyTensStressServWithRebar, pDisplayUnits->Stress );
+   DDV_UnitValueZeroOrMore(pDX, IDC_CYS_TENS_BYLINE2,m_Entry.m_CyTensStressServWithRebar, pDisplayUnits->SqrtPressure );
 
 	DDX_Text(pDX, IDC_N, m_Entry.m_SplittingZoneLengthFactor);
    DDV_GreaterThanZero(pDX, IDC_N, m_Entry.m_SplittingZoneLengthFactor);

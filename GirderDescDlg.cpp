@@ -23,8 +23,8 @@
 // GirderDescDlg.cpp : implementation file
 //
 
-#include "stdafx.h"
-#include "resource.h"
+#include "PGSuperAppPlugin\stdafx.h"
+#include "PGSuperAppPlugin\Resource.h"
 #include "PGSuperDoc.h"
 #include "GirderDescDlg.h"
 #include <IFace\Bridge.h>
@@ -159,7 +159,11 @@ BOOL CGirderDescDlg::OnInitDialog()
 
 	BOOL bResult = CPropertySheet::OnInitDialog();
 		
-	return bResult;
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+   HICON hIcon = (HICON)LoadImage(AfxGetResourceHandle(),MAKEINTRESOURCE(IDI_EDIT_GIRDER),IMAGE_ICON,0,0,LR_DEFAULTSIZE);
+   SetIcon(hIcon,FALSE);
+
+   return bResult;
 }
 
 StrandIndexType CGirderDescDlg::GetStraightStrandCount()

@@ -23,7 +23,7 @@
 // SlabDisplayObjectEvents.cpp : implementation file
 //
 
-#include "stdafx.h"
+#include "PGSuperAppPlugin\stdafx.h"
 #include "resource.h"
 #include "PGSuperAppPlugin\PGSuperApp.h"
 #include "SlabDisplayObjectEvents.h"
@@ -164,9 +164,28 @@ STDMETHODIMP_(bool) CBridgePlanViewSlabDisplayObjectEvents::XEvents::OnContextMe
 
    if ( pDO->IsSelected() )
    {
-      CMenu menu;
-      menu.LoadMenu(IDR_SELECTED_DECK_CONTEXT);
-      menu.GetSubMenu(0)->TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, point.x, point.y,pThis->m_pFrame);
+      CComPtr<iDisplayList> pList;
+      pDO->GetDisplayList(&pList);
+
+      CComPtr<iDisplayMgr> pDispMgr;
+      pList->GetDisplayMgr(&pDispMgr);
+
+      CDisplayView* pView = pDispMgr->GetView();
+      CPGSuperDoc* pDoc = (CPGSuperDoc*)pView->GetDocument();
+
+      CEAFMenu* pMenu = CEAFMenu::CreateContextMenu(pDoc->GetPluginCommandManager());
+      pMenu->LoadMenu(IDR_SELECTED_DECK_CONTEXT,NULL);
+
+      std::vector<IBridgePlanViewEventCallback*> callbacks = pDoc->GetBridgePlanViewCallbacks();
+      std::vector<IBridgePlanViewEventCallback*>::iterator iter;
+      for ( iter = callbacks.begin(); iter != callbacks.end(); iter++ )
+      {
+         IBridgePlanViewEventCallback* callback = *iter;
+         callback->OnDeckContextMenu(pMenu);
+      }
+
+      pMenu->TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, point.x, point.y,pThis->m_pFrame);
+
       return true;
    }
 
@@ -355,12 +374,30 @@ STDMETHODIMP_(bool) CBridgeSectionViewSlabDisplayObjectEvents::XEvents::OnContex
    METHOD_PROLOGUE_(CBridgeSectionViewSlabDisplayObjectEvents,Events);
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
-
    if ( pDO->IsSelected() )
    {
-      CMenu menu;
-      menu.LoadMenu(IDR_SELECTED_DECK_CONTEXT);
-      menu.GetSubMenu(0)->TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, point.x, point.y,pWnd->GetParent());
+      CComPtr<iDisplayList> pList;
+      pDO->GetDisplayList(&pList);
+
+      CComPtr<iDisplayMgr> pDispMgr;
+      pList->GetDisplayMgr(&pDispMgr);
+
+      CDisplayView* pView = pDispMgr->GetView();
+      CPGSuperDoc* pDoc = (CPGSuperDoc*)pView->GetDocument();
+
+      CEAFMenu* pMenu = CEAFMenu::CreateContextMenu(pDoc->GetPluginCommandManager());
+      pMenu->LoadMenu(IDR_SELECTED_DECK_CONTEXT,NULL);
+
+      std::vector<IBridgePlanViewEventCallback*> callbacks = pDoc->GetBridgePlanViewCallbacks();
+      std::vector<IBridgePlanViewEventCallback*>::iterator iter;
+      for ( iter = callbacks.begin(); iter != callbacks.end(); iter++ )
+      {
+         IBridgePlanViewEventCallback* callback = *iter;
+         callback->OnDeckContextMenu(pMenu);
+      }
+
+      pMenu->TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, point.x, point.y,pThis->m_pFrame);
+
       return true;
    }
 

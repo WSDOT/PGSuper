@@ -23,7 +23,7 @@
 // SpecDlg.cpp : implementation file
 //
 
-#include "stdafx.h"
+#include "PGSuperAppPlugin\stdafx.h"
 #include "PGSuperAppPlugin\PGSuperApp.h"
 #include "SpecDlg.h"
 #include <MfcTools\CustomDDX.h>

@@ -50,7 +50,8 @@ CLASS
 ////////////////////////// PUBLIC     ///////////////////////////////////////
 
 //======================== LIFECYCLE  =======================================
-CSplittingZoneDetailsChapterBuilder::CSplittingZoneDetailsChapterBuilder()
+CSplittingZoneDetailsChapterBuilder::CSplittingZoneDetailsChapterBuilder(bool bSelect) :
+CPGSuperChapterBuilder(bSelect)
 {
 }
 

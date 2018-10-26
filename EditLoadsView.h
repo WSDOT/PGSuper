@@ -97,8 +97,10 @@ protected:
 	afx_msg void OnAddNewDistributed();
 	afx_msg void OnClickLoadsList(NMHDR* pNMHDR, LRESULT* pResult);
 	afx_msg void OnSize(UINT nType, int cx, int cy);
+   afx_msg void OnContextMenu(CWnd* pWnd,CPoint pos);
 	afx_msg void OnHelp();
 	//}}AFX_MSG
+   afx_msg void OnHeaderClicked(NMHDR* pNMHDR, LRESULT* pResult);
 	DECLARE_MESSAGE_MAP()
 
    CComPtr<IBroker>     m_pBroker;
@@ -124,8 +126,14 @@ protected:
    CSize  m_But2Size;
    int    m_HelpButWidth;
 
+   int m_SortColIdx;
+   bool m_bSortAscending;
+   void Sort(int columnIdx,bool bReverse=true);
+
    sysNumericFormatTool m_FormatTool;
    std::string D2S(Float64 val);
+public:
+   afx_msg void OnDestroy();
 };
 
 /////////////////////////////////////////////////////////////////////////////

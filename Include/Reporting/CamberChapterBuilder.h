@@ -55,7 +55,7 @@ class REPORTINGCLASS CCamberChapterBuilder : public CPGSuperChapterBuilder
 {
 public:
    // GROUP: LIFECYCLE
-   CCamberChapterBuilder();
+   CCamberChapterBuilder(bool bSelect = true);
 
    // GROUP: OPERATORS
    // GROUP: OPERATIONS

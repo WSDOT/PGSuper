@@ -23,7 +23,7 @@
 // ResolveGirderSpacingDlg.cpp : implementation file
 //
 
-#include "stdafx.h"
+#include "PGSuperAppPlugin\stdafx.h"
 #include "PGSuperAppPlugin\PGSuperApp.h"
 #include "ResolveGirderSpacingDlg.h"
 #include <System\Tokenizer.h>

@@ -23,7 +23,7 @@
 // BridgePlanView.cpp : implementation file
 //
 
-#include "stdafx.h"
+#include "PGSuperAppPlugin\stdafx.h"
 #include "resource.h"
 #include "PGSuperAppPlugin\PGSuperApp.h"
 #include "PGSuperDoc.h"
@@ -55,6 +55,8 @@
 #include <WBFLDManipTools.h>
 
 #include <Material\Material.h>
+
+#include <EAF\EAFMenu.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -662,8 +664,9 @@ void CBridgePlanView::HandleContextMenu(CWnd* pWnd,CPoint logPoint)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
-   CMenu menu;
-   VERIFY( menu.LoadMenu(IDR_BRIDGE_PLAN_CTX) );
+   CPGSuperDoc* pDoc = (CPGSuperDoc*)GetDocument();
+   CEAFMenu* pMenu = CEAFMenu::CreateContextMenu(pDoc->GetPluginCommandManager());
+   pMenu->LoadMenu(IDR_BRIDGE_PLAN_CTX,NULL);
 
    if ( logPoint.x < 0 || logPoint.y < 0 )
    {
@@ -676,7 +679,17 @@ void CBridgePlanView::HandleContextMenu(CWnd* pWnd,CPoint logPoint)
       logPoint = center;
    }
 
-   menu.GetSubMenu(0)->TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, logPoint.x, logPoint.y, this);
+   std::vector<IBridgePlanViewEventCallback*> callbacks = pDoc->GetBridgePlanViewCallbacks();
+   std::vector<IBridgePlanViewEventCallback*>::iterator iter;
+   for ( iter = callbacks.begin(); iter != callbacks.end(); iter++ )
+   {
+      IBridgePlanViewEventCallback* callback = *iter;
+      callback->OnBackgroundContextMenu(pMenu);
+   }
+
+
+   pMenu->TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, logPoint.x, logPoint.y, this);
+   delete pMenu;
 }
 
 void CBridgePlanView::OnEditRoadway() 
@@ -1773,6 +1786,10 @@ void CBridgePlanView::BuildSpanDisplayObjects()
    CComPtr<IBroker> pBroker;
    pDoc->GetBroker(&pBroker);
 
+   GET_IFACE2(pBroker,IBridge,pBridge);
+   if ( pBridge->GetDeckType() == pgsTypes::sdtNone )
+      return;
+
    CComPtr<iDisplayMgr> dispMgr;
    GetDisplayMgr(&dispMgr);
 
@@ -1781,7 +1798,6 @@ void CBridgePlanView::BuildSpanDisplayObjects()
 
    display_list->Clear();
 
-   GET_IFACE2(pBroker,IBridge,pBridge);
    SpanIndexType nSpans = pBridge->GetSpanCount();
    for ( SpanIndexType spanIdx = 0; spanIdx < nSpans; spanIdx++ )
    {
@@ -1845,15 +1861,15 @@ void CBridgePlanView::BuildSlabDisplayObjects()
    pDoc->GetBroker(&pBroker);
 
    GET_IFACE2(pBroker,IBridge,pBridge);
+   if ( pBridge->GetDeckType() == pgsTypes::sdtNone )
+      return;
+
    GET_IFACE2(pBroker,IBridgeMaterial,pBridgeMaterial);
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CDeckDescription* pDeck = pBridgeDesc->GetDeckDescription();
-
-   if ( pBridge->GetDeckType() == pgsTypes::sdtNone )
-      return; // if there is not a deck, don't create a display object
 
    CComPtr<iDisplayMgr> dispMgr;
    GetDisplayMgr(&dispMgr);

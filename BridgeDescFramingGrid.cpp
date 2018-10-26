@@ -23,7 +23,7 @@
 // BridgeDescFramingGrid.cpp : implementation file
 //
 
-#include "stdafx.h"
+#include "PGSuperAppPlugin\stdafx.h"
 #include "BridgeDescFramingGrid.h"
 #include "PGSuperDoc.h"
 #include "PGSuperUnits.h"
@@ -788,6 +788,8 @@ BOOL CBridgeDescFramingGrid::CanActivateGrid(BOOL bActivate)
 
 void CBridgeDescFramingGrid::EditSpan(SpanIndexType spanIdx)
 {
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
    CBridgeDescFramingPage* pParent = (CBridgeDescFramingPage*)GetParent();
    ASSERT( pParent->IsKindOf(RUNTIME_CLASS(CBridgeDescFramingPage) ) );
 
@@ -859,6 +861,8 @@ void CBridgeDescFramingGrid::EditSpan(SpanIndexType spanIdx)
 
 void CBridgeDescFramingGrid::EditPier(PierIndexType pierIdx)
 {
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
    ROWCOL nRow = GetPierRow(pierIdx);
 
    CBridgeDescFramingPage* pParent = (CBridgeDescFramingPage*)GetParent();

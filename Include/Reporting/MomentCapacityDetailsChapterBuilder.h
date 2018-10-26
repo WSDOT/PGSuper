@@ -51,7 +51,7 @@ class REPORTINGCLASS CMomentCapacityDetailsChapterBuilder : public CPGSuperChapt
 {
 public:
    // GROUP: LIFECYCLE
-   CMomentCapacityDetailsChapterBuilder(bool bReportCapacityOnly=false);
+   CMomentCapacityDetailsChapterBuilder(bool bReportCapacityOnly=false,bool bSelect = true);
 
    // GROUP: OPERATORS
    // GROUP: OPERATIONS

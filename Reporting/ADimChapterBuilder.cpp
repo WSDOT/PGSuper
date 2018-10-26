@@ -45,7 +45,8 @@ CLASS
 ////////////////////////// PUBLIC     ///////////////////////////////////////
 
 //======================== LIFECYCLE  =======================================
-CADimChapterBuilder::CADimChapterBuilder()
+CADimChapterBuilder::CADimChapterBuilder(bool bSelect) :
+CPGSuperChapterBuilder(bSelect)
 {
 }
 

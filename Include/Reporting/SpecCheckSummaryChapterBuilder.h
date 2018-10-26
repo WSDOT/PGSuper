@@ -27,6 +27,9 @@
 #include <Reporter\Chapter.h>
 #include <Reporting\PGSuperChapterBuilder.h>
 
+class pgsGirderArtifact;
+class CSpanGirderReportSpecification;
+
 /*****************************************************************************
 CLASS 
    CSpecCheckSummaryChapterBuilder
@@ -51,7 +54,7 @@ class REPORTINGCLASS CSpecCheckSummaryChapterBuilder : public CPGSuperChapterBui
 {
 public:
    // GROUP: LIFECYCLE
-   CSpecCheckSummaryChapterBuilder(bool referToDetailsReport);
+CSpecCheckSummaryChapterBuilder(bool referToDetailsReport,bool bSelect = true);
 
    // GROUP: OPERATORS
    // GROUP: OPERATIONS
@@ -62,6 +65,11 @@ public:
 
    //------------------------------------------------------------------------
    virtual rptChapter* Build(CReportSpecification* pRptSpec,Uint16 level) const;
+
+   //------------------------------------------------------------------------
+   virtual rptChapter* BuildEx(CSpanGirderReportSpecification* pSGRptSpec,Uint16 level,
+                               SpanIndexType span, GirderIndexType gdr, const pgsGirderArtifact* pArtifact) const;
+
 
    //------------------------------------------------------------------------
    virtual CChapterBuilder* Clone() const;
