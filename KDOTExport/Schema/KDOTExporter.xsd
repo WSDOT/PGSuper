@@ -787,23 +787,23 @@
         </xs:annotation>
       </xs:element>
 
-      <xs:element name="GirderData"  type="kd:GirderDataType"  minOccurs="1" maxOccurs="unbounded">
+      <xs:element name="GirderData" type="kd:GirderDataType" minOccurs="1" maxOccurs="unbounded">
         <xs:annotation>
-          <xs:documentation>Data for a given girder</xs:documentation>
+          <xs:documentation>Data for a given girder. Only girders selected in the user interface are reported.</xs:documentation>
         </xs:annotation>
       </xs:element>
-
-      <xs:element name="HaunchVolume" type="xs:double">
+      
+      <xs:element name="HaunchVolumeForAllSelectedGirders" type="xs:double">
         <xs:annotation>
-          <xs:documentation>Total volume of haunch material for all girders in bridge.</xs:documentation>
+          <xs:documentation>Total volume of haunch material for all girders selected.</xs:documentation>
         </xs:annotation>
       </xs:element>
-
-      <xs:element name="HaunchWeight" type="xs:double">
+      
+      <xs:element name="HaunchWeightForAllSelectedGirders" type="xs:double">
         <xs:annotation>
-          <xs:documentation>Total weight of haunch material for all girders in bridge.</xs:documentation>
+          <xs:documentation>Total weight of haunch material for all girders selected.</xs:documentation>
         </xs:annotation>
-      </xs:element>
+      </xs:element>      
 
     </xs:sequence>
   </xs:complexType>

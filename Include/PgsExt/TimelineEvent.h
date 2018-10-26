@@ -75,6 +75,10 @@ public:
    void SetDay(Float64 day);
    Float64 GetDay() const;
 
+   // returns the duration of this event as the longest duration of the
+   // activities in this event
+   Float64 GetDuration() const;
+
    // Set/Get the various activities the can occur during a timeline event
 
    void SetConstructSegmentsActivity(const CConstructSegmentActivity& activity);

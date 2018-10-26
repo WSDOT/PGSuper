@@ -68,6 +68,7 @@ rptChapter* CCastingYardRebarRequirementChapterBuilder::Build(CReportSpecificati
    const CGirderKey& girderKey(pGirderRptSpec->GetGirderKey());
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
+   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
@@ -137,14 +138,22 @@ rptChapter* CCastingYardRebarRequirementChapterBuilder::Build(CReportSpecificati
          IntervalIndexType intervalIdx = *iter;
          if ( compositeClosureJointIntervalIdx <= intervalIdx )
          {
-            pPara = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
-            *pChapter << pPara;
-            *pPara << _T("Interval ") << LABEL_INTERVAL(intervalIdx) << _T(" : ") << pIntervals->GetDescription(intervalIdx) << rptNewLine;
+            // allowable tension stresses are checked in the Service I limit state before live load is applied and in the
+            // Service III limit state after live load is applied
+            pgsTypes::LimitState limitState = (liveLoadIntervalIdx <= intervalIdx ? pgsTypes::ServiceIII : pgsTypes::ServiceI);
 
-            pPara = new rptParagraph;
-            *pChapter << pPara;
+            bool bIsApplicable = pAllowStress->IsStressCheckApplicable(girderKey,intervalIdx,limitState,pgsTypes::Tension);
+            if ( bIsApplicable )
+            {
+               pPara = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
+               *pChapter << pPara;
+               *pPara << _T("Interval ") << LABEL_INTERVAL(intervalIdx) << _T(" : ") << pIntervals->GetDescription(intervalIdx) << rptNewLine;
 
-            BuildTable(pBroker,pPara,poi,intervalIdx);
+               pPara = new rptParagraph;
+               *pChapter << pPara;
+
+               BuildTable(pBroker,pPara,poi,intervalIdx);
+            }
          }
       }
    }

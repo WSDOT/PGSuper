@@ -95,7 +95,6 @@ rptChapter* CSectPropChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16
    GET_IFACE2(pBroker, IEAFDisplayUnits,   pDisplayUnits);
    GET_IFACE2(pBroker, IGirder,            pGirder);
    GET_IFACE2(pBroker, IBridge,            pBridge);
-   GET_IFACE2(pBroker, IPointOfInterest,   pPoi);
    GET_IFACE2_NOCHECK(pBroker, IDocumentType,      pDocType);
    GET_IFACE2_NOCHECK(pBroker, IIntervals,         pIntervals); // not always used... depends on if the segment is prismatic
 
@@ -238,6 +237,7 @@ rptChapter* CSectPropChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16
 
    if ( !m_SimplifiedVersion )
    {
+      GET_IFACE2(pBroker, IPointOfInterest,   pPoi);
       GET_IFACE2(pBroker, ISectionProperties, pSectProp);
       for ( GroupIndexType grpIdx = firstGroupIdx; grpIdx <= lastGroupIdx; grpIdx++ )
       {

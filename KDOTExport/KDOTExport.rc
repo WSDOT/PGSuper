@@ -53,8 +53,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 3,0,0,41
- PRODUCTVERSION 3,0,0,41
+ FILEVERSION 3,0,0,42
+ PRODUCTVERSION 3,0,0,42
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -72,12 +72,12 @@ BEGIN
             VALUE "Comments", "PGSuperKDOTExport"
             VALUE "CompanyName", "Kansas Department of Transportation"
             VALUE "FileDescription", "PGSuperKDOTExport  Module"
-            VALUE "FileVersion", "3.0.0.41"
+            VALUE "FileVersion", "3.0.0.42"
             VALUE "InternalName", "PGSuperKDOTExport.dll"
             VALUE "LegalCopyright", "Copyright © 2009-2015, KDOT, All rights reserved"
             VALUE "OriginalFilename", "PGSuperKDOTExport.dll"
             VALUE "ProductName", "PGSuper KDOT Export"
-            VALUE "ProductVersion", "3.0.0.41"
+            VALUE "ProductVersion", "3.0.0.42"
         END
     END
     BLOCK "VarFileInfo"
@@ -93,6 +93,27 @@ END
 //
 
 IDR_PGSUPERDATAEXPORTER REGISTRY                "PGSuperDataExporter.rgs"
+IDR_KDOTCOMPONENTINFO   REGISTRY                "KDOTComponentInfo.rgs"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_EXPORT_DLG DIALOGEX 0, 0, 341, 184
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Select Girders To Export"
+FONT 8, "MS Sans Serif", 0, 0, 0x0
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,83,163,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,148,163,50,14
+    GROUPBOX        "Select Girder(s)",IDC_GROUP,10,4,324,148
+    CONTROL         "Custom1",IDC_SELECT_GRID,"GXWND",WS_BORDER | WS_VSCROLL | WS_HSCROLL | WS_TABSTOP,18,15,306,111
+    PUSHBUTTON      "Select All",IDC_SELECT_ALL,218,130,50,14
+    PUSHBUTTON      "Clear All",IDC_CLEAR_ALL,273,130,50,14
+    PUSHBUTTON      "Help",IDC_HELPBTN,213,163,50,14
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -102,6 +123,11 @@ IDR_PGSUPERDATAEXPORTER REGISTRY                "PGSuperDataExporter.rgs"
 STRINGTABLE 
 BEGIN
     IDS_PROJNAME            "PGSuperKDOTExport"
+END
+
+STRINGTABLE 
+BEGIN
+    IDS_E_NOGIRDERS         "Please select at least one girder for the report."
 END
 
 #endif    // English (U.S.) resources

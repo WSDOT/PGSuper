@@ -26,8 +26,6 @@
 #include <Graphing\DrawBeamTool.h>
 #include "GirderPropertiesGraphController.h"
 
-#include "GraphColor.h"
-
 #include <EAF\EAFUtilities.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <EAF\EAFAutoProgress.h>
@@ -489,7 +487,7 @@ void CGirderPropertiesGraphBuilder::UpdateTendonGraph(PropertyType propertyType,
       nMaxDucts = Max(nMaxDucts,nDucts);
    }
    
-   CGraphColor graphColor(nMaxDucts);
+   grGraphColor graphColor(nMaxDucts);
 
    for ( GroupIndexType grpIdx = startGroupIdx; grpIdx <= endGroupIdx; grpIdx++ )
    {

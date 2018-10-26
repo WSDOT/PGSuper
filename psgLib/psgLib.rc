@@ -68,8 +68,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 3,0,0,41
- PRODUCTVERSION 3,0,0,41
+ FILEVERSION 3,0,0,42
+ PRODUCTVERSION 3,0,0,42
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -87,12 +87,12 @@ BEGIN
             VALUE "Comments", "A member of the Alternate Route Project"
             VALUE "CompanyName", "Washington State Department of Transportation"
             VALUE "FileDescription", "psgLib DLL"
-            VALUE "FileVersion", "3.0.0.41"
+            VALUE "FileVersion", "3.0.0.42"
             VALUE "InternalName", "psgLib"
             VALUE "LegalCopyright", "Copyright © 1999-2015, Washington State Department of Transportation, All Rights Reserved"
             VALUE "OriginalFilename", "psgLib.DLL"
             VALUE "ProductName", "PGSuper"
-            VALUE "ProductVersion", "3.0.0.41"
+            VALUE "ProductVersion", "3.0.0.42"
         END
     END
     BLOCK "VarFileInfo"
@@ -1544,20 +1544,20 @@ CAPTION "Prestressed Elements"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     GROUPBOX        "Stress Limits for Temporary Stresses before Losses (LRFD 5.9.4.1)",IDC_STATIC,7,7,414,77
-    LTEXT           "Compressive Stress",IDC_STATIC,15,23,68,8
+    LTEXT           "Compressive Stress",IDC_STATIC,15,22,68,8
     EDITTEXT        IDC_RELEASE_COMPRESSION,86,20,40,14,ES_RIGHT | ES_AUTOHSCROLL | WS_GROUP
     LTEXT           "f'ci",IDC_STATIC,129,22,19,8
     LTEXT           "Tensile Stress",IDC_STATIC,15,36,57,8
-    LTEXT           "In areas other than the precompressed tensile zone and without bounded reinforcement",IDC_STATIC,15,47,149,15
-    EDITTEXT        IDC_RELEASE_TENSION,169,46,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "sqrt(f'ci (MPa))",IDC_RELEASE_TENSION_UNIT,214,48,52,8
+    LTEXT           "In areas other than the precompressed tensile zone and without bounded reinforcement",IDC_STATIC,22,47,149,15
+    EDITTEXT        IDC_RELEASE_TENSION,176,46,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "sqrt(f'ci (MPa))",IDC_RELEASE_TENSION_UNIT,221,48,52,8
     CONTROL         "But not greater than ",IDC_CHECK_RELEASE_TENSION_MAX,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,267,48,78,10
-    EDITTEXT        IDC_RELEASE_TENSION_MAX,347,46,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "MPa",IDC_RELEASE_TENSION_MAX_UNIT,392,48,25,8
-    LTEXT           "In areas with sufficient bonded reinforcement",IDC_STATIC,15,68,147,8
-    EDITTEXT        IDC_RELEASE_TENSION_WITH_REBAR,169,66,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "sqrt(f'ci (MPa))",IDC_RELEASE_TENSION_WITH_REBAR_UNIT,214,68,52,8
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,274,48,78,10
+    EDITTEXT        IDC_RELEASE_TENSION_MAX,354,46,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "MPa",IDC_RELEASE_TENSION_MAX_UNIT,396,48,18,8
+    LTEXT           "In areas with sufficient bonded reinforcement",IDC_STATIC,22,68,147,8
+    EDITTEXT        IDC_RELEASE_TENSION_WITH_REBAR,176,66,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "sqrt(f'ci (MPa))",IDC_RELEASE_TENSION_WITH_REBAR_UNIT,221,68,52,8
     GROUPBOX        "Stress Limits at Service Limit State after Losses (LRFD 5.9.4.2)",IDC_STATIC,7,87,414,124
     LTEXT           "Compressive Stress (Effective Prestress + Permanent Loads)",IDC_STATIC,15,104,204,8
     EDITTEXT        IDC_SERVICE_COMPRESSION,274,100,40,14,ES_RIGHT | ES_AUTOHSCROLL | WS_GROUP
@@ -1565,8 +1565,8 @@ BEGIN
     LTEXT           "Compressive Stress (Effective Prestress + Permanent Loads + Transient Loads)",IDC_STATIC,15,119,260,8
     EDITTEXT        IDC_SERVICE_COMPRESSION_WITH_LIVELOAD,274,116,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "f'c",IDC_STATIC,318,119,13,8
-    CONTROL         "Tensile Stress (Service I) (Effective Prestress + Permanent Loads)",IDC_CHECK_SERVICE_I_TENSION,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,135,228,10
+    CONTROL         "Tensile Stress (Service I) (Effective Prestress + Permanent Loads = Final Stress without Live Load)",IDC_CHECK_SERVICE_I_TENSION,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,135,332,10
     EDITTEXT        IDC_SERVICE_I_TENSION,28,146,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "sqrt(f'c (MPa))",IDC_SERVICE_I_TENSION_UNIT,72,149,52,8
     CONTROL         "But not greater than ",IDC_CHECK_SERVICE_I_TENSION_MAX,
@@ -1574,20 +1574,20 @@ BEGIN
     EDITTEXT        IDC_SERVICE_I_TENSION_MAX,208,146,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "MPa",IDC_SERVICE_I_TENSION_MAX_UNIT,252,149,20,8
     LTEXT           "Tensile Stress (Service III) (Effective Prestress + Permanent Loads + Transient Loads)",IDC_STATIC,15,164,278,8
-    LTEXT           "Not worse than moderate corrosion conditions",IDC_STATIC,19,177,148,8
-    EDITTEXT        IDC_SERVICE_III_TENSION,169,174,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "sqrt(f'c (MPa))",IDC_SERVICE_III_TENSION_UNIT,213,177,52,8
+    LTEXT           "Not worse than moderate corrosion conditions",IDC_STATIC,22,177,148,8
+    EDITTEXT        IDC_SERVICE_III_TENSION,176,174,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "sqrt(f'c (MPa))",IDC_SERVICE_III_TENSION_UNIT,221,177,52,8
     CONTROL         "But not greater than ",IDC_CHECK_SERVICE_III_TENSION_MAX,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,267,177,78,10
-    EDITTEXT        IDC_SERVICE_III_TENSION_MAX,349,174,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "MPa",IDC_SERVICE_III_TENSION_MAX_UNIT,393,177,20,8
-    LTEXT           "Severe corrosive conditions",IDC_STATIC,19,191,89,8
-    EDITTEXT        IDC_SEVERE_SERVICE_III_TENSION,169,189,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "sqrt(f'c (MPa))",IDC_SEVERE_SERVICE_III_TENSION_UNIT,213,191,52,8
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,274,177,78,10
+    EDITTEXT        IDC_SERVICE_III_TENSION_MAX,354,174,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "MPa",IDC_SERVICE_III_TENSION_MAX_UNIT,396,177,18,8
+    LTEXT           "Severe corrosive conditions",IDC_STATIC,22,191,89,8
+    EDITTEXT        IDC_SEVERE_SERVICE_III_TENSION,176,189,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "sqrt(f'c (MPa))",IDC_SEVERE_SERVICE_III_TENSION_UNIT,221,191,52,8
     CONTROL         "But not greater than ",IDC_CHECK_SEVERE_SERVICE_III_TENSION_MAX,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,267,191,79,10
-    EDITTEXT        IDC_SEVERE_SERVICE_III_TENSION_MAX,349,189,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "MPa",IDC_SEVERE_SERVICE_III_TENSION_MAX_UNIT,393,191,15,8
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,274,191,79,10
+    EDITTEXT        IDC_SEVERE_SERVICE_III_TENSION_MAX,354,189,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "MPa",IDC_SEVERE_SERVICE_III_TENSION_MAX_UNIT,396,191,18,8
     GROUPBOX        "Stress Limits for Fatigue Limit State (LRFD 5.5.3.1)",IDC_FATIGUE_GROUP,7,218,414,35
     LTEXT           "Service IA (Live Load Plus One-Half of Permanent Loads)",IDC_FATIGUE_LABEL,16,234,216,8
     EDITTEXT        IDC_FATIGUE_COMPRESSION,233,231,40,14,ES_RIGHT | ES_AUTOHSCROLL
@@ -1600,26 +1600,26 @@ BEGIN
     EDITTEXT        IDC_TS_REMOVAL_COMPRESSION,99,292,40,14,ES_RIGHT | ES_AUTOHSCROLL | WS_GROUP
     LTEXT           "f'c",IDC_TS_REMOVAL_COMPRESS_FC,142,295,8,8
     LTEXT           "Tensile Stress in areas other than the precompressed tensile zone",IDC_TS_REMOVAL_TENSION_LABEL,28,311,261,8
-    EDITTEXT        IDC_TS_REMOVAL_TENSION,31,323,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "sqrt(f'c (MPa))",IDC_TS_REMOVAL_TENSION_UNIT,74,325,52,8
+    EDITTEXT        IDC_TS_REMOVAL_TENSION,36,324,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "sqrt(f'c (MPa))",IDC_TS_REMOVAL_TENSION_UNIT,80,325,52,8
     CONTROL         "But not greater than ",IDC_CHECK_TS_REMOVAL_TENSION_MAX,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,127,325,78,10
-    EDITTEXT        IDC_TS_REMOVAL_TENSION_MAX,208,323,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "MPa",IDC_TS_REMOVAL_TENSION_MAX_UNIT,253,325,25,8
-    LTEXT           "In areas with sufficient bonded reinforcement",IDC_TS_TENSION_WITH_REBAR_LABEL,30,342,147,8
-    EDITTEXT        IDC_TS_TENSION_WITH_REBAR,184,339,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "sqrt(f'ci (MPa))",IDC_TS_TENSION_WITH_REBAR_UNIT,228,342,52,8
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,133,325,78,10
+    EDITTEXT        IDC_TS_REMOVAL_TENSION_MAX,214,323,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "MPa",IDC_TS_REMOVAL_TENSION_MAX_UNIT,259,325,25,8
+    LTEXT           "In areas with sufficient bonded reinforcement",IDC_TS_TENSION_WITH_REBAR_LABEL,36,342,147,8
+    EDITTEXT        IDC_TS_TENSION_WITH_REBAR,190,339,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "sqrt(f'ci (MPa))",IDC_TS_TENSION_WITH_REBAR_UNIT,234,342,52,8
     GROUPBOX        "Stress Limits immediately after Deck Placement",IDC_AFTER_DECK_GROUP,20,367,386,53
     LTEXT           "Compressive Stress",IDC_AFTER_DECK_COMPRESSION_LABEL,28,385,68,8
     EDITTEXT        IDC_AFTER_DECK_COMPRESSION,99,382,40,14,ES_RIGHT | ES_AUTOHSCROLL | WS_GROUP
     LTEXT           "f'c",IDC_AFTER_DECK_COMPRESSION_FC,142,385,8,8
-    LTEXT           "Tensile Stress",IDC_AFTER_DECK_TENSION_LABEL,28,399,57,8
+    LTEXT           "Tensile Stress",IDC_AFTER_DECK_TENSION_LABEL,28,400,57,8
     EDITTEXT        IDC_AFTER_DECK_TENSION,99,398,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "sqrt(f'c (MPa))",IDC_AFTER_DECK_TENSION_UNIT,142,399,77,8
+    LTEXT           "sqrt(f'c (MPa))",IDC_AFTER_DECK_TENSION_UNIT,142,400,52,8
     CONTROL         "But not greater than ",IDC_CHECK_AFTER_DECK_TENSION_MAX,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,195,399,78,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,195,400,78,10
     EDITTEXT        IDC_AFTER_DECK_TENSION_MAX,276,398,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "MPa",IDC_AFTER_DECK_TENSION_MAX_UNIT,321,399,25,8
+    LTEXT           "MPa",IDC_AFTER_DECK_TENSION_MAX_UNIT,321,400,25,8
 END
 
 IDD_SPEC_LOADS DIALOGEX 0, 0, 351, 311

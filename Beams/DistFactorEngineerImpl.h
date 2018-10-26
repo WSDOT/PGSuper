@@ -645,9 +645,13 @@ int CDistFactorEngineerImpl<T>::LimitStateType(pgsTypes::LimitState ls)
    // strength and service limit states, return 0
    // fatigue limit state, return 1
    if ( IsStrengthLimitState(ls) || IsServiceLimitState(ls) )
+   {
       return 0;
+   }
    else if ( IsFatigueLimitState(ls) )
+   {
       return 1;
+   }
    else
    {
       ATLASSERT(false); // should never get here
@@ -678,7 +682,9 @@ void CDistFactorEngineerImpl<T>::GetIndicies(IndexType spanOrPierIdx,DFParam dfT
 
       span = (dfType == dfPierLeft ? prev_span : next_span);
       if ( span == INVALID_INDEX )
+      {
          span = prev_span;
+      }
    }
 }
 
@@ -731,7 +737,7 @@ void CDistFactorEngineerImpl<T>::GetGirderSpacingAndOverhang(const CSpanKey& spa
    Float64 Xs;
    pPoi->ConvertSpanPointToSegmentCoordiante(spanKey,ctrl_loc_from_gdr,&segmentKey,&Xs);
 
-   pDetails->ControllingLocation = Xs;
+   pDetails->ControllingLocation = ctrl_loc_from_gdr;
 
    pgsPointOfInterest ctrl_poi(segmentKey,Xs);
 
@@ -866,12 +872,16 @@ Float64 CDistFactorEngineerImpl<T>::GetEffectiveSpanLength(IndexType spanOrPierI
    GirderIndexType prev_span_gdr_idx = gdrIdx;
    GirderIndexType next_span_gdr_idx = gdrIdx;
    if ( prev_span != INVALID_INDEX && pPrevGroup->GetGirderCount() <= gdrIdx )
+   {
       prev_span_gdr_idx = pPrevGroup->GetGirderCount()-1;
+   }
 
    ATLASSERT(prev_span_gdr_idx != INVALID_INDEX);
 
    if ( next_span != INVALID_INDEX && pNextGroup->GetGirderCount() <= gdrIdx )
+   {
       next_span_gdr_idx = pNextGroup->GetGirderCount()-1;
+   }
 
    ATLASSERT(next_span_gdr_idx != INVALID_INDEX);
 
@@ -894,18 +904,26 @@ Float64 CDistFactorEngineerImpl<T>::GetEffectiveSpanLength(IndexType spanOrPierI
          l1 = pBridge->GetSpanLength(prev_span,prev_span_gdr_idx);
 
          if (next_span != ALL_SPANS && ((bIntegralLeft && bIntegralRight) || (bContinuousLeft && bContinuousRight)) )
+         {
             l2 = pBridge->GetSpanLength(next_span,next_span_gdr_idx);
+         }
          else
+         {
             l2 = l1;
+         }
       }
       else if ( dfType == dfPierRight )
       {
          l1 = pBridge->GetSpanLength(next_span,next_span_gdr_idx);
 
          if (prev_span != ALL_SPANS && ((bIntegralLeft && bIntegralRight) || (bContinuousLeft && bContinuousRight)) )
+         {
             l2 = pBridge->GetSpanLength(prev_span,prev_span_gdr_idx);
+         }
          else
+         {
             l2 = l1;
+         }
       }
       else
       {

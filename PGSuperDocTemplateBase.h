@@ -43,13 +43,13 @@ public:
 
    void SetDocStrings(const CString& str);
 
+   virtual CString GetAppName() const = 0;
+   virtual UINT GetTemplateIconResourceID() const = 0;
+   virtual CString GetTemplateSuffix() = 0;
+
    DECLARE_DYNAMIC(CPGSuperDocTemplateBase)
 
 protected:
    void FindInFolder(LPCTSTR strPath,CEAFTemplateGroup* pGroup,HICON defaultIcon);
    void FindTemplateFiles(LPCTSTR strPath,CEAFTemplateGroup* pGroup,HICON folderIcon);
-
-   virtual CString GetAppName() const = 0;
-   virtual UINT GetTemplateIconResourceID() const = 0;
-   virtual CString GetTemplateSuffix() = 0;
 };

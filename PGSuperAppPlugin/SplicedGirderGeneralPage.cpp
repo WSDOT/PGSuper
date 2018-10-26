@@ -119,7 +119,8 @@ void CSplicedGirderGeneralPage::DoDataExchange(CDataExchange* pDX)
 {
 	CPropertyPage::DoDataExchange(pDX);
 
-   DDX_Control(pDX, IDC_HYPERLINK, m_ctrlSlabOffsetHyperLink);
+   DDX_Control(pDX, IDC_SLABOFFSET_HYPERLINK, m_ctrlSlabOffsetHyperLink);
+   DDX_Control(pDX, IDC_GIRDERTYPE_HYPERLINK, m_ctrlGirderTypeHyperLink);
 
    CSplicedGirderDescDlg* pParent = (CSplicedGirderDescDlg*)GetParent();
 
@@ -127,7 +128,9 @@ void CSplicedGirderGeneralPage::DoDataExchange(CDataExchange* pDX)
    DDX_CBStringExactCase(pDX,IDC_GIRDER_NAME,strGirderName);
    if ( pDX->m_bSaveAndValidate )
    {
-      pParent->m_pGirder->SetGirderName(strGirderName.c_str());
+      GirderIndexType gdrIdx = pParent->m_pGirder->GetIndex();
+      GroupIndexType girderTypeGroupIdx = pParent->m_pGirder->GetGirderGroup()->CreateGirderTypeGroup(gdrIdx,gdrIdx);
+      pParent->m_pGirder->GetGirderGroup()->SetGirderName(girderTypeGroupIdx,strGirderName.c_str());
    }
 
    DDX_Strand(pDX,IDC_STRAND,&pParent->m_pGirder->GetPostTensioning()->pStrand);
@@ -205,6 +208,7 @@ BEGIN_MESSAGE_MAP(CSplicedGirderGeneralPage, CPropertyPage)
    ON_CBN_SELCHANGE(IDC_CONDITION_FACTOR_TYPE, &CSplicedGirderGeneralPage::OnConditionFactorTypeChanged)
    ON_BN_CLICKED(IDHELP, &CSplicedGirderGeneralPage::OnHelp)
    ON_REGISTERED_MESSAGE(MsgChangeSlabOffsetType,OnChangeSlabOffsetType)
+   ON_REGISTERED_MESSAGE(MsgChangeSameGirderType,OnChangeGirderType)
 END_MESSAGE_MAP()
 
 
@@ -256,12 +260,18 @@ BOOL CSplicedGirderGeneralPage::OnInitDialog()
    pcbConditionFactor->AddString(_T("Other"));
    pcbConditionFactor->SetCurSel(0);
 
+   m_ctrlGirderTypeHyperLink.ModifyLinkStyle(CHyperLink::StyleAutoSize,0);
+
    CPropertyPage::OnInitDialog();
+
 
    OnConditionFactorTypeChanged();
 
    UpdateSlabOffsetHyperLink();
    UpdateSlabOffsetControls();
+
+   UpdateGirderTypeHyperLink();
+   UpdateGirderTypeControls();
 
    return TRUE;  // return TRUE unless you set the focus to a control
    // EXCEPTION: OCX Property Pages should return FALSE
@@ -549,10 +559,7 @@ void CSplicedGirderGeneralPage::UpdateSlabOffsetHyperLink()
    {
       // slab offset is by girder
       m_ctrlSlabOffsetHyperLink.SetWindowText(_T("Slab Offsets are defined girder by girder"));
-//      if ( m_SlabOffsetTypeCache == pgsTypes::sotBridge )
-         m_ctrlSlabOffsetHyperLink.SetURL(_T("Click to use this Slab Offset for the entire bridge"));
-//      else
-//         m_ctrlSlabOffsetHyperLink.SetURL(_T("Click to use this Slab Offset for this span"));
+      m_ctrlSlabOffsetHyperLink.SetURL(_T("Click to use this Slab Offset for the entire bridge"));
    }
    else if ( pBridge->GetSlabOffsetType() == pgsTypes::sotBridge )
    {
@@ -573,4 +580,49 @@ void CSplicedGirderGeneralPage::UpdateSlabOffsetControls()
 
    BOOL bEnable = ( pBridge->GetSlabOffsetType() == pgsTypes::sotGirder ? TRUE : FALSE );
    m_SlabOffsetGrid.EnableWindow(bEnable);
+}
+
+LRESULT CSplicedGirderGeneralPage::OnChangeGirderType(WPARAM wParam,LPARAM lParam)
+{
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
+   CSplicedGirderDescDlg* pParent = (CSplicedGirderDescDlg*)GetParent();
+   CBridgeDescription2* pBridge = pParent->m_pGirder->GetGirderGroup()->GetBridgeDescription();
+   pBridge->UseSameGirderForEntireBridge( !pBridge->UseSameGirderForEntireBridge() );
+
+   UpdateGirderTypeHyperLink();
+   UpdateGirderTypeControls();
+
+   return 0;
+}
+
+void CSplicedGirderGeneralPage::UpdateGirderTypeHyperLink()
+{
+   CSplicedGirderDescDlg* pParent = (CSplicedGirderDescDlg*)GetParent();
+   CBridgeDescription2* pBridge = pParent->m_pGirder->GetGirderGroup()->GetBridgeDescription();
+
+   if ( pBridge->UseSameGirderForEntireBridge() )
+   {
+      // same girder type used for bridge
+      m_ctrlGirderTypeHyperLink.SetWindowText(_T("The same segment type is used for the entire bridge"));
+      m_ctrlGirderTypeHyperLink.SetURL(_T("Click to use a unique segment type for each girder"));
+   }
+   else
+   {
+      m_ctrlGirderTypeHyperLink.SetWindowText(_T("A unique segment type is used for each girder"));
+      m_ctrlGirderTypeHyperLink.SetURL(_T("Click to use the same segment type for the entire bridge"));
+   }
+}
+
+void CSplicedGirderGeneralPage::UpdateGirderTypeControls()
+{
+   CSplicedGirderDescDlg* pParent = (CSplicedGirderDescDlg*)GetParent();
+   CBridgeDescription2* pBridge = pParent->m_pGirder->GetGirderGroup()->GetBridgeDescription();
+
+   BOOL bEnable = ( pBridge->UseSameGirderForEntireBridge() ? FALSE : TRUE );
+   CWnd* pWnd = GetDlgItem(IDC_GIRDER_NAME);
+   pWnd->EnableWindow(bEnable);
+
+   pWnd->SetWindowText(pParent->m_pGirder->GetGirderName());
+
 }

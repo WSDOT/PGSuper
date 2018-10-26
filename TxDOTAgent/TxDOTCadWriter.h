@@ -60,7 +60,7 @@ COPYRIGHT
 LOG
    rdp : 04.09.2009 : Created file
 *****************************************************************************/
-static const int BF_SIZ=256; // buffer size
+static const int BF_SIZ=1024; // buffer size
 
 // Main External functions that write the file
 int TxDOT_WriteCADDataToFile (FILE *fp, IBroker* pBroker, const CGirderKey& girderKey, TxDOTCadExportFormatType format, bool designSucceeded);
@@ -72,12 +72,15 @@ int TxDOT_WriteTOGAReportToFile (FILE *fp, IBroker* pBroker);
 class CadWriterWorkerBee
 {
 public:
+   enum Justification {jLeft, jCenter, jRight};
+
    CadWriterWorkerBee(bool doWriteTitles); 
 
-   void WriteFloat64(Float64 val, LPCTSTR title, Int16 nchars, LPCTSTR format, bool doDelim);
-   void WriteInt16(Int16 val, LPCTSTR title, Int16 nchars, LPCTSTR format, bool doDelim);
-   void WriteString(LPCTSTR val, LPCTSTR title, Int16 nchars, LPCTSTR format, bool doDelim);
+   void WriteFloat64(Float64 val, LPCTSTR title, Int16 colWidth, Int16 nChars, LPCTSTR format);
+   void WriteInt16(Int16 val, LPCTSTR title, Int16 colWidth, Int16 nchars, LPCTSTR format);
+   void WriteString(LPCTSTR val, LPCTSTR title, Int16 colWidth, Int16 nchars, LPCTSTR format);
    void WriteBlankSpaces(Int16 ns);
+   void WriteBlankSpacesNoTitle(Int16 ns);
    void WriteToFile(FILE* fp);
 
 private:
@@ -94,7 +97,7 @@ private:
    LPTSTR m_DashLineCursor;
 
    CadWriterWorkerBee(); // no default const
-   void WriteTitle(LPCTSTR title, Int16 nchars, bool doDelim);
+   void WriteTitle(LPCTSTR title, Int16 colWidth);
 
    // remaining buffer sizes for *printf_s type functions
    size_t DataBufferRemaining() const
@@ -114,7 +117,7 @@ public:
    {;}
 
    void WriteInitialData(CadWriterWorkerBee& workerBee);
-   void WriteFinalData(FILE *fp, bool isExtended);
+   void WriteFinalData(FILE *fp, bool isExtended, bool isIBeam);
 
 private:
    void WriteRowData(CadWriterWorkerBee& workerBee, const RowData& row,Float64 Hg) const;

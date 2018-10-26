@@ -601,7 +601,7 @@ typedef struct pgsTypes
 
    typedef enum DuctType
    {
-      // See LRFD 5.6.4.1
+      // See LRFD 5.4.6.1
       dtMetal,   // galvanized ferrous metal
       dtPlastic, // polyethylene
       dtFormed   // formed in concrete with removable cores
@@ -610,7 +610,7 @@ typedef struct pgsTypes
    typedef enum StrandInstallationType
    {
       // Defines strand installation type for post-tensioning tendons
-      // See LRFD 5.6.4.2
+      // See LRFD 5.4.6.2
       sitPush,
       sitPull
    } StrandInstallationType;

@@ -68,6 +68,7 @@ public:
 
    virtual BOOL UpdateProgramSettings(BOOL bFirstRun);
 
+   // CEAFCustomReportMixin
    virtual void LoadCustomReportInformation();
    virtual void SaveCustomReportInformation();
 

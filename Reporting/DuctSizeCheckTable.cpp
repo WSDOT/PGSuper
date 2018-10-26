@@ -101,20 +101,21 @@ void CDuctSizeCheckTable::Build(rptChapter* pChapter,IBroker* pBroker,const pgsG
    rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(9);
    *pPara << pTable << rptNewLine;
 
-   (*pTable)(0,0) << _T("Duct");
-   (*pTable)(0,1) << COLHDR(Sub2(_T("A"),_T("pt")),rptAreaUnitTag,pDisplayUnits->GetAreaUnit());
-   (*pTable)(0,2) << COLHDR(Sub2(_T("A"),_T("duct")),rptAreaUnitTag,pDisplayUnits->GetAreaUnit());
-   (*pTable)(0,3) << Sub2(_T("A"),_T("pt")) << _T("/") << Sub2(_T("A"),_T("duct"));
-   (*pTable)(0,4) << _T("Status");
-   (*pTable)(0,5) << COLHDR(_T("OD"),rptLengthUnitTag,pDisplayUnits->GetComponentDimUnit());
-   (*pTable)(0,6) << COLHDR(_T("Least") << rptNewLine << _T("Thickness (Tmin)"),rptLengthUnitTag,pDisplayUnits->GetComponentDimUnit());
-   (*pTable)(0,7) << _T("OD/Tmin");
-   (*pTable)(0,8) << _T("Status");
+   ColumnIndexType col = 0;
+   (*pTable)(0,col++) << _T("Duct");
+   (*pTable)(0,col++) << COLHDR(Sub2(_T("A"),_T("duct")),rptAreaUnitTag,pDisplayUnits->GetAreaUnit());
+   (*pTable)(0,col++) << COLHDR(Sub2(_T("A"),_T("pt")),rptAreaUnitTag,pDisplayUnits->GetAreaUnit());
+   (*pTable)(0,col++) << Sub2(_T("A"),_T("duct")) << _T("/") << Sub2(_T("A"),_T("pt"));
+   (*pTable)(0,col++) << _T("Status");
+   (*pTable)(0,col++) << COLHDR(_T("OD"),rptLengthUnitTag,pDisplayUnits->GetComponentDimUnit());
+   (*pTable)(0,col++) << COLHDR(_T("Least") << rptNewLine << _T("Thickness (Tmin)"),rptLengthUnitTag,pDisplayUnits->GetComponentDimUnit());
+   (*pTable)(0,col++) << _T("OD/Tmin");
+   (*pTable)(0,col++) << _T("Status");
 
    RowIndexType row = pTable->GetNumberOfHeaderRows();
    for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++, row++ )
    {
-      ColumnIndexType col = 0;
+      col = 0;
       const pgsDuctSizeArtifact* pDuctSizeArtifact = pGirderArtifact->GetDuctSizeArtifact(ductIdx);
       (*pTable)(row,col++) << LABEL_DUCT(ductIdx);
 
@@ -124,15 +125,15 @@ void CDuctSizeCheckTable::Build(rptChapter* pChapter,IBroker* pBroker,const pgsG
       Float64 OD, MinGrossThickness, Tmax;
       pDuctSizeArtifact->GetDuctSize(&OD,&MinGrossThickness,&Tmax);
 
-      (*pTable)(row,col++) << area.SetValue(Apt);
       (*pTable)(row,col++) << area.SetValue(Aduct);
+      (*pTable)(row,col++) << area.SetValue(Apt);
       if ( IsZero(Apt) )
       {
          (*pTable)(row,col++) << _T("-");
       }
       else
       {
-         (*pTable)(row,col++) << scalar.SetValue(Apt/Aduct);
+         (*pTable)(row,col++) << scalar.SetValue(Aduct/Apt);
       }
 
       if ( pDuctSizeArtifact->PassedDuctArea() )
@@ -147,7 +148,14 @@ void CDuctSizeCheckTable::Build(rptChapter* pChapter,IBroker* pBroker,const pgsG
       (*pTable)(row,col++) << size.SetValue(OD);
       (*pTable)(row,col++) << size.SetValue(MinGrossThickness);
       
-      (*pTable)(row,col++) << scalar.SetValue(OD/MinGrossThickness);
+      if ( IsZero(MinGrossThickness) )
+      {
+         (*pTable)(row,col++) << _T("-");
+      }
+      else
+      {
+         (*pTable)(row,col++) << scalar.SetValue(OD/MinGrossThickness);
+      }
       
       if ( pDuctSizeArtifact->PassedDuctSize() )
       {

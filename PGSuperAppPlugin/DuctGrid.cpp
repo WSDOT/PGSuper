@@ -665,20 +665,7 @@ void CDuctGrid::UpdateNumStrandsList(ROWCOL nRow)
       .SetUserAttribute(GX_IDS_UA_SPINBOUND_WRAP,1L)
       );
 
-   if ( nStrands <= maxStrands )
-   {
-      SetValueRange(CGXRange(nRow,nNumStrandCol),(LONG)nStrands);
-   }
-   else
-   {
-      AFX_MANAGE_STATE(AfxGetStaticModuleState());
-      pgsTypes::StrandInstallationType installationType = pParent->GetInstallationType();
-      CString strMsg;
-      strMsg.Format(_T("The number of strands exceeds the maximum for this duct size and %s installation (See LRFD 5.4.6.2).\r\n\r\nThe number of strands will be set to the maximum value."),
-         (installationType == pgsTypes::sitPush ? _T("push") : _T("pull")));
-      AfxMessageBox(strMsg);
-      SetValueRange(CGXRange(nRow,nNumStrandCol),(LONG)maxStrands);
-   }
+   SetValueRange(CGXRange(nRow,nNumStrandCol),(LONG)nStrands);
 
    // If the Calc Pjack box is unchecked, update the jacking force
    if ( GetCellValue(nRow,nPjackCheckCol) == _T("0") )

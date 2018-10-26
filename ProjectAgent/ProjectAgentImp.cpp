@@ -9999,6 +9999,7 @@ void CProjectAgentImp::CreatePrecastGirderBridgeTimelineEvents()
    pTimelineEvent->SetDescription(_T("Cast Deck (Bridge Site 1)"));
    pTimelineEvent->GetCastDeckActivity().Enable();
    pTimelineEvent->GetCastDeckActivity().SetConcreteAgeAtContinuity( 1.0 ); // 1 day
+   pTimelineEvent->GetCastDeckActivity().SetCuringDuration(0.0); // day
    pTimelineManager->AddTimelineEvent(pTimelineEvent,true,&eventIdx);
 
    // traffic barrier/superimposed dead loads

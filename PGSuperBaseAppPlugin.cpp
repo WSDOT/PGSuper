@@ -269,12 +269,14 @@ void CPGSuperBaseAppPlugin::SaveOptions()
 void CPGSuperBaseAppPlugin::LoadCustomReportInformation()
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
+   CAutoRegistry autoReg(GetAppName());
    CEAFCustomReportMixin::LoadCustomReportInformation();
 }
 
 void CPGSuperBaseAppPlugin::SaveCustomReportInformation()
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
+   CAutoRegistry autoReg(GetAppName());
    CEAFCustomReportMixin::SaveCustomReportInformation();
 }
 

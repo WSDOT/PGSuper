@@ -978,20 +978,41 @@ void CSpecAgentImp::GetSegmentAllowableTensionStressCoefficient(const pgsPointOf
    if ( intervalIdx == liftingIntervalIdx )
    {
       ATLASSERT( ls == pgsTypes::ServiceI );
-      x = pSpec->GetLiftingTensionStressFactor();
-      pSpec->GetLiftingMaximumTensionStress(&bCheckMax,&fmax);
+      if ( bWithBondedReinforcement )
+      {
+         x = pSpec->GetLiftingTensionStressFactorWithRebar();
+      }
+      else
+      {
+         x = pSpec->GetLiftingTensionStressFactor();
+         pSpec->GetLiftingMaximumTensionStress(&bCheckMax,&fmax);
+      }
    }
    else if ( storageIntervalIdx <= intervalIdx && intervalIdx < haulingIntervalIdx )
    {
       ATLASSERT( ls == pgsTypes::ServiceI );
-      x = pSpec->GetAtReleaseTensionStressFactor();
-      pSpec->GetAtReleaseMaximumTensionStress(&bCheckMax,&fmax);
+      if ( bWithBondedReinforcement )
+      {
+         x = pSpec->GetAtReleaseTensionStressFactorWithRebar();
+      }
+      else
+      {
+         x = pSpec->GetAtReleaseTensionStressFactor();
+         pSpec->GetAtReleaseMaximumTensionStress(&bCheckMax,&fmax);
+      }
    }
    else if ( intervalIdx == haulingIntervalIdx )
    {
       ATLASSERT( ls == pgsTypes::ServiceI );
-      x = pSpec->GetHaulingTensionStressFactor();
-      pSpec->GetHaulingMaximumTensionStress(&bCheckMax,&fmax);
+      if ( bWithBondedReinforcement )
+      {
+         x = pSpec->GetHaulingTensionStressFactorWithRebar();
+      }
+      else
+      {
+         x = pSpec->GetHaulingTensionStressFactor();
+         pSpec->GetHaulingMaximumTensionStress(&bCheckMax,&fmax);
+      }
    } 
    else if ( intervalIdx == tempStrandRemovalIdx )
    {

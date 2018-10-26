@@ -30,38 +30,3 @@
 #define GRAPH_GRID_COLOR GREY50 //RGB(0,150,0)
 
 #define GRAPH_PEN_WEIGHT 2
-
-
-class CGraphColor
-{
-public:
-   CGraphColor();
-   CGraphColor(IndexType nGraphs);
-
-   void SetGraphCount(IndexType nGraphs);
-   void SetHueRange(Float64 minHue,Float64 maxHue); // a value between 0 and 360
-   void SetSaturation(Float64 saturation); // a value between 0 and 1
-   void SetLightness(Float64 lightness); // a value between 0 and 1
-
-   // number of colors before repeating
-   // note that repeat colors are shifted in the hue range so that
-   // no two same colors are used (e.g. every time red is used
-   // it will be a different shade)
-   void SetColorPerBandCount(IndexType nColorsPerBand);
-
-   COLORREF GetColor(IndexType index);
-
-private:
-   bool m_bInitialized;
-   void Init();
-   void ComputeColorParameters();
-
-   IndexType m_nGraphs;
-   Float64 m_MinHue;
-   Float64 m_MaxHue;
-   Float64 m_Saturation;
-   Float64 m_Lightness;
-   IndexType m_nColorBands;
-   IndexType m_ColorsPerBand;
-   Float64 m_BandHueStep;
-};

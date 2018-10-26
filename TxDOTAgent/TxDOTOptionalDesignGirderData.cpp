@@ -78,6 +78,7 @@ void CTxDOTOptionalDesignGirderData::ResetData()
    m_Grade = matPsStrand::Gr1860;
    m_Type  = matPsStrand::LowRelaxation;
    m_Size  = matPsStrand::D1270;
+   m_Coating = matPsStrand::None;
 
    m_Fci = Float64_Inf;
    m_Fc  = Float64_Inf;
@@ -96,7 +97,7 @@ void CTxDOTOptionalDesignGirderData::ResetStrandNoData()
 
    // Data for non-standard fill
    // ==========================
-   m_StrandRowsAtCL;
+   m_StrandRowsAtCL.clear();
    m_StrandRowsAtEnds.clear();
 
    // Data for direct manip fill

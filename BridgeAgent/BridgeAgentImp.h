@@ -635,7 +635,8 @@ public:
 
    virtual void GetHarpingPointLocations(const CSegmentKey& segmentKey,Float64* lhp,Float64* rhp);
    virtual void GetHarpingPointLocations(const CSegmentKey& segmentKey,Float64* pX1,Float64* pX2,Float64* pX3,Float64* pX4);
-   virtual void GetHighestHarpedStrandLocation(const CSegmentKey& segmentKey,Float64* pElevation);
+   virtual void GetHighestHarpedStrandLocationEnds(const CSegmentKey& segmentKey,Float64* pElevation);
+   virtual void GetHighestHarpedStrandLocationHPs(const CSegmentKey& segmentKey,Float64* pElevation);
    virtual IndexType GetNumHarpPoints(const CSegmentKey& segmentKey);
 
    virtual StrandIndexType GetMaxNumPermanentStrands(const CSegmentKey& segmentKey);

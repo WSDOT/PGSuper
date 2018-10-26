@@ -28,7 +28,7 @@
 
 class CAnalysisResultsGraphDefinition; // use a forward declaration here. We don't want to include the header file for a non-exported class
 class CAnalysisResultsGraphDefinitions;
-class CGraphColor;
+class grGraphColor;
 
 class GRAPHINGCLASS CAnalysisResultsGraphBuilder : public CGirderGraphBuilderBase
 {
@@ -49,7 +49,7 @@ public:
    void DumpLBAM();
 
 protected:
-   std::auto_ptr<CGraphColor> m_pGraphColor;
+   std::auto_ptr<grGraphColor> m_pGraphColor;
    std::set<IndexType> m_UsedDataLabels; // keeps track of the graph data labels that have already been used so we don't get duplicates in the legend
 
    void Init();

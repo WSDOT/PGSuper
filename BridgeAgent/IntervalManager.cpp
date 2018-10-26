@@ -64,6 +64,8 @@ void CIntervalManager::BuildIntervals(const CTimelineManager* pTimelineMgr,bool 
    m_LiveLoadIntervalIdx      = INVALID_INDEX;
    m_OverlayIntervalIdx       = INVALID_INDEX;
    m_RailingSystemIntervalIdx = INVALID_INDEX;
+   m_UserLoadInterval[0].clear();
+   m_UserLoadInterval[1].clear();
 
    m_StressStrandIntervals.clear();
    m_ReleaseIntervals.clear();
@@ -94,7 +96,8 @@ void CIntervalManager::BuildIntervals(const CTimelineManager* pTimelineMgr,bool 
       ProcessStep1(eventIdx,pTimelineEvent);
       ProcessStep2(eventIdx,pTimelineEvent);
       ProcessStep3(eventIdx,pTimelineEvent,bTimeStepMethod);
-      ProcessStep4(eventIdx,pTimelineEvent,bTimeStepMethod);
+      ProcessStep4(eventIdx,pTimelineEvent);
+      ProcessStep5(eventIdx,pTimelineEvent,bTimeStepMethod);
    } // next event
    
    // If we aren't doing type step analysis, this is a PGSuper project
@@ -664,12 +667,11 @@ void CIntervalManager::ProcessStep2(EventIndexType eventIdx,const CTimelineEvent
 {
    // Step 2: Create a single interval for all zero duration activities that can happen at the same time
    // These activities are:
-   // a) Erect Segment (segment hauling was taken care of in Step 2)
+   // a) Erect Segment
    // b) Remove Temporary Supports
    // c) Stress Tendons
-   // d) Apply Load
-   // e) Cast Deck
-   // f) Cast Closure
+   // d) Cast Deck
+   // e) Cast Closure
 
    // For each activity in this event, get phrase to use in the description of the interval
    // as well as record the interval index if needed. Since the interval object hasn't
@@ -797,6 +799,416 @@ void CIntervalManager::ProcessStep2(EventIndexType eventIdx,const CTimelineEvent
          }
       }
    }
+
+   const CCastDeckActivity& castDeckActivity = pTimelineEvent->GetCastDeckActivity();
+   if ( castDeckActivity.IsEnabled() )
+   {
+      strDescriptions.push_back(CString(_T("Cast Deck")));
+      m_CastDeckIntervalIdx = intervalIdx;
+   } // end if cast deck activity
+
+   const CCastClosureJointActivity& closureJointActivity = pTimelineEvent->GetCastClosureJointActivity();
+   if ( closureJointActivity.IsEnabled() )
+   {
+      strDescriptions.push_back(CString(_T("Cast Closure Joint")));
+      IntervalIndexType castClosureIntervalIdx = intervalIdx;
+
+      const std::set<PierIDType>& vPierIDs(closureJointActivity.GetPiers());
+      BOOST_FOREACH(PierIDType pierID,vPierIDs)
+      {
+         const CPierData2* pPier = pBridgeDesc->FindPier(pierID);
+         const CGirderGroupData* pGroup = pPier->GetGirderGroup(pgsTypes::Ahead); // shouldn't matter which side
+         GirderIndexType nGirders = pGroup->GetGirderCount();
+         for ( GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++ )
+         {
+            const CClosureJointData* pClosureJoint = pPier->GetClosureJoint(gdrIdx);
+            CClosureKey closureKey(pClosureJoint->GetClosureKey());
+            m_CastClosureIntervals.insert(std::make_pair(closureKey,castClosureIntervalIdx));
+         }
+      }
+      const std::set<SupportIDType>& vTempSupportIDs(closureJointActivity.GetTempSupports());
+      BOOST_FOREACH(SupportIDType tsID,vTempSupportIDs)
+      {
+         const CTemporarySupportData* pTS = pBridgeDesc->FindTemporarySupport(tsID);
+         GirderIndexType nGirders = pTS->GetSpan()->GetGirderCount();
+         for ( GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++ )
+         {
+            const CClosureJointData* pClosureJoint = pTS->GetClosureJoint(gdrIdx);
+            CClosureKey closureKey(pClosureJoint->GetClosureKey());
+            m_CastClosureIntervals.insert(std::make_pair(closureKey,castClosureIntervalIdx));
+         }
+      }
+   } // end if cast deck activity
+
+   if ( strDescriptions.size() == 0 )
+   {
+      return; // none of the activities are enabled for this event
+   }
+
+   // Build up the composite description for this interval
+   CString strDescription;
+   BOOST_FOREACH(CString& str,strDescriptions)
+   {
+      if (strDescription.GetLength() != 0 )
+      {
+         strDescription += _T(", ");
+      }
+
+      strDescription += str;
+   }
+
+   CInterval interval;
+   interval.StartEventIdx = eventIdx;
+   interval.EndEventIdx   = eventIdx;
+   interval.Start         = pTimelineEvent->GetDay();
+   interval.End           = interval.Start;
+   interval.Middle        = interval.Start;
+   interval.Duration      = 0;
+   interval.Description = strDescription;
+   StoreInterval(interval);
+
+   // If there are temporary strands to be removed... create an interval
+   if ( bRemoveTemporaryStrands )
+   {
+      // at least one segment that is erected in this activity has temporary strands
+
+      // remove temporary strands
+      CInterval removeTempStrandInterval;
+      removeTempStrandInterval.StartEventIdx = eventIdx;
+      removeTempStrandInterval.EndEventIdx   = eventIdx;
+      removeTempStrandInterval.Start         = pTimelineEvent->GetDay();
+      removeTempStrandInterval.End           = removeTempStrandInterval.Start;
+      removeTempStrandInterval.Middle        = removeTempStrandInterval.Start;
+      removeTempStrandInterval.Duration      = 0;
+      removeTempStrandInterval.Description   = _T("Remove temporary strands");
+      IntervalIndexType removeTempStrandsIntervalIdx = StoreInterval(removeTempStrandInterval);
+
+      std::set<SegmentIDType> erectedSegments(erectSegmentsActivity.GetSegments());
+      BOOST_FOREACH(SegmentIDType segmentID, erectedSegments)
+      {
+         const CPrecastSegmentData* pSegment = pBridgeDesc->FindSegment(segmentID);
+         CSegmentKey segmentKey(pSegment->GetSegmentKey());
+         m_RemoveTemporaryStrandsIntervals.insert(std::make_pair(segmentKey,removeTempStrandsIntervalIdx));
+      } 
+   }
+}
+
+#define SEGMENT 1
+#define DECK 2
+#define CLOSURE 3
+void CIntervalManager::ProcessStep3(EventIndexType eventIdx,const CTimelineEvent* pTimelineEvent,bool bTimeStepMethod)
+{
+   // Step 3: Create curing duration intervals
+   const CConstructSegmentActivity& constructSegmentActivity = pTimelineEvent->GetConstructSegmentsActivity();
+   const CCastDeckActivity& castDeckActivity = pTimelineEvent->GetCastDeckActivity();
+   const CCastClosureJointActivity& castClosureJointActivity = pTimelineEvent->GetCastClosureJointActivity();
+
+   std::map<Float64,int> curingDurations;
+   if ( constructSegmentActivity.IsEnabled() )
+   {
+      curingDurations.insert( std::make_pair(constructSegmentActivity.GetRelaxationTime(),SEGMENT) );
+   }
+
+   if ( castDeckActivity.IsEnabled() )
+   {
+      curingDurations.insert( std::make_pair(castDeckActivity.GetConcreteAgeAtContinuity(),DECK) );
+   }
+
+   if ( castClosureJointActivity.IsEnabled() )
+   {
+      curingDurations.insert( std::make_pair(castClosureJointActivity.GetConcreteAgeAtContinuity(),CLOSURE) );
+   }
+
+   if ( curingDurations.size() == 0 )
+   {
+      return; // none of the activities are enabled during this event
+   }
+
+   const CBridgeDescription2* pBridgeDesc = pTimelineEvent->GetTimelineManager()->GetBridgeDescription();
+
+   // work in order of shortest duration first
+   Float64 previous_curing_duration = 0;
+   std::map<Float64,int>::iterator iter(curingDurations.begin());
+   std::map<Float64,int>::iterator end(curingDurations.end());
+   for ( ; iter != end; iter++ )
+   {
+      Float64 duration = iter->first;
+      int activityType = iter->second;
+
+      // the concrete for all concrete casting activities during this event
+      // are cast at the same time. the curing intervals are based on the
+      // one with the shortest curing time, then the next longest, and so on.
+      // the duration of the curing time is the curing time for the
+      // given activity less the duration of the other curing times that
+      // have already occuring during this activity
+      //
+      // e.g. Assume deck concrete and closure joint concrete are cast at the same
+      // time. It takes the closure joint 3 days to cure and the deck 10 days.
+      // The curing duration for the closure joint and deck together is modeled as 3 days. the
+      // curing duration duration for the deck then proceeds for an additional 7 days
+      Float64 remaining_duration = duration - previous_curing_duration;
+
+      if ( activityType == SEGMENT )
+      {
+         ATLASSERT(IsEqual(duration,constructSegmentActivity.GetRelaxationTime()));
+
+         // stress strands during segment construction. strands relax during this interval
+         CInterval stressStrandInterval;
+         stressStrandInterval.StartEventIdx = eventIdx;
+         stressStrandInterval.EndEventIdx   = eventIdx;
+         stressStrandInterval.Start         = pTimelineEvent->GetDay();
+         stressStrandInterval.Duration      = remaining_duration;
+         stressStrandInterval.End           = stressStrandInterval.Start + stressStrandInterval.Duration;
+         stressStrandInterval.Middle        = 0.5*(stressStrandInterval.Start + stressStrandInterval.End);
+         stressStrandInterval.Description   = _T("Tension strand, cast girder segment, strand relaxation, and concrete curing");
+         IntervalIndexType stressStrandIntervalIdx = StoreInterval(stressStrandInterval);
+
+         // release prestress is a sudden loading.... zero length interval
+         CInterval releaseInterval(stressStrandInterval);
+         releaseInterval.Start = stressStrandInterval.End;
+         releaseInterval.Duration = 0;
+         releaseInterval.Middle = releaseInterval.Start;
+         releaseInterval.Description = _T("Prestress Release");
+         IntervalIndexType releaseIntervalIdx = StoreInterval(releaseInterval);
+
+         // lift segment
+         CInterval liftSegmentInterval(releaseInterval);
+         liftSegmentInterval.Start = releaseInterval.End;
+         liftSegmentInterval.Duration = 0;
+         liftSegmentInterval.Middle = liftSegmentInterval.Start;
+         liftSegmentInterval.Description = _T("Lift segments");
+         IntervalIndexType liftIntervalIdx = StoreInterval(liftSegmentInterval);
+
+         // placing into storage changes boundary conditions... treat as sudden change in loading
+         CInterval storageInterval(liftSegmentInterval);
+         storageInterval.Start = liftSegmentInterval.End;
+         storageInterval.Duration = 0;
+         storageInterval.Middle = storageInterval.Start;
+         storageInterval.Description = _T("Place segments into storage");
+         IntervalIndexType storateIntervalIdx = StoreInterval(storageInterval);
+
+
+         // record the segments that are constructed during this activity
+         const std::set<SegmentIDType>& segments = constructSegmentActivity.GetSegments();
+         BOOST_FOREACH(SegmentIDType segmentID,segments)
+         {
+            const CPrecastSegmentData* pSegment = pBridgeDesc->FindSegment(segmentID);
+            CSegmentKey segmentKey(pSegment->GetSegmentKey());
+
+            m_StressStrandIntervals.insert(std::make_pair(segmentKey,stressStrandIntervalIdx));
+            m_ReleaseIntervals.insert(std::make_pair(segmentKey,releaseIntervalIdx));
+
+            // this is for keeping track of when the strands are stressed for the first and last segments constructed for this girder
+            std::map<CGirderKey,std::pair<IntervalIndexType,IntervalIndexType>>::iterator strandStressingFound(m_StrandStressingSequenceIntervalLimits.find(segmentKey));
+            if ( strandStressingFound == m_StrandStressingSequenceIntervalLimits.end() )
+            {
+               // this is the first segment from the girder have strands stressed
+               m_StrandStressingSequenceIntervalLimits.insert(std::make_pair(segmentKey,std::make_pair(stressStrandIntervalIdx,stressStrandIntervalIdx)));
+            }
+            else
+            {
+               // a segment from this girder has already had its strands stressed.. update the record
+               strandStressingFound->second.first  = Min(strandStressingFound->second.first, stressStrandIntervalIdx);
+               strandStressingFound->second.second = Max(strandStressingFound->second.second,stressStrandIntervalIdx);
+            }
+
+            // this is for keeping track of when the strands are released for the first and last segments constructed for this girder
+            std::map<CGirderKey,std::pair<IntervalIndexType,IntervalIndexType>>::iterator releaseFound(m_ReleaseSequenceIntervalLimits.find(segmentKey));
+            if ( releaseFound == m_ReleaseSequenceIntervalLimits.end() )
+            {
+               // this is the first segment from the girder to have its strands released
+               m_ReleaseSequenceIntervalLimits.insert(std::make_pair(segmentKey,std::make_pair(releaseIntervalIdx,releaseIntervalIdx)));
+            }
+            else
+            {
+               // a segment from this girder has already had its strands released.. update the record
+               releaseFound->second.first  = Min(releaseFound->second.first, releaseIntervalIdx);
+               releaseFound->second.second = Max(releaseFound->second.second,releaseIntervalIdx);
+            }
+         } // next segment
+      }
+      else if ( activityType == DECK )
+      {
+         CInterval cureDeckInterval;
+         ATLASSERT(IsEqual(duration,castDeckActivity.GetConcreteAgeAtContinuity()));
+         if ( bTimeStepMethod && 0 < duration )
+         {
+            // only model deck curing if we are doing a time-step analysis
+            ATLASSERT(m_CastDeckIntervalIdx != INVALID_INDEX); // deck must have been previously cast
+            cureDeckInterval.StartEventIdx = eventIdx;
+            cureDeckInterval.EndEventIdx   = eventIdx;
+            cureDeckInterval.Start         = m_Intervals.back().End; // curing starts when the previous interval ends
+            cureDeckInterval.Duration      = remaining_duration;
+            cureDeckInterval.End           = cureDeckInterval.Start + cureDeckInterval.Duration;
+            cureDeckInterval.Middle        = 0.5*(cureDeckInterval.Start + cureDeckInterval.End);
+            cureDeckInterval.Description = _T("Deck curing");
+            StoreInterval(cureDeckInterval);
+
+            CInterval compositeDeckInterval;
+            compositeDeckInterval.StartEventIdx = eventIdx;
+            compositeDeckInterval.EndEventIdx   = eventIdx;
+            compositeDeckInterval.Start = cureDeckInterval.End;
+            compositeDeckInterval.Duration = 0;
+            compositeDeckInterval.End = compositeDeckInterval.Start + compositeDeckInterval.Duration;
+            compositeDeckInterval.Middle = 0.5*(compositeDeckInterval.Start + compositeDeckInterval.End);
+            compositeDeckInterval.Description = _T("Composite Deck");
+            m_CompositeDeckIntervalIdx = StoreInterval(compositeDeckInterval);
+         }
+         else
+         {
+            // for non-timestep analysis (PGSuper) deck is composite the interval after it is cast
+            m_CompositeDeckIntervalIdx = m_CastDeckIntervalIdx+1;
+         }
+      }
+      else if ( activityType == CLOSURE )
+      {
+         ATLASSERT(IsEqual(duration,castClosureJointActivity.GetConcreteAgeAtContinuity()));
+
+         CInterval cureClosureInterval;
+         cureClosureInterval.StartEventIdx = eventIdx;
+         cureClosureInterval.EndEventIdx   = eventIdx;
+         cureClosureInterval.Start         = m_Intervals.back().End; // curing starts when the previous interval ends
+         cureClosureInterval.Duration      = remaining_duration;
+         cureClosureInterval.End           = cureClosureInterval.Start + cureClosureInterval.Duration;
+         cureClosureInterval.Middle        = 0.5*(cureClosureInterval.Start + cureClosureInterval.End);
+         cureClosureInterval.Description   = _T("Closure joints curing");
+         StoreInterval(cureClosureInterval);
+      }
+
+      previous_curing_duration += duration;
+   }
+}
+
+void CIntervalManager::ProcessStep4(EventIndexType eventIdx,const CTimelineEvent* pTimelineEvent)
+{
+   // Step 4: Create a single interval for loadings
+
+   // For each activity in this event, get phrase to use in the description of the interval
+   // as well as record the interval index if needed. Since the interval object hasn't
+   // been added to the m_Intervals collection yet, the interval is the size of the collection
+   IntervalIndexType intervalIdx = m_Intervals.size();
+   
+   std::vector<CString> strDescriptions;
+
+   const CBridgeDescription2* pBridgeDesc = pTimelineEvent->GetTimelineManager()->GetBridgeDescription();
+
+   //bool bRemoveTemporaryStrands = false; // need to know if there are temporary strands that are removed
+   //// if so, we will add another interval after this interval
+   //const CErectSegmentActivity& erectSegmentsActivity = pTimelineEvent->GetErectSegmentsActivity();
+   //if ( erectSegmentsActivity.IsEnabled() )
+   //{
+   //   // Segments must be hauled to the bridge site before they are erected
+   //   CInterval haulSegmentInterval;
+   //   haulSegmentInterval.StartEventIdx = eventIdx;
+   //   haulSegmentInterval.EndEventIdx   = eventIdx;
+   //   haulSegmentInterval.Start         = pTimelineEvent->GetDay();
+   //   haulSegmentInterval.End           = haulSegmentInterval.Start;
+   //   haulSegmentInterval.Middle        = haulSegmentInterval.Start;
+   //   haulSegmentInterval.Duration      = 0;
+   //   haulSegmentInterval.Description   = _T("Haul Segments");
+   //   IntervalIndexType haulIntervalIdx = StoreInterval(haulSegmentInterval);
+
+   //   std::set<SegmentIDType> erectedSegments(erectSegmentsActivity.GetSegments());
+   //   BOOST_FOREACH(SegmentIDType segmentID, erectedSegments)
+   //   {
+   //      const CPrecastSegmentData* pSegment = pBridgeDesc->FindSegment(segmentID);
+   //      CSegmentKey segmentKey(pSegment->GetSegmentKey());
+   //      m_SegmentHaulingIntervals.insert(std::make_pair(segmentKey,haulIntervalIdx));
+   //   } // next segment ID
+
+   //   // update the interval index for all the other activities since it just incremented by one
+   //   // for segment hauling
+   //   intervalIdx = m_Intervals.size();
+
+   //   
+   //   strDescriptions.push_back(CString(_T("Erect Segments")));
+   //   IntervalIndexType erectSegmentIntervalIdx = intervalIdx;
+
+   //   BOOST_FOREACH(SegmentIDType segmentID, erectedSegments)
+   //   {
+   //      const CPrecastSegmentData* pSegment = pBridgeDesc->FindSegment(segmentID);
+   //      CSegmentKey segmentKey(pSegment->GetSegmentKey());
+   //      m_SegmentErectionIntervals.insert(std::make_pair(segmentKey,erectSegmentIntervalIdx));
+
+   //      if ( 0 < pSegment->Strands.GetStrandCount(pgsTypes::Temporary) )
+   //      {
+   //         bRemoveTemporaryStrands = true;
+   //      }
+
+   //      // this is for keeping track of when the first and last segments in a girder are erected
+   //      std::map<CGirderKey,std::pair<IntervalIndexType,IntervalIndexType>>::iterator found(m_SegmentErectionSequenceIntervalLimits.find(segmentKey));
+   //      if ( found == m_SegmentErectionSequenceIntervalLimits.end() )
+   //      {
+   //         // this is the first segment from the girder to be erected
+   //         m_SegmentErectionSequenceIntervalLimits.insert(std::make_pair(segmentKey,std::make_pair(erectSegmentIntervalIdx,erectSegmentIntervalIdx)));
+   //      }
+   //      else
+   //      {
+   //         // a segment from this girder has already been erected.. update the record
+   //         found->second.first  = Min(found->second.first, erectSegmentIntervalIdx);
+   //         found->second.second = Max(found->second.second,erectSegmentIntervalIdx);
+   //      }
+   //   } // next segment ID
+   //} // erect segments activity
+
+   //const CRemoveTemporarySupportsActivity& removeTemporarySupportActivity = pTimelineEvent->GetRemoveTempSupportsActivity();
+   //if ( removeTemporarySupportActivity.IsEnabled() )
+   //{
+   //   strDescriptions.push_back(CString(_T("Remove Temporary Support")));
+   //   IntervalIndexType removeTempSupportIntervalIdx = intervalIdx;
+
+   //   const CRemoveTemporarySupportsActivity& removeTS = pTimelineEvent->GetRemoveTempSupportsActivity();
+   //   const std::vector<SupportIDType>& tsIDs(removeTS.GetTempSupports());
+   //   BOOST_FOREACH(SupportIDType tsID,tsIDs)
+   //   {
+   //      const CTemporarySupportData* pTS = pBridgeDesc->FindTemporarySupport(tsID);
+   //      SupportIndexType tsIdx = pTS->GetIndex();
+   //      m_RemoveTemporarySupportIntervals.insert(std::make_pair(tsIdx,removeTempSupportIntervalIdx));
+   //   }
+   //}
+
+   //const CStressTendonActivity& stressTendonActivity = pTimelineEvent->GetStressTendonActivity();
+   //if ( stressTendonActivity.IsEnabled() )
+   //{
+   //   strDescriptions.push_back(CString(_T("Stress Tendons")));
+   //   IntervalIndexType stressTendonIntervalIdx = intervalIdx;
+
+   //   const std::set<CTendonKey>& tendons( stressTendonActivity.GetTendons() );
+   //   BOOST_FOREACH(CTendonKey tendonKey,tendons)
+   //   {
+   //      if ( tendonKey.girderKey.groupIndex == ALL_GROUPS )
+   //      {
+   //         // tendon key doesn't have a valid girder key, so it must have a valid girder ID
+   //         // need to get the associated girder key
+   //         ATLASSERT(tendonKey.girderID != INVALID_ID);
+   //         const CSplicedGirderData* pGirder = pBridgeDesc->FindGirder(tendonKey.girderID);
+   //         tendonKey.girderKey = pGirder->GetGirderKey();
+   //      }
+
+   //      // we need to know the number of webs in a girder, but since we are in the middle
+   //      // of validating the overall bridge model, we can't make a request throught the
+   //      // IGirder interface. Doing so would cause recursion and *crash*. 
+   //      //
+   //      // Here is an alternative method that works
+   //      const CSplicedGirderData* pGirder = pBridgeDesc->GetGirderGroup(tendonKey.girderKey.groupIndex)->GetGirder(tendonKey.girderKey.girderIndex);
+   //      const GirderLibraryEntry* pGdrEntry = pGirder->GetGirderLibraryEntry();
+   //      CComPtr<IBeamFactory> factory;
+   //      pGdrEntry->GetBeamFactory(&factory);
+
+   //      CComPtr<IGirderSection> gdrSection;
+   //      factory->CreateGirderSection(NULL,INVALID_ID,pGdrEntry->GetDimensions(),-1,-1,&gdrSection);
+
+   //      WebIndexType nWebs;
+   //      gdrSection->get_WebCount(&nWebs);
+
+   //      for ( WebIndexType webIdx = 0; webIdx < nWebs; webIdx++ )
+   //      {
+   //         DuctIndexType thisDuctIdx = nWebs*tendonKey.ductIdx + webIdx;
+   //         CTendonKey thisTendonKey(tendonKey.girderKey,thisDuctIdx);
+   //         m_StressTendonIntervals.insert(std::make_pair(thisTendonKey,stressTendonIntervalIdx));
+   //      }
+   //   }
+   //}
 
    const CApplyLoadActivity& applyLoadActivity = pTimelineEvent->GetApplyLoadActivity();
    if ( applyLoadActivity.IsEnabled() )
@@ -969,46 +1381,6 @@ void CIntervalManager::ProcessStep2(EventIndexType eventIdx,const CTimelineEvent
       }
    } // end if loading activity
 
-   const CCastDeckActivity& castDeckActivity = pTimelineEvent->GetCastDeckActivity();
-   if ( castDeckActivity.IsEnabled() )
-   {
-      strDescriptions.push_back(CString(_T("Cast Deck")));
-      m_CastDeckIntervalIdx = intervalIdx;
-   } // end if cast deck activity
-
-   const CCastClosureJointActivity& closureJointActivity = pTimelineEvent->GetCastClosureJointActivity();
-   if ( closureJointActivity.IsEnabled() )
-   {
-      strDescriptions.push_back(CString(_T("Cast Closure Joint")));
-      IntervalIndexType castClosureIntervalIdx = intervalIdx;
-
-      const std::set<PierIDType>& vPierIDs(closureJointActivity.GetPiers());
-      BOOST_FOREACH(PierIDType pierID,vPierIDs)
-      {
-         const CPierData2* pPier = pBridgeDesc->FindPier(pierID);
-         const CGirderGroupData* pGroup = pPier->GetGirderGroup(pgsTypes::Ahead); // shouldn't matter which side
-         GirderIndexType nGirders = pGroup->GetGirderCount();
-         for ( GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++ )
-         {
-            const CClosureJointData* pClosureJoint = pPier->GetClosureJoint(gdrIdx);
-            CClosureKey closureKey(pClosureJoint->GetClosureKey());
-            m_CastClosureIntervals.insert(std::make_pair(closureKey,castClosureIntervalIdx));
-         }
-      }
-      const std::set<SupportIDType>& vTempSupportIDs(closureJointActivity.GetTempSupports());
-      BOOST_FOREACH(SupportIDType tsID,vTempSupportIDs)
-      {
-         const CTemporarySupportData* pTS = pBridgeDesc->FindTemporarySupport(tsID);
-         GirderIndexType nGirders = pTS->GetSpan()->GetGirderCount();
-         for ( GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++ )
-         {
-            const CClosureJointData* pClosureJoint = pTS->GetClosureJoint(gdrIdx);
-            CClosureKey closureKey(pClosureJoint->GetClosureKey());
-            m_CastClosureIntervals.insert(std::make_pair(closureKey,castClosureIntervalIdx));
-         }
-      }
-   } // end if cast deck activity
-
    if ( strDescriptions.size() == 0 )
    {
       return; // none of the activities are enabled for this event
@@ -1029,226 +1401,15 @@ void CIntervalManager::ProcessStep2(EventIndexType eventIdx,const CTimelineEvent
    CInterval interval;
    interval.StartEventIdx = eventIdx;
    interval.EndEventIdx   = eventIdx;
-   interval.Start         = pTimelineEvent->GetDay();
+   interval.Start         = pTimelineEvent->GetDay() + pTimelineEvent->GetDuration(); // this interval starts at end end of the event and has zero duration
    interval.End           = interval.Start;
    interval.Middle        = interval.Start;
    interval.Duration      = 0;
    interval.Description = strDescription;
    StoreInterval(interval);
-
-   // If there are temporary strands to be removed... create an interval
-   if ( bRemoveTemporaryStrands )
-   {
-      // at least one segment that is erected in this activity has temporary strands
-
-      // remove temporary strands
-      CInterval removeTempStrandInterval;
-      removeTempStrandInterval.StartEventIdx = eventIdx;
-      removeTempStrandInterval.EndEventIdx   = eventIdx;
-      removeTempStrandInterval.Start         = pTimelineEvent->GetDay();
-      removeTempStrandInterval.End           = removeTempStrandInterval.Start;
-      removeTempStrandInterval.Middle        = removeTempStrandInterval.Start;
-      removeTempStrandInterval.Duration      = 0;
-      removeTempStrandInterval.Description   = _T("Remove temporary strands");
-      IntervalIndexType removeTempStrandsIntervalIdx = StoreInterval(removeTempStrandInterval);
-
-      std::set<SegmentIDType> erectedSegments(erectSegmentsActivity.GetSegments());
-      BOOST_FOREACH(SegmentIDType segmentID, erectedSegments)
-      {
-         const CPrecastSegmentData* pSegment = pBridgeDesc->FindSegment(segmentID);
-         CSegmentKey segmentKey(pSegment->GetSegmentKey());
-         m_RemoveTemporaryStrandsIntervals.insert(std::make_pair(segmentKey,removeTempStrandsIntervalIdx));
-      } 
-   }
 }
 
-#define SEGMENT 1
-#define DECK 2
-#define CLOSURE 3
-void CIntervalManager::ProcessStep3(EventIndexType eventIdx,const CTimelineEvent* pTimelineEvent,bool bTimeStepMethod)
-{
-   // Step 3: Create curing duration intervals
-   const CConstructSegmentActivity& constructSegmentActivity = pTimelineEvent->GetConstructSegmentsActivity();
-   const CCastDeckActivity& castDeckActivity = pTimelineEvent->GetCastDeckActivity();
-   const CCastClosureJointActivity& castClosureJointActivity = pTimelineEvent->GetCastClosureJointActivity();
-
-   std::map<Float64,int> curingDurations;
-   if ( constructSegmentActivity.IsEnabled() )
-   {
-      curingDurations.insert( std::make_pair(constructSegmentActivity.GetRelaxationTime(),SEGMENT) );
-   }
-
-   if ( castDeckActivity.IsEnabled() )
-   {
-      curingDurations.insert( std::make_pair(castDeckActivity.GetConcreteAgeAtContinuity(),DECK) );
-   }
-
-   if ( castClosureJointActivity.IsEnabled() )
-   {
-      curingDurations.insert( std::make_pair(castClosureJointActivity.GetConcreteAgeAtContinuity(),CLOSURE) );
-   }
-
-   if ( curingDurations.size() == 0 )
-   {
-      return; // none of the activities are enabled during this event
-   }
-
-   const CBridgeDescription2* pBridgeDesc = pTimelineEvent->GetTimelineManager()->GetBridgeDescription();
-
-   // work in order of shortest duration first
-   Float64 previous_curing_duration = 0;
-   std::map<Float64,int>::iterator iter(curingDurations.begin());
-   std::map<Float64,int>::iterator end(curingDurations.end());
-   for ( ; iter != end; iter++ )
-   {
-      Float64 duration = iter->first;
-      int activityType = iter->second;
-
-      // the concrete for all concrete casting activities during this event
-      // are cast at the same time. the curing intervals are based on the
-      // one with the shortest curing time, then the next longets, and so on.
-      // the duration of the curing time is the curing time for the
-      // given activity less the duration of the other curing times that
-      // have already occuring during this activity
-      //
-      // e.g. Assume deck concrete and closure joint concrete are cast at the same
-      // time. It takes the closure joint 3 days to cure and the deck 10 days.
-      // The curing duration for the closure joint and deck together is modeled as 3 days. the
-      // curing duration duration for the deck then proceeds for an additional 7 days
-      Float64 remaining_duration = duration - previous_curing_duration;
-
-      if ( activityType == SEGMENT )
-      {
-         ATLASSERT(IsEqual(duration,constructSegmentActivity.GetRelaxationTime()));
-
-         // stress strands during segment construction. strands relax during this interval
-         CInterval stressStrandInterval;
-         stressStrandInterval.StartEventIdx = eventIdx;
-         stressStrandInterval.EndEventIdx   = eventIdx;
-         stressStrandInterval.Start         = pTimelineEvent->GetDay();
-         stressStrandInterval.Duration      = remaining_duration;
-         stressStrandInterval.End           = stressStrandInterval.Start + stressStrandInterval.Duration;
-         stressStrandInterval.Middle        = 0.5*(stressStrandInterval.Start + stressStrandInterval.End);
-         stressStrandInterval.Description   = _T("Tension strand, cast girder segment, strand relaxation, and concrete curing");
-         IntervalIndexType stressStrandIntervalIdx = StoreInterval(stressStrandInterval);
-
-         // release prestress is a sudden loading.... zero length interval
-         CInterval releaseInterval(stressStrandInterval);
-         releaseInterval.Start = stressStrandInterval.End;
-         releaseInterval.Duration = 0;
-         releaseInterval.Middle = releaseInterval.Start;
-         releaseInterval.Description = _T("Prestress Release");
-         IntervalIndexType releaseIntervalIdx = StoreInterval(releaseInterval);
-
-         // lift segment
-         CInterval liftSegmentInterval(releaseInterval);
-         liftSegmentInterval.Start = releaseInterval.End;
-         liftSegmentInterval.Duration = 0;
-         liftSegmentInterval.Middle = liftSegmentInterval.Start;
-         liftSegmentInterval.Description = _T("Lift segments");
-         IntervalIndexType liftIntervalIdx = StoreInterval(liftSegmentInterval);
-
-         // placing into storage changes boundary conditions... treat as sudden change in loading
-         CInterval storageInterval(liftSegmentInterval);
-         storageInterval.Start = liftSegmentInterval.End;
-         storageInterval.Duration = 0;
-         storageInterval.Middle = storageInterval.Start;
-         storageInterval.Description = _T("Place segments into storage");
-         IntervalIndexType storateIntervalIdx = StoreInterval(storageInterval);
-
-
-         // record the segments that are constructed during this activity
-         const std::set<SegmentIDType>& segments = constructSegmentActivity.GetSegments();
-         BOOST_FOREACH(SegmentIDType segmentID,segments)
-         {
-            const CPrecastSegmentData* pSegment = pBridgeDesc->FindSegment(segmentID);
-            CSegmentKey segmentKey(pSegment->GetSegmentKey());
-
-            m_StressStrandIntervals.insert(std::make_pair(segmentKey,stressStrandIntervalIdx));
-            m_ReleaseIntervals.insert(std::make_pair(segmentKey,releaseIntervalIdx));
-
-            // this is for keeping track of when the strands are stressed for the first and last segments constructed for this girder
-            std::map<CGirderKey,std::pair<IntervalIndexType,IntervalIndexType>>::iterator strandStressingFound(m_StrandStressingSequenceIntervalLimits.find(segmentKey));
-            if ( strandStressingFound == m_StrandStressingSequenceIntervalLimits.end() )
-            {
-               // this is the first segment from the girder have strands stressed
-               m_StrandStressingSequenceIntervalLimits.insert(std::make_pair(segmentKey,std::make_pair(stressStrandIntervalIdx,stressStrandIntervalIdx)));
-            }
-            else
-            {
-               // a segment from this girder has already had its strands stressed.. update the record
-               strandStressingFound->second.first  = Min(strandStressingFound->second.first, stressStrandIntervalIdx);
-               strandStressingFound->second.second = Max(strandStressingFound->second.second,stressStrandIntervalIdx);
-            }
-
-            // this is for keeping track of when the strands are released for the first and last segments constructed for this girder
-            std::map<CGirderKey,std::pair<IntervalIndexType,IntervalIndexType>>::iterator releaseFound(m_ReleaseSequenceIntervalLimits.find(segmentKey));
-            if ( releaseFound == m_ReleaseSequenceIntervalLimits.end() )
-            {
-               // this is the first segment from the girder to have its strands released
-               m_ReleaseSequenceIntervalLimits.insert(std::make_pair(segmentKey,std::make_pair(releaseIntervalIdx,releaseIntervalIdx)));
-            }
-            else
-            {
-               // a segment from this girder has already had its strands released.. update the record
-               releaseFound->second.first  = Min(releaseFound->second.first, releaseIntervalIdx);
-               releaseFound->second.second = Max(releaseFound->second.second,releaseIntervalIdx);
-            }
-         } // next segment
-      }
-      else if ( activityType == DECK )
-      {
-         CInterval cureDeckInterval;
-         ATLASSERT(IsEqual(duration,castDeckActivity.GetConcreteAgeAtContinuity()));
-         if ( bTimeStepMethod && 0 < duration )
-         {
-            // only model deck curing if we are doing a time-step analysis
-            ATLASSERT(m_CastDeckIntervalIdx != INVALID_INDEX); // deck must have been previously cast
-            cureDeckInterval.StartEventIdx = eventIdx;
-            cureDeckInterval.EndEventIdx   = eventIdx;
-            cureDeckInterval.Start         = m_Intervals.back().End; // curing starts when the previous interval ends
-            cureDeckInterval.Duration      = remaining_duration;
-            cureDeckInterval.End           = cureDeckInterval.Start + cureDeckInterval.Duration;
-            cureDeckInterval.Middle        = 0.5*(cureDeckInterval.Start + cureDeckInterval.End);
-            cureDeckInterval.Description = _T("Deck curing");
-            StoreInterval(cureDeckInterval);
-
-            CInterval compositeDeckInterval;
-            compositeDeckInterval.StartEventIdx = eventIdx;
-            compositeDeckInterval.EndEventIdx   = eventIdx;
-            compositeDeckInterval.Start = cureDeckInterval.End;
-            compositeDeckInterval.Duration = 0;
-            compositeDeckInterval.End = compositeDeckInterval.Start + compositeDeckInterval.Duration;
-            compositeDeckInterval.Middle = 0.5*(compositeDeckInterval.Start + compositeDeckInterval.End);
-            compositeDeckInterval.Description = _T("Composite Deck");
-            m_CompositeDeckIntervalIdx = StoreInterval(compositeDeckInterval);
-         }
-         else
-         {
-            // for non-timestep analysis (PGSuper) deck is composite the interval after it is cast
-            m_CompositeDeckIntervalIdx = m_CastDeckIntervalIdx+1;
-         }
-      }
-      else if ( activityType == CLOSURE )
-      {
-         ATLASSERT(IsEqual(duration,castClosureJointActivity.GetConcreteAgeAtContinuity()));
-
-         CInterval cureClosureInterval;
-         cureClosureInterval.StartEventIdx = eventIdx;
-         cureClosureInterval.EndEventIdx   = eventIdx;
-         cureClosureInterval.Start         = m_Intervals.back().End; // curing starts when the previous interval ends
-         cureClosureInterval.Duration      = remaining_duration;
-         cureClosureInterval.End           = cureClosureInterval.Start + cureClosureInterval.Duration;
-         cureClosureInterval.Middle        = 0.5*(cureClosureInterval.Start + cureClosureInterval.End);
-         cureClosureInterval.Description   = _T("Closure joints curing");
-         StoreInterval(cureClosureInterval);
-      }
-
-      previous_curing_duration += duration;
-   }
-}
-
-void CIntervalManager::ProcessStep4(EventIndexType eventIdx,const CTimelineEvent* pTimelineEvent,bool bTimeStepMethod)
+void CIntervalManager::ProcessStep5(EventIndexType eventIdx,const CTimelineEvent* pTimelineEvent,bool bTimeStepMethod)
 {
    // At the end of every event, create a general time step
    // that goes from the end of last interval for the current event

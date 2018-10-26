@@ -38,3 +38,6 @@
 
 #include <PgsExt\GirderLabel.h>
 #include <PgsExt\Keys.h>
+
+#include "GraphColor.h"
+#include <GraphicsLib\GraphColor.h>

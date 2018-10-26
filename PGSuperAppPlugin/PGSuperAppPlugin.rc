@@ -2404,9 +2404,10 @@ CAPTION "General"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     GROUPBOX        "Segments",IDC_STATIC,7,7,145,187
-    LTEXT           "Section",IDC_STATIC,20,25,24,8
-    COMBOBOX        IDC_GIRDER_NAME,47,23,97,94,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
-    CONTROL         "Custom1",IDC_GIRDER_GRID,"GXWND",WS_BORDER | WS_VSCROLL | WS_HSCROLL | WS_TABSTOP,14,44,130,143
+    LTEXT           "Girder Type Hyperlink",IDC_GIRDERTYPE_HYPERLINK,16,18,129,19
+    LTEXT           "Type",IDC_STATIC,20,42,17,8
+    COMBOBOX        IDC_GIRDER_NAME,47,40,97,94,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "Custom1",IDC_GIRDER_GRID,"GXWND",WS_BORDER | WS_VSCROLL | WS_HSCROLL | WS_TABSTOP,14,55,130,132
     GROUPBOX        "Ducts/Tendons",IDC_STATIC,158,7,443,120
     CONTROL         "Custom1",IDC_DUCT_GRID,"GXWND",WS_BORDER | WS_VSCROLL | WS_HSCROLL | WS_TABSTOP,167,23,370,70
     PUSHBUTTON      "Add",IDC_ADD,543,24,50,14
@@ -2418,7 +2419,7 @@ BEGIN
     LTEXT           "Installation Method (LRFD 5.4.6.2)",IDC_STATIC,537,90,64,15
     COMBOBOX        IDC_INSTALLATION_TYPE,541,107,52,94,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     GROUPBOX        "Slab Offsets",IDC_STATIC,158,131,443,63
-    LTEXT           "Slab Offset Hyperlink",IDC_HYPERLINK,167,143,121,8
+    LTEXT           "Slab Offset Hyperlink",IDC_SLABOFFSET_HYPERLINK,167,143,121,8
     CONTROL         "Custom1",IDC_SLABOFFSET_GRID,"GXWND",WS_BORDER | WS_VSCROLL | WS_HSCROLL | WS_TABSTOP,167,155,370,32
     LTEXT           "Custom1",IDC_TENDONS,7,202,594,58,NOT WS_GROUP | WS_TABSTOP
     LTEXT           "Condition Factor (MBE 6A.4.2.3)",IDC_STATIC,7,266,105,8
@@ -3301,8 +3302,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 3,0,0,41
- PRODUCTVERSION 3,0,0,41
+ FILEVERSION 3,0,0,42
+ PRODUCTVERSION 3,0,0,42
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -3319,12 +3320,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "Washington State Department of Transportation"
             VALUE "FileDescription", "PGSuper"
-            VALUE "FileVersion", "3.0.0.41"
+            VALUE "FileVersion", "3.0.0.42"
             VALUE "InternalName", "PGSuper"
             VALUE "LegalCopyright", "Copyright © 1999-2015, Washington State Department of Transportation, All Rights Reserved"
             VALUE "OriginalFilename", "PGSuperAppPlugin.DLL"
             VALUE "ProductName", "PGSuper"
-            VALUE "ProductVersion", "3.0.0.41"
+            VALUE "ProductVersion", "3.0.0.42"
         END
     END
     BLOCK "VarFileInfo"
@@ -4651,8 +4652,8 @@ END
 STRINGTABLE 
 BEGIN
     IDS_E_BADINSTALL        "There is an error with the %1 installation.  Please re-install the program."
-    IDS_E_PROBPERSISTS      "Contact your technical support representitive if this problem persists.\n Please include your project file and the %1 file found in the program directory."
-    IDS_E_INVALIDFORMAT     "%1 is not a valid PGSuper project file."
+    IDS_E_PROBPERSISTS      "Contact your technical support representitive if this problem persists.\n Please include your project file and the log file, %1."
+    IDS_E_INVALIDFORMAT     "%1 is not a valid %2 project file."
     IDS_E_FILENOTFOUND      "File %1 was not found"
     IDS_E_READ              "An error has occured while reading %1"
     IDS_E_FORMAT            "%1\n\n %2"
@@ -4660,7 +4661,7 @@ END
 
 STRINGTABLE 
 BEGIN
-    IDS_E_INVALIDVERSION    "The file %1 came from a newer version of PGSuper. You must upgrade in order to read it."
+    IDS_E_INVALIDVERSION    "The file %1 came from a newer version of %2. You must upgrade in order to read it."
 END
 
 #endif    // English (U.S.) resources

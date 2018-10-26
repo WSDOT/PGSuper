@@ -616,10 +616,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\GraphColor.cpp"
-				>
-			</File>
-			<File
 				RelativePath=".\Graphing.cpp"
 				>
 			</File>

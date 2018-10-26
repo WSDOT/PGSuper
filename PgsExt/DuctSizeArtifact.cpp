@@ -119,7 +119,7 @@ bool pgsDuctSizeArtifact::PassedRadiusOfCurvature() const
 
 bool pgsDuctSizeArtifact::PassedDuctArea() const
 {
-   return m_Apt <= m_Kmax*m_Aduct;
+   return m_Kmax*m_Apt <= m_Aduct;
 }
 
 bool pgsDuctSizeArtifact::PassedDuctSize() const

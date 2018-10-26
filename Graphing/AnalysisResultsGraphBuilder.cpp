@@ -77,7 +77,7 @@ END_MESSAGE_MAP()
 
 CAnalysisResultsGraphBuilder::CAnalysisResultsGraphBuilder() :
 CGirderGraphBuilderBase(),
-m_pGraphColor(new CGraphColor),
+m_pGraphColor(new grGraphColor),
 m_pGraphDefinitions(new CAnalysisResultsGraphDefinitions)
 {
    Init();
@@ -85,7 +85,7 @@ m_pGraphDefinitions(new CAnalysisResultsGraphDefinitions)
 
 CAnalysisResultsGraphBuilder::CAnalysisResultsGraphBuilder(const CAnalysisResultsGraphBuilder& other) :
 CGirderGraphBuilderBase(other),
-m_pGraphColor(new CGraphColor),
+m_pGraphColor(new grGraphColor),
 m_pGraphDefinitions(new CAnalysisResultsGraphDefinitions)
 {
    Init();
@@ -1335,10 +1335,9 @@ void CAnalysisResultsGraphBuilder::InitializeGraph(IndexType graphIdx,const CAna
 
    pgsTypes::AnalysisType analysisType = GetAnalysisType();
 
-   GET_IFACE(IProductForces,pProductForces);
-
    if (actionType == actionShear )
    {
+      GET_IFACE(IProductForces,pProductForces);
       GET_IFACE(IIntervals,pIntervals);
       IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
 
@@ -1371,6 +1370,7 @@ void CAnalysisResultsGraphBuilder::InitializeGraph(IndexType graphIdx,const CAna
              actionType == actionReaction)
    {
       // For moments and deflections
+      GET_IFACE(IProductForces,pProductForces);
       if ( analysisType == pgsTypes::Envelope )
       {
          *pAnalysisTypeCount = 2;

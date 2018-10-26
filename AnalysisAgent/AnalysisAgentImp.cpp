@@ -1145,7 +1145,7 @@ LPCTSTR CAnalysisAgentImp::GetLoadCombinationName(LoadingCombinationType loadCom
 
 LPCTSTR CAnalysisAgentImp::GetLimitStateName(pgsTypes::LimitState limitState)
 {
-   return GetLimitStateName(limitState); // pgsext
+   return ::GetLimitStateName(limitState); // (must use the scope resolution operator to call the global version of this function.. if not, we recursion)
 }
 
 bool CAnalysisAgentImp::ReportAxialResults()
@@ -1890,7 +1890,9 @@ std::vector<Float64> CAnalysisAgentImp::GetAxial(IntervalIndexType intervalIdx,p
          if ( resultsType == rtCumulative )
          {
             results.resize(vPoi.size(),0);
-            for ( IntervalIndexType iIdx = 0; iIdx <= intervalIdx; iIdx++ )
+            GET_IFACE(IIntervals,pIntervals);
+            IntervalIndexType releaseIntervalIdx = pIntervals->GetFirstPrestressReleaseInterval(vPoi.front().GetSegmentKey());
+            for ( IntervalIndexType iIdx = releaseIntervalIdx; iIdx <= intervalIdx; iIdx++ )
             {
                CString strLoadingName = pLosses->GetRestrainingLoadName(iIdx,pfType - pgsTypes::pftCreep);
                std::vector<Float64> fx = GetAxial(iIdx,strLoadingName,vPoi,bat,rtIncremental);
@@ -1970,7 +1972,9 @@ std::vector<sysSectionValue> CAnalysisAgentImp::GetShear(IntervalIndexType inter
          if ( resultsType == rtCumulative )
          {
             results.resize(vPoi.size(),sysSectionValue(0,0));
-            for ( IntervalIndexType iIdx = 0; iIdx <= intervalIdx; iIdx++ )
+            GET_IFACE(IIntervals,pIntervals);
+            IntervalIndexType releaseIntervalIdx = pIntervals->GetFirstPrestressReleaseInterval(vPoi.front().GetSegmentKey());
+            for ( IntervalIndexType iIdx = releaseIntervalIdx; iIdx <= intervalIdx; iIdx++ )
             {
                CString strLoadingName = pLosses->GetRestrainingLoadName(iIdx,pfType - pgsTypes::pftCreep);
                std::vector<sysSectionValue> fy = GetShear(iIdx,strLoadingName,vPoi,bat,rtIncremental);
@@ -2080,7 +2084,9 @@ std::vector<Float64> CAnalysisAgentImp::GetMoment(IntervalIndexType intervalIdx,
          if ( resultsType == rtCumulative )
          {
             results.resize(vPoi.size(),0);
-            for ( IntervalIndexType iIdx = 0; iIdx <= intervalIdx; iIdx++ )
+            GET_IFACE(IIntervals,pIntervals);
+            IntervalIndexType releaseIntervalIdx = pIntervals->GetFirstPrestressReleaseInterval(vPoi.front().GetSegmentKey());
+            for ( IntervalIndexType iIdx = releaseIntervalIdx; iIdx <= intervalIdx; iIdx++ )
             {
                CString strLoadingName = pLosses->GetRestrainingLoadName(iIdx,pfType - pgsTypes::pftCreep);
                std::vector<Float64> mz = GetMoment(iIdx,strLoadingName,vPoi,bat,rtIncremental);
@@ -2155,7 +2161,10 @@ std::vector<Float64> CAnalysisAgentImp::GetDeflection(IntervalIndexType interval
       if ( resultsType == rtCumulative )
       {
          deflections.resize(vPoi.size(),0);
-         for ( IntervalIndexType iIdx = 0; iIdx <= intervalIdx; iIdx++ )
+
+         GET_IFACE(IIntervals,pIntervals);
+         IntervalIndexType releaseIntervalIdx = pIntervals->GetFirstPrestressReleaseInterval(vPoi.front().GetSegmentKey());
+         for ( IntervalIndexType iIdx = releaseIntervalIdx; iIdx <= intervalIdx; iIdx++ )
          {
             CString strLoadingName = pLosses->GetRestrainingLoadName(iIdx,pfType - pgsTypes::pftCreep);
             std::vector<Float64> dy = GetDeflection(iIdx,strLoadingName,vPoi,bat,rtIncremental,false);
@@ -2246,7 +2255,10 @@ std::vector<Float64> CAnalysisAgentImp::GetRotation(IntervalIndexType intervalId
       if ( resultsType == rtCumulative )
       {
          rotations.resize(vPoi.size(),0);
-         for ( IntervalIndexType iIdx = 0; iIdx <= intervalIdx; iIdx++ )
+
+         GET_IFACE(IIntervals,pIntervals);
+         IntervalIndexType releaseIntervalIdx = pIntervals->GetFirstPrestressReleaseInterval(vPoi.front().GetSegmentKey());
+         for ( IntervalIndexType iIdx = releaseIntervalIdx; iIdx <= intervalIdx; iIdx++ )
          {
             CString strLoadingName = pLosses->GetRestrainingLoadName(iIdx,pfType - pgsTypes::pftCreep);
             std::vector<Float64> rz = GetRotation(iIdx,strLoadingName,vPoi,bat,rtIncremental,false);
@@ -2895,7 +2907,9 @@ std::vector<Float64> CAnalysisAgentImp::GetRotation(IntervalIndexType intervalId
       if ( resultsType == rtCumulative )
       {
          rotation.resize(vPoi.size(),0);
-         for ( IntervalIndexType iIdx = 0; iIdx <= intervalIdx; iIdx++ )
+         GET_IFACE(IIntervals,pIntervals);
+         IntervalIndexType releaseIntervalIdx = pIntervals->GetFirstPrestressReleaseInterval(vPoi.front().GetSegmentKey());
+         for ( IntervalIndexType iIdx = releaseIntervalIdx; iIdx <= intervalIdx; iIdx++ )
          {
             CString strLoadingName = pLosses->GetRestrainingLoadName(iIdx,comboType - lcCR);
             std::vector<Float64> rz = GetRotation(iIdx,strLoadingName,vPoi,bat,rtIncremental,false);
@@ -7337,8 +7351,10 @@ std::vector<Float64> CAnalysisAgentImp::GetReaction(const CGirderKey& girderKey,
          ComputeTimeDependentEffects(girderKey,intervalIdx);
          if ( resultsType == rtCumulative )
          {
+            GET_IFACE(IIntervals,pIntervals);
+            IntervalIndexType erectionIntervalIdx = pIntervals->GetFirstSegmentErectionInterval(girderKey);
             results.resize(vSupports.size(),0);
-            for ( IntervalIndexType iIdx = 0; iIdx <= intervalIdx; iIdx++ )
+            for ( IntervalIndexType iIdx = erectionIntervalIdx; iIdx <= intervalIdx; iIdx++ )
             {
                CString strLoadingName = pLosses->GetRestrainingLoadName(iIdx,comboType - lcCR);
                std::vector<Float64> vReactions = GetReaction(girderKey,vSupports,intervalIdx,strLoadingName,bat,rtIncremental);

@@ -64,10 +64,12 @@ bool GirderLibrary::NewEntry(LPCTSTR key)
       CEAFDocument* pEAFDoc = EAFGetDocument();
       if ( pEAFDoc->IsKindOf(RUNTIME_CLASS(CLibraryEditorDoc)) )
       {
-         CString strResponses(_T("Precast Girder\nSpliced Girder Segment"));
-         int result = AfxChoose(_T("Select Girder Type"),_T("What type of girder library entry would you like to create?"),strResponses,0,TRUE);
+         CString strResponses(_T("Precast Girder (PGSuper)\nPrecast Spliced Girder Segment (PGSplice)"));
+         int result = AfxRBChoose(_T("Select Girder Type"),_T("What type of girder library entry would you like to create?"),strResponses,0,TRUE);
          if ( result == -1 )
+         {
             return false; // user pressed cancel
+         }
 
          createType = (result == 0 ? GirderLibraryEntry::PRECAST : GirderLibraryEntry::SPLICED);
       }

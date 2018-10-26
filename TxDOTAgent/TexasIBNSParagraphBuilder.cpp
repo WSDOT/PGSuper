@@ -673,7 +673,7 @@ void WriteGirderScheduleTable(rptParagraph* p, IBroker* pBroker, IEAFDisplayUnit
             (*p_table)(row,0) << _T("Y")<<Sub(_T("b"))<<_T(" of Topmost Depressed Strand(s) @ End");
 
          Float64 TO;
-         pStrandGeometry->GetHighestHarpedStrandLocation(segmentKey,&TO);
+         pStrandGeometry->GetHighestHarpedStrandLocationEnds(segmentKey,&TO);
          (*p_table)(row++,col) << ecc.SetValue(TO);
       }
 

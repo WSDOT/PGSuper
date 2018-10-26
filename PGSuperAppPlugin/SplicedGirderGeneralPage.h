@@ -32,6 +32,7 @@
 #include "DrawTendonsControl.h"
 
 #include "SlabOffsetHyperLink.h"
+#include "SameGirderTypeHyperLink.h"
 
 // CSplicedGirderGeneralPage dialog
 
@@ -68,6 +69,10 @@ protected:
    void UpdateSlabOffsetHyperLink();
    void UpdateSlabOffsetControls();
 
+   CSameGirderTypeHyperLink m_ctrlGirderTypeHyperLink;
+   void UpdateGirderTypeHyperLink();
+   void UpdateGirderTypeControls();
+
    CGirderGrid m_GirderGrid;
    CDuctGrid   m_DuctGrid;
    CSlabOffsetGrid m_SlabOffsetGrid;
@@ -82,6 +87,7 @@ public:
    afx_msg void OnInstallationTypeChanged();
    afx_msg void OnConditionFactorTypeChanged();
    afx_msg LRESULT OnChangeSlabOffsetType(WPARAM wParam,LPARAM lParam);
+   afx_msg LRESULT OnChangeGirderType(WPARAM wParam,LPARAM lParam);
 
    void OnDuctChanged();
    afx_msg void OnHelp();

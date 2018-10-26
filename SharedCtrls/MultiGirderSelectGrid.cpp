@@ -33,6 +33,7 @@
 
 #include "SharedCTrls\MultiGirderSelectGrid.h" 
 #include <PgsExt\GirderLabel.h>
+#include <PgsExt\Keys.h>
 
 #include <EAF\EAFUtilities.h>
 #include <IFace\Tools.h>

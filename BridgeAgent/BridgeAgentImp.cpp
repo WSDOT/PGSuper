@@ -1104,7 +1104,6 @@ void CBridgeAgentImp::ValidatePointLoads()
                intervalIdx = m_IntervalManager.GetUserLoadInterval(thisSpanKey,pPointLoad->m_LoadCase,pPointLoad->m_EventIndex);
             }
             ATLASSERT(intervalIdx != INVALID_INDEX);
-            ATLASSERT(m_IntervalManager.GetInterval(pPointLoad->m_EventIndex) == intervalIdx);
 
             CUserLoadKey key(thisSpanKey,intervalIdx);
             std::map<CUserLoadKey,std::vector<UserPointLoad>>::iterator found(m_PointLoads.find(key));
@@ -1323,7 +1322,6 @@ void CBridgeAgentImp::ValidateDistributedLoads()
                intervalIdx = m_IntervalManager.GetUserLoadInterval(thisSpanKey,pDistLoad->m_LoadCase,pDistLoad->m_EventIndex);
             }
             ATLASSERT(intervalIdx != INVALID_INDEX);
-            ATLASSERT(m_IntervalManager.GetInterval(pDistLoad->m_EventIndex) == intervalIdx);
 
             CUserLoadKey key(thisSpanKey,intervalIdx);
             std::map<CUserLoadKey,std::vector<UserDistributedLoad>>::iterator found(m_DistributedLoads.find(key));
@@ -1493,7 +1491,6 @@ void CBridgeAgentImp::ValidateMomentLoads()
                intervalIdx = m_IntervalManager.GetUserLoadInterval(thisSpanKey,pMomentLoad->m_LoadCase,pMomentLoad->m_EventIndex);
             }
             ATLASSERT(intervalIdx != INVALID_INDEX);
-            ATLASSERT(m_IntervalManager.GetInterval(pMomentLoad->m_EventIndex) == intervalIdx);
 
             CUserLoadKey key(thisSpanKey,intervalIdx);
             std::map<CUserLoadKey,std::vector<UserMomentLoad>>::iterator found(m_MomentLoads.find(key));
@@ -12939,7 +12936,30 @@ ZoneIndexType CBridgeAgentImp::GetPrimaryShearZoneIndexAtPoi(const pgsPointOfInt
    if ( IsInClosureJoint(poi,&closureKey) )
    {
       length = GetClosureJointLength(closureKey);
-      location = poi.GetDistFromStart() - GetSegmentLength(closureKey);
+      if ( poi.GetDistFromStart() < 0 )
+      {
+         // poi is beyond the CL of the closure so it is measured in segment coordinates for the
+         // segment that comes after the closure. location is the distance from the start
+         // face of the closure
+
+         // CL Closure -+
+         //             |   Xpoi < 0
+         //             |  |<--->|
+         // ----+       |  |     +-----------
+         //     |       |  *poi  |
+         // ----+       |  |     +-----------
+         //     | location |     |
+         //     |<-------->|     |
+         //     |    length      |
+         //     |<-------------->|
+
+         location = length + poi.GetDistFromStart();
+      }
+      else
+      {
+         // poi is before the CL Closure
+         location = poi.GetDistFromStart() - GetSegmentLength(closureKey);
+      }
       left_bearing_location  = 0;
       right_bearing_location = 0;
    }
@@ -15015,7 +15035,7 @@ void CBridgeAgentImp::GetHarpingPointLocations(const CSegmentKey& segmentKey,Flo
    girder->GetEndHarpingPointLocations(pX1,pX4);
 }
 
-void CBridgeAgentImp::GetHighestHarpedStrandLocation(const CSegmentKey& segmentKey,Float64* pElevation)
+void CBridgeAgentImp::GetHighestHarpedStrandLocationEnds(const CSegmentKey& segmentKey,Float64* pElevation)
 {
    // determine distance from bottom of girder to highest harped strand at end of girder 
    // to compute the txdot ibns TO value
@@ -15033,6 +15053,32 @@ void CBridgeAgentImp::GetHighestHarpedStrandLocation(const CSegmentKey& segmentK
 
    CComPtr<IRect2d> boxEnd;
    hr = girder->HarpedEndStrandBoundingBox(etEnd,&boxEnd);
+   ATLASSERT(SUCCEEDED(hr));
+
+   Float64 endTop;
+   boxEnd->get_Top(&endTop);
+
+   *pElevation = Max(startTop,endTop);
+}
+
+void CBridgeAgentImp::GetHighestHarpedStrandLocationHPs(const CSegmentKey& segmentKey,Float64* pElevation)
+{
+   // determine distance from bottom of girder to highest harped strand at end of girder 
+   // to compute the txdot ibns TO CL value
+   VALIDATE( GIRDER );
+
+   CComPtr<IPrecastGirder> girder;
+   GetGirder(segmentKey,&girder);
+
+   CComPtr<IRect2d> boxStart;
+   HRESULT hr = girder->HarpedHpStrandBoundingBox(etStart,&boxStart);
+   ATLASSERT(SUCCEEDED(hr));
+
+   Float64 startTop;
+   boxStart->get_Top(&startTop);
+
+   CComPtr<IRect2d> boxEnd;
+   hr = girder->HarpedHpStrandBoundingBox(etEnd,&boxEnd);
    ATLASSERT(SUCCEEDED(hr));
 
    Float64 endTop;

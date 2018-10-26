@@ -1126,7 +1126,7 @@ void CFlexuralStressCheckTable::BuildAllowDeckStressInformation(rptChapter* pCha
    }
    else
    {
-      ATLASSERT(fc_reqd != -99999); // -99999 means the value was never set
+      ATLASSERT(fc_reqd == -99999); // -99999 means there is not a concrete strength that will work
       *pPara << _T("Regardless of the concrete strength, the stress requirements will not be satisfied.") << rptNewLine;
    }
 }

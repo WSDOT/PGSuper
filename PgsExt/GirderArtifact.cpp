@@ -392,6 +392,7 @@ Float64 pgsGirderArtifact::GetRequiredGirderConcreteStrength(IntervalIndexType i
       Float64 required = artifact.GetRequiredSegmentConcreteStrength(intervalIdx,limitState);
       if ( required < 0 )
       {
+         ATLASSERT(required == -99999); // there is not a concrete strength that will work
          return required;
       }
 
@@ -411,7 +412,7 @@ Float64 pgsGirderArtifact::GetRequiredGirderConcreteStrength() const
       Float64 required = artifact.GetRequiredSegmentConcreteStrength();
       if ( required < 0 )
       {
-         ATLASSERT(required == -99999);
+         ATLASSERT(required == -99999); // there is not a concrete strength that will work
          return required;
       }
 
@@ -431,7 +432,7 @@ Float64 pgsGirderArtifact::GetRequiredDeckConcreteStrength(IntervalIndexType int
       Float64 required = artifact.GetRequiredDeckConcreteStrength(intervalIdx,limitState);
       if ( required < 0 )
       {
-         ATLASSERT(required != -99999);
+         ATLASSERT(required == -99999); // there is not a concrete strength that will work
          return required;
       }
 
@@ -451,6 +452,7 @@ Float64 pgsGirderArtifact::GetRequiredDeckConcreteStrength() const
       Float64 required = artifact.GetRequiredDeckConcreteStrength();
       if ( required < 0 )
       {
+         ATLASSERT(required == -99999); // there is not a concrete strength that will work
          return required;
       }
 
@@ -470,6 +472,7 @@ Float64 pgsGirderArtifact::GetRequiredReleaseStrength() const
       Float64 required = artifact.GetRequiredReleaseStrength();
       if ( required < 0 )
       {
+         ATLASSERT(required == -99999); // there is not a concrete strength that will work
          return required;
       }
 

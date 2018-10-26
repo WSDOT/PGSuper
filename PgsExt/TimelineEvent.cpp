@@ -196,6 +196,36 @@ Float64 CTimelineEvent::GetDay() const
    return m_Day;
 }
 
+Float64 CTimelineEvent::GetDuration() const
+{
+   Float64 duration = 0;
+
+   // Construct Segments
+   if ( m_ConstructSegments.IsEnabled() )
+   {
+      duration = Max(duration,m_ConstructSegments.GetRelaxationTime());
+   }
+
+   // Erect Piers (zero duration)
+   // Erect Segments (zero duration)
+   // Remove Temp Supports (zero duration)
+
+   if ( m_CastClosureJoints.IsEnabled() )
+   {
+      duration = Max(duration,m_CastClosureJoints.GetCuringDuration());
+   }
+
+   if ( m_CastDeck.IsEnabled() )
+   {
+      duration = Max(duration,m_CastDeck.GetCuringDuration());
+   }
+
+   // Apply Loads ( zero duration )
+   // Stress Tendonds ( zero duration )
+
+   return duration;
+}
+
 void CTimelineEvent::SetConstructSegmentsActivity(const CConstructSegmentActivity& activity)
 {
    m_ConstructSegments = activity;

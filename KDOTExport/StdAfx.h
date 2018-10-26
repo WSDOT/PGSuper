@@ -7,6 +7,7 @@
 #include <PGSuperAll.h>
 
 #include <PgsExt\GirderLabel.h>
+#include <AgentTools.h>
 
 #include <atlbase.h>
 //You may derive a class from CComModule and use it if you want to override
@@ -14,5 +15,7 @@
 extern CComModule _Module;
 #include <atlcom.h>
 #include <afxdlgs.h>
+#include <grid\gxall.h>
 
 #include "KDOTExport.h"
+//#include "KDOTExporter.h"

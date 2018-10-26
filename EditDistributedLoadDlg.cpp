@@ -107,6 +107,13 @@ void CEditDistributedLoadDlg::DoDataExchange(CDataExchange* pDX)
          pDX->Fail();
       }
 
+      if ( m_Load.m_EventIndex < pTimelineMgr->GetFirstSegmentErectionEventIndex() )
+      {
+         AfxMessageBox(_T("User defined loads can only be applied at the bridge site"));
+         pDX->PrepareCtrl(IDC_EVENT);
+         pDX->Fail();
+      }
+
       ival = m_SpanCB.GetCurSel();
 
       SpanIndexType spanIdx;
@@ -601,14 +608,22 @@ void CEditDistributedLoadDlg::FillEventList()
       const CTimelineManager* pTimelineMgr = pIBridgeDesc->GetTimelineManager();
 
       EventIndexType nEvents = pTimelineMgr->GetEventCount();
+      bool bValidEvent = false;
       for ( EventIndexType eventIdx = 0; eventIdx < nEvents; eventIdx++ )
       {
          const CTimelineEvent* pTimelineEvent = pTimelineMgr->GetEventByIndex(eventIdx);
+         if ( pTimelineEvent->GetErectSegmentsActivity().IsEnabled() )
+         {
+            bValidEvent = true;
+         }
 
-         CString label;
-         label.Format(_T("Event %d: %s"),LABEL_EVENT(eventIdx),pTimelineEvent->GetDescription());
+         if ( bValidEvent )
+         {
+            CString label;
+            label.Format(_T("Event %d: %s"),LABEL_EVENT(eventIdx),pTimelineEvent->GetDescription());
 
-         pcbEvent->SetItemData(pcbEvent->AddString(label),eventIdx);
+            pcbEvent->SetItemData(pcbEvent->AddString(label),eventIdx);
+         }
       }
 
       CString strNewEvent((LPCSTR)IDS_CREATE_NEW_EVENT);

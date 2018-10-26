@@ -166,9 +166,11 @@ public:
    void JoinAll(GirderIndexType gdrIdx);
    void Join(GirderIndexType firstGdrIdx,GirderIndexType lastGdrIdx,GirderIndexType gdrIdx);
 
-   // returns the girder type name for a given girder index
-   void SetGirderName(GroupIndexType grpIdx,LPCTSTR strName);
-   void RenameGirder(GroupIndexType grpIdx,LPCTSTR strName);
+   // sets the name of the girder section used in the specified girder type group
+   void SetGirderName(GroupIndexType girderTypeGroupIdx,LPCTSTR strName);
+   void RenameGirder(GroupIndexType girderTypeGroupIdx,LPCTSTR strName);
+
+   // returns the name of a girder
    LPCTSTR GetGirderName(GirderIndexType gdrIdx) const;
 
    void SetGirderLibraryEntry(GirderIndexType gdrIdx,const GirderLibraryEntry* pEntry);

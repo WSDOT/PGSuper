@@ -85,7 +85,7 @@ rptChapter* CSpecCheckSummaryChapterBuilder::Build(CReportSpecification* pRptSpe
    }
 
    // Report multiple girders
-   CMultiGirderReportSpecification* pMultiGirderRptSpec = dynamic_cast<CMultiGirderReportSpecification*>(pRptSpec);
+   CMultiViewSpanGirderReportSpecification* pMultiGirderRptSpec = dynamic_cast<CMultiViewSpanGirderReportSpecification*>(pRptSpec);
    if (pMultiGirderRptSpec != NULL)
    {
       const std::vector<CGirderKey>& girderKeys( pMultiGirderRptSpec->GetGirderKeys() );

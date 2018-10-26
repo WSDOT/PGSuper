@@ -26,4 +26,12 @@ library KDOTExport
 	{
 		[default] interface IPGSuperDataExporter;
 	};
+
+   [
+      uuid(75AAA5FD-16D5-415d-B2AD-8FF123C27B45)
+   ]
+   coclass KDOTComponentInfo
+   {
+      [default] interface IUnknown;
+   };
 };

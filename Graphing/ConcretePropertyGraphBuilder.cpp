@@ -25,8 +25,6 @@
 #include <Graphing\ConcretePropertyGraphBuilder.h>
 #include "ConcretePropertyGraphController.h"
 
-#include "GraphColor.h"
-
 #include <EAF\EAFUtilities.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <EAF\EAFAutoProgress.h>
@@ -443,7 +441,7 @@ void CConcretePropertyGraphBuilder::UpdateGraphData()
       vIntervals.push_back(startIntervalIdx);
    }
 
-   CGraphColor graphColor(vIntervals.size());
+   grGraphColor graphColor(vIntervals.size());
 
    BOOST_FOREACH(IntervalIndexType iIdx,vIntervals)
    {

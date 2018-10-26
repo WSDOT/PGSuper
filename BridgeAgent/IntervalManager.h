@@ -178,7 +178,8 @@ protected:
    void ProcessStep1(EventIndexType eventIdx,const CTimelineEvent* pTimelineEvent);
    void ProcessStep2(EventIndexType eventIdx,const CTimelineEvent* pTimelineEvent);
    void ProcessStep3(EventIndexType eventIdx,const CTimelineEvent* pTimelineEvent,bool bTimeStepMethod);
-   void ProcessStep4(EventIndexType eventIdx,const CTimelineEvent* pTimelineEvent,bool bTimeStepMethod);
+   void ProcessStep4(EventIndexType eventIdx,const CTimelineEvent* pTimelineEvent);
+   void ProcessStep5(EventIndexType eventIdx,const CTimelineEvent* pTimelineEvent,bool bTimeStepMethod);
 
    std::map<CTendonKey,IntervalIndexType> m_StressTendonIntervals;
 

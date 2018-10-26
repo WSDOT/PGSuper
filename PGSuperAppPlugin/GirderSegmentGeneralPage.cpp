@@ -1418,28 +1418,7 @@ void CGirderSegmentGeneralPage::InitEndBlockControls()
 
    bool bSupportsEndBlocks = splicedBeamFactory->SupportsEndBlocks();
 
-   if ( bSupportsEndBlocks )
-   {
-      BOOL bEnableLeft  = ( pSegment->GetPrevSegment() == NULL ? TRUE : FALSE);
-      BOOL bEnableRight = ( pSegment->GetNextSegment() == NULL ? TRUE : FALSE);
-
-      GetDlgItem(IDC_LEFT_END_BLOCK_LABEL)->EnableWindow(bEnableLeft);
-      GetDlgItem(IDC_LEFT_END_BLOCK_LENGTH)->EnableWindow(bEnableLeft);
-      GetDlgItem(IDC_LEFT_END_BLOCK_LENGTH_UNIT)->EnableWindow(bEnableLeft);
-      GetDlgItem(IDC_LEFT_END_BLOCK_TRANSITION)->EnableWindow(bEnableLeft);
-      GetDlgItem(IDC_LEFT_END_BLOCK_TRANSITION_UNIT)->EnableWindow(bEnableLeft);
-      GetDlgItem(IDC_LEFT_END_BLOCK_WIDTH)->EnableWindow(bEnableLeft);
-      GetDlgItem(IDC_LEFT_END_BLOCK_WIDTH_UNIT)->EnableWindow(bEnableLeft);
-
-      GetDlgItem(IDC_RIGHT_END_BLOCK_LABEL)->EnableWindow(bEnableRight);
-      GetDlgItem(IDC_RIGHT_END_BLOCK_LENGTH)->EnableWindow(bEnableRight);
-      GetDlgItem(IDC_RIGHT_END_BLOCK_LENGTH_UNIT)->EnableWindow(bEnableRight);
-      GetDlgItem(IDC_RIGHT_END_BLOCK_TRANSITION)->EnableWindow(bEnableRight);
-      GetDlgItem(IDC_RIGHT_END_BLOCK_TRANSITION_UNIT)->EnableWindow(bEnableRight);
-      GetDlgItem(IDC_RIGHT_END_BLOCK_WIDTH)->EnableWindow(bEnableRight);
-      GetDlgItem(IDC_RIGHT_END_BLOCK_WIDTH_UNIT)->EnableWindow(bEnableRight);
-   }
-   else
+   if ( !bSupportsEndBlocks )
    {
       GetDlgItem(IDC_END_BLOCK_LENGTH_LABEL)->ShowWindow(SW_HIDE);
       GetDlgItem(IDC_END_BLOCK_TRANSITION_LABEL)->ShowWindow(SW_HIDE);

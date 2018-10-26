@@ -198,7 +198,7 @@
 #define IDR_ACTIVITIES                  341
 #define IDD_ERECT_PIERS                 342
 #define IDD_REMOVE_TS                   343
-#define IDD_CAST_CLOSURE_JOINT         345
+#define IDD_CAST_CLOSURE_JOINT          345
 #define IDD_APPLYLOADS                  346
 #define IDD_CONSTRUCT_SEGMENT           347
 #define IDD_STRESS_TENDON               348
@@ -1500,6 +1500,7 @@
 #define IDC_NWC_NOTE                    1789
 #define IDC_START_CANTILEVER_LABEL      1789
 #define IDC_HYPERLINK                   1790
+#define IDC_SLABOFFSET_HYPERLINK        1790
 #define IDC_START_CANTILEVER_UNIT       1791
 #define IDC_END_CANTILEVER_LABEL        1792
 #define IDC_BACK_DIAPHRAGM_LABEL        1792
@@ -1574,6 +1575,7 @@
 #define IDC_CURING_UNIT                 1859
 #define IDC_SERVICE_I_SH                1860
 #define IDC_SERVICE_I_PS                1861
+#define IDC_GIRDERTYPE_HYPERLINK        1861
 #define IDC_CHECK_YIELDING              1862
 #define IDC_FY_LABEL                    1863
 #define IDC_FY                          1864
@@ -1750,7 +1752,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        367
 #define _APS_NEXT_COMMAND_VALUE         36994
-#define _APS_NEXT_CONTROL_VALUE         1860
+#define _APS_NEXT_CONTROL_VALUE         1862
 #define _APS_NEXT_SYMED_VALUE           113
 #endif
 #endif

@@ -2,6 +2,7 @@
 #include "stdafx.h"
 #include "KDOTExport_i.h"
 #include "PGSuperDataExporter.h"
+#include "ExportDlg.h"
 
 #include <MFCTools\Prompts.h>
 #include "PGSuperInterfaces.h"
@@ -96,6 +97,46 @@ STDMETHODIMP CPGSuperDataExporter::GetCommandHintText(BSTR*  bstrText)
 STDMETHODIMP CPGSuperDataExporter::Export(IBroker* pBroker)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
+   GET_IFACE2(pBroker,ISelection,pSelection);
+   CSelection selection = pSelection->GetSelection();
+
+   CGirderKey girderKey;
+   if ( selection.Type == CSelection::Span )
+   {
+      GET_IFACE2(pBroker,IBridge,pBridge);
+      girderKey.groupIndex = pBridge->GetGirderGroupIndex(selection.SpanIdx);
+      girderKey.girderIndex = 0;
+   }
+   else if ( selection.Type == CSelection::Girder || selection.Type == CSelection::Segment || selection.Type == CSelection::ClosureJoint )
+   {
+      girderKey.groupIndex  = selection.GroupIdx;
+      girderKey.girderIndex = selection.GirderIdx;
+   }
+   else
+   {
+      girderKey.groupIndex  = 0;
+      girderKey.girderIndex = 0;
+   }
+
+   std::vector<CGirderKey> girderKeys;
+   girderKeys.push_back(girderKey);
+
+   CExportDlg  caddlg (pBroker, NULL);
+   caddlg.m_GirderKeys = girderKeys;
+
+   // Open the ExportCADData dialog box
+   INT_PTR stf = caddlg.DoModal();
+   if (stf == IDOK)
+   {
+	   // Get user's span & beam id values
+	   girderKeys = caddlg.m_GirderKeys;
+   }
+   else
+   {
+	   // Just do nothing if CANCEL
+       return S_OK;
+   }
 
    // use the PGSuper document file name, with the extension changed, as the default file name
    CEAFDocument* pDoc = EAFGetDocument();
@@ -234,7 +275,7 @@ HRESULT CPGSuperDataExporter::Export(IBroker* pBroker,CString& strFileName)
          }
 
          dval = ::ConvertFromSysUnits(aheadEndOffset, unitMeasure::Inch);
-         pd.aheadGirderEndOffset(aheadEndOffset);
+         pd.aheadGirderEndOffset(dval);
 
          pds.push_back(pd);
       }
@@ -960,14 +1001,14 @@ HRESULT CPGSuperDataExporter::Export(IBroker* pBroker,CString& strFileName)
 
       // total bridge haunch
       dval = ::ConvertFromSysUnits(bridgeHaunchVolume, unitMeasure::Inch3);
-      brdata.HaunchVolume(dval);
+      brdata.HaunchVolumeForAllSelectedGirders(dval);
 
       // Now can compute haunch weight for entire bridge
       Float64 haunchWDensity = pMaterials->GetDeckWeightDensity(compositeDeckIntervalIdx) * unitSysUnitsMgr::GetGravitationalAcceleration();
       Float64 bridgeHaunchWeight = bridgeHaunchVolume * haunchWDensity;
 
       dval = ::ConvertFromSysUnits(bridgeHaunchWeight, unitMeasure::Kip);
-      brdata.HaunchWeight(dval);
+      brdata.HaunchWeightForAllSelectedGirders(dval);
 
       // Set data for main export class
       kdot_export.BridgeData(brdata);

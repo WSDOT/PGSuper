@@ -766,6 +766,7 @@ const pgsGirderArtifact* pgsDesigner2::Check(const CGirderKey& girderKey)
             std::vector<pgsPointOfInterest> vCJPoi(pPoi->GetPointsOfInterest(segmentKey,POI_CLOSURE));
             vPoi.insert(vPoi.end(),vCJPoi.begin(),vCJPoi.end());
             std::sort(vPoi.begin(),vPoi.end());
+            vPoi.erase(std::unique(vPoi.begin(),vPoi.end()),vPoi.end());
          }
 
          CComBSTR bstrIntervalDescription( pIntervals->GetDescription(intervalIdx) );
@@ -2274,7 +2275,7 @@ void pgsDesigner2::CheckSegmentStresses(const CSegmentKey& segmentKey,const std:
          {
             // stress is tensile and there is adequate reinforcement to use the 
             // alternative limit... compute the required strength here... otherwise
-            // don't change anything because the "without rebar" case govens and it
+            // don't change anything because the "without rebar" case governs and it
             // is done
             Float64 fc_reqd;
             ATLASSERT(bCheckMax[face] == false); // alternate stress doesn't use limiting value
@@ -2928,7 +2929,15 @@ void pgsDesigner2::CheckHorizontalShearMidZone(const pgsPointOfInterest& poi,
       Float64 Qslab = pSectProp->GetQSlab(poi); // Note: A possible problem here - QSlab is slightly dependent on fcGdr
       ATLASSERT(Qslab!=0);
 
-      Float64 Ic  = pSectProp->GetIx(liveLoadIntervalIdx,poi,fcGdr);
+      Float64 Ic;
+      if ( pConfig == NULL )
+      {
+         Ic  = pSectProp->GetIx(liveLoadIntervalIdx,poi);
+      }
+      else
+      {
+         Ic  = pSectProp->GetIx(liveLoadIntervalIdx,poi,pConfig->Fc);
+      }
       Vuh  = vu*Qslab/Ic;
 
       pArtifact->SetI( Ic );
@@ -2938,19 +2947,21 @@ void pgsDesigner2::CheckHorizontalShearMidZone(const pgsPointOfInterest& poi,
    {
       Float64 nEffStrands;
       Float64 ecc;
+      Float64 Yt;
       if (pConfig == NULL)
       {
          GET_IFACE(IStrandGeometry,pStrandGeom);
          ecc = pStrandGeom->GetEccentricity(castDeckIntervalIdx,poi,pgsTypes::Permanent,&nEffStrands); // based on non-composite cg
+         Yt = pSectProp->GetY(castDeckIntervalIdx,poi,pgsTypes::TopGirder); // non-composite girder
       }
       else
       {
          GET_IFACE(IStrandGeometry,pStrandGeom);
          ecc = pStrandGeom->GetEccentricity(castDeckIntervalIdx,poi,*pConfig,pgsTypes::Permanent,&nEffStrands); // based on non-composite cg
+         Yt = pSectProp->GetY(castDeckIntervalIdx,poi,pgsTypes::TopGirder,pConfig->Fc); // non-composite girder
       }
 
-      Float64 Yt = pSectProp->GetY(castDeckIntervalIdx,poi,pgsTypes::TopGirder,fcGdr); // non-composite girder
-   
+  
       GET_IFACE(IBridge,pBridge);
       Float64 tSlab = pBridge->GetStructuralSlabDepth(poi);
 

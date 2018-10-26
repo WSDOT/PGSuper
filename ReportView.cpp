@@ -228,7 +228,7 @@ int CPGSuperReportView::OnCreate(LPCREATESTRUCT lpCreateStruct)
    return 0;
 }
 
-bool CPGSuperReportView::CreateReport(CollectionIndexType rptIdx,bool bPromptForSpec)
+bool CPGSuperReportView::CreateReport(CollectionIndexType rptIdx,BOOL bPromptForSpec)
 {
    // Everything in this version of CreateReport is done in support of multi-view report
    // creation because the underlying framework doesn't support it directly.

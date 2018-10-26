@@ -35,6 +35,7 @@
 #include "PGSuperDocBase.h"
 #include "PGSuperUnits.h"
 #include "PGSuperBaseAppPlugin.h"
+#include "PGSuperDocTemplateBase.h"
 
 #include "BridgeSectionView.h"
 #include "BridgePlanView.h"
@@ -1952,13 +1953,16 @@ void CPGSuperDocBase::HandleOpenDocumentError( HRESULT hr, LPCTSTR lpszPathName 
       return;
    }
 
+   CPGSuperDocTemplateBase* pTemplate = (CPGSuperDocTemplateBase*)GetDocTemplate();
+
+
    CString strLog;
    CString msg1;
    switch( hr )
    {
    case REGDB_E_CLASSNOTREG:
       pLog->LogMessage( TEXT("CLSID_StructuredLoad not registered") );
-      AfxFormatString1(msg1,IDS_E_BADINSTALL, ::AfxGetAppName() );
+      AfxFormatString1(msg1,IDS_E_BADINSTALL, pTemplate->GetAppName() );
       break;
 
    case STRLOAD_E_CANTOPEN:
@@ -1972,15 +1976,15 @@ void CPGSuperDocBase::HandleOpenDocumentError( HRESULT hr, LPCTSTR lpszPathName 
       break;
 
    case STRLOAD_E_INVALIDFORMAT:
-      strLog.Format(_T("File does not have a valid %s format"),::AfxGetAppName());
+      strLog.Format(_T("File does not have a valid %s format"),pTemplate->GetAppName());
       pLog->LogMessage(strLog);
-      AfxFormatString1( msg1, IDS_E_INVALIDFORMAT, lpszPathName );
+      AfxFormatString2( msg1, IDS_E_INVALIDFORMAT, lpszPathName,pTemplate->GetAppName() );
       break;
 
    case STRLOAD_E_BADVERSION:
-      strLog.Format(_T("This file came from a newer version of %s, please upgrade"),::AfxGetAppName());
+      strLog.Format(_T("This file came from a newer version of %s, please upgrade"),pTemplate->GetAppName());
       pLog->LogMessage(strLog);
-      AfxFormatString1( msg1, IDS_E_INVALIDVERSION, lpszPathName );
+      AfxFormatString2( msg1, IDS_E_INVALIDVERSION, lpszPathName,pTemplate->GetAppName() );
       break;
 
    default:
@@ -2013,12 +2017,14 @@ void CPGSuperDocBase::HandleSaveDocumentError( HRESULT hr, LPCTSTR lpszPathName 
    log_msg_header.Format(_T("The following error occured while saving %s"),lpszPathName );
    pLog->LogMessage( log_msg_header );
 
+   CPGSuperDocTemplateBase* pTemplate = (CPGSuperDocTemplateBase*)GetDocTemplate();
+
    CString msg1;
    switch( hr )
    {
    case REGDB_E_CLASSNOTREG:
       pLog->LogMessage( TEXT("CLSID_StructuredSave not registered") );
-      AfxFormatString1(msg1,IDS_E_BADINSTALL, ::AfxGetAppName() );
+      AfxFormatString1(msg1,IDS_E_BADINSTALL, pTemplate->GetAppName() );
       break;
 
    case STRSAVE_E_CANTOPEN:
@@ -2058,6 +2064,8 @@ void CPGSuperDocBase::HandleConvertDocumentError( HRESULT hr, LPCTSTR lpszPathNa
 
    GET_IFACE( IEAFProjectLog, pLog );
 
+   CPGSuperDocTemplateBase* pTemplate = (CPGSuperDocTemplateBase*)GetDocTemplate();
+
    CString log_msg_header;
    log_msg_header.Format(_T("The following error occured while converting %s"),lpszPathName );
    pLog->LogMessage( log_msg_header );
@@ -2067,7 +2075,7 @@ void CPGSuperDocBase::HandleConvertDocumentError( HRESULT hr, LPCTSTR lpszPathNa
    {
    case REGDB_E_CLASSNOTREG:
       pLog->LogMessage( TEXT("File converter is not registered") );
-      AfxFormatString1(msg1,IDS_E_BADINSTALL, ::AfxGetAppName() );
+      AfxFormatString1(msg1,IDS_E_BADINSTALL, pTemplate->GetAppName() );
       break;
 
    case E_INVALIDARG:

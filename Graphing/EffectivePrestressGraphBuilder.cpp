@@ -25,9 +25,6 @@
 #include <Graphing\EffectivePrestressGraphBuilder.h>
 #include <Graphing\DrawBeamTool.h>
 #include "EffectivePrestressGraphController.h"
-#include "GraphColor.h"
-
-#include "GraphColor.h"
 
 #include <EAF\EAFUtilities.h>
 #include <EAF\EAFDisplayUnits.h>
@@ -198,7 +195,7 @@ void CEffectivePrestressGraphBuilder::UpdatePosttensionGraphData(GroupIndexType 
    IntervalIndexType firstIntervalIdx = ((CMultiIntervalGirderGraphControllerBase*)m_pGraphController)->GetFirstInterval();
    IntervalIndexType lastIntervalIdx  = ((CMultiIntervalGirderGraphControllerBase*)m_pGraphController)->GetLastInterval();
    IntervalIndexType nGraphs = lastIntervalIdx - firstIntervalIdx + 1;
-   CGraphColor graphColor(nGraphs);
+   grGraphColor graphColor(nGraphs);
 
    std::vector<IntervalIndexType> vIntervals = ((CMultiIntervalGirderGraphControllerBase*)m_pGraphController)->GetSelectedIntervals();
 
@@ -321,7 +318,7 @@ void CEffectivePrestressGraphBuilder::UpdatePretensionGraphData(GroupIndexType g
    IntervalIndexType firstIntervalIdx = ((CMultiIntervalGirderGraphControllerBase*)m_pGraphController)->GetFirstInterval();
    IntervalIndexType lastIntervalIdx  = ((CMultiIntervalGirderGraphControllerBase*)m_pGraphController)->GetLastInterval();
    IntervalIndexType nGraphs = lastIntervalIdx - firstIntervalIdx + 1;
-   CGraphColor graphColor(nGraphs);
+   grGraphColor graphColor(nGraphs);
 
 
    std::vector<IntervalIndexType>::iterator intervalIter(vIntervals.begin());
