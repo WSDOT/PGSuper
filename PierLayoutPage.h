@@ -73,9 +73,11 @@ protected:
 	afx_msg void OnKillfocusStation();
 	afx_msg void OnSetfocusMovePier();
    afx_msg void OnHelp();
+   afx_msg HBRUSH OnCtlColor(CDC* pDC,CWnd* pWnd,UINT nCtlColor);
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 
+   CComPtr<IStation> m_objStation;
    Float64 m_FromStation;
    Float64 m_NextPierStation;
    Float64 m_PrevPierStation;
@@ -86,6 +88,8 @@ protected:
 
    void DisableAll();
    void UpdateChildWindowState();
+
+   BOOL IsValidStation(Float64* pStation);
 };
 
 //{{AFX_INSERT_LOCATION}}

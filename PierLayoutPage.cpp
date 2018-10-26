@@ -54,7 +54,11 @@ CPierLayoutPage::CPierLayoutPage() : CPropertyPage(CPierLayoutPage::IDD)
 	//{{AFX_DATA_INIT(CPierLayoutPage)
 		// NOTE: the ClassWizard will add member initialization here
 	//}}AFX_DATA_INIT
+
    m_MovePierOption = pgsTypes::MoveBridge;
+
+   HRESULT hr = m_objStation.CoCreateInstance(CLSID_Station);
+   ASSERT(SUCCEEDED(hr));
 }
 
 CPierLayoutPage::~CPierLayoutPage()
@@ -106,6 +110,7 @@ BEGIN_MESSAGE_MAP(CPierLayoutPage, CPropertyPage)
 	ON_EN_KILLFOCUS(IDC_STATION, OnKillfocusStation)
 	ON_CBN_SETFOCUS(IDC_MOVE_PIER, OnSetfocusMovePier)
 	ON_COMMAND(ID_HELP, OnHelp)
+   ON_WM_CTLCOLOR()
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -184,23 +189,44 @@ void CPierLayoutPage::OnChangeStation()
    UpdateMoveOptionList();
 }
 
-void CPierLayoutPage::UpdateMoveOptionList()
+BOOL CPierLayoutPage::IsValidStation(Float64* pStation)
 {
-
-   // Get the current value for station
-   CDataExchange dx(this,TRUE);
-
+   BOOL bResult = TRUE;
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
-   // read the current value of the station edit
-   Float64 toStation;
-   try
+   UnitModeType unitMode = pDisplayUnits->GetStationFormat().GetUnitOfMeasure() == unitStationFormat::Feet ? umUS : umSI;
+   const unitLength& displayUnit = (unitMode == umUS ? unitMeasure::Feet : unitMeasure::Meter);
+
+   CWnd* pWnd = GetDlgItem(IDC_STATION);
+   
+   int cLength = pWnd->GetWindowTextLength() + 1;
+   cLength = (cLength == 1 ? 32 : cLength );
+   LPTSTR lpszBuffer = new TCHAR[cLength];
+
+   pWnd->GetWindowText(lpszBuffer,cLength);
+   HRESULT hr = m_objStation->FromString(CComBSTR(lpszBuffer),unitMode);
+   if ( SUCCEEDED(hr) )
    {
-      DDX_Station(&dx,IDC_STATION,toStation,pDisplayUnits->GetStationFormat());
+      m_objStation->get_Value(pStation);
+      *pStation = ::ConvertToSysUnits( *pStation, displayUnit );
+      bResult = TRUE;
    }
-   catch(...)
+   else
+   {
+      bResult = FALSE;
+   }
+
+   delete[] lpszBuffer;
+   return bResult;
+}
+
+void CPierLayoutPage::UpdateMoveOptionList()
+{
+   Float64 toStation;
+   BOOL bIsValid = IsValidStation(&toStation);
+   if ( bIsValid == FALSE )
    {
       CComboBox* pOptions = (CComboBox*)GetDlgItem(IDC_MOVE_PIER);
       pOptions->EnableWindow(FALSE);
@@ -209,6 +235,10 @@ void CPierLayoutPage::UpdateMoveOptionList()
       pEdit->SetSel(-1,0);
       return;
    }
+
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    // get the current selection
    CComboBox* pOptions = (CComboBox*)GetDlgItem(IDC_MOVE_PIER);
@@ -223,7 +253,7 @@ void CPierLayoutPage::UpdateMoveOptionList()
    CString strMove;
    strMove.Format(_T("Move %s %d from %s to %s"),
                   strName,
-                  m_PierIdx+1,
+                  LABEL_PIER(m_PierIdx),
                   FormatStation(pDisplayUnits->GetStationFormat(),m_FromStation),
                   FormatStation(pDisplayUnits->GetStationFormat(),toStation)
                   );
@@ -315,4 +345,23 @@ void CPierLayoutPage::OnSetfocusMovePier()
 void CPierLayoutPage::OnHelp() 
 {
    ::HtmlHelp( *this, AfxGetApp()->m_pszHelpFilePath, HH_HELP_CONTEXT, IDH_PIERDETAILS_GENERAL );
+}
+
+HBRUSH CPierLayoutPage::OnCtlColor(CDC* pDC,CWnd* pWnd,UINT nCtlColor)
+{
+   HBRUSH hbr = CPropertyPage::OnCtlColor(pDC,pWnd,nCtlColor);
+   if ( pWnd->GetDlgCtrlID() == IDC_STATION )
+   {
+      Float64 toStation;
+      if ( IsValidStation(&toStation) )
+      {
+         pDC->SetTextColor(::GetSysColor(COLOR_WINDOWTEXT));
+      }
+      else
+      {
+         pDC->SetTextColor(RED);
+      }
+   }
+
+   return hbr;
 }

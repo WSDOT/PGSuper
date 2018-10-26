@@ -32,6 +32,7 @@ CLASS
 #include <PgsExt\PointOfInterest.h>
 #include <PgsExt\GirderArtifact.h>
 #include <PgsExt\GirderArtifactTool.h>
+#include <PgsExt\BridgeDescription.h>
 
 #include <IFace\Bridge.h>
 #include <EAF\EAFDisplayUnits.h>
@@ -206,19 +207,71 @@ void CSpecCheckSummaryChapterBuilder::CreateContent(rptChapter* pChapter, IBroke
       }
    }
 
-   // Negative camber is not technically a spec check, but a warning
-   GET_IFACE2(pBroker,IPointOfInterest,pIPOI);
-   std::vector<pgsPointOfInterest> vPoi = pIPOI->GetPointsOfInterest(span,gdr,pgsTypes::BridgeSite3,POI_MIDSPAN);
-   CHECK(vPoi.size()==1);
-   pgsPointOfInterest poi = *vPoi.begin();
-
-   GET_IFACE2(pBroker,ICamber,pCamber);
-   Float64 excess_camber = pCamber->GetExcessCamber(poi,CREEP_MAXTIME);
-   if ( excess_camber < 0 )
+   // Stirrup lengths is not technically a spec check, but a warning
+   const pgsConstructabilityArtifact* pConstrArtifact = pArtifact->GetConstructabilityArtifact();
+   if ( pConstrArtifact->CheckStirrupLength() )
    {
       rptParagraph* pPara = new rptParagraph;
       *pChapter << pPara;
-      *pPara << _T("Warning:  Excess camber is negative, indicating a potential sag in the beam. Refer to the Details Report for more information.") << rptNewLine;
+      *pPara << color(Red) << Bold(_T("WARNING: The length of stirrups that engage the bridge deck may need special attention. Refer to the Specification Check Details for more information.")) << color(Black) << rptNewLine;
+   }
+
+   GET_IFACE2(pBroker,IStirrupGeometry,pStirrupGeom);
+   if ( !pStirrupGeom->AreStirrupZoneLengthsCombatible(span,gdr) )
+   {
+      rptParagraph* pPara = new rptParagraph;
+      *pChapter << pPara;
+      *pPara << color(Red) << Bold(_T("WARNING: Stirrup zone lengths are not compatible with stirrup spacings. Refer to the Stirrup Layout Geometry Check for more information.")) << color(Black) << rptNewLine;
+   }
+
+   // Negative camber is not technically a spec check, but a warning
+   GET_IFACE2(pBroker, IPointOfInterest, pPointOfInterest );
+   std::vector<pgsPointOfInterest> pmid = pPointOfInterest->GetPointsOfInterest(span, gdr ,pgsTypes::BridgeSite1, POI_MIDSPAN);
+   ATLASSERT(pmid.size()==1);
+   pgsPointOfInterest poiMidSpan(pmid.front());
+
+
+   GET_IFACE2(pBroker,ICamber,pCamber);
+   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+
+   Float64 C = 0;
+   if ( pBridgeDesc->GetDeckDescription()->DeckType != pgsTypes::sdtNone )
+   {
+      C = pCamber->GetScreedCamber( poiMidSpan ) ;
+   }
+
+   Float64 D = 999;
+   if ( pBridgeDesc->GetDeckDescription()->DeckType == pgsTypes::sdtNone )
+   {
+      D = pCamber->GetDCamberForGirderSchedule( poiMidSpan, CREEP_MAXTIME);
+   }
+   else
+   {
+      D = 0.5*pCamber->GetDCamberForGirderSchedule( poiMidSpan, CREEP_MINTIME);
+   }
+
+   if ( D < C )
+   {
+      pPara = new rptParagraph;
+      *pChapter << pPara;
+
+      *pPara << color(Red) << Bold(_T("WARNING: Screed Camber is greater than the camber at time of deck casting. The girder may end up with a sag.")) << color(Black) << rptNewLine;
+   }
+   else if ( IsEqual(C,D,::ConvertToSysUnits(0.25,unitMeasure::Inch)) )
+   {
+      pPara = new rptParagraph;
+      *pChapter << pPara;
+
+      *pPara << color(Red) << Bold(_T("WARNING: Screed Camber is nearly equal to the camber at time of deck casting. The girder may end up with a sag.")) << color(Black) << rptNewLine;
+   }
+
+   Float64 excess_camber = pCamber->GetExcessCamber(poiMidSpan,CREEP_MAXTIME);
+   if ( excess_camber < 0.0 )
+   {
+      rptParagraph* pPara = new rptParagraph;
+      *pChapter << pPara;
+      *pPara << color(Red) << Bold(_T("WARNING:  Excess camber is negative, indicating a potential sag in the beam. Refer to the Details Report for more information.")) << color(Black) << rptNewLine;
    }
 }
 

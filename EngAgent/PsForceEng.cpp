@@ -477,7 +477,7 @@ STRANDDEVLENGTHDETAILS pgsPsForceEng::GetDevLengthDetails(const pgsPointOfIntere
    Float64 mbrDepth = pGirder->GetHeight(poi);
 
    GET_IFACE(IPrestressForce,pPrestressForce);
-   Float64 fpe = pPrestressForce->GetStrandStress(poi,pgsTypes::Permanent,pgsTypes::AfterLosses);
+   Float64 fpe = pPrestressForce->GetStrandStress(poi,pgsTypes::Permanent,pgsTypes::AfterLossesWithLiveLoad);
 
    GET_IFACE(IMomentCapacity,pMomCap);
    MOMENTCAPACITYDETAILS mcd;

@@ -469,8 +469,12 @@ void pgsDesigner2::GetHaunchDetails(SpanIndexType span,GirderIndexType gdr,bool 
       pHaunchDetails->Haunch.push_back(haunch);
 
       max_tslab_and_fillet = _cpp_max(max_tslab_and_fillet,tSlab + fillet);
-      
-      max_actual_haunch_depth_diff = _cpp_max(max_actual_haunch_depth_diff, haunch.ActualHaunchDepth - slab_offset);
+
+      // if haunch depth diff is > 0, the haunch is deeper towards the middle of the girder
+      // if haunch depth diff is < 0, the haunch is deeper at the CL Bearing
+      Float64 haunch_depth_diff = haunch.ActualHaunchDepth - slab_offset;
+      if ( fabs(max_actual_haunch_depth_diff) < fabs(haunch_depth_diff) )
+         max_actual_haunch_depth_diff = haunch_depth_diff;
    }
 
    // profile effect
@@ -3181,7 +3185,9 @@ void pgsDesigner2::CheckConstructability(SpanIndexType span,GirderIndexType gdr,
 
       HAUNCHDETAILS haunch_details;
       pGdrHaunch->GetHaunchDetails(span,gdr,&haunch_details);
-      pArtifact->CheckStirrupLength( bDoStirrupsEngageDeck && ::IsGT(0.0,haunch_details.HaunchDiff) );
+
+      // warn of possible stirrup length issue if the difference in haunch depth along the girder is more than 0.5"
+      pArtifact->CheckStirrupLength( bDoStirrupsEngageDeck && ::ConvertToSysUnits(0.5,unitMeasure::Inch) < fabs(haunch_details.HaunchDiff) );
    }
 
    ///////////////////////////////////////////////////////////////

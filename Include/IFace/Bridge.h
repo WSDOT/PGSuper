@@ -482,6 +482,9 @@ interface IStirrupGeometry : IUnknown
    // Processed confinement bar information - returns max bar size/min spacing in required zone length at both ends of girder
    virtual void GetStartConfinementBarInfo(SpanIndexType span,GirderIndexType gdr, Float64 requiredZoneLength, matRebar::Size* pSize, Float64* pProvidedZoneLength, Float64* pSpacing) = 0;
    virtual void GetEndConfinementBarInfo(  SpanIndexType span,GirderIndexType gdr, Float64 requiredZoneLength, matRebar::Size* pSize, Float64* pProvidedZoneLength, Float64* pSpacing) = 0;
+
+   // Returns true if the stirrup layout geometry is ok
+   virtual bool AreStirrupZoneLengthsCombatible(SpanIndexType span,GirderIndexType gdr) = 0;
 };
 
 /*****************************************************************************

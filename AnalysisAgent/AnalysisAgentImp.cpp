@@ -4838,161 +4838,111 @@ void CAnalysisAgentImp::GetMainSpanSlabLoad(SpanIndexType span,GirderIndexType g
       Float64 panel_depth = pBridge->GetPanelDepth(poi);
       Float64 trib_slab_width = pSectProp2->GetTributaryFlangeWidth(poi);
 
-      if ( nGirders == 1 )
+      if ( bIsInteriorGirder )
       {
-         // single girder bridge - use the whole deck
-         Float64 station,offset;
-         pBridge->GetStationAndOffset(poi,&station,&offset);
+         // Apply the load of the main slab
+         wslab       = trib_slab_width * cast_depth  * pMat->GetWgtDensitySlab() * unitSysUnitsMgr::GetGravitationalAcceleration();
 
-         CComPtr<IShape> slab_shape;
-         pSectProp2->GetSlabShape(station,&slab_shape);
+         // compute the width of the deck panels
+         Float64 panel_width = trib_slab_width; // start with tributary width
 
-         CComPtr<IShapeProperties> sectProps;
-         slab_shape->get_ShapeProperties(&sectProps);
-
-         // this deck area includes the slab panels and slab haunch
-         Float64 deck_area;
-         sectProps->get_Area(&deck_area);
-
-         Float64 panel_depth = pBridge->GetPanelDepth(poi);
-         Float64 panel_width = 0;
+         // deduct width of mating surfaces
          MatingSurfaceIndexType nMatingSurfaces = pGdr->GetNumberOfMatingSurfaces(span,gdrIdx);
-         for ( MatingSurfaceIndexType msIdx = 0; msIdx < nMatingSurfaces-1; msIdx++ )
+         for ( MatingSurfaceIndexType msIdx = 0; msIdx < nMatingSurfaces; msIdx++ )
          {
-            // compute width of deck panel as distance between mating surface support locations
-            Float64 x1 = pGdr->GetMatingSurfaceLocation(poi,msIdx);
-            Float64 x2 = pGdr->GetMatingSurfaceLocation(poi,msIdx+1);
-            Float64 width = x2 - x1;
-
-            // adjust the panel width half the mating surface width on each end
-            // this puts the edges of the panel at the edges of the mating surface
-            Float64 w1 = pGdr->GetMatingSurfaceWidth(poi,msIdx);
-            Float64 w2 = pGdr->GetMatingSurfaceWidth(poi,msIdx+1);
-
-            width -= w1/2 + w2/2;
-            
-            // added the panel support widthto the width of the panel
-            width += 2*panel_support_width;
-
-            panel_width += width;
+            panel_width -= pGdr->GetMatingSurfaceWidth(poi,msIdx);
          }
 
-         Float64 panel_area = panel_depth * panel_width;
-
-         deck_area -= panel_area;
-
-         wslab       =  deck_area * pMat->GetWgtDensitySlab() * unitSysUnitsMgr::GetGravitationalAcceleration();
-         wslab_panel = panel_area * pMat->GetWgtDensitySlab() * unitSysUnitsMgr::GetGravitationalAcceleration();
+         // add panel support widths
+         panel_width += 2*nMatingSurfaces*panel_support_width;
+         wslab_panel = panel_width * panel_depth * pMat->GetWgtDensitySlab() * unitSysUnitsMgr::GetGravitationalAcceleration();
       }
       else
       {
-         // multi-girder bridge
-         if ( bIsInteriorGirder )
+         // Exterior girder... the slab overhang can be thickened so we have figure out the weight
+         // on the left and right of the girder instead of using the tributary width and slab depth
+
+         // determine depth of the slab at the edge and flange tip
+         Float64 overhang_edge_depth = pDeck->OverhangEdgeDepth;
+         Float64 overhang_depth_at_flange_tip;
+         if ( pDeck->OverhangTaper == pgsTypes::None )
          {
-            // Apply the load of the main slab
-            wslab       = trib_slab_width * cast_depth  * pMat->GetWgtDensitySlab() * unitSysUnitsMgr::GetGravitationalAcceleration();
+            // overhang is constant depth
+            overhang_depth_at_flange_tip = overhang_edge_depth;
+         }
+         else if ( pDeck->OverhangTaper == pgsTypes::TopTopFlange )
+         {
+            // deck overhang tapers to the top of the top flange
+            overhang_depth_at_flange_tip = slab_offset;
+         }
+         else if ( pDeck->OverhangTaper == pgsTypes::BottomTopFlange )
+         {
+            // deck overhang tapers to the bottom of the top flange
+            FlangeIndexType nFlanges = pGdr->GetNumberOfTopFlanges(span,gdrIdx);
+            Float64 flange_thickness;
+            if ( gdr == 0 )
+               flange_thickness = pGdr->GetTopFlangeThickness(poi,0);
+            else
+               flange_thickness = pGdr->GetTopFlangeThickness(poi,nFlanges-1);
 
-            // compute the width of the deck panels
-            Float64 panel_width = trib_slab_width; // start with tributary width
-
-            // deduct width of mating surfaces
-            MatingSurfaceIndexType nMatingSurfaces = pGdr->GetNumberOfMatingSurfaces(span,gdrIdx);
-            for ( MatingSurfaceIndexType msIdx = 0; msIdx < nMatingSurfaces; msIdx++ )
-            {
-               panel_width -= pGdr->GetMatingSurfaceWidth(poi,msIdx);
-            }
-
-            // add panel support widths
-            panel_width += 2*nMatingSurfaces*panel_support_width;
-            wslab_panel = panel_width * panel_depth * pMat->GetWgtDensitySlab() * unitSysUnitsMgr::GetGravitationalAcceleration();
+            overhang_depth_at_flange_tip = slab_offset + flange_thickness;
          }
          else
          {
-            // Exterior girder... the slab overhang can be thickened so we have figure out the weight
-            // on the left and right of the girder instead of using the tributary width and slab depth
-
-            // determine depth of the slab at the edge and flange tip
-            Float64 overhang_edge_depth = pDeck->OverhangEdgeDepth;
-            Float64 overhang_depth_at_flange_tip;
-            if ( pDeck->OverhangTaper == pgsTypes::None )
-            {
-               // overhang is constant depth
-               overhang_depth_at_flange_tip = overhang_edge_depth;
-            }
-            else if ( pDeck->OverhangTaper == pgsTypes::TopTopFlange )
-            {
-               // deck overhang tapers to the top of the top flange
-               overhang_depth_at_flange_tip = slab_offset;
-            }
-            else if ( pDeck->OverhangTaper == pgsTypes::BottomTopFlange )
-            {
-               // deck overhang tapers to the bottom of the top flange
-               FlangeIndexType nFlanges = pGdr->GetNumberOfTopFlanges(span,gdrIdx);
-               Float64 flange_thickness;
-               if ( gdr == 0 )
-                  flange_thickness = pGdr->GetTopFlangeThickness(poi,0);
-               else
-                  flange_thickness = pGdr->GetTopFlangeThickness(poi,nFlanges-1);
-
-               overhang_depth_at_flange_tip = slab_offset + flange_thickness;
-            }
-            else
-            {
-               ATLASSERT(false); // is there a new deck overhang taper???
-            }
-
-            // Determine the slab overhang
-            Float64 station,offset;
-            pBridge->GetStationAndOffset(poi,&station,&offset);
-            Float64 dist_from_start_of_bridge = pBridge->GetDistanceFromStartOfBridge(station);
-
-            // slab overhang from CL of girder (normal to alignment)
-            Float64 slab_overhang = (gdrIdx == 0 ? pBridge->GetLeftSlabOverhang(dist_from_start_of_bridge) : pBridge->GetRightSlabOverhang(dist_from_start_of_bridge));
-
-            if (slab_overhang < 0.0)
-            {
-               // negative overhang - girder probably has no slab over it
-               slab_overhang = 0.0;
-            }
-            else
-            {
-               Float64 top_width = pGdr->GetTopWidth(poi);
-
-               // slab overhang from edge of girder (normal to alignment)
-               slab_overhang -= top_width/2;
-            }
-
-            // area of slab overhang
-            Float64 slab_overhang_area = slab_overhang*(overhang_edge_depth + overhang_depth_at_flange_tip)/2;
-
-            // Determine area of slab from exterior flange tip to 1/2 distance to interior girder
-            Float64 w = trib_slab_width - slab_overhang;
-            Float64 slab_area = w*cast_depth;
-            wslab       = (slab_area + slab_overhang_area) * pMat->GetWgtDensitySlab() * unitSysUnitsMgr::GetGravitationalAcceleration();
-
-            Float64 panel_width = w;
-
-            // deduct width of mating surfaces
-            MatingSurfaceIndexType nMatingSurfaces = pGdr->GetNumberOfMatingSurfaces(span,gdrIdx);
-            for ( MatingSurfaceIndexType msIdx = 0; msIdx < nMatingSurfaces; msIdx++ )
-            {
-               panel_width -= pGdr->GetMatingSurfaceWidth(poi,msIdx);
-            }
-
-            // add panel support widths (2 sides per mating surface)
-            panel_width += 2*nMatingSurfaces*panel_support_width;
-
-            // the exterior mating surface doesn't have a panel on the exterior side
-            // so deduct one panel support width
-
-            panel_width -= panel_support_width;
-            if (panel_width<0.0)
-            {
-               panel_width = 0.0; // negative overhangs can cause this condition
-            }
-
-            wslab_panel = panel_width * panel_depth * pMat->GetWgtDensitySlab() * unitSysUnitsMgr::GetGravitationalAcceleration();
+            ATLASSERT(false); // is there a new deck overhang taper???
          }
+
+         // Determine the slab overhang
+         Float64 station,offset;
+         pBridge->GetStationAndOffset(poi,&station,&offset);
+         Float64 dist_from_start_of_bridge = pBridge->GetDistanceFromStartOfBridge(station);
+
+         // slab overhang from CL of girder (normal to alignment)
+         Float64 slab_overhang = (gdrIdx == 0 ? pBridge->GetLeftSlabOverhang(dist_from_start_of_bridge) : pBridge->GetRightSlabOverhang(dist_from_start_of_bridge));
+
+         if (slab_overhang < 0.0)
+         {
+            // negative overhang - girder probably has no slab over it
+            slab_overhang = 0.0;
+         }
+         else
+         {
+            Float64 top_width = pGdr->GetTopWidth(poi);
+
+            // slab overhang from edge of girder (normal to alignment)
+            slab_overhang -= top_width/2;
+         }
+
+         // area of slab overhang
+         Float64 slab_overhang_area = slab_overhang*(overhang_edge_depth + overhang_depth_at_flange_tip)/2;
+
+         // Determine area of slab from exterior flange tip to 1/2 distance to interior girder
+         Float64 w = trib_slab_width - slab_overhang;
+         Float64 slab_area = w*cast_depth;
+         wslab       = (slab_area + slab_overhang_area) * pMat->GetWgtDensitySlab() * unitSysUnitsMgr::GetGravitationalAcceleration();
+
+         Float64 panel_width = w;
+
+         // deduct width of mating surfaces
+         MatingSurfaceIndexType nMatingSurfaces = pGdr->GetNumberOfMatingSurfaces(span,gdrIdx);
+         for ( MatingSurfaceIndexType msIdx = 0; msIdx < nMatingSurfaces; msIdx++ )
+         {
+            panel_width -= pGdr->GetMatingSurfaceWidth(poi,msIdx);
+         }
+
+         // add panel support widths (2 sides per mating surface)
+         panel_width += 2*nMatingSurfaces*panel_support_width;
+
+         // the exterior mating surface doesn't have a panel on the exterior side
+         // so deduct one panel support width
+
+         panel_width -= panel_support_width;
+         if (panel_width<0.0)
+         {
+            panel_width = 0.0; // negative overhangs can cause this condition
+         }
+
+         wslab_panel = panel_width * panel_depth * pMat->GetWgtDensitySlab() * unitSysUnitsMgr::GetGravitationalAcceleration();
       }
 
       ASSERT( 0 <= wslab );
@@ -5023,9 +4973,6 @@ void CAnalysisAgentImp::GetMainSpanSlabLoad(SpanIndexType span,GirderIndexType g
       // calculate load, neglecting effect of fillet
       Float64 wpad = (pad_hgt*mating_surface_width + (pad_hgt - panel_depth)*(bIsInteriorGirder ? 2 : 1)*nMatingSurfaces*panel_support_width)*  pMat->GetWgtDensitySlab() * unitSysUnitsMgr::GetGravitationalAcceleration();
       ASSERT( 0 <= wpad );
-
-      if ( nGirders == 1 )
-         wslab -= wpad; // for the nGirders == 1 case, wslab contains the pad load... remove the pad load
 
       LOG("Poi Loc at           = " << poi.GetDistFromStart());
       LOG("Main Slab Loa        = " << wslab);

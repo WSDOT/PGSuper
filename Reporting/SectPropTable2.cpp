@@ -84,7 +84,7 @@ rptRcTable* CSectionPropertiesTable2::Build(IBroker* pBroker,SpanIndexType span,
    if ( stage == pgsTypes::CastingYard || stage == pgsTypes::BridgeSite1 )
       nCol = 12;
    else if ( (stage == pgsTypes::BridgeSite2 || stage == pgsTypes::BridgeSite3) && bIsCompositeDeck )
-      nCol = 15;
+      nCol = 13;
    else if ( stage == pgsTypes::BridgeSite2 )
       nCol = 12; // BS2 and noncomposite deck
    else

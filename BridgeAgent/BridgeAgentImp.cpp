@@ -2545,6 +2545,8 @@ bool CBridgeAgentImp::LayoutGirders(const CBridgeDescription* pBridgeDesc)
          pGirderEntry->ConfigureTemporaryStrandGrid(tempGrd[etStart],tempGrd[etEnd]);
 
          girder->put_AllowOddNumberOfHarpedStrands(pGirderEntry->OddNumberOfHarpedStrands() ? VARIANT_TRUE : VARIANT_FALSE);
+         girder->put_UseDifferentHarpedGridsAtEnds(pGirderEntry->IsDifferentHarpedGridAtEndsUsed() ? VARIANT_TRUE : VARIANT_FALSE);
+
 
          // Let beam factory build segments as necessary to represent the beam
          beamFactory->LayoutGirderLine(m_pBroker,m_StatusGroupID,spanIdx,gdrIdx,ssmbr);
@@ -8867,6 +8869,49 @@ void CBridgeAgentImp::GetEndConfinementBarInfo(  SpanIndexType span,GirderIndexT
    // Use either primary bars or additional bars. Choose by which has adequate zone length, smallest spacing, largest bars
    ChooseConfinementBars(requiredZoneLength, primSpc, primZonL, primSize, addlSpc, addlZonL, addlSize,
                          pSize, pProvidedZoneLength, pSpacing);
+}
+
+bool CBridgeAgentImp::AreStirrupZoneLengthsCombatible(SpanIndexType span,GirderIndexType gdr)
+{
+   CShearData shearData = GetShearData(span,gdr);
+
+   ZoneIndexType squishyZoneIdx = INVALID_INDEX;
+   if ( shearData.bAreZonesSymmetrical )
+   {
+      // if zones are symmetrical, the last zone input is the "squishy" zone
+      squishyZoneIdx = shearData.ShearZones.size()-1;
+   }
+
+
+   ZoneIndexType nZones = GetNumPrimaryZones(span,gdr);
+   for (ZoneIndexType zoneIdx = 0; zoneIdx < nZones; zoneIdx++ )
+   {
+      Float64 zoneStart, zoneEnd;
+      GetPrimaryZoneBounds(span, gdr, zoneIdx, &zoneStart, &zoneEnd);
+      Float64 zoneLength = zoneEnd-zoneStart;
+
+      matRebar::Size barSize;
+      Float64 spacing;
+      Float64 nStirrups;
+      GetPrimaryVertStirrupBarInfo(span,gdr,zoneIdx,&barSize,&nStirrups,&spacing);
+
+      if (barSize != matRebar::bsNone && TOLERANCE < spacing)
+      {
+         // If spacings fit within 1%, then pass. Otherwise fail
+         Float64 nFSpaces = zoneLength / spacing;
+         Int32 nSpaces = (Int32)nFSpaces;
+         Float64 remainder = nFSpaces - nSpaces;
+
+         if ( zoneIdx != squishyZoneIdx && 
+              !IsZero(remainder, 0.01) && 
+              !IsEqual(remainder, 1.0, 0.01) )
+         {
+            return false;
+         }
+      }
+   }
+
+   return true;
 }
 
 // private:

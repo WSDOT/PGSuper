@@ -106,8 +106,8 @@ CPGSuperCatalogServer* CreateCatalogServer(const CString& strServerName,const CS
    int p = createString.Find(_T('|'));
    if ( p != -1 )
    {
-      CString strType = createString.Left(p);
-      CString strAddress = createString.Mid(p+1);
+      CString strType(createString.Left(p));
+      CString strAddress(createString.Mid(p+1));
       if (strType==_T("FTP"))
       {
          CFtpPGSuperCatalogServer* psvr = new CFtpPGSuperCatalogServer(strServerName, strAddress, strExt);
@@ -338,6 +338,10 @@ CPGSuperCatalogServer::CPGSuperCatalogServer(const CString& name,SharedResourceT
 m_Name(name),
 m_ServerType(type),
 m_TemplateFileExt(strExt)
+{
+}
+
+CPGSuperCatalogServer::~CPGSuperCatalogServer()
 {
 }
 

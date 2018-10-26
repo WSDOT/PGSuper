@@ -498,7 +498,7 @@ void write_shear_dimensions_table(IBroker* pBroker,
    *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("dv.png")) << rptNewLine;
    *pParagraph << rptNewLine;
 
-   rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(7,_T(""));
+   rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(9,_T(""));
    *pParagraph << table << rptNewLine;
 
 
@@ -514,11 +514,13 @@ void write_shear_dimensions_table(IBroker* pBroker,
       (*table)(0,0)  << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
 
    (*table)(0,1) << COLHDR(Sub2(_T("b"),_T("v")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-   (*table)(0,2) << COLHDR(_T("Moment") << rptNewLine << _T("Arm"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-   (*table)(0,3) << COLHDR(Sub2(_T("d"),_T("e")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-   (*table)(0,4) << COLHDR(_T("h"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-   (*table)(0,5) << COLHDR(Sub2(_T("d"),_T("v")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-   (*table)(0,6) << _T("Tension") << rptNewLine << _T("Side");
+   (*table)(0,2) << COLHDR(Sub2(_T("d"),_T("e")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+   (*table)(0,3) << COLHDR(_T("h"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+   (*table)(0,4) << COLHDR(Sub2(_T("0.9d"),_T("e")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+   (*table)(0,5) << COLHDR(_T("0.72h"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+   (*table)(0,6) << COLHDR(_T("Moment") << rptNewLine << _T("Arm"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+   (*table)(0,7) << COLHDR(Sub2(_T("d"),_T("v")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+   (*table)(0,8) << _T("Tension") << rptNewLine << _T("Side");
 
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(),   false );
    INIT_UV_PROTOTYPE( rptLengthUnitValue, dim,      pDisplayUnits->GetComponentDimUnit(), false );
@@ -546,12 +548,14 @@ void write_shear_dimensions_table(IBroker* pBroker,
 
       (*table)(row,0) << location.SetValue( stage, poi, end_size );
       (*table)(row,1) << dim.SetValue( scd.bv );
-      (*table)(row,2) << dim.SetValue( scd.MomentArm );
-      (*table)(row,3) << dim.SetValue( scd.de );
-      (*table)(row,4) << dim.SetValue( scd.h );
-      (*table)(row,5) << dim.SetValue( scd.dv );
+      (*table)(row,2) << dim.SetValue( scd.de );
+      (*table)(row,3) << dim.SetValue( scd.h );
+      (*table)(row,4) << dim.SetValue( 0.9*scd.de );
+      (*table)(row,5) << dim.SetValue( 0.72*scd.h );
+      (*table)(row,6) << dim.SetValue( scd.MomentArm );
+      (*table)(row,7) << dim.SetValue( scd.dv );
 
-      (*table)(row,6) << (scd.bTensionBottom ? _T("Bottom") : _T("Top"));
+      (*table)(row,8) << (scd.bTensionBottom ? _T("Bottom") : _T("Top"));
 
       row++;
    }

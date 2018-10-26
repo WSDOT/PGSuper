@@ -1,6 +1,6 @@
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 14.25   1 12.00  1     1    U54G6  *    82  0.60  270 14.80  2.31  26 50.0  5.900 10.700    8.546   -4.816  15486  1.000  1.000  0.34 -0.25  0.00 -0.04 -0.29 370.09 538.76   3.00   4.50   4.50
+ 14.25   1 12.00  1     1    U54G6  *    82  0.60  270 14.80  2.31  26 50.0  6.000 10.800    8.625   -4.854  15495  1.000  1.000  0.33 -0.26  0.00 -0.04 -0.29 367.63 529.46   3.00   4.50   4.50
 
 
 The Specification Check was Not Successful
@@ -10,11 +10,10 @@ Hauling checks failed
 
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 14.25   1 12.00  2     1    U54G6  *    80  0.60  270 14.86  2.56  24 50.0  5.900 10.500    8.530   -4.812  15180  1.000  1.000  0.33 -0.25  0.00 -0.04 -0.29 352.52 509.16   3.00   4.50   4.50
+ 14.25   1 12.00  2     1    U54G6  *    82  0.60  270 14.80  2.31  26 50.0  5.900 10.600    8.610   -4.850  15443  1.000  1.000  0.34 -0.26  0.00 -0.04 -0.30 370.09 534.04   3.00   4.50   4.50
 
 
 The Specification Check was Not Successful
-Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
 Slab Offset ("A" Dimension) check failed
 Hauling checks failed
 

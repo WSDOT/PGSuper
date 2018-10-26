@@ -326,7 +326,8 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
    }
 
    // Strand Slope
-   p = new rptParagraph;
+   p = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+   *p << _T("Constructability") << rptNewLine;
    p->SetName(_T("Constructability"));
    *pChapter << p;
 
@@ -363,6 +364,9 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
       *p << atable << rptNewLine;
       *pChapter << p;
    }
+
+   // Camber Check
+   CConstructabilityCheckTable().BuildCamberCheck(pChapter,pBroker,span,girder,pDisplayUnits);
 
    // Global Stability Check
    CConstructabilityCheckTable().BuildGlobalGirderStabilityCheck(pChapter,pBroker,span,girder,pDisplayUnits);

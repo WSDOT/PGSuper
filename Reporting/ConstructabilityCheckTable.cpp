@@ -32,6 +32,7 @@
 
 #include <PgsExt\GirderArtifact.h>
 #include <PgsExt\HoldDownForceArtifact.h>
+#include <PgsExt\BridgeDescription.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -154,7 +155,10 @@ rptRcTable* CConstructabilityCheckTable::BuildSlabOffsetTable(IBroker* pBroker,c
             HAUNCHDETAILS haunch_details;
             pGdrHaunch->GetHaunchDetails(span,girder,&haunch_details);
 
-            (*pTable)(row, col++) << color(Red) << _T("The haunch depth in the middle of the girder exceeds the depth at the ends by ") << dim2.SetValue(haunch_details.HaunchDiff) << _T(". Check stirrup lengths to ensure they engage the deck in all locations.") << color(Black) << rptNewLine;
+            if ( 0 < haunch_details.HaunchDiff )
+               (*pTable)(row, col++) << color(Red) << _T("The haunch depth in the middle of the girder exceeds the depth at the ends by ") << dim2.SetValue(haunch_details.HaunchDiff) << _T(". Check stirrup lengths to ensure they engage the deck in all locations.") << color(Black) << rptNewLine;
+            else
+               (*pTable)(row, col++) << color(Red) << _T("The haunch depth in the ends of the girder exceeds the depth at the middle by ") << dim2.SetValue(-haunch_details.HaunchDiff) << _T(". Check stirrup lengths to ensure they engage the deck in all locations.") << color(Black) << rptNewLine;
          }
          else
          {
@@ -174,6 +178,97 @@ rptRcTable* CConstructabilityCheckTable::BuildSlabOffsetTable(IBroker* pBroker,c
    {
       delete pTable;
       return NULL;
+   }
+}
+
+void CConstructabilityCheckTable::BuildCamberCheck(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType girder, IEAFDisplayUnits* pDisplayUnits) const
+{
+   GET_IFACE2(pBroker, IPointOfInterest, pPointOfInterest );
+   std::vector<pgsPointOfInterest> pmid = pPointOfInterest->GetPointsOfInterest(span, girder,pgsTypes::BridgeSite1, POI_MIDSPAN);
+   ATLASSERT(pmid.size()==1);
+   pgsPointOfInterest poiMidSpan(pmid.front());
+
+   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+
+   GET_IFACE2(pBroker,ICamber,pCamber);
+
+   GET_IFACE2( pBroker, ILibrary, pLib );
+   GET_IFACE2( pBroker, ISpecification, pSpec );
+   std::_tstring spec_name = pSpec->GetSpecification();
+   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( spec_name.c_str() );
+   Float64 min_days =  ::ConvertFromSysUnits(pSpecEntry->GetCreepDuration2Min(), unitMeasure::Day);
+   Float64 max_days =  ::ConvertFromSysUnits(pSpecEntry->GetCreepDuration2Max(), unitMeasure::Day);
+
+   rptParagraph* pTitle = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );
+   *pChapter << pTitle;
+   *pTitle << _T("Camber");
+
+   rptParagraph* pBody = new rptParagraph;
+   *pChapter << pBody;
+
+   INIT_UV_PROTOTYPE( rptLengthUnitValue, dim, pDisplayUnits->GetComponentDimUnit(), false );
+
+   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(2,_T(""));
+
+   pTable->SetColumnStyle(0, pgsReportStyleHolder::GetTableCellStyle( CB_NONE | CJ_LEFT) );
+   pTable->SetStripeRowColumnStyle(0, pgsReportStyleHolder::GetTableStripeRowCellStyle( CB_NONE | CJ_LEFT) );
+
+   *pBody << pTable << rptNewLine;
+
+   (*pTable)(0,0) << _T("");
+   (*pTable)(0,1) << COLHDR(_T("Camber"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+
+   RowIndexType row = pTable->GetNumberOfHeaderRows();
+   Float64 C = 0;
+   if ( pBridgeDesc->GetDeckDescription()->DeckType != pgsTypes::sdtNone )
+   {
+      C = pCamber->GetScreedCamber( poiMidSpan ) ;
+      (*pTable)(row,  0) << _T("Screed Camber, C");
+      (*pTable)(row++,1) << dim.SetValue(C);
+   }
+
+   // get # of days for creep
+   Float64 D = 999;
+   if ( pBridgeDesc->GetDeckDescription()->DeckType == pgsTypes::sdtNone )
+   {
+      D = pCamber->GetDCamberForGirderSchedule( poiMidSpan, CREEP_MAXTIME);
+      (*pTable)(row,0) << _T("D @ ") << max_days << _T(" days (") << Sub2(_T("D"),max_days) << _T(")");
+      if ( D < 0 )
+         (*pTable)(row++,1) << color(Red) << dim.SetValue(D) << color(Black);
+      else
+         (*pTable)(row++,1) << dim.SetValue(D);
+   }
+   else
+   {
+      D = 0.5*pCamber->GetDCamberForGirderSchedule( poiMidSpan, CREEP_MINTIME);
+      (*pTable)(row,0) << _T("Lower bound camber at ")<< min_days<<_T(" days, 50% of D") <<Sub(min_days);
+      if ( D < 0 )
+         (*pTable)(row++,1) << color(Red) << dim.SetValue(D) << color(Black);
+      else
+         (*pTable)(row++,1) << dim.SetValue(D);
+
+      (*pTable)(row,0) << _T("Upper bound camber at ")<< max_days<<_T(" days, D") << Sub(max_days);
+      Float64 D120 = pCamber->GetDCamberForGirderSchedule( poiMidSpan, CREEP_MAXTIME) ;
+      if ( D120 < 0 )
+         (*pTable)(row++,1) << color(Red) << dim.SetValue(D120) << color(Black);
+      else
+         (*pTable)(row++,1) << dim.SetValue(D120);
+   }
+
+   if ( D < C )
+   {
+      rptParagraph* p = new rptParagraph;
+      *pChapter << p;
+
+      *p << color(Red) << Bold(_T("WARNING: Screed Camber, C, is greater than the camber at time of deck casting, D. The girder may end up with a sag.")) << color(Black) << rptNewLine;
+   }
+   else if ( IsEqual(C,D,::ConvertToSysUnits(0.25,unitMeasure::Inch)) )
+   {
+      rptParagraph* p = new rptParagraph;
+      *pChapter << p;
+
+      *p << color(Red) << Bold(_T("WARNING: Screed Camber, C, is nearly equal to the camber at time of deck casting, D. The girder may end up with a sag.")) << color(Black) << rptNewLine;
    }
 }
 

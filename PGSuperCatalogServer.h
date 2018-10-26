@@ -111,6 +111,7 @@ class CPGSuperCatalogServer
 {
 public:
    CPGSuperCatalogServer(const CString& name,SharedResourceType type,const CString& strExt); 
+   virtual ~CPGSuperCatalogServer();
 
    CString GetServerName() const;
    SharedResourceType GetServerType() const;

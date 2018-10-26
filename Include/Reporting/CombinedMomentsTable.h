@@ -287,7 +287,7 @@ RowIndexType CreateLimitStateTableHeading(rptRcTable** ppTable,LPCTSTR strLabel,
       }
    }
 
-   if ( bRating )
+   if ( bRating && 0 < nRatingCols)
    {
       pTable->SetColumnSpan(ll_title_row,ll_title_col,nRatingCols);
       (*pTable)(ll_title_row,ll_title_col++) << _T("Rating");
