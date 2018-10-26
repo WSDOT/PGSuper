@@ -134,7 +134,7 @@ void girder_points(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* 
       os << _T("Span ") << LABEL_SPAN(span) << std::endl;
       rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(19,os.str().c_str());
 
-      (*pPara) << rptNewLine << pTable;
+      (*pPara) << pTable << rptNewLine;
 
       pTable->SetNumberOfHeaderRows(3);
 
@@ -288,7 +288,7 @@ void girder_offsets(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter*
       os << _T("Span ") << LABEL_SPAN(span) << std::endl;
       rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(19,os.str().c_str());
 
-      (*pPara) << rptNewLine << pTable;
+      (*pPara) << pTable << rptNewLine;
 
       pTable->SetNumberOfHeaderRows(3);
 
@@ -555,7 +555,7 @@ void girder_spacing(IBroker*pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* 
       os << _T("Span ") << LABEL_SPAN(span) << std::endl;
       rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(11,os.str().c_str());
 
-      (*pPara) << rptNewLine << pTable;
+      (*pPara) << pTable << rptNewLine;
 
       pTable->SetNumberOfHeaderRows(3);
 
@@ -686,6 +686,8 @@ void girder_spacing(IBroker*pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* 
          row++;
       }
    }
+
+   (*pPara) << symbol(NORMAL) << _T(" to Alignment: spacing is measured along a line that is normal to the alignment and passes through the point where the CL Pier or CL Brg intersect the alignment.") << rptNewLine;
 }
 
 

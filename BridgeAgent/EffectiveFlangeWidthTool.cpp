@@ -267,6 +267,8 @@ HRESULT CEffectiveFlangeWidthTool::EffectiveFlangeWidthDetails(IGenericBridge* b
       // Overhang <= S/2
 
       // If Overhang > S/2, then limit amount of overhang to S/2 and don't use traffic barrier stiffness
+      // (See C4.6.2.6.1, last paragraph on page 4-52... since provisions were developed for overhangs
+      // < S/2, we will limit the overhang to S/2 for purposes for this calculation).
 
       // is this an exterior girder?
       bool bIsExteriorGirder = pBridge->IsExteriorGirder(spanIdx,gdrIdx);
@@ -281,135 +283,139 @@ HRESULT CEffectiveFlangeWidthTool::EffectiveFlangeWidthDetails(IGenericBridge* b
       CComPtr<ISpan> span;
       spans->get_Item(spanIdx,&span);
 
-      // get girder spacing data
-      CComPtr<IGirderSpacing> startSpacing;
-      span->get_GirderSpacing(etStart,&startSpacing);
-
-      CComPtr<IGirderSpacing> endSpacing;
-      span->get_GirderSpacing(etEnd,&endSpacing);
-
       GirderIndexType nGirders;
       span->get_GirderCount(&nGirders);
 
-      double S1 = 0;
-      double S2 = 0;
-      for ( SpacingIndexType spaceIdx = 0; spaceIdx < nGirders-1; spaceIdx++ )
-      {
-         double s;
-
-         // spacing at start pier
-         startSpacing->get_GirderSpacing(spaceIdx,mlCenterlinePier,mtNormal,&s);
-         S1 = _cpp_max(s,S1);
-
-         // spacing at end pier
-         endSpacing->get_GirderSpacing(spaceIdx,mlCenterlinePier,mtNormal,&s);
-         S2 = _cpp_max(s,S2);
-      }
-
-      double S = _cpp_max(S1,S2);
-
-      // get span length
-      double L = pBridge->GetSpanLength(spanIdx,gdrIdx);
-      if ( L/S < 2.0 )
-      {
-         //  ratio of span length to girder spacing is out of range
-         std::_tostringstream os;
-         os << "The ratio of span length to girder spacing (L/S) is less that 2. The effective flange width cannot be computed (LRFD 4.6.2.6.1)" << std::endl;
-
-         pgsBridgeDescriptionStatusItem* pStatusItem = 
-            new pgsBridgeDescriptionStatusItem(m_StatusGroupID,m_scidBridgeDescriptionError,0,os.str().c_str());
-
-         pStatusCenter->Add(pStatusItem);
-
-         os << "See Status Center for Details";
-         THROW_UNWIND(os.str().c_str(),XREASON_REFINEDANALYSISREQUIRED);
-      }
-
-      // check overhang spacing if it is a CIP or SIP deck
-      // overlay decks don't have overhangs
       bool bOverhangCheckFailed = false;
-      if ( pBridge->GetDeckType() != pgsTypes::sdtCompositeOverlay )
+
+      if ( 1 < nGirders )
       {
-         Float64 left_trib_width_adjustment  = pGirder->GetCL2ExteriorWebDistance(pgsPointOfInterest(spanIdx,0,location));
-         Float64 right_trib_width_adjustment = pGirder->GetCL2ExteriorWebDistance(pgsPointOfInterest(spanIdx,nGirders-1,location));
-         double left_overhang  = twLeft - left_trib_width_adjustment;
-         double right_overhang = twRight - right_trib_width_adjustment;
-         if ( (gdrIdx == 0 && S/2 < left_overhang && !IsEqual(S/2,left_overhang)) || (gdrIdx == (nGirders-1) && S/2 < right_overhang && !IsEqual(S/2,right_overhang)) )
+         // get girder spacing data
+         CComPtr<IGirderSpacing> startSpacing;
+         span->get_GirderSpacing(etStart,&startSpacing);
+
+         CComPtr<IGirderSpacing> endSpacing;
+         span->get_GirderSpacing(etEnd,&endSpacing);
+
+         double S1 = 0;
+         double S2 = 0;
+         for ( SpacingIndexType spaceIdx = 0; spaceIdx < nGirders-1; spaceIdx++ )
          {
-            bOverhangCheckFailed = true;
-            // force tributary area to be S/2
-            if ( IsGE(S/2,left_overhang) )
-               twLeft = S/2;
+            double s;
 
-            if ( IsGE(S/2,right_overhang) )
-               twRight = S/2;
+            // spacing at start pier
+            startSpacing->get_GirderSpacing(spaceIdx,mlCenterlinePier,mtNormal,&s);
+            S1 = _cpp_max(s,S1);
 
-            // overhang is too big
+            // spacing at end pier
+            endSpacing->get_GirderSpacing(spaceIdx,mlCenterlinePier,mtNormal,&s);
+            S2 = _cpp_max(s,S2);
+         }
+
+         double S = _cpp_max(S1,S2);
+
+         // get span length
+         double L = pBridge->GetSpanLength(spanIdx,gdrIdx);
+         if ( L/S < 2.0 )
+         {
+            //  ratio of span length to girder spacing is out of range
             std::_tostringstream os;
-            os << "The slab overhang exceeds S/2. The overhang is taken to be equal to S/2 for purposes of computing the effective flange width and the effect of structurally continuous barriers has been ignored. (LRFD 4.6.2.6.1)" << std::endl;
+            os << "The ratio of span length to girder spacing (L/S) is less that 2. The effective flange width cannot be computed (LRFD 4.6.2.6.1)" << std::endl;
 
-            pgsInformationalStatusItem* pStatusItem = new pgsInformationalStatusItem(m_StatusGroupID,m_scidInformationalWarning,os.str().c_str());
+            pgsBridgeDescriptionStatusItem* pStatusItem = 
+               new pgsBridgeDescriptionStatusItem(m_StatusGroupID,m_scidBridgeDescriptionError,0,os.str().c_str());
+
             pStatusCenter->Add(pStatusItem);
 
-            wTrib = twLeft + twRight;
+            os << "See Status Center for Details";
+            THROW_UNWIND(os.str().c_str(),XREASON_REFINEDANALYSISREQUIRED);
          }
-      }
 
-
-      // the code below could be more efficient if the evaluation happens once and is cached
-      // if the framing plan doesn't change, this evaluation will not change
-#pragma Reminder("UPDATE: This could be more efficient")
-
-      // check maximum skew angle... AASHTO defines the skew angle as...
-      // The largest skew angle (theta) in the BRIDGE SYSTEM where (theta)
-      // is the angle of a bearing line measured relative to a normal to
-      // the cneterline of a longitudial component
-      double maxSkew = 0;
-      PierIndexType nPiers = pBridge->GetPierCount();
-      for ( PierIndexType pierIdx = 0; pierIdx < nPiers; pierIdx++ )
-      {
-         CComPtr<IDirection> pierDirection;
-         pBridge->GetPierDirection(pierIdx,&pierDirection);
-
-         SpanIndexType spanIndex = pierIdx;
-         if ( nPiers-1 == pierIdx ) // at the last pier... use the previous span index
-            spanIndex -= 1;
-
-         GirderIndexType nGirders = pBridge->GetGirderCount(spanIndex);
-         for ( GirderIndexType gdr = 0; gdr < nGirders; gdr++ )
+         // check overhang spacing if it is a CIP or SIP deck
+         // overlay decks don't have overhangs
+         if ( pBridge->GetDeckType() != pgsTypes::sdtCompositeOverlay )
          {
-            CComPtr<IDirection> girderDirection;
-            pBridge->GetGirderBearing(spanIndex,gdr,&girderDirection);
+            Float64 left_trib_width_adjustment  = pGirder->GetCL2ExteriorWebDistance(pgsPointOfInterest(spanIdx,0,location));
+            Float64 right_trib_width_adjustment = pGirder->GetCL2ExteriorWebDistance(pgsPointOfInterest(spanIdx,nGirders-1,location));
+            double left_overhang  = twLeft - left_trib_width_adjustment;
+            double right_overhang = twRight - right_trib_width_adjustment;
+            if ( (gdrIdx == 0 && S/2 < left_overhang && !IsEqual(S/2,left_overhang)) || (gdrIdx == (nGirders-1) && S/2 < right_overhang && !IsEqual(S/2,right_overhang)) )
+            {
+               bOverhangCheckFailed = true;
+               // force tributary area to be S/2
+               if ( IsGE(S/2,left_overhang) )
+                  twLeft = S/2;
 
-            CComPtr<IDirection> girderNormal;
-            girderDirection->Increment(CComVariant(PI_OVER_2),&girderNormal);
+               if ( IsGE(S/2,right_overhang) )
+                  twRight = S/2;
 
-            CComPtr<IAngle> angle;
-            girderNormal->AngleBetween(pierDirection,&angle);
+               // overhang is too big
+               std::_tostringstream os;
+               os << "The slab overhang exceeds S/2. The overhang is taken to be equal to S/2 for purposes of computing the effective flange width and the effect of structurally continuous barriers has been ignored. (LRFD 4.6.2.6.1)" << std::endl;
 
-            double angle_value;
-            angle->get_Value(&angle_value);
+               pgsInformationalStatusItem* pStatusItem = new pgsInformationalStatusItem(m_StatusGroupID,m_scidInformationalWarning,os.str().c_str());
+               pStatusCenter->Add(pStatusItem);
 
-            if ( M_PI < angle_value )
-               angle_value = TWO_PI - angle_value;
-
-            maxSkew = _cpp_max(maxSkew,angle_value);
+               wTrib = twLeft + twRight;
+            }
          }
-      }
 
-      if ( 75.*M_PI/180. < maxSkew )
-      {
-         // skew is too large
-         std::_tostringstream os;
-         os << "The maximum skew angle in the bridge system exceeds the limit of 75 degrees for computing effective flange width (LRFD 4.6.2.6.1)" << std::endl;
 
-         pgsBridgeDescriptionStatusItem* pStatusItem = 
-            new pgsBridgeDescriptionStatusItem(m_StatusGroupID,m_scidBridgeDescriptionError,0,os.str().c_str());
+         // the code below could be more efficient if the evaluation happens once and is cached
+         // if the framing plan doesn't change, this evaluation will not change
+   #pragma Reminder("UPDATE: This could be more efficient")
 
-         pStatusCenter->Add(pStatusItem);
+         // check maximum skew angle... AASHTO defines the skew angle as...
+         // The largest skew angle (theta) in the BRIDGE SYSTEM where (theta)
+         // is the angle of a bearing line measured relative to a normal to
+         // the cneterline of a longitudial component
+         double maxSkew = 0;
+         PierIndexType nPiers = pBridge->GetPierCount();
+         for ( PierIndexType pierIdx = 0; pierIdx < nPiers; pierIdx++ )
+         {
+            CComPtr<IDirection> pierDirection;
+            pBridge->GetPierDirection(pierIdx,&pierDirection);
 
-         os << "See Status Center for Details";
-         THROW_UNWIND(os.str().c_str(),XREASON_REFINEDANALYSISREQUIRED);
+            SpanIndexType spanIndex = pierIdx;
+            if ( nPiers-1 == pierIdx ) // at the last pier... use the previous span index
+               spanIndex -= 1;
+
+            GirderIndexType nGirders = pBridge->GetGirderCount(spanIndex);
+            for ( GirderIndexType gdr = 0; gdr < nGirders; gdr++ )
+            {
+               CComPtr<IDirection> girderDirection;
+               pBridge->GetGirderBearing(spanIndex,gdr,&girderDirection);
+
+               CComPtr<IDirection> girderNormal;
+               girderDirection->Increment(CComVariant(PI_OVER_2),&girderNormal);
+
+               CComPtr<IAngle> angle;
+               girderNormal->AngleBetween(pierDirection,&angle);
+
+               double angle_value;
+               angle->get_Value(&angle_value);
+
+               if ( M_PI < angle_value )
+                  angle_value = TWO_PI - angle_value;
+
+               maxSkew = _cpp_max(maxSkew,angle_value);
+            }
+         }
+
+         if ( 75.*M_PI/180. < maxSkew )
+         {
+            // skew is too large
+            std::_tostringstream os;
+            os << "The maximum skew angle in the bridge system exceeds the limit of 75 degrees for computing effective flange width (LRFD 4.6.2.6.1)" << std::endl;
+
+            pgsBridgeDescriptionStatusItem* pStatusItem = 
+               new pgsBridgeDescriptionStatusItem(m_StatusGroupID,m_scidBridgeDescriptionError,0,os.str().c_str());
+
+            pStatusCenter->Add(pStatusItem);
+
+            os << "See Status Center for Details";
+            THROW_UNWIND(os.str().c_str(),XREASON_REFINEDANALYSISREQUIRED);
+         }
       }
 
 
@@ -936,16 +942,25 @@ void CEffectiveFlangeWidthTool::ReportEffectiveFlangeWidth_ExteriorGirder_Single
    {
       if ( IsSpreadSpacing(pIBridgeDesc->GetGirderSpacingType()) )
       {
-         *pPara << _T("Effective flange width is taken as one-half the distance to the adjacent girder plus the full overhang width") << rptNewLine;
-         if ( bLeftGirder )
-           *pPara << _T("Left Overhang from CL girder = ") << xdim.SetValue(efw.twLeft) << rptNewLine;
-         else
-           *pPara << _T("Left Spacing = ") << xdim.SetValue(efw.twLeft*2) << rptNewLine;
+         if ( 1 < pBridge->GetGirderCount(poi.GetSpan()) )
+         {
+            *pPara << _T("Effective flange width is taken as one-half the distance to the adjacent girder plus the full overhang width") << rptNewLine;
+            if ( bLeftGirder )
+              *pPara << _T("Left Overhang from CL girder = ") << xdim.SetValue(efw.twLeft) << rptNewLine;
+            else
+              *pPara << _T("Left Spacing = ") << xdim.SetValue(efw.twLeft*2) << rptNewLine;
 
-         if ( bLeftGirder )
-           *pPara << _T("Right Spacing = ") << xdim.SetValue(efw.twRight*2) << rptNewLine;
+            if ( bLeftGirder )
+              *pPara << _T("Right Spacing = ") << xdim.SetValue(efw.twRight*2) << rptNewLine;
+            else
+              *pPara << _T("Right Overhang from CL girder = ") << xdim.SetValue(efw.twRight) << rptNewLine;
+         }
          else
-           *pPara << _T("Right Overhang from CL girder = ") << xdim.SetValue(efw.twRight) << rptNewLine;
+         {
+            *pPara << _T("Effective flange width is take to be the slab overhangs") << rptNewLine;
+            *pPara << _T("Left Overhang from CL girder = ") << xdim.SetValue(efw.twLeft) << rptNewLine;
+            *pPara << _T("Right Overhang from CL girder = ") << xdim.SetValue(efw.twRight) << rptNewLine;
+         }
       }
       else
       {

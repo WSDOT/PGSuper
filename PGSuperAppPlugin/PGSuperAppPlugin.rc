@@ -862,33 +862,38 @@ BEGIN
     LTEXT           "Girder Length",IDC_STATICSLGL,41,202,44,8
 END
 
-IDD_COPY_GIRDER_PROPERTIES DIALOGEX 0, 0, 287, 190
+IDD_COPY_GIRDER_PROPERTIES DIALOGEX 0, 0, 347, 254
 STYLE DS_SETFONT | DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Copy Girder Properties"
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
-    GROUPBOX        "Select Source Girder and Target Girder(s)",IDC_STATIC,7,7,273,53
-    LTEXT           "Copy Properties From:",IDC_STATIC,17,22,76,8
-    LTEXT           "To:",IDC_STATIC,148,22,11,8
-    COMBOBOX        IDC_FROM_SPAN,16,34,59,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    COMBOBOX        IDC_FROM_GIRDER,82,34,59,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    COMBOBOX        IDC_TO_SPAN,147,34,59,57,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    COMBOBOX        IDC_TO_GIRDER,212,34,59,57,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    GROUPBOX        "Select Properties to be Copied:",IDC_STATIC,7,64,273,99
-    CONTROL         "Copy Girder Type",IDC_COPY_GIRDER,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,17,75,71,10
+    COMBOBOX        IDC_FROM_SPAN,16,41,59,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_FROM_GIRDER,82,41,59,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "Single Girder, Span, Girderline, or All",IDC_RADIO1,
+                    "Button",BS_AUTORADIOBUTTON,189,27,129,10
+    COMBOBOX        IDC_TO_SPAN,205,41,59,57,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_TO_GIRDER,270,41,59,57,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "Multiple Girders",IDC_RADIO2,"Button",BS_AUTORADIOBUTTON,189,61,64,10
+    PUSHBUTTON      "Select Girders\n(0 Selected)",IDC_SELECT_GIRDERS,221,75,78,23,BS_MULTILINE
+    CONTROL         "Copy Girder Type",IDC_COPY_GIRDER,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,66,131,71,10
     CONTROL         "Copy Concrete Material Properties",IDC_COPY_MATERIAL,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,17,86,135,10
-    CONTROL         "Copy Prestressing",IDC_COPY_PRESTRESSING,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,17,98,71,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,66,142,135,10
+    CONTROL         "Copy Prestressing",IDC_COPY_PRESTRESSING,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,66,154,71,10
     CONTROL         "Copy Longitudinal Reinforcement",IDC_LONGITUDINAL_REBAR,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,17,110,120,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,66,166,120,10
     CONTROL         "Copy Transverse Reinforcement",IDC_COPY_TRANSVERSE,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,17,122,113,10
-    CONTROL         "Copy Handling Locations",IDC_COPY_HANDLING,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,17,134,91,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,66,178,113,10
+    CONTROL         "Copy Handling Locations",IDC_COPY_HANDLING,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,66,190,91,10
     CONTROL         "Copy Slab Offset (""A"" Dimension)",IDC_COPY_SLABOFFSET,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,17,147,121,10
-    PUSHBUTTON      "Help",ID_HELP,7,169,50,14
-    DEFPUSHBUTTON   "Copy Now",IDOK,179,168,48,15
-    DEFPUSHBUTTON   "Close",IDCANCEL,232,168,48,15
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,66,203,121,10
+    DEFPUSHBUTTON   "Copy Now",IDOK,118,232,48,15
+    DEFPUSHBUTTON   "Close",IDCANCEL,181,232,48,15
+    PUSHBUTTON      "Help",ID_HELP,290,233,50,14
+    GROUPBOX        "Source Girder",IDC_STATIC,7,7,139,101
+    LTEXT           "Copy Properties From:",IDC_STATIC,17,19,76,8
+    LTEXT           "To:",IDC_STATIC,165,19,11,8
+    GROUPBOX        "Select Properties to be Copied:",IDC_STATIC,7,117,333,105
+    GROUPBOX        "Target Girder(s)",IDC_STATIC,160,7,180,101
 END
 
 IDD_SECTION_CUT_DIALOG DIALOG  0, 0, 226, 62
@@ -2113,8 +2118,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 2,5,0,3
- PRODUCTVERSION 2,5,0,3
+ FILEVERSION 2,5,0,4
+ PRODUCTVERSION 2,5,0,4
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -2131,12 +2136,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "Washington State Department of Transportation"
             VALUE "FileDescription", "PGSuper"
-            VALUE "FileVersion", "2.5.0.3"
+            VALUE "FileVersion", "2.5.0.4"
             VALUE "InternalName", "PGSuper"
             VALUE "LegalCopyright", "Copyright © 1999-2011, Washington State Department of Transportation, All Rights Reserved"
             VALUE "OriginalFilename", "PGSuperAppPlugin.DLL"
             VALUE "ProductName", "PGSuper"
-            VALUE "ProductVersion", "2.5.0.3"
+            VALUE "ProductVersion", "2.5.0.4"
         END
     END
     BLOCK "VarFileInfo"
@@ -2269,10 +2274,10 @@ BEGIN
     IDD_COPY_GIRDER_PROPERTIES, DIALOG
     BEGIN
         LEFTMARGIN, 7
-        RIGHTMARGIN, 280
+        RIGHTMARGIN, 340
         VERTGUIDE, 17
         TOPMARGIN, 7
-        BOTTOMMARGIN, 183
+        BOTTOMMARGIN, 247
     END
 
     IDD_SECTION_CUT_DIALOG, DIALOG

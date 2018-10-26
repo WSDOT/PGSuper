@@ -237,13 +237,13 @@ HRESULT CDeckRebarData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
       else
       {
          var.vt = VT_I4;
-         pStrLoad->get_Property(_T("BottomRebarType"),&var);
+         pStrLoad->get_Property(_T("RebarType"),&var);
          rebar.RebarType = matRebar::Type(var.lVal);
 
-         pStrLoad->get_Property(_T("BottomRebarGrade"),&var);
+         pStrLoad->get_Property(_T("RebarGrade"),&var);
          rebar.RebarGrade = matRebar::Grade(var.lVal);
 
-         pStrLoad->get_Property(_T("BottomRebarSize"),&var);
+         pStrLoad->get_Property(_T("RebarSize"),&var);
          rebar.RebarSize = matRebar::Size(var.lVal);
       }
 

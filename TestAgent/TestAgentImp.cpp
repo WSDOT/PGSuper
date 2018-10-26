@@ -135,7 +135,7 @@ bool CTestAgentImp::RunTest(long type,
                             const std::_tstring poiFileName)
 {
    // use run unit tests with numeric labeling
-   pgsGirderLabel::UseAlphaLabel(false);
+   pgsAutoLabel auto_label;
 
    // turn off diagnostics
    DIAG_WARNPOPUP(FALSE);
@@ -254,6 +254,8 @@ bool CTestAgentImp::RunTestEx(long type, const std::vector<SpanGirderHashType>& 
                             const std::_tstring& outputFileName,
                             const std::_tstring poiFileName)
 {
+   pgsAutoLabel auto_label;
+
    // turn off diagnostics
    DIAG_WARNPOPUP(FALSE);
 
@@ -745,7 +747,7 @@ bool CTestAgentImp::RunCombinedLoadActionTest(std::_tofstream& resultsFile, std:
       }
       else
       {
-         bat = (pgsTypes::Simple ? SimpleSpan : ContinuousSpan);
+         bat = (analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan);
          pLsForces->GetMoment( pgsTypes::StrengthI, pgsTypes::BridgeSite3, poi, bat, &min, &max );
          resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 34000, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(max, unitMeasure::NewtonMillimeter)) <<_T(", 8, ")<<gdr<<std::endl;
          resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 34001, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(min, unitMeasure::NewtonMillimeter)) <<_T(", 8, ")<<gdr<<std::endl;

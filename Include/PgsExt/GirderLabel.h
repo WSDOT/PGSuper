@@ -41,3 +41,12 @@ private:
    pgsGirderLabel(void);
    ~pgsGirderLabel(void);
 };
+
+class pgsAutoLabel
+{
+public:
+   pgsAutoLabel() { m_bOldSetting = pgsGirderLabel::UseAlphaLabel(false); }
+   ~pgsAutoLabel() { pgsGirderLabel::UseAlphaLabel(m_bOldSetting); }
+private:
+   bool m_bOldSetting;
+};

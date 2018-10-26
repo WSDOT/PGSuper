@@ -88,8 +88,14 @@ void CCopyGirderDlg::DoDataExchange(CDataExchange* pDX)
       m_FromSpanGirderHashValue = GetFromSpanGirder();
       m_ToSpanGirderHashValues  = GetToSpanGirders();
    }
+   else
+   {
+      // start with combo box for To girder
+      CButton* pBut = (CButton*)GetDlgItem(IDC_RADIO1);
+      pBut->SetCheck(BST_CHECKED);
+      GetDlgItem(IDC_SELECT_GIRDERS)->EnableWindow(false);
+   }
 }
-
 
 BEGIN_MESSAGE_MAP(CCopyGirderDlg, CDialog)
 	//{{AFX_MSG_MAP(CCopyGirderDlg)
@@ -104,7 +110,10 @@ BEGIN_MESSAGE_MAP(CCopyGirderDlg, CDialog)
 	ON_BN_CLICKED(ID_HELP, OnHelp)
 	ON_BN_CLICKED(IDC_COPY_MATERIAL, OnCopyMaterial)
 	ON_BN_CLICKED(IDC_COPY_GIRDER, OnCopyGirder)
+   ON_BN_CLICKED(IDC_RADIO1, &CCopyGirderDlg::OnBnClickedRadio)
+   ON_BN_CLICKED(IDC_RADIO2, &CCopyGirderDlg::OnBnClickedRadio)
 	//}}AFX_MSG_MAP
+   ON_BN_CLICKED(IDC_SELECT_GIRDERS, &CCopyGirderDlg::OnBnClickedSelectGirders)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -354,46 +363,57 @@ SpanGirderHashType CCopyGirderDlg::GetFromSpanGirder()
 
 std::vector<SpanGirderHashType> CCopyGirderDlg::GetToSpanGirders()
 {
-   GET_IFACE(IBridge,pBridge);
-
    std::vector<SpanGirderHashType> vec;
-   SpanIndexType firstSpan, lastSpan;
-   int sel = m_ToSpan.GetCurSel();
-   firstSpan = (SpanIndexType)m_ToSpan.GetItemData(sel);
-   if ( firstSpan == ALL_SPANS )
-   {
-      firstSpan = 0;
-      lastSpan = pBridge->GetSpanCount()-1;
-   }
-   else
-   {
-      lastSpan = firstSpan;
-   }
 
-   for ( SpanIndexType spanIdx = firstSpan; spanIdx <= lastSpan; spanIdx++ )
+   // See which control to get data from
+   BOOL enab_combo = IsDlgButtonChecked(IDC_RADIO1) == BST_CHECKED ? TRUE : FALSE;
+
+   if (enab_combo)
    {
-      GirderIndexType firstGdr, lastGdr;
-      sel = m_ToGirder.GetCurSel();
-      firstGdr = (GirderIndexType)m_ToGirder.GetItemData(sel);
-      if ( firstGdr == ALL_GIRDERS )
+      GET_IFACE(IBridge,pBridge);
+      SpanIndexType firstSpan, lastSpan;
+      int sel = m_ToSpan.GetCurSel();
+      firstSpan = (SpanIndexType)m_ToSpan.GetItemData(sel);
+      if ( firstSpan == ALL_SPANS )
       {
-         firstGdr = 0;
-         lastGdr = pBridge->GetGirderCount(spanIdx)-1;
+         firstSpan = 0;
+         lastSpan = pBridge->GetSpanCount()-1;
       }
       else
       {
-         lastGdr = firstGdr;
+         lastSpan = firstSpan;
       }
 
-      for (GirderIndexType gdrIdx = firstGdr; gdrIdx <= lastGdr; gdrIdx++ )
+      for ( SpanIndexType spanIdx = firstSpan; spanIdx <= lastSpan; spanIdx++ )
       {
-         GirderIndexType realGdrIdx = gdrIdx;
-         GirderIndexType nGirders = pBridge->GetGirderCount(spanIdx);
-         if ( nGirders <= gdrIdx )
-            realGdrIdx = nGirders-1;
+         GirderIndexType firstGdr, lastGdr;
+         sel = m_ToGirder.GetCurSel();
+         firstGdr = (GirderIndexType)m_ToGirder.GetItemData(sel);
+         if ( firstGdr == ALL_GIRDERS )
+         {
+            firstGdr = 0;
+            lastGdr = pBridge->GetGirderCount(spanIdx)-1;
+         }
+         else
+         {
+            lastGdr = firstGdr;
+         }
 
-         vec.push_back( HashSpanGirder(spanIdx,realGdrIdx) );
+         for (GirderIndexType gdrIdx = firstGdr; gdrIdx <= lastGdr; gdrIdx++ )
+         {
+            GirderIndexType realGdrIdx = gdrIdx;
+            GirderIndexType nGirders = pBridge->GetGirderCount(spanIdx);
+            if ( nGirders <= gdrIdx )
+               realGdrIdx = nGirders-1;
+
+            vec.push_back( HashSpanGirder(spanIdx,realGdrIdx) );
+         }
       }
+   }
+   else
+   {
+      // data is in grid
+      vec = m_MultiDialogSelections;
    }
 
    return vec;
@@ -424,11 +444,6 @@ void CCopyGirderDlg::OnCopyLongitudinalRebar()
    UpdateApply();
 }
 
-void CCopyGirderDlg::UpdateButtons() 
-{
-	
-}
-
 void CCopyGirderDlg::OnHelp()
 {
    ::HtmlHelp( *this, AfxGetApp()->m_pszHelpFilePath, HH_HELP_CONTEXT, IDH_DIALOG_COPYGDRPROPERTIES );
@@ -442,4 +457,35 @@ void CCopyGirderDlg::OnCopyMaterial()
 void CCopyGirderDlg::OnCopyGirder() 
 {
    UpdateApply();	
+}
+
+void CCopyGirderDlg::OnBnClickedRadio()
+{
+   BOOL enab_sgl = IsDlgButtonChecked(IDC_RADIO1) == BST_CHECKED ? TRUE : FALSE;
+   BOOL enab_mpl = enab_sgl ? FALSE : TRUE;
+
+   GetDlgItem(IDC_TO_SPAN)->EnableWindow(enab_sgl);
+   GetDlgItem(IDC_TO_GIRDER)->EnableWindow(enab_sgl);
+
+   GetDlgItem(IDC_SELECT_GIRDERS)->EnableWindow(enab_mpl);
+
+   CopyToSelectionChanged();
+}
+
+void CCopyGirderDlg::OnBnClickedSelectGirders()
+{
+   CMultiGirderSelectDlg dlg;
+   dlg.m_SelGdrs = m_MultiDialogSelections;
+
+   if (dlg.DoModal()==IDOK)
+   {
+      // update button text
+      CString msg;
+      msg.Format(_T("Select Girders\n(%d Selected)"), dlg.m_SelGdrs.size());
+      GetDlgItem(IDC_SELECT_GIRDERS)->SetWindowText(msg);
+
+      m_MultiDialogSelections = dlg.m_SelGdrs;
+
+      CopyToSelectionChanged();
+   }
 }

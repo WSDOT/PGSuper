@@ -231,6 +231,8 @@ void CBridgeDescDeckDetailsPage::DoDataExchange(CDataExchange* pDX)
       {
          // Slab offset is span-by-span or girder-by-girder. Have user adjust the slab depth if it doesn't
          // fit with the current values for slab offset.
+         
+         pParent->m_BridgeDesc.SetSlabOffsetType(pgsTypes::sotGirder); // force to girder-by-girder
 
          Float64 maxSlabOffset = pParent->m_BridgeDesc.GetMaxSlabOffset();
 

@@ -4622,20 +4622,14 @@ void CBridgeAgentImp::GetStationAndOffset(const pgsPointOfInterest& poi,Float64*
 {
    SpanIndexType span  = poi.GetSpan();
    GirderIndexType gdr = poi.GetGirder();
-
-   Float64 gdr_end_dist = GetGirderStartConnectionLength(span,gdr);
-   Float64 brg_offset = GetGirderStartBearingOffset(span,gdr);
-   GetStationAndOffset(span,gdr,poi.GetDistFromStart()+brg_offset - gdr_end_dist,pStation,pOffset);
+   GetStationAndOffset(span,gdr,poi.GetDistFromStart(),pStation,pOffset);
 }
 
 Float64 CBridgeAgentImp::GetDistanceFromStartOfBridge(const pgsPointOfInterest& poi)
 {
    SpanIndexType span  = poi.GetSpan();
    GirderIndexType gdr = poi.GetGirder();
-
-   Float64 gdr_end_dist = GetGirderStartConnectionLength(span,gdr);
-   Float64 brg_offset = GetGirderStartBearingOffset(span,gdr);
-   return GetDistanceFromStartOfBridge(span,gdr,poi.GetDistFromStart()+brg_offset - gdr_end_dist);
+   return GetDistanceFromStartOfBridge(span,gdr,poi.GetDistFromStart());
 }
 
 Float64 CBridgeAgentImp::GetDistanceFromStartOfBridge(SpanIndexType span,GirderIndexType gdr,Float64 distFromStartOfSpan)
@@ -5208,24 +5202,28 @@ std::vector<IntermedateDiaphragm> CBridgeAgentImp::GetIntermediateDiaphragms(pgs
                // determine length (width) of the diaphragm
                Float64 W = 0;
                WebIndexType nWebs = pGirder->GetNumberOfWebs(spanIdx,gdrIdx);
-               SpacingIndexType nSpaces = nWebs-1;
 
-               // add up the spacing between the centerlines of webs in the girder cross section
-               for ( SpacingIndexType spaceIdx = 0; spaceIdx < nSpaces; spaceIdx++ )
+               if ( 1 < nWebs )
                {
-                  Float64 s = pGirder->GetWebSpacing(poi,spaceIdx);
-                  W += s;
-               }
+                  SpacingIndexType nSpaces = nWebs-1;
 
-               // deduct the thickness of the webs
-               for ( WebIndexType webIdx = 0; webIdx < nWebs; webIdx++ )
-               {
-                  Float64 t = pGirder->GetWebThickness(poi,webIdx);
+                  // add up the spacing between the centerlines of webs in the girder cross section
+                  for ( SpacingIndexType spaceIdx = 0; spaceIdx < nSpaces; spaceIdx++ )
+                  {
+                     Float64 s = pGirder->GetWebSpacing(poi,spaceIdx);
+                     W += s;
+                  }
 
-                  if ( webIdx == 0 || webIdx == nWebs-1 )
-                     W -= t/2;
-                  else
-                     W -= t;
+                  // deduct the thickness of the webs
+                  for ( WebIndexType webIdx = 0; webIdx < nWebs; webIdx++ )
+                  {
+                     Float64 t = pGirder->GetWebThickness(poi,webIdx);
+
+                     if ( webIdx == 0 || webIdx == nWebs-1 )
+                        W -= t/2;
+                     else
+                        W -= t;
+                  }
                }
 
                diaphragm.W = W/cos(skew);
@@ -5304,30 +5302,33 @@ std::vector<IntermedateDiaphragm> CBridgeAgentImp::GetIntermediateDiaphragms(pgs
             {
                if ( diaphragm.m_bCompute )
                {
-                  // determine length (width) of the diaphragm
-                  Float64 W = 0;
-                  WebIndexType nWebs = pGirder->GetNumberOfWebs(spanIdx,gdrIdx);
-                  SpacingIndexType nSpaces = nWebs-1;
+                     // determine length (width) of the diaphragm
+                     Float64 W = 0;
+                     WebIndexType nWebs = pGirder->GetNumberOfWebs(spanIdx,gdrIdx);
+                     if ( 1 < nWebs )
+                     {
+                     SpacingIndexType nSpaces = nWebs-1;
 
-                  // add up the spacing between the centerlines of webs in the girder cross section
-                  for ( SpacingIndexType spaceIdx = 0; spaceIdx < nSpaces; spaceIdx++ )
-                  {
-                     Float64 s = pGirder->GetWebSpacing(poi,spaceIdx);
-                     W += s;
+                     // add up the spacing between the centerlines of webs in the girder cross section
+                     for ( SpacingIndexType spaceIdx = 0; spaceIdx < nSpaces; spaceIdx++ )
+                     {
+                        Float64 s = pGirder->GetWebSpacing(poi,spaceIdx);
+                        W += s;
+                     }
+
+                     // deduct the thickness of the webs
+                     for ( WebIndexType webIdx = 0; webIdx < nWebs; webIdx++ )
+                     {
+                        Float64 t = pGirder->GetWebThickness(poi,webIdx);
+
+                        if ( webIdx == 0 || webIdx == nWebs-1 )
+                           W -= t/2;
+                        else
+                           W -= t;
+                     }
+
+                     diaphragm.W = W/cos(skew);
                   }
-
-                  // deduct the thickness of the webs
-                  for ( WebIndexType webIdx = 0; webIdx < nWebs; webIdx++ )
-                  {
-                     Float64 t = pGirder->GetWebThickness(poi,webIdx);
-
-                     if ( webIdx == 0 || webIdx == nWebs-1 )
-                        W -= t/2;
-                     else
-                        W -= t;
-                  }
-
-                  diaphragm.W = W/cos(skew);
                }
 
                diaphragms.push_back(diaphragm);
@@ -10867,8 +10868,11 @@ Float64 CBridgeAgentImp::GetTributaryFlangeWidth(const pgsPointOfInterest& poi)
 
    if ( IsCompositeDeck() )
    {
-       HRESULT hr = m_EffFlangeWidthTool->TributaryFlangeWidth(m_Bridge,poi.GetSpan(),poi.GetGirder(),poi.GetDistFromStart(),&tfw);
-       ATLASSERT(SUCCEEDED(hr));
+      SpanIndexType spanIdx = poi.GetSpan();
+      GirderIndexType gdrIdx = poi.GetGirder();
+      Float64 dist_from_start_of_girder = poi.GetDistFromStart();
+      HRESULT hr = m_EffFlangeWidthTool->TributaryFlangeWidth(m_Bridge,spanIdx,gdrIdx,dist_from_start_of_girder,&tfw);
+      ATLASSERT(SUCCEEDED(hr));
    }
 
    return tfw;
@@ -10890,8 +10894,11 @@ Float64 CBridgeAgentImp::GetEffectiveFlangeWidth(const pgsPointOfInterest& poi)
 
       if ( IsCompositeDeck() )
       {
-          HRESULT hr = m_EffFlangeWidthTool->EffectiveFlangeWidth(m_Bridge,poi.GetSpan(),poi.GetGirder(),poi.GetDistFromStart(),&efw);
-          ATLASSERT(SUCCEEDED(hr));
+         SpanIndexType spanIdx = poi.GetSpan();
+         GirderIndexType gdrIdx = poi.GetGirder();
+         Float64 dist_from_start_of_girder = poi.GetDistFromStart();
+         HRESULT hr = m_EffFlangeWidthTool->EffectiveFlangeWidth(m_Bridge,spanIdx,gdrIdx,dist_from_start_of_girder,&efw);
+         ATLASSERT(SUCCEEDED(hr));
       }
    }
    else

@@ -1008,13 +1008,22 @@ void pgsDesigner2::CheckGirderStresses(SpanIndexType span,GirderIndexType gdr,AL
 
    Float64 AsMax = 0;
 
-   BridgeAnalysisType bat;
+   BridgeAnalysisType batTop, batBottom;
    if ( analysisType == pgsTypes::Simple )
-      bat = SimpleSpan;
+   {
+      batTop    = SimpleSpan;
+      batBottom = SimpleSpan;
+   }
    else if ( analysisType == pgsTypes::Continuous )
-      bat = ContinuousSpan;
+   {
+      batTop    = ContinuousSpan;
+      batBottom = ContinuousSpan;
+   }
    else
-      bat = MaxSimpleContinuousEnvelope;
+   {
+      batTop    = MaxSimpleContinuousEnvelope;
+      batBottom = MinSimpleContinuousEnvelope;
+   }
 
    GET_IFACE(IStageMap,pStageMap);
    GET_IFACE(IProgress, pProgress);
@@ -1037,12 +1046,12 @@ void pgsDesigner2::CheckGirderStresses(SpanIndexType span,GirderIndexType gdr,AL
 
       // get girder stress due to external loads (top)
       Float64 fTopLimitStateMin, fTopLimitStateMax;
-      pLimitStateForces->GetStress(task.ls,task.stage,poi,pgsTypes::TopGirder,false,bat,&fTopLimitStateMin,&fTopLimitStateMax);
+      pLimitStateForces->GetStress(task.ls,task.stage,poi,pgsTypes::TopGirder,false,batTop,&fTopLimitStateMin,&fTopLimitStateMax);
       Float64 fTopLimitState = (task.type == pgsTypes::Compression ? fTopLimitStateMin : fTopLimitStateMax );
 
       // get girder stress due to external loads (bottom)
       Float64 fBotLimitStateMin, fBotLimitStateMax;
-      pLimitStateForces->GetStress(task.ls,task.stage,poi,pgsTypes::BottomGirder,false,bat,&fBotLimitStateMin,&fBotLimitStateMax);
+      pLimitStateForces->GetStress(task.ls,task.stage,poi,pgsTypes::BottomGirder,false,batBottom,&fBotLimitStateMin,&fBotLimitStateMax);
       Float64 fBotLimitState = (task.type == pgsTypes::Compression ? fBotLimitStateMin : fBotLimitStateMax );
 
       // get allowable stress
@@ -1440,14 +1449,17 @@ void pgsDesigner2::CheckUltimateShearCapacity( const pgsPointOfInterest& poi, co
       GET_IFACE(IStirrupGeometry,pStirrupGeom);
 
       // the shear reinforcement must be at least as much as at the critical section
+      // See LRFD C5.8.3.2 (since the stress in the stirrups doesn't change between
+      // the support and the critical section, there should be at least as much 
+      // reinforcement between the end and the CS as there is at the CS)
       Float64 AvS_provided = scd.Av/scd.S;
       Float64 AvS_at_CS;
       if ( !m_bLeftCS_StrutAndTieRequired && poi.GetDistFromStart() < m_LeftCS )
       {
          pgsPointOfInterest poiCS(poi);
          poiCS.SetDistFromStart(m_LeftCS);
-         Uint32 nl  = pStirrupGeom->GetVertStirrupBarCount(poi);
-         Float64 Av = pStirrupGeom->GetVertStirrupBarArea(poi)*nl;
+         Uint32 nl  = pStirrupGeom->GetVertStirrupBarCount(poiCS);
+         Float64 Av = pStirrupGeom->GetVertStirrupBarArea(poiCS)*nl;
          Float64 S  = pStirrupGeom->GetS(poi);
          AvS_at_CS = Av/S;
          pArtifact->SetEndSpacing(pgsTypes::metStart,AvS_provided,AvS_at_CS);
@@ -1456,8 +1468,8 @@ void pgsDesigner2::CheckUltimateShearCapacity( const pgsPointOfInterest& poi, co
       {
          pgsPointOfInterest poiCS(poi);
          poiCS.SetDistFromStart(m_RightCS);
-         Uint32 nl  = pStirrupGeom->GetVertStirrupBarCount(poi);
-         Float64 Av = pStirrupGeom->GetVertStirrupBarArea(poi)*nl;
+         Uint32 nl  = pStirrupGeom->GetVertStirrupBarCount(poiCS);
+         Float64 Av = pStirrupGeom->GetVertStirrupBarArea(poiCS)*nl;
          Float64 S  = pStirrupGeom->GetS(poi);
          AvS_at_CS = Av/S;
          pArtifact->SetEndSpacing(pgsTypes::metEnd,AvS_provided,AvS_at_CS);
@@ -2090,7 +2102,6 @@ void pgsDesigner2::CheckConfinement( SpanIndexType span,GirderIndexType gdr, Uin
 
    // determine if we even need to check this
    Float64 gird_length  = pBridge->GetGirderLength(span, gdr);
-   Float64 gird_length2 = gird_length/2.;
 
    // NOTE: This d is defined differently than in 5.10.10.2 of the 2nd 
    //       edition of the spec. We think what they really meant to say 
@@ -2104,16 +2115,20 @@ void pgsDesigner2::CheckConfinement( SpanIndexType span,GirderIndexType gdr, Uin
    Float64 zone_end   = pStirrupGeometry->GetZoneEnd(span,gdr,zoneNum);
    pArtifact->SetZoneEnd(zone_end);
 
-   // mirror zones to check for applicability
-   if (zone_end > gird_length2)
-      zone_end = gird_length-zone_end;
-
-   if (zone_start > gird_length2)
-      zone_start = gird_length-zone_start;
-
+   // We are applicable if either end of the zone encroaches into confinement zone
    // tolerance check to 1mm so we don't get hosed by numerics
    Float64 tol = ::ConvertToSysUnits(1.0,unitMeasure::Millimeter);
-   bool is_app = zl+tol>zone_start || zl+tol>zone_end;
+
+   bool is_app = false;
+   if (zone_start+tol < zl) // left confinement zone
+   {
+      is_app = true;
+   }
+   else if (zone_end-tol > gird_length-zl) // right confinement zone
+   {
+      is_app = true;
+   }
+
    pArtifact->SetApplicability(is_app);
 
    // determine current stirrup config

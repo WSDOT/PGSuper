@@ -1,0 +1,16 @@
+ RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Nh   To   Fci    Fc      fcomp   ftens   ultMom LLDFmo LLDFsh Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ---- ------ ------  ------- -------- ------ ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 14.25   1 12.00     1     1 U54G6  *    78   5/8  270 14.88  3.45  22 50.0  5.500 10.600    7.348   -4.502  12404  1.000  1.000  0.34 -0.25  0.00 -0.04 -0.29 343.95 553.42   3.00   4.50   4.50
+
+
+The Specification Check was Successful
+
+
+ RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Nh   To   Fci    Fc      fcomp   ftens   ultMom LLDFmo LLDFsh Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ---- ------ ------  ------- -------- ------ ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 14.25   1 12.00     2     1 U54G6  *    78   5/8  270 14.88  3.45  22 50.0  5.500 10.600    7.348   -4.502  12404  1.000  1.000  0.34 -0.25  0.00 -0.04 -0.29 343.95 553.42   3.00   4.50   4.50
+
+
+The Specification Check was Successful
+
+

@@ -2552,15 +2552,15 @@ Uint32 CEngAgentImp::GetNumberOfDesignLanesEx(SpanIndexType spanIdx,Float64* pDi
 
    Float64 curb_to_curb_width;
 
-   if ( width1 < width2 )
+   if ( width2 < width1 )
    {
       curb_to_curb_width = width1;
-      *pDistToSection = (prev_pier_station - start_bridge_station) + loc1;
+      *pDistToSection = loc1;
    }
    else
    {
       curb_to_curb_width = width2;
-      *pDistToSection = (prev_pier_station - start_bridge_station) + loc2;
+      *pDistToSection = loc2;
    }
 
    *pCurbToCurb = curb_to_curb_width;

@@ -196,7 +196,7 @@ HRESULT CReporterImp::InitReportBuilders()
 
    // Multi-Girder Spec Summary
    pRptBuilder = new CReportBuilder(_T("Multi-Girder Spec Check Summary"));
-   pRptBuilder->AddTitlePageBuilder( boost::shared_ptr<CTitlePageBuilder>(new CPGSuperTitlePageBuilder(m_pBroker,pRptBuilder->GetName())) );
+   pRptBuilder->AddTitlePageBuilder( boost::shared_ptr<CTitlePageBuilder>(new CPGSuperTitlePageBuilder(m_pBroker,pRptBuilder->GetName(),false)) );
    pRptBuilder->SetReportSpecificationBuilder( pMultiGirderRptSpecBuilder );
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CSpecCheckSummaryChapterBuilder(false)) );
    pRptMgr->AddReportBuilder( pRptBuilder );

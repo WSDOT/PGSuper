@@ -26,8 +26,8 @@
 <meta name=filetype content=kadov>
 <meta name=filetype-version content=1>
 <meta name=page-count content=1>
-<meta name=layout-height content=1364>
-<meta name=layout-width content=921>
+<meta name=layout-height content=1390>
+<meta name=layout-width content=993>
 
 
 <!--(Links)=========================================================-->
@@ -107,25 +107,25 @@
 
 <p>The equations in LRFD 4.6.2.2 may be used to compute distribution factors 
  as long as &quot;Beams are parallel and have approximately the same stiffness&quot;. 
- However, no guidance is given as to when girders are &quot;parallel&quot;. 
- Enter the maximum allowable angular deviation between girder where you 
- consider girders to be &quot;parallel&quot;. </p>
+ However, no guidance is given as to when girders are not parallel. Enter 
+ the maximum allowable angular deviation between girder where you consider 
+ girders to be &quot;parallel&quot;. </p>
 
 <h3><span>Maximum Girder Stiffness Ratio</span></h3>
 
 <p>The equations in LRFD 4.6.2.2 may be used to compute distribution factors 
  as long as &quot;Beams are parallel and have approximately the same stiffness&quot;. 
- However, no definition is given for &quot;same stiffness&quot;. Enter 
- the maximum percentage that Ix can vary between girders in a span.</p>
+ However, no definition is given for &quot;approximately the same stiffness&quot;. 
+ Enter the maximum percentage that Ix can vary between girders in a span.</p>
 
 <h3><span>Location to Measure Girder Spacing For Distribution Factors</span></h3>
 
 <p>Enter the fractional distance, measured from the ends of a girder's 
  span, for the location(s) where girder spacing is to be measured in order 
- to determine the value of S in distribution factor equations.PGSuper will 
- use the location of maximum deck width to determine the spacing used to 
- compute distribution factors. Some other notes about spacing used to compute 
- </p>
+ to determine the value of S and d<span style="vertical-align: Sub;">e</span> 
+ in distribution factor equations. PGSuper will use the location of maximum 
+ deck width to determine the spacing used to compute distribution factors. 
+ Some other notes about spacing used to compute </p>
 
 <ul style="list-style: disc;"
 	type=disc>
@@ -133,14 +133,17 @@
 	<li class=kadov-p><p>Spacings are measured normal to the alignment 
  at the stationing of the location determined above.</p></li>
 	
-	<li class=kadov-p><p><!--kadov_tag{{<spaces>}}-->&nbsp;<!--kadov_tag{{</spaces>}}-->Most 
- LRFD distribution factor methods use a single value (S) for girder spacing 
- as a parameter. However, PGSuper allows spacing to vary (splay), if desired. 
- If the spacings to the left and right side of the girder are different, 
- PGSuper will use the average of the two adjacent spacings where a single 
- value is needed. The actual spacings are used when using the lever rule 
- or statical method.</p></li>
+	<li class=kadov-p><p>Most LRFD distribution factor methods use a single 
+ value (S) for girder spacing as a parameter. However, PGSuper allows spacing 
+ to vary (splay), if desired. If the spacings to the left and right side 
+ of the girder are different, PGSuper will use the average of the two adjacent 
+ spacings where a single value is needed. The actual spacings are used 
+ when using the lever rule or statical method.</p></li>
 </ul>
+
+<p>If the fractional distance is not 0.5, the width of the bridge is evaluated 
+ at two locations. If the width of the bridge is the same at both locations, 
+ the section that is nearest the start of the span will be used.</p>
 
 <p>Note that PGSuper allows you to directly input, or override how distribution 
  factors are computed for a project. See the <a href="../../Dialogs/Live_Load_Distibution_Factors.htm">Live 

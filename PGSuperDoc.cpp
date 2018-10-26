@@ -1040,14 +1040,15 @@ void CPGSuperDoc::OnCreateFinalize()
 
       // get the text string from the email command
       CString strEmail;
-      pFileMenu->GetMenuString(ID_FILE_SEND_MAIL,strEmail,MF_BYCOMMAND);
+      if ( pFileMenu->GetMenuString(ID_FILE_SEND_MAIL,strEmail,MF_BYCOMMAND) )
+      {
+         // find the position of the email command
+         UINT emailPos = pFileMenu->FindMenuItem(strEmail);
 
-      // find the position of the email command
-      UINT emailPos = pFileMenu->FindMenuItem(strEmail);
-
-      // remove the email command and the adjacent separator
-      pFileMenu->RemoveMenu(emailPos,MF_BYPOSITION,NULL);
-      pFileMenu->RemoveMenu(emailPos,MF_BYPOSITION,NULL);
+         // remove the email command and the adjacent separator
+         pFileMenu->RemoveMenu(emailPos,MF_BYPOSITION,NULL);
+         pFileMenu->RemoveMenu(emailPos,MF_BYPOSITION,NULL);
+      }
    }
 
    // Set the autocalc state on the status bar
@@ -2231,7 +2232,7 @@ void CPGSuperDoc::OnCopyGirderProps()
 
 void CPGSuperDoc::OnApplyCopyGirder(SpanGirderHashType fromHash,std::vector<SpanGirderHashType> toHash,BOOL bGirder,BOOL bTransverse,BOOL bLongitudinalRebar,BOOL bPrestress,BOOL bHandling, BOOL bMaterial, BOOL bSlabOffset)
 {
-   if (!(bGirder || bTransverse || bPrestress || bLongitudinalRebar || bHandling || bMaterial))
+   if (!(bGirder || bTransverse || bPrestress || bLongitudinalRebar || bHandling || bMaterial || bSlabOffset))
       return; //nothing to do
 
    txnCopyGirder* pTxn = new txnCopyGirder(fromHash,toHash,bGirder,bTransverse,bLongitudinalRebar,bPrestress,bHandling,bMaterial,bSlabOffset);

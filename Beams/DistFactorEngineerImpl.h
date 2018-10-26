@@ -701,10 +701,12 @@ void CDistFactorEngineerImpl<T>::GetGirderSpacingAndOverhang(SpanIndexType span,
    Float64 loc2 = (1-span_fraction_for_girder_spacing)*span_length;
 
    Float64 ctrl_loc_from_gdr;
-   if ( dist_to_section_along_cl_span <= pBridge->GetSpanLength(span) )
-      ctrl_loc_from_gdr = loc1;
+   if ( dist_to_section_along_cl_span <= pBridge->GetSpanLength(span)/2 )
+      ctrl_loc_from_gdr = min(loc1,loc2);
    else
-      ctrl_loc_from_gdr = loc2;
+      ctrl_loc_from_gdr = max(loc1,loc2);
+
+   ctrl_loc_from_gdr += pBridge->GetGirderStartConnectionLength(span,gdr);
 
    pgsPointOfInterest ctrl_poi(span,gdr,ctrl_loc_from_gdr);
 

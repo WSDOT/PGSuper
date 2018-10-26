@@ -55,7 +55,7 @@ inline CString FormatOffset(double offset,const unitmgtLengthData& indirectMeasu
    std::_tstring str = format_tool.AsString( offset );
    CString strOffset;
    if ( offset < 0 )
-      strOffset.Format(_T("%*.*f L"),indirectMeasure.Width,indirectMeasure.Precision, offset );
+      strOffset.Format(_T("%*.*f L"),indirectMeasure.Width,indirectMeasure.Precision, -offset );
    else if ( 0 < offset )
       strOffset.Format(_T("%*.*f R"),indirectMeasure.Width,indirectMeasure.Precision, offset );
    else

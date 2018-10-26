@@ -227,6 +227,8 @@ void CTxDOTAgentImp::ProcessTxDotCad(const CTxDOTCommandLineInfo& rCmdInfo)
 
    ASSERT(rCmdInfo.m_DoTxCadReport);
 
+   pgsAutoLabel auto_label;
+
 
    if (rCmdInfo.m_TxGirder != TXALLGIRDERS && 
        rCmdInfo.m_TxGirder != TXEIGIRDERS && 
@@ -430,7 +432,9 @@ bool CTxDOTAgentImp::DoTxDotCadReport(const CString& outputFileName, const CStri
    CEAFAutoProgress ap(pProgress);
 
    // Loop over all span/girder combos and create results
-   for(std::vector<SpanGirderHashType>::iterator it=spn_grd_list.begin(); it!=spn_grd_list.end(); it++)
+   std::vector<SpanGirderHashType>::iterator it(spn_grd_list.begin());
+   std::vector<SpanGirderHashType>::iterator end(spn_grd_list.end());
+   for( ; it != end; it++)
    {
       SpanGirderHashType key = *it;
       SpanIndexType span;

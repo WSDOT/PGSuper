@@ -31,6 +31,7 @@
 
 #include "resource.h"
 #include <vector>
+#include "MultiGirderSelectDlg.h"
 
 /////////////////////////////////////////////////////////////////////////////
 // CCopyGirderDlg dialog
@@ -105,6 +106,8 @@ protected:
    afx_msg void OnHelp();
 	afx_msg void OnCopyMaterial();
 	afx_msg void OnCopyGirder();
+   afx_msg void OnBnClickedRadio();
+   afx_msg void OnBnClickedSelectGirders();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 
@@ -112,15 +115,17 @@ protected:
 
    void CopyToSelectionChanged();
    void UpdateApply();
-   void UpdateButtons();
    CPGSuperDoc* m_pDoc;
    IBroker* m_pBroker;
 
    void FillComboBoxes(CComboBox& cbSpan,CComboBox& cbGirder, bool bIncludeAllSpanGirder);
    void FillGirderComboBox(CComboBox& cbGirder,SpanIndexType spanIdx,bool bIncludeAll);
 
-   std::map<int,SpanGirderHashType> m_ToListIndicies;
    std::map<int,SpanGirderHashType> m_FromListIndicies;
+
+private:
+   // map from multi-select dialog
+   std::vector<SpanGirderHashType> m_MultiDialogSelections;
 };
 
 //{{AFX_INSERT_LOCATION}}

@@ -2084,78 +2084,82 @@ void CBridgePlanView::BuildDiaphragmDisplayObjects()
          {
             IntermedateDiaphragm left_diaphragm  = *left_iter;
             IntermedateDiaphragm right_diaphragm = *right_iter;
-            
-            double station, offset;
-            pBridge->GetStationAndOffset(pgsPointOfInterest(spanIdx,gdrIdx,left_diaphragm.Location),&station,&offset);
 
-            CComPtr<IDirection> normal;
-            pAlignment->GetBearingNormal(station,&normal);
-            CComPtr<IPoint2d> pntLeft;
-            pAlignment->GetPoint(station,offset,normal,&pntLeft);
+            // Only add the diaphragm if it has width
+            if ( !IsZero(left_diaphragm.W) && !IsZero(right_diaphragm.W) )
+            {
+               double station, offset;
+               pBridge->GetStationAndOffset(pgsPointOfInterest(spanIdx,gdrIdx,left_diaphragm.Location),&station,&offset);
 
-            pBridge->GetStationAndOffset(pgsPointOfInterest(spanIdx,gdrIdx+1,right_diaphragm.Location),&station,&offset);
-            normal.Release();
-            pAlignment->GetBearingNormal(station,&normal);
-            CComPtr<IPoint2d> pntRight;
-            pAlignment->GetPoint(station,offset,normal,&pntRight);
+               CComPtr<IDirection> normal;
+               pAlignment->GetBearingNormal(station,&normal);
+               CComPtr<IPoint2d> pntLeft;
+               pAlignment->GetPoint(station,offset,normal,&pntLeft);
 
-            // create a point on the left side of the diaphragm
-            CComPtr<iPointDisplayObject> doLeft;
-            doLeft.CoCreateInstance(CLSID_PointDisplayObject);
-            doLeft->SetPosition(pntLeft,FALSE,FALSE);
-            CComQIPtr<iConnectable> connectable1(doLeft);
-            CComPtr<iSocket> socket1;
-            connectable1->AddSocket(0,pntLeft,&socket1);
+               pBridge->GetStationAndOffset(pgsPointOfInterest(spanIdx,gdrIdx+1,right_diaphragm.Location),&station,&offset);
+               normal.Release();
+               pAlignment->GetBearingNormal(station,&normal);
+               CComPtr<IPoint2d> pntRight;
+               pAlignment->GetPoint(station,offset,normal,&pntRight);
 
-            // create a point on the right side of the diaphragm
-            CComPtr<iPointDisplayObject> doRight;
-            doRight.CoCreateInstance(CLSID_PointDisplayObject);
-            doRight->SetPosition(pntRight,FALSE,FALSE);
-            CComQIPtr<iConnectable> connectable2(doRight);
-            CComPtr<iSocket> socket2;
-            connectable2->AddSocket(0,pntRight,&socket2);
+               // create a point on the left side of the diaphragm
+               CComPtr<iPointDisplayObject> doLeft;
+               doLeft.CoCreateInstance(CLSID_PointDisplayObject);
+               doLeft->SetPosition(pntLeft,FALSE,FALSE);
+               CComQIPtr<iConnectable> connectable1(doLeft);
+               CComPtr<iSocket> socket1;
+               connectable1->AddSocket(0,pntLeft,&socket1);
 
-            // create a line for the diaphragm
-            CComPtr<iLineDisplayObject> doDiaphragmLine;
-            doDiaphragmLine.CoCreateInstance(CLSID_LineDisplayObject);
+               // create a point on the right side of the diaphragm
+               CComPtr<iPointDisplayObject> doRight;
+               doRight.CoCreateInstance(CLSID_PointDisplayObject);
+               doRight->SetPosition(pntRight,FALSE,FALSE);
+               CComQIPtr<iConnectable> connectable2(doRight);
+               CComPtr<iSocket> socket2;
+               connectable2->AddSocket(0,pntRight,&socket2);
 
-            CComQIPtr<iConnector> connector(doDiaphragmLine);
-            CComQIPtr<iPlug> startPlug, endPlug;
-            connector->GetStartPlug(&startPlug);
-            connector->GetEndPlug(&endPlug);
+               // create a line for the diaphragm
+               CComPtr<iLineDisplayObject> doDiaphragmLine;
+               doDiaphragmLine.CoCreateInstance(CLSID_LineDisplayObject);
 
-            // connect the line to the points
-            DWORD dwCookie;
-            connectable1->Connect(0,atByID,startPlug,&dwCookie);
-            connectable2->Connect(0,atByID,endPlug,  &dwCookie);
+               CComQIPtr<iConnector> connector(doDiaphragmLine);
+               CComQIPtr<iPlug> startPlug, endPlug;
+               connector->GetStartPlug(&startPlug);
+               connector->GetEndPlug(&endPlug);
 
-            CComPtr<iExtRectangleDrawLineStrategy> strategy;
-            strategy.CoCreateInstance(CLSID_ExtRectangleDrawLineStrategy);
-            strategy->SetColor(DIAPHRAGM_BORDER_COLOR);
-            strategy->SetFillColor(DIAPHRAGM_FILL_COLOR);
-            strategy->SetDoFill(TRUE);
+               // connect the line to the points
+               DWORD dwCookie;
+               connectable1->Connect(0,atByID,startPlug,&dwCookie);
+               connectable2->Connect(0,atByID,endPlug,  &dwCookie);
 
-            double width = (left_diaphragm.T + right_diaphragm.T)/2;
-            strategy->SetLeftOffset(width/2);
-            strategy->SetRightOffset(width/2);
+               CComPtr<iExtRectangleDrawLineStrategy> strategy;
+               strategy.CoCreateInstance(CLSID_ExtRectangleDrawLineStrategy);
+               strategy->SetColor(DIAPHRAGM_BORDER_COLOR);
+               strategy->SetFillColor(DIAPHRAGM_FILL_COLOR);
+               strategy->SetDoFill(TRUE);
 
-            strategy->SetStartExtension(0);
-            strategy->SetEndExtension(0);
+               double width = (left_diaphragm.T + right_diaphragm.T)/2;
+               strategy->SetLeftOffset(width/2);
+               strategy->SetRightOffset(width/2);
 
-            strategy->SetStartSkew(0);
-            strategy->SetEndSkew(0);
+               strategy->SetStartExtension(0);
+               strategy->SetEndExtension(0);
 
-            doDiaphragmLine->SetDrawLineStrategy(strategy);
+               strategy->SetStartSkew(0);
+               strategy->SetEndSkew(0);
 
-            CString strTip;
-            strTip.Format(_T("%s x %s intermediate diaphragm"),::FormatDimension(left_diaphragm.T,pDisplayUnits->GetComponentDimUnit()),::FormatDimension(left_diaphragm.H,pDisplayUnits->GetComponentDimUnit()));
-            doDiaphragmLine->SetMaxTipWidth(TOOLTIP_WIDTH);
-            doDiaphragmLine->SetTipDisplayTime(TOOLTIP_DURATION);
-            doDiaphragmLine->SetToolTipText(strTip);
+               doDiaphragmLine->SetDrawLineStrategy(strategy);
+
+               CString strTip;
+               strTip.Format(_T("%s x %s intermediate diaphragm"),::FormatDimension(left_diaphragm.T,pDisplayUnits->GetComponentDimUnit()),::FormatDimension(left_diaphragm.H,pDisplayUnits->GetComponentDimUnit()));
+               doDiaphragmLine->SetMaxTipWidth(TOOLTIP_WIDTH);
+               doDiaphragmLine->SetTipDisplayTime(TOOLTIP_DURATION);
+               doDiaphragmLine->SetToolTipText(strTip);
 
 
-            CComQIPtr<iDisplayObject> dispObj(doDiaphragmLine);
-            display_list->AddDisplayObject(dispObj);
+               CComQIPtr<iDisplayObject> dispObj(doDiaphragmLine);
+               display_list->AddDisplayObject(dispObj);
+            }
          }
       }
    }
