@@ -774,7 +774,7 @@ void CBridgeDescDeckDetailsPage::OnMoreConcreteProperties()
    dlg.m_ACI.m_A               = pDeck->Concrete.A;
    dlg.m_ACI.m_B               = pDeck->Concrete.B;
    dlg.m_ACI.m_CureMethod      = pDeck->Concrete.CureMethod;
-   dlg.m_ACI.m_CementType      = pDeck->Concrete.CementType;
+   dlg.m_ACI.m_CementType      = pDeck->Concrete.ACI209CementType;
 
    matACI209Concrete concrete;
    concrete.SetTimeAtCasting(0);
@@ -786,7 +786,7 @@ void CBridgeDescDeckDetailsPage::OnMoreConcreteProperties()
    dlg.m_ACI.m_fci = fci;
    dlg.m_ACI.m_fc28 = pDeck->Concrete.Fc;
 
-#pragma Reminder("UPDATE: deal with CEB-FIP concrete models")
+   dlg.m_CEBFIP.m_CementType = pDeck->Concrete.CEBFIPCementType;
 
    if ( dlg.DoModal() == IDOK )
    {
@@ -810,9 +810,9 @@ void CBridgeDescDeckDetailsPage::OnMoreConcreteProperties()
       pDeck->Concrete.A                  = dlg.m_ACI.m_A;
       pDeck->Concrete.B                  = dlg.m_ACI.m_B;
       pDeck->Concrete.CureMethod         = dlg.m_ACI.m_CureMethod;
-      pDeck->Concrete.CementType         = dlg.m_ACI.m_CementType;
+      pDeck->Concrete.ACI209CementType   = dlg.m_ACI.m_CementType;
 
-#pragma Reminder("UPDATE: deal with CEB-FIP concrete models")
+      pDeck->Concrete.CEBFIPCementType   = dlg.m_CEBFIP.m_CementType;
 
       m_strUserEc  = dlg.m_General.m_strUserEc;
       m_ctrlEc.SetWindowText(m_strUserEc);

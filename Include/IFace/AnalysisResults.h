@@ -806,10 +806,10 @@ DEFINE_GUID(IID_IPrecompressedTensileZone,
 interface IPrecompressedTensileZone : IUnknown
 {
    // Returns true of the specified location is in the precompressed tensile zone
-   virtual bool IsInPrecompressedTensileZone(const pgsPointOfInterest& poi,pgsTypes::StressLocation stressLocation,pgsTypes::BridgeAnalysisType bat) = 0;
+   virtual bool IsInPrecompressedTensileZone(const pgsPointOfInterest& poi,pgsTypes::LimitState limitState,pgsTypes::StressLocation stressLocation) = 0;
 
    // Returns true of the specified location is in the precompressed tensile zone
-   virtual bool IsInPrecompressedTensileZone(const pgsPointOfInterest& poi,pgsTypes::StressLocation stressLocation,pgsTypes::BridgeAnalysisType bat, const GDRCONFIG* pConfig) = 0;
+   virtual bool IsInPrecompressedTensileZone(const pgsPointOfInterest& poi,pgsTypes::LimitState limitState,pgsTypes::StressLocation stressLocation,const GDRCONFIG* pConfig) = 0;
 
    // Returns true if the deck is "precompressed". The deck is considered precompressed if
    // it experiences direct stresses due to post-tensioning applied after the deck

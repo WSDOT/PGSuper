@@ -53,7 +53,6 @@
 #include <IFace\StatusCenter.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <IFace\DocumentType.h>
-#include <IFace\Intervals.h>
 #include <IFace\BeamFactory.h>
 
 // tranactions executed by this agent
@@ -7181,23 +7180,6 @@ void CProjectAgentImp::SetAllowableTensionCoefficient(pgsTypes::LoadRatingType r
 Float64 CProjectAgentImp::GetAllowableTensionCoefficient(pgsTypes::LoadRatingType ratingType)
 {
    return m_AllowableTensionCoefficient[ratingType];
-}
-
-Float64 CProjectAgentImp::GetAllowableTension(pgsTypes::LoadRatingType ratingType,const CSegmentKey& segmentKey)
-{
-#pragma Reminder("UPDATE: move to spec agent") // similar methods for design are in the spec agent
-                     // using the IIntervals interface here... this agent is just to manage input data
-                     // not to do calculations
-   // Remove include for Intervals.h from this file and ProjectAgent.cpp
-   GET_IFACE(IIntervals,pIntervals);
-   IntervalIndexType loadRatingIntervalIdx = pIntervals->GetLoadRatingInterval(segmentKey);
-
-   GET_IFACE(IMaterials,pMaterial);
-   Float64 fc = pMaterial->GetSegmentFc(segmentKey,loadRatingIntervalIdx);
-
-   Float64 t = GetAllowableTensionCoefficient(ratingType);
-
-   return t*sqrt(fc);
 }
 
 void CProjectAgentImp::RateForStress(pgsTypes::LoadRatingType ratingType,bool bRateForStress)

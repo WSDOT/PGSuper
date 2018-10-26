@@ -163,6 +163,9 @@ private:
    // factory method for ACI209 concrete model
    matACI209Concrete* CreateACI209Model(const CConcreteMaterial& concrete,Float64 ageAtInitialLoading);
 
+   // factory method for CEB-FIP concrete model
+   matCEBFIPConcrete* CreateCEBFIPModel(const CConcreteMaterial& concrete,Float64 ageAtInitialLoading);
+
    // Material model for precast girder segments
    std::map< CSegmentKey, boost::shared_ptr<matConcreteBase> > m_pSegmentConcrete;
 

@@ -1285,7 +1285,7 @@ private:
 
    void CreateStrandMover(LPCTSTR strGirderName,IStrandMover** ppStrandMover);
 
-   Float64 GetRelaxation(Float64 fpi,Float64 fpy,matPsStrand::Type strandType,Float64 tStart,Float64 tEnd,Float64 tStress);
+   Float64 GetRelaxation(Float64 fpi,const matPsStrand* pStrand,Float64 tStart,Float64 tEnd,Float64 tStress);
 };
 
 #endif //__BRIDGEAGENT_H_

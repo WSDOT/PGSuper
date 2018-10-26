@@ -163,12 +163,16 @@ void CGirderDescGeneralPage::ExchangeConcreteData(CDataExchange* pDX)
    {
       int value;
       if ( !pDX->m_bSaveAndValidate )
+      {
          value = pParent->m_pSegment->Material.Concrete.bBasePropertiesOnInitialValues ? 0 : 1;
+      }
       
       DDX_Radio(pDX,IDC_FC1,value);
 
       if ( pDX->m_bSaveAndValidate )
+      {
          pParent->m_pSegment->Material.Concrete.bBasePropertiesOnInitialValues = (value == 0 ? true : false);
+      }
    }
 
    DDX_UnitValueAndTag( pDX, IDC_GIRDER_FC,  IDC_GIRDER_FC_UNIT,   pParent->m_pSegment->Material.Concrete.Fc , pDisplayUnits->GetStressUnit() );
@@ -276,13 +280,17 @@ BOOL CGirderDescGeneralPage::OnInitDialog()
 
    GET_IFACE2(pBroker,ILibrary,pLib);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( strSpecName.c_str() );
-
    m_LossMethod = pSpecEntry->GetLossMethod();
+   m_TimeDependentModel = pSpecEntry->GetTimeDependentModel();
 
    if ( m_SlabOffsetType == pgsTypes::sotBridge || m_SlabOffsetType == pgsTypes::sotPier )
+   {
       m_SlabOffsetTypeCache = pgsTypes::sotGirder;
+   }
    else
+   {
       m_SlabOffsetTypeCache = pgsTypes::sotBridge;
+   }
 
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    m_strSlabOffsetCache[pgsTypes::metStart].Format(_T("%s"),FormatDimension(m_SlabOffset[pgsTypes::metStart],pDisplayUnits->GetComponentDimUnit(),false));
@@ -330,10 +338,14 @@ BOOL CGirderDescGeneralPage::OnInitDialog()
    UpdateSlabOffsetControls();
 
    if ( m_strUserEc == _T("") )
+   {
       m_ctrlEc.GetWindowText(m_strUserEc);
+   }
 	
    if ( m_strUserEci == _T("") )
+   {
       m_ctrlEci.GetWindowText(m_strUserEci);
+   }
 
    OnUserEci();
    OnUserEc();
@@ -475,9 +487,13 @@ void CGirderDescGeneralPage::UpdateEci()
    else
    {
       if ( m_ctrlEciCheck.GetCheck() == FALSE )
+      {
          method = 1;
+      }
       else
+      {
          method = -1;
+      }
    }
 
    if ( method == 0 )
@@ -495,15 +511,31 @@ void CGirderDescGeneralPage::UpdateEci()
 
       CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
 
-      matACI209Concrete concrete;
-      concrete.UserEc28(true);
-      concrete.SetEc28(Ec);
-      concrete.SetA(pParent->m_pSegment->Material.Concrete.A);
-      concrete.SetBeta(pParent->m_pSegment->Material.Concrete.B);
-      concrete.SetTimeAtCasting(0);
-      concrete.SetFc28(pParent->m_pSegment->Material.Concrete.Fc);
-      concrete.SetStrengthDensity(pParent->m_pSegment->Material.Concrete.StrengthDensity);
-      Float64 Eci = concrete.GetEc(m_AgeAtRelease);
+      Float64 Eci;
+      if ( m_TimeDependentModel == TDM_AASHTO || m_TimeDependentModel == TDM_ACI209 )
+      {
+         matACI209Concrete concrete;
+         concrete.UserEc28(true);
+         concrete.SetEc28(Ec);
+         concrete.SetA(pParent->m_pSegment->Material.Concrete.A);
+         concrete.SetBeta(pParent->m_pSegment->Material.Concrete.B);
+         concrete.SetTimeAtCasting(0);
+         concrete.SetFc28(pParent->m_pSegment->Material.Concrete.Fc);
+         concrete.SetStrengthDensity(pParent->m_pSegment->Material.Concrete.StrengthDensity);
+         Eci = concrete.GetEc(m_AgeAtRelease);
+      }
+      else
+      {
+         ATLASSERT(m_TimeDependentModel == TDM_CEBFIP);
+         matCEBFIPConcrete concrete;
+         concrete.UserEc28(true);
+         concrete.SetEc28(Ec);
+         concrete.SetTimeAtCasting(0);
+         concrete.SetFc28(pParent->m_pSegment->Material.Concrete.Fc);
+         concrete.SetStrengthDensity(pParent->m_pSegment->Material.Concrete.StrengthDensity);
+         concrete.SetCementType((matCEBFIPConcrete::CementType)pParent->m_pSegment->Material.Concrete.CEBFIPCementType);
+         Eci = concrete.GetEc(m_AgeAtRelease);
+      }
 
       CString strEci;
       strEci.Format(_T("%s"),FormatDimension(Eci,pDisplayUnits->GetModEUnit(),false));
@@ -567,9 +599,13 @@ void CGirderDescGeneralPage::UpdateEc()
    else
    {
       if ( m_ctrlEcCheck.GetCheck() == FALSE )
+      {
          method = 1;
+      }
       else
+      {
          method = -1;
+      }
    }
 
    if ( method == 0 )
@@ -587,7 +623,16 @@ void CGirderDescGeneralPage::UpdateEc()
 
       CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
 
-      Float64 Ec = matACI209Concrete::ComputeEc28(Eci,m_AgeAtRelease,pParent->m_pSegment->Material.Concrete.A,pParent->m_pSegment->Material.Concrete.B);
+      Float64 Ec;
+      if ( m_TimeDependentModel == TDM_AASHTO || m_TimeDependentModel == TDM_ACI209 )
+      {
+         Ec = matACI209Concrete::ComputeEc28(Eci,m_AgeAtRelease,pParent->m_pSegment->Material.Concrete.A,pParent->m_pSegment->Material.Concrete.B);
+      }
+      else
+      {
+         ATLASSERT( m_TimeDependentModel == TDM_CEBFIP );
+         Ec = matCEBFIPConcrete::ComputeEc28(Eci,m_AgeAtRelease,(matCEBFIPConcrete::CementType)pParent->m_pSegment->Material.Concrete.CEBFIPCementType);
+      }
 
       CString strEc;
       strEc.Format(_T("%s"),FormatDimension(Ec,pDisplayUnits->GetModEUnit(),false));
@@ -622,7 +667,6 @@ void CGirderDescGeneralPage::UpdateFc()
       if ( i == IDC_FC1 )
       {
          // concrete model is based on f'ci... compute f'c
-#pragma Reminder("UPDATE: this is ok for LRFD and ACI209 concrete models. Review and update for CEB-FIP")
          // Get f'ci from edit control
          CString strFci;
          m_ctrlFci.GetWindowText(strFci);
@@ -636,7 +680,17 @@ void CGirderDescGeneralPage::UpdateFc()
          fci = ::ConvertToSysUnits(fci,pDisplayUnits->GetStressUnit().UnitOfMeasure);
 
          CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
-         Float64 fc = matACI209Concrete::ComputeFc28(fci,m_AgeAtRelease,pParent->m_pSegment->Material.Concrete.A,pParent->m_pSegment->Material.Concrete.B);
+         Float64 fc;
+
+         if ( m_TimeDependentModel == TDM_AASHTO || m_TimeDependentModel == TDM_ACI209 )
+         {
+            fc = matACI209Concrete::ComputeFc28(fci,m_AgeAtRelease,pParent->m_pSegment->Material.Concrete.A,pParent->m_pSegment->Material.Concrete.B);
+         }
+         else
+         {
+            ATLASSERT(m_TimeDependentModel == TDM_CEBFIP);
+            fc = matCEBFIPConcrete::ComputeFc28(fci,m_AgeAtRelease,(matCEBFIPConcrete::CementType)pParent->m_pSegment->Material.Concrete.CEBFIPCementType);
+         }
 
          CString strFc;
          strFc.Format(_T("%s"),FormatDimension(fc,pDisplayUnits->GetStressUnit(),false));
@@ -653,7 +707,6 @@ void CGirderDescGeneralPage::UpdateFci()
       if ( i == IDC_FC2 )
       {
          // concrete model is based on f'ci... compute f'c
-#pragma Reminder("UPDATE: this is ok for LRFD and ACI209 concrete models. Review and update for CEB-FIP")
          // Get f'c from edit control
          CString strFc;
          m_ctrlFc.GetWindowText(strFc);
@@ -668,13 +721,24 @@ void CGirderDescGeneralPage::UpdateFci()
 
          CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
 
-         matACI209Concrete concrete;
-         concrete.SetTimeAtCasting(0);
-         concrete.SetFc28(fc);
-         concrete.SetA(pParent->m_pSegment->Material.Concrete.A);
-         concrete.SetBeta(pParent->m_pSegment->Material.Concrete.B);
-         concrete.SetStrengthDensity(pParent->m_pSegment->Material.Concrete.StrengthDensity);
-         Float64 fci = concrete.GetFc(m_AgeAtRelease);
+         Float64 fci;
+         if ( m_TimeDependentModel == TDM_AASHTO || m_TimeDependentModel == TDM_ACI209 )
+         {
+            matACI209Concrete concrete;
+            concrete.SetTimeAtCasting(0);
+            concrete.SetFc28(fc);
+            concrete.SetA(pParent->m_pSegment->Material.Concrete.A);
+            concrete.SetBeta(pParent->m_pSegment->Material.Concrete.B);
+            fci = concrete.GetFc(m_AgeAtRelease);
+         }
+         else
+         {
+            matCEBFIPConcrete concrete;
+            concrete.SetTimeAtCasting(0);
+            concrete.SetFc28(fc);
+            concrete.SetCementType((matCEBFIPConcrete::CementType)pParent->m_pSegment->Material.Concrete.CEBFIPCementType);
+            fci = concrete.GetFc(m_AgeAtRelease);
+         }
 
          CString strFci;
          strFci.Format(_T("%s"),FormatDimension(fci,pDisplayUnits->GetStressUnit(),false));
@@ -715,9 +779,9 @@ void CGirderDescGeneralPage::OnMoreConcreteProperties()
    dlg.m_ACI.m_A               = pParent->m_pSegment->Material.Concrete.A;
    dlg.m_ACI.m_B               = pParent->m_pSegment->Material.Concrete.B;
    dlg.m_ACI.m_CureMethod      = pParent->m_pSegment->Material.Concrete.CureMethod;
-   dlg.m_ACI.m_CementType      = pParent->m_pSegment->Material.Concrete.CementType;
+   dlg.m_ACI.m_CementType      = pParent->m_pSegment->Material.Concrete.ACI209CementType;
 
-#pragma Reminder("UPDATE: deal with CEB-FIP concrete models")
+   dlg.m_CEBFIP.m_CementType  = pParent->m_pSegment->Material.Concrete.CEBFIPCementType;
 
    dlg.m_General.m_strUserEc  = m_strUserEc;
 
@@ -744,9 +808,9 @@ void CGirderDescGeneralPage::OnMoreConcreteProperties()
       pParent->m_pSegment->Material.Concrete.A                  = dlg.m_ACI.m_A;
       pParent->m_pSegment->Material.Concrete.B                  = dlg.m_ACI.m_B;
       pParent->m_pSegment->Material.Concrete.CureMethod         = dlg.m_ACI.m_CureMethod;
-      pParent->m_pSegment->Material.Concrete.CementType         = dlg.m_ACI.m_CementType;
+      pParent->m_pSegment->Material.Concrete.ACI209CementType   = dlg.m_ACI.m_CementType;
 
-#pragma Reminder("UPDATE: deal with CEB-FIP concrete models")
+      pParent->m_pSegment->Material.Concrete.CEBFIPCementType   = dlg.m_CEBFIP.m_CementType;
 
       m_strUserEc  = dlg.m_General.m_strUserEc;
       m_ctrlEc.SetWindowText(m_strUserEc);

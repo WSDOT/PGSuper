@@ -227,8 +227,13 @@ public:
    void SetBeta(Float64 b);
    pgsTypes::CureMethod GetCureMethod() const;
    void SetCureMethod(pgsTypes::CureMethod cureMethod);
-   pgsTypes::CementType GetCementType() const;
-   void SetCementType(pgsTypes::CementType cementType);
+   pgsTypes::ACI209CementType GetACI209CementType() const;
+   void SetACI209CementType(pgsTypes::ACI209CementType cementType);
+
+   //------------------------------------------------------------------------
+   // Parameters for the CEB-FIP model
+   pgsTypes::CEBFIPCementType GetCEBFIPCementType() const;
+   void SetCEBFIPCementType(pgsTypes::CEBFIPCementType cementType);
 
    //------------------------------------------------------------------------
    // Equality - test if two entries are equal. Ignore names by default
@@ -272,7 +277,10 @@ private:
    bool m_bUserACIParameters;
    Float64 m_A, m_B;
    pgsTypes::CureMethod m_CureMethod;
-   pgsTypes::CementType m_CementType;
+   pgsTypes::ACI209CementType m_ACI209CementType;
+
+   // CEB-FIP Model Parameters
+   pgsTypes::CEBFIPCementType m_CEBFIPCementType;
 
    // GROUP: LIFECYCLE
    // GROUP: OPERATORS

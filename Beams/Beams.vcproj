@@ -957,6 +957,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\VoidedSlabDistFactorEngineerTypes.h"
+				>
+			</File>
+			<File
 				RelativePath="VoidedSlabFactory.h"
 				>
 			</File>
@@ -986,6 +990,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\BoxBeamDistFactorEngineer.rgs"
+				>
+			</File>
+			<File
 				RelativePath="BoxBeamFactory.rgs"
 				>
 			</File>
@@ -1003,6 +1011,10 @@
 			</File>
 			<File
 				RelativePath="Res\BulbTee.emf"
+				>
+			</File>
+			<File
+				RelativePath=".\BulbTeeDistFactorEngineer.rgs"
 				>
 			</File>
 			<File
@@ -1043,6 +1055,10 @@
 			</File>
 			<File
 				RelativePath="Res\IBeam.emf"
+				>
+			</File>
+			<File
+				RelativePath=".\IBeamDistFactorEngineer.rgs"
 				>
 			</File>
 			<File
@@ -1178,6 +1194,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\UBeamDistFactorEngineer.rgs"
+				>
+			</File>
+			<File
 				RelativePath="UBeamFactory.rgs"
 				>
 			</File>
@@ -1199,6 +1219,14 @@
 			</File>
 			<File
 				RelativePath=".\Res\VoidedSlab2.emf"
+				>
+			</File>
+			<File
+				RelativePath=".\VoidedSlab2DistFactorEngineer.rgs"
+				>
+			</File>
+			<File
+				RelativePath=".\VoidedSlabDistFactorEngineer.rgs"
 				>
 			</File>
 			<File

@@ -1,0 +1,25 @@
+HKCR
+{
+	PGSuperDistFactorEngineer.BulbTeeDistFactorEngineer.1 = s 'Bulb Tee Distribution Factor Engineer'
+	{
+		CLSID = s '{49222DB8-F784-4576-811F-A831075FDDAF}'
+	}
+	PGSuperDistFactorEngineer.BulbTeeDistFactorEngineer = s 'Bulb Tee Distribution Factor Engineer'
+	{
+		CLSID = s '{49222DB8-F784-4576-811F-A831075FDDAF}'
+		CurVer = s 'PGSuperDistFactorEngineer.BulbTeeDistFactorEngineer.1'
+	}
+	NoRemove CLSID
+	{
+		ForceRemove {49222DB8-F784-4576-811F-A831075FDDAF} = s 'Bulb Tee Distribution Factor Engineer'
+		{
+			ProgID = s 'PGSuperDistFactorEngineer.BulbTeeDistFactorEngineer.1'
+			VersionIndependentProgID = s 'PGSuperDistFactorEngineer.BulbTeeDistFactorEngineer'
+			InprocServer32 = s '%MODULE%'
+			{
+				val ThreadingModel = s 'Apartment'
+			}
+			'TypeLib' = s 'DC4B56B3-455B-41be-9509-289950E62190'
+		}
+	}
+}

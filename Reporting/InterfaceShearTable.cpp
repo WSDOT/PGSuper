@@ -180,6 +180,8 @@ void CInterfaceShearTable::Build( IBroker* pBroker, rptChapter* pChapter,
             (*table)(row,col++) << symbol(INFINITY);
          }
 
+         (*table)(row,col++) << dim.SetValue( pArtifact->GetSmax() );
+
          if ( pArtifact->SpacingPassed() )
          {
             (*table)(row,col++) << RPT_PASS;

@@ -75,7 +75,9 @@ CDeckDescription2::CDeckDescription2()
    Concrete.A                  = ::ConvertToSysUnits(4.0,unitMeasure::Day);
    Concrete.B                  = 0.85;
    Concrete.CureMethod         = pgsTypes::Moist;
-   Concrete.CementType         = pgsTypes::TypeI;
+   Concrete.ACI209CementType   = pgsTypes::TypeI;
+
+   Concrete.CEBFIPCementType   = pgsTypes::N;
 
    WearingSurface = pgsTypes::wstSacrificialDepth;
    bInputAsDepthAndDensity = false;

@@ -27,6 +27,7 @@
 
 #include "resource.h"       // main symbols
 #include "DistFactorEngineerImpl.h"
+#include <Plugins\Beams.h>
 
 struct MULTIWEB_LLDFDETAILS : public BASE_LLDFDETAILS
 {
@@ -51,11 +52,6 @@ struct MULTIWEB_LLDFDETAILS : public BASE_LLDFDETAILS
    Float64 rightDe;
 };
 
-// {5F9F0F5B-0BCE-4aad-B2A6-47FC36BB331A}
-DEFINE_GUID(CLSID_MultiWebDistFactorEngineer, 
-0x5f9f0f5b, 0xbce, 0x4aad, 0xb2, 0xa6, 0x47, 0xfc, 0x36, 0xbb, 0x33, 0x1a);
-
-
 /////////////////////////////////////////////////////////////////////////////
 // CMultiWebDistFactorEngineer
 class ATL_NO_VTABLE CMultiWebDistFactorEngineer : 
@@ -70,6 +66,8 @@ public:
 	}
 
    HRESULT FinalConstruct();
+
+DECLARE_REGISTRY_RESOURCEID(IDR_MULTIWEBDISTFACTORENGINEER)
 
 BEGIN_COM_MAP(CMultiWebDistFactorEngineer)
    COM_INTERFACE_ENTRY(IDistFactorEngineer)

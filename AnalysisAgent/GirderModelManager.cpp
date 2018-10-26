@@ -8427,6 +8427,8 @@ std::vector<ProductForceType> CGirderModelManager::GetProductForces(LoadingCombi
    GET_IFACE(IBridge,pBridge);
    bool bFutureOverlay = pBridge->IsFutureOverlay();
 
+   GET_IFACE(ILossParameters,pLossParameters);
+
    std::vector<ProductForceType> pfTypes;
    pfTypes.reserve(pftProductForceTypeCount);
 
@@ -8452,17 +8454,31 @@ std::vector<ProductForceType> CGirderModelManager::GetProductForces(LoadingCombi
 
    case lcDWRating:
       pfTypes.push_back(pftUserDW);
-      if ( !bFutureOverlay )
+      if ( pLossParameters->GetLossMethod() == pgsTypes::TIME_STEP )
       {
-         pfTypes.push_back(pftOverlayRating);
+         pfTypes.push_back(pftOverlay);
+      }
+      else
+      {
+         if ( !bFutureOverlay )
+         {
+            pfTypes.push_back(pftOverlayRating);
+         }
       }
       break;
 
    case lcDWp:
       pfTypes.push_back(pftUserDW);
-      if ( !bFutureOverlay )
+      if ( pLossParameters->GetLossMethod() == pgsTypes::TIME_STEP )
       {
          pfTypes.push_back(pftOverlay);
+      }
+      else
+      {
+         if ( !bFutureOverlay )
+         {
+            pfTypes.push_back(pftOverlayRating);
+         }
       }
       break;
 

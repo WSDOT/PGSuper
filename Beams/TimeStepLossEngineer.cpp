@@ -200,10 +200,97 @@ const ANCHORSETDETAILS* CTimeStepLossEngineer::GetAnchorSetDetails(const CGirder
 
 Float64 CTimeStepLossEngineer::GetElongation(const CGirderKey& girderKey,DuctIndexType ductIdx,pgsTypes::MemberEndType endType)
 {
-#pragma Reminder("IMPLEMENT CTimeStepLossEngineer::GetElongation()")
-   // Getting elongation is an important calculation for post-tensioning operations
-   ATLASSERT(false);
-   return 0;
+   ComputeLosses(girderKey,0);
+   std::map<CGirderKey,LOSSES>::const_iterator found;
+   found = m_Losses.find( girderKey );
+   ATLASSERT(found != m_Losses.end());
+   const LOSSES& losses = found->second;
+
+   CTendonKey tendonKey(girderKey,ductIdx);
+
+#if defined _DEBUG || defined _BETA_VERSION
+   // Elongation calculations are kind of trick... they are computed with friction losses
+   // Re-compute them here using a more direct method and compare to what was computed before.
+   GET_IFACE(IBridgeDescription,pBridgeDesc);
+   GET_IFACE(IGirder,pIGirder);
+   const CSplicedGirderData* pGirder = pBridgeDesc->GetGirder(girderKey);
+   const CPTData* pPTData = pGirder->GetPostTensioning();
+   WebIndexType nWebs = pIGirder->GetWebCount(girderKey);
+   const CDuctData* pDuct = pPTData->GetDuct(ductIdx/nWebs);
+
+   Float64 elongation = 0;
+
+   if ( (pDuct->JackingEnd == pgsTypes::jeLeft  && endType == pgsTypes::metStart) ||
+        (pDuct->JackingEnd == pgsTypes::jeRight && endType == pgsTypes::metEnd) ||
+        pDuct->JackingEnd == pgsTypes::jeBoth 
+      )
+   {
+      Float64 Pj;
+      if ( pDuct->bPjCalc )
+      {
+         GET_IFACE(IPosttensionForce,pPTForce);
+         Pj = pPTForce->GetPjackMax(girderKey,pDuct->nStrands);
+      }
+      else
+      {
+         Pj = pDuct->Pj;
+      }
+
+      Float64 apt = pPTData->pStrand->GetNominalArea();
+      StrandIndexType nStrands = pDuct->nStrands;
+      Float64 Apt = apt*nStrands;
+
+      GET_IFACE(IMaterials,pMaterials);
+      Float64 Ept = pMaterials->GetTendonMaterial(girderKey)->GetE();
+
+      // this is iterating by POI
+      SectionLossContainer::const_iterator sectionLossIter(losses.SectionLosses.begin());
+      const LOSSDETAILS& lossDetails = sectionLossIter->second;
+      Float64 X1    = lossDetails.FrictionLossDetails[ductIdx].X;
+      Float64 dfpF1 = lossDetails.FrictionLossDetails[ductIdx].dfpF;
+
+      sectionLossIter++;
+
+      SectionLossContainer::const_iterator sectionLossIterEnd(losses.SectionLosses.end());
+      for ( ; sectionLossIter != sectionLossIterEnd; sectionLossIter++ )
+      {
+         const LOSSDETAILS& lossDetails = sectionLossIter->second;
+         Float64 X2    = lossDetails.FrictionLossDetails[ductIdx].X;
+         Float64 dfpF2 = lossDetails.FrictionLossDetails[ductIdx].dfpF;
+
+         Float64 dX = X2 - X1;
+         Float64 dP = Pj - 0.5*Apt*(dfpF2 + dfpF1);
+         Float64 dElongation = dP*dX;
+         elongation += dElongation;
+
+         // get ready for next time throught hte loop
+         X1 = X2;
+         dfpF1 = dfpF2;
+      }
+
+      elongation /= (Ept*Apt);
+
+      if ( pDuct->JackingEnd == pgsTypes::jeBoth )
+      {
+         // half of total elongation at each end
+         elongation /= 2;
+      }
+   }
+
+#if defined _BETA_VERSION
+   Float64 e = (endType == pgsTypes::metStart ? m_Elongation[tendonKey].first : m_Elongation[tendonKey].second);
+   if ( !IsEqual(elongation,e) )
+   {
+      CString strMsg;
+      strMsg.Format(_T("Elongation 1 = %s, Elongation 2 = %s"),
+         ::FormatDimension(elongation,m_pDisplayUnits->GetComponentDimUnit()),
+         ::FormatDimension(e,m_pDisplayUnits->GetComponentDimUnit()));
+      AfxMessageBox(strMsg);
+   }
+#endif // _BETA_RELEASE
+   ATLASSERT(IsEqual(elongation,e));
+#endif // _DEBUG
+   return (endType == pgsTypes::metStart ? m_Elongation[tendonKey].first : m_Elongation[tendonKey].second);
 }
 
 void CTimeStepLossEngineer::GetAverageFrictionAndAnchorSetLoss(const CGirderKey& girderKey,DuctIndexType ductIdx,Float64* pfpF,Float64* pfpA)
@@ -309,6 +396,12 @@ void CTimeStepLossEngineer::ComputeFrictionLosses(const CGirderKey& girderKey,LO
 
    WebIndexType nWebs = m_pGirder->GetWebCount(girderKey);
 
+   const CSplicedGirderData* pGirder = m_pBridgeDesc->GetGirder(girderKey);
+   const CPTData* pPTData = pGirder->GetPostTensioning();
+   DuctIndexType nDucts = m_pTendonGeom->GetDuctCount(girderKey);
+   Float64 Lg = m_pBridge->GetGirderLength(girderKey);
+
+   std::vector<pgsPointOfInterest>::iterator begin(vPoi.begin());
    std::vector<pgsPointOfInterest>::iterator iter(vPoi.begin());
    std::vector<pgsPointOfInterest>::iterator end(vPoi.end());
    for ( ; iter != end; iter++ )
@@ -325,10 +418,8 @@ void CTimeStepLossEngineer::ComputeFrictionLosses(const CGirderKey& girderKey,LO
       //////////////////////////////////////////////////////////////////////////
       // Friction Losses
       //////////////////////////////////////////////////////////////////////////
-      const CSplicedGirderData* pGirder = m_pBridgeDesc->GetGirder(poi.GetSegmentKey());
-      const CPTData* pPTData = pGirder->GetPostTensioning();
+      Float64 Xg = m_pPoi->ConvertPoiToGirderCoordinate(poi); // distance along girder
 
-      DuctIndexType nDucts = m_pTendonGeom->GetDuctCount(poi.GetSegmentKey());
       for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
       {
          FRICTIONLOSSDETAILS frDetails;
@@ -337,7 +428,7 @@ void CTimeStepLossEngineer::ComputeFrictionLosses(const CGirderKey& girderKey,LO
          Float64 Pj;
          if ( pDuct->bPjCalc )
          {
-            Pj = m_pPTForce->GetPjackMax(poi.GetSegmentKey(),pDuct->nStrands);
+            Pj = m_pPTForce->GetPjackMax(girderKey,pDuct->nStrands);
          }
          else
          {
@@ -349,9 +440,6 @@ void CTimeStepLossEngineer::ComputeFrictionLosses(const CGirderKey& girderKey,LO
          Float64 Aps = aps*nStrands;
          Float64 fpj = (nStrands == 0 ? 0 : Pj/Aps);
          
-         Float64 Xg = m_pPoi->ConvertPoiToGirderCoordinate(poi); // distance along girder
-         Float64 Lg = m_pBridge->GetGirderLength(poi.GetSegmentKey());
-
          // determine from which end of the girder to measure the angular change of the tendon path
          pgsTypes::MemberEndType endType;
          if ( pDuct->JackingEnd == pgsTypes::jeLeft )
@@ -380,10 +468,56 @@ void CTimeStepLossEngineer::ComputeFrictionLosses(const CGirderKey& girderKey,LO
          frDetails.alpha = alpha;
          frDetails.dfpF = fpj*(1 - exp(-(friction*alpha + X*wobble)));
 
+         // calculation incremental elongation at this poi... it will
+         // be summed with previously computed increments to get the total
+         // elongation
+         CTendonKey tendonKey(girderKey,ductIdx);
+         if ( iter == begin )
+         {
+            // first time... initialize with zero
+            m_Elongation.insert(std::make_pair(tendonKey,std::make_pair(0,0)));
+         }
+         else
+         {
+            pgsPointOfInterest& prevPoi(*(iter-1));
+            Float64 dX = frDetails.X - pLosses->SectionLosses[prevPoi].FrictionLossDetails[ductIdx].X;
+            Float64 df = fpj - 0.5*(frDetails.dfpF + pLosses->SectionLosses[prevPoi].FrictionLossDetails[ductIdx].dfpF);
+            m_Elongation[tendonKey].first += df*dX;
+         }
+
          details.FrictionLossDetails.push_back(frDetails);
       }
 
       pLosses->SectionLosses.insert(std::make_pair(poi,details));
+   }
+
+   // For elongation calculations we have the sum of (PL/A)... we need (PL/AE)
+   // Elongation is shoved into array for pgsTypes::metStart for easy of computation
+   // now make sure the elongation is in the correct position of the array for
+   // the actual jacking condition
+   Float64 Ept = m_pMaterials->GetTendonMaterial(girderKey)->GetE();
+   for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
+   {
+      CTendonKey tendonKey(girderKey,ductIdx);
+      m_Elongation[tendonKey].first /= Ept;
+      const CDuctData* pDuct = pPTData->GetDuct(ductIdx/nWebs);
+      if ( pDuct->JackingEnd == pgsTypes::jeLeft )
+      {
+         // jacking from left end, no elongation at end
+         m_Elongation[tendonKey].second = 0;
+      }
+      else if ( pDuct->JackingEnd == pgsTypes::jeRight )
+      {
+         // jacking from right end, no elongation at start
+         m_Elongation[tendonKey].second = m_Elongation[tendonKey].first;
+         m_Elongation[tendonKey].first = 0;
+      }
+      else
+      {
+         // jacking from both ends at the same time... elongation is split equally
+         m_Elongation[tendonKey].first *= 0.5;
+         m_Elongation[tendonKey].second = m_Elongation[tendonKey].first;
+      }
    }
 }
 

@@ -64,6 +64,8 @@ protected:
    Float64 m_SlabOffset;
    CString m_strSlabOffsetCache;
 
+   int m_LossMethod;
+   int m_TimeDependentModel;
    Float64 m_AgeAtContinuity;
 
 public:

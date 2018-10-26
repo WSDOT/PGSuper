@@ -211,12 +211,14 @@ CString ConcreteDescription(const CConcreteMaterial& concrete)
             strLabel.Format(_T("%s, ACI 209R-92, %s cured, %s cement"),
                matConcrete::GetTypeName((matConcrete::Type)concrete.Type,true).c_str(),
                concrete.CureMethod == pgsTypes::Steam ? _T("Steam") : _T("Moist"),
-               concrete.CementType == pgsTypes::TypeI ? _T("Type I") : _T("Type III"));
+               concrete.ACI209CementType == pgsTypes::TypeI ? _T("Type I") : _T("Type III"));
          }
       }
       else
       {
-#pragma Reminder("UPDATE: deal with CEB-FIP concrete models")
+         strLabel.Format(_T("%s, CEB-FIP, Type %s cement"),
+               matConcrete::GetTypeName((matConcrete::Type)concrete.Type,true).c_str(),
+               matCEBFIPConcrete::GetCementType((matCEBFIPConcrete::CementType)concrete.CEBFIPCementType));
       }
    }
    else

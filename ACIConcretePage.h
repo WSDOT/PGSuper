@@ -40,7 +40,7 @@ public:
    Float64 m_A;
    Float64 m_B;
    pgsTypes::CureMethod m_CureMethod;
-   pgsTypes::CementType m_CementType;
+   pgsTypes::ACI209CementType m_CementType;
 
    // Parameters for computing A and B based on user defined values for f'ci and f'c28
    Float64 m_TimeAtInitialStrength; // time when initial strength is reached (used to compute A and B)

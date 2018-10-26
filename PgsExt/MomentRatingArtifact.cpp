@@ -364,14 +364,25 @@ Float64 pgsMomentRatingArtifact::GetRatingFactor() const
       }
 
       Float64 C = p * m_CapacityRedutionFactor * m_MinimumReinforcementFactor * m_Mn;
-      Float64 RF = (C - m_gDC*m_Mdc - m_gDW*m_Mdw - m_gCR*m_Mcr - m_gSH*m_Msh - m_gRE*m_Mre - m_gPS*m_Mps)/(m_gLL*m_Mllim);
+      Float64 RFtop = C - m_gDC*m_Mdc - m_gDW*m_Mdw - m_gCR*m_Mcr - m_gSH*m_Msh - m_gRE*m_Mre - m_gPS*m_Mps;
+      Float64 RFbot = m_gLL*m_Mllim;
 
-      if ( RF < 0 )
+      if ( (0 < m_Mllim && RFtop < 0) || (m_Mllim < 0 && 0 < RFtop) )
       {
-         RF = 0;
+         // There isn't any capacity remaining for live load
+         m_RF = 0;
       }
-
-      m_RF = RF;
+      else if ( ::BinarySign(RFtop) != ::BinarySign(RFbot) && !IsZero(RFtop) )
+      {
+         // (C - DL) and LL have opposite signs
+         // this case probably shouldn't happen, but if does,
+         // the rating is great
+         m_RF = DBL_MAX;
+      }
+      else
+      {
+         m_RF = RFtop/RFbot;
+      }
    }
 
    m_bRFComputed = true;

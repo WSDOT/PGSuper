@@ -344,6 +344,40 @@ Float64 CSpecAgentImp::GetAllowableTensionStress(const pgsPointOfInterest& poi,p
    }
 }
 
+Float64 CSpecAgentImp::GetAllowableTensionStress(pgsTypes::LoadRatingType ratingType,const pgsPointOfInterest& poi,pgsTypes::StressLocation stressLocation)
+{
+   const CSegmentKey& segmentKey(poi.GetSegmentKey());
+
+   GET_IFACE(IIntervals,pIntervals);
+   IntervalIndexType ratingIntervalIdx = pIntervals->GetLoadRatingInterval(segmentKey);
+
+   Float64 fc;
+   GET_IFACE(IMaterials,pMaterials);
+   if ( IsGirderStressLocation(stressLocation) )
+   {
+      GET_IFACE(IPointOfInterest,pPoi);
+      if ( pPoi->IsInClosureJoint(poi) )
+      {
+         fc = pMaterials->GetClosureJointFc(segmentKey,ratingIntervalIdx);
+      }
+      else
+      {
+         fc = pMaterials->GetSegmentFc(segmentKey,ratingIntervalIdx);
+      }
+   }
+   else
+   {
+      ATLASSERT(IsDeckStressLocation(stressLocation));
+      fc = pMaterials->GetDeckFc(segmentKey,ratingIntervalIdx);
+   }
+
+   GET_IFACE(IRatingSpecification,pRatingSpec);
+   Float64 x = pRatingSpec->GetAllowableTensionCoefficient(ratingType);
+
+   Float64 fallow = x*sqrt(fc);
+   return fallow;
+}
+
 Float64 CSpecAgentImp::GetAllowableCompressionStressCoefficient(const pgsPointOfInterest& poi,pgsTypes::StressLocation stressLocation,IntervalIndexType intervalIdx,pgsTypes::LimitState ls)
 {
    if ( IsGirderStressLocation(stressLocation) )
@@ -443,7 +477,8 @@ Float64 CSpecAgentImp::GetSegmentAllowableTensionStress(const pgsPointOfInterest
       IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval(segmentKey);
       ATLASSERT(liveLoadIntervalIdx <= intervalIdx );
 #endif
-      return GetLoadRatingAllowableTension(segmentKey,ls);
+      pgsTypes::LoadRatingType ratingType = ::RatingTypeFromLimitState(ls);
+      return GetAllowableTensionStress(ratingType,poi,pgsTypes::BottomGirder);
    }
 
    // This is a design/check case, so use the regular specifications
@@ -467,7 +502,8 @@ Float64 CSpecAgentImp::GetClosureJointAllowableTensionStress(const pgsPointOfInt
       IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval(segmentKey);
       ATLASSERT(liveLoadIntervalIdx <= intervalIdx );
 #endif
-      return GetLoadRatingAllowableTension(segmentKey,ls);
+      pgsTypes::LoadRatingType ratingType = ::RatingTypeFromLimitState(ls);
+      return GetAllowableTensionStress(ratingType,poi,pgsTypes::BottomGirder);
    }
 
    // This is a design/check case, so use the regular specifications
@@ -491,7 +527,8 @@ Float64 CSpecAgentImp::GetDeckAllowableTensionStress(const pgsPointOfInterest& p
       IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval(segmentKey);
       ATLASSERT(liveLoadIntervalIdx <= intervalIdx );
 #endif
-      return GetLoadRatingAllowableTension(segmentKey,ls);
+      pgsTypes::LoadRatingType ratingType = ::RatingTypeFromLimitState(ls);
+      return GetAllowableTensionStress(ratingType,poi,pgsTypes::TopDeck);
    }
 
    // This is a design/check case, so use the regular specifications
@@ -2138,31 +2175,4 @@ bool CSpecAgentImp::IsLoadRatingServiceIIILimitState(pgsTypes::LimitState ls)
             ls == pgsTypes::ServiceIII_Operating ||
             ls == pgsTypes::ServiceIII_LegalRoutine ||
             ls == pgsTypes::ServiceIII_LegalSpecial ) ? true : false;
-}
-
-Float64 CSpecAgentImp::GetLoadRatingAllowableTension(const CSegmentKey& segmentKey,pgsTypes::LimitState ls)
-{
-   GET_IFACE(IRatingSpecification,pRatingSpec);
-   if ( ls == pgsTypes::ServiceIII_Inventory )
-   {
-      return pRatingSpec->GetAllowableTension(pgsTypes::lrDesign_Inventory,segmentKey);
-   }
-
-   if ( ls == pgsTypes::ServiceIII_Operating )
-   {
-      return pRatingSpec->GetAllowableTension(pgsTypes::lrDesign_Operating,segmentKey);
-   }
-
-   if ( ls == pgsTypes::ServiceIII_LegalRoutine )
-   {
-      return pRatingSpec->GetAllowableTension(pgsTypes::lrLegal_Routine,segmentKey);
-   }
-
-   if ( ls == pgsTypes::ServiceIII_LegalSpecial )
-   {
-      return pRatingSpec->GetAllowableTension(pgsTypes::lrLegal_Special,segmentKey);
-   }
-
-   ATLASSERT(false); // should never get here
-   return -1;
 }

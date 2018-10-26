@@ -27,6 +27,7 @@
 
 #include "resource.h"       // main symbols
 #include "DistFactorEngineerImpl.h"
+#include <Plugins\Beams.h>
 
 
 struct BOXBEAM_J_VOID
@@ -52,10 +53,6 @@ struct BOXBEAM_LLDFDETAILS : public BASE_LLDFDETAILS
    BOXBEAM_J_VOID  Jvoid;
 };
 
-// {AF7F923F-3E47-435b-8835-53F68601FE3B}
-DEFINE_GUID(CLSID_BoxBeamDistFactorEngineer, 
-0xaf7f923f, 0x3e47, 0x435b, 0x88, 0x35, 0x53, 0xf6, 0x86, 0x1, 0xfe, 0x3b);
-
 /////////////////////////////////////////////////////////////////////////////
 // CBoxBeamDistFactorEngineer
 class ATL_NO_VTABLE CBoxBeamDistFactorEngineer : 
@@ -70,6 +67,8 @@ public:
 	}
 
    HRESULT FinalConstruct();
+
+DECLARE_REGISTRY_RESOURCEID(IDR_BOXBEAMDISTFACTORENGINEER)
 
 BEGIN_COM_MAP(CBoxBeamDistFactorEngineer)
    COM_INTERFACE_ENTRY(IDistFactorEngineer)

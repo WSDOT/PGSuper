@@ -69,6 +69,8 @@ static void write_lrfd_concrete_details(IBroker* pBroker,IEAFDisplayUnits* pDisp
 static void write_lrfd_concrete_row(IEAFDisplayUnits* pDisplayUnits,rptRcTable* pTable,Float64 fci,Float64 fc,Float64 Eci,Float64 Ec,const CConcreteMaterial& concrete,RowIndexType row);
 static void write_aci209_concrete_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,const CGirderKey& girderKey,Uint16 level);
 static void write_aci209_concrete_row(IEAFDisplayUnits* pDisplayUnits,rptRcTable* pTable,Float64 fc28,Float64 Ec28,const CConcreteMaterial& concrete,RowIndexType row);
+static void write_cebfip_concrete_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,const CGirderKey& girderKey,Uint16 level);
+static void write_cebfip_concrete_row(IEAFDisplayUnits* pDisplayUnits,rptRcTable* pTable,Float64 fc28,Float64 Ec28,const CConcreteMaterial& concrete,RowIndexType row);
 static void write_deck_reinforcing_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,Uint16 level);
 
 /****************************************************************************
@@ -707,6 +709,10 @@ void write_concrete_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rpt
       case TDM_ACI209:
          write_aci209_concrete_details(pBroker,pDisplayUnits,pChapter,girderKey,level);
          break;
+
+      case TDM_CEBFIP:
+         write_cebfip_concrete_details(pBroker,pDisplayUnits,pChapter,girderKey,level);
+         break;
       }
    }
    else
@@ -1037,7 +1043,7 @@ void write_aci209_concrete_row(IEAFDisplayUnits* pDisplayUnits,rptRcTable* pTabl
    else
    {
       std::_tstring strCure(concrete.CureMethod == pgsTypes::Steam ? _T("Steam") : _T("Moist"));
-      std::_tstring strCement(concrete.CementType == pgsTypes::TypeI ? _T("Type I") : _T("Type II"));
+      std::_tstring strCement(concrete.ACI209CementType == pgsTypes::TypeI ? _T("Type I") : _T("Type II"));
       (*pTable)(row,col++) << strCure;
       (*pTable)(row,col++) << strCement;
    }
@@ -1058,6 +1064,136 @@ void write_aci209_concrete_row(IEAFDisplayUnits* pDisplayUnits,rptRcTable* pTabl
    (*pTable)(row,col++) << cmpdim.SetValue( concrete.MaxAggregateSize );
 }
 
+void write_cebfip_concrete_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,const CGirderKey& girderKey,Uint16 level)
+{
+   rptParagraph* pPara = new rptParagraph;
+   *pChapter << pPara;
+
+   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(9,_T("Concrete Properties"));
+   pTable->SetColumnStyle(0, pgsReportStyleHolder::GetTableCellStyle( CB_NONE | CJ_LEFT) );
+   pTable->SetStripeRowColumnStyle(0, pgsReportStyleHolder::GetTableStripeRowCellStyle( CB_NONE | CJ_LEFT) );
+   pTable->SetColumnStyle(1, pgsReportStyleHolder::GetTableCellStyle( CB_NONE | CJ_LEFT) );
+   pTable->SetStripeRowColumnStyle(1, pgsReportStyleHolder::GetTableStripeRowCellStyle( CB_NONE | CJ_LEFT) );
+
+   *pPara << pTable << rptNewLine;
+
+   *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("CEBFIP_TimeDependentProperties.png")) << rptNewLine;
+
+   ColumnIndexType col = 0;
+   RowIndexType row = 0;
+   (*pTable)(row,col++) << _T("Element");
+   (*pTable)(row,col++) << _T("Type");
+   (*pTable)(row,col++) << COLHDR(_T("(") << RPT_FC << _T(")") << Sub(_T("28")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*pTable)(row,col++) << COLHDR(_T("(") << RPT_EC << _T(")") << Sub(_T("28")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*pTable)(row,col++) << _T("Cement Type");
+   (*pTable)(row,col++) << _T("s");
+   (*pTable)(row,col++) << COLHDR(Sub2(symbol(gamma),_T("w")), rptDensityUnitTag, pDisplayUnits->GetDensityUnit() );
+   (*pTable)(row,col++) << COLHDR(Sub2(symbol(gamma),_T("s")), rptDensityUnitTag, pDisplayUnits->GetDensityUnit() );
+   (*pTable)(row,col++) << COLHDR(Sub2(_T("D"),_T("agg")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+
+   row = pTable->GetNumberOfHeaderRows();
+
+   GET_IFACE2(pBroker,IMaterials,pMaterials);
+
+   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+   const CTimelineManager* pTimelineMgr = pBridgeDesc->GetTimelineManager();
+
+   GroupIndexType nGroups = pBridgeDesc->GetGirderGroupCount();
+   GroupIndexType firstGroupIdx = (girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex);
+   GroupIndexType lastGroupIdx  = (girderKey.groupIndex == ALL_GROUPS ? nGroups-1 : firstGroupIdx);
+
+   for ( GroupIndexType grpIdx = firstGroupIdx; grpIdx <= lastGroupIdx; grpIdx++ )
+   {
+      const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(grpIdx);
+      GirderIndexType nGirders = pGroup->GetGirderCount();
+      GirderIndexType firstGirderIdx = Min(nGirders-1,(girderKey.girderIndex == ALL_GIRDERS ? 0 : girderKey.girderIndex));
+      GirderIndexType lastGirderIdx  = Min(nGirders-1,(girderKey.girderIndex == ALL_GIRDERS ? nGirders-1 : firstGirderIdx));
+      
+      for ( GirderIndexType gdrIdx = firstGirderIdx; gdrIdx <= lastGirderIdx; gdrIdx++ )
+      {
+         const CSplicedGirderData* pGirder = pGroup->GetGirder(gdrIdx);
+         SegmentIndexType nSegments = pGirder->GetSegmentCount();
+         for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
+         {
+            CSegmentKey thisSegmentKey(grpIdx,gdrIdx,segIdx);
+
+            const CPrecastSegmentData* pSegment = pGirder->GetSegment(segIdx);
+
+            Float64 fc28 = pMaterials->GetSegmentFc28(thisSegmentKey);
+            Float64 Ec28 = pMaterials->GetSegmentEc28(thisSegmentKey);
+
+            if ( nSegments == 1 )
+            {
+               (*pTable)(row,0) << _T("Girder ") << LABEL_GIRDER(gdrIdx);
+            }
+            else
+            {
+               (*pTable)(row,0) << _T("Segment ") << LABEL_SEGMENT(segIdx);
+            }
+
+            write_cebfip_concrete_row(pDisplayUnits,pTable,fc28,Ec28,pSegment->Material.Concrete,row);
+            row++;
+
+            const CClosureJointData* pClosure = pSegment->GetRightClosure();
+            if ( pClosure )
+            {
+               Float64 fc28 = pMaterials->GetClosureJointFc28(thisSegmentKey);
+               Float64 Ec28 = pMaterials->GetClosureJointEc28(thisSegmentKey);
+
+               (*pTable)(row,0) << _T("Closure Joint ") << LABEL_SEGMENT(segIdx);
+               write_cebfip_concrete_row(pDisplayUnits,pTable,fc28,Ec28,pClosure->GetConcrete(),row);
+               row++;
+            }
+         } // segIdx
+      } // gdrIdx
+   } // spanIdx
+
+   const CDeckDescription2* pDeck = pBridgeDesc->GetDeckDescription();
+   if ( pDeck->DeckType != pgsTypes::sdtNone )
+   {
+      Float64 fc28 = pMaterials->GetDeckFc28();
+      Float64 Ec28 = pMaterials->GetDeckEc28();
+
+      (*pTable)(row,0) << _T("Slab");
+      write_cebfip_concrete_row(pDisplayUnits,pTable,fc28,Ec28,pDeck->Concrete,row);
+      row++;
+   }
+
+   (*pPara) << Sub2(symbol(gamma),_T("w")) << _T(" =  Unit weight including reinforcement (used for dead load calculations)") << rptNewLine;
+   (*pPara) << Sub2(symbol(gamma),_T("s")) << _T(" =  Unit weight (used to compute ") << Sub2(_T("E"),_T("c")) << _T(")") << rptNewLine;
+   (*pPara) << Sub2(_T("D"),_T("agg")) << _T(" =  Maximum aggregate size") << rptNewLine;
+}
+
+void write_cebfip_concrete_row(IEAFDisplayUnits* pDisplayUnits,rptRcTable* pTable,Float64 fc28,Float64 Ec28,const CConcreteMaterial& concrete,RowIndexType row)
+{
+   INIT_UV_PROTOTYPE( rptLengthUnitValue,  cmpdim,  pDisplayUnits->GetComponentDimUnit(), false );
+   INIT_UV_PROTOTYPE( rptStressUnitValue,  stress,  pDisplayUnits->GetStressUnit(),       false );
+   INIT_UV_PROTOTYPE( rptDensityUnitValue, density, pDisplayUnits->GetDensityUnit(),      false );
+   INIT_UV_PROTOTYPE( rptStressUnitValue,  modE,    pDisplayUnits->GetModEUnit(),         false );
+   INIT_UV_PROTOTYPE( rptTimeUnitValue,    time,    pDisplayUnits->GetLongTimeUnit(),     false );
+
+   ColumnIndexType col = 1;
+   (*pTable)(row,col++) << matConcrete::GetTypeName( (matConcrete::Type)concrete.Type, true );
+   (*pTable)(row,col++) << stress.SetValue( fc28 );
+   (*pTable)(row,col++) << modE.SetValue( Ec28 );
+
+   (*pTable)(row,col++) << matCEBFIPConcrete::GetCementType((matCEBFIPConcrete::CementType)concrete.CEBFIPCementType);
+   (*pTable)(row,col++) << matCEBFIPConcrete::GetS((matCEBFIPConcrete::CementType)concrete.CEBFIPCementType);
+
+   (*pTable)(row,col++) << density.SetValue( concrete.WeightDensity );
+
+   if (concrete.bUserEc )
+   {
+      (*pTable)(row,col++) << RPT_NA;
+   }
+   else
+   {
+      (*pTable)(row,col++) << density.SetValue( concrete.StrengthDensity );
+   }
+
+   (*pTable)(row,col++) << cmpdim.SetValue( concrete.MaxAggregateSize );
+}
 
 void write_pier_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,Uint16 level)
 {

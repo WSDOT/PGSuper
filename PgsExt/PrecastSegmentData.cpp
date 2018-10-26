@@ -75,7 +75,7 @@ void CPrecastSegmentData::Init()
    m_SegmentIndex = INVALID_INDEX;
    m_SegmentID    = INVALID_ID;
 
-   m_VariationType = pgsTypes::svtLinear;
+   m_VariationType = pgsTypes::svtNone;
    for ( int i = 0; i < 4; i++ )
    {
       m_VariationLength[i] = 0;

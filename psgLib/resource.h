@@ -105,6 +105,8 @@
 #define IDD_LIVE_LOAD_FACTORS2          307
 #define IDI_DUCT_ENTRY                  308
 #define IDD_DUCT_ENTRY                  309
+#define IDD_DIALOG1                     310
+#define IDD_CEBFIP_CONCRETE             310
 #define IDC_D1                          1001
 #define IDC_W1                          1002
 #define IDC_D2                          1003
@@ -1161,7 +1163,7 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
-#define _APS_NEXT_RESOURCE_VALUE        310
+#define _APS_NEXT_RESOURCE_VALUE        311
 #define _APS_NEXT_COMMAND_VALUE         36881
 #define _APS_NEXT_CONTROL_VALUE         1586
 #define _APS_NEXT_SYMED_VALUE           101

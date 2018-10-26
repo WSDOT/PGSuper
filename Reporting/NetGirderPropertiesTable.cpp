@@ -117,7 +117,7 @@ rptRcTable* CNetGirderPropertiesTable::Build(IBroker* pBroker,
    GET_IFACE2(pBroker,IBridge,pBridge);
 
    PoiAttributeType poiRefAttribute = (intervalIdx < erectionIntervalIdx ? POI_RELEASED_SEGMENT : POI_ERECTED_SEGMENT);
-   std::vector<pgsPointOfInterest> vPoi( pIPoi->GetPointsOfInterest(segmentKey,poiRefAttribute) );
+   std::vector<pgsPointOfInterest> vPoi( pIPoi->GetPointsOfInterest(segmentKey/*,poiRefAttribute*/) );
 
    RowIndexType row = xs_table->GetNumberOfHeaderRows();
 

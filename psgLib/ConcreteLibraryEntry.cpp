@@ -71,7 +71,8 @@ m_bUserACIParameters(false),
 m_A(::ConvertToSysUnits(4.0,unitMeasure::Day)),
 m_B(0.85),
 m_CureMethod(pgsTypes::Moist),
-m_CementType(pgsTypes::TypeI)
+m_ACI209CementType(pgsTypes::TypeI),
+m_CEBFIPCementType(pgsTypes::N)
 {
 }
 
@@ -99,9 +100,10 @@ ConcreteLibraryEntry& ConcreteLibraryEntry::operator= (const ConcreteLibraryEntr
 //======================== OPERATIONS =======================================
 bool ConcreteLibraryEntry::SaveMe(sysIStructuredSave* pSave)
 {
-   pSave->BeginUnit(_T("ConcreteMaterialEntry"), 5.0);
+   pSave->BeginUnit(_T("ConcreteMaterialEntry"), 6.0);
 
    // Version 5, re-arranged data and added AASHTO and ACI groups.
+   // Version 6, added CEB-FIP Concrete
 
    pSave->Property(_T("Name"),this->GetName().c_str());
    
@@ -127,7 +129,9 @@ bool ConcreteLibraryEntry::SaveMe(sysIStructuredSave* pSave)
    {
       pSave->Property(_T("HasAggSplittingStrength"),m_bHasFct);
       if ( m_bHasFct )
+      {
          pSave->Property(_T("AggSplittingStrength"),m_Fct);
+      }
    }
    pSave->EndUnit(); // AASHTO
 
@@ -136,8 +140,13 @@ bool ConcreteLibraryEntry::SaveMe(sysIStructuredSave* pSave)
    pSave->Property(_T("A"),m_A);
    pSave->Property(_T("B"),m_B);
    pSave->Property(_T("CureMethod"),m_CureMethod);
-   pSave->Property(_T("CementType"),m_CementType);
+   pSave->Property(_T("CementType"),m_ACI209CementType);
    pSave->EndUnit(); // ACI
+
+   // Added version 6
+   pSave->BeginUnit(_T("CEBFIP"),1.0);
+   pSave->Property(_T("CementType"),m_CEBFIPCementType);
+   pSave->EndUnit(); // CEBFIP
 
    pSave->EndUnit();
 
@@ -149,14 +158,20 @@ bool ConcreteLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
    if(pLoad->BeginUnit(_T("ConcreteMaterialEntry")))
    {
       Float64 version = pLoad->GetVersion();
-      if (5.0 < version )
+      if (6.0 < version )
+      {
          THROW_LOAD(BadVersion,pLoad);
+      }
 
       std::_tstring name;
       if(pLoad->Property(_T("Name"),&name))
+      {
          this->SetName(name.c_str());
+      }
       else
+      {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
 
 
       // Added version 4
@@ -168,50 +183,76 @@ bool ConcreteLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
       }
 
       if(!pLoad->Property(_T("Dw"), &m_Dw))
+      {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
 
       if(!pLoad->Property(_T("Fc"), &m_Fc))
+      {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
 
       if(!pLoad->Property(_T("Ds"), &m_Ds))
+      {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
 
       if(!pLoad->Property(_T("AggregateSize"), &m_AggSize))
+      {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
 
       if ( 2.0 <= version && version < 4)
       {
          if ( !pLoad->Property(_T("K1"),&m_EccK1) )
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
       }
       else if ( 4 <= version && version < 5 )
       {
          if ( !pLoad->Property(_T("EccK1"),&m_EccK1) )
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          if ( !pLoad->Property(_T("EccK2"),&m_EccK2) )
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          if ( !pLoad->Property(_T("CreepK1"),&m_CreepK1) )
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          if ( !pLoad->Property(_T("CreepK2"),&m_CreepK2) )
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          if ( !pLoad->Property(_T("ShrinkageK1"),&m_ShrinkageK1) )
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          if ( !pLoad->Property(_T("ShrinkageK2"),&m_ShrinkageK2) )
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
       }
 
       if ( 3.0 <= version && version < 5 )
       {
          if ( !pLoad->Property(_T("UserEc"),&m_bUserEc) )
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          if ( !pLoad->Property(_T("Ec"),&m_Ec) )
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
       }
 
       if ( 4.0 <= version && version < 5 )
@@ -220,12 +261,16 @@ bool ConcreteLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
          if ( m_Type != pgsTypes::Normal )
          {
             if ( !pLoad->Property(_T("HasAggSplittingStrength"),&m_bHasFct) )
+            {
                THROW_LOAD(InvalidFileFormat,pLoad);
+            }
 
             if ( m_bHasFct )
             {
                if ( !pLoad->Property(_T("AggSplittingStrength"),&m_Fct) )
+               {
                   THROW_LOAD(InvalidFileFormat,pLoad);
+               }
             }
          }
       }
@@ -235,79 +280,143 @@ bool ConcreteLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
          // Version 5
 
          if ( !pLoad->Property(_T("UserEc"),&m_bUserEc) )
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          if ( !pLoad->Property(_T("Ec"),&m_Ec) )
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          if ( !pLoad->BeginUnit(_T("AASHTO")) )
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          if ( !pLoad->Property(_T("EccK1"), &m_EccK1) )
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          if ( !pLoad->Property(_T("EccK2"), &m_EccK2) )
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          if ( !pLoad->Property(_T("CreepK1"), &m_CreepK1) )
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          if ( !pLoad->Property(_T("CreepK2"), &m_CreepK2) )
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          if ( !pLoad->Property(_T("ShrinkageK1"), &m_ShrinkageK1) )
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          if ( !pLoad->Property(_T("ShrinkageK2"), &m_ShrinkageK2) )
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
 
          if ( m_Type != pgsTypes::Normal )
          {
             if ( !pLoad->Property(_T("HasAggSplittingStrength"),&m_bHasFct) )
+            {
                THROW_LOAD(InvalidFileFormat,pLoad);
+            }
 
             if ( m_bHasFct )
             {
                if ( !pLoad->Property(_T("AggSplittingStrength"),&m_Fct) )
+               {
                   THROW_LOAD(InvalidFileFormat,pLoad);
+               }
             }
          }
          if ( !pLoad->EndUnit() ) // AASHTO
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          if ( !pLoad->BeginUnit(_T("ACI")) )
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          if (!pLoad->Property(_T("UserACI"),&m_bUserACIParameters))
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          if ( !pLoad->Property(_T("A"),&m_A) )
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          if ( !pLoad->Property(_T("B"),&m_B) )
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          int value;
          if ( !pLoad->Property(_T("CureMethod"),&value) )
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          m_CureMethod = (pgsTypes::CureMethod)value;
 
          if ( !pLoad->Property(_T("CementType"),&value) )
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
-         m_CementType = (pgsTypes::CementType)value;
+         m_ACI209CementType = (pgsTypes::ACI209CementType)value;
 
          if ( !pLoad->EndUnit() ) // ACI
+         {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
+      }
+
+      if ( 5 < version )
+      {
+         // version 6
+         if ( !pLoad->BeginUnit(_T("CEBFIP")) )
+         {
+            THROW_LOAD(InvalidFileFormat,pLoad);
+         }
+
+         int value;
+         if ( !pLoad->Property(_T("CementType"),&value) )
+         {
+            THROW_LOAD(InvalidFileFormat,pLoad);
+         }
+
+         m_CEBFIPCementType = (pgsTypes::CEBFIPCementType)value;
+
+         if ( !pLoad->EndUnit() ) // CEBFIP
+         {
+            THROW_LOAD(InvalidFileFormat,pLoad);
+         }
       }
 
       if(!pLoad->EndUnit())
+      {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
    }
    else
+   {
       return false; // not a concrete entry
+   }
    
    return true;
 }
@@ -347,12 +456,16 @@ bool ConcreteLibraryEntry::IsEqual(const ConcreteLibraryEntry& rOther, bool cons
    else
    {
       test &= m_CureMethod   == rOther.m_CureMethod;
-      test &= m_CementType   == rOther.m_CementType;
+      test &= m_ACI209CementType   == rOther.m_ACI209CementType;
    }
+
+   test &= m_CEBFIPCementType == rOther.m_CEBFIPCementType;
 
 
    if (considerName)
+   {
       test &= this->GetName()==rOther.GetName();
+   }
 
    return test;
 }
@@ -550,14 +663,24 @@ void ConcreteLibraryEntry::SetCureMethod(pgsTypes::CureMethod cureMethod)
    m_CureMethod = cureMethod;
 }
 
-pgsTypes::CementType ConcreteLibraryEntry::GetCementType() const
+pgsTypes::ACI209CementType ConcreteLibraryEntry::GetACI209CementType() const
 {
-   return m_CementType;
+   return m_ACI209CementType;
 }
 
-void ConcreteLibraryEntry::SetCementType(pgsTypes::CementType cementType)
+void ConcreteLibraryEntry::SetACI209CementType(pgsTypes::ACI209CementType cementType)
 {
-   m_CementType = cementType;
+   m_ACI209CementType = cementType;
+}
+
+pgsTypes::CEBFIPCementType ConcreteLibraryEntry::GetCEBFIPCementType() const
+{
+   return m_CEBFIPCementType;
+}
+
+void ConcreteLibraryEntry::SetCEBFIPCementType(pgsTypes::CEBFIPCementType cementType)
+{
+   m_CEBFIPCementType = cementType;
 }
 
 //======================== INQUIRY    =======================================
@@ -601,9 +724,9 @@ bool ConcreteLibraryEntry::Edit(bool allowEditing,int nPage)
    dlg.m_ACI.m_A               = this->GetAlpha();
    dlg.m_ACI.m_B               = this->GetBeta();
    dlg.m_ACI.m_CureMethod      = this->GetCureMethod();
-   dlg.m_ACI.m_CementType      = this->GetCementType();
+   dlg.m_ACI.m_CementType      = this->GetACI209CementType();
 
-#pragma Reminder("UPDATE: deal with CEB-FIP concrete models")
+   dlg.m_CEBFIP.m_CementType   = this->GetCEBFIPCementType();
 
    INT_PTR i = dlg.DoModal();
    dlg.SetActivePage(nPage);
@@ -631,9 +754,9 @@ bool ConcreteLibraryEntry::Edit(bool allowEditing,int nPage)
       this->SetAlpha(dlg.m_ACI.m_A);
       this->SetBeta(dlg.m_ACI.m_B);
       this->SetCureMethod(dlg.m_ACI.m_CureMethod);
-      this->SetCementType(dlg.m_ACI.m_CementType);
+      this->SetACI209CementType(dlg.m_ACI.m_CementType);
 
-#pragma Reminder("UPDATE: deal with CEB-FIP concrete models")
+      this->SetCEBFIPCementType(dlg.m_CEBFIP.m_CementType);
 
       return true;
    }
@@ -667,8 +790,10 @@ void ConcreteLibraryEntry::MakeCopy(const ConcreteLibraryEntry& rOther)
    m_A                  = rOther.m_A;
    m_B                  = rOther.m_B;
    m_CureMethod         = rOther.m_CureMethod;
-   m_CementType         = rOther.m_CementType;
+   m_ACI209CementType   = rOther.m_ACI209CementType;
 
+   // CEB-FIP
+   m_CEBFIPCementType = rOther.m_CEBFIPCementType;
 }
 
 void ConcreteLibraryEntry::MakeAssignment(const ConcreteLibraryEntry& rOther)

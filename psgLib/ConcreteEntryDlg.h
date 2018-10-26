@@ -28,6 +28,7 @@
 #include "ConcreteEntryGeneralPage.h"
 #include "AASHTOConcretePage.h"
 #include "ACIConcretePage.h"
+#include "CEBFIPConcretePage.h"
 
 /////////////////////////////////////////////////////////////////////////////
 // CConcreteEntryDlg dialog
@@ -56,7 +57,7 @@ public:
    CConcreteEntryGeneralPage m_General;
    CAASHTOConcretePage m_AASHTO;
    CACIConcretePage m_ACI;
-   //CCEBFIBConcretePage m_CEBFIB;
+   CCEBFIPConcretePage m_CEBFIP;
 
 protected:
    void Init();

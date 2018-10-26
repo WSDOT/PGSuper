@@ -362,14 +362,25 @@ Float64 pgsShearRatingArtifact::GetRatingFactor() const
       }
 
       Float64 C = p * m_CapacityRedutionFactor * m_Vn;
-      Float64 RF = (C - m_gDC*m_Vdc - m_gDW*m_Vdw - m_gCR*m_Vcr - m_gSH*m_Vsh - m_gRE*m_Vre - m_gPS*m_Vps)/(m_gLL*m_Vllim);
+      Float64 RFtop = C - m_gDC*m_Vdc - m_gDW*m_Vdw - m_gCR*m_Vcr - m_gSH*m_Vsh - m_gRE*m_Vre - m_gPS*m_Vps;
+      Float64 RFbot = m_gLL*m_Vllim;
 
-      if ( RF < 0 )
+      if ( RFtop < 0 )
       {
-         RF = 0;
+         // There isn't any capacity remaining for live load
+         m_RF = 0;
       }
-
-      m_RF = RF;
+      else if ( ::BinarySign(RFtop) != ::BinarySign(RFbot) && !IsZero(RFtop) )
+      {
+         // (fr - DL) and LL have opposite signs
+         // this case probably shouldn't happen, but if does,
+         // the rating is great
+         m_RF = DBL_MAX;
+      }
+      else
+      {
+         m_RF = RFtop/RFbot;
+      }
    }
 
    m_bRFComputed = true;

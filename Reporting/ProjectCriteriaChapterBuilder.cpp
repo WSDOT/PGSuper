@@ -1017,6 +1017,10 @@ void write_losses(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDisp
          {
             *pPara<<_T("Time-dependent concrete properties based on ACI 209R-92") << rptNewLine;
          }
+         else if ( pSpecEntry->GetTimeDependentModel() == TDM_CEBFIP)
+         {
+            *pPara<<_T("Time-dependent concrete properties based on CEB-FIP Model Code 1990") << rptNewLine;
+         }
          else
          {
             ATLASSERT(false);

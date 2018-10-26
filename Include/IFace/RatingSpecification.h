@@ -92,7 +92,6 @@ interface IRatingSpecification : IUnknown
 
    virtual void SetAllowableTensionCoefficient(pgsTypes::LoadRatingType ratingType,Float64 t) = 0;
    virtual Float64 GetAllowableTensionCoefficient(pgsTypes::LoadRatingType ratingType) = 0;
-   virtual Float64 GetAllowableTension(pgsTypes::LoadRatingType ratingType,const CSegmentKey& segmentKey) = 0;
 
    virtual void RateForStress(pgsTypes::LoadRatingType ratingType,bool bRateForStress) = 0;
    virtual bool RateForStress(pgsTypes::LoadRatingType ratingType) = 0;

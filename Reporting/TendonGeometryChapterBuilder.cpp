@@ -89,6 +89,7 @@ rptChapter* CTendonGeometryChapterBuilder::Build(CReportSpecification* pRptSpec,
 
    location.IncludeSpanAndGirder(true);
 
+   std::vector<pgsPointOfInterest> vPoi(pPoi->GetPointsOfInterest(CSegmentKey(girderKey,ALL_SEGMENTS)));
 
    DuctIndexType nDucts = pTendonGeom->GetDuctCount(girderKey);
    for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
@@ -111,8 +112,6 @@ rptChapter* CTendonGeometryChapterBuilder::Build(CReportSpecification* pRptSpec,
       (*pTable)(0,col++) << symbol(alpha) << rptNewLine << _T("(from End)");
       (*pTable)(0,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pF")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
       (*pTable)(0,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pA")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-
-      std::vector<pgsPointOfInterest> vPoi(pPoi->GetPointsOfInterest(CSegmentKey(girderKey,ALL_SEGMENTS)));
 
       RowIndexType row = 1;
       std::vector<pgsPointOfInterest>::iterator iter(vPoi.begin());
@@ -146,15 +145,40 @@ rptChapter* CTendonGeometryChapterBuilder::Build(CReportSpecification* pRptSpec,
       }
 
       dist.ShowUnitTag(true);
+      ecc.ShowUnitTag(true);
+      stress.ShowUnitTag(true);
+
       Float64 Lduct = pTendonGeom->GetDuctLength(girderKey,ductIdx);
       *pPara << _T("Duct Length = ") << dist.SetValue(Lduct) << rptNewLine;
+      *pPara << rptNewLine;
+
+      Float64 pfpF = pLosses->GetAverageFrictionLoss(girderKey,ductIdx);
+      *pPara << _T("Avg. Friction Loss = ") << stress.SetValue(pfpF) << rptNewLine;
+
+      Float64 pfpA = pLosses->GetAverageAnchorSetLoss(girderKey,ductIdx);
+      *pPara << _T("Avg. Anchor Set Loss = ") << stress.SetValue(pfpA) << rptNewLine;
+      *pPara << rptNewLine;
 
       Float64 Lset = pLosses->GetAnchorSetZoneLength(girderKey,ductIdx,pgsTypes::metStart);
       *pPara << _T("Left End, ") << Sub2(_T("L"),_T("set")) << _T(" = ") << dist.SetValue(Lset) << rptNewLine;
 
       Lset = pLosses->GetAnchorSetZoneLength(girderKey,ductIdx,pgsTypes::metEnd);
       *pPara << _T("Right End, ") << Sub2(_T("L"),_T("set")) << _T(" = ") << dist.SetValue(Lset) << rptNewLine;
+
+      *pPara << rptNewLine;
+
+      Float64 elongation = pLosses->GetElongation(girderKey,ductIdx,pgsTypes::metStart);
+      *pPara << _T("Left End, Elongation = ") << ecc.SetValue(elongation) << rptNewLine;
+
+      elongation = pLosses->GetElongation(girderKey,ductIdx,pgsTypes::metEnd);
+      *pPara << _T("Right End, Elongation = ") << ecc.SetValue(elongation) << rptNewLine;
+
+      *pPara << rptNewLine;
+
+
       dist.ShowUnitTag(false);
+      ecc.ShowUnitTag(false);
+      stress.ShowUnitTag(false);
    }
 
 

@@ -230,9 +230,9 @@ BOOL CSpecLossPage::OnInitDialog()
    pBox->AddString(_T("Assumption of 0.7 fpu unless special conditions"));
 
    pBox = (CComboBox*)GetDlgItem(IDC_TIME_DEPENDENT_MODEL);
-   pBox->AddString(_T("AASHTO LRFD"));
-   pBox->AddString(_T("ACI 209R-92"));
-   //pBox->AddString(_T("CEB-FIP 1990"));
+   pBox->SetItemData(pBox->AddString(_T("AASHTO LRFD")), TDM_AASHTO);
+   pBox->SetItemData(pBox->AddString(_T("ACI 209R-92")), TDM_ACI209);
+   pBox->SetItemData(pBox->AddString(_T("CEB-FIP 1990")),TDM_CEBFIP);
 
    CPropertyPage::OnInitDialog();
 

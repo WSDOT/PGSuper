@@ -10141,7 +10141,6 @@ Float64 CBridgeAgentImp::GetStrandRelaxation(const CSegmentKey& segmentKey,Inter
    }
 
    const matPsStrand* pStrand = GetStrandMaterial(segmentKey,strandType);
-   Float64 fpy = pStrand->GetYieldStrength();
 
    IntervalIndexType stressStrandIntervalIdx = m_IntervalManager.GetStressStrandInterval(segmentKey);
    if ( intervalIdx < stressStrandIntervalIdx )
@@ -10154,7 +10153,7 @@ Float64 CBridgeAgentImp::GetStrandRelaxation(const CSegmentKey& segmentKey,Inter
    Float64 tStart = m_IntervalManager.GetTime(segmentKey,intervalIdx,pgsTypes::Start);
    Float64 tEnd   = m_IntervalManager.GetTime(segmentKey,intervalIdx,pgsTypes::End);
 
-   Float64 fr = GetRelaxation(fpi,fpy,pStrand->GetType(),tStart,tEnd,tStress);
+   Float64 fr = GetRelaxation(fpi,pStrand,tStart,tEnd,tStress);
    return fr;
 }
 
@@ -10173,7 +10172,6 @@ Float64 CBridgeAgentImp::GetTendonRelaxation(const CGirderKey& girderKey,DuctInd
    }
 
    const matPsStrand* pStrand = GetTendonMaterial(girderKey);
-   Float64 fpy = pStrand->GetYieldStrength();
 
    IntervalIndexType stressTendonIntervalIdx = m_IntervalManager.GetStressTendonInterval(girderKey,ductIdx);
    if ( intervalIdx < stressTendonIntervalIdx )
@@ -10186,7 +10184,7 @@ Float64 CBridgeAgentImp::GetTendonRelaxation(const CGirderKey& girderKey,DuctInd
    Float64 tStart  = m_IntervalManager.GetTime(girderKey,intervalIdx,pgsTypes::Start);
    Float64 tEnd    = m_IntervalManager.GetTime(girderKey,intervalIdx,pgsTypes::End);
 
-   Float64 fr = GetRelaxation(fpi,fpy,pStrand->GetType(),tStart,tEnd,tStress);
+   Float64 fr = GetRelaxation(fpi,pStrand,tStart,tEnd,tStress);
    return fr;
 }
 
@@ -25234,12 +25232,16 @@ void CBridgeAgentImp::CreateStrandMover(LPCTSTR strGirderName,IStrandMover** ppS
    ATLASSERT(*ppStrandMover != NULL);
 }
 
-Float64 CBridgeAgentImp::GetRelaxation(Float64 fpi,Float64 fpy,matPsStrand::Type strandType,Float64 tStart,Float64 tEnd,Float64 tStress)
+Float64 CBridgeAgentImp::GetRelaxation(Float64 fpi,const matPsStrand* pStrand,Float64 tStart,Float64 tEnd,Float64 tStress)
 {
    GET_IFACE(ILossParameters,pLossParameters);
 #if defined _DEBUG
    ATLASSERT(pLossParameters->GetLossMethod() == pgsTypes::TIME_STEP);
 #endif
+
+   matPsStrand::Type strandType = pStrand->GetType();
+   Float64 fpy = pStrand->GetYieldStrength();
+   Float64 fpu = pStrand->GetUltimateStrength();
 
    // This method computes the incremental strand relaxation during the time period tStart-tEnd
    // with the stress in the strand fpi at the beginning of the interval
@@ -25251,14 +25253,14 @@ Float64 CBridgeAgentImp::GetRelaxation(Float64 fpi,Float64 fpy,matPsStrand::Type
       Float64 initial_stress_ratio = fpi/fpy;
       if ( tStart-tStress < 1./24. )
       {
-         // don't want to log10 to be less than zero (see "Recommendations for Estimating Prestress Losses",
+         // don't want log10 to be less than zero (see "Recommendations for Estimating Prestress Losses",
          // PCI Journal July-August 1975, pg 51)
          tStart = tStress + 1./24.; 
       }
 
       if ( tEnd-tStress < 1./24. )
       {
-         // don't want to log10 to be less than zero (see "Recommendations for Estimating Prestress Losses",
+         // don't want log10 to be less than zero (see "Recommendations for Estimating Prestress Losses",
          // PCI Journal July-August 1975, pg 51)
          tEnd = tStress + 1./24.; 
       }
@@ -25273,10 +25275,33 @@ Float64 CBridgeAgentImp::GetRelaxation(Float64 fpi,Float64 fpy,matPsStrand::Type
          fr = (fpi/K)*(initial_stress_ratio - 0.55)*(log10(24*(tEnd-tStress)) - log10(24*(tStart-tStress))); // t is in days
       }
    }
-   //else if ( model == pgsTypes::tdmCEBFIP )
-   //{
-#pragma Reminder("UPDATE: Need to deal with CEB-FIP")
-   //}
+   else if ( model == pgsTypes::tdmCEBFIP )
+   {
+      Float64 initial_stress_ratio = fpi/fpu; // See CEB-FIP Figure 2.3.3
+      Float64 p; // relaxation ratio
+      Float64 k;
+      if ( strandType == matPsStrand::StressRelieved )
+      {
+         // curve fit for Class 1 curve from CEB-FIP Figure 2.3.3
+         p = 0.4*initial_stress_ratio + 0.2;
+         k = 0.12;
+      }
+      else
+      {
+         // curve fit for Class 2 curve from CEB-FIP Figure 2.3.3
+         p = initial_stress_ratio*initial_stress_ratio - 1.2*initial_stress_ratio + 0.37;
+         k = 0.19;
+      }
+
+      // Assume ultimate relaxation to occur at 50 years
+      // CEB-FIP 2.3.4.5, relxation at 50 years = 3 times relaxation at day 1000
+      // Relaxation rate = 1/3 1000 hour relaxation
+      p /= 3;
+
+      Float64 t1 = tStart - tStress;
+      Float64 t2 = tEnd   - tStress;
+      fr = fpi*p*(pow(24*t2/1000,k) - pow(24*t1/1000,k)); // Equation in CEB-FEB commentary for 2.3.4.5
+   }
    else
    {
       ATLASSERT(false); // is there a new type?

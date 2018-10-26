@@ -81,7 +81,9 @@ CConcreteMaterial::CConcreteMaterial()
    A = gs_A;
    B = 0.85;
    CureMethod = pgsTypes::Moist;
-   CementType = pgsTypes::TypeI;
+   ACI209CementType = pgsTypes::TypeI;
+
+   CEBFIPCementType = pgsTypes::N;
 }  
 
 CConcreteMaterial::CConcreteMaterial(const CConcreteMaterial& rOther)
@@ -233,10 +235,15 @@ bool CConcreteMaterial::operator==(const CConcreteMaterial& rOther) const
          return false;
       }
 
-      if ( CementType != rOther.CementType )
+      if ( ACI209CementType != rOther.ACI209CementType )
       {
          return false;
       }
+   }
+
+   if ( CEBFIPCementType != rOther.CEBFIPCementType )
+   {
+      return false;
    }
 
 
@@ -280,7 +287,10 @@ void CConcreteMaterial::MakeCopy(const CConcreteMaterial& rOther)
    A                  = rOther.A;
    B                  = rOther.B;
    CureMethod         = rOther.CureMethod;
-   CementType         = rOther.CementType;
+   ACI209CementType   = rOther.ACI209CementType;
+
+   // CEB-FIP Parameters
+   CEBFIPCementType   = rOther.CEBFIPCementType;
 }
 
 
@@ -291,7 +301,7 @@ void CConcreteMaterial::MakeAssignment(const CConcreteMaterial& rOther)
 
 HRESULT CConcreteMaterial::Save(IStructuredSave* pStrSave,IProgress* pProgress)
 {
-   pStrSave->BeginUnit(_T("Concrete"),1.0);
+   pStrSave->BeginUnit(_T("Concrete"),2.0);
    pStrSave->put_Property(_T("Type"),             CComVariant( matConcrete::GetTypeName((matConcrete::Type)Type,false).c_str() ));
    pStrSave->put_Property(_T("Fc"),               CComVariant(Fc));
 
@@ -346,10 +356,13 @@ HRESULT CConcreteMaterial::Save(IStructuredSave* pStrSave,IProgress* pProgress)
    pStrSave->put_Property(_T("A"),CComVariant(A));
    pStrSave->put_Property(_T("B"),CComVariant(B));
    pStrSave->put_Property(_T("CureMethod"),CComVariant(CureMethod));
-   pStrSave->put_Property(_T("CementType"),CComVariant(CementType));
+   pStrSave->put_Property(_T("CementType"),CComVariant(ACI209CementType));
    pStrSave->EndUnit(); // ACI
 
-   // CEB-FIP 
+   // CEB-FIP (added in version 2)
+   pStrSave->BeginUnit(_T("CEBFIP"),1.0);
+   pStrSave->put_Property(_T("CementType"),CComVariant(CEBFIPCementType));
+   pStrSave->EndUnit(); // CEBFIP
 
    pStrSave->EndUnit(); // concrete
 
@@ -362,6 +375,9 @@ HRESULT CConcreteMaterial::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
    USES_CONVERSION;
 
    pStrLoad->BeginUnit(_T("Concrete"));
+
+   Float64 version;
+   pStrLoad->get_Version(&version);
 
    var.vt = VT_BSTR;
    pStrLoad->get_Property(_T("Type"),&var);
@@ -476,11 +492,19 @@ HRESULT CConcreteMaterial::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
    CureMethod = (pgsTypes::CureMethod)var.iVal;
 
    pStrLoad->get_Property(_T("CementType"),&var);
-   CementType = (pgsTypes::CementType)var.iVal;
+   ACI209CementType = (pgsTypes::ACI209CementType)var.iVal;
 
    pStrLoad->EndUnit(); // ACI
 
-   // CEB-FIP
+   // CEB-FIP (added in version 2)
+   if ( 1.0 < version )
+   {
+      pStrLoad->BeginUnit(_T("CEBFIP"));
+      var.vt = VT_I4;
+      pStrLoad->get_Property(_T("CementType"),&var);
+      CEBFIPCementType = (pgsTypes::CEBFIPCementType)var.iVal;
+      pStrLoad->EndUnit(); // CEBFIP
+   }
 
    pStrLoad->EndUnit(); // concrete
 

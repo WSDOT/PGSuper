@@ -209,6 +209,8 @@
 #define IDD_PRETENSION_PARAMETERS       359
 #define IDD_ACI_PARAMETERS              362
 #define IDD_TIMESTEP_PARAMETERS         363
+#define IDD_DIALOG3                     364
+#define IDD_CEBFIP_CONCRETE             364
 #define IDD_GIRDER_SELECT_STRANDS       390
 #define IDD_PIERCONNECTIONS2            391
 #define IDR_PGSUPER_TEMPLATE_ICON       500
@@ -1663,7 +1665,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        364
+#define _APS_NEXT_RESOURCE_VALUE        365
 #define _APS_NEXT_COMMAND_VALUE         36991
 #define _APS_NEXT_CONTROL_VALUE         1808
 #define _APS_NEXT_SYMED_VALUE           113

@@ -656,6 +656,14 @@
 				>
 			</File>
 			<File
+				RelativePath=".\CEBFIPCreepCoefficientChapterBuilder.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\CEBFIPShrinkageStrainChapterBuilder.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\CombinedMomentsTable.cpp"
 				>
 			</File>
@@ -1402,6 +1410,14 @@
 			</File>
 			<File
 				RelativePath="..\Include\Reporting\CastingYardStressTable.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Include\Reporting\CEBFIPCreepCoefficientChapterBuilder.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Include\Reporting\CEBFIPShrinkageStrainChapterBuilder.h"
 				>
 			</File>
 			<File

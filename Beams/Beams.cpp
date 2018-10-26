@@ -51,7 +51,15 @@
 #include "BoxBeamFactory2.h"
 #include "TxDotDoubleTFactory.h"
 #include "DeckedSlabBeamFactory.h"
+
+#include "IBeamDistFactorEngineer.h"
+#include "BoxBeamDistFactorEngineer.h"
+#include "BulbTeeDistFactorEngineer.h"
+#include "UBeamDistFactorEngineer.h"
+#include "MultiWebDistFactorEngineer.h"
+#include "VoidedSlabDistFactorEngineer.h"
 #include "VoidedSlab2DistFactorEngineer.h"
+
 #include "PsBeamLossEngineer.h"
 #include "TimeStepLossEngineer.h"
 
@@ -127,6 +135,14 @@ BEGIN_OBJECT_MAP(ObjectMap)
    OBJECT_ENTRY(CLSID_SplicedUBeamFamily,    CSplicedUBeamFamily)
 
    OBJECT_ENTRY(CLSID_StrandMoverImpl, CStrandMoverImpl)
+
+   OBJECT_ENTRY(CLSID_BoxBeamDistFactorEngineer, CBoxBeamDistFactorEngineer)
+   OBJECT_ENTRY(CLSID_BulbTeeDistFactorEngineer, CBulbTeeDistFactorEngineer)
+   OBJECT_ENTRY(CLSID_MultiWebDistFactorEngineer, CMultiWebDistFactorEngineer)
+   OBJECT_ENTRY(CLSID_IBeamDistFactorEngineer, CIBeamDistFactorEngineer)
+   OBJECT_ENTRY(CLSID_UBeamDistFactorEngineer, CUBeamDistFactorEngineer)
+   OBJECT_ENTRY(CLSID_VoidedSlabDistFactorEngineer, CVoidedSlabDistFactorEngineer)
+   OBJECT_ENTRY(CLSID_VoidedSlab2DistFactorEngineer, CVoidedSlab2DistFactorEngineer)
 
    OBJECT_ENTRY(CLSID_PsBeamLossEngineer,   CPsBeamLossEngineer)
    OBJECT_ENTRY(CLSID_TimeStepLossEngineer, CTimeStepLossEngineer)

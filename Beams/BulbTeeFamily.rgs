@@ -4,7 +4,7 @@ HKCR
 	{
 		CLSID = s '{F35DAB20-CD13-4529-A0AC-A65BA6D03DA0}'
 	}
-	PGSuperBeamFamily.BulbTee = s 'I-Beam'
+	PGSuperBeamFamily.BulbTee = s 'Deck Bulb Tee'
 	{
 		CLSID = s '{F35DAB20-CD13-4529-A0AC-A65BA6D03DA0}'
 		CurVer = s 'PGSuperBeamFamily.BulbTee.1'

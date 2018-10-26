@@ -264,9 +264,9 @@ void CConcreteGeneralPage::OnCopyMaterial()
          pParent->m_ACI.m_A               = entry->GetAlpha();
          pParent->m_ACI.m_B               = entry->GetBeta();
          pParent->m_ACI.m_CureMethod      = entry->GetCureMethod();
-         pParent->m_ACI.m_CementType      = entry->GetCementType();
+         pParent->m_ACI.m_CementType      = entry->GetACI209CementType();
 
-#pragma Reminder("UPDATE: copy CEB-FIP model data here")
+         pParent->m_CEBFIP.m_CementType = entry->GetCEBFIPCementType();
 
          CDataExchange dx(this,FALSE);
          DoDataExchange(&dx);

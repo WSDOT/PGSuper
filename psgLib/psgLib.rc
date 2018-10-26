@@ -74,8 +74,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 3,0,0,19
- PRODUCTVERSION 3,0,0,19
+ FILEVERSION 3,0,0,20
+ PRODUCTVERSION 3,0,0,20
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -93,12 +93,12 @@ BEGIN
             VALUE "Comments", "A member of the Alternate Route Project"
             VALUE "CompanyName", "Washington State Department of Transportation"
             VALUE "FileDescription", "psgLib DLL"
-            VALUE "FileVersion", "3.0.0.19"
+            VALUE "FileVersion", "3.0.0.20"
             VALUE "InternalName", "psgLib"
             VALUE "LegalCopyright", "Copyright © 1999-2014, Washington State Department of Transportation, All Rights Reserved"
             VALUE "OriginalFilename", "psgLib.DLL"
             VALUE "ProductName", "PGSuper"
-            VALUE "ProductVersion", "3.0.0.19"
+            VALUE "ProductVersion", "3.0.0.20"
         END
     END
     BLOCK "VarFileInfo"
@@ -1674,6 +1674,15 @@ BEGIN
     PUSHBUTTON      "Help",ID_HELP,283,101,50,14
 END
 
+IDD_CEBFIP_CONCRETE DIALOGEX 0, 0, 229, 131
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "CEB-FIP"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    LTEXT           "Cement Type",IDC_STATIC,7,7,44,8
+    COMBOBOX        IDC_CEMENT_TYPE,61,7,161,64,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -2012,6 +2021,14 @@ BEGIN
         RIGHTMARGIN, 333
         TOPMARGIN, 7
         BOTTOMMARGIN, 115
+    END
+
+    IDD_CEBFIP_CONCRETE, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 222
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 124
     END
 END
 #endif    // APSTUDIO_INVOKED

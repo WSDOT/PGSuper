@@ -103,6 +103,14 @@ BOOL CClosureJointGeneralPage::OnInitDialog()
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
+   GET_IFACE2(pBroker,ISpecification,pSpec);
+   std::_tstring strSpecName = pSpec->GetSpecification();
+
+   GET_IFACE2(pBroker,ILibrary,pLib);
+   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( strSpecName.c_str() );
+   m_LossMethod = pSpecEntry->GetLossMethod();
+   m_TimeDependentModel = pSpecEntry->GetTimeDependentModel();
+
    CClosureJointDlg* pParent = (CClosureJointDlg*)GetParent();
 
    GroupIndexType  grpIdx  = pParent->m_ClosureKey.groupIndex;
@@ -232,12 +240,12 @@ void CClosureJointGeneralPage::OnMoreConcreteProperties()
    dlg.m_ACI.m_A               = pParent->m_ClosureJoint.GetConcrete().A;
    dlg.m_ACI.m_B               = pParent->m_ClosureJoint.GetConcrete().B;
    dlg.m_ACI.m_CureMethod      = pParent->m_ClosureJoint.GetConcrete().CureMethod;
-   dlg.m_ACI.m_CementType      = pParent->m_ClosureJoint.GetConcrete().CementType;
+   dlg.m_ACI.m_CementType      = pParent->m_ClosureJoint.GetConcrete().ACI209CementType;
    dlg.m_ACI.m_TimeAtInitialStrength = ::ConvertToSysUnits(m_AgeAtContinuity,unitMeasure::Day);
    dlg.m_ACI.m_fci             = pParent->m_ClosureJoint.GetConcrete().Fci;
    dlg.m_ACI.m_fc28            = pParent->m_ClosureJoint.GetConcrete().Fc;
 
-#pragma Reminder("UPDATE: deal with CEB-FIP concrete models")
+   dlg.m_CEBFIP.m_CementType = pParent->m_ClosureJoint.GetConcrete().CEBFIPCementType;
 
    dlg.m_General.m_strUserEc  = m_strUserEc;
 
@@ -264,10 +272,10 @@ void CClosureJointGeneralPage::OnMoreConcreteProperties()
       pParent->m_ClosureJoint.GetConcrete().A                  = dlg.m_ACI.m_A;
       pParent->m_ClosureJoint.GetConcrete().B                  = dlg.m_ACI.m_B;
       pParent->m_ClosureJoint.GetConcrete().CureMethod         = dlg.m_ACI.m_CureMethod;
-      pParent->m_ClosureJoint.GetConcrete().CementType         = dlg.m_ACI.m_CementType;
+      pParent->m_ClosureJoint.GetConcrete().ACI209CementType   = dlg.m_ACI.m_CementType;
       pParent->m_ClosureJoint.GetConcrete().Fci                = dlg.m_ACI.m_fci;
 
-#pragma Reminder("UPDATE: deal with CEB-FIP concrete models")
+      pParent->m_ClosureJoint.GetConcrete().CEBFIPCementType   = dlg.m_CEBFIP.m_CementType;
 
       m_strUserEc  = dlg.m_General.m_strUserEc;
       m_ctrlEc.SetWindowText(m_strUserEc);
@@ -401,15 +409,31 @@ void CClosureJointGeneralPage::UpdateEci()
 
       CClosureJointDlg* pParent = (CClosureJointDlg*)GetParent();
 
-      matACI209Concrete concrete;
-      concrete.UserEc28(true);
-      concrete.SetEc28(Ec);
-      concrete.SetA(pParent->m_ClosureJoint.GetConcrete().A);
-      concrete.SetBeta(pParent->m_ClosureJoint.GetConcrete().B);
-      concrete.SetTimeAtCasting(0);
-      concrete.SetFc28(pParent->m_ClosureJoint.GetConcrete().Fc);
-      concrete.SetStrengthDensity(pParent->m_ClosureJoint.GetConcrete().StrengthDensity);
-      Float64 Eci = concrete.GetEc(m_AgeAtContinuity);
+      Float64 Eci;
+      if ( m_TimeDependentModel == TDM_AASHTO || m_TimeDependentModel == TDM_ACI209 )
+      {
+         matACI209Concrete concrete;
+         concrete.UserEc28(true);
+         concrete.SetEc28(Ec);
+         concrete.SetA(pParent->m_ClosureJoint.GetConcrete().A);
+         concrete.SetBeta(pParent->m_ClosureJoint.GetConcrete().B);
+         concrete.SetTimeAtCasting(0);
+         concrete.SetFc28(pParent->m_ClosureJoint.GetConcrete().Fc);
+         concrete.SetStrengthDensity(pParent->m_ClosureJoint.GetConcrete().StrengthDensity);
+         Eci = concrete.GetEc(m_AgeAtContinuity);
+      }
+      else
+      {
+         ATLASSERT(m_TimeDependentModel == TDM_CEBFIP);
+         matCEBFIPConcrete concrete;
+         concrete.UserEc28(true);
+         concrete.SetEc28(Ec);
+         concrete.SetTimeAtCasting(0);
+         concrete.SetFc28(pParent->m_ClosureJoint.GetConcrete().Fc);
+         concrete.SetStrengthDensity(pParent->m_ClosureJoint.GetConcrete().StrengthDensity);
+         concrete.SetCementType((matCEBFIPConcrete::CementType)pParent->m_ClosureJoint.GetConcrete().CEBFIPCementType);
+         Eci = concrete.GetEc(m_AgeAtContinuity);
+      }
 
       CString strEci;
       strEci.Format(_T("%s"),FormatDimension(Eci,pDisplayUnits->GetModEUnit(),false));
@@ -483,7 +507,16 @@ void CClosureJointGeneralPage::UpdateEc()
 
       CClosureJointDlg* pParent = (CClosureJointDlg*)GetParent();
 
-      Float64 Ec = matACI209Concrete::ComputeEc28(Eci,m_AgeAtContinuity,pParent->m_ClosureJoint.GetConcrete().A,pParent->m_ClosureJoint.GetConcrete().B);
+      Float64 Ec;
+      if ( m_TimeDependentModel == TDM_AASHTO || m_TimeDependentModel == TDM_ACI209 )
+      {
+         Ec = matACI209Concrete::ComputeEc28(Eci,m_AgeAtContinuity,pParent->m_ClosureJoint.GetConcrete().A,pParent->m_ClosureJoint.GetConcrete().B);
+      }
+      else
+      {
+         ATLASSERT( m_TimeDependentModel == TDM_CEBFIP );
+         Ec = matCEBFIPConcrete::ComputeEc28(Eci,m_AgeAtContinuity,(matCEBFIPConcrete::CementType)pParent->m_ClosureJoint.GetConcrete().CEBFIPCementType);
+      }
 
       CString strEc;
       strEc.Format(_T("%s"),FormatDimension(Ec,pDisplayUnits->GetModEUnit(),false));
@@ -516,7 +549,6 @@ void CClosureJointGeneralPage::UpdateFc()
    if ( i == IDC_FC1 )
    {
       // concrete model is based on f'ci... compute f'c
-#pragma Reminder("UPDATE: assuming ACI209 concrete model") // OK for LRFD and ACI209, review for CEB-FIP
       // Get f'ci from edit control
       CString strFci;
       m_ctrlFci.GetWindowText(strFci);
@@ -530,7 +562,17 @@ void CClosureJointGeneralPage::UpdateFc()
       fci = ::ConvertToSysUnits(fci,pDisplayUnits->GetStressUnit().UnitOfMeasure);
 
       CClosureJointDlg* pParent = (CClosureJointDlg*)GetParent();
-      Float64 fc = matACI209Concrete::ComputeFc28(fci,m_AgeAtContinuity,pParent->m_ClosureJoint.GetConcrete().A,pParent->m_ClosureJoint.GetConcrete().B);
+      Float64 fc;
+
+      if ( m_TimeDependentModel == TDM_AASHTO || m_TimeDependentModel == TDM_ACI209 )
+      {
+         fc = matACI209Concrete::ComputeFc28(fci,m_AgeAtContinuity,pParent->m_ClosureJoint.GetConcrete().A,pParent->m_ClosureJoint.GetConcrete().B);
+      }
+      else
+      {
+         ATLASSERT(m_TimeDependentModel == TDM_CEBFIP);
+         fc = matCEBFIPConcrete::ComputeFc28(fci,m_AgeAtContinuity,(matCEBFIPConcrete::CementType)pParent->m_ClosureJoint.GetConcrete().CEBFIPCementType);
+      }
 
       CString strFc;
       strFc.Format(_T("%s"),FormatDimension(fc,pDisplayUnits->GetStressUnit(),false));
@@ -544,7 +586,6 @@ void CClosureJointGeneralPage::UpdateFci()
    if ( i == IDC_FC2 )
    {
       // concrete model is based on f'ci... compute f'c
-#pragma Reminder("UPDATE: assuming ACI209 concrete model") // OK for LRFD and ACI209, review for CEB-FIP
       // Get f'c from edit control
       CString strFc;
       m_ctrlFc.GetWindowText(strFc);
@@ -559,13 +600,25 @@ void CClosureJointGeneralPage::UpdateFci()
 
       CClosureJointDlg* pParent = (CClosureJointDlg*)GetParent();
 
-      matACI209Concrete concrete;
-      concrete.SetTimeAtCasting(0);
-      concrete.SetFc28(fc);
-      concrete.SetA(pParent->m_ClosureJoint.GetConcrete().A);
-      concrete.SetBeta(pParent->m_ClosureJoint.GetConcrete().B);
-      concrete.SetStrengthDensity(pParent->m_ClosureJoint.GetConcrete().StrengthDensity);
-      Float64 fci = concrete.GetFc(m_AgeAtContinuity);
+      Float64 fci;
+      if ( m_TimeDependentModel == TDM_AASHTO || m_TimeDependentModel == TDM_ACI209 )
+      {
+         matACI209Concrete concrete;
+         concrete.SetTimeAtCasting(0);
+         concrete.SetFc28(fc);
+         concrete.SetA(pParent->m_ClosureJoint.GetConcrete().A);
+         concrete.SetBeta(pParent->m_ClosureJoint.GetConcrete().B);
+         fci = concrete.GetFc(m_AgeAtContinuity);
+      }
+      else
+      {
+         ATLASSERT(m_TimeDependentModel == TDM_CEBFIP);
+         matCEBFIPConcrete concrete;
+         concrete.SetTimeAtCasting(0);
+         concrete.SetFc28(fc);
+         concrete.SetCementType((matCEBFIPConcrete::CementType)pParent->m_ClosureJoint.GetConcrete().CEBFIPCementType);
+         fci = concrete.GetFc(m_AgeAtContinuity);
+      }
 
       CString strFci;
       strFci.Format(_T("%s"),FormatDimension(fci,pDisplayUnits->GetStressUnit(),false));

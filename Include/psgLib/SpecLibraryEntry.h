@@ -84,7 +84,7 @@ PSGLIBTPL sysSubjectT<SpecLibraryEntryObserver, SpecLibraryEntry>;
 // constants for time dependent models
 #define TDM_AASHTO    0
 #define TDM_ACI209    1
-//#define TDM_CEBFIP    2
+#define TDM_CEBFIP    2
 
 // MISCELLANEOUS
 //

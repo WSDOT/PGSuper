@@ -1662,7 +1662,7 @@ void pgsDesigner2::CheckSegmentStresses(const CSegmentKey& segmentKey,const std:
 
          bool bIsInPTZ;
          pgsTypes::BridgeAnalysisType bat = (stressLocation == pgsTypes::BottomGirder ? batBottom : batTop);
-         bIsInPTZ = pPrecompressedTensileZone->IsInPrecompressedTensileZone(poi,stressLocation,bat);
+         bIsInPTZ = pPrecompressedTensileZone->IsInPrecompressedTensileZone(poi,task.limitState,stressLocation);
          artifact.IsInPrecompressedTensileZone(stressLocation,bIsInPTZ);
 
          //
@@ -2072,8 +2072,8 @@ void pgsDesigner2::CheckSegmentStressesAtRelease(const CSegmentKey& segmentKey, 
       pgsFlexuralStressArtifact artifact(poi);
 
       bool bIsInPTZ[2]; // access with pgsTypes::StressLocation constant
-      bIsInPTZ[pgsTypes::TopGirder]    = pPrecompressedTensileZone->IsInPrecompressedTensileZone(poi,pgsTypes::TopGirder,   batTop,    pConfig);
-      bIsInPTZ[pgsTypes::BottomGirder] = pPrecompressedTensileZone->IsInPrecompressedTensileZone(poi,pgsTypes::BottomGirder,batBottom, pConfig);
+      bIsInPTZ[pgsTypes::TopGirder]    = pPrecompressedTensileZone->IsInPrecompressedTensileZone(poi,task.limitState,pgsTypes::TopGirder,   pConfig);
+      bIsInPTZ[pgsTypes::BottomGirder] = pPrecompressedTensileZone->IsInPrecompressedTensileZone(poi,task.limitState,pgsTypes::BottomGirder,pConfig);
       artifact.IsInPrecompressedTensileZone(pgsTypes::TopGirder,   bIsInPTZ[pgsTypes::TopGirder]);
       artifact.IsInPrecompressedTensileZone(pgsTypes::BottomGirder,bIsInPTZ[pgsTypes::BottomGirder]);
 
@@ -8298,52 +8298,10 @@ bool pgsDesigner2::CollapseZoneData(CShearZoneData zoneData[MAX_ZONES], ZoneInde
 
 void pgsDesigner2::GetBridgeAnalysisType(GirderIndexType gdr,const StressCheckTask& task,pgsTypes::BridgeAnalysisType& batTop,pgsTypes::BridgeAnalysisType& batBottom)
 {
-#pragma Reminder("REVIEW: missing out on simple span analysis for non-continuous precast bridges")
-   // this is a little bit of a hack. the analysis type for PGSplice documents
-   // is always continuous.
-   //pgsTypes::AnalysisType analysisType;
-   //GET_IFACE(IDocumentType,pDocType);
-   //if ( pDocType->IsPGSpliceDocument() )
-   //{
-   //   GET_IFACE(ISpecification, pSpec);
-   //   analysisType = pSpec->GetAnalysisType();
-   //}
-   //else
-   //{
-   //   CGirderKey girderKey(ALL_GROUPS,gdr);
-   //   analysisType = pgsTypes::Simple;
-
-   //   GET_IFACE(IContinuity,pContinuity);
-   //   if ( pContinuity->IsContinuityFullyEffective(girderKey) )
-   //   {
-   //      GET_IFACE(ISpecification, pSpec);
-   //      analysisType = pSpec->GetAnalysisType();
-   //   }
-   //}
-
-   GET_IFACE(ISpecification, pSpec);
-   pgsTypes::AnalysisType analysisType = pSpec->GetAnalysisType();
-   if ( analysisType == pgsTypes::Simple )
-   {
-      batTop    = pgsTypes::SimpleSpan;
-      batBottom = pgsTypes::SimpleSpan;
-   }
-   else if ( analysisType == pgsTypes::Continuous )
-   {
-      batTop    = pgsTypes::ContinuousSpan;
-      batBottom = pgsTypes::ContinuousSpan;
-   }
-   else
-   {
-      if ( task.stressType == pgsTypes::Compression )
-      {
-         batTop    = pgsTypes::MaxSimpleContinuousEnvelope;
-         batBottom = pgsTypes::MinSimpleContinuousEnvelope;
-      }
-      else
-      {
-         batTop    = pgsTypes::MinSimpleContinuousEnvelope;
-         batBottom = pgsTypes::MaxSimpleContinuousEnvelope;
-      }
-   }
+   // Compression stresses are greatest at the top of the girder using the maximum model in Envelope mode. 
+   // Tensile stresses are greatest at the bottom of the girder using the maximum model in Envelope mode. 
+   // In all other modes, Min/Max are the same
+   GET_IFACE(IProductForces,pProdForces);
+   batTop    = pProdForces->GetBridgeAnalysisType(task.stressType == pgsTypes::Compression ? pgsTypes::Maximize : pgsTypes::Minimize);
+   batBottom = pProdForces->GetBridgeAnalysisType(task.stressType == pgsTypes::Compression ? pgsTypes::Minimize : pgsTypes::Maximize);
 }

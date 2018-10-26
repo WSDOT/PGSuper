@@ -676,6 +676,9 @@ matConcreteBase* CConcreteManager::CreateConcreteModel(LPCTSTR strName,const CCo
       case pgsTypes::tdmACI209:
          pConcrete = CreateACI209Model(concrete,ageAtInitialLoading);
          break;
+      case pgsTypes::tdmCEBFIP:
+         pConcrete = CreateCEBFIPModel(concrete,ageAtInitialLoading);
+         break;
       default:
          ATLASSERT(false); // should never get here
          // is there a new model
@@ -703,7 +706,7 @@ matConcreteBase* CConcreteManager::CreateConcreteModel(LPCTSTR strName,const CCo
    // of the concrete model. To get V/S we need to get section properties and section properties
    // need valid concrete models. This creates a circular dependency. However, the only part
    // of the concrete model that needs V/S is creep and shrinkage. Let V/S be invalid
-   // on the concrete model until a creep of shrinkage parameter is requested... then, make
+   // on the concrete model until a creep or shrinkage parameter is requested... then, make
    // V/S correct
 
 
@@ -1185,6 +1188,7 @@ Float64 CConcreteManager::GetRailingSystemCreepCoefficient(pgsTypes::TrafficBarr
 matConcreteBase* CConcreteManager::GetRailingSystemConcrete(pgsTypes::TrafficBarrierDistribution orientation)
 {
    ValidateConcrete();
+   ValidateConcrete2();
    return m_pRailingConc[orientation].get();
 }
 
@@ -1359,6 +1363,7 @@ Float64 CConcreteManager::GetDeckCreepCoefficient(Float64 t,Float64 tla)
 matConcreteBase* CConcreteManager::GetDeckConcrete()
 {
    ValidateConcrete();
+   ValidateConcrete2();
    return m_pDeckConc.get();
 }
 
@@ -1409,6 +1414,7 @@ Float64 CConcreteManager::GetSegmentCreepCoefficient(const CSegmentKey& segmentK
 matConcreteBase* CConcreteManager::GetSegmentConcrete(const CSegmentKey& segmentKey)
 {
    ValidateConcrete();
+   ValidateConcrete2();
    return m_pSegmentConcrete[segmentKey].get();
 }
 
@@ -1459,6 +1465,7 @@ Float64 CConcreteManager::GetClosureJointCreepCoefficient(const CClosureKey& clo
 matConcreteBase* CConcreteManager::GetClosureJointConcrete(const CClosureKey& closureKey)
 {
    ValidateConcrete();
+   ValidateConcrete2();
    return m_pClosureConcrete[closureKey].get();
 }
 
@@ -1509,7 +1516,7 @@ lrfdLRFDTimeDependentConcrete* CConcreteManager::CreateTimeDependentLRFDConcrete
    else
    {
       lrfdLRFDTimeDependentConcrete::GetModelParameters((matConcreteBase::CureMethod)concrete.CureMethod,
-                                                       (matConcreteBase::CementType)concrete.CementType,
+                                                        (lrfdLRFDTimeDependentConcrete::CementType)concrete.ACI209CementType,
                                                        &A,&B);
    }
 
@@ -1553,7 +1560,7 @@ matACI209Concrete* CConcreteManager::CreateACI209Model(const CConcreteMaterial& 
    else
    {
       matACI209Concrete::GetModelParameters((matConcreteBase::CureMethod)concrete.CureMethod,
-                                            (matConcreteBase::CementType)concrete.CementType,
+                                            (matACI209Concrete::CementType)concrete.ACI209CementType,
                                             &A,&B);
    }
 
@@ -1574,5 +1581,15 @@ matACI209Concrete* CConcreteManager::CreateACI209Model(const CConcreteMaterial& 
       pConcrete->SetEc28(concrete.Ec);
    }
 
+   return pConcrete;
+}
+
+matCEBFIPConcrete* CConcreteManager::CreateCEBFIPModel(const CConcreteMaterial& concrete,Float64 ageAtInitialLoading)
+{
+   matCEBFIPConcrete* pConcrete = new matCEBFIPConcrete;
+   pConcrete->SetFc28(concrete.Fc);
+   pConcrete->UserEc28(concrete.bUserEc);
+   pConcrete->SetEc28(concrete.Ec);
+   pConcrete->SetCementType((matCEBFIPConcrete::CementType)concrete.CEBFIPCementType);
    return pConcrete;
 }

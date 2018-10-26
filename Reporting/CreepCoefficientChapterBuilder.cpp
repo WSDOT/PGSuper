@@ -25,6 +25,7 @@
 #include <Reporting\LRFDCreepCoefficientChapterBuilder.h>
 #include <Reporting\LRFDTimeDependentCreepCoefficientChapterBuilder.h>
 #include <Reporting\ACI209CreepCoefficientChapterBuilder.h>
+#include <Reporting\CEBFIPCreepCoefficientChapterBuilder.h>
 
 #include <IFace\AnalysisResults.h>
 #include <IFace\Project.h>
@@ -76,6 +77,10 @@ rptChapter* CCreepCoefficientChapterBuilder::Build(CReportSpecification* pRptSpe
       else if ( pLossParams->GetTimeDependentModel() == pgsTypes::tdmACI209 )
       {
          pChapter = CACI209CreepCoefficientChapterBuilder().Build(pRptSpec,level);
+      }
+      else if ( pLossParams->GetTimeDependentModel() == pgsTypes::tdmCEBFIP )
+      {
+         pChapter = CCEBFIPCreepCoefficientChapterBuilder().Build(pRptSpec,level);
       }
    }
    else

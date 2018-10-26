@@ -38,7 +38,7 @@ public:
    Float64 m_A;
    Float64 m_B;
    pgsTypes::CureMethod m_CureMethod;
-   pgsTypes::CementType m_CementType;
+   pgsTypes::ACI209CementType m_CementType;
 
 protected:
    bool m_bUseACIParameters;

@@ -352,14 +352,25 @@ Float64 pgsStressRatingArtifact::GetRatingFactor() const
    else
    {
       Float64 fr = GetResistance();
-      Float64 RF = (fr - m_gDC*m_fDC - m_gDW*m_fDW - m_gCR*m_fCR - m_gSH*m_fSH - m_gRE*m_fRE - m_gPS*m_fPS)/(m_gLL*m_fLLIM);
+      Float64 RFtop = fr - m_gDC*m_fDC - m_gDW*m_fDW - m_gCR*m_fCR - m_gSH*m_fSH - m_gRE*m_fRE - m_gPS*m_fPS;
+      Float64 RFbot = m_gLL*m_fLLIM;
 
-      if ( RF < 0 )
+      if ( RFtop < 0 )
       {
-         RF = 0;
+         // There isn't any capacity remaining for live load
+         m_RF = 0;
       }
-
-      m_RF = RF;
+      else if ( ::BinarySign(RFtop) != ::BinarySign(RFbot) && !IsZero(RFtop) )
+      {
+         // (fr - DL) and LL have opposite signs
+         // this case probably shouldn't happen, but if does,
+         // the rating is great
+         m_RF = DBL_MAX;
+      }
+      else
+      {
+         m_RF = RFtop/RFbot;
+      }
    }
 
    m_bRFComputed = true;

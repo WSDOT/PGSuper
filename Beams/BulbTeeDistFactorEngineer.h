@@ -27,10 +27,7 @@
 
 #include "resource.h"       // main symbols
 #include <IFace\DistFactorEngineer.h>
-
-// {E02EA7A6-5E4B-4e2d-91C9-20F4E742F1EC}
-DEFINE_GUID(CLSID_BulbTeeDistFactorEngineer, 
-0xe02ea7a6, 0x5e4b, 0x4e2d, 0x91, 0xc9, 0x20, 0xf4, 0xe7, 0x42, 0xf1, 0xec);
+#include <Plugins\Beams.h>
 
 /////////////////////////////////////////////////////////////////////////////
 // CBulbTeeDistFactorEngineer
@@ -48,6 +45,7 @@ public:
 
    void Init(bool treatAsWsDotI);
 
+DECLARE_REGISTRY_RESOURCEID(IDR_BULBTEEDISTFACTORENGINEER)
 
 BEGIN_COM_MAP(CBulbTeeDistFactorEngineer)
    COM_INTERFACE_ENTRY(IDistFactorEngineer)

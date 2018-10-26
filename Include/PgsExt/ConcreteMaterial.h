@@ -79,13 +79,14 @@ public:
                                             // based on Fc and Ec.
 
    // Parameters for the ACI 209R-92 Model
+   // also used for LRFD time-dependent concrete
    bool bACIUserParameters; // if true, A and B are user defined parameters, otherwise look up A and B based on cure method and cement type
    Float64 A, B; // A has system units of Time
    pgsTypes::CureMethod CureMethod;
-   pgsTypes::CementType CementType;
+   pgsTypes::ACI209CementType ACI209CementType;
 
    // Parameters for the CEB-FIP Model
-
+   pgsTypes::CEBFIPCementType CEBFIPCementType;
 
 
    //------------------------------------------------------------------------

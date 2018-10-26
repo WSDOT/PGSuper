@@ -108,4 +108,4 @@ private:
 };
 
 #define RF_PASS(_cd_,_rf_) _cd_.SetValue(_rf_,1.0,true)
-#define RF_FAIL(_cd_,_rf_) color(Red) << _cd_.SetValue(_rf_ < 0 ? 0 : _rf_,1.0,false) << color(Black)
+#define RF_FAIL(_cd_,_rf_) color(Red) << _cd_.SetValue(_rf_ < 0 ? 0 : _rf_,0 < _rf_ ? 1 : 0,false) << color(Black)

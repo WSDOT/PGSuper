@@ -44,7 +44,7 @@ import "WBFLGenericBridgeTools.idl";
 [
    uuid(D3810B3E-91D6-4aed-A748-8ABEB87FCF44)
 ]
-interface DummyBeamFactory : IUnknown
+interface IDummyInterface : IUnknown
 {
    [helpstring("method Dummy")] HRESULT Dummy();
 };
@@ -89,7 +89,7 @@ library PGSuperBeamFactory
 	]
 	coclass WFBeamFactory
 	{
-		[default] interface DummyBeamFactory;
+		[default] interface IDummyInterface;
 	};
 
 	[
@@ -97,7 +97,7 @@ library PGSuperBeamFactory
 	]
 	coclass TaperedIBeamFactory
 	{
-		[default] interface DummyBeamFactory;
+		[default] interface IDummyInterface;
 	};
 
 	[
@@ -105,7 +105,7 @@ library PGSuperBeamFactory
 	]
 	coclass NUBeamFactory
 	{
-		[default] interface DummyBeamFactory;
+		[default] interface IDummyInterface;
 	};
 
 	[
@@ -113,7 +113,7 @@ library PGSuperBeamFactory
 	]
 	coclass UBeamFactory
 	{
-		[default] interface DummyBeamFactory;
+		[default] interface IDummyInterface;
 	};
 
 	[
@@ -121,7 +121,7 @@ library PGSuperBeamFactory
 	]
 	coclass UBeam2Factory
 	{
-		[default] interface DummyBeamFactory;
+		[default] interface IDummyInterface;
 	};
 
 	[
@@ -129,7 +129,7 @@ library PGSuperBeamFactory
 	]
 	coclass BulbTeeFactory
 	{
-		[default] interface DummyBeamFactory;
+		[default] interface IDummyInterface;
 	};
 
 	[
@@ -137,7 +137,7 @@ library PGSuperBeamFactory
 	]
 	coclass MultiWebFactory
 	{
-		[default] interface DummyBeamFactory;
+		[default] interface IDummyInterface;
 	};
 
 	[
@@ -145,7 +145,7 @@ library PGSuperBeamFactory
 	]
 	coclass MultiWeb2Factory
 	{
-		[default] interface DummyBeamFactory;
+		[default] interface IDummyInterface;
 	};
 
 	[
@@ -153,7 +153,7 @@ library PGSuperBeamFactory
 	]
 	coclass DoubleTeeFactory
 	{
-		[default] interface DummyBeamFactory;
+		[default] interface IDummyInterface;
 	};
 
 	[
@@ -161,7 +161,7 @@ library PGSuperBeamFactory
 	]
 	coclass VoidedSlabFactory
 	{
-		[default] interface DummyBeamFactory;
+		[default] interface IDummyInterface;
 	};
 
 	[
@@ -169,7 +169,7 @@ library PGSuperBeamFactory
 	]
 	coclass VoidedSlab2Factory
 	{
-		[default] interface DummyBeamFactory;
+		[default] interface IDummyInterface;
 	};
 
 	[
@@ -177,7 +177,7 @@ library PGSuperBeamFactory
 	]
 	coclass BoxBeamFactory
 	{
-		[default] interface DummyBeamFactory;
+		[default] interface IDummyInterface;
 	};
 
 	[
@@ -185,7 +185,7 @@ library PGSuperBeamFactory
 	]
 	coclass BoxBeamFactory2
 	{
-		[default] interface DummyBeamFactory;
+		[default] interface IDummyInterface;
 	};
 
 	[
@@ -202,7 +202,7 @@ library PGSuperBeamFactory
 	]
 	coclass TxDotDoubleTFactory
 	{
-		[default] interface DummyBeamFactory;
+		[default] interface IDummyInterface;
 	};
 
 	[
@@ -210,7 +210,7 @@ library PGSuperBeamFactory
 	]
 	coclass DeckedSlabBeamFactory
 	{
-		[default] interface DummyBeamFactory;
+		[default] interface IDummyInterface;
 	};
 
    // PGSplice
@@ -220,7 +220,7 @@ library PGSuperBeamFactory
 	]
 	coclass SplicedIBeamFactory
 	{
-		[default] interface DummyBeamFactory;
+		[default] interface IDummyInterface;
 	};
 
    [
@@ -228,6 +228,62 @@ library PGSuperBeamFactory
 	]
 	coclass SplicedUBeamFactory
 	{
-		[default] interface DummyBeamFactory;
+		[default] interface IDummyInterface;
 	};
+
+   [
+      uuid(3AC40380-8764-4087-BD7C-47A50A369AE6)
+   ]
+   coclass IBeamDistFactorEngineer
+   {
+      [default] interface IDummyInterface;
+   };
+
+   [
+      uuid(FBD11B34-65A4-4d87-90FF-39A42EEACABA)
+   ]
+   coclass BoxBeamDistFactorEngineer
+   {
+      [default] interface IDummyInterface;
+   };
+
+   [
+      uuid(49222DB8-F784-4576-811F-A831075FDDAF)
+   ]
+   coclass BulbTeeDistFactorEngineer
+   {
+      [default] interface IDummyInterface;
+   };
+
+   [
+      uuid(27013EA9-0AA9-4b85-80D0-0904A3D762DA)
+   ]
+   coclass MultiWebDistFactorEngineer
+   {
+      [default] interface IDummyInterface;
+   };
+
+   [
+      uuid(62C15951-4A40-46cf-B326-D40D248F1299)
+   ]
+   coclass UBeamDistFactorEngineer
+   {
+      [default] interface IDummyInterface;
+   };
+
+   [
+      uuid(53884B6C-07D5-4e5e-9ED3-DF162DE1C27E)
+   ]
+   coclass VoidedSlabDistFactorEngineer
+   {
+      [default] interface IDummyInterface;
+   };
+
+   [
+      uuid(43BA23FE-C697-4277-A1C0-943E6E9DFBF9)
+   ]
+   coclass VoidedSlab2DistFactorEngineer
+   {
+      [default] interface IDummyInterface;
+   };
 };

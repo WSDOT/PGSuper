@@ -125,6 +125,7 @@ protected:
    CString m_strUserEci;
 
    int m_LossMethod;
+   int m_TimeDependentModel;
    Float64 m_AgeAtRelease;
 
    int m_GirderNameIdx; // combo box index of current girder name just before it is changed

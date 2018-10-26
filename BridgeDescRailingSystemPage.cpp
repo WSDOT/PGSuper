@@ -470,9 +470,9 @@ void CBridgeDescRailingSystemPage::OnMoreProperties(CRailingSystem* pRailingSyst
    dlg.m_ACI.m_A               = pRailingSystem->Concrete.A;
    dlg.m_ACI.m_B               = pRailingSystem->Concrete.B;
    dlg.m_ACI.m_CureMethod      = pRailingSystem->Concrete.CureMethod;
-   dlg.m_ACI.m_CementType      = pRailingSystem->Concrete.CementType;
+   dlg.m_ACI.m_CementType      = pRailingSystem->Concrete.ACI209CementType;
 
-#pragma Reminder("UPDATE: deal with CEB-FIP concrete models")
+   dlg.m_CEBFIP.m_CementType   = pRailingSystem->Concrete.CEBFIPCementType;
 
    if ( dlg.DoModal() == IDOK )
    {
@@ -493,14 +493,13 @@ void CBridgeDescRailingSystemPage::OnMoreProperties(CRailingSystem* pRailingSyst
       pRailingSystem->Concrete.bHasFct          = dlg.m_AASHTO.m_bHasFct;
       pRailingSystem->Concrete.Fct              = dlg.m_AASHTO.m_Fct;
 
+      pRailingSystem->Concrete.bACIUserParameters = dlg.m_ACI.m_bUserParameters;
+      pRailingSystem->Concrete.A                  = dlg.m_ACI.m_A;
+      pRailingSystem->Concrete.B                  = dlg.m_ACI.m_B;
+      pRailingSystem->Concrete.CureMethod         = dlg.m_ACI.m_CureMethod;
+      pRailingSystem->Concrete.ACI209CementType   = dlg.m_ACI.m_CementType;
 
-     pRailingSystem->Concrete.bACIUserParameters = dlg.m_ACI.m_bUserParameters;
-     pRailingSystem->Concrete.A                  = dlg.m_ACI.m_A;
-     pRailingSystem->Concrete.B                  = dlg.m_ACI.m_B;
-     pRailingSystem->Concrete.CureMethod         = dlg.m_ACI.m_CureMethod;
-     pRailingSystem->Concrete.CementType         = dlg.m_ACI.m_CementType;
-
-#pragma Reminder("UPDATE: deal with CEB-FIP concrete models")
+      pRailingSystem->Concrete.CEBFIPCementType = dlg.m_CEBFIP.m_CementType;
 
       m_strRightUserEc                 = dlg.m_General.m_strUserEc;
 

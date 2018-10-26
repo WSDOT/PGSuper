@@ -1,0 +1,25 @@
+HKCR
+{
+	PGSuperDistFactorEngineer.BoxBeamDistFactorEngineer.1 = s 'Box Beam Distribution Factor Engineer'
+	{
+		CLSID = s '{FBD11B34-65A4-4d87-90FF-39A42EEACABA}'
+	}
+	PGSuperDistFactorEngineer.BoxBeamDistFactorEngineer = s 'Box Beam Distribution Factor Engineer'
+	{
+		CLSID = s '{FBD11B34-65A4-4d87-90FF-39A42EEACABA}'
+		CurVer = s 'PGSuperDistFactorEngineer.BoxBeamDistFactorEngineer.1'
+	}
+	NoRemove CLSID
+	{
+		ForceRemove {FBD11B34-65A4-4d87-90FF-39A42EEACABA} = s 'Box Beam Distribution Factor Engineer'
+		{
+			ProgID = s 'PGSuperDistFactorEngineer.BoxBeamDistFactorEngineer.1'
+			VersionIndependentProgID = s 'PGSuperDistFactorEngineer.BoxBeamDistFactorEngineer'
+			InprocServer32 = s '%MODULE%'
+			{
+				val ThreadingModel = s 'Apartment'
+			}
+			'TypeLib' = s 'DC4B56B3-455B-41be-9509-289950E62190'
+		}
+	}
+}

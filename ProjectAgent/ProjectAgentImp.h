@@ -414,7 +414,6 @@ public:
    virtual Float64 GetLiveLoadFactor(pgsTypes::LimitState ls,pgsTypes::SpecialPermitType specialPermitType,Int16 adtt,const RatingLibraryEntry* pRatingEntry,bool bResolveIfDefault=false);
    virtual void SetAllowableTensionCoefficient(pgsTypes::LoadRatingType ratingType,Float64 t);
    virtual Float64 GetAllowableTensionCoefficient(pgsTypes::LoadRatingType ratingType);
-   virtual Float64 GetAllowableTension(pgsTypes::LoadRatingType ratingType,const CSegmentKey& segmentKey);
    virtual void RateForStress(pgsTypes::LoadRatingType ratingType,bool bRateForStress);
    virtual bool RateForStress(pgsTypes::LoadRatingType ratingType);
    virtual void RateForShear(pgsTypes::LoadRatingType ratingType,bool bRateForShear);

@@ -3289,6 +3289,15 @@ BEGIN
     CONTROL         "Ignore Relaxation Effects",IDC_IGNORE_RELAXATION,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,75,98,10
 END
 
+IDD_CEBFIP_CONCRETE DIALOGEX 0, 0, 229, 92
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "CEB-FIP"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    LTEXT           "Cement Type",IDC_STATIC,7,7,44,8
+    COMBOBOX        IDC_CEMENT_TYPE,61,7,161,64,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -3296,8 +3305,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 3,0,0,19
- PRODUCTVERSION 3,0,0,19
+ FILEVERSION 3,0,0,20
+ PRODUCTVERSION 3,0,0,20
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -3314,12 +3323,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "Washington State Department of Transportation"
             VALUE "FileDescription", "PGSuper"
-            VALUE "FileVersion", "3.0.0.19"
+            VALUE "FileVersion", "3.0.0.20"
             VALUE "InternalName", "PGSuper"
             VALUE "LegalCopyright", "Copyright © 1999-2014, Washington State Department of Transportation, All Rights Reserved"
             VALUE "OriginalFilename", "PGSuperAppPlugin.DLL"
             VALUE "ProductName", "PGSuper"
-            VALUE "ProductVersion", "3.0.0.19"
+            VALUE "ProductVersion", "3.0.0.20"
         END
     END
     BLOCK "VarFileInfo"
@@ -4127,6 +4136,14 @@ BEGIN
         RIGHTMARGIN, 259
         TOPMARGIN, 7
         BOTTOMMARGIN, 114
+    END
+
+    IDD_CEBFIP_CONCRETE, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 222
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 85
     END
 END
 #endif    // APSTUDIO_INVOKED

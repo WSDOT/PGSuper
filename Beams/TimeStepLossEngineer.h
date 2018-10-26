@@ -131,13 +131,14 @@ private:
 
    struct LOSSES
    {
-      std::vector<ANCHORSETDETAILS> AnchorSet;
+      std::vector<ANCHORSETDETAILS> AnchorSet; // one for each duct
       SectionLossContainer SectionLosses;
    };
 
    std::map<CGirderKey,LOSSES> m_Losses;
 
-   std::map<CTendonKey,std::pair<Float64,Float64>> m_AvgFrictionAndAnchorSetLoss;
+   std::map<CTendonKey,std::pair<Float64,Float64>> m_AvgFrictionAndAnchorSetLoss; // first is friction, second is anchor set loss
+   std::map<CTendonKey,std::pair<Float64,Float64>> m_Elongation; // first in pair is left end, second is right end
 
    void ComputeLosses(const CGirderKey& girderKey,IntervalIndexType endAnalysisIntervalIdx);
    void ComputeLosses(const CGirderKey& girderKey,IntervalIndexType endAnalysisIntervalIdx,LOSSES* pLosses);

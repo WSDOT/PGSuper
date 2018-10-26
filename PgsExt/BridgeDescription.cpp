@@ -630,8 +630,8 @@ void CBridgeDescription::SetBridgeData(CBridgeDescription2* pBridgeDesc) const
          pNewSegment->LongitudinalRebarData = girderData.LongitudinalRebarData;
          pNewSegment->Material              = girderData.Material;
          pNewSegment->Material.Concrete.CureMethod = pgsTypes::Steam; // Steam for precast components
-         matACI209Concrete::GetModelParameters( (matACI209Concrete::CureMethod)pNewSegment->Material.Concrete.CureMethod,
-                                                (matACI209Concrete::CementType)pNewSegment->Material.Concrete.CementType,
+         matACI209Concrete::GetModelParameters( (matConcreteBase::CureMethod)pNewSegment->Material.Concrete.CureMethod,
+                                                (matACI209Concrete::CementType)pNewSegment->Material.Concrete.ACI209CementType,
                                                  &pNewSegment->Material.Concrete.A,
                                                  &pNewSegment->Material.Concrete.B);
 

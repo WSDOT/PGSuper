@@ -24,6 +24,7 @@
 #include <Reporting\ShrinkageStrainChapterBuilder.h>
 #include <Reporting\LRFDTimeDependentShrinkageStrainChapterBuilder.h>
 #include <Reporting\ACI209ShrinkageStrainChapterBuilder.h>
+#include <Reporting\CEBFIPShrinkageStrainChapterBuilder.h>
 
 #include <IFace\AnalysisResults.h>
 #include <IFace\Project.h>
@@ -74,6 +75,10 @@ rptChapter* CShrinkageStrainChapterBuilder::Build(CReportSpecification* pRptSpec
    else if ( pLossParams->GetTimeDependentModel() == pgsTypes::tdmACI209 )
    {
       pChapter = CACI209ShrinkageStrainChapterBuilder().Build(pRptSpec,level);
+   }
+   else if ( pLossParams->GetTimeDependentModel() == pgsTypes::tdmCEBFIP )
+   {
+      pChapter = CCEBFIPShrinkageStrainChapterBuilder().Build(pRptSpec,level);
    }
    else
    {

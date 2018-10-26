@@ -1448,89 +1448,6 @@ void CAnalysisAgentImp::GetDeckShrinkageStresses(const pgsPointOfInterest& poi,F
    m_pGirderModelManager->GetDeckShrinkageStresses(poi,pftop,pfbot);
 }
 
-std::vector<sysSectionValue> CAnalysisAgentImp::GetTimeStepPrestressShear(IntervalIndexType intervalIdx,ProductForceType pfType,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType)
-{
-   // We want the vertical component of prestressing
-   ATLASSERT(pfType == pftPretension || pfType == pftTotalPostTensioning || pfType == pftPrimaryPostTensioning || pfType == pftSecondaryEffects);
-   ATLASSERT(bat == pgsTypes::ContinuousSpan);
-
-   GET_IFACE(ILosses,pILosses);
-   GET_IFACE_NOCHECK(IStrandGeometry,pStrandGeom); // usage depends on pfType. Don't want to get interface for every poi while in the loop
-   GET_IFACE_NOCHECK(ITendonGeometry,pTendonGeom); // usage depends on pfType. Don't want to get interface for every poi while in the loop
-
-   std::vector<sysSectionValue> V;
-
-   std::vector<pgsPointOfInterest>::const_iterator iter(vPoi.begin());
-   std::vector<pgsPointOfInterest>::const_iterator end(vPoi.end());
-   for ( ; iter != end; iter++ )
-   {
-      const pgsPointOfInterest& poi = *iter;
-
-      const LOSSDETAILS* pLossDetails = pILosses->GetLossDetails(poi,intervalIdx);
-      Float64 Vps = 0;
-      if ( resultsType == rtIncremental )
-      {
-         if ( pfType == pftPretension )
-         {
-            // only harped strands have a change of slope
-            Float64 P = pLossDetails->TimeStepDetails[intervalIdx].Strands[pgsTypes::Harped].dP;
-            Float64 n = pStrandGeom->GetAvgStrandSlope(poi);
-            Float64 slope = 0;
-            if (n < Float64_Max)
-            {
-               slope = 1.0/sqrt(1*1 + n*n);
-            }
-            Vps = P*slope;
-         }
-         else
-         {
-            DuctIndexType nDucts = pTendonGeom->GetDuctCount(poi.GetSegmentKey());
-            for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
-            {
-               Float64 P = pLossDetails->TimeStepDetails[intervalIdx].Tendons[ductIdx].dP;
-               CComPtr<IVector3d> vSlope;
-               pTendonGeom->GetTendonSlope(poi,ductIdx,&vSlope);
-               Float64 slope;
-               vSlope->get_Y(&slope);
-               Vps += P*slope;
-            }
-         }
-      }
-      else
-      {
-         if ( pfType == pftPretension )
-         {
-            // only harped strands have a change of slope
-            Float64 P = pLossDetails->TimeStepDetails[intervalIdx].Strands[pgsTypes::Harped].P;
-            Float64 n = pStrandGeom->GetAvgStrandSlope(poi);
-            Float64 slope = 0;
-            if (n < Float64_Max)
-            {
-               slope = 1.0/sqrt(1*1 + n*n);
-            }
-            Vps = P*slope;
-         }
-         else
-         {
-            DuctIndexType nDucts = pTendonGeom->GetDuctCount(poi.GetSegmentKey());
-            for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
-            {
-               Float64 P = pLossDetails->TimeStepDetails[intervalIdx].Tendons[ductIdx].P;
-               CComPtr<IVector3d> vSlope;
-               pTendonGeom->GetTendonSlope(poi,ductIdx,&vSlope);
-               Float64 slope;
-               vSlope->get_Y(&slope);
-               Vps += P*slope;
-            }
-         }
-      }
-
-      V.push_back(sysSectionValue(Vps,Vps));
-   }
-
-   return V;
-}
-
 std::vector<Float64> CAnalysisAgentImp::GetTimeStepPrestressMoment(IntervalIndexType intervalIdx,ProductForceType pfType,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType)
 {
    ATLASSERT(pfType == pftPretension || pfType == pftTotalPostTensioning || pfType == pftPrimaryPostTensioning || pfType == pftSecondaryEffects);
@@ -1665,38 +1582,11 @@ std::vector<sysSectionValue> CAnalysisAgentImp::GetShear(IntervalIndexType inter
 
    if ( pfType == pftPretension || pfType == pftPrimaryPostTensioning )
    {
-      GET_IFACE( ILossParameters, pLossParams);
-      if ( pLossParams->GetLossMethod() == pgsTypes::TIME_STEP )
-      {
-         return GetTimeStepPrestressShear(intervalIdx,pfType,vPoi,bat,resultsType);
-      }
-      else
-      {
-#if defined _DEBUG
-         GET_IFACE(IPointOfInterest,pPoi);
-         std::vector<CSegmentKey> vSegmentKeys(pPoi->GetSegmentKeys(vPoi));
-         ATLASSERT(vSegmentKeys.size() == 1); // this method assumes all the poi are for the same segment
-#endif
-         // This is not time-step analysis.
-         // The pretension effects are handled in the segment and girder models for
-         // elastic analysis... we want to use the code further down in this method.
-         if ( pfType == pftPretension )
-         {
-            // for elastic analysis, force effects due to pretensioning are always those at release
-            CSegmentKey segmentKey = vPoi.front().GetSegmentKey();
-            GET_IFACE(IIntervals,pIntervals);
-            IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
-            intervalIdx = releaseIntervalIdx;
-         }
-
-         // Post-tensioning is not modeled for linear elastic analysis, so the
-         // results are zero
-         if ( pfType == pftPrimaryPostTensioning )
-         {
-            results.resize(vPoi.size(),sysSectionValue(0.0,0.0));
-            return results;
-         }
-      }
+      // pre and post-tensioning don't cause external shear forces.
+      // There is a vertical component of prestress, Vp, that is used
+      // in shear analysis, but that isn't this...
+      results.resize(vPoi.size(),sysSectionValue(0,0));
+      return results;
    }
 
    // Secondary effects aren't computed in the LBAM model
@@ -1709,7 +1599,6 @@ std::vector<sysSectionValue> CAnalysisAgentImp::GetShear(IntervalIndexType inter
    {
       pfType = pftEquivPostTensioning;
    }
-
 
    if ( pfType == pftCreep || pfType == pftShrinkage || pfType == pftRelaxation )
    {
@@ -5546,20 +5435,20 @@ Float64 CAnalysisAgentImp::GetContinuityStressLevel(PierIndexType pierIdx,const 
 
 /////////////////////////////////////////////////
 // IPrecompressedTensileZone
-bool CAnalysisAgentImp::IsInPrecompressedTensileZone(const pgsPointOfInterest& poi,pgsTypes::StressLocation stressLocation,pgsTypes::BridgeAnalysisType bat)
+bool CAnalysisAgentImp::IsInPrecompressedTensileZone(const pgsPointOfInterest& poi,pgsTypes::LimitState limitState,pgsTypes::StressLocation stressLocation)
 {
-   return IsInPrecompressedTensileZone(poi,stressLocation,bat,NULL);
+   return IsInPrecompressedTensileZone(poi,limitState,stressLocation,NULL);
 }
 
-bool CAnalysisAgentImp::IsInPrecompressedTensileZone(const pgsPointOfInterest& poi,pgsTypes::StressLocation stressLocation,pgsTypes::BridgeAnalysisType bat, const GDRCONFIG* pConfig)
+bool CAnalysisAgentImp::IsInPrecompressedTensileZone(const pgsPointOfInterest& poi,pgsTypes::LimitState limitState,pgsTypes::StressLocation stressLocation,const GDRCONFIG* pConfig)
 {
    if ( IsDeckStressLocation(stressLocation) )
    {
-      return IsDeckInPrecompressedTensileZone(poi,stressLocation,bat);
+      return IsDeckInPrecompressedTensileZone(poi,limitState,stressLocation);
    }
    else
    {
-      return IsGirderInPrecompressedTensileZone(poi,stressLocation,bat,pConfig);
+      return IsGirderInPrecompressedTensileZone(poi,limitState,stressLocation,pConfig);
    }
 }
 
@@ -6135,9 +6024,10 @@ Float64 CAnalysisAgentImp::GetDeflectionAdjustmentFactor(const pgsPointOfInteres
    return k;
 }
 
-bool CAnalysisAgentImp::IsDeckInPrecompressedTensileZone(const pgsPointOfInterest& poi,pgsTypes::StressLocation stressLocation,pgsTypes::BridgeAnalysisType bat)
+bool CAnalysisAgentImp::IsDeckInPrecompressedTensileZone(const pgsPointOfInterest& poi,pgsTypes::LimitState limitState,pgsTypes::StressLocation stressLocation)
 {
    ATLASSERT(IsDeckStressLocation(stressLocation));
+   ATLASSERT(IsServiceIIILimitState(limitState)); // must be one of the Service III limit states
 
    GET_IFACE(IBridge,pBridge);
    if ( pBridge->GetDeckType() == pgsTypes::sdtNone )
@@ -6152,8 +6042,12 @@ bool CAnalysisAgentImp::IsDeckInPrecompressedTensileZone(const pgsPointOfInteres
    GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType serviceLoadIntervalIdx = pIntervals->GetLiveLoadInterval(segmentKey);
 
+   // Tensile stresses are greatest at the top of the deck using the minimum model in
+   // Envelope mode. In all other modes, Min/Max are the same
+   pgsTypes::BridgeAnalysisType bat = GetBridgeAnalysisType(pgsTypes::Minimize);
+
    Float64 fMin, fMax;
-   GetStress(serviceLoadIntervalIdx,pgsTypes::ServiceI,poi,bat,false/*without prestress*/,stressLocation,&fMin,&fMax);
+   GetStress(serviceLoadIntervalIdx,limitState,poi,bat,false/*without prestress*/,stressLocation,&fMin,&fMax);
    if ( fMax <= 0 )
    {
       return false; // the location is not in tension so is not in the "tension zone"
@@ -6172,12 +6066,13 @@ bool CAnalysisAgentImp::IsDeckInPrecompressedTensileZone(const pgsPointOfInteres
    return true;
 }
 
-bool CAnalysisAgentImp::IsGirderInPrecompressedTensileZone(const pgsPointOfInterest& poi,pgsTypes::StressLocation stressLocation,pgsTypes::BridgeAnalysisType bat, const GDRCONFIG* pConfig)
+bool CAnalysisAgentImp::IsGirderInPrecompressedTensileZone(const pgsPointOfInterest& poi,pgsTypes::LimitState limitState,pgsTypes::StressLocation stressLocation,const GDRCONFIG* pConfig)
 {
    ATLASSERT(IsGirderStressLocation(stressLocation));
+   ATLASSERT(IsServiceIIILimitState(limitState)); // must be one of the Service III limit states
 
    // The specified location is in a precompressed tensile zone if the following requirements are true
-   // 1) The location is in tension in the Service I limit state for the final interval with the
+   // 1) The location is in tension in the Service III limit state for the final interval with the
    //    contribution of prestressing
    // 2) Prestressing causes compression at the location
 
@@ -6352,9 +6247,13 @@ bool CAnalysisAgentImp::IsGirderInPrecompressedTensileZone(const pgsPointOfInter
    GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType serviceLoadIntervalIdx = pIntervals->GetLiveLoadInterval(segmentKey);
 
+   // Tensile stresses are greatest at the top of the girder using the minimum model in
+   // Envelope mode. In all other modes, Min/Max are the same
+   pgsTypes::BridgeAnalysisType bat = GetBridgeAnalysisType(::IsTopStressLocation(stressLocation) ? pgsTypes::Minimize : pgsTypes::Maximize);
+
    // Get stresses due to service loads
    Float64 fMin, fMax;
-   GetStress(serviceLoadIntervalIdx,pgsTypes::ServiceI,poi,bat,false/*without prestress*/,stressLocation,&fMin,&fMax);
+   GetStress(serviceLoadIntervalIdx,limitState,poi,bat,false/*without prestress*/,stressLocation,&fMin,&fMax);
    if ( fMax <= 0 )
    {
       return false; // the location is not in tension so is not in the "tension zone"

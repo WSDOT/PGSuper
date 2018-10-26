@@ -86,7 +86,7 @@ void CConcreteDetailsDlg::Init()
    m_General.m_psp.dwFlags  |= PSP_HASHELP;
    m_AASHTO.m_psp.dwFlags   |= PSP_HASHELP;
    m_ACI.m_psp.dwFlags      |= PSP_HASHELP;
-   //m_CEBFIP.m_psp.dwFlags    |= PSP_HASHELP;
+   m_CEBFIP.m_psp.dwFlags    |= PSP_HASHELP;
 
    AddPage( &m_General );
 
@@ -113,9 +113,9 @@ void CConcreteDetailsDlg::Init()
          AddPage( &m_ACI );
          break;
 
-      //case pgsTypes::tdmCEBFIP:
-         //AddPage( &m_CEBFIPPage );
-         //break;
+      case pgsTypes::tdmCEBFIP:
+         AddPage( &m_CEBFIP );
+         break;
 
       default:
          ATLASSERT(false); // should never get here

@@ -506,11 +506,19 @@ typedef struct pgsTypes
       Steam
    } CureMethod;
 
-   typedef enum CementType
+   typedef enum ACI209CementType
    {
       TypeI,
       TypeIII
-   } CementType;
+   } ACI209CementType;
+
+   typedef enum CEBFIPCementType
+   {
+      RS, // rapid hardening, high strength
+      N,  // normal hardining
+      R,  // rapid hardening
+      SL  // slow hardening
+   } CEBFIPCementType;
 
    // indicates the relative point of time
    // within a time-step interval
@@ -541,7 +549,7 @@ typedef struct pgsTypes
    {
       tdmAASHTO, 
       tdmACI209,
-      //tdmCEBFIP
+      tdmCEBFIP
    } TimeDependentModel;
 
    typedef enum JackingEndType
