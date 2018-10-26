@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper Beam Factory
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2014  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This library is a part of the Washington Bridge Foundation Libraries
@@ -242,5 +242,11 @@ interface IBeamFactory : IUnknown
    virtual bool IsShearKey(const IBeamFactory::Dimensions& dimensions, pgsTypes::SupportedBeamSpacing spacingType)=0;
    virtual void GetShearKeyAreas(const IBeamFactory::Dimensions& dimensions, pgsTypes::SupportedBeamSpacing spacingType,Float64* uniformArea, Float64* areaPerJoint)=0;
 
+   //---------------------------------------------------------------------------------
+   // Returns the minimum number of girders that can be in a cross section.
+   // Two girders is the typical minimum for single-stem sections. One girder can
+   // be used in a section for multi-step sections like double-tees and U-beams. One
+   // girder can also be used for "wide" girders such as box beams and voided slabs
+   virtual GirderIndexType GetMinimumBeamCount() = 0;
 };
 

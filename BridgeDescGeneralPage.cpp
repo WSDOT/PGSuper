@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2014  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -881,19 +881,7 @@ void CBridgeDescGeneralPage::OnGirderFamilyChanged()
 
 void CBridgeDescGeneralPage::UpdateMinimumGirderCount()
 {
-   // Determine minimum number of girders
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2( pBroker, ILibrary, pLib );
-   const GirderLibraryEntry* pGdrEntry = pLib->GetGirderEntry(m_GirderName);
-
-   CComPtr<IGirderSection> section;
-   m_Factory->CreateGirderSection(pBroker,0,INVALID_INDEX,INVALID_INDEX,pGdrEntry->GetDimensions(),&section);
-
-   WebIndexType nWebs;
-   section->get_WebCount(&nWebs);
-
-   m_MinGirderCount = (1 < nWebs ? 1 : 2);
+   m_MinGirderCount = m_Factory->GetMinimumBeamCount();
 
    if ( m_NumGdrSpinner.GetSafeHwnd() != NULL )
       m_NumGdrSpinner.SetRange(short(m_MinGirderCount),MAX_GIRDERS_PER_SPAN);

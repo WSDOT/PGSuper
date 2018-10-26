@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2014  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -211,10 +211,10 @@ void CLiveLoadDistributionFactorTable::Build(rptChapter* pChapter,
       row++;
    }
 
-   (*pTable)(row-1,4) << df.SetValue(pDistFact->GetReactionDistFactor(vPoi.back().GetSpan(),vPoi.back().GetGirder(),pgsTypes::StrengthI));
+   (*pTable)(row-1,4) << df.SetValue(pDistFact->GetReactionDistFactor(vPoi.back().GetSpan()+1,vPoi.back().GetGirder(),pgsTypes::StrengthI));
    if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
    {
-      (*pTable)(row-1,8) << df.SetValue(pDistFact->GetReactionDistFactor(vPoi.back().GetSpan(),vPoi.back().GetGirder(),pgsTypes::FatigueI));
+      (*pTable)(row-1,8) << df.SetValue(pDistFact->GetReactionDistFactor(vPoi.back().GetSpan()+1,vPoi.back().GetGirder(),pgsTypes::FatigueI));
    }
 
 

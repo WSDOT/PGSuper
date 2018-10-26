@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2014  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -466,7 +466,10 @@ void CPierGirderSpacingPage::FillRefGirderComboBox(pgsTypes::PierFaceType pierFa
       pCB->SetItemData(idx,(DWORD)i);
    }
 
-   pCB->SetCurSel(curSel == CB_ERR ? 0 : curSel);
+   if ( pCB->SetCurSel(curSel == CB_ERR ? 0 : curSel) == CB_ERR )
+   {
+      pCB->SetCurSel(0);
+   }
 }
 
 void CPierGirderSpacingPage::OnNumGirdersPrevSpanChanged(NMHDR* pNMHDR,LRESULT* pResult)
@@ -500,6 +503,8 @@ void CPierGirderSpacingPage::OnNumGirdersChanged(NMHDR* pNMHDR,LRESULT* pResult,
       else
          AddGirders(pNMUpDown->iDelta, pierFace);
    }
+
+   FillRefGirderComboBox(pierFace);
 
    UpdateGirderSpacingState(pierFace);
    UpdateCopyButtonState(m_nGirders[pgsTypes::Ahead] == m_nGirders[pgsTypes::Back]);
@@ -673,13 +678,7 @@ int CPierGirderSpacingPage::GetMinGirderCount(const CSpanData* pSpan)
    CComPtr<IBeamFactory> factory;
    pGdrEntry->GetBeamFactory(&factory);
 
-   CComPtr<IGirderSection> section;
-   factory->CreateGirderSection(pBroker,0,INVALID_INDEX,INVALID_INDEX,pGdrEntry->GetDimensions(),&section);
-
-   WebIndexType nWebs;
-   section->get_WebCount(&nWebs);
-
-   return (1 < nWebs ? 1 : 2);
+   return factory->GetMinimumBeamCount();
 }
 
 void CPierGirderSpacingPage::UpdateGirderSpacingState(pgsTypes::PierFaceType pierFace)

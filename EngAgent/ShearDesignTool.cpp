@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2014  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -828,38 +828,49 @@ void pgsShearDesignTool::ProcessAvsDemand(std::vector<Float64>& rDemandAtPois, m
          i++;
       }
       
-      // Mirror about location of mid-span measured from girder start
-      Float64 spn2 = (m_StartConnectionLength+m_GirderLength-m_EndConnectionLength)/2.0; 
-      mirror_avs.MirrorAboutY(spn2);
-
-      // Mirror function can cause very slight numerical problems with the end locations of the range. 
-      // Reset to the exact values
-      Float64 range_start = m_DesignPois[0].GetDistFromStart();
-      Float64 range_end   = m_DesignPois.back().GetDistFromStart();
-      mirror_avs.ResetOuterRange(math1dRange(range_start,math1dRange::Bound,range_end,math1dRange::Bound));
-
-      // Since we have mirrored, we aren't gauranteed to have x values in same locations as POI's.
-      // Use function2d class to get x,y locations for mirror
+      // mathPwLinearFunction2dUsingPoints can throw, and it's probably not the end of the world
+      // if if does. Don't let it crash program.
       IndexType spn2_idx=0; // store index at mid-span;
-      idx=0;
-      for ( i = m_DesignPois.begin(); i != m_DesignPois.end(); i++ )
+      try
       {
-         const pgsPointOfInterest& poi = *i;
+         // Mirror about location of mid-span measured from girder start
+         Float64 spn2 = (m_StartConnectionLength+m_GirderLength-m_EndConnectionLength)/2.0; 
+         mirror_avs.MirrorAboutY(spn2);
 
-         Float64 x = poi.GetDistFromStart();
-         Float64& ry  = rDemandAtPois[idx]; // grab reference for reassignment below
-         Float64 mry = mirror_avs.Evaluate(x);
+         // Mirrored function needs to lie at least within the same X range as the original function
+         // Force this by extending range out to support locations
+         Float64 range_start = m_StartConnectionLength;
+         Float64 range_end   = m_GirderLength - m_EndConnectionLength;
+         mirror_avs.ResetOuterRange(math1dRange(range_start,math1dRange::Bound,range_end,math1dRange::Bound));
 
-         Float64 maxy = max(ry, mry);
-
-         ry = maxy;
-
-         if (spn2_idx==0 && x>spn2)
+         // Since we have mirrored, we aren't gauranteed to have x values in same locations as POI's.
+         // Use function2d class to get x,y locations for mirror
+         idx=0;
+         for ( i = m_DesignPois.begin(); i != m_DesignPois.end(); i++ )
          {
-            spn2_idx = idx;
-         }
+            const pgsPointOfInterest& poi = *i;
 
-         idx++;
+            Float64 x = poi.GetDistFromStart();
+            Float64& ry  = rDemandAtPois[idx]; // grab reference for reassignment below
+            Float64 mry = mirror_avs.Evaluate(x);
+
+            Float64 maxy = max(ry, mry);
+
+            ry = maxy;
+
+            if (spn2_idx==0 && x>spn2)
+            {
+               spn2_idx = idx;
+            }
+
+            idx++;
+         }
+      }
+      catch(...)
+      {
+         ATLASSERT(0); // This really should never happen. Somehow our function got out
+                       // of bounds? This is a programming error.
+         spn2_idx = rDemandAtPois.size()/2; // reasonable assumption for mid-span
       }
 
       // Last step is to process the avs curve to make sure that values always increase from

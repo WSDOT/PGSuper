@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2014  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -1166,12 +1166,16 @@ void pgsDesigner2::CheckGirderStresses(SpanIndexType span,GirderIndexType gdr,AL
          if(task.type == pgsTypes::Compression)
          {
             if ( task.ls != pgsTypes::ServiceIII )
+            {
                fAllowable = pAllowable->GetAllowableStress(poi,task.stage,task.ls,pgsTypes::Compression);
+            }
          }
          else // tension
          {
             if ( task.stage != pgsTypes::BridgeSite2 )
+            {
    	         fAllowable = pAllowable->GetAllowableStress(poi,task.stage,task.ls,pgsTypes::Tension);
+            }
          }
 
          artifact.SetCapacity(fAllowable,task.type);
@@ -1202,9 +1206,12 @@ void pgsDesigner2::CheckGirderStresses(SpanIndexType span,GirderIndexType gdr,AL
             Float64 f = (task.stage == pgsTypes::BridgeSite3 ? fBot : _cpp_max(fTop,fBot));
 
             Float64 fc_reqd;
-            if (f>0.0)
+            if (0.0 < f)
             {
-               fc_reqd = (IsZero(t) ? 0 : BinarySign(f)*pow(f/t,2));
+               // if t is zero the allowable will be zero... demand "f" is > 0 so there
+               // isn't a concrete strength that will work.... if t is not zero, compute
+               // the required concrete strength
+               fc_reqd = (IsZero(t) ? -1 : BinarySign(f)*pow(f/t,2));
             }
             else
             {

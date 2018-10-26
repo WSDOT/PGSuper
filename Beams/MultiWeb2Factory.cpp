@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2014  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -930,4 +930,9 @@ void CMultiWeb2Factory::GetShearKeyAreas(const IBeamFactory::Dimensions& dimensi
 {
    *uniformArea = 0.0;
    *areaPerJoint = 0.0;
+}
+
+GirderIndexType CMultiWeb2Factory::GetMinimumBeamCount()
+{
+   return 1;
 }

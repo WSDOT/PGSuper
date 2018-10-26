@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2014  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -346,10 +346,14 @@ Float64 pgsGirderArtifact::GetRequiredConcreteStrength(pgsTypes::Stage stage,pgs
          Float64 fc = artifact.second.GetRequiredConcreteStrength();
 
          if ( fc < 0 ) 
+         {
             return fc;
+         }
 
          if ( 0 < fc )
+         {
             fc_reqd = _cpp_max(fc,fc_reqd);
+         }
       }
    }
 
@@ -371,24 +375,28 @@ Float64 pgsGirderArtifact::GetRequiredConcreteStrength() const
       Float64 fc = artifact.second.GetRequiredConcreteStrength();
 
       if ( fc < 0 ) // there is no concrete strength that will work
+      {
          return fc;
+      }
 
       if ( 0 < fc )
+      {
          fc_reqd = _cpp_max(fc,fc_reqd);
+      }
    }
 
-   if (m_pLiftingAnalysisArtifact.get()!=NULL)
-   {
-      Float64 fc_reqd_Lifting_comp, fc_reqd_Lifting_tens, fc_reqd_Lifting_tens_wbar;
-      m_pLiftingAnalysisArtifact->GetRequiredConcreteStrength(&fc_reqd_Lifting_comp,&fc_reqd_Lifting_tens, &fc_reqd_Lifting_tens_wbar);
+   //if (m_pLiftingAnalysisArtifact.get()!=NULL)
+   //{
+   //   Float64 fc_reqd_Lifting_comp, fc_reqd_Lifting_tens, fc_reqd_Lifting_tens_wbar;
+   //   m_pLiftingAnalysisArtifact->GetRequiredConcreteStrength(&fc_reqd_Lifting_comp,&fc_reqd_Lifting_tens, &fc_reqd_Lifting_tens_wbar);
 
-      Float64 fc_reqd_Lifting = max(fc_reqd_Lifting_tens_wbar,fc_reqd_Lifting_comp);
+   //   Float64 fc_reqd_Lifting = max(fc_reqd_Lifting_tens_wbar,fc_reqd_Lifting_comp);
 
-      if ( fc_reqd_Lifting < 0 ) // there is no concrete strength that will work
-         return fc_reqd_Lifting;
+   //   if ( fc_reqd_Lifting < 0 ) // there is no concrete strength that will work
+   //      return fc_reqd_Lifting;
 
-      fc_reqd = _cpp_max(fc_reqd,fc_reqd_Lifting);
-   }
+   //   fc_reqd = _cpp_max(fc_reqd,fc_reqd_Lifting);
+   //}
 
    if (m_pHaulingAnalysisArtifact.get()!=NULL)
    {
@@ -398,7 +406,9 @@ Float64 pgsGirderArtifact::GetRequiredConcreteStrength() const
       Float64 fc_reqd_hauling = max(fc_reqd_hauling_tens_wbar,fc_reqd_hauling_comp);
 
       if ( fc_reqd_hauling < 0 ) // there is no concrete strength that will work
+      {
          return fc_reqd_hauling;
+      }
 
       fc_reqd = _cpp_max(fc_reqd,fc_reqd_hauling);
    }
@@ -421,10 +431,14 @@ Float64 pgsGirderArtifact::GetRequiredReleaseStrength() const
       Float64 fc = artifact.second.GetRequiredConcreteStrength();
 
       if ( fc < 0 ) // there is no concrete strength that will work
+      {
          return fc;
+      }
 
       if ( 0 < fc )
+      {
          fc_reqd = _cpp_max(fc,fc_reqd);
+      }
    }
 
    if (m_pLiftingAnalysisArtifact.get()!=NULL)

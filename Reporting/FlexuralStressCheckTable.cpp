@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2014  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -381,6 +381,7 @@ void CFlexuralStressCheckTable::BuildNotes(rptChapter* pChapter, const pgsGirder
    }
    else
    {
+      ATLASSERT(fc_reqd != -99999); // -99999 means the value was never set
       *p << _T("Regardless of the concrete strength, the stress requirements will not be satisfied.") << rptNewLine;
    }
 }

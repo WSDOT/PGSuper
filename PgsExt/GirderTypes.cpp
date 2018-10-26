@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2014  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -528,7 +528,7 @@ void CGirderTypes::GetGirderGroup(GroupIndexType groupIdx,GirderIndexType* pFirs
         m_pSpan->GetBridgeDescription()->UseSameGirderForEntireBridge() )
    {
       *pFirstGdrIdx = 0;
-      *pLastGdrIdx = m_pSpan->GetBridgeDescription()->GetGirderCount()-1;
+      *pLastGdrIdx = min(m_GirderGroups[groupIdx].second,m_pSpan->GetBridgeDescription()->GetGirderCount()-1);
       strName = m_pSpan->GetBridgeDescription()->GetGirderName();
    }
    else

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2013  Washington State Department of Transportation
+// Copyright © 1999-2014  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -373,6 +373,9 @@ void CSpanGirderLayoutPage::OnNumGirdersChanged(NMHDR* pNMHDR, LRESULT* pResult)
          AddGirders(GirderIndexType(pNMUpDown->iDelta));
    }
 
+   FillRefGirderComboBox(pgsTypes::metStart);
+   FillRefGirderComboBox(pgsTypes::metEnd);
+
    *pResult = 0;
 }
 
@@ -449,7 +452,10 @@ void CSpanGirderLayoutPage::FillRefGirderComboBox(pgsTypes::MemberEndType end)
       pCB->SetItemData(idx,(DWORD)i);
    }
 
-   pCB->SetCurSel(curSel == CB_ERR ? 0 : curSel);
+   if ( pCB->SetCurSel(curSel == CB_ERR ? 0 : curSel) == CB_ERR )
+   {
+      pCB->SetCurSel(0);
+   }
 }
 
 void CSpanGirderLayoutPage::OnPrevPierGirderSpacingMeasureChanged() 
@@ -514,13 +520,7 @@ GirderIndexType CSpanGirderLayoutPage::GetMinGirderCount()
    CComPtr<IBeamFactory> factory;
    pGdrEntry->GetBeamFactory(&factory);
 
-   CComPtr<IGirderSection> section;
-   factory->CreateGirderSection(pBroker,0,INVALID_INDEX,INVALID_INDEX,pGdrEntry->GetDimensions(),&section);
-
-   WebIndexType nWebs;
-   section->get_WebCount(&nWebs);
-
-   return (1 < nWebs ? 1 : 2);
+   return factory->GetMinimumBeamCount();
 }
 
 void CSpanGirderLayoutPage::UpdateGirderSpacingState()
@@ -1197,8 +1197,8 @@ void CSpanGirderLayoutPage::OnCopySpacingToEnd()
    // Prev Pier, Ahead side --> Next Pier, Back side
 
    // Girder spacing measurement type
-   CComboBox* pcbBackMeasure  = (CComboBox*)GetDlgItem(IDC_PREV_PIER_GIRDER_SPACING_MEASURE);
-   CComboBox* pcbAheadMeasure = (CComboBox*)GetDlgItem(IDC_NEXT_PIER_GIRDER_SPACING_MEASURE);
+   CComboBox* pcbBackMeasure  = (CComboBox*)GetDlgItem(IDC_NEXT_PIER_GIRDER_SPACING_MEASURE);
+   CComboBox* pcbAheadMeasure = (CComboBox*)GetDlgItem(IDC_PREV_PIER_GIRDER_SPACING_MEASURE);
    pcbBackMeasure->SetCurSel(pcbAheadMeasure->GetCurSel());
 
    // Spacing Grid
@@ -1231,8 +1231,8 @@ void CSpanGirderLayoutPage::OnCopySpacingToStart()
    // Next Pier, Back side --> Prev Pier, Ahead side
 
    // Girder spacing measurement type
-   CComboBox* pcbBackMeasure  = (CComboBox*)GetDlgItem(IDC_PREV_PIER_GIRDER_SPACING_MEASURE);
-   CComboBox* pcbAheadMeasure = (CComboBox*)GetDlgItem(IDC_NEXT_PIER_GIRDER_SPACING_MEASURE);
+   CComboBox* pcbBackMeasure  = (CComboBox*)GetDlgItem(IDC_NEXT_PIER_GIRDER_SPACING_MEASURE);
+   CComboBox* pcbAheadMeasure = (CComboBox*)GetDlgItem(IDC_PREV_PIER_GIRDER_SPACING_MEASURE);
    pcbAheadMeasure->SetCurSel(pcbBackMeasure->GetCurSel());
 
    // Spacing Grid
