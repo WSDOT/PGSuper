@@ -73,7 +73,7 @@ rptChapter* CTexasMomentCapacityChapterBuilder::Build(CReportSpecification* pRpt
 
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
-   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval(girderKey);
+   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
 
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 

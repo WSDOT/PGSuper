@@ -200,7 +200,7 @@ void CIBeamFactory::CreateGirderProfile(IBroker* pBroker,StatusGroupIDType statu
    rect->QueryInterface(ppShape);
 }
 
-void CIBeamFactory::CreateSegment(IBroker* pBroker,StatusGroupIDType statusGroupID,const CSegmentKey& segmentKey,IStages* pStages,ISuperstructureMember* ssmbr)
+void CIBeamFactory::CreateSegment(IBroker* pBroker,StatusGroupIDType statusGroupID,const CSegmentKey& segmentKey,ISuperstructureMember* ssmbr)
 {
    CComPtr<ISegment> segment;
 
@@ -242,16 +242,14 @@ void CIBeamFactory::CreateSegment(IBroker* pBroker,StatusGroupIDType statusGroup
    CComPtr<IMaterial> material;
    material.CoCreateInstance(CLSID_Material);
 
-   IntervalIndexType nIntervals = pIntervals->GetIntervalCount(segmentKey);
+   IntervalIndexType nIntervals = pIntervals->GetIntervalCount();
    for ( IntervalIndexType intervalIdx = 0; intervalIdx < nIntervals; intervalIdx++ )
    {
       Float64 E = pMaterial->GetSegmentEc(segmentKey,intervalIdx);
       Float64 D = pMaterial->GetSegmentWeightDensity(segmentKey,intervalIdx);
 
-      StageIndexType stageIdx = pStages->GetStage(segmentKey,intervalIdx);
-
-      material->put_E(stageIdx,E);
-      material->put_Density(stageIdx,D);
+      material->put_E(intervalIdx,E);
+      material->put_Density(intervalIdx,D);
    }
 
 

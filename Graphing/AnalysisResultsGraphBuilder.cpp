@@ -218,16 +218,17 @@ void CAnalysisResultsGraphBuilder::UpdateGraphDefinitions()
    GET_IFACE(IIntervals,pIntervals);
 
    // spec check intervals
-   std::vector<IntervalIndexType> vSpecCheckIntervals(pIntervals->GetSpecCheckIntervals(dummyGirderKey));
+   std::vector<IntervalIndexType> vSpecCheckIntervals(pIntervals->GetSpecCheckIntervals(girderKey));
 
    // initial intervals
-   IntervalIndexType nIntervals               = pIntervals->GetIntervalCount(dummySegmentKey);
+#pragma Reminder("REVIEW: using dummy segment keys could be problematic")
+   IntervalIndexType nIntervals               = pIntervals->GetIntervalCount();
    IntervalIndexType releaseIntervalIdx       = pIntervals->GetPrestressReleaseInterval(dummySegmentKey);
    IntervalIndexType storageIntervalIdx       = pIntervals->GetStorageInterval(dummySegmentKey);
    IntervalIndexType erectSegmentIntervalIdx  = pIntervals->GetFirstSegmentErectionInterval(dummySegmentKey);
-   IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval(dummySegmentKey);
-   IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval(dummySegmentKey);
-   IntervalIndexType overlayIntervalIdx       = pIntervals->GetOverlayInterval(dummySegmentKey);
+   IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval();
+   IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval();
+   IntervalIndexType overlayIntervalIdx       = pIntervals->GetOverlayInterval();
    std::vector<IntervalIndexType> vInitialIntervals;
    vInitialIntervals.push_back(releaseIntervalIdx);
    vInitialIntervals.push_back(storageIntervalIdx);
@@ -257,7 +258,7 @@ void CAnalysisResultsGraphBuilder::UpdateGraphDefinitions()
    }
 
    // intervals only after live load is applied
-   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval(dummySegmentKey);
+   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
    std::vector<IntervalIndexType> vLiveLoadIntervals;
    for ( IntervalIndexType intervalIdx = liveLoadIntervalIdx; intervalIdx < nIntervals; intervalIdx++ )
    {
@@ -294,9 +295,7 @@ void CAnalysisResultsGraphBuilder::UpdateGraphDefinitions()
    SupportIndexType nTS = pBridgeDesc->GetTemporarySupportCount();
    for ( SupportIndexType tsIdx = 0; tsIdx < nTS; tsIdx++ )
    {
-      const CTemporarySupportData* pTS = pBridgeDesc->GetTemporarySupport(tsIdx);
-      SupportIDType tsID = pTS->GetID();
-      IntervalIndexType tsrIntervalIdx = pIntervals->GetTemporarySupportRemovalInterval(dummyGirderKey,tsID);
+      IntervalIndexType tsrIntervalIdx = pIntervals->GetTemporarySupportRemovalInterval(tsIdx);
       vTempSupportRemovalIntervals.push_back(tsrIntervalIdx);
    }
 
@@ -839,7 +838,7 @@ void CAnalysisResultsGraphBuilder::UpdateGraphTitle()
       IntervalIndexType intervalIdx = vIntervals.back();
 
       GET_IFACE(IIntervals,pIntervals);
-      CString strInterval( pIntervals->GetDescription(girderKey,intervalIdx) );
+      CString strInterval( pIntervals->GetDescription(intervalIdx) );
 
       CString strGraphTitle;
       if ( grpIdx == ALL_GROUPS )
@@ -1010,7 +1009,7 @@ void CAnalysisResultsGraphBuilder::UpdateGraphData()
       // deck is composite with the girders (in which case we can assume continuity has occured)
       if ( bSimpleSpanSegments )
       {
-         if ( pIntervals->GetCompositeDeckInterval(girderKey) <= intervalIdx && grpIdx == ALL_GROUPS )
+         if ( pIntervals->GetCompositeDeckInterval() <= intervalIdx && grpIdx == ALL_GROUPS )
          {
             bSimpleSpanSegments = false;
          }
@@ -1034,14 +1033,14 @@ void CAnalysisResultsGraphBuilder::UpdateGraphData()
 
    IndexType nGraphs = ((CAnalysisResultsGraphController*)m_pGraphController)->GetGraphCount();
 
+   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
+
    m_GroupOffset = 0;
    for ( GroupIndexType groupIdx = startGroupIdx; groupIdx <= endGroupIdx; groupIdx++ )
    {
       GirderIndexType nGirders = pBridge->GetGirderCount(groupIdx);
       GirderIndexType girderIdx = Min(gdrIdx,nGirders-1);
       CGirderKey thisGirderKey(groupIdx,girderIdx);
-
-      IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval(thisGirderKey);
 
       SegmentIndexType nSegments = pBridge->GetSegmentCount(thisGirderKey);
 
@@ -1214,7 +1213,7 @@ void CAnalysisResultsGraphBuilder::InitializeGraph(IndexType graphIdx,const CAna
    if (actionType == actionShear )
    {
       GET_IFACE(IIntervals,pIntervals);
-      IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval(girderKey);
+      IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
 
       int penStyle = (liveLoadIntervalIdx <= intervalIdx && actionType == actionShear && !bIsFinalShear ? PS_DOT : PS_SOLID);
 
@@ -1485,8 +1484,8 @@ void CAnalysisResultsGraphBuilder::LimitStateLoadGraph(IndexType graphIdx,const 
    int penWeight = (graphType == graphAllowable || graphType == graphCapacity ? 3 : 2);
 
    GET_IFACE(IIntervals,pIntervals);
-   IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval(girderKey);
-   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval(girderKey);
+   IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval();
+   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
 
    CString strDataLabel(GetDataLabel(graphIdx,graphDef,intervalIdx));
 
@@ -1776,7 +1775,7 @@ void CAnalysisResultsGraphBuilder::LiveLoadGraph(IndexType graphIdx,const CAnaly
    ATLASSERT(vehicleIndex == INVALID_INDEX);
 
    GET_IFACE(IIntervals,pIntervals);
-   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval(girderKey);
+   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
 
    if ( intervalIdx < liveLoadIntervalIdx )
    {
@@ -1969,7 +1968,7 @@ void CAnalysisResultsGraphBuilder::VehicularLiveLoadGraph(IndexType graphIdx,con
    VehicleIndexType vehicleIndex(graphDef.m_VehicleIndex);
 
    GET_IFACE(IIntervals,pIntervals);
-   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval(girderKey);
+   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
 
    if ( intervalIdx < liveLoadIntervalIdx )
    {
@@ -2728,7 +2727,7 @@ void CAnalysisResultsGraphBuilder::LiveLoadReactionGraph(IndexType graphIdx,cons
    VehicleIndexType vehicleIndex(graphDef.m_VehicleIndex);
 
    GET_IFACE(IIntervals,pIntervals);
-   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval(girderKey);
+   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
 
    if ( intervalIdx < liveLoadIntervalIdx )
    {
@@ -2818,7 +2817,7 @@ void CAnalysisResultsGraphBuilder::VehicularLiveLoadReactionGraph(IndexType grap
    VehicleIndexType vehicleIndex(graphDef.m_VehicleIndex);
 
    GET_IFACE(IIntervals,pIntervals);
-   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval(girderKey);
+   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
 
    if ( intervalIdx < liveLoadIntervalIdx )
    {

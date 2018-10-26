@@ -74,8 +74,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 3,0,0,24
- PRODUCTVERSION 3,0,0,24
+ FILEVERSION 3,0,0,25
+ PRODUCTVERSION 3,0,0,25
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -93,12 +93,12 @@ BEGIN
             VALUE "Comments", "A member of the Alternate Route Project"
             VALUE "CompanyName", "Washington State Department of Transportation"
             VALUE "FileDescription", "psgLib DLL"
-            VALUE "FileVersion", "3.0.0.24"
+            VALUE "FileVersion", "3.0.0.25"
             VALUE "InternalName", "psgLib"
             VALUE "LegalCopyright", "Copyright © 1999-2015, Washington State Department of Transportation, All Rights Reserved"
             VALUE "OriginalFilename", "psgLib.DLL"
             VALUE "ProductName", "PGSuper"
-            VALUE "ProductVersion", "3.0.0.24"
+            VALUE "ProductVersion", "3.0.0.25"
         END
     END
     BLOCK "VarFileInfo"
@@ -1713,19 +1713,20 @@ FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     LTEXT           "Entry:",IDC_STATIC,7,7,21,8
     LTEXT           "Name",IDC_NAME,37,7,141,8
-    LTEXT           "Outside Diameter (OD)",IDC_STATIC,7,28,74,8
-    EDITTEXT        IDC_OD,87,25,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Static",IDC_OD_UNIT,133,29,19,8
+    LTEXT           "Max Outside Diameter (OD)",IDC_STATIC,7,28,89,8
+    EDITTEXT        IDC_OD,98,25,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_OD_UNIT,144,29,19,8
     LTEXT           "Inside Diameter (ID)",IDC_STATIC,7,45,66,8
-    EDITTEXT        IDC_ID,87,42,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Static",IDC_ID_UNIT,133,44,19,8
-    LTEXT           "Max Strand Offset (Z)",IDC_STATIC,7,61,72,8
-    EDITTEXT        IDC_Z,87,59,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Static",IDC_Z_UNIT,133,61,19,8
+    EDITTEXT        IDC_ID,98,42,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_ID_UNIT,144,44,19,8
+    LTEXT           "Strand Offset (Z)",IDC_STATIC,7,61,56,8
+    EDITTEXT        IDC_Z,98,59,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_Z_UNIT,144,61,19,8
     CONTROL         "",IDC_ZDIM,"Static",SS_ENHMETAFILE | WS_BORDER,173,6,160,81
     DEFPUSHBUTTON   "OK",IDOK,175,101,50,14
     PUSHBUTTON      "Cancel",IDCANCEL,230,101,50,14
     PUSHBUTTON      "Help",ID_HELP,283,101,50,14
+    LTEXT           "Max Outside Diameter should account for ribs on the duct. Used to evaluate LRFD 5.4.6.2.",IDC_STATIC,7,84,150,22
 END
 
 IDD_CEBFIP_CONCRETE DIALOGEX 0, 0, 229, 131

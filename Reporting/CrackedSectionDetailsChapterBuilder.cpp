@@ -163,7 +163,7 @@ void write_cracked_section_table(IBroker* pBroker,
    GET_IFACE2(pBroker, IBridge, pBridge);
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
-   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval(girderKey);
+   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
 
    // Setup the table
    pPara = new rptParagraph;

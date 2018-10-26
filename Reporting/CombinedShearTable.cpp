@@ -84,7 +84,7 @@ void CCombinedShearTable::Build(IBroker* pBroker,rptChapter* pChapter,
    BuildCombinedDeadTable(pBroker, pChapter, girderKey, pDisplayUnits, intervalIdx, analysisType, bDesign, bRating);
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
-   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval(CGirderKey(girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex,girderKey.girderIndex));
+   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
 
    if ( liveLoadIntervalIdx <= intervalIdx )
    {
@@ -167,7 +167,7 @@ void CCombinedShearTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter* p
    {
       CGirderKey thisGirderKey(grpIdx,girderKey.girderIndex);
 
-      IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval(thisGirderKey);
+      IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
 
       PoiAttributeType poiRefAttribute;
       std::vector<pgsPointOfInterest> vPoi;
@@ -478,7 +478,7 @@ void CCombinedShearTable::BuildCombinedLiveTable(IBroker* pBroker, rptChapter* p
    {
       CGirderKey thisGirderKey(grpIdx,girderKey.girderIndex);
 
-      IntervalIndexType liveLoadInteravlIdx = pIntervals->GetLiveLoadInterval(thisGirderKey);
+      IntervalIndexType liveLoadInteravlIdx = pIntervals->GetLiveLoadInterval();
 
       PoiAttributeType poiRefAttribute;
       std::vector<pgsPointOfInterest> vPoi;
@@ -520,7 +520,7 @@ void CCombinedShearTable::BuildCombinedLiveTable(IBroker* pBroker, rptChapter* p
 
       if ( bRating )
       {
-         IntervalIndexType ratingIntervalIdx = pIntervals->GetLoadRatingInterval(thisGirderKey);
+         IntervalIndexType ratingIntervalIdx = pIntervals->GetLoadRatingInterval();
 
          if ( !bDesign && (pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) || pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory)) )
          {

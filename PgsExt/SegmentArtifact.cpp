@@ -730,7 +730,7 @@ Float64 pgsSegmentArtifact::GetRequiredDeckConcreteStrength() const
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IIntervals,pIntervals);
-   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval(m_SegmentKey);
+   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
 
    std::map<StressKey,std::vector<pgsFlexuralStressArtifact>>::const_iterator iter(m_FlexuralStressArtifacts.begin());
    std::map<StressKey,std::vector<pgsFlexuralStressArtifact>>::const_iterator end(m_FlexuralStressArtifacts.end());

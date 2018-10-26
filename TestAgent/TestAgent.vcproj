@@ -21,7 +21,7 @@
 	<Configurations>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="\ARP\$(SolutionName)\RegFreeCOM\$(PlatformName)\$(ConfigurationName)"
+			OutputDirectory="\ARP\BridgeLink\RegFreeCOM\$(PlatformName)\$(ConfigurationName)"
 			IntermediateDirectory="$(PlatformName)\$(ConfigurationName)"
 			ConfigurationType="2"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops"
@@ -89,7 +89,7 @@
 				OutputFile="$(OutDir)\PGSuper$(ProjectName).dll"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
-				AdditionalLibraryDirectories="&quot;\ARP\WBFL\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&quot;;&quot;\ARP\$(SolutionName)\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&quot;"
+				AdditionalLibraryDirectories="&quot;\ARP\WBFL\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&quot;;&quot;\ARP\BridgeLink\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&quot;"
 				ModuleDefinitionFile=".\TestAgent.def"
 				SubSystem="2"
 				OptimizeReferences="2"
@@ -126,7 +126,7 @@
 		</Configuration>
 		<Configuration
 			Name="Release|x64"
-			OutputDirectory="\ARP\$(SolutionName)\RegFreeCOM\$(PlatformName)\$(ConfigurationName)"
+			OutputDirectory="\ARP\BridgeLink\RegFreeCOM\$(PlatformName)\$(ConfigurationName)"
 			IntermediateDirectory="$(PlatformName)\$(ConfigurationName)"
 			ConfigurationType="2"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops"
@@ -195,7 +195,7 @@
 				OutputFile="$(OutDir)\PGSuper$(ProjectName).dll"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
-				AdditionalLibraryDirectories="&quot;\ARP\WBFL\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&quot;;&quot;\ARP\$(SolutionName)\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&quot;"
+				AdditionalLibraryDirectories="&quot;\ARP\WBFL\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&quot;;&quot;\ARP\BridgeLink\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&quot;"
 				ModuleDefinitionFile=".\TestAgent.def"
 				SubSystem="2"
 				OptimizeReferences="2"
@@ -232,7 +232,7 @@
 		</Configuration>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="\ARP\$(SolutionName)\RegFreeCOM\$(PlatformName)\$(ConfigurationName)"
+			OutputDirectory="\ARP\BridgeLink\RegFreeCOM\$(PlatformName)\$(ConfigurationName)"
 			IntermediateDirectory="$(PlatformName)\$(ConfigurationName)"
 			ConfigurationType="2"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops"
@@ -298,7 +298,7 @@
 				OutputFile="$(OutDir)\PGSuper$(ProjectName).dll"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
-				AdditionalLibraryDirectories="&quot;\ARP\WBFL\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&quot;;&quot;\ARP\$(SolutionName)\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&quot;"
+				AdditionalLibraryDirectories="&quot;\ARP\WBFL\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&quot;;&quot;\ARP\BridgeLink\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&quot;"
 				ModuleDefinitionFile=".\TestAgent.def"
 				GenerateDebugInformation="true"
 				SubSystem="2"
@@ -333,7 +333,7 @@
 		</Configuration>
 		<Configuration
 			Name="Debug|x64"
-			OutputDirectory="\ARP\$(SolutionName)\RegFreeCOM\$(PlatformName)\$(ConfigurationName)"
+			OutputDirectory="\ARP\BridgeLink\RegFreeCOM\$(PlatformName)\$(ConfigurationName)"
 			IntermediateDirectory="$(PlatformName)\$(ConfigurationName)"
 			ConfigurationType="2"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops"
@@ -400,7 +400,7 @@
 				OutputFile="$(OutDir)\PGSuper$(ProjectName).dll"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
-				AdditionalLibraryDirectories="&quot;\ARP\WBFL\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&quot;;&quot;\ARP\$(SolutionName)\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&quot;"
+				AdditionalLibraryDirectories="&quot;\ARP\WBFL\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&quot;;&quot;\ARP\BridgeLink\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&quot;"
 				ModuleDefinitionFile=".\TestAgent.def"
 				GenerateDebugInformation="true"
 				SubSystem="2"
@@ -435,7 +435,7 @@
 		</Configuration>
 		<Configuration
 			Name="Profile|Win32"
-			OutputDirectory="\ARP\$(SolutionName)\RegFreeCOM\$(PlatformName)\$(ConfigurationName)"
+			OutputDirectory="\ARP\BridgeLink\RegFreeCOM\$(PlatformName)\$(ConfigurationName)"
 			IntermediateDirectory="$(PlatformName)\$(ConfigurationName)"
 			ConfigurationType="2"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops"
@@ -504,7 +504,7 @@
 				OutputFile="$(OutDir)\PGSuper$(ProjectName).dll"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
-				AdditionalLibraryDirectories="&quot;\ARP\WBFL\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&quot;;&quot;\ARP\$(SolutionName)\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&quot;"
+				AdditionalLibraryDirectories="&quot;\ARP\WBFL\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&quot;;&quot;\ARP\BridgeLink\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&quot;"
 				ModuleDefinitionFile=".\TestAgent.def"
 				GenerateDebugInformation="true"
 				SubSystem="2"
@@ -542,7 +542,7 @@
 		</Configuration>
 		<Configuration
 			Name="Profile|x64"
-			OutputDirectory="\ARP\$(SolutionName)\RegFreeCOM\$(PlatformName)\$(ConfigurationName)"
+			OutputDirectory="\ARP\BridgeLink\RegFreeCOM\$(PlatformName)\$(ConfigurationName)"
 			IntermediateDirectory="$(PlatformName)\$(ConfigurationName)"
 			ConfigurationType="2"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops"
@@ -612,7 +612,7 @@
 				OutputFile="$(OutDir)\PGSuper$(ProjectName).dll"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
-				AdditionalLibraryDirectories="&quot;\ARP\WBFL\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&quot;;&quot;\ARP\$(SolutionName)\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&quot;"
+				AdditionalLibraryDirectories="&quot;\ARP\WBFL\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&quot;;&quot;\ARP\BridgeLink\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&quot;"
 				ModuleDefinitionFile=".\TestAgent.def"
 				GenerateDebugInformation="true"
 				SubSystem="2"

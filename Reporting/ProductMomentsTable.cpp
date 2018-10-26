@@ -432,11 +432,11 @@ rptRcTable* CProductMomentsTable::Build(IBroker* pBroker,const CGirderKey& girde
       CGirderKey thisGirderKey(grpIdx,gdrIdx);
 
       IntervalIndexType erectSegmentIntervalIdx  = pIntervals->GetLastSegmentErectionInterval(thisGirderKey);
-      IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval(thisGirderKey);
-      IntervalIndexType overlayIntervalIdx       = pIntervals->GetOverlayInterval(thisGirderKey);
-      IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval(thisGirderKey);
-      IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval(thisGirderKey);
-      IntervalIndexType loadRatingIntervalIdx    = pIntervals->GetLoadRatingInterval(thisGirderKey);
+      IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval();
+      IntervalIndexType overlayIntervalIdx       = pIntervals->GetOverlayInterval();
+      IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval();
+      IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval();
+      IntervalIndexType loadRatingIntervalIdx    = pIntervals->GetLoadRatingInterval();
 
       CSegmentKey allSegmentsKey(grpIdx,gdrIdx,ALL_SEGMENTS);
       std::vector<pgsPointOfInterest> vPoi( pIPoi->GetPointsOfInterest(allSegmentsKey,POI_ERECTED_SEGMENT) );

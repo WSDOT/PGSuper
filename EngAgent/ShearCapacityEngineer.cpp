@@ -127,7 +127,7 @@ void pgsShearCapacityEngineer::ComputeShearCapacityDetails(IntervalIndexType int
 
 #if defined _DEBUG
    GET_IFACE(IIntervals,pIntervals);
-   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval(girderKey);
+   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
    ATLASSERT( liveLoadIntervalIdx <= intervalIdx );
 #endif
 
@@ -301,9 +301,9 @@ void pgsShearCapacityEngineer::ComputeFpc(const pgsPointOfInterest& poi, const G
 
    GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(poi.GetSegmentKey());
-   IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval(girderKey);
-   IntervalIndexType finalIntervalIdx = pIntervals->GetIntervalCount(girderKey) - 1;
-   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval(girderKey);
+   IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval();
+   IntervalIndexType finalIntervalIdx = pIntervals->GetIntervalCount() - 1;
+   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
 
    Float64 neff;
    Float64 eps, Pps;
@@ -862,7 +862,7 @@ bool pgsShearCapacityEngineer::GetInformation(IntervalIndexType intervalIdx,
    }
    else
    {
-      pscd->McrDetails.fr = pMaterial->GetDeckShearFr(segmentKey,intervalIdx);
+      pscd->McrDetails.fr = pMaterial->GetDeckShearFr(intervalIdx);
    }
 
    pscd->McrDetails.Mcr = pscd->McrDetails.Sbc*(pscd->McrDetails.fr + pscd->McrDetails.fcpe - pscd->McrDetails.Mdnc/pscd->McrDetails.Sb);

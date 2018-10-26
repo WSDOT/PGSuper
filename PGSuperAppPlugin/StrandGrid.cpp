@@ -828,9 +828,9 @@ void CStrandGrid::FillGrid(CStrandData* pStrands)
    GetParam()->SetLockReadOnly(FALSE);
 
    ROWCOL nRows = GetRowCount();
-   if ( 2 < nRows )
+   if ( 2 <= nRows )
    {
-      CGXGridWnd::RemoveRows(2,GetRowCount());
+      CGXGridWnd::RemoveRows(2,nRows);
    }
 
    ATLASSERT(pStrands->GetStrandDefinitionType() == CStrandData::sdtDirectInput);

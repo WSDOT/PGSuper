@@ -89,9 +89,9 @@ void CTSRemovalReactionTable::Build(rptChapter* pChapter,IBroker* pBroker,const 
    GroupIndexType endGroup   = (girderKey.groupIndex == ALL_GROUPS ? nGroups-1 : startGroup);
 
    GET_IFACE2(pBroker, IIntervals, pIntervals);
-   IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval(girderKey);
-   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval(girderKey);
-   IntervalIndexType overlayIntervalIdx  = pIntervals->GetOverlayInterval(girderKey);
+   IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval();
+   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
+   IntervalIndexType overlayIntervalIdx  = pIntervals->GetOverlayInterval();
 
    // Get the results
    GET_IFACE2_NOCHECK(pBroker, IRatingSpecification, pRatingSpec); // only used if there are temporary supports to be removed
@@ -114,9 +114,9 @@ void CTSRemovalReactionTable::Build(rptChapter* pChapter,IBroker* pBroker,const 
    for ( GroupIndexType grpIdx = startGroup; grpIdx <= endGroup; grpIdx++ )
    {
       // Get the intervals when temporary supports are removed for this group
-      std::vector<IntervalIndexType> tsrIntervals(pIntervals->GetTemporarySupportRemovalIntervals(girderKey));
+      std::vector<IntervalIndexType> tsrIntervals(pIntervals->GetTemporarySupportRemovalIntervals(grpIdx));
 
-      IntervalIndexType overlayIntervalIdx = pIntervals->GetOverlayInterval(girderKey);
+      IntervalIndexType overlayIntervalIdx = pIntervals->GetOverlayInterval();
 
       GirderIndexType nGirders = pBridge->GetGirderCount(grpIdx);
       GirderIndexType gdrIdx = Min(girderKey.girderIndex,nGirders-1);

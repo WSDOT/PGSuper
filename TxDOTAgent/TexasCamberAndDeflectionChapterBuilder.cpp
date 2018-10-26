@@ -217,6 +217,10 @@ void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker, const std::vec
    }
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
+   IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval();
+   IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval();
+   IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval();
+   IntervalIndexType overlayIntervalIdx       = pIntervals->GetOverlayInterval();
 
    // Build table column by column
    std::vector<CSegmentKey> BeamsWithExcessCamber;
@@ -225,11 +229,6 @@ void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker, const std::vec
    for (ColumnIndexType gdr_idx=startIdx; gdr_idx<=endIdx; gdr_idx++)
    {
       CGirderKey girderKey(girderList[gdr_idx]);
-
-      IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval(girderKey);
-      IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval(girderKey);
-      IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval(girderKey);
-      IntervalIndexType overlayIntervalIdx       = pIntervals->GetOverlayInterval(girderKey);
 
       // Get Midspan poi
       std::vector<pgsPointOfInterest> vPoi = pIPOI->GetPointsOfInterest(CSegmentKey(girderKey,0),POI_5L | POI_ERECTED_SEGMENT);

@@ -223,7 +223,7 @@ rptChapter* CACI209ShrinkageStrainChapterBuilder::Build(CReportSpecification* pR
    (*pTable)(rowIdx+1,colIdx++) << Sub2(symbol(epsilon),_T("sh")) << _T("x10") << Super(_T("6"));
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
-   IntervalIndexType nIntervals = pIntervals->GetIntervalCount(girderKey);
+   IntervalIndexType nIntervals = pIntervals->GetIntervalCount();
 
    rowIdx = pTable->GetNumberOfHeaderRows();
    for ( IntervalIndexType intervalIdx = 0; intervalIdx < nIntervals; intervalIdx++, rowIdx++ )
@@ -275,16 +275,16 @@ rptChapter* CACI209ShrinkageStrainChapterBuilder::Build(CReportSpecification* pR
          }
       }
 
-      IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval(girderKey);
+      IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
       if ( compositeDeckIntervalIdx <= intervalIdx )
       {
-         Float64 t  = pMaterials->GetDeckConcreteAge(girderKey,intervalIdx,pgsTypes::End);
+         Float64 t  = pMaterials->GetDeckConcreteAge(intervalIdx,pgsTypes::End);
          const matConcreteBase* pConcrete = pMaterials->GetDeckConcrete();
          const matACI209Concrete* pACIConcrete = dynamic_cast<const matACI209Concrete*>(pConcrete);
          Float64 cure = pACIConcrete->GetCureTime();
          (*pTable)(rowIdx,colIdx++) << t - cure;
-         (*pTable)(rowIdx,colIdx++) << 1E6*pMaterials->GetDeckFreeShrinkageStrain(girderKey,intervalIdx);
-         (*pTable)(rowIdx,colIdx++) << 1E6*pMaterials->GetDeckFreeShrinkageStrain(girderKey,intervalIdx,pgsTypes::End);
+         (*pTable)(rowIdx,colIdx++) << 1E6*pMaterials->GetDeckFreeShrinkageStrain(intervalIdx);
+         (*pTable)(rowIdx,colIdx++) << 1E6*pMaterials->GetDeckFreeShrinkageStrain(intervalIdx,pgsTypes::End);
       }
       else
       {

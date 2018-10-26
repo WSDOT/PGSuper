@@ -162,7 +162,7 @@ STDMETHODIMP CEffectiveFlangeWidthTool::TributaryFlangeWidthBySegmentEx(IGeneric
    segmentKey.segmentIndex = segIdx;
 
    GET_IFACE(IIntervals,pIntervals);
-   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval(segmentKey);
+   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
 
    SSMbrIntervalKey key(compositeDeckIntervalIdx,gdrID,segIdx,Xs);
    TWContainer::iterator found = m_TFW.find(key);
@@ -369,7 +369,7 @@ STDMETHODIMP CEffectiveFlangeWidthTool::EffectiveFlangeWidthBySegmentEx(IGeneric
    CSegmentKey segmentKey = GetSegmentKey(gdrID);
 
    GET_IFACE(IIntervals,pIntervals);
-   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval(segmentKey);
+   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
 
    SSMbrIntervalKey key(compositeDeckIntervalIdx,gdrID,segIdx,Xs);
    FWContainer::iterator found = m_EFW.find(key);
@@ -783,7 +783,7 @@ void CEffectiveFlangeWidthTool::ReportEffectiveFlangeWidth(IBroker* pBroker,IGen
 void CEffectiveFlangeWidthTool::ReportEffectiveFlangeWidth_InteriorGirder(IBroker* pBroker,IGenericBridge* bridge,const CSegmentKey& segmentKey,GirderIDType leftGdrID,GirderIDType gdrID,GirderIDType rightGdrID,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits)
 {
    GET_IFACE2(pBroker,IIntervals,pIntervals);
-   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval(segmentKey);
+   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
 
    GET_IFACE2(pBroker,IGirder,pGirder);
    if ( pGirder->IsPrismatic(liveLoadIntervalIdx,segmentKey) )
@@ -1058,7 +1058,7 @@ void CEffectiveFlangeWidthTool::ReportEffectiveFlangeWidth_ExteriorGirder(IBroke
 void CEffectiveFlangeWidthTool::ReportEffectiveFlangeWidth_ExteriorGirder_SingleTopFlange(IBroker* pBroker,IGenericBridge* bridge,const CSegmentKey& segmentKey,GirderIDType leftGdrID,GirderIDType gdrID,GirderIDType rightGdrID,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits)
 {
    GET_IFACE2(pBroker,IIntervals,pIntervals);
-   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval(segmentKey);
+   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
 
    GET_IFACE2(pBroker,IGirder,pGirder);
    if ( pGirder->IsPrismatic(liveLoadIntervalIdx,segmentKey) )
@@ -1407,7 +1407,7 @@ void CEffectiveFlangeWidthTool::ReportEffectiveFlangeWidth_ExteriorGirder_Single
 void CEffectiveFlangeWidthTool::ReportEffectiveFlangeWidth_ExteriorGirder_MultiTopFlange(IBroker* pBroker,IGenericBridge* bridge,const CSegmentKey& segmentKey,GirderIDType leftGdrID,GirderIDType gdrID,GirderIDType rightGdrID,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits)
 {
    GET_IFACE2(pBroker,IIntervals,pIntervals);
-   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval(segmentKey);
+   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
 
    GET_IFACE2(pBroker,IGirder,pGirder);
     if ( pGirder->IsPrismatic(liveLoadIntervalIdx,segmentKey) ) // ??? is this the right gdrID and segIdx to check?

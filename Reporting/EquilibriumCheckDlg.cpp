@@ -72,11 +72,11 @@ BOOL CEquilibriumCheckDlg::OnInitDialog()
 
    GET_IFACE( IIntervals, pIntervals);
    CComboBox* pcbIntervals = (CComboBox*)GetDlgItem(IDC_INTERVAL);
-   IntervalIndexType nIntervals = pIntervals->GetIntervalCount(m_GirderKey);
+   IntervalIndexType nIntervals = pIntervals->GetIntervalCount();
    for ( IntervalIndexType intervalIdx = 0; intervalIdx < nIntervals; intervalIdx++ )
    {
       CString strLabel;
-      strLabel.Format(_T("Interval %d: %s"),LABEL_INTERVAL(intervalIdx),pIntervals->GetDescription(m_GirderKey,intervalIdx));
+      strLabel.Format(_T("Interval %d: %s"),LABEL_INTERVAL(intervalIdx),pIntervals->GetDescription(intervalIdx));
       int idx = pcbIntervals->AddString(strLabel);
       pcbIntervals->SetItemData(idx,(DWORD_PTR)intervalIdx);
    }
@@ -125,7 +125,7 @@ IntervalIndexType CEquilibriumCheckDlg::GetInterval()
 void CEquilibriumCheckDlg::UpdatePOI()
 {
    GET_IFACE(IPointOfInterest,pPOI);
-   m_vPOI = pPOI->GetPointsOfInterest(CSegmentKey(m_GirderKey,ALL_SEGMENTS));
+   m_vPOI = pPOI->GetPointsOfInterest(CSegmentKey(ALL_GROUPS,m_GirderKey.girderIndex,ALL_SEGMENTS));
    if (m_Slider.GetSafeHwnd() != NULL )
    {
       m_Slider.SetRange(0,(int)(m_vPOI.size()-1)); // the range is number of spaces along slider... 

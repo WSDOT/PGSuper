@@ -2,7 +2,7 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="9.00"
-	Name="PGSuperAppPlugin"
+	Name="PGSuper"
 	ProjectGUID="{2055203D-02FC-4D11-BDF0-411E9F465E93}"
 	RootNamespace="PGSuperAppPlugin"
 	Keyword="AtlProj"
@@ -21,7 +21,7 @@
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="\ARP\$(SolutionName)\RegFreeCOM\$(PlatformName)\$(ConfigurationName)"
+			OutputDirectory="\ARP\BridgeLink\RegFreeCOM\$(PlatformName)\$(ConfigurationName)"
 			IntermediateDirectory="$(PlatformName)\$(ConfigurationName)"
 			ConfigurationType="2"
 			UseOfMFC="2"
@@ -91,7 +91,7 @@
 				IgnoreImportLibrary="true"
 				AdditionalDependencies="htmlhelp.lib"
 				LinkIncremental="2"
-				AdditionalLibraryDirectories="&quot;\ARP\WBFL\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&quot;;&quot;\ARP\$(SolutionName)\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&quot;"
+				AdditionalLibraryDirectories="&quot;\ARP\WBFL\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&quot;;&quot;\ARP\BridgeLink\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&quot;"
 				ModuleDefinitionFile=".\PGSuperAppPlugin.def"
 				GenerateDebugInformation="true"
 				SubSystem="2"
@@ -121,7 +121,7 @@
 		</Configuration>
 		<Configuration
 			Name="Debug|x64"
-			OutputDirectory="\ARP\$(SolutionName)\RegFreeCOM\$(PlatformName)\$(ConfigurationName)"
+			OutputDirectory="\ARP\BridgeLink\RegFreeCOM\$(PlatformName)\$(ConfigurationName)"
 			IntermediateDirectory="$(PlatformName)\$(ConfigurationName)"
 			ConfigurationType="2"
 			UseOfMFC="2"
@@ -190,7 +190,7 @@
 				IgnoreImportLibrary="true"
 				AdditionalDependencies="htmlhelp.lib"
 				LinkIncremental="2"
-				AdditionalLibraryDirectories="&quot;\ARP\WBFL\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&quot;;&quot;\ARP\$(SolutionName)\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&quot;"
+				AdditionalLibraryDirectories="&quot;\ARP\WBFL\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&quot;;&quot;\ARP\BridgeLink\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&quot;"
 				ModuleDefinitionFile=".\PGSuperAppPlugin.def"
 				GenerateDebugInformation="true"
 				SubSystem="2"
@@ -220,7 +220,7 @@
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="\ARP\$(SolutionName)\RegFreeCOM\$(PlatformName)\$(ConfigurationName)"
+			OutputDirectory="\ARP\BridgeLink\RegFreeCOM\$(PlatformName)\$(ConfigurationName)"
 			IntermediateDirectory="$(PlatformName)\$(ConfigurationName)"
 			ConfigurationType="2"
 			UseOfMFC="2"
@@ -292,7 +292,7 @@
 				IgnoreImportLibrary="true"
 				AdditionalDependencies="htmlhelp.lib"
 				LinkIncremental="1"
-				AdditionalLibraryDirectories="&quot;\ARP\WBFL\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&quot;;&quot;\ARP\$(SolutionName)\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&quot;"
+				AdditionalLibraryDirectories="&quot;\ARP\WBFL\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&quot;;&quot;\ARP\BridgeLink\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&quot;"
 				ModuleDefinitionFile=".\PGSuperAppPlugin.def"
 				GenerateDebugInformation="false"
 				SubSystem="2"
@@ -325,7 +325,7 @@
 		</Configuration>
 		<Configuration
 			Name="Release|x64"
-			OutputDirectory="\ARP\$(SolutionName)\RegFreeCOM\$(PlatformName)\$(ConfigurationName)"
+			OutputDirectory="\ARP\BridgeLink\RegFreeCOM\$(PlatformName)\$(ConfigurationName)"
 			IntermediateDirectory="$(PlatformName)\$(ConfigurationName)"
 			ConfigurationType="2"
 			UseOfMFC="2"
@@ -396,7 +396,7 @@
 				IgnoreImportLibrary="true"
 				AdditionalDependencies="htmlhelp.lib"
 				LinkIncremental="1"
-				AdditionalLibraryDirectories="&quot;\ARP\WBFL\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&quot;;&quot;\ARP\$(SolutionName)\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&quot;"
+				AdditionalLibraryDirectories="&quot;\ARP\WBFL\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&quot;;&quot;\ARP\BridgeLink\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&quot;"
 				ModuleDefinitionFile=".\PGSuperAppPlugin.def"
 				GenerateDebugInformation="false"
 				SubSystem="2"
@@ -429,7 +429,7 @@
 		</Configuration>
 		<Configuration
 			Name="Profile|Win32"
-			OutputDirectory="\ARP\$(SolutionName)\RegFreeCOM\$(PlatformName)\$(ConfigurationName)"
+			OutputDirectory="\ARP\BridgeLink\RegFreeCOM\$(PlatformName)\$(ConfigurationName)"
 			IntermediateDirectory="$(PlatformName)\$(ConfigurationName)"
 			ConfigurationType="2"
 			UseOfMFC="2"
@@ -500,7 +500,7 @@
 				IgnoreImportLibrary="true"
 				AdditionalDependencies="htmlhelp.lib"
 				LinkIncremental="1"
-				AdditionalLibraryDirectories="&quot;\ARP\WBFL\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&quot;;&quot;\ARP\$(SolutionName)\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&quot;"
+				AdditionalLibraryDirectories="&quot;\ARP\WBFL\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&quot;;&quot;\ARP\BridgeLink\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&quot;"
 				ModuleDefinitionFile=".\PGSuperAppPlugin.def"
 				GenerateDebugInformation="true"
 				SubSystem="2"
@@ -533,7 +533,7 @@
 		</Configuration>
 		<Configuration
 			Name="Profile|x64"
-			OutputDirectory="\ARP\$(SolutionName)\RegFreeCOM\$(PlatformName)\$(ConfigurationName)"
+			OutputDirectory="\ARP\BridgeLink\RegFreeCOM\$(PlatformName)\$(ConfigurationName)"
 			IntermediateDirectory="$(PlatformName)\$(ConfigurationName)"
 			ConfigurationType="2"
 			UseOfMFC="2"
@@ -603,7 +603,7 @@
 				IgnoreImportLibrary="true"
 				AdditionalDependencies="htmlhelp.lib"
 				LinkIncremental="1"
-				AdditionalLibraryDirectories="&quot;\ARP\WBFL\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&quot;;&quot;\ARP\$(SolutionName)\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&quot;"
+				AdditionalLibraryDirectories="&quot;\ARP\WBFL\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&quot;;&quot;\ARP\BridgeLink\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&quot;"
 				ModuleDefinitionFile=".\PGSuperAppPlugin.def"
 				GenerateDebugInformation="true"
 				SubSystem="2"
@@ -2330,11 +2330,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\Include\PGSuperComponentInfo.h"
+				RelativePath=".\PGSuperComponentInfo.h"
 				>
 			</File>
 			<File
-				RelativePath=".\PGSuperComponentInfo.h"
+				RelativePath="..\Include\PGSuperComponentInfo.h"
 				>
 			</File>
 			<File
@@ -2680,11 +2680,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\res\bss.ico"
+				RelativePath=".\res\bss.ico"
 				>
 			</File>
 			<File
-				RelativePath=".\res\bss.ico"
+				RelativePath="..\res\bss.ico"
 				>
 			</File>
 			<File
@@ -2860,11 +2860,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\res\GirderDesigner.bmp"
+				RelativePath=".\res\GirderDesigner.bmp"
 				>
 			</File>
 			<File
-				RelativePath=".\res\GirderDesigner.bmp"
+				RelativePath="..\res\GirderDesigner.bmp"
 				>
 			</File>
 			<File
@@ -3068,11 +3068,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\res\txdot.ico"
+				RelativePath=".\res\txdot.ico"
 				>
 			</File>
 			<File
-				RelativePath=".\res\txdot.ico"
+				RelativePath="..\res\txdot.ico"
 				>
 			</File>
 			<File
@@ -3080,11 +3080,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\res\Wsdot.ico"
+				RelativePath="..\res\Wsdot.ico"
 				>
 			</File>
 			<File
-				RelativePath="..\res\Wsdot.ico"
+				RelativePath=".\res\Wsdot.ico"
 				>
 			</File>
 		</Filter>

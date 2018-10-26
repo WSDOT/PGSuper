@@ -41,7 +41,7 @@
 
 #include <PgsExt\BridgeDescription2.h>
 
-#include "AgeAdjustedMaterial.h"
+#include "PrivateHelpers.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -197,7 +197,7 @@ void CSplicedIBeamFactory::CreateGirderProfile(IBroker* pBroker,StatusGroupIDTyp
    rect->QueryInterface(ppShape);
 }
 
-void CSplicedIBeamFactory::CreateSegment(IBroker* pBroker,StatusGroupIDType statusGroupID,const CSegmentKey& segmentKey,IStages* pStages,ISuperstructureMember* ssmbr)
+void CSplicedIBeamFactory::CreateSegment(IBroker* pBroker,StatusGroupIDType statusGroupID,const CSegmentKey& segmentKey,ISuperstructureMember* ssmbr)
 {
    CComPtr<ISplicedGirderSegment> segment;
    segment.CoCreateInstance(CLSID_FlangedSplicedGirderSegment);
@@ -213,8 +213,6 @@ void CSplicedIBeamFactory::CreateSegment(IBroker* pBroker,StatusGroupIDType stat
 
    const GirderLibraryEntry* pGdrEntry = pGirder->GetGirderLibraryEntry();
    const GirderLibraryEntry::Dimensions& dimensions = pGdrEntry->GetDimensions();
-
-   bool bHasClosure[2] = {pSegment->GetLeftClosure() != NULL,pSegment->GetRightClosure() != NULL};
 
    CComPtr<IGirderSection> gdrSection;
    CreateGirderSection(pBroker,statusGroupID,dimensions,-1,-1,&gdrSection);
@@ -240,51 +238,7 @@ void CSplicedIBeamFactory::CreateSegment(IBroker* pBroker,StatusGroupIDType stat
       segment->SetVariationParameters((SegmentZoneType)i,length,height,bottomFlangeDepth);
    }
 
-   // Beam materials
-
-   // NOTE: TRICKY CODE FOR SPLICED GIRDER BEAMS
-   // We need to model the material with an age adjusted modulus. The age adjusted modulus
-   // is E/(1+Y) where Y is the creep coefficient. In order to get the creep coefficient
-   // we need the Volume and Surface Area of the segment (for the V/S ratio). This method
-   // gets called during the creation of the bridge model. The bridge model is not
-   // ready to compute V or S. Calling IMaterial::GetSegmentAgeAdjustedEc() will cause
-   // recusion and validation errors. Using the age adjusted material object we can
-   // delay the calls to GetAgeAdjustedEc until well after the time the bridge model
-   // is validated.
-   GET_IFACE2(pBroker,IMaterials,pMaterials);
-
-   CComObject<CAgeAdjustedMaterial>* pSegmentMaterial;
-   CComObject<CAgeAdjustedMaterial>::CreateInstance(&pSegmentMaterial);
-   CComPtr<IAgeAdjustedMaterial> segmentMaterial = pSegmentMaterial;
-   segmentMaterial->InitSegment(segmentKey,pStages,pMaterials);
-
-   CComQIPtr<IShape> shape(gdrSection);
-   ATLASSERT(shape);
-   segment->AddShape(shape,segmentMaterial,NULL);
-
-   if ( bHasClosure[etStart] )
-   {
-      CClosureKey closureKey(segmentKey.groupIndex,segmentKey.girderIndex,segmentKey.segmentIndex-1);
-      CComObject<CAgeAdjustedMaterial>* pClosureMaterial;
-      CComObject<CAgeAdjustedMaterial>::CreateInstance(&pClosureMaterial);
-      CComPtr<IAgeAdjustedMaterial> closureMaterial = pClosureMaterial;
-      closureMaterial->InitClosureJoint(closureKey,pStages,pMaterials);
-
-      segment->put_ClosureJointForegroundMaterial(etStart,closureMaterial);
-      segment->put_ClosureJointBackgroundMaterial(etStart,NULL);
-   }
-
-   if ( bHasClosure[etEnd] )
-   {
-      CClosureKey closureKey(segmentKey);
-      CComObject<CAgeAdjustedMaterial>* pClosureMaterial;
-      CComObject<CAgeAdjustedMaterial>::CreateInstance(&pClosureMaterial);
-      CComPtr<IAgeAdjustedMaterial> closureMaterial = pClosureMaterial;
-      closureMaterial->InitClosureJoint(closureKey,pStages,pMaterials);
-
-      segment->put_ClosureJointForegroundMaterial(etEnd,closureMaterial);
-      segment->put_ClosureJointBackgroundMaterial(etEnd,NULL);
-   }
+   BuildSplicedGirderMaterialModel(pBroker,pSegment,segment,gdrSection);
 
    ssmbr->AddSegment(segment);
 }

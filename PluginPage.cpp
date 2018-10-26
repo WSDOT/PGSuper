@@ -149,6 +149,7 @@ void CPluginPage::OnOK()
 
       pApp->WriteProfileString(m_Section,strCLSID,(bEnabled ? _T("Enabled") : _T("Disabled")));
    }
+
    CPropertyPage::OnOK();
 }
 

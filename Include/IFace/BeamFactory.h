@@ -51,12 +51,6 @@ struct ISuperstructureMember;
 struct IGirderSection;
 struct IStrandMover;
 
-interface IStages
-{
-   virtual StageIndexType GetStage(const CGirderKey& girderKey,IntervalIndexType intervalIdx) const = 0;
-   virtual IntervalIndexType GetIntervalFromStage(const CGirderKey& girderKey,StageIndexType stageIdx) const = 0;
-};
-
 /*****************************************************************************
 INTERFACE
    IBeamFactory
@@ -90,7 +84,7 @@ interface IBeamFactory : IUnknown
    //---------------------------------------------------------------------------------
    // Lays out the girder along the given superstructure member. This function must
    // create the segments that describe the girder line
-   virtual void CreateSegment(IBroker* pBroker,StatusGroupIDType statusGroupID,const CSegmentKey& segmentKey,IStages* pStages,ISuperstructureMember* ssmbr) = 0;
+   virtual void CreateSegment(IBroker* pBroker,StatusGroupIDType statusGroupID,const CSegmentKey& segmentKey,ISuperstructureMember* ssmbr) = 0;
 
    //---------------------------------------------------------------------------------
    // Adds Points of interest at all cross section changes.

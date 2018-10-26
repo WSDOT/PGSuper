@@ -351,57 +351,57 @@ public:
 
    virtual Float64 GetSegmentWeightDensity(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx);
    virtual Float64 GetClosureJointWeightDensity(const CSegmentKey& closureKey,IntervalIndexType intervalIdx);
-   virtual Float64 GetDeckWeightDensity(const CGirderKey& girderKey,IntervalIndexType intervalIdx);
-   virtual Float64 GetRailingSystemWeightDensity(pgsTypes::TrafficBarrierOrientation orientation,const CGirderKey& girderKey,IntervalIndexType intervalIdx);
+   virtual Float64 GetDeckWeightDensity(IntervalIndexType intervalIdx);
+   virtual Float64 GetRailingSystemWeightDensity(pgsTypes::TrafficBarrierOrientation orientation,IntervalIndexType intervalIdx);
 
    virtual Float64 GetSegmentConcreteAge(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType);
    virtual Float64 GetClosureJointConcreteAge(const CSegmentKey& closureKey,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType);
-   virtual Float64 GetDeckConcreteAge(const CGirderKey& girderKey,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType);
-   virtual Float64 GetRailingSystemAge(pgsTypes::TrafficBarrierOrientation orientation,const CGirderKey& girderKey,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType);
+   virtual Float64 GetDeckConcreteAge(IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType);
+   virtual Float64 GetRailingSystemAge(pgsTypes::TrafficBarrierOrientation orientation,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType);
 
    virtual Float64 GetSegmentFc(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx);
    virtual Float64 GetClosureJointFc(const CSegmentKey& closureKey,IntervalIndexType intervalIdx);
-   virtual Float64 GetDeckFc(const CGirderKey& girderKey,IntervalIndexType intervalIdx);
-   virtual Float64 GetRailingSystemFc(pgsTypes::TrafficBarrierOrientation orientation,const CGirderKey& girderKey,IntervalIndexType intervalIdx);
+   virtual Float64 GetDeckFc(IntervalIndexType intervalIdx);
+   virtual Float64 GetRailingSystemFc(pgsTypes::TrafficBarrierOrientation orientation,IntervalIndexType intervalIdx);
 
    virtual Float64 GetSegmentEc(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx);
    virtual Float64 GetSegmentEc(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx,Float64 trialFc,bool* pbChanged);
    virtual Float64 GetClosureJointEc(const CClosureKey& closureKey,IntervalIndexType intervalIdx);
    virtual Float64 GetClosureJointEc(const CClosureKey& closureKey,IntervalIndexType intervalIdx,Float64 trialFc,bool* pbChanged);
-   virtual Float64 GetDeckEc(const CGirderKey& girderKey,IntervalIndexType intervalIdx);
-   virtual Float64 GetRailingSystemEc(pgsTypes::TrafficBarrierOrientation orientation,const CGirderKey& girderKey,IntervalIndexType intervalIdx);
+   virtual Float64 GetDeckEc(IntervalIndexType intervalIdx);
+   virtual Float64 GetRailingSystemEc(pgsTypes::TrafficBarrierOrientation orientation,IntervalIndexType intervalIdx);
 
    virtual Float64 GetSegmentFlexureFr(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx);
    virtual Float64 GetSegmentShearFr(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx);
    virtual Float64 GetClosureJointFlexureFr(const CSegmentKey& closureKey,IntervalIndexType intervalIdx);
    virtual Float64 GetClosureJointShearFr(const CSegmentKey& closureKey,IntervalIndexType intervalIdx);
-   virtual Float64 GetDeckFlexureFr(const CGirderKey& girderKey,IntervalIndexType intervalIdx);
-   virtual Float64 GetDeckShearFr(const CGirderKey& girderKey,IntervalIndexType intervalIdx);
+   virtual Float64 GetDeckFlexureFr(IntervalIndexType intervalIdx);
+   virtual Float64 GetDeckShearFr(IntervalIndexType intervalIdx);
 
    virtual Float64 GetSegmentAgingCoefficient(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx);
    virtual Float64 GetClosureJointAgingCoefficient(const CSegmentKey& closureKey,IntervalIndexType intervalIdx);
-   virtual Float64 GetDeckAgingCoefficient(const CGirderKey& girderKey,IntervalIndexType intervalIdx);
-   virtual Float64 GetRailingSystemAgingCoefficient(pgsTypes::TrafficBarrierOrientation orientation,const CGirderKey& girderKey,IntervalIndexType intervalIdx);
+   virtual Float64 GetDeckAgingCoefficient(IntervalIndexType intervalIdx);
+   virtual Float64 GetRailingSystemAgingCoefficient(pgsTypes::TrafficBarrierOrientation orientation,IntervalIndexType intervalIdx);
 
    virtual Float64 GetSegmentAgeAdjustedEc(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx);
    virtual Float64 GetClosureJointAgeAdjustedEc(const CSegmentKey& closureKey,IntervalIndexType intervalIdx);
-   virtual Float64 GetDeckAgeAdjustedEc(const CGirderKey& girderKey,IntervalIndexType intervalIdx);
-   virtual Float64 GetRailingSystemAgeAdjustedEc(pgsTypes::TrafficBarrierOrientation orientation,const CGirderKey& girderKey,IntervalIndexType intervalIdx);
+   virtual Float64 GetDeckAgeAdjustedEc(IntervalIndexType intervalIdx);
+   virtual Float64 GetRailingSystemAgeAdjustedEc(pgsTypes::TrafficBarrierOrientation orientation,IntervalIndexType intervalIdx);
 
    virtual Float64 GetSegmentFreeShrinkageStrain(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType time);
    virtual Float64 GetClosureJointFreeShrinkageStrain(const CSegmentKey& closureKey,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType time);
-   virtual Float64 GetDeckFreeShrinkageStrain(const CGirderKey& girderKey,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType time);
-   virtual Float64 GetRailingSystemFreeShrinakgeStrain(pgsTypes::TrafficBarrierOrientation orientation,const CGirderKey& girderKey,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType);
+   virtual Float64 GetDeckFreeShrinkageStrain(IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType time);
+   virtual Float64 GetRailingSystemFreeShrinakgeStrain(pgsTypes::TrafficBarrierOrientation orientation,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType);
 
    virtual Float64 GetSegmentFreeShrinkageStrain(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx);
    virtual Float64 GetClosureJointFreeShrinkageStrain(const CSegmentKey& closureKey,IntervalIndexType intervalIdx);
-   virtual Float64 GetDeckFreeShrinkageStrain(const CGirderKey& girderKey,IntervalIndexType intervalIdx);
-   virtual Float64 GetRailingSystemFreeShrinakgeStrain(pgsTypes::TrafficBarrierOrientation orientation,const CGirderKey& girderKey,IntervalIndexType intervalIdx);
+   virtual Float64 GetDeckFreeShrinkageStrain(IntervalIndexType intervalIdx);
+   virtual Float64 GetRailingSystemFreeShrinakgeStrain(pgsTypes::TrafficBarrierOrientation orientation,IntervalIndexType intervalIdx);
 
    virtual Float64 GetSegmentCreepCoefficient(const CSegmentKey& segmentKey,IntervalIndexType loadingIntervalIdx,pgsTypes::IntervalTimeType loadingTimeType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType);
    virtual Float64 GetClosureJointCreepCoefficient(const CSegmentKey& closureKey,IntervalIndexType loadingIntervalIdx,pgsTypes::IntervalTimeType loadingTimeType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType);
-   virtual Float64 GetDeckCreepCoefficient(const CGirderKey& girderKey,IntervalIndexType loadingIntervalIdx,pgsTypes::IntervalTimeType loadingTimeType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType);
-   virtual Float64 GetRailingSystemCreepCoefficient(pgsTypes::TrafficBarrierOrientation orientation,const CGirderKey& girderKey,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType,IntervalIndexType loadingIntervalIdx,pgsTypes::IntervalTimeType loadingTimeType);
+   virtual Float64 GetDeckCreepCoefficient(IntervalIndexType loadingIntervalIdx,pgsTypes::IntervalTimeType loadingTimeType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType);
+   virtual Float64 GetRailingSystemCreepCoefficient(pgsTypes::TrafficBarrierOrientation orientation,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType,IntervalIndexType loadingIntervalIdx,pgsTypes::IntervalTimeType loadingTimeType);
 
    virtual pgsTypes::ConcreteType GetSegmentConcreteType(const CSegmentKey& segmentKey);
    virtual bool DoesSegmentConcreteHaveAggSplittingStrength(const CSegmentKey& segmentKey);
@@ -709,6 +709,8 @@ public:
    virtual bool IsInClosureJoint(const pgsPointOfInterest& poi,CClosureKey* pClosureKey);
    virtual bool IsOnSegment(const pgsPointOfInterest& poi);
    virtual bool IsOffSegment(const pgsPointOfInterest& poi);
+   virtual bool IsOnGirder(const pgsPointOfInterest& poi);
+   virtual bool IsInIntermediateDiaphragm(const pgsPointOfInterest& poi);
    virtual pgsPointOfInterest ConvertSpanPointToPoi(const CSpanKey& spanKey,Float64 Xspan);
    virtual void ConvertPoiToSpanPoint(const pgsPointOfInterest& poi,CSpanKey* pSpanKey,Float64* pXspan);
    virtual void ConvertSpanPointToSegmentCoordiante(const CSpanKey& spanKey,Float64 Xspan,CSegmentKey* pSegmentKey,Float64* pXs);
@@ -969,13 +971,14 @@ public:
 
 // IIntervals
 public:
-   virtual IntervalIndexType GetIntervalCount(const CGirderKey& girderKey);
-   virtual EventIndexType GetStartEvent(const CGirderKey& girderKey,IntervalIndexType idx); 
-   virtual EventIndexType GetEndEvent(const CGirderKey& girderKey,IntervalIndexType idx); 
-   virtual Float64 GetTime(const CGirderKey& girderKey,IntervalIndexType idx,pgsTypes::IntervalTimeType timeType);
-   virtual Float64 GetDuration(const CGirderKey& girderKey,IntervalIndexType idx);
-   virtual LPCTSTR GetDescription(const CGirderKey& girderKey,IntervalIndexType idx);
-   virtual IntervalIndexType GetInterval(const CGirderKey& girderKey,EventIndexType eventIdx);
+   virtual IntervalIndexType GetIntervalCount();
+   virtual EventIndexType GetStartEvent(IntervalIndexType idx); 
+   virtual EventIndexType GetEndEvent(IntervalIndexType idx); 
+   virtual Float64 GetTime(IntervalIndexType idx,pgsTypes::IntervalTimeType timeType);
+   virtual Float64 GetDuration(IntervalIndexType idx);
+   virtual LPCTSTR GetDescription(IntervalIndexType idx);
+   virtual IntervalIndexType GetInterval(EventIndexType eventIdx);
+   virtual IntervalIndexType GetErectPierInterval(PierIndexType pierIdx);
    virtual IntervalIndexType GetFirstStressStrandInterval(const CGirderKey& girderKey);
    virtual IntervalIndexType GetLastStressStrandInterval(const CGirderKey& girderKey);
    virtual IntervalIndexType GetStressStrandInterval(const CSegmentKey& segmentKey);
@@ -988,26 +991,28 @@ public:
    virtual IntervalIndexType GetFirstSegmentErectionInterval(const CGirderKey& girderKey);
    virtual IntervalIndexType GetLastSegmentErectionInterval(const CGirderKey& girderKey);
    virtual IntervalIndexType GetErectSegmentInterval(const CSegmentKey& segmentKey);
+   virtual bool IsSegmentErectionInterval(IntervalIndexType intervalIdx);
    virtual bool IsSegmentErectionInterval(const CGirderKey& girderKey,IntervalIndexType intervalIdx);
    virtual IntervalIndexType GetTemporaryStrandInstallationInterval(const CSegmentKey& segmentKey);
    virtual IntervalIndexType GetTemporaryStrandRemovalInterval(const CSegmentKey& segmentKey);
    virtual IntervalIndexType GetCastClosureJointInterval(const CClosureKey& closureKey);
    virtual IntervalIndexType GetCompositeClosureJointInterval(const CClosureKey& closureKey);
    virtual void GetContinuityInterval(const CGirderKey& girderKey,PierIndexType pierIdx,IntervalIndexType* pBack,IntervalIndexType* pAhead);
-   virtual IntervalIndexType GetCastDeckInterval(const CGirderKey& girderKey);
-   virtual IntervalIndexType GetCompositeDeckInterval(const CGirderKey& girderKey);
-   virtual IntervalIndexType GetLiveLoadInterval(const CGirderKey& girderKey);
-   virtual IntervalIndexType GetLoadRatingInterval(const CGirderKey& girderKey);
-   virtual IntervalIndexType GetOverlayInterval(const CGirderKey& girderKey);
-   virtual IntervalIndexType GetInstallRailingSystemInterval(const CGirderKey& girderKey);
+   virtual IntervalIndexType GetCastDeckInterval();
+   virtual IntervalIndexType GetCompositeDeckInterval();
+   virtual IntervalIndexType GetLiveLoadInterval();
+   virtual IntervalIndexType GetLoadRatingInterval();
+   virtual IntervalIndexType GetOverlayInterval();
+   virtual IntervalIndexType GetInstallRailingSystemInterval();
    virtual IntervalIndexType GetFirstTendonStressingInterval(const CGirderKey& girderKey);
    virtual IntervalIndexType GetLastTendonStressingInterval(const CGirderKey& girderKey);
    virtual IntervalIndexType GetStressTendonInterval(const CGirderKey& girderKey,DuctIndexType ductIdx);
    virtual bool IsTendonStressingInterval(const CGirderKey& girderKey,IntervalIndexType intervalIdx);
-   virtual IntervalIndexType GetTemporarySupportRemovalInterval(const CGirderKey& girderKey,SupportIDType tsID);
-   virtual std::vector<IntervalIndexType> GetTemporarySupportRemovalIntervals(const CGirderKey& girderKey);
-   virtual std::vector<IntervalIndexType> GetUserDefinedLoadIntervals(const CGirderKey& girderKey);
-   virtual std::vector<IntervalIndexType> GetUserDefinedLoadIntervals(const CGirderKey& girderKey,ProductForceType pfType);
+   virtual IntervalIndexType GetTemporarySupportErectionInterval(SupportIndexType tsIdx);
+   virtual IntervalIndexType GetTemporarySupportRemovalInterval(SupportIndexType tsIdx);
+   virtual std::vector<IntervalIndexType> GetTemporarySupportRemovalIntervals(GroupIndexType groupIdx);
+   virtual std::vector<IntervalIndexType> GetUserDefinedLoadIntervals(const CSpanKey& spanKey);
+   virtual std::vector<IntervalIndexType> GetUserDefinedLoadIntervals(const CSpanKey& spanKey,ProductForceType pfType);
    virtual std::vector<IntervalIndexType> GetSpecCheckIntervals(const CGirderKey& girderKey);
 
 private:

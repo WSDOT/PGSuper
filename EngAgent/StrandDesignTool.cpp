@@ -811,7 +811,7 @@ Float64 pgsStrandDesignTool::ComputeEccentricity(const pgsPointOfInterest& poi,I
 
    GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(m_SegmentKey);
-   IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval(m_SegmentKey);
+   IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval();
    ATLASSERT(castDeckIntervalIdx != INVALID_INDEX);
    bool bIncTempStrands = (intervalIdx < castDeckIntervalIdx ? true : false);
    // NOTE: Can't use the following code block. If the original input (before design) does not have
@@ -885,7 +885,7 @@ void pgsStrandDesignTool::ComputePermanentStrandsRequiredForPrestressForce(const
    psfeng.SetStatusGroupID(m_StatusGroupID);
    psfeng.SetBroker(m_pBroker);
    GET_IFACE(IIntervals,pIntervals);
-   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval(m_SegmentKey);
+   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
    Float64 loss;
    if ( pDesignParams->intervalIdx < liveLoadIntervalIdx )
    {
@@ -2313,8 +2313,8 @@ Float64 pgsStrandDesignTool::GetPrestressForceMidZone(IntervalIndexType interval
 
    GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(m_SegmentKey);
-   IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval(m_SegmentKey);
-   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval(m_SegmentKey);
+   IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval();
+   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
    // NOTE: can't use temp strand removal interval because it is based on the original input which may not have temp strands
    //IntervalIndexType tsRemovalIntervalIdx = pIntervals->GetTemporaryStrandRemovalInterval(poi.GetSegmentKey());
 
@@ -2448,7 +2448,7 @@ Float64 pgsStrandDesignTool::ComputeHpOffsetForEccentricity(const pgsPointOfInte
    {
       GET_IFACE(IIntervals,pIntervals);
       IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(m_SegmentKey);
-      IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval(m_SegmentKey);
+      IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval();
       ATLASSERT(castDeckIntervalIdx != INVALID_INDEX);
       bool bIncTempStrands = (intervalIdx < castDeckIntervalIdx ? true : false);
       // NOTE: Can't use the following code block. If the original input (before design) does not have
@@ -2525,7 +2525,7 @@ bool pgsStrandDesignTool::ComputeMinHarpedForEndZoneEccentricity(const pgsPointO
 
    GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(m_SegmentKey);
-   IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval(m_SegmentKey);
+   IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval();
    ATLASSERT(castDeckIntervalIdx != INVALID_INDEX);
    bool bIncTempStrands = (intervalIdx < castDeckIntervalIdx ? true : false);
    // NOTE: Can't use the following code block. If the original input (before design) does not have

@@ -678,8 +678,8 @@ const pgsGirderArtifact* pgsDesigner2::Check(const CGirderKey& girderKey)
    GET_IFACE(ISegmentHaulingSpecCriteria,pSegmentHaulingSpecCriteria);
 
    GET_IFACE(IIntervals,pIntervals);
-   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval(girderKey);
-   IntervalIndexType lastIntervalIdx     = pIntervals->GetIntervalCount(girderKey)-1;
+   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
+   IntervalIndexType lastIntervalIdx     = pIntervals->GetIntervalCount()-1;
 
    // Get the limit states that we need to do spec checks in
    GET_IFACE(IAllowableConcreteStress,pAllowableConcreteStress);
@@ -744,7 +744,7 @@ const pgsGirderArtifact* pgsDesigner2::Check(const CGirderKey& girderKey)
             std::sort(vPoi.begin(),vPoi.end());
          }
 
-         CComBSTR bstrIntervalDescription( pIntervals->GetDescription(girderKey,intervalIdx) );
+         CComBSTR bstrIntervalDescription( pIntervals->GetDescription(intervalIdx) );
 
          std::_tostringstream os;
          os << _T("Performing LRFD specification checks for Interval ") << LABEL_INTERVAL(intervalIdx) << _T(": ") << OLE2T(bstrIntervalDescription) << std::endl;
@@ -854,9 +854,9 @@ void pgsDesigner2::ConfigureStressCheckTasks(const CSegmentKey& segmentKey)
    GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType releaseIntervalIdx       = pIntervals->GetPrestressReleaseInterval(segmentKey);
    IntervalIndexType tsRemovalIntervalIdx     = pIntervals->GetTemporaryStrandRemovalInterval(segmentKey);
-   IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval(segmentKey);
-   IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval(segmentKey);
-   IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval(segmentKey);
+   IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval();
+   IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval();
+   IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval();
 
    StressCheckTask task;
    task.intervalIdx = liveLoadIntervalIdx;
@@ -974,7 +974,7 @@ void pgsDesigner2::DoDesign(const CGirderKey& girderKey,const arDesignOptions& o
 #endif
 
    GET_IFACE(IIntervals,pIntervals);
-   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval(girderKey);
+   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
 
    GET_IFACE(ILiveLoads,pLiveLoads);
    bool bPermit = pLiveLoads->IsLiveLoadDefined(pgsTypes::lltPermit);
@@ -1433,9 +1433,9 @@ pgsEccEnvelope pgsDesigner2::GetEccentricityEnvelope(const pgsPointOfInterest& p
 
    GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType releaseIntervalIdx       = pIntervals->GetPrestressReleaseInterval(segmentKey);
-   IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval(segmentKey);
-   IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval(segmentKey);
-   IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval(segmentKey);
+   IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval();
+   IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval();
+   IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval();
 
    Float64 startSlabOffset, endSlabOffset;
    pBridge->GetSlabOffset(segmentKey,&startSlabOffset,&endSlabOffset);
@@ -1640,7 +1640,7 @@ void pgsDesigner2::CheckTendonStresses(const CGirderKey& girderKey,pgsGirderArti
    GET_IFACE(IIntervals,pIntervals);
    GET_IFACE(IAllowableTendonStress,pAllowables);
 
-   IntervalIndexType finalIntervalIdx = pIntervals->GetIntervalCount(girderKey)-1;
+   IntervalIndexType finalIntervalIdx = pIntervals->GetIntervalCount()-1;
 
    for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
    {
@@ -1760,7 +1760,7 @@ void pgsDesigner2::CheckStrandStresses(const CSegmentKey& segmentKey,pgsStrandSt
    GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType jackIntervalIdx = pIntervals->GetStressStrandInterval(segmentKey);
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
-   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval(segmentKey);
+   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
 
    std::vector<pgsTypes::StrandType>::iterator standTypeIter(strandTypes.begin());
    std::vector<pgsTypes::StrandType>::iterator standTypeIterEnd(strandTypes.end());
@@ -1801,8 +1801,8 @@ void pgsDesigner2::CheckSegmentStresses(const CSegmentKey& segmentKey,const std:
 
    GET_IFACE(IIntervals, pIntervals);
    IntervalIndexType releaseIntervalIdx              = pIntervals->GetPrestressReleaseInterval(segmentKey);
-   IntervalIndexType compositeDeckIntervalIdx        = pIntervals->GetCompositeDeckInterval(segmentKey);
-   IntervalIndexType liveLoadIntervalIdx             = pIntervals->GetLiveLoadInterval(segmentKey);
+   IntervalIndexType compositeDeckIntervalIdx        = pIntervals->GetCompositeDeckInterval();
+   IntervalIndexType liveLoadIntervalIdx             = pIntervals->GetLiveLoadInterval();
    IntervalIndexType compositeClosureIntervalIdx     = pIntervals->GetCompositeClosureJointInterval(segmentKey);
    IntervalIndexType firstTendonStressingIntervalIdx = pIntervals->GetFirstTendonStressingInterval(segmentKey);
    IntervalIndexType lastTendonStressingIntervalIdx  = pIntervals->GetLastTendonStressingInterval(segmentKey);
@@ -2550,7 +2550,7 @@ void pgsDesigner2::CreateStirrupCheckAtPoisArtifact(const pgsPointOfInterest& po
 
 #if defined _DEBUG
    GET_IFACE(IIntervals,pIntervals);
-   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval(segmentKey);
+   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
    ATLASSERT(liveLoadIntervalIdx <= intervalIdx);
    ATLASSERT(limitState==pgsTypes::StrengthI || limitState == pgsTypes::StrengthII);
 #endif
@@ -2818,8 +2818,8 @@ void pgsDesigner2::CheckHorizontalShearMidZone(const pgsPointOfInterest& poi,
    GET_IFACE(IMaterials,pMaterial);
 
    GET_IFACE(IIntervals,pIntervals);
-   IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval(segmentKey);
-   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval(segmentKey);
+   IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval();
+   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
 
    // determine shear demand
    GET_IFACE(IInterfaceShearRequirements,pInterfaceShear);
@@ -3059,7 +3059,7 @@ Float64 pgsDesigner2::GetNormalFrictionForce(const pgsPointOfInterest& poi)
 
    const CSegmentKey& segmentKey = poi.GetSegmentKey();
 
-   IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval(segmentKey);
+   IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval();
 
    // permanent compressive force between slab and girder top
    // If the slab is CIP, use the tributary area.
@@ -3073,7 +3073,7 @@ Float64 pgsDesigner2::GetNormalFrictionForce(const pgsPointOfInterest& poi)
    Float64 wslab = 0; // weight of slab on shear interface
 
    // slab load
-   Float64 slab_unit_weight = pMaterial->GetDeckWeightDensity(segmentKey,castDeckIntervalIdx) * unitSysUnitsMgr::GetGravitationalAcceleration();
+   Float64 slab_unit_weight = pMaterial->GetDeckWeightDensity(castDeckIntervalIdx) * unitSysUnitsMgr::GetGravitationalAcceleration();
 
    if ( pDeck->DeckType == pgsTypes::sdtCompositeCIP )
    {
@@ -3666,7 +3666,7 @@ void pgsDesigner2::CheckMomentCapacity(IntervalIndexType intervalIdx,pgsTypes::L
    const CGirderKey& girderKey(pGirderArtifact->GetGirderKey());
 
    GET_IFACE(IIntervals,pIntervals);
-   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval(girderKey);
+   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
 
    // Get points of interest for evaluation
    std::vector<pgsPointOfInterest> vPoi;
@@ -3814,7 +3814,7 @@ void pgsDesigner2::InitShearCheck(const CSegmentKey& segmentKey,IntervalIndexTyp
    // Checking shear should only be occuring at the final condition.... that is, only in intervals
    // after the live load is applied
    GET_IFACE(IIntervals,pIntervals);
-   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval(segmentKey);
+   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
    ATLASSERT(liveLoadIntervalIdx <= intervalIdx);
 #endif
 
@@ -3957,7 +3957,7 @@ void pgsDesigner2::CheckShear(bool bDesign,const CSegmentKey& segmentKey,Interva
    // Checking shear should only be occuring at the final condition.... that is, only in intervals
    // after the live load is applied
    GET_IFACE(IIntervals,pIntervals);
-   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval(segmentKey);
+   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
    ATLASSERT(liveLoadIntervalIdx <= intervalIdx);
 #endif
 
@@ -3976,8 +3976,13 @@ void pgsDesigner2::CheckShear(bool bDesign,const CSegmentKey& segmentKey,Interva
       std::vector<pgsPointOfInterest> pois( pPoi->GetPointsOfInterest(segmentKey,POI_ERECTED_SEGMENT) );
       std::vector<pgsPointOfInterest> csPoi( pPoi->GetPointsOfInterest(segmentKey, limitState == pgsTypes::StrengthII ? POI_CRITSECTSHEAR2 : POI_CRITSECTSHEAR1) );
       pois.insert(pois.end(),csPoi.begin(),csPoi.end());
-      std::vector<pgsPointOfInterest> morePoi( pPoi->GetPointsOfInterest(segmentKey,POI_STIRRUP_ZONE | POI_CONCLOAD | POI_DIAPHRAGM, POIFIND_OR) );
-      pois.insert(pois.end(),morePoi.begin(),morePoi.end());
+      std::vector<pgsPointOfInterest> morePoi( pPoi->GetPointsOfInterest(segmentKey,POI_HARPINGPOINT | POI_STIRRUP_ZONE | POI_CONCLOAD | POI_DIAPHRAGM, POIFIND_OR) );
+      pois.insert(pois.end(),morePoi.begin(),morePoi.end()); 
+
+      // these poi are for the WSDOT summary report. They are traditinoal location for reporting shear checks
+      morePoi = pPoi->GetPointsOfInterest(segmentKey,POI_H | POI_15H, POIFIND_OR);
+      pois.insert(pois.end(),morePoi.begin(),morePoi.end()); 
+
       std::sort(pois.begin(),pois.end());
 
       // remove all POI from the container that are outside of the CL Bearings...
@@ -3990,7 +3995,7 @@ void pgsDesigner2::CheckShear(bool bDesign,const CSegmentKey& segmentKey,Interva
 
    ATLASSERT(pStirrupArtifact != NULL);
    GET_IFACE(IMaterials,pMaterials);
-   Float64 fc_slab = pMaterials->GetDeckFc(segmentKey,intervalIdx);
+   Float64 fc_slab = pMaterials->GetDeckFc(intervalIdx);
 
    Float64 fc_girder;
    if ( pConfig == NULL )
@@ -4815,7 +4820,7 @@ void pgsDesigner2::DesignEndZone(bool firstPass, arDesignOptions options, pgsSeg
 
             GET_IFACE(IIntervals,pIntervals);
             IntervalIndexType releaseIntervalIdx  = pIntervals->GetPrestressReleaseInterval(artifact.GetSegmentKey());
-            IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval(artifact.GetSegmentKey());
+            IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
             m_StrandDesignTool.UpdateReleaseStrength(fci_min, ConcSuccess, releaseIntervalIdx, pgsTypes::ServiceI, pgsTypes::Tension, pgsTypes::TopGirder);
             m_StrandDesignTool.UpdateConcreteStrength(fc_max,liveLoadIntervalIdx, pgsTypes::ServiceIII, pgsTypes::Tension, pgsTypes::BottomGirder);
 
@@ -5393,9 +5398,9 @@ void pgsDesigner2::DesignMidZoneFinalConcrete(IProgress* pProgress)
    pgsTypes::AnalysisType analysisType = pSpec->GetAnalysisType();
 
    GET_IFACE(IIntervals,pIntervals);
-   IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval(segmentKey);
-   IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval(segmentKey);
-   IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval(segmentKey);
+   IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval();
+   IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval();
+   IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval();
 
    // Maximize stresses at pois for their config
    std::vector<ConcreteStrengthParameters> vConcreteStrengthParameters;
@@ -5520,7 +5525,7 @@ void pgsDesigner2::DesignMidZoneAtRelease(const arDesignOptions& options, IProgr
 
    GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType releaseIntervalIdx  = pIntervals->GetPrestressReleaseInterval(m_StrandDesignTool.GetSegmentKey());
-   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval(segmentKey);
+   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
 
    GDRCONFIG config = m_StrandDesignTool.GetSegmentConfiguration();
 
@@ -5924,11 +5929,11 @@ void pgsDesigner2::DesignMidZoneInitialStrands(bool bUseCurrentStrands,IProgress
    GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType releaseIntervalIdx       = pIntervals->GetPrestressReleaseInterval(segmentKey);
    IntervalIndexType erectSegmentIntervalIdx  = pIntervals->GetErectSegmentInterval(segmentKey);
-   IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval(segmentKey);
-   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval(segmentKey);
-   IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval(segmentKey);
-   IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval(segmentKey);
-   IntervalIndexType overlayIntervalIdx       = pIntervals->GetOverlayInterval(segmentKey);
+   IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval();
+   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
+   IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval();
+   IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval();
+   IntervalIndexType overlayIntervalIdx       = pIntervals->GetOverlayInterval();
 
    // Get some information about the girder
    GET_IFACE(IBridge,pBridge);
@@ -6034,7 +6039,7 @@ void pgsDesigner2::DesignMidZoneInitialStrands(bool bUseCurrentStrands,IProgress
       pForces->GetDesignStress(designParams.intervalIdx,designParams.limit_state,poi,designParams.stress_location,fc,startSlabOffset,endSlabOffset,bat,&designParams.fmin,&designParams.fmax);
 
       Float64 f_demand = ( designParams.stress_type == pgsTypes::Compression ) ? designParams.fmin : designParams.fmax;
-      LOG(_T("Stress Demand (") << pIntervals->GetDescription(segmentKey,designParams.intervalIdx) << _T(", ") << designParams.strLimitState << _T(", ") << designParams.strStressLocation << _T(", mid-span) = ") << ::ConvertFromSysUnits(f_demand,unitMeasure::KSI) << _T(" KSI") );
+      LOG(_T("Stress Demand (") << pIntervals->GetDescription(designParams.intervalIdx) << _T(", ") << designParams.strLimitState << _T(", ") << designParams.strStressLocation << _T(", mid-span) = ") << ::ConvertFromSysUnits(f_demand,unitMeasure::KSI) << _T(" KSI") );
 
 
       // Get allowable stress 
@@ -6397,7 +6402,7 @@ pgsPointOfInterest pgsDesigner2::GetControllingFinalMidZonePoi(const CSegmentKey
    GET_IFACE(ISpecification,pSpec);
 
    GET_IFACE(IIntervals,pIntervals);
-   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval(segmentKey);
+   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
 
    pgsTypes::AnalysisType analysisType = pSpec->GetAnalysisType();
 
@@ -7936,7 +7941,7 @@ void pgsDesigner2::RefineDesignForAllowableStress(IProgress* pProgress)
       }
 
       LOG(_T(""));
-      LOG(_T("*** Refining design for Interval ") << LABEL_INTERVAL(task.intervalIdx) << _T(", ") << pIntervals->GetDescription(segmentKey,task.intervalIdx) << _T(" ") << g_LimitState[task.limitState] << _T(" ") << g_Type[task.stressType] );
+      LOG(_T("*** Refining design for Interval ") << LABEL_INTERVAL(task.intervalIdx) << _T(", ") << pIntervals->GetDescription(task.intervalIdx) << _T(" ") << g_LimitState[task.limitState] << _T(" ") << g_Type[task.stressType] );
 
       RefineDesignForAllowableStress(task,pProgress);
 
@@ -7965,7 +7970,7 @@ void pgsDesigner2::RefineDesignForAllowableStress(const StressCheckTask& task,IP
    IntervalIndexType liftSegmentIntervalIdx  = pIntervals->GetLiftSegmentInterval(segmentKey);
    IntervalIndexType erectSegmentIntervalIdx = pIntervals->GetErectSegmentInterval(segmentKey);
    IntervalIndexType tsRemovalIntervalIdx    = pIntervals->GetTemporaryStrandRemovalInterval(segmentKey);
-   IntervalIndexType castDeckIntervalIdx     = pIntervals->GetCastDeckInterval(segmentKey);
+   IntervalIndexType castDeckIntervalIdx     = pIntervals->GetCastDeckInterval();
 
    Float64 fcgdr;
    const GDRCONFIG& config = m_StrandDesignTool.GetSegmentConfiguration();
@@ -8451,7 +8456,7 @@ void pgsDesigner2::DesignShear(pgsSegmentDesignArtifact* pArtifact, bool bDoStar
    const Float64 one_inch = ::ConvertToSysUnits(1.0, unitMeasure::Inch); // Very US bias here
 
    GET_IFACE(IIntervals,pIntervals);
-   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval(segmentKey);
+   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
 
    // Initialize shear design tool using flexure design pois
    m_ShearDesignTool.ResetDesign( m_StrandDesignTool.GetDesignPoi(liveLoadIntervalIdx,POI_ERECTED_SEGMENT) );

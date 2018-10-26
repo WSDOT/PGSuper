@@ -79,7 +79,7 @@ rptRcTable* CProductReactionTable::Build(IBroker* pBroker,const CGirderKey& gird
    PierIndexType nPiers = pBridge->GetPierCount();
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
-   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval(CGirderKey(girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex,girderKey.girderIndex));
+   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
 
    bool bConstruction, bDeckPanels, bPedLoading, bSidewalk, bShearKey, bPermit;
    bool bContinuousBeforeDeckCasting;
@@ -120,11 +120,11 @@ rptRcTable* CProductReactionTable::Build(IBroker* pBroker,const CGirderKey& gird
 
       const CGirderKey& thisGirderKey(reactionLocation.GirderKey);
 
-      IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval(thisGirderKey);
-      IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval(thisGirderKey);
-      IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval(thisGirderKey);
-      IntervalIndexType loadRatingIntervalIdx    = pIntervals->GetLoadRatingInterval(thisGirderKey);
-      IntervalIndexType overlayIntervalIdx       = pIntervals->GetOverlayInterval(thisGirderKey);
+      IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval();
+      IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval();
+      IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval();
+      IntervalIndexType loadRatingIntervalIdx    = pIntervals->GetLoadRatingInterval();
+      IntervalIndexType overlayIntervalIdx       = pIntervals->GetOverlayInterval();
       IntervalIndexType erectSegmentIntervalIdx  = pIntervals->GetLastSegmentErectionInterval(thisGirderKey);
 
      (*p_table)(row,col++) << reactionLocation.PierLabel;

@@ -100,7 +100,7 @@ rptRcTable* CProductStressTable::Build(IBroker* pBroker,const CGirderKey& girder
    pgsTypes::BridgeAnalysisType minBAT = pForces->GetBridgeAnalysisType(analysisType,pgsTypes::Minimize);
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
-   IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval(girderKey);
+   IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval();
 
    GET_IFACE2(pBroker,IProductLoads,pLoads);
    bool bPedLoading = pLoads->HasPedestrianLoad(girderKey);
@@ -140,7 +140,7 @@ rptRcTable* CProductStressTable::Build(IBroker* pBroker,const CGirderKey& girder
       }
    }
 
-   IntervalIndexType continuityIntervalIdx    = pIntervals->GetInterval(girderKey,continuityEventIdx);
+   IntervalIndexType continuityIntervalIdx    = pIntervals->GetInterval(continuityEventIdx);
 
    bool bContinuousBeforeDeckCasting;
    ColumnIndexType nCols = GetProductLoadTableColumnCount(pBroker,girderKey,analysisType,bDesign,bRating,bSlabShrinkage,&bConstruction,&bDeckPanels,&bSidewalk,&bShearKey,&bPedLoading,&bPermit,&bContinuousBeforeDeckCasting,&startGroup,&endGroup);
@@ -171,10 +171,10 @@ rptRcTable* CProductStressTable::Build(IBroker* pBroker,const CGirderKey& girder
       std::vector<pgsPointOfInterest> vPoi( pIPoi->GetPointsOfInterest(allSegmentsKey,POI_ERECTED_SEGMENT) );
 
       IntervalIndexType erectSegmentIntervalIdx  = pIntervals->GetLastSegmentErectionInterval(thisGirderKey);
-      IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval(thisGirderKey);
-      IntervalIndexType overlayIntervalIdx       = pIntervals->GetOverlayInterval(thisGirderKey);
-      IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval(thisGirderKey);
-      IntervalIndexType loadRatingIntervalIdx    = pIntervals->GetLoadRatingInterval(thisGirderKey);
+      IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval();
+      IntervalIndexType overlayIntervalIdx       = pIntervals->GetOverlayInterval();
+      IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval();
+      IntervalIndexType loadRatingIntervalIdx    = pIntervals->GetLoadRatingInterval();
 
 
       std::vector<Float64> fTopGirder, fBotGirder;

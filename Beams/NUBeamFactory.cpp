@@ -173,7 +173,7 @@ void CNUBeamFactory::CreateGirderProfile(IBroker* pBroker,StatusGroupIDType stat
    rect->QueryInterface(ppShape);
 }
 
-void CNUBeamFactory::CreateSegment(IBroker* pBroker,StatusGroupIDType statusGroupID,const CSegmentKey& segmentKey,IStages* pStages,ISuperstructureMember* ssmbr)
+void CNUBeamFactory::CreateSegment(IBroker* pBroker,StatusGroupIDType statusGroupID,const CSegmentKey& segmentKey,ISuperstructureMember* ssmbr)
 {
    CComPtr<IPrismaticSegment> segment;
    segment.CoCreateInstance(CLSID_PrismaticSegment);
@@ -194,16 +194,14 @@ void CNUBeamFactory::CreateSegment(IBroker* pBroker,StatusGroupIDType statusGrou
    CComPtr<IMaterial> material;
    material.CoCreateInstance(CLSID_Material);
 
-   IntervalIndexType nIntervals = pIntervals->GetIntervalCount(segmentKey);
+   IntervalIndexType nIntervals = pIntervals->GetIntervalCount();
    for ( IntervalIndexType intervalIdx = 0; intervalIdx < nIntervals; intervalIdx++ )
    {
       Float64 E = pMaterial->GetSegmentEc(segmentKey,intervalIdx);
       Float64 D = pMaterial->GetSegmentWeightDensity(segmentKey,intervalIdx);
 
-      StageIndexType stageIdx = pStages->GetStage(segmentKey,intervalIdx);
-
-      material->put_E(stageIdx,E);
-      material->put_Density(stageIdx,D);
+      material->put_E(intervalIdx,E);
+      material->put_Density(intervalIdx,D);
    }
 
    CComQIPtr<IShape> shape(gdrsection);

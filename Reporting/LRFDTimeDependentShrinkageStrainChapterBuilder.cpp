@@ -329,7 +329,7 @@ rptChapter* CLRFDTimeDependentShrinkageStrainChapterBuilder::Build(CReportSpecif
    (*pTable)(rowIdx+1,colIdx++) << Sub2(symbol(epsilon),_T("sh")) << _T("x10") << Super(_T("6"));
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
-   IntervalIndexType nIntervals = pIntervals->GetIntervalCount(girderKey);
+   IntervalIndexType nIntervals = pIntervals->GetIntervalCount();
 
    rowIdx = pTable->GetNumberOfHeaderRows();
    for ( IntervalIndexType intervalIdx = 0; intervalIdx < nIntervals; intervalIdx++, rowIdx++ )
@@ -405,10 +405,10 @@ rptChapter* CLRFDTimeDependentShrinkageStrainChapterBuilder::Build(CReportSpecif
          }
       }
 
-      IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval(girderKey);
+      IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
       if ( compositeDeckIntervalIdx <= intervalIdx )
       {
-         Float64 t  = pMaterials->GetDeckConcreteAge(girderKey,intervalIdx,pgsTypes::End);
+         Float64 t  = pMaterials->GetDeckConcreteAge(intervalIdx,pgsTypes::End);
          const matConcreteBase* pConcrete = pMaterials->GetDeckConcrete();
          const lrfdLRFDTimeDependentConcrete* pLRFDConcrete = dynamic_cast<const lrfdLRFDTimeDependentConcrete*>(pConcrete);
          Float64 cure = pLRFDConcrete->GetCureTime();
@@ -419,8 +419,8 @@ rptChapter* CLRFDTimeDependentShrinkageStrainChapterBuilder::Build(CReportSpecif
             (*pTable)(rowIdx,colIdx++) << pLRFDConcrete->GetSizeFactorShrinkage(t);
          }
 
-         (*pTable)(rowIdx,colIdx++) << 1E6*pMaterials->GetDeckFreeShrinkageStrain(girderKey,intervalIdx);
-         (*pTable)(rowIdx,colIdx++) << 1E6*pMaterials->GetDeckFreeShrinkageStrain(girderKey,intervalIdx,pgsTypes::End);
+         (*pTable)(rowIdx,colIdx++) << 1E6*pMaterials->GetDeckFreeShrinkageStrain(intervalIdx);
+         (*pTable)(rowIdx,colIdx++) << 1E6*pMaterials->GetDeckFreeShrinkageStrain(intervalIdx,pgsTypes::End);
       }
       else
       {

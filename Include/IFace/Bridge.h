@@ -577,68 +577,68 @@ interface IMaterials : IUnknown
    // been added to the system yet, this method returns 0
    virtual Float64 GetSegmentWeightDensity(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx) = 0;
    virtual Float64 GetClosureJointWeightDensity(const CSegmentKey& closureKey,IntervalIndexType intervalIdx) = 0;
-   virtual Float64 GetDeckWeightDensity(const CGirderKey& girderKey,IntervalIndexType intervalIdx) = 0;
-   virtual Float64 GetRailingSystemWeightDensity(pgsTypes::TrafficBarrierOrientation orientation,const CGirderKey& girderKey,IntervalIndexType intervalIdx) = 0;
+   virtual Float64 GetDeckWeightDensity(IntervalIndexType intervalIdx) = 0;
+   virtual Float64 GetRailingSystemWeightDensity(pgsTypes::TrafficBarrierOrientation orientation,IntervalIndexType intervalIdx) = 0;
 
    // Returns the age of concrete. Returns 0 if the concrete has not
    // be cast or hasn't attained sufficient strength prior to this interval.
    virtual Float64 GetSegmentConcreteAge(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType) = 0;
    virtual Float64 GetClosureJointConcreteAge(const CSegmentKey& closureKey,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType) = 0;
-   virtual Float64 GetDeckConcreteAge(const CGirderKey& girderKey,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType) = 0;
-   virtual Float64 GetRailingSystemAge(pgsTypes::TrafficBarrierOrientation orientation,const CGirderKey& girderKey,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType) = 0;
+   virtual Float64 GetDeckConcreteAge(IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType) = 0;
+   virtual Float64 GetRailingSystemAge(pgsTypes::TrafficBarrierOrientation orientation,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType) = 0;
 
    // Returns the concrete strength at the middle of an interval
    virtual Float64 GetSegmentFc(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx) = 0;
    virtual Float64 GetClosureJointFc(const CSegmentKey& closureKey,IntervalIndexType intervalIdx) = 0;
-   virtual Float64 GetDeckFc(const CGirderKey& girderKey,IntervalIndexType intervalIdx) = 0;
-   virtual Float64 GetRailingSystemFc(pgsTypes::TrafficBarrierOrientation orientation,const CGirderKey& girderKey,IntervalIndexType intervalIdx) = 0;
+   virtual Float64 GetDeckFc(IntervalIndexType intervalIdx) = 0;
+   virtual Float64 GetRailingSystemFc(pgsTypes::TrafficBarrierOrientation orientation,IntervalIndexType intervalIdx) = 0;
 
    // Returns the secant modulus at the middle of an interval
    virtual Float64 GetSegmentEc(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx) = 0;
    virtual Float64 GetSegmentEc(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx,Float64 trialFc,bool* pbChanged) = 0;
    virtual Float64 GetClosureJointEc(const CClosureKey& closureKey,IntervalIndexType intervalIdx) = 0;
    virtual Float64 GetClosureJointEc(const CClosureKey& closureKey,IntervalIndexType intervalIdx,Float64 trialFc,bool* pbChanged) = 0;
-   virtual Float64 GetDeckEc(const CGirderKey& girderKey,IntervalIndexType intervalIdx) = 0;
-   virtual Float64 GetRailingSystemEc(pgsTypes::TrafficBarrierOrientation orientation,const CGirderKey& girderKey,IntervalIndexType intervalIdx) = 0;
+   virtual Float64 GetDeckEc(IntervalIndexType intervalIdx) = 0;
+   virtual Float64 GetRailingSystemEc(pgsTypes::TrafficBarrierOrientation orientation,IntervalIndexType intervalIdx) = 0;
 
    // Returns the modulus of rupture at the middle of an interval
    virtual Float64 GetSegmentFlexureFr(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx) = 0;
    virtual Float64 GetSegmentShearFr(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx) = 0;
    virtual Float64 GetClosureJointFlexureFr(const CSegmentKey& closureKey,IntervalIndexType intervalIdx) = 0;
    virtual Float64 GetClosureJointShearFr(const CSegmentKey& closureKey,IntervalIndexType intervalIdx) = 0;
-   virtual Float64 GetDeckFlexureFr(const CGirderKey& girderKey,IntervalIndexType intervalIdx) = 0;
-   virtual Float64 GetDeckShearFr(const CGirderKey& girderKey,IntervalIndexType intervalIdx) = 0;
+   virtual Float64 GetDeckFlexureFr(IntervalIndexType intervalIdx) = 0;
+   virtual Float64 GetDeckShearFr(IntervalIndexType intervalIdx) = 0;
 
    // Returns the aging coefficient during an interval
    virtual Float64 GetSegmentAgingCoefficient(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx) = 0;
    virtual Float64 GetClosureJointAgingCoefficient(const CSegmentKey& closureKey,IntervalIndexType intervalIdx) = 0;
-   virtual Float64 GetDeckAgingCoefficient(const CGirderKey& girderKey,IntervalIndexType intervalIdx) = 0;
-   virtual Float64 GetRailingSystemAgingCoefficient(pgsTypes::TrafficBarrierOrientation orientation,const CGirderKey& girderKey,IntervalIndexType intervalIdx) = 0;
+   virtual Float64 GetDeckAgingCoefficient(IntervalIndexType intervalIdx) = 0;
+   virtual Float64 GetRailingSystemAgingCoefficient(pgsTypes::TrafficBarrierOrientation orientation,IntervalIndexType intervalIdx) = 0;
 
    // Returns the age adjusted modulus from the middle to the end of an interval
    virtual Float64 GetSegmentAgeAdjustedEc(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx) = 0;
    virtual Float64 GetClosureJointAgeAdjustedEc(const CSegmentKey& closureKey,IntervalIndexType intervalIdx) = 0;
-   virtual Float64 GetDeckAgeAdjustedEc(const CGirderKey& girderKey,IntervalIndexType intervalIdx) = 0;
-   virtual Float64 GetRailingSystemAgeAdjustedEc(pgsTypes::TrafficBarrierOrientation orientation,const CGirderKey& girderKey,IntervalIndexType intervalIdx) = 0;
+   virtual Float64 GetDeckAgeAdjustedEc(IntervalIndexType intervalIdx) = 0;
+   virtual Float64 GetRailingSystemAgeAdjustedEc(pgsTypes::TrafficBarrierOrientation orientation,IntervalIndexType intervalIdx) = 0;
 
    // Returns the total free shrinkage at the relative time within the specified interval
    virtual Float64 GetSegmentFreeShrinkageStrain(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType time) = 0;
    virtual Float64 GetClosureJointFreeShrinkageStrain(const CSegmentKey& closureKey,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType time) = 0;
-   virtual Float64 GetDeckFreeShrinkageStrain(const CGirderKey& girderKey,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType time) = 0;
-   virtual Float64 GetRailingSystemFreeShrinakgeStrain(pgsTypes::TrafficBarrierOrientation orientation,const CGirderKey& girderKey,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType) = 0;
+   virtual Float64 GetDeckFreeShrinkageStrain(IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType time) = 0;
+   virtual Float64 GetRailingSystemFreeShrinakgeStrain(pgsTypes::TrafficBarrierOrientation orientation,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType) = 0;
 
    // Returns the free shrinkage occuring within the specified interval
    virtual Float64 GetSegmentFreeShrinkageStrain(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx) = 0;
    virtual Float64 GetClosureJointFreeShrinkageStrain(const CSegmentKey& closureKey,IntervalIndexType intervalIdx) = 0;
-   virtual Float64 GetDeckFreeShrinkageStrain(const CGirderKey& girderKey,IntervalIndexType intervalIdx) = 0;
-   virtual Float64 GetRailingSystemFreeShrinakgeStrain(pgsTypes::TrafficBarrierOrientation orientation,const CGirderKey& girderKey,IntervalIndexType intervalIdx) = 0;
+   virtual Float64 GetDeckFreeShrinkageStrain(IntervalIndexType intervalIdx) = 0;
+   virtual Float64 GetRailingSystemFreeShrinakgeStrain(pgsTypes::TrafficBarrierOrientation orientation,IntervalIndexType intervalIdx) = 0;
 
    // Returns the creep coefficient at the specified time (timeType) in interval (intervalIdx) for a loading
    // occuring at time (loadingTimeType) in interval (loadingIntervalIdx). 
    virtual Float64 GetSegmentCreepCoefficient(const CSegmentKey& segmentKey,IntervalIndexType loadingIntervalIdx,pgsTypes::IntervalTimeType loadingTimeType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType) = 0;
    virtual Float64 GetClosureJointCreepCoefficient(const CSegmentKey& closureKey,IntervalIndexType loadingIntervalIdx,pgsTypes::IntervalTimeType loadingTimeType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType) = 0;
-   virtual Float64 GetDeckCreepCoefficient(const CGirderKey& girderKey,IntervalIndexType loadingIntervalIdx,pgsTypes::IntervalTimeType loadingTimeType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType) = 0;
-   virtual Float64 GetRailingSystemCreepCoefficient(pgsTypes::TrafficBarrierOrientation orientation,const CGirderKey& girderKey,IntervalIndexType loadingIntervalIdx,pgsTypes::IntervalTimeType loadingTimeType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType) = 0;
+   virtual Float64 GetDeckCreepCoefficient(IntervalIndexType loadingIntervalIdx,pgsTypes::IntervalTimeType loadingTimeType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType) = 0;
+   virtual Float64 GetRailingSystemCreepCoefficient(pgsTypes::TrafficBarrierOrientation orientation,IntervalIndexType loadingIntervalIdx,pgsTypes::IntervalTimeType loadingTimeType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType) = 0;
 
    // Segment Concrete
    virtual pgsTypes::ConcreteType GetSegmentConcreteType(const CSegmentKey& segmentKey) = 0;

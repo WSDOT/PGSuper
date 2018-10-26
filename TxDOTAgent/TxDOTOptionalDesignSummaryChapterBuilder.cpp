@@ -156,7 +156,7 @@ void design_information(rptChapter* pChapter,IBroker* pBroker,const CTxDOTOption
    GET_IFACE2(pBroker, ILiveLoads,         pLiveLoads);
    GET_IFACE2(pBroker, IIntervals,         pIntervals);
 
-   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval(fabrSegmentKey);
+   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
 
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
@@ -205,13 +205,13 @@ void design_information(rptChapter* pChapter,IBroker* pBroker,const CTxDOTOption
    (*p_table)(row++,1) << pProjectData->GetLldfShear();
 
    (*p_table)(row,0) << RPT_EC <<_T(" Slab");
-   (*p_table)(row++,1) << modE.SetValue( pMaterial->GetDeckEc(fabrSegmentKey,liveLoadIntervalIdx) );
+   (*p_table)(row++,1) << modE.SetValue( pMaterial->GetDeckEc(liveLoadIntervalIdx) );
 
    (*p_table)(row,0) << RPT_EC <<_T(" Beam");
    (*p_table)(row++,1) << modE.SetValue( pMaterial->GetSegmentEc(fabrSegmentKey,liveLoadIntervalIdx) );
 
    (*p_table)(row,0) << RPT_FC <<_T(" Slab");
-   (*p_table)(row++,1) << stress.SetValue( pMaterial->GetDeckFc(fabrSegmentKey,liveLoadIntervalIdx) );
+   (*p_table)(row++,1) << stress.SetValue( pMaterial->GetDeckFc(liveLoadIntervalIdx) );
 
    (*p_table)(row,0) << _T("Project Criteria");
    (*p_table)(row++,1) << pProjectData->GetSelectedProjectCriteriaLibrary();

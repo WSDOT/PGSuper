@@ -79,7 +79,7 @@ void CBoxBeamFactoryImpl::CreateGirderProfile(IBroker* pBroker,StatusItemIDType 
    rect->QueryInterface(ppShape);
 }
 
-void CBoxBeamFactoryImpl::CreateSegment(IBroker* pBroker,StatusItemIDType statusID,const CSegmentKey& segmentKey,IStages* pStages,ISuperstructureMember* ssmbr)
+void CBoxBeamFactoryImpl::CreateSegment(IBroker* pBroker,StatusItemIDType statusID,const CSegmentKey& segmentKey,ISuperstructureMember* ssmbr)
 {
    CComPtr<IBoxBeamEndBlockSegment> segment;
    HRESULT hr = segment.CoCreateInstance(CLSID_BoxBeamEndBlockSegment);
@@ -123,16 +123,14 @@ void CBoxBeamFactoryImpl::CreateSegment(IBroker* pBroker,StatusItemIDType status
    CComPtr<IMaterial> material;
    material.CoCreateInstance(CLSID_Material);
 
-   IntervalIndexType nIntervals = pIntervals->GetIntervalCount(segmentKey);
+   IntervalIndexType nIntervals = pIntervals->GetIntervalCount();
    for ( IntervalIndexType intervalIdx = 0; intervalIdx < nIntervals; intervalIdx++ )
    {
       Float64 E = pMaterial->GetSegmentEc(segmentKey,intervalIdx);
       Float64 D = pMaterial->GetSegmentWeightDensity(segmentKey,intervalIdx);
 
-      StageIndexType stageIdx = pStages->GetStage(segmentKey,intervalIdx);
-
-      material->put_E(stageIdx,E);
-      material->put_Density(stageIdx,D);
+      material->put_E(intervalIdx,E);
+      material->put_Density(intervalIdx,D);
    }
 
    CComQIPtr<IShape> shape(section);

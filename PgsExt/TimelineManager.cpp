@@ -1511,6 +1511,7 @@ void CTimelineManager::SetCastClosureJointEventByIndex(ClosureIDType closureID,E
       {
          bUpdateAge = true;
          ageAtContinuity = pTimelineEvent->GetCastClosureJointActivity().GetConcreteAgeAtContinuity();
+         pTimelineEvent->GetCastClosureJointActivity().RemovePier(pClosure->GetPier()->GetID());
          break;
       }
 

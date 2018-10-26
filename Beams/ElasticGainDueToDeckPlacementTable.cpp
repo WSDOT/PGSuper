@@ -59,7 +59,7 @@ CElasticGainDueToDeckPlacementTable* CElasticGainDueToDeckPlacementTable::Prepar
    bool bHasDeckPanel = pBridge->GetDeckType() == pgsTypes::sdtCompositeSIP ? true : false;
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
-   IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval(segmentKey);
+   IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval();
 
    ColumnIndexType numColumns = 9;
 
@@ -190,7 +190,7 @@ void CElasticGainDueToDeckPlacementTable::AddRow(rptChapter* pChapter,IBroker* p
    const CSegmentKey& segmentKey(poi.GetSegmentKey());
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
-   IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval(segmentKey);
+   IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval();
 
    GET_IFACE2(pBroker,IProductForces,pProdForces);
    ColumnIndexType col = 1;

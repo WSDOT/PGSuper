@@ -530,7 +530,7 @@ STRANDDEVLENGTHDETAILS pgsPsForceEng::GetDevLengthDetails(const pgsPointOfIntere
    const CSegmentKey& segmentKey = poi.GetSegmentKey();
 
    GET_IFACE(IIntervals,pIntervals);
-   IntervalIndexType nIntervals = pIntervals->GetIntervalCount(segmentKey);
+   IntervalIndexType nIntervals = pIntervals->GetIntervalCount();
    IntervalIndexType intervalIdx = nIntervals-1;
    pgsTypes::LimitState limitState = pgsTypes::ServiceIII;
 
@@ -584,7 +584,7 @@ STRANDDEVLENGTHDETAILS pgsPsForceEng::GetDevLengthDetails(const pgsPointOfIntere
    const CSegmentKey& segmentKey = poi.GetSegmentKey();
 
    GET_IFACE(IIntervals,pIntervals);
-   IntervalIndexType nIntervals = pIntervals->GetIntervalCount(segmentKey);
+   IntervalIndexType nIntervals = pIntervals->GetIntervalCount();
    IntervalIndexType intervalIdx = nIntervals-1;
    pgsTypes::LimitState limitState = pgsTypes::ServiceIII;
 
@@ -943,11 +943,11 @@ Float64 pgsPsForceEng::GetEffectivePrestressLossWithLiveLoad(const pgsPointOfInt
    IntervalIndexType liveLoadIntervalIdx;
    if ( IsRatingLimitState(limitState) )
    {
-      liveLoadIntervalIdx = pIntervals->GetLoadRatingInterval(poi.GetSegmentKey());
+      liveLoadIntervalIdx = pIntervals->GetLoadRatingInterval();
    }
    else
    {
-      liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval(poi.GetSegmentKey());
+      liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
    }
    pgsTypes::IntervalTimeType intervalTime = pgsTypes::End;
    Float64 time_dependent_loss = GetTimeDependentLosses(poi,strandType,liveLoadIntervalIdx,intervalTime);
@@ -962,11 +962,11 @@ Float64 pgsPsForceEng::GetEffectivePrestressLossWithLiveLoad(const pgsPointOfInt
    IntervalIndexType liveLoadIntervalIdx;
    if ( IsRatingLimitState(limitState) )
    {
-      liveLoadIntervalIdx = pIntervals->GetLoadRatingInterval(poi.GetSegmentKey());
+      liveLoadIntervalIdx = pIntervals->GetLoadRatingInterval();
    }
    else
    {
-      liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval(poi.GetSegmentKey());
+      liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
    }
    pgsTypes::IntervalTimeType intervalTime = pgsTypes::End;
    Float64 time_dependent_loss = GetTimeDependentLosses(poi,strandType,liveLoadIntervalIdx,intervalTime,&config);
@@ -1090,11 +1090,11 @@ Float64 pgsPsForceEng::GetTimeDependentLosses(const pgsPointOfInterest& poi,pgsT
       IntervalIndexType erectSegmentIntervalIdx  = pIntervals->GetErectSegmentInterval(segmentKey);
       IntervalIndexType tsInstallationIntervalIdx = pIntervals->GetTemporaryStrandInstallationInterval(segmentKey);
       IntervalIndexType tsRemovalIntervalIdx     = pIntervals->GetTemporaryStrandRemovalInterval(segmentKey);
-      IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval(segmentKey);
-      IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval(segmentKey);
-      IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval(segmentKey);
-      IntervalIndexType overlayIntervalIdx       = pIntervals->GetOverlayInterval(segmentKey);
-      IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval(segmentKey);
+      IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval();
+      IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
+      IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval();
+      IntervalIndexType overlayIntervalIdx       = pIntervals->GetOverlayInterval();
+      IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval();
 
       GET_IFACE(IBridge,pBridge);
       bool bIsFutureOverlay = pBridge->IsFutureOverlay();
@@ -1372,11 +1372,11 @@ Float64 pgsPsForceEng::GetElasticEffects(const pgsPointOfInterest& poi,pgsTypes:
       IntervalIndexType erectSegmentIntervalIdx  = pIntervals->GetErectSegmentInterval(segmentKey);
       IntervalIndexType tsInstallationIntervalIdx = pIntervals->GetTemporaryStrandInstallationInterval(segmentKey);
       IntervalIndexType tsRemovalIntervalIdx     = pIntervals->GetTemporaryStrandRemovalInterval(segmentKey);
-      IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval(segmentKey);
-      IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval(segmentKey);
-      IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval(segmentKey);
-      IntervalIndexType overlayIntervalIdx       = pIntervals->GetOverlayInterval(segmentKey);
-      IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval(segmentKey);
+      IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval();
+      IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
+      IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval();
+      IntervalIndexType overlayIntervalIdx       = pIntervals->GetOverlayInterval();
+      IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval();
 
       Float64 gain = 0;
 
@@ -1461,11 +1461,11 @@ Float64 pgsPsForceEng::GetElasticEffectsWithLiveLoad(const pgsPointOfInterest& p
    IntervalIndexType liveLoadIntervalIdx;
    if ( IsRatingLimitState(limitState) )
    {
-      liveLoadIntervalIdx = pIntervals->GetLoadRatingInterval(poi.GetSegmentKey());
+      liveLoadIntervalIdx = pIntervals->GetLoadRatingInterval();
    }
    else
    {
-      liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval(poi.GetSegmentKey());
+      liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
    }
    GET_IFACE(ILosses,pLosses);
    const LOSSDETAILS* pDetails = pLosses->GetLossDetails(poi,liveLoadIntervalIdx);
@@ -1486,11 +1486,11 @@ Float64 pgsPsForceEng::GetElasticEffectsWithLiveLoad(const pgsPointOfInterest& p
       IntervalIndexType liveLoadIntervalIdx;
       if ( IsRatingLimitState(limitState) )
       {
-         liveLoadIntervalIdx = pIntervals->GetLoadRatingInterval(poi.GetSegmentKey());
+         liveLoadIntervalIdx = pIntervals->GetLoadRatingInterval();
       }
       else
       {
-         liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval(poi.GetSegmentKey());
+         liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
       }
       pDetails = pLosses->GetLossDetails(poi,liveLoadIntervalIdx);
    }
@@ -1504,11 +1504,11 @@ Float64 pgsPsForceEng::GetElasticEffectsWithLiveLoad(const pgsPointOfInterest& p
    IntervalIndexType liveLoadIntervalIdx;
    if ( IsRatingLimitState(limitState) )
    {
-      liveLoadIntervalIdx = pIntervals->GetLoadRatingInterval(poi.GetSegmentKey());
+      liveLoadIntervalIdx = pIntervals->GetLoadRatingInterval();
    }
    else
    {
-      liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval(poi.GetSegmentKey());
+      liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
    }
    pgsTypes::IntervalTimeType intervalTime = pgsTypes::End;
 
@@ -1561,7 +1561,7 @@ Float64 pgsPsForceEng::GetEffectivePrestress(const pgsPointOfInterest& poi,pgsTy
 
    GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType releaseIntervalIdx        = pIntervals->GetPrestressReleaseInterval(segmentKey);
-   IntervalIndexType castDeckIntervalIdx       = pIntervals->GetCastDeckInterval(segmentKey);
+   IntervalIndexType castDeckIntervalIdx       = pIntervals->GetCastDeckInterval();
    IntervalIndexType tsInstallationIntervalIdx = pIntervals->GetTemporaryStrandInstallationInterval(segmentKey);
    IntervalIndexType tsRemovalIntervalIdx      = pIntervals->GetTemporaryStrandRemovalInterval(segmentKey);
 
@@ -1707,11 +1707,11 @@ Float64 pgsPsForceEng::GetEffectivePrestressWithLiveLoad(const pgsPointOfInteres
    IntervalIndexType liveLoadIntervalIdx;
    if ( IsRatingLimitState(limitState) )
    {
-      liveLoadIntervalIdx = pIntervals->GetLoadRatingInterval(segmentKey);
+      liveLoadIntervalIdx = pIntervals->GetLoadRatingInterval();
    }
    else
    {
-      liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval(segmentKey);
+      liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
    }
 
 

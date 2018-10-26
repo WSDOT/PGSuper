@@ -93,7 +93,7 @@ rptRcTable* CPretensionStressTable::Build(IBroker* pBroker,const CSegmentKey& se
    GET_IFACE2(pBroker,IIntervals,pIntervals);
    std::vector<IntervalIndexType> vIntervals(pIntervals->GetSpecCheckIntervals(segmentKey));
    IntervalIndexType nIntervals = vIntervals.size();
-   IntervalIndexType loadRatingIntervalIdx = pIntervals->GetLoadRatingInterval(segmentKey);
+   IntervalIndexType loadRatingIntervalIdx = pIntervals->GetLoadRatingInterval();
 
    ColumnIndexType nColumns;
    if ( bDesign )
@@ -133,13 +133,13 @@ rptRcTable* CPretensionStressTable::Build(IBroker* pBroker,const CSegmentKey& se
       for ( ; iter != end; iter++ )
       {
          IntervalIndexType intervalIdx = *iter;
-         (*p_table)(0,col++) << _T("Interval ") << LABEL_INTERVAL(intervalIdx) << rptNewLine << pIntervals->GetDescription(segmentKey,intervalIdx);
+         (*p_table)(0,col++) << _T("Interval ") << LABEL_INTERVAL(intervalIdx) << rptNewLine << pIntervals->GetDescription(intervalIdx);
       }
    }
    else
    {
       (*p_table)(0,col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
-      (*p_table)(0,col++) << _T("Interval ") << LABEL_INTERVAL(loadRatingIntervalIdx) << rptNewLine << pIntervals->GetDescription(segmentKey,loadRatingIntervalIdx);
+      (*p_table)(0,col++) << _T("Interval ") << LABEL_INTERVAL(loadRatingIntervalIdx) << rptNewLine << pIntervals->GetDescription(loadRatingIntervalIdx);
    }
 
    // Get the interface pointers we need

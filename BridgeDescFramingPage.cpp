@@ -78,8 +78,8 @@ void CBridgeDescFramingPage::DoDataExchange(CDataExchange* pDX)
    if ( pDX->m_bSaveAndValidate )
    {
       DDV_GXGridWnd(pDX, &m_Grid);
-#pragma Reminder("BUG? why validate grid and then not get the data out of it?")
-//      m_Grid.GetGridData();
+      // why validate grid and then not get the data out of it?
+      // pParent->m_BridgeDesc is kept continuously up to date with grid
    }
    else
    {

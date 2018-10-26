@@ -114,7 +114,7 @@ void CCombinedReactionTable::Build(IBroker* pBroker, rptChapter* pChapter,
    BuildCombinedDeadTable(pBroker, pChapter, girderKey, pDisplayUnits, intervalIdx, analysisType, tableType, bDesign, bRating);
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
-   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval(CGirderKey(girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex,girderKey.girderIndex));
+   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
 
    if ( liveLoadIntervalIdx <= intervalIdx )
    {
@@ -150,7 +150,7 @@ void CCombinedReactionTable::BuildForBearingDesign(IBroker* pBroker, rptChapter*
    BuildCombinedDeadTable(pBroker, pChapter, girderKey, pDisplayUnits, intervalIdx, analysisType, tableType, true, false);
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
-   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval(girderKey);
+   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
    if (liveLoadIntervalIdx <= intervalIdx)
    {
       // first no impact
@@ -221,10 +221,9 @@ void CCombinedReactionTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter
    {
       const ReactionLocation& reactionLocation( iter.CurrentItem() );
 
-      CGirderKey thisGirderKey(reactionLocation.GirderKey);
-      IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval(thisGirderKey);
-      IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval(thisGirderKey);
-      IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval(thisGirderKey);
+      IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval();
+      IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
+      IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval();
 
      (*p_table)(row,0) << reactionLocation.PierLabel;
 
@@ -364,7 +363,7 @@ void CCombinedReactionTable::BuildLiveLoad(IBroker* pBroker, rptChapter* pChapte
    else
    {
       GET_IFACE2(pBroker,IBearingDesign,pBearingDesign);
-      IntervalIndexType intervalIdx = pIntervals->GetLiveLoadInterval(CGirderKey(girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex, girderKey.girderIndex));
+      IntervalIndexType intervalIdx = pIntervals->GetLiveLoadInterval();
       pForces =  std::auto_ptr<ICmbLsReactionAdapter>(new CmbLsBearingDesignReactionAdapter(pBearingDesign, intervalIdx, girderKey) );
    }
 
@@ -416,9 +415,8 @@ void CCombinedReactionTable::BuildLiveLoad(IBroker* pBroker, rptChapter* pChapte
       const ReactionLocation& reactionLocation( iter.CurrentItem() );
 
       PierIndexType pier = reactionLocation.PierIdx;
-      CGirderKey thisGirderKey(reactionLocation.GirderKey);
 
-      IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval(thisGirderKey);
+      IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
 
      (*p_table)(row,0) << reactionLocation.PierLabel;
 
@@ -487,7 +485,7 @@ void CCombinedReactionTable::BuildLiveLoad(IBroker* pBroker, rptChapter* pChapte
 
          if ( bRating )
          {
-            IntervalIndexType ratingIntervalIdx = pIntervals->GetLoadRatingInterval(thisGirderKey);
+            IntervalIndexType ratingIntervalIdx = pIntervals->GetLoadRatingInterval();
 
             Float64 pedMin(0), pedMax(0);
             if ( bPedLoading && pRatingSpec->IncludePedestrianLiveLoad() )
@@ -596,7 +594,7 @@ void CCombinedReactionTable::BuildLiveLoad(IBroker* pBroker, rptChapter* pChapte
 
          if ( bRating )
          {
-            IntervalIndexType ratingIntervalIdx = pIntervals->GetLoadRatingInterval(thisGirderKey);
+            IntervalIndexType ratingIntervalIdx = pIntervals->GetLoadRatingInterval();
 
             Float64 pedMin(0), pedMax(0);
             if ( bPedLoading && pRatingSpec->IncludePedestrianLiveLoad() )

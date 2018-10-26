@@ -693,7 +693,7 @@ bool CTestAgentImp::RunHL93Test(std::_tofstream& resultsFile, std::_tofstream& p
    GET_IFACE( ISpecification,     pSpec);
    GET_IFACE( IIntervals, pIntervals);
 
-   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval(segmentKey);
+   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
 
    pgsTypes::AnalysisType analysisType = pSpec->GetAnalysisType();
    pgsTypes::BridgeAnalysisType bat = (analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan);
@@ -787,7 +787,7 @@ bool CTestAgentImp::RunCrossSectionTest(std::_tofstream& resultsFile, std::_tofs
    GET_IFACE( IGirder, pGdr);
    GET_IFACE( IIntervals, pIntervals);
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
-   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval(segmentKey);
+   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
 
    std::_tstring pid      = GetProcessID();
    std::_tstring bridgeId = GetBridgeID();
@@ -834,11 +834,11 @@ bool CTestAgentImp::RunDeadLoadActionTest(std::_tofstream& resultsFile, std::_to
    GET_IFACE( IIntervals,         pIntervals);
 
    IntervalIndexType releaseIntervalIdx       = pIntervals->GetPrestressReleaseInterval(segmentKey);
-   IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval(segmentKey);
-   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval(segmentKey);
-   IntervalIndexType overlayIntervalIdx       = pIntervals->GetOverlayInterval(segmentKey);
-   IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval(segmentKey);
-   IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval(segmentKey);
+   IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval();
+   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
+   IntervalIndexType overlayIntervalIdx       = pIntervals->GetOverlayInterval();
+   IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval();
+   IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval();
 
    pgsTypes::AnalysisType analysisType = pSpec->GetAnalysisType();
    pgsTypes::BridgeAnalysisType bat = (analysisType == pgsTypes::Simple     ? pgsTypes::SimpleSpan : 
@@ -1161,7 +1161,7 @@ bool CTestAgentImp::RunCombinedLoadActionTest(std::_tofstream& resultsFile, std:
    GET_IFACE( IBearingDesign,     pBearingDesign);
    GET_IFACE( IIntervals, pIntervals);
 
-   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval(segmentKey);
+   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
 
    std::_tstring pid      = GetProcessID();
    std::_tstring bridgeId = GetBridgeID();
@@ -1485,9 +1485,9 @@ bool CTestAgentImp::RunPrestressedISectionTest(std::_tofstream& resultsFile, std
    IntervalIndexType erectSegmentIntervalIdx  = pIntervals->GetErectSegmentInterval(segmentKey);
    IntervalIndexType tsInstallIntervalIdx     = pIntervals->GetTemporaryStrandInstallationInterval(segmentKey);
    IntervalIndexType tsRemovalIntervalIdx     = pIntervals->GetTemporaryStrandRemovalInterval(segmentKey);
-   IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval(segmentKey);
-   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval(segmentKey);
-   IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval(segmentKey);
+   IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval();
+   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
+   IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval();
 
    pgsTypes::BridgeAnalysisType bat = pProdForce->GetBridgeAnalysisType(pgsTypes::Maximize);
 
@@ -2022,7 +2022,7 @@ bool CTestAgentImp::RunWsdotGirderScheduleTest(std::_tofstream& resultsFile, std
 
    GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
-   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval(segmentKey);
+   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
 
    GirderIndexType gdrIdx = segmentKey.girderIndex;
    CSpanKey spanKey;

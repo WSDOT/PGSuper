@@ -41,25 +41,28 @@ DEFINE_GUID(IID_IIntervals,
 interface IIntervals : IUnknown
 {
    // returns the number of time-step intervals
-   virtual IntervalIndexType GetIntervalCount(const CGirderKey& girderKey) = 0;
+   virtual IntervalIndexType GetIntervalCount() = 0;
 
    // returns the timeline event index at the start of the interval
-   virtual EventIndexType GetStartEvent(const CGirderKey& girderKey,IntervalIndexType idx) = 0; 
+   virtual EventIndexType GetStartEvent(IntervalIndexType idx) = 0; 
 
    // returns the timeline event index at the end of the interval
-   virtual EventIndexType GetEndEvent(const CGirderKey& girderKey,IntervalIndexType idx) = 0; 
+   virtual EventIndexType GetEndEvent(IntervalIndexType idx) = 0; 
 
    // returns the specified time for an interval
-   virtual Float64 GetTime(const CGirderKey& girderKey,IntervalIndexType idx,pgsTypes::IntervalTimeType timeType) = 0;
+   virtual Float64 GetTime(IntervalIndexType idx,pgsTypes::IntervalTimeType timeType) = 0;
 
    // returns the duration of the interval
-   virtual Float64 GetDuration(const CGirderKey& girderKey,IntervalIndexType idx) = 0;
+   virtual Float64 GetDuration(IntervalIndexType idx) = 0;
 
    // returns the interval description
-   virtual LPCTSTR GetDescription(const CGirderKey& girderKey,IntervalIndexType idx) = 0;
+   virtual LPCTSTR GetDescription(IntervalIndexType idx) = 0;
 
    // returns the index of the first interval that starts with the specified event index
-   virtual IntervalIndexType GetInterval(const CGirderKey& girderKey,EventIndexType eventIdx) = 0;
+   virtual IntervalIndexType GetInterval(EventIndexType eventIdx) = 0;
+
+   // returns the index of the interval when a pier is erected
+   virtual IntervalIndexType GetErectPierInterval(PierIndexType pierIdx) = 0;
 
    // returns the index of the interval when the prestressing strands are stressed for the first segment 
    // that is constructed for this girder
@@ -104,6 +107,7 @@ interface IIntervals : IUnknown
    virtual IntervalIndexType GetErectSegmentInterval(const CSegmentKey& segmentKey) = 0;
 
    // returns true if a segment is erected in the specified interval
+   virtual bool IsSegmentErectionInterval(IntervalIndexType intervalIdx) = 0;
    virtual bool IsSegmentErectionInterval(const CGirderKey& girderKey,IntervalIndexType intervalIdx) = 0;
 
    // returns the index of the interval when temporary strands are installed in a specific segment
@@ -125,31 +129,31 @@ interface IIntervals : IUnknown
 
    // returns the index of the interval when the deck and diaphragms are cast
    // this is the replacement for pgsTypes::BridgeSite1
-   virtual IntervalIndexType GetCastDeckInterval(const CGirderKey& girderKey) = 0;
+   virtual IntervalIndexType GetCastDeckInterval() = 0;
 
    // returns the index of the interval when the deck becomes composite
    // this is the replacement for pgsTypes::BridgeSite2 (also see GetOverlayInterval and GetInstallRailingSystemInterval)
-   virtual IntervalIndexType GetCompositeDeckInterval(const CGirderKey& girderKey) = 0;
+   virtual IntervalIndexType GetCompositeDeckInterval() = 0;
 
    // returns the index of the interval when live load is first
    // applied to the structure. it is assumed that live
    // load can be applied to the structure at this interval and all
    // intervals thereafter
    // this is the replacement for pgsTypes::BridgeSite3
-   virtual IntervalIndexType GetLiveLoadInterval(const CGirderKey& girderKey) = 0;
+   virtual IntervalIndexType GetLiveLoadInterval() = 0;
 
    // returns the index of the interval when load rating calculations are performed
-   virtual IntervalIndexType GetLoadRatingInterval(const CGirderKey& girderKey) = 0;
+   virtual IntervalIndexType GetLoadRatingInterval() = 0;
 
    // returns the index of the interval when the overlay is
    // installed. 
    // this is a replacement for pgsTypes::BridgeSite2 or pgsTypes::BridgeSite3,
    // depending on when the overlay is installed (normal or future)
-   virtual IntervalIndexType GetOverlayInterval(const CGirderKey& girderKey) = 0;
+   virtual IntervalIndexType GetOverlayInterval() = 0;
 
    // returns the index of the interval when the railing system is constructed
    // this is the same as pgsTypes::BridgeSite2 for pre version 3.0 PGSuper projects
-   virtual IntervalIndexType GetInstallRailingSystemInterval(const CGirderKey& girderKey) = 0;
+   virtual IntervalIndexType GetInstallRailingSystemInterval() = 0;
 
    // returns the index of the first interval when tendon stressing occurs
    virtual IntervalIndexType GetFirstTendonStressingInterval(const CGirderKey& girderKey) = 0;
@@ -163,17 +167,20 @@ interface IIntervals : IUnknown
    // returns true if a tendon is stressed during the specified interval
    virtual bool IsTendonStressingInterval(const CGirderKey& girderKey,IntervalIndexType intervalIdx) = 0;
 
+   // returns the interval index when a temporary support is erected
+   virtual IntervalIndexType GetTemporarySupportErectionInterval(SupportIndexType tsIdx) = 0;
+
    // returns the interval index when a temporary support is removed
-   virtual IntervalIndexType GetTemporarySupportRemovalInterval(const CGirderKey& girderKey,SupportIDType tsID) = 0;
+   virtual IntervalIndexType GetTemporarySupportRemovalInterval(SupportIndexType tsIdx) = 0;
 
    // returns a vector of removal intervals for all the temporary supports in the specified group
-   virtual std::vector<IntervalIndexType> GetTemporarySupportRemovalIntervals(const CGirderKey& girderKey) = 0;
+   virtual std::vector<IntervalIndexType> GetTemporarySupportRemovalIntervals(GroupIndexType groupIdx) = 0;
 
    // returns a vector of intervals when user defined loads are applied to this girder
-   virtual std::vector<IntervalIndexType> GetUserDefinedLoadIntervals(const CGirderKey& girderKey) = 0;
+   virtual std::vector<IntervalIndexType> GetUserDefinedLoadIntervals(const CSpanKey& spanKey) = 0;
 
    // returns a vector of intervals when user defined loads are applied to this girder
-   virtual std::vector<IntervalIndexType> GetUserDefinedLoadIntervals(const CGirderKey& girderKey,ProductForceType pfType) = 0;
+   virtual std::vector<IntervalIndexType> GetUserDefinedLoadIntervals(const CSpanKey& spanKey,ProductForceType pfType) = 0;
 
    // returns a vector of intervals that should be spec checked
    virtual std::vector<IntervalIndexType> GetSpecCheckIntervals(const CGirderKey& girderKey) = 0;

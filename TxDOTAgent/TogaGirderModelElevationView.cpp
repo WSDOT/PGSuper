@@ -496,7 +496,7 @@ void CTogaGirderModelElevationView::BuildGirderDisplayObjects(CTxDOTOptionalDesi
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
-   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval(segmentKey);
+   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
 
    // the origin of the coordinate system is at the left end of the girder
    // at the CG

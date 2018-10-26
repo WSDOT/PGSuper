@@ -52,8 +52,8 @@ DEFINE_GUID(IID_IAgeAdjustedMaterial,
 struct __declspec(uuid("{4D1CA7C0-1991-421c-91FA-0BA7E22E1563}")) IAgeAdjustedMaterial;
 interface IAgeAdjustedMaterial : IMaterial
 {
-   STDMETHOD(InitSegment)(const CSegmentKey& segmentKey,IStages* pStages,IMaterials* pMaterials) = 0;
-   STDMETHOD(InitClosureJoint)(const CClosureKey& closureKey,IStages* pStages,IMaterials* pMaterials) = 0;
-   STDMETHOD(InitDeck)(const CGirderKey& girderKey,IStages* pStages,IMaterials* pMaterials) = 0;
+   STDMETHOD(InitSegment)(const CSegmentKey& segmentKey,IMaterials* pMaterials) = 0;
+   STDMETHOD(InitClosureJoint)(const CClosureKey& closureKey,IMaterials* pMaterials) = 0;
+   STDMETHOD(InitDeck)(const CGirderKey& girderKey,IMaterials* pMaterials) = 0;
 };
 

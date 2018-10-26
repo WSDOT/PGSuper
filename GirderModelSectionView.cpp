@@ -288,7 +288,7 @@ void CGirderModelSectionView::BuildSectionDisplayObjects(CPGSuperDocBase* pDoc,I
 
    EventIndexType eventIdx = m_pFrame->GetEvent();
    EventIndexType castDeckEventIdx = pIBridgeDesc->GetCastDeckEventIndex();
-   IntervalIndexType intervalIdx = pIntervals->GetInterval(segmentKey,eventIdx);
+   IntervalIndexType intervalIdx = pIntervals->GetInterval(eventIdx);
 
    CComPtr<iPointDisplayObject> doPnt;
    ::CoCreateInstance(CLSID_PointDisplayObject,NULL,CLSCTX_ALL,IID_iPointDisplayObject,(void**)&doPnt);
@@ -457,7 +457,7 @@ void CGirderModelSectionView::BuildStrandDisplayObjects(CPGSuperDocBase* pDoc,IB
    // Temporary Strands
    EventIndexType eventIdx = m_pFrame->GetEvent();
    GET_IFACE2(pBroker,IIntervals,pIntervals);
-   IntervalIndexType intervalIdx = pIntervals->GetInterval(segmentKey,eventIdx);
+   IntervalIndexType intervalIdx = pIntervals->GetInterval(eventIdx);
    IntervalIndexType tsrIntervalIdx = pIntervals->GetTemporaryStrandRemovalInterval(segmentKey);
    if ( tsrIntervalIdx != INVALID_INDEX && intervalIdx < tsrIntervalIdx )
    {
@@ -600,7 +600,7 @@ void CGirderModelSectionView::BuildCGDisplayObjects(CPGSuperDocBase* pDoc,IBroke
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
    EventIndexType eventIdx = m_pFrame->GetEvent();
-   IntervalIndexType intervalIdx = pIntervals->GetInterval(segmentKey,eventIdx);
+   IntervalIndexType intervalIdx = pIntervals->GetInterval(eventIdx);
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
    if ( intervalIdx < releaseIntervalIdx )
    {
@@ -786,7 +786,7 @@ void CGirderModelSectionView::BuildDimensionDisplayObjects(CPGSuperDocBase* pDoc
    }
 
    // set the text labels on the dimension lines
-   IntervalIndexType intervalIdx = Max(pIntervals->GetInterval(segmentKey,eventIdx), pIntervals->GetPrestressReleaseInterval(segmentKey) );
+   IntervalIndexType intervalIdx = Max(pIntervals->GetInterval(eventIdx), pIntervals->GetPrestressReleaseInterval(segmentKey) );
 
    Float64 twLeft, twRight;
    Float64 top_width = (eventIdx <= castDeckEventIdx ? pGirder->GetTopWidth(poi) : pSectProp->GetTributaryFlangeWidthEx(poi,&twLeft,&twRight));

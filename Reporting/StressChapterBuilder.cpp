@@ -207,8 +207,8 @@ rptChapter* CStressChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 l
       GirderIndexType gdrIdx = (nGirders <= girderKey.girderIndex ? nGirders-1 : girderKey.girderIndex);
       CGirderKey thisGirderKey(grpIdx,gdrIdx);
 
-      IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval(thisGirderKey);
-      IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval(thisGirderKey);
+      IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
+      IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
 
       // product stresses in girder
       p = new rptParagraph;
@@ -256,13 +256,13 @@ rptChapter* CStressChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 l
       {
          IntervalIndexType intervalIdx = *iter;
 
-         IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval(thisGirderKey);
-         IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval(thisGirderKey);
+         IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
+         IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
 
          p = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
          *pChapter << p;
          CString strName;
-         strName.Format(_T("Combined Stresses - Interval %d: %s"),LABEL_INTERVAL(intervalIdx),pIntervals->GetDescription(thisGirderKey,intervalIdx));
+         strName.Format(_T("Combined Stresses - Interval %d: %s"),LABEL_INTERVAL(intervalIdx),pIntervals->GetDescription(intervalIdx));
          p->SetName(strName);
          *p << p->GetName();
 

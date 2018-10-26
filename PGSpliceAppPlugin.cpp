@@ -35,6 +35,8 @@
 
 #include <EAF\EAFMainFrame.h>
 
+#include <MFCTools\AutoRegistry.h>
+
 
 BEGIN_MESSAGE_MAP(CPGSpliceAppCmdTarget,CCmdTarget)
    ON_COMMAND(ID_MANAGE_PLUGINS,OnConfigurePlugins)
@@ -80,6 +82,8 @@ void CPGSpliceAppPlugin::FinalRelease()
 void CPGSpliceAppPlugin::ConfigurePlugins()
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
+   CAutoRegistry autoReg(GetAppName());
 
    CPluginManagerDlg dlg(_T("Manage PGSplice Plugins and Extensions"),EAFGetMainFrame(),0,CATID_PGSpliceDataImporter,CATID_PGSpliceDataExporter,CATID_PGSpliceExtensionAgent);
    dlg.DoModal(); // this DoModal is correct... the dialog takes care of its own data

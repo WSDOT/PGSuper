@@ -438,7 +438,7 @@ void CConcretePropertyGraphBuilder::UpdateGraphData()
    GET_IFACE(IMaterials,pMaterials);
    GET_IFACE(IIntervals,pIntervals);
 
-   IntervalIndexType nIntervals = pIntervals->GetIntervalCount(m_SegmentKey);
+   IntervalIndexType nIntervals = pIntervals->GetIntervalCount();
    IntervalIndexType startIntervalIdx = 0;
    if ( m_XAxisType == X_AXIS_AGE_LINEAR  || m_XAxisType == X_AXIS_AGE_LOG )
    {
@@ -452,7 +452,7 @@ void CConcretePropertyGraphBuilder::UpdateGraphData()
       }
       else
       {
-         startIntervalIdx = pIntervals->GetCompositeDeckInterval(m_SegmentKey);
+         startIntervalIdx = pIntervals->GetCompositeDeckInterval();
       }
    }
 
@@ -463,7 +463,7 @@ void CConcretePropertyGraphBuilder::UpdateGraphData()
       Float64 xMiddle;
       if ( m_XAxisType == X_AXIS_TIME_LINEAR || m_XAxisType == X_AXIS_TIME_LOG )
       {
-         xMiddle = pIntervals->GetTime(m_SegmentKey,intervalIdx,pgsTypes::Middle);
+         xMiddle = pIntervals->GetTime(intervalIdx,pgsTypes::Middle);
       }
       else if ( m_XAxisType == X_AXIS_AGE_LINEAR || m_XAxisType == X_AXIS_AGE_LOG )
       {
@@ -477,7 +477,7 @@ void CConcretePropertyGraphBuilder::UpdateGraphData()
          }
          else
          {
-            xMiddle = pMaterials->GetDeckConcreteAge(m_ClosureKey,intervalIdx,pgsTypes::Middle);
+            xMiddle = pMaterials->GetDeckConcreteAge(intervalIdx,pgsTypes::Middle);
          }
       }
       else
@@ -537,23 +537,23 @@ void CConcretePropertyGraphBuilder::UpdateGraphData()
       {
          if ( m_GraphType == GRAPH_TYPE_FC )
          {
-            value = pMaterials->GetDeckFc(m_SegmentKey,intervalIdx);
+            value = pMaterials->GetDeckFc(intervalIdx);
          }
          else if ( m_GraphType == GRAPH_TYPE_EC )
          {
-            value = pMaterials->GetDeckEc(m_SegmentKey,intervalIdx);
+            value = pMaterials->GetDeckEc(intervalIdx);
          }
          else if ( m_GraphType == GRAPH_TYPE_ECE )
          {
-            value = pMaterials->GetDeckAgeAdjustedEc(m_SegmentKey,intervalIdx);
+            value = pMaterials->GetDeckAgeAdjustedEc(intervalIdx);
          }
          else if ( m_GraphType == GRAPH_TYPE_SH )
          {
-            value = pMaterials->GetDeckFreeShrinkageStrain(m_SegmentKey,intervalIdx,pgsTypes::Middle);
+            value = pMaterials->GetDeckFreeShrinkageStrain(intervalIdx,pgsTypes::Middle);
          }
          else if ( m_GraphType == GRAPH_TYPE_CR )
          {
-            value = pMaterials->GetDeckCreepCoefficient(m_SegmentKey,startIntervalIdx,pgsTypes::Middle,intervalIdx,pgsTypes::Middle);
+            value = pMaterials->GetDeckCreepCoefficient(startIntervalIdx,pgsTypes::Middle,intervalIdx,pgsTypes::Middle);
          }
       }
       AddGraphPoint(dataSeries,xMiddle,value);

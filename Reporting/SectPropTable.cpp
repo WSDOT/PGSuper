@@ -73,7 +73,7 @@ rptRcTable* CSectionPropertiesTable::Build(IBroker* pBroker,const CSegmentKey& s
 {
    GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType constructionIntervalIdx        = pIntervals->GetPrestressReleaseInterval(segmentKey);
-   IntervalIndexType compositeDeckIntervalIdx       = pIntervals->GetCompositeDeckInterval(segmentKey);
+   IntervalIndexType compositeDeckIntervalIdx       = pIntervals->GetCompositeDeckInterval();
    IntervalIndexType lastTendonStressingIntervalIdx = pIntervals->GetLastTendonStressingInterval(segmentKey);
 
 #if defined _DEBUG

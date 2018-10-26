@@ -206,12 +206,10 @@ void CConcretePropertyGraphController::FillGroupControl()
       pcbGroup->AddString(strGroup);
    }
 
-   if ( curSel == CB_ERR )
+   if ( pcbGroup->SetCurSel(curSel) == CB_ERR )
    {
-      curSel = 0;
+      pcbGroup->SetCurSel(0);
    }
-
-   pcbGroup->SetCurSel(curSel);
 }
 
 void CConcretePropertyGraphController::FillGirderControl()
@@ -232,12 +230,10 @@ void CConcretePropertyGraphController::FillGirderControl()
       pcbGirder->AddString(strGirder);
    }
 
-   if ( curSel == CB_ERR )
+   if ( pcbGirder->SetCurSel(curSel) == CB_ERR ) 
    {
-      curSel = 0;
+      pcbGirder->SetCurSel(0);
    }
-
-   pcbGirder->SetCurSel(curSel);
 }
 
 void CConcretePropertyGraphController::FillSegmentControl()
@@ -260,12 +256,10 @@ void CConcretePropertyGraphController::FillSegmentControl()
       pcbSegment->AddString(strSegment);
    }
 
-   if ( curSel == CB_ERR )
+   if ( pcbSegment->SetCurSel(curSel) == CB_ERR )
    {
-      curSel = 0;
+      pcbSegment->SetCurSel(0);
    }
-
-   pcbSegment->SetCurSel(curSel);
 }
 
 void CConcretePropertyGraphController::FillClosureControl()

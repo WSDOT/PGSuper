@@ -77,7 +77,10 @@ rptChapter* CEquilibriumCheckChapterBuilder::Build(CReportSpecification* pRptSpe
    INIT_UV_PROTOTYPE(rptLengthUnitValue,    dist,       pDisplayUnits->GetComponentDimUnit(),    true);
    INIT_UV_PROTOTYPE(rptAreaUnitValue,      area,       pDisplayUnits->GetAreaUnit(),            true);
    INIT_UV_PROTOTYPE(rptLength4UnitValue,   inertia,    pDisplayUnits->GetMomentOfInertiaUnit(), true);
-   INIT_UV_PROTOTYPE(rptStressUnitValue,    modE,       pDisplayUnits->GetModEUnit(),            true );
+   INIT_UV_PROTOTYPE(rptStressUnitValue,    modE,       pDisplayUnits->GetModEUnit(),            true);
+   INIT_UV_PROTOTYPE(rptPointOfInterest,    location,   pDisplayUnits->GetSpanLengthUnit(),      true);
+
+   location.IncludeSpanAndGirder(true);
 
    GET_IFACE2(pBroker,ILosses,pLosses);
    const LOSSDETAILS* pDetails = pLosses->GetLossDetails(poi,intervalIdx);
@@ -85,8 +88,8 @@ rptChapter* CEquilibriumCheckChapterBuilder::Build(CReportSpecification* pRptSpe
    const TIME_STEP_DETAILS& tsDetails(pDetails->TimeStepDetails[intervalIdx]);
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
-   *pPara << _T("ID = ") << poi.GetID() << rptNewLine;
-   *pPara << _T("Interval = ") << LABEL_INTERVAL(intervalIdx) << _T(" ") << pIntervals->GetDescription(girderKey,intervalIdx) << rptNewLine;
+   *pPara << _T("ID = ") << poi.GetID() << _T(" ") << location.SetValue(POI_ERECTED_SEGMENT,poi) << rptNewLine;
+   *pPara << _T("Interval ") << LABEL_INTERVAL(intervalIdx) << _T(" : ") << pIntervals->GetDescription(intervalIdx) << rptNewLine;
 
    *pPara << rptNewLine;
 
@@ -261,11 +264,14 @@ rptChapter* CEquilibriumCheckChapterBuilder::Build(CReportSpecification* pRptSpe
       sum_dP += dP;
       *pPara << _T("Temporary Strand dP = ") << force.SetValue(dP) << rptNewLine;
 
-      for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
+      DuctIndexType ductIdx = 0;
+      BOOST_FOREACH(const TIME_STEP_STRAND& tendon,tsDetails.Tendons)
       {
-         dP = tsDetails.Tendons[ductIdx].dPi[pfType];
+         dP = tendon.dPi[pfType];
          sum_dP += dP;
          *pPara << _T("Duct ") << LABEL_DUCT(ductIdx) << _T(" dP = ") << force.SetValue(dP) << rptNewLine;
+
+         ductIdx++;
       }
 
       *pPara << _T("Sum Individual dP = ") << force.SetValue(sum_dP) << rptNewLine;
@@ -329,12 +335,14 @@ rptChapter* CEquilibriumCheckChapterBuilder::Build(CReportSpecification* pRptSpe
       sum_dM += dM;
       *pPara << _T("Temporary Strand dM = ") << moment.SetValue(dM) << rptNewLine;
 
-      for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
+      DuctIndexType ductIdx = 0;
+      BOOST_FOREACH(const TIME_STEP_STRAND& tendon,tsDetails.Tendons)
       {
-         dP = tsDetails.Tendons[ductIdx].dPi[pfType];
-         dM = dP*(tsDetails.Ytr - tsDetails.Tendons[ductIdx].Ys);
+         dP = tendon.dPi[pfType];
+         dM = dP*(tsDetails.Ytr - tendon.Ys);
          sum_dM += dM;
          *pPara << _T("Duct ") << LABEL_DUCT(ductIdx) << _T(" dM = ") << moment.SetValue(dM) << rptNewLine;
+         ductIdx++;
       }
 
       *pPara << _T("Sum Individual dM = ") << moment.SetValue(sum_dM) << rptNewLine;

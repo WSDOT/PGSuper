@@ -257,7 +257,7 @@ CElasticGainDueToDeckShrinkageTable* CElasticGainDueToDeckShrinkageTable::Prepar
    table->m_Sign =  ( pSpecEntry->GetSpecificationType() < lrfdVersionMgr::FourthEdition2007 ) ? 1 : -1;
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
-   table->compositeIntervalIdx = pIntervals->GetCompositeDeckInterval(segmentKey);
+   table->compositeIntervalIdx = pIntervals->GetCompositeDeckInterval();
 
    return table;
 }

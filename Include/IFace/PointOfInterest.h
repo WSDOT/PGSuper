@@ -114,6 +114,12 @@ interface IPointOfInterest : public IUnknown
    virtual bool IsOnSegment(const pgsPointOfInterest& poi) = 0;
    virtual bool IsOffSegment(const pgsPointOfInterest& poi) = 0;
 
+   // returns true if the poi is on the girder. This determination is made based soley on
+   // the location of the poi in girder coordinates and the and the length of the girder
+   virtual bool IsOnGirder(const pgsPointOfInterest& poi) = 0;
+
+   // returns true if the poi is in an intermediate diaphragm at a boundary pier
+   virtual bool IsInIntermediateDiaphragm(const pgsPointOfInterest& poi) = 0;
 
    //////////////////////////////
    // Conversion Methods

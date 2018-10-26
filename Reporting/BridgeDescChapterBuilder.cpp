@@ -810,7 +810,7 @@ void write_lrfd_concrete_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnit
             EventIndexType erectEventIdx = pTimelineMgr->GetSegmentErectionEventIndex(pSegment->GetID());
 
             IntervalIndexType initialIntervalIdx = pIntervals->GetPrestressReleaseInterval(thisSegmentKey);
-            IntervalIndexType finalIntervalIdx   = pIntervals->GetInterval(thisSegmentKey,erectEventIdx);
+            IntervalIndexType finalIntervalIdx   = pIntervals->GetInterval(erectEventIdx);
 
             Float64 fci = pMaterials->GetSegmentFc(thisSegmentKey,initialIntervalIdx);
             Float64 fc  = pMaterials->GetSegmentFc(thisSegmentKey,finalIntervalIdx);
@@ -843,10 +843,10 @@ void write_lrfd_concrete_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnit
    const CDeckDescription2* pDeck = pBridgeDesc->GetDeckDescription();
    if ( pDeck->DeckType != pgsTypes::sdtNone )
    {
-      IntervalIndexType intervalIdx = pIntervals->GetCompositeDeckInterval(girderKey);
+      IntervalIndexType intervalIdx = pIntervals->GetCompositeDeckInterval();
 
-      Float64 fc = pMaterials->GetDeckFc(girderKey,intervalIdx);
-      Float64 Ec = pMaterials->GetDeckEc(girderKey,intervalIdx);
+      Float64 fc = pMaterials->GetDeckFc(intervalIdx);
+      Float64 Ec = pMaterials->GetDeckEc(intervalIdx);
 
       (*pTable)(row,0) << _T("Slab");
       write_lrfd_concrete_row(pDisplayUnits,pTable,-1.0,fc,-1.0,Ec,pDeck->Concrete,row);

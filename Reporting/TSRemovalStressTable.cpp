@@ -109,17 +109,17 @@ void CTSRemovalStressTable::Build(rptChapter* pChapter,IBroker* pBroker,const CG
       GirderIndexType gdrIdx = Min(girderKey.girderIndex,nGirders-1);
       CGirderKey thisGirderKey(grpIdx,gdrIdx);
 
-      IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval(thisGirderKey);
-      IntervalIndexType overlayIntervalIdx  = pIntervals->GetOverlayInterval(thisGirderKey);
+      IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval();
+      IntervalIndexType overlayIntervalIdx  = pIntervals->GetOverlayInterval();
 
       // Get the intervals when temporary supports are removed for this group
-      std::vector<IntervalIndexType> tsrIntervals(pIntervals->GetTemporarySupportRemovalIntervals(thisGirderKey));
+      std::vector<IntervalIndexType> tsrIntervals(pIntervals->GetTemporarySupportRemovalIntervals(grpIdx));
 
       // if we are writing out stresses in the deck, don't report on any interval
       // that occurs before the deck is composite
       if ( !bGirderStresses )
       {
-         IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval(thisGirderKey);
+         IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
          tsrIntervals.erase(std::remove_if(tsrIntervals.begin(),tsrIntervals.end(),std::bind2nd(std::less<IntervalIndexType>(),compositeDeckIntervalIdx)),tsrIntervals.end());
       }
 

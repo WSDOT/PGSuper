@@ -97,7 +97,7 @@ rptChapter* CTimeStepParametersChapterBuilder::Build(CReportSpecification* pRptS
    GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
 #endif
 
-   IntervalIndexType nIntervals = pIntervals->GetIntervalCount(girderKey);
+   IntervalIndexType nIntervals = pIntervals->GetIntervalCount();
 
    DuctIndexType nDucts = pTendonGeom->GetDuctCount(girderKey);
 
@@ -305,14 +305,14 @@ rptChapter* CTimeStepParametersChapterBuilder::Build(CReportSpecification* pRptS
    {
       col = 0;
       (*pTable)(row,col++) << LABEL_INTERVAL(intervalIdx);
-      (*pTable)(row,col++) << pMaterials->GetDeckConcreteAge(girderKey,intervalIdx,pgsTypes::Middle);
-      (*pTable)(row,col++) << stress.SetValue(pMaterials->GetDeckFc(girderKey,intervalIdx));
-      (*pTable)(row,col++) << modE.SetValue(pMaterials->GetDeckEc(girderKey,intervalIdx));
-      (*pTable)(row,col++) << pMaterials->GetDeckCreepCoefficient(girderKey,intervalIdx,pgsTypes::Middle,intervalIdx,pgsTypes::End);
-      (*pTable)(row,col++) << pMaterials->GetDeckAgingCoefficient(girderKey,intervalIdx);
-      (*pTable)(row,col++) << modE.SetValue(pMaterials->GetDeckAgeAdjustedEc(girderKey,intervalIdx));
-      (*pTable)(row,col++) << 1E6*pMaterials->GetDeckFreeShrinkageStrain(girderKey,intervalIdx);
-      (*pTable)(row,col++) << 1E6*pMaterials->GetDeckFreeShrinkageStrain(girderKey,intervalIdx,pgsTypes::End);
+      (*pTable)(row,col++) << pMaterials->GetDeckConcreteAge(intervalIdx,pgsTypes::Middle);
+      (*pTable)(row,col++) << stress.SetValue(pMaterials->GetDeckFc(intervalIdx));
+      (*pTable)(row,col++) << modE.SetValue(pMaterials->GetDeckEc(intervalIdx));
+      (*pTable)(row,col++) << pMaterials->GetDeckCreepCoefficient(intervalIdx,pgsTypes::Middle,intervalIdx,pgsTypes::End);
+      (*pTable)(row,col++) << pMaterials->GetDeckAgingCoefficient(intervalIdx);
+      (*pTable)(row,col++) << modE.SetValue(pMaterials->GetDeckAgeAdjustedEc(intervalIdx));
+      (*pTable)(row,col++) << 1E6*pMaterials->GetDeckFreeShrinkageStrain(intervalIdx);
+      (*pTable)(row,col++) << 1E6*pMaterials->GetDeckFreeShrinkageStrain(intervalIdx,pgsTypes::End);
    }
 
    rptRcTable* pCreepTable = pgsReportStyleHolder::CreateDefaultTable(1 + 2*(nIntervals-1),_T("Creep Coefficients"));
@@ -341,8 +341,8 @@ rptChapter* CTimeStepParametersChapterBuilder::Build(CReportSpecification* pRptS
       (*pCreepTable)(row,col++) << LABEL_INTERVAL(intervalIdx);
       for ( IntervalIndexType loadIntIdx = 0; loadIntIdx < intervalIdx && loadIntIdx < nIntervals-1; loadIntIdx++ )
       {
-         (*pCreepTable)(row,col++) << pMaterials->GetDeckCreepCoefficient(girderKey,loadIntIdx,pgsTypes::Middle,intervalIdx,pgsTypes::End);
-         (*pCreepTable)(row,col++) << pMaterials->GetDeckCreepCoefficient(girderKey,loadIntIdx,pgsTypes::Middle,intervalIdx,pgsTypes::Start);
+         (*pCreepTable)(row,col++) << pMaterials->GetDeckCreepCoefficient(loadIntIdx,pgsTypes::Middle,intervalIdx,pgsTypes::End);
+         (*pCreepTable)(row,col++) << pMaterials->GetDeckCreepCoefficient(loadIntIdx,pgsTypes::Middle,intervalIdx,pgsTypes::Start);
       }
       for ( IntervalIndexType i = intervalIdx; i < nIntervals-1; i++ )
       {

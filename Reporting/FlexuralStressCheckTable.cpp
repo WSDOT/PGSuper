@@ -182,7 +182,7 @@ void CFlexuralStressCheckTable::BuildSectionHeading(rptChapter* pChapter,
    std::_tstring strLimitState = pProductLoads->GetLimitStateName(limitState);
 
    std::_tostringstream os;
-   os << _T("Interval ") << LABEL_INTERVAL(intervalIdx) << _T(": ") << pIntervals->GetDescription(girderKey,intervalIdx) << _T(" : ") << strLimitState << std::endl;
+   os << _T("Interval ") << LABEL_INTERVAL(intervalIdx) << _T(": ") << pIntervals->GetDescription(intervalIdx) << _T(" : ") << strLimitState << std::endl;
 
    GET_IFACE2(pBroker,IAllowableConcreteStress,pAllowable);
    bool bCompression = pAllowable->IsStressCheckApplicable(girderKey,intervalIdx,limitState,pgsTypes::Compression);
@@ -278,9 +278,9 @@ void CFlexuralStressCheckTable::BuildTable(rptChapter* pChapter,
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType releaseIntervalIdx       = pIntervals->GetPrestressReleaseInterval(CSegmentKey(girderKey,segIdx == ALL_SEGMENTS ? 0 : segIdx));
-   IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval(girderKey);
-   IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval(girderKey);
-   IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval(girderKey);
+   IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval();
+   IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval();
+   IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval();
 
    // Build table
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
@@ -1035,7 +1035,7 @@ void CFlexuralStressCheckTable::BuildAllowDeckStressInformation(rptChapter* pCha
    GET_IFACE2(pBroker,IAllowableConcreteStress,pAllowable);
    GET_IFACE2(pBroker,IMaterials,pMaterials);
 
-   Float64 fc = pMaterials->GetDeckFc(girderKey,intervalIdx);
+   Float64 fc = pMaterials->GetDeckFc(intervalIdx);
    *pPara << RPT_FC << _T(" = ") << stress_u.SetValue(fc) << rptNewLine;
 
    // using a dummy location to get information... all location should be the same
@@ -1150,7 +1150,7 @@ void CFlexuralStressCheckTable::BuildAllowSegmentStressInformation(rptParagraph*
    const CSegmentKey& segmentKey(pSegmentArtifact->GetSegmentKey());
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
-   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval(segmentKey);
+   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
 
    const pgsFlexuralStressArtifact* pArtifact;
 
@@ -1311,7 +1311,7 @@ void CFlexuralStressCheckTable::BuildAllowClosureJointStressInformation(rptParag
    const CSegmentKey& segmentKey(pSegmentArtifact->GetSegmentKey());
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
-   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval(segmentKey);
+   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
 
    const pgsFlexuralStressArtifact* pArtifact;
 

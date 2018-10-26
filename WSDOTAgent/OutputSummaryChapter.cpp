@@ -161,7 +161,7 @@ void section_properties(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey&
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
-   IntervalIndexType lastIntervalIdx = pIntervals->GetIntervalCount(segmentKey)-1;
+   IntervalIndexType lastIntervalIdx = pIntervals->GetIntervalCount()-1;
 
    GET_IFACE2(pBroker,IGirder,pGirder);
    bool bPrismaticNonComp = pGirder->IsPrismatic(releaseIntervalIdx,segmentKey);
@@ -311,7 +311,7 @@ void creep_and_losses(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& s
    GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType liftSegmentIntervalIdx = pIntervals->GetLiftSegmentInterval(segmentKey);
    IntervalIndexType haulSegmentIntervalIdx = pIntervals->GetHaulSegmentInterval(segmentKey);
-   IntervalIndexType lastIntervalIdx        = pIntervals->GetIntervalCount(segmentKey)-1;
+   IntervalIndexType lastIntervalIdx        = pIntervals->GetIntervalCount()-1;
 
    (*pTable)(0,0) << _T("Effective Prestress at Lifting");
    (*pTable)(0,1) << stress.SetValue( pPretensionForce->GetEffectivePrestress(poi,pgsTypes::Permanent,liftSegmentIntervalIdx,pgsTypes::Middle) );
@@ -377,10 +377,10 @@ void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker,const CSegmentK
    Float64 temp;
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
-   IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval(segmentKey);
-   IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval(segmentKey);
-   IntervalIndexType overlayIntervalIdx       = pIntervals->GetOverlayInterval(segmentKey);
-   IntervalIndexType lastIntervalIdx          = pIntervals->GetIntervalCount(segmentKey)-1;
+   IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval();
+   IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval();
+   IntervalIndexType overlayIntervalIdx       = pIntervals->GetOverlayInterval();
+   IntervalIndexType lastIntervalIdx          = pIntervals->GetIntervalCount()-1;
 
    delta_gdr = pProductForces->GetGirderDeflectionForCamber( poi );
 
@@ -848,7 +848,7 @@ void bridgesite1_stresses(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
 
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
-   IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval(segmentKey);
+   IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval();
 
    rptParagraph* p = new rptParagraph;
    *pChapter << p;
@@ -1038,7 +1038,7 @@ void bridgesite1_stresses(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
 void bridgesite2_stresses(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& segmentKey,IEAFDisplayUnits* pDisplayUnits)
 {
    GET_IFACE2(pBroker,IIntervals,pIntervals);
-   IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval(segmentKey);
+   IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval();
 
    rptParagraph* p = new rptParagraph;
    *pChapter << p;
@@ -1195,7 +1195,7 @@ void bridgesite2_stresses(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
 void bridgesite3_stresses(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& segmentKey,IEAFDisplayUnits* pDisplayUnits)
 {
    GET_IFACE2(pBroker,IIntervals,pIntervals);
-   IntervalIndexType lastIntervalIdx = pIntervals->GetIntervalCount(segmentKey)-1;
+   IntervalIndexType lastIntervalIdx = pIntervals->GetIntervalCount()-1;
 
    rptParagraph* p = new rptParagraph;
    *pChapter << p;
@@ -1513,7 +1513,7 @@ void shear_capacity(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& seg
    ATLASSERT(pBridge->GetSegmentCount(segmentKey) == 1);
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
-   IntervalIndexType lastIntervalIdx = pIntervals->GetIntervalCount(segmentKey)-1;
+   IntervalIndexType lastIntervalIdx = pIntervals->GetIntervalCount()-1;
 
    StrandIndexType NhMax = pStrandGeom->GetMaxStrands(segmentKey,pgsTypes::Harped);
 

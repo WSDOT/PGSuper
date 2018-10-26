@@ -118,60 +118,64 @@ void CCastClosureJointDlg::OnMoveToSourceList()
 
 void CCastClosureJointDlg::FillLists()
 {
-   const CSplicedGirderData* pGirder = m_pBridgeDesc->GetGirderGroup(GroupIndexType(0))->GetGirder(0);
-   const CPrecastSegmentData* pSegment = pGirder->GetSegment(0);
-   const CClosureJointData* pClosure = pSegment->GetRightClosure();
-
-   while ( pClosure )
+   GroupIndexType nGroups = m_pBridgeDesc->GetGirderGroupCount();
+   for ( GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )
    {
-      ClosureIDType closureID = pClosure->GetID();
-      EventIndexType castClosureJointEventIdx = m_TimelineMgr.GetCastClosureJointEventIndex(closureID);
+      const CSplicedGirderData* pGirder = m_pBridgeDesc->GetGirderGroup(grpIdx)->GetGirder(0);
+      const CPrecastSegmentData* pSegment = pGirder->GetSegment(0);
+      const CClosureJointData* pClosure = pSegment->GetRightClosure();
 
-      if ( pClosure->GetPier() )
+      while ( pClosure )
       {
-         PierIDType pierID = pClosure->GetPier()->GetID();
-         bool bHasClosure = m_TimelineMgr.IsClosureJointAtPier(pierID);
+         ClosureIDType closureID = pClosure->GetID();
+         EventIndexType castClosureJointEventIdx = m_TimelineMgr.GetCastClosureJointEventIndex(closureID);
 
-         CString label(GetLabel(pClosure->GetPier(),m_pDisplayUnits));
-
-         if ( castClosureJointEventIdx == m_EventIndex )
+         if ( pClosure->GetPier() )
          {
-            // erected during this event, put it in the target list
-            m_lbTarget.AddItem(label,CTimelineItemDataPtr::Used,closureID);
+            PierIDType pierID = pClosure->GetPier()->GetID();
+            bool bHasClosure = m_TimelineMgr.IsClosureJointAtPier(pierID);
+
+            CString label(GetLabel(pClosure->GetPier(),m_pDisplayUnits));
+
+            if ( castClosureJointEventIdx == m_EventIndex )
+            {
+               // erected during this event, put it in the target list
+               m_lbTarget.AddItem(label,CTimelineItemDataPtr::Used,closureID);
+            }
+            else
+            {
+               // not erected during this event, put it in the source list
+               CTimelineItemDataPtr::State state = (bHasClosure ? CTimelineItemDataPtr::Used : CTimelineItemDataPtr::Unused);
+               m_lbSource.AddItem(label,state,closureID);
+            }
          }
          else
          {
-            // not erected during this event, put it in the source list
-            CTimelineItemDataPtr::State state = (bHasClosure ? CTimelineItemDataPtr::Used : CTimelineItemDataPtr::Unused);
-            m_lbSource.AddItem(label,state,closureID);
+            ATLASSERT(pClosure->GetTemporarySupport());
+            SupportIDType tsID = pClosure->GetTemporarySupport()->GetID();
+            bool bHasClosure = m_TimelineMgr.IsClosureJointAtTempSupport(tsID);
+
+            CString label( GetLabel(pClosure->GetTemporarySupport(),m_pDisplayUnits) );
+
+            if ( castClosureJointEventIdx == m_EventIndex )
+            {
+               m_lbTarget.AddItem(label,CTimelineItemDataPtr::Used,closureID);
+            }
+            else
+            {
+               CTimelineItemDataPtr::State state = (bHasClosure ? CTimelineItemDataPtr::Used : CTimelineItemDataPtr::Unused);
+               m_lbSource.AddItem(label,state,closureID);
+            }
          }
-      }
-      else
-      {
-         ATLASSERT(pClosure->GetTemporarySupport());
-         SupportIDType tsID = pClosure->GetTemporarySupport()->GetID();
-         bool bHasClosure = m_TimelineMgr.IsClosureJointAtTempSupport(tsID);
 
-         CString label( GetLabel(pClosure->GetTemporarySupport(),m_pDisplayUnits) );
-
-         if ( castClosureJointEventIdx == m_EventIndex )
+         if ( pClosure->GetRightSegment() )
          {
-            m_lbTarget.AddItem(label,CTimelineItemDataPtr::Used,closureID);
+            pClosure = pClosure->GetRightSegment()->GetRightClosure();
          }
          else
          {
-            CTimelineItemDataPtr::State state = (bHasClosure ? CTimelineItemDataPtr::Used : CTimelineItemDataPtr::Unused);
-            m_lbSource.AddItem(label,state,closureID);
+            pClosure = NULL;
          }
-      }
-
-      if ( pClosure->GetRightSegment() )
-      {
-         pClosure = pClosure->GetRightSegment()->GetRightClosure();
-      }
-      else
-      {
-         pClosure = NULL;
       }
    }
 }

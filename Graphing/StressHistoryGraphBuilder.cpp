@@ -327,8 +327,8 @@ void CStressHistoryGraphBuilder::UpdateGraphData(const pgsPointOfInterest& poi)
 
    const CSegmentKey& segmentKey(poi.GetSegmentKey());
 
-   IntervalIndexType nIntervals = pIntervals->GetIntervalCount(segmentKey);
-   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval(segmentKey);
+   IntervalIndexType nIntervals = pIntervals->GetIntervalCount();
+   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
    IntervalIndexType startIntervalIdx = 0;
 
    // Plot points at start of first interval, then at the end of all the intervals
@@ -362,7 +362,7 @@ Float64 CStressHistoryGraphBuilder::GetX(const CSegmentKey& segmentKey,IntervalI
    Float64 x;
    if ( m_XAxisType == X_AXIS_TIME_LINEAR || m_XAxisType == X_AXIS_TIME_LOG )
    {
-      x = pIntervals->GetTime(segmentKey,intervalIdx,timeType);
+      x = pIntervals->GetTime(intervalIdx,timeType);
    }
    else
    {

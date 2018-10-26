@@ -405,7 +405,7 @@ void CAnalysisResultsGraphController::FillDropListCtrl_Intervals(bool bRetainSel
    for ( IntervalIndexType intervalIdx = firstIntervalIdx; intervalIdx <= lastIntervalIdx; intervalIdx++ )
    {
       CString strInterval;
-      strInterval.Format(_T("Interval %d: %s"),LABEL_INTERVAL(intervalIdx),pIntervals->GetDescription(girderKey,intervalIdx));
+      strInterval.Format(_T("Interval %d: %s"),LABEL_INTERVAL(intervalIdx),pIntervals->GetDescription(intervalIdx));
       int idx = pcbIntervals->AddString(strInterval);
       pcbIntervals->SetItemData(idx,intervalIdx);
    }
@@ -514,7 +514,7 @@ void CAnalysisResultsGraphController::FillSelectListCtrl_Intervals(bool bRetainS
          thisGirderKey.groupIndex = 0;
       }
 
-      str.Format(_T("%d: %s"),LABEL_INTERVAL(intervalIdx),pIntervals->GetDescription(thisGirderKey,intervalIdx));
+      str.Format(_T("%d: %s"),LABEL_INTERVAL(intervalIdx),pIntervals->GetDescription(intervalIdx));
       int idx = plbIntervals->AddString(str);
       plbIntervals->SetItemData(idx,intervalIdx);
    }
@@ -738,12 +738,7 @@ IntervalIndexType CAnalysisResultsGraphController::GetFirstInterval()
 IntervalIndexType CAnalysisResultsGraphController::GetLastInterval()
 {
    GET_IFACE(IIntervals,pIntervals);
-   CGirderKey girderKey(GetGirderKey());
-   if ( girderKey.groupIndex == ALL_GROUPS )
-   {
-      girderKey.groupIndex = 0;
-   }
-   return pIntervals->GetIntervalCount(girderKey) - 1;
+   return pIntervals->GetIntervalCount() - 1;
 }
 
 #ifdef _DEBUG

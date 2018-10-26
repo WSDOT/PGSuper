@@ -490,9 +490,8 @@ void CLibEditorListView::RenameSelectedEntry()
    libILibrary* plib;
    if(GetSelectedEntry(&entry_name, &plib))
    {
+      rlist.SetFocus();
       rlist.EditLabel(m_ItemSelected);
-      CDocument* pDoc = GetDocument();
-      pDoc->SetModifiedFlag(true);
    }
    else
    {
@@ -649,6 +648,8 @@ void CLibEditorListView::OnEndEditLabel(NMHDR* pNMHDR, LRESULT* pResult)
             {
                if (new_plib->RenameEntry(old_name, new_name))
                {
+                  CDocument* pDoc = GetDocument();
+                  pDoc->SetModifiedFlag(true);
             	   *pResult = TRUE;
                }
                else if ( new_plib->IsReservedName(new_name) )

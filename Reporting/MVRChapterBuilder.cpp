@@ -220,10 +220,10 @@ rptChapter* CMVRChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 leve
       GirderIndexType gdrIdx = (nGirders <= girderKey.girderIndex ? nGirders-1 : girderKey.girderIndex);
       CGirderKey thisGirderKey(grpIdx,gdrIdx);
 
-      IntervalIndexType nIntervals = pIntervals->GetIntervalCount(thisGirderKey);
+      IntervalIndexType nIntervals = pIntervals->GetIntervalCount();
       IntervalIndexType lastIntervalIdx = nIntervals-1;
-      IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval(thisGirderKey);
-      IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval(thisGirderKey);
+      IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval();
+      IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
 
       std::vector<IntervalIndexType> vIntervals(pIntervals->GetSpecCheckIntervals(thisGirderKey));
 
@@ -438,7 +438,7 @@ rptChapter* CMVRChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 leve
          p = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
          *pChapter << p;
          CString strName;
-         strName.Format(_T("Combined Results - Interval %d: %s"),LABEL_INTERVAL(intervalIdx),pIntervals->GetDescription(thisGirderKey,intervalIdx));
+         strName.Format(_T("Combined Results - Interval %d: %s"),LABEL_INTERVAL(intervalIdx),pIntervals->GetDescription(intervalIdx));
          p->SetName(strName);
          *p << p->GetName() << rptNewLine;
 

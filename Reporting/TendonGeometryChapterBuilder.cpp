@@ -80,7 +80,7 @@ rptChapter* CTendonGeometryChapterBuilder::Build(CReportSpecification* pRptSpec,
    GET_IFACE2(pBroker,IPointOfInterest,pPoi);
    GET_IFACE2(pBroker,ILosses,pLosses);
    GET_IFACE2(pBroker,IIntervals,pIntervals);
-   IntervalIndexType nIntervals = pIntervals->GetIntervalCount(girderKey);
+   IntervalIndexType nIntervals = pIntervals->GetIntervalCount();
 
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(),  false);
    INIT_UV_PROTOTYPE( rptLengthUnitValue,        dist,     pDisplayUnits->GetSpanLengthUnit(),  false);

@@ -689,7 +689,7 @@ pgsShearDesignTool::ShearDesignOutcome pgsShearDesignTool::Validate()
 pgsShearDesignTool::ShearDesignOutcome pgsShearDesignTool::ValidateVerticalAvsDemand()
 {
    GET_IFACE(IIntervals,pIntervals);
-   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval(m_SegmentKey);
+   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
 
    IndexType numpois = m_DesignPois.size();
    ATLASSERT(numpois>0);
@@ -987,7 +987,7 @@ Float64 pgsShearDesignTool::GetVerticalAvsDemand(Float64 distFromStart)
 void pgsShearDesignTool::ValidateHorizontalAvsDemand()
 {
    GET_IFACE(IIntervals,pIntervals);
-   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval(m_SegmentKey);
+   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
 
    IndexType numpois = m_DesignPois.size();
    ATLASSERT(numpois>0);
@@ -1724,7 +1724,7 @@ bool pgsShearDesignTool::DetailHorizontalInterfaceShear()
    Float64 zone_max = m_ShearData.bAreZonesSymmetrical ? m_SegmentLength/2.0 : m_SegmentLength;
 
    GET_IFACE(IIntervals,pIntervals);
-   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval(m_SegmentKey);
+   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
    pgsPointOfInterest poiStart(m_SegmentKey,0.0);
    pgsPointOfInterest poiEnd(m_SegmentKey,m_SegmentLength);
    GET_IFACE(IInterfaceShearRequirements,pInterfaceShear);
@@ -2144,7 +2144,7 @@ pgsShearDesignTool::ShearDesignOutcome pgsShearDesignTool::DesignLongReinfShear(
    GDRCONFIG config = this->GetSegmentConfiguration(); // current design
 
    GET_IFACE(IIntervals,pIntervals);
-   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval(m_SegmentKey);
+   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
 
    GET_IFACE(IShearCapacity, pShearCapacity);
    GET_IFACE(IBridge, pBridge);
@@ -2284,7 +2284,7 @@ Float64 pgsShearDesignTool::ComputeMaxStirrupSpacing(IndexType PoiIdx)
 // RDP made some changes but I could not figure out how to merge them and/or if my re-coding
 // of this method is just a different way to resolve the issue he was resolving
    GET_IFACE(IIntervals,pIntervals);
-   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval(m_SegmentKey);
+   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
 
    // Get max allowable spacing from spec check, then check if we are in confinement zone
    const pgsPointOfInterest& poi = m_DesignPois[PoiIdx];

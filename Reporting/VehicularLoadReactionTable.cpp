@@ -202,7 +202,7 @@ rptRcTable* CVehicularLoadReactionTable::Build(IBroker* pBroker,const CGirderKey
          }
       }
 
-      IntervalIndexType intervalIdx = (IsRatingLiveLoad(llType) ? pIntervals->GetLoadRatingInterval(thisGirderKey) : pIntervals->GetLiveLoadInterval(thisGirderKey) );
+      IntervalIndexType intervalIdx = (IsRatingLiveLoad(llType) ? pIntervals->GetLoadRatingInterval() : pIntervals->GetLiveLoadInterval() );
 
       col = 0;
       pgsPointOfInterest& poi = vPoi[pier-startPierIdx];

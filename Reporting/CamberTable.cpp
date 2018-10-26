@@ -164,10 +164,10 @@ void CCamberTable::Build_CIP_TempStrands(IBroker* pBroker,const CSegmentKey& seg
    IntervalIndexType storageIntervalIdx           = pIntervals->GetStorageInterval(segmentKey);
    IntervalIndexType erectionIntervalIdx          = pIntervals->GetErectSegmentInterval(segmentKey);
    IntervalIndexType tempStrandRemovalIntervalIdx = pIntervals->GetTemporaryStrandRemovalInterval(segmentKey);
-   IntervalIndexType castDeckIntervalIdx          = pIntervals->GetCastDeckInterval(segmentKey);
-   IntervalIndexType compositeDeckIntervalIdx     = pIntervals->GetCompositeDeckInterval(segmentKey);
-   IntervalIndexType railingSystemIntervalIdx     = pIntervals->GetInstallRailingSystemInterval(segmentKey);
-   IntervalIndexType overlayIntervalIdx           = pIntervals->GetOverlayInterval(segmentKey);
+   IntervalIndexType castDeckIntervalIdx          = pIntervals->GetCastDeckInterval();
+   IntervalIndexType compositeDeckIntervalIdx     = pIntervals->GetCompositeDeckInterval();
+   IntervalIndexType railingSystemIntervalIdx     = pIntervals->GetInstallRailingSystemInterval();
+   IntervalIndexType overlayIntervalIdx           = pIntervals->GetOverlayInterval();
 
    pgsTypes::SupportedDeckType deckType = pBridge->GetDeckType();
 
@@ -444,10 +444,10 @@ void CCamberTable::Build_CIP(IBroker* pBroker,const CSegmentKey& segmentKey,
    IntervalIndexType releaseIntervalIdx       = pIntervals->GetPrestressReleaseInterval(segmentKey);
    IntervalIndexType storageIntervalIdx       = pIntervals->GetStorageInterval(segmentKey);
    IntervalIndexType erectionIntervalIdx      = pIntervals->GetErectSegmentInterval(segmentKey);
-   IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval(segmentKey);
-   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval(segmentKey);
-   IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval(segmentKey);
-   IntervalIndexType overlayIntervalIdx       = pIntervals->GetOverlayInterval(segmentKey);
+   IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval();
+   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
+   IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval();
+   IntervalIndexType overlayIntervalIdx       = pIntervals->GetOverlayInterval();
 
    pgsTypes::SupportedDeckType deckType = pBridge->GetDeckType();
 
@@ -705,10 +705,10 @@ void CCamberTable::Build_SIP_TempStrands(IBroker* pBroker,const CSegmentKey& seg
    IntervalIndexType releaseIntervalIdx       = pIntervals->GetPrestressReleaseInterval(segmentKey);
    IntervalIndexType storageIntervalIdx       = pIntervals->GetStorageInterval(segmentKey);
    IntervalIndexType erectionIntervalIdx      = pIntervals->GetErectSegmentInterval(segmentKey);
-   IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval(segmentKey);
-   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval(segmentKey);
-   IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval(segmentKey);
-   IntervalIndexType overlayIntervalIdx       = pIntervals->GetOverlayInterval(segmentKey);
+   IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval();
+   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
+   IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval();
+   IntervalIndexType overlayIntervalIdx       = pIntervals->GetOverlayInterval();
 
    pgsTypes::SupportedDeckType deckType = pBridge->GetDeckType();
 
@@ -982,10 +982,10 @@ void CCamberTable::Build_SIP(IBroker* pBroker,const CSegmentKey& segmentKey,
    IntervalIndexType releaseIntervalIdx       = pIntervals->GetPrestressReleaseInterval(segmentKey);
    IntervalIndexType storageIntervalIdx       = pIntervals->GetStorageInterval(segmentKey);
    IntervalIndexType erectionIntervalIdx      = pIntervals->GetErectSegmentInterval(segmentKey);
-   IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval(segmentKey);
-   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval(segmentKey);
-   IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval(segmentKey);
-   IntervalIndexType overlayIntervalIdx       = pIntervals->GetOverlayInterval(segmentKey);
+   IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval();
+   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
+   IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval();
+   IntervalIndexType overlayIntervalIdx       = pIntervals->GetOverlayInterval();
 
    pgsTypes::SupportedDeckType deckType = pBridge->GetDeckType();
 
@@ -1242,10 +1242,10 @@ void CCamberTable::Build_NoDeck_TempStrands(IBroker* pBroker,const CSegmentKey& 
    IntervalIndexType storageIntervalIdx       = pIntervals->GetStorageInterval(segmentKey);
    IntervalIndexType erectionIntervalIdx      = pIntervals->GetErectSegmentInterval(segmentKey);
    IntervalIndexType tempStrandRemovalIntervalIdx = pIntervals->GetTemporaryStrandRemovalInterval(segmentKey);
-   IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval(segmentKey);
-   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval(segmentKey);
-   IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval(segmentKey);
-   IntervalIndexType overlayIntervalIdx       = pIntervals->GetOverlayInterval(segmentKey);
+   IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval();
+   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
+   IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval();
+   IntervalIndexType overlayIntervalIdx       = pIntervals->GetOverlayInterval();
 
    pgsTypes::SupportedDeckType deckType = pBridge->GetDeckType();
 
@@ -1510,10 +1510,10 @@ void CCamberTable::Build_NoDeck(IBroker* pBroker,const CSegmentKey& segmentKey,
    IntervalIndexType releaseIntervalIdx       = pIntervals->GetPrestressReleaseInterval(segmentKey);
    IntervalIndexType storageIntervalIdx       = pIntervals->GetStorageInterval(segmentKey);
    IntervalIndexType erectionIntervalIdx      = pIntervals->GetErectSegmentInterval(segmentKey);
-   IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval(segmentKey);
-   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval(segmentKey);
-   IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval(segmentKey);
-   IntervalIndexType overlayIntervalIdx       = pIntervals->GetOverlayInterval(segmentKey);
+   IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval();
+   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
+   IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval();
+   IntervalIndexType overlayIntervalIdx       = pIntervals->GetOverlayInterval();
 
    pgsTypes::SupportedDeckType deckType = pBridge->GetDeckType();
 

@@ -484,8 +484,8 @@ ReactionDecider::ReactionDecider(ReactionTableType tableType, const ReactionLoca
          EventIndexType back_continunity_event, ahead_continuity_event;
          pBridge->GetContinuityEventIndex(location.PierIdx,&back_continunity_event,&ahead_continuity_event);
 
-         IntervalIndexType back_continuity_interval  = pIntervals->GetInterval(girderKey,back_continunity_event);
-         IntervalIndexType ahead_continuity_interval = pIntervals->GetInterval(girderKey,ahead_continuity_event);
+         IntervalIndexType back_continuity_interval  = pIntervals->GetInterval(back_continunity_event);
+         IntervalIndexType ahead_continuity_interval = pIntervals->GetInterval(ahead_continuity_event);
 
          m_ThresholdInterval = (location.Face == rftBack ? back_continuity_interval : ahead_continuity_interval);
       }

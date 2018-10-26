@@ -77,16 +77,16 @@ rptRcTable* CUserReactionTable::Build(IBroker* pBroker,const CGirderKey& girderK
    INIT_UV_PROTOTYPE( rptForceSectionValue, reaction, pDisplayUnits->GetShearUnit(), false );
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
-   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval(CGirderKey(girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex,girderKey.girderIndex));
+   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
 
    CString strTitle;
    if ( tableType == PierReactionsTable )
    {
-      strTitle.Format(_T("Total Girderline Reactions at Abutments and Piers due to User Defined Loads in Interval %d: %s"),LABEL_INTERVAL(intervalIdx),pIntervals->GetDescription(CGirderKey(girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex,girderKey.girderIndex),intervalIdx));
+      strTitle.Format(_T("Total Girderline Reactions at Abutments and Piers due to User Defined Loads in Interval %d: %s"),LABEL_INTERVAL(intervalIdx),pIntervals->GetDescription(intervalIdx));
    }
    else
    {
-      strTitle.Format(_T("Girder Bearing Reactions due to User Defined Loads in Interval %d: %s"),LABEL_INTERVAL(intervalIdx),pIntervals->GetDescription(CGirderKey(girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex,girderKey.girderIndex),intervalIdx));
+      strTitle.Format(_T("Girder Bearing Reactions due to User Defined Loads in Interval %d: %s"),LABEL_INTERVAL(intervalIdx),pIntervals->GetDescription(intervalIdx));
    }
 
    rptRcTable* p_table = CreateUserLoadHeading<rptForceUnitTag,unitmgtForceData>( strTitle.GetBuffer(),
@@ -125,11 +125,11 @@ rptRcTable* CUserReactionTable::Build(IBroker* pBroker,const CGirderKey& girderK
 
       const CGirderKey& thisGirderKey(reactionLocation.GirderKey);
 
-      IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval(thisGirderKey);
-      IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval(thisGirderKey);
-      IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval(thisGirderKey);
-      IntervalIndexType loadRatingIntervalIdx    = pIntervals->GetLoadRatingInterval(thisGirderKey);
-      IntervalIndexType overlayIntervalIdx       = pIntervals->GetOverlayInterval(thisGirderKey);
+      IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval();
+      IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval();
+      IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval();
+      IntervalIndexType loadRatingIntervalIdx    = pIntervals->GetLoadRatingInterval();
+      IntervalIndexType overlayIntervalIdx       = pIntervals->GetOverlayInterval();
       IntervalIndexType erectSegmentIntervalIdx  = pIntervals->GetLastSegmentErectionInterval(thisGirderKey);
 
       (*p_table)(row,col++) << reactionLocation.PierLabel;

@@ -65,11 +65,11 @@ rptRcTable* CSectionPropertiesTable2::Build(IBroker* pBroker,
    GET_IFACE2(pBroker,ISectionProperties,pSectProp);
 
    IntervalIndexType erectionIntervalIdx            = pIntervals->GetErectSegmentInterval(segmentKey);
-   IntervalIndexType compositeDeckIntervalIdx       = pIntervals->GetCompositeDeckInterval(segmentKey);
+   IntervalIndexType compositeDeckIntervalIdx       = pIntervals->GetCompositeDeckInterval();
    IntervalIndexType lastTendonStressingIntervalIdx = pIntervals->GetLastTendonStressingInterval(segmentKey);
 
    std::_tostringstream os;
-   os << "Interval " << LABEL_INTERVAL(intervalIdx) << _T(" : ") <<  pIntervals->GetDescription(segmentKey,intervalIdx);
+   os << "Interval " << LABEL_INTERVAL(intervalIdx) << _T(" : ") <<  pIntervals->GetDescription(intervalIdx);
 
    if ( spType == pgsTypes::sptTransformedNoncomposite )
    {

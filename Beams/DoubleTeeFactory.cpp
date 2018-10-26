@@ -180,7 +180,7 @@ void CDoubleTeeFactory::CreateGirderProfile(IBroker* pBroker,StatusGroupIDType s
    rect->QueryInterface(ppShape);
 }
 
-void CDoubleTeeFactory::CreateSegment(IBroker* pBroker,StatusGroupIDType statusGroupID,const CSegmentKey& segmentKey,IStages* pStages,ISuperstructureMember* ssmbr)
+void CDoubleTeeFactory::CreateSegment(IBroker* pBroker,StatusGroupIDType statusGroupID,const CSegmentKey& segmentKey,ISuperstructureMember* ssmbr)
 {
    CComPtr<IPrismaticSegment> segment;
    segment.CoCreateInstance(CLSID_PrismaticSegment);
@@ -204,16 +204,14 @@ void CDoubleTeeFactory::CreateSegment(IBroker* pBroker,StatusGroupIDType statusG
    CComPtr<IMaterial> material;
    material.CoCreateInstance(CLSID_Material);
 
-   IntervalIndexType nIntervals = pIntervals->GetIntervalCount(segmentKey);
+   IntervalIndexType nIntervals = pIntervals->GetIntervalCount();
    for ( IntervalIndexType intervalIdx = 0; intervalIdx < nIntervals; intervalIdx++ )
    {
       Float64 E = pMaterial->GetSegmentEc(segmentKey,intervalIdx);
       Float64 D = pMaterial->GetSegmentWeightDensity(segmentKey,intervalIdx);
 
-      StageIndexType stageIdx = pStages->GetStage(segmentKey,intervalIdx);
-
-      material->put_E(stageIdx,E);
-      material->put_Density(stageIdx,D);
+      material->put_E(intervalIdx,E);
+      material->put_Density(intervalIdx,D);
    }
 
    CComQIPtr<IShape> shape(gdrsection);

@@ -771,6 +771,7 @@ void CGirderModelElevationView::CreateSegmentEndSupportDisplayObject(Float64 gro
    {
       ATLASSERT(pTS != NULL);
 
+#pragma Reminder("UPDATE: should be able to get temp support intervals from IInterval")
       EventIndexType erectionEventIdx, removalEventIdx;
       pTimelineMgr->GetTempSupportEvents(pTS->GetID(),&erectionEventIdx,&removalEventIdx);
       if ( eventIdx < erectionEventIdx || removalEventIdx <= eventIdx )
@@ -788,7 +789,7 @@ void CGirderModelElevationView::CreateSegmentEndSupportDisplayObject(Float64 gro
 
       GET_IFACE2(pBroker,IPointOfInterest,pPoi);
       GET_IFACE2(pBroker,IIntervals,pIntervals);
-      IntervalIndexType intervalIdx = pIntervals->GetInterval(segmentKey,eventIdx);
+      IntervalIndexType intervalIdx = pIntervals->GetInterval(eventIdx);
       PoiAttributeType poiReference = (pIntervals->GetErectSegmentInterval(segmentKey) <= intervalIdx ? POI_ERECTED_SEGMENT : POI_RELEASED_SEGMENT);
       PoiAttributeType attribute = (endType == pgsTypes::metStart ? POI_0L : POI_10L);
       std::vector<pgsPointOfInterest> vPoi(pPoi->GetPointsOfInterest(segmentKey,poiReference | attribute,POIFIND_AND));
@@ -797,11 +798,16 @@ void CGirderModelElevationView::CreateSegmentEndSupportDisplayObject(Float64 gro
 
       GET_IFACE2(pBroker,ISectionProperties,pSectProp);
       sectionHeight = pSectProp->GetHg(pIntervals->GetPrestressReleaseInterval(segmentKey),poiCLBrg);
+
+      if ( 0 < groupOffset )
+      {
+         groupOffset = 0;
+      }
    }
 
    CComPtr<IPoint2d> point;
    point.CoCreateInstance(CLSID_Point2d);
-   point->Move(pierLocation+groupOffset,-sectionHeight);
+   point->Move(pierLocation + groupOffset,-sectionHeight);
 
    // create display object
    CComPtr<iPointDisplayObject> ptDispObj;
@@ -909,9 +915,15 @@ void CGirderModelElevationView::CreateIntermediateTemporarySupportDisplayObject(
    const CSpanData2* pStartSpan = pSegment->GetSpan(pgsTypes::metStart);
    const CSpanData2* pEndSpan   = pSegment->GetSpan(pgsTypes::metEnd);
 
-   std::vector<const CTemporarySupportData*> tempSupports(pStartSpan->GetTemporarySupports());
-   std::vector<const CTemporarySupportData*> endTempSupports(pEndSpan->GetTemporarySupports());
-   tempSupports.insert(tempSupports.begin(),endTempSupports.begin(),endTempSupports.end());
+   const CSpanData2* pSpan = pStartSpan;
+   std::vector<const CTemporarySupportData*> tempSupports(pSpan->GetTemporarySupports());
+   while ( pSpan != pEndSpan )
+   {
+      pSpan = pSpan->GetNextPier()->GetNextSpan();
+      ATLASSERT(pSpan != NULL);
+      std::vector<const CTemporarySupportData*> endTempSupports(pSpan->GetTemporarySupports());
+      tempSupports.insert(tempSupports.end(),endTempSupports.begin(),endTempSupports.end());
+   }
 
    if ( tempSupports.size() == 0 )
    {

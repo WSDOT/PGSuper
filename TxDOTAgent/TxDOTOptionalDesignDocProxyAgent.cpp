@@ -379,9 +379,9 @@ void CTxDOTOptionalDesignDocProxyAgent::Validate()
 
       GET_IFACE2(pBroker,IIntervals,pIntervals);
       IntervalIndexType releaseIntervalIdx       = pIntervals->GetPrestressReleaseInterval(origSegmentKey);
-      IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval(origSegmentKey);
-      IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval(origSegmentKey);
-      IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval(origSegmentKey);
+      IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval();
+      IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
+      IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval();
     
       // Get responses from design based on original data
       GET_IFACE2(pBroker,IArtifact,pIArtifact);
@@ -600,7 +600,7 @@ void CTxDOTOptionalDesignDocProxyAgent::CheckShear(IPointOfInterest* pIPoi)
    CSegmentKey fabrSegmentKey(TOGA_SPAN,TOGA_FABR_GDR,0);
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
-   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval(origSegmentKey);
+   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
 
    m_ShearPassed = true; // until otherwise
 

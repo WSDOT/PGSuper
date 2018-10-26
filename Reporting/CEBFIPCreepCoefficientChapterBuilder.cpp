@@ -193,7 +193,7 @@ rptChapter* CCEBFIPCreepCoefficientChapterBuilder::Build(CReportSpecification* p
    (*pTable)(rowIdx+1,colIdx++) << symbol(phi) << _T("(t,") << Sub2(_T("t"),_T("0")) << _T(")");
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
-   IntervalIndexType nIntervals = pIntervals->GetIntervalCount(girderKey);
+   IntervalIndexType nIntervals = pIntervals->GetIntervalCount();
 
    rowIdx = pTable->GetNumberOfHeaderRows();
    for ( IntervalIndexType intervalIdx = 0; intervalIdx < nIntervals; intervalIdx++, rowIdx++ )
@@ -241,14 +241,14 @@ rptChapter* CCEBFIPCreepCoefficientChapterBuilder::Build(CReportSpecification* p
          }
       }
 
-      IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval(girderKey);
+      IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
       if ( compositeDeckIntervalIdx <= intervalIdx )
       {
-         Float64 ti = pMaterials->GetDeckConcreteAge(girderKey,compositeDeckIntervalIdx,pgsTypes::Middle);
-         Float64 t  = pMaterials->GetDeckConcreteAge(girderKey,intervalIdx,pgsTypes::End);
+         Float64 ti = pMaterials->GetDeckConcreteAge(compositeDeckIntervalIdx,pgsTypes::Middle);
+         Float64 t  = pMaterials->GetDeckConcreteAge(intervalIdx,pgsTypes::End);
          (*pTable)(rowIdx,colIdx++) << t;
          (*pTable)(rowIdx,colIdx++) << ti;
-         (*pTable)(rowIdx,colIdx++) << pMaterials->GetDeckCreepCoefficient(girderKey,compositeDeckIntervalIdx,pgsTypes::Middle,intervalIdx,pgsTypes::End);
+         (*pTable)(rowIdx,colIdx++) << pMaterials->GetDeckCreepCoefficient(compositeDeckIntervalIdx,pgsTypes::Middle,intervalIdx,pgsTypes::End);
       }
       else
       {

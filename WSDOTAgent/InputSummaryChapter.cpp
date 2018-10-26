@@ -496,7 +496,7 @@ void concrete(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& segmentKe
 
    GET_IFACE2( pBroker, IIntervals, pIntervals );
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
-   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval(segmentKey);
+   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
    
    // Get the interfaces
    GET_IFACE2( pBroker, IMaterials, pMaterial );
@@ -509,7 +509,7 @@ void concrete(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& segmentKe
    (*pTable)(1,1) << stress.SetValue( pMaterial->GetSegmentFc(segmentKey,releaseIntervalIdx) );
 
    (*pTable)(2,0) << _T("Slab");
-   (*pTable)(2,1) << stress.SetValue( pMaterial->GetDeckFc(segmentKey,liveLoadIntervalIdx) );
+   (*pTable)(2,1) << stress.SetValue( pMaterial->GetDeckFc(liveLoadIntervalIdx) );
 }
 
 void prestressing(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& segmentKey,IEAFDisplayUnits* pDisplayUnits)

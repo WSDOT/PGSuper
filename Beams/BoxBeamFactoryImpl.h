@@ -43,7 +43,7 @@ public:
 public:
    // IBeamFactory
    virtual void CreateGirderProfile(IBroker* pBroker,StatusItemIDType statusID,const CSegmentKey& segmentKey,const IBeamFactory::Dimensions& dimensions,IShape** ppShape);
-   virtual void CreateSegment(IBroker* pBroker,StatusItemIDType statusID,const CSegmentKey& segmentKey,IStages* pStages,ISuperstructureMember* ssmbr);
+   virtual void CreateSegment(IBroker* pBroker,StatusItemIDType statusID,const CSegmentKey& segmentKey,ISuperstructureMember* ssmbr);
    virtual void LayoutSectionChangePointsOfInterest(IBroker* pBroker,const CSegmentKey& segmentKey,pgsPoiMgr* pPoiMgr);
    virtual void CreateDistFactorEngineer(IBroker* pBroker,StatusItemIDType statusID,const pgsTypes::SupportedDeckType* pDeckType, const pgsTypes::AdjacentTransverseConnectivity* pConnect,IDistFactorEngineer** ppEng);
    virtual void CreatePsLossEngineer(IBroker* pBroker,StatusItemIDType statusID,const CGirderKey& girderKey,IPsLossEngineer** ppEng);

@@ -482,7 +482,7 @@ lrfdLiveLoadDistributionFactorBase* CMultiWebDistFactorEngineer::GetLLDFParamete
 
    GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
-   IntervalIndexType llIntervalIdx      = pIntervals->GetLiveLoadInterval(segmentKey);
+   IntervalIndexType llIntervalIdx      = pIntervals->GetLiveLoadInterval();
 
    if (0 < fcgdr)
    {
@@ -512,7 +512,7 @@ lrfdLiveLoadDistributionFactorBase* CMultiWebDistFactorEngineer::GetLLDFParamete
    {
       GET_IFACE(IMaterials, pMaterials);
 
-      Float64 EcDeck = pMaterials->GetDeckEc(segmentKey,llIntervalIdx);
+      Float64 EcDeck = pMaterials->GetDeckEc(llIntervalIdx);
       if ( fcgdr < 0 )
       {
          // fcgdr < 0 means use the current bridge model

@@ -47,6 +47,7 @@ public:
    std::vector<Float64> GetSpanLengths();
    void SetSpanLengths(const std::vector<Float64>& spanLengths,PierIndexType fixedPierIdx);
    void SetPierOrientation(LPCTSTR strOrientation);
+   std::vector<Float64> GetSegmentLengths();
 
 // Overrides
 	// ClassWizard generated virtual function overrides

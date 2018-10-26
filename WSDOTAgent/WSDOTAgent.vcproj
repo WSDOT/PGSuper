@@ -21,7 +21,7 @@
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="\ARP\$(SolutionName)\RegFreeCOM\$(PlatformName)\$(ConfigurationName)"
+			OutputDirectory="\ARP\BridgeLink\RegFreeCOM\$(PlatformName)\$(ConfigurationName)"
 			IntermediateDirectory="$(PlatformName)\$(ConfigurationName)"
 			ConfigurationType="2"
 			UseOfMFC="2"
@@ -88,7 +88,7 @@
 				AdditionalDependencies="OpenBridgeMLD.lib"
 				OutputFile="$(OutDir)\$(ProjectName).dll"
 				LinkIncremental="2"
-				AdditionalLibraryDirectories="&quot;\ARP\WBFL\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&quot;;&quot;\ARP\$(SolutionName)\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&quot;;&quot;$(SolutionDir)$(PlatformName)\$(ConfigurationName)&quot;"
+				AdditionalLibraryDirectories="&quot;\ARP\WBFL\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&quot;;&quot;\ARP\BridgeLink\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&quot;"
 				ModuleDefinitionFile=".\WSDOTAgent.def"
 				GenerateDebugInformation="true"
 				SubSystem="2"
@@ -119,7 +119,7 @@
 		</Configuration>
 		<Configuration
 			Name="Debug|x64"
-			OutputDirectory="\ARP\$(SolutionName)\RegFreeCOM\$(PlatformName)\$(ConfigurationName)"
+			OutputDirectory="\ARP\BridgeLink\RegFreeCOM\$(PlatformName)\$(ConfigurationName)"
 			IntermediateDirectory="$(PlatformName)\$(ConfigurationName)"
 			ConfigurationType="2"
 			UseOfMFC="2"
@@ -185,7 +185,7 @@
 				AdditionalDependencies="OpenBridgeMLD.lib"
 				OutputFile="$(OutDir)\$(ProjectName).dll"
 				LinkIncremental="2"
-				AdditionalLibraryDirectories="&quot;\ARP\WBFL\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&quot;;&quot;\ARP\$(SolutionName)\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&quot;;&quot;$(SolutionDir)$(PlatformName)\$(ConfigurationName)&quot;"
+				AdditionalLibraryDirectories="&quot;\ARP\WBFL\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&quot;;&quot;\ARP\BridgeLink\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&quot;"
 				ModuleDefinitionFile=".\WSDOTAgent.def"
 				GenerateDebugInformation="true"
 				SubSystem="2"
@@ -216,7 +216,7 @@
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="\ARP\$(SolutionName)\RegFreeCOM\$(PlatformName)\$(ConfigurationName)"
+			OutputDirectory="\ARP\BridgeLink\RegFreeCOM\$(PlatformName)\$(ConfigurationName)"
 			IntermediateDirectory="$(PlatformName)\$(ConfigurationName)"
 			ConfigurationType="2"
 			UseOfMFC="2"
@@ -286,7 +286,7 @@
 				AdditionalDependencies="OpenBridgeML.lib"
 				OutputFile="$(OutDir)\$(ProjectName).dll"
 				LinkIncremental="1"
-				AdditionalLibraryDirectories="&quot;\ARP\WBFL\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&quot;;&quot;\ARP\$(SolutionName)\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&quot;;&quot;$(SolutionDir)$(PlatformName)\$(ConfigurationName)&quot;"
+				AdditionalLibraryDirectories="&quot;\ARP\WBFL\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&quot;;&quot;\ARP\BridgeLink\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&quot;"
 				ModuleDefinitionFile=".\WSDOTAgent.def"
 				GenerateDebugInformation="true"
 				SubSystem="2"
@@ -320,7 +320,7 @@
 		</Configuration>
 		<Configuration
 			Name="Release|x64"
-			OutputDirectory="\ARP\$(SolutionName)\RegFreeCOM\$(PlatformName)\$(ConfigurationName)"
+			OutputDirectory="\ARP\BridgeLink\RegFreeCOM\$(PlatformName)\$(ConfigurationName)"
 			IntermediateDirectory="$(PlatformName)\$(ConfigurationName)"
 			ConfigurationType="2"
 			UseOfMFC="2"
@@ -389,7 +389,7 @@
 				AdditionalDependencies="OpenBridgeML.lib"
 				OutputFile="$(OutDir)\$(ProjectName).dll"
 				LinkIncremental="1"
-				AdditionalLibraryDirectories="&quot;\ARP\WBFL\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&quot;;&quot;\ARP\$(SolutionName)\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&quot;;&quot;$(SolutionDir)$(PlatformName)\$(ConfigurationName)&quot;"
+				AdditionalLibraryDirectories="&quot;\ARP\WBFL\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&quot;;&quot;\ARP\BridgeLink\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&quot;"
 				ModuleDefinitionFile=".\WSDOTAgent.def"
 				GenerateDebugInformation="true"
 				SubSystem="2"
@@ -423,7 +423,7 @@
 		</Configuration>
 		<Configuration
 			Name="Profile|Win32"
-			OutputDirectory="\ARP\$(SolutionName)\RegFreeCOM\$(PlatformName)\$(ConfigurationName)"
+			OutputDirectory="\ARP\BridgeLink\RegFreeCOM\$(PlatformName)\$(ConfigurationName)"
 			IntermediateDirectory="$(PlatformName)\$(ConfigurationName)"
 			ConfigurationType="2"
 			UseOfMFC="2"
@@ -491,7 +491,7 @@
 				IgnoreImportLibrary="true"
 				OutputFile="$(OutDir)\$(ProjectName).dll"
 				LinkIncremental="1"
-				AdditionalLibraryDirectories="&quot;\ARP\WBFL\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&quot;;&quot;\ARP\$(SolutionName)\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&quot;;&quot;$(SolutionDir)$(PlatformName)\$(ConfigurationName)&quot;"
+				AdditionalLibraryDirectories="&quot;\ARP\WBFL\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&quot;;&quot;\ARP\BridgeLink\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&quot;"
 				ModuleDefinitionFile=".\WSDOTAgent.def"
 				GenerateDebugInformation="true"
 				SubSystem="2"
@@ -525,7 +525,7 @@
 		</Configuration>
 		<Configuration
 			Name="Profile|x64"
-			OutputDirectory="\ARP\$(SolutionName)\RegFreeCOM\$(PlatformName)\$(ConfigurationName)"
+			OutputDirectory="\ARP\BridgeLink\RegFreeCOM\$(PlatformName)\$(ConfigurationName)"
 			IntermediateDirectory="$(PlatformName)\$(ConfigurationName)"
 			ConfigurationType="2"
 			UseOfMFC="2"
@@ -592,7 +592,7 @@
 				IgnoreImportLibrary="true"
 				OutputFile="$(OutDir)\$(ProjectName).dll"
 				LinkIncremental="1"
-				AdditionalLibraryDirectories="&quot;\ARP\WBFL\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&quot;;&quot;\ARP\$(SolutionName)\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&quot;;&quot;$(SolutionDir)$(PlatformName)\$(ConfigurationName)&quot;"
+				AdditionalLibraryDirectories="&quot;\ARP\WBFL\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&quot;;&quot;\ARP\BridgeLink\RegFreeCOM\$(PlatformName)\$(ConfigurationName)&quot;"
 				ModuleDefinitionFile=".\WSDOTAgent.def"
 				GenerateDebugInformation="true"
 				SubSystem="2"

@@ -319,8 +319,8 @@ protected:
    virtual CString GetRootNodeName();
    virtual Float64 GetRootNodeVersion();
 
-   virtual HRESULT OpenDocumentRootNode(IStructuredSave* pStrSave);
-   virtual HRESULT OpenDocumentRootNode(IStructuredLoad* pStrLoad);
+   virtual HRESULT LoadTheDocument(IStructuredLoad* pStrLoad);
+   virtual HRESULT WriteTheDocument(IStructuredSave* pStrSave);
 
    virtual void OnErrorDeletingBadSave(LPCTSTR lpszPathName,LPCTSTR lpszBackup);
    virtual void OnErrorRemaningSaveBackup(LPCTSTR lpszPathName,LPCTSTR lpszBackup);
@@ -345,6 +345,8 @@ protected:
    virtual void DeleteContents();
 
    virtual CATID GetBeamFamilyCategoryID() = 0;
+
+   virtual BOOL LoadAgents();
 
 // Generated message map functions
 protected:

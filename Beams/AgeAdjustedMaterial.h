@@ -63,7 +63,6 @@ private:
 
    // use weak refereces so we don't have circular dependencies
    IMaterials* m_pMaterials;
-   IStages* m_pStages;
 
    bool IsDeck();
    bool IsClosureJoint();
@@ -71,9 +70,9 @@ private:
 
 // IAgeAdjustedMaterial
 public:
-   STDMETHOD(InitSegment)(const CSegmentKey& segmentKey,IStages* pStages,IMaterials* pMaterials);
-   STDMETHOD(InitClosureJoint)(const CClosureKey& closureKey,IStages* pStages,IMaterials* pMaterials);
-   STDMETHOD(InitDeck)(const CGirderKey& girderKey,IStages* pStages,IMaterials* pMaterials);
+   STDMETHOD(InitSegment)(const CSegmentKey& segmentKey,IMaterials* pMaterials);
+   STDMETHOD(InitClosureJoint)(const CClosureKey& closureKey,IMaterials* pMaterials);
+   STDMETHOD(InitDeck)(const CGirderKey& girderKey,IMaterials* pMaterials);
 
 // IMaterial
 public:

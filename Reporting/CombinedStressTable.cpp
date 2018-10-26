@@ -79,13 +79,13 @@ void CCombinedStressTable::Build(IBroker* pBroker, rptChapter* pChapter,
                                          bool bDesign,bool bRating,bool bGirderStresses) const
 {
    GET_IFACE2(pBroker,IIntervals,pIntervals);
-   IntervalIndexType liveLoadIntervalIdx  = pIntervals->GetLiveLoadInterval(CGirderKey(girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex,girderKey.girderIndex));
+   IntervalIndexType liveLoadIntervalIdx  = pIntervals->GetLiveLoadInterval();
 
 #if defined _DEBUG
    if ( !bGirderStresses )
    {
       // only report deck stresses after the deck is composite
-      IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval(girderKey);
+      IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
       ATLASSERT(compositeDeckIntervalIdx <= intervalIdx);
    }
 #endif
@@ -162,7 +162,7 @@ void CCombinedStressTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter* 
          continuityEventIndex = Min(continuityEventIndex,rightContinuityEventIdx);
       }
    }
-   IntervalIndexType continunityIntervalIdx = pIntervals->GetInterval(girderKey,continuityEventIndex);
+   IntervalIndexType continunityIntervalIdx = pIntervals->GetInterval(continuityEventIndex);
 
    // Set up table headings
    ColumnIndexType nCols = (bTimeStepMethod ? 13 : 5);
@@ -236,8 +236,8 @@ void CCombinedStressTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter* 
 
       CGirderKey thisGirderKey(grpIdx,girderKey.girderIndex);
 
-      IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval(thisGirderKey);
-      IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval(thisGirderKey);
+      IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
+      IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval();
 
       PoiAttributeType poiRefAttribute;
       std::vector<pgsPointOfInterest> vPoi;
@@ -410,7 +410,7 @@ void CCombinedStressTable::BuildCombinedLiveTable(IBroker* pBroker, rptChapter* 
    {
       CGirderKey thisGirderKey(grpIdx,girderKey.girderIndex);
 
-      IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval(thisGirderKey);
+      IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
 
       PoiAttributeType poiRefAttribute;
       std::vector<pgsPointOfInterest> vPoi;
@@ -445,7 +445,7 @@ void CCombinedStressTable::BuildCombinedLiveTable(IBroker* pBroker, rptChapter* 
 
       if ( bRating )
       {
-         IntervalIndexType ratingIntervalIdx = pIntervals->GetLoadRatingInterval(thisGirderKey);
+         IntervalIndexType ratingIntervalIdx = pIntervals->GetLoadRatingInterval();
 
          if ( !bDesign && (pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) || pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating)) )
          {

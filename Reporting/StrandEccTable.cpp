@@ -90,7 +90,7 @@ rptRcTable* CStrandEccTable::Build(IBroker* pBroker,const CSegmentKey& segmentKe
    // Setup table
    GET_IFACE2(pBroker,IIntervals,pIntervals);
    std::_tostringstream os;
-   os << _T("Strand Eccentricity: Interval ") << LABEL_INTERVAL(intervalIdx) << _T(" ") << pIntervals->GetDescription(segmentKey,intervalIdx);
+   os << _T("Strand Eccentricity: Interval ") << LABEL_INTERVAL(intervalIdx) << _T(" ") << pIntervals->GetDescription(intervalIdx);
 
    rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(bTempStrands ? 9 : 7, os.str().c_str() );
 

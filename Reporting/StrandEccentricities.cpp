@@ -97,7 +97,7 @@ void CStrandEccentricities::Build(rptChapter* pChapter,IBroker* pBroker,const CS
             if ( lossMethod == pgsTypes::TIME_STEP )
             {
                IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(thisSegmentKey);
-               IntervalIndexType nIntervals = pIntervals->GetIntervalCount(thisSegmentKey);
+               IntervalIndexType nIntervals = pIntervals->GetIntervalCount();
                for (IntervalIndexType intervalIdx = releaseIntervalIdx; intervalIdx < nIntervals; intervalIdx++ )
                {
                   CStrandEccTable ecc_table;
@@ -106,7 +106,7 @@ void CStrandEccentricities::Build(rptChapter* pChapter,IBroker* pBroker,const CS
             }
             else
             {
-               std::vector<IntervalIndexType> vIntervals(pIntervals->GetSpecCheckIntervals(segmentKey));
+               std::vector<IntervalIndexType> vIntervals(pIntervals->GetSpecCheckIntervals(thisSegmentKey));
 
                BOOST_FOREACH(IntervalIndexType intervalIdx,vIntervals)
                {

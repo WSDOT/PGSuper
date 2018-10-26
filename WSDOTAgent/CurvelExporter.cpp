@@ -485,7 +485,7 @@ STDMETHODIMP CCurvelExporter::Export(IBroker* pBroker)
       {
          bCurves = true;
          HorzCurveData& hCurve(*iter);
-         SkewLineType skewLine(hCurve.PIStation,OffsetType::RadialFromCrownLine,0.0,"0.0 L",hCurve.Radius,0.0);
+         SkewLineType skewLine(hCurve.PIStation,OffsetType::RadialFromCrownLine,0.0,_T("0.0 L"),hCurve.Radius,0.0);
          if ( !IsZero(hCurve.EntrySpiral) || !IsZero(hCurve.ExitSpiral) )
          {
             bSpiral = true;

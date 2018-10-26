@@ -2589,11 +2589,11 @@ void CPsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi,const GDRC
 
    IntervalIndexType releaseIntervalIdx       = pIntervals->GetPrestressReleaseInterval(segmentKey);
    IntervalIndexType erectIntervalIdx         = pIntervals->GetErectSegmentInterval(segmentKey);
-   IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval(segmentKey);
-   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval(segmentKey);
-   IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval(segmentKey);
-   IntervalIndexType overlayIntervalIdx       = pIntervals->GetOverlayInterval(segmentKey);
-   IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval(segmentKey);
+   IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval();
+   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
+   IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval();
+   IntervalIndexType overlayIntervalIdx       = pIntervals->GetOverlayInterval();
+   IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval();
 
 
    // Material Properties
@@ -2609,7 +2609,7 @@ void CPsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi,const GDRC
 
    *pFci    = config.Fci;
    *pFc     = config.Fc;
-   *pFcSlab = pMaterial->GetDeckFc(segmentKey,compositeDeckIntervalIdx);
+   *pFcSlab = pMaterial->GetDeckFc(compositeDeckIntervalIdx);
 
    if ( config.bUserEci )
    {
@@ -2635,7 +2635,7 @@ void CPsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi,const GDRC
    }
    else
    {
-      *pEcSlab = pMaterial->GetDeckEc(segmentKey,compositeDeckIntervalIdx);
+      *pEcSlab = pMaterial->GetDeckEc(compositeDeckIntervalIdx);
    }
 
    

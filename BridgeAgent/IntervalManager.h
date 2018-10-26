@@ -31,7 +31,7 @@
 ////////////////////////////////////////////////
 // This class manages the definitions for intervals of time for 
 // a time-step loss analysis
-class CIntervalManager : public IStages
+class CIntervalManager
 {
 public:
    // creates the time step intervals from the event model
@@ -41,22 +41,25 @@ public:
    // interval model)
    void BuildIntervals(const CTimelineManager* pTimelineMgr,bool bTimeStepMethod);
 
-   StageIndexType GetStageCount() const;
-   StageIndexType GetStage(const CGirderKey& girderKey,IntervalIndexType intervalIdx) const; // this is the IStages interface
-   IntervalIndexType GetIntervalFromStage(const CGirderKey& girderKey,StageIndexType stageIdx) const;
-   const std::map<IntervalIndexType,StageIndexType>& GetStageMap(const CGirderKey& girderKey) const;
-   const std::map<CGirderKey,IntervalIndexType>& GetIntervalMap(StageIndexType stageIdx) const;
+   //// Functions for mapping between analysis intervals and generic bridge model stages
+   //StageIndexType GetStageCount() const;
+   //StageIndexType GetStage(IntervalIndexType intervalIdx) const; // this is the IStages interface
+   //IntervalIndexType GetIntervalFromStage(girderKey,StageIndexType stageIdx) const;
+   //const std::map<IntervalIndexType,StageIndexType>& GetStageMap() const;
+   ////const std::map<StageIndexType,IntervalIndexType>& GetIntervalMap(StageIndexType stageIdx) const;
 
 
-   IntervalIndexType GetIntervalCount(const CGirderKey& girderKey) const;
-   EventIndexType GetStartEvent(const CGirderKey& girderKey,IntervalIndexType idx) const;
-   EventIndexType GetEndEvent(const CGirderKey& girderKey,IntervalIndexType idx) const;
-   Float64 GetTime(const CGirderKey& girderKey,IntervalIndexType idx,pgsTypes::IntervalTimeType timeType) const;
-   Float64 GetDuration(const CGirderKey& girderKey,IntervalIndexType idx) const;
-   LPCTSTR GetDescription(const CGirderKey& girderKey,IntervalIndexType idx) const;
+   IntervalIndexType GetIntervalCount() const;
+   EventIndexType GetStartEvent(IntervalIndexType idx) const;
+   EventIndexType GetEndEvent(IntervalIndexType idx) const;
+   Float64 GetTime(IntervalIndexType idx,pgsTypes::IntervalTimeType timeType) const;
+   Float64 GetDuration(IntervalIndexType idx) const;
+   LPCTSTR GetDescription(IntervalIndexType idx) const;
 
    // returns the index of the first interval that starts with eventIdx
-   IntervalIndexType GetInterval(const CGirderKey& girderKey,EventIndexType eventIdx) const;
+   IntervalIndexType GetInterval(EventIndexType eventIdx) const;
+
+   IntervalIndexType GetErectPierInterval(PierIndexType pierIdx) const;
 
    // returns the index of the interval when the prestressing strands are stressed for
    // the first segment constructed for this girder
@@ -103,36 +106,45 @@ public:
    IntervalIndexType GetErectSegmentInterval(const CSegmentKey& segmentKey) const;
 
    // returns true if a segment is erected in the specified interval
+   bool IsSegmentErectionInterval(IntervalIndexType intervalIdx) const;
+
+   // returns true if a segment belonging to the specified girder is erected in the specified interval
    bool IsSegmentErectionInterval(const CGirderKey& girderKey,IntervalIndexType intervalIdx) const;
 
    // returns the index of the interval when temporary strands are removed
    IntervalIndexType GetTemporaryStrandRemovalInterval(const CSegmentKey& segmentKey) const;
 
+   // returns the index of the interval when the closure joint is cast
+   IntervalIndexType GetCastClosureInterval(const CClosureKey& clousreKey) const;
+
    // returns the index of the interval when the deck and diaphragms are cast
-   IntervalIndexType GetCastDeckInterval(const CGirderKey& girderKey) const;
+   IntervalIndexType GetCastDeckInterval() const;
 
    // returns the index of the interval when the deck has finished curing
    // curing take place over the duration of an interval and cannot take load.
    // this method returns the index of the first interval when the deck can take load
-   IntervalIndexType GetCompositeDeckInterval(const CGirderKey& girderKey) const;
+   IntervalIndexType GetCompositeDeckInterval() const;
 
    // returns the index of the interval when live load is first
    // applied to the structure. it is assumed that live
    // load can be applied to the structure at this interval and all
    // intervals thereafter
-   IntervalIndexType GetLiveLoadInterval(const CGirderKey& girderKey) const;
+   IntervalIndexType GetLiveLoadInterval() const;
 
    // returns the index of the interval when the overlay is added to the bridge
-   IntervalIndexType GetOverlayInterval(const CGirderKey& girderKey) const;
+   IntervalIndexType GetOverlayInterval() const;
 
    // returns index of interval when the railing system is installed
-   IntervalIndexType GetInstallRailingSystemInterval(const CGirderKey& girderKey) const;
+   IntervalIndexType GetInstallRailingSystemInterval() const;
 
    // returns the index of the interval when a user defined load is applied
-   IntervalIndexType GetUserLoadInterval(const CGirderKey& girderKey,UserLoads::LoadCase loadCase,EventIndexType eventIdx) const;
+   IntervalIndexType GetUserLoadInterval(const CSpanKey& spanKey,UserLoads::LoadCase loadCase,EventIndexType eventIdx) const;
+
+   // returns the interval index when a temporary support is erected
+   IntervalIndexType GetTemporarySupportErectionInterval(SupportIndexType tsIdx) const;
 
    // returns the interval index when a temporary support is removed
-   IntervalIndexType GetTemporarySupportRemovalInterval(const CGirderKey& girderKey,SupportIDType tsID) const;
+   IntervalIndexType GetTemporarySupportRemovalInterval(SupportIndexType tsIdx) const;
 
    // returns the interval index when a tendon is stressed
    IntervalIndexType GetStressTendonInterval(const CGirderKey& girderKey,DuctIndexType ductIdx) const;
@@ -157,38 +169,37 @@ protected:
       Float64        Duration;      // Interval duration
       std::_tstring  Description;   // Description of activity occuring during this interval
    };
-
-   // each girder has its own sequence of intervals. this is because segments can
-   // be constructed and erected at different times and there can be a different
-   // number of tendons in each girder and they can be tensioned in different
-   // sequences. after the deck is cast, all of the interval sequences are the same
-   // it is just easier to do one complete sequence per girder
-   std::map<CGirderKey,std::vector<CInterval>> m_IntervalSequences;
-
-   // maps the interval to stage index for a girder
-   std::map<CGirderKey,std::map<IntervalIndexType,StageIndexType>> m_StageMap;
-   
-   // maps generic bridge modeling stages to girder/interval values
-   // this is the reverse of m_StageMap. However, using the pair instead of CStageKey
-   // because this map gets returned for external users
-   std::map<StageIndexType,std::map<CGirderKey,IntervalIndexType>> m_IntervalMap;
-
+   std::vector<CInterval> m_Intervals;
+   IntervalIndexType StoreInterval(CInterval& interval);
+   void ProcessStep1(EventIndexType eventIdx,const CTimelineEvent* pTimelineEvent);
+   void ProcessStep2(EventIndexType eventIdx,const CTimelineEvent* pTimelineEvent);
+   void ProcessStep3(EventIndexType eventIdx,const CTimelineEvent* pTimelineEvent,bool bTimeStepMethod);
+   void ProcessStep4(EventIndexType eventIdx,const CTimelineEvent* pTimelineEvent,bool bTimeStepMethod);
 
    std::map<CTendonKey,IntervalIndexType> m_StressTendonIntervals;
 
-   // map of when temporary supports are removed. this makes it easier
-   // to provide this information
-   class CTempSupportKey
-   {
-   public:
-      CTempSupportKey(const CGirderKey& girderKey,SupportIDType tsID);
-      CTempSupportKey(const CTempSupportKey& other);
-      bool operator<(const CTempSupportKey& other) const;
+   // keeps track of when piers are erected
+   std::map<PierIndexType,IntervalIndexType> m_ErectPierIntervals;
 
-      CGirderKey m_GirderKey;
-      SupportIDType m_tsID;
-   };
-   std::map<CTempSupportKey,IntervalIndexType> m_TempSupportRemovalIntervals;
+   // Keeps track of when temporary supports are erected and removed
+   std::map<SupportIndexType,IntervalIndexType> m_ErectTemporarySupportIntervals;
+   std::map<SupportIndexType,IntervalIndexType> m_RemoveTemporarySupportIntervals;
+
+
+   // keep trakc of the interval when key activities occur for each segment
+   std::map<CSegmentKey,IntervalIndexType> m_StressStrandIntervals;
+   std::map<CSegmentKey,IntervalIndexType> m_ReleaseIntervals;
+   std::map<CSegmentKey,IntervalIndexType> m_SegmentHaulingIntervals;
+   std::map<CSegmentKey,IntervalIndexType> m_SegmentErectionIntervals;
+   std::map<CSegmentKey,IntervalIndexType> m_RemoveTemporaryStrandsIntervals;
+   std::map<CClosureKey,IntervalIndexType> m_CastClosureIntervals;
+   
+   // keeps track of the intervals for other key activities
+   IntervalIndexType m_CastDeckIntervalIdx;
+   IntervalIndexType m_CompositeDeckIntervalIdx;
+   IntervalIndexType m_LiveLoadIntervalIdx;
+   IntervalIndexType m_OverlayIntervalIdx;
+   IntervalIndexType m_RailingSystemIntervalIdx;
 
    // map of when the strands are stressed for the first and last segment constructed for a girder
    std::map<CGirderKey,std::pair<IntervalIndexType,IntervalIndexType>> m_StrandStressingSequenceIntervalLimits;
@@ -196,37 +207,21 @@ protected:
    // map of when the strands are release for the first and last segment constructed for a girder
    std::map<CGirderKey,std::pair<IntervalIndexType,IntervalIndexType>> m_ReleaseSequenceIntervalLimits;
 
-   // map of when segments are erected. this makes it easier to provide this information
-   std::map<CSegmentKey,IntervalIndexType> m_SegmentErectionIntervals;
-
    // map of when the first and last segment is erected for a girder
    std::map<CGirderKey,std::pair<IntervalIndexType,IntervalIndexType>> m_SegmentErectionSequenceIntervalLimits;
-
-   std::map<CSegmentKey,IntervalIndexType> m_StressStrandIntervals;
-   std::map<CSegmentKey,IntervalIndexType> m_ReleaseIntervals;
-
-   std::map<CSegmentKey,IntervalIndexType> m_RemoveTemporaryStrandsIntervals;
-
-   std::map<CGirderKey,IntervalIndexType> m_CastDeckInterval;
-   std::map<CGirderKey,IntervalIndexType> m_CompositeDeckInterval; // interval when deck is composite
-   std::map<CGirderKey,IntervalIndexType> m_LiveLoadInterval; // interval when live load is applied to the structure
-   std::map<CGirderKey,IntervalIndexType> m_OverlayInterval;
-   std::map<CGirderKey,IntervalIndexType> m_RailingSystemInterval;
 
    class CUserLoadKey
    {
    public:
-      CUserLoadKey(const CGirderKey& girderKey,EventIndexType eventIdx);
+      CUserLoadKey(const CSpanKey& spanKey,EventIndexType eventIdx);
       CUserLoadKey(const CUserLoadKey& other);
       bool operator<(const CUserLoadKey& other) const;
 
-      CGirderKey m_GirderKey;
+      CSpanKey m_SpanKey;
       EventIndexType m_EventIdx;
    };
    std::map<CUserLoadKey,IntervalIndexType> m_UserLoadInterval[2]; // interval when user DC/DW loads are applied
                                                                    // user LLIM are applied in the live load interval
-
-   void AddToStageMap(const CGirderKey& girderKey,IntervalIndexType intervalIdx,StageIndexType stageIdx);
 
 #if defined _DEBUG
    void AssertValid() const;

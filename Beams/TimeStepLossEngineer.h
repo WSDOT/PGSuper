@@ -83,6 +83,9 @@ END_COM_MAP()
 
 public:
    virtual void SetBroker(IBroker* pBroker,StatusGroupIDType statusGroupID);
+
+// IPsLossEngineer
+public:
    virtual const LOSSDETAILS* GetLosses(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx);
    virtual const LOSSDETAILS* GetLosses(const pgsPointOfInterest& poi,const GDRCONFIG& config,IntervalIndexType intervalIdx);
    virtual void ClearDesignLosses();
@@ -94,8 +97,6 @@ public:
 
 private:
    pgsTypes::BridgeAnalysisType m_Bat;
-
-   std::_tstring m_strLoadingName[3]; // contains the loading names for the artifical restraint loads
 
    StatusCallbackIDType m_scidProjectCriteria;
 
@@ -122,8 +123,9 @@ private:
    CComPtr<IEAFDisplayUnits>   m_pDisplayUnits;
 
 
-   std::map<CSegmentKey,std::vector<pgsTypes::StrandType>> m_StrandTypes; // keeps track of the strand types we are analyzing
+   // keeps track of the strand types we are analyzing
    // no need to analyze types of strands that have a strand count of zero
+   std::map<CSegmentKey,std::vector<pgsTypes::StrandType>> m_StrandTypes; 
    void InitializeStrandTypes(const CSegmentKey& segmentKey);
    const std::vector<pgsTypes::StrandType>& GetStrandTypes(const CSegmentKey& segmentKey);
 
@@ -138,14 +140,17 @@ private:
 
    std::map<CGirderKey,LOSSES> m_Losses;
 
-   std::map<CTendonKey,std::pair<Float64,Float64>> m_AvgFrictionAndAnchorSetLoss; // first is friction, second is anchor set loss
+   std::map<CTendonKey,std::pair<Float64,Float64>> m_AvgFrictionAndAnchorSetLoss; // first in pair is friction, second is anchor set loss
    std::map<CTendonKey,std::pair<Float64,Float64>> m_Elongation; // first in pair is left end, second is right end
 
+   // computes losses for the specified girder for all intervals upto and including endAnalysisIntervalIdx
    void ComputeLosses(const CGirderKey& girderKey,IntervalIndexType endAnalysisIntervalIdx);
-   void ComputeLosses(const CGirderKey& girderKey,IntervalIndexType endAnalysisIntervalIdx,LOSSES* pLosses);
+   void ComputeLosses(GirderIndexType girderLineIdx,IntervalIndexType endAnalysisIntervalIdx,std::vector<LOSSES*>* pvpLosses);
+
    void ComputeFrictionLosses(const CGirderKey& girderKey,LOSSES* pLosses);
    void ComputeAnchorSetLosses(const CGirderKey& girderKey,LOSSES* pLosses);
-   void ComputeSectionLosses(const CGirderKey& girderKey,IntervalIndexType endAnalysisIntervalIdx,LOSSES* pLosses);
+
+   void ComputeSectionLosses(GirderIndexType girderLineIdx,IntervalIndexType endAnalysisIntervalIdx,std::vector<LOSSES*>* pvpLosses);
    void InitializeTimeStepAnalysis(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,LOSSDETAILS& details);
    void AnalyzeInitialStrains(IntervalIndexType intervalIdx,const CGirderKey& girderKey,LOSSES* pLosses);
    void FinalizeTimeStepAnalysis(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,LOSSDETAILS& details);

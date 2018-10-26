@@ -1563,33 +1563,32 @@ Float64 CPGSuperDocBase::GetRootNodeVersion()
    return FILE_VERSION;
 }
 
-HRESULT CPGSuperDocBase::OpenDocumentRootNode(IStructuredSave* pStrSave)
+HRESULT CPGSuperDocBase::WriteTheDocument(IStructuredSave* pStrSave)
 {
-  HRESULT hr = CEAFDocument::OpenDocumentRootNode(pStrSave);
-  if ( FAILED(hr) )
-  {
-     return hr;
-  }
-
-  hr = pStrSave->put_Property(_T("Version"),CComVariant(theApp.GetVersion(true)));
-  if ( FAILED(hr) )
-  {
-     return hr;
-  }
-
-  return S_OK;
-}
-
-HRESULT CPGSuperDocBase::OpenDocumentRootNode(IStructuredLoad* pStrLoad)
-{
-   HRESULT hr = CEAFDocument::OpenDocumentRootNode(pStrLoad);
+   // before the standard broker document persistence, write out the version
+   // number of the application that created this document
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+   CPGSuperAppPluginApp* pApp = (CPGSuperAppPluginApp*)AfxGetApp();
+   HRESULT hr = pStrSave->put_Property(_T("Version"),CComVariant(pApp->GetVersion(true)));
    if ( FAILED(hr) )
    {
       return hr;
    }
 
+   hr = CEAFBrokerDocument::WriteTheDocument(pStrSave);
+   if ( FAILED(hr) )
+   {
+      return hr;
+   }
+
+
+   return S_OK;
+}
+
+HRESULT CPGSuperDocBase::LoadTheDocument(IStructuredLoad* pStrLoad)
+{
    Float64 version;
-   hr = pStrLoad->get_Version(&version);
+   HRESULT hr = pStrLoad->get_Version(&version);
    if ( FAILED(hr) )
    {
       return hr;
@@ -1613,6 +1612,12 @@ HRESULT CPGSuperDocBase::OpenDocumentRootNode(IStructuredLoad* pStrLoad)
       TRACE(_T("Loading data saved with PGSuper Version 2.1 or earlier\n"));
    #endif
    } // clses the bracket for if ( 1.0 < version )
+
+   hr = CEAFBrokerDocument::LoadTheDocument(pStrLoad);
+   if ( FAILED(hr) )
+   {
+      return hr;
+   }
 
    return S_OK;
 }
@@ -1689,12 +1694,14 @@ BOOL CPGSuperDocBase::Init()
 
    m_strAppProfileName = pMyApp->m_pszProfileName;
    free((void*)pMyApp->m_pszProfileName);
+   free((void*)pMyApp->m_pszAppName);
 
    CEAFDocTemplate* pTemplate = (CEAFDocTemplate*)GetDocTemplate();
    CComPtr<IEAFAppPlugin> pAppPlugin;
    pTemplate->GetPlugin(&pAppPlugin);
    CPGSuperBaseAppPlugin* pPGSuper = dynamic_cast<CPGSuperBaseAppPlugin*>(pAppPlugin.p);
    pMyApp->m_pszProfileName = _tcsdup(pPGSuper->GetAppName());
+   pMyApp->m_pszAppName = _tcsdup(pPGSuper->GetAppName());
 
    if ( !CEAFBrokerDocument::Init() )
    {
@@ -1785,12 +1792,12 @@ BOOL CPGSuperDocBase::LoadSpecialAgents(IBrokerInitEx2* pBrokerInit)
    HRESULT hr = pBrokerInit->AddAgent( pAgent );
    if ( FAILED(hr) )
    {
-      return hr;
+      return FALSE;
    }
 
    // we want to use some special agents
    CLSID clsid[] = {CLSID_SysAgent,CLSID_ReportManagerAgent,CLSID_GraphManagerAgent};
-   if ( !LoadAgents(pBrokerInit, clsid, sizeof(clsid)/sizeof(CLSID) ) )
+   if ( !CEAFBrokerDocument::LoadAgents(pBrokerInit, clsid, sizeof(clsid)/sizeof(CLSID) ) )
    {
       return FALSE;
    }
@@ -3731,7 +3738,8 @@ void CPGSuperDocBase::OnLogFileOpened()
 
    GET_IFACE(IEAFProjectLog,pLog);
    CString strMsg;
-   strMsg.Format(_T("PGSuper version %s"),theApp.GetVersion(false).GetBuffer(100));
+   CPGSuperAppPluginApp* pApp = (CPGSuperAppPluginApp*)AfxGetApp();
+   strMsg.Format(_T("PGSuper version %s"),pApp->GetVersion(false).GetBuffer(100));
    pLog->LogMessage(strMsg);
 }
 
@@ -4061,6 +4069,13 @@ void CPGSuperDocBase::DeleteContents()
    }
 
    __super::DeleteContents();
+}
+
+BOOL CPGSuperDocBase::LoadAgents()
+{
+   // set the modulus state to ours so when load agents reads the registry its does so from the right location
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+   return __super::LoadAgents();
 }
 
 long CPGSuperDocBase::GetReportViewKey()

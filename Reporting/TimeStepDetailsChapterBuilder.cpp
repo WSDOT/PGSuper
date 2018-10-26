@@ -117,7 +117,7 @@ rptChapter* CTimeStepDetailsChapterBuilder::Build(CReportSpecification* pRptSpec
 //
 //   location.IncludeSpanAndGirder(true);
 
-   IntervalIndexType nIntervals = pIntervals->GetIntervalCount(girderKey);
+   IntervalIndexType nIntervals = pIntervals->GetIntervalCount();
    for ( IntervalIndexType intervalIdx = 0; intervalIdx < nIntervals; intervalIdx++ )
    {
       // put each interval on its own page
@@ -128,7 +128,7 @@ rptChapter* CTimeStepDetailsChapterBuilder::Build(CReportSpecification* pRptSpec
       *pChapter << pPara;
 
       CString str;
-      str.Format(_T("Interval %d : %s"),LABEL_INTERVAL(intervalIdx),pIntervals->GetDescription(girderKey,intervalIdx));
+      str.Format(_T("Interval %d : %s"),LABEL_INTERVAL(intervalIdx),pIntervals->GetDescription(intervalIdx));
       pPara->SetName(str);
       *pPara << pPara->GetName();
 
@@ -139,11 +139,11 @@ rptChapter* CTimeStepDetailsChapterBuilder::Build(CReportSpecification* pRptSpec
       const TIME_STEP_DETAILS& tsDetails(pDetails->TimeStepDetails[intervalIdx]);
 
       // Interval Time Parameters
-      Float64 start  = pIntervals->GetTime(girderKey,intervalIdx,pgsTypes::Start);
-      Float64 middle = pIntervals->GetTime(girderKey,intervalIdx,pgsTypes::Middle);
-      Float64 end    = pIntervals->GetTime(girderKey,intervalIdx,pgsTypes::End);
+      Float64 start  = pIntervals->GetTime(intervalIdx,pgsTypes::Start);
+      Float64 middle = pIntervals->GetTime(intervalIdx,pgsTypes::Middle);
+      Float64 end    = pIntervals->GetTime(intervalIdx,pgsTypes::End);
 
-      Float64 duration = pIntervals->GetDuration(girderKey,intervalIdx);
+      Float64 duration = pIntervals->GetDuration(intervalIdx);
       *pPara << _T("Start: ") << start << _T(" day, Middle: ") << middle << _T(" day, End: ") << end << _T(" day, Duration: ") << duration << _T(" day") << rptNewLine;
 
       *pPara << rptNewLine;
@@ -510,7 +510,7 @@ rptChapter* CTimeStepDetailsChapterBuilder::Build(CReportSpecification* pRptSpec
          }
          else if (strandType == pgsTypes::Harped)
          {
-            *pPara << _T("Straight Strand") << rptNewLine;
+            *pPara << _T("Harped Strand") << rptNewLine;
          }
          else if (strandType == pgsTypes::Temporary)
          {
@@ -518,7 +518,7 @@ rptChapter* CTimeStepDetailsChapterBuilder::Build(CReportSpecification* pRptSpec
          }
 
          *pPara << _T("fr = ") << stress.SetValue(tsDetails.Strands[strandType].fr) << rptNewLine;
-         *pPara << _T("e = fr/Eps = ") << _T("?");//stress.SetValue(tsDetails.Strands[strandType].fr) << _T("/") << modE.SetValue(tsDetails.Strands[strandType].E) << _T(" = ") << tsDetails.Strands[strandType].er << rptNewLine;
+         *pPara << _T("e = fr/Eps = ") << stress.SetValue(tsDetails.Strands[strandType].fr) << _T("/") << modE.SetValue(tsDetails.Strands[strandType].E) << _T(" = ") << tsDetails.Strands[strandType].er << rptNewLine;
          *pPara << _T("Pr = ") << force.SetValue(tsDetails.Strands[strandType].PrRelaxation) << rptNewLine;
          *pPara << rptNewLine;
       }
@@ -528,38 +528,6 @@ rptChapter* CTimeStepDetailsChapterBuilder::Build(CReportSpecification* pRptSpec
       *pPara << _T("Creep: N = ") << force.SetValue(tsDetails.Pr[TIMESTEP_CR]) << _T(", M = ") << moment.SetValue(tsDetails.Mr[TIMESTEP_CR]) << rptNewLine;
       *pPara << _T("Shrinkage: N = ") << force.SetValue(tsDetails.Pr[TIMESTEP_SH]) << _T(", M = ") << moment.SetValue(tsDetails.Mr[TIMESTEP_SH]) << rptNewLine;
       *pPara << _T("Relaxation: N = ") << force.SetValue(tsDetails.Pr[TIMESTEP_RE]) << _T(", M = ") << moment.SetValue(tsDetails.Mr[TIMESTEP_RE]) << rptNewLine;
-      
-      *pPara << rptNewLine;
-
-      //*pPara << _T("Nodal Forces to Negate Total Artifical Restraining Forces") << rptNewLine;
-      //*pPara << _T("Creep") << rptNewLine;
-      //*pPara << _T("Fx (Back)  = ") << force.SetValue(tsDetails.Fx[TIMESTEP_CR][pgsTypes::Back]) << _T(", ");
-      //*pPara << _T("Fx (Ahead) = ") << force.SetValue(tsDetails.Fx[TIMESTEP_CR][pgsTypes::Ahead]) << _T(", ") << rptNewLine;
-      //*pPara << _T("Fy (Back)  = ") << force.SetValue(tsDetails.Fy[TIMESTEP_CR][pgsTypes::Back]) << _T(", ");
-      //*pPara << _T("Fy (Ahead) = ") << force.SetValue(tsDetails.Fy[TIMESTEP_CR][pgsTypes::Ahead]) << _T(", ") << rptNewLine;
-      //*pPara << _T("Mz (Back)  = ") << moment.SetValue(tsDetails.Mz[TIMESTEP_CR][pgsTypes::Back]) << _T(", ");
-      //*pPara << _T("Mz (Ahead) = ") << moment.SetValue(tsDetails.Mz[TIMESTEP_CR][pgsTypes::Ahead]) << _T(", ") << rptNewLine;
-      //*pPara << _T("Shrinkage") << rptNewLine;
-      //*pPara << _T("Fx (Back)  = ") << force.SetValue(tsDetails.Fx[TIMESTEP_SH][pgsTypes::Back]) << _T(", ");
-      //*pPara << _T("Fx (Ahead) = ") << force.SetValue(tsDetails.Fx[TIMESTEP_SH][pgsTypes::Ahead]) << _T(", ") << rptNewLine;
-      //*pPara << _T("Fy (Back)  = ") << force.SetValue(tsDetails.Fy[TIMESTEP_SH][pgsTypes::Back]) << _T(", ");
-      //*pPara << _T("Fy (Ahead) = ") << force.SetValue(tsDetails.Fy[TIMESTEP_SH][pgsTypes::Ahead]) << _T(", ") << rptNewLine;
-      //*pPara << _T("Mz (Back)  = ") << moment.SetValue(tsDetails.Mz[TIMESTEP_SH][pgsTypes::Back]) << _T(", ");
-      //*pPara << _T("Mz (Ahead) = ") << moment.SetValue(tsDetails.Mz[TIMESTEP_SH][pgsTypes::Ahead]) << _T(", ") << rptNewLine;
-      //*pPara << _T("Relaxation") << rptNewLine;
-      //*pPara << _T("Fx (Back)  = ") << force.SetValue(tsDetails.Fx[TIMESTEP_RE][pgsTypes::Back]) << _T(", ");
-      //*pPara << _T("Fx (Ahead) = ") << force.SetValue(tsDetails.Fx[TIMESTEP_RE][pgsTypes::Ahead]) << _T(", ") << rptNewLine;
-      //*pPara << _T("Fy (Back)  = ") << force.SetValue(tsDetails.Fy[TIMESTEP_RE][pgsTypes::Back]) << _T(", ");
-      //*pPara << _T("Fy (Ahead) = ") << force.SetValue(tsDetails.Fy[TIMESTEP_RE][pgsTypes::Ahead]) << _T(", ") << rptNewLine;
-      //*pPara << _T("Mz (Back)  = ") << moment.SetValue(tsDetails.Mz[TIMESTEP_RE][pgsTypes::Back]) << _T(", ");
-      //*pPara << _T("Mz (Ahead) = ") << moment.SetValue(tsDetails.Mz[TIMESTEP_RE][pgsTypes::Ahead]) << _T(", ") << rptNewLine;
-      
-      *pPara << rptNewLine;
-
-      //*pPara << _T("Corresponding Internal Forces") << rptNewLine;
-      //*pPara << _T("Creep: N = ") << force.SetValue(tsDetails.Pre[TIMESTEP_CR]) << _T(", M = ") << moment.SetValue(tsDetails.Mre[TIMESTEP_CR]) << rptNewLine;
-      //*pPara << _T("Shrinkage: N = ") << force.SetValue(tsDetails.Pre[TIMESTEP_SH]) << _T(", M = ") << moment.SetValue(tsDetails.Mre[TIMESTEP_SH]) << rptNewLine;
-      //*pPara << _T("Relaxation: N = ") << force.SetValue(tsDetails.Pre[TIMESTEP_RE]) << _T(", M = ") << moment.SetValue(tsDetails.Mre[TIMESTEP_RE]) << rptNewLine;
       
       *pPara << rptNewLine;
 

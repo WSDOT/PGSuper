@@ -202,10 +202,10 @@ rptParagraph* CUserDefinedLoadsChapterBuilder::CreatePointLoadTable(IBroker* pBr
    bool loads_exist = false;
    RowIndexType row = table->GetNumberOfHeaderRows();
 
-   IntervalIndexType nIntervals = pIntervals->GetIntervalCount(girderKey);
+   IntervalIndexType nIntervals = pIntervals->GetIntervalCount();
    for ( IntervalIndexType intervalIdx = 0; intervalIdx < nIntervals; intervalIdx++ )
    {
-      EventIndexType eventIdx = pIntervals->GetStartEvent(girderKey,intervalIdx);
+      EventIndexType eventIdx = pIntervals->GetStartEvent(intervalIdx);
       const CTimelineEvent* pTimelineEvent = pTimelineMgr->GetEventByIndex(eventIdx);
       std::_tstring strEventName(pEventMap->GetEventName(eventIdx));
 
@@ -304,10 +304,10 @@ rptParagraph* CUserDefinedLoadsChapterBuilder::CreateDistributedLoadTable(IBroke
 
    bool loads_exist = false;
    RowIndexType row = table->GetNumberOfHeaderRows();
-   IntervalIndexType nIntervals = pIntervals->GetIntervalCount(girderKey);
+   IntervalIndexType nIntervals = pIntervals->GetIntervalCount();
    for ( IntervalIndexType intervalIdx = 0; intervalIdx < nIntervals; intervalIdx++ )
    {
-      EventIndexType eventIdx = pIntervals->GetStartEvent(girderKey,intervalIdx);
+      EventIndexType eventIdx = pIntervals->GetStartEvent(intervalIdx);
       const CTimelineEvent* pTimelineEvent = pTimelineMgr->GetEventByIndex(eventIdx);
       std::_tstring strEventName(pEventMap->GetEventName(eventIdx));
 
@@ -406,10 +406,10 @@ rptParagraph* CUserDefinedLoadsChapterBuilder::CreateMomentLoadTable(IBroker* pB
 
    bool loads_exist = false;
    RowIndexType row = table->GetNumberOfHeaderRows();
-   IntervalIndexType nIntervals = pIntervals->GetIntervalCount(girderKey);
+   IntervalIndexType nIntervals = pIntervals->GetIntervalCount();
    for ( IntervalIndexType intervalIdx = 0; intervalIdx < nIntervals; intervalIdx++ )
    {
-      EventIndexType eventIdx = pIntervals->GetStartEvent(girderKey,intervalIdx);
+      EventIndexType eventIdx = pIntervals->GetStartEvent(intervalIdx);
       const CTimelineEvent* pTimelineEvent = pTimelineMgr->GetEventByIndex(eventIdx);
       std::_tstring strEventName(pEventMap->GetEventName(eventIdx));
 

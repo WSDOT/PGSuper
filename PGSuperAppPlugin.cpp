@@ -34,6 +34,8 @@
 
 #include <EAF\EAFMainFrame.h>
 
+#include <MFCTools\AutoRegistry.h>
+
 
 BEGIN_MESSAGE_MAP(CMyCmdTarget,CCmdTarget)
    ON_COMMAND(ID_MANAGE_PLUGINS,OnConfigurePlugins)
@@ -101,6 +103,8 @@ void CPGSuperAppPlugin::FinalRelease()
 void CPGSuperAppPlugin::ConfigurePlugins()
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
+   CAutoRegistry autoReg(GetAppName());
 
    CPluginManagerDlg dlg(_T("Manage PGSuper Plugins and Extensions"),EAFGetMainFrame(),0,CATID_PGSuperDataImporter,CATID_PGSuperDataExporter,CATID_PGSuperExtensionAgent);
    dlg.DoModal(); // this DoModal is correct... the dialog takes care of its own data

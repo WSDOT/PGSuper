@@ -42,15 +42,22 @@ static char THIS_FILE[] = __FILE__;
 #endif
 
 // inline functions to determine whether to print status center items
-static bool DoPrintStatusItem(CEAFStatusItem* pItem, const CGirderKey& girderKey,SegmentIndexType nSegments)
+bool DoPrintStatusItem(CEAFStatusItem* pItem, const CGirderKey& girderKey,SegmentIndexType nSegments)
 {
    pgsSegmentRelatedStatusItem* pSegmentStatusItem = dynamic_cast<pgsSegmentRelatedStatusItem*>(pItem);
    if (pSegmentStatusItem != NULL)
    {
-      for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
+      if ( nSegments == ALL_SEGMENTS )
       {
-         CSegmentKey segmentKey(girderKey,segIdx);
-         return pSegmentStatusItem->IsRelatedTo(segmentKey);
+         return true;
+      }
+      else
+      {
+         for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
+         {
+            CSegmentKey segmentKey(girderKey,segIdx);
+            return pSegmentStatusItem->IsRelatedTo(segmentKey);
+         }
       }
    }
    else
@@ -61,7 +68,7 @@ static bool DoPrintStatusItem(CEAFStatusItem* pItem, const CGirderKey& girderKey
    return false;
 }
 
-static bool DoPrintStatusCenter(IEAFStatusCenter* pStatusCenter, CollectionIndexType nItems, const CGirderKey& girderKey,SegmentIndexType nSegments)
+bool DoPrintStatusCenter(IEAFStatusCenter* pStatusCenter, CollectionIndexType nItems, const CGirderKey& girderKey,SegmentIndexType nSegments)
 {
    for ( CollectionIndexType i = 0; i < nItems; i++ )
    {
@@ -393,7 +400,7 @@ rptChapter* CPGSuperTitlePageBuilder::Build(boost::shared_ptr<CReportSpecificati
       for ( GroupIndexType grpIdx = firstGroupIdx; grpIdx <= lastGroupIdx; grpIdx++ )
       {
          CGirderKey thisGirderKey(grpIdx,girderKey.girderIndex);
-         SegmentIndexType nSegments = pBridge->GetSegmentCount(thisGirderKey);
+         SegmentIndexType nSegments = (thisGirderKey.girderIndex == ALL_GIRDERS ? ALL_SEGMENTS : pBridge->GetSegmentCount(thisGirderKey));
          if ( DoPrintStatusCenter(pStatusCenter, nItems, thisGirderKey, nSegments) )
          {
             pPara = new rptParagraph;

@@ -148,30 +148,40 @@ void pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalIndexType interval
    GET_IFACE(IMaterials,pMaterial);
    const matPsStrand* pStrand = pMaterial->GetStrandMaterial(segmentKey,pgsTypes::Permanent);
 
+   GET_IFACE(IPointOfInterest,pPoi);
+   bool bIsOnSegment = pPoi->IsOnSegment(poi);
+   bool bIsOnGirder  = pPoi->IsOnGirder(poi);
+
    Float64 Eps = pStrand->GetE();
    Float64 fpe_ps = 0.0; // effective prestress after all losses
    Float64 eps_initial = 0.0; // initial strain in the prestressing strands (strain at effect prestress)
    if ( bPositiveMoment )
    {
       // only for positive moment... strands are ignored for negative moment analysis
-      GET_IFACE(IPretensionForce, pPrestressForce);
-      fpe_ps = pPrestressForce->GetEffectivePrestress(poi,pgsTypes::Permanent,intervalIdx,pgsTypes::End);
-      eps_initial = fpe_ps/Eps;
+      if ( bIsOnSegment )
+      {
+         GET_IFACE(IPretensionForce, pPrestressForce);
+         fpe_ps = pPrestressForce->GetEffectivePrestress(poi,pgsTypes::Permanent,intervalIdx,pgsTypes::End);
+         eps_initial = fpe_ps/Eps;
+      }
    }
 
    std::vector<Float64> fpe_pt;
    std::vector<Float64> ept_initial;
-   const matPsStrand* pTendon = pMaterial->GetTendonMaterial(segmentKey);
-   Float64 Ept = pTendon->GetE();
-   GET_IFACE(ITendonGeometry,pTendonGeom);
-   GET_IFACE_NOCHECK(IPosttensionForce,pPTForce); // only used if 0 < nDucts
-   DuctIndexType nDucts = pTendonGeom->GetDuctCount(segmentKey);
-   for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
+   if ( bIsOnGirder )
    {
-      Float64 fpe = pPTForce->GetTendonStress(poi,intervalIdx,pgsTypes::End,ductIdx);
-      Float64 e = fpe/Ept;
-      fpe_pt.push_back(fpe);
-      ept_initial.push_back(e);
+      const matPsStrand* pTendon = pMaterial->GetTendonMaterial(segmentKey);
+      Float64 Ept = pTendon->GetE();
+      GET_IFACE(ITendonGeometry,pTendonGeom);
+      GET_IFACE_NOCHECK(IPosttensionForce,pPTForce); // only used if 0 < nDucts
+      DuctIndexType nDucts = pTendonGeom->GetDuctCount(segmentKey);
+      for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
+      {
+         Float64 fpe = pPTForce->GetTendonStress(poi,intervalIdx,pgsTypes::End,ductIdx);
+         Float64 e = fpe/Ept;
+         fpe_pt.push_back(fpe);
+         ept_initial.push_back(e);
+      }
    }
 
    pgsBondTool bondTool(m_pBroker,poi);
@@ -265,6 +275,9 @@ void pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalIndexType interval
    }
 
    bool bIsSplicedGirder = (0 < nDucts ? true : false);
+
+   GET_IFACE(IPointOfInterest,pPoi);
+   bool bIsOnGirder = pPoi->IsOnGirder(poi);
 
    // create a problem to solve
    CComPtr<IGeneralSection> section;
@@ -447,7 +460,6 @@ void pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalIndexType interval
    pMaterial->GetDeckRebarMaterial(&rebarType,&deckRebarGrade);
 
    GET_IFACE(IResistanceFactors,pResistanceFactors);
-   GET_IFACE(IPointOfInterest,pPoi);
    Float64 PhiRC,PhiPS,PhiSP,PhiC;
    CClosureKey closureKey;
    if ( pPoi->IsInClosureJoint(poi,&closureKey) )
@@ -583,26 +595,29 @@ void pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalIndexType interval
             }
          }
 
-         for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
+         if ( bIsOnGirder )
          {
-            CComPtr<IPoint2d> point;
-            pTendonGeom->GetDuctPoint(poi,ductIdx,&point);
+            for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
+            {
+               CComPtr<IPoint2d> point;
+               pTendonGeom->GetDuctPoint(poi,ductIdx,&point);
 
-            Float64 apt = pTendonGeom->GetTendonArea(segmentKey,intervalIdx,ductIdx);
-            Apt += apt;
+               Float64 apt = pTendonGeom->GetTendonArea(segmentKey,intervalIdx,ductIdx);
+               Apt += apt;
 
-            point->get_X(&x);
-            point->get_Y(&y);
+               point->get_X(&x);
+               point->get_Y(&y);
 
-            strainPlane->GetZ(x-dx,y-dy,&z);
-            Float64 stress;
-            ssTendon->ComputeStress(z+ept_initial[ductIdx],&stress);
+               strainPlane->GetZ(x-dx,y-dy,&z);
+               Float64 stress;
+               ssTendon->ComputeStress(z+ept_initial[ductIdx],&stress);
 
-            //stress *= bond_factor;
+               //stress *= bond_factor;
 
-            fps_avg += apt*stress;
+               fps_avg += apt*stress;
 
-            point.Release();
+               point.Release();
+            }
          }
 
          fps_avg /= (Aps[pgsTypes::Straight]+Aps[pgsTypes::Harped]+Apt);
@@ -709,7 +724,7 @@ void pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalIndexType interval
             {
                b     = pProps->GetEffectiveFlangeWidth(poi);
                hf    = pBridge->GetStructuralSlabDepth(poi);
-               fc    = pMaterial->GetDeckFc(segmentKey,intervalIdx);
+               fc    = pMaterial->GetDeckFc(intervalIdx);
                Beta1 = lrfdConcreteUtil::Beta1(fc);
             }
          }
@@ -1169,12 +1184,12 @@ Float64 pgsMomentCapacityEngineer::GetNonCompositeDeadLoadMoment(IntervalIndexTy
       IntervalIndexType intervalIdx;
       if ( pBridge->GetDeckType() != pgsTypes::sdtNone )
       {
-         IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval(segmentKey);
+         IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
          intervalIdx = compositeDeckIntervalIdx - 1;
       }
       else
       {
-         intervalIdx = pIntervals->GetIntervalCount(segmentKey) - 1;
+         intervalIdx = pIntervals->GetIntervalCount() - 1;
       }
 
       // Girder moment
@@ -1208,7 +1223,20 @@ Float64 pgsMomentCapacityEngineer::GetModulusOfRupture(IntervalIndexType interva
    // Compute modulus of rupture
    if ( bPositiveMoment )
    {
-      fr = pMaterial->GetSegmentFlexureFr(segmentKey,intervalIdx);
+      GET_IFACE(IPointOfInterest,pPoi);
+      CClosureKey closureKey;
+      if ( pPoi->IsOnSegment(poi) )
+      {
+         fr = pMaterial->GetSegmentFlexureFr(segmentKey,intervalIdx);
+      }
+      else if ( pPoi->IsInClosureJoint(poi,&closureKey) )
+      {
+         fr = pMaterial->GetClosureJointFlexureFr(closureKey,intervalIdx);
+      }
+      else
+      {
+         fr = pMaterial->GetDeckFlexureFr(intervalIdx);
+      }
    }
    else
    {
@@ -1219,7 +1247,7 @@ Float64 pgsMomentCapacityEngineer::GetModulusOfRupture(IntervalIndexType interva
       }
       else
       {
-         fr = pMaterial->GetDeckFlexureFr(segmentKey,intervalIdx);
+         fr = pMaterial->GetDeckFlexureFr(intervalIdx);
       }
    }
 
@@ -1247,7 +1275,7 @@ Float64 pgsMomentCapacityEngineer::GetModulusOfRupture(IntervalIndexType interva
       }
       else
       {
-         fr = pMaterial->GetDeckFlexureFr(config.SegmentKey,intervalIdx);
+         fr = pMaterial->GetDeckFlexureFr(intervalIdx);
       }
    }
 
@@ -1268,14 +1296,14 @@ void pgsMomentCapacityEngineer::GetSectionProperties(IntervalIndexType intervalI
 
       Sbc = pSectProp->GetS(intervalIdx,poi,pgsTypes::BottomGirder);
       CClosureKey closureKey;
-      if ( pPoi->IsInClosureJoint(poi,&closureKey) )
+      if ( pPoi->IsInClosureJoint(poi,&closureKey) || pPoi->IsInIntermediateDiaphragm(poi) )
       {
          Sb = Sbc;
       }
       else
       {
          GET_IFACE(IIntervals,pIntervals);
-         IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval(poi.GetSegmentKey());
+         IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval();
          Sb  = pSectProp->GetS(castDeckIntervalIdx,poi,pgsTypes::BottomGirder);
       }
    }
@@ -1300,7 +1328,7 @@ void pgsMomentCapacityEngineer::GetSectionProperties(IntervalIndexType intervalI
    if ( bPositiveMoment )
    {
       GET_IFACE(IIntervals,pIntervals);
-      IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval(poi.GetSegmentKey());
+      IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval();
       Sb  = pSectProp->GetS(castDeckIntervalIdx,poi,pgsTypes::BottomGirder,config.Fc);
       Sbc = pSectProp->GetS(intervalIdx,        poi,pgsTypes::BottomGirder,config.Fc);
    }
@@ -1362,7 +1390,7 @@ void pgsMomentCapacityEngineer::AnalyzeCrackedSection(const pgsPointOfInterest& 
    e_initial_tendons.insert(e_initial_tendons.begin(),nDucts,0);
 
    GET_IFACE(IIntervals,pIntervals);
-   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval(segmentKey);
+   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
    BuildCapacityProblem(liveLoadIntervalIdx,poi,NULL,e_initial_strands,e_initial_tendons,bondTool,bPositiveMoment,&beam_section,&pntCompression,&szOffset,&dt,&H,&Haunch,bond_factors);
 
    // determine neutral axis angle
@@ -1518,24 +1546,30 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalI
    CClosureKey closureKey;
    bool bIsInClosure = pPoi->IsInClosureJoint(poi,&closureKey);
 
+   bool bIsOnSegment = pPoi->IsOnGirder(poi);
+   bool bIsOnGirder  = pPoi->IsOnGirder(poi);
+
    GET_IFACE(IIntervals,pIntervals);
-   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval(segmentKey);
+   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
 
    Float64 segment_length = pBridge->GetSegmentLength(segmentKey);
 
    Float64 dt = 0; // depth from compression face to extreme layer of tensile reinforcement
 
    StrandIndexType Ns(0), Nh(0);
-   if ( pConfig )
+   if ( bIsOnSegment )
    {
-      Ns = pConfig->PrestressConfig.GetStrandCount(pgsTypes::Straight);
-      Nh = pConfig->PrestressConfig.GetStrandCount(pgsTypes::Harped);
-   }
-   else
-   {
-      GET_IFACE(IStrandGeometry, pStrandGeom);
-      Ns = pStrandGeom->GetStrandCount(segmentKey,pgsTypes::Straight);
-      Nh = pStrandGeom->GetStrandCount(segmentKey,pgsTypes::Harped);
+      if ( pConfig )
+      {
+         Ns = pConfig->PrestressConfig.GetStrandCount(pgsTypes::Straight);
+         Nh = pConfig->PrestressConfig.GetStrandCount(pgsTypes::Harped);
+      }
+      else
+      {
+         GET_IFACE(IStrandGeometry, pStrandGeom);
+         Ns = pStrandGeom->GetStrandCount(segmentKey,pgsTypes::Straight);
+         Nh = pStrandGeom->GetStrandCount(segmentKey,pgsTypes::Harped);
+      }
    }
 
    //
@@ -1570,8 +1604,7 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalI
          // this means the POI is in a cast-in-place diaphragm between girder groups
          // assume cast in place diaphragms between groups is the same material as the deck
          // because they are typically cast together
-         ATLASSERT(poi.HasAttribute(POI_BOUNDARY_PIER) || poi.IsTenthPoint(POI_SPAN) == 1);
-         matGirder->put_fc( pMaterial->GetDeckFc(segmentKey,intervalIdx) );
+         matGirder->put_fc( pMaterial->GetDeckFc(intervalIdx) );
       }
       else
       {
@@ -1583,7 +1616,7 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalI
    // slab concrete
    CComPtr<IUnconfinedConcrete> matSlab;
    matSlab.CoCreateInstance(CLSID_UnconfinedConcrete);
-   matSlab->put_fc( pMaterial->GetDeckFc(segmentKey,intervalIdx) );
+   matSlab->put_fc( pMaterial->GetDeckFc(intervalIdx) );
    CComQIPtr<IStressStrain> ssSlab(matSlab);
 
    // girder rebar
@@ -1709,135 +1742,140 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalI
    if ( bPositiveMoment ) // only model strands for positive moment
    {
       // strands
-      const matPsStrand* pStrand = pMaterial->GetStrandMaterial(segmentKey,pgsTypes::Permanent);
-      Float64 aps = pStrand->GetNominalArea();
-      Float64 dps = pStrand->GetNominalDiameter();
-      GET_IFACE(IStrandGeometry, pStrandGeom);
-      for ( int i = 0; i < 2; i++ ) // straight and harped strands
+      if ( bIsOnSegment )
       {
-         StrandIndexType nStrands = (i == 0 ? Ns : Nh);
-         pgsTypes::StrandType strandType = (pgsTypes::StrandType)(i);
-         CComPtr<IPoint2dCollection> points; // strand points are in Girder Section Coordinates
-         if ( pConfig )
+         const matPsStrand* pStrand = pMaterial->GetStrandMaterial(segmentKey,pgsTypes::Permanent);
+         Float64 aps = pStrand->GetNominalArea();
+         Float64 dps = pStrand->GetNominalDiameter();
+         GET_IFACE(IStrandGeometry, pStrandGeom);
+         for ( int i = 0; i < 2; i++ ) // straight and harped strands
          {
-            pStrandGeom->GetStrandPositionsEx(poi, pConfig->PrestressConfig, strandType, &points);
-         }
-         else
-         {
-            pStrandGeom->GetStrandPositions(poi, strandType, &points);
-         }
-
-         /////////////////////////////////////////////
-         // We know that we have symmetric section and that strands are generally in rows.
-         // Create a single "lump of strand" for each row instead of modeling each strand 
-         // individually. This will speed up the solver by quite a bit
-
-         RowIndexType nStrandRows = pStrandGeom->GetNumRowsWithStrand(segmentKey,nStrands,strandType);
-         for ( RowIndexType rowIdx = 0; rowIdx < nStrandRows; rowIdx++ )
-         {
-            Float64 rowArea = 0;
-            std::vector<StrandIndexType> strandIdxs = pStrandGeom->GetStrandsInRow(segmentKey,nStrands,rowIdx,strandType);
-
-#if defined _DEBUG
-            StrandIndexType nStrandsInRow = pStrandGeom->GetNumStrandInRow(segmentKey,nStrands,rowIdx,strandType);
-            ATLASSERT( nStrandsInRow == strandIdxs.size() );
-#endif
-
-            ATLASSERT( 0 < strandIdxs.size() );
-            BOOST_FOREACH(StrandIndexType strandIdx,strandIdxs)
+            StrandIndexType nStrands = (i == 0 ? Ns : Nh);
+            pgsTypes::StrandType strandType = (pgsTypes::StrandType)(i);
+            CComPtr<IPoint2dCollection> points; // strand points are in Girder Section Coordinates
+            if ( pConfig )
             {
-               ATLASSERT( strandIdx < nStrands );
-
-               bool bDebonded = bondTool.IsDebonded(strandIdx,strandType);
-               if ( bDebonded )
-               {
-                  // strand is debonded... don't add it... go to the next strand
-                  continue;
-               }
-   
-               // get the bond factor (this will reduce the effective area of the strand if it isn't fully developed)
-               Float64 bond_factor = bondTool.GetBondFactor(strandIdx,strandType);
-
-               pBondFactors[i].insert( std::make_pair(strandIdx,bond_factor) );
-
-               rowArea += bond_factor*aps;
+               pStrandGeom->GetStrandPositionsEx(poi, pConfig->PrestressConfig, strandType, &points);
+            }
+            else
+            {
+               pStrandGeom->GetStrandPositions(poi, strandType, &points);
             }
 
-            // create a single equivalent rectangle for the area of reinforcement in this row
-            Float64 h = dps; // height is diamter of strand
-            Float64 w = rowArea/dps;
+            /////////////////////////////////////////////
+            // We know that we have symmetric section and that strands are generally in rows.
+            // Create a single "lump of strand" for each row instead of modeling each strand 
+            // individually. This will speed up the solver by quite a bit
 
-            CComPtr<IRectangle> bar_shape;
-            bar_shape.CoCreateInstance(CLSID_Rect);
-            bar_shape->put_Width(w);
-            bar_shape->put_Height(h);
+            RowIndexType nStrandRows = pStrandGeom->GetNumRowsWithStrand(segmentKey,nStrands,strandType);
+            for ( RowIndexType rowIdx = 0; rowIdx < nStrandRows; rowIdx++ )
+            {
+               Float64 rowArea = 0;
+               std::vector<StrandIndexType> strandIdxs = pStrandGeom->GetStrandsInRow(segmentKey,nStrands,rowIdx,strandType);
 
-            // get one strand from the row and get it's Y value
-            CComPtr<IPoint2d> point;
-            points->get_Item(strandIdxs[0],&point);
-            Float64 rowY;
-            point->get_Y(&rowY);
-            point.Release();
+   #if defined _DEBUG
+               StrandIndexType nStrandsInRow = pStrandGeom->GetNumStrandInRow(segmentKey,nStrands,rowIdx,strandType);
+               ATLASSERT( nStrandsInRow == strandIdxs.size() );
+   #endif
 
-            // position the "strand" rectangle
-            CComQIPtr<IXYPosition> position(bar_shape);
-            CComPtr<IPoint2d> hp;
-            position->get_LocatorPoint(lpHookPoint,&hp);
-            hp->Move(0,rowY);
-            hp->Offset(-dx,-dy);
+               ATLASSERT( 0 < strandIdxs.size() );
+               BOOST_FOREACH(StrandIndexType strandIdx,strandIdxs)
+               {
+                  ATLASSERT( strandIdx < nStrands );
 
-            // determine depth to lowest layer of strand
-            Float64 cy;
-            hp->get_Y(&cy);
-            dt = Max(dt,fabs(Yc-cy));
+                  bool bDebonded = bondTool.IsDebonded(strandIdx,strandType);
+                  if ( bDebonded )
+                  {
+                     // strand is debonded... don't add it... go to the next strand
+                     continue;
+                  }
+      
+                  // get the bond factor (this will reduce the effective area of the strand if it isn't fully developed)
+                  Float64 bond_factor = bondTool.GetBondFactor(strandIdx,strandType);
 
-            CComQIPtr<IShape> shape(bar_shape);
-            AddShape2Section(section,shape,ssStrand,ssGirder,eps_initial);
+                  pBondFactors[i].insert( std::make_pair(strandIdx,bond_factor) );
 
-#if defined _DEBUG
-            CComPtr<IShapeProperties> props;
-            shape->get_ShapeProperties(&props);
-            Float64 area;
-            props->get_Area(&area);
-            ATLASSERT( IsEqual(area,rowArea) );
-#endif // _DEBUG
-         }
+                  rowArea += bond_factor*aps;
+               }
 
-      } // next strand type
-   }
+               // create a single equivalent rectangle for the area of reinforcement in this row
+               Float64 h = dps; // height is diamter of strand
+               Float64 w = rowArea/dps;
+
+               CComPtr<IRectangle> bar_shape;
+               bar_shape.CoCreateInstance(CLSID_Rect);
+               bar_shape->put_Width(w);
+               bar_shape->put_Height(h);
+
+               // get one strand from the row and get it's Y value
+               CComPtr<IPoint2d> point;
+               points->get_Item(strandIdxs[0],&point);
+               Float64 rowY;
+               point->get_Y(&rowY);
+               point.Release();
+
+               // position the "strand" rectangle
+               CComQIPtr<IXYPosition> position(bar_shape);
+               CComPtr<IPoint2d> hp;
+               position->get_LocatorPoint(lpHookPoint,&hp);
+               hp->Move(0,rowY);
+               hp->Offset(-dx,-dy);
+
+               // determine depth to lowest layer of strand
+               Float64 cy;
+               hp->get_Y(&cy);
+               dt = Max(dt,fabs(Yc-cy));
+
+               CComQIPtr<IShape> shape(bar_shape);
+               AddShape2Section(section,shape,ssStrand,ssGirder,eps_initial);
+
+   #if defined _DEBUG
+               CComPtr<IShapeProperties> props;
+               shape->get_ShapeProperties(&props);
+               Float64 area;
+               props->get_Area(&area);
+               ATLASSERT( IsEqual(area,rowArea) );
+   #endif // _DEBUG
+            }
+         } // next strand type
+      } // bIsOnSegment
+   } // bPositiveMoment
 
    // PT Tendons
-   GET_IFACE(ITendonGeometry,pTendonGeom);
-   DuctIndexType nDucts = pTendonGeom->GetDuctCount(segmentKey);
-   for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
+   if ( bIsOnGirder )
    {
-      CComPtr<IPoint2d> point;
-      pTendonGeom->GetDuctPoint(poi,ductIdx,&point);
+      GET_IFACE(ITendonGeometry,pTendonGeom);
+      DuctIndexType nDucts = pTendonGeom->GetDuctCount(segmentKey);
+      for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
+      {
+         CComPtr<IPoint2d> point;
+         pTendonGeom->GetDuctPoint(poi,ductIdx,&point);
 
-      Float64 area = pTendonGeom->GetTendonArea(segmentKey,intervalIdx,ductIdx);
+         Float64 area = pTendonGeom->GetTendonArea(segmentKey,intervalIdx,ductIdx);
 
-      Float64 s = sqrt(area); // side of equivalent square (area = s*s)
+         Float64 s = sqrt(area); // side of equivalent square (area = s*s)
 
-      CComPtr<IRectangle> tendon_shape;
-      tendon_shape.CoCreateInstance(CLSID_Rect);
-      tendon_shape->put_Width(s);
-      tendon_shape->put_Height(s);
+         CComPtr<IRectangle> tendon_shape;
+         tendon_shape.CoCreateInstance(CLSID_Rect);
+         tendon_shape->put_Width(s);
+         tendon_shape->put_Height(s);
 
-      CComQIPtr<IXYPosition> position(tendon_shape);
-      CComPtr<IPoint2d> hp;
-      position->get_LocatorPoint(lpHookPoint,&hp);
-      hp->MoveEx(point);
-      hp->Offset(-dx,-dy);
+         CComQIPtr<IXYPosition> position(tendon_shape);
+         CComPtr<IPoint2d> hp;
+         position->get_LocatorPoint(lpHookPoint,&hp);
+         hp->MoveEx(point);
+         hp->Offset(-dx,-dy);
 
-      // determine depth to lowest layer of strand
-      Float64 cy;
-      hp->get_Y(&cy);
-      dt = Max(dt,fabs(Yc-cy));
+         // determine depth to lowest layer of strand
+         Float64 cy;
+         hp->get_Y(&cy);
+         dt = Max(dt,fabs(Yc-cy));
 
-      Float64 epti = ept_initial[ductIdx];
+         Float64 epti = ept_initial[ductIdx];
 
-      CComQIPtr<IShape> shape(tendon_shape);
-      AddShape2Section(section,shape,ssTendon,ssGirder,epti);
+         CComQIPtr<IShape> shape(tendon_shape);
+         AddShape2Section(section,shape,ssTendon,ssGirder,epti);
+      }
    }
 
    // girder rebar

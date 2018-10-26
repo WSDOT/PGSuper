@@ -218,11 +218,11 @@ void CSelectPOIDlg::FillIntervalCtrl()
 
    GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType startIntervalIdx = pIntervals->GetPrestressReleaseInterval(CSegmentKey(m_GirderKey,0));
-   IntervalIndexType nIntervals = pIntervals->GetIntervalCount(m_GirderKey);
+   IntervalIndexType nIntervals = pIntervals->GetIntervalCount();
    for ( IntervalIndexType intervalIdx = startIntervalIdx; intervalIdx < nIntervals; intervalIdx++ )
    {
       CString strInterval;
-      strInterval.Format(_T("Interval %d: %s"),LABEL_INTERVAL(intervalIdx),pIntervals->GetDescription(m_GirderKey,intervalIdx));
+      strInterval.Format(_T("Interval %d: %s"),LABEL_INTERVAL(intervalIdx),pIntervals->GetDescription(intervalIdx));
       int idx = pcbIntervals->AddString(strInterval);
       pcbIntervals->SetItemData(idx,intervalIdx);
    }

@@ -54,6 +54,7 @@ private:
 
    virtual void Draw(iPointDisplayObject* pDO,CDC* pDC,COLORREF outline_color,COLORREF fill_color,IPoint2d* loc);
    void DrawGround(CDC* pDC, long cx, long cy, long wid, long hgt);
+   void DrawFixedSupport(CDC* pDC, long cx, long cy, long wid, long hgt);
    void DrawPinnedSupport(CDC* pDC, long cx, long cy, long wid, long hgt);
    void DrawRollerSupport(CDC* pDC, long cx, long cy, long wid, long hgt);
    void GetWSymbolSize(iCoordinateMap* pMap, Float64* psx, Float64 *psy);

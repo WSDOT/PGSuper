@@ -274,8 +274,8 @@ rptChapter* CShearCapacityDetailsChapterBuilder::Build(CReportSpecification* pRp
       {
          CGirderKey thisGirderKey(grpIdx,gdrIdx);
 
-         IntervalIndexType intervalIdx = pIntervals->GetIntervalCount(thisGirderKey)-1;
-         std::_tstring stage_name( pIntervals->GetDescription(thisGirderKey,intervalIdx) );
+         IntervalIndexType intervalIdx = pIntervals->GetIntervalCount()-1;
+         std::_tstring stage_name( pIntervals->GetDescription(intervalIdx) );
 
          rptParagraph* pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
          *pChapter << pPara;

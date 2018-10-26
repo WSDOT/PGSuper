@@ -273,7 +273,7 @@ void CGirderPropertiesGraphBuilder::UpdateYAxisUnits(PropertyType propertyType)
 void CGirderPropertiesGraphBuilder::UpdateGraphTitle(GroupIndexType grpIdx,GirderIndexType gdrIdx,IntervalIndexType intervalIdx,PropertyType propertyType)
 {
    GET_IFACE(IIntervals,pIntervals);
-   CString strInterval( pIntervals->GetDescription(CGirderKey(grpIdx,gdrIdx),intervalIdx) );
+   CString strInterval( pIntervals->GetDescription(intervalIdx) );
 
    CString strGraphTitle;
    if ( grpIdx == ALL_GROUPS )
@@ -314,9 +314,6 @@ void CGirderPropertiesGraphBuilder::UpdateGraphData(GroupIndexType grpIdx,Girder
    IndexType dataSeries1, dataSeries2;
    InitializeGraph(propertyType,girderKey,intervalIdx,&dataSeries1,&dataSeries2);
 
-   GET_IFACE(IIntervals,pIntervals);
-   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval(girderKey);
-
    Float64 nEffectiveStrands;
 
    std::vector<pgsPointOfInterest>::iterator iter(vPoi.begin());
@@ -351,6 +348,8 @@ void CGirderPropertiesGraphBuilder::UpdateGraphData(GroupIndexType grpIdx,Girder
 
       case Centroid:
          {
+         GET_IFACE(IIntervals,pIntervals);
+         IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
          GET_IFACE(ISectionProperties,pSectProps);
          if ( intervalIdx < compositeDeckIntervalIdx )
          {
@@ -367,6 +366,8 @@ void CGirderPropertiesGraphBuilder::UpdateGraphData(GroupIndexType grpIdx,Girder
 
       case SectionModulus:
          {
+         GET_IFACE(IIntervals,pIntervals);
+         IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
          GET_IFACE(ISectionProperties,pSectProps);
          if ( intervalIdx < compositeDeckIntervalIdx )
          {
@@ -402,7 +403,9 @@ void CGirderPropertiesGraphBuilder::UpdateGraphData(GroupIndexType grpIdx,Girder
 
       case EffectiveFlangeWidth:
          {
-         if ( intervalIdx < pIntervals->GetCompositeDeckInterval(poi.GetSegmentKey()) )
+         GET_IFACE(IIntervals,pIntervals);
+         IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
+         if ( intervalIdx < compositeDeckIntervalIdx )
          {
             value1 = 0;
          }
@@ -428,9 +431,10 @@ void CGirderPropertiesGraphBuilder::UpdateGraphData(GroupIndexType grpIdx,Girder
             value1 = pMaterials->GetSegmentFc(poi.GetSegmentKey(),intervalIdx);
          }
 
-         if ( pIntervals->GetCompositeDeckInterval(poi.GetSegmentKey()) )
+         GET_IFACE(IIntervals,pIntervals);
+         if ( pIntervals->GetCompositeDeckInterval() )
          {
-            value2 = pMaterials->GetDeckFc(poi.GetSegmentKey(),intervalIdx);
+            value2 = pMaterials->GetDeckFc(intervalIdx);
          }
          break;
          }
@@ -449,9 +453,11 @@ void CGirderPropertiesGraphBuilder::UpdateGraphData(GroupIndexType grpIdx,Girder
             value1 = pMaterials->GetSegmentEc(poi.GetSegmentKey(),intervalIdx);
          }
 
-         if ( pIntervals->GetCompositeDeckInterval(poi.GetSegmentKey()) )
+         GET_IFACE(IIntervals,pIntervals);
+         IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
+         if ( compositeDeckIntervalIdx <= intervalIdx )
          {
-            value2 = pMaterials->GetDeckEc(poi.GetSegmentKey(),intervalIdx);
+            value2 = pMaterials->GetDeckEc(intervalIdx);
          }
          break;
          }
@@ -470,9 +476,11 @@ void CGirderPropertiesGraphBuilder::UpdateGraphData(GroupIndexType grpIdx,Girder
             value1 = pMaterials->GetSegmentAgeAdjustedEc(poi.GetSegmentKey(),intervalIdx);
          }
 
-         if ( pIntervals->GetCompositeDeckInterval(poi.GetSegmentKey()) )
+         GET_IFACE(IIntervals,pIntervals);
+         IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
+         if ( compositeDeckIntervalIdx <= intervalIdx )
          {
-            value2 = pMaterials->GetDeckAgeAdjustedEc(poi.GetSegmentKey(),intervalIdx);
+            value2 = pMaterials->GetDeckAgeAdjustedEc(intervalIdx);
          }
          break;
          }
@@ -639,7 +647,7 @@ void CGirderPropertiesGraphBuilder::InitializeGraph(PropertyType propertyType,co
    case Fc:
       strPropertyLabel1 += _T(" Girder");
       *pGraph1 = m_Graph.CreateDataSeries(strPropertyLabel1.c_str(),PS_SOLID,GRAPH_PEN_WEIGHT,ORANGE);
-      if ( pIntervals->GetCompositeDeckInterval(girderKey) <= intervalIdx )
+      if ( pIntervals->GetCompositeDeckInterval() <= intervalIdx )
       {
          strPropertyLabel2 += _T(" Deck");
          *pGraph2 = m_Graph.CreateDataSeries(strPropertyLabel2.c_str(),PS_SOLID,GRAPH_PEN_WEIGHT,BLUE);
@@ -650,7 +658,7 @@ void CGirderPropertiesGraphBuilder::InitializeGraph(PropertyType propertyType,co
    case Ece:
       strPropertyLabel1 += _T(" Girder");
       *pGraph1 = m_Graph.CreateDataSeries(strPropertyLabel1.c_str(),PS_SOLID,GRAPH_PEN_WEIGHT,ORANGE);
-      if ( pIntervals->GetCompositeDeckInterval(girderKey) <= intervalIdx )
+      if ( pIntervals->GetCompositeDeckInterval() <= intervalIdx )
       {
          strPropertyLabel2 += _T(" Deck");
          *pGraph2 = m_Graph.CreateDataSeries(strPropertyLabel2.c_str(),PS_SOLID,GRAPH_PEN_WEIGHT,BLUE);

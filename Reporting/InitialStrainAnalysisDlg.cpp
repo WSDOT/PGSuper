@@ -68,11 +68,11 @@ BOOL CInitialStrainAnalysisDlg::OnInitDialog()
 
    GET_IFACE( IIntervals, pIntervals);
    CComboBox* pcbIntervals = (CComboBox*)GetDlgItem(IDC_INTERVAL);
-   IntervalIndexType nIntervals = pIntervals->GetIntervalCount(m_GirderKey);
+   IntervalIndexType nIntervals = pIntervals->GetIntervalCount();
    for ( IntervalIndexType intervalIdx = 0; intervalIdx < nIntervals; intervalIdx++ )
    {
       CString strLabel;
-      strLabel.Format(_T("Interval %d: %s"),LABEL_INTERVAL(intervalIdx),pIntervals->GetDescription(m_GirderKey,intervalIdx));
+      strLabel.Format(_T("Interval %d: %s"),LABEL_INTERVAL(intervalIdx),pIntervals->GetDescription(intervalIdx));
       int idx = pcbIntervals->AddString(strLabel);
       pcbIntervals->SetItemData(idx,(DWORD_PTR)intervalIdx);
    }

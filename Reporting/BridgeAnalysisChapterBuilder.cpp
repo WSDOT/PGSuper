@@ -104,16 +104,11 @@ rptChapter* CBridgeAnalysisChapterBuilder::Build(CReportSpecification* pRptSpec,
    GET_IFACE2(pBroker,IIntervals,pIntervals);
 
    // must use a specific girder key to get interval information
-   CGirderKey thisGirderKey(girderKey);
-   if ( thisGirderKey.groupIndex == ALL_GROUPS )
-   {
-      thisGirderKey.groupIndex = 0;
-   }
-   IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval(thisGirderKey);
-   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval(thisGirderKey);
-   IntervalIndexType lastIntervalIdx     = pIntervals->GetIntervalCount(thisGirderKey)-1;
+   IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval();
+   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
+   IntervalIndexType lastIntervalIdx     = pIntervals->GetIntervalCount()-1;
 
-   std::vector<IntervalIndexType> vIntervals(pIntervals->GetSpecCheckIntervals(thisGirderKey));
+   std::vector<IntervalIndexType> vIntervals(pIntervals->GetSpecCheckIntervals(girderKey));
 
    GET_IFACE2(pBroker,ISpecification,pSpec);
 
@@ -466,7 +461,7 @@ rptChapter* CBridgeAnalysisChapterBuilder::Build(CReportSpecification* pRptSpec,
       p = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
       *pChapter << p;
       CString strName;
-      strName.Format(_T("Combined Results - Interval %d: %s"),LABEL_INTERVAL(intervalIdx),pIntervals->GetDescription(thisGirderKey,intervalIdx));
+      strName.Format(_T("Combined Results - Interval %d: %s"),LABEL_INTERVAL(intervalIdx),pIntervals->GetDescription(intervalIdx));
       p->SetName(strName);
       *p << p->GetName();
 

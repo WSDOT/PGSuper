@@ -80,7 +80,7 @@ void CCombinedMomentsTable::Build(IBroker* pBroker, rptChapter* pChapter,
                                          bool bDesign,bool bRating) const
 {
    GET_IFACE2(pBroker,IIntervals,pIntervals);
-   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval(CGirderKey(girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex,girderKey.girderIndex));
+   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
 
    BuildCombinedDeadTable(pBroker, pChapter, girderKey, pDisplayUnits, intervalIdx, analysisType, bDesign, bRating);
 
@@ -130,7 +130,7 @@ void CCombinedMomentsTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter*
    GroupIndexType nGroups = pBridge->GetGirderGroupCount();
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
-   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval(CGirderKey(girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex,girderKey.girderIndex));
+   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
 
 
    GET_IFACE2(pBroker,ILibrary,pLib);
@@ -416,7 +416,7 @@ void CCombinedMomentsTable::BuildCombinedLiveTable(IBroker* pBroker, rptChapter*
    {
       CGirderKey thisGirderKey(grpIdx,girderKey.girderIndex);
 
-      IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval(thisGirderKey);
+      IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
 
       PoiAttributeType poiRefAttribute;
       std::vector<pgsPointOfInterest> vPoi;
@@ -458,7 +458,7 @@ void CCombinedMomentsTable::BuildCombinedLiveTable(IBroker* pBroker, rptChapter*
 
       if ( bRating )
       {
-         IntervalIndexType ratingIntervalIdx = pIntervals->GetLoadRatingInterval(thisGirderKey);
+         IntervalIndexType ratingIntervalIdx = pIntervals->GetLoadRatingInterval();
          if(pRatingSpec->IncludePedestrianLiveLoad())
          {
             pForces2->GetCombinedLiveLoadMoment( ratingIntervalIdx, pgsTypes::lltPedestrian, vPoi, maxBAT, &dummy, &maxPedestrianLL );
@@ -1144,7 +1144,7 @@ void GetCombinedResultsPoi(IBroker* pBroker,const CGirderKey& girderKey,Interval
 {
    GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType releaseIntervalIdx = pIntervals->GetFirstPrestressReleaseInterval(girderKey);
-   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval(girderKey);
+   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
 
    PoiAttributeType poiRefAttribute;
    if (intervalIdx == releaseIntervalIdx)

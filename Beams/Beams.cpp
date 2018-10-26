@@ -97,6 +97,10 @@
 
 #include "StrandMoverImpl.h"
 
+#if defined _BETA_VERSION
+#include <EAF\EAFUIIntegration.h>
+#endif
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE

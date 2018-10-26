@@ -391,13 +391,18 @@ void CIntervalGirderGraphControllerBase::FillIntervalCtrl()
 
    CGirderKey girderKey(GetGirderKey());
 
+   if ( girderKey.groupIndex == ALL_GROUPS )
+   {
+      girderKey.groupIndex = 0;
+   }
+
    GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType startIntervalIdx = pIntervals->GetPrestressReleaseInterval(CSegmentKey(girderKey,0));
-   IntervalIndexType nIntervals = pIntervals->GetIntervalCount(girderKey);
+   IntervalIndexType nIntervals = pIntervals->GetIntervalCount();
    for ( IntervalIndexType intervalIdx = startIntervalIdx; intervalIdx < nIntervals; intervalIdx++ )
    {
       CString strInterval;
-      strInterval.Format(_T("Interval %d: %s"),LABEL_INTERVAL(intervalIdx),pIntervals->GetDescription(girderKey,intervalIdx));
+      strInterval.Format(_T("Interval %d: %s"),LABEL_INTERVAL(intervalIdx),pIntervals->GetDescription(intervalIdx));
       int idx = pcbIntervals->AddString(strInterval);
       pcbIntervals->SetItemData(idx,intervalIdx);
    }
@@ -518,7 +523,7 @@ void CMultiIntervalGirderGraphControllerBase::FillIntervalCtrl()
    for ( IntervalIndexType intervalIdx = firstIntervalIdx; intervalIdx <= lastIntervalIdx; intervalIdx++ )
    {
       CString str;
-      str.Format(_T("%d: %s"),LABEL_INTERVAL(intervalIdx),pIntervals->GetDescription(girderKey,intervalIdx));
+      str.Format(_T("%d: %s"),LABEL_INTERVAL(intervalIdx),pIntervals->GetDescription(intervalIdx));
       int idx = plbIntervals->AddString(str);
       plbIntervals->SetItemData(idx,intervalIdx);
    }
@@ -544,7 +549,7 @@ IntervalIndexType CMultiIntervalGirderGraphControllerBase::GetLastInterval()
 {
    CGirderKey girderKey(GetGirderKey());
    GET_IFACE(IIntervals,pIntervals);
-   IntervalIndexType nIntervals = pIntervals->GetIntervalCount(girderKey);
+   IntervalIndexType nIntervals = pIntervals->GetIntervalCount();
    return nIntervals-1;
 }
 

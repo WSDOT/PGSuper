@@ -137,7 +137,7 @@ void pgsLoadRater::MomentRating(const CGirderKey& girderKey,const std::vector<pg
    }
 
    GET_IFACE(IIntervals,pIntervals);
-   IntervalIndexType loadRatingIntervalIdx = pIntervals->GetLoadRatingInterval(thisGirderKey);
+   IntervalIndexType loadRatingIntervalIdx = pIntervals->GetLoadRatingInterval();
 
    GET_IFACE(IMomentCapacity,pMomentCapacity);
    std::vector<MOMENTCAPACITYDETAILS> vM = pMomentCapacity->GetMomentCapacityDetails(loadRatingIntervalIdx,vPoi,bPositiveMoment);
@@ -294,7 +294,7 @@ void pgsLoadRater::ShearRating(const CGirderKey& girderKey,const std::vector<pgs
    pgsTypes::LimitState ls = GetStrengthLimitStateType(ratingType);
 
    GET_IFACE(IIntervals,pIntervals);
-   IntervalIndexType loadRatingIntervalIdx = pIntervals->GetLoadRatingInterval(thisGirderKey);
+   IntervalIndexType loadRatingIntervalIdx = pIntervals->GetLoadRatingInterval();
 
    std::vector<sysSectionValue> vDCmin, vDCmax;
    std::vector<sysSectionValue> vDWmin, vDWmax;
@@ -536,7 +536,7 @@ void pgsLoadRater::StressRating(const CGirderKey& girderKey,const std::vector<pg
    }
 
    GET_IFACE(IIntervals,pIntervals);
-   IntervalIndexType loadRatingIntervalIdx = pIntervals->GetLoadRatingInterval(thisGirderKey);
+   IntervalIndexType loadRatingIntervalIdx = pIntervals->GetLoadRatingInterval();
 
    GET_IFACE(IPrecompressedTensileZone,pPTZ);
 
@@ -738,7 +738,7 @@ void pgsLoadRater::CheckReinforcementYielding(const CGirderKey& girderKey,const 
    }
 
    GET_IFACE(IIntervals,pIntervals);
-   IntervalIndexType loadRatingIntervalIdx = pIntervals->GetLoadRatingInterval(thisGirderKey);
+   IntervalIndexType loadRatingIntervalIdx = pIntervals->GetLoadRatingInterval();
 
    ATLASSERT(ratingType == pgsTypes::lrPermit_Routine || ratingType == pgsTypes::lrPermit_Special);
 
@@ -1064,11 +1064,11 @@ void pgsLoadRater::GetMoments(const CGirderKey& girderKey,bool bPositiveMoment,p
    }
 
    GET_IFACE(IIntervals,pIntervals);
-   IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval(thisGirderKey);
-   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval(thisGirderKey);
-   IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval(thisGirderKey);
-   IntervalIndexType overlayIntervalIdx       = pIntervals->GetOverlayInterval(thisGirderKey);
-   IntervalIndexType loadRatingIntervalIdx    = pIntervals->GetLoadRatingInterval(thisGirderKey);
+   IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval();
+   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
+   IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval();
+   IntervalIndexType overlayIntervalIdx       = pIntervals->GetOverlayInterval();
+   IntervalIndexType loadRatingIntervalIdx    = pIntervals->GetLoadRatingInterval();
 
    pgsTypes::LiveLoadType llType = GetLiveLoadType(ratingType);
 
@@ -1304,9 +1304,9 @@ void special_transform(IBridge* pBridge,IPointOfInterest* pPoi,IIntervals* pInte
       pBridge->GetContinuityEventIndex(prevPierIdx,&dummy,&start);
       pBridge->GetContinuityEventIndex(nextPierIdx,&end,&dummy);
 
-      IntervalIndexType compositeDeckIntervalIdx       = pIntervals->GetCompositeDeckInterval(segmentKey);
-      IntervalIndexType startPierContinuityIntervalIdx = pIntervals->GetInterval(segmentKey,start);
-      IntervalIndexType endPierContinuityIntervalIdx   = pIntervals->GetInterval(segmentKey,end);
+      IntervalIndexType compositeDeckIntervalIdx       = pIntervals->GetCompositeDeckInterval();
+      IntervalIndexType startPierContinuityIntervalIdx = pIntervals->GetInterval(start);
+      IntervalIndexType endPierContinuityIntervalIdx   = pIntervals->GetInterval(end);
 
       if ( startPierContinuityIntervalIdx == compositeDeckIntervalIdx && 
            endPierContinuityIntervalIdx   == compositeDeckIntervalIdx )

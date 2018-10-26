@@ -535,7 +535,8 @@ void CFtpPGSuperCatalogServer::FetchCatalog(IProgressMonitor* pProgress, bool to
       }
 
       // We have the catalog, initialize the catalog parser
-      CString strVersion = theApp.GetVersion(true);
+      CPGSuperAppPluginApp* pApp = (CPGSuperAppPluginApp*)AfxGetApp();
+      CString strVersion = pApp->GetVersion(true);
 
       if (! m_Catalog.Init(m_strLocalCatalog,strVersion) )
       {
@@ -1202,7 +1203,8 @@ void CHttpPGSuperCatalogServer::FetchCatalog(IProgressMonitor* pProgress) const
       if ( gwres==gwOk )
       {
          // we have the catalog, initialize the catalog parser
-         CString strVersion = theApp.GetVersion(true);
+         CPGSuperAppPluginApp* pApp = (CPGSuperAppPluginApp*)AfxGetApp();
+         CString strVersion = pApp->GetVersion(true);
 
          if (! m_Catalog.Init(m_strLocalCatalog,strVersion) )
          {

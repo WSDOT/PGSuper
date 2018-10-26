@@ -75,7 +75,7 @@ void CLiveLoadReactionTable::Build(IBroker* pBroker, rptChapter* pChapter,
                                           IntervalIndexType intervalIdx, pgsTypes::AnalysisType analysisType) const
 {
    GET_IFACE2(pBroker,IIntervals,pIntervals);
-   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval(girderKey);
+   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
 
    // Build table
    INIT_UV_PROTOTYPE( rptLengthUnitValue, location, pDisplayUnits->GetSpanLengthUnit(), false );

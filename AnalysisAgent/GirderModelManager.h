@@ -31,6 +31,7 @@ interface ILibrary;
 interface ILiveLoads;
 
 class CPierData2;
+class CTemporarySupportData;
 class CTimelineManager;
 class CPrecastSegmentData;
 class CParabolicDuctGeometry;
@@ -199,8 +200,8 @@ public:
    std::vector<Float64> GetSlabDesignMoment(pgsTypes::LimitState limitState,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::BridgeAnalysisType bat);
 
    // IExternalLoading
-   bool CreateLoading(const CGirderKey& girderKey,LPCTSTR strLoadingName);
-   bool AddLoadingToLoadCombination(const CGirderKey& girderKey,LPCTSTR strLoadingName,LoadingCombinationType lcCombo);
+   bool CreateLoading(GirderIndexType girderLineIdx,LPCTSTR strLoadingName);
+   bool AddLoadingToLoadCombination(GirderIndexType girderLineIdx,LPCTSTR strLoadingName,LoadingCombinationType lcCombo);
    bool CreateConcentratedLoad(IntervalIndexType intervalIdx,LPCTSTR strLoadingName,const pgsPointOfInterest& poi,Float64 Fx,Float64 Fy,Float64 Mz);
    bool CreateConcentratedLoad(IntervalIndexType intervalIdx,ProductForceType pfType,const pgsPointOfInterest& poi,Float64 Fx,Float64 Fy,Float64 Mz);
    bool CreateUniformLoad(IntervalIndexType intervalIdx,LPCTSTR strLoadingName,const pgsPointOfInterest& poi1,const pgsPointOfInterest& poi2,Float64 wx,Float64 wy);
@@ -391,7 +392,6 @@ private:
    SupportIDType GetTemporarySupportID(SupportIndexType tsIdx);
    SupportIndexType GetTemporarySupportIndex(SupportIDType tsID);
    void GetPierTemporarySupportIDs(PierIndexType pierIdx,SupportIDType* pBackID,SupportIDType* pAheadID);
-   GirderIDType GetSuperstructureMemberID(GroupIndexType grpIdx,GirderIndexType gdrIdx);
 
    void GetEngine(CGirderModelData* pModelData,bool bContinuous,ILBAMAnalysisEngine** pEngine);
    PoiIDType AddPointOfInterest(CGirderModelData* pModelData,const pgsPointOfInterest& poi);
@@ -419,11 +419,17 @@ private:
    void AddLoadCase(ILoadCases* loadCases, BSTR name, BSTR description);
    HRESULT AddLoadGroup(ILoadGroups* loadGroups, BSTR name, BSTR description);
 
-   // Returns the LBAM superstructure member ID at the start of the segment
-   MemberIDType GetSuperstructureMemberID(const CSegmentKey& segmentKey);
+   // Returns the ID of the first LBAM superstructure member that models this segment
+   MemberIDType GetFirstSuperstructureMemberID(const CSegmentKey& segmentKey);
 
    // Returns the number of superstructure members used to model the segment
    IndexType GetSuperstructureMemberCount(const CSegmentKey& segmentKey);
+
+   // Returns the number of superstructure members used in the LBAM model at this pier
+   IndexType GetSuperstructureMemberCount(const CPierData2* pPier);
+
+   // Returns the number of superstructure members used in the LBAM model at this temporary support
+   IndexType GetSuperstructureMemberCount(const CTemporarySupportData* pTS);
 
    // Converts a location in segment coordinates to a position in the LBAM
    void GetPosition(ILBAMModel* pModel,const CSegmentKey& segmentKey,Float64 Xs,MemberType* pMbrType,MemberIDType* pMbrID,Float64* pX);

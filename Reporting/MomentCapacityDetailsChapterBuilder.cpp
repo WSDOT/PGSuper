@@ -144,8 +144,8 @@ rptChapter* CMomentCapacityDetailsChapterBuilder::Build(CReportSpecification* pR
       {
          CGirderKey thisGirderKey(grpIdx,gdrIdx);
 
-         IntervalIndexType lastIntervalIdx = pIntervals->GetIntervalCount(thisGirderKey)-1;
-         std::_tstring strLabel(pIntervals->GetDescription(thisGirderKey,lastIntervalIdx));
+         IntervalIndexType lastIntervalIdx = pIntervals->GetIntervalCount()-1;
+         std::_tstring strLabel(pIntervals->GetDescription(lastIntervalIdx));
 
          rptParagraph* pPara;
 
@@ -318,7 +318,7 @@ void write_moment_data_table(IBroker* pBroker,
    ColumnIndexType col = 0;
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
-   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval(girderKey);
+   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
    if ( intervalIdx < compositeDeckIntervalIdx )
    {
       (*table)(0,col++)  << COLHDR(RPT_GDR_END_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
@@ -556,7 +556,7 @@ void write_crack_moment_data_table(IBroker* pBroker,
    *pParagraph << table << rptNewLine;
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
-   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval(girderKey);
+   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
    if ( intervalIdx < compositeDeckIntervalIdx )
    {
       (*table)(0,0)  << COLHDR(RPT_GDR_END_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
@@ -713,7 +713,7 @@ void write_min_moment_data_table(IBroker* pBroker,
 
    ColumnIndexType col = 0;
    GET_IFACE2(pBroker,IIntervals,pIntervals);
-   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval(girderKey);
+   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
    if ( intervalIdx < compositeDeckIntervalIdx )
    {
       (*table)(0,col++)  << COLHDR(RPT_GDR_END_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
@@ -849,7 +849,7 @@ void write_over_reinforced_moment_data_table(IBroker* pBroker,
    *pParagraph << table << rptNewLine;
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
-   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval(girderKey);
+   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
    if ( intervalIdx < compositeDeckIntervalIdx )
    {
       (*table)(0,0)  << COLHDR(RPT_GDR_END_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());

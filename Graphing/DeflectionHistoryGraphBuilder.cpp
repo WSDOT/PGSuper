@@ -250,7 +250,7 @@ void CDeflectionHistoryGraphBuilder::UpdateGraphData(const pgsPointOfInterest& p
    GET_IFACE(IIntervals,pIntervals);
 
    IntervalIndexType startIntervalIdx = 0;
-   IntervalIndexType nIntervals = pIntervals->GetIntervalCount(segmentKey);
+   IntervalIndexType nIntervals = pIntervals->GetIntervalCount();
 
    Float64 x = GetX(segmentKey,startIntervalIdx,pgsTypes::Start,pIntervals);
    PlotDeflection(x,poi,startIntervalIdx,dataSeries,pLimitStateForces);
@@ -267,7 +267,7 @@ Float64 CDeflectionHistoryGraphBuilder::GetX(const CSegmentKey& segmentKey,Inter
    Float64 x;
    if ( m_XAxisType == X_AXIS_TIME_LINEAR || m_XAxisType == X_AXIS_TIME_LOG )
    {
-      x = pIntervals->GetTime(segmentKey,intervalIdx,timeType);
+      x = pIntervals->GetTime(intervalIdx,timeType);
    }
    else
    {

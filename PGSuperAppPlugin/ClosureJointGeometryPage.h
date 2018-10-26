@@ -24,6 +24,7 @@
 
 #include <PsgLib\ConnectionLibraryEntry.h>
 #include <PgsExt\BoundaryConditionComboBox.h>
+#include <PgsExt\TimelineManager.h>
 
 // CClosureJointGeometryPage dialog
 
@@ -87,6 +88,8 @@ protected:
    EventIndexType CreateEvent();
 
    EventIndexType m_PrevEventIdx;
+
+   CTimelineManager* GetTimelineManager();
 
 public:
    virtual BOOL OnSetActive();

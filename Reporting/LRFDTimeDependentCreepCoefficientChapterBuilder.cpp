@@ -361,7 +361,7 @@ rptChapter* CLRFDTimeDependentCreepCoefficientChapterBuilder::Build(CReportSpeci
    (*pTable)(rowIdx+1,colIdx++) << symbol(psi) << _T("(t,") << Sub2(_T("t"),_T("i")) << _T(")");
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
-   IntervalIndexType nIntervals = pIntervals->GetIntervalCount(girderKey);
+   IntervalIndexType nIntervals = pIntervals->GetIntervalCount();
 
    rowIdx = pTable->GetNumberOfHeaderRows();
    for ( IntervalIndexType intervalIdx = 0; intervalIdx < nIntervals; intervalIdx++, rowIdx++ )
@@ -444,11 +444,11 @@ rptChapter* CLRFDTimeDependentCreepCoefficientChapterBuilder::Build(CReportSpeci
          }
       }
 
-      IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval(girderKey);
+      IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
       if ( compositeDeckIntervalIdx <= intervalIdx )
       {
-         Float64 ti = pMaterials->GetDeckConcreteAge(girderKey,compositeDeckIntervalIdx,pgsTypes::Middle);
-         Float64 t  = pMaterials->GetDeckConcreteAge(girderKey,intervalIdx,pgsTypes::End);
+         Float64 ti = pMaterials->GetDeckConcreteAge(compositeDeckIntervalIdx,pgsTypes::Middle);
+         Float64 t  = pMaterials->GetDeckConcreteAge(intervalIdx,pgsTypes::End);
          const matConcreteBase* pConcrete = pMaterials->GetDeckConcrete();
          const lrfdLRFDTimeDependentConcrete* pLRFDConcrete = dynamic_cast<const lrfdLRFDTimeDependentConcrete*>(pConcrete);
          (*pTable)(rowIdx,colIdx++) << ti;
@@ -464,7 +464,7 @@ rptChapter* CLRFDTimeDependentCreepCoefficientChapterBuilder::Build(CReportSpeci
          {
             (*pTable)(rowIdx,colIdx++) << pLRFDConcrete->GetSizeFactorCreep(t,ti);
          }
-         (*pTable)(rowIdx,colIdx++) << pMaterials->GetDeckCreepCoefficient(girderKey,compositeDeckIntervalIdx,pgsTypes::Middle,intervalIdx,pgsTypes::End);
+         (*pTable)(rowIdx,colIdx++) << pMaterials->GetDeckCreepCoefficient(compositeDeckIntervalIdx,pgsTypes::Middle,intervalIdx,pgsTypes::End);
       }
       else
       {

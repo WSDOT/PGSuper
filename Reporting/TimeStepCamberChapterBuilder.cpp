@@ -148,7 +148,7 @@ rptRcTable* CTimeStepCamberChapterBuilder::CreateAfterErectionDeflectionTable(IB
    {
       RowIndexType rowIdx = 0;
       IntervalIndexType intervalIdx = *intervalIter;
-      (*pLayoutTable)(rowIdx++,layoutTableColIdx) << _T("Interval ") << LABEL_INTERVAL(intervalIdx) << rptNewLine << pIntervals->GetDescription(girderKey,intervalIdx);
+      (*pLayoutTable)(rowIdx++,layoutTableColIdx) << _T("Interval ") << LABEL_INTERVAL(intervalIdx) << rptNewLine << pIntervals->GetDescription(intervalIdx);
 
       for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++, rowIdx++ )
       {
@@ -318,7 +318,7 @@ rptRcTable* CTimeStepCamberChapterBuilder::CreateBeforeSlabCastingDeflectionTabl
    Float64 end_size = pBridge->GetSegmentStartEndDistance(CSegmentKey(girderKey,0));
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
-   IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval(girderKey);
+   IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval();
    IntervalIndexType firstTendonStressingIntervalIdx = pIntervals->GetFirstTendonStressingInterval(girderKey);
 
    GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
@@ -447,8 +447,8 @@ rptRcTable* CTimeStepCamberChapterBuilder::CreateScreedCamberDeflectionTable(IBr
    Float64 end_size = pBridge->GetSegmentStartEndDistance(CSegmentKey(girderKey,0));
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
-   IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval(girderKey);
-   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval(girderKey);
+   IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval();
+   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
 
    GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
    std::vector<pgsPointOfInterest> vPoi( pIPoi->GetPointsOfInterest( CSegmentKey(girderKey,ALL_SEGMENTS), POI_ERECTED_SEGMENT ) );
@@ -483,7 +483,7 @@ rptRcTable* CTimeStepCamberChapterBuilder::CreateScreedCamberDeflectionTable(IBr
 
    vProductForces.push_back(pftDiaphragm); 
 
-   if ( pIntervals->GetOverlayInterval(girderKey) <= liveLoadIntervalIdx )
+   if ( pIntervals->GetOverlayInterval() <= liveLoadIntervalIdx )
    {
       vProductForces.push_back(pftOverlay);
    }
@@ -606,8 +606,8 @@ rptRcTable* CTimeStepCamberChapterBuilder::CreateExcessCamberTable(IBroker* pBro
    Float64 end_size = pBridge->GetSegmentStartEndDistance(CSegmentKey(girderKey,0));
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
-   IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval(girderKey);
-   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval(girderKey);
+   IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval();
+   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
 
    GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
    std::vector<pgsPointOfInterest> vPoi( pIPoi->GetPointsOfInterest( CSegmentKey(girderKey,ALL_SEGMENTS), POI_ERECTED_SEGMENT ) );
@@ -665,7 +665,7 @@ rptRcTable* CTimeStepCamberChapterBuilder::CreateFinalDeflectionTable(IBroker* p
    Float64 end_size = pBridge->GetSegmentStartEndDistance(CSegmentKey(girderKey,0));
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
-   IntervalIndexType lastIntervalIdx = pIntervals->GetIntervalCount(girderKey)-1;
+   IntervalIndexType lastIntervalIdx = pIntervals->GetIntervalCount()-1;
 
    GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
    std::vector<pgsPointOfInterest> vPoi( pIPoi->GetPointsOfInterest( CSegmentKey(girderKey,ALL_SEGMENTS), POI_ERECTED_SEGMENT ) );
@@ -701,7 +701,7 @@ rptRcTable* CTimeStepCamberChapterBuilder::CreateFinalDeflectionTable(IBroker* p
 
    vProductForces.push_back(pftDiaphragm); 
 
-   if ( pIntervals->GetOverlayInterval(girderKey) != INVALID_INDEX )
+   if ( pIntervals->GetOverlayInterval() != INVALID_INDEX )
    {
       vProductForces.push_back(pftOverlay);
    }

@@ -1256,53 +1256,68 @@ void CSegmentModelManager::GetStress(IntervalIndexType intervalIdx,pgsTypes::Lim
 
 ///////////////////////////
 // IExternalLoading
-bool CSegmentModelManager::CreateLoading(const CGirderKey& girderKey,LPCTSTR strLoadingName)
+bool CSegmentModelManager::CreateLoading(GirderIndexType girderLineIdx,LPCTSTR strLoadingName)
 {
-   ASSERT_GIRDER_KEY(girderKey);
-
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
-
-   const CSplicedGirderData* pGirder = pIBridgeDesc->GetGirder(girderKey);
-   SegmentIndexType nSegments = pGirder->GetSegmentCount();
-   for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
+   GroupIndexType nGroups = pIBridgeDesc->GetGirderGroupCount();
+   for ( GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )
    {
-      CSegmentKey segmentKey(girderKey,segIdx);
+      GirderIndexType nGirdersThisGroup = pIBridgeDesc->GetGirderGroup(grpIdx)->GetGirderCount();
+      GirderIndexType gdrIdx = Min(girderLineIdx,nGirdersThisGroup-1);
 
-      for ( int i = 0; i < 2; i++ )
+      CGirderKey girderKey(grpIdx,gdrIdx);
+
+      const CSplicedGirderData* pGirder = pIBridgeDesc->GetGirder(girderKey);
+      SegmentIndexType nSegments = pGirder->GetSegmentCount();
+      for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
       {
-         CSegmentModelData* pModelData;
-         if ( i == 0 )
+         CSegmentKey segmentKey(girderKey,segIdx);
+
+         for ( int i = 0; i < 2; i++ )
          {
-            pModelData = GetReleaseModel(segmentKey);
+            CSegmentModelData* pModelData;
+            if ( i == 0 )
+            {
+               pModelData = GetReleaseModel(segmentKey);
+            }
+            else
+            {
+               pModelData = GetStorageModel(segmentKey);
+            }
+
+            CComPtr<IFem2dLoadingCollection> loadings;
+            pModelData->Model->get_Loadings(&loadings);
+
+            LoadCaseIDType lcid = GetFirstExternalLoadCaseID() + pModelData->ExternalLoadMap.size();
+
+            CComPtr<IFem2dLoading> loading;
+            if ( FAILED(loadings->Create(lcid,&loading)) )
+            {
+               ATLASSERT(false);
+               return false;
+            }
+
+            pModelData->ExternalLoadMap.insert(std::make_pair(std::_tstring(strLoadingName),lcid));
          }
-         else
-         {
-            pModelData = GetStorageModel(segmentKey);
-         }
-
-         CComPtr<IFem2dLoadingCollection> loadings;
-         pModelData->Model->get_Loadings(&loadings);
-
-         LoadCaseIDType lcid = GetFirstExternalLoadCaseID() + pModelData->ExternalLoadMap.size();
-
-         CComPtr<IFem2dLoading> loading;
-         if ( FAILED(loadings->Create(lcid,&loading)) )
-         {
-            ATLASSERT(false);
-            return false;
-         }
-
-         pModelData->ExternalLoadMap.insert(std::make_pair(std::_tstring(strLoadingName),lcid));
-      }
-   }
+      } // next segment
+   } // next group
 
    return true;
 }
 
-bool CSegmentModelManager::AddLoadingToLoadCombination(const CGirderKey& girderKey,LPCTSTR strLoadingName,LoadingCombinationType comboType)
+bool CSegmentModelManager::AddLoadingToLoadCombination(GirderIndexType girderLineIdx,LPCTSTR strLoadingName,LoadingCombinationType comboType)
 {
-   LoadCombinationMap& loadCombinationMap(GetLoadCombinationMap(girderKey));
-   loadCombinationMap.insert(std::make_pair(comboType,strLoadingName));
+   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   GroupIndexType nGroups = pIBridgeDesc->GetGirderGroupCount();
+   for ( GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )
+   {
+      GirderIndexType nGirdersThisGroup = pIBridgeDesc->GetGirderGroup(grpIdx)->GetGirderCount();
+      GirderIndexType gdrIdx = Min(girderLineIdx,nGirdersThisGroup-1);
+
+      CGirderKey girderKey(grpIdx,gdrIdx);
+      LoadCombinationMap& loadCombinationMap(GetLoadCombinationMap(girderKey));
+      loadCombinationMap.insert(std::make_pair(comboType,strLoadingName));
+   }
    return true;
 }
 

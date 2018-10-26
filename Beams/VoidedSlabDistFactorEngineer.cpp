@@ -500,7 +500,7 @@ lrfdLiveLoadDistributionFactorBase* CVoidedSlabDistFactorEngineer::GetLLDFParame
 
    GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
-   IntervalIndexType llIntervalIdx = pIntervals->GetLiveLoadInterval(segmentKey);
+   IntervalIndexType llIntervalIdx = pIntervals->GetLiveLoadInterval();
    if (0 < fcgdr)
    {
       plldf->I = pSectProp->GetIx(pgsTypes::sptGross,llIntervalIdx,poi,fcgdr);

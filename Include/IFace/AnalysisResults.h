@@ -527,10 +527,10 @@ interface IExternalLoading : IUnknown
 {
    // creates a new loading. this is essentially creating a user defined product load
    // returns true if successful
-   virtual bool CreateLoading(const CGirderKey& girderKey,LPCTSTR strLoadingName) = 0;
+   virtual bool CreateLoading(GirderIndexType girderLineIdx,LPCTSTR strLoadingName) = 0;
 
    // adds a loading to a load combination. returns true if successful
-   virtual bool AddLoadingToLoadCombination(const CGirderKey& girderKey,LPCTSTR strLoadingName,LoadingCombinationType lcCombo) = 0;
+   virtual bool AddLoadingToLoadCombination(GirderIndexType girderLineIdx,LPCTSTR strLoadingName,LoadingCombinationType lcCombo) = 0;
 
    // creates a concentrated load
    virtual bool CreateConcentratedLoad(IntervalIndexType intervalIdx,LPCTSTR strLoadingName,const pgsPointOfInterest& poi,Float64 Fx,Float64 Fy,Float64 Mz) = 0;

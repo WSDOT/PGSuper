@@ -165,7 +165,7 @@ void CLongReinfShearCheckChapterBuilder::BuildForDesign(rptChapter* pChapter,CRe
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    GET_IFACE2(pBroker,ILimitStateForces,pLimitStateForces);
    GET_IFACE2(pBroker,IIntervals,pIntervals);
-   IntervalIndexType intervalIdx = pIntervals->GetIntervalCount(girderKey)-1;
+   IntervalIndexType intervalIdx = pIntervals->GetIntervalCount()-1;
 
    bool bPermit = pLimitStateForces->IsStrengthIIApplicable(girderKey);
    pgsTypes::LimitState ls = pgsTypes::StrengthI;
@@ -314,7 +314,7 @@ void CLongReinfShearCheckChapterBuilder::BuildForRating(rptChapter* pChapter,CRe
    {
       CGirderKey thisGirderKey(grpIdx,girderKey.girderIndex);
 
-      IntervalIndexType intervalIdx = pIntervals->GetLiveLoadInterval(thisGirderKey);
+      IntervalIndexType intervalIdx = pIntervals->GetLiveLoadInterval();
 
       std::vector<pgsTypes::LimitState>::iterator ls_iter;
       for ( ls_iter = limitStates.begin(); ls_iter != limitStates.end(); ls_iter++ )

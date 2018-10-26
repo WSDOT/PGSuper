@@ -90,20 +90,20 @@ rptChapter* CIntervalChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16
    (*pIntervalTable)(0,col++) << COLHDR(_T("Duration"),rptTimeUnitTag,pDisplayUnits->GetWholeDaysUnit());
 
    
-   IntervalIndexType nIntervals = pIntervals->GetIntervalCount(girderKey);
+   IntervalIndexType nIntervals = pIntervals->GetIntervalCount();
 
    RowIndexType row  = pIntervalTable->GetNumberOfHeaderRows();
    for (IntervalIndexType intervalIdx = 0; intervalIdx < nIntervals; intervalIdx++ )
    {
       col = 0;
       (*pIntervalTable)(row,col++) << LABEL_INTERVAL(intervalIdx);
-      (*pIntervalTable)(row,col++) << pIntervals->GetDescription(girderKey,intervalIdx);
-      (*pIntervalTable)(row,col++) << LABEL_EVENT(pIntervals->GetStartEvent(girderKey,intervalIdx));
-      (*pIntervalTable)(row,col++) << LABEL_EVENT(pIntervals->GetEndEvent(girderKey,intervalIdx));
-      (*pIntervalTable)(row,col++) << pIntervals->GetTime(girderKey,intervalIdx,pgsTypes::Start);
-      (*pIntervalTable)(row,col++) << pIntervals->GetTime(girderKey,intervalIdx,pgsTypes::Middle);
-      (*pIntervalTable)(row,col++) << pIntervals->GetTime(girderKey,intervalIdx,pgsTypes::End);
-      (*pIntervalTable)(row,col++) << pIntervals->GetDuration(girderKey,intervalIdx);
+      (*pIntervalTable)(row,col++) << pIntervals->GetDescription(intervalIdx);
+      (*pIntervalTable)(row,col++) << LABEL_EVENT(pIntervals->GetStartEvent(intervalIdx));
+      (*pIntervalTable)(row,col++) << LABEL_EVENT(pIntervals->GetEndEvent(intervalIdx));
+      (*pIntervalTable)(row,col++) << pIntervals->GetTime(intervalIdx,pgsTypes::Start);
+      (*pIntervalTable)(row,col++) << pIntervals->GetTime(intervalIdx,pgsTypes::Middle);
+      (*pIntervalTable)(row,col++) << pIntervals->GetTime(intervalIdx,pgsTypes::End);
+      (*pIntervalTable)(row,col++) << pIntervals->GetDuration(intervalIdx);
       row++;
    }
 

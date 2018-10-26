@@ -92,7 +92,7 @@ void CGirderDetailingCheck::Build(rptChapter* pChapter,
    const CGirderKey& girderKey(pGirderArtifact->GetGirderKey());
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
-   IntervalIndexType intervalIdx = pIntervals->GetIntervalCount(girderKey)-1;
+   IntervalIndexType intervalIdx = pIntervals->GetIntervalCount()-1;
 
    // Stirrup detailing check
    rptParagraph* p = new rptParagraph;

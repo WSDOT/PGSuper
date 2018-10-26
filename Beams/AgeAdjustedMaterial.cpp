@@ -58,42 +58,39 @@ HRESULT CAgeAdjustedMaterial::FinalConstruct()
 }
 
 // IAgeAdjustedMaterial
-STDMETHODIMP CAgeAdjustedMaterial::InitSegment(const CSegmentKey& segmentKey,IStages* pStages,IMaterials* pMaterials)
+STDMETHODIMP CAgeAdjustedMaterial::InitSegment(const CSegmentKey& segmentKey,IMaterials* pMaterials)
 {
    m_bIsSegment = true;
    m_SegmentKey = segmentKey;
    m_GirderKey = m_SegmentKey;
    m_pMaterials = pMaterials;
-   m_pStages    = pStages;
    return S_OK;
 }
 
-STDMETHODIMP CAgeAdjustedMaterial::InitClosureJoint(const CClosureKey& closureKey,IStages* pStages,IMaterials* pMaterials)
+STDMETHODIMP CAgeAdjustedMaterial::InitClosureJoint(const CClosureKey& closureKey,IMaterials* pMaterials)
 {
    m_bIsClosure = true;
    m_ClosureKey = closureKey;
    m_GirderKey = m_ClosureKey;
    m_pMaterials = pMaterials;
-   m_pStages = pStages;
    return S_OK;
 }
 
-STDMETHODIMP CAgeAdjustedMaterial::InitDeck(const CGirderKey& girderKey,IStages* pStages,IMaterials* pMaterials)
+STDMETHODIMP CAgeAdjustedMaterial::InitDeck(const CGirderKey& girderKey,IMaterials* pMaterials)
 {
    m_bIsDeck = true;
    m_GirderKey = girderKey;
    m_pMaterials = pMaterials;
-   m_pStages = pStages;
    return S_OK;
 }
 
 // IMaterial
 STDMETHODIMP CAgeAdjustedMaterial::get_E(StageIndexType stageIdx,Float64* E)
 {
-   IntervalIndexType intervalIdx = m_pStages->GetIntervalFromStage(m_GirderKey,stageIdx);
+   IntervalIndexType intervalIdx = (IntervalIndexType)stageIdx;
    if ( IsDeck() )
    {
-      *E = m_pMaterials->GetDeckAgeAdjustedEc(m_GirderKey,intervalIdx);
+      *E = m_pMaterials->GetDeckAgeAdjustedEc(intervalIdx);
    }
    else if ( IsSegment() )
    {
@@ -119,10 +116,10 @@ STDMETHODIMP CAgeAdjustedMaterial::put_E(StageIndexType stageIdx,Float64 E)
 
 STDMETHODIMP CAgeAdjustedMaterial::get_Density(StageIndexType stageIdx,Float64* w)
 {
-   IntervalIndexType intervalIdx = m_pStages->GetIntervalFromStage(m_GirderKey,stageIdx);
+   IntervalIndexType intervalIdx = (IntervalIndexType)stageIdx;
    if ( IsDeck() )
    {
-      *w = m_pMaterials->GetDeckWeightDensity(m_GirderKey,intervalIdx);
+      *w = m_pMaterials->GetDeckWeightDensity(intervalIdx);
    }
    else if ( IsSegment() )
    {

@@ -166,6 +166,17 @@ void CClosureJointGeometryPage::DoDataExchange(CDataExchange* pDX)
          pParent->m_pTS->SetBearingOffset(m_BearingOffset,m_BearingOffsetMeasurementType);
          pParent->m_pTS->SetSupportWidth(m_SupportWidth);
       }
+
+      CTimelineManager* pTimelineMgr = GetTimelineManager();
+      int result = pTimelineMgr->Validate();
+      if ( result != TLM_SUCCESS )
+      {
+         pDX->PrepareCtrl(IDC_EVENT);
+         CString strMsg = pTimelineMgr->GetErrorMessage(result);
+         strMsg += _T("\r\n\r\nPlease correct the closure joint installation event.");
+         AfxMessageBox(strMsg,MB_ICONEXCLAMATION);
+         pDX->Fail();
+      }
    }
 }
 
@@ -661,17 +672,7 @@ void CClosureJointGeometryPage::OnInstallationStageChanged()
       }
    }
 
-   CTimelineManager* pTimelineMgr;
-   if ( m_bIsPier )
-   {
-      CPierDetailsDlg* pParent = (CPierDetailsDlg*)GetParent();
-      pTimelineMgr = pParent->m_BridgeDesc.GetTimelineManager();
-   }
-   else
-   {
-      CTemporarySupportDlg* pParent = (CTemporarySupportDlg*)GetParent();
-      pTimelineMgr = pParent->m_BridgeDesc.GetTimelineManager();
-   }
+   CTimelineManager* pTimelineMgr = GetTimelineManager();
 
    ATLASSERT(m_ClosureID != INVALID_ID);
    pTimelineMgr->SetCastClosureJointEventByIndex(m_ClosureID,eventIdx);
@@ -679,6 +680,21 @@ void CClosureJointGeometryPage::OnInstallationStageChanged()
 }
 
 EventIndexType CClosureJointGeometryPage::CreateEvent()
+{
+   CTimelineManager* pTimelineMgr = GetTimelineManager();
+
+   CTimelineEventDlg dlg(*pTimelineMgr,INVALID_INDEX,FALSE);
+   if ( dlg.DoModal() == IDOK )
+   {
+      EventIndexType idx;
+      pTimelineMgr->AddTimelineEvent(*dlg.m_pTimelineEvent,true,&idx);
+      return idx;
+  }
+
+   return INVALID_INDEX;
+}
+
+CTimelineManager* CClosureJointGeometryPage::GetTimelineManager()
 {
    CTimelineManager* pTimelineMgr;
    if ( m_bIsPier )
@@ -691,14 +707,5 @@ EventIndexType CClosureJointGeometryPage::CreateEvent()
       CTemporarySupportDlg* pParent = (CTemporarySupportDlg*)GetParent();
       pTimelineMgr = pParent->m_BridgeDesc.GetTimelineManager();
    }
-
-   CTimelineEventDlg dlg(*pTimelineMgr,INVALID_INDEX,FALSE);
-   if ( dlg.DoModal() == IDOK )
-   {
-      EventIndexType idx;
-      pTimelineMgr->AddTimelineEvent(*dlg.m_pTimelineEvent,true,&idx);
-      return idx;
-  }
-
-   return INVALID_INDEX;
+   return pTimelineMgr;
 }

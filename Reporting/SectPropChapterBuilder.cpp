@@ -327,7 +327,7 @@ rptChapter* CSectPropChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16
                if ( bComposite )
                {
                   // there is a deck so we have composite, non-prismatic results
-                  IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval(thisSegmentKey);
+                  IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
                   pTable = CSectionPropertiesTable2().Build(pBroker,pgsTypes::sptGross,thisSegmentKey,liveLoadIntervalIdx,pDisplayUnits);
                   *pPara << pTable << rptNewLine;
                }
@@ -337,7 +337,7 @@ rptChapter* CSectPropChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16
                GET_IFACE2(pBroker,ILossParameters,pLossParams);
                if ( pLossParams->GetLossMethod() == pgsTypes::TIME_STEP )
                {
-                  IntervalIndexType nIntervals = pIntervals->GetIntervalCount(thisSegmentKey);
+                  IntervalIndexType nIntervals = pIntervals->GetIntervalCount();
                   IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(thisSegmentKey);
                   for ( IntervalIndexType intervalIdx = releaseIntervalIdx; intervalIdx < nIntervals; intervalIdx++ )
                   {
@@ -348,7 +348,7 @@ rptChapter* CSectPropChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16
                else
                {
                   std::vector<IntervalIndexType> vIntervals = pIntervals->GetSpecCheckIntervals(thisSegmentKey);
-                  IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval(thisSegmentKey);
+                  IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
                   BOOST_FOREACH(IntervalIndexType intervalIdx,vIntervals)
                   {
                      pgsTypes::SectionPropertyType spType1 = (pSectProp->GetSectionPropertiesMode() == pgsTypes::spmGross ? pgsTypes::sptGross : pgsTypes::sptTransformedNoncomposite);
@@ -374,7 +374,7 @@ rptChapter* CSectPropChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16
 
                if ( pLossParams->GetLossMethod() == pgsTypes::TIME_STEP )
                {
-                  IntervalIndexType nIntervals = pIntervals->GetIntervalCount(thisSegmentKey);
+                  IntervalIndexType nIntervals = pIntervals->GetIntervalCount();
                   IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(thisSegmentKey);
                   for ( IntervalIndexType intervalIdx = releaseIntervalIdx; intervalIdx < nIntervals; intervalIdx++ )
                   {

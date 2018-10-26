@@ -40,7 +40,7 @@
 IMPLEMENT_DYNCREATE(CGirderPropertiesGraphController,CIntervalGirderGraphControllerBase)
 
 CGirderPropertiesGraphController::CGirderPropertiesGraphController():
-CIntervalGirderGraphControllerBase(false),
+CIntervalGirderGraphControllerBase(true/*all groups*/),
 m_PropertyType(CGirderPropertiesGraphBuilder::Height),
 m_SectionPropertyType(pgsTypes::sptTransformed)
 {
@@ -67,9 +67,9 @@ BOOL CGirderPropertiesGraphController::OnInitDialog()
    m_PropertyType = (CGirderPropertiesGraphBuilder::PropertyType)(pcbProperties->GetItemData(0));
 
    GET_IFACE(ISectionProperties,pSectProp);
-   m_SectionPropertyType = (pgsTypes::SectionPropertyType)(pSectProp->GetSectionPropertiesMode());
+   m_SectionPropertyType = (pSectProp->GetSectionPropertiesMode() == pgsTypes::spmGross ? pgsTypes::sptGross : pgsTypes::sptTransformed );
 
-   CheckRadioButton(IDC_TRANSFORMED,IDC_NET_DECK,m_SectionPropertyType + IDC_TRANSFORMED);
+   CheckRadioButton(IDC_TRANSFORMED,IDC_NET_DECK,(m_SectionPropertyType == pgsTypes::spmGross ? 1 : 0) + IDC_TRANSFORMED);
 
    UpdateSectionPropertyTypeControls();
 
@@ -111,13 +111,21 @@ void CGirderPropertiesGraphController::OnSectionPropertiesChanged()
    int i = GetCheckedRadioButton(IDC_TRANSFORMED,IDC_NET_DECK);
    pgsTypes::SectionPropertyType spType;
    if ( i == IDC_TRANSFORMED )
+   {
       spType = pgsTypes::sptTransformed;
+   }
    else if ( i == IDC_GROSS )
+   {
       spType = pgsTypes::sptGross;
+   }
    else if ( i == IDC_NET_GIRDER )
+   {
       spType = pgsTypes::sptNetGirder;
+   }
    else if ( i == IDC_NET_DECK )
+   {
       spType = pgsTypes::sptNetDeck;
+   }
 
    if ( spType != m_SectionPropertyType )
    {

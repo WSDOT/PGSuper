@@ -116,7 +116,7 @@ rptChapter* CGirderScheduleChapterBuilder::Build(CReportSpecification* pRptSpec,
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
-   IntervalIndexType finalIntervalIdx   = pIntervals->GetIntervalCount(segmentKey)-1;
+   IntervalIndexType finalIntervalIdx   = pIntervals->GetIntervalCount()-1;
 
    const GirderLibraryEntry* pGdrLibEntry = pGirder->GetGirderLibraryEntry();
    CComPtr<IBeamFactory> factory;

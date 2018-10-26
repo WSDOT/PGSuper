@@ -23,6 +23,11 @@
 // BridgeDescFramingGrid2.cpp : implementation file
 //
 
+// NOTE
+// In this grid, when we talk about segment lengths, we don't mean the length of segments of the girder.
+// Segment lengths in this context is the distance between segment supports measured along the alignment
+// which is based on stationing.
+
 #include "PGSuperAppPlugin\stdafx.h"
 #include "BridgeDescFramingGrid.h"
 #include "PGSuperDoc.h"
@@ -109,6 +114,33 @@ std::vector<Float64> CBridgeDescFramingGrid::GetSpanLengths()
    return spanLengths;
 }
 
+std::vector<Float64> CBridgeDescFramingGrid::GetSegmentLengths()
+{
+   std::vector<Float64> segmentLengths;
+
+   CBridgeDescFramingPage* pParent = (CBridgeDescFramingPage*)GetParent();
+   ASSERT( pParent->IsKindOf(RUNTIME_CLASS(CBridgeDescFramingPage) ) );
+
+   CBridgeDescDlg* pDlg = (CBridgeDescDlg*)(pParent->GetParent());
+   ASSERT( pDlg->IsKindOf(RUNTIME_CLASS(CBridgeDescDlg) ) );
+
+   SpanIndexType nSpans = pDlg->m_BridgeDesc.GetSpanCount();
+   for ( SpanIndexType spanIdx = 0; spanIdx < nSpans; spanIdx++ )
+   {
+      CSpanData2* pSpan = pDlg->m_BridgeDesc.GetSpan(spanIdx);
+      Float64 startSpanStation = pSpan->GetPrevPier()->GetStation();
+      std::vector<CTemporarySupportData*> vTS = pSpan->GetTemporarySupports();
+      BOOST_FOREACH(CTemporarySupportData* pTS,vTS)
+      {
+         Float64 station = pTS->GetStation();
+         Float64 segmentLength = station - startSpanStation;
+         segmentLengths.push_back(segmentLength);
+      }
+   }
+
+   return segmentLengths;
+}
+
 void CBridgeDescFramingGrid::SetPierOrientation(LPCTSTR strOrientation)
 {
    CBridgeDescFramingPage* pParent = (CBridgeDescFramingPage*)GetParent();
@@ -158,17 +190,24 @@ void CBridgeDescFramingGrid::SetSpanLengths(const std::vector<Float64>& spanLeng
 
    // holding first pier constant
    CPierData2* pPrevPier = pDlg->m_BridgeDesc.GetPier(0);
+   Float64 first_pier_station = pPrevPier->GetStation();
+   Float64 pier_offset = station - first_pier_station; // this is the amount the bridge is moving... need to move temporary supports this amount too
    pPrevPier->SetStation( station );
 
    ASSERT(spanLengths.size() == pDlg->m_BridgeDesc.GetSpanCount());
 
-   std::vector<Float64>::const_iterator iter;
-   for ( iter = spanLengths.begin(); iter != spanLengths.end(); iter++ )
+   BOOST_FOREACH(Float64 L,spanLengths)
    {
-      Float64 L = *iter;
-
       CSpanData2* pNextSpan = pPrevPier->GetNextSpan();
       ASSERT(pNextSpan);
+
+      std::vector<CTemporarySupportData*> vTS = pNextSpan->GetTemporarySupports();
+      BOOST_FOREACH(CTemporarySupportData* pTS,vTS)
+      {
+         Float64 tsStation = pTS->GetStation();
+         tsStation += pier_offset;
+         pTS->SetStation(tsStation);
+      }
 
       CPierData2* pNextPier = pNextSpan->GetNextPier();
       pNextPier->SetStation( pPrevPier->GetStation() + L );
@@ -216,6 +255,8 @@ void CBridgeDescFramingGrid::OnChangedSelection(const CGXRange* pChangedRect,BOO
    ASSERT( pParent->IsKindOf(RUNTIME_CLASS(CBridgeDescFramingPage) ) );
    pParent->EnableRemovePierBtn(EnableRemovePierBtn());
    pParent->EnableRemoveTemporarySupportBtn(EnableRemoveTemporarySupportBtn());
+
+   CGXGridWnd::OnChangedSelection(pChangedRect,bIsDragging,bKey);
 }
 
 void CBridgeDescFramingGrid::InsertRow()
@@ -543,7 +584,8 @@ CPierData2* CBridgeDescFramingGrid::GetPierRowData(ROWCOL nRow)
    m_objStation->FromString(CComBSTR(strStation),unitMode);
    Float64 station;
    m_objStation->get_Value(&station);
-   pPier->SetStation( ::ConvertToSysUnits(station,pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure) );
+   station = ::ConvertToSysUnits(station,pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure);
+   pPier->SetStation(station);
 
    // Orientation
    CString strOrientation = GetCellValue(nRow,2);
@@ -612,7 +654,7 @@ void CBridgeDescFramingGrid::FillGrid(const CBridgeDescription2& bridgeDesc)
    ROWCOL rows = GetRowCount();
    if ( 1 < rows )
    {
-      RemoveRows(1, rows);
+      RemoveRows(1, rows, GX_INVALIDATE);
    }
 
    const CPierData2* pPier = bridgeDesc.GetPier(0);
@@ -694,6 +736,8 @@ void CBridgeDescFramingGrid::FillPierRow(ROWCOL row,const CPierData2* pPierData)
    // station
    SetStyleRange(CGXRange(row,col++), CGXStyle()
       .SetHorizontalAlignment(DT_RIGHT)
+      .SetReadOnly(FALSE)
+      .SetEnabled(TRUE)
       .SetValue(strStation)
    );
 
@@ -918,7 +962,7 @@ void CBridgeDescFramingGrid::FillSegmentColumn()
                .SetVerticalAlignment(DT_VCENTER)
                .SetMergeCell(GX_MERGE_VERTICAL | GX_MERGE_COMPVALUE)
                .SetInterior( ::GetSysColor(COLOR_BTNFACE) )
-               .SetTextColor( ::GetSysColor(COLOR_WINDOWTEXT) )
+               .SetTextColor( segmentLength <= 0 ? RED : ::GetSysColor(COLOR_WINDOWTEXT) )
                .SetValue(strSegmentLength)
             );
          }
@@ -1011,7 +1055,7 @@ void CBridgeDescFramingGrid::FillSpanColumn()
             .SetVerticalAlignment(DT_VCENTER)
             .SetMergeCell(GX_MERGE_VERTICAL | GX_MERGE_COMPVALUE)
             .SetInterior( ::GetSysColor(COLOR_BTNFACE) )
-            .SetTextColor(spanLength <= 0 ? RGB(255,0,0) : ::GetSysColor(COLOR_WINDOWTEXT))
+            .SetTextColor(spanLength <= 0 ? RED : ::GetSysColor(COLOR_WINDOWTEXT))
             .SetReadOnly(TRUE)
             .SetEnabled(FALSE)
             .SetValue(strSpanLength)
@@ -1042,7 +1086,10 @@ void CBridgeDescFramingGrid::OnClickedButtonRowCol(ROWCOL nRow,ROWCOL nCol)
  
    CBridgeDescFramingPage* pParent = (CBridgeDescFramingPage*)GetParent();
    ASSERT( pParent->IsKindOf(RUNTIME_CLASS(CBridgeDescFramingPage) ) );
-   pParent->UpdateData();
+   if ( !pParent->UpdateData() )
+   {
+      return;
+   }
 
    CGXStyle style;
    GetStyleRowCol(nRow,nCol,style);
@@ -1144,42 +1191,33 @@ BOOL CBridgeDescFramingGrid::OnValidateCell(ROWCOL nRow, ROWCOL nCol)
 
 BOOL CBridgeDescFramingGrid::OnEndEditing(ROWCOL nRow,ROWCOL nCol)
 {
-   // The function FillGrid(), called below, causes recursion into
-   // this function. To avoid that problem, we'll keep a static
-   // variable to keep track if this function has already been entered
-   static bool bHasThisMethodBeenCalled = false;
-   if ( bHasThisMethodBeenCalled )
-   {
-      return TRUE;
-   }
-
-   bHasThisMethodBeenCalled = true;
    if ( nCol == 1 || nCol == 2 )
    {
-      // Pier or temporary support station changed... update segment and span lengths
+      // Pier or temporary support station or orientation changed... 
       CBridgeDescFramingPage* pParent = (CBridgeDescFramingPage*)GetParent();
       ASSERT( pParent->IsKindOf(RUNTIME_CLASS(CBridgeDescFramingPage) ) );
 
       CBridgeDescDlg* pDlg = (CBridgeDescDlg*)(pParent->GetParent());
       ASSERT( pDlg->IsKindOf(RUNTIME_CLASS(CBridgeDescDlg) ) );
 
-
       PierIndexType pierIdx = GetPierIndex(nRow);
       if ( pierIdx != INVALID_INDEX )
       {
          CPierData2* pPierData = GetPierRowData(nRow);
+         FillPierRow(nRow,pPierData); // updates station and orientation formatting
       }
       else
       {
          SupportIndexType tsIdx = GetTemporarySupportIndex(nRow);
          CTemporarySupportData tsData = GetTemporarySupportRowData(nRow);
          pDlg->m_BridgeDesc.SetTemporarySupportByIndex(tsIdx,tsData);
+         const CTemporarySupportData* pTS = pDlg->m_BridgeDesc.GetTemporarySupport(tsIdx);
+         FillTemporarySupportRow(nRow,pTS); // updates station and orientation formatting
       }
 
-      FillGrid(pDlg->m_BridgeDesc);
+      FillSpanColumn();   // updates span lengths
+      FillSegmentColumn(); // update segment lengths
    }
-
-   bHasThisMethodBeenCalled = false;
    return CGXGridWnd::OnEndEditing(nRow,nCol);
 }
 
@@ -1225,16 +1263,25 @@ BOOL CBridgeDescFramingGrid::CanActivateGrid(BOOL bActivate)
    {
       // make sure all the grid data is active
       std::vector<Float64> spanLengths = GetSpanLengths();
-      std::vector<Float64>::iterator iter;
-      for ( iter = spanLengths.begin(); iter != spanLengths.end(); iter++ )
+      BOOST_FOREACH(Float64 L,spanLengths)
       {
-         Float64 L = *iter;
          if ( L <= 0 )
          {
    			AfxMessageBox(_T("Invalid Span Length"));
             return FALSE;
          }
       }
+
+      std::vector<Float64> segmentLengths = GetSegmentLengths();
+      BOOST_FOREACH(Float64 L,segmentLengths)
+      {
+         if ( L <= 0 )
+         {
+   			AfxMessageBox(_T("Invalid Temporary Support Location"));
+            return FALSE;
+         }
+      }
+
    }
 
    return CGXGridWnd::CanActivateGrid(bActivate);

@@ -352,7 +352,7 @@ Float64 CSpecAgentImp::GetAllowableTensionStress(pgsTypes::LoadRatingType rating
    const CSegmentKey& segmentKey(poi.GetSegmentKey());
 
    GET_IFACE(IIntervals,pIntervals);
-   IntervalIndexType ratingIntervalIdx = pIntervals->GetLoadRatingInterval(segmentKey);
+   IntervalIndexType ratingIntervalIdx = pIntervals->GetLoadRatingInterval();
 
    Float64 fc;
    GET_IFACE(IMaterials,pMaterials);
@@ -372,7 +372,7 @@ Float64 CSpecAgentImp::GetAllowableTensionStress(pgsTypes::LoadRatingType rating
    else
    {
       ATLASSERT(IsDeckStressLocation(stressLocation));
-      fc = pMaterials->GetDeckFc(segmentKey,ratingIntervalIdx);
+      fc = pMaterials->GetDeckFc(ratingIntervalIdx);
    }
 
    GET_IFACE(IRatingSpecification,pRatingSpec);
@@ -462,7 +462,7 @@ Float64 CSpecAgentImp::GetDeckAllowableCompressionStress(const pgsPointOfInteres
 
    // This is a design/check case, so use the regular specifications
    GET_IFACE(IMaterials,pMaterials);
-   Float64 fc = pMaterials->GetDeckFc(segmentKey,intervalIdx);
+   Float64 fc = pMaterials->GetDeckFc(intervalIdx);
 
    Float64 fAllow = GetDeckAllowableCompressionStress(poi,intervalIdx,ls,fc);
    return fAllow;
@@ -479,7 +479,7 @@ Float64 CSpecAgentImp::GetSegmentAllowableTensionStress(const pgsPointOfInterest
 #if defined _DEBUG
       // allowable stresses during load rating only make sense if live load is applied
       GET_IFACE(IIntervals,pIntervals);
-      IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval(segmentKey);
+      IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
       ATLASSERT(liveLoadIntervalIdx <= intervalIdx );
 #endif
       pgsTypes::LoadRatingType ratingType = ::RatingTypeFromLimitState(ls);
@@ -505,7 +505,7 @@ Float64 CSpecAgentImp::GetClosureJointAllowableTensionStress(const pgsPointOfInt
 #if defined _DEBUG
       // allowable stresses during load rating only make sense if live load is applied
       GET_IFACE(IIntervals,pIntervals);
-      IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval(segmentKey);
+      IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
       ATLASSERT(liveLoadIntervalIdx <= intervalIdx );
 #endif
       pgsTypes::LoadRatingType ratingType = ::RatingTypeFromLimitState(ls);
@@ -531,7 +531,7 @@ Float64 CSpecAgentImp::GetDeckAllowableTensionStress(const pgsPointOfInterest& p
 #if defined _DEBUG
       // allowable stresses during load rating only make sense if live load is applied
       GET_IFACE(IIntervals,pIntervals);
-      IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval(segmentKey);
+      IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
       ATLASSERT(liveLoadIntervalIdx <= intervalIdx );
 #endif
       pgsTypes::LoadRatingType ratingType = ::RatingTypeFromLimitState(ls);
@@ -540,7 +540,7 @@ Float64 CSpecAgentImp::GetDeckAllowableTensionStress(const pgsPointOfInterest& p
 
    // This is a design/check case, so use the regular specifications
    GET_IFACE(IMaterials,pMaterials);
-   Float64 fc = pMaterials->GetDeckFc(segmentKey,intervalIdx);
+   Float64 fc = pMaterials->GetDeckFc(intervalIdx);
 
    Float64 fAllow = GetDeckAllowableTensionStress(poi,intervalIdx,ls,fc,bWithBondedReinforcement);
    return fAllow;
@@ -781,8 +781,8 @@ Float64 CSpecAgentImp::GetSegmentAllowableCompressionStressCoefficient(const pgs
    IntervalIndexType haulIntervalIdx          = pIntervals->GetHaulSegmentInterval(segmentKey);
    IntervalIndexType erectSegmentIdx          = pIntervals->GetErectSegmentInterval(segmentKey);
    IntervalIndexType tempStrandRemovalIdx     = pIntervals->GetTemporaryStrandRemovalInterval(segmentKey);
-   IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval(segmentKey);
-   IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval(segmentKey);
+   IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval();
+   IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval();
 
    // first the special cases
    if ( intervalIdx == liftIntervalIdx )
@@ -860,8 +860,8 @@ Float64 CSpecAgentImp::GetClosureJointAllowableCompressionStressCoefficient(cons
    ATLASSERT(IsStressCheckApplicable(segmentKey,intervalIdx,ls,pgsTypes::Compression));
 
    GET_IFACE(IIntervals,pIntervals);
-   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval(segmentKey);
-   IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval(segmentKey);
+   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
+   IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval();
 
    bool bIsTendonStressingInterval = pIntervals->IsTendonStressingInterval(segmentKey,intervalIdx);
 
@@ -905,8 +905,8 @@ Float64 CSpecAgentImp::GetDeckAllowableCompressionStressCoefficient(const pgsPoi
    ATLASSERT(IsStressCheckApplicable(segmentKey,intervalIdx,ls,pgsTypes::Compression));
 
    GET_IFACE(IIntervals,pIntervals);
-   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval(segmentKey);
-   IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval(segmentKey);
+   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
+   IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval();
    bool bIsTendonStressingInterval = pIntervals->IsTendonStressingInterval(segmentKey,intervalIdx);
 
    ATLASSERT(compositeDeckIntervalIdx <= intervalIdx); // why are you asking for allowable deck stresses before the deck can take load?
@@ -968,8 +968,8 @@ void CSpecAgentImp::GetSegmentAllowableTensionStressCoefficient(const pgsPointOf
    IntervalIndexType haulingIntervalIdx       = pIntervals->GetHaulSegmentInterval(segmentKey);
    IntervalIndexType erectSegmentIdx          = pIntervals->GetErectSegmentInterval(segmentKey);
    IntervalIndexType tempStrandRemovalIdx     = pIntervals->GetTemporaryStrandRemovalInterval(segmentKey);
-   IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval(segmentKey);
-   IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval(segmentKey);
+   IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval();
+   IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval();
 
    bool bIsTendonStressingInterval = pIntervals->IsTendonStressingInterval(segmentKey,intervalIdx);
    bool bIsStressingInterval = (intervalIdx == releaseIntervalIdx || bIsTendonStressingInterval ? true : false);
@@ -1139,10 +1139,10 @@ void CSpecAgentImp::GetDeckAllowableTensionStressCoefficient(const pgsPointOfInt
    ATLASSERT(IsStressCheckApplicable(segmentKey,intervalIdx,ls,pgsTypes::Tension));
 
    GET_IFACE(IIntervals,pIntervals);
-   IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval(segmentKey);
-   IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval(segmentKey);
+   IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval();
+   IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval();
 
-   ATLASSERT(pIntervals->GetCompositeDeckInterval(segmentKey) <= intervalIdx);
+   ATLASSERT(pIntervals->GetCompositeDeckInterval() <= intervalIdx);
 
    bool bIsTendonStressingInterval = pIntervals->IsTendonStressingInterval(segmentKey,intervalIdx);
 
@@ -1210,9 +1210,9 @@ bool CSpecAgentImp::IsStressCheckApplicable(const CGirderKey& girderKey,Interval
 
    GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType erectSegmentIntervalIdx  = pIntervals->GetFirstSegmentErectionInterval(girderKey);
-   IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval(girderKey);
-   IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval(girderKey);
-   IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval(girderKey);
+   IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval();
+   IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval();
+   IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval();
 
    if ( stressType == pgsTypes::Tension )
    {
@@ -2221,7 +2221,7 @@ Float64 CSpecAgentImp::GetMaxShearConnectorSpacing(const pgsPointOfInterest& poi
    {
       GET_IFACE(ISectionProperties,pSectProp);
       GET_IFACE(IIntervals,pIntervals);
-      IntervalIndexType intervalIdx = pIntervals->GetIntervalCount(poi.GetSegmentKey())-1;
+      IntervalIndexType intervalIdx = pIntervals->GetIntervalCount()-1;
       Float64 Hg = pSectProp->GetHg(intervalIdx,poi);
       sMax = min(Hg,sMax);
    }

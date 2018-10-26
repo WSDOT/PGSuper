@@ -108,7 +108,7 @@ pgsPointOfInterest CSelectPointOfInterestDlg::GetPointOfInterest()
 void CSelectPointOfInterestDlg::UpdatePOI()
 {
    GET_IFACE(IPointOfInterest,pPOI);
-   m_vPOI = pPOI->GetPointsOfInterest(CSegmentKey(m_GirderKey,ALL_SEGMENTS));
+   m_vPOI = pPOI->GetPointsOfInterest(CSegmentKey(ALL_GROUPS,m_GirderKey.girderIndex,ALL_SEGMENTS));
    if (m_Slider.GetSafeHwnd() != NULL )
    {
       m_Slider.SetRange(0,(int)(m_vPOI.size()-1)); // the range is number of spaces along slider... 

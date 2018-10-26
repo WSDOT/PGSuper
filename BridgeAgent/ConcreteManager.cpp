@@ -216,7 +216,7 @@ void CConcreteManager::ValidateConcrete()
             // for the LRFD stepped f'c concrete model, assume the jump from f'ci to f'c occurs
             // at hauling interval
             IntervalIndexType intervalIdx = pIntervals->GetHaulSegmentInterval(segmentKey);
-            Float64 stepTime = pIntervals->GetTime(segmentKey,intervalIdx,pgsTypes::Start);
+            Float64 stepTime = pIntervals->GetTime(intervalIdx,pgsTypes::Start);
 
             matConcreteBase* pSegmentConcrete = CreateConcreteModel(_T("Segment Concrete"),pSegment->Material.Concrete,segment_casting_time,segment_cure_time,segment_age_at_release,stepTime);
             m_pSegmentConcrete.insert( std::make_pair(segmentKey,boost::shared_ptr<matConcreteBase>(pSegmentConcrete)) );
