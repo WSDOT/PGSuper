@@ -22,7 +22,8 @@
 
 #include "StdAfx.h"
 #include "EditAnalysisType.h"
-#include "PGSuper.h"
+#include "PGSuperDoc.h"
+#include <IFace\Project.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -54,7 +55,7 @@ void txnEditAnalysisType::Undo()
 void txnEditAnalysisType::Execute(int i)
 {
    CComPtr<IBroker> pBroker;
-   AfxGetBroker(&pBroker);
+   EAFGetBroker(&pBroker);
 
    GET_IFACE2(pBroker,IEvents, pEvents);
    GET_IFACE2(pBroker, ISpecification, pSpec );

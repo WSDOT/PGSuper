@@ -31,7 +31,8 @@ enum RptDialogMode
 {
    ChaptersOnly = 0,
    SpanAndChapters = 1,
-   SpanGirderAndChapters = 2
+   GirderAndChapters = 2,
+   SpanGirderAndChapters = 3
 };
 
 class CSpanGirderReportDlg : public CDialog
@@ -39,13 +40,14 @@ class CSpanGirderReportDlg : public CDialog
 	DECLARE_DYNAMIC(CSpanGirderReportDlg)
 
 public:
-	CSpanGirderReportDlg(IBroker* pBroker,const CReportDescription& rptDesc,RptDialogMode mode,boost::shared_ptr<CReportSpecification>& pRptSpec,CWnd* pParent = NULL);   // standard constructor
+	CSpanGirderReportDlg(IBroker* pBroker,const CReportDescription& rptDesc,RptDialogMode mode,boost::shared_ptr<CReportSpecification>& pRptSpec,UINT nIDTemplate = IDD_SPANGIRDERREPORT,CWnd* pParent = NULL);   // standard constructor
 	virtual ~CSpanGirderReportDlg();
 
 // Dialog Data
 	enum { IDD = IDD_SPANGIRDERREPORT };
 
-   int m_Span, m_Girder;
+   int m_Span;
+   int m_Girder;
    std::vector<std::string> m_ChapterList;
 
 protected:

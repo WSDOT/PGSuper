@@ -24,7 +24,7 @@
 //
 
 #include "stdafx.h"
-#include "PGSuper.h"
+#include "PGSuperDoc.h"
 #include "BridgeDescShearGrid.h"
 #include "BridgeDescShearPage.h"
 #include <Units\Measure.h>
@@ -131,7 +131,7 @@ void CGirderDescShearGrid::InsertRow(bool bAppend)
 	ROWCOL nRow = 0;
 
    CComPtr<IBroker> pBroker;
-   AfxGetBroker(&pBroker);
+   EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
 
 	// if there are no cells selected,
@@ -217,7 +217,7 @@ bool CGirderDescShearGrid::EnableItemDelete()
 void CGirderDescShearGrid::CustomInit()
 {
    CComPtr<IBroker> pBroker;
-   AfxGetBroker(&pBroker);
+   EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
 
 // Initialize the grid. For CWnd based grids this call is // 

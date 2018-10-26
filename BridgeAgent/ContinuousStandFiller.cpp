@@ -370,7 +370,7 @@ HRESULT CContinuousStandFiller::ComputeHarpedStrandFill(IPrecastGirder* girder, 
          array->get_Item(ip, &val);
 
          m_TempArray->Add(val);
-         cnt+=val;
+         cnt += val;
       
          if (nStrands <= cnt)
          {
@@ -386,8 +386,9 @@ HRESULT CContinuousStandFiller::ComputeHarpedStrandFill(IPrecastGirder* girder, 
                girder->get_AllowOddNumberOfHarpedStrands(&allow);
                if (allow == VARIANT_TRUE)
                {
+                  // This puts the odd strand at the beginning of the fill sequence
                   m_TempArray->get_Item(0,&val);
-                  if (val==2)
+                  if (val == 2)
                   {
                      m_TempArray->put_Item(0,1);
                      return m_TempArray.CopyTo(strandFill);
@@ -395,7 +396,7 @@ HRESULT CContinuousStandFiller::ComputeHarpedStrandFill(IPrecastGirder* girder, 
                }
 
                // Nope, doesn't fit
-               //ATLASSERT(0);
+               ATLASSERT(0);
                return E_INVALIDARG;
             }
          }

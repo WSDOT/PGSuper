@@ -246,13 +246,13 @@ void pgsDesigner2::SetBroker(IBroker* pBroker)
    m_pBroker = pBroker;
 }
 
-void pgsDesigner2::SetAgentID(AgentIDType agentID)
+void pgsDesigner2::SetStatusGroupID(StatusGroupIDType statusGroupID)
 {
-   m_AgentID = agentID;
+   m_StatusGroupID = statusGroupID;
 
    GET_IFACE(IStatusCenter,pStatusCenter);
    m_scidLiveLoad = pStatusCenter->RegisterCallback( new pgsLiveLoadStatusCallback(m_pBroker) );
-   m_scidBridgeDescriptionError = pStatusCenter->RegisterCallback( new pgsBridgeDescriptionStatusCallback(m_pBroker,pgsTypes::statusError));
+   m_scidBridgeDescriptionError = pStatusCenter->RegisterCallback( new pgsBridgeDescriptionStatusCallback(m_pBroker,eafTypes::statusError));
 }
 
 void pgsDesigner2::GetHaunchDetails(SpanIndexType span,GirderIndexType gdr,HAUNCHDETAILS* pHaunchDetails)
@@ -487,7 +487,7 @@ pgsGirderArtifact pgsDesigner2::Check(SpanIndexType span,GirderIndexType gdr)
    if (!pLiveLoads->IsLiveLoadDefined(pgsTypes::lltDesign))
    {
       std::string strMsg("Live load are not defined.");
-      pgsLiveLoadStatusItem* pStatusItem = new pgsLiveLoadStatusItem(m_AgentID,m_scidLiveLoad,strMsg.c_str());
+      pgsLiveLoadStatusItem* pStatusItem = new pgsLiveLoadStatusItem(m_StatusGroupID,m_scidLiveLoad,strMsg.c_str());
       pStatusCenter->Add(pStatusItem);
    }
 
@@ -515,7 +515,7 @@ pgsGirderArtifact pgsDesigner2::Check(SpanIndexType span,GirderIndexType gdr)
    CheckDebonding(span,gdr,pgsTypes::Harped,gdr_artifact.GetDebondArtifact(pgsTypes::Harped));
    CheckDebonding(span,gdr,pgsTypes::Temporary,gdr_artifact.GetDebondArtifact(pgsTypes::Temporary));
 
-   pgsGirderHandlingChecker handling_checker(m_pBroker,m_AgentID);
+   pgsGirderHandlingChecker handling_checker(m_pBroker,m_StatusGroupID);
 
    GET_IFACE(IGirderLiftingSpecCriteria,pGirderLiftingSpecCriteria);
    if (pGirderLiftingSpecCriteria->IsLiftingCheckEnabled())
@@ -568,7 +568,7 @@ pgsDesignArtifact pgsDesigner2::Design(SpanIndexType span,GirderIndexType gdr,ar
    bool bPermit = pLiveLoads->IsLiveLoadDefined(pgsTypes::lltPermit);
 
    GET_IFACE(IProgress,pProgress);
-   pgsAutoProgress ap(pProgress);
+   CEAFAutoProgress ap(pProgress);
 
    std::ostringstream os;
    os << "Designing Span " << LABEL_SPAN(span) << " Girder " << LABEL_GIRDER(gdr) << std::ends;
@@ -597,7 +597,7 @@ pgsDesignArtifact pgsDesigner2::Design(SpanIndexType span,GirderIndexType gdr,ar
    }
 
    // use strand design tool to control proportioning of strands
-   m_StrandDesignTool.Initialize(m_pBroker, m_AgentID, &artifact);
+   m_StrandDesignTool.Initialize(m_pBroker, m_StatusGroupID, &artifact);
 
    // clear outcome codes
    m_DesignerOutcome.Reset();
@@ -888,7 +888,7 @@ void pgsDesigner2::MakeCopy(const pgsDesigner2& rOther)
 {
    // Add copy code here...
    m_pBroker = rOther.m_pBroker;
-   m_AgentID = rOther.m_AgentID;
+   m_StatusGroupID = rOther.m_StatusGroupID;
 }
 
 void pgsDesigner2::MakeAssignment(const pgsDesigner2& rOther)
@@ -913,7 +913,7 @@ void pgsDesigner2::CheckStrandStresses(SpanIndexType span,GirderIndexType gdr,pg
    GET_IFACE(IPointOfInterest,pIPOI);
 
    GET_IFACE(IProgress, pProgress);
-   pgsAutoProgress ap(pProgress);
+   CEAFAutoProgress ap(pProgress);
 
    std::ostringstream os;
    os << "Checking strand stresses for Span "
@@ -989,8 +989,8 @@ void pgsDesigner2::CheckGirderStresses(SpanIndexType span,GirderIndexType gdr,AL
    std::vector<pgsPointOfInterest> vPoi = pIPoi->GetPointsOfInterest(task.stage,span,gdr,POI_FLEXURESTRESS | POI_TABULAR);
    std::vector<pgsPointOfInterest>::iterator iter;
 
-   GET_IFACE(IProjectSettings,pProjectSettings);
-   bool bUnitsSI = (pProjectSettings->GetUnitsMode() == pgsTypes::umSI ? true : false);
+   GET_IFACE(IDisplayUnits,pDisplayUnits);
+   bool bUnitsSI = IS_SI_UNITS(pDisplayUnits);
 
    double Es, fy;
    pMaterial->GetLongitudinalRebarProperties(span,gdr,&Es,&fy);
@@ -1015,9 +1015,8 @@ void pgsDesigner2::CheckGirderStresses(SpanIndexType span,GirderIndexType gdr,AL
 
    GET_IFACE(IStageMap,pStageMap);
    GET_IFACE(IProgress, pProgress);
-   GET_IFACE(IDisplayUnits,pDisplayUnits);
    const unitmgtLengthData& length = pDisplayUnits->GetSpanLengthUnit();
-   pgsAutoProgress ap(pProgress);
+   CEAFAutoProgress ap(pProgress);
 
    for ( iter = vPoi.begin(); iter != vPoi.end(); iter++)
    {
@@ -1348,7 +1347,7 @@ pgsStirrupCheckAtPoisArtifact pgsDesigner2::CreateStirrupCheckAtPoisArtifact(con
       std::ostringstream os;
       os << "Cannot perform shear check - Span-to-Depth ratio is less than "<< MIN_SPAN_DEPTH_RATIO <<" for Span "<< poi.GetSpan()+1 << " Girder "<< LABEL_GIRDER(poi.GetGirder());
 
-      pgsBridgeDescriptionStatusItem* pStatusItem = new pgsBridgeDescriptionStatusItem(m_AgentID,m_scidBridgeDescriptionError,0,os.str().c_str());
+      pgsBridgeDescriptionStatusItem* pStatusItem = new pgsBridgeDescriptionStatusItem(m_StatusGroupID,m_scidBridgeDescriptionError,0,os.str().c_str());
       pStatusCenter->Add(pStatusItem);
 
       os << std::endl << "See Status Center for Details";
@@ -1940,9 +1939,14 @@ void pgsDesigner2::CheckLongReinfShear(const pgsPointOfInterest& poi,
    // calculate required longitudinal reinforcement
 
    GET_IFACE(IBridge,pBridge);
-   Float64 start_end_size = pBridge->GetGirderStartConnectionLength(poi.GetSpan(),poi.GetGirder());
-   Float64 end_end_size   = pBridge->GetGirderEndConnectionLength(poi.GetSpan(),poi.GetGirder());
-   Float64 length         = pBridge->GetGirderLength(poi.GetSpan(),poi.GetGirder());
+   Float64 start_end_size = pBridge->GetGirderStartConnectionLength(span,gdr);
+   Float64 end_end_size   = pBridge->GetGirderEndConnectionLength(span,gdr);
+   Float64 length         = pBridge->GetGirderLength(span,gdr);
+   bool bDummy;
+   bool bNegMomentAtStart;
+   bool bNegMomentAtEnd;
+   pBridge->IsContinuousAtPier(span,&bDummy,&bNegMomentAtStart);
+   pBridge->IsContinuousAtPier(span+1,&bNegMomentAtEnd,&bDummy);
 
    GET_IFACE(IPointOfInterest,pPOI);
    pgsPointOfInterest cs_start, cs_end;
@@ -1954,7 +1958,8 @@ void pgsDesigner2::CheckLongReinfShear(const pgsPointOfInterest& poi,
 
    if ( lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion() )
    {
-      if (InRange(start_end_size,poi.GetDistFromStart(),cs_start.GetDistFromStart()) || InRange(cs_end.GetDistFromStart(),poi.GetDistFromStart(),length-end_end_size) )
+      if ( (InRange(start_end_size,poi.GetDistFromStart(),cs_start.GetDistFromStart()) && !bNegMomentAtStart) ||
+           (InRange(cs_end.GetDistFromStart(),poi.GetDistFromStart(),length-end_end_size) && !bNegMomentAtEnd) )
       {
           // Equation 5.8.3.5-2
          demand = 0.5*nu/phi_axial +
@@ -1972,11 +1977,14 @@ void pgsDesigner2::CheckLongReinfShear(const pgsPointOfInterest& poi,
    else
    {
       if (// Spec is 2003 or earlier AND poi is at one of the points of support 
-           (lrfdVersionMgr::GetVersion() <= lrfdVersionMgr::SecondEditionWith2003Interims && (IsEqual(poi.GetDistFromStart(),start_end_size) || IsEqual(poi.GetDistFromStart(),length-end_end_size)))
+           (lrfdVersionMgr::GetVersion() <= lrfdVersionMgr::SecondEditionWith2003Interims && 
+           ( (IsEqual(poi.GetDistFromStart(),start_end_size) && !bNegMomentAtStart ) || 
+             (IsEqual(poi.GetDistFromStart(),length-end_end_size))) && !bNegMomentAtEnd )
             ||
            // Spec is 2004 AND poi is between point of support and critical section for shear
            (lrfdVersionMgr::SecondEditionWith2003Interims < lrfdVersionMgr::GetVersion() && lrfdVersionMgr::GetVersion() <= lrfdVersionMgr::ThirdEdition2004 && 
-              (InRange(start_end_size,poi.GetDistFromStart(),cs_start.GetDistFromStart()) || InRange(cs_end.GetDistFromStart(),poi.GetDistFromStart(),length-end_end_size)) )
+              ( (InRange(start_end_size,poi.GetDistFromStart(),cs_start.GetDistFromStart()) && !bNegMomentAtStart) || 
+                (InRange(cs_end.GetDistFromStart(),poi.GetDistFromStart(),length-end_end_size)) && !bNegMomentAtEnd) )
          )
       {
           // Equation 5.8.3.5-2
@@ -2084,8 +2092,7 @@ void pgsDesigner2::CheckMomentCapacity(SpanIndexType span,GirderIndexType gdr,pg
    }
    else
    {
-      PoiAttributeType attrib = POI_FLEXURECAPACITY | POI_SHEAR;
-      attrib |= (ls == pgsTypes::StrengthI ? POI_CRITSECTSHEAR1 : POI_CRITSECTSHEAR2);
+      PoiAttributeType attrib = POI_FLEXURECAPACITY | POI_SHEAR | POI_CRITSECTSHEAR1 | POI_CRITSECTSHEAR2;
       vPoi = pIPoi->GetPointsOfInterest(stage, span, gdr, attrib, POIFIND_OR );
    }
 
@@ -2104,25 +2111,9 @@ void pgsDesigner2::CheckMomentCapacity(SpanIndexType span,GirderIndexType gdr,pg
       // negative moment is a different story. there must be a negative moment connection
       // at one end of the girder
       pgsFlexuralCapacityArtifact nm_artifact;
-      bool bComputeNegativeMomentCapacity = false;
+      bool bComputeNegativeMomentCapacity = pBridge->ProcessNegativeMoments(span);
 
-      GET_IFACE(ISpecification,pSpec);
-      pgsTypes::AnalysisType analysisType = pSpec->GetAnalysisType();
-
-      if ( stage == pgsTypes::BridgeSite3 && (analysisType == pgsTypes::Continuous || analysisType == pgsTypes::Envelope) )
-      {
-         bool bContinuousAtPrevPier,bContinuousAtNextPier,bValue;
-         pBridge->IsContinuousAtPier(prev_pier,&bValue,&bContinuousAtPrevPier);
-         pBridge->IsContinuousAtPier(next_pier,&bContinuousAtNextPier,&bValue);
-
-         bool bIntegralAtPrevPier,bIntegralAtNextPier;
-         pBridge->IsIntegralAtPier(prev_pier,&bValue,&bIntegralAtPrevPier);
-         pBridge->IsIntegralAtPier(next_pier,&bIntegralAtNextPier,&bValue);
-
-         bComputeNegativeMomentCapacity = ( bContinuousAtPrevPier || bContinuousAtNextPier || bIntegralAtPrevPier || bIntegralAtNextPier );
-      }
-
-      if ( bComputeNegativeMomentCapacity )
+      if ( stage == pgsTypes::BridgeSite3 && bComputeNegativeMomentCapacity )
          nm_artifact = CreateFlexuralCapacityArtifact(poi,stage,ls,false);
 
       pGdrArtifact->AddFlexuralCapacityArtifact(key,pm_artifact,nm_artifact);
@@ -2291,7 +2282,7 @@ void pgsDesigner2::CheckSplittingZone(SpanIndexType span,GirderIndexType gdr,pgs
    GET_IFACE(IPrestressForce,pPrestressForce);
 
    GET_IFACE(IProgress,pProgress);
-   pgsAutoProgress ap(pProgress);
+   CEAFAutoProgress ap(pProgress);
    std::ostringstream os;
    os << "Checking splitting requirements for Span "
       << LABEL_SPAN(span) << " Girder "
@@ -2383,7 +2374,7 @@ void pgsDesigner2::CheckGirderDetailing(SpanIndexType span,GirderIndexType gdr,p
 {
    // 5.14.1.2.2
    GET_IFACE(IProgress,pProgress);
-   pgsAutoProgress ap(pProgress);
+   CEAFAutoProgress ap(pProgress);
    std::ostringstream os;
    os << "Checking Girder Detailing requirements for Span "
       << LABEL_SPAN(span) << " Girder "
@@ -2459,7 +2450,7 @@ void pgsDesigner2::CheckStrandSlope(SpanIndexType span,GirderIndexType gdr,pgsSt
    GET_IFACE(IStrandGeometry,pStrGeom);
 
    GET_IFACE(IProgress,pProgress);
-   pgsAutoProgress ap(pProgress);
+   CEAFAutoProgress ap(pProgress);
    std::ostringstream os;
    os << "Checking Strand Slope requirements for Span "
       << LABEL_SPAN(span) << " Girder "
@@ -2498,7 +2489,7 @@ void pgsDesigner2::CheckHoldDownForce(SpanIndexType span,GirderIndexType gdr,pgs
    GET_IFACE(IPrestressForce,pPrestressForce);
 
    GET_IFACE(IProgress,pProgress);
-   pgsAutoProgress ap(pProgress);
+   CEAFAutoProgress ap(pProgress);
    std::ostringstream os;
    os << "Checking Hold Down Force requirements for Span "
       << LABEL_SPAN(span) << " Girder "
@@ -2531,7 +2522,7 @@ void pgsDesigner2::CheckLiveLoadDeflection(SpanIndexType span,GirderIndexType gd
    if (pSpecEntry->GetDoEvaluateLLDeflection())
    {
       GET_IFACE(IProgress,pProgress);
-      pgsAutoProgress ap(pProgress);
+      CEAFAutoProgress ap(pProgress);
       std::ostringstream os;
       os << "Checking Live Load Deflection requirements for Span "
          << LABEL_SPAN(span) << " Girder "
@@ -2603,7 +2594,7 @@ void pgsDesigner2::CheckConstructability(SpanIndexType span,GirderIndexType gdr,
    else
    {
       GET_IFACE(IProgress,pProgress);
-      pgsAutoProgress ap(pProgress);
+      CEAFAutoProgress ap(pProgress);
       std::ostringstream os;
       os << "Checking Constructability requirements for Span "
          << LABEL_SPAN(span) << " Girder "
@@ -2686,7 +2677,7 @@ void pgsDesigner2::CheckDebonding(SpanIndexType span,GirderIndexType gdr,pgsType
    GET_IFACE(IDebondLimits,pDebondLimits);
 
    GET_IFACE(IProgress,pProgress);
-   pgsAutoProgress ap(pProgress);
+   CEAFAutoProgress ap(pProgress);
    std::ostringstream os;
    os << "Checking Debonding requirements for Span "
       << LABEL_SPAN(span) << " Girder "
@@ -4759,7 +4750,7 @@ void pgsDesigner2::DesignForLiftingHarping(bool bProportioningStrands,IProgress*
    SpanIndexType span  = m_StrandDesignTool.GetSpan();
    GirderIndexType gdr = m_StrandDesignTool.GetGirder();
 
-   pgsGirderHandlingChecker checker(m_pBroker,m_AgentID); // this guy can do the stability design!
+   pgsGirderHandlingChecker checker(m_pBroker,m_StatusGroupID); // this guy can do the stability design!
 
    GDRCONFIG config = m_StrandDesignTool.GetGirderConfiguration();
    if ( bProportioningStrands )
@@ -5110,7 +5101,7 @@ std::vector<Int16> pgsDesigner2::DesignForLiftingDebonding(bool bProportioningSt
    SpanIndexType span = m_StrandDesignTool.GetSpan();
    GirderIndexType gdr  = m_StrandDesignTool.GetGirder();
 
-   pgsGirderHandlingChecker checker(m_pBroker,m_AgentID);
+   pgsGirderHandlingChecker checker(m_pBroker,m_StatusGroupID);
    GDRCONFIG config = m_StrandDesignTool.GetGirderConfiguration();
 
    if ( bProportioningStrands )
@@ -5328,7 +5319,7 @@ std::vector<Int16> pgsDesigner2::DesignDebondingForLifting(HANDLINGCONFIG& liftC
 
       pgsLiftingAnalysisArtifact artifact;
 
-      pgsGirderHandlingChecker checker(m_pBroker,m_AgentID);
+      pgsGirderHandlingChecker checker(m_pBroker,m_StatusGroupID);
       // Designer manages it's own POIs
       IGirderLiftingDesignPointsOfInterest* pPoiLd = dynamic_cast<IGirderLiftingDesignPointsOfInterest*>(&m_StrandDesignTool);
       checker.AnalyzeLifting(span,gdr,liftConfig,pPoiLd,&artifact);
@@ -5415,7 +5406,7 @@ void pgsDesigner2::DesignForShipping(IProgress* pProgress)
    SpanIndexType span = m_StrandDesignTool.GetSpan();
    GirderIndexType gdr  = m_StrandDesignTool.GetGirder();
 
-   pgsGirderHandlingChecker checker(m_pBroker,m_AgentID);
+   pgsGirderHandlingChecker checker(m_pBroker,m_StatusGroupID);
    
    pgsHaulingAnalysisArtifact artifact;
    bool bResult = false;
@@ -5626,7 +5617,7 @@ std::vector<Int16> pgsDesigner2::DesignForShippingDebondingFinal(IProgress* pPro
       ship_config.LeftOverhang = m_StrandDesignTool.GetLeadingOverhang();
       ship_config.RightOverhang = m_StrandDesignTool.GetTrailingOverhang();
 
-      pgsGirderHandlingChecker checker(m_pBroker,m_AgentID);
+      pgsGirderHandlingChecker checker(m_pBroker,m_StatusGroupID);
       IGirderHaulingDesignPointsOfInterest* pPoiLd = dynamic_cast<IGirderHaulingDesignPointsOfInterest*>(&m_StrandDesignTool);
 
       checker.AnalyzeHauling(span,gdr,ship_config,pPoiLd,&artifact);
@@ -6965,8 +6956,8 @@ Float64 pgsDesigner2::RoundSlabOffset(Float64 offset)
 {
    Float64 newoff;
    // Round to nearest 1/4" (5 mm) per WSDOT BDM
-   GET_IFACE(IProjectSettings, pProjSettings);
-   if ( pProjSettings->GetUnitsMode() == pgsTypes::umSI )
+   GET_IFACE(IDisplayUnits,pDisplayUnits);
+   if ( IS_SI_UNITS(pDisplayUnits) )
       newoff = CeilOff(offset,::ConvertToSysUnits(5.0,unitMeasure::Millimeter) );
    else
       newoff = CeilOff(offset,::ConvertToSysUnits(0.25,unitMeasure::Inch) );

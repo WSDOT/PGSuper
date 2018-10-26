@@ -108,6 +108,29 @@ Float64 GetVertPsComponent(IBroker* pBroker,
    return vz;
 }
 
+//-----------------------------------------------------------------------------
+CollectionIndexType LimitStateToShearIndex(pgsTypes::LimitState ls)
+{
+   CollectionIndexType idx;
+
+   switch (ls)
+   {
+   case pgsTypes::StrengthI:                         idx = 0;       break;
+   case pgsTypes::StrengthII:                        idx = 1;       break;
+   case pgsTypes::StrengthI_Inventory:               idx = 2;       break;
+   case pgsTypes::StrengthI_Operating:               idx = 3;       break;
+   case pgsTypes::StrengthI_LegalRoutine:            idx = 4;       break;
+   case pgsTypes::StrengthI_LegalSpecial:            idx = 5;       break;
+   case pgsTypes::StrengthII_PermitRoutine:          idx = 6;       break;
+   case pgsTypes::StrengthII_PermitSpecial:          idx = 7;       break;
+   default:
+      ATLASSERT(false); // is there a new limit state type?
+      idx = 0;
+      break;
+   }
+
+   return idx;
+}
 
 /////////////////////////////////////////////////////////////////////////////
 // CEngAgentImp
@@ -121,16 +144,18 @@ m_ShearCapEngineer(0,0)
 void CEngAgentImp::InvalidateAll()
 {
    GET_IFACE(IStatusCenter,pStatusCenter);
-   pStatusCenter->RemoveByAgentID(m_AgentID);
+   pStatusCenter->RemoveByStatusGroupID(m_StatusGroupID);
 
    InvalidateHaunch();
    InvalidateLosses();
    InvalidateLiveLoadDistributionFactors();
    InvalidateArtifacts();
+   InvalidateRatingArtifacts();
    InvalidateShearCapacity();
    InvalidateFpc();
    InvalidateShearCritSection();
    InvalidateMomentCapacity();
+   InvalidateCrackedSectionDetails();
 }
 
 //-----------------------------------------------------------------------------
@@ -179,7 +204,7 @@ void CEngAgentImp::ValidateLiveLoadDistributionFactors(SpanIndexType span,Girder
 
    CComPtr<IBeamFactory> pFactory;
    pGdr->GetBeamFactory(&pFactory);
-   pFactory->CreateDistFactorEngineer(m_pBroker,m_AgentID,NULL,NULL,&m_pDistFactorEngineer);
+   pFactory->CreateDistFactorEngineer(m_pBroker,m_StatusGroupID,NULL,NULL,&m_pDistFactorEngineer);
 }
 
 //-----------------------------------------------------------------------------
@@ -200,10 +225,21 @@ void CEngAgentImp::InvalidateArtifacts()
 }
 
 //-----------------------------------------------------------------------------
+void CEngAgentImp::InvalidateRatingArtifacts()
+{
+   LOG("Invalidating rating artifacts");
+   int size = sizeof(m_RatingArtifacts)/sizeof(std::map<RatingArtifactKey,pgsRatingArtifact>);
+   for ( int i = 0; i < size; i++ )
+   {
+      m_RatingArtifacts[i].clear();
+   }
+}
+
+//-----------------------------------------------------------------------------
 void CEngAgentImp::ValidateArtifacts(SpanIndexType span,GirderIndexType gdr)
 {
    GET_IFACE(IProgress, pProgress);
-   pgsAutoProgress ap(pProgress);
+   CEAFAutoProgress ap(pProgress);
 
    std::ostringstream os;
    os << "Analyzing Span " << LABEL_SPAN(span) << " Girder " << LABEL_GIRDER(gdr) << std::ends;
@@ -218,6 +254,32 @@ void CEngAgentImp::ValidateArtifacts(SpanIndexType span,GirderIndexType gdr)
    pgsGirderArtifact gdr_artifact = m_Designer.Check(span,gdr);
 
    m_CheckArtifacts.insert( std::make_pair(HashSpanGirder(span,gdr),gdr_artifact) );
+}
+
+//-----------------------------------------------------------------------------
+void CEngAgentImp::ValidateRatingArtifacts(SpanIndexType spanIdx,GirderIndexType gdrIdx,pgsTypes::LoadRatingType ratingType,VehicleIndexType vehicleIndex)
+{
+   GET_IFACE(IRatingSpecification,pRatingSpec);
+   if ( !pRatingSpec->IsRatingEnabled(ratingType) )
+      return; // this type isn't enabled, so leave
+
+   GET_IFACE(IProgress, pProgress);
+   CEAFAutoProgress ap(pProgress);
+
+   std::ostringstream os;
+   os << "Load Rating Span " << LABEL_SPAN(spanIdx) << " Girder " << LABEL_GIRDER(gdrIdx) << std::ends;
+   pProgress->UpdateMessage( os.str().c_str() );
+
+   std::map<RatingArtifactKey,pgsRatingArtifact>::iterator found;
+   RatingArtifactKey key(spanIdx,gdrIdx,vehicleIndex);
+   found = m_RatingArtifacts[ratingType].find(key);
+   if ( found != m_RatingArtifacts[ratingType].end() )
+      return; // We already have an artifact for this girder
+
+
+   pgsRatingArtifact artifact = m_LoadRater.Rate(spanIdx,gdrIdx,ratingType,vehicleIndex);
+
+   m_RatingArtifacts[ratingType].insert( std::make_pair(key,artifact) );
 }
 
 //-----------------------------------------------------------------------------
@@ -247,6 +309,17 @@ pgsGirderArtifact* CEngAgentImp::FindArtifact(SpanIndexType span,GirderIndexType
     return &(*found).second;
 }
 
+pgsRatingArtifact* CEngAgentImp::FindRatingArtifact(SpanIndexType spanIdx,GirderIndexType gdrIdx,pgsTypes::LoadRatingType ratingType,VehicleIndexType vehicleIndex)
+{
+    std::map<RatingArtifactKey,pgsRatingArtifact>::iterator found;
+    RatingArtifactKey key(spanIdx,gdrIdx,vehicleIndex);
+    found = m_RatingArtifacts[ratingType].find( key );
+    if ( found == m_RatingArtifacts[ratingType].end() )
+        return 0;
+
+    return &(*found).second;
+}
+
 //-----------------------------------------------------------------------------
 const MINMOMENTCAPDETAILS* CEngAgentImp::ValidateMinMomentCapacity(pgsTypes::Stage stage,
                                                                    const pgsPointOfInterest& poi,
@@ -267,7 +340,7 @@ const MINMOMENTCAPDETAILS* CEngAgentImp::ValidateMinMomentCapacity(pgsTypes::Sta
    }
 
    GET_IFACE(IProgress, pProgress);
-   pgsAutoProgress ap(pProgress);
+   CEAFAutoProgress ap(pProgress);
 
    std::string strSectionType = ( stage == pgsTypes::BridgeSite1 ? "noncomposite" : "composite" );
 
@@ -275,16 +348,12 @@ const MINMOMENTCAPDETAILS* CEngAgentImp::ValidateMinMomentCapacity(pgsTypes::Sta
    GirderIndexType gdr = poi.GetGirder();
 
    GET_IFACE(IDisplayUnits,pDisplayUnits);
-   const unitmgtLengthData& length = pDisplayUnits->GetSpanLengthUnit();
 
    std::ostringstream os;
    os << "Computing " << strSectionType << " minimum moment capacity for Span "
       << LABEL_SPAN(span) << " Girder "
-      << LABEL_GIRDER(gdr) << " at "
-      << std::setw(length.Width)
-      << std::setprecision(length.Precision) 
-      << ::ConvertFromSysUnits(poi.GetDistFromStart(),length.UnitOfMeasure) << " " 
-      << length.UnitOfMeasure.UnitTag() << " from start of girder" << std::ends;
+      << LABEL_GIRDER(gdr) << " at " << (LPCTSTR)FormatDimension(poi.GetDistFromStart(),pDisplayUnits->GetSpanLengthUnit())
+      << " from start of girder" << std::ends;
 
    pProgress->UpdateMessage( os.str().c_str() );
 
@@ -317,21 +386,17 @@ const CRACKINGMOMENTDETAILS* CEngAgentImp::ValidateCrackingMoments(pgsTypes::Sta
    }
 
    GET_IFACE(IProgress, pProgress);
-   pgsAutoProgress ap(pProgress);
+   CEAFAutoProgress ap(pProgress);
 
    std::string strSectionType = ( stage == pgsTypes::BridgeSite1 ? "noncomposite" : "composite" );
 
    GET_IFACE(IDisplayUnits,pDisplayUnits);
-   const unitmgtLengthData& length = pDisplayUnits->GetSpanLengthUnit();
 
    std::ostringstream os;
    os << "Computing " << strSectionType << " cracking moment for Span "
-      << (poi.GetSpan()+1) << " Girder "
-      << LABEL_GIRDER(poi.GetGirder()) << " at "
-      << std::setw(length.Width)
-      << std::setprecision(length.Precision) 
-      << ::ConvertFromSysUnits(poi.GetDistFromStart(),length.UnitOfMeasure) << " " 
-      << length.UnitOfMeasure.UnitTag() << " from start of girder" << std::ends;
+      << LABEL_SPAN(poi.GetSpan()) << " Girder "
+      << LABEL_GIRDER(poi.GetGirder()) << " at " << (LPCTSTR)FormatDimension(poi.GetDistFromStart(),pDisplayUnits->GetSpanLengthUnit())
+      << " from start of girder" << std::ends;
 
    pProgress->UpdateMessage( os.str().c_str() );
 
@@ -456,20 +521,16 @@ MOMENTCAPACITYDETAILS CEngAgentImp::ComputeMomentCapacity(pgsTypes::Stage stage,
 
    GET_IFACE(IProgress, pProgress);
    GET_IFACE(IDisplayUnits,pDisplayUnits);
-   const unitmgtLengthData& length = pDisplayUnits->GetSpanLengthUnit();
 
-   pgsAutoProgress ap(pProgress);
+   CEAFAutoProgress ap(pProgress);
 
    std::string strSectionType = ( bPositiveMoment ? "positive" : "negative" );
 
    std::ostringstream os;
    os << "Computing " << strSectionType << " moment capacity for Span "
       << LABEL_SPAN(span) << " Girder "
-      << LABEL_GIRDER(gdr) << " at " 
-      << std::setw(length.Width)
-      << std::setprecision(length.Precision) 
-      << ::ConvertFromSysUnits(poi.GetDistFromStart(),length.UnitOfMeasure) << " " 
-      << length.UnitOfMeasure.UnitTag() << " from start of girder" << std::ends;
+      << LABEL_GIRDER(gdr) << " at " << (LPCTSTR)FormatDimension(poi.GetDistFromStart(),pDisplayUnits->GetSpanLengthUnit())
+      << " from start of girder" << std::ends;
 
    pProgress->UpdateMessage( os.str().c_str() );
 
@@ -487,9 +548,8 @@ MOMENTCAPACITYDETAILS CEngAgentImp::ComputeMomentCapacity(pgsTypes::Stage stage,
 
    GET_IFACE(IProgress, pProgress);
    GET_IFACE(IDisplayUnits,pDisplayUnits);
-   const unitmgtLengthData& length = pDisplayUnits->GetSpanLengthUnit();
 
-   pgsAutoProgress ap(pProgress);
+   CEAFAutoProgress ap(pProgress);
 
 
    std::string strSectionType = ( bPositiveMoment ? "positive" : "negative" );
@@ -497,11 +557,8 @@ MOMENTCAPACITYDETAILS CEngAgentImp::ComputeMomentCapacity(pgsTypes::Stage stage,
    std::ostringstream os;
    os << "Computing " << strSectionType << " moment capacity for Span "
       << LABEL_SPAN(span) << " Girder "
-      << LABEL_GIRDER(gdr) << " at " 
-      << std::setw(length.Width)
-      << std::setprecision(length.Precision) 
-      << ::ConvertFromSysUnits(poi.GetDistFromStart(),length.UnitOfMeasure) << " " 
-      << length.UnitOfMeasure.UnitTag() << " from start of girder" << std::ends;
+      << LABEL_GIRDER(gdr) << " at " << (LPCTSTR)FormatDimension(poi.GetDistFromStart(),pDisplayUnits->GetSpanLengthUnit())
+      << " from start of girder" << std::ends;
 
    pProgress->UpdateMessage( os.str().c_str() );
 
@@ -558,18 +615,33 @@ void CEngAgentImp::InvalidateMomentCapacity()
 void CEngAgentImp::InvalidateShearCapacity()
 {
    LOG("Invalidating shear capacities");
-   m_ShearCapacity[0].clear(); // Strength I
-   m_ShearCapacity[1].clear(); // Strength II
+   CollectionIndexType size = sizeof(m_ShearCapacity)/sizeof(std::map<PoiKey,SHEARCAPACITYDETAILS>);
+   for (CollectionIndexType idx = 0; idx < size; idx++ )
+   {
+      m_ShearCapacity[idx].clear();
+   }
 }
 
 //-----------------------------------------------------------------------------
+void CEngAgentImp::InvalidateCrackedSectionDetails()
+{
+   LOG("Invalidating cracked section details");
+
+   for ( int i = 0; i < 2; i++ )
+   {
+      m_CrackedSectionDetails[i].clear();
+   }
+}
+
+//-----------------------------------------------------------------------------
+
 const SHEARCAPACITYDETAILS* CEngAgentImp::ValidateShearCapacity(pgsTypes::LimitState ls, 
                                                                 pgsTypes::Stage stage, 
                                                                 const pgsPointOfInterest& poi)
 {
    std::map<PoiKey,SHEARCAPACITYDETAILS>::iterator found;
 
-   int idx = (ls == pgsTypes::StrengthI ? 0 : 1);
+   CollectionIndexType idx = LimitStateToShearIndex(ls);
 
    if ( 0 <= poi.GetID() )
    {
@@ -581,20 +653,16 @@ const SHEARCAPACITYDETAILS* CEngAgentImp::ValidateShearCapacity(pgsTypes::LimitS
    }
 
    GET_IFACE(IProgress, pProgress);
-   pgsAutoProgress ap(pProgress);
+   CEAFAutoProgress ap(pProgress);
 
    GET_IFACE(IDisplayUnits,pDisplayUnits);
-   const unitmgtLengthData& length = pDisplayUnits->GetSpanLengthUnit();
 
    std::ostringstream os;
    std::string strLimitState = (ls == pgsTypes::StrengthI ? "Strength I" : "Strength II");
    os << "Computing " << strLimitState << " shear capacity for Span "
-      << (poi.GetSpan()+1) << " Girder "
-      << LABEL_GIRDER(poi.GetGirder()) << " at " 
-      << std::setw(length.Width)
-      << std::setprecision(length.Precision) 
-      << ::ConvertFromSysUnits(poi.GetDistFromStart(),length.UnitOfMeasure) << " " 
-      << length.UnitOfMeasure.UnitTag() << " from start of girder" << std::ends;
+      << LABEL_SPAN(poi.GetSpan()) << " Girder "
+      << LABEL_GIRDER(poi.GetGirder()) << " at " << (LPCTSTR)FormatDimension(poi.GetDistFromStart(),pDisplayUnits->GetSpanLengthUnit())
+      << " from start of girder" << std::ends;
 
    pProgress->UpdateMessage( os.str().c_str() );
 
@@ -621,19 +689,15 @@ const FPCDETAILS* CEngAgentImp::ValidateFpc(const pgsPointOfInterest& poi)
    }
 
    GET_IFACE(IProgress, pProgress);
-   pgsAutoProgress ap(pProgress);
+   CEAFAutoProgress ap(pProgress);
 
    GET_IFACE(IDisplayUnits,pDisplayUnits);
-   const unitmgtLengthData& length = pDisplayUnits->GetSpanLengthUnit();
 
    std::ostringstream os;
    os << "Computing fpc for Span "
-      << (poi.GetSpan()+1) << " Girder "
-      << LABEL_GIRDER(poi.GetGirder()) << " at "
-      << std::setw(length.Width)
-      << std::setprecision(length.Precision) 
-      << ::ConvertFromSysUnits(poi.GetDistFromStart(),length.UnitOfMeasure) << " " 
-      << length.UnitOfMeasure.UnitTag() << " from start of girder" << std::ends;
+      << LABEL_SPAN(poi.GetSpan()) << " Girder "
+      << LABEL_GIRDER(poi.GetGirder()) << " at " << (LPCTSTR)FormatDimension(poi.GetDistFromStart(),pDisplayUnits->GetSpanLengthUnit())
+      << " from start of girder" << std::ends;
 
    pProgress->UpdateMessage( os.str().c_str() );
 
@@ -662,25 +726,36 @@ void CEngAgentImp::InvalidateFpc()
 void CEngAgentImp::InvalidateShearCritSection()
 {
    LOG("Invalidating critical section for shear");
-   m_CritSectionDetails[0].clear();
-   m_CritSectionDetails[1].clear();
+   CollectionIndexType size = sizeof(m_CritSectionDetails)/sizeof(std::map<SpanGirderHashType,CRITSECTDETAILS>);
+   for (CollectionIndexType idx = 0; idx < size; idx++ )
+   {
+      m_CritSectionDetails[idx].clear();
+   }
 }
 
 //-----------------------------------------------------------------------------
 const CRITSECTDETAILS* CEngAgentImp::ValidateShearCritSection(pgsTypes::LimitState limitState,SpanIndexType span,GirderIndexType gdr)
 {
-   int idx = (limitState == pgsTypes::StrengthI ? 0 : 1);
+   USES_CONVERSION;
+   GET_IFACE(ILibrary,pLib);
+   GET_IFACE(ISpecification,pSpec);
+   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
+
+   // LRFD 2004 and later, critical section is only a function of dv
+   if ( lrfdVersionMgr::ThirdEdition2004 <= pSpecEntry->GetSpecificationType() )
+      limitState = pgsTypes::StrengthI;
 
    std::map<SpanGirderHashType,CRITSECTDETAILS>::iterator found;
-   found = m_CritSectionDetails[idx].find(HashSpanGirder(span,gdr));
-   if ( found != m_CritSectionDetails[idx].end() )
+   found = m_CritSectionDetails[LimitStateToShearIndex(limitState)].find(HashSpanGirder(span,gdr));
+   if ( found != m_CritSectionDetails[LimitStateToShearIndex(limitState)].end() )
       return &(found->second); // We already have the value for this girder
 
    GET_IFACE(IProgress, pProgress);
-   pgsAutoProgress ap(pProgress);
+   CEAFAutoProgress ap(pProgress);
 
+   GET_IFACE(IStageMap,pStageMap);
    std::ostringstream os;
-   os << "Computing " << (limitState==pgsTypes::StrengthI ? "Strength I" : "Strength II") << " critical section for shear for Span "
+   os << "Computing " << OLE2A(pStageMap->GetLimitStateName(limitState)) << " critical section for shear for Span "
       << LABEL_SPAN(span) << " Girder "<< LABEL_GIRDER(gdr) << std::ends;
 
    pProgress->UpdateMessage( os.str().c_str() );
@@ -690,7 +765,7 @@ const CRITSECTDETAILS* CEngAgentImp::ValidateShearCritSection(pgsTypes::LimitSta
    CalculateShearCritSection(limitState,span, gdr, &scsd);
 
    std::pair<std::map<SpanGirderHashType,CRITSECTDETAILS>::iterator,bool> retval;
-   retval =    m_CritSectionDetails[idx].insert( std::make_pair(HashSpanGirder(span,gdr),scsd) );
+   retval =    m_CritSectionDetails[LimitStateToShearIndex(limitState)].insert( std::make_pair(HashSpanGirder(span,gdr),scsd) );
    return &((retval.first)->second);
 }
 
@@ -854,7 +929,7 @@ void CEngAgentImp::CalculateShearCritSection(pgsTypes::LimitState limitState,
 
       // intercept functions make a 45 degree angle upward from supports
       Float64 Yl = x - left_end_size - left_support_width/2;
-      Float64 Yr = span_length + right_end_size - x - right_support_width/2;
+      Float64 Yr = span_length + left_end_size - x - right_support_width/2;
       left_intercept.AddPoint( gpPoint2d(x,Yl) );
       right_intercept.AddPoint( gpPoint2d(x,Yr) );
 
@@ -966,12 +1041,47 @@ void CEngAgentImp::CalculateShearCritSection(pgsTypes::LimitState limitState,
       GET_IFACE(IStatusCenter,pStatusCenter);
 
       std::string msg("An error occured while locating the critical section for shear");
-      pgsUnknownErrorStatusItem* pStatusItem = new pgsUnknownErrorStatusItem(m_AgentID,m_scidUnknown,__FILE__,__LINE__,msg.c_str());
+      pgsUnknownErrorStatusItem* pStatusItem = new pgsUnknownErrorStatusItem(m_StatusGroupID,m_scidUnknown,__FILE__,__LINE__,msg.c_str());
       pStatusCenter->Add(pStatusItem);
 
       msg += std::string("\nSee Status Center for Details");
       THROW_UNWIND(msg.c_str(),-1);
    }
+}
+
+const CRACKEDSECTIONDETAILS* CEngAgentImp::ValidateCrackedSectionDetails(const pgsPointOfInterest& poi,bool bPositiveMoment)
+{
+   std::map<PoiKey,CRACKEDSECTIONDETAILS>::iterator found;
+
+   int idx = (bPositiveMoment ? 0 : 1);
+   if ( 0 <= poi.GetID() )
+   {
+      PoiKey key(poi.GetID(),poi);
+      found = m_CrackedSectionDetails[idx].find( key );
+
+      if ( found != m_CrackedSectionDetails[idx].end() )
+         return &( (*found).second ); // cracked section has already been computed
+   }
+
+   GET_IFACE(IProgress, pProgress);
+   CEAFAutoProgress ap(pProgress);
+
+   GET_IFACE(IDisplayUnits,pDisplayUnits);
+   std::ostringstream os;
+   os << "Analyzing cracked section for Span "
+      << LABEL_SPAN(poi.GetSpan()) << " Girder "
+      << LABEL_GIRDER(poi.GetGirder()) << " at " << (LPCTSTR)FormatDimension(poi.GetDistFromStart(),pDisplayUnits->GetSpanLengthUnit())
+      << " from start of girder" << std::ends;
+
+   pProgress->UpdateMessage( os.str().c_str() );
+
+   CRACKEDSECTIONDETAILS csd;
+   m_MomentCapEngineer.AnalyzeCrackedSection(poi,bPositiveMoment,&csd);
+
+   PoiKey key(poi.GetID(),poi);
+   std::pair<std::map<PoiKey,CRACKEDSECTIONDETAILS>::iterator,bool> retval;
+   retval = m_CrackedSectionDetails[idx].insert( std::make_pair(key,csd) );
+   return &((*(retval.first)).second);
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -986,14 +1096,15 @@ STDMETHODIMP CEngAgentImp::RegInterfaces()
 {
    CComQIPtr<IBrokerInitEx2,&IID_IBrokerInitEx2> pBrokerInit(m_pBroker);
 
-   pBrokerInit->RegInterface( IID_ILosses,              this );
-   pBrokerInit->RegInterface( IID_IPrestressForce,      this );
+   pBrokerInit->RegInterface( IID_ILosses,                      this );
+   pBrokerInit->RegInterface( IID_IPrestressForce,              this );
    pBrokerInit->RegInterface( IID_ILiveLoadDistributionFactors, this );
-   pBrokerInit->RegInterface( IID_IMomentCapacity,      this );
-   pBrokerInit->RegInterface( IID_IShearCapacity,       this );
-   pBrokerInit->RegInterface( IID_IGirderHaunch,        this );
-   pBrokerInit->RegInterface( IID_IFabricationOptimization,        this );
-   pBrokerInit->RegInterface( IID_IArtifact,            this );
+   pBrokerInit->RegInterface( IID_IMomentCapacity,              this );
+   pBrokerInit->RegInterface( IID_IShearCapacity,               this );
+   pBrokerInit->RegInterface( IID_IGirderHaunch,                this );
+   pBrokerInit->RegInterface( IID_IFabricationOptimization,     this );
+   pBrokerInit->RegInterface( IID_IArtifact,                    this );
+   pBrokerInit->RegInterface( IID_ICrackedSection,              this );
 
     return S_OK;
 }
@@ -1012,43 +1123,50 @@ STDMETHODIMP CEngAgentImp::Init()
 
    // Connection Point for the bridge description input
    hr = pBrokerInit->FindConnectionPoint(IID_IBridgeDescriptionEventSink, &pCP );
-   CHECK( SUCCEEDED(hr) );
+   ATLASSERT( SUCCEEDED(hr) );
    hr = pCP->Advise( GetUnknown(), &m_dwBridgeDescCookie );
-   CHECK( SUCCEEDED(hr) );
+   ATLASSERT( SUCCEEDED(hr) );
    pCP.Release(); // Recycle the connection point
 
    hr = pBrokerInit->FindConnectionPoint(IID_ISpecificationEventSink, &pCP );
-   CHECK( SUCCEEDED(hr) );
+   ATLASSERT( SUCCEEDED(hr) );
    hr = pCP->Advise( GetUnknown(), &m_dwSpecificationCookie );
-   CHECK( SUCCEEDED(hr) );
+   ATLASSERT( SUCCEEDED(hr) );
+   pCP.Release(); // Recycle the connection point
+
+   hr = pBrokerInit->FindConnectionPoint(IID_IRatingSpecificationEventSink, &pCP );
+   ATLASSERT( SUCCEEDED(hr) );
+   hr = pCP->Advise( GetUnknown(), &m_dwRatingSpecificationCookie );
+   ATLASSERT( SUCCEEDED(hr) );
    pCP.Release(); // Recycle the connection point
 
    hr = pBrokerInit->FindConnectionPoint(IID_ILoadModifiersEventSink, &pCP );
-   CHECK( SUCCEEDED(hr) );
+   ATLASSERT( SUCCEEDED(hr) );
    hr = pCP->Advise( GetUnknown(), &m_dwLoadModifiersCookie );
-   CHECK( SUCCEEDED(hr) );
+   ATLASSERT( SUCCEEDED(hr) );
    pCP.Release(); // Recycle the connection point
 
    hr = pBrokerInit->FindConnectionPoint(IID_IEnvironmentEventSink, &pCP );
-   CHECK( SUCCEEDED(hr) );
+   ATLASSERT( SUCCEEDED(hr) );
    hr = pCP->Advise( GetUnknown(), &m_dwEnvironmentCookie );
-   CHECK( SUCCEEDED(hr) );
+   ATLASSERT( SUCCEEDED(hr) );
    pCP.Release(); // Recycle the connection point
 
    m_PsForceEngineer.SetBroker(m_pBroker);
    m_MomentCapEngineer.SetBroker(m_pBroker);
    m_ShearCapEngineer.SetBroker(m_pBroker);
    m_Designer.SetBroker(m_pBroker);
+   m_LoadRater.SetBroker(m_pBroker);
 
-   m_Designer.SetAgentID(m_AgentID);
-   m_PsForceEngineer.SetAgentID(m_AgentID);
-   m_MomentCapEngineer.SetAgentID(m_AgentID);
-   m_ShearCapEngineer.SetAgentID(m_AgentID);
+   m_Designer.SetStatusGroupID(m_StatusGroupID);
+   m_PsForceEngineer.SetStatusGroupID(m_StatusGroupID);
+   m_MomentCapEngineer.SetStatusGroupID(m_StatusGroupID);
+   m_ShearCapEngineer.SetStatusGroupID(m_StatusGroupID);
 
    // regiter the callback ID's we will be using
    m_scidUnknown                = pStatusCenter->RegisterCallback( new pgsUnknownErrorStatusCallback() );
    m_scidRefinedAnalysis        = pStatusCenter->RegisterCallback( new pgsRefinedAnalysisStatusCallback(m_pBroker) );
-   m_scidBridgeDescriptionError = pStatusCenter->RegisterCallback( new pgsBridgeDescriptionStatusCallback(m_pBroker,pgsTypes::statusError));
+   m_scidBridgeDescriptionError = pStatusCenter->RegisterCallback( new pgsBridgeDescriptionStatusCallback(m_pBroker,eafTypes::statusError));
    
    return S_OK;
 }
@@ -1071,36 +1189,43 @@ STDMETHODIMP CEngAgentImp::Reset()
 
 STDMETHODIMP CEngAgentImp::ShutDown()
 {
-   AGENT_CLEAR_INTERFACE_CACHE;
-   CLOSE_LOGFILE;
-
    CComQIPtr<IBrokerInitEx2,&IID_IBrokerInitEx2> pBrokerInit(m_pBroker);
    CComPtr<IConnectionPoint> pCP;
    HRESULT hr;
    
    hr = pBrokerInit->FindConnectionPoint(IID_IBridgeDescriptionEventSink, &pCP );
-   CHECK( SUCCEEDED(hr) );
+   ATLASSERT( SUCCEEDED(hr) );
    hr = pCP->Unadvise( m_dwBridgeDescCookie );
-   CHECK( SUCCEEDED(hr) );
+   ATLASSERT( SUCCEEDED(hr) );
    pCP.Release(); // Recycle the connection point
 
    hr = pBrokerInit->FindConnectionPoint(IID_ISpecificationEventSink, &pCP );
-   CHECK( SUCCEEDED(hr) );
+   ATLASSERT( SUCCEEDED(hr) );
    hr = pCP->Unadvise( m_dwSpecificationCookie );
-   CHECK( SUCCEEDED(hr) );
+   ATLASSERT( SUCCEEDED(hr) );
+   pCP.Release(); // Recycle the connection point
+
+   hr = pBrokerInit->FindConnectionPoint(IID_IRatingSpecificationEventSink, &pCP );
+   ATLASSERT( SUCCEEDED(hr) );
+   hr = pCP->Unadvise( m_dwRatingSpecificationCookie );
+   ATLASSERT( SUCCEEDED(hr) );
    pCP.Release(); // Recycle the connection point
 
    hr = pBrokerInit->FindConnectionPoint(IID_ILoadModifiersEventSink, &pCP );
-   CHECK( SUCCEEDED(hr) );
+   ATLASSERT( SUCCEEDED(hr) );
    hr = pCP->Unadvise( m_dwLoadModifiersCookie );
-   CHECK( SUCCEEDED(hr) );
+   ATLASSERT( SUCCEEDED(hr) );
    pCP.Release(); // Recycle the connection point
 
    hr = pBrokerInit->FindConnectionPoint(IID_IEnvironmentEventSink, &pCP );
-   CHECK( SUCCEEDED(hr) );
+   ATLASSERT( SUCCEEDED(hr) );
    hr = pCP->Unadvise( m_dwEnvironmentCookie );
-   CHECK( SUCCEEDED(hr) );
+   ATLASSERT( SUCCEEDED(hr) );
    pCP.Release(); // Recycle the connection point
+
+   CLOSE_LOGFILE;
+
+   AGENT_CLEAR_INTERFACE_CACHE;
 
    return S_OK;
 }
@@ -1251,7 +1376,7 @@ Float64 CEngAgentImp::GetFinal(const pgsPointOfInterest& poi,pgsTypes::StrandTyp
 LOSSDETAILS CEngAgentImp::GetLossDetails(const pgsPointOfInterest& poi)
 {
    LOSSDETAILS* pLosses = FindLosses(poi);
-   CHECK(pLosses != 0);
+   ATLASSERT(pLosses != 0);
 
    return *pLosses;
 }
@@ -1705,7 +1830,7 @@ void CEngAgentImp::CheckCurvatureRequirements(const pgsPointOfInterest& poi)
    if ( nBeams == 0 || nBeams == 1 )
    {
       const char* msg = "The bridge must have at least two beams per span";
-      pgsBridgeDescriptionStatusItem* pStatusItem = new pgsBridgeDescriptionStatusItem(m_AgentID,m_scidBridgeDescriptionError,1,msg);
+      pgsBridgeDescriptionStatusItem* pStatusItem = new pgsBridgeDescriptionStatusItem(m_StatusGroupID,m_scidBridgeDescriptionError,1,msg);
       pStatusCenter->Add(pStatusItem);
 
       std::string strMsg(msg);
@@ -1724,7 +1849,7 @@ void CEngAgentImp::CheckCurvatureRequirements(const pgsPointOfInterest& poi)
    }
    else 
    {
-      CHECK( nBeams >= 5 );
+      ATLASSERT( 5 <= nBeams );
       delta_limit = (nSpans == 1 ? 4.0 : 5.0);
       bIsOK = ( delta < delta_limit ) ? true : false;
    }
@@ -1738,7 +1863,7 @@ void CEngAgentImp::CheckCurvatureRequirements(const pgsPointOfInterest& poi)
       os << "Limiting value = " << delta_limit << " deg" << std::endl;
       os << "A refined method of analysis is required for this bridge" << std::endl;
 
-      pgsRefinedAnalysisStatusItem* pStatusItem = new pgsRefinedAnalysisStatusItem(m_AgentID,m_scidRefinedAnalysis,os.str().c_str());
+      pgsRefinedAnalysisStatusItem* pStatusItem = new pgsRefinedAnalysisStatusItem(m_StatusGroupID,m_scidRefinedAnalysis,os.str().c_str());
       pStatusCenter->Add(pStatusItem);
 
       os << "See Status Center for Details" << std::endl;
@@ -1798,7 +1923,7 @@ void CEngAgentImp::CheckGirderStiffnessRequirements(const pgsPointOfInterest& po
       os << "Minimum stiffness ratio permitted by " << pSpecEntry->GetName() << " = " << (LPCTSTR)FormatScalar(minStiffnessRatio,pDisplayUnits->GetScalarFormat()) << std::endl;
       os << "A refined method of analysis is required for this bridge" << std::endl;
 
-      pgsRefinedAnalysisStatusItem* pStatusItem = new pgsRefinedAnalysisStatusItem(m_AgentID,m_scidRefinedAnalysis,os.str().c_str());
+      pgsRefinedAnalysisStatusItem* pStatusItem = new pgsRefinedAnalysisStatusItem(m_StatusGroupID,m_scidRefinedAnalysis,os.str().c_str());
       pStatusCenter->Add(pStatusItem);
 
       os << "See Status Center for Details" << std::endl;
@@ -1860,7 +1985,7 @@ void CEngAgentImp::CheckParallelGirderRequirements(const pgsPointOfInterest& poi
       os << "Maximum angular difference permitted by " << pSpecEntry->GetName() << " = " << (LPCTSTR)FormatDimension(maxAllowableAngle,pDisplayUnits->GetAngleUnit(),true) << std::endl;
       os << "A refined method of analysis is required for this bridge" << std::endl;
 
-      pgsRefinedAnalysisStatusItem* pStatusItem = new pgsRefinedAnalysisStatusItem(m_AgentID,m_scidRefinedAnalysis,os.str().c_str());
+      pgsRefinedAnalysisStatusItem* pStatusItem = new pgsRefinedAnalysisStatusItem(m_StatusGroupID,m_scidRefinedAnalysis,os.str().c_str());
       pStatusCenter->Add(pStatusItem);
 
       os << "See Status Center for Details" << std::endl;
@@ -2501,8 +2626,8 @@ Float64 CEngAgentImp::GetCrackingMoment(pgsTypes::Stage stage,const pgsPointOfIn
 void CEngAgentImp::GetCrackingMomentDetails(pgsTypes::Stage stage,const pgsPointOfInterest& poi,bool bPositiveMoment,CRACKINGMOMENTDETAILS* pcmd)
 {
    // Capacity is only computed in these stages
-   CHECK( stage == pgsTypes::BridgeSite1 || stage == pgsTypes::BridgeSite3 );
-   CHECK( poi.GetID() >= 0 );
+   ATLASSERT( stage == pgsTypes::BridgeSite1 || stage == pgsTypes::BridgeSite3 );
+   ATLASSERT( 0 <= poi.GetID() );
 
    *pcmd = *ValidateCrackingMoments(stage,poi,bPositiveMoment);
 }
@@ -2529,7 +2654,7 @@ Float64 CEngAgentImp::GetMinMomentCapacity(pgsTypes::Stage stage,const pgsPointO
 void CEngAgentImp::GetMinMomentCapacityDetails(pgsTypes::Stage stage,const pgsPointOfInterest& poi,bool bPositiveMoment,MINMOMENTCAPDETAILS* pmmcd)
 {
    // Capacity is only computed in these stages
-   CHECK( stage == pgsTypes::BridgeSite1 || stage == pgsTypes::BridgeSite3 );
+   ATLASSERT( stage == pgsTypes::BridgeSite1 || stage == pgsTypes::BridgeSite3 );
 
    *pmmcd = *ValidateMinMomentCapacity(stage,poi,bPositiveMoment);
 }
@@ -2544,6 +2669,51 @@ void CEngAgentImp::GetMinMomentCapacityDetails(pgsTypes::Stage stage,const pgsPo
       GetMinMomentCapacityDetails(stage,poi,bPositiveMoment,pmmcd);
    else
       m_MomentCapEngineer.ComputeMinMomentCapacity(stage,poi,config,bPositiveMoment,pmmcd);
+}
+
+std::vector<MOMENTCAPACITYDETAILS> CEngAgentImp::GetMomentCapacityDetails(pgsTypes::Stage stage,const std::vector<pgsPointOfInterest>& vPoi,bool bPositiveMoment)
+{
+   std::vector<MOMENTCAPACITYDETAILS> details;
+   std::vector<pgsPointOfInterest>::const_iterator iter;
+   for ( iter = vPoi.begin(); iter != vPoi.end(); iter++ )
+   {
+      const pgsPointOfInterest& poi = *iter;
+      MOMENTCAPACITYDETAILS mcd;
+      GetMomentCapacityDetails(stage,poi,bPositiveMoment,&mcd);
+      details.push_back( mcd );
+   }
+
+   return details;
+}
+
+std::vector<MINMOMENTCAPDETAILS> CEngAgentImp::GetMinMomentCapacityDetails(pgsTypes::Stage stage,const std::vector<pgsPointOfInterest>& vPoi,bool bPositiveMoment)
+{
+   std::vector<MINMOMENTCAPDETAILS> details;
+   std::vector<pgsPointOfInterest>::const_iterator iter;
+   for ( iter = vPoi.begin(); iter != vPoi.end(); iter++ )
+   {
+      const pgsPointOfInterest& poi = *iter;
+      MINMOMENTCAPDETAILS mcd;
+      GetMinMomentCapacityDetails(stage,poi,bPositiveMoment,&mcd);
+      details.push_back( mcd );
+   }
+
+   return details;
+}
+
+std::vector<CRACKINGMOMENTDETAILS> CEngAgentImp::GetCrackingMomentDetails(pgsTypes::Stage stage,const std::vector<pgsPointOfInterest>& vPoi,bool bPositiveMoment)
+{
+   std::vector<CRACKINGMOMENTDETAILS> details;
+   std::vector<pgsPointOfInterest>::const_iterator iter;
+   for ( iter = vPoi.begin(); iter != vPoi.end(); iter++ )
+   {
+      const pgsPointOfInterest& poi = *iter;
+      CRACKINGMOMENTDETAILS cmd;
+      GetCrackingMomentDetails(stage,poi,bPositiveMoment,&cmd);
+      details.push_back( cmd );
+   }
+
+   return details;
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -2610,8 +2780,7 @@ void CEngAgentImp::GetShearCapacityDetails(pgsTypes::LimitState ls, pgsTypes::St
 void CEngAgentImp::GetRawShearCapacityDetails(pgsTypes::LimitState ls, pgsTypes::Stage stage,const pgsPointOfInterest& poi,SHEARCAPACITYDETAILS* pscd)
 {
    // Capacity is only computed in this stage and load case
-   CHECK( stage == pgsTypes::BridgeSite3 );
-   CHECK( ls == pgsTypes::StrengthI || ls == pgsTypes::StrengthII);
+   ATLASSERT( stage == pgsTypes::BridgeSite3 );
 
    *pscd = *ValidateShearCapacity(ls,stage,poi);
 }
@@ -2640,7 +2809,7 @@ void CEngAgentImp::GetRawShearCapacityDetails(pgsTypes::LimitState ls, pgsTypes:
                                            SHEARCAPACITYDETAILS* pscd)
 {
    // Capacity is only computed in this stage and load case
-   CHECK( stage == pgsTypes::BridgeSite3 );
+   ATLASSERT( stage == pgsTypes::BridgeSite3 );
 
    m_ShearCapEngineer.ComputeShearCapacity(ls,stage,poi,config,pscd);
 }
@@ -2744,6 +2913,21 @@ void CEngAgentImp::GetCriticalSectionDetails(pgsTypes::LimitState limitState,Spa
    CalculateShearCritSection(limitState,span,gdr,config,pDetails);
 }
 
+std::vector<SHEARCAPACITYDETAILS> CEngAgentImp::GetShearCapacityDetails(pgsTypes::LimitState ls, pgsTypes::Stage stage,const std::vector<pgsPointOfInterest>& vPoi)
+{
+   std::vector<SHEARCAPACITYDETAILS> details;
+   std::vector<pgsPointOfInterest>::const_iterator iter;
+   for ( iter = vPoi.begin(); iter != vPoi.end(); iter++ )
+   {
+      const pgsPointOfInterest& poi = *iter;
+      SHEARCAPACITYDETAILS scd;
+      GetShearCapacityDetails(ls,stage,poi,&scd);
+      details.push_back(scd);
+   }
+
+   return details;
+}
+
 /////////////////////////////////////////////////////////////////////////////
 // IGirderHaunch
 Float64 CEngAgentImp::GetRequiredSlabOffset(SpanIndexType span,GirderIndexType gdr)
@@ -2755,8 +2939,8 @@ Float64 CEngAgentImp::GetRequiredSlabOffset(SpanIndexType span,GirderIndexType g
 
    // Round to nearest 1/4" (5 mm) per WSDOT BDM
 
-   GET_IFACE(IProjectSettings, pProjSettings);
-   if ( pProjSettings->GetUnitsMode() == pgsTypes::umSI )
+   GET_IFACE(IDisplayUnits,pDisplayUnits);
+   if ( IS_SI_UNITS(pDisplayUnits) )
       slab_offset = RoundOff(slab_offset,::ConvertToSysUnits(5.0,unitMeasure::Millimeter) );
    else
       slab_offset = RoundOff(slab_offset,::ConvertToSysUnits(0.25, unitMeasure::Inch) );
@@ -2802,7 +2986,7 @@ void CEngAgentImp::GetFabricationOptimizationDetails(SpanIndexType span,GirderIn
    CGirderData girderData = pGirderData->GetGirderData(span,gdr);
    pDetails->TempStrandUsage = girderData.TempStrandUsage;
 
-   pgsGirderHandlingChecker checker(m_pBroker,m_AgentID);
+   pgsGirderHandlingChecker checker(m_pBroker,m_StatusGroupID);
 
    GET_IFACE(IStrandGeometry,pStrandGeom);
    if ( 0 <  pStrandGeom->GetMaxStrands(span,gdr,pgsTypes::Temporary) && 0 < pDetails->Nt )
@@ -3117,11 +3301,17 @@ const pgsGirderArtifact* CEngAgentImp::GetArtifact(SpanIndexType span,GirderInde
    return FindArtifact(span,gdr);
 }
 
+const pgsRatingArtifact* CEngAgentImp::GetRatingArtifact(SpanIndexType spanIdx,GirderIndexType gdrIdx,pgsTypes::LoadRatingType ratingType,VehicleIndexType vehicleIndex)
+{
+   ValidateRatingArtifacts(spanIdx,gdrIdx,ratingType,vehicleIndex);
+   return FindRatingArtifact(spanIdx,gdrIdx,ratingType,vehicleIndex);
+}
+
 const pgsDesignArtifact* CEngAgentImp::CreateDesignArtifact(SpanIndexType span,GirderIndexType gdr,arDesignOptions options)
 {
    SpanGirderHashType key = HashSpanGirder(span,gdr);
    std::map<SpanGirderHashType,pgsDesignArtifact>::size_type cRemove = m_DesignArtifacts.erase(key);
-   CHECK( cRemove == 0 || cRemove == 1 );
+   ATLASSERT( cRemove == 0 || cRemove == 1 );
 
    std::pair<std::map<SpanGirderHashType,pgsDesignArtifact>::iterator,bool> retval;
 
@@ -3186,7 +3376,7 @@ void CEngAgentImp::CreateLiftingAnalysisArtifact(SpanIndexType span,GirderIndexT
       config.RightOverhang = supportLoc;
       Float64 slabOffset = pBridge->GetSlabOffset(poi);
 
-      pgsGirderHandlingChecker checker(m_pBroker,m_AgentID);
+      pgsGirderHandlingChecker checker(m_pBroker,m_StatusGroupID);
       GET_IFACE(IGirderLiftingPointsOfInterest,pGirderLiftingPointsOfInterest);
       checker.AnalyzeLifting(span,gdr,config,pGirderLiftingPointsOfInterest,pArtifact);
 
@@ -3239,12 +3429,41 @@ void CEngAgentImp::CreateHaulingAnalysisArtifact(SpanIndexType span,GirderIndexT
 
       Float64 slabOffset = pBridge->GetSlabOffset(poi);
 
-      pgsGirderHandlingChecker checker(m_pBroker,m_AgentID);
+      pgsGirderHandlingChecker checker(m_pBroker,m_StatusGroupID);
       GET_IFACE(IGirderHaulingPointsOfInterest,pGirderHaulingPointsOfInterest);
       checker.AnalyzeHauling(span,gdr,config,pGirderHaulingPointsOfInterest,pArtifact);
 
       (*found_gdr).second.insert( std::make_pair(leftSupportLoc,*pArtifact) );
    }
+}
+
+/////////////////////////////////////////////////////////////////////////////
+// ICrackedSection
+void CEngAgentImp::GetCrackedSectionDetails(const pgsPointOfInterest& poi,bool bPositiveMoment,CRACKEDSECTIONDETAILS* pCSD)
+{
+   *pCSD = *ValidateCrackedSectionDetails(poi,bPositiveMoment);
+}
+
+Float64 CEngAgentImp::GetIcr(const pgsPointOfInterest& poi,bool bPositiveMoment)
+{
+   CRACKEDSECTIONDETAILS csd;
+   GetCrackedSectionDetails( poi,bPositiveMoment,&csd );
+   return csd.Icr;
+}
+
+std::vector<CRACKEDSECTIONDETAILS> CEngAgentImp::GetCrackedSectionDetails(const std::vector<pgsPointOfInterest>& vPoi,bool bPositiveMoment)
+{
+   std::vector<CRACKEDSECTIONDETAILS> details;
+   std::vector<pgsPointOfInterest>::const_iterator iter;
+   for ( iter = vPoi.begin(); iter != vPoi.end(); iter++ )
+   {
+      const pgsPointOfInterest& poi = *iter;
+      CRACKEDSECTIONDETAILS csd;
+      GetCrackedSectionDetails(poi,bPositiveMoment,&csd);
+      details.push_back( csd );
+   }
+
+   return details;
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -3300,6 +3519,31 @@ HRESULT CEngAgentImp::OnSpecificationChanged()
 HRESULT CEngAgentImp::OnAnalysisTypeChanged()
 {
    InvalidateAll();
+   return S_OK;
+}
+
+/////////////////////////////////////////////////////////////////////////////
+// IRatingSpecificationEventSink
+HRESULT CEngAgentImp::OnRatingSpecificationChanged()
+{
+   LOG("OnRatingSpecificationChanged Event Received");
+   InvalidateRatingArtifacts();
+
+   // invalidate shear capacities associated with rating limit states
+   m_ShearCapacity[LimitStateToShearIndex(pgsTypes::StrengthI_Inventory)].clear();
+   m_ShearCapacity[LimitStateToShearIndex(pgsTypes::StrengthI_Operating)].clear();
+   m_ShearCapacity[LimitStateToShearIndex(pgsTypes::StrengthI_LegalRoutine)].clear();
+   m_ShearCapacity[LimitStateToShearIndex(pgsTypes::StrengthI_LegalSpecial)].clear();
+   m_ShearCapacity[LimitStateToShearIndex(pgsTypes::StrengthII_PermitRoutine)].clear();
+   m_ShearCapacity[LimitStateToShearIndex(pgsTypes::StrengthII_PermitSpecial)].clear();
+
+   m_CritSectionDetails[LimitStateToShearIndex(pgsTypes::StrengthI_Inventory)].clear();
+   m_CritSectionDetails[LimitStateToShearIndex(pgsTypes::StrengthI_Operating)].clear();
+   m_CritSectionDetails[LimitStateToShearIndex(pgsTypes::StrengthI_LegalRoutine)].clear();
+   m_CritSectionDetails[LimitStateToShearIndex(pgsTypes::StrengthI_LegalSpecial)].clear();
+   m_CritSectionDetails[LimitStateToShearIndex(pgsTypes::StrengthII_PermitRoutine)].clear();
+   m_CritSectionDetails[LimitStateToShearIndex(pgsTypes::StrengthII_PermitSpecial)].clear();
+
    return S_OK;
 }
 

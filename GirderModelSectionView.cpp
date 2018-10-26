@@ -231,11 +231,10 @@ void CGirderModelSectionView::UpdateDisplayObjects()
 
    // Grab hold of the broker so we can pass it as a parameter
    CComPtr<IBroker> pBroker;
-   AfxGetBroker(&pBroker);
+   EAFGetBroker(&pBroker);
 
 
-   CPGSuperApp* pApp =(CPGSuperApp*) AfxGetApp();
-   UINT settings = pApp->GetGirderEditorSettings();
+   UINT settings = pDoc->GetGirderEditorSettings();
 
    BuildSectionDisplayObjects(pDoc, pBroker, span, girder, dispMgr);
 
@@ -576,8 +575,7 @@ void CGirderModelSectionView::BuildDimensionDisplayObjects(CPGSuperDoc* pDoc,IBr
    connectableSection->GetSocket(SOCKET_HB,   atByID, &socketHB);
    connectableSection->GetSocket(SOCKET_BC,   atByID, &socketBC);
 
-   CPGSuperApp* papp =(CPGSuperApp*) AfxGetApp();
-   UINT settings = papp->GetGirderEditorSettings();
+   UINT settings = pDoc->GetGirderEditorSettings();
 
    CComPtr<iSocket> socketCGPS;
    if (settings & IDG_SV_SHOW_PS_CG)

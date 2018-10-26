@@ -26,7 +26,6 @@
 #include "TestAgent.h"
 #include "TestAgentImp.h"
 
-#include <IFace\File.h>
 #include <IFace\VersionInfo.h>
 #include <IFace\AnalysisResults.h>
 #include <IFace\Bridge.h>
@@ -38,6 +37,7 @@
 #include <IFace\GirderHandlingPointOfInterest.h>
 #include <IFace\GirderHandlingSpecCriteria.h>
 #include <IFace\StatusCenter.h>
+#include <EAF\EAFUIIntegration.h>
 
 #include <psgLib\ConnectionLibraryEntry.h>
 #include <psgLib\SpecLibraryEntry.h>
@@ -47,7 +47,7 @@
 #include <PgsExt\DesignArtifact.h>
 #include <PgsExt\LiftingCheckArtifact.h>
 #include <PgsExt\HaulingCheckArtifact.h>
-#include <PgsExt\AutoProgress.h>
+#include <EAF\EAFAutoProgress.h>
 #include <PgsExt\GirderLabel.h>
 
 #include <Units\Units.h>
@@ -132,7 +132,7 @@ bool CTestAgentImp::RunTest(long type,
 
    // create progress window
    GET_IFACE(IProgress,pProgress);
-   pgsAutoProgress ap(pProgress);
+   CEAFAutoProgress ap(pProgress);
 
    GET_IFACE(IBridge,pBridge);
    SpanIndexType nSpans = pBridge->GetSpanCount();
@@ -249,7 +249,7 @@ bool CTestAgentImp::RunTestEx(long type, const std::vector<SpanGirderHashType>& 
 
    // create progress window
    GET_IFACE(IProgress,pProgress);
-   pgsAutoProgress ap(pProgress);
+   CEAFAutoProgress ap(pProgress);
 
    GET_IFACE(IBridge,pBridge);
    SpanIndexType nspans = pBridge->GetSpanCount();
@@ -350,8 +350,8 @@ std::string CTestAgentImp::GetBridgeID()
       return strID;
    else
    {
-      GET_IFACE(IFile,pFile);
-      std::string strPath = pFile->GetFilePath();
+      GET_IFACE(IDocument,pDocumnet);
+      std::string strPath = pDocumnet->GetFilePath();
 
       // Filename is in the form Regxxx.pgs
       std::string::size_type pos = strPath.find(".pgs");

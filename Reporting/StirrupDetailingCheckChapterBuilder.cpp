@@ -100,7 +100,7 @@ rptParagraph* build_min_avs_paragraph(IBroker* pBroker,SpanIndexType span,Girder
    pParagraph = new rptParagraph();
   // Av/S check 5.8.2.5
    // picture depends on units
-   if ( pDisplayUnits->GetUnitDisplayMode() == pgsTypes::umSI )
+   if ( IS_SI_UNITS(pDisplayUnits) )
    {
       *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + "Min Transverse Reinforcement SI.jpg") << rptNewLine;
    }

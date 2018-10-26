@@ -34,8 +34,8 @@
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
-//#undef THIS_FILE
-//static char THIS_FILE[] = __FILE__;
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
 #endif
 
 /////////////////////////////////////////////////////////////////////////////
@@ -100,8 +100,7 @@ void CGirderDiaphragmPage::OnAdd()
 
    GirderLibraryEntry::DiaphragmLayoutRule rule; // new rule
 
-   bool bUnitsSI = pDad->m_Mode == libUnitsMode::UNITS_SI ? true : false;
-   CDiaphragmDefinitionDlg dlg(bUnitsSI);
+   CDiaphragmDefinitionDlg dlg;
 
    dlg.m_Rule = rule;
    if ( dlg.DoModal() == IDOK )
@@ -125,8 +124,7 @@ void CGirderDiaphragmPage::OnEdit()
    nSelected = m_Grid.GetSelectedRows(rows);
    ASSERT(nSelected != 0);
 
-   bool bUnitsSI = pDad->m_Mode == libUnitsMode::UNITS_SI ? true : false;
-   CDiaphragmDefinitionDlg dlg(bUnitsSI);
+   CDiaphragmDefinitionDlg dlg;
 
    GirderLibraryEntry::DiaphragmLayoutRule* pRule = m_Grid.GetRule(rows[0]);
 

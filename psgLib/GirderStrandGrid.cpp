@@ -28,10 +28,12 @@
 #include "GirderStrandGrid.h"
 #include <system\tokenizer.h>
 
+#include <EAF\EAFApp.h>
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
-//#undef THIS_FILE
-//static char THIS_FILE[] = __FILE__;
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
 #endif
 
 /////////////////////////////////////////////////////////////////////////////
@@ -178,7 +180,14 @@ void CGirderStrandGrid::Removerows()
 
 void CGirderStrandGrid::CustomInit()
 {
-// Initialize the grid. For CWnd based grids this call is // 
+   CEAFApp* pApp;
+   {
+      AFX_MANAGE_STATE(AfxGetAppModuleState());
+      pApp = (CEAFApp*)AfxGetApp();
+   }
+   const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
+
+   // Initialize the grid. For CWnd based grids this call is // 
 // essential. For view based grids this initialization is done 
 // in OnInitialUpdate.
 	this->Initialize( );
@@ -209,7 +218,8 @@ void CGirderStrandGrid::CustomInit()
 			.SetValue(_T("Fill\n#"))
 		);
 
-   CString cv = "Xt\n" + m_pClient->GetLengthUnitString();
+   CString cv;
+   cv.Format("Xt\n(%s)",pDisplayUnits->ComponentDim.UnitOfMeasure.UnitTag().c_str());
 	this->SetStyleRange(CGXRange(0,1), CGXStyle()
          .SetWrapText(TRUE)
 			.SetEnabled(FALSE)          // disables usage as current cell
@@ -218,7 +228,7 @@ void CGirderStrandGrid::CustomInit()
 			.SetValue(cv)
 		);
 
-   cv = "Yt\n" + m_pClient->GetLengthUnitString();
+   cv.Format("Yt\n(%s)",pDisplayUnits->ComponentDim.UnitOfMeasure.UnitTag().c_str());
 	this->SetStyleRange(CGXRange(0,2), CGXStyle()
          .SetWrapText(TRUE)
 			.SetEnabled(FALSE)          // disables usage as current cell

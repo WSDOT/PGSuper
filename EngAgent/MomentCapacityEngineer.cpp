@@ -47,8 +47,8 @@ static char THIS_FILE[] = __FILE__;
 
 DIAG_DEFINE_GROUP(MomCap,DIAG_GROUP_DISABLE,0);
 
-static const double ANGLE_TOL=1.0e-6;
-static const double D_TOL=1.0e-10;
+static const Float64 ANGLE_TOL=1.0e-6;
+static const Float64 D_TOL=1.0e-10;
 
 /****************************************************************************
 CLASS
@@ -58,11 +58,27 @@ CLASS
 ////////////////////////// PUBLIC     ///////////////////////////////////////
 
 //======================== LIFECYCLE  =======================================
-pgsMomentCapacityEngineer::pgsMomentCapacityEngineer(IBroker* pBroker,AgentIDType agentID)
+pgsMomentCapacityEngineer::pgsMomentCapacityEngineer(IBroker* pBroker,StatusGroupIDType statusGroupID)
 {
    m_pBroker = pBroker;
-   m_AgentID = agentID;
+   m_StatusGroupID = statusGroupID;
    CREATE_LOGFILE("MomentCapacity");
+
+   // create solvers
+   HRESULT hr = m_MomentCapacitySolver.CoCreateInstance(CLSID_MomentCapacitySolver);
+
+   if ( FAILED(hr) )
+   {
+      THROW_SHUTDOWN("Installation Problem - Unable to create Moment Capacity Solver",XREASON_COMCREATE_ERROR,true);
+   }
+
+
+   hr = m_CrackedSectionSolver.CoCreateInstance(CLSID_CrackedSectionSolver);
+
+   if ( FAILED(hr) )
+   {
+      THROW_SHUTDOWN("Installation Problem - Unable to create Cracked Section Solver",XREASON_COMCREATE_ERROR,true);
+   }
 }
 
 pgsMomentCapacityEngineer::pgsMomentCapacityEngineer(const pgsMomentCapacityEngineer& rOther)
@@ -92,9 +108,9 @@ void pgsMomentCapacityEngineer::SetBroker(IBroker* pBroker)
    m_pBroker = pBroker;
 }
 
-void pgsMomentCapacityEngineer::SetAgentID(AgentIDType agentID)
+void pgsMomentCapacityEngineer::SetStatusGroupID(StatusGroupIDType statusGroupID)
 {
-   m_AgentID = agentID;
+   m_StatusGroupID = statusGroupID;
 
    GET_IFACE(IStatusCenter,pStatusCenter);
    m_scidUnknown = pStatusCenter->RegisterCallback( new pgsUnknownErrorStatusCallback() );
@@ -118,10 +134,6 @@ void pgsMomentCapacityEngineer::ComputeMomentCapacity(pgsTypes::Stage stage,cons
       fpe = pPrestressForce->GetStrandStress(poi,pgsTypes::Permanent,pgsTypes::AfterLosses);
       e_initial = fpe/Eps;
    }
-
-   GET_IFACE(IStrandGeometry,pStrandGeom);
-   StrandIndexType Ns = pStrandGeom->GetNumStrands(span,gdr,pgsTypes::Straight);
-   StrandIndexType Nh = pStrandGeom->GetNumStrands(span,gdr,pgsTypes::Harped);
 
    GET_IFACE(IBridge,pBridge);
    GDRCONFIG config = pBridge->GetGirderConfiguration(span,gdr);
@@ -155,7 +167,7 @@ void pgsMomentCapacityEngineer::ComputeMomentCapacity(pgsTypes::Stage stage,cons
    ComputeMomentCapacity(stage,poi,config,fpe,e_initial,bondTool,bPositiveMoment,pmcd);
 }
 
-void pgsMomentCapacityEngineer::ComputeMomentCapacity(pgsTypes::Stage stage,const pgsPointOfInterest& poi,const GDRCONFIG& config,double fpe,double e_initial,pgsBondTool& bondTool,bool bPositiveMoment,MOMENTCAPACITYDETAILS* pmcd)
+void pgsMomentCapacityEngineer::ComputeMomentCapacity(pgsTypes::Stage stage,const pgsPointOfInterest& poi,const GDRCONFIG& config,Float64 fpe,Float64 e_initial,pgsBondTool& bondTool,bool bPositiveMoment,MOMENTCAPACITYDETAILS* pmcd)
 {
    GET_IFACE(IBridge, pBridge);
    GET_IFACE(IPrestressForce, pPrestressForce);
@@ -171,39 +183,29 @@ void pgsMomentCapacityEngineer::ComputeMomentCapacity(pgsTypes::Stage stage,cons
    CComPtr<IGeneralSection> section;
    CComPtr<IPoint2d> pntCompression; // needed to figure out the result geometry
    CComPtr<ISize2d> szOffset; // distance to offset coordinates from bridge model to capacity model
-   std::map<long,double> bond_factors[2];
-   double dt; // depth from top of section to extreme layer of tensile reinforcement
+   std::map<long,Float64> bond_factors[2];
+   Float64 dt; // depth from top of section to extreme layer of tensile reinforcement
    BuildCapacityProblem(stage,poi,config,e_initial,bondTool,bPositiveMoment,&section,&pntCompression,&szOffset,&dt,bond_factors);
 
 #if defined _DEBUG_SECTION_DUMP
    DumpSection(poi,section,bond_factors[0],bond_factors[1],bPositiveMoment);
 #endif // _DEBUG_SECTION_DUMP
 
-   // create solver
-   CComPtr<IMomentCapacitySolver> solver;
-   HRESULT hr = solver.CoCreateInstance(CLSID_MomentCapacitySolver);
-
-   if ( FAILED(hr) )
-   {
-      THROW_SHUTDOWN("Installation Problem - Unable to create RC Capacity Solver",XREASON_COMCREATE_ERROR,true);
-   }
-
-   solver->putref_Section(section);
-   //solver->put_Slices(30);
-   solver->put_Slices(10);
-   solver->put_SliceGrowthFactor(3);
-   solver->put_MaxIterations(50);
+   m_MomentCapacitySolver->putref_Section(section);
+   m_MomentCapacitySolver->put_Slices(10);
+   m_MomentCapacitySolver->put_SliceGrowthFactor(3);
+   m_MomentCapacitySolver->put_MaxIterations(50);
 
    // Set the convergence tolerance to 0.1N. This is more than accurate enough for the
    // output display. Output accurace for SI = 0.01kN = 10N, for US = 0.01kip = 45N
-   solver->put_AxialTolerance(0.1);
+   m_MomentCapacitySolver->put_AxialTolerance(0.1);
 
    // determine neutral axis angle
    // compression is on the left side of the neutral axis
-   double na_angle = (bPositiveMoment ? 0.00 : M_PI);
+   Float64 na_angle = (bPositiveMoment ? 0.00 : M_PI);
 
    // compressive strain limit
-   double ec = -0.003; 
+   Float64 ec = -0.003; 
 
    CComPtr<IMomentCapacitySolution> solution;
 
@@ -211,7 +213,7 @@ void pgsMomentCapacityEngineer::ComputeMomentCapacity(pgsTypes::Stage stage,cons
    CTime startTime = CTime::GetCurrentTime();
 #endif // _DEBUG
 
-   hr = solver->Solve(0.00,na_angle,ec,smFixedCompressiveStrain,&solution);
+   HRESULT hr = m_MomentCapacitySolver->Solve(0.00,na_angle,ec,smFixedCompressiveStrain,&solution);
 
    if ( hr == RC_E_MATERIALFAILURE )
    {
@@ -222,20 +224,21 @@ void pgsMomentCapacityEngineer::ComputeMomentCapacity(pgsTypes::Stage stage,cons
    // It is ok if this assert fires... All it means is that the solver didn't find a solution
    // on its first try. The purpose of this assert is to help gauge how often this happens.
    // Second and third attempts are made below
+#if defined _DEBUG
    ATLASSERT(SUCCEEDED(hr));
-   if ( hr == RC_E_INITCONCRETE )   ATLASSERT(SUCCEEDED(hr));
+   if ( hr == RC_E_INITCONCRETE )       ATLASSERT(SUCCEEDED(hr));
    if ( hr == RC_E_SOLUTIONNOTFOUND )   ATLASSERT(SUCCEEDED(hr));
    if ( hr == RC_E_BEAMNOTSYMMETRIC )   ATLASSERT(SUCCEEDED(hr));
-   if ( hr == RC_E_MATERIALFAILURE )   ATLASSERT(SUCCEEDED(hr));
+   if ( hr == RC_E_MATERIALFAILURE )    ATLASSERT(SUCCEEDED(hr));
+#endif // _DEBUG
 
    if (FAILED(hr))
    {
       // Try again with more slices
-      //solver->put_Slices(50);
-      solver->put_Slices(20);
-      solver->put_SliceGrowthFactor(2);
-      solver->put_AxialTolerance(1.0);
-      hr = solver->Solve(0.00,na_angle,ec,smFixedCompressiveStrain,&solution);
+      m_MomentCapacitySolver->put_Slices(20);
+      m_MomentCapacitySolver->put_SliceGrowthFactor(2);
+      m_MomentCapacitySolver->put_AxialTolerance(1.0);
+      hr = m_MomentCapacitySolver->Solve(0.00,na_angle,ec,smFixedCompressiveStrain,&solution);
 
       if ( hr == RC_E_MATERIALFAILURE )
       {
@@ -246,11 +249,10 @@ void pgsMomentCapacityEngineer::ComputeMomentCapacity(pgsTypes::Stage stage,cons
       if ( FAILED(hr) )
       {
          // Try again with more slices
-         //solver->put_Slices(100);
-         solver->put_Slices(50);
-         solver->put_SliceGrowthFactor(2);
-         solver->put_AxialTolerance(10.0);
-         hr = solver->Solve(0.00,na_angle,ec,smFixedCompressiveStrain,&solution);
+         m_MomentCapacitySolver->put_Slices(50);
+         m_MomentCapacitySolver->put_SliceGrowthFactor(2);
+         m_MomentCapacitySolver->put_AxialTolerance(10.0);
+         hr = m_MomentCapacitySolver->Solve(0.00,na_angle,ec,smFixedCompressiveStrain,&solution);
 
          if ( hr == RC_E_MATERIALFAILURE )
          {
@@ -267,12 +269,12 @@ void pgsMomentCapacityEngineer::ComputeMomentCapacity(pgsTypes::Stage stage,cons
             CString msg;
             msg.Format("An unknown error occured while computing %s moment capacity for Span %d Girder %s at %f %s from the left end of the girder (%d)",
                         (bPositiveMoment ? "positive" : "negative"),
-                        poi.GetSpan()+1,
+                        LABEL_SPAN(poi.GetSpan()),
                         LABEL_GIRDER(poi.GetGirder()),
                         ::ConvertFromSysUnits(poi.GetDistFromStart(),unit.UnitOfMeasure),
                         unit.UnitOfMeasure.UnitTag().c_str(),
                         hr);
-            pgsUnknownErrorStatusItem* pStatusItem = new pgsUnknownErrorStatusItem(m_AgentID,m_scidUnknown,__FILE__,__LINE__,msg);
+            pgsUnknownErrorStatusItem* pStatusItem = new pgsUnknownErrorStatusItem(m_StatusGroupID,m_scidUnknown,__FILE__,__LINE__,msg);
             pStatusCenter->Add(pStatusItem);
             THROW_UNWIND(msg,-1);
          }
@@ -288,7 +290,7 @@ void pgsMomentCapacityEngineer::ComputeMomentCapacity(pgsTypes::Stage stage,cons
 
    pmcd->CapacitySolution = solution;
 
-   double Fz,Mx,My;
+   Float64 Fz,Mx,My;
    CComPtr<IPlane3d> strains;
    solution->get_Fz(&Fz);
    solution->get_Mx(&Mx);
@@ -300,7 +302,7 @@ void pgsMomentCapacityEngineer::ComputeMomentCapacity(pgsTypes::Stage stage,cons
                                      // this will cause a small amount of off axis bending.
                                      // Only assert if the ratio of My/Mx is larger that the tolerance for zero
 
-   double mn;
+   Float64 mn;
    mn = -Mx;
 
    pmcd->Mn  = mn;
@@ -309,7 +311,7 @@ void pgsMomentCapacityEngineer::ComputeMomentCapacity(pgsTypes::Stage stage,cons
 
    pmcd->Phi = 0.9 + 0.1*(pmcd->PPR);
 
-   double C,T;
+   Float64 C,T;
    solution->get_CompressionResultant(&C);
    solution->get_TensionResultant(&T);
    ATLASSERT(IsZero(C+T,0.5));
@@ -321,13 +323,13 @@ void pgsMomentCapacityEngineer::ComputeMomentCapacity(pgsTypes::Stage stage,cons
    solution->get_CompressionResultantLocation(&cgC);
    solution->get_TensionResultantLocation(&cgT);
 
-   double fps_avg = 0;
+   Float64 fps_avg = 0;
 
    if ( !IsZero(mn) )
    {
       pmcd->MomentArm = fabs(mn/T);
 
-      double x1,y1, x2,y2;
+      Float64 x1,y1, x2,y2;
       pntCompression->get_X(&x1);
       pntCompression->get_Y(&y1);
 
@@ -339,14 +341,14 @@ void pgsMomentCapacityEngineer::ComputeMomentCapacity(pgsTypes::Stage stage,cons
 
       CComPtr<IPlane3d> strainPlane;
       solution->get_StrainPlane(&strainPlane);
-      double x,y,z;
+      Float64 x,y,z;
       x = 0;
       z = 0;
       strainPlane->GetY(x,z,&y);
 
       pmcd->c = sqrt((x1-x)*(x1-x) + (y1-y)*(y1-y));
 
-      double dx,dy;
+      Float64 dx,dy;
       szOffset->get_Dx(&dx);
       szOffset->get_Dy(&dy);
 
@@ -366,13 +368,13 @@ void pgsMomentCapacityEngineer::ComputeMomentCapacity(pgsTypes::Stage stage,cons
          CComPtr<IPoint2d> point;
          while ( enum_points->Next(1,&point,NULL) != S_FALSE )
          {
-            double bond_factor = bond_factors[i][strandPos++];
+            Float64 bond_factor = bond_factors[i][strandPos++];
 
             point->get_X(&x);
             point->get_Y(&y);
 
             strainPlane->GetZ(x-dx,y-dy,&z);
-            double stress;
+            Float64 stress;
             ssStrand->ComputeStress(z+e_initial,&stress);
 
             fps_avg += bond_factor*stress;
@@ -412,31 +414,44 @@ void pgsMomentCapacityEngineer::ComputeMomentCapacity(pgsTypes::Stage stage,cons
       if ( pmcd->bOverReinforced )
       {
          GET_IFACE(IBridgeMaterial,pMaterial);
-         Float64 fc = pMaterial->GetFcSlab();
-
-         Float64 Beta1 = lrfdConcreteUtil::Beta1(fc);
          Float64 de = pmcd->de;
          Float64 c  = pmcd->c;
 
          Float64 hf;
          Float64 b;
          Float64 bw;
+         Float64 fc;
+         Float64 Beta1;
          if ( bPositiveMoment )
          {
-            hf = pBridge->GetStructuralSlabDepth(poi);
-
             GET_IFACE(ISectProp2,pProps);
-            b = pProps->GetEffectiveFlangeWidth(poi);
 
             GET_IFACE(IGirder, pGdr);
-            bw = pGdr->GetMinWebWidth(poi);
+            bw = pGdr->GetShearWidth(poi);
+
+            if ( pBridge->GetDeckType() == pgsTypes::sdtNone )
+            {
+               b     = pGdr->GetTopFlangeWidth(poi);
+               hf    = pGdr->GetMinTopFlangeThickness(poi);
+               fc    = pMaterial->GetFcGdr(span,gdr);
+               Beta1 = lrfdConcreteUtil::Beta1(fc);
+            }
+            else
+            {
+               b     = pProps->GetEffectiveFlangeWidth(poi);
+               hf    = pBridge->GetStructuralSlabDepth(poi);
+               fc    = pMaterial->GetFcSlab();
+               Beta1 = lrfdConcreteUtil::Beta1(fc);
+            }
          }
          else
          {
             GET_IFACE(IGirder, pGdr);
             hf = pGdr->GetMinBottomFlangeThickness(poi);
             b  = pGdr->GetBottomWidth(poi);
-            bw = pGdr->GetMinWebWidth(poi);
+            bw = pGdr->GetShearWidth(poi);
+            fc = pMaterial->GetFcGdr(span,gdr);
+            Beta1 = lrfdConcreteUtil::Beta1(fc);
          }
 
          pmcd->FcSlab = fc;
@@ -697,18 +712,18 @@ void pgsMomentCapacityEngineer::ComputeCrackingMoment(pgsTypes::Stage stage,cons
    ComputeCrackingMoment(fr,fcpe,Mdnc,Sb,Sbc,pcmd);
 }
 
-double pgsMomentCapacityEngineer::GetNonCompositeDeadLoadMoment(pgsTypes::Stage stage,const pgsPointOfInterest& poi,const GDRCONFIG& config,bool bPositiveMoment)
+Float64 pgsMomentCapacityEngineer::GetNonCompositeDeadLoadMoment(pgsTypes::Stage stage,const pgsPointOfInterest& poi,const GDRCONFIG& config,bool bPositiveMoment)
 {
    GET_IFACE(IProductForces,pProductForces);
-   double Mdnc = GetNonCompositeDeadLoadMoment(stage,poi,bPositiveMoment);
+   Float64 Mdnc = GetNonCompositeDeadLoadMoment(stage,poi,bPositiveMoment);
    // add effect of different slab offset
-   double deltaSlab = pProductForces->GetDesignSlabPadMomentAdjustment(config.Fc,config.SlabOffset[pgsTypes::metStart],config.SlabOffset[pgsTypes::metEnd],poi);
+   Float64 deltaSlab = pProductForces->GetDesignSlabPadMomentAdjustment(config.Fc,config.SlabOffset[pgsTypes::metStart],config.SlabOffset[pgsTypes::metEnd],poi);
    Mdnc += deltaSlab;
 
    return Mdnc;
 }
 
-double pgsMomentCapacityEngineer::GetNonCompositeDeadLoadMoment(pgsTypes::Stage stage,const pgsPointOfInterest& poi,bool bPositiveMoment)
+Float64 pgsMomentCapacityEngineer::GetNonCompositeDeadLoadMoment(pgsTypes::Stage stage,const pgsPointOfInterest& poi,bool bPositiveMoment)
 {
    GET_IFACE(IProductLoads,pProductLoads);
    GET_IFACE(IProductForces,pProductForces);
@@ -742,7 +757,7 @@ double pgsMomentCapacityEngineer::GetNonCompositeDeadLoadMoment(pgsTypes::Stage 
    return Mdnc;
 }
 
-double pgsMomentCapacityEngineer::GetModulusOfRupture(const pgsPointOfInterest& poi,bool bPositiveMoment)
+Float64 pgsMomentCapacityEngineer::GetModulusOfRupture(const pgsPointOfInterest& poi,bool bPositiveMoment)
 {
    GET_IFACE(IProductForces,pProductForces);
    GET_IFACE(IBridgeMaterial,pMaterial);
@@ -759,7 +774,7 @@ double pgsMomentCapacityEngineer::GetModulusOfRupture(const pgsPointOfInterest& 
    return fr;
 }
 
-double pgsMomentCapacityEngineer::GetModulusOfRupture(const GDRCONFIG& config,bool bPositiveMoment)
+Float64 pgsMomentCapacityEngineer::GetModulusOfRupture(const GDRCONFIG& config,bool bPositiveMoment)
 {
    GET_IFACE(IProductForces,pProductForces);
    GET_IFACE(IBridgeMaterial,pMaterial);
@@ -776,7 +791,7 @@ double pgsMomentCapacityEngineer::GetModulusOfRupture(const GDRCONFIG& config,bo
    return fr;
 }
 
-void pgsMomentCapacityEngineer::GetSectionProperties(pgsTypes::Stage stage,const pgsPointOfInterest& poi,bool bPositiveMoment,double* pSb,double* pSbc)
+void pgsMomentCapacityEngineer::GetSectionProperties(pgsTypes::Stage stage,const pgsPointOfInterest& poi,bool bPositiveMoment,Float64* pSb,Float64* pSbc)
 {
    GET_IFACE(ISectProp2,pSectProp2);
 
@@ -799,7 +814,7 @@ void pgsMomentCapacityEngineer::GetSectionProperties(pgsTypes::Stage stage,const
    *pSbc = Sbc;
 }
 
-void pgsMomentCapacityEngineer::GetSectionProperties(pgsTypes::Stage stage,const pgsPointOfInterest& poi,const GDRCONFIG& config,bool bPositiveMoment,double* pSb,double* pSbc)
+void pgsMomentCapacityEngineer::GetSectionProperties(pgsTypes::Stage stage,const pgsPointOfInterest& poi,const GDRCONFIG& config,bool bPositiveMoment,Float64* pSb,Float64* pSbc)
 {
    GET_IFACE(ISectProp2,pSectProp2);
 
@@ -822,9 +837,9 @@ void pgsMomentCapacityEngineer::GetSectionProperties(pgsTypes::Stage stage,const
    *pSbc = Sbc;
 }
 
-void pgsMomentCapacityEngineer::ComputeCrackingMoment(double fr,double fcpe,double Mdnc,double Sb,double Sbc,CRACKINGMOMENTDETAILS* pcmd)
+void pgsMomentCapacityEngineer::ComputeCrackingMoment(Float64 fr,Float64 fcpe,Float64 Mdnc,Float64 Sb,Float64 Sbc,CRACKINGMOMENTDETAILS* pcmd)
 {
-   double Mcr = (fr + fcpe)*Sbc - Mdnc*(Sbc/Sb - 1);
+   Float64 Mcr = (fr + fcpe)*Sbc - Mdnc*(Sbc/Sb - 1);
 
    GET_IFACE(ILibrary,pLib);
    GET_IFACE(ISpecification,pSpec);
@@ -844,6 +859,94 @@ void pgsMomentCapacityEngineer::ComputeCrackingMoment(double fr,double fcpe,doub
    pcmd->Sbc  = Sbc;
 }
 
+void pgsMomentCapacityEngineer::AnalyzeCrackedSection(const pgsPointOfInterest& poi,bool bPositiveMoment,CRACKEDSECTIONDETAILS* pCSD)
+{
+   SpanIndexType spanIdx = poi.GetSpan();
+   GirderIndexType gdrIdx = poi.GetGirder();
+   GET_IFACE(IBridge,pBridge);
+   GDRCONFIG config = pBridge->GetGirderConfiguration(spanIdx,gdrIdx);
+
+   pgsBondTool bondTool(m_pBroker,poi);
+
+   // create a problem to solve
+   // the cracked section analysis tool uses the same model as the moment capacity tool
+   CComPtr<IGeneralSection> beam_section;
+   CComPtr<IPoint2d> pntCompression; // needed to figure out the result geometry
+   CComPtr<ISize2d> szOffset; // distance to offset coordinates from bridge model to capacity model
+   std::map<long,Float64> bond_factors[2];
+   Float64 dt; // depth from top of section to extreme layer of tensile reinforcement
+   BuildCapacityProblem(pgsTypes::BridgeSite3,poi,config,0,bondTool,bPositiveMoment,&beam_section,&pntCompression,&szOffset,&dt,bond_factors);
+
+   CComPtr<ICrackedSectionSolution> solution;
+   m_CrackedSectionSolver->putref_Section(beam_section);
+   m_CrackedSectionSolver->put_Slices(20);
+   m_CrackedSectionSolver->put_SliceGrowthFactor(2);
+   m_CrackedSectionSolver->put_CGTolerance(0.001);
+   HRESULT hr = m_CrackedSectionSolver->Solve(&solution);
+   ATLASSERT(SUCCEEDED(hr));
+
+   pCSD->CrackedSectionSolution = solution;
+  
+
+   ///////////////////////////////////////////
+   // Compute I-crack
+   ///////////////////////////////////////////
+
+   // use the WBFL Sections library
+   CComPtr<ICompositeSection> composite_section;
+   composite_section.CoCreateInstance(CLSID_CompositeSection);
+
+   // add each slice into a composite section object
+   CollectionIndexType nSlices;
+   solution->get_SliceCount(&nSlices);
+   for ( CollectionIndexType sliceIdx = 0; sliceIdx < nSlices; sliceIdx++ )
+   {
+      CComPtr<ICrackedSectionSlice> slice;
+      solution->get_Slice(sliceIdx,&slice);
+
+      CComPtr<IShape> shape;
+      slice->get_Shape(&shape);
+
+      Float64 Efg, Ebg;
+      slice->get_Efg(&Efg);
+      slice->get_Ebg(&Ebg);
+
+      if ( !IsZero(Efg) )
+      {
+         // only add slices that aren't cracked
+         composite_section->AddSection(shape,Efg,1,VARIANT_FALSE,VARIANT_TRUE);
+
+         if ( !IsZero(Ebg) )
+         {
+            // add the void
+            composite_section->AddSection(shape,Ebg,1,VARIANT_TRUE,VARIANT_TRUE);
+         }
+      }
+   }
+
+   // get the elastic properties
+   CComQIPtr<ISection> section(composite_section);
+   CComPtr<IElasticProperties> elastic_properties;
+   section->get_ElasticProperties(&elastic_properties);
+
+   // transform properties into girder matieral
+   GET_IFACE(IBridgeMaterial,pMaterials);
+   Float64 Eg = pMaterials->GetEcGdr(spanIdx,gdrIdx);
+
+   CComPtr<IShapeProperties> shape_properties;
+   elastic_properties->TransformProperties(Eg,&shape_properties);
+
+   // Icrack for girder
+   Float64 Icr;
+   shape_properties->get_Ixx(&Icr);
+   pCSD->Icr = Icr;
+
+   // distance from top of section to the cracked centroid
+   Float64 c;
+   shape_properties->get_Ytop(&c);
+   pCSD->c = c;
+}
+
 //======================== ACCESS     =======================================
 //======================== INQUIRY    =======================================
 
@@ -856,6 +959,8 @@ void pgsMomentCapacityEngineer::MakeCopy(const pgsMomentCapacityEngineer& rOther
 {
    // Add copy code here...
    m_pBroker = rOther.m_pBroker;
+   m_CrackedSectionSolver = rOther.m_CrackedSectionSolver;
+   m_MomentCapacitySolver = rOther.m_MomentCapacitySolver;
 }
 
 void pgsMomentCapacityEngineer::MakeAssignment(const pgsMomentCapacityEngineer& rOther)
@@ -889,7 +994,7 @@ void pgsMomentCapacityEngineer::CreateStrandMaterial(SpanIndexType span,GirderIn
    (*ppSS)->AddRef();
 }
 
-void pgsMomentCapacityEngineer::BuildCapacityProblem(pgsTypes::Stage stage,const pgsPointOfInterest& poi,const GDRCONFIG& config,double e_initial,pgsBondTool& bondTool,bool bPositiveMoment,IGeneralSection** ppProblem,IPoint2d** pntCompression,ISize2d** szOffset,double* pdt,std::map<long,double>* pBondFactors)
+void pgsMomentCapacityEngineer::BuildCapacityProblem(pgsTypes::Stage stage,const pgsPointOfInterest& poi,const GDRCONFIG& config,Float64 e_initial,pgsBondTool& bondTool,bool bPositiveMoment,IGeneralSection** ppProblem,IPoint2d** pntCompression,ISize2d** szOffset,Float64* pdt,std::map<long,Float64>* pBondFactors)
 {
    ATLASSERT( stage == pgsTypes::BridgeSite3 );
 
@@ -902,11 +1007,11 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(pgsTypes::Stage stage,const
    GET_IFACE(ILongRebarGeometry, pRebarGeom);
    SpanIndexType span = poi.GetSpan();
    GirderIndexType gdr  = poi.GetGirder();
-   double dist_from_start = poi.GetDistFromStart();
+   Float64 dist_from_start = poi.GetDistFromStart();
 
-   double gdr_length = pBridge->GetGirderLength(span,gdr);
+   Float64 gdr_length = pBridge->GetGirderLength(span,gdr);
 
-   double dt = 0; // depth from compression face to extreme layer of tensile reinforcement
+   Float64 dt = 0; // depth from compression face to extreme layer of tensile reinforcement
 
    StrandIndexType Ns = config.Nstrands[pgsTypes::Straight];
    StrandIndexType Nh = config.Nstrands[pgsTypes::Harped];
@@ -934,7 +1039,7 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(pgsTypes::Stage stage,const
    // girder rebar
    CComPtr<IRebarModel> matGirderRebar;
    matGirderRebar.CoCreateInstance(CLSID_RebarModel);
-   double E, Fy;
+   Float64 E, Fy;
    pMaterial->GetLongitudinalRebarProperties(span,gdr,&E,&Fy);
    matGirderRebar->Init( Fy, E, 1.00 );
    CComQIPtr<IStressStrain> ssGirderRebar(matGirderRebar);
@@ -974,7 +1079,7 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(pgsTypes::Stage stage,const
    shapeBeam->get_ShapeProperties(&props);
    CComPtr<IPoint2d> cgBeam;
    props->get_Centroid(&cgBeam);
-   double dx,dy;
+   Float64 dx,dy;
    cgBeam->get_X(&dx);
    cgBeam->get_Y(&dy);
 
@@ -1031,7 +1136,7 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(pgsTypes::Stage stage,const
    else
       posBeam->get_LocatorPoint(lpBottomCenter,pntCompression);
 
-   double Yc;
+   Float64 Yc;
    (*pntCompression)->get_Y(&Yc);
 
    /////// -- NOTE -- //////
@@ -1045,7 +1150,7 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(pgsTypes::Stage stage,const
    //
    // If the poi is around mid-span, assume a development length factor of 1.0 otherwise compute it.
    //
-   double fra = 0.25; // 25% either side of centerline
+   Float64 fra = 0.25; // 25% either side of centerline
    bool bNearMidSpan = false;
    if ( InRange(fra*gdr_length,dist_from_start,(1-fra)*gdr_length))
       bNearMidSpan = true;
@@ -1055,8 +1160,8 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(pgsTypes::Stage stage,const
    {
       // strands
       const matPsStrand* pStrand = pMaterial->GetStrand(span,gdr);
-      double aps = pStrand->GetNominalArea();
-      double dps = pStrand->GetNominalDiameter();
+      Float64 aps = pStrand->GetNominalArea();
+      Float64 dps = pStrand->GetNominalDiameter();
       for ( int i = 0; i < 2; i++ ) // straight and harped strands
       {
          StrandIndexType nStrands = (i == 0 ? Ns : Nh);
@@ -1064,15 +1169,15 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(pgsTypes::Stage stage,const
          CComPtr<IPoint2dCollection> points;
          pStrandGeom->GetStrandPositionsEx(poi, nStrands, strandType, &points);
 
-/////////////////////////////////////////////
-         // We know that we have symmetric section and that strands are generally in rows
-         // create a single "lump of strand" for each row instead of modeling each strand 
+         /////////////////////////////////////////////
+         // We know that we have symmetric section and that strands are generally in rows.
+         // Create a single "lump of strand" for each row instead of modeling each strand 
          // individually. This will spead up the solver by quite a bit
 
          RowIndexType nStrandRows = pStrandGeom->GetNumRowsWithStrand(span,gdr,nStrands,strandType);
          for ( RowIndexType rowIdx = 0; rowIdx < nStrandRows; rowIdx++ )
          {
-            double rowArea = 0;
+            Float64 rowArea = 0;
             std::vector<StrandIndexType> strandIdxs = pStrandGeom->GetStrandsInRow(span,gdr,nStrands,rowIdx,strandType);
 
 #if defined _DEBUG
@@ -1095,7 +1200,7 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(pgsTypes::Stage stage,const
                }
    
                // get the bond factor (this will reduce the effective area of the strand if it isn't fully developed)
-               double bond_factor = bondTool.GetBondFactor(strandIdx,strandType);
+               Float64 bond_factor = bondTool.GetBondFactor(strandIdx,strandType);
 
                // for negative moment, assume fully bonded
                if ( !bPositiveMoment )
@@ -1107,8 +1212,8 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(pgsTypes::Stage stage,const
             }
 
             // create a single equivalent rectangle for the area of reinforcement in this row
-            double h = dps; // height is diamter of strand
-            double w = rowArea/dps;
+            Float64 h = dps; // height is diamter of strand
+            Float64 w = rowArea/dps;
 
             CComPtr<IRectangle> bar_shape;
             bar_shape.CoCreateInstance(CLSID_Rect);
@@ -1118,7 +1223,7 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(pgsTypes::Stage stage,const
             // get one strand from the row and get it's Y value
             CComPtr<IPoint2d> point;
             points->get_Item(strandIdxs[0],&point);
-            double rowY;
+            Float64 rowY;
             point->get_Y(&rowY);
             point.Release();
 
@@ -1130,7 +1235,7 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(pgsTypes::Stage stage,const
             hp->Offset(-dx,-dy);
 
             // determine depth to lowest layer of strand
-            double cy;
+            Float64 cy;
             hp->get_Y(&cy);
             dt = _cpp_max(dt,fabs(Yc-cy));
 
@@ -1141,84 +1246,12 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(pgsTypes::Stage stage,const
 #if defined _DEBUG
             CComPtr<IShapeProperties> props;
             shape->get_ShapeProperties(&props);
-            double area;
+            Float64 area;
             props->get_Area(&area);
             ATLASSERT( IsEqual(area,rowArea) );
 #endif // _DEBUG
          }
 
-/////////////////////////////////////////////
-         // This commentent out code block creates individual strands in the capacity problems.
-         // This type of model will run much slower.
-/*
-         long strandIdx = 0;
-         long strandPos = 0;
-         CComPtr<IEnumPoint2d> enum_points;
-         points->get__Enum(&enum_points);
-         CComPtr<IPoint2d> point;
-         while ( enum_points->Next(1,&point,NULL) != S_FALSE )
-         {
-            bool bDebonded = bondTool.IsDebonded(strandIdx,strandType);
-            if ( bDebonded )
-            {
-               // strand is debonded... don't add it... go to the next strand
-               point.Release();
-               strandIdx++;
-               continue;
-            }
-
-            // get the bond factor (this will reduce the effective area of the strand if it isn't fully developed)
-            double bond_factor = bondTool.GetBondFactor(strandIdx,strandType);
-
-            // for negative moment, assume fully bonded
-            if ( !bPositiveMoment )
-               bond_factor = 1.0;
-
-            pBondFactors[i].insert( std::make_pair(strandPos++,bond_factor) );
-
-//            // create an "area perfect" circle
-//            double r = sqrt(aps/M_PI);
-//            CComPtr<ICircle> bar_shape;
-//            bar_shape.CoCreateInstance(CLSID_Circle);
-//            bar_shape->put_Radius(r);
-         
-
-            // create an "area perfect" square
-            // (clips are lot faster than a circle)
-            double s = sqrt(bond_factor*aps);
-
-            CComPtr<IRectangle> bar_shape;
-            bar_shape.CoCreateInstance(CLSID_Rect);
-            bar_shape->put_Width(s);
-            bar_shape->put_Height(s);
-
-            CComQIPtr<IXYPosition> position(bar_shape);
-            CComPtr<IPoint2d> hp;
-            position->get_LocatorPoint(lpHookPoint,&hp);
-            hp->MoveEx(point);
-            hp->Offset(-dx,-dy);
-
-            double cy;
-            hp->get_Y(&cy);
-            dt = _cpp_max(dt,fabs(Yc-cy));
-
-            CComQIPtr<IShape> shape(bar_shape);
-            section->AddShape(shape,ssStrand,ssGirder,e_initial);
-
-
-#if defined _DEBUG
-            CComPtr<IShapeProperties> props;
-            shape->get_ShapeProperties(&props);
-            double area;
-            props->get_Area(&area);
-            ATLASSERT( IsEqual(area,aps*bond_factor) );
-#endif // _DEBUG
-
-            strandIdx++;
-            point.Release();
-         }
-*/
-/////////////////////////////////////////////
       } // next strand type
    }
 
@@ -1240,7 +1273,7 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(pgsTypes::Stage stage,const
          CComPtr<IPoint2d> location;
          item->get_Location(&location);
 
-         double x,y;
+         Float64 x,y;
          location->get_X(&x);
          location->get_Y(&y);
 
@@ -1249,11 +1282,11 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(pgsTypes::Stage stage,const
          Float64 as;
          rebar->get_NominalArea(&as);
 
-         double dev_length_factor = pRebarGeom->GetDevLengthFactor(span,gdr,item);
+         Float64 dev_length_factor = pRebarGeom->GetDevLengthFactor(span,gdr,item);
 
          // create an "area perfect" square
          // (clips are lot faster than a circle)
-         double s = sqrt(dev_length_factor*as);
+         Float64 s = sqrt(dev_length_factor*as);
 
          CComPtr<IRectangle> square;
          square.CoCreateInstance(CLSID_Rect);
@@ -1265,7 +1298,7 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(pgsTypes::Stage stage,const
          hp->MoveEx(location);
          hp->Offset(-dx,-dy);
 
-         double cy;
+         Float64 cy;
          hp->get_Y(&cy);
          dt = _cpp_max(dt,fabs(Yc-cy));
 
@@ -1280,8 +1313,8 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(pgsTypes::Stage stage,const
          pBridge->GetDeckType() != pgsTypes::sdtNone && pBridge->IsCompositeDeck() )
    {
       // deck
-      double Weff = pSectProp->GetEffectiveFlangeWidth(poi);
-      double Dslab = pBridge->GetStructuralSlabDepth(poi);
+      Float64 Weff = pSectProp->GetEffectiveFlangeWidth(poi);
+      Float64 Dslab = pBridge->GetStructuralSlabDepth(poi);
 
       // so far, dt is measured from top of girder (if positive moment)
       // since we have a deck, add Dslab so that dt is measured from top of slab
@@ -1312,13 +1345,13 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(pgsTypes::Stage stage,const
       // deck rebar if this is for negative moment
       if ( !bPositiveMoment )
       {
-         double AsTop = pRebarGeom->GetAsTopMat(poi,ILongRebarGeometry::All);
+         Float64 AsTop = pRebarGeom->GetAsTopMat(poi,ILongRebarGeometry::All);
 
          if ( !IsZero(AsTop) )
          {
-            double coverTop = pRebarGeom->GetCoverTopMat();
-            double equiv_height = AsTop / Weff; // model deck rebar as rectangles of equivalent area
-            double equiv_width = Weff;
+            Float64 coverTop = pRebarGeom->GetCoverTopMat();
+            Float64 equiv_height = AsTop / Weff; // model deck rebar as rectangles of equivalent area
+            Float64 equiv_width = Weff;
             if ( equiv_height < Dslab/16. )
             {
                // of the equivalent height is too sort, it doesn't model well
@@ -1338,7 +1371,7 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(pgsTypes::Stage stage,const
             pntCommon->Offset(0,-coverTop);
             posTop->put_LocatorPoint(lpCenterCenter,pntCommon);
 
-            double cy;
+            Float64 cy;
             pntCommon->get_Y(&cy);
             dt = _cpp_max(dt,fabs(Yc-cy));
 
@@ -1347,12 +1380,12 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(pgsTypes::Stage stage,const
          }
 
 
-         double AsBottom = pRebarGeom->GetAsBottomMat(poi,ILongRebarGeometry::All);
+         Float64 AsBottom = pRebarGeom->GetAsBottomMat(poi,ILongRebarGeometry::All);
          if ( !IsZero(AsBottom) )
          {
-            double coverBottom = pRebarGeom->GetCoverBottomMat();
-            double equiv_height = AsBottom / Weff;
-            double equiv_width = Weff;
+            Float64 coverBottom = pRebarGeom->GetCoverBottomMat();
+            Float64 equiv_height = AsBottom / Weff;
+            Float64 equiv_width = Weff;
             if ( equiv_height < Dslab/16. )
             {
                // of the equivalent height is too sort, it doesn't model well
@@ -1372,7 +1405,7 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(pgsTypes::Stage stage,const
             pntCommon->Offset(0,coverBottom);
             posBottom->put_LocatorPoint(lpCenterCenter,pntCommon);
 
-            double cy;
+            Float64 cy;
             pntCommon->get_Y(&cy);
             dt = _cpp_max(dt,fabs(Yc-cy));
 
@@ -1416,7 +1449,7 @@ bool pgsMomentCapacityEngineer::TestMe(dbgLog& rlog)
 #endif // _UNITTEST
 
 #if defined _DEBUG_SECTION_DUMP
-void pgsMomentCapacityEngineer::DumpSection(const pgsPointOfInterest& poi,IGeneralSection* section, std::map<long,double> ssBondFactors,std::map<long,double> hsBondFactors,bool bPositiveMoment)
+void pgsMomentCapacityEngineer::DumpSection(const pgsPointOfInterest& poi,IGeneralSection* section, std::map<long,Float64> ssBondFactors,std::map<long,Float64> hsBondFactors,bool bPositiveMoment)
 {
    std::ostringstream os;
    std::string strMn(bPositiveMoment ? "+M" : "-M"); 
@@ -1440,7 +1473,7 @@ void pgsMomentCapacityEngineer::DumpSection(const pgsPointOfInterest& poi,IGener
       points->get__Enum(&enum_points);
       while ( enum_points->Next(1,&point,0) == S_OK )
       {
-         double x,y;
+         Float64 x,y;
          point->get_X(&x);
          point->get_Y(&y);
 
@@ -1453,7 +1486,7 @@ void pgsMomentCapacityEngineer::DumpSection(const pgsPointOfInterest& poi,IGener
    file << "done" << std::endl;
 
    file << "Straight Strand Bond Factors" << std::endl;
-   std::map<long,double>::iterator iter;
+   std::map<long,Float64>::iterator iter;
    for ( iter = ssBondFactors.begin(); iter != ssBondFactors.end(); iter++ )
    {
       file << iter->first << ", " << iter->second << std::endl;
@@ -1515,7 +1548,7 @@ void pgsMomentCapacityEngineer::pgsBondTool::Init()
    //
    // If the poi is around mid-span, assume a development length factor of 1.0 otherwise compute it.
    //
-   double fra = 0.25; // 25% either side of centerline
+   Float64 fra = 0.25; // 25% either side of centerline
    m_bNearMidSpan = false;
    if ( InRange(fra*m_GirderLength,m_DistFromStart,(1-fra)*m_GirderLength))
       m_bNearMidSpan = true;
@@ -1531,7 +1564,7 @@ Float64 pgsMomentCapacityEngineer::pgsBondTool::GetBondFactor(StrandIndexType st
    //
    // To work around this, the bond factors for moment capacity analysis are computed based on fps and fpe
    // at mid span.
-   double bond_factor = 1;
+   Float64 bond_factor = 1;
    if ( !m_bNearMidSpan )
    {
       if ( m_bUseConfig )

@@ -1,17 +1,17 @@
 HKCR
 {
-	PGSuper.WSDOTAgent.1 = s 'WSDOTAgent Class'
+	PGSuper.WSDOTAgent.1 = s 'WSDOT Extensions'
 	{
 		CLSID = s '{338AD645-BAF2-41DC-964E-A9DFC8123253}'
 	}
-	PGSuper.WSDOTAgent = s 'WSDOTAgent Class'
+	PGSuper.WSDOTAgent = s 'WSDOT Extensions'
 	{
 		CLSID = s '{338AD645-BAF2-41DC-964E-A9DFC8123253}'
 		CurVer = s 'PGSuper.WSDOTAgent.1'
 	}
 	NoRemove CLSID
 	{
-		ForceRemove {338AD645-BAF2-41DC-964E-A9DFC8123253} = s 'WSDOTAgent Class'
+		ForceRemove {338AD645-BAF2-41DC-964E-A9DFC8123253} = s 'WSDOT Extensions'
 		{
 			ProgID = s 'PGSuper.WSDOTAgent.1'
 			VersionIndependentProgID = s 'PGSuper.WSDOTAgent'

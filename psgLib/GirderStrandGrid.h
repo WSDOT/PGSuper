@@ -40,8 +40,6 @@ class CGirderStrandGridClient
 public:
    // capture event fired from grid that allows deletion of rows
    virtual void OnEnableDelete(const CGirderStrandGrid* pgrid, bool canDelete)=0;
-   virtual CString GetLengthUnitString()=0;
-   virtual unitLength GetLengthUnit()=0;
 };
 
 /////////////////////////////////////////////////////////////////////////////

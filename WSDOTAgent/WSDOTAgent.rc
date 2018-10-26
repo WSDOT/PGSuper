@@ -59,8 +59,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 2,3,0,1
- PRODUCTVERSION 2,3,0,1
+ FILEVERSION 2,3,0,2
+ PRODUCTVERSION 2,3,0,2
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -78,11 +78,12 @@ BEGIN
             VALUE "Comments", "A member of the Alternate Route Project"
             VALUE "CompanyName", "Washington State Department of Transportation"
             VALUE "FileDescription", "WSDOTAgent Module"
-            VALUE "FileVersion", "2.3.0.1"
+            VALUE "FileVersion", "2.3.0.2"
             VALUE "InternalName", "WSDOTAgent"
             VALUE "OriginalFilename", "PGSuperWSDOTAgent.DLL"
+            VALUE "LegalCopyright", "Copyright © 1999-2010, Washington State Department of Transportation, All Rights Reserved"
             VALUE "ProductName", "PGSuper"
-            VALUE "ProductVersion", "2.3.0.1"
+            VALUE "ProductVersion", "2.3.0.2"
         END
     END
     BLOCK "VarFileInfo"
@@ -99,6 +100,16 @@ END
 
 IDR_WSDOTAGENT          REGISTRY                "WSDOTAgent.rgs"
 IDR_WSDOTAGENTIMP       REGISTRY                "WSDOTAgentImp.rgs"
+IDR_WSDOTCOMPONENTINFO  REGISTRY                "WSDOTComponentInfo.rgs"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDI_WSDOT               ICON                    "res\\Wsdot.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 //

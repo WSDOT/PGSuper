@@ -24,7 +24,8 @@
 //
 
 #include "stdafx.h"
-#include "PGSuper.h"
+#include "resource.h"
+#include "PGSuperDoc.h"
 #include "GirderDescDlg.h"
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
@@ -69,14 +70,15 @@ void CGirderDescDlg::Init()
    m_Shear.m_psp.dwFlags     |= PSP_HASHELP;
    m_LongRebar.m_psp.dwFlags |= PSP_HASHELP;
    m_Lifting.m_psp.dwFlags   |= PSP_HASHELP;
-   m_Debond.m_psp.dwFlags   |= PSP_HASHELP;
+   m_Debond.m_psp.dwFlags    |= PSP_HASHELP;
+   m_Rating.m_psp.dwFlags    |= PSP_HASHELP;
 
 
    AddPage( &m_General );
    AddPage( &m_Prestress );
 
    CComPtr<IBroker> pBroker;
-   AfxGetBroker(&pBroker);
+   EAFGetBroker(&pBroker);
 
    GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
    if ( pStrandGeom->CanDebondStrands(m_CurrentSpanIdx,m_CurrentGirderIdx,pgsTypes::Straight) )
@@ -95,6 +97,8 @@ void CGirderDescDlg::Init()
    {
       AddPage( &m_Lifting );
    }
+
+   AddPage( &m_Rating );
 }
 
 BEGIN_MESSAGE_MAP(CGirderDescDlg, CPropertySheet)
@@ -110,12 +114,11 @@ END_MESSAGE_MAP()
 void CGirderDescDlg::DoUpdate()
 {
    CComPtr<IBroker> pBroker;
-   AfxGetBroker(&pBroker);
+   EAFGetBroker(&pBroker);
 
    GET_IFACE2(pBroker,IGirderData,pGirderData);
    GET_IFACE2(pBroker,IShear,pShear);
    GET_IFACE2(pBroker,ILongitudinalRebar,pLongitudinaRebar);
-   GET_IFACE2(pBroker,IProjectSettings,pProjSettings);
    GET_IFACE2(pBroker,IGirderLifting,pGirderLifting);
    GET_IFACE2(pBroker,IGirderHauling,pGirderHauling);
    GET_IFACE2(pBroker,IBridge,pBridge);

@@ -42,7 +42,7 @@ public:
       m_bComputingLossesForDesign = false;
 	}
 
-   void Init(IBroker* pBroker,AgentIDType agentID);
+   void Init(IBroker* pBroker,StatusGroupIDType statusGroupID);
 
 public:
    enum BeamType { IBeam, UBeam, SolidSlab, BoxBeam, SingleT };
@@ -53,7 +53,7 @@ public:
 
 private:
    IBroker* m_pBroker;
-   AgentIDType m_AgentID;
+   StatusGroupIDType m_StatusGroupID;
    StatusCallbackIDType m_scidUnknown;
    StatusCallbackIDType m_scidGirderDescriptionError;
 

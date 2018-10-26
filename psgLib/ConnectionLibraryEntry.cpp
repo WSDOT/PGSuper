@@ -35,8 +35,8 @@
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
-//#undef THIS_FILE
-//static char THIS_FILE[] = __FILE__;
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
 #endif
 
 
@@ -398,12 +398,12 @@ void ConnectionLibraryEntry::SetDiaphragmLoadLocation(Float64 loc)
 //======================== LIFECYCLE  =======================================
 //======================== OPERATORS  =======================================
 //======================== OPERATIONS =======================================
-bool ConnectionLibraryEntry::Edit(libUnitsMode::Mode mode, bool allowEditing)
+bool ConnectionLibraryEntry::Edit(bool allowEditing)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
    // exchange data with dialog
-   CConnectionEntryDlg dlg(mode, allowEditing);
+   CConnectionEntryDlg dlg(allowEditing);
    dlg.m_GirderEndDistance  = this->GetGirderEndDistance();
    dlg.m_GirderBearingOffset  = this->GetGirderBearingOffset();
    dlg.m_EndDistanceMeasurementType = this->GetEndDistanceMeasurementType();

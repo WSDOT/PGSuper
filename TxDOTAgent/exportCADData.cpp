@@ -105,7 +105,7 @@ BOOL exportCADData::OnInitDialog()
 	{
 		/* Add current span string to span list */
 		CString strSpan;
-		strSpan.Format("Span %d",i+1);
+		strSpan.Format("Span %d",LABEL_SPAN(i));
 		pSpanBox->AddString(strSpan);
 	}
 

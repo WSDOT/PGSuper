@@ -30,12 +30,265 @@
 #include <IFace\Bridge.h>
 #include <IFace\DisplayUnits.h>
 #include <IFace\AnalysisResults.h>
+#include <IFace\RatingSpecification.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
 static char THIS_FILE[] = __FILE__;
 #endif
+
+std::string LiveLoadPrefix(pgsTypes::LiveLoadType llType)
+{
+   std::string strPrefix;
+   switch(llType)
+   {
+   case pgsTypes::lltDesign:
+      strPrefix = "D";
+      break;
+
+   case pgsTypes::lltFatigue:
+      strPrefix = "F";
+      break;
+      
+   case pgsTypes::lltPedestrian:
+      strPrefix = "Ped";
+      break;
+
+   case pgsTypes::lltPermit:
+      strPrefix = "P";
+      break;
+
+   case pgsTypes::lltLegalRating_Routine:
+      strPrefix = "R";
+      break;
+
+   case pgsTypes::lltLegalRating_Special:
+      strPrefix = "S";
+      break;
+
+   case pgsTypes::lltPermitRating_Routine:
+      strPrefix = "PR";
+      break;
+
+   case pgsTypes::lltPermitRating_Special:
+      strPrefix = "PS";
+      break;
+   }
+
+   return strPrefix;
+}
+
+void LiveLoadTableFooter(IBroker* pBroker,rptParagraph* pPara,GirderIndexType girder,bool bDesign,bool bRating)
+{
+   GET_IFACE2(pBroker,IProductLoads,pProductLoads);
+   GET_IFACE2(pBroker,IRatingSpecification,pRatingSpec);
+   std::vector<std::string> strLLNames;
+   std::vector<std::string>::iterator iter;
+   long j;
+
+   if ( bDesign )
+   {
+      GET_IFACE2(pBroker,ILiveLoads,pLiveLoads);
+
+      j = 0;
+      strLLNames = pProductLoads->GetVehicleNames(pgsTypes::lltDesign,girder);
+      for (iter = strLLNames.begin(); iter != strLLNames.end(); iter++, j++ )
+      {
+         *pPara << "(" << LiveLoadPrefix(pgsTypes::lltDesign) << j << ") " << *iter << rptNewLine;
+      }
+
+      if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
+      {
+         strLLNames = pProductLoads->GetVehicleNames(pgsTypes::lltFatigue,girder);
+         j = 0;
+         for (iter = strLLNames.begin(); iter != strLLNames.end(); iter++, j++ )
+         {
+            *pPara << "(" << LiveLoadPrefix(pgsTypes::lltFatigue) << j << ") " << *iter << rptNewLine;
+         }
+      }
+
+      if ( pLiveLoads->IsLiveLoadDefined(pgsTypes::lltPedestrian) )
+      {
+         strLLNames = pProductLoads->GetVehicleNames(pgsTypes::lltPedestrian,girder);
+         j = 0;
+         for (iter = strLLNames.begin(); iter != strLLNames.end(); iter++, j++ )
+         {
+            *pPara << "(" << LiveLoadPrefix(pgsTypes::lltPedestrian) << j << ") " << *iter << rptNewLine;
+         }
+      }
+
+      if ( pLiveLoads->IsLiveLoadDefined(pgsTypes::lltPermit) )
+      {
+         strLLNames = pProductLoads->GetVehicleNames(pgsTypes::lltPermit,girder);
+         j = 0;
+         for (iter = strLLNames.begin(); iter != strLLNames.end(); iter++, j++ )
+         {
+            *pPara << "(" << LiveLoadPrefix(pgsTypes::lltPermit) << j << ") " << *iter << rptNewLine;
+         }
+      }
+   }
+
+   if ( bRating )
+   {
+      if ( !bDesign && (pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) || pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating)) )
+      {
+         j = 0;
+         strLLNames = pProductLoads->GetVehicleNames(pgsTypes::lltDesign,girder);
+         for (iter = strLLNames.begin(); iter != strLLNames.end(); iter++, j++ )
+         {
+            *pPara << "(" << LiveLoadPrefix(pgsTypes::lltDesign) << j << ") " << *iter << rptNewLine;
+         }
+      }
+
+      if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) )
+      {
+         strLLNames = pProductLoads->GetVehicleNames(pgsTypes::lltLegalRating_Routine,girder);
+         j = 0;
+         for (iter = strLLNames.begin(); iter != strLLNames.end(); iter++, j++ )
+         {
+            *pPara << "(" << LiveLoadPrefix(pgsTypes::lltLegalRating_Routine) << j << ") " << *iter << rptNewLine;
+         }
+      }
+
+      if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
+      {
+         strLLNames = pProductLoads->GetVehicleNames(pgsTypes::lltLegalRating_Special,girder);
+         j = 0;
+         for (iter = strLLNames.begin(); iter != strLLNames.end(); iter++, j++ )
+         {
+            *pPara << "(" << LiveLoadPrefix(pgsTypes::lltLegalRating_Special) << j << ") " << *iter << rptNewLine;
+         }
+      }
+
+      if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine) )
+      {
+         strLLNames = pProductLoads->GetVehicleNames(pgsTypes::lltPermitRating_Routine,girder);
+         j = 0;
+         for (iter = strLLNames.begin(); iter != strLLNames.end(); iter++, j++ )
+         {
+            *pPara << "(" << LiveLoadPrefix(pgsTypes::lltPermitRating_Routine) << j << ") " << *iter << rptNewLine;
+         }
+      }
+
+      if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Special) )
+      {
+         strLLNames = pProductLoads->GetVehicleNames(pgsTypes::lltPermitRating_Special,girder);
+         j = 0;
+         for (iter = strLLNames.begin(); iter != strLLNames.end(); iter++, j++ )
+         {
+            *pPara << "(" << LiveLoadPrefix(pgsTypes::lltPermitRating_Special) << j << ") " << *iter << rptNewLine;
+         }
+      }
+   }
+}
+
+ColumnIndexType GetProductLoadTableColumnCount(IBroker* pBroker,SpanIndexType span,GirderIndexType gdrIdx,pgsTypes::AnalysisType analysisType,bool bDesign,bool bRating,
+                                               bool* pbDeckPanels,bool* pbSidewalk,bool* pbShearKey,bool* pbPedLoading,bool* pbPermit,pgsTypes::Stage* pContinuityStage,SpanIndexType* pStartSpan,SpanIndexType* pNSpans)
+{
+   ColumnIndexType nCols = 6; // location, girder, diaphragm, slab, overlay, traffic barrier
+   GET_IFACE2(pBroker,IProductLoads,pLoads);
+   GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker,ILiveLoads,pLiveLoads);
+   GET_IFACE2(pBroker,IRatingSpecification,pRatingSpec);
+
+   *pbDeckPanels = (pBridge->GetDeckType() == pgsTypes::sdtCompositeSIP ? true : false);
+   *pbPermit     = pLiveLoads->IsLiveLoadDefined(pgsTypes::lltPermit);
+
+   *pStartSpan = (span == ALL_SPANS ? 0 : span);
+   *pNSpans    = (span == ALL_SPANS ? pBridge->GetSpanCount() : (*pStartSpan)+1 );
+   *pbPedLoading = pLiveLoads->IsLiveLoadDefined(pgsTypes::lltPedestrian);
+   *pbSidewalk   = pLoads->HasSidewalkLoad(*pStartSpan,gdrIdx);
+   *pbShearKey   = pLoads->HasShearKeyLoad(*pStartSpan,gdrIdx);
+
+   // determine continuity stage
+   *pContinuityStage = pgsTypes::BridgeSite2;
+   SpanIndexType spanIdx;
+   for ( spanIdx = *pStartSpan; spanIdx < *pNSpans; spanIdx++ )
+   {
+      pgsTypes::Stage left_stage, right_stage;
+      pBridge->GetContinuityStage(spanIdx,&left_stage,&right_stage);
+      *pContinuityStage = _cpp_min(*pContinuityStage,left_stage);
+      *pContinuityStage = _cpp_min(*pContinuityStage,right_stage);
+   }
+
+   // last pier
+   pgsTypes::Stage left_stage, right_stage;
+   pBridge->GetContinuityStage(spanIdx,&left_stage,&right_stage);
+   *pContinuityStage = _cpp_min(*pContinuityStage,left_stage);
+   *pContinuityStage = _cpp_min(*pContinuityStage,right_stage);
+
+   if ( *pbDeckPanels )
+   {
+      if ( analysisType == pgsTypes::Envelope && *pContinuityStage == pgsTypes::BridgeSite1)
+         nCols += 2;
+      else
+         nCols++;
+   }
+
+   if ( analysisType == pgsTypes::Envelope && *pContinuityStage == pgsTypes::BridgeSite1 )
+      nCols++; // add on more column for min/max slab
+
+   if ( analysisType == pgsTypes::Envelope )
+      nCols += 2; // add one more each for min/max overlay and min/max traffic barrier
+
+   if ( bDesign )
+   {
+      nCols += 2; // design live loads
+      if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
+         nCols += 2; // fatigue live load
+
+      if ( *pbPermit )
+         nCols += 2; // for permit live loads
+
+      if ( *pbPedLoading )
+         nCols += 2;
+   }
+
+   if ( *pbSidewalk )
+   {
+      if (analysisType == pgsTypes::Envelope )
+      {
+         nCols += 2;
+      }
+      else
+      {
+         nCols++;
+      }
+   }
+
+   if ( *pbShearKey )
+   {
+      if (analysisType == pgsTypes::Envelope )
+      {
+         nCols += 2;
+      }
+      else
+      {
+         nCols++;
+      }
+   }
+
+   if ( bRating )
+   {
+      if ( !bDesign && (pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) || pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory)) )
+         nCols += 2;
+
+      if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) )
+         nCols += 2;
+
+      if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
+         nCols += 2;
+
+      if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine) )
+         nCols += 2;
+
+      if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Special) )
+         nCols += 2;
+   }
+
+   return nCols;
+}
 
 /****************************************************************************
 CLASS
@@ -73,105 +326,34 @@ CProductMomentsTable& CProductMomentsTable::operator= (const CProductMomentsTabl
 
 //======================== OPERATIONS =======================================
 rptRcTable* CProductMomentsTable::Build(IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,pgsTypes::AnalysisType analysisType,
-                                      bool bIndicateControllingLoad,IDisplayUnits* pDisplayUnits) const
+                                        bool bDesign,bool bRating,bool bIndicateControllingLoad,IDisplayUnits* pDisplayUnits) const
 {
    // Build table
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
    INIT_UV_PROTOTYPE( rptMomentSectionValue, moment, pDisplayUnits->GetMomentUnit(), false );
 
    GET_IFACE2(pBroker,IBridge,pBridge);
-   bool bDeckPanels = (pBridge->GetDeckType() == pgsTypes::sdtCompositeSIP ? true : false);
    pgsTypes::Stage overlay_stage = pBridge->IsFutureOverlay() ? pgsTypes::BridgeSite3 : pgsTypes::BridgeSite2;
 
-   SpanIndexType startSpan = (span == ALL_SPANS ? 0 : span);
-   SpanIndexType nSpans    = (span == ALL_SPANS ? pBridge->GetSpanCount() : startSpan+1 );
+   bool bDeckPanels, bPedLoading, bSidewalk, bShearKey, bPermit;
+   SpanIndexType startSpan, nSpans;
+   pgsTypes::Stage continuity_stage;
 
-   GET_IFACE2(pBroker,IProductForces2,pForces2);
-   GET_IFACE2(pBroker,IProductLoads,pLoads);
-   bool bPedLoading = pLoads->HasPedestrianLoad(startSpan,gdr);
-   bool bSidewalk = pLoads->HasSidewalkLoad(startSpan,gdr);
-   bool bShearKey = pLoads->HasShearKeyLoad(startSpan,gdr);
+   GET_IFACE2(pBroker, IRatingSpecification, pRatingSpec);
 
-   pgsTypes::Stage continuity_stage = pgsTypes::BridgeSite2;
-   SpanIndexType spanIdx;
-   for ( spanIdx = startSpan; spanIdx < nSpans; spanIdx++ )
-   {
-      pgsTypes::Stage left_stage, right_stage;
-      pBridge->GetContinuityStage(spanIdx,&left_stage,&right_stage);
-      continuity_stage = _cpp_min(continuity_stage,left_stage);
-      continuity_stage = _cpp_min(continuity_stage,right_stage);
-   }
-
-   // last pier
-   pgsTypes::Stage left_stage, right_stage;
-   pBridge->GetContinuityStage(spanIdx,&left_stage,&right_stage);
-   continuity_stage = _cpp_min(continuity_stage,left_stage);
-   continuity_stage = _cpp_min(continuity_stage,right_stage);
-
-   ColumnIndexType nCols = 8; // location, girder, diaphragm, slab, overlay, traffic barrier, LL min, LL max
-
-   GET_IFACE2(pBroker,ILiveLoads,pLiveLoads);
-   bool bPermit = pLiveLoads->IsLiveLoadDefined(pgsTypes::lltPermit);
-
-   if ( bDeckPanels )
-   {
-      if ( analysisType == pgsTypes::Envelope && continuity_stage == pgsTypes::BridgeSite1)
-         nCols += 2;
-      else
-         nCols++;
-   }
-
-   if ( analysisType == pgsTypes::Envelope && continuity_stage == pgsTypes::BridgeSite1 )
-      nCols++; // add on more column for min/max slab
-
-   if ( analysisType == pgsTypes::Envelope )
-      nCols += 2; // add one more each for min/max overlay and min/max traffic barrier
-
-   if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
-      nCols += 2; // fatigue live load
-
-   if ( bPermit )
-      nCols += 2;
-
-   if ( bPedLoading )
-      nCols += 2;
-
-   if ( bSidewalk )
-   {
-      if (analysisType == pgsTypes::Envelope )
-      {
-         nCols += 2;
-      }
-      else
-      {
-         nCols++;
-      }
-   }
-
-   if ( bShearKey )
-   {
-      if (analysisType == pgsTypes::Envelope )
-      {
-         nCols += 2;
-      }
-      else
-      {
-         nCols++;
-      }
-   }
+   ColumnIndexType nCols = GetProductLoadTableColumnCount(pBroker,span,gdr,analysisType,bDesign,bRating,&bDeckPanels,&bSidewalk,&bShearKey,&bPedLoading,&bPermit,&continuity_stage,&startSpan,&nSpans);
 
    rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(nCols,"Moments");
-   RowIndexType row = ConfigureProductLoadTableHeading<rptMomentUnitTag,unitmgtMomentData>(p_table,false,bDeckPanels,bSidewalk,bShearKey,bPedLoading,
-                                                                                           bPermit,analysisType,continuity_stage,
-                                                                                           pDisplayUnits,pDisplayUnits->GetMomentUnit());
-   // Get the interface pointers we need
+   RowIndexType row = ConfigureProductLoadTableHeading<rptMomentUnitTag,unitmgtMomentData>(p_table,false,bDeckPanels,bSidewalk,bShearKey,bDesign,bPedLoading,
+                                                                                           bPermit,bRating,analysisType,continuity_stage,
+                                                                                           pRatingSpec,pDisplayUnits,pDisplayUnits->GetMomentUnit());
+   // Get the results
    GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
-   for ( spanIdx = startSpan; spanIdx < nSpans; spanIdx++ )
+   GET_IFACE2(pBroker,IProductForces2,pForces2);
+   GET_IFACE2(pBroker,IProductLoads,pLoads);
+   for ( SpanIndexType spanIdx = startSpan; spanIdx < nSpans; spanIdx++ )
    {
-      // Get all the tabular poi's for flexure and shear
-      // Merge the two vectors to form one vector to report on.
-      std::vector<pgsPointOfInterest> vPoi = pIPoi->GetPointsOfInterest(pgsTypes::BridgeSite1,spanIdx,gdr, POI_ALLACTIONS | POI_TABULAR | POI_CRITSECTSHEAR1 | POI_CRITSECTSHEAR2, POIFIND_OR);
-
+      std::vector<pgsPointOfInterest> vPoi = pIPoi->GetPointsOfInterest(pgsTypes::BridgeSite3,spanIdx,gdr, POI_ALL, POIFIND_OR);
       GirderIndexType nGirders = pBridge->GetGirderCount(spanIdx);
       GirderIndexType gdrIdx = min(gdr,nGirders-1);
 
@@ -215,8 +397,26 @@ rptRcTable* CProductMomentsTable::Build(IBroker* pBroker,SpanIndexType span,Gird
       std::vector<Float64> minDesignLL, maxDesignLL;
       std::vector<Float64> minFatigueLL, maxFatigueLL;
       std::vector<Float64> minPermitLL, maxPermitLL;
+      std::vector<Float64> minLegalRoutineLL, maxLegalRoutineLL;
+      std::vector<Float64> minLegalSpecialLL, maxLegalSpecialLL;
+      std::vector<Float64> minPermitRoutineLL, maxPermitRoutineLL;
+      std::vector<Float64> minPermitSpecialLL, maxPermitSpecialLL;
 
-      std::vector<long> dummyTruck, minDesignLLtruck, maxDesignLLtruck, minFatigueLLtruck, maxFatigueLLtruck, minPermitLLtruck, maxPermitLLtruck;
+      std::vector<long> dummyTruck;
+      std::vector<long> minDesignLLtruck;
+      std::vector<long> maxDesignLLtruck;
+      std::vector<long> minFatigueLLtruck;
+      std::vector<long> maxFatigueLLtruck;
+      std::vector<long> minPermitLLtruck;
+      std::vector<long> maxPermitLLtruck;
+      std::vector<long> minLegalRoutineLLtruck;
+      std::vector<long> maxLegalRoutineLLtruck;
+      std::vector<long> minLegalSpecialLLtruck;
+      std::vector<long> maxLegalSpecialLLtruck;
+      std::vector<long> minPermitRoutineLLtruck;
+      std::vector<long> maxPermitRoutineLLtruck;
+      std::vector<long> minPermitSpecialLLtruck;
+      std::vector<long> maxPermitSpecialLLtruck;
 
       if (analysisType == pgsTypes::Envelope)
       {
@@ -237,25 +437,61 @@ rptRcTable* CProductMomentsTable::Build(IBroker* pBroker,SpanIndexType span,Gird
          maxOverlay = pForces2->GetMoment( overlay_stage, pftOverlay, vPoi, MaxSimpleContinuousEnvelope );
          minOverlay = pForces2->GetMoment( overlay_stage, pftOverlay, vPoi, MinSimpleContinuousEnvelope );
 
-         if ( bPedLoading )
+         if ( bDesign )
          {
-            pForces2->GetLiveLoadMoment( pgsTypes::lltPedestrian, pgsTypes::BridgeSite3, vPoi, MaxSimpleContinuousEnvelope, true, false, &dummy, &maxPedestrian );
-            pForces2->GetLiveLoadMoment( pgsTypes::lltPedestrian, pgsTypes::BridgeSite3, vPoi, MinSimpleContinuousEnvelope, true, false, &minPedestrian, &dummy );
+            if ( bPedLoading )
+            {
+               pForces2->GetLiveLoadMoment( pgsTypes::lltPedestrian, pgsTypes::BridgeSite3, vPoi, MaxSimpleContinuousEnvelope, true, false, &dummy, &maxPedestrian );
+               pForces2->GetLiveLoadMoment( pgsTypes::lltPedestrian, pgsTypes::BridgeSite3, vPoi, MinSimpleContinuousEnvelope, true, false, &minPedestrian, &dummy );
+            }
+
+            pForces2->GetLiveLoadMoment( pgsTypes::lltDesign, pgsTypes::BridgeSite3, vPoi, MaxSimpleContinuousEnvelope, true, false, &dummy, &maxDesignLL, &dummyTruck, &maxDesignLLtruck );
+            pForces2->GetLiveLoadMoment( pgsTypes::lltDesign, pgsTypes::BridgeSite3, vPoi, MinSimpleContinuousEnvelope, true, false, &minDesignLL, &dummy, &minDesignLLtruck, &dummyTruck );
+
+            if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
+            {
+               pForces2->GetLiveLoadMoment( pgsTypes::lltFatigue, pgsTypes::BridgeSite3, vPoi, MaxSimpleContinuousEnvelope, true, false, &dummy, &maxFatigueLL, &dummyTruck, &maxFatigueLLtruck );
+               pForces2->GetLiveLoadMoment( pgsTypes::lltFatigue, pgsTypes::BridgeSite3, vPoi, MinSimpleContinuousEnvelope, true, false, &minFatigueLL, &dummy, &minFatigueLLtruck, &dummyTruck );
+            }
+
+            if ( bPermit )
+            {
+               pForces2->GetLiveLoadMoment( pgsTypes::lltPermit, pgsTypes::BridgeSite3, vPoi, MaxSimpleContinuousEnvelope, true, false, &dummy, &maxPermitLL, &dummyTruck, &maxPermitLLtruck );
+               pForces2->GetLiveLoadMoment( pgsTypes::lltPermit, pgsTypes::BridgeSite3, vPoi, MinSimpleContinuousEnvelope, true, false, &minPermitLL, &dummy, &minPermitLLtruck, &dummyTruck );
+            }
          }
 
-         pForces2->GetLiveLoadMoment( pgsTypes::lltDesign, pgsTypes::BridgeSite3, vPoi, MaxSimpleContinuousEnvelope, true, false, &dummy, &maxDesignLL, &dummyTruck, &maxDesignLLtruck );
-         pForces2->GetLiveLoadMoment( pgsTypes::lltDesign, pgsTypes::BridgeSite3, vPoi, MinSimpleContinuousEnvelope, true, false, &minDesignLL, &dummy, &minDesignLLtruck, &dummyTruck );
-
-         if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
+         if ( bRating )
          {
-            pForces2->GetLiveLoadMoment( pgsTypes::lltFatigue, pgsTypes::BridgeSite3, vPoi, MaxSimpleContinuousEnvelope, true, false, &dummy, &maxFatigueLL, &dummyTruck, &maxFatigueLLtruck );
-            pForces2->GetLiveLoadMoment( pgsTypes::lltFatigue, pgsTypes::BridgeSite3, vPoi, MinSimpleContinuousEnvelope, true, false, &minFatigueLL, &dummy, &minFatigueLLtruck, &dummyTruck );
-         }
+            if ( !bDesign && (pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) || pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating)) )
+            {
+               pForces2->GetLiveLoadMoment( pgsTypes::lltDesign, pgsTypes::BridgeSite3, vPoi, MaxSimpleContinuousEnvelope, true, false, &dummy, &maxDesignLL, &dummyTruck, &maxDesignLLtruck );
+               pForces2->GetLiveLoadMoment( pgsTypes::lltDesign, pgsTypes::BridgeSite3, vPoi, MinSimpleContinuousEnvelope, true, false, &minDesignLL, &dummy, &minDesignLLtruck, &dummyTruck );
+            }
 
-         if ( bPermit )
-         {
-            pForces2->GetLiveLoadMoment( pgsTypes::lltPermit, pgsTypes::BridgeSite3, vPoi, MaxSimpleContinuousEnvelope, true, false, &dummy, &maxPermitLL, &dummyTruck, &maxPermitLLtruck );
-            pForces2->GetLiveLoadMoment( pgsTypes::lltPermit, pgsTypes::BridgeSite3, vPoi, MinSimpleContinuousEnvelope, true, false, &minPermitLL, &dummy, &minPermitLLtruck, &dummyTruck );
+            if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) )
+            {
+               pForces2->GetLiveLoadMoment( pgsTypes::lltLegalRating_Routine, pgsTypes::BridgeSite3, vPoi, MaxSimpleContinuousEnvelope, true, false, &dummy, &maxLegalRoutineLL, &dummyTruck, &maxLegalRoutineLLtruck );
+               pForces2->GetLiveLoadMoment( pgsTypes::lltLegalRating_Routine, pgsTypes::BridgeSite3, vPoi, MinSimpleContinuousEnvelope, true, false, &minLegalRoutineLL, &dummy, &minLegalRoutineLLtruck, &dummyTruck );
+            }
+
+            if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
+            {
+               pForces2->GetLiveLoadMoment( pgsTypes::lltLegalRating_Special, pgsTypes::BridgeSite3, vPoi, MaxSimpleContinuousEnvelope, true, false, &dummy, &maxLegalSpecialLL, &dummyTruck, &maxLegalSpecialLLtruck );
+               pForces2->GetLiveLoadMoment( pgsTypes::lltLegalRating_Special, pgsTypes::BridgeSite3, vPoi, MinSimpleContinuousEnvelope, true, false, &minLegalSpecialLL, &dummy, &minLegalSpecialLLtruck, &dummyTruck );
+            }
+
+            if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine) )
+            {
+               pForces2->GetLiveLoadMoment( pgsTypes::lltPermitRating_Routine, pgsTypes::BridgeSite3, vPoi, MaxSimpleContinuousEnvelope, true, false, &dummy, &maxPermitRoutineLL, &dummyTruck, &maxPermitRoutineLLtruck );
+               pForces2->GetLiveLoadMoment( pgsTypes::lltPermitRating_Routine, pgsTypes::BridgeSite3, vPoi, MinSimpleContinuousEnvelope, true, false, &minPermitRoutineLL, &dummy, &minPermitRoutineLLtruck, &dummyTruck );
+            }
+
+            if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Special) )
+            {
+               pForces2->GetLiveLoadMoment( pgsTypes::lltPermitRating_Special, pgsTypes::BridgeSite3, vPoi, MaxSimpleContinuousEnvelope, true, false, &dummy, &maxPermitSpecialLL, &dummyTruck, &maxPermitSpecialLLtruck );
+               pForces2->GetLiveLoadMoment( pgsTypes::lltPermitRating_Special, pgsTypes::BridgeSite3, vPoi, MinSimpleContinuousEnvelope, true, false, &minPermitSpecialLL, &dummy, &minPermitSpecialLLtruck, &dummyTruck );
+            }
          }
       }
       else
@@ -273,21 +509,52 @@ rptRcTable* CProductMomentsTable::Build(IBroker* pBroker,SpanIndexType span,Gird
          maxTrafficBarrier = pForces2->GetMoment( pgsTypes::BridgeSite2, pftTrafficBarrier, vPoi, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan );
          maxOverlay = pForces2->GetMoment( overlay_stage, pftOverlay, vPoi, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan );
 
-         if ( bPedLoading )
+         if ( bDesign )
          {
-            pForces2->GetLiveLoadMoment( pgsTypes::lltPedestrian, pgsTypes::BridgeSite3, vPoi, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan, true, false, &minPedestrian, &maxPedestrian );
+            if ( bPedLoading )
+            {
+               pForces2->GetLiveLoadMoment( pgsTypes::lltPedestrian, pgsTypes::BridgeSite3, vPoi, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan, true, false, &minPedestrian, &maxPedestrian );
+            }
+
+            pForces2->GetLiveLoadMoment( pgsTypes::lltDesign, pgsTypes::BridgeSite3, vPoi, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan, true, false, &minDesignLL, &maxDesignLL, &minDesignLLtruck, &maxDesignLLtruck );
+
+            if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
+            {
+               pForces2->GetLiveLoadMoment( pgsTypes::lltFatigue, pgsTypes::BridgeSite3, vPoi, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan, true, false, &minFatigueLL, &maxFatigueLL, &minFatigueLLtruck, &maxFatigueLLtruck );
+            }
+
+            if ( bPermit )
+            {
+               pForces2->GetLiveLoadMoment( pgsTypes::lltPermit, pgsTypes::BridgeSite3, vPoi, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan, true, false, &minPermitLL, &maxPermitLL, &minPermitLLtruck, &maxPermitLLtruck );
+            }
          }
 
-         pForces2->GetLiveLoadMoment( pgsTypes::lltDesign, pgsTypes::BridgeSite3, vPoi, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan, true, false, &minDesignLL, &maxDesignLL, &minDesignLLtruck, &maxDesignLLtruck );
-
-         if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
+         if ( bRating )
          {
-            pForces2->GetLiveLoadMoment( pgsTypes::lltFatigue, pgsTypes::BridgeSite3, vPoi, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan, true, false, &minFatigueLL, &maxFatigueLL, &minFatigueLLtruck, &maxFatigueLLtruck );
-         }
+            if ( !bDesign && (pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) || pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating)) )
+            {
+               pForces2->GetLiveLoadMoment( pgsTypes::lltDesign, pgsTypes::BridgeSite3, vPoi, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan, true, false, &minDesignLL, &maxDesignLL, &minDesignLLtruck, &maxDesignLLtruck );
+            }
 
-         if ( bPermit )
-         {
-            pForces2->GetLiveLoadMoment( pgsTypes::lltPermit, pgsTypes::BridgeSite3, vPoi, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan, true, false, &minPermitLL, &maxPermitLL, &minPermitLLtruck, &maxPermitLLtruck );
+            if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) )
+            {
+               pForces2->GetLiveLoadMoment( pgsTypes::lltLegalRating_Routine, pgsTypes::BridgeSite3, vPoi, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan, true, false, &minLegalRoutineLL, &maxLegalRoutineLL, &minLegalRoutineLLtruck, &maxLegalRoutineLLtruck );
+            }
+
+            if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
+            {
+               pForces2->GetLiveLoadMoment( pgsTypes::lltLegalRating_Special, pgsTypes::BridgeSite3, vPoi, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan, true, false, &minLegalSpecialLL, &maxLegalSpecialLL, &minLegalSpecialLLtruck, &maxLegalSpecialLLtruck );
+            }
+
+            if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine) )
+            {
+               pForces2->GetLiveLoadMoment( pgsTypes::lltPermitRating_Routine, pgsTypes::BridgeSite3, vPoi, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan, true, false, &minPermitRoutineLL, &maxPermitRoutineLL, &minPermitRoutineLLtruck, &maxPermitRoutineLLtruck );
+            }
+
+            if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Special) )
+            {
+               pForces2->GetLiveLoadMoment( pgsTypes::lltPermitRating_Special, pgsTypes::BridgeSite3, vPoi, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan, true, false, &minPermitSpecialLL, &maxPermitSpecialLL, &minPermitSpecialLLtruck, &maxPermitSpecialLLtruck );
+            }
          }
       }
 
@@ -367,56 +634,143 @@ rptRcTable* CProductMomentsTable::Build(IBroker* pBroker,SpanIndexType span,Gird
             (*p_table)(row,col++) << moment.SetValue( maxOverlay[index] );
          }
 
-         if ( bPedLoading )
+         if ( bDesign )
          {
-            (*p_table)(row,col++) << moment.SetValue( maxPedestrian[index] );
-            (*p_table)(row,col++) << moment.SetValue( minPedestrian[index] );
-         }
+            if ( bPedLoading )
+            {
+               (*p_table)(row,col++) << moment.SetValue( maxPedestrian[index] );
+               (*p_table)(row,col++) << moment.SetValue( minPedestrian[index] );
+            }
 
-         (*p_table)(row,col) << moment.SetValue( maxDesignLL[index] );
+            (*p_table)(row,col) << moment.SetValue( maxDesignLL[index] );
 
-         if ( bIndicateControllingLoad && 0 < maxDesignLLtruck.size() )
-            (*p_table)(row,col) << rptNewLine << "(D" << maxDesignLLtruck[index] << ")";
-
-         col++;
-
-         (*p_table)(row,col) << moment.SetValue( minDesignLL[index] );
-         
-         if ( bIndicateControllingLoad && 0 < minDesignLLtruck.size() )
-            (*p_table)(row,col) << rptNewLine << "(D" << minDesignLLtruck[index] << ")";
-
-         col++;
-
-         if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
-         {
-            (*p_table)(row,col) << moment.SetValue( maxFatigueLL[index] );
-
-            if ( bIndicateControllingLoad && 0 < maxFatigueLLtruck.size() )
-               (*p_table)(row,col) << rptNewLine << "(F" << maxFatigueLLtruck[index] << ")";
+            if ( bIndicateControllingLoad && 0 < maxDesignLLtruck.size() )
+               (*p_table)(row,col) << rptNewLine << "(" << LiveLoadPrefix(pgsTypes::lltDesign) << maxDesignLLtruck[index] << ")";
 
             col++;
 
-            (*p_table)(row,col) << moment.SetValue( minFatigueLL[index] );
+            (*p_table)(row,col) << moment.SetValue( minDesignLL[index] );
             
-            if ( bIndicateControllingLoad && 0 < minFatigueLLtruck.size() )
-               (*p_table)(row,col) << rptNewLine << "(F" << minFatigueLLtruck[index] << ")";
+            if ( bIndicateControllingLoad && 0 < minDesignLLtruck.size() )
+               (*p_table)(row,col) << rptNewLine << "(" << LiveLoadPrefix(pgsTypes::lltDesign) << minDesignLLtruck[index] << ")";
 
             col++;
+
+            if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
+            {
+               (*p_table)(row,col) << moment.SetValue( maxFatigueLL[index] );
+
+               if ( bIndicateControllingLoad && 0 < maxFatigueLLtruck.size() )
+                  (*p_table)(row,col) << rptNewLine << "(" << LiveLoadPrefix(pgsTypes::lltFatigue) << maxFatigueLLtruck[index] << ")";
+
+               col++;
+
+               (*p_table)(row,col) << moment.SetValue( minFatigueLL[index] );
+               
+               if ( bIndicateControllingLoad && 0 < minFatigueLLtruck.size() )
+                  (*p_table)(row,col) << rptNewLine << "(" << LiveLoadPrefix(pgsTypes::lltFatigue) << minFatigueLLtruck[index] << ")";
+
+               col++;
+            }
+
+            if ( bPermit )
+            {
+               (*p_table)(row,col) << moment.SetValue( maxPermitLL[index] );
+               if ( bIndicateControllingLoad && 0 < maxPermitLLtruck.size() )
+                  (*p_table)(row,col) << rptNewLine << "(" << LiveLoadPrefix(pgsTypes::lltPermit) << maxPermitLLtruck[index] << ")";
+
+               col++;
+
+               (*p_table)(row,col) << moment.SetValue( minPermitLL[index] );
+               if ( bIndicateControllingLoad && 0 < minPermitLLtruck.size() )
+                  (*p_table)(row,col) << rptNewLine << "(" << LiveLoadPrefix(pgsTypes::lltPermit) << minPermitLLtruck[index] << ")";
+
+               col++;
+            }
          }
 
-         if ( bPermit )
+         if ( bRating )
          {
-            (*p_table)(row,col) << moment.SetValue( maxPermitLL[index] );
-            if ( bIndicateControllingLoad && 0 < maxPermitLLtruck.size() )
-               (*p_table)(row,col) << rptNewLine << "(P" << maxPermitLLtruck[index] << ")";
+            if ( !bDesign && (pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) || pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating)) )
+            {
+               (*p_table)(row,col) << moment.SetValue( maxDesignLL[index] );
 
-            col++;
+               if ( bIndicateControllingLoad && 0 < maxDesignLLtruck.size() )
+                  (*p_table)(row,col) << rptNewLine << "(" << LiveLoadPrefix(pgsTypes::lltDesign) << maxDesignLLtruck[index] << ")";
 
-            (*p_table)(row,col) << moment.SetValue( minPermitLL[index] );
-            if ( bIndicateControllingLoad && 0 < minPermitLLtruck.size() )
-               (*p_table)(row,col) << rptNewLine << "(P" << minPermitLLtruck[index] << ")";
+               col++;
 
-            col++;
+               (*p_table)(row,col) << moment.SetValue( minDesignLL[index] );
+               
+               if ( bIndicateControllingLoad && 0 < minDesignLLtruck.size() )
+                  (*p_table)(row,col) << rptNewLine << "(" << LiveLoadPrefix(pgsTypes::lltDesign) << minDesignLLtruck[index] << ")";
+
+               col++;
+            }
+
+            // Legal - Routine
+            if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) )
+            {
+               (*p_table)(row,col) << moment.SetValue( maxLegalRoutineLL[index] );
+               if ( bIndicateControllingLoad && 0 < maxLegalRoutineLLtruck.size() )
+                  (*p_table)(row,col) << rptNewLine << "(" << LiveLoadPrefix(pgsTypes::lltLegalRating_Routine) << maxLegalRoutineLLtruck[index] << ")";
+
+               col++;
+
+               (*p_table)(row,col) << moment.SetValue( minLegalRoutineLL[index] );
+               if ( bIndicateControllingLoad && 0 < minLegalRoutineLLtruck.size() )
+                  (*p_table)(row,col) << rptNewLine << "(" << LiveLoadPrefix(pgsTypes::lltLegalRating_Routine) << minLegalRoutineLLtruck[index] << ")";
+
+               col++;
+            }
+
+            // Legal - Special
+            if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
+            {
+               (*p_table)(row,col) << moment.SetValue( maxLegalSpecialLL[index] );
+               if ( bIndicateControllingLoad && 0 < maxLegalSpecialLLtruck.size() )
+                  (*p_table)(row,col) << rptNewLine << "(" << LiveLoadPrefix(pgsTypes::lltLegalRating_Special) << maxLegalSpecialLLtruck[index] << ")";
+
+               col++;
+
+               (*p_table)(row,col) << moment.SetValue( minLegalSpecialLL[index] );
+               if ( bIndicateControllingLoad && 0 < minLegalSpecialLLtruck.size() )
+                  (*p_table)(row,col) << rptNewLine << "(" << LiveLoadPrefix(pgsTypes::lltLegalRating_Special) << minLegalSpecialLLtruck[index] << ")";
+
+               col++;
+            }
+
+            // Permit Rating - Routine
+            if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine) )
+            {
+               (*p_table)(row,col) << moment.SetValue( maxPermitRoutineLL[index] );
+               if ( bIndicateControllingLoad && 0 < maxPermitRoutineLLtruck.size() )
+                  (*p_table)(row,col) << rptNewLine << "(" << LiveLoadPrefix(pgsTypes::lltPermitRating_Routine) << maxPermitRoutineLLtruck[index] << ")";
+
+               col++;
+
+               (*p_table)(row,col) << moment.SetValue( minPermitRoutineLL[index] );
+               if ( bIndicateControllingLoad && 0 < minPermitRoutineLLtruck.size() )
+                  (*p_table)(row,col) << rptNewLine << "(" << LiveLoadPrefix(pgsTypes::lltPermitRating_Routine) << minPermitRoutineLLtruck[index] << ")";
+
+               col++;
+            }
+
+            // Permit Rating - Special
+            if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Special) )
+            {
+               (*p_table)(row,col) << moment.SetValue( maxPermitSpecialLL[index] );
+               if ( bIndicateControllingLoad && 0 < maxPermitSpecialLLtruck.size() )
+                  (*p_table)(row,col) << rptNewLine << "(" << LiveLoadPrefix(pgsTypes::lltPermitRating_Special) << maxPermitSpecialLLtruck[index] << ")";
+
+               col++;
+
+               (*p_table)(row,col) << moment.SetValue( minPermitSpecialLL[index] );
+               if ( bIndicateControllingLoad && 0 < minPermitSpecialLLtruck.size() )
+                  (*p_table)(row,col) << rptNewLine << "(" << LiveLoadPrefix(pgsTypes::lltPermitRating_Special) << minPermitSpecialLLtruck[index] << ")";
+
+               col++;
+            }
          }
 
          row++;
@@ -426,14 +780,6 @@ rptRcTable* CProductMomentsTable::Build(IBroker* pBroker,SpanIndexType span,Gird
    return p_table;
 }
 
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PROTECTED  ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
 void CProductMomentsTable::MakeCopy(const CProductMomentsTable& rOther)
 {
    // Add copy code here...
@@ -444,37 +790,3 @@ void CProductMomentsTable::MakeAssignment(const CProductMomentsTable& rOther)
    MakeCopy( rOther );
 }
 
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PRIVATE    ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-//======================== INQUERY    =======================================
-
-//======================== DEBUG      =======================================
-#if defined _DEBUG
-bool CProductMomentsTable::AssertValid() const
-{
-   return true;
-}
-
-void CProductMomentsTable::Dump(dbgDumpContext& os) const
-{
-   os << "Dump for CProductMomentsTable" << endl;
-}
-#endif // _DEBUG
-
-#if defined _UNITTEST
-bool CProductMomentsTable::TestMe(dbgLog& rlog)
-{
-   TESTME_PROLOGUE("CProductMomentsTable");
-
-   TEST_NOT_IMPLEMENTED("Unit Tests Not Implemented for CProductMomentsTable");
-
-   TESTME_EPILOG("CProductMomentsTable");
-}
-#endif // _UNITTEST

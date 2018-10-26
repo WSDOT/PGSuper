@@ -28,9 +28,9 @@
 #include <Reporting\GirderSeedDataComparisonParagraph.h>
 
 #include <IFace\VersionInfo.h>
-#include <IFace\File.h>
 #include <IFace\Project.h>
 #include <IFace\StatusCenter.h>
+#include <EAF\EAFUIIntegration.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -84,6 +84,12 @@ rptChapter* CPGSuperTitlePageBuilder::Build(boost::shared_ptr<CReportSpecificati
          *pPara << "Span " << LABEL_SPAN(spanIdx) << rptNewLine;
          *pPara << rptNewLine;
       }
+      else if ( gdrIdx != NULL )
+      {
+         *pPara << "For" << rptNewLine << rptNewLine;
+         *pPara << "Girder Line " << LABEL_GIRDER(gdrIdx) << rptNewLine;
+         *pPara << rptNewLine;
+      }
    }
    else if ( pSpanRptSpec != NULL )
    {
@@ -132,7 +138,7 @@ rptChapter* CPGSuperTitlePageBuilder::Build(boost::shared_ptr<CReportSpecificati
       *pPara << rptNewLine << rptNewLine;
 
    GET_IFACE(IProjectProperties,pProps);
-   GET_IFACE(IFile,pFile);
+   GET_IFACE(IDocument,pDocument);
 
    rptParagraph* pPara3 = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );
    *pTitlePage << pPara3;
@@ -161,7 +167,7 @@ rptChapter* CPGSuperTitlePageBuilder::Build(boost::shared_ptr<CReportSpecificati
    (*pTbl)(5,0) << "Comments";
    (*pTbl)(5,1) << pProps->GetComments();
    (*pTbl)(6,0) << "File";
-   (*pTbl)(6,1) << pFile->GetFilePath();
+   (*pTbl)(6,1) << pDocument->GetFilePath();
 
 
    rptParagraph* p = new rptParagraph;
@@ -185,8 +191,8 @@ rptChapter* CPGSuperTitlePageBuilder::Build(boost::shared_ptr<CReportSpecificati
    // girder seed data comparison
    if ( pSpanGirderRptSpec != NULL || pSpanRptSpec != NULL )
    {
-      SpanIndexType spanIdx = -1;
-      GirderIndexType gdrIdx = -1; // means all girders in span
+      SpanIndexType spanIdx  = ALL_SPANS;
+      GirderIndexType gdrIdx = ALL_GIRDERS;
 
       if (pSpanGirderRptSpec != NULL )
       {
@@ -198,12 +204,15 @@ rptChapter* CPGSuperTitlePageBuilder::Build(boost::shared_ptr<CReportSpecificati
          spanIdx = pSpanRptSpec->GetSpan();
       }
 
-      p = CGirderSeedDataComparisonParagraph().Build(m_pBroker, spanIdx, gdrIdx);
-
-      if (p != NULL)
+      if ( spanIdx != INVALID_INDEX )
       {
-         // only report if we have data
-         *pTitlePage << p;
+         p = CGirderSeedDataComparisonParagraph().Build(m_pBroker, spanIdx, gdrIdx);
+
+         if (p != NULL)
+         {
+            // only report if we have data
+            *pTitlePage << p;
+         }
       }
    }
 
@@ -272,7 +281,7 @@ rptChapter* CPGSuperTitlePageBuilder::Build(boost::shared_ptr<CReportSpecificati
 
    // Status Center Items
    GET_IFACE(IStatusCenter,pStatusCenter);
-   long nItems = pStatusCenter->Count();
+   CollectionIndexType nItems = pStatusCenter->Count();
 
    if ( nItems != 0 )
    {
@@ -295,11 +304,11 @@ rptChapter* CPGSuperTitlePageBuilder::Build(boost::shared_ptr<CReportSpecificati
 
       row = 1;
       CString strSeverityType[] = { "Info", "Warning", "Error" };
-      for ( long i = 0; i < nItems; i++ )
+      for ( CollectionIndexType i = 0; i < nItems; i++ )
       {
-         pgsStatusItem* pItem = pStatusCenter->GetByIndex(i);
+         CEAFStatusItem* pItem = pStatusCenter->GetByIndex(i);
 
-         long severity = pStatusCenter->GetSeverity(pItem);
+         eafTypes::StatusSeverityType severity = pStatusCenter->GetSeverity(pItem);
 
          (*pTable)(row,0) << strSeverityType[severity];
          (*pTable)(row++,1) << pItem->GetDescription();

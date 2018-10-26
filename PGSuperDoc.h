@@ -31,17 +31,16 @@
 #pragma once
 #endif // _MSC_VER >= 1000
 
-#include "AutoCalcDoc.h"
+#include <EAF\EAFBrokerDocument.h>
+#include <EAF\EAFAutoCalcDoc.h>
 
 #include <PsgLib\ISupportLibraryManager.h>
 #include <PsgLib\LibraryManager.h>
-#include <PgsExt\InterfaceCache.h>
 #include <IReportManager.h>
 
 #include "Hints.h"
-#include "StatusCenterImp.h"
-#include "StatusCenterDlg.h"
-#include "PgsuperCommandLineInfo.h"
+#include "PGSuperCommandLineInfo.h"
+#include "PGSuperPluginMgr.h"
 
 #define EPD_GENERAL        0
 #define EPD_CONNECTION     1
@@ -59,28 +58,31 @@
 
 class CCopyGirderDlg;
 class pgsDesignArtifact;
-
+class CPGSuperDocProxyAgent;
 
 /*--------------------------------------------------------------------*/
-class CPGSuperDoc : public CAutoCalcDoc, public libISupportLibraryManager, public iStatusCenterEventSink
+class CPGSuperDoc : public CEAFBrokerDocument, 
+                    public CEAFAutoCalcDocMixin,  // mix-in class for auto-calc capabilities
+                    public libISupportLibraryManager
 {
 protected: // create from serialization only
 	CPGSuperDoc();
 	DECLARE_DYNCREATE(CPGSuperDoc)
 
-// Attributes
+// CBrokerDocument over-rides
 public:
+   virtual CATID GetAgentCategoryID();
+   virtual CATID GetExtensionAgentCategoryID();
+   virtual BOOL Init();
+   virtual BOOL LoadSpecialAgents(IBrokerInitEx2* pBrokerInit); 
 
-// Operations
+// CEAFAutoCalcDocMixin over-rides
 public:
    virtual bool IsAutoCalcEnabled() const;
    virtual void EnableAutoCalc(bool bEnable);
 
-   // flags for design dialog
-   bool IsDesignFlexureEnabled() const;
-   void EnableDesignFlexure( bool bEnable );
-   bool IsDesignShearEnabled() const;
-   void EnableDesignShear( bool bEnable );
+// Operations
+public:
 
    // index of selected object
    PierIndexType GetPierIdx();
@@ -104,17 +106,10 @@ public:
 	// ClassWizard generated virtual function overrides
 	//{{AFX_VIRTUAL(CPGSuperDoc)
 	public:
-	virtual BOOL OnNewDocument();
-	virtual void Serialize(CArchive& ar);
-	virtual BOOL OnOpenDocument(LPCTSTR lpszPathName);
-	virtual BOOL OnSaveDocument(LPCTSTR lpszPathName);
-	virtual void OnCloseDocument();
-   virtual void DeleteContents();
+	virtual BOOL OnNewDocumentFromTemplate(LPCTSTR lpszPathName);
 	virtual BOOL OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDLERINFO* pHandlerInfo);
 	//}}AFX_VIRTUAL
-   virtual BOOL OnImportDocument(UINT nID);
-   virtual BOOL OnExportDocument(UINT nID);
-	virtual void SetModifiedFlag(BOOL bModified = TRUE);
+
    void UpdateAnalysisTypeStatusIndicator();
    void OnLoadsLldf();
    void OnLoadsLldf(pgsTypes::DistributionFactorMethod method,LldfRangeOfApplicabilityAction roaAction);
@@ -131,12 +126,7 @@ public:
    // ISupportLibraryManager
    virtual int GetNumberOfLibraryManagers() const;
    virtual libLibraryManager* GetLibraryManager(int num);
-   virtual void SetUnitsMode(libUnitsMode::Mode mode);
-   virtual libUnitsMode::Mode GetUnitsMode() const;
    virtual libLibraryManager* GetTargetLibraryManager();
-
-   HRESULT GetBroker(IBroker** ppBroker);
-   pgsStatusCenter& GetStatusCenter();
 
    void EditBridgeDescription(int nPage);
    void EditAlignmentDescription(int nPage);
@@ -164,14 +154,49 @@ public:
    void DeleteSpan(SpanIndexType spanIdx,pgsTypes::RemovePierType pierRemoveType);
    void InsertSpan(PierIndexType refPierIdx,pgsTypes::PierFaceType pierFace);
 
+
+   // set/get view settings for bridge model editor
+   UINT GetBridgeEditorSettings() const;
+   void SetBridgeEditorSettings(UINT settings);
+
+   // set/get view settings for Girder model editor
+   UINT GetGirderEditorSettings() const;
+   void SetGirderEditorSettings(UINT settings);
+
+   // set/get settings for UI hint dialogs
+   UINT GetUIHintSettings() const;
+   void SetUIHintSettings(UINT settings);
+
+   // flags for design dialog
+   bool IsDesignFlexureEnabled() const;
+   void EnableDesignFlexure( bool bEnable );
+
+   bool IsDesignShearEnabled() const;
+   void EnableDesignShear( bool bEnable );
+
+   bool ShowProjectPropertiesOnNewProject();
+   void ShowProjectPropertiesOnNewProject(bool bShow);
+
+   BOOL UpdateTemplates();
+
 protected:
-   DECLARE_AGENT_DATA;
-   CComPtr<IBroker> m_TheRealBroker; // strong reference to broker (all other are weak)
+   CPGSuperDocProxyAgent* m_pPGSuperDocProxyAgent;
+
    psgLibraryManager m_LibMgr;
 
    bool m_bIsReportMenuPopulated; 
 
+   bool m_bAutoCalcEnabled;
+   UINT m_BridgeModelEditorSettings;
+   UINT m_GirderModelEditorSettings;
+   UINT m_UIHintSettings;
+   bool m_bDesignFlexureEnabled;
+   bool m_bDesignShearEnabled;
+   bool m_bShowProjectProperties;
+
    CComPtr<IDocUnitSystem> m_DocUnitSystem;
+   
+   CPGSuperPluginMgr m_PluginMgr; // manages data importer and exporter plugins
 
    PierIndexType   m_CurrentPierIdx;
    SpanIndexType   m_CurrentSpanIdx;
@@ -179,37 +204,45 @@ protected:
 
    bool m_DesignSlabOffset;
 
-   pgsStatusCenter m_StatusCenter;
-   CStatusCenterDlg m_StatusCenterDlg;
-
    friend CCopyGirderDlg;
    void OnApplyCopyGirder(SpanGirderHashType fromHash,std::vector<SpanGirderHashType> toHash,BOOL bGirder,BOOL bTransverse,BOOL bLongitudinalRebar,BOOL bPrestress,BOOL bHandling, BOOL bMaterial, BOOL bSlabOffset);
 
-   BOOL Init();
-   BOOL LoadAgents();
-   BOOL LoadAgents(IBrokerInitEx2* pBrokerInit, CLSID* pClsid, long nClsid);
-   BOOL OpenTheDocument(LPCTSTR lpszPathName);
-   BOOL SaveTheDocument(LPCTSTR lpszPathName);
-   // convert - returns same as vb convert function
-   long ConvertTheDocument(LPCTSTR lpszPathName, CString* realFileName);
-   void HandleOpenDocumentError( HRESULT hr, LPCTSTR lpszPathName );
-   void HandleSaveDocumentError( HRESULT hr, LPCTSTR lpszPathName );
-   void HandleConvertDocumentError( HRESULT hr, LPCTSTR lpszPathName );
+   virtual void OnCreateInitialize();
+   virtual void OnCreateFinalize();
 
-   BOOL UpdateTemplates();
+   virtual BOOL OnOpenDocument(LPCTSTR lpszPathName);
+   virtual BOOL OpenTheDocument(LPCTSTR lpszPathName);
+
+   virtual void HandleOpenDocumentError( HRESULT hr, LPCTSTR lpszPathName );
+   virtual void HandleSaveDocumentError( HRESULT hr, LPCTSTR lpszPathName );
+
+   virtual long ConvertTheDocument(LPCTSTR lpszPathName, CString* realFileName);
+   virtual void HandleConvertDocumentError( HRESULT hr, LPCTSTR lpszPathName );
+
+   virtual HRESULT WriteTheDocument(IStructuredSave* pStrSave);
+   virtual HRESULT LoadTheDocument(IStructuredLoad* pStrLoad);
+
+   virtual void OnErrorDeletingBadSave(LPCTSTR lpszPathName,LPCTSTR lpszBackup);
+   virtual void OnErrorRemaningSaveBackup(LPCTSTR lpszPathName,LPCTSTR lpszBackup);
+
+   virtual void LoadDocumentSettings();
+   virtual void SaveDocumentSettings();
+
+   virtual void OnLogFileOpened(); // called when the log file is first opened
+
+   virtual void BrokerShutDown();
+   virtual void OnStatusChanged();
+
+   virtual CString GetToolbarSectionName();
 
 // Generated message map functions
 protected:
 	//{{AFX_MSG(CPGSuperDoc)
 	afx_msg void OnFileProjectProperties();
-	afx_msg void OnProjectUnits();
-   afx_msg void OnSiUnits();
-   afx_msg void OnUpdateSiUnits(CCmdUI* pCmdUI);
-   afx_msg void OnUsUnits();
-   afx_msg void OnUpdateUsUnits(CCmdUI* pCmdUI);
 	afx_msg void OnProjectEnvironment();
 	afx_msg void OnProjectBridgeDesc();
 	afx_msg void OnProjectSpec();
+   afx_msg void OnRatingSpec();
 	afx_msg void OnProjectAutoCalc();
 	afx_msg void OnUpdateProjectAutoCalc(CCmdUI* pCmdUI);
 	afx_msg void OnExportToTemplateFile();
@@ -225,52 +258,50 @@ protected:
 	afx_msg void OnCopyGirderProps();
 	afx_msg void OnImportProjectLibrary();
 	afx_msg void OnAddPointload();
-	afx_msg void OnEditUserloads();
 	afx_msg void OnAddDistributedLoad();
 	afx_msg void OnAddMomentLoad();
 	afx_msg void OnProjectAlignment();
    afx_msg void OnReport(UINT nID);
    afx_msg void OnQuickReport(UINT nID);
-   afx_msg void OnViewAnalysisResults();
-	afx_msg void OnProjectAnalysis();
+   afx_msg void OnProjectAnalysis();
 	afx_msg void OnEditPier();
 	afx_msg void OnEditSpan();
 	afx_msg void OnDeleteSelection();
 	afx_msg void OnUpdateDeleteSelection(CCmdUI* pCmdUI);
-	afx_msg void OnUndo();
-	afx_msg void OnUpdateUndo(CCmdUI* pCmdUI);
-	afx_msg void OnRedo();
-	afx_msg void OnUpdateRedo(CCmdUI* pCmdUI);
 	afx_msg void OnInsert();
 	afx_msg void OnOptionsHints();
    afx_msg void OnOptionsLabels();
-	//}}AFX_MSG
-   afx_msg void OnUpdateStatusCenter(CCmdUI* pCmdUI);
-	afx_msg void OnViewStatusCenter(UINT nID);
-	DECLARE_MESSAGE_MAP()
+   afx_msg void OnUpdateNow();
+	afx_msg void OnUpdateUpdateNow(CCmdUI* pCmdUI);
+   //}}AFX_MSG
+   afx_msg void OnViewStatusCenter(UINT nID);
+   afx_msg void OnUpdateViewReports(CCmdUI* pCmdUI);
+   afx_msg void OnViewReports(NMHDR* pnmtb,LRESULT* plr);
+   afx_msg void OnImport(UINT nID);
+   afx_msg void OnExport(UINT nID);
+   afx_msg void OnImportMenu(CCmdUI* pCmdUI);
+   afx_msg void OnExportMenu(CCmdUI* pCmdUI);
 
-	// Generated OLE dispatch map functions
-	//{{AFX_DISPATCH(CPGSuperDoc)
-		// NOTE - the ClassWizard will add and remove member functions here.
-		//    DO NOT EDIT what you see in these blocks of generated code !
-	//}}AFX_DISPATCH
-	DECLARE_DISPATCH_MAP()
-	DECLARE_INTERFACE_MAP()
+public:
+	afx_msg void OnViewBridgeModelEditor();
+	afx_msg void OnViewGirderEditor();
+	afx_msg void OnViewAnalysisResults();
+   afx_msg void OnViewStability();
+   afx_msg void OnEditUserLoads();
+	afx_msg void OnViewLibraryEditor();
 
-   void SetUnitMode(pgsTypes::UnitMode unitsMode);
-   pgsTypes::UnitMode GetUnitMode() const;
    bool LoadMasterLibrary();
    bool DoLoadMasterLibrary(const CString& rPath);
 
    void InitProjectProperties();
-   int FindMenuItem(CMenu* pParentMenu,const char* strTargetMenu);
 
-public:
-   void OnStatusItemAdded(pgsStatusItem* pItem);
-   void OnStatusItemRemoved(long id);
-
+   /// populates a menu with the names of the reports
+   void BuildReportMenu(CMenu* pMenu,bool bQuickReport);
+   void BuildReportMenu(CEAFMenu* pMenu,bool bQuickReport);
    UINT_PTR GetReportCommand(CollectionIndexType rptIdx,bool bQuickReport);
    CollectionIndexType GetReportIndex(UINT nID,bool bQuickReport);
+
+	DECLARE_MESSAGE_MAP()
 };
 
 /////////////////////////////////////////////////////////////////////////////

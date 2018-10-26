@@ -221,7 +221,7 @@ void CProfileGrid::SetRowData(ROWCOL nRow,VertCurveData& data)
    CProfilePage* pParent = (CProfilePage*)GetParent();
 
    GET_IFACE2(pParent->GetBroker(),IDisplayUnits,pDisplayUnits);
-   UnitModeType unit_mode = (UnitModeType)(pDisplayUnits->GetUnitDisplayMode());
+   UnitModeType unit_mode = (UnitModeType)(pDisplayUnits->GetUnitMode());
 
    double station = data.PVIStation;
    station = ::ConvertFromSysUnits(station,pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure);
@@ -250,7 +250,7 @@ bool CProfileGrid::GetRowData(ROWCOL nRow,double* pStation,double* pGrade,double
    CProfilePage* pParent = (CProfilePage*)GetParent();
 
    GET_IFACE2(pParent->GetBroker(),IDisplayUnits,pDisplayUnits);
-   UnitModeType unit_mode = (UnitModeType)(pDisplayUnits->GetUnitDisplayMode());
+   UnitModeType unit_mode = (UnitModeType)(pDisplayUnits->GetUnitMode());
 
    CString strStation = GetCellValue(nRow,1);
    CComPtr<IStation> station;

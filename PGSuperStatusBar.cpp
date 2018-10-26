@@ -36,100 +36,119 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
+
+static UINT indicators[] =
+{
+   ID_SEPARATOR,           // status line indicator
+   ID_INDICATOR_ANALYSIS,
+   ID_INDICATOR_STATUS,
+   ID_INDICATOR_MODIFIED,
+   ID_INDICATOR_AUTOCALC_ON,
+   ID_INDICATOR_CAPS,
+   ID_INDICATOR_NUM,
+   ID_INDICATOR_SCRL,
+};
+
 /////////////////////////////////////////////////////////////////////////////
 // CPGSuperStatusBar
 
 CPGSuperStatusBar::CPGSuperStatusBar()
 {
+   m_AnalysisModePaneIdx = -1;
+   m_AutoCalcPaneIdx     = -1;
 }
 
 CPGSuperStatusBar::~CPGSuperStatusBar()
 {
 }
 
-
-BEGIN_MESSAGE_MAP(CPGSuperStatusBar, CStatusBar)
+BEGIN_MESSAGE_MAP(CPGSuperStatusBar, CEAFStatusBar)
 	//{{AFX_MSG_MAP(CPGSuperStatusBar)
 	ON_WM_LBUTTONDBLCLK()
-	ON_WM_CREATE()
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
+void CPGSuperStatusBar::GetStatusIndicators(const UINT** lppIDArray,int* pnIDCount)
+{
+   *lppIDArray = indicators;
+   *pnIDCount = sizeof(indicators)/sizeof(UINT);
+}
+
 /////////////////////////////////////////////////////////////////////////////
 // CPGSuperStatusBar message handlers
-void CPGSuperStatusBar::DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
-{
-   CDC* pDC = CDC::FromHandle(lpDrawItemStruct->hDC);
-
-   COLORREF color;
-
-   long status_count = 0;
-
-   CWnd* pMainWnd = AfxGetMainWnd();
-   if ( pMainWnd->IsKindOf(RUNTIME_CLASS(CFrameWnd)) )
-   {
-      CFrameWnd* pMainFrame = (CFrameWnd*)pMainWnd;
-      CMDIChildWnd* pChild = (CMDIChildWnd*)pMainFrame->GetActiveFrame();
-      CView* pView = pChild->GetActiveView();
-      CDocument* pDoc = NULL;
-      if ( pView )
-         pDoc = pView->GetDocument();
-
-      if ( pDoc && pDoc->IsKindOf(RUNTIME_CLASS(CPGSuperDoc)) )
-      {
-         CPGSuperDoc* pPGSuperDoc = (CPGSuperDoc*)pDoc;
-
-         pgsStatusCenter& status_center = pPGSuperDoc->GetStatusCenter();
-         pgsTypes::StatusSeverityType severity = status_center.GetSeverity();
-         color = (severity == pgsTypes::statusOK      ? STATUS_OK_COLOR :
-                  severity == pgsTypes::statusWarning ? STATUS_WARN_COLOR : STATUS_ERROR_COLOR);
-
-         status_count = status_center.Count();
-
-         CBrush brush(color);
-         CPen pen(PS_SOLID,1,color);
-
-         CBrush* pOldBrush = pDC->SelectObject(&brush);
-         CPen* pOldPen = pDC->SelectObject(&pen);
-
-         pDC->Rectangle( &(lpDrawItemStruct->rcItem) );
-
-         CString strStatus;
-         strStatus.Format("%d",status_count);
-         int bkMode = pDC->SetBkMode(TRANSPARENT);
-         pDC->DrawText(strStatus,&(lpDrawItemStruct->rcItem),DT_CENTER | DT_VCENTER);
-         pDC->SetBkMode(bkMode);
-
-         pDC->SelectObject(pOldBrush);
-         pDC->SelectObject(pOldPen);
-      }
-   }
-}
 
 void CPGSuperStatusBar::OnLButtonDblClk(UINT nFlags, CPoint point) 
 {
    CRect rect;
 
    // Analysis Type
-   GetStatusBarCtrl().GetRect(1,&rect);
+   GetStatusBarCtrl().GetRect(GetAnalysisModePaneIndex(),&rect);
    if (rect.PtInRect(point))
    {
       PostMessage(WM_COMMAND,ID_PROJECT_ANALYSIS,0);
    }
 
-   // Status Center
-   GetStatusBarCtrl().GetRect(2,&rect);
-   if (rect.PtInRect(point))
-   {
-      PostMessage(WM_COMMAND,ID_VIEW_STATUSCENTER,0);
-   }
-
    // AutoCalc Mode
-   GetStatusBarCtrl().GetRect(4,&rect);
+   GetStatusBarCtrl().GetRect(GetAutoCalcPaneIndex(),&rect);
    if (rect.PtInRect(point))
    {
       PostMessage(WM_COMMAND,ID_PROJECT_AUTOCALC,0);
    }
 
-   CStatusBar::OnLButtonDblClk(nFlags, point);
+   CEAFStatusBar::OnLButtonDblClk(nFlags, point);
+}
+
+int CPGSuperStatusBar::GetAnalysisModePaneIndex()
+{
+   if ( m_AnalysisModePaneIdx < 0 )
+   {
+      for ( int i = 0; i < GetPaneCount(); i++ )
+      {
+         UINT nID;
+         UINT nStyle;
+         int cxWidth;
+         GetPaneInfo(i,nID,nStyle,cxWidth);
+
+         if ( nID == ID_INDICATOR_ANALYSIS )
+         {
+            m_AnalysisModePaneIdx = i;
+            break;
+         }
+      }
+   }
+
+   return m_AnalysisModePaneIdx;
+}
+
+int CPGSuperStatusBar::GetAutoCalcPaneIndex()
+{
+   if ( m_AutoCalcPaneIdx < 0 )
+   {
+      for ( int i = 0; i < GetPaneCount(); i++ )
+      {
+         UINT nID;
+         UINT nStyle;
+         int cxWidth;
+         GetPaneInfo(i,nID,nStyle,cxWidth);
+
+         if ( nID == ID_INDICATOR_AUTOCALC_ON )
+         {
+            m_AutoCalcPaneIdx = i;
+            break;
+         }
+      }
+   }
+
+   return m_AutoCalcPaneIdx;
+}
+
+void CPGSuperStatusBar::Reset()
+{
+   CEAFStatusBar::Reset();
+
+   int idx = GetAnalysisModePaneIndex();
+   SetPaneText( idx, "" );
+
+   idx = GetAutoCalcPaneIndex();
+   SetPaneText( idx, "" );
 }

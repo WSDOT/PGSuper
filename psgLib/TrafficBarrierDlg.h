@@ -27,15 +27,10 @@
 #pragma once
 #endif // _MSC_VER >= 1000
 
-#if !defined INCLUDED_LIBRARYFW_UNITSMODE_H_
-#include <LibraryFw\UnitsMode.h>
-#endif
-
 #if !defined INCLUDED_MFCTOOLS_METAFILESTATIC_H_
 #include <MfcTools\MetaFileStatic.h>
 #endif
 
-#include <Units\sysUnits.h>
 #include "TrafficBarrierGrid.h"
 
 // TrafficBarrierDlg.h : header file
@@ -47,7 +42,7 @@ class CTrafficBarrierDlg : public CDialog
 {
 // Construction
 public:
-	CTrafficBarrierDlg(libUnitsMode::Mode mode, bool allowEditing,
+	CTrafficBarrierDlg(bool allowEditing,
       CWnd* pParent = NULL);   // standard constructor
 
 	DECLARE_DYNAMIC(CTrafficBarrierDlg)
@@ -67,14 +62,10 @@ public:
    bool m_bStructurallyContinuous;
    double m_CurbOffset;
 
-   libUnitsMode::Mode m_Mode;
    bool m_AllowEditing;
-   unitLength          m_LongLengthUnit;
-   CString             m_LongLengthUnitString;
 
    CTrafficBarrierGrid m_PointsGrid;
 
-   CString GetLengthUnitString() {return m_LongLengthUnitString;}
 
 // Overrides
 	// ClassWizard generated virtual function overrides

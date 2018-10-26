@@ -155,6 +155,8 @@ public:
    // error handling.
    virtual std::string GetStateDump() const;
 
+   virtual std::string GetUnit() const;
+
    // GROUP: ACCESS
    // GROUP: INQUIRY
 

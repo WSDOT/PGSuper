@@ -30,7 +30,7 @@
 //
 
 #include <DManip\DManip.h>
-
+#include "BridgeModelViewChildFrame.h"
 
 /////////////////////////////////////////////////////////////////////////////
 // CBridgePlanViewSpanDisplayObjectEvents command target

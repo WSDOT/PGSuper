@@ -24,10 +24,10 @@
 //
 
 #include "stdafx.h"
-#include "PGSuper.h"
+#include "BridgeDescFramingGrid.h"
+#include "PGSuperDoc.h"
 #include "PGSuperUnits.h"
 #include "BridgeDescDlg.h"
-#include "BridgeDescFramingGrid.h"
 #include "BridgeDescFramingPage.h"
 
 #include "SpanDetailsDlg.h"
@@ -465,7 +465,7 @@ CString CBridgeDescFramingGrid::GetCellValue(ROWCOL nRow, ROWCOL nCol)
 CPierData* CBridgeDescFramingGrid::GetPierRowData(ROWCOL nRow)
 {
    CComPtr<IBroker> pBroker;
-   AfxGetBroker(&pBroker);
+   EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
 
    CBridgeDescFramingPage* pParent = (CBridgeDescFramingPage*)GetParent();
@@ -482,7 +482,7 @@ CPierData* CBridgeDescFramingGrid::GetPierRowData(ROWCOL nRow)
    // update for the data in the grid
    // Station
    CString strStation = GetCellValue(nRow,1);
-   UnitModeType unitMode = (UnitModeType)(pDisplayUnits->GetUnitDisplayMode());
+   UnitModeType unitMode = (UnitModeType)(pDisplayUnits->GetUnitMode());
    m_objStation->FromString(CComBSTR(strStation),unitMode);
    double station;
    m_objStation->get_Value(&station);
@@ -561,7 +561,7 @@ void CBridgeDescFramingGrid::FillPierRow(ROWCOL row,const CPierData& pierData)
 
 
    CComPtr<IBroker> pBroker;
-   AfxGetBroker(&pBroker);
+   EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
    CString strStation = FormatStation(pDisplayUnits->GetStationFormat(),pierData.GetStation());
 
@@ -592,11 +592,11 @@ void CBridgeDescFramingGrid::FillSpanRow(ROWCOL row,const CSpanData& spanData)
    GetParam()->SetLockReadOnly(FALSE);
 
    CString strSpanLabel;
-   strSpanLabel.Format("Span %d",spanData.GetSpanIndex()+1);
+   strSpanLabel.Format("Span %d",LABEL_SPAN(spanData.GetSpanIndex()));
    SetValueRange(CGXRange(row,0),strSpanLabel);
 
    CComPtr<IBroker> pBroker;
-   AfxGetBroker(&pBroker);
+   EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
 
    CString strSpanLength;
@@ -673,10 +673,10 @@ BOOL CBridgeDescFramingGrid::OnValidateCell(ROWCOL nRow, ROWCOL nCol)
       ASSERT(SUCCEEDED(hr));
 
       CComPtr<IBroker> pBroker;
-      AfxGetBroker(&pBroker);
+      EAFGetBroker(&pBroker);
       GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
 
-      hr = objStation->FromString( CComBSTR(s), (UnitModeType)(pDisplayUnits->GetUnitDisplayMode()));
+      hr = objStation->FromString( CComBSTR(s), (UnitModeType)(pDisplayUnits->GetUnitMode()));
       if ( FAILED(hr) )
       {
 			SetWarningText (_T("Invalid Station Value"));

@@ -23,6 +23,6 @@
 
 #include <tchar.h>
 
-int ZipPGZ(_TCHAR* fileName);
+int ZipPGZ(_TCHAR* masterLibraryFile,_TCHAR* templateRoot,_TCHAR* pgzFileName);
 int ListPGZ(_TCHAR* fileName);
 

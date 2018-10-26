@@ -90,7 +90,7 @@ void CGirderDescGeneralPage::DoDataExchange(CDataExchange* pDX)
    DDX_Control(pDX,IDC_SLABOFFSET_NOTE,m_SlabOffsetHyperLink);
 
    CComPtr<IBroker> pBroker;
-   AfxGetBroker(&pBroker);
+   EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
 
    CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
@@ -150,7 +150,7 @@ void CGirderDescGeneralPage::DoDataExchange(CDataExchange* pDX)
 void CGirderDescGeneralPage::ExchangeConcreteData(CDataExchange* pDX)
 {
    CComPtr<IBroker> pBroker;
-   AfxGetBroker(&pBroker);
+   EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
 
    CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
@@ -238,7 +238,7 @@ BOOL CGirderDescGeneralPage::OnInitDialog()
    FillGirderComboBox();
 
    CComPtr<IBroker> pBroker;
-   AfxGetBroker(&pBroker);
+   EAFGetBroker(&pBroker);
 
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
@@ -361,7 +361,7 @@ void CGirderDescGeneralPage::UpdateEci()
       m_ctrlFci.GetWindowText(strFci);
 
       CComPtr<IBroker> pBroker;
-      AfxGetBroker(&pBroker);
+      EAFGetBroker(&pBroker);
       GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
 
       CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
@@ -384,7 +384,7 @@ void CGirderDescGeneralPage::UpdateEc()
       m_ctrlFc.GetWindowText(strFc);
 
       CComPtr<IBroker> pBroker;
-      AfxGetBroker(&pBroker);
+      EAFGetBroker(&pBroker);
       GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
 
       CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
@@ -460,7 +460,6 @@ BOOL CGirderDescGeneralPage::OnToolTipNotify(UINT id,NMHDR* pNMHDR, LRESULT* pRe
       switch(nID)
       {
       case IDC_MORE:
-         ::SendMessage(pNMHDR->hwndFrom,TTM_SETMAXTIPWIDTH,0,300); // makes it a multi-line tooltip
          UpdateConcreteParametersToolTip();
          break;
 
@@ -468,6 +467,8 @@ BOOL CGirderDescGeneralPage::OnToolTipNotify(UINT id,NMHDR* pNMHDR, LRESULT* pRe
          return FALSE;
       }
 
+      ::SendMessage(pNMHDR->hwndFrom,TTM_SETDELAYTIME,TTDT_AUTOPOP,TOOLTIP_DURATION); // sets the display time to 10 seconds
+      ::SendMessage(pNMHDR->hwndFrom,TTM_SETMAXTIPWIDTH,0,TOOLTIP_WIDTH); // makes it a multi-line tooltip
       pTTT->lpszText = m_strTip.GetBuffer();
       pTTT->hinst = NULL;
       return TRUE;
@@ -478,7 +479,7 @@ BOOL CGirderDescGeneralPage::OnToolTipNotify(UINT id,NMHDR* pNMHDR, LRESULT* pRe
 void CGirderDescGeneralPage::UpdateConcreteParametersToolTip()
 {
    CComPtr<IBroker> pBroker;
-   AfxGetBroker(&pBroker);
+   EAFGetBroker(&pBroker);
 
    GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
 
@@ -520,7 +521,7 @@ void CGirderDescGeneralPage::FillGirderComboBox()
    GirderIndexType gdrIdx  = pParent->m_CurrentGirderIdx;
 
    CComPtr<IBroker> pBroker;
-   AfxGetBroker(&pBroker);
+   EAFGetBroker(&pBroker);
 
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
@@ -603,7 +604,7 @@ LRESULT CGirderDescGeneralPage::OnChangeSlabOffsetType(WPARAM wParam,LPARAM lPar
    else
    {
       CComPtr<IBroker> pBroker;
-      AfxGetBroker(&pBroker);
+      EAFGetBroker(&pBroker);
       GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
 
       Float64 slabOffset[2];

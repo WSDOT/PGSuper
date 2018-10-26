@@ -105,10 +105,10 @@ rptRcTable* CUserRotationTable::Build(IBroker* pBroker,SpanIndexType span,Girder
       ColumnIndexType col = 0;
       pgsPointOfInterest& poi = vPoi[pier-startPier];
 
-      if ( pier == 0 || pier == nPiers-1 )
-         (*p_table)(row,col++) << "Abutment " << (Int32)(pier+1);
+      if ( pier == 0 || pier == pBridge->GetPierCount()-1 )
+         (*p_table)(row,col++) << "Abutment " << LABEL_PIER(pier);
       else
-         (*p_table)(row,col++) << "Pier " << (Int32)(pier+1);
+         (*p_table)(row,col++) << "Pier " << LABEL_PIER(pier);
 
 
       if ( analysisType == pgsTypes::Envelope )

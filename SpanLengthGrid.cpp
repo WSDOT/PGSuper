@@ -24,7 +24,7 @@
 //
 
 #include "stdafx.h"
-#include "PGSuper.h"
+#include "PGSuperDoc.h"
 #include "PGSuperUnits.h"
 #include "SpanLengthGrid.h"
 #include <Units\Measure.h>
@@ -127,7 +127,7 @@ void CSpanLengthGrid::CustomInit()
 		);
 
    CComPtr<IBroker> pBroker;
-   AfxGetBroker(&pBroker);
+   EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
    const unitLength& um = pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure;
    CString cv = "Length (" + CString(um.UnitTag().c_str()) + ")";
@@ -186,7 +186,7 @@ void CSpanLengthGrid::FillGrid(const std::vector<double>& vSpanLengths)
    GetParam()->SetLockReadOnly(FALSE);
 
    CComPtr<IBroker> pBroker;
-   AfxGetBroker(&pBroker);
+   EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
 
    // remove all but top row
@@ -229,7 +229,7 @@ void CSpanLengthGrid::GetSpanLengths(std::vector<double>& vSpanLengths)
    vSpanLengths.clear();
 
    CComPtr<IBroker> pBroker;
-   AfxGetBroker(&pBroker);
+   EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
 
    const unitLength& um = pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure;

@@ -1,0 +1,37 @@
+
+// PGSuperLibrary.idl : IDL source for PGSuperLibrary.dll
+//
+
+// This file will be processed by the MIDL tool to
+// produce the type library (PGSuperLibrary.tlb) and marshalling code.
+
+import "oaidl.idl";
+import "ocidl.idl";
+
+[
+	uuid(B9603863-5166-4c1c-BDD9-962819A48CC1),
+	version(1.0),
+	helpstring("PGSuperLibrary Library")
+]
+library PGSuperLibrary
+{
+	importlib("stdole32.tlb");
+	importlib("stdole2.tlb");
+
+	[
+		uuid(E67716CF-F63C-472c-8FF9-3C959A736097),
+		helpstring("LibraryAppPlugin Class")
+	]
+	coclass LibraryAppPlugin
+	{
+		interface IUnknown;
+   };
+
+   [
+      uuid(3EB252D0-84CF-4f09-98CA-9C0A80472258)
+   ]
+   coclass PGSuperComponentInfo
+   {
+      interface IUnknown;
+   }
+};

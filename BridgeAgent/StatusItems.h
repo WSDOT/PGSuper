@@ -27,11 +27,11 @@
 
 
 // status for general alignment description input
-class pgsAlignmentDescriptionStatusItem : public pgsStatusItem
+class pgsAlignmentDescriptionStatusItem : public CEAFStatusItem
 {
 public:
-   pgsAlignmentDescriptionStatusItem(AgentIDType agentID,StatusCallbackIDType callbackID,long dlgPage,const char* strDescription);
-   bool IsEqual(pgsStatusItem* pOther);
+   pgsAlignmentDescriptionStatusItem(StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,long dlgPage,const char* strDescription);
+   bool IsEqual(CEAFStatusItem* pOther);
 
    long m_DlgPage;
 };
@@ -40,23 +40,23 @@ public:
 class pgsAlignmentDescriptionStatusCallback : public iStatusCallback
 {
 public:
-   pgsAlignmentDescriptionStatusCallback(IBroker* pBroker,pgsTypes::StatusSeverityType severity);
-   virtual pgsTypes::StatusSeverityType GetSeverity();
-   virtual void Execute(pgsStatusItem* pStatusItem);
+   pgsAlignmentDescriptionStatusCallback(IBroker* pBroker,eafTypes::StatusSeverityType severity);
+   virtual eafTypes::StatusSeverityType GetSeverity();
+   virtual void Execute(CEAFStatusItem* pStatusItem);
 
 private:
    IBroker* m_pBroker;
-   pgsTypes::StatusSeverityType m_Severity;
+   eafTypes::StatusSeverityType m_Severity;
 };
 
 // status for Concrete Strength
-class pgsConcreteStrengthStatusItem : public pgsStatusItem
+class pgsConcreteStrengthStatusItem : public CEAFStatusItem
 {
 public:
    enum ConcreteType { Slab, Girder, RailingSystem };
    enum ElementType { ReleaseStrength, FinalStrength, Density, DensityForWeight, AggSize };
-   pgsConcreteStrengthStatusItem(ConcreteType concType,ElementType elemType,SpanIndexType span,GirderIndexType gdr,AgentIDType agentID,StatusCallbackIDType callbackID,const char* strDescription);
-   bool IsEqual(pgsStatusItem* pOther);
+   pgsConcreteStrengthStatusItem(ConcreteType concType,ElementType elemType,SpanIndexType span,GirderIndexType gdr,StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,const char* strDescription);
+   bool IsEqual(CEAFStatusItem* pOther);
 
    ConcreteType m_ConcreteType;
    ElementType m_ElementType;
@@ -68,21 +68,21 @@ public:
 class pgsConcreteStrengthStatusCallback : public iStatusCallback
 {
 public:
-   pgsConcreteStrengthStatusCallback(IBroker* pBroker,pgsTypes::StatusSeverityType statusLevel);
-   virtual pgsTypes::StatusSeverityType GetSeverity();
-   virtual void Execute(pgsStatusItem* pStatusItem);
+   pgsConcreteStrengthStatusCallback(IBroker* pBroker,eafTypes::StatusSeverityType statusLevel);
+   virtual eafTypes::StatusSeverityType GetSeverity();
+   virtual void Execute(CEAFStatusItem* pStatusItem);
 
 private:
    IBroker* m_pBroker;
-   pgsTypes::StatusSeverityType m_Severity;
+   eafTypes::StatusSeverityType m_Severity;
 };
 
 // status for point loads
-class pgsPointLoadStatusItem : public pgsStatusItem
+class pgsPointLoadStatusItem : public CEAFStatusItem
 {
 public:
-   pgsPointLoadStatusItem(Uint32 loadIndex,AgentIDType agentID,StatusCallbackIDType callbackID,const char* strDescription);
-   bool IsEqual(pgsStatusItem* pOther);
+   pgsPointLoadStatusItem(Uint32 loadIndex,StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,const char* strDescription);
+   bool IsEqual(CEAFStatusItem* pOther);
 
    Uint32 m_LoadIndex;
 };
@@ -90,21 +90,21 @@ public:
 class pgsPointLoadStatusCallback : public iStatusCallback
 {
 public:
-   pgsPointLoadStatusCallback(IBroker* pBroker,pgsTypes::StatusSeverityType severity);
-   virtual pgsTypes::StatusSeverityType GetSeverity();
-   virtual void Execute(pgsStatusItem* pStatusItem);
+   pgsPointLoadStatusCallback(IBroker* pBroker,eafTypes::StatusSeverityType severity);
+   virtual eafTypes::StatusSeverityType GetSeverity();
+   virtual void Execute(CEAFStatusItem* pStatusItem);
 
 private:
    IBroker* m_pBroker;
-   pgsTypes::StatusSeverityType m_Severity;
+   eafTypes::StatusSeverityType m_Severity;
 };
 
 // status for Distributed loads
-class pgsDistributedLoadStatusItem : public pgsStatusItem
+class pgsDistributedLoadStatusItem : public CEAFStatusItem
 {
 public:
-   pgsDistributedLoadStatusItem(Uint32 loadIndex,AgentIDType agentID,StatusCallbackIDType callbackID,const char* strDescription);
-   bool IsEqual(pgsStatusItem* pOther);
+   pgsDistributedLoadStatusItem(Uint32 loadIndex,StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,const char* strDescription);
+   bool IsEqual(CEAFStatusItem* pOther);
 
    Uint32 m_LoadIndex;
 };
@@ -113,21 +113,21 @@ public:
 class pgsDistributedLoadStatusCallback : public iStatusCallback
 {
 public:
-   pgsDistributedLoadStatusCallback(IBroker* pBroker,pgsTypes::StatusSeverityType severity);
-   virtual pgsTypes::StatusSeverityType GetSeverity();
-   virtual void Execute(pgsStatusItem* pStatusItem);
+   pgsDistributedLoadStatusCallback(IBroker* pBroker,eafTypes::StatusSeverityType severity);
+   virtual eafTypes::StatusSeverityType GetSeverity();
+   virtual void Execute(CEAFStatusItem* pStatusItem);
 
 private:
    IBroker* m_pBroker;
-   pgsTypes::StatusSeverityType m_Severity;
+   eafTypes::StatusSeverityType m_Severity;
 };
 
 // status for moment loads
-class pgsMomentLoadStatusItem : public pgsStatusItem
+class pgsMomentLoadStatusItem : public CEAFStatusItem
 {
 public:
-   pgsMomentLoadStatusItem(Uint32 loadIndex,AgentIDType agentID,StatusCallbackIDType callbackID,const char* strDescription);
-   bool IsEqual(pgsStatusItem* pOther);
+   pgsMomentLoadStatusItem(Uint32 loadIndex,StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,const char* strDescription);
+   bool IsEqual(CEAFStatusItem* pOther);
 
    Uint32 m_LoadIndex;
 };
@@ -136,11 +136,11 @@ public:
 class pgsMomentLoadStatusCallback : public iStatusCallback
 {
 public:
-   pgsMomentLoadStatusCallback(IBroker* pBroker,pgsTypes::StatusSeverityType severity);
-   virtual pgsTypes::StatusSeverityType GetSeverity();
-   virtual void Execute(pgsStatusItem* pStatusItem);
+   pgsMomentLoadStatusCallback(IBroker* pBroker,eafTypes::StatusSeverityType severity);
+   virtual eafTypes::StatusSeverityType GetSeverity();
+   virtual void Execute(CEAFStatusItem* pStatusItem);
 
 private:
    IBroker* m_pBroker;
-   pgsTypes::StatusSeverityType m_Severity;
+   eafTypes::StatusSeverityType m_Severity;
 };

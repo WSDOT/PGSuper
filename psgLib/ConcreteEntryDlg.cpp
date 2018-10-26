@@ -29,28 +29,34 @@
 #include <MfcTools\CustomDDX.h>
 #include <Colors.h>
 
+#include <EAF\EAFApp.h>
+
 #include "..\htmlhelp\helptopics.hh"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
-//#undef THIS_FILE
-//static char THIS_FILE[] = __FILE__;
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
 #endif
 
 /////////////////////////////////////////////////////////////////////////////
 // CConcreteEntryDlg dialog
 
 
-CConcreteEntryDlg::CConcreteEntryDlg(libUnitsMode::Mode mode, bool allowEditing, CWnd* pParent /*=NULL*/)
+CConcreteEntryDlg::CConcreteEntryDlg(bool allowEditing, CWnd* pParent /*=NULL*/)
 	: CDialog(CConcreteEntryDlg::IDD, pParent),
-   m_Mode(mode),
    m_AllowEditing(allowEditing)
 {
 	//{{AFX_DATA_INIT(CConcreteEntryDlg)
 	m_EntryName = _T("");
 	//}}AFX_DATA_INIT
+   CEAFApp* pApp;
+   {
+      AFX_MANAGE_STATE(AfxGetAppModuleState());
+      pApp = (CEAFApp*)AfxGetApp();
+   }
 
-   m_MinNWCDensity = m_Mode == libUnitsMode::UNITS_US ? ::ConvertToSysUnits(135.0,unitMeasure::LbfPerFeet3) : ::ConvertToSysUnits(2150.,unitMeasure::KgPerMeter3);
+   m_MinNWCDensity = pApp->GetUnitsMode() == eafTypes::umUS ? ::ConvertToSysUnits(135.0,unitMeasure::LbfPerFeet3) : ::ConvertToSysUnits(2150.,unitMeasure::KgPerMeter3);
    m_bIsStrengthNWC = true;
    m_bIsDensityNWC = true;
 }
@@ -58,7 +64,14 @@ CConcreteEntryDlg::CConcreteEntryDlg(libUnitsMode::Mode mode, bool allowEditing,
 
 void CConcreteEntryDlg::DoDataExchange(CDataExchange* pDX)
 {
-	CDialog::DoDataExchange(pDX);
+   CEAFApp* pApp;
+   {
+      AFX_MANAGE_STATE(AfxGetAppModuleState());
+      pApp = (CEAFApp*)AfxGetApp();
+   }
+   const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
+
+   CDialog::DoDataExchange(pDX);
 	//{{AFX_DATA_MAP(CConcreteEntryDlg)
 	DDX_Text(pDX, IDC_ENTRY_NAME, m_EntryName);
 	//}}AFX_DATA_MAP
@@ -72,16 +85,14 @@ void CConcreteEntryDlg::DoDataExchange(CDataExchange* pDX)
       }
    }
 
-   bool bUnitsSI = (m_Mode == libUnitsMode::UNITS_SI ? true : false);
-
-   DDX_UnitValueAndTag(pDX, IDC_FC, IDC_FC_T, m_Fc, bUnitsSI, unitMeasure::KSI, unitMeasure::MPa );
-   DDV_UnitValueGreaterThanZero(pDX, m_Fc, bUnitsSI,  unitMeasure::KSI, unitMeasure::MPa );
+   DDX_UnitValueAndTag(pDX, IDC_FC, IDC_FC_T, m_Fc, pDisplayUnits->Stress );
+   DDV_UnitValueGreaterThanZero(pDX, m_Fc, pDisplayUnits->Stress );
 
    DDX_Check_Bool(pDX, IDC_MOD_E, m_bUserEc);
    if (m_bUserEc || !pDX->m_bSaveAndValidate)
    {
-      DDX_UnitValueAndTag(pDX, IDC_EC, IDC_EC_T, m_Ec, bUnitsSI, unitMeasure::KSI, unitMeasure::MPa );
-      DDV_UnitValueGreaterThanZero(pDX, m_Ec, bUnitsSI,  unitMeasure::KSI, unitMeasure::MPa );
+      DDX_UnitValueAndTag(pDX, IDC_EC, IDC_EC_T, m_Ec, pDisplayUnits->Stress );
+      DDV_UnitValueGreaterThanZero(pDX, m_Ec, pDisplayUnits->Stress );
 
       if (!pDX->m_bSaveAndValidate)
       {
@@ -90,14 +101,14 @@ void CConcreteEntryDlg::DoDataExchange(CDataExchange* pDX)
       }
    }
 
-   DDX_UnitValueAndTag(pDX, IDC_DS, IDC_DS_T, m_Ds, bUnitsSI, unitMeasure::LbfPerFeet3, unitMeasure::KgPerMeter3 );
-   DDV_UnitValueGreaterThanZero(pDX, m_Ds, bUnitsSI,  unitMeasure::LbfPerFeet3, unitMeasure::KgPerMeter3 );
-   DDX_UnitValueAndTag(pDX, IDC_DW, IDC_DW_T, m_Dw, bUnitsSI, unitMeasure::LbfPerFeet3, unitMeasure::KgPerMeter3 );
-   DDV_UnitValueGreaterThanZero(pDX, m_Dw, bUnitsSI,  unitMeasure::LbfPerFeet3, unitMeasure::KgPerMeter3 );
-   DDX_UnitValueAndTag(pDX, IDC_AGG_SIZE, IDC_AGG_SIZE_T, m_AggSize, bUnitsSI, unitMeasure::Inch, unitMeasure::Millimeter );
-   DDV_UnitValueGreaterThanZero(pDX, m_AggSize, bUnitsSI,  unitMeasure::Inch, unitMeasure::Millimeter );
+   DDX_UnitValueAndTag(pDX, IDC_DS, IDC_DS_T, m_Ds, pDisplayUnits->Density);
+   DDV_UnitValueGreaterThanZero(pDX, m_Ds, pDisplayUnits->Density );
+   DDX_UnitValueAndTag(pDX, IDC_DW, IDC_DW_T, m_Dw, pDisplayUnits->Density );
+   DDV_UnitValueGreaterThanZero(pDX, m_Dw, pDisplayUnits->Density );
+   DDX_UnitValueAndTag(pDX, IDC_AGG_SIZE, IDC_AGG_SIZE_T, m_AggSize, pDisplayUnits->ComponentDim );
+   DDV_UnitValueGreaterThanZero(pDX, m_AggSize, pDisplayUnits->ComponentDim );
    DDX_Text(pDX, IDC_K1, m_K1 );
-   DDV_GreaterThanZero(pDX,m_K1);
+   DDV_GreaterThanZero(pDX,IDC_K1,m_K1);
 
    if ( m_Ds < m_MinNWCDensity )
    {
@@ -190,17 +201,23 @@ void CConcreteEntryDlg::OnChangeDw()
 
 HBRUSH CConcreteEntryDlg::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
 {
+   CEAFApp* pApp;
+   {
+      AFX_MANAGE_STATE(AfxGetAppModuleState());
+      pApp = (CEAFApp*)AfxGetApp();
+   }
+   const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
+
    HBRUSH hbr = CDialog::OnCtlColor(pDC, pWnd, nCtlColor);
 
    if ( pWnd->GetDlgCtrlID() == IDC_DS && 0 < pWnd->GetWindowTextLength())
    {
       try
       {
-         bool bUnitsSI = (m_Mode == libUnitsMode::UNITS_SI ? true : false);
          CDataExchange dx(this,TRUE);
 
          Float64 value;
-         DDX_UnitValue(&dx, IDC_DS, value, bUnitsSI, unitMeasure::LbfPerFeet3, unitMeasure::KgPerMeter3 );
+         DDX_UnitValue(&dx, IDC_DS, value, pDisplayUnits->Density );
 
          if (value < m_MinNWCDensity )
          {
@@ -220,11 +237,10 @@ HBRUSH CConcreteEntryDlg::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
    {
       try
       {
-         bool bUnitsSI = (m_Mode == libUnitsMode::UNITS_SI ? true : false);
          CDataExchange dx(this,TRUE);
 
          Float64 value;
-         DDX_UnitValue(&dx, IDC_DW, value, bUnitsSI, unitMeasure::LbfPerFeet3, unitMeasure::KgPerMeter3 );
+         DDX_UnitValue(&dx, IDC_DW, value, pDisplayUnits->Density);
 
          if (value < m_MinNWCDensity )
          {

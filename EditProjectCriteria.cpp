@@ -22,7 +22,8 @@
 
 #include "StdAfx.h"
 #include "EditProjectCriteria.h"
-#include "PGSuper.h"
+#include <IFace\Project.h> // for IEvents and ISpecification
+#include "PGSuperDoc.h" // for EAFGetBroker
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -54,7 +55,7 @@ void txnEditProjectCriteria::Undo()
 void txnEditProjectCriteria::Execute(int i)
 {
    CComPtr<IBroker> pBroker;
-   AfxGetBroker(&pBroker);
+   EAFGetBroker(&pBroker);
 
    GET_IFACE2(pBroker,IEvents, pEvents);
    GET_IFACE2(pBroker, ISpecification, pSpec );
@@ -71,7 +72,7 @@ txnTransaction* txnEditProjectCriteria::CreateClone() const
 
 std::string txnEditProjectCriteria::Name() const
 {
-   return "Edit Project Criteria";
+   return "Edit Design Criteria";
 }
 
 bool txnEditProjectCriteria::IsUndoable()

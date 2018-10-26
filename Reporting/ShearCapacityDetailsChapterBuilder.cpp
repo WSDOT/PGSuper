@@ -34,6 +34,7 @@
 #include <IFace\DisplayUnits.h>
 #include <IFace\ShearCapacity.h>
 #include <IFace\Project.h>
+#include <IFace\RatingSpecification.h>
 
 #include <Reporter\ReportingUtils.h>
 
@@ -200,8 +201,10 @@ void write_bar_spacing_table(IBroker* pBroker,
 ////////////////////////// PUBLIC     ///////////////////////////////////////
 
 //======================== LIFECYCLE  =======================================
-CShearCapacityDetailsChapterBuilder::CShearCapacityDetailsChapterBuilder()
+CShearCapacityDetailsChapterBuilder::CShearCapacityDetailsChapterBuilder(bool bDesign,bool bRating)
 {
+   m_bDesign = bDesign;
+   m_bRating = bRating;
 }
 
 //======================== OPERATORS  =======================================
@@ -219,11 +222,25 @@ rptChapter* CShearCapacityDetailsChapterBuilder::Build(CReportSpecification* pRp
    SpanIndexType span = pSGRptSpec->GetSpan();
    GirderIndexType girder = pSGRptSpec->GetGirder();
 
-   rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
-
    GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
    GET_IFACE2(pBroker,ILiveLoads,pLiveLoads);
    bool bPermit = pLiveLoads->IsLiveLoadDefined(pgsTypes::lltPermit);
+
+   bool bDesign = m_bDesign;
+   bool bRating;
+   
+   if ( m_bRating )
+   {
+      bRating = true;
+   }
+   else
+   {
+      // include load rating results if we are always load rating
+      GET_IFACE2(pBroker,IRatingSpecification,pRatingSpec);
+      bRating = pRatingSpec->AlwaysLoadRate();
+   }
+
+   rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
    rptParagraph* pPara = new rptParagraph();
    *pChapter << pPara;
@@ -241,96 +258,103 @@ rptChapter* CShearCapacityDetailsChapterBuilder::Build(CReportSpecification* pRp
 
    vPoi = pIPOI->GetPointsOfInterest(pgsTypes::BridgeSite3, span,girder, POI_SHEAR|POI_TABULAR);
 
-   write_shear_dimensions_table(pBroker,pDisplayUnits,span,girder, vPoi,  pChapter, stage, stage_name, pgsTypes::StrengthI);
-
-   if ( bPermit )
-      write_shear_dimensions_table(pBroker,pDisplayUnits,span,girder, vPoi,  pChapter, stage, stage_name, pgsTypes::StrengthII);
-
-   if ( shear_capacity_method == scmBTTables || shear_capacity_method == scmWSDOT2001 )
+   std::vector<pgsTypes::LimitState> vLimitStates;
+   if ( bDesign )
    {
-      write_shear_stress_table    (pBroker,pDisplayUnits,span,girder, vPoi,  pChapter, stage, stage_name, pgsTypes::StrengthI);
-      write_fpc_table             (pBroker,pDisplayUnits,span,girder, vPoi,  pChapter, stage, stage_name, pgsTypes::StrengthI);
-      write_fpo_table             (pBroker,pDisplayUnits,span,girder, vPoi,  pChapter, stage, stage_name, pgsTypes::StrengthI);
-      write_Fe_table              (pBroker,pDisplayUnits,span,girder, vPoi,  pChapter, stage, stage_name, pgsTypes::StrengthI);
-      write_ex_table              (pBroker,pDisplayUnits,span,girder, vPoi,  pChapter, stage, stage_name, pgsTypes::StrengthI);
-      write_btsummary_table       (pBroker,pDisplayUnits,span,girder, vPoi,  pChapter, stage, stage_name, pgsTypes::StrengthI);
-      write_Vc_table              (pBroker,pDisplayUnits,span,girder, vPoi,  pChapter, stage, stage_name, pgsTypes::StrengthI);
-      write_Vs_table              (pBroker,pDisplayUnits,span,girder, vPoi,  pChapter, stage, stage_name, pgsTypes::StrengthI);
+      vLimitStates.push_back(pgsTypes::StrengthI);
+      if ( bPermit )
+         vLimitStates.push_back(pgsTypes::StrengthII);
+   }
+
+   if ( bRating )
+   {
+      GET_IFACE2(pBroker,IRatingSpecification,pRatingSpec);
+      if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) && pRatingSpec->RateForShear(pgsTypes::lrDesign_Inventory) )
+         vLimitStates.push_back(pgsTypes::StrengthI_Inventory);
+
+      if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating) && pRatingSpec->RateForShear(pgsTypes::lrDesign_Operating) )
+         vLimitStates.push_back(pgsTypes::StrengthI_Operating);
+
+      if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) && pRatingSpec->RateForShear(pgsTypes::lrLegal_Routine) )
+         vLimitStates.push_back(pgsTypes::StrengthI_LegalRoutine);
+
+      if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) && pRatingSpec->RateForShear(pgsTypes::lrLegal_Special) )
+         vLimitStates.push_back(pgsTypes::StrengthI_LegalSpecial);
+
+      if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine) && pRatingSpec->RateForShear(pgsTypes::lrPermit_Routine) )
+         vLimitStates.push_back(pgsTypes::StrengthII_PermitRoutine);
+
+      if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Special) && pRatingSpec->RateForShear(pgsTypes::lrPermit_Special) )
+         vLimitStates.push_back(pgsTypes::StrengthII_PermitSpecial);
+   }
+
+   std::vector<pgsTypes::LimitState>::iterator iter;
+   for ( iter = vLimitStates.begin(); iter != vLimitStates.end(); iter++ )
+   {
+      pgsTypes::LimitState ls = *iter;
+      write_shear_dimensions_table(pBroker,pDisplayUnits,span,girder, vPoi,  pChapter, stage, stage_name, ls);
+
+      if ( shear_capacity_method == scmBTTables || shear_capacity_method == scmWSDOT2001 )
+      {
+         write_shear_stress_table    (pBroker,pDisplayUnits,span,girder, vPoi,  pChapter, stage, stage_name, ls);
+         write_fpc_table             (pBroker,pDisplayUnits,span,girder, vPoi,  pChapter, stage, stage_name, ls);
+         write_fpo_table             (pBroker,pDisplayUnits,span,girder, vPoi,  pChapter, stage, stage_name, ls);
+         write_Fe_table              (pBroker,pDisplayUnits,span,girder, vPoi,  pChapter, stage, stage_name, ls);
+         write_ex_table              (pBroker,pDisplayUnits,span,girder, vPoi,  pChapter, stage, stage_name, ls);
+         write_btsummary_table       (pBroker,pDisplayUnits,span,girder, vPoi,  pChapter, stage, stage_name, ls);
+         write_Vc_table              (pBroker,pDisplayUnits,span,girder, vPoi,  pChapter, stage, stage_name, ls);
+         write_Vs_table              (pBroker,pDisplayUnits,span,girder, vPoi,  pChapter, stage, stage_name, ls);
+      }
+      else if ( shear_capacity_method == scmBTEquations || shear_capacity_method == scmWSDOT2007 )
+      {
+         write_fpo_table             (pBroker,pDisplayUnits,span,girder, vPoi,  pChapter, stage, stage_name, ls);
+         write_ex_table              (pBroker,pDisplayUnits,span,girder, vPoi,  pChapter, stage, stage_name, ls);
+         write_btsummary_table       (pBroker,pDisplayUnits,span,girder, vPoi,  pChapter, stage, stage_name, ls);
+         write_Vc_table              (pBroker,pDisplayUnits,span,girder, vPoi,  pChapter, stage, stage_name, ls);
+         write_Vs_table              (pBroker,pDisplayUnits,span,girder, vPoi,  pChapter, stage, stage_name, ls);
+      }
+      else if ( shear_capacity_method == scmVciVcw )
+      {
+         write_fpce_table            (pBroker,pDisplayUnits,span,girder, vPoi,  pChapter, stage, stage_name, ls);
+         write_Vci_table             (pBroker,pDisplayUnits,span,girder, vPoi,  pChapter, stage, stage_name, ls);
+         write_fpc_table             (pBroker,pDisplayUnits,span,girder, vPoi,  pChapter, stage, stage_name, ls);
+         write_Vcw_table             (pBroker,pDisplayUnits,span,girder, vPoi,  pChapter, stage, stage_name, ls);
+         write_theta_table           (pBroker,pDisplayUnits,span,girder, vPoi,  pChapter, stage, stage_name, ls);
+         write_Vs_table              (pBroker,pDisplayUnits,span,girder, vPoi,  pChapter, stage, stage_name, ls);
+      }
+
+      write_Vn_table(pBroker,pDisplayUnits,span,girder, vPoi,  pChapter, stage, stage_name, ls);
+   }
+
+   if ( bDesign )
+   {
+      write_Avs_table(pBroker,pDisplayUnits,span,girder, vPoi,  pChapter, stage, stage_name, pgsTypes::StrengthI);
+      write_bar_spacing_table(pBroker,pDisplayUnits,span,girder, vPoi,  pChapter, stage, stage_name, pgsTypes::StrengthI);
 
       if ( bPermit )
       {
-         write_shear_stress_table    (pBroker,pDisplayUnits,span,girder, vPoi,  pChapter, stage, stage_name, pgsTypes::StrengthII);
-         write_fpc_table             (pBroker,pDisplayUnits,span,girder, vPoi,  pChapter, stage, stage_name, pgsTypes::StrengthII);
-         write_fpo_table             (pBroker,pDisplayUnits,span,girder, vPoi,  pChapter, stage, stage_name, pgsTypes::StrengthII);
-         write_Fe_table              (pBroker,pDisplayUnits,span,girder, vPoi,  pChapter, stage, stage_name, pgsTypes::StrengthII);
-         write_ex_table              (pBroker,pDisplayUnits,span,girder, vPoi,  pChapter, stage, stage_name, pgsTypes::StrengthII);
-         write_btsummary_table       (pBroker,pDisplayUnits,span,girder, vPoi,  pChapter, stage, stage_name, pgsTypes::StrengthII);
-         write_Vc_table              (pBroker,pDisplayUnits,span,girder, vPoi,  pChapter, stage, stage_name, pgsTypes::StrengthII);
-         write_Vs_table              (pBroker,pDisplayUnits,span,girder, vPoi,  pChapter, stage, stage_name, pgsTypes::StrengthII);
+         write_Avs_table(pBroker,pDisplayUnits,span,girder, vPoi,  pChapter, stage, stage_name, pgsTypes::StrengthII);
+         write_bar_spacing_table(pBroker,pDisplayUnits,span,girder, vPoi,  pChapter, stage, stage_name, pgsTypes::StrengthII);
       }
    }
-   else if ( shear_capacity_method == scmBTEquations || shear_capacity_method == scmWSDOT2007 )
-   {
-      write_fpo_table             (pBroker,pDisplayUnits,span,girder, vPoi,  pChapter, stage, stage_name, pgsTypes::StrengthI);
-      write_ex_table              (pBroker,pDisplayUnits,span,girder, vPoi,  pChapter, stage, stage_name, pgsTypes::StrengthI);
-      write_btsummary_table       (pBroker,pDisplayUnits,span,girder, vPoi,  pChapter, stage, stage_name, pgsTypes::StrengthI);
-      write_Vc_table              (pBroker,pDisplayUnits,span,girder, vPoi,  pChapter, stage, stage_name, pgsTypes::StrengthI);
-      write_Vs_table              (pBroker,pDisplayUnits,span,girder, vPoi,  pChapter, stage, stage_name, pgsTypes::StrengthI);
 
-      if ( bPermit )
+   /////////////////////////////////////////////
+   // Horizontal interface shear - only reported for design
+   /////////////////////////////////////////////
+   if ( bDesign )
+   {
+      GET_IFACE2(pBroker,IBridge,pBridge);
+      if ( pBridge->IsCompositeDeck() )
       {
-         write_fpo_table             (pBroker,pDisplayUnits,span,girder, vPoi,  pChapter, stage, stage_name, pgsTypes::StrengthII);
-         write_ex_table              (pBroker,pDisplayUnits,span,girder, vPoi,  pChapter, stage, stage_name, pgsTypes::StrengthII);
-         write_btsummary_table       (pBroker,pDisplayUnits,span,girder, vPoi,  pChapter, stage, stage_name, pgsTypes::StrengthII);
-         write_Vc_table              (pBroker,pDisplayUnits,span,girder, vPoi,  pChapter, stage, stage_name, pgsTypes::StrengthII);
-         write_Vs_table              (pBroker,pDisplayUnits,span,girder, vPoi,  pChapter, stage, stage_name, pgsTypes::StrengthII);
+         pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+         pPara->SetName("Horizontal Interface Shear");
+         *pPara << pPara->GetName() << rptNewLine;
+         *pChapter << pPara;
+         CInterfaceShearDetails::Build(pBroker, pChapter, span, girder, pDisplayUnits, stage,  pgsTypes::StrengthI);
+
+         if ( bPermit )
+            CInterfaceShearDetails::Build(pBroker, pChapter, span, girder, pDisplayUnits, stage,  pgsTypes::StrengthII);
       }
-   }
-   else if ( shear_capacity_method == scmVciVcw )
-   {
-      write_fpce_table            (pBroker,pDisplayUnits,span,girder, vPoi,  pChapter, stage, stage_name, pgsTypes::StrengthI);
-      write_Vci_table             (pBroker,pDisplayUnits,span,girder, vPoi,  pChapter, stage, stage_name, pgsTypes::StrengthI);
-      write_fpc_table             (pBroker,pDisplayUnits,span,girder, vPoi,  pChapter, stage, stage_name, pgsTypes::StrengthI);
-      write_Vcw_table             (pBroker,pDisplayUnits,span,girder, vPoi,  pChapter, stage, stage_name, pgsTypes::StrengthI);
-      write_theta_table           (pBroker,pDisplayUnits,span,girder, vPoi,  pChapter, stage, stage_name, pgsTypes::StrengthI);
-      write_Vs_table              (pBroker,pDisplayUnits,span,girder, vPoi,  pChapter, stage, stage_name, pgsTypes::StrengthI);
-
-      if ( bPermit )
-      {
-         write_fpce_table            (pBroker,pDisplayUnits,span,girder, vPoi,  pChapter, stage, stage_name, pgsTypes::StrengthII);
-         write_Vci_table             (pBroker,pDisplayUnits,span,girder, vPoi,  pChapter, stage, stage_name, pgsTypes::StrengthII);
-         write_fpc_table             (pBroker,pDisplayUnits,span,girder, vPoi,  pChapter, stage, stage_name, pgsTypes::StrengthII);
-         write_Vcw_table             (pBroker,pDisplayUnits,span,girder, vPoi,  pChapter, stage, stage_name, pgsTypes::StrengthII);
-         write_theta_table           (pBroker,pDisplayUnits,span,girder, vPoi,  pChapter, stage, stage_name, pgsTypes::StrengthII);
-         write_Vs_table              (pBroker,pDisplayUnits,span,girder, vPoi,  pChapter, stage, stage_name, pgsTypes::StrengthII);
-      }
-   }
-
-   write_Vn_table(pBroker,pDisplayUnits,span,girder, vPoi,  pChapter, stage, stage_name, pgsTypes::StrengthI);
-   
-   if ( bPermit )
-      write_Vn_table(pBroker,pDisplayUnits,span,girder, vPoi,  pChapter, stage, stage_name, pgsTypes::StrengthII);
-
-   write_Avs_table(pBroker,pDisplayUnits,span,girder, vPoi,  pChapter, stage, stage_name, pgsTypes::StrengthI);
-   write_bar_spacing_table(pBroker,pDisplayUnits,span,girder, vPoi,  pChapter, stage, stage_name, pgsTypes::StrengthI);
-
-   if ( bPermit )
-   {
-      write_Avs_table(pBroker,pDisplayUnits,span,girder, vPoi,  pChapter, stage, stage_name, pgsTypes::StrengthII);
-      write_bar_spacing_table(pBroker,pDisplayUnits,span,girder, vPoi,  pChapter, stage, stage_name, pgsTypes::StrengthII);
-   }
-
-   GET_IFACE2(pBroker,IBridge,pBridge);
-   if ( pBridge->IsCompositeDeck() )
-   {
-      pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
-      pPara->SetName("Horizontal Interface Shear");
-      *pPara << pPara->GetName() << rptNewLine;
-      *pChapter << pPara;
-      CInterfaceShearDetails::Build(pBroker, pChapter, span, girder, pDisplayUnits, stage,  pgsTypes::StrengthI);
-
-      if ( bPermit )
-         CInterfaceShearDetails::Build(pBroker, pChapter, span, girder, pDisplayUnits, stage,  pgsTypes::StrengthII);
    }
 
    return pChapter;
@@ -338,7 +362,7 @@ rptChapter* CShearCapacityDetailsChapterBuilder::Build(CReportSpecification* pRp
 
 CChapterBuilder* CShearCapacityDetailsChapterBuilder::Clone() const
 {
-   return new CShearCapacityDetailsChapterBuilder;
+   return new CShearCapacityDetailsChapterBuilder(m_bDesign,m_bRating);
 }
 
 //======================== ACCESS     =======================================
@@ -369,7 +393,9 @@ void write_shear_dimensions_table(IBroker* pBroker,
                              pgsTypes::Stage stage,
                              const std::string& strStageName,pgsTypes::LimitState ls)
 {
+   USES_CONVERSION;
    GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker,IStageMap,pStageMap);
 
    // Setup the table
    rptParagraph* pParagraph;
@@ -377,36 +403,29 @@ void write_shear_dimensions_table(IBroker* pBroker,
    pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pChapter << pParagraph;
 
-   if ( ls == pgsTypes::StrengthI )
-      pParagraph->SetName("Effective Shear Dimensions for Strength I");
-   else
-      pParagraph->SetName("Effective Shear Dimensions for Strength II");
+   CString strName;
+   strName.Format("Effective Shear Dimensions for %s",OLE2A(pStageMap->GetLimitStateName(ls)));
+   pParagraph->SetName(strName);
 
    *pParagraph << pParagraph->GetName() << " [From Article 5.8.2.7]" << rptNewLine;
 
-   if ( ls == pgsTypes::StrengthI )
-   {
-      // only do the picture if we have strength I. if we have strenght II, we also have
-      // strenght I so no need to duplicate the picture
-      GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
-      const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
-      const CSpanData* pSpan = pBridgeDesc->GetSpan(span);
+   GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
+   const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+   const CSpanData* pSpan = pBridgeDesc->GetSpan(span);
 
-      const GirderLibraryEntry* pGdrEntry = pSpan->GetGirderTypes()->GetGirderLibraryEntry(gdr);
+   const GirderLibraryEntry* pGdrEntry = pSpan->GetGirderTypes()->GetGirderLibraryEntry(gdr);
 
-      CComPtr<IBeamFactory> pFactory;
-      pGdrEntry->GetBeamFactory(&pFactory);
+   CComPtr<IBeamFactory> pFactory;
+   pGdrEntry->GetBeamFactory(&pFactory);
 
-      pgsTypes::SupportedDeckType deckType = pBridgeDesc->GetDeckDescription()->DeckType;
+   pgsTypes::SupportedDeckType deckType = pBridgeDesc->GetDeckDescription()->DeckType;
 
-      std::string strPicture = pFactory->GetShearDimensionsSchematicImage(deckType);
-      *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + strPicture);
+   std::string strPicture = pFactory->GetShearDimensionsSchematicImage(deckType);
+   *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + strPicture);
 
-      *pParagraph << rptNewLine;
-      *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + "dv Equation.jpg") << rptNewLine;
-      *pParagraph << rptNewLine;
-   }
-
+   *pParagraph << rptNewLine;
+   *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + "dv Equation.jpg") << rptNewLine;
+   *pParagraph << rptNewLine;
 
    rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(7,"");
    *pParagraph << table << rptNewLine;
@@ -462,6 +481,8 @@ void write_shear_stress_table(IBroker* pBroker,
                               pgsTypes::Stage stage,
                               const std::string& strStageName,pgsTypes::LimitState ls)
 {
+   USES_CONVERSION;
+
    rptParagraph* pParagraph;
 
    pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
@@ -508,8 +529,10 @@ void write_shear_stress_table(IBroker* pBroker,
 
    *pParagraph << rptNewLine;
 
-   std::string strTitle = (ls == pgsTypes::StrengthI ? "Factored Shear Stresses for Strength I" : "Factored Shear Stresses for Strength II");
-   rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(7,strTitle);
+   GET_IFACE2(pBroker,IStageMap,pStageMap);
+   CString strTitle;
+   strTitle.Format("Factored Shear Stresses for %s",OLE2A(pStageMap->GetLimitStateName(ls)));
+   rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(7,std::string(strTitle));
 
    *pParagraph << table << rptNewLine;
 
@@ -565,6 +588,8 @@ void write_fpc_table(IBroker* pBroker,
                      pgsTypes::Stage stage,
                      const std::string& strStageName,pgsTypes::LimitState ls)
 {
+   USES_CONVERSION;
+
    GET_IFACE2(pBroker,ILibrary,pLib);
    GET_IFACE2(pBroker,ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
@@ -580,19 +605,14 @@ void write_fpc_table(IBroker* pBroker,
    pParagraph->SetName("fpc");
    *pChapter << pParagraph;
 
-   if ( ls == pgsTypes::StrengthI )
+   GET_IFACE2(pBroker,IStageMap,pStageMap);
+   if ( shear_capacity_method == scmVciVcw )
    {
-      if ( shear_capacity_method == scmVciVcw )
-         *pParagraph << Sub2("f","pc") << " [for use in Eqn 5.8.3.4.3-3] - Strength I Limit State" << rptNewLine;
-      else
-         *pParagraph << Sub2("f","pc") << " [for use in Eqn C5.8.3.4.2-1] - Strength I Limit State" << rptNewLine;
+      *pParagraph << Sub2("f","pc") << " [for use in Eqn 5.8.3.4.3-3] - " << OLE2A(pStageMap->GetLimitStateName(ls)) << rptNewLine;
    }
    else
    {
-      if ( shear_capacity_method == scmVciVcw )
-         *pParagraph << Sub2("f","pc") << " [for use in Eqn 5.8.3.4.3-3] - Strength II Limit State" << rptNewLine;
-      else
-         *pParagraph << Sub2("f","pc") << " [for use in Eqn C5.8.3.4.2-1] - Strength II Limit State" << rptNewLine;
+      *pParagraph << Sub2("f","pc") << " [for use in Eqn C5.8.3.4.2-1] - " << OLE2A(pStageMap->GetLimitStateName(ls)) << rptNewLine;
    }
 
    *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + "Fpc Pic.jpg") << rptNewLine;
@@ -660,16 +680,15 @@ void write_fpce_table(IBroker* pBroker,
                       pgsTypes::Stage stage,
                       const std::string& strStageName,pgsTypes::LimitState ls)
 {
+   USES_CONVERSION;
    rptParagraph* pParagraph;
 
    pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    pParagraph->SetName("Mcre");
    *pChapter << pParagraph;
 
-   if ( ls == pgsTypes::StrengthI )
-      *pParagraph << Sub2("M","cre") << " Strength I [Eqn 5.8.3.4.3-2]" << rptNewLine;
-   else
-      *pParagraph << Sub2("M","cre") << " Strength II [Eqn 5.8.3.4.3-2]" << rptNewLine;
+   GET_IFACE2(pBroker,IStageMap,pStageMap);
+   *pParagraph << Sub2("M","cre") << OLE2A(pStageMap->GetLimitStateName(ls)) << " [Eqn 5.8.3.4.3-2]" << rptNewLine;
 
    *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + "Mcre.gif") << rptNewLine;
    *pParagraph << rptNewLine;
@@ -743,6 +762,8 @@ void write_fpo_table(IBroker* pBroker,
                      pgsTypes::Stage stage,
                      const std::string& strStageName,pgsTypes::LimitState ls)
 {
+   USES_CONVERSION;
+
    GET_IFACE2(pBroker,ILibrary,pLib);
    GET_IFACE2(pBroker,ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
@@ -758,10 +779,8 @@ void write_fpo_table(IBroker* pBroker,
    if ( !bAfter1999 )
       *pParagraph << " [Eqn C5.8.3.4.2-1]";
 
-   if ( ls == pgsTypes::StrengthI )
-      *pParagraph << " - Strength I Limit State" << rptNewLine;
-   else
-      *pParagraph << " - Strength II Limit State" << rptNewLine;
+   GET_IFACE2(pBroker,IStageMap,pStageMap);
+   *pParagraph << " - " << OLE2A(pStageMap->GetLimitStateName(ls)) << rptNewLine;
 
    if ( bAfter1999 )
       *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + "fpo Equation 2000.gif") << rptNewLine;
@@ -838,6 +857,8 @@ void write_Fe_table(IBroker* pBroker,
                     pgsTypes::Stage stage,
                     const std::string& strStageName,pgsTypes::LimitState ls)
 {
+   USES_CONVERSION;
+
    GET_IFACE2(pBroker,ILibrary,pLib);
    GET_IFACE2(pBroker,ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
@@ -850,10 +871,8 @@ void write_Fe_table(IBroker* pBroker,
    pParagraph->SetName("Fe");
    *pChapter << pParagraph;
 
-   if ( ls == pgsTypes::StrengthI )
-      *pParagraph << Sub2("F",symbol(epsilon)) << " [Eqn 5.8.3.4.2-3] - Strength I Limit State" << rptNewLine;
-   else
-      *pParagraph << Sub2("F",symbol(epsilon)) << " [Eqn 5.8.3.4.2-3] - Strength II Limit State" << rptNewLine;
+   GET_IFACE2(pBroker,IStageMap,pStageMap);
+   *pParagraph << Sub2("F",symbol(epsilon)) << " [Eqn 5.8.3.4.2-3] - " << OLE2A(pStageMap->GetLimitStateName(ls)) << rptNewLine;
 
    *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + "Fe Equation.jpg") << rptNewLine;
 
@@ -937,6 +956,8 @@ void write_ex_table(IBroker* pBroker,
                     pgsTypes::Stage stage,
                     const std::string& strStageName,pgsTypes::LimitState ls)
 {
+   USES_CONVERSION;
+
    GET_IFACE2(pBroker,ILibrary,pLib);
    GET_IFACE2(pBroker,ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
@@ -955,10 +976,8 @@ void write_ex_table(IBroker* pBroker,
    if ( !bAfter1999 )
       *pParagraph << " [Eqn 5.8.3.4.2-2] ";
 
-   if ( ls == pgsTypes::StrengthI )
-      *pParagraph << "- Strength I Limit State" << rptNewLine;
-   else
-      *pParagraph << "- Strength II Limit State" << rptNewLine;
+   GET_IFACE2(pBroker,IStageMap,pStageMap);
+   *pParagraph << "- " << OLE2A(pStageMap->GetLimitStateName(ls)) << rptNewLine;
 
    if ( bAfter2007 )
    {
@@ -1090,7 +1109,7 @@ void write_ex_table(IBroker* pBroker,
       pShearCap->GetShearCapacityDetails(ls,stage,poi,&scd);
 
       
-      Int16 col = 0;
+      ColumnIndexType col = 0;
       (*table)(row,col++) << location.SetValue( poi, end_size );
 
       if ( bAfter1999  && shear_capacity_method == scmBTTables )
@@ -1185,6 +1204,8 @@ void write_btsummary_table(IBroker* pBroker,
                        pgsTypes::Stage stage,
                        const std::string& strStageName,pgsTypes::LimitState ls)
 {
+   USES_CONVERSION;
+
    GET_IFACE2(pBroker,ILibrary,pLib);
    GET_IFACE2(pBroker,ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
@@ -1210,8 +1231,11 @@ void write_btsummary_table(IBroker* pBroker,
 
 
    ColumnIndexType nCol = (shear_capacity_method == scmBTEquations || shear_capacity_method == scmWSDOT2007) ? 4 : 6;
-   std::string strTitle = (ls == pgsTypes::StrengthI ? "Shear Parameter Summary - Strength I Limit State" : "Shear Parameter Summary - Strength II Limit State");
-   rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(nCol,strTitle);
+
+   GET_IFACE2(pBroker,IStageMap,pStageMap);
+   CString strTitle;
+   strTitle.Format("Shear Parameters Summary - %s",OLE2A(pStageMap->GetLimitStateName(ls)));
+   rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(nCol,std::string(strTitle));
 
    *pParagraph << table << rptNewLine;
 
@@ -1323,16 +1347,16 @@ void write_Vs_table(IBroker* pBroker,
                     pgsTypes::Stage stage,
                     const std::string& strStageName,pgsTypes::LimitState ls)
 {
+   USES_CONVERSION;
+
    rptParagraph* pParagraph;
 
    pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pChapter << pParagraph;
    pParagraph->SetName("Vs");
 
-   if ( ls == pgsTypes::StrengthI )
-      *pParagraph << "Shear Resistance Provided By Shear Reinforcement - Strength I Limit State" << rptNewLine;
-   else
-      *pParagraph << "Shear Resistance Provided By Shear Reinforcement - Strength II Limit State" << rptNewLine;
+   GET_IFACE2(pBroker,IStageMap,pStageMap);
+   *pParagraph << "Shear Resistance Provided By Shear Reinforcement - " << OLE2A(pStageMap->GetLimitStateName(ls)) << rptNewLine;
 
    *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + "Vs Equation.jpg") << rptNewLine;
    *pParagraph << rptNewLine;
@@ -1418,18 +1442,18 @@ void write_Vc_table(IBroker* pBroker,
                     pgsTypes::Stage stage,
                     const std::string& strStageName,pgsTypes::LimitState ls)
 {
+   USES_CONVERSION;
+
    rptParagraph* pParagraph;
 
    pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pChapter << pParagraph;
    pParagraph->SetName("Vc");
 
-   if ( ls == pgsTypes::StrengthI )
-      *pParagraph << "Shear Resistance Provided By Tensile Stress in the Concrete - Strength I Limit State" << rptNewLine;
-   else
-      *pParagraph << "Shear Resistance Provided By Tensile Stress in the Concrete - Strength II Limit State" << rptNewLine;
+   GET_IFACE2(pBroker,IStageMap,pStageMap);
+   *pParagraph << "Shear Resistance Provided By Tensile Stress in the Concrete - " << OLE2A(pStageMap->GetLimitStateName(ls)) << rptNewLine;
 
-   if ( pDisplayUnits->GetUnitDisplayMode() == pgsTypes::umSI )
+      if ( IS_SI_UNITS(pDisplayUnits) )
       *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + "Vc Equation -SI.jpg") << rptNewLine;
    else
       *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + "Vc Equation -US.jpg") << rptNewLine;
@@ -1512,20 +1536,20 @@ void write_Vci_table(IBroker* pBroker,
                     pgsTypes::Stage stage,
                     const std::string& strStageName,pgsTypes::LimitState ls)
 {
+   USES_CONVERSION;
+
    rptParagraph* pParagraph;
 
    pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pChapter << pParagraph;
    pParagraph->SetName("Vci");
 
-   if ( ls == pgsTypes::StrengthI )
-      *pParagraph << "Strength I - ";
-   else
-      *pParagraph << "Strength II - ";
+   GET_IFACE2(pBroker,IStageMap,pStageMap);
+   *pParagraph << OLE2A(pStageMap->GetLimitStateName(ls)) << " - ";
 
    *pParagraph << "Shear Resistance Provided by Concrete when inclined cracking results from combined shear and moment" << rptNewLine;
 
-   if ( pDisplayUnits->GetUnitDisplayMode() == pgsTypes::umSI )
+      if ( IS_SI_UNITS(pDisplayUnits) )
       *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + "Vci_SI.gif") << rptNewLine;
    else
       *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + "Vci_US.gif") << rptNewLine;
@@ -1547,7 +1571,7 @@ void write_Vci_table(IBroker* pBroker,
    (*table)(0,5) << COLHDR( Sub2("M","max"), rptMomentUnitTag,  pDisplayUnits->GetMomentUnit() );
    (*table)(0,6) << COLHDR( Sub2("M","cre"), rptMomentUnitTag,  pDisplayUnits->GetMomentUnit() );
 
-   if ( pDisplayUnits->GetUnitDisplayMode() == pgsTypes::umSI )
+      if ( IS_SI_UNITS(pDisplayUnits) )
       (*table)(0,7) << COLHDR( Sub2("V","ci min") << rptNewLine << rptRcImage(pgsReportStyleHolder::GetImagePath() + "Vcimin_SI.gif"), rptForceUnitTag,  pDisplayUnits->GetShearUnit() );
    else
       (*table)(0,7) << COLHDR( Sub2("V","ci min") << rptNewLine << rptRcImage(pgsReportStyleHolder::GetImagePath() + "Vcimin_US.gif"), rptForceUnitTag,  pDisplayUnits->GetShearUnit() );
@@ -1595,20 +1619,20 @@ void write_Vcw_table(IBroker* pBroker,
                     pgsTypes::Stage stage,
                     const std::string& strStageName,pgsTypes::LimitState ls)
 {
+   USES_CONVERSION;
+
    rptParagraph* pParagraph;
 
    pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pChapter << pParagraph;
    pParagraph->SetName("Vcw");
 
-   if ( ls == pgsTypes::StrengthI )
-      *pParagraph << "Strength I - ";
-   else
-      *pParagraph << "Strength II - ";
+   GET_IFACE2(pBroker,IStageMap,pStageMap);
+   *pParagraph << OLE2A(pStageMap->GetLimitStateName(ls)) << " - ";
 
    *pParagraph << "Shear Resistance Provided by Concrete when inclined cracking results from excessive principal tension in the web." << rptNewLine;
 
-   if ( pDisplayUnits->GetUnitDisplayMode() == pgsTypes::umSI )
+      if ( IS_SI_UNITS(pDisplayUnits) )
       *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + "Vcw_SI.gif") << rptNewLine;
    else
       *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + "Vcw_US.gif") << rptNewLine;
@@ -1667,20 +1691,19 @@ void write_theta_table(IBroker* pBroker,
                        pgsTypes::Stage stage,
                        const std::string& strStageName,pgsTypes::LimitState ls)
 {
+   USES_CONVERSION;
    rptParagraph* pParagraph;
 
    pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pChapter << pParagraph;
    pParagraph->SetName("Angle of inclination of diagonal compressive stress");
 
-   if ( ls == pgsTypes::StrengthI )
-      *pParagraph << "Strength I - ";
-   else
-      *pParagraph << "Strength II - ";
+   GET_IFACE2(pBroker,IStageMap,pStageMap);
+   *pParagraph << OLE2A(pStageMap->GetLimitStateName(ls)) << " - ";
 
    *pParagraph << "Angle of inclination of diagonal compressive stress [LRFD 5.8.3.3 and 5.8.3.4.3]" << rptNewLine;
 
-   if ( pDisplayUnits->GetUnitDisplayMode() == pgsTypes::umSI )
+      if ( IS_SI_UNITS(pDisplayUnits) )
       *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + "cotan_Theta_SI.gif") << rptNewLine;
    else
       *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + "cotan_Theta_US.gif") << rptNewLine;
@@ -1744,6 +1767,8 @@ void write_Vn_table(IBroker* pBroker,
                     pgsTypes::Stage stage,
                     const std::string& strStageName,pgsTypes::LimitState ls)
 {
+   USES_CONVERSION;
+
    GET_IFACE2(pBroker,ISpecification, pSpec);
    GET_IFACE2(pBroker,ILibrary, pLib);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
@@ -1753,17 +1778,16 @@ void write_Vn_table(IBroker* pBroker,
 
    pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
 
-   if ( ls == pgsTypes::StrengthI )
-      pParagraph->SetName("Nominal Shear Resistance - Strength I Limit State");
-   else
-      pParagraph->SetName("Nominal Shear Resistance - Strength II Limit State");
+   GET_IFACE2(pBroker,IStageMap,pStageMap);
+   CString strName;
+   strName.Format("Nominal Shear Resistance - %s",OLE2A(pStageMap->GetLimitStateName(ls)));
+   pParagraph->SetName(strName);
 
    *pChapter << pParagraph;
 
    int nCol = (shear_capacity_method == scmVciVcw ? 10 : 11);
 
-   std::string strTitle = (ls == pgsTypes::StrengthI ? "Nominal Shear Resistance - Strength I Limit State" : "Nominal Shear Resistance - Strength II Limit State");
-   rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(nCol,strTitle);
+   rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(nCol,pParagraph->GetName());
 
    *pParagraph << table << rptNewLine;
 
@@ -1891,6 +1915,8 @@ void write_Avs_table(IBroker* pBroker,
                      pgsTypes::Stage stage,
                      const std::string& strStageName,pgsTypes::LimitState ls)
 {
+   USES_CONVERSION;
+
    GET_IFACE2(pBroker,ISpecification, pSpec);
    GET_IFACE2(pBroker,ILibrary, pLib);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
@@ -1898,14 +1924,12 @@ void write_Avs_table(IBroker* pBroker,
 
    rptParagraph* pParagraph;
 
-   std::string strLabel;
-   if ( ls == pgsTypes::StrengthI )
-      strLabel = "Required Shear Reinforcement - Strength I Limit State";
-   else
-      strLabel = "Required Shear Reinforcement - Strength II Limit State";
+   GET_IFACE2(pBroker,IStageMap,pStageMap);
+   CString strLabel;
+   strLabel.Format("Required Shear Reinforcement - %s",OLE2A(pStageMap->GetLimitStateName(ls)));
 
    pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
-   pParagraph->SetName(strLabel.c_str());
+   pParagraph->SetName(strLabel);
    *pParagraph << pParagraph->GetName() << rptNewLine;
    *pChapter << pParagraph;
 
@@ -1916,7 +1940,7 @@ void write_Avs_table(IBroker* pBroker,
 
    int nCol = (shear_capacity_method == scmVciVcw ? 8 : 9);
 
-   rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(nCol,strLabel.c_str());
+   rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(nCol,std::string(strLabel));
    *pParagraph << table << rptNewLine;
 
    int col = 0;
@@ -2001,6 +2025,7 @@ void write_bar_spacing_table(IBroker* pBroker,
                      pgsTypes::Stage stage,
                      const std::string& strStageName,pgsTypes::LimitState ls)
 {
+   USES_CONVERSION;
    GET_IFACE2(pBroker,IGirder,pGirder);
    GET_IFACE2(pBroker,ISpecification, pSpec);
    GET_IFACE2(pBroker,ILibrary, pLib);
@@ -2009,14 +2034,12 @@ void write_bar_spacing_table(IBroker* pBroker,
 
    rptParagraph* pParagraph;
 
-   std::string strLabel;
-   if ( ls == pgsTypes::StrengthI )
-      strLabel = "Required Stirrup Spacing - Strength I Limit State";
-   else
-      strLabel = "Required Stirrup Spacing - Strength II Limit State";
+   GET_IFACE2(pBroker,IStageMap,pStageMap);
+   CString strLabel;
+   strLabel.Format("Required Stirrup Spacing - %s",OLE2A(pStageMap->GetLimitStateName(ls)));
 
    pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
-   pParagraph->SetName(strLabel.c_str());
+   pParagraph->SetName(strLabel);
    *pParagraph << pParagraph->GetName() << rptNewLine;
    *pChapter << pParagraph;
 

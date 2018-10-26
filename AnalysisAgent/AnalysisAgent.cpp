@@ -54,7 +54,7 @@
 
 #include <IFace\StatusCenter.h>
 #include <IFace\GirderHandlingPointOfInterest.h>
-
+#include <IFace\RatingSpecification.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

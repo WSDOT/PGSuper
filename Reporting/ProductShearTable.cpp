@@ -31,6 +31,7 @@
 #include <IFace\Bridge.h>
 #include <IFace\DisplayUnits.h>
 #include <IFace\AnalysisResults.h>
+#include <IFace\RatingSpecification.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -73,100 +74,33 @@ CProductShearTable& CProductShearTable::operator= (const CProductShearTable& rOt
 
 //======================== OPERATIONS =======================================
 rptRcTable* CProductShearTable::Build(IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,pgsTypes::AnalysisType analysisType,
-                                      bool bIndicateControllingLoad,IDisplayUnits* pDisplayUnits) const
+                                      bool bDesign,bool bRating,bool bIndicateControllingLoad,IDisplayUnits* pDisplayUnits) const
 {
    // Build table
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
    INIT_UV_PROTOTYPE( rptForceSectionValue, shear, pDisplayUnits->GetShearUnit(), false );
 
    GET_IFACE2(pBroker,IBridge,pBridge);
-   bool bDeckPanels = (pBridge->GetDeckType() == pgsTypes::sdtCompositeSIP ? true : false);
    pgsTypes::Stage overlay_stage = pBridge->IsFutureOverlay() ? pgsTypes::BridgeSite3 : pgsTypes::BridgeSite2;
 
-   SpanIndexType startSpan = (span == ALL_SPANS ? 0 : span);
-   SpanIndexType nSpans    = (span == ALL_SPANS ? pBridge->GetSpanCount() : startSpan+1 );
- 
-   GET_IFACE2(pBroker,ILiveLoads,pLiveLoads);
-   bool bPermit = pLiveLoads->IsLiveLoadDefined(pgsTypes::lltPermit);
+   bool bDeckPanels, bPedLoading, bSidewalk, bShearKey, bPermit;
+   SpanIndexType startSpan, nSpans;
+   pgsTypes::Stage continuity_stage;
 
-   GET_IFACE2(pBroker,IProductForces2,pForces2);
-   GET_IFACE2(pBroker,IProductLoads,pLoads);
-   bool bPedLoading = pLoads->HasPedestrianLoad(startSpan,gdr);
-   bool bSidewalk = pLoads->HasSidewalkLoad(startSpan,gdr);
-   bool bShearKey = pLoads->HasShearKeyLoad(startSpan,gdr);
+   GET_IFACE2(pBroker, IRatingSpecification, pRatingSpec);
 
-   pgsTypes::Stage continuity_stage = pgsTypes::BridgeSite2;
-   SpanIndexType spanIdx;
-   for ( spanIdx = startSpan; spanIdx < nSpans; spanIdx++ )
-   {
-      pgsTypes::Stage left_stage,right_stage;
-      pBridge->GetContinuityStage(spanIdx,&left_stage,&right_stage);
-      continuity_stage = _cpp_min(continuity_stage,left_stage);
-      continuity_stage = _cpp_min(continuity_stage,right_stage);
-   }
-   // last pier
-   pgsTypes::Stage left_stage, right_stage;
-   pBridge->GetContinuityStage(spanIdx,&left_stage,&right_stage);
-   continuity_stage = _cpp_min(continuity_stage,left_stage);
-   continuity_stage = _cpp_min(continuity_stage,right_stage);
-   
-   ColumnIndexType nCols = 8;
-
-   if ( bDeckPanels )
-   {
-      if ( analysisType == pgsTypes::Envelope && continuity_stage == pgsTypes::BridgeSite1)
-         nCols += 2;
-      else
-         nCols++;
-   }
-
-   if ( analysisType == pgsTypes::Envelope && continuity_stage == pgsTypes::BridgeSite1 )
-      nCols++; // add on more column for min/max slab
-
-   if ( analysisType == pgsTypes::Envelope )
-      nCols += 2; // add one more each for min/max overlay and min/max traffic barrier
-
-   if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
-      nCols += 2; // fatigue live load
-
-   if ( bPermit )
-      nCols += 2;
-
-   if ( bPedLoading )
-      nCols += 2;
-
-   if ( bSidewalk )
-   {
-      if (analysisType == pgsTypes::Envelope )
-      {
-         nCols += 2;
-      }
-      else
-      {
-         nCols++;
-      }
-   }
-
-   if ( bShearKey )
-   {
-      if (analysisType == pgsTypes::Envelope )
-      {
-         nCols += 2;
-      }
-      else
-      {
-         nCols++;
-      }
-   }
+   ColumnIndexType nCols = GetProductLoadTableColumnCount(pBroker,span,gdr,analysisType,bDesign,bRating,&bDeckPanels,&bSidewalk,&bShearKey,&bPedLoading,&bPermit,&continuity_stage,&startSpan,&nSpans);
 
    rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(nCols,"Shears");
-   RowIndexType row = ConfigureProductLoadTableHeading<rptForceUnitTag,unitmgtForceData>(p_table,false,bDeckPanels,bSidewalk,bShearKey,bPedLoading,bPermit,analysisType,continuity_stage,pDisplayUnits,pDisplayUnits->GetShearUnit());
+   RowIndexType row = ConfigureProductLoadTableHeading<rptForceUnitTag,unitmgtForceData>(p_table,false,bDeckPanels,bSidewalk,bShearKey,bDesign,bPedLoading,bPermit,bRating,analysisType,continuity_stage,pRatingSpec,pDisplayUnits,pDisplayUnits->GetShearUnit());
 
    // Get the interface pointers we need
    GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
-   for ( spanIdx = startSpan; spanIdx < nSpans; spanIdx++ )
+   GET_IFACE2(pBroker,IProductForces2,pForces2);
+   GET_IFACE2(pBroker,IProductLoads,pLoads);
+   for ( SpanIndexType spanIdx = startSpan; spanIdx < nSpans; spanIdx++ )
    {
-      std::vector<pgsPointOfInterest> vPoi = pIPoi->GetPointsOfInterest( pgsTypes::BridgeSite1, spanIdx, gdr, POI_TABULAR );
+      std::vector<pgsPointOfInterest> vPoi = pIPoi->GetPointsOfInterest( pgsTypes::BridgeSite3, spanIdx, gdr, POI_ALL, POIFIND_OR );
 
       GirderIndexType nGirders = pBridge->GetGirderCount(spanIdx);
       GirderIndexType gdrIdx = min(gdr,nGirders-1);
@@ -213,8 +147,26 @@ rptRcTable* CProductShearTable::Build(IBroker* pBroker,SpanIndexType span,Girder
       std::vector<sysSectionValue> minDesignLL, maxDesignLL;
       std::vector<sysSectionValue> minFatigueLL, maxFatigueLL;
       std::vector<sysSectionValue> minPermitLL, maxPermitLL;
+      std::vector<sysSectionValue> minLegalRoutineLL, maxLegalRoutineLL;
+      std::vector<sysSectionValue> minLegalSpecialLL, maxLegalSpecialLL;
+      std::vector<sysSectionValue> minPermitRoutineLL, maxPermitRoutineLL;
+      std::vector<sysSectionValue> minPermitSpecialLL, maxPermitSpecialLL;
 
-      std::vector<long> dummyTruck, minDesignLLtruck, maxDesignLLtruck, minFatigueLLtruck, maxFatigueLLtruck, minPermitLLtruck, maxPermitLLtruck;
+      std::vector<long> dummyTruck;
+      std::vector<long> minDesignLLtruck;
+      std::vector<long> maxDesignLLtruck;
+      std::vector<long> minFatigueLLtruck;
+      std::vector<long> maxFatigueLLtruck;
+      std::vector<long> minPermitLLtruck;
+      std::vector<long> maxPermitLLtruck;
+      std::vector<long> minLegalRoutineLLtruck;
+      std::vector<long> maxLegalRoutineLLtruck;
+      std::vector<long> minLegalSpecialLLtruck;
+      std::vector<long> maxLegalSpecialLLtruck;
+      std::vector<long> minPermitRoutineLLtruck;
+      std::vector<long> maxPermitRoutineLLtruck;
+      std::vector<long> minPermitSpecialLLtruck;
+      std::vector<long> maxPermitSpecialLLtruck;
       
       if (analysisType == pgsTypes::Envelope)
       {
@@ -255,6 +207,39 @@ rptRcTable* CProductShearTable::Build(IBroker* pBroker,SpanIndexType span,Girder
             pForces2->GetLiveLoadShear( pgsTypes::lltPermit, pgsTypes::BridgeSite3, vPoi, MaxSimpleContinuousEnvelope, true, false, &dummy, &maxPermitLL, &dummyTruck, &maxPermitLLtruck );
             pForces2->GetLiveLoadShear( pgsTypes::lltPermit, pgsTypes::BridgeSite3, vPoi, MinSimpleContinuousEnvelope, true, false, &minPermitLL, &dummy, &minPermitLLtruck, &dummyTruck );
          }
+
+         if ( bRating )
+         {
+            if (!bDesign && (pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) || pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating)) )
+            {
+               pForces2->GetLiveLoadShear( pgsTypes::lltDesign, pgsTypes::BridgeSite3, vPoi, MaxSimpleContinuousEnvelope, true, false, &dummy, &maxDesignLL, &dummyTruck, &maxDesignLLtruck );
+               pForces2->GetLiveLoadShear( pgsTypes::lltDesign, pgsTypes::BridgeSite3, vPoi, MinSimpleContinuousEnvelope, true, false, &minDesignLL, &dummy, &minDesignLLtruck, &dummyTruck );
+            }
+
+            if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) )
+            {
+               pForces2->GetLiveLoadShear( pgsTypes::lltLegalRating_Routine, pgsTypes::BridgeSite3, vPoi, MaxSimpleContinuousEnvelope, true, false, &dummy, &maxLegalRoutineLL, &dummyTruck, &maxLegalRoutineLLtruck );
+               pForces2->GetLiveLoadShear( pgsTypes::lltLegalRating_Routine, pgsTypes::BridgeSite3, vPoi, MinSimpleContinuousEnvelope, true, false, &minLegalRoutineLL, &dummy, &minLegalRoutineLLtruck, &dummyTruck );
+            }
+
+            if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
+            {
+               pForces2->GetLiveLoadShear( pgsTypes::lltLegalRating_Special, pgsTypes::BridgeSite3, vPoi, MaxSimpleContinuousEnvelope, true, false, &dummy, &maxLegalSpecialLL, &dummyTruck, &maxLegalSpecialLLtruck );
+               pForces2->GetLiveLoadShear( pgsTypes::lltLegalRating_Special, pgsTypes::BridgeSite3, vPoi, MinSimpleContinuousEnvelope, true, false, &minLegalSpecialLL, &dummy, &minLegalSpecialLLtruck, &dummyTruck );
+            }
+
+            if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine) )
+            {
+               pForces2->GetLiveLoadShear( pgsTypes::lltPermitRating_Routine, pgsTypes::BridgeSite3, vPoi, MaxSimpleContinuousEnvelope, true, false, &dummy, &maxPermitRoutineLL, &dummyTruck, &maxPermitRoutineLLtruck );
+               pForces2->GetLiveLoadShear( pgsTypes::lltPermitRating_Routine, pgsTypes::BridgeSite3, vPoi, MinSimpleContinuousEnvelope, true, false, &minPermitRoutineLL, &dummy, &minPermitRoutineLLtruck, &dummyTruck );
+            }
+
+            if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Special) )
+            {
+               pForces2->GetLiveLoadShear( pgsTypes::lltPermitRating_Special, pgsTypes::BridgeSite3, vPoi, MaxSimpleContinuousEnvelope, true, false, &dummy, &maxPermitSpecialLL, &dummyTruck, &maxPermitSpecialLLtruck );
+               pForces2->GetLiveLoadShear( pgsTypes::lltPermitRating_Special, pgsTypes::BridgeSite3, vPoi, MinSimpleContinuousEnvelope, true, false, &minPermitSpecialLL, &dummy, &minPermitSpecialLLtruck, &dummyTruck );
+            }
+         }
       }
       else
       {
@@ -286,6 +271,34 @@ rptRcTable* CProductShearTable::Build(IBroker* pBroker,SpanIndexType span,Girder
          if ( bPermit )
          {
             pForces2->GetLiveLoadShear( pgsTypes::lltPermit, pgsTypes::BridgeSite3, vPoi, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan, true, false, &minPermitLL, &maxPermitLL, &minPermitLLtruck, &maxPermitLLtruck );
+         }
+
+         if ( bRating )
+         {
+            if ( !bDesign && (pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) || pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating)) )
+            {
+               pForces2->GetLiveLoadShear( pgsTypes::lltDesign, pgsTypes::BridgeSite3, vPoi, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan, true, false, &minDesignLL, &maxDesignLL, &minDesignLLtruck, &maxDesignLLtruck );
+            }
+
+            if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) )
+            {
+               pForces2->GetLiveLoadShear( pgsTypes::lltLegalRating_Routine, pgsTypes::BridgeSite3, vPoi, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan, true, false, &minLegalRoutineLL, &maxLegalRoutineLL, &minLegalRoutineLLtruck, &maxLegalRoutineLLtruck );
+            }
+
+            if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
+            {
+               pForces2->GetLiveLoadShear( pgsTypes::lltLegalRating_Special, pgsTypes::BridgeSite3, vPoi, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan, true, false, &minLegalSpecialLL, &maxLegalSpecialLL, &minLegalSpecialLLtruck, &maxLegalSpecialLLtruck );
+            }
+
+            if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine) )
+            {
+               pForces2->GetLiveLoadShear( pgsTypes::lltPermitRating_Routine, pgsTypes::BridgeSite3, vPoi, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan, true, false, &minPermitRoutineLL, &maxPermitRoutineLL, &minPermitRoutineLLtruck, &maxPermitRoutineLLtruck );
+            }
+
+            if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Special) )
+            {
+               pForces2->GetLiveLoadShear( pgsTypes::lltPermitRating_Special, pgsTypes::BridgeSite3, vPoi, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan, true, false, &minPermitSpecialLL, &maxPermitSpecialLL, &minPermitSpecialLLtruck, &maxPermitSpecialLLtruck );
+            }
          }
       }
 
@@ -362,52 +375,137 @@ rptRcTable* CProductShearTable::Build(IBroker* pBroker,SpanIndexType span,Girder
             (*p_table)(row,col++) << shear.SetValue( maxOverlay[index] );
          }
 
-         if ( bPedLoading )
+         if ( bDesign )
          {
-            (*p_table)(row,col++) << shear.SetValue( maxPedestrian[index] );
-            (*p_table)(row,col++) << shear.SetValue( minPedestrian[index] );
+            if ( bPedLoading )
+            {
+               (*p_table)(row,col++) << shear.SetValue( maxPedestrian[index] );
+               (*p_table)(row,col++) << shear.SetValue( minPedestrian[index] );
+            }
+
+            (*p_table)(row,col) << shear.SetValue( maxDesignLL[index] );
+            if ( bIndicateControllingLoad && 0 < maxDesignLLtruck.size() )
+               (*p_table)(row,col) << rptNewLine << "(" << LiveLoadPrefix(pgsTypes::lltDesign) << maxDesignLLtruck[index] << ")";
+
+            col++;
+
+            (*p_table)(row,col) << shear.SetValue( minDesignLL[index] );
+            if ( bIndicateControllingLoad && 0 < minDesignLLtruck.size())
+               (*p_table)(row,col) << rptNewLine << "(" << LiveLoadPrefix(pgsTypes::lltDesign) << minDesignLLtruck[index] << ")";
+
+            col++;
+
+            if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
+            {
+               (*p_table)(row,col) << shear.SetValue( maxFatigueLL[index] );
+               if ( bIndicateControllingLoad && 0 < maxFatigueLLtruck.size() )
+                  (*p_table)(row,col) << rptNewLine << "(" << LiveLoadPrefix(pgsTypes::lltFatigue) << maxFatigueLLtruck[index] << ")";
+
+               col++;
+
+               (*p_table)(row,col) << shear.SetValue( minFatigueLL[index] );
+               if ( bIndicateControllingLoad && 0 < minFatigueLLtruck.size())
+                  (*p_table)(row,col) << rptNewLine << "(" << LiveLoadPrefix(pgsTypes::lltFatigue) << minFatigueLLtruck[index] << ")";
+
+               col++;
+            }
+
+            if ( bPermit )
+            {
+               (*p_table)(row,col) << shear.SetValue( maxPermitLL[index] );
+               if ( bIndicateControllingLoad && 0 < maxPermitLLtruck.size())
+                  (*p_table)(row,col) << rptNewLine << "(" << LiveLoadPrefix(pgsTypes::lltPermit) << maxPermitLLtruck[index] << ")";
+
+               col++;
+
+               (*p_table)(row,col) << shear.SetValue( minPermitLL[index] );
+               if ( bIndicateControllingLoad && 0 < minPermitLLtruck.size())
+                  (*p_table)(row,col) << rptNewLine << "(" << LiveLoadPrefix(pgsTypes::lltPermit) << minPermitLLtruck[index] << ")";
+
+               col++;
+            }
          }
 
-         (*p_table)(row,col) << shear.SetValue( maxDesignLL[index] );
-         if ( bIndicateControllingLoad && 0 < maxDesignLLtruck.size() )
-            (*p_table)(row,col) << rptNewLine << "(D" << maxDesignLLtruck[index] << ")";
-
-         col++;
-
-         (*p_table)(row,col) << shear.SetValue( minDesignLL[index] );
-         if ( bIndicateControllingLoad && 0 < minDesignLLtruck.size())
-            (*p_table)(row,col) << rptNewLine << "(D" << minDesignLLtruck[index] << ")";
-
-         col++;
-
-         if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
+         if ( bRating )
          {
-            (*p_table)(row,col) << shear.SetValue( maxFatigueLL[index] );
-            if ( bIndicateControllingLoad && 0 < maxFatigueLLtruck.size() )
-               (*p_table)(row,col) << rptNewLine << "(F" << maxFatigueLLtruck[index] << ")";
+            if ( !bDesign && (pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) || pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating)) )
+            {
+               (*p_table)(row,col) << shear.SetValue( maxDesignLL[index] );
+               if ( bIndicateControllingLoad && 0 < maxDesignLLtruck.size() )
+                  (*p_table)(row,col) << rptNewLine << "(" << LiveLoadPrefix(pgsTypes::lltDesign) << maxDesignLLtruck[index] << ")";
 
-            col++;
+               col++;
 
-            (*p_table)(row,col) << shear.SetValue( minFatigueLL[index] );
-            if ( bIndicateControllingLoad && 0 < minFatigueLLtruck.size())
-               (*p_table)(row,col) << rptNewLine << "(F" << minFatigueLLtruck[index] << ")";
+               (*p_table)(row,col) << shear.SetValue( minDesignLL[index] );
+               if ( bIndicateControllingLoad && 0 < minDesignLLtruck.size())
+                  (*p_table)(row,col) << rptNewLine << "(" << LiveLoadPrefix(pgsTypes::lltDesign) << minDesignLLtruck[index] << ")";
 
-            col++;
-         }
+               col++;
+            }
 
-         if ( bPermit )
-         {
-            (*p_table)(row,col) << shear.SetValue( maxPermitLL[index] );
-            if ( bIndicateControllingLoad && 0 < maxPermitLLtruck.size())
-               (*p_table)(row,col) << rptNewLine << "(P" << maxPermitLLtruck[index] << ")";
+            // Legal - Routine
+            if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) )
+            {
+               (*p_table)(row,col) << shear.SetValue( maxLegalRoutineLL[index] );
+               if ( bIndicateControllingLoad && 0 < maxLegalRoutineLLtruck.size() )
+                  (*p_table)(row,col) << rptNewLine << "(" << LiveLoadPrefix(pgsTypes::lltLegalRating_Routine) << maxLegalRoutineLLtruck[index] << ")";
 
-            col++;
+               col++;
 
-            (*p_table)(row,col) << shear.SetValue( minPermitLL[index] );
-            if ( bIndicateControllingLoad && 0 < minPermitLLtruck.size())
-               (*p_table)(row,col) << rptNewLine << "(P" << minPermitLLtruck[index] << ")";
+               (*p_table)(row,col) << shear.SetValue( minLegalRoutineLL[index] );
+               if ( bIndicateControllingLoad && 0 < minLegalRoutineLLtruck.size() )
+                  (*p_table)(row,col) << rptNewLine << "(" << LiveLoadPrefix(pgsTypes::lltLegalRating_Routine) << minLegalRoutineLLtruck[index] << ")";
 
-            col++;
+               col++;
+            }
+
+            // Legal - Special
+            if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
+            {
+               (*p_table)(row,col) << shear.SetValue( maxLegalSpecialLL[index] );
+               if ( bIndicateControllingLoad && 0 < maxLegalSpecialLLtruck.size() )
+                  (*p_table)(row,col) << rptNewLine << "(" << LiveLoadPrefix(pgsTypes::lltLegalRating_Special) << maxLegalSpecialLLtruck[index] << ")";
+
+               col++;
+
+               (*p_table)(row,col) << shear.SetValue( minLegalSpecialLL[index] );
+               if ( bIndicateControllingLoad && 0 < minLegalSpecialLLtruck.size() )
+                  (*p_table)(row,col) << rptNewLine << "(" << LiveLoadPrefix(pgsTypes::lltLegalRating_Special) << minLegalSpecialLLtruck[index] << ")";
+
+               col++;
+            }
+
+            // Permit Rating - Routine
+            if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine) )
+            {
+               (*p_table)(row,col) << shear.SetValue( maxPermitRoutineLL[index] );
+               if ( bIndicateControllingLoad && 0 < maxPermitRoutineLLtruck.size() )
+                  (*p_table)(row,col) << rptNewLine << "(" << LiveLoadPrefix(pgsTypes::lltPermitRating_Routine) << maxPermitRoutineLLtruck[index] << ")";
+
+               col++;
+
+               (*p_table)(row,col) << shear.SetValue( minPermitRoutineLL[index] );
+               if ( bIndicateControllingLoad && 0 < minPermitRoutineLLtruck.size() )
+                  (*p_table)(row,col) << rptNewLine << "(" << LiveLoadPrefix(pgsTypes::lltPermitRating_Routine) << minPermitRoutineLLtruck[index] << ")";
+
+               col++;
+            }
+
+            // Permit Rating - Special
+            if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Special) )
+            {
+               (*p_table)(row,col) << shear.SetValue( maxPermitSpecialLL[index] );
+               if ( bIndicateControllingLoad && 0 < maxPermitSpecialLLtruck.size() )
+                  (*p_table)(row,col) << rptNewLine << "(" << LiveLoadPrefix(pgsTypes::lltPermitRating_Special) << maxPermitSpecialLLtruck[index] << ")";
+
+               col++;
+
+               (*p_table)(row,col) << shear.SetValue( minPermitSpecialLL[index] );
+               if ( bIndicateControllingLoad && 0 < minPermitSpecialLLtruck.size() )
+                  (*p_table)(row,col) << rptNewLine << "(" << LiveLoadPrefix(pgsTypes::lltPermitRating_Special) << minPermitSpecialLLtruck[index] << ")";
+
+               col++;
+            }
          }
 
          row++;

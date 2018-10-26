@@ -1,0 +1,25 @@
+HKCR
+{
+	PGSuper.TxDOTComponentInfo.1 = s 'TxDOT Component Information'
+	{
+		CLSID = s '{539E5AB9-4302-45f9-9FAD-B8E2DB6867F1}'
+	}
+	PGSuper.TxDOTComponentInfo = s 'TxDOT Component Information'
+	{
+		CLSID = s '{539E5AB9-4302-45f9-9FAD-B8E2DB6867F1}'
+		CurVer = s 'PGSuper.TxDOTComponentInfo.1'
+	}
+	NoRemove CLSID
+	{
+		ForceRemove {539E5AB9-4302-45f9-9FAD-B8E2DB6867F1} = s 'TxDOT Component Information'
+		{
+			ProgID = s 'PGSuper.TxDOTComponentInfo.1'
+			VersionIndependentProgID = s 'PGSuper.TxDOTComponentInfo'
+			InprocServer32 = s '%MODULE%'
+			{
+				val ThreadingModel = s 'Apartment'
+			}
+			'TypeLib' = s '{17D09C05-E1AC-42D5-9CFE-B72414564E26}'
+		}
+	}
+}

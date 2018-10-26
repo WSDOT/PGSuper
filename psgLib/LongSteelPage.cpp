@@ -31,8 +31,8 @@
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
-//#undef THIS_FILE
-//static char THIS_FILE[] = __FILE__;
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
 #endif
 
 /////////////////////////////////////////////////////////////////////////////
@@ -84,35 +84,6 @@ void CLongSteelPage::OnEnableDelete(bool canDelete)
    CWnd* pdel = GetDlgItem(IDC_REMOVEROWS);
    ASSERT(pdel);
    pdel->EnableWindow(canDelete);
-}
-
-
-CString CLongSteelPage::GetLongLengthUnitString() const
-{
-   CGirderMainSheet* ppar = (CGirderMainSheet*) GetParent();
-   ASSERT(ppar);
-   return ppar->GetLongLengthUnitString();
-}
-
-unitLength CLongSteelPage::GetLongLengthUnit() const
-{
-   CGirderMainSheet* ppar = (CGirderMainSheet*) GetParent();
-   ASSERT(ppar);
-   return ppar->GetLongLengthUnit();
-}
-
-CString CLongSteelPage::GetShortLengthUnitString() const
-{
-   CGirderMainSheet* ppar = (CGirderMainSheet*) GetParent();
-   ASSERT(ppar);
-   return ppar->GetShortLengthUnitString();
-}
-
-unitLength CLongSteelPage::GetShortLengthUnit() const
-{
-   CGirderMainSheet* ppar = (CGirderMainSheet*) GetParent();
-   ASSERT(ppar);
-   return ppar->GetShortLengthUnit();
 }
 
 BOOL CLongSteelPage::OnInitDialog() 

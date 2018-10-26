@@ -24,7 +24,8 @@
 //
 
 #include "stdafx.h"
-#include "pgsuper.h"
+#include "resource.h"
+#include "PGSuperDoc.h"
 #include "PierConnectionsPage.h"
 #include "PierDetailsDlg.h"
 
@@ -164,7 +165,7 @@ void CPierConnectionsPage::InitializeComboBoxes()
 void CPierConnectionsPage::FillWithConnections(CComboBox* pCB)
 {
    CComPtr<IBroker> pBroker;
-   AfxGetBroker(&pBroker);
+   EAFGetBroker(&pBroker);
    GET_IFACE2( pBroker, ILibraryNames, pLibNames);
 
    std::vector<std::string> strNames;

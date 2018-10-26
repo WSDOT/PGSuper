@@ -38,34 +38,46 @@ import "ocidl.idl";
 
 import "WBFLCore.idl";
 
-cpp_quote("// {76F11481-22CF-4626-AFAA-EDA19112BC8A}")
-cpp_quote("DEFINE_GUID(CATID_PGSuperIEPlugin, ")
-cpp_quote("0x76f11481, 0x22cf, 0x4626, 0xaf, 0xaa, 0xed, 0xa1, 0x91, 0x12, 0xbc, 0x8a);")
+cpp_quote("// {80D817C2-6E5D-4ffe-BAFC-F5B0A05B8112}")
+cpp_quote("DEFINE_GUID(CATID_PGSuperProjectImporter,") 
+cpp_quote("0x80d817c2, 0x6e5d, 0x4ffe, 0xba, 0xfc, 0xf5, 0xb0, 0xa0, 0x5b, 0x81, 0x12);")
 
-typedef [public,helpstring("enum ImporterType"),uuid(AFA5A772-B920-4e7f-AE24-80B69D339464)] 
-enum 
-{
-	impProject = 1,
-	impData = 2
-} ImporterType;
+cpp_quote("// {CF6FEC56-E107-4075-97D2-8DC80930D40A}")
+cpp_quote("DEFINE_GUID(CATID_PGSuperDataImporter, ")
+cpp_quote("0xcf6fec56, 0xe107, 0x4075, 0x97, 0xd2, 0x8d, 0xc8, 0x9, 0x30, 0xd4, 0xa);")
+
+cpp_quote("// {4D284019-F81E-4e52-B32C-212FC305E33E}")
+cpp_quote("DEFINE_GUID(CATID_PGSuperDataExporter, ")
+cpp_quote("0x4d284019, 0xf81e, 0x4e52, 0xb3, 0x2c, 0x21, 0x2f, 0xc3, 0x5, 0xe3, 0x3e);")
+
 
 [
-   uuid(07F63944-A0F9-4e75-8344-99283FAC220C),
+   uuid(98B3DF17-7E0E-4d4a-B8A2-5443914FC608),
    pointer_default(unique)
 ]
-interface IPGSuperImporter : IUnknown
+interface IPGSuperDataImporter : IUnknown
 {
-   HRESULT GetType([out]ImporterType* type);
    HRESULT GetMenuText([out]BSTR*  bstrText);
    HRESULT GetBitmapHandle([out]HBITMAP* phBmp);
    HRESULT Import([in]IBroker* pBroker);
 };
 
 [
+   uuid(5DB8B1D3-C91D-4e62-81E6-A7B64B0D38FD),
+   pointer_default(unique)
+]
+interface IPGSuperProjectImporter : IUnknown
+{
+   HRESULT GetItemText([out]BSTR* bstrText);
+   HRESULT Import([in]IBroker* pBroker);
+   HRESULT GetIcon([out] HICON* phIcon);
+};
+
+[
    uuid(BF6EC18A-43D2-4ea1-BC7F-54365DD645DA),
    pointer_default(unique)
 ]
-interface IPGSuperExporter : IUnknown
+interface IPGSuperDataExporter : IUnknown
 {
    HRESULT GetMenuText([out]BSTR*  bstrText);
    HRESULT GetBitmapHandle([out]HBITMAP* phBmp);

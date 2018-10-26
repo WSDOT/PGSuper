@@ -70,14 +70,18 @@ STDAPI DllRegisterServer(void)
     if ( FAILED(hr) )
        return hr;
 
-    return sysComCatMgr::RegWithCategory(CLSID_WSDOTAgent,CATID_PGSuperAgent,true);
+    sysComCatMgr::RegWithCategory(CLSID_WSDOTAgent,CATID_PGSuperExtensionAgent,true);
+    sysComCatMgr::RegWithCategory(CLSID_WSDOTComponentInfo,CATID_PGSuperComponents,true);
+
+    return hr;
 }
 
 
 // DllUnregisterServer - Removes entries from the system registry
 STDAPI DllUnregisterServer(void)
 {
-   sysComCatMgr::RegWithCategory(CLSID_WSDOTAgent,CATID_PGSuperAgent,false);
+   sysComCatMgr::RegWithCategory(CLSID_WSDOTAgent,CATID_PGSuperExtensionAgent,false);
+   sysComCatMgr::RegWithCategory(CLSID_WSDOTComponentInfo,CATID_PGSuperComponents,false);
 	HRESULT hr = _AtlModule.DllUnregisterServer();
 	return hr;
 }

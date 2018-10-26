@@ -28,11 +28,12 @@
 #include "ConnectionEntryDlg.h"
 #include <MfcTools\CustomDDX.h>
 #include "..\htmlhelp\HelpTopics.hh"
+#include <EAF\EAFApp.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
-//#undef THIS_FILE
-//static char THIS_FILE[] = __FILE__;
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
 #endif
 
 inline CString GetImageName(ConnectionLibraryEntry::BearingOffsetMeasurementType brgOffsetType,ConnectionLibraryEntry::EndDistanceMeasurementType endType)
@@ -88,10 +89,9 @@ inline CString GetImageName(ConnectionLibraryEntry::BearingOffsetMeasurementType
 // CConnectionEntryDlg dialog
 
 
-CConnectionEntryDlg::CConnectionEntryDlg(libUnitsMode::Mode mode, bool allowEditing,
+CConnectionEntryDlg::CConnectionEntryDlg(bool allowEditing,
                                          CWnd* pParent /*=NULL*/)
 	: CDialog(CConnectionEntryDlg::IDD, pParent),
-   m_Mode(mode),
    m_AllowEditing(allowEditing)
 {
 	//{{AFX_DATA_INIT(CConnectionEntryDlg)
@@ -106,28 +106,31 @@ void CConnectionEntryDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialog::DoDataExchange(pDX);
 
-   bool bUnitsSI = (m_Mode == libUnitsMode::UNITS_SI ? true : false);
-   const unitLength& usLength = unitMeasure::Inch;
-   const unitLength& siLength = unitMeasure::Millimeter;
+   CEAFApp* pApp;
+   {
+      AFX_MANAGE_STATE(AfxGetAppModuleState());
+      pApp = (CEAFApp*)AfxGetApp();
+   }
+   const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
    CString image_name = GetImageName(m_BearingOffsetMeasurementType,m_EndDistanceMeasurementType);
 
 	DDX_MetaFileStatic(pDX, IDC_CONNECTION_MF, m_ConnectionPicture,image_name, _T("Metafile") );
 
-   DDX_UnitValueAndTag(pDX, IDC_END_DISTANCE, IDC_END_DISTANCE_T, m_GirderEndDistance, bUnitsSI, usLength, siLength );
-   DDV_UnitValueZeroOrMore(pDX, m_GirderEndDistance, bUnitsSI,  usLength, siLength );
-   DDX_UnitValueAndTag(pDX, IDC_BEARING_OFFSET, IDC_BEARING_OFFSET_T, m_GirderBearingOffset, bUnitsSI, usLength, siLength );
-   DDV_UnitValueZeroOrMore(pDX, m_GirderBearingOffset, bUnitsSI,  usLength, siLength );
+   DDX_UnitValueAndTag(pDX, IDC_END_DISTANCE, IDC_END_DISTANCE_T, m_GirderEndDistance, pDisplayUnits->ComponentDim );
+   DDV_UnitValueZeroOrMore(pDX, m_GirderEndDistance, pDisplayUnits->ComponentDim );
+   DDX_UnitValueAndTag(pDX, IDC_BEARING_OFFSET, IDC_BEARING_OFFSET_T, m_GirderBearingOffset, pDisplayUnits->ComponentDim );
+   DDV_UnitValueZeroOrMore(pDX, m_GirderBearingOffset, pDisplayUnits->ComponentDim );
 
-   DDX_UnitValueAndTag(pDX, IDC_SUPPORT_WIDTH, IDC_SUPPORT_WIDTH_T, m_SupportWidth, bUnitsSI, usLength, siLength );
-   DDV_UnitValueZeroOrMore(pDX, m_SupportWidth, bUnitsSI,  usLength, siLength );
+   DDX_UnitValueAndTag(pDX, IDC_SUPPORT_WIDTH, IDC_SUPPORT_WIDTH_T, m_SupportWidth, pDisplayUnits->ComponentDim );
+   DDV_UnitValueZeroOrMore(pDX, m_SupportWidth, pDisplayUnits->ComponentDim );
 
-   DDX_UnitValueAndTag(pDX, IDC_DIAPHRAGM_HEIGHT, IDC_DIAPHRAGM_HEIGHT_T, m_DiaphragmHeight, bUnitsSI, usLength, siLength );
-   DDV_UnitValueZeroOrMore(pDX, m_DiaphragmHeight, bUnitsSI,  usLength, siLength );
-   DDX_UnitValueAndTag(pDX, IDC_DIAPHRAGM_WIDTH, IDC_DIAPHRAGM_WIDTH_T, m_DiaphragmWidth, bUnitsSI, usLength, siLength );
-   DDV_UnitValueZeroOrMore(pDX, m_DiaphragmWidth, bUnitsSI,  usLength, siLength );
-   DDX_UnitValueAndTag( pDX, IDC_DIAPHRAGM_OFFSET, IDC_DIAPHRAGM_OFFSET_UNITS, m_DiaphragmLoadLocation, bUnitsSI, usLength, siLength );
-   DDV_UnitValueZeroOrMore(pDX, m_DiaphragmLoadLocation, bUnitsSI,  usLength, siLength );
+   DDX_UnitValueAndTag(pDX, IDC_DIAPHRAGM_HEIGHT, IDC_DIAPHRAGM_HEIGHT_T, m_DiaphragmHeight, pDisplayUnits->ComponentDim );
+   DDV_UnitValueZeroOrMore(pDX, m_DiaphragmHeight, pDisplayUnits->ComponentDim );
+   DDX_UnitValueAndTag(pDX, IDC_DIAPHRAGM_WIDTH, IDC_DIAPHRAGM_WIDTH_T, m_DiaphragmWidth, pDisplayUnits->ComponentDim );
+   DDV_UnitValueZeroOrMore(pDX, m_DiaphragmWidth, pDisplayUnits->ComponentDim );
+   DDX_UnitValueAndTag( pDX, IDC_DIAPHRAGM_OFFSET, IDC_DIAPHRAGM_OFFSET_UNITS, m_DiaphragmLoadLocation, pDisplayUnits->ComponentDim );
+   DDV_UnitValueZeroOrMore(pDX, m_DiaphragmLoadLocation, pDisplayUnits->ComponentDim );
 
    DDX_CBItemData(pDX,IDC_BEARING_OFFSET_MEASURE,m_BearingOffsetMeasurementType);
    DDX_CBItemData(pDX,IDC_END_DISTANCE_MEASURE,m_EndDistanceMeasurementType);
@@ -144,8 +147,8 @@ void CConnectionEntryDlg::DoDataExchange(CDataExchange* pDX)
       }
       // check end distance
       Float64 end_distance, bearing_end_offset;
-      DDX_UnitValueAndTag(pDX, IDC_END_DISTANCE, IDC_END_DISTANCE_T, end_distance, bUnitsSI, usLength, siLength );
-      DDX_UnitValueAndTag(pDX, IDC_BEARING_OFFSET, IDC_BEARING_OFFSET_T, bearing_end_offset, bUnitsSI, usLength, siLength );
+      DDX_UnitValueAndTag(pDX, IDC_END_DISTANCE, IDC_END_DISTANCE_T, end_distance, pDisplayUnits->ComponentDim );
+      DDX_UnitValueAndTag(pDX, IDC_BEARING_OFFSET, IDC_BEARING_OFFSET_T, bearing_end_offset, pDisplayUnits->ComponentDim );
 
       // RAB 8/16/2007
       // NOTE: At one time this code block was commented out with the following comment

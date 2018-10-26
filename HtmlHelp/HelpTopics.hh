@@ -40,7 +40,11 @@
 #define IDH_DIALOG_LIBIMPORTENTRYCONFLICT 112
 #define IDH_DIALOG_DESIGNDETAILS   113
 #define IDH_LIVELOAD_DIALOG			114
+#define IDH_DECK_CONDITION         115
+#define IDH_GIRDER_CONDITION       116
 
+
+#define IDH_DIALOG_BRIDGEANALYSISREPORT 119
 
 #define IDH_ALIGNMENT_HORIZONTAL		1000
 #define IDH_ALIGNMENT_PROFILE			1001
@@ -133,5 +137,17 @@
 #define IDH_CONCRETE_DETAILS                                      3791
 #define IDH_STRUCTURAL_ANALYSIS                                   3792
 #define IDH_GIRDER_CONNECTION_ERROR                               3793
+
+#define IDH_RATING_GENERAL_TAB                                    3800
+#define IDH_RATING_DESIGN_TAB                                     3801
+#define IDH_RATING_LEGAL_TAB                                      3802
+#define IDH_RATING_PERMIT_TAB                                     3803
+
+#define IDH_PLUGINS                                               3810
+
+#define IDH_GENERATE_STRANDS                                      3900
+
+#define IDH_LOAD_RATING_CRITERIA                                  3910
+#define IDH_LIVE_LOAD_FACTORS                                     3911
 
 #endif // INCLUDED_HELPTOPICS_HH_

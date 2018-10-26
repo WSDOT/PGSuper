@@ -28,6 +28,13 @@
 #include "ReportNotes.h"
 
 interface IDisplayUnits;
+interface IRatingSpecification;
+
+std::string REPORTINGFUNC LiveLoadPrefix(pgsTypes::LiveLoadType llType);
+void REPORTINGFUNC LiveLoadTableFooter(IBroker* pBroker,rptParagraph* pPara,GirderIndexType girder,bool bDesign,bool bRating);
+
+ColumnIndexType REPORTINGFUNC GetProductLoadTableColumnCount(IBroker* pBroker,SpanIndexType spanIdx,GirderIndexType gdrIdx,pgsTypes::AnalysisType analysisType,bool bDesign,bool bRating,
+                                                             bool* pbDeckPanels,bool* pbSidewalk,bool* pbShearKey,bool* pbPedLoading,bool* pbPermit,pgsTypes::Stage* pContinuityStage,SpanIndexType* pStartSpan,SpanIndexType* pNSpans);
 
 /*****************************************************************************
 CLASS 
@@ -76,61 +83,22 @@ public:
    //------------------------------------------------------------------------
    // Builds the strand eccentricity table.
    virtual rptRcTable* Build(IBroker* pBroker,SpanIndexType span,GirderIndexType girder,pgsTypes::AnalysisType analysisType,
-                             bool bIndicateControllingLoad,IDisplayUnits* pDisplayUnits) const;
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
+                             bool bDesign,bool bRating,bool bIndicateControllingLoad,IDisplayUnits* pDisplayUnits) const;
 
 protected:
-   // GROUP: DATA MEMBERS
-   // GROUP: LIFECYCLE
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
+
    //------------------------------------------------------------------------
    void MakeCopy(const CProductMomentsTable& rOther);
 
    //------------------------------------------------------------------------
    void MakeAssignment(const CProductMomentsTable& rOther);
 
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
-
-private:
-   // GROUP: DATA MEMBERS
-   // GROUP: LIFECYCLE
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
-
-public:
-   // GROUP: DEBUG
-   #if defined _DEBUG
-   //------------------------------------------------------------------------
-   // Returns true if the object is in a valid state, otherwise returns false.
-   virtual bool AssertValid() const;
-
-   //------------------------------------------------------------------------
-   // Dumps the contents of the object to the given dump context.
-   virtual void Dump(dbgDumpContext& os) const;
-   #endif // _DEBUG
-
-   #if defined _UNITTEST
-   //------------------------------------------------------------------------
-   // Runs a self-diagnostic test.  Returns true if the test passed,
-   // otherwise false.
-   static bool TestMe(dbgLog& rlog);
-   #endif // _UNITTEST
 };
 
-// INLINE METHODS
-//
-
-// EXTERNAL REFERENCES
-//
 template <class M,class T>
 int ConfigureProductLoadTableHeading(rptRcTable* p_table,bool bPierTable,bool bDeckPanels,bool bSidewalk,bool bShearKey,
-                                     bool bPedLoading,bool bPermit,pgsTypes::AnalysisType analysisType,pgsTypes::Stage continuityStage,
-                                     IDisplayUnits* pDisplayUnits,const T& unitT)
+                                     bool bDesign,bool bPedLoading,bool bPermit,bool bRating,pgsTypes::AnalysisType analysisType,pgsTypes::Stage continuityStage,
+                                     IRatingSpecification* pRatingSpec,IDisplayUnits* pDisplayUnits,const T& unitT)
 {
    p_table->SetNumberOfHeaderRows(2);
 
@@ -241,34 +209,79 @@ int ConfigureProductLoadTableHeading(rptRcTable* p_table,bool bPierTable,bool bD
       (*p_table)(0,row1col++) << COLHDR("Overlay", M, unitT );
    }
 
-   if ( bPedLoading )
+   if ( bDesign )
    {
+      if ( bPedLoading )
+      {
+         p_table->SetColumnSpan(0,row1col,2);
+         (*p_table)(0,row1col++) << "* Pedestrian";
+         (*p_table)(1,row2col++) << COLHDR("Max", M, unitT );
+         (*p_table)(1,row2col++) << COLHDR("Min", M, unitT );
+      }
+
       p_table->SetColumnSpan(0,row1col,2);
-      (*p_table)(0,row1col++) << "* Pedestrian";
-      (*p_table)(1,row2col++) << COLHDR("Max", M, unitT );
-      (*p_table)(1,row2col++) << COLHDR("Min", M, unitT );
-   }
-
-
-   p_table->SetColumnSpan(0,row1col,2);
-   (*p_table)(0,row1col++) << "* Design Live Load";
-   (*p_table)(1,row2col++) << COLHDR("Max",   M, unitT );
-   (*p_table)(1,row2col++) << COLHDR("Min",   M, unitT );
-
-   if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
-   {
-      p_table->SetColumnSpan(0,row1col,2);
-      (*p_table)(0,row1col++) << "* Fatigue Live Load";
+      (*p_table)(0,row1col++) << "* Design Live Load";
       (*p_table)(1,row2col++) << COLHDR("Max",   M, unitT );
       (*p_table)(1,row2col++) << COLHDR("Min",   M, unitT );
+
+      if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
+      {
+         p_table->SetColumnSpan(0,row1col,2);
+         (*p_table)(0,row1col++) << "* Fatigue Live Load";
+         (*p_table)(1,row2col++) << COLHDR("Max",   M, unitT );
+         (*p_table)(1,row2col++) << COLHDR("Min",   M, unitT );
+      }
+
+      if ( bPermit )
+      {
+         p_table->SetColumnSpan(0,row1col,2);
+         (*p_table)(0,row1col++) << "* Permit Live Load";
+         (*p_table)(1,row2col++) << COLHDR("Max",   M, unitT );
+         (*p_table)(1,row2col++) << COLHDR("Min",   M, unitT );
+      }
    }
 
-   if ( bPermit )
+   if ( bRating )
    {
-      p_table->SetColumnSpan(0,row1col,2);
-      (*p_table)(0,row1col++) << "* Permit Live Load";
-      (*p_table)(1,row2col++) << COLHDR("Max",   M, unitT );
-      (*p_table)(1,row2col++) << COLHDR("Min",   M, unitT );
+      if ( !bDesign && (pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) || pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating)) )
+      {
+         p_table->SetColumnSpan(0,row1col,2);
+         (*p_table)(0,row1col++) << "* Design Live Load";
+         (*p_table)(1,row2col++) << COLHDR("Max",   M, unitT );
+         (*p_table)(1,row2col++) << COLHDR("Min",   M, unitT );
+      }
+
+      if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) )
+      {
+         p_table->SetColumnSpan(0,row1col,2);
+         (*p_table)(0,row1col++) << "* Legal Routine";
+         (*p_table)(1,row2col++) << COLHDR("Max",   M, unitT );
+         (*p_table)(1,row2col++) << COLHDR("Min",   M, unitT );
+      }
+
+      if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
+      {
+         p_table->SetColumnSpan(0,row1col,2);
+         (*p_table)(0,row1col++) << "* Legal Special";
+         (*p_table)(1,row2col++) << COLHDR("Max",   M, unitT );
+         (*p_table)(1,row2col++) << COLHDR("Min",   M, unitT );
+      }
+
+      if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine) )
+      {
+         p_table->SetColumnSpan(0,row1col,2);
+         (*p_table)(0,row1col++) << "* Permit Routine";
+         (*p_table)(1,row2col++) << COLHDR("Max",   M, unitT );
+         (*p_table)(1,row2col++) << COLHDR("Min",   M, unitT );
+      }
+
+      if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Special) )
+      {
+         p_table->SetColumnSpan(0,row1col,2);
+         (*p_table)(0,row1col++) << "* Permit Special";
+         (*p_table)(1,row2col++) << COLHDR("Max",   M, unitT );
+         (*p_table)(1,row2col++) << COLHDR("Min",   M, unitT );
+      }
    }
 
    for ( ColumnIndexType i = row1col; i < p_table->GetNumberOfColumns(); i++ )

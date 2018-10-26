@@ -24,9 +24,10 @@
 //
 
 #include "stdafx.h"
-#include "pgsuper.h"
+#include "resource.h"
 #include "AlignmentDisplayObjectEvents.h"
 #include "BridgeSectionCutDisplayImpl.h"
+#include "BridgeModelViewChildFrame.h"
 #include "mfcdual.h"
 #include "pgsuperdoc.h"
 #include <IFace\Bridge.h>

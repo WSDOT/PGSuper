@@ -33,6 +33,7 @@
 #include <Units\Measure.h>
 
 class CGirderGlobalStrandGrid;
+class CStrandGenerationDlg;
 
 // define a pure virtual class that clients of this grid can inherit from
 class CGirderGlobalStrandGridClient
@@ -40,8 +41,6 @@ class CGirderGlobalStrandGridClient
 public:
    // capture event fired from grid that allows deletion of rows
    virtual void OnEnableDelete(bool canDelete)=0;
-   virtual CString GetLengthUnitString()=0;
-   virtual unitLength GetLengthUnit()=0;
    virtual bool DoUseHarpedGrid()=0;
    virtual void UpdateStrandStatus(Uint16 ns, Uint16 ndb, Uint16 nh)=0; 
 };
@@ -96,6 +95,7 @@ public:
 // Operations
 public:
    void ReverseHarpedStrandOrder();
+   void GenerateStrandPositions();
 
 // Overrides
 	// ClassWizard generated virtual function overrides
@@ -163,6 +163,13 @@ private:
    bool EditEntry(ROWCOL row, GlobalStrandGridEntry& entry, bool isNewEntry);
    // fill at the starting row - return num rows filled
    ROWCOL FillRowsWithEntry(ROWCOL row, GlobalStrandGridEntry& entry, bool useHarped, COLORREF color);
+
+
+   void AppendEntry(GlobalStrandGridEntry& entry);
+   void GenerateStraightStrands(CStrandGenerationDlg& dlg);
+   void GenerateHarpedStrands(CStrandGenerationDlg& dlg);
+   void DeleteAllStraightStrands();
+   void DeleteAllHarpedStrands();
 };
 
 /////////////////////////////////////////////////////////////////////////////

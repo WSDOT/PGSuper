@@ -22,7 +22,7 @@
 
 #include "StdAfx.h"
 #include "EditPier.h"
-#include "PGSuper.h"
+#include "PGSuperDoc.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -86,7 +86,7 @@ txnEditPier::txnEditPier(PierIndexType pierIdx,
    m_MoveOption = moveOption;
 
    CComPtr<IBroker> pBroker;
-   AfxGetBroker(&pBroker);
+   EAFGetBroker(&pBroker);
 
    GET_IFACE2(pBroker,IBridgeDescription,pBridgeDesc);
    long nPiers = pBridgeDesc->GetBridgeDescription()->GetPierCount();
@@ -139,7 +139,7 @@ bool txnEditPier::IsRepeatable()
 void txnEditPier::DoExecute(int i)
 {
    CComPtr<IBroker> pBroker;
-   AfxGetBroker(&pBroker);
+   EAFGetBroker(&pBroker);
 
    GET_IFACE2(pBroker, IEvents, pEvents);
    pEvents->HoldEvents();

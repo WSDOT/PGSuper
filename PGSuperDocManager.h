@@ -20,23 +20,13 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-#ifndef INCLUDED_PGSUPERDOCMANAGER_H_
-#define INCLUDED_PGSUPERDOCMANAGER_H_
-
-
-#if _MSC_VER >= 1000
 #pragma once
-#endif // _MSC_VER >= 1000
 
-#include "PGSuperImportPluginDocTemplate.h"
+#include <EAF\EAFDocManager.h>
 
-class CPGSuperDocManager : public CDocManager
+class CPGSuperDocManager : public CEAFDocManager
 {
 public:
    CPGSuperDocManager();
    ~CPGSuperDocManager();
-   void OnImport(UINT nID);
-   virtual void OnFileNew();
 };
-
-#endif // INCLUDED_PGSUPERDOCMANAGER_H_

@@ -85,7 +85,7 @@ END_COM_MAP()
 
 public:
    // IDistFactorEngineer
-//   virtual void SetBroker(IBroker* pBroker,long agentID);
+//   virtual void SetBroker(IBroker* pBroker,long statusGroupID);
 //   virtual double GetMomentDF(SpanIndexType span,GirderIndexType gdr);
 //   virtual double GetNegMomentDF(PierIndexType pier,GirderIndexType gdr);
 //   virtual double GetShearDF(SpanIndexType span,GirderIndexType gdr);

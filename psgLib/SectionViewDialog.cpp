@@ -38,6 +38,8 @@
 #include <WBFLSections.h>
 #include <WBFLGenericBridge.h>
 
+#include <EAF\EAFApp.h>
+
 #ifdef _DEBUG
 #include <Plugins\Beams.h> // including here is a bit of a hack, but drawing the strand mover is debug only
 #endif
@@ -45,8 +47,8 @@
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
-//#undef THIS_FILE
-//static char THIS_FILE[] = __FILE__;
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
 #endif
 
 #define BORDER 7
@@ -57,14 +59,12 @@
 // CSectionViewDialog dialog
 
 
-CSectionViewDialog::CSectionViewDialog(GirderLibraryEntry* pEntry,bool isEnd,libUnitsMode::Mode uMode, CWnd* pParent /*=NULL*/)
+CSectionViewDialog::CSectionViewDialog(const GirderLibraryEntry* pEntry,bool isEnd,CWnd* pParent /*=NULL*/)
 	: CDialog(CSectionViewDialog::IDD, pParent)
 {
    m_pGirderEntry = pEntry;
    m_IsEnd = isEnd;
    m_DrawNumbers = true;
-
-   m_UnitsMode = uMode;
 
    // assume 0.6" diameter
    m_Radius = ::ConvertToSysUnits(0.3,unitMeasure::Inch);
@@ -503,7 +503,14 @@ HBRUSH CSectionViewDialog::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
 
 BOOL CSectionViewDialog::OnInitDialog() 
 {
-	CDialog::OnInitDialog();
+   CEAFApp* pApp;
+   {
+      AFX_MANAGE_STATE(AfxGetAppModuleState());
+      pApp = (CEAFApp*)AfxGetApp();
+   }
+   const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
+
+   CDialog::OnInitDialog();
 	
    CButton* pBtn = (CButton*)GetDlgItem(IDC_SHOWS);
    pBtn->SetCheck(TRUE);
@@ -523,46 +530,23 @@ BOOL CSectionViewDialog::OnInitDialog()
    double Kb = Stop/Area;
 
    CString strAreaUnit, strIxUnit, strYUnit, strSUnit;
-   if ( m_UnitsMode == libUnitsMode::UNITS_SI )
-   {
-      Area = ::ConvertFromSysUnits(Area,unitMeasure::Millimeter2);
-      strAreaUnit = "mm^2";
+   Area = ::ConvertFromSysUnits(Area,pDisplayUnits->Area.UnitOfMeasure);
+   strAreaUnit = pDisplayUnits->Area.UnitOfMeasure.UnitTag().c_str();
 
-      Ix = ::ConvertFromSysUnits(Ix,unitMeasure::Millimeter4);
-      strIxUnit = "mm^4";
+   Ix = ::ConvertFromSysUnits(Ix,pDisplayUnits->MomentOfInertia.UnitOfMeasure);
+   strIxUnit = pDisplayUnits->MomentOfInertia.UnitOfMeasure.UnitTag().c_str();
 
-      Ytop = ::ConvertFromSysUnits(Ytop,unitMeasure::Millimeter);
-      Ybot = ::ConvertFromSysUnits(Ybot,unitMeasure::Millimeter);
-      strYUnit = "mm";
+   Ytop = ::ConvertFromSysUnits(Ytop,pDisplayUnits->ComponentDim.UnitOfMeasure);
+   Ybot = ::ConvertFromSysUnits(Ybot,pDisplayUnits->ComponentDim.UnitOfMeasure);
+   strYUnit = pDisplayUnits->ComponentDim.UnitOfMeasure.UnitTag().c_str();
 
-      Stop = ::ConvertFromSysUnits(Stop,unitMeasure::Millimeter3);
-      Sbot = ::ConvertFromSysUnits(Sbot,unitMeasure::Millimeter3);
-      strSUnit = "mm^3";
+   Stop = ::ConvertFromSysUnits(Stop,pDisplayUnits->SectModulus.UnitOfMeasure);
+   Sbot = ::ConvertFromSysUnits(Sbot,pDisplayUnits->SectModulus.UnitOfMeasure);
+   strSUnit = pDisplayUnits->SectModulus.UnitOfMeasure.UnitTag().c_str();
 
-      Kt = ::ConvertFromSysUnits(Kt,unitMeasure::Millimeter);
-      Kb = ::ConvertFromSysUnits(Kb,unitMeasure::Millimeter);
-      strYUnit = "mm";
-   }
-   else
-   {
-      Area = ::ConvertFromSysUnits(Area,unitMeasure::Inch2);
-      strAreaUnit = "in^2";
-
-      Ix = ::ConvertFromSysUnits(Ix,unitMeasure::Inch4);
-      strIxUnit = "in^4";
-
-      Ytop = ::ConvertFromSysUnits(Ytop,unitMeasure::Inch);
-      Ybot = ::ConvertFromSysUnits(Ybot,unitMeasure::Inch);
-      strYUnit = "in";
-
-      Stop = ::ConvertFromSysUnits(Stop,unitMeasure::Inch3);
-      Sbot = ::ConvertFromSysUnits(Sbot,unitMeasure::Inch3);
-      strSUnit = "in^3";
-
-      Kt = ::ConvertFromSysUnits(Kt,unitMeasure::Inch);
-      Kb = ::ConvertFromSysUnits(Kb,unitMeasure::Inch);
-      strYUnit = "in";
-   }
+   Kt = ::ConvertFromSysUnits(Kt,pDisplayUnits->ComponentDim.UnitOfMeasure);
+   Kb = ::ConvertFromSysUnits(Kb,pDisplayUnits->ComponentDim.UnitOfMeasure);
+   strYUnit = pDisplayUnits->ComponentDim.UnitOfMeasure.UnitTag().c_str();
 
    strProps.Format("Area = %.0f %s\t\tYt = %0.f %s\t\tYb = %0.f %s\nIx = %0.f %s\t\tSt = %0.f %s\t\tSb = %0.f %s\nH = %0.f %s\t\tKt = %0.f %s\t\tKb = %0.f %s",Area,strAreaUnit,Ytop,strYUnit,Ybot,strYUnit,Ix,strIxUnit,Stop,strSUnit,Sbot,strSUnit,(Ytop+Ybot),strYUnit,Kt,strYUnit,Kb,strYUnit);
    pShapeProps->SetWindowText(strProps);

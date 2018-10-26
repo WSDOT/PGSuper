@@ -538,6 +538,10 @@
           <param name="Local" value="Bridge Description\Deck_Rebar.htm">
         </object>
         <li><object type="text/sitemap">
+          <param name="Name" value="Condition and Rating">
+          <param name="Local" value="Bridge Description\Condition_and_Rating.htm">
+        </object>
+        <li><object type="text/sitemap">
           <param name="Name" value="Environmental">
           <param name="Local" value="Bridge Description\Environment.htm">
         </object>
@@ -660,6 +664,10 @@
           <param name="Name" value="Lifting and Shipping">
           <param name="Local" value="Girder Editing Wizard\Lifting_and_Shipping.htm">
         </object>
+        <li><object type="text/sitemap">
+          <param name="Name" value="Condition and Rating">
+          <param name="Local" value="Girder Editing Wizard\Condition_and_Rating_(Girder).htm">
+        </object>
         </ul>
       <li><object type="text/sitemap">
         <param name="Name" value="Girder View Settings">
@@ -691,6 +699,10 @@
         <param name="Local" value="Dialogs\Load_Modifiers.htm">
       </object>
       <li><object type="text/sitemap">
+        <param name="Name" value="Plug-ins and Extensions">
+        <param name="Local" value="Dialogs\Plugins_and_Extensions.htm">
+      </object>
+      <li><object type="text/sitemap">
         <param name="Name" value="Program Settings">
         <param name="Local" value="Dialogs\Configure_PGSuper.htm">
       </object>
@@ -698,6 +710,28 @@
         <param name="Name" value="Project Properties">
         <param name="Local" value="Dialogs\Project_Properties.htm">
       </object>
+      <li><object type="text/sitemap">
+        <param name="Name" value="Rating Options">
+        <param name="Local" value="Dialogs\Rating_Options_(General).htm">
+      </object>
+      <ul>
+        <li><object type="text/sitemap">
+          <param name="Name" value="General">
+          <param name="Local" value="Dialogs\Rating_Options_(General).htm">
+        </object>
+        <li><object type="text/sitemap">
+          <param name="Name" value="Design">
+          <param name="Local" value="Dialogs\Rating_Options_(Design).htm">
+        </object>
+        <li><object type="text/sitemap">
+          <param name="Name" value="Legal">
+          <param name="Local" value="Dialogs\Rating_Options_(Legal).htm">
+        </object>
+        <li><object type="text/sitemap">
+          <param name="Name" value="Permit">
+          <param name="Local" value="Dialogs\Rating_Options_(Permit).htm">
+        </object>
+        </ul>
       <li><object type="text/sitemap">
         <param name="Name" value="Reports">
         <param name="Local" value="Dialogs\Reports.htm">
@@ -744,6 +778,10 @@
       <li><object type="text/sitemap">
         <param name="Name" value="Concrete Material Dialog">
         <param name="Local" value="User's Guide\Appendix B - PGSuper Library Dialogs\PsglibConcrete_Entry_Dialog.htm">
+      </object>
+      <li><object type="text/sitemap">
+        <param name="Name" value="Generate Strands Dialog">
+        <param name="Local" value="User's Guide\Appendix B - PGSuper Library Dialogs\GenerateStrands.htm">
       </object>
       <li><object type="text/sitemap">
         <param name="Name" value="Girder Connection Dialog">
@@ -865,6 +903,20 @@
         <param name="Name" value="Vehicular Live Loads">
         <param name="Local" value="User's Guide\Appendix B - PGSuper Library Dialogs\Vehicular_Live_Loads.htm">
       </object>
+      <li><object type="text/sitemap">
+        <param name="Name" value="Load Rating Criteria">
+        <param name="Local" value="User's Guide\Appendix B - PGSuper Library Dialogs\Load_Rating_Criteria.htm">
+      </object>
+      <ul>
+        <li><object type="text/sitemap">
+          <param name="Name" value="Load Rating Criteria">
+          <param name="Local" value="User's Guide\Appendix B - PGSuper Library Dialogs\Load_Rating_Criteria.htm">
+        </object>
+        <li><object type="text/sitemap">
+          <param name="Name" value="Live Load Factors">
+          <param name="Local" value="User's Guide\Appendix B - PGSuper Library Dialogs\Live_Load_Factors.htm">
+        </object>
+        </ul>
       </ul>
     </ul>
   <li><object type="text/sitemap">

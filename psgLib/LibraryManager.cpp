@@ -48,20 +48,27 @@ libLibraryManager()
    std::auto_ptr<DiaphragmLayoutLibrary> diap_lib(new DiaphragmLayoutLibrary("DIAPHRAGM_LAYOUT_LIBRARY", "Diaphragm Layouts",true)); 
    std::auto_ptr<TrafficBarrierLibrary>  barr_lib(new TrafficBarrierLibrary("TRAFFIC_BARRIER_LIBRARY", "Traffic Barriers"));
    std::auto_ptr<SpecLibrary>            spec_lib(new SpecLibrary("SPECIFICATION_LIBRARY", "Project Criteria"));
+   std::auto_ptr<RatingLibrary>          rate_lib(new RatingLibrary("RATING_LIBRARY", "Load Rating Criteria"));
    std::auto_ptr<LiveLoadLibrary>        live_lib(new LiveLoadLibrary("USER_LIVE_LOAD_LIBRARY", "User-Defined Live Loads"));
 
    live_lib->AddReservedName("HL-93");
    live_lib->AddReservedName("Fatigue");
    live_lib->AddReservedName("Pedestrian on Sidewalk");
+   live_lib->AddReservedName("AASHTO Legal Loads");
+   live_lib->AddReservedName("Notional Rating Load (NRL)");
+   live_lib->AddReservedName("Single-Unit SHVs");
    live_lib->AddReservedName("No Live Load Defined"); // this is for the dummy live load, when one isn't defined for analysis
 
-   m_ConcLibIdx = this->AddLibrary(conc_lib.release()); 
-   m_ConnLibIdx = this->AddLibrary(conn_lib.release());
-   m_GirdLibIdx = this->AddLibrary(gird_lib.release());
-   m_DiapLibIdx = this->AddLibrary(diap_lib.release());
-   m_BarrLibIdx = this->AddLibrary(barr_lib.release());
-   m_SpecLibIdx = this->AddLibrary(spec_lib.release());
-   m_LiveLibIdx = this->AddLibrary(live_lib.release());
+   // don't change the order that the libraries are added to the library manager
+   // add new libraries at the end of this list
+   m_ConcLibIdx   = this->AddLibrary(conc_lib.release()); 
+   m_ConnLibIdx   = this->AddLibrary(conn_lib.release());
+   m_GirdLibIdx   = this->AddLibrary(gird_lib.release());
+   m_DiapLibIdx   = this->AddLibrary(diap_lib.release());
+   m_BarrLibIdx   = this->AddLibrary(barr_lib.release());
+   m_SpecLibIdx   = this->AddLibrary(spec_lib.release());
+   m_LiveLibIdx   = this->AddLibrary(live_lib.release());
+   m_RatingLibIdx = this->AddLibrary(rate_lib.release());
 
    m_strPublisher = "Unknown";
    m_strLibFile   = "Unknown";
@@ -175,6 +182,22 @@ const SpecLibrary* psgLibraryManager::GetSpecLibrary() const
    return pc;
 }
 
+RatingLibrary* psgLibraryManager::GetRatingLibrary()
+{
+   libILibrary* pl = GetLibrary(m_RatingLibIdx);
+   RatingLibrary* pc = dynamic_cast<RatingLibrary*>(pl);
+   ASSERT(pc);
+   return pc;
+}
+
+const RatingLibrary* psgLibraryManager::GetRatingLibrary() const
+{
+   const libILibrary* pl = GetLibrary(m_RatingLibIdx);
+   const RatingLibrary* pc = dynamic_cast<const RatingLibrary*>(pl);
+   ASSERT(pc);
+   return pc;
+}
+
 LiveLoadLibrary* psgLibraryManager::GetLiveLoadLibrary()
 {
    libILibrary* pl = GetLibrary(m_LiveLibIdx);
@@ -258,6 +281,7 @@ void psgLibraryManager::Dump(dbgDumpContext& os) const
    os << " m_DiapLibIdx = "<< m_DiapLibIdx << endl;
    os << " m_BarrLibIdx = "<< m_BarrLibIdx << endl;
    os << " m_SpecLibIdx = "<< m_SpecLibIdx << endl;
+   os << " m_RatingLibIdx = "<< m_RatingLibIdx << endl;
 
    libLibraryManager::Dump( os );
 }
@@ -291,6 +315,10 @@ bool psgLibraryManager::TestMe(dbgLog& rlog)
    SpecLibrary* spec_lib = libmgr.GetSpecLibrary();
    const type_info& spec_lib_ti = typeid( *spec_lib );
    TRY_TESTME( std::string( spec_lib_ti.name() ) == std::string("libLibrary<SpecLibraryEntry>") );
+
+   RatingLibrary* rating_lib = libmgr.GetRatingLibrary();
+   const type_info& rating_lib_ti = typeid( *rating_lib );
+   TRY_TESTME( std::string( rating_lib_ti.name() ) == std::string("libLibrary<RatingLibraryEntry>") );
 
    TESTME_EPILOG("LibraryManager");
 }

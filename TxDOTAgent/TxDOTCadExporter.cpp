@@ -28,7 +28,7 @@
 #include "TxDOTCadWriter.h"
 #include "ExportCadData.h" 
 
-#include <PgsExt\AutoProgress.h>
+#include <EAF\EAFAutoProgress.h>
 #include <IFace\Selection.h>
 #include <IFace\TxDOTCadExport.h>
 
@@ -51,6 +51,12 @@ bool DoesFileExist(const CString& filename)
 
 /////////////////////////////////////////////////////////////////////////////
 // IPGSuperExporter
+STDMETHODIMP CTxDOTCadExporter::GetName(BSTR*  bstrText)
+{
+   *bstrText = CComBSTR("TxDOT CAD Data Exporter");
+   return S_OK;
+}
+
 STDMETHODIMP CTxDOTCadExporter::GetMenuText(BSTR*  bstrText)
 {
    *bstrText = CComBSTR("TxDOT &CAD Data...");
@@ -140,7 +146,7 @@ STDMETHODIMP CTxDOTCadExporter::Export(IBroker* pBroker)
 	      /* Create progress bar (before needing one) to remain alive during this task */
 	      /* (otherwise, progress bars will be repeatedly created & destroyed on the fly) */
          GET_IFACE2(pBroker,IProgress,pProgress);
-         pgsAutoProgress ap(pProgress);
+         CEAFAutoProgress ap(pProgress);
 
 		   /* Open/create the specified text file */
          if (fopen_s(&fp,LPCTSTR(file_path), "w+") != 0 || fp == NULL)

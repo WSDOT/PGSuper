@@ -111,7 +111,7 @@ HRESULT CTxDotDoubleTFactory::FinalConstruct()
    return S_OK;
 }
 
-void CTxDotDoubleTFactory::CreateGirderSection(IBroker* pBroker,long agentID,SpanIndexType spanIdx,GirderIndexType gdrIdx,const IBeamFactory::Dimensions& dimensions,IGirderSection** ppSection)
+void CTxDotDoubleTFactory::CreateGirderSection(IBroker* pBroker,long statusGroupID,SpanIndexType spanIdx,GirderIndexType gdrIdx,const IBeamFactory::Dimensions& dimensions,IGirderSection** ppSection)
 {
    CComPtr<IMultiWebSection2> gdrsection;
    gdrsection.CoCreateInstance(CLSID_MultiWebSection2);
@@ -144,7 +144,7 @@ void CTxDotDoubleTFactory::CreateGirderSection(IBroker* pBroker,long agentID,Spa
    gdrsection.QueryInterface(ppSection);
 }
 
-void CTxDotDoubleTFactory::CreateGirderProfile(IBroker* pBroker,long agentID,SpanIndexType spanIdx,GirderIndexType gdrIdx,const IBeamFactory::Dimensions& dimensions,IShape** ppShape)
+void CTxDotDoubleTFactory::CreateGirderProfile(IBroker* pBroker,long statusGroupID,SpanIndexType spanIdx,GirderIndexType gdrIdx,const IBeamFactory::Dimensions& dimensions,IShape** ppShape)
 {
    GET_IFACE2(pBroker,IBridge,pBridge);
    Float64 length = pBridge->GetGirderLength(spanIdx,gdrIdx);
@@ -172,7 +172,7 @@ void CTxDotDoubleTFactory::CreateGirderProfile(IBroker* pBroker,long agentID,Spa
    rect->QueryInterface(ppShape);
 }
 
-void CTxDotDoubleTFactory::LayoutGirderLine(IBroker* pBroker,long agentID,SpanIndexType spanIdx,GirderIndexType gdrIdx,ISuperstructureMember* ssmbr)
+void CTxDotDoubleTFactory::LayoutGirderLine(IBroker* pBroker,long statusGroupID,SpanIndexType spanIdx,GirderIndexType gdrIdx,ISuperstructureMember* ssmbr)
 {
    CComPtr<IPrismaticSegment> segment;
    segment.CoCreateInstance(CLSID_PrismaticSegment);
@@ -191,7 +191,7 @@ void CTxDotDoubleTFactory::LayoutGirderLine(IBroker* pBroker,long agentID,SpanIn
    const GirderLibraryEntry::Dimensions& dimensions = pGdrEntry->GetDimensions();
 
    CComPtr<IGirderSection> gdrsection;
-   CreateGirderSection(pBroker,agentID,spanIdx,gdrIdx,dimensions,&gdrsection);
+   CreateGirderSection(pBroker,statusGroupID,spanIdx,gdrIdx,dimensions,&gdrsection);
    CComQIPtr<IMultiWebSection2> section(gdrsection);
 
    // if this is an exterior girder, remove the shear key block outs
@@ -255,11 +255,11 @@ void CTxDotDoubleTFactory::LayoutSectionChangePointsOfInterest(IBroker* pBroker,
    pPoiMgr->AddPointOfInterest(poiEnd);
 }
 
-void CTxDotDoubleTFactory::CreateDistFactorEngineer(IBroker* pBroker,long agentID,const pgsTypes::SupportedDeckType* pDeckType, const pgsTypes::AdjacentTransverseConnectivity* pConnect,IDistFactorEngineer** ppEng)
+void CTxDotDoubleTFactory::CreateDistFactorEngineer(IBroker* pBroker,long statusGroupID,const pgsTypes::SupportedDeckType* pDeckType, const pgsTypes::AdjacentTransverseConnectivity* pConnect,IDistFactorEngineer** ppEng)
 {
    CComObject<CMultiWebDistFactorEngineer>* pEngineer;
    CComObject<CMultiWebDistFactorEngineer>::CreateInstance(&pEngineer);
-   pEngineer->SetBroker(pBroker,agentID);
+   pEngineer->SetBroker(pBroker,statusGroupID);
 
    pEngineer->SetBeamType(CMultiWebDistFactorEngineer::btMultiWebTee);
 
@@ -267,12 +267,12 @@ void CTxDotDoubleTFactory::CreateDistFactorEngineer(IBroker* pBroker,long agentI
    (*ppEng)->AddRef();
 }
 
-void CTxDotDoubleTFactory::CreatePsLossEngineer(IBroker* pBroker,long agentID,SpanIndexType spanIdx,GirderIndexType gdrIdx,IPsLossEngineer** ppEng)
+void CTxDotDoubleTFactory::CreatePsLossEngineer(IBroker* pBroker,long statusGroupID,SpanIndexType spanIdx,GirderIndexType gdrIdx,IPsLossEngineer** ppEng)
 {
     CComObject<CPsBeamLossEngineer>* pEngineer;
     CComObject<CPsBeamLossEngineer>::CreateInstance(&pEngineer);
     pEngineer->Init(CPsLossEngineer::SingleT);
-    pEngineer->SetBroker(pBroker,agentID);
+    pEngineer->SetBroker(pBroker,statusGroupID);
     (*ppEng) = pEngineer;
     (*ppEng)->AddRef();
 }

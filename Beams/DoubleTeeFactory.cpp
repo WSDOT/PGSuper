@@ -92,7 +92,7 @@ HRESULT CDoubleTeeFactory::FinalConstruct()
    return S_OK;
 }
 
-void CDoubleTeeFactory::CreateGirderSection(IBroker* pBroker,long agentID,SpanIndexType spanIdx,GirderIndexType gdrIdx,const IBeamFactory::Dimensions& dimensions,IGirderSection** ppSection)
+void CDoubleTeeFactory::CreateGirderSection(IBroker* pBroker,long statusGroupID,SpanIndexType spanIdx,GirderIndexType gdrIdx,const IBeamFactory::Dimensions& dimensions,IGirderSection** ppSection)
 {
    CComPtr<IMultiWebSection> gdrsection;
    gdrsection.CoCreateInstance(CLSID_MultiWebSection);
@@ -152,7 +152,7 @@ void CDoubleTeeFactory::CreateGirderSection(IBroker* pBroker,long agentID,SpanIn
    gdrsection.QueryInterface(ppSection);
 }
 
-void CDoubleTeeFactory::CreateGirderProfile(IBroker* pBroker,long agentID,SpanIndexType spanIdx,GirderIndexType gdrIdx,const IBeamFactory::Dimensions& dimensions,IShape** ppShape)
+void CDoubleTeeFactory::CreateGirderProfile(IBroker* pBroker,long statusGroupID,SpanIndexType spanIdx,GirderIndexType gdrIdx,const IBeamFactory::Dimensions& dimensions,IShape** ppShape)
 {
    GET_IFACE2(pBroker,IBridge,pBridge);
    Float64 length = pBridge->GetGirderLength(spanIdx,gdrIdx);
@@ -179,7 +179,7 @@ void CDoubleTeeFactory::CreateGirderProfile(IBroker* pBroker,long agentID,SpanIn
    rect->QueryInterface(ppShape);
 }
 
-void CDoubleTeeFactory::LayoutGirderLine(IBroker* pBroker,long agentID,SpanIndexType spanIdx,GirderIndexType gdrIdx,ISuperstructureMember* ssmbr)
+void CDoubleTeeFactory::LayoutGirderLine(IBroker* pBroker,long statusGroupID,SpanIndexType spanIdx,GirderIndexType gdrIdx,ISuperstructureMember* ssmbr)
 {
    CComPtr<IPrismaticSegment> segment;
    segment.CoCreateInstance(CLSID_PrismaticSegment);
@@ -198,7 +198,7 @@ void CDoubleTeeFactory::LayoutGirderLine(IBroker* pBroker,long agentID,SpanIndex
    const GirderLibraryEntry::Dimensions& dimensions = pGdrEntry->GetDimensions();
 
    CComPtr<IGirderSection> gdrsection;
-   CreateGirderSection(pBroker,agentID,spanIdx,gdrIdx,dimensions,&gdrsection);
+   CreateGirderSection(pBroker,statusGroupID,spanIdx,gdrIdx,dimensions,&gdrsection);
    CComQIPtr<IShape> shape(gdrsection);
    segment->putref_Shape(shape);
 
@@ -248,11 +248,11 @@ void CDoubleTeeFactory::LayoutSectionChangePointsOfInterest(IBroker* pBroker,Spa
    pPoiMgr->AddPointOfInterest(poiEnd);
 }
 
-void CDoubleTeeFactory::CreateDistFactorEngineer(IBroker* pBroker,long agentID,const pgsTypes::SupportedDeckType* pDeckType, const pgsTypes::AdjacentTransverseConnectivity* pConnect,IDistFactorEngineer** ppEng)
+void CDoubleTeeFactory::CreateDistFactorEngineer(IBroker* pBroker,long statusGroupID,const pgsTypes::SupportedDeckType* pDeckType, const pgsTypes::AdjacentTransverseConnectivity* pConnect,IDistFactorEngineer** ppEng)
 {
    CComObject<CMultiWebDistFactorEngineer>* pEngineer;
    CComObject<CMultiWebDistFactorEngineer>::CreateInstance(&pEngineer);
-   pEngineer->SetBroker(pBroker,agentID);
+   pEngineer->SetBroker(pBroker,statusGroupID);
 
    pEngineer->SetBeamType(CMultiWebDistFactorEngineer::btMultiWebTee);
 
@@ -260,12 +260,12 @@ void CDoubleTeeFactory::CreateDistFactorEngineer(IBroker* pBroker,long agentID,c
    (*ppEng)->AddRef();
 }
 
-void CDoubleTeeFactory::CreatePsLossEngineer(IBroker* pBroker,long agentID,SpanIndexType spanIdx,GirderIndexType gdrIdx,IPsLossEngineer** ppEng)
+void CDoubleTeeFactory::CreatePsLossEngineer(IBroker* pBroker,long statusGroupID,SpanIndexType spanIdx,GirderIndexType gdrIdx,IPsLossEngineer** ppEng)
 {
     CComObject<CPsBeamLossEngineer>* pEngineer;
     CComObject<CPsBeamLossEngineer>::CreateInstance(&pEngineer);
     pEngineer->Init(CPsLossEngineer::IBeam);
-    pEngineer->SetBroker(pBroker,agentID);
+    pEngineer->SetBroker(pBroker,statusGroupID);
     (*ppEng) = pEngineer;
     (*ppEng)->AddRef();
 }

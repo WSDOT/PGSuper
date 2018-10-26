@@ -96,6 +96,7 @@ DEFINE_GUID(IID_IBridge,
 interface IBridge : IUnknown
 {
    virtual Float64 GetLength() = 0; // overall length of bridge
+   virtual Float64 GetSpanLength(SpanIndexType span) = 0; // returns the pier to pier span length
    virtual double GetAlignmentOffset() = 0;
 
    virtual SpanIndexType GetSpanCount() = 0;
@@ -215,6 +216,11 @@ interface IBridge : IUnknown
    // this is usefuly for determing the skew angle of piers that aren't in the bridge model yet
    // returns false if there is an error in the strOrientation string
    virtual bool GetSkewAngle(Float64 station,const char* strOrientation,Float64* pSkew) = 0;
+
+   // negative moment calculations and results need not be processed if a simple span analysis is
+   // used or if there isn't any continuity.
+   // this method returns true when negative moments should be processed
+   virtual bool ProcessNegativeMoments(SpanIndexType spanIdx) = 0;
 };
 
 /*****************************************************************************

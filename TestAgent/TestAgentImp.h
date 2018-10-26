@@ -31,7 +31,7 @@
 #include <IFace\DistributionFactors.h>
 #include <IFace\GirderHandlingSpecCriteria.h>
 
-#include <PgsExt\InterfaceCache.h>
+#include <EAF\EAFInterfaceCache.h>
 
 /////////////////////////////////////////////////////////////////////////////
 // CTestAgentImp

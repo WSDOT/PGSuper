@@ -36,7 +36,7 @@
 #include <IFace\GirderHandlingPointOfInterest.h>
 #include <IFace\GirderHandlingSpecCriteria.h>
 #include <PgsExt\PointOfInterest.h>
-#include <PgsExt\AutoProgress.h>
+#include <EAF\EAFAutoProgress.h>
 #include <PgsExt\PhysicalConverter.h>
 #include <PgsExt\LiftingAnalysisArtifact.h>
 #include <PgsExt\HaulingAnalysisArtifact.h>
@@ -65,9 +65,10 @@ static LengthTool    DUMMY_TOOL(DUMMY);
 /////////////////////////////////////////////////////////////////////////////
 // CFactorOfSafetyView
 
-IMPLEMENT_DYNCREATE(CFactorOfSafetyView, CAutoCalcView)
+IMPLEMENT_DYNCREATE(CFactorOfSafetyView, CView)
 
 CFactorOfSafetyView::CFactorOfSafetyView():
+CEAFAutoCalcViewMixin(this),
 m_bValidGraph(false),
 m_pXFormat(0),
 m_pYFormat(0),
@@ -88,7 +89,7 @@ CFactorOfSafetyView::~CFactorOfSafetyView()
 }
 
 
-BEGIN_MESSAGE_MAP(CFactorOfSafetyView, CAutoCalcView)
+BEGIN_MESSAGE_MAP(CFactorOfSafetyView, CView)
 	//{{AFX_MSG_MAP(CFactorOfSafetyView)
 	ON_WM_CREATE()
 	ON_UPDATE_COMMAND_UI(ID_FILE_PRINT, OnUpdateFilePrint)
@@ -101,7 +102,7 @@ END_MESSAGE_MAP()
 
 int CFactorOfSafetyView::OnCreate(LPCREATESTRUCT lpCreateStruct) 
 {
-	if (CAutoCalcView::OnCreate(lpCreateStruct) == -1)
+	if (CView::OnCreate(lpCreateStruct) == -1)
 		return -1;
 	
    m_pFrame = (CFactorOfSafetyChildFrame*)GetParent();
@@ -320,6 +321,12 @@ void CFactorOfSafetyView::DrawLegend(CDC* pDC)
    pDC->SetBkColor(oldBkColor);
 }
 
+void CFactorOfSafetyView::OnInitialUpdate()
+{
+   CView::OnInitialUpdate();
+   CEAFAutoCalcViewMixin::Initialize();
+}
+
 void CFactorOfSafetyView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint) 
 {
    if ( lHint == HINT_UPDATEERROR )
@@ -328,7 +335,7 @@ void CFactorOfSafetyView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
       m_ErrorMsg = *pmsg;
       m_bUpdateError = true;
       m_bValidGraph       = false;
-      CAutoCalcView::OnUpdate( pSender, lHint, pHint );
+      CEAFAutoCalcViewMixin::OnUpdate( pSender, lHint, pHint );
       Invalidate();
       return;
    }
@@ -350,7 +357,8 @@ void CFactorOfSafetyView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 
 
    // deal with license plate stuff
-   CAutoCalcView::OnUpdate( pSender, lHint, pHint);
+   CView::OnUpdate(pSender,lHint,pHint);
+   CEAFAutoCalcViewMixin::OnUpdate( pSender, lHint, pHint);
 
    // update model is controlled by frame window. This is definitely a hack, but I
    // don't think there is a clean way to do it without adding complexity.
@@ -366,12 +374,12 @@ void CFactorOfSafetyView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 #ifdef _DEBUG
 void CFactorOfSafetyView::AssertValid() const
 {
-	CAutoCalcView::AssertValid();
+	CView::AssertValid();
 }
 
 void CFactorOfSafetyView::Dump(CDumpContext& dc) const
 {
-	CAutoCalcView::Dump(dc);
+	CView::Dump(dc);
 }
 #endif //_DEBUG
 
@@ -422,7 +430,7 @@ void CFactorOfSafetyView::DoUpdateNow()
    PRECONDITION(m_pBroker);
 
    GET_IFACE(IProgress,pProgress);
-   pgsAutoProgress ap(pProgress);
+   CEAFAutoProgress ap(pProgress);
 
    m_bValidGraph = false;
    m_Graph.ClearData();
@@ -559,18 +567,18 @@ void CFactorOfSafetyView::OnUpdateFilePrint(CCmdUI* pCmdUI)
 
 void CFactorOfSafetyView::OnBeginPrinting(CDC* pDC, CPrintInfo* pInfo) 
 {
-	CAutoCalcView::OnBeginPrinting(pDC, pInfo);
+	CView::OnBeginPrinting(pDC, pInfo);
 }
 
 void CFactorOfSafetyView::OnEndPrinting(CDC* pDC, CPrintInfo* pInfo) 
 {
-	CAutoCalcView::OnEndPrinting(pDC, pInfo);
+	CView::OnEndPrinting(pDC, pInfo);
 }
 
 BOOL CFactorOfSafetyView::OnPreparePrinting(CPrintInfo* pInfo) 
 {
 	if (DoPreparePrinting(pInfo))
-	   return CAutoCalcView::OnPreparePrinting(pInfo);
+	   return CView::OnPreparePrinting(pInfo);
    else
       return FALSE;
 }
@@ -582,7 +590,7 @@ void CFactorOfSafetyView::OnPrint(CDC* pDC, CPrintInfo* pInfo)
    CString strBottomTitle;
    strBottomTitle.Format("PGSuper™, Copyright © %4d, WSDOT, All rights reserved",sysDate().Year());
    border.SetTitle(strBottomTitle);
-   CDocument* pdoc = this->GetDocument();
+   CDocument* pdoc = GetDocument();
    CString path = pdoc->GetPathName();
    border.SetFileName(path);
    CRect rcPrint = border.Print(pDC, 1);
@@ -594,6 +602,6 @@ void CFactorOfSafetyView::OnPrint(CDC* pDC, CPrintInfo* pInfo)
    }
 
    m_PrintRect = rcPrint;
-	CAutoCalcView::OnPrint(pDC, pInfo);
+	CView::OnPrint(pDC, pInfo);
 }
 

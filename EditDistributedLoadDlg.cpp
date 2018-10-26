@@ -28,6 +28,7 @@
 
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
+#include <IFace\DisplayUnits.h>
 #include <MfcTools\CustomDDX.h>
 #include <System\Tokenizer.h>
 #include <..\htmlhelp\HelpTopics.hh>
@@ -206,9 +207,8 @@ END_MESSAGE_MAP()
 BOOL CEditDistributedLoadDlg::OnInitDialog() 
 {
    // units
-   GET_IFACE(IProjectSettings,pProjSettings);
-   Int32 units = pProjSettings->GetUnitsMode();
-   m_bUnitsSI = (units == pgsTypes::umSI) ? true : false;
+   GET_IFACE(IDisplayUnits,pDisplayUnits);
+   m_bUnitsSI = IS_SI_UNITS(pDisplayUnits);
 
    if (m_bUnitsSI)
       m_pLengthUnit = &unitMeasure::Meter;

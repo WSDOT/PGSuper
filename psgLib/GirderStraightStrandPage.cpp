@@ -31,8 +31,8 @@
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
-//#undef THIS_FILE
-//static char THIS_FILE[] = __FILE__;
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
 #endif
 
 /////////////////////////////////////////////////////////////////////////////
@@ -123,20 +123,6 @@ BOOL CGirderStraightStrandPage::OnInitDialog()
 
 	return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE
-}
-
-CString CGirderStraightStrandPage::GetLengthUnitString()
-{
-   CGirderMainSheet* ppar = (CGirderMainSheet*) GetParent();
-   ASSERT(ppar);
-   return ppar->GetShortLengthUnitString();
-}
-
-unitLength CGirderStraightStrandPage::GetLengthUnit()
-{
-   CGirderMainSheet* ppar = (CGirderMainSheet*) GetParent();
-   ASSERT(ppar);
-   return ppar->GetShortLengthUnit();
 }
 
 void CGirderStraightStrandPage::OnAppendTemporaryStrand() 

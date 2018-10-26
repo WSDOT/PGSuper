@@ -24,9 +24,9 @@
 //
 
 #include "stdafx.h"
-#include "PGSuper.h"
-#include "BridgeDescDlg.h"
 #include "BridgeDescDeckRebarGrid.h"
+#include "PGSuperDoc.h"
+#include "BridgeDescDlg.h"
 #include "BridgeDescDeckReinforcementPage.h"
 #include <Units\Measure.h>
 
@@ -144,7 +144,7 @@ void CBridgeDescDeckRebarGrid::CustomInit()
 	Initialize( );
 
    CComPtr<IBroker> pBroker;
-   AfxGetBroker(&pBroker);
+   EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
 
 	GetParam( )->EnableUndo(FALSE);
@@ -324,7 +324,7 @@ CString CBridgeDescDeckRebarGrid::GetCellValue(ROWCOL nRow, ROWCOL nCol)
 bool CBridgeDescDeckRebarGrid::GetRowData(ROWCOL nRow, CDeckRebarData::NegMomentRebarData* pRebarData)
 {
    CComPtr<IBroker> pBroker;
-   AfxGetBroker(&pBroker);
+   EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
 
    // pier index
@@ -372,7 +372,7 @@ bool CBridgeDescDeckRebarGrid::GetRowData(ROWCOL nRow, CDeckRebarData::NegMoment
 void CBridgeDescDeckRebarGrid::PutRowData(ROWCOL nRow, const CDeckRebarData::NegMomentRebarData& rebarData)
 {
    CComPtr<IBroker> pBroker;
-   AfxGetBroker(&pBroker);
+   EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
 
 	GetParam()->EnableUndo(FALSE);

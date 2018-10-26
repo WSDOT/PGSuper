@@ -35,8 +35,8 @@
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
-//#undef THIS_FILE
-//static char THIS_FILE[] = __FILE__;
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
 #endif
 
 
@@ -256,12 +256,12 @@ HICON  ConcreteLibraryEntry::GetIcon() const
 //======================== LIFECYCLE  =======================================
 //======================== OPERATORS  =======================================
 //======================== OPERATIONS =======================================
-bool ConcreteLibraryEntry::Edit(libUnitsMode::Mode mode, bool allowEditing)
+bool ConcreteLibraryEntry::Edit(bool allowEditing)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
    // exchange data with dialog
-   CConcreteEntryDlg dlg(mode, allowEditing);
+   CConcreteEntryDlg dlg(allowEditing);
    dlg.m_Fc  = this->GetFc();
    dlg.m_Ds  = this->GetStrengthDensity();
    dlg.m_Dw  = this->GetWeightDensity();

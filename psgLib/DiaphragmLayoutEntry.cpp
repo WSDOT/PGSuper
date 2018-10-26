@@ -33,8 +33,8 @@
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
-//#undef THIS_FILE
-//static char THIS_FILE[] = __FILE__;
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
 #endif
 
 
@@ -170,7 +170,7 @@ DiaphragmLayoutEntry::DiaphragmLayoutVec DiaphragmLayoutEntry::GetDiaphragmLayou
 //======================== LIFECYCLE  =======================================
 //======================== OPERATORS  =======================================
 //======================== OPERATIONS =======================================
-bool DiaphragmLayoutEntry::Edit(libUnitsMode::Mode mode, bool allowEditing)
+bool DiaphragmLayoutEntry::Edit(bool allowEditing)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 

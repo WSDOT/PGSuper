@@ -25,6 +25,7 @@
 #include <IFace\Project.h>
 #include <IFace\PrestressForce.h>
 #include <IFace\Allowables.h>
+#include <IFace\DisplayUnits.h>
 
 #include <PgsExt\BridgeDescription.h>
 
@@ -86,7 +87,7 @@ pgsStrandDesignTool::pgsStrandDesignTool(SHARED_LOGFILE lf):
 LOGFILE(lf),
 m_pArtifact(NULL),
 m_pBroker(NULL),
-m_AgentID(NULL),
+m_StatusGroupID(NULL),
 m_DoDesignForStrandSlope(false),
 m_AllowableStrandSlope(0.0),
 m_DoDesignForHoldDownForce(false),
@@ -99,13 +100,13 @@ m_ConcreteAccuracy(::ConvertToSysUnits(100,unitMeasure::PSI))
 {
 }
 
-void pgsStrandDesignTool::Initialize(IBroker* pBroker, long agentID, pgsDesignArtifact* pArtif)
+void pgsStrandDesignTool::Initialize(IBroker* pBroker, long statusGroupID, pgsDesignArtifact* pArtif)
 {
    ATLASSERT(pBroker);
 
    // Cache a whole bunch of stuff that does not change during design
    m_pBroker = pBroker;
-   m_AgentID = agentID;
+   m_StatusGroupID = statusGroupID;
 
    m_pArtifact = pArtif;
    m_Span = m_pArtifact->GetSpan();
@@ -722,7 +723,7 @@ StrandIndexType pgsStrandDesignTool::ComputePermanentStrandsRequiredForPrestress
 
    // Estimate prestress loss
    pgsPsForceEng psfeng;
-   psfeng.SetAgentID(m_AgentID);
+   psfeng.SetStatusGroupID(m_StatusGroupID);
    psfeng.SetBroker(m_pBroker);
    LOSSDETAILS losses;
    ATLASSERT(m_Span == poi.GetSpan() && m_Girder == poi.GetGirder());
@@ -1809,7 +1810,7 @@ Float64 pgsStrandDesignTool::GetPrestressForceAtLifting(const GDRCONFIG &guess,c
 
    // Estimate prestress loss
    pgsPsForceEng psfeng;
-   psfeng.SetAgentID(m_AgentID);
+   psfeng.SetStatusGroupID(m_StatusGroupID);
    psfeng.SetBroker(m_pBroker);
    LOSSDETAILS losses;
    ATLASSERT(m_Span == poi.GetSpan() && m_Girder == poi.GetGirder());
@@ -1875,7 +1876,7 @@ Float64 pgsStrandDesignTool::GetPrestressForceMz(pgsTypes::Stage stage,const pgs
 
    // Estimate prestress loss
    pgsPsForceEng psfeng;
-   psfeng.SetAgentID(m_AgentID);
+   psfeng.SetStatusGroupID(m_StatusGroupID);
    psfeng.SetBroker(m_pBroker);
    LOSSDETAILS losses;
    ATLASSERT(m_Span == poi.GetSpan() && m_Girder == poi.GetGirder());
@@ -2364,8 +2365,9 @@ void pgsStrandDesignTool::SetMinimumFinalMzEccentricity(Float64 ecc)
 
 Float64 pgsStrandDesignTool::GetMinimumReleaseStrength() const
 {
-   GET_IFACE(IProjectSettings, pProjSettings);
-   return pProjSettings->GetUnitsMode() == pgsTypes::umSI ? ::ConvertToSysUnits(28.0,unitMeasure::MPa) : ::ConvertToSysUnits(4.0,unitMeasure::KSI); // minimum per LRFD 5.4.2.1
+   GET_IFACE(IDisplayUnits,pDisplayUnits);
+   return IS_SI_UNITS(pDisplayUnits) ? ::ConvertToSysUnits(28.0,unitMeasure::MPa) 
+                                     : ::ConvertToSysUnits( 4.0,unitMeasure::KSI); // minimum per LRFD 5.4.2.1
 }
 
 Float64 pgsStrandDesignTool::GetMaximumReleaseStrength() const
@@ -2377,14 +2379,16 @@ Float64 pgsStrandDesignTool::GetMaximumReleaseStrength() const
 
 Float64 pgsStrandDesignTool::GetMinimumConcreteStrength() const
 {
-   GET_IFACE(IProjectSettings, pProjSettings);
-   return pProjSettings->GetUnitsMode() == pgsTypes::umSI ? ::ConvertToSysUnits(34.5,unitMeasure::MPa) : ::ConvertToSysUnits(5.0,unitMeasure::KSI); // agreed by wsdot and txdot
+   GET_IFACE(IDisplayUnits,pDisplayUnits);
+   return IS_SI_UNITS(pDisplayUnits) ? ::ConvertToSysUnits(34.5,unitMeasure::MPa) 
+                                     : ::ConvertToSysUnits( 5.0,unitMeasure::KSI); // agreed by wsdot and txdot
 }
 
 Float64 pgsStrandDesignTool::GetMaximumConcreteStrength() const
 {
-   GET_IFACE(IProjectSettings, pProjSettings);
-   return pProjSettings->GetUnitsMode() == pgsTypes::umSI ? ::ConvertToSysUnits(105,unitMeasure::MPa) : ::ConvertToSysUnits(15.0,unitMeasure::KSI);
+   GET_IFACE(IDisplayUnits,pDisplayUnits);
+   return IS_SI_UNITS(pDisplayUnits) ? ::ConvertToSysUnits(105.0,unitMeasure::MPa) 
+                                     : ::ConvertToSysUnits( 15.0,unitMeasure::KSI);
 }
 
 arDesignStrandFillType pgsStrandDesignTool::GetOriginalStrandFillType() const

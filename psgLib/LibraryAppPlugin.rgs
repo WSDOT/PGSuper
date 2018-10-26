@@ -1,0 +1,25 @@
+HKCR
+{
+	PGSuperLibrary.LibraryAppPlugin.1 = s 'LibraryAppPlugin Class'
+	{
+		CLSID = s '{E67716CF-F63C-472c-8FF9-3C959A736097}'
+	}
+	PGSuperLibrary.LibraryAppPlugin = s 'LibraryAppPlugin Class'
+	{
+		CLSID = s '{E67716CF-F63C-472c-8FF9-3C959A736097}'
+		CurVer = s 'PGSuperLibrary.LibraryAppPlugin.1'
+	}
+	NoRemove CLSID
+	{
+		ForceRemove {E67716CF-F63C-472c-8FF9-3C959A736097} = s 'LibraryAppPlugin Class'
+		{
+			ProgID = s 'PGSuperLibrary.LibraryAppPlugin.1'
+			VersionIndependentProgID = s 'PGSuperLibrary.LibraryAppPlugin'
+			ForceRemove 'Programmable'
+			InprocServer32 = s '%MODULE%'
+			{
+				val ThreadingModel = s 'Apartment'
+			}
+		}
+	}
+}

@@ -33,8 +33,8 @@
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
-//#undef THIS_FILE
-//static char THIS_FILE[] = __FILE__;
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
 #endif
 
 /****************************************************************************
@@ -60,8 +60,10 @@ CDeckDescription::CDeckDescription()
    SlabEc               = ::ConvertToSysUnits(4200.,unitMeasure::KSI);
 
    WearingSurface = pgsTypes::wstSacrificialDepth;
-   OverlayWeight    = ::ConvertToSysUnits( 25.0, unitMeasure::PSF );
-   bInputAsDepthAndDensity = true;
+   bInputAsDepthAndDensity = false;
+   OverlayWeight  = ::ConvertToSysUnits( 25.0, unitMeasure::PSF );
+   OverlayDensity = 0;
+   OverlayDepth = 0;
    SacrificialDepth = ::ConvertToSysUnits(  0.5, unitMeasure::Inch );
    PanelDepth       = ::ConvertToSysUnits(  0.0, unitMeasure::Inch );
    PanelSupport     = ::ConvertToSysUnits(  4.0, unitMeasure::Inch );
@@ -69,6 +71,9 @@ CDeckDescription::CDeckDescription()
 
    OverhangTaper = pgsTypes::TopTopFlange;
    OverhangEdgeDepth = ::ConvertToSysUnits( 7.0, unitMeasure::Inch );
+
+   Condition = pgsTypes::cfGood;
+   ConditionFactor = 1.0;
 
    m_pBridgeDesc = NULL;
 }
@@ -153,6 +158,12 @@ bool CDeckDescription::operator == (const CDeckDescription& rOther) const
       return false;
 
    if ( DeckEdgePoints != rOther.DeckEdgePoints )
+      return false;
+
+   if ( Condition != rOther.Condition )
+      return false;
+
+   if ( !IsEqual(ConditionFactor,rOther.ConditionFactor) )
       return false;
 
    return true;
@@ -366,6 +377,20 @@ HRESULT CDeckDescription::Load(IStructuredLoad* pStrLoad,IProgress* pProgress,pg
       hr = pStrLoad->get_Property("SlabEc", &var );
       SlabEc = var.dblVal;
 
+      if ( 4 < version )
+      {
+         pStrLoad->BeginUnit("Condition");
+         var.vt = VT_I4;
+         pStrLoad->get_Property("ConditionFactorType",&var);
+         Condition = (pgsTypes::ConditionFactorType)(var.lVal);
+
+         var.vt = VT_R8;
+         pStrLoad->get_Property("ConditionFactor",&var);
+         ConditionFactor = var.dblVal;
+      
+         pStrLoad->EndUnit();
+      }
+
       DeckRebarData.Load(pStrLoad,pProgress);
 
       // in some 2.1 Beta versions we stored deck edge points for NoDeck and CompositeOverlay decks
@@ -387,7 +412,7 @@ HRESULT CDeckDescription::Save(IStructuredSave* pStrSave,IProgress* pProgress)
 {
    HRESULT hr = S_OK;
 
-   pStrSave->BeginUnit("Deck",4.0);
+   pStrSave->BeginUnit("Deck",5.0);
 
    pStrSave->put_Property("SlabType",         CComVariant(DeckType));
    pStrSave->put_Property("TransverseConnectivity", CComVariant(TransverseConnectivity)); // added for version 14.0
@@ -435,6 +460,12 @@ HRESULT CDeckDescription::Save(IStructuredSave* pStrSave,IProgress* pProgress)
    pStrSave->put_Property("SlabK1",               CComVariant(SlabK1));
    pStrSave->put_Property("SlabUserEc", CComVariant(SlabUserEc));
    pStrSave->put_Property("SlabEc",     CComVariant(SlabEc));
+
+   // Added in version 5
+   pStrSave->BeginUnit("Condition",1.0);
+   pStrSave->put_Property("ConditionFactorType",CComVariant(Condition));
+   pStrSave->put_Property("ConditionFactor",CComVariant(ConditionFactor));
+   pStrSave->EndUnit(); // Condition
 
    DeckRebarData.Save(pStrSave,pProgress);
 
@@ -489,6 +520,9 @@ void CDeckDescription::MakeCopy(const CDeckDescription& rOther)
 
    PanelDepth       = rOther.PanelDepth;
    PanelSupport     = rOther.PanelSupport;
+
+   Condition = rOther.Condition;
+   ConditionFactor = rOther.ConditionFactor;
 
    DeckRebarData = rOther.DeckRebarData;
 

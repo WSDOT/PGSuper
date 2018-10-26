@@ -85,10 +85,6 @@ protected:
 
 public:
    void OnEnableDelete(bool canDelete);
-   CString GetLongLengthUnitString() const;
-   unitLength GetLongLengthUnit() const;
-   CString GetShortLengthUnitString() const;
-   unitLength GetShortLengthUnit() const;
 };
 
 //{{AFX_INSERT_LOCATION}}

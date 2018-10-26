@@ -76,9 +76,9 @@ void pgsPsForceEng::SetBroker(IBroker* pBroker)
    m_pBroker = pBroker;
 }
 
-void pgsPsForceEng::SetAgentID(long agentID)
+void pgsPsForceEng::SetStatusGroupID(long statusGroupID)
 {
-   m_AgentID = agentID;
+   m_StatusGroupID = statusGroupID;
 }
 
 void pgsPsForceEng::CreateLossEngineer(SpanIndexType spanIdx,GirderIndexType gdrIdx)
@@ -94,7 +94,7 @@ void pgsPsForceEng::CreateLossEngineer(SpanIndexType spanIdx,GirderIndexType gdr
    CComPtr<IBeamFactory> beamFactory;
    pGdr->GetBeamFactory(&beamFactory);
 
-   beamFactory->CreatePsLossEngineer(m_pBroker,m_AgentID,spanIdx,gdrIdx,&m_LossEngineer);
+   beamFactory->CreatePsLossEngineer(m_pBroker,m_StatusGroupID,spanIdx,gdrIdx,&m_LossEngineer);
 }
 
 void pgsPsForceEng::Invalidate()
@@ -724,7 +724,7 @@ Float64 pgsPsForceEng::GetHoldDownForce(SpanIndexType span,GirderIndexType gdr,c
 void pgsPsForceEng::MakeCopy(const pgsPsForceEng& rOther)
 {
    m_pBroker = rOther.m_pBroker;
-   m_AgentID = rOther.m_AgentID;
+   m_StatusGroupID = rOther.m_StatusGroupID;
 
    m_PrestressTransferComputationType = rOther.m_PrestressTransferComputationType;
 }

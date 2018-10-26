@@ -73,8 +73,8 @@ void CConfigurePGSuperDlg::DoDataExchange(CDataExchange* pDX)
    if (!pDX->m_bSaveAndValidate)
    {
       // save original data on the way in
-      m_OriginalMethod = m_Method;
-      if ( m_Method != (int)srtDefault )
+      m_OriginalSharedResourceType = m_SharedResourceType;
+      if ( m_SharedResourceType != srtDefault )
       {
 	      m_OriginalPublisher = m_Publisher;
          m_OriginalServer = m_CurrentServer;
@@ -87,13 +87,38 @@ void CConfigurePGSuperDlg::DoDataExchange(CDataExchange* pDX)
    }
    else
    {
+      // Error checking can be very tricky if network burps
+      // Make sure the selected publisher is in the catalog
+      if(m_Method != 0) // srtDefault
+      {
+         const CPGSuperCatalogServer* psrvr = m_Servers.GetServer(m_CurrentServer);
+         if (psrvr==NULL)
+         {
+            ::AfxMessageBox("The selected server is invalid - please select another or the generic library package",MB_ICONEXCLAMATION);
+            pDX->Fail();
+         }
+
+         if(!psrvr->DoesPublisherExist(m_Publisher))
+         {
+            ::AfxMessageBox("The selected server is invalid - please select another or the generic library package",MB_ICONEXCLAMATION);
+            pDX->Fail();
+         }
+
+         m_SharedResourceType = psrvr->GetServerType();
+
+      }
+      else
+      {
+         m_SharedResourceType = srtDefault;
+      }
+
       // check if we changed publishers (don't care if Default)
-      if ( !m_bUpdateCache && m_Method != (int)srtDefault)
+      if ( !m_bUpdateCache && m_SharedResourceType != srtDefault)
       {
          bool bchanged = false;
-         bchanged |= m_OriginalMethod != m_Method;
+         bchanged |= m_OriginalSharedResourceType != m_SharedResourceType;
 
-         if ( m_Method != (int)srtLocal)
+         if ( m_SharedResourceType != srtLocal)
          {
             bchanged |= m_OriginalPublisher != m_Publisher;
          }
@@ -128,7 +153,6 @@ void CConfigurePGSuperDlg::DoDataExchange(CDataExchange* pDX)
 BEGIN_MESSAGE_MAP(CConfigurePGSuperDlg, CDialog)
 	//{{AFX_MSG_MAP(CConfigurePGSuperDlg)
 	ON_BN_CLICKED(ID_HELP, OnHelp)
-	ON_LBN_SETFOCUS(IDC_PUBLISHERS, OnSetfocusPublishers)
    ON_BN_CLICKED(IDC_ADD,OnAddCatalogServer)
 	ON_CBN_SELCHANGE(IDC_SERVERS, OnServerChanged)
 	ON_BN_CLICKED(IDC_UPDATENOW, OnUpdatenow)
@@ -151,7 +175,13 @@ BOOL CConfigurePGSuperDlg::OnInitDialog()
    // no cache update until we're told
    m_bUpdateCache = false;
 
+   m_Method = m_SharedResourceType==srtDefault ? 0 : 1;
+
    UpdateFrequencyList();
+
+   // must be called before ServerList();
+   CDialog::OnInitDialog();
+
    ServerList();
 
    CWnd* pWnd = GetDlgItem(IDC_EDIT);
@@ -163,14 +193,11 @@ BOOL CConfigurePGSuperDlg::OnInitDialog()
    else
       pWnd->SetWindowText("Set the User, Library, and Template Configuration information.");
 
-   CDialog::OnInitDialog();
-
    if ( m_bFirstRun )
       HideOkAndCancelButtons();
 
    OnMethod();
-
-   ConfigureWebLink();
+   OnServerChanged();
 
 	return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE
@@ -237,16 +264,7 @@ void CConfigurePGSuperDlg::ServerList()
    {
       pCB->SetCurSel(0);
    }
-
-   OnServerChanged();
 }
-
-void CConfigurePGSuperDlg::OnSetfocusPublishers() 
-{
-   // when the Publisher list gets the focus, select the radio button
-   CheckRadioButton(IDC_GENERIC,IDC_DOWNLOAD,IDC_DOWNLOAD);
-}
-
 
 void CConfigurePGSuperDlg::OnAddCatalogServer()
 {
@@ -256,6 +274,7 @@ void CConfigurePGSuperDlg::OnAddCatalogServer()
    {
       m_Servers = dlg.m_Servers;
       ServerList();
+      OnServerChanged();
    }
 }
 
@@ -275,61 +294,97 @@ void CConfigurePGSuperDlg::OnServerChanged()
 
       PublisherList();
 
-      OnSetfocusPublishers();
-
       ConfigureWebLink();
    }
 }
 
 
+
 void CConfigurePGSuperDlg::PublisherList() 
 {
-   // fill up the list box
-   const CPGSuperCatalogServer* pserver = m_Servers.GetServer(m_CurrentServer);
-   m_bNetworkError = pserver->IsNetworkError();
+   CButton* pGen = (CButton*)GetDlgItem(IDC_GENERIC);
+   int check = pGen->GetCheck();
 
-   if ( !m_bNetworkError )
+   if (BST_CHECKED==check)
    {
-      std::vector<CString> items = pserver->GetPublishers();
+      // default publisher
+      // no need to hit the internet if we don't have to
       CListBox* pLB = (CListBox*)GetDlgItem(IDC_PUBLISHERS);
-
-      int idx = pLB->GetCurSel();
       pLB->ResetContent();
-
-      for ( std::vector<CString>::iterator iter = items.begin(); iter != items.end(); iter++ )
-      {
-         CString strItem = *iter;
-         pLB->AddString(strItem);
-      }
-
-      if ( idx != LB_ERR && idx< (int)items.size() )
-         pLB->SetCurSel(idx);
-      else
-         pLB->SetCurSel(0);
-
-      pLB->EnableWindow(TRUE);
-      GetDlgItem(IDC_UPDATENOW)->EnableWindow(TRUE);
    }
    else
    {
-      // internet option isn't avaliable
-      CListBox* pLB = (CListBox*)GetDlgItem(IDC_PUBLISHERS);
-      pLB->ResetContent();
-      pLB->AddString("An error occured while accessing the list");
-      pLB->AddString("of publishers.");
-      pLB->AddString("");
-      pLB->AddString("The most recently downloaded settings");
-      pLB->AddString("will be used");
-      pLB->EnableWindow(FALSE);
+      // this can take a while, so create a progress window,
+      CComPtr<IProgressMonitorWindow> wndProgress;
+      wndProgress.CoCreateInstance(CLSID_ProgressMonitorWindow);
+      wndProgress->put_HasGauge(VARIANT_FALSE);
+      wndProgress->put_HasCancel(VARIANT_FALSE);
+      wndProgress->Show(CComBSTR("Fetching package names from server..."),GetSafeHwnd());
 
+      // fill up the list box
+      const CPGSuperCatalogServer* pserver = m_Servers.GetServer(m_CurrentServer);
+      m_bNetworkError = pserver->IsNetworkError();
 
-      if ( m_bFirstRun )
+      bool is_error = m_bNetworkError;
+
+      if ( !m_bNetworkError )
       {
-         m_Method = (m_Method == 1 ? 0 : m_Method);
-         GetDlgItem(IDC_DOWNLOAD)->EnableWindow(FALSE);
+         try
+         {
+            std::vector<CString> items = pserver->GetPublishers();
+
+            CListBox* pLB = (CListBox*)GetDlgItem(IDC_PUBLISHERS);
+
+            int idx = pLB->GetCurSel();
+            pLB->ResetContent();
+
+            for ( std::vector<CString>::iterator iter = items.begin(); iter != items.end(); iter++ )
+            {
+               CString strItem = *iter;
+               pLB->AddString(strItem);
+            }
+
+            if ( idx != LB_ERR && idx< (int)items.size() )
+            {
+               pLB->SetCurSel(idx);
+            }
+            else
+            {
+               // try to set current publisher
+               int sst = pLB->SelectString(-1,m_Publisher);
+               if (sst==LB_ERR)
+                  pLB->SetCurSel(0);
+            }
+
+            pLB->EnableWindow(TRUE);
+            GetDlgItem(IDC_UPDATENOW)->EnableWindow(TRUE);
+         }
+         catch (CCatalogServerException excp)
+         {
+            // lots of things could have gone wrong, none of them good.
+            // let the exception do the talking
+            CString msg = excp.GetErrorMessage();
+            ::AfxMessageBox(msg,MB_ICONEXCLAMATION);
+            is_error = true;
+         }
       }
-      else
+
+      if (is_error)
       {
+         // internet option isn't avaliable
+         CListBox* pLB = (CListBox*)GetDlgItem(IDC_PUBLISHERS);
+         pLB->ResetContent();
+
+		 pLB->AddString("An error occured while accessing the list");
+		 pLB->AddString("of publishers.");
+         if (!m_bFirstRun )
+		 {
+			 pLB->AddString("");
+			 pLB->AddString("The most recently downloaded settings");
+			 pLB->AddString("will be used");
+			 pLB->EnableWindow(FALSE);
+		 }
+
          if ( m_Method == 1 )
             GetDlgItem(IDC_UPDATENOW)->EnableWindow(FALSE);
       }
@@ -352,16 +407,16 @@ void CConfigurePGSuperDlg::OnUpdatenow()
 
 void CConfigurePGSuperDlg::OnGeneric() 
 {
-   GetDlgItem(IDC_UPDATENOW)->EnableWindow(TRUE);
    OnMethod();
+   this->PublisherList();
+   ConfigureWebLink();
 }
 
 void CConfigurePGSuperDlg::OnDownload() 
 {
-   const CPGSuperCatalogServer* pserver = m_Servers.GetServer(m_CurrentServer);
-   m_bNetworkError = pserver->IsNetworkError();
-
    OnMethod();
+   this->PublisherList();
+   ConfigureWebLink();
 }
 
 void CConfigurePGSuperDlg::OnMethod()
@@ -387,30 +442,49 @@ void CConfigurePGSuperDlg::OnLbnSelchangePublishers()
 
 void CConfigurePGSuperDlg::ConfigureWebLink()
 {
-   const CPGSuperCatalogServer* pserver = m_Servers.GetServer(m_CurrentServer);
-   if(pserver!=NULL)
+   CWnd* pWeb = (CWnd*)GetDlgItem(IDC_PUBLISHER_HYPERLINK);
+
+   CButton* pGen = (CButton*)GetDlgItem(IDC_GENERIC);
+   if (BST_CHECKED!=pGen->GetCheck())
    {
-      CListBox* pCB = (CListBox*)GetDlgItem(IDC_PUBLISHERS);
-      int idx = pCB->GetCurSel();
-      if ( idx != CB_ERR )
+      const CPGSuperCatalogServer* pserver = m_Servers.GetServer(m_CurrentServer);
+      if(pserver!=NULL)
       {
-         CString strName;
-         pCB->GetText(idx,strName);
-
-         CString url = pserver->GetWebLink(strName);
-
-         CWnd* pCB = (CWnd*)GetDlgItem(IDC_PUBLISHER_HYPERLINK);
-
-         if (!url.IsEmpty())
+         CListBox* pCB = (CListBox*)GetDlgItem(IDC_PUBLISHERS);
+         int idx = pCB->GetCurSel();
+         if ( idx != CB_ERR )
          {
-            m_PublisherHyperLink.SetURL(url);
-            pCB->EnableWindow(TRUE);
-         }
-         else
-         {
-            pCB->EnableWindow(FALSE);
-            m_PublisherHyperLink.SetURL(CString("No web link defined for this publisher."));
+            CString strName;
+            pCB->GetText(idx,strName);
+
+            CString url;
+            
+            try
+            {
+               url = pserver->GetWebLink(strName);
+            }
+            catch(CCatalogServerException exp)
+            {
+               ATLASSERT(0); // not sure why this would happen this late in the game.
+               CString msg = exp.GetErrorMessage();
+            }
+
+            if (!url.IsEmpty())
+            {
+               pWeb->EnableWindow(TRUE);
+               m_PublisherHyperLink.SetURL(url);
+            }
+            else
+            {
+               pWeb->EnableWindow(FALSE);
+               m_PublisherHyperLink.SetURL(CString("No web link defined for this publisher."));
+            }
          }
       }
+   }
+   else
+   {
+      pWeb->EnableWindow(FALSE);
+      m_PublisherHyperLink.SetURL(CString("No web link defined for this publisher."));
    }
 }

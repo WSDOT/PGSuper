@@ -46,7 +46,7 @@ class CSectionViewDialog : public CDialog
 {
 // Construction
 public:
-	CSectionViewDialog(GirderLibraryEntry* pShape,bool isEnd,libUnitsMode::Mode uMode, CWnd* pParent = NULL);   // standard constructor
+	CSectionViewDialog(const GirderLibraryEntry* pShape,bool isEnd,CWnd* pParent = NULL);   // standard constructor
 
 // Dialog Data
 	//{{AFX_DATA(CSectionViewDialog)
@@ -66,11 +66,10 @@ public:
 protected:
    CComPtr<IShape>     m_pShape;
    CComPtr<IShapeProperties> m_ShapeProps;
-   GirderLibraryEntry* m_pGirderEntry;
+   const GirderLibraryEntry* m_pGirderEntry;
    bool                m_IsEnd;
    bool                m_DrawNumbers;
    Float64             m_Radius;
-   libUnitsMode::Mode  m_UnitsMode;
 
 #ifdef _DEBUG
    std::vector< CComPtr<IShape> > m_RegionShapes; // for debugging the strandmover

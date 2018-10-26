@@ -621,7 +621,7 @@ void write_bridge_data(IBroker* pBroker,IDisplayUnits* pDisplayUnits,rptChapter*
 {
    GET_IFACE2(pBroker, IGirderData, pGirderData);
 
-   bool bUnitsSI = (pDisplayUnits->GetUnitDisplayMode() == pgsTypes::umSI);
+   bool bUnitsSI = IS_SI_UNITS(pDisplayUnits);
 
    rptParagraph* pPara;
    pPara = new rptParagraph;

@@ -34,8 +34,8 @@
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
-//#undef THIS_FILE
-//static char THIS_FILE[] = __FILE__;
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
 #endif
 
 #define CURRENT_VERSION 36.0
@@ -252,7 +252,7 @@ SpecLibraryEntry& SpecLibraryEntry::operator= (const SpecLibraryEntry& rOther)
 }
 
 //======================== OPERATIONS =======================================
-bool SpecLibraryEntry::Edit(libUnitsMode::Mode mode, bool allowEditing)
+bool SpecLibraryEntry::Edit(bool allowEditing)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
@@ -260,7 +260,7 @@ bool SpecLibraryEntry::Edit(libUnitsMode::Mode mode, bool allowEditing)
    // make a temporary copy of this and have the dialog work on it.
    SpecLibraryEntry tmp(*this);
 
-   CSpecMainSheet dlg(tmp, IDS_SPEC_SHEET, mode, allowEditing);
+   CSpecMainSheet dlg(tmp, IDS_SPEC_SHEET, allowEditing);
    int i = dlg.DoModal();
    if (i==IDOK)
    {

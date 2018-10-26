@@ -24,7 +24,8 @@
 //
 
 #include "stdafx.h"
-#include "pgsuper.h"
+#include "resource.h"
+#include "PGSuperDoc.h"
 #include "BridgeDescRailingSystemPage.h"
 #include "BridgeDescDlg.h"
 #include "ConcreteDetailsDlg.h"
@@ -53,7 +54,7 @@ CBridgeDescRailingSystemPage::CBridgeDescRailingSystemPage() : CPropertyPage(CBr
 	//{{AFX_DATA_INIT(CBridgeDescRailingSystemPage)
 		// NOTE: the ClassWizard will add member initialization here
 	//}}AFX_DATA_INIT
-   AfxGetBroker(&m_pBroker);
+   EAFGetBroker(&m_pBroker);
 
    GET_IFACE(IBridgeMaterial,pMaterial);
    m_MinNWCDensity = pMaterial->GetNWCDensityLimit();
@@ -240,17 +241,17 @@ BOOL CBridgeDescRailingSystemPage::OnInitDialog()
    m_CacheInteriorBarrierIdx[1] = pcbRight->GetCurSel();
 
    CComPtr<IBroker> pBroker;
-   AfxGetBroker(&pBroker);
+   EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
-   if ( pDisplayUnits->GetUnitDisplayMode() == pgsTypes::umUS )
-   {
-      GetDlgItem(IDC_LEFT_DENSITY_LABEL)->SetWindowText("Unit Weight");
-      GetDlgItem(IDC_RIGHT_DENSITY_LABEL)->SetWindowText("Unit Weight");
-   }
-   else
+   if ( IS_SI_UNITS(pDisplayUnits) )
    {
       GetDlgItem(IDC_LEFT_DENSITY_LABEL)->SetWindowText("Density");
       GetDlgItem(IDC_RIGHT_DENSITY_LABEL)->SetWindowText("Density");
+   }
+   else
+   {
+      GetDlgItem(IDC_LEFT_DENSITY_LABEL)->SetWindowText("Unit Weight");
+      GetDlgItem(IDC_RIGHT_DENSITY_LABEL)->SetWindowText("Unit Weight");
    }
 
    // Update the UI elements
@@ -272,7 +273,7 @@ BOOL CBridgeDescRailingSystemPage::OnInitDialog()
 void CBridgeDescRailingSystemPage::FillTrafficBarrierComboBoxes()
 {
    CComPtr<IBroker> pBroker;
-   AfxGetBroker(&pBroker);
+   EAFGetBroker(&pBroker);
 
    GET_IFACE2( pBroker, ILibraryNames, pLibNames );
    std::vector<std::string> names;
@@ -520,7 +521,7 @@ void CBridgeDescRailingSystemPage::OnLeftExteriorBarrierChanged()
    pCB->GetLBText(curSel,strRailing);
 
    CComPtr<IBroker> pBroker;
-   AfxGetBroker(&pBroker);
+   EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,ILibrary,pLibrary);
    const TrafficBarrierEntry* pEntry = pLibrary->GetTrafficBarrierEntry( strRailing );
    int nShowCmd = SW_SHOW;
@@ -553,7 +554,7 @@ void CBridgeDescRailingSystemPage::OnRightExteriorBarrierChanged()
    pCB->GetLBText(curSel,strRailing);
 
    CComPtr<IBroker> pBroker;
-   AfxGetBroker(&pBroker);
+   EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,ILibrary,pLibrary);
    const TrafficBarrierEntry* pEntry = pLibrary->GetTrafficBarrierEntry( strRailing );
    int nShowCmd = SW_SHOW;
@@ -749,14 +750,12 @@ BOOL CBridgeDescRailingSystemPage::OnToolTipNotify(UINT id,NMHDR* pNMHDR, LRESUL
       switch(nID)
       {
       case IDC_LEFT_MORE:
-         ::SendMessage(pNMHDR->hwndFrom,TTM_SETMAXTIPWIDTH,0,300); // makes it a multi-line tooltip
          UpdateLeftConcreteParametersToolTip();
          pTTT->lpszText = m_strToolTip[pgsTypes::tboLeft].GetBuffer();
          pTTT->hinst = NULL;
          break;
 
       case IDC_RIGHT_MORE:
-         ::SendMessage(pNMHDR->hwndFrom,TTM_SETMAXTIPWIDTH,0,300); // makes it a multi-line tooltip
          UpdateRightConcreteParametersToolTip();
          pTTT->lpszText = m_strToolTip[pgsTypes::tboRight].GetBuffer();
          pTTT->hinst = NULL;
@@ -766,6 +765,9 @@ BOOL CBridgeDescRailingSystemPage::OnToolTipNotify(UINT id,NMHDR* pNMHDR, LRESUL
          return FALSE;
       }
 
+      ::SendMessage(pNMHDR->hwndFrom,TTM_SETDELAYTIME,TTDT_AUTOPOP,TOOLTIP_DURATION); // sets the display time to 10 seconds
+      ::SendMessage(pNMHDR->hwndFrom,TTM_SETMAXTIPWIDTH,0,TOOLTIP_WIDTH); // makes it a multi-line tooltip
+
       return TRUE;
    }
    return FALSE;
@@ -774,7 +776,7 @@ BOOL CBridgeDescRailingSystemPage::OnToolTipNotify(UINT id,NMHDR* pNMHDR, LRESUL
 void CBridgeDescRailingSystemPage::UpdateLeftConcreteParametersToolTip()
 {
    CComPtr<IBroker> pBroker;
-   AfxGetBroker(&pBroker);
+   EAFGetBroker(&pBroker);
 
    GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
    const unitmgtDensityData& density = pDisplayUnits->GetDensityUnit();
@@ -807,7 +809,7 @@ void CBridgeDescRailingSystemPage::UpdateLeftConcreteParametersToolTip()
 void CBridgeDescRailingSystemPage::UpdateRightConcreteParametersToolTip()
 {
    CComPtr<IBroker> pBroker;
-   AfxGetBroker(&pBroker);
+   EAFGetBroker(&pBroker);
 
    GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
 

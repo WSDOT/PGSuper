@@ -28,11 +28,13 @@
 #include "resource.h"       // main symbols
 #include "PsForceEng.h"
 #include "Designer2.h"
+#include "LoadRater.h"
 #include "MomentCapacityEngineer.h"
 #include "ShearCapacityEngineer.h"
 #include <IFace\DistFactorEngineer.h>
-
-#include <PgsExt\InterfaceCache.h>
+#include <IFace\RatingSpecification.h>
+#include <IFace\CrackedSection.h>
+#include <EAF\EAFInterfaceCache.h>
 
 #include <PgsExt\PoiKey.h>
 #include <map>
@@ -54,8 +56,10 @@ class ATL_NO_VTABLE CEngAgentImp :
    public IArtifact,
    public IBridgeDescriptionEventSink,
    public ISpecificationEventSink,
+   public IRatingSpecificationEventSink,
    public ILoadModifiersEventSink,
-   public IEnvironmentEventSink
+   public IEnvironmentEventSink,
+   public ICrackedSection
 {
 public:
    CEngAgentImp();
@@ -80,8 +84,10 @@ BEGIN_COM_MAP(CEngAgentImp)
    COM_INTERFACE_ENTRY(IArtifact)
    COM_INTERFACE_ENTRY(IBridgeDescriptionEventSink)
    COM_INTERFACE_ENTRY(ISpecificationEventSink)
+   COM_INTERFACE_ENTRY(IRatingSpecificationEventSink)
    COM_INTERFACE_ENTRY(ILoadModifiersEventSink)
    COM_INTERFACE_ENTRY(IEnvironmentEventSink)
+   COM_INTERFACE_ENTRY(ICrackedSection)
    COM_INTERFACE_ENTRY_IMPL(IConnectionPointContainer)
 END_COM_MAP()
 
@@ -204,6 +210,9 @@ public:
    virtual Float64 GetMinMomentCapacity(pgsTypes::Stage stage,const pgsPointOfInterest& poi,bool bPositiveMoment);
    virtual void GetMinMomentCapacityDetails(pgsTypes::Stage stage,const pgsPointOfInterest& poi,bool bPositiveMoment,MINMOMENTCAPDETAILS* pmmcd);
    virtual void GetMinMomentCapacityDetails(pgsTypes::Stage stage,const pgsPointOfInterest& poi,const GDRCONFIG& config,bool bPositiveMoment,MINMOMENTCAPDETAILS* pmmcd);
+   virtual std::vector<MOMENTCAPACITYDETAILS> GetMomentCapacityDetails(pgsTypes::Stage stage,const std::vector<pgsPointOfInterest>& vPoi,bool bPositiveMoment);
+   virtual std::vector<MINMOMENTCAPDETAILS> GetMinMomentCapacityDetails(pgsTypes::Stage stage,const std::vector<pgsPointOfInterest>& vPoi,bool bPositiveMoment);
+   virtual std::vector<CRACKINGMOMENTDETAILS> GetCrackingMomentDetails(pgsTypes::Stage stage,const std::vector<pgsPointOfInterest>& vPoi,bool bPositiveMoment);
 
 // IShearCapacity
 public:
@@ -222,6 +231,7 @@ public:
    virtual void GetCriticalSection(pgsTypes::LimitState limitState,SpanIndexType span,GirderIndexType gdr,const GDRCONFIG& config,Float64* pLeft,Float64* pRight);
    virtual void GetCriticalSectionDetails(pgsTypes::LimitState limitState,SpanIndexType span,GirderIndexType gdr,CRITSECTDETAILS* pDetails);
    virtual void GetCriticalSectionDetails(pgsTypes::LimitState limitState,SpanIndexType span,GirderIndexType gdr,const GDRCONFIG& config,CRITSECTDETAILS* pDetails);
+   virtual std::vector<SHEARCAPACITYDETAILS> GetShearCapacityDetails(pgsTypes::LimitState ls, pgsTypes::Stage stage,const std::vector<pgsPointOfInterest>& vPoi);
 
 // IGirderHaunch
 public:
@@ -239,6 +249,13 @@ public:
    virtual const pgsDesignArtifact* GetDesignArtifact(SpanIndexType span,GirderIndexType gdr);
    virtual void CreateLiftingAnalysisArtifact(SpanIndexType span,GirderIndexType gdr,Float64 supportLoc,pgsLiftingAnalysisArtifact* pArtifact);
    virtual void CreateHaulingAnalysisArtifact(SpanIndexType span,GirderIndexType gdr,Float64 leftSupportLoc,Float64 rightSupportLoc,pgsHaulingAnalysisArtifact* pArtifact);
+   virtual const pgsRatingArtifact* GetRatingArtifact(SpanIndexType spanIdx,GirderIndexType gdrIdx,pgsTypes::LoadRatingType ratingType,VehicleIndexType vehicleIndex);
+
+// ICrackedSection
+public:
+   virtual void GetCrackedSectionDetails(const pgsPointOfInterest& poi,bool bPositiveMoment,CRACKEDSECTIONDETAILS* pCSD);
+   virtual Float64 GetIcr(const pgsPointOfInterest& poi,bool bPositiveMoment);
+   virtual std::vector<CRACKEDSECTIONDETAILS> GetCrackedSectionDetails(const std::vector<pgsPointOfInterest>& vPoi,bool bPositiveMoment);
 
 // IBridgeDescriptionEventSink
 public:
@@ -253,6 +270,10 @@ public:
    virtual HRESULT OnSpecificationChanged();
    virtual HRESULT OnAnalysisTypeChanged();
 
+// IRatingSpecificationEventSink
+public:
+   virtual HRESULT OnRatingSpecificationChanged();
+
 // ILoadModifiersEventSink
 public:
    virtual HRESULT OnLoadModifiersChanged();
@@ -261,7 +282,6 @@ public:
 public:
    virtual HRESULT OnExposureConditionChanged();
    virtual HRESULT OnRelHumidityChanged();
-
 
 private:
    DECLARE_AGENT_DATA;
@@ -343,10 +363,43 @@ private:
    std::map<SpanGirderHashType,pgsGirderArtifact> m_CheckArtifacts;
    std::map<SpanGirderHashType,pgsDesignArtifact> m_DesignArtifacts;
 
+   struct RatingArtifactKey
+   {
+      RatingArtifactKey(SpanIndexType spanIdx,GirderIndexType gdrIdx,VehicleIndexType vehIdx)
+      { SpanIdx = spanIdx, GirderIdx = gdrIdx; VehicleIdx = vehIdx; }
+
+      SpanIndexType SpanIdx;
+      GirderIndexType GirderIdx;
+      VehicleIndexType VehicleIdx;
+
+      bool operator<(const RatingArtifactKey& other) const
+      {
+         if( SpanIdx < other.SpanIdx )
+            return true;
+
+         if( other.SpanIdx < SpanIdx)
+            return false;
+
+         if( GirderIdx < other.GirderIdx )
+            return true;
+
+         if( other.GirderIdx < GirderIdx)
+            return false;
+
+         if( VehicleIdx < other.VehicleIdx )
+            return true;
+
+         return false;
+      }
+
+   };
+   std::map<RatingArtifactKey,pgsRatingArtifact> m_RatingArtifacts[6]; // pgsTypes::LoadRatingType enum as key
+
    std::map<PrestressPoiKey,double> m_PsForce;
 
    pgsPsForceEng             m_PsForceEngineer;
    pgsDesigner2              m_Designer;
+   pgsLoadRater              m_LoadRater;
    pgsMomentCapacityEngineer m_MomentCapEngineer;
    pgsShearCapacityEngineer  m_ShearCapEngineer;
    CComPtr<IDistFactorEngineer> m_pDistFactorEngineer;
@@ -380,6 +433,11 @@ private:
    std::map<PoiKey,MINMOMENTCAPDETAILS> m_CompositeMinMomentCapacity[2];
    const MINMOMENTCAPDETAILS* ValidateMinMomentCapacity(pgsTypes::Stage stage,const pgsPointOfInterest& poi,bool bPositiveMoment);
 
+   typedef std::map<PoiKey,CRACKEDSECTIONDETAILS> CrackedSectionDetailsContainer;
+   CrackedSectionDetailsContainer m_CrackedSectionDetails[2]; // 0 = positive moment, 1 = negative moment
+   const CRACKEDSECTIONDETAILS* ValidateCrackedSectionDetails(const pgsPointOfInterest& poi,bool bPositiveMoment);
+   void InvalidateCrackedSectionDetails();
+
    // Temporary Moment Capacity (idx 0 = positive moment, idx 1 = negative moment)
    // This is a cache of moment capacities computed based on a supplied GdrConfig and not the
    // current state of input.
@@ -388,7 +446,7 @@ private:
    MomentCapacityDetailsContainer m_TempCompositeMomentCapacity[2];
 
    // Shear Capacity
-   std::map<PoiKey,SHEARCAPACITYDETAILS> m_ShearCapacity[2];
+   std::map<PoiKey,SHEARCAPACITYDETAILS> m_ShearCapacity[8]; // use the LimitStateToShearIndex method to map limit state to array index
    const SHEARCAPACITYDETAILS* ValidateShearCapacity(pgsTypes::LimitState ls, pgsTypes::Stage stage,const pgsPointOfInterest& poi);
    void InvalidateShearCapacity();
    std::map<PoiKey,FPCDETAILS> m_Fpc;
@@ -398,7 +456,7 @@ private:
    void GetCriticalSectionFromDetails(const CRITSECTDETAILS& details,Float64* pLeft,Float64* pRight);
 
    // critical section for shear
-   std::map<SpanGirderHashType,CRITSECTDETAILS> m_CritSectionDetails[2];
+   std::map<SpanGirderHashType,CRITSECTDETAILS> m_CritSectionDetails[8]; // use the LimitStateToShearIndex method to map limit state to array index
    const CRITSECTDETAILS* ValidateShearCritSection(pgsTypes::LimitState limitState,SpanIndexType span, GirderIndexType gdr);
    void CalculateShearCritSection(pgsTypes::LimitState limitState,SpanIndexType span,GirderIndexType gdr,CRITSECTDETAILS* pDetails);
    void CalculateShearCritSection(pgsTypes::LimitState limitState,SpanIndexType span,GirderIndexType gdr,const GDRCONFIG& config,CRITSECTDETAILS* pDetails);
@@ -414,6 +472,7 @@ private:
    // Event Sink Cookies
    DWORD m_dwBridgeDescCookie;
    DWORD m_dwSpecificationCookie;
+   DWORD m_dwRatingSpecificationCookie;
    DWORD m_dwLoadModifiersCookie;
    DWORD m_dwEnvironmentCookie;
 
@@ -424,10 +483,13 @@ private:
    void ValidateLiveLoadDistributionFactors(SpanIndexType span,GirderIndexType gdr);
    void InvalidateLiveLoadDistributionFactors();
    void ValidateArtifacts(SpanIndexType span,GirderIndexType gdr);
+   void ValidateRatingArtifacts(SpanIndexType spanIdx,GirderIndexType gdrIdx,pgsTypes::LoadRatingType ratingType,VehicleIndexType vehicleIndex);
    void InvalidateArtifacts();
+   void InvalidateRatingArtifacts();
 
    LOSSDETAILS* FindLosses(const pgsPointOfInterest& poi);
    pgsGirderArtifact* FindArtifact(SpanIndexType span,GirderIndexType gdr);
+   pgsRatingArtifact* FindRatingArtifact(SpanIndexType spanIdx,GirderIndexType gdrIdx,pgsTypes::LoadRatingType ratingType,VehicleIndexType vehicleIndex);
 
    DECLARE_LOGFILE;
 

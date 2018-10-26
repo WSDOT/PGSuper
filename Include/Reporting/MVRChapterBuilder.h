@@ -50,15 +50,10 @@ LOG
 class REPORTINGCLASS CMVRChapterBuilder : public CPGSuperChapterBuilder
 {
 public:
-   // GROUP: LIFECYCLE
-   CMVRChapterBuilder();
-
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
+   CMVRChapterBuilder(bool bDesign,bool bRating);
 
    //------------------------------------------------------------------------
    virtual LPCTSTR GetName() const;
-   
 
    //------------------------------------------------------------------------
    virtual rptChapter* Build(CReportSpecification* pRptSpec,Uint16 level) const;
@@ -66,35 +61,13 @@ public:
    //------------------------------------------------------------------------
    virtual CChapterBuilder* Clone() const;
 
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
-
-protected:
-   // GROUP: DATA MEMBERS
-   // GROUP: LIFECYCLE
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
-
 private:
-   // GROUP: DATA MEMBERS
-   // GROUP: LIFECYCLE
+   bool m_bDesign;
+   bool m_bRating;
 
    // Prevent accidental copying and assignment
    CMVRChapterBuilder(const CMVRChapterBuilder&);
    CMVRChapterBuilder& operator=(const CMVRChapterBuilder&);
-
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
 };
-
-// INLINE METHODS
-//
-
-// EXTERNAL REFERENCES
-//
 
 #endif // INCLUDED_MVRCHAPTERBUILDER_H_

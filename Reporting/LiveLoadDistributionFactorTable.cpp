@@ -86,17 +86,7 @@ void CLiveLoadDistributionFactorTable::Build(rptChapter* pChapter,
    PierIndexType startPier = span;
    PierIndexType endPier   = span+1;
 
-   bool bContinuousLeft, bContinuousRight;
-   bool bIntegralLeft, bIntegralRight;
-   pBridge->IsContinuousAtPier(startPier,&bContinuousLeft,&bContinuousRight);
-   pBridge->IsIntegralAtPier(startPier,&bIntegralLeft,&bIntegralRight);
-   bool bNegMomentAtStart = (bContinuousRight || bIntegralRight);
-
-   pBridge->IsContinuousAtPier(endPier,&bContinuousLeft,&bContinuousRight);
-   pBridge->IsIntegralAtPier(endPier,&bIntegralLeft,&bIntegralRight);
-   bool bNegMomentAtEnd = (bContinuousLeft || bIntegralLeft);
-
-   bool bNegMomentDF = (bNegMomentAtStart || bNegMomentAtEnd);
+   bool bNegMoments = pBridge->ProcessNegativeMoments(span);
 
    rptParagraph* pBody = new rptParagraph;
    *pChapter << pBody;
@@ -179,7 +169,7 @@ void CLiveLoadDistributionFactorTable::Build(rptChapter* pChapter,
       pDistFact->GetDistributionFactors(poi,pgsTypes::StrengthI,&pM,&nM,&V);
       (*pTable)(row,1) << df.SetValue(pM);
 
-      if ( bNegMomentDF )
+      if ( bNegMoments )
       {
          (*pTable)(row,2) << df.SetValue(nM);
       }
@@ -195,7 +185,7 @@ void CLiveLoadDistributionFactorTable::Build(rptChapter* pChapter,
          pDistFact->GetDistributionFactors(poi,pgsTypes::FatigueI,&pM,&nM,&V);
          (*pTable)(row,5) << df.SetValue(pM);
 
-         if ( bNegMomentDF )
+         if ( bNegMoments )
          {
             (*pTable)(row,6) << df.SetValue(nM);
          }

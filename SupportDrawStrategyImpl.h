@@ -24,6 +24,7 @@
 #define INCLUDED_SUPPORTDRAWSTRATEGYIMPL_H_
 
 #include "SupportDrawStrategy.h"
+#include <DManip\DManip.h>
 
 class CSupportDrawStrategyImpl : public CCmdTarget
 {

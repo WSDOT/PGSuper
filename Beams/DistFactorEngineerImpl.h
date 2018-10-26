@@ -66,7 +66,7 @@ template <class T>
 class CDistFactorEngineerImpl : public IDistFactorEngineer
 {
 public:
-   virtual void SetBroker(IBroker* pBroker,AgentIDType agentID);
+   virtual void SetBroker(IBroker* pBroker,StatusGroupIDType statusGroupID);
    virtual double GetMomentDF(SpanIndexType span,GirderIndexType gdr,pgsTypes::LimitState ls);
    virtual double GetNegMomentDF(PierIndexType pier,GirderIndexType gdr,pgsTypes::LimitState ls,pgsTypes::PierFaceType pierFace);
    virtual double GetShearDF(SpanIndexType span,GirderIndexType gdr,pgsTypes::LimitState ls);
@@ -86,7 +86,7 @@ public:
 
 protected:
    IBroker* m_pBroker;
-   AgentIDType m_AgentID;
+   StatusGroupIDType m_StatusGroupID;
    StatusCallbackIDType m_scidRefinedAnalysis;
 
    struct REACTIONDETAILS : T
@@ -144,10 +144,10 @@ protected:
 
 
 template <class T>
-void CDistFactorEngineerImpl<T>::SetBroker(IBroker* pBroker,AgentIDType agentID)
+void CDistFactorEngineerImpl<T>::SetBroker(IBroker* pBroker,StatusGroupIDType statusGroupID)
 {
 	m_pBroker = pBroker;
-	m_AgentID = agentID;
+	m_StatusGroupID = statusGroupID;
 
    GET_IFACE(IStatusCenter,pStatusCenter);
    m_scidRefinedAnalysis = pStatusCenter->RegisterCallback( new pgsRefinedAnalysisStatusCallback(m_pBroker) );
@@ -593,7 +593,7 @@ void CDistFactorEngineerImpl<T>::HandleRangeOfApplicabilityError(const lrfdXRang
    GET_IFACE(IStatusCenter,     pStatusCenter);
 
    const char* msg = "Live Load Distribution Factors could not be calculated";
-   pgsRefinedAnalysisStatusItem* pStatusItem = new pgsRefinedAnalysisStatusItem(m_AgentID,110,msg);
+   pgsRefinedAnalysisStatusItem* pStatusItem = new pgsRefinedAnalysisStatusItem(m_StatusGroupID,m_scidRefinedAnalysis,msg);
    pStatusCenter->Add(pStatusItem);
 
    std::ostringstream os;
@@ -631,26 +631,15 @@ int CDistFactorEngineerImpl<T>::LimitStateType(pgsTypes::LimitState ls)
    // maps specific limit state to a general limit state type
    // strength and service limit states, return 0
    // fatigue limit state, return 1
-   int lst = 0;
-   switch(ls)
+   if ( IsStrengthLimitState(ls) || IsServiceLimitState(ls) )
+      return 0;
+   else if ( IsFatigueLimitState(ls) )
+      return 1;
+   else
    {
-   case pgsTypes::ServiceI:
-   case pgsTypes::ServiceIA:
-   case pgsTypes::ServiceIII:
-   case pgsTypes::StrengthI:
-   case pgsTypes::StrengthII:
-      lst = 0;
-      break;
-
-   case pgsTypes::FatigueI:
-      lst = 1;
-      break;
-
-   default:
       ATLASSERT(false); // should never get here
+      return 0;
    }
-
-   return lst;
 }
 
 template <class T>

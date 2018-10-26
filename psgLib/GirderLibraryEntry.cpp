@@ -68,7 +68,8 @@ static char THIS_FILE[] = __FILE__;
 // from 12.0 to 13.0 added debond criteria. This was removed from the spec criteria
 // from 13.0 to 14.0 added SectionDimensions data block
 // from 14.0 to 15.0 added strand grids for each end of the girder
-#define CURRENT_VERSION 15.0
+// from 15.0 to 16.0 added input for post-tensioning
+#define CURRENT_VERSION 16.0
 
 ////////////////////////// PUBLIC     ///////////////////////////////////////
 
@@ -112,8 +113,11 @@ m_MaxDebondedStrandsPerSection(0.40),
 m_MinDebondLength(::ConvertToSysUnits(3.0,unitMeasure::Feet)), // not aashto, but reasonable
 m_DefaultDebondLength(::ConvertToSysUnits(3.0,unitMeasure::Feet)),
 m_MaxDebondLengthBySpanFraction(-1.0), // 
-m_MaxDebondLengthByHardDistance(-1.0)
+m_MaxDebondLengthByHardDistance(-1.0),
+m_bCanPostTension(false)
 {
+	CWaitCursor cursor;
+
    // When the user creates a new library entry, it needs a beam type. The beam type
    // is defined by the beam factory this object holds. Therefore we need to create a
    // beam factory. Since we don't what kind of beam the user wants, use the first 
@@ -174,6 +178,9 @@ bool GirderLibraryEntry::SaveMe(sysIStructuredSave* pSave)
    pSave->Property("SectionName",CString(pszUserType));
 
    m_pBeamFactory->SaveSectionDimensions(pSave,m_Dimensions);
+
+   // added version 16
+   pSave->Property("CanPostTension", m_bCanPostTension );
 
    pSave->Property("UseDifferentHarpedGridAtEnds",  m_bUseDifferentHarpedGridAtEnds);
 
@@ -445,6 +452,12 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
       }
       else
       {
+         if ( 15 < version )
+         {
+            // added version 16
+            if ( !pLoad->Property("CanPostTension", &m_bCanPostTension ) )
+               THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          if(!pLoad->Property("UseDifferentHarpedGridAtEnds", &m_bUseDifferentHarpedGridAtEnds))
             THROW_LOAD(InvalidFileFormat,pLoad);
@@ -1558,6 +1571,8 @@ bool GirderLibraryEntry::IsEqual(const GirderLibraryEntry& rOther, bool consider
 
    test &= (m_DiaphragmLayoutRules == rOther.m_DiaphragmLayoutRules);
 
+   test &= (m_bCanPostTension == rOther.m_bCanPostTension);
+
    if (considerName)
       test &= this->GetName()==rOther.GetName();
 
@@ -2602,7 +2617,7 @@ const GirderLibraryEntry::DiaphragmLayoutRules& GirderLibraryEntry::GetDiaphragm
 //======================== LIFECYCLE  =======================================
 //======================== OPERATORS  =======================================
 //======================== OPERATIONS =======================================
-bool GirderLibraryEntry::Edit(libUnitsMode::Mode mode, bool allowEditing)
+bool GirderLibraryEntry::Edit(bool allowEditing)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
@@ -2619,7 +2634,7 @@ bool GirderLibraryEntry::Edit(libUnitsMode::Mode mode, bool allowEditing)
    // make a temporary copy of this and have the dialog work on it.
    GirderLibraryEntry tmp(*this);
 
-   CGirderMainSheet dlg(tmp, IDS_GIRDER_SHEET, mode, allowEditing);
+   CGirderMainSheet dlg(tmp, IDS_GIRDER_SHEET, allowEditing);
    int i = dlg.DoModal();
    if (i==IDOK)
    {
@@ -2685,6 +2700,8 @@ void GirderLibraryEntry::MakeCopy(const GirderLibraryEntry& rOther)
    m_bStirrupsEngageDeck = rOther.m_bStirrupsEngageDeck;
 
    m_DiaphragmLayoutRules = rOther.m_DiaphragmLayoutRules;
+
+   m_bCanPostTension = rOther.m_bCanPostTension;
 }
 
 void GirderLibraryEntry::MakeAssignment(const GirderLibraryEntry& rOther)
@@ -2976,6 +2993,10 @@ std::string GirderLibraryEntry::GetSectionName() const
    }
 }
 
+bool GirderLibraryEntry::CanPostTension() const
+{
+   return m_bCanPostTension;
+}
 
 //======================== ACCESS     =======================================
 //======================== INQUERY    =======================================

@@ -24,7 +24,7 @@
 //
 
 #include "stdafx.h"
-#include "PGSuper.h"
+#include "resource.h"
 #include "PGSuperDoc.h"
 #include "PGSuperException.h"
 #include "AnalysisResultsView.h"
@@ -36,7 +36,7 @@
 #include <IFace\MomentCapacity.h>
 #include <IFace\ShearCapacity.h>
 #include <PgsExt\PointOfInterest.h>
-#include <PgsExt\AutoProgress.h>
+#include <EAF\EAFAutoProgress.h>
 #include <PgsExt\PhysicalConverter.h>
 #include <PgsExt\BridgeDescription.h>
 #include "PGSuperCalculationSheet.h"
@@ -66,9 +66,10 @@ static LengthTool    DUMMY_TOOL(DUMMY);
 /////////////////////////////////////////////////////////////////////////////
 // CAnalysisResultsView
 
-IMPLEMENT_DYNCREATE(CAnalysisResultsView, CAutoCalcView)
+IMPLEMENT_DYNCREATE(CAnalysisResultsView, CView)
 
 CAnalysisResultsView::CAnalysisResultsView():
+CEAFAutoCalcViewMixin(this),
 m_bValidGraph(false),
 m_Graph(DUMMY_TOOL,DUMMY_TOOL),
 m_pXFormat(0),
@@ -89,7 +90,7 @@ CAnalysisResultsView::~CAnalysisResultsView()
 }
 
 
-BEGIN_MESSAGE_MAP(CAnalysisResultsView, CAutoCalcView)
+BEGIN_MESSAGE_MAP(CAnalysisResultsView, CView)
 	//{{AFX_MSG_MAP(CAnalysisResultsView)
 	ON_WM_CREATE()
 	ON_UPDATE_COMMAND_UI(ID_FILE_PRINT, OnUpdateFilePrint)
@@ -181,8 +182,8 @@ void CAnalysisResultsView::DrawBeam(CDC* pDC)
 
    pgsTypes::Stage stage = m_pFrame->GetStage();
 
-   GET_IFACE2(m_pBroker,IBridge,pBridge);
-   GET_IFACE2(m_pBroker,IBridgeDescription,pIBridgeDesc);
+   GET_IFACE(IBridge,pBridge);
+   GET_IFACE(IBridgeDescription,pIBridgeDesc);
 
    const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
@@ -416,12 +417,12 @@ void CAnalysisResultsView::DumpLBAM()
 #ifdef _DEBUG
 void CAnalysisResultsView::AssertValid() const
 {
-	CAutoCalcView::AssertValid();
+	CView::AssertValid();
 }
 
 void CAnalysisResultsView::Dump(CDumpContext& dc) const
 {
-	CAutoCalcView::Dump(dc);
+	CView::Dump(dc);
 }
 #endif //_DEBUG
 
@@ -437,7 +438,7 @@ void CAnalysisResultsView::DoUpdateNow()
    PRECONDITION(m_pBroker);
 
    GET_IFACE(IProgress,pProgress);
-   pgsAutoProgress ap(pProgress);
+   CEAFAutoProgress ap(pProgress);
 
    pProgress->UpdateMessage("Building Graph");
 
@@ -1265,7 +1266,7 @@ void CAnalysisResultsView::UpdateNow()
 
 int CAnalysisResultsView::OnCreate(LPCREATESTRUCT lpCreateStruct) 
 {
-	if (CAutoCalcView::OnCreate(lpCreateStruct) == -1)
+	if (CView::OnCreate(lpCreateStruct) == -1)
 		return -1;
 	
    m_pFrame = (CAnalysisResultsChildFrame*)GetParent();
@@ -1295,6 +1296,12 @@ int CAnalysisResultsView::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	return 0;
 }
 
+void CAnalysisResultsView::OnInitialUpdate()
+{
+   CView::OnInitialUpdate();
+   CEAFAutoCalcViewMixin::Initialize();
+}
+
 void CAnalysisResultsView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint) 
 {
    if ( 0 < lHint && lHint <= MAX_DISPLAY_HINT && lHint != HINT_GIRDERLABELFORMATCHANGED )
@@ -1306,7 +1313,7 @@ void CAnalysisResultsView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint
       m_ErrorMsg = *pmsg;
       m_bUpdateError = true;
       m_bValidGraph       = false;
-      CAutoCalcView::OnUpdate( pSender, lHint, pHint );
+      CEAFAutoCalcViewMixin::OnUpdate( pSender, lHint, pHint );
       Invalidate();
       return;
    }
@@ -1318,7 +1325,8 @@ void CAnalysisResultsView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint
    m_pFrame->Update(lHint);
 
    // deal with license plate stuff
-   CAutoCalcView::OnUpdate( pSender, lHint, pHint);
+   CView::OnUpdate(pSender,lHint,pHint);
+   CEAFAutoCalcViewMixin::OnUpdate( pSender, lHint, pHint);
 
    // update graph data
    Update();
@@ -1481,18 +1489,18 @@ void CAnalysisResultsView::OnUpdateFilePrint(CCmdUI* pCmdUI)
 
 void CAnalysisResultsView::OnBeginPrinting(CDC* pDC, CPrintInfo* pInfo) 
 {
-	CAutoCalcView::OnBeginPrinting(pDC, pInfo);
+	CView::OnBeginPrinting(pDC, pInfo);
 }
 
 void CAnalysisResultsView::OnEndPrinting(CDC* pDC, CPrintInfo* pInfo) 
 {
-	CAutoCalcView::OnEndPrinting(pDC, pInfo);
+	CView::OnEndPrinting(pDC, pInfo);
 }
 
 BOOL CAnalysisResultsView::OnPreparePrinting(CPrintInfo* pInfo) 
 {
 	if (DoPreparePrinting(pInfo))
-	   return CAutoCalcView::OnPreparePrinting(pInfo);
+	   return CView::OnPreparePrinting(pInfo);
    else
       return FALSE;
 }
@@ -1504,7 +1512,7 @@ void CAnalysisResultsView::OnPrint(CDC* pDC, CPrintInfo* pInfo)
    CString strBottomTitle;
    strBottomTitle.Format("PGSuper™, Copyright © %4d, WSDOT, All rights reserved",sysDate().Year());
    border.SetTitle(strBottomTitle);
-   CDocument* pdoc = this->GetDocument();
+   CDocument* pdoc = GetDocument();
    CString path = pdoc->GetPathName();
    border.SetFileName(path);
    CRect rcPrint = border.Print(pDC, 1);
@@ -1516,7 +1524,7 @@ void CAnalysisResultsView::OnPrint(CDC* pDC, CPrintInfo* pInfo)
    }
 
    m_PrintRect = rcPrint;
-	CAutoCalcView::OnPrint(pDC, pInfo);
+	CView::OnPrint(pDC, pInfo);
 }
 
 void CAnalysisResultsView::UpdateXAxisTitle(pgsTypes::Stage stage)

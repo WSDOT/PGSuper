@@ -31,15 +31,6 @@
 BOOL CreateAppUnitSystem(IAppUnitSystem** ppAppUnitSystem);
 void CreateDocUnitSystem(IAppUnitSystem* pAppUnitSystem,IDocUnitSystem** ppDocUnitSystem);
 
-inline void InitUnitSystem()
-{
-   unitSysUnitsMgr::SetMassUnit( unitMeasure::Kilogram );
-   unitSysUnitsMgr::SetLengthUnit( unitMeasure::Meter );
-   unitSysUnitsMgr::SetTimeUnit( unitMeasure::Second );
-   unitSysUnitsMgr::SetTemperatureUnit( unitMeasure::Celcius );
-   unitSysUnitsMgr::SetAngleUnit( unitMeasure::Radian );
-}
-
 // Helper function for formatting text
 template <class T>
 inline CString FormatDimension(double value,const T& indirectMeasure,bool bIncludeUnitTag = true)

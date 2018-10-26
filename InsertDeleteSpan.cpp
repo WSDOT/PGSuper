@@ -22,7 +22,7 @@
 
 #include "StdAfx.h"
 #include "InsertDeleteSpan.h"
-#include "PGSuper.h"
+#include "PGSuperDoc.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -59,7 +59,7 @@ bool txnInsertSpan::IsRepeatable()
 bool txnInsertSpan::Execute()
 {
    CComPtr<IBroker> pBroker;
-   AfxGetBroker(&pBroker);
+   EAFGetBroker(&pBroker);
 
    GET_IFACE2(pBroker,IEvents,pEvents);
    pEvents->HoldEvents();
@@ -77,7 +77,7 @@ bool txnInsertSpan::Execute()
 void txnInsertSpan::Undo()
 {
    CComPtr<IBroker> pBroker;
-   AfxGetBroker(&pBroker);
+   EAFGetBroker(&pBroker);
 
    GET_IFACE2(pBroker,IEvents,pEvents);
    pEvents->HoldEvents();
@@ -131,7 +131,7 @@ bool txnDeleteSpan::IsRepeatable()
 bool txnDeleteSpan::Execute()
 {
    CComPtr<IBroker> pBroker;
-   AfxGetBroker(&pBroker);
+   EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    GET_IFACE2(pBroker,IEvents,pEvents);
    pEvents->HoldEvents();
@@ -160,7 +160,7 @@ bool txnDeleteSpan::Execute()
 void txnDeleteSpan::Undo()
 {
    CComPtr<IBroker> pBroker;
-   AfxGetBroker(&pBroker);
+   EAFGetBroker(&pBroker);
 
    GET_IFACE2(pBroker,IEvents,pEvents);
    pEvents->HoldEvents();

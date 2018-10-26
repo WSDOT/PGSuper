@@ -24,7 +24,8 @@
 //
 
 #include "stdafx.h"
-#include "pgsuper.h"
+#include "resource.h"
+#include "PGSuperDoc.h"
 #include "SpanConnectionsPage.h"
 #include "SpanDetailsDlg.h"
 #include "HtmlHelp\HelpTopics.hh"
@@ -155,7 +156,7 @@ void CSpanConnectionsPage::InitializeComboBoxes()
    long nextPierIdx = spanIdx+1;
 
    CComPtr<IBroker> pBroker;
-   AfxGetBroker(&pBroker);
+   EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IBridge,pBridge);
    long nPiers = pBridge->GetPierCount();
 
@@ -190,7 +191,7 @@ void CSpanConnectionsPage::LabelGroupBoxes()
 void CSpanConnectionsPage::FillWithConnections(CComboBox* pCB)
 {
    CComPtr<IBroker> pBroker;
-   AfxGetBroker(&pBroker);
+   EAFGetBroker(&pBroker);
    GET_IFACE2( pBroker, ILibraryNames, pLibNames);
 
    std::vector<std::string> strNames;

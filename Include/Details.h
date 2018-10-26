@@ -365,4 +365,11 @@ struct FABRICATIONOPTIMIZATIONDETAILS
    };
 };
 
+struct CRACKEDSECTIONDETAILS
+{
+   Float64 c;   // distance from top of section to crack (crack depth)
+   Float64 Icr; // based on girder material
+   CComPtr<ICrackedSectionSolution> CrackedSectionSolution;
+};
+
 #endif // INCLUDE_DETAILS_H_

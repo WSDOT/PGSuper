@@ -59,7 +59,7 @@ CLoadFactors::CLoadFactors()
 
    DCmin[pgsTypes::FatigueI]   = 0.5;      DCmax[pgsTypes::FatigueI]   = 0.5;
    DWmin[pgsTypes::FatigueI]   = 0.5;      DWmax[pgsTypes::FatigueI]   = 0.5;
-   LLIMmin[pgsTypes::FatigueI] = 1.0;      LLIMmax[pgsTypes::FatigueI] = 1.0;
+   LLIMmin[pgsTypes::FatigueI] = 1.0;      LLIMmax[pgsTypes::FatigueI] = 1.5;
 }
 
 CLoadFactors::CLoadFactors(const CLoadFactors& rOther)

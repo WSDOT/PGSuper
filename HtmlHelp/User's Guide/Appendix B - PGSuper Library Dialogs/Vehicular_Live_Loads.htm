@@ -20,8 +20,8 @@
 <meta name=filetype content=kadov>
 <meta name=filetype-version content=1>
 <meta name=page-count content=1>
-<meta name=layout-height content=613>
-<meta name=layout-width content=964>
+<meta name=layout-height content=684>
+<meta name=layout-width content=873>
 
 
 <!--(Links)=========================================================-->
@@ -44,24 +44,31 @@
 
 <p>Use this dialog to define a Vehicular Live Load.</p>
 
-<h6>Apply Using</h6>
+<h6>Usage</h6>
 
-<p>Select how the live load is applied</p>
+<p>&nbsp;</p>
+
+<h6>Load Type</h6>
+
+<p>Select the type of live load model</p>
 
 <!--(Table)=========================================================-->
 <table x-use-null-cells
 		style="x-cell-content-align: top;
 				width: 100%;
-				border-spacing: 0;"
+				border-spacing: 0;
+				border-spacing: 0px;"
 		cellspacing=0
 		width=100%>
 <col style="width: 50%;">
 <col style="width: 50%;">
 
-<tr valign=top>
+<tr style="x-cell-content-align: top;"
+	valign=top>
 <td colspan=1
 	rowspan=1
-	style="border-left-width: 1px;
+	style="width: 50%;
+			border-left-width: 1px;
 			border-left-color: #000000;
 			border-left-style: Solid;
 			border-top-style: Solid;
@@ -79,7 +86,8 @@
 <p>Truck Only</td>
 <td colspan=1
 	rowspan=1
-	style="border-top-style: Solid;
+	style="width: 50%;
+			border-top-style: Solid;
 			border-top-color: #000000;
 			border-top-width: 1px;
 			border-right-width: 1px;
@@ -93,10 +101,12 @@
 	width=50%>
 <p>This loading consists only of a truck</td></tr>
 
-<tr valign=top>
+<tr style="x-cell-content-align: top;"
+	valign=top>
 <td colspan=1
 	rowspan=1
-	style="padding-right: 10px;
+	style="width: 50%;
+			padding-right: 10px;
 			padding-left: 10px;
 			border-left-style: Solid;
 			border-left-color: #000000;
@@ -111,7 +121,8 @@
 <p>Lane Load Only</td>
 <td colspan=1
 	rowspan=1
-	style="padding-right: 10px;
+	style="width: 50%;
+			padding-right: 10px;
 			padding-left: 10px;
 			border-right-style: Solid;
 			border-right-color: #000000;
@@ -122,8 +133,10 @@
 	width=50%>
 <p>This loading consists only of a lane load</td></tr>
 
-<tr valign=top>
-<td style="padding-right: 10px;
+<tr style="x-cell-content-align: top;"
+	valign=top>
+<td style="width: 50%;
+			padding-right: 10px;
 			padding-left: 10px;
 			border-left-style: Solid;
 			border-left-color: #000000;
@@ -136,7 +149,8 @@
 			border-bottom-style: Solid;"
 	width=50%>
 <p>Sum of Lane Load and Truck</td>
-<td style="padding-right: 10px;
+<td style="width: 50%;
+			padding-right: 10px;
 			padding-left: 10px;
 			border-right-style: Solid;
 			border-right-color: #000000;
@@ -147,8 +161,10 @@
 	width=50%>
 <p>The response of the lane load and truck are added together</td></tr>
 
-<tr valign=top>
-<td style="border-left-width: 1px;
+<tr style="x-cell-content-align: top;"
+	valign=top>
+<td style="width: 50%;
+			border-left-width: 1px;
 			border-left-color: #000000;
 			border-left-style: Solid;
 			border-right-width: 1px;
@@ -161,7 +177,8 @@
 			padding-left: 10px;"
 	width=50%>
 <p>Envelope of Lane Load and Truck</td>
-<td style="border-right-width: 1px;
+<td style="width: 50%;
+			border-right-width: 1px;
 			border-right-color: #000000;
 			border-right-style: Solid;
 			border-bottom-style: Solid;
@@ -175,16 +192,22 @@
 
 <h6>Lane Load</h6>
 
-<p>Input the magnitude of the lane load</p>
+<p>Input the magnitude of the lane load and the span length for which it 
+ will be applied. If any span length, measured as the pier-to-pier distance 
+ exceeds the threshold value, the lane load will be applied. A span length 
+ of zero will cause the lane load to always be applied.</p>
 
 <h6>Truck Configuration</h6>
 
 <p>Describe the truck configuration. Trucks are defined as a series of 
  axle weights and spacing. Use the Add and Delete buttons to define the 
- axles</p>
+ axles. A single axle spacing can be optional designated as a variable 
+ spacing. The spacing value in the grid will be taken as the minimum value 
+ and the secondary value will be taken as the maximum axle spacing.</p>
 
-<p>Select the check box if only axles contributing the to extreme force 
- effect under consideration are to be considered.</p>
+<p>Axles not contributing to the maximum load effect under consideration 
+ can be optionally neglected. This is typically done with notional loads 
+ such as HL-93 and NRL.</p>
 
 <!--kadov_tag{{<placeholder id="footer">}}-->
 </body>

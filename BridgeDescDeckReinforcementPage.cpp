@@ -24,9 +24,10 @@
 //
 
 #include "stdafx.h"
-#include "pgsuper.h"
+#include "resource.h"
 #include "BridgeDescDeckReinforcementPage.h"
 #include "BridgeDescDlg.h"
+#include "PGSuperDoc.h"
 #include <MFCTools\CustomDDX.h>
 
 #include <IFace\DisplayUnits.h>
@@ -65,7 +66,7 @@ void CBridgeDescDeckReinforcementPage::DoDataExchange(CDataExchange* pDX)
    DDX_CBStringExactCase(pDX,IDC_MILD_STEEL_SELECTOR,m_RebarData.strRebarMaterial);
 
    CComPtr<IBroker> pBroker;
-   AfxGetBroker(&pBroker);
+   EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
 
    DDX_UnitValueAndTag(pDX, IDC_TOP_COVER,    IDC_TOP_COVER_UNIT,    m_RebarData.TopCover,    pDisplayUnits->GetComponentDimUnit() );
@@ -242,12 +243,10 @@ BOOL CBridgeDescDeckReinforcementPage::OnToolTipNotify(UINT id,NMHDR* pNMHDR, LR
       switch(nID)
       {
       case IDC_TOP_COVER:
-         ::SendMessage(pNMHDR->hwndFrom,TTM_SETMAXTIPWIDTH,0,300); // makes it a multi-line tooltip
          m_strTip = "Measured from top of deck to center of top mat of reinforcing";
          break;
 
       case IDC_BOTTOM_COVER:
-         ::SendMessage(pNMHDR->hwndFrom,TTM_SETMAXTIPWIDTH,0,300); // makes it a multi-line tooltip
          m_strTip = "Measured from bottom of deck to center of bottom mat of reinforcing";
          break;
 
@@ -255,6 +254,8 @@ BOOL CBridgeDescDeckReinforcementPage::OnToolTipNotify(UINT id,NMHDR* pNMHDR, LR
          return FALSE;
       }
 
+      ::SendMessage(pNMHDR->hwndFrom,TTM_SETDELAYTIME,TTDT_AUTOPOP,TOOLTIP_DURATION); // sets the display time to 10 seconds
+      ::SendMessage(pNMHDR->hwndFrom,TTM_SETMAXTIPWIDTH,0,TOOLTIP_WIDTH); // makes it a multi-line tooltip
       pTTT->lpszText = m_strTip.LockBuffer();
       pTTT->hinst = NULL;
       return TRUE;

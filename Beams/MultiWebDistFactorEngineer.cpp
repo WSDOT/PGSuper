@@ -90,8 +90,7 @@ void CMultiWebDistFactorEngineer::BuildReport(SpanIndexType span,GirderIndexType
 
    rptParagraph* pPara;
 
-
-   bool bSIUnits = (pDisplayUnits->GetUnitDisplayMode() == pgsTypes::umSI);
+   bool bSIUnits = IS_SI_UNITS(pDisplayUnits);
    std::string strImagePath(pgsReportStyleHolder::GetImagePath());
 
    INIT_UV_PROTOTYPE( rptLengthUnitValue,    location, pDisplayUnits->GetSpanLengthUnit(),      true );

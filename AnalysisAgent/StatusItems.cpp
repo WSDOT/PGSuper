@@ -25,12 +25,12 @@
 
 #include <PgsExt\GirderLabel.h>
 
-pgsVSRatioStatusItem::pgsVSRatioStatusItem(SpanIndexType span,GirderIndexType gdr,AgentIDType agentID,StatusCallbackIDType callbackID,const char* strDescription) :
-pgsStatusItem(agentID,callbackID,strDescription), m_Span(span),m_Girder(gdr)
+pgsVSRatioStatusItem::pgsVSRatioStatusItem(SpanIndexType span,GirderIndexType gdr,StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,const char* strDescription) :
+CEAFStatusItem(statusGroupID,callbackID,strDescription), m_Span(span),m_Girder(gdr)
 {
 }
 
-bool pgsVSRatioStatusItem::IsEqual(pgsStatusItem* pOther)
+bool pgsVSRatioStatusItem::IsEqual(CEAFStatusItem* pOther)
 {
    pgsVSRatioStatusItem* other = dynamic_cast<pgsVSRatioStatusItem*>(pOther);
    if ( !other )
@@ -45,12 +45,12 @@ m_pBroker(pBroker)
 {
 }
 
-pgsTypes::StatusSeverityType pgsVSRatioStatusCallback::GetSeverity()
+eafTypes::StatusSeverityType pgsVSRatioStatusCallback::GetSeverity()
 {
-   return pgsTypes::statusError;
+   return eafTypes::statusError;
 }
 
-void pgsVSRatioStatusCallback::Execute(pgsStatusItem* pStatusItem)
+void pgsVSRatioStatusCallback::Execute(CEAFStatusItem* pStatusItem)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 

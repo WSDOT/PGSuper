@@ -65,10 +65,8 @@ void CCopyConcreteEntry::DoDataExchange(CDataExchange* pDX)
 
    if ( pDX->m_bSaveAndValidate )
    {
-      CMainFrame* pwndMain = (CMainFrame*)AfxGetMainWnd();
-      CPGSuperDoc* pDoc = pwndMain->GetPGSuperDocument();
       CComPtr<IBroker> pBroker;
-      pDoc->GetBroker(&pBroker);
+      EAFGetBroker(&pBroker);
 
       GET_IFACE2(pBroker,ILibrary,pLib);
       m_ConcreteEntry = pLib->GetConcreteEntry(m_Concrete);
@@ -87,10 +85,8 @@ END_MESSAGE_MAP()
 
 BOOL CCopyConcreteEntry::OnInitDialog() 
 {
-   CMainFrame* pwndMain = (CMainFrame*)AfxGetMainWnd();
-   CPGSuperDoc* pDoc = pwndMain->GetPGSuperDocument();
    CComPtr<IBroker> pBroker;
-   pDoc->GetBroker(&pBroker);
+   EAFGetBroker(&pBroker);
 
    GET_IFACE2( pBroker, ILibraryNames, pLibNames);
    std::vector<std::string> names;

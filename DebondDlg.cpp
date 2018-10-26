@@ -24,7 +24,7 @@
 //
 
 #include "stdafx.h"
-#include "pgsuper.h"
+#include "PGSuperDoc.h"
 #include "DebondDlg.h"
 #include "GirderDescDlg.h"
 #include "PGSuperColors.h"
@@ -62,7 +62,7 @@ void CGirderDescDebondPage::DoDataExchange(CDataExchange* pDX)
    CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
 
    CComPtr<IBroker> pBroker;
-   AfxGetBroker(&pBroker);
+   EAFGetBroker(&pBroker);
 
    if ( pDX->m_bSaveAndValidate )
    {
@@ -90,7 +90,7 @@ void CGirderDescDebondPage::DoDataExchange(CDataExchange* pDX)
 
 BEGIN_MESSAGE_MAP(CGirderDescDebondPage, CPropertyPage)
 	//{{AFX_MSG_MAP(CGirderDescDebondPage)
-	ON_BN_CLICKED(IDD_ADD, OnAdd)
+	ON_BN_CLICKED(IDC_ADD, OnAdd)
 	ON_BN_CLICKED(IDC_DELETE, OnDelete)
 	ON_WM_PAINT()
 	ON_WM_SIZE()
@@ -112,7 +112,7 @@ BOOL CGirderDescDebondPage::OnInitDialog()
    CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
 
    CComPtr<IBroker> pBroker;
-   AfxGetBroker(&pBroker);
+   EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
    pStrandGeometry->ListDebondableStrands(pParent->m_CurrentSpanIdx, pParent->m_CurrentGirderIdx, pgsTypes::Straight, &m_Debondables);
 
@@ -193,7 +193,7 @@ std::vector<CString>  CGirderDescDebondPage::GetStrandList()
    CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
 
    CComPtr<IBroker> pBroker;
-   AfxGetBroker(&pBroker);
+   EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
 
    std::vector<CString>  strList;
@@ -263,7 +263,7 @@ void CGirderDescDebondPage::OnPaint()
    pWnd->UpdateWindow();
 
    CComPtr<IBroker> pBroker;
-   AfxGetBroker(&pBroker);
+   EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,ISectProp2,pSectProp);
    CComPtr<IShape> shape;
    pgsPointOfInterest poi(pParent->m_CurrentSpanIdx,pParent->m_CurrentGirderIdx,0.00);
@@ -411,7 +411,7 @@ void CGirderDescDebondPage::DrawShape(CDC* pDC,IShape* shape,grlibPointMapper& m
 void CGirderDescDebondPage::DrawStrands(CDC* pDC,grlibPointMapper& mapper)
 {
    CComPtr<IBroker> pBroker;
-   AfxGetBroker(&pBroker);
+   EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
 
    CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();

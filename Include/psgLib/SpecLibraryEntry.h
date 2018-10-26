@@ -147,7 +147,7 @@ public:
 
    //------------------------------------------------------------------------
    // Edit the entry
-   virtual bool Edit(libUnitsMode::Mode mode, bool allowEditing);
+   virtual bool Edit(bool allowEditing);
 
    //------------------------------------------------------------------------
    // Save to structured storage

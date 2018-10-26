@@ -51,7 +51,7 @@ public:
 	CString	m_Engineer;
    CString m_CurrentServer; // name of current catalog server
 	CString	m_Publisher;
-	int		m_Method;
+	SharedResourceType m_SharedResourceType;
 	//}}AFX_DATA
    CHyperLink   m_PublisherHyperLink;
 
@@ -65,7 +65,7 @@ public:
 
 // Save data going into dialog so we can compare on the way out
 // in order to determine if we need an update
-   int m_OriginalMethod;
+   SharedResourceType m_OriginalSharedResourceType;
    CString m_OriginalServer;
 	CString	m_OriginalPublisher;
    const CPGSuperCatalogServer* m_OriginalServerPtr;
@@ -85,7 +85,6 @@ protected:
 	//{{AFX_MSG(CConfigurePGSuperDlg)
 	afx_msg void OnHelp();
 	virtual BOOL OnInitDialog();
-	afx_msg void OnSetfocusPublishers();
    afx_msg void OnAddCatalogServer();
 	afx_msg void OnServerChanged();
 	afx_msg void OnUpdatenow();
@@ -103,6 +102,7 @@ protected:
    void OnMethod();
 
    bool m_bNetworkError;
+  int	m_Method;
 public:
    afx_msg void OnLbnSelchangePublishers();
 };

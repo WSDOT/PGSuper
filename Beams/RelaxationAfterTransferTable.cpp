@@ -70,7 +70,7 @@ CRelaxationAfterTransferTable* CRelaxationAfterTransferTable::PrepareTable(rptCh
    *pParagraph << "Losses due to Relaxation After Transfer" << rptNewLine;
    if ( pstrand->GetType() == matPsStrand::LowRelaxation )
    {
-      if ( pDisplayUnits->GetUnitDisplayMode() == pgsTypes::umSI )
+      if ( IS_SI_UNITS(pDisplayUnits) )
       {
          *pParagraph << rptRcImage(strImagePath + "Delta FpR2 Equation for Low Relax Strands SI.jpg") << rptNewLine;
       }
@@ -81,7 +81,7 @@ CRelaxationAfterTransferTable* CRelaxationAfterTransferTable::PrepareTable(rptCh
    }
    else
    {
-      if ( pDisplayUnits->GetUnitDisplayMode() == pgsTypes::umSI )
+      if ( IS_SI_UNITS(pDisplayUnits) )
       {
          *pParagraph << rptRcImage(strImagePath + "Delta FpR2 Equation for Stress Rel Strands SI.jpg") << rptNewLine;
       }

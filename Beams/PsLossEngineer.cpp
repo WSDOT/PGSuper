@@ -40,7 +40,7 @@
 #include <PgsExt\StatusItem.h>
 #include <PgsExt\GirderData.h>
 #include <PgsExt\BridgeDescription.h>
-#include <PgsExt\AutoProgress.h>
+#include <EAF\EAFAutoProgress.h>
 #include <PgsExt\GirderLabel.h>
 
 #include <Material\PsStrand.h>
@@ -91,14 +91,14 @@ void ReportRow(T* pTable,rptChapter* pChapter,IBroker* pBroker,int row,LOSSDETAI
 
 /////////////////////////////////////////////////////////////////////////////
 // CPsLossEngineer
-void CPsLossEngineer::Init(IBroker* pBroker,AgentIDType agentID)
+void CPsLossEngineer::Init(IBroker* pBroker,StatusGroupIDType statusGroupID)
 {
    m_pBroker = pBroker;
-   m_AgentID = agentID;
+   m_StatusGroupID = statusGroupID;
 
    GET_IFACE(IStatusCenter,pStatusCenter);
    m_scidUnknown = pStatusCenter->RegisterCallback( new pgsUnknownErrorStatusCallback() );
-   m_scidGirderDescriptionError = pStatusCenter->RegisterCallback( new pgsGirderDescriptionStatusCallback(m_pBroker,pgsTypes::statusError) );
+   m_scidGirderDescriptionError = pStatusCenter->RegisterCallback( new pgsGirderDescriptionStatusCallback(m_pBroker,eafTypes::statusError) );
 }
 
 LOSSDETAILS CPsLossEngineer::ComputeLosses(BeamType beamType,const pgsPointOfInterest& poi)
@@ -117,7 +117,7 @@ LOSSDETAILS CPsLossEngineer::ComputeLosses(BeamType beamType,const pgsPointOfInt
    LOSSDETAILS details;
 
    GET_IFACE(IProgress,pProgress);
-   pgsAutoProgress ap(pProgress);
+   CEAFAutoProgress ap(pProgress);
 
    SpanIndexType span  = poi.GetSpan();
    GirderIndexType gdr = poi.GetGirder();
@@ -404,25 +404,25 @@ void CPsLossEngineer::LossesByRefinedEstimateBefore2005(BeamType beamType,const 
       std::string msg;
 
       GET_IFACE(IStatusCenter,pStatusCenter);
-      pgsStatusItem* pStatusItem;
+      CEAFStatusItem* pStatusItem;
 
       if ( e.GetReasonCode() == lrfdXPsLosses::fpjOutOfRange )
       {
          reason |= XREASON_ASSUMPTIONVIOLATED;
          msg = "Prestress losses could not be computed because the prestress jacking stress fpj does not exceed 0.5fpu (see Article 5.9.5.4.4b of LRFD 3rd Edition 2004)\nAdjust the prestress jacking forces";
-         pStatusItem = new pgsGirderDescriptionStatusItem(span,gdr,1,m_AgentID,m_scidGirderDescriptionError,msg.c_str());
+         pStatusItem = new pgsGirderDescriptionStatusItem(span,gdr,1,m_StatusGroupID,m_scidGirderDescriptionError,msg.c_str());
       }
       else if ( e.GetReasonCode() == lrfdXPsLosses::fcOutOfRange )
       {
          reason |= XREASON_ASSUMPTIONVIOLATED;
          msg = "Prestress losses could not be computed because the concrete strength is out of range per LRFD 5.4.2.1 and 5.9.5.1";
-         pStatusItem = new pgsGirderDescriptionStatusItem(span,gdr,2,m_AgentID,m_scidGirderDescriptionError,msg.c_str());
+         pStatusItem = new pgsGirderDescriptionStatusItem(span,gdr,2,m_StatusGroupID,m_scidGirderDescriptionError,msg.c_str());
       }
       else
       {
          reason |= XREASON_ASSUMPTIONVIOLATED;
          msg = "Prestress losses could not be computed because an unspecified error occured";
-         pStatusItem = new pgsUnknownErrorStatusItem(m_AgentID,m_scidUnknown,__FILE__,__LINE__,msg.c_str());
+         pStatusItem = new pgsUnknownErrorStatusItem(m_StatusGroupID,m_scidUnknown,__FILE__,__LINE__,msg.c_str());
       }
 
       pStatusCenter->Add(pStatusItem);
@@ -563,25 +563,25 @@ void CPsLossEngineer::LossesByRefinedEstimate2005(BeamType beamType,const pgsPoi
       std::string msg;
 
       GET_IFACE(IStatusCenter,pStatusCenter);
-      pgsStatusItem* pStatusItem;
+      CEAFStatusItem* pStatusItem;
 
       if ( e.GetReasonCode() == lrfdXPsLosses::fpjOutOfRange )
       {
          reason |= XREASON_ASSUMPTIONVIOLATED;
          msg = "Prestress losses could not be computed because the prestress jacking stress fpj does not exceed 0.5fpu (see Article 5.9.5.4.4b of LRFD 3rd Edition 2004)\nAdjust the prestress jacking forces";
-         pStatusItem = new pgsGirderDescriptionStatusItem(span,gdr,1,m_AgentID,m_scidGirderDescriptionError,msg.c_str());
+         pStatusItem = new pgsGirderDescriptionStatusItem(span,gdr,1,m_StatusGroupID,m_scidGirderDescriptionError,msg.c_str());
       }
       else if ( e.GetReasonCode() == lrfdXPsLosses::fcOutOfRange )
       {
          reason |= XREASON_ASSUMPTIONVIOLATED;
          msg = "Prestress losses could not be computed because the concrete strength is out of range per LRFD 5.4.2.1 and 5.9.5.1";
-         pStatusItem = new pgsGirderDescriptionStatusItem(span,gdr,2,m_AgentID,m_scidGirderDescriptionError,msg.c_str());
+         pStatusItem = new pgsGirderDescriptionStatusItem(span,gdr,2,m_StatusGroupID,m_scidGirderDescriptionError,msg.c_str());
       }
       else
       {
          reason |= XREASON_ASSUMPTIONVIOLATED;
          msg = "Prestress losses could not be computed because an unspecified error occured";
-         pStatusItem = new pgsUnknownErrorStatusItem(m_AgentID,m_scidUnknown,__FILE__,__LINE__,msg.c_str());
+         pStatusItem = new pgsUnknownErrorStatusItem(m_StatusGroupID,m_scidUnknown,__FILE__,__LINE__,msg.c_str());
       }
 
       pStatusCenter->Add(pStatusItem);
@@ -789,25 +789,25 @@ void CPsLossEngineer::LossesByApproxLumpSum(BeamType beamType,const pgsPointOfIn
       std::string msg;
 
       GET_IFACE(IStatusCenter,pStatusCenter);
-      pgsStatusItem* pStatusItem;
+      CEAFStatusItem* pStatusItem;
 
       if ( e.GetReasonCode() == lrfdXPsLosses::fpjOutOfRange )
       {
          reason |= XREASON_ASSUMPTIONVIOLATED;
          msg = "Prestress losses could not be computed because the prestress jacking stress fpj does not exceed 0.5fpu (see Article 5.9.5.4.4b of LRFD 3rd Edition 2004)\nAdjust the prestress jacking forces";
-         pStatusItem = new pgsGirderDescriptionStatusItem(span,gdr,1,m_AgentID,m_scidGirderDescriptionError,msg.c_str());
+         pStatusItem = new pgsGirderDescriptionStatusItem(span,gdr,1,m_StatusGroupID,m_scidGirderDescriptionError,msg.c_str());
       }
       else if ( e.GetReasonCode() == lrfdXPsLosses::fcOutOfRange )
       {
          reason |= XREASON_ASSUMPTIONVIOLATED;
          msg = "Prestress losses could not be computed because the concrete strength is out of range per LRFD 5.4.2.1 and 5.9.5.1";
-         pStatusItem = new pgsGirderDescriptionStatusItem(span,gdr,0,m_AgentID,m_scidGirderDescriptionError,msg.c_str());
+         pStatusItem = new pgsGirderDescriptionStatusItem(span,gdr,0,m_StatusGroupID,m_scidGirderDescriptionError,msg.c_str());
       }
       else
       {
          reason |= XREASON_ASSUMPTIONVIOLATED;
          msg = "Prestress losses could not be computed because an unspecified error occured";
-         pStatusItem = new pgsUnknownErrorStatusItem(m_AgentID,m_scidUnknown,__FILE__,__LINE__,msg.c_str());
+         pStatusItem = new pgsUnknownErrorStatusItem(m_StatusGroupID,m_scidUnknown,__FILE__,__LINE__,msg.c_str());
       }
 
       pStatusCenter->Add(pStatusItem);
@@ -1734,7 +1734,7 @@ void CPsLossEngineer::ReportLumpSumTimeDependentLossesAtShipping(rptChapter* pCh
    else
    {
       // Approximate methods, 2005
-      if ( pDisplayUnits->GetUnitDisplayMode() == pgsTypes::umSI )
+      if ( IS_SI_UNITS(pDisplayUnits) )
          *pParagraph<< rptRcImage(strImagePath + "LumpSumLossEquation2005_SI_Shipping.gif") << rptNewLine;
       else
          *pParagraph<< rptRcImage(strImagePath + "LumpSumLossEquation2005_US_Shipping.gif") << rptNewLine;
@@ -1835,7 +1835,7 @@ void CPsLossEngineer::ReportLumpSumTimeDependentLosses(rptChapter* pChapter,cons
       int method = (details.Method == LOSSES_WSDOT_LUMPSUM) ? 1 : 0;
       int beam = (int)details.ApproxLosses.GetBeamType();
       int strand = details.pLosses->GetStrandType() == matPsStrand::LowRelaxation ? 0 : 1;
-      int units = (pDisplayUnits->GetUnitDisplayMode() == pgsTypes::umSI) ? 0 : 1;
+      int units = IS_SI_UNITS(pDisplayUnits);
 
       
       pParagraph = new rptParagraph;
@@ -1849,7 +1849,7 @@ void CPsLossEngineer::ReportLumpSumTimeDependentLosses(rptChapter* pChapter,cons
    }
    else
    {
-      if ( pDisplayUnits->GetUnitDisplayMode() == pgsTypes::umSI )
+      if ( IS_SI_UNITS(pDisplayUnits) )
          *pParagraph<< rptRcImage(strImagePath + "LumpSumLossEquation2005_SI.gif") << rptNewLine;
       else
          *pParagraph<< rptRcImage(strImagePath + "LumpSumLossEquation2005_US.gif") << rptNewLine;

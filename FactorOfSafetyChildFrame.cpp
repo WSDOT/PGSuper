@@ -43,7 +43,7 @@ static char THIS_FILE[] = __FILE__;
 /////////////////////////////////////////////////////////////////////////////
 // CFactorOfSafetyChildFrame
 
-IMPLEMENT_DYNCREATE(CFactorOfSafetyChildFrame, COutputChildFrame)
+IMPLEMENT_DYNCREATE(CFactorOfSafetyChildFrame, CEAFOutputChildFrame)
 
 CFactorOfSafetyChildFrame::CFactorOfSafetyChildFrame():
 m_GirderIdx(0),
@@ -57,7 +57,7 @@ CFactorOfSafetyChildFrame::~CFactorOfSafetyChildFrame()
 {
 }
 
-BEGIN_MESSAGE_MAP(CFactorOfSafetyChildFrame, COutputChildFrame)
+BEGIN_MESSAGE_MAP(CFactorOfSafetyChildFrame, CEAFOutputChildFrame)
 	//{{AFX_MSG_MAP(CFactorOfSafetyChildFrame)
 	ON_WM_CREATE()
    ON_CBN_SELCHANGE( IDC_GIRDER   , OnGirderChanged )
@@ -88,7 +88,7 @@ CFactorOfSafetyChildFrame::Stage  CFactorOfSafetyChildFrame::GetStage() const
 
 int CFactorOfSafetyChildFrame::OnCreate(LPCREATESTRUCT lpCreateStruct) 
 {
-	if (COutputChildFrame::OnCreate(lpCreateStruct) == -1)
+	if (CEAFOutputChildFrame::OnCreate(lpCreateStruct) == -1)
 		return -1;
 	
 	if ( !m_SettingsBar.Create( this, IDD_STABILITY_BAR, CBRS_TOP, IDD_STABILITY_BAR) )
@@ -298,18 +298,16 @@ void CFactorOfSafetyChildFrame::OnGridClicked()
 
 void CFactorOfSafetyChildFrame::OnUpdateFrameTitle(BOOL bAddToTitle)
 {
-	if (bAddToTitle )
+	if ( bAddToTitle )
    {
-
-      // TRICKY:
-      // we expect our view to provide is with text
-      CView* pv = this->GetActiveView();
-      ASSERT(pv!=0);
-      CString name;
-      pv->GetWindowText(name);
-
-      // set our title
-		AfxSetWindowText(m_hWnd, name);
+      // TRICKY: we expect our view to provide is with text
+      CView* pView = this->GetActiveView();
+      if ( pView )
+      {
+         CString name;
+         pView->GetWindowText(name);
+		   AfxSetWindowText(m_hWnd, name);
+      }
    }
 }
 

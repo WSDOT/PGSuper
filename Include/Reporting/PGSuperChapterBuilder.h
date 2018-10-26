@@ -55,7 +55,5 @@ public:
    virtual Uint16 GetMaxLevel() const;
    
    // creates a new chapter object and configures it with the correct style for PGSuper reports
-   // still a pure virtual function because you must provide that actual report building
-   // instructions
-   virtual rptChapter* Build(CReportSpecification* pRptSpec,Uint16 level) const = 0;
+   virtual rptChapter* Build(CReportSpecification* pRptSpec,Uint16 level) const;
 };

@@ -88,7 +88,7 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(CReportSpecification* 
    // Product Reactions
    p = new rptParagraph;
    *pChapter << p;
-   *p << CProductReactionTable().Build(pBroker,span,girder,pSpec->GetAnalysisType(),false,true,true,pDisplayUnits) << rptNewLine;
+   *p << CProductReactionTable().Build(pBroker,span,girder,pSpec->GetAnalysisType(),false,true,true,true,true,pDisplayUnits) << rptNewLine;
    *p << LIVELOAD_PER_GIRDER_NO_IMPACT << rptNewLine;
    *p << rptNewLine;
 
@@ -129,7 +129,7 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(CReportSpecification* 
    // Product Rotations
    p = new rptParagraph;
    *pChapter << p;
-   *p << CProductRotationTable().Build(pBroker,span,girder,pSpec->GetAnalysisType(),false,true,true,pDisplayUnits) << rptNewLine;
+   *p << CProductRotationTable().Build(pBroker,span,girder,pSpec->GetAnalysisType(),false,true,true,true,true,pDisplayUnits) << rptNewLine;
    *p << LIVELOAD_PER_GIRDER_NO_IMPACT << rptNewLine;
    *p << rptNewLine;
 
@@ -228,8 +228,8 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(CReportSpecification* 
 
    pgsTypes::AnalysisType analysisType = pSpec->GetAnalysisType();
 
-   INIT_UV_PROTOTYPE( rptForceSectionValue, reaction, pDisplayUnits->GetShearUnit(), false );
-   INIT_UV_PROTOTYPE( rptAngleUnitValue,  rotation, pDisplayUnits->GetRadAngleUnit(), false );
+   INIT_UV_PROTOTYPE( rptForceSectionValue, reaction, pDisplayUnits->GetShearUnit(),    false );
+   INIT_UV_PROTOTYPE( rptAngleUnitValue,    rotation, pDisplayUnits->GetRadAngleUnit(), false );
 
 
    p = new rptParagraph;
@@ -277,9 +277,9 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(CReportSpecification* 
       pgsTypes::PierFaceType pierFace = (pier == startPier ? pgsTypes::Ahead : pgsTypes::Back );
 
       if ( pier == 0 || pier == nPiers-1 )
-         (*pTable)(row,col++) << "Abutment " << (Int32)(pier+1);
+         (*pTable)(row,col++) << "Abutment " << LABEL_PIER(pier);
       else
-         (*pTable)(row,col++) << "Pier " << (Int32)(pier+1);
+         (*pTable)(row,col++) << "Pier " << LABEL_PIER(pier);
 
       pgsPointOfInterest poi(startPier,girder,pBridge->GetGirderStartConnectionLength(span,girder));
       if ( pier != startPier )
@@ -361,9 +361,9 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(CReportSpecification* 
       pgsTypes::PierFaceType pierFace = (pier == startPier ? pgsTypes::Ahead : pgsTypes::Back );
 
       if ( pier == 0 || pier == nPiers-1 )
-         (*pTable)(row,col++) << "Abutment " << (Int32)(pier+1);
+         (*pTable)(row,col++) << "Abutment " << LABEL_PIER(pier);
       else
-         (*pTable)(row,col++) << "Pier " << (Int32)(pier+1);
+         (*pTable)(row,col++) << "Pier " << LABEL_PIER(pier);
 
 
       double slope1 = pBridge->GetGirderSlope(span,girder);

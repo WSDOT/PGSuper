@@ -29,7 +29,7 @@
 #include <IFace\Project.h> // For EventSink
 #include <IFace\Alignment.h>
 
-#include <PgsExt\InterfaceCache.h>
+#include <EAF\EAFInterfaceCache.h>
 
 #include <PgsExt\PoiMgr.h>
 #include <PgsExt\PoiKey.h>
@@ -80,10 +80,10 @@ public:
       m_AlignmentID = -1;
 
       m_bUserLoadsValidated  = false;
-
 	}
 
    HRESULT FinalConstruct();
+   void FinalRelease();
 
 DECLARE_REGISTRY_RESOURCEID(IDR_BRIDGEAGENT)
 
@@ -157,6 +157,7 @@ public:
 // IBridge
 public:
    virtual Float64 GetLength();
+   virtual Float64 GetSpanLength(SpanIndexType span);
    virtual double GetAlignmentOffset();
    virtual double GetDistanceFromStartOfBridge(double station);
    virtual SpanIndexType GetSpanCount();
@@ -246,6 +247,7 @@ public:
    virtual void IsIntegralAtPier(PierIndexType pierIdx,bool* pbLeft,bool* pbRight);
    virtual void GetContinuityStage(PierIndexType pierIdx,pgsTypes::Stage* pLeft,pgsTypes::Stage* pRight);
    virtual bool GetSkewAngle(Float64 station,const char* strOrientation,Float64* pSkew);
+   virtual bool ProcessNegativeMoments(SpanIndexType spanIdx);
 
 // IBridgeMaterial
 public:
@@ -602,11 +604,12 @@ public:
 
 private:
    DECLARE_AGENT_DATA;
+
    Uint16 m_Level;
    DWORD m_dwBridgeDescCookie;
    DWORD m_dwSpecificationCookie;
 
-   AgentIDType m_LoadAgentID; // ID used to identify user load-related status items created by this agent
+   StatusGroupIDType m_LoadStatusGroupID; // ID used to identify user load-related status items created by this agent
 
    Int32 m_AlignmentID;
 

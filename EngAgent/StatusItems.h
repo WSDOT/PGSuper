@@ -25,19 +25,19 @@
 #include <PgsExt\StatusItem.h>
 #include <PGSuperTypes.h>
 
-class pgsLiveLoadStatusItem : public pgsStatusItem
+class pgsLiveLoadStatusItem : public CEAFStatusItem
 {
 public:
-   pgsLiveLoadStatusItem(AgentIDType agentID,StatusCallbackIDType callbackID,const char* strDescription);
-   bool IsEqual(pgsStatusItem* pOther);
+   pgsLiveLoadStatusItem(StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,const char* strDescription);
+   bool IsEqual(CEAFStatusItem* pOther);
 };
 
 class pgsLiveLoadStatusCallback : public iStatusCallback
 {
 public:
    pgsLiveLoadStatusCallback(IBroker* pBroker);
-   virtual pgsTypes::StatusSeverityType GetSeverity();
-   virtual void Execute(pgsStatusItem* pStatusItem);
+   virtual eafTypes::StatusSeverityType GetSeverity();
+   virtual void Execute(CEAFStatusItem* pStatusItem);
 
 private:
    IBroker* m_pBroker;
@@ -45,11 +45,11 @@ private:
 
 
 // status for Lifting support location
-class pgsLiftingSupportLocationStatusItem : public pgsStatusItem
+class pgsLiftingSupportLocationStatusItem : public CEAFStatusItem
 {
 public:
-   pgsLiftingSupportLocationStatusItem(SpanIndexType span,GirderIndexType gdr,AgentIDType agentID,StatusCallbackIDType callbackID,const char* strDescription);
-   bool IsEqual(pgsStatusItem* pOther);
+   pgsLiftingSupportLocationStatusItem(SpanIndexType span,GirderIndexType gdr,StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,const char* strDescription);
+   bool IsEqual(CEAFStatusItem* pOther);
 
    SpanIndexType m_Span;
    GirderIndexType m_Girder;
@@ -60,19 +60,19 @@ class pgsLiftingSupportLocationStatusCallback : public iStatusCallback
 {
 public:
    pgsLiftingSupportLocationStatusCallback(IBroker* pBroker);
-   virtual pgsTypes::StatusSeverityType GetSeverity();
-   virtual void Execute(pgsStatusItem* pStatusItem);
+   virtual eafTypes::StatusSeverityType GetSeverity();
+   virtual void Execute(CEAFStatusItem* pStatusItem);
 
 private:
    IBroker* m_pBroker;
 };
 
 // status for truck stiffness
-class pgsTruckStiffnessStatusItem : public pgsStatusItem
+class pgsTruckStiffnessStatusItem : public CEAFStatusItem
 {
 public:
-   pgsTruckStiffnessStatusItem(AgentIDType agentID,StatusCallbackIDType callbackID,const char* strDescription);
-   bool IsEqual(pgsStatusItem* pOther);
+   pgsTruckStiffnessStatusItem(StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,const char* strDescription);
+   bool IsEqual(CEAFStatusItem* pOther);
 };
 
 ///////////////////////////
@@ -80,8 +80,8 @@ class pgsTruckStiffnessStatusCallback : public iStatusCallback
 {
 public:
    pgsTruckStiffnessStatusCallback(IBroker* pBroker);
-   virtual pgsTypes::StatusSeverityType GetSeverity();
-   virtual void Execute(pgsStatusItem* pStatusItem);
+   virtual eafTypes::StatusSeverityType GetSeverity();
+   virtual void Execute(CEAFStatusItem* pStatusItem);
 
 private:
    IBroker* m_pBroker;

@@ -47,4 +47,12 @@ library PGSuper
 	{
 		[default] interface IAgentEx;
 	};
+
+   [
+      uuid(78D50F7D-4825-4FB0-86CC-CAAF7326B8FB)
+   ]
+   coclass WSDOTComponentInfo
+   {
+		[default] interface IUnknown;
+   };
 };

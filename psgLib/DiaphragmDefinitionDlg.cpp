@@ -27,21 +27,21 @@
 #include <psgLib\psglib.h>
 #include "DiaphragmDefinitionDlg.h"
 #include <MFCTools\MFCTools.h>
+#include <EAF\EAFApp.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
-//#undef THIS_FILE
-//static char THIS_FILE[] = __FILE__;
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
 #endif
 
 /////////////////////////////////////////////////////////////////////////////
 // CDiaphragmDefinitionDlg dialog
 
 
-CDiaphragmDefinitionDlg::CDiaphragmDefinitionDlg(bool bUnitsSI,CWnd* pParent /*=NULL*/)
+CDiaphragmDefinitionDlg::CDiaphragmDefinitionDlg(CWnd* pParent /*=NULL*/)
 	: CDialog(CDiaphragmDefinitionDlg::IDD, pParent)
 {
-   m_bUnitsSI = bUnitsSI;
 	//{{AFX_DATA_INIT(CDiaphragmDefinitionDlg)
 		// NOTE: the ClassWizard will add member initialization here
 	//}}AFX_DATA_INIT
@@ -54,12 +54,18 @@ void CDiaphragmDefinitionDlg::DoDataExchange(CDataExchange* pDX)
 	//{{AFX_DATA_MAP(CDiaphragmDefinitionDlg)
 		// NOTE: the ClassWizard will add DDX and DDV calls here
 	//}}AFX_DATA_MAP
+   CEAFApp* pApp;
+   {
+      AFX_MANAGE_STATE(AfxGetAppModuleState());
+      pApp = (CEAFApp*)AfxGetApp();
+   }
+   const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
    DDX_String(pDX,IDC_DESCRIPTION,m_Rule.Description);
-   DDX_UnitValueAndTag(pDX,IDC_SPAN1,IDC_SPAN_UNIT, m_Rule.MinSpan, m_bUnitsSI, unitMeasure::Feet, unitMeasure::Meter);
-   DDX_UnitValueAndTag(pDX,IDC_SPAN2,IDC_SPAN_UNIT, m_Rule.MaxSpan, m_bUnitsSI, unitMeasure::Feet, unitMeasure::Meter);
-   DDX_UnitValueAndTag(pDX,IDC_H,IDC_H_UNIT, m_Rule.Height, m_bUnitsSI, unitMeasure::Inch, unitMeasure::Millimeter);
-   DDX_UnitValueAndTag(pDX,IDC_THICKNESS,IDC_THICKNESS_UNIT, m_Rule.Thickness, m_bUnitsSI, unitMeasure::Inch, unitMeasure::Millimeter);
+   DDX_UnitValueAndTag(pDX,IDC_SPAN1,IDC_SPAN_UNIT, m_Rule.MinSpan, pDisplayUnits->SpanLength);
+   DDX_UnitValueAndTag(pDX,IDC_SPAN2,IDC_SPAN_UNIT, m_Rule.MaxSpan, pDisplayUnits->SpanLength);
+   DDX_UnitValueAndTag(pDX,IDC_H,IDC_H_UNIT, m_Rule.Height, pDisplayUnits->ComponentDim );
+   DDX_UnitValueAndTag(pDX,IDC_THICKNESS,IDC_THICKNESS_UNIT, m_Rule.Thickness, pDisplayUnits->ComponentDim );
    DDX_CBItemData(pDX,IDC_TYPE,m_Rule.Type);
    DDX_CBItemData(pDX,IDC_CONSTRUCTION,m_Rule.Construction);
    DDX_CBItemData(pDX,IDC_MEASUREMENT_TYPE,m_Rule.MeasureType);
@@ -73,8 +79,8 @@ void CDiaphragmDefinitionDlg::DoDataExchange(CDataExchange* pDX)
    }
    else
    {
-      DDX_UnitValueAndTag(pDX,IDC_LOCATION,IDC_LOCATION_UNIT,m_Rule.Location, m_bUnitsSI, unitMeasure::Feet, unitMeasure::Meter);
-      DDV_UnitValueZeroOrMore(pDX, m_Rule.Location, m_bUnitsSI,  unitMeasure::Feet, unitMeasure::Meter );
+      DDX_UnitValueAndTag(pDX,IDC_LOCATION,IDC_LOCATION_UNIT,m_Rule.Location, pDisplayUnits->SpanLength );
+      DDV_UnitValueZeroOrMore(pDX, m_Rule.Location, pDisplayUnits->SpanLength );
    }
 }
 
@@ -152,7 +158,13 @@ void CDiaphragmDefinitionDlg::OnMeasurementTypeChanged()
    else
    {
       CDataExchange dx(this,FALSE);
-      DDX_Tag(&dx,IDC_LOCATION_UNIT,m_bUnitsSI,unitMeasure::Feet,unitMeasure::Meter);
+      CEAFApp* pApp;
+      {
+         AFX_MANAGE_STATE(AfxGetAppModuleState());
+         pApp = (CEAFApp*)AfxGetApp();
+      }
+      const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
+      DDX_Tag(&dx,IDC_LOCATION_UNIT,pDisplayUnits->SpanLength);
    }
 }
 

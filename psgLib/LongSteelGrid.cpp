@@ -29,10 +29,12 @@
 #include "LongSteelPage.h"
 #include <system\tokenizer.h>
 
+#include <EAF\EAFApp.h>
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
-//#undef THIS_FILE
-//static char THIS_FILE[] = __FILE__;
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
 #endif
 
 GRID_IMPLEMENT_REGISTER(CLongSteelGrid, CS_DBLCLKS, 0, 0, 0);
@@ -173,8 +175,13 @@ void CLongSteelGrid::OnUpdateEditRemoverows(CCmdUI* pCmdUI)
 
 void CLongSteelGrid::CustomInit()
 {
-   CLongSteelPage* pdlg = (CLongSteelPage*)GetParent();
-   ASSERT(pdlg);
+   CEAFApp* pApp;
+   {
+      AFX_MANAGE_STATE(AfxGetAppModuleState());
+      pApp = (CEAFApp*)AfxGetApp();
+   }
+   const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
+
 
 // Initialize the grid. For CWnd based grids this call is // 
 // essential. For view based grids this initialization is done 
@@ -231,7 +238,8 @@ void CLongSteelGrid::CustomInit()
 			.SetValue("# of Bars")
 		);
 
-   CString cv = "Cover\n" + pdlg->GetShortLengthUnitString();
+   CString cv;
+   cv.Format("Cover\n(%s)",pDisplayUnits->ComponentDim.UnitOfMeasure.UnitTag().c_str());
 	this->SetStyleRange(CGXRange(0,4), CGXStyle()
          .SetWrapText(TRUE)
 			.SetEnabled(FALSE)          // disables usage as current cell
@@ -240,7 +248,7 @@ void CLongSteelGrid::CustomInit()
 			.SetValue(cv)
 		);
 
-   cv = "Spacing\n" + pdlg->GetShortLengthUnitString();
+   cv.Format("Spacing\n(%s)",pDisplayUnits->SpanLength.UnitOfMeasure.UnitTag().c_str());
 	this->SetStyleRange(CGXRange(0,5), CGXStyle()
          .SetWrapText(TRUE)
 			.SetEnabled(FALSE)          // disables usage as current cell

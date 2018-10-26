@@ -72,7 +72,7 @@ void txnEditBoundaryConditions::Undo()
 bool txnEditBoundaryConditions::DoExecute(int i)
 {
    CComPtr<IBroker> pBroker;
-   AfxGetBroker(&pBroker);
+   EAFGetBroker(&pBroker);
 
    GET_IFACE2(pBroker,IEvents,pEvents);
    pEvents->HoldEvents();

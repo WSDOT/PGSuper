@@ -18,19 +18,22 @@ class CLiveLoadDlg : public CDialog
    friend CLiveLoadAxleGrid;
 // Construction
 public:
-	CLiveLoadDlg(libUnitsMode::Mode mode,  bool allowEditing, CWnd* pParent = NULL);   // standard constructor
+	CLiveLoadDlg(bool allowEditing, CWnd* pParent = NULL);   // standard constructor
 
 // Dialog Data
 	//{{AFX_DATA(CLiveLoadDlg)
 	enum { IDD = IDD_LIVE_LOAD_ENTRY };
 	CString	m_EntryName;
 	double	m_LaneLoad;
+   double m_LaneLoadSpanLength;
 	BOOL	m_IsNotional;
 	//}}AFX_DATA
-	LiveLoadLibraryEntry::LiveLoadConfigurationType		m_ConfigType;
+	LiveLoadLibraryEntry::LiveLoadConfigurationType m_ConfigType;
+   LiveLoadLibraryEntry::LiveLoadApplicabilityType m_UsageType;
 
    Float64 m_MaxVariableAxleSpacing;
-   AxleIndexType m_VariableAxleIndex;
+   //AxleIndexType m_VariableAxleIndex;
+   int m_VariableAxleIndex;
    LiveLoadLibraryEntry::AxleContainer m_Axles;
 
 // Overrides
@@ -44,9 +47,6 @@ public:
 public:
    void InitData(LiveLoadLibraryEntry* entry);
    void OnEnableDelete(bool canDelete);
-
-   CString GetLengthUnitString() {return m_LongLengthUnitString;}
-   CString GetForceUnitString() {return m_ForceUnitString;}
 protected:
 
 	// Generated message map functions
@@ -55,6 +55,7 @@ protected:
 	afx_msg void OnAdd();
 	afx_msg void OnDelete();
 	afx_msg void OnSelchangeConfigType();
+   afx_msg void OnVariableAxleTruck();
    afx_msg LRESULT OnCommandHelp(WPARAM, LPARAM lParam);
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
@@ -62,15 +63,11 @@ protected:
 private:
    CLiveLoadAxleGrid  m_Grid;
 
+   bool m_bHasVariableAxle;
    bool m_AllowEditing;
-   libUnitsMode::Mode  m_Mode;
-   unitLength          m_LongLengthUnit;
-   CString             m_LongLengthUnitString;
-   unitForce           m_ForceUnit;
-   CString             m_ForceUnitString;
 
-   void Init();
    void UpdateConfig();
+   void UpdateVariableAxleChoice();
 };
 
 //{{AFX_INSERT_LOCATION}}

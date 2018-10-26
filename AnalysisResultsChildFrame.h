@@ -27,7 +27,7 @@
 #pragma once
 #endif // _MSC_VER >= 1000
 //
-#include "OutputChildFrame.h"
+#include <EAF\EAFOutputChildFrame.h>
 #include "AnalysisResultsGraphDefinition.h"
 #include <vector>
 
@@ -36,7 +36,7 @@ class CAnalysisResultsView;
 /////////////////////////////////////////////////////////////////////////////
 // CAnalysisResultsChildFrame frame
 
-class CAnalysisResultsChildFrame : public COutputChildFrame
+class CAnalysisResultsChildFrame : public CEAFOutputChildFrame
 {
 	DECLARE_DYNCREATE(CAnalysisResultsChildFrame)
 protected:

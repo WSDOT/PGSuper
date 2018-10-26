@@ -42,6 +42,7 @@
 #include <System\ComCatMgr.h>
 
 #include <IFace\StatusCenter.h>
+#include <EAF\EAFUIIntegration.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

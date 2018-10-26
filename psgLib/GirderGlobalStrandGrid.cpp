@@ -30,10 +30,14 @@
 #include "GirderHarpedStrandPage.h"
 #include <system\tokenizer.h>
 
+#include <EAF\EAFApp.h>
+
+#include "StrandGenerationDlg.h"
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
-//#undef THIS_FILE
-//static char THIS_FILE[] = __FILE__;
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
 #endif
 
 static COLORREF DISABLED_COLOR = RGB(200,200,200);
@@ -340,6 +344,40 @@ ROWCOL CGirderGlobalStrandGrid::Appendrow()
    return nRow;
 }
 
+void CGirderGlobalStrandGrid::AppendEntry(CGirderGlobalStrandGrid::GlobalStrandGridEntry& entry)
+{
+	ROWCOL nrow = 0;
+   nrow = GetRowCount()+1;
+
+   bool use_harped = m_pClient->DoUseHarpedGrid();
+
+   // entry was changed - we must add some new rows
+   Appendrow();
+
+   ROWCOL new_nrows = GetEntryLoad(entry, use_harped);
+   if (new_nrows > 1)
+   {
+      Appendrow();
+   }
+
+   // add entry to data store
+   m_Entries.push_back(entry);
+
+   long idx = m_Entries.size()-1;
+   COLORREF curr_color  =  GetEntryColor(idx);
+
+
+   FillRowsWithEntry(nrow, entry, use_harped, curr_color);
+   SelectRow(nrow);
+
+   nrow = GetRowCount();
+   SetCurrentCell(nrow, GetLeftCol(), GX_SCROLLINVIEW|GX_DISPLAYEDITWND);
+	ScrollCellInView(nrow, GetLeftCol());
+	Invalidate();
+
+   OnChangeStrandData();
+}
+
 void CGirderGlobalStrandGrid::OnEditRemoverows()
 {
    RemoveSelectedRow();
@@ -534,7 +572,14 @@ void CGirderGlobalStrandGrid::OnChangeUseHarpedGrid()
 
 void CGirderGlobalStrandGrid::CustomInit()
 {
-// Initialize the grid. For CWnd based grids this call is // 
+   CEAFApp* pApp;
+   {
+      AFX_MANAGE_STATE(AfxGetAppModuleState());
+      pApp = (CEAFApp*)AfxGetApp();
+   }
+   const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
+
+   // Initialize the grid. For CWnd based grids this call is // 
 // essential. For view based grids this initialization is done 
 // in OnInitialUpdate.
 	this->Initialize( );
@@ -564,7 +609,8 @@ void CGirderGlobalStrandGrid::CustomInit()
 			.SetValue(_T("Fill\n#"))
 		);
 
-   CString cv = "Xb\n" + m_pClient->GetLengthUnitString();
+   CString cv;
+   cv.Format("Xb\n(%s)",pDisplayUnits->ComponentDim.UnitOfMeasure.UnitTag().c_str());
 	this->SetStyleRange(CGXRange(0,1), CGXStyle()
          .SetWrapText(TRUE)
 			.SetEnabled(FALSE)          // disables usage as current cell
@@ -573,7 +619,7 @@ void CGirderGlobalStrandGrid::CustomInit()
 			.SetValue(cv)
 		);
 
-   cv = "Yb\n" + m_pClient->GetLengthUnitString();
+   cv.Format("Yb\n(%s)",pDisplayUnits->ComponentDim.UnitOfMeasure.UnitTag().c_str());
 	this->SetStyleRange(CGXRange(0,2), CGXStyle()
          .SetWrapText(TRUE)
 			.SetEnabled(FALSE)          // disables usage as current cell
@@ -591,7 +637,7 @@ void CGirderGlobalStrandGrid::CustomInit()
 			.SetValue(cv)
 		);
 
-   cv = "Xt\n" + m_pClient->GetLengthUnitString();
+   cv.Format("Xt\n(%s)",pDisplayUnits->ComponentDim.UnitOfMeasure.UnitTag().c_str());
 	this->SetStyleRange(CGXRange(0,4), CGXStyle()
          .SetWrapText(TRUE)
 			.SetEnabled(FALSE)          // disables usage as current cell
@@ -600,7 +646,7 @@ void CGirderGlobalStrandGrid::CustomInit()
 			.SetValue(cv)
 		);
 
-   cv = "Yt\n" + m_pClient->GetLengthUnitString();
+   cv.Format("Yt\n(%s)",pDisplayUnits->ComponentDim.UnitOfMeasure.UnitTag().c_str());
 	this->SetStyleRange(CGXRange(0,5), CGXStyle()
          .SetWrapText(TRUE)
 			.SetEnabled(FALSE)          // disables usage as current cell
@@ -638,6 +684,9 @@ void CGirderGlobalStrandGrid::CustomInit()
 void CGirderGlobalStrandGrid::FillGrid(EntryCollectionType& entries)
 {
    GetParam()->SetLockReadOnly(FALSE);
+
+   if ( 1 <= GetRowCount() )
+      RemoveRows(1,GetRowCount());
 
    m_Entries = entries;
    long num_rows = GetRowsForEntries();
@@ -868,11 +917,18 @@ ROWCOL CGirderGlobalStrandGrid::GetRowsForEntries()
 
 bool CGirderGlobalStrandGrid::EditEntry(ROWCOL row, GlobalStrandGridEntry& entry, bool isNewEntry)
 {
+   CEAFApp* pApp;
+   {
+      AFX_MANAGE_STATE(AfxGetAppModuleState());
+      pApp = (CEAFApp*)AfxGetApp();
+   }
+   const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
+
    bool use_harped = m_pClient->DoUseHarpedGrid();
 
    CStrandGridLocation dlg;
 
-   dlg.m_UnitString= m_pClient->GetLengthUnitString();
+   dlg.m_UnitString = pDisplayUnits->ComponentDim.UnitOfMeasure.UnitTag().c_str();
    dlg.m_UnitString.TrimLeft("(");
    dlg.m_UnitString.TrimRight(")");
 
@@ -964,4 +1020,268 @@ void CGirderGlobalStrandGrid::ReverseHarpedStrandOrder()
    }
 
    RedrawGrid();
+}
+
+void CGirderGlobalStrandGrid::GenerateStrandPositions()
+{
+   CEAFApp* pApp;
+   {
+      AFX_MANAGE_STATE(AfxGetAppModuleState());
+      pApp = (CEAFApp*)AfxGetApp();
+   }
+   const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
+
+   CStrandGenerationDlg dlg; // this dialog works in system units
+   dlg.m_Xstart = ::ConvertToSysUnits(1.0,unitMeasure::Inch);
+   dlg.m_Ystart = ::ConvertToSysUnits(2.0,unitMeasure::Inch);
+   dlg.m_nStrandsX = 8;
+   dlg.m_nStrandsY = 1;
+   
+   dlg.m_LayoutType = CStrandGenerationDlg::ltSpacing;
+
+   dlg.m_StrandGenerationType = CStrandGenerationDlg::sgSequential;
+
+   Float64 spacing = ::ConvertToSysUnits(2.0,unitMeasure::Inch);
+   dlg.m_Xend = spacing;
+   dlg.m_Yend = spacing;
+
+   dlg.m_StrandType = 0; // straight;
+   dlg.m_Xstart2 = dlg.m_Xstart;
+   dlg.m_Ystart2 = dlg.m_Ystart;
+   dlg.m_Xend2 = dlg.m_Xend;
+   dlg.m_Yend2 = dlg.m_Yend;
+
+   if ( dlg.DoModal() == IDOK )
+   {
+      if ( dlg.m_StrandType == 0 )
+         GenerateStraightStrands(dlg);
+      else
+         GenerateHarpedStrands(dlg);
+
+   }
+}
+
+void CGirderGlobalStrandGrid::GenerateStraightStrands(CStrandGenerationDlg& dlg)
+{
+   CEAFApp* pApp;
+   {
+      AFX_MANAGE_STATE(AfxGetAppModuleState());
+      pApp = (CEAFApp*)AfxGetApp();
+   }
+   const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
+
+
+   if ( dlg.m_bDelete )
+   {
+      DeleteAllStraightStrands();
+   }
+
+   // strand grid must be generated in display units
+   Float64 x_start = ::ConvertFromSysUnits(dlg.m_Xstart,pDisplayUnits->ComponentDim.UnitOfMeasure);
+   Float64 y_start = ::ConvertFromSysUnits(dlg.m_Ystart,pDisplayUnits->ComponentDim.UnitOfMeasure);
+   Float64 x_end,y_end, Xspacing,Yspacing;
+   if ( dlg.m_LayoutType == CStrandGenerationDlg::ltSpacing )
+   {
+      Xspacing = ::ConvertFromSysUnits(dlg.m_Xend,  pDisplayUnits->ComponentDim.UnitOfMeasure);;
+      Yspacing = ::ConvertFromSysUnits(dlg.m_Yend,  pDisplayUnits->ComponentDim.UnitOfMeasure);
+
+      x_end = x_start + Xspacing*(dlg.m_nStrandsX-1);
+      y_end = y_start + Yspacing*(dlg.m_nStrandsY-1);
+   }
+   else
+   {
+      x_end = ::ConvertFromSysUnits(dlg.m_Xend,  pDisplayUnits->ComponentDim.UnitOfMeasure);
+      y_end = ::ConvertFromSysUnits(dlg.m_Yend,  pDisplayUnits->ComponentDim.UnitOfMeasure);
+
+      Xspacing = (x_end-x_start)/(dlg.m_nStrandsX-1);
+      Yspacing = (y_end-y_start)/(dlg.m_nStrandsY-1);
+   }
+
+   Int16 Nx1;
+   Int16 strand_step;
+   if (dlg.m_StrandGenerationType == CStrandGenerationDlg::sgSequential)
+   {
+      Nx1 = dlg.m_nStrandsX;
+      strand_step = 1;
+   }
+   else
+   {
+      Nx1 = dlg.m_nStrandsX/2;
+      strand_step = 2;
+   }
+
+
+   Int16 Nx2 = dlg.m_nStrandsX - Nx1;
+
+
+   Float64 y = y_start;
+   for ( Int16 i = 0; i < dlg.m_nStrandsY; i++ )
+   {
+      Float64 x = x_start;
+      for ( Int16 j = 0; j < Nx1; j++ )
+      {
+         CGirderGlobalStrandGrid::GlobalStrandGridEntry entry;
+         entry.m_Type = GirderLibraryEntry::stStraight;
+         entry.m_CanDebond = false;
+         entry.m_X = x;
+         entry.m_Y = y;
+
+         x += Xspacing*strand_step;
+
+         AppendEntry(entry);
+      }
+
+      x = x_start + Xspacing;
+      for ( Int16 j = 0; j < Nx2; j++ )
+      {
+         CGirderGlobalStrandGrid::GlobalStrandGridEntry entry;
+         entry.m_Type = GirderLibraryEntry::stStraight;
+         entry.m_CanDebond = false;
+         entry.m_X = x;
+         entry.m_Y = y;
+
+         x += Xspacing*strand_step;
+
+         AppendEntry(entry);
+      }
+
+      y += Yspacing;
+   }
+}
+
+void CGirderGlobalStrandGrid::GenerateHarpedStrands(CStrandGenerationDlg& dlg)
+{
+   CEAFApp* pApp;
+   {
+      AFX_MANAGE_STATE(AfxGetAppModuleState());
+      pApp = (CEAFApp*)AfxGetApp();
+   }
+   const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
+
+   if ( dlg.m_bDelete )
+   {
+      DeleteAllHarpedStrands();
+   }
+
+   // strand grid must be generated in display units
+   Float64 x_start_1 = ::ConvertFromSysUnits(dlg.m_Xstart, pDisplayUnits->ComponentDim.UnitOfMeasure);
+   Float64 y_start_1 = ::ConvertFromSysUnits(dlg.m_Ystart, pDisplayUnits->ComponentDim.UnitOfMeasure);
+   Float64 x_start_2 = ::ConvertFromSysUnits(dlg.m_Xstart2,pDisplayUnits->ComponentDim.UnitOfMeasure);
+   Float64 y_start_2 = ::ConvertFromSysUnits(dlg.m_Ystart2,pDisplayUnits->ComponentDim.UnitOfMeasure);
+   Float64 x_end_1,y_end_1, Xspacing_1,Yspacing_1;
+   Float64 x_end_2,y_end_2, Xspacing_2,Yspacing_2;
+   if ( dlg.m_LayoutType == CStrandGenerationDlg::ltSpacing )
+   {
+      Xspacing_1 = ::ConvertFromSysUnits(dlg.m_Xend,  pDisplayUnits->ComponentDim.UnitOfMeasure);;
+      Yspacing_1 = ::ConvertFromSysUnits(dlg.m_Yend,  pDisplayUnits->ComponentDim.UnitOfMeasure);
+
+      x_end_1 = x_start_1 + Xspacing_1*(dlg.m_nStrandsX-1);
+      y_end_1 = y_start_1 + Yspacing_1*(dlg.m_nStrandsY-1);
+
+      Xspacing_2 = ::ConvertFromSysUnits(dlg.m_Xend2,  pDisplayUnits->ComponentDim.UnitOfMeasure);;
+      Yspacing_2 = ::ConvertFromSysUnits(dlg.m_Yend2,  pDisplayUnits->ComponentDim.UnitOfMeasure);
+
+      x_end_2 = x_start_2 + Xspacing_1*(dlg.m_nStrandsX-1);
+      y_end_2 = y_start_2 + Yspacing_1*(dlg.m_nStrandsY-1);
+   }
+   else
+   {
+      x_end_1 = ::ConvertFromSysUnits(dlg.m_Xend,  pDisplayUnits->ComponentDim.UnitOfMeasure);
+      y_end_1 = ::ConvertFromSysUnits(dlg.m_Yend,  pDisplayUnits->ComponentDim.UnitOfMeasure);
+
+      Xspacing_1 = (x_end_1-x_start_1)/(dlg.m_nStrandsX-1);
+      Yspacing_1 = (y_end_1-y_start_1)/(dlg.m_nStrandsY-1);
+
+      x_end_2 = ::ConvertFromSysUnits(dlg.m_Xend2,  pDisplayUnits->ComponentDim.UnitOfMeasure);
+      y_end_2 = ::ConvertFromSysUnits(dlg.m_Yend2,  pDisplayUnits->ComponentDim.UnitOfMeasure);
+
+      Xspacing_2 = (x_end_2-x_start_2)/(dlg.m_nStrandsX-1);
+      Yspacing_2 = (y_end_2-y_start_2)/(dlg.m_nStrandsY-1);
+   }
+
+   Int16 Nx1;
+   Int16 strand_step;
+   if (dlg.m_StrandGenerationType == CStrandGenerationDlg::sgSequential)
+   {
+      Nx1 = dlg.m_nStrandsX;
+      strand_step = 1;
+   }
+   else
+   {
+      Nx1 = dlg.m_nStrandsX/2;
+      strand_step = 2;
+   }
+
+
+   Int16 Nx2 = dlg.m_nStrandsX - Nx1;
+
+
+   Float64 y1 = y_start_1;
+   Float64 y2 = y_start_2;
+   for ( Int16 i = 0; i < dlg.m_nStrandsY; i++ )
+   {
+      Float64 x1 = x_start_1;
+      Float64 x2 = x_start_2;
+
+      for ( Int16 j = 0; j < Nx1; j++ )
+      {
+         CGirderGlobalStrandGrid::GlobalStrandGridEntry entry;
+         entry.m_Type = GirderLibraryEntry::stHarped;
+         entry.m_CanDebond = false;
+
+         entry.m_X = x1;
+         entry.m_Y = y1;
+
+         entry.m_Hend_X = x2;
+         entry.m_Hend_Y = y2;
+
+         x1 += Xspacing_1*strand_step;
+         x2 += Xspacing_2*strand_step;
+
+         AppendEntry(entry);
+      }
+
+      x1 = x_start_1 + Xspacing_1;
+      x2 = x_start_2 + Xspacing_2;
+      for ( Int16 j = 0; j < Nx2; j++ )
+      {
+         CGirderGlobalStrandGrid::GlobalStrandGridEntry entry;
+         entry.m_Type = GirderLibraryEntry::stHarped;
+         entry.m_CanDebond = false;
+
+         entry.m_X = x1;
+         entry.m_Y = y1;
+
+         entry.m_Hend_X = x2;
+         entry.m_Hend_Y = y2;
+
+         x1 += Xspacing_1*strand_step;
+         x2 += Xspacing_2*strand_step;
+
+         AppendEntry(entry);
+      }
+
+      y1 += Yspacing_1;
+      y2 += Yspacing_2;
+   }
+}
+
+bool straight_strand_pred(CGirderGlobalStrandGrid::GlobalStrandGridEntry& entry)
+{ return entry.m_Type == GirderLibraryEntry::stStraight; }
+
+bool harped_strand_pred(CGirderGlobalStrandGrid::GlobalStrandGridEntry& entry)
+{ return entry.m_Type == GirderLibraryEntry::stHarped; }
+
+void CGirderGlobalStrandGrid::DeleteAllStraightStrands()
+{
+   EntryCollectionType::iterator new_begin = std::remove_if(m_Entries.begin(),m_Entries.end(),straight_strand_pred); // doesn't actually remove
+   m_Entries.erase(new_begin,m_Entries.end());
+   FillGrid(m_Entries);
+}
+
+void CGirderGlobalStrandGrid::DeleteAllHarpedStrands()
+{
+   EntryCollectionType::iterator new_begin = std::remove_if(m_Entries.begin(),m_Entries.end(),harped_strand_pred); // doesn't actually remove
+   m_Entries.erase(new_begin,m_Entries.end());
+   FillGrid(m_Entries);
 }

@@ -48,13 +48,15 @@
 #include <IFace\TransverseReinforcementSpec.h>
 #include <IFace\PrecastIGirderDetailsSpec.h>
 #include <IFace\VersionInfo.h>
-#include <Iface\GirderHandlingPointOfInterest.h>
+#include <IFace\GirderHandlingPointOfInterest.h>
 #include <IFace\GirderHandling.h>
 #include <IFace\Allowables.h>
 #include <IFace\GirderHandlingSpecCriteria.h>
-#include <IFace\File.h> 
 #include <IFace\StatusCenter.h>
 #include <IFace\Selection.h>
+#include <IFace\RatingSpecification.h>
+#include <IFace\CrackedSection.h>
+#include <EAF\EAFUIIntegration.h>
 
 #include <WBFLCogo.h>
 #include <WBFLCogo_i.c>

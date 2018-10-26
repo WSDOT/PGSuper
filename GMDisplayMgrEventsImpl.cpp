@@ -25,7 +25,6 @@
 
 #include "stdafx.h"
 #include "PGSuper.h"
-#include "PGSuperDoc.h"
 #include "GMDisplayMgrEventsImpl.h"
 #include "mfcdual.h"
 #include "GirderModelChildFrame.h"
@@ -135,20 +134,7 @@ STDMETHODIMP_(bool) CGMDisplayMgrEventsImpl::XEvents::OnContextMenu(iDisplayMgr*
 
    CMenu* pMenu = menu.GetSubMenu(0);
 
-   CComPtr<IBroker> pBroker;
-   pThis->m_pDoc->GetBroker(&pBroker);
-
-   GET_IFACE2( pBroker, IReportManager, pRptMgr );
-   std::vector<std::string> rptNames = pRptMgr->GetReportNames();
-
-   int i = 0;
-   std::vector<std::string>::iterator iter;
-   for ( iter = rptNames.begin(); iter != rptNames.end(); iter++ )
-   {
-      std::string rptName = *iter;
-      pMenu->AppendMenuA(MF_STRING,IDM_REPORT+i,rptName.c_str());
-      i++;
-   }
+   pThis->m_pDoc->BuildReportMenu(pMenu,true);
 
    if ( point.x < 0 || point.y < 0 )
    {

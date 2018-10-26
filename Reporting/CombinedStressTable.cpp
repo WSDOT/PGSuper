@@ -30,6 +30,7 @@
 #include <IFace\Bridge.h>
 #include <IFace\DisplayUnits.h>
 #include <IFace\AnalysisResults.h>
+#include <IFace\RatingSpecification.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -73,7 +74,8 @@ CCombinedStressTable& CCombinedStressTable::operator= (const CCombinedStressTabl
 void CCombinedStressTable::Build(IBroker* pBroker, rptChapter* pChapter,
                                          SpanIndexType span,GirderIndexType girder,
                                          IDisplayUnits* pDisplayUnits,
-                                         pgsTypes::Stage stage,pgsTypes::AnalysisType analysisType) const
+                                         pgsTypes::Stage stage,pgsTypes::AnalysisType analysisType,
+                                         bool bDesign,bool bRating) const
 {
    // NOTE - Stregth II stresses not reported because they aren't used for anything
 
@@ -114,7 +116,10 @@ void CCombinedStressTable::Build(IBroker* pBroker, rptChapter* pChapter,
    ColumnIndexType nCols;
    ColumnIndexType col=0;
 
-   bool bPedLoading = false;
+   GET_IFACE2(pBroker,IProductLoads,pProductLoads);
+   bool bPedLoading = pProductLoads->HasPedestrianLoad(startSpan,girder);
+
+   GET_IFACE2(pBroker,IRatingSpecification,pRatingSpec);
 
    // Set up table headings
    if ( stage == pgsTypes::CastingYard || stage == pgsTypes::GirderPlacement || stage == pgsTypes::TemporaryStrandRemoval )
@@ -158,16 +163,33 @@ void CCombinedStressTable::Build(IBroker* pBroker, rptChapter* pChapter,
    }
    else if ( stage == pgsTypes::BridgeSite3 )
    {
-      nCols = 7;
+      nCols = 5;
 
-      GET_IFACE2(pBroker,IProductLoads,pProductLoads);
-      bPedLoading = pProductLoads->HasPedestrianLoad(startSpan,girder);
-
-      if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
+      if ( bDesign )
+      {
          nCols += 2;
 
-      if ( bPedLoading )
-         nCols += 2;
+         if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
+            nCols += 2;
+
+         if ( bPedLoading )
+            nCols += 2;
+      }
+
+      if ( bRating )
+      {
+         if ( !bDesign && (pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) || pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating)) )
+         {
+            nCols += 2;
+         }
+
+         if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) )
+            nCols += 2;
+
+         if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
+            nCols += 2;
+      }
+
 
       col = 0;
       ColumnIndexType col2 = 0;
@@ -196,25 +218,55 @@ void CCombinedStressTable::Build(IBroker* pBroker, rptChapter* pChapter,
       p_table->SetRowSpan(1,col2++,-1);
       (*p_table)(0,col++) << COLHDR(symbol(SUM) << "DW",          rptStressUnitTag, pDisplayUnits->GetStressUnit() );
 
-      if ( bPedLoading )
+      if ( bDesign )
       {
+         if ( bPedLoading )
+         {
+            p_table->SetColumnSpan(0,col,2);
+            (*p_table)(0,col++) << "PL";
+            (*p_table)(1,col2++) << COLHDR("Max",       rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+            (*p_table)(1,col2++) << COLHDR("Min",       rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+         }
+
          p_table->SetColumnSpan(0,col,2);
-         (*p_table)(0,col++) << "PL";
+         (*p_table)(0,col++) << "*LL+IM" << rptNewLine << "Design";
          (*p_table)(1,col2++) << COLHDR("Max",       rptStressUnitTag, pDisplayUnits->GetStressUnit() );
          (*p_table)(1,col2++) << COLHDR("Min",       rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+
+         if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
+         {
+            p_table->SetColumnSpan(0,col,2);
+            (*p_table)(0,col++) << "*LL+IM" << rptNewLine << "Fatigue";
+            (*p_table)(1,col2++) << COLHDR("Max",       rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+            (*p_table)(1,col2++) << COLHDR("Min",       rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+         }
       }
 
-      p_table->SetColumnSpan(0,col,2);
-      (*p_table)(0,col++) << "*LL+IM" << rptNewLine << "Design";
-      (*p_table)(1,col2++) << COLHDR("Max",       rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-      (*p_table)(1,col2++) << COLHDR("Min",       rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-
-      if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
+      if ( bRating )
       {
-         p_table->SetColumnSpan(0,col,2);
-         (*p_table)(0,col++) << "*LL+IM" << rptNewLine << "Fatigue";
-         (*p_table)(1,col2++) << COLHDR("Max",       rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-         (*p_table)(1,col2++) << COLHDR("Min",       rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+         if ( !bDesign && (pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) || pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating)) )
+         {
+            p_table->SetColumnSpan(0,col,2);
+            (*p_table)(0,col++) << "*LL+IM" << rptNewLine << "Design";
+            (*p_table)(1,col2++) << COLHDR("Max",       rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+            (*p_table)(1,col2++) << COLHDR("Min",       rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+         }
+
+         if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) )
+         {
+            p_table->SetColumnSpan(0,col,2);
+            (*p_table)(0,col++) << "*LL+IM" << rptNewLine << "Legal Rating" << rptNewLine << "Routine";
+            (*p_table)(1,col2++) << COLHDR("Max",       rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+            (*p_table)(1,col2++) << COLHDR("Min",       rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+         }
+
+         if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
+         {
+            p_table->SetColumnSpan(0,col,2);
+            (*p_table)(0,col++) << "*LL+IM" << rptNewLine << "Legal Rating" << rptNewLine << "Special";
+            (*p_table)(1,col2++) << COLHDR("Max",       rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+            (*p_table)(1,col2++) << COLHDR("Min",       rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+         }
       }
 
 
@@ -222,7 +274,9 @@ void CCombinedStressTable::Build(IBroker* pBroker, rptChapter* pChapter,
          p_table->SetColumnSpan(0,i,-1);
    }
    else
-      CHECK(0); // who added a new stage without telling me?
+   {
+      ATLASSERT(false); // who added a new stage without telling me?
+   }
 
    *p << p_table << rptNewLine;
 
@@ -235,7 +289,7 @@ void CCombinedStressTable::Build(IBroker* pBroker, rptChapter* pChapter,
 
    // Get the interface pointers we need
    GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
-   std::vector<pgsPointOfInterest> vPoi = pIPoi->GetPointsOfInterest( stage, span, girder, POI_TABULAR );
+   std::vector<pgsPointOfInterest> vPoi = pIPoi->GetPointsOfInterest( stage, span, girder, POI_ALL, POIFIND_OR );
 
    GET_IFACE2(pBroker,ICombinedForces,pForces);
    GET_IFACE2(pBroker,ICombinedForces2,pForces2);
@@ -262,6 +316,11 @@ void CCombinedStressTable::Build(IBroker* pBroker, rptChapter* pChapter,
    std::vector<Float64> fTopMaxDesignLL, fBotMaxDesignLL;
    std::vector<Float64> fTopMinFatigueLL, fBotMinFatigueLL;
    std::vector<Float64> fTopMaxFatigueLL, fBotMaxFatigueLL;
+   std::vector<Float64> fTopMinLegalRoutineLL, fBotMinLegalRoutineLL;
+   std::vector<Float64> fTopMaxLegalRoutineLL, fBotMaxLegalRoutineLL;
+   std::vector<Float64> fTopMinLegalSpecialLL, fBotMinLegalSpecialLL;
+   std::vector<Float64> fTopMaxLegalSpecialLL, fBotMaxLegalSpecialLL;
+
    if ( stage == pgsTypes::CastingYard || stage == pgsTypes::GirderPlacement || stage == pgsTypes::TemporaryStrandRemoval )
    {
       pForces2->GetStress(lcDC,stage,vPoi, ctIncremental, SimpleSpan, &fTopDCinc, &fBotDCinc);
@@ -292,15 +351,39 @@ void CCombinedStressTable::Build(IBroker* pBroker, rptChapter* pChapter,
       }
       else
       {
-         if ( bPedLoading )
+         // Bridge site 3
+         if ( bDesign )
          {
-            pForces2->GetCombinedLiveLoadStress( pgsTypes::lltPedestrian, pgsTypes::BridgeSite3, vPoi, bat, &fTopMinPedestrianLL, &fTopMaxPedestrianLL, &fBotMinPedestrianLL, &fBotMaxPedestrianLL );
+            if ( bPedLoading )
+            {
+               pForces2->GetCombinedLiveLoadStress( pgsTypes::lltPedestrian, pgsTypes::BridgeSite3, vPoi, bat, &fTopMinPedestrianLL, &fTopMaxPedestrianLL, &fBotMinPedestrianLL, &fBotMaxPedestrianLL );
+            }
+
+            pForces2->GetCombinedLiveLoadStress( pgsTypes::lltDesign, pgsTypes::BridgeSite3, vPoi, bat, &fTopMinDesignLL, &fTopMaxDesignLL, &fBotMinDesignLL, &fBotMaxDesignLL );
+
+            if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
+            {
+               pForces2->GetCombinedLiveLoadStress( pgsTypes::lltFatigue, pgsTypes::BridgeSite3, vPoi, bat, &fTopMinFatigueLL, &fTopMaxFatigueLL, &fBotMinFatigueLL, &fBotMaxFatigueLL );
+            }
          }
 
-         pForces2->GetCombinedLiveLoadStress( pgsTypes::lltDesign, pgsTypes::BridgeSite3, vPoi, bat, &fTopMinDesignLL, &fTopMaxDesignLL, &fBotMinDesignLL, &fBotMaxDesignLL );
+         if ( bRating )
+         {
+            if ( !bDesign && (pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) || pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating)) )
+            {
+               pForces2->GetCombinedLiveLoadStress( pgsTypes::lltDesign, pgsTypes::BridgeSite3, vPoi, bat, &fTopMinDesignLL, &fTopMaxDesignLL, &fBotMinDesignLL, &fBotMaxDesignLL );
+            }
 
-         if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
-            pForces2->GetCombinedLiveLoadStress( pgsTypes::lltFatigue, pgsTypes::BridgeSite3, vPoi, bat, &fTopMinFatigueLL, &fTopMaxFatigueLL, &fBotMinFatigueLL, &fBotMaxFatigueLL );
+            if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) )
+            {
+               pForces2->GetCombinedLiveLoadStress( pgsTypes::lltLegalRating_Routine, pgsTypes::BridgeSite3, vPoi, bat, &fTopMinLegalRoutineLL, &fTopMaxLegalRoutineLL, &fBotMinLegalRoutineLL, &fBotMaxLegalRoutineLL );
+            }
+
+            if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
+            {
+               pForces2->GetCombinedLiveLoadStress( pgsTypes::lltLegalRating_Special, pgsTypes::BridgeSite3, vPoi, bat, &fTopMinLegalSpecialLL, &fTopMaxLegalSpecialLL, &fBotMinLegalSpecialLL, &fBotMaxLegalSpecialLL );
+            }
+         }
       }
    }
 
@@ -367,29 +450,62 @@ void CCombinedStressTable::Build(IBroker* pBroker, rptChapter* pChapter,
          }
          else
          {
-            if ( bPedLoading )
+            if ( bDesign )
             {
-               (*p_table)(row,col  ) << RPT_FTOP << " = " << stress.SetValue(fTopMaxPedestrianLL[index]) << rptNewLine;
-               (*p_table)(row,col++) << RPT_FBOT << " = " << stress.SetValue(fBotMaxPedestrianLL[index]);
+               if ( bPedLoading )
+               {
+                  (*p_table)(row,col  ) << RPT_FTOP << " = " << stress.SetValue(fTopMaxPedestrianLL[index]) << rptNewLine;
+                  (*p_table)(row,col++) << RPT_FBOT << " = " << stress.SetValue(fBotMaxPedestrianLL[index]);
 
-               (*p_table)(row,col  ) << RPT_FTOP << " = " << stress.SetValue(fTopMinPedestrianLL[index]) << rptNewLine;
-               (*p_table)(row,col++) << RPT_FBOT << " = " << stress.SetValue(fBotMinPedestrianLL[index]);
+                  (*p_table)(row,col  ) << RPT_FTOP << " = " << stress.SetValue(fTopMinPedestrianLL[index]) << rptNewLine;
+                  (*p_table)(row,col++) << RPT_FBOT << " = " << stress.SetValue(fBotMinPedestrianLL[index]);
+               }
+
+               (*p_table)(row,col  ) << RPT_FTOP << " = " << stress.SetValue(fTopMaxDesignLL[index]) << rptNewLine;
+               (*p_table)(row,col++) << RPT_FBOT << " = " << stress.SetValue(fBotMaxDesignLL[index]);
+
+               (*p_table)(row,col  ) << RPT_FTOP << " = " << stress.SetValue(fTopMinDesignLL[index]) << rptNewLine;
+               (*p_table)(row,col++) << RPT_FBOT << " = " << stress.SetValue(fBotMinDesignLL[index]);
+
+               if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
+               {
+                  (*p_table)(row,col  ) << RPT_FTOP << " = " << stress.SetValue(fTopMaxFatigueLL[index]) << rptNewLine;
+                  (*p_table)(row,col++) << RPT_FBOT << " = " << stress.SetValue(fBotMaxFatigueLL[index]);
+
+                  (*p_table)(row,col  ) << RPT_FTOP << " = " << stress.SetValue(fTopMinFatigueLL[index]) << rptNewLine;
+                  (*p_table)(row,col++) << RPT_FBOT << " = " << stress.SetValue(fBotMinFatigueLL[index]);
+               }
             }
 
-            (*p_table)(row,col  ) << RPT_FTOP << " = " << stress.SetValue(fTopMaxDesignLL[index]) << rptNewLine;
-            (*p_table)(row,col++) << RPT_FBOT << " = " << stress.SetValue(fBotMaxDesignLL[index]);
-
-            (*p_table)(row,col  ) << RPT_FTOP << " = " << stress.SetValue(fTopMinDesignLL[index]) << rptNewLine;
-            (*p_table)(row,col++) << RPT_FBOT << " = " << stress.SetValue(fBotMinDesignLL[index]);
-
-            if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
+            if ( bRating )
             {
-               (*p_table)(row,col  ) << RPT_FTOP << " = " << stress.SetValue(fTopMaxFatigueLL[index]) << rptNewLine;
-               (*p_table)(row,col++) << RPT_FBOT << " = " << stress.SetValue(fBotMaxFatigueLL[index]);
+               if ( !bDesign && (pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) || pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating)) )
+               {
+                  (*p_table)(row,col  ) << RPT_FTOP << " = " << stress.SetValue(fTopMaxDesignLL[index]) << rptNewLine;
+                  (*p_table)(row,col++) << RPT_FBOT << " = " << stress.SetValue(fBotMaxDesignLL[index]);
 
-               (*p_table)(row,col  ) << RPT_FTOP << " = " << stress.SetValue(fTopMinFatigueLL[index]) << rptNewLine;
-               (*p_table)(row,col++) << RPT_FBOT << " = " << stress.SetValue(fBotMinFatigueLL[index]);
-            }
+                  (*p_table)(row,col  ) << RPT_FTOP << " = " << stress.SetValue(fTopMinDesignLL[index]) << rptNewLine;
+                  (*p_table)(row,col++) << RPT_FBOT << " = " << stress.SetValue(fBotMinDesignLL[index]);
+               }
+
+               if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) )
+               {
+                  (*p_table)(row,col  ) << RPT_FTOP << " = " << stress.SetValue(fTopMaxLegalRoutineLL[index]) << rptNewLine;
+                  (*p_table)(row,col++) << RPT_FBOT << " = " << stress.SetValue(fBotMaxLegalRoutineLL[index]);
+
+                  (*p_table)(row,col  ) << RPT_FTOP << " = " << stress.SetValue(fTopMinLegalRoutineLL[index]) << rptNewLine;
+                  (*p_table)(row,col++) << RPT_FBOT << " = " << stress.SetValue(fBotMinLegalRoutineLL[index]);
+               }
+
+               if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) )
+               {
+                  (*p_table)(row,col  ) << RPT_FTOP << " = " << stress.SetValue(fTopMaxLegalSpecialLL[index]) << rptNewLine;
+                  (*p_table)(row,col++) << RPT_FBOT << " = " << stress.SetValue(fBotMaxLegalSpecialLL[index]);
+
+                  (*p_table)(row,col  ) << RPT_FTOP << " = " << stress.SetValue(fTopMinLegalSpecialLL[index]) << rptNewLine;
+                  (*p_table)(row,col++) << RPT_FBOT << " = " << stress.SetValue(fBotMinLegalSpecialLL[index]);
+               }
+             }
          }
       }
 
@@ -404,47 +520,135 @@ void CCombinedStressTable::Build(IBroker* pBroker, rptChapter* pChapter,
 
       p = new rptParagraph;
       *pChapter << p;
-      p_table = pgsReportStyleHolder::CreateDefaultTable(4,"");
+
+      ColumnIndexType nCols = 1; 
+      if ( bDesign )
+      {
+         nCols += 3;
+      }
+
+      if ( bRating )
+      {
+         if ( !bDesign && pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) )
+            nCols++;
+
+         if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) )
+            nCols++;
+
+         if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
+            nCols++;
+      }
+
+      p_table = pgsReportStyleHolder::CreateDefaultTable(nCols,"");
 
       *p << p_table;
 
-      ColumnIndexType col = 0;
-      (*p_table)(0,col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION ,    rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
-      (*p_table)(0,col++) << COLHDR("Service I",   rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   
-      if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims )
-         (*p_table)(0,col++) << COLHDR("Service IA",  rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      p_table->SetNumberOfHeaderRows(2);
+
+      ColumnIndexType col1 = 0;
+      ColumnIndexType col2 = 0;
+      p_table->SetRowSpan(0,col1,2);
+      (*p_table)(0,col1++) << COLHDR(RPT_LFT_SUPPORT_LOCATION ,    rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+      p_table->SetRowSpan(1,col2++,-1);
+
+      if ( bDesign )
+      {
+         p_table->SetColumnSpan(0,col1,3);
+         (*p_table)(0,col1++) << "Design";
+         p_table->SetColumnSpan(0,col1++,-1);
+         p_table->SetColumnSpan(0,col1++,-1);
+
+         (*p_table)(1,col2++) << COLHDR("Service I",   rptStressUnitTag, pDisplayUnits->GetStressUnit() );
       
-      (*p_table)(0,col++) << COLHDR("Service III", rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+         if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims )
+            (*p_table)(1,col2++) << COLHDR("Service IA",  rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+         
+         (*p_table)(1,col2++) << COLHDR("Service III", rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      
+         if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
+            (*p_table)(1,col2++) << COLHDR("Fatigue I",  rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      }
+
+      if ( bRating )
+      {
+         p_table->SetColumnSpan(0,col1,(!bDesign && pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) ? 3 : 2));
+         (*p_table)(0,col1++) << "Rating";
+         p_table->SetColumnSpan(0,col1++,-1);
    
-      if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
-         (*p_table)(0,col++) << COLHDR("Fatigue I",  rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+         if ( !bDesign && pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) )
+            p_table->SetColumnSpan(0,col1++,-1);
 
+         if ( !bDesign && pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) )
+         {
+            (*p_table)(1,col2++) << COLHDR("Service III" << rptNewLine << "Inventory", rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+         }
 
-      std::vector<Float64> fTopMinServiceI, fBotMinServiceI;
-      std::vector<Float64> fTopMaxServiceI, fBotMaxServiceI;
-      std::vector<Float64> fTopMinServiceIA, fBotMinServiceIA;
-      std::vector<Float64> fTopMaxServiceIA, fBotMaxServiceIA;
+         if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) )
+         {
+            (*p_table)(1,col2++) << COLHDR("Service III" << rptNewLine << "Legal Routine", rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+         }
+
+         if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
+         {
+            (*p_table)(1,col2++) << COLHDR("Service III" << rptNewLine << "Legal Special", rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+         }
+      }
+
+      std::vector<Float64> fTopMinServiceI,   fBotMinServiceI;
+      std::vector<Float64> fTopMaxServiceI,   fBotMaxServiceI;
+      std::vector<Float64> fTopMinServiceIA,  fBotMinServiceIA;
+      std::vector<Float64> fTopMaxServiceIA,  fBotMaxServiceIA;
       std::vector<Float64> fTopMinServiceIII, fBotMinServiceIII;
       std::vector<Float64> fTopMaxServiceIII, fBotMaxServiceIII;
-      std::vector<Float64> fTopMinFatigueI, fBotMinFatigueI;
-      std::vector<Float64> fTopMaxFatigueI, fBotMaxFatigueI;
-      pLsForces2->GetStress( pgsTypes::ServiceI, stage, vPoi, pgsTypes::TopGirder,    false, bat, &fTopMinServiceI, &fTopMaxServiceI);
-      pLsForces2->GetStress( pgsTypes::ServiceI, stage, vPoi, pgsTypes::BottomGirder, false, bat, &fBotMinServiceI, &fBotMaxServiceI);
+      std::vector<Float64> fTopMinFatigueI,   fBotMinFatigueI;
+      std::vector<Float64> fTopMaxFatigueI,   fBotMaxFatigueI;
+      std::vector<Float64> fTopMinServiceIII_Inventory, fBotMinServiceIII_Inventory;
+      std::vector<Float64> fTopMaxServiceIII_Inventory, fBotMaxServiceIII_Inventory;
+      std::vector<Float64> fTopMinServiceIII_Routine,   fBotMinServiceIII_Routine;
+      std::vector<Float64> fTopMaxServiceIII_Routine,   fBotMaxServiceIII_Routine;
+      std::vector<Float64> fTopMinServiceIII_Special,   fBotMinServiceIII_Special;
+      std::vector<Float64> fTopMaxServiceIII_Special,   fBotMaxServiceIII_Special;
 
-      if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims )
+      if ( bDesign )
       {
-         pLsForces2->GetStress( pgsTypes::ServiceIA, stage, vPoi, pgsTypes::TopGirder,    false, bat, &fTopMinServiceIA, &fTopMaxServiceIA);
-         pLsForces2->GetStress( pgsTypes::ServiceIA, stage, vPoi, pgsTypes::BottomGirder, false, bat, &fBotMinServiceIA, &fBotMaxServiceIA);
-      }
-      else
-      {
-         pLsForces2->GetStress( pgsTypes::FatigueI, stage, vPoi, pgsTypes::TopGirder,    false, bat, &fTopMinFatigueI, &fTopMaxFatigueI);
-         pLsForces2->GetStress( pgsTypes::FatigueI, stage, vPoi, pgsTypes::BottomGirder, false, bat, &fBotMinFatigueI, &fBotMaxFatigueI);
+         pLsForces2->GetStress( pgsTypes::ServiceI, stage, vPoi, pgsTypes::TopGirder,    false, bat, &fTopMinServiceI, &fTopMaxServiceI);
+         pLsForces2->GetStress( pgsTypes::ServiceI, stage, vPoi, pgsTypes::BottomGirder, false, bat, &fBotMinServiceI, &fBotMaxServiceI);
+
+         if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims )
+         {
+            pLsForces2->GetStress( pgsTypes::ServiceIA, stage, vPoi, pgsTypes::TopGirder,    false, bat, &fTopMinServiceIA, &fTopMaxServiceIA);
+            pLsForces2->GetStress( pgsTypes::ServiceIA, stage, vPoi, pgsTypes::BottomGirder, false, bat, &fBotMinServiceIA, &fBotMaxServiceIA);
+         }
+         else
+         {
+            pLsForces2->GetStress( pgsTypes::FatigueI, stage, vPoi, pgsTypes::TopGirder,    false, bat, &fTopMinFatigueI, &fTopMaxFatigueI);
+            pLsForces2->GetStress( pgsTypes::FatigueI, stage, vPoi, pgsTypes::BottomGirder, false, bat, &fBotMinFatigueI, &fBotMaxFatigueI);
+         }
+
+         pLsForces2->GetStress( pgsTypes::ServiceIII, stage, vPoi, pgsTypes::TopGirder,    false, bat, &fTopMinServiceIII, &fTopMaxServiceIII);
+         pLsForces2->GetStress( pgsTypes::ServiceIII, stage, vPoi, pgsTypes::BottomGirder, false, bat, &fBotMinServiceIII, &fBotMaxServiceIII);
       }
 
-      pLsForces2->GetStress( pgsTypes::ServiceIII, stage, vPoi, pgsTypes::TopGirder,    false, bat, &fTopMinServiceIII, &fTopMaxServiceIII);
-      pLsForces2->GetStress( pgsTypes::ServiceIII, stage, vPoi, pgsTypes::BottomGirder, false, bat, &fBotMinServiceIII, &fBotMaxServiceIII);
+      if ( bRating )
+      {
+         if ( !bDesign && pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) )
+         {
+            pLsForces2->GetStress( pgsTypes::ServiceIII_Inventory, stage, vPoi, pgsTypes::TopGirder,    false, bat, &fTopMinServiceIII_Inventory, &fTopMaxServiceIII_Inventory);
+            pLsForces2->GetStress( pgsTypes::ServiceIII_Inventory, stage, vPoi, pgsTypes::BottomGirder, false, bat, &fBotMinServiceIII_Inventory, &fBotMaxServiceIII_Inventory);
+         }
+
+         if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) )
+         {
+            pLsForces2->GetStress( pgsTypes::ServiceIII_LegalRoutine, stage, vPoi, pgsTypes::TopGirder,    false, bat, &fTopMinServiceIII_Routine, &fTopMaxServiceIII_Routine);
+            pLsForces2->GetStress( pgsTypes::ServiceIII_LegalRoutine, stage, vPoi, pgsTypes::BottomGirder, false, bat, &fBotMinServiceIII_Routine, &fBotMaxServiceIII_Routine);
+         }
+
+         if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
+         {
+            pLsForces2->GetStress( pgsTypes::ServiceIII_LegalSpecial, stage, vPoi, pgsTypes::TopGirder,    false, bat, &fTopMinServiceIII_Special, &fTopMaxServiceIII_Special);
+            pLsForces2->GetStress( pgsTypes::ServiceIII_LegalSpecial, stage, vPoi, pgsTypes::BottomGirder, false, bat, &fBotMinServiceIII_Special, &fBotMaxServiceIII_Special);
+         }
+      }
 
       RowIndexType row = p_table->GetNumberOfHeaderRows();
    
@@ -460,22 +664,46 @@ void CCombinedStressTable::Build(IBroker* pBroker, rptChapter* pChapter,
 
          (*p_table)(row,col++) << location.SetValue( poi, end_size );
 
-         (*p_table)(row,col  ) << RPT_FTOP << " = " << stress.SetValue(fTopMinServiceI[index]) << rptNewLine;
-         (*p_table)(row,col++) << RPT_FBOT << " = " << stress.SetValue(fBotMaxServiceI[index]);
-
-         if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims )
+         if ( bDesign )
          {
-            (*p_table)(row,col  ) << RPT_FTOP << " = " << stress.SetValue(fTopMinServiceIA[index]) << rptNewLine;
-            (*p_table)(row,col++) << RPT_FBOT << " = " << stress.SetValue(fBotMaxServiceIA[index]);
+            (*p_table)(row,col  ) << RPT_FTOP << " = " << stress.SetValue(fTopMinServiceI[index]) << rptNewLine;
+            (*p_table)(row,col++) << RPT_FBOT << " = " << stress.SetValue(fBotMaxServiceI[index]);
+
+            if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims )
+            {
+               (*p_table)(row,col  ) << RPT_FTOP << " = " << stress.SetValue(fTopMinServiceIA[index]) << rptNewLine;
+               (*p_table)(row,col++) << RPT_FBOT << " = " << stress.SetValue(fBotMaxServiceIA[index]);
+            }
+
+            (*p_table)(row,col  ) << RPT_FTOP << " = " << stress.SetValue(fTopMinServiceIII[index]) << rptNewLine;
+            (*p_table)(row,col++) << RPT_FBOT << " = " << stress.SetValue(fBotMaxServiceIII[index]);
+
+            if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
+            {
+               (*p_table)(row,col  ) << RPT_FTOP << " = " << stress.SetValue(fTopMinFatigueI[index]) << rptNewLine;
+               (*p_table)(row,col++) << RPT_FBOT << " = " << stress.SetValue(fBotMaxFatigueI[index]);
+            }
          }
 
-         (*p_table)(row,col  ) << RPT_FTOP << " = " << stress.SetValue(fTopMinServiceIII[index]) << rptNewLine;
-         (*p_table)(row,col++) << RPT_FBOT << " = " << stress.SetValue(fBotMaxServiceIII[index]);
-
-         if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
+         if ( bRating )
          {
-            (*p_table)(row,col  ) << RPT_FTOP << " = " << stress.SetValue(fTopMinFatigueI[index]) << rptNewLine;
-            (*p_table)(row,col++) << RPT_FBOT << " = " << stress.SetValue(fBotMaxFatigueI[index]);
+            if ( !bDesign && pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) )
+            {
+               (*p_table)(row,col  ) << RPT_FTOP << " = " << stress.SetValue(fTopMinServiceIII_Inventory[index]) << rptNewLine;
+               (*p_table)(row,col++) << RPT_FBOT << " = " << stress.SetValue(fBotMaxServiceIII_Inventory[index]);
+            }
+
+            if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) )
+            {
+               (*p_table)(row,col  ) << RPT_FTOP << " = " << stress.SetValue(fTopMinServiceIII_Routine[index]) << rptNewLine;
+               (*p_table)(row,col++) << RPT_FBOT << " = " << stress.SetValue(fBotMaxServiceIII_Routine[index]);
+            }
+
+            if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
+            {
+               (*p_table)(row,col  ) << RPT_FTOP << " = " << stress.SetValue(fTopMinServiceIII_Special[index]) << rptNewLine;
+               (*p_table)(row,col++) << RPT_FBOT << " = " << stress.SetValue(fBotMaxServiceIII_Special[index]);
+            }
          }
 
          row++;
@@ -483,14 +711,6 @@ void CCombinedStressTable::Build(IBroker* pBroker, rptChapter* pChapter,
    }
 }
 
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PROTECTED  ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
 void CCombinedStressTable::MakeCopy(const CCombinedStressTable& rOther)
 {
    // Add copy code here...
@@ -500,14 +720,3 @@ void CCombinedStressTable::MakeAssignment(const CCombinedStressTable& rOther)
 {
    MakeCopy( rOther );
 }
-
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PRIVATE    ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-//======================== INQUERY    =======================================

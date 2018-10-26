@@ -235,13 +235,10 @@ void CServerDefinitionDlg::OnBnClickedTestServer()
          wndProgress.CoCreateInstance(CLSID_ProgressMonitorWindow);
          wndProgress->put_HasGauge(VARIANT_FALSE);
          wndProgress->put_HasCancel(VARIANT_FALSE);
-         wndProgress->Show(CComBSTR("Attempting to connect to and test server...."));
+         wndProgress->Show(CComBSTR("Attempting to connect to and test server...."),GetSafeHwnd());
 
          CString msg;
          bool st = psvr->TestServer(msg);
-
-         wndProgress->Hide();
-         wndProgress.Release();
 
          if (!st)
          {

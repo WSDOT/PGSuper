@@ -24,7 +24,7 @@
 //
 
 #include "stdafx.h"
-#include "PGSuper.h"
+#include "PGSuperDoc.h"
 #include <IFace\DisplayUnits.h>
 #include "BridgeDescLongRebarGrid.h"
 #include "BridgeDescLongitudinalRebar.h"
@@ -175,7 +175,7 @@ void CGirderDescLongRebarGrid::OnUpdateEditRemoverows(CCmdUI* pCmdUI)
 void CGirderDescLongRebarGrid::CustomInit()
 {
    CComPtr<IBroker> pBroker;
-   AfxGetBroker(&pBroker);
+   EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
 
 // Initialize the grid. For CWnd based grids this call is // 

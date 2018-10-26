@@ -158,8 +158,7 @@ void CHaulingCheck::Build(rptChapter* pChapter,
 
    *p <<"Allowable factor of safety against cracking = "<<pHaulArtifact->GetAllowableFsForCracking()<<rptNewLine;
 
-   GET_IFACE2(pBroker,IProjectSettings, pProjSettings);
-   double fcMax = pProjSettings->GetUnitsMode() == pgsTypes::umSI ? ::ConvertToSysUnits(105,unitMeasure::MPa) : ::ConvertToSysUnits(15.0,unitMeasure::KSI);
+   double fcMax = IS_SI_UNITS(pDisplayUnits) ? ::ConvertToSysUnits(105,unitMeasure::MPa) : ::ConvertToSysUnits(15.0,unitMeasure::KSI);
 
    double fc_reqd_comp,fc_reqd_tens;
    bool min_rebar_reqd;

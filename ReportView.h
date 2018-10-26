@@ -29,90 +29,54 @@
 // ReportView.h : header file
 //
 
-#include "AutoCalcView.h"
-#include <IReportManager.h>
+#include <EAF\EAFAutoCalcReportView.h>
 
 /////////////////////////////////////////////////////////////////////////////
-// CReportView view
-
-class CReportView : public CAutoCalcView
+// CPGSuperReportView view
+class CPGSuperReportView : public CEAFAutoCalcReportView
 {
 protected:
-	CReportView();           // protected constructor used by dynamic creation
-	DECLARE_DYNCREATE(CReportView)
+	CPGSuperReportView();           // protected constructor used by dynamic creation
+	DECLARE_DYNCREATE(CPGSuperReportView)
 
 // Attributes
 public:
 
 // Operations
 public:
-   bool DoResultsExist() const;
 
 // Overrides
 	// ClassWizard generated virtual function overrides
-	//{{AFX_VIRTUAL(CReportView)
+	//{{AFX_VIRTUAL(CPGSuperReportView)
 	public:
-	virtual void OnInitialUpdate();
 	virtual BOOL PreTranslateMessage(MSG* pMsg);
 	protected:
-	virtual void OnDraw(CDC* pDC);      // overridden to draw this view
 	virtual void OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint);
 	//}}AFX_VIRTUAL
 
 // Implementation
 public:
-   virtual void UpdateNow();
 
 protected:
-	virtual ~CReportView();
+	virtual ~CPGSuperReportView();
+
+   virtual HRESULT UpdateReportBrowser();
+
+
 #ifdef _DEBUG
 	virtual void AssertValid() const;
 	virtual void Dump(CDumpContext& dc) const;
 #endif
 
-public:
-   bool CreateReport(CollectionIndexType rptIdx,bool bPromptForSpec=true);
-
    // Generated message map functions
 protected:
-	//{{AFX_MSG(CReportView)
+	//{{AFX_MSG(CPGSuperReportView)
 	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
-	afx_msg void OnSize(UINT nType, int cx, int cy);
-	afx_msg void OnFilePrint();
-	afx_msg void OnToolbarPrint();
-	afx_msg void OnUpdateFilePrint(CCmdUI* pCmdUI);
-	afx_msg void OnTimer(UINT nIDEvent);
-   afx_msg void OnEdit();
-   afx_msg BOOL OnEraseBkgnd(CDC* pDC);
+
+   virtual void CreateEditButton();
 
 	//}}AFX_MSG
-   afx_msg void OnCmenuSelected(UINT id);
 	DECLARE_MESSAGE_MAP()
-
-   virtual void CreateReportSpecification(CollectionIndexType rptIdx,bool bCreateDefaultReport);
-   virtual HRESULT UpdateReportBrowser();
-
-protected:
-   boost::shared_ptr<CReportBrowser> m_pReportBrowser;
-   boost::shared_ptr<CReportSpecification> m_pReportSpec;
-
-   bool m_bInvalidReport; // true if an update event is received and the contents of the report are not invalid
-   bool m_bNoBrowser;     // true if the browser window couldn't be created
-   bool m_bUpdateError;   // true if an error occured while updating the report contents
-   bool m_bIsNewReport;   // true while calls are coming from OnInitialUpdate
-
-   std::string m_ErrorMsg;
-
-   static bool ms_bIsUpdatingReport; // true while the report content is being updated
-
-   CButton m_btnEdit;
-   CFont   m_btnFont;
-
-   UINT m_Timer;
-   UINT m_TimerEvent;
-   UINT m_Timeout;
- 
-   void UpdateViewTitle();
 };
 
 /////////////////////////////////////////////////////////////////////////////

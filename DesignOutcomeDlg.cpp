@@ -28,9 +28,10 @@
 #include "DesignOutcomeDlg.h"
 #include "HtmlHelp\HelpTopics.hh"
 
-#include <PgsExt\AutoProgress.h>
+#include <EAF\EAFAutoProgress.h>
 
 #include <IFace\Artifact.h>
+#include <IReportManager.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -178,7 +179,7 @@ BOOL CDesignOutcomeDlg::OnInitDialog()
    m_pRptSpec->GetBroker(&pBroker);
 
    GET_IFACE2(pBroker,IProgress,pProgress);
-   pgsAutoProgress ap(pProgress);
+   CEAFAutoProgress ap(pProgress);
 
    SpanIndexType span = m_pRptSpec->GetSpan();
    GirderIndexType gdr = m_pRptSpec->GetGirder();

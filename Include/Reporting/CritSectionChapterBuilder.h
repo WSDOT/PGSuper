@@ -54,7 +54,7 @@ class REPORTINGCLASS CCritSectionChapterBuilder : public CPGSuperChapterBuilder
 {
 public:
    // GROUP: LIFECYCLE
-   CCritSectionChapterBuilder();
+   CCritSectionChapterBuilder(bool bDesign,bool bRating);
 
    // GROUP: OPERATORS
    // GROUP: OPERATIONS
@@ -82,6 +82,9 @@ protected:
 
 private:
    // GROUP: DATA MEMBERS
+   bool m_bDesign;
+   bool m_bRating;
+
    // GROUP: LIFECYCLE
    void Build(rptChapter* pChapter,pgsTypes::LimitState limitState,IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,IDisplayUnits* pDisplayUnits,Uint16 level) const;
 

@@ -118,7 +118,7 @@ bool CPGSuperCatalog::DoParse()
 
    char buffer[256];
    DWORD dwResult = GetPrivateProfileSectionNames(buffer,sizeof(buffer),m_strLocalCatalog);
-   // buffer contains a null terminated seperated list of section names
+   // buffer contains a null terminated separated list of section names
 
    char* token = buffer;
    while ( *token != 0x00 )
@@ -198,6 +198,17 @@ bool CPGSuperCatalog::DoParse()
             token = strtok_s(NULL,sep,&next_token);
          }
 
+         // make sure we have entries for this publisher
+         if (MasterLibraryEntries.empty())
+         {
+            break;
+         }
+
+         if (WorkgroupTemplateEntries.empty())
+         {
+            break;
+         }
+
          // find the master library key closest to the one for the current version (but not after)
          std::string master_library_key("Version_");
          master_library_key += m_PGSuperVersion;
@@ -213,7 +224,6 @@ bool CPGSuperCatalog::DoParse()
             master_library_key = *insert_loc;
          }
          master_library_key += std::string("_MasterLibrary");
-
 
          std::string workgroup_template_key("Version_");
          workgroup_template_key += m_PGSuperVersion;
@@ -251,8 +261,7 @@ bool CPGSuperCatalog::DoParse()
             CString msg;
             msg.Format("The Master Library and Workgroup Templates could not be updated because PGSuper:\n\n%s\n%s\n\nPlease contact the server owner.",msg1,msg2);
             AfxMessageBox(msg,MB_ICONEXCLAMATION | MB_OK);
-
-            return false;
+            break;
          }
 
          publisher.MasterLibrary      = buffer1;
@@ -280,7 +289,12 @@ bool CPGSuperCatalog::DoParse()
             token = strtok_s(NULL,sep,&next_token);
          }
 
-         // find the master library key closest to the one for the current version (but not after)
+        if (PgzEntries.empty())
+         {
+            break;
+         }
+
+         // find the key closest to the one for the current version (but not after)
          std::string pgz_key("Version_");
          pgz_key += m_PGSuperVersion;
 
@@ -299,9 +313,6 @@ bool CPGSuperCatalog::DoParse()
 
          char buffer1[256];
          DWORD dwResult1 = GetPrivateProfileString(publisherName,pgz_key.c_str(),"",buffer1,sizeof(buffer1),m_strLocalCatalog);
-         CString msg1;
-         if ( dwResult1 == 0 )
-            msg1.Format("Could not find Pgz File Key: %s",pgz_key.c_str());
 
          if ( dwResult1 == 0 )
          {
@@ -322,7 +333,6 @@ bool CPGSuperCatalog::DoParse()
          CString weblink(buffer);
          publisher.WebLink = weblink;
       }
-
 
       m_Publishers.push_back(publisher);
    }

@@ -69,6 +69,7 @@ void CBridgeDescDlg::Init()
    m_RailingSystemPage.m_psp.dwFlags  |= PSP_HASHELP;
    m_DeckDetailsPage.m_psp.dwFlags    |= PSP_HASHELP;
    m_DeckRebarPage.m_psp.dwFlags      |= PSP_HASHELP;
+   m_RatingPage.m_psp.dwFlags         |= PSP_HASHELP;
    m_EnvironmentalPage.m_psp.dwFlags  |= PSP_HASHELP;
 
    AddPage( &m_GeneralPage );
@@ -76,6 +77,7 @@ void CBridgeDescDlg::Init()
    AddPage( &m_RailingSystemPage );
    AddPage( &m_DeckDetailsPage );
    AddPage( &m_DeckRebarPage );
+   AddPage( &m_RatingPage );
    AddPage( &m_EnvironmentalPage );
 }
 

@@ -32,8 +32,8 @@
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
-//#undef THIS_FILE
-//static char THIS_FILE[] = __FILE__;
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
 #endif
 
 /////////////////////////////////////////////////////////////////////////////
@@ -62,7 +62,6 @@ void CShearSteelPage::DoDataExchange(CDataExchange* pDX)
 	//}}AFX_DATA_MAP
 
    CGirderMainSheet* pDad = (CGirderMainSheet*)GetParent();
-   bool bUnitsSI = (pDad->m_Mode == libUnitsMode::UNITS_SI ? true : false);
 
 	DDV_GXGridWnd(pDX, &m_Grid);
 
@@ -87,35 +86,6 @@ void CShearSteelPage::OnEnableDelete(bool canDelete)
    CWnd* pdel = GetDlgItem(IDC_REMOVEROWS);
    ASSERT(pdel);
    pdel->EnableWindow(canDelete);
-}
-
-
-CString CShearSteelPage::GetLongLengthUnitString() const
-{
-   CGirderMainSheet* ppar = (CGirderMainSheet*) GetParent();
-   ASSERT(ppar);
-   return ppar->GetLongLengthUnitString();
-}
-
-unitLength CShearSteelPage::GetLongLengthUnit() const
-{
-   CGirderMainSheet* ppar = (CGirderMainSheet*) GetParent();
-   ASSERT(ppar);
-   return ppar->GetLongLengthUnit();
-}
-
-CString CShearSteelPage::GetShortLengthUnitString() const
-{
-   CGirderMainSheet* ppar = (CGirderMainSheet*) GetParent();
-   ASSERT(ppar);
-   return ppar->GetShortLengthUnitString();
-}
-
-unitLength CShearSteelPage::GetShortLengthUnit() const
-{
-   CGirderMainSheet* ppar = (CGirderMainSheet*) GetParent();
-   ASSERT(ppar);
-   return ppar->GetShortLengthUnit();
 }
 
 BOOL CShearSteelPage::OnInitDialog() 

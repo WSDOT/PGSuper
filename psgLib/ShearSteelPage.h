@@ -77,10 +77,6 @@ protected:
 
 public:
    void OnEnableDelete(bool canDelete);
-   CString GetLongLengthUnitString() const;
-   unitLength GetLongLengthUnit() const;
-   CString GetShortLengthUnitString() const;
-   unitLength GetShortLengthUnit() const;
    void FillLastZone(int siz);
    void DoRemoveRows();
    void DoInsertRow();

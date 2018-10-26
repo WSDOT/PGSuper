@@ -29,7 +29,6 @@
 #include "TexasMomentCapacityChapterBuilder.h"
 
 #include <IFace\DisplayUnits.h>
-#include <IFace\Project.h>
 #include <IFace\Bridge.h>
 
 
@@ -74,35 +73,9 @@ rptChapter* CTexasMomentCapacityChapterBuilder::Build(CReportSpecification* pRpt
    rptParagraph* p = new rptParagraph;
    bool bOverReinforced;
    *p << CFlexuralCapacityCheckTable().Build(pBroker,span,girder,pDisplayUnits,pgsTypes::BridgeSite3,pgsTypes::StrengthI,true,&bOverReinforced) << rptNewLine;
-
-   // The same code below is in serveral places:
-#pragma Reminder("Redundant code to Determine whether to compute negative moment is all over PGSuper - This should be added to an interface once Rating is merged")
-   bool bComputeNegativeMomentCapacity = false;
-
-   // don't need to write out negative moment capacity if this is a simple span design
-   // or if there isn't any continuity
-   GET_IFACE2(pBroker,ISpecification,pSpec);
-   pgsTypes::AnalysisType analysisType = pSpec->GetAnalysisType();
-
-   if ( analysisType == pgsTypes::Continuous || analysisType == pgsTypes::Envelope )
-   {
-      GET_IFACE2(pBroker,IBridge,pBridge);
-
-      PierIndexType prev_pier = span;
-      PierIndexType next_pier = prev_pier + 1;
-
-      bool bContinuousAtPrevPier,bContinuousAtNextPier,bValue;
-      pBridge->IsContinuousAtPier(prev_pier,&bValue,&bContinuousAtPrevPier);
-      pBridge->IsContinuousAtPier(next_pier,&bContinuousAtNextPier,&bValue);
-
-      bool bIntegralAtPrevPier,bIntegralAtNextPier;
-      pBridge->IsIntegralAtPier(prev_pier,&bValue,&bIntegralAtPrevPier);
-      pBridge->IsIntegralAtPier(next_pier,&bIntegralAtNextPier,&bValue);
-
-      bComputeNegativeMomentCapacity = ( bContinuousAtPrevPier || bContinuousAtNextPier || bIntegralAtPrevPier || bIntegralAtNextPier );
-   }
-
-   if (bComputeNegativeMomentCapacity)
+   
+   GET_IFACE2(pBroker,IBridge,pBridge);
+   if ( pBridge->ProcessNegativeMoments(span) )
    {
       *p << rptNewLine;
       *p << CFlexuralCapacityCheckTable().Build(pBroker,span,girder,pDisplayUnits,pgsTypes::BridgeSite3,pgsTypes::StrengthI,false,&bOverReinforced) << rptNewLine;

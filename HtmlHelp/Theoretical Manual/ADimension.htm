@@ -26,8 +26,8 @@
 <meta name=filetype content=kadov>
 <meta name=filetype-version content=1>
 <meta name=page-count content=1>
-<meta name=layout-height content=4166>
-<meta name=layout-width content=946>
+<meta name=layout-height content=4073>
+<meta name=layout-width content=1352>
 
 
 <!--(Links)=========================================================-->
@@ -48,14 +48,20 @@
 
 <h3>Introduction</h3>
 
-<p>The slab offset is the distance between the top of a girder and the 
- bottom of the roadway slab. The offset varies in depth along the length 
- of the girder accommodating the girder camber and geometric effects of 
- the roadway surface including super elevations, vertical curves and horizontal 
- curves. The depth of the haunch at the intersection of the centerlines 
- of girder and bearing is represented by the quantity “A”. This is commonly 
- referred to as the “A” dimension in WSDOT jargon, and as the &quot;Slab 
- Offset&quot; in TxDOT jargon.</p>
+<p>Slab offset, or &quot;A&quot; dimension, is the vertical distance from 
+ the top of slab to the top of girder measured at the intersection of the 
+ girder and bearing centerlines. The slab offset is defined at the beginning 
+ and ending of each girder. The actual slab offset is input by the user. 
+ PGSuper computes the required slab offset during analysis and the values 
+ are compared in the specification check.</p>
+
+<p>The offset varies in depth along the length of the girder accommodating 
+ the girder camber and geometric effects of the roadway surface including 
+ super elevations, vertical curves and horizontal curves. The depth of 
+ the haunch at the intersection of the centerlines of girder and bearing 
+ is represented by the quantity “A”. This is commonly referred to as the 
+ “A” dimension in WSDOT jargon, and as the &quot;Slab Offset&quot; in TxDOT 
+ jargon.</p>
 
 <p>The basic concept in determining the required slab offset dimension 
  is to provide a haunch over the girder such that the top of the girder 
@@ -254,9 +260,9 @@
 		x-maintain-ratio=TRUE
 		style="border: none;
 				float: none;
-				border-style: none;
 				width: 139px;
 				height: 64px;
+				border-style: none;
 				border-style: none;"
 		width=139
 		height=64
@@ -266,9 +272,9 @@
 		x-maintain-ratio=TRUE
 		style="border: none;
 				float: none;
-				border-style: none;
 				width: 243px;
 				height: 48px;
+				border-style: none;
 				border-style: none;"
 		width=243
 		height=48

@@ -39,12 +39,12 @@ HRESULT CPsBeamLossEngineer::FinalConstruct()
    return S_OK;
 }
 
-void CPsBeamLossEngineer::SetBroker(IBroker* pBroker,AgentIDType agentID)
+void CPsBeamLossEngineer::SetBroker(IBroker* pBroker,StatusGroupIDType statusGroupID)
 {
    m_pBroker = pBroker;
-   m_AgentID = agentID;
+   m_StatusGroupID = statusGroupID;
 
-   m_Engineer.Init(m_pBroker,m_AgentID);
+   m_Engineer.Init(m_pBroker,m_StatusGroupID);
 }
 
 LOSSDETAILS CPsBeamLossEngineer::ComputeLosses(const pgsPointOfInterest& poi)

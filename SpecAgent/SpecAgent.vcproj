@@ -361,18 +361,6 @@
 			Filter="h;hpp;hxx;hm;inl"
 			>
 			<File
-				RelativePath="..\Include\IFace\Allowables.h"
-				>
-			</File>
-			<File
-				RelativePath="..\Include\IFace\GirderHandlingSpecCriteria.h"
-				>
-			</File>
-			<File
-				RelativePath="..\Include\IFace\PrecastIGirderDetailsSpec.h"
-				>
-			</File>
-			<File
 				RelativePath="Resource.h"
 				>
 			</File>
@@ -388,10 +376,6 @@
 				RelativePath="StdAfx.h"
 				>
 			</File>
-			<File
-				RelativePath="..\Include\IFace\TransverseReinforcementSpec.h"
-				>
-			</File>
 		</Filter>
 		<Filter
 			Name="Resource Files"
@@ -401,6 +385,30 @@
 				RelativePath="SpecAgent.rgs"
 				>
 			</File>
+		</Filter>
+		<Filter
+			Name="IFace"
+			>
+			<File
+				RelativePath="..\Include\IFace\Allowables.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Include\IFace\GirderHandlingSpecCriteria.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Include\IFace\PrecastIGirderDetailsSpec.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Include\IFace\TransverseReinforcementSpec.h"
+				>
+			</File>
+		</Filter>
+		<Filter
+			Name="Status Items"
+			>
 		</Filter>
 	</Files>
 	<Globals>

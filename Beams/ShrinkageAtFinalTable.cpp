@@ -83,7 +83,7 @@ CShrinkageAtFinalTable* CShrinkageAtFinalTable::PrepareTable(rptChapter* pChapte
 
    if ( pSpecEntry->GetSpecificationType() <= lrfdVersionMgr::ThirdEditionWith2005Interims )
    {
-      if ( pDisplayUnits->GetUnitDisplayMode() == pgsTypes::umSI )
+      if ( IS_SI_UNITS(pDisplayUnits) )
           *pParagraph << rptRcImage(strImagePath + "Delta_FpSD_SI.gif") << rptNewLine;
       else
           *pParagraph << rptRcImage(strImagePath + "Delta_FpSD_US.gif") << rptNewLine;
@@ -91,7 +91,7 @@ CShrinkageAtFinalTable* CShrinkageAtFinalTable::PrepareTable(rptChapter* pChapte
 #if defined IGNORE_2007_CHANGES
    else
    {
-      if ( pDisplayUnits->GetUnitDisplayMode() == pgsTypes::umSI )
+      if ( IS_SI_UNITS(pDisplayUnits) )
           *pParagraph << rptRcImage(strImagePath + "Delta_FpSD_SI_2006.gif") << rptNewLine;
       else
           *pParagraph << rptRcImage(strImagePath + "Delta_FpSD_US_2006.gif") << rptNewLine;

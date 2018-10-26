@@ -26,7 +26,6 @@
 #include <initguid.h>
 #include <IFace\Project.h>
 #include <IFace\VersionInfo.h>
-#include <IFace\File.h>
 #include <IFace\StatusCenter.h>
 #include <IFace\Bridge.h>
 #include <IFace\AnalysisResults.h>
@@ -40,8 +39,8 @@
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
-//#undef THIS_FILE
-//static char THIS_FILE[] = __FILE__;
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
 #endif
 
 //// Every DLL has an entry point DllEntryPoint

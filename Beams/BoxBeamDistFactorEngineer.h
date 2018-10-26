@@ -77,7 +77,7 @@ END_COM_MAP()
 
 public:
    // IDistFactorEngineer
-//   virtual void SetBroker(IBroker* pBroker,long agentID);
+//   virtual void SetBroker(IBroker* pBroker,long statusGroupID);
 //   virtual double GetMomentDF(SpanIndexType span,GirderIndexType gdr);
 //   virtual double GetNegMomentDF(SpanIndexType pier,GirderIndexType gdr,IDistFactorEngineer::Side side);
 //   virtual double GetShearDF(SpanIndexType span,GirderIndexType gdr);
@@ -87,7 +87,7 @@ public:
 
 private:
 //   IBroker* m_pBroker;
-//   long m_AgentID;
+//   long m_StatusGroupID;
 
    lrfdLiveLoadDistributionFactorBase* GetLLDFParameters(SpanIndexType spanOrPier,GirderIndexType gdr,DFParam dfType,Float64 fcgdr,BOXBEAM_LLDFDETAILS* plldf);
 

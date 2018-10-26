@@ -92,7 +92,7 @@ rptChapter* COptimizedFabricationChapterBuilder::Build(CReportSpecification* pRp
    }
 
 
-   bool bUSUnits = (pDisplayUnits->GetUnitDisplayMode() == pgsTypes::umUS ? true : false);
+   bool bUSUnits = IS_US_UNITS(pDisplayUnits);
 
    INIT_UV_PROTOTYPE( rptForceUnitValue, force, pDisplayUnits->GetGeneralForceUnit(), true );
    INIT_UV_PROTOTYPE( rptLengthUnitValue, length, pDisplayUnits->GetAlignmentLengthUnit() , true );

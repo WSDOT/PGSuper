@@ -52,6 +52,7 @@ static char THIS_FILE[] = __FILE__;
 HRESULT CBulbTeeFactory::FinalConstruct()
 {
    // Initialize with default values... This are not necessarily valid dimensions
+   m_DimNames.push_back("C1");
    m_DimNames.push_back("D1");
    m_DimNames.push_back("D2");
    m_DimNames.push_back("D3");
@@ -72,6 +73,7 @@ HRESULT CBulbTeeFactory::FinalConstruct()
    std::sort(m_DimNames.begin(),m_DimNames.end());
 
    // Default beam is a W74G                                              
+   m_DefaultDims.push_back(::ConvertToSysUnits(0.000,unitMeasure::Inch)); // C1
    m_DefaultDims.push_back(::ConvertToSysUnits(2.875,unitMeasure::Inch)); // D1
    m_DefaultDims.push_back(::ConvertToSysUnits(2.625,unitMeasure::Inch)); // D2
    m_DefaultDims.push_back(::ConvertToSysUnits(2.000,unitMeasure::Inch)); // D3
@@ -90,6 +92,7 @@ HRESULT CBulbTeeFactory::FinalConstruct()
    m_DefaultDims.push_back(::ConvertToSysUnits(4.000,unitMeasure::Feet)); // Wmin
 
    // SI Units
+   m_DimUnits[0].push_back(&unitMeasure::Millimeter); // C1
    m_DimUnits[0].push_back(&unitMeasure::Millimeter); // D1
    m_DimUnits[0].push_back(&unitMeasure::Millimeter); // D2
    m_DimUnits[0].push_back(&unitMeasure::Millimeter); // D3
@@ -108,6 +111,7 @@ HRESULT CBulbTeeFactory::FinalConstruct()
    m_DimUnits[0].push_back(&unitMeasure::Meter);      // Wmin
 
    // US Units
+   m_DimUnits[1].push_back(&unitMeasure::Inch); // C1
    m_DimUnits[1].push_back(&unitMeasure::Inch); // D1
    m_DimUnits[1].push_back(&unitMeasure::Inch); // D2
    m_DimUnits[1].push_back(&unitMeasure::Inch); // D3
@@ -135,10 +139,11 @@ void CBulbTeeFactory::CreateGirderSection(IBroker* pBroker,long agentID,SpanInde
    CComPtr<IBulbTee> beam;
    gdrsection->get_Beam(&beam);
 
+   double c1;
    double d1,d2,d3,d4,d5,d6,d7,d8;
    double w1,w2,w3,w4,wmin,wmax;
    double t1,t2;
-   GetDimensions(dimensions,d1,d2,d3,d4,d5,d6,d7,d8,w1,w2,w3,w4,wmin,wmax,t1,t2);
+   GetDimensions(dimensions,c1,d1,d2,d3,d4,d5,d6,d7,d8,w1,w2,w3,w4,wmin,wmax,t1,t2);
    beam->put_W1(w1);
    beam->put_W2(w2);
    beam->put_W3(w3);
@@ -167,6 +172,7 @@ void CBulbTeeFactory::CreateGirderSection(IBroker* pBroker,long agentID,SpanInde
       beam->put_W5(spacing);
    }
 
+   beam->put_C1(c1);
    beam->put_D1(d1);
    beam->put_D2(d2);
    beam->put_D3(d3);
@@ -185,10 +191,11 @@ void CBulbTeeFactory::CreateGirderProfile(IBroker* pBroker,long agentID,SpanInde
    GET_IFACE2(pBroker,IBridge,pBridge);
    Float64 length = pBridge->GetGirderLength(spanIdx,gdrIdx);
 
+   double c1;
    double d1,d2,d3,d4,d5,d6,d7,d8;
    double w1,w2,w3,w4,wmin,wmax;
    double t1,t2;
-   GetDimensions(dimensions,d1,d2,d3,d4,d5,d6,d7,d8,w1,w2,w3,w4,wmin,wmax,t1,t2);
+   GetDimensions(dimensions,c1,d1,d2,d3,d4,d5,d6,d7,d8,w1,w2,w3,w4,wmin,wmax,t1,t2);
 
    Float64 height = d1 + d2 + d3 + d4 + d5 + d6 + d7;
    
@@ -390,10 +397,11 @@ void CBulbTeeFactory::CreateStrandMover(const IBeamFactory::Dimensions& dimensio
    hr = harp_rect.CoCreateInstance(CLSID_Rect);
    ATLASSERT (SUCCEEDED(hr));
 
+   double c1;
    double d1,d2,d3,d4,d5,d6,d7,d8;
    double w1,w2,w3,w4,wmin,wmax;
    double t1,t2;
-   GetDimensions(dimensions,d1,d2,d3,d4,d5,d6,d7,d8,w1,w2,w3,w4,wmin,wmax,t1,t2);
+   GetDimensions(dimensions,c1,d1,d2,d3,d4,d5,d6,d7,d8,w1,w2,w3,w4,wmin,wmax,t1,t2);
 
    double width = min(t1,t2);
    double depth = d1 + d2 + d3 + d4 + d5 + d6 + d7;
@@ -444,10 +452,11 @@ std::vector<const unitLength*> CBulbTeeFactory::GetDimensionUnits(bool bSIUnits)
 
 bool CBulbTeeFactory::ValidateDimensions(const IBeamFactory::Dimensions& dimensions,bool bSIUnits,std::string* strErrMsg)
 {
+   double c1;
    double d1,d2,d3,d4,d5,d6,d7,d8;
    double w1,w2,w3,w4,wmin,wmax;
    double t1,t2;
-   GetDimensions(dimensions,d1,d2,d3,d4,d5,d6,d7,d8,w1,w2,w3,w4,wmin,wmax,t1,t2);
+   GetDimensions(dimensions,c1,d1,d2,d3,d4,d5,d6,d7,d8,w1,w2,w3,w4,wmin,wmax,t1,t2);
 
 // 0  D1  
 // 1  D2
@@ -465,6 +474,14 @@ bool CBulbTeeFactory::ValidateDimensions(const IBeamFactory::Dimensions& dimensi
 // 13 W4
 // 14 Wmax
 // 15 Wmin
+   if ( c1 < 0.0 )
+   {
+      const unitLength* pUnit = m_DimUnits[bSIUnits ? 0 : 1][0];
+      std::ostringstream os;
+      os << "C1 must be zero or greater " << std::ends;
+      *strErrMsg = os.str();
+      return false;
+   }
 
    if ( d1 <= 0.0 )
    {
@@ -586,6 +603,15 @@ bool CBulbTeeFactory::ValidateDimensions(const IBeamFactory::Dimensions& dimensi
       return false;
    }   
 
+   if ( c1 > d4 )
+   {
+      const unitLength* pUnit = m_DimUnits[bSIUnits ? 0 : 1][9];
+      std::ostringstream os;
+      os << "C1 must be less than D4 " << std::ends;
+      *strErrMsg = os.str();
+      return false;
+   }   
+
    if (wmin>wmax)
    {
       std::ostringstream os;
@@ -627,7 +653,7 @@ bool CBulbTeeFactory::ValidateDimensions(const IBeamFactory::Dimensions& dimensi
 void CBulbTeeFactory::SaveSectionDimensions(sysIStructuredSave* pSave,const IBeamFactory::Dimensions& dimensions)
 {
    std::vector<std::string>::iterator iter;
-   pSave->BeginUnit("BulbTeeDimensions",2.0);
+   pSave->BeginUnit("BulbTeeDimensions",3.0);
    for ( iter = m_DimNames.begin(); iter != m_DimNames.end(); iter++ )
    {
       std::string name = *iter;
@@ -657,8 +683,11 @@ IBeamFactory::Dimensions CBulbTeeFactory::LoadSectionDimensions(sysIStructuredLo
       {
          if ( (parent_version < 14 || (14 <= parent_version && dimVersion < 2)) && name == "D8" )
             value = 0;
+         else if ( (parent_version < 14 || (14 <= parent_version && dimVersion < 3))&& name == "C1" )
+            value = 0;
          else
             THROW_LOAD(InvalidFileFormat,pLoad);
+
       }
       dimensions.push_back( std::make_pair(name,value) );
    }
@@ -738,7 +767,7 @@ Float64 CBulbTeeFactory::GetSurfaceArea(IBroker* pBroker,SpanIndexType spanIdx,G
 
 std::string CBulbTeeFactory::GetImage()
 {
-   return std::string("BulbTee.jpg");
+   return std::string("BulbTee.png");
 }
 
 std::string CBulbTeeFactory::GetSlabDimensionsImage(pgsTypes::SupportedDeckType deckType)
@@ -889,11 +918,12 @@ HICON  CBulbTeeFactory::GetIcon()
    return ::LoadIcon(AfxGetInstanceHandle(), MAKEINTRESOURCE(IDI_BULBTEE) );
 }
 
-void CBulbTeeFactory::GetDimensions(const IBeamFactory::Dimensions& dimensions,
+void CBulbTeeFactory::GetDimensions(const IBeamFactory::Dimensions& dimensions, double& c1,
                                   double& d1,double& d2,double& d3,double& d4,double& d5,double& d6,double& d7,double& d8,
                                   double& w1,double& w2,double& w3,double& w4,double& wmin,double& wmax,
                                   double& t1,double& t2)
 {
+   c1 = GetDimension(dimensions,"C1");
    d1 = GetDimension(dimensions,"D1");
    d2 = GetDimension(dimensions,"D2");
    d3 = GetDimension(dimensions,"D3");

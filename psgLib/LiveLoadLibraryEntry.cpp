@@ -35,8 +35,8 @@
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
-//#undef THIS_FILE
-//static char THIS_FILE[] = __FILE__;
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
 #endif
 
 /****************************************************************************
@@ -52,9 +52,12 @@ CLASS
 LiveLoadLibraryEntry::LiveLoadLibraryEntry() :
 m_IsNotional(false),
 m_LiveLoadConfigurationType(lcTruckPlusLane),
+m_LiveLoadApplicabilityType(llaEntireStructure),
 m_MaxVariableAxleSpacing(0.0),
 m_VariableAxleIndex(-1)
 {
+   m_LaneLoadSpanLength = 0; // always use lane load if it is defined
+
    // default to hs20-44
    m_LaneLoad   = ::ConvertToSysUnits( 0.64, unitMeasure::KipPerFoot );
    Axle axle;
@@ -92,12 +95,14 @@ LiveLoadLibraryEntry& LiveLoadLibraryEntry::operator= (const LiveLoadLibraryEntr
 //======================== OPERATIONS =======================================
 bool LiveLoadLibraryEntry::SaveMe(sysIStructuredSave* pSave)
 {
-   pSave->BeginUnit("LiveLoadLibraryEntry", 1.0);
+   pSave->BeginUnit("LiveLoadLibraryEntry", 2.0);
 
    pSave->Property("Name",this->GetName().c_str());
    pSave->Property("IsNotional", m_IsNotional);
+   pSave->Property("LiveLoadApplicabilityType", (Int16)m_LiveLoadApplicabilityType); // added version 2.0
    pSave->Property("LiveLoadConfigurationType", (Int16)m_LiveLoadConfigurationType);
    pSave->Property("LaneLoad", m_LaneLoad);
+   pSave->Property("LaneLoadSpanLength",m_LaneLoadSpanLength); // added version 2.0
    pSave->Property("MaxVariableAxleSpacing", m_MaxVariableAxleSpacing);
    pSave->Property("VariableAxleIndex", m_VariableAxleIndex);
 
@@ -126,7 +131,8 @@ bool LiveLoadLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
 {
    if(pLoad->BeginUnit("LiveLoadLibraryEntry"))
    {
-      if (pLoad->GetVersion()!=1.0)
+      Float64 version = pLoad->GetVersion();
+      if (2.0 < version)
          THROW_LOAD(BadVersion,pLoad);
 
       std::string name;
@@ -138,11 +144,23 @@ bool LiveLoadLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
       if(!pLoad->Property("IsNotional", &m_IsNotional))
          THROW_LOAD(InvalidFileFormat,pLoad);
 
+      if ( 1.0 < version ) // added version 2.0
+      {
+         if(!pLoad->Property("LiveLoadApplicabilityType", (Int16*)&m_LiveLoadApplicabilityType))
+            THROW_LOAD(InvalidFileFormat,pLoad);
+      }
+
       if(!pLoad->Property("LiveLoadConfigurationType", (Int16*)&m_LiveLoadConfigurationType))
          THROW_LOAD(InvalidFileFormat,pLoad);
 
       if(!pLoad->Property("LaneLoad", &m_LaneLoad))
          THROW_LOAD(InvalidFileFormat,pLoad);
+
+      if ( 1.0 < version ) // added version 2.0
+      {
+         if(!pLoad->Property("LaneLoadSpanLength", &m_LaneLoadSpanLength))
+            THROW_LOAD(InvalidFileFormat,pLoad);
+      }
 
       if(!pLoad->Property("MaxVariableAxleSpacing", &m_MaxVariableAxleSpacing))
          THROW_LOAD(InvalidFileFormat,pLoad);
@@ -194,7 +212,9 @@ bool LiveLoadLibraryEntry::IsEqual(const LiveLoadLibraryEntry& rOther, bool cons
 {
    bool test =  m_IsNotional == rOther.m_IsNotional  &&
                 m_LiveLoadConfigurationType == rOther.m_LiveLoadConfigurationType  &&
+                m_LiveLoadApplicabilityType == rOther.m_LiveLoadApplicabilityType &&
                 m_VariableAxleIndex == rOther.m_VariableAxleIndex &&
+                ::IsEqual(m_LaneLoadSpanLength,rOther.m_LaneLoadSpanLength) &&
                 ::IsEqual(m_MaxVariableAxleSpacing,rOther.m_MaxVariableAxleSpacing);
 
    if (test)
@@ -244,6 +264,16 @@ LiveLoadLibraryEntry::LiveLoadConfigurationType LiveLoadLibraryEntry::GetLiveLoa
    return m_LiveLoadConfigurationType;
 }
 
+void LiveLoadLibraryEntry::SetLiveLoadApplicabilityType(LiveLoadApplicabilityType applicability)
+{
+   m_LiveLoadApplicabilityType = applicability;
+}
+
+LiveLoadLibraryEntry::LiveLoadApplicabilityType LiveLoadLibraryEntry::GetLiveLoadApplicabilityType() const
+{
+   return m_LiveLoadApplicabilityType;
+}
+
 void LiveLoadLibraryEntry::SetLaneLoad(Float64 load)
 {
    ASSERT(load>=0);
@@ -253,6 +283,17 @@ void LiveLoadLibraryEntry::SetLaneLoad(Float64 load)
 Float64 LiveLoadLibraryEntry::GetLaneLoad() const
 {
    return m_LaneLoad;
+}
+
+void LiveLoadLibraryEntry::SetLaneLoadSpanLength(Float64 length)
+{
+   ASSERT(0 <= length);
+   m_LaneLoadSpanLength = length;
+}
+
+Float64 LiveLoadLibraryEntry::GetLaneLoadSpanLength() const
+{
+   return m_LaneLoadSpanLength;
 }
 
 AxleIndexType LiveLoadLibraryEntry::GetNumAxles() const
@@ -319,15 +360,17 @@ Float64 LiveLoadLibraryEntry::GetMaxVariableAxleSpacing() const
 //======================== OPERATORS  =======================================
 //======================== OPERATIONS =======================================
 
-bool LiveLoadLibraryEntry::Edit(libUnitsMode::Mode mode, bool allowEditing)
+bool LiveLoadLibraryEntry::Edit(bool allowEditing)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
    // exchange data with dialog
-   CLiveLoadDlg dlg(mode, allowEditing);
+   CLiveLoadDlg dlg(allowEditing);
    dlg.m_EntryName  = this->GetName().c_str();
    dlg.m_ConfigType = this->GetLiveLoadConfigurationType();
+   dlg.m_UsageType  = this->GetLiveLoadApplicabilityType();
    dlg.m_LaneLoad   = this->GetLaneLoad();
+   dlg.m_LaneLoadSpanLength = this->GetLaneLoadSpanLength();
    dlg.m_IsNotional = this->GetIsNotional() ? TRUE : FALSE;
 
    dlg.m_MaxVariableAxleSpacing = this->GetMaxVariableAxleSpacing();
@@ -343,8 +386,10 @@ bool LiveLoadLibraryEntry::Edit(libUnitsMode::Mode mode, bool allowEditing)
    int i = dlg.DoModal();
    if (i==IDOK)
    {
-      this->SetLiveLoadConfigurationType((LiveLoadConfigurationType)dlg.m_ConfigType);
+      this->SetLiveLoadConfigurationType(dlg.m_ConfigType);
+      this->SetLiveLoadApplicabilityType(dlg.m_UsageType);
       this->SetLaneLoad(dlg.m_LaneLoad);
+      this->SetLaneLoadSpanLength(dlg.m_LaneLoadSpanLength);
       this->SetIsNotional(dlg.m_IsNotional==TRUE);
 
       this->SetMaxVariableAxleSpacing(dlg.m_MaxVariableAxleSpacing);
@@ -363,7 +408,9 @@ void LiveLoadLibraryEntry::MakeCopy(const LiveLoadLibraryEntry& rOther)
 {
    m_IsNotional = rOther.m_IsNotional;
    m_LiveLoadConfigurationType = rOther.m_LiveLoadConfigurationType;
+   m_LiveLoadApplicabilityType = rOther.m_LiveLoadApplicabilityType;
    m_LaneLoad = rOther.m_LaneLoad;
+   m_LaneLoadSpanLength = rOther.m_LaneLoadSpanLength;
    m_MaxVariableAxleSpacing = rOther.m_MaxVariableAxleSpacing;
    m_VariableAxleIndex = rOther.m_VariableAxleIndex;
    m_Axles = rOther.m_Axles;

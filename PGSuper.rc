@@ -74,7 +74,6 @@ END
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
 IDR_MAINFRAME           ICON                    "res\\PGSuper.ico"
-AAAA                    ICON                    "libraryeditor\\res\\aaaa.ico"
 IDR_PGSUPERTYPE         ICON                    "res\\PGSuperDoc.ico"
 IDR_PGSUPER_TEMPLATE_ICON ICON                    "res\\pgs_template.ico"
 IDR_BRIDGEMODELEDITOR   ICON                    "res\\Bridge.ico"
@@ -95,8 +94,8 @@ IDI_POINT_LOAD          ICON                    "res\\ico00004.ico"
 IDI_DISTRIBUTED_LOAD    ICON                    "res\\ico00005.ico"
 IDI_TXDOT               ICON                    "res\\txdot.ico"
 IDI_MOMENT_LOAD         ICON                    "res\\moment.ico"
-IDR_LIBRARTYPE          ICON                    "res\\LibraryEditorDoc.ico"
-IDI_EARTH               ICON                    "res\\ico00006.ico"
+IDR_PROJECTIMPORTER     ICON                    "res\\Bridge2.ico"
+IDI_EARTH               ICON                    "res\\Globe.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -104,11 +103,10 @@ IDI_EARTH               ICON                    "res\\ico00006.ico"
 //
 
 IDB_SPLASH              BITMAP                  "res\\Splash.bmp"
-IDB_LIGHTBULB           BITMAP                  "res\\litebulb.bmp"
-IDB_LPFRAME             BITMAP                  "res\\lpframe.bmp"
 IDB_NORTH_ARROW         BITMAP                  "res\\north_ar.bmp"
 IDR_STDTOOLBAR          BITMAP                  "res\\Toolbar.bmp"
 IDR_LIBTOOLBAR          BITMAP                  "res\\LibraryToolbar.bmp"
+IDR_LIBEDITORTOOLBAR    BITMAP                  "res\\LibEditorToolbar.bmp"
 IDR_HELPTOOLBAR         BITMAP                  "res\\HelpToolbar.bmp"
 CONCRETE_LIBRARY_ENTRY  BITMAP                  "res\\bitmap2.bmp"
 CONNECTION_LIBRARY_ENTRY BITMAP                  "res\\bmp00001.bmp"
@@ -156,6 +154,7 @@ BEGIN
     BUTTON      ID_EDIT_USERLOADS
     BUTTON      IDR_LIVE_LOADS
     BUTTON      IDM_COPY_GIRDER_PROPS
+    BUTTON      ID_RATING_SPEC
     SEPARATOR
     BUTTON      ID_VIEW_LIBRARYEDITOR
     SEPARATOR
@@ -170,10 +169,11 @@ BEGIN
     BUTTON      ID_VIEW_STATUSCENTER3
     SEPARATOR
     BUTTON      ID_PROJECT_DESIGNGIRDER
+    SEPARATOR
     BUTTON      ID_PROJECT_UPDATENOW
 END
 
-IDR_LIBTOOLBAR TOOLBAR  16, 15
+IDR_LIBTOOLBAR TOOLBAR  16, 16
 BEGIN
     BUTTON      IDM_ADD_ENTRY
     BUTTON      IDM_DELETE_ENTRY
@@ -183,6 +183,27 @@ BEGIN
     BUTTON      IDM_LARGE_ICONS
     BUTTON      IDM_SMALL_ICONS
     BUTTON      IDM_LIST_ICONS
+END
+
+IDR_LIBEDITORTOOLBAR TOOLBAR  16, 16
+BEGIN
+    BUTTON      ID_FILE_NEW
+    BUTTON      ID_FILE_OPEN
+    BUTTON      ID_FILE_SAVE
+    SEPARATOR
+    BUTTON      IDM_ADD_ENTRY
+    BUTTON      IDM_DELETE_ENTRY
+    BUTTON      IDM_DUPLICATE_ENTRY
+    BUTTON      IDM_EDIT_ENTRY
+    SEPARATOR
+    BUTTON      IDM_LARGE_ICONS
+    BUTTON      IDM_SMALL_ICONS
+    BUTTON      IDM_LIST_ICONS
+    SEPARATOR
+    BUTTON      ID_UNITS_SI
+    BUTTON      ID_UNITS_US
+    SEPARATOR
+    BUTTON      ID_HELP_FINDER
 END
 
 IDR_HELPTOOLBAR TOOLBAR  16, 16
@@ -204,18 +225,10 @@ BEGIN
         MENUITEM "&New\tCtrl+N",                ID_FILE_NEW
         MENUITEM "&Open...\tCtrl+O",            ID_FILE_OPEN
         MENUITEM SEPARATOR
-        POPUP "Import"
-        BEGIN
-            MENUITEM "Importers",                   FIRST_IMPORT_PLUGIN, GRAYED
-        END
-        POPUP "Export"
-        BEGIN
-            MENUITEM "Export",                      FIRST_EXPORT_PLUGIN, GRAYED
-        END
-        MENUITEM SEPARATOR
         MENUITEM "P&rint Setup...",             ID_FILE_PRINT_SETUP
         MENUITEM SEPARATOR
         MENUITEM "Pro&gram Settings...",        ID_VIEW_OPTIONS
+        MENUITEM "Manage Plugins...",           ID_OPTIONS_PLUGINS
         MENUITEM SEPARATOR
         MENUITEM "Recent File",                 ID_FILE_MRU_FILE1, GRAYED
         MENUITEM SEPARATOR
@@ -254,17 +267,16 @@ BEGIN
         MENUITEM MFT_SEPARATOR
         POPUP "Import",                         65535,MFT_STRING,MFS_ENABLED
         BEGIN
-            MENUITEM "Importers",                   FIRST_IMPORT_PLUGIN,MFT_STRING,MFS_GRAYED
+            MENUITEM "Importers",                   FIRST_DATA_IMPORTER_PLUGIN,MFT_STRING,MFS_GRAYED
         END
         POPUP "Export",                         65535,MFT_STRING,MFS_ENABLED
         BEGIN
-            MENUITEM "Export",                      FIRST_EXPORT_PLUGIN,MFT_STRING,MFS_GRAYED
+            MENUITEM "Exporters",                   FIRST_DATA_EXPORTER_PLUGIN,MFT_STRING,MFS_GRAYED
         END
         MENUITEM MFT_SEPARATOR
         MENUITEM "&Get Library Entries...",     IDM_IMPORT_PROJECT_LIBRARY,MFT_STRING,MFS_ENABLED
         MENUITEM MFT_SEPARATOR
         MENUITEM "Project Prope&rties...",      ID_FILE_PROJECT_PROPERTIES,MFT_STRING,MFS_ENABLED
-        MENUITEM "Pro&gram Settings...",        ID_VIEW_OPTIONS,MFT_STRING,MFS_ENABLED
         MENUITEM MFT_SEPARATOR
         MENUITEM "&Print...\tCtrl+P",           ID_FILE_PRINT,MFT_STRING,MFS_ENABLED
         MENUITEM "P&rint Setup...",             ID_FILE_PRINT_SETUP,MFT_STRING,MFS_ENABLED
@@ -297,9 +309,10 @@ BEGIN
         MENUITEM MFT_SEPARATOR
         MENUITEM "Update &Now\tF5",             ID_PROJECT_UPDATENOW,MFT_STRING,MFS_ENABLED
         MENUITEM MFT_SEPARATOR
-        MENUITEM "&Units...",                   ID_PROJECT_UNITS,MFT_STRING,MFS_ENABLED
+        MENUITEM "&Units...",                   ID_EDIT_UNITS,MFT_STRING,MFS_ENABLED
         MENUITEM "Structural Analysis &Method...", ID_PROJECT_ANALYSIS,MFT_STRING,MFS_ENABLED
-        MENUITEM "&Project Criteria...",        ID_PROJECT_SPEC,MFT_STRING,MFS_ENABLED
+        MENUITEM "&Design Criteria...",         ID_PROJECT_SPEC,MFT_STRING,MFS_ENABLED
+        MENUITEM "&Rating Criteria...",         ID_RATING_SPEC,MFT_STRING,MFS_ENABLED
         MENUITEM "En&vironment...",             ID_PROJECT_ENVIRONMENT,MFT_STRING,MFS_ENABLED
         MENUITEM MFT_SEPARATOR
         MENUITEM "Prope&rties...",              ID_FILE_PROJECT_PROPERTIES,MFT_STRING,MFS_ENABLED
@@ -540,61 +553,6 @@ BEGIN
     END
 END
 
-IDR_LIBRARTYPE MENU 
-BEGIN
-    POPUP "&File"
-    BEGIN
-        MENUITEM "&New\tCtrl+N",                ID_FILE_NEW
-        MENUITEM "&Open...\tCtrl+O",            ID_FILE_OPEN
-        MENUITEM "&Close",                      ID_FILE_CLOSE
-        MENUITEM "&Save\tCtrl+S",               ID_FILE_SAVE
-        MENUITEM "Save &As...",                 ID_FILE_SAVE_AS
-        MENUITEM SEPARATOR
-        MENUITEM "&Import from PGSuper Project...", ID_FILE_IMPORT
-        MENUITEM SEPARATOR
-        MENUITEM "Recent File",                 ID_FILE_MRU_FILE1, GRAYED
-        MENUITEM SEPARATOR
-        MENUITEM "E&xit",                       ID_APP_EXIT
-    END
-    POPUP "&Edit"
-    BEGIN
-        MENUITEM "&Add New Entry",              32771
-        MENUITEM "&Edit Entry",                 32772
-        MENUITEM "&Delete Entry",               32773
-        MENUITEM "D&uplicate Entry",            32774
-        MENUITEM "R&ename Entry",               32786
-    END
-    POPUP "&Units"
-    BEGIN
-        MENUITEM "&SI Units",                   32780
-        MENUITEM "&US Units",                   32781
-    END
-    POPUP "&View"
-    BEGIN
-        MENUITEM "&Toolbar",                    ID_VIEW_TOOLBAR
-        MENUITEM "&Status Bar",                 ID_VIEW_STATUS_BAR
-        MENUITEM SEPARATOR
-        MENUITEM "Large Icons",                 32782
-        MENUITEM "Small Icons",                 32783
-        MENUITEM "List",                        32784
-        MENUITEM SEPARATOR
-        MENUITEM "&Arrange Icons",              ID_WINDOW_ARRANGE
-    END
-    POPUP "&Window"
-    BEGIN
-        MENUITEM "&New Window",                 ID_WINDOW_NEW
-        MENUITEM "&Cascade",                    ID_WINDOW_CASCADE
-        MENUITEM "&Tile",                       ID_WINDOW_TILE_HORZ
-    END
-    POPUP "&Help"
-    BEGIN
-        MENUITEM "&Help Topics",                ID_HELP_FINDER
-        MENUITEM SEPARATOR
-        MENUITEM "&Legal Notices...",           32787
-        MENUITEM "&About LibraryEditor...",     ID_APP_ABOUT
-    END
-END
-
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -691,38 +649,32 @@ END
 // Dialog
 //
 
-IDD_SELECTREPORT DIALOG  0, 0, 275, 163
-STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "Select Report"
-FONT 8, "MS Sans Serif"
-BEGIN
-    DEFPUSHBUTTON   "OK",IDOK,218,7,50,14
-    PUSHBUTTON      "Cancel",IDCANCEL,218,24,50,14
-    LTEXT           "Select a report to create",IDC_STATIC,7,7,77,8
-    LISTBOX         IDC_LIST,7,25,199,131,LBS_SORT | LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
-END
-
-IDD_ABOUTBOX DIALOG  0, 0, 234, 242
+IDD_ABOUTBOX DIALOGEX 0, 0, 443, 318
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "About PGSuper"
-FONT 8, "MS Sans Serif"
+FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
-    ICON            IDR_MAINFRAME,IDC_STATIC,7,7,20,20
-    LTEXT           "PGSuper Version 1.3",IDC_VERSION,40,10,187,8,SS_NOPREFIX
-    LTEXT           "Copyright ©",IDC_COPYRIGHT,40,22,187,8
-    DEFPUSHBUTTON   "OK",IDOK,70,221,95,14,WS_GROUP
-    LTEXT           "Developed by",IDC_STATIC,39,67,59,8
-    LTEXT           "Richard Brice, PE - WSDOT\n\tSoftware Architect and Lead Programmer",IDC_STATIC,56,175,171,17
-    LTEXT           "Washington State Department of Transportation",IDC_WSDOT,65,79,162,8
-    LTEXT           "Richard Pickings, PE - BridgeSight Software\n\tConsulting and Expert Programming Services",IDC_STATIC,56,195,171,18
-    LTEXT           "BridgeSight Software",IDC_BRIDGESIGHT,65,142,140,8
-    ICON            IDI_WSDOT,IDC_STATIC,41,79,20,20
-    ICON            IDI_BSS,IDC_STATIC,41,137,20,20
-    LTEXT           "This software is licensed under the terms and conditions of the Alternate Route Open Source License",IDC_STATIC,40,39,187,18
-    ICON            IDI_TXDOT,IDC_STATIC,41,104,20,20
-    LTEXT           "Texas Department of Transportation",IDC_TXDOT,65,104,114,8
-    LTEXT           "Consulting services provided by",IDC_STATIC,39,128,100,8
-    LTEXT           "Credits",IDC_STATIC,41,165,22,8
+    ICON            IDR_MAINFRAME,IDC_APPICON,7,7,20,20
+    LTEXT           "PGSuper Version 1.3",IDC_VERSION,36,7,371,8,SS_NOPREFIX
+    LTEXT           "Copyright ©",IDC_COPYRIGHT,36,19,353,8
+    DEFPUSHBUTTON   "OK",IDOK,386,297,50,14,WS_GROUP
+    LTEXT           "Richard Brice, PE - WSDOT\n\tSoftware Architect and Lead Programmer",IDC_STATIC,214,46,171,17
+    LTEXT           "Washington State Department of Transportation",IDC_WSDOT,35,46,162,8
+    LTEXT           "Richard Pickings, PE - BridgeSight Software\n\tConsulting and Professional Programming Services",IDC_STATIC,214,66,214,18
+    LTEXT           "BridgeSight Software",IDC_BRIDGESIGHT,35,107,75,8
+    ICON            IDI_WSDOT,IDC_STATIC,11,46,20,20
+    ICON            IDI_BSS,IDC_STATIC,11,103,20,20
+    ICON            IDI_TXDOT,IDC_STATIC,11,70,20,20
+    LTEXT           "Texas Department of Transportation",IDC_TXDOT,35,70,114,8
+    LTEXT           "Consulting services provided by",IDC_STATIC,11,95,100,8
+    LTEXT           "Installed Components",IDC_STATIC,7,129,68,8
+    LISTBOX         IDC_APPLIST,7,140,359,65,LBS_SORT | LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Component Description",IDC_STATIC,7,210,74,8
+    LTEXT           "Static",IDC_DESCRIPTION,7,221,358,63,WS_BORDER
+    LTEXT           "This software is licenced under the terms and conditions of the Alternate Route Open Source License. Individual components may be licensed under different terms and conditions. Click on the components listed above for more information.",IDC_STATIC,7,286,358,25
+    PUSHBUTTON      "More Information",IDC_MOREINFO,374,221,58,14
+    GROUPBOX        "Developed by",IDC_STATIC,7,32,191,93
+    GROUPBOX        "Credits",IDC_STATIC,209,32,227,93
 END
 
 IDD_PROJECTPROPERTIES DIALOG  0, 0, 241, 231
@@ -749,19 +701,6 @@ BEGIN
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,214,180,10
 END
 
-IDD_UNITS DIALOG  0, 0, 187, 60
-STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "Units"
-FONT 8, "MS Sans Serif"
-BEGIN
-    GROUPBOX        "Select System of Units",IDC_STATIC,7,7,109,46,WS_GROUP
-    CONTROL         "&SI Units",IDC_SI_UNITS,"Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,15,20,39,10
-    CONTROL         "&Traditional U.S. Units",IDC_RADIO2,"Button",BS_AUTORADIOBUTTON,15,35,79,10
-    DEFPUSHBUTTON   "OK",IDOK,130,7,50,14
-    PUSHBUTTON      "Cancel",IDCANCEL,130,23,50,14
-    PUSHBUTTON      "Help",ID_HELP,130,39,50,14
-END
-
 IDD_ENVIRONMENT DIALOG  0, 0, 187, 97
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Environmental Conditions"
@@ -776,18 +715,6 @@ BEGIN
     DEFPUSHBUTTON   "OK",IDOK,130,7,50,14
     PUSHBUTTON      "Cancel",IDCANCEL,130,24,50,14
     PUSHBUTTON      "Help",ID_HELP,130,41,50,14
-END
-
-IDD_TIP DIALOGEX 0, 0, 231, 164
-STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "Tip of the Day"
-FONT 8, "MS Sans Serif", 0, 0, 0x0
-BEGIN
-    CONTROL         "",IDC_FRAME,"Static",SS_ETCHEDFRAME,12,11,207,123
-    LTEXT           "Some String",IDC_TIPSTRING,28,63,177,60
-    DEFPUSHBUTTON   "&Close",IDOK,168,143,50,14,WS_GROUP
-    PUSHBUTTON      "&Next Tip",IDC_NEXTTIP,109,143,50,14,WS_GROUP
-    CONTROL         "&Show Tips on StartUp",IDC_STARTUP,"Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,13,146,85,10
 END
 
 IDD_GIRDERDESC_PRESTRESS DIALOGEX 0, 0, 361, 243
@@ -816,7 +743,7 @@ BEGIN
     LTEXT           "Static",IDC_TEMP_JACK_FORCE_UNIT,307,76,24,8
     COMBOBOX        IDC_TTS_USE,21,96,305,57,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     RTEXT           "Girder Ends:",IDC_HPOFFSET_END_TITLE,12,133,50,8
-    EDITTEXT        IDC_HP_CB_END,287,132,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    EDITTEXT        IDC_HPOFFSET_END,287,132,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "Static",IDC_HPOFFSET_END_UNIT,329,135,18,8
     RTEXT           "Harping Points:",IDC_HPOFFSET_HP_TITLE,12,160,49,8
     EDITTEXT        IDC_HPOFFSET_HP,287,159,40,14,ES_RIGHT | ES_AUTOHSCROLL
@@ -870,19 +797,6 @@ BEGIN
     CONTROL         "Label Girders",IDC_LABEL_GIRDERS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,7,57,10
 END
 
-IDD_TOOLBARS DIALOG  0, 0, 251, 98
-STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "Toolbars"
-FONT 8, "MS Sans Serif"
-BEGIN
-    DEFPUSHBUTTON   "OK",IDOK,194,7,50,14
-    PUSHBUTTON      "Cancel",IDCANCEL,194,24,50,14
-    LTEXT           "&Toolbars:",IDC_STATIC,7,7,49,8
-    LISTBOX         IDC_LIST,7,17,113,74,LBS_OWNERDRAWFIXED | LBS_HASSTRINGS | LBS_NOINTEGRALHEIGHT | LBS_WANTKEYBOARDINPUT | LBS_EXTENDEDSEL | WS_VSCROLL | WS_TABSTOP
-    CONTROL         "&Show ToolTips",IDC_TOOLTIPS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,124,17,62,10
-    PUSHBUTTON      "Help",ID_HELP,194,42,50,14
-END
-
 IDD_GIRDER_EDITOR_SECTION_PAGE DIALOG  0, 0, 143, 85
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION
 CAPTION "Section View"
@@ -921,9 +835,9 @@ BEGIN
     PUSHBUTTON      "Section Cut Location",IDC_SECTION_CUT,298,5,125,12,BS_LEFT
     LTEXT           "Show Loads in Stage",IDC_STATIC,167,3,45,16
     COMBOBOX        IDC_SELSTAGE,217,4,69,68,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    CONTROL         215,IDC_POINT_LOAD_DRAG,"Static",SS_BITMAP | SS_NOTIFY | WS_GROUP,431,5,13,12,WS_EX_CLIENTEDGE
-    CONTROL         219,IDC_DISTRIBUTED_LOAD_DRAG,"Static",SS_BITMAP | SS_NOTIFY | WS_GROUP,448,5,13,12,WS_EX_CLIENTEDGE
-    CONTROL         249,IDC_MOMENT_LOAD_DRAG,"Static",SS_BITMAP | SS_NOTIFY | WS_GROUP,464,5,17,16,WS_EX_CLIENTEDGE
+    CONTROL         213,IDC_POINT_LOAD_DRAG,"Static",SS_BITMAP | SS_NOTIFY | WS_GROUP,431,5,13,12,WS_EX_CLIENTEDGE
+    CONTROL         216,IDC_DISTRIBUTED_LOAD_DRAG,"Static",SS_BITMAP | SS_NOTIFY | WS_GROUP,448,5,13,12,WS_EX_CLIENTEDGE
+    CONTROL         247,IDC_MOMENT_LOAD_DRAG,"Static",SS_BITMAP | SS_NOTIFY | WS_GROUP,464,5,13,12,WS_EX_CLIENTEDGE
     CONTROL         "Synchronize with Bridge Model View selection",IDC_SYNC,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,19,160,10
 END
@@ -1009,7 +923,7 @@ BEGIN
     PUSHBUTTON      "Help",ID_HELP,207,172,50,14
     LTEXT           "The Girder Designer uses current bridge layout and project criteria information to determine an optimal design for the selected girder",IDC_STATIC,9,10,165,30
     LTEXT           "Note: A successful design attempt does not guarantee compliance with all criteria.  You should always run a Spec Check Report to review your final design.",IDC_STATIC,7,149,268,17
-    CONTROL         191,IDC_PICTURE,"Static",SS_BITMAP | SS_NOTIFY | SS_CENTERIMAGE | SS_REALSIZEIMAGE | SS_SUNKEN | WS_BORDER,178,7,97,116
+    CONTROL         193,IDC_PICTURE,"Static",SS_BITMAP | SS_NOTIFY | SS_CENTERIMAGE | SS_REALSIZEIMAGE | SS_SUNKEN | WS_BORDER,178,7,97,116
     CONTROL         "Don't Change Slab Offset (""A"" dimension)",IDC_DESIGN_A,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,21,112,145,10
 END
@@ -1150,16 +1064,6 @@ BEGIN
     PUSHBUTTON      "Help",IDHELP,162,92,50,14
 END
 
-IDD_STATUSCENTER DIALOG  0, 0, 396, 238
-STYLE DS_SETFONT | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
-CAPTION "Status Center"
-FONT 8, "MS Sans Serif"
-BEGIN
-    PUSHBUTTON      "Close",IDCLOSE,339,217,50,14
-    CONTROL         "List1",IDC_STATUSLIST,"SysListView32",LVS_REPORT | WS_BORDER | WS_TABSTOP,7,7,382,205
-    LTEXT           "Double click on each status item for more details and possible remedies",IDC_LABEL,7,223,224,8
-END
-
 IDD_EDIT_POINTLOAD DIALOG  0, 0, 394, 209
 STYLE DS_SETFONT | DS_MODALFRAME | DS_CONTEXTHELP | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Edit Point Load"
@@ -1242,7 +1146,7 @@ BEGIN
     PUSHBUTTON      "Add New Moment Load...",IDC_ADD_MOMENTLOAD,365,110,100,14
 END
 
-IDD_DEBOND DIALOG  0, 0, 427, 276
+IDD_GIRDERDESC_DEBOND DIALOG  0, 0, 427, 276
 STYLE DS_SETFONT | WS_POPUP | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
 CAPTION "Debonding"
 FONT 8, "MS Sans Serif"
@@ -1382,40 +1286,42 @@ BEGIN
     GROUPBOX        "Slab Offset (""A"" Dimension)",IDC_STATIC,7,103,263,51
 END
 
-IDD_BRIDGEDESC_DECKREINFORCEMENT DIALOG  0, 0, 307, 225
+IDD_BRIDGEDESC_DECKREINFORCEMENT DIALOGEX 0, 0, 307, 239
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION
 CAPTION "Deck Reinforcement"
-FONT 8, "MS Sans Serif"
+FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
-    LTEXT           "Top Mat Cover",IDC_STATIC,7,39,48,8
-    EDITTEXT        IDC_TOP_COVER,59,39,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Static",IDC_TOP_COVER_UNIT,103,39,19,8
-    LTEXT           "Bottom Mat Cover",IDC_STATIC,133,39,58,8
-    EDITTEXT        IDC_BOTTOM_COVER,195,39,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Static",IDC_BOTTOM_COVER_UNIT,242,40,19,8
-    GROUPBOX        "Primary Reinforcement - Longitudinal reinforcement running the full length of the bridge",IDC_STATIC,7,57,290,51
-    LTEXT           "Top Mat",IDC_STATIC,22,73,28,8
-    COMBOBOX        IDC_TOP_MAT_BAR,54,71,41,66,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "at",IDC_STATIC,99,73,8,8
-    EDITTEXT        IDC_TOP_MAT_BAR_SPACING,111,71,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Static",IDC_TOP_MAT_BAR_SPACING_UNIT,156,73,19,8
-    EDITTEXT        IDC_TOP_MAT_LUMP_SUM,203,70,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Static",IDC_TOP_MAT_LUMP_SUM_UNIT,249,74,36,8
-    LTEXT           "Bottom Mat",IDC_STATIC,13,91,37,8
-    COMBOBOX        IDC_BOTTOM_MAT_BAR,54,89,41,66,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "at",IDC_STATIC,99,91,8,8
-    EDITTEXT        IDC_BOTTOM_MAT_BAR_SPACING,111,89,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Static",IDC_BOTTOM_MAT_BAR_SPACING_UNIT,156,91,19,8
-    EDITTEXT        IDC_BOTTOM_MAT_LUMP_SUM,203,88,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Static",IDC_BOTTOM_MAT_LUMP_SUM_UNIT,249,92,36,8
-    GROUPBOX        "Supplemental Reinforcement - Negative moment reinforcement at continuous piers",IDC_STATIC,7,113,293,104
-    CONTROL         "Custom1",IDC_GRID,"GXWND",WS_BORDER | WS_VSCROLL | WS_HSCROLL | WS_TABSTOP,14,129,280,60
-    PUSHBUTTON      "Add",IDC_ADD,102,196,50,14
-    PUSHBUTTON      "Remove",IDC_REMOVE,156,196,50,14
+    LTEXT           "Top Mat Cover",IDC_STATIC,7,35,48,8
+    EDITTEXT        IDC_TOP_COVER,59,35,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_TOP_COVER_UNIT,103,35,19,8
+    LTEXT           "Bottom Mat Cover",IDC_STATIC,133,35,58,8
+    EDITTEXT        IDC_BOTTOM_COVER,195,35,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_BOTTOM_COVER_UNIT,242,36,19,8
+    GROUPBOX        "Primary Reinforcement",IDC_STATIC,7,52,290,59
+    LTEXT           "Top Mat",IDC_STATIC,22,79,28,8
+    COMBOBOX        IDC_TOP_MAT_BAR,54,77,41,66,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "at",IDC_STATIC,99,79,8,8
+    EDITTEXT        IDC_TOP_MAT_BAR_SPACING,111,77,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_TOP_MAT_BAR_SPACING_UNIT,156,79,19,8
+    EDITTEXT        IDC_TOP_MAT_LUMP_SUM,203,76,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_TOP_MAT_LUMP_SUM_UNIT,249,80,36,8
+    LTEXT           "Bottom Mat",IDC_STATIC,13,97,37,8
+    COMBOBOX        IDC_BOTTOM_MAT_BAR,54,95,41,66,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "at",IDC_STATIC,99,97,8,8
+    EDITTEXT        IDC_BOTTOM_MAT_BAR_SPACING,111,95,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_BOTTOM_MAT_BAR_SPACING_UNIT,156,97,19,8
+    EDITTEXT        IDC_BOTTOM_MAT_LUMP_SUM,203,94,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_BOTTOM_MAT_LUMP_SUM_UNIT,249,98,36,8
+    GROUPBOX        "Supplemental Reinforcement",IDC_STATIC,7,113,293,119
+    CONTROL         "Custom1",IDC_GRID,"GXWND",WS_BORDER | WS_VSCROLL | WS_HSCROLL | WS_TABSTOP,14,135,280,75
+    PUSHBUTTON      "Add",IDC_ADD,102,214,50,14
+    PUSHBUTTON      "Remove",IDC_REMOVE,156,214,50,14
     LTEXT           "Static",IDC_DECK,7,6,293,8
-    COMBOBOX        IDC_MILD_STEEL_SELECTOR,7,20,147,43,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "AND",IDC_STATIC,180,73,16,8
-    LTEXT           "AND",IDC_STATIC,180,91,16,8
+    COMBOBOX        IDC_MILD_STEEL_SELECTOR,7,17,147,43,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "AND",IDC_STATIC,180,79,16,8
+    LTEXT           "AND",IDC_STATIC,180,97,16,8
+    LTEXT           "Negative moment reinforcement at integral abutments and continuous piers",IDC_STATIC,16,124,236,8
+    LTEXT           "Longitudinal reinforcement running the full length of the bridge",IDC_STATIC,17,65,194,8
 END
 
 IDD_GIRDERDESC_LONGITUDINAL_REBAR DIALOGEX 0, 0, 348, 233
@@ -1434,7 +1340,7 @@ BEGIN
 END
 
 IDD_CONFIGUREPGSUPER DIALOGEX 0, 0, 468, 305
-STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION
 CAPTION "Configure PGSuper"
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
@@ -1444,9 +1350,9 @@ BEGIN
                     "Button",BS_AUTORADIOBUTTON | BS_TOP | BS_MULTILINE,20,98,172,20
     COMBOBOX        IDC_SERVERS,32,138,148,95,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
     PUSHBUTTON      "Add/Edit",IDC_ADD,183,138,37,12
-    LISTBOX         IDC_PUBLISHERS,33,164,172,32,LBS_NOINTEGRALHEIGHT | WS_DISABLED | WS_VSCROLL | WS_TABSTOP
-    DEFPUSHBUTTON   "Update Library and Templates Now",IDC_UPDATENOW,47,267,132,14
-    COMBOBOX        IDC_UPDATE_FREQUENCY,33,238,172,80,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LISTBOX         IDC_PUBLISHERS,33,164,172,49,LBS_NOINTEGRALHEIGHT | WS_DISABLED | WS_VSCROLL | WS_TABSTOP
+    DEFPUSHBUTTON   "Update Library and Templates Now",IDC_UPDATENOW,47,273,132,14
+    COMBOBOX        IDC_UPDATE_FREQUENCY,33,245,172,80,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     EDITTEXT        IDC_ENGINEER_NAME,258,69,172,14,ES_AUTOHSCROLL
     EDITTEXT        IDC_COMPANY_NAME,258,100,172,14,ES_AUTOHSCROLL
     PUSHBUTTON      "OK",IDOK,297,285,50,14
@@ -1461,10 +1367,10 @@ BEGIN
     LTEXT           "Enter your user information. This information will be used in report titles and other output.",IDC_STATIC,258,38,190,19
     LTEXT           "Engineer",IDC_STATIC,258,60,65,8
     LTEXT           "Company",IDC_STATIC,258,90,69,8
-    LTEXT           "Check for library and template updates:",IDC_UPDATES_STATIC,33,226,174,8
+    LTEXT           "Check for library and template updates:",IDC_UPDATES_STATIC,33,233,174,8
     GROUPBOX        "",IDC_SERVER_STATIC3,36,170,172,38
-    LTEXT           "More about this library and templates package...",IDC_PUBLISHER_HYPERLINK,61,203,155,10
-    ICON            IDI_EARTH,IDC_STATIC_EARTH,36,197,20,20
+    LTEXT           "More about this library and templates package...",IDC_PUBLISHER_HYPERLINK,62,218,155,10
+    ICON            IDI_EARTH,IDC_STATIC_EARTH,38,214,20,20
 END
 
 IDD_BRIDGEDESC_DECKDETAILS DIALOGEX 0, 0, 415, 247
@@ -1591,44 +1497,45 @@ BEGIN
     LTEXT           "Path to Template Files",IDC_TEMPLATE_STATIC,7,116,71,8
 END
 
-IDD_SELECT_LIVE_LOAD DIALOGEX 0, 0, 489, 202
+IDD_SELECT_LIVE_LOAD DIALOGEX 0, 0, 489, 241
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "Live Loads"
+CAPTION "Design Live Loads"
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
-    GROUPBOX        "Design Limit States",IDC_STATIC,7,7,153,159
+    GROUPBOX        "Design Limit States",IDC_STATIC,7,7,153,212
     LTEXT           "Select the live loads to include in the Service and Strength I limit states envelopes",IDC_STATIC,13,19,143,20
-    LISTBOX         IDC_DESIGN_LL_LIST,15,39,137,88,NOT LBS_NOTIFY | LBS_OWNERDRAWFIXED | LBS_HASSTRINGS | LBS_NOINTEGRALHEIGHT | LBS_NOSEL | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Dynamic Load Allowance (Impact)",IDC_STATIC,19,134,108,8
-    LTEXT           "Truck",IDC_STATIC,22,148,20,8
-    EDITTEXT        IDC_DESIGN_TRUCK_IMPACT,45,145,20,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "%",IDC_STATIC,67,148,8,8
-    LTEXT           "Lane",IDC_STATIC,89,148,17,8
-    EDITTEXT        IDC_DESIGN_LANE_IMPACT,110,145,20,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "%",IDC_STATIC,133,148,8,8
-    GROUPBOX        "Fatigue Limit States",IDC_STATIC,169,7,153,159
+    LISTBOX         IDC_DESIGN_LL_LIST,15,39,137,145,NOT LBS_NOTIFY | LBS_OWNERDRAWFIXED | LBS_HASSTRINGS | LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Dynamic Load Allowance (Impact)",IDC_STATIC,19,188,108,8
+    LTEXT           "Truck",IDC_STATIC,22,202,20,8
+    EDITTEXT        IDC_DESIGN_TRUCK_IMPACT,45,199,20,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "%",IDC_STATIC,67,202,8,8
+    LTEXT           "Lane",IDC_STATIC,89,202,17,8
+    EDITTEXT        IDC_DESIGN_LANE_IMPACT,110,199,20,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "%",IDC_STATIC,133,202,8,8
+    GROUPBOX        "Fatigue Limit States",IDC_STATIC,169,7,153,212
     LTEXT           "Select the live loads to include in the Fatigue I limit state envelope",IDC_STATIC,175,18,137,20
-    LISTBOX         IDC_FATIGUE_LL_LIST,177,39,137,88,NOT LBS_NOTIFY | LBS_OWNERDRAWFIXED | LBS_HASSTRINGS | LBS_NOINTEGRALHEIGHT | LBS_NOSEL | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Dynamic Load Allowance (Impact)",IDC_STATIC,181,133,108,8
-    LTEXT           "Truck",IDC_STATIC,184,147,20,8
-    EDITTEXT        IDC_FATIGUE_TRUCK_IMPACT,207,144,20,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "%",IDC_STATIC,229,147,8,8
-    LTEXT           "Lane",IDC_STATIC,251,147,17,8
-    EDITTEXT        IDC_FATIGUE_LANE_IMPACT,272,144,20,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "%",IDC_STATIC,295,147,8,8
-    GROUPBOX        "Permit Limit States",IDC_STATIC,329,7,153,159
+    LISTBOX         IDC_FATIGUE_LL_LIST,177,39,137,145,NOT LBS_NOTIFY | LBS_OWNERDRAWFIXED | LBS_HASSTRINGS | LBS_NOINTEGRALHEIGHT | LBS_NOSEL | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Dynamic Load Allowance (Impact)",IDC_STATIC,181,187,108,8
+    LTEXT           "Truck",IDC_STATIC,184,201,20,8
+    EDITTEXT        IDC_FATIGUE_TRUCK_IMPACT,207,198,20,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "%",IDC_STATIC,229,201,8,8
+    LTEXT           "Lane",IDC_STATIC,251,201,17,8
+    EDITTEXT        IDC_FATIGUE_LANE_IMPACT,272,198,20,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "%",IDC_STATIC,295,201,8,8
+    GROUPBOX        "Permit Limit States",IDC_STATIC,329,7,153,212
     LTEXT           "Select the live loads to include in the Strength II limit state envelope",IDC_STATIC,335,18,143,20
-    LISTBOX         IDC_STRENGTH_LL_LIST,337,39,137,88,NOT LBS_NOTIFY | LBS_OWNERDRAWFIXED | LBS_HASSTRINGS | LBS_NOINTEGRALHEIGHT | LBS_NOSEL | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Dynamic Load Allowance (Impact)",IDC_STATIC,341,133,108,8
-    LTEXT           "Truck",IDC_STATIC,344,147,20,8
-    EDITTEXT        IDC_PERMIT_TRUCK_IMPACT,367,144,20,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "%",IDC_STATIC,389,147,8,8
-    LTEXT           "Lane",IDC_STATIC,411,147,17,8
-    EDITTEXT        IDC_PERMIT_LANE_IMPACT,432,144,20,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "%",IDC_STATIC,455,147,8,8
-    DEFPUSHBUTTON   "OK",IDOK,325,181,50,14
-    PUSHBUTTON      "Cancel",IDCANCEL,379,181,50,14
-    PUSHBUTTON      "Help",ID_HELP,432,181,50,14
+    LISTBOX         IDC_STRENGTH_LL_LIST,337,39,137,145,NOT LBS_NOTIFY | LBS_OWNERDRAWFIXED | LBS_HASSTRINGS | LBS_NOINTEGRALHEIGHT | LBS_NOSEL | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Dynamic Load Allowance (Impact)",IDC_STATIC,341,187,108,8
+    LTEXT           "Truck",IDC_STATIC,344,201,20,8
+    EDITTEXT        IDC_PERMIT_TRUCK_IMPACT,367,198,20,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "%",IDC_STATIC,389,201,8,8
+    LTEXT           "Lane",IDC_STATIC,411,201,17,8
+    EDITTEXT        IDC_PERMIT_LANE_IMPACT,432,198,20,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "%",IDC_STATIC,455,201,8,8
+    DEFPUSHBUTTON   "OK",IDOK,325,220,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,379,220,50,14
+    PUSHBUTTON      "Help",ID_HELP,432,220,50,14
+    LTEXT           "Live loads for rating are defined in the Rating Criteria dialog",IDC_STATIC,7,226,186,8
 END
 
 IDD_MOVEPIER DIALOG  0, 0, 312, 82
@@ -1802,8 +1709,8 @@ BEGIN
     LTEXT           "Number of Girders",IDC_NUMGDR_PREV_SPAN_LABEL,17,33,58,8
     EDITTEXT        IDC_NUMGDR_PREV_SPAN,93,33,40,14,ES_RIGHT | ES_AUTOHSCROLL | ES_NUMBER | WS_GROUP
     CONTROL         "Spin1",IDC_NUMGDR_SPIN_PREV_SPAN,"msctls_updown32",UDS_WRAP | UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,130,33,11,14
-    LTEXT           "Girder Spacing",IDC_BACK_PIER_SPACING_LABEL,17,68,52,8
-    LTEXT           "Girder Spacing",IDC_AHEAD_PIER_SPACING_LABEL,17,219,52,8
+    LTEXT           "Girder Spacing",IDC_PREV_SPAN_SPACING_LABEL,17,68,52,8
+    LTEXT           "Girder Spacing",IDC_NEXT_SPAN_SPACING_LABEL,17,219,52,8
     COMBOBOX        IDC_PREV_SPAN_SPACING_MEASUREMENT,74,66,278,70,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     COMBOBOX        IDC_NEXT_SPAN_SPACING_MEASUREMENT,76,219,276,70,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     CONTROL         "Custom1",IDC_PREV_SPAN_SPACING_GRID,"GXWND",WS_BORDER | WS_VSCROLL | WS_HSCROLL | WS_TABSTOP,17,81,333,48
@@ -2030,6 +1937,200 @@ BEGIN
     PUSHBUTTON      "Cancel",IDCANCEL,259,63,50,14
 END
 
+IDD_RATING_OPTIONS DIALOGEX 0, 0, 316, 163
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "General"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    LTEXT           "Load Rating Criteria",IDC_STATIC,7,7,64,8
+    COMBOBOX        IDC_RATING_CRITERIA,7,18,174,64,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "System Factor (MBE 6A.4.2.4)",IDC_STATIC,7,35,98,8
+    LTEXT           "Flexure",IDC_STATIC,7,49,25,8
+    EDITTEXT        IDC_SYSTEM_FACTOR_FLEXURE,38,47,29,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Shear",IDC_STATIC,87,49,20,8
+    EDITTEXT        IDC_SYSTEM_FACTOR_SHEAR,109,47,29,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Average Daily Truck Traffic (ADTT) - One Direction",IDC_STATIC,7,74,162,8
+    EDITTEXT        IDC_ADTT,171,72,40,14,ES_AUTOHSCROLL
+    LTEXT           "(ADTT value or Unknown)",IDC_STATIC,213,74,83,8
+    CONTROL         "Include pedestrian live load (MBE 6A.2.3.4)",IDC_PEDESTRIAN,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,91,155,10
+    LTEXT           "Rating Type",IDC_STATIC,7,108,40,8
+    CONTROL         "Design",IDC_DESIGN,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,120,37,10
+    CONTROL         "Legal Loads",IDC_LEGAL,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,133,53,10
+    CONTROL         "Permit",IDC_PERMIT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,146,36,10
+END
+
+IDD_DESIGN_RATING DIALOGEX 0, 0, 296, 134
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Design"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    LTEXT           "Strength I =",IDC_STATIC,15,23,41,8
+    EDITTEXT        IDC_STRENGTH_I_DC,58,21,26,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "DC + ",IDC_STATIC,86,24,20,8
+    EDITTEXT        IDC_STRENGTH_I_DW,104,21,26,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "DW + ",IDC_STATIC,132,24,22,8
+    EDITTEXT        IDC_STRENGTH_I_LL_INVENTORY,154,21,43,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "(LL+IM) - Inventory Level",IDC_STATIC,201,24,84,8
+    LTEXT           "+ ",IDC_STATIC,146,40,8,8
+    EDITTEXT        IDC_STRENGTH_I_LL_OPERATING,154,37,43,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "(LL+IM) - Operating Level",IDC_STATIC,201,40,84,8
+    LTEXT           "Service III =",IDC_STATIC,15,60,42,8
+    EDITTEXT        IDC_SERVICE_III_DC,58,58,26,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "DC + ",IDC_STATIC,86,61,20,8
+    EDITTEXT        IDC_SERVICE_III_DW,104,58,26,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "DW + ",IDC_STATIC,132,61,22,8
+    EDITTEXT        IDC_SERVICE_III_LL,154,58,43,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "(LL+IM) - Inventory Level",IDC_STATIC,201,61,84,8
+    LTEXT           "Allowable Tension",IDC_STATIC,18,107,58,8
+    EDITTEXT        IDC_ALLOWABLE_TENSION,82,104,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "sqrt(f'c)",IDC_ALLOWABLE_TENSION_UNIT,126,107,57,8
+    CONTROL         "Rate for Shear",IDC_RATE_FOR_SHEAR,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,189,107,63,10
+    GROUPBOX        "Limit States",IDC_STATIC,7,7,282,73
+    GROUPBOX        "Analysis Controls",IDC_STATIC,7,86,282,39
+END
+
+IDD_LEGAL_RATING DIALOGEX 0, 0, 341, 302
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Legal"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    LTEXT           "Routine Commercial Vehicles",IDC_STATIC,15,16,91,8
+    LISTBOX         IDC_ROUTINE_LIVELOAD,15,25,140,65,NOT LBS_NOTIFY | LBS_OWNERDRAWFIXED | LBS_HASSTRINGS | LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Dynamic Load Allowance (Impact)",IDC_STATIC,18,91,108,8
+    LTEXT           "Truck",IDC_STATIC,18,105,20,8
+    EDITTEXT        IDC_ROUTINE_TRUCK_IMPACT,41,103,20,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "%",IDC_STATIC,63,105,8,8
+    LTEXT           "Lane",IDC_STATIC,85,105,17,8
+    EDITTEXT        IDC_ROUTINE_LANE_IMPACT,106,103,20,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "%",IDC_STATIC,129,105,8,8
+    LTEXT           "Specialized Hauling Vehicles",IDC_STATIC,162,15,88,8
+    LISTBOX         IDC_SPECIAL_LIVELOAD,162,25,139,65,NOT LBS_NOTIFY | LBS_OWNERDRAWFIXED | LBS_HASSTRINGS | LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Dynamic Load Allowance (Impact)",IDC_STATIC,166,91,108,8
+    LTEXT           "Truck",IDC_STATIC,166,105,20,8
+    EDITTEXT        IDC_SPECIAL_TRUCK_IMPACT,189,103,20,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "%",IDC_STATIC,211,105,8,8
+    LTEXT           "Lane",IDC_STATIC,233,105,17,8
+    EDITTEXT        IDC_SPECIAL_LANE_IMPACT,254,103,20,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "%",IDC_STATIC,277,105,8,8
+    LTEXT           "MBE 6A.4.4.2.1 - If the ADTT is less than 500, the lane load my be excluded and the 0.75 truck factor changed to 1.0 if, in the Engineer's judgement, it is warrented.",IDC_STATIC,17,129,284,19
+    CONTROL         "Exclude Lane Load and use 1.0 Truck Factor",IDC_EXCLUDE_LANELOAD,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,18,151,157,10
+    LTEXT           "Strength I =",IDC_STATIC,16,185,41,8
+    EDITTEXT        IDC_STRENGTH_I_DC,57,182,26,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "DC + ",IDC_STATIC,85,185,20,8
+    EDITTEXT        IDC_STRENGTH_I_DW,103,182,26,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "DW + ",IDC_STATIC,131,185,22,8
+    EDITTEXT        IDC_STRENGTH_I_LL_ROUTINE,153,182,43,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "(LL+IM) - Routine Commecial Vehicles",IDC_STATIC,202,185,120,8
+    LTEXT           "+ ",IDC_STATIC,145,201,8,8
+    EDITTEXT        IDC_STRENGTH_I_LL_SPECIAL,153,198,43,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "(LL+IM) - Special Hauling Vehicles",IDC_STATIC,202,201,108,8
+    LTEXT           "Service III =",IDC_STATIC,16,222,42,8
+    EDITTEXT        IDC_SERVICE_III_DC,57,219,26,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "DC + ",IDC_STATIC,85,222,20,8
+    EDITTEXT        IDC_SERVICE_III_DW,103,219,26,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "DW + ",IDC_STATIC,131,222,22,8
+    EDITTEXT        IDC_SERVICE_III_LL_ROUTINE,153,219,43,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "(LL+IM) - Routine Commecial Vehicles",IDC_STATIC,202,222,120,8
+    LTEXT           "+ ",IDC_STATIC,143,237,8,8
+    EDITTEXT        IDC_SERVICE_III_LL_SPECIAL,153,234,43,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "(LL+IM) - Special Hauling Vehicles",IDC_STATIC,202,237,108,8
+    LTEXT           "Allowable Tension",IDC_STATIC,16,275,58,8
+    EDITTEXT        IDC_ALLOWABLE_TENSION,80,272,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "sqrt(f'c)",IDC_ALLOWABLE_TENSION_UNIT,124,275,57,8
+    CONTROL         "Rate for Service III Stresses",IDC_RATE_FOR_STRESS,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,186,267,107,10
+    CONTROL         "Rate for Shear",IDC_RATE_FOR_SHEAR,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,186,279,63,10
+    GROUPBOX        "Live Loads",IDC_STATIC,7,7,327,160
+    GROUPBOX        "Limit States",IDC_STATIC,7,172,327,81
+    GROUPBOX        "Analysis Controls",IDC_STATIC,7,256,327,39
+END
+
+IDD_PERMIT_RATING DIALOGEX 0, 0, 340, 305
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Permit"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    LTEXT           "Routine/Annual Permit Rating Vehicles",IDC_STATIC,12,18,122,8
+    LISTBOX         IDC_PERMIT_LIVELOAD,12,28,153,65,NOT LBS_NOTIFY | LBS_OWNERDRAWFIXED | LBS_HASSTRINGS | LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Dynamic Load Allowance (Impact)",IDC_STATIC,12,97,108,8
+    LTEXT           "Truck",IDC_STATIC,13,112,20,8
+    EDITTEXT        IDC_PERMIT_TRUCK_IMPACT,37,110,20,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "%",IDC_STATIC,59,112,8,8
+    LTEXT           "Lane",IDC_STATIC,81,112,17,8
+    EDITTEXT        IDC_PERMIT_LANE_IMPACT,101,110,20,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "%",IDC_STATIC,125,112,8,8
+    LTEXT           "Special/Limited Crossing Permit Rating Vehicles",IDC_STATIC,171,17,149,8
+    LISTBOX         IDC_PERMIT_LIVELOAD2,171,28,153,65,NOT LBS_NOTIFY | LBS_OWNERDRAWFIXED | LBS_HASSTRINGS | LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Dynamic Load Allowance (Impact)",IDC_STATIC,171,97,108,8
+    LTEXT           "Truck",IDC_STATIC,171,111,20,8
+    EDITTEXT        IDC_PERMIT_TRUCK_IMPACT2,191,110,20,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "%",IDC_STATIC,214,111,8,8
+    LTEXT           "Lane",IDC_STATIC,235,111,17,8
+    EDITTEXT        IDC_PERMIT_LANE_IMPACT2,255,110,20,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "%",IDC_STATIC,280,111,8,8
+    LTEXT           "Permit Type",IDC_STATIC,171,127,39,8
+    COMBOBOX        IDC_PERMIT_TYPE,171,136,153,58,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Strength II =",IDC_STATIC,13,176,44,8
+    EDITTEXT        IDC_STRENGTH_II_DC,57,172,26,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "DC + ",IDC_STATIC,85,176,20,8
+    EDITTEXT        IDC_STRENGTH_II_DW,103,172,26,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "DW + ",IDC_STATIC,131,176,22,8
+    EDITTEXT        IDC_STRENGTH_II_LL_PERMIT,153,172,43,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "(LL+IM) - Routine/Annual Permit",IDC_STATIC,200,176,104,8
+    LTEXT           "+ ",IDC_STATIC,145,192,8,8
+    EDITTEXT        IDC_STRENGTH_II_LL_PERMIT2,153,188,43,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "(LL+IM) - Special/Limited Crossing",IDC_STATIC,200,192,109,8
+    LTEXT           "Service I =",IDC_STATIC,13,211,36,8
+    EDITTEXT        IDC_SERVICE_I_DC,57,208,26,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "DC + ",IDC_STATIC,85,211,20,8
+    EDITTEXT        IDC_SERVICE_I_DW,103,208,26,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "DW + ",IDC_STATIC,131,211,22,8
+    EDITTEXT        IDC_SERVICE_I_LL_PERMIT,153,208,43,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "(LL+IM) - Routine/Annual Permit",IDC_STATIC,200,211,104,8
+    LTEXT           "+",IDC_STATIC,145,228,8,8
+    EDITTEXT        IDC_SERVICE_I_LL_PERMIT2,153,225,43,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "(LL+IM) - Special/Limited Crossing",IDC_STATIC,200,228,109,8
+    CONTROL         "Rate for Shear",IDC_RATE_FOR_SHEAR,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,16,265,63,10
+    CONTROL         "Check reinforcement yielding (6A.5.2.2b)",IDC_CHECK_YIELDING,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,16,281,148,10
+    LTEXT           "Allowable Stress",IDC_FY_LABEL,176,282,53,8
+    EDITTEXT        IDC_FY_COEFFICIENT,232,279,30,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "fy",IDC_FY,264,281,8,8
+    GROUPBOX        "Live Loads",IDC_STATIC,7,7,326,150
+    GROUPBOX        "Limit States",IDC_STATIC,7,161,326,86
+    GROUPBOX        "Analysis Controls",IDC_STATIC,7,251,326,47
+END
+
+IDD_GIRDERDESC_RATING DIALOGEX 0, 0, 316, 180
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Condition and Rating"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    LTEXT           "Condition Factor (MBE 6A.4.2.3)",IDC_STATIC,7,7,105,8
+    COMBOBOX        IDC_CONDITION_FACTOR_TYPE,7,19,243,87,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    EDITTEXT        IDC_CONDITION_FACTOR,255,19,40,14,ES_RIGHT | ES_AUTOHSCROLL
+END
+
+IDD_BRIDGEDESC_RATING DIALOGEX 0, 0, 316, 180
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Condition and Rating"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    LTEXT           "Condition Factor (MBE 6A.4.2.3)",IDC_STATIC,7,7,105,8
+    COMBOBOX        IDC_CONDITION_FACTOR_TYPE,7,19,243,87,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    EDITTEXT        IDC_CONDITION_FACTOR,255,19,40,14,ES_RIGHT | ES_AUTOHSCROLL
+END
+
+IDD_MANAGE_PLUGINS DIALOGEX 0, 0, 316, 161
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    LISTBOX         IDC_PLUGIN_LIST,7,19,302,135,LBS_OWNERDRAWFIXED | LBS_HASSTRINGS | LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Enable Components",IDC_LIST_TITLE,7,7,64,8
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -2037,8 +2138,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 2,3,0,1
- PRODUCTVERSION 2,3,0,1
+ FILEVERSION 2,3,0,2
+ PRODUCTVERSION 2,3,0,2
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -2055,12 +2156,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "Washington State Department of Transportation"
             VALUE "FileDescription", "PGSuper"
-            VALUE "FileVersion", "2.3.0.1"
+            VALUE "FileVersion", "2.3.0.2"
             VALUE "InternalName", "PGSuper"
             VALUE "LegalCopyright", "Copyright © 1999-2010, Washington State Department of Transportation, All Rights Reserved"
             VALUE "OriginalFilename", "PGSuper.EXE"
             VALUE "ProductName", "PGSuper"
-            VALUE "ProductVersion", "2.3.0.1"
+            VALUE "ProductVersion", "2.3.0.2"
         END
     END
     BLOCK "VarFileInfo"
@@ -2081,9 +2182,9 @@ BEGIN
     IDD_ABOUTBOX, DIALOG
     BEGIN
         LEFTMARGIN, 7
-        RIGHTMARGIN, 227
+        RIGHTMARGIN, 436
         TOPMARGIN, 7
-        BOTTOMMARGIN, 235
+        BOTTOMMARGIN, 311
     END
 
     IDD_PROJECTPROPERTIES, DIALOG
@@ -2094,28 +2195,12 @@ BEGIN
         BOTTOMMARGIN, 224
     END
 
-    IDD_UNITS, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 180
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 53
-    END
-
     IDD_ENVIRONMENT, DIALOG
     BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 180
         TOPMARGIN, 7
         BOTTOMMARGIN, 90
-    END
-
-    IDD_TIP, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 224
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 157
     END
 
     IDD_GIRDERDESC_PRESTRESS, DIALOG
@@ -2149,14 +2234,6 @@ BEGIN
         RIGHTMARGIN, 105
         TOPMARGIN, 7
         BOTTOMMARGIN, 54
-    END
-
-    IDD_TOOLBARS, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 244
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 91
     END
 
     IDD_GIRDER_EDITOR_SECTION_PAGE, DIALOG
@@ -2280,14 +2357,6 @@ BEGIN
         BOTTOMMARGIN, 106
     END
 
-    IDD_STATUSCENTER, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 389
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 231
-    END
-
     IDD_EDIT_POINTLOAD, DIALOG
     BEGIN
         LEFTMARGIN, 7
@@ -2312,7 +2381,7 @@ BEGIN
         BOTTOMMARGIN, 124
     END
 
-    IDD_DEBOND, DIALOG
+    IDD_GIRDERDESC_DEBOND, DIALOG
     BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 420
@@ -2381,7 +2450,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 300
         TOPMARGIN, 6
-        BOTTOMMARGIN, 218
+        BOTTOMMARGIN, 232
     END
 
     IDD_GIRDERDESC_LONGITUDINAL_REBAR, DIALOG
@@ -2437,7 +2506,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 482
         TOPMARGIN, 7
-        BOTTOMMARGIN, 195
+        BOTTOMMARGIN, 234
     END
 
     IDD_MOVEPIER, DIALOG
@@ -2579,6 +2648,62 @@ BEGIN
         TOPMARGIN, 7
         BOTTOMMARGIN, 77
     END
+
+    IDD_RATING_OPTIONS, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 309
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 156
+    END
+
+    IDD_DESIGN_RATING, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 289
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 125
+    END
+
+    IDD_LEGAL_RATING, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 334
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 295
+    END
+
+    IDD_PERMIT_RATING, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 333
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 298
+    END
+
+    IDD_GIRDERDESC_RATING, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 309
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 173
+    END
+
+    IDD_BRIDGEDESC_RATING, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 309
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 173
+    END
+
+    IDD_MANAGE_PLUGINS, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 309
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 154
+    END
 END
 #endif    // APSTUDIO_INVOKED
 
@@ -2715,26 +2840,19 @@ END
 
 STRINGTABLE 
 BEGIN
-    IDP_OLE_INIT_FAILED     "OLE initialization failed.  Make sure that the OLE libraries are the correct version."
-    CG_IDS_TIPOFTHEDAY      "Displays a Tip of the Day."
-    CG_IDS_TIPOFTHEDAYMENU  "Ti&p of the Day..."
-    CG_IDS_DIDYOUKNOW       "Did you know..."
-    CG_IDS_FILE_ABSENT      "Tips file does not exist in the prescribed directory"
-    CG_IDP_FILE_CORRUPT     "Trouble reading the tips file"
-    CG_IDS_TIPOFTHEDAYHELP  "&Help"
-END
-
-STRINGTABLE 
-BEGIN
     IDR_MAINFRAME           "PGSuper"
     IDR_PGSUPERTYPE         "\n\n\n\n\n\n"
-    IDR_BRIDGEMODELEDITOR   "Bridge Model View\nPGSuper\nPGSuper Project\nPGSuper Files (*.pgs)\n.pgs\nPGSuper.Document\nPGSuper Document"
+    IDR_BRIDGEMODELEDITOR   "Bridge Model View\nPGSuper\nPGSuper Project Templates\nPGSuper Project and Template Files (*.pgs; *.pgt)\n.pgs;.pgt\nPGSuper.Document\nPGSuper Document"
+    IDR_PROJECTIMPORTER     "Bridge Model View\nPGSuper\nPGSuper Project Importers\n\n\n\n"
     IDR_GIRDERMODELEDITOR   "Girder View\n\n\n\n\n\n"
     IDR_ANALYSISMODELEDITOR "Analysis Model Editor\n\n\n\n\n\n"
     IDR_LIBRARYEDITOR       "Library Editor\n\n\n\n\n\n"
     IDR_ANALYSISRESULTS     "Analysis Results\n\n\n\n\n\n"
     IDR_REPORT              "Report\n\n\n\n\n\n"
-    IDR_LIBRARTYPE          "Library Editor\nUntitled\nMaster Library File\nLibrary File (*.lbr)\n.lbr\nPGSuperLibrary.Document\nPGSuper Library File"
+END
+
+STRINGTABLE 
+BEGIN
     IDR_FACTOROFSAFETY      "Stablity\n\n\n\n\n\n"
 END
 
@@ -2833,8 +2951,6 @@ BEGIN
     ID_EDIT_REPEAT          "Repeat the last action\nRepeat"
     ID_EDIT_REPLACE         "Replace specific text with different text\nReplace"
     ID_EDIT_SELECT_ALL      "Select the entire document\nSelect All"
-    ID_EDIT_UNDO            "Undo the last action\nUndo"
-    ID_EDIT_REDO            "Redo the previously undone action\nRedo"
 END
 
 STRINGTABLE 
@@ -2864,6 +2980,10 @@ END
 STRINGTABLE 
 BEGIN
     AFX_IDS_PREVIEW_CLOSE   "Close print preview mode\nCancel Preview"
+END
+
+STRINGTABLE 
+BEGIN
     IDS_INCOMPATIBLE_BEARING_MSG 
                             "This connection locates the point of bearing by measuring along the centerline of the girder. The girder spacing is measured at the centerline of bearing. These are incompatible options.\r\n\r\nWhen the bearing is located along the girder, girder spacing must be measured at the pier. Would you like to measure the girder spacing at the centerline of pier?\r\n\r\nYes: Change girder spacing\r\nNo: Don't change anything"
     IDS_INCOMPATIBLE_BEARING_MSG2 
@@ -2884,16 +3004,21 @@ END
 
 STRINGTABLE 
 BEGIN
-    IDS_E_BADINSTALL        "There is an error with the PGSuper installation.  Please re-install the program."
+    IDS_E_BADINSTALL        "There is an error with the %1 installation.  Please re-install the program."
     IDS_E_PROBPERSISTS      "If this problem persists,  contact technical support at Bridge_Support@wsdot.wa.gov.\n Please include your project file and the %1 file found in the program directory."
     IDS_E_INVALIDFORMAT     "%1 is not a valid PGSuper project file."
     IDS_E_FILENOTFOUND      "File %1 was not found"
     IDS_E_READ              "An error has occured while reading %1"
     IDS_E_FORMAT            "%1\n\n %2"
-    IDS_E_NOBROWSER         "An error occured while trying to display the report.  The most likely cause is Internet Explorer Version 4.0 or later is not installed.  Please re-install your browser."
+END
+
+STRINGTABLE 
+BEGIN
     IDS_E_WRITE             "An error has occured while writing to %1"
     IDS_E_UNSAFESAVE        "PGSuper could not make a backup copy of your last successful save. If an error occurs while saving  your bridge model, your PGSuper file may become corrupt and unrecoverable.\n\n Would  you like to proceed?"
     IDS_E_SAVERECOVER1      "An error occured while restoring your last sucessful save.  It is highly likely that the file %1 is corrupt.  Try saving your project to another locaion.  If this fails, see %2  for manual recovery instructions."
+    IDS_E_SAVERECOVER2      "An error occured while restoring your last sucessful save. The file %1 no longer exists.  Try saving your project again, preferable  to another locaion.  If this fails, see %2 for manual recovery instructions."
+    IDS_E_CREATEWND         "An error occured while creating the window."
 END
 
 STRINGTABLE 
@@ -2924,8 +3049,7 @@ BEGIN
     ID_PROJECT_AUTOCALC     "Toggles AutoCalc mode.\nAutoCalc"
     ID_PROJECT_UPDATENOW    "Update all views, reports, and graphs\nUpdate Now"
     ID_PROJECT_DESIGNGIRDER "Run Preliminary Girder Designer\nPreliminary Girder Designer"
-    ID_PROJECT_UNITS        "Change the system of units\nUnits."
-    ID_PROJECT_SPEC         "Choose the criteria for your project\nProject Criteria"
+    ID_PROJECT_SPEC         "Choose the design and analysis criteria for your project\nDesign Criteria"
     ID_PROJECT_POI          "Select points of interest\nPoints of Interest"
     ID_PROJECT_DESIGNOPTIONS "Design Options\nDesign Options"
 END
@@ -2935,21 +3059,11 @@ BEGIN
     ID_VIEW_ANALYSISRESULTS "View analysis results\nAnalysis Results"
     ID_PROJECT_ENVIRONMENT  "Specify environment conditions\nEnvironment"
     ID_PROJECT_BRIDGEDESC   "Edit the Bridge\nEdit the Bridge Description"
-    IDM_ADD_ENTRY           "Add a new entry to the library\nAdd new entry"
-    IDM_EDIT_ENTRY          "Open the entry for editing\nEdit entry"
-    IDM_DELETE_ENTRY        "Delete The Selected Entry\nDelete entry"
-    IDM_DUPLICATE_ENTRY     "Duplicate the Selected Entry\nDuplicate entry"
-    IDM_EXPORT_TEMPLATE     "Save the current project to a template file\nSave as template file"
-    IDM_LARGE_ICONS         "View library entries using large icons\nLarge Icons"
 END
 
 STRINGTABLE 
 BEGIN
-    IDM_SMALL_ICONS         "View library entries using small icons\nSmall Icons"
-    IDM_LIST_ICONS          "View library entries in a list\nList"
     IDS_GM_VIEW_SETTINGS    "View Settings - Girder Model Editor"
-    ID_UNITS_SI             "Change units mode to SI\nSI Units"
-    ID_UNITS_US             "Change units mode to US\nUS Units"
     ID_LOADS_LOADMODIFIERS  "Edit the load modifiers\nLoad modifiers"
     ID_LEFTEND              "Cut section at left end of the girder"
     ID_RIGHTEND             "Cut section at right end of girder"
@@ -2960,14 +3074,16 @@ END
 
 STRINGTABLE 
 BEGIN
-    IDS_E_SAVERECOVER2      "An error occured while restoring your last sucessful save. The file %1 no longer exists.  Try saving your project again, preferable  to another locaion.  If this fails, see %2 for manual recovery instructions."
-    IDS_E_CREATEWND         "An error occured while creating the window."
     IDS_E_LOWRESOURCES      "System resources are running low.  Please quit one or more applications and try again."
     IDS_DLG_STATIONFMT_SI   "Enter station in the following format, xxx+yyy.zzz  Example 1+234.567"
     IDS_DLG_STATIONFMT_US   "Enter station in the following format, xx+yy.zz  Example 1+23.45"
     IDS_DLG_ORIENTATIONFMT  "Enter orientation as Normal, a bearing (N/S dd mm ss.s E/W), or a skew angle (dd mm ss.s L/R). \nExample: N 34 23 32.1 W"
     IDS_GRADE1725_US        "Grade 250"
     IDS_GRADE1725_SI        "Grade 1725"
+END
+
+STRINGTABLE 
+BEGIN
     IDS_GRADE1860_US        "Grade 270"
     IDS_GRADE1860_SI        "Grade 1860"
     IDS_GDRSEL_EXCEED_MAX_STRAND 
@@ -2975,40 +3091,45 @@ BEGIN
     IDS_PSFORCE_EXCEED_MAX  "The prestress force for the %1 strands exceed the ultimate strength of the prestressing strand.\n\nWould you like to change the prestressing force for the %1 strands to the maximum allowable jacking force?"
     ID_INDICATOR_AUTOCALC_ON "AutoCalc : On"
     ID_INDICATOR_AUTOCALC_OFF "AutoCalc : Off"
+    IDS_BROWSER_ERROR       "Error displaying report.  You must have Internet Explorer Version 4.0 or later."
 END
 
 STRINGTABLE 
 BEGIN
-    IDS_BROWSER_ERROR       "Error displaying report.  You must have Internet Explorer Version 4.0 or later."
     IDS_RESULTS_NOT_AVAILABLE 
                             "Results not available - Select ""Update Now"" from the Project menu"
     IDS_COMPANY             "Washington State Department of Transportation"
+END
+
+STRINGTABLE 
+BEGIN
     IDS_TEMPLATE_FILE_SUFFIX "pgt"
     IDS_FATAL_MSG_SAVE      """%1\n\nPGSuper is going to shut down!\n\nWould you like to attempt to save your project first?\n\n%2"""
     IDS_FATAL_MSG_NOSAVE    """%1\n\nPGSuper is going to shut down!\n\n%2"""
     IDS_DEFAULT_MASTER_LIB  "PGSuper.lbr"
     IDS_CANT_FIND_LIBRARY_FILE 
                             "There is a problem with the software configuration. The master library file could not be found. Please use the next window to update the Libraries and Templates configuration."
-END
-
-STRINGTABLE 
-BEGIN
     IDS_CORRUPTED_LIBRARY_FILE 
                             "Error - loading master library file: %1 The file may be corrupted. Choose Yes to find a new file, or No to abort."
     IDS_E_EXCESSIVE_SKEW    "Pier %1 is skewed %2 or more.\nPlease adjust the orientation of Pier %1."
     IDS_E_EXCESSIVE_DELTA_SKEW 
                             "The difference in skew angles between Pier %u and Pier %u is more than %s.\nPlease adjust the orientation of the piers."
     IDS_E_PIER_LAYOUT       "The alignment you have entered (%s) invalidates the pier layout.\nThe skew angle of one of the piers exceeds %s or the\ndifference in skew angles between piers exceeds %s.\nWould you like to edit the piers?"
+END
+
+STRINGTABLE 
+BEGIN
     IDS_E_NOCHAPTERS        "Please select at least one chapter for the report."
-    IDS_TOOLBAR_STATE       "Toolbars"
-    IDS_REG_SETTINGS        "Settings"
-    IDS_TOOLTIP_STATE       "ToolTips"
-    IDS_REG_WNDPOS          "WindowPosition"
     IDS_E_UPDATE            "The following error occured while updating the views.\n\n%1."
-    IDS_WORKING             "Working..."
+END
+
+STRINGTABLE 
+BEGIN
     IDS_E_PARSER_INIT_FAIL  "An error has occured while initializing the file parser.\n\nThis is most commonly caused by having the wrong version of Internet Explorer.\n\nPGSuper requires Internet Explorer 4.01 SP 3 or greater."
     IDS_E_INVALIDVERSION    "The file %1 came from a newer version of PGSuper. You must upgrade in order to read it."
     IDS_E_USERDEFINED       "An unknown error occured while reading %1"
+    ID_E_INVALID_ORIENTATION 
+                            "Invalidate orientation for Pier %1\nEnter the keyword ""Normal"", a valid skew angle or a valid bearing"
 END
 
 STRINGTABLE 
@@ -3031,8 +3152,11 @@ END
 STRINGTABLE 
 BEGIN
     IDS_GIRDER_SHEAR        "Trans. Reinforcement"
+    IDS_LIVE_LOAD_FACTOR_TOOLTIP 
+                            "Enter a live load factor. Leave blank or use the keyword Compute to have the live load factor computed based on the requirements of the Load Rating Criteria.\n\n%1"
     IDS_E_ONLINERESOURCES   "Sorry, but an error occured while attempting to connect to the Internet"
-    ID_INDICATOR_MODIFIED   "Modified"
+    IDS_LIVE_LOAD_FACTOR_DISABLED_TOOLTIP 
+                            "Live load factors will be determined based on the Load Rating Criteria. The selected Load Rating Criteria does not permit user defined live load factors."
     IDS_NWC_MESSAGE         "The concrete density is less than the minimum value for Normal Weight Concrete (See LRFD 5.2).\nPGSuper will proceed as if the concrete were Normal Weight."
 END
 
@@ -3066,13 +3190,6 @@ END
 
 STRINGTABLE 
 BEGIN
-    ID_INDICATOR_STATUS     "OK"
-    ID_E_INVALID_ORIENTATION 
-                            "Invalidate orientation for Pier %1\nEnter the keyword ""Normal"", a valid skew angle or a valid bearing"
-END
-
-STRINGTABLE 
-BEGIN
     ID_INDICATOR_ANALYSIS   "CONTINUOUS"
 END
 
@@ -3090,6 +3207,9 @@ END
 STRINGTABLE 
 BEGIN
     ID_FILE_NEW_LIBRARY     "Create a new Master Library File\nNew Master Library"
+    ID_RATING_SPEC          "Choose the load rating criteria for your project\nRating Criteria"
+    ID_PROJECT_RATING       "Edit the load rating criteria\nRating Criteria"
+    ID_OPTIONS_PLUGINS      "Manage PGSuper Importer and Exporter Plug-ins\nManage Plug-ins"
 END
 
 #endif    // English (U.S.) resources

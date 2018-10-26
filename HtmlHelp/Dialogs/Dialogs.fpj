@@ -3,27 +3,12 @@
 	<folders/>
 	<topics>
 		<topic>
-			<name>Edit_Moment_Load.htm</name>
-			<comments></comments>
-			<frameset>0</frameset>
-		</topic>
-		<topic>
-			<name>Bridge_Editing_Dialog.htm</name>
-			<comments></comments>
-			<frameset>0</frameset>
-		</topic>
-		<topic>
-			<name>Live_Load_Distibution_Factors.htm</name>
-			<comments></comments>
-			<frameset>0</frameset>
-		</topic>
-		<topic>
-			<name>Design_Criteria.htm</name>
-			<comments></comments>
-			<frameset>0</frameset>
-		</topic>
-		<topic>
 			<name>CopyConcrete.htm</name>
+			<comments></comments>
+			<frameset>0</frameset>
+		</topic>
+		<topic>
+			<name>Specify_User-Defined_Live_Loads.htm</name>
 			<comments></comments>
 			<frameset>0</frameset>
 		</topic>
@@ -38,7 +23,7 @@
 			<frameset>0</frameset>
 		</topic>
 		<topic>
-			<name>Alignment_Description_Dialog.htm</name>
+			<name>Structural_Analysis_Method_Dialog.htm</name>
 			<comments></comments>
 			<frameset>0</frameset>
 		</topic>
@@ -48,12 +33,17 @@
 			<frameset>0</frameset>
 		</topic>
 		<topic>
-			<name>Load_Modifiers.htm</name>
+			<name>Library_Import_Entry_Conflict.htm</name>
 			<comments></comments>
 			<frameset>0</frameset>
 		</topic>
 		<topic>
-			<name>Design_Girder.htm</name>
+			<name>Rating_Options_(Legal).htm</name>
+			<comments></comments>
+			<frameset>0</frameset>
+		</topic>
+		<topic>
+			<name>Design_Criteria.htm</name>
 			<comments></comments>
 			<frameset>0</frameset>
 		</topic>
@@ -63,17 +53,17 @@
 			<frameset>0</frameset>
 		</topic>
 		<topic>
-			<name>Library_Import_Entry_Conflict.htm</name>
+			<name>Design_Girder.htm</name>
 			<comments></comments>
 			<frameset>0</frameset>
 		</topic>
 		<topic>
-			<name>Project_Properties.htm</name>
+			<name>Bridge_Editing_Dialog.htm</name>
 			<comments></comments>
 			<frameset>0</frameset>
 		</topic>
 		<topic>
-			<name>Library_Entry_Conflict.htm</name>
+			<name>Alignment_Description_Dialog.htm</name>
 			<comments></comments>
 			<frameset>0</frameset>
 		</topic>
@@ -83,22 +73,17 @@
 			<frameset>0</frameset>
 		</topic>
 		<topic>
-			<name>Specify_User-Defined_Live_Loads.htm</name>
+			<name>Rating_Options_(Permit).htm</name>
 			<comments></comments>
 			<frameset>0</frameset>
 		</topic>
 		<topic>
-			<name>Structural_Analysis_Method_Dialog.htm</name>
+			<name>environment.htm</name>
 			<comments></comments>
 			<frameset>0</frameset>
 		</topic>
 		<topic>
-			<name>Section_Cut.htm</name>
-			<comments></comments>
-			<frameset>0</frameset>
-		</topic>
-		<topic>
-			<name>Toolbars.htm</name>
+			<name>Edit_Moment_Load.htm</name>
 			<comments></comments>
 			<frameset>0</frameset>
 		</topic>
@@ -113,7 +98,42 @@
 			<frameset>0</frameset>
 		</topic>
 		<topic>
-			<name>Edit_User_Defined_Loads.htm</name>
+			<name>Load_Modifiers.htm</name>
+			<comments></comments>
+			<frameset>0</frameset>
+		</topic>
+		<topic>
+			<name>Project_Properties.htm</name>
+			<comments></comments>
+			<frameset>0</frameset>
+		</topic>
+		<topic>
+			<name>Section_Cut.htm</name>
+			<comments></comments>
+			<frameset>0</frameset>
+		</topic>
+		<topic>
+			<name>Toolbars.htm</name>
+			<comments></comments>
+			<frameset>0</frameset>
+		</topic>
+		<topic>
+			<name>Rating_Options_(General).htm</name>
+			<comments></comments>
+			<frameset>0</frameset>
+		</topic>
+		<topic>
+			<name>Rating_Options_(Design).htm</name>
+			<comments></comments>
+			<frameset>0</frameset>
+		</topic>
+		<topic>
+			<name>Library_Entry_Conflict.htm</name>
+			<comments></comments>
+			<frameset>0</frameset>
+		</topic>
+		<topic>
+			<name>Live_Load_Distibution_Factors.htm</name>
 			<comments></comments>
 			<frameset>0</frameset>
 		</topic>
@@ -123,7 +143,12 @@
 			<frameset>0</frameset>
 		</topic>
 		<topic>
-			<name>environment.htm</name>
+			<name>Edit_User_Defined_Loads.htm</name>
+			<comments></comments>
+			<frameset>0</frameset>
+		</topic>
+		<topic>
+			<name>Plugins_and_Extensions.htm</name>
 			<comments></comments>
 			<frameset>0</frameset>
 		</topic>

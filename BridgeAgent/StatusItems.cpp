@@ -33,12 +33,12 @@
 
 ////////////////
 
-pgsAlignmentDescriptionStatusItem::pgsAlignmentDescriptionStatusItem(AgentIDType agentID,StatusCallbackIDType callbackID,long dlgPage,const char* strDescription) :
-pgsStatusItem(agentID,callbackID,strDescription), m_DlgPage(dlgPage)
+pgsAlignmentDescriptionStatusItem::pgsAlignmentDescriptionStatusItem(StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,long dlgPage,const char* strDescription) :
+CEAFStatusItem(statusGroupID,callbackID,strDescription), m_DlgPage(dlgPage)
 {
 }
 
-bool pgsAlignmentDescriptionStatusItem::IsEqual(pgsStatusItem* pOther)
+bool pgsAlignmentDescriptionStatusItem::IsEqual(CEAFStatusItem* pOther)
 {
    pgsAlignmentDescriptionStatusItem* other = dynamic_cast<pgsAlignmentDescriptionStatusItem*>(pOther);
    if ( !other )
@@ -54,17 +54,17 @@ bool pgsAlignmentDescriptionStatusItem::IsEqual(pgsStatusItem* pOther)
 }
 
 //////////////////////////////////////////////////////////
-pgsAlignmentDescriptionStatusCallback::pgsAlignmentDescriptionStatusCallback(IBroker* pBroker,pgsTypes::StatusSeverityType severity):
+pgsAlignmentDescriptionStatusCallback::pgsAlignmentDescriptionStatusCallback(IBroker* pBroker,eafTypes::StatusSeverityType severity):
 m_pBroker(pBroker), m_Severity(severity)
 {
 }
 
-pgsTypes::StatusSeverityType pgsAlignmentDescriptionStatusCallback::GetSeverity()
+eafTypes::StatusSeverityType pgsAlignmentDescriptionStatusCallback::GetSeverity()
 {
    return m_Severity;
 }
 
-void pgsAlignmentDescriptionStatusCallback::Execute(pgsStatusItem* pStatusItem)
+void pgsAlignmentDescriptionStatusCallback::Execute(CEAFStatusItem* pStatusItem)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
@@ -81,12 +81,12 @@ void pgsAlignmentDescriptionStatusCallback::Execute(pgsStatusItem* pStatusItem)
 
 ////////////////
 
-pgsConcreteStrengthStatusItem::pgsConcreteStrengthStatusItem(pgsConcreteStrengthStatusItem::ConcreteType concType,pgsConcreteStrengthStatusItem::ElementType elemType,SpanIndexType span,GirderIndexType gdr,AgentIDType agentID,StatusCallbackIDType callbackID,const char* strDescription) :
-pgsStatusItem(agentID,callbackID,strDescription), m_ConcreteType(concType),m_ElementType(elemType),m_Span(span),m_Girder(gdr)
+pgsConcreteStrengthStatusItem::pgsConcreteStrengthStatusItem(pgsConcreteStrengthStatusItem::ConcreteType concType,pgsConcreteStrengthStatusItem::ElementType elemType,SpanIndexType span,GirderIndexType gdr,StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,const char* strDescription) :
+CEAFStatusItem(statusGroupID,callbackID,strDescription), m_ConcreteType(concType),m_ElementType(elemType),m_Span(span),m_Girder(gdr)
 {
 }
 
-bool pgsConcreteStrengthStatusItem::IsEqual(pgsStatusItem* pOther)
+bool pgsConcreteStrengthStatusItem::IsEqual(CEAFStatusItem* pOther)
 {
    pgsConcreteStrengthStatusItem* other = dynamic_cast<pgsConcreteStrengthStatusItem*>(pOther);
    if ( !other )
@@ -96,18 +96,18 @@ bool pgsConcreteStrengthStatusItem::IsEqual(pgsStatusItem* pOther)
 }
 
 //////////////////////////////////////////////////////////
-pgsConcreteStrengthStatusCallback::pgsConcreteStrengthStatusCallback(IBroker* pBroker,pgsTypes::StatusSeverityType severity):
+pgsConcreteStrengthStatusCallback::pgsConcreteStrengthStatusCallback(IBroker* pBroker,eafTypes::StatusSeverityType severity):
 m_pBroker(pBroker),
 m_Severity(severity)
 {
 }
 
-pgsTypes::StatusSeverityType pgsConcreteStrengthStatusCallback::GetSeverity()
+eafTypes::StatusSeverityType pgsConcreteStrengthStatusCallback::GetSeverity()
 {
    return m_Severity;
 }
 
-void pgsConcreteStrengthStatusCallback::Execute(pgsStatusItem* pStatusItem)
+void pgsConcreteStrengthStatusCallback::Execute(CEAFStatusItem* pStatusItem)
 {
    pgsConcreteStrengthStatusItem* pItem = dynamic_cast<pgsConcreteStrengthStatusItem*>(pStatusItem);
    ATLASSERT(pItem!=NULL);
@@ -130,12 +130,12 @@ void pgsConcreteStrengthStatusCallback::Execute(pgsStatusItem* pStatusItem)
 
 //////////////////////
 
-pgsPointLoadStatusItem::pgsPointLoadStatusItem(Uint32 value,AgentIDType agentID,StatusCallbackIDType callbackID,const char* strDescription) :
-pgsStatusItem(agentID,callbackID,strDescription), m_LoadIndex(value)
+pgsPointLoadStatusItem::pgsPointLoadStatusItem(Uint32 value,StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,const char* strDescription) :
+CEAFStatusItem(statusGroupID,callbackID,strDescription), m_LoadIndex(value)
 {
 }
 
-bool pgsPointLoadStatusItem::IsEqual(pgsStatusItem* pOther)
+bool pgsPointLoadStatusItem::IsEqual(CEAFStatusItem* pOther)
 {
    pgsPointLoadStatusItem* other = dynamic_cast<pgsPointLoadStatusItem*>(pOther);
    if ( !other )
@@ -146,18 +146,18 @@ bool pgsPointLoadStatusItem::IsEqual(pgsStatusItem* pOther)
 
 ///////////////////////////////
 
-pgsPointLoadStatusCallback::pgsPointLoadStatusCallback(IBroker* pBroker,pgsTypes::StatusSeverityType severity):
+pgsPointLoadStatusCallback::pgsPointLoadStatusCallback(IBroker* pBroker,eafTypes::StatusSeverityType severity):
 m_pBroker(pBroker),
 m_Severity(severity)
 {
 }
 
-pgsTypes::StatusSeverityType pgsPointLoadStatusCallback::GetSeverity()
+eafTypes::StatusSeverityType pgsPointLoadStatusCallback::GetSeverity()
 {
    return m_Severity;
 }
 
-void pgsPointLoadStatusCallback::Execute(pgsStatusItem* pStatusItem)
+void pgsPointLoadStatusCallback::Execute(CEAFStatusItem* pStatusItem)
 {
    pgsPointLoadStatusItem* pItem = dynamic_cast<pgsPointLoadStatusItem*>(pStatusItem);
    ATLASSERT(pItem!=NULL);
@@ -193,12 +193,12 @@ void pgsPointLoadStatusCallback::Execute(pgsStatusItem* pStatusItem)
 
 //////////////////////////////////////////////////////////
 
-pgsDistributedLoadStatusItem::pgsDistributedLoadStatusItem(Uint32 value,AgentIDType agentID,StatusCallbackIDType callbackID,const char* strDescription) :
-pgsStatusItem(agentID,callbackID,strDescription), m_LoadIndex(value)
+pgsDistributedLoadStatusItem::pgsDistributedLoadStatusItem(Uint32 value,StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,const char* strDescription) :
+CEAFStatusItem(statusGroupID,callbackID,strDescription), m_LoadIndex(value)
 {
 }
 
-bool pgsDistributedLoadStatusItem::IsEqual(pgsStatusItem* pOther)
+bool pgsDistributedLoadStatusItem::IsEqual(CEAFStatusItem* pOther)
 {
    pgsDistributedLoadStatusItem* other = dynamic_cast<pgsDistributedLoadStatusItem*>(pOther);
    if ( !other )
@@ -209,18 +209,18 @@ bool pgsDistributedLoadStatusItem::IsEqual(pgsStatusItem* pOther)
 
 //////////////////////////////////////////////////////////
 
-pgsDistributedLoadStatusCallback::pgsDistributedLoadStatusCallback(IBroker* pBroker,pgsTypes::StatusSeverityType severity):
+pgsDistributedLoadStatusCallback::pgsDistributedLoadStatusCallback(IBroker* pBroker,eafTypes::StatusSeverityType severity):
 m_pBroker(pBroker),
 m_Severity(severity)
 {
 }
 
-pgsTypes::StatusSeverityType pgsDistributedLoadStatusCallback::GetSeverity()
+eafTypes::StatusSeverityType pgsDistributedLoadStatusCallback::GetSeverity()
 {
    return m_Severity;
 }
 
-void pgsDistributedLoadStatusCallback::Execute(pgsStatusItem* pStatusItem)
+void pgsDistributedLoadStatusCallback::Execute(CEAFStatusItem* pStatusItem)
 {
    pgsDistributedLoadStatusItem* pItem = dynamic_cast<pgsDistributedLoadStatusItem*>(pStatusItem);
    ATLASSERT(pItem!=NULL);
@@ -256,12 +256,12 @@ void pgsDistributedLoadStatusCallback::Execute(pgsStatusItem* pStatusItem)
 
 //////////////////////////////////////////////
 
-pgsMomentLoadStatusItem::pgsMomentLoadStatusItem(Uint32 value,AgentIDType agentID,StatusCallbackIDType callbackID,const char* strDescription) :
-pgsStatusItem(agentID,callbackID,strDescription), m_LoadIndex(value)
+pgsMomentLoadStatusItem::pgsMomentLoadStatusItem(Uint32 value,StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,const char* strDescription) :
+CEAFStatusItem(statusGroupID,callbackID,strDescription), m_LoadIndex(value)
 {
 }
 
-bool pgsMomentLoadStatusItem::IsEqual(pgsStatusItem* pOther)
+bool pgsMomentLoadStatusItem::IsEqual(CEAFStatusItem* pOther)
 {
    pgsMomentLoadStatusItem* other = dynamic_cast<pgsMomentLoadStatusItem*>(pOther);
    if ( !other )
@@ -271,18 +271,18 @@ bool pgsMomentLoadStatusItem::IsEqual(pgsStatusItem* pOther)
 }
 ///////////////////////////
 
-pgsMomentLoadStatusCallback::pgsMomentLoadStatusCallback(IBroker* pBroker,pgsTypes::StatusSeverityType severity):
+pgsMomentLoadStatusCallback::pgsMomentLoadStatusCallback(IBroker* pBroker,eafTypes::StatusSeverityType severity):
 m_pBroker(pBroker),
 m_Severity(severity)
 {
 }
 
-pgsTypes::StatusSeverityType pgsMomentLoadStatusCallback::GetSeverity()
+eafTypes::StatusSeverityType pgsMomentLoadStatusCallback::GetSeverity()
 {
    return m_Severity;
 }
 
-void pgsMomentLoadStatusCallback::Execute(pgsStatusItem* pStatusItem)
+void pgsMomentLoadStatusCallback::Execute(CEAFStatusItem* pStatusItem)
 {
    pgsMomentLoadStatusItem* pItem = dynamic_cast<pgsMomentLoadStatusItem*>(pStatusItem);
    ATLASSERT(pItem!=NULL);

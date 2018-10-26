@@ -48,6 +48,8 @@
 #include <IFace\UpdateTemplates.h>
 #include <IFace\AnalysisResults.h>
 #include <IFace\Bridge.h>
+#include <IFace\Transactions.h>
+#include <IFace\DisplayUnits.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

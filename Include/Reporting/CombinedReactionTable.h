@@ -72,11 +72,14 @@ public:
    // GROUP: OPERATIONS
 
    //------------------------------------------------------------------------
-   // Builds the strand eccentricity table.
+   // Builds the combined results table
+   // bDesign and bRating are only considered from stage = pgsTypes::BridgeSite3
    virtual void Build(IBroker* pBroker, rptChapter* pChapter,
                       SpanIndexType span,GirderIndexType girder,
                       IDisplayUnits* pDisplayUnits,
-                      pgsTypes::Stage stage, pgsTypes::AnalysisType analysisType) const;
+                      pgsTypes::Stage stage,pgsTypes::AnalysisType analysisType,
+                      bool bDesign=true,bool bRating=true) const;
+
    // GROUP: ACCESS
    // GROUP: INQUIRY
 

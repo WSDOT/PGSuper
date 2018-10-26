@@ -26,8 +26,8 @@
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
-//#undef THIS_FILE
-//static char THIS_FILE[] = __FILE__;
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
 #endif
 
 /****************************************************************************
@@ -141,6 +141,11 @@ void CStructuredSave::Property(const char* name, bool value)
    var.vt = VT_BOOL;
    var.boolVal = (value == true ? VARIANT_TRUE : VARIANT_FALSE );
    m_pStrSave->put_Property( name, var );
+}
+
+void CStructuredSave::PutUnit(const char* xml)
+{
+   m_pStrSave->SaveRawUnit(xml);
 }
 
 //======================== OPERATIONS =======================================

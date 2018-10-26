@@ -46,11 +46,13 @@
 #include <IFace\StatusCenter.h>
 #include <IFace\DisplayUnits.h>
 #include <IFace\EditByUI.h>
+#include <IFace\RatingSpecification.h>
 
 #include <WBFLCore_i.c>
 #include <WBFLGeometry_i.c>
 #include <WBFLFem2d_i.c>
 #include <WBFLRCCapacity_i.c> 
+#include <WBFLSections_i.c> 
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

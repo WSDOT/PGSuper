@@ -28,7 +28,9 @@
 #endif // _MSC_VER > 1000
 // GMDisplayMgrEventsImpl.h : header file
 //
-#include <DManip\DisplayMgrEvents.h>
+#include <DManip\DManip.h>
+#include "PGSuperDoc.h"
+#include "GirderModelChildFrame.h"
 
 class CPGSuperDoc;
 

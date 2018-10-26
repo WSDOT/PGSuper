@@ -1,6 +1,7 @@
 IDH_BRIDGE_VIEW=User's Guide\Bridge_Model_Editing\Understanding_the_Bridge_View.htm
 IDH_SPEC_CREEP=User's Guide\Appendix B - PGSuper Library Dialogs\Creep_Tab.htm
 IDH_CONCRETE_ENTRY_DIALOG=User's Guide\Appendix B - PGSuper Library Dialogs\PsglibConcrete_Entry_Dialog.htm
+IDH_CONCRETE_DETAILS=User's Guide\Appendix B - PGSuper Library Dialogs\PsglibConcrete_Entry_Dialog.htm
 IDH_DIALOG_DESIGNCRITERIA=Dialogs\Design_Criteria.htm
 IDH_REPORT_VIEW=User's Guide\Analysis_Results\Report_View.htm
 IDH_GIRDER_VIEW=User's Guide\Girder_Editing\Understanding_the_Girder_View.htm
@@ -94,3 +95,19 @@ IDH_STRUCTURAL_ANALYSIS=Dialogs\Structural_Analysis_Method_Dialog.htm
 
 IDH_DIALOG_ENVIRONMENT=Dialogs\Environment.htm
 IDH_GIRDER_CONNECTION_ERROR=User's Guide\StatusCenter\GirderConnectionError.htm
+
+IDH_GENERATE_STRANTS=User's Guide\Appendix B - PGSuper Library Dialogs\GenerateStrands.htm
+
+IDH_RATING_GENERAL_TAB=Dialogs\Rating_Options_(General).htm
+IDH_RATING_DESIGN_TAB=Dialogs\Rating_Options_(Design).htm
+IDH_RATING_LEGAL_TAB=Dialogs\Rating_Options_(Legal).htm
+IDH_RATING_PERMIT_TAB=Dialogs\Rating_Options_(Permit).htm
+
+IDH_PLUGINS=Dialogs\Plugins_and_Extensions.htm
+
+
+IDH_LOAD_RATING_CRITERIA=User's Guide\Appendix B - PGSuper Library Dialogs\Load_Rating_Criteria.htm
+IDH_LIVE_LOAD_FACTORS=User's Guide\Appendix B - PGSuper Library Dialogs\Live_Load_Factors.htm
+
+IDH_DECK_CONDITION=Bridge Description\Condition_and_Rating.htm
+IDH_GIRDER_CONDITION=Girder Editing Wizard\Condition_and_Rating_(Girder).htm

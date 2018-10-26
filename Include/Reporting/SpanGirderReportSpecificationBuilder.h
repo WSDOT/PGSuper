@@ -48,3 +48,14 @@ public:
    virtual boost::shared_ptr<CReportSpecification> CreateReportSpec(const CReportDescription& rptDesc,boost::shared_ptr<CReportSpecification>& pRptSpec);
    virtual boost::shared_ptr<CReportSpecification> CreateDefaultReportSpec(const CReportDescription& rptDesc);
 };
+
+class REPORTINGCLASS CGirderReportSpecificationBuilder :
+   public CBrokerReportSpecificationBuilder
+{
+public:
+   CGirderReportSpecificationBuilder(IBroker* pBroker);
+   ~CGirderReportSpecificationBuilder(void);
+
+   virtual boost::shared_ptr<CReportSpecification> CreateReportSpec(const CReportDescription& rptDesc,boost::shared_ptr<CReportSpecification>& pRptSpec);
+   virtual boost::shared_ptr<CReportSpecification> CreateDefaultReportSpec(const CReportDescription& rptDesc);
+};

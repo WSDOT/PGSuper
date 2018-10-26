@@ -26,8 +26,8 @@
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
-//#undef THIS_FILE
-//static char THIS_FILE[] = __FILE__;
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
 #endif
 
 /****************************************************************************
@@ -162,6 +162,15 @@ bool CStructuredLoad::Eof()const
 std::string CStructuredLoad::GetStateDump() const
 {
    std::string str("State data not available");
+   return str;
+}
+
+std::string CStructuredLoad::GetUnit() const
+{
+   USES_CONVERSION;
+   CComBSTR bstrUnit;
+   m_pStrLoad->LoadRawUnit(&bstrUnit);
+   std::string str(OLE2A(bstrUnit));
    return str;
 }
 

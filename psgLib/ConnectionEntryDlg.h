@@ -28,10 +28,6 @@
 #endif // _MSC_VER >= 1000
 // ConnectionEntryDlg.h : header file
 //
-#if !defined INCLUDED_LIBRARYFW_UNITSMODE_H_
-#include <LibraryFw\UnitsMode.h>
-#endif
-
 #if !defined INCLUDED_PSGLIB_CONNECTIONLIBRARYENTRY_H_
 #include <psgLib\ConnectionLibraryEntry.h>
 #endif
@@ -47,7 +43,7 @@ class CConnectionEntryDlg : public CDialog
 {
 // Construction
 public:
-	CConnectionEntryDlg(libUnitsMode::Mode mode, bool allowEditing, CWnd* pParent = NULL);   // standard constructor
+	CConnectionEntryDlg(bool allowEditing, CWnd* pParent = NULL);   // standard constructor
 
 // Dialog Data
 	//{{AFX_DATA(CConnectionEntryDlg)
@@ -64,7 +60,6 @@ public:
    ConnectionLibraryEntry::BearingOffsetMeasurementType m_BearingOffsetMeasurementType;
    Float64 m_DiaphragmLoadLocation;
 
-   libUnitsMode::Mode m_Mode;
    bool m_AllowEditing;
 
 // Overrides

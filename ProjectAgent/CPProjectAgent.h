@@ -21,7 +21,7 @@
 ///////////////////////////////////////////////////////////////////////
 
 #define EVT_PROJECTPROPERTIES 0x0001
-#define EVT_UNITS             0x0002
+//#define EVT_UNITS             0x0002
 #define EVT_EXPOSURECONDITION 0x0004
 #define EVT_RELHUMIDITY       0x0008
 #define EVT_BRIDGE            0x0010
@@ -32,6 +32,7 @@
 #define EVT_LIVELOAD          0x0200
 #define EVT_LIVELOADNAME      0x0400
 #define EVT_ANALYSISTYPE      0x0800
+#define EVT_RATING_SPECIFICATION 0x1000
 
 
 //////////////////////////////////////////////////////////////////////////////
@@ -69,44 +70,6 @@ public:
 		return ret;
 	}
 };
-
-//////////////////////////////////////////////////////////////////////////////
-// CProxyIProjectSettingsEventSink
-template <class T>
-class CProxyIProjectSettingsEventSink : public IConnectionPointImpl<T, &IID_IProjectSettingsEventSink, CComDynamicUnkArray>
-{
-public:
-
-//IProjectSettingsEventSink : IUnknown
-public:
-	HRESULT Fire_UnitsChanged(
-		long units)
-	{
-		T* pT = (T*)this;
-
-      if ( pT->m_bHoldingEvents )
-      {
-         sysFlags<Uint32>::Set(&pT->m_PendingEvents,EVT_UNITS);
-         return S_OK;
-      }
-
-      pT->Lock();
-		HRESULT ret;
-		IUnknown** pp = m_vec.begin();
-		while (pp < m_vec.end())
-		{
-			if (*pp != NULL)
-			{
-				IProjectSettingsEventSink* pIProjectSettingsEventSink = reinterpret_cast<IProjectSettingsEventSink*>(*pp);
-				ret = pIProjectSettingsEventSink->OnUnitsChanged(units);
-			}
-			pp++;
-		}
-		pT->Unlock();
-		return ret;
-	}
-};
-
 
 //////////////////////////////////////////////////////////////////////////////
 // CProxyIEnvironmentEventSink
@@ -362,7 +325,7 @@ public:
 		return ret;
 	}
 
-	HRESULT Fire_AnalysisTypeChanged()
+   HRESULT Fire_AnalysisTypeChanged()
 	{
 		T* pT = (T*)this;
 
@@ -381,6 +344,47 @@ public:
 			{
 				ISpecificationEventSink* pISpecificationEventSink = reinterpret_cast<ISpecificationEventSink*>(*pp);
 				ret = pISpecificationEventSink->OnAnalysisTypeChanged();
+			}
+			pp++;
+		}
+		pT->Unlock();
+		return ret;
+	}
+};
+
+
+//////////////////////////////////////////////////////////////////////////////
+// CProxyIRatingSpecificationEventSink
+template <class T>
+class CProxyIRatingSpecificationEventSink : public IConnectionPointImpl<T, &IID_IRatingSpecificationEventSink, CComDynamicUnkArray>
+{
+public:
+
+//IRatingSpecificationEventSink : IUnknown
+public:
+
+	HRESULT Fire_RatingSpecificationChanged()
+	{
+		T* pT = (T*)this;
+
+      if ( pT->m_bHoldingEvents )
+      {
+         sysFlags<Uint32>::Set(&pT->m_PendingEvents,EVT_RATING_SPECIFICATION);
+         return S_OK;
+      }
+
+      if ( pT->m_bHoldingEvents )
+         return S_OK;
+
+		pT->Lock();
+		HRESULT ret;
+		IUnknown** pp = m_vec.begin();
+		while (pp < m_vec.end())
+		{
+			if (*pp != NULL)
+			{
+				IRatingSpecificationEventSink* pEventSink = reinterpret_cast<IRatingSpecificationEventSink*>(*pp);
+				ret = pEventSink->OnRatingSpecificationChanged();
 			}
 			pp++;
 		}

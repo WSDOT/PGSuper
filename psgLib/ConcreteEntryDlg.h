@@ -29,10 +29,6 @@
 // ConcreteEntryDlg.h : header file
 //
 
-#if !defined INCLUDED_LIBRARYFW_UNITSMODE_H_
-#include <LibraryFw\UnitsMode.h>
-#endif
-
 /////////////////////////////////////////////////////////////////////////////
 // CConcreteEntryDlg dialog
 
@@ -40,7 +36,7 @@ class CConcreteEntryDlg : public CDialog
 {
 // Construction
 public:
-	CConcreteEntryDlg(libUnitsMode::Mode mode, bool allowEditing, CWnd* pParent = NULL);   // standard constructor
+	CConcreteEntryDlg(bool allowEditing, CWnd* pParent = NULL);   // standard constructor
 
 // Dialog Data
 	//{{AFX_DATA(CConcreteEntryDlg)
@@ -54,7 +50,6 @@ public:
    double m_Dw;
    double m_AggSize;
    double m_K1;
-   libUnitsMode::Mode m_Mode;
    bool m_AllowEditing;
 
    CString m_InitialEc;

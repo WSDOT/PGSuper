@@ -336,7 +336,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\StatusItems.cpp"
+				RelativePath=".\PGSuperLoadCombinationResponse.cpp"
 				>
 			</File>
 			<File
@@ -377,15 +377,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\Include\IFace\AnalysisResults.h"
+				RelativePath=".\PGSuperLoadCombinationResponse.h"
 				>
 			</File>
 			<File
 				RelativePath="Resource.h"
-				>
-			</File>
-			<File
-				RelativePath=".\StatusItems.h"
 				>
 			</File>
 			<File
@@ -399,6 +395,26 @@
 			>
 			<File
 				RelativePath="AnalysisAgent.rgs"
+				>
+			</File>
+		</Filter>
+		<Filter
+			Name="IFace"
+			>
+			<File
+				RelativePath="..\Include\IFace\AnalysisResults.h"
+				>
+			</File>
+		</Filter>
+		<Filter
+			Name="Status Items"
+			>
+			<File
+				RelativePath=".\StatusItems.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\StatusItems.h"
 				>
 			</File>
 		</Filter>

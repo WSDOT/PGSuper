@@ -37,7 +37,7 @@
 class ATL_NO_VTABLE CTxDOTCadExporter :
 	public CComObjectRootEx<CComSingleThreadModel>,
 	public CComCoClass<CTxDOTCadExporter, &CLSID_TxDOTCadExporter>,
-	public IPGSuperExporter
+	public IPGSuperDataExporter
 {
 public:
 	CTxDOTCadExporter()
@@ -49,7 +49,7 @@ DECLARE_REGISTRY_RESOURCEID(IDR_TXDOTCADEXPORTER)
 DECLARE_NOT_AGGREGATABLE(CTxDOTCadExporter)
 
 BEGIN_COM_MAP(CTxDOTCadExporter)
-	COM_INTERFACE_ENTRY(IPGSuperExporter)
+	COM_INTERFACE_ENTRY(IPGSuperDataExporter)
 END_COM_MAP()
 
 
@@ -65,8 +65,9 @@ END_COM_MAP()
 	{
 	}
 
-// IPGSuperImporter
+// IPGSuperDataImporter
 public:
+   STDMETHOD(GetName)(/*[out,retval]*/BSTR*  bstrText);
    STDMETHOD(GetMenuText)(/*[out,retval]*/BSTR*  bstrText);
    STDMETHOD(GetBitmapHandle)(/*[out]*/HBITMAP* phBmp);
    STDMETHOD(Export)(/*[in]*/IBroker* pBroker);

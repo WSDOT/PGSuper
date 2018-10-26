@@ -208,6 +208,18 @@
 				>
 			</File>
 			<File
+				RelativePath=".\BridgeAnalysisReportDlg.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\BridgeAnalysisReportSpecification.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\BridgeAnalysisReportSpecificationBuilder.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\BridgeDescChapterBuilder.cpp"
 				>
 			</File>
@@ -277,6 +289,10 @@
 			</File>
 			<File
 				RelativePath=".\ContinuityCheck.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\CrackedSectionDetailsChapterBuilder.cpp"
 				>
 			</File>
 			<File
@@ -397,6 +413,18 @@
 				>
 			</File>
 			<File
+				RelativePath=".\LoadRatingChapterBuilder.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\LoadRatingDetailsChapterBuilder.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\LoadRatingReportSpecificationBuilder.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\LongRebarLocations.cpp"
 				>
 			</File>
@@ -482,6 +510,10 @@
 			</File>
 			<File
 				RelativePath=".\ProjectCriteriaChapterBuilder.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\RatingSummaryTable.cpp"
 				>
 			</File>
 			<File
@@ -655,6 +687,18 @@
 				>
 			</File>
 			<File
+				RelativePath="..\Include\Reporting\BridgeAnalysisReportDlg.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Include\Reporting\BridgeAnalysisReportSpecification.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Include\Reporting\BridgeAnalysisReportSpecificationBuilder.h"
+				>
+			</File>
+			<File
 				RelativePath="..\Include\Reporting\BridgeDescChapterBuilder.h"
 				>
 			</File>
@@ -738,6 +782,10 @@
 			</File>
 			<File
 				RelativePath="..\Include\Reporting\ContinuityCheck.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Include\Reporting\CrackedSectionDetailsChapterBuilder.h"
 				>
 			</File>
 			<File
@@ -857,6 +905,18 @@
 				>
 			</File>
 			<File
+				RelativePath="..\Include\Reporting\LoadRatingChapterBuilder.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Include\Reporting\LoadRatingDetailsChapterBuilder.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Include\Reporting\LoadRatingReportSpecificationBuilder.h"
+				>
+			</File>
+			<File
 				RelativePath="..\Include\Reporting\LongRebarLocations.h"
 				>
 			</File>
@@ -942,6 +1002,10 @@
 			</File>
 			<File
 				RelativePath="..\Include\Reporting\ProjectCriteriaChapterBuilder.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Include\Reporting\RatingSummaryTable.h"
 				>
 			</File>
 			<File

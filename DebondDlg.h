@@ -49,7 +49,7 @@ public:
 
 // Dialog Data
 	//{{AFX_DATA(CGirderDescDebondPage)
-	enum { IDD = IDD_DEBOND };
+	enum { IDD = IDD_GIRDERDESC_DEBOND };
 	BOOL	m_bSymmetricDebond;
 	//}}AFX_DATA
 

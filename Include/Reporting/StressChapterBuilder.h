@@ -50,7 +50,7 @@ class REPORTINGCLASS CStressChapterBuilder : public CPGSuperChapterBuilder
 {
 public:
    // GROUP: LIFECYCLE
-   CStressChapterBuilder();
+   CStressChapterBuilder(bool bDesign,bool bRating);
 
    // GROUP: OPERATORS
    // GROUP: OPERATIONS
@@ -83,6 +83,9 @@ private:
    // Prevent accidental copying and assignment
    CStressChapterBuilder(const CStressChapterBuilder&);
    CStressChapterBuilder& operator=(const CStressChapterBuilder&);
+
+   bool m_bDesign;
+   bool m_bRating;
 
    // GROUP: OPERATORS
    // GROUP: OPERATIONS

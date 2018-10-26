@@ -22,7 +22,7 @@
 
 #include "StdAfx.h"
 #include "EditLLDF.h"
-#include "PGSuper.h"
+#include "PGSuperDoc.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -80,7 +80,7 @@ bool txnEditLLDF::IsRepeatable()
 void txnEditLLDF::DoExecute(int i)
 {
    CComPtr<IBroker> pBroker;
-   AfxGetBroker(&pBroker);
+   EAFGetBroker(&pBroker);
 
    GET_IFACE2(pBroker,IEvents, pEvents);
    pEvents->HoldEvents(); // don't fire any changed events until all changes are done

@@ -118,7 +118,7 @@ void CHorizontalAlignmentGrid::InitRowData(ROWCOL row)
 
    CHorizontalAlignmentPage* pParent = (CHorizontalAlignmentPage*)GetParent();
    GET_IFACE2(pParent->GetBroker(),IDisplayUnits,pDisplayUnits);
-   UnitModeType unit_mode = (UnitModeType)(pDisplayUnits->GetUnitDisplayMode());
+   UnitModeType unit_mode = (UnitModeType)(pDisplayUnits->GetUnitMode());
 
    SetValueRange(CGXRange(row,1),unit_mode == umUS ? "0+00" : "0+000");
    SetValueRange(CGXRange(row,2),"N 90 E");
@@ -272,7 +272,7 @@ void CHorizontalAlignmentGrid::SetRowData(ROWCOL nRow,HorzCurveData& data)
    CHorizontalAlignmentPage* pParent = (CHorizontalAlignmentPage*)GetParent();
 
    GET_IFACE2(pParent->GetBroker(),IDisplayUnits,pDisplayUnits);
-   UnitModeType unit_mode = (UnitModeType)(pDisplayUnits->GetUnitDisplayMode());
+   UnitModeType unit_mode = (UnitModeType)(pDisplayUnits->GetUnitMode());
 
    double station = data.PIStation;
    station = ::ConvertFromSysUnits(station,pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure);
@@ -318,7 +318,7 @@ bool CHorizontalAlignmentGrid::GetRowData(ROWCOL nRow,double* pStation,double* p
    CHorizontalAlignmentPage* pParent = (CHorizontalAlignmentPage*)GetParent();
 
    GET_IFACE2(pParent->GetBroker(),IDisplayUnits,pDisplayUnits);
-   UnitModeType unit_mode = (UnitModeType)(pDisplayUnits->GetUnitDisplayMode());
+   UnitModeType unit_mode = (UnitModeType)(pDisplayUnits->GetUnitMode());
 
    CString strStation = GetCellValue(nRow,1);
    CComPtr<IStation> station;

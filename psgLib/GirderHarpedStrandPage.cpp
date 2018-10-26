@@ -31,8 +31,8 @@
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
-//#undef THIS_FILE
-//static char THIS_FILE[] = __FILE__;
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
 #endif
 
 /////////////////////////////////////////////////////////////////////////////
@@ -84,6 +84,7 @@ BEGIN_MESSAGE_MAP(CGirderHarpedStrandPage, CPropertyPage)
 	ON_MESSAGE(WM_COMMANDHELP, OnCommandHelp)
 
    ON_BN_CLICKED(IDC_REVERSE_HARPED_STRAND_ORDER,OnReverseHarpedStrandOrder)
+   ON_BN_CLICKED(IDC_GENERATE,OnGenerateStrandPositions)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -159,20 +160,6 @@ void CGirderHarpedStrandPage::OnClickHarpedBox()
    CWnd* pw = (CWnd*)GetDlgItem(IDC_STATIC_END);
    ASSERT(pw);
    pw->EnableWindow( DoUseHarpedGrid() ? TRUE : FALSE);
-}
-
-CString CGirderHarpedStrandPage::GetLengthUnitString()
-{
-   CGirderMainSheet* ppar = (CGirderMainSheet*) GetParent();
-   ASSERT(ppar);
-   return ppar->GetShortLengthUnitString();
-}
-
-unitLength CGirderHarpedStrandPage::GetLengthUnit()
-{
-   CGirderMainSheet* ppar = (CGirderMainSheet*) GetParent();
-   ASSERT(ppar);
-   return ppar->GetShortLengthUnit();
 }
 
 bool CGirderHarpedStrandPage::DoUseHarpedGrid()
@@ -312,4 +299,9 @@ void CGirderHarpedStrandPage::UpdateStrandStatus(Uint16 ns, Uint16 ndb, Uint16 n
 void CGirderHarpedStrandPage::OnReverseHarpedStrandOrder()
 {
    m_MainGrid.ReverseHarpedStrandOrder();
+}
+
+void CGirderHarpedStrandPage::OnGenerateStrandPositions()
+{
+   m_MainGrid.GenerateStrandPositions();
 }

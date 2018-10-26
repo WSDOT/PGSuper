@@ -28,7 +28,7 @@
 #endif // _MSC_VER >= 1000
 // AnalysisResultsView.h : header file
 //
-#include "AutoCalcView.h"
+#include <EAF\EAFAutoCalcView.h>
 
 #if !defined INCLUDED_GRAPHICSLIB_GRAPHXY_H_
 #include <GraphicsLib\GraphXY.h>
@@ -43,7 +43,8 @@ class arvPhysicalConverter;
 /////////////////////////////////////////////////////////////////////////////
 // CAnalysisResultsView view
 
-class CAnalysisResultsView : public CAutoCalcView
+class CAnalysisResultsView : public CView,
+                             public CEAFAutoCalcViewMixin
 {
 protected:
 	CAnalysisResultsView();           // protected constructor used by dynamic creation
@@ -65,6 +66,7 @@ public:
 	protected:
 	virtual void OnDraw(CDC* pDC);      // overridden to draw this view
 	virtual void OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint);
+   virtual void OnInitialUpdate();
 	virtual void OnBeginPrinting(CDC* pDC, CPrintInfo* pInfo);
 	virtual void OnEndPrinting(CDC* pDC, CPrintInfo* pInfo);
 	virtual BOOL OnPreparePrinting(CPrintInfo* pInfo);

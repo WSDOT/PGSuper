@@ -24,7 +24,8 @@
 //
 
 #include "stdafx.h"
-#include "pgsuper.h"
+#include "resource.h"
+#include "PGSuperDoc.h"
 #include "PGSuperUnits.h"
 #include "PierLayoutPage.h"
 #include "PierDetailsDlg.h"
@@ -68,7 +69,7 @@ void CPierLayoutPage::DoDataExchange(CDataExchange* pDX)
 	//}}AFX_DATA_MAP
 
    CComPtr<IBroker> pBroker;
-   AfxGetBroker(&pBroker);
+   EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
 
    CPierDetailsDlg* pParent = (CPierDetailsDlg*)GetParent();
@@ -132,11 +133,11 @@ BOOL CPierLayoutPage::OnInitDialog()
    GetDlgItem(IDC_PIER_LABEL)->SetWindowText(strPierLabel);
 	
    CComPtr<IBroker> pBroker;
-   AfxGetBroker(&pBroker);
+   EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
    
    CString fmt;
-   fmt.LoadString(( pDisplayUnits->GetUnitDisplayMode() == pgsTypes::umSI ? IDS_DLG_STATIONFMT_SI : IDS_DLG_STATIONFMT_US ));
+   fmt.LoadString( IS_SI_UNITS(pDisplayUnits) ? IDS_DLG_STATIONFMT_SI : IDS_DLG_STATIONFMT_US );
    GetDlgItem(IDC_STATION_FORMAT)->SetWindowText( fmt );
 
    fmt.LoadString( IDS_DLG_ORIENTATIONFMT );
@@ -183,7 +184,7 @@ void CPierLayoutPage::UpdateMoveOptionList()
    CDataExchange dx(this,TRUE);
 
    CComPtr<IBroker> pBroker;
-   AfxGetBroker(&pBroker);
+   EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
 
    // read the current value of the station edit
@@ -244,12 +245,12 @@ void CPierLayoutPage::UpdateMoveOptionList()
       if ( m_nSpans == 1 )
       {
          strOptions[nOptions++].Format("Adjust the length of Span %d by moving %s %d",
-                                       m_PierIdx+1,strName,m_PierIdx+1);
+                                       LABEL_SPAN(m_PierIdx),strName,LABEL_SPAN(m_PierIdx));
       }
       else
       {
          strOptions[nOptions++].Format("Adjust the length of Span %d, retain length of all other spans",
-                                       m_PierIdx+1);
+                                       LABEL_SPAN(m_PierIdx));
       }
    }
    else if ( m_PierIdx == m_nSpans && m_PrevPierStation < toStation )
@@ -259,12 +260,12 @@ void CPierLayoutPage::UpdateMoveOptionList()
       if ( m_nSpans == 1 )
       {
          strOptions[nOptions++].Format("Adjust the length of Span %d by moving %s %d",
-                                       m_PierIdx,strName,m_PierIdx+1);
+                                       LABEL_SPAN(m_PierIdx-1),strName,LABEL_SPAN(m_PierIdx));
       }
       else
       {
          strOptions[nOptions++].Format("Adjust the length of Span %d, retain length of all other spans",
-                                       m_PierIdx);
+                                       LABEL_SPAN(m_PierIdx-1));
       }
    }
    else if ( 0 < m_PierIdx && m_PierIdx < m_nSpans )
@@ -274,7 +275,7 @@ void CPierLayoutPage::UpdateMoveOptionList()
          // adjust length of previous span only
          options[nOptions] = pgsTypes::AdjustPrevSpan;
          strOptions[nOptions++].Format("Adjust the length of Span %d, retain length of all other spans",
-                                       m_PierIdx);
+                                       LABEL_SPAN(m_PierIdx-1));
       }
 
       if ( toStation < m_NextPierStation )
@@ -282,7 +283,7 @@ void CPierLayoutPage::UpdateMoveOptionList()
          // adjust length of next span only
          options[nOptions] = pgsTypes::AdjustNextSpan;
          strOptions[nOptions++].Format("Adjust the length of Span %d, retain length of all other spans",
-                                       m_PierIdx+1);
+                                       LABEL_SPAN(m_PierIdx));
       }
    }
 
