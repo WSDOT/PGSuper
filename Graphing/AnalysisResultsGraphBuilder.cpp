@@ -680,7 +680,7 @@ BOOL CAnalysisResultsGraphBuilder::InitGraphController(CWnd* pParent,UINT nID)
 bool CAnalysisResultsGraphBuilder::UpdateNow()
 {
    GET_IFACE(IProgress,pProgress);
-   CEAFAutoProgress ap(pProgress);
+   CEAFAutoProgress ap(pProgress,0);
 
    pProgress->UpdateMessage(_T("Building Graph"));
 

@@ -18506,56 +18506,28 @@ IntervalIndexType CBridgeAgentImp::GetFirstTendonStressingInterval(const CGirder
 {
    VALIDATE(BRIDGE);
 
-   DuctIndexType nDucts = GetDuctCount(girderKey);
-   if ( nDucts == 0 )
-      return INVALID_INDEX;
-
-   // Convert the actual number of ducts to the number of raw input ducts.
-   // There is one duct per web. If there is multiple webs, such as with U-Beams,
-   // ducts 0 and 1, 2 and 3, 4 and 5, etc. are stressed together. The input for
-   // the pairs of ducts is stored as index = 0 for duct 0 and 1, index = 1 for duct 2 and 3, etc.
-   WebIndexType nWebs = GetWebCount(girderKey);
-   nDucts = nDucts/nWebs;
-
-   GET_IFACE(IBridgeDescription,pIBridgeDesc);
-   EventIndexType ptEventIdx = pIBridgeDesc->GetTimelineManager()->GetEventCount();
-   for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
-   {
-      ptEventIdx = Min(ptEventIdx,pIBridgeDesc->GetStressTendonEventIndex(girderKey,ductIdx));
-   }
-
-   return m_IntervalManager.GetInterval(ptEventIdx);
+   return m_IntervalManager.GetFirstTendonStressingInterval(girderKey);
 }
 
 IntervalIndexType CBridgeAgentImp::GetLastTendonStressingInterval(const CGirderKey& girderKey)
 {
    VALIDATE(BRIDGE);
 
-   DuctIndexType nDucts = GetDuctCount(girderKey);
-   if ( nDucts == 0 )
-      return INVALID_INDEX;
-
-   // Convert the actual number of ducts to the number of raw input ducts.
-   // There is one duct per web. If there is multiple webs, such as with U-Beams,
-   // ducts 0 and 1, 2 and 3, 4 and 5, etc. are stressed together. The input for
-   // the pairs of ducts is stored as index = 0 for duct 0 and 1, index = 1 for duct 2 and 3, etc.
-   WebIndexType nWebs = GetWebCount(girderKey);
-   nDucts = nDucts/nWebs;
-
-   GET_IFACE(IBridgeDescription,pIBridgeDesc);
-   EventIndexType ptEventIdx = 0;
-   for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
-   {
-      ptEventIdx = Max(ptEventIdx,pIBridgeDesc->GetStressTendonEventIndex(girderKey,ductIdx));
-   }
-
-   return m_IntervalManager.GetInterval(ptEventIdx);
+   return m_IntervalManager.GetLastTendonStressingInterval(girderKey);
 }
 
 IntervalIndexType CBridgeAgentImp::GetStressTendonInterval(const CGirderKey& girderKey,DuctIndexType ductIdx)
 {
    VALIDATE(BRIDGE);
    ATLASSERT(ductIdx != INVALID_INDEX);
+
+   // Convert the actual number of ducts to the number of raw input ducts.
+   // There is one duct per web. If there is multiple webs, such as with U-Beams,
+   // ducts 0 and 1, 2 and 3, 4 and 5, etc. are stressed together. The input for
+   // the pairs of ducts is stored as index = 0 for duct 0 and 1, index = 1 for duct 2 and 3, etc.
+   WebIndexType nWebs = GetWebCount(girderKey);
+   ductIdx /= nWebs;
+
    return m_IntervalManager.GetStressTendonInterval(girderKey,ductIdx);
 }
 

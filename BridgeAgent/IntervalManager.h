@@ -99,6 +99,12 @@ public:
    // returns the interval index when a tendon is stressed
    IntervalIndexType GetStressTendonInterval(const CGirderKey& girderKey,DuctIndexType ductIdx) const;
 
+   // returns the interval when the first tendon stressing occurs for the specified girder
+   IntervalIndexType GetFirstTendonStressingInterval(const CGirderKey& girderKey) const;
+
+   // returns the interval when the last tendon stressing occurs for the specified girder
+   IntervalIndexType GetLastTendonStressingInterval(const CGirderKey& girderKey) const;
+
 protected:
    struct CInterval
    {

@@ -608,6 +608,44 @@ IntervalIndexType CIntervalManager::GetStressTendonInterval(const CGirderKey& gi
    return found->second;
 }
 
+IntervalIndexType CIntervalManager::GetFirstTendonStressingInterval(const CGirderKey& girderKey) const
+{
+   std::set<IntervalIndexType> intervals;
+   std::map<CTendonKey,IntervalIndexType>::const_iterator iter(m_StressTendonIntervals.begin());
+   std::map<CTendonKey,IntervalIndexType>::const_iterator end(m_StressTendonIntervals.end());
+   for ( ; iter != end; iter++ )
+   {
+      if ( girderKey == iter->first.m_GirderKey )
+      {
+         intervals.insert(iter->second);
+      }
+   }
+
+   if ( intervals.size() == 0 )
+      return INVALID_INDEX;
+
+   return *intervals.begin();
+}
+
+IntervalIndexType CIntervalManager::GetLastTendonStressingInterval(const CGirderKey& girderKey) const
+{
+   std::set<IntervalIndexType> intervals;
+   std::map<CTendonKey,IntervalIndexType>::const_iterator iter(m_StressTendonIntervals.begin());
+   std::map<CTendonKey,IntervalIndexType>::const_iterator end(m_StressTendonIntervals.end());
+   for ( ; iter != end; iter++ )
+   {
+      if ( girderKey == iter->first.m_GirderKey )
+      {
+         intervals.insert(iter->second);
+      }
+   }
+
+   if ( intervals.size() == 0 )
+      return INVALID_INDEX;
+
+   return *intervals.rbegin();
+}
+
 IntervalIndexType CIntervalManager::GetTemporarySupportRemovalInterval(SupportIDType tsID) const
 {
    std::map<SupportIDType,IntervalIndexType>::const_iterator found(m_TempSupportRemovalIntervals.find(tsID) );
@@ -654,7 +692,7 @@ bool CIntervalManager::CTendonKey::operator<(const CIntervalManager::CTendonKey&
    if ( m_GirderKey < other.m_GirderKey )
       return true;
 
-   if ( m_DuctIdx < other.m_DuctIdx )
+   if ( m_GirderKey == other.m_GirderKey && m_DuctIdx < other.m_DuctIdx )
       return true;
 
    return false;
