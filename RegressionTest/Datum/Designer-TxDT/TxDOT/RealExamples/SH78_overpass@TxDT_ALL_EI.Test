@@ -40,7 +40,7 @@ The Specification Check was Successful
 
  RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Nh   To   Fci    Fc      fcomp   ftens   ultMom  lldf  Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ---- ------ ------  ------- -------- ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 33.17   8  5.00     2     5  Tx40       46   1/2  270 13.17  8.30   8 36.5  5.700  6.100    3.576   -3.878   4818  0.555  0.36 -0.14 -0.01  0.00 -0.16 134.80 379.34   1.00   1.00   1.00
+ 33.17   8  5.00     2     5  Tx40       46   1/2  270 13.17  8.30   8 36.5  5.700  6.100    3.576   -3.878   4818  0.555  0.37 -0.14 -0.01  0.00 -0.16 134.80 379.34   1.00   1.00   1.00
 
 
 The Specification Check was Successful
@@ -64,7 +64,7 @@ The Specification Check was Successful
 
  RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Nh   To   Fci    Fc      fcomp   ftens   ultMom  lldf  Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ---- ------ ------  ------- -------- ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 33.17   8  5.00     3     5  Tx40       48   1/2  270 13.02  8.35   8 36.5  5.900  6.100    3.619   -3.922   4870  0.555  0.37 -0.15 -0.01  0.00 -0.16 143.99 408.33   1.00   1.00   1.00
+ 33.17   8  5.00     3     5  Tx40       48   1/2  270 13.02  8.35   8 36.5  5.900  6.100    3.619   -3.922   4870  0.555  0.38 -0.15 -0.01  0.00 -0.16 143.99 408.33   1.00   1.00   1.00
 
 
 The Specification Check was Successful

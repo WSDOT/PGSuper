@@ -22,7 +22,25 @@
 
 #pragma once
 
+/**********************************************************************
+The LBAM engine uses a single load factor when performing load combinations.
+This works every time except for permit live loads in the Routine/Annual
+permit type. For this case, the load factor is a function of ADTT and
+the weight of the axles on the bridge. Since the live load is a moving
+load analysis, the weight of the axles on the bridge changes as the truck
+moves. This means, for each maximum/minimum value, the load factor could be
+different at each location in the bridge. 
+
+The CPGSuperLoadCombinatResponse is a specialized load combination response
+object that alters the combination by dividing out the "static" live load factor
+and using the live load factor computed based on truck position, ADTT,
+and the weight of the axles on the bridge.
+
+See MBE Table 6A.4.5.4.2a-1 for permit live load factors
+***********************************************************************/
+
 #include <WBFLLBAMLoadCombiner.h>
+#include <WBFLLBAMLiveLoader.h>
 
 interface ILibrary;
 interface IRatingSpecification;
@@ -47,7 +65,7 @@ public:
    {
    }
 
-   void Initialize(ILoadCombinationResponse* pLCResponse,ILBAMModel* pModel,CAnalysisAgentImp* pAnalysisAgent);
+   void Initialize(ILoadCombinationResponse* pLCResponse,ILoadGroupResponse* pLGResponse,ILiveLoadModelResponse* pLLResponse,ILBAMModel* pModel,CAnalysisAgentImp* pAnalysisAgent);
 
    HRESULT FinalConstruct();
    void FinalRelease();
@@ -88,7 +106,10 @@ public:
 
 private:
    CComPtr<ILoadCombinationResponse> m_LCResponseDelegate; // delegate to this object except in the gLL < 0 special case
+   CComPtr<ILiveLoadModelResponse> m_LiveLoadResponse;
+   CComPtr<ILoadGroupResponse> m_LoadGroupResponse;
    CComPtr<ILBAMModel> m_Model;
+   CComPtr<IPOIs> m_POIs;
    CAnalysisAgentImp* m_pAnalysisAgent;
    CComPtr<ILibrary> m_pLibrary;
    CComPtr<IRatingSpecification> m_pRatingSpec;

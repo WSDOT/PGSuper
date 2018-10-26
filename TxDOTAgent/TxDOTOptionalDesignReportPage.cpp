@@ -48,7 +48,7 @@ BEGIN_MESSAGE_MAP(CTxDOTOptionalDesignReportPage, CPropertyPage)
    ON_COMMAND_RANGE(CCS_CMENU_BASE, CCS_CMENU_MAX, OnCmenuSelected)
    ON_CBN_SELCHANGE(IDC_REPORT_COMBO, &CTxDOTOptionalDesignReportPage::OnCbnSelchangeReportCombo)
    ON_WM_CTLCOLOR()
-   ON_WM_HELPINFO()
+   ON_COMMAND(ID_HELP, &CTxDOTOptionalDesignReportPage::OnHelpFinder)
    ON_COMMAND(ID_HELP_FINDER, &CTxDOTOptionalDesignReportPage::OnHelpFinder)
 END_MESSAGE_MAP()
 
@@ -172,7 +172,7 @@ boost::shared_ptr<CReportSpecification> CTxDOTOptionalDesignReportPage::CreateSe
    ASSERT(curidx==0 || curidx==1);
 
    // Two choices here
-   const char* spec_name = curidx==0 ? "TxDOT Optional Girder Analysis (TOGA) - Short Form" : "TxDOT Optional Girder Analysis (TOGA) - Long Form";
+   const char* spec_name = curidx==0 ? "TxDOT Optional Girder Analysis (TOGA) - Short Report" : "TxDOT Optional Girder Analysis (TOGA) - Long Report";
 
    // Get our report description
    CReportDescription rptDesc = pReportMgr->GetReportDescription(spec_name);
@@ -351,16 +351,10 @@ void CTxDOTOptionalDesignReportPage::AssertValid() const
    __super::AssertValid();
 }
 
-BOOL CTxDOTOptionalDesignReportPage::OnHelpInfo(HELPINFO* pHelpInfo)
-{
-   CWinApp* papp = AfxGetApp();
-   ::HtmlHelp( *this, papp->m_pszHelpFilePath, HH_HELP_CONTEXT, IDH_REPORT_TAB );
-
-   return TRUE;
-}
 
 void CTxDOTOptionalDesignReportPage::OnHelpFinder()
 {
-   CWinApp* papp = AfxGetApp();
-   ::HtmlHelp( *this, papp->m_pszHelpFilePath, HH_HELP_CONTEXT, IDH_REPORT_TAB );
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+   CWinApp* pApp = AfxGetApp();
+   ::HtmlHelp( *this, pApp->m_pszHelpFilePath, HH_HELP_CONTEXT, IDH_REPORT_TAB );
 }

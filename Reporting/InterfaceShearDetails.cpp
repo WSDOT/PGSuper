@@ -340,12 +340,12 @@ void CInterfaceShearDetails::Build( IBroker* pBroker, rptChapter* pChapter,
    // Next, fill table for min Avf
    pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pChapter << pPara;
-   *pPara << "Details for Minimum Horizontal Interface Shear Steel"<<rptNewLine;
+   *pPara << "Details for Minimum Horizontal Interface Shear Reinforcement [5.8.4.4]"<<rptNewLine;
 
    pPara = new rptParagraph();
    *pChapter << pPara;
 
-   bool is_roughened = pBridge->AreGirderTopFlangesRoughened();
+   bool is_roughened = pBridge->AreGirderTopFlangesRoughened(span,girder);
    Float64 llss = lrfdConcreteUtil::LowerLimitOfShearStrength(is_roughened);
    if ( 0 < llss )
    {

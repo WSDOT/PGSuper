@@ -143,7 +143,7 @@ rptChapter* CCreepCoefficientChapterBuilder::Build_CIP_TempStrands(CReportSpecif
    CREEPCOEFFICIENTDETAILS details;
 
 #if defined IGNORE_2007_CHANGES
-   if ( lrfdVersionMgr::FourthEdition2007 <= pSpecEntry->GetSpecificationType() )
+   if ( lrfdVersionMgr::FourthEdition2007 == pSpecEntry->GetSpecificationType() )
    {
       pPara = new rptParagraph();
       *pChapter << pPara;
@@ -361,7 +361,7 @@ rptChapter* CCreepCoefficientChapterBuilder::Build_CIP(CReportSpecification* pRp
    CREEPCOEFFICIENTDETAILS details;
 
 #if defined IGNORE_2007_CHANGES
-   if ( lrfdVersionMgr::FourthEdition2007 <= pSpecEntry->GetSpecificationType() )
+   if ( lrfdVersionMgr::FourthEdition2007 == pSpecEntry->GetSpecificationType() )
    {
       pPara = new rptParagraph();
       *pChapter << pPara;
@@ -524,7 +524,7 @@ rptChapter* CCreepCoefficientChapterBuilder::Build_NoDeck_TempStrands(CReportSpe
    CREEPCOEFFICIENTDETAILS details;
 
 #if defined IGNORE_2007_CHANGES
-   if ( lrfdVersionMgr::FourthEdition2007 <= pSpecEntry->GetSpecificationType() )
+   if ( lrfdVersionMgr::FourthEdition2007 == pSpecEntry->GetSpecificationType() )
    {
       pPara = new rptParagraph();
       *pChapter << pPara;

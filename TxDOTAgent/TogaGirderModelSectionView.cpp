@@ -211,25 +211,32 @@ void CTogaGirderModelSectionView::UpdateDisplayObjects()
       return;
 
    // Grab hold of the broker so we can pass it as a parameter
-   CComPtr<IBroker> pBroker = pDoc->GetUpdatedBroker();
+   try
+   {
+      CComPtr<IBroker> pBroker = pDoc->GetUpdatedBroker();
 
-   UINT settings = pDoc->GetGirderEditorSettings();
+      UINT settings = pDoc->GetGirderEditorSettings();
 
-   BuildSectionDisplayObjects(pDoc, pBroker, span, girder, dispMgr);
+      BuildSectionDisplayObjects(pDoc, pBroker, span, girder, dispMgr);
 
-   if ( settings & IDG_SV_SHOW_STRANDS )
-      BuildStrandDisplayObjects(pDoc, pBroker,span, girder, dispMgr);
+      if ( settings & IDG_SV_SHOW_STRANDS )
+         BuildStrandDisplayObjects(pDoc, pBroker,span, girder, dispMgr);
 
-   if ( settings & IDG_SV_SHOW_LONG_REINF )
-      BuildLongReinfDisplayObjects(pDoc, pBroker,span, girder, dispMgr);
+      if ( settings & IDG_SV_SHOW_LONG_REINF )
+         BuildLongReinfDisplayObjects(pDoc, pBroker,span, girder, dispMgr);
 
-   if (settings & IDG_SV_SHOW_PS_CG)
-      BuildCGDisplayObjects(pDoc, pBroker,span, girder, dispMgr);
+      if (settings & IDG_SV_SHOW_PS_CG)
+         BuildCGDisplayObjects(pDoc, pBroker,span, girder, dispMgr);
 
-   if ( settings & IDG_SV_SHOW_DIMENSIONS )
-      BuildDimensionDisplayObjects(pDoc, pBroker,span, girder, dispMgr);
+      if ( settings & IDG_SV_SHOW_DIMENSIONS )
+         BuildDimensionDisplayObjects(pDoc, pBroker,span, girder, dispMgr);
 
-   SetMappingMode(DManip::Isotropic);
+      SetMappingMode(DManip::Isotropic);
+   }
+   catch(...)
+   {
+      // shouldn't matter here - page should present error
+   }
 }
 
 void CTogaGirderModelSectionView::BuildSectionDisplayObjects(CTxDOTOptionalDesignDoc* pDoc,IBroker* pBroker,SpanIndexType span,GirderIndexType girder,iDisplayMgr* pDispMgr)
@@ -244,6 +251,9 @@ void CTogaGirderModelSectionView::BuildSectionDisplayObjects(CTxDOTOptionalDesig
    GET_IFACE2(pBroker,IBridge,pBridge);
    GET_IFACE2(pBroker,ISectProp2,pSectProp);
    GET_IFACE2(pBroker,IGirder,pGirder);
+
+   double top_width = pGirder->GetTopWidth(poi);
+   double bottom_width = pGirder->GetBottomWidth(poi);
 
    CComPtr<iPointDisplayObject> doPnt;
    ::CoCreateInstance(CLSID_PointDisplayObject,NULL,CLSCTX_ALL,IID_iPointDisplayObject,(void**)&doPnt);
@@ -278,8 +288,6 @@ void CTogaGirderModelSectionView::BuildSectionDisplayObjects(CTxDOTOptionalDesig
    CComPtr<IRect2d> box;
    shape->get_BoundingBox(&box);
    CComPtr<IPoint2d> pntTC, pntBC; // top and bottom center
-   double top_width = pGirder->GetTopWidth(poi);
-   double bottom_width = pGirder->GetBottomWidth(poi);
 
    CComPtr<iSocket> socketHT, socketHB, socketTFL, socketTFR, socketBFL, socketBFR, socketBC;
    CComQIPtr<iConnectable> connectable(doPnt);

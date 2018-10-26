@@ -2,7 +2,9 @@
 //
 
 #include "stdafx.h"
+#include "resource.h"
 #include "TxDOTOptionalDesignNonStandardFillDlg.h"
+#include <WBFLGenericBridge.h>
 
 
 // CTxDOTOptionalDesignNonStandardFillDlg dialog
@@ -27,6 +29,31 @@ void CTxDOTOptionalDesignNonStandardFillDlg::Init(CTxDOTOptionalDesignGirderData
    m_pGirderData = pGirderData;
    m_pBrokerRetriever = pBrokerRetriever;
    m_UseDepressed = m_pGirderData->GetUseDepressedStrands();
+
+   // compute ybottom
+   GirderLibrary* pLib = m_pBrokerRetriever->GetGirderLibrary();
+
+   CString girder_name = m_pGirderData->GetGirderEntryName();
+   const GirderLibraryEntry* pGdrEntry = dynamic_cast<const GirderLibraryEntry*>(pLib->GetEntry(girder_name));
+
+   // first need cg location of outer shape - this requires some work
+   CComPtr<IBeamFactory> pFactory;
+   pGdrEntry->GetBeamFactory(&pFactory);
+   GirderLibraryEntry::Dimensions dimensions = pGdrEntry->GetDimensions();
+
+   long DUMMY_AGENT_ID = -1;
+   CComPtr<IGirderSection> gdrSection;
+   pFactory->CreateGirderSection(NULL,DUMMY_AGENT_ID,INVALID_INDEX,INVALID_INDEX,dimensions,&gdrSection);
+
+   CComPtr<IShape>  pShape;
+   gdrSection.QueryInterface(&pShape);
+
+   CComPtr<IShapeProperties> pShapeProps;
+   pShape->get_ShapeProperties(&pShapeProps);
+
+   pShapeProps->get_Ybottom(&m_yBottom);
+
+   m_yBottom = ::ConvertFromSysUnits(m_yBottom,unitMeasure::Inch);
 }
 
 void CTxDOTOptionalDesignNonStandardFillDlg::DoDataExchange(CDataExchange* pDX)
@@ -42,8 +69,9 @@ void CTxDOTOptionalDesignNonStandardFillDlg::DoDataExchange(CDataExchange* pDX)
    const GirderLibraryEntry* pGdrEntry = dynamic_cast<const GirderLibraryEntry*>(pLib->GetEntry(girder_name));
    if (pGdrEntry==NULL)
    {
-      CString msg;
-      msg.Format("The girder with name: \"%s\" does not exist in the master library. Cannot continue",girder_name);
+      CString msg, stmp;
+      stmp.LoadStringA(IDS_GDR_ERROR);
+      msg.Format(stmp,girder_name);
       ::AfxMessageBox(msg);
       return pDX->Fail();
    }
@@ -73,8 +101,12 @@ void CTxDOTOptionalDesignNonStandardFillDlg::DoDataExchange(CDataExchange* pDX)
       // Don't allow exit if cl/end strand no's don't match
       if (m_UseDepressed)
       {
-         StrandIndexType clnos = m_GridAtCL.ComputeNoStrands();
-         StrandIndexType endnos = m_GridAtEnds.ComputeNoStrands();
+         Float64 cg;
+         StrandIndexType clnos;
+         m_GridAtCL.ComputeStrands(&clnos, &cg);
+
+         StrandIndexType endnos;
+         m_GridAtEnds.ComputeStrands(&endnos, &cg);
 
          if (clnos != endnos)
          {
@@ -152,15 +184,25 @@ BOOL CTxDOTOptionalDesignNonStandardFillDlg::OnFillKillActive()
 void CTxDOTOptionalDesignNonStandardFillDlg::UpdateNoStrandsCtrls()
 {
    // Centerline
-   StrandIndexType clnos = m_GridAtCL.ComputeNoStrands();
+   Float64 clcg;
+   StrandIndexType clnos;
+   m_GridAtCL.ComputeStrands(&clnos,&clcg);
    CString msg;
-   msg.Format("No. Strands = %d", clnos);
+   if (clnos==0)
+      msg.Format("No. Strands = %d", clnos);
+   else
+      msg.Format("No. Strands = %d\nEcc = %.3f in", clnos,m_yBottom-clcg);
 
    m_CLNoStrandsCtrl.SetWindowTextA(msg);
 
    // Ends
-   StrandIndexType endnos = m_GridAtEnds.ComputeNoStrands();
-   msg.Format("No. Strands = %d", endnos);
+   Float64 endcg;
+   StrandIndexType endnos;
+   m_GridAtEnds.ComputeStrands(&endnos,&endcg);
+   if (endnos==0)
+      msg.Format("No. Strands = %d", endnos);
+   else
+      msg.Format("No. Strands = %d\nEcc = %.3f in", endnos,m_yBottom-endcg);
 
    m_EndsNoStrandsCtrl.SetWindowTextA(msg);
 }
@@ -173,8 +215,11 @@ HBRUSH CTxDOTOptionalDesignNonStandardFillDlg::OnCtlColor(CDC* pDC, CWnd* pWnd, 
       int id = pWnd->GetDlgCtrlID();
       if (id==IDC_CL_NO_STRANDS || id==IDC_END_NO_STRANDS)
       {
-         StrandIndexType clnos = m_GridAtCL.ComputeNoStrands();
-         StrandIndexType endnos = m_GridAtEnds.ComputeNoStrands();
+         Float64 cg;
+         StrandIndexType clnos;
+         m_GridAtCL.ComputeStrands(&clnos,&cg);
+         StrandIndexType endnos;
+         m_GridAtEnds.ComputeStrands(&endnos,&cg);
 
          if (clnos != endnos)
          {

@@ -44,6 +44,7 @@
 #include <Reporting\LoadingDetailsChapterBuilder.h>
 #include <Reporting\LiveLoadDetailsChapterBuilder.h>
 #include <Reporting\UserDefinedLoadsChapterBuilder.h>
+#include <Reporting\SectPropChapterBuilder.h>
 
 #include "TexasIBNSChapterBuilder.h"
 #include "TexasGirderSummaryChapterBuilder.h"
@@ -52,11 +53,13 @@
 #include "TexasStressChecksChapterBuilder.h"
 #include "TexasMomentCapacityChapterBuilder.h"
 #include "TexasShearChapterBuilder.h"
+#include "TOGATitlePageBuilder.h"
 
 #include "TxDOTOptionalDesignSummaryChapterBuilder.h"
 #include "TogaStressChecksChapterBuilder.h"
 #include "TogaSpecCheckSummaryChapterBuilder.h"
-
+#include "TogaCamberAndDeflectionChapterBuilder.h"
+#include "TogaLongSectionChapterBuilder.h"
 
 #include "TxDOTCadWriter.h"
 
@@ -131,23 +134,26 @@ STDMETHODIMP CTxDOTAgentImp::Init2()
    pRptMgr->AddReportBuilder( pRptBuilder );
 
    // TOGA Long Form
-   pRptBuilder = new CReportBuilder("TxDOT Optional Girder Analysis (TOGA) - Long Form",true);
-   pRptBuilder->AddTitlePageBuilder( boost::shared_ptr<CTitlePageBuilder>(new CPGSuperTitlePageBuilder(m_pBroker,pRptBuilder->GetName(),false)) );
+   pRptBuilder = new CReportBuilder("TxDOT Optional Girder Analysis (TOGA) - Long Report",true);
+   pRptBuilder->AddTitlePageBuilder( boost::shared_ptr<CTitlePageBuilder>(new CTOGATitlePageBuilder(m_pBroker,pRptBuilder->GetName(),false)) );
    pRptBuilder->SetReportSpecificationBuilder( pSpanGirderRptSpecBuilder );
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CTogaSpecCheckSummaryChapterBuilder(true)) );
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CTxDOTOptionalDesignSummaryChapterBuilder()) );
+   pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CTogaLongSectionChapterBuilder()) );
+//   pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CSectPropChapterBuilder()) );
+   pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CSectPropChapterBuilder(true,true)) );
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CLoadingDetailsChapterBuilder(true,true,false,true)) );
-   pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CUserDefinedLoadsChapterBuilder) );
+   pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CUserDefinedLoadsChapterBuilder(true,true)) );
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CTexasPrestressSummaryChapterBuilder) );
-   pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CTexasCamberAndDeflectionChapterBuilder) );
+   pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CTogaCamberAndDeflectionChapterBuilder) );
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CTogaStressChecksChapterBuilder) );
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CTexasMomentCapacityChapterBuilder) );
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CTexasShearChapterBuilder) );
    pRptMgr->AddReportBuilder( pRptBuilder );
 
    // TOGA Short Form
-   pRptBuilder = new CReportBuilder("TxDOT Optional Girder Analysis (TOGA) - Short Form",true);
-   pRptBuilder->AddTitlePageBuilder( boost::shared_ptr<CTitlePageBuilder>(new CPGSuperTitlePageBuilder(m_pBroker,pRptBuilder->GetName(),false)) );
+   pRptBuilder = new CReportBuilder("TxDOT Optional Girder Analysis (TOGA) - Short Report",true);
+   pRptBuilder->AddTitlePageBuilder( boost::shared_ptr<CTitlePageBuilder>(new CTOGATitlePageBuilder(m_pBroker,pRptBuilder->GetName(),false)) );
    pRptBuilder->SetReportSpecificationBuilder( pSpanGirderRptSpecBuilder );
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CTogaSpecCheckSummaryChapterBuilder(true)) );
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CTxDOTOptionalDesignSummaryChapterBuilder()) );
@@ -203,6 +209,11 @@ BOOL CTxDOTAgentImp::ProcessCommandLineOptions(CEAFCommandLineInfo& cmdInfo)
    if (txCmdInfo.m_DoTxCadReport && !txCmdInfo.m_bError)
    {
       ProcessTxDotCad(txCmdInfo);
+      return TRUE;
+   }
+   else if (txCmdInfo.m_DoTogaTest && !txCmdInfo.m_bError)
+   {
+      ATLASSERT(true);
       return TRUE;
    }
 
@@ -444,12 +455,7 @@ bool CTxDOTAgentImp::DoTxDotCadReport(const CString& outputFileName, const CStri
          {
             // Design the girder
             pArtifact = pIArtifact->CreateDesignArtifact( span,girder, des_options);
-            if ( pArtifact == NULL )
-            {
-               err_file <<"Design was cancelled"<<std::endl;
-               return false;
-            }
-
+         
             if (pArtifact->GetOutcome() != pgsDesignArtifact::Success)
             {
                err_file <<"Design was unsuccessful"<<std::endl;

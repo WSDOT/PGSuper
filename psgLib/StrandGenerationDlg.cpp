@@ -156,8 +156,8 @@ void CStrandGenerationDlg::OnStrandTypeChanged()
    {
       // Harped
       bEnableHarped = TRUE;
-      GetDlgItem(IDC_GROUP1)->SetWindowText(_T("Harped Strands at End"));
-      GetDlgItem(IDC_GROUP2)->SetWindowText(_T("Harped Strands at Harping Point"));
+      GetDlgItem(IDC_GROUP1)->SetWindowText(_T("Harped Strands at Harping Point"));
+      GetDlgItem(IDC_GROUP2)->SetWindowText(_T("Harped Strands at End"));
       GetDlgItem(IDC_DELETE)->SetWindowText(_T("Delete previously defined harped strands"));
    }
 

@@ -20,11 +20,11 @@
 <meta name=filetype content=kadov>
 <meta name=filetype-version content=1>
 <meta name=page-count content=1>
-<meta name=layout-height content=716>
-<meta name=layout-width content=588>
+<meta name=layout-height content=1104>
+<meta name=layout-width content=1333>
 
 
-<!--(Links)=========================================================-->
+ <meta name="topic-check-list" content="Ran Smart Index"><!--(Links)=========================================================-->
 
 <link rel="StyleSheet" href="default.css">
 
@@ -45,25 +45,21 @@
 
 <h2>Original Girder Design, and Fabricator Optional Girder Design</h2>
 
-<p>Input data for both beams is identical. Hence, we will only treat one 
- case.</p>
+<p>The format for input data for both beams is identical. Hence, we will 
+ only treat one case.</p>
 
-<h2>Strand Fill Information</h2>
+<h2>Prestressing Strand Type</h2>
 
-<p>Strands may be filled using the standard fill sequence, or using a row-by-row 
- definition .</p>
+<p>Enter the strand material grade, type and strand size for the given 
+ girder</p>
 
-<h3>Standard Strand Fill</h3>
-
-<p>If the Standard Strand Fill option is checked, strands are filled in 
- the order defined on TxDOT standard precast design plan sheets for the 
- selected girder type (e.g., IBND sheets). This is the simplest way to 
- define strand fill</p>
+<h2>Girder Material Properties</h2>
 
 <!--(Table)=========================================================-->
 <table x-use-null-cells
 		style="x-cell-content-align: top;
 				width: 100%;
+				border-spacing: 4px;
 				border-spacing: 4px;"
 		cellspacing=4
 		width=100%>
@@ -72,119 +68,181 @@
 
 <tr style="x-cell-content-align: top;"
 	valign=top>
-<td style="padding-right: 10px;
+<td style="width: 112px;
+			padding-right: 10px;
 			padding-left: 10px;
 			border-bottom-style: None;
 			border-right-style: None;
 			border-left-style: None;
 			border-top-style: None;"
-	width=112>
+	width=112px>
+<p style="text-align: right;
+			font-style: normal;
+			font-weight: bold;"
+	align=right>f'ci</td>
+<td style="width: 412px;
+			padding-right: 10px;
+			padding-left: 10px;
+			border-bottom-style: None;
+			border-right-style: None;
+			border-top-style: None;"
+	width=412px>
+<p>Input the release strength, f'ci, for the girder concrete.</td></tr>
+
+<tr style="x-cell-content-align: top;"
+	valign=top>
+<td style="width: 112px;
+			padding-right: 10px;
+			padding-left: 10px;
+			border-bottom-style: None;
+			border-right-style: None;
+			border-left-style: None;"
+	width=112px>
+<p style="text-align: right;
+			font-style: normal;
+			font-weight: bold;"
+	align=right>f'c</td>
+<td style="width: 412px;
+			padding-right: 10px;
+			padding-left: 10px;
+			border-bottom-style: None;
+			border-right-style: None;"
+	width=412px>
+<p>This is the crushing strength, or final compressive strength, for the 
+ material as defined by most common specifications. This strength is normally 
+ defined as the stress value at a strain of 0.003 at 28 days.</td></tr>
+</table>
+
+<h2>Strand Fill Information</h2>
+
+<p>Strands may be filled using the standard fill sequence, or using a row-by-row 
+ definition. Use the check boxes to select a standard fill sequence, row-by-row 
+ with harped strands, or row-by-row using all straight strands. The number 
+ of strand information and available rows are populated automatically from 
+ the current girder type.</p>
+
+<h3>Standard Strand Fill</h3>
+
+<p>If the Standard Strand Fill option is checked, strands are filled in 
+ the order defined on TxDOT standard precast design plan sheets for the 
+ selected girder type (e.g., IBND sheets) as quoted below:</p>
+
+<p style="font-style: italic; text-align: center;"
+	align=center>“For depressed strand designed beams, strands shall be 
+ located as low as possible on the 2&quot; grid system unless a Non-Standard 
+ Strand Pattern is indicated. Fill row &quot;2&quot;, then row &quot;4&quot;, 
+ then row &quot;6&quot;, etc., beginning each row in the &quot;A&quot; 
+ position and working outward until the required number of strands is reached. 
+ All strands in the &quot;A&quot; position shall be depressed, maintaining 
+ the 2&quot; spacing so that, at the beam ends, the upper two strands are 
+ in the position shown in the table.”</p>
+
+<p>The actual fill order is taken from the TxDOT PGSuper Master library. 
+ This is the simplest way to define strand fill.</p>
+
+<!--(Table)=========================================================-->
+<table x-use-null-cells
+		style="x-cell-content-align: top;
+				width: 100%;
+				border-spacing: 4px;
+				border-spacing: 4px;"
+		cellspacing=4
+		width=100%>
+<col style="width: 112px;">
+<col style="width: 412px;">
+
+<tr style="x-cell-content-align: top;"
+	valign=top>
+<td style="width: 112px;
+			padding-right: 10px;
+			padding-left: 10px;
+			border-bottom-style: None;
+			border-right-style: None;
+			border-left-style: None;
+			border-top-style: None;"
+	width=112px>
 <p style="text-align: right;
 			font-style: normal;
 			font-weight: bold;"
 	align=right>Total No. Strands</td>
-<td style="padding-right: 10px;
+<td style="width: 412px;
+			padding-right: 10px;
 			padding-left: 10px;
 			border-bottom-style: None;
 			border-right-style: None;
 			border-top-style: None;"
-	width=412>
-<p>Select the total number of straight and depressed strands in the section</td></tr>
+	width=412px>
+<p>Select the total number of permanent (straight + depressed strands) 
+ in the section</td></tr>
 
 <tr style="x-cell-content-align: top;"
 	valign=top>
-<td style="padding-right: 10px;
+<td style="width: 112px;
+			padding-right: 10px;
 			padding-left: 10px;
 			border-bottom-style: None;
 			border-right-style: None;
 			border-left-style: None;"
-	width=112>
+	width=112px>
 <p style="text-align: right;
 			font-style: normal;
 			font-weight: bold;"
 	align=right>Girder Bottom to Topmost Strand (To)</td>
-<td style="padding-right: 10px;
+<td style="width: 412px;
+			padding-right: 10px;
 			padding-left: 10px;
 			border-bottom-style: None;
 			border-right-style: None;"
-	width=412>
-<p>Distance between the bottom of the girder and the top most row of harped 
- strands.</td></tr>
+	width=412px>
+<p>Distance between the bottom of the girder and the top most row of depressed 
+ strands at the girder ends.</td></tr>
 
 <tr style="x-cell-content-align: top;"
 	valign=top>
-<td style="padding-right: 10px;
+<td style="width: 112px;
+			padding-right: 10px;
 			padding-left: 10px;
 			border-bottom-style: None;
 			border-right-style: None;
 			border-left-style: None;"
-	width=112>
+	width=112px>
 <p style="font-weight: bold; text-align: right;"
 	align=right>Compute Eccentricity</td>
-<td style="padding-right: 10px;
+<td style="width: 412px;
+			padding-right: 10px;
 			padding-left: 10px;
 			border-bottom-style: None;
 			border-right-style: None;"
-	width=412>
-<p>Click this button </td></tr>
-
-<tr style="x-cell-content-align: top;"
-	valign=top>
-<td style="padding-right: 10px;
-			padding-left: 10px;
-			border-bottom-style: None;
-			border-right-style: None;
-			border-left-style: None;"
-	width=112>
-<p style="text-align: right;
-			font-style: normal;
-			font-weight: bold;"
-	align=right>Engineer</td>
-<td style="padding-right: 10px;
-			padding-left: 10px;
-			border-bottom-style: None;
-			border-right-style: None;"
-	width=412>
-<p>-</td></tr>
-
-<tr style="x-cell-content-align: top;"
-	valign=top>
-<td style="padding-right: 10px;
-			padding-left: 10px;
-			border-bottom-style: None;
-			border-right-style: None;
-			border-left-style: None;"
-	width=112>
-<p style="text-align: right;
-			font-style: normal;
-			font-weight: bold;"
-	align=right>Company</td>
-<td style="padding-right: 10px;
-			padding-left: 10px;
-			border-bottom-style: None;
-			border-right-style: None;"
-	width=412>
-<p>-</td></tr>
-
-<tr style="x-cell-content-align: top;"
-	valign=top>
-<td style="padding-right: 10px;
-			padding-left: 10px;
-			border-right-style: None;
-			border-left-style: None;
-			border-bottom-style: None;"
-	width=112>
-<p style="text-align: right;
-			font-style: normal;
-			font-weight: bold;"
-	align=right>Comments</td>
-<td style="padding-right: 10px;
-			padding-left: 10px;
-			border-bottom-style: None;
-			border-right-style: None;"
-	width=412>
-<p>Any additional text to be included in report</td></tr>
+	width=412px>
+<p>Click this button to view the strand eccentricity for current strand 
+ data</td></tr>
 </table>
+
+<h3>Non-Standard Strand Fill</h3>
+
+<p>If the Standard Strand Fill option is unchecked, strands may be filled 
+ using a row-by-row description. Select the number of strands to be placed 
+ in each row using the available locations listed in the combo boxes.</p>
+
+<p>The strand row locations are measured from the bottom of the girder. 
+ Available rows and number of strands per row are based on the permanent 
+ strand locations defined in PGSuper's girder library entry for the given 
+ girder type. The fill sequence in each row is defined by the relative 
+ fill order within the library entry. The row locations cannot be edited.</p>
+
+<p>If &quot;Use Depressed Strands&quot; is checked, two input grids of 
+ strand rows are presented, one representing strand locations at the girder 
+ ends, and one representing strand locations at the centerline between 
+ the hold-down points. Note that the number of straight strands and number 
+ of harped strands at both locations must match in order for the fill data 
+ to be valid.</p>
+
+<p>If &quot;Use Depressed Strands&quot; is left unchecked, then the girder 
+ is filled with all straight strands using a single input grid.</p>
+
+<p>Strand locations may be viewed on the <a href="Girder_View_Tab.htm">Girder 
+ View Tab</a> <!--kadov_tag{{<spaces>}}-->&nbsp;<!--kadov_tag{{</spaces>}}-->once 
+ the input data has been validated.</p>
 
 <!--kadov_tag{{<placeholder id="footer">}}-->
 </body>

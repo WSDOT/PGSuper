@@ -526,6 +526,8 @@ HRESULT pgslibLoadLibrary(IStructuredLoad* pStrLoad,psgLibraryManager* pLibMgr,e
 
       // load the library 
       pLibMgr->LoadMe(&load);
+
+      pStrLoad->EndUnit(); // "LIBRARY_EDITOR"
    }
    catch (const sysXStructuredLoad& rLoad)
    {

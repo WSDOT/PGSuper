@@ -72,6 +72,7 @@
 #include <IFace\UpdateTemplates.h>
 #include <IFace\Test1250.h>
 #include <IFace\GirderHandling.h>
+#include <IFace\Allowables.h>
 
 #include "TxDOTOptionalDesignData.h"
 #include "TogaSupportDrawStrategy.h"
@@ -94,13 +95,13 @@ STDAPI DllGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID* ppv)
 HRESULT Register(bool bRegister)
 {
    HRESULT hr = S_OK;
-/*
+
    // The TxDOTAppPlugin plugs into the BridgeLink application executable and brings the
    // TxDOT Optional Design Document functionality
    hr = sysComCatMgr::RegWithCategory(CLSID_TxDOTAppPlugin,CATID_BridgeLinkAppPlugin,bRegister);
    if ( FAILED(hr) )
       return hr;
-*/
+
    // The TxDOT Agent extends the functionality of PGSuper by adding custom reporting and
    // other features
    hr = sysComCatMgr::RegWithCategory(CLSID_TxDOTAgent,CATID_PGSuperExtensionAgent,bRegister);

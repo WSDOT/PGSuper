@@ -111,6 +111,8 @@ rptRcTable* CShearCheckTable::Build(IBroker* pBroker,SpanIndexType span,GirderIn
    if ( stage == pgsTypes::CastingYard )
       end_size = 0; // don't adjust if CY stage
 
+   Float64 Lg = pBridge->GetGirderLength(span,girder);
+
    bStrutAndTieRequired = false;
    RowIndexType row = table->GetNumberOfHeaderRows();
    std::vector<pgsPointOfInterest>::const_iterator i;
@@ -140,7 +142,7 @@ rptRcTable* CShearCheckTable::Build(IBroker* pBroker,SpanIndexType span,GirderIn
       }
       else
       {
-         if ( pArtifact->IsStrutAndTieRequired() )
+         if ( pArtifact->IsStrutAndTieRequired( poi.GetDistFromStart() < Lg/2 ? pgsTypes::metStart : pgsTypes::metEnd ) )
          {
             (*table)(row,3) << "*";
             (*table)(row,4) << "*";
@@ -164,7 +166,7 @@ rptRcTable* CShearCheckTable::Build(IBroker* pBroker,SpanIndexType span,GirderIn
       }
       else
       {
-         if ( pArtifact->IsStrutAndTieRequired() )
+         if ( pArtifact->IsStrutAndTieRequired(poi.GetDistFromStart() < Lg/2 ? pgsTypes::metStart : pgsTypes::metEnd) )
          {
             (*table)(row,5) << "*";
          }
@@ -177,7 +179,7 @@ rptRcTable* CShearCheckTable::Build(IBroker* pBroker,SpanIndexType span,GirderIn
          }
       }
 
-      if ( pArtifact->IsStrutAndTieRequired() )
+      if ( pArtifact->IsStrutAndTieRequired(poi.GetDistFromStart() < Lg/2 ? pgsTypes::metStart : pgsTypes::metEnd) )
          bStrutAndTieRequired = true;
 
       row++;

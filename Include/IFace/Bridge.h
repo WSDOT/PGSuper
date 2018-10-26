@@ -136,7 +136,7 @@ interface IBridge : IUnknown
    virtual void GetDistFromStartOfSpan(GirderIndexType gdrIdx,double distFromStartOfBridge,SpanIndexType* pSpanIdx,double* pDistFromStartOfSpan) = 0;
    virtual bool IsInteriorGirder(SpanIndexType span,GirderIndexType gdr) = 0;
    virtual bool IsExteriorGirder(SpanIndexType span,GirderIndexType gdr) = 0;
-   virtual bool AreGirderTopFlangesRoughened() = 0;
+   virtual bool AreGirderTopFlangesRoughened(SpanIndexType span,GirderIndexType gdr) = 0;
    virtual bool GetSpan(double station,SpanIndexType* pSpanIdx) = 0;
 
    // clear distance between girders. If poi is on an exterior girder, the left/right parameter will

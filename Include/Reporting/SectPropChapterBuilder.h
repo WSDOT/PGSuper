@@ -51,7 +51,7 @@ class REPORTINGCLASS CSectPropChapterBuilder : public CPGSuperChapterBuilder
 {
 public:
    // GROUP: LIFECYCLE
-   CSectPropChapterBuilder(bool bSelect = true);
+   CSectPropChapterBuilder(bool bSelect = true,bool simplifiedVersion=false);
 
    // GROUP: OPERATORS
    // GROUP: OPERATIONS
@@ -79,6 +79,7 @@ protected:
 
 private:
    // GROUP: DATA MEMBERS
+   bool m_SimplifiedVersion;
    // GROUP: LIFECYCLE
 
    // Prevent accidental copying and assignment

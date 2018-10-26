@@ -455,7 +455,7 @@ void CAnalysisResultsChildFrame::OnGirderChanged()
    ASSERT(pgirder_ctrl);
 
    int girdidx = pgirder_ctrl->GetCurSel();
-   ASSERT(girdidx!=CB_ERR);
+//   ASSERT(girdidx!=CB_ERR);
    if (girdidx == CB_ERR) 
    {
       m_GirderIdx=0;
@@ -1051,7 +1051,7 @@ void CAnalysisResultsChildFrame::CreateGraphDefinitions()
       m_GraphDefinitions.AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, "Service IA (Design)",           pgsTypes::ServiceIA,                false, false, false, false, false, true,  ACTIONS_STRESS_ONLY,  NAVY) );
 
    m_GraphDefinitions.AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, "Service III (Design)",          pgsTypes::ServiceIII,               false, false, false, false, false, true,  ACTIONS_STRESS_ONLY,  ROYALBLUE) );
-   m_GraphDefinitions.AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, "Strength I (Design)",           pgsTypes::StrengthI,                false, false, false, false, false, true,  ACTIONS_MOMENT_SHEAR, SKYBLUE) );
+   m_GraphDefinitions.AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, "Strength I (Design)",           pgsTypes::StrengthI,                false, false, false, false, false, true,  ACTIONS_MOMENT_SHEAR, CADETBLUE) );
    m_GraphDefinitions.AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, "Strength I Capacity (Design)",  pgsTypes::StrengthI, graphCapacity, false, false, false, false, false, true,  ACTIONS_SHEAR_ONLY,   CADETBLUE) );
    
    if (lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
@@ -1060,50 +1060,50 @@ void CAnalysisResultsChildFrame::CreateGraphDefinitions()
    if ( bPermit )
    {
       m_GraphDefinitions.AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, "Strength II (Permit)",          pgsTypes::StrengthII,               false, false, false, false, false, true,  ACTIONS_MOMENT_SHEAR, BROWN) );
-      m_GraphDefinitions.AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, "Strength II Capacity (Permit)", pgsTypes::StrengthII,graphCapacity, false, false, false, false, false, true,  ACTIONS_SHEAR_ONLY,   SKYBLUE) );
+      m_GraphDefinitions.AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, "Strength II Capacity (Permit)", pgsTypes::StrengthII,graphCapacity, false, false, false, false, false, true,  ACTIONS_SHEAR_ONLY,   BROWN) );
    }
 
    if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) )
    {
       m_GraphDefinitions.AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, "Strength I (Design Rating, Inventory)",            pgsTypes::StrengthI_Inventory,                false, false, false, false, false, true,  ACTIONS_MOMENT_SHEAR, DEEPPINK4) );
-      m_GraphDefinitions.AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, "Strength I Capacity (Design Rating, Inventory)",  pgsTypes::StrengthI_Inventory, graphCapacity, false, false, false, false, false, true,  ACTIONS_SHEAR_ONLY,   PLUM) );
+      m_GraphDefinitions.AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, "Strength I Capacity (Design Rating, Inventory)",  pgsTypes::StrengthI_Inventory, graphCapacity,  false, false, false, false, false, true,  ACTIONS_SHEAR_ONLY,   DEEPPINK4) );
    }
 
    if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating) )
    {
-      m_GraphDefinitions.AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, "Strength I (Design Rating, Operating)",            pgsTypes::StrengthI_Operating,                false, false, false, false, false, true,  ACTIONS_MOMENT_SHEAR, LINEN) );
-      m_GraphDefinitions.AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, "Strength I Capacity (Design Rating, Operating)",  pgsTypes::StrengthI_Operating, graphCapacity, false, false, false, false, false, true,  ACTIONS_SHEAR_ONLY,   THISTLE) );
+      m_GraphDefinitions.AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, "Strength I (Design Rating, Operating)",            pgsTypes::StrengthI_Operating,                false, false, false, false, false, true,  ACTIONS_MOMENT_SHEAR, THISTLE) );
+      m_GraphDefinitions.AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, "Strength I Capacity (Design Rating, Operating)",  pgsTypes::StrengthI_Operating, graphCapacity,  false, false, false, false, false, true,  ACTIONS_SHEAR_ONLY,   THISTLE) );
    }
 
    if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) )
    {
-      m_GraphDefinitions.AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, "Strength I (Legal Rating, Routine)",            pgsTypes::StrengthI_LegalRoutine,                false, false, false, false, false, true,  ACTIONS_MOMENT_SHEAR, MISTYROSE4) );
-      m_GraphDefinitions.AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, "Strength I Capacity (Legal Rating, Routine)",  pgsTypes::StrengthI_LegalRoutine, graphCapacity, false, false, false, false, false, true,  ACTIONS_SHEAR_ONLY,   SLATEBLUE) );
+      m_GraphDefinitions.AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, "Strength I (Legal Rating, Routine)",            pgsTypes::StrengthI_LegalRoutine,                false, false, false, false, false, true,  ACTIONS_MOMENT_SHEAR, SLATEBLUE) );
+      m_GraphDefinitions.AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, "Strength I Capacity (Legal Rating, Routine)",  pgsTypes::StrengthI_LegalRoutine, graphCapacity,  false, false, false, false, false, true,  ACTIONS_SHEAR_ONLY,   SLATEBLUE) );
    }
 
    if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
    {
-      m_GraphDefinitions.AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, "Strength I (Legal Rating, Special)",            pgsTypes::StrengthI_LegalSpecial,                false, false, false, false, false, true,  ACTIONS_MOMENT_SHEAR, LEMONCHIFFON) );
-      m_GraphDefinitions.AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, "Strength I Capacity, (Legal Rating, Special)",  pgsTypes::StrengthI_LegalSpecial, graphCapacity, false, false, false, false, false, true,  ACTIONS_SHEAR_ONLY,   MOCCASIN) );
+      m_GraphDefinitions.AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, "Strength I (Legal Rating, Special)",            pgsTypes::StrengthI_LegalSpecial,                false, false, false, false, false, true,  ACTIONS_MOMENT_SHEAR, DARKORCHID) );
+      m_GraphDefinitions.AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, "Strength I Capacity, (Legal Rating, Special)",  pgsTypes::StrengthI_LegalSpecial, graphCapacity, false, false, false, false, false, true,  ACTIONS_SHEAR_ONLY,   DARKORCHID) );
    }
 
    if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine) )
    {
-      m_GraphDefinitions.AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, "Strength II (Routine Permit Rating)",            pgsTypes::StrengthII_PermitRoutine,                false, false, false, false, false, true,  ACTIONS_MOMENT_SHEAR, DARKORCHID) );
-      m_GraphDefinitions.AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, "Strength II Capacity (Routine Permit Rating)",  pgsTypes::StrengthII_PermitRoutine, graphCapacity, false, false, false, false, false, true,  ACTIONS_SHEAR_ONLY,   MEDIUMSLATEBLUE) );
+      m_GraphDefinitions.AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, "Strength II (Routine Permit Rating)",            pgsTypes::StrengthII_PermitRoutine,                false, false, false, false, false, true,  ACTIONS_MOMENT_SHEAR, MEDIUMSLATEBLUE) );
+      m_GraphDefinitions.AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, "Strength II Capacity (Routine Permit Rating)",  pgsTypes::StrengthII_PermitRoutine, graphCapacity,  false, false, false, false, false, true,  ACTIONS_SHEAR_ONLY,   MEDIUMSLATEBLUE) );
    }
 
    if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Special) )
    {
-      m_GraphDefinitions.AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, "Strength II (Special Permit Rating)",            pgsTypes::StrengthII_PermitSpecial,                false, false, false, false, false, true,  ACTIONS_MOMENT_SHEAR, GAINSBORO) );
-      m_GraphDefinitions.AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, "Strength II Capacity (Special Permit Rating)",  pgsTypes::StrengthII_PermitSpecial, graphCapacity, false, false, false, false, false, true,  ACTIONS_SHEAR_ONLY,   DARKSLATEGRAY) );
+      m_GraphDefinitions.AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, "Strength II (Special Permit Rating)",            pgsTypes::StrengthII_PermitSpecial,                false, false, false, false, false, true,  ACTIONS_MOMENT_SHEAR, DARKSLATEGRAY) );
+      m_GraphDefinitions.AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, "Strength II Capacity (Special Permit Rating)",  pgsTypes::StrengthII_PermitSpecial, graphCapacity,  false, false, false, false, false, true,  ACTIONS_SHEAR_ONLY,   DARKSLATEGRAY) );
    }
 
    m_GraphDefinitions.AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, "Moment Capacity",      pgsTypes::StrengthI, graphCapacity, false, false, false, false, false, true,  ACTIONS_MOMENT_ONLY,  CHOCOLATE) );
 
    // Demand and Allowable
    m_GraphDefinitions.AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, "Service I Demand (Design)",     pgsTypes::ServiceI,  graphDemand,    true,  false,  true,  true,  true,  true, RGB(139, 26, 26)) );
-   m_GraphDefinitions.AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, "Service I Allowable (Design)",  pgsTypes::ServiceI,  graphAllowable, true,  false, true,  true,  true,  true, RGB(139, 26, 26)) );
+   m_GraphDefinitions.AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, "Service I Allowable (Design)",  pgsTypes::ServiceI,  graphAllowable, true,  false,  true,  true,  true,  true, RGB(139, 26, 26)) );
    
    if (lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims )
    {
@@ -1121,20 +1121,20 @@ void CAnalysisResultsChildFrame::CreateGraphDefinitions()
 
    if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) )
    {
-      m_GraphDefinitions.AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, "Service III Demand (Design Rating, Inventory)",   pgsTypes::ServiceIII_Inventory,graphDemand,    false, false, false, false, false, true, RGB(205, 16,118)) );
-      m_GraphDefinitions.AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, "Service III Allowable (Design Rating, Inventory)",pgsTypes::ServiceIII_Inventory,graphAllowable, false, false, false, false, false, true, RGB(205, 16,118)) );
+      m_GraphDefinitions.AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, "Service III Demand (Design Rating, Inventory)",   pgsTypes::ServiceIII_Inventory,graphDemand,    false, false, false, false, false, true, RGB(118,16,205)) );
+      m_GraphDefinitions.AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, "Service III Allowable (Design Rating, Inventory)",pgsTypes::ServiceIII_Inventory,graphAllowable, false, false, false, false, false, true, RGB(118,16,205)) );
    }
 
    if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) )
    {
-      m_GraphDefinitions.AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, "Service III Demand (Legal Rating, Routine)",   pgsTypes::ServiceIII_LegalRoutine,graphDemand,    false, false, false, false, false, true, RGB(205, 16,118)) );
-      m_GraphDefinitions.AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, "Service III Allowable (Legal Rating, Routine)",pgsTypes::ServiceIII_LegalRoutine,graphAllowable, false, false, false, false, false, true, RGB(205, 16,118)) );
+      m_GraphDefinitions.AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, "Service III Demand (Legal Rating, Routine)",   pgsTypes::ServiceIII_LegalRoutine,graphDemand,    false, false, false, false, false, true, RGB( 16,205,118)) );
+      m_GraphDefinitions.AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, "Service III Allowable (Legal Rating, Routine)",pgsTypes::ServiceIII_LegalRoutine,graphAllowable, false, false, false, false, false, true, RGB( 16,205,118)) );
    }
 
    if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
    {
       m_GraphDefinitions.AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, "Service III Demaind (Legal Rating, Special)",   pgsTypes::ServiceIII_LegalSpecial,graphDemand,    false, false, false, false, false, true, RGB(205, 16,118)) );
-      m_GraphDefinitions.AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, "Service III Allowable (Legal Rating, Special)",pgsTypes::ServiceIII_LegalSpecial,graphAllowable, false, false, false, false, false, true, RGB(205, 16,118)) );
+      m_GraphDefinitions.AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, "Service III Allowable (Legal Rating, Special)",pgsTypes::ServiceIII_LegalSpecial,graphAllowable,  false, false, false, false, false, true, RGB(205, 16,118)) );
    }
 }
 

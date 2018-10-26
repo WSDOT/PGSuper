@@ -598,6 +598,9 @@ public:
    void DoStirrupsEngageDeck(bool bEngage);
    bool DoStirrupsEngageDeck() const;
 
+   void IsRoughenedSurface(bool bIsRoughened);
+   bool IsRoughenedSurface() const;
+
    //------------------------------------------------------------------------
    // Set bar size for top flange interface shear stirrups
    // zero means no bars
@@ -682,12 +685,11 @@ private:
 
    bool m_bUseDifferentHarpedGridAtEnds;
 
-   bool m_bCanPostTension;
-
    std::string m_ShearSteelMaterial;
    BarSizeType m_ShearSteelBarSize;
    Uint16 m_LastConfinementZone;
    bool m_bStirrupsEngageDeck;
+   bool m_bIsRoughenedSurface;
    BarSizeType m_TopFlangeShearBarSize;
    Float64 m_TopFlangeShearBarSpacing;
    std::string m_LongSteelMaterial;

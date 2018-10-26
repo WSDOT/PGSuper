@@ -12,8 +12,14 @@ copy /Y Convert\Convert.dll			%BINTARGET%\AutomationDLLs\
 copy /Y RegFreeCOM\Release\PGSuper*.dll		%BINTARGET%\AutomationDLLs\
 
 REM - Extension Agents
-copy /Y RegFreeCOM\Release\WSDOTAgent.dll	%BINTARGET%\Extensions\
-copy /Y RegFreeCOM\Release\TxDOTAgent.dll	%BINTARGET%\Extensions\
+REM - WSDOT
+copy /Y RegFreeCOM\Release\WSDOTAgent.dll	%BINTARGET%\Extensions\WSDOT\
+
+REM - TXDOT
+copy /Y RegFreeCOM\Release\TxDOTAgent.dll	%BINTARGET%\Extensions\TxDOT\
+copy /Y TxDOTAgent\TOGA.chm			%BINTARGET%\Extensions\TxDOT\
+copy /Y TxDOTAgent\TogaTemplates\*.pgs		%BINTARGET%\Extensions\TxDOT\TogaTemplates\
+copy /Y TxDOTAgent\TogaTemplates\*.togt		%BINTARGET%\Extensions\TxDOT\TogaTemplates\
 
 REM - Image files
 copy /Y images\*.gif				%BINTARGET%\images\
@@ -38,3 +44,4 @@ copy /Y Templates\WSDOT\WBT-Girders\*.pgt	%BINTARGET%\Templates\WBT-Girders\
 copy /Y Templates\WSDOT\Deck_Bulb_Tees\*.pgt	%BINTARGET%\Templates\Deck_Bulb_Tees\
 copy /Y Templates\WSDOT\MultiWeb\*.pgt		%BINTARGET%\Templates\MultiWeb\
 copy /Y Templates\WSDOT\Slabs\*.pgt		%BINTARGET%\Templates\Slabs\
+

@@ -326,7 +326,7 @@ void CAnalysisAgentImp::ModelData::CreateAnalysisEngine(ILBAMModel* theModel,Bri
    engine->get_EnvelopedVehicularResponse(&pVehicularResponse[bat]);
 
    CComQIPtr<ILoadCombinationResponse> load_combination_response_delegate(pLoadCaseResponse[bat]);
-   pLCResponse->Initialize(load_combination_response_delegate,theModel,m_pParent);
+   pLCResponse->Initialize(load_combination_response_delegate,pLoadGroupResponse[bat],pLiveLoadResponse[bat],theModel,m_pParent);
 
    (*ppEngine) = engine;
    (*ppEngine)->AddRef();
@@ -1874,6 +1874,13 @@ STDMETHODIMP CAnalysisAgentImp::Init()
    CHECK( SUCCEEDED(hr) );
    pCP.Release(); // Recycle the IConnectionPoint smart pointer so we can use it again.
 
+   // Connection point for the rating specification
+   hr = pBrokerInit->FindConnectionPoint( IID_IRatingSpecificationEventSink, &pCP );
+   CHECK( SUCCEEDED(hr) );
+   hr = pCP->Advise( GetUnknown(), &m_dwRatingSpecCookie );
+   CHECK( SUCCEEDED(hr) );
+   pCP.Release(); // Recycle the IConnectionPoint smart pointer so we can use it again.
+
    // Connection point for the load modifiers
    hr = pBrokerInit->FindConnectionPoint( IID_ILoadModifiersEventSink, &pCP );
    CHECK( SUCCEEDED(hr) );
@@ -1929,6 +1936,12 @@ STDMETHODIMP CAnalysisAgentImp::ShutDown()
    hr = pBrokerInit->FindConnectionPoint(IID_ISpecificationEventSink, &pCP );
    CHECK( SUCCEEDED(hr) );
    hr = pCP->Unadvise( m_dwSpecCookie );
+   CHECK( SUCCEEDED(hr) );
+   pCP.Release(); // Recycle the connection point
+
+   hr = pBrokerInit->FindConnectionPoint(IID_IRatingSpecificationEventSink, &pCP );
+   CHECK( SUCCEEDED(hr) );
+   hr = pCP->Unadvise( m_dwRatingSpecCookie );
    CHECK( SUCCEEDED(hr) );
    pCP.Release(); // Recycle the connection point
 
@@ -3272,6 +3285,7 @@ void CAnalysisAgentImp::ConfigureLoadCombinations(ILBAMModel* pModel)
    // Setup the LRFD load combinations
    CComPtr<ILoadCases> loadcases;
    hr = pModel->get_LoadCases(&loadcases);
+   loadcases->Clear();
 
    // Add load cases
    AddLoadCase(loadcases, CComBSTR("DC"),    CComBSTR("Component and Attachments"));
@@ -3282,6 +3296,7 @@ void CAnalysisAgentImp::ConfigureLoadCombinations(ILBAMModel* pModel)
    // add load combinations
    CComPtr<ILoadCombinations> loadcombos;
    hr = pModel->get_LoadCombinations(&loadcombos) ;
+   loadcombos->Clear();
 
    // STRENGTH-I
    CComPtr<ILoadCombination> strength1;
@@ -3703,6 +3718,7 @@ void CAnalysisAgentImp::ConfigureLoadCombinations(ILBAMModel* pModel)
    // set up load groups
    CComPtr<ILoadGroups> loadGroups;
    pModel->get_LoadGroups(&loadGroups);
+   loadGroups->Clear();
    AddLoadGroup(loadGroups, GetLoadGroupName(pftGirder),         CComBSTR("Girder self weight"));
    AddLoadGroup(loadGroups, GetLoadGroupName(pftConstruction),   CComBSTR("Construction"));
    AddLoadGroup(loadGroups, GetLoadGroupName(pftSlab),           CComBSTR("Slab self weight"));
@@ -8585,6 +8601,7 @@ void CAnalysisAgentImp::GetMoment(pgsTypes::LimitState ls,pgsTypes::Stage stage,
          pModelData->pLoadComboResponse[bat]->ComputeForces(bstrLoadCombo, m_LBAMPoi, bstrStage, roMember, rsCumulative, fetMz, optMaximize, bIncludeLiveLoad, VARIANT_TRUE, VARIANT_FALSE, &maxResults);
          pModelData->pLoadComboResponse[bat]->ComputeForces(bstrLoadCombo, m_LBAMPoi, bstrStage, roMember, rsCumulative, fetMz, optMinimize, bIncludeLiveLoad, VARIANT_TRUE, VARIANT_FALSE, &minResults);
 
+
          std::vector<pgsPointOfInterest>::const_iterator iter;
          for ( iter = vPoi.begin(); iter != vPoi.end(); iter++ )
          {
@@ -8727,11 +8744,20 @@ std::vector<Float64> CAnalysisAgentImp::GetSlabDesignMoment(pgsTypes::LimitState
       Float64 gDCmin, gDCmax;
       if ( stage == pgsTypes::BridgeSite2 || stage == pgsTypes::BridgeSite3 )
       {
-         GET_IFACE(ILoadFactors,pLF);
-         const CLoadFactors* pLoadFactors = pLF->GetLoadFactors();
+         if ( ::IsRatingLimitState(ls) )
+         {
+            GET_IFACE(IRatingSpecification,pRatingSpec);
+            gDCmin = pRatingSpec->GetDeadLoadFactor(ls);
+            gDCmax = gDCmin;
+         }
+         else
+         {
+            GET_IFACE(ILoadFactors,pLF);
+            const CLoadFactors* pLoadFactors = pLF->GetLoadFactors();
 
-         gDCmin = pLoadFactors->DCmin[ls];
-         gDCmax = pLoadFactors->DCmax[ls];
+            gDCmin = pLoadFactors->DCmin[ls];
+            gDCmax = pLoadFactors->DCmax[ls];
+         }
       }
 
 
@@ -9030,21 +9056,6 @@ void CAnalysisAgentImp::GetReaction(pgsTypes::LimitState ls,pgsTypes::Stage stag
          CComBSTR bstrLoadCombo = GetLoadCombinationName(ls);
          CComBSTR bstrStage     = pStageMap->GetStageName(stage);
 
-
-         CComPtr<ILoadCombinations> loadCombos;
-         pModelData->m_Model->get_LoadCombinations(&loadCombos) ;
-         CComPtr<ILoadCombination> loadCombo;
-         loadCombos->Find(bstrLoadCombo,&loadCombo);
-         Float64 gLLmin, gLLmax;
-         loadCombo->FindLoadCaseFactor(CComBSTR("LL_IM"),&gLLmin,&gLLmax);
-         ATLASSERT( 0 < gLLmin && 0 < gLLmax); // if this assert fires, we have to do the load combination "manually"
-                                               // because the load factor is a function of POI and axle weights
-                                               // this can only happen for permit limit states
-         if ( gLLmin < 0 || gLLmax < 0 )
-         {
-            ATLASSERT( ::IsRatingLimitState(ls) ); // this can only happen for ratings
-         }
-
          VARIANT_BOOL vbIncludeImpact = (bIncludeImpact ? VARIANT_TRUE : VARIANT_FALSE);
 
          VARIANT_BOOL bIncludeLiveLoad = (stage == pgsTypes::BridgeSite3 ? VARIANT_TRUE : VARIANT_FALSE );
@@ -9060,25 +9071,6 @@ void CAnalysisAgentImp::GetReaction(pgsTypes::LimitState ls,pgsTypes::Stage stag
 
          *pMin = FyMin;
          *pMax = FyMax;
-
-//#if defined _DEBUG
-// Since left/right side boundary conditions have been added, this assert is no longer true
-// Piers with hinge on one side and fixed on the other crank moment into the supports
-//
-//         maxResults.Release();
-//         minResults.Release();
-//         pModelData->pLoadComboResponse[bat]->ComputeReactions(bstrLoadCombo, m_LBAMPoi, bstrStage, rsCumulative, fetMz, optMaximize, bIncludeLiveLoad, VARIANT_FALSE,&maxResults);
-//         pModelData->pLoadComboResponse[bat]->ComputeReactions(bstrLoadCombo, m_LBAMPoi, bstrStage, rsCumulative, fetMz, optMinimize, bIncludeLiveLoad, VARIANT_FALSE,&minResults);
-//
-//         double MzMax;
-//         maxResults->GetResult(0,&MzMax,NULL);
-//      
-//         double MzMin;
-//         minResults->GetResult(0,&MzMin,NULL);
-//
-//         ATLASSERT( IsZero(MzMax) );
-//         ATLASSERT( IsZero(MzMin) );
-//#endif // _DEBUG
       }
    }
    catch(...)
@@ -10705,6 +10697,15 @@ HRESULT CAnalysisAgentImp::OnAnalysisTypeChanged()
    // The casting yard models wont change
    // The simple span models, if built, wont change
    // The continuous span models, if built, wont change
+   return S_OK;
+}
+
+/////////////////////////////////////////////////////////////////////////////
+// IRatingSpecificationEventSink
+//
+HRESULT CAnalysisAgentImp::OnRatingSpecificationChanged()
+{
+   Invalidate();
    return S_OK;
 }
 
@@ -12502,7 +12503,7 @@ DistributionFactorType CAnalysisAgentImp::GetLiveLoadDistributionFactorType(pgsT
       break;
 
    case pgsTypes::lltPermit:
-      dfType = dftFatigue;
+      dfType = dftEnvelope;
       break;
 
    case pgsTypes::lltLegalRating_Routine:
@@ -12518,7 +12519,7 @@ DistributionFactorType CAnalysisAgentImp::GetLiveLoadDistributionFactorType(pgsT
      break;
 
    case pgsTypes::lltPermitRating_Special:
-     dfType = dftFatigue;
+     dfType = dftFatigue; // single lane with muliple presense divided out
      break;
 
    default:

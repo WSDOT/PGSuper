@@ -334,10 +334,13 @@ rptChapter* CGirderScheduleChapterBuilder::Build(CReportSpecification* pRptSpec,
    if (0 < nh)
    {
       GDRCONFIG config = pBridge->GetGirderConfiguration(span,girder);
-      config.Nstrands[pgsTypes::Harped] = pStrandGeometry->GetNextNumStrands(span, girder, pgsTypes::Harped, 0);
-      Float64 eh2 = pStrandGeometry->GetHsEccentricity( pmid[0], config, &nEff );
-
-      Float64 Fb  = pSectProp2->GetYb(pgsTypes::CastingYard,pois) - eh2;
+      CComPtr<IPoint2d> pnt0, pnt1;
+      pStrandGeometry->GetStrandPosition(pmid[0],0,pgsTypes::Harped,&pnt0);
+      pStrandGeometry->GetStrandPosition(pmid[0],nh-1,pgsTypes::Harped,&pnt1);
+      Float64 x,Fb0,Fb1;
+      pnt0->Location(&x,&Fb0);
+      pnt1->Location(&x,&Fb1);
+      Float64 Fb = min(Fb0,Fb1);
       (*p_table)(row,1) << gdim.SetValue(Fb);
    }
    else

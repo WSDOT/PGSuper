@@ -127,7 +127,6 @@ public:
    virtual void GetControllingTensileStress(Float64* pStress, Float64* pStressFactor, Float64* pDistFromStart);
    virtual void GetControllingCompressiveStress(Float64* pStress, Float64* pStressFactor, Float64* pDistFromStart);
 
-
    virtual Float64 GetUltimateMomentCapacity();
    virtual Float64 GetMaximumCamber();
 
@@ -137,6 +136,8 @@ public:
 
    virtual const pgsGirderArtifact* GetFabricatorDesignArtifact();
    virtual Float64 GetFabricatorMaximumCamber();
+
+   virtual bool ShearPassed();
 
 // ITxDataObserver
    virtual void OnTxDotDataChanged(int change);
@@ -169,6 +170,9 @@ private:
    Float64 m_RequiredFc;
    Float64 m_RequiredFci;
 
+   bool m_ShearPassed;
+
    void Validate();
+   void CheckShear(IPointOfInterest* pPoi);
 };
 

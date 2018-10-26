@@ -351,6 +351,10 @@ private:
    // make sure harped strands don't go out of allowable bounds when adding strands
    bool KeepHarpedStrandsInBounds();
 
+   // compute min strands until eccentricity is non-negative
+   void ComputeMinStrands();
+
+
    IBroker* m_pBroker;
    long m_StatusGroupID;
 

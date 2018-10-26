@@ -797,13 +797,13 @@
 #define IDC_DIST_TRAFFIC_BARRIER_BASIS  1442
 #define IDC_NWC_NOTE                    1443
 #define IDC_CHECK1                      1444
-#define IDC_PT                          1444
 #define IDC_ALWAYS_RATE                 1444
 #define IDC_IS_VARIABLE_AXLE_TRUCK      1444
 #define IDC_HAS_AGG_STRENGTH            1444
 #define IDC_BRIDGE_LENGTH               1445
 #define IDC_BRIDGE_LENGTH_UNITS         1446
 #define IDC_USER_OVERRIDE               1446
+#define IDC_ROUGHENED                   1446
 #define IDC_LANE_LOAD_LABEL             1447
 #define IDC_BRIDGE_LENGTH_LABEL         1448
 #define IDC_AXLE_LIST                   1449

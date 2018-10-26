@@ -476,7 +476,7 @@ HRESULT CDeckDescription::Load(IStructuredLoad* pStrLoad,IProgress* pProgress,pg
          {
             var.Clear();
             var.vt = VT_R8;
-            hr = pStrLoad->get_Property("SlabEc", &var );
+            hr = pStrLoad->get_Property("Ec", &var );
             SlabEc = var.dblVal;
          }
 

@@ -4,5 +4,549 @@
   <param name="SiteType" value="index">
 </object>
 <ul>
+  <li><object type="text/sitemap">
+    <param name="Name" value="Row-Based Strand Fill">
+    <param name="Name" value="Row-Based Strand Fill">
+    <param name="Local" value="Row-Based_Strand_Fill.htm">
+  </object>
+  <li><object type="text/sitemap">
+    <param name="Name" value="Help Window">
+    <param name="Name" value="Main Menu">
+    <param name="Local" value="Main_Menu.htm">
+  </object>
+  <li><object type="text/sitemap">
+    <param name="Name" value="File Menu">
+    <param name="Name" value="Main Menu">
+    <param name="Local" value="Main_Menu.htm">
+  </object>
+  <li><object type="text/sitemap">
+    <param name="Name" value="TxDOT Bridge Standards">
+    <param name="Name" value="Welcome">
+    <param name="Local" value="Welcome.htm">
+  </object>
+  <li><object type="text/sitemap">
+    <param name="Name" value="Additional Resources">
+    <param name="Name" value="Welcome">
+    <param name="Local" value="Welcome.htm">
+  </object>
+  <li><object type="text/sitemap">
+    <param name="Name" value="Installation">
+    <param name="Name" value="Installation">
+    <param name="Local" value="Installation.htm">
+  </object>
+  <li><object type="text/sitemap">
+    <param name="Name" value="PGSuper Libraries and Templates">
+    <param name="Name" value="Installation">
+    <param name="Local" value="Installation.htm">
+  </object>
+  <li><object type="text/sitemap">
+    <param name="Name" value="Administrator Guide">
+    <param name="Name" value="Administrator Guide">
+    <param name="Local" value="Administrator_Guide.htm">
+  </object>
+  <li><object type="text/sitemap">
+    <param name="Name" value="PGSuper Template Bridge">
+    <param name="Name" value="Administrator Guide">
+    <param name="Local" value="Administrator_Guide.htm">
+    <param name="Name" value="PGSuper Template Bridge">
+    <param name="Local" value="PGSuper_Template_Bridge.htm">
+    <param name="Name" value="Generation of the PGSuper Model">
+    <param name="Local" value="Generation_of_the_PGSuper_Model.htm">
+  </object>
+  <li><object type="text/sitemap">
+    <param name="Name" value="Togt">
+    <param name="Name" value="Administrator Guide">
+    <param name="Local" value="Administrator_Guide.htm">
+    <param name="Name" value="The Templates Text File">
+    <param name="Local" value="The_Templates_Text_File.htm">
+  </object>
+  <li><object type="text/sitemap">
+    <param name="Name" value="TxDOTAgent.dll">
+    <param name="Name" value="Administrator Guide">
+    <param name="Local" value="Administrator_Guide.htm">
+  </object>
+  <li><object type="text/sitemap">
+    <param name="Name" value="TogaTemplate.pgs">
+    <param name="Name" value="Administrator Guide">
+    <param name="Local" value="Administrator_Guide.htm">
+    <param name="Name" value="PGSuper Template Bridge">
+    <param name="Local" value="PGSuper_Template_Bridge.htm">
+  </object>
+  <li><object type="text/sitemap">
+    <param name="Name" value="TOGA Configuration Folder">
+    <param name="Name" value="Administrator Guide">
+    <param name="Local" value="Administrator_Guide.htm">
+  </object>
+  <li><object type="text/sitemap">
+    <param name="Name" value="Non-Standard Strand Fill">
+    <param name="Name" value="Girder Description Tab">
+    <param name="Local" value="Girder_Description_Tab.htm">
+  </object>
+  <li><object type="text/sitemap">
+    <param name="Name" value="Standard Strand Fill">
+    <param name="Name" value="Girder Description Tab">
+    <param name="Local" value="Girder_Description_Tab.htm">
+    <param name="Name" value="Bridge Description Tab">
+    <param name="Local" value="Bridge_Description_Tab.htm">
+  </object>
+  <li><object type="text/sitemap">
+    <param name="Name" value="Original Girder Design">
+    <param name="Name" value="Girder Description Tab">
+    <param name="Local" value="Girder_Description_Tab.htm">
+  </object>
+  <li><object type="text/sitemap">
+    <param name="Name" value="Prestressing Strand Type">
+    <param name="Name" value="Girder Description Tab">
+    <param name="Local" value="Girder_Description_Tab.htm">
+  </object>
+  <li><object type="text/sitemap">
+    <param name="Name" value="Use Depressed Strands">
+    <param name="Name" value="Girder Description Tab">
+    <param name="Local" value="Girder_Description_Tab.htm">
+  </object>
+  <li><object type="text/sitemap">
+    <param name="Name" value="Non-Standard Strand Pattern">
+    <param name="Name" value="Girder Description Tab">
+    <param name="Local" value="Girder_Description_Tab.htm">
+  </object>
+  <li><object type="text/sitemap">
+    <param name="Name" value="PGSuper Template file AKA">
+    <param name="Name" value="PGSuper Template Bridge">
+    <param name="Local" value="PGSuper_Template_Bridge.htm">
+  </object>
+  <li><object type="text/sitemap">
+    <param name="Name" value="PGSuper">
+    <param name="Name" value="PGSuper Template Bridge">
+    <param name="Local" value="PGSuper_Template_Bridge.htm">
+  </object>
+  <ul>
+    <li><object type="text/sitemap">
+      <param name="Name" value="exporting">
+      <param name="Name" value="PGSuper Template Bridge">
+      <param name="Local" value="PGSuper_Template_Bridge.htm">
+    </object>
+    </ul>
+  <li><object type="text/sitemap">
+    <param name="Name" value="Exporting">
+    <param name="Name" value="PGSuper Template Bridge">
+    <param name="Local" value="PGSuper_Template_Bridge.htm">
+  </object>
+  <ul>
+    <li><object type="text/sitemap">
+      <param name="Name" value="PGSuper">
+      <param name="Name" value="PGSuper Template Bridge">
+      <param name="Local" value="PGSuper_Template_Bridge.htm">
+    </object>
+    </ul>
+  <li><object type="text/sitemap">
+    <param name="Name" value="Run Complete Specification Check">
+    <param name="Name" value="Optional Design Analysis">
+    <param name="Local" value="Optional_Design_Analysis.htm">
+  </object>
+  <li><object type="text/sitemap">
+    <param name="Name" value="Specification Check">
+    <param name="Name" value="Optional Design Analysis">
+    <param name="Local" value="Optional_Design_Analysis.htm">
+  </object>
+  <li><object type="text/sitemap">
+    <param name="Name" value="Status Bar">
+    <param name="Name" value="Main Menu">
+    <param name="Local" value="Main_Menu.htm">
+  </object>
+  <li><object type="text/sitemap">
+    <param name="Name" value="Pressing">
+    <param name="Name" value="Main Menu">
+    <param name="Local" value="Main_Menu.htm">
+  </object>
+  <ul>
+    <li><object type="text/sitemap">
+      <param name="Name" value="CTRL+S">
+      <param name="Name" value="Main Menu">
+      <param name="Local" value="Main_Menu.htm">
+    </object>
+    </ul>
+  <li><object type="text/sitemap">
+    <param name="Name" value="Theoretical Manual">
+    <param name="Name" value="Main Menu">
+    <param name="Local" value="Main_Menu.htm">
+    <param name="Name" value="Theoretical Manual">
+    <param name="Local" value="Theoretical_Manual.htm">
+  </object>
+  <li><object type="text/sitemap">
+    <param name="Name" value="Section Cut Location">
+    <param name="Name" value="Main Menu">
+    <param name="Local" value="Main_Menu.htm">
+  </object>
+  <li><object type="text/sitemap">
+    <param name="Name" value="Status Center window">
+    <param name="Name" value="Main Menu">
+    <param name="Local" value="Main_Menu.htm">
+  </object>
+  <li><object type="text/sitemap">
+    <param name="Name" value="Save As">
+    <param name="Name" value="Main Menu">
+    <param name="Local" value="Main_Menu.htm">
+  </object>
+  <li><object type="text/sitemap">
+    <param name="Name" value="Print Setup">
+    <param name="Name" value="Main Menu">
+    <param name="Local" value="Main_Menu.htm">
+  </object>
+  <li><object type="text/sitemap">
+    <param name="Name" value="View Menu">
+    <param name="Name" value="Main Menu">
+    <param name="Local" value="Main_Menu.htm">
+  </object>
+  <li><object type="text/sitemap">
+    <param name="Name" value="Status Center">
+    <param name="Name" value="Main Menu">
+    <param name="Local" value="Main_Menu.htm">
+  </object>
+  <li><object type="text/sitemap">
+    <param name="Name" value="Shortcuts">
+    <param name="Name" value="Main Menu">
+    <param name="Local" value="Main_Menu.htm">
+  </object>
+  <li><object type="text/sitemap">
+    <param name="Name" value="Save PGSuper">
+    <param name="Name" value="Main Menu">
+    <param name="Local" value="Main_Menu.htm">
+  </object>
+  <li><object type="text/sitemap">
+    <param name="Name" value="Open PGSuper">
+    <param name="Name" value="Getting Started">
+    <param name="Local" value="Getting_Started.htm">
+  </object>
+  <li><object type="text/sitemap">
+    <param name="Name" value="TxDOT's Fabrication Branch">
+    <param name="Name" value="Getting Started">
+    <param name="Local" value="Getting_Started.htm">
+    <param name="Name" value="Girder Models Used In Analysis">
+    <param name="Local" value="Girder_Models_Used_In_Analysis.htm">
+    <param name="Name" value="Background">
+    <param name="Local" value="tmbackground.htm">
+  </object>
+  <li><object type="text/sitemap">
+    <param name="Name" value="TxDOT Optional Girder Analysis">
+    <param name="Name" value="Getting Started">
+    <param name="Local" value="Getting_Started.htm">
+    <param name="Name" value="Welcome">
+    <param name="Local" value="Welcome.htm">
+  </object>
+  <li><object type="text/sitemap">
+    <param name="Name" value="Per-Plan Original Girder Model">
+    <param name="Name" value="Girder Models Used In Analysis">
+    <param name="Local" value="Girder_Models_Used_In_Analysis.htm">
+  </object>
+  <li><object type="text/sitemap">
+    <param name="Name" value="Per-Plan Original Girder">
+    <param name="Name" value="Girder Models Used In Analysis">
+    <param name="Local" value="Girder_Models_Used_In_Analysis.htm">
+  </object>
+  <li><object type="text/sitemap">
+    <param name="Name" value="Uniform Design Loads">
+    <param name="Name" value="Girder Models Used In Analysis">
+    <param name="Local" value="Girder_Models_Used_In_Analysis.htm">
+  </object>
+  <li><object type="text/sitemap">
+    <param name="Name" value="Service III">
+    <param name="Name" value="Girder Models Used In Analysis">
+    <param name="Local" value="Girder_Models_Used_In_Analysis.htm">
+    <param name="Name" value="Bridge Description Tab">
+    <param name="Local" value="Bridge_Description_Tab.htm">
+  </object>
+  <li><object type="text/sitemap">
+    <param name="Name" value="TxDOT Master Library">
+    <param name="Name" value="Girder Models Used In Analysis">
+    <param name="Local" value="Girder_Models_Used_In_Analysis.htm">
+  </object>
+  <li><object type="text/sitemap">
+    <param name="Name" value="TOGA Templates Files">
+    <param name="Name" value="The Templates Text File">
+    <param name="Local" value="The_Templates_Text_File.htm">
+  </object>
+  <li><object type="text/sitemap">
+    <param name="Name" value="The Template File">
+    <param name="Name" value="The Templates Text File">
+    <param name="Local" value="The_Templates_Text_File.htm">
+  </object>
+  <li><object type="text/sitemap">
+    <param name="Name" value="TOGA User Guide">
+    <param name="Name" value="User Guide">
+    <param name="Local" value="User_Guide.htm">
+  </object>
+  <li><object type="text/sitemap">
+    <param name="Name" value="Bridge Standards">
+    <param name="Name" value="Welcome">
+    <param name="Local" value="Welcome.htm">
+  </object>
+  <li><object type="text/sitemap">
+    <param name="Name" value="Bridge Manuals">
+    <param name="Name" value="Welcome">
+    <param name="Local" value="Welcome.htm">
+  </object>
+  <li><object type="text/sitemap">
+    <param name="Name" value="Alternate Route Project">
+    <param name="Name" value="Welcome">
+    <param name="Local" value="Welcome.htm">
+  </object>
+  <li><object type="text/sitemap">
+    <param name="Name" value="Bridge Division">
+    <param name="Name" value="Welcome">
+    <param name="Local" value="Welcome.htm">
+  </object>
+  <li><object type="text/sitemap">
+    <param name="Name" value="TxDOT Server">
+    <param name="Name" value="Installation">
+    <param name="Local" value="Installation.htm">
+  </object>
+  <li><object type="text/sitemap">
+    <param name="Name" value="TxDOT's ftp">
+    <param name="Name" value="Installation">
+    <param name="Local" value="Installation.htm">
+  </object>
+  <li><object type="text/sitemap">
+    <param name="Name" value="Troubleshooting">
+    <param name="Name" value="Installation">
+    <param name="Local" value="Installation.htm">
+  </object>
+  <li><object type="text/sitemap">
+    <param name="Name" value="Update Libraries">
+    <param name="Name" value="Installation">
+    <param name="Local" value="Installation.htm">
+  </object>
+  <li><object type="text/sitemap">
+    <param name="Name" value="Generation">
+    <param name="Name" value="Generation of the PGSuper Model">
+    <param name="Local" value="Generation_of_the_PGSuper_Model.htm">
+  </object>
+  <ul>
+    <li><object type="text/sitemap">
+      <param name="Name" value="PGSuper Model">
+      <param name="Name" value="Generation of the PGSuper Model">
+      <param name="Local" value="Generation_of_the_PGSuper_Model.htm">
+    </object>
+    </ul>
+  <li><object type="text/sitemap">
+    <param name="Name" value="PGSuper Model">
+    <param name="Name" value="Generation of the PGSuper Model">
+    <param name="Local" value="Generation_of_the_PGSuper_Model.htm">
+  </object>
+  <ul>
+    <li><object type="text/sitemap">
+      <param name="Name" value="Generation">
+      <param name="Name" value="Generation of the PGSuper Model">
+      <param name="Local" value="Generation_of_the_PGSuper_Model.htm">
+    </object>
+    </ul>
+  <li><object type="text/sitemap">
+    <param name="Name" value="Model Generation Flow Chart">
+    <param name="Name" value="Generation of the PGSuper Model">
+    <param name="Local" value="Generation_of_the_PGSuper_Model.htm">
+  </object>
+  <li><object type="text/sitemap">
+    <param name="Name" value="TxDOT’s PS&amp;E">
+    <param name="Name" value="Background">
+    <param name="Local" value="tmbackground.htm">
+  </object>
+  <li><object type="text/sitemap">
+    <param name="Name" value="Show C.G.">
+    <param name="Name" value="Girder View Tab">
+    <param name="Local" value="Girder_View_Tab.htm">
+  </object>
+  <li><object type="text/sitemap">
+    <param name="Name" value="Show Transverse Reinforcement">
+    <param name="Name" value="Girder View Tab">
+    <param name="Local" value="Girder_View_Tab.htm">
+  </object>
+  <li><object type="text/sitemap">
+    <param name="Name" value="Girder View Settings">
+    <param name="Name" value="Girder View Tab">
+    <param name="Local" value="Girder_View_Tab.htm">
+  </object>
+  <li><object type="text/sitemap">
+    <param name="Name" value="Section Cut Offset">
+    <param name="Name" value="Girder View Tab">
+    <param name="Local" value="Girder_View_Tab.htm">
+  </object>
+  <li><object type="text/sitemap">
+    <param name="Name" value="Show Longitudinal Reinforcement">
+    <param name="Name" value="Girder View Tab">
+    <param name="Local" value="Girder_View_Tab.htm">
+  </object>
+  <li><object type="text/sitemap">
+    <param name="Name" value="Elevation View Settings">
+    <param name="Name" value="Girder View Tab">
+    <param name="Local" value="Girder_View_Tab.htm">
+  </object>
+  <li><object type="text/sitemap">
+    <param name="Name" value="Show Strands">
+    <param name="Name" value="Girder View Tab">
+    <param name="Local" value="Girder_View_Tab.htm">
+  </object>
+  <li><object type="text/sitemap">
+    <param name="Name" value="Girder View Settings Dialog">
+    <param name="Name" value="Girder View Tab">
+    <param name="Local" value="Girder_View_Tab.htm">
+  </object>
+  <li><object type="text/sitemap">
+    <param name="Name" value="Girder View Tab">
+    <param name="Name" value="Girder View Tab">
+    <param name="Local" value="Girder_View_Tab.htm">
+  </object>
+  <li><object type="text/sitemap">
+    <param name="Name" value="Show Dimensions">
+    <param name="Name" value="Girder View Tab">
+    <param name="Local" value="Girder_View_Tab.htm">
+  </object>
+  <li><object type="text/sitemap">
+    <param name="Name" value="Section View">
+    <param name="Name" value="Girder View Tab">
+    <param name="Local" value="Girder_View_Tab.htm">
+  </object>
+  <li><object type="text/sitemap">
+    <param name="Name" value="ALTERNATE ROUTE OPEN SOURCE LICENSE">
+    <param name="Name" value="Alternate Route Open Source License">
+    <param name="Local" value="License_Agreement.htm">
+  </object>
+  <ul>
+    <li><object type="text/sitemap">
+      <param name="Name" value="terms">
+      <param name="Name" value="Alternate Route Open Source License">
+      <param name="Local" value="License_Agreement.htm">
+    </object>
+    <li><object type="text/sitemap">
+      <param name="Name" value="Conditions">
+      <param name="Name" value="Alternate Route Open Source License">
+      <param name="Local" value="License_Agreement.htm">
+    </object>
+    </ul>
+  <li><object type="text/sitemap">
+    <param name="Name" value="GNU General Public License">
+    <param name="Name" value="Alternate Route Open Source License">
+    <param name="Local" value="License_Agreement.htm">
+  </object>
+  <li><object type="text/sitemap">
+    <param name="Name" value="GNU Library General Public License">
+    <param name="Name" value="Alternate Route Open Source License">
+    <param name="Local" value="License_Agreement.htm">
+  </object>
+  <li><object type="text/sitemap">
+    <param name="Name" value="Long Form">
+    <param name="Name" value="Analysis Report Tab">
+    <param name="Local" value="Analysis_Report_Tab.htm">
+  </object>
+  <li><object type="text/sitemap">
+    <param name="Name" value="Short Form">
+    <param name="Name" value="Analysis Report Tab">
+    <param name="Local" value="Analysis_Report_Tab.htm">
+  </object>
+  <li><object type="text/sitemap">
+    <param name="Name" value="Analysis Report Tab">
+    <param name="Name" value="Analysis Report Tab">
+    <param name="Local" value="Analysis_Report_Tab.htm">
+  </object>
+  <li><object type="text/sitemap">
+    <param name="Name" value="Job ID">
+    <param name="Name" value="Bridge Description Tab">
+    <param name="Local" value="Bridge_Description_Tab.htm">
+  </object>
+  <li><object type="text/sitemap">
+    <param name="Name" value="Mu, Required Ultimate Moment">
+    <param name="Name" value="Bridge Description Tab">
+    <param name="Local" value="Bridge_Description_Tab.htm">
+  </object>
+  <li><object type="text/sitemap">
+    <param name="Name" value="Span Length">
+    <param name="Name" value="Bridge Description Tab">
+    <param name="Local" value="Bridge_Description_Tab.htm">
+  </object>
+  <li><object type="text/sitemap">
+    <param name="Name" value="LLDF">
+    <param name="Name" value="Bridge Description Tab">
+    <param name="Local" value="Bridge_Description_Tab.htm">
+  </object>
+  <li><object type="text/sitemap">
+    <param name="Name" value="General Information">
+    <param name="Name" value="Bridge Description Tab">
+    <param name="Local" value="Bridge_Description_Tab.htm">
+  </object>
+  <li><object type="text/sitemap">
+    <param name="Name" value="Slab Thickness">
+    <param name="Name" value="Bridge Description Tab">
+    <param name="Local" value="Bridge_Description_Tab.htm">
+  </object>
+  <li><object type="text/sitemap">
+    <param name="Name" value="Name">
+    <param name="Name" value="Bridge Description Tab">
+    <param name="Local" value="Bridge_Description_Tab.htm">
+  </object>
+  <ul>
+    <li><object type="text/sitemap">
+      <param name="Name" value="Bridge">
+      <param name="Name" value="Bridge Description Tab">
+      <param name="Local" value="Bridge_Description_Tab.htm">
+    </object>
+    </ul>
+  <li><object type="text/sitemap">
+    <param name="Name" value="Relative Humidity">
+    <param name="Name" value="Bridge Description Tab">
+    <param name="Local" value="Bridge_Description_Tab.htm">
+  </object>
+  <li><object type="text/sitemap">
+    <param name="Name" value="Girder Input">
+    <param name="Name" value="Bridge Description Tab">
+    <param name="Local" value="Bridge_Description_Tab.htm">
+  </object>
+  <li><object type="text/sitemap">
+    <param name="Name" value="Optional Uniform Design Loads">
+    <param name="Name" value="Bridge Description Tab">
+    <param name="Local" value="Bridge_Description_Tab.htm">
+  </object>
+  <li><object type="text/sitemap">
+    <param name="Name" value="TxDOT Bridge Identification Number">
+    <param name="Name" value="Bridge Description Tab">
+    <param name="Local" value="Bridge_Description_Tab.htm">
+  </object>
+  <li><object type="text/sitemap">
+    <param name="Name" value="Material Properties">
+    <param name="Name" value="Bridge Description Tab">
+    <param name="Local" value="Bridge_Description_Tab.htm">
+  </object>
+  <li><object type="text/sitemap">
+    <param name="Name" value="Span No">
+    <param name="Name" value="Bridge Description Tab">
+    <param name="Local" value="Bridge_Description_Tab.htm">
+  </object>
+  <li><object type="text/sitemap">
+    <param name="Name" value="Modulus">
+    <param name="Name" value="Bridge Description Tab">
+    <param name="Local" value="Bridge_Description_Tab.htm">
+  </object>
+  <li><object type="text/sitemap">
+    <param name="Name" value="Pcf">
+    <param name="Name" value="Bridge Description Tab">
+    <param name="Local" value="Bridge_Description_Tab.htm">
+  </object>
+  <li><object type="text/sitemap">
+    <param name="Name" value="Job Number">
+    <param name="Name" value="Bridge Description Tab">
+    <param name="Local" value="Bridge_Description_Tab.htm">
+  </object>
+  <li><object type="text/sitemap">
+    <param name="Name" value="Export PGSuper Model">
+    <param name="Name" value="User Interface">
+    <param name="Local" value="User_Interface.htm">
+  </object>
+  <li><object type="text/sitemap">
+    <param name="Name" value="User Interface Guide">
+    <param name="Name" value="User Interface">
+    <param name="Local" value="User_Interface.htm">
+  </object>
+  <li><object type="text/sitemap">
+    <param name="Name" value="Support">
+    <param name="Name" value="Support">
+    <param name="Local" value="Support.htm">
+  </object>
 </ul>
 </html>

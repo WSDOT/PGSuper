@@ -29,6 +29,7 @@ LRESULT FAR PASCAL GetMsgProc(int nCode, WPARAM wParam,LPARAM lParam)
    if( ( nCode >= 0 && PM_REMOVE == wParam ) &&
         (lpMsg->message >= WM_KEYFIRST &&
          lpMsg->message <= WM_KEYLAST) &&
+         lpMsg->wParam == VK_TAB &&
          (IsDialogMessage(PageHwnd, lpMsg))) 
    {
       lpMsg->message = WM_NULL;
@@ -115,7 +116,7 @@ void CTxDOTOptionalDesignView::OnInitialUpdate()
 	   m_pPropSheet->AddPage(m_pReportPage);
 
 	   // Create a modeless property page
-      DWORD sheetStyle = DS_CONTEXTHELP | DS_SETFONT | WS_CHILD | WS_VISIBLE;
+      DWORD sheetStyle = WS_CHILD | WS_VISIBLE;
 
 	   if (!m_pPropSheet->Create(this,sheetStyle))
 	   {
@@ -128,9 +129,31 @@ void CTxDOTOptionalDesignView::OnInitialUpdate()
       m_pPropSheet->SetParent(this);
    }
 
-   SetScaleToFitSize(CSize(1, 1));
+   // Resize mainframe to fit entire property sheet initially
+	CRect rects;
+	m_pPropSheet->GetWindowRect(rects);
+	m_pPropSheet->CalcWindowRect(rects);
 
-   // plug in our hook so dialog messages redirected to the property sheet
+   GetParentFrame()->RecalcLayout();
+
+   // Expand mainframe to fit entire dialogs
+   CEAFMainFrame* pFrame = EAFGetMainFrame();
+
+   CRect rframe;
+   pFrame->GetWindowRect(rframe);
+
+   CRect rthis;
+   this->GetWindowRect(rthis); 
+
+   // height of menus,toolbars, other stuff
+   int rjunk = rthis.top - rframe.top; // (rframe.Height() - rthis.Height());
+
+   pFrame->SetWindowPos(NULL,0,0,rects.Width(),rects.Height()+rjunk,SWP_NOMOVE | SWP_NOZORDER);
+
+   // no scrolling
+   this->SetScaleToFitSize(CSize(1,1));
+   
+   // plug in our hook so dialog messages are redirected to the property sheet
    PageHwnd = m_pPropSheet->GetSafeHwnd();
    hHook = ::SetWindowsHookEx(WH_GETMESSAGE, GetMsgProc, NULL, GetCurrentThreadId());
 }
@@ -181,7 +204,7 @@ void CTxDOTOptionalDesignView::OnSize(UINT nType, int cx, int cy)
 
    if (m_pPropSheet!=NULL && ::IsWindow(m_pPropSheet->m_hWnd))
    {
-	   m_pPropSheet->SetWindowPos(NULL, 0, 0, cx, cy, SWP_NOZORDER);
+	   m_pPropSheet->SetWindowPos(this, 0, 0, cx, cy, SWP_NOZORDER);
    }
 }
 
@@ -212,30 +235,19 @@ BOOL CTxDOTOptionalDesignView::UpdateCurrentPageData()
 
 BOOL CTxDOTOptionalDesignView::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDLERINFO* pHandlerInfo)
 {
+
    // Redirect commands to active property page
-   if (m_pPropSheet!=NULL && ::IsWindow(m_pPropSheet->m_hWnd))
+   // If this is not here, the context menu in the report view will not work
+   if (nCode==CN_COMMAND  && !(nID>=ID_FILE_MRU_FIRST && nID<=ID_FILE_MRU_LAST) // mru commands must go to main app
+       && m_pPropSheet!=NULL && ::IsWindow(m_pPropSheet->m_hWnd))
    {
-      CPropertyPage* pPage;
-      {
       AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
+      CPropertyPage* pPage;
       pPage = m_pPropSheet->GetActivePage();
-      }
 
-      // HACK: Most messages require the static module state. However the help system
-      //       will not work without the below. Change the other and MRU no longer works
-      //       on the menu.
-      if(nID!=ID_HELP_FINDER)
-      {
-         if(pPage->OnCmdMsg(nID, nCode, pExtra, pHandlerInfo))
-            return TRUE;
-      }
-      else
-      {
-         AFX_MANAGE_STATE(AfxGetStaticModuleState());
-
-         if(pPage->OnCmdMsg(nID, nCode, pExtra, pHandlerInfo))
-            return TRUE;
-      }
+      if(pPage->OnCmdMsg(nID, nCode, pExtra, pHandlerInfo))
+        return TRUE;
    }
 
    return CFormView::OnCmdMsg(nID, nCode, pExtra, pHandlerInfo);
@@ -244,9 +256,18 @@ BOOL CTxDOTOptionalDesignView::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_C
 
 BOOL CTxDOTOptionalDesignView::PreTranslateMessage(MSG* pMsg)
 {
-   // TODO: Add your specialized code here and/or call the base class
-   if ( ::IsDialogMessage(m_hWnd,pMsg) )
-      return TRUE;
+
+   if (pMsg->message < WM_KEYLAST)
+      return FALSE;
+
+
+   {
+      AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
+      if ( ::IsDialogMessage(m_hWnd,pMsg) )
+         return TRUE;
+   }
+
 
    return CFormView::PreTranslateMessage(pMsg);
 }

@@ -63,6 +63,5 @@ public:
    afx_msg void OnCbnSelchangeReportCombo();
    afx_msg HBRUSH OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor);
    virtual void AssertValid() const;
-   afx_msg BOOL OnHelpInfo(HELPINFO* pHelpInfo);
    afx_msg void OnHelpFinder();
 };

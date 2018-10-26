@@ -51,6 +51,7 @@ NumConfinementZones(0),
 TopFlangeBarSize(0),
 TopFlangeBarSpacing(0.0),
 bDoStirrupsEngageDeck(true),
+bIsRoughenedSurface(true),
 strRebarMaterial("AASHTO M31 (A615) - Grade 60")
 {
    // make sure we have at least one zone
@@ -92,6 +93,9 @@ bool CShearData::operator == (const CShearData& rOther) const
       return false;
 
    if ( bDoStirrupsEngageDeck != rOther.bDoStirrupsEngageDeck )
+      return false;
+
+   if ( bIsRoughenedSurface != rOther.bIsRoughenedSurface )
       return false;
 
    if ( TopFlangeBarSize != rOther.TopFlangeBarSize)
@@ -150,6 +154,14 @@ HRESULT CShearData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
       bDoStirrupsEngageDeck = (var.boolVal == VARIANT_TRUE ? true : false);
    }
 
+   if (5.0 < version) // added in version 6.0
+   {
+      var.Clear();
+      var.vt = VT_BOOL;
+      pStrLoad->get_Property("IsRoughenedSurface", &var );
+      bIsRoughenedSurface = (var.boolVal == VARIANT_TRUE ? true : false);
+   }
+
    var.Clear();
    var.vt = VT_UI4;
    pStrLoad->get_Property("TopFlangeBarSize", &var );
@@ -189,12 +201,13 @@ HRESULT CShearData::Save(IStructuredSave* pStrSave,IProgress* pProgress)
    HRESULT hr = S_OK;
 
 
-   pStrSave->BeginUnit("ShearData",5.0);
+   pStrSave->BeginUnit("ShearData",6.0);
 
    pStrSave->put_Property("RebarType",CComVariant(strRebarMaterial.c_str()));
    pStrSave->put_Property("ConfinementBarSize", CComVariant(ConfinementBarSize));
    pStrSave->put_Property("ConfinementZone",    CComVariant(NumConfinementZones));
    pStrSave->put_Property("DoStirrupsEngageDeck",CComVariant(bDoStirrupsEngageDeck));
+   pStrSave->put_Property("IsRoughenedSurface",CComVariant(bIsRoughenedSurface));
    pStrSave->put_Property("TopFlangeBarSize",   CComVariant(TopFlangeBarSize));
    pStrSave->put_Property("TopFlangeBarSpacing",CComVariant(TopFlangeBarSpacing));
 
@@ -225,6 +238,7 @@ void CShearData::CopyGirderEntryData(const GirderLibraryEntry& rGird)
    TopFlangeBarSize      = rGird.GetTopFlangeShearBarSize();
    TopFlangeBarSpacing   = rGird.GetTopFlangeShearBarSpacing();
    bDoStirrupsEngageDeck = rGird.DoStirrupsEngageDeck();
+   bIsRoughenedSurface   = rGird.IsRoughenedSurface();
 
    ShearZones.clear();
    GirderLibraryEntry::ShearZoneInfoVec libvec = rGird.GetShearZoneInfo();
@@ -281,6 +295,7 @@ void CShearData::MakeCopy(const CShearData& rOther)
    TopFlangeBarSize      = rOther.TopFlangeBarSize;
    TopFlangeBarSpacing   = rOther.TopFlangeBarSpacing;
    bDoStirrupsEngageDeck = rOther.bDoStirrupsEngageDeck;
+   bIsRoughenedSurface   = rOther.bIsRoughenedSurface;
    strRebarMaterial      = rOther.strRebarMaterial;
 }
 

@@ -69,7 +69,7 @@ static char THIS_FILE[] = __FILE__;
 // from 13.0 to 14.0 added SectionDimensions data block
 // from 14.0 to 15.0 added strand grids for each end of the girder
 // from 15.0 to 16.0 added input for post-tensioning
-#define CURRENT_VERSION 16.0
+#define CURRENT_VERSION 17.0
 
 ////////////////////////// PUBLIC     ///////////////////////////////////////
 
@@ -104,6 +104,7 @@ m_LongSteelMaterial(SMaterialName),
 m_TopFlangeShearBarSize(0),
 m_TopFlangeShearBarSpacing(0.0),
 m_bStirrupsEngageDeck(true),
+m_bIsRoughenedSurface(true),
 m_bOddNumberOfHarpedStrands(true),
 // debonding criteria - use aashto defaults
 m_MaxDebondStrands(0.25),
@@ -113,8 +114,7 @@ m_MaxDebondedStrandsPerSection(0.40),
 m_MinDebondLength(::ConvertToSysUnits(3.0,unitMeasure::Feet)), // not aashto, but reasonable
 m_DefaultDebondLength(::ConvertToSysUnits(3.0,unitMeasure::Feet)),
 m_MaxDebondLengthBySpanFraction(-1.0), // 
-m_MaxDebondLengthByHardDistance(-1.0),
-m_bCanPostTension(false)
+m_MaxDebondLengthByHardDistance(-1.0)
 {
 	CWaitCursor cursor;
 
@@ -179,8 +179,8 @@ bool GirderLibraryEntry::SaveMe(sysIStructuredSave* pSave)
 
    m_pBeamFactory->SaveSectionDimensions(pSave,m_Dimensions);
 
-   // added version 16
-   pSave->Property("CanPostTension", m_bCanPostTension );
+   // added version 16, removed version 17
+   //pSave->Property("CanPostTension", m_bCanPostTension );
 
    pSave->Property("UseDifferentHarpedGridAtEnds",  m_bUseDifferentHarpedGridAtEnds);
 
@@ -211,6 +211,7 @@ bool GirderLibraryEntry::SaveMe(sysIStructuredSave* pSave)
    pSave->Property("ShearSteelMaterial",       m_ShearSteelMaterial.c_str());
    pSave->Property("LongSteelMaterial",        m_LongSteelMaterial.c_str());
    pSave->Property("DoStirrupsEngageDeck",     m_bStirrupsEngageDeck);
+   pSave->Property("IsRoughenedSurface",       m_bIsRoughenedSurface); // added in version 17
    pSave->Property("TopFlangeShearBarSize",    m_TopFlangeShearBarSize);
    pSave->Property("TopFlangeShearBarSpacing", m_TopFlangeShearBarSpacing);
 
@@ -461,11 +462,14 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
       }
       else
       {
-         if ( 15 < version )
+         if ( 15 < version && version < 17 )
          {
             // added version 16
-            if ( !pLoad->Property("CanPostTension", &m_bCanPostTension ) )
-               THROW_LOAD(InvalidFileFormat,pLoad);
+            // This input was stubbed in, but never used...
+            // The data member has been removed, but the keyword may still exist in the
+            // data stream.
+            bool bDummy;
+            pLoad->Property("CanPostTension", &bDummy);
          }
 
          if(!pLoad->Property("UseDifferentHarpedGridAtEnds", &m_bUseDifferentHarpedGridAtEnds))
@@ -723,6 +727,12 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
       if ( version >= 1.8 )
       {
          if ( !pLoad->Property("DoStirrupsEngageDeck",    &m_bStirrupsEngageDeck) )
+            THROW_LOAD(InvalidFileFormat,pLoad);
+      }
+
+      if ( 17 <= version )
+      {
+         if ( !pLoad->Property("IsRoughenedSurface",       &m_bIsRoughenedSurface) )
             THROW_LOAD(InvalidFileFormat,pLoad);
       }
 
@@ -1610,10 +1620,9 @@ bool GirderLibraryEntry::IsEqual(const GirderLibraryEntry& rOther, bool consider
    test &= (m_Dimensions == rOther.m_Dimensions);
 
    test &= (m_bStirrupsEngageDeck == rOther.m_bStirrupsEngageDeck);
+   test &= (m_bIsRoughenedSurface == rOther.m_bIsRoughenedSurface);
 
    test &= (m_DiaphragmLayoutRules == rOther.m_DiaphragmLayoutRules);
-
-   test &= (m_bCanPostTension == rOther.m_bCanPostTension);
 
    if (considerName)
       test &= this->GetName()==rOther.GetName();
@@ -2604,6 +2613,16 @@ bool GirderLibraryEntry::DoStirrupsEngageDeck() const
    return m_bStirrupsEngageDeck;
 }
 
+void GirderLibraryEntry::IsRoughenedSurface(bool bIsRoughened)
+{
+   m_bIsRoughenedSurface = bIsRoughened;
+}
+
+bool GirderLibraryEntry::IsRoughenedSurface() const
+{
+   return m_bIsRoughenedSurface;
+}
+
 void GirderLibraryEntry::SetTopFlangeShearBarSize(BarSizeType size)
 {
    CHECK(size>=0);
@@ -2800,10 +2819,9 @@ void GirderLibraryEntry::MakeCopy(const GirderLibraryEntry& rOther)
    m_bUseDifferentHarpedGridAtEnds = rOther.m_bUseDifferentHarpedGridAtEnds;
 
    m_bStirrupsEngageDeck = rOther.m_bStirrupsEngageDeck;
+   m_bIsRoughenedSurface = rOther.m_bIsRoughenedSurface;
 
    m_DiaphragmLayoutRules = rOther.m_DiaphragmLayoutRules;
-
-   m_bCanPostTension = rOther.m_bCanPostTension;
 }
 
 void GirderLibraryEntry::MakeAssignment(const GirderLibraryEntry& rOther)
@@ -3093,11 +3111,6 @@ std::string GirderLibraryEntry::GetSectionName() const
       ATLASSERT(0);
       return std::string("Unknown Girder Type");
    }
-}
-
-bool GirderLibraryEntry::CanPostTension() const
-{
-   return m_bCanPostTension;
 }
 
 //======================== ACCESS     =======================================

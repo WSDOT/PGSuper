@@ -261,6 +261,7 @@ void CGirderDescShearPage::DoDataExchange(CDataExchange* pDX)
    }
 
    DDX_Check_Bool(pDX,IDC_STIRRUPS_ENGAGE_DECK,m_ShearData.bDoStirrupsEngageDeck);
+   DDX_Check_Bool(pDX,IDC_ROUGHENED,           m_ShearData.bIsRoughenedSurface);
 }
 
 

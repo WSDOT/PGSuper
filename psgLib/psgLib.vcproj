@@ -152,7 +152,7 @@
 				Name="VCCLCompilerTool"
 				AdditionalOptions="/Zm200 "
 				AdditionalIncludeDirectories="..\Include;\ARP\WBFL\Include;\ARP\WBFL\Include\$(ConfigurationName)"
-				PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;_USRDLL;BUILDPSGLIBLIB;UNIT_TEST;_ATL_NO_UUIDOF;_GXDLL"
+				PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;_USRDLL;BUILDPSGLIBLIB;_ATL_NO_UUIDOF;_GXDLL"
 				RuntimeLibrary="2"
 				RuntimeTypeInfo="true"
 				UsePrecompiledHeader="2"
@@ -1949,15 +1949,11 @@
 				>
 			</File>
 			<File
-				RelativePath="ico00002.ico"
-				>
-			</File>
-			<File
 				RelativePath="res\ico00002.ico"
 				>
 			</File>
 			<File
-				RelativePath="res\ico00003.ico"
+				RelativePath="ico00002.ico"
 				>
 			</File>
 			<File
@@ -1965,11 +1961,15 @@
 				>
 			</File>
 			<File
-				RelativePath="ico00004.ico"
+				RelativePath="res\ico00003.ico"
 				>
 			</File>
 			<File
 				RelativePath="res\ico00004.ico"
+				>
+			</File>
+			<File
+				RelativePath="ico00004.ico"
 				>
 			</File>
 			<File
@@ -1981,11 +1981,11 @@
 				>
 			</File>
 			<File
-				RelativePath="res\icon1.ico"
+				RelativePath="icon1.ico"
 				>
 			</File>
 			<File
-				RelativePath="icon1.ico"
+				RelativePath="res\icon1.ico"
 				>
 			</File>
 			<File

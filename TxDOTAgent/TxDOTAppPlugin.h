@@ -43,6 +43,7 @@ class ATL_NO_VTABLE CTxDOTAppPlugin :
    public CComObjectRootEx<CComSingleThreadModel>,
    public CComCoClass<CTxDOTAppPlugin, &CLSID_TxDOTAppPlugin>,
    public IEAFAppPlugin,
+   public IEAFAppCommandLine,
    public IEAFCommandCallback
 {
 public:
@@ -56,6 +57,7 @@ DECLARE_REGISTRY_RESOURCEID(IDR_TXDOTAPPPLUGIN)
 BEGIN_COM_MAP(CTxDOTAppPlugin)
    COM_INTERFACE_ENTRY(IEAFAppPlugin)
    COM_INTERFACE_ENTRY(IEAFCommandCallback)
+   COM_INTERFACE_ENTRY(IEAFAppCommandLine)
 END_COM_MAP()
 
 BEGIN_CONNECTION_POINT_MAP(CTxDOTAppPlugin)
@@ -72,6 +74,10 @@ public:
    virtual HMENU GetSharedMenuHandle();
    virtual UINT GetDocumentResourceID();
    virtual CString GetName();
+
+// IEAFAppCommandLine
+public:
+   virtual CString GetUsageMessage();
    virtual BOOL ProcessCommandLineOptions(CEAFCommandLineInfo &cmdInfo);
 
 // IEAFCommandCallback

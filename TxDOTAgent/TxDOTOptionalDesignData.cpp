@@ -75,8 +75,8 @@ void CTxDOTOptionalDesignData::ResetData()
    m_Company.Empty();
    m_Comments.Empty();
 
-   m_SpanNo = -1;
-   m_BeamNo = -1;
+   m_SpanNo.Empty();
+   m_BeamNo.Empty();
 
    m_BeamType.Empty();
 
@@ -96,9 +96,11 @@ void CTxDOTOptionalDesignData::ResetData()
    m_Fb = Float64_Inf;
    m_Mu = Float64_Inf;
 
-   m_WNonCompDc = Float64_Inf;
-   m_WCompDc = Float64_Inf;
-   m_WCompDw = Float64_Inf;
+   m_WNonCompDc = 0.0;
+   m_WCompDc    = 0.0;
+   m_WCompDw    = 0.0;
+
+   m_UseHigherCompressionAllowable = FALSE;
 
    m_OriginalDesignGirderData.ResetData();
    m_PrecasterDesignGirderData.ResetData();
@@ -148,7 +150,7 @@ HRESULT CTxDOTOptionalDesignData::Save(IStructuredSave* pStrSave,IProgress* pPro
    pStrSave->put_Property("PGSuperFileName", CComVariant(m_PGSuperFileName));
    pStrSave->EndUnit();
 
-   pStrSave->BeginUnit("BridgeInputData",1.0);
+   pStrSave->BeginUnit("BridgeInputData",2.0);
    pStrSave->put_Property("Bridge",         CComVariant(m_Bridge));
    pStrSave->put_Property("BridgeID",         CComVariant(m_BridgeID));
    pStrSave->put_Property("JobNumber",         CComVariant(m_JobNumber));
@@ -176,6 +178,9 @@ HRESULT CTxDOTOptionalDesignData::Save(IStructuredSave* pStrSave,IProgress* pPro
    pStrSave->put_Property("WNonCompDc",         CComVariant(m_WNonCompDc));
    pStrSave->put_Property("WCompDc",         CComVariant(m_WCompDc));
    pStrSave->put_Property("WCompDw",         CComVariant(m_WCompDw));
+
+   pStrSave->put_Property("UseHigherCompressionAllowable", CComVariant(m_UseHigherCompressionAllowable!=FALSE)); // added version 2.0
+
    pStrSave->EndUnit(); // BridgeInputData
 
    pStrSave->BeginUnit("OriginalDesignGirderData",1.0);
@@ -233,6 +238,9 @@ HRESULT CTxDOTOptionalDesignData::Load(IStructuredLoad* pStrLoad,IProgress* pPro
       // Bridge Input Data
       hr = pStrLoad->BeginUnit("BridgeInputData");
 
+      double brgversion;
+      pStrLoad->get_Version(&brgversion);
+
       var.Clear();
       var.vt = VT_BSTR;
       hr = pStrLoad->get_Property("Bridge", &var );
@@ -264,14 +272,14 @@ HRESULT CTxDOTOptionalDesignData::Load(IStructuredLoad* pStrLoad,IProgress* pPro
       m_Comments = var.bstrVal;
 
       var.Clear();
-      var.vt = VT_I4;
+      var.vt = VT_BSTR;
       hr = pStrLoad->get_Property("SpanNo", &var );
-      m_SpanNo = var.lVal;
+      m_SpanNo = var.bstrVal;
 
       var.Clear();
-      var.vt = VT_I4;
+      var.vt = VT_BSTR;
       hr = pStrLoad->get_Property("BeamNo", &var );
-      m_BeamNo = var.lVal;
+      m_BeamNo = var.bstrVal;
 
       var.Clear();
       var.vt = VT_BSTR;
@@ -352,6 +360,18 @@ HRESULT CTxDOTOptionalDesignData::Load(IStructuredLoad* pStrLoad,IProgress* pPro
       var.vt = VT_R8;
       hr = pStrLoad->get_Property("WCompDw", &var );
       m_WCompDw = var.dblVal;
+
+      if (brgversion < 2.0)
+      {
+         m_UseHigherCompressionAllowable = FALSE;
+      }
+      else
+      {
+         var.Clear();
+         var.vt = VT_BOOL;
+         hr = pStrLoad->get_Property("UseHigherCompressionAllowable", &var );
+         m_UseHigherCompressionAllowable = var.boolVal==VARIANT_FALSE ? FALSE : TRUE;
+      }
 
       hr = pStrLoad->EndUnit(); // end BridgeInputData
 
@@ -442,7 +462,7 @@ void CTxDOTOptionalDesignData::SetBridge(const CString& value)
    if (value != m_Bridge)
    {
       m_Bridge = value;
-      FireChanged(ITxDataObserver::ctLocal);
+      FireChanged(ITxDataObserver::ctPGSuper);
    }
 }
 
@@ -456,7 +476,7 @@ void CTxDOTOptionalDesignData::SetBridgeID(const CString& value)
    if (value != m_BridgeID)
    {
       m_BridgeID = value;
-      FireChanged(ITxDataObserver::ctLocal);
+      FireChanged(ITxDataObserver::ctPGSuper);
    }
 }
 
@@ -470,7 +490,7 @@ void CTxDOTOptionalDesignData::SetJobNumber(const CString& value)
    if (value != m_JobNumber)
    {
       m_JobNumber = value;
-      FireChanged(ITxDataObserver::ctLocal);
+      FireChanged(ITxDataObserver::ctPGSuper);
    }
 }
 
@@ -489,7 +509,7 @@ void CTxDOTOptionalDesignData::SetEngineer(const CString& value)
    if (value != m_Engineer)
    {
       m_Engineer = value;
-      FireChanged(ITxDataObserver::ctLocal);
+      FireChanged(ITxDataObserver::ctPGSuper);
    }
 }
 
@@ -498,7 +518,7 @@ void CTxDOTOptionalDesignData::SetCompany(const CString& value)
    if (value != m_Company)
    {
       m_Company = value;
-      FireChanged(ITxDataObserver::ctLocal);
+      FireChanged(ITxDataObserver::ctPGSuper);
    }
 }
 
@@ -512,7 +532,7 @@ void CTxDOTOptionalDesignData::SetComments(const CString& value)
    if (value != m_Comments)
    {
       m_Comments = value;
-      FireChanged(ITxDataObserver::ctLocal);
+      FireChanged(ITxDataObserver::ctPGSuper);
    }
 }
 
@@ -521,7 +541,7 @@ CString CTxDOTOptionalDesignData::GetComments() const
    return m_Comments;
 }
 
-void CTxDOTOptionalDesignData::SetSpanNo(int value)
+void CTxDOTOptionalDesignData::SetSpanNo(const CString& value)
 {
    if (value != m_SpanNo)
    {
@@ -530,12 +550,12 @@ void CTxDOTOptionalDesignData::SetSpanNo(int value)
    }
 }
 
-int CTxDOTOptionalDesignData::GetSpanNo() const
+CString CTxDOTOptionalDesignData::GetSpanNo() const
 {
    return m_SpanNo;
 }
 
-void CTxDOTOptionalDesignData::SetBeamNo(int value)
+void CTxDOTOptionalDesignData::SetBeamNo(const CString& value)
 {
    if (value != m_BeamNo)
    {
@@ -544,7 +564,7 @@ void CTxDOTOptionalDesignData::SetBeamNo(int value)
    }
 }
 
-int CTxDOTOptionalDesignData::GetBeamNo() const
+CString CTxDOTOptionalDesignData::GetBeamNo() const
 {
    return m_BeamNo;
 }
@@ -775,6 +795,20 @@ Float64 CTxDOTOptionalDesignData::GetWCompDw() const
    return m_WCompDw;
 }
 
+void CTxDOTOptionalDesignData::SetUseHigherCompressionAllowable(BOOL val)
+{
+   if (val != m_UseHigherCompressionAllowable)
+   {
+      m_UseHigherCompressionAllowable = val;
+      FireChanged(ITxDataObserver::ctPGSuper);
+   }
+}
+
+BOOL CTxDOTOptionalDesignData::GetUseHigherCompressionAllowable() const
+{
+   return m_UseHigherCompressionAllowable;
+}
+
 CTxDOTOptionalDesignGirderData* CTxDOTOptionalDesignData::GetOriginalDesignGirderData()
 {
    return &m_OriginalDesignGirderData;
@@ -851,6 +885,8 @@ void CTxDOTOptionalDesignData::MakeCopy(const CTxDOTOptionalDesignData& rOther)
    m_WNonCompDc = rOther.m_WNonCompDc;
    m_WCompDc = rOther.m_WCompDc;
    m_WCompDw = rOther.m_WCompDw;
+
+   m_UseHigherCompressionAllowable = rOther.m_UseHigherCompressionAllowable;
 
    m_OriginalDesignGirderData = rOther.m_OriginalDesignGirderData;
    m_PrecasterDesignGirderData = rOther.m_PrecasterDesignGirderData;

@@ -53,7 +53,7 @@ public:
    CLibraryUsageParagraph();
    virtual ~CLibraryUsageParagraph();
 
-   virtual rptParagraph* Build(IBroker* pBroker) const;
+   virtual rptParagraph* Build(IBroker* pBroker, bool doPrintTable=true) const;
 
 private:
    CLibraryUsageParagraph(const CLibraryUsageParagraph& rOther);

@@ -349,12 +349,15 @@ CLASS
 
 //======================== LIFECYCLE  =======================================
 pgsVerticalShearArtifact::pgsVerticalShearArtifact() :
-m_bIsApplicable(true),
-m_bIsStrutAndTieRequired(false),
-m_bEndSpacingApplicable(false),
-m_AvSprovided(0.0),
-m_AvSatCS(0.0)
+m_bIsApplicable(true)
 {
+   for ( int i = 0; i < 2; i++ )
+   {
+      m_bIsStrutAndTieRequired[i] = false;
+      m_bEndSpacingApplicable[i] = false;
+      m_AvSprovided[i] = 0.0;
+      m_AvSatCS[i] = 0.0;
+   }
 }
 
 pgsVerticalShearArtifact::pgsVerticalShearArtifact(const pgsVerticalShearArtifact& rOther)
@@ -389,14 +392,14 @@ void pgsVerticalShearArtifact::IsApplicable(bool bApplicable)
    m_bIsApplicable = bApplicable;
 }
 
-bool pgsVerticalShearArtifact::IsStrutAndTieRequired() const
+bool pgsVerticalShearArtifact::IsStrutAndTieRequired(pgsTypes::MemberEndType end) const
 {
-   return m_bIsStrutAndTieRequired;
+   return m_bIsStrutAndTieRequired[end];
 }
 
-void pgsVerticalShearArtifact::IsStrutAndTieRequired(bool bRequired)
+void pgsVerticalShearArtifact::IsStrutAndTieRequired(pgsTypes::MemberEndType end,bool bRequired)
 {
-   m_bIsStrutAndTieRequired = bRequired;
+   m_bIsStrutAndTieRequired[end] = bRequired;
 }
 
 void pgsVerticalShearArtifact::SetAreStirrupsReqd(bool reqd)
@@ -439,23 +442,26 @@ Float64 pgsVerticalShearArtifact::GetCapacity() const
    return m_Capacity;
 }
 
-void pgsVerticalShearArtifact::SetEndSpacing(double AvS_provided,double AvS_at_CS)
+void pgsVerticalShearArtifact::SetEndSpacing(pgsTypes::MemberEndType end,double AvS_provided,double AvS_at_CS)
 {
-   m_bEndSpacingApplicable = true;
-   m_AvSprovided = AvS_provided;
-   m_AvSatCS     = AvS_at_CS;
+   m_bEndSpacingApplicable[end] = true;
+   m_AvSprovided[end] = AvS_provided;
+   m_AvSatCS[end]     = AvS_at_CS;
 }
 
-void pgsVerticalShearArtifact::GetEndSpacing(double* pAvS_provided,double* pAvS_at_CS)
+void pgsVerticalShearArtifact::GetEndSpacing(pgsTypes::MemberEndType end,double* pAvS_provided,double* pAvS_at_CS)
 {
-   *pAvS_provided = m_AvSprovided;
-   *pAvS_at_CS    = m_AvSatCS;
+   *pAvS_provided = m_AvSprovided[end];
+   *pAvS_at_CS    = m_AvSatCS[end];
 }
 
 bool pgsVerticalShearArtifact::Passed() const
 {
-   if ( m_bEndSpacingApplicable && m_AvSprovided < m_AvSatCS )
-      return false;
+   for ( int i = 0; i < 2; i++ )
+   {
+      if ( m_bEndSpacingApplicable[i] && m_AvSprovided[i] < m_AvSatCS[i] )
+         return false;
+   }
 
    if (m_AreStirrupsReqd && ! m_AreStirrupsProvided)
       return false;
@@ -491,14 +497,20 @@ void pgsVerticalShearArtifact::Dump(dbgDumpContext& os) const
 void pgsVerticalShearArtifact::MakeCopy(const pgsVerticalShearArtifact& rOther)
 {
    m_bIsApplicable = rOther.m_bIsApplicable;
-   m_bIsStrutAndTieRequired = rOther.m_bIsStrutAndTieRequired;
-   m_AreStirrupsReqd = rOther.m_AreStirrupsReqd;
+
+   for (int i = 0; i < 2; i++ )
+   {
+      m_bIsStrutAndTieRequired[i] = rOther.m_bIsStrutAndTieRequired[i];
+      m_AvSprovided[i]            = rOther.m_AvSprovided[i];
+      m_AvSatCS [i]               = rOther.m_AvSatCS[i];
+      m_bEndSpacingApplicable[i]  = rOther.m_bEndSpacingApplicable[i];
+   }
+
+   m_AreStirrupsReqd     = rOther.m_AreStirrupsReqd;
    m_AreStirrupsProvided = rOther.m_AreStirrupsProvided;
-   m_Demand = rOther.m_Demand;
+
+   m_Demand   = rOther.m_Demand;
    m_Capacity = rOther.m_Capacity;
-   m_AvSprovided = rOther.m_AvSprovided;
-   m_AvSatCS     = rOther.m_AvSatCS;
-   m_bEndSpacingApplicable = rOther.m_bEndSpacingApplicable;
 }
 
 void pgsVerticalShearArtifact::MakeAssignment(const pgsVerticalShearArtifact& rOther)

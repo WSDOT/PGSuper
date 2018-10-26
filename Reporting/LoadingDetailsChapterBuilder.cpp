@@ -146,7 +146,7 @@ rptChapter* CLoadingDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,
       GirderIndexType lastGirderIdx  = min(nGirders,  (gdr == ALL_GIRDERS ? nGirders : firstGirderIdx + 1));
       for ( GirderIndexType gdrIdx = firstGirderIdx; gdrIdx < lastGirderIdx; gdrIdx++ )
       {
-         if ( span == ALL_SPANS || gdr == ALL_GIRDERS )
+         if ( (span == ALL_SPANS || gdr == ALL_GIRDERS) && !m_bSimplifiedVersion )
          {
             pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
             *pChapter << pPara;
@@ -194,8 +194,12 @@ rptChapter* CLoadingDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,
             (*p_table)(row++,1) << fpl.SetValue(-pProdLoads->GetSidewalkLoad(spanIdx,gdrIdx));
          }
 
-         (*p_table)(row,0) << "Traffic Barrier";
-         (*p_table)(row++,1) << fpl.SetValue(-pProdLoads->GetTrafficBarrierLoad(spanIdx,gdrIdx));
+         Float64 tb_load = pProdLoads->GetTrafficBarrierLoad(spanIdx,gdrIdx);
+         if (tb_load!=0.0)
+         {
+            (*p_table)(row,0) << "Traffic Barrier";
+            (*p_table)(row++,1) << fpl.SetValue(-tb_load);
+         }
 
          if ( pProdLoads->HasPedestrianLoad(spanIdx,gdrIdx) )
          {
@@ -244,19 +248,22 @@ rptChapter* CLoadingDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,
 
             bool is_uniform = IsSlabLoadUniform(slab_loads, deck_type);
 
-            pPara = new rptParagraph;
-            *pChapter << pPara;
+            // Don't eject haunch note unless we have a haunch
+            bool do_report_haunch = true;
+            rptParagraph* pNotePara = new rptParagraph;
+            *pChapter << pNotePara;
 
             if (is_uniform)
             {
-               *pPara << "Slab Load is uniform along entire girder length."<<rptNewLine;
+               *pNotePara << "Slab Load is uniform along entire girder length.";
             }
             else
             {
-               *pPara << "Slab Load is approximated with Linear Load Segments applied along the length of the girder" << rptNewLine;
+               *pNotePara << "Slab Load is approximated with Linear Load Segments applied along the length of the girder";
             }
 
-            *pPara << "Haunch weight includes effects of roadway geometry but does not include a reduction for camber" << rptNewLine;
+            pPara = new rptParagraph;
+            *pChapter << pPara;
 
             if ( deck_type == pgsTypes::sdtCompositeSIP )
             {
@@ -325,10 +332,16 @@ rptChapter* CLoadingDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,
 
                   const SlabLoad& slab_load = *(slab_loads.begin());
 
-                  (*p_table)(row,0) << "Main Slab Weight";
-                  (*p_table)(row++,1) << fpl.SetValue(-slab_load.MainSlabLoad);
-                  (*p_table)(row,0) << "Haunch Weight";
-                  (*p_table)(row++,1) << fpl.SetValue(-slab_load.PadLoad);
+                  // Don't report zero slab load in simplified version
+                  do_report_haunch = !(m_bSimplifiedVersion && IsZero(slab_load.PadLoad));
+
+                  if (do_report_haunch)
+                  {
+                     (*p_table)(row,0) << "Main Slab Weight";
+                     (*p_table)(row++,1) << fpl.SetValue(-slab_load.MainSlabLoad);
+                     (*p_table)(row,0) << "Haunch Weight";
+                     (*p_table)(row++,1) << fpl.SetValue(-slab_load.PadLoad);
+                  }
                   (*p_table)(row,0) << "Total Slab Weight";
                   (*p_table)(row++,1) << fpl.SetValue(-slab_load.MainSlabLoad-slab_load.PadLoad);
                }
@@ -358,6 +371,8 @@ rptChapter* CLoadingDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,
                }
             } // end if ( pBridge->GetDeckType() == pgsTypes::sdtCompositeSIP )
 
+            if(do_report_haunch)            
+               *pNotePara <<rptNewLine<< "Haunch weight includes effects of roadway geometry but does not include a reduction for camber";
 
             // the rest of the content is for the non-simplified version (full boat)
             if (!m_bSimplifiedVersion)
@@ -785,17 +800,17 @@ rptChapter* CLoadingDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,
                }
             }
 
-               // User Defined Loads
-               pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
-               *pChapter << pPara;
-               *pPara<< "User Defined Loads"<<rptNewLine;
-               pPara = CUserDefinedLoadsChapterBuilder::CreatePointLoadTable(pBroker, spanIdx, gdrIdx, pDisplayUnits, level);
-               *pChapter << pPara;
-               pPara = CUserDefinedLoadsChapterBuilder::CreateDistributedLoadTable(pBroker, spanIdx, gdrIdx, pDisplayUnits, level);
-               *pChapter << pPara;
-               pPara = CUserDefinedLoadsChapterBuilder::CreateMomentLoadTable(pBroker, spanIdx, gdrIdx, pDisplayUnits, level);
-               *pChapter << pPara;
-            }
+            // User Defined Loads
+            pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+            *pChapter << pPara;
+            *pPara<< "User Defined Loads"<<rptNewLine;
+            pPara = CUserDefinedLoadsChapterBuilder::CreatePointLoadTable(pBroker, spanIdx, gdrIdx, pDisplayUnits, level, m_bSimplifiedVersion);
+            *pChapter << pPara;
+            pPara = CUserDefinedLoadsChapterBuilder::CreateDistributedLoadTable(pBroker, spanIdx, gdrIdx, pDisplayUnits, level, m_bSimplifiedVersion);
+            *pChapter << pPara;
+            pPara = CUserDefinedLoadsChapterBuilder::CreateMomentLoadTable(pBroker, spanIdx, gdrIdx, pDisplayUnits, level, m_bSimplifiedVersion);
+            *pChapter << pPara;
+         } // !simplified version
       } // gdrIdx
    } // spanIdx
 

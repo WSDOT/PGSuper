@@ -136,7 +136,7 @@ LRESULT CTrafficBarrierDlg::OnCommandHelp(WPARAM, LPARAM lParam)
 BOOL CTrafficBarrierDlg::OnInitDialog() 
 {
    CComboBox* pCB = (CComboBox*)GetDlgItem(IDC_WEIGHT_METHOD);
-   int idx = pCB->AddString("Compute properties based on user input");
+   int idx = pCB->AddString("Compute properties from barrier shape and materials");
    pCB->SetItemData(idx,(DWORD)TrafficBarrierEntry::Compute);
 
    idx = pCB->AddString("Use these properties");
@@ -183,10 +183,18 @@ void CTrafficBarrierDlg::OnWeightMethodChanged()
    GetDlgItem(IDC_WEIGHT_LABEL)->EnableWindow(method == TrafficBarrierEntry::Input );
    GetDlgItem(IDC_WEIGHT)->EnableWindow(method == TrafficBarrierEntry::Input );
    GetDlgItem(IDC_WEIGHT_UNIT)->EnableWindow(method == TrafficBarrierEntry::Input );
+
+   GetDlgItem(IDC_WEIGHT_LABEL)->ShowWindow(method == TrafficBarrierEntry::Input ? SW_SHOW : SW_HIDE );
+   GetDlgItem(IDC_WEIGHT)->ShowWindow(method == TrafficBarrierEntry::Input ? SW_SHOW : SW_HIDE );
+   GetDlgItem(IDC_WEIGHT_UNIT)->ShowWindow(method == TrafficBarrierEntry::Input ? SW_SHOW : SW_HIDE );
 	
    GetDlgItem(IDC_EC_LABEL)->EnableWindow(method == TrafficBarrierEntry::Input );
    GetDlgItem(IDC_EC)->EnableWindow(method == TrafficBarrierEntry::Input );
    GetDlgItem(IDC_EC_UNIT)->EnableWindow(method == TrafficBarrierEntry::Input );
+
+   GetDlgItem(IDC_EC_LABEL)->ShowWindow(method == TrafficBarrierEntry::Input ? SW_SHOW : SW_HIDE );
+   GetDlgItem(IDC_EC)->ShowWindow(method == TrafficBarrierEntry::Input ? SW_SHOW : SW_HIDE );
+   GetDlgItem(IDC_EC_UNIT)->ShowWindow(method == TrafficBarrierEntry::Input ? SW_SHOW : SW_HIDE );
 }
 
 void CTrafficBarrierDlg::OnAdd()

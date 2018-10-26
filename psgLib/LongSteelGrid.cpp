@@ -244,7 +244,7 @@ void CLongSteelGrid::CustomInit()
 			.SetValue(cv)
 		);
 
-   cv.Format("Spacing\n(%s)",pDisplayUnits->SpanLength.UnitOfMeasure.UnitTag().c_str());
+   cv.Format("Spacing\n(%s)",pDisplayUnits->ComponentDim.UnitOfMeasure.UnitTag().c_str());
 	this->SetStyleRange(CGXRange(0,5), CGXStyle()
          .SetWrapText(TRUE)
 			.SetEnabled(FALSE)          // disables usage as current cell

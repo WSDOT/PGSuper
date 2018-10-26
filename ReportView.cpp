@@ -139,7 +139,7 @@ HRESULT CPGSuperReportView::UpdateReportBrowser(CReportHint* pHint)
    EAFGetBroker(&pBroker);
 
    GET_IFACE2(pBroker,IProgress,pProgress);
-   CEAFAutoProgress ap(pProgress,0);
+   CEAFAutoProgress ap(pProgress);
 
    pProgress->UpdateMessage("Working...");
 
