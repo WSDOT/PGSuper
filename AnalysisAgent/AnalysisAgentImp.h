@@ -483,6 +483,7 @@ private:
    CamberModelData m_CacheConfig_PrestressDeflectionModel;
    CamberModelData m_CacheConfig_InitialTempPrestressDeflectionModels;
    CamberModelData m_CacheConfig_ReleaseTempPrestressDeflectionModels;
+   void InvalidateCache();
 
    void ValidateCamberModels(const CSegmentKey& segmentKey);
    void ValidateCamberModels(const GDRCONFIG* pConfig);

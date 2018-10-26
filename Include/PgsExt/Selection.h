@@ -26,7 +26,7 @@
 class PGSEXTCLASS CSelection
 {
 public:
-   enum Type { None, Pier, Span, Girder, Segment, ClosureJoint, TemporarySupport, Deck, Alignment } Type;
+   enum Type { None, Pier, Span, Girder, Segment, ClosureJoint, TemporarySupport, Deck, Alignment, LeftRailingSystem, RightRailingSystem } Type;
    SpanIndexType SpanIdx;
    PierIndexType PierIdx;
    GroupIndexType GroupIdx;

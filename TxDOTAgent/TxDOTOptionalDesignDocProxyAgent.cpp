@@ -189,6 +189,12 @@ bool CTxDOTOptionalDesignDocProxyAgent::IsAlignmentSelected()
    return false;
 }
 
+bool CTxDOTOptionalDesignDocProxyAgent::IsRailingSystemSelected(pgsTypes::TrafficBarrierOrientation orientation)
+{
+   ATLASSERT(false); // not using this method
+   return false;
+}
+
 void CTxDOTOptionalDesignDocProxyAgent::SelectPier(PierIndexType pierIdx)
 {
    ATLASSERT(false); // not using this method
@@ -225,6 +231,11 @@ void CTxDOTOptionalDesignDocProxyAgent::SelectDeck()
 }
 
 void CTxDOTOptionalDesignDocProxyAgent::SelectAlignment()
+{
+   ATLASSERT(false); // not using this method
+}
+
+void CTxDOTOptionalDesignDocProxyAgent::SelectRailingSystem(pgsTypes::TrafficBarrierOrientation orientation)
 {
    ATLASSERT(false); // not using this method
 }

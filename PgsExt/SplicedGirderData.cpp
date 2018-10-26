@@ -38,7 +38,7 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-// NOTE: On of the original ideas for this class was to have adjacent segments be merged together
+// NOTE: One of the original ideas for this class was to have adjacent segments be merged together
 // when a temporary support or pier was removed from the model. The hope was to retain the girder
 // profile geometry after editing. The geometry is kept intact when a closure joint is added
 // to the girder, but it cannot be maintained when a closure is removed.
@@ -159,6 +159,7 @@ CSplicedGirderData::~CSplicedGirderData()
 
 void CSplicedGirderData::Clear()
 {
+   RemovePTFromTimelineManager();
    RemoveSegmentsFromTimelineManager();
    RemoveClosureJointsFromTimelineManager();
 }
@@ -1664,6 +1665,11 @@ void CSplicedGirderData::AddClosureToTimelineManager(const CClosureJointData* pC
    IDType closureID = pClosure->GetID();
 
    pTimelineMgr->SetCastClosureJointEventByIndex(closureID,castClosureEventIdx);
+}
+
+void CSplicedGirderData::RemovePTFromTimelineManager()
+{
+   m_PTData.RemoveDucts();
 }
 
 void CSplicedGirderData::Initialize()

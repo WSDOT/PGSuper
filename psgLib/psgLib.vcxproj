@@ -606,7 +606,6 @@
     <ClInclude Include="..\Include\psgLib\LibraryEditorChildFrm.h" />
     <ClInclude Include="..\Include\psgLib\LibraryEditorDoc.h" />
     <ClInclude Include="..\Include\psgLib\libraryEditorView.h" />
-    <ClInclude Include="..\Include\psgLib\LibraryEntryConflict.h" />
     <ClInclude Include="..\Include\psgLib\LibraryEntryDifferenceItem.h" />
     <ClInclude Include="..\Include\PsgLib\LibraryManager.h" />
     <ClInclude Include="..\Include\psgLib\LiveLoadLibraryEntry.h" />

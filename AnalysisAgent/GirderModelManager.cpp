@@ -4264,7 +4264,6 @@ void CGirderModelManager::GetReaction(IntervalIndexType intervalIdx,pgsTypes::Li
 
    GET_IFACE(IBridge,pBridge);
    CSegmentKey segmentKey = pBridge->GetSegmentAtPier(pierIdx,girderKey);
-   IntervalIndexType erectionIntervalIdx = pIntervals->GetErectSegmentInterval(segmentKey);
 
    ConfigureLBAMPoisForReactions(girderKey,pierIdx,pgsTypes::stPier,intervalIdx,bat,intervalIdx < liveLoadIntervalIdx ? false : true, rtCumulative, false);
 
@@ -12641,14 +12640,87 @@ void CGirderModelManager::GetPierTemporarySupportIDs(PierIndexType pierIdx,Suppo
 
 //////////////////////////////////////////////////
 // LLDF Support Methods
-CGirderModelManager::SpanType CGirderModelManager::GetSpanType(const CSpanKey& spanKey,bool bContinuous)
+CGirderModelManager::SpanType CGirderModelManager::GetSpanType(const CSpanKey& spanKey,bool bContinuousAnalysis)
 {
-   if ( !bContinuous )
+   // Determine the type of span we have for the purpose of applying LLDF
+   // to the LBAM model
+
+   // Determine if there are cantilevers at the ends of the span.. cantilever cause inflection points
+   GET_IFACE(IBridge, pBridge);
+   bool bStartCantilever(false), bEndCantilever(false);
+   GroupIndexType nGroups = pBridge->GetGirderGroupCount();
+   for (GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++)
    {
-      return PinPin;
+      SpanIndexType startSpanIdx, endSpanIdx;
+      pBridge->GetGirderGroupSpans(grpIdx, &startSpanIdx, &endSpanIdx);
+      if (spanKey.spanIndex == startSpanIdx)
+      {
+         // this is the first span in the group... if the pier doesn't have continuity check to see if there is a cantilever at the start of the span
+         PierIndexType startPierIdx = (PierIndexType)startSpanIdx;
+         bool bContinuousLeft, bContinuousRight;
+         pBridge->IsContinuousAtPier(startPierIdx, &bContinuousLeft, &bContinuousRight);
+
+         bool bIntegralLeft, bIntegralRight;
+         pBridge->IsIntegralAtPier(startPierIdx, &bIntegralLeft, &bIntegralRight);
+
+         bool bContinuousStart = bContinuousLeft || bIntegralLeft;
+         if (!bContinuousStart)
+         {
+            CSegmentKey segmentKey(grpIdx, spanKey.girderIndex, 0);
+            bool _bEndCantilever;
+            pBridge->ModelCantilevers(segmentKey, &bStartCantilever, &_bEndCantilever);
+         }
+      }
+
+      if (spanKey.spanIndex == endSpanIdx)
+      {
+         // this is the last span in the group... see if there is a cantilever at the end of the span
+         PierIndexType endPierIdx = (PierIndexType)(endSpanIdx+1);
+         bool bContinuousLeft, bContinuousRight;
+         pBridge->IsContinuousAtPier(endPierIdx, &bContinuousLeft, &bContinuousRight);
+
+         bool bIntegralLeft, bIntegralRight;
+         pBridge->IsIntegralAtPier(endPierIdx, &bIntegralLeft, &bIntegralRight);
+
+         bool bContinuousEnd = bContinuousRight || bIntegralRight;
+         if (!bContinuousEnd)
+         {
+            SegmentIndexType nSegments = pBridge->GetSegmentCount(grpIdx, spanKey.girderIndex);
+            CSegmentKey segmentKey(grpIdx, spanKey.girderIndex, nSegments - 1);
+            bool _bStartCantilever;
+            pBridge->ModelCantilevers(segmentKey, &_bStartCantilever, &bEndCantilever);
+         }
+      }
+
+      if (startSpanIdx <= spanKey.spanIndex && spanKey.spanIndex <= endSpanIdx )
+      {
+         // we found our group... break
+         break;
+      }
    }
 
-   GET_IFACE(IBridge,pBridge);
+   if ( !bContinuousAnalysis )
+   {
+      // we are doing simple span analysis
+      if (!bStartCantilever && !bEndCantilever)
+      {
+         return PinPin;
+      }
+      else if (bStartCantilever && !bEndCantilever)
+      {
+         return FixPin;
+      }
+      else if (!bStartCantilever && bEndCantilever)
+      {
+         return PinFix;
+      }
+      else
+      {
+         ATLASSERT(bStartCantilever && bEndCantilever);
+         return FixFix;
+      }
+   }
+
    PierIndexType prev_pier = spanKey.spanIndex;
    PierIndexType next_pier = prev_pier + 1;
 
@@ -12672,17 +12744,38 @@ CGirderModelManager::SpanType CGirderModelManager::GetSpanType(const CSpanKey& s
 
    if ( bContinuousStart && !bContinuousEnd )
    {
-      return FixPin;
+      if (bEndCantilever)
+      {
+         return FixFix;
+      }
+      else
+      {
+         return FixPin;
+      }
    }
 
    if ( !bContinuousStart && bContinuousEnd )
    {
-      return PinFix;
+      if (bStartCantilever)
+      {
+         return FixFix;
+      }
+      else
+      {
+         return PinFix;
+      }
    }
 
    if ( !bContinuousStart && !bContinuousEnd )
    {
-      return PinPin;
+      if (bStartCantilever && bEndCantilever)
+      {
+         return FixFix;
+      }
+      else
+      {
+         return PinPin;
+      }
    }
 
    ATLASSERT(false); // should never get here
@@ -13164,6 +13257,7 @@ void CGirderModelManager::ApplyLLDF_PinFix(const CSpanKey& spanKey,IDblArray* cf
       }
    }
 
+   pgsTypes::PierFaceType pierFace(spanKey.spanIndex == 0 ? pgsTypes::Ahead : pgsTypes::Back);
    if ( bUseLinearLLDF )
    {
       if ( bTaperStart && !bTaperEnd )
@@ -13180,7 +13274,7 @@ void CGirderModelManager::ApplyLLDF_PinFix(const CSpanKey& spanKey,IDblArray* cf
          }
 
          // for the second part of the span, use the negative moment distribution factor that goes over the next pier
-         gnM = pLLDF->GetNegMomentDistFactorAtPier(spanKey.spanIndex+1,spanKey.girderIndex,pgsTypes::StrengthI,pgsTypes::Back);
+         gnM = pLLDF->GetNegMomentDistFactorAtPier(spanKey.spanIndex+1,spanKey.girderIndex,pgsTypes::StrengthI, pierFace);
 
          AddDistributionFactors(distFactors,seg_length_2,gpM,gnM,gVEnd,gR,gFM,gFVEnd,gD,gPedes);
       }
@@ -13192,7 +13286,7 @@ void CGirderModelManager::ApplyLLDF_PinFix(const CSpanKey& spanKey,IDblArray* cf
             AddDistributionFactors(distFactors,seg_length_1 - span_length/2,gpM,gnM,gVStart,gVCF,gR,gFM,gFVStart,gFVCF,gD,gPedes);
 
             // for the second part of the span, use the negative moment distribution factor that goes over the next pier
-            gnM = pLLDF->GetNegMomentDistFactorAtPier(spanKey.spanIndex+1,spanKey.girderIndex,pgsTypes::StrengthI,pgsTypes::Back);
+            gnM = pLLDF->GetNegMomentDistFactorAtPier(spanKey.spanIndex+1,spanKey.girderIndex,pgsTypes::StrengthI, pierFace);
 
             AddDistributionFactors(distFactors,seg_length_2,gpM,gnM,gVCF,gVEnd,gR,gFM,gFVCF,gFVEnd,gD,gPedes);
          }
@@ -13201,7 +13295,7 @@ void CGirderModelManager::ApplyLLDF_PinFix(const CSpanKey& spanKey,IDblArray* cf
             AddDistributionFactors(distFactors,seg_length_1,gpM,gnM,gVStart,gR,gFM,gFVStart,gD,gPedes);
 
             // for the second part of the span, use the negative moment distribution factor that goes over the next pier
-            gnM = pLLDF->GetNegMomentDistFactorAtPier(spanKey.spanIndex+1,spanKey.girderIndex,pgsTypes::StrengthI,pgsTypes::Back);
+            gnM = pLLDF->GetNegMomentDistFactorAtPier(spanKey.spanIndex+1,spanKey.girderIndex,pgsTypes::StrengthI, pierFace);
             AddDistributionFactors(distFactors,span_length/2 - seg_length_1,gpM,gnM,gVStart,gR,gFM,gFVStart,gD,gPedes);
 
             AddDistributionFactors(distFactors,seg_length_2 - (span_length/2 - seg_length_1),gpM,gnM,gVStart,gVEnd,gR,gFM,gFVStart,gFVEnd,gD,gPedes);
@@ -13214,13 +13308,13 @@ void CGirderModelManager::ApplyLLDF_PinFix(const CSpanKey& spanKey,IDblArray* cf
          {
             AddDistributionFactors(distFactors,span_length/2,gpM,gnM,gVStart,gVMid,gR,gFM,gFVStart,gFVMid,gD,gPedes);
             AddDistributionFactors(distFactors,seg_length_1 - span_length/2,gpM,gnM,gVMid,gVCF,gR,gFM,gFVMid,gFVCF,gD,gPedes);
-            gnM = pLLDF->GetNegMomentDistFactorAtPier(spanKey.spanIndex+1,spanKey.girderIndex,pgsTypes::StrengthI,pgsTypes::Back);
+            gnM = pLLDF->GetNegMomentDistFactorAtPier(spanKey.spanIndex+1,spanKey.girderIndex,pgsTypes::StrengthI, pierFace);
             AddDistributionFactors(distFactors,seg_length_2,gpM,gnM,gVCF,gVEnd,gR,gFM,gFVCF,gFVEnd,gD,gPedes);
          }
          else
          {
             AddDistributionFactors(distFactors,seg_length_1,gpM,gnM,gVStart,gVCF,gR,gFM,gFVStart,gFVCF,gD,gPedes);
-            gnM = pLLDF->GetNegMomentDistFactorAtPier(spanKey.spanIndex+1,spanKey.girderIndex,pgsTypes::StrengthI,pgsTypes::Back);
+            gnM = pLLDF->GetNegMomentDistFactorAtPier(spanKey.spanIndex+1,spanKey.girderIndex,pgsTypes::StrengthI, pierFace);
             AddDistributionFactors(distFactors,span_length/2 - seg_length_1,gpM,gnM,gVCF,gVMid,gR,gFM,gFVCF,gFVMid,gD,gPedes);
             AddDistributionFactors(distFactors,seg_length_2,gpM,gnM,gVMid,gVEnd,gR,gFM,gFVMid,gFVEnd,gD,gPedes);
          }
@@ -13231,7 +13325,7 @@ void CGirderModelManager::ApplyLLDF_PinFix(const CSpanKey& spanKey,IDblArray* cf
       AddDistributionFactors(distFactors,seg_length_1,gpM,gnM,gV,gR,gFM,gFV,gD,gPedes);
 
       // for the second part of the span, use the negative moment distribution factor that goes over the next pier
-      gnM = pLLDF->GetNegMomentDistFactorAtPier(spanKey.spanIndex+1,spanKey.girderIndex,pgsTypes::StrengthI,pgsTypes::Back);
+      gnM = pLLDF->GetNegMomentDistFactorAtPier(spanKey.spanIndex+1,spanKey.girderIndex,pgsTypes::StrengthI, pierFace);
 
       AddDistributionFactors(distFactors,seg_length_2,gpM,gnM,gV,gR,gFM,gFV,gD,gPedes);
    }
@@ -13412,6 +13506,7 @@ void CGirderModelManager::ApplyLLDF_FixPin(const CSpanKey& spanKey,IDblArray* cf
       }
    }
 
+   pgsTypes::PierFaceType pierFace(spanKey.spanIndex == 0 ? pgsTypes::Ahead : pgsTypes::Back);
    if ( bUseLinearLLDF )
    {
       if ( bTaperStart && !bTaperEnd )
@@ -13428,7 +13523,7 @@ void CGirderModelManager::ApplyLLDF_FixPin(const CSpanKey& spanKey,IDblArray* cf
          }
 
          // for the second part of the span, use the negative moment distribution factor that goes over the next pier
-         gnM = pLLDF->GetNegMomentDistFactorAtPier(spanKey.spanIndex,spanKey.girderIndex,pgsTypes::StrengthI,pgsTypes::Back);
+         gnM = pLLDF->GetNegMomentDistFactorAtPier(spanKey.spanIndex,spanKey.girderIndex,pgsTypes::StrengthI,pierFace);
 
          AddDistributionFactors(distFactors,seg_length_2,gpM,gnM,gVEnd,gR,gFM,gFVEnd,gD,gPedes);
       }
@@ -13440,7 +13535,7 @@ void CGirderModelManager::ApplyLLDF_FixPin(const CSpanKey& spanKey,IDblArray* cf
             AddDistributionFactors(distFactors,seg_length_1 - span_length/2,gpM,gnM,gVStart,gVCF,gR,gFM,gFVStart,gFVCF,gD,gPedes);
 
             // for the second part of the span, use the negative moment distribution factor that goes over the next pier
-            gnM = pLLDF->GetNegMomentDistFactorAtPier(spanKey.spanIndex,spanKey.girderIndex,pgsTypes::StrengthI,pgsTypes::Back);
+            gnM = pLLDF->GetNegMomentDistFactorAtPier(spanKey.spanIndex,spanKey.girderIndex,pgsTypes::StrengthI, pierFace);
 
             AddDistributionFactors(distFactors,seg_length_2,gpM,gnM,gVCF,gVEnd,gR,gFM,gFVCF,gFVEnd,gD,gPedes);
          }
@@ -13449,7 +13544,7 @@ void CGirderModelManager::ApplyLLDF_FixPin(const CSpanKey& spanKey,IDblArray* cf
             AddDistributionFactors(distFactors,seg_length_1,gpM,gnM,gVStart,gR,gFM,gFVStart,gD,gPedes);
 
             // for the second part of the span, use the negative moment distribution factor that goes over the next pier
-            gnM = pLLDF->GetNegMomentDistFactorAtPier(spanKey.spanIndex,spanKey.girderIndex,pgsTypes::StrengthI,pgsTypes::Back);
+            gnM = pLLDF->GetNegMomentDistFactorAtPier(spanKey.spanIndex,spanKey.girderIndex,pgsTypes::StrengthI, pierFace);
             AddDistributionFactors(distFactors,span_length/2 - seg_length_1,gpM,gnM,gVStart,gR,gFM,gFVStart,gD,gPedes);
 
             AddDistributionFactors(distFactors,seg_length_2 - (span_length/2 - seg_length_1),gpM,gnM,gVStart,gVEnd,gR,gFM,gFVStart,gFVEnd,gD,gPedes);
@@ -13462,13 +13557,13 @@ void CGirderModelManager::ApplyLLDF_FixPin(const CSpanKey& spanKey,IDblArray* cf
          {
             AddDistributionFactors(distFactors,span_length/2,gpM,gnM,gVStart,gVMid,gR,gFM,gFVStart,gFVMid,gD,gPedes);
             AddDistributionFactors(distFactors,seg_length_1 - span_length/2,gpM,gnM,gVMid,gVCF,gR,gFM,gFVMid,gFVCF,gD,gPedes);
-            gnM = pLLDF->GetNegMomentDistFactorAtPier(spanKey.spanIndex,spanKey.girderIndex,pgsTypes::StrengthI,pgsTypes::Back);
+            gnM = pLLDF->GetNegMomentDistFactorAtPier(spanKey.spanIndex,spanKey.girderIndex,pgsTypes::StrengthI, pierFace);
             AddDistributionFactors(distFactors,seg_length_2,gpM,gnM,gVCF,gVEnd,gR,gFM,gFVCF,gFVEnd,gD,gPedes);
          }
          else
          {
             AddDistributionFactors(distFactors,seg_length_1,gpM,gnM,gVStart,gVCF,gR,gFM,gFVStart,gFVCF,gD,gPedes);
-            gnM = pLLDF->GetNegMomentDistFactorAtPier(spanKey.spanIndex,spanKey.girderIndex,pgsTypes::StrengthI,pgsTypes::Back);
+            gnM = pLLDF->GetNegMomentDistFactorAtPier(spanKey.spanIndex,spanKey.girderIndex,pgsTypes::StrengthI, pierFace);
             AddDistributionFactors(distFactors,span_length/2 - seg_length_1,gpM,gnM,gVCF,gVMid,gR,gFM,gFVCF,gFVMid,gD,gPedes);
             AddDistributionFactors(distFactors,seg_length_2,gpM,gnM,gVMid,gVEnd,gR,gFM,gFVMid,gFVEnd,gD,gPedes);
          }
@@ -14771,9 +14866,9 @@ MemberIDType CGirderModelManager::ApplyDistributedLoadsToSegment(IntervalIndexTy
             ) 
             )
          {
-            start[2]  = 0;
+            start[2]  = start_loc;
             wStart[2] = start_load;
-            end[2]    = end_offset;
+            end[2]    = end_loc;
             wEnd[2]   = load.wEnd;
 
             load.EndLoc -= end_loc - start_loc;
@@ -17064,7 +17159,7 @@ void CGirderModelManager::ConfigureLBAMPoisForReactions(const CGirderKey& girder
          vIDs.push_back(GetPierID(pierIdx));
       }
 
-      if ( !pBridge->IsAbutment(pierIdx) && // This is a boundary pier and not and abutnment
+      if ( !pBridge->IsAbutment(pierIdx) && // This is a boundary pier and not and abutnment (don't use IsBoundaryPier because and abutment is also a boundary pier)
           ( 
             (resultsType == rtCumulative || intervalIdx < backContinuityIntervalIdx || intervalIdx < aheadContinuityIntervalIdx) // We want cumulative results and we are before continunity is achieved
             || // OR

@@ -400,9 +400,6 @@
     <ClInclude Include="..\Include\psgLib\libraryEditorView.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\Include\psgLib\LibraryEntryConflict.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\Include\psgLib\LibraryEntryDifferenceItem.h">
       <Filter>Header Files</Filter>
     </ClInclude>

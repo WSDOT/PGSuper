@@ -609,6 +609,7 @@
     <ClCompile Include="TimelineEvent.cpp" />
     <ClCompile Include="TimelineItemListBox.cpp" />
     <ClCompile Include="TimelineManager.cpp" />
+    <ClCompile Include="TxnManager.cpp" />
     <ClCompile Include="YieldStressRatioArtifact.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -720,6 +721,7 @@
     <ClInclude Include="..\Include\PgsExt\TimelineEvent.h" />
     <ClInclude Include="..\Include\PgsExt\TimelineItemListBox.h" />
     <ClInclude Include="..\Include\PgsExt\TimelineManager.h" />
+    <ClInclude Include="..\Include\PgsExt\TxnManager.h" />
     <ClInclude Include="..\Include\PgsExt\YieldStressRatioArtifact.h" />
     <ClInclude Include="..\MakePgz\unzip.h" />
     <ClInclude Include="..\MakePgz\UnzipPgz.h" />
@@ -744,7 +746,6 @@
     <ClInclude Include="TemplateManager.h" />
   </ItemGroup>
   <ItemGroup>
-    <Image Include="res\bitmap1.bmp" />
     <Image Include="res\bitmap2.bmp" />
     <Image Include="res\ColumnFixity.bmp" />
     <Image Include="res\Continuous.bmp" />

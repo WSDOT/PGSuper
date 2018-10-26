@@ -48,6 +48,7 @@
 #include <GraphicsLib\GraphTool.h>
 
 #include "GirderDisplayObjectEvents.h"
+#include "TrafficBarrierDisplayObjectEvents.h"
 
 #include <WBFLDManip.h>
 #include <DManipTools\DManipTools.h>
@@ -228,6 +229,24 @@ void CBridgeSectionView::SelectDeck(bool bSelect)
    if ( pDO )
    {
       dispMgr->SelectObject(pDO,bSelect);
+   }
+   else
+   {
+      dispMgr->ClearSelectedObjects();
+   }
+}
+
+void CBridgeSectionView::SelectTrafficBarrier(pgsTypes::TrafficBarrierOrientation orientation, bool bSelect)
+{
+   CComPtr<iDisplayMgr> dispMgr;
+   GetDisplayMgr(&dispMgr);
+
+   CComPtr<iDisplayObject> pDO;
+   dispMgr->FindDisplayObject(orientation == pgsTypes::tboLeft ? LEFT_TRAFFIC_BARRIER_ID : RIGHT_TRAFFIC_BARRIER_ID, TRAFFIC_BARRIER_DISPLAY_LIST, atByID, &pDO);
+
+   if (pDO)
+   {
+      dispMgr->SelectObject(pDO, bSelect);
    }
    else
    {
@@ -434,6 +453,14 @@ void CBridgeSectionView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
          this->SelectAlignment(true);
          break;
 
+      case CSelection::LeftRailingSystem:
+         this->SelectTrafficBarrier(pgsTypes::tboLeft, true);
+         break;
+
+      case CSelection::RightRailingSystem:
+         this->SelectTrafficBarrier(pgsTypes::tboRight, true);
+         break;
+
       case CSelection::TemporarySupport:
          this->SelectTemporarySupport(true);
          break;
@@ -623,6 +650,51 @@ void CBridgeSectionView::UpdateGirderTooltips()
       pDO->SetTipDisplayTime(TOOLTIP_DURATION);
       pDO->SetToolTipText(strMsg);
    }
+}
+
+CString CBridgeSectionView::GetBarrierToolTip(IBroker* pBroker,const CRailingSystem* pRailingSystem)
+{
+   CString strTip;
+   if (pRailingSystem->bUseInteriorRailing)
+   {
+      if (pRailingSystem->bUseSidewalk)
+      {
+         GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
+         strTip.Format(_T("Exterior Barrier: %s\r\nInterior Barrier: %s\r\nSidewalk Width: %s\r\nLeft Depth: %s\r\nRight Depth: %s"),
+            pRailingSystem->strExteriorRailing.c_str(),
+            pRailingSystem->strInteriorRailing.c_str(),
+            FormatDimension(pRailingSystem->Width, pDisplayUnits->GetXSectionDimUnit()),
+            FormatDimension(pRailingSystem->LeftDepth, pDisplayUnits->GetComponentDimUnit()),
+            FormatDimension(pRailingSystem->RightDepth, pDisplayUnits->GetComponentDimUnit())
+         );
+      }
+      else
+      {
+         strTip.Format(_T("Exterior Barrier: %s\r\nInterior Barrier: %s"), pRailingSystem->strExteriorRailing.c_str(), pRailingSystem->strInteriorRailing.c_str());
+      }
+   }
+   else
+   {
+      if (pRailingSystem->bUseSidewalk)
+      {
+         GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
+         strTip.Format(_T("Barrier: %s\r\nSidewalk Width: %s\r\nLeft Depth: %s\r\nRight Depth: %s"),
+            pRailingSystem->strExteriorRailing.c_str(),
+            FormatDimension(pRailingSystem->Width, pDisplayUnits->GetXSectionDimUnit()),
+            FormatDimension(pRailingSystem->LeftDepth, pDisplayUnits->GetComponentDimUnit()),
+            FormatDimension(pRailingSystem->RightDepth, pDisplayUnits->GetComponentDimUnit())
+         );
+      }
+      else
+      {
+         strTip.Format(_T("Barrier: %s"), pRailingSystem->strExteriorRailing.c_str());
+      }
+   }
+
+   CString strMsg(_T("Double click to edit\r\nRight click for more options\r\n\r\n"));
+   strMsg += strTip;
+
+   return strMsg;
 }
 
 void CBridgeSectionView::UpdateDisplayObjects()
@@ -1078,6 +1150,7 @@ void CBridgeSectionView::BuildTrafficBarrierDisplayObjects()
    GET_IFACE2(pBroker,IShapes,pShapes);
    GET_IFACE2(pBroker,IBarriers,pBarriers);
    GET_IFACE2(pBroker,IPointOfInterest,pPoi);
+   GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
 
    CComPtr<iDisplayMgr> dispMgr;
    GetDisplayMgr(&dispMgr);
@@ -1085,9 +1158,19 @@ void CBridgeSectionView::BuildTrafficBarrierDisplayObjects()
    CComPtr<iDisplayList> display_list;
    dispMgr->FindDisplayList(TRAFFIC_BARRIER_DISPLAY_LIST,&display_list);
 
+   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+
    // left hand barrier
    CComPtr<iPointDisplayObject> left_dispObj;
    left_dispObj.CoCreateInstance(CLSID_PointDisplayObject);
+   left_dispObj->SetSelectionType(stAll);
+   left_dispObj->SetID(LEFT_TRAFFIC_BARRIER_ID);
+
+   const CRailingSystem* pLeftRailingSystem = pBridgeDesc->GetLeftRailingSystem();
+   CString strTip = GetBarrierToolTip(pBroker,pLeftRailingSystem);
+   left_dispObj->SetMaxTipWidth(TOOLTIP_WIDTH);
+   left_dispObj->SetTipDisplayTime(TOOLTIP_DURATION);
+   left_dispObj->SetToolTipText(strTip);
 
    Float64 cut_station = m_pFrame->GetCurrentCutLocation();
    Float64 pier_1_station = pBridge->GetPierStation(0);
@@ -1131,13 +1214,22 @@ void CBridgeSectionView::BuildTrafficBarrierDisplayObjects()
 
       left_dispObj->SetDrawingStrategy(strategy);
 
-      display_list->AddDisplayObject(left_dispObj);
+      //display_list->AddDisplayObject(left_dispObj);
    }
 
 
    // right hand barrier
    CComPtr<iPointDisplayObject> right_dispObj;
    right_dispObj.CoCreateInstance(CLSID_PointDisplayObject);
+   right_dispObj->SetSelectionType(stAll);
+   right_dispObj->SetID(RIGHT_TRAFFIC_BARRIER_ID);
+
+   const CRailingSystem* pRightRailingSystem = pBridgeDesc->GetRightRailingSystem();
+   strTip = GetBarrierToolTip(pBroker,pRightRailingSystem);
+
+   right_dispObj->SetMaxTipWidth(TOOLTIP_WIDTH);
+   right_dispObj->SetTipDisplayTime(TOOLTIP_DURATION);
+   right_dispObj->SetToolTipText(strTip);
 
    CComPtr<IShape> right_shape;
    pShapes->GetRightTrafficBarrierShape(cut_station,nullptr,&right_shape);
@@ -1165,7 +1257,7 @@ void CBridgeSectionView::BuildTrafficBarrierDisplayObjects()
 
       right_dispObj->SetDrawingStrategy(strategy);
 
-      display_list->AddDisplayObject(right_dispObj);
+      //display_list->AddDisplayObject(right_dispObj);
    }
 
    // place sockets at curb line so we can do a curb-to-curb dimension line
@@ -1263,6 +1355,21 @@ void CBridgeSectionView::BuildTrafficBarrierDisplayObjects()
       pl->put_X(right_icb_offset);
       left_connectable->AddSocket(RIGHT_INT_OVERLAY_SOCKET, pl,&socket2);
    }
+
+   // on the piers differently then a general dbl-click
+   CTrafficBarrierDisplayObjectEvents* pLeftEvents = new CTrafficBarrierDisplayObjectEvents(pBroker, m_pFrame, pgsTypes::tboLeft);
+   CComPtr<iDisplayObjectEvents> left_events;
+   left_events.Attach((iDisplayObjectEvents*)pLeftEvents->GetInterface(&IID_iDisplayObjectEvents));
+
+   CTrafficBarrierDisplayObjectEvents* pRightEvents = new CTrafficBarrierDisplayObjectEvents(pBroker, m_pFrame, pgsTypes::tboRight);
+   CComPtr<iDisplayObjectEvents> right_events;
+   right_events.Attach((iDisplayObjectEvents*)pRightEvents->GetInterface(&IID_iDisplayObjectEvents));
+
+   left_dispObj->RegisterEventSink(left_events);
+   right_dispObj->RegisterEventSink(right_events);
+
+   display_list->AddDisplayObject(left_dispObj);
+   display_list->AddDisplayObject(right_dispObj);
 }
 
 void CBridgeSectionView::BuildDimensionLineDisplayObjects()
@@ -1666,8 +1773,8 @@ void CBridgeSectionView::BuildDimensionLineDisplayObjects()
 
    // get the slab display object
    CComPtr<iDisplayObject> doLeftTB, doRightTB;
-   tb_list->GetDisplayObject(0,&doLeftTB);
-   tb_list->GetDisplayObject(1,&doRightTB);
+   tb_list->GetDisplayObject(0, &doLeftTB);
+   tb_list->GetDisplayObject(1, &doRightTB);
 
    if ( doLeftTB && doRightTB )
    {

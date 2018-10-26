@@ -34,6 +34,8 @@
 #include <IReportManager.h>
 #include <IGraphManager.h>
 
+#include <PgsExt\TxnManager.h>
+
 #include <IFace\ViewEvents.h> 
 #include <IFace\Selection.h> 
 #include <IFace\ExtendUI.h>
@@ -41,7 +43,7 @@
 #include <WBFLUnitServer.h>
 
 #include "Hints.h"
-#include "pgsExt\BaseCommandLineInfo.h"
+#include <PgsExt\BaseCommandLineInfo.h>
 #include "PGSuperPluginMgr.h"
 
 #include "CopyGirderPropertiesCallbacks.h"
@@ -99,6 +101,7 @@ public:
    void SelectTemporarySupport(SupportIDType tsID,BOOL bNotify=TRUE);
    void SelectDeck(BOOL bNotify=TRUE);
    void SelectAlignment(BOOL bNotify=TRUE);
+   void SelectTrafficBarrier(pgsTypes::TrafficBarrierOrientation orientation,BOOL bNotify = TRUE);
    void ClearSelection(BOOL bNotify=TRUE);
 
    void OnLibMgrChanged(psgLibraryManager* pNewLibMgr);
@@ -320,6 +323,8 @@ protected:
    StatusCallbackIDType m_scidInformationalError;
    StatusGroupIDType m_StatusGroupID;
 
+   pgsTxnManagerFactory m_TxnMgrFactory;
+
    virtual void LoadToolbarState() override;
    virtual void SaveToolbarState() override;
 
@@ -394,6 +399,7 @@ protected:
    afx_msg void OnConstructionLoads();
 	afx_msg void OnProjectAlignment();
    afx_msg void OnProjectProfile();
+   afx_msg void OnProjectBarriers();
 	afx_msg void OnEditPier();
 	afx_msg void OnEditSpan();
 	afx_msg void OnDeleteSelection();

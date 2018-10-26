@@ -900,6 +900,20 @@ bool CPGSuperDocProxyAgent::IsAlignmentSelected()
    return selection.Type == CSelection::Alignment;
 }
 
+bool CPGSuperDocProxyAgent::IsRailingSystemSelected(pgsTypes::TrafficBarrierOrientation orientation)
+{
+   AFX_MANAGE_STATE(AfxGetAppModuleState());
+   CSelection selection = m_pMyDocument->GetSelection();
+   if (orientation == pgsTypes::tboLeft)
+   {
+      return selection.Type == CSelection::LeftRailingSystem;
+   }
+   else
+   {
+      return selection.Type == CSelection::RightRailingSystem;
+   }
+}
+
 void CPGSuperDocProxyAgent::SelectPier(PierIndexType pierIdx)
 {
    AFX_MANAGE_STATE(AfxGetAppModuleState());
@@ -944,6 +958,11 @@ void CPGSuperDocProxyAgent::SelectDeck()
 void CPGSuperDocProxyAgent::SelectAlignment()
 {
    m_pMyDocument->SelectAlignment();
+}
+
+void CPGSuperDocProxyAgent::SelectRailingSystem(pgsTypes::TrafficBarrierOrientation orientation)
+{
+   m_pMyDocument->SelectTrafficBarrier(orientation);
 }
 
 Float64 CPGSuperDocProxyAgent::GetSectionCutStation()
@@ -1024,16 +1043,22 @@ void CPGSuperDocProxyAgent::FirePendingEvents()
 
       m_bFiringEvents = true;
 
-      std::vector<UIEvent>::iterator iter(m_UIEvents.begin());
-      std::vector<UIEvent>::iterator iterEnd(m_UIEvents.end());
-      for ( ; iter != iterEnd; iter++ )
+      try
       {
-         UIEvent event = *iter;
-         m_pMyDocument->UpdateAllViews(event.pSender,event.lHint,event.pHint.get());
-      }
+         for( const auto& event : m_UIEvents)
+         {
+            m_pMyDocument->UpdateAllViews(event.pSender, event.lHint, event.pHint.get());
+         }
 
-      m_bFiringEvents = false;
-      m_UIEvents.clear();
+         m_bFiringEvents = false;
+         m_UIEvents.clear();
+      }
+      catch (...)
+      {
+         m_bFiringEvents = false;
+         m_UIEvents.clear();
+         throw;
+      }
    }
    else
    {

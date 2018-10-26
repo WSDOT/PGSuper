@@ -38,14 +38,15 @@ public:
 
 // Operations
 public:
-   virtual bool DoResultsExist();
+   virtual bool DoResultsExist() override;
 
 // Overrides
 	// ClassWizard generated virtual function overrides
 	//{{AFX_VIRTUAL(CGraphView)
 	protected:
-	virtual void OnPrint(CDC* pDC, CPrintInfo* pInfo);
-	//}}AFX_VIRTUAL
+	virtual void OnPrint(CDC* pDC, CPrintInfo* pInfo) override;
+   virtual void OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint) override;
+   //}}AFX_VIRTUAL
 
 // Implementation
 protected:

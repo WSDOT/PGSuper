@@ -9064,120 +9064,129 @@ void CProjectAgentImp::FirePendingEvents()
       return;
    }
 
-   if ( m_EventHoldCount == 1 )
+   try
    {
-      m_EventHoldCount--;
-      m_bFiringEvents = true;
-	
-	
-	   if ( sysFlags<Uint32>::IsSet(m_PendingEvents,EVT_PROJECTPROPERTIES) )
+      if (m_EventHoldCount == 1)
       {
-	      Fire_ProjectPropertiesChanged();
-      }
-	
-	   //if ( sysFlags<Uint32>::IsSet(m_PendingEvents,EVT_UNITS) )
-	   //   Fire_UnitsChanged(m_Units);
-	
-	   if ( sysFlags<Uint32>::IsSet(m_PendingEvents,EVT_ANALYSISTYPE) )
-      {
-	      Fire_AnalysisTypeChanged();
-      }
-	
-	   if ( sysFlags<Uint32>::IsSet(m_PendingEvents,EVT_EXPOSURECONDITION) )
-      {
-	      Fire_ExposureConditionChanged();
-      }
-	
-	   if ( sysFlags<Uint32>::IsSet(m_PendingEvents,EVT_RELHUMIDITY) )
-      {
-	      Fire_RelHumidityChanged();
-      }
-	
-	   if ( sysFlags<Uint32>::IsSet(m_PendingEvents,EVT_GIRDERFAMILY))
-      {
-	      Fire_BridgeChanged(nullptr);
-      }
-	
-	   if ( sysFlags<Uint32>::IsSet(m_PendingEvents,EVT_BRIDGE) )
-	   {
-         // eliminate duplicates
-         m_PendingBridgeChangedHints.erase(std::unique(m_PendingBridgeChangedHints.begin(),m_PendingBridgeChangedHints.end()),m_PendingBridgeChangedHints.end());
-	      std::vector<CBridgeChangedHint*>::iterator iter(m_PendingBridgeChangedHints.begin());
-	      std::vector<CBridgeChangedHint*>::iterator end(m_PendingBridgeChangedHints.end());
-	      for ( ; iter != end; iter++ )
-	      {
-	         CBridgeChangedHint* pHint = *iter;
-	         Fire_BridgeChanged(pHint);
-	      }
-	      m_PendingBridgeChangedHints.clear();
-	   }
+         m_EventHoldCount--;
+         m_bFiringEvents = true;
 
-	//
-	// pretty much all the event handers do the same thing when the bridge or girder family changes
-	// no sence firing two events
-	//   if ( sysFlags<Uint32>::IsSet(m_PendingEvents,EVT_GIRDERFAMILY) )
-	//      Fire_GirderFamilyChanged();
-	
-	
-	   if ( sysFlags<Uint32>::IsSet(m_PendingEvents,EVT_SPECIFICATION) )
-      {
-	      SpecificationChanged(true);
+
+         if (sysFlags<Uint32>::IsSet(m_PendingEvents, EVT_PROJECTPROPERTIES))
+         {
+            Fire_ProjectPropertiesChanged();
+         }
+
+         //if ( sysFlags<Uint32>::IsSet(m_PendingEvents,EVT_UNITS) )
+         //   Fire_UnitsChanged(m_Units);
+
+         if (sysFlags<Uint32>::IsSet(m_PendingEvents, EVT_ANALYSISTYPE))
+         {
+            Fire_AnalysisTypeChanged();
+         }
+
+         if (sysFlags<Uint32>::IsSet(m_PendingEvents, EVT_EXPOSURECONDITION))
+         {
+            Fire_ExposureConditionChanged();
+         }
+
+         if (sysFlags<Uint32>::IsSet(m_PendingEvents, EVT_RELHUMIDITY))
+         {
+            Fire_RelHumidityChanged();
+         }
+
+         if (sysFlags<Uint32>::IsSet(m_PendingEvents, EVT_GIRDERFAMILY))
+         {
+            Fire_BridgeChanged(nullptr);
+         }
+
+         if (sysFlags<Uint32>::IsSet(m_PendingEvents, EVT_BRIDGE))
+         {
+            // eliminate duplicates
+            m_PendingBridgeChangedHints.erase(std::unique(m_PendingBridgeChangedHints.begin(), m_PendingBridgeChangedHints.end()), m_PendingBridgeChangedHints.end());
+            std::vector<CBridgeChangedHint*>::iterator iter(m_PendingBridgeChangedHints.begin());
+            std::vector<CBridgeChangedHint*>::iterator end(m_PendingBridgeChangedHints.end());
+            for (; iter != end; iter++)
+            {
+               CBridgeChangedHint* pHint = *iter;
+               Fire_BridgeChanged(pHint);
+            }
+            m_PendingBridgeChangedHints.clear();
+         }
+
+         //
+         // pretty much all the event handers do the same thing when the bridge or girder family changes
+         // no sence firing two events
+         //   if ( sysFlags<Uint32>::IsSet(m_PendingEvents,EVT_GIRDERFAMILY) )
+         //      Fire_GirderFamilyChanged();
+
+
+         if (sysFlags<Uint32>::IsSet(m_PendingEvents, EVT_SPECIFICATION))
+         {
+            SpecificationChanged(true);
+         }
+
+         if (sysFlags<Uint32>::IsSet(m_PendingEvents, EVT_RATING_SPECIFICATION))
+         {
+            RatingSpecificationChanged(true);
+         }
+
+         if (sysFlags<Uint32>::IsSet(m_PendingEvents, EVT_LIBRARYCONFLICT))
+         {
+            Fire_OnLibraryConflictResolved();
+         }
+
+         if (sysFlags<Uint32>::IsSet(m_PendingEvents, EVT_LOADMODIFIER))
+         {
+            Fire_LoadModifiersChanged();
+         }
+
+         if (sysFlags<Uint32>::IsSet(m_PendingEvents, EVT_CONSTRUCTIONLOAD))
+         {
+            Fire_ConstructionLoadChanged();
+         }
+
+         if (sysFlags<Uint32>::IsSet(m_PendingEvents, EVT_LIVELOAD))
+         {
+            Fire_LiveLoadChanged();
+         }
+
+         if (sysFlags<Uint32>::IsSet(m_PendingEvents, EVT_LOSSPARAMETERS))
+         {
+            Fire_OnLossParametersChanged();
+         }
+
+         for ( const auto& item : m_PendingEventsHash )
+         {
+            const CGirderKey& girderKey(item.first);
+            Uint32 lHint = item.second;
+
+            Fire_GirderChanged(girderKey, lHint);
+         }
+
+         m_PendingEventsHash.clear();
+         m_PendingEvents = 0;
+
+         m_bFiringEvents = false;
       }
-	
-	   if ( sysFlags<Uint32>::IsSet(m_PendingEvents,EVT_RATING_SPECIFICATION) )
+      else
       {
-	      RatingSpecificationChanged(true);
-      }
-	
-	   if ( sysFlags<Uint32>::IsSet(m_PendingEvents,EVT_LIBRARYCONFLICT) )
-      {
-	      Fire_OnLibraryConflictResolved();
-      }
-	
-	   if ( sysFlags<Uint32>::IsSet(m_PendingEvents,EVT_LOADMODIFIER) )
-      {
-	      Fire_LoadModifiersChanged();
-      }
-	
-	   if ( sysFlags<Uint32>::IsSet(m_PendingEvents,EVT_CONSTRUCTIONLOAD) )
-      {
-	      Fire_ConstructionLoadChanged();
-      }
-	
-	   if ( sysFlags<Uint32>::IsSet(m_PendingEvents,EVT_LIVELOAD) )
-      {
-	      Fire_LiveLoadChanged();
-      }
-		
-	   if ( sysFlags<Uint32>::IsSet(m_PendingEvents,EVT_LOSSPARAMETERS) )
-      {
-	      Fire_OnLossParametersChanged();
+         m_EventHoldCount--;
       }
 
-	   std::map<CGirderKey,Uint32>::iterator iter(m_PendingEventsHash.begin());
-	   std::map<CGirderKey,Uint32>::iterator iterEnd(m_PendingEventsHash.end());
-	   for ( ; iter != iterEnd; iter++ )
-	   {
-	      const CGirderKey& girderKey( (*iter).first );
-	      Uint32 lHint = (*iter).second;
-	
-	      Fire_GirderChanged(girderKey,lHint);
-	   }
-	
-	   m_PendingEventsHash.clear();
-	   m_PendingEvents = 0;
+      Fire_OnFirePendingEvents();
+
+      GET_IFACE(IUIEvents, pUIEvents);
+      pUIEvents->FirePendingEvents();
+   }
+   catch (...)
+   {
+      m_PendingEventsHash.clear();
+      m_PendingEvents = 0;
 
       m_bFiringEvents = false;
+      throw;
    }
-   else
-   {
-      m_EventHoldCount--;
-   }
-	
-   Fire_OnFirePendingEvents();
-
-   GET_IFACE(IUIEvents,pUIEvents);
-   pUIEvents->FirePendingEvents();
 }
 
 void CProjectAgentImp::CancelPendingEvents()

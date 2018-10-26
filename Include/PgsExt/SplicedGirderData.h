@@ -176,6 +176,8 @@ protected:
    // Call this method when a closure joint is created.
    void AddClosureToTimelineManager(const CClosureJointData* pClosure,EventIndexType castClosureEventIdx);
 
+   void RemovePTFromTimelineManager();
+
    // Initializes the girder by creating a single segment. 
    // Called by CGirderGroupData when new girders are created. 
    // In this context "new" means a 100% new girder, not a new girder that is a copy

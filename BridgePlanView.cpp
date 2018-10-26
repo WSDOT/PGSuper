@@ -715,49 +715,7 @@ void CBridgePlanView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
    else if ( lHint == HINT_SELECTIONCHANGED )
    {
       CSelection* pSelection = (CSelection*)pHint;
-      switch( pSelection->Type )
-      {
-      case CSelection::None:
-         this->ClearSelection();
-         break;
-
-      case CSelection::Span:
-         this->SelectSpan( pSelection->SpanIdx, true );
-         break;
-
-      case CSelection::Girder:
-         this->SelectGirder( CSegmentKey(pSelection->GroupIdx,pSelection->GirderIdx,INVALID_INDEX),true);
-         break;
-
-      case CSelection::Segment:
-         this->SelectSegment( CSegmentKey(pSelection->GroupIdx, pSelection->GirderIdx, pSelection->SegmentIdx), true );
-         break;
-
-      case CSelection::ClosureJoint:
-         this->SelectClosureJoint( CSegmentKey(pSelection->GroupIdx, pSelection->GirderIdx, pSelection->SegmentIdx), true );
-         break;
-
-      case CSelection::Pier:
-         this->SelectPier( pSelection->PierIdx, true );
-         break;
-
-      case CSelection::Deck:
-         this->SelectDeck(true);
-         break;
-
-      case CSelection::Alignment:
-         this->SelectAlignment(true);
-         break;
-
-      case CSelection::TemporarySupport:
-         this->SelectTemporarySupport(pSelection->tsID,true);
-         break;
-
-      default:
-         ATLASSERT(FALSE); // is there a new type of object to be selected?
-         ClearSelection();
-         break;
-      }
+      Select(pSelection);
    }
 }
 
@@ -1226,7 +1184,7 @@ void CBridgePlanView::UpdateDisplayObjects()
    UpdateClosureJointTooltips();
 
    // restore the selection
-   pDoc->SetSelection(selection);
+   Select(&selection);
 }
 
 void CBridgePlanView::BuildTitleDisplayObjects()
@@ -3514,4 +3472,56 @@ void CBridgePlanView::OnZoom()
 void CBridgePlanView::OnScaleToFit()
 {
    UpdateDrawingScale();
+}
+
+void CBridgePlanView::Select(const CSelection* pSelection)
+{
+   switch (pSelection->Type)
+   {
+   case CSelection::None:
+      ClearSelection();
+      break;
+
+   case CSelection::Span:
+      SelectSpan(pSelection->SpanIdx, true);
+      break;
+
+   case CSelection::Girder:
+      SelectGirder(CSegmentKey(pSelection->GroupIdx, pSelection->GirderIdx, INVALID_INDEX), true);
+      break;
+
+   case CSelection::Segment:
+      SelectSegment(CSegmentKey(pSelection->GroupIdx, pSelection->GirderIdx, pSelection->SegmentIdx), true);
+      break;
+
+   case CSelection::ClosureJoint:
+      SelectClosureJoint(CSegmentKey(pSelection->GroupIdx, pSelection->GirderIdx, pSelection->SegmentIdx), true);
+      break;
+
+   case CSelection::Pier:
+      SelectPier(pSelection->PierIdx, true);
+      break;
+
+   case CSelection::Deck:
+      SelectDeck(true);
+      break;
+
+   case CSelection::Alignment:
+      SelectAlignment(true);
+      break;
+
+   case CSelection::LeftRailingSystem:
+   case CSelection::RightRailingSystem:
+      ClearSelection();
+      break;
+
+   case CSelection::TemporarySupport:
+      SelectTemporarySupport(pSelection->tsID, true);
+      break;
+
+   default:
+      ATLASSERT(FALSE); // is there a new type of object to be selected?
+      ClearSelection();
+      break;
+   }
 }

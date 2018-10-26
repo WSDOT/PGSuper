@@ -549,6 +549,17 @@ void CBridgeModelViewChildFrame::SelectAlignment()
    m_bSelecting = false;
 }
 
+void CBridgeModelViewChildFrame::SelectTrafficBarrier(pgsTypes::TrafficBarrierOrientation orientation)
+{
+   if (m_bSelecting)
+      return;
+
+   m_bSelecting = true;
+   CPGSDocBase* pDoc = (CPGSDocBase*)EAFGetDocument();
+   pDoc->SelectTrafficBarrier(orientation);
+   m_bSelecting = false;
+}
+
 void CBridgeModelViewChildFrame::ClearSelection()
 {
    CPGSDocBase* pDoc = (CPGSDocBase*)EAFGetDocument();

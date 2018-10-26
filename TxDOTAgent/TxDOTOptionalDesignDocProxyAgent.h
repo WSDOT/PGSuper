@@ -114,6 +114,7 @@ public:
    virtual SupportIDType GetSelectedTemporarySupport() override;
    virtual bool IsDeckSelected() override;
    virtual bool IsAlignmentSelected() override;
+   virtual bool IsRailingSystemSelected(pgsTypes::TrafficBarrierOrientation orientation) override;
    virtual void SelectPier(PierIndexType pierIdx) override;
    virtual void SelectSpan(SpanIndexType spanIdx) override;
    virtual void SelectGirder(const CGirderKey& girderKey) override;
@@ -122,6 +123,7 @@ public:
    virtual void SelectTemporarySupport(SupportIDType tsID) override;
    virtual void SelectDeck() override;
    virtual void SelectAlignment() override;
+   virtual void SelectRailingSystem(pgsTypes::TrafficBarrierOrientation orientation) override;
    virtual Float64 GetSectionCutStation() override;
 
 // IDocumentType

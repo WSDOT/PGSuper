@@ -1,12 +1,10 @@
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 45.29    8   6.00                     1     1     III           20  0.6  270  19.08  11.88  11.12  11.12                                               4  40.0  4.0  5.100  6.200   3.169    -3.824     4206   0.674  0.674   2.882 -0.535  0.000 -0.218 -0.754  63.19  125.85    1.00    5.00    5.00 
+ 45.29    8   6.00                     1     1     III           22  0.6  270  18.81  11.72  11.38  11.38                                               6  32.0  6.0  5.100  6.600   3.270    -3.898     4246   0.674  0.674   3.186 -0.561  0.000 -0.214 -0.775  76.82  151.95    1.00    5.00    5.00 
 
 
 Girder design was Not Successful
 The Specification Check was Not Successful
-Compression stress check failed for Service I Limit State in Interval 9 Cast Deck (Bridge Site 1)
-Ultimate moment capacity (negative moment) check failed for Strength I Limit State
 Confinement zone check failed.
 Hauling checks failed
 
@@ -25,7 +23,7 @@ Slab Offset ("A" Dimension) check failed
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 45.29    8   6.00                     1     5     III           16  0.6  270  19.33  10.33  11.00  11.00                                               4  40.0  4.0  4.000  5.000   2.625    -2.925     3110   0.552  0.671   2.615 -0.553 -0.041 -0.068 -0.663  42.83  104.49    1.00    5.00    5.00 
+ 45.29    8   6.00                     1     5     III           16  0.6  270  19.33  10.33  11.00  11.00                                               4  40.0  4.0  4.000  5.000   2.627    -2.931     3111   0.552  0.671   2.615 -0.553 -0.044 -0.068 -0.665  42.83  104.30    1.00    5.00    5.00 
 
 
 The Specification Check was Not Successful

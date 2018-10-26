@@ -376,6 +376,9 @@
     <ClCompile Include="..\MakePgz\zip.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="TxnManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Include\PgsExt\AASHTOConcretePage.h">
@@ -759,11 +762,11 @@
     <ClInclude Include="..\MakePgz\zip.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\Include\PgsExt\TxnManager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <Image Include="res\bitmap1.bmp">
-      <Filter>Resource Files</Filter>
-    </Image>
     <Image Include="res\bitmap2.bmp">
       <Filter>Resource Files</Filter>
     </Image>

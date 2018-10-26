@@ -144,6 +144,12 @@ void FillComboWithUnitFloatRange(Float64 selectedVal, Float64 minVal, Float64 ma
    // Could be that maxVal was not on increment. Put it in if so
    if (lastVal < maxVal)
    {
+       // it is possible that selected value is between incremented max and maxval
+       if (idx_sel==CB_ERR && ::IsLT(selectedVal,maxVal,toler))
+       {
+          idx_sel = PutFloatInCB(selectedVal, pfcCtrl, tool); // put exact selected val into cb
+       }
+
        int idx = PutFloatInCB(maxVal, pfcCtrl, tool);
        if (idx_sel==CB_ERR && ::IsEqual(selectedVal,maxVal,toler))
           idx_sel = idx;

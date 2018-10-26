@@ -116,7 +116,6 @@ Ultimate moment capacity (positive moment) check failed for Strength I Limit Sta
 Ultimate moment capacity (negative moment) check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 Stirrup detailing checks failed for the Strength I Limit State.
-Hauling checks failed
 
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
@@ -129,7 +128,6 @@ Ultimate moment capacity (positive moment) check failed for Strength I Limit Sta
 Ultimate moment capacity (negative moment) check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 Stirrup detailing checks failed for the Strength I Limit State.
-Hauling checks failed
 
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 

@@ -441,7 +441,11 @@ IBeamFactory::Dimensions CDoubleTeeFactory::LoadSectionDimensions(sysIStructured
 {
    IBeamFactory::Dimensions dimensions;
 
-   Float64 parent_version = pLoad->GetVersion();
+   Float64 parent_version;
+   if (pLoad->GetParentUnit() == _T("GirderLibraryEntry"))
+      parent_version = pLoad->GetParentVersion();
+   else
+      parent_version = pLoad->GetVersion();
 
    if ( 14 <= parent_version && !pLoad->BeginUnit(_T("DoubleTeeDimensions")) )
       THROW_LOAD(InvalidFileFormat,pLoad);

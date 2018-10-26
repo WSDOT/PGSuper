@@ -213,9 +213,6 @@
     <ClInclude Include="..\Include\IFace\AgeAdjustedMaterial.h">
       <Filter>IFace</Filter>
     </ClInclude>
-    <ClInclude Include="TxDOT2013TimeDependentLossesTable.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="AgeAdjustedMaterial.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -457,6 +454,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="StdAfx.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TxDOT2013TimeDependentLossesTable.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

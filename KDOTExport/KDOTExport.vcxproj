@@ -571,9 +571,6 @@
     <ClInclude Include="StdAfx.h" />
   </ItemGroup>
   <ItemGroup>
-    <Image Include="icon1.ico" />
-  </ItemGroup>
-  <ItemGroup>
     <CXX_Tree_Mapping_Rule Include="Schema\KDOTExporter.xsd">
       <GenDefaultCtor Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</GenDefaultCtor>
       <GenIntellisense Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</GenIntellisense>

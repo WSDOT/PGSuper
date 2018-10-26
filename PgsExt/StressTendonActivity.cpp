@@ -93,14 +93,20 @@ void CStressTendonActivity::Clear()
 
 void CStressTendonActivity::AddTendon(GirderIDType gdrID,DuctIndexType ductIdx)
 {
-   m_Tendons.push_back(CTendonKey(gdrID,ductIdx));
-   std::sort(m_Tendons.begin(), m_Tendons.end());
-   m_bEnabled = true;
+   AddTendon(CTendonKey(gdrID, ductIdx));
 }
 
 void CStressTendonActivity::AddTendon(const CTendonKey& tendonKey)
 {
    ATLASSERT(tendonKey.girderID != INVALID_ID); // must be using girder ID
+   ATLASSERT(std::is_sorted(m_Tendons.begin(), m_Tendons.end()));
+   
+   if (std::find(m_Tendons.begin(), m_Tendons.end(), tendonKey) != m_Tendons.end())
+   {
+      // this tendon is already defined
+      return;
+   }
+
    m_Tendons.push_back(tendonKey);
    std::sort(m_Tendons.begin(), m_Tendons.end());
    m_bEnabled = true;
@@ -108,25 +114,19 @@ void CStressTendonActivity::AddTendon(const CTendonKey& tendonKey)
 
 void CStressTendonActivity::AddTendons(const std::vector<CTendonKey>& tendons)
 {
-#if defined _DEBUG
-   std::vector<CTendonKey>::const_iterator iter(tendons.begin());
-   std::vector<CTendonKey>::const_iterator end(tendons.end());
-   for ( ; iter != end; iter++ )
+   for (const auto& tendonKey : tendons)
    {
-      const CTendonKey& key = *iter;
-      ATLASSERT(key.girderID != INVALID_ID); // must be using girder ID
+      AddTendon(tendonKey);
    }
-#endif
-   m_Tendons.insert(m_Tendons.end(),tendons.begin(),tendons.end());
-   std::sort(m_Tendons.begin(), m_Tendons.end());
-   m_bEnabled = true;
 }
 
 void CStressTendonActivity::RemoveTendon(GirderIDType gdrID,DuctIndexType ductIdx,bool bRemovedFromBridge)
 {
-   CTendonKey key(gdrID,ductIdx);
+   ATLASSERT(gdrID != ALL_GIRDERS);
    ATLASSERT(std::is_sorted(m_Tendons.begin(), m_Tendons.end()));
-   std::vector<CTendonKey>::iterator found(std::find(m_Tendons.begin(),m_Tendons.end(),key));
+
+   CTendonKey key(gdrID,ductIdx);
+   const auto& found(std::find(m_Tendons.begin(),m_Tendons.end(),key));
    if ( found != m_Tendons.end() )
    {
       m_Tendons.erase(found);
@@ -135,11 +135,8 @@ void CStressTendonActivity::RemoveTendon(GirderIDType gdrID,DuctIndexType ductId
       {
          // adjust the remaining keys for this girder.
          // if we remove ductIdx 0, ductIdx 1 becomes 0, 2 becomes 1, etc
-         std::vector<CTendonKey>::iterator iter(m_Tendons.begin());
-         std::vector<CTendonKey>::iterator end(m_Tendons.end());
-         for ( ; iter != end; iter++ )
+         for( auto& thisKey : m_Tendons )
          {
-            CTendonKey& thisKey(*iter);
             if ( thisKey.girderID == gdrID && ductIdx < thisKey.ductIdx )
             {
                thisKey.ductIdx--;
@@ -175,6 +172,13 @@ void CStressTendonActivity::RemoveTendons(GirderIDType gdrID)
 {
    m_Tendons.erase(std::remove_if(m_Tendons.begin(),m_Tendons.end(),MatchGirderID(gdrID)),m_Tendons.end());
 
+#if defined _DEBUG
+   if (gdrID == ALL_GIRDERS)
+   {
+      ATLASSERT(m_Tendons.size() == 0);
+   }
+#endif
+
    if ( m_Tendons.size() == 0 )
    {
       m_bEnabled = false;
@@ -183,17 +187,11 @@ void CStressTendonActivity::RemoveTendons(GirderIDType gdrID)
 
 bool CStressTendonActivity::IsTendonStressed(GirderIDType gdrID,DuctIndexType ductIdx) const
 {
-   CTendonKey key(gdrID,ductIdx);
+   ATLASSERT(gdrID != ALL_GIRDERS);
    ATLASSERT(std::is_sorted(m_Tendons.begin(), m_Tendons.end()));
-   std::vector<CTendonKey>::const_iterator found(std::find(m_Tendons.begin(),m_Tendons.end(),key));
-   if ( found == m_Tendons.end() )
-   {
-      return false;
-   }
-   else
-   {
-      return true;
-   }
+
+   CTendonKey key(gdrID,ductIdx);
+   return std::find(m_Tendons.begin(), m_Tendons.end(), key) == m_Tendons.end() ? false : true;
 }
 
 bool CStressTendonActivity::IsTendonStressed() const
@@ -249,6 +247,10 @@ HRESULT CStressTendonActivity::Load(IStructuredLoad* pStrLoad,IProgress* pProgre
          }
 
          std::sort(m_Tendons.begin(), m_Tendons.end());
+
+         // in some of the initial versions of PGSplice, the tendons vector got filled up with many
+         // copies of the same information. remove that duplication information here 
+         m_Tendons.erase(std::unique(m_Tendons.begin(), m_Tendons.end()), m_Tendons.end());
       }
 
       hr = pStrLoad->EndUnit();
@@ -269,13 +271,13 @@ HRESULT CStressTendonActivity::Save(IStructuredSave* pStrSave,IProgress* pProgre
 
    if ( m_bEnabled )
    {
+      ATLASSERT(std::is_sorted(m_Tendons.begin(), m_Tendons.end()));
+      ATLASSERT(std::adjacent_find(m_Tendons.begin(), m_Tendons.end()) == m_Tendons.end()); // make sure there aren't any duplicates
+
       pStrSave->put_Property(_T("Count"),CComVariant(m_Tendons.size()));
 
-      std::vector<CTendonKey>::iterator iter(m_Tendons.begin());
-      std::vector<CTendonKey>::iterator iterEnd(m_Tendons.end());
-      for ( ; iter != iterEnd; iter++ )
+      for ( const auto& key : m_Tendons)
       {
-         CTendonKey& key(*iter);
          pStrSave->BeginUnit(_T("Tendon"),1.0);
          pStrSave->put_Property(_T("GirderID"),CComVariant(key.girderID));
          pStrSave->put_Property(_T("DuctIndex"),CComVariant(key.ductIdx));

@@ -533,33 +533,44 @@ void CTimeStepLossEngineer::ComputeFrictionLosses(const CGirderKey& girderKey,LO
             Float64 Aps = aps*nStrands;
             Float64 fpj = (nStrands == 0 ? 0 : Pj/Aps);
             
-            // determine from which end of the girder to measure the angular change of the tendon path
-            pgsTypes::MemberEndType endType;
+            frDetails.X = Xg;
             if ( pDuct->JackingEnd == pgsTypes::jeStart )
             {
-               endType = pgsTypes::metStart;
+               Float64 alpha = m_pTendonGeom->GetAngularChange(poi, ductIdx, pgsTypes::metStart);
+               frDetails.alpha = alpha;
+               frDetails.dfpF = fpj*(1 - exp(-(friction*alpha + Xg*wobble)));
             }
             else if ( pDuct->JackingEnd == pgsTypes::jeEnd )
             {
-               endType = pgsTypes::metEnd;
+               Float64 alpha = m_pTendonGeom->GetAngularChange(poi, ductIdx, pgsTypes::metEnd);
+               frDetails.alpha = alpha;
+               frDetails.dfpF = fpj*(1 - exp(-(friction*alpha + (Lg-Xg)*wobble)));
             }
             else
             {
-               // jacked from both ends.... if Xg < Lg/2, measure from start, otherwise from the end
-               endType = (Xg < Lg/2) ? pgsTypes::metStart : pgsTypes::metEnd;
+               ATLASSERT(pDuct->JackingEnd == pgsTypes::jeBoth);
+
+               // get friction loss for jacking from left end
+               Float64 alpha_left = m_pTendonGeom->GetAngularChange(poi, ductIdx, pgsTypes::metStart);
+               Float64 dfpF_left = fpj*(1 - exp(-(friction*alpha_left + Xg*wobble)));
+
+               // get friction loss for jacking from right end
+               Float64 alpha_right = m_pTendonGeom->GetAngularChange(poi, ductIdx, pgsTypes::metEnd);
+               Float64 dfpF_right = fpj*(1 - exp(-(friction*alpha_right + (Lg - Xg)*wobble)));
+
+               if (dfpF_left < dfpF_right)
+               {
+                  // this section is controlled by left end jacking
+                  frDetails.alpha = alpha_left;
+                  frDetails.dfpF = dfpF_left;
+               }
+               else
+               {
+                  // this section is controlled by right end jacking
+                  frDetails.alpha = alpha_right;
+                  frDetails.dfpF = dfpF_right;
+               }
             }
-
-            Float64 X = Xg; // distance from stressing end
-            if ( endType == pgsTypes::metEnd )
-            {
-               X = Lg - Xg;
-            }
-
-            Float64 alpha = m_pTendonGeom->GetAngularChange(poi,ductIdx,endType);
-
-            frDetails.X = Xg;
-            frDetails.alpha = alpha;
-            frDetails.dfpF = fpj*(1 - exp(-(friction*alpha + X*wobble)));
 
             // calculation incremental elongation at this poi... it will
             // be summed with previously computed increments to get the total

@@ -1273,7 +1273,10 @@
 #define ID_CENTER                       36918
 #define ID_RIGHT_HP                     36919
 #define ID_USER_CUT                     36920
-#define ID_EDIT_BRIDGE                  36923
+#define ID_UNUSED_1                     36921 // UNUSED
+#define ID_UNUSED_2                     36922 // UNUSED
+#define ID_UNUSED_3                     36923 // UNUSED
+#define ID_UNUSED_4                     36924 // UNUSED
 #define ID_VIEWSETTINGS                 36925
 #define ID_EDIT_PRESTRESSING            36926
 #define ID_EDIT_STIRRUPS                36927
@@ -1336,13 +1339,14 @@
 #define ID_ADD_POINT_LOAD_CTX           36997
 #define ID_ADD_DISTRIBUTED_LOAD_CTX     36998
 #define ID_ADD_MOMENT_LOAD_CTX          36999
+#define ID_PROJECT_BARRIER              37000
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        374
-#define _APS_NEXT_COMMAND_VALUE         37000
+#define _APS_NEXT_COMMAND_VALUE         37001
 #define _APS_NEXT_CONTROL_VALUE         1906
 #define _APS_NEXT_SYMED_VALUE           113
 #endif

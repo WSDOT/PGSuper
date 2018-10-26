@@ -1890,7 +1890,7 @@ void CGirderModelElevationView::BuildRebarDisplayObjects(CPGSDocBase* pDoc, IBro
                {
                   CComPtr<IPoint2dCollection> profile;
                   rebarPattern->get_Profile(0,&profile);
-                  profile->Offset(group_offset+startLoc,0);
+                  profile->Offset(group_offset + start_offset,0);
                   BuildLine(pDL, profile, REBAR_COLOR);
                }
 

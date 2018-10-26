@@ -28,13 +28,11 @@
 #include "PGSuperAppPlugin\PGSuperApp.h"
 #include "SlabDisplayObjectEvents.h"
 #include "BridgeSectionCutDisplayImpl.h"
+#include "BridgeModelViewChildFrame.h"
 #include "mfcdual.h"
-#include "pgsuperdoc.h"
+#include "PGSuperDoc.h"
 #include <IFace\Bridge.h>
 #include <IFace\EditByUI.h>
-#include "BridgeSectionView.h"
-
-#include <PgsExt\BridgeDescription2.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -283,17 +281,12 @@ void CBridgeSectionViewSlabDisplayObjectEvents::EditSlab()
 
 void CBridgeSectionViewSlabDisplayObjectEvents::SelectPrev()
 {
-   GET_IFACE(IBridgeDescription,pIBridgeDesc);
-   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
-   GroupIndexType grpIdx = m_pFrame->GetBridgeSectionView()->GetGroupIndex();
-   GirderIndexType nGirders = pBridgeDesc->GetGirderGroup(grpIdx)->GetGirderCount();
-   m_pFrame->SelectGirder( CSegmentKey(grpIdx,nGirders-1,INVALID_INDEX) );
+   m_pFrame->SelectTrafficBarrier(pgsTypes::tboLeft);
 }
 
 void CBridgeSectionViewSlabDisplayObjectEvents::SelectNext()
 {
-   GroupIndexType grpIdx = m_pFrame->GetBridgeSectionView()->GetGroupIndex();
-   m_pFrame->SelectGirder( CSegmentKey(grpIdx,0,INVALID_INDEX) );
+   m_pFrame->SelectTrafficBarrier(pgsTypes::tboRight);
 }
 
 /////////////////////////////////////////////////////////////////////////////

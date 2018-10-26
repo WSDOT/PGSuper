@@ -3172,21 +3172,6 @@ std::vector<pgsPointOfInterest> CPsLossEngineer::GetPointsOfInterest(const CGird
    // remove all POI that are not between the ends of the actual segment
    Float64 Xmin = vPoi2.front().GetDistFromStart(); // poi's at end of released segment
    Float64 Xmax = vPoi2.back().GetDistFromStart();
-   std::vector<pgsPointOfInterest>::iterator iter(vPoi.begin());
-   do
-   {
-      pgsPointOfInterest& poi(*iter);
-      Float64 Xpoi = poi.GetDistFromStart();
-      if ( Xpoi < Xmin || Xmax < Xpoi )
-      {
-         iter = vPoi.erase(iter);
-      }
-
-      if ( iter != vPoi.end() )
-      {
-         iter++;
-      }
-   } while ( iter != vPoi.end() );
-
+   vPoi.erase(std::remove_if(vPoi.begin(), vPoi.end(), [Xmin=Xmin, Xmax=Xmax](const auto& poi) {return poi.GetDistFromStart() < Xmin || Xmax < poi.GetDistFromStart();}),vPoi.end());
    return vPoi;
 }

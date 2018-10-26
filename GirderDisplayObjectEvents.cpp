@@ -641,7 +641,7 @@ void CBridgeSectionViewGirderDisplayObjectEvents::SelectPrevGirder()
 {
    if ( m_GirderKey.girderIndex == 0 )
    {
-      m_pFrame->SelectDeck();
+      m_pFrame->SelectTrafficBarrier(pgsTypes::tboRight);
    }
    else
    {
@@ -655,7 +655,7 @@ void CBridgeSectionViewGirderDisplayObjectEvents::SelectNextGirder()
 {
    if ( m_GirderKey.girderIndex == m_nGirdersThisGroup-1 )
    {
-      m_pFrame->SelectDeck();
+      m_pFrame->SelectTrafficBarrier(pgsTypes::tboLeft);
    }
    else
    {

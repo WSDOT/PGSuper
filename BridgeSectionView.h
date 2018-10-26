@@ -32,6 +32,8 @@
 #include "BridgeViewPane.h"
 #include <map>
 
+class CRailingSystem;
+
 /////////////////////////////////////////////////////////////////////////////
 // CBridgeSectionView view
 
@@ -53,6 +55,7 @@ public:
    void SelectGirder(const CGirderKey& girderKey,bool bSelect);
    void SelectDeck(bool bSelect);
    void SelectAlignment(bool bSelect);
+   void SelectTrafficBarrier(pgsTypes::TrafficBarrierOrientation orientation,bool bSelect);
    void SelectTemporarySupport(bool bSelect);
    void ClearSelection();
 
@@ -102,6 +105,7 @@ protected:
    void BuildAlignmentDisplayObjects();
 
    void UpdateGirderTooltips();
+   CString GetBarrierToolTip(IBroker* pBroker, const CRailingSystem* pRailingSystem);
 
    void TrimSurface(IPoint2dCollection* pPoints,Float64 Xleft,Float64 Xright);
 

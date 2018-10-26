@@ -1773,14 +1773,11 @@ bool CBridgeAgentImp::BuildCogoModel()
       // we are starting on the back tangent
       HorzCurveData& first_curve_data = *(alignment_data.HorzCurves.begin());
 
-      // NOTE: The commented code below is correct, however it is commented out because
-      // ultimate there will be a crash because of issues in the COGO Path model.
-      // Also see NOTE below and Mantis 575
-      //if ( IsZero(first_curve_data.Radius) )
-      //{
-      //   prev_curve_ST_station = first_curve_data.PIStation - 100;
-      //}
-      //else
+      if ( IsZero(first_curve_data.Radius) )
+      {
+         prev_curve_ST_station = first_curve_data.PIStation - 100;
+      }
+      else
       {
          prev_curve_ST_station = first_curve_data.PIStation - 2*(first_curve_data.Radius + first_curve_data.EntrySpiral);
       }
@@ -1986,15 +1983,11 @@ bool CBridgeAgentImp::BuildCogoModel()
          if ( curveIdx == 0 )
          {
             // this is the first curve so set the reference station at the TS 
-
-            // NOTE: The commented code below is correct, however it is commented out because
-            // ultimate there will be a crash because of issues in the COGO Path model.
-            // Also see NOTE above and Mantis 575
-            //if ( IsZero(curve_data.Radius) )
-            //{
-            //   alignment->put_RefStation( CComVariant(pi_station - 100) );
-            //}
-            //else
+            if ( IsZero(curve_data.Radius) )
+            {
+               alignment->put_RefStation( CComVariant(pi_station - 100) );
+            }
+            else
             {
                alignment->put_RefStation( CComVariant(pi_station - T) );
             }
@@ -18677,6 +18670,22 @@ PierIndexType CBridgeAgentImp::GetPier(const pgsPointOfInterest& poi)
    }
    else
    {
+      const CSegmentKey& segmentKey = poi.GetSegmentKey();
+      Float64 Xpoi = poi.GetDistFromStart();
+      Float64 Lg = GetGirderLength(segmentKey);
+      if (Xpoi < 0 || Lg < Xpoi )
+      {
+         PierIndexType startPierIdx, endPierIdx;
+         GetGirderGroupPiers(segmentKey.groupIndex, &startPierIdx, &endPierIdx);
+         if (Xpoi < 0)
+         {
+            return startPierIdx;
+         }
+         else
+         {
+            return endPierIdx;
+         }
+      }
       return INVALID_INDEX;
    }
 }
@@ -19714,16 +19723,36 @@ Float64 CBridgeAgentImp::GetS(pgsTypes::SectionPropertyType spType,IntervalIndex
 
    if ( IsDeckStressLocation(location) )
    {
+      // make S in terms of the deck material
       IntervalIndexType compositeDeckInterval = m_IntervalManager.GetCompositeDeckInterval();
-      if (  compositeDeckInterval <= intervalIdx && IsCompositeDeck() // and the deck is composite with the section
+      if (compositeDeckInterval <= intervalIdx && IsCompositeDeck() // and the deck is composite with the section
          )
       {
-         // make S be in terms of deck material
-         CClosureKey closureKey;
-         Float64 Eg = (IsInClosureJoint(poi,&closureKey) ? GetClosureJointEc(closureKey,intervalIdx) : GetSegmentEc(segmentKey,intervalIdx));
-         Float64 Es = GetDeckEc(intervalIdx);
+         GET_IFACE(ILossParameters, pLossParams);
+         bool bIsTimeStepAnalysis = (pLossParams->GetLossMethod() == pgsTypes::TIME_STEP ? true : false);
 
-         Float64 n = Eg/Es;
+         CClosureKey closureKey;
+         bool bIsInClosureJoint = IsInClosureJoint(poi, &closureKey);
+         bool bIsOnSegment = IsOnSegment(poi);
+         bool bIsInIntermediateDiaphragm = IsInIntermediateDiaphragm(poi);
+
+         Float64 Eg;
+         if (bIsOnSegment)
+         {
+            Eg = (bIsTimeStepAnalysis ? GetSegmentAgeAdjustedEc(segmentKey, intervalIdx) : GetSegmentEc(segmentKey, intervalIdx));
+         }
+         else if (bIsInClosureJoint)
+         {
+            Eg = (bIsTimeStepAnalysis ? GetClosureJointAgeAdjustedEc(closureKey, intervalIdx) : GetClosureJointEc(closureKey, intervalIdx));
+         }
+         else if (bIsInIntermediateDiaphragm)
+         {
+            Eg = (bIsTimeStepAnalysis ? GetDeckAgeAdjustedEc(intervalIdx) : GetDeckEc(intervalIdx));
+         }
+
+         Float64 Es = (bIsTimeStepAnalysis ? GetDeckAgeAdjustedEc(intervalIdx) : GetDeckEc(intervalIdx));
+
+         Float64 n = Eg / Es;
          S *= n;
       }
       else
@@ -19888,10 +19917,12 @@ Float64 CBridgeAgentImp::GetS(pgsTypes::SectionPropertyType spType,IntervalIndex
    }
 
    IntervalIndexType compositeDeckInterval = m_IntervalManager.GetCompositeDeckInterval();
-   if ( (location == pgsTypes::TopDeck || location == pgsTypes::BottomDeck) && // want S for deck
-         compositeDeckInterval <= intervalIdx && IsCompositeDeck() // and the deck is composite with the section
+   if ( IsDeckStressLocation(location) && // want S for deck
+        compositeDeckInterval <= intervalIdx && IsCompositeDeck() // and the deck is composite with the section
       )
    {
+      ATLASSERT(IsOnSegment(poi)); // since we are doing girder design, the poi must be on the segment
+
       // make S be in terms of deck material
       Float64 Eg = E;
       Float64 Es = GetDeckEc(intervalIdx);
@@ -23406,7 +23437,8 @@ void CBridgeAgentImp::ConfigureSegmentHaulingStabilityProblem(const CSegmentKey&
    pProblem->SetImpact(impactUp,impactDown);
    pProblem->SetImpactUsage((stbTypes::HaulingImpact)pHaulingCriteria->GetHaulingImpactUsage());
 
-   pProblem->EvaluateStressesAtEquilibriumAngle(pHaulingCriteria->EvaluateHaulingStressesAtEquilibriumAngle());
+   pProblem->EvaluateStressesAtEquilibriumAngle(stbTypes::CrownSlope, pHaulingCriteria->EvaluateHaulingStressesAtEquilibriumAngle());
+   pProblem->EvaluateStressesAtEquilibriumAngle(stbTypes::Superelevation, true);
 
    pgsPointOfInterest poi = GetPointOfInterest(segmentKey,0.0);
    Float64 Hg  = GetHg(intervalIdx,poi);

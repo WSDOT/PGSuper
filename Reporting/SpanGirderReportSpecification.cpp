@@ -314,12 +314,25 @@ const CGirderKey& CGirderReportSpecification::GetGirderKey() const
 HRESULT CGirderReportSpecification::Validate() const
 {
    GET_IFACE(IBridge,pBridge);
-   GirderIndexType nGirders = 0;
 
    GroupIndexType nGroups = pBridge->GetGirderGroupCount();
-   for (GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )
+   if (nGroups <= m_GirderKey.groupIndex && m_GirderKey.groupIndex != ALL_GROUPS)
    {
-      nGirders = Max(nGirders,pBridge->GetGirderCount(grpIdx));
+      // the group index is out of range (group probably got deleted)
+      return RPT_E_INVALID_GIRDER;
+   }
+
+   GirderIndexType nGirders = 0;
+   if (m_GirderKey.groupIndex == ALL_GROUPS)
+   {
+      for (GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++)
+      {
+         nGirders = Max(nGirders, pBridge->GetGirderCount(grpIdx));
+      }
+   }
+   else
+   {
+      nGirders = pBridge->GetGirderCount(m_GirderKey.groupIndex);
    }
 
    if ( nGirders <= m_GirderKey.girderIndex )

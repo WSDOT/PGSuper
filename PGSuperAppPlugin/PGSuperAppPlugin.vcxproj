@@ -689,6 +689,7 @@ xcopy /y/d/s \ARP\PGSuper\Configurations \ARP\BridgeLink\Configurations\
     <ClCompile Include="..\StrandFillGrid.cpp" />
     <ClCompile Include="..\StructuralAnalysisMethodDlg.cpp" />
     <ClCompile Include="..\SupportDrawStrategyImpl.cpp" />
+    <ClCompile Include="..\TrafficBarrierDisplayObjectEvents.cpp" />
     <ClCompile Include="AboutDlg.cpp" />
     <ClCompile Include="ActivityGrid.cpp" />
     <ClCompile Include="ApplyLoadsDlg.cpp" />
@@ -1012,7 +1013,6 @@ xcopy /y/d/s \ARP\PGSuper\Configurations \ARP\BridgeLink\Configurations\
     <ClInclude Include="..\Include\PGSuperAll.h" />
     <ClInclude Include="..\Include\PGSuperCatCom.h" />
     <ClInclude Include="..\Include\PGSuperColors.h" />
-    <ClInclude Include="..\Include\PGSuperComponentInfo.h" />
     <ClInclude Include="..\Include\PGSuperDebug.h" />
     <ClInclude Include="..\Include\PGSuperTypes.h" />
     <ClInclude Include="..\Include\PGSuperUnits.h" />
@@ -1098,6 +1098,7 @@ xcopy /y/d/s \ARP\PGSuper\Configurations \ARP\BridgeLink\Configurations\
     <ClInclude Include="..\StructuralAnalysisMethodDlg.h" />
     <ClInclude Include="..\SupportDrawStrategy.h" />
     <ClInclude Include="..\SupportDrawStrategyImpl.h" />
+    <ClInclude Include="..\TrafficBarrierDisplayObjectEvents.h" />
     <ClInclude Include="AboutDlg.h" />
     <ClInclude Include="ActivityGrid.h" />
     <ClInclude Include="ApplyLoadsDlg.h" />

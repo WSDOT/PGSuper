@@ -1334,30 +1334,36 @@ bool CPTData::CanRemoveDuct(DuctIndexType idx) const
    return true;
 }
 
-void CPTData::RemoveDuct(DuctIndexType idx)
+void CPTData::RemoveDuct(DuctIndexType ductIdx)
 {
-   ATLASSERT( CanRemoveDuct(idx) == true );
+   ATLASSERT( CanRemoveDuct(ductIdx) == true );
 
    // repair offset duct reference id's
    // all reference duct indices that are after the duct to be removed
    // must be decremented
-   std::vector<CDuctData>::iterator iter(m_Ducts.begin());
-   std::vector<CDuctData>::iterator end(m_Ducts.end());
-   for ( ; iter != end; iter++ )
+   for ( auto& ductData : m_Ducts )
    {
-      CDuctData& ductData = *iter;
       if ( ductData.DuctGeometryType == CDuctGeometry::Offset )
       {
-         ATLASSERT( idx != ductData.OffsetDuctGeometry.RefDuctIdx );
-         if ( idx < ductData.OffsetDuctGeometry.RefDuctIdx )
+         ATLASSERT(ductIdx != ductData.OffsetDuctGeometry.RefDuctIdx );
+         if (ductIdx < ductData.OffsetDuctGeometry.RefDuctIdx )
          {
             ductData.OffsetDuctGeometry.RefDuctIdx--;
          }
       }
    }
 
-   RemoveFromTimeline(idx);
-   m_Ducts.erase( m_Ducts.begin() + idx );
+   RemoveFromTimeline(ductIdx);
+   m_Ducts.erase( m_Ducts.begin() + ductIdx);
+}
+
+void CPTData::RemoveDucts()
+{
+   DuctIndexType nDucts = GetDuctCount();
+   for (DuctIndexType ductIdx = nDucts-1; ductIdx != INVALID_INDEX; ductIdx--)
+   {
+      RemoveDuct(ductIdx);
+   }
 }
 
 StrandIndexType CPTData::GetStrandCount(DuctIndexType ductIndex) const

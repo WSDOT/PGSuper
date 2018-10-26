@@ -33,6 +33,8 @@
 
 #include <EAF\EAFAppPlugin.h>
 
+#include "Hints.h"
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
@@ -114,4 +116,17 @@ void CGraphView::OnPrint(CDC* pDC, CPrintInfo* pInfo)
 
    m_PrintRect = rcPrint;
 	CEAFAutoCalcGraphView::OnPrint(pDC, pInfo);
+}
+
+void CGraphView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
+{
+   if (lHint == HINT_SELECTIONCHANGED)
+   {
+      return; // none of the graphs are keyed to the selection, so if the selection changes, do nothing...
+      // if we let this go through, then, if autocalc mode is disabled, the graphs will get a license plate frame
+      // even though nothing has changed except the selection
+   }
+
+
+   CEAFAutoCalcGraphView::OnUpdate(pSender, lHint, pHint);
 }

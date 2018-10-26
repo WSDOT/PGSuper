@@ -447,13 +447,9 @@ BOOL CPierLocationPage::IsValidStation(Float64* pStation)
    const unitLength& displayUnit = (unitMode == umUS ? unitMeasure::Feet : unitMeasure::Meter);
 
    CWnd* pWnd = GetDlgItem(IDC_STATION);
-   
-   int cLength = pWnd->GetWindowTextLength() + 1;
-   cLength = (cLength == 1 ? 32 : cLength );
-   LPTSTR lpszBuffer = new TCHAR[cLength];
-
-   pWnd->GetWindowText(lpszBuffer,cLength);
-   HRESULT hr = m_objStation->FromString(CComBSTR(lpszBuffer),unitMode);
+   CString strStation;
+   pWnd->GetWindowText(strStation);
+   HRESULT hr = m_objStation->FromString(CComBSTR(strStation),unitMode);
    if ( SUCCEEDED(hr) )
    {
       m_objStation->get_Value(pStation);
@@ -465,7 +461,6 @@ BOOL CPierLocationPage::IsValidStation(Float64* pStation)
       bResult = FALSE;
    }
 
-   delete[] lpszBuffer;
    return bResult;
 }
 

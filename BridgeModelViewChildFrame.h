@@ -71,6 +71,7 @@ public:
    void SelectTemporarySupport(SupportIDType tsID);
    void SelectDeck();
    void SelectAlignment();
+   void SelectTrafficBarrier(pgsTypes::TrafficBarrierOrientation orientation);
    void ClearSelection();
 
    void InvalidateCutLocation() {m_bCutLocationInitialized = false;}

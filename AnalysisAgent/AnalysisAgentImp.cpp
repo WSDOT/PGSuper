@@ -130,6 +130,8 @@ void CAnalysisAgentImp::Invalidate(bool clearStatus)
    CAnalysisAgentImp::DeleteGirderModelManager((LPVOID)pOldGirderModels);
 #endif
 
+   InvalidateCache();
+
    InvalidateCamberModels();
 
    InValidateSlabOffsetDesignModel();
@@ -190,6 +192,17 @@ void CAnalysisAgentImp::ValidateCamberModels(const GDRCONFIG* pConfig)
 
       m_CacheConfig = *pConfig;
    }
+}
+
+void CAnalysisAgentImp::InvalidateCache()
+{
+   GDRCONFIG defaultConfig;
+   m_CacheConfig = defaultConfig;
+
+   CamberModelData defaultModelData;
+   m_CacheConfig_PrestressDeflectionModel = defaultModelData;
+   m_CacheConfig_InitialTempPrestressDeflectionModels = defaultModelData;
+   m_CacheConfig_ReleaseTempPrestressDeflectionModels = defaultModelData;
 }
 
 CAnalysisAgentImp::CamberModelData CAnalysisAgentImp::GetPrestressDeflectionModel(const CSegmentKey& segmentKey,CamberModels& models)
@@ -1495,7 +1508,7 @@ void CAnalysisAgentImp::GetGirderDeflectionForCamber(const pgsPointOfInterest& p
    d_inc = GetDeflection(erectionIntervalIdx, _T("Girder_Incremental"), poi, bat, rtCumulative, false);
    r_inc = GetRotation(erectionIntervalIdx, _T("Girder_Incremental"), poi, bat, rtCumulative, false);
 
-   ATLASSERT(IsEqual(dStorage+d_inc,dErected));
+   ATLASSERT(IsEqual(dStorage+d_inc,dErected,0.001));
    //ATLASSERT(IsEqual(rStorage+r_inc,rErected));
 
    if (pConfig != nullptr)
@@ -7109,8 +7122,11 @@ void CAnalysisAgentImp::GetPrestressDeflectionFromModel(const pgsPointOfInterest
          ATLASSERT(false); // should never get here
       }
 
+      std::vector<pgsPointOfInterest> vPoi(pPoi->GetPointsOfInterest(segmentKey, POI_ERECTED_SEGMENT | POI_0L | POI_10L));
+      ATLASSERT(vPoi.size() == 2);
 
-      pgsPointOfInterest poiAtStart( pPoi->GetPointOfInterest(segmentKey,left_support) );
+      pgsPointOfInterest poiAtStart( vPoi.front() );
+      ATLASSERT(poiAtStart.IsTenthPoint(POI_ERECTED_SEGMENT) == 1);
       ATLASSERT( 0 <= poiAtStart.GetID() );
    
       femPoiID = modelData.PoiMap.GetModelPoi(poiAtStart);
@@ -7118,7 +7134,8 @@ void CAnalysisAgentImp::GetPrestressDeflectionFromModel(const pgsPointOfInterest
       Float64 start_delta_brg = Dy;
 
       Float64 Lg = pBridge->GetSegmentLength(segmentKey);
-      pgsPointOfInterest poiAtEnd( pPoi->GetPointOfInterest(segmentKey,Lg-right_support) );
+      pgsPointOfInterest poiAtEnd( vPoi.back() );
+      ATLASSERT(poiAtEnd.IsTenthPoint(POI_ERECTED_SEGMENT) == 11);
       ATLASSERT( 0 <= poiAtEnd.GetID() );
       femPoiID = modelData.PoiMap.GetModelPoi(poiAtEnd);
       results->ComputePOIDeflections(lcid,femPoiID.first,lotGlobal,&Dx,&Dy,&Rz);
@@ -7157,22 +7174,26 @@ void CAnalysisAgentImp::GetReleaseTempPrestressDeflection(const pgsPointOfIntere
    results->ComputePOIDeflections(g_lcidTemporaryStrand,femPoiID.first,lotGlobal,&Dx,&Dy,pRz);
    Float64 delta_poi = Dy;
 
+   std::vector<pgsPointOfInterest> vPoi(pPoi->GetPointsOfInterest(segmentKey, POI_ERECTED_SEGMENT | POI_0L | POI_10L));
+   ATLASSERT(vPoi.size() == 2);
+   pgsPointOfInterest poiStart(vPoi.front());
+   pgsPointOfInterest poiEnd(vPoi.back());
+   ATLASSERT(poiStart.IsTenthPoint(POI_ERECTED_SEGMENT) == 1);
+   ATLASSERT(poiEnd.IsTenthPoint(POI_ERECTED_SEGMENT) == 11);
+
    // Get deflection at start bearing
-   GET_IFACE(IBridge,pBridge);
-   Float64 start_end_size = pBridge->GetSegmentStartEndDistance(segmentKey);
-   pgsPointOfInterest poi2( pPoi->GetPointOfInterest(segmentKey,start_end_size) );
-   femPoiID = modelData.PoiMap.GetModelPoi(poi2);
+   femPoiID = modelData.PoiMap.GetModelPoi(poiStart);
    results->ComputePOIDeflections(g_lcidTemporaryStrand,femPoiID.first,lotGlobal,&Dx,&Dy,&Rz);
    Float64 start_delta_end_size = Dy;
 
    // Get deflection at end bearing
-   Float64 L = pBridge->GetSegmentLength(segmentKey);
-   Float64 end_end_size = pBridge->GetSegmentEndEndDistance(segmentKey);
-   poi2 = pPoi->GetPointOfInterest(segmentKey,L-end_end_size);
-   femPoiID = modelData.PoiMap.GetModelPoi(poi2);
+   femPoiID = modelData.PoiMap.GetModelPoi(poiEnd);
    results->ComputePOIDeflections(g_lcidTemporaryStrand,femPoiID.first,lotGlobal,&Dx,&Dy,&Rz);
    Float64 end_delta_end_size = Dy;
 
+   GET_IFACE(IBridge, pBridge);
+   Float64 L = pBridge->GetSegmentLength(segmentKey);
+   Float64 start_end_size = pBridge->GetSegmentStartEndDistance(segmentKey);
    Float64 delta_brg = LinInterp(poi.GetDistFromStart()-start_end_size, start_delta_end_size,end_delta_end_size,L);
 
    Float64 delta = delta_poi - delta_brg;
@@ -7291,14 +7312,13 @@ void CAnalysisAgentImp::GetCreepDeflection_CIP_TempStrands(const pgsPointOfInter
       // get POI at final bearing locations.... 
       // we want to deduct the deformation relative to the storage supports at these locations from the storage deformations
       // to make the deformation relative to the final bearings
-      GET_IFACE(IBridge,pBridge);
-      Float64 leftSupport = pBridge->GetSegmentStartEndDistance(segmentKey);
-      Float64 rightSupport = pBridge->GetSegmentEndEndDistance(segmentKey);
-      Float64 segmentLength = pBridge->GetSegmentLength(segmentKey);
-
       GET_IFACE(IPointOfInterest,pPoi);
-      pgsPointOfInterest poiLeft = pPoi->GetPointOfInterest(segmentKey,leftSupport);
-      pgsPointOfInterest poiRight = pPoi->GetPointOfInterest(segmentKey,segmentLength - rightSupport);
+      std::vector<pgsPointOfInterest> vPoi(pPoi->GetPointsOfInterest(segmentKey, POI_ERECTED_SEGMENT | POI_0L | POI_10L));
+      ATLASSERT(vPoi.size() == 2);
+      pgsPointOfInterest poiLeft(vPoi.front());
+      pgsPointOfInterest poiRight(vPoi.back());
+      ATLASSERT(poiLeft.IsTenthPoint(POI_ERECTED_SEGMENT) == 1);
+      ATLASSERT(poiRight.IsTenthPoint(POI_ERECTED_SEGMENT) == 11);
       ATLASSERT(poiLeft.GetID() != INVALID_ID && poiRight.GetID() != INVALID_ID);
 
       // get creep deformations during storage at location of final bearings
@@ -7475,14 +7495,13 @@ void CAnalysisAgentImp::GetCreepDeflection_CIP(const pgsPointOfInterest& poi,con
       // get POI at final bearing locations.... 
       // we want to deduct the deformation relative to the storage supports at these locations from the storage deformations
       // to make the deformation relative to the final bearings
-      GET_IFACE(IBridge,pBridge);
-      Float64 leftSupport = pBridge->GetSegmentStartEndDistance(segmentKey);
-      Float64 rightSupport = pBridge->GetSegmentEndEndDistance(segmentKey);
-      Float64 segmentLength = pBridge->GetSegmentLength(segmentKey);
-
-      GET_IFACE(IPointOfInterest,pPoi);
-      pgsPointOfInterest poiLeft = pPoi->GetPointOfInterest(segmentKey,leftSupport);
-      pgsPointOfInterest poiRight = pPoi->GetPointOfInterest(segmentKey,segmentLength - rightSupport);
+      GET_IFACE(IPointOfInterest, pPoi);
+      std::vector<pgsPointOfInterest> vPoi(pPoi->GetPointsOfInterest(segmentKey, POI_ERECTED_SEGMENT | POI_0L | POI_10L));
+      ATLASSERT(vPoi.size() == 2);
+      pgsPointOfInterest poiLeft(vPoi.front());
+      pgsPointOfInterest poiRight(vPoi.back());
+      ATLASSERT(poiLeft.IsTenthPoint(POI_ERECTED_SEGMENT) == 1);
+      ATLASSERT(poiRight.IsTenthPoint(POI_ERECTED_SEGMENT) == 11);
       ATLASSERT(poiLeft.GetID() != INVALID_ID && poiRight.GetID() != INVALID_ID);
 
       // get creep deformations during storage at location of final bearings
@@ -7690,14 +7709,13 @@ void CAnalysisAgentImp::GetCreepDeflection_NoDeck_TempStrands(const pgsPointOfIn
       // get POI at final bearing locations.... 
       // we want to deduct the deformation relative to the storage supports at these locations from the storage deformations
       // to make the deformation relative to the final bearings
-      GET_IFACE(IBridge,pBridge);
-      Float64 leftSupport = pBridge->GetSegmentStartEndDistance(segmentKey);
-      Float64 rightSupport = pBridge->GetSegmentEndEndDistance(segmentKey);
-      Float64 segmentLength = pBridge->GetSegmentLength(segmentKey);
-
-      GET_IFACE(IPointOfInterest,pPoi);
-      pgsPointOfInterest poiLeft = pPoi->GetPointOfInterest(segmentKey,leftSupport);
-      pgsPointOfInterest poiRight = pPoi->GetPointOfInterest(segmentKey,segmentLength - rightSupport);
+      GET_IFACE(IPointOfInterest, pPoi);
+      std::vector<pgsPointOfInterest> vPoi(pPoi->GetPointsOfInterest(segmentKey, POI_ERECTED_SEGMENT | POI_0L | POI_10L));
+      ATLASSERT(vPoi.size() == 2);
+      pgsPointOfInterest poiLeft(vPoi.front());
+      pgsPointOfInterest poiRight(vPoi.back());
+      ATLASSERT(poiLeft.IsTenthPoint(POI_ERECTED_SEGMENT) == 1);
+      ATLASSERT(poiRight.IsTenthPoint(POI_ERECTED_SEGMENT) == 11);
       ATLASSERT(poiLeft.GetID() != INVALID_ID && poiRight.GetID() != INVALID_ID);
 
       // get creep deformations during storage at location of final bearings
@@ -7929,14 +7947,13 @@ void CAnalysisAgentImp::GetCreepDeflection_NoDeck(const pgsPointOfInterest& poi,
       // get POI at final bearing locations.... 
       // we want to deduct the deformation relative to the storage supports at these locations from the storage deformations
       // to make the deformation relative to the final bearings
-      GET_IFACE(IBridge,pBridge);
-      Float64 leftSupport = pBridge->GetSegmentStartEndDistance(segmentKey);
-      Float64 rightSupport = pBridge->GetSegmentEndEndDistance(segmentKey);
-      Float64 segmentLength = pBridge->GetSegmentLength(segmentKey);
-
-      GET_IFACE(IPointOfInterest,pPoi);
-      pgsPointOfInterest poiLeft = pPoi->GetPointOfInterest(segmentKey,leftSupport);
-      pgsPointOfInterest poiRight = pPoi->GetPointOfInterest(segmentKey,segmentLength - rightSupport);
+      GET_IFACE(IPointOfInterest, pPoi);
+      std::vector<pgsPointOfInterest> vPoi(pPoi->GetPointsOfInterest(segmentKey, POI_ERECTED_SEGMENT | POI_0L | POI_10L));
+      ATLASSERT(vPoi.size() == 2);
+      pgsPointOfInterest poiLeft(vPoi.front());
+      pgsPointOfInterest poiRight(vPoi.back());
+      ATLASSERT(poiLeft.IsTenthPoint(POI_ERECTED_SEGMENT) == 1);
+      ATLASSERT(poiRight.IsTenthPoint(POI_ERECTED_SEGMENT) == 11);
       ATLASSERT(poiLeft.GetID() != INVALID_ID && poiRight.GetID() != INVALID_ID);
 
       // get creep deformations during storage at location of final bearings
@@ -8180,10 +8197,14 @@ void CAnalysisAgentImp::GetD_Deck_TempStrands(const pgsPointOfInterest& poi,cons
    GetDiaphragmDeflection(poi, pConfig, &Ddiaphragm, &Rdiaphragm);
    GetShearKeyDeflection(poi, pConfig, &Dshearkey, &Rshearkey);
    GetConstructionLoadDeflection(poi, pConfig, &Dconstr, &Rconstr);
-   if ( pConfig )
+   if (pConfig)
+   {
       GetCreepDeflection(poi, pConfig, initModelData, initTempModelData, releaseTempModelData, ICamber::cpDiaphragmToDeck, constructionRate, pgsTypes::pddErected, &Dcreep2, &Rcreep2);
+   }
    else
-      GetCreepDeflection( poi, ICamber::cpDiaphragmToDeck, constructionRate, pgsTypes::pddErected, pConfig, &Dcreep2, &Rcreep2 );
+   {
+      GetCreepDeflection(poi, ICamber::cpDiaphragmToDeck, constructionRate, pgsTypes::pddErected, pConfig, &Dcreep2, &Rcreep2);
+   }
 
    //if ( pConfig != nullptr )
    //{
@@ -8237,10 +8258,15 @@ void CAnalysisAgentImp::GetD_Deck(const pgsPointOfInterest& poi,const GDRCONFIG*
    GetDiaphragmDeflection(poi, pConfig, &Ddiaphragm, &Rdiaphragm);
    GetShearKeyDeflection(poi, pConfig, &Dshearkey, &Rshearkey);
    GetConstructionLoadDeflection(poi, pConfig, &Dconstr, &Rconstr);
-   if ( pConfig )
+   if (pConfig)
+   {
       GetCreepDeflection(poi, pConfig, initModelData, initTempModelData, releaseTempModelData, ICamber::cpReleaseToDeck, constructionRate, pgsTypes::pddErected, &Dcreep, &Rcreep);
+   }
    else
-      GetCreepDeflection( poi, ICamber::cpReleaseToDeck, constructionRate, pgsTypes::pddErected, pConfig, &Dcreep, &Rcreep );
+   {
+      GetCreepDeflection(poi, ICamber::cpReleaseToDeck, constructionRate, pgsTypes::pddErected, pConfig, &Dcreep, &Rcreep);
+   }
+
    //if ( pConfig != nullptr )
    //{
    //   GetPrestressDeflection( poi,  pgsTypes::pddErected, pConfig, &Dps, &Rps );

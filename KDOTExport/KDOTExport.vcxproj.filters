@@ -75,11 +75,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <Image Include="icon1.ico">
-      <Filter>Resource Files</Filter>
-    </Image>
-  </ItemGroup>
-  <ItemGroup>
     <ResourceCompile Include="KDOTExport.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>

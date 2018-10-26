@@ -5,7 +5,6 @@
 
 The Specification Check was Not Successful
 Stirrup detailing checks failed for the Strength I Limit State.
-Lifting checks failed
 Hauling checks failed
 
 
@@ -17,7 +16,6 @@ Hauling checks failed
 The Specification Check was Not Successful
 Stirrup detailing checks failed for the Strength I Limit State.
 Debond arrangement checks failed.
-Lifting checks failed
 
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 

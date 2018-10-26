@@ -758,6 +758,9 @@
     <ClCompile Include="..\PGSImportPluginDocTemplateBase.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\TrafficBarrierDisplayObjectEvents.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Documentation\PGSuper.hh" />
@@ -1606,6 +1609,9 @@
       <Filter>IFace</Filter>
     </ClInclude>
     <ClInclude Include="..\Include\IFace\Tools.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\TrafficBarrierDisplayObjectEvents.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

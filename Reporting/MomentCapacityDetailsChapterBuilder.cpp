@@ -33,6 +33,7 @@
 #include <IFace\Project.h>
 #include <IFace\Intervals.h>
 #include <IFace\BeamFactory.h>
+#include <IFace\DocumentType.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -122,6 +123,7 @@ rptChapter* CMomentCapacityDetailsChapterBuilder::Build(CReportSpecification* pR
    GET_IFACE2(pBroker,IBridge,pBridge);
    GET_IFACE2(pBroker,IPointOfInterest,pIPOI);
    GET_IFACE2(pBroker,IIntervals,pIntervals);
+   GET_IFACE2_NOCHECK(pBroker, IDocumentType, pDocType);
 
 // NOTE
 // No longer designing/checking for ultimate moment in temporary construction state
@@ -151,8 +153,21 @@ rptChapter* CMomentCapacityDetailsChapterBuilder::Build(CReportSpecification* pR
 
          pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
          *pChapter << pPara;
-         *pPara << _T("Positive Moment Capacity Details") << rptNewLine;
 
+
+         if (girderKey.groupIndex == ALL_GROUPS)
+         {
+            if (pDocType->IsPGSuperDocument())
+            {
+               *pPara << _T("Span ") << LABEL_SPAN(thisGirderKey.groupIndex) << _T(" Girder ") << LABEL_GIRDER(thisGirderKey.girderIndex) << rptNewLine << rptNewLine;
+            }
+            else
+            {
+               *pPara << _T("Group ") << LABEL_GROUP(thisGirderKey.groupIndex) << _T(" Girder ") << LABEL_GIRDER(thisGirderKey.girderIndex) << rptNewLine << rptNewLine;
+            }
+         }
+
+         *pPara << _T("Positive Moment Capacity Details") << rptNewLine;
 
          std::vector<pgsPointOfInterest> vPoi( pIPOI->GetPointsOfInterest(CSegmentKey(thisGirderKey,ALL_SEGMENTS)) );
 

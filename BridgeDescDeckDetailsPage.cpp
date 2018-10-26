@@ -775,7 +775,7 @@ void CBridgeDescDeckDetailsPage::OnWearingSurfaceTypeChanged()
       bOverlayDepthAndDensity = (iOption == IDC_OLAY_DEPTH_LABEL  ? TRUE : FALSE);
 
       // create a loading event in the timeline for the overlay load
-      pTimelineMgr->SetOverlayLoadEventByIndex(pTimelineMgr->GetRailingSystemLoadEventIndex());
+      pTimelineMgr->SetOverlayLoadEventByIndex(pTimelineMgr->GetLiveLoadEventIndex()-1);
    }
    else
    {
@@ -811,6 +811,13 @@ void CBridgeDescDeckDetailsPage::OnWearingSurfaceTypeChanged()
    GetDlgItem(IDC_SACDEPTH_LABEL)->EnableWindow( bSacDepth );
    GetDlgItem(IDC_SACDEPTH)->EnableWindow( bSacDepth );
    GetDlgItem(IDC_SACDEPTH_UNIT)->EnableWindow( bSacDepth );
+
+   CDataExchange dx(this, FALSE);
+   EventIndexType overlayEventIdx = pParent->m_BridgeDesc.GetTimelineManager()->GetOverlayLoadEventIndex();
+   if (overlayEventIdx != INVALID_INDEX)
+   {
+      DDX_CBItemData(&dx, IDC_OVERLAY_EVENT, overlayEventIdx);
+   }
 }
 
 void CBridgeDescDeckDetailsPage::OnMoreConcreteProperties() 

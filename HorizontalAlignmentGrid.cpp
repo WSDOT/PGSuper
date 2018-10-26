@@ -373,7 +373,7 @@ bool CHorizontalAlignmentGrid::GetRowData(ROWCOL nRow,Float64* pStation,Float64*
    *pExitSpiral = _tstof(strExitSpiral);
    *pExitSpiral = ::ConvertToSysUnits(*pExitSpiral,pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure);
 
-   if ( ::IsLE(*pRadius,0.0) || ::IsLT(*pEntrySpiral,0.0) || ::IsLT(*pExitSpiral,0.0) )
+   if ( ::IsLT(*pRadius,0.0) || ::IsLT(*pEntrySpiral,0.0) || ::IsLT(*pExitSpiral,0.0) )
    {
       // Radius must be greater than zero
       // Spirals must be a positive value

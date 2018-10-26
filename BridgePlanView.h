@@ -170,6 +170,8 @@ protected:
    std::_tstring GetConnectionString(const CTemporarySupportData* pTS);
    std::_tstring GetFullConnectionString(const CTemporarySupportData* pTS);
 
+   void Select(const CSelection* pSelection);
+
    // Range of spans that will be displayed
    SpanIndexType m_StartSpanIdx;
    SpanIndexType m_EndSpanIdx;

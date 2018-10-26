@@ -244,7 +244,8 @@ BEGIN_MESSAGE_MAP(CPGSDocBase, CEAFBrokerDocument)
 	ON_COMMAND(ID_ADD_DISTRIBUTED_LOAD, OnAddDistributedLoad)
 	ON_COMMAND(ID_ADD_MOMENT_LOAD, OnAddMomentLoad)
    ON_COMMAND(ID_CONSTRUCTION_LOADS,OnConstructionLoads)
-	ON_COMMAND(ID_PROJECT_ALIGNMENT, OnProjectAlignment)
+   ON_COMMAND(ID_PROJECT_ALIGNMENT, OnProjectAlignment)
+   ON_COMMAND(ID_PROJECT_BARRIER, OnProjectBarriers)
    ON_COMMAND(ID_PROJECT_PROFILE, OnProjectProfile)
 	ON_COMMAND(ID_PROJECT_PIERDESC, OnEditPier)
 	ON_COMMAND(ID_PROJECT_SPANDESC, OnEditSpan)
@@ -338,6 +339,8 @@ m_bAutoCalcEnabled(true)
    m_bSelectingGirder = false;
    m_bSelectingSegment = false;
    m_bClearingSelection = false;
+
+   txnTxnManager::SetTransactionManagerFactory(&m_TxnMgrFactory);
 }
 
 CPGSDocBase::~CPGSDocBase()
@@ -2989,6 +2992,28 @@ void CPGSDocBase::SelectAlignment(BOOL bNotify)
    }
 }
 
+void CPGSDocBase::SelectTrafficBarrier(pgsTypes::TrafficBarrierOrientation orientation,BOOL bNotify)
+{
+   if ( (orientation == pgsTypes::tboLeft && m_Selection.Type == CSelection::LeftRailingSystem) || (orientation == pgsTypes::tboRight && m_Selection.Type == CSelection::RightRailingSystem) )
+   {
+      return;
+   }
+
+   m_Selection.Type = (orientation == pgsTypes::tboLeft ? CSelection::LeftRailingSystem : CSelection::RightRailingSystem);
+   m_Selection.SegmentIdx = INVALID_INDEX;
+   m_Selection.GirderIdx = INVALID_INDEX;
+   m_Selection.GroupIdx = INVALID_INDEX;
+   m_Selection.SpanIdx = INVALID_INDEX;
+   m_Selection.PierIdx = INVALID_INDEX;
+   m_Selection.tsID = INVALID_INDEX;
+
+   CSelection selection = m_Selection;
+   if (bNotify)
+   {
+      UpdateAllViews(0, HINT_SELECTIONCHANGED, (CObject*)&selection);
+   }
+}
+
 void CPGSDocBase::ClearSelection(BOOL bNotify)
 {
    if ( m_Selection.Type == CSelection::None )
@@ -3195,6 +3220,11 @@ void CPGSDocBase::OnConstructionLoads()
 void CPGSDocBase::OnProjectAlignment() 
 {
    EditAlignmentDescription(EBD_ROADWAY);
+}
+
+void CPGSDocBase::OnProjectBarriers()
+{
+   EditBridgeDescription(EBD_RAILING);
 }
 
 void CPGSDocBase::OnProjectProfile()

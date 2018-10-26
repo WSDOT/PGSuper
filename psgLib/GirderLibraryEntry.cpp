@@ -3416,12 +3416,14 @@ void GirderLibraryEntry::ValidateData(GirderLibraryEntry::GirderEntryDataErrorVe
             {
                point->Move(0.0, strandLocation.m_Ystart);
 
+               bool didMsg = false;
                shape->PointInShape( point,&bPointInShape );
                if ( bPointInShape == VARIANT_FALSE )
                {
                   std::_tostringstream os;
                   os << _T("Odd")<<LABEL_HARP_TYPE(cantBeHarped)<<_T(" strand #")<<total_num<<_T(" at girder end is outside of the girder section. Disable odd strands");
                   pvec->push_back(GirderEntryDataError(HarpedStrandOutsideOfGirder, os.str(), total_num));
+                  didMsg = true;
                }
 
                strand_mover->TestEndStrandLocation(etStart,height,0.0, strandLocation.m_Ystart-height, 0.0, &is_within);
@@ -3430,6 +3432,18 @@ void GirderLibraryEntry::ValidateData(GirderLibraryEntry::GirderEntryDataErrorVe
                   std::_tostringstream os;
                   os << _T("Odd ")<<LABEL_HARP_TYPE(cantBeHarped)<<_T(" strand #")<<total_num<<_T(" at girder end must be within offset bounds and lie within the thinnest portion of a web. Disable odd strands");
                   pvec->push_back(GirderEntryDataError(HarpedStrandOutsideOfGirder, os.str(), total_num));
+                  didMsg = true;
+               }
+
+               if (didMsg)
+               {
+                  // Coerce number of harped strands should probably not be on for multi-web sections
+                  WebIndexType wc;
+                  gdrSection->get_WebCount(&wc);
+                  if (wc > 1)
+                  {
+                     pvec->push_back(GirderEntryDataError(HarpedStrandOutsideOfGirder, _T("\"Coerce Odd Number of Harped Strands\" is enabled and this girder has more than one web - Could this be the problem?"), total_num));
+                  }
                }
             }
 

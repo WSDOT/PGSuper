@@ -492,10 +492,10 @@ void CCamberTable::Build_Deck(IBroker* pBroker,const CSegmentKey& segmentKey,
 #ifdef _DEBUG
       // Reality check with AnalysisAgent
       Float64 Dc = pCamber->GetDCamberForGirderSchedule(erectedPoi, constructionRate);
-      ATLASSERT(IsEqual(Dc, D4));
+      ATLASSERT(IsEqual(Dc, D4,0.001));
 
       Float64 Ec = pCamber->GetExcessCamber(erectedPoi, constructionRate);
-      ATLASSERT(IsEqual(Ec, D6));
+      ATLASSERT(IsEqual(Ec, D6,0.001));
 #endif
 
       row3++;

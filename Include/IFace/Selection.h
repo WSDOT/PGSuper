@@ -51,6 +51,7 @@ interface ISelection : IUnknown
    virtual SupportIDType GetSelectedTemporarySupport() = 0;
    virtual bool IsDeckSelected() = 0;
    virtual bool IsAlignmentSelected() = 0;
+   virtual bool IsRailingSystemSelected(pgsTypes::TrafficBarrierOrientation orientation) = 0;
 
    virtual void SelectPier(PierIndexType pierIdx) = 0;
    virtual void SelectSpan(SpanIndexType spanIdx) = 0;
@@ -60,6 +61,7 @@ interface ISelection : IUnknown
    virtual void SelectTemporarySupport(SupportIDType tsID) = 0;
    virtual void SelectDeck() = 0;
    virtual void SelectAlignment() = 0;
+   virtual void SelectRailingSystem(pgsTypes::TrafficBarrierOrientation orientation) = 0;
 
    virtual Float64 GetSectionCutStation() = 0; // bridge model view section cut station
 };
