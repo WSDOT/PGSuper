@@ -256,6 +256,14 @@
 				>
 			</File>
 			<File
+				RelativePath=".\BoxBeamFactory2.h"
+				>
+			</File>
+			<File
+				RelativePath=".\BoxBeamFactoryImpl.h"
+				>
+			</File>
+			<File
 				RelativePath="BulbTeeDistFactorEngineer.h"
 				>
 			</File>
@@ -281,6 +289,10 @@
 			</File>
 			<File
 				RelativePath="CreepAtHaulingTable.h"
+				>
+			</File>
+			<File
+				RelativePath=".\DeckedSlabBeamFactory.h"
 				>
 			</File>
 			<File
@@ -485,7 +497,19 @@
 				>
 			</File>
 			<File
+				RelativePath=".\Res\BoxBeam2.emf"
+				>
+			</File>
+			<File
+				RelativePath=".\res\boxbeam2.ico"
+				>
+			</File>
+			<File
 				RelativePath="BoxBeamFactory.rgs"
+				>
+			</File>
+			<File
+				RelativePath=".\BoxBeamFactory2.rgs"
 				>
 			</File>
 			<File
@@ -506,6 +530,22 @@
 			</File>
 			<File
 				RelativePath=".\BulbTeeFamily.rgs"
+				>
+			</File>
+			<File
+				RelativePath=".\res\DeckedSlab.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\Res\DeckedSlabBeam.emf"
+				>
+			</File>
+			<File
+				RelativePath=".\DeckedSlabBeamFactory.rgs"
+				>
+			</File>
+			<File
+				RelativePath=".\DeckedSlabBeamFamily.rgs"
 				>
 			</File>
 			<File
@@ -541,11 +581,11 @@
 				>
 			</File>
 			<File
-				RelativePath="Res\ico00002.ico"
+				RelativePath="ico00002.ico"
 				>
 			</File>
 			<File
-				RelativePath="ico00002.ico"
+				RelativePath="Res\ico00002.ico"
 				>
 			</File>
 			<File
@@ -562,6 +602,14 @@
 			</File>
 			<File
 				RelativePath="icon1.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\Res\icon2.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\Res\icon3.ico"
 				>
 			</File>
 			<File
@@ -772,6 +820,14 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\BoxBeamFactory2.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\BoxBeamFactoryImpl.cpp"
+				>
+			</File>
+			<File
 				RelativePath="BulbTeeDistFactorEngineer.cpp"
 				>
 				<FileConfiguration
@@ -924,6 +980,10 @@
 						PreprocessorDefinitions=""
 					/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\DeckedSlabBeamFactory.cpp"
+				>
 			</File>
 			<File
 				RelativePath="DeckShrinkageLossTable.cpp"

@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -46,22 +46,22 @@ static char THIS_FILE[] = __FILE__;
 #endif
 
 
-void write_load_modifiers(rptChapter* pChapter,IBroker* pBroker, IDisplayUnits* pDispUnit);
-void write_environmental_conditions(rptChapter* pChapter,IBroker* pBroker, IDisplayUnits* pDispUnit);
-void write_casting_yard(rptChapter* pChapter,IBroker* pBroker, IDisplayUnits* pDispUnit, const SpecLibraryEntry* pSpecEntry,SpanIndexType span,GirderIndexType gdr);
-void write_lifting(rptChapter* pChapter,IBroker* pBroker, IDisplayUnits* pDispUnit, const SpecLibraryEntry* pSpecEntry,SpanIndexType span,GirderIndexType gdr);
-void write_hauling(rptChapter* pChapter,IBroker* pBroker, IDisplayUnits* pDispUnit, const SpecLibraryEntry* pSpecEntry,SpanIndexType span,GirderIndexType gdr);
-void write_temp_strand_removal(rptChapter* pChapter,IBroker* pBroker, IDisplayUnits* pDispUnit, const SpecLibraryEntry* pSpecEntry,SpanIndexType span,GirderIndexType gdr);
-void write_bridge_site1(rptChapter* pChapter,IBroker* pBroker, IDisplayUnits* pDispUnit, const SpecLibraryEntry* pSpecEntry,SpanIndexType span,GirderIndexType gdr);
-void write_bridge_site2(rptChapter* pChapter,IBroker* pBroker, IDisplayUnits* pDispUnit, const SpecLibraryEntry* pSpecEntry,SpanIndexType span,GirderIndexType gdr);
-void write_bridge_site3(rptChapter* pChapter,IBroker* pBroker, IDisplayUnits* pDispUnit, const SpecLibraryEntry* pSpecEntry,SpanIndexType span,GirderIndexType gdr);
-void write_moment_capacity(rptChapter* pChapter,IBroker* pBroker, IDisplayUnits* pDispUnit, const SpecLibraryEntry* pSpecEntry,SpanIndexType span,GirderIndexType gdr);
-void write_shear_capacity(rptChapter* pChapter,IBroker* pBroker, IDisplayUnits* pDispUnit, const SpecLibraryEntry* pSpecEntry,SpanIndexType span,GirderIndexType gdr);
-void write_creep(rptChapter* pChapter,IBroker* pBroker, IDisplayUnits* pDispUnit, const SpecLibraryEntry* pSpecEntry,SpanIndexType span,GirderIndexType gdr);
-void write_losses(rptChapter* pChapter,IBroker* pBroker, IDisplayUnits* pDispUnit, const SpecLibraryEntry* pSpecEntry,SpanIndexType span,GirderIndexType gdr);
-void write_strand_stress(rptChapter* pChapter,IBroker* pBroker, IDisplayUnits* pDispUnit, const SpecLibraryEntry* pSpecEntry,SpanIndexType span,GirderIndexType gdr);
-void write_structural_analysis(rptChapter* pChapter,IBroker* pBroker, IDisplayUnits* pDispUnit);
-void write_deflections(rptChapter* pChapter,IBroker* pBroker, IDisplayUnits* pDispUnit, const SpecLibraryEntry* pSpecEntry,SpanIndexType span,GirderIndexType gdr);
+void write_load_modifiers(rptChapter* pChapter,IBroker* pBroker, IDisplayUnits* pDisplayUnits);
+void write_environmental_conditions(rptChapter* pChapter,IBroker* pBroker, IDisplayUnits* pDisplayUnits);
+void write_casting_yard(rptChapter* pChapter,IBroker* pBroker, IDisplayUnits* pDisplayUnits, const SpecLibraryEntry* pSpecEntry,SpanIndexType span,GirderIndexType gdr);
+void write_lifting(rptChapter* pChapter,IBroker* pBroker, IDisplayUnits* pDisplayUnits, const SpecLibraryEntry* pSpecEntry,SpanIndexType span,GirderIndexType gdr);
+void write_hauling(rptChapter* pChapter,IBroker* pBroker, IDisplayUnits* pDisplayUnits, const SpecLibraryEntry* pSpecEntry,SpanIndexType span,GirderIndexType gdr);
+void write_temp_strand_removal(rptChapter* pChapter,IBroker* pBroker, IDisplayUnits* pDisplayUnits, const SpecLibraryEntry* pSpecEntry,SpanIndexType span,GirderIndexType gdr);
+void write_bridge_site1(rptChapter* pChapter,IBroker* pBroker, IDisplayUnits* pDisplayUnits, const SpecLibraryEntry* pSpecEntry,SpanIndexType span,GirderIndexType gdr);
+void write_bridge_site2(rptChapter* pChapter,IBroker* pBroker, IDisplayUnits* pDisplayUnits, const SpecLibraryEntry* pSpecEntry,SpanIndexType span,GirderIndexType gdr);
+void write_bridge_site3(rptChapter* pChapter,IBroker* pBroker, IDisplayUnits* pDisplayUnits, const SpecLibraryEntry* pSpecEntry,SpanIndexType span,GirderIndexType gdr);
+void write_moment_capacity(rptChapter* pChapter,IBroker* pBroker, IDisplayUnits* pDisplayUnits, const SpecLibraryEntry* pSpecEntry,SpanIndexType span,GirderIndexType gdr);
+void write_shear_capacity(rptChapter* pChapter,IBroker* pBroker, IDisplayUnits* pDisplayUnits, const SpecLibraryEntry* pSpecEntry,SpanIndexType span,GirderIndexType gdr);
+void write_creep(rptChapter* pChapter,IBroker* pBroker, IDisplayUnits* pDisplayUnits, const SpecLibraryEntry* pSpecEntry,SpanIndexType span,GirderIndexType gdr);
+void write_losses(rptChapter* pChapter,IBroker* pBroker, IDisplayUnits* pDisplayUnits, const SpecLibraryEntry* pSpecEntry,SpanIndexType span,GirderIndexType gdr);
+void write_strand_stress(rptChapter* pChapter,IBroker* pBroker, IDisplayUnits* pDisplayUnits, const SpecLibraryEntry* pSpecEntry,SpanIndexType span,GirderIndexType gdr);
+void write_structural_analysis(rptChapter* pChapter,IBroker* pBroker, IDisplayUnits* pDisplayUnits);
+void write_deflections(rptChapter* pChapter,IBroker* pBroker, IDisplayUnits* pDisplayUnits, const SpecLibraryEntry* pSpecEntry,SpanIndexType span,GirderIndexType gdr);
 
 ////////////////////////// PUBLIC     ///////////////////////////////////////
 
@@ -87,7 +87,7 @@ rptChapter* CProjectCriteriaChapterBuilder::Build(CReportSpecification* pRptSpec
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
-   GET_IFACE2(pBroker,IDisplayUnits,pDispUnit);
+   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
    GET_IFACE2( pBroker, ISpecification, pSpec );
    std::string spec_name = pSpec->GetSpecification();
    GET_IFACE2( pBroker, ILibrary, pLib );
@@ -161,33 +161,33 @@ rptChapter* CProjectCriteriaChapterBuilder::Build(CReportSpecification* pRptSpec
       *pPara<<" - US Units"<<rptNewLine;
 
 
-   write_load_modifiers(pChapter, pBroker, pDispUnit);
-   write_environmental_conditions(pChapter, pBroker, pDispUnit);
-   write_structural_analysis(pChapter, pBroker, pDispUnit);
-   write_casting_yard(pChapter, pBroker, pDispUnit, pSpecEntry, span, girder);
+   write_load_modifiers(pChapter, pBroker, pDisplayUnits);
+   write_environmental_conditions(pChapter, pBroker, pDisplayUnits);
+   write_structural_analysis(pChapter, pBroker, pDisplayUnits);
+   write_casting_yard(pChapter, pBroker, pDisplayUnits, pSpecEntry, span, girder);
    
    GET_IFACE2(pBroker,IGirderLiftingSpecCriteria,pGirderLiftingSpecCriteria);
    if (pGirderLiftingSpecCriteria->IsLiftingCheckEnabled())
    {
-      write_lifting(pChapter, pBroker, pDispUnit, pSpecEntry, span, girder);
+      write_lifting(pChapter, pBroker, pDisplayUnits, pSpecEntry, span, girder);
    }
 
    GET_IFACE2(pBroker,IGirderHaulingSpecCriteria,pGirderHaulingSpecCriteria);
    if (pGirderHaulingSpecCriteria->IsHaulingCheckEnabled())
    {
-      write_hauling(pChapter, pBroker, pDispUnit, pSpecEntry, span, girder);
+      write_hauling(pChapter, pBroker, pDisplayUnits, pSpecEntry, span, girder);
    }
 
-   write_temp_strand_removal(pChapter, pBroker, pDispUnit, pSpecEntry, span, girder);
-   write_bridge_site1(pChapter, pBroker, pDispUnit, pSpecEntry, span, girder);
-   write_bridge_site2(pChapter, pBroker, pDispUnit, pSpecEntry, span, girder);
-   write_bridge_site3(pChapter, pBroker, pDispUnit, pSpecEntry, span, girder);
-   write_moment_capacity(pChapter, pBroker, pDispUnit, pSpecEntry, span, girder);
-   write_shear_capacity(pChapter, pBroker, pDispUnit, pSpecEntry, span, girder);
-   write_creep(pChapter, pBroker, pDispUnit, pSpecEntry, span, girder);
-   write_losses(pChapter, pBroker, pDispUnit, pSpecEntry, span, girder);
-   write_strand_stress(pChapter, pBroker, pDispUnit, pSpecEntry, span, girder);
-   write_deflections(pChapter, pBroker, pDispUnit, pSpecEntry, span, girder);
+   write_temp_strand_removal(pChapter, pBroker, pDisplayUnits, pSpecEntry, span, girder);
+   write_bridge_site1(pChapter, pBroker, pDisplayUnits, pSpecEntry, span, girder);
+   write_bridge_site2(pChapter, pBroker, pDisplayUnits, pSpecEntry, span, girder);
+   write_bridge_site3(pChapter, pBroker, pDisplayUnits, pSpecEntry, span, girder);
+   write_moment_capacity(pChapter, pBroker, pDisplayUnits, pSpecEntry, span, girder);
+   write_shear_capacity(pChapter, pBroker, pDisplayUnits, pSpecEntry, span, girder);
+   write_creep(pChapter, pBroker, pDisplayUnits, pSpecEntry, span, girder);
+   write_losses(pChapter, pBroker, pDisplayUnits, pSpecEntry, span, girder);
+   write_strand_stress(pChapter, pBroker, pDisplayUnits, pSpecEntry, span, girder);
+   write_deflections(pChapter, pBroker, pDisplayUnits, pSpecEntry, span, girder);
 
    return pChapter;
 }
@@ -217,7 +217,7 @@ CChapterBuilder* CProjectCriteriaChapterBuilder::Clone() const
 //======================== ACCESS     =======================================
 //======================== INQUERY    =======================================
 
-void write_load_modifiers(rptChapter* pChapter,IBroker* pBroker, IDisplayUnits* pDispUnit)
+void write_load_modifiers(rptChapter* pChapter,IBroker* pBroker, IDisplayUnits* pDisplayUnits)
 {
    rptParagraph* pPara = new rptParagraph;
    *pChapter << pPara;
@@ -237,7 +237,7 @@ void write_load_modifiers(rptChapter* pChapter,IBroker* pBroker, IDisplayUnits* 
    (*p_table)(2,1) <<  pLoadModifiers->GetRedundancyFactor();
 }
 
-void write_environmental_conditions(rptChapter* pChapter,IBroker* pBroker, IDisplayUnits* pDispUnit)
+void write_environmental_conditions(rptChapter* pChapter,IBroker* pBroker, IDisplayUnits* pDisplayUnits)
 {
    rptParagraph* pPara = new rptParagraph;
    *pChapter << pPara;
@@ -258,7 +258,7 @@ void write_environmental_conditions(rptChapter* pChapter,IBroker* pBroker, IDisp
    (*p_table)(1,1) <<  pEnvironment->GetRelHumidity()<<"%";
 }
 
-void write_structural_analysis(rptChapter* pChapter,IBroker* pBroker, IDisplayUnits* pDispUnit)
+void write_structural_analysis(rptChapter* pChapter,IBroker* pBroker, IDisplayUnits* pDisplayUnits)
 {
    rptParagraph* pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pChapter << pPara;
@@ -286,7 +286,7 @@ void write_structural_analysis(rptChapter* pChapter,IBroker* pBroker, IDisplayUn
    }
 }
 
-void write_casting_yard(rptChapter* pChapter,IBroker* pBroker, IDisplayUnits* pDispUnit, const SpecLibraryEntry* pSpecEntry,SpanIndexType span,GirderIndexType gdr)
+void write_casting_yard(rptChapter* pChapter,IBroker* pBroker, IDisplayUnits* pDisplayUnits, const SpecLibraryEntry* pSpecEntry,SpanIndexType span,GirderIndexType gdr)
 {
    rptParagraph* pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pChapter << pPara;
@@ -295,9 +295,9 @@ void write_casting_yard(rptChapter* pChapter,IBroker* pBroker, IDisplayUnits* pD
    pPara = new rptParagraph;
    *pChapter << pPara;
 
-   INIT_UV_PROTOTYPE( rptStressUnitValue, stress, pDispUnit->GetStressUnit(),       true );
-   INIT_UV_PROTOTYPE( rptForceUnitValue,  force,  pDispUnit->GetGeneralForceUnit(), true );
-   INIT_UV_PROTOTYPE( rptLengthUnitValue, dim, pDispUnit->GetComponentDimUnit(), true );
+   INIT_UV_PROTOTYPE( rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(),       true );
+   INIT_UV_PROTOTYPE( rptForceUnitValue,  force,  pDisplayUnits->GetGeneralForceUnit(), true );
+   INIT_UV_PROTOTYPE( rptLengthUnitValue, dim, pDisplayUnits->GetComponentDimUnit(), true );
 
    bool do_check, do_design;
    Float64 slope05, slope06, slope07;
@@ -355,7 +355,7 @@ void write_casting_yard(rptChapter* pChapter,IBroker* pBroker, IDisplayUnits* pD
    }
 }
 
-void write_lifting(rptChapter* pChapter,IBroker* pBroker, IDisplayUnits* pDispUnit, const SpecLibraryEntry* pSpecEntry,SpanIndexType span,GirderIndexType gdr)
+void write_lifting(rptChapter* pChapter,IBroker* pBroker, IDisplayUnits* pDisplayUnits, const SpecLibraryEntry* pSpecEntry,SpanIndexType span,GirderIndexType gdr)
 {
    rptParagraph* pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pChapter << pPara;
@@ -364,9 +364,9 @@ void write_lifting(rptChapter* pChapter,IBroker* pBroker, IDisplayUnits* pDispUn
    pPara = new rptParagraph;
    *pChapter << pPara;
 
-   INIT_UV_PROTOTYPE( rptStressUnitValue, stress, pDispUnit->GetStressUnit(),    true );
-   INIT_UV_PROTOTYPE( rptLengthUnitValue, dim, pDispUnit->GetComponentDimUnit(), true );
-   INIT_UV_PROTOTYPE( rptAngleUnitValue, angle, pDispUnit->GetAngleUnit(), true );
+   INIT_UV_PROTOTYPE( rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(),    true );
+   INIT_UV_PROTOTYPE( rptLengthUnitValue, dim, pDisplayUnits->GetComponentDimUnit(), true );
+   INIT_UV_PROTOTYPE( rptAngleUnitValue, angle, pDisplayUnits->GetAngleUnit(), true );
 
    *pPara<<"Factors of Safety"<<rptNewLine;
    *pPara<<"- Cracking F.S. = "<< pSpecEntry->GetCyLiftingCrackFs()<<rptNewLine;
@@ -396,7 +396,7 @@ void write_lifting(rptChapter* pChapter,IBroker* pBroker, IDisplayUnits* pDispUn
    *pPara<<"- Tensile Stress (w/  mild rebar) = "<<stress.SetValue(ft) << rptNewLine;
 }
 
-void write_hauling(rptChapter* pChapter,IBroker* pBroker, IDisplayUnits* pDispUnit, const SpecLibraryEntry* pSpecEntry,SpanIndexType span,GirderIndexType gdr)
+void write_hauling(rptChapter* pChapter,IBroker* pBroker, IDisplayUnits* pDisplayUnits, const SpecLibraryEntry* pSpecEntry,SpanIndexType span,GirderIndexType gdr)
 {
    rptParagraph* pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pChapter << pPara;
@@ -405,11 +405,11 @@ void write_hauling(rptChapter* pChapter,IBroker* pBroker, IDisplayUnits* pDispUn
    pPara = new rptParagraph;
    *pChapter << pPara;
 
-   INIT_UV_PROTOTYPE( rptStressUnitValue, stress, pDispUnit->GetStressUnit(),    true );
-   INIT_UV_PROTOTYPE( rptLengthUnitValue, dim, pDispUnit->GetComponentDimUnit(), true );
-   INIT_UV_PROTOTYPE( rptLengthUnitValue, dim2, pDispUnit->GetSpanLengthUnit(), true );
-   INIT_UV_PROTOTYPE( rptForceUnitValue,  force, pDispUnit->GetGeneralForceUnit(), true );
-   INIT_UV_PROTOTYPE( rptMomentPerAngleUnitValue, spring, pDispUnit->GetMomentPerAngleUnit(),true );
+   INIT_UV_PROTOTYPE( rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(),    true );
+   INIT_UV_PROTOTYPE( rptLengthUnitValue, dim, pDisplayUnits->GetComponentDimUnit(), true );
+   INIT_UV_PROTOTYPE( rptLengthUnitValue, dim2, pDisplayUnits->GetSpanLengthUnit(), true );
+   INIT_UV_PROTOTYPE( rptForceUnitValue,  force, pDisplayUnits->GetGeneralForceUnit(), true );
+   INIT_UV_PROTOTYPE( rptMomentPerAngleUnitValue, spring, pDisplayUnits->GetMomentPerAngleUnit(),true );
 
    *pPara<<"Factors of Safety"<<rptNewLine;
    *pPara<<"- Cracking F.S. = "<< pSpecEntry->GetHaulingCrackFs()<<rptNewLine;
@@ -455,7 +455,7 @@ void write_hauling(rptChapter* pChapter,IBroker* pBroker, IDisplayUnits* pDispUn
    *pPara<<"- Tensile Stress (w/  mild rebar) = "<<stress.SetValue(ft) << rptNewLine;
 }
 
-void write_temp_strand_removal(rptChapter* pChapter,IBroker* pBroker, IDisplayUnits* pDispUnit, const SpecLibraryEntry* pSpecEntry,SpanIndexType span,GirderIndexType gdr)
+void write_temp_strand_removal(rptChapter* pChapter,IBroker* pBroker, IDisplayUnits* pDisplayUnits, const SpecLibraryEntry* pSpecEntry,SpanIndexType span,GirderIndexType gdr)
 {
    rptParagraph* pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pChapter << pPara;
@@ -464,7 +464,7 @@ void write_temp_strand_removal(rptChapter* pChapter,IBroker* pBroker, IDisplayUn
    pPara = new rptParagraph;
    *pChapter << pPara;
 
-   INIT_UV_PROTOTYPE( rptStressUnitValue, stress, pDispUnit->GetStressUnit(),    true );
+   INIT_UV_PROTOTYPE( rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(),    true );
 
    GET_IFACE2(pBroker,IAllowableConcreteStress,pAllowableConcreteStress);
 
@@ -478,7 +478,7 @@ void write_temp_strand_removal(rptChapter* pChapter,IBroker* pBroker, IDisplayUn
    *pPara<<"- Service I = "<<stress.SetValue(fts)<<rptNewLine;
 }
 
-void write_bridge_site1(rptChapter* pChapter,IBroker* pBroker, IDisplayUnits* pDispUnit, const SpecLibraryEntry* pSpecEntry,SpanIndexType span,GirderIndexType gdr)
+void write_bridge_site1(rptChapter* pChapter,IBroker* pBroker, IDisplayUnits* pDisplayUnits, const SpecLibraryEntry* pSpecEntry,SpanIndexType span,GirderIndexType gdr)
 {
    rptParagraph* pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pChapter << pPara;
@@ -487,7 +487,7 @@ void write_bridge_site1(rptChapter* pChapter,IBroker* pBroker, IDisplayUnits* pD
    pPara = new rptParagraph;
    *pChapter << pPara;
 
-   INIT_UV_PROTOTYPE( rptStressUnitValue, stress, pDispUnit->GetStressUnit(),    true );
+   INIT_UV_PROTOTYPE( rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(),    true );
 
    GET_IFACE2(pBroker,IAllowableConcreteStress,pAllowableConcreteStress);
 
@@ -501,7 +501,7 @@ void write_bridge_site1(rptChapter* pChapter,IBroker* pBroker, IDisplayUnits* pD
    *pPara<<"- Service I = "<<stress.SetValue(fts)<<rptNewLine;
 }
 
-void write_bridge_site2(rptChapter* pChapter,IBroker* pBroker, IDisplayUnits* pDispUnit, const SpecLibraryEntry* pSpecEntry,SpanIndexType span,GirderIndexType gdr)
+void write_bridge_site2(rptChapter* pChapter,IBroker* pBroker, IDisplayUnits* pDisplayUnits, const SpecLibraryEntry* pSpecEntry,SpanIndexType span,GirderIndexType gdr)
 {
    rptParagraph* pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pChapter << pPara;
@@ -510,7 +510,7 @@ void write_bridge_site2(rptChapter* pChapter,IBroker* pBroker, IDisplayUnits* pD
    pPara = new rptParagraph;
    *pChapter << pPara;
 
-   INIT_UV_PROTOTYPE( rptStressUnitValue, stress, pDispUnit->GetStressUnit(),    true );
+   INIT_UV_PROTOTYPE( rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(),    true );
 
    switch ( pSpecEntry->GetTrafficBarrierDistributionType() )
    {
@@ -558,7 +558,7 @@ void write_bridge_site2(rptChapter* pChapter,IBroker* pBroker, IDisplayUnits* pD
    }
 }
 
-void write_bridge_site3(rptChapter* pChapter,IBroker* pBroker, IDisplayUnits* pDispUnit, const SpecLibraryEntry* pSpecEntry,SpanIndexType span,GirderIndexType gdr)
+void write_bridge_site3(rptChapter* pChapter,IBroker* pBroker, IDisplayUnits* pDisplayUnits, const SpecLibraryEntry* pSpecEntry,SpanIndexType span,GirderIndexType gdr)
 {
    rptParagraph* pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pChapter << pPara;
@@ -567,9 +567,9 @@ void write_bridge_site3(rptChapter* pChapter,IBroker* pBroker, IDisplayUnits* pD
    pPara = new rptParagraph;
    *pChapter << pPara;
 
-   INIT_UV_PROTOTYPE( rptStressUnitValue, stress, pDispUnit->GetStressUnit(),    true );
-   INIT_UV_PROTOTYPE( rptLengthUnitValue, dim, pDispUnit->GetComponentDimUnit(), true );
-   INIT_UV_PROTOTYPE( rptMomentPerAngleUnitValue, spring, pDispUnit->GetMomentPerAngleUnit(),true );
+   INIT_UV_PROTOTYPE( rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(),    true );
+   INIT_UV_PROTOTYPE( rptLengthUnitValue, dim, pDisplayUnits->GetComponentDimUnit(), true );
+   INIT_UV_PROTOTYPE( rptMomentPerAngleUnitValue, spring, pDisplayUnits->GetMomentPerAngleUnit(),true );
 
    GET_IFACE2(pBroker,IAllowableConcreteStress,pAllowableConcreteStress);
 
@@ -613,7 +613,7 @@ void write_bridge_site3(rptChapter* pChapter,IBroker* pBroker, IDisplayUnits* pD
    }
 }
 
-void write_moment_capacity(rptChapter* pChapter,IBroker* pBroker, IDisplayUnits* pDispUnit, const SpecLibraryEntry* pSpecEntry,SpanIndexType span,GirderIndexType gdr)
+void write_moment_capacity(rptChapter* pChapter,IBroker* pBroker, IDisplayUnits* pDisplayUnits, const SpecLibraryEntry* pSpecEntry,SpanIndexType span,GirderIndexType gdr)
 {
    rptParagraph* pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pChapter << pPara;
@@ -640,13 +640,13 @@ void write_moment_capacity(rptChapter* pChapter,IBroker* pBroker, IDisplayUnits*
       *pPara << "Longitudinal reinforcing bars ignored in moment capacity calculations" << rptNewLine;
 
 
-   INIT_UV_PROTOTYPE( rptStressUnitValue, stress, pDispUnit->GetStressUnit(),    true );
+   INIT_UV_PROTOTYPE( rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(),    true );
    GET_IFACE2(pBroker,IBridgeMaterial,pMaterial);
    Float64 fr = pMaterial->GetFlexureFrGdr(span,gdr);
    *pPara << "Modulus of rupture = " << stress.SetValue(fr) << rptNewLine;
 }
 
-void write_shear_capacity(rptChapter* pChapter,IBroker* pBroker, IDisplayUnits* pDispUnit, const SpecLibraryEntry* pSpecEntry,SpanIndexType span,GirderIndexType gdr)
+void write_shear_capacity(rptChapter* pChapter,IBroker* pBroker, IDisplayUnits* pDisplayUnits, const SpecLibraryEntry* pSpecEntry,SpanIndexType span,GirderIndexType gdr)
 {
    rptParagraph* pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pChapter << pPara;
@@ -681,7 +681,7 @@ void write_shear_capacity(rptChapter* pChapter,IBroker* pBroker, IDisplayUnits* 
       ATLASSERT(false); // should never get here
    }
 
-   INIT_UV_PROTOTYPE( rptStressUnitValue, stress, pDispUnit->GetStressUnit(),    true );
+   INIT_UV_PROTOTYPE( rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(),    true );
    GET_IFACE2(pBroker,IBridgeMaterial,pMaterial);
    Float64 fr = pMaterial->GetShearFrGdr(span,gdr);
    *pPara << "Modulus of rupture = " << stress.SetValue(fr) << rptNewLine;
@@ -718,7 +718,7 @@ void write_shear_capacity(rptChapter* pChapter,IBroker* pBroker, IDisplayUnits* 
    }
 }
 
-void write_creep(rptChapter* pChapter,IBroker* pBroker, IDisplayUnits* pDispUnit, const SpecLibraryEntry* pSpecEntry,SpanIndexType span,GirderIndexType gdr)
+void write_creep(rptChapter* pChapter,IBroker* pBroker, IDisplayUnits* pDisplayUnits, const SpecLibraryEntry* pSpecEntry,SpanIndexType span,GirderIndexType gdr)
 {
    rptParagraph* pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pChapter << pPara;
@@ -738,7 +738,7 @@ void write_creep(rptChapter* pChapter,IBroker* pBroker, IDisplayUnits* pDispUnit
    else
       CHECK(0); // new method?
 
-   INIT_UV_PROTOTYPE( rptTimeUnitValue, time, pDispUnit->GetLongTimeUnit(), true );
+   INIT_UV_PROTOTYPE( rptTimeUnitValue, time, pDisplayUnits->GetLongTimeUnit(), true );
 
    *pPara<< "# of hours from stressing to prestress transfer : "<<::ConvertFromSysUnits(pSpecEntry->GetXferTime(),unitMeasure::Hour)<<rptNewLine;
    *pPara<< "# of days from prestress transfer until removal of temporary strands / diaphram casting : "<<::ConvertFromSysUnits(pSpecEntry->GetCreepDuration1Min(),unitMeasure::Day) << " Min";
@@ -751,7 +751,7 @@ void write_creep(rptChapter* pChapter,IBroker* pBroker, IDisplayUnits* pDispUnit
    *pPara << "1 day of steam or radiant heat curing is equal to " << pSpecEntry->GetCuringMethodTimeAdjustmentFactor() << " days of normal curing" << rptNewLine;
 }
 
-void write_losses(rptChapter* pChapter,IBroker* pBroker, IDisplayUnits* pDispUnit, const SpecLibraryEntry* pSpecEntry,SpanIndexType span,GirderIndexType gdr)
+void write_losses(rptChapter* pChapter,IBroker* pBroker, IDisplayUnits* pDisplayUnits, const SpecLibraryEntry* pSpecEntry,SpanIndexType span,GirderIndexType gdr)
 {
    rptParagraph* pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pChapter << pPara;
@@ -760,7 +760,7 @@ void write_losses(rptChapter* pChapter,IBroker* pBroker, IDisplayUnits* pDispUni
    pPara = new rptParagraph;
    *pChapter << pPara;
 
-   INIT_UV_PROTOTYPE( rptStressUnitValue, stress, pDispUnit->GetStressUnit(),    true );
+   INIT_UV_PROTOTYPE( rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(),    true );
 
    int method = pSpecEntry->GetLossMethod();
 
@@ -808,7 +808,7 @@ void write_losses(rptChapter* pChapter,IBroker* pBroker, IDisplayUnits* pDispUni
    }
 }
 
-void write_strand_stress(rptChapter* pChapter,IBroker* pBroker, IDisplayUnits* pDispUnit, const SpecLibraryEntry* pSpecEntry,SpanIndexType span,GirderIndexType gdr)
+void write_strand_stress(rptChapter* pChapter,IBroker* pBroker, IDisplayUnits* pDisplayUnits, const SpecLibraryEntry* pSpecEntry,SpanIndexType span,GirderIndexType gdr)
 {
    rptParagraph* pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pChapter << pPara;
@@ -850,7 +850,7 @@ void write_strand_stress(rptChapter* pChapter,IBroker* pBroker, IDisplayUnits* p
    }
 }
 
-void write_deflections(rptChapter* pChapter,IBroker* pBroker, IDisplayUnits* pDispUnit, const SpecLibraryEntry* pSpecEntry,SpanIndexType span,GirderIndexType gdr)
+void write_deflections(rptChapter* pChapter,IBroker* pBroker, IDisplayUnits* pDisplayUnits, const SpecLibraryEntry* pSpecEntry,SpanIndexType span,GirderIndexType gdr)
 {
    rptParagraph* pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pChapter << pPara;

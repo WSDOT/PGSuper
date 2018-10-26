@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -274,8 +274,8 @@ const MINMOMENTCAPDETAILS* CEngAgentImp::ValidateMinMomentCapacity(pgsTypes::Sta
    SpanIndexType span  = poi.GetSpan();
    GirderIndexType gdr = poi.GetGirder();
 
-   GET_IFACE(IDisplayUnits,pDispUnits);
-   const unitmgtLengthData& length = pDispUnits->GetSpanLengthUnit();
+   GET_IFACE(IDisplayUnits,pDisplayUnits);
+   const unitmgtLengthData& length = pDisplayUnits->GetSpanLengthUnit();
 
    std::ostringstream os;
    os << "Computing " << strSectionType << " minimum moment capacity for Span "
@@ -321,8 +321,8 @@ const CRACKINGMOMENTDETAILS* CEngAgentImp::ValidateCrackingMoments(pgsTypes::Sta
 
    std::string strSectionType = ( stage == pgsTypes::BridgeSite1 ? "noncomposite" : "composite" );
 
-   GET_IFACE(IDisplayUnits,pDispUnits);
-   const unitmgtLengthData& length = pDispUnits->GetSpanLengthUnit();
+   GET_IFACE(IDisplayUnits,pDisplayUnits);
+   const unitmgtLengthData& length = pDisplayUnits->GetSpanLengthUnit();
 
    std::ostringstream os;
    os << "Computing " << strSectionType << " cracking moment for Span "
@@ -455,8 +455,8 @@ MOMENTCAPACITYDETAILS CEngAgentImp::ComputeMomentCapacity(pgsTypes::Stage stage,
    GirderIndexType gdr = poi.GetGirder();
 
    GET_IFACE(IProgress, pProgress);
-   GET_IFACE(IDisplayUnits,pDispUnits);
-   const unitmgtLengthData& length = pDispUnits->GetSpanLengthUnit();
+   GET_IFACE(IDisplayUnits,pDisplayUnits);
+   const unitmgtLengthData& length = pDisplayUnits->GetSpanLengthUnit();
 
    pgsAutoProgress ap(pProgress);
 
@@ -486,8 +486,8 @@ MOMENTCAPACITYDETAILS CEngAgentImp::ComputeMomentCapacity(pgsTypes::Stage stage,
    GirderIndexType gdr = poi.GetGirder();
 
    GET_IFACE(IProgress, pProgress);
-   GET_IFACE(IDisplayUnits,pDispUnits);
-   const unitmgtLengthData& length = pDispUnits->GetSpanLengthUnit();
+   GET_IFACE(IDisplayUnits,pDisplayUnits);
+   const unitmgtLengthData& length = pDisplayUnits->GetSpanLengthUnit();
 
    pgsAutoProgress ap(pProgress);
 
@@ -583,8 +583,8 @@ const SHEARCAPACITYDETAILS* CEngAgentImp::ValidateShearCapacity(pgsTypes::LimitS
    GET_IFACE(IProgress, pProgress);
    pgsAutoProgress ap(pProgress);
 
-   GET_IFACE(IDisplayUnits,pDispUnits);
-   const unitmgtLengthData& length = pDispUnits->GetSpanLengthUnit();
+   GET_IFACE(IDisplayUnits,pDisplayUnits);
+   const unitmgtLengthData& length = pDisplayUnits->GetSpanLengthUnit();
 
    std::ostringstream os;
    std::string strLimitState = (ls == pgsTypes::StrengthI ? "Strength I" : "Strength II");
@@ -623,8 +623,8 @@ const FPCDETAILS* CEngAgentImp::ValidateFpc(const pgsPointOfInterest& poi)
    GET_IFACE(IProgress, pProgress);
    pgsAutoProgress ap(pProgress);
 
-   GET_IFACE(IDisplayUnits,pDispUnits);
-   const unitmgtLengthData& length = pDispUnits->GetSpanLengthUnit();
+   GET_IFACE(IDisplayUnits,pDisplayUnits);
+   const unitmgtLengthData& length = pDisplayUnits->GetSpanLengthUnit();
 
    std::ostringstream os;
    os << "Computing fpc for Span "
@@ -966,7 +966,7 @@ void CEngAgentImp::CalculateShearCritSection(pgsTypes::LimitState limitState,
       GET_IFACE(IStatusCenter,pStatusCenter);
 
       std::string msg("An error occured while locating the critical section for shear");
-      pgsUnknownErrorStatusItem* pStatusItem = new pgsUnknownErrorStatusItem(m_AgentID,112,__FILE__,__LINE__,msg.c_str());
+      pgsUnknownErrorStatusItem* pStatusItem = new pgsUnknownErrorStatusItem(m_AgentID,m_scidUnknown,__FILE__,__LINE__,msg.c_str());
       pStatusCenter->Add(pStatusItem);
 
       msg += std::string("\nSee Status Center for Details");
@@ -1045,6 +1045,11 @@ STDMETHODIMP CEngAgentImp::Init()
    m_MomentCapEngineer.SetAgentID(m_AgentID);
    m_ShearCapEngineer.SetAgentID(m_AgentID);
 
+   // regiter the callback ID's we will be using
+   m_scidUnknown                = pStatusCenter->RegisterCallback( new pgsUnknownErrorStatusCallback() );
+   m_scidRefinedAnalysis        = pStatusCenter->RegisterCallback( new pgsRefinedAnalysisStatusCallback(m_pBroker) );
+   m_scidBridgeDescriptionError = pStatusCenter->RegisterCallback( new pgsBridgeDescriptionStatusCallback(m_pBroker,pgsTypes::statusError));
+   
    return S_OK;
 }
 
@@ -1251,9 +1256,9 @@ LOSSDETAILS CEngAgentImp::GetLossDetails(const pgsPointOfInterest& poi)
    return *pLosses;
 }
 
-void CEngAgentImp::ReportLosses(SpanIndexType span,GirderIndexType gdr,rptChapter* pChapter,IDisplayUnits* pDispUnit)
+void CEngAgentImp::ReportLosses(SpanIndexType span,GirderIndexType gdr,rptChapter* pChapter,IDisplayUnits* pDisplayUnits)
 {
-   m_PsForceEngineer.ReportLosses(span,gdr,pChapter,pDispUnit);
+   m_PsForceEngineer.ReportLosses(span,gdr,pChapter,pDisplayUnits);
 }
 
 Float64 CEngAgentImp::GetElasticShortening(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,const GDRCONFIG& config)
@@ -1700,7 +1705,7 @@ void CEngAgentImp::CheckCurvatureRequirements(const pgsPointOfInterest& poi)
    if ( nBeams == 0 || nBeams == 1 )
    {
       const char* msg = "The bridge must have at least two beams per span";
-      pgsBridgeDescriptionStatusItem* pStatusItem = new pgsBridgeDescriptionStatusItem(m_AgentID,109,1,msg);
+      pgsBridgeDescriptionStatusItem* pStatusItem = new pgsBridgeDescriptionStatusItem(m_AgentID,m_scidBridgeDescriptionError,1,msg);
       pStatusCenter->Add(pStatusItem);
 
       std::string strMsg(msg);
@@ -1733,7 +1738,7 @@ void CEngAgentImp::CheckCurvatureRequirements(const pgsPointOfInterest& poi)
       os << "Limiting value = " << delta_limit << " deg" << std::endl;
       os << "A refined method of analysis is required for this bridge" << std::endl;
 
-      pgsRefinedAnalysisStatusItem* pStatusItem = new pgsRefinedAnalysisStatusItem(m_AgentID,110,os.str().c_str());
+      pgsRefinedAnalysisStatusItem* pStatusItem = new pgsRefinedAnalysisStatusItem(m_AgentID,m_scidRefinedAnalysis,os.str().c_str());
       pStatusCenter->Add(pStatusItem);
 
       os << "See Status Center for Details" << std::endl;
@@ -1793,7 +1798,7 @@ void CEngAgentImp::CheckGirderStiffnessRequirements(const pgsPointOfInterest& po
       os << "Minimum stiffness ratio permitted by " << pSpecEntry->GetName() << " = " << (LPCTSTR)FormatScalar(minStiffnessRatio,pDisplayUnits->GetScalarFormat()) << std::endl;
       os << "A refined method of analysis is required for this bridge" << std::endl;
 
-      pgsRefinedAnalysisStatusItem* pStatusItem = new pgsRefinedAnalysisStatusItem(m_AgentID,110,os.str().c_str());
+      pgsRefinedAnalysisStatusItem* pStatusItem = new pgsRefinedAnalysisStatusItem(m_AgentID,m_scidRefinedAnalysis,os.str().c_str());
       pStatusCenter->Add(pStatusItem);
 
       os << "See Status Center for Details" << std::endl;
@@ -1855,7 +1860,7 @@ void CEngAgentImp::CheckParallelGirderRequirements(const pgsPointOfInterest& poi
       os << "Maximum angular difference permitted by " << pSpecEntry->GetName() << " = " << (LPCTSTR)FormatDimension(maxAllowableAngle,pDisplayUnits->GetAngleUnit(),true) << std::endl;
       os << "A refined method of analysis is required for this bridge" << std::endl;
 
-      pgsRefinedAnalysisStatusItem* pStatusItem = new pgsRefinedAnalysisStatusItem(m_AgentID,110,os.str().c_str());
+      pgsRefinedAnalysisStatusItem* pStatusItem = new pgsRefinedAnalysisStatusItem(m_AgentID,m_scidRefinedAnalysis,os.str().c_str());
       pStatusCenter->Add(pStatusItem);
 
       os << "See Status Center for Details" << std::endl;
@@ -2209,14 +2214,14 @@ void CEngAgentImp::GetNegMomentDistFactorPoints(SpanIndexType span,GirderIndexTy
    pCP->GetContraflexurePoints(span,gdr,dfPoints,nPoints);
 }
 
-void CEngAgentImp::ReportDistributionFactors(SpanIndexType span,GirderIndexType gdr,rptChapter* pChapter,IDisplayUnits* pDispUnit)
+void CEngAgentImp::ReportDistributionFactors(SpanIndexType span,GirderIndexType gdr,rptChapter* pChapter,IDisplayUnits* pDisplayUnits)
 {
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    if ( pBridgeDesc->GetDistributionFactorMethod() != pgsTypes::DirectlyInput )
    {
       ValidateLiveLoadDistributionFactors(span,gdr);
-      m_pDistFactorEngineer->BuildReport(span,gdr,pChapter,pDispUnit);
+      m_pDistFactorEngineer->BuildReport(span,gdr,pChapter,pDisplayUnits);
    }
    else
    {

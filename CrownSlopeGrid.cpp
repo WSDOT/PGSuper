@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 2006  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -101,8 +101,8 @@ void CCrownSlopeGrid::CustomInit()
 {
    CProfilePage* pParent = (CProfilePage*)GetParent();
 
-   GET_IFACE2(pParent->GetBroker(),IDisplayUnits,pDispUnits);
-   const unitmgtLengthData& alignment_unit = pDispUnits->GetAlignmentLengthUnit();
+   GET_IFACE2(pParent->GetBroker(),IDisplayUnits,pDisplayUnits);
+   const unitmgtLengthData& alignment_unit = pDisplayUnits->GetAlignmentLengthUnit();
    std::string strUnitTag = alignment_unit.UnitOfMeasure.UnitTag();
 
    // Initialize the grid. For CWnd based grids this call is // 
@@ -224,11 +224,11 @@ void CCrownSlopeGrid::SetRowData(ROWCOL nRow,CrownData2& data)
 
    CProfilePage* pParent = (CProfilePage*)GetParent();
 
-   GET_IFACE2(pParent->GetBroker(),IDisplayUnits,pDispUnits);
-   UnitModeType unit_mode = (UnitModeType)(pDispUnits->GetUnitDisplayMode());
+   GET_IFACE2(pParent->GetBroker(),IDisplayUnits,pDisplayUnits);
+   UnitModeType unit_mode = (UnitModeType)(pDisplayUnits->GetUnitDisplayMode());
 
    double station = data.Station;
-   station = ::ConvertFromSysUnits(station,pDispUnits->GetAlignmentLengthUnit().UnitOfMeasure);
+   station = ::ConvertFromSysUnits(station,pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure);
 
    CComPtr<IStation> objStation;
    objStation.CoCreateInstance(CLSID_Station);
@@ -250,8 +250,8 @@ bool CCrownSlopeGrid::GetRowData(ROWCOL nRow,double* pStation,double* pLeft,doub
 {
    CProfilePage* pParent = (CProfilePage*)GetParent();
 
-   GET_IFACE2(pParent->GetBroker(),IDisplayUnits,pDispUnits);
-   UnitModeType unit_mode = (UnitModeType)(pDispUnits->GetUnitDisplayMode());
+   GET_IFACE2(pParent->GetBroker(),IDisplayUnits,pDisplayUnits);
+   UnitModeType unit_mode = (UnitModeType)(pDisplayUnits->GetUnitDisplayMode());
 
    CString strStation = GetCellValue(nRow,1);
    CComPtr<IStation> station;
@@ -262,7 +262,7 @@ bool CCrownSlopeGrid::GetRowData(ROWCOL nRow,double* pStation,double* pLeft,doub
 
    double station_value;
    station->get_Value(&station_value);
-   station_value = ::ConvertToSysUnits(station_value,pDispUnits->GetAlignmentLengthUnit().UnitOfMeasure);
+   station_value = ::ConvertToSysUnits(station_value,pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure);
    *pStation = station_value;
 
    CString strLeft = GetCellValue(nRow,2);
@@ -333,7 +333,7 @@ double CCrownSlopeGrid::GetCrownPointOffset(const CString& strAlignmentOffset)
 {
    CComPtr<IBroker> pBroker;
    AfxGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IDisplayUnits,pDispUnits);
+   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
 
    double sign = 1;
    char cDir = strAlignmentOffset.GetAt(strAlignmentOffset.GetLength()-1);
@@ -345,7 +345,7 @@ double CCrownSlopeGrid::GetCrownPointOffset(const CString& strAlignmentOffset)
    double value = atof(strAlignmentOffset);
    value *= sign;
 
-   value = ::ConvertToSysUnits(value,pDispUnits->GetAlignmentLengthUnit().UnitOfMeasure);
+   value = ::ConvertToSysUnits(value,pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure);
 
    return value;
 }
@@ -356,15 +356,15 @@ CString CCrownSlopeGrid::GetCrownPointOffset(double alignmentOffset)
 
    CComPtr<IBroker> pBroker;
    AfxGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IDisplayUnits,pDispUnits);
+   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
 
    CString strAlignmentOffset;
    if ( sign == 0 )
-      strAlignmentOffset.Format("%s",FormatDimension(alignmentOffset,pDispUnits->GetAlignmentLengthUnit(),false));
+      strAlignmentOffset.Format("%s",FormatDimension(alignmentOffset,pDisplayUnits->GetAlignmentLengthUnit(),false));
    else if ( sign < 0 )
-      strAlignmentOffset.Format("%s %c",FormatDimension(fabs(alignmentOffset),pDispUnits->GetAlignmentLengthUnit(),false),'L');
+      strAlignmentOffset.Format("%s %c",FormatDimension(fabs(alignmentOffset),pDisplayUnits->GetAlignmentLengthUnit(),false),'L');
    else
-      strAlignmentOffset.Format("%s %c",FormatDimension(fabs(alignmentOffset),pDispUnits->GetAlignmentLengthUnit(),false),'R');
+      strAlignmentOffset.Format("%s %c",FormatDimension(fabs(alignmentOffset),pDisplayUnits->GetAlignmentLengthUnit(),false),'R');
 
    return strAlignmentOffset;
 }

@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -78,19 +78,19 @@ CGirderDetailingCheck& CGirderDetailingCheck::operator= (const CGirderDetailingC
 //======================== OPERATIONS =======================================
 void CGirderDetailingCheck::Build(rptChapter* pChapter,
                               IBroker* pBroker,SpanIndexType span,GirderIndexType girder,
-                              IDisplayUnits* pDispUnit) const
+                              IDisplayUnits* pDisplayUnits) const
 {
 
    if (!m_BasicVersion)
    {
       // girder dimensions check table
-      CGirderDetailingCheck::BuildDimensionCheck(pChapter, pBroker, span, girder, pDispUnit);
+      CGirderDetailingCheck::BuildDimensionCheck(pChapter, pBroker, span, girder, pDisplayUnits);
    }
 
    // Stirrup detailing check
    rptParagraph* p = new rptParagraph;
    bool write_note;
-   *p << CStirrupDetailingCheckTable().Build(pBroker,span,girder,pDispUnit,pgsTypes::BridgeSite3,pgsTypes::StrengthI,&write_note) << rptNewLine;
+   *p << CStirrupDetailingCheckTable().Build(pBroker,span,girder,pDisplayUnits,pgsTypes::BridgeSite3,pgsTypes::StrengthI,&write_note) << rptNewLine;
    *pChapter << p;
 
    if (write_note)
@@ -128,7 +128,7 @@ void CGirderDetailingCheck::MakeAssignment(const CGirderDetailingCheck& rOther)
 //======================== OPERATIONS =======================================
 void CGirderDetailingCheck::BuildDimensionCheck(rptChapter* pChapter,
                               IBroker* pBroker,SpanIndexType span,GirderIndexType girder,
-                              IDisplayUnits* pDispUnit) const
+                              IDisplayUnits* pDisplayUnits) const
 {
    GET_IFACE2(pBroker,IArtifact,pIArtifact);
    const pgsGirderArtifact* pGdrArtifact = pIArtifact->GetArtifact(span,girder);
@@ -144,15 +144,15 @@ void CGirderDetailingCheck::BuildDimensionCheck(rptChapter* pChapter,
    pTable->SetStripeRowColumnStyle(0, pgsReportStyleHolder::GetTableStripeRowCellStyle( CB_NONE | CJ_LEFT) );
 
    (*pTable)(0,0)  << "Dimension";
-   (*pTable)(0,1)  << COLHDR("Minimum",  rptLengthUnitTag, pDispUnit->GetComponentDimUnit() );
-   (*pTable)(0,2)  << COLHDR("Actual",       rptLengthUnitTag, pDispUnit->GetComponentDimUnit() );
+   (*pTable)(0,1)  << COLHDR("Minimum",  rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+   (*pTable)(0,2)  << COLHDR("Actual",       rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
    (*pTable)(0,3)  << "Status";
 
    (*pTable)(1,0) << "Top Flange Thickness";
    (*pTable)(2,0) << "Web Thickness";
    (*pTable)(3,0) << "Bottom Flange Thickness";
 
-   INIT_UV_PROTOTYPE( rptLengthSectionValue,      dim,      pDispUnit->GetComponentDimUnit(),  false );
+   INIT_UV_PROTOTYPE( rptLengthSectionValue,      dim,      pDisplayUnits->GetComponentDimUnit(),  false );
 
    if ( IsZero(pArtifact->GetProvidedTopFlangeThickness()) )
    {

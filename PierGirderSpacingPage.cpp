@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -136,24 +136,24 @@ void CPierGirderSpacingPage::DoDataExchange(CDataExchange* pDX)
 
    CComPtr<IBroker> pBroker;
    AfxGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IDisplayUnits,pDispUnits);
+   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
    DDX_CBItemData(pDX, IDC_PREV_REF_GIRDER, m_RefGirderIdx[pgsTypes::Back]);
    DDX_CBItemData(pDX, IDC_NEXT_REF_GIRDER, m_RefGirderIdx[pgsTypes::Ahead]);
 
-   DDX_OffsetAndTag(pDX, IDC_PREV_REF_GIRDER_OFFSET,IDC_PREV_REF_GIRDER_OFFSET_UNIT, m_RefGirderOffset[pgsTypes::Back], pDispUnits->GetXSectionDimUnit());
-   DDX_OffsetAndTag(pDX, IDC_NEXT_REF_GIRDER_OFFSET,IDC_NEXT_REF_GIRDER_OFFSET_UNIT, m_RefGirderOffset[pgsTypes::Ahead], pDispUnits->GetXSectionDimUnit());
+   DDX_OffsetAndTag(pDX, IDC_PREV_REF_GIRDER_OFFSET,IDC_PREV_REF_GIRDER_OFFSET_UNIT, m_RefGirderOffset[pgsTypes::Back], pDisplayUnits->GetXSectionDimUnit());
+   DDX_OffsetAndTag(pDX, IDC_NEXT_REF_GIRDER_OFFSET,IDC_NEXT_REF_GIRDER_OFFSET_UNIT, m_RefGirderOffset[pgsTypes::Ahead], pDisplayUnits->GetXSectionDimUnit());
 
    DDX_CBItemData(pDX, IDC_PREV_REF_GIRDER_OFFSET_TYPE, m_RefGirderOffsetType[pgsTypes::Back]);
    DDX_CBItemData(pDX, IDC_NEXT_REF_GIRDER_OFFSET_TYPE, m_RefGirderOffsetType[pgsTypes::Ahead]);
 
-   DDX_Tag(pDX, IDC_BACK_SLAB_OFFSET_UNIT,  pDispUnits->GetComponentDimUnit() );
-   DDX_Tag(pDX, IDC_AHEAD_SLAB_OFFSET_UNIT, pDispUnits->GetComponentDimUnit() );
+   DDX_Tag(pDX, IDC_BACK_SLAB_OFFSET_UNIT,  pDisplayUnits->GetComponentDimUnit() );
+   DDX_Tag(pDX, IDC_AHEAD_SLAB_OFFSET_UNIT, pDisplayUnits->GetComponentDimUnit() );
    if ( pParent->m_pBridge->GetDeckDescription()->DeckType != pgsTypes::sdtNone )
    {
       if ( !pDX->m_bSaveAndValidate || (pDX->m_bSaveAndValidate && m_SlabOffsetType == pgsTypes::sotSpan) )
       {
-         DDX_UnitValueAndTag(pDX, IDC_BACK_SLAB_OFFSET,  IDC_BACK_SLAB_OFFSET_UNIT,  m_SlabOffset[pgsTypes::Back], pDispUnits->GetComponentDimUnit() );
-         DDX_UnitValueAndTag(pDX, IDC_AHEAD_SLAB_OFFSET, IDC_AHEAD_SLAB_OFFSET_UNIT, m_SlabOffset[pgsTypes::Ahead], pDispUnits->GetComponentDimUnit() );
+         DDX_UnitValueAndTag(pDX, IDC_BACK_SLAB_OFFSET,  IDC_BACK_SLAB_OFFSET_UNIT,  m_SlabOffset[pgsTypes::Back], pDisplayUnits->GetComponentDimUnit() );
+         DDX_UnitValueAndTag(pDX, IDC_AHEAD_SLAB_OFFSET, IDC_AHEAD_SLAB_OFFSET_UNIT, m_SlabOffset[pgsTypes::Ahead], pDisplayUnits->GetComponentDimUnit() );
       }
    }
 }
@@ -950,7 +950,7 @@ LRESULT CPierGirderSpacingPage::OnChangeSameGirderSpacing(WPARAM wParam,LPARAM l
             // for the entire bridge???
             CComPtr<IBroker> broker;
             AfxGetBroker(&broker);
-            GET_IFACE2(broker,IDisplayUnits,pDispUnits);
+            GET_IFACE2(broker,IDisplayUnits,pDisplayUnits);
 
             CSelectItemDlg dlg;
             dlg.m_strLabel = "Select the spacing to be used for the entire bridge";
@@ -965,9 +965,9 @@ LRESULT CPierGirderSpacingPage::OnChangeSameGirderSpacing(WPARAM wParam,LPARAM l
 
                CString strItem;
                if ( IsGirderSpacing(oldGirderSpacingType) )
-                  strItem.Format("%s",FormatDimension(spacing,pDispUnits->GetXSectionDimUnit(),true));
+                  strItem.Format("%s",FormatDimension(spacing,pDisplayUnits->GetXSectionDimUnit(),true));
                else
-                  strItem.Format("%s",FormatDimension(spacing,pDispUnits->GetComponentDimUnit(),true));
+                  strItem.Format("%s",FormatDimension(spacing,pDisplayUnits->GetComponentDimUnit(),true));
 
                if ( iter != spacings.begin() )
                   strItems += "\n";
@@ -1077,7 +1077,7 @@ LRESULT CPierGirderSpacingPage::OnChangeSlabOffset(WPARAM wParam,LPARAM lParam)
 
    CComPtr<IBroker> pBroker;
    AfxGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IDisplayUnits,pDispUnits);
+   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
 
    CWnd* pWnd = GetDlgItem(pierFace == pgsTypes::Back ? IDC_BACK_SLAB_OFFSET : IDC_AHEAD_SLAB_OFFSET);
 
@@ -1242,7 +1242,7 @@ void CPierGirderSpacingPage::UpdateGirderSpacingHyperLinkText()
    if ( m_pNextSpan && m_pNextSpan->UseSameSpacingAtBothEndsOfSpan() )
    {
       if ( ::IsSpreadSpacing(m_pNextSpan->GetBridgeDescription()->GetGirderSpacingType()) )
-         strBackSpanConstantSpacingNote.Format("The same girder spacing is used at both ends of Span %d.",LABEL_SPAN(m_pPrevSpan->GetSpanIndex()));
+         strBackSpanConstantSpacingNote.Format("The same girder spacing is used at both ends of Span %d.",LABEL_SPAN(m_pNextSpan->GetSpanIndex()));
       else
          strAheadSpanConstantSpacingNote.Format("The same joint spacing is used at both ends of Span %d.",LABEL_SPAN(m_pNextSpan->GetSpanIndex()));
    }

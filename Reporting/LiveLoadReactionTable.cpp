@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -71,12 +71,12 @@ CLiveLoadReactionTable& CLiveLoadReactionTable::operator= (const CLiveLoadReacti
 //======================== OPERATIONS =======================================
 void CLiveLoadReactionTable::Build(IBroker* pBroker, rptChapter* pChapter,
                                           SpanIndexType span,GirderIndexType girder,
-                                          IDisplayUnits* pDispUnits,
+                                          IDisplayUnits* pDisplayUnits,
                                           pgsTypes::Stage stage, pgsTypes::AnalysisType analysisType) const
 {
    // Build table
-   INIT_UV_PROTOTYPE( rptLengthUnitValue, location, pDispUnits->GetSpanLengthUnit(), false );
-   INIT_UV_PROTOTYPE( rptForceSectionValue, reaction, pDispUnits->GetShearUnit(), false );
+   INIT_UV_PROTOTYPE( rptLengthUnitValue, location, pDisplayUnits->GetSpanLengthUnit(), false );
+   INIT_UV_PROTOTYPE( rptForceSectionValue, reaction, pDisplayUnits->GetShearUnit(), false );
 
    GET_IFACE2(pBroker,IBridge,pBridge);
 
@@ -97,8 +97,8 @@ void CLiveLoadReactionTable::Build(IBroker* pBroker, rptChapter* pChapter,
    GET_IFACE2(pBroker,ILiveLoads,pLiveLoads);
    bPermit = pLiveLoads->IsLiveLoadDefined(pgsTypes::lltPermit);
 
-   GET_IFACE2(pBroker,IProductForces,pProductForces);
-   bool bPedLoading = pProductForces->HasPedestrianLoad(startPier,girder);
+   GET_IFACE2(pBroker,IProductLoads,pProductLoads);
+   bool bPedLoading = pProductLoads->HasPedestrianLoad(startPier,girder);
 
 	if ( analysisType == pgsTypes::Envelope )
 		nCols = 9;
@@ -124,21 +124,21 @@ void CLiveLoadReactionTable::Build(IBroker* pBroker, rptChapter* pChapter,
 	{
       p_table->SetColumnSpan(0,col1,2);
       (*p_table)(0,col1++) << symbol(SUM) << "DC";
-      (*p_table)(1,col2++) << COLHDR("Max", rptForceUnitTag, pDispUnits->GetShearUnit() );
-      (*p_table)(1,col2++) << COLHDR("Min", rptForceUnitTag, pDispUnits->GetShearUnit() );
+      (*p_table)(1,col2++) << COLHDR("Max", rptForceUnitTag, pDisplayUnits->GetShearUnit() );
+      (*p_table)(1,col2++) << COLHDR("Min", rptForceUnitTag, pDisplayUnits->GetShearUnit() );
 
       p_table->SetColumnSpan(0,col1,2);
       (*p_table)(0,col1++) << symbol(SUM) << "DW";
-      (*p_table)(1,col2++) << COLHDR("Max", rptForceUnitTag, pDispUnits->GetShearUnit() );
-      (*p_table)(1,col2++) << COLHDR("Min", rptForceUnitTag, pDispUnits->GetShearUnit() );
+      (*p_table)(1,col2++) << COLHDR("Max", rptForceUnitTag, pDisplayUnits->GetShearUnit() );
+      (*p_table)(1,col2++) << COLHDR("Min", rptForceUnitTag, pDisplayUnits->GetShearUnit() );
 	}
 	else
 	{
       p_table->SetRowSpan(0,col1,2);
-		(*p_table)(0,col1++) << COLHDR(symbol(SUM) << "DC",          rptForceUnitTag, pDispUnits->GetShearUnit() );
+		(*p_table)(0,col1++) << COLHDR(symbol(SUM) << "DC",          rptForceUnitTag, pDisplayUnits->GetShearUnit() );
 
       p_table->SetRowSpan(0,col1,2);
-		(*p_table)(0,col1++) << COLHDR(symbol(SUM) << "DW",          rptForceUnitTag, pDispUnits->GetShearUnit() );
+		(*p_table)(0,col1++) << COLHDR(symbol(SUM) << "DW",          rptForceUnitTag, pDisplayUnits->GetShearUnit() );
 
       p_table->SetRowSpan(1,col2++,-1);
       p_table->SetRowSpan(1,col2++,-1);
@@ -148,34 +148,34 @@ void CLiveLoadReactionTable::Build(IBroker* pBroker, rptChapter* pChapter,
    {
       p_table->SetColumnSpan(0,col1,2);
       (*p_table)(0,col1++) << "* PL";
-		(*p_table)(1,col2++) << COLHDR("Max",       rptForceUnitTag, pDispUnits->GetShearUnit() );
-		(*p_table)(1,col2++) << COLHDR("Min",       rptForceUnitTag, pDispUnits->GetShearUnit() );
+		(*p_table)(1,col2++) << COLHDR("Max",       rptForceUnitTag, pDisplayUnits->GetShearUnit() );
+		(*p_table)(1,col2++) << COLHDR("Min",       rptForceUnitTag, pDisplayUnits->GetShearUnit() );
    }
 
    p_table->SetColumnSpan(0,col1,2);
    (*p_table)(0,col1++) << "* LL Design";
-	(*p_table)(1,col2++) << COLHDR("Max",       rptForceUnitTag, pDispUnits->GetShearUnit() );
-	(*p_table)(1,col2++) << COLHDR("Min",       rptForceUnitTag, pDispUnits->GetShearUnit() );
+	(*p_table)(1,col2++) << COLHDR("Max",       rptForceUnitTag, pDisplayUnits->GetShearUnit() );
+	(*p_table)(1,col2++) << COLHDR("Min",       rptForceUnitTag, pDisplayUnits->GetShearUnit() );
 
 	if ( bPermit )
 	{
       p_table->SetColumnSpan(0,col1,2);
       (*p_table)(0,col1++) << "* LL Permit";
-		(*p_table)(1,col2++) << COLHDR("Max",       rptForceUnitTag, pDispUnits->GetShearUnit() );
-		(*p_table)(1,col2++) << COLHDR("Min",       rptForceUnitTag, pDispUnits->GetShearUnit() );
+		(*p_table)(1,col2++) << COLHDR("Max",       rptForceUnitTag, pDisplayUnits->GetShearUnit() );
+		(*p_table)(1,col2++) << COLHDR("Min",       rptForceUnitTag, pDisplayUnits->GetShearUnit() );
 	}
 
    p_table->SetColumnSpan(0,col1,2);
    (*p_table)(0,col1++) << "Strength I";
-	(*p_table)(1,col2++) << COLHDR("Max", rptForceUnitTag, pDispUnits->GetShearUnit() );
-	(*p_table)(1,col2++) << COLHDR("Min", rptForceUnitTag, pDispUnits->GetShearUnit() );
+	(*p_table)(1,col2++) << COLHDR("Max", rptForceUnitTag, pDisplayUnits->GetShearUnit() );
+	(*p_table)(1,col2++) << COLHDR("Min", rptForceUnitTag, pDisplayUnits->GetShearUnit() );
 
 	if ( bPermit )
 	{
       p_table->SetColumnSpan(0,col1,2);
 		(*p_table)(0,col1++) << "Strength II";
-		(*p_table)(1,col2++) << COLHDR("Max", rptForceUnitTag, pDispUnits->GetShearUnit() );
-		(*p_table)(1,col2++) << COLHDR("Min", rptForceUnitTag, pDispUnits->GetShearUnit() );
+		(*p_table)(1,col2++) << COLHDR("Max", rptForceUnitTag, pDisplayUnits->GetShearUnit() );
+		(*p_table)(1,col2++) << COLHDR("Min", rptForceUnitTag, pDisplayUnits->GetShearUnit() );
 	}
 
    for ( ColumnIndexType i = col1; i < nCols; i++ )

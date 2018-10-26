@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 2008  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -200,10 +200,10 @@ void CGirderSpacingGrid::FillGrid()
    CComPtr<IBroker> pBroker;
    AfxGetBroker(&pBroker);
 
-   GET_IFACE2(pBroker,IDisplayUnits,pDispUnits);
+   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
    const unitmgtLengthData& spacingUnit = IsGirderSpacing(m_GirderSpacingType) // if
-                                        ? pDispUnits->GetXSectionDimUnit()     // then
-                                        : pDispUnits->GetComponentDimUnit();   // else
+                                        ? pDisplayUnits->GetXSectionDimUnit()     // then
+                                        : pDisplayUnits->GetComponentDimUnit();   // else
 
    GroupIndexType nSpacingGroups = m_GridData.m_GirderSpacing.GetSpacingGroupCount();
    GirderIndexType nGirders      = m_GridData.m_GirderSpacing.GetSpacingCount() + 1;
@@ -691,10 +691,10 @@ BOOL CGirderSpacingGrid::OnValidateCell(ROWCOL nRow, ROWCOL nCol)
    CComPtr<IBroker> pBroker;
    AfxGetBroker(&pBroker);
 
-   GET_IFACE2(pBroker,IDisplayUnits,pDispUnits);
+   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
    if ( IsGirderSpacing(m_GirderSpacingType) )
    {
-      spacing = ::ConvertToSysUnits(spacing,pDispUnits->GetXSectionDimUnit().UnitOfMeasure);
+      spacing = ::ConvertToSysUnits(spacing,pDisplayUnits->GetXSectionDimUnit().UnitOfMeasure);
       double minGirderSpacing = m_MinGirderSpacing[nCol-1];
       double maxGirderSpacing = m_MaxGirderSpacing[nCol-1];
       if ( IsLT(spacing,minGirderSpacing) || IsLT(maxGirderSpacing,spacing) )
@@ -705,7 +705,7 @@ BOOL CGirderSpacingGrid::OnValidateCell(ROWCOL nRow, ROWCOL nCol)
    }
    else
    {
-      spacing = ::ConvertToSysUnits(spacing,pDispUnits->GetComponentDimUnit().UnitOfMeasure);
+      spacing = ::ConvertToSysUnits(spacing,pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
       double minGirderSpacing = m_MinGirderSpacing[nCol-1];
       double maxGirderSpacing = m_MaxGirderSpacing[nCol-1];
       if ( spacing < 0 || IsGT(spacing,maxGirderSpacing-minGirderSpacing) )
@@ -725,7 +725,7 @@ BOOL CGirderSpacingGrid::OnEndEditing(ROWCOL nRow,ROWCOL nCol)
       CComPtr<IBroker> pBroker;
       AfxGetBroker(&pBroker);
 
-      GET_IFACE2(pBroker,IDisplayUnits,pDispUnits);
+      GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
 
       CString strValue;
       GetCurrentCellControl()->GetCurrentText(strValue);
@@ -735,12 +735,12 @@ BOOL CGirderSpacingGrid::OnEndEditing(ROWCOL nRow,ROWCOL nCol)
       if ( IsGirderSpacing(m_GirderSpacingType) )
       {
          // girder spacing
-         spacing = ::ConvertToSysUnits(spacing,pDispUnits->GetXSectionDimUnit().UnitOfMeasure);
+         spacing = ::ConvertToSysUnits(spacing,pDisplayUnits->GetXSectionDimUnit().UnitOfMeasure);
       }
       else
       {
          // joint spacing
-         spacing = ::ConvertToSysUnits(spacing,pDispUnits->GetComponentDimUnit().UnitOfMeasure);
+         spacing = ::ConvertToSysUnits(spacing,pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
       }
 
       m_GridData.m_GirderSpacing.SetGirderSpacing(nCol-1,spacing);

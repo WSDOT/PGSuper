@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -23,30 +23,39 @@
 #include <PgsExt\PgsExtLib.h>
 #include <PgsExt\StatusItem.h>
 
+#include <IFace\Project.h>
+#include <IFace\EditByUI.h>
+#include <IFace\StatusCenter.h>
+
+#include "StatusMessageDialog.h"
+#include "RefinedAnalysisOptionsDlg.h"
+
+#include <PgsExt\BridgeDescription.h>
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
 static char THIS_FILE[] = __FILE__;
 #endif
 
-pgsStatusItem::pgsStatusItem(Uint32 agentID,Uint32 callbackID,const char* strDescription) :
+pgsStatusItem::pgsStatusItem(AgentIDType agentID,StatusCallbackIDType callbackID,const char* strDescription) :
 m_Description(strDescription), m_bRemoveAfterEdit(false)
 {
    m_AgentID = agentID;
    m_CallbackID = callbackID;
 }
 
-void pgsStatusItem::SetID(Uint32 id)
+void pgsStatusItem::SetID(StatusItemIDType id)
 {
    m_ID = id;
 }
 
-Uint32 pgsStatusItem::GetID() const
+StatusItemIDType pgsStatusItem::GetID() const
 {
    return m_ID;
 }
 
-Uint32 pgsStatusItem::GetAgentID() const
+AgentIDType pgsStatusItem::GetAgentID() const
 {
    return m_AgentID;
 }
@@ -56,7 +65,7 @@ const std::string& pgsStatusItem::GetDescription() const
    return m_Description;
 }
 
-Uint32 pgsStatusItem::GetCallbackID() const
+StatusCallbackIDType pgsStatusItem::GetCallbackID() const
 {
    return m_CallbackID;
 }
@@ -72,160 +81,9 @@ void pgsStatusItem::RemoveAfterEdit(bool bRemoveAfterEdit)
 }
 
 
-pgsPointLoadStatusItem::pgsPointLoadStatusItem(Uint32 value,Uint32 agentID,Uint32 callbackID,const char* strDescription) :
-pgsStatusItem(agentID,callbackID,strDescription), m_LoadIndex(value)
-{
-}
-
-bool pgsPointLoadStatusItem::IsEqual(pgsStatusItem* pOther)
-{
-   pgsPointLoadStatusItem* other = dynamic_cast<pgsPointLoadStatusItem*>(pOther);
-   if ( !other )
-      return false;
-
-   return (other->m_LoadIndex == m_LoadIndex);
-}
-
-
-pgsMomentLoadStatusItem::pgsMomentLoadStatusItem(Uint32 value,Uint32 agentID,Uint32 callbackID,const char* strDescription) :
-pgsStatusItem(agentID,callbackID,strDescription), m_LoadIndex(value)
-{
-}
-
-bool pgsMomentLoadStatusItem::IsEqual(pgsStatusItem* pOther)
-{
-   pgsMomentLoadStatusItem* other = dynamic_cast<pgsMomentLoadStatusItem*>(pOther);
-   if ( !other )
-      return false;
-
-   return (other->m_LoadIndex == m_LoadIndex);
-}
-
-pgsDistributedLoadStatusItem::pgsDistributedLoadStatusItem(Uint32 value,Uint32 agentID,Uint32 callbackID,const char* strDescription) :
-pgsStatusItem(agentID,callbackID,strDescription), m_LoadIndex(value)
-{
-}
-
-bool pgsDistributedLoadStatusItem::IsEqual(pgsStatusItem* pOther)
-{
-   pgsDistributedLoadStatusItem* other = dynamic_cast<pgsDistributedLoadStatusItem*>(pOther);
-   if ( !other )
-      return false;
-
-   return (other->m_LoadIndex == m_LoadIndex);
-}
-
 ////////////////
 
-pgsConcreteStrengthStatusItem::pgsConcreteStrengthStatusItem(pgsConcreteStrengthStatusItem::ConcreteType concType,pgsConcreteStrengthStatusItem::ElementType elemType,SpanIndexType span,GirderIndexType gdr,long agentID,long callbackID,const char* strDescription) :
-pgsStatusItem(agentID,callbackID,strDescription), m_ConcreteType(concType),m_ElementType(elemType),m_Span(span),m_Girder(gdr)
-{
-}
-
-bool pgsConcreteStrengthStatusItem::IsEqual(pgsStatusItem* pOther)
-{
-   pgsConcreteStrengthStatusItem* other = dynamic_cast<pgsConcreteStrengthStatusItem*>(pOther);
-   if ( !other )
-      return false;
-
-   return (other->m_ConcreteType == m_ConcreteType && other->m_ElementType == m_ElementType && other->m_Span == m_Span && other->m_Girder == m_Girder);
-}
-
-////////////////
-
-pgsVSRatioStatusItem::pgsVSRatioStatusItem(SpanIndexType span,GirderIndexType gdr,Uint32 agentID,Uint32 callbackID,const char* strDescription) :
-pgsStatusItem(agentID,callbackID,strDescription), m_Span(span),m_Girder(gdr)
-{
-}
-
-bool pgsVSRatioStatusItem::IsEqual(pgsStatusItem* pOther)
-{
-   pgsVSRatioStatusItem* other = dynamic_cast<pgsVSRatioStatusItem*>(pOther);
-   if ( !other )
-      return false;
-
-   return (other->m_Span == m_Span && other->m_Girder == m_Girder);
-}
-
-////////////////
-
-pgsLiftingSupportLocationStatusItem::pgsLiftingSupportLocationStatusItem(SpanIndexType span,GirderIndexType gdr,Uint32 agentID,Uint32 callbackID,const char* strDescription) :
-pgsStatusItem(agentID,callbackID,strDescription), m_Span(span),m_Girder(gdr)
-{
-}
-
-bool pgsLiftingSupportLocationStatusItem::IsEqual(pgsStatusItem* pOther)
-{
-   pgsLiftingSupportLocationStatusItem* other = dynamic_cast<pgsLiftingSupportLocationStatusItem*>(pOther);
-   if ( !other )
-      return false;
-
-   return (other->m_Span == m_Span && other->m_Girder == m_Girder);
-}
-
-////////////////
-
-pgsTruckStiffnessStatusItem::pgsTruckStiffnessStatusItem(Uint32 agentID,Uint32 callbackID,const char* strDescription) :
-pgsStatusItem(agentID,callbackID,strDescription)
-{
-}
-
-bool pgsTruckStiffnessStatusItem::IsEqual(pgsStatusItem* pOther)
-{
-   pgsTruckStiffnessStatusItem* other = dynamic_cast<pgsTruckStiffnessStatusItem*>(pOther);
-   if ( !other )
-      return false;
-
-   return true;
-}
-
-////////////////
-
-pgsBridgeDescriptionStatusItem::pgsBridgeDescriptionStatusItem(Uint32 agentID,Uint32 callbackID,long dlgPage,const char* strDescription) :
-pgsStatusItem(agentID,callbackID,strDescription), m_DlgPage(dlgPage)
-{
-}
-
-bool pgsBridgeDescriptionStatusItem::IsEqual(pgsStatusItem* pOther)
-{
-   pgsBridgeDescriptionStatusItem* other = dynamic_cast<pgsBridgeDescriptionStatusItem*>(pOther);
-   if ( !other )
-      return false;
-
-   if ( this->GetDescription() != other->GetDescription() )
-      return false;
-
-   if ( m_DlgPage != other->m_DlgPage )
-      return false;
-
-   return true;
-}
-
-////////////////
-
-pgsAlignmentDescriptionStatusItem::pgsAlignmentDescriptionStatusItem(Uint32 agentID,Uint32 callbackID,long dlgPage,const char* strDescription) :
-pgsStatusItem(agentID,callbackID,strDescription), m_DlgPage(dlgPage)
-{
-}
-
-bool pgsAlignmentDescriptionStatusItem::IsEqual(pgsStatusItem* pOther)
-{
-   pgsAlignmentDescriptionStatusItem* other = dynamic_cast<pgsAlignmentDescriptionStatusItem*>(pOther);
-   if ( !other )
-      return false;
-
-   if ( this->GetDescription() != other->GetDescription() )
-      return false;
-
-   if ( m_DlgPage != other->m_DlgPage )
-      return false;
-
-   return true;
-}
-
-////////////////
-
-pgsRefinedAnalysisStatusItem::pgsRefinedAnalysisStatusItem(Uint32 agentID,Uint32 callbackID,const char* strDescription) :
+pgsRefinedAnalysisStatusItem::pgsRefinedAnalysisStatusItem(AgentIDType agentID,StatusCallbackIDType callbackID,const char* strDescription) :
 pgsStatusItem(agentID,callbackID,strDescription)
 {
 }
@@ -239,9 +97,74 @@ bool pgsRefinedAnalysisStatusItem::IsEqual(pgsStatusItem* pOther)
    return true;
 }
 
+//////////////////////////////////////////////////////////
+pgsRefinedAnalysisStatusCallback::pgsRefinedAnalysisStatusCallback(IBroker* pBroker):
+m_pBroker(pBroker)
+{
+}
+
+pgsTypes::StatusSeverityType pgsRefinedAnalysisStatusCallback::GetSeverity()
+{
+   return pgsTypes::statusError;
+}
+
+void pgsRefinedAnalysisStatusCallback::Execute(pgsStatusItem* pStatusItem)
+{
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+   pgsRefinedAnalysisStatusItem* pItem = dynamic_cast<pgsRefinedAnalysisStatusItem*>(pStatusItem);
+   ATLASSERT(pItem!=NULL);
+
+   CRefinedAnalysisOptionsDlg dlg;
+   dlg.m_strDescription = pStatusItem->GetDescription().c_str();
+   dlg.m_strDescription.Replace("\n","\r\n"); // this makes the text wrap correctly in the dialog
+
+   if ( dlg.DoModal() == IDOK )
+   {
+      GET_IFACE(ILiveLoads,pLiveLoads);
+      GET_IFACE(IBridgeDescription,pIBridgeDesc);
+      const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+
+      pgsTypes::DistributionFactorMethod method;
+      LldfRangeOfApplicabilityAction roaAction;
+      switch(dlg.m_Choice)
+      {
+      case CRefinedAnalysisOptionsDlg::lldfDirectInput:
+         method = pgsTypes::DirectlyInput;
+         roaAction = roaIgnore;
+         break;
+
+      case CRefinedAnalysisOptionsDlg::lldfIgnore:
+         method = pgsTypes::Calculated;
+         roaAction = roaIgnore;
+         break;
+
+      case CRefinedAnalysisOptionsDlg::lldfIgnoreLever:
+         method = pgsTypes::Calculated;
+         roaAction =roaIgnoreUseLeverRule;
+         break;
+
+      case CRefinedAnalysisOptionsDlg::lldfForceLever:
+         method = pgsTypes::LeverRule;
+         roaAction = roaIgnore;
+         break;
+
+      case CRefinedAnalysisOptionsDlg::lldfDefault:
+         method = pBridgeDesc->GetDistributionFactorMethod();
+         roaAction = pLiveLoads->GetLldfRangeOfApplicabilityAction();
+         break;
+
+      default:
+         ATLASSERT(false); // is there a new choice???
+      }
+
+      GET_IFACE(IEditByUI,pEdit);
+      pEdit->EditLiveLoadDistributionFactors(method,roaAction);
+   }
+}
+
 ////////////////
 
-pgsInstallationErrorStatusItem::pgsInstallationErrorStatusItem(Uint32 agentID,Uint32 callbackID,const char* strComponent,const char* strDescription) :
+pgsInstallationErrorStatusItem::pgsInstallationErrorStatusItem(AgentIDType agentID,StatusCallbackIDType callbackID,const char* strComponent,const char* strDescription) :
 pgsStatusItem(agentID,callbackID,strDescription), m_Component(strComponent)
 {
 }
@@ -258,9 +181,31 @@ bool pgsInstallationErrorStatusItem::IsEqual(pgsStatusItem* pOther)
    return true;
 }
 
+//////////////////////////////////////////////////////////
+pgsInstallationErrorStatusCallback::pgsInstallationErrorStatusCallback()
+{
+}
+
+pgsTypes::StatusSeverityType pgsInstallationErrorStatusCallback::GetSeverity()
+{
+   return pgsTypes::statusError;
+}
+
+void pgsInstallationErrorStatusCallback::Execute(pgsStatusItem* pStatusItem)
+{
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+   pgsInstallationErrorStatusItem* pItem = dynamic_cast<pgsInstallationErrorStatusItem*>(pStatusItem);
+   ATLASSERT(pItem!=NULL);
+
+   CString msg;
+   msg.Format("PGSuper was not successfully installed or has become damanged.\n\n%s could not be created.\n\nPlease re-install the software.",pItem->m_Component.c_str());
+   AfxMessageBox(msg,MB_OK | MB_ICONEXCLAMATION);
+}
+
+
 ////////////////
 
-pgsUnknownErrorStatusItem::pgsUnknownErrorStatusItem(Uint32 agentID,Uint32 callbackID,const char* strFile,long line,const char* strDescription) :
+pgsUnknownErrorStatusItem::pgsUnknownErrorStatusItem(AgentIDType agentID,StatusCallbackIDType callbackID,const char* strFile,long line,const char* strDescription) :
 pgsStatusItem(agentID,callbackID,strDescription), m_File(strFile), m_Line(line)
 {
 }
@@ -279,9 +224,32 @@ bool pgsUnknownErrorStatusItem::IsEqual(pgsStatusItem* pOther)
 
    return true;
 }
+
+//////////////////////////////////////////////////////////
+pgsUnknownErrorStatusCallback::pgsUnknownErrorStatusCallback()
+{
+}
+
+pgsTypes::StatusSeverityType pgsUnknownErrorStatusCallback::GetSeverity()
+{
+   return pgsTypes::statusError;
+}
+
+void pgsUnknownErrorStatusCallback::Execute(pgsStatusItem* pStatusItem)
+{
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
+   pgsUnknownErrorStatusItem* pItem = dynamic_cast<pgsUnknownErrorStatusItem*>(pStatusItem);
+   ATLASSERT(pItem!=NULL);
+
+   CString msg;
+   msg.Format("An unspecified error occured at %s, Line %d",pItem->m_File.c_str(),pItem->m_Line);
+   AfxMessageBox(msg,MB_OK | MB_ICONEXCLAMATION);
+}
+
 ////////////////
 
-pgsInformationalStatusItem::pgsInformationalStatusItem(Uint32 agentID,Uint32 callbackID,const char* strDescription) :
+pgsInformationalStatusItem::pgsInformationalStatusItem(AgentIDType agentID,StatusCallbackIDType callbackID,const char* strDescription) :
 pgsStatusItem(agentID,callbackID,strDescription)
 {
 }
@@ -298,10 +266,53 @@ bool pgsInformationalStatusItem::IsEqual(pgsStatusItem* pOther)
    return true;
 }
 
+//////////////////////////////////////////////////////////
+pgsInformationalStatusCallback::pgsInformationalStatusCallback(pgsTypes::StatusSeverityType severity,UINT helpID):
+m_Severity(severity), m_HelpID(helpID)
+{
+}
+
+pgsTypes::StatusSeverityType pgsInformationalStatusCallback::GetSeverity()
+{
+   return m_Severity;
+}
+
+void pgsInformationalStatusCallback::Execute(pgsStatusItem* pStatusItem)
+{
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
+   std::string msg = pStatusItem->GetDescription();
+
+   if (m_HelpID!=0)
+   {
+      msg += std::string("\r\n\r\nClick on Help button for more details.");
+   }
+
+   bool is_severe = m_Severity==pgsTypes::statusError;
+   if (!is_severe)
+   {
+      msg += std::string("\r\n\r\nClick OK to remove this message.");
+   }
+
+   pgsInformationalStatusItem* pItem = dynamic_cast<pgsInformationalStatusItem*>(pStatusItem);
+   ATLASSERT(pItem!=NULL);
+
+   CStatusMessageDialog dlg;
+   dlg.m_Message = msg.c_str();
+   dlg.m_IsSevere = is_severe;
+   dlg.m_HelpID = m_HelpID;
+
+   int st = dlg.DoModal();
+   if (!is_severe && st==IDOK) // allow non-severe messages to be removed by user
+   {
+      pStatusItem->RemoveAfterEdit(true);
+   }
+}
+
 
 ////////////////
 
-pgsGirderDescriptionStatusItem::pgsGirderDescriptionStatusItem(SpanIndexType span,GirderIndexType gdr,Uint16 page,Uint32 agentID,Uint32 callbackID,const char* strDescription) :
+pgsGirderDescriptionStatusItem::pgsGirderDescriptionStatusItem(SpanIndexType span,GirderIndexType gdr,Uint16 page,AgentIDType agentID,StatusCallbackIDType callbackID,const char* strDescription) :
 pgsStatusItem(agentID,callbackID,strDescription), m_Span(span), m_Girder(gdr), m_Page(page)
 {
 }
@@ -327,25 +338,45 @@ bool pgsGirderDescriptionStatusItem::IsEqual(pgsStatusItem* pOther)
    return true;
 }
 
-////////////////
-
-pgsLiveLoadStatusItem::pgsLiveLoadStatusItem(Uint32 agentID,Uint32 callbackID,const char* strDescription) :
-pgsStatusItem(agentID,callbackID,strDescription)
+//////////////////////////////////////////////////////////
+pgsGirderDescriptionStatusCallback::pgsGirderDescriptionStatusCallback(IBroker* pBroker,pgsTypes::StatusSeverityType severity):
+m_pBroker(pBroker), m_Severity(severity)
 {
 }
 
-bool pgsLiveLoadStatusItem::IsEqual(pgsStatusItem* pOther)
+pgsTypes::StatusSeverityType pgsGirderDescriptionStatusCallback::GetSeverity()
 {
-   pgsLiveLoadStatusItem* other = dynamic_cast<pgsLiveLoadStatusItem*>(pOther);
-   if ( !other )
-      return false;
+   return m_Severity;
+}
 
-   return true;
+void pgsGirderDescriptionStatusCallback::Execute(pgsStatusItem* pStatusItem)
+{
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
+   pgsGirderDescriptionStatusItem* pItem = dynamic_cast<pgsGirderDescriptionStatusItem*>(pStatusItem);
+   ATLASSERT(pItem!=NULL);
+
+   CString strMessage;
+   strMessage.Format("%s\n\r%s",pItem->GetDescription().c_str(),"Would you like to edit the girder?");
+   int result = AfxMessageBox(strMessage,MB_YESNO);
+
+   if ( result == IDYES )
+   {
+      GET_IFACE(IEditByUI,pEdit);
+
+      if (pEdit->EditGirderDescription(pItem->m_Span,pItem->m_Girder,pItem->m_Page))
+      {
+         // assume that edit took care of status
+         StatusItemIDType id = pItem->GetID();
+         GET_IFACE(IStatusCenter,pStatusCenter);
+         pStatusCenter->RemoveByID(id);
+      }
+   }
 }
 
 ////////////////
 
-pgsStructuralAnalysisTypeStatusItem::pgsStructuralAnalysisTypeStatusItem(Uint32 agentID,Uint32 callbackID,const char* strDescription) :
+pgsStructuralAnalysisTypeStatusItem::pgsStructuralAnalysisTypeStatusItem(AgentIDType agentID,StatusCallbackIDType callbackID,const char* strDescription) :
 pgsStatusItem(agentID,callbackID,strDescription)
 {
 }
@@ -357,4 +388,61 @@ bool pgsStructuralAnalysisTypeStatusItem::IsEqual(pgsStatusItem* pOther)
       return false;
 
    return true;
+}
+
+////////////////
+
+pgsStructuralAnalysisTypeStatusCallback::pgsStructuralAnalysisTypeStatusCallback()
+{
+}
+
+pgsTypes::StatusSeverityType pgsStructuralAnalysisTypeStatusCallback::GetSeverity()
+{
+   return pgsTypes::statusWarning;
+}
+
+void pgsStructuralAnalysisTypeStatusCallback::Execute(pgsStatusItem* pStatusItem)
+{
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+   AfxMessageBox(pStatusItem->GetDescription().c_str(),MB_OK);
+}
+
+pgsBridgeDescriptionStatusItem::pgsBridgeDescriptionStatusItem(AgentIDType agentID,StatusCallbackIDType callbackID,long dlgPage,const char* strDescription) :
+pgsStatusItem(agentID,callbackID,strDescription), m_DlgPage(dlgPage)
+{
+}
+
+bool pgsBridgeDescriptionStatusItem::IsEqual(pgsStatusItem* pOther)
+{
+   pgsBridgeDescriptionStatusItem* other = dynamic_cast<pgsBridgeDescriptionStatusItem*>(pOther);
+   if ( !other )
+      return false;
+
+   if ( this->GetDescription() != other->GetDescription() )
+      return false;
+
+   if ( m_DlgPage != other->m_DlgPage )
+      return false;
+
+   return true;
+}
+
+//////////////////////////////////////////////////////////
+pgsBridgeDescriptionStatusCallback::pgsBridgeDescriptionStatusCallback(IBroker* pBroker,pgsTypes::StatusSeverityType severity):
+m_pBroker(pBroker), m_Severity(severity)
+{
+}
+
+pgsTypes::StatusSeverityType pgsBridgeDescriptionStatusCallback::GetSeverity()
+{
+   return m_Severity;
+}
+
+void pgsBridgeDescriptionStatusCallback::Execute(pgsStatusItem* pStatusItem)
+{
+   pgsBridgeDescriptionStatusItem* pItem = dynamic_cast<pgsBridgeDescriptionStatusItem*>(pStatusItem);
+   ATLASSERT(pItem!=NULL);
+
+   GET_IFACE(IEditByUI,pEdit);
+   pEdit->EditBridgeDescription(pItem->m_DlgPage);
 }

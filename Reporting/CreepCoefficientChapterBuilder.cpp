@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -64,7 +64,7 @@ rptChapter* CCreepCoefficientChapterBuilder::Build(CReportSpecification* pRptSpe
    SpanIndexType span = pSGRptSpec->GetSpan();
    GirderIndexType gdr = pSGRptSpec->GetGirder();
 
-   GET_IFACE2(pBroker,IDisplayUnits,pDispUnit);
+   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
    GET_IFACE2(pBroker,IBridge,pBridge);
    pgsTypes::SupportedDeckType deckType = pBridge->GetDeckType();
 
@@ -77,15 +77,15 @@ rptChapter* CCreepCoefficientChapterBuilder::Build(CReportSpecification* pRptSpe
    {
    case pgsTypes::sdtCompositeCIP:
    case pgsTypes::sdtCompositeOverlay:
-      pChapter = (bTempStrands ? Build_CIP_TempStrands(pRptSpec, pBroker,span,gdr,pDispUnit,level) : Build_CIP(pRptSpec, pBroker,span,gdr,pDispUnit,level));
+      pChapter = (bTempStrands ? Build_CIP_TempStrands(pRptSpec, pBroker,span,gdr,pDisplayUnits,level) : Build_CIP(pRptSpec, pBroker,span,gdr,pDisplayUnits,level));
       break;
 
    case pgsTypes::sdtCompositeSIP:
-      pChapter = (bTempStrands ? Build_SIP_TempStrands(pRptSpec, pBroker,span,gdr,pDispUnit,level) : Build_SIP(pRptSpec, pBroker,span,gdr,pDispUnit,level));
+      pChapter = (bTempStrands ? Build_SIP_TempStrands(pRptSpec, pBroker,span,gdr,pDisplayUnits,level) : Build_SIP(pRptSpec, pBroker,span,gdr,pDisplayUnits,level));
       break;
 
    case pgsTypes::sdtNone:
-      pChapter = (bTempStrands ? Build_NoDeck_TempStrands(pRptSpec, pBroker,span,gdr,pDispUnit,level) : Build_NoDeck(pRptSpec, pBroker,span,gdr,pDispUnit,level));
+      pChapter = (bTempStrands ? Build_NoDeck_TempStrands(pRptSpec, pBroker,span,gdr,pDisplayUnits,level) : Build_NoDeck(pRptSpec, pBroker,span,gdr,pDisplayUnits,level));
       break;
 
    default:
@@ -120,7 +120,7 @@ CChapterBuilder* CCreepCoefficientChapterBuilder::Clone() const
 //======================== INQUERY    =======================================
 
 rptChapter* CCreepCoefficientChapterBuilder::Build_CIP_TempStrands(CReportSpecification* pRptSpec,IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,
-                                                   IDisplayUnits* pDispUnits,
+                                                   IDisplayUnits* pDisplayUnits,
                                                    Uint16 level) const
 {
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
@@ -134,10 +134,10 @@ rptChapter* CCreepCoefficientChapterBuilder::Build_CIP_TempStrands(CReportSpecif
    GET_IFACE2(pBroker,ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
 
-   INIT_UV_PROTOTYPE( rptTimeUnitValue, time, pDispUnits->GetLongTimeUnit(), true );
-   INIT_UV_PROTOTYPE( rptTimeUnitValue, time2, pDispUnits->GetLongTimeUnit(), false );
-   INIT_UV_PROTOTYPE( rptStressUnitValue, fc, pDispUnits->GetStressUnit(), true );
-   INIT_UV_PROTOTYPE( rptLengthUnitValue, length, pDispUnits->GetComponentDimUnit(), true );
+   INIT_UV_PROTOTYPE( rptTimeUnitValue, time, pDisplayUnits->GetLongTimeUnit(), true );
+   INIT_UV_PROTOTYPE( rptTimeUnitValue, time2, pDisplayUnits->GetLongTimeUnit(), false );
+   INIT_UV_PROTOTYPE( rptStressUnitValue, fc, pDisplayUnits->GetStressUnit(), true );
+   INIT_UV_PROTOTYPE( rptLengthUnitValue, length, pDisplayUnits->GetComponentDimUnit(), true );
 
    CREEPCOEFFICIENTDETAILS details;
 
@@ -153,7 +153,7 @@ rptChapter* CCreepCoefficientChapterBuilder::Build_CIP_TempStrands(CReportSpecif
    //////////////////////////////
    // Report LRFD method
    //////////////////////////////
-   bool bSI = (pDispUnits->GetUnitDisplayMode() == pgsTypes::umSI);
+   bool bSI = (pDisplayUnits->GetUnitDisplayMode() == pgsTypes::umSI);
 
    for ( Int16 i = CREEP_MINTIME; i <= CREEP_MAXTIME; i++ )
    {
@@ -335,7 +335,7 @@ rptChapter* CCreepCoefficientChapterBuilder::Build_CIP_TempStrands(CReportSpecif
 }
 
 rptChapter* CCreepCoefficientChapterBuilder::Build_CIP(CReportSpecification* pRptSpec,IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,
-                                                       IDisplayUnits* pDispUnits,
+                                                       IDisplayUnits* pDisplayUnits,
                                                        Uint16 level) const
 {
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
@@ -349,10 +349,10 @@ rptChapter* CCreepCoefficientChapterBuilder::Build_CIP(CReportSpecification* pRp
    GET_IFACE2(pBroker,ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
 
-   INIT_UV_PROTOTYPE( rptTimeUnitValue, time, pDispUnits->GetLongTimeUnit(), true );
-   INIT_UV_PROTOTYPE( rptTimeUnitValue, time2, pDispUnits->GetLongTimeUnit(), false );
-   INIT_UV_PROTOTYPE( rptStressUnitValue, fc, pDispUnits->GetStressUnit(), true );
-   INIT_UV_PROTOTYPE( rptLengthUnitValue, length, pDispUnits->GetComponentDimUnit(), true );
+   INIT_UV_PROTOTYPE( rptTimeUnitValue, time, pDisplayUnits->GetLongTimeUnit(), true );
+   INIT_UV_PROTOTYPE( rptTimeUnitValue, time2, pDisplayUnits->GetLongTimeUnit(), false );
+   INIT_UV_PROTOTYPE( rptStressUnitValue, fc, pDisplayUnits->GetStressUnit(), true );
+   INIT_UV_PROTOTYPE( rptLengthUnitValue, length, pDisplayUnits->GetComponentDimUnit(), true );
 
    CREEPCOEFFICIENTDETAILS details;
 
@@ -368,7 +368,7 @@ rptChapter* CCreepCoefficientChapterBuilder::Build_CIP(CReportSpecification* pRp
    //////////////////////////////
    // Report LRFD method
    //////////////////////////////
-   bool bSI = (pDispUnits->GetUnitDisplayMode() == pgsTypes::umSI);
+   bool bSI = (pDisplayUnits->GetUnitDisplayMode() == pgsTypes::umSI);
 
    for ( Int16 i = CREEP_MINTIME; i <= CREEP_MAXTIME; i++ )
    {
@@ -482,21 +482,21 @@ rptChapter* CCreepCoefficientChapterBuilder::Build_CIP(CReportSpecification* pRp
 }
 
 rptChapter* CCreepCoefficientChapterBuilder::Build_SIP_TempStrands(CReportSpecification* pRptSpec,IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,
-                                                                   IDisplayUnits* pDispUnits,
+                                                                   IDisplayUnits* pDisplayUnits,
                                                                    Uint16 level) const
 {
-   return Build_CIP_TempStrands(pRptSpec, pBroker, span, gdr, pDispUnits, level);
+   return Build_CIP_TempStrands(pRptSpec, pBroker, span, gdr, pDisplayUnits, level);
 }
 
 rptChapter* CCreepCoefficientChapterBuilder::Build_SIP(CReportSpecification* pRptSpec,IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,
-                                                       IDisplayUnits* pDispUnits,
+                                                       IDisplayUnits* pDisplayUnits,
                                                        Uint16 level) const
 {
-   return Build_SIP_TempStrands(pRptSpec, pBroker, span, gdr, pDispUnits, level);
+   return Build_SIP_TempStrands(pRptSpec, pBroker, span, gdr, pDisplayUnits, level);
 }
 
 rptChapter* CCreepCoefficientChapterBuilder::Build_NoDeck_TempStrands(CReportSpecification* pRptSpec,IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,
-                                                                      IDisplayUnits* pDispUnits,
+                                                                      IDisplayUnits* pDisplayUnits,
                                                                       Uint16 level) const
 {
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
@@ -510,10 +510,10 @@ rptChapter* CCreepCoefficientChapterBuilder::Build_NoDeck_TempStrands(CReportSpe
    GET_IFACE2(pBroker,ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
 
-   INIT_UV_PROTOTYPE( rptTimeUnitValue, time, pDispUnits->GetLongTimeUnit(), true );
-   INIT_UV_PROTOTYPE( rptTimeUnitValue, time2, pDispUnits->GetLongTimeUnit(), false );
-   INIT_UV_PROTOTYPE( rptStressUnitValue, fc, pDispUnits->GetStressUnit(), true );
-   INIT_UV_PROTOTYPE( rptLengthUnitValue, length, pDispUnits->GetComponentDimUnit(), true );
+   INIT_UV_PROTOTYPE( rptTimeUnitValue, time, pDisplayUnits->GetLongTimeUnit(), true );
+   INIT_UV_PROTOTYPE( rptTimeUnitValue, time2, pDisplayUnits->GetLongTimeUnit(), false );
+   INIT_UV_PROTOTYPE( rptStressUnitValue, fc, pDisplayUnits->GetStressUnit(), true );
+   INIT_UV_PROTOTYPE( rptLengthUnitValue, length, pDisplayUnits->GetComponentDimUnit(), true );
 
    CREEPCOEFFICIENTDETAILS details;
 
@@ -529,7 +529,7 @@ rptChapter* CCreepCoefficientChapterBuilder::Build_NoDeck_TempStrands(CReportSpe
    //////////////////////////////
    // Report LRFD method
    //////////////////////////////
-   bool bSI = (pDispUnits->GetUnitDisplayMode() == pgsTypes::umSI);
+   bool bSI = (pDisplayUnits->GetUnitDisplayMode() == pgsTypes::umSI);
 
    for ( Int16 i = CREEP_MINTIME; i <= CREEP_MAXTIME; i++ )
    {
@@ -796,8 +796,8 @@ rptChapter* CCreepCoefficientChapterBuilder::Build_NoDeck_TempStrands(CReportSpe
 }
 
 rptChapter* CCreepCoefficientChapterBuilder::Build_NoDeck(CReportSpecification* pRptSpec,IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,
-                                                          IDisplayUnits* pDispUnits,
+                                                          IDisplayUnits* pDisplayUnits,
                                                           Uint16 level) const
 {
-   return Build_NoDeck_TempStrands(pRptSpec, pBroker, span, gdr, pDispUnits, level);
+   return Build_NoDeck_TempStrands(pRptSpec, pBroker, span, gdr, pDisplayUnits, level);
 }

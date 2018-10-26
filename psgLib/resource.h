@@ -21,6 +21,7 @@
 #define IDS_SLOPE_O6_SI                 16
 #define IDS_SLOPE_O7_SI                 17
 #define IDS_SLOPE_O7_US                 18
+#define IDS_NWC_MESSAGE                 19
 #define IDS_SPEC_STRAND                 27
 #define IDS_SPEC_LOSS                   28
 #define IDS_SPEC_ANALYSIS               29
@@ -740,6 +741,7 @@
 #define IDC_EC_LABEL                    1440
 #define IDC_COMBO1                      1441
 #define IDC_DIST_TRAFFIC_BARRIER_BASIS  1442
+#define IDC_NWC_NOTE                    1443
 #define IDS_CONFLICT_TOP_IMPORT         1458
 #define IDS_CONFLICT_TOP_MASTER         1459
 #define IDS_CONFLICT_BOTTOM_MASTER      1498
@@ -759,7 +761,7 @@
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        202
 #define _APS_NEXT_COMMAND_VALUE         32776
-#define _APS_NEXT_CONTROL_VALUE         1443
+#define _APS_NEXT_CONTROL_VALUE         1444
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

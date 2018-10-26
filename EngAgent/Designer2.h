@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -114,7 +114,7 @@ public:
 
    //------------------------------------------------------------------------
    void SetBroker(IBroker* pBroker);
-   void SetAgentID(long agentID);
+   void SetAgentID(AgentIDType agentID);
 
    pgsGirderArtifact Check(SpanIndexType span,GirderIndexType gdr);
    pgsDesignArtifact Design(SpanIndexType span,GirderIndexType gdr,arDesignOptions options);
@@ -143,7 +143,11 @@ private:
 
    // GROUP: DATA MEMBERS
    IBroker* m_pBroker;
-   long m_AgentID;
+   AgentIDType m_AgentID;
+
+   // ID of the status callbacks we have registered
+   StatusCallbackIDType m_scidLiveLoad;
+   StatusCallbackIDType m_scidBridgeDescriptionError;
 
    pgsStrandDesignTool m_StrandDesignTool;
    pgsDesignCodes      m_DesignerOutcome;
@@ -243,18 +247,18 @@ private:
    pgsFlexuralCapacityArtifact CreateFlexuralCapacityArtifact(const pgsPointOfInterest& poi,pgsTypes::Stage stage,pgsTypes::LimitState ls,bool bPositiveMoment,const MOMENTCAPACITYDETAILS& mcd,const MINMOMENTCAPDETAILS& mmcd);
 
    // poi based shear checks
-   pgsStirrupCheckAtPoisArtifact CreateStirrupCheckAtPoisArtifact(const pgsPointOfInterest& poi,pgsTypes::Stage stage, pgsTypes::LimitState ls, const sysSectionValue& vu,
+   pgsStirrupCheckAtPoisArtifact CreateStirrupCheckAtPoisArtifact(const pgsPointOfInterest& poi,pgsTypes::Stage stage, pgsTypes::LimitState ls, Float64 vu,
                                                                   Float64 fcSlab,Float64 fcGdr, Float64 fy);
 
    void InitShearCheck(SpanIndexType span,GirderIndexType gdr,pgsTypes::LimitState ls);
    bool IsDeepSection( const pgsPointOfInterest& poi);
    void CheckStirrupRequirement( const pgsPointOfInterest& poi, const SHEARCAPACITYDETAILS& scd, pgsVerticalShearArtifact* pArtifact );
-   void CheckUltimateShearCapacity( const pgsPointOfInterest& poi, const SHEARCAPACITYDETAILS& scd, const sysSectionValue& vu, pgsVerticalShearArtifact* pArtifact );
-   void CheckHorizontalShear( const pgsPointOfInterest& poi, const sysSectionValue& vu,
+   void CheckUltimateShearCapacity( const pgsPointOfInterest& poi, const SHEARCAPACITYDETAILS& scd, Float64 vu, pgsVerticalShearArtifact* pArtifact );
+   void CheckHorizontalShear( const pgsPointOfInterest& poi, Float64 vu,
                               Float64 fcSlab,Float64 fcGdr, Float64 fy,
                               pgsHorizontalShearArtifact* pArtifact );
    void CheckFullStirrupDetailing( const pgsPointOfInterest& poi, const pgsVerticalShearArtifact& vertArtifact, 
-                                   const SHEARCAPACITYDETAILS& scd, const sysSectionValue& vu, 
+                                   const SHEARCAPACITYDETAILS& scd, Float64 vu, 
                                    Float64 fcGdr, Float64 fy,
                                    pgsStirrupDetailArtifact* pArtifact );
    void pgsDesigner2::CheckLongReinfShear(const pgsPointOfInterest& poi, 

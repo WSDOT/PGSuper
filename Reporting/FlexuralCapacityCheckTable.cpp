@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -27,6 +27,7 @@
 #include <PgsExt\PointOfInterest.h>
 #include <PgsExt\GirderArtifact.h>
 #include <PgsExt\FlexuralStressArtifact.h>
+#include <PgsExt\CapacityToDemand.h>
 
 #include <IFace\Bridge.h>
 #include <IFace\DisplayUnits.h>
@@ -76,7 +77,7 @@ CFlexuralCapacityCheckTable& CFlexuralCapacityCheckTable::operator= (const CFlex
 
 //======================== OPERATIONS =======================================
 rptRcTable* CFlexuralCapacityCheckTable::Build(IBroker* pBroker,SpanIndexType span,GirderIndexType girder,
-                                               IDisplayUnits* pDispUnit,
+                                               IDisplayUnits* pDisplayUnits,
                                                pgsTypes::Stage stage,
                                                pgsTypes::LimitState ls,bool bPositiveMoment,bool* pbOverReinforced) const
 {
@@ -109,7 +110,7 @@ rptRcTable* CFlexuralCapacityCheckTable::Build(IBroker* pBroker,SpanIndexType sp
 
    p_table->SetRowSpan(0,col,2);
    p_table->SetRowSpan(1,col,-1);
-   (*p_table)(0,col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDispUnit->GetSpanLengthUnit() );
+   (*p_table)(0,col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
 
    if ( c_over_de )
    {
@@ -128,16 +129,16 @@ rptRcTable* CFlexuralCapacityCheckTable::Build(IBroker* pBroker,SpanIndexType sp
 
    p_table->SetRowSpan(0,col,2);
    p_table->SetRowSpan(1,col,-1);
-   (*p_table)(0,col++) << COLHDR(Sub2("M","u"), rptMomentUnitTag, pDispUnit->GetMomentUnit() );
+   (*p_table)(0,col++) << COLHDR(Sub2("M","u"), rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
 
 
    p_table->SetRowSpan(0,col,2);
    p_table->SetRowSpan(1,col,-1);
-   (*p_table)(0,col++) << COLHDR(symbol(phi) << Sub2("M","n"), rptMomentUnitTag, pDispUnit->GetMomentUnit() );
+   (*p_table)(0,col++) << COLHDR(symbol(phi) << Sub2("M","n"), rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
 
    p_table->SetRowSpan(0,col,2);
    p_table->SetRowSpan(1,col,-1);
-   (*p_table)(0,col++) << COLHDR(symbol(phi) << "M" << Sub("n") << " Min", rptMomentUnitTag, pDispUnit->GetMomentUnit() );
+   (*p_table)(0,col++) << COLHDR(symbol(phi) << "M" << Sub("n") << " Min", rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
 
    p_table->SetColumnSpan(0,col,2);
    p_table->SetColumnSpan(0,col+1,-1);
@@ -146,14 +147,15 @@ rptRcTable* CFlexuralCapacityCheckTable::Build(IBroker* pBroker,SpanIndexType sp
    (*p_table)(1,col++) << symbol(phi) << Sub2("M","n") << " Min " << symbol(LTE) << " " << symbol(phi) << Sub2("M","n") << rptNewLine << "(" << symbol(phi) << Sub2("M","n") << "/" << symbol(phi) << Sub2("M","n") << " Min)";
    (*p_table)(1,col++) << Sub2("M","u") << " " << symbol(LTE) << " " << symbol(phi) << Sub2("M","n") << rptNewLine << "(" << symbol(phi) << Sub2("M","n") << "/" << Sub2("M","u") << ")";
 
-   INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDispUnit->GetSpanLengthUnit(),   false );
-   INIT_UV_PROTOTYPE( rptMomentUnitValue, moment, pDispUnit->GetMomentUnit(), false );
+   INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(),   false );
+   INIT_UV_PROTOTYPE( rptMomentUnitValue, moment, pDisplayUnits->GetMomentUnit(), false );
 
    rptRcScalar scalar;
-   scalar.SetFormat( pDispUnit->GetScalarFormat().Format );
-   scalar.SetWidth( pDispUnit->GetScalarFormat().Width );
-   scalar.SetPrecision( pDispUnit->GetScalarFormat().Precision );
+   scalar.SetFormat( pDisplayUnits->GetScalarFormat().Format );
+   scalar.SetWidth( pDisplayUnits->GetScalarFormat().Width );
+   scalar.SetPrecision( pDisplayUnits->GetScalarFormat().Precision );
 
+   rptCapacityToDemand cap_demand;
 
    // Fill up the p_table
    GET_IFACE2(pBroker,IBridge,pBridge);
@@ -215,33 +217,21 @@ rptRcTable* CFlexuralCapacityCheckTable::Build(IBroker* pBroker,SpanIndexType sp
       (*p_table)(row,col++) << moment.SetValue( Mr );
       (*p_table)(row,col++) << moment.SetValue( MrMin );
 
-      if ( !pArtifact->IsUnderReinforced() )
+      bool bPassed = !pArtifact->IsUnderReinforced();
+      if ( bPassed )
          (*p_table)(row,col) << RPT_PASS;
       else
          (*p_table)(row,col) << RPT_FAIL;
 
-      if ( IsZero( MrMin ) )
-      {
-         (*p_table)(row,col++) << rptNewLine << "(" << symbol(INFINITY) << ")";
-      }
-      else
-      {
-         (*p_table)(row,col++) << rptNewLine << "(" << scalar.SetValue(Mr/MrMin) << ")";
-      }
+      (*p_table)(row,col++) << rptNewLine << "(" << cap_demand.SetValue(Mr,MrMin,bPassed) << ")";
 
-      if ( pArtifact->CapacityPassed() )
+      bPassed = pArtifact->CapacityPassed();
+      if ( bPassed )
          (*p_table)(row,col) << RPT_PASS;
       else
          (*p_table)(row,col) << RPT_FAIL;
 
-      if ( IsZero( Mu ) )
-      {
-         (*p_table)(row,col++) << rptNewLine << "(" << symbol(INFINITY) << ")";
-      }
-      else
-      {
-         (*p_table)(row,col++) << rptNewLine << "(" << scalar.SetValue(Mr/Mu) << ")";
-      }
+      (*p_table)(row,col++) << rptNewLine << "(" << cap_demand.SetValue(Mr,Mu,bPassed) << ")";
 
       if ( c_over_de )
       {

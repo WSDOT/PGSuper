@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -32,8 +32,10 @@
 #include "HtmlHelp\HelpTopics.hh"
 
 #include <IFace\Project.h>
+#include <IFace\Bridge.h>
 #include <IFace\DisplayUnits.h>
 #include <MfcTools\CustomDDX.h>
+#include <PGSuperColors.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -51,6 +53,11 @@ CBridgeDescRailingSystemPage::CBridgeDescRailingSystemPage() : CPropertyPage(CBr
 	//{{AFX_DATA_INIT(CBridgeDescRailingSystemPage)
 		// NOTE: the ClassWizard will add member initialization here
 	//}}AFX_DATA_INIT
+   AfxGetBroker(&m_pBroker);
+
+   GET_IFACE(IBridgeMaterial,pMaterial);
+   m_MinNWCDensity = pMaterial->GetNWCDensityLimit();
+   m_bIsNWC = true;
 }
 
 CBridgeDescRailingSystemPage::~CBridgeDescRailingSystemPage()
@@ -64,9 +71,7 @@ void CBridgeDescRailingSystemPage::DoDataExchange(CDataExchange* pDX)
 		// NOTE: the ClassWizard will add DDX and DDV calls here
 	//}}AFX_DATA_MAP
 
-   CComPtr<IBroker> pBroker;
-   AfxGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IDisplayUnits,pDispUnits);
+   GET_IFACE(IDisplayUnits,pDisplayUnits);
    
    DDX_CBStringExactCase(pDX, IDC_LEFT_EXTERIORBARRIER,  m_LeftRailingSystem.strExteriorRailing );
 	DDX_CBStringExactCase(pDX, IDC_RIGHT_EXTERIORBARRIER, m_RightRailingSystem.strExteriorRailing );
@@ -100,37 +105,37 @@ void CBridgeDescRailingSystemPage::DoDataExchange(CDataExchange* pDX)
       GetDlgItem(IDC_RIGHT_SIDEWALK_RIGHT_DEPTH)->SetWindowText(m_CacheRightDepth[1]);
    }
 
-   DDX_UnitValueAndTag(pDX,IDC_LEFT_SIDEWALK_WIDTH,       IDC_LEFT_SIDEWALK_WIDTH_UNIT,       m_LeftRailingSystem.Width,      pDispUnits->GetXSectionDimUnit());
-   DDX_UnitValueAndTag(pDX,IDC_LEFT_SIDEWALK_LEFT_DEPTH,  IDC_LEFT_SIDEWALK_LEFT_DEPTH_UNIT,  m_LeftRailingSystem.LeftDepth,  pDispUnits->GetComponentDimUnit());
-   DDX_UnitValueAndTag(pDX,IDC_LEFT_SIDEWALK_RIGHT_DEPTH, IDC_LEFT_SIDEWALK_RIGHT_DEPTH_UNIT, m_LeftRailingSystem.RightDepth, pDispUnits->GetComponentDimUnit());
+   DDX_UnitValueAndTag(pDX,IDC_LEFT_SIDEWALK_WIDTH,       IDC_LEFT_SIDEWALK_WIDTH_UNIT,       m_LeftRailingSystem.Width,      pDisplayUnits->GetXSectionDimUnit());
+   DDX_UnitValueAndTag(pDX,IDC_LEFT_SIDEWALK_LEFT_DEPTH,  IDC_LEFT_SIDEWALK_LEFT_DEPTH_UNIT,  m_LeftRailingSystem.LeftDepth,  pDisplayUnits->GetComponentDimUnit());
+   DDX_UnitValueAndTag(pDX,IDC_LEFT_SIDEWALK_RIGHT_DEPTH, IDC_LEFT_SIDEWALK_RIGHT_DEPTH_UNIT, m_LeftRailingSystem.RightDepth, pDisplayUnits->GetComponentDimUnit());
 
-   DDX_UnitValueAndTag(pDX,IDC_RIGHT_SIDEWALK_WIDTH,       IDC_RIGHT_SIDEWALK_WIDTH_UNIT,       m_RightRailingSystem.Width,      pDispUnits->GetXSectionDimUnit());
-   DDX_UnitValueAndTag(pDX,IDC_RIGHT_SIDEWALK_RIGHT_DEPTH, IDC_RIGHT_SIDEWALK_RIGHT_DEPTH_UNIT, m_RightRailingSystem.RightDepth, pDispUnits->GetComponentDimUnit());
-   DDX_UnitValueAndTag(pDX,IDC_RIGHT_SIDEWALK_LEFT_DEPTH,  IDC_RIGHT_SIDEWALK_LEFT_DEPTH_UNIT,  m_RightRailingSystem.LeftDepth,  pDispUnits->GetComponentDimUnit());
+   DDX_UnitValueAndTag(pDX,IDC_RIGHT_SIDEWALK_WIDTH,       IDC_RIGHT_SIDEWALK_WIDTH_UNIT,       m_RightRailingSystem.Width,      pDisplayUnits->GetXSectionDimUnit());
+   DDX_UnitValueAndTag(pDX,IDC_RIGHT_SIDEWALK_RIGHT_DEPTH, IDC_RIGHT_SIDEWALK_RIGHT_DEPTH_UNIT, m_RightRailingSystem.RightDepth, pDisplayUnits->GetComponentDimUnit());
+   DDX_UnitValueAndTag(pDX,IDC_RIGHT_SIDEWALK_LEFT_DEPTH,  IDC_RIGHT_SIDEWALK_LEFT_DEPTH_UNIT,  m_RightRailingSystem.LeftDepth,  pDisplayUnits->GetComponentDimUnit());
 
-   DDX_UnitValueAndTag(pDX,IDC_LEFT_FC, IDC_LEFT_FC_UNIT, m_LeftRailingSystem.fc, pDispUnits->GetStressUnit() );
+   DDX_UnitValueAndTag(pDX,IDC_LEFT_FC, IDC_LEFT_FC_UNIT, m_LeftRailingSystem.fc, pDisplayUnits->GetStressUnit() );
    DDX_Check_Bool(pDX,IDC_LEFT_MOD_E, m_LeftRailingSystem.bUserEc);
-   DDX_UnitValueAndTag( pDX, IDC_LEFT_EC,  IDC_LEFT_EC_UNIT, m_LeftRailingSystem.Ec, pDispUnits->GetModEUnit() );
-   DDX_UnitValueAndTag( pDX, IDC_LEFT_DENSITY,  IDC_LEFT_DENSITY_UNIT, m_LeftRailingSystem.WeightDensity, pDispUnits->GetDensityUnit() );
+   DDX_UnitValueAndTag( pDX, IDC_LEFT_EC,  IDC_LEFT_EC_UNIT, m_LeftRailingSystem.Ec, pDisplayUnits->GetModEUnit() );
+   DDX_UnitValueAndTag( pDX, IDC_LEFT_DENSITY,  IDC_LEFT_DENSITY_UNIT, m_LeftRailingSystem.WeightDensity, pDisplayUnits->GetDensityUnit() );
 
-   DDX_UnitValueAndTag(pDX,IDC_RIGHT_FC, IDC_RIGHT_FC_UNIT, m_RightRailingSystem.fc, pDispUnits->GetStressUnit() );
+   DDX_UnitValueAndTag(pDX,IDC_RIGHT_FC, IDC_RIGHT_FC_UNIT, m_RightRailingSystem.fc, pDisplayUnits->GetStressUnit() );
    DDX_Check_Bool(pDX,IDC_RIGHT_MOD_E, m_RightRailingSystem.bUserEc);
-   DDX_UnitValueAndTag( pDX, IDC_RIGHT_EC,  IDC_RIGHT_EC_UNIT, m_RightRailingSystem.Ec, pDispUnits->GetModEUnit() );
-   DDX_UnitValueAndTag( pDX, IDC_RIGHT_DENSITY,  IDC_RIGHT_DENSITY_UNIT, m_RightRailingSystem.WeightDensity, pDispUnits->GetDensityUnit() );
+   DDX_UnitValueAndTag( pDX, IDC_RIGHT_EC,  IDC_RIGHT_EC_UNIT, m_RightRailingSystem.Ec, pDisplayUnits->GetModEUnit() );
+   DDX_UnitValueAndTag( pDX, IDC_RIGHT_DENSITY,  IDC_RIGHT_DENSITY_UNIT, m_RightRailingSystem.WeightDensity, pDisplayUnits->GetDensityUnit() );
 
    if ( pDX->m_bSaveAndValidate )
    {
       pDX->PrepareCtrl(IDC_LEFT_FC);
-      DDV_UnitValueGreaterThanZero( pDX, m_LeftRailingSystem.fc, pDispUnits->GetStressUnit() );
+      DDV_UnitValueGreaterThanZero( pDX, m_LeftRailingSystem.fc, pDisplayUnits->GetStressUnit() );
 
       pDX->PrepareCtrl(IDC_LEFT_EC);
-      DDV_UnitValueGreaterThanZero( pDX, m_LeftRailingSystem.Ec, pDispUnits->GetModEUnit() );
+      DDV_UnitValueGreaterThanZero( pDX, m_LeftRailingSystem.Ec, pDisplayUnits->GetModEUnit() );
 
       pDX->PrepareCtrl(IDC_RIGHT_FC);
-      DDV_UnitValueGreaterThanZero( pDX, m_RightRailingSystem.fc, pDispUnits->GetStressUnit() );
+      DDV_UnitValueGreaterThanZero( pDX, m_RightRailingSystem.fc, pDisplayUnits->GetStressUnit() );
 
       pDX->PrepareCtrl(IDC_RIGHT_EC);
-      DDV_UnitValueGreaterThanZero( pDX, m_RightRailingSystem.Ec, pDispUnits->GetModEUnit() );
+      DDV_UnitValueGreaterThanZero( pDX, m_RightRailingSystem.Ec, pDisplayUnits->GetModEUnit() );
    }
 
    if ( pDX->m_bSaveAndValidate && m_LeftRailingSystem.bUserEc )
@@ -152,6 +157,20 @@ void CBridgeDescRailingSystemPage::DoDataExchange(CDataExchange* pDX)
       *(pParent->m_BridgeDesc.GetLeftRailingSystem())  = m_LeftRailingSystem;
       *(pParent->m_BridgeDesc.GetRightRailingSystem()) = m_RightRailingSystem;
    }
+
+   bool bLeftNWC = true;
+   bool bRightNWC = true;
+   if ( m_LeftRailingSystem.bUseSidewalk && (m_LeftRailingSystem.StrengthDensity < m_MinNWCDensity || m_LeftRailingSystem.WeightDensity < m_MinNWCDensity) )
+   {
+      bLeftNWC = false;
+   }
+
+   if ( m_RightRailingSystem.bUseSidewalk && (m_RightRailingSystem.StrengthDensity < m_MinNWCDensity || m_RightRailingSystem.WeightDensity < m_MinNWCDensity) )
+   {
+      bRightNWC = false;
+   }
+
+   m_bIsNWC = bLeftNWC && bRightNWC;
 }
 
 
@@ -222,8 +241,8 @@ BOOL CBridgeDescRailingSystemPage::OnInitDialog()
 
    CComPtr<IBroker> pBroker;
    AfxGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IDisplayUnits,pDispUnits);
-   if ( pDispUnits->GetUnitDisplayMode() == pgsTypes::umUS )
+   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
+   if ( pDisplayUnits->GetUnitDisplayMode() == pgsTypes::umUS )
    {
       GetDlgItem(IDC_LEFT_DENSITY_LABEL)->SetWindowText("Unit Weight");
       GetDlgItem(IDC_RIGHT_DENSITY_LABEL)->SetWindowText("Unit Weight");
@@ -676,6 +695,44 @@ HBRUSH CBridgeDescRailingSystemPage::OnCtlColor(CDC* pDC,CWnd* pWnd,UINT nCtlCol
    {
       pDC->SetTextColor( GetSysColor(COLOR_ACTIVECAPTION) );
    }
+   else if ( pWnd->GetDlgCtrlID() == IDC_LEFT_DENSITY && 0 < pWnd->GetWindowTextLength())
+   {
+      try
+      {
+         GET_IFACE(IDisplayUnits,pDisplayUnits);
+         CDataExchange dx(this,TRUE);
+
+         Float64 value;
+         DDX_UnitValue(&dx, IDC_LEFT_DENSITY, value, pDisplayUnits->GetDensityUnit() );
+
+         if (value < m_MinNWCDensity )
+         {
+            pDC->SetTextColor( RED );
+         }
+      }
+      catch(...)
+      {
+      }
+   }
+   else if ( pWnd->GetDlgCtrlID() == IDC_RIGHT_DENSITY )
+   {
+      try
+      {
+         GET_IFACE(IDisplayUnits,pDisplayUnits);
+         CDataExchange dx(this,TRUE);
+
+         Float64 value;
+         DDX_UnitValue(&dx, IDC_RIGHT_DENSITY, value, pDisplayUnits->GetDensityUnit() );
+
+         if (value < m_MinNWCDensity )
+         {
+            pDC->SetTextColor( RED );
+         }
+      }
+      catch(...)
+      {
+      }
+   }
 
    return hbr;
 }
@@ -779,4 +836,14 @@ void CBridgeDescRailingSystemPage::UpdateRightConcreteParametersToolTip()
    strTip += strPress;
 
    m_strToolTip[pgsTypes::tboRight] = strTip;
+}
+
+BOOL CBridgeDescRailingSystemPage::OnKillActive()
+{
+   BOOL bRetValue = CPropertyPage::OnKillActive(); // calls DoDataExchange
+
+   if ( !m_bIsNWC )
+      AfxMessageBox(IDS_NWC_MESSAGE,MB_OK | MB_ICONINFORMATION);
+
+   return bRetValue;
 }

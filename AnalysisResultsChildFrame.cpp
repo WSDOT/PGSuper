@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -791,7 +791,7 @@ void CAnalysisResultsChildFrame::CreateGraphDefinitions()
    SpanIndexType span = GetSpanIdx();
    GirderIndexType gdr  = GetGirderIdx();
 
-   GET_IFACE2(pBroker,IProductForces,pProductForces);
+   GET_IFACE2(pBroker,IProductLoads,pProductLoads);
 
    // determine if there are temporary strands or pedestrian load for any of the girders
    // for this sppan
@@ -802,13 +802,15 @@ void CAnalysisResultsChildFrame::CreateGraphDefinitions()
    bool bTempStrand = false;
    bool bPedLoading = false;
    bool bSidewalk   = false;
+   bool bShearKey   = false;
    for ( SpanIndexType spanIdx = startSpanIdx; spanIdx < endSpanIdx; spanIdx++ )
    {
       GirderIndexType nGirders = pBridge->GetGirderCount(spanIdx);
       GirderIndexType gdrIdx = min(gdr,nGirders-1);
 
-      bPedLoading |= pProductForces->HasPedestrianLoad(spanIdx,gdrIdx);
-      bSidewalk   |= pProductForces->HasSidewalkLoad(spanIdx,gdrIdx);
+      bPedLoading |= pProductLoads->HasPedestrianLoad(spanIdx,gdrIdx);
+      bSidewalk   |= pProductLoads->HasSidewalkLoad(spanIdx,gdrIdx);
+      bShearKey   |= pProductLoads->HasShearKeyLoad(spanIdx,gdrIdx);
 
       StrandIndexType NtMax = pStrandGeom->GetMaxStrands(spanIdx,gdrIdx,pgsTypes::Temporary);
       bTempStrand |= ( 0 < NtMax );
@@ -818,6 +820,10 @@ void CAnalysisResultsChildFrame::CreateGraphDefinitions()
    m_GraphDefinitions.AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, "Girder",         pftGirder,        true,  true,  false, false, false, false, ACTIONS_ALL,BROWN) );
    m_GraphDefinitions.AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, "Slab",           pftSlab,          false, false, false, true,  false, false, ACTIONS_ALL,SALMON) );
    m_GraphDefinitions.AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, "Diaphragm",      pftDiaphragm,     false, false, false, true,  false, false, ACTIONS_ALL,ORANGE) );
+
+   if (bShearKey)
+      m_GraphDefinitions.AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, "Shear Key",      pftShearKey,      false, false, false, true,  false, false, ACTIONS_ALL,DARKSEAGREEN) );
+
    m_GraphDefinitions.AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, "Traffic Barrier",pftTrafficBarrier,false, false, false, false, true,  false, ACTIONS_ALL,TAN) );
 
    if ( bSidewalk )
@@ -846,7 +852,7 @@ void CAnalysisResultsChildFrame::CreateGraphDefinitions()
 
       std::string strBase = (llType == pgsTypes::lltDesign ? "Design" : llType == pgsTypes::lltFatigue ? "Fatigue" : "Permit");
 
-      std::vector<std::string> strLLNames = pProductForces->GetVehicleNames(llType,gdr);
+      std::vector<std::string> strLLNames = pProductLoads->GetVehicleNames(llType,gdr);
       std::vector<std::string>::iterator iter;
       VehicleIndexType vehicleIndex = 0;
       long colorIdx = 0;

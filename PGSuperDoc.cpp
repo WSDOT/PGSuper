@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -102,7 +102,6 @@
 #include "StructuralAnalysisMethodDlg.h"
 #include "SpanDetailsDlg.h"
 #include "PierDetailsDlg.h"
-#include "DealWithLoadDlg.h"
 #include "GirderLabelFormatDlg.h"
 
 #include <IFace\Test1250.h>
@@ -118,7 +117,6 @@
 #include <PgsExt\DesignArtifact.h>
 #include <PgsExt\BridgeDescription.h>
 #include <PgsExt\StatusItem.h>
-#include "StatusCallbacks.h"
 
 // Transactions
 #include <System\TxnManager.h>
@@ -146,9 +144,6 @@
 #include <algorithm>
 
 #include <PgsExt\StatusItem.h>
-#include "StatusCallbacks.h"
-
-#include "DealWithLoadDlg.h"
 
 
 #ifdef _DEBUG
@@ -259,39 +254,6 @@ m_StatusCenterDlg(m_StatusCenter)
    m_pBroker = 0;
 
    m_StatusCenter.SinkEvents(this);
-
-
-   //
-   // Register Status Center Callback Items here
-   //
-   // WARNING: Don't change the Callback ID's unless you are prepared to search through all of the
-   // source code and make the corrosponding changes at the point status items are posted!!!!
-   m_StatusCenter.RegisterCallbackItem(101,new CPointLoadStatusCallback(this,STATUS_WARNING));
-   m_StatusCenter.RegisterCallbackItem(102,new CPointLoadStatusCallback(this,STATUS_OK));
-   m_StatusCenter.RegisterCallbackItem(103,new CDistributedLoadStatusCallback(this,STATUS_WARNING));
-   m_StatusCenter.RegisterCallbackItem(104,new CDistributedLoadStatusCallback(this,STATUS_OK));
-   m_StatusCenter.RegisterCallbackItem(105,new CConcreteStrengthStatusCallback(this,STATUS_ERROR));
-   m_StatusCenter.RegisterCallbackItem(106,new CVSRatioStatusCallback(this));
-   m_StatusCenter.RegisterCallbackItem(107,new CLiftingSupportLocationStatusCallback(this));
-   m_StatusCenter.RegisterCallbackItem(108,new CTruckStiffnessStatusCallback(this));
-   m_StatusCenter.RegisterCallbackItem(109,new CBridgeDescriptionStatusCallback(this,STATUS_ERROR));
-   m_StatusCenter.RegisterCallbackItem(110,new CRefinedAnalysisStatusCallback(this));
-   m_StatusCenter.RegisterCallbackItem(111,new CInstallationErrorStatusCallback(this));
-   m_StatusCenter.RegisterCallbackItem(112,new CUnknownErrorStatusCallback(this));
-   m_StatusCenter.RegisterCallbackItem(113,new CGirderDescriptionStatusCallback(this,STATUS_WARNING));
-   m_StatusCenter.RegisterCallbackItem(114,new CGirderDescriptionStatusCallback(this,STATUS_ERROR));
-   m_StatusCenter.RegisterCallbackItem(115,new CBridgeDescriptionStatusCallback(this,STATUS_WARNING));
-   m_StatusCenter.RegisterCallbackItem(116,new CAlignmentDescriptionStatusCallback(this,STATUS_OK));
-   m_StatusCenter.RegisterCallbackItem(117,new CAlignmentDescriptionStatusCallback(this,STATUS_WARNING));
-   m_StatusCenter.RegisterCallbackItem(118,new CAlignmentDescriptionStatusCallback(this,STATUS_ERROR));
-   m_StatusCenter.RegisterCallbackItem(119,new CConcreteStrengthStatusCallback(this,STATUS_WARNING));
-   m_StatusCenter.RegisterCallbackItem(120,new CMomentLoadStatusCallback(this,STATUS_WARNING));
-   m_StatusCenter.RegisterCallbackItem(121,new CMomentLoadStatusCallback(this,STATUS_OK));
-   m_StatusCenter.RegisterCallbackItem(122,new CLiveLoadStatusCallback(this));
-   m_StatusCenter.RegisterCallbackItem(123,new CStructuralAnalysisTypeStatusCallback(this));
-   m_StatusCenter.RegisterCallbackItem(124,new CInformationalStatusCallback(this,STATUS_WARNING)); // informational, no help
-   m_StatusCenter.RegisterCallbackItem(125,new CInformationalStatusCallback(this,STATUS_ERROR));
-   m_StatusCenter.RegisterCallbackItem(126,new CInformationalStatusCallback(this,STATUS_ERROR,IDH_GIRDER_CONNECTION_ERROR)); // informational with help for girder end offset error
 }
 
 CPGSuperDoc::~CPGSuperDoc()
@@ -596,6 +558,66 @@ bool CPGSuperDoc::EditGirderDescription(SpanIndexType span,GirderIndexType girde
    }
 }
 
+bool CPGSuperDoc::EditPointLoad(CollectionIndexType loadIdx)
+{
+   GET_IFACE(IUserDefinedLoadData, pUserDefinedLoads);
+   const CPointLoadData& loadData = pUserDefinedLoads->GetPointLoad(loadIdx);
+
+   CEditPointLoadDlg dlg(loadData,m_pBroker);
+   if (dlg.DoModal() == IDOK)
+   {
+      // only update if changed
+      if (loadData != dlg.m_Load)
+      {
+         txnEditPointLoad* pTxn = new txnEditPointLoad(loadIdx,loadData,dlg.m_Load);
+         txnTxnManager::GetInstance()->Execute(pTxn);
+         return true;
+      }
+   }
+
+   return false;
+}
+
+bool CPGSuperDoc::EditDistributedLoad(CollectionIndexType loadIdx)
+{
+   GET_IFACE(IUserDefinedLoadData, pUserDefinedLoads);
+   const CDistributedLoadData& loadData = pUserDefinedLoads->GetDistributedLoad(loadIdx);
+
+   CEditDistributedLoadDlg dlg(loadData,m_pBroker);
+   if (dlg.DoModal() == IDOK)
+   {
+      // only update if changed
+      if (loadData != dlg.m_Load)
+      {
+         txnEditDistributedLoad* pTxn = new txnEditDistributedLoad(loadIdx,loadData,dlg.m_Load);
+         txnTxnManager::GetInstance()->Execute(pTxn);
+         return true;
+      }
+   }
+
+   return false;
+}
+
+bool CPGSuperDoc::EditMomentLoad(CollectionIndexType loadIdx)
+{
+   GET_IFACE(IUserDefinedLoadData, pUserDefinedLoads);
+   const CMomentLoadData& loadData = pUserDefinedLoads->GetMomentLoad(loadIdx);
+
+   CEditMomentLoadDlg dlg(loadData,m_pBroker);
+   if (dlg.DoModal() == IDOK)
+   {
+      // only update if changed
+      if (loadData != dlg.m_Load)
+      {
+         txnEditMomentLoad* pTxn = new txnEditMomentLoad(loadIdx,loadData,dlg.m_Load);
+         txnTxnManager::GetInstance()->Execute(pTxn);
+         return true;
+      }
+   }
+
+   return false;
+}
+
 void CPGSuperDoc::EditGirderViewSettings(int nPage)
 {
    CPGSuperApp* papp =(CPGSuperApp*) AfxGetApp();
@@ -642,8 +664,8 @@ BOOL CPGSuperDoc::UpdateTemplates()
 {
    CPGSuperApp* pApp =(CPGSuperApp*) AfxGetApp();
 
-   CString user_folder, workgroup_folder;
-   pApp->GetTemplateFolders(user_folder,workgroup_folder);
+   CString workgroup_folder;
+   pApp->GetTemplateFolders(workgroup_folder);
 
    if  ( !Init() ) // load the agents and other necessary stuff
       return false;
@@ -705,24 +727,12 @@ BOOL CPGSuperDoc::OnNewDocument()
 	if (!CDocument::OnNewDocument())
 		return FALSE;
 
-   CString user_folder, workgroup_folder;
-   pApp->GetTemplateFolders(user_folder,workgroup_folder);
+   CString workgroup_folder;
+   pApp->GetTemplateFolders(workgroup_folder);
 
    // load up vector of directory locations
    // check to make sure that template directories are valid
    std::vector<std::string> dirvec;
-   if (DoesFolderExist(user_folder))
-   {
-      dirvec.push_back(std::string(user_folder));
-   }
-   else
-   {
-      CString msg = "The current User Templates Folder " + user_folder +
-         " is invalid and will be ignored.\nTo correct this problem, " +
-         "select Program Settings from the File menu and specify a valid folder location";
-      AfxMessageBox(msg);
-   }
-
    if (DoesFolderExist(workgroup_folder))
    {
       dirvec.push_back(std::string(workgroup_folder));
@@ -1800,28 +1810,9 @@ void CPGSuperDoc::OnExportToTemplateFile()
    CString default_name = "PGSuper.pgt";
    CString initial_filespec;
    CString initial_dir;
-   CString user_folder, workgroup_folder;
    
    CPGSuperApp* pApp =(CPGSuperApp*) AfxGetApp();
 
-   pApp->GetTemplateFolders(user_folder, workgroup_folder);
-
-   // first try user templates folder
-   if (DoesFolderExist(user_folder))
-   {
-      initial_dir = user_folder;
-   }
-   else
-   {
-      // try application_directory\templates
-      CString app_dir = pApp->GetAppLocation();
-      CString app_templ;
-      app_templ = app_dir + "\\Templates";
-      if (DoesFolderExist(app_templ))
-         initial_dir = app_templ;
-      else
-         initial_dir = app_dir;
-   }
 
    // prompt user to save current project to a template file
    CFileDialog  fildlg(FALSE,"pgt",default_name,OFN_HIDEREADONLY,
@@ -1830,6 +1821,8 @@ void CPGSuperDoc::OnExportToTemplateFile()
 #if defined _DEBUG
    // If this is a debug build, then the developers are probably running
    // the software and they want the workgroup folder most often.
+   CString workgroup_folder;
+   pApp->GetTemplateFolders(workgroup_folder);
    fildlg.m_ofn.lpstrInitialDir = workgroup_folder;
 #else
    fildlg.m_ofn.lpstrInitialDir = initial_dir;
@@ -2081,6 +2074,7 @@ void CPGSuperDoc::OnUpdateStatusCenter(CCmdUI* pCmdUI)
 
    CMainFrame* pMainFrame = (CMainFrame*)AfxGetMainWnd();
    pMainFrame->UpdateToolbarStatusItems(m_StatusCenter.GetSeverity());
+   pMainFrame->UpdateStatusBar();
 }
 
 void CPGSuperDoc::OnViewStatusCenter(UINT nID)
@@ -2174,7 +2168,7 @@ void CPGSuperDoc::UpdateAnalysisTypeStatusIndicator()
 
 void CPGSuperDoc::OnProjectDesignGirder() 
 {
-   if ( GetStatusCenter().GetSeverity() == STATUS_ERROR )
+   if ( GetStatusCenter().GetSeverity() == pgsTypes::statusError )
    {
       AfxMessageBox("There are errors that must be corrected before you can design a girder\r\n\r\nSee the Status Center for details.",MB_OK);
       return;
@@ -2246,7 +2240,7 @@ void CPGSuperDoc::OnProjectDesignGirderDirectHoldSlabOffset()
 
 void CPGSuperDoc::DesignGirderDirect(bool bDesignSlabOffset)
 {
-   if ( GetStatusCenter().GetSeverity() == STATUS_ERROR )
+   if ( GetStatusCenter().GetSeverity() == pgsTypes::statusError )
    {
       AfxMessageBox("There are errors that must be corrected before you can design a girder\r\n\r\nSee the Status Center for details.",MB_OK);
       return;
@@ -2694,8 +2688,7 @@ void CPGSuperDoc::OnImportProjectLibrary()
             ASSERT(FALSE);
          }
 
-         hr = pImport->ImportProjectLibraries( pStrLoad );
-         if ( FAILED(hr) )
+         if ( !pImport->ImportProjectLibraries( pStrLoad ) )
          {
             HandleOpenDocumentError( hr, rPath );
             ASSERT(FALSE);
@@ -2723,10 +2716,17 @@ void CPGSuperDoc::OnImportProjectLibrary()
 
 void CPGSuperDoc::OnLoadsLldf() 
 {
-   OnLoadsLldf(CRefinedAnalysisOptionsDlg::lldfDefault);
+   GET_IFACE(ILiveLoads,pLiveLoads);
+   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+
+   pgsTypes::DistributionFactorMethod method = pBridgeDesc->GetDistributionFactorMethod();
+   LldfRangeOfApplicabilityAction roaAction = pLiveLoads->GetLldfRangeOfApplicabilityAction();
+                  
+   OnLoadsLldf(method,roaAction);
 }
 
-void CPGSuperDoc::OnLoadsLldf(CRefinedAnalysisOptionsDlg::RefinedAnalysisOption option) 
+void CPGSuperDoc::OnLoadsLldf(pgsTypes::DistributionFactorMethod method,LldfRangeOfApplicabilityAction roaAction) 
 {
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription* pOldBridgeDesc = pIBridgeDesc->GetBridgeDescription();
@@ -2735,31 +2735,8 @@ void CPGSuperDoc::OnLoadsLldf(CRefinedAnalysisOptionsDlg::RefinedAnalysisOption 
 
    CLiveLoadDistFactorsDlg dlg;
    dlg.m_BridgeDesc = *pOldBridgeDesc;
-   dlg.m_LldfRangeOfApplicabilityAction = pLiveLoads->GetLldfRangeOfApplicabilityAction();
-
-   // setup dialog based on option
-   if (option==CRefinedAnalysisOptionsDlg::lldfDirectInput)
-   {
-      dlg.m_BridgeDesc.SetDistributionFactorMethod(pgsTypes::DirectlyInput);
-      dlg.m_LldfRangeOfApplicabilityAction = roaIgnore;
-   }
-   else if (option==CRefinedAnalysisOptionsDlg::lldfIgnore)
-   {
-      dlg.m_BridgeDesc.SetDistributionFactorMethod(pgsTypes::Calculated);
-      dlg.m_LldfRangeOfApplicabilityAction = roaIgnore;
-   }
-   else if (option==CRefinedAnalysisOptionsDlg::lldfIgnoreLever)
-   {
-      dlg.m_BridgeDesc.SetDistributionFactorMethod(pgsTypes::Calculated);
-      dlg.m_LldfRangeOfApplicabilityAction = roaIgnoreUseLeverRule;
-   }
-   else if (option==CRefinedAnalysisOptionsDlg::lldfForceLever)
-   {
-      dlg.m_BridgeDesc.SetDistributionFactorMethod(pgsTypes::LeverRule);
-      dlg.m_LldfRangeOfApplicabilityAction = roaIgnore;
-   }
-   else
-      ATLASSERT(option==CRefinedAnalysisOptionsDlg::lldfDefault); // an option we don't know about?
+   dlg.m_BridgeDesc.SetDistributionFactorMethod(method);
+   dlg.m_LldfRangeOfApplicabilityAction = roaAction;
 
    if ( dlg.DoModal() == IDOK )
    {

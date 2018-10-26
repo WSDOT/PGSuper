@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -73,11 +73,11 @@ CProductDisplacementsTable& CProductDisplacementsTable::operator= (const CProduc
 
 //======================== OPERATIONS =======================================
 rptRcTable* CProductDisplacementsTable::Build(IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,pgsTypes::AnalysisType analysisType,
-                                              bool bIndicateControllingLoad,IDisplayUnits* pDispUnits) const
+                                              bool bIndicateControllingLoad,IDisplayUnits* pDisplayUnits) const
 {
    // Build table
-   INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDispUnits->GetSpanLengthUnit(), false );
-   INIT_UV_PROTOTYPE( rptLengthUnitValue, displacement, pDispUnits->GetDisplacementUnit(), false );
+   INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
+   INIT_UV_PROTOTYPE( rptLengthUnitValue, displacement, pDisplayUnits->GetDisplacementUnit(), false );
 
    GET_IFACE2(pBroker,IBridge,pBridge);
    bool bDeckPanels = (pBridge->GetDeckType() == pgsTypes::sdtCompositeSIP ? true : false);
@@ -90,9 +90,10 @@ rptRcTable* CProductDisplacementsTable::Build(IBroker* pBroker,SpanIndexType spa
    bool bPermit = pLiveLoads->IsLiveLoadDefined(pgsTypes::lltPermit);
 
    GET_IFACE2(pBroker,IProductForces2,pForces2);
-   GET_IFACE2(pBroker,IProductForces,pForces);
-   bool bPedLoading = pForces->HasPedestrianLoad(startSpan,gdr);
-   bool bSidewalk = pForces->HasSidewalkLoad(startSpan,gdr);
+   GET_IFACE2(pBroker,IProductLoads,pLoads);
+   bool bPedLoading = pLoads->HasPedestrianLoad(startSpan,gdr);
+   bool bSidewalk = pLoads->HasSidewalkLoad(startSpan,gdr);
+   bool bShearKey = pLoads->HasShearKeyLoad(startSpan,gdr);
 
    pgsTypes::Stage continuity_stage = pgsTypes::BridgeSite2;
    SpanIndexType spanIdx;
@@ -146,8 +147,20 @@ rptRcTable* CProductDisplacementsTable::Build(IBroker* pBroker,SpanIndexType spa
       }
    }
 
+   if ( bShearKey )
+   {
+      if (analysisType == pgsTypes::Envelope )
+      {
+         nCols += 2;
+      }
+      else
+      {
+         nCols++;
+      }
+   }
+
    rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(nCols,"Displacements");
-   RowIndexType row = ConfigureProductLoadTableHeading<rptLengthUnitTag,unitmgtLengthData>(p_table,false,bDeckPanels,bSidewalk,bPedLoading,bPermit,analysisType,continuity_stage,pDispUnits,pDispUnits->GetDisplacementUnit());
+   RowIndexType row = ConfigureProductLoadTableHeading<rptLengthUnitTag,unitmgtLengthData>(p_table,false,bDeckPanels,bSidewalk,bShearKey,bPedLoading,bPermit,analysisType,continuity_stage,pDisplayUnits,pDisplayUnits->GetDisplacementUnit());
 
    // Get the interface pointers we need
    GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
@@ -159,7 +172,7 @@ rptRcTable* CProductDisplacementsTable::Build(IBroker* pBroker,SpanIndexType spa
       GirderIndexType nGirders = pBridge->GetGirderCount(spanIdx);
       GirderIndexType gdrIdx = min(gdr,nGirders-1);
 
-      pgsTypes::Stage girderLoadStage = pForces->GetGirderDeadLoadStage(spanIdx,gdrIdx);
+      pgsTypes::Stage girderLoadStage = pLoads->GetGirderDeadLoadStage(spanIdx,gdrIdx);
 
       // Get the results for this span (it is faster to get them as a vector rather than individually)
       std::vector<Float64> girder = pForces2->GetDisplacement(girderLoadStage,pftGirder,vPoi,SimpleSpan);
@@ -194,6 +207,7 @@ rptRcTable* CProductDisplacementsTable::Build(IBroker* pBroker,SpanIndexType spa
       std::vector<Float64> minOverlay, maxOverlay;
       std::vector<Float64> minTrafficBarrier, maxTrafficBarrier;
       std::vector<Float64> minSidewalk, maxSidewalk;
+      std::vector<Float64> minShearKey, maxShearKey;
       std::vector<Float64> minPedestrian, maxPedestrian;
       std::vector<Float64> minDesignLL, maxDesignLL;
       std::vector<Float64> minFatigueLL, maxFatigueLL;
@@ -207,6 +221,12 @@ rptRcTable* CProductDisplacementsTable::Build(IBroker* pBroker,SpanIndexType spa
          {
             maxSidewalk = pForces2->GetDisplacement( pgsTypes::BridgeSite2, pftSidewalk, vPoi, MaxSimpleContinuousEnvelope );
             minSidewalk = pForces2->GetDisplacement( pgsTypes::BridgeSite2, pftSidewalk, vPoi, MinSimpleContinuousEnvelope );
+         }
+
+         if ( bShearKey )
+         {
+            maxShearKey = pForces2->GetDisplacement( pgsTypes::BridgeSite1, pftShearKey, vPoi, MaxSimpleContinuousEnvelope );
+            minShearKey = pForces2->GetDisplacement( pgsTypes::BridgeSite1, pftShearKey, vPoi, MinSimpleContinuousEnvelope );
          }
 
          maxTrafficBarrier = pForces2->GetDisplacement( pgsTypes::BridgeSite2, pftTrafficBarrier, vPoi, MaxSimpleContinuousEnvelope );
@@ -240,6 +260,11 @@ rptRcTable* CProductDisplacementsTable::Build(IBroker* pBroker,SpanIndexType spa
          if ( bSidewalk )
          {
             maxSidewalk = pForces2->GetDisplacement( pgsTypes::BridgeSite2, pftSidewalk, vPoi, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan );
+         }
+
+         if ( bShearKey )
+         {
+            maxShearKey = pForces2->GetDisplacement( pgsTypes::BridgeSite1, pftShearKey, vPoi, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan );
          }
 
          maxTrafficBarrier = pForces2->GetDisplacement( pgsTypes::BridgeSite2, pftTrafficBarrier, vPoi, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan );
@@ -278,6 +303,19 @@ rptRcTable* CProductDisplacementsTable::Build(IBroker* pBroker,SpanIndexType spa
          (*p_table)(row,col++) << location.SetValue( poi, end_size );
          (*p_table)(row,col++) << displacement.SetValue( girder[index] );
          (*p_table)(row,col++) << displacement.SetValue( diaphragm[index] );
+
+         if ( bShearKey )
+         {
+            if ( analysisType == pgsTypes::Envelope )
+            {
+               (*p_table)(row,col++) << displacement.SetValue( maxShearKey[index] );
+               (*p_table)(row,col++) << displacement.SetValue( minShearKey[index] );
+            }
+            else
+            {
+               (*p_table)(row,col++) << displacement.SetValue( maxShearKey[index] );
+            }
+         }
 
          if ( analysisType == pgsTypes::Envelope && continuity_stage == pgsTypes::BridgeSite1 )
          {
@@ -389,19 +427,19 @@ rptRcTable* CProductDisplacementsTable::Build(IBroker* pBroker,SpanIndexType spa
 }
 
 rptRcTable* CProductDisplacementsTable::BuildLiveLoadTable(IBroker* pBroker,SpanIndexType span,GirderIndexType girder,
-                                                           IDisplayUnits* pDispUnits) const
+                                                           IDisplayUnits* pDisplayUnits) const
 {
    // Build table
-   INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDispUnits->GetSpanLengthUnit(), false );
-   INIT_UV_PROTOTYPE( rptLengthUnitValue, displacement, pDispUnits->GetDisplacementUnit(), false );
+   INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
+   INIT_UV_PROTOTYPE( rptLengthUnitValue, displacement, pDisplayUnits->GetDisplacementUnit(), false );
 
    rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(4,"Displacements For The LRFD Optional Deflection Live Load (LRFD 3.6.1.3.2)");
 
    // Set up table headings
-   (*p_table)(0,0) << COLHDR(RPT_LFT_SUPPORT_LOCATION,        rptLengthUnitTag, pDispUnits->GetSpanLengthUnit() );
-   (*p_table)(0,1) << COLHDR("D1",          rptLengthUnitTag, pDispUnits->GetDisplacementUnit() );
-   (*p_table)(0,2) << COLHDR("D2",       rptLengthUnitTag, pDispUnits->GetDisplacementUnit() );
-   (*p_table)(0,3) << COLHDR("D" << rptNewLine << "Controlling",            rptLengthUnitTag, pDispUnits->GetDisplacementUnit() );
+   (*p_table)(0,0) << COLHDR(RPT_LFT_SUPPORT_LOCATION,        rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+   (*p_table)(0,1) << COLHDR("D1",          rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*p_table)(0,2) << COLHDR("D2",       rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*p_table)(0,3) << COLHDR("D" << rptNewLine << "Controlling",            rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
 
    // Get the interface pointers we need
    GET_IFACE2(pBroker,IPointOfInterest,pIPoi);

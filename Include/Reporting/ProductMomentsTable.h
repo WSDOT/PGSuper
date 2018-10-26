@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -76,7 +76,7 @@ public:
    //------------------------------------------------------------------------
    // Builds the strand eccentricity table.
    virtual rptRcTable* Build(IBroker* pBroker,SpanIndexType span,GirderIndexType girder,pgsTypes::AnalysisType analysisType,
-                             bool bIndicateControllingLoad,IDisplayUnits* pDispUnits) const;
+                             bool bIndicateControllingLoad,IDisplayUnits* pDisplayUnits) const;
    // GROUP: ACCESS
    // GROUP: INQUIRY
 
@@ -128,7 +128,9 @@ public:
 // EXTERNAL REFERENCES
 //
 template <class M,class T>
-int ConfigureProductLoadTableHeading(rptRcTable* p_table,bool bPierTable,bool bDeckPanels,bool bSidewalk,bool bPedLoading,bool bPermit,pgsTypes::AnalysisType analysisType,pgsTypes::Stage continuityStage,IDisplayUnits* pDispUnits,const T& unitT)
+int ConfigureProductLoadTableHeading(rptRcTable* p_table,bool bPierTable,bool bDeckPanels,bool bSidewalk,bool bShearKey,
+                                     bool bPedLoading,bool bPermit,pgsTypes::AnalysisType analysisType,pgsTypes::Stage continuityStage,
+                                     IDisplayUnits* pDisplayUnits,const T& unitT)
 {
    p_table->SetNumberOfHeaderRows(2);
 
@@ -143,7 +145,7 @@ int ConfigureProductLoadTableHeading(rptRcTable* p_table,bool bPierTable,bool bD
    if ( bPierTable )
       (*p_table)(0,row1col++) << "";
    else
-      (*p_table)(0,row1col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION,   rptLengthUnitTag, pDispUnits->GetSpanLengthUnit() );
+      (*p_table)(0,row1col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION,   rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
 
    p_table->SetRowSpan(0,row1col,2);
    p_table->SetRowSpan(1,row2col++,-1);
@@ -152,6 +154,23 @@ int ConfigureProductLoadTableHeading(rptRcTable* p_table,bool bPierTable,bool bD
    p_table->SetRowSpan(0,row1col,2);
    p_table->SetRowSpan(1,row2col++,-1);
    (*p_table)(0,row1col++) << COLHDR("Diaphragm",       M, unitT );
+
+   if ( bShearKey )
+   {
+      if ( analysisType == pgsTypes::Envelope && continuityStage == pgsTypes::BridgeSite1 )
+      {
+         p_table->SetColumnSpan(0,row1col,2);
+         (*p_table)(0,row1col++) << "Shear Key";
+         (*p_table)(1,row2col++) << COLHDR("Max", M, unitT );
+         (*p_table)(1,row2col++) << COLHDR("Min", M, unitT );
+      }
+      else
+      {
+         p_table->SetRowSpan(0,row1col,2);
+         p_table->SetRowSpan(1,row2col++,-1);
+         (*p_table)(0,row1col++) << COLHDR("Shear" << rptNewLine << "Key", M, unitT );
+      }
+   }
 
    if ( analysisType == pgsTypes::Envelope && continuityStage == pgsTypes::BridgeSite1 )
    {

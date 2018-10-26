@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -42,6 +42,7 @@ pgsStatusCenter::pgsStatusCenter()
 {
    m_NextID = 1;
    m_NextAgentID = 1;
+   m_NextCallbackID = 1;
    m_pCurrentItem = NULL;
 }
 
@@ -64,15 +65,15 @@ pgsStatusCenter::~pgsStatusCenter()
    }
 }
 
-Int32 pgsStatusCenter::GetAgentID()
+AgentIDType pgsStatusCenter::GetAgentID()
 {
    return m_NextAgentID++;
 }
 
-Int32 pgsStatusCenter::Add(pgsStatusItem* pItem)
+StatusItemIDType pgsStatusCenter::Add(pgsStatusItem* pItem)
 {
 #if defined _DEBUG
-   long callbackID = pItem->GetCallbackID();
+   StatusCallbackIDType callbackID = pItem->GetCallbackID();
    Callbacks::iterator found = m_Callbacks.find(callbackID);
 
    // If this assert fires, then an associated callback handler
@@ -94,7 +95,7 @@ Int32 pgsStatusCenter::Add(pgsStatusItem* pItem)
    return -1; // failed
 }
 
-bool pgsStatusCenter::RemoveByID(Int32 id)
+bool pgsStatusCenter::RemoveByID(StatusItemIDType id)
 {
    Container::iterator iter;
    for ( iter = m_Items.begin(); iter != m_Items.end(); iter++ )
@@ -117,19 +118,19 @@ bool pgsStatusCenter::RemoveByID(Int32 id)
    return false;
 }
 
-bool pgsStatusCenter::RemoveByIndex(Uint32 index)
+bool pgsStatusCenter::RemoveByIndex(CollectionIndexType index)
 {
-   if ( index < 0 || m_Items.size() <= index )
+   if ( index < 0 || (CollectionIndexType)m_Items.size() <= index )
       return false;
 
    Container::iterator iter = m_Items.begin();
-   for ( Uint32 i = 0; i <= index; i++ )
+   for ( CollectionIndexType i = 0; i <= index; i++ )
       iter++;
 
    pgsStatusItem* pItem = *iter;
    if ( m_pCurrentItem != pItem )
    {
-      Int32 id = pItem->GetID();
+      StatusItemIDType id = pItem->GetID();
       delete pItem;
       pItem = NULL;
       m_Items.erase(iter);
@@ -144,7 +145,7 @@ bool pgsStatusCenter::RemoveByIndex(Uint32 index)
    return false;
 }
 
-bool pgsStatusCenter::RemoveByAgentID(Int32 id)
+bool pgsStatusCenter::RemoveByAgentID(AgentIDType id)
 {
    bool bItemsRemoved = false;
    Container::iterator iter;
@@ -159,7 +160,7 @@ bool pgsStatusCenter::RemoveByAgentID(Int32 id)
       {
          if ( m_pCurrentItem != pItem )
          {
-            Int32 itemID = pItem->GetID();
+            StatusItemIDType itemID = pItem->GetID();
             delete pItem;
             pItem = NULL;
             NotifyRemoved(itemID);
@@ -180,7 +181,7 @@ bool pgsStatusCenter::RemoveByAgentID(Int32 id)
    return bItemsRemoved;
 }
 
-pgsStatusItem* pgsStatusCenter::GetByID(Int32 id)
+pgsStatusItem* pgsStatusCenter::GetByID(StatusItemIDType id)
 {
    Container::iterator iter;
    for ( iter = m_Items.begin(); iter != m_Items.end(); iter++ )
@@ -193,26 +194,26 @@ pgsStatusItem* pgsStatusCenter::GetByID(Int32 id)
    return NULL;
 }
 
-pgsStatusItem* pgsStatusCenter::GetByIndex(Uint32 index)
+pgsStatusItem* pgsStatusCenter::GetByIndex(CollectionIndexType index)
 {
-   if ( index < 0 || m_Items.size() < index )
+   if ( index < 0 || (CollectionIndexType)m_Items.size() <= index )
       return 0;
 
    Container::iterator iter = m_Items.begin();
-   for ( Uint32 i = 0; i < index; i++ )
+   for ( CollectionIndexType i = 0; i < index; i++ )
       iter ++;
 
    return *iter;
 }
 
-Uint32 pgsStatusCenter::Count()
+CollectionIndexType pgsStatusCenter::Count()
 {
    return m_Items.size();
 }
 
-Uint32 pgsStatusCenter::GetSeverity()
+pgsTypes::StatusSeverityType pgsStatusCenter::GetSeverity()
 {
-   Uint32 severity = STATUS_OK;
+   pgsTypes::StatusSeverityType severity = pgsTypes::statusOK;
 
    Container::iterator iter;
    for ( iter = m_Items.begin(); iter != m_Items.end(); iter++ )
@@ -246,7 +247,7 @@ void pgsStatusCenter::NotifyAdded(pgsStatusItem* pNewItem)
    }
 }
 
-void pgsStatusCenter::NotifyRemoved(Int32 id)
+void pgsStatusCenter::NotifyRemoved(StatusItemIDType id)
 {
    Sinks::iterator iter;
    for ( iter = m_Sinks.begin(); iter != m_Sinks.end(); iter++ )
@@ -256,21 +257,23 @@ void pgsStatusCenter::NotifyRemoved(Int32 id)
    }
 }
 
-void pgsStatusCenter::RegisterCallbackItem(Uint32 callbackID,iStatusCallback* pCallback)
+StatusCallbackIDType pgsStatusCenter::RegisterCallbackItem(iStatusCallback* pCallback)
 {
+   StatusCallbackIDType callbackID = m_NextCallbackID++;
    m_Callbacks.insert(std::make_pair(callbackID,pCallback));
+   return callbackID;
 }
 
-Uint32 pgsStatusCenter::GetSeverity(Uint32 callbackID)
+pgsTypes::StatusSeverityType pgsStatusCenter::GetSeverity(StatusCallbackIDType callbackID)
 {
    iStatusCallback* pCallback = GetCallback(callbackID);
    if ( !pCallback )
-      return STATUS_OK;
+      return pgsTypes::statusOK;
 
    return pCallback->GetSeverity();
 }
 
-iStatusCallback* pgsStatusCenter::GetCallback(Int32 callbackID)
+iStatusCallback* pgsStatusCenter::GetCallback(StatusCallbackIDType callbackID)
 {
    Callbacks::iterator found = m_Callbacks.find(callbackID);
    if ( found == m_Callbacks.end() )
@@ -279,12 +282,12 @@ iStatusCallback* pgsStatusCenter::GetCallback(Int32 callbackID)
    return (*found).second;
 }
 
-void pgsStatusCenter::EditItem(Uint32 id)
+void pgsStatusCenter::EditItem(StatusItemIDType id)
 {
    pgsStatusItem* pItem = GetByID(id);
    ASSERT(pItem != NULL);
 
-   Uint32 callbackID = pItem->GetCallbackID();
+   StatusCallbackIDType callbackID = pItem->GetCallbackID();
    iStatusCallback* pCallback = GetCallback(callbackID);
    ASSERT(pCallback != NULL);
 

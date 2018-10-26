@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -47,11 +47,11 @@ CLASS
 
 rptParagraph* build_min_avs_paragraph(IBroker* pBroker,SpanIndexType span,GirderIndexType girder,
                                       pgsTypes::Stage stage,
-                                      IDisplayUnits* pDispUnit);
+                                      IDisplayUnits* pDisplayUnits);
 
 rptParagraph* build_max_spacing_paragraph(IBroker* pBroker,SpanIndexType span,GirderIndexType girder,
                                           pgsTypes::Stage stage, pgsTypes::LimitState ls,
-                                          IDisplayUnits* pDispUnit);
+                                          IDisplayUnits* pDisplayUnits);
 
 ////////////////////////// PUBLIC     ///////////////////////////////////////
 
@@ -77,30 +77,30 @@ rptChapter* CStirrupDetailingCheckChapterBuilder::Build(CReportSpecification* pR
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
-   GET_IFACE2(pBroker,IDisplayUnits,pDispUnit);
+   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
    pgsTypes::Stage stage = pgsTypes::BridgeSite3;
 
    GET_IFACE2(pBroker,ILiveLoads,pLiveLoads);
    bool bPermit = pLiveLoads->IsLiveLoadDefined(pgsTypes::lltPermit);
 
-   *pChapter << build_min_avs_paragraph(pBroker,span,girder,stage,pDispUnit);
+   *pChapter << build_min_avs_paragraph(pBroker,span,girder,stage,pDisplayUnits);
 
-   *pChapter << build_max_spacing_paragraph(pBroker,span,girder,stage,pgsTypes::StrengthI,pDispUnit);
+   *pChapter << build_max_spacing_paragraph(pBroker,span,girder,stage,pgsTypes::StrengthI,pDisplayUnits);
    if ( bPermit )
-      *pChapter << build_max_spacing_paragraph(pBroker,span,girder,stage,pgsTypes::StrengthII,pDispUnit);
+      *pChapter << build_max_spacing_paragraph(pBroker,span,girder,stage,pgsTypes::StrengthII,pDisplayUnits);
 
    return pChapter;
 }
 
 rptParagraph* build_min_avs_paragraph(IBroker* pBroker,SpanIndexType span,GirderIndexType girder,
                                       pgsTypes::Stage stage, 
-                                      IDisplayUnits* pDispUnit)
+                                      IDisplayUnits* pDisplayUnits)
 {
    rptParagraph* pParagraph;
    pParagraph = new rptParagraph();
   // Av/S check 5.8.2.5
    // picture depends on units
-   if ( pDispUnit->GetUnitDisplayMode() == pgsTypes::umSI )
+   if ( pDisplayUnits->GetUnitDisplayMode() == pgsTypes::umSI )
    {
       *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + "Min Transverse Reinforcement SI.jpg") << rptNewLine;
    }
@@ -108,10 +108,10 @@ rptParagraph* build_min_avs_paragraph(IBroker* pBroker,SpanIndexType span,Girder
    {
       *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + "Min Transverse Reinforcement US.jpg") << rptNewLine;
    }
-   INIT_UV_PROTOTYPE( rptPointOfInterest,    location, pDispUnit->GetSpanLengthUnit(),   false );
-   INIT_UV_PROTOTYPE( rptStressUnitValue,    stress,   pDispUnit->GetStressUnit(),          false );
-   INIT_UV_PROTOTYPE( rptAreaPerLengthValue, avs,      pDispUnit->GetAvOverSUnit(),  false );
-   INIT_UV_PROTOTYPE( rptLengthUnitValue,    dim,     pDispUnit->GetComponentDimUnit(),  false );
+   INIT_UV_PROTOTYPE( rptPointOfInterest,    location, pDisplayUnits->GetSpanLengthUnit(),   false );
+   INIT_UV_PROTOTYPE( rptStressUnitValue,    stress,   pDisplayUnits->GetStressUnit(),          false );
+   INIT_UV_PROTOTYPE( rptAreaPerLengthValue, avs,      pDisplayUnits->GetAvOverSUnit(),  false );
+   INIT_UV_PROTOTYPE( rptLengthUnitValue,    dim,     pDisplayUnits->GetComponentDimUnit(),  false );
 
    GET_IFACE2(pBroker,IArtifact,pIArtifact);
    const pgsGirderArtifact* gdrArtifact = pIArtifact->GetArtifact(span,girder);
@@ -127,12 +127,12 @@ rptParagraph* build_min_avs_paragraph(IBroker* pBroker,SpanIndexType span,Girder
    table->TableLabel() << "Details for Minimum Transverse Reinforcement Check - 5.8.2.5-1";
   
    if ( stage == pgsTypes::CastingYard )
-      (*table)(0,0)  << COLHDR(RPT_GDR_END_LOCATION, rptLengthUnitTag, pDispUnit->GetSpanLengthUnit());
+      (*table)(0,0)  << COLHDR(RPT_GDR_END_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
    else
-      (*table)(0,0)  << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDispUnit->GetSpanLengthUnit());
+      (*table)(0,0)  << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
 
-   (*table)(0,1)  << COLHDR("b"<<Sub("v"),  rptLengthUnitTag, pDispUnit->GetComponentDimUnit() );
-   (*table)(0,2)  << COLHDR("A" << Sub("v")<<"/S"<<Sub("min") , rptAreaPerLengthUnitTag, pDispUnit->GetAvOverSUnit() );
+   (*table)(0,1)  << COLHDR("b"<<Sub("v"),  rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+   (*table)(0,2)  << COLHDR("A" << Sub("v")<<"/S"<<Sub("min") , rptAreaPerLengthUnitTag, pDisplayUnits->GetAvOverSUnit() );
 
    // Fill up the table
 
@@ -176,7 +176,7 @@ rptParagraph* build_min_avs_paragraph(IBroker* pBroker,SpanIndexType span,Girder
 
 rptParagraph* build_max_spacing_paragraph(IBroker* pBroker,SpanIndexType span,GirderIndexType girder,
                                     pgsTypes::Stage stage, pgsTypes::LimitState ls,
-                                    IDisplayUnits* pDispUnit)
+                                    IDisplayUnits* pDisplayUnits)
 {
    // Spacing check 5.8.2.7
    rptParagraph* pParagraph;
@@ -189,12 +189,12 @@ rptParagraph* build_max_spacing_paragraph(IBroker* pBroker,SpanIndexType span,Gi
 
    *pParagraph <<" - Details for Maximum Transverse Reinforcement Spacing Check - 5.8.2.7"<<rptNewLine;
 
-   INIT_UV_PROTOTYPE( rptPointOfInterest,    location, pDispUnit->GetSpanLengthUnit(),   false );
-   INIT_UV_PROTOTYPE( rptStressUnitValue,    stress,   pDispUnit->GetStressUnit(),          false );
-   INIT_UV_PROTOTYPE( rptAreaUnitValue,      area,     pDispUnit->GetAreaUnit(),            false );
-   INIT_UV_PROTOTYPE( rptAreaPerLengthValue, avs,      pDispUnit->GetAvOverSUnit(),  false );
-   INIT_UV_PROTOTYPE( rptLengthUnitValue,    dim,     pDispUnit->GetComponentDimUnit(),  false );
-   INIT_UV_PROTOTYPE( rptForceSectionValue,  shear,    pDispUnit->GetShearUnit(),        false );
+   INIT_UV_PROTOTYPE( rptPointOfInterest,    location, pDisplayUnits->GetSpanLengthUnit(),   false );
+   INIT_UV_PROTOTYPE( rptStressUnitValue,    stress,   pDisplayUnits->GetStressUnit(),          false );
+   INIT_UV_PROTOTYPE( rptAreaUnitValue,      area,     pDisplayUnits->GetAreaUnit(),            false );
+   INIT_UV_PROTOTYPE( rptAreaPerLengthValue, avs,      pDisplayUnits->GetAvOverSUnit(),  false );
+   INIT_UV_PROTOTYPE( rptLengthUnitValue,    dim,     pDisplayUnits->GetComponentDimUnit(),  false );
+   INIT_UV_PROTOTYPE( rptForceSectionValue,  shear,    pDisplayUnits->GetShearUnit(),        false );
 
    // get a little fancy here with the equation so it lines up
    rptRcTable* petable = pgsReportStyleHolder::CreateDefaultTable(2,"");
@@ -222,20 +222,20 @@ rptParagraph* build_max_spacing_paragraph(IBroker* pBroker,SpanIndexType span,Gi
    *pParagraph << table << rptNewLine;
 
    if ( stage == pgsTypes::CastingYard )
-      (*table)(0,0)  << COLHDR(RPT_GDR_END_LOCATION, rptLengthUnitTag, pDispUnit->GetSpanLengthUnit());
+      (*table)(0,0)  << COLHDR(RPT_GDR_END_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
    else
-      (*table)(0,0)  << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDispUnit->GetSpanLengthUnit());
+      (*table)(0,0)  << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
 
-   (*table)(0,1)  << COLHDR("V"<<Sub("u"),       rptForceUnitTag,  pDispUnit->GetShearUnit() );
+   (*table)(0,1)  << COLHDR("V"<<Sub("u"),       rptForceUnitTag,  pDisplayUnits->GetShearUnit() );
 
    if ( bAfter1999 )
-      (*table)(0,2)  << COLHDR("0.125 f'"<<Sub("c")<<"b"<<Sub("v")<<"d"<<Sub("v"),  rptForceUnitTag,  pDispUnit->GetShearUnit() );
+      (*table)(0,2)  << COLHDR("0.125 f'"<<Sub("c")<<"b"<<Sub("v")<<"d"<<Sub("v"),  rptForceUnitTag,  pDisplayUnits->GetShearUnit() );
    else
-      (*table)(0,2)  << COLHDR("0.1 f'"<<Sub("c")<<"b"<<Sub("v")<<"d"<<Sub("v"),  rptForceUnitTag,  pDispUnit->GetShearUnit() );
+      (*table)(0,2)  << COLHDR("0.1 f'"<<Sub("c")<<"b"<<Sub("v")<<"d"<<Sub("v"),  rptForceUnitTag,  pDisplayUnits->GetShearUnit() );
 
-   (*table)(0,3)  << COLHDR("b"<<Sub("v"),  rptLengthUnitTag, pDispUnit->GetComponentDimUnit() );
-   (*table)(0,4)  << COLHDR("d"<<Sub("v"),  rptLengthUnitTag, pDispUnit->GetComponentDimUnit() );
-   (*table)(0,5)  << COLHDR("S" << Sub("max"), rptLengthUnitTag, pDispUnit->GetComponentDimUnit() );
+   (*table)(0,3)  << COLHDR("b"<<Sub("v"),  rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+   (*table)(0,4)  << COLHDR("d"<<Sub("v"),  rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+   (*table)(0,5)  << COLHDR("S" << Sub("max"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
 
    // Fill up the table
    GET_IFACE2(pBroker,IBridge,pBridge);

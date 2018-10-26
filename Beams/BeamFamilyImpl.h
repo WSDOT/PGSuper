@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 2009  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -234,4 +234,31 @@ END_COM_MAP()
 protected:
    virtual const CLSID& GetCLSID() { return GetObjectCLSID(); }
    virtual const CATID& GetCATID() { return CATID_SlabBeamFactory; }
+};
+
+
+/////////////////////////////////////////////////////////////////////////////
+// CDeckedSlabBeamFamily - beam family for slab beams
+class ATL_NO_VTABLE CDeckedSlabBeamFamily : 
+   public CComObjectRootEx<CComSingleThreadModel>,
+   public CComCoClass<CDeckedSlabBeamFamily, &CLSID_DeckedSlabBeamFamily>,
+   public IBeamFamilyImpl
+{
+public:
+	CDeckedSlabBeamFamily()
+	{
+	}
+
+   HRESULT FinalConstruct() { return Init(); }
+
+DECLARE_REGISTRY_RESOURCEID(IDR_DECKEDSLABBEAMFAMILY)
+DECLARE_CLASSFACTORY_SINGLETON(CDeckedSlabBeamFamily)
+
+BEGIN_COM_MAP(CDeckedSlabBeamFamily)
+   COM_INTERFACE_ENTRY(IBeamFamily)
+END_COM_MAP()
+
+protected:
+   virtual const CLSID& GetCLSID() { return GetObjectCLSID(); }
+   virtual const CATID& GetCATID() { return CATID_DeckedSlabBeamFactory; }
 };

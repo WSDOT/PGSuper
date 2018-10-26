@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -67,11 +67,11 @@ void CGirderDescShearPage::DoDataExchange(CDataExchange* pDX)
 
    CComPtr<IBroker> pBroker;
    AfxGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IDisplayUnits,pDispUnits);
+   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
 
 
-   DDX_UnitValueAndTag(pDX, IDC_TF_SPACING, IDC_TF_SPACING_UNITS, m_ShearData.TopFlangeBarSpacing, pDispUnits->GetComponentDimUnit());
-   DDV_UnitValueZeroOrMore(pDX, m_ShearData.TopFlangeBarSpacing, pDispUnits->GetComponentDimUnit() );
+   DDX_UnitValueAndTag(pDX, IDC_TF_SPACING, IDC_TF_SPACING_UNITS, m_ShearData.TopFlangeBarSpacing, pDisplayUnits->GetComponentDimUnit());
+   DDV_UnitValueZeroOrMore(pDX, m_ShearData.TopFlangeBarSpacing, pDisplayUnits->GetComponentDimUnit() );
 
 	DDV_GXGridWnd(pDX, &m_Grid);
 
@@ -143,8 +143,8 @@ void CGirderDescShearPage::DoDataExchange(CDataExchange* pDX)
       {
          if (m_Grid.GetRowData(i,&lsi))
          {
-            lsi.ZoneLength = ::ConvertToSysUnits(lsi.ZoneLength, pDispUnits->GetXSectionDimUnit().UnitOfMeasure);
-            lsi.StirrupSpacing = ::ConvertToSysUnits(lsi.StirrupSpacing, pDispUnits->GetComponentDimUnit().UnitOfMeasure);
+            lsi.ZoneLength = ::ConvertToSysUnits(lsi.ZoneLength, pDisplayUnits->GetXSectionDimUnit().UnitOfMeasure);
+            lsi.StirrupSpacing = ::ConvertToSysUnits(lsi.StirrupSpacing, pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
 
             // make sure stirrup spacing is greater than zone length
             if ((0 < lsi.VertBarSize || 0 < lsi.HorzBarSize) && zn < nrows)
@@ -202,8 +202,8 @@ void CGirderDescShearPage::DoDataExchange(CDataExchange* pDX)
       for (CShearData::ShearZoneConstIterator it = m_ShearData.ShearZones.begin(); it!=m_ShearData.ShearZones.end(); it++)
       {
          GirderLibraryEntry::ShearZoneInfo inf;
-         inf.ZoneLength     = ::ConvertFromSysUnits((*it).ZoneLength, pDispUnits->GetXSectionDimUnit().UnitOfMeasure);
-         inf.StirrupSpacing = ::ConvertFromSysUnits((*it).BarSpacing, pDispUnits->GetComponentDimUnit().UnitOfMeasure);
+         inf.ZoneLength     = ::ConvertFromSysUnits((*it).ZoneLength, pDisplayUnits->GetXSectionDimUnit().UnitOfMeasure);
+         inf.StirrupSpacing = ::ConvertFromSysUnits((*it).BarSpacing, pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
          inf.VertBarSize    = (*it).VertBarSize;
          inf.nVertBars      = (*it).nVertBars;
          inf.HorzBarSize    = (*it).HorzBarSize;

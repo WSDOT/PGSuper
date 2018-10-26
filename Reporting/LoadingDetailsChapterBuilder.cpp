@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -25,6 +25,7 @@
 #include <Reporting\UserDefinedLoadsChapterBuilder.h>
 
 #include <PgsExt\LoadFactors.h>
+#include <PgsExt\BridgeDescription.h>
 
 #include <IFace\DisplayUnits.h>
 #include <IFace\AnalysisResults.h>
@@ -73,14 +74,14 @@ rptChapter* CLoadingDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,
    SpanIndexType span = pSGRptSpec->GetSpan();
    GirderIndexType gdr = pSGRptSpec->GetGirder();
 
-   GET_IFACE2(pBroker,IDisplayUnits,pDispUnits);
+   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
-   INIT_UV_PROTOTYPE( rptLengthUnitValue, loc, pDispUnits->GetSpanLengthUnit(), false );
-   INIT_UV_PROTOTYPE( rptForcePerLengthUnitValue, fpl, pDispUnits->GetForcePerLengthUnit(), false );
-   INIT_UV_PROTOTYPE( rptMomentUnitValue, moment, pDispUnits->GetMomentUnit(), false );
-   INIT_UV_PROTOTYPE( rptForceUnitValue,  force,    pDispUnits->GetGeneralForceUnit(), false );
-   INIT_UV_PROTOTYPE( rptLengthUnitValue, dim, pDispUnits->GetComponentDimUnit(), false );
+   INIT_UV_PROTOTYPE( rptLengthUnitValue, loc, pDisplayUnits->GetSpanLengthUnit(), false );
+   INIT_UV_PROTOTYPE( rptForcePerLengthUnitValue, fpl, pDisplayUnits->GetForcePerLengthUnit(), false );
+   INIT_UV_PROTOTYPE( rptMomentUnitValue, moment, pDisplayUnits->GetMomentUnit(), false );
+   INIT_UV_PROTOTYPE( rptForceUnitValue,  force,    pDisplayUnits->GetGeneralForceUnit(), false );
+   INIT_UV_PROTOTYPE( rptLengthUnitValue, dim, pDisplayUnits->GetComponentDimUnit(), false );
 
    // uniform loads
    rptParagraph* pPara = new rptParagraph;
@@ -93,15 +94,15 @@ rptChapter* CLoadingDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,
    p_table->SetStripeRowColumnStyle(0, pgsReportStyleHolder::GetTableStripeRowCellStyle( CB_NONE | CJ_LEFT) );
 
    (*p_table)(0,0) << "Load Type";
-   (*p_table)(0,1) << COLHDR("w",rptForcePerLengthUnitTag, pDispUnits->GetForcePerLengthUnit() );
+   (*p_table)(0,1) << COLHDR("w",rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
 
-   GET_IFACE2(pBroker,IProductForces,pProdForce);
+   GET_IFACE2(pBroker,IProductLoads,pProdLoads);
 
    RowIndexType row = p_table->GetNumberOfHeaderRows();
 
    std::vector<GirderLoad> gdrLoad;
    std::vector<DiaphragmLoad> diaLoad;
-   pProdForce->GetGirderSelfWeightLoad(span,gdr,&gdrLoad,&diaLoad);
+   pProdLoads->GetGirderSelfWeightLoad(span,gdr,&gdrLoad,&diaLoad);
    bool bUniformGirderDeadLoad = (gdrLoad.size() == 1 && IsEqual(gdrLoad[0].wStart,gdrLoad[0].wEnd) ? true : false);
    if ( bUniformGirderDeadLoad )
    {
@@ -110,19 +111,19 @@ rptChapter* CLoadingDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,
       (*p_table)(row++,1) << fpl.SetValue(-gdrLoad[0].wStart);
    }
 
-   if ( pProdForce->HasSidewalkLoad(span,gdr) )
+   if ( pProdLoads->HasSidewalkLoad(span,gdr) )
    {
       (*p_table)(row,0) << "Sidewalk";
-      (*p_table)(row++,1) << fpl.SetValue(-pProdForce->GetSidewalkLoad(span,gdr));
+      (*p_table)(row++,1) << fpl.SetValue(-pProdLoads->GetSidewalkLoad(span,gdr));
    }
 
    (*p_table)(row,0) << "Traffic Barrier";
-   (*p_table)(row++,1) << fpl.SetValue(-pProdForce->GetTrafficBarrierLoad(span,gdr));
+   (*p_table)(row++,1) << fpl.SetValue(-pProdLoads->GetTrafficBarrierLoad(span,gdr));
 
-   if ( pProdForce->HasPedestrianLoad(span,gdr) )
+   if ( pProdLoads->HasPedestrianLoad(span,gdr) )
    {
       (*p_table)(row,0) << "Pedestrian Live Load";
-      (*p_table)(row++,1) << fpl.SetValue(pProdForce->GetPedestrianLoad(span,gdr));
+      (*p_table)(row++,1) << fpl.SetValue(pProdLoads->GetPedestrianLoad(span,gdr));
    }
 
    if ( !bUniformGirderDeadLoad )
@@ -130,10 +131,10 @@ rptChapter* CLoadingDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,
       p_table = pgsReportStyleHolder::CreateDefaultTable(4,"Girder Self-Weight");
       *pPara << rptNewLine << p_table << rptNewLine;
 
-      (*p_table)(0,0) << COLHDR("Load Start,"<<rptNewLine<<"From Left End of Girder",rptLengthUnitTag, pDispUnits->GetSpanLengthUnit() );
-      (*p_table)(0,1) << COLHDR("Load End,"<<rptNewLine<<"From Left End of Girder",rptLengthUnitTag, pDispUnits->GetSpanLengthUnit() );
-      (*p_table)(0,2) << COLHDR("Start Weight",rptForcePerLengthUnitTag, pDispUnits->GetForcePerLengthUnit() );
-      (*p_table)(0,3) << COLHDR("End Weight",rptForcePerLengthUnitTag, pDispUnits->GetForcePerLengthUnit() );
+      (*p_table)(0,0) << COLHDR("Load Start,"<<rptNewLine<<"From Left End of Girder",rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+      (*p_table)(0,1) << COLHDR("Load End,"<<rptNewLine<<"From Left End of Girder",rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+      (*p_table)(0,2) << COLHDR("Start Weight",rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
+      (*p_table)(0,3) << COLHDR("End Weight",rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
 
       row = p_table->GetNumberOfHeaderRows();
       std::vector<GirderLoad>::iterator iter;
@@ -171,14 +172,14 @@ rptChapter* CLoadingDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,
          p_table = pgsReportStyleHolder::CreateDefaultTable(5,"");
          *pPara << p_table;
 
-         (*p_table)(0,0) << COLHDR("Location"<<rptNewLine<<"From Left Bearing",rptLengthUnitTag, pDispUnits->GetSpanLengthUnit() );
-         (*p_table)(0,1) << COLHDR("Panel Weight",rptForcePerLengthUnitTag, pDispUnits->GetForcePerLengthUnit() );
-         (*p_table)(0,2) << COLHDR("Cast Slab Weight",rptForcePerLengthUnitTag, pDispUnits->GetForcePerLengthUnit() );
-         (*p_table)(0,3) << COLHDR("Haunch Weight",rptForcePerLengthUnitTag, pDispUnits->GetForcePerLengthUnit() );
-         (*p_table)(0,4) << COLHDR("Total Slab Weight",rptForcePerLengthUnitTag, pDispUnits->GetForcePerLengthUnit() );
+         (*p_table)(0,0) << COLHDR("Location"<<rptNewLine<<"From Left Bearing",rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+         (*p_table)(0,1) << COLHDR("Panel Weight",rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
+         (*p_table)(0,2) << COLHDR("Cast Slab Weight",rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
+         (*p_table)(0,3) << COLHDR("Haunch Weight",rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
+         (*p_table)(0,4) << COLHDR("Total Slab Weight",rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
 
          std::vector<SlabLoad> slab_loads;
-         pProdForce->GetMainSpanSlabLoad(span, gdr, &slab_loads);
+         pProdLoads->GetMainSpanSlabLoad(span, gdr, &slab_loads);
 
          RowIndexType row = 1;
          for ( std::vector<SlabLoad>::iterator i = slab_loads.begin(); i != slab_loads.end(); i++ )
@@ -203,13 +204,13 @@ rptChapter* CLoadingDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,
          p_table = pgsReportStyleHolder::CreateDefaultTable(4,"");
          *pPara << p_table;
 
-         (*p_table)(0,0) << COLHDR("Location"<<rptNewLine<<"From Left Bearing",rptLengthUnitTag, pDispUnits->GetSpanLengthUnit() );
-         (*p_table)(0,1) << COLHDR("Main Slab Weight",rptForcePerLengthUnitTag, pDispUnits->GetForcePerLengthUnit() );
-         (*p_table)(0,2) << COLHDR("Haunch Weight",rptForcePerLengthUnitTag, pDispUnits->GetForcePerLengthUnit() );
-         (*p_table)(0,3) << COLHDR("Total Slab Weight",rptForcePerLengthUnitTag, pDispUnits->GetForcePerLengthUnit() );
+         (*p_table)(0,0) << COLHDR("Location"<<rptNewLine<<"From Left Bearing",rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+         (*p_table)(0,1) << COLHDR("Main Slab Weight",rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
+         (*p_table)(0,2) << COLHDR("Haunch Weight",rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
+         (*p_table)(0,3) << COLHDR("Total Slab Weight",rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
 
          std::vector<SlabLoad> slab_loads;
-         pProdForce->GetMainSpanSlabLoad(span, gdr, &slab_loads);
+         pProdLoads->GetMainSpanSlabLoad(span, gdr, &slab_loads);
 
          RowIndexType row = 1;
          for (std::vector<SlabLoad>::iterator i = slab_loads.begin(); i!=slab_loads.end(); i++)
@@ -242,11 +243,11 @@ rptChapter* CLoadingDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,
          *pPara << p_table;
 
          (*p_table)(0,0) << "Location";
-         (*p_table)(0,1) << COLHDR("Point Load",rptForceUnitTag, pDispUnits->GetGeneralForceUnit() );
-         (*p_table)(0,2) << COLHDR("Point Moment",rptMomentUnitTag, pDispUnits->GetMomentUnit() );
+         (*p_table)(0,1) << COLHDR("Point Load",rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit() );
+         (*p_table)(0,2) << COLHDR("Point Moment",rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
 
          Float64 P1, P2, M1, M2;
-         pProdForce->GetCantileverSlabLoad(span, gdr, &P1, &M1, &P2, &M2);
+         pProdLoads->GetCantileverSlabLoad(span, gdr, &P1, &M1, &P2, &M2);
          (*p_table)(1,0) << "Left Bearing";
          (*p_table)(1,1) << force.SetValue(-P1);
          (*p_table)(1,2) << moment.SetValue(M1);
@@ -274,25 +275,25 @@ rptChapter* CLoadingDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,
       p_table = pgsReportStyleHolder::CreateDefaultTable(6,"");
       *pPara << p_table;
 
-      (*p_table)(0,0) << COLHDR("Load Start,"<<rptNewLine<<"From Left Bearing",rptLengthUnitTag, pDispUnits->GetSpanLengthUnit() );
-      (*p_table)(0,1) << COLHDR("Load End,"<<rptNewLine<<"From Left Bearing",rptLengthUnitTag, pDispUnits->GetSpanLengthUnit() );
+      (*p_table)(0,0) << COLHDR("Load Start,"<<rptNewLine<<"From Left Bearing",rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+      (*p_table)(0,1) << COLHDR("Load End,"<<rptNewLine<<"From Left Bearing",rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
 
       if (olayd==pgsTypes::olDistributeTributaryWidth)
       {
-         (*p_table)(0,2) << COLHDR("Start " << Sub2("W","trib"),rptLengthUnitTag, pDispUnits->GetSpanLengthUnit() );
-         (*p_table)(0,3) << COLHDR("End " << Sub2("W","trib"),rptLengthUnitTag, pDispUnits->GetSpanLengthUnit() );
+         (*p_table)(0,2) << COLHDR("Start " << Sub2("W","trib"),rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+         (*p_table)(0,3) << COLHDR("End " << Sub2("W","trib"),rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
       }
       else
       {
-         (*p_table)(0,2) << COLHDR("Start " << Sub2("W","cc"),rptLengthUnitTag, pDispUnits->GetSpanLengthUnit() );
-         (*p_table)(0,3) << COLHDR("End " << Sub2("W","cc"),rptLengthUnitTag, pDispUnits->GetSpanLengthUnit() );
+         (*p_table)(0,2) << COLHDR("Start " << Sub2("W","cc"),rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+         (*p_table)(0,3) << COLHDR("End " << Sub2("W","cc"),rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
       }
 
-      (*p_table)(0,4) << COLHDR("Start Weight",rptForcePerLengthUnitTag, pDispUnits->GetForcePerLengthUnit() );
-      (*p_table)(0,5) << COLHDR("End Weight",rptForcePerLengthUnitTag, pDispUnits->GetForcePerLengthUnit() );
+      (*p_table)(0,4) << COLHDR("Start Weight",rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
+      (*p_table)(0,5) << COLHDR("End Weight",rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
 
       std::vector<OverlayLoad> overlay_loads;
-      pProdForce->GetOverlayLoad(span, gdr, &overlay_loads);
+      pProdLoads->GetOverlayLoad(span, gdr, &overlay_loads);
 
       RowIndexType row = 1;
       for (std::vector<OverlayLoad>::iterator i = overlay_loads.begin(); i != overlay_loads.end(); i++)
@@ -328,6 +329,66 @@ rptChapter* CLoadingDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,
       }
    }
 
+   // Shear key loads
+   GET_IFACE2(pBroker,IGirder,pGirder);
+   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+   pgsTypes::SupportedBeamSpacing spacingType = pBridgeDesc->GetGirderSpacingType();
+
+   bool has_shear_key = pGirder->HasShearKey(span, gdr, spacingType);
+   if ( has_shear_key )
+   {
+      pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+      *pChapter << pPara;
+      *pPara<< "Shear Key Load"<<rptNewLine;
+      
+      pPara = new rptParagraph;
+      *pChapter << pPara;
+
+      *pPara << "Shear Key Load is approximated with Linear Load Segments applied along the length of the girder" << rptNewLine;
+
+      p_table = pgsReportStyleHolder::CreateDefaultTable(4,"");
+      *pPara << p_table;
+
+      (*p_table)(0,0) << COLHDR("Location"<<rptNewLine<<"From Left Bearing",rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+      (*p_table)(0,1) << COLHDR("Load Within"<<rptNewLine<<"Girder Envelope",rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
+      (*p_table)(0,2) << COLHDR("Load Within"<<rptNewLine<<"Joint",rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
+      (*p_table)(0,3) << COLHDR("Total Shear"<<rptNewLine<<"Key Weight",rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
+
+      std::vector<ShearKeyLoad> loads;
+      pProdLoads->GetShearKeyLoad(span, gdr, &loads);
+
+      RowIndexType row = 1;
+      for ( std::vector<ShearKeyLoad>::iterator i = loads.begin(); i != loads.end(); i++ )
+      {
+         ShearKeyLoad& sk_load = *i;
+
+         if (row==1)
+         {
+            Float64 location  = sk_load.StartLoc - end_size;
+            Float64 unif_load  = sk_load.UniformLoad;
+            Float64 joint_load = sk_load.StartJointLoad;
+            Float64 total_load = unif_load + joint_load;
+            (*p_table)(row,0) << loc.SetValue(location);
+            (*p_table)(row,1) << fpl.SetValue(-unif_load);
+            (*p_table)(row,2) << fpl.SetValue(-joint_load);
+            (*p_table)(row,3) << fpl.SetValue(-total_load);
+            row++;
+         }
+
+         Float64 location  = sk_load.EndLoc - end_size;
+         Float64 unif_load  = sk_load.UniformLoad;
+         Float64 joint_load = sk_load.EndJointLoad;
+         Float64 total_load = unif_load + joint_load;
+         (*p_table)(row,0) << loc.SetValue(location);
+         (*p_table)(row,1) << fpl.SetValue(-unif_load);
+         (*p_table)(row,2) << fpl.SetValue(-joint_load);
+         (*p_table)(row,3) << fpl.SetValue(-total_load);
+
+         row++;
+      }
+   }
+
    if ( !m_SimplifiedVersion )
    {
       // end diaphragm loads
@@ -342,11 +403,11 @@ rptChapter* CLoadingDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,
       *pPara << p_table;
 
       (*p_table)(0,0) << "Location";
-      (*p_table)(0,1) << COLHDR("Point Load",rptForceUnitTag, pDispUnits->GetGeneralForceUnit() );
-      (*p_table)(0,2) << COLHDR("Point Moment",rptMomentUnitTag, pDispUnits->GetMomentUnit() );
+      (*p_table)(0,1) << COLHDR("Point Load",rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit() );
+      (*p_table)(0,2) << COLHDR("Point Moment",rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
 
       Float64 P1, P2, M1, M2;
-      pProdForce->GetEndDiaphragmLoads(span, gdr, &P1, &M1, &P2, &M2);
+      pProdLoads->GetEndDiaphragmLoads(span, gdr, &P1, &M1, &P2, &M2);
       (*p_table)(1,0) << "Left Bearing";
       (*p_table)(1,1) << force.SetValue(-P1);
       (*p_table)(1,2) << moment.SetValue(M1);
@@ -367,7 +428,7 @@ rptChapter* CLoadingDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,
       *pChapter << pPara;
 
       std::vector<DiaphragmLoad> diap_loads;
-      pProdForce->GetIntermediateDiaphragmLoads(pgsTypes::CastingYard, span, gdr, &diap_loads);
+      pProdLoads->GetIntermediateDiaphragmLoads(pgsTypes::CastingYard, span, gdr, &diap_loads);
       std::sort(diap_loads.begin(),diap_loads.end());
 
       if (diap_loads.size() == 0)
@@ -379,11 +440,11 @@ rptChapter* CLoadingDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,
          p_table = pgsReportStyleHolder::CreateDefaultTable(5,"");
          *pPara << p_table;
 
-         (*p_table)(0,0) << COLHDR("Load Location,"<<rptNewLine<<"From Left End of Girder",rptLengthUnitTag, pDispUnits->GetSpanLengthUnit() );
-         (*p_table)(0,1) << COLHDR("H",rptLengthUnitTag,pDispUnits->GetComponentDimUnit());
-         (*p_table)(0,2) << COLHDR("W",rptLengthUnitTag,pDispUnits->GetComponentDimUnit());
-         (*p_table)(0,3) << COLHDR("T",rptLengthUnitTag,pDispUnits->GetComponentDimUnit());
-         (*p_table)(0,4) << COLHDR("Load",rptForceUnitTag, pDispUnits->GetGeneralForceUnit() );
+         (*p_table)(0,0) << COLHDR("Load Location,"<<rptNewLine<<"From Left End of Girder",rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+         (*p_table)(0,1) << COLHDR("H",rptLengthUnitTag,pDisplayUnits->GetComponentDimUnit());
+         (*p_table)(0,2) << COLHDR("W",rptLengthUnitTag,pDisplayUnits->GetComponentDimUnit());
+         (*p_table)(0,3) << COLHDR("T",rptLengthUnitTag,pDisplayUnits->GetComponentDimUnit());
+         (*p_table)(0,4) << COLHDR("Load",rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit() );
 
          int row=1;
 
@@ -412,7 +473,7 @@ rptChapter* CLoadingDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,
       *pChapter << pPara;
 
       diap_loads.clear();
-      pProdForce->GetIntermediateDiaphragmLoads(pgsTypes::BridgeSite1, span, gdr, &diap_loads);
+      pProdLoads->GetIntermediateDiaphragmLoads(pgsTypes::BridgeSite1, span, gdr, &diap_loads);
       std::sort(diap_loads.begin(),diap_loads.end());
 
       if (diap_loads.size() == 0)
@@ -424,11 +485,11 @@ rptChapter* CLoadingDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,
          p_table = pgsReportStyleHolder::CreateDefaultTable(5,"");
          *pPara << p_table;
 
-         (*p_table)(0,0) << COLHDR("Load Location,"<<rptNewLine<<"From Left Bearing",rptLengthUnitTag, pDispUnits->GetSpanLengthUnit() );
-         (*p_table)(0,1) << COLHDR("H",rptLengthUnitTag,pDispUnits->GetComponentDimUnit());
-         (*p_table)(0,2) << COLHDR("W",rptLengthUnitTag,pDispUnits->GetComponentDimUnit());
-         (*p_table)(0,3) << COLHDR("T",rptLengthUnitTag,pDispUnits->GetComponentDimUnit());
-         (*p_table)(0,4) << COLHDR("Load",rptForceUnitTag, pDispUnits->GetGeneralForceUnit() );
+         (*p_table)(0,0) << COLHDR("Load Location,"<<rptNewLine<<"From Left Bearing",rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+         (*p_table)(0,1) << COLHDR("H",rptLengthUnitTag,pDisplayUnits->GetComponentDimUnit());
+         (*p_table)(0,2) << COLHDR("W",rptLengthUnitTag,pDisplayUnits->GetComponentDimUnit());
+         (*p_table)(0,3) << COLHDR("T",rptLengthUnitTag,pDisplayUnits->GetComponentDimUnit());
+         (*p_table)(0,4) << COLHDR("Load",rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit() );
 
          std::vector<IntermedateDiaphragm> diaphragms   = pBridge->GetIntermediateDiaphragms(pgsTypes::BridgeSite1,span,gdr);
          std::vector<IntermedateDiaphragm>::iterator iter = diaphragms.begin();
@@ -518,11 +579,11 @@ rptChapter* CLoadingDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,
       pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
       *pChapter << pPara;
       *pPara<< "User Defined Loads"<<rptNewLine;
-      pPara = CUserDefinedLoadsChapterBuilder::CreatePointLoadTable(pBroker, span, gdr, pDispUnits, level);
+      pPara = CUserDefinedLoadsChapterBuilder::CreatePointLoadTable(pBroker, span, gdr, pDisplayUnits, level);
       *pChapter << pPara;
-      pPara = CUserDefinedLoadsChapterBuilder::CreateDistributedLoadTable(pBroker, span, gdr, pDispUnits, level);
+      pPara = CUserDefinedLoadsChapterBuilder::CreateDistributedLoadTable(pBroker, span, gdr, pDisplayUnits, level);
       *pChapter << pPara;
-      pPara = CUserDefinedLoadsChapterBuilder::CreateMomentLoadTable(pBroker, span, gdr, pDispUnits, level);
+      pPara = CUserDefinedLoadsChapterBuilder::CreateMomentLoadTable(pBroker, span, gdr, pDisplayUnits, level);
       *pChapter << pPara;
 
 
@@ -550,15 +611,25 @@ rptChapter* CLoadingDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,
       (*p_table)(1,0) << "Casting Yard";
       (*p_table)(1,1) << "DC = Girder";
 
+      std::string strDC;
+      if (has_shear_key)
+      {
+         strDC = "DC = Girder + Diaphragms + Shear Key + Slab";
+      }
+      else
+      {
+         strDC = "DC = Girder + Diaphragms + Slab";
+      }
+
       (*p_table)(2,0) << "Deck and Diaphragm Placement (Bridge Site 1)";
-      (*p_table)(2,1) << "DC = Girder + Diaphragms + Slab";
+      (*p_table)(2,1) << strDC;
 
       (*p_table)(3,0) << "Superimposed Dead Loads (Bridge Site 2)";
-      (*p_table)(3,1) << "DC = Girder + Diaphragms + Slab + Traffic Barrier"<<rptNewLine
+      (*p_table)(3,1) << strDC<<" + Traffic Barrier"<<rptNewLine
                       << "DW = Overlay";
 
       (*p_table)(4,0) << "Final with Live Load (Bridge Site 3)";
-      (*p_table)(4,1) << "DC = Girder + Diaphragms + Slab + Traffic Barrier"<<rptNewLine
+      (*p_table)(4,1) << strDC<<" + Traffic Barrier"<<rptNewLine
                       << "DW = Future Overlay"<< rptNewLine
                       << "LL+IM = Live Load + Impact (HL-93 or other)" << rptNewLine
                       << "PL = Pedestrian Live Load" << rptNewLine;

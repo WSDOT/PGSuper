@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -29,10 +29,10 @@
 // ConfigurePGSuperDlg.h : header file
 //
 
-#include "PGSuperCatalog.h"
 #include "PGSuperCatalogServers.h"
 #include <MfcTools\ddxFolder.h>
 #include <MfcTools\ddxfile.h>
+#include <MfcTools\HyperLink.h>
 
 /////////////////////////////////////////////////////////////////////////////
 // CConfigurePGSuperDlg dialog
@@ -41,7 +41,7 @@ class CConfigurePGSuperDlg : public CDialog
 {
 // Construction
 public:
-	CConfigurePGSuperDlg(const CPGSuperCatalog& catalog,BOOL bFirstRun,CWnd* pParent = NULL);   // standard constructor
+	CConfigurePGSuperDlg(BOOL bFirstRun,CWnd* pParent = NULL);   // standard constructor
 
 // Dialog Data
 	//{{AFX_DATA(CConfigurePGSuperDlg)
@@ -49,23 +49,27 @@ public:
 	CListBox	m_PublisherList;
 	CString	m_Company;
 	CString	m_Engineer;
+   CString m_CurrentServer; // name of current catalog server
 	CString	m_Publisher;
 	int		m_Method;
 	//}}AFX_DATA
+   CHyperLink   m_PublisherHyperLink;
 
-   CPGSuperCatalog m_Catalog;
-
-   CString	m_LocalMasterLibraryFile;
-   CString	m_LocalWorkgroupTemplateFolder;
-
-   CString	m_UserFolder;
    CacheUpdateFrequency m_CacheUpdateFrequency;
 
    CPGSuperCatalogServers m_Servers;
 
-   BOOL m_bUpdateCache;
+   bool m_bUpdateCache;
 
    BOOL m_bFirstRun;
+
+// Save data going into dialog so we can compare on the way out
+// in order to determine if we need an update
+   int m_OriginalMethod;
+   CString m_OriginalServer;
+	CString	m_OriginalPublisher;
+   const CPGSuperCatalogServer* m_OriginalServerPtr;
+
 
 // Overrides
 	// ClassWizard generated virtual function overrides
@@ -82,12 +86,10 @@ protected:
 	afx_msg void OnHelp();
 	virtual BOOL OnInitDialog();
 	afx_msg void OnSetfocusPublishers();
-	afx_msg void OnSetFocusNetwork();
    afx_msg void OnAddCatalogServer();
 	afx_msg void OnServerChanged();
 	afx_msg void OnUpdatenow();
 	afx_msg void OnGeneric();
-	afx_msg void OnLocal();
 	afx_msg void OnDownload();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
@@ -96,14 +98,13 @@ protected:
    void UpdateFrequencyList();
    void ServerList();
    void PublisherList();
+   void ConfigureWebLink();
 
    void OnMethod();
 
-   CGetFilenameControl m_ctrlLibraryFile;
-   CGetFolderControl m_ctrlWorkgroupFolder;
-   CGetFolderControl m_ctrlUserFolder;
-
    bool m_bNetworkError;
+public:
+   afx_msg void OnLbnSelchangePublishers();
 };
 
 //{{AFX_INSERT_LOCATION}}

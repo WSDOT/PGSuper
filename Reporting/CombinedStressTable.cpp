@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 2006  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -72,14 +72,14 @@ CCombinedStressTable& CCombinedStressTable::operator= (const CCombinedStressTabl
 //======================== OPERATIONS =======================================
 void CCombinedStressTable::Build(IBroker* pBroker, rptChapter* pChapter,
                                          SpanIndexType span,GirderIndexType girder,
-                                         IDisplayUnits* pDispUnits,
+                                         IDisplayUnits* pDisplayUnits,
                                          pgsTypes::Stage stage,pgsTypes::AnalysisType analysisType) const
 {
    // NOTE - Stregth II stresses not reported because they aren't used for anything
 
    // Build table
-   INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDispUnits->GetSpanLengthUnit(), false );
-   INIT_UV_PROTOTYPE( rptStressUnitValue, stress,   pDispUnits->GetStressUnit(),     false );
+   INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
+   INIT_UV_PROTOTYPE( rptStressUnitValue, stress,   pDisplayUnits->GetStressUnit(),     false );
 
    if ( stage == pgsTypes::CastingYard )
       location.MakeGirderPoi();
@@ -122,9 +122,9 @@ void CCombinedStressTable::Build(IBroker* pBroker, rptChapter* pChapter,
       std::string strTitle(stage == pgsTypes::CastingYard     ? "Casting Yard" :
                            stage == pgsTypes::GirderPlacement ? "Girder Placement" : "Temporary Strand Removal");
       p_table = pgsReportStyleHolder::CreateDefaultTable(3,strTitle);
-      (*p_table)(0,0) << COLHDR(RPT_GDR_END_LOCATION ,    rptLengthUnitTag, pDispUnits->GetSpanLengthUnit() );
-      (*p_table)(0,1) << COLHDR("DC",          rptStressUnitTag, pDispUnits->GetStressUnit() );
-      (*p_table)(0,2) << COLHDR("Service I", rptStressUnitTag, pDispUnits->GetStressUnit() );
+      (*p_table)(0,0) << COLHDR(RPT_GDR_END_LOCATION ,    rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+      (*p_table)(0,1) << COLHDR("DC",          rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      (*p_table)(0,2) << COLHDR("Service I", rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    }
    else if ( stage == pgsTypes::BridgeSite1)
    {
@@ -136,12 +136,12 @@ void CCombinedStressTable::Build(IBroker* pBroker, rptChapter* pChapter,
       col = 0;
 
       p_table = pgsReportStyleHolder::CreateDefaultTable(nCols,"Deck and Diaphragm Placement (Bridge Site 1)");
-      (*p_table)(0,col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION ,    rptLengthUnitTag, pDispUnits->GetSpanLengthUnit() );
-      (*p_table)(0,col++) << COLHDR("DC",          rptStressUnitTag, pDispUnits->GetStressUnit() );
-      (*p_table)(0,col++) << COLHDR("DW",          rptStressUnitTag, pDispUnits->GetStressUnit() );
-      (*p_table)(0,col++) << COLHDR(symbol(SUM) << "DC",          rptStressUnitTag, pDispUnits->GetStressUnit() );
-      (*p_table)(0,col++) << COLHDR(symbol(SUM) << "DW",          rptStressUnitTag, pDispUnits->GetStressUnit() );
-      (*p_table)(0,col++) << COLHDR("Service I", rptStressUnitTag, pDispUnits->GetStressUnit() );
+      (*p_table)(0,col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION ,    rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+      (*p_table)(0,col++) << COLHDR("DC",          rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      (*p_table)(0,col++) << COLHDR("DW",          rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      (*p_table)(0,col++) << COLHDR(symbol(SUM) << "DC",          rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      (*p_table)(0,col++) << COLHDR(symbol(SUM) << "DW",          rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      (*p_table)(0,col++) << COLHDR("Service I", rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    }
    else if ( stage == pgsTypes::BridgeSite2)
    {
@@ -149,19 +149,19 @@ void CCombinedStressTable::Build(IBroker* pBroker, rptChapter* pChapter,
 
       col = 0;
       p_table = pgsReportStyleHolder::CreateDefaultTable(nCols,"Superimposed Dead Loads (Bridge Site 2)");
-      (*p_table)(0,col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION ,    rptLengthUnitTag, pDispUnits->GetSpanLengthUnit() );
-      (*p_table)(0,col++) << COLHDR("DC",          rptStressUnitTag, pDispUnits->GetStressUnit() );
-      (*p_table)(0,col++) << COLHDR("DW",          rptStressUnitTag, pDispUnits->GetStressUnit() );
-      (*p_table)(0,col++) << COLHDR(symbol(SUM) << "DC",          rptStressUnitTag, pDispUnits->GetStressUnit() );
-      (*p_table)(0,col++) << COLHDR(symbol(SUM) << "DW",          rptStressUnitTag, pDispUnits->GetStressUnit() );
-      (*p_table)(0,col++) << COLHDR("Service I", rptStressUnitTag, pDispUnits->GetStressUnit() );
+      (*p_table)(0,col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION ,    rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+      (*p_table)(0,col++) << COLHDR("DC",          rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      (*p_table)(0,col++) << COLHDR("DW",          rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      (*p_table)(0,col++) << COLHDR(symbol(SUM) << "DC",          rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      (*p_table)(0,col++) << COLHDR(symbol(SUM) << "DW",          rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      (*p_table)(0,col++) << COLHDR("Service I", rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    }
    else if ( stage == pgsTypes::BridgeSite3 )
    {
       nCols = 7;
 
-      GET_IFACE2(pBroker,IProductForces,pProductForces);
-      bPedLoading = pProductForces->HasPedestrianLoad(startSpan,girder);
+      GET_IFACE2(pBroker,IProductLoads,pProductLoads);
+      bPedLoading = pProductLoads->HasPedestrianLoad(startSpan,girder);
 
       if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
          nCols += 2;
@@ -178,43 +178,43 @@ void CCombinedStressTable::Build(IBroker* pBroker, rptChapter* pChapter,
 
       p_table->SetRowSpan(0,col,2);
       p_table->SetRowSpan(1,col2++,-1);
-      (*p_table)(0,col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION,  rptLengthUnitTag, pDispUnits->GetSpanLengthUnit() );
+      (*p_table)(0,col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION,  rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
 
       p_table->SetRowSpan(0,col,2);
       p_table->SetRowSpan(1,col2++,-1);
-      (*p_table)(0,col++) << COLHDR("DC",          rptStressUnitTag, pDispUnits->GetStressUnit() );
+      (*p_table)(0,col++) << COLHDR("DC",          rptStressUnitTag, pDisplayUnits->GetStressUnit() );
 
       p_table->SetRowSpan(0,col,2);
       p_table->SetRowSpan(1,col2++,-1);
-      (*p_table)(0,col++) << COLHDR("DW",          rptStressUnitTag, pDispUnits->GetStressUnit() );
+      (*p_table)(0,col++) << COLHDR("DW",          rptStressUnitTag, pDisplayUnits->GetStressUnit() );
 
       p_table->SetRowSpan(0,col,2);
       p_table->SetRowSpan(1,col2++,-1);
-      (*p_table)(0,col++) << COLHDR(symbol(SUM) << "DC",          rptStressUnitTag, pDispUnits->GetStressUnit() );
+      (*p_table)(0,col++) << COLHDR(symbol(SUM) << "DC",          rptStressUnitTag, pDisplayUnits->GetStressUnit() );
 
       p_table->SetRowSpan(0,col,2);
       p_table->SetRowSpan(1,col2++,-1);
-      (*p_table)(0,col++) << COLHDR(symbol(SUM) << "DW",          rptStressUnitTag, pDispUnits->GetStressUnit() );
+      (*p_table)(0,col++) << COLHDR(symbol(SUM) << "DW",          rptStressUnitTag, pDisplayUnits->GetStressUnit() );
 
       if ( bPedLoading )
       {
          p_table->SetColumnSpan(0,col,2);
          (*p_table)(0,col++) << "PL";
-         (*p_table)(1,col2++) << COLHDR("Max",       rptStressUnitTag, pDispUnits->GetStressUnit() );
-         (*p_table)(1,col2++) << COLHDR("Min",       rptStressUnitTag, pDispUnits->GetStressUnit() );
+         (*p_table)(1,col2++) << COLHDR("Max",       rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+         (*p_table)(1,col2++) << COLHDR("Min",       rptStressUnitTag, pDisplayUnits->GetStressUnit() );
       }
 
       p_table->SetColumnSpan(0,col,2);
       (*p_table)(0,col++) << "*LL+IM" << rptNewLine << "Design";
-      (*p_table)(1,col2++) << COLHDR("Max",       rptStressUnitTag, pDispUnits->GetStressUnit() );
-      (*p_table)(1,col2++) << COLHDR("Min",       rptStressUnitTag, pDispUnits->GetStressUnit() );
+      (*p_table)(1,col2++) << COLHDR("Max",       rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      (*p_table)(1,col2++) << COLHDR("Min",       rptStressUnitTag, pDisplayUnits->GetStressUnit() );
 
       if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
       {
          p_table->SetColumnSpan(0,col,2);
          (*p_table)(0,col++) << "*LL+IM" << rptNewLine << "Fatigue";
-         (*p_table)(1,col2++) << COLHDR("Max",       rptStressUnitTag, pDispUnits->GetStressUnit() );
-         (*p_table)(1,col2++) << COLHDR("Min",       rptStressUnitTag, pDispUnits->GetStressUnit() );
+         (*p_table)(1,col2++) << COLHDR("Max",       rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+         (*p_table)(1,col2++) << COLHDR("Min",       rptStressUnitTag, pDisplayUnits->GetStressUnit() );
       }
 
 
@@ -409,16 +409,16 @@ void CCombinedStressTable::Build(IBroker* pBroker, rptChapter* pChapter,
       *p << p_table;
 
       ColumnIndexType col = 0;
-      (*p_table)(0,col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION ,    rptLengthUnitTag, pDispUnits->GetSpanLengthUnit() );
-      (*p_table)(0,col++) << COLHDR("Service I",   rptStressUnitTag, pDispUnits->GetStressUnit() );
+      (*p_table)(0,col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION ,    rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+      (*p_table)(0,col++) << COLHDR("Service I",   rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    
       if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims )
-         (*p_table)(0,col++) << COLHDR("Service IA",  rptStressUnitTag, pDispUnits->GetStressUnit() );
+         (*p_table)(0,col++) << COLHDR("Service IA",  rptStressUnitTag, pDisplayUnits->GetStressUnit() );
       
-      (*p_table)(0,col++) << COLHDR("Service III", rptStressUnitTag, pDispUnits->GetStressUnit() );
+      (*p_table)(0,col++) << COLHDR("Service III", rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    
       if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
-         (*p_table)(0,col++) << COLHDR("Fatigue I",  rptStressUnitTag, pDispUnits->GetStressUnit() );
+         (*p_table)(0,col++) << COLHDR("Fatigue I",  rptStressUnitTag, pDisplayUnits->GetStressUnit() );
 
 
       std::vector<Float64> fTopMinServiceI, fBotMinServiceI;

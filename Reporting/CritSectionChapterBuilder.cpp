@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -75,17 +75,17 @@ rptChapter* CCritSectionChapterBuilder::Build(CReportSpecification* pRptSpec,Uin
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
-   GET_IFACE2(pBroker,IDisplayUnits,pDispUnit);
-   Build(pChapter,pgsTypes::StrengthI,pBroker,span,gdr,pDispUnit,level);
+   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
+   Build(pChapter,pgsTypes::StrengthI,pBroker,span,gdr,pDisplayUnits,level);
 
    GET_IFACE2(pBroker,ILiveLoads,pLiveLoads);
    if ( pLiveLoads->IsLiveLoadDefined(pgsTypes::lltPermit) )
-      Build(pChapter,pgsTypes::StrengthII,pBroker,span,gdr,pDispUnit,level);
+      Build(pChapter,pgsTypes::StrengthII,pBroker,span,gdr,pDisplayUnits,level);
 
    return pChapter;
 }
 
-void CCritSectionChapterBuilder::Build(rptChapter* pChapter,pgsTypes::LimitState limitState,IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,IDisplayUnits* pDispUnit,Uint16 level) const
+void CCritSectionChapterBuilder::Build(rptChapter* pChapter,pgsTypes::LimitState limitState,IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,IDisplayUnits* pDisplayUnits,Uint16 level) const
 {
 
    GET_IFACE2(pBroker,ILibrary,pLib);
@@ -127,9 +127,9 @@ void CCritSectionChapterBuilder::Build(rptChapter* pChapter,pgsTypes::LimitState
    *pPara << ptable;
    ptable->TableLabel() << "Critical Section Calculation";
   
-   (*ptable)(0,0)  << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDispUnit->GetSpanLengthUnit());
-   (*ptable)(0,1)  << COLHDR("Assumed C.S."<<rptNewLine<<"Location", rptLengthUnitTag, pDispUnit->GetComponentDimUnit() );
-   (*ptable)(0,2)  << COLHDR("d"<<Sub("v") , rptLengthUnitTag, pDispUnit->GetComponentDimUnit() );
+   (*ptable)(0,0)  << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
+   (*ptable)(0,1)  << COLHDR("Assumed C.S."<<rptNewLine<<"Location", rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+   (*ptable)(0,2)  << COLHDR("d"<<Sub("v") , rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
    if ( bThirdEdition )
    {
       (*ptable)(0,3)  << "CS"<<rptNewLine<<"Intersects?";
@@ -137,15 +137,15 @@ void CCritSectionChapterBuilder::Build(rptChapter* pChapter,pgsTypes::LimitState
    else
    {
       (*ptable)(0,3)  << "CS1"<<rptNewLine<<"Intersects?";
-      (*ptable)(0,4)  << COLHDR(symbol(theta),  rptAngleUnitTag, pDispUnit->GetAngleUnit() );
-      (*ptable)(0,5)  << COLHDR("0.5 cot("<<symbol(theta)<<") d"<<Sub("v"),  rptLengthUnitTag, pDispUnit->GetComponentDimUnit() );
+      (*ptable)(0,4)  << COLHDR(symbol(theta),  rptAngleUnitTag, pDisplayUnits->GetAngleUnit() );
+      (*ptable)(0,5)  << COLHDR("0.5 cot("<<symbol(theta)<<") d"<<Sub("v"),  rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
       (*ptable)(0,6)  << "CS2"<<rptNewLine<<"Intersects?";
    }
 
-   INIT_UV_PROTOTYPE( rptPointOfInterest,         locationp, pDispUnit->GetSpanLengthUnit(),   false );
-   INIT_UV_PROTOTYPE( rptLengthSectionValue,      location,  pDispUnit->GetSpanLengthUnit(),   false );
-   INIT_UV_PROTOTYPE( rptLengthSectionValue,      dim,       pDispUnit->GetComponentDimUnit(),  false );
-   INIT_UV_PROTOTYPE( rptAngleSectionValue,       ang,       pDispUnit->GetAngleUnit(),  false );
+   INIT_UV_PROTOTYPE( rptPointOfInterest,         locationp, pDisplayUnits->GetSpanLengthUnit(),   false );
+   INIT_UV_PROTOTYPE( rptLengthSectionValue,      location,  pDisplayUnits->GetSpanLengthUnit(),   false );
+   INIT_UV_PROTOTYPE( rptLengthSectionValue,      dim,       pDisplayUnits->GetComponentDimUnit(),  false );
+   INIT_UV_PROTOTYPE( rptAngleSectionValue,       ang,       pDisplayUnits->GetAngleUnit(),  false );
 
    // Fill up the table
    GET_IFACE2(pBroker,IShearCapacity,pShearCapacity);

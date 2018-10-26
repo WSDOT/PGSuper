@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -70,7 +70,7 @@ rptChapter* CPrestressForceChapterBuilder::Build(CReportSpecification* pRptSpec,
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
-   GET_IFACE2(pBroker,IDisplayUnits,pDispUnit);
+   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
    // These are the interfaces we are going to be using
    GET_IFACE2(pBroker,IBridgeMaterial,       pMat);
    GET_IFACE2(pBroker,IStrandGeometry, pStrandGeom);
@@ -87,10 +87,10 @@ rptChapter* CPrestressForceChapterBuilder::Build(CReportSpecification* pRptSpec,
    CGirderData girderData = pGirderData->GetGirderData(span,gdr);
 
    // Setup some unit-value prototypes
-   INIT_UV_PROTOTYPE( rptStressUnitValue, stress, pDispUnit->GetStressUnit(),       true );
-   INIT_UV_PROTOTYPE( rptAreaUnitValue,   area,   pDispUnit->GetAreaUnit(),         true );
-   INIT_UV_PROTOTYPE( rptLengthUnitValue, len,    pDispUnit->GetComponentDimUnit(), true );
-   INIT_UV_PROTOTYPE( rptForceUnitValue,  force,  pDispUnit->GetGeneralForceUnit(), true );
+   INIT_UV_PROTOTYPE( rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(),       true );
+   INIT_UV_PROTOTYPE( rptAreaUnitValue,   area,   pDisplayUnits->GetAreaUnit(),         true );
+   INIT_UV_PROTOTYPE( rptLengthUnitValue, len,    pDisplayUnits->GetComponentDimUnit(), true );
+   INIT_UV_PROTOTYPE( rptForceUnitValue,  force,  pDisplayUnits->GetGeneralForceUnit(), true );
 
    rptParagraph* pPara;
 
@@ -145,7 +145,7 @@ rptChapter* CPrestressForceChapterBuilder::Build(CReportSpecification* pRptSpec,
    // Write out strand forces and stresses at the various stages of prestress loss
    pPara = new rptParagraph;
    *pChapter << pPara;
-   *pPara << CPrestressLossTable().Build(pBroker,span,gdr,pDispUnit) << rptNewLine;
+   *pPara << CPrestressLossTable().Build(pBroker,span,gdr,pDisplayUnits) << rptNewLine;
 
    return pChapter;
 }

@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -128,11 +128,11 @@ bool CCamberTable::TestMe(dbgLog& rlog)
 
 
 void CCamberTable::Build_CIP_TempStrands(IBroker* pBroker,SpanIndexType span,GirderIndexType girder,
-                                         IDisplayUnits* pDispUnits,Int16 constructionRate,
+                                         IDisplayUnits* pDisplayUnits,Int16 constructionRate,
                                          rptRcTable** pTable1,rptRcTable** pTable2,rptRcTable** pTable3) const
 {
-   INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDispUnits->GetSpanLengthUnit(), false );
-   INIT_UV_PROTOTYPE( rptLengthUnitValue, displacement, pDispUnits->GetDisplacementUnit(), false );
+   INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
+   INIT_UV_PROTOTYPE( rptLengthUnitValue, displacement, pDisplayUnits->GetDisplacementUnit(), false );
 
    GET_IFACE2(pBroker,ILibrary,pLib);
    GET_IFACE2(pBroker,ISpecification,pSpec);
@@ -146,13 +146,15 @@ void CCamberTable::Build_CIP_TempStrands(IBroker* pBroker,SpanIndexType span,Gir
    std::vector<pgsPointOfInterest> vPoi = pIPoi->GetPointsOfInterest( stages, span, girder, POI_DISPLACEMENT | POI_TABULAR );
 
    GET_IFACE2(pBroker,ICamber,pCamber);
-   GET_IFACE2(pBroker,IProductForces,pProduct);
+   GET_IFACE2(pBroker,IProductLoads,pProduct);
+   GET_IFACE2(pBroker,IProductForces,pProductForces);
    GET_IFACE2(pBroker,IBridge,pBridge);
 
    pgsTypes::SupportedDeckType deckType = pBridge->GetDeckType();
    Float64 end_size = pBridge->GetGirderStartConnectionLength(span,girder);
 
    bool bSidewalk = pProduct->HasSidewalkLoad(span,girder);
+   bool bShearKey = pProduct->HasShearKeyLoad(span,girder);
 
    pgsTypes::AnalysisType analysisType = pSpec->GetAnalysisType();
 
@@ -162,50 +164,54 @@ void CCamberTable::Build_CIP_TempStrands(IBroker* pBroker,SpanIndexType span,Gir
    rptRcTable* table3;
 
    table1 = pgsReportStyleHolder::CreateDefaultTable(7,"Camber - Part 1 (upwards is positive)");
-   table2 = pgsReportStyleHolder::CreateDefaultTable(7 + (bSidewalk ? 1 : 0) + (!pBridge->IsFutureOverlay() ? 1 : 0),"Camber - Part 2 (upwards is positive)");
+   table2 = pgsReportStyleHolder::CreateDefaultTable(7 + (bSidewalk ? 1 : 0) + (!pBridge->IsFutureOverlay() ? 1 : 0) + (bShearKey ? 1 : 0),"Camber - Part 2 (upwards is positive)");
    table3 = pgsReportStyleHolder::CreateDefaultTable(8,"Camber - Part 3 (upwards is positive)");
 
    // Setup table headings
    int col = 0;
-   (*table1)(0,col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDispUnits->GetSpanLengthUnit());
-   (*table1)(0,col++) << COLHDR(Sub2(symbol(DELTA),"ps") << " " << Sub2("L","g"),         rptLengthUnitTag, pDispUnits->GetDisplacementUnit() );
-   (*table1)(0,col++) << COLHDR(Sub2(symbol(DELTA),"ps") << " " << Sub2("L","s"),         rptLengthUnitTag, pDispUnits->GetDisplacementUnit() );
-   (*table1)(0,col++) << COLHDR(Sub2(symbol(DELTA),"tpsi"),       rptLengthUnitTag, pDispUnits->GetDisplacementUnit() );
-   (*table1)(0,col++) << COLHDR(Sub2(symbol(DELTA),"tpsr"),       rptLengthUnitTag, pDispUnits->GetDisplacementUnit() );
-   (*table1)(0,col++) << COLHDR(Sub2(symbol(DELTA),"girder"),     rptLengthUnitTag, pDispUnits->GetDisplacementUnit() );
-   (*table1)(0,col++) << COLHDR(Sub2(symbol(DELTA),"creep1"),  rptLengthUnitTag, pDispUnits->GetDisplacementUnit() );
+   (*table1)(0,col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
+   (*table1)(0,col++) << COLHDR(Sub2(symbol(DELTA),"ps") << " " << Sub2("L","g"),         rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table1)(0,col++) << COLHDR(Sub2(symbol(DELTA),"ps") << " " << Sub2("L","s"),         rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table1)(0,col++) << COLHDR(Sub2(symbol(DELTA),"tpsi"),       rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table1)(0,col++) << COLHDR(Sub2(symbol(DELTA),"tpsr"),       rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table1)(0,col++) << COLHDR(Sub2(symbol(DELTA),"girder"),     rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table1)(0,col++) << COLHDR(Sub2(symbol(DELTA),"creep1"),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
 
    col = 0;
-   (*table2)(0,col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDispUnits->GetSpanLengthUnit());
-   (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),"diaphragm"),  rptLengthUnitTag, pDispUnits->GetDisplacementUnit() );
-   (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),"creep2"),  rptLengthUnitTag, pDispUnits->GetDisplacementUnit() );
-   (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),"deck"),  rptLengthUnitTag, pDispUnits->GetDisplacementUnit() );
-   (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),"User1") << " = " << rptNewLine << Sub2(symbol(DELTA),"UserDC") << " + " << rptNewLine << Sub2(symbol(DELTA),"UserDW") , rptLengthUnitTag, pDispUnits->GetDisplacementUnit() );
+   (*table2)(0,col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
+   (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),"diaphragm"),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+
+   if ( bShearKey )
+      (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),"shear key"), rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+
+   (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),"creep2"),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),"deck"),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),"User1") << " = " << rptNewLine << Sub2(symbol(DELTA),"UserDC") << " + " << rptNewLine << Sub2(symbol(DELTA),"UserDW") , rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
 
    if ( bSidewalk )
-      (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),"sidewalk"), rptLengthUnitTag, pDispUnits->GetDisplacementUnit() );
+      (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),"sidewalk"), rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
 
-   (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),"barrier"), rptLengthUnitTag, pDispUnits->GetDisplacementUnit() );
+   (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),"barrier"), rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
 
    if ( !pBridge->IsFutureOverlay() )
-      (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),"overlay"), rptLengthUnitTag, pDispUnits->GetDisplacementUnit() );
+      (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),"overlay"), rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
 
-   (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),"User2") << " = " << rptNewLine << Sub2(symbol(DELTA),"UserDC") << " + " << rptNewLine << Sub2(symbol(DELTA),"UserDW") , rptLengthUnitTag, pDispUnits->GetDisplacementUnit() );
+   (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),"User2") << " = " << rptNewLine << Sub2(symbol(DELTA),"UserDC") << " + " << rptNewLine << Sub2(symbol(DELTA),"UserDW") , rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
 
    col = 0;
-   (*table3)(0,col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDispUnits->GetSpanLengthUnit());
-   (*table3)(0,col++) << COLHDR(Sub2(symbol(DELTA),"1"),  rptLengthUnitTag, pDispUnits->GetDisplacementUnit() );
-   (*table3)(0,col++) << COLHDR(Sub2(symbol(DELTA),"2"),  rptLengthUnitTag, pDispUnits->GetDisplacementUnit() );
-   (*table3)(0,col++) << COLHDR(Sub2(symbol(DELTA),"3"),  rptLengthUnitTag, pDispUnits->GetDisplacementUnit() );
+   (*table3)(0,col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
+   (*table3)(0,col++) << COLHDR(Sub2(symbol(DELTA),"1"),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table3)(0,col++) << COLHDR(Sub2(symbol(DELTA),"2"),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table3)(0,col++) << COLHDR(Sub2(symbol(DELTA),"3"),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
 
    double days = (constructionRate == CREEP_MINTIME ? pSpecEntry->GetCreepDuration2Min() : pSpecEntry->GetCreepDuration2Max());
    days = ::ConvertFromSysUnits(days,unitMeasure::Day);
    std::ostringstream os;
    os << days;
-   (*table3)(0,col++) << COLHDR(Sub2("D",os.str().c_str()) << " = " << Sub2(symbol(DELTA),"4"),  rptLengthUnitTag, pDispUnits->GetDisplacementUnit() );
-   (*table3)(0,col++) << COLHDR(Sub2(symbol(DELTA),"5"),  rptLengthUnitTag, pDispUnits->GetDisplacementUnit() );
-   (*table3)(0,col++) << COLHDR(Sub2(symbol(DELTA),"excess") << " = " << rptNewLine << Sub2(symbol(DELTA),"6"),  rptLengthUnitTag, pDispUnits->GetDisplacementUnit() );
-   (*table3)(0,col++) << COLHDR("C = " << Sub2(symbol(DELTA),"4") << " - " << Sub2(symbol(DELTA),"6"),  rptLengthUnitTag, pDispUnits->GetDisplacementUnit() );
+   (*table3)(0,col++) << COLHDR(Sub2("D",os.str().c_str()) << " = " << Sub2(symbol(DELTA),"4"),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table3)(0,col++) << COLHDR(Sub2(symbol(DELTA),"5"),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table3)(0,col++) << COLHDR(Sub2(symbol(DELTA),"excess") << " = " << rptNewLine << Sub2(symbol(DELTA),"6"),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table3)(0,col++) << COLHDR("C = " << Sub2(symbol(DELTA),"4") << " - " << Sub2(symbol(DELTA),"6"),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
 
    BridgeAnalysisType bat = (analysisType == pgsTypes::Simple ? SimpleSpan : analysisType == pgsTypes::Continuous ? ContinuousSpan : MinSimpleContinuousEnvelope);
 
@@ -218,23 +224,24 @@ void CCamberTable::Build_CIP_TempStrands(IBroker* pBroker,SpanIndexType span,Gir
    {
       const pgsPointOfInterest& poi = *i;
 
-      double Dps1, Dps, Dtpsi, Dtpsr, Dgirder, Dcreep1, Ddiaphragm, Ddeck, Dcreep2, Duser1, Dbarrier, Dsidewalk, Doverlay, Duser2;
+      double Dps1, Dps, Dtpsi, Dtpsr, Dgirder, Dcreep1, Ddiaphragm, Dshearkey, Ddeck, Dcreep2, Duser1, Dbarrier, Dsidewalk, Doverlay, Duser2;
       Dps1       = pCamber->GetPrestressDeflection( poi, false );
       Dps        = pCamber->GetPrestressDeflection( poi, true );
       Dtpsi      = pCamber->GetInitialTempPrestressDeflection( poi,true );
       Dtpsr      = pCamber->GetReleaseTempPrestressDeflection( poi );
-      Dgirder    = pProduct->GetGirderDeflectionForCamber( poi );
+      Dgirder    = pProductForces->GetGirderDeflectionForCamber( poi );
       Dcreep1    = pCamber->GetCreepDeflection( poi, ICamber::cpReleaseToDiaphragm, constructionRate );
       Ddiaphragm = pCamber->GetDiaphragmDeflection( poi );
-      Ddeck      = pProduct->GetDisplacement(pgsTypes::BridgeSite1,pftSlab,poi,bat);
+      Dshearkey  = pProductForces->GetDisplacement(pgsTypes::BridgeSite1,pftShearKey,poi,bat);
+      Ddeck      = pProductForces->GetDisplacement(pgsTypes::BridgeSite1,pftSlab,poi,bat);
       Dcreep2    = pCamber->GetCreepDeflection( poi, ICamber::cpDiaphragmToDeck, constructionRate );
-      Duser1     = pProduct->GetDisplacement(pgsTypes::BridgeSite1,pftUserDC,poi,bat) + pProduct->GetDisplacement(pgsTypes::BridgeSite1,pftUserDW,poi,bat);
-      Duser2     = pProduct->GetDisplacement(pgsTypes::BridgeSite2,pftUserDC,poi,bat) + pProduct->GetDisplacement(pgsTypes::BridgeSite2,pftUserDW,poi,bat);
-      Dbarrier   = pProduct->GetDisplacement(pgsTypes::BridgeSite2,pftTrafficBarrier,poi,bat);
-      Dsidewalk  = pProduct->GetDisplacement(pgsTypes::BridgeSite2,pftSidewalk,      poi,bat);
-      Doverlay   = pProduct->GetDisplacement(pgsTypes::BridgeSite2,pftOverlay,poi,bat);
+      Duser1     = pProductForces->GetDisplacement(pgsTypes::BridgeSite1,pftUserDC,poi,bat) + pProductForces->GetDisplacement(pgsTypes::BridgeSite1,pftUserDW,poi,bat);
+      Duser2     = pProductForces->GetDisplacement(pgsTypes::BridgeSite2,pftUserDC,poi,bat) + pProductForces->GetDisplacement(pgsTypes::BridgeSite2,pftUserDW,poi,bat);
+      Dbarrier   = pProductForces->GetDisplacement(pgsTypes::BridgeSite2,pftTrafficBarrier,poi,bat);
+      Dsidewalk  = pProductForces->GetDisplacement(pgsTypes::BridgeSite2,pftSidewalk,      poi,bat);
+      Doverlay   = pProductForces->GetDisplacement(pgsTypes::BridgeSite2,pftOverlay,poi,bat);
 
-      // if we have a future overlay, the deflection due to the overlan in BridgeSite2 must be zero
+      // if we have a future overlay, the deflection due to the overlay in BridgeSite2 must be zero
       ATLASSERT( pBridge->IsFutureOverlay() ? IsZero(Doverlay) : true );
 
       // Table 1
@@ -253,6 +260,9 @@ void CCamberTable::Build_CIP_TempStrands(IBroker* pBroker,SpanIndexType span,Gir
       col = 0;
       (*table2)(row2,col++) << location.SetValue( poi,end_size );
       (*table2)(row2,col++) << displacement.SetValue( Ddiaphragm );
+      if ( bShearKey )
+         (*table2)(row2,col++) << displacement.SetValue( Dshearkey );
+
       (*table2)(row2,col++) << displacement.SetValue( Dcreep2 );
       (*table2)(row2,col++) << displacement.SetValue( Ddeck );
       (*table2)(row2,col++) << displacement.SetValue( Duser1 );
@@ -272,7 +282,7 @@ void CCamberTable::Build_CIP_TempStrands(IBroker* pBroker,SpanIndexType span,Gir
       col = 0;
       double D1 = Dgirder + Dps + Dtpsi;
       double D2 = D1 + Dcreep1;
-      double D3 = D2 + Ddiaphragm + Dtpsr;
+      double D3 = D2 + Ddiaphragm + Dshearkey + Dtpsr;
       double D4 = D3 + Dcreep2;
       double D5 = D4 + Ddeck + Duser1;
       double D6 = D5 + Dsidewalk + Dbarrier + Doverlay + Duser2;
@@ -315,11 +325,11 @@ void CCamberTable::Build_CIP_TempStrands(IBroker* pBroker,SpanIndexType span,Gir
 
 
 void CCamberTable::Build_CIP(IBroker* pBroker,SpanIndexType span,GirderIndexType girder,
-                             IDisplayUnits* pDispUnits,Int16 constructionRate,
+                             IDisplayUnits* pDisplayUnits,Int16 constructionRate,
                              rptRcTable** pTable1,rptRcTable** pTable2,rptRcTable** pTable3) const
 {
-   INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDispUnits->GetSpanLengthUnit(), false );
-   INIT_UV_PROTOTYPE( rptLengthUnitValue, displacement, pDispUnits->GetDisplacementUnit(), false );
+   INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
+   INIT_UV_PROTOTYPE( rptLengthUnitValue, displacement, pDisplayUnits->GetDisplacementUnit(), false );
 
    GET_IFACE2(pBroker,ILibrary,pLib);
    GET_IFACE2(pBroker,ISpecification,pSpec);
@@ -334,12 +344,14 @@ void CCamberTable::Build_CIP(IBroker* pBroker,SpanIndexType span,GirderIndexType
 
    GET_IFACE2(pBroker,ICamber,pCamber);
    GET_IFACE2(pBroker,IProductForces,pProduct);
+   GET_IFACE2(pBroker,IProductLoads,pProductLoads);
    GET_IFACE2(pBroker,IBridge,pBridge);
 
    pgsTypes::SupportedDeckType deckType = pBridge->GetDeckType();
    Float64 end_size = pBridge->GetGirderStartConnectionLength(span,girder);
 
-   bool bSidewalk = pProduct->HasSidewalkLoad(span,girder);
+   bool bSidewalk = pProductLoads->HasSidewalkLoad(span,girder);
+   bool bShearKey = pProductLoads->HasShearKeyLoad(span,girder);
 
    pgsTypes::AnalysisType analysisType = pSpec->GetAnalysisType();
 
@@ -349,46 +361,50 @@ void CCamberTable::Build_CIP(IBroker* pBroker,SpanIndexType span,GirderIndexType
    rptRcTable* table3;
 
    table1 = pgsReportStyleHolder::CreateDefaultTable(5,"Camber - Part 1 (upwards is positive)");
-   table2 = pgsReportStyleHolder::CreateDefaultTable(6 + (bSidewalk ? 1 : 0) + (!pBridge->IsFutureOverlay() ? 1 : 0),"Camber - Part 2 (upwards is positive)");
+   table2 = pgsReportStyleHolder::CreateDefaultTable(6 + (bSidewalk ? 1 : 0) + (!pBridge->IsFutureOverlay() ? 1 : 0)+ (bShearKey ? 1 : 0),"Camber - Part 2 (upwards is positive)");
    table3 = pgsReportStyleHolder::CreateDefaultTable(6,"Camber - Part 3 (upwards is positive)");
 
    // Setup table headings
    int col = 0;
-   (*table1)(0,col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDispUnits->GetSpanLengthUnit());
-   (*table1)(0,col++) << COLHDR(Sub2(symbol(DELTA),"ps") << " " << Sub2("L","g"),         rptLengthUnitTag, pDispUnits->GetDisplacementUnit() );
-   (*table1)(0,col++) << COLHDR(Sub2(symbol(DELTA),"ps") << " " << Sub2("L","s"),         rptLengthUnitTag, pDispUnits->GetDisplacementUnit() );
-   (*table1)(0,col++) << COLHDR(Sub2(symbol(DELTA),"girder"),     rptLengthUnitTag, pDispUnits->GetDisplacementUnit() );
-   (*table1)(0,col++) << COLHDR(Sub2(symbol(DELTA),"creep"),  rptLengthUnitTag, pDispUnits->GetDisplacementUnit() );
+   (*table1)(0,col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
+   (*table1)(0,col++) << COLHDR(Sub2(symbol(DELTA),"ps") << " " << Sub2("L","g"),         rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table1)(0,col++) << COLHDR(Sub2(symbol(DELTA),"ps") << " " << Sub2("L","s"),         rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table1)(0,col++) << COLHDR(Sub2(symbol(DELTA),"girder"),     rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table1)(0,col++) << COLHDR(Sub2(symbol(DELTA),"creep"),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
 
    col = 0;
-   (*table2)(0,col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDispUnits->GetSpanLengthUnit());
-   (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),"diaphragm"),  rptLengthUnitTag, pDispUnits->GetDisplacementUnit() );
-   (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),"deck"),  rptLengthUnitTag, pDispUnits->GetDisplacementUnit() );
-   (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),"User1") << " = " << rptNewLine << Sub2(symbol(DELTA),"UserDC") << " + " << rptNewLine  << Sub2(symbol(DELTA),"UserDW") , rptLengthUnitTag, pDispUnits->GetDisplacementUnit() );
+   (*table2)(0,col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
+   (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),"diaphragm"),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+
+   if ( bShearKey )
+      (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),"shear key"), rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+
+   (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),"deck"),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),"User1") << " = " << rptNewLine << Sub2(symbol(DELTA),"UserDC") << " + " << rptNewLine  << Sub2(symbol(DELTA),"UserDW") , rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
 
    if ( bSidewalk )
-      (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),"sidewalk"), rptLengthUnitTag, pDispUnits->GetDisplacementUnit() );
+      (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),"sidewalk"), rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
 
-   (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),"barrier"), rptLengthUnitTag, pDispUnits->GetDisplacementUnit() );
+   (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),"barrier"), rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
 
    if ( !pBridge->IsFutureOverlay() )
    {
-      (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),"overlay"), rptLengthUnitTag, pDispUnits->GetDisplacementUnit() );
+      (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),"overlay"), rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
    }
 
-   (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),"User2") << " = " << rptNewLine << Sub2(symbol(DELTA),"UserDC") << " + " << rptNewLine  << Sub2(symbol(DELTA),"UserDW") , rptLengthUnitTag, pDispUnits->GetDisplacementUnit() );
+   (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),"User2") << " = " << rptNewLine << Sub2(symbol(DELTA),"UserDC") << " + " << rptNewLine  << Sub2(symbol(DELTA),"UserDW") , rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
 
    col = 0;
-   (*table3)(0,col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDispUnits->GetSpanLengthUnit());
-   (*table3)(0,col++) << COLHDR(Sub2(symbol(DELTA),"1"),  rptLengthUnitTag, pDispUnits->GetDisplacementUnit() );
+   (*table3)(0,col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
+   (*table3)(0,col++) << COLHDR(Sub2(symbol(DELTA),"1"),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
 
    double days = (constructionRate == CREEP_MINTIME ? pSpecEntry->GetCreepDuration2Min() : pSpecEntry->GetCreepDuration2Max());
    days = ::ConvertFromSysUnits(days,unitMeasure::Day);
    std::ostringstream os;
-   (*table3)(0,col++) << COLHDR(Sub2("D",os.str().c_str()) << " = " << Sub2(symbol(DELTA),"2"),  rptLengthUnitTag, pDispUnits->GetDisplacementUnit() );
-   (*table3)(0,col++) << COLHDR(Sub2(symbol(DELTA),"3"),  rptLengthUnitTag, pDispUnits->GetDisplacementUnit() );
-   (*table3)(0,col++) << COLHDR(Sub2(symbol(DELTA),"excess") << " = " << rptNewLine << Sub2(symbol(DELTA),"4"),  rptLengthUnitTag, pDispUnits->GetDisplacementUnit() );
-   (*table3)(0,col++) << COLHDR("C = " << Sub2(symbol(DELTA),"2") << " - " << Sub2(symbol(DELTA),"4"),  rptLengthUnitTag, pDispUnits->GetDisplacementUnit() );
+   (*table3)(0,col++) << COLHDR(Sub2("D",os.str().c_str()) << " = " << Sub2(symbol(DELTA),"2"),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table3)(0,col++) << COLHDR(Sub2(symbol(DELTA),"3"),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table3)(0,col++) << COLHDR(Sub2(symbol(DELTA),"excess") << " = " << rptNewLine << Sub2(symbol(DELTA),"4"),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table3)(0,col++) << COLHDR("C = " << Sub2(symbol(DELTA),"2") << " - " << Sub2(symbol(DELTA),"4"),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
 
    BridgeAnalysisType bat = (analysisType == pgsTypes::Simple ? SimpleSpan : analysisType == pgsTypes::Continuous ? ContinuousSpan : MinSimpleContinuousEnvelope);
 
@@ -401,12 +417,13 @@ void CCamberTable::Build_CIP(IBroker* pBroker,SpanIndexType span,GirderIndexType
    {
       const pgsPointOfInterest& poi = *i;
 
-      double Dps1, Dps, Dgirder, Dcreep, Ddiaphragm, Ddeck, Duser1, Dbarrier, Dsidewalk, Doverlay, Duser2;
+      double Dps1, Dps, Dgirder, Dcreep, Ddiaphragm, Dshearkey, Ddeck, Duser1, Dbarrier, Dsidewalk, Doverlay, Duser2;
       Dps1       = pCamber->GetPrestressDeflection( poi, false );
       Dps        = pCamber->GetPrestressDeflection( poi, true );
       Dgirder    = pProduct->GetGirderDeflectionForCamber( poi );
       Dcreep     = pCamber->GetCreepDeflection( poi, ICamber::cpReleaseToDeck, constructionRate );
       Ddiaphragm = pCamber->GetDiaphragmDeflection( poi );
+      Dshearkey  = pProduct->GetDisplacement(pgsTypes::BridgeSite1,pftShearKey,poi,bat);
       Ddeck      = pProduct->GetDisplacement(pgsTypes::BridgeSite1,pftSlab,poi,bat);
       Duser1     = pProduct->GetDisplacement(pgsTypes::BridgeSite1,pftUserDC,poi,bat) + pProduct->GetDisplacement(pgsTypes::BridgeSite1,pftUserDW,poi,bat);
       Duser2     = pProduct->GetDisplacement(pgsTypes::BridgeSite2,pftUserDC,poi,bat) + pProduct->GetDisplacement(pgsTypes::BridgeSite2,pftUserDW,poi,bat);
@@ -427,6 +444,10 @@ void CCamberTable::Build_CIP(IBroker* pBroker,SpanIndexType span,GirderIndexType
       col = 0;
       (*table2)(row2,col++) << location.SetValue( poi,end_size );
       (*table2)(row2,col++) << displacement.SetValue( Ddiaphragm );
+
+      if ( bShearKey )
+         (*table2)(row2,col++) << displacement.SetValue( Dshearkey );
+
       (*table2)(row2,col++) << displacement.SetValue( Ddeck );
       (*table2)(row2,col++) << displacement.SetValue( Duser1 );
 
@@ -446,7 +467,7 @@ void CCamberTable::Build_CIP(IBroker* pBroker,SpanIndexType span,GirderIndexType
       col = 0;
       double D1 = Dgirder + Dps;
       double D2 = D1 + Dcreep;
-      double D3 = D2 + Ddiaphragm + Ddeck + Duser1;
+      double D3 = D2 + Ddiaphragm + Ddeck + Dshearkey + Duser1;
       double D4 = D3 + Dsidewalk + Dbarrier + Duser2 + Doverlay;
 
       (*table3)(row3,col++) << location.SetValue( poi,end_size );
@@ -485,11 +506,11 @@ void CCamberTable::Build_CIP(IBroker* pBroker,SpanIndexType span,GirderIndexType
 }
 
 void CCamberTable::Build_SIP_TempStrands(IBroker* pBroker,SpanIndexType span,GirderIndexType girder,
-                                         IDisplayUnits* pDispUnits,Int16 constructionRate,
+                                         IDisplayUnits* pDisplayUnits,Int16 constructionRate,
                                          rptRcTable** pTable1,rptRcTable** pTable2,rptRcTable** pTable3) const
 {
-   INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDispUnits->GetSpanLengthUnit(), false );
-   INIT_UV_PROTOTYPE( rptLengthUnitValue, displacement, pDispUnits->GetDisplacementUnit(), false );
+   INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
+   INIT_UV_PROTOTYPE( rptLengthUnitValue, displacement, pDisplayUnits->GetDisplacementUnit(), false );
 
    GET_IFACE2(pBroker,ILibrary,pLib);
    GET_IFACE2(pBroker,ISpecification,pSpec);
@@ -503,6 +524,7 @@ void CCamberTable::Build_SIP_TempStrands(IBroker* pBroker,SpanIndexType span,Gir
    std::vector<pgsPointOfInterest> vPoi = pIPoi->GetPointsOfInterest( stages, span, girder, POI_DISPLACEMENT | POI_TABULAR );
 
    GET_IFACE2(pBroker,ICamber,pCamber);
+   GET_IFACE2(pBroker,IProductLoads,pProductLoads);
    GET_IFACE2(pBroker,IProductForces,pProduct);
    GET_IFACE2(pBroker,IBridge,pBridge);
 
@@ -511,7 +533,8 @@ void CCamberTable::Build_SIP_TempStrands(IBroker* pBroker,SpanIndexType span,Gir
 
    pgsTypes::AnalysisType analysisType = pSpec->GetAnalysisType();
 
-   bool bSidewalk = pProduct->HasSidewalkLoad(span,girder);
+   bool bSidewalk = pProductLoads->HasSidewalkLoad(span,girder);
+   bool bShearKey = pProductLoads->HasShearKeyLoad(span,girder);
 
    // create the tables
    rptRcTable* table1;
@@ -519,51 +542,55 @@ void CCamberTable::Build_SIP_TempStrands(IBroker* pBroker,SpanIndexType span,Gir
    rptRcTable* table3;
 
    table1 = pgsReportStyleHolder::CreateDefaultTable(7,"Camber - Part 1 (upwards is positive)");
-   table2 = pgsReportStyleHolder::CreateDefaultTable(8 + (bSidewalk ? 1 : 0) + (!pBridge->IsFutureOverlay() ? 1 : 0),"Camber - Part 2 (upwards is positive)");
+   table2 = pgsReportStyleHolder::CreateDefaultTable(8 + (bSidewalk ? 1 : 0) + (!pBridge->IsFutureOverlay() ? 1 : 0) + (bShearKey ? 1 : 0),"Camber - Part 2 (upwards is positive)");
    table3 = pgsReportStyleHolder::CreateDefaultTable(8,"Camber - Part 3 (upwards is positive)");
 
    // Setup table headings
    int col = 0;
-   (*table1)(0,col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDispUnits->GetSpanLengthUnit());
-   (*table1)(0,col++) << COLHDR(Sub2(symbol(DELTA),"ps") << " " << Sub2("L","g"),         rptLengthUnitTag, pDispUnits->GetDisplacementUnit() );
-   (*table1)(0,col++) << COLHDR(Sub2(symbol(DELTA),"ps") << " " << Sub2("L","s"),         rptLengthUnitTag, pDispUnits->GetDisplacementUnit() );
-   (*table1)(0,col++) << COLHDR(Sub2(symbol(DELTA),"tpsi"),       rptLengthUnitTag, pDispUnits->GetDisplacementUnit() );
-   (*table1)(0,col++) << COLHDR(Sub2(symbol(DELTA),"tpsr"),       rptLengthUnitTag, pDispUnits->GetDisplacementUnit() );
-   (*table1)(0,col++) << COLHDR(Sub2(symbol(DELTA),"girder"),     rptLengthUnitTag, pDispUnits->GetDisplacementUnit() );
-   (*table1)(0,col++) << COLHDR(Sub2(symbol(DELTA),"creep1"),  rptLengthUnitTag, pDispUnits->GetDisplacementUnit() );
+   (*table1)(0,col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
+   (*table1)(0,col++) << COLHDR(Sub2(symbol(DELTA),"ps") << " " << Sub2("L","g"),         rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table1)(0,col++) << COLHDR(Sub2(symbol(DELTA),"ps") << " " << Sub2("L","s"),         rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table1)(0,col++) << COLHDR(Sub2(symbol(DELTA),"tpsi"),       rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table1)(0,col++) << COLHDR(Sub2(symbol(DELTA),"tpsr"),       rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table1)(0,col++) << COLHDR(Sub2(symbol(DELTA),"girder"),     rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table1)(0,col++) << COLHDR(Sub2(symbol(DELTA),"creep1"),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
 
    col = 0;
-   (*table2)(0,col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDispUnits->GetSpanLengthUnit());
-   (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),"diaphragm"),  rptLengthUnitTag, pDispUnits->GetDisplacementUnit() );
-   (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),"creep2"),  rptLengthUnitTag, pDispUnits->GetDisplacementUnit() );
-   (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),"panels"),  rptLengthUnitTag, pDispUnits->GetDisplacementUnit() );
-   (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),"deck"),  rptLengthUnitTag, pDispUnits->GetDisplacementUnit() );
-   (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),"User1") << " = " << rptNewLine << Sub2(symbol(DELTA),"UserDC") << " + " << rptNewLine  << Sub2(symbol(DELTA),"UserDW") , rptLengthUnitTag, pDispUnits->GetDisplacementUnit() );
+   (*table2)(0,col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
+   (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),"diaphragm"),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+
+   if ( bShearKey )
+      (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),"shear key"), rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+
+   (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),"creep2"),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),"panels"),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),"deck"),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),"User1") << " = " << rptNewLine << Sub2(symbol(DELTA),"UserDC") << " + " << rptNewLine  << Sub2(symbol(DELTA),"UserDW") , rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
 
    if ( bSidewalk )
-      (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),"sidewalk"), rptLengthUnitTag, pDispUnits->GetDisplacementUnit() );
+      (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),"sidewalk"), rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
 
-   (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),"barrier"), rptLengthUnitTag, pDispUnits->GetDisplacementUnit() );
+   (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),"barrier"), rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
 
    if ( !pBridge->IsFutureOverlay() )
-      (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),"overlay"), rptLengthUnitTag, pDispUnits->GetDisplacementUnit() );
+      (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),"overlay"), rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
 
-   (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),"User2") << " = " << rptNewLine << Sub2(symbol(DELTA),"UserDC") << " + " << rptNewLine  << Sub2(symbol(DELTA),"UserDW") , rptLengthUnitTag, pDispUnits->GetDisplacementUnit() );
+   (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),"User2") << " = " << rptNewLine << Sub2(symbol(DELTA),"UserDC") << " + " << rptNewLine  << Sub2(symbol(DELTA),"UserDW") , rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
 
    col = 0;
-   (*table3)(0,col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDispUnits->GetSpanLengthUnit());
-   (*table3)(0,col++) << COLHDR(Sub2(symbol(DELTA),"1"),  rptLengthUnitTag, pDispUnits->GetDisplacementUnit() );
-   (*table3)(0,col++) << COLHDR(Sub2(symbol(DELTA),"2"),  rptLengthUnitTag, pDispUnits->GetDisplacementUnit() );
-   (*table3)(0,col++) << COLHDR(Sub2(symbol(DELTA),"3"),  rptLengthUnitTag, pDispUnits->GetDisplacementUnit() );
+   (*table3)(0,col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
+   (*table3)(0,col++) << COLHDR(Sub2(symbol(DELTA),"1"),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table3)(0,col++) << COLHDR(Sub2(symbol(DELTA),"2"),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table3)(0,col++) << COLHDR(Sub2(symbol(DELTA),"3"),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
 
    double days = (constructionRate == CREEP_MINTIME ? pSpecEntry->GetCreepDuration2Min() : pSpecEntry->GetCreepDuration2Max());
    days = ::ConvertFromSysUnits(days,unitMeasure::Day);
    std::ostringstream os;
    os << days;
-   (*table3)(0,col++) << COLHDR(Sub2("D",os.str().c_str()) << " = " << Sub2(symbol(DELTA),"4"),  rptLengthUnitTag, pDispUnits->GetDisplacementUnit() );
-   (*table3)(0,col++) << COLHDR(Sub2(symbol(DELTA),"5"),  rptLengthUnitTag, pDispUnits->GetDisplacementUnit() );
-   (*table3)(0,col++) << COLHDR(Sub2(symbol(DELTA),"excess") << " = " << rptNewLine << Sub2(symbol(DELTA),"6"),  rptLengthUnitTag, pDispUnits->GetDisplacementUnit() );
-   (*table3)(0,col++) << COLHDR("C = " << Sub2(symbol(DELTA),"4") << " - " << Sub2(symbol(DELTA),"6"),  rptLengthUnitTag, pDispUnits->GetDisplacementUnit() );
+   (*table3)(0,col++) << COLHDR(Sub2("D",os.str().c_str()) << " = " << Sub2(symbol(DELTA),"4"),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table3)(0,col++) << COLHDR(Sub2(symbol(DELTA),"5"),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table3)(0,col++) << COLHDR(Sub2(symbol(DELTA),"excess") << " = " << rptNewLine << Sub2(symbol(DELTA),"6"),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table3)(0,col++) << COLHDR("C = " << Sub2(symbol(DELTA),"4") << " - " << Sub2(symbol(DELTA),"6"),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
 
    BridgeAnalysisType bat = (analysisType == pgsTypes::Simple ? SimpleSpan : analysisType == pgsTypes::Continuous ? ContinuousSpan : MinSimpleContinuousEnvelope);
 
@@ -577,7 +604,7 @@ void CCamberTable::Build_SIP_TempStrands(IBroker* pBroker,SpanIndexType span,Gir
    {
       const pgsPointOfInterest& poi = *i;
 
-      double Dps1, Dps, Dtpsi, Dtpsr, Dgirder, Dcreep1, Ddiaphragm, Dpanel, Ddeck, Dcreep2, Duser1, Dsidewalk, Dbarrier, Doverlay, Duser2;
+      double Dps1, Dps, Dtpsi, Dtpsr, Dgirder, Dcreep1, Ddiaphragm, Dshearkey, Dpanel, Ddeck, Dcreep2, Duser1, Dsidewalk, Dbarrier, Doverlay, Duser2;
       Dps1       = pCamber->GetPrestressDeflection( poi, false );
       Dps        = pCamber->GetPrestressDeflection( poi, true );
       Dtpsi      = pCamber->GetInitialTempPrestressDeflection( poi,true );
@@ -586,6 +613,7 @@ void CCamberTable::Build_SIP_TempStrands(IBroker* pBroker,SpanIndexType span,Gir
       Dcreep1    = pCamber->GetCreepDeflection( poi, ICamber::cpReleaseToDiaphragm, constructionRate );
       Ddiaphragm = pCamber->GetDiaphragmDeflection( poi );
       Ddeck      = pProduct->GetDisplacement(pgsTypes::BridgeSite1,pftSlab,poi,bat);
+      Dshearkey  = pProduct->GetDisplacement(pgsTypes::BridgeSite1,pftShearKey,poi,bat);
       Dcreep2    = pCamber->GetCreepDeflection( poi, ICamber::cpDiaphragmToDeck, constructionRate );
       Duser1     = pProduct->GetDisplacement(pgsTypes::BridgeSite1,pftUserDC,poi,bat) + pProduct->GetDisplacement(pgsTypes::BridgeSite1,pftUserDW,poi,bat);
       Duser2     = pProduct->GetDisplacement(pgsTypes::BridgeSite2,pftUserDC,poi,bat) + pProduct->GetDisplacement(pgsTypes::BridgeSite2,pftUserDW,poi,bat);
@@ -609,6 +637,10 @@ void CCamberTable::Build_SIP_TempStrands(IBroker* pBroker,SpanIndexType span,Gir
       col = 0;
       (*table2)(row2,col++) << location.SetValue( poi,end_size );
       (*table2)(row2,col++) << displacement.SetValue( Ddiaphragm );
+
+      if ( bShearKey )
+         (*table2)(row2,col++) << displacement.SetValue(Dshearkey);
+
       (*table2)(row2,col++) << displacement.SetValue( Dcreep2 );
       (*table2)(row2,col++) << displacement.SetValue( Dpanel );
       (*table2)(row2,col++) << displacement.SetValue( Ddeck );
@@ -630,7 +662,7 @@ void CCamberTable::Build_SIP_TempStrands(IBroker* pBroker,SpanIndexType span,Gir
       col = 0;
       double D1 = Dgirder + Dps + Dtpsi;
       double D2 = D1 + Dcreep1;
-      double D3 = D2 + Ddiaphragm + Dtpsr + Dpanel;
+      double D3 = D2 + Ddiaphragm + + Dshearkey + Dtpsr + Dpanel;
       double D4 = D3 + Dcreep2;
       double D5 = D4 + Ddeck + Duser1;
       double D6 = D5 + Dbarrier + Dsidewalk + Doverlay + Duser2;
@@ -673,11 +705,11 @@ void CCamberTable::Build_SIP_TempStrands(IBroker* pBroker,SpanIndexType span,Gir
 
 
 void CCamberTable::Build_SIP(IBroker* pBroker,SpanIndexType span,GirderIndexType girder,
-                             IDisplayUnits* pDispUnits,Int16 constructionRate,
+                             IDisplayUnits* pDisplayUnits,Int16 constructionRate,
                              rptRcTable** pTable1,rptRcTable** pTable2,rptRcTable** pTable3) const
 {
-   INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDispUnits->GetSpanLengthUnit(), false );
-   INIT_UV_PROTOTYPE( rptLengthUnitValue, displacement, pDispUnits->GetDisplacementUnit(), false );
+   INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
+   INIT_UV_PROTOTYPE( rptLengthUnitValue, displacement, pDisplayUnits->GetDisplacementUnit(), false );
 
    GET_IFACE2(pBroker,ILibrary,pLib);
    GET_IFACE2(pBroker,ISpecification,pSpec);
@@ -692,6 +724,7 @@ void CCamberTable::Build_SIP(IBroker* pBroker,SpanIndexType span,GirderIndexType
 
    GET_IFACE2(pBroker,ICamber,pCamber);
    GET_IFACE2(pBroker,IProductForces,pProduct);
+   GET_IFACE2(pBroker,IProductLoads,pProductLoads);
    GET_IFACE2(pBroker,IBridge,pBridge);
 
    pgsTypes::SupportedDeckType deckType = pBridge->GetDeckType();
@@ -699,7 +732,8 @@ void CCamberTable::Build_SIP(IBroker* pBroker,SpanIndexType span,GirderIndexType
 
    pgsTypes::AnalysisType analysisType = pSpec->GetAnalysisType();
 
-   bool bSidewalk = pProduct->HasSidewalkLoad(span,girder);
+   bool bSidewalk = pProductLoads->HasSidewalkLoad(span,girder);
+   bool bShearKey = pProductLoads->HasShearKeyLoad(span,girder);
 
    // create the tables
    rptRcTable* table1;
@@ -707,46 +741,50 @@ void CCamberTable::Build_SIP(IBroker* pBroker,SpanIndexType span,GirderIndexType
    rptRcTable* table3;
 
    table1 = pgsReportStyleHolder::CreateDefaultTable(5,"Camber - Part 1 (upwards is positive)");
-   table2 = pgsReportStyleHolder::CreateDefaultTable(7 + (bSidewalk ? 1 : 0) + (!pBridge->IsFutureOverlay() ? 1 : 0),"Camber - Part 2 (upwards is positive)");
+   table2 = pgsReportStyleHolder::CreateDefaultTable(7 + (bSidewalk ? 1 : 0) + (!pBridge->IsFutureOverlay() ? 1 : 0) + (bShearKey ? 1 : 0),"Camber - Part 2 (upwards is positive)");
    table3 = pgsReportStyleHolder::CreateDefaultTable(6,"Camber - Part 3 (upwards is positive)");
 
    // Setup table headings
    int col = 0;
-   (*table1)(0,col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDispUnits->GetSpanLengthUnit());
-   (*table1)(0,col++) << COLHDR(Sub2(symbol(DELTA),"ps") << " " << Sub2("L","g"),         rptLengthUnitTag, pDispUnits->GetDisplacementUnit() );
-   (*table1)(0,col++) << COLHDR(Sub2(symbol(DELTA),"ps") << " " << Sub2("L","s"),         rptLengthUnitTag, pDispUnits->GetDisplacementUnit() );
-   (*table1)(0,col++) << COLHDR(Sub2(symbol(DELTA),"girder"),     rptLengthUnitTag, pDispUnits->GetDisplacementUnit() );
-   (*table1)(0,col++) << COLHDR(Sub2(symbol(DELTA),"creep"),  rptLengthUnitTag, pDispUnits->GetDisplacementUnit() );
+   (*table1)(0,col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
+   (*table1)(0,col++) << COLHDR(Sub2(symbol(DELTA),"ps") << " " << Sub2("L","g"),         rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table1)(0,col++) << COLHDR(Sub2(symbol(DELTA),"ps") << " " << Sub2("L","s"),         rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table1)(0,col++) << COLHDR(Sub2(symbol(DELTA),"girder"),     rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table1)(0,col++) << COLHDR(Sub2(symbol(DELTA),"creep"),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
 
    col = 0;
-   (*table2)(0,col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDispUnits->GetSpanLengthUnit());
-   (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),"diaphragm"),  rptLengthUnitTag, pDispUnits->GetDisplacementUnit() );
-   (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),"panel"),  rptLengthUnitTag, pDispUnits->GetDisplacementUnit() );
-   (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),"deck"),  rptLengthUnitTag, pDispUnits->GetDisplacementUnit() );
-   (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),"User1") << " = " << rptNewLine << Sub2(symbol(DELTA),"UserDC") << " + " << rptNewLine  << Sub2(symbol(DELTA),"UserDW") , rptLengthUnitTag, pDispUnits->GetDisplacementUnit() );
+   (*table2)(0,col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
+   (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),"diaphragm"),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+
+   if ( bShearKey )
+      (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),"shear key"), rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+
+   (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),"panel"),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),"deck"),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),"User1") << " = " << rptNewLine << Sub2(symbol(DELTA),"UserDC") << " + " << rptNewLine  << Sub2(symbol(DELTA),"UserDW") , rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
 
    if ( bSidewalk )
-      (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),"sidewalk"), rptLengthUnitTag, pDispUnits->GetDisplacementUnit() );
+      (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),"sidewalk"), rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
 
-   (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),"barrier"), rptLengthUnitTag, pDispUnits->GetDisplacementUnit() );
+   (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),"barrier"), rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
 
    if ( !pBridge->IsFutureOverlay() )
-      (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),"overlay"), rptLengthUnitTag, pDispUnits->GetDisplacementUnit() );
+      (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),"overlay"), rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
 
-   (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),"User2") << " = " << rptNewLine << Sub2(symbol(DELTA),"UserDC") << " + " << rptNewLine  << Sub2(symbol(DELTA),"UserDW") , rptLengthUnitTag, pDispUnits->GetDisplacementUnit() );
+   (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),"User2") << " = " << rptNewLine << Sub2(symbol(DELTA),"UserDC") << " + " << rptNewLine  << Sub2(symbol(DELTA),"UserDW") , rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
 
    col = 0;
-   (*table3)(0,col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDispUnits->GetSpanLengthUnit());
-   (*table3)(0,col++) << COLHDR(Sub2(symbol(DELTA),"1"),  rptLengthUnitTag, pDispUnits->GetDisplacementUnit() );
+   (*table3)(0,col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
+   (*table3)(0,col++) << COLHDR(Sub2(symbol(DELTA),"1"),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
 
    double days = (constructionRate == CREEP_MINTIME ? pSpecEntry->GetCreepDuration2Min() : pSpecEntry->GetCreepDuration2Max());
    days = ::ConvertFromSysUnits(days,unitMeasure::Day);
    std::ostringstream os;
    os << days;
-   (*table3)(0,col++) << COLHDR(Sub2("D",os.str().c_str()) << " = " << Sub2(symbol(DELTA),"2"),  rptLengthUnitTag, pDispUnits->GetDisplacementUnit() );
-   (*table3)(0,col++) << COLHDR(Sub2(symbol(DELTA),"3"),  rptLengthUnitTag, pDispUnits->GetDisplacementUnit() );
-   (*table3)(0,col++) << COLHDR(Sub2(symbol(DELTA),"excess") << " = " << rptNewLine << Sub2(symbol(DELTA),"4"),  rptLengthUnitTag, pDispUnits->GetDisplacementUnit() );
-   (*table3)(0,col++) << COLHDR("C = " << Sub2(symbol(DELTA),"2") << " - " << Sub2(symbol(DELTA),"4"),  rptLengthUnitTag, pDispUnits->GetDisplacementUnit() );
+   (*table3)(0,col++) << COLHDR(Sub2("D",os.str().c_str()) << " = " << Sub2(symbol(DELTA),"2"),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table3)(0,col++) << COLHDR(Sub2(symbol(DELTA),"3"),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table3)(0,col++) << COLHDR(Sub2(symbol(DELTA),"excess") << " = " << rptNewLine << Sub2(symbol(DELTA),"4"),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table3)(0,col++) << COLHDR("C = " << Sub2(symbol(DELTA),"2") << " - " << Sub2(symbol(DELTA),"4"),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
 
    BridgeAnalysisType bat = (analysisType == pgsTypes::Simple ? SimpleSpan : analysisType == pgsTypes::Continuous ? ContinuousSpan : MinSimpleContinuousEnvelope);
 
@@ -759,12 +797,13 @@ void CCamberTable::Build_SIP(IBroker* pBroker,SpanIndexType span,GirderIndexType
    {
       const pgsPointOfInterest& poi = *i;
 
-      double Dps1, Dps, Dgirder, Dcreep, Ddiaphragm, Dpanel, Ddeck, Duser1, Dsidewalk, Dbarrier, Doverlay, Duser2;
+      double Dps1, Dps, Dgirder, Dcreep, Ddiaphragm, Dshearkey, Dpanel, Ddeck, Duser1, Dsidewalk, Dbarrier, Doverlay, Duser2;
       Dps1       = pCamber->GetPrestressDeflection( poi, false );
       Dps        = pCamber->GetPrestressDeflection( poi, true );
       Dgirder    = pProduct->GetGirderDeflectionForCamber( poi );
       Dcreep     = pCamber->GetCreepDeflection( poi, ICamber::cpReleaseToDeck, constructionRate );
       Ddiaphragm = pCamber->GetDiaphragmDeflection( poi );
+      Dshearkey  = pProduct->GetDisplacement(pgsTypes::BridgeSite1,pftShearKey,poi,bat);
       Ddeck      = pProduct->GetDisplacement(pgsTypes::BridgeSite1,pftSlab,poi,bat);
       Duser1     = pProduct->GetDisplacement(pgsTypes::BridgeSite1,pftUserDC,poi,bat) + pProduct->GetDisplacement(pgsTypes::BridgeSite1,pftUserDW,poi,bat);
       Duser2     = pProduct->GetDisplacement(pgsTypes::BridgeSite2,pftUserDC,poi,bat) + pProduct->GetDisplacement(pgsTypes::BridgeSite2,pftUserDW,poi,bat);
@@ -786,6 +825,10 @@ void CCamberTable::Build_SIP(IBroker* pBroker,SpanIndexType span,GirderIndexType
       col = 0;
       (*table2)(row2,col++) << location.SetValue( poi,end_size );
       (*table2)(row2,col++) << displacement.SetValue( Ddiaphragm );
+
+      if ( bShearKey )
+         (*table2)(row2,col++) << displacement.SetValue( Dshearkey);
+
       (*table2)(row2,col++) << displacement.SetValue( Dpanel );
       (*table2)(row2,col++) << displacement.SetValue( Ddeck );
       (*table2)(row2,col++) << displacement.SetValue( Duser1 );
@@ -806,7 +849,7 @@ void CCamberTable::Build_SIP(IBroker* pBroker,SpanIndexType span,GirderIndexType
       col = 0;
       double D1 = Dgirder + Dps;
       double D2 = D1 + Dcreep;
-      double D3 = D2 + Ddiaphragm + Dpanel;
+      double D3 = D2 + Ddiaphragm + Dshearkey + Dpanel;
       double D4 = D3 + Ddeck + Duser1 + Dsidewalk + Dbarrier + Doverlay + Duser2;
 
       (*table3)(row3,col++) << location.SetValue( poi,end_size );
@@ -844,11 +887,11 @@ void CCamberTable::Build_SIP(IBroker* pBroker,SpanIndexType span,GirderIndexType
 }
 
 void CCamberTable::Build_NoDeck_TempStrands(IBroker* pBroker,SpanIndexType span,GirderIndexType girder,
-                                            IDisplayUnits* pDispUnits,Int16 constructionRate,
+                                            IDisplayUnits* pDisplayUnits,Int16 constructionRate,
                                             rptRcTable** pTable1,rptRcTable** pTable2,rptRcTable** pTable3) const
 {
-   INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDispUnits->GetSpanLengthUnit(), false );
-   INIT_UV_PROTOTYPE( rptLengthUnitValue, displacement, pDispUnits->GetDisplacementUnit(), false );
+   INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
+   INIT_UV_PROTOTYPE( rptLengthUnitValue, displacement, pDisplayUnits->GetDisplacementUnit(), false );
 
    GET_IFACE2(pBroker,ILibrary,pLib);
    GET_IFACE2(pBroker,ISpecification,pSpec);
@@ -862,6 +905,7 @@ void CCamberTable::Build_NoDeck_TempStrands(IBroker* pBroker,SpanIndexType span,
    std::vector<pgsPointOfInterest> vPoi = pIPoi->GetPointsOfInterest( stages, span, girder, POI_DISPLACEMENT | POI_TABULAR );
 
    GET_IFACE2(pBroker,ICamber,pCamber);
+   GET_IFACE2(pBroker,IProductLoads,pProductLoads);
    GET_IFACE2(pBroker,IProductForces,pProduct);
    GET_IFACE2(pBroker,IBridge,pBridge);
 
@@ -870,7 +914,8 @@ void CCamberTable::Build_NoDeck_TempStrands(IBroker* pBroker,SpanIndexType span,
 
    pgsTypes::AnalysisType analysisType = pSpec->GetAnalysisType();
 
-   bool bSidewalk = pProduct->HasSidewalkLoad(span,girder);
+   bool bSidewalk = pProductLoads->HasSidewalkLoad(span,girder);
+   bool bShearKey = pProductLoads->HasShearKeyLoad(span,girder);
 
    // create the tables
    rptRcTable* table1;
@@ -878,50 +923,54 @@ void CCamberTable::Build_NoDeck_TempStrands(IBroker* pBroker,SpanIndexType span,
    rptRcTable* table3;
 
    table1 = pgsReportStyleHolder::CreateDefaultTable(7,"Camber - Part 1 (upwards is positive)");
-   table2 = pgsReportStyleHolder::CreateDefaultTable(8 + (bSidewalk ? 1 : 0) + (!pBridge->IsFutureOverlay() ? 1 : 0),"Camber - Part 2 (upwards is positive)");
+   table2 = pgsReportStyleHolder::CreateDefaultTable(8 + (bSidewalk ? 1 : 0) + (!pBridge->IsFutureOverlay() ? 1 : 0) + (bShearKey ? 1 : 0),"Camber - Part 2 (upwards is positive)");
    table3 = pgsReportStyleHolder::CreateDefaultTable(7,"Camber - Part 3 (upwards is positive)");
 
    // Setup table headings
    int col = 0;
-   (*table1)(0,col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDispUnits->GetSpanLengthUnit());
-   (*table1)(0,col++) << COLHDR(Sub2(symbol(DELTA),"ps") << " " << Sub2("L","g"),         rptLengthUnitTag, pDispUnits->GetDisplacementUnit() );
-   (*table1)(0,col++) << COLHDR(Sub2(symbol(DELTA),"ps") << " " << Sub2("L","s"),         rptLengthUnitTag, pDispUnits->GetDisplacementUnit() );
-   (*table1)(0,col++) << COLHDR(Sub2(symbol(DELTA),"tpsi"),       rptLengthUnitTag, pDispUnits->GetDisplacementUnit() );
-   (*table1)(0,col++) << COLHDR(Sub2(symbol(DELTA),"tpsr"),       rptLengthUnitTag, pDispUnits->GetDisplacementUnit() );
-   (*table1)(0,col++) << COLHDR(Sub2(symbol(DELTA),"girder"),     rptLengthUnitTag, pDispUnits->GetDisplacementUnit() );
-   (*table1)(0,col++) << COLHDR(Sub2(symbol(DELTA),"creep1"),  rptLengthUnitTag, pDispUnits->GetDisplacementUnit() );
+   (*table1)(0,col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
+   (*table1)(0,col++) << COLHDR(Sub2(symbol(DELTA),"ps") << " " << Sub2("L","g"),         rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table1)(0,col++) << COLHDR(Sub2(symbol(DELTA),"ps") << " " << Sub2("L","s"),         rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table1)(0,col++) << COLHDR(Sub2(symbol(DELTA),"tpsi"),       rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table1)(0,col++) << COLHDR(Sub2(symbol(DELTA),"tpsr"),       rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table1)(0,col++) << COLHDR(Sub2(symbol(DELTA),"girder"),     rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table1)(0,col++) << COLHDR(Sub2(symbol(DELTA),"creep1"),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
 
    col = 0;
-   (*table2)(0,col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDispUnits->GetSpanLengthUnit());
-   (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),"diaphragm"),  rptLengthUnitTag, pDispUnits->GetDisplacementUnit() );
-   (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),"creep2"),  rptLengthUnitTag, pDispUnits->GetDisplacementUnit() );
-   (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),"deck"),  rptLengthUnitTag, pDispUnits->GetDisplacementUnit() );
-   (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),"User1") << " = " << rptNewLine << Sub2(symbol(DELTA),"UserDC") << " + " << rptNewLine  << Sub2(symbol(DELTA),"UserDW") , rptLengthUnitTag, pDispUnits->GetDisplacementUnit() );
+   (*table2)(0,col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
+   (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),"diaphragm"),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+
+   if ( bShearKey )
+      (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),"shear key"), rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+
+   (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),"creep2"),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),"deck"),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),"User1") << " = " << rptNewLine << Sub2(symbol(DELTA),"UserDC") << " + " << rptNewLine  << Sub2(symbol(DELTA),"UserDW") , rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
 
    if (bSidewalk)
-      (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),"sidewalk"), rptLengthUnitTag, pDispUnits->GetDisplacementUnit() );
+      (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),"sidewalk"), rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
 
-   (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),"barrier"), rptLengthUnitTag, pDispUnits->GetDisplacementUnit() );
+   (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),"barrier"), rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
 
    if ( !pBridge->IsFutureOverlay() )
-      (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),"overlay"), rptLengthUnitTag, pDispUnits->GetDisplacementUnit() );
+      (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),"overlay"), rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
 
-   (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),"User2") << " = " << rptNewLine << Sub2(symbol(DELTA),"UserDC") << " + " << rptNewLine  << Sub2(symbol(DELTA),"UserDW") , rptLengthUnitTag, pDispUnits->GetDisplacementUnit() );
-   (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),"creep3"),  rptLengthUnitTag, pDispUnits->GetDisplacementUnit() );
+   (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),"User2") << " = " << rptNewLine << Sub2(symbol(DELTA),"UserDC") << " + " << rptNewLine  << Sub2(symbol(DELTA),"UserDW") , rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),"creep3"),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
 
    col = 0;
-   (*table3)(0,col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDispUnits->GetSpanLengthUnit());
-   (*table3)(0,col++) << COLHDR(Sub2(symbol(DELTA),"1"),  rptLengthUnitTag, pDispUnits->GetDisplacementUnit() );
-   (*table3)(0,col++) << COLHDR(Sub2(symbol(DELTA),"2"),  rptLengthUnitTag, pDispUnits->GetDisplacementUnit() );
-   (*table3)(0,col++) << COLHDR(Sub2(symbol(DELTA),"3"),  rptLengthUnitTag, pDispUnits->GetDisplacementUnit() );
+   (*table3)(0,col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
+   (*table3)(0,col++) << COLHDR(Sub2(symbol(DELTA),"1"),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table3)(0,col++) << COLHDR(Sub2(symbol(DELTA),"2"),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table3)(0,col++) << COLHDR(Sub2(symbol(DELTA),"3"),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
    
    double days = (constructionRate == CREEP_MINTIME ? pSpecEntry->GetCreepDuration2Min() : pSpecEntry->GetCreepDuration2Max());
    days = ::ConvertFromSysUnits(days,unitMeasure::Day);
    std::ostringstream os;
    os << days;
-   (*table3)(0,col++) << COLHDR(Sub2("D",os.str().c_str()) << " = " << Sub2(symbol(DELTA),"4"),  rptLengthUnitTag, pDispUnits->GetDisplacementUnit() );
-   (*table3)(0,col++) << COLHDR(Sub2(symbol(DELTA),"5"),  rptLengthUnitTag, pDispUnits->GetDisplacementUnit() );
-   (*table3)(0,col++) << COLHDR("C = " << Sub2(symbol(DELTA),"excess") << " = " << rptNewLine << Sub2(symbol(DELTA),"6"),  rptLengthUnitTag, pDispUnits->GetDisplacementUnit() );
+   (*table3)(0,col++) << COLHDR(Sub2("D",os.str().c_str()) << " = " << Sub2(symbol(DELTA),"4"),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table3)(0,col++) << COLHDR(Sub2(symbol(DELTA),"5"),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table3)(0,col++) << COLHDR("C = " << Sub2(symbol(DELTA),"excess") << " = " << rptNewLine << Sub2(symbol(DELTA),"6"),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
 
    BridgeAnalysisType bat = (analysisType == pgsTypes::Simple ? SimpleSpan : analysisType == pgsTypes::Continuous ? ContinuousSpan : MinSimpleContinuousEnvelope);
 
@@ -934,7 +983,7 @@ void CCamberTable::Build_NoDeck_TempStrands(IBroker* pBroker,SpanIndexType span,
    {
       const pgsPointOfInterest& poi = *i;
 
-      double Dps1, Dps, Dtpsi, Dtpsr, Dgirder, Dcreep1, Ddiaphragm, Ddeck, Dcreep2, Duser1, Dsidewalk, Dbarrier, Doverlay, Duser2, Dcreep3;
+      double Dps1, Dps, Dtpsi, Dtpsr, Dgirder, Dcreep1, Ddiaphragm, Dshearkey, Ddeck, Dcreep2, Duser1, Dsidewalk, Dbarrier, Doverlay, Duser2, Dcreep3;
       Dps1       = pCamber->GetPrestressDeflection( poi, false );
       Dps        = pCamber->GetPrestressDeflection( poi, true );
       Dtpsi      = pCamber->GetInitialTempPrestressDeflection( poi,true );
@@ -942,6 +991,7 @@ void CCamberTable::Build_NoDeck_TempStrands(IBroker* pBroker,SpanIndexType span,
       Dgirder    = pProduct->GetGirderDeflectionForCamber( poi );
       Dcreep1    = pCamber->GetCreepDeflection( poi, ICamber::cpReleaseToDiaphragm, constructionRate );
       Ddiaphragm = pCamber->GetDiaphragmDeflection( poi );
+      Dshearkey  = pProduct->GetDisplacement(pgsTypes::BridgeSite1,pftShearKey,poi,bat);
       Ddeck      = pProduct->GetDisplacement(pgsTypes::BridgeSite1,pftSlab,poi,bat);
       Dcreep2    = pCamber->GetCreepDeflection( poi, ICamber::cpDiaphragmToDeck, constructionRate );
       Duser1     = pProduct->GetDisplacement(pgsTypes::BridgeSite1,pftUserDC,poi,bat) + pProduct->GetDisplacement(pgsTypes::BridgeSite1,pftUserDW,poi,bat);
@@ -966,6 +1016,10 @@ void CCamberTable::Build_NoDeck_TempStrands(IBroker* pBroker,SpanIndexType span,
       col = 0;
       (*table2)(row2,col++) << location.SetValue( poi,end_size );
       (*table2)(row2,col++) << displacement.SetValue( Ddiaphragm );
+
+      if (bShearKey)
+      (*table2)(row2,col++) << displacement.SetValue( Dshearkey );
+
       (*table2)(row2,col++) << displacement.SetValue( Dcreep2 );
       (*table2)(row2,col++) << displacement.SetValue( Ddeck );
       (*table2)(row2,col++) << displacement.SetValue( Duser1 );
@@ -987,7 +1041,7 @@ void CCamberTable::Build_NoDeck_TempStrands(IBroker* pBroker,SpanIndexType span,
       col = 0;
       double D1 = Dgirder + Dps + Dtpsi;
       double D2 = D1 + Dcreep1;
-      double D3 = D2 + Ddiaphragm + Dtpsr + Duser1;
+      double D3 = D2 + Ddiaphragm + Dshearkey + Dtpsr + Duser1;
       double D4 = D3 + Dcreep2;
       double D5 = D4 + Dsidewalk + Dbarrier + Doverlay + Duser2;
       double D6 = D5 + Dcreep3;
@@ -1028,11 +1082,11 @@ void CCamberTable::Build_NoDeck_TempStrands(IBroker* pBroker,SpanIndexType span,
 }
 
 void CCamberTable::Build_NoDeck(IBroker* pBroker,SpanIndexType span,GirderIndexType girder,
-                                IDisplayUnits* pDispUnits,Int16 constructionRate,
+                                IDisplayUnits* pDisplayUnits,Int16 constructionRate,
                                 rptRcTable** pTable1,rptRcTable** pTable2,rptRcTable** pTable3) const
 {
-   INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDispUnits->GetSpanLengthUnit(), false );
-   INIT_UV_PROTOTYPE( rptLengthUnitValue, displacement, pDispUnits->GetDisplacementUnit(), false );
+   INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
+   INIT_UV_PROTOTYPE( rptLengthUnitValue, displacement, pDisplayUnits->GetDisplacementUnit(), false );
 
    GET_IFACE2(pBroker,ILibrary,pLib);
    GET_IFACE2(pBroker,ISpecification,pSpec);
@@ -1047,6 +1101,7 @@ void CCamberTable::Build_NoDeck(IBroker* pBroker,SpanIndexType span,GirderIndexT
 
    GET_IFACE2(pBroker,ICamber,pCamber);
    GET_IFACE2(pBroker,IProductForces,pProduct);
+   GET_IFACE2(pBroker,IProductLoads,pProductLoads);
    GET_IFACE2(pBroker,IBridge,pBridge);
 
    pgsTypes::SupportedDeckType deckType = pBridge->GetDeckType();
@@ -1054,7 +1109,8 @@ void CCamberTable::Build_NoDeck(IBroker* pBroker,SpanIndexType span,GirderIndexT
 
    pgsTypes::AnalysisType analysisType = pSpec->GetAnalysisType();
 
-   bool bSidewalk = pProduct->HasSidewalkLoad(span,girder);
+   bool bSidewalk = pProductLoads->HasSidewalkLoad(span,girder);
+   bool bShearKey = pProductLoads->HasShearKeyLoad(span,girder);
 
    // create the tables
    rptRcTable* table1;
@@ -1062,47 +1118,51 @@ void CCamberTable::Build_NoDeck(IBroker* pBroker,SpanIndexType span,GirderIndexT
    rptRcTable* table3;
 
    table1 = pgsReportStyleHolder::CreateDefaultTable(5,"Camber - Part 1 (upwards is positive)");
-   table2 = pgsReportStyleHolder::CreateDefaultTable(7 + (bSidewalk ? 1 : 0) + (!pBridge->IsFutureOverlay() ? 1 : 0),"Camber - Part 2 (upwards is positive)");
+   table2 = pgsReportStyleHolder::CreateDefaultTable(7 + (bSidewalk ? 1 : 0) + (!pBridge->IsFutureOverlay() ? 1 : 0) + (bShearKey ? 1 : 0),"Camber - Part 2 (upwards is positive)");
    table3 = pgsReportStyleHolder::CreateDefaultTable(7,"Camber - Part 3 (upwards is positive)");
 
    // Setup table headings
    int col = 0;
-   (*table1)(0,col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDispUnits->GetSpanLengthUnit());
-   (*table1)(0,col++) << COLHDR(Sub2(symbol(DELTA),"ps") << " " << Sub2("L","g"),         rptLengthUnitTag, pDispUnits->GetDisplacementUnit() );
-   (*table1)(0,col++) << COLHDR(Sub2(symbol(DELTA),"ps") << " " << Sub2("L","s"),         rptLengthUnitTag, pDispUnits->GetDisplacementUnit() );
-   (*table1)(0,col++) << COLHDR(Sub2(symbol(DELTA),"girder"),     rptLengthUnitTag, pDispUnits->GetDisplacementUnit() );
-   (*table1)(0,col++) << COLHDR(Sub2(symbol(DELTA),"creep1"),  rptLengthUnitTag, pDispUnits->GetDisplacementUnit() );
+   (*table1)(0,col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
+   (*table1)(0,col++) << COLHDR(Sub2(symbol(DELTA),"ps") << " " << Sub2("L","g"),         rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table1)(0,col++) << COLHDR(Sub2(symbol(DELTA),"ps") << " " << Sub2("L","s"),         rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table1)(0,col++) << COLHDR(Sub2(symbol(DELTA),"girder"),     rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table1)(0,col++) << COLHDR(Sub2(symbol(DELTA),"creep1"),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
 
    col = 0;
-   (*table2)(0,col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDispUnits->GetSpanLengthUnit());
-   (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),"diaphragm"),  rptLengthUnitTag, pDispUnits->GetDisplacementUnit() );
-   (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),"User1") << " = " << rptNewLine << Sub2(symbol(DELTA),"UserDC") << " + " << rptNewLine  << Sub2(symbol(DELTA),"UserDW") , rptLengthUnitTag, pDispUnits->GetDisplacementUnit() );
-   (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),"creep2"),  rptLengthUnitTag, pDispUnits->GetDisplacementUnit() );
+   (*table2)(0,col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
+   (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),"diaphragm"),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+
+   if ( bShearKey )
+      (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),"shear key"), rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+
+   (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),"User1") << " = " << rptNewLine << Sub2(symbol(DELTA),"UserDC") << " + " << rptNewLine  << Sub2(symbol(DELTA),"UserDW") , rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),"creep2"),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
 
    if ( bSidewalk )
-      (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),"sidewalk"), rptLengthUnitTag, pDispUnits->GetDisplacementUnit() );
+      (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),"sidewalk"), rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
 
-   (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),"barrier"), rptLengthUnitTag, pDispUnits->GetDisplacementUnit() );
+   (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),"barrier"), rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
 
    if ( !pBridge->IsFutureOverlay() )
-      (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),"overlay"), rptLengthUnitTag, pDispUnits->GetDisplacementUnit() );
+      (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),"overlay"), rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
 
-   (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),"User2") << " = " << rptNewLine << Sub2(symbol(DELTA),"UserDC") << " + " << rptNewLine  << Sub2(symbol(DELTA),"UserDW") , rptLengthUnitTag, pDispUnits->GetDisplacementUnit() );
-   (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),"creep3"),  rptLengthUnitTag, pDispUnits->GetDisplacementUnit() );
+   (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),"User2") << " = " << rptNewLine << Sub2(symbol(DELTA),"UserDC") << " + " << rptNewLine  << Sub2(symbol(DELTA),"UserDW") , rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table2)(0,col++) << COLHDR(Sub2(symbol(DELTA),"creep3"),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
 
    col = 0;
-   (*table3)(0,col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDispUnits->GetSpanLengthUnit());
-   (*table3)(0,col++) << COLHDR(Sub2(symbol(DELTA),"1"),  rptLengthUnitTag, pDispUnits->GetDisplacementUnit() );
-   (*table3)(0,col++) << COLHDR(Sub2(symbol(DELTA),"2"),  rptLengthUnitTag, pDispUnits->GetDisplacementUnit() );
-   (*table3)(0,col++) << COLHDR(Sub2(symbol(DELTA),"3"),  rptLengthUnitTag, pDispUnits->GetDisplacementUnit() );
+   (*table3)(0,col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
+   (*table3)(0,col++) << COLHDR(Sub2(symbol(DELTA),"1"),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table3)(0,col++) << COLHDR(Sub2(symbol(DELTA),"2"),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table3)(0,col++) << COLHDR(Sub2(symbol(DELTA),"3"),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
 
    double days = (constructionRate == CREEP_MINTIME ? pSpecEntry->GetCreepDuration2Min() : pSpecEntry->GetCreepDuration2Max());
    days = ::ConvertFromSysUnits(days,unitMeasure::Day);
    std::ostringstream os;
    os << days;
-   (*table3)(0,col++) << COLHDR(Sub2("D",os.str().c_str()) << " = " << Sub2(symbol(DELTA),"4"),  rptLengthUnitTag, pDispUnits->GetDisplacementUnit() );
-   (*table3)(0,col++) << COLHDR(Sub2(symbol(DELTA),"5"),  rptLengthUnitTag, pDispUnits->GetDisplacementUnit() );
-   (*table3)(0,col++) << COLHDR("C = " << Sub2(symbol(DELTA),"excess") << " = " << rptNewLine << Sub2(symbol(DELTA),"6"),  rptLengthUnitTag, pDispUnits->GetDisplacementUnit() );
+   (*table3)(0,col++) << COLHDR(Sub2("D",os.str().c_str()) << " = " << Sub2(symbol(DELTA),"4"),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table3)(0,col++) << COLHDR(Sub2(symbol(DELTA),"5"),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
+   (*table3)(0,col++) << COLHDR("C = " << Sub2(symbol(DELTA),"excess") << " = " << rptNewLine << Sub2(symbol(DELTA),"6"),  rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
 
    BridgeAnalysisType bat = (analysisType == pgsTypes::Simple ? SimpleSpan : analysisType == pgsTypes::Continuous ? ContinuousSpan : MinSimpleContinuousEnvelope);
 
@@ -1115,12 +1175,13 @@ void CCamberTable::Build_NoDeck(IBroker* pBroker,SpanIndexType span,GirderIndexT
    {
       const pgsPointOfInterest& poi = *i;
 
-      double Dps1, Dps, Dgirder, Dcreep1, Ddiaphragm, Dcreep2, Duser1, Dsidewalk, Dbarrier, Doverlay, Duser2, Dcreep3;
+      double Dps1, Dps, Dgirder, Dcreep1, Ddiaphragm, Dshearkey, Dcreep2, Duser1, Dsidewalk, Dbarrier, Doverlay, Duser2, Dcreep3;
       Dps1       = pCamber->GetPrestressDeflection( poi, false );
       Dps        = pCamber->GetPrestressDeflection( poi, true );
       Dgirder    = pProduct->GetGirderDeflectionForCamber( poi );
       Dcreep1    = pCamber->GetCreepDeflection( poi, ICamber::cpReleaseToDiaphragm, constructionRate );
       Ddiaphragm = pCamber->GetDiaphragmDeflection( poi );
+      Dshearkey  = pProduct->GetDisplacement(pgsTypes::BridgeSite2,pftShearKey,      poi,bat);
       Dcreep2    = pCamber->GetCreepDeflection( poi, ICamber::cpDiaphragmToDeck, constructionRate );
       Duser1     = pProduct->GetDisplacement(pgsTypes::BridgeSite1,pftUserDC,poi,bat) + pProduct->GetDisplacement(pgsTypes::BridgeSite1,pftUserDW,poi,bat);
       Duser2     = pProduct->GetDisplacement(pgsTypes::BridgeSite2,pftUserDC,poi,bat) + pProduct->GetDisplacement(pgsTypes::BridgeSite2,pftUserDW,poi,bat);
@@ -1143,6 +1204,10 @@ void CCamberTable::Build_NoDeck(IBroker* pBroker,SpanIndexType span,GirderIndexT
       col = 0;
       (*table2)(row2,col++) << location.SetValue( poi,end_size );
       (*table2)(row2,col++) << displacement.SetValue( Ddiaphragm );
+
+      if ( bShearKey )
+         (*table2)(row2,col++) << displacement.SetValue( Dshearkey );
+
       (*table2)(row2,col++) << displacement.SetValue( Duser1 );
       (*table2)(row2,col++) << displacement.SetValue( Dcreep2 );
 
@@ -1163,7 +1228,7 @@ void CCamberTable::Build_NoDeck(IBroker* pBroker,SpanIndexType span,GirderIndexT
       col = 0;
       double D1 = Dgirder + Dps;
       double D2 = D1 + Dcreep1;
-      double D3 = D2 + Ddiaphragm + Duser1;
+      double D3 = D2 + Ddiaphragm + Dshearkey + Duser1;
       double D4 = D3 + Dcreep2;
       double D5 = D4 + Dsidewalk + Dbarrier + Doverlay + Duser2;
       double D6 = D5 + Dcreep3;

@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 2006  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -73,7 +73,7 @@ CPrestressLossTable& CPrestressLossTable::operator= (const CPrestressLossTable& 
 
 //======================== OPERATIONS =======================================
 rptRcTable* CPrestressLossTable::Build(IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,
-                                            IDisplayUnits* pDispUnit) const
+                                            IDisplayUnits* pDisplayUnits) const
 {
    GET_IFACE2(pBroker,IPrestressForce, pPrestressForce ); 
    GET_IFACE2(pBroker,IPointOfInterest,pIPOI);
@@ -87,15 +87,15 @@ rptRcTable* CPrestressLossTable::Build(IBroker* pBroker,SpanIndexType span,Girde
    CGirderData girderData = pGirderData->GetGirderData(span,gdr);
 
    // Setup some unit-value prototypes
-   INIT_UV_PROTOTYPE( rptStressUnitValue, stress, pDispUnit->GetStressUnit(),       true );
-   INIT_UV_PROTOTYPE( rptAreaUnitValue,   area,   pDispUnit->GetAreaUnit(),         true );
-   INIT_UV_PROTOTYPE( rptLengthUnitValue, len,    pDispUnit->GetComponentDimUnit(), true );
-   INIT_UV_PROTOTYPE( rptForceUnitValue,  force,  pDispUnit->GetGeneralForceUnit(), true );
+   INIT_UV_PROTOTYPE( rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(),       true );
+   INIT_UV_PROTOTYPE( rptAreaUnitValue,   area,   pDisplayUnits->GetAreaUnit(),         true );
+   INIT_UV_PROTOTYPE( rptLengthUnitValue, len,    pDisplayUnits->GetComponentDimUnit(), true );
+   INIT_UV_PROTOTYPE( rptForceUnitValue,  force,  pDisplayUnits->GetGeneralForceUnit(), true );
 
    rptRcScalar scalar;
    scalar.SetFormat( sysNumericFormatTool::Fixed );
-   scalar.SetWidth(5); // -99.9
-   scalar.SetPrecision(1);
+   scalar.SetWidth(6); // -99.99
+   scalar.SetPrecision(2);
    scalar.SetTolerance(1.0e-6);
 
    bool bTempStrands = (0 < pStrandGeom->GetMaxStrands(span,gdr,pgsTypes::Temporary) ? true : false);
@@ -121,9 +121,9 @@ rptRcTable* CPrestressLossTable::Build(IBroker* pBroker,SpanIndexType span,Girde
 
    p_table->SetColumnSpan(0,1,4);
    (*p_table)(0,1) << "Permanent Strand";
-   (*p_table)(1,1) << COLHDR("Force",  rptForceUnitTag, pDispUnit->GetGeneralForceUnit() );
-   (*p_table)(1,2) << COLHDR("Loss",   rptStressUnitTag, pDispUnit->GetStressUnit() );
-   (*p_table)(1,3) << COLHDR("Stress", rptStressUnitTag, pDispUnit->GetStressUnit() );
+   (*p_table)(1,1) << COLHDR("Force",  rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit() );
+   (*p_table)(1,2) << COLHDR("Loss",   rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*p_table)(1,3) << COLHDR("Stress", rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    (*p_table)(1,4) << "% Loss";
 
    if ( bTempStrands )
@@ -138,9 +138,9 @@ rptRcTable* CPrestressLossTable::Build(IBroker* pBroker,SpanIndexType span,Girde
 
       (*p_table)(0,2) << "Temporary Strand";
 
-      (*p_table)(1,5) << COLHDR("Force",  rptForceUnitTag, pDispUnit->GetGeneralForceUnit() );
-      (*p_table)(1,6) << COLHDR("Loss",   rptStressUnitTag, pDispUnit->GetStressUnit() );
-      (*p_table)(1,7) << COLHDR("Stress", rptStressUnitTag, pDispUnit->GetStressUnit() );
+      (*p_table)(1,5) << COLHDR("Force",  rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit() );
+      (*p_table)(1,6) << COLHDR("Loss",   rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      (*p_table)(1,7) << COLHDR("Stress", rptStressUnitTag, pDisplayUnits->GetStressUnit() );
       (*p_table)(1,8) << "% Loss";
    }
    else

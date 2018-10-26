@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -47,6 +47,8 @@
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
 #include <IFace\DisplayUnits.h>
+#include <IFace\EditByUI.h>
+
 #include <PgsExt\BridgeDescription.h>
 #include <MfcTools\Text.h>
 #include <WBFLDManip.h>
@@ -491,7 +493,7 @@ void CBridgePlanView::UpdateGirderTooltips()
 
    GET_IFACE2(pBroker,IBridge,pBridge);
    GET_IFACE2(pBroker,IBridgeMaterial,pBridgeMaterial);
-   GET_IFACE2(pBroker,IDisplayUnits,pDispUnits);
+   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
    GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
 
@@ -531,8 +533,8 @@ void CBridgePlanView::UpdateGirderTooltips()
          CString strMsg2;
          strMsg2.Format("\r\n\r\nGirder: %s\r\nGirder Length: %s\r\nSpan Length: %s\r\n\r\n%s",
                         pBridgeDesc->GetSpan(spanIdx)->GetGirderTypes()->GetGirderName(girderIdx),
-                        FormatDimension(gdr_length,pDispUnits->GetSpanLengthUnit()),
-                        FormatDimension(span_length,pDispUnits->GetSpanLengthUnit()),
+                        FormatDimension(gdr_length,pDisplayUnits->GetSpanLengthUnit()),
+                        FormatDimension(span_length,pDisplayUnits->GetSpanLengthUnit()),
                         FormatDirection(direction)
                         );
 
@@ -542,8 +544,8 @@ void CBridgePlanView::UpdateGirderTooltips()
 
          CString strMsg3;
          strMsg3.Format("\r\n\r\nf'ci: %s\r\nf'c: %s",
-                        FormatDimension(fci,pDispUnits->GetStressUnit()),
-                        FormatDimension(fc, pDispUnits->GetStressUnit())
+                        FormatDimension(fci,pDisplayUnits->GetStressUnit()),
+                        FormatDimension(fc, pDisplayUnits->GetStressUnit())
                         );
 
          const matPsStrand* pStrand = pBridgeMaterial->GetStrand(spanIdx,girderIdx);
@@ -1333,7 +1335,7 @@ void CBridgePlanView::BuildPierDisplayObjects()
    UINT settings = papp->GetBridgeEditorSettings();
 
    GET_IFACE2(pBroker,IRoadway,pAlignment);
-   GET_IFACE2(pBroker,IDisplayUnits,pDispUnits);
+   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    GET_IFACE2(pBroker,IGirder,pGirder);
 
@@ -1390,7 +1392,7 @@ void CBridgePlanView::BuildPierDisplayObjects()
       strMsg1.Format("Double click to edit %s %d\r\nRight click for more options.",(pierIdx == 0 || pierIdx == nPiers-1 ? "Abutment" : "Pier"),pierIdx+1);
 
       CString strMsg2;
-      strMsg2.Format("Station: %s\r\nDirection: %s\r\nSkew: %s",FormatStation(pDispUnits->GetStationFormat(),station),FormatDirection(direction),FormatAngle(objSkew));
+      strMsg2.Format("Station: %s\r\nDirection: %s\r\nSkew: %s",FormatStation(pDisplayUnits->GetStationFormat(),station),FormatDirection(direction),FormatAngle(objSkew));
 
       CString strConnectionTip;
       if ( pierIdx == 0 ) // first pier
@@ -1837,7 +1839,7 @@ void CBridgePlanView::BuildSlabDisplayObjects()
 
    GET_IFACE2(pBroker,IBridge,pBridge);
    GET_IFACE2(pBroker,IBridgeMaterial,pBridgeMaterial);
-   GET_IFACE2(pBroker,IDisplayUnits,pDispUnits);
+   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
 
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
@@ -1904,9 +1906,9 @@ void CBridgePlanView::BuildSlabDisplayObjects()
    {
       strMsg2.Format("\r\n\r\nDeck: %s\r\nSlab Thickness: %s\r\nSlab Offset: ????\r\nf'c: %s",
                      m_pFrame->GetDeckTypeName(pDeck->DeckType),
-                     FormatDimension(pDeck->GrossDepth,pDispUnits->GetComponentDimUnit()),
-                     //FormatDimension(pDeck->SlabOffset,pDispUnits->GetComponentDimUnit()), // replace ???? with %s in the format string
-                     FormatDimension(pBridgeMaterial->GetFcSlab(),pDispUnits->GetStressUnit())
+                     FormatDimension(pDeck->GrossDepth,pDisplayUnits->GetComponentDimUnit()),
+                     //FormatDimension(pDeck->SlabOffset,pDisplayUnits->GetComponentDimUnit()), // replace ???? with %s in the format string
+                     FormatDimension(pBridgeMaterial->GetFcSlab(),pDisplayUnits->GetStressUnit())
                      );
    }
 
@@ -1916,7 +1918,7 @@ void CBridgePlanView::BuildSlabDisplayObjects()
    {
       strMsg3.Format("\r\n\r\n%s: %s",
          pBridge->IsFutureOverlay() ? "Future Overlay" : "Overlay",
-         FormatDimension(overlay_weight,pDispUnits->GetOverlayWeightUnit()));
+         FormatDimension(overlay_weight,pDisplayUnits->GetOverlayWeightUnit()));
    }
 
    CString strMsg = strMsg1 + strMsg2 + strMsg3;
@@ -2022,7 +2024,7 @@ void CBridgePlanView::BuildDiaphragmDisplayObjects()
 
    GET_IFACE2(pBroker,IBridge,pBridge);
    GET_IFACE2(pBroker,IRoadway,pAlignment);
-   GET_IFACE2(pBroker,IDisplayUnits,pDispUnits);
+   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
 
    SpanIndexType nSpans = pBridge->GetSpanCount();
    for ( SpanIndexType spanIdx = 0; spanIdx < nSpans; spanIdx++ )
@@ -2104,7 +2106,7 @@ void CBridgePlanView::BuildDiaphragmDisplayObjects()
             doDiaphragmLine->SetDrawLineStrategy(strategy);
 
             CString strTip;
-            strTip.Format("%s x %s intermediate diaphragm",::FormatDimension(left_diaphragm.T,pDispUnits->GetComponentDimUnit()),::FormatDimension(left_diaphragm.H,pDispUnits->GetComponentDimUnit()));
+            strTip.Format("%s x %s intermediate diaphragm",::FormatDimension(left_diaphragm.T,pDisplayUnits->GetComponentDimUnit()),::FormatDimension(left_diaphragm.H,pDisplayUnits->GetComponentDimUnit()));
             doDiaphragmLine->SetMaxTipWidth(300);
             doDiaphragmLine->SetToolTipText(strTip);
 

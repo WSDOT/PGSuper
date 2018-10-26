@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -70,7 +70,7 @@ CHoldDownForceCheck& CHoldDownForceCheck::operator= (const CHoldDownForceCheck& 
 
 //======================== OPERATIONS =======================================
 rptRcTable* CHoldDownForceCheck::Build(IBroker* pBroker,SpanIndexType span,GirderIndexType girder,
-                                       IDisplayUnits* pDispUnits) const
+                                       IDisplayUnits* pDisplayUnits) const
 {
    GET_IFACE2(pBroker,IArtifact,pIArtifact);
    const pgsGirderArtifact* pGdrArtifact = pIArtifact->GetArtifact(span,girder);
@@ -78,12 +78,12 @@ rptRcTable* CHoldDownForceCheck::Build(IBroker* pBroker,SpanIndexType span,Girde
 
    if ( pArtifact->IsApplicable() )
    {
-      INIT_UV_PROTOTYPE( rptForceUnitValue, force, pDispUnits->GetGeneralForceUnit(), false );
+      INIT_UV_PROTOTYPE( rptForceUnitValue, force, pDisplayUnits->GetGeneralForceUnit(), false );
 
       rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(3,"Hold Down Force");
 
-      (*pTable)(0,0) << COLHDR("Hold Down Force",    rptForceUnitTag, pDispUnits->GetGeneralForceUnit() );
-      (*pTable)(0,1) << COLHDR("Max Hold Down Force",   rptForceUnitTag, pDispUnits->GetGeneralForceUnit() );
+      (*pTable)(0,0) << COLHDR("Hold Down Force",    rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit() );
+      (*pTable)(0,1) << COLHDR("Max Hold Down Force",   rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit() );
       (*pTable)(0,2) << "Status";
 
       (*pTable)(1,0) << force.SetValue(pArtifact->GetDemand());

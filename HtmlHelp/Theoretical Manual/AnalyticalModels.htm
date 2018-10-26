@@ -26,8 +26,8 @@
 <meta name=filetype content=kadov>
 <meta name=filetype-version content=1>
 <meta name=page-count content=1>
-<meta name=layout-height content=7529>
-<meta name=layout-width content=921>
+<meta name=layout-height content=7681>
+<meta name=layout-width content=1344>
 
 
 <!--(Links)=========================================================-->
@@ -231,6 +231,7 @@
 				border-right-style: none;
 				border-bottom-style: none;
 				float: none;
+				border-style: none;
 				border-style: none;"
 		width=439
 		height=233
@@ -690,7 +691,36 @@
 <p style="margin-bottom: 0;">&nbsp;Spacing of the exterior girders</td></tr>
 </table>
 
-<h3 style="text-indent: 0.0in; margin-left: 0.0in;">Bridge Site Stage 2</h3>
+<h4>Shear Key Loads</h4>
+
+<p>Shear key loads can be automatically generated <span style="font-style: italic; font-weight: bold;">only 
+ for adjacently-spaced TxDOT Box girders</span>. To activate the load, 
+ specify the ShearKeyDepth variable in the Box Girder library entry. </p>
+
+<ul style="list-style: disc;"
+	type=disc>
+	
+	<li class=kadov-P><p>The shear key will fill the gap between girders 
+ from the specified shear key depth to the tops of the beams and will have 
+ the same unit weight as the slab concrete.</p></li>
+	
+	<li class=kadov-P><p>The load is applied in a load case called &quot;Shear 
+ Key&quot; applied in Bridge Site stage 1, and added to the DC combination.</p></li>
+	
+	<li class=kadov-P><p>Structural stiffness properties of the shear key 
+ are not considered in any analyses.</p></li>
+	
+	<li class=kadov-P><p>The width of the shear key will be variable if 
+ the joint spacing between girders is variable.</p></li>
+	
+	<li class=kadov-P><p>The shear key load is applied between bearings. 
+ No cantilever portion is applied.</p></li>
+	
+	<li class=kadov-p><p><!--kadov_tag{{<spaces>}}-->&nbsp;<!--kadov_tag{{</spaces>}}-->Results 
+ will only be displayed if a shear key is present</p></li>
+</ul>
+
+<h3>Bridge Site Stage 2</h3>
 
 <p>Superimposed dead loads are applied to the bridge in the stage 2 model. 
  The superimposed dead loads consist of the railing system and the overlay.</p>
@@ -999,10 +1029,10 @@
 		border=0></p>
 
 <p>The basic railing system load is <img src="image040.gif"
-										style="border-style: none;
+										style="width: 217px;
+												height: 24px;
 												border-style: none;
-												width: 217px;
-												height: 24px;"
+												border-style: none;"
 										width=217
 										height=24
 										border=0>. The railing system load 
@@ -1012,10 +1042,10 @@
  for the left and right side of the section) are evenly distributed to 
  all girders, webs, or mating surfaces. The weight per girders is <span 
  style="vertical-align: sub;"><img src="image042.gif"
-									style="border-style: none;
+									style="width: 107px;
+											height: 44px;
 											border-style: none;
-											width: 107px;
-											height: 44px;"
+											border-style: none;"
 									width=107
 									height=44
 									border=0></span>, where <span style="font-style: italic;">N</span> 
@@ -1031,17 +1061,20 @@
 <table x-use-null-cells
 		style="x-cell-content-align: top;
 				width: 100%;
-				border-spacing: 0;"
+				border-spacing: 0px;
+				border-spacing: 0px;"
 		cellspacing=0
 		width=100%>
 <col style="width: 33.334%;">
 <col style="width: 33.334%;">
 <col style="width: 33.332%;">
 
-<tr valign=top>
+<tr style="x-cell-content-align: top;"
+	valign=top>
 <td rowspan=1
 	colspan=1
-	style="border-left-width: 1px;
+	style="width: 33.334%;
+			border-left-width: 1px;
 			border-left-color: #000000;
 			border-left-style: Solid;
 			border-top-style: Solid;
@@ -1060,7 +1093,8 @@
 	align=center>Girder A</td>
 <td rowspan=1
 	colspan=1
-	style="border-top-style: Solid;
+	style="width: 33.334%;
+			border-top-style: Solid;
 			border-top-color: #000000;
 			border-top-width: 1px;
 			border-right-width: 1px;
@@ -1076,7 +1110,8 @@
 	align=center>Girder B</td>
 <td rowspan=1
 	colspan=1
-	style="border-top-style: Solid;
+	style="width: 33.332%;
+			border-top-style: Solid;
 			border-top-color: #000000;
 			border-top-width: 1px;
 			border-right-width: 1px;
@@ -1091,10 +1126,12 @@
 <p style="text-align: center; font-weight: bold;"
 	align=center>Girder C</td></tr>
 
-<tr valign=top>
+<tr style="x-cell-content-align: top;"
+	valign=top>
 <td rowspan=1
 	colspan=1
-	style="border-left-width: 1px;
+	style="width: 33.334%;
+			border-left-width: 1px;
 			border-left-color: #000000;
 			border-left-style: Solid;
 			border-right-width: 1px;
@@ -1111,7 +1148,8 @@
  0.33W<span style="vertical-align: Sub;">right</span></td>
 <td rowspan=1
 	colspan=1
-	style="border-right-width: 1px;
+	style="width: 33.334%;
+			border-right-width: 1px;
 			border-right-color: #000000;
 			border-right-style: Solid;
 			border-bottom-style: Solid;
@@ -1125,7 +1163,8 @@
  0.33W<span style="vertical-align: Sub;">right</span></td>
 <td rowspan=1
 	colspan=1
-	style="border-right-width: 1px;
+	style="width: 33.332%;
+			border-right-width: 1px;
 			border-right-color: #000000;
 			border-right-style: Solid;
 			border-bottom-style: Solid;
@@ -1146,7 +1185,8 @@
 <table x-use-null-cells
 		style="x-cell-content-align: top;
 				width: 100%;
-				border-spacing: 0;"
+				border-spacing: 0px;
+				border-spacing: 0px;"
 		cellspacing=0
 		width=100%>
 <col style="width: 16.667%;">
@@ -1156,10 +1196,12 @@
 <col style="width: 16.667%;">
 <col style="width: 16.667%;">
 
-<tr valign=top>
+<tr style="x-cell-content-align: top;"
+	valign=top>
 <td rowspan=1
 	colspan=2
-	style="border-left-width: 1px;
+	style="width: 33.334%;
+			border-left-width: 1px;
 			border-left-color: #000000;
 			border-left-style: Solid;
 			border-top-style: Solid;
@@ -1179,7 +1221,8 @@
 <td_null>
 <td rowspan=1
 	colspan=2
-	style="border-top-style: Solid;
+	style="width: 33.334%;
+			border-top-style: Solid;
 			border-top-color: #000000;
 			border-top-width: 1px;
 			border-right-width: 1px;
@@ -1196,7 +1239,8 @@
 <td_null>
 <td rowspan=1
 	colspan=2
-	style="border-top-style: Solid;
+	style="width: 33.334%;
+			border-top-style: Solid;
 			border-top-color: #000000;
 			border-top-width: 1px;
 			border-right-width: 1px;
@@ -1212,10 +1256,12 @@
 	align=center>Girder C</td>
 <td_null></tr>
 
-<tr valign=top>
+<tr style="x-cell-content-align: top;"
+	valign=top>
 <td rowspan=1
 	colspan=2
-	style="border-left-width: 1px;
+	style="width: 33.334%;
+			border-left-width: 1px;
 			border-left-color: #000000;
 			border-left-style: Solid;
 			border-right-width: 1px;
@@ -1232,7 +1278,8 @@
 <td_null>
 <td rowspan=1
 	colspan=2
-	style="border-right-width: 1px;
+	style="width: 33.334%;
+			border-right-width: 1px;
 			border-right-color: #000000;
 			border-right-style: Solid;
 			border-bottom-style: Solid;
@@ -1247,7 +1294,8 @@
 <td_null>
 <td rowspan=1
 	colspan=2
-	style="border-right-width: 1px;
+	style="width: 33.334%;
+			border-right-width: 1px;
 			border-right-color: #000000;
 			border-right-style: Solid;
 			border-bottom-style: Solid;
@@ -1260,8 +1308,10 @@
 	align=center>0.67W<span style="vertical-align: Sub;">right</span></td>
 <td_null></tr>
 
-<tr valign=top>
-<td style="border-left-width: 1px;
+<tr style="x-cell-content-align: top;"
+	valign=top>
+<td style="width: 16.667%;
+			border-left-width: 1px;
 			border-left-color: #000000;
 			border-left-style: Solid;
 			border-right-width: 1px;
@@ -1275,7 +1325,8 @@
 	width=16.667%>
 <p style="text-align: center; font-weight: bold;"
 	align=center>Web 1</td>
-<td style="border-right-width: 1px;
+<td style="width: 16.667%;
+			border-right-width: 1px;
 			border-right-color: #000000;
 			border-right-style: Solid;
 			border-bottom-style: Solid;
@@ -1286,7 +1337,8 @@
 	width=16.667%>
 <p style="text-align: center; font-weight: bold;"
 	align=center>Web 2</td>
-<td style="border-right-width: 1px;
+<td style="width: 16.667%;
+			border-right-width: 1px;
 			border-right-color: #000000;
 			border-right-style: Solid;
 			border-bottom-style: Solid;
@@ -1297,7 +1349,8 @@
 	width=16.667%>
 <p style="text-align: center; font-weight: bold;"
 	align=center>Web 1</td>
-<td style="border-right-width: 1px;
+<td style="width: 16.667%;
+			border-right-width: 1px;
 			border-right-color: #000000;
 			border-right-style: Solid;
 			border-bottom-style: Solid;
@@ -1308,7 +1361,8 @@
 	width=16.667%>
 <p style="text-align: center; font-weight: bold;"
 	align=center>Web 2</td>
-<td style="border-right-width: 1px;
+<td style="width: 16.667%;
+			border-right-width: 1px;
 			border-right-color: #000000;
 			border-right-style: Solid;
 			border-bottom-style: Solid;
@@ -1319,7 +1373,8 @@
 	width=16.667%>
 <p style="text-align: center; font-weight: bold;"
 	align=center>Web 1</td>
-<td style="border-right-width: 1px;
+<td style="width: 16.667%;
+			border-right-width: 1px;
 			border-right-color: #000000;
 			border-right-style: Solid;
 			border-bottom-style: Solid;
@@ -1331,10 +1386,12 @@
 <p style="text-align: center; font-weight: bold;"
 	align=center>Web 2</td></tr>
 
-<tr valign=top>
+<tr style="x-cell-content-align: top;"
+	valign=top>
 <td colspan=1
 	rowspan=1
-	style="padding-right: 10px;
+	style="width: 16.667%;
+			padding-right: 10px;
 			padding-left: 10px;
 			border-left-style: Solid;
 			border-left-color: #000000;
@@ -1350,7 +1407,8 @@
 	align=center>0.33W<span style="vertical-align: Sub;">left</span></td>
 <td colspan=1
 	rowspan=1
-	style="padding-right: 10px;
+	style="width: 16.667%;
+			padding-right: 10px;
 			padding-left: 10px;
 			border-right-style: Solid;
 			border-right-color: #000000;
@@ -1363,7 +1421,8 @@
 	align=center>0.33W<span style="vertical-align: Sub;">left</span></td>
 <td colspan=1
 	rowspan=1
-	style="padding-right: 10px;
+	style="width: 16.667%;
+			padding-right: 10px;
 			padding-left: 10px;
 			border-right-style: Solid;
 			border-right-color: #000000;
@@ -1376,7 +1435,8 @@
 	align=center>0.33W<span style="vertical-align: Sub;">left</span></td>
 <td colspan=1
 	rowspan=1
-	style="padding-right: 10px;
+	style="width: 16.667%;
+			padding-right: 10px;
 			padding-left: 10px;
 			border-right-style: Solid;
 			border-right-color: #000000;
@@ -1389,7 +1449,8 @@
 	align=center>0.33W<span style="vertical-align: Sub;">right</span></td>
 <td colspan=1
 	rowspan=1
-	style="padding-right: 10px;
+	style="width: 16.667%;
+			padding-right: 10px;
 			padding-left: 10px;
 			border-right-style: Solid;
 			border-right-color: #000000;
@@ -1402,7 +1463,8 @@
 	align=center>0.33W<span style="vertical-align: Sub;">right</span></td>
 <td colspan=1
 	rowspan=1
-	style="padding-right: 10px;
+	style="width: 16.667%;
+			padding-right: 10px;
 			padding-left: 10px;
 			border-right-style: Solid;
 			border-right-color: #000000;
@@ -1631,8 +1693,9 @@
 <h4><span style="margin-bottom: 0;">Pedestrian L</span>ive Load</h4>
 
 <p>Pedestrian live load on sidewalks is computed based on LRFD 3.6.1.6. 
- The pedestrian live load is applied to all girder lines using the live 
- load distribution factors.</p>
+ The pedestrian live load is distributed to the exterior girders using 
+ the same distribution as the sidewalk dead load. The pedestrian live load 
+ is applied concurrently with the vehicular live loads.</p>
 
 <!--kadov_tag{{<placeholder id="footer">}}-->
 </body>

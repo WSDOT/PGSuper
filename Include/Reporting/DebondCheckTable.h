@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSplice - Precast Post-tensioned Spliced Girder Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -67,16 +67,16 @@ public:
 
    // GROUP: OPERATIONS
 
-   void Build(rptChapter* pChapter, IBroker* pBroker,SpanIndexType span,GirderIndexType girder,pgsTypes::StrandType strandType,IDisplayUnits* pDispUnits) const;
+   void Build(rptChapter* pChapter, IBroker* pBroker,SpanIndexType span,GirderIndexType girder,pgsTypes::StrandType strandType,IDisplayUnits* pDisplayUnits) const;
 
 private:
    //------------------------------------------------------------------------
    // Builds the table for debonded strands in a row
-   rptRcTable* Build1(const pgsDebondArtifact* pDebondArtifact,SpanIndexType span,GirderIndexType girder,pgsTypes::StrandType strandType,IDisplayUnits* pDispUnits) const;
+   rptRcTable* Build1(const pgsDebondArtifact* pDebondArtifact,SpanIndexType span,GirderIndexType girder,pgsTypes::StrandType strandType,IDisplayUnits* pDisplayUnits) const;
 
    //------------------------------------------------------------------------
    // Builds the table for debonded strands at a section
-   rptRcTable* Build2(const pgsDebondArtifact* pDebondArtifact,SpanIndexType span,GirderIndexType girder, Float64 girderLength, pgsTypes::StrandType strandType,IDisplayUnits* pDispUnits) const;
+   rptRcTable* Build2(const pgsDebondArtifact* pDebondArtifact,SpanIndexType span,GirderIndexType girder, Float64 girderLength, pgsTypes::StrandType strandType,IDisplayUnits* pDisplayUnits) const;
 
    // GROUP: ACCESS
    // GROUP: INQUIRY

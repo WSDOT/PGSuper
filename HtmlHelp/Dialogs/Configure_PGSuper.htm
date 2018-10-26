@@ -21,8 +21,8 @@
 <meta name=filetype content=kadov>
 <meta name=filetype-version content=1>
 <meta name=page-count content=1>
-<meta name=layout-height content=1380>
-<meta name=layout-width content=964>
+<meta name=layout-height content=1083>
+<meta name=layout-width content=1346>
 
 
 <!--(Links)=========================================================-->
@@ -51,11 +51,13 @@
 <h2>Libraries and Templates</h2>
 
 <p>PGSuper is designed to be a highly efficient, and highly configurable, 
- production girder design tool. Project libraries and template files are 
- used to support design standardization and to minimize the amount of input 
- data required to perform a design. In fact, PGSuper does not have any 
- default girders, design criteria, or other settings. All of this &quot;default&quot; 
- information is stored in the Master Library file and Workgroup Templates.</p>
+ production girder design tool. Project libraries allow you to define design 
+ settings and save them into a sharable file. Template files provide a 
+ starting place on which to base new projects. Together, these features 
+ support design standardization and to minimize the amount of input data 
+ required to perform a design. In fact, PGSuper does not have any default 
+ girders, design criteria, or other settings. All of this &quot;default&quot; 
+ information is stored in the Master Library file and Templates.</p>
 
 <p class=Tip>Note: PGSuper must be configured to use a Master Library and 
  Templates.</p>
@@ -66,64 +68,73 @@
  that does not publish standard PGSuper libraries, you can start by using 
  the generic library and templates that were installed with PGSuper. These 
  will get you up and running quickly and do not require Internet access. 
- <!--kadov_tag{{<spaces>}}-->&nbsp;<!--kadov_tag{{</spaces>}}--></p>
+ PGSuper also comes preconfigured to access the Internet servers at WSDOT 
+ and TxDOT which contain preconfigured standard templates and libraries 
+ for those agencies. </p>
 
 <p>However, if you decide to use PGSuper as your production design tool, 
  it is wise to create your own Master Library files with girder shapes, 
- connections, and Project Criteria for your situation. Read the<a href="../Adminstrator%27s Guide/Introduction_Admin_Guide.htm"> 
- Administrator's Guide</a> for detailed instructions for setting up a production 
- environment in your office..</p>
+ connections, and project design criteria for your situation. Read the<a 
+ href="../Adminstrator%27s Guide/Introduction_Admin_Guide.htm"> Administrator's 
+ Guide</a> for detailed instructions for setting up a production environment 
+ in your office..</p>
 
 <h3>Standardized Libraries and Templates from Publishers</h3>
 
 <p>If you are working for a DOT that has fully adopted PGSuper, such as 
  WSDOT or TxDOT, you can download and synchronize with libraries and templates 
- that are published on the Internet. There is also an option to use standard 
- AASHTO options and AASHTO girders. Select a publisher to configure PGSuper 
- to keep up to date with the latest libraries and templates for that publisher.</p>
+ that are published on the Internet. The WSDOT server also has an option 
+ to use standard AASHTO options and AASHTO girders. PGSuper is open, so 
+ any organization is free to post libraries and templates either on the 
+ Internet or a local network. For example, www.pgsuper.com has a growing 
+ number of library/template configurations for your use.</p>
 
-<h3><span style="font-weight: bold;">P</span>GSuper Catalog Server</h3>
+<h3>PGSuper Libraries and Templates Server</h3>
 
 <p>Select the name of a PGSuper Catalog Server. PGSuper will access this 
- server and provide you access to the Master Library and Workgroup Template 
- files.</p>
+ server and provide access to its Master Library and Template file publishers.</p>
 
 <p>Press the Add/Edit button to manage the PGSuper Catalog Servers. A PGSuper 
- Catalog Server is defined by a name and a location. The location must 
- be an FTP server that permits anonymous access. An example of a PGSuper 
- Catalog Server definition is shown below:</p>
+ Catalog Server is defined by a name, type, and a location. Three types 
+ are supported: FTP, HTTP, and File System. The location must be a valid 
+ of the correct type <!--kadov_tag{{<spaces>}}-->&nbsp;<!--kadov_tag{{</spaces>}}-->that 
+ permits anonymous read access. An example of a PGSuper Catalog Server 
+ definition is shown below:</p>
 
 <!--(Table)=========================================================-->
 <table x-use-null-cells
 		style="x-cell-content-align: top;
-				width: 55.439%;
 				border-spacing: 0px;
+				width: 95.42%;
 				border-spacing: 0px;"
 		cellspacing=0
-		width=55.439%>
-<col style="width: 27.883%;">
-<col style="width: 72.117%;">
+		width=95.42%>
+<col style="width: 16.2%;">
+<col style="width: 41.9%;">
+<col style="width: 41.9%;">
 
 <tr style="x-cell-content-align: top;"
 	valign=top>
-<td style="width: 27.883%;
-			border-left-width: 1px;
-			border-left-color: #000000;
+<td style="width: 16.2%;
+			padding-right: 10px;
+			padding-left: 10px;
+			border-top-width: 1px;
+			border-top-color: #000000;
+			border-top-style: Solid;
+			border-right-style: Solid;
+			border-right-color: #000000;
+			border-right-width: 1px;
+			border-bottom-width: 1px;
+			border-bottom-color: #000000;
+			border-bottom-style: Solid;
 			border-left-style: Solid;
-			border-top-style: Solid;
-			border-top-color: #000000;
-			border-top-width: 1px;
-			border-right-width: 1px;
-			border-right-color: #000000;
-			border-right-style: Solid;
-			border-bottom-style: Solid;
-			border-bottom-color: #000000;
-			border-bottom-width: 1px;
-			padding-right: 10px;
-			padding-left: 10px;"
-	width=27.883%>
+			border-left-color: #000000;
+			border-left-width: 1px;"
+	width=16.2%>
 <p style="font-weight: bold;">Name</td>
-<td style="width: 72.117%;
+<td colspan=1
+	rowspan=1
+	style="width: 41.9%;
 			border-top-style: Solid;
 			border-top-color: #000000;
 			border-top-width: 1px;
@@ -135,26 +146,44 @@
 			border-bottom-width: 1px;
 			padding-right: 10px;
 			padding-left: 10px;"
-	width=72.117%>
+	width=41.9%>
+<p style="font-weight: bold;">Type</td>
+<td style="width: 41.9%;
+			border-top-style: Solid;
+			border-top-color: #000000;
+			border-top-width: 1px;
+			border-right-width: 1px;
+			border-right-color: #000000;
+			border-right-style: Solid;
+			border-bottom-style: Solid;
+			border-bottom-color: #000000;
+			border-bottom-width: 1px;
+			padding-right: 10px;
+			padding-left: 10px;"
+	width=41.9%>
 <p style="font-weight: bold;">Location</td></tr>
 
 <tr style="x-cell-content-align: top;"
 	valign=top>
-<td style="width: 27.883%;
-			border-left-width: 1px;
-			border-left-color: #000000;
+<td colspan=1
+	rowspan=1
+	style="width: 16.2%;
+			padding-right: 10px;
+			padding-left: 10px;
+			border-right-style: Solid;
+			border-right-color: #000000;
+			border-right-width: 1px;
+			border-bottom-width: 1px;
+			border-bottom-color: #000000;
+			border-bottom-style: Solid;
 			border-left-style: Solid;
-			border-right-width: 1px;
-			border-right-color: #000000;
-			border-right-style: Solid;
-			border-bottom-style: Solid;
-			border-bottom-color: #000000;
-			border-bottom-width: 1px;
-			padding-right: 10px;
-			padding-left: 10px;"
-	width=27.883%>
+			border-left-color: #000000;
+			border-left-width: 1px;"
+	width=16.2%>
 <p>WSDOT</td>
-<td style="width: 72.117%;
+<td colspan=1
+	rowspan=1
+	style="width: 41.9%;
 			border-right-width: 1px;
 			border-right-color: #000000;
 			border-right-style: Solid;
@@ -163,8 +192,108 @@
 			border-bottom-width: 1px;
 			padding-right: 10px;
 			padding-left: 10px;"
-	width=72.117%>
+	width=41.9%>
+<p>FTP</td>
+<td colspan=1
+	rowspan=1
+	style="width: 41.9%;
+			border-right-width: 1px;
+			border-right-color: #000000;
+			border-right-style: Solid;
+			border-bottom-style: Solid;
+			border-bottom-color: #000000;
+			border-bottom-width: 1px;
+			padding-right: 10px;
+			padding-left: 10px;"
+	width=41.9%>
 <p>ftp://ftp.wsdot.wa.gov/public/bridge/Software/PGSuper</td></tr>
+
+<tr style="x-cell-content-align: top;"
+	valign=top>
+<td colspan=1
+	rowspan=1
+	style="width: 16.2%;
+			padding-right: 10px;
+			padding-left: 10px;
+			border-right-style: Solid;
+			border-right-color: #000000;
+			border-right-width: 1px;
+			border-bottom-width: 1px;
+			border-bottom-color: #000000;
+			border-bottom-style: Solid;
+			border-left-style: Solid;
+			border-left-color: #000000;
+			border-left-width: 1px;"
+	width=16.2%>
+<p>MyNetworkServer</td>
+<td colspan=1
+	rowspan=1
+	style="width: 41.9%;
+			border-right-width: 1px;
+			border-right-color: #000000;
+			border-right-style: Solid;
+			border-bottom-style: Solid;
+			border-bottom-color: #000000;
+			border-bottom-width: 1px;
+			padding-right: 10px;
+			padding-left: 10px;"
+	width=41.9%>
+<p>File System</td>
+<td colspan=1
+	rowspan=1
+	style="width: 41.9%;
+			border-right-width: 1px;
+			border-right-color: #000000;
+			border-right-style: Solid;
+			border-bottom-style: Solid;
+			border-bottom-color: #000000;
+			border-bottom-width: 1px;
+			padding-right: 10px;
+			padding-left: 10px;"
+	width=41.9%>
+<p>\\MyServer\MyLibrary.lbr<br>
+\\Myserver\MyTemplateFolder</td></tr>
+
+<tr style="x-cell-content-align: top;"
+	valign=top>
+<td style="width: 16.2%;
+			padding-right: 10px;
+			padding-left: 10px;
+			border-right-style: Solid;
+			border-right-color: #000000;
+			border-right-width: 1px;
+			border-bottom-width: 1px;
+			border-bottom-color: #000000;
+			border-bottom-style: Solid;
+			border-left-style: Solid;
+			border-left-color: #000000;
+			border-left-width: 1px;"
+	width=16.2%>
+<p>MyWebServer</td>
+<td colspan=1
+	rowspan=1
+	style="width: 41.9%;
+			border-right-width: 1px;
+			border-right-color: #000000;
+			border-right-style: Solid;
+			border-bottom-style: Solid;
+			border-bottom-color: #000000;
+			border-bottom-width: 1px;
+			padding-right: 10px;
+			padding-left: 10px;"
+	width=41.9%>
+<p>HTTP</td>
+<td style="width: 41.9%;
+			border-right-width: 1px;
+			border-right-color: #000000;
+			border-right-style: Solid;
+			border-bottom-style: Solid;
+			border-bottom-color: #000000;
+			border-bottom-width: 1px;
+			padding-right: 10px;
+			padding-left: 10px;"
+	width=41.9%>
+<p>http://www.myserver.com/MyTemplateFolder</td></tr>
 </table>
 
 <h2>User Information</h2>
@@ -180,115 +309,17 @@
 <p>Enter your name and company in the input fields. This information will 
  be put onto reports and other output created by PGSuper.</p>
 
-<h3 class=Tip>User Templates Folder</h3>
-
-<p>Enter the location of your personal templates in the User Templates 
- field. The templates stored in this folder and the folders below it will 
- be displayed in the &quot;File | New&quot; dialog.</p>
-
-<p>The table below shows the syntax for valid template folder paths:</p>
-
-<!--(Table)=========================================================-->
-<table x-use-null-cells
-		style="x-cell-content-align: top;
-				width: 100%;
-				border-spacing: 0px;
-				border-spacing: 0px;"
-		cellspacing=0
-		width=100%>
-<col style="width: 50%;">
-<col style="width: 50%;">
-
-<tr style="x-cell-content-align: top;"
-	valign=top>
-<td style="width: 50%;
-			border-left-width: 1px;
-			border-left-color: #000000;
-			border-left-style: Solid;
-			border-top-style: Solid;
-			border-top-color: #000000;
-			border-top-width: 1px;
-			border-right-width: 1px;
-			border-right-color: #000000;
-			border-right-style: Solid;
-			border-bottom-style: Solid;
-			border-bottom-color: #000000;
-			border-bottom-width: 1px;
-			padding-right: 10px;
-			padding-left: 10px;"
-	width=50%>
-<p>Folder in a local hard disk or mapped network drive</td>
-<td style="width: 50%;
-			border-top-style: Solid;
-			border-top-color: #000000;
-			border-top-width: 1px;
-			border-right-width: 1px;
-			border-right-color: #000000;
-			border-right-style: Solid;
-			border-bottom-style: Solid;
-			border-bottom-color: #000000;
-			border-bottom-width: 1px;
-			padding-right: 10px;
-			padding-left: 10px;"
-	width=50%>
-<p>M:\MyPGSuperTemplates\</td></tr>
-
-<tr style="x-cell-content-align: top;"
-	valign=top>
-<td colspan=1
-	rowspan=1
-	style="width: 50%;
-			padding-right: 10px;
-			padding-left: 10px;
-			border-left-style: Solid;
-			border-left-color: #000000;
-			border-left-width: 1px;
-			border-right-style: Solid;
-			border-right-color: #000000;
-			border-right-width: 1px;
-			border-bottom-width: 1px;
-			border-bottom-color: #000000;
-			border-bottom-style: Solid;"
-	width=50%>
-<p>Network folder</td>
-<td colspan=1
-	rowspan=1
-	style="width: 50%;
-			padding-right: 10px;
-			padding-left: 10px;
-			border-right-style: Solid;
-			border-right-color: #000000;
-			border-right-width: 1px;
-			border-bottom-width: 1px;
-			border-bottom-color: #000000;
-			border-bottom-style: Solid;"
-	width=50%>
-<p>\\myserver\MyPGSuperTemplates\</td></tr>
-</table>
-
-<p class=Tip>See <a href="../User%27s Guide/Customizing_PGSuper/Chapter_10.htm">Chapter 
- 10</a> of the PGSuper User's Guide for more information</p>
-
 <h2>Update Frequency</h2>
 
-<p>Select the frequency at which PGSuper will look for updates to the Master 
- Library and Workgroup Template files. This option is only applicable if 
- you've selected a Libraries and Templates option that synchronizes with 
- published files.</p>
-
-<p class=Tip><span style="font-weight: bold;">NOTE</span>: PGSuper must 
- have an Internet connection to automatically update the library and templates. 
- However, you do not need an active Internet connection to use PGSuper.</p>
+<p>Select the frequency at which PGSuper will look for updates to the currently 
+ selected. Master Library and Template files. This option is not available 
+ for the generic files option.</p>
 
 <p class=Tip><span style="font-weight: bold;">Tip</span>: Once you've selected 
  a Publisher, you aren't &quot;locked in&quot;. You can change the publisher 
- at any time, and the program will still run if you disconnect your compute 
+ at any time, and the program will still run if you disconnect your computer 
  from the Internet. See the <a HREF="../Adminstrator%27s Guide/Introduction_Admin_Guide.htm">Administrator's 
  Guide</a> for more information.</p>
-
-<p>You can also use and synchronize with libraries and templates on your 
- local network. Contact your PGSuper Administrator for the location of 
- the Master Library and Workgroup Templates</p>
 
 <!--kadov_tag{{<placeholder id="footer">}}-->
 </body>

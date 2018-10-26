@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -63,14 +63,14 @@ rptChapter* CSpanDataChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
-   GET_IFACE2(pBroker,IDisplayUnits,pDispUnit);
+   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
 
    // Strand Eccentricity Table
    rptParagraph* p = new rptParagraph;
    *pChapter << p;
 
    CStrandEccTable ecc_table;
-   *p << ecc_table.Build(pBroker,span,girder,pDispUnit) << rptNewLine;
+   *p << ecc_table.Build(pBroker,span,girder,pDisplayUnits) << rptNewLine;
 
    p = new rptParagraph(pgsReportStyleHolder::GetFootnoteStyle());
    *pChapter << p;
@@ -84,7 +84,7 @@ rptChapter* CSpanDataChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16
 
    GET_IFACE2( pBroker, IBridge, pBridge );
 
-   INIT_UV_PROTOTYPE( rptLengthUnitValue, length, pDispUnit->GetSpanLengthUnit(), true );
+   INIT_UV_PROTOTYPE( rptLengthUnitValue, length, pDisplayUnits->GetSpanLengthUnit(), true );
    *p << "Girder Length = " << length.SetValue( pBridge->GetGirderLength(span,girder) ) << rptNewLine;
    *p << "Span Length = " << length.SetValue( pBridge->GetSpanLength(span,girder) )<<" (CL Bearing to CL Bearing)" << rptNewLine;
    *p << "Left End Distance = " << length.SetValue( pBridge->GetGirderStartConnectionLength(span,girder) )<<" (Overhang, CL Bearing to End of Girder, Measured Along Girder)" << rptNewLine;

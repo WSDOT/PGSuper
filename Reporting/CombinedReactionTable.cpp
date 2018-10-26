@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -72,12 +72,12 @@ CCombinedReactionTable& CCombinedReactionTable::operator= (const CCombinedReacti
 //======================== OPERATIONS =======================================
 void CCombinedReactionTable::Build(IBroker* pBroker, rptChapter* pChapter,
                                           SpanIndexType span,GirderIndexType girder,
-                                          IDisplayUnits* pDispUnits,
+                                          IDisplayUnits* pDisplayUnits,
                                           pgsTypes::Stage stage, pgsTypes::AnalysisType analysisType) const
 {
    // Build table
-   INIT_UV_PROTOTYPE( rptLengthUnitValue, location, pDispUnits->GetSpanLengthUnit(), false );
-   INIT_UV_PROTOTYPE( rptForceSectionValue, reaction, pDispUnits->GetShearUnit(), false );
+   INIT_UV_PROTOTYPE( rptLengthUnitValue, location, pDisplayUnits->GetSpanLengthUnit(), false );
+   INIT_UV_PROTOTYPE( rptForceSectionValue, reaction, pDisplayUnits->GetShearUnit(), false );
 
    GET_IFACE2(pBroker,IBridge,pBridge);
 
@@ -105,10 +105,10 @@ void CCombinedReactionTable::Build(IBroker* pBroker, rptChapter* pChapter,
    GET_IFACE2(pBroker,ILiveLoads,pLiveLoads);
    bool bPermit = pLiveLoads->IsLiveLoadDefined(pgsTypes::lltPermit);
 
-   GET_IFACE2(pBroker,IProductForces,pProductForces);
-   bool bPedLoading = pProductForces->HasPedestrianLoad(startPier,girder);
+   GET_IFACE2(pBroker,IProductLoads,pProductLoads);
+   bool bPedLoading = pProductLoads->HasPedestrianLoad(startPier,girder);
 
-   RowIndexType row = CreateCombinedLoadingTableHeading<rptForceUnitTag,unitmgtForceData>(&p_table,"Reaction",true,bPermit,bPedLoading,stage,continuity_stage,analysisType,pDispUnits,pDispUnits->GetShearUnit());
+   RowIndexType row = CreateCombinedLoadingTableHeading<rptForceUnitTag,unitmgtForceData>(&p_table,"Reaction",true,bPermit,bPedLoading,stage,continuity_stage,analysisType,pDisplayUnits,pDisplayUnits->GetShearUnit());
    *p << p_table;
 
    // Get the interface pointers we need
@@ -302,7 +302,7 @@ void CCombinedReactionTable::Build(IBroker* pBroker, rptChapter* pChapter,
          nCols += 3;
 
       p_table = pgsReportStyleHolder::CreateDefaultTable(nCols,"");
-      row = ConfigureLimitStateTableHeading<rptForceUnitTag,unitmgtForceData>(p_table,true,bPermit,analysisType,pDispUnits,pDispUnits->GetShearUnit());
+      row = ConfigureLimitStateTableHeading<rptForceUnitTag,unitmgtForceData>(p_table,true,bPermit,false,analysisType,pDisplayUnits,pDisplayUnits->GetShearUnit());
       *p << p_table;
 
       ColumnIndexType col = 0;

@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -62,13 +62,13 @@ rptChapter* CTexasPrestressSummaryChapterBuilder::Build(CReportSpecification* pR
    SpanIndexType span = pSpec->GetSpan();
    GirderIndexType girder = pSpec->GetGirder();
 
-   GET_IFACE2(pBroker,IDisplayUnits,pDispUnit);
+   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
    rptParagraph* pPara = new rptParagraph;
    *pChapter << pPara;
-   *pPara << CPrestressLossTable().Build(pBroker,span,girder,pDispUnit) << rptNewLine;
+   *pPara << CPrestressLossTable().Build(pBroker,span,girder,pDisplayUnits) << rptNewLine;
 
    return pChapter;
 }

@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -69,13 +69,13 @@ CStirrupTable& CStirrupTable::operator= (const CStirrupTable& rOther)
 
 //======================== OPERATIONS =======================================
 void CStirrupTable::Build(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType girder,
-                                IDisplayUnits* pDispUnit) const
+                                IDisplayUnits* pDisplayUnits) const
 {
    GET_IFACE2(pBroker,IStirrupGeometry,pStirrupGeometry);
 
-   INIT_UV_PROTOTYPE( rptLengthUnitValue, dim, pDispUnit->GetComponentDimUnit(),  false );
-   INIT_UV_PROTOTYPE( rptLengthUnitValue, loc, pDispUnit->GetSpanLengthUnit(), false );
-   INIT_UV_PROTOTYPE( rptLengthUnitValue, dim_u, pDispUnit->GetComponentDimUnit(),  true );
+   INIT_UV_PROTOTYPE( rptLengthUnitValue, dim, pDisplayUnits->GetComponentDimUnit(),  false );
+   INIT_UV_PROTOTYPE( rptLengthUnitValue, loc, pDisplayUnits->GetSpanLengthUnit(), false );
+   INIT_UV_PROTOTYPE( rptLengthUnitValue, dim_u, pDisplayUnits->GetComponentDimUnit(),  true );
 
    rptParagraph* pPara = new rptParagraph;
    *pChapter << pPara;
@@ -101,9 +101,9 @@ void CStirrupTable::Build(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
    *pPara << p_table;
 
    (*p_table)(0,0) << "Zone";
-   (*p_table)(0,1) << COLHDR("Zone Start",rptLengthUnitTag, pDispUnit->GetSpanLengthUnit() );
-   (*p_table)(0,2) << COLHDR("Zone End",rptLengthUnitTag, pDispUnit->GetSpanLengthUnit() );
-   (*p_table)(0,3) << COLHDR("Bar Spacing",rptLengthUnitTag, pDispUnit->GetComponentDimUnit() );
+   (*p_table)(0,1) << COLHDR("Zone Start",rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+   (*p_table)(0,2) << COLHDR("Zone End",rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+   (*p_table)(0,3) << COLHDR("Bar Spacing",rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
    (*p_table)(0,4) << "Vert Bar" << rptNewLine << "Size";
    (*p_table)(0,5) << "# Vert" << rptNewLine << "Bars";
    (*p_table)(0,6) << "Horz Bar" << rptNewLine << "Size";

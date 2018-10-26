@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 2008  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -25,6 +25,8 @@
 #include <PgsExt\GirderData.h>
 #include <WbflAtlExt.h>
 #include <PGSuperException.h>
+
+#include <IFace\Project.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -1292,6 +1294,8 @@ bool CBridgeDescription::MoveBridgeAdjustAdjacentSpans(PierIndexType pierIdx,dou
 
 void CBridgeDescription::CopyDown(bool bGirderCount,bool bGirderType,bool bSpacing,bool bSlabOffset)
 {
+   // NOTE: If you are adding data to be copied in this function, you will want to also make changes
+   //       to ReconcileEdits
    CSpanData* pSpan = GetSpan(0);
    while ( pSpan )
    {
@@ -1340,6 +1344,110 @@ void CBridgeDescription::CopyDown(bool bGirderCount,bool bGirderType,bool bSpaci
    }
 }
 
+void CBridgeDescription::ReconcileEdits(IBroker* pBroker, const CBridgeDescription* pOriginal)
+{
+   // Note: that *this is the data that has been edited and pOriginal represents
+   //       *this before editing.
+
+   // First step is to check if data has been changed at the bridge level. If so,
+   // copy down to the individual span/girder level
+
+   bool copyGirderCount = false;
+   if (this->m_bSameNumberOfGirders)
+   {
+     if(!pOriginal->m_bSameNumberOfGirders ||
+        this->m_nGirders != pOriginal->m_nGirders)
+     {
+        copyGirderCount = true;
+     }
+   }
+
+   bool copyGirderType = false;
+   if (this->m_bSameGirderName)
+   {
+      if (!pOriginal->m_bSameGirderName ||
+          this->m_strGirderName != pOriginal->m_strGirderName)
+      {
+         copyGirderType = true;
+      }
+   }
+   
+   bool copySpacing = false;
+   if (IsBridgeSpacing(this->m_GirderSpacingType))
+   {
+      if (!IsBridgeSpacing(pOriginal->m_GirderSpacingType) ||
+          this->m_GirderSpacing != pOriginal->m_GirderSpacing)
+      {
+         copySpacing = true;
+      }
+   }
+
+   bool copySlabOffset = false;
+   if (this->m_SlabOffsetType==pgsTypes::sotBridge)
+   {
+      if (pOriginal->m_SlabOffsetType!=pgsTypes::sotBridge ||
+          this->m_SlabOffset != pOriginal->m_SlabOffset)
+      {
+         copySlabOffset = true;
+      }
+   }
+
+   // Copy bridge data down to spans if needed
+   CopyDown(copyGirderCount ,copyGirderType, copySpacing, copySlabOffset);
+
+   // Next step is to refill seed data for girder stirrups or long rebar
+   // for any girders that have changed types
+   // get shear information from library
+   GET_IFACE2( pBroker, ILibrary, pLib );
+
+   // NOTE: The logic here isn't, and probably can't be perfect. If spans or girder groups are added and 
+   //       shuffled, it's impossible to compare with the original configuration. The default here
+   //       is, if in doubt, use seed data
+   std::vector<CSpanData*>::const_iterator origSpanIter = pOriginal->m_Spans.begin();
+   for(std::vector<CSpanData*>::iterator thisSpanIter = m_Spans.begin(); thisSpanIter!=m_Spans.end(); thisSpanIter++)
+   {
+      if(origSpanIter != pOriginal->m_Spans.end())
+         origSpanIter++;
+
+      CSpanData* pthisSpan = *thisSpanIter;
+      CSpanData* pOrigSpan = (origSpanIter==pOriginal->m_Spans.end() ? NULL : *origSpanIter);
+
+      GroupIndexType thisNGroups = pthisSpan->GetGirderTypes()->GetGirderGroupCount();
+      GroupIndexType origNGroups = (pOrigSpan!=NULL ? pOrigSpan->GetGirderTypes()->GetGirderGroupCount() : 0);
+
+      for(GroupIndexType iGroup = 0; iGroup< thisNGroups; iGroup++)
+      {
+         std::string thisGirderName;
+         GirderIndexType nthisGstart, nthisGend;
+         pthisSpan->GetGirderTypes()->GetGirderGroup(iGroup, &nthisGstart, &nthisGend, thisGirderName);
+
+         std::string origGirderName;
+         if (iGroup < origNGroups)
+         {
+            GirderIndexType norigGstart, norigGend;
+            pOrigSpan->GetGirderTypes()->GetGirderGroup(iGroup, &norigGstart, &norigGend, origGirderName);
+         }
+
+         if (thisGirderName != origGirderName)
+         {
+            // Enough evidence here that the girder type was changed - refill with seed data
+            const GirderLibraryEntry* pGird = pLib->GetGirderEntry( thisGirderName.c_str());
+            ASSERT(pGird!=0);
+
+            for (GirderIndexType igdr=nthisGstart; igdr<=nthisGend; igdr++)
+            {
+               CGirderData& thisGdrData = pthisSpan->GetGirderTypes()->GetGirderData(igdr);
+
+               thisGdrData.ShearData.CopyGirderEntryData( *pGird );
+
+               thisGdrData.LongitudinalRebarData.CopyGirderEntryData( *pGird );
+            }
+         }
+      }
+   }
+}
+
+
 void CBridgeDescription::RenumberSpans()
 {
    // renumbers the spans and piers and updates all the prev/next pointers.
@@ -1371,6 +1479,12 @@ void CBridgeDescription::RenumberSpans()
    // last pier
    CPierData* pLastPier = m_Piers.back();
    pLastPier->SetSpans(pPrevSpan,NULL);
+
+   // Make sure connection data at ends of bridge are cleared
+   CPierData* pPier = m_Piers.front();
+   pPier->SetConnectionLibraryEntry(pgsTypes::Back, NULL);
+   pPier = m_Piers.back();
+   pPier->SetConnectionLibraryEntry(pgsTypes::Ahead, NULL);
 }
 
 void CBridgeDescription::AssertValid()

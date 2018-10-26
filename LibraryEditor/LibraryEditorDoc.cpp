@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // Library Editor - Editor for WBFL Library Services
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -174,7 +174,7 @@ BOOL CLibraryEditorDoc::OnOpenDocument(LPCTSTR lpszPathName)
             cmsg = "Undetermined error reading data file.  Extended error information is as follows: ";
 
          cmsg += msg.c_str();
-         AfxMessageBox(cmsg,MB_OK||MB_ICONEXCLAMATION);
+         AfxMessageBox(cmsg,MB_OK|MB_ICONEXCLAMATION);
          return FALSE;
       }
    }
@@ -294,7 +294,49 @@ void CLibraryEditorDoc::OnImport()
             ASSERT(FALSE);
          }
 
-         bool bOK = psglibImportEntries(pStrLoad,FILE_VERSION,&m_LibraryManager);
+         // advance the structured load pointer to the correct point for agent
+         hr = pStrLoad->BeginUnit("PGSuper");
+         if ( FAILED(hr) )
+         {
+            HandleOpenDocumentError( hr, rPath );
+            ASSERT(FALSE);
+         }
+
+         double ver;
+         pStrLoad->get_Version(&ver);
+         if(ver < FILE_VERSION)
+            return;
+
+         if ( 1.0 < ver )
+         {
+            CComVariant var;
+            var.vt = VT_BSTR;
+            if ( FAILED(pStrLoad->get_Property("Version",&var)) )
+            {
+               HandleOpenDocumentError( hr, rPath );
+               ASSERT(FALSE);
+            }
+
+            if ( FAILED(pStrLoad->BeginUnit("Broker")) )
+            {
+               HandleOpenDocumentError( hr, rPath );
+               ASSERT(FALSE);
+            }
+
+            if ( FAILED(pStrLoad->BeginUnit("Agent")) )
+            {
+               HandleOpenDocumentError( hr, rPath );
+               ASSERT(FALSE);
+            }
+
+            if ( FAILED(pStrLoad->get_Property("CLSID",&var)) )
+            {
+               HandleOpenDocumentError( hr, rPath );
+               ASSERT(FALSE);
+            }
+         }
+
+         bool bOK = psglibImportEntries(pStrLoad,&m_LibraryManager);
          if ( !bOK )
          {
             HandleOpenDocumentError( E_FAIL, rPath );

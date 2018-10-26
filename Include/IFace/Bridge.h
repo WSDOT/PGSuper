@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -280,6 +280,9 @@ interface IBridgeMaterial : IUnknown
    virtual Float64 GetShearModRupture(Float64 fc) = 0;
    virtual Float64 GetFlexureFrCoefficient() = 0;
    virtual Float64 GetShearFrCoefficient() = 0;
+
+   virtual Float64 GetNWCDensityLimit() = 0; // returns the minimum density for normal weight concrete
+                                             // densities below this value are considered to be LWC
 };
 
 /*****************************************************************************
@@ -599,7 +602,7 @@ interface ISectProp2 : IUnknown
    virtual Float64 GetDistTopSlabToTopGirder(const pgsPointOfInterest& poi) = 0;
 
    // Reporting
-   virtual void ReportEffectiveFlangeWidth(SpanIndexType span,GirderIndexType gdr,rptChapter* pChapter,IDisplayUnits* pDispUnit) = 0;
+   virtual void ReportEffectiveFlangeWidth(SpanIndexType span,GirderIndexType gdr,rptChapter* pChapter,IDisplayUnits* pDisplayUnits) = 0;
 
    // Volume and surface area
    virtual Float64 GetPerimeter(const pgsPointOfInterest& poi) = 0;
@@ -706,6 +709,10 @@ interface IGirder : IUnknown
    virtual pgsTypes::SplittingDirection GetSplittingDirection(SpanIndexType spanIdx,GirderIndexType gdrIdx) = 0;
 
    virtual void GetProfileShape(SpanIndexType spanIdx,GirderIndexType gdrIdx,IShape** ppShape) = 0;
+
+   // Area of shear key. uniform portion assumes no joint, section is per joint spacing.
+   virtual bool HasShearKey(SpanIndexType spanIdx,GirderIndexType gdrIdx,pgsTypes::SupportedBeamSpacing spacingType)=0;
+   virtual void GetShearKeyAreas(SpanIndexType spanIdx,GirderIndexType gdrIdx,pgsTypes::SupportedBeamSpacing spacingType,Float64* uniformArea, Float64* areaPerJoint)=0;
 };
 
 /*****************************************************************************

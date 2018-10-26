@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -71,7 +71,7 @@ CStrandSlopeCheck& CStrandSlopeCheck::operator= (const CStrandSlopeCheck& rOther
 //======================== OPERATIONS =======================================
 void CStrandSlopeCheck::Build(rptChapter* pChapter,
                               IBroker* pBroker,SpanIndexType span,GirderIndexType girder,
-                              IDisplayUnits* pDispUnits) const
+                              IDisplayUnits* pDisplayUnits) const
 {
    GET_IFACE2(pBroker,IArtifact,pIArtifact);
    const pgsGirderArtifact* pGdrArtifact = pIArtifact->GetArtifact(span,girder);
@@ -86,9 +86,9 @@ void CStrandSlopeCheck::Build(rptChapter* pChapter,
 
    
       rptRcScalar slope;
-      slope.SetFormat(pDispUnits->GetScalarFormat().Format);
-      slope.SetWidth(pDispUnits->GetScalarFormat().Width);
-      slope.SetPrecision(pDispUnits->GetScalarFormat().Precision);
+      slope.SetFormat(pDisplayUnits->GetScalarFormat().Format);
+      slope.SetWidth(pDisplayUnits->GetScalarFormat().Width);
+      slope.SetPrecision(pDisplayUnits->GetScalarFormat().Precision);
 
       rptParagraph* pBody = new rptParagraph;
       *pChapter << pBody;

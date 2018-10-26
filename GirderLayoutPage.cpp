@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -138,24 +138,24 @@ void CSpanGirderLayoutPage::DoDataExchange(CDataExchange* pDX)
 
    CComPtr<IBroker> pBroker;
    AfxGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IDisplayUnits,pDispUnits);
+   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
    DDX_CBItemData(pDX, IDC_PREV_REF_GIRDER, m_RefGirderIdx[pgsTypes::Ahead]);
    DDX_CBItemData(pDX, IDC_NEXT_REF_GIRDER, m_RefGirderIdx[pgsTypes::Back]);
 
-   DDX_OffsetAndTag(pDX, IDC_PREV_REF_GIRDER_OFFSET,IDC_PREV_REF_GIRDER_OFFSET_UNIT, m_RefGirderOffset[pgsTypes::Ahead], pDispUnits->GetXSectionDimUnit());
-   DDX_OffsetAndTag(pDX, IDC_NEXT_REF_GIRDER_OFFSET,IDC_NEXT_REF_GIRDER_OFFSET_UNIT, m_RefGirderOffset[pgsTypes::Back], pDispUnits->GetXSectionDimUnit());
+   DDX_OffsetAndTag(pDX, IDC_PREV_REF_GIRDER_OFFSET,IDC_PREV_REF_GIRDER_OFFSET_UNIT, m_RefGirderOffset[pgsTypes::Ahead], pDisplayUnits->GetXSectionDimUnit());
+   DDX_OffsetAndTag(pDX, IDC_NEXT_REF_GIRDER_OFFSET,IDC_NEXT_REF_GIRDER_OFFSET_UNIT, m_RefGirderOffset[pgsTypes::Back], pDisplayUnits->GetXSectionDimUnit());
 
    DDX_CBItemData(pDX, IDC_PREV_REF_GIRDER_OFFSET_TYPE, m_RefGirderOffsetType[pgsTypes::Ahead]);
    DDX_CBItemData(pDX, IDC_NEXT_REF_GIRDER_OFFSET_TYPE, m_RefGirderOffsetType[pgsTypes::Back]);
 
-   DDX_Tag(pDX, IDC_START_SLAB_OFFSET_UNIT, pDispUnits->GetComponentDimUnit() );
-   DDX_Tag(pDX, IDC_END_SLAB_OFFSET_UNIT,   pDispUnits->GetComponentDimUnit() );
+   DDX_Tag(pDX, IDC_START_SLAB_OFFSET_UNIT, pDisplayUnits->GetComponentDimUnit() );
+   DDX_Tag(pDX, IDC_END_SLAB_OFFSET_UNIT,   pDisplayUnits->GetComponentDimUnit() );
    if ( pParent->m_pBridgeDesc->GetDeckDescription()->DeckType != pgsTypes::sdtNone )
    {
       if ( !pDX->m_bSaveAndValidate || (pDX->m_bSaveAndValidate && m_SlabOffsetType == pgsTypes::sotSpan) )
       {
-         DDX_UnitValueAndTag(pDX, IDC_START_SLAB_OFFSET, IDC_START_SLAB_OFFSET_UNIT, m_SlabOffset[pgsTypes::metStart], pDispUnits->GetComponentDimUnit() );
-         DDX_UnitValueAndTag(pDX, IDC_END_SLAB_OFFSET,   IDC_END_SLAB_OFFSET_UNIT,   m_SlabOffset[pgsTypes::metEnd],   pDispUnits->GetComponentDimUnit() );
+         DDX_UnitValueAndTag(pDX, IDC_START_SLAB_OFFSET, IDC_START_SLAB_OFFSET_UNIT, m_SlabOffset[pgsTypes::metStart], pDisplayUnits->GetComponentDimUnit() );
+         DDX_UnitValueAndTag(pDX, IDC_END_SLAB_OFFSET,   IDC_END_SLAB_OFFSET_UNIT,   m_SlabOffset[pgsTypes::metEnd],   pDisplayUnits->GetComponentDimUnit() );
       }
    }
 }
@@ -512,10 +512,10 @@ void CSpanGirderLayoutPage::CacheEndSpacing()
    // cache the reference girder offset
    CComPtr<IBroker> pBroker;
    AfxGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IDisplayUnits,pDispUnits);
+   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
 
    CDataExchange dx(this,TRUE);
-   DDX_OffsetAndTag(&dx, IDC_NEXT_REF_GIRDER_OFFSET,IDC_NEXT_REF_GIRDER_OFFSET_UNIT, m_CacheRefGirderOffset[pgsTypes::Back], pDispUnits->GetXSectionDimUnit());
+   DDX_OffsetAndTag(&dx, IDC_NEXT_REF_GIRDER_OFFSET,IDC_NEXT_REF_GIRDER_OFFSET_UNIT, m_CacheRefGirderOffset[pgsTypes::Back], pDisplayUnits->GetXSectionDimUnit());
 
    // cache the reference girder offset type
    CComboBox* pcbStartRefGirderOffsetType = (CComboBox*)GetDlgItem(IDC_PREV_REF_GIRDER_OFFSET_TYPE);
@@ -593,8 +593,8 @@ void CSpanGirderLayoutPage::RestoreEndSpacing()
 
    CComPtr<IBroker> pBroker;
    AfxGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IDisplayUnits,pDispUnits);
-   DDX_OffsetAndTag(&dx, IDC_NEXT_REF_GIRDER_OFFSET,IDC_NEXT_REF_GIRDER_OFFSET_UNIT, m_CacheRefGirderOffset[pgsTypes::Back], pDispUnits->GetXSectionDimUnit());
+   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
+   DDX_OffsetAndTag(&dx, IDC_NEXT_REF_GIRDER_OFFSET,IDC_NEXT_REF_GIRDER_OFFSET_UNIT, m_CacheRefGirderOffset[pgsTypes::Back], pDisplayUnits->GetXSectionDimUnit());
    GetDlgItem(IDC_NEXT_REF_GIRDER_OFFSET)->EnableWindow(TRUE);
 
    DDX_CBItemData(&dx, IDC_NEXT_REF_GIRDER_OFFSET_TYPE, m_CacheRefGirderOffsetType[pgsTypes::Back]);
@@ -778,7 +778,7 @@ LRESULT CSpanGirderLayoutPage::OnChangeSameGirderSpacing(WPARAM wParam,LPARAM lP
          // for the entire bridge???
          CComPtr<IBroker> broker;
          AfxGetBroker(&broker);
-         GET_IFACE2(broker,IDisplayUnits,pDispUnits);
+         GET_IFACE2(broker,IDisplayUnits,pDisplayUnits);
 
          CResolveGirderSpacingDlg dlg;
          CString strItems;
@@ -789,9 +789,9 @@ LRESULT CSpanGirderLayoutPage::OnChangeSameGirderSpacing(WPARAM wParam,LPARAM lP
 
             CString strItem;
             if ( IsGirderSpacing(oldGirderSpacingType) )
-               strItem.Format("%s",FormatDimension(spacing,pDispUnits->GetXSectionDimUnit(),true));
+               strItem.Format("%s",FormatDimension(spacing,pDisplayUnits->GetXSectionDimUnit(),true));
             else
-               strItem.Format("%s",FormatDimension(spacing,pDispUnits->GetComponentDimUnit(),true));
+               strItem.Format("%s",FormatDimension(spacing,pDisplayUnits->GetComponentDimUnit(),true));
 
             if ( iter != spacings.begin() )
                strItems += "\n";
@@ -972,14 +972,14 @@ LRESULT CSpanGirderLayoutPage::OnChangeSlabOffset(WPARAM wParam,LPARAM lParam)
 {
    CComPtr<IBroker> pBroker;
    AfxGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IDisplayUnits,pDispUnits);
+   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
 
    if ( m_SlabOffsetTypeCache == pgsTypes::sotBridge )
    {
       Float64 slabOffset[2];
       CDataExchange dx(this,TRUE);
-      DDX_UnitValueAndTag(&dx, IDC_START_SLAB_OFFSET,IDC_START_SLAB_OFFSET_UNIT, slabOffset[pgsTypes::metStart], pDispUnits->GetComponentDimUnit());
-      DDX_UnitValueAndTag(&dx, IDC_END_SLAB_OFFSET,  IDC_END_SLAB_OFFSET_UNIT,   slabOffset[pgsTypes::metEnd],   pDispUnits->GetComponentDimUnit());
+      DDX_UnitValueAndTag(&dx, IDC_START_SLAB_OFFSET,IDC_START_SLAB_OFFSET_UNIT, slabOffset[pgsTypes::metStart], pDisplayUnits->GetComponentDimUnit());
+      DDX_UnitValueAndTag(&dx, IDC_END_SLAB_OFFSET,  IDC_END_SLAB_OFFSET_UNIT,   slabOffset[pgsTypes::metEnd],   pDisplayUnits->GetComponentDimUnit());
 
       Float64 slab_offset = slabOffset[pgsTypes::metStart];
 
@@ -994,8 +994,8 @@ LRESULT CSpanGirderLayoutPage::OnChangeSlabOffset(WPARAM wParam,LPARAM lParam)
          
          CString strItems;
          strItems.Format("Start of Span (%s)\nEnd of Span (%s)",
-                         ::FormatDimension(slabOffset[pgsTypes::metStart],pDispUnits->GetComponentDimUnit()),
-                         ::FormatDimension(slabOffset[pgsTypes::metEnd],  pDispUnits->GetComponentDimUnit()));
+                         ::FormatDimension(slabOffset[pgsTypes::metStart],pDisplayUnits->GetComponentDimUnit()),
+                         ::FormatDimension(slabOffset[pgsTypes::metEnd],  pDisplayUnits->GetComponentDimUnit()));
 
          dlg.m_strItems = strItems;
          if ( dlg.DoModal() == IDOK )
@@ -1014,8 +1014,8 @@ LRESULT CSpanGirderLayoutPage::OnChangeSlabOffset(WPARAM wParam,LPARAM lParam)
       GetDlgItem(IDC_START_SLAB_OFFSET)->GetWindowText(m_strSlabOffsetCache[pgsTypes::metStart]);
       GetDlgItem(IDC_END_SLAB_OFFSET)->GetWindowText(m_strSlabOffsetCache[pgsTypes::metEnd]);
 
-      GetDlgItem(IDC_END_SLAB_OFFSET)->SetWindowText( ::FormatDimension(slab_offset,pDispUnits->GetComponentDimUnit(),false) );
-      GetDlgItem(IDC_START_SLAB_OFFSET)->SetWindowText( ::FormatDimension(slab_offset,pDispUnits->GetComponentDimUnit(),false) );
+      GetDlgItem(IDC_END_SLAB_OFFSET)->SetWindowText( ::FormatDimension(slab_offset,pDisplayUnits->GetComponentDimUnit(),false) );
+      GetDlgItem(IDC_START_SLAB_OFFSET)->SetWindowText( ::FormatDimension(slab_offset,pDisplayUnits->GetComponentDimUnit(),false) );
    }
    else if ( m_SlabOffsetTypeCache == pgsTypes::sotGirder )
    {

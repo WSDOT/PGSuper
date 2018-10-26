@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -66,6 +66,7 @@ class ATL_NO_VTABLE CMultiWebDistFactorEngineer :
 public:
 	CMultiWebDistFactorEngineer()
 	{
+      m_BeamType = (BeamType)-1; // set trap to make sure client sets a real value
 	}
 
    HRESULT FinalConstruct();
@@ -74,6 +75,38 @@ BEGIN_COM_MAP(CMultiWebDistFactorEngineer)
    COM_INTERFACE_ENTRY(IDistFactorEngineer)
 END_COM_MAP()
 
+public: 
+   // We need a little help from above to figure beam type
+   enum BeamType  {btMultiWebTee, btDeckBulbTee, btDeckedSlabBeam};
+
+   BeamType GetBeamType() const
+   {
+      return m_BeamType;
+   }
+
+   void SetBeamType(BeamType bt)
+   {
+      m_BeamType = bt;
+   }
+
+   Float64 GetTxDOTKfactor() const
+   {
+      // Refer to txdot manual
+      if (m_BeamType==btDeckBulbTee || m_BeamType==btDeckedSlabBeam)
+      {
+         return 2.0;
+      }
+      else if (m_BeamType==btMultiWebTee)
+      {
+         return 2.2;
+      }
+      else
+      {
+         ATLASSERT(0); // forgot to set factor?
+         return 2.0;
+      }
+   }
+
 public:
    // IDistFactorEngineer
 //   virtual void SetBroker(IBroker* pBroker,long agentID);
@@ -81,15 +114,17 @@ public:
 //   virtual double GetNegMomentDF(PierIndexType pier,GirderIndexType gdr);
 //   virtual double GetShearDF(SpanIndexType span,GirderIndexType gdr);
 //   virtual double GetReactionDF(PierIndexType pier,GirderIndexType gdr);
-   virtual void BuildReport(SpanIndexType span,GirderIndexType gdr,rptChapter* pChapter,IDisplayUnits* pDispUnit);
+   virtual void BuildReport(SpanIndexType span,GirderIndexType gdr,rptChapter* pChapter,IDisplayUnits* pDisplayUnits);
    virtual std::string GetComputationDescription(SpanIndexType span,GirderIndexType gdr,const std::string& libraryEntryName,pgsTypes::SupportedDeckType decktype, pgsTypes::AdjacentTransverseConnectivity connect);
 
 private:
 
    lrfdLiveLoadDistributionFactorBase* GetLLDFParameters(SpanIndexType spanOrPier,GirderIndexType gdr,DFParam dfType,Float64 fcgdr,MULTIWEB_LLDFDETAILS* plldf);
 
-   void ReportMoment(rptParagraph* pPara,MULTIWEB_LLDFDETAILS& lldf,lrfdILiveLoadDistributionFactor::DFResult& gM1,lrfdILiveLoadDistributionFactor::DFResult& gM2,double gM,bool bSIUnits,IDisplayUnits* pDispUnit);
-   void ReportShear(rptParagraph* pPara,MULTIWEB_LLDFDETAILS& lldf,lrfdILiveLoadDistributionFactor::DFResult& gV1,lrfdILiveLoadDistributionFactor::DFResult& gV2,double gV,bool bSIUnits,IDisplayUnits* pDispUnit);
+   void ReportMoment(rptParagraph* pPara,MULTIWEB_LLDFDETAILS& lldf,lrfdILiveLoadDistributionFactor::DFResult& gM1,lrfdILiveLoadDistributionFactor::DFResult& gM2,double gM,bool bSIUnits,IDisplayUnits* pDisplayUnits);
+   void ReportShear(rptParagraph* pPara,MULTIWEB_LLDFDETAILS& lldf,lrfdILiveLoadDistributionFactor::DFResult& gV1,lrfdILiveLoadDistributionFactor::DFResult& gV2,double gV,bool bSIUnits,IDisplayUnits* pDisplayUnits);
+
+   BeamType m_BeamType;
 };
 
 #endif //__MULTIWEBDISTFACTORENGINEER_H_

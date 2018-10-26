@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -67,7 +67,7 @@ CStrandLocations& CStrandLocations::operator= (const CStrandLocations& rOther)
 
 //======================== OPERATIONS =======================================
 void CStrandLocations::Build(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType girder,
-                                IDisplayUnits* pDispUnit) const
+                                IDisplayUnits* pDisplayUnits) const
 {
    GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
    GET_IFACE2(pBroker,IBridge,pBridge);
@@ -76,8 +76,8 @@ void CStrandLocations::Build(rptChapter* pChapter,IBroker* pBroker,SpanIndexType
 
    double Lg = pBridge->GetGirderLength(span,girder);
 
-   INIT_UV_PROTOTYPE( rptLengthUnitValue, dim, pDispUnit->GetComponentDimUnit(),  false );
-   INIT_UV_PROTOTYPE( rptLengthUnitValue, len, pDispUnit->GetSpanLengthUnit(),  false );
+   INIT_UV_PROTOTYPE( rptLengthUnitValue, dim, pDisplayUnits->GetComponentDimUnit(),  false );
+   INIT_UV_PROTOTYPE( rptLengthUnitValue, len, pDisplayUnits->GetSpanLengthUnit(),  false );
 
    rptParagraph* pHead;
    pHead = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
@@ -97,13 +97,13 @@ void CStrandLocations::Build(rptChapter* pChapter,IBroker* pBroker,SpanIndexType
       *pPara << p_table;
 
       (*p_table)(0,0) << "Strand";
-      (*p_table)(0,1) << COLHDR("X Location",rptLengthUnitTag, pDispUnit->GetComponentDimUnit() );
-      (*p_table)(0,2) << COLHDR("Y Location",rptLengthUnitTag, pDispUnit->GetComponentDimUnit() );
+      (*p_table)(0,1) << COLHDR("X Location",rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+      (*p_table)(0,2) << COLHDR("Y Location",rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
 
       if ( 0 < nDebonded )
       {
-         (*p_table)(0,3) << COLHDR("Debonded from" << rptNewLine << "Left End",rptLengthUnitTag, pDispUnit->GetSpanLengthUnit() );
-         (*p_table)(0,4) << COLHDR("Debonded from" << rptNewLine << "Right End",rptLengthUnitTag, pDispUnit->GetSpanLengthUnit() );
+         (*p_table)(0,3) << COLHDR("Debonded from" << rptNewLine << "Left End",rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+         (*p_table)(0,4) << COLHDR("Debonded from" << rptNewLine << "Right End",rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
       }
 
       CComPtr<IPoint2dCollection> spts;
@@ -164,13 +164,13 @@ void CStrandLocations::Build(rptChapter* pChapter,IBroker* pBroker,SpanIndexType
          *pPara << p_table;
 
          (*p_table)(0,0) << "Strand";
-         (*p_table)(0,1) << COLHDR("X Location",rptLengthUnitTag, pDispUnit->GetComponentDimUnit() );
-         (*p_table)(0,2) << COLHDR("Y Location",rptLengthUnitTag, pDispUnit->GetComponentDimUnit() );
+         (*p_table)(0,1) << COLHDR("X Location",rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+         (*p_table)(0,2) << COLHDR("Y Location",rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
 
          if ( 0 < nDebonded )
          {
-            (*p_table)(0,3) << COLHDR("Left End",rptLengthUnitTag, pDispUnit->GetSpanLengthUnit() );
-            (*p_table)(0,4) << COLHDR("Right End",rptLengthUnitTag, pDispUnit->GetSpanLengthUnit() );
+            (*p_table)(0,3) << COLHDR("Left End",rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+            (*p_table)(0,4) << COLHDR("Right End",rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
          }
 
          CComPtr<IPoint2dCollection> spts;
@@ -231,13 +231,13 @@ void CStrandLocations::Build(rptChapter* pChapter,IBroker* pBroker,SpanIndexType
       *pPara << p_table;
 
       (*p_table)(0,0) << "Strand";
-      (*p_table)(0,1) << COLHDR("X Location",rptLengthUnitTag, pDispUnit->GetComponentDimUnit() );
-      (*p_table)(0,2) << COLHDR("Y Location",rptLengthUnitTag, pDispUnit->GetComponentDimUnit() );
+      (*p_table)(0,1) << COLHDR("X Location",rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+      (*p_table)(0,2) << COLHDR("Y Location",rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
 
       if ( 0 < nDebonded )
       {
-         (*p_table)(0,3) << COLHDR("Left End",rptLengthUnitTag, pDispUnit->GetSpanLengthUnit() );
-         (*p_table)(0,4) << COLHDR("Right End",rptLengthUnitTag, pDispUnit->GetSpanLengthUnit() );
+         (*p_table)(0,3) << COLHDR("Left End",rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+         (*p_table)(0,4) << COLHDR("Right End",rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
       }
 
       CComPtr<IPoint2dCollection> spts;
@@ -285,8 +285,8 @@ void CStrandLocations::Build(rptChapter* pChapter,IBroker* pBroker,SpanIndexType
       *pPara << p_table;
 
       (*p_table)(0,0) << "Strand";
-      (*p_table)(0,1) << COLHDR("X Location",rptLengthUnitTag, pDispUnit->GetComponentDimUnit() );
-      (*p_table)(0,2) << COLHDR("Y Location",rptLengthUnitTag, pDispUnit->GetComponentDimUnit() );
+      (*p_table)(0,1) << COLHDR("X Location",rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+      (*p_table)(0,2) << COLHDR("Y Location",rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
 
       CComPtr<IPoint2dCollection> hspts;
       pStrandGeometry->GetStrandPositions(harp_poi, pgsTypes::Harped, &hspts);

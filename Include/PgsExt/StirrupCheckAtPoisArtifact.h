@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -268,10 +268,10 @@ public:
    void SetAreStirrupsProvided(bool provd);
    bool GetAreStirrupsProvided() const;
 
-   void SetDemand(sysSectionValue demand);
-   sysSectionValue GetDemand() const;
-   void SetCapacity(sysSectionValue cap);
-   sysSectionValue GetCapacity() const;
+   void SetDemand(Float64 demand);
+   Float64 GetDemand() const;
+   void SetCapacity(Float64 cap);
+   Float64 GetCapacity() const;
 
    void SetEndSpacing(double AvS_provided,double AvS_at_CS);
    void GetEndSpacing(double* pAvS_provided,double* pAvS_at_CS);
@@ -336,8 +336,8 @@ private:
    bool m_AreStirrupsReqd;
    bool m_AreStirrupsProvided;
 
-   sysSectionValue m_Demand;
-   sysSectionValue m_Capacity;
+   Float64 m_Demand;
+   Float64 m_Capacity;
 
    double m_AvSprovided, m_AvSatCS;
 
@@ -436,8 +436,8 @@ public:
    Float64 GetFc() const;
    void SetFc(Float64 fc);
 
-   sysSectionValue GetDemand() const {return m_UltimateHorizontalShear;}
-   void SetDemand(sysSectionValue shear) {m_UltimateHorizontalShear = shear;}
+   Float64 GetDemand() const {return m_UltimateHorizontalShear;}
+   void SetDemand(Float64 shear) {m_UltimateHorizontalShear = shear;}
    Float64 GetCapacity() const;
 
    // additional data for 5.8.4.1-4
@@ -460,8 +460,8 @@ public:
    void SetVsLimit(Float64 vs);
 
    // data for computing shear stress
-   sysSectionValue GetVu() const;
-   void SetVu(const sysSectionValue& vu);
+   Float64 GetVu() const;
+   void SetVu(const Float64& vu);
    Float64 GetDv() const;
    void SetDv(double dv);
    Float64 GetI() const;
@@ -509,7 +509,7 @@ private:
    Float64 m_STopFlange;
    Float64 m_AvfGirder;
    Float64 m_SGirder;
-   sysSectionValue m_UltimateHorizontalShear;
+   Float64 m_UltimateHorizontalShear;
    Float64 m_NormalCompressionForce;
    Float64 m_Acv;
    Float64 m_CohesionFactor;
@@ -534,7 +534,7 @@ private:
    Float64 m_Dv;
    Float64 m_I;
    Float64 m_Q;
-   sysSectionValue m_Vu; // vertical shear
+   Float64 m_Vu; // vertical shear
 
 
    // GROUP: LIFECYCLE

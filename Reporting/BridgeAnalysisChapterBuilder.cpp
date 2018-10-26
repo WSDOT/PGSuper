@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -90,7 +90,7 @@ rptChapter* CBridgeAnalysisChapterBuilder::Build(CReportSpecification* pRptSpec,
    SpanIndexType span = ALL_SPANS;
    GirderIndexType girder = pSGRptSpec->GetGirder();
 
-   GET_IFACE2(pBroker,IDisplayUnits,pDispUnit);
+   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
    rptParagraph* p = 0;
@@ -105,11 +105,11 @@ rptChapter* CBridgeAnalysisChapterBuilder::Build(CReportSpecification* pRptSpec,
    *pChapter << p;
    p = new rptParagraph;
    *pChapter << p;
-   *p << CProductMomentsTable().Build(pBroker,span,girder,m_AnalysisType,true,pDispUnit) << rptNewLine;
+   *p << CProductMomentsTable().Build(pBroker,span,girder,m_AnalysisType,true,pDisplayUnits) << rptNewLine;
    *p << LIVELOAD_PER_LANE << rptNewLine;
     
-   GET_IFACE2(pBroker,IProductForces,pProductForces);
-   std::vector<std::string> strLLNames = pProductForces->GetVehicleNames(pgsTypes::lltDesign,girder);
+   GET_IFACE2(pBroker,IProductLoads,pProductLoads);
+   std::vector<std::string> strLLNames = pProductLoads->GetVehicleNames(pgsTypes::lltDesign,girder);
    std::vector<std::string>::iterator iter;
    long j = 0;
    for (iter = strLLNames.begin(); iter != strLLNames.end(); iter++, j++ )
@@ -119,7 +119,7 @@ rptChapter* CBridgeAnalysisChapterBuilder::Build(CReportSpecification* pRptSpec,
 
    if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
    {
-      strLLNames = pProductForces->GetVehicleNames(pgsTypes::lltFatigue,girder);
+      strLLNames = pProductLoads->GetVehicleNames(pgsTypes::lltFatigue,girder);
       j = 0;
       for (iter = strLLNames.begin(); iter != strLLNames.end(); iter++, j++ )
       {
@@ -129,7 +129,7 @@ rptChapter* CBridgeAnalysisChapterBuilder::Build(CReportSpecification* pRptSpec,
 
    if ( bPermit )
    {
-      strLLNames = pProductForces->GetVehicleNames(pgsTypes::lltPermit,girder);
+      strLLNames = pProductLoads->GetVehicleNames(pgsTypes::lltPermit,girder);
       j = 0;
       for (iter = strLLNames.begin(); iter != strLLNames.end(); iter++, j++ )
       {
@@ -141,17 +141,17 @@ rptChapter* CBridgeAnalysisChapterBuilder::Build(CReportSpecification* pRptSpec,
    bool are_user_loads = pUDL->DoUserLoadsExist(span,girder);
    if (are_user_loads)
    {
-      *p << CUserMomentsTable().Build(pBroker,span,girder,m_AnalysisType,pDispUnit) << rptNewLine;
+      *p << CUserMomentsTable().Build(pBroker,span,girder,m_AnalysisType,pDisplayUnits) << rptNewLine;
    }
 
    // Product Shears
    p = new rptParagraph;
    *pChapter << p;
-   *p << CProductShearTable().Build(pBroker,span,girder,m_AnalysisType,true,pDispUnit) << rptNewLine;
+   *p << CProductShearTable().Build(pBroker,span,girder,m_AnalysisType,true,pDisplayUnits) << rptNewLine;
    *p << LIVELOAD_PER_LANE << rptNewLine;
    *p << rptNewLine;
 
-   strLLNames = pProductForces->GetVehicleNames(pgsTypes::lltDesign,girder);
+   strLLNames = pProductLoads->GetVehicleNames(pgsTypes::lltDesign,girder);
    j = 0;
    for (iter = strLLNames.begin(); iter != strLLNames.end(); iter++, j++ )
    {
@@ -160,7 +160,7 @@ rptChapter* CBridgeAnalysisChapterBuilder::Build(CReportSpecification* pRptSpec,
 
    if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
    {
-      strLLNames = pProductForces->GetVehicleNames(pgsTypes::lltFatigue,girder);
+      strLLNames = pProductLoads->GetVehicleNames(pgsTypes::lltFatigue,girder);
       j = 0;
       for (iter = strLLNames.begin(); iter != strLLNames.end(); iter++, j++ )
       {
@@ -170,7 +170,7 @@ rptChapter* CBridgeAnalysisChapterBuilder::Build(CReportSpecification* pRptSpec,
 
    if ( bPermit )
    {
-      strLLNames = pProductForces->GetVehicleNames(pgsTypes::lltPermit,girder);
+      strLLNames = pProductLoads->GetVehicleNames(pgsTypes::lltPermit,girder);
       j = 0;
       for (iter = strLLNames.begin(); iter != strLLNames.end(); iter++, j++ )
       {
@@ -180,17 +180,17 @@ rptChapter* CBridgeAnalysisChapterBuilder::Build(CReportSpecification* pRptSpec,
 
    if (are_user_loads)
    {
-      *p << CUserShearTable().Build(pBroker,span,girder,m_AnalysisType,pDispUnit) << rptNewLine;
+      *p << CUserShearTable().Build(pBroker,span,girder,m_AnalysisType,pDisplayUnits) << rptNewLine;
    }
 
    // Product Reactions
    p = new rptParagraph;
    *pChapter << p;
-   *p << CProductReactionTable().Build(pBroker,span,girder,m_AnalysisType,true,false,true,pDispUnit) << rptNewLine;
+   *p << CProductReactionTable().Build(pBroker,span,girder,m_AnalysisType,true,false,true,pDisplayUnits) << rptNewLine;
    *p << LIVELOAD_PER_LANE << rptNewLine;
    *p << rptNewLine;
 
-   strLLNames = pProductForces->GetVehicleNames(pgsTypes::lltDesign,girder);
+   strLLNames = pProductLoads->GetVehicleNames(pgsTypes::lltDesign,girder);
    j = 0;
    for (iter = strLLNames.begin(); iter != strLLNames.end(); iter++, j++ )
    {
@@ -199,7 +199,7 @@ rptChapter* CBridgeAnalysisChapterBuilder::Build(CReportSpecification* pRptSpec,
 
    if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
    {
-      strLLNames = pProductForces->GetVehicleNames(pgsTypes::lltFatigue,girder);
+      strLLNames = pProductLoads->GetVehicleNames(pgsTypes::lltFatigue,girder);
       j = 0;
       for (iter = strLLNames.begin(); iter != strLLNames.end(); iter++, j++ )
       {
@@ -209,7 +209,7 @@ rptChapter* CBridgeAnalysisChapterBuilder::Build(CReportSpecification* pRptSpec,
 
    if ( bPermit )
    {
-      strLLNames = pProductForces->GetVehicleNames(pgsTypes::lltPermit,girder);
+      strLLNames = pProductLoads->GetVehicleNames(pgsTypes::lltPermit,girder);
       j = 0;
       for (iter = strLLNames.begin(); iter != strLLNames.end(); iter++, j++ )
       {
@@ -219,17 +219,17 @@ rptChapter* CBridgeAnalysisChapterBuilder::Build(CReportSpecification* pRptSpec,
 
    if (are_user_loads)
    {
-      *p << CUserReactionTable().Build(pBroker,span,girder,m_AnalysisType,pDispUnit) << rptNewLine;
+      *p << CUserReactionTable().Build(pBroker,span,girder,m_AnalysisType,pDisplayUnits) << rptNewLine;
    }
 
    // Product Displacements
    p = new rptParagraph;
    *pChapter << p;
-   *p << CProductDisplacementsTable().Build(pBroker,span,girder,m_AnalysisType,true,pDispUnit) << rptNewLine;
+   *p << CProductDisplacementsTable().Build(pBroker,span,girder,m_AnalysisType,true,pDisplayUnits) << rptNewLine;
    *p << LIVELOAD_PER_LANE << rptNewLine;
    *p << rptNewLine;
 
-   strLLNames = pProductForces->GetVehicleNames(pgsTypes::lltDesign,girder);
+   strLLNames = pProductLoads->GetVehicleNames(pgsTypes::lltDesign,girder);
    j = 0;
    for (iter = strLLNames.begin(); iter != strLLNames.end(); iter++, j++ )
    {
@@ -238,7 +238,7 @@ rptChapter* CBridgeAnalysisChapterBuilder::Build(CReportSpecification* pRptSpec,
 
    if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
    {
-      strLLNames = pProductForces->GetVehicleNames(pgsTypes::lltFatigue,girder);
+      strLLNames = pProductLoads->GetVehicleNames(pgsTypes::lltFatigue,girder);
       j = 0;
       for (iter = strLLNames.begin(); iter != strLLNames.end(); iter++, j++ )
       {
@@ -249,7 +249,7 @@ rptChapter* CBridgeAnalysisChapterBuilder::Build(CReportSpecification* pRptSpec,
 
    if ( bPermit )
    {
-      strLLNames = pProductForces->GetVehicleNames(pgsTypes::lltPermit,girder);
+      strLLNames = pProductLoads->GetVehicleNames(pgsTypes::lltPermit,girder);
       j = 0;
       for (iter = strLLNames.begin(); iter != strLLNames.end(); iter++, j++ )
       {
@@ -259,17 +259,17 @@ rptChapter* CBridgeAnalysisChapterBuilder::Build(CReportSpecification* pRptSpec,
 
    if (are_user_loads)
    {
-      *p << CUserDisplacementsTable().Build(pBroker,span,girder,m_AnalysisType,pDispUnit) << rptNewLine;
+      *p << CUserDisplacementsTable().Build(pBroker,span,girder,m_AnalysisType,pDisplayUnits) << rptNewLine;
    }
 
    // Product Rotations
    p = new rptParagraph;
    *pChapter << p;
-   *p << CProductRotationTable().Build(pBroker,span,girder,m_AnalysisType,true,false,true,pDispUnit) << rptNewLine;
+   *p << CProductRotationTable().Build(pBroker,span,girder,m_AnalysisType,true,false,true,pDisplayUnits) << rptNewLine;
    *p << LIVELOAD_PER_LANE << rptNewLine;
    *p << rptNewLine;
 
-   strLLNames = pProductForces->GetVehicleNames(pgsTypes::lltDesign,girder);
+   strLLNames = pProductLoads->GetVehicleNames(pgsTypes::lltDesign,girder);
    j = 0;
    for (iter = strLLNames.begin(); iter != strLLNames.end(); iter++, j++ )
    {
@@ -278,7 +278,7 @@ rptChapter* CBridgeAnalysisChapterBuilder::Build(CReportSpecification* pRptSpec,
 
    if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
    {
-      strLLNames = pProductForces->GetVehicleNames(pgsTypes::lltFatigue,girder);
+      strLLNames = pProductLoads->GetVehicleNames(pgsTypes::lltFatigue,girder);
       j = 0;
       for (iter = strLLNames.begin(); iter != strLLNames.end(); iter++, j++ )
       {
@@ -288,7 +288,7 @@ rptChapter* CBridgeAnalysisChapterBuilder::Build(CReportSpecification* pRptSpec,
 
    if ( bPermit )
    {
-      strLLNames = pProductForces->GetVehicleNames(pgsTypes::lltPermit,girder);
+      strLLNames = pProductLoads->GetVehicleNames(pgsTypes::lltPermit,girder);
       j = 0;
       for (iter = strLLNames.begin(); iter != strLLNames.end(); iter++, j++ )
       {
@@ -298,7 +298,7 @@ rptChapter* CBridgeAnalysisChapterBuilder::Build(CReportSpecification* pRptSpec,
 
    if (are_user_loads)
    {
-      *p << CUserRotationTable().Build(pBroker,span,girder,m_AnalysisType,pDispUnit) << rptNewLine;
+      *p << CUserRotationTable().Build(pBroker,span,girder,m_AnalysisType,pDisplayUnits) << rptNewLine;
    }
 
    // Responses from individual live load vehicules
@@ -307,8 +307,8 @@ rptChapter* CBridgeAnalysisChapterBuilder::Build(CReportSpecification* pRptSpec,
    {
       pgsTypes::LiveLoadType llType = (pgsTypes::LiveLoadType)i;
 
-      GET_IFACE2( pBroker, IProductForces, pProductForces);
-      std::vector<std::string> strLLNames = pProductForces->GetVehicleNames(llType,girder);
+      GET_IFACE2( pBroker, IProductLoads, pProductLoads);
+      std::vector<std::string> strLLNames = pProductLoads->GetVehicleNames(llType,girder);
 
       // nothing to report if there are no loads
       if ( strLLNames.size() == 0 )
@@ -352,12 +352,12 @@ rptChapter* CBridgeAnalysisChapterBuilder::Build(CReportSpecification* pRptSpec,
          p = new rptParagraph;
          *pChapter << p;
          p->SetName( strLLName.c_str() );
-         *p << CVehicularLoadResultsTable().Build(pBroker,span,girder,llType,strLLName,index,m_AnalysisType,true,pDispUnit) << rptNewLine;
+         *p << CVehicularLoadResultsTable().Build(pBroker,span,girder,llType,strLLName,index,m_AnalysisType,true,pDisplayUnits) << rptNewLine;
          *p << LIVELOAD_PER_LANE << rptNewLine;
 
          *p << rptNewLine;
 
-         *p << CVehicularLoadReactionTable().Build(pBroker,span,girder,llType,strLLName,index,m_AnalysisType,true,pDispUnit) << rptNewLine;
+         *p << CVehicularLoadReactionTable().Build(pBroker,span,girder,llType,strLLName,index,m_AnalysisType,true,pDisplayUnits) << rptNewLine;
          *p << LIVELOAD_PER_LANE << rptNewLine;
       }
    }
@@ -367,17 +367,17 @@ rptChapter* CBridgeAnalysisChapterBuilder::Build(CReportSpecification* pRptSpec,
    *pChapter << p;
    *p << "Responses - Casting Yard Stage" << rptNewLine;
    p->SetName("Casting Yard");
-   CCombinedMomentsTable().Build(pBroker,pChapter,span,girder,pDispUnit,pgsTypes::CastingYard, m_AnalysisType);
-//   CCombinedShearTable().Build(pBroker,pChapter,span,girder,pDispUnit,pgsTypes::CastingYard);
-//   CCombinedReactionTable().Build(pBroker,pChapter,span,girder,pDispUnit,pgsTypes::CastingYard);
+   CCombinedMomentsTable().Build(pBroker,pChapter,span,girder,pDisplayUnits,pgsTypes::CastingYard, m_AnalysisType);
+//   CCombinedShearTable().Build(pBroker,pChapter,span,girder,pDisplayUnits,pgsTypes::CastingYard);
+//   CCombinedReactionTable().Build(pBroker,pChapter,span,girder,pDisplayUnits,pgsTypes::CastingYard);
 
    p = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pChapter << p;
    *p << "Responses - Girder Placement" << rptNewLine;
    p->SetName("Girder Placement");
-   CCombinedMomentsTable().Build(pBroker,pChapter,span,girder,pDispUnit,pgsTypes::GirderPlacement, m_AnalysisType);
-   CCombinedShearTable().Build(pBroker,pChapter,span,girder,pDispUnit,pgsTypes::GirderPlacement, m_AnalysisType);
-   CCombinedReactionTable().Build(pBroker,pChapter,span,girder,pDispUnit,pgsTypes::GirderPlacement, m_AnalysisType);
+   CCombinedMomentsTable().Build(pBroker,pChapter,span,girder,pDisplayUnits,pgsTypes::GirderPlacement, m_AnalysisType);
+   CCombinedShearTable().Build(pBroker,pChapter,span,girder,pDisplayUnits,pgsTypes::GirderPlacement, m_AnalysisType);
+   CCombinedReactionTable().Build(pBroker,pChapter,span,girder,pDisplayUnits,pgsTypes::GirderPlacement, m_AnalysisType);
 
    GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
    if ( 0 < pStrandGeom->GetMaxStrands(span == ALL_SPANS ? 0 : span,girder,pgsTypes::Temporary) )
@@ -388,41 +388,41 @@ rptChapter* CBridgeAnalysisChapterBuilder::Build(CReportSpecification* pRptSpec,
       *pChapter << p;
       *p << "Responses - Temporary Strand Removal Stage" << rptNewLine;
       p->SetName("Temporary Strand Removal");
-      CCombinedMomentsTable().Build(pBroker,pChapter,span,girder,pDispUnit,pgsTypes::TemporaryStrandRemoval, m_AnalysisType);
-      CCombinedShearTable().Build(pBroker,pChapter,span,girder,pDispUnit,pgsTypes::TemporaryStrandRemoval, m_AnalysisType);
-      CCombinedReactionTable().Build(pBroker,pChapter,span,girder,pDispUnit,pgsTypes::TemporaryStrandRemoval, m_AnalysisType);
+      CCombinedMomentsTable().Build(pBroker,pChapter,span,girder,pDisplayUnits,pgsTypes::TemporaryStrandRemoval, m_AnalysisType);
+      CCombinedShearTable().Build(pBroker,pChapter,span,girder,pDisplayUnits,pgsTypes::TemporaryStrandRemoval, m_AnalysisType);
+      CCombinedReactionTable().Build(pBroker,pChapter,span,girder,pDisplayUnits,pgsTypes::TemporaryStrandRemoval, m_AnalysisType);
    }
 
    p = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pChapter << p;
    *p << "Responses - Deck and Diaphragm Placement (Bridge Site 1)" << rptNewLine;
    p->SetName("Deck and Diaphragm Placement (Bridge Site 1)");
-   CCombinedMomentsTable().Build(pBroker,pChapter,span,girder,pDispUnit,pgsTypes::BridgeSite1,m_AnalysisType);
-   CCombinedShearTable().Build(pBroker,pChapter,span,girder,pDispUnit,pgsTypes::BridgeSite1,m_AnalysisType);
-   CCombinedReactionTable().Build(pBroker,pChapter,span,girder,pDispUnit,pgsTypes::BridgeSite1,m_AnalysisType);
+   CCombinedMomentsTable().Build(pBroker,pChapter,span,girder,pDisplayUnits,pgsTypes::BridgeSite1,m_AnalysisType);
+   CCombinedShearTable().Build(pBroker,pChapter,span,girder,pDisplayUnits,pgsTypes::BridgeSite1,m_AnalysisType);
+   CCombinedReactionTable().Build(pBroker,pChapter,span,girder,pDisplayUnits,pgsTypes::BridgeSite1,m_AnalysisType);
 
    p = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pChapter << p;
    *p << "Responses - Superimposed Dead Loads (Bridge Site 2)" << rptNewLine;
    p->SetName("Superimposed Dead Loads (Bridge Site 2)");
-   CCombinedMomentsTable().Build(pBroker,pChapter,span,girder,pDispUnit,pgsTypes::BridgeSite2,m_AnalysisType);
-   CCombinedShearTable().Build(pBroker,pChapter,span,girder,pDispUnit,pgsTypes::BridgeSite2,m_AnalysisType);
-   CCombinedReactionTable().Build(pBroker,pChapter,span,girder,pDispUnit,pgsTypes::BridgeSite2,m_AnalysisType);
+   CCombinedMomentsTable().Build(pBroker,pChapter,span,girder,pDisplayUnits,pgsTypes::BridgeSite2,m_AnalysisType);
+   CCombinedShearTable().Build(pBroker,pChapter,span,girder,pDisplayUnits,pgsTypes::BridgeSite2,m_AnalysisType);
+   CCombinedReactionTable().Build(pBroker,pChapter,span,girder,pDisplayUnits,pgsTypes::BridgeSite2,m_AnalysisType);
 
    p = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pChapter << p;
    *p << "Responses - Final with Live Load (Bridge Site 3)" << rptNewLine;
    p->SetName("Final with Live Load (Bridge Site 3)");
 
-   CCombinedMomentsTable().Build(pBroker,pChapter,span,girder,pDispUnit,pgsTypes::BridgeSite3,m_AnalysisType);
-   CCombinedShearTable().Build(pBroker,pChapter,span,girder,pDispUnit,pgsTypes::BridgeSite3,m_AnalysisType);
-   CCombinedReactionTable().Build(pBroker,pChapter,span,girder,pDispUnit,pgsTypes::BridgeSite3,m_AnalysisType);
+   CCombinedMomentsTable().Build(pBroker,pChapter,span,girder,pDisplayUnits,pgsTypes::BridgeSite3,m_AnalysisType);
+   CCombinedShearTable().Build(pBroker,pChapter,span,girder,pDisplayUnits,pgsTypes::BridgeSite3,m_AnalysisType);
+   CCombinedReactionTable().Build(pBroker,pChapter,span,girder,pDisplayUnits,pgsTypes::BridgeSite3,m_AnalysisType);
 
    p = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pChapter << p;
    *p << "Live Load Reactions without Impact" << rptNewLine;
    p->SetName("Live Load Reactions without Impact");
-   CLiveLoadReactionTable().Build(pBroker,pChapter,span,girder,pDispUnit,pgsTypes::BridgeSite3, m_AnalysisType);
+   CLiveLoadReactionTable().Build(pBroker,pChapter,span,girder,pDisplayUnits,pgsTypes::BridgeSite3, m_AnalysisType);
 
    return pChapter;
 }

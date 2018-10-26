@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -25,9 +25,8 @@
 
 // SYSTEM INCLUDES
 //
-#if !defined INCLUDED_PGSEXTEXP_H_
 #include <PgsExt\PgsExtExp.h>
-#endif
+
 
 // PROJECT INCLUDES
 //
@@ -37,6 +36,14 @@
 
 // FORWARD DECLARATIONS
 //
+
+class pgsStatusItem;
+
+interface iStatusCallback
+{
+   virtual pgsTypes::StatusSeverityType GetSeverity() = 0;
+   virtual void Execute(pgsStatusItem* pItem) = 0;
+};
 
 // MISCELLANEOUS
 //
@@ -58,168 +65,115 @@ COPYRIGHT
 class PGSEXTCLASS pgsStatusItem
 {
 public:
-   pgsStatusItem(Uint32 agentID,Uint32 callbackID,const char* strDescription);
+   pgsStatusItem(AgentIDType agentID,StatusCallbackIDType callbackID,const char* strDescription);
 
    // Called by the framework to assign a unique identifier
    // to the status item. Don't call this method
-   void SetID(Uint32 id);
+   void SetID(StatusItemIDType id);
 
-   Uint32 GetID() const;
-   Uint32 GetAgentID() const;
+   StatusItemIDType GetID() const;
+   AgentIDType GetAgentID() const;
 
    // framework will remove status item after edit if true
    bool RemoveAfterEdit();
    void RemoveAfterEdit(bool bRemoveAfterEdit);
 
    const std::string& GetDescription() const;
-   Uint32 GetCallbackID() const;
+   StatusCallbackIDType GetCallbackID() const;
 
    virtual bool IsEqual(pgsStatusItem* pOther) = 0;
 
 private:
-   Uint32 m_ID;
-   Uint32 m_AgentID;
-   Uint32 m_CallbackID;
+   StatusItemIDType m_ID;
+   AgentIDType m_AgentID;
+   StatusCallbackIDType m_CallbackID;
    bool m_bRemoveAfterEdit;
    std::string m_Description;
-};
-
-// status for point loads
-class PGSEXTCLASS pgsPointLoadStatusItem : public pgsStatusItem
-{
-public:
-   pgsPointLoadStatusItem(Uint32 loadIndex,Uint32 agentID,Uint32 callbackID,const char* strDescription);
-   bool IsEqual(pgsStatusItem* pOther);
-
-   Uint32 m_LoadIndex;
-};
-
-// status for moment loads
-class PGSEXTCLASS pgsMomentLoadStatusItem : public pgsStatusItem
-{
-public:
-   pgsMomentLoadStatusItem(Uint32 loadIndex,Uint32 agentID,Uint32 callbackID,const char* strDescription);
-   bool IsEqual(pgsStatusItem* pOther);
-
-   Uint32 m_LoadIndex;
-};
-
-// status for Distributed loads
-class PGSEXTCLASS pgsDistributedLoadStatusItem : public pgsStatusItem
-{
-public:
-   pgsDistributedLoadStatusItem(Uint32 loadIndex,Uint32 agentID,Uint32 callbackID,const char* strDescription);
-   bool IsEqual(pgsStatusItem* pOther);
-
-   Uint32 m_LoadIndex;
-};
-
-// status for Concrete Strength
-class PGSEXTCLASS pgsConcreteStrengthStatusItem : public pgsStatusItem
-{
-public:
-   enum ConcreteType { Slab, Girder };
-   enum ElementType { ReleaseStrength, FinalStrength, Density, DensityForWeight, AggSize };
-   pgsConcreteStrengthStatusItem(ConcreteType concType,ElementType elemType,SpanIndexType span,GirderIndexType gdr,long agentID,long callbackID,const char* strDescription);
-   bool IsEqual(pgsStatusItem* pOther);
-
-   ConcreteType m_ConcreteType;
-   ElementType m_ElementType;
-   SpanIndexType m_Span;
-   GirderIndexType m_Girder;
-};
-
-// status for Volume to Surface Ratio
-class PGSEXTCLASS pgsVSRatioStatusItem : public pgsStatusItem
-{
-public:
-   pgsVSRatioStatusItem(SpanIndexType span,GirderIndexType gdr,Uint32 agentID,Uint32 callbackID,const char* strDescription);
-   bool IsEqual(pgsStatusItem* pOther);
-
-   SpanIndexType m_Span;
-   GirderIndexType m_Girder;
-};
-
-// status for Lifting support location
-class PGSEXTCLASS pgsLiftingSupportLocationStatusItem : public pgsStatusItem
-{
-public:
-   pgsLiftingSupportLocationStatusItem(SpanIndexType span,GirderIndexType gdr,Uint32 agentID,Uint32 callbackID,const char* strDescription);
-   bool IsEqual(pgsStatusItem* pOther);
-
-   SpanIndexType m_Span;
-   GirderIndexType m_Girder;
-};
-
-// status for truck stiffness
-class PGSEXTCLASS pgsTruckStiffnessStatusItem : public pgsStatusItem
-{
-public:
-   pgsTruckStiffnessStatusItem(Uint32 agentID,Uint32 callbackID,const char* strDescription);
-   bool IsEqual(pgsStatusItem* pOther);
-};
-
-// status for general bridge description input
-class PGSEXTCLASS pgsBridgeDescriptionStatusItem : public pgsStatusItem
-{
-public:
-   pgsBridgeDescriptionStatusItem(Uint32 agentID,Uint32 callbackID,long dlgPage,const char* strDescription);
-   bool IsEqual(pgsStatusItem* pOther);
-
-   long m_DlgPage;
-};
-
-// status for general alignment description input
-class PGSEXTCLASS pgsAlignmentDescriptionStatusItem : public pgsStatusItem
-{
-public:
-   pgsAlignmentDescriptionStatusItem(Uint32 agentID,Uint32 callbackID,long dlgPage,const char* strDescription);
-   bool IsEqual(pgsStatusItem* pOther);
-
-   long m_DlgPage;
 };
 
 // status for refined analysis
 class PGSEXTCLASS pgsRefinedAnalysisStatusItem : public pgsStatusItem
 {
 public:
-   pgsRefinedAnalysisStatusItem(Uint32 agentID,Uint32 callbackID,const char* strDescription);
+   pgsRefinedAnalysisStatusItem(AgentIDType agentID,StatusCallbackIDType callbackID,const char* strDescription);
    bool IsEqual(pgsStatusItem* pOther);
+};
+
+///////////////////////////
+class PGSEXTCLASS pgsRefinedAnalysisStatusCallback : public iStatusCallback
+{
+public:
+   pgsRefinedAnalysisStatusCallback(IBroker* pBroker);
+   virtual pgsTypes::StatusSeverityType GetSeverity();
+   virtual void Execute(pgsStatusItem* pStatusItem);
+
+private:
+   IBroker* m_pBroker;
 };
 
 // status for install error
 class PGSEXTCLASS pgsInstallationErrorStatusItem : public pgsStatusItem
 {
 public:
-   pgsInstallationErrorStatusItem(Uint32 agentID,Uint32 callbackID,const char* strComponent,const char* strDescription);
+   pgsInstallationErrorStatusItem(AgentIDType agentID,StatusCallbackIDType callbackID,const char* strComponent,const char* strDescription);
    bool IsEqual(pgsStatusItem* pOther);
    std::string m_Component;
+};
+
+///////////////////////////
+class PGSEXTCLASS pgsInstallationErrorStatusCallback : public iStatusCallback
+{
+public:
+   pgsInstallationErrorStatusCallback();
+   virtual pgsTypes::StatusSeverityType GetSeverity();
+   virtual void Execute(pgsStatusItem* pStatusItem);
 };
 
 // status for unknown error
 class PGSEXTCLASS pgsUnknownErrorStatusItem : public pgsStatusItem
 {
 public:
-   pgsUnknownErrorStatusItem(Uint32 agentID,Uint32 callbackID,const char* file,long line,const char* strDescription);
+   pgsUnknownErrorStatusItem(AgentIDType agentID,StatusCallbackIDType callbackID,const char* file,long line,const char* strDescription);
    bool IsEqual(pgsStatusItem* pOther);
    std::string m_File;
    long m_Line;
+};
+
+///////////////////////////
+class PGSEXTCLASS pgsUnknownErrorStatusCallback : public iStatusCallback
+{
+public:
+   pgsUnknownErrorStatusCallback();
+   virtual pgsTypes::StatusSeverityType GetSeverity();
+   virtual void Execute(pgsStatusItem* pStatusItem);
 };
 
 // status informational message
 class PGSEXTCLASS pgsInformationalStatusItem : public pgsStatusItem
 {
 public:
-   pgsInformationalStatusItem(Uint32 agentID,Uint32 callbackID,const char* strDescription);
+   pgsInformationalStatusItem(AgentIDType agentID,StatusCallbackIDType callbackID,const char* strDescription);
    bool IsEqual(pgsStatusItem* pOther);
 
+};
+
+class PGSEXTCLASS pgsInformationalStatusCallback : public iStatusCallback
+{
+public:
+   pgsInformationalStatusCallback(pgsTypes::StatusSeverityType severity,UINT helpID=0);
+   virtual pgsTypes::StatusSeverityType GetSeverity();
+   virtual void Execute(pgsStatusItem* pStatusItem);
+
+private:
+   pgsTypes::StatusSeverityType m_Severity;
+   UINT m_HelpID;
 };
 
 // status for girder input
 class PGSEXTCLASS pgsGirderDescriptionStatusItem : public pgsStatusItem
 {
 public:
-   pgsGirderDescriptionStatusItem(SpanIndexType span,GirderIndexType gdr,Uint16 page,Uint32 agentID,Uint32 callbackID,const char* strDescription);
+   pgsGirderDescriptionStatusItem(SpanIndexType span,GirderIndexType gdr,Uint16 page,AgentIDType agentID,StatusCallbackIDType callbackID,const char* strDescription);
    bool IsEqual(pgsStatusItem* pOther);
 
    SpanIndexType m_Span;
@@ -227,20 +181,57 @@ public:
    Uint16 m_Page; // page of girder input wizard
 };
 
-// status for live load
-class PGSEXTCLASS pgsLiveLoadStatusItem : public pgsStatusItem
+
+///////////////////////////
+class PGSEXTCLASS pgsGirderDescriptionStatusCallback : public iStatusCallback
 {
 public:
-   pgsLiveLoadStatusItem(Uint32 agentID,Uint32 callbackID,const char* strDescription);
-   bool IsEqual(pgsStatusItem* pOther);
+   pgsGirderDescriptionStatusCallback(IBroker* pBroker,pgsTypes::StatusSeverityType severity);
+   virtual pgsTypes::StatusSeverityType GetSeverity();
+   virtual void Execute(pgsStatusItem* pStatusItem);
+
+private:
+   IBroker* m_pBroker;
+   pgsTypes::StatusSeverityType m_Severity;
 };
 
 // status for structural analysis type
 class PGSEXTCLASS pgsStructuralAnalysisTypeStatusItem : public pgsStatusItem
 {
 public:
-   pgsStructuralAnalysisTypeStatusItem(Uint32 agentID,Uint32 callbackID,const char* strDescription);
+   pgsStructuralAnalysisTypeStatusItem(AgentIDType agentID,StatusCallbackIDType callbackID,const char* strDescription);
    bool IsEqual(pgsStatusItem* pOther);
+};
+
+class PGSEXTCLASS pgsStructuralAnalysisTypeStatusCallback : public iStatusCallback
+{
+public:
+   pgsStructuralAnalysisTypeStatusCallback();
+   virtual pgsTypes::StatusSeverityType GetSeverity();
+   virtual void Execute(pgsStatusItem* pStatusItem);
+};
+
+// status for general bridge description input
+class PGSEXTCLASS pgsBridgeDescriptionStatusItem : public pgsStatusItem
+{
+public:
+   pgsBridgeDescriptionStatusItem(AgentIDType agentID,StatusCallbackIDType callbackID,long dlgPage,const char* strDescription);
+   bool IsEqual(pgsStatusItem* pOther);
+
+   long m_DlgPage;
+};
+
+///////////////////////////
+class PGSEXTCLASS pgsBridgeDescriptionStatusCallback : public iStatusCallback
+{
+public:
+   pgsBridgeDescriptionStatusCallback(IBroker* pBroker,pgsTypes::StatusSeverityType severity);
+   virtual pgsTypes::StatusSeverityType GetSeverity();
+   virtual void Execute(pgsStatusItem* pStatusItem);
+
+private:
+   IBroker* m_pBroker;
+   pgsTypes::StatusSeverityType m_Severity;
 };
 
 #endif // INCLUDED_STATUSITEM_H_

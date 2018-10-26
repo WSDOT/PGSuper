@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -513,6 +513,7 @@ bool CTestAgentImp::RunCrossSectionTest(std::ofstream& resultsFile, std::ofstrea
 bool CTestAgentImp::RunDeadLoadActionTest(std::ofstream& resultsFile, std::ofstream& poiFile, SpanIndexType span,GirderIndexType gdr)
 {
    GET_IFACE( IPointOfInterest,   pIPoi);
+   GET_IFACE( IProductLoads,      pLoads);
    GET_IFACE( IProductForces,     pForce);
    GET_IFACE( ICombinedForces,    pForces);
    GET_IFACE( ISpecification,     pSpec);
@@ -542,7 +543,7 @@ bool CTestAgentImp::RunDeadLoadActionTest(std::ofstream& resultsFile, std::ofstr
       poiFile<<locn<<", "<< bridgeId<< ", 7, 1, "<<loc<<", 2, -1, -1, -1,  0,  0,  0, -1,  0,  0,  0,  0,  0,  0,  0"<<std::endl;
 
       // girder 
-      pgsTypes::Stage girderLoadStage = pForce->GetGirderDeadLoadStage(poi.GetSpan(),poi.GetGirder());
+      pgsTypes::Stage girderLoadStage = pLoads->GetGirderDeadLoadStage(poi.GetSpan(),poi.GetGirder());
 
       resultsFile<<bridgeId<<", "<<pid<<", 30000, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(pForce->GetMoment( girderLoadStage, pftGirder, poi, bat ), unitMeasure::NewtonMillimeter)) <<", 1, "<<gdr<<std::endl;
       resultsFile<<bridgeId<<", "<<pid<<", 30001, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(pForce->GetShear( girderLoadStage, pftGirder, poi, bat ).Left(), unitMeasure::Newton)) <<    ", 1, "<<gdr<<std::endl;
@@ -554,6 +555,12 @@ bool CTestAgentImp::RunDeadLoadActionTest(std::ofstream& resultsFile, std::ofstr
       resultsFile<<bridgeId<<", "<<pid<<", 30010, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(pForce->GetShear( pgsTypes::BridgeSite1, pftDiaphragm, poi, bat ).Left(), unitMeasure::Newton)) <<    ", 1, "<<gdr<<std::endl;
       resultsFile<<bridgeId<<", "<<pid<<", 30011, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(pForce->GetDisplacement( pgsTypes::BridgeSite1, pftDiaphragm, poi, bat ), unitMeasure::Millimeter)) <<", 1, "<<gdr<<std::endl;
       resultsFile<<bridgeId<<", "<<pid<<", 30209, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(pForce->GetReaction( pgsTypes::BridgeSite1, pftDiaphragm, span, gdr, bat), unitMeasure::Newton)) <<    ", 1, "<<gdr<<std::endl;
+
+      // ShearKey
+      resultsFile<<bridgeId<<", "<<pid<<", 30070, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(pForce->GetMoment( pgsTypes::BridgeSite1, pftShearKey,poi, bat ), unitMeasure::NewtonMillimeter)) << ", 1, "<<gdr<<std::endl;
+      resultsFile<<bridgeId<<", "<<pid<<", 30071, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(pForce->GetShear( pgsTypes::BridgeSite1, pftShearKey, poi, bat ).Left(), unitMeasure::Newton)) <<    ", 1, "<<gdr<<std::endl;
+      resultsFile<<bridgeId<<", "<<pid<<", 30072, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(pForce->GetDisplacement( pgsTypes::BridgeSite1, pftShearKey, poi, bat ), unitMeasure::Millimeter)) <<", 1, "<<gdr<<std::endl;
+      resultsFile<<bridgeId<<", "<<pid<<", 30270, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(pForce->GetReaction( pgsTypes::BridgeSite1, pftShearKey, span, gdr, bat), unitMeasure::Newton)) <<    ", 1, "<<gdr<<std::endl;
        
       // slab
       resultsFile<<bridgeId<<", "<<pid<<", 30012, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(pForce->GetMoment( pgsTypes::BridgeSite1, pftSlab,poi, bat ), unitMeasure::NewtonMillimeter)) << ", 1, "<<gdr<<std::endl;
@@ -1054,24 +1061,24 @@ bool CTestAgentImp::RunPrestressedISectionTest(std::ofstream& resultsFile, std::
       {
          const pgsFlexuralStressArtifact* pStresses;
          pStresses = gdrArtifact->GetFlexuralStressArtifact(pgsFlexuralStressArtifactKey(pgsTypes::BridgeSite1,pgsTypes::ServiceI,pgsTypes::Tension,poi.GetDistFromStart()));
-         resultsFile<<bridgeId<<", "<<pid<<", 122019, "<<loc<<", "<<(int)(pStresses->Passed()?1:0)<<", 15, "<<gdr<<std::endl;
+         resultsFile<<bridgeId<<", "<<pid<<", 122019, "<<loc<<", "<<(int)(pStresses->Passed(pgsFlexuralStressArtifact::WithoutRebar)?1:0)<<", 15, "<<gdr<<std::endl;
          pStresses = gdrArtifact->GetFlexuralStressArtifact(pgsFlexuralStressArtifactKey(pgsTypes::BridgeSite3,pgsTypes::ServiceIII,pgsTypes::Tension,poi.GetDistFromStart()));
-         resultsFile<<bridgeId<<", "<<pid<<", 122023, "<<loc<<", "<<(int)(pStresses->TopPassed()?1:0)<<", 15, "<<gdr<<std::endl;
+         resultsFile<<bridgeId<<", "<<pid<<", 122023, "<<loc<<", "<<(int)(pStresses->TopPassed(pgsFlexuralStressArtifact::WithoutRebar)?1:0)<<", 15, "<<gdr<<std::endl;
          pStresses = gdrArtifact->GetFlexuralStressArtifact(pgsFlexuralStressArtifactKey(pgsTypes::BridgeSite1,pgsTypes::ServiceI,pgsTypes::Compression,poi.GetDistFromStart()));
-         resultsFile<<bridgeId<<", "<<pid<<", 122024, "<<loc<<", "<<(int)(pStresses->Passed()?1:0)<<", 15, "<<gdr<<std::endl;
+         resultsFile<<bridgeId<<", "<<pid<<", 122024, "<<loc<<", "<<(int)(pStresses->Passed(pgsFlexuralStressArtifact::WithoutRebar)?1:0)<<", 15, "<<gdr<<std::endl;
          pStresses = gdrArtifact->GetFlexuralStressArtifact(pgsFlexuralStressArtifactKey(pgsTypes::BridgeSite2,pgsTypes::ServiceI,pgsTypes::Compression,poi.GetDistFromStart()));
-         resultsFile<<bridgeId<<", "<<pid<<", 122025, "<<loc<<", "<<(int)(pStresses->Passed()?1:0)<<", 15, "<<gdr<<std::endl;
+         resultsFile<<bridgeId<<", "<<pid<<", 122025, "<<loc<<", "<<(int)(pStresses->Passed(pgsFlexuralStressArtifact::WithoutRebar)?1:0)<<", 15, "<<gdr<<std::endl;
          pStresses = gdrArtifact->GetFlexuralStressArtifact(pgsFlexuralStressArtifactKey(pgsTypes::BridgeSite3,pgsTypes::ServiceI,pgsTypes::Compression,poi.GetDistFromStart()));
-         resultsFile<<bridgeId<<", "<<pid<<", 122026, "<<loc<<", "<<(int)(pStresses->Passed()?1:0)<<", 15, "<<gdr<<std::endl;
+         resultsFile<<bridgeId<<", "<<pid<<", 122026, "<<loc<<", "<<(int)(pStresses->Passed(pgsFlexuralStressArtifact::WithoutRebar)?1:0)<<", 15, "<<gdr<<std::endl;
          if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims )
          {
             pStresses = gdrArtifact->GetFlexuralStressArtifact(pgsFlexuralStressArtifactKey(pgsTypes::BridgeSite3,pgsTypes::ServiceIA,pgsTypes::Compression,poi.GetDistFromStart()));
-            resultsFile<<bridgeId<<", "<<pid<<", 122027, "<<loc<<", "<<(int)(pStresses->Passed()?1:0)<<", 15, "<<gdr<<std::endl;
+            resultsFile<<bridgeId<<", "<<pid<<", 122027, "<<loc<<", "<<(int)(pStresses->Passed(pgsFlexuralStressArtifact::WithoutRebar)?1:0)<<", 15, "<<gdr<<std::endl;
          }
          else
          {
             pStresses = gdrArtifact->GetFlexuralStressArtifact(pgsFlexuralStressArtifactKey(pgsTypes::BridgeSite3,pgsTypes::FatigueI,pgsTypes::Compression,poi.GetDistFromStart()));
-            resultsFile<<bridgeId<<", "<<pid<<", 122027, "<<loc<<", "<<(int)(pStresses->Passed()?1:0)<<", 15, "<<gdr<<std::endl;
+            resultsFile<<bridgeId<<", "<<pid<<", 122027, "<<loc<<", "<<(int)(pStresses->Passed(pgsFlexuralStressArtifact::WithoutRebar)?1:0)<<", 15, "<<gdr<<std::endl;
          }
       }
    }

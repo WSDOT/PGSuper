@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -31,18 +31,7 @@ class iStatusCenterEventSink
 {
 public:
    virtual void OnStatusItemAdded(pgsStatusItem* pItem) = 0;
-   virtual void OnStatusItemRemoved(long id) = 0;
-};
-
-#define STATUS_OK       0
-#define STATUS_WARNING  1
-#define STATUS_ERROR    2
-
-class iStatusCallback
-{
-public:
-   virtual long GetSeverity() = 0;
-   virtual void Execute(pgsStatusItem* pItem) = 0;
+   virtual void OnStatusItemRemoved(StatusItemIDType id) = 0;
 };
 
 class StatusItemCompare
@@ -57,28 +46,29 @@ public:
    pgsStatusCenter();
    ~pgsStatusCenter();
 
-   Int32 GetAgentID();
-   Int32 Add(pgsStatusItem* pItem);
-   bool RemoveByID(Int32 id);
-   bool RemoveByIndex(Uint32 index);
-   bool RemoveByAgentID(Int32 id);
-   pgsStatusItem* GetByID(Int32 id);
-   pgsStatusItem* GetByIndex(Uint32 index);
-   Uint32 Count();
+   AgentIDType GetAgentID();
+   StatusItemIDType Add(pgsStatusItem* pItem);
+   bool RemoveByID(StatusItemIDType id);
+   bool RemoveByIndex(CollectionIndexType index);
+   bool RemoveByAgentID(AgentIDType id);
+   pgsStatusItem* GetByID(StatusItemIDType id);
+   pgsStatusItem* GetByIndex(CollectionIndexType index);
+   CollectionIndexType Count();
 
-   Uint32 GetSeverity();
+   pgsTypes::StatusSeverityType GetSeverity();
 
-   void RegisterCallbackItem(Uint32 callbackID,iStatusCallback* pCallback);
-   Uint32 GetSeverity(Uint32 callbackID);
+   StatusCallbackIDType RegisterCallbackItem(iStatusCallback* pCallback);
+   pgsTypes::StatusSeverityType GetSeverity(StatusCallbackIDType callbackID);
 
-   void EditItem(Uint32 index);
+   void EditItem(CollectionIndexType index);
 
    void SinkEvents(iStatusCenterEventSink* pSink);
    void UnSinkEvents(iStatusCenterEventSink* pSink);
 
 private:
-   Int32 m_NextAgentID;
-   Int32 m_NextID;
+   AgentIDType m_NextAgentID;
+   StatusItemIDType m_NextID;
+   StatusCallbackIDType m_NextCallbackID;
    pgsStatusItem* m_pCurrentItem;
 
    typedef std::set<pgsStatusItem*,StatusItemCompare> Container;
@@ -87,13 +77,13 @@ private:
    typedef std::set<iStatusCenterEventSink*> Sinks;
    Sinks m_Sinks;
 
-   typedef std::map<Int32,iStatusCallback*> Callbacks;
+   typedef std::map<StatusCallbackIDType,iStatusCallback*> Callbacks;
    Callbacks m_Callbacks;
 
-   iStatusCallback* GetCallback(long callbackID);
+   iStatusCallback* GetCallback(StatusCallbackIDType callbackID);
 
    void NotifyAdded(pgsStatusItem* pNewItem);
-   void NotifyRemoved(Int32 id);
+   void NotifyRemoved(StatusItemIDType id);
 };
 
 #endif // INCLUDED_STATUSCENTERIMP_H_

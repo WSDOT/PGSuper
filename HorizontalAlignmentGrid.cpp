@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 2006  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -117,8 +117,8 @@ void CHorizontalAlignmentGrid::InitRowData(ROWCOL row)
 	GetParam()->EnableUndo(FALSE);
 
    CHorizontalAlignmentPage* pParent = (CHorizontalAlignmentPage*)GetParent();
-   GET_IFACE2(pParent->GetBroker(),IDisplayUnits,pDispUnits);
-   UnitModeType unit_mode = (UnitModeType)(pDispUnits->GetUnitDisplayMode());
+   GET_IFACE2(pParent->GetBroker(),IDisplayUnits,pDisplayUnits);
+   UnitModeType unit_mode = (UnitModeType)(pDisplayUnits->GetUnitDisplayMode());
 
    SetValueRange(CGXRange(row,1),unit_mode == umUS ? "0+00" : "0+000");
    SetValueRange(CGXRange(row,2),"N 90 E");
@@ -133,8 +133,8 @@ void CHorizontalAlignmentGrid::CustomInit()
 {
    CHorizontalAlignmentPage* pParent = (CHorizontalAlignmentPage*)GetParent();
 
-   GET_IFACE2(pParent->GetBroker(),IDisplayUnits,pDispUnits);
-   const unitmgtLengthData& alignment_unit = pDispUnits->GetAlignmentLengthUnit();
+   GET_IFACE2(pParent->GetBroker(),IDisplayUnits,pDisplayUnits);
+   const unitmgtLengthData& alignment_unit = pDisplayUnits->GetAlignmentLengthUnit();
    std::string strUnitTag = alignment_unit.UnitOfMeasure.UnitTag();
 
    // Initialize the grid. For CWnd based grids this call is // 
@@ -271,11 +271,11 @@ void CHorizontalAlignmentGrid::SetRowData(ROWCOL nRow,HorzCurveData& data)
 
    CHorizontalAlignmentPage* pParent = (CHorizontalAlignmentPage*)GetParent();
 
-   GET_IFACE2(pParent->GetBroker(),IDisplayUnits,pDispUnits);
-   UnitModeType unit_mode = (UnitModeType)(pDispUnits->GetUnitDisplayMode());
+   GET_IFACE2(pParent->GetBroker(),IDisplayUnits,pDisplayUnits);
+   UnitModeType unit_mode = (UnitModeType)(pDisplayUnits->GetUnitDisplayMode());
 
    double station = data.PIStation;
-   station = ::ConvertFromSysUnits(station,pDispUnits->GetAlignmentLengthUnit().UnitOfMeasure);
+   station = ::ConvertFromSysUnits(station,pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure);
 
    CComPtr<IStation> objStation;
    objStation.CoCreateInstance(CLSID_Station);
@@ -299,13 +299,13 @@ void CHorizontalAlignmentGrid::SetRowData(ROWCOL nRow,HorzCurveData& data)
       SetValueRange(CGXRange(nRow,2),CString(bstrAngle));
    }
 
-   double radius = ::ConvertFromSysUnits(data.Radius,pDispUnits->GetAlignmentLengthUnit().UnitOfMeasure);
+   double radius = ::ConvertFromSysUnits(data.Radius,pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure);
    SetValueRange(CGXRange(nRow,3),radius );
 
-   double entry_spiral = ::ConvertFromSysUnits(data.EntrySpiral,pDispUnits->GetAlignmentLengthUnit().UnitOfMeasure);
+   double entry_spiral = ::ConvertFromSysUnits(data.EntrySpiral,pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure);
    SetValueRange(CGXRange(nRow,4),entry_spiral );
 
-   double exit_spiral = ::ConvertFromSysUnits(data.ExitSpiral,pDispUnits->GetAlignmentLengthUnit().UnitOfMeasure);
+   double exit_spiral = ::ConvertFromSysUnits(data.ExitSpiral,pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure);
    SetValueRange(CGXRange(nRow,5),exit_spiral );
 
    GetParam()->EnableUndo(TRUE);
@@ -317,8 +317,8 @@ bool CHorizontalAlignmentGrid::GetRowData(ROWCOL nRow,double* pStation,double* p
 
    CHorizontalAlignmentPage* pParent = (CHorizontalAlignmentPage*)GetParent();
 
-   GET_IFACE2(pParent->GetBroker(),IDisplayUnits,pDispUnits);
-   UnitModeType unit_mode = (UnitModeType)(pDispUnits->GetUnitDisplayMode());
+   GET_IFACE2(pParent->GetBroker(),IDisplayUnits,pDisplayUnits);
+   UnitModeType unit_mode = (UnitModeType)(pDisplayUnits->GetUnitDisplayMode());
 
    CString strStation = GetCellValue(nRow,1);
    CComPtr<IStation> station;
@@ -329,7 +329,7 @@ bool CHorizontalAlignmentGrid::GetRowData(ROWCOL nRow,double* pStation,double* p
 
    double station_value;
    station->get_Value(&station_value);
-   station_value = ::ConvertToSysUnits(station_value,pDispUnits->GetAlignmentLengthUnit().UnitOfMeasure);
+   station_value = ::ConvertToSysUnits(station_value,pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure);
    *pStation = station_value;
 
    // assume input is an angle
@@ -357,15 +357,15 @@ bool CHorizontalAlignmentGrid::GetRowData(ROWCOL nRow,double* pStation,double* p
 
    CString strRadius = GetCellValue(nRow,3);
    *pRadius = atof(strRadius);
-   *pRadius = ::ConvertToSysUnits(*pRadius,pDispUnits->GetAlignmentLengthUnit().UnitOfMeasure);
+   *pRadius = ::ConvertToSysUnits(*pRadius,pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure);
 
    CString strEntrySpiral = GetCellValue(nRow,4);
    *pEntrySpiral = atof(strEntrySpiral);
-   *pEntrySpiral = ::ConvertToSysUnits(*pEntrySpiral,pDispUnits->GetAlignmentLengthUnit().UnitOfMeasure);
+   *pEntrySpiral = ::ConvertToSysUnits(*pEntrySpiral,pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure);
 
    CString strExitSpiral = GetCellValue(nRow,5);
    *pExitSpiral = atof(strExitSpiral);
-   *pExitSpiral = ::ConvertToSysUnits(*pExitSpiral,pDispUnits->GetAlignmentLengthUnit().UnitOfMeasure);
+   *pExitSpiral = ::ConvertToSysUnits(*pExitSpiral,pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure);
 
    return true;
 }

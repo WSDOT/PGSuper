@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -571,18 +571,25 @@ void CAnalysisResultsView::LimitStateLoadGraph(int graphIdx,pgsTypes::Stage stag
             if ( analysis_type == pgsTypes::Envelope )
             {
                std::vector<Float64> mmax, mmin;
-               pForces->GetMoment( limit_state, stage, vPoi, MinSimpleContinuousEnvelope, &mmin, &mmax );
-               AddGraphPoints(min_data_series, xVals, mmin);
-
                pForces->GetMoment( limit_state, stage, vPoi, MaxSimpleContinuousEnvelope, &mmin, &mmax );
                AddGraphPoints(max_data_series, xVals, mmax);
+               
+               if ( stage == pgsTypes::BridgeSite3 && IsStrengthLimitState(limit_state) )
+                  mmin = pForces->GetSlabDesignMoment(limit_state,vPoi, MinSimpleContinuousEnvelope );
+               else
+                  pForces->GetMoment( limit_state, stage, vPoi, MinSimpleContinuousEnvelope, &mmin, &mmax );
+               AddGraphPoints(min_data_series, xVals, mmin);
             }
             else
             {
                std::vector<Float64> mmax, mmin;
                pForces->GetMoment( limit_state, stage, vPoi, analysis_type == pgsTypes::Simple ? SimpleSpan : ContinuousSpan, &mmin, &mmax );
-               AddGraphPoints(min_data_series, xVals, mmin);
                AddGraphPoints(max_data_series, xVals, mmax);
+
+               if ( stage == pgsTypes::BridgeSite3 && IsStrengthLimitState(limit_state) )
+                  mmin = pForces->GetSlabDesignMoment(limit_state,vPoi, analysis_type == pgsTypes::Simple ? SimpleSpan : ContinuousSpan );
+
+               AddGraphPoints(min_data_series, xVals, mmin);
             }
          }
       break;
@@ -1580,7 +1587,7 @@ void CAnalysisResultsView::UpdateGraphTitle(SpanIndexType span,GirderIndexType g
    CString graph_title;
    if ( span == ALL_SPANS )
    {
-      graph_title.Format("Girder Line %c - %s - %s",LABEL_GIRDER(girder),strStage,strAction);
+      graph_title.Format("Girder Line %s - %s - %s",LABEL_GIRDER(girder),strStage,strAction);
    }
    else
    {

@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -200,7 +200,7 @@ void CVoidedSlab2Factory::LayoutGirderLine(IBroker* pBroker,long agentID,SpanInd
    {
       voidedSlabShape->put_RightBlockOut(VARIANT_FALSE);
    }
-   segment->putref_VoidedSlabSection(section);
+   segment->putref_BeamSection(section);
 
    // Beam materials
    GET_IFACE2(pBroker,IBridgeMaterial,pMaterial);
@@ -1059,4 +1059,15 @@ Float64 CVoidedSlab2Factory::GetBeamHeight(const IBeamFactory::Dimensions& dimen
 Float64 CVoidedSlab2Factory::GetBeamWidth(const IBeamFactory::Dimensions& dimensions,pgsTypes::MemberEndType endType)
 {
    return GetDimension(dimensions,"W");
+}
+
+bool CVoidedSlab2Factory::IsShearKey(const IBeamFactory::Dimensions& dimensions, pgsTypes::SupportedBeamSpacing spacingType)
+{
+   return false;
+}
+
+void CVoidedSlab2Factory::GetShearKeyAreas(const IBeamFactory::Dimensions& dimensions, pgsTypes::SupportedBeamSpacing spacingType,Float64* uniformArea, Float64* areaPerJoint)
+{
+   *uniformArea = 0.0;
+   *areaPerJoint = 0.0;
 }

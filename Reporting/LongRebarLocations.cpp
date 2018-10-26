@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -71,7 +71,7 @@ CLongRebarLocations& CLongRebarLocations::operator= (const CLongRebarLocations& 
 
 //======================== OPERATIONS =======================================
 void CLongRebarLocations::Build(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType girder,
-                                IDisplayUnits* pDispUnit) const
+                                IDisplayUnits* pDisplayUnits) const
 {
    USES_CONVERSION;
 
@@ -80,7 +80,7 @@ void CLongRebarLocations::Build(rptChapter* pChapter,IBroker* pBroker,SpanIndexT
    SpanIndexType nspans = pBridge->GetSpanCount();
    CHECK(span<nspans);
 
-   INIT_UV_PROTOTYPE( rptLengthUnitValue, dim, pDispUnit->GetComponentDimUnit(),  false );
+   INIT_UV_PROTOTYPE( rptLengthUnitValue, dim, pDisplayUnits->GetComponentDimUnit(),  false );
 
    rptParagraph* pHead = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pChapter<<pHead;
@@ -109,8 +109,8 @@ void CLongRebarLocations::Build(rptChapter* pChapter,IBroker* pBroker,SpanIndexT
    rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(3,"");
    *pPara << p_table;
 
-   (*p_table)(0,0) << COLHDR("X",rptLengthUnitTag, pDispUnit->GetComponentDimUnit() );
-   (*p_table)(0,1) << COLHDR("Y",rptLengthUnitTag, pDispUnit->GetComponentDimUnit() );
+   (*p_table)(0,0) << COLHDR("X",rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+   (*p_table)(0,1) << COLHDR("Y",rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
    (*p_table)(0,2) << "Bar" << rptNewLine << "Size";
 
    int row=1;

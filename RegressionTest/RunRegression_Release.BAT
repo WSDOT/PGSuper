@@ -1,3 +1,7 @@
+echo off
+IF "%1"=="/n" goto nopt1
+IF "%1"=="/N" goto nopt1
+
 regsvr32 /s \ARP\PGSuper\RegFreeCOM\Release\PGSuperAnalysisAgent.dll
 regsvr32 /s \ARP\PGSuper\RegFreeCOM\Release\PGSuperBeams.dll
 regsvr32 /s \ARP\PGSuper\RegFreeCOM\Release\PGSuperBridgeAgent.dll
@@ -9,5 +13,13 @@ regsvr32 /s \ARP\PGSuper\RegFreeCOM\Release\PGSuperTestAgent.dll
 regsvr32 /s \ARP\PGSuper\RegFreeCOM\Release\WSDOTAgent.dll
 regsvr32 /s \ARP\PGSuper\RegFreeCOM\Release\TxDOTAgent.dll
 
-cscript.exe runregression.js /VRELEASE
+:nopt1
+
+cscript.exe runregression.js /VRELEASE %1 %2
+
+IF "%1"=="/n" goto nopt2
+IF "%1"=="/N" goto nopt2
+
 call UpdateTestResults.bat
+
+:nopt2

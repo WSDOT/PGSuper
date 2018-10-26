@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -73,16 +73,16 @@ CConcurrentShearTable& CConcurrentShearTable::operator= (const CConcurrentShearT
 //======================== OPERATIONS =======================================
 void CConcurrentShearTable::Build(IBroker* pBroker,rptChapter* pChapter,
                                        SpanIndexType span,GirderIndexType girder,
-                                       IDisplayUnits* pDispUnits,
+                                       IDisplayUnits* pDisplayUnits,
                                        pgsTypes::Stage stage,pgsTypes::AnalysisType analysisType) const
 {
    if ( stage == pgsTypes::CastingYard )
       return;
 
    // Build table
-   INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDispUnits->GetSpanLengthUnit(), false );
-   INIT_UV_PROTOTYPE( rptForceUnitValue, shear, pDispUnits->GetGeneralForceUnit(), false );
-   INIT_UV_PROTOTYPE( rptMomentSectionValue, moment, pDispUnits->GetMomentUnit(), false );
+   INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
+   INIT_UV_PROTOTYPE( rptForceUnitValue, shear, pDisplayUnits->GetGeneralForceUnit(), false );
+   INIT_UV_PROTOTYPE( rptMomentSectionValue, moment, pDisplayUnits->GetMomentUnit(), false );
 
    GET_IFACE2(pBroker,IBridge,pBridge);
 
@@ -113,9 +113,9 @@ void CConcurrentShearTable::Build(IBroker* pBroker,rptChapter* pChapter,
    ColumnIndexType col = 0;
 
    p_table = pgsReportStyleHolder::CreateDefaultTable(3,"Concurrent Shears");
-   (*p_table)(0,col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION ,    rptLengthUnitTag, pDispUnits->GetSpanLengthUnit() );
-   (*p_table)(0,col++) << COLHDR(Sub2("M","max") << rptNewLine << "Strength I", rptMomentUnitTag, pDispUnits->GetMomentUnit() );
-   (*p_table)(0,col++) << COLHDR(Sub2("V","i"), rptForceUnitTag, pDispUnits->GetGeneralForceUnit() );
+   (*p_table)(0,col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION ,    rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+   (*p_table)(0,col++) << COLHDR(Sub2("M","max") << rptNewLine << "Strength I", rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
+   (*p_table)(0,col++) << COLHDR(Sub2("V","i"), rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit() );
 
    *p << p_table;
 

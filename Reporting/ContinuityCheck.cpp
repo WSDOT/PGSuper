@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -70,7 +70,7 @@ CContinuityCheck& CContinuityCheck::operator= (const CContinuityCheck& rOther)
 //======================== OPERATIONS =======================================
 void CContinuityCheck::Build(rptChapter* pChapter,
                               IBroker* pBroker,SpanIndexType span,GirderIndexType girder,
-                              IDisplayUnits* pDispUnits) const
+                              IDisplayUnits* pDisplayUnits) const
 {
    GET_IFACE2(pBroker,IContinuity,pContinuity);
    GET_IFACE2(pBroker,IBridge,pBridge);
@@ -83,7 +83,7 @@ void CContinuityCheck::Build(rptChapter* pChapter,
    if ( nSpans == 1 || analysis_type == pgsTypes::Simple )
       return;
 
-   INIT_UV_PROTOTYPE( rptPressureSectionValue, stress, pDispUnits->GetStressUnit(), false );
+   INIT_UV_PROTOTYPE( rptPressureSectionValue, stress, pDisplayUnits->GetStressUnit(), false );
 
    rptParagraph* pTitle = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );
    *pChapter << pTitle;
@@ -99,7 +99,7 @@ void CContinuityCheck::Build(rptChapter* pChapter,
    *pPara << pTable;
 
    (*pTable)(0,0) << "";
-   (*pTable)(0,1) << COLHDR(RPT_FBOT, rptStressUnitTag, pDispUnits->GetStressUnit() );
+   (*pTable)(0,1) << COLHDR(RPT_FBOT, rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    (*pTable)(0,2) << "Boundary Condition";
    (*pTable)(0,3) << "Is Compressive?";
 

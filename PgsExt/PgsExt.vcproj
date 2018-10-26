@@ -77,6 +77,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				IgnoreImportLibrary="true"
+				AdditionalDependencies="htmlhelp.lib"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
 				AdditionalLibraryDirectories="&quot;\ARP\WBFL\RegFreeCOM\$(ConfigurationName)&quot;;&quot;\ARP\PGSuper\RegFreeCOM\$(ConfigurationName)&quot;"
@@ -174,6 +175,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				IgnoreImportLibrary="true"
+				AdditionalDependencies="htmlhelp.lib"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
 				AdditionalLibraryDirectories="&quot;\ARP\WBFL\RegFreeCOM\$(ConfigurationName)&quot;;&quot;\ARP\PGSuper\RegFreeCOM\$(ConfigurationName)&quot;"
@@ -260,6 +262,10 @@
 						PreprocessorDefinitions=""
 					/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\CapacityToDemand.cpp"
+				>
 			</File>
 			<File
 				RelativePath="ConstructabilityArtifact.cpp"
@@ -1026,6 +1032,10 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\RefinedAnalysisOptionsDlg.cpp"
+				>
+			</File>
+			<File
 				RelativePath="ShearData.cpp"
 				>
 				<FileConfiguration
@@ -1116,6 +1126,10 @@
 						PreprocessorDefinitions=""
 					/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\StatusMessageDialog.cpp"
+				>
 			</File>
 			<File
 				RelativePath="StirrupCheckArtifact.cpp"
@@ -1242,6 +1256,10 @@
 			</File>
 			<File
 				RelativePath="..\Include\PgsExt\BridgeDescription.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Include\PgsExt\CapacityToDemand.h"
 				>
 			</File>
 			<File
@@ -1417,6 +1435,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\RefinedAnalysisOptionsDlg.h"
+				>
+			</File>
+			<File
 				RelativePath="resource.h"
 				>
 			</File>
@@ -1438,6 +1460,10 @@
 			</File>
 			<File
 				RelativePath="..\Include\PgsExt\StatusItem.h"
+				>
+			</File>
+			<File
+				RelativePath=".\StatusMessageDialog.h"
 				>
 			</File>
 			<File

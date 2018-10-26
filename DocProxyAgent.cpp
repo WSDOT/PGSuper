@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -134,6 +134,10 @@ STDMETHODIMP pgsDocProxyAgent::QueryInterface(const IID& iid, void** ppv)
    {
       *ppv = static_cast<ISelection*>(this);
    }
+   else if ( iid == IID_IEditByUI )
+   {
+      *ppv = static_cast<IEditByUI*>(this);
+   }
    else
    {
       *ppv = NULL;
@@ -171,10 +175,11 @@ STDMETHODIMP pgsDocProxyAgent::RegInterfaces()
 {
    CComQIPtr<IBrokerInitEx2,&IID_IBrokerInitEx2> pBrokerInit(m_pBroker);
 
-   pBrokerInit->RegInterface( IID_IFile,         this );
-   pBrokerInit->RegInterface( IID_IStatusCenter, this );
-   pBrokerInit->RegInterface( IID_ISelection, this );
-   pBrokerInit->RegInterface( IID_IUIEvents, this );
+   pBrokerInit->RegInterface( IID_IFile,            this );
+   pBrokerInit->RegInterface( IID_IStatusCenter,    this );
+   pBrokerInit->RegInterface( IID_IEditByUI,        this );
+   pBrokerInit->RegInterface( IID_ISelection,       this );
+   pBrokerInit->RegInterface( IID_IUIEvents,        this );
    pBrokerInit->RegInterface( IID_IUpdateTemplates, this );
 
    return S_OK;
@@ -516,62 +521,70 @@ std::string pgsDocProxyAgent::GetFileRoot()
 }
 
 
+//////////////////////////////////////////////////////////////
 // IStatusCenter
-long pgsDocProxyAgent::GetAgentID()
+StatusCallbackIDType pgsDocProxyAgent::RegisterCallback(iStatusCallback* pCallback)
+{
+   AFX_MANAGE_STATE(AfxGetAppModuleState());
+   return m_pDoc->GetStatusCenter().RegisterCallbackItem(pCallback);
+}
+
+AgentIDType pgsDocProxyAgent::GetAgentID()
 {
    AFX_MANAGE_STATE(AfxGetAppModuleState());
    return m_pDoc->GetStatusCenter().GetAgentID();
 }
 
-long pgsDocProxyAgent::Add(pgsStatusItem* pItem)
+StatusItemIDType pgsDocProxyAgent::Add(pgsStatusItem* pItem)
 {
    AFX_MANAGE_STATE(AfxGetAppModuleState());
    return m_pDoc->GetStatusCenter().Add(pItem);
 }
 
-bool pgsDocProxyAgent::RemoveByID(long id)
+bool pgsDocProxyAgent::RemoveByID(StatusItemIDType id)
 {
    AFX_MANAGE_STATE(AfxGetAppModuleState());
    return m_pDoc->GetStatusCenter().RemoveByID(id);
 }
 
-bool pgsDocProxyAgent::RemoveByIndex(long index)
+bool pgsDocProxyAgent::RemoveByIndex(CollectionIndexType index)
 {
    AFX_MANAGE_STATE(AfxGetAppModuleState());
    return m_pDoc->GetStatusCenter().RemoveByIndex(index);
 }
 
-bool pgsDocProxyAgent::RemoveByAgentID(long id)
+bool pgsDocProxyAgent::RemoveByAgentID(AgentIDType id)
 {
    AFX_MANAGE_STATE(AfxGetAppModuleState());
    return m_pDoc->GetStatusCenter().RemoveByAgentID(id);
 }
 
-pgsStatusItem* pgsDocProxyAgent::GetByID(long id)
+pgsStatusItem* pgsDocProxyAgent::GetByID(StatusItemIDType id)
 {
    AFX_MANAGE_STATE(AfxGetAppModuleState());
    return m_pDoc->GetStatusCenter().GetByID(id);
 }
 
-pgsStatusItem* pgsDocProxyAgent::GetByIndex(long index)
+pgsStatusItem* pgsDocProxyAgent::GetByIndex(CollectionIndexType index)
 {
    AFX_MANAGE_STATE(AfxGetAppModuleState());
    return m_pDoc->GetStatusCenter().GetByIndex(index);
 }
 
-long pgsDocProxyAgent::GetSeverity(const pgsStatusItem* pItem)
+pgsTypes::StatusSeverityType pgsDocProxyAgent::GetSeverity(const pgsStatusItem* pItem)
 {
    AFX_MANAGE_STATE(AfxGetAppModuleState());
    return m_pDoc->GetStatusCenter().GetSeverity(pItem->GetCallbackID());
 }
 
-long pgsDocProxyAgent::Count()
+CollectionIndexType pgsDocProxyAgent::Count()
 {
    AFX_MANAGE_STATE(AfxGetAppModuleState());
    return m_pDoc->GetStatusCenter().Count();
 }
 
-   // ISelection
+////////////////////////////////////////////////////////////////////
+// ISelection
 PierIndexType pgsDocProxyAgent::GetPierIdx()
 {
    AFX_MANAGE_STATE(AfxGetAppModuleState());
@@ -631,6 +644,7 @@ Float64 pgsDocProxyAgent::GetSectionCutStation()
    return -999999;
 }
 
+/////////////////////////////////////////////////////////////////////////
 // IUpdatingTemplates
 bool pgsDocProxyAgent::UpdatingTemplates()
 {
@@ -640,6 +654,7 @@ bool pgsDocProxyAgent::UpdatingTemplates()
    return pApp->UpdatingTemplate();
 }
 
+/////////////////////////////////////////////////////////////////////////
 // IUIEvents
 void pgsDocProxyAgent::HoldEvents(bool bHold)
 {
@@ -692,6 +707,69 @@ void pgsDocProxyAgent::FireEvent(CView* pSender,LPARAM lHint,CObject* pHint)
       m_pDoc->UpdateAllViews(pSender,lHint,pHint);
    }
 }
+
+///////////////////////////////////////////////////////////////////////////////////
+// IEditByUI
+void pgsDocProxyAgent::EditBridgeDescription(int nPage)
+{
+   AFX_MANAGE_STATE(AfxGetAppModuleState());
+   m_pDoc->EditBridgeDescription(nPage);
+}
+
+void pgsDocProxyAgent::EditAlignmentDescription(int nPage)
+{
+   AFX_MANAGE_STATE(AfxGetAppModuleState());
+   m_pDoc->EditAlignmentDescription(nPage);
+}
+
+bool pgsDocProxyAgent::EditGirderDescription(SpanIndexType span,GirderIndexType girder, int nPage)
+{
+   AFX_MANAGE_STATE(AfxGetAppModuleState());
+   return m_pDoc->EditGirderDescription(span,girder,nPage);
+}
+
+bool pgsDocProxyAgent::EditSpanDescription(SpanIndexType spanIdx, int nPage)
+{
+   AFX_MANAGE_STATE(AfxGetAppModuleState());
+   return m_pDoc->EditSpanDescription(spanIdx,nPage);
+}
+
+bool pgsDocProxyAgent::EditPierDescription(PierIndexType pierIdx, int nPage)
+{
+   AFX_MANAGE_STATE(AfxGetAppModuleState());
+   return m_pDoc->EditPierDescription(pierIdx,nPage);
+}
+
+void pgsDocProxyAgent::EditLiveLoads()
+{
+   AFX_MANAGE_STATE(AfxGetAppModuleState());
+   return m_pDoc->OnLiveLoads();
+}
+
+void pgsDocProxyAgent::EditLiveLoadDistributionFactors(pgsTypes::DistributionFactorMethod method,LldfRangeOfApplicabilityAction roaAction)
+{
+   AFX_MANAGE_STATE(AfxGetAppModuleState());
+   return m_pDoc->OnLoadsLldf(method,roaAction);
+}
+
+bool pgsDocProxyAgent::EditPointLoad(CollectionIndexType loadIdx)
+{
+   AFX_MANAGE_STATE(AfxGetAppModuleState());
+   return m_pDoc->EditPointLoad(loadIdx);
+}
+
+bool pgsDocProxyAgent::EditDistributedLoad(CollectionIndexType loadIdx)
+{
+   AFX_MANAGE_STATE(AfxGetAppModuleState());
+   return m_pDoc->EditDistributedLoad(loadIdx);
+}
+
+bool pgsDocProxyAgent::EditMomentLoad(CollectionIndexType loadIdx)
+{
+   AFX_MANAGE_STATE(AfxGetAppModuleState());
+   return m_pDoc->EditMomentLoad(loadIdx);
+}
+
 
 ////////////////////////// PROTECTED  ///////////////////////////////////////
 

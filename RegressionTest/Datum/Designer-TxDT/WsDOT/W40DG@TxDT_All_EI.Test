@@ -1,10 +1,10 @@
  RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Nh   To   Fci    Fc      fcomp   ftens   ultMom  lldf  Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ---- ------ ------  ------- -------- ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 28.25   5  6.00     1     1 W41DG  *    13   5/8  270 24.10 17.03   3 35.0  4.000  5.000    1.226   -2.074   1982  0.625  0.11 -0.00 -0.00 -0.00 -0.01  38.51 129.58   1.75   5.00   5.00
+ 28.25   5  6.00     1     1 W41DG  *    13   5/8  270 24.10 16.87   3 35.0  4.000  5.000    1.226   -2.074   1982  0.625  0.11 -0.00 -0.00 -0.00 -0.01  38.51 129.58   1.75   5.00   5.00
 
 
 The Specification Check was Not Successful
-Longitudinal Reinforcement for Shear check failed for Strength I Limit State for the Bridge Site Stage 3.
+Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
 Stirrup detailing checks failed for the Strength I Limit State.
 Confinement zone checks failed.
 
@@ -16,6 +16,7 @@ Confinement zone checks failed.
 
 The Specification Check was Not Successful
 Ultimate vertical shear capacity check failed for Strength I Limit State for the Bridge Site Stage 3.
+Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
 Stirrup detailing checks failed for the Strength I Limit State.
 Confinement zone checks failed.
 
@@ -27,6 +28,7 @@ Confinement zone checks failed.
 
 The Specification Check was Not Successful
 Ultimate vertical shear capacity check failed for Strength I Limit State for the Bridge Site Stage 3.
+Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
 Stirrup detailing checks failed for the Strength I Limit State.
 Confinement zone checks failed.
 

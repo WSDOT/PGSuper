@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -74,7 +74,7 @@ rptChapter* CGirderScheduleChapterBuilder::Build(CReportSpecification* pRptSpec,
    SpanIndexType span = pSGRptSpec->GetSpan();
    GirderIndexType girder = pSGRptSpec->GetGirder();
 
-   GET_IFACE2(pBroker,IDisplayUnits,pDispUnit);
+   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
 
    GET_IFACE2(pBroker,IArtifact,pIArtifact);
    const pgsGirderArtifact* pArtifact = pIArtifact->GetArtifact(span,girder);
@@ -95,22 +95,22 @@ rptChapter* CGirderScheduleChapterBuilder::Build(CReportSpecification* pRptSpec,
    }
 
    rptRcScalar scalar;
-   scalar.SetFormat( pDispUnit->GetScalarFormat().Format );
-   scalar.SetWidth( pDispUnit->GetScalarFormat().Width );
-   scalar.SetPrecision( pDispUnit->GetScalarFormat().Precision );
-   INIT_UV_PROTOTYPE( rptLengthUnitValue, loc,            pDispUnit->GetSpanLengthUnit(),    true );
-   INIT_UV_PROTOTYPE( rptForceUnitValue,  force,          pDispUnit->GetShearUnit(),         true );
-   INIT_UV_PROTOTYPE( rptStressUnitValue, stress,         pDispUnit->GetStressUnit(),        true );
-   INIT_UV_PROTOTYPE( rptStressUnitValue, mod_e,          pDispUnit->GetModEUnit(),          true );
-   INIT_UV_PROTOTYPE( rptMomentUnitValue, moment,         pDispUnit->GetMomentUnit(),        true );
-   INIT_UV_PROTOTYPE( rptAngleUnitValue,  angle,          pDispUnit->GetAngleUnit(),         true );
-   INIT_UV_PROTOTYPE( rptForcePerLengthUnitValue, wt_len, pDispUnit->GetForcePerLengthUnit(),true );
-   INIT_UV_PROTOTYPE( rptMomentPerAngleUnitValue, spring, pDispUnit->GetMomentPerAngleUnit(),true );
+   scalar.SetFormat( pDisplayUnits->GetScalarFormat().Format );
+   scalar.SetWidth( pDisplayUnits->GetScalarFormat().Width );
+   scalar.SetPrecision( pDisplayUnits->GetScalarFormat().Precision );
+   INIT_UV_PROTOTYPE( rptLengthUnitValue, loc,            pDisplayUnits->GetSpanLengthUnit(),    true );
+   INIT_UV_PROTOTYPE( rptForceUnitValue,  force,          pDisplayUnits->GetShearUnit(),         true );
+   INIT_UV_PROTOTYPE( rptStressUnitValue, stress,         pDisplayUnits->GetStressUnit(),        true );
+   INIT_UV_PROTOTYPE( rptStressUnitValue, mod_e,          pDisplayUnits->GetModEUnit(),          true );
+   INIT_UV_PROTOTYPE( rptMomentUnitValue, moment,         pDisplayUnits->GetMomentUnit(),        true );
+   INIT_UV_PROTOTYPE( rptAngleUnitValue,  angle,          pDisplayUnits->GetAngleUnit(),         true );
+   INIT_UV_PROTOTYPE( rptForcePerLengthUnitValue, wt_len, pDisplayUnits->GetForcePerLengthUnit(),true );
+   INIT_UV_PROTOTYPE( rptMomentPerAngleUnitValue, spring, pDisplayUnits->GetMomentPerAngleUnit(),true );
 
-   INIT_FRACTIONAL_LENGTH_PROTOTYPE( titledim1, IS_US_UNITS(pDispUnit), 4, pDispUnit->GetComponentDimUnit(), true, true );
-   INIT_FRACTIONAL_LENGTH_PROTOTYPE( titledim2, IS_US_UNITS(pDispUnit), 8, pDispUnit->GetComponentDimUnit(), true, true );
-   INIT_FRACTIONAL_LENGTH_PROTOTYPE( gdim,      IS_US_UNITS(pDispUnit), 8, pDispUnit->GetComponentDimUnit(), true, false );
-   INIT_FRACTIONAL_LENGTH_PROTOTYPE( glength,   IS_US_UNITS(pDispUnit), 4, pDispUnit->GetSpanLengthUnit(),   true, false );
+   INIT_FRACTIONAL_LENGTH_PROTOTYPE( titledim1, IS_US_UNITS(pDisplayUnits), 4, pDisplayUnits->GetComponentDimUnit(), true, true );
+   INIT_FRACTIONAL_LENGTH_PROTOTYPE( titledim2, IS_US_UNITS(pDisplayUnits), 8, pDisplayUnits->GetComponentDimUnit(), true, true );
+   INIT_FRACTIONAL_LENGTH_PROTOTYPE( gdim,      IS_US_UNITS(pDisplayUnits), 8, pDisplayUnits->GetComponentDimUnit(), true, false );
+   INIT_FRACTIONAL_LENGTH_PROTOTYPE( glength,   IS_US_UNITS(pDisplayUnits), 4, pDisplayUnits->GetSpanLengthUnit(),   true, false );
 
    rptParagraph* p = new rptParagraph;
    *pChapter << p;

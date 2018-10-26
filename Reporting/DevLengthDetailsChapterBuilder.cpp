@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -64,10 +64,10 @@ rptChapter* CDevLengthDetailsChapterBuilder::Build(CReportSpecification* pRptSpe
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
-   GET_IFACE2(pBroker,IDisplayUnits,pDispUnits);
-   INIT_UV_PROTOTYPE( rptLengthUnitValue, length,  pDispUnits->GetComponentDimUnit(), true );
-   INIT_UV_PROTOTYPE( rptStressUnitValue, stress,  pDispUnits->GetStressUnit(), true );
-   INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDispUnits->GetSpanLengthUnit(), false );
+   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
+   INIT_UV_PROTOTYPE( rptLengthUnitValue, length,  pDisplayUnits->GetComponentDimUnit(), true );
+   INIT_UV_PROTOTYPE( rptStressUnitValue, stress,  pDisplayUnits->GetStressUnit(), true );
+   INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
 
    rptRcScalar scalar;
    scalar.SetFormat( sysNumericFormatTool::Fixed );
@@ -116,7 +116,7 @@ rptChapter* CDevLengthDetailsChapterBuilder::Build(CReportSpecification* pRptSpe
    rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(13,"Development Length [5.11.4.2]");
    (*pParagraph) << pTable << rptNewLine;
 
-   if ( IS_US_UNITS(pDispUnits) )
+   if ( IS_US_UNITS(pDisplayUnits) )
       *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + "DevLength_US.gif") << rptNewLine;
    else
       *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + "DevLength_SI.gif") << rptNewLine;
@@ -127,7 +127,7 @@ rptChapter* CDevLengthDetailsChapterBuilder::Build(CReportSpecification* pRptSpe
    pTable->SetNumberOfHeaderRows(2);
    pTable->SetRowSpan(0,0,2);
    pTable->SetRowSpan(1,0,-1);
-   (*pTable)(0,0) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDispUnits->GetSpanLengthUnit());
+   (*pTable)(0,0) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
 
    pTable->SetColumnSpan(0,1, 6);
    pTable->SetColumnSpan(0,2,-1);
@@ -145,18 +145,18 @@ rptChapter* CDevLengthDetailsChapterBuilder::Build(CReportSpecification* pRptSpe
    pTable->SetColumnSpan(0,12,-1);
    (*pTable)(0,7) << "Debonded Strands " << symbol(kappa) << " = " << debonded_details.k;
 
-   (*pTable)(1,1) << COLHDR(Sub2("f","ps"), rptStressUnitTag, pDispUnits->GetStressUnit() );
-   (*pTable)(1,2) << COLHDR(Sub2("f","pe"), rptStressUnitTag, pDispUnits->GetStressUnit() );
-   (*pTable)(1,3) << COLHDR(Sub2("d","b"),  rptLengthUnitTag, pDispUnits->GetComponentDimUnit() );
-   (*pTable)(1,4) << COLHDR(Sub2("l","d"),  rptLengthUnitTag, pDispUnits->GetComponentDimUnit() );
-   (*pTable)(1,5) << COLHDR(Sub2("l","px"),  rptLengthUnitTag, pDispUnits->GetComponentDimUnit() );
+   (*pTable)(1,1) << COLHDR(Sub2("f","ps"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*pTable)(1,2) << COLHDR(Sub2("f","pe"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*pTable)(1,3) << COLHDR(Sub2("d","b"),  rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+   (*pTable)(1,4) << COLHDR(Sub2("l","d"),  rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+   (*pTable)(1,5) << COLHDR(Sub2("l","px"),  rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
    (*pTable)(1,6) << Sub2("f","px") << "/" << Sub2("f","ps");
 
-   (*pTable)(1,7) << COLHDR(Sub2("f","ps"), rptStressUnitTag, pDispUnits->GetStressUnit() );
-   (*pTable)(1,8) << COLHDR(Sub2("f","pe"), rptStressUnitTag, pDispUnits->GetStressUnit() );
-   (*pTable)(1,9) << COLHDR(Sub2("d","b"),  rptLengthUnitTag, pDispUnits->GetComponentDimUnit() );
-   (*pTable)(1,10)<< COLHDR(Sub2("l","d"),  rptLengthUnitTag, pDispUnits->GetComponentDimUnit() );
-   (*pTable)(1,11)<< COLHDR(Sub2("l","px"),  rptLengthUnitTag, pDispUnits->GetComponentDimUnit() );
+   (*pTable)(1,7) << COLHDR(Sub2("f","ps"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*pTable)(1,8) << COLHDR(Sub2("f","pe"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*pTable)(1,9) << COLHDR(Sub2("d","b"),  rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+   (*pTable)(1,10)<< COLHDR(Sub2("l","d"),  rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+   (*pTable)(1,11)<< COLHDR(Sub2("l","px"),  rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
    (*pTable)(1,12)<< Sub2("f","px") << "/" << Sub2("f","ps");
 
    GET_IFACE2(pBroker,IBridge,pBridge);

@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -54,16 +54,16 @@ CLASS
    COutputSummaryChapter
 ****************************************************************************/
 
-void castingyard_stresses(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType girder,IDisplayUnits* pDispUnits);
-void bridgesite1_stresses(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType girder,IDisplayUnits* pDispUnits);
-void bridgesite2_stresses(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType girder,IDisplayUnits* pDispUnits);
-void bridgesite3_stresses(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType girder,IDisplayUnits* pDispUnits);
-void shear_capacity(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType girder,IDisplayUnits* pDispUnits);
-void section_properties(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType girder,IDisplayUnits* pDispUnits);
-void creep_and_losses(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType girder,IDisplayUnits* pDispUnits);
-void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType girder,IDisplayUnits* pDispUnits);
-void lifting(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType girder,IDisplayUnits* pDispUnits);
-void hauling(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType girder,IDisplayUnits* pDispUnits);
+void castingyard_stresses(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType girder,IDisplayUnits* pDisplayUnits);
+void bridgesite1_stresses(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType girder,IDisplayUnits* pDisplayUnits);
+void bridgesite2_stresses(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType girder,IDisplayUnits* pDisplayUnits);
+void bridgesite3_stresses(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType girder,IDisplayUnits* pDisplayUnits);
+void shear_capacity(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType girder,IDisplayUnits* pDisplayUnits);
+void section_properties(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType girder,IDisplayUnits* pDisplayUnits);
+void creep_and_losses(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType girder,IDisplayUnits* pDisplayUnits);
+void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType girder,IDisplayUnits* pDisplayUnits);
+void lifting(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType girder,IDisplayUnits* pDisplayUnits);
+void hauling(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType girder,IDisplayUnits* pDisplayUnits);
 
 COutputSummaryChapter::COutputSummaryChapter()
 {
@@ -82,7 +82,7 @@ rptChapter* COutputSummaryChapter::Build(CReportSpecification* pRptSpec,Uint16 l
    SpanIndexType spanIdx = pSGRptSpec->GetSpan();
    GirderIndexType gdrIdx = pSGRptSpec->GetGirder();
 
-   GET_IFACE2(pBroker,IDisplayUnits,pDispUnit);
+   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
@@ -113,21 +113,21 @@ rptChapter* COutputSummaryChapter::Build(CReportSpecification* pRptSpec,Uint16 l
    }
 
 
-   castingyard_stresses( pChapter, pBroker, spanIdx, gdrIdx, pDispUnit );
-   bridgesite1_stresses( pChapter, pBroker, spanIdx, gdrIdx, pDispUnit );
-   bridgesite2_stresses( pChapter, pBroker, spanIdx, gdrIdx, pDispUnit );
-   bridgesite3_stresses( pChapter, pBroker, spanIdx, gdrIdx, pDispUnit );
+   castingyard_stresses( pChapter, pBroker, spanIdx, gdrIdx, pDisplayUnits );
+   bridgesite1_stresses( pChapter, pBroker, spanIdx, gdrIdx, pDisplayUnits );
+   bridgesite2_stresses( pChapter, pBroker, spanIdx, gdrIdx, pDisplayUnits );
+   bridgesite3_stresses( pChapter, pBroker, spanIdx, gdrIdx, pDisplayUnits );
 
    CMomentCapacityParagraphBuilder mcbuilder;
    p = mcbuilder.Build(pRptSpec, level);
    *pChapter << p;
 
-   shear_capacity( pChapter, pBroker, spanIdx, gdrIdx, pDispUnit );
-   section_properties( pChapter, pBroker, spanIdx, gdrIdx, pDispUnit );
-   creep_and_losses( pChapter, pBroker, spanIdx, gdrIdx, pDispUnit );
-   deflection_and_camber( pChapter, pBroker, spanIdx, gdrIdx, pDispUnit );
-   lifting( pChapter, pBroker, spanIdx, gdrIdx, pDispUnit );
-   hauling( pChapter, pBroker, spanIdx, gdrIdx, pDispUnit );
+   shear_capacity( pChapter, pBroker, spanIdx, gdrIdx, pDisplayUnits );
+   section_properties( pChapter, pBroker, spanIdx, gdrIdx, pDisplayUnits );
+   creep_and_losses( pChapter, pBroker, spanIdx, gdrIdx, pDisplayUnits );
+   deflection_and_camber( pChapter, pBroker, spanIdx, gdrIdx, pDisplayUnits );
+   lifting( pChapter, pBroker, spanIdx, gdrIdx, pDisplayUnits );
+   hauling( pChapter, pBroker, spanIdx, gdrIdx, pDisplayUnits );
 
    return pChapter;
 }
@@ -137,7 +137,7 @@ CChapterBuilder* COutputSummaryChapter::Clone() const
    return new COutputSummaryChapter;
 }
 
-void section_properties(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType girder,IDisplayUnits* pDispUnits)
+void section_properties(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType girder,IDisplayUnits* pDisplayUnits)
 {
    rptParagraph* pPara = new rptParagraph;
    *pChapter << pPara;
@@ -152,28 +152,28 @@ void section_properties(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span
       if ( bPrismaticComp )
       {
          // prismatc componsite and non-composite properties
-         *pPara << CSectionPropertiesTable().Build(pBroker,span,girder,true,pDispUnits);
+         *pPara << CSectionPropertiesTable().Build(pBroker,span,girder,true,pDisplayUnits);
       }
       else
       {
          // prismatic non-composite properties
-         *pPara << CSectionPropertiesTable().Build(pBroker,span,girder,false,pDispUnits);
+         *pPara << CSectionPropertiesTable().Build(pBroker,span,girder,false,pDisplayUnits);
 
          // non-prismatic, composite properties
-         *pPara << CSectionPropertiesTable2().Build(pBroker,span,girder,pgsTypes::BridgeSite3,pDispUnits);
+         *pPara << CSectionPropertiesTable2().Build(pBroker,span,girder,pgsTypes::BridgeSite3,pDisplayUnits);
       }
    }
    else
    {
       // non-prismatic, non-composite properties
-      *pPara << CSectionPropertiesTable2().Build(pBroker,span,girder,pgsTypes::CastingYard,pDispUnits);
+      *pPara << CSectionPropertiesTable2().Build(pBroker,span,girder,pgsTypes::CastingYard,pDisplayUnits);
 
       // non-prismatic, composite properties
-      *pPara << CSectionPropertiesTable2().Build(pBroker,span,girder,pgsTypes::BridgeSite3,pDispUnits);
+      *pPara << CSectionPropertiesTable2().Build(pBroker,span,girder,pgsTypes::BridgeSite3,pDisplayUnits);
    }
 }
 
-void creep_and_losses(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType girder,IDisplayUnits* pDispUnits)
+void creep_and_losses(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType girder,IDisplayUnits* pDisplayUnits)
 {
 #if defined IGNORE_2007_CHANGES
    GET_IFACE2(pBroker,ILibrary,pLib);
@@ -202,8 +202,8 @@ void creep_and_losses(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,G
    pTable->SetStripeRowColumnStyle(1, pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT) );
 
    // Setup up some unit value prototypes
-   INIT_UV_PROTOTYPE( rptStressUnitValue, stress, pDispUnits->GetStressUnit(), true );
-   INIT_UV_PROTOTYPE( rptTimeUnitValue, time2, pDispUnits->GetLongTimeUnit(), false );
+   INIT_UV_PROTOTYPE( rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(), true );
+   INIT_UV_PROTOTYPE( rptTimeUnitValue, time2, pDisplayUnits->GetLongTimeUnit(), false );
 
    // Get the interfaces we need
    GET_IFACE2(pBroker,ICamber,pCamber);
@@ -311,7 +311,7 @@ void creep_and_losses(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,G
    (*pTable)(2,1) << stress.SetValue( pLosses->GetFinal(poi,pgsTypes::Permanent) );
 }
 
-void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType girder,IDisplayUnits* pDispUnits)
+void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType girder,IDisplayUnits* pDisplayUnits)
 {
    rptParagraph* p = new rptParagraph;
    *pChapter << p;
@@ -320,12 +320,13 @@ void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker,SpanIndexType s
    *p << pTable << rptNewLine;
 
    // Setup up some unit value prototypes
-   INIT_UV_PROTOTYPE( rptLengthUnitValue, disp, pDispUnits->GetDisplacementUnit(), true );
-   INIT_FRACTIONAL_LENGTH_PROTOTYPE( camber, IS_US_UNITS(pDispUnits), 8, pDispUnits->GetDisplacementUnit(), true, false );
+   INIT_UV_PROTOTYPE( rptLengthUnitValue, disp, pDisplayUnits->GetDisplacementUnit(), true );
+   INIT_FRACTIONAL_LENGTH_PROTOTYPE( camber, IS_US_UNITS(pDisplayUnits), 8, pDisplayUnits->GetDisplacementUnit(), true, false );
 
    // Get the interfaces we need
    GET_IFACE2(pBroker,ICamber,pCamber);
    GET_IFACE2(pBroker,IPointOfInterest,pIPOI);
+   GET_IFACE2(pBroker,IProductLoads, pProductLoads);
    GET_IFACE2(pBroker,IProductForces, pProductForces);
    GET_IFACE2( pBroker, ILibrary, pLib );
    GET_IFACE2( pBroker, ISpecification, pSpec );
@@ -340,7 +341,7 @@ void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker,SpanIndexType s
 
    pgsTypes::AnalysisType analysisType = pSpec->GetAnalysisType();
 
-   bool bSidewalk = pProductForces->HasSidewalkLoad(span,girder);
+   bool bSidewalk = pProductLoads->HasSidewalkLoad(span,girder);
 
    // Get Midspan std::vector<pgsPointOfInterest>
    std::vector<pgsPointOfInterest> vPoi = pIPOI->GetPointsOfInterest(pgsTypes::BridgeSite3,span,girder,POI_MIDSPAN);
@@ -365,7 +366,8 @@ void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker,SpanIndexType s
    BridgeAnalysisType bat = (analysisType == pgsTypes::Simple ? SimpleSpan : analysisType == pgsTypes::Continuous ? ContinuousSpan : MinSimpleContinuousEnvelope);
 
    delta_dl = pProductForces->GetDisplacement(pgsTypes::BridgeSite1, pftSlab, poi, bat )
-            + pProductForces->GetDisplacement(pgsTypes::BridgeSite1, pftDiaphragm, poi, bat );
+            + pProductForces->GetDisplacement(pgsTypes::BridgeSite1, pftDiaphragm, poi, bat )
+            + pProductForces->GetDisplacement(pgsTypes::BridgeSite1, pftShearKey, poi, bat );
 
    delta_overlay = pProductForces->GetDisplacement(overlay_stage, pftOverlay, poi, bat );
 
@@ -489,7 +491,7 @@ void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker,SpanIndexType s
 }
 
 
-void castingyard_stresses(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType girder,IDisplayUnits* pDispUnits)
+void castingyard_stresses(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType girder,IDisplayUnits* pDisplayUnits)
 {
    rptParagraph* p = new rptParagraph;
    *pChapter << p;
@@ -508,13 +510,13 @@ void castingyard_stresses(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
 
    (*pTable)(0,0) << "Location";
    (*pTable)(0,1) << "Limit State";
-   (*pTable)(0,2) << COLHDR("Demand", rptStressUnitTag, pDispUnits->GetStressUnit() );
-   (*pTable)(0,3) << COLHDR("Allowable", rptStressUnitTag, pDispUnits->GetStressUnit() );
+   (*pTable)(0,2) << COLHDR("Demand", rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*pTable)(0,3) << COLHDR("Allowable", rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    (*pTable)(0,4) << "Status";
 
    // Setup up some unit value prototypes
-   INIT_UV_PROTOTYPE( rptStressUnitValue, stress, pDispUnits->GetStressUnit(), false );
-   INIT_UV_PROTOTYPE( rptAreaUnitValue,   area,   pDispUnits->GetAreaUnit(),   true  );
+   INIT_UV_PROTOTYPE( rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(), false );
+   INIT_UV_PROTOTYPE( rptAreaUnitValue,   area,   pDisplayUnits->GetAreaUnit(),   true  );
 
    // Interfaces
    GET_IFACE2(pBroker,IPointOfInterest,pIPOI);
@@ -578,7 +580,7 @@ void castingyard_stresses(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
    (*pTable)(row,1) << "Service I";
    (*pTable)(row,2) << stress.SetValue( fTop );
    (*pTable)(row,3) << stress.SetValue( fAllow );
-   if ( pStresses->TopPassed() )
+   if ( pStresses->TopPassed(pgsFlexuralStressArtifact::WithoutRebar) )
       (*pTable)(row,4) << RPT_PASS;
    else
       (*pTable)(row,4) << RPT_FAIL;
@@ -610,7 +612,7 @@ void castingyard_stresses(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
    (*pTable)(row,1) << "Service I";
    (*pTable)(row,2) << stress.SetValue( fBot );
    (*pTable)(row,3) << stress.SetValue( fAllow );
-   if ( pStresses->BottomPassed() )
+   if ( pStresses->BottomPassed(pgsFlexuralStressArtifact::WithRebar) )
       (*pTable)(row,4) << RPT_PASS;
    else
       (*pTable)(row,4) << RPT_FAIL;
@@ -624,7 +626,7 @@ void castingyard_stresses(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
    (*pTable)(row,1) << "Service I";
    (*pTable)(row,2) << stress.SetValue( fTop );
    (*pTable)(row,3) << stress.SetValue( fAllow );
-   if ( pStresses->TopPassed() )
+   if ( pStresses->TopPassed(pgsFlexuralStressArtifact::WithoutRebar) )
       (*pTable)(row,4) << RPT_PASS;
    else
       (*pTable)(row,4) << RPT_FAIL;
@@ -655,7 +657,7 @@ void castingyard_stresses(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
    (*pTable)(row,1) << "Service I";
    (*pTable)(row,2) << stress.SetValue( fBot );
    (*pTable)(row,3) << stress.SetValue( fAllow );
-   if ( pStresses->BottomPassed() )
+   if ( pStresses->BottomPassed(pgsFlexuralStressArtifact::WithRebar) )
       (*pTable)(row,4) << RPT_PASS;
    else
       (*pTable)(row,4) << RPT_FAIL;
@@ -672,7 +674,7 @@ void castingyard_stresses(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
          (*pTable)(row,1) << "Service I";
          (*pTable)(row,2) << stress.SetValue( fTop );
          (*pTable)(row,3) << stress.SetValue( fAllow );
-         if ( pStresses->TopPassed() )
+         if ( pStresses->TopPassed(pgsFlexuralStressArtifact::WithoutRebar) )
             (*pTable)(row,4) << RPT_PASS;
          else
             (*pTable)(row,4) << RPT_FAIL;
@@ -703,7 +705,7 @@ void castingyard_stresses(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
          (*pTable)(row,1) << "Service I";
          (*pTable)(row,2) << stress.SetValue( fBot );
          (*pTable)(row,3) << stress.SetValue( fAllow );
-         if ( pStresses->BottomPassed() )
+         if ( pStresses->BottomPassed(pgsFlexuralStressArtifact::WithRebar) )
             (*pTable)(row,4) << RPT_PASS;
          else
             (*pTable)(row,4) << RPT_FAIL;
@@ -718,7 +720,7 @@ void castingyard_stresses(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
          (*pTable)(row,1) << "Service I";
          (*pTable)(row,2) << stress.SetValue( fTop );
          (*pTable)(row,3) << stress.SetValue( fAllow );
-         if ( pStresses->TopPassed() )
+         if ( pStresses->TopPassed(pgsFlexuralStressArtifact::WithoutRebar) )
             (*pTable)(row,4) << RPT_PASS;
          else
             (*pTable)(row,4) << RPT_FAIL;
@@ -749,7 +751,7 @@ void castingyard_stresses(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
          (*pTable)(row,1) << "Service I";
          (*pTable)(row,2) << stress.SetValue( fBot );
          (*pTable)(row,3) << stress.SetValue( fAllow );
-         if ( pStresses->BottomPassed() )
+         if ( pStresses->BottomPassed(pgsFlexuralStressArtifact::WithRebar) )
             (*pTable)(row,4) << RPT_PASS;
          else
             (*pTable)(row,4) << RPT_FAIL;
@@ -762,7 +764,7 @@ void castingyard_stresses(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
          (*pTable)(row,1) << "Service I";
          (*pTable)(row,2) << stress.SetValue( fTop );
          (*pTable)(row,3) << stress.SetValue( fAllow );
-         if ( pStresses->TopPassed() )
+         if ( pStresses->TopPassed(pgsFlexuralStressArtifact::WithoutRebar) )
             (*pTable)(row,4) << RPT_PASS;
          else
             (*pTable)(row,4) << RPT_FAIL;
@@ -793,7 +795,7 @@ void castingyard_stresses(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
          (*pTable)(row,1) << "Service I";
          (*pTable)(row,2) << stress.SetValue( fBot );
          (*pTable)(row,3) << stress.SetValue( fAllow );
-         if ( pStresses->BottomPassed() )
+         if ( pStresses->BottomPassed(pgsFlexuralStressArtifact::WithRebar) )
             (*pTable)(row,4) << RPT_PASS;
          else
             (*pTable)(row,4) << RPT_FAIL;
@@ -809,7 +811,7 @@ void castingyard_stresses(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
    (*pTable)(row,1) << "Service I";
    (*pTable)(row,2) << stress.SetValue( fTop );
    (*pTable)(row,3) << stress.SetValue( fAllow );
-   if ( pStresses->TopPassed() )
+   if ( pStresses->TopPassed(pgsFlexuralStressArtifact::WithoutRebar) )
       (*pTable)(row,4) << RPT_PASS;
    else
       (*pTable)(row,4) << RPT_FAIL;
@@ -840,7 +842,7 @@ void castingyard_stresses(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
    (*pTable)(row,1) << "Service I";
    (*pTable)(row,2) << stress.SetValue( fBot );
    (*pTable)(row,3) << stress.SetValue( fAllow );
-   if ( pStresses->BottomPassed() )
+   if ( pStresses->BottomPassed(pgsFlexuralStressArtifact::WithRebar) )
       (*pTable)(row,4) << RPT_PASS;
    else
       (*pTable)(row,4) << RPT_FAIL;
@@ -848,7 +850,7 @@ void castingyard_stresses(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
 }
 
 
-void bridgesite1_stresses(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType girder,IDisplayUnits* pDispUnits)
+void bridgesite1_stresses(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType girder,IDisplayUnits* pDisplayUnits)
 {
    pgsTypes::Stage stage = pgsTypes::BridgeSite1;
 
@@ -869,12 +871,12 @@ void bridgesite1_stresses(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
 
    (*pTable)(0,0) << "Location";
    (*pTable)(0,1) << "Limit State";
-   (*pTable)(0,2) << COLHDR("Demand", rptStressUnitTag, pDispUnits->GetStressUnit() );
-   (*pTable)(0,3) << COLHDR("Allowable", rptStressUnitTag, pDispUnits->GetStressUnit() );
+   (*pTable)(0,2) << COLHDR("Demand", rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*pTable)(0,3) << COLHDR("Allowable", rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    (*pTable)(0,4) << "Status";
 
    // Setup up some unit value prototypes
-   INIT_UV_PROTOTYPE( rptStressUnitValue, stress, pDispUnits->GetStressUnit(), false );
+   INIT_UV_PROTOTYPE( rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(), false );
 
    // Interfaces
    GET_IFACE2(pBroker,IPointOfInterest,pIPOI);
@@ -914,7 +916,7 @@ void bridgesite1_stresses(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
    (*pTable)(row,1) << "Service I";
    (*pTable)(row,2) << stress.SetValue( fTop );
    (*pTable)(row,3) << stress.SetValue( fAllow );
-   if ( pStresses->TopPassed() )
+   if ( pStresses->TopPassed(pgsFlexuralStressArtifact::WithoutRebar) )
       (*pTable)(row,4) << RPT_PASS;
    else
       (*pTable)(row,4) << RPT_FAIL;
@@ -927,7 +929,7 @@ void bridgesite1_stresses(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
    (*pTable)(row,1) << "Service I";
    (*pTable)(row,2) << stress.SetValue( fBot );
    (*pTable)(row,3) << stress.SetValue( fAllow );
-   if ( pStresses->BottomPassed() )
+   if ( pStresses->BottomPassed(pgsFlexuralStressArtifact::WithoutRebar) )
       (*pTable)(row,4) << RPT_PASS;
    else
       (*pTable)(row,4) << RPT_FAIL;
@@ -940,7 +942,7 @@ void bridgesite1_stresses(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
    (*pTable)(row,1) << "Service I";
    (*pTable)(row,2) << stress.SetValue( fTop );
    (*pTable)(row,3) << stress.SetValue( fAllow );
-   if ( pStresses->TopPassed() )
+   if ( pStresses->TopPassed(pgsFlexuralStressArtifact::WithoutRebar) )
       (*pTable)(row,4) << RPT_PASS;
    else
       (*pTable)(row,4) << RPT_FAIL;
@@ -953,7 +955,7 @@ void bridgesite1_stresses(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
    (*pTable)(row,1) << "Service I";
    (*pTable)(row,2) << stress.SetValue( fBot );
    (*pTable)(row,3) << stress.SetValue( fAllow );
-   if ( pStresses->BottomPassed() )
+   if ( pStresses->BottomPassed(pgsFlexuralStressArtifact::WithoutRebar) )
       (*pTable)(row,4) << RPT_PASS;
    else
       (*pTable)(row,4) << RPT_FAIL;
@@ -967,7 +969,7 @@ void bridgesite1_stresses(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
    (*pTable)(row,1) << "Service I";
    (*pTable)(row,2) << stress.SetValue( fTop );
    (*pTable)(row,3) << stress.SetValue( fAllow );
-   if ( pStresses->TopPassed() )
+   if ( pStresses->TopPassed(pgsFlexuralStressArtifact::WithoutRebar) )
       (*pTable)(row,4) << RPT_PASS;
    else
       (*pTable)(row,4) << RPT_FAIL;
@@ -980,14 +982,14 @@ void bridgesite1_stresses(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
    (*pTable)(row,1) << "Service I";
    (*pTable)(row,2) << stress.SetValue( fBot );
    (*pTable)(row,3) << stress.SetValue( fAllow );
-   if ( pStresses->BottomPassed() )
+   if ( pStresses->BottomPassed(pgsFlexuralStressArtifact::WithoutRebar) )
       (*pTable)(row,4) << RPT_PASS;
    else
       (*pTable)(row,4) << RPT_FAIL;
    row++;
 }
 
-void bridgesite2_stresses(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType girder,IDisplayUnits* pDispUnits)
+void bridgesite2_stresses(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType girder,IDisplayUnits* pDisplayUnits)
 {
    pgsTypes::Stage stage = pgsTypes::BridgeSite2;
    rptParagraph* p = new rptParagraph;
@@ -1007,12 +1009,12 @@ void bridgesite2_stresses(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
 
    (*pTable)(0,0) << "Location";
    (*pTable)(0,1) << "Limit State";
-   (*pTable)(0,2) << COLHDR("Demand", rptStressUnitTag, pDispUnits->GetStressUnit() );
-   (*pTable)(0,3) << COLHDR("Allowable", rptStressUnitTag, pDispUnits->GetStressUnit() );
+   (*pTable)(0,2) << COLHDR("Demand", rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*pTable)(0,3) << COLHDR("Allowable", rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    (*pTable)(0,4) << "Status";
 
    // Setup up some unit value prototypes
-   INIT_UV_PROTOTYPE( rptStressUnitValue, stress, pDispUnits->GetStressUnit(), false );
+   INIT_UV_PROTOTYPE( rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(), false );
 
    // Interfaces
    GET_IFACE2(pBroker,IPointOfInterest,pIPOI);
@@ -1051,7 +1053,7 @@ void bridgesite2_stresses(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
    (*pTable)(row,1) << "Service I";
    (*pTable)(row,2) << stress.SetValue( fBot );
    (*pTable)(row,3) << stress.SetValue( fAllow );
-   if ( pStresses->BottomPassed() )
+   if ( pStresses->BottomPassed(pgsFlexuralStressArtifact::WithoutRebar) )
       (*pTable)(row,4) << RPT_PASS;
    else
       (*pTable)(row,4) << RPT_FAIL;
@@ -1064,7 +1066,7 @@ void bridgesite2_stresses(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
    (*pTable)(row,1) << "Service I";
    (*pTable)(row,2) << stress.SetValue( fTop );
    (*pTable)(row,3) << stress.SetValue( fAllow );
-   if ( pStresses->TopPassed() )
+   if ( pStresses->TopPassed(pgsFlexuralStressArtifact::WithoutRebar) )
       (*pTable)(row,4) << RPT_PASS;
    else
       (*pTable)(row,4) << RPT_FAIL;
@@ -1077,14 +1079,14 @@ void bridgesite2_stresses(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
    (*pTable)(row,1) << "Service I";
    (*pTable)(row,2) << stress.SetValue( fBot );
    (*pTable)(row,3) << stress.SetValue( fAllow );
-   if ( pStresses->BottomPassed() )
+   if ( pStresses->BottomPassed(pgsFlexuralStressArtifact::WithoutRebar) )
       (*pTable)(row,4) << RPT_PASS;
    else
       (*pTable)(row,4) << RPT_FAIL;
    row++;
 }
 
-void bridgesite3_stresses(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType girder,IDisplayUnits* pDispUnits)
+void bridgesite3_stresses(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType girder,IDisplayUnits* pDisplayUnits)
 {
    pgsTypes::Stage stage = pgsTypes::BridgeSite3;
    rptParagraph* p = new rptParagraph;
@@ -1104,12 +1106,12 @@ void bridgesite3_stresses(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
 
    (*pTable)(0,0) << "Location";
    (*pTable)(0,1) << "Limit State";
-   (*pTable)(0,2) << COLHDR("Demand", rptStressUnitTag, pDispUnits->GetStressUnit() );
-   (*pTable)(0,3) << COLHDR("Allowable", rptStressUnitTag, pDispUnits->GetStressUnit() );
+   (*pTable)(0,2) << COLHDR("Demand", rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*pTable)(0,3) << COLHDR("Allowable", rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    (*pTable)(0,4) << "Status";
 
    // Setup up some unit value prototypes
-   INIT_UV_PROTOTYPE( rptStressUnitValue, stress, pDispUnits->GetStressUnit(), false );
+   INIT_UV_PROTOTYPE( rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(), false );
 
    // Interfaces
    GET_IFACE2(pBroker,IPointOfInterest,pIPOI);
@@ -1149,7 +1151,7 @@ void bridgesite3_stresses(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
    (*pTable)(row,1) << "Service I";
    (*pTable)(row,2) << stress.SetValue( fBot );
    (*pTable)(row,3) << stress.SetValue( fAllow );
-   if ( pStresses->BottomPassed() )
+   if ( pStresses->BottomPassed(pgsFlexuralStressArtifact::WithoutRebar) )
       (*pTable)(row,4) << RPT_PASS;
    else
       (*pTable)(row,4) << RPT_FAIL;
@@ -1164,7 +1166,7 @@ void bridgesite3_stresses(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
       (*pTable)(row,1) << "Service IA";
       (*pTable)(row,2) << stress.SetValue( fBot );
       (*pTable)(row,3) << stress.SetValue( fAllow );
-      if ( pStresses->BottomPassed() )
+      if ( pStresses->BottomPassed(pgsFlexuralStressArtifact::WithoutRebar) )
          (*pTable)(row,4) << RPT_PASS;
       else
          (*pTable)(row,4) << RPT_FAIL;
@@ -1179,7 +1181,7 @@ void bridgesite3_stresses(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
       (*pTable)(row,1) << "Fatigue I";
       (*pTable)(row,2) << stress.SetValue( fBot );
       (*pTable)(row,3) << stress.SetValue( fAllow );
-      if ( pStresses->BottomPassed() )
+      if ( pStresses->BottomPassed(pgsFlexuralStressArtifact::WithoutRebar) )
          (*pTable)(row,4) << RPT_PASS;
       else
          (*pTable)(row,4) << RPT_FAIL;
@@ -1193,7 +1195,7 @@ void bridgesite3_stresses(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
    (*pTable)(row,1) << "Service I";
    (*pTable)(row,2) << stress.SetValue( fTop );
    (*pTable)(row,3) << stress.SetValue( fAllow );
-   if ( pStresses->TopPassed() )
+   if ( pStresses->TopPassed(pgsFlexuralStressArtifact::WithoutRebar) )
       (*pTable)(row,4) << RPT_PASS;
    else
       (*pTable)(row,4) << RPT_FAIL;
@@ -1208,7 +1210,7 @@ void bridgesite3_stresses(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
       (*pTable)(row,1) << "Service IA";
       (*pTable)(row,2) << stress.SetValue( fTop );
       (*pTable)(row,3) << stress.SetValue( fAllow );
-      if ( pStresses->TopPassed() )
+      if ( pStresses->TopPassed(pgsFlexuralStressArtifact::WithoutRebar) )
          (*pTable)(row,4) << RPT_PASS;
       else
          (*pTable)(row,4) << RPT_FAIL;
@@ -1223,7 +1225,7 @@ void bridgesite3_stresses(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
       (*pTable)(row,1) << "Fatigue I";
       (*pTable)(row,2) << stress.SetValue( fTop );
       (*pTable)(row,3) << stress.SetValue( fAllow );
-      if ( pStresses->TopPassed() )
+      if ( pStresses->TopPassed(pgsFlexuralStressArtifact::WithoutRebar) )
          (*pTable)(row,4) << RPT_PASS;
       else
          (*pTable)(row,4) << RPT_FAIL;
@@ -1237,7 +1239,7 @@ void bridgesite3_stresses(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
    (*pTable)(row,1) << "Service III";
    (*pTable)(row,2) << stress.SetValue( fBot );
    (*pTable)(row,3) << stress.SetValue( fAllow );
-   if ( pStresses->BottomPassed() )
+   if ( pStresses->BottomPassed(pgsFlexuralStressArtifact::WithoutRebar) )
       (*pTable)(row,4) << RPT_PASS;
    else
       (*pTable)(row,4) << RPT_FAIL;
@@ -1251,7 +1253,7 @@ void bridgesite3_stresses(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
    (*pTable)(row,1) << "Service I";
    (*pTable)(row,2) << stress.SetValue( fBot );
    (*pTable)(row,3) << stress.SetValue( fAllow );
-   if ( pStresses->BottomPassed() )
+   if ( pStresses->BottomPassed(pgsFlexuralStressArtifact::WithoutRebar) )
       (*pTable)(row,4) << RPT_PASS;
    else
       (*pTable)(row,4) << RPT_FAIL;
@@ -1267,7 +1269,7 @@ void bridgesite3_stresses(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
       (*pTable)(row,1) << "Service IA";
       (*pTable)(row,2) << stress.SetValue( fBot );
       (*pTable)(row,3) << stress.SetValue( fAllow );
-      if ( pStresses->BottomPassed() )
+      if ( pStresses->BottomPassed(pgsFlexuralStressArtifact::WithoutRebar) )
          (*pTable)(row,4) << RPT_PASS;
       else
          (*pTable)(row,4) << RPT_FAIL;
@@ -1283,7 +1285,7 @@ void bridgesite3_stresses(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
       (*pTable)(row,1) << "Fatigue I";
       (*pTable)(row,2) << stress.SetValue( fBot );
       (*pTable)(row,3) << stress.SetValue( fAllow );
-      if ( pStresses->BottomPassed() )
+      if ( pStresses->BottomPassed(pgsFlexuralStressArtifact::WithoutRebar) )
          (*pTable)(row,4) << RPT_PASS;
       else
          (*pTable)(row,4) << RPT_FAIL;
@@ -1291,10 +1293,10 @@ void bridgesite3_stresses(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
    }
 }
 
-void write_shear_capacity(rptRcTable* pTable,int row,const std::string& lbl, const pgsVerticalShearArtifact* pArtifact,IDisplayUnits* pDispUnits)
+void write_shear_capacity(rptRcTable* pTable,int row,const std::string& lbl, const pgsVerticalShearArtifact* pArtifact,IDisplayUnits* pDisplayUnits)
 {
-   INIT_UV_PROTOTYPE( rptForceSectionValue, shear, pDispUnits->GetGeneralForceUnit(), false );
-   INIT_UV_PROTOTYPE( rptLengthUnitValue, dim, pDispUnits->GetComponentDimUnit(), false );
+   INIT_UV_PROTOTYPE( rptForceSectionValue, shear, pDisplayUnits->GetGeneralForceUnit(), false );
+   INIT_UV_PROTOTYPE( rptLengthUnitValue, dim, pDisplayUnits->GetComponentDimUnit(), false );
 
    (*pTable)(row,0) << lbl;
    (*pTable)(row,1) << shear.SetValue( pArtifact->GetDemand() );
@@ -1305,7 +1307,7 @@ void write_shear_capacity(rptRcTable* pTable,int row,const std::string& lbl, con
       (*pTable)(row,3) << RPT_FAIL;
 }
 
-void shear_capacity(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType girder,IDisplayUnits* pDispUnits)
+void shear_capacity(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType girder,IDisplayUnits* pDisplayUnits)
 {
    rptParagraph* p = new rptParagraph;
    *pChapter << p;
@@ -1317,8 +1319,8 @@ void shear_capacity(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,Gir
    pTable->SetColumnStyle(0, pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT) );
    pTable->SetStripeRowColumnStyle(0, pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT) );
    (*pTable)(0,0) << "Location";
-   (*pTable)(0,1) << COLHDR(Sub2("V","u"), rptForceUnitTag, pDispUnits->GetGeneralForceUnit() );
-   (*pTable)(0,2) << COLHDR(symbol(phi) << Sub2("V","n"), rptForceUnitTag, pDispUnits->GetGeneralForceUnit() );
+   (*pTable)(0,1) << COLHDR(Sub2("V","u"), rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit() );
+   (*pTable)(0,2) << COLHDR(symbol(phi) << Sub2("V","n"), rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit() );
    (*pTable)(0,3) << "Status";
 
    // Setup up some unit value prototypes
@@ -1367,17 +1369,17 @@ void shear_capacity(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,Gir
    pPoiArtifact = pstirrup_artifact->GetStirrupCheckAtPoisArtifact(pgsStirrupCheckAtPoisArtifactKey(pgsTypes::BridgeSite3,pgsTypes::StrengthI,left_cs.GetDistFromStart()));
    pArtifact = pPoiArtifact->GetVerticalShearArtifact();
    CHECK(pArtifact!=0);
-   write_shear_capacity(pTable,row++,"Left Critical Section", pArtifact, pDispUnits );
+   write_shear_capacity(pTable,row++,"Left Critical Section", pArtifact, pDisplayUnits );
 
    pPoiArtifact = pstirrup_artifact->GetStirrupCheckAtPoisArtifact(pgsStirrupCheckAtPoisArtifactKey(pgsTypes::BridgeSite3,pgsTypes::StrengthI,left_h.GetDistFromStart()));
    pArtifact = pPoiArtifact->GetVerticalShearArtifact();
    CHECK(pArtifact!=0);
-   write_shear_capacity(pTable,row++,"H from left end", pArtifact, pDispUnits );
+   write_shear_capacity(pTable,row++,"H from left end", pArtifact, pDisplayUnits );
    
    pPoiArtifact = pstirrup_artifact->GetStirrupCheckAtPoisArtifact(pgsStirrupCheckAtPoisArtifactKey(pgsTypes::BridgeSite3,pgsTypes::StrengthI,left_15h.GetDistFromStart()));
    pArtifact = pPoiArtifact->GetVerticalShearArtifact();
    CHECK(pArtifact!=0);
-   write_shear_capacity(pTable,row++,"1.5H from left end", pArtifact, pDispUnits );
+   write_shear_capacity(pTable,row++,"1.5H from left end", pArtifact, pDisplayUnits );
 
    if ( 0 < NhMax )
    {
@@ -1386,39 +1388,39 @@ void shear_capacity(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,Gir
          pPoiArtifact = pstirrup_artifact->GetStirrupCheckAtPoisArtifact(pgsStirrupCheckAtPoisArtifactKey(pgsTypes::BridgeSite3,pgsTypes::StrengthI,hp_left.GetDistFromStart()));
          pArtifact = pPoiArtifact->GetVerticalShearArtifact();
          CHECK(pArtifact!=0);
-         write_shear_capacity(pTable,row++,"Left Harping Point", pArtifact, pDispUnits );
+         write_shear_capacity(pTable,row++,"Left Harping Point", pArtifact, pDisplayUnits );
 
          pPoiArtifact = pstirrup_artifact->GetStirrupCheckAtPoisArtifact(pgsStirrupCheckAtPoisArtifactKey(pgsTypes::BridgeSite3,pgsTypes::StrengthI,hp_right.GetDistFromStart()));
          pArtifact = pPoiArtifact->GetVerticalShearArtifact();
          CHECK(pArtifact!=0);
-         write_shear_capacity(pTable,row++,"Right Harping Point", pArtifact, pDispUnits );
+         write_shear_capacity(pTable,row++,"Right Harping Point", pArtifact, pDisplayUnits );
       }
       else
       {
          pPoiArtifact = pstirrup_artifact->GetStirrupCheckAtPoisArtifact(pgsStirrupCheckAtPoisArtifactKey(pgsTypes::BridgeSite3,pgsTypes::StrengthI,hp_left.GetDistFromStart()));
          pArtifact = pPoiArtifact->GetVerticalShearArtifact();
          CHECK(pArtifact!=0);
-         write_shear_capacity(pTable,row++,"Harping Point", pArtifact, pDispUnits );
+         write_shear_capacity(pTable,row++,"Harping Point", pArtifact, pDisplayUnits );
       }
    }
 
    pPoiArtifact = pstirrup_artifact->GetStirrupCheckAtPoisArtifact(pgsStirrupCheckAtPoisArtifactKey(pgsTypes::BridgeSite3,pgsTypes::StrengthI,right_15h.GetDistFromStart()));
    pArtifact = pPoiArtifact->GetVerticalShearArtifact();
    CHECK(pArtifact!=0);
-   write_shear_capacity(pTable,row++,"1.5H from right end", pArtifact, pDispUnits );
+   write_shear_capacity(pTable,row++,"1.5H from right end", pArtifact, pDisplayUnits );
 
    pPoiArtifact = pstirrup_artifact->GetStirrupCheckAtPoisArtifact(pgsStirrupCheckAtPoisArtifactKey(pgsTypes::BridgeSite3,pgsTypes::StrengthI,right_h.GetDistFromStart()));
    pArtifact = pPoiArtifact->GetVerticalShearArtifact();
    CHECK(pArtifact!=0);
-   write_shear_capacity(pTable,row++,"H from right end", pArtifact, pDispUnits );
+   write_shear_capacity(pTable,row++,"H from right end", pArtifact, pDisplayUnits );
 
    pPoiArtifact = pstirrup_artifact->GetStirrupCheckAtPoisArtifact(pgsStirrupCheckAtPoisArtifactKey(pgsTypes::BridgeSite3,pgsTypes::StrengthI,right_cs.GetDistFromStart()));
    pArtifact = pPoiArtifact->GetVerticalShearArtifact();
    CHECK(pArtifact!=0);
-   write_shear_capacity(pTable,row++,"Right Critical Section", pArtifact, pDispUnits );
+   write_shear_capacity(pTable,row++,"Right Critical Section", pArtifact, pDisplayUnits );
 }
 
-void lifting(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType girder,IDisplayUnits* pDispUnits)
+void lifting(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType girder,IDisplayUnits* pDisplayUnits)
 {
    rptParagraph* p = new rptParagraph;
    *pChapter << p;
@@ -1458,11 +1460,11 @@ void lifting(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderInde
 
       // Setup up some unit value prototypes
       rptRcScalar scalar;
-      scalar.SetFormat( pDispUnits->GetScalarFormat().Format );
-      scalar.SetWidth( pDispUnits->GetScalarFormat().Width );
-      scalar.SetPrecision( pDispUnits->GetScalarFormat().Precision );
-      INIT_UV_PROTOTYPE( rptStressUnitValue, stress, pDispUnits->GetStressUnit(), true );
-      INIT_UV_PROTOTYPE( rptAreaUnitValue,   area,   pDispUnits->GetAreaUnit(),   true );
+      scalar.SetFormat( pDisplayUnits->GetScalarFormat().Format );
+      scalar.SetWidth( pDisplayUnits->GetScalarFormat().Width );
+      scalar.SetPrecision( pDisplayUnits->GetScalarFormat().Precision );
+      INIT_UV_PROTOTYPE( rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(), true );
+      INIT_UV_PROTOTYPE( rptAreaUnitValue,   area,   pDisplayUnits->GetAreaUnit(),   true );
 
       (*pTable)(0,0) << "";
       (*pTable)(0,1) << "Demand";
@@ -1538,7 +1540,7 @@ void lifting(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderInde
    }
 }
 
-void hauling(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType girder,IDisplayUnits* pDispUnits)
+void hauling(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType girder,IDisplayUnits* pDisplayUnits)
 {
    rptParagraph* p = new rptParagraph;
    *pChapter << p;
@@ -1569,12 +1571,12 @@ void hauling(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderInde
 
    // Setup up some unit value prototypes
    rptRcScalar scalar;
-   scalar.SetFormat( pDispUnits->GetScalarFormat().Format );
-   scalar.SetWidth( pDispUnits->GetScalarFormat().Width );
-   scalar.SetPrecision( pDispUnits->GetScalarFormat().Precision );
-   INIT_UV_PROTOTYPE( rptStressUnitValue, stress, pDispUnits->GetStressUnit(), true );
-   INIT_UV_PROTOTYPE( rptForceUnitValue,  force,  pDispUnits->GetShearUnit(),  true );
-   INIT_UV_PROTOTYPE( rptAreaUnitValue,   area,   pDispUnits->GetAreaUnit(),   true );
+   scalar.SetFormat( pDisplayUnits->GetScalarFormat().Format );
+   scalar.SetWidth( pDisplayUnits->GetScalarFormat().Width );
+   scalar.SetPrecision( pDisplayUnits->GetScalarFormat().Precision );
+   INIT_UV_PROTOTYPE( rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(), true );
+   INIT_UV_PROTOTYPE( rptForceUnitValue,  force,  pDisplayUnits->GetShearUnit(),  true );
+   INIT_UV_PROTOTYPE( rptAreaUnitValue,   area,   pDisplayUnits->GetAreaUnit(),   true );
 
    (*pTable)(0,0) << "";
    (*pTable)(0,1) << "Demand";

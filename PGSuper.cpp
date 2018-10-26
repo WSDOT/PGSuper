@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -170,7 +170,6 @@ END_MESSAGE_MAP()
 // CPGSuperApp construction
 
 CPGSuperApp::CPGSuperApp() :
-m_Catalog("WSDOT","ftp://ftp.wsdot.wa.gov/public/bridge/software/PGSuper/","PGSuperCatalog.ini"),
 m_strWindowPlacementFormat("%u,%u,%d,%d,%d,%d,%d,%d,%d,%d")
 {
    m_bAutoCalcEnabled = true;
@@ -181,7 +180,7 @@ m_strWindowPlacementFormat("%u,%u,%d,%d,%d,%d,%d,%d,%d,%d")
    ::InitUnitSystem();
 
    m_CacheUpdateFrequency = Daily;
-   m_SharedResourceType = Internet;
+   m_SharedResourceType = srtInternetFtp;
 
    m_bUpdatingTemplate = false;
 
@@ -228,6 +227,7 @@ BOOL CPGSuperApp::InitInstance()
    }
   // we don't show splash when in command line mode
   CSplashWnd::EnableSplashScreen(cmdInfo.m_bShowSplash);
+  CSplashWnd::ShowSplashScreen();
 
    if ( !CreateAppUnitSystem(&m_AppUnitSystem) )
       return FALSE;
@@ -248,13 +248,6 @@ BOOL CPGSuperApp::InitInstance()
    // read out any important values.
    RegistryInit();
 
-   // Legal Notice - start up
-   if (!cmdInfo.m_CommandLineMode )
-   {
-      if ( ShowLegalNoticeAtStartup() == atReject )
-         return FALSE; // License was not accepted
-   }
-
 	// Register the application's document templates.  Document templates
 	//  serve as the connection between documents, frame windows and views.
    RegDocTemplates();
@@ -272,7 +265,14 @@ BOOL CPGSuperApp::InitInstance()
    sysComCatMgr::CreateCategory(L"PGSuper Beam Family",CATID_BeamFamily);
    sysComCatMgr::CreateCategory(L"PGSuper IE Plugin",CATID_PGSuperIEPlugin);
 
-		// Note: MDI applications register all server objects without regard
+   // Legal Notice - start up
+   if (!cmdInfo.m_CommandLineMode )
+   {
+      if ( ShowLegalNoticeAtStartup() == atReject )
+         return FALSE; // License was not accepted
+   }
+
+   // Note: MDI applications register all server objects without regard
 		//  to the /Embedding or /Automation on the command line.
    
 	// create main MDI Frame window
@@ -361,7 +361,10 @@ BOOL CPGSuperApp::InitInstance()
 
    m_PluginMgr.LoadPlugins();
 
-	return TRUE;
+   // Close splash screen as it causes problems
+   CSplashWnd::CloseSplashScreen();
+
+   return TRUE;
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -478,29 +481,30 @@ CString CPGSuperApp::GetMasterLibraryFile()
    CString strMasterLibFile;
    switch( m_SharedResourceType )
    {
-   case Default:
-      strMasterLibFile = m_LocalMasterLibraryFile;
+   case srtDefault:
+      strMasterLibFile = GetDefaultMasterLibraryFile();
       break;
 
-   case Internet:
-      strMasterLibFile = m_MasterLibraryFileURL;
-      break;
-
-   case Local:
-      strMasterLibFile = m_LocalMasterLibraryFile;
+   case srtInternetFtp:
+   case srtInternetHttp:
+   case srtLocal:
+      {
+         // use our cached value
+         strMasterLibFile = m_MasterLibraryFileURL;
+      }
       break;
 
    default:
       ATLASSERT(false);
+      strMasterLibFile = GetDefaultMasterLibraryFile();
       break;
    }
 
    return strMasterLibFile;
 }
 
-void CPGSuperApp::GetTemplateFolders(CString& strUserFolder,CString& strWorkgroupFolder)
+void CPGSuperApp::GetTemplateFolders(CString& strWorkgroupFolder)
 {
-   strUserFolder      = m_UserTemplateFolder;
    strWorkgroupFolder = m_WorkgroupTemplateFolderCache;
 }
 
@@ -587,15 +591,16 @@ CString CPGSuperApp::GetMasterLibraryPublisher() const
    CString strPublisher;
    switch( m_SharedResourceType )
    {
-   case Default:
+   case srtDefault:
       strPublisher = "Default libraries installed with PGSuper";
       break;
 
-   case Internet:
+   case srtInternetFtp:
+   case srtInternetHttp:
       strPublisher = m_Publisher;
       break;
 
-   case Local:
+   case srtLocal:
       strPublisher = "Published on Local Network";
       break;
 
@@ -605,11 +610,6 @@ CString CPGSuperApp::GetMasterLibraryPublisher() const
    }
 
    return strPublisher;
-}
-
-CPGSuperCatalog& CPGSuperApp::GetCatalog()
-{
-   return m_Catalog;
 }
 
 bool CPGSuperApp::UpdatingTemplate()
@@ -673,8 +673,8 @@ void CPGSuperApp::FinalDocumentInit(CPGSuperDoc* pDoc)
 {
    CComPtr<IBroker> pBroker;
    AfxGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IDisplayUnits,pDispUnits);
-   pgsTypes::UnitMode unitMode = pDispUnits->GetUnitDisplayMode();
+   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
+   pgsTypes::UnitMode unitMode = pDisplayUnits->GetUnitDisplayMode();
 
 
    CMainFrame* pMainFrame = (CMainFrame*)AfxGetMainWnd();
@@ -1063,6 +1063,9 @@ void CPGSuperApp::RegistryInit()
 
    // NOTE: Settings is an MFC created Registry section
 
+   // Do any necessary conversions from previous versions of PGSuper
+   RegistryConvert();
+
    // Get AutoCalc setting.
    // Default is On.
    // If the string is not Off, then assume autocalc is on.
@@ -1113,9 +1116,6 @@ void CPGSuperApp::RegistryInit()
    // engineer name
    m_EngineerName = GetProfileString(_T("Options"),_T("EngineerName"), strDefaultEngineer);
 
-   // user template location
-   m_UserTemplateFolder = GetProfileString(_T("Options"), _T("UserTemplateLocation"), strDefaultUserTemplateFolder);
-
    /////////////////////////////////
    // Shared Resource Settings
    /////////////////////////////////
@@ -1132,22 +1132,16 @@ void CPGSuperApp::RegistryInit()
    m_CacheUpdateFrequency = (CacheUpdateFrequency)GetProfileInt(_T("Settings"),_T("CacheUpdateFrequency"),iDefaultCacheUpdateFrequency);
 
    // Internet resources
-   m_CatalogServers.LoadFromRegistry();
-   CString strName = GetProfileString(_T("Options"),_T("CatalogServer"),strDefaultCatalogServer);
-   CString strAddress = m_CatalogServers.GetServerAddress(strName);
-   m_Catalog.SetCatalogServer(strName,strAddress);
+   m_CatalogServers.LoadFromRegistry(this);
+   m_CurrentCatalogServer = GetProfileString(_T("Options"),_T("CatalogServer"),strDefaultCatalogServer);
 
    m_Publisher = GetProfileString(_T("Options"),_T("Publisher"),strDefaultPublisher);
-   m_MasterLibraryFileURL = GetProfileString(_T("Options"),_T("MasterLibraryURL"),strDefaultMasterLibraryURL);
-   m_WorkgroupTemplateFolderURL = GetProfileString(_T("Options"),_T("WorkgroupTemplatesURL"),strDefaultWorkgroupTemplateFolderURL);
 
-   // Local network resources
-   m_LocalMasterLibraryFile       = GetProfileString(_T("Options"),_T("MasterLibraryLocal"),     strDefaultLocalMasterLibraryFile);
-   m_LocalWorkgroupTemplateFolder = GetProfileString(_T("Options"),_T("WorkgroupTemplatesLocal"),strLocalWorkgroupTemplateFolder);
+   m_MasterLibraryFileURL = GetProfileString(_T("Options"),_T("MasterLibraryURL"),strDefaultMasterLibraryURL);
 
    // Cache file/folder for Internet or Local Network resources
-   m_MasterLibraryFileCache       = GetProfileString(_T("Options"),_T("MasterLibraryCache"),     GetCacheFolder()+"\\MasterLibrary.lbr");
-   m_WorkgroupTemplateFolderCache = GetProfileString(_T("Options"),_T("WorkgroupTemplatesCache"),GetCacheFolder()+"\\WorkgroupTemplates\\");
+   m_MasterLibraryFileCache       = GetProfileString(_T("Options"),_T("MasterLibraryCache"),     GetCacheFolder()+GetMasterLibraryFileName());
+   m_WorkgroupTemplateFolderCache = GetProfileString(_T("Options"),_T("WorkgroupTemplatesCache"),GetCacheFolder()+GetTemplateSubFolderName()+"\\");
 
    // Tip of the Day file location
    m_TipFilePath = GetProfileString(_T("Tip"),_T("TipFile"), GetAppLocation() + CString("PGSuper.tip"));
@@ -1189,6 +1183,58 @@ void CPGSuperApp::RegistryInit()
    m_LastRunDate = sysTime(last_run);
 }
 
+void CPGSuperApp::RegistryConvert()
+{
+   // Prior to version 2.2.3 we allowed only a single local file system catalog server and the
+   // app class did much of the server heavy lifting. The code below removes those registry keys
+   // and converts the data to the new format
+
+   // This code was written in Jan, 2010. If you are reading this in, say 2012, you 
+   // are probably safe to blast it as nobody should be using 2 year old versions of PGSuper
+
+   SharedResourceType type   = (SharedResourceType)  GetProfileInt(_T("Settings"),_T("SharedResourceType"),  -1);
+   CString masterlib  = GetProfileString(_T("Options"),_T("MasterLibraryLocal"), _T("Bogus"));
+   CString tempfolder = GetProfileString(_T("Options"),_T("WorkgroupTemplatesLocal"), _T("Bogus"));
+
+   // If we were set to a local library, create a new catalog server 
+   // and add its settings to the registry
+   if (type==srtLocal)
+   {
+      // our publisher and server is "Local Files"
+      WriteProfileString(_T("Options"),_T("CatalogServer"),"Local Files");
+      WriteProfileString(_T("Options"),_T("Publisher"),    "Local Files");
+
+      // create that server
+      CFileSystemPGSuperCatalogServer server("Local Files",masterlib,tempfolder);
+      CString create_string = GetCreationString(&server);
+
+      int count = GetProfileInt(_T("Servers"),_T("Count"),-1);
+      count==-1 ? count=1 : count++;
+      WriteProfileInt(_T("Servers"),_T("Count"),count);
+
+      CString key(char(count-1+'A'));
+      WriteProfileString(_T("Servers"), key, create_string);
+   }
+
+   // Delete profile strings if they are not empty
+   if (masterlib!="Bogus")
+   {
+      WriteProfileString(_T("Options"),_T("MasterLibraryLocal"),NULL);
+   }
+
+   if (tempfolder!="Bogus")
+   {
+      WriteProfileString(_T("Options"),_T("WorkgroupTemplatesLocal"), NULL);
+   }
+
+   //  m_WorkgroupTemplateFolderURL is no longer used
+   WriteProfileString(_T("Options"),_T("WorkgroupTemplatesURL"),NULL);
+
+   // user template location no longer used
+   WriteProfileString(_T("Options"), _T("UserTemplateLocation"), NULL);
+
+}
+
 void CPGSuperApp::RegistryExit()
 {
    // Save the AutoCalc mode setting
@@ -1211,21 +1257,12 @@ void CPGSuperApp::RegistryExit()
    // engineer name
    VERIFY(WriteProfileString(_T("Options"), _T("EngineerName"), m_EngineerName));
 
-   // user template
-   VERIFY(WriteProfileString(_T("Options"), _T("UserTemplateLocation"), m_UserTemplateFolder));
-
    WriteProfileInt(_T("Settings"),_T("SharedResourceType"),m_SharedResourceType);
    WriteProfileInt(_T("Settings"),_T("CacheUpdateFrequency"),m_CacheUpdateFrequency);
 
    // Internet resources
-   WriteProfileString(_T("Options"),_T("CatalogServer"),m_Catalog.GetCatalogName());
+   WriteProfileString(_T("Options"),_T("CatalogServer"),m_CurrentCatalogServer);
    WriteProfileString(_T("Options"),_T("Publisher"),m_Publisher);
-   WriteProfileString(_T("Options"),_T("MasterLibraryURL"),m_MasterLibraryFileURL);
-   WriteProfileString(_T("Options"),_T("WorkgroupTemplatesURL"),m_WorkgroupTemplateFolderURL);
-
-   // Local network resources
-   WriteProfileString(_T("Options"),_T("MasterLibraryLocal"),     m_LocalMasterLibraryFile);
-   WriteProfileString(_T("Options"),_T("WorkgroupTemplatesLocal"),m_LocalWorkgroupTemplateFolder);
 
    // Cache file/folder for Internet or Local Network resources
    WriteProfileString(_T("Options"),_T("MasterLibraryCache"),     m_MasterLibraryFileCache);
@@ -1245,7 +1282,7 @@ void CPGSuperApp::RegistryExit()
    sysTime time;
    WriteProfileInt(_T("Settings"),_T("LastRun"),time.Seconds());
 
-   m_CatalogServers.SaveToRegistry();
+   m_CatalogServers.SaveToRegistry(this);
 }
 
 BOOL CPGSuperApp::PreTranslateMessage(MSG* pMsg)
@@ -1321,64 +1358,63 @@ void CPGSuperApp::OnProgramSettings(BOOL bFirstRun)
    }
    else
    {
-      CConfigurePGSuperDlg dlg(GetCatalog(),bFirstRun,AfxGetMainWnd());
+      CConfigurePGSuperDlg dlg(bFirstRun,AfxGetMainWnd());
 
       dlg.m_Company  = m_CompanyName;
       dlg.m_Engineer = m_EngineerName;
-      dlg.m_UserFolder = m_UserTemplateFolder;
 
       dlg.m_Method               = (int)m_SharedResourceType;
       dlg.m_CacheUpdateFrequency = m_CacheUpdateFrequency;
-
-      dlg.m_LocalMasterLibraryFile       = m_LocalMasterLibraryFile;
-      dlg.m_LocalWorkgroupTemplateFolder = m_LocalWorkgroupTemplateFolder;
-
-      dlg.m_Publisher                    = m_Publisher;
+      dlg.m_CurrentServer  = m_CurrentCatalogServer;
+      dlg.m_Publisher      = m_Publisher;
       dlg.m_Servers = m_CatalogServers;
+
+      // Save a copy of all server information in case our update fails
+      SharedResourceType        original_type = m_SharedResourceType;
+      CacheUpdateFrequency      original_freq = m_CacheUpdateFrequency;
+      CString                 original_server = m_CurrentCatalogServer;
+      CString              original_publisher = m_Publisher;
+      CPGSuperCatalogServers original_servers = m_CatalogServers;
 
       int result = dlg.DoModal();
 
-      if ( result == IDOK || result == IDC_UPDATENOW )
+      if ( result == IDOK )
       {
          m_EngineerName         = dlg.m_Engineer;
          m_CompanyName          = dlg.m_Company;
-         m_UserTemplateFolder   = dlg.m_UserFolder;
 
-         m_SharedResourceType = (SharedResourceType)(dlg.m_Method);
+         m_SharedResourceType   = (SharedResourceType)(dlg.m_Method);
          m_CacheUpdateFrequency = dlg.m_CacheUpdateFrequency;
 
-         m_CatalogServers = dlg.m_Servers;
-         m_Catalog = dlg.m_Catalog;
+         m_CatalogServers       = dlg.m_Servers;
+         m_CurrentCatalogServer = dlg.m_CurrentServer;
+         m_Publisher            = dlg.m_Publisher;
 
-         if ( m_SharedResourceType == Default )
+         if ( m_SharedResourceType == srtDefault )
          {
             // Using hard coded defaults
-            m_LocalMasterLibraryFile       = GetDefaultMasterLibraryFile();
-            m_LocalWorkgroupTemplateFolder = GetDefaultWorkgroupTemplateFolder();
+            RestoreLibraryAndTemplatesToDefault();
          }
-         else if ( m_SharedResourceType == Internet )
-         {
-            // Using Master library and workgroup templates from an FTP server
-            m_Publisher = dlg.m_Publisher;
-            if ( !m_Catalog.GetSettings(m_Publisher,m_MasterLibraryFileURL,m_WorkgroupTemplateFolderURL) )
-               return;
-         }
-         else
-         {
-            // Using Master library and workgroup templates from a local path
-            m_LocalMasterLibraryFile       = dlg.m_LocalMasterLibraryFile;
-            m_LocalWorkgroupTemplateFolder = dlg.m_LocalWorkgroupTemplateFolder;
-         }
-
-
-         RegistryExit(); // saves all the current settings to the registery
-         // There is no sense waiting until PGSuper closes to do this
       }
 
-      if ( result == IDC_UPDATENOW )
+      if ( dlg.m_bUpdateCache )
       {
-         DoCacheUpdate();
+         if (!DoCacheUpdate())
+         {  
+            // DoCacheUpdate will restore the cache, we need also to restore local data
+            m_SharedResourceType   = original_type;
+            m_CacheUpdateFrequency = original_freq;
+            m_CurrentCatalogServer = original_server;
+            m_Publisher            = original_publisher;
+            m_CatalogServers       = original_servers;
+         }
       }
+
+      if ( result == IDOK )
+      {
+         RegistryExit(); // Saves all the current settings to the registery
+                         // There is no sense waiting until PGSuper closes to do this
+       }
    }
 }
 
@@ -1539,9 +1575,9 @@ LRESULT CPGSuperApp::ProcessWndProcException(CException* e, const MSG* pMsg)
    {
       lResult = 1L;
       AfxMessageBox("There was a critical error accessing the Master Library and Workgroup Templates on the Internet.\n\nPGSuper will use the generic libraries and templates that were installed with the application.\n\nUse File | Program Settings to reset the Master Library and Workgroup Templates to shared Internet resources at a later date.",MB_OK | MB_ICONEXCLAMATION);
-      m_SharedResourceType = Default;
-      m_LocalMasterLibraryFile       = GetDefaultMasterLibraryFile();
-      m_LocalWorkgroupTemplateFolder = GetDefaultWorkgroupTemplateFolder();
+      m_SharedResourceType = srtDefault;
+      m_MasterLibraryFileCache       = GetDefaultMasterLibraryFile();
+      m_WorkgroupTemplateFolderCache = GetDefaultWorkgroupTemplateFolder();
    }
    else
    {
@@ -1712,7 +1748,7 @@ BOOL CAboutDlg::OnInitDialog()
    pWnd = GetDlgItem(IDC_COPYRIGHT);
    CString strText;
    CTime now = CTime::GetCurrentTime();
-   strText.Format("Copyright © 2000-%d,  WSDOT, All Rights Reserved",now.GetYear());
+   strText.Format("Copyright © 1999-%d, WSDOT, All Rights Reserved",now.GetYear());
    pWnd->SetWindowText(strText);
 
 
@@ -1956,374 +1992,47 @@ void CPGSuperApp::ProcessTxDotCad(const CPGSuperCommandLineInfo& rCmdInfo)
    }
 }
 
-
-CString CPGSuperApp::CleanFTPURL(const CString& strURL)
-{
-   // if this url starts with ftp, make sure the slashes go the right direction
-   CString url = strURL;
-   CString left = url.Left(3);
-   left.MakeLower();
-   if ( left == "ftp" )
-      url.Replace("\\","/");
-
-   // if it doesn't start with ftp:// add it
-   left = url.Left(4);
-   left.MakeLower();
-   if (left == "ftp.")
-      url.Insert(0,"ftp://");
-
-   return url;
-}
-
-bool CPGSuperApp::UpdateMasterLibraryCache(IProgressMonitor* pProgress)
-{
-   //
-   // Update Master Library
-   //
-
-   CString strLocalFile( GetCacheFolder() + "MasterLibrary.lbr");
-
-   if ( m_SharedResourceType == Default )
-   {
-      m_MasterLibraryFileCache = m_LocalMasterLibraryFile;
-      return true;
-   }
-   else if ( m_SharedResourceType == Internet )
-   {
-      // download the Master library file from the FTP server
-      CString strMasterLibraryFile = CleanFTPURL(m_MasterLibraryFileURL);
-
-      DWORD dwServiceType;
-      CString strServer, strObject;
-      INTERNET_PORT nPort;
-      BOOL bSuccess = AfxParseURL(strMasterLibraryFile,dwServiceType,strServer,strObject,nPort);
-      ATLASSERT( bSuccess && dwServiceType == AFX_INET_SERVICE_FTP);
-
-      CInternetSession inetSession;
-      CFtpConnection* pFTP = 0;
-
-      try
-      {
-         pFTP = inetSession.GetFtpConnection(strServer);
-         CFtpFileFind file_find(pFTP);
-
-         pProgress->put_Message(0,CComBSTR("Downloading the Master Library"));
-
-         if ( file_find.FindFile(strObject) && pFTP->GetFile(strObject,strLocalFile,FALSE,FILE_ATTRIBUTE_NORMAL,FTP_TRANSFER_TYPE_ASCII | INTERNET_FLAG_RELOAD) )
-         {
-            m_MasterLibraryFileCache = strLocalFile;
-            pProgress->put_Message(0,CComBSTR("Master Library downloaded successfully"));
-         }
-         else
-         {
-            pProgress->put_Message(0,CComBSTR("Error downloading the Master Library"));
-            AfxThrowInternetException(0);
-         }
-      }
-      catch ( CInternetException* pException)
-      {
-         // can't open the connection for what ever reason
-         CString strMessage;
-         strMessage.Format("Error opening the Master library file from %s.",m_MasterLibraryFileURL);
-
-         AfxMessageBox(strMessage,MB_ICONEXCLAMATION | MB_OK);
-
-         pException->Delete();
-         pFTP->Close();
-         delete pFTP;
-
-         return false;
-      }
-
-      pFTP->Close();
-      delete pFTP;
-   }
-   else
-   {
-      // copy the network file to the cache
-      pProgress->put_Message(0,CComBSTR("Copying the Master Library"));
-      BOOL bSuccess = ::CopyFile(m_LocalMasterLibraryFile,strLocalFile,FALSE);
-      if ( !bSuccess )
-      {
-         pProgress->put_Message(0,CComBSTR("Error copying the Master Library"));
-
-         CString strMessage;
-         strMessage.Format("Error opening Master library file from %s",m_LocalMasterLibraryFile);
-
-         AfxMessageBox(strMessage,MB_ICONEXCLAMATION | MB_OK);
-
-         return false;
-      }
-      else
-      {
-         m_MasterLibraryFileCache = strLocalFile;
-         pProgress->put_Message(0,CComBSTR("Master Library copied successfully"));
-      }
-   }
-
-   return true;
-}
-
-bool CPGSuperApp::UpdateWorkgroupTemplateCache(IProgressMonitor* pProgress)
-{
-   CString strLocalRootFolder = GetCacheFolder() + CString("WorkgroupTemplates\\");
-   if ( m_SharedResourceType == Default )
-   {
-      m_WorkgroupTemplateFolderCache = m_LocalWorkgroupTemplateFolder;
-      return true;
-   }
-   else if ( m_SharedResourceType == Internet )
-   {
-      // download templates from the FTP server
-      CString strWorkgroupTemplateFolder = CleanFTPURL(m_WorkgroupTemplateFolderURL);
-
-      DWORD dwServiceType;
-      CString strServer, strObject;
-      CString strLocalFile;
-      INTERNET_PORT nPort;
-
-      BOOL bSuccess = AfxParseURL(strWorkgroupTemplateFolder,dwServiceType,strServer,strObject,nPort);
-      ATLASSERT( bSuccess && dwServiceType == AFX_INET_SERVICE_FTP); // this should be tested elsewhere
-
-      CInternetSession inetSession;
-
-      ::CreateDirectory(strLocalRootFolder,NULL);
-
-      CFtpConnection* pFTP = 0;
-
-      // read and collect the sub folders
-      std::vector<CString> strFolders;
-      try
-      {
-         pFTP = inetSession.GetFtpConnection(strServer);
-         CFtpFileFind folder_find(pFTP);
-
-         BOOL bWorkingOnFolders = folder_find.FindFile(strObject);
-         while ( bWorkingOnFolders )
-         {
-            bWorkingOnFolders = folder_find.FindNextFile();
-            if ( folder_find.IsDirectory() )
-            {
-               strFolders.push_back(folder_find.GetFileTitle());
-            }
-         }
-         
-         // download any templates at the root level
-         CString strFiles = strObject + "/*.pgt";
-         BOOL bWorkingOnFiles = folder_find.FindFile(strFiles);
-         while ( bWorkingOnFiles )
-         {
-            bWorkingOnFiles = folder_find.FindNextFile();
-            CString strRemoteFile = folder_find.GetFilePath();
-
-            CString strLocalFile = strLocalRootFolder + folder_find.GetFileName();
-
-            CString strMessage;
-            strMessage.Format("Downloading %s",folder_find.GetFileTitle());
-            pProgress->put_Message(0,CComBSTR(strMessage));
-
-            bSuccess = false;
-            int count = 0;
-
-            do
-            {
-               bSuccess = pFTP->GetFile(strRemoteFile,strLocalFile,FALSE,FILE_ATTRIBUTE_NORMAL,FTP_TRANSFER_TYPE_ASCII | INTERNET_FLAG_RELOAD);
-            } while (!bSuccess && count++ < 3);
-
-            if ( !bSuccess )
-            {
-               strMessage.Format("Failed to download %s",folder_find.GetFileTitle());
-               pProgress->put_Message(0,CComBSTR(strMessage));
-            }
-
-         } // end of while
-
-         folder_find.Close();
-
-         // for each folder, look for template files
-         std::vector<CString>::iterator iter;
-         for ( iter = strFolders.begin(); iter != strFolders.end(); iter++ )
-         {
-            CString strRemoteFolder = *iter;
-            CString strFolder = strRemoteFolder;
-
-            CString strLocalFolder  = strLocalRootFolder + strFolder + CString("\\");
-
-            ::CreateDirectory(strLocalFolder,NULL);
-
-            CString strMessage;
-            strMessage.Format("Downloading templates from %s",strFolder);
-            pProgress->put_Message(0,CComBSTR(strMessage));
-               
-            CFtpFileFind* pTemplateFind = new CFtpFileFind(pFTP);
-
-            CString strRemoteFiles   = strObject + strRemoteFolder + CString("/*.pgt");
-
-            BOOL bWorkingOnTemplates = pTemplateFind->FindFile(strRemoteFiles);
-            while ( bWorkingOnTemplates )
-            {
-               bWorkingOnTemplates = pTemplateFind->FindNextFile();
-               CString strRemoteFile = pTemplateFind->GetFilePath();
-
-               strLocalFile = strLocalFolder + pTemplateFind->GetFileName();
-                  
-               CString strRemoteFileName = pTemplateFind->GetFileTitle();
-               strMessage.Format("Downloading %s",strRemoteFileName);
-               pProgress->put_Message(0,CComBSTR(strMessage));
-
-               bSuccess = false;
-               int count = 0;
-               do
-               {
-                  bSuccess = pFTP->GetFile(strRemoteFile,strLocalFile,FALSE,FILE_ATTRIBUTE_NORMAL,FTP_TRANSFER_TYPE_ASCII | INTERNET_FLAG_RELOAD);
-               } while ( !bSuccess && count++ < 3 );
-
-               if ( !bSuccess )
-               {
-                  strMessage.Format("Failed to download %s",strRemoteFileName);
-                  pProgress->put_Message(0,CComBSTR(strMessage));
-               }
-            }
-
-            pTemplateFind->Close();
-            delete pTemplateFind;
-         }
-
-         m_WorkgroupTemplateFolderCache = strLocalRootFolder;
-      }
-      catch ( CInternetException* pException)
-      {
-         // can't open the connection for what ever reason
-         CString strMessage;
-         strMessage.Format("Error opening the template folder from %s.",m_WorkgroupTemplateFolderURL);
-
-         AfxMessageBox(strMessage,MB_ICONEXCLAMATION | MB_OK);
-
-         pException->Delete();
-         pFTP->Close();
-         delete pFTP;
-
-         return false;
-      }
-
-     pFTP->Close();
-     delete pFTP;
-   }
-   else
-   {
-      // copy the network files to the cache
-      ::CreateDirectory(strLocalRootFolder,NULL);
-
-      // make sure the path ends with a slash
-      if ( m_LocalWorkgroupTemplateFolder.GetAt(m_LocalWorkgroupTemplateFolder .GetLength()-1) != '\\' )
-         m_LocalWorkgroupTemplateFolder += "\\";
-
-      CFileFind folder_find;
-      BOOL bWorkingOnFolders = folder_find.FindFile(m_LocalWorkgroupTemplateFolder + "*");
-
-      // read and collect the sub folders
-      std::vector<CString> strFolders;
-      while ( bWorkingOnFolders )
-      {
-         bWorkingOnFolders = folder_find.FindNextFile();
-         if ( folder_find.IsDirectory() && !folder_find.IsDots() && !folder_find.IsHidden() )
-         {
-            strFolders.push_back(folder_find.GetFileTitle());
-         }
-      }
-      
-      // download any templates at the root level
-      CString strFiles = m_LocalWorkgroupTemplateFolder + "*.pgt";
-      BOOL bWorkingOnFiles = folder_find.FindFile(strFiles);
-      while ( bWorkingOnFiles )
-      {
-         bWorkingOnFiles = folder_find.FindNextFile();
-         CString strRemoteFile = folder_find.GetFilePath();
-
-         CString strLocalFile = strLocalRootFolder + folder_find.GetFileName();
-
-         CString strMessage;
-         strMessage.Format("Copying %s",folder_find.GetFileTitle());
-         pProgress->put_Message(0,CComBSTR(strMessage));
-
-         BOOL bSuccess = ::CopyFile(strRemoteFile,strLocalFile,FALSE);
-         if ( !bSuccess )
-         {
-            strMessage.Format("Failed to copy %s",folder_find.GetFileTitle());
-            pProgress->put_Message(0,CComBSTR(strMessage));
-         }
-
-      } // end of while
-
-      folder_find.Close();
-
-      // for each folder, look for template files
-      std::vector<CString>::iterator iter;
-      for ( iter = strFolders.begin(); iter != strFolders.end(); iter++ )
-      {
-         CString strRemoteFolder = *iter;
-         CString strFolder = strRemoteFolder;
-
-         CString strLocalFolder  = strLocalRootFolder + strFolder + CString("\\");
-
-         ::CreateDirectory(strLocalFolder,NULL);
-
-         CString strMessage;
-         strMessage.Format("Copying templates from %s",strFolder);
-         pProgress->put_Message(0,CComBSTR(strMessage));
-            
-         CFileFind template_find;
-         CString strRemoteFiles   = m_LocalWorkgroupTemplateFolder + strRemoteFolder + CString("\\*.pgt");
-
-         BOOL bWorkingOnTemplates = template_find.FindFile(strRemoteFiles);
-         while ( bWorkingOnTemplates )
-         {
-            bWorkingOnTemplates = template_find.FindNextFile();
-            CString strRemoteFile = template_find.GetFilePath();
-
-            CString strLocalFile = strLocalFolder + template_find.GetFileName();
-               
-            CString strRemoteFileName = template_find.GetFileTitle();
-            strMessage.Format("Copying %s",strRemoteFileName);
-            pProgress->put_Message(0,CComBSTR(strMessage));
-
-            BOOL bSuccess = ::CopyFile(strRemoteFile,strLocalFile,FALSE);
-            if ( !bSuccess )
-            {
-               strMessage.Format("Failed to copy %s",strRemoteFileName);
-               pProgress->put_Message(0,CComBSTR(strMessage));
-            }
-         }
-      }
-
-      m_WorkgroupTemplateFolderCache = strLocalRootFolder;
-   }
-
-   return true;
-}
-
 void CPGSuperApp::UpdateCache()
 {
-   BOOL bFirstRun = IsFirstRun();
-   if (bFirstRun)
+   try
    {
-      LOG("Update Cache -> First Run");
+      BOOL bFirstRun = IsFirstRun();
+      if (bFirstRun)
+      {
+         LOG("Update Cache -> First Run");
 
-      // if this is the first time PGSuper is run after installation
-      // go right to the program settings. OnProgramSettings will
-      // force an update
-      OnProgramSettings(TRUE); 
+         // if this is the first time PGSuper is run after installation
+         // go right to the program settings. OnProgramSettings will
+         // force an update
+         OnProgramSettings(TRUE); 
+      }
+      else if ( IsTimeToUpdateCache() && AreUpdatesPending() )
+      {
+         LOG("Time to update cache and Updates are pending");
+         // this is not the first time, it is time to check for updates,
+         // and sure enough there are updates pending.... do the update
+         int result = ::MessageBox(AfxGetMainWnd()->GetSafeHwnd(),"There are updates to Master Library and Workgroup Templates pending.\n\nWould you like to update PGSuper now?","Pending Updates",MB_YESNO | MB_ICONINFORMATION);
+
+         if ( result == IDYES )
+            DoCacheUpdate();
+      }
    }
-   else if ( IsTimeToUpdateCache() && AreUpdatesPending() )
+   catch(...)
    {
-      LOG("Time to update cache and Updates are pending");
-      // this is not the first time, it is time to check for updates,
-      // and sure enough there are updates pending.... do the update
-      int result = ::MessageBox(AfxGetMainWnd()->GetSafeHwnd(),"There are updates to Master Library and Workgroup Templates pending.\n\nWould you like to update PGSuper now?","Pending Updates",MB_YESNO | MB_ICONINFORMATION);
-
-      if ( result == IDYES )
-         DoCacheUpdate();
+      // Things are totally screwed if we end up here. Reset to default library and templates from install
+      RestoreLibraryAndTemplatesToDefault();
+      ::AfxMessageBox("An error occurred while loading Library and Template server information. These settings have been restored to factory defaults.",MB_ICONINFORMATION);
    }
+}
+
+void CPGSuperApp::RestoreLibraryAndTemplatesToDefault()
+{
+   m_SharedResourceType = srtDefault;
+
+   m_MasterLibraryFileCache       = GetDefaultMasterLibraryFile();
+   m_WorkgroupTemplateFolderCache = GetDefaultWorkgroupTemplateFolder();
+
+   m_MasterLibraryFileURL = m_MasterLibraryFileCache;
 }
 
 void CPGSuperApp::DeleteCache(LPCSTR pstrCache)
@@ -2366,7 +2075,7 @@ void CPGSuperApp::RecursiveDelete(LPCSTR pstr)
 bool CPGSuperApp::IsTimeToUpdateCache()
 {
    LOG("IsTimeToUpdateCache()");
-   if ( m_SharedResourceType == Default )
+   if ( m_SharedResourceType == srtDefault )
    {
       LOG("Using default resource type, no updating");
       return false;
@@ -2424,213 +2133,47 @@ bool CPGSuperApp::AreUpdatesPending()
    LOG("AreUpdatesPending()");
 
    bool bUpdatesPending = false;
-   if ( m_SharedResourceType == Default )
+   if ( m_SharedResourceType == srtDefault )
    {
       bUpdatesPending = false;
    }
-   else if ( m_SharedResourceType == Internet )
+   else if ( m_SharedResourceType == srtInternetFtp ||
+             m_SharedResourceType == srtInternetHttp ||
+             m_SharedResourceType == srtLocal)
    {
-      bUpdatesPending = CheckInternetForUpdates();
+
+      // create a progress window
+      CComPtr<IProgressMonitorWindow> wndProgress;
+      wndProgress.CoCreateInstance(CLSID_ProgressMonitorWindow);
+      wndProgress->put_HasGauge(VARIANT_FALSE);
+      wndProgress->put_HasCancel(VARIANT_FALSE);
+      wndProgress->Show(CComBSTR("Checking the Internet for Library updates"));
+
+      try
+      {
+         // Catalog server does the work here
+         const CPGSuperCatalogServer* pserver = m_CatalogServers.GetServer(m_CurrentCatalogServer);
+         bUpdatesPending = pserver->CheckForUpdates(m_Publisher, NULL, GetCacheFolder());
+
+         wndProgress->Hide();
+         wndProgress.Release();
+      }
+      catch(...)
+      {
+         wndProgress->Hide();
+         wndProgress.Release();
+         throw;
+      }
    }
    else
    {
-      bUpdatesPending = CheckLocalNetworkForUpdates();
+      ATLASSERT(0);
    }
 
    LOG("Pending updates = " << (bUpdatesPending ? "Yes" : "No"));
    return bUpdatesPending;
 }
 
-bool CPGSuperApp::CheckInternetForUpdates()
-{
-   // create a progress window
-   CComPtr<IProgressMonitorWindow> wndProgress;
-   wndProgress.CoCreateInstance(CLSID_ProgressMonitorWindow);
-   wndProgress->put_HasGauge(VARIANT_FALSE);
-   wndProgress->put_HasCancel(VARIANT_FALSE);
-   wndProgress->Show(CComBSTR("Checking the Internet for Library updates"));
-
-   // Check the URL and parse it
-   DWORD dwServiceType;
-   CString strMasterLibraryServer,      strMasterLibraryObject;
-   CString strWorkgroupTemplatesServer, strWorkgroupTemplatesObject;
-   INTERNET_PORT nPort;
-
-   BOOL bSuccess = AfxParseURL(m_MasterLibraryFileURL,dwServiceType,strMasterLibraryServer,strMasterLibraryObject,nPort);
-   if ( !bSuccess || dwServiceType != AFX_INET_SERVICE_FTP)
-   {
-      CString strMessage;
-      strMessage.Format("The published Master library file location, %s, for %s is invalid. Please report this to WSDOT",m_MasterLibraryFileURL,m_Publisher);
-      AfxMessageBox(strMessage,MB_OK | MB_ICONEXCLAMATION);
-
-      return false; 
-   }
-
-   bSuccess = AfxParseURL(m_WorkgroupTemplateFolderURL,dwServiceType,strWorkgroupTemplatesServer,strWorkgroupTemplatesObject,nPort);
-
-   if ( !bSuccess || dwServiceType != AFX_INET_SERVICE_FTP)
-      return false; 
-
-   bool bUpdatePending = true;
-   bool bFTPError = false;
-
-   // connect to the internet and get the md5 files
-   CInternetSession inetSession;
-   CFtpConnection* pFTP = NULL;
-
-   CString strLocalFile;
-   CString strLocalFolder;
-   try
-   {
-      // Master library
-      pFTP = inetSession.GetFtpConnection(strMasterLibraryServer);
-      CFtpFileFind master_library_file_find(pFTP);
-
-      CString strMasterLibMD5 = strMasterLibraryObject + CString(".md5");
-      strLocalFile = GetLocalMasterLibraryMD5Filename();
-      
-      LOG("Getting " << strMasterLibMD5 << " from " << strMasterLibraryServer);
-
-      if ( !master_library_file_find.FindFile(strMasterLibMD5) || !pFTP->GetFile(strMasterLibMD5,strLocalFile,FALSE,FILE_ATTRIBUTE_NORMAL,FTP_TRANSFER_TYPE_ASCII | INTERNET_FLAG_RELOAD) )
-      {
-         LOG("Error getting " << strMasterLibMD5 << " from " << strMasterLibraryServer);
-         bFTPError = true;
-      }
-
-      pFTP->Close();
-      delete pFTP;
-
-
-      // Workgroup Template
-      pFTP = inetSession.GetFtpConnection(strWorkgroupTemplatesServer);
-      CFtpFileFind workgroup_template_file_find(pFTP);
-
-      CString strWorkgroupTemplateMD5 = strWorkgroupTemplatesObject + CString("WorkgroupTemplates.md5");
-      strLocalFolder = GetLocalWorkgroupTemplateFolderMD5Filename();
-
-      LOG("Getting " << strWorkgroupTemplateMD5 << " from " << strWorkgroupTemplatesServer);
-
-      if ( !workgroup_template_file_find.FindFile(strWorkgroupTemplateMD5) || !pFTP->GetFile(strWorkgroupTemplateMD5,strLocalFolder,FALSE,FILE_ATTRIBUTE_NORMAL,FTP_TRANSFER_TYPE_ASCII | INTERNET_FLAG_RELOAD) )
-      {
-         LOG("Error getting " << strWorkgroupTemplateMD5 << " from " << strWorkgroupTemplatesServer);
-         bFTPError = true;
-      }
-
-      pFTP->Close();
-      delete pFTP;
-   }
-   catch(CInternetException* pException)
-   {
-      pException->Delete();
-      bFTPError = true;
-      bUpdatePending = false;
-   }
-
-   if ( !bFTPError )
-   {
-      bUpdatePending = CheckForUpdates(strLocalFile,strLocalFolder);
-   }
-
-   wndProgress->Hide();
-   wndProgress.Release();
-
-   return bUpdatePending;
-}
-
-bool CPGSuperApp::CheckLocalNetworkForUpdates()
-{
-   // if the md5 files are missing, assume that an update is pending
-   // so start with a default of true
-#if defined _DEBUG
-   // In the development environment, the source of the workgroup templates folder
-   // have CVS information. When PGSuper sync's with this source, the templates
-   // are copied to the Application Data folder along with the md5 file that
-   // was created considering the CVS information. When PGSuper computes the md5
-   // of the cached data, it will always be different because the Application Data
-   // folder does not contain the CVS information.
-   // 
-   // To prevent us from getting asked to update the templates every time the program
-   // is run, we don't create any md5 files and assume there is not an updated if the
-   // md5 files are missing.
-   bool bUpdatePending = false;
-#else
-   bool bUpdatePending = true;
-#endif
-
-   // Master Library File
-   CString strMasterLibMD5 = m_LocalMasterLibraryFile + ".md5";
-   CString strLocalFile = GetLocalMasterLibraryMD5Filename();
-   BOOL bMasterLibrarySuccess = ::CopyFile(strMasterLibMD5,strLocalFile,FALSE);
-
-   LOG("Getting " << strMasterLibMD5);
-   if ( !bMasterLibrarySuccess )
-   {
-      LOG("Error getting " << strMasterLibMD5);
-   }
-
-   // Workgroup Template Folder
-   CString strWorkgroupTemplateMD5 = m_LocalWorkgroupTemplateFolder + CString("WorkgroupTemplates.md5");
-   CString strLocalFolder = GetLocalWorkgroupTemplateFolderMD5Filename();
-   BOOL bWorkgroupTemplateSuccess = ::CopyFile(strWorkgroupTemplateMD5,strLocalFolder,FALSE);
-
-
-   LOG("Getting " << strWorkgroupTemplateMD5);
-   if ( !bWorkgroupTemplateSuccess )
-   {
-      LOG("Error getting " << strWorkgroupTemplateMD5);
-   }
-
-   if ( bMasterLibrarySuccess && bWorkgroupTemplateSuccess )
-   {
-      bUpdatePending = CheckForUpdates(strLocalFile,strLocalFolder);
-   }
-
-   return bUpdatePending;
-}
-
-bool CPGSuperApp::CheckForUpdates(const CString& strLocalMasterLibMD5,const CString& strLocalWorkgroupTemplateMD5)
-{
-   bool bUpdatePending = false;
-
-   CString strAppPath = GetAppLocation();
-   CString strMD5Deep = strAppPath + CString("md5deep.exe");
-
-   CFileFind finder;
-   BOOL bFound = finder.FindFile(strMD5Deep);
-   if ( !bFound )
-   {
-      CString strMessage;
-      strMessage.Format("The program %s is missing. This program is needed to determine if there are pending updates for the Master Library and Workgroup Templates. Please repair PGSuper.\n\nWould you like to assume there are pending updates?",strMD5Deep);
-
-      return (::MessageBox(AfxGetMainWnd()->GetSafeHwnd(),strMessage,"Error", MB_YESNO | MB_ICONQUESTION) == IDYES ? true : false);
-   }
-
-   // Master library
-   CString strArg1 = CString("-x ") + CString("\"") + strLocalMasterLibMD5 + CString("\"");
-   CString strArg2 = CString("\"") + m_MasterLibraryFileCache + CString("\"");
-   LOG(strMD5Deep << " " << strArg1 << " " << strArg2);
-   int master_lib_result = _spawnl(_P_WAIT,strMD5Deep,strMD5Deep,strArg1,strArg2,NULL);
-   LOG("master_lib_result = " << master_lib_result);
-
-   // Workgroup templates
-   CString strWorkgroupTemplateFolderCache = m_WorkgroupTemplateFolderCache;
-
-   // remove the last \\ because md5deep doesn't like it
-   int loc = strWorkgroupTemplateFolderCache.GetLength()-1;
-   if ( strWorkgroupTemplateFolderCache.GetAt(loc) == '\\' )
-      strWorkgroupTemplateFolderCache.SetAt(loc,'\0');
-
-   strArg1 = CString("-x ") + CString("\"") + strLocalWorkgroupTemplateMD5 + CString("\"");
-   strArg2 = CString("-r ") + CString("\"") + strWorkgroupTemplateFolderCache + CString("\"");
-   LOG(strMD5Deep << " " << strArg1 << " " << strArg2);
-   int workgroup_template_result = _spawnl(_P_WAIT,strMD5Deep,strMD5Deep,strArg1,strArg2,NULL);
-   LOG("workgroup_template_result = " << workgroup_template_result);
-
-   if ( master_lib_result != 0 || workgroup_template_result != 0 )
-      bUpdatePending = true;
-
-   return bUpdatePending;
-}
 
 bool CPGSuperApp::DoCacheUpdate()
 {
@@ -2667,11 +2210,35 @@ bool CPGSuperApp::DoCacheUpdate()
    ::SetFileAttributes(strCache,FILE_ATTRIBUTE_HIDDEN); // make the cache a hidden folder
 
    // fill up the cache
-   bool bMasterLibrarySuccessful      = UpdateMasterLibraryCache(progress);
-   bool bWorkgroupTemplatesSuccessful = UpdateWorkgroupTemplateCache(progress);
+   bool bSuccessful(false);
+   if ( m_SharedResourceType == srtDefault )
+   {
+      m_MasterLibraryFileCache = GetDefaultMasterLibraryFile();
+      m_WorkgroupTemplateFolderCache = GetDefaultWorkgroupTemplateFolder();
+      return true;
+   }
+   else if ( m_SharedResourceType == srtInternetFtp ||
+             m_SharedResourceType == srtInternetHttp ||
+             m_SharedResourceType == srtLocal)
+   {
+      // set cache folder
+      m_MasterLibraryFileCache = GetCacheFolder() + GetMasterLibraryFileName();
+      m_WorkgroupTemplateFolderCache = GetCacheFolder() + GetTemplateSubFolderName() + CString("\\");
+
+      // Catalog server takes care of business
+      const CPGSuperCatalogServer* pserver = m_CatalogServers.GetServer(m_CurrentCatalogServer);
+      bSuccessful = pserver->PopulateCatalog(m_Publisher,progress,GetCacheFolder());
+
+      m_MasterLibraryFileURL = pserver->GetMasterLibraryURL(m_Publisher);
+
+   }
+   else
+   {
+      ATLASSERT(0);
+   }
 
    // if the cache was successfully updated, delete the saved copy and update the time stamp
-   if ( bMasterLibrarySuccessful && bWorkgroupTemplatesSuccessful )
+   if ( bSuccessful )
    {
       DeleteCache(strSaveCache);
       CTime now = CTime::GetCurrentTime();
@@ -2684,10 +2251,14 @@ bool CPGSuperApp::DoCacheUpdate()
       rename(strSaveCache,strCache);
    }
 
-   progress->put_Message(0,CComBSTR("The Master Library and Templates have been updated"));
+   if (bSuccessful)
+      progress->put_Message(0,CComBSTR("The Master Library and Templates have been updated"));
+   else
+      progress->put_Message(0,CComBSTR("Update failed. Previous settings restored."));
+
    wndProgress->Close();
 
-   return true;
+   return bSuccessful;
 }
 
 CTime CPGSuperApp::GetLastCacheUpdateTime()
@@ -2708,18 +2279,18 @@ CString CPGSuperApp::GetAppLocation()
    CString filename(szBuff);
    filename.MakeUpper();
 
-#if defined _DEBUG
-   CString exe_file = "DEBUG\\PGSUPER.EXE";
-   int loc;
-#else
-   // if "Release" is in the path, remove it (this happens when testing release builds)
-   int loc = filename.Find("RELEASE\\");
-   if ( loc != -1 )
-      filename.Replace("RELEASE\\","");
+//#if defined _DEBUG
+//   CString exe_file = "DEBUG\\PGSUPER.EXE";
+//   int loc;
+//#else
+   //// if "Release" is in the path, remove it (this happens when testing release builds)
+   //int loc = filename.Find("RELEASE\\");
+   //if ( loc != -1 )
+   //   filename.Replace("RELEASE\\","");
 
    CString exe_file = "PGSUPER.EXE";
-#endif
-   loc = filename.Find(exe_file);
+//#endif
+   int loc = filename.Find(exe_file);
    if ( loc == -1 )
    {
        // something is wrong... that find should have succeeded
@@ -2773,15 +2344,6 @@ CString CPGSuperApp::GetSaveCacheFolder()
       return CString(buffer) + CString("\\PGSuper_Save\\");
 }
 
-CString CPGSuperApp::GetLocalMasterLibraryMD5Filename()
-{
-   return GetCacheFolder() + CString("MasterLib.md5");
-}
-
-CString CPGSuperApp::GetLocalWorkgroupTemplateFolderMD5Filename()
-{
-   return GetCacheFolder() + CString("WorkgroupTemplates.md5");
-}
 
 void CPGSuperApp::GetAppUnitSystem(IAppUnitSystem** ppAppUnitSystem)
 {

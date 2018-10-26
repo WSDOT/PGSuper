@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -35,6 +35,7 @@
 #include <IFace\Project.h>
 #include <IFace\DrawBridgeSettings.h>
 #include <IFace\DisplayUnits.h>
+#include <IFace\EditByUI.h>
 
 #include <PgsExt\BridgeDescription.h>
 
@@ -676,7 +677,7 @@ void CGirderModelElevationView::BuildGirderDisplayObjects(CPGSuperDoc* pDoc,IBro
    strategy->DoFill(true);
 
    // set the tool tip text
-   GET_IFACE2(pBroker,IDisplayUnits,pDispUnits);
+   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
@@ -687,8 +688,8 @@ void CGirderModelElevationView::BuildGirderDisplayObjects(CPGSuperDoc* pDoc,IBro
    CString strMsg1;
    strMsg1.Format("Girder: %s\r\nGirder Length: %s\r\nSpan Length: %s",
                   pBridgeDesc->GetSpan(span)->GetGirderTypes()->GetGirderName(girder),
-                  FormatDimension(gdr_length,pDispUnits->GetSpanLengthUnit()),
-                  FormatDimension(span_length,pDispUnits->GetSpanLengthUnit())
+                  FormatDimension(gdr_length,pDisplayUnits->GetSpanLengthUnit()),
+                  FormatDimension(span_length,pDisplayUnits->GetSpanLengthUnit())
                   );
 
    GET_IFACE2(pBroker,IBridgeMaterial,pBridgeMaterial);
@@ -698,8 +699,8 @@ void CGirderModelElevationView::BuildGirderDisplayObjects(CPGSuperDoc* pDoc,IBro
 
    CString strMsg2;
    strMsg2.Format("\r\n\r\nf'ci: %s\r\nf'c: %s",
-                  FormatDimension(fci,pDispUnits->GetStressUnit()),
-                  FormatDimension(fc, pDispUnits->GetStressUnit())
+                  FormatDimension(fci,pDisplayUnits->GetStressUnit()),
+                  FormatDimension(fc, pDisplayUnits->GetStressUnit())
                   );
 
    GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
@@ -1275,9 +1276,9 @@ void CGirderModelElevationView::BuildPointLoadDisplayObjects(CPGSuperDoc* pDoc, 
          // tool tip
          CComPtr<IBroker> pBroker;
          AfxGetBroker(&pBroker);
-         GET_IFACE2(pBroker,IDisplayUnits,pDispUnits);
-         CString strMagnitude = FormatDimension(load.m_Magnitude,pDispUnits->GetGeneralForceUnit(),true);
-         CString strLocation  = FormatDimension(location_from_left_end,pDispUnits->GetSpanLengthUnit(),true);
+         GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
+         CString strMagnitude = FormatDimension(load.m_Magnitude,pDisplayUnits->GetGeneralForceUnit(),true);
+         CString strLocation  = FormatDimension(location_from_left_end,pDisplayUnits->GetSpanLengthUnit(),true);
 
          std::ostringstream os;
          os << "Point Load\r\n";
@@ -1402,11 +1403,11 @@ void CGirderModelElevationView::BuildDistributedLoadDisplayObjects(CPGSuperDoc* 
          // tool tip
          CComPtr<IBroker> pBroker;
          AfxGetBroker(&pBroker);
-         GET_IFACE2(pBroker,IDisplayUnits,pDispUnits);
-         CString strStartMagnitude = FormatDimension(load.m_WStart,pDispUnits->GetForcePerLengthUnit(),true);
-         CString strEndMagnitude   = FormatDimension(load.m_WEnd,pDispUnits->GetForcePerLengthUnit(),true);
-         CString strStartLocation  = FormatDimension(wstart_loc-start_lgth,pDispUnits->GetSpanLengthUnit(),true);
-         CString strEndLocation    = FormatDimension(wend_loc-start_lgth,pDispUnits->GetSpanLengthUnit(),true);
+         GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
+         CString strStartMagnitude = FormatDimension(load.m_WStart,pDisplayUnits->GetForcePerLengthUnit(),true);
+         CString strEndMagnitude   = FormatDimension(load.m_WEnd,pDisplayUnits->GetForcePerLengthUnit(),true);
+         CString strStartLocation  = FormatDimension(wstart_loc-start_lgth,pDisplayUnits->GetSpanLengthUnit(),true);
+         CString strEndLocation    = FormatDimension(wend_loc-start_lgth,pDisplayUnits->GetSpanLengthUnit(),true);
 
          std::ostringstream os;
          os << "Distributed Load\r\n";
@@ -1513,9 +1514,9 @@ void CGirderModelElevationView::BuildMomentLoadDisplayObjects(CPGSuperDoc* pDoc,
          // tool tip
          CComPtr<IBroker> pBroker;
          AfxGetBroker(&pBroker);
-         GET_IFACE2(pBroker,IDisplayUnits,pDispUnits);
-         CString strMagnitude = FormatDimension(load.m_Magnitude,pDispUnits->GetMomentUnit(),true);
-         CString strLocation  = FormatDimension(location,pDispUnits->GetSpanLengthUnit(),true);
+         GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
+         CString strMagnitude = FormatDimension(load.m_Magnitude,pDisplayUnits->GetMomentUnit(),true);
+         CString strLocation  = FormatDimension(location,pDisplayUnits->GetSpanLengthUnit(),true);
 
          std::ostringstream os;
          os << "Moment Load\r\n";
@@ -1943,8 +1944,8 @@ iDimensionLine* CGirderModelElevationView::BuildDimensionLine(iDisplayList* pDL,
    // Format the dimension text
    CComPtr<IBroker> pBroker;
    AfxGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IDisplayUnits,pDispUnits);
-   CString strDimension = FormatDimension(dimension,pDispUnits->GetSpanLengthUnit());
+   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
+   CString strDimension = FormatDimension(dimension,pDisplayUnits->GetSpanLengthUnit());
 
    textBlock->SetText(strDimension);
 

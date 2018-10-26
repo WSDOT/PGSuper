@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 2002  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -33,21 +33,21 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-CElasticShorteningTable::CElasticShorteningTable(ColumnIndexType NumColumns, IDisplayUnits* pDispUnit) :
+CElasticShorteningTable::CElasticShorteningTable(ColumnIndexType NumColumns, IDisplayUnits* pDisplayUnits) :
 rptRcTable(NumColumns,0)
 {
-   DEFINE_UV_PROTOTYPE( spanloc,     pDispUnit->GetSpanLengthUnit(),      false );
-   DEFINE_UV_PROTOTYPE( gdrloc,      pDispUnit->GetSpanLengthUnit(),      false );
-   DEFINE_UV_PROTOTYPE( mod_e,       pDispUnit->GetModEUnit(),            false );
-   DEFINE_UV_PROTOTYPE( force,       pDispUnit->GetGeneralForceUnit(),    false );
-   DEFINE_UV_PROTOTYPE( area,        pDispUnit->GetAreaUnit(),            false );
-   DEFINE_UV_PROTOTYPE( mom_inertia, pDispUnit->GetMomentOfInertiaUnit(), false );
-   DEFINE_UV_PROTOTYPE( ecc,         pDispUnit->GetComponentDimUnit(),    false );
-   DEFINE_UV_PROTOTYPE( moment,      pDispUnit->GetMomentUnit(),          false );
-   DEFINE_UV_PROTOTYPE( stress,      pDispUnit->GetStressUnit(),          false );
+   DEFINE_UV_PROTOTYPE( spanloc,     pDisplayUnits->GetSpanLengthUnit(),      false );
+   DEFINE_UV_PROTOTYPE( gdrloc,      pDisplayUnits->GetSpanLengthUnit(),      false );
+   DEFINE_UV_PROTOTYPE( mod_e,       pDisplayUnits->GetModEUnit(),            false );
+   DEFINE_UV_PROTOTYPE( force,       pDisplayUnits->GetGeneralForceUnit(),    false );
+   DEFINE_UV_PROTOTYPE( area,        pDisplayUnits->GetAreaUnit(),            false );
+   DEFINE_UV_PROTOTYPE( mom_inertia, pDisplayUnits->GetMomentOfInertiaUnit(), false );
+   DEFINE_UV_PROTOTYPE( ecc,         pDisplayUnits->GetComponentDimUnit(),    false );
+   DEFINE_UV_PROTOTYPE( moment,      pDisplayUnits->GetMomentUnit(),          false );
+   DEFINE_UV_PROTOTYPE( stress,      pDisplayUnits->GetStressUnit(),          false );
 }
 
-CElasticShorteningTable* CElasticShorteningTable::PrepareTable(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,bool bTemporaryStrands,IDisplayUnits* pDispUnit,Uint16 level)
+CElasticShorteningTable* CElasticShorteningTable::PrepareTable(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,bool bTemporaryStrands,IDisplayUnits* pDisplayUnits,Uint16 level)
 {
    // create and configure the table
    ColumnIndexType numColumns = 10;
@@ -60,7 +60,7 @@ CElasticShorteningTable* CElasticShorteningTable::PrepareTable(rptChapter* pChap
    if ( bIsPrismatic )
       numColumns -= 2;
 
-   CElasticShorteningTable* table = new CElasticShorteningTable( numColumns, pDispUnit );
+   CElasticShorteningTable* table = new CElasticShorteningTable( numColumns, pDisplayUnits );
    pgsReportStyleHolder::ConfigureTable(table);
 
    table->m_bTemporaryStrands = bTemporaryStrands;
@@ -103,18 +103,18 @@ CElasticShorteningTable* CElasticShorteningTable::PrepareTable(rptChapter* pChap
    *pParagraph << table << rptNewLine;
 
    ColumnIndexType col = 0;
-   (*table)(0,col++) << COLHDR("Location from"<<rptNewLine<<"End of Girder",rptLengthUnitTag,  pDispUnit->GetSpanLengthUnit() );
-   (*table)(0,col++) << COLHDR("Location from"<<rptNewLine<<"Left Support",rptLengthUnitTag,  pDispUnit->GetSpanLengthUnit() );
-   (*table)(0,col++) << COLHDR("P", rptForceUnitTag, pDispUnit->GetGeneralForceUnit() );
+   (*table)(0,col++) << COLHDR("Location from"<<rptNewLine<<"End of Girder",rptLengthUnitTag,  pDisplayUnits->GetSpanLengthUnit() );
+   (*table)(0,col++) << COLHDR("Location from"<<rptNewLine<<"Left Support",rptLengthUnitTag,  pDisplayUnits->GetSpanLengthUnit() );
+   (*table)(0,col++) << COLHDR("P", rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit() );
 
    if ( !bIsPrismatic )
    {
-      (*table)(0,col++) << COLHDR(Sub2("A","g"), rptAreaUnitTag, pDispUnit->GetAreaUnit() );
-      (*table)(0,col++) << COLHDR(Sub2("I","g"), rptLength4UnitTag, pDispUnit->GetMomentOfInertiaUnit() );
+      (*table)(0,col++) << COLHDR(Sub2("A","g"), rptAreaUnitTag, pDisplayUnits->GetAreaUnit() );
+      (*table)(0,col++) << COLHDR(Sub2("I","g"), rptLength4UnitTag, pDisplayUnits->GetMomentOfInertiaUnit() );
    }
 
-   (*table)(0,col++) << COLHDR(Sub2("e","ps"), rptLengthUnitTag, pDispUnit->GetComponentDimUnit() );
-   (*table)(0,col++) << COLHDR(Sub2("M","g"), rptMomentUnitTag, pDispUnit->GetMomentUnit() );
+   (*table)(0,col++) << COLHDR(Sub2("e","ps"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+   (*table)(0,col++) << COLHDR(Sub2("M","g"), rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
 
    if ( bTemporaryStrands )
    {
@@ -156,20 +156,20 @@ CElasticShorteningTable* CElasticShorteningTable::PrepareTable(rptChapter* pChap
 
       // perm
       col -= 2;
-      (*table)(1,col++) << COLHDR(Sub2("e","p"), rptLengthUnitTag, pDispUnit->GetComponentDimUnit() );
-      (*table)(1,col++) << COLHDR(Sub2("f","cgp"), rptStressUnitTag, pDispUnit->GetStressUnit() );
-      (*table)(1,col++) << COLHDR(symbol(DELTA) << Sub2("f","pES"), rptStressUnitTag, pDispUnit->GetStressUnit() );
+      (*table)(1,col++) << COLHDR(Sub2("e","p"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+      (*table)(1,col++) << COLHDR(Sub2("f","cgp"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      (*table)(1,col++) << COLHDR(symbol(DELTA) << Sub2("f","pES"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
 
       // temp
-      (*table)(1,col++) << COLHDR(Sub2("e","t"), rptLengthUnitTag, pDispUnit->GetComponentDimUnit() );
-      (*table)(1,col++) << COLHDR(Sub2("f","cgp"), rptStressUnitTag, pDispUnit->GetStressUnit() );
-      (*table)(1,col++) << COLHDR(symbol(DELTA) << Sub2("f","pES"), rptStressUnitTag, pDispUnit->GetStressUnit() );
+      (*table)(1,col++) << COLHDR(Sub2("e","t"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+      (*table)(1,col++) << COLHDR(Sub2("f","cgp"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      (*table)(1,col++) << COLHDR(symbol(DELTA) << Sub2("f","pES"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    }
    else
    {
-      (*table)(0,col++) << COLHDR(Sub2("e","p"), rptLengthUnitTag, pDispUnit->GetComponentDimUnit() );
-      (*table)(0,col++) << COLHDR(Sub2("f","cgp"), rptStressUnitTag, pDispUnit->GetStressUnit() );
-      (*table)(0,col++) << COLHDR(symbol(DELTA) << Sub2("f","pES"), rptStressUnitTag, pDispUnit->GetStressUnit() );
+      (*table)(0,col++) << COLHDR(Sub2("e","p"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+      (*table)(0,col++) << COLHDR(Sub2("f","cgp"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      (*table)(0,col++) << COLHDR(symbol(DELTA) << Sub2("f","pES"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    }
 
    GET_IFACE2(pBroker,ISpecification,pSpec);
@@ -237,7 +237,7 @@ CElasticShorteningTable* CElasticShorteningTable::PrepareTable(rptChapter* pChap
    return table;
 }
 
-void CElasticShorteningTable::AddRow(rptChapter* pChapter,IBroker* pBroker,RowIndexType row,LOSSDETAILS& details,IDisplayUnits* pDispUnit,Uint16 level)
+void CElasticShorteningTable::AddRow(rptChapter* pChapter,IBroker* pBroker,RowIndexType row,LOSSDETAILS& details,IDisplayUnits* pDisplayUnits,Uint16 level)
 {
    ColumnIndexType col = 2;
    int rowOffset = GetNumberOfHeaderRows()-1;

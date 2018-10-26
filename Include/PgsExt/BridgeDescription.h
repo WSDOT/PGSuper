@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 2008  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -159,6 +159,11 @@ public:
    void CopyDown(bool bGirderCount,bool bGirderType,bool bSpacing,bool bSlabOffset); 
                     // takes all the data defined at the bridge level and copies
                     // it down to the spans and girders (only for this parameters set to true)
+
+   // It's pretty much impossible to take care of all data in this tree from the editing dialog
+   // so the function below takes half-baked edits, compares what changed from the original
+   // version, and finishes them.
+   void ReconcileEdits(IBroker* pBroker, const CBridgeDescription* pOriginalDesc);
 
    void Clear();
 

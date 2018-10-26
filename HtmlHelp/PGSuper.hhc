@@ -881,6 +881,10 @@
       <param name="Local" value="Theoretical Manual\Continuity.htm">
     </object>
     <li><object type="text/sitemap">
+      <param name="Name" value="Capacity/Demand Ratios">
+      <param name="Local" value="Theoretical Manual\CapacityToDemand_Ratios.htm">
+    </object>
+    <li><object type="text/sitemap">
       <param name="Name" value="Defining Girder Spacing">
       <param name="Local" value="Theoretical Manual\Defining_Girder_Spacing.htm">
     </object>
@@ -971,6 +975,10 @@
     <li><object type="text/sitemap">
       <param name="Name" value="Vehicular Live Loads">
       <param name="Local" value="Theoretical Manual\User-Defined_Live_Loads.htm">
+    </object>
+    <li><object type="text/sitemap">
+      <param name="Name" value="Light Weight Concrete">
+      <param name="Local" value="Theoretical Manual\Light_Weight_Concrete.htm">
     </object>
     </ul>
   <li><object type="text/sitemap">

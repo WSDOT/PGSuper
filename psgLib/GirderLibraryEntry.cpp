@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -85,6 +85,7 @@ GirderLibraryEntry::ClassFactoryCollection GirderLibraryEntry::ms_ClassFactories
 CLASS
    GirderLibraryEntry
 ****************************************************************************/
+static const char* SMaterialName={"AASHTO M31 (A615) - Grade 60"};
 
 
 //======================== LIFECYCLE  =======================================
@@ -97,8 +98,8 @@ m_HarpPointMeasure(mtFractionOfGirderLength),
 m_bMinHarpingPointLocation(false),
 m_MinHarpingPointLocation(::ConvertToSysUnits(5.0,unitMeasure::Feet)),
 m_HarpPointReference(mlBearing),
-m_ShearSteelMaterial("AASHTO M31 (A615) - Grade 60"),
-m_LongSteelMaterial("AASHTO M31 (A615) - Grade 60"),
+m_ShearSteelMaterial(SMaterialName),
+m_LongSteelMaterial(SMaterialName),
 m_TopFlangeShearBarSize(0),
 m_TopFlangeShearBarSpacing(0.0),
 m_bStirrupsEngageDeck(true),
@@ -685,6 +686,11 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
 
       if(!pLoad->Property("LongSteelMaterial",  &m_LongSteelMaterial))
          THROW_LOAD(InvalidFileFormat,pLoad);
+
+      // Bug fix: There was an error saving m_LongSteelMaterial that caused it to be blank. This
+      //          caused no harm until we needed the value. Reset it to correct value if blank
+      if (m_LongSteelMaterial.empty())
+         m_LongSteelMaterial = SMaterialName;
 
       // top flange shear steel
       if ( version >= 1.8 )

@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -73,21 +73,21 @@ void CGirderDescLiftingPage::DoDataExchange(CDataExchange* pDX)
 
    CComPtr<IBroker> pBroker;
    AfxGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IDisplayUnits,pDispUnits);
+   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
 
-   DDX_UnitValueAndTag( pDX, IDC_LIFTING_LOOP_LOCATION, IDC_LIFTING_LOOP_LOCATION_UNITS, m_LiftingLocation, pDispUnits->GetSpanLengthUnit() );
-   DDV_UnitValueZeroOrMore( pDX, m_LiftingLocation, pDispUnits->GetSpanLengthUnit() );
+   DDX_UnitValueAndTag( pDX, IDC_LIFTING_LOOP_LOCATION, IDC_LIFTING_LOOP_LOCATION_UNITS, m_LiftingLocation, pDisplayUnits->GetSpanLengthUnit() );
+   DDV_UnitValueZeroOrMore( pDX, m_LiftingLocation, pDisplayUnits->GetSpanLengthUnit() );
 
-   DDX_UnitValueAndTag( pDX, IDC_LEADINGOVERHANG, IDC_LEADINGOVERHANG_UNITS, m_LeadingOverhang, pDispUnits->GetSpanLengthUnit() );
-   DDV_UnitValueZeroOrMore( pDX, m_LeadingOverhang, pDispUnits->GetSpanLengthUnit() );
+   DDX_UnitValueAndTag( pDX, IDC_LEADINGOVERHANG, IDC_LEADINGOVERHANG_UNITS, m_LeadingOverhang, pDisplayUnits->GetSpanLengthUnit() );
+   DDV_UnitValueZeroOrMore( pDX, m_LeadingOverhang, pDisplayUnits->GetSpanLengthUnit() );
 
-   DDX_UnitValueAndTag( pDX, IDC_TRAILINGOVERHANG, IDC_TRAILINGOVERHANG_UNITS, m_TrailingOverhang, pDispUnits->GetSpanLengthUnit() );
-   DDV_UnitValueZeroOrMore( pDX, m_TrailingOverhang, pDispUnits->GetSpanLengthUnit() );
+   DDX_UnitValueAndTag( pDX, IDC_TRAILINGOVERHANG, IDC_TRAILINGOVERHANG_UNITS, m_TrailingOverhang, pDisplayUnits->GetSpanLengthUnit() );
+   DDV_UnitValueZeroOrMore( pDX, m_TrailingOverhang, pDisplayUnits->GetSpanLengthUnit() );
 
    GET_IFACE2(pBroker,IBridge,pBridge);
 
    double gdrlength = pBridge->GetGirderLength(pParent->m_CurrentSpanIdx,pParent->m_CurrentGirderIdx);
-   DDX_UnitValueAndTag( pDX, IDC_GIRDERLENGTH, IDC_GIRDERLENGTH_UNIT, gdrlength, pDispUnits->GetSpanLengthUnit() );
+   DDX_UnitValueAndTag( pDX, IDC_GIRDERLENGTH, IDC_GIRDERLENGTH_UNIT, gdrlength, pDisplayUnits->GetSpanLengthUnit() );
 
 #pragma Reminder("IMPLEMENT: Check clear span... make sure it is positive")
    double clearspan = gdrlength - m_LeadingOverhang - m_TrailingOverhang;

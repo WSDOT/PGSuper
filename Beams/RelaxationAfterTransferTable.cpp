@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 2002  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -34,27 +34,27 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-CRelaxationAfterTransferTable::CRelaxationAfterTransferTable(ColumnIndexType NumColumns, IDisplayUnits* pDispUnits) :
+CRelaxationAfterTransferTable::CRelaxationAfterTransferTable(ColumnIndexType NumColumns, IDisplayUnits* pDisplayUnits) :
 rptRcTable(NumColumns,0)
 {
-   DEFINE_UV_PROTOTYPE( spanloc,     pDispUnits->GetSpanLengthUnit(),      false );
-   DEFINE_UV_PROTOTYPE( gdrloc,      pDispUnits->GetSpanLengthUnit(),      false );
-   DEFINE_UV_PROTOTYPE( cg,          pDispUnits->GetSpanLengthUnit(),      false );
-   DEFINE_UV_PROTOTYPE( mod_e,       pDispUnits->GetModEUnit(),            false );
-   DEFINE_UV_PROTOTYPE( force,       pDispUnits->GetGeneralForceUnit(),    false );
-   DEFINE_UV_PROTOTYPE( area,        pDispUnits->GetAreaUnit(),            false );
-   DEFINE_UV_PROTOTYPE( mom_inertia, pDispUnits->GetMomentOfInertiaUnit(), false );
-   DEFINE_UV_PROTOTYPE( ecc,         pDispUnits->GetComponentDimUnit(),    false );
-   DEFINE_UV_PROTOTYPE( moment,      pDispUnits->GetMomentUnit(),          false );
-   DEFINE_UV_PROTOTYPE( stress,      pDispUnits->GetStressUnit(),          false );
+   DEFINE_UV_PROTOTYPE( spanloc,     pDisplayUnits->GetSpanLengthUnit(),      false );
+   DEFINE_UV_PROTOTYPE( gdrloc,      pDisplayUnits->GetSpanLengthUnit(),      false );
+   DEFINE_UV_PROTOTYPE( cg,          pDisplayUnits->GetSpanLengthUnit(),      false );
+   DEFINE_UV_PROTOTYPE( mod_e,       pDisplayUnits->GetModEUnit(),            false );
+   DEFINE_UV_PROTOTYPE( force,       pDisplayUnits->GetGeneralForceUnit(),    false );
+   DEFINE_UV_PROTOTYPE( area,        pDisplayUnits->GetAreaUnit(),            false );
+   DEFINE_UV_PROTOTYPE( mom_inertia, pDisplayUnits->GetMomentOfInertiaUnit(), false );
+   DEFINE_UV_PROTOTYPE( ecc,         pDisplayUnits->GetComponentDimUnit(),    false );
+   DEFINE_UV_PROTOTYPE( moment,      pDisplayUnits->GetMomentUnit(),          false );
+   DEFINE_UV_PROTOTYPE( stress,      pDisplayUnits->GetStressUnit(),          false );
 }
 
-CRelaxationAfterTransferTable* CRelaxationAfterTransferTable::PrepareTable(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,IDisplayUnits* pDispUnits,Uint16 level)
+CRelaxationAfterTransferTable* CRelaxationAfterTransferTable::PrepareTable(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,IDisplayUnits* pDisplayUnits,Uint16 level)
 {
    // Create and configure the table
    ColumnIndexType numColumns = 5;
 
-   CRelaxationAfterTransferTable* table = new CRelaxationAfterTransferTable( numColumns, pDispUnits );
+   CRelaxationAfterTransferTable* table = new CRelaxationAfterTransferTable( numColumns, pDisplayUnits );
    pgsReportStyleHolder::ConfigureTable(table);
 
    std::string strImagePath(pgsReportStyleHolder::GetImagePath());
@@ -70,7 +70,7 @@ CRelaxationAfterTransferTable* CRelaxationAfterTransferTable::PrepareTable(rptCh
    *pParagraph << "Losses due to Relaxation After Transfer" << rptNewLine;
    if ( pstrand->GetType() == matPsStrand::LowRelaxation )
    {
-      if ( pDispUnits->GetUnitDisplayMode() == pgsTypes::umSI )
+      if ( pDisplayUnits->GetUnitDisplayMode() == pgsTypes::umSI )
       {
          *pParagraph << rptRcImage(strImagePath + "Delta FpR2 Equation for Low Relax Strands SI.jpg") << rptNewLine;
       }
@@ -81,7 +81,7 @@ CRelaxationAfterTransferTable* CRelaxationAfterTransferTable::PrepareTable(rptCh
    }
    else
    {
-      if ( pDispUnits->GetUnitDisplayMode() == pgsTypes::umSI )
+      if ( pDisplayUnits->GetUnitDisplayMode() == pgsTypes::umSI )
       {
          *pParagraph << rptRcImage(strImagePath + "Delta FpR2 Equation for Stress Rel Strands SI.jpg") << rptNewLine;
       }
@@ -93,16 +93,16 @@ CRelaxationAfterTransferTable* CRelaxationAfterTransferTable::PrepareTable(rptCh
 
    *pParagraph << table << rptNewLine;
 
-   (*table)(0,0) << COLHDR("Location from"<<rptNewLine<<"Left Support",rptLengthUnitTag,  pDispUnits->GetSpanLengthUnit() );
-   (*table)(0,1) << COLHDR( symbol(DELTA) << "f" << Sub("pES"), rptStressUnitTag, pDispUnits->GetStressUnit() );
-   (*table)(0,2) << COLHDR( symbol(DELTA) << "f" << Sub("pSR"), rptStressUnitTag, pDispUnits->GetStressUnit() );
-   (*table)(0,3) << COLHDR( symbol(DELTA) << "f" << Sub("pCR"), rptStressUnitTag, pDispUnits->GetStressUnit() );
-   (*table)(0,4) << COLHDR( symbol(DELTA) << "f" << Sub("pR2"), rptStressUnitTag, pDispUnits->GetStressUnit() );
+   (*table)(0,0) << COLHDR("Location from"<<rptNewLine<<"Left Support",rptLengthUnitTag,  pDisplayUnits->GetSpanLengthUnit() );
+   (*table)(0,1) << COLHDR( symbol(DELTA) << "f" << Sub("pES"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*table)(0,2) << COLHDR( symbol(DELTA) << "f" << Sub("pSR"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*table)(0,3) << COLHDR( symbol(DELTA) << "f" << Sub("pCR"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*table)(0,4) << COLHDR( symbol(DELTA) << "f" << Sub("pR2"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    
    return table;
 }
 
-void CRelaxationAfterTransferTable::AddRow(rptChapter* pChapter,IBroker* pBroker,RowIndexType row,LOSSDETAILS& details,IDisplayUnits* pDispUnits,Uint16 level)
+void CRelaxationAfterTransferTable::AddRow(rptChapter* pChapter,IBroker* pBroker,RowIndexType row,LOSSDETAILS& details,IDisplayUnits* pDisplayUnits,Uint16 level)
 {
    (*this)(row,1) << stress.SetValue( details.pLosses->PermanentStrand_ElasticShorteningLosses() );
    (*this)(row,2) << stress.SetValue( details.RefinedLosses.ShrinkageLosses() );

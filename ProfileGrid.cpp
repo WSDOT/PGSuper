@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 2006  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -99,8 +99,8 @@ void CProfileGrid::CustomInit()
 {
    CProfilePage* pParent = (CProfilePage*)GetParent();
 
-   GET_IFACE2(pParent->GetBroker(),IDisplayUnits,pDispUnits);
-   const unitmgtLengthData& alignment_unit = pDispUnits->GetAlignmentLengthUnit();
+   GET_IFACE2(pParent->GetBroker(),IDisplayUnits,pDisplayUnits);
+   const unitmgtLengthData& alignment_unit = pDisplayUnits->GetAlignmentLengthUnit();
    std::string strUnitTag = alignment_unit.UnitOfMeasure.UnitTag();
 
    // Initialize the grid. For CWnd based grids this call is // 
@@ -220,11 +220,11 @@ void CProfileGrid::SetRowData(ROWCOL nRow,VertCurveData& data)
 
    CProfilePage* pParent = (CProfilePage*)GetParent();
 
-   GET_IFACE2(pParent->GetBroker(),IDisplayUnits,pDispUnits);
-   UnitModeType unit_mode = (UnitModeType)(pDispUnits->GetUnitDisplayMode());
+   GET_IFACE2(pParent->GetBroker(),IDisplayUnits,pDisplayUnits);
+   UnitModeType unit_mode = (UnitModeType)(pDisplayUnits->GetUnitDisplayMode());
 
    double station = data.PVIStation;
-   station = ::ConvertFromSysUnits(station,pDispUnits->GetAlignmentLengthUnit().UnitOfMeasure);
+   station = ::ConvertFromSysUnits(station,pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure);
 
    CComPtr<IStation> objStation;
    objStation.CoCreateInstance(CLSID_Station);
@@ -236,10 +236,10 @@ void CProfileGrid::SetRowData(ROWCOL nRow,VertCurveData& data)
    double grade = data.ExitGrade*100;
    SetValueRange(CGXRange(nRow,2), grade);
 
-   double L1 = ::ConvertFromSysUnits(data.L1,pDispUnits->GetAlignmentLengthUnit().UnitOfMeasure);
+   double L1 = ::ConvertFromSysUnits(data.L1,pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure);
    SetValueRange(CGXRange(nRow,3),L1);
 
-   double L2 = ::ConvertFromSysUnits(data.L2,pDispUnits->GetAlignmentLengthUnit().UnitOfMeasure);
+   double L2 = ::ConvertFromSysUnits(data.L2,pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure);
    SetValueRange(CGXRange(nRow,4),L2);
 
    GetParam()->EnableUndo(TRUE);
@@ -249,8 +249,8 @@ bool CProfileGrid::GetRowData(ROWCOL nRow,double* pStation,double* pGrade,double
 {
    CProfilePage* pParent = (CProfilePage*)GetParent();
 
-   GET_IFACE2(pParent->GetBroker(),IDisplayUnits,pDispUnits);
-   UnitModeType unit_mode = (UnitModeType)(pDispUnits->GetUnitDisplayMode());
+   GET_IFACE2(pParent->GetBroker(),IDisplayUnits,pDisplayUnits);
+   UnitModeType unit_mode = (UnitModeType)(pDisplayUnits->GetUnitDisplayMode());
 
    CString strStation = GetCellValue(nRow,1);
    CComPtr<IStation> station;
@@ -261,7 +261,7 @@ bool CProfileGrid::GetRowData(ROWCOL nRow,double* pStation,double* pGrade,double
 
    double station_value;
    station->get_Value(&station_value);
-   station_value = ::ConvertToSysUnits(station_value,pDispUnits->GetAlignmentLengthUnit().UnitOfMeasure);
+   station_value = ::ConvertToSysUnits(station_value,pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure);
    *pStation = station_value;
 
    CString strGrade = GetCellValue(nRow,2);
@@ -269,11 +269,11 @@ bool CProfileGrid::GetRowData(ROWCOL nRow,double* pStation,double* pGrade,double
 
    CString strL1 = GetCellValue(nRow,3);
    *pL1 = atof(strL1);
-   *pL1 = ::ConvertToSysUnits(*pL1,pDispUnits->GetAlignmentLengthUnit().UnitOfMeasure);
+   *pL1 = ::ConvertToSysUnits(*pL1,pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure);
 
    CString strL2 = GetCellValue(nRow,4);
    *pL2 = atof(strL2);
-   *pL2 = ::ConvertToSysUnits(*pL2,pDispUnits->GetAlignmentLengthUnit().UnitOfMeasure);
+   *pL2 = ::ConvertToSysUnits(*pL2,pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure);
 
    return true;
 }

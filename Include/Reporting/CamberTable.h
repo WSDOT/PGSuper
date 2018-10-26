@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -74,27 +74,27 @@ public:
    //------------------------------------------------------------------------
    // Build the strand eccentricity tables
    void Build_CIP_TempStrands(IBroker* pBroker,SpanIndexType span,GirderIndexType girder,
-                              IDisplayUnits* pDispUnits,Int16 time,
+                              IDisplayUnits* pDisplayUnits,Int16 time,
                               rptRcTable** pTable1,rptRcTable** pTable2,rptRcTable** pTable3) const;
 
    void Build_CIP(IBroker* pBroker,SpanIndexType span,GirderIndexType girder,
-                  IDisplayUnits* pDispUnits,Int16 time,
+                  IDisplayUnits* pDisplayUnits,Int16 time,
                   rptRcTable** pTable1,rptRcTable** pTable2,rptRcTable** pTable3) const;
 
    void Build_SIP_TempStrands(IBroker* pBroker,SpanIndexType span,GirderIndexType girder,
-                              IDisplayUnits* pDispUnits,Int16 time,
+                              IDisplayUnits* pDisplayUnits,Int16 time,
                               rptRcTable** pTable1,rptRcTable** pTable2,rptRcTable** pTable3) const;
 
    void Build_SIP(IBroker* pBroker,SpanIndexType span,GirderIndexType girder,
-                  IDisplayUnits* pDispUnits,Int16 time,
+                  IDisplayUnits* pDisplayUnits,Int16 time,
                   rptRcTable** pTable1,rptRcTable** pTable2,rptRcTable** pTable3) const;
 
    void Build_NoDeck_TempStrands(IBroker* pBroker,SpanIndexType span,GirderIndexType girder,
-                                 IDisplayUnits* pDispUnits,Int16 time,
+                                 IDisplayUnits* pDisplayUnits,Int16 time,
                                  rptRcTable** pTable1,rptRcTable** pTable2,rptRcTable** pTable3) const;
 
    void Build_NoDeck(IBroker* pBroker,SpanIndexType span,GirderIndexType girder,
-                     IDisplayUnits* pDispUnits,Int16 time,
+                     IDisplayUnits* pDisplayUnits,Int16 time,
                      rptRcTable** pTable1,rptRcTable** pTable2,rptRcTable** pTable3) const;
    // GROUP: ACCESS
    // GROUP: INQUIRY

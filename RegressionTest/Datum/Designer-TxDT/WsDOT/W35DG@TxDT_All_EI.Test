@@ -1,10 +1,11 @@
  RoadW Ng  Spcng Span   Gdr  Type   N   Ns  Size  Strn EccCL EccEn Nh   To   Fci    Fc      fcomp   ftens   ultMom  lldf  Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- ----- ----- ----- -----  -   --- ----- ---- ----- ----- --- ---- ------ ------  ------- -------- ------ ------ ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 28.25   5  6.00     1     1 W35DG  *    15   5/8  270 20.17 11.64   5 31.0  4.300  5.000    1.551   -2.629   1960  0.625  0.14 -0.00 -0.01 -0.01 -0.01  50.41 150.62   1.75   5.00   5.00
+ 28.25   5  6.00     1     1 W35DG  *    15   5/8  270 20.17 11.37   5 31.0  4.300  5.000    1.551   -2.629   1960  0.625  0.14 -0.00 -0.01 -0.01 -0.01  50.41 150.62   1.75   5.00   5.00
 
 
 The Specification Check was Not Successful
 Ultimate vertical shear capacity check failed for Strength I Limit State for the Bridge Site Stage 3.
+Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
 Stirrup detailing checks failed for the Strength I Limit State.
 Confinement zone checks failed.
 
@@ -15,8 +16,8 @@ Confinement zone checks failed.
 
 
 The Specification Check was Not Successful
-Longitudinal Reinforcement for Shear check failed for Strength I Limit State for the Bridge Site Stage 3.
 Ultimate vertical shear capacity check failed for Strength I Limit State for the Bridge Site Stage 3.
+Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
 Stirrup detailing checks failed for the Strength I Limit State.
 Confinement zone checks failed.
 
@@ -27,8 +28,8 @@ Confinement zone checks failed.
 
 
 The Specification Check was Not Successful
-Longitudinal Reinforcement for Shear check failed for Strength I Limit State for the Bridge Site Stage 3.
 Ultimate vertical shear capacity check failed for Strength I Limit State for the Bridge Site Stage 3.
+Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
 Stirrup detailing checks failed for the Strength I Limit State.
 Confinement zone checks failed.
 

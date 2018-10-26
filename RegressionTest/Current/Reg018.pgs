@@ -1,2 +1,1327 @@
 <?xml version="1.0"?>
-<PGSuper version="0.9"><LIBRARY_MANAGER version="1"><LIBRARY_MANAGER_ENTRY version="1"><LIBRARY_NAME>CONCRETE_LIBRARY</LIBRARY_NAME><LIBRARY version="1"><LIBRARY_ID_NAME>CONCRETE_LIBRARY</LIBRARY_ID_NAME><LIBRARY_DISPLAY_NAME>Concrete Types</LIBRARY_DISPLAY_NAME><LIBRARY_ENTRY version="1"><ENTRY_KEY>4 KSI</ENTRY_KEY><ConcreteMaterialEntry version="1"><Name>4 KSI</Name><Dw>2562.9541015625</Dw><Fc>27579030</Fc><Ds>2562.9541015625</Ds><AggregateSize>1.90500002354383E-02</AggregateSize></ConcreteMaterialEntry></LIBRARY_ENTRY><LIBRARY_ENTRY version="1"><ENTRY_KEY>7 KSI</ENTRY_KEY><ConcreteMaterialEntry version="1"><Name>7 KSI</Name><Dw>2562.9541015625</Dw><Fc>48263300</Fc><Ds>2562.9541015625</Ds><AggregateSize>1.90500002354383E-02</AggregateSize></ConcreteMaterialEntry></LIBRARY_ENTRY></LIBRARY></LIBRARY_MANAGER_ENTRY><LIBRARY_MANAGER_ENTRY version="1"><LIBRARY_NAME>CONNECTION_LIBRARY</LIBRARY_NAME><LIBRARY version="1"><LIBRARY_ID_NAME>CONNECTION_LIBRARY</LIBRARY_ID_NAME><LIBRARY_DISPLAY_NAME>Connections</LIBRARY_DISPLAY_NAME><LIBRARY_ENTRY version="1"><ENTRY_KEY>End Type B - End Pier (W50G)</ENTRY_KEY><ConnectionLibraryEntry version="2"><Name>End Type B - End Pier (W50G)</Name><DiaphragmHeight>1.26999998092651</DiaphragmHeight><GirderEndDistance>0.304800003767014</GirderEndDistance><GirderBearingOffset>0.660399973392487</GirderBearingOffset><DiaphragmWidth>0.304800003767014</DiaphragmWidth><DiaphragmLoadType>ApplyAtBearingCenterline</DiaphragmLoadType></ConnectionLibraryEntry></LIBRARY_ENTRY><LIBRARY_ENTRY version="1"><ENTRY_KEY>End Type C (W50G)</ENTRY_KEY><ConnectionLibraryEntry version="2"><Name>End Type C (W50G)</Name><DiaphragmHeight>1.26999998092651</DiaphragmHeight><GirderEndDistance>0.152400001883507</GirderEndDistance><GirderBearingOffset>0.533399999141693</GirderBearingOffset><DiaphragmWidth>0.342900007963181</DiaphragmWidth><DiaphragmLoadType>DontApply</DiaphragmLoadType></ConnectionLibraryEntry></LIBRARY_ENTRY></LIBRARY></LIBRARY_MANAGER_ENTRY><LIBRARY_MANAGER_ENTRY version="1"><LIBRARY_NAME>GIRDER_LIBRARY</LIBRARY_NAME><LIBRARY version="1"><LIBRARY_ID_NAME>GIRDER_LIBRARY</LIBRARY_ID_NAME><LIBRARY_DISPLAY_NAME>Girders</LIBRARY_DISPLAY_NAME><LIBRARY_ENTRY version="1"><ENTRY_KEY>W50G</ENTRY_KEY><GirderLibraryEntry version="1.6"><Name>W50G</Name><CLSID>{30962206-2412-4001-AA20-CF359BC60142}</CLSID><Publisher>WSDOT</Publisher><SectionName>Precast I-Beam</SectionName><D1>0.127000004053116</D1><D2>5.07999993860722E-02</D2><D3>0</D3><D4>0.152400001883507</D4><D5>7.62000009417534E-02</D5><D6>0</D6><D7>0.863600015640259</D7><T1>0.152400001883507</T1><T2>0.152400001883507</T2><W1>0.177799999713898</W1><W2>0</W2><W3>0.241300001740456</W3><W4>0</W4><DownwardStrandAdjustment>0.152400001883507</DownwardStrandAdjustment><DownwardStrandIncrement>2.53999996930361E-02</DownwardStrandIncrement><UpwardStrandAdjustment>0.152400001883507</UpwardStrandAdjustment><UpwardStrandIncrement>2.53999996930361E-02</UpwardStrandIncrement><ShearSteelBarSize>3</ShearSteelBarSize><LastConfinementZone>3</LastConfinementZone><HarpingPointLocation>-0.33</HarpingPointLocation><HarpingPointReference>1</HarpingPointReference><DiaphragmHeight>0.787400007247925</DiaphragmHeight><DiaphragmWidth>0.203199997544289</DiaphragmWidth><ShearSteelMaterial>AASHTO M31 (A615) - Grade 60</ShearSteelMaterial><LongSteelMaterial></LongSteelMaterial><TopFlangeShearBarSize>0</TopFlangeShearBarSize><TopFlangeShearBarSpacing>0</TopFlangeShearBarSpacing><StraightStrandLocations version="1"><X>0.2667</X><Y>0.047625</Y></StraightStrandLocations><StraightStrandLocations version="1"><X>0.1651</X><Y>0.047625</Y></StraightStrandLocations><StraightStrandLocations version="1"><X>0.0635</X><Y>0.047625</Y></StraightStrandLocations><StraightStrandLocations version="1"><X>0.2159</X><Y>0.047625</Y></StraightStrandLocations><StraightStrandLocations version="1"><X>0.1143</X><Y>0.047625</Y></StraightStrandLocations><StraightStrandLocations version="1"><X>0.1143</X><Y>0.098425</Y></StraightStrandLocations><StraightStrandLocations version="1"><X>0.1651</X><Y>0.098425</Y></StraightStrandLocations><StraightStrandLocations version="1"><X>0.2159</X><Y>0.098425</Y></StraightStrandLocations><StraightStrandLocations version="1"><X>0.2667</X><Y>0.098425</Y></StraightStrandLocations><StraightStrandLocations version="1"><X>0.1143</X><Y>0.149225</Y></StraightStrandLocations><StraightStrandLocations version="1"><X>0.1651</X><Y>0.149225</Y></StraightStrandLocations><StraightStrandLocations version="1"><X>0.0635</X><Y>0.098425</Y></StraightStrandLocations><StraightStrandLocations version="1"><X>0.0635</X><Y>0.149225</Y></StraightStrandLocations><HarpedStrandLocations version="1"><X>0.0254</X><Y>1.1684</Y></HarpedStrandLocations><HarpedStrandLocations version="1"><X>0.0254</X><Y>1.1176</Y></HarpedStrandLocations><HarpedStrandLocations version="1"><X>0.0254</X><Y>1.0668</Y></HarpedStrandLocations><HarpedStrandLocations version="1"><X>0.0254</X><Y>1.016</Y></HarpedStrandLocations><HarpedStrandLocations version="1"><X>0.0254</X><Y>0.9652</Y></HarpedStrandLocations><HarpedStrandLocations version="1"><X>0.0254</X><Y>0.9652</Y></HarpedStrandLocations><HPStrandLocations version="1"><X>0</X><Y>7.62000009417534E-02</Y></HPStrandLocations><HPStrandLocations version="1"><X>0</X><Y>7.62000009417534E-02</Y></HPStrandLocations><HPStrandLocations version="1"><X>0</X><Y>7.62000009417534E-02</Y></HPStrandLocations><HPStrandLocations version="1"><X>0</X><Y>7.62000009417534E-02</Y></HPStrandLocations><HPStrandLocations version="1"><X>0</X><Y>7.62000009417534E-02</Y></HPStrandLocations><HPStrandLocations version="1"><X>0</X><Y>7.62000009417534E-02</Y></HPStrandLocations><HPStrandLocations version="1"><X>0</X><Y>7.62000009417534E-02</Y></HPStrandLocations><HPStrandLocations version="1"><X>0</X><Y>7.62000009417534E-02</Y></HPStrandLocations><HPStrandLocations version="1"><X>0</X><Y>7.62000009417534E-02</Y></HPStrandLocations><HPStrandLocations version="1"><X>0</X><Y>7.62000009417534E-02</Y></HPStrandLocations><HPStrandLocations version="1"><X>0</X><Y>7.62000009417534E-02</Y></HPStrandLocations><HPStrandLocations version="1"><X>0</X><Y>7.62000009417534E-02</Y></HPStrandLocations><OddNumberOfHarpedStrands>-1</OddNumberOfHarpedStrands><ShearZones version="1.1"><ZoneLength>0.0381</ZoneLength><BarSize>5</BarSize><SS>0.0381</SS><NBars>2</NBars></ShearZones><ShearZones version="1.1"><ZoneLength>0.2667</ZoneLength><BarSize>5</BarSize><SS>0.0889</SS><NBars>2</NBars></ShearZones><ShearZones version="1.1"><ZoneLength>1.6764</ZoneLength><BarSize>5</BarSize><SS>0.1524</SS><NBars>2</NBars></ShearZones><ShearZones version="1.1"><ZoneLength>1.3716</ZoneLength><BarSize>4</BarSize><SS>0.2286</SS><NBars>2</NBars></ShearZones><ShearZones version="1.1"><ZoneLength>3.048</ZoneLength><BarSize>4</BarSize><SS>0.381</SS><NBars>2</NBars></ShearZones><ShearZones version="1.1"><ZoneLength>0</ZoneLength><BarSize>4</BarSize><SS>0.4572</SS><NBars>2</NBars></ShearZones><LongSteelInfo version="1"><Face>Top</Face><NumberOfBars>4</NumberOfBars><BarSize>5</BarSize><BarCover>0.0254</BarCover><BarSpacing>0.1143</BarSpacing></LongSteelInfo></GirderLibraryEntry></LIBRARY_ENTRY></LIBRARY></LIBRARY_MANAGER_ENTRY><LIBRARY_MANAGER_ENTRY version="1"><LIBRARY_NAME>DIAPHRAGM_LAYOUT_LIBRARY</LIBRARY_NAME><LIBRARY version="1"><LIBRARY_ID_NAME>DIAPHRAGM_LAYOUT_LIBRARY</LIBRARY_ID_NAME><LIBRARY_DISPLAY_NAME>Diaphragm Layouts</LIBRARY_DISPLAY_NAME><LIBRARY_ENTRY version="1"><ENTRY_KEY>WSDOT Diaphragm Rules (US)</ENTRY_KEY><DiaphragmLayoutEntry version="1"><Name>WSDOT Diaphragm Rules (US)</Name><DiaphragmLayout version="1"><EndOfRange>12.192</EndOfRange><NumberOfDiaphragms>0</NumberOfDiaphragms></DiaphragmLayout><DiaphragmLayout version="1"><EndOfRange>24.384</EndOfRange><NumberOfDiaphragms>1</NumberOfDiaphragms></DiaphragmLayout><DiaphragmLayout version="1"><EndOfRange>36.576</EndOfRange><NumberOfDiaphragms>2</NumberOfDiaphragms></DiaphragmLayout><DiaphragmLayout version="1"><EndOfRange>152.4</EndOfRange><NumberOfDiaphragms>3</NumberOfDiaphragms></DiaphragmLayout></DiaphragmLayoutEntry></LIBRARY_ENTRY></LIBRARY></LIBRARY_MANAGER_ENTRY><LIBRARY_MANAGER_ENTRY version="1"><LIBRARY_NAME>TRAFFIC_BARRIER_LIBRARY</LIBRARY_NAME><LIBRARY version="1"><LIBRARY_ID_NAME>TRAFFIC_BARRIER_LIBRARY</LIBRARY_ID_NAME><LIBRARY_DISPLAY_NAME>Traffic Barriers</LIBRARY_DISPLAY_NAME><LIBRARY_ENTRY version="1"><ENTRY_KEY>Higher Standard Exterior Barrier (US)</ENTRY_KEY><TrafficBarrierEntry version="1"><Name>Higher Standard Exterior Barrier (US)</Name><X1>0.0889</X1><X2>0.2667</X2><X3>0.2921</X3><X4>0.060325</X4><X5>0.123825</X5><Y1>0.127</Y1><Y2>0.1778</Y2><Y3>0.8636</Y3></TrafficBarrierEntry></LIBRARY_ENTRY></LIBRARY></LIBRARY_MANAGER_ENTRY><LIBRARY_MANAGER_ENTRY version="1"><LIBRARY_NAME>SPECIFICATION_LIBRARY</LIBRARY_NAME><LIBRARY version="1"><LIBRARY_ID_NAME>SPECIFICATION_LIBRARY</LIBRARY_ID_NAME><LIBRARY_DISPLAY_NAME>Project Criteria</LIBRARY_DISPLAY_NAME><LIBRARY_ENTRY version="1"><ENTRY_KEY>WSDOT LRFD - US Units</ENTRY_KEY><SpecificationLibraryEntry version="3"><Name>WSDOT LRFD - US Units</Name><Description>AASHTO LRFD Bridge Design Specification, 2nd Edition 1998 - US Units, modified to reflect WSDOT design practices</Description><SpecificationType>AashtoLrfd2001</SpecificationType><SpecificationUnits>UsUnitsSpec</SpecificationUnits><DoCheckStrandSlope>-1</DoCheckStrandSlope><MaxSlope05>6</MaxSlope05><MaxSlope06>8</MaxSlope06><DoCheckHoldDown>0</DoCheckHoldDown><HoldDownForce>200170</HoldDownForce><MaxStirrupSpacing>0.457200020551682</MaxStirrupSpacing><CyLiftingCrackFs>1</CyLiftingCrackFs><CyLiftingFailFs>1.5</CyLiftingFailFs><CyCompStressServ>0.6</CyCompStressServ><CyCompStressLifting>0.6</CyCompStressLifting><CyTensStressServ>248.925003051758</CyTensStressServ><CyDoTensStressServMax>-1</CyDoTensStressServMax><CyTensStressServMax>1378950</CyTensStressServMax><CyTensStressLifting>630.189025878906</CyTensStressLifting><CyDoTensStressLiftingMax>0</CyDoTensStressLiftingMax><CyTensStressLiftingMax>0</CyTensStressLiftingMax><BurstingZoneLengthFactor>4</BurstingZoneLengthFactor><LiftingUpwardImpact>0</LiftingUpwardImpact><LiftingDownwardImpact>0</LiftingDownwardImpact><HaulingUpwardImpact>0.2</HaulingUpwardImpact><HaulingDownwardImpact>0.2</HaulingDownwardImpact><CuringMethod>1</CuringMethod><PickPointHeight>0</PickPointHeight><LiftingLoopTolerance>6.34999992325902E-03</LiftingLoopTolerance><MinCableInclination>1.57079637050629</MinCableInclination><MaxGirderSweepLifting>0.00052</MaxGirderSweepLifting><MaxGirderSweepHauling>0.001042</MaxGirderSweepHauling><HaulingSupportDistance>39.6240005493164</HaulingSupportDistance><MaxHaulingOverhang>4.572</MaxHaulingOverhang><HaulingSupportPlacementTolerance>2.53999996930361E-02</HaulingSupportPlacementTolerance><HaulingCamberPercentEstimate>2</HaulingCamberPercentEstimate><CompStressHauling>0.6</CompStressHauling><TensStressHauling>630.188842773438</TensStressHauling><DoTensStressHaulingMax>0</DoTensStressHaulingMax><TensStressHaulingMax>0</TensStressHaulingMax><HeHaulingCrackFs>1</HeHaulingCrackFs><HeHaulingFailFs>1.5</HeHaulingFailFs><RoadwaySuperelevation>0.06</RoadwaySuperelevation><TruckRollStiffnessMethod>0</TruckRollStiffnessMethod><TruckRollStiffness>4575885.5</TruckRollStiffness><AxleWeightLimit>80067.98907468</AxleWeightLimit><AxleStiffness>451939.316112</AxleStiffness><MinRollStiffness>3163575.212784</MinRollStiffness><TruckGirderHeight>1.82879996299744</TruckGirderHeight><TruckRollCenterHeight>0.609600007534027</TruckRollCenterHeight><TruckAxleWidth>1.82879996299744</TruckAxleWidth><HeErectionCrackFs>1</HeErectionCrackFs><HeErectionFailFs>1.5</HeErectionFailFs><MaxGirderWgt>889644.3125</MaxGirderWgt><m_Bs1CompStress>0.45</m_Bs1CompStress><m_Bs1TensStress>498.899536132813</m_Bs1TensStress><m_Bs1DoTensStressMax>0</m_Bs1DoTensStressMax><m_Bs1TensStressMax>0</m_Bs1TensStressMax><m_Bs2CompStress>0.45</m_Bs2CompStress><m_Bs2TensStress>0</m_Bs2TensStress><m_Bs2DoTensStressMax>0</m_Bs2DoTensStressMax><m_Bs2TensStressMax>0</m_Bs2TensStressMax><Bs2MaxGirdersTrafficBarrier>3</Bs2MaxGirdersTrafficBarrier><Bs2MaxGirdersUtility>3</Bs2MaxGirdersUtility><Bs3CompStressServ>0.6</Bs3CompStressServ><Bs3CompStressService1A>0.4</Bs3CompStressService1A><Bs3TensStressServNc>0</Bs3TensStressServNc><Bs3DoTensStressServNcMax>0</Bs3DoTensStressServNcMax><Bs3TensStressServNcMax>0</Bs3TensStressServNcMax><Bs3TensStressServSc>0</Bs3TensStressServSc><Bs3DoTensStressServScMax>0</Bs3DoTensStressServScMax><Bs3TensStressServScMax>0</Bs3TensStressServScMax><Bs3IgnoreRangeOfApplicability>0</Bs3IgnoreRangeOfApplicability><Bs3LRFDShear>1</Bs3LRFDShear><Bs3LRFDOverreinforcedMomentCapacity>0</Bs3LRFDOverreinforcedMomentCapacity><BsLldfMethod>1</BsLldfMethod><LongReinfShearMethod>1</LongReinfShearMethod><CreepMethod>0</CreepMethod><CreepFactor>2</CreepFactor><CreepDuration1Min>7776000</CreepDuration1Min><CreepDuration1Max>7776000</CreepDuration1Max><CreepDuration2Min>10368000</CreepDuration2Min><CreepDuration2Max>10368000</CreepDuration2Max><XferTime>86400</XferTime><LossMethod>4</LossMethod><FinalLosses>330948352</FinalLosses><ShippingLosses>241316512</ShippingLosses><BeforeXferLosses>0</BeforeXferLosses><AfterXferLosses>137895152</AfterXferLosses><CheckStrandStressAtJacking>0</CheckStrandStressAtJacking><Coeff_AtJacking_StressRel>0.72</Coeff_AtJacking_StressRel><Coeff_AtJacking_LowRelax>0.78</Coeff_AtJacking_LowRelax><CheckStrandStressBeforeTransfer>-1</CheckStrandStressBeforeTransfer><Coeff_BeforeTransfer_StressRel>0.7</Coeff_BeforeTransfer_StressRel><Coeff_BeforeTransfer_LowRelax>0.75</Coeff_BeforeTransfer_LowRelax><CheckStrandStressAfterTransfer>0</CheckStrandStressAfterTransfer><Coeff_AfterTransfer_StressRel>0.7</Coeff_AfterTransfer_StressRel><Coeff_AfterTransfer_LowRelax>0.74</Coeff_AfterTransfer_LowRelax><CheckStrandStressAfterAllLosses>-1</CheckStrandStressAfterAllLosses><Coeff_AfterAllLosses_StressRel>0.8</Coeff_AfterAllLosses_StressRel><Coeff_AfterAllLosses_LowRelax>0.8</Coeff_AfterAllLosses_LowRelax><CheckLiveLoadDeflection>-1</CheckLiveLoadDeflection><LiveLoadDeflectionLimit>800</LiveLoadDeflectionLimit></SpecificationLibraryEntry></LIBRARY_ENTRY></LIBRARY></LIBRARY_MANAGER_ENTRY></LIBRARY_MANAGER><ProjectData version="1"><ProjectProperties version="1"><BridgeName></BridgeName><BridgeId>18</BridgeId><JobNumber></JobNumber><Engineer></Engineer><Company></Company><Comments></Comments></ProjectProperties><ProjectSettings version="1"><Units>2</Units></ProjectSettings><Environment version="1"><ExpCond>0</ExpCond><RelHumidity>75</RelHumidity></Environment><Alignment version="1"><AlignmentData version="1"><AlignmentMethod>0</AlignmentMethod><AlignmentDirection>3.89666077182937E-12</AlignmentDirection><FwdTangent>3.89666077182937E-12</FwdTangent><BkTangent>0.785398163399397</BkTangent><Radius>10000</Radius><PIStation>10000</PIStation></AlignmentData></Alignment><Profile version="1"><ProfileMethod>0</ProfileMethod><Station>0</Station><Elevation>0</Elevation><Grade>0</Grade><G1>0</G1><G2>0</G2><PVIStation>10000</PVIStation><PVIElevation>0</PVIElevation><Length>1000</Length></Profile><Crown version="1"><Left>-0.02</Left><Right>-0.02</Right></Crown><Piers version="1"><PierCount>2</PierCount><PierDataDetails version="2"><Station>0</Station><Orientation>22 11 04.0 L</Orientation><Connection>End Type C (W50G)</Connection></PierDataDetails><PierDataDetails version="2"><Station>15.706344</Station><Orientation>22 11 04.0 L</Orientation><Connection>End Type B - End Pier (W50G)</Connection></PierDataDetails></Piers><CrossSection version="1"><XSectionData version="4"><SlabType>0</SlabType><GdrSpacing>1.9751040058136</GdrSpacing><GdrLineCount>9</GdrLineCount><Girder>W50G</Girder><TrafficBarrier>Higher Standard Exterior Barrier (US)</TrafficBarrier><GrossDepth>0.1778</GrossDepth><Overhang>1.31064005813599</Overhang><Fillet>1.90500002354383E-02</Fillet><SlabOffset>0.2413</SlabOffset><PanelDepth>0</PanelDepth><PanelSupport>0.1016</PanelSupport><OverlayDepth>4.57199987888336E-02</OverlayDepth><OverlayDensity>2402.7695061</OverlayDensity><SacrificialDepth>0</SacrificialDepth><SlabFc>27579030</SlabFc><SlabWeightDensity>2562.9541015625</SlabWeightDensity><SlabStrengthDensity>2562.9541015625</SlabStrengthDensity><SlabMaxAggregateSize>1.90500002354383E-02</SlabMaxAggregateSize><DiaphragmLayout>WSDOT Diaphragm Rules (US)</DiaphragmLayout></XSectionData></CrossSection><Prestressing version="2"><PrestressStrandKey>262</PrestressStrandKey><PrestressDataCount>9</PrestressDataCount><GirderPrestressData version="1"><Span>0</Span><Girder>0</Girder><PrestressData version="3.1"><HpOffsetAtEnd>0.4064</HpOffsetAtEnd><HpOffsetAtHp>0</HpOffsetAtHp><NumHarpedStrands>4</NumHarpedStrands><NumStraightStrands>6</NumStraightStrands><NumTempStrands>0</NumTempStrands><PjHarped>551579.48029224</PjHarped><PjStraight>827369.22043836</PjStraight><PjTemp>0</PjTemp><CalcPjHarped>0</CalcPjHarped><CalcPjStraight>0</CalcPjStraight><CalcPjTemp>-1</CalcPjTemp><LastUserPjHarped>551579.48029224</LastUserPjHarped><LastUserPjStraight>827369.22043836</LastUserPjStraight><LastUserPjTemp>0</LastUserPjTemp><TempStrandUsage>0</TempStrandUsage><Fci>41368543.75902</Fci><Fc>48263300</Fc><WeightDensity>2562.9541015625</WeightDensity><StrengthDensity>2562.9541015625</StrengthDensity><MaxAggregateSize>1.90500002354383E-02</MaxAggregateSize></PrestressData></GirderPrestressData><GirderPrestressData version="1"><Span>0</Span><Girder>1</Girder><PrestressData version="3.1"><HpOffsetAtEnd>0.4064</HpOffsetAtEnd><HpOffsetAtHp>0</HpOffsetAtHp><NumHarpedStrands>4</NumHarpedStrands><NumStraightStrands>6</NumStraightStrands><NumTempStrands>0</NumTempStrands><PjHarped>551579.48029224</PjHarped><PjStraight>827369.22043836</PjStraight><PjTemp>0</PjTemp><CalcPjHarped>0</CalcPjHarped><CalcPjStraight>0</CalcPjStraight><CalcPjTemp>-1</CalcPjTemp><LastUserPjHarped>551579.48029224</LastUserPjHarped><LastUserPjStraight>827369.22043836</LastUserPjStraight><LastUserPjTemp>0</LastUserPjTemp><TempStrandUsage>0</TempStrandUsage><Fci>41368543.75902</Fci><Fc>48263300</Fc><WeightDensity>2562.9541015625</WeightDensity><StrengthDensity>2562.9541015625</StrengthDensity><MaxAggregateSize>1.90500002354383E-02</MaxAggregateSize></PrestressData></GirderPrestressData><GirderPrestressData version="1"><Span>0</Span><Girder>2</Girder><PrestressData version="3.1"><HpOffsetAtEnd>0.4064</HpOffsetAtEnd><HpOffsetAtHp>0</HpOffsetAtHp><NumHarpedStrands>4</NumHarpedStrands><NumStraightStrands>6</NumStraightStrands><NumTempStrands>0</NumTempStrands><PjHarped>551579.48029224</PjHarped><PjStraight>827369.22043836</PjStraight><PjTemp>0</PjTemp><CalcPjHarped>0</CalcPjHarped><CalcPjStraight>0</CalcPjStraight><CalcPjTemp>-1</CalcPjTemp><LastUserPjHarped>551579.48029224</LastUserPjHarped><LastUserPjStraight>827369.22043836</LastUserPjStraight><LastUserPjTemp>0</LastUserPjTemp><TempStrandUsage>0</TempStrandUsage><Fci>41368543.75902</Fci><Fc>48263300</Fc><WeightDensity>2562.9541015625</WeightDensity><StrengthDensity>2562.9541015625</StrengthDensity><MaxAggregateSize>1.90500002354383E-02</MaxAggregateSize></PrestressData></GirderPrestressData><GirderPrestressData version="1"><Span>0</Span><Girder>3</Girder><PrestressData version="3.1"><HpOffsetAtEnd>0.4064</HpOffsetAtEnd><HpOffsetAtHp>0</HpOffsetAtHp><NumHarpedStrands>4</NumHarpedStrands><NumStraightStrands>6</NumStraightStrands><NumTempStrands>0</NumTempStrands><PjHarped>551579.48029224</PjHarped><PjStraight>827369.22043836</PjStraight><PjTemp>0</PjTemp><CalcPjHarped>0</CalcPjHarped><CalcPjStraight>0</CalcPjStraight><CalcPjTemp>-1</CalcPjTemp><LastUserPjHarped>551579.48029224</LastUserPjHarped><LastUserPjStraight>827369.22043836</LastUserPjStraight><LastUserPjTemp>0</LastUserPjTemp><TempStrandUsage>0</TempStrandUsage><Fci>41368543.75902</Fci><Fc>48263300</Fc><WeightDensity>2562.9541015625</WeightDensity><StrengthDensity>2562.9541015625</StrengthDensity><MaxAggregateSize>1.90500002354383E-02</MaxAggregateSize></PrestressData></GirderPrestressData><GirderPrestressData version="1"><Span>0</Span><Girder>4</Girder><PrestressData version="3.1"><HpOffsetAtEnd>0.4064</HpOffsetAtEnd><HpOffsetAtHp>0</HpOffsetAtHp><NumHarpedStrands>4</NumHarpedStrands><NumStraightStrands>6</NumStraightStrands><NumTempStrands>0</NumTempStrands><PjHarped>551579.48029224</PjHarped><PjStraight>827369.22043836</PjStraight><PjTemp>0</PjTemp><CalcPjHarped>0</CalcPjHarped><CalcPjStraight>0</CalcPjStraight><CalcPjTemp>-1</CalcPjTemp><LastUserPjHarped>551579.48029224</LastUserPjHarped><LastUserPjStraight>827369.22043836</LastUserPjStraight><LastUserPjTemp>0</LastUserPjTemp><TempStrandUsage>0</TempStrandUsage><Fci>41368543.75902</Fci><Fc>48263300</Fc><WeightDensity>2562.9541015625</WeightDensity><StrengthDensity>2562.9541015625</StrengthDensity><MaxAggregateSize>1.90500002354383E-02</MaxAggregateSize></PrestressData></GirderPrestressData><GirderPrestressData version="1"><Span>0</Span><Girder>5</Girder><PrestressData version="3.1"><HpOffsetAtEnd>0.4064</HpOffsetAtEnd><HpOffsetAtHp>0</HpOffsetAtHp><NumHarpedStrands>4</NumHarpedStrands><NumStraightStrands>6</NumStraightStrands><NumTempStrands>0</NumTempStrands><PjHarped>551579.48029224</PjHarped><PjStraight>827369.22043836</PjStraight><PjTemp>0</PjTemp><CalcPjHarped>0</CalcPjHarped><CalcPjStraight>0</CalcPjStraight><CalcPjTemp>-1</CalcPjTemp><LastUserPjHarped>551579.48029224</LastUserPjHarped><LastUserPjStraight>827369.22043836</LastUserPjStraight><LastUserPjTemp>0</LastUserPjTemp><TempStrandUsage>0</TempStrandUsage><Fci>41368543.75902</Fci><Fc>48263300</Fc><WeightDensity>2562.9541015625</WeightDensity><StrengthDensity>2562.9541015625</StrengthDensity><MaxAggregateSize>1.90500002354383E-02</MaxAggregateSize></PrestressData></GirderPrestressData><GirderPrestressData version="1"><Span>0</Span><Girder>6</Girder><PrestressData version="3.1"><HpOffsetAtEnd>0.4064</HpOffsetAtEnd><HpOffsetAtHp>0</HpOffsetAtHp><NumHarpedStrands>4</NumHarpedStrands><NumStraightStrands>6</NumStraightStrands><NumTempStrands>0</NumTempStrands><PjHarped>551579.48029224</PjHarped><PjStraight>827369.22043836</PjStraight><PjTemp>0</PjTemp><CalcPjHarped>0</CalcPjHarped><CalcPjStraight>0</CalcPjStraight><CalcPjTemp>-1</CalcPjTemp><LastUserPjHarped>551579.48029224</LastUserPjHarped><LastUserPjStraight>827369.22043836</LastUserPjStraight><LastUserPjTemp>0</LastUserPjTemp><TempStrandUsage>0</TempStrandUsage><Fci>41368543.75902</Fci><Fc>48263300</Fc><WeightDensity>2562.9541015625</WeightDensity><StrengthDensity>2562.9541015625</StrengthDensity><MaxAggregateSize>1.90500002354383E-02</MaxAggregateSize></PrestressData></GirderPrestressData><GirderPrestressData version="1"><Span>0</Span><Girder>7</Girder><PrestressData version="3.1"><HpOffsetAtEnd>0.4064</HpOffsetAtEnd><HpOffsetAtHp>0</HpOffsetAtHp><NumHarpedStrands>4</NumHarpedStrands><NumStraightStrands>6</NumStraightStrands><NumTempStrands>0</NumTempStrands><PjHarped>551579.48029224</PjHarped><PjStraight>827369.22043836</PjStraight><PjTemp>0</PjTemp><CalcPjHarped>0</CalcPjHarped><CalcPjStraight>0</CalcPjStraight><CalcPjTemp>-1</CalcPjTemp><LastUserPjHarped>551579.48029224</LastUserPjHarped><LastUserPjStraight>827369.22043836</LastUserPjStraight><LastUserPjTemp>0</LastUserPjTemp><TempStrandUsage>0</TempStrandUsage><Fci>41368543.75902</Fci><Fc>48263300</Fc><WeightDensity>2562.9541015625</WeightDensity><StrengthDensity>2562.9541015625</StrengthDensity><MaxAggregateSize>1.90500002354383E-02</MaxAggregateSize></PrestressData></GirderPrestressData><GirderPrestressData version="1"><Span>0</Span><Girder>8</Girder><PrestressData version="3.1"><HpOffsetAtEnd>0.4064</HpOffsetAtEnd><HpOffsetAtHp>0</HpOffsetAtHp><NumHarpedStrands>4</NumHarpedStrands><NumStraightStrands>6</NumStraightStrands><NumTempStrands>0</NumTempStrands><PjHarped>551579.48029224</PjHarped><PjStraight>827369.22043836</PjStraight><PjTemp>0</PjTemp><CalcPjHarped>0</CalcPjHarped><CalcPjStraight>0</CalcPjStraight><CalcPjTemp>-1</CalcPjTemp><LastUserPjHarped>551579.48029224</LastUserPjHarped><LastUserPjStraight>827369.22043836</LastUserPjStraight><LastUserPjTemp>0</LastUserPjTemp><TempStrandUsage>0</TempStrandUsage><Fci>41368543.75902</Fci><Fc>48263300</Fc><WeightDensity>2562.9541015625</WeightDensity><StrengthDensity>2562.9541015625</StrengthDensity><MaxAggregateSize>1.90500002354383E-02</MaxAggregateSize></PrestressData></GirderPrestressData></Prestressing><Shear version="2"><StirrupMaterial>AASHTO M31 (A615) - Grade 60</StirrupMaterial><ShearDataCount>9</ShearDataCount><GirderShearData version="1"><Span>0</Span><Girder>0</Girder><ShearData version="3"><ConfinementBarSize>3</ConfinementBarSize><ConfinementZone>4</ConfinementZone><TopFlangeBarSize>0</TopFlangeBarSize><TopFlangeBarSpacing>0.4572</TopFlangeBarSpacing><ZoneCount>6</ZoneCount><ShearZoneData version="1.1"><ZoneNum>1</ZoneNum><BarSize>5</BarSize><BarSpacing>0.0381</BarSpacing><ZoneLength>0.0381</ZoneLength><NbrLegs>2</NbrLegs></ShearZoneData><ShearZoneData version="1.1"><ZoneNum>2</ZoneNum><BarSize>5</BarSize><BarSpacing>0.0889</BarSpacing><ZoneLength>0.2667</ZoneLength><NbrLegs>2</NbrLegs></ShearZoneData><ShearZoneData version="1.1"><ZoneNum>3</ZoneNum><BarSize>5</BarSize><BarSpacing>0.1524</BarSpacing><ZoneLength>0.3048</ZoneLength><NbrLegs>2</NbrLegs></ShearZoneData><ShearZoneData version="1.1"><ZoneNum>4</ZoneNum><BarSize>5</BarSize><BarSpacing>0.2286</BarSpacing><ZoneLength>0.6858</ZoneLength><NbrLegs>2</NbrLegs></ShearZoneData><ShearZoneData version="1.1"><ZoneNum>5</ZoneNum><BarSize>4</BarSize><BarSpacing>0.4572</BarSpacing><ZoneLength>0.9144</ZoneLength><NbrLegs>2</NbrLegs></ShearZoneData><ShearZoneData version="1.1"><ZoneNum>6</ZoneNum><BarSize>4</BarSize><BarSpacing>0.4572</BarSpacing><ZoneLength>0</ZoneLength><NbrLegs>2</NbrLegs></ShearZoneData></ShearData></GirderShearData><GirderShearData version="1"><Span>0</Span><Girder>1</Girder><ShearData version="3"><ConfinementBarSize>3</ConfinementBarSize><ConfinementZone>4</ConfinementZone><TopFlangeBarSize>5</TopFlangeBarSize><TopFlangeBarSpacing>0.4572</TopFlangeBarSpacing><ZoneCount>6</ZoneCount><ShearZoneData version="1.1"><ZoneNum>1</ZoneNum><BarSize>5</BarSize><BarSpacing>0.0381</BarSpacing><ZoneLength>0.0381</ZoneLength><NbrLegs>2</NbrLegs></ShearZoneData><ShearZoneData version="1.1"><ZoneNum>2</ZoneNum><BarSize>5</BarSize><BarSpacing>0.0889</BarSpacing><ZoneLength>0.2667</ZoneLength><NbrLegs>2</NbrLegs></ShearZoneData><ShearZoneData version="1.1"><ZoneNum>3</ZoneNum><BarSize>5</BarSize><BarSpacing>0.1524</BarSpacing><ZoneLength>0.3048</ZoneLength><NbrLegs>2</NbrLegs></ShearZoneData><ShearZoneData version="1.1"><ZoneNum>4</ZoneNum><BarSize>5</BarSize><BarSpacing>0.2286</BarSpacing><ZoneLength>0.6858</ZoneLength><NbrLegs>2</NbrLegs></ShearZoneData><ShearZoneData version="1.1"><ZoneNum>5</ZoneNum><BarSize>4</BarSize><BarSpacing>0.4572</BarSpacing><ZoneLength>0.9144</ZoneLength><NbrLegs>2</NbrLegs></ShearZoneData><ShearZoneData version="1.1"><ZoneNum>6</ZoneNum><BarSize>4</BarSize><BarSpacing>0.4572</BarSpacing><ZoneLength>0</ZoneLength><NbrLegs>2</NbrLegs></ShearZoneData></ShearData></GirderShearData><GirderShearData version="1"><Span>0</Span><Girder>2</Girder><ShearData version="3"><ConfinementBarSize>3</ConfinementBarSize><ConfinementZone>4</ConfinementZone><TopFlangeBarSize>5</TopFlangeBarSize><TopFlangeBarSpacing>0.4572</TopFlangeBarSpacing><ZoneCount>6</ZoneCount><ShearZoneData version="1.1"><ZoneNum>1</ZoneNum><BarSize>5</BarSize><BarSpacing>0.0381</BarSpacing><ZoneLength>0.0381</ZoneLength><NbrLegs>2</NbrLegs></ShearZoneData><ShearZoneData version="1.1"><ZoneNum>2</ZoneNum><BarSize>5</BarSize><BarSpacing>0.0889</BarSpacing><ZoneLength>0.2667</ZoneLength><NbrLegs>2</NbrLegs></ShearZoneData><ShearZoneData version="1.1"><ZoneNum>3</ZoneNum><BarSize>5</BarSize><BarSpacing>0.1524</BarSpacing><ZoneLength>0.3048</ZoneLength><NbrLegs>2</NbrLegs></ShearZoneData><ShearZoneData version="1.1"><ZoneNum>4</ZoneNum><BarSize>5</BarSize><BarSpacing>0.2286</BarSpacing><ZoneLength>0.6858</ZoneLength><NbrLegs>2</NbrLegs></ShearZoneData><ShearZoneData version="1.1"><ZoneNum>5</ZoneNum><BarSize>4</BarSize><BarSpacing>0.4572</BarSpacing><ZoneLength>0.9144</ZoneLength><NbrLegs>2</NbrLegs></ShearZoneData><ShearZoneData version="1.1"><ZoneNum>6</ZoneNum><BarSize>4</BarSize><BarSpacing>0.4572</BarSpacing><ZoneLength>0</ZoneLength><NbrLegs>2</NbrLegs></ShearZoneData></ShearData></GirderShearData><GirderShearData version="1"><Span>0</Span><Girder>3</Girder><ShearData version="3"><ConfinementBarSize>3</ConfinementBarSize><ConfinementZone>4</ConfinementZone><TopFlangeBarSize>5</TopFlangeBarSize><TopFlangeBarSpacing>0.4572</TopFlangeBarSpacing><ZoneCount>6</ZoneCount><ShearZoneData version="1.1"><ZoneNum>1</ZoneNum><BarSize>5</BarSize><BarSpacing>0.0381</BarSpacing><ZoneLength>0.0381</ZoneLength><NbrLegs>2</NbrLegs></ShearZoneData><ShearZoneData version="1.1"><ZoneNum>2</ZoneNum><BarSize>5</BarSize><BarSpacing>0.0889</BarSpacing><ZoneLength>0.2667</ZoneLength><NbrLegs>2</NbrLegs></ShearZoneData><ShearZoneData version="1.1"><ZoneNum>3</ZoneNum><BarSize>5</BarSize><BarSpacing>0.1524</BarSpacing><ZoneLength>0.3048</ZoneLength><NbrLegs>2</NbrLegs></ShearZoneData><ShearZoneData version="1.1"><ZoneNum>4</ZoneNum><BarSize>5</BarSize><BarSpacing>0.2286</BarSpacing><ZoneLength>0.6858</ZoneLength><NbrLegs>2</NbrLegs></ShearZoneData><ShearZoneData version="1.1"><ZoneNum>5</ZoneNum><BarSize>4</BarSize><BarSpacing>0.4572</BarSpacing><ZoneLength>0.9144</ZoneLength><NbrLegs>2</NbrLegs></ShearZoneData><ShearZoneData version="1.1"><ZoneNum>6</ZoneNum><BarSize>4</BarSize><BarSpacing>0.4572</BarSpacing><ZoneLength>0</ZoneLength><NbrLegs>2</NbrLegs></ShearZoneData></ShearData></GirderShearData><GirderShearData version="1"><Span>0</Span><Girder>4</Girder><ShearData version="3"><ConfinementBarSize>3</ConfinementBarSize><ConfinementZone>4</ConfinementZone><TopFlangeBarSize>5</TopFlangeBarSize><TopFlangeBarSpacing>0.4572</TopFlangeBarSpacing><ZoneCount>6</ZoneCount><ShearZoneData version="1.1"><ZoneNum>1</ZoneNum><BarSize>5</BarSize><BarSpacing>0.0381</BarSpacing><ZoneLength>0.0381</ZoneLength><NbrLegs>2</NbrLegs></ShearZoneData><ShearZoneData version="1.1"><ZoneNum>2</ZoneNum><BarSize>5</BarSize><BarSpacing>0.0889</BarSpacing><ZoneLength>0.2667</ZoneLength><NbrLegs>2</NbrLegs></ShearZoneData><ShearZoneData version="1.1"><ZoneNum>3</ZoneNum><BarSize>5</BarSize><BarSpacing>0.1524</BarSpacing><ZoneLength>0.3048</ZoneLength><NbrLegs>2</NbrLegs></ShearZoneData><ShearZoneData version="1.1"><ZoneNum>4</ZoneNum><BarSize>5</BarSize><BarSpacing>0.2286</BarSpacing><ZoneLength>0.6858</ZoneLength><NbrLegs>2</NbrLegs></ShearZoneData><ShearZoneData version="1.1"><ZoneNum>5</ZoneNum><BarSize>4</BarSize><BarSpacing>0.4572</BarSpacing><ZoneLength>0.9144</ZoneLength><NbrLegs>2</NbrLegs></ShearZoneData><ShearZoneData version="1.1"><ZoneNum>6</ZoneNum><BarSize>4</BarSize><BarSpacing>0.4572</BarSpacing><ZoneLength>0</ZoneLength><NbrLegs>2</NbrLegs></ShearZoneData></ShearData></GirderShearData><GirderShearData version="1"><Span>0</Span><Girder>5</Girder><ShearData version="3"><ConfinementBarSize>3</ConfinementBarSize><ConfinementZone>4</ConfinementZone><TopFlangeBarSize>5</TopFlangeBarSize><TopFlangeBarSpacing>0.4572</TopFlangeBarSpacing><ZoneCount>6</ZoneCount><ShearZoneData version="1.1"><ZoneNum>1</ZoneNum><BarSize>5</BarSize><BarSpacing>0.0381</BarSpacing><ZoneLength>0.0381</ZoneLength><NbrLegs>2</NbrLegs></ShearZoneData><ShearZoneData version="1.1"><ZoneNum>2</ZoneNum><BarSize>5</BarSize><BarSpacing>0.0889</BarSpacing><ZoneLength>0.2667</ZoneLength><NbrLegs>2</NbrLegs></ShearZoneData><ShearZoneData version="1.1"><ZoneNum>3</ZoneNum><BarSize>5</BarSize><BarSpacing>0.1524</BarSpacing><ZoneLength>0.3048</ZoneLength><NbrLegs>2</NbrLegs></ShearZoneData><ShearZoneData version="1.1"><ZoneNum>4</ZoneNum><BarSize>5</BarSize><BarSpacing>0.2286</BarSpacing><ZoneLength>0.6858</ZoneLength><NbrLegs>2</NbrLegs></ShearZoneData><ShearZoneData version="1.1"><ZoneNum>5</ZoneNum><BarSize>4</BarSize><BarSpacing>0.4572</BarSpacing><ZoneLength>0.9144</ZoneLength><NbrLegs>2</NbrLegs></ShearZoneData><ShearZoneData version="1.1"><ZoneNum>6</ZoneNum><BarSize>4</BarSize><BarSpacing>0.4572</BarSpacing><ZoneLength>0</ZoneLength><NbrLegs>2</NbrLegs></ShearZoneData></ShearData></GirderShearData><GirderShearData version="1"><Span>0</Span><Girder>6</Girder><ShearData version="3"><ConfinementBarSize>3</ConfinementBarSize><ConfinementZone>4</ConfinementZone><TopFlangeBarSize>5</TopFlangeBarSize><TopFlangeBarSpacing>0.4572</TopFlangeBarSpacing><ZoneCount>6</ZoneCount><ShearZoneData version="1.1"><ZoneNum>1</ZoneNum><BarSize>5</BarSize><BarSpacing>0.0381</BarSpacing><ZoneLength>0.0381</ZoneLength><NbrLegs>2</NbrLegs></ShearZoneData><ShearZoneData version="1.1"><ZoneNum>2</ZoneNum><BarSize>5</BarSize><BarSpacing>0.0889</BarSpacing><ZoneLength>0.2667</ZoneLength><NbrLegs>2</NbrLegs></ShearZoneData><ShearZoneData version="1.1"><ZoneNum>3</ZoneNum><BarSize>5</BarSize><BarSpacing>0.1524</BarSpacing><ZoneLength>0.3048</ZoneLength><NbrLegs>2</NbrLegs></ShearZoneData><ShearZoneData version="1.1"><ZoneNum>4</ZoneNum><BarSize>5</BarSize><BarSpacing>0.2286</BarSpacing><ZoneLength>0.6858</ZoneLength><NbrLegs>2</NbrLegs></ShearZoneData><ShearZoneData version="1.1"><ZoneNum>5</ZoneNum><BarSize>4</BarSize><BarSpacing>0.4572</BarSpacing><ZoneLength>0.9144</ZoneLength><NbrLegs>2</NbrLegs></ShearZoneData><ShearZoneData version="1.1"><ZoneNum>6</ZoneNum><BarSize>4</BarSize><BarSpacing>0.4572</BarSpacing><ZoneLength>0</ZoneLength><NbrLegs>2</NbrLegs></ShearZoneData></ShearData></GirderShearData><GirderShearData version="1"><Span>0</Span><Girder>7</Girder><ShearData version="3"><ConfinementBarSize>3</ConfinementBarSize><ConfinementZone>4</ConfinementZone><TopFlangeBarSize>5</TopFlangeBarSize><TopFlangeBarSpacing>0.4572</TopFlangeBarSpacing><ZoneCount>6</ZoneCount><ShearZoneData version="1.1"><ZoneNum>1</ZoneNum><BarSize>5</BarSize><BarSpacing>0.0381</BarSpacing><ZoneLength>0.0381</ZoneLength><NbrLegs>2</NbrLegs></ShearZoneData><ShearZoneData version="1.1"><ZoneNum>2</ZoneNum><BarSize>5</BarSize><BarSpacing>0.0889</BarSpacing><ZoneLength>0.2667</ZoneLength><NbrLegs>2</NbrLegs></ShearZoneData><ShearZoneData version="1.1"><ZoneNum>3</ZoneNum><BarSize>5</BarSize><BarSpacing>0.1524</BarSpacing><ZoneLength>0.3048</ZoneLength><NbrLegs>2</NbrLegs></ShearZoneData><ShearZoneData version="1.1"><ZoneNum>4</ZoneNum><BarSize>5</BarSize><BarSpacing>0.2286</BarSpacing><ZoneLength>0.6858</ZoneLength><NbrLegs>2</NbrLegs></ShearZoneData><ShearZoneData version="1.1"><ZoneNum>5</ZoneNum><BarSize>4</BarSize><BarSpacing>0.4572</BarSpacing><ZoneLength>0.9144</ZoneLength><NbrLegs>2</NbrLegs></ShearZoneData><ShearZoneData version="1.1"><ZoneNum>6</ZoneNum><BarSize>4</BarSize><BarSpacing>0.4572</BarSpacing><ZoneLength>0</ZoneLength><NbrLegs>2</NbrLegs></ShearZoneData></ShearData></GirderShearData><GirderShearData version="1"><Span>0</Span><Girder>8</Girder><ShearData version="3"><ConfinementBarSize>3</ConfinementBarSize><ConfinementZone>4</ConfinementZone><TopFlangeBarSize>5</TopFlangeBarSize><TopFlangeBarSpacing>0.4572</TopFlangeBarSpacing><ZoneCount>6</ZoneCount><ShearZoneData version="1.1"><ZoneNum>1</ZoneNum><BarSize>5</BarSize><BarSpacing>0.0381</BarSpacing><ZoneLength>0.0381</ZoneLength><NbrLegs>2</NbrLegs></ShearZoneData><ShearZoneData version="1.1"><ZoneNum>2</ZoneNum><BarSize>5</BarSize><BarSpacing>0.0889</BarSpacing><ZoneLength>0.2667</ZoneLength><NbrLegs>2</NbrLegs></ShearZoneData><ShearZoneData version="1.1"><ZoneNum>3</ZoneNum><BarSize>5</BarSize><BarSpacing>0.1524</BarSpacing><ZoneLength>0.3048</ZoneLength><NbrLegs>2</NbrLegs></ShearZoneData><ShearZoneData version="1.1"><ZoneNum>4</ZoneNum><BarSize>5</BarSize><BarSpacing>0.2286</BarSpacing><ZoneLength>0.6858</ZoneLength><NbrLegs>2</NbrLegs></ShearZoneData><ShearZoneData version="1.1"><ZoneNum>5</ZoneNum><BarSize>4</BarSize><BarSpacing>0.4572</BarSpacing><ZoneLength>0.9144</ZoneLength><NbrLegs>2</NbrLegs></ShearZoneData><ShearZoneData version="1.1"><ZoneNum>6</ZoneNum><BarSize>4</BarSize><BarSpacing>0.4572</BarSpacing><ZoneLength>0</ZoneLength><NbrLegs>2</NbrLegs></ShearZoneData></ShearData></GirderShearData></Shear><Specification version="1"><Spec>WSDOT LRFD - US Units</Spec></Specification><LoadModifiers version="1"><DuctilityLevel>1</DuctilityLevel><DuctilityFactor>1</DuctilityFactor><ImportanceLevel>1</ImportanceLevel><ImportanceFactor>1</ImportanceFactor><RedundancyLevel>1</RedundancyLevel><RedundancyFactor>1</RedundancyFactor></LoadModifiers><LiftingAndHauling version="2"><LiftingAndHaulingDataCount>9</LiftingAndHaulingDataCount><LiftingAndHaulingData version="1.1"><Span>0</Span><Girder>0</Girder><LeftLiftingLoopLocation>0.9144</LeftLiftingLoopLocation><RightLiftingLoopLocation>0.9144</RightLiftingLoopLocation><LeadingOverhang>0.3048</LeadingOverhang><TrailingOverhang>0.3048</TrailingOverhang></LiftingAndHaulingData><LiftingAndHaulingData version="1.1"><Span>0</Span><Girder>1</Girder><LeftLiftingLoopLocation>0.9144</LeftLiftingLoopLocation><RightLiftingLoopLocation>0.9144</RightLiftingLoopLocation><LeadingOverhang>0.3048</LeadingOverhang><TrailingOverhang>0.3048</TrailingOverhang></LiftingAndHaulingData><LiftingAndHaulingData version="1.1"><Span>0</Span><Girder>2</Girder><LeftLiftingLoopLocation>0.9144</LeftLiftingLoopLocation><RightLiftingLoopLocation>0.9144</RightLiftingLoopLocation><LeadingOverhang>0.3048</LeadingOverhang><TrailingOverhang>0.3048</TrailingOverhang></LiftingAndHaulingData><LiftingAndHaulingData version="1.1"><Span>0</Span><Girder>3</Girder><LeftLiftingLoopLocation>0.9144</LeftLiftingLoopLocation><RightLiftingLoopLocation>0.9144</RightLiftingLoopLocation><LeadingOverhang>0.3048</LeadingOverhang><TrailingOverhang>0.3048</TrailingOverhang></LiftingAndHaulingData><LiftingAndHaulingData version="1.1"><Span>0</Span><Girder>4</Girder><LeftLiftingLoopLocation>0.9144</LeftLiftingLoopLocation><RightLiftingLoopLocation>0.9144</RightLiftingLoopLocation><LeadingOverhang>0.3048</LeadingOverhang><TrailingOverhang>0.3048</TrailingOverhang></LiftingAndHaulingData><LiftingAndHaulingData version="1.1"><Span>0</Span><Girder>5</Girder><LeftLiftingLoopLocation>0.9144</LeftLiftingLoopLocation><RightLiftingLoopLocation>0.9144</RightLiftingLoopLocation><LeadingOverhang>0.3048</LeadingOverhang><TrailingOverhang>0.3048</TrailingOverhang></LiftingAndHaulingData><LiftingAndHaulingData version="1.1"><Span>0</Span><Girder>6</Girder><LeftLiftingLoopLocation>0.9144</LeftLiftingLoopLocation><RightLiftingLoopLocation>0.9144</RightLiftingLoopLocation><LeadingOverhang>0.3048</LeadingOverhang><TrailingOverhang>0.3048</TrailingOverhang></LiftingAndHaulingData><LiftingAndHaulingData version="1.1"><Span>0</Span><Girder>7</Girder><LeftLiftingLoopLocation>0.9144</LeftLiftingLoopLocation><RightLiftingLoopLocation>0.9144</RightLiftingLoopLocation><LeadingOverhang>0.3048</LeadingOverhang><TrailingOverhang>0.3048</TrailingOverhang></LiftingAndHaulingData><LiftingAndHaulingData version="1.1"><Span>0</Span><Girder>8</Girder><LeftLiftingLoopLocation>0.9144</LeftLiftingLoopLocation><RightLiftingLoopLocation>0.9144</RightLiftingLoopLocation><LeadingOverhang>0.3048</LeadingOverhang><TrailingOverhang>0.3048</TrailingOverhang></LiftingAndHaulingData></LiftingAndHauling><UserDefinedLoads version="1"><UserDefinedPointLoads version="1"><Count>0</Count></UserDefinedPointLoads><UserDefinedDistributedLoads version="1"><Count>0</Count></UserDefinedDistributedLoads></UserDefinedLoads></ProjectData></PGSuper>
+<PGSuper version="0.9">
+  <LIBRARY_MANAGER version="1">
+    <LIBRARY_MANAGER_ENTRY version="1">
+      <LIBRARY_NAME>CONCRETE_LIBRARY</LIBRARY_NAME>
+      <LIBRARY version="1">
+        <LIBRARY_ID_NAME>CONCRETE_LIBRARY</LIBRARY_ID_NAME>
+        <LIBRARY_DISPLAY_NAME>Concrete Types</LIBRARY_DISPLAY_NAME>
+        <LIBRARY_ENTRY version="1">
+          <ENTRY_KEY>4 KSI</ENTRY_KEY>
+          <ConcreteMaterialEntry version="1">
+            <Name>4 KSI</Name>
+            <Dw>2562.9541015625</Dw>
+            <Fc>27579030</Fc>
+            <Ds>2562.9541015625</Ds>
+            <AggregateSize>1.90500002354383E-02</AggregateSize>
+          </ConcreteMaterialEntry>
+        </LIBRARY_ENTRY>
+        <LIBRARY_ENTRY version="1">
+          <ENTRY_KEY>7 KSI</ENTRY_KEY>
+          <ConcreteMaterialEntry version="1">
+            <Name>7 KSI</Name>
+            <Dw>2562.9541015625</Dw>
+            <Fc>48263300</Fc>
+            <Ds>2562.9541015625</Ds>
+            <AggregateSize>1.90500002354383E-02</AggregateSize>
+          </ConcreteMaterialEntry>
+        </LIBRARY_ENTRY>
+      </LIBRARY>
+    </LIBRARY_MANAGER_ENTRY>
+    <LIBRARY_MANAGER_ENTRY version="1">
+      <LIBRARY_NAME>CONNECTION_LIBRARY</LIBRARY_NAME>
+      <LIBRARY version="1">
+        <LIBRARY_ID_NAME>CONNECTION_LIBRARY</LIBRARY_ID_NAME>
+        <LIBRARY_DISPLAY_NAME>Connections</LIBRARY_DISPLAY_NAME>
+        <LIBRARY_ENTRY version="1">
+          <ENTRY_KEY>End Type B - End Pier (W50G)</ENTRY_KEY>
+          <ConnectionLibraryEntry version="2">
+            <Name>End Type B - End Pier (W50G)</Name>
+            <DiaphragmHeight>1.26999998092651</DiaphragmHeight>
+            <GirderEndDistance>0.304800003767014</GirderEndDistance>
+            <GirderBearingOffset>0.660399973392487</GirderBearingOffset>
+            <DiaphragmWidth>0.304800003767014</DiaphragmWidth>
+            <DiaphragmLoadType>ApplyAtBearingCenterline</DiaphragmLoadType>
+          </ConnectionLibraryEntry>
+        </LIBRARY_ENTRY>
+        <LIBRARY_ENTRY version="1">
+          <ENTRY_KEY>End Type C (W50G)</ENTRY_KEY>
+          <ConnectionLibraryEntry version="2">
+            <Name>End Type C (W50G)</Name>
+            <DiaphragmHeight>1.26999998092651</DiaphragmHeight>
+            <GirderEndDistance>0.152400001883507</GirderEndDistance>
+            <GirderBearingOffset>0.533399999141693</GirderBearingOffset>
+            <DiaphragmWidth>0.342900007963181</DiaphragmWidth>
+            <DiaphragmLoadType>DontApply</DiaphragmLoadType>
+          </ConnectionLibraryEntry>
+        </LIBRARY_ENTRY>
+      </LIBRARY>
+    </LIBRARY_MANAGER_ENTRY>
+    <LIBRARY_MANAGER_ENTRY version="1">
+      <LIBRARY_NAME>GIRDER_LIBRARY</LIBRARY_NAME>
+      <LIBRARY version="1">
+        <LIBRARY_ID_NAME>GIRDER_LIBRARY</LIBRARY_ID_NAME>
+        <LIBRARY_DISPLAY_NAME>Girders</LIBRARY_DISPLAY_NAME>
+        <LIBRARY_ENTRY version="1">
+          <ENTRY_KEY>W50G</ENTRY_KEY>
+          <GirderLibraryEntry version="1.6">
+            <Name>W50G</Name>
+            <CLSID>{30962206-2412-4001-AA20-CF359BC60142}</CLSID>
+            <Publisher>WSDOT</Publisher>
+            <SectionName>Precast I-Beam</SectionName>
+            <D1>0.127000004053116</D1>
+            <D2>5.07999993860722E-02</D2>
+            <D3>0</D3>
+            <D4>0.152400001883507</D4>
+            <D5>7.62000009417534E-02</D5>
+            <D6>0</D6>
+            <D7>0.863600015640259</D7>
+            <T1>0.152400001883507</T1>
+            <T2>0.152400001883507</T2>
+            <W1>0.177799999713898</W1>
+            <W2>0</W2>
+            <W3>0.241300001740456</W3>
+            <W4>0</W4>
+            <DownwardStrandAdjustment>0.152400001883507</DownwardStrandAdjustment>
+            <DownwardStrandIncrement>2.53999996930361E-02</DownwardStrandIncrement>
+            <UpwardStrandAdjustment>0.152400001883507</UpwardStrandAdjustment>
+            <UpwardStrandIncrement>2.53999996930361E-02</UpwardStrandIncrement>
+            <ShearSteelBarSize>3</ShearSteelBarSize>
+            <LastConfinementZone>3</LastConfinementZone>
+            <HarpingPointLocation>-0.33</HarpingPointLocation>
+            <HarpingPointReference>1</HarpingPointReference>
+            <DiaphragmHeight>0.787400007247925</DiaphragmHeight>
+            <DiaphragmWidth>0.203199997544289</DiaphragmWidth>
+            <ShearSteelMaterial>AASHTO M31 (A615) - Grade 60</ShearSteelMaterial>
+            <LongSteelMaterial></LongSteelMaterial>
+            <TopFlangeShearBarSize>0</TopFlangeShearBarSize>
+            <TopFlangeShearBarSpacing>0</TopFlangeShearBarSpacing>
+            <StraightStrandLocations version="1">
+              <X>0.2667</X>
+              <Y>0.047625</Y>
+            </StraightStrandLocations>
+            <StraightStrandLocations version="1">
+              <X>0.1651</X>
+              <Y>0.047625</Y>
+            </StraightStrandLocations>
+            <StraightStrandLocations version="1">
+              <X>0.0635</X>
+              <Y>0.047625</Y>
+            </StraightStrandLocations>
+            <StraightStrandLocations version="1">
+              <X>0.2159</X>
+              <Y>0.047625</Y>
+            </StraightStrandLocations>
+            <StraightStrandLocations version="1">
+              <X>0.1143</X>
+              <Y>0.047625</Y>
+            </StraightStrandLocations>
+            <StraightStrandLocations version="1">
+              <X>0.1143</X>
+              <Y>0.098425</Y>
+            </StraightStrandLocations>
+            <StraightStrandLocations version="1">
+              <X>0.1651</X>
+              <Y>0.098425</Y>
+            </StraightStrandLocations>
+            <StraightStrandLocations version="1">
+              <X>0.2159</X>
+              <Y>0.098425</Y>
+            </StraightStrandLocations>
+            <StraightStrandLocations version="1">
+              <X>0.2667</X>
+              <Y>0.098425</Y>
+            </StraightStrandLocations>
+            <StraightStrandLocations version="1">
+              <X>0.1143</X>
+              <Y>0.149225</Y>
+            </StraightStrandLocations>
+            <StraightStrandLocations version="1">
+              <X>0.1651</X>
+              <Y>0.149225</Y>
+            </StraightStrandLocations>
+            <StraightStrandLocations version="1">
+              <X>0.0635</X>
+              <Y>0.098425</Y>
+            </StraightStrandLocations>
+            <StraightStrandLocations version="1">
+              <X>0.0635</X>
+              <Y>0.149225</Y>
+            </StraightStrandLocations>
+            <HarpedStrandLocations version="1">
+              <X>0.0254</X>
+              <Y>1.1684</Y>
+            </HarpedStrandLocations>
+            <HarpedStrandLocations version="1">
+              <X>0.0254</X>
+              <Y>1.1176</Y>
+            </HarpedStrandLocations>
+            <HarpedStrandLocations version="1">
+              <X>0.0254</X>
+              <Y>1.0668</Y>
+            </HarpedStrandLocations>
+            <HarpedStrandLocations version="1">
+              <X>0.0254</X>
+              <Y>1.016</Y>
+            </HarpedStrandLocations>
+            <HarpedStrandLocations version="1">
+              <X>0.0254</X>
+              <Y>0.9652</Y>
+            </HarpedStrandLocations>
+            <HarpedStrandLocations version="1">
+              <X>0.0254</X>
+              <Y>0.9652</Y>
+            </HarpedStrandLocations>
+            <HPStrandLocations version="1">
+              <X>0</X>
+              <Y>7.62000009417534E-02</Y>
+            </HPStrandLocations>
+            <HPStrandLocations version="1">
+              <X>0</X>
+              <Y>7.62000009417534E-02</Y>
+            </HPStrandLocations>
+            <HPStrandLocations version="1">
+              <X>0</X>
+              <Y>7.62000009417534E-02</Y>
+            </HPStrandLocations>
+            <HPStrandLocations version="1">
+              <X>0</X>
+              <Y>7.62000009417534E-02</Y>
+            </HPStrandLocations>
+            <HPStrandLocations version="1">
+              <X>0</X>
+              <Y>7.62000009417534E-02</Y>
+            </HPStrandLocations>
+            <HPStrandLocations version="1">
+              <X>0</X>
+              <Y>7.62000009417534E-02</Y>
+            </HPStrandLocations>
+            <HPStrandLocations version="1">
+              <X>0</X>
+              <Y>7.62000009417534E-02</Y>
+            </HPStrandLocations>
+            <HPStrandLocations version="1">
+              <X>0</X>
+              <Y>7.62000009417534E-02</Y>
+            </HPStrandLocations>
+            <HPStrandLocations version="1">
+              <X>0</X>
+              <Y>7.62000009417534E-02</Y>
+            </HPStrandLocations>
+            <HPStrandLocations version="1">
+              <X>0</X>
+              <Y>7.62000009417534E-02</Y>
+            </HPStrandLocations>
+            <HPStrandLocations version="1">
+              <X>0</X>
+              <Y>7.62000009417534E-02</Y>
+            </HPStrandLocations>
+            <HPStrandLocations version="1">
+              <X>0</X>
+              <Y>7.62000009417534E-02</Y>
+            </HPStrandLocations>
+            <OddNumberOfHarpedStrands>-1</OddNumberOfHarpedStrands>
+            <ShearZones version="1.1">
+              <ZoneLength>0.0381</ZoneLength>
+              <BarSize>5</BarSize>
+              <SS>0.0381</SS>
+              <NBars>2</NBars>
+            </ShearZones>
+            <ShearZones version="1.1">
+              <ZoneLength>0.2667</ZoneLength>
+              <BarSize>5</BarSize>
+              <SS>0.0889</SS>
+              <NBars>2</NBars>
+            </ShearZones>
+            <ShearZones version="1.1">
+              <ZoneLength>1.6764</ZoneLength>
+              <BarSize>5</BarSize>
+              <SS>0.1524</SS>
+              <NBars>2</NBars>
+            </ShearZones>
+            <ShearZones version="1.1">
+              <ZoneLength>1.3716</ZoneLength>
+              <BarSize>4</BarSize>
+              <SS>0.2286</SS>
+              <NBars>2</NBars>
+            </ShearZones>
+            <ShearZones version="1.1">
+              <ZoneLength>3.048</ZoneLength>
+              <BarSize>4</BarSize>
+              <SS>0.381</SS>
+              <NBars>2</NBars>
+            </ShearZones>
+            <ShearZones version="1.1">
+              <ZoneLength>0</ZoneLength>
+              <BarSize>4</BarSize>
+              <SS>0.4572</SS>
+              <NBars>2</NBars>
+            </ShearZones>
+            <LongSteelInfo version="1">
+              <Face>Top</Face>
+              <NumberOfBars>4</NumberOfBars>
+              <BarSize>5</BarSize>
+              <BarCover>0.0254</BarCover>
+              <BarSpacing>0.1143</BarSpacing>
+            </LongSteelInfo>
+          </GirderLibraryEntry>
+        </LIBRARY_ENTRY>
+      </LIBRARY>
+    </LIBRARY_MANAGER_ENTRY>
+    <LIBRARY_MANAGER_ENTRY version="1">
+      <LIBRARY_NAME>DIAPHRAGM_LAYOUT_LIBRARY</LIBRARY_NAME>
+      <LIBRARY version="1">
+        <LIBRARY_ID_NAME>DIAPHRAGM_LAYOUT_LIBRARY</LIBRARY_ID_NAME>
+        <LIBRARY_DISPLAY_NAME>Diaphragm Layouts</LIBRARY_DISPLAY_NAME>
+        <LIBRARY_ENTRY version="1">
+          <ENTRY_KEY>WSDOT Diaphragm Rules (US)</ENTRY_KEY>
+          <DiaphragmLayoutEntry version="1">
+            <Name>WSDOT Diaphragm Rules (US)</Name>
+            <DiaphragmLayout version="1">
+              <EndOfRange>12.192</EndOfRange>
+              <NumberOfDiaphragms>0</NumberOfDiaphragms>
+            </DiaphragmLayout>
+            <DiaphragmLayout version="1">
+              <EndOfRange>24.384</EndOfRange>
+              <NumberOfDiaphragms>1</NumberOfDiaphragms>
+            </DiaphragmLayout>
+            <DiaphragmLayout version="1">
+              <EndOfRange>36.576</EndOfRange>
+              <NumberOfDiaphragms>2</NumberOfDiaphragms>
+            </DiaphragmLayout>
+            <DiaphragmLayout version="1">
+              <EndOfRange>152.4</EndOfRange>
+              <NumberOfDiaphragms>3</NumberOfDiaphragms>
+            </DiaphragmLayout>
+          </DiaphragmLayoutEntry>
+        </LIBRARY_ENTRY>
+      </LIBRARY>
+    </LIBRARY_MANAGER_ENTRY>
+    <LIBRARY_MANAGER_ENTRY version="1">
+      <LIBRARY_NAME>TRAFFIC_BARRIER_LIBRARY</LIBRARY_NAME>
+      <LIBRARY version="1">
+        <LIBRARY_ID_NAME>TRAFFIC_BARRIER_LIBRARY</LIBRARY_ID_NAME>
+        <LIBRARY_DISPLAY_NAME>Traffic Barriers</LIBRARY_DISPLAY_NAME>
+        <LIBRARY_ENTRY version="1">
+          <ENTRY_KEY>Higher Standard Exterior Barrier (US)</ENTRY_KEY>
+          <TrafficBarrierEntry version="1">
+            <Name>Higher Standard Exterior Barrier (US)</Name>
+            <X1>0.0889</X1>
+            <X2>0.2667</X2>
+            <X3>0.2921</X3>
+            <X4>0.060325</X4>
+            <X5>0.123825</X5>
+            <Y1>0.127</Y1>
+            <Y2>0.1778</Y2>
+            <Y3>0.8636</Y3>
+          </TrafficBarrierEntry>
+        </LIBRARY_ENTRY>
+      </LIBRARY>
+    </LIBRARY_MANAGER_ENTRY>
+    <LIBRARY_MANAGER_ENTRY version="1">
+      <LIBRARY_NAME>SPECIFICATION_LIBRARY</LIBRARY_NAME>
+      <LIBRARY version="1">
+        <LIBRARY_ID_NAME>SPECIFICATION_LIBRARY</LIBRARY_ID_NAME>
+        <LIBRARY_DISPLAY_NAME>Project Criteria</LIBRARY_DISPLAY_NAME>
+        <LIBRARY_ENTRY version="1">
+          <ENTRY_KEY>WSDOT LRFD - US Units</ENTRY_KEY>
+          <SpecificationLibraryEntry version="3">
+            <Name>WSDOT LRFD - US Units</Name>
+            <Description>AASHTO LRFD Bridge Design Specification, 2nd Edition 1998 - US Units, modified to reflect WSDOT design practices</Description>
+            <SpecificationType>AashtoLrfd2001</SpecificationType>
+            <SpecificationUnits>UsUnitsSpec</SpecificationUnits>
+            <DoCheckStrandSlope>-1</DoCheckStrandSlope>
+            <MaxSlope05>6</MaxSlope05>
+            <MaxSlope06>8</MaxSlope06>
+            <DoCheckHoldDown>0</DoCheckHoldDown>
+            <HoldDownForce>200170</HoldDownForce>
+            <MaxStirrupSpacing>0.457200020551682</MaxStirrupSpacing>
+            <CyLiftingCrackFs>1</CyLiftingCrackFs>
+            <CyLiftingFailFs>1.5</CyLiftingFailFs>
+            <CyCompStressServ>0.6</CyCompStressServ>
+            <CyCompStressLifting>0.6</CyCompStressLifting>
+            <CyTensStressServ>248.925003051758</CyTensStressServ>
+            <CyDoTensStressServMax>-1</CyDoTensStressServMax>
+            <CyTensStressServMax>1378950</CyTensStressServMax>
+            <CyTensStressLifting>630.189025878906</CyTensStressLifting>
+            <CyDoTensStressLiftingMax>0</CyDoTensStressLiftingMax>
+            <CyTensStressLiftingMax>0</CyTensStressLiftingMax>
+            <BurstingZoneLengthFactor>4</BurstingZoneLengthFactor>
+            <LiftingUpwardImpact>0</LiftingUpwardImpact>
+            <LiftingDownwardImpact>0</LiftingDownwardImpact>
+            <HaulingUpwardImpact>0.2</HaulingUpwardImpact>
+            <HaulingDownwardImpact>0.2</HaulingDownwardImpact>
+            <CuringMethod>1</CuringMethod>
+            <PickPointHeight>0</PickPointHeight>
+            <LiftingLoopTolerance>6.34999992325902E-03</LiftingLoopTolerance>
+            <MinCableInclination>1.57079637050629</MinCableInclination>
+            <MaxGirderSweepLifting>0.00052</MaxGirderSweepLifting>
+            <MaxGirderSweepHauling>0.001042</MaxGirderSweepHauling>
+            <HaulingSupportDistance>39.6240005493164</HaulingSupportDistance>
+            <MaxHaulingOverhang>4.572</MaxHaulingOverhang>
+            <HaulingSupportPlacementTolerance>2.53999996930361E-02</HaulingSupportPlacementTolerance>
+            <HaulingCamberPercentEstimate>2</HaulingCamberPercentEstimate>
+            <CompStressHauling>0.6</CompStressHauling>
+            <TensStressHauling>630.188842773438</TensStressHauling>
+            <DoTensStressHaulingMax>0</DoTensStressHaulingMax>
+            <TensStressHaulingMax>0</TensStressHaulingMax>
+            <HeHaulingCrackFs>1</HeHaulingCrackFs>
+            <HeHaulingFailFs>1.5</HeHaulingFailFs>
+            <RoadwaySuperelevation>0.06</RoadwaySuperelevation>
+            <TruckRollStiffnessMethod>0</TruckRollStiffnessMethod>
+            <TruckRollStiffness>4575885.5</TruckRollStiffness>
+            <AxleWeightLimit>80067.98907468</AxleWeightLimit>
+            <AxleStiffness>451939.316112</AxleStiffness>
+            <MinRollStiffness>3163575.212784</MinRollStiffness>
+            <TruckGirderHeight>1.82879996299744</TruckGirderHeight>
+            <TruckRollCenterHeight>0.609600007534027</TruckRollCenterHeight>
+            <TruckAxleWidth>1.82879996299744</TruckAxleWidth>
+            <HeErectionCrackFs>1</HeErectionCrackFs>
+            <HeErectionFailFs>1.5</HeErectionFailFs>
+            <MaxGirderWgt>889644.3125</MaxGirderWgt>
+            <m_Bs1CompStress>0.45</m_Bs1CompStress>
+            <m_Bs1TensStress>498.899536132813</m_Bs1TensStress>
+            <m_Bs1DoTensStressMax>0</m_Bs1DoTensStressMax>
+            <m_Bs1TensStressMax>0</m_Bs1TensStressMax>
+            <m_Bs2CompStress>0.45</m_Bs2CompStress>
+            <m_Bs2TensStress>0</m_Bs2TensStress>
+            <m_Bs2DoTensStressMax>0</m_Bs2DoTensStressMax>
+            <m_Bs2TensStressMax>0</m_Bs2TensStressMax>
+            <Bs2MaxGirdersTrafficBarrier>3</Bs2MaxGirdersTrafficBarrier>
+            <Bs2MaxGirdersUtility>3</Bs2MaxGirdersUtility>
+            <Bs3CompStressServ>0.6</Bs3CompStressServ>
+            <Bs3CompStressService1A>0.4</Bs3CompStressService1A>
+            <Bs3TensStressServNc>0</Bs3TensStressServNc>
+            <Bs3DoTensStressServNcMax>0</Bs3DoTensStressServNcMax>
+            <Bs3TensStressServNcMax>0</Bs3TensStressServNcMax>
+            <Bs3TensStressServSc>0</Bs3TensStressServSc>
+            <Bs3DoTensStressServScMax>0</Bs3DoTensStressServScMax>
+            <Bs3TensStressServScMax>0</Bs3TensStressServScMax>
+            <Bs3IgnoreRangeOfApplicability>0</Bs3IgnoreRangeOfApplicability>
+            <Bs3LRFDShear>1</Bs3LRFDShear>
+            <Bs3LRFDOverreinforcedMomentCapacity>0</Bs3LRFDOverreinforcedMomentCapacity>
+            <BsLldfMethod>1</BsLldfMethod>
+            <LongReinfShearMethod>1</LongReinfShearMethod>
+            <CreepMethod>0</CreepMethod>
+            <CreepFactor>2</CreepFactor>
+            <CreepDuration1Min>7776000</CreepDuration1Min>
+            <CreepDuration1Max>7776000</CreepDuration1Max>
+            <CreepDuration2Min>10368000</CreepDuration2Min>
+            <CreepDuration2Max>10368000</CreepDuration2Max>
+            <XferTime>86400</XferTime>
+            <LossMethod>4</LossMethod>
+            <FinalLosses>330948352</FinalLosses>
+            <ShippingLosses>241316512</ShippingLosses>
+            <BeforeXferLosses>0</BeforeXferLosses>
+            <AfterXferLosses>137895152</AfterXferLosses>
+            <CheckStrandStressAtJacking>0</CheckStrandStressAtJacking>
+            <Coeff_AtJacking_StressRel>0.72</Coeff_AtJacking_StressRel>
+            <Coeff_AtJacking_LowRelax>0.78</Coeff_AtJacking_LowRelax>
+            <CheckStrandStressBeforeTransfer>-1</CheckStrandStressBeforeTransfer>
+            <Coeff_BeforeTransfer_StressRel>0.7</Coeff_BeforeTransfer_StressRel>
+            <Coeff_BeforeTransfer_LowRelax>0.75</Coeff_BeforeTransfer_LowRelax>
+            <CheckStrandStressAfterTransfer>0</CheckStrandStressAfterTransfer>
+            <Coeff_AfterTransfer_StressRel>0.7</Coeff_AfterTransfer_StressRel>
+            <Coeff_AfterTransfer_LowRelax>0.74</Coeff_AfterTransfer_LowRelax>
+            <CheckStrandStressAfterAllLosses>-1</CheckStrandStressAfterAllLosses>
+            <Coeff_AfterAllLosses_StressRel>0.8</Coeff_AfterAllLosses_StressRel>
+            <Coeff_AfterAllLosses_LowRelax>0.8</Coeff_AfterAllLosses_LowRelax>
+            <CheckLiveLoadDeflection>-1</CheckLiveLoadDeflection>
+            <LiveLoadDeflectionLimit>800</LiveLoadDeflectionLimit>
+          </SpecificationLibraryEntry>
+        </LIBRARY_ENTRY>
+      </LIBRARY>
+    </LIBRARY_MANAGER_ENTRY>
+  </LIBRARY_MANAGER>
+  <ProjectData version="1">
+    <ProjectProperties version="1">
+      <BridgeName></BridgeName>
+      <BridgeId>18</BridgeId>
+      <JobNumber></JobNumber>
+      <Engineer></Engineer>
+      <Company></Company>
+      <Comments></Comments>
+    </ProjectProperties>
+    <ProjectSettings version="1">
+      <Units>2</Units>
+    </ProjectSettings>
+    <Environment version="1">
+      <ExpCond>0</ExpCond>
+      <RelHumidity>75</RelHumidity>
+    </Environment>
+    <Alignment version="1">
+      <AlignmentData version="1">
+        <AlignmentMethod>0</AlignmentMethod>
+        <AlignmentDirection>3.89666077182937E-12</AlignmentDirection>
+        <FwdTangent>3.89666077182937E-12</FwdTangent>
+        <BkTangent>0.785398163399397</BkTangent>
+        <Radius>10000</Radius>
+        <PIStation>10000</PIStation>
+      </AlignmentData>
+    </Alignment>
+    <Profile version="1">
+      <ProfileMethod>0</ProfileMethod>
+      <Station>0</Station>
+      <Elevation>0</Elevation>
+      <Grade>0</Grade>
+      <G1>0</G1>
+      <G2>0</G2>
+      <PVIStation>10000</PVIStation>
+      <PVIElevation>0</PVIElevation>
+      <Length>1000</Length>
+    </Profile>
+    <Crown version="1">
+      <Left>-0.02</Left>
+      <Right>-0.02</Right>
+    </Crown>
+    <Piers version="1">
+      <PierCount>2</PierCount>
+      <PierDataDetails version="2">
+        <Station>0</Station>
+        <Orientation>22 11 04.0 L</Orientation>
+        <Connection>End Type C (W50G)</Connection>
+      </PierDataDetails>
+      <PierDataDetails version="2">
+        <Station>15.706344</Station>
+        <Orientation>22 11 04.0 L</Orientation>
+        <Connection>End Type B - End Pier (W50G)</Connection>
+      </PierDataDetails>
+    </Piers>
+    <CrossSection version="1">
+      <XSectionData version="4">
+        <SlabType>0</SlabType>
+        <GdrSpacing>1.9751040058136</GdrSpacing>
+        <GdrLineCount>9</GdrLineCount>
+        <Girder>W50G</Girder>
+        <TrafficBarrier>Higher Standard Exterior Barrier (US)</TrafficBarrier>
+        <GrossDepth>0.1778</GrossDepth>
+        <Overhang>1.31064005813599</Overhang>
+        <Fillet>1.90500002354383E-02</Fillet>
+        <SlabOffset>0.2413</SlabOffset>
+        <PanelDepth>0</PanelDepth>
+        <PanelSupport>0.1016</PanelSupport>
+        <OverlayDepth>4.57199987888336E-02</OverlayDepth>
+        <OverlayDensity>2402.7695061</OverlayDensity>
+        <SacrificialDepth>0</SacrificialDepth>
+        <SlabFc>27579030</SlabFc>
+        <SlabWeightDensity>2562.9541015625</SlabWeightDensity>
+        <SlabStrengthDensity>2562.9541015625</SlabStrengthDensity>
+        <SlabMaxAggregateSize>1.90500002354383E-02</SlabMaxAggregateSize>
+        <DiaphragmLayout>WSDOT Diaphragm Rules (US)</DiaphragmLayout>
+      </XSectionData>
+    </CrossSection>
+    <Prestressing version="2">
+      <PrestressStrandKey>262</PrestressStrandKey>
+      <PrestressDataCount>9</PrestressDataCount>
+      <GirderPrestressData version="1">
+        <Span>0</Span>
+        <Girder>0</Girder>
+        <PrestressData version="3.1">
+          <HpOffsetAtEnd>0.4064</HpOffsetAtEnd>
+          <HpOffsetAtHp>0</HpOffsetAtHp>
+          <NumHarpedStrands>4</NumHarpedStrands>
+          <NumStraightStrands>6</NumStraightStrands>
+          <NumTempStrands>0</NumTempStrands>
+          <PjHarped>551579.48029224</PjHarped>
+          <PjStraight>827369.22043836</PjStraight>
+          <PjTemp>0</PjTemp>
+          <CalcPjHarped>0</CalcPjHarped>
+          <CalcPjStraight>0</CalcPjStraight>
+          <CalcPjTemp>-1</CalcPjTemp>
+          <LastUserPjHarped>551579.48029224</LastUserPjHarped>
+          <LastUserPjStraight>827369.22043836</LastUserPjStraight>
+          <LastUserPjTemp>0</LastUserPjTemp>
+          <TempStrandUsage>0</TempStrandUsage>
+          <Fci>41368543.75902</Fci>
+          <Fc>48263300</Fc>
+          <WeightDensity>2562.9541015625</WeightDensity>
+          <StrengthDensity>2562.9541015625</StrengthDensity>
+          <MaxAggregateSize>1.90500002354383E-02</MaxAggregateSize>
+        </PrestressData>
+      </GirderPrestressData>
+      <GirderPrestressData version="1">
+        <Span>0</Span>
+        <Girder>1</Girder>
+        <PrestressData version="3.1">
+          <HpOffsetAtEnd>0.4064</HpOffsetAtEnd>
+          <HpOffsetAtHp>0</HpOffsetAtHp>
+          <NumHarpedStrands>4</NumHarpedStrands>
+          <NumStraightStrands>6</NumStraightStrands>
+          <NumTempStrands>0</NumTempStrands>
+          <PjHarped>551579.48029224</PjHarped>
+          <PjStraight>827369.22043836</PjStraight>
+          <PjTemp>0</PjTemp>
+          <CalcPjHarped>0</CalcPjHarped>
+          <CalcPjStraight>0</CalcPjStraight>
+          <CalcPjTemp>-1</CalcPjTemp>
+          <LastUserPjHarped>551579.48029224</LastUserPjHarped>
+          <LastUserPjStraight>827369.22043836</LastUserPjStraight>
+          <LastUserPjTemp>0</LastUserPjTemp>
+          <TempStrandUsage>0</TempStrandUsage>
+          <Fci>41368543.75902</Fci>
+          <Fc>48263300</Fc>
+          <WeightDensity>2562.9541015625</WeightDensity>
+          <StrengthDensity>2562.9541015625</StrengthDensity>
+          <MaxAggregateSize>1.90500002354383E-02</MaxAggregateSize>
+        </PrestressData>
+      </GirderPrestressData>
+      <GirderPrestressData version="1">
+        <Span>0</Span>
+        <Girder>2</Girder>
+        <PrestressData version="3.1">
+          <HpOffsetAtEnd>0.4064</HpOffsetAtEnd>
+          <HpOffsetAtHp>0</HpOffsetAtHp>
+          <NumHarpedStrands>4</NumHarpedStrands>
+          <NumStraightStrands>6</NumStraightStrands>
+          <NumTempStrands>0</NumTempStrands>
+          <PjHarped>551579.48029224</PjHarped>
+          <PjStraight>827369.22043836</PjStraight>
+          <PjTemp>0</PjTemp>
+          <CalcPjHarped>0</CalcPjHarped>
+          <CalcPjStraight>0</CalcPjStraight>
+          <CalcPjTemp>-1</CalcPjTemp>
+          <LastUserPjHarped>551579.48029224</LastUserPjHarped>
+          <LastUserPjStraight>827369.22043836</LastUserPjStraight>
+          <LastUserPjTemp>0</LastUserPjTemp>
+          <TempStrandUsage>0</TempStrandUsage>
+          <Fci>41368543.75902</Fci>
+          <Fc>48263300</Fc>
+          <WeightDensity>2562.9541015625</WeightDensity>
+          <StrengthDensity>2562.9541015625</StrengthDensity>
+          <MaxAggregateSize>1.90500002354383E-02</MaxAggregateSize>
+        </PrestressData>
+      </GirderPrestressData>
+      <GirderPrestressData version="1">
+        <Span>0</Span>
+        <Girder>3</Girder>
+        <PrestressData version="3.1">
+          <HpOffsetAtEnd>0.4064</HpOffsetAtEnd>
+          <HpOffsetAtHp>0</HpOffsetAtHp>
+          <NumHarpedStrands>4</NumHarpedStrands>
+          <NumStraightStrands>6</NumStraightStrands>
+          <NumTempStrands>0</NumTempStrands>
+          <PjHarped>551579.48029224</PjHarped>
+          <PjStraight>827369.22043836</PjStraight>
+          <PjTemp>0</PjTemp>
+          <CalcPjHarped>0</CalcPjHarped>
+          <CalcPjStraight>0</CalcPjStraight>
+          <CalcPjTemp>-1</CalcPjTemp>
+          <LastUserPjHarped>551579.48029224</LastUserPjHarped>
+          <LastUserPjStraight>827369.22043836</LastUserPjStraight>
+          <LastUserPjTemp>0</LastUserPjTemp>
+          <TempStrandUsage>0</TempStrandUsage>
+          <Fci>41368543.75902</Fci>
+          <Fc>48263300</Fc>
+          <WeightDensity>2562.9541015625</WeightDensity>
+          <StrengthDensity>2562.9541015625</StrengthDensity>
+          <MaxAggregateSize>1.90500002354383E-02</MaxAggregateSize>
+        </PrestressData>
+      </GirderPrestressData>
+      <GirderPrestressData version="1">
+        <Span>0</Span>
+        <Girder>4</Girder>
+        <PrestressData version="3.1">
+          <HpOffsetAtEnd>0.4064</HpOffsetAtEnd>
+          <HpOffsetAtHp>0</HpOffsetAtHp>
+          <NumHarpedStrands>4</NumHarpedStrands>
+          <NumStraightStrands>6</NumStraightStrands>
+          <NumTempStrands>0</NumTempStrands>
+          <PjHarped>551579.48029224</PjHarped>
+          <PjStraight>827369.22043836</PjStraight>
+          <PjTemp>0</PjTemp>
+          <CalcPjHarped>0</CalcPjHarped>
+          <CalcPjStraight>0</CalcPjStraight>
+          <CalcPjTemp>-1</CalcPjTemp>
+          <LastUserPjHarped>551579.48029224</LastUserPjHarped>
+          <LastUserPjStraight>827369.22043836</LastUserPjStraight>
+          <LastUserPjTemp>0</LastUserPjTemp>
+          <TempStrandUsage>0</TempStrandUsage>
+          <Fci>41368543.75902</Fci>
+          <Fc>48263300</Fc>
+          <WeightDensity>2562.9541015625</WeightDensity>
+          <StrengthDensity>2562.9541015625</StrengthDensity>
+          <MaxAggregateSize>1.90500002354383E-02</MaxAggregateSize>
+        </PrestressData>
+      </GirderPrestressData>
+      <GirderPrestressData version="1">
+        <Span>0</Span>
+        <Girder>5</Girder>
+        <PrestressData version="3.1">
+          <HpOffsetAtEnd>0.4064</HpOffsetAtEnd>
+          <HpOffsetAtHp>0</HpOffsetAtHp>
+          <NumHarpedStrands>4</NumHarpedStrands>
+          <NumStraightStrands>6</NumStraightStrands>
+          <NumTempStrands>0</NumTempStrands>
+          <PjHarped>551579.48029224</PjHarped>
+          <PjStraight>827369.22043836</PjStraight>
+          <PjTemp>0</PjTemp>
+          <CalcPjHarped>0</CalcPjHarped>
+          <CalcPjStraight>0</CalcPjStraight>
+          <CalcPjTemp>-1</CalcPjTemp>
+          <LastUserPjHarped>551579.48029224</LastUserPjHarped>
+          <LastUserPjStraight>827369.22043836</LastUserPjStraight>
+          <LastUserPjTemp>0</LastUserPjTemp>
+          <TempStrandUsage>0</TempStrandUsage>
+          <Fci>41368543.75902</Fci>
+          <Fc>48263300</Fc>
+          <WeightDensity>2562.9541015625</WeightDensity>
+          <StrengthDensity>2562.9541015625</StrengthDensity>
+          <MaxAggregateSize>1.90500002354383E-02</MaxAggregateSize>
+        </PrestressData>
+      </GirderPrestressData>
+      <GirderPrestressData version="1">
+        <Span>0</Span>
+        <Girder>6</Girder>
+        <PrestressData version="3.1">
+          <HpOffsetAtEnd>0.4064</HpOffsetAtEnd>
+          <HpOffsetAtHp>0</HpOffsetAtHp>
+          <NumHarpedStrands>4</NumHarpedStrands>
+          <NumStraightStrands>6</NumStraightStrands>
+          <NumTempStrands>0</NumTempStrands>
+          <PjHarped>551579.48029224</PjHarped>
+          <PjStraight>827369.22043836</PjStraight>
+          <PjTemp>0</PjTemp>
+          <CalcPjHarped>0</CalcPjHarped>
+          <CalcPjStraight>0</CalcPjStraight>
+          <CalcPjTemp>-1</CalcPjTemp>
+          <LastUserPjHarped>551579.48029224</LastUserPjHarped>
+          <LastUserPjStraight>827369.22043836</LastUserPjStraight>
+          <LastUserPjTemp>0</LastUserPjTemp>
+          <TempStrandUsage>0</TempStrandUsage>
+          <Fci>41368543.75902</Fci>
+          <Fc>48263300</Fc>
+          <WeightDensity>2562.9541015625</WeightDensity>
+          <StrengthDensity>2562.9541015625</StrengthDensity>
+          <MaxAggregateSize>1.90500002354383E-02</MaxAggregateSize>
+        </PrestressData>
+      </GirderPrestressData>
+      <GirderPrestressData version="1">
+        <Span>0</Span>
+        <Girder>7</Girder>
+        <PrestressData version="3.1">
+          <HpOffsetAtEnd>0.4064</HpOffsetAtEnd>
+          <HpOffsetAtHp>0</HpOffsetAtHp>
+          <NumHarpedStrands>4</NumHarpedStrands>
+          <NumStraightStrands>6</NumStraightStrands>
+          <NumTempStrands>0</NumTempStrands>
+          <PjHarped>551579.48029224</PjHarped>
+          <PjStraight>827369.22043836</PjStraight>
+          <PjTemp>0</PjTemp>
+          <CalcPjHarped>0</CalcPjHarped>
+          <CalcPjStraight>0</CalcPjStraight>
+          <CalcPjTemp>-1</CalcPjTemp>
+          <LastUserPjHarped>551579.48029224</LastUserPjHarped>
+          <LastUserPjStraight>827369.22043836</LastUserPjStraight>
+          <LastUserPjTemp>0</LastUserPjTemp>
+          <TempStrandUsage>0</TempStrandUsage>
+          <Fci>41368543.75902</Fci>
+          <Fc>48263300</Fc>
+          <WeightDensity>2562.9541015625</WeightDensity>
+          <StrengthDensity>2562.9541015625</StrengthDensity>
+          <MaxAggregateSize>1.90500002354383E-02</MaxAggregateSize>
+        </PrestressData>
+      </GirderPrestressData>
+      <GirderPrestressData version="1">
+        <Span>0</Span>
+        <Girder>8</Girder>
+        <PrestressData version="3.1">
+          <HpOffsetAtEnd>0.4064</HpOffsetAtEnd>
+          <HpOffsetAtHp>0</HpOffsetAtHp>
+          <NumHarpedStrands>4</NumHarpedStrands>
+          <NumStraightStrands>6</NumStraightStrands>
+          <NumTempStrands>0</NumTempStrands>
+          <PjHarped>551579.48029224</PjHarped>
+          <PjStraight>827369.22043836</PjStraight>
+          <PjTemp>0</PjTemp>
+          <CalcPjHarped>0</CalcPjHarped>
+          <CalcPjStraight>0</CalcPjStraight>
+          <CalcPjTemp>-1</CalcPjTemp>
+          <LastUserPjHarped>551579.48029224</LastUserPjHarped>
+          <LastUserPjStraight>827369.22043836</LastUserPjStraight>
+          <LastUserPjTemp>0</LastUserPjTemp>
+          <TempStrandUsage>0</TempStrandUsage>
+          <Fci>41368543.75902</Fci>
+          <Fc>48263300</Fc>
+          <WeightDensity>2562.9541015625</WeightDensity>
+          <StrengthDensity>2562.9541015625</StrengthDensity>
+          <MaxAggregateSize>1.90500002354383E-02</MaxAggregateSize>
+        </PrestressData>
+      </GirderPrestressData>
+    </Prestressing>
+    <Shear version="2">
+      <StirrupMaterial>AASHTO M31 (A615) - Grade 60</StirrupMaterial>
+      <ShearDataCount>9</ShearDataCount>
+      <GirderShearData version="1">
+        <Span>0</Span>
+        <Girder>0</Girder>
+        <ShearData version="3">
+          <ConfinementBarSize>3</ConfinementBarSize>
+          <ConfinementZone>4</ConfinementZone>
+          <TopFlangeBarSize>0</TopFlangeBarSize>
+          <TopFlangeBarSpacing>0.4572</TopFlangeBarSpacing>
+          <ZoneCount>6</ZoneCount>
+          <ShearZoneData version="1.1">
+            <ZoneNum>1</ZoneNum>
+            <BarSize>5</BarSize>
+            <BarSpacing>0.0381</BarSpacing>
+            <ZoneLength>0.0381</ZoneLength>
+            <NbrLegs>2</NbrLegs>
+          </ShearZoneData>
+          <ShearZoneData version="1.1">
+            <ZoneNum>2</ZoneNum>
+            <BarSize>5</BarSize>
+            <BarSpacing>0.0889</BarSpacing>
+            <ZoneLength>0.2667</ZoneLength>
+            <NbrLegs>2</NbrLegs>
+          </ShearZoneData>
+          <ShearZoneData version="1.1">
+            <ZoneNum>3</ZoneNum>
+            <BarSize>5</BarSize>
+            <BarSpacing>0.1524</BarSpacing>
+            <ZoneLength>0.3048</ZoneLength>
+            <NbrLegs>2</NbrLegs>
+          </ShearZoneData>
+          <ShearZoneData version="1.1">
+            <ZoneNum>4</ZoneNum>
+            <BarSize>5</BarSize>
+            <BarSpacing>0.2286</BarSpacing>
+            <ZoneLength>0.6858</ZoneLength>
+            <NbrLegs>2</NbrLegs>
+          </ShearZoneData>
+          <ShearZoneData version="1.1">
+            <ZoneNum>5</ZoneNum>
+            <BarSize>4</BarSize>
+            <BarSpacing>0.4572</BarSpacing>
+            <ZoneLength>0.9144</ZoneLength>
+            <NbrLegs>2</NbrLegs>
+          </ShearZoneData>
+          <ShearZoneData version="1.1">
+            <ZoneNum>6</ZoneNum>
+            <BarSize>4</BarSize>
+            <BarSpacing>0.4572</BarSpacing>
+            <ZoneLength>0</ZoneLength>
+            <NbrLegs>2</NbrLegs>
+          </ShearZoneData>
+        </ShearData>
+      </GirderShearData>
+      <GirderShearData version="1">
+        <Span>0</Span>
+        <Girder>1</Girder>
+        <ShearData version="3">
+          <ConfinementBarSize>3</ConfinementBarSize>
+          <ConfinementZone>4</ConfinementZone>
+          <TopFlangeBarSize>5</TopFlangeBarSize>
+          <TopFlangeBarSpacing>0.4572</TopFlangeBarSpacing>
+          <ZoneCount>6</ZoneCount>
+          <ShearZoneData version="1.1">
+            <ZoneNum>1</ZoneNum>
+            <BarSize>5</BarSize>
+            <BarSpacing>0.0381</BarSpacing>
+            <ZoneLength>0.0381</ZoneLength>
+            <NbrLegs>2</NbrLegs>
+          </ShearZoneData>
+          <ShearZoneData version="1.1">
+            <ZoneNum>2</ZoneNum>
+            <BarSize>5</BarSize>
+            <BarSpacing>0.0889</BarSpacing>
+            <ZoneLength>0.2667</ZoneLength>
+            <NbrLegs>2</NbrLegs>
+          </ShearZoneData>
+          <ShearZoneData version="1.1">
+            <ZoneNum>3</ZoneNum>
+            <BarSize>5</BarSize>
+            <BarSpacing>0.1524</BarSpacing>
+            <ZoneLength>0.3048</ZoneLength>
+            <NbrLegs>2</NbrLegs>
+          </ShearZoneData>
+          <ShearZoneData version="1.1">
+            <ZoneNum>4</ZoneNum>
+            <BarSize>5</BarSize>
+            <BarSpacing>0.2286</BarSpacing>
+            <ZoneLength>0.6858</ZoneLength>
+            <NbrLegs>2</NbrLegs>
+          </ShearZoneData>
+          <ShearZoneData version="1.1">
+            <ZoneNum>5</ZoneNum>
+            <BarSize>4</BarSize>
+            <BarSpacing>0.4572</BarSpacing>
+            <ZoneLength>0.9144</ZoneLength>
+            <NbrLegs>2</NbrLegs>
+          </ShearZoneData>
+          <ShearZoneData version="1.1">
+            <ZoneNum>6</ZoneNum>
+            <BarSize>4</BarSize>
+            <BarSpacing>0.4572</BarSpacing>
+            <ZoneLength>0</ZoneLength>
+            <NbrLegs>2</NbrLegs>
+          </ShearZoneData>
+        </ShearData>
+      </GirderShearData>
+      <GirderShearData version="1">
+        <Span>0</Span>
+        <Girder>2</Girder>
+        <ShearData version="3">
+          <ConfinementBarSize>3</ConfinementBarSize>
+          <ConfinementZone>4</ConfinementZone>
+          <TopFlangeBarSize>5</TopFlangeBarSize>
+          <TopFlangeBarSpacing>0.4572</TopFlangeBarSpacing>
+          <ZoneCount>6</ZoneCount>
+          <ShearZoneData version="1.1">
+            <ZoneNum>1</ZoneNum>
+            <BarSize>5</BarSize>
+            <BarSpacing>0.0381</BarSpacing>
+            <ZoneLength>0.0381</ZoneLength>
+            <NbrLegs>2</NbrLegs>
+          </ShearZoneData>
+          <ShearZoneData version="1.1">
+            <ZoneNum>2</ZoneNum>
+            <BarSize>5</BarSize>
+            <BarSpacing>0.0889</BarSpacing>
+            <ZoneLength>0.2667</ZoneLength>
+            <NbrLegs>2</NbrLegs>
+          </ShearZoneData>
+          <ShearZoneData version="1.1">
+            <ZoneNum>3</ZoneNum>
+            <BarSize>5</BarSize>
+            <BarSpacing>0.1524</BarSpacing>
+            <ZoneLength>0.3048</ZoneLength>
+            <NbrLegs>2</NbrLegs>
+          </ShearZoneData>
+          <ShearZoneData version="1.1">
+            <ZoneNum>4</ZoneNum>
+            <BarSize>5</BarSize>
+            <BarSpacing>0.2286</BarSpacing>
+            <ZoneLength>0.6858</ZoneLength>
+            <NbrLegs>2</NbrLegs>
+          </ShearZoneData>
+          <ShearZoneData version="1.1">
+            <ZoneNum>5</ZoneNum>
+            <BarSize>4</BarSize>
+            <BarSpacing>0.4572</BarSpacing>
+            <ZoneLength>0.9144</ZoneLength>
+            <NbrLegs>2</NbrLegs>
+          </ShearZoneData>
+          <ShearZoneData version="1.1">
+            <ZoneNum>6</ZoneNum>
+            <BarSize>4</BarSize>
+            <BarSpacing>0.4572</BarSpacing>
+            <ZoneLength>0</ZoneLength>
+            <NbrLegs>2</NbrLegs>
+          </ShearZoneData>
+        </ShearData>
+      </GirderShearData>
+      <GirderShearData version="1">
+        <Span>0</Span>
+        <Girder>3</Girder>
+        <ShearData version="3">
+          <ConfinementBarSize>3</ConfinementBarSize>
+          <ConfinementZone>4</ConfinementZone>
+          <TopFlangeBarSize>5</TopFlangeBarSize>
+          <TopFlangeBarSpacing>0.4572</TopFlangeBarSpacing>
+          <ZoneCount>6</ZoneCount>
+          <ShearZoneData version="1.1">
+            <ZoneNum>1</ZoneNum>
+            <BarSize>5</BarSize>
+            <BarSpacing>0.0381</BarSpacing>
+            <ZoneLength>0.0381</ZoneLength>
+            <NbrLegs>2</NbrLegs>
+          </ShearZoneData>
+          <ShearZoneData version="1.1">
+            <ZoneNum>2</ZoneNum>
+            <BarSize>5</BarSize>
+            <BarSpacing>0.0889</BarSpacing>
+            <ZoneLength>0.2667</ZoneLength>
+            <NbrLegs>2</NbrLegs>
+          </ShearZoneData>
+          <ShearZoneData version="1.1">
+            <ZoneNum>3</ZoneNum>
+            <BarSize>5</BarSize>
+            <BarSpacing>0.1524</BarSpacing>
+            <ZoneLength>0.3048</ZoneLength>
+            <NbrLegs>2</NbrLegs>
+          </ShearZoneData>
+          <ShearZoneData version="1.1">
+            <ZoneNum>4</ZoneNum>
+            <BarSize>5</BarSize>
+            <BarSpacing>0.2286</BarSpacing>
+            <ZoneLength>0.6858</ZoneLength>
+            <NbrLegs>2</NbrLegs>
+          </ShearZoneData>
+          <ShearZoneData version="1.1">
+            <ZoneNum>5</ZoneNum>
+            <BarSize>4</BarSize>
+            <BarSpacing>0.4572</BarSpacing>
+            <ZoneLength>0.9144</ZoneLength>
+            <NbrLegs>2</NbrLegs>
+          </ShearZoneData>
+          <ShearZoneData version="1.1">
+            <ZoneNum>6</ZoneNum>
+            <BarSize>4</BarSize>
+            <BarSpacing>0.4572</BarSpacing>
+            <ZoneLength>0</ZoneLength>
+            <NbrLegs>2</NbrLegs>
+          </ShearZoneData>
+        </ShearData>
+      </GirderShearData>
+      <GirderShearData version="1">
+        <Span>0</Span>
+        <Girder>4</Girder>
+        <ShearData version="3">
+          <ConfinementBarSize>3</ConfinementBarSize>
+          <ConfinementZone>4</ConfinementZone>
+          <TopFlangeBarSize>5</TopFlangeBarSize>
+          <TopFlangeBarSpacing>0.4572</TopFlangeBarSpacing>
+          <ZoneCount>6</ZoneCount>
+          <ShearZoneData version="1.1">
+            <ZoneNum>1</ZoneNum>
+            <BarSize>5</BarSize>
+            <BarSpacing>0.0381</BarSpacing>
+            <ZoneLength>0.0381</ZoneLength>
+            <NbrLegs>2</NbrLegs>
+          </ShearZoneData>
+          <ShearZoneData version="1.1">
+            <ZoneNum>2</ZoneNum>
+            <BarSize>5</BarSize>
+            <BarSpacing>0.0889</BarSpacing>
+            <ZoneLength>0.2667</ZoneLength>
+            <NbrLegs>2</NbrLegs>
+          </ShearZoneData>
+          <ShearZoneData version="1.1">
+            <ZoneNum>3</ZoneNum>
+            <BarSize>5</BarSize>
+            <BarSpacing>0.1524</BarSpacing>
+            <ZoneLength>0.3048</ZoneLength>
+            <NbrLegs>2</NbrLegs>
+          </ShearZoneData>
+          <ShearZoneData version="1.1">
+            <ZoneNum>4</ZoneNum>
+            <BarSize>5</BarSize>
+            <BarSpacing>0.2286</BarSpacing>
+            <ZoneLength>0.6858</ZoneLength>
+            <NbrLegs>2</NbrLegs>
+          </ShearZoneData>
+          <ShearZoneData version="1.1">
+            <ZoneNum>5</ZoneNum>
+            <BarSize>4</BarSize>
+            <BarSpacing>0.4572</BarSpacing>
+            <ZoneLength>0.9144</ZoneLength>
+            <NbrLegs>2</NbrLegs>
+          </ShearZoneData>
+          <ShearZoneData version="1.1">
+            <ZoneNum>6</ZoneNum>
+            <BarSize>4</BarSize>
+            <BarSpacing>0.4572</BarSpacing>
+            <ZoneLength>0</ZoneLength>
+            <NbrLegs>2</NbrLegs>
+          </ShearZoneData>
+        </ShearData>
+      </GirderShearData>
+      <GirderShearData version="1">
+        <Span>0</Span>
+        <Girder>5</Girder>
+        <ShearData version="3">
+          <ConfinementBarSize>3</ConfinementBarSize>
+          <ConfinementZone>4</ConfinementZone>
+          <TopFlangeBarSize>5</TopFlangeBarSize>
+          <TopFlangeBarSpacing>0.4572</TopFlangeBarSpacing>
+          <ZoneCount>6</ZoneCount>
+          <ShearZoneData version="1.1">
+            <ZoneNum>1</ZoneNum>
+            <BarSize>5</BarSize>
+            <BarSpacing>0.0381</BarSpacing>
+            <ZoneLength>0.0381</ZoneLength>
+            <NbrLegs>2</NbrLegs>
+          </ShearZoneData>
+          <ShearZoneData version="1.1">
+            <ZoneNum>2</ZoneNum>
+            <BarSize>5</BarSize>
+            <BarSpacing>0.0889</BarSpacing>
+            <ZoneLength>0.2667</ZoneLength>
+            <NbrLegs>2</NbrLegs>
+          </ShearZoneData>
+          <ShearZoneData version="1.1">
+            <ZoneNum>3</ZoneNum>
+            <BarSize>5</BarSize>
+            <BarSpacing>0.1524</BarSpacing>
+            <ZoneLength>0.3048</ZoneLength>
+            <NbrLegs>2</NbrLegs>
+          </ShearZoneData>
+          <ShearZoneData version="1.1">
+            <ZoneNum>4</ZoneNum>
+            <BarSize>5</BarSize>
+            <BarSpacing>0.2286</BarSpacing>
+            <ZoneLength>0.6858</ZoneLength>
+            <NbrLegs>2</NbrLegs>
+          </ShearZoneData>
+          <ShearZoneData version="1.1">
+            <ZoneNum>5</ZoneNum>
+            <BarSize>4</BarSize>
+            <BarSpacing>0.4572</BarSpacing>
+            <ZoneLength>0.9144</ZoneLength>
+            <NbrLegs>2</NbrLegs>
+          </ShearZoneData>
+          <ShearZoneData version="1.1">
+            <ZoneNum>6</ZoneNum>
+            <BarSize>4</BarSize>
+            <BarSpacing>0.4572</BarSpacing>
+            <ZoneLength>0</ZoneLength>
+            <NbrLegs>2</NbrLegs>
+          </ShearZoneData>
+        </ShearData>
+      </GirderShearData>
+      <GirderShearData version="1">
+        <Span>0</Span>
+        <Girder>6</Girder>
+        <ShearData version="3">
+          <ConfinementBarSize>3</ConfinementBarSize>
+          <ConfinementZone>4</ConfinementZone>
+          <TopFlangeBarSize>5</TopFlangeBarSize>
+          <TopFlangeBarSpacing>0.4572</TopFlangeBarSpacing>
+          <ZoneCount>6</ZoneCount>
+          <ShearZoneData version="1.1">
+            <ZoneNum>1</ZoneNum>
+            <BarSize>5</BarSize>
+            <BarSpacing>0.0381</BarSpacing>
+            <ZoneLength>0.0381</ZoneLength>
+            <NbrLegs>2</NbrLegs>
+          </ShearZoneData>
+          <ShearZoneData version="1.1">
+            <ZoneNum>2</ZoneNum>
+            <BarSize>5</BarSize>
+            <BarSpacing>0.0889</BarSpacing>
+            <ZoneLength>0.2667</ZoneLength>
+            <NbrLegs>2</NbrLegs>
+          </ShearZoneData>
+          <ShearZoneData version="1.1">
+            <ZoneNum>3</ZoneNum>
+            <BarSize>5</BarSize>
+            <BarSpacing>0.1524</BarSpacing>
+            <ZoneLength>0.3048</ZoneLength>
+            <NbrLegs>2</NbrLegs>
+          </ShearZoneData>
+          <ShearZoneData version="1.1">
+            <ZoneNum>4</ZoneNum>
+            <BarSize>5</BarSize>
+            <BarSpacing>0.2286</BarSpacing>
+            <ZoneLength>0.6858</ZoneLength>
+            <NbrLegs>2</NbrLegs>
+          </ShearZoneData>
+          <ShearZoneData version="1.1">
+            <ZoneNum>5</ZoneNum>
+            <BarSize>4</BarSize>
+            <BarSpacing>0.4572</BarSpacing>
+            <ZoneLength>0.9144</ZoneLength>
+            <NbrLegs>2</NbrLegs>
+          </ShearZoneData>
+          <ShearZoneData version="1.1">
+            <ZoneNum>6</ZoneNum>
+            <BarSize>4</BarSize>
+            <BarSpacing>0.4572</BarSpacing>
+            <ZoneLength>0</ZoneLength>
+            <NbrLegs>2</NbrLegs>
+          </ShearZoneData>
+        </ShearData>
+      </GirderShearData>
+      <GirderShearData version="1">
+        <Span>0</Span>
+        <Girder>7</Girder>
+        <ShearData version="3">
+          <ConfinementBarSize>3</ConfinementBarSize>
+          <ConfinementZone>4</ConfinementZone>
+          <TopFlangeBarSize>5</TopFlangeBarSize>
+          <TopFlangeBarSpacing>0.4572</TopFlangeBarSpacing>
+          <ZoneCount>6</ZoneCount>
+          <ShearZoneData version="1.1">
+            <ZoneNum>1</ZoneNum>
+            <BarSize>5</BarSize>
+            <BarSpacing>0.0381</BarSpacing>
+            <ZoneLength>0.0381</ZoneLength>
+            <NbrLegs>2</NbrLegs>
+          </ShearZoneData>
+          <ShearZoneData version="1.1">
+            <ZoneNum>2</ZoneNum>
+            <BarSize>5</BarSize>
+            <BarSpacing>0.0889</BarSpacing>
+            <ZoneLength>0.2667</ZoneLength>
+            <NbrLegs>2</NbrLegs>
+          </ShearZoneData>
+          <ShearZoneData version="1.1">
+            <ZoneNum>3</ZoneNum>
+            <BarSize>5</BarSize>
+            <BarSpacing>0.1524</BarSpacing>
+            <ZoneLength>0.3048</ZoneLength>
+            <NbrLegs>2</NbrLegs>
+          </ShearZoneData>
+          <ShearZoneData version="1.1">
+            <ZoneNum>4</ZoneNum>
+            <BarSize>5</BarSize>
+            <BarSpacing>0.2286</BarSpacing>
+            <ZoneLength>0.6858</ZoneLength>
+            <NbrLegs>2</NbrLegs>
+          </ShearZoneData>
+          <ShearZoneData version="1.1">
+            <ZoneNum>5</ZoneNum>
+            <BarSize>4</BarSize>
+            <BarSpacing>0.4572</BarSpacing>
+            <ZoneLength>0.9144</ZoneLength>
+            <NbrLegs>2</NbrLegs>
+          </ShearZoneData>
+          <ShearZoneData version="1.1">
+            <ZoneNum>6</ZoneNum>
+            <BarSize>4</BarSize>
+            <BarSpacing>0.4572</BarSpacing>
+            <ZoneLength>0</ZoneLength>
+            <NbrLegs>2</NbrLegs>
+          </ShearZoneData>
+        </ShearData>
+      </GirderShearData>
+      <GirderShearData version="1">
+        <Span>0</Span>
+        <Girder>8</Girder>
+        <ShearData version="3">
+          <ConfinementBarSize>3</ConfinementBarSize>
+          <ConfinementZone>4</ConfinementZone>
+          <TopFlangeBarSize>5</TopFlangeBarSize>
+          <TopFlangeBarSpacing>0.4572</TopFlangeBarSpacing>
+          <ZoneCount>6</ZoneCount>
+          <ShearZoneData version="1.1">
+            <ZoneNum>1</ZoneNum>
+            <BarSize>5</BarSize>
+            <BarSpacing>0.0381</BarSpacing>
+            <ZoneLength>0.0381</ZoneLength>
+            <NbrLegs>2</NbrLegs>
+          </ShearZoneData>
+          <ShearZoneData version="1.1">
+            <ZoneNum>2</ZoneNum>
+            <BarSize>5</BarSize>
+            <BarSpacing>0.0889</BarSpacing>
+            <ZoneLength>0.2667</ZoneLength>
+            <NbrLegs>2</NbrLegs>
+          </ShearZoneData>
+          <ShearZoneData version="1.1">
+            <ZoneNum>3</ZoneNum>
+            <BarSize>5</BarSize>
+            <BarSpacing>0.1524</BarSpacing>
+            <ZoneLength>0.3048</ZoneLength>
+            <NbrLegs>2</NbrLegs>
+          </ShearZoneData>
+          <ShearZoneData version="1.1">
+            <ZoneNum>4</ZoneNum>
+            <BarSize>5</BarSize>
+            <BarSpacing>0.2286</BarSpacing>
+            <ZoneLength>0.6858</ZoneLength>
+            <NbrLegs>2</NbrLegs>
+          </ShearZoneData>
+          <ShearZoneData version="1.1">
+            <ZoneNum>5</ZoneNum>
+            <BarSize>4</BarSize>
+            <BarSpacing>0.4572</BarSpacing>
+            <ZoneLength>0.9144</ZoneLength>
+            <NbrLegs>2</NbrLegs>
+          </ShearZoneData>
+          <ShearZoneData version="1.1">
+            <ZoneNum>6</ZoneNum>
+            <BarSize>4</BarSize>
+            <BarSpacing>0.4572</BarSpacing>
+            <ZoneLength>0</ZoneLength>
+            <NbrLegs>2</NbrLegs>
+          </ShearZoneData>
+        </ShearData>
+      </GirderShearData>
+    </Shear>
+    <Specification version="1">
+      <Spec>WSDOT LRFD - US Units</Spec>
+    </Specification>
+    <LoadModifiers version="1">
+      <DuctilityLevel>1</DuctilityLevel>
+      <DuctilityFactor>1</DuctilityFactor>
+      <ImportanceLevel>1</ImportanceLevel>
+      <ImportanceFactor>1</ImportanceFactor>
+      <RedundancyLevel>1</RedundancyLevel>
+      <RedundancyFactor>1</RedundancyFactor>
+    </LoadModifiers>
+    <LiftingAndHauling version="2">
+      <LiftingAndHaulingDataCount>9</LiftingAndHaulingDataCount>
+      <LiftingAndHaulingData version="1.1">
+        <Span>0</Span>
+        <Girder>0</Girder>
+        <LeftLiftingLoopLocation>0.9144</LeftLiftingLoopLocation>
+        <RightLiftingLoopLocation>0.9144</RightLiftingLoopLocation>
+        <LeadingOverhang>0.3048</LeadingOverhang>
+        <TrailingOverhang>0.3048</TrailingOverhang>
+      </LiftingAndHaulingData>
+      <LiftingAndHaulingData version="1.1">
+        <Span>0</Span>
+        <Girder>1</Girder>
+        <LeftLiftingLoopLocation>0.9144</LeftLiftingLoopLocation>
+        <RightLiftingLoopLocation>0.9144</RightLiftingLoopLocation>
+        <LeadingOverhang>0.3048</LeadingOverhang>
+        <TrailingOverhang>0.3048</TrailingOverhang>
+      </LiftingAndHaulingData>
+      <LiftingAndHaulingData version="1.1">
+        <Span>0</Span>
+        <Girder>2</Girder>
+        <LeftLiftingLoopLocation>0.9144</LeftLiftingLoopLocation>
+        <RightLiftingLoopLocation>0.9144</RightLiftingLoopLocation>
+        <LeadingOverhang>0.3048</LeadingOverhang>
+        <TrailingOverhang>0.3048</TrailingOverhang>
+      </LiftingAndHaulingData>
+      <LiftingAndHaulingData version="1.1">
+        <Span>0</Span>
+        <Girder>3</Girder>
+        <LeftLiftingLoopLocation>0.9144</LeftLiftingLoopLocation>
+        <RightLiftingLoopLocation>0.9144</RightLiftingLoopLocation>
+        <LeadingOverhang>0.3048</LeadingOverhang>
+        <TrailingOverhang>0.3048</TrailingOverhang>
+      </LiftingAndHaulingData>
+      <LiftingAndHaulingData version="1.1">
+        <Span>0</Span>
+        <Girder>4</Girder>
+        <LeftLiftingLoopLocation>0.9144</LeftLiftingLoopLocation>
+        <RightLiftingLoopLocation>0.9144</RightLiftingLoopLocation>
+        <LeadingOverhang>0.3048</LeadingOverhang>
+        <TrailingOverhang>0.3048</TrailingOverhang>
+      </LiftingAndHaulingData>
+      <LiftingAndHaulingData version="1.1">
+        <Span>0</Span>
+        <Girder>5</Girder>
+        <LeftLiftingLoopLocation>0.9144</LeftLiftingLoopLocation>
+        <RightLiftingLoopLocation>0.9144</RightLiftingLoopLocation>
+        <LeadingOverhang>0.3048</LeadingOverhang>
+        <TrailingOverhang>0.3048</TrailingOverhang>
+      </LiftingAndHaulingData>
+      <LiftingAndHaulingData version="1.1">
+        <Span>0</Span>
+        <Girder>6</Girder>
+        <LeftLiftingLoopLocation>0.9144</LeftLiftingLoopLocation>
+        <RightLiftingLoopLocation>0.9144</RightLiftingLoopLocation>
+        <LeadingOverhang>0.3048</LeadingOverhang>
+        <TrailingOverhang>0.3048</TrailingOverhang>
+      </LiftingAndHaulingData>
+      <LiftingAndHaulingData version="1.1">
+        <Span>0</Span>
+        <Girder>7</Girder>
+        <LeftLiftingLoopLocation>0.9144</LeftLiftingLoopLocation>
+        <RightLiftingLoopLocation>0.9144</RightLiftingLoopLocation>
+        <LeadingOverhang>0.3048</LeadingOverhang>
+        <TrailingOverhang>0.3048</TrailingOverhang>
+      </LiftingAndHaulingData>
+      <LiftingAndHaulingData version="1.1">
+        <Span>0</Span>
+        <Girder>8</Girder>
+        <LeftLiftingLoopLocation>0.9144</LeftLiftingLoopLocation>
+        <RightLiftingLoopLocation>0.9144</RightLiftingLoopLocation>
+        <LeadingOverhang>0.3048</LeadingOverhang>
+        <TrailingOverhang>0.3048</TrailingOverhang>
+      </LiftingAndHaulingData>
+    </LiftingAndHauling>
+    <UserDefinedLoads version="1">
+      <UserDefinedPointLoads version="1">
+        <Count>0</Count>
+      </UserDefinedPointLoads>
+      <UserDefinedDistributedLoads version="1">
+        <Count>0</Count>
+      </UserDefinedDistributedLoads>
+    </UserDefinedLoads>
+  </ProjectData>
+</PGSuper>

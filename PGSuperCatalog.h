@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -32,31 +32,54 @@
 class CPGSuperCatalog
 {
 public:
-   CPGSuperCatalog(const char* strName,const char* strServer,const char* file);
+   enum Format
+   {
+      ctOriginal, // original version contining separate library file and template folders
+      ctPgz       // publisher in pgz compressed files
+   };
 
-   void SetCatalogServer(const char* strName,const char* strServer);
-   void SetCatalogFile(const char* file);
-   CString GetCatalogServer() const;
-   CString GetCatalogName() const;
-   CString GetCatalogFile() const;
+   CPGSuperCatalog();
 
-   bool Fetch();
+   bool Init(const char* strIniFileName, const CString& strPGSuperVersion);
 
-   std::vector<CString> GetCatalogItems();
+   std::vector<CString> GetPublishers();
 
-   bool GetSettings(const char* catalogItem,CString& strMasterLibrary,CString& strWorkgroupTemplates,bool bShowMessageOnError=true);
+   bool DoesPublisherExist(const CString& publisher);
 
-   void FakeNetworkError(bool bFake); // used for testing... causes IsNetworkError to always return true
-   bool IsNetworkError();
+   Format GetFormat(const CString& publisher);
+   CString GetWebLink(const CString& publisher);
+
+   // for ctOriginal catalogs
+   void GetCatalogSettings(const char* publisher,CString& strMasterLibrary,CString& strWorkgroupTemplates);
+
+   // for ctOriginal catalogs
+   void GetCatalogSettings(const char* publisher,CString& strPgzFile);
+
 
 private:
-   bool m_bFetch;
-   bool m_bError;
-   bool m_bFakeError;
-   CString m_strName; // this is a common name for the catalog server
-   CString m_strServer; // this is the server that holds the catalog
-   CString m_strCatalog; // this is the catalog file on the server
-   CString m_strLocalCatalog; // this is the copy that is downloaded to the local computer
+   struct Publisher
+   {
+      CString Name;
+      Format  Format;
+      CString MasterLibrary; // location of pgz if ctPgz format
+      CString TemplateFolder;
+      CString WebLink;
+   };
+
+   typedef std::vector<Publisher> PublisherList;
+   typedef PublisherList::iterator PublisherIterator;
+   PublisherList m_Publishers;
+
+
+   bool DoParse();
+   const Publisher* GetPublisher(const char* publisher);
+
+   CString m_strLocalCatalog; // location of ini file on local computer
+   CString m_PGSuperVersion;
+
+   bool m_DidParse;
+
+
 };
 
 #endif // INCLUDED_PGSUPERCATALOG_H_

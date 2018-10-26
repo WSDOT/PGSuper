@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -128,8 +128,8 @@ void CSpanLengthGrid::CustomInit()
 
    CComPtr<IBroker> pBroker;
    AfxGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IDisplayUnits,pDispUnits);
-   const unitLength& um = pDispUnits->GetSpanLengthUnit().UnitOfMeasure;
+   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
+   const unitLength& um = pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure;
    CString cv = "Length (" + CString(um.UnitTag().c_str()) + ")";
 	SetStyleRange(CGXRange(0,1), CGXStyle()
          .SetWrapText(TRUE)
@@ -187,7 +187,7 @@ void CSpanLengthGrid::FillGrid(const std::vector<double>& vSpanLengths)
 
    CComPtr<IBroker> pBroker;
    AfxGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IDisplayUnits,pDispUnits);
+   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
 
    // remove all but top row
    ROWCOL rows = GetRowCount();
@@ -208,7 +208,7 @@ void CSpanLengthGrid::FillGrid(const std::vector<double>& vSpanLengths)
       {
          double L = *iter;
          CString strLength;
-         strLength.Format("%s",FormatDimension(L,pDispUnits->GetSpanLengthUnit(),false));
+         strLength.Format("%s",FormatDimension(L,pDisplayUnits->GetSpanLengthUnit(),false));
          SetValueRange(CGXRange(nRow,1),strLength);
          nRow++;
       }
@@ -230,9 +230,9 @@ void CSpanLengthGrid::GetSpanLengths(std::vector<double>& vSpanLengths)
 
    CComPtr<IBroker> pBroker;
    AfxGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IDisplayUnits,pDispUnits);
+   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
 
-   const unitLength& um = pDispUnits->GetSpanLengthUnit().UnitOfMeasure;
+   const unitLength& um = pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure;
 
    ROWCOL rows = GetRowCount();
    for ( ROWCOL row = 1; row <= rows; row++ )

@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -23,25 +23,39 @@
 #if !defined INCLUDED_PGSUPERCATALOGSERVERS_H_
 #define INCLUDED_PGSUPERCATALOGSERVERS_H_
 
-#include <map>
+#include <set>
+#include "PGSuperCatalogServer.h"
+#include <boost\shared_ptr.hpp>
 
 class CPGSuperCatalogServers
 {
 public:
    CPGSuperCatalogServers();
-   void AddServer(const CString& strName,const CString& strAddress);
+   ~CPGSuperCatalogServers();
+   void AddServer(CPGSuperCatalogServer* pserver);
    long GetServerCount() const;
-   void GetServer(long index,CString& strName,CString& strAddress) const;
-   CString GetServerAddress(const CString& strName) const;
+   const CPGSuperCatalogServer* GetServer(long index) const;
+   const CPGSuperCatalogServer* GetServer(const CString& strName) const;
    void RemoveServer(long index);
    void RemoveServer(const CString& strName);
    bool IsServerDefined(const CString& strName) const;
 
-   void LoadFromRegistry();
-   void SaveToRegistry() const;
+   void LoadFromRegistry(CPGSuperApp* theApp);
+   void SaveToRegistry(CPGSuperApp* theApp) const;
 
 private:
-   typedef std::map<CString,CString> Servers;
+   // predicate class for comparing servers only by name
+   class CatalogServerCompareByName
+   {
+   public:
+      bool operator () (const boost::shared_ptr<CPGSuperCatalogServer> pserver1, const boost::shared_ptr<CPGSuperCatalogServer> pserver2) const
+      {
+         return pserver1->GetServerName() < pserver2->GetServerName();
+      }
+   };
+   
+   typedef boost::shared_ptr<CPGSuperCatalogServer> ServerPtr;
+   typedef std::set<ServerPtr ,CatalogServerCompareByName> Servers;
    Servers m_Servers;
 };
 

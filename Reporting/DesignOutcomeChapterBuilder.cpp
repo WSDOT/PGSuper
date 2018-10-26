@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -49,9 +49,9 @@ CLASS
    CDesignOutcomeChapterBuilder
 ****************************************************************************/
 
-void write_artifact_data(IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,rptChapter* pChapter,IDisplayUnits* pDispUnit,const pgsDesignArtifact* pArtifact);
-void failed_design(IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,rptChapter* pChapter,IDisplayUnits* pDispUnit,const pgsDesignArtifact* pArtifact);
-void successful_design(IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,rptChapter* pChapter,IDisplayUnits* pDispUnit,const pgsDesignArtifact* pArtifact);
+void write_artifact_data(IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,rptChapter* pChapter,IDisplayUnits* pDisplayUnits,const pgsDesignArtifact* pArtifact);
+void failed_design(IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,rptChapter* pChapter,IDisplayUnits* pDisplayUnits,const pgsDesignArtifact* pArtifact);
+void successful_design(IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,rptChapter* pChapter,IDisplayUnits* pDisplayUnits,const pgsDesignArtifact* pArtifact);
 
 CDesignOutcomeChapterBuilder::CDesignOutcomeChapterBuilder()
 {
@@ -75,7 +75,7 @@ rptChapter* CDesignOutcomeChapterBuilder::Build(CReportSpecification* pRptSpec,U
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
-   GET_IFACE2( pBroker, IDisplayUnits, pDispUnit );
+   GET_IFACE2( pBroker, IDisplayUnits, pDisplayUnits );
    GET_IFACE2( pBroker, IArtifact, pIArtifact );
    const pgsDesignArtifact* pArtifact = pIArtifact->GetDesignArtifact(span,gdr);
 
@@ -89,11 +89,11 @@ rptChapter* CDesignOutcomeChapterBuilder::Build(CReportSpecification* pRptSpec,U
 
    if ( pArtifact->GetOutcome() == pgsDesignArtifact::Success )
    {
-      successful_design(pBroker,span,gdr,pChapter,pDispUnit,pArtifact);
+      successful_design(pBroker,span,gdr,pChapter,pDisplayUnits,pArtifact);
    }
    else
    {
-      failed_design(pBroker,span,gdr,pChapter,pDispUnit,pArtifact);
+      failed_design(pBroker,span,gdr,pChapter,pDisplayUnits,pArtifact);
    }
 
    return pChapter;
@@ -104,13 +104,13 @@ CChapterBuilder* CDesignOutcomeChapterBuilder::Clone() const
    return new CDesignOutcomeChapterBuilder;
 }
 
-void write_artifact_data(IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,rptChapter* pChapter,IDisplayUnits* pDispUnit,const pgsDesignArtifact* pArtifact)
+void write_artifact_data(IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,rptChapter* pChapter,IDisplayUnits* pDisplayUnits,const pgsDesignArtifact* pArtifact)
 {
 
-   INIT_UV_PROTOTYPE( rptForceUnitValue,  force,  pDispUnit->GetGeneralForceUnit(), true );
-   INIT_UV_PROTOTYPE( rptLengthUnitValue, length, pDispUnit->GetComponentDimUnit(), true );
-   INIT_UV_PROTOTYPE( rptLengthUnitValue, distance, pDispUnit->GetXSectionDimUnit(), true );
-   INIT_UV_PROTOTYPE( rptStressUnitValue, stress, pDispUnit->GetStressUnit(),       true );
+   INIT_UV_PROTOTYPE( rptForceUnitValue,  force,  pDisplayUnits->GetGeneralForceUnit(), true );
+   INIT_UV_PROTOTYPE( rptLengthUnitValue, length, pDisplayUnits->GetComponentDimUnit(), true );
+   INIT_UV_PROTOTYPE( rptLengthUnitValue, distance, pDisplayUnits->GetXSectionDimUnit(), true );
+   INIT_UV_PROTOTYPE( rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(),       true );
 
    GET_IFACE2(pBroker,IBridge,pBridge);
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
@@ -413,13 +413,13 @@ void write_artifact_data(IBroker* pBroker,SpanIndexType span,GirderIndexType gdr
          rptRcTable* pTables = pgsReportStyleHolder::CreateTableNoHeading(4,"");
          *pParagraph << pTables;
 
-         INIT_UV_PROTOTYPE( rptLengthUnitValue, length, pDispUnit->GetComponentDimUnit(), true );
-         INIT_UV_PROTOTYPE( rptLengthUnitValue, location, pDispUnit->GetSpanLengthUnit(), true );
+         INIT_UV_PROTOTYPE( rptLengthUnitValue, length, pDisplayUnits->GetComponentDimUnit(), true );
+         INIT_UV_PROTOTYPE( rptLengthUnitValue, location, pDisplayUnits->GetSpanLengthUnit(), true );
 
          (*pTables)(0,0) << "Zone #";
-         (*pTables)(0,1) << COLHDR("Zone End", rptLengthUnitTag, pDispUnit->GetSpanLengthUnit() );
+         (*pTables)(0,1) << COLHDR("Zone End", rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
          (*pTables)(0,2) << "Bar Size";
-         (*pTables)(0,3) << COLHDR("Spacing", rptLengthUnitTag, pDispUnit->GetComponentDimUnit() );
+         (*pTables)(0,3) << COLHDR("Spacing", rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
 
          lrfdRebarPool* pool = lrfdRebarPool::GetInstance();
          CHECK(pool!=0);
@@ -472,13 +472,13 @@ void write_artifact_data(IBroker* pBroker,SpanIndexType span,GirderIndexType gdr
          rptRcTable* pTables = pgsReportStyleHolder::CreateTableNoHeading(4,"");
          *pParagraph << pTables;
 
-         INIT_UV_PROTOTYPE( rptLengthUnitValue, length, pDispUnit->GetComponentDimUnit(), true );
-         INIT_UV_PROTOTYPE( rptLengthUnitValue, location, pDispUnit->GetSpanLengthUnit(), true );
+         INIT_UV_PROTOTYPE( rptLengthUnitValue, length, pDisplayUnits->GetComponentDimUnit(), true );
+         INIT_UV_PROTOTYPE( rptLengthUnitValue, location, pDisplayUnits->GetSpanLengthUnit(), true );
 
          (*pTables)(0,0) << "Zone #";
-         (*pTables)(0,1) << COLHDR("Zone End", rptLengthUnitTag, pDispUnit->GetSpanLengthUnit() );
+         (*pTables)(0,1) << COLHDR("Zone End", rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
          (*pTables)(0,2) << "Bar Size";
-         (*pTables)(0,3) << COLHDR("Spacing", rptLengthUnitTag, pDispUnit->GetComponentDimUnit() );
+         (*pTables)(0,3) << COLHDR("Spacing", rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
 
          lrfdRebarPool* pool = lrfdRebarPool::GetInstance();
          CHECK(pool!=0);
@@ -586,7 +586,7 @@ void write_artifact_data(IBroker* pBroker,SpanIndexType span,GirderIndexType gdr
    }
 }
 
-void successful_design(IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,rptChapter* pChapter,IDisplayUnits* pDispUnit,const pgsDesignArtifact* pArtifact)
+void successful_design(IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,rptChapter* pChapter,IDisplayUnits* pDisplayUnits,const pgsDesignArtifact* pArtifact)
 {
    rptParagraph* pParagraph;
    pParagraph = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );
@@ -599,10 +599,10 @@ void successful_design(IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,r
                << color(Black)
                << rptNewLine;
 
-   write_artifact_data(pBroker,span,gdr,pChapter,pDispUnit,pArtifact);
+   write_artifact_data(pBroker,span,gdr,pChapter,pDisplayUnits,pArtifact);
 }
 
-void failed_design(IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,rptChapter* pChapter,IDisplayUnits* pDispUnit,const pgsDesignArtifact* pArtifact)
+void failed_design(IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,rptChapter* pChapter,IDisplayUnits* pDisplayUnits,const pgsDesignArtifact* pArtifact)
 {
    rptParagraph* pParagraph;
    pParagraph = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );
@@ -703,6 +703,6 @@ void failed_design(IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,rptCh
    pParagraph = new rptParagraph();
    *pParagraph << Bold("Results from last trial:") << rptNewLine;
    *pChapter << pParagraph;
-   write_artifact_data(pBroker,span,gdr,pChapter,pDispUnit,pArtifact);
+   write_artifact_data(pBroker,span,gdr,pChapter,pDisplayUnits,pArtifact);
 }
 

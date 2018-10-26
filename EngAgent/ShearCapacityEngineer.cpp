@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -51,7 +51,7 @@ CLASS
 ////////////////////////// PUBLIC     ///////////////////////////////////////
 
 //======================== LIFECYCLE  =======================================
-pgsShearCapacityEngineer::pgsShearCapacityEngineer(IBroker* pBroker,long agentID)
+pgsShearCapacityEngineer::pgsShearCapacityEngineer(IBroker* pBroker,AgentIDType agentID)
 {
    m_pBroker = pBroker;
    m_AgentID = agentID;
@@ -83,9 +83,13 @@ void pgsShearCapacityEngineer::SetBroker(IBroker* pBroker)
    m_pBroker = pBroker;
 }
 
-void pgsShearCapacityEngineer::SetAgentID(long agentID)
+void pgsShearCapacityEngineer::SetAgentID(AgentIDType agentID)
 {
    m_AgentID = agentID;
+
+   GET_IFACE(IStatusCenter,pStatusCenter);
+   m_scidGirderDescriptionError   = pStatusCenter->RegisterCallback(new pgsGirderDescriptionStatusCallback(m_pBroker,pgsTypes::statusError) );
+
 }
 
 void pgsShearCapacityEngineer::ComputeShearCapacity(pgsTypes::LimitState ls, 
@@ -168,7 +172,7 @@ void pgsShearCapacityEngineer::ComputeShearCapacityDetails(pgsTypes::LimitState 
 
       std::string msg("An error occured while computing shear capacity");
       pgsGirderDescriptionStatusItem* pStatusItem =
-            new pgsGirderDescriptionStatusItem(span,gdr,2,m_AgentID,114,msg.c_str());
+            new pgsGirderDescriptionStatusItem(span,gdr,2,m_AgentID,m_scidGirderDescriptionError,msg.c_str());
 
       pStatusCenter->Add(pStatusItem);
 
@@ -750,7 +754,7 @@ bool pgsShearCapacityEngineer::ComputeVc(const pgsPointOfInterest& poi, SHEARCAP
 
          std::string msg("Error computing shear capacity - could not converge on a solution");
          pgsGirderDescriptionStatusItem* pStatusItem =
-            new pgsGirderDescriptionStatusItem(poi.GetSpan(),poi.GetGirder(),2,m_AgentID,114,msg.c_str());
+            new pgsGirderDescriptionStatusItem(poi.GetSpan(),poi.GetGirder(),2,m_AgentID,m_scidGirderDescriptionError,msg.c_str());
 
          pStatusCenter->Add(pStatusItem);
 

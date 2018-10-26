@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -49,17 +49,17 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-static void write_alignment_data(IBroker* pBroker,IDisplayUnits* pDispUnit,rptChapter* pChapter,Uint16 level);
-static void write_profile_data(IBroker* pBroker,IDisplayUnits* pDispUnit,rptChapter* pChapter,Uint16 level);
-static void write_crown_data(IBroker* pBroker,IDisplayUnits* pDispUnit,rptChapter* pChapter,Uint16 level);
-static void write_bridge_data(IBroker* pBroker,IDisplayUnits* pDispUnit,rptChapter* pChapter,Uint16 level,SpanIndexType span,GirderIndexType gdr);
-static void write_pier_data(IBroker* pBroker,IDisplayUnits* pDispUnit,rptChapter* pChapter,Uint16 level);
-static void write_span_data(IBroker* pBroker,IDisplayUnits* pDispUnit,rptChapter* pChapter,Uint16 level,SpanIndexType span, GirderIndexType gdr);
-static void write_girder_spacing(IBroker* pBroker,IDisplayUnits* pDispUnit,rptRcTable* pTable,const CGirderSpacing* pGirderSpacing,RowIndexType row,ColumnIndexType col);
-static void write_ps_data(IBroker* pBroker,IDisplayUnits* pDispUnit,rptChapter* pChapter,Uint16 level,SpanIndexType span, GirderIndexType gdr);
-static void write_slab_data(IBroker* pBroker,IDisplayUnits* pDispUnit,rptChapter* pChapter,Uint16 level);
-static void write_concrete_details(IBroker* pBroker,IDisplayUnits* pDispUnit,rptChapter* pChapter,SpanIndexType span,GirderIndexType gdr,Uint16 level);
-static void write_deck_reinforcing_data(IBroker* pBroker,IDisplayUnits* pDispUnit,rptChapter* pChapter,Uint16 level);
+static void write_alignment_data(IBroker* pBroker,IDisplayUnits* pDisplayUnits,rptChapter* pChapter,Uint16 level);
+static void write_profile_data(IBroker* pBroker,IDisplayUnits* pDisplayUnits,rptChapter* pChapter,Uint16 level);
+static void write_crown_data(IBroker* pBroker,IDisplayUnits* pDisplayUnits,rptChapter* pChapter,Uint16 level);
+static void write_bridge_data(IBroker* pBroker,IDisplayUnits* pDisplayUnits,rptChapter* pChapter,Uint16 level,SpanIndexType span,GirderIndexType gdr);
+static void write_pier_data(IBroker* pBroker,IDisplayUnits* pDisplayUnits,rptChapter* pChapter,Uint16 level);
+static void write_span_data(IBroker* pBroker,IDisplayUnits* pDisplayUnits,rptChapter* pChapter,Uint16 level,SpanIndexType span, GirderIndexType gdr);
+static void write_girder_spacing(IBroker* pBroker,IDisplayUnits* pDisplayUnits,rptRcTable* pTable,const CGirderSpacing* pGirderSpacing,RowIndexType row,ColumnIndexType col);
+static void write_ps_data(IBroker* pBroker,IDisplayUnits* pDisplayUnits,rptChapter* pChapter,Uint16 level,SpanIndexType span, GirderIndexType gdr);
+static void write_slab_data(IBroker* pBroker,IDisplayUnits* pDisplayUnits,rptChapter* pChapter,Uint16 level);
+static void write_concrete_details(IBroker* pBroker,IDisplayUnits* pDisplayUnits,rptChapter* pChapter,SpanIndexType span,GirderIndexType gdr,Uint16 level);
+static void write_deck_reinforcing_data(IBroker* pBroker,IDisplayUnits* pDisplayUnits,rptChapter* pChapter,Uint16 level);
 
 /****************************************************************************
 CLASS
@@ -91,17 +91,17 @@ rptChapter* CBridgeDescChapterBuilder::Build(CReportSpecification* pRptSpec,Uint
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
-   GET_IFACE2(pBroker,IDisplayUnits,pDispUnit);
-   write_alignment_data( pBroker, pDispUnit, pChapter, level);
-   write_profile_data( pBroker, pDispUnit, pChapter, level);
-   write_crown_data( pBroker, pDispUnit, pChapter, level);
-   write_bridge_data( pBroker, pDispUnit, pChapter, level, span, gdr);
-   write_concrete_details(pBroker,pDispUnit,pChapter, span, gdr,level);
-   write_pier_data( pBroker, pDispUnit, pChapter, level);
-   write_span_data( pBroker, pDispUnit, pChapter, level, span, gdr );
-   write_ps_data( pBroker, pDispUnit, pChapter, level, span, gdr );
-   write_slab_data( pBroker, pDispUnit, pChapter, level );
-   write_deck_reinforcing_data( pBroker, pDispUnit, pChapter, level );
+   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
+   write_alignment_data( pBroker, pDisplayUnits, pChapter, level);
+   write_profile_data( pBroker, pDisplayUnits, pChapter, level);
+   write_crown_data( pBroker, pDisplayUnits, pChapter, level);
+   write_bridge_data( pBroker, pDisplayUnits, pChapter, level, span, gdr);
+   write_concrete_details(pBroker,pDisplayUnits,pChapter, span, gdr,level);
+   write_pier_data( pBroker, pDisplayUnits, pChapter, level);
+   write_span_data( pBroker, pDisplayUnits, pChapter, level, span, gdr );
+   write_ps_data( pBroker, pDisplayUnits, pChapter, level, span, gdr );
+   write_slab_data( pBroker, pDisplayUnits, pChapter, level );
+   write_deck_reinforcing_data( pBroker, pDisplayUnits, pChapter, level );
 
    return pChapter;
 }
@@ -111,19 +111,19 @@ CChapterBuilder* CBridgeDescChapterBuilder::Clone() const
    return new CBridgeDescChapterBuilder;
 }
 
-void CBridgeDescChapterBuilder::WriteAlignmentData(IBroker* pBroker, IDisplayUnits* pDispUnits, rptChapter* pChapter,Uint16 level)
+void CBridgeDescChapterBuilder::WriteAlignmentData(IBroker* pBroker, IDisplayUnits* pDisplayUnits, rptChapter* pChapter,Uint16 level)
 {
-   write_alignment_data( pBroker, pDispUnits, pChapter, level);
+   write_alignment_data( pBroker, pDisplayUnits, pChapter, level);
 }
 
-void CBridgeDescChapterBuilder::WriteProfileData(IBroker* pBroker, IDisplayUnits* pDispUnits, rptChapter* pChapter,Uint16 level)
+void CBridgeDescChapterBuilder::WriteProfileData(IBroker* pBroker, IDisplayUnits* pDisplayUnits, rptChapter* pChapter,Uint16 level)
 {
-   write_profile_data( pBroker, pDispUnits, pChapter, level);
+   write_profile_data( pBroker, pDisplayUnits, pChapter, level);
 }
 
-void CBridgeDescChapterBuilder::WriteCrownData(IBroker* pBroker, IDisplayUnits* pDispUnits, rptChapter* pChapter,Uint16 level)
+void CBridgeDescChapterBuilder::WriteCrownData(IBroker* pBroker, IDisplayUnits* pDisplayUnits, rptChapter* pChapter,Uint16 level)
 {
-   write_crown_data( pBroker, pDispUnits, pChapter, level);
+   write_crown_data( pBroker, pDisplayUnits, pChapter, level);
 }
 
 //======================== ACCESS     =======================================
@@ -144,14 +144,14 @@ void CBridgeDescChapterBuilder::WriteCrownData(IBroker* pBroker, IDisplayUnits* 
 //======================== OPERATIONS =======================================
 //======================== ACCESS     =======================================
 //======================== INQUERY    =======================================
-void write_alignment_data(IBroker* pBroker,IDisplayUnits* pDispUnit,rptChapter* pChapter,Uint16 level)
+void write_alignment_data(IBroker* pBroker,IDisplayUnits* pDisplayUnits,rptChapter* pChapter,Uint16 level)
 {
    USES_CONVERSION;
 
    GET_IFACE2(pBroker, IRoadwayData, pAlignment ); 
    rptParagraph* pPara;
 
-   INIT_UV_PROTOTYPE( rptLengthUnitValue, length, pDispUnit->GetAlignmentLengthUnit(), false );
+   INIT_UV_PROTOTYPE( rptLengthUnitValue, length, pDisplayUnits->GetAlignmentLengthUnit(), false );
 
    CComPtr<IDirectionDisplayUnitFormatter> direction_formatter;
    direction_formatter.CoCreateInstance(CLSID_DirectionDisplayUnitFormatter);
@@ -173,7 +173,7 @@ void write_alignment_data(IBroker* pBroker,IDisplayUnits* pDispUnit,rptChapter* 
    direction_formatter->Format(alignment.Direction,CComBSTR("°,\',\""),&bstrBearing);
    *pPara << "Direction: " << RPT_BEARING(OLE2A(bstrBearing)) << rptNewLine;
 
-   *pPara << "Ref. Point: " << rptRcStation(alignment.RefStation, &pDispUnit->GetStationFormat())
+   *pPara << "Ref. Point: " << rptRcStation(alignment.RefStation, &pDisplayUnits->GetStationFormat())
           << " "
           << "(E (X) " << length.SetValue(alignment.xRefPoint);
    *pPara << ", " 
@@ -213,6 +213,7 @@ void write_alignment_data(IBroker* pBroker,IDisplayUnits* pDispUnit,rptChapter* 
    (*pTable)(row++,0) << "Radius (R)";
    (*pTable)(row++,0) << "Tangent (T)";
    (*pTable)(row++,0) << "Length (L)";
+   (*pTable)(row++,0) << "Chord (C)";
    (*pTable)(row++,0) << "External (E)";
    (*pTable)(row++,0) << "Mid Ordinate (MO)";
 
@@ -223,134 +224,183 @@ void write_alignment_data(IBroker* pBroker,IDisplayUnits* pDispUnit,rptChapter* 
    for ( iter = alignment.HorzCurves.begin(); iter != alignment.HorzCurves.end(); iter++, col++ )
    {
       HorzCurveData& hc_data = *iter;
-
-      CComPtr<IHorzCurve> hc;
-      pRoadway->GetCurve(col-1,&hc);
-
       row = 0;
 
-
-      CComPtr<IDirection> bkTangent;
-      CComPtr<IDirection> fwdTangent;
-      hc->get_BkTangentBrg(&bkTangent);
-      hc->get_FwdTangentBrg(&fwdTangent);
-
-      double bk_tangent_value;
-      bkTangent->get_Value(&bk_tangent_value);
-
-      double fwd_tangent_value;
-      fwdTangent->get_Value(&fwd_tangent_value);
-
-      CComBSTR bstrBkTangent;
-      direction_formatter->Format(bk_tangent_value,CComBSTR("°,\',\""),&bstrBkTangent);
-
-      CComBSTR bstrFwdTangent;
-      direction_formatter->Format(fwd_tangent_value,CComBSTR("°,\',\""),&bstrFwdTangent);
-
-      double bk_tangent_length;
-      hc->get_BkTangentLength(&bk_tangent_length);
-
-      double total_length;
-      hc->get_TotalLength(&total_length);
-
-      double ts,sc,cs,st;
-      ts = hc_data.PIStation - bk_tangent_length;
-      sc = hc_data.PIStation - bk_tangent_length + hc_data.EntrySpiral;
-      cs = hc_data.PIStation - bk_tangent_length + total_length - hc_data.ExitSpiral;
-      st = hc_data.PIStation - bk_tangent_length + total_length;
       (*pTable)(row++,col) << "Curve " << col;
-      (*pTable)(row++,col) << RPT_BEARING(OLE2A(bstrBkTangent));
-      (*pTable)(row++,col) << RPT_BEARING(OLE2A(bstrFwdTangent));
-      if ( IsEqual(ts,sc) )
+
+      if ( IsZero(hc_data.Radius) )
       {
-         (*pTable)(row++,col) << "-";
-         (*pTable)(row++,col) << "-";
-         (*pTable)(row++,col) << rptRcStation(ts, &pDispUnit->GetStationFormat());
+         CComPtr<IDirection> bkTangent;
+         pRoadway->GetBearing(hc_data.PIStation - ::ConvertToSysUnits(1.0,unitMeasure::Feet),&bkTangent);
+
+         CComPtr<IDirection> fwdTangent;
+         pRoadway->GetBearing(hc_data.PIStation + ::ConvertToSysUnits(1.0,unitMeasure::Feet),&fwdTangent);
+
+         double bk_tangent_value;
+         bkTangent->get_Value(&bk_tangent_value);
+
+         double fwd_tangent_value;
+         fwdTangent->get_Value(&fwd_tangent_value);
+
+         CComBSTR bstrBkTangent;
+         direction_formatter->Format(bk_tangent_value,CComBSTR("°,\',\""),&bstrBkTangent);
+
+         CComBSTR bstrFwdTangent;
+         direction_formatter->Format(fwd_tangent_value,CComBSTR("°,\',\""),&bstrFwdTangent);
+         (*pTable)(row++,col) << RPT_BEARING(OLE2A(bstrBkTangent));
+         (*pTable)(row++,col) << RPT_BEARING(OLE2A(bstrFwdTangent));
+
+         (*pTable)(row++,col) << "";
+         (*pTable)(row++,col) << "";
+         (*pTable)(row++,col) << "";
+
+         (*pTable)(row++,col) << rptRcStation(hc_data.PIStation, &pDisplayUnits->GetStationFormat());
+
+         (*pTable)(row++,col) << "";
+         (*pTable)(row++,col) << "";
+         (*pTable)(row++,col) << "";
+         (*pTable)(row++,col) << "";
+         (*pTable)(row++,col) << "";
+         (*pTable)(row++,col) << "";
+         (*pTable)(row++,col) << "";
+         (*pTable)(row++,col) << "";
+         (*pTable)(row++,col) << "";
+         (*pTable)(row++,col) << "";
+         (*pTable)(row++,col) << "";
+         (*pTable)(row++,col) << "";
+         (*pTable)(row++,col) << "";
+         (*pTable)(row++,col) << "";
       }
       else
       {
-         (*pTable)(row++,col) << rptRcStation(ts, &pDispUnit->GetStationFormat());
-         (*pTable)(row++,col) << rptRcStation(sc, &pDispUnit->GetStationFormat());
-         (*pTable)(row++,col) << "-";
+         CComPtr<IHorzCurve> hc;
+         pRoadway->GetCurve(col-1,&hc);
+
+         CComPtr<IDirection> bkTangent;
+         CComPtr<IDirection> fwdTangent;
+         hc->get_BkTangentBrg(&bkTangent);
+         hc->get_FwdTangentBrg(&fwdTangent);
+
+         double bk_tangent_value;
+         bkTangent->get_Value(&bk_tangent_value);
+
+         double fwd_tangent_value;
+         fwdTangent->get_Value(&fwd_tangent_value);
+
+         CComBSTR bstrBkTangent;
+         direction_formatter->Format(bk_tangent_value,CComBSTR("°,\',\""),&bstrBkTangent);
+
+         CComBSTR bstrFwdTangent;
+         direction_formatter->Format(fwd_tangent_value,CComBSTR("°,\',\""),&bstrFwdTangent);
+
+         double bk_tangent_length;
+         hc->get_BkTangentLength(&bk_tangent_length);
+
+         double total_length;
+         hc->get_TotalLength(&total_length);
+
+         double ts,sc,cs,st;
+         ts = hc_data.PIStation - bk_tangent_length;
+         sc = hc_data.PIStation - bk_tangent_length + hc_data.EntrySpiral;
+         cs = hc_data.PIStation - bk_tangent_length + total_length - hc_data.ExitSpiral;
+         st = hc_data.PIStation - bk_tangent_length + total_length;
+         (*pTable)(row++,col) << RPT_BEARING(OLE2A(bstrBkTangent));
+         (*pTable)(row++,col) << RPT_BEARING(OLE2A(bstrFwdTangent));
+         if ( IsEqual(ts,sc) )
+         {
+            (*pTable)(row++,col) << "-";
+            (*pTable)(row++,col) << "-";
+            (*pTable)(row++,col) << rptRcStation(ts, &pDisplayUnits->GetStationFormat());
+         }
+         else
+         {
+            (*pTable)(row++,col) << rptRcStation(ts, &pDisplayUnits->GetStationFormat());
+            (*pTable)(row++,col) << rptRcStation(sc, &pDisplayUnits->GetStationFormat());
+            (*pTable)(row++,col) << "-";
+         }
+         (*pTable)(row++,col) << rptRcStation(hc_data.PIStation, &pDisplayUnits->GetStationFormat());
+
+         if ( IsEqual(cs,st) )
+         {
+            (*pTable)(row++,col) << rptRcStation(cs, &pDisplayUnits->GetStationFormat());
+            (*pTable)(row++,col) << "-";
+            (*pTable)(row++,col) << "-";
+         }
+         else
+         {
+            (*pTable)(row++,col) << "-";
+            (*pTable)(row++,col) << rptRcStation(cs, &pDisplayUnits->GetStationFormat());
+            (*pTable)(row++,col) << rptRcStation(st, &pDisplayUnits->GetStationFormat());
+         }
+
+         CurveDirectionType direction;
+         hc->get_Direction(&direction);
+
+         CComPtr<IAngle> delta;
+         hc->get_CurveAngle(&delta);
+         double delta_value;
+         delta->get_Value(&delta_value);
+         delta_value *= (direction == cdRight ? -1 : 1);
+         CComBSTR bstrDelta;
+         angle_formatter->put_Signed(VARIANT_FALSE);
+         angle_formatter->Format(delta_value,CComBSTR("°,\',\""),&bstrDelta);
+         (*pTable)(row++,col) << RPT_ANGLE(OLE2A(bstrDelta));
+
+         // Entry Spiral Data
+         (*pTable)(row++,col) << length.SetValue(hc_data.EntrySpiral);
+         (*pTable)(row++,col) << length.SetValue(hc_data.ExitSpiral);
+
+         // Circular curve data
+         delta.Release();
+         hc->get_CircularCurveAngle(&delta);
+         delta->get_Value(&delta_value);
+         delta_value *= (direction == cdRight ? -1 : 1);
+         bstrDelta.Empty();
+         angle_formatter->put_Signed(VARIANT_FALSE);
+         angle_formatter->Format(delta_value,CComBSTR("°,\',\""),&bstrDelta);
+
+         CComBSTR bstrDC;
+         delta.Release();
+         hc->get_DegreeCurvature(::ConvertToSysUnits(100.0,unitMeasure::Feet),dcHighway,&delta);
+         delta->get_Value(&delta_value);
+         angle_formatter->put_Signed(VARIANT_TRUE);
+         angle_formatter->Format(delta_value,CComBSTR("°,\',\""),&bstrDC);
+
+
+         double tangent;
+         hc->get_Tangent(&tangent);
+
+         double curve_length;
+         hc->get_CurveLength(&curve_length);
+
+         double external;
+         hc->get_External(&external);
+
+         double chord;
+         hc->get_Chord(&chord);
+         
+         double mid_ordinate;
+         hc->get_MidOrdinate(&mid_ordinate);
+
+         (*pTable)(row++,col) << RPT_ANGLE(OLE2A(bstrDelta));
+         (*pTable)(row++,col) << RPT_ANGLE(OLE2A(bstrDC));
+         (*pTable)(row++,col) << length.SetValue(hc_data.Radius);
+         (*pTable)(row++,col) << length.SetValue(tangent);
+         (*pTable)(row++,col) << length.SetValue(curve_length);
+         (*pTable)(row++,col) << length.SetValue(chord);
+         (*pTable)(row++,col) << length.SetValue(external);
+         (*pTable)(row++,col) << length.SetValue(mid_ordinate);
       }
-      (*pTable)(row++,col) << rptRcStation(hc_data.PIStation, &pDispUnit->GetStationFormat());
-
-      if ( IsEqual(cs,st) )
-      {
-         (*pTable)(row++,col) << rptRcStation(cs, &pDispUnit->GetStationFormat());
-         (*pTable)(row++,col) << "-";
-         (*pTable)(row++,col) << "-";
-      }
-      else
-      {
-         (*pTable)(row++,col) << "-";
-         (*pTable)(row++,col) << rptRcStation(cs, &pDispUnit->GetStationFormat());
-         (*pTable)(row++,col) << rptRcStation(st, &pDispUnit->GetStationFormat());
-      }
-
-      CurveDirectionType direction;
-      hc->get_Direction(&direction);
-
-      CComPtr<IAngle> delta;
-      hc->get_CurveAngle(&delta);
-      double delta_value;
-      delta->get_Value(&delta_value);
-      delta_value *= (direction == cdRight ? -1 : 1);
-      CComBSTR bstrDelta;
-      angle_formatter->put_Signed(VARIANT_FALSE);
-      angle_formatter->Format(delta_value,CComBSTR("°,\',\""),&bstrDelta);
-      (*pTable)(row++,col) << RPT_ANGLE(OLE2A(bstrDelta));
-
-      // Entry Spiral Data
-      (*pTable)(row++,col) << length.SetValue(hc_data.EntrySpiral);
-      (*pTable)(row++,col) << length.SetValue(hc_data.ExitSpiral);
-
-      // Circular curve data
-      delta.Release();
-      hc->get_CircularCurveAngle(&delta);
-      delta->get_Value(&delta_value);
-      delta_value *= (direction == cdRight ? -1 : 1);
-      bstrDelta.Empty();
-      angle_formatter->put_Signed(VARIANT_FALSE);
-      angle_formatter->Format(delta_value,CComBSTR("°,\',\""),&bstrDelta);
-
-      CComBSTR bstrDC;
-      delta.Release();
-      hc->get_DegreeCurvature(::ConvertToSysUnits(100.0,unitMeasure::Feet),dcHighway,&delta);
-      delta->get_Value(&delta_value);
-      angle_formatter->put_Signed(VARIANT_TRUE);
-      angle_formatter->Format(delta_value,CComBSTR("°,\',\""),&bstrDC);
-
-
-      double tangent;
-      hc->get_Tangent(&tangent);
-
-      double curve_length;
-      hc->get_CurveLength(&curve_length);
-
-      double external;
-      hc->get_External(&external);
-      
-      double mid_ordinate;
-      hc->get_MidOrdinate(&mid_ordinate);
-
-      (*pTable)(row++,col) << RPT_ANGLE(OLE2A(bstrDelta));
-      (*pTable)(row++,col) << RPT_ANGLE(OLE2A(bstrDC));
-      (*pTable)(row++,col) << length.SetValue(hc_data.Radius);
-      (*pTable)(row++,col) << length.SetValue(tangent);
-      (*pTable)(row++,col) << length.SetValue(curve_length);
-      (*pTable)(row++,col) << length.SetValue(external);
-      (*pTable)(row++,col) << length.SetValue(mid_ordinate);
    }
 }
 
-void write_profile_data(IBroker* pBroker,IDisplayUnits* pDispUnit,rptChapter* pChapter,Uint16 level)
+void write_profile_data(IBroker* pBroker,IDisplayUnits* pDisplayUnits,rptChapter* pChapter,Uint16 level)
 {
    GET_IFACE2(pBroker, IRoadway, pRoadway);
    GET_IFACE2(pBroker, IRoadwayData, pAlignment ); 
    rptParagraph* pPara;
 
-   INIT_UV_PROTOTYPE( rptLengthUnitValue, length, pDispUnit->GetAlignmentLengthUnit(), true );
+   INIT_UV_PROTOTYPE( rptLengthUnitValue, length, pDisplayUnits->GetAlignmentLengthUnit(), true );
 
    pPara = new rptParagraph( pgsReportStyleHolder::GetHeadingStyle() );
    *pChapter << pPara;
@@ -360,7 +410,7 @@ void write_profile_data(IBroker* pBroker,IDisplayUnits* pDispUnit,rptChapter* pC
 
    pPara = new rptParagraph;
    *pChapter << pPara;
-   *pPara << "Station: " << rptRcStation(profile.Station, &pDispUnit->GetStationFormat()) << rptNewLine;
+   *pPara << "Station: " << rptRcStation(profile.Station, &pDisplayUnits->GetStationFormat()) << rptNewLine;
    *pPara << "Elevation: " << length.SetValue(profile.Elevation) << rptNewLine;
    *pPara << "Grade: " << profile.Grade*100 << "%" << rptNewLine;
 
@@ -404,102 +454,132 @@ void write_profile_data(IBroker* pBroker,IDisplayUnits* pDispUnit,rptChapter* pC
 
       VertCurveData& vcd = *iter;
 
-      CComPtr<IVertCurve> vc;
-      pRoadway->GetVertCurve(col-1,&vc);
-
-      CComPtr<IProfilePoint> bvc;
-      vc->get_BVC(&bvc);
-
-      CComPtr<IStation> bvc_station;
-      bvc->get_Station(&bvc_station);
-
-      double bvc_station_value;
-      bvc_station->get_Value(&bvc_station_value);
-
-      double bvc_elevation;
-      bvc->get_Elevation(&bvc_elevation);
-
-
-      CComPtr<IProfilePoint> pvi;
-      vc->get_PVI(&pvi);
-
-      CComPtr<IStation> pvi_station;
-      pvi->get_Station(&pvi_station);
-
-      double pvi_station_value;
-      pvi_station->get_Value(&pvi_station_value);
-
-      double pvi_elevation;
-      pvi->get_Elevation(&pvi_elevation);
-
-
-      CComPtr<IProfilePoint> evc;
-      vc->get_EVC(&evc);
-
-      CComPtr<IStation> evc_station;
-      evc->get_Station(&evc_station);
-
-      double evc_station_value;
-      evc_station->get_Value(&evc_station_value);
-
-      double evc_elevation;
-      evc->get_Elevation(&evc_elevation);
-
-      double g1,g2;
-      vc->get_EntryGrade(&g1);
-      vc->get_ExitGrade(&g2);
-
-      double L1,L2, Length;
-      vc->get_L1(&L1);
-      vc->get_L2(&L2);
-      vc->get_Length(&Length);
-
-      CComPtr<IProfilePoint> high;
-      vc->get_HighPoint(&high);
-
-      CComPtr<IStation> high_station;
-      high->get_Station(&high_station);
-
-      double high_station_value;
-      high_station->get_Value(&high_station_value);
-
-      double high_elevation;
-      high->get_Elevation(&high_elevation);
-
-      CComPtr<IProfilePoint> low;
-      vc->get_LowPoint(&low);
-
-      CComPtr<IStation> low_station;
-      low->get_Station(&low_station);
-
-      double low_station_value;
-      low_station->get_Value(&low_station_value);
-
-      double low_elevation;
-      low->get_Elevation(&low_elevation);
-
       (*pTable)(row++,col) << "Curve " << col;
-      (*pTable)(row++,col) << rptRcStation(bvc_station_value, &pDispUnit->GetStationFormat());
-      (*pTable)(row++,col) << length.SetValue(bvc_elevation);
-      (*pTable)(row++,col) << rptRcStation(pvi_station_value, &pDispUnit->GetStationFormat());
-      (*pTable)(row++,col) << length.SetValue(pvi_elevation);
-      (*pTable)(row++,col) << rptRcStation(evc_station_value, &pDispUnit->GetStationFormat());
-      (*pTable)(row++,col) << length.SetValue(evc_elevation);
-      (*pTable)(row++,col) << g1*100 << "%";
-      (*pTable)(row++,col) << g2*100 << "%";
-      (*pTable)(row++,col) << length.SetValue(L1);
-      (*pTable)(row++,col) << length.SetValue(L2);
-      (*pTable)(row++,col) << length.SetValue(Length);
-      (*pTable)(row++,col) << rptRcStation(high_station_value, &pDispUnit->GetStationFormat());
-      (*pTable)(row++,col) << length.SetValue(high_elevation);
-      (*pTable)(row++,col) << rptRcStation(low_station_value, &pDispUnit->GetStationFormat());
-      (*pTable)(row++,col) << length.SetValue(low_elevation);
+      if ( IsZero(vcd.L1) && IsZero(vcd.L2) )
+      {
+         Float64 pvi_elevation = pRoadway->GetElevation(vcd.PVIStation,0.0);
+         Float64 g1;
+         if ( iter == profile.VertCurves.begin() )
+            g1 = profile.Grade;
+         else
+            g1 = (*(iter-1)).ExitGrade;
+
+         Float64 g2 = vcd.ExitGrade;
+
+         (*pTable)(row++,col) << "";
+         (*pTable)(row++,col) << "";
+         (*pTable)(row++,col) << rptRcStation(vcd.PVIStation, &pDisplayUnits->GetStationFormat());
+         (*pTable)(row++,col) << length.SetValue(pvi_elevation);
+         (*pTable)(row++,col) << "";
+         (*pTable)(row++,col) << "";
+         (*pTable)(row++,col) << g1*100 << "%";
+         (*pTable)(row++,col) << g2*100 << "%";
+         (*pTable)(row++,col) << "";
+         (*pTable)(row++,col) << "";
+         (*pTable)(row++,col) << "";
+         (*pTable)(row++,col) << "";
+         (*pTable)(row++,col) << "";
+         (*pTable)(row++,col) << "";
+         (*pTable)(row++,col) << "";
+      }
+      else
+      {
+         CComPtr<IVertCurve> vc;
+         pRoadway->GetVertCurve(col-1,&vc);
+
+         CComPtr<IProfilePoint> bvc;
+         vc->get_BVC(&bvc);
+
+         CComPtr<IStation> bvc_station;
+         bvc->get_Station(&bvc_station);
+
+         double bvc_station_value;
+         bvc_station->get_Value(&bvc_station_value);
+
+         double bvc_elevation;
+         bvc->get_Elevation(&bvc_elevation);
+
+
+         CComPtr<IProfilePoint> pvi;
+         vc->get_PVI(&pvi);
+
+         CComPtr<IStation> pvi_station;
+         pvi->get_Station(&pvi_station);
+
+         double pvi_station_value;
+         pvi_station->get_Value(&pvi_station_value);
+
+         double pvi_elevation;
+         pvi->get_Elevation(&pvi_elevation);
+
+
+         CComPtr<IProfilePoint> evc;
+         vc->get_EVC(&evc);
+
+         CComPtr<IStation> evc_station;
+         evc->get_Station(&evc_station);
+
+         double evc_station_value;
+         evc_station->get_Value(&evc_station_value);
+
+         double evc_elevation;
+         evc->get_Elevation(&evc_elevation);
+
+         double g1,g2;
+         vc->get_EntryGrade(&g1);
+         vc->get_ExitGrade(&g2);
+
+         double L1,L2, Length;
+         vc->get_L1(&L1);
+         vc->get_L2(&L2);
+         vc->get_Length(&Length);
+
+         CComPtr<IProfilePoint> high;
+         vc->get_HighPoint(&high);
+
+         CComPtr<IStation> high_station;
+         high->get_Station(&high_station);
+
+         double high_station_value;
+         high_station->get_Value(&high_station_value);
+
+         double high_elevation;
+         high->get_Elevation(&high_elevation);
+
+         CComPtr<IProfilePoint> low;
+         vc->get_LowPoint(&low);
+
+         CComPtr<IStation> low_station;
+         low->get_Station(&low_station);
+
+         double low_station_value;
+         low_station->get_Value(&low_station_value);
+
+         double low_elevation;
+         low->get_Elevation(&low_elevation);
+
+         (*pTable)(row++,col) << rptRcStation(bvc_station_value, &pDisplayUnits->GetStationFormat());
+         (*pTable)(row++,col) << length.SetValue(bvc_elevation);
+         (*pTable)(row++,col) << rptRcStation(pvi_station_value, &pDisplayUnits->GetStationFormat());
+         (*pTable)(row++,col) << length.SetValue(pvi_elevation);
+         (*pTable)(row++,col) << rptRcStation(evc_station_value, &pDisplayUnits->GetStationFormat());
+         (*pTable)(row++,col) << length.SetValue(evc_elevation);
+         (*pTable)(row++,col) << g1*100 << "%";
+         (*pTable)(row++,col) << g2*100 << "%";
+         (*pTable)(row++,col) << length.SetValue(L1);
+         (*pTable)(row++,col) << length.SetValue(L2);
+         (*pTable)(row++,col) << length.SetValue(Length);
+         (*pTable)(row++,col) << rptRcStation(high_station_value, &pDisplayUnits->GetStationFormat());
+         (*pTable)(row++,col) << length.SetValue(high_elevation);
+         (*pTable)(row++,col) << rptRcStation(low_station_value, &pDisplayUnits->GetStationFormat());
+         (*pTable)(row++,col) << length.SetValue(low_elevation);
+      }
 
       col++;
    }
 }
 
-void write_crown_data(IBroker* pBroker,IDisplayUnits* pDispUnit,rptChapter* pChapter,Uint16 level)
+void write_crown_data(IBroker* pBroker,IDisplayUnits* pDisplayUnits,rptChapter* pChapter,Uint16 level)
 {
    GET_IFACE2(pBroker, IRoadwayData, pAlignment ); 
    rptParagraph* pPara;
@@ -510,15 +590,15 @@ void write_crown_data(IBroker* pBroker,IDisplayUnits* pDispUnit,rptChapter* pCha
    rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(5,"Superelevation Details");
    *pPara << pTable << rptNewLine;
 
-   std::string strSlopeTag = pDispUnit->GetAlignmentLengthUnit().UnitOfMeasure.UnitTag();
+   std::string strSlopeTag = pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure.UnitTag();
 
    (*pTable)(0,0) << "Section";
    (*pTable)(0,1) << "Station";
    (*pTable)(0,2) << "Left Slope" << rptNewLine << "(" << strSlopeTag << "/" << strSlopeTag << ")";
    (*pTable)(0,3) << "Right Slope" << rptNewLine << "(" << strSlopeTag << "/" << strSlopeTag << ")";
-   (*pTable)(0,4) << COLHDR("Crown Point Offset", rptLengthUnitTag, pDispUnit->GetAlignmentLengthUnit() );
+   (*pTable)(0,4) << COLHDR("Crown Point Offset", rptLengthUnitTag, pDisplayUnits->GetAlignmentLengthUnit() );
 
-   INIT_UV_PROTOTYPE( rptLengthUnitValue, length, pDispUnit->GetAlignmentLengthUnit(), false );
+   INIT_UV_PROTOTYPE( rptLengthUnitValue, length, pDisplayUnits->GetAlignmentLengthUnit(), false );
 
    RoadwaySectionData section = pAlignment->GetRoadwaySectionData();
 
@@ -528,7 +608,7 @@ void write_crown_data(IBroker* pBroker,IDisplayUnits* pDispUnit,rptChapter* pCha
    {
       CrownData2& crown = *iter;
       (*pTable)(row,0) << row;
-      (*pTable)(row,1) << rptRcStation(crown.Station,&pDispUnit->GetStationFormat());
+      (*pTable)(row,1) << rptRcStation(crown.Station,&pDisplayUnits->GetStationFormat());
       (*pTable)(row,2) << crown.Left;
       (*pTable)(row,3) << crown.Right;
       (*pTable)(row,4) << RPT_OFFSET(crown.CrownPointOffset,length);
@@ -537,17 +617,17 @@ void write_crown_data(IBroker* pBroker,IDisplayUnits* pDispUnit,rptChapter* pCha
    }
 }
 
-void write_bridge_data(IBroker* pBroker,IDisplayUnits* pDispUnit,rptChapter* pChapter,Uint16 level,SpanIndexType span,GirderIndexType gdr)
+void write_bridge_data(IBroker* pBroker,IDisplayUnits* pDisplayUnits,rptChapter* pChapter,Uint16 level,SpanIndexType span,GirderIndexType gdr)
 {
    GET_IFACE2(pBroker, IGirderData, pGirderData);
 
-   bool bUnitsSI = (pDispUnit->GetUnitDisplayMode() == pgsTypes::umSI);
+   bool bUnitsSI = (pDisplayUnits->GetUnitDisplayMode() == pgsTypes::umSI);
 
    rptParagraph* pPara;
    pPara = new rptParagraph;
    *pChapter << pPara;
 
-   INIT_UV_PROTOTYPE( rptLengthUnitValue,  dia,  pDispUnit->GetComponentDimUnit(), true );
+   INIT_UV_PROTOTYPE( rptLengthUnitValue,  dia,  pDisplayUnits->GetComponentDimUnit(), true );
 
 
    // Setup the table
@@ -613,7 +693,13 @@ void write_bridge_data(IBroker* pBroker,IDisplayUnits* pDispUnit,rptChapter* pCh
    }
    else
    {
-      (*pTable)(row,1) << dia.SetValue(pstrand->GetNominalDiameter()) << " Dia.";
+      Float64 diam = pstrand->GetNominalDiameter();
+
+      // special designator for 1/2" special (as per High concrete)
+      if (IsEqual(diam,0.013208))
+         (*pTable)(row,1) << " 1/2\" Special, ";
+
+      (*pTable)(row,1) << dia.SetValue(diam) << " Dia.";
       std::string strData;
 
       strData += " ";
@@ -627,12 +713,12 @@ void write_bridge_data(IBroker* pBroker,IDisplayUnits* pDispUnit,rptChapter* pCh
 }
 
 
-void write_concrete_details(IBroker* pBroker,IDisplayUnits* pDispUnit,rptChapter* pChapter,SpanIndexType span,GirderIndexType gdr,Uint16 level)
+void write_concrete_details(IBroker* pBroker,IDisplayUnits* pDisplayUnits,rptChapter* pChapter,SpanIndexType span,GirderIndexType gdr,Uint16 level)
 {
-   INIT_UV_PROTOTYPE( rptLengthUnitValue,  cmpdim,  pDispUnit->GetComponentDimUnit(), false );
-   INIT_UV_PROTOTYPE( rptStressUnitValue,  stress,  pDispUnit->GetStressUnit(),       false );
-   INIT_UV_PROTOTYPE( rptDensityUnitValue, density, pDispUnit->GetDensityUnit(),      false );
-   INIT_UV_PROTOTYPE( rptStressUnitValue,  modE,    pDispUnit->GetModEUnit(),         false );
+   INIT_UV_PROTOTYPE( rptLengthUnitValue,  cmpdim,  pDisplayUnits->GetComponentDimUnit(), false );
+   INIT_UV_PROTOTYPE( rptStressUnitValue,  stress,  pDisplayUnits->GetStressUnit(),       false );
+   INIT_UV_PROTOTYPE( rptDensityUnitValue, density, pDisplayUnits->GetDensityUnit(),      false );
+   INIT_UV_PROTOTYPE( rptStressUnitValue,  modE,    pDisplayUnits->GetModEUnit(),         false );
 
    rptParagraph* pPara = new rptParagraph;
    *pChapter << pPara;
@@ -651,13 +737,13 @@ void write_concrete_details(IBroker* pBroker,IDisplayUnits* pDispUnit,rptChapter
 
    RowIndexType row = 0;
    (*pTable)(row,0) << "Element";
-   (*pTable)(row,1) << COLHDR(RPT_FCI, rptStressUnitTag, pDispUnit->GetStressUnit() );
-   (*pTable)(row,2) << COLHDR(RPT_ECI, rptStressUnitTag, pDispUnit->GetStressUnit() );
-   (*pTable)(row,3) << COLHDR(RPT_FC,  rptStressUnitTag, pDispUnit->GetStressUnit() );
-   (*pTable)(row,4) << COLHDR(RPT_EC,  rptStressUnitTag, pDispUnit->GetStressUnit() );
-   (*pTable)(row,5) << COLHDR(Sub2(symbol(gamma),"w"), rptDensityUnitTag, pDispUnit->GetDensityUnit() );
-   (*pTable)(row,6) << COLHDR(Sub2(symbol(gamma),"s"), rptDensityUnitTag, pDispUnit->GetDensityUnit() );
-   (*pTable)(row,7) << COLHDR(Sub2("D","agg"), rptLengthUnitTag, pDispUnit->GetComponentDimUnit() );
+   (*pTable)(row,1) << COLHDR(RPT_FCI, rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*pTable)(row,2) << COLHDR(RPT_ECI, rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*pTable)(row,3) << COLHDR(RPT_FC,  rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*pTable)(row,4) << COLHDR(RPT_EC,  rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*pTable)(row,5) << COLHDR(Sub2(symbol(gamma),"w"), rptDensityUnitTag, pDisplayUnits->GetDensityUnit() );
+   (*pTable)(row,6) << COLHDR(Sub2(symbol(gamma),"s"), rptDensityUnitTag, pDisplayUnits->GetDensityUnit() );
+   (*pTable)(row,7) << COLHDR(Sub2("D","agg"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
    if ( bK1 )
    {
       (*pTable)(row,8) << Sub2("K","1");
@@ -723,7 +809,7 @@ void write_concrete_details(IBroker* pBroker,IDisplayUnits* pDispUnit,rptChapter
    }
 }
 
-void write_pier_data(IBroker* pBroker,IDisplayUnits* pDispUnit,rptChapter* pChapter,Uint16 level)
+void write_pier_data(IBroker* pBroker,IDisplayUnits* pDisplayUnits,rptChapter* pChapter,Uint16 level)
 {
    USES_CONVERSION;
 
@@ -734,9 +820,9 @@ void write_pier_data(IBroker* pBroker,IDisplayUnits* pDispUnit,rptChapter* pChap
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
-   INIT_UV_PROTOTYPE( rptLengthUnitValue, xdim,   pDispUnit->GetXSectionDimUnit(),  false );
-   INIT_UV_PROTOTYPE( rptLengthUnitValue, cmpdim, pDispUnit->GetComponentDimUnit(), false );
-   INIT_UV_PROTOTYPE( rptLengthUnitValue, offset, pDispUnit->GetAlignmentLengthUnit(), true );
+   INIT_UV_PROTOTYPE( rptLengthUnitValue, xdim,   pDisplayUnits->GetXSectionDimUnit(),  false );
+   INIT_UV_PROTOTYPE( rptLengthUnitValue, cmpdim, pDisplayUnits->GetComponentDimUnit(), false );
+   INIT_UV_PROTOTYPE( rptLengthUnitValue, offset, pDisplayUnits->GetAlignmentLengthUnit(), true );
 
    CComPtr<IAngleDisplayUnitFormatter> angle_formatter;
    angle_formatter.CoCreateInstance(CLSID_AngleDisplayUnitFormatter);
@@ -816,7 +902,7 @@ void write_pier_data(IBroker* pBroker,IDisplayUnits* pDispUnit,rptChapter* pChap
       else
          (*pTable)(row,0) << "Pier " << LABEL_PIER(pierIdx);
 
-      (*pTable)(row,1) << rptRcStation(pPier->GetStation(), &pDispUnit->GetStationFormat() );
+      (*pTable)(row,1) << rptRcStation(pPier->GetStation(), &pDisplayUnits->GetStationFormat() );
       (*pTable)(row,2) << RPT_BEARING(OLE2A(bstrBearing));
       (*pTable)(row,3) << RPT_ANGLE(OLE2A(bstrAngle));
 
@@ -850,7 +936,7 @@ void write_pier_data(IBroker* pBroker,IDisplayUnits* pDispUnit,rptChapter* pChap
 }
 
 
-void write_span_data(IBroker* pBroker,IDisplayUnits* pDispUnit,rptChapter* pChapter,Uint16 level,SpanIndexType span,GirderIndexType gdr)
+void write_span_data(IBroker* pBroker,IDisplayUnits* pDisplayUnits,rptChapter* pChapter,Uint16 level,SpanIndexType span,GirderIndexType gdr)
 {
    rptParagraph* pPara;
    pPara = new rptParagraph;
@@ -910,10 +996,10 @@ void write_span_data(IBroker* pBroker,IDisplayUnits* pDispUnit,rptChapter* pChap
       if ( 1 < nGirders )
       {
          const CGirderSpacing* pStartGirderSpacing = pSpan->GetGirderSpacing(pgsTypes::metStart);
-         write_girder_spacing(pBroker,pDispUnit,pTable,pStartGirderSpacing,row,2);
+         write_girder_spacing(pBroker,pDisplayUnits,pTable,pStartGirderSpacing,row,2);
 
          const CGirderSpacing* pEndGirderSpacing = pSpan->GetGirderSpacing(pgsTypes::metEnd);
-         write_girder_spacing(pBroker,pDispUnit,pTable,pEndGirderSpacing,row,4);
+         write_girder_spacing(pBroker,pDisplayUnits,pTable,pEndGirderSpacing,row,4);
       }
       else
       {
@@ -940,14 +1026,14 @@ void write_span_data(IBroker* pBroker,IDisplayUnits* pDispUnit,rptChapter* pChap
    *pPara << "(4) Measured at and along the centerline of bearing" << rptNewLine;
 }
 
-void write_girder_spacing(IBroker* pBroker,IDisplayUnits* pDispUnit,rptRcTable* pTable,const CGirderSpacing* pGirderSpacing,RowIndexType row,ColumnIndexType col)
+void write_girder_spacing(IBroker* pBroker,IDisplayUnits* pDisplayUnits,rptRcTable* pTable,const CGirderSpacing* pGirderSpacing,RowIndexType row,ColumnIndexType col)
 {
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
    bool bIsGirderSpacing = IsGirderSpacing( pBridgeDesc->GetGirderSpacingType() );
 
-   INIT_UV_PROTOTYPE( rptLengthUnitValue,  xdim, (bIsGirderSpacing ? pDispUnit->GetXSectionDimUnit() :  pDispUnit->GetComponentDimUnit()),  true );
+   INIT_UV_PROTOTYPE( rptLengthUnitValue,  xdim, (bIsGirderSpacing ? pDisplayUnits->GetXSectionDimUnit() :  pDisplayUnits->GetComponentDimUnit()),  true );
 
    GroupIndexType nSpacingGroups = pGirderSpacing->GetSpacingGroupCount();
    for ( GroupIndexType grpIdx = 0; grpIdx < nSpacingGroups; grpIdx++ )
@@ -987,15 +1073,15 @@ void write_girder_spacing(IBroker* pBroker,IDisplayUnits* pDispUnit,rptRcTable* 
    }
 }
 
-void write_ps_data(IBroker* pBroker,IDisplayUnits* pDispUnit,rptChapter* pChapter,Uint16 level,SpanIndexType span,GirderIndexType gdr)
+void write_ps_data(IBroker* pBroker,IDisplayUnits* pDisplayUnits,rptChapter* pChapter,Uint16 level,SpanIndexType span,GirderIndexType gdr)
 {
-   INIT_UV_PROTOTYPE( rptLengthUnitValue,  xdim,    pDispUnit->GetXSectionDimUnit(),  true );
-   INIT_UV_PROTOTYPE( rptLengthUnitValue,  cmpdim,  pDispUnit->GetComponentDimUnit(), true );
-   INIT_UV_PROTOTYPE( rptForceUnitValue,   force,   pDispUnit->GetGeneralForceUnit(), true );
-   INIT_UV_PROTOTYPE( rptStressUnitValue,  stress,  pDispUnit->GetStressUnit(),       true );
-   INIT_UV_PROTOTYPE( rptDensityUnitValue, density, pDispUnit->GetDensityUnit(),      true );
-   INIT_UV_PROTOTYPE( rptStressUnitValue,  modE,    pDispUnit->GetModEUnit(),         true );
-   INIT_UV_PROTOTYPE( rptAreaUnitValue,    area,    pDispUnit->GetAreaUnit(),         true );
+   INIT_UV_PROTOTYPE( rptLengthUnitValue,  xdim,    pDisplayUnits->GetXSectionDimUnit(),  true );
+   INIT_UV_PROTOTYPE( rptLengthUnitValue,  cmpdim,  pDisplayUnits->GetComponentDimUnit(), true );
+   INIT_UV_PROTOTYPE( rptForceUnitValue,   force,   pDisplayUnits->GetGeneralForceUnit(), true );
+   INIT_UV_PROTOTYPE( rptStressUnitValue,  stress,  pDisplayUnits->GetStressUnit(),       true );
+   INIT_UV_PROTOTYPE( rptDensityUnitValue, density, pDisplayUnits->GetDensityUnit(),      true );
+   INIT_UV_PROTOTYPE( rptStressUnitValue,  modE,    pDisplayUnits->GetModEUnit(),         true );
+   INIT_UV_PROTOTYPE( rptAreaUnitValue,    area,    pDisplayUnits->GetAreaUnit(),         true );
 
    rptParagraph* pPara;
    pPara = new rptParagraph;
@@ -1170,7 +1256,7 @@ void write_ps_data(IBroker* pBroker,IDisplayUnits* pDispUnit,rptChapter* pChapte
 }
 
 
-void write_slab_data(IBroker* pBroker,IDisplayUnits* pDispUnit,rptChapter* pChapter,Uint16 level)
+void write_slab_data(IBroker* pBroker,IDisplayUnits* pDisplayUnits,rptChapter* pChapter,Uint16 level)
 {
    rptParagraph* pPara1 = new rptParagraph;
    pPara1->SetStyleName(pgsReportStyleHolder::GetHeadingStyle());
@@ -1182,10 +1268,10 @@ void write_slab_data(IBroker* pBroker,IDisplayUnits* pDispUnit,rptChapter* pChap
    rptParagraph* pPara2 = new rptParagraph;
    *pChapter << pPara2;
 
-   INIT_UV_PROTOTYPE( rptLengthUnitValue, dim,      pDispUnit->GetComponentDimUnit(),  true );
-   INIT_UV_PROTOTYPE( rptLengthUnitValue, overhang, pDispUnit->GetXSectionDimUnit(),   true );
-   INIT_UV_PROTOTYPE( rptStressUnitValue, olay,     pDispUnit->GetOverlayWeightUnit(), true );
-   INIT_UV_PROTOTYPE( rptStressUnitValue, stress,   pDispUnit->GetStressUnit(),        true );
+   INIT_UV_PROTOTYPE( rptLengthUnitValue, dim,      pDisplayUnits->GetComponentDimUnit(),  true );
+   INIT_UV_PROTOTYPE( rptLengthUnitValue, overhang, pDisplayUnits->GetXSectionDimUnit(),   true );
+   INIT_UV_PROTOTYPE( rptStressUnitValue, olay,     pDisplayUnits->GetOverlayWeightUnit(), true );
+   INIT_UV_PROTOTYPE( rptStressUnitValue, stress,   pDisplayUnits->GetStressUnit(),        true );
 
    rptRcTable* table = pgsReportStyleHolder::CreateTableNoHeading(1,"");
    table->EnableRowStriping(false);
@@ -1289,8 +1375,8 @@ void write_slab_data(IBroker* pBroker,IDisplayUnits* pDispUnit,rptChapter* pChap
       rptRcTable* deckTable = pgsReportStyleHolder::CreateDefaultTable(4,"");
       (*deckTable)(0,0) << "Station";
       (*deckTable)(0,1) << "Measured" << rptNewLine << "From";
-      (*deckTable)(0,2) << COLHDR("Left Offset", rptLengthUnitTag, pDispUnit->GetXSectionDimUnit() );
-      (*deckTable)(0,3) << COLHDR("Right Offset", rptLengthUnitTag, pDispUnit->GetXSectionDimUnit() );
+      (*deckTable)(0,2) << COLHDR("Left Offset", rptLengthUnitTag, pDisplayUnits->GetXSectionDimUnit() );
+      (*deckTable)(0,3) << COLHDR("Right Offset", rptLengthUnitTag, pDisplayUnits->GetXSectionDimUnit() );
 
       overhang.ShowUnitTag(false);
       (*table)(0,0) << deckTable << rptNewLine;
@@ -1299,7 +1385,7 @@ void write_slab_data(IBroker* pBroker,IDisplayUnits* pDispUnit,rptChapter* pChap
       for ( iter = pDeck->DeckEdgePoints.begin(); iter != pDeck->DeckEdgePoints.end(); iter++ )
       {
          const CDeckPoint& dp = *iter;
-         (*deckTable)(row,0) << rptRcStation(dp.Station, &pDispUnit->GetStationFormat());
+         (*deckTable)(row,0) << rptRcStation(dp.Station, &pDisplayUnits->GetStationFormat());
 
          if ( dp.MeasurementType == pgsTypes::omtAlignment )
             (*deckTable)(row,1) << "Alignment";
@@ -1387,16 +1473,16 @@ void write_slab_data(IBroker* pBroker,IDisplayUnits* pDispUnit,rptChapter* pChap
    (*table)(1,0) << rptRcImage(pgsReportStyleHolder::GetImagePath() + strPicture );
 }
 
-void write_deck_reinforcing_data(IBroker* pBroker,IDisplayUnits* pDispUnit,rptChapter* pChapter,Uint16 level)
+void write_deck_reinforcing_data(IBroker* pBroker,IDisplayUnits* pDisplayUnits,rptChapter* pChapter,Uint16 level)
 {
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CDeckDescription* pDeck = pBridgeDesc->GetDeckDescription();
 
-   INIT_UV_PROTOTYPE( rptLengthUnitValue, cover, pDispUnit->GetComponentDimUnit(), true );
-   INIT_UV_PROTOTYPE( rptLengthUnitValue, spacing, pDispUnit->GetComponentDimUnit(), false );
-   INIT_UV_PROTOTYPE( rptLengthUnitValue, cutoff, pDispUnit->GetXSectionDimUnit(), false );
-   INIT_UV_PROTOTYPE( rptAreaPerLengthValue, As, pDispUnit->GetAvOverSUnit(), false );
+   INIT_UV_PROTOTYPE( rptLengthUnitValue, cover, pDisplayUnits->GetComponentDimUnit(), true );
+   INIT_UV_PROTOTYPE( rptLengthUnitValue, spacing, pDisplayUnits->GetComponentDimUnit(), false );
+   INIT_UV_PROTOTYPE( rptLengthUnitValue, cutoff, pDisplayUnits->GetXSectionDimUnit(), false );
+   INIT_UV_PROTOTYPE( rptAreaPerLengthValue, As, pDisplayUnits->GetAvOverSUnit(), false );
 
    const CDeckRebarData& deckRebar = pDeck->DeckRebarData;
 
@@ -1424,7 +1510,7 @@ void write_deck_reinforcing_data(IBroker* pBroker,IDisplayUnits* pDispUnit,rptCh
    (*pTable)(0,0) << "Mat";
    (*pTable)(0,1) << "Bars";
    (*pTable)(0,2) << "";
-   (*pTable)(0,3) << COLHDR("Lump Sum", rptAreaPerLengthUnitTag, pDispUnit->GetAvOverSUnit() );
+   (*pTable)(0,3) << COLHDR("Lump Sum", rptAreaPerLengthUnitTag, pDisplayUnits->GetAvOverSUnit() );
 
    (*pTable)(1,0) << "Top";
    if ( deckRebar.TopRebarKey == INVALID_BAR_SIZE )
@@ -1460,11 +1546,11 @@ void write_deck_reinforcing_data(IBroker* pBroker,IDisplayUnits* pDispUnit,rptCh
       *pPara << pTable << rptNewLine;
       (*pTable)(0,0) << "Pier";
       (*pTable)(0,1) << "Mat";
-      (*pTable)(0,2) << COLHDR(Sub2("A","s"), rptAreaPerLengthUnitTag, pDispUnit->GetAvOverSUnit() );
+      (*pTable)(0,2) << COLHDR(Sub2("A","s"), rptAreaPerLengthUnitTag, pDisplayUnits->GetAvOverSUnit() );
       (*pTable)(0,3) << "Bar";
-      (*pTable)(0,4) << COLHDR("Spacing",rptLengthUnitTag, pDispUnit->GetComponentDimUnit() );
-      (*pTable)(0,5) << COLHDR("Left" << rptNewLine << "Cutoff",rptLengthUnitTag, pDispUnit->GetXSectionDimUnit() );
-      (*pTable)(0,6) << COLHDR("Right" << rptNewLine << "Cutoff",rptLengthUnitTag, pDispUnit->GetXSectionDimUnit() );
+      (*pTable)(0,4) << COLHDR("Spacing",rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+      (*pTable)(0,5) << COLHDR("Left" << rptNewLine << "Cutoff",rptLengthUnitTag, pDisplayUnits->GetXSectionDimUnit() );
+      (*pTable)(0,6) << COLHDR("Right" << rptNewLine << "Cutoff",rptLengthUnitTag, pDisplayUnits->GetXSectionDimUnit() );
 
       int row = pTable->GetNumberOfHeaderRows();
       std::vector<CDeckRebarData::NegMomentRebarData>::const_iterator iter;

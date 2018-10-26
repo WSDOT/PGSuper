@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 2002  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -33,27 +33,27 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-CCreepAtFinalTable::CCreepAtFinalTable(ColumnIndexType NumColumns, IDisplayUnits* pDispUnit) :
+CCreepAtFinalTable::CCreepAtFinalTable(ColumnIndexType NumColumns, IDisplayUnits* pDisplayUnits) :
 rptRcTable(NumColumns,0)
 {
-   DEFINE_UV_PROTOTYPE( spanloc,     pDispUnit->GetSpanLengthUnit(),      false );
-   DEFINE_UV_PROTOTYPE( gdrloc,      pDispUnit->GetSpanLengthUnit(),      false );
-   DEFINE_UV_PROTOTYPE( offset,      pDispUnit->GetSpanLengthUnit(),      false );
-   DEFINE_UV_PROTOTYPE( mod_e,       pDispUnit->GetModEUnit(),            false );
-   DEFINE_UV_PROTOTYPE( force,       pDispUnit->GetGeneralForceUnit(),    false );
-   DEFINE_UV_PROTOTYPE( area,        pDispUnit->GetAreaUnit(),            false );
-   DEFINE_UV_PROTOTYPE( mom_inertia, pDispUnit->GetMomentOfInertiaUnit(), false );
-   DEFINE_UV_PROTOTYPE( ecc,         pDispUnit->GetComponentDimUnit(),    false );
-   DEFINE_UV_PROTOTYPE( moment,      pDispUnit->GetMomentUnit(),          false );
-   DEFINE_UV_PROTOTYPE( stress,      pDispUnit->GetStressUnit(),          false );
-   DEFINE_UV_PROTOTYPE( time,        pDispUnit->GetLongTimeUnit(),        false );
+   DEFINE_UV_PROTOTYPE( spanloc,     pDisplayUnits->GetSpanLengthUnit(),      false );
+   DEFINE_UV_PROTOTYPE( gdrloc,      pDisplayUnits->GetSpanLengthUnit(),      false );
+   DEFINE_UV_PROTOTYPE( offset,      pDisplayUnits->GetSpanLengthUnit(),      false );
+   DEFINE_UV_PROTOTYPE( mod_e,       pDisplayUnits->GetModEUnit(),            false );
+   DEFINE_UV_PROTOTYPE( force,       pDisplayUnits->GetGeneralForceUnit(),    false );
+   DEFINE_UV_PROTOTYPE( area,        pDisplayUnits->GetAreaUnit(),            false );
+   DEFINE_UV_PROTOTYPE( mom_inertia, pDisplayUnits->GetMomentOfInertiaUnit(), false );
+   DEFINE_UV_PROTOTYPE( ecc,         pDisplayUnits->GetComponentDimUnit(),    false );
+   DEFINE_UV_PROTOTYPE( moment,      pDisplayUnits->GetMomentUnit(),          false );
+   DEFINE_UV_PROTOTYPE( stress,      pDisplayUnits->GetStressUnit(),          false );
+   DEFINE_UV_PROTOTYPE( time,        pDisplayUnits->GetLongTimeUnit(),        false );
 
    scalar.SetFormat( sysNumericFormatTool::Automatic );
    scalar.SetWidth(6);
    scalar.SetPrecision(2);
 }
 
-CCreepAtFinalTable* CCreepAtFinalTable::PrepareTable(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,LOSSDETAILS& details,IDisplayUnits* pDispUnit,Uint16 level)
+CCreepAtFinalTable* CCreepAtFinalTable::PrepareTable(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,LOSSDETAILS& details,IDisplayUnits* pDisplayUnits,Uint16 level)
 {
    GET_IFACE2(pBroker,IGirderData,pGirderData);
    CGirderData girderData = pGirderData->GetGirderData(span,gdr);
@@ -78,7 +78,7 @@ CCreepAtFinalTable* CCreepAtFinalTable::PrepareTable(rptChapter* pChapter,IBroke
          numColumns+=2;
    }
 
-   CCreepAtFinalTable* table = new CCreepAtFinalTable( numColumns, pDispUnit );
+   CCreepAtFinalTable* table = new CCreepAtFinalTable( numColumns, pDisplayUnits );
    pgsReportStyleHolder::ConfigureTable(table);
 
    
@@ -130,10 +130,10 @@ CCreepAtFinalTable* CCreepAtFinalTable::PrepareTable(rptChapter* pChapter,IBroke
 
    rptRcTable* pParamTable = pgsReportStyleHolder::CreateDefaultTable(5,"");
    *pParagraph << pParamTable << rptNewLine;
-   (*pParamTable)(0,0) << COLHDR(Sub2("E","p"), rptStressUnitTag, pDispUnit->GetStressUnit());
-   (*pParamTable)(0,1) << COLHDR(Sub2("E","c"), rptStressUnitTag, pDispUnit->GetStressUnit());
-   (*pParamTable)(0,2) << COLHDR(Sub2("E","ci"), rptStressUnitTag, pDispUnit->GetStressUnit());
-   (*pParamTable)(0,3) << COLHDR(RPT_FC,rptStressUnitTag,pDispUnit->GetStressUnit());
+   (*pParamTable)(0,0) << COLHDR(Sub2("E","p"), rptStressUnitTag, pDisplayUnits->GetStressUnit());
+   (*pParamTable)(0,1) << COLHDR(Sub2("E","c"), rptStressUnitTag, pDisplayUnits->GetStressUnit());
+   (*pParamTable)(0,2) << COLHDR(Sub2("E","ci"), rptStressUnitTag, pDisplayUnits->GetStressUnit());
+   (*pParamTable)(0,3) << COLHDR(RPT_FC,rptStressUnitTag,pDisplayUnits->GetStressUnit());
    (*pParamTable)(0,4) << Sub2("k","f");
 
    (*pParamTable)(1,0) << table->mod_e.SetValue( details.RefinedLosses2005.GetEp() );
@@ -144,9 +144,9 @@ CCreepAtFinalTable* CCreepAtFinalTable::PrepareTable(rptChapter* pChapter,IBroke
 
    pParamTable = pgsReportStyleHolder::CreateDefaultTable(5,"");
    *pParagraph << pParamTable << rptNewLine;
-   (*pParamTable)(0,0) << COLHDR(Sub2("t","i"), rptTimeUnitTag, pDispUnit->GetLongTimeUnit());
-   (*pParamTable)(0,1) << COLHDR(Sub2("t","d"), rptTimeUnitTag, pDispUnit->GetLongTimeUnit());
-   (*pParamTable)(0,2) << COLHDR(Sub2("t","f"), rptTimeUnitTag, pDispUnit->GetLongTimeUnit());
+   (*pParamTable)(0,0) << COLHDR(Sub2("t","i"), rptTimeUnitTag, pDisplayUnits->GetLongTimeUnit());
+   (*pParamTable)(0,1) << COLHDR(Sub2("t","d"), rptTimeUnitTag, pDisplayUnits->GetLongTimeUnit());
+   (*pParamTable)(0,2) << COLHDR(Sub2("t","f"), rptTimeUnitTag, pDisplayUnits->GetLongTimeUnit());
 
    table->time.ShowUnitTag(true);
    (*pParamTable)(0,3) << Sub2("k","td") << rptNewLine << "t = " << table->time.SetValue(details.RefinedLosses2005.GetAdjustedInitialAge());
@@ -175,27 +175,27 @@ CCreepAtFinalTable* CCreepAtFinalTable::PrepareTable(rptChapter* pChapter,IBroke
 
    ColumnIndexType col = 0;
 
-   (*table)(0,col++) << COLHDR("Location from"<<rptNewLine<<"Left Support",rptLengthUnitTag,  pDispUnit->GetSpanLengthUnit() );
+   (*table)(0,col++) << COLHDR("Location from"<<rptNewLine<<"Left Support",rptLengthUnitTag,  pDisplayUnits->GetSpanLengthUnit() );
    (*table)(0,col++) << Sub2("K","df");
 
-  (*table)(0,col++) << COLHDR(Sub2("f","cgp"), rptStressUnitTag, pDispUnit->GetStressUnit() );
+  (*table)(0,col++) << COLHDR(Sub2("f","cgp"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    if ( 0 < NtMax &&  girderData.TempStrandUsage != pgsTypes::ttsPretensioned )
    {
-      (*table)(0,col++) << COLHDR(symbol(DELTA) << Sub2("f","pp"), rptStressUnitTag, pDispUnit->GetStressUnit() );
+      (*table)(0,col++) << COLHDR(symbol(DELTA) << Sub2("f","pp"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    }
 
    if ( 0 < NtMax )
    {
-      (*table)(0,col++) << COLHDR(symbol(DELTA) << Sub2("f","ptr"), rptStressUnitTag, pDispUnit->GetStressUnit() );
+      (*table)(0,col++) << COLHDR(symbol(DELTA) << Sub2("f","ptr"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    }
 
-   (*table)(0,col++) << COLHDR(symbol(DELTA) << Sub2("f","cd"), rptStressUnitTag, pDispUnit->GetStressUnit() );
-   (*table)(0,col++) << COLHDR(symbol(DELTA) << Sub2("f","pCD"), rptStressUnitTag, pDispUnit->GetStressUnit() );
+   (*table)(0,col++) << COLHDR(symbol(DELTA) << Sub2("f","cd"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*table)(0,col++) << COLHDR(symbol(DELTA) << Sub2("f","pCD"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
 
    return table;
 }
 
-void CCreepAtFinalTable::AddRow(rptChapter* pChapter,IBroker* pBroker,RowIndexType row,LOSSDETAILS& details,IDisplayUnits* pDispUnit,Uint16 level)
+void CCreepAtFinalTable::AddRow(rptChapter* pChapter,IBroker* pBroker,RowIndexType row,LOSSDETAILS& details,IDisplayUnits* pDisplayUnits,Uint16 level)
 {
    ColumnIndexType col = 1;
    (*this)(row,col++) << scalar.SetValue(details.RefinedLosses2005.GetKdf());

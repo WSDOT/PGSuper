@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -33,6 +33,7 @@
 #include <IFace\StatusCenter.h>
 #include <IFace\UpdateTemplates.h>
 #include <IFace\Selection.h>
+#include <IFace\EditByUI.h>
 
 // LOCAL INCLUDES
 //
@@ -80,7 +81,8 @@ class pgsDocProxyAgent : public IAgentEx,
                          public IUIEvents,
                          public IStatusCenter,
                          public IUpdateTemplates,
-                         public ISelection
+                         public ISelection,
+                         public IEditByUI
 {
 public:
    // GROUP: LIFECYCLE
@@ -150,15 +152,16 @@ public:
    virtual std::string GetFileRoot();
 
    // IStatusCenter
-   virtual long GetAgentID();
-   virtual long Add(pgsStatusItem* pItem);
-   virtual bool RemoveByID(long id);
-   virtual bool RemoveByIndex(long index);
-   virtual bool RemoveByAgentID(long agentID);
-   virtual pgsStatusItem* GetByID(long id);
-   virtual pgsStatusItem* GetByIndex(long index);
-   virtual long GetSeverity(const pgsStatusItem* pItem);
-   virtual long Count();
+   virtual StatusCallbackIDType RegisterCallback(iStatusCallback* pCallback);
+   virtual AgentIDType GetAgentID();
+   virtual StatusItemIDType Add(pgsStatusItem* pItem);
+   virtual bool RemoveByID(StatusItemIDType id);
+   virtual bool RemoveByIndex(CollectionIndexType index);
+   virtual bool RemoveByAgentID(AgentIDType agentID);
+   virtual pgsStatusItem* GetByID(StatusItemIDType id);
+   virtual pgsStatusItem* GetByIndex(CollectionIndexType index);
+   virtual pgsTypes::StatusSeverityType GetSeverity(const pgsStatusItem* pItem);
+   virtual CollectionIndexType Count();
 
    // IUpdateTemplates
    virtual bool UpdatingTemplates();
@@ -175,6 +178,18 @@ public:
    virtual void SelectSpan(SpanIndexType spanIdx);
    virtual void SelectGirder(SpanIndexType spanIdx,GirderIndexType gdrIdx);
    virtual Float64 GetSectionCutStation();
+
+   // IEditByUI
+   virtual void EditBridgeDescription(int nPage);
+   virtual void EditAlignmentDescription(int nPage);
+   virtual bool EditGirderDescription(SpanIndexType span,GirderIndexType girder, int nPage);
+   virtual bool EditSpanDescription(SpanIndexType spanIdx, int nPage);
+   virtual bool EditPierDescription(PierIndexType pierIdx, int nPage);
+   virtual void EditLiveLoads();
+   virtual void EditLiveLoadDistributionFactors(pgsTypes::DistributionFactorMethod method,LldfRangeOfApplicabilityAction roaAction);
+   virtual bool EditPointLoad(CollectionIndexType loadIdx);
+   virtual bool EditDistributedLoad(CollectionIndexType loadIdx);
+   virtual bool EditMomentLoad(CollectionIndexType loadIdx);
 
 protected:
    // GROUP: DATA MEMBERS

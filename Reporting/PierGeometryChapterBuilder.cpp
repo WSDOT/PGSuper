@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 2001  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -45,7 +45,7 @@ CLASS
 ****************************************************************************/
 
 
-void pier_geometry(IBroker*pBroker,rptChapter* pChapter,IDisplayUnits* pDispUnit);
+void pier_geometry(IBroker*pBroker,rptChapter* pChapter,IDisplayUnits* pDisplayUnits);
 
 ////////////////////////// PUBLIC     ///////////////////////////////////////
 
@@ -67,10 +67,10 @@ rptChapter* CPierGeometryChapterBuilder::Build(CReportSpecification* pRptSpec,Ui
    CComPtr<IBroker> pBroker;
    pSpec->GetBroker(&pBroker);
 
-   GET_IFACE2(pBroker,IDisplayUnits,pDispUnit);
+   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
    
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
-   pier_geometry(pBroker,pChapter,pDispUnit);
+   pier_geometry(pBroker,pChapter,pDisplayUnits);
 
    return pChapter;
 }
@@ -99,7 +99,7 @@ CChapterBuilder* CPierGeometryChapterBuilder::Clone() const
 //======================== OPERATIONS =======================================
 //======================== ACCESS     =======================================
 //======================== INQUERY    =======================================
-void pier_geometry(IBroker*pBroker,rptChapter* pChapter,IDisplayUnits* pDispUnit)
+void pier_geometry(IBroker*pBroker,rptChapter* pChapter,IDisplayUnits* pDisplayUnits)
 {
    USES_CONVERSION;
 
@@ -108,7 +108,7 @@ void pier_geometry(IBroker*pBroker,rptChapter* pChapter,IDisplayUnits* pDispUnit
    GET_IFACE2(pBroker, IRoadway, pAlignment);
    const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
-   INIT_UV_PROTOTYPE( rptLengthUnitValue, offset, pDispUnit->GetAlignmentLengthUnit(), false );
+   INIT_UV_PROTOTYPE( rptLengthUnitValue, offset, pDisplayUnits->GetAlignmentLengthUnit(), false );
 
    CComPtr<IAngleDisplayUnitFormatter> angle_formatter;
    angle_formatter.CoCreateInstance(CLSID_AngleDisplayUnitFormatter);
@@ -155,7 +155,7 @@ void pier_geometry(IBroker*pBroker,rptChapter* pChapter,IDisplayUnits* pDispUnit
    (*pTable)(0,4) << "Alignment Intersection";
    (*pTable)(1,4) << "East" << rptNewLine << "(X)";
    (*pTable)(1,5) << "North" << rptNewLine << "(Y)";
-   (*pTable)(1,6) << COLHDR("Elev",rptLengthUnitTag,pDispUnit->GetAlignmentLengthUnit());
+   (*pTable)(1,6) << COLHDR("Elev",rptLengthUnitTag,pDisplayUnits->GetAlignmentLengthUnit());
 
    const CPierData* pPier = pBridgeDesc->GetPier(0);
    RowIndexType row = pTable->GetNumberOfHeaderRows();
@@ -186,7 +186,7 @@ void pier_geometry(IBroker*pBroker,rptChapter* pChapter,IDisplayUnits* pDispUnit
       else
          (*pTable)(row,0) << "Pier " << (Int32)(pierIdx+1);
 
-      (*pTable)(row,1) << rptRcStation(pPier->GetStation(), &pDispUnit->GetStationFormat() );
+      (*pTable)(row,1) << rptRcStation(pPier->GetStation(), &pDisplayUnits->GetStationFormat() );
       (*pTable)(row,2) << RPT_BEARING(OLE2A(bstrBearing));
       (*pTable)(row,3) << RPT_ANGLE(OLE2A(bstrAngle));
 

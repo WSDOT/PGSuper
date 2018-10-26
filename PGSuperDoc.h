@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -42,23 +42,6 @@
 #include "StatusCenterImp.h"
 #include "StatusCenterDlg.h"
 #include "PgsuperCommandLineInfo.h"
-#include "RefinedAnalysisOptionsDlg.h"
-
-#define EBD_ROADWAY        0
-
-#define EBD_GENERAL        0
-#define EBD_FRAMING        1
-#define EBD_RAILING        2
-#define EBD_DECK           3
-#define EBD_DECKREBAR      4
-#define EBD_ENVIRONMENT    5
-
-#define EGD_GENERAL        0
-#define EGD_PRESTRESSING   1
-#define EGD_DEBONDING      2
-#define EGD_CONCRETE       EGD_GENERAL
-#define EGD_STIRRUPS       4
-#define EGD_TRANSPORTATION 5
 
 #define EPD_GENERAL        0
 #define EPD_CONNECTION     1
@@ -134,7 +117,7 @@ public:
 	virtual void SetModifiedFlag(BOOL bModified = TRUE);
    void UpdateAnalysisTypeStatusIndicator();
    void OnLoadsLldf();
-   void OnLoadsLldf(CRefinedAnalysisOptionsDlg::RefinedAnalysisOption option);
+   void OnLoadsLldf(pgsTypes::DistributionFactorMethod method,LldfRangeOfApplicabilityAction roaAction);
    void OnLiveLoads();
 
 // Implementation
@@ -160,6 +143,11 @@ public:
    bool EditGirderDescription(SpanIndexType span,GirderIndexType girder, int nPage);
    bool EditSpanDescription(SpanIndexType spanIdx, int nPage);
    bool EditPierDescription(PierIndexType pierIdx, int nPage);
+   bool EditPointLoad(CollectionIndexType loadIdx);
+   bool EditDistributedLoad(CollectionIndexType loadIdx);
+   bool EditMomentLoad(CollectionIndexType loadIdx);
+
+
    void EditGirderViewSettings(int nPage);
    void EditBridgeViewSettings(int nPage);
 

@@ -332,6 +332,11 @@
 				>
 			</File>
 			<File
+				RelativePath=".\GirderSeedDataComparisonParagraph.cpp"
+				DeploymentContent="true"
+				>
+			</File>
+			<File
 				RelativePath=".\HaulingCheck.cpp"
 				>
 			</File>
@@ -785,6 +790,10 @@
 			</File>
 			<File
 				RelativePath="..\Include\Reporting\GirderGeometryChapterBuilder.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Include\Reporting\GirderSeedDataComparisonParagraph.h"
 				>
 			</File>
 			<File

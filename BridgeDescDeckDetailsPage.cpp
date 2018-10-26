@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -70,7 +70,7 @@ void CBridgeDescDeckDetailsPage::DoDataExchange(CDataExchange* pDX)
 {
    CComPtr<IBroker> pBroker;
    AfxGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IDisplayUnits,pDispUnits);
+   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
 	
    CBridgeDescDlg* pParent = (CBridgeDescDlg*)GetParent();
    ASSERT( pParent->IsKindOf(RUNTIME_CLASS(CBridgeDescDlg)) );
@@ -87,46 +87,51 @@ void CBridgeDescDeckDetailsPage::DoDataExchange(CDataExchange* pDX)
 	//}}AFX_DATA_MAP
 
    // make sure unit tags are always displayed (even if disabled)
-   DDX_Tag( pDX, IDC_GROSS_DEPTH_UNIT,    pDispUnits->GetComponentDimUnit() );
-   DDX_Tag( pDX, IDC_FILLET_UNIT,         pDispUnits->GetComponentDimUnit() );
-   DDX_Tag( pDX, IDC_ADIM_UNIT,           pDispUnits->GetComponentDimUnit() );
-   DDX_Tag( pDX, IDC_OVERHANG_DEPTH_UNIT, pDispUnits->GetComponentDimUnit() );
-   DDX_Tag( pDX, IDC_PANEL_DEPTH_UNIT,    pDispUnits->GetComponentDimUnit() );
-   DDX_Tag( pDX, IDC_PANEL_SUPPORT_UNIT,  pDispUnits->GetComponentDimUnit() );
-   DDX_Tag( pDX, IDC_SACDEPTH_UNIT,       pDispUnits->GetComponentDimUnit() );
-   DDX_Tag( pDX, IDC_SLAB_FC_UNIT,        pDispUnits->GetStressUnit() );
-   DDX_Tag( pDX, IDC_EC_UNIT,             pDispUnits->GetModEUnit() );
+   DDX_Tag( pDX, IDC_GROSS_DEPTH_UNIT,    pDisplayUnits->GetComponentDimUnit() );
+   DDX_Tag( pDX, IDC_FILLET_UNIT,         pDisplayUnits->GetComponentDimUnit() );
+   DDX_Tag( pDX, IDC_ADIM_UNIT,           pDisplayUnits->GetComponentDimUnit() );
+   DDX_Tag( pDX, IDC_OVERHANG_DEPTH_UNIT, pDisplayUnits->GetComponentDimUnit() );
+   DDX_Tag( pDX, IDC_PANEL_DEPTH_UNIT,    pDisplayUnits->GetComponentDimUnit() );
+   DDX_Tag( pDX, IDC_PANEL_SUPPORT_UNIT,  pDisplayUnits->GetComponentDimUnit() );
+   DDX_Tag( pDX, IDC_SACDEPTH_UNIT,       pDisplayUnits->GetComponentDimUnit() );
+   DDX_Tag( pDX, IDC_SLAB_FC_UNIT,        pDisplayUnits->GetStressUnit() );
+   DDX_Tag( pDX, IDC_EC_UNIT,             pDisplayUnits->GetModEUnit() );
 
    if ( deckType != pgsTypes::sdtNone )
    {
       // gross or cast depth
-      DDX_UnitValueAndTag( pDX, IDC_GROSS_DEPTH,   IDC_GROSS_DEPTH_UNIT,  pParent->m_BridgeDesc.GetDeckDescription()->GrossDepth, pDispUnits->GetComponentDimUnit() );
-      DDV_UnitValueGreaterThanZero( pDX, pParent->m_BridgeDesc.GetDeckDescription()->GrossDepth, pDispUnits->GetComponentDimUnit() );
+      DDX_UnitValueAndTag( pDX, IDC_GROSS_DEPTH,   IDC_GROSS_DEPTH_UNIT,  pParent->m_BridgeDesc.GetDeckDescription()->GrossDepth, pDisplayUnits->GetComponentDimUnit() );
+      DDV_UnitValueGreaterThanZero( pDX, pParent->m_BridgeDesc.GetDeckDescription()->GrossDepth, pDisplayUnits->GetComponentDimUnit() );
 
       // fillet
-      DDX_UnitValueAndTag( pDX, IDC_FILLET, IDC_FILLET_UNIT, pParent->m_BridgeDesc.GetDeckDescription()->Fillet, pDispUnits->GetComponentDimUnit() );
-      DDV_UnitValueZeroOrMore( pDX, pParent->m_BridgeDesc.GetDeckDescription()->Fillet, pDispUnits->GetComponentDimUnit() );
+      DDX_UnitValueAndTag( pDX, IDC_FILLET, IDC_FILLET_UNIT, pParent->m_BridgeDesc.GetDeckDescription()->Fillet, pDisplayUnits->GetComponentDimUnit() );
+      DDV_UnitValueZeroOrMore( pDX, pParent->m_BridgeDesc.GetDeckDescription()->Fillet, pDisplayUnits->GetComponentDimUnit() );
 
       // slab offset
       DDX_Check_Bool(pDX,IDC_SAMESLABOFFSET,m_bSlabOffsetWholeBridge);
       if ( m_bSlabOffsetWholeBridge )
-         DDX_UnitValueAndTag( pDX, IDC_ADIM, IDC_ADIM_UNIT, m_SlabOffset, pDispUnits->GetComponentDimUnit() );
+         DDX_UnitValueAndTag( pDX, IDC_ADIM, IDC_ADIM_UNIT, m_SlabOffset, pDisplayUnits->GetComponentDimUnit() );
 
       // overhang
-      DDX_UnitValueAndTag( pDX, IDC_OVERHANG_DEPTH, IDC_OVERHANG_DEPTH_UNIT, pParent->m_BridgeDesc.GetDeckDescription()->OverhangEdgeDepth, pDispUnits->GetComponentDimUnit() );
+      DDX_UnitValueAndTag( pDX, IDC_OVERHANG_DEPTH, IDC_OVERHANG_DEPTH_UNIT, pParent->m_BridgeDesc.GetDeckDescription()->OverhangEdgeDepth, pDisplayUnits->GetComponentDimUnit() );
       DDX_CBItemData( pDX, IDC_OVERHANG_TAPER, pParent->m_BridgeDesc.GetDeckDescription()->OverhangTaper );
 
       // deck panel
-      DDX_UnitValueAndTag( pDX, IDC_PANEL_DEPTH, IDC_PANEL_DEPTH_UNIT,  pParent->m_BridgeDesc.GetDeckDescription()->PanelDepth, pDispUnits->GetComponentDimUnit() );
+      DDX_UnitValueAndTag( pDX, IDC_PANEL_DEPTH, IDC_PANEL_DEPTH_UNIT,  pParent->m_BridgeDesc.GetDeckDescription()->PanelDepth, pDisplayUnits->GetComponentDimUnit() );
       if ( pParent->m_BridgeDesc.GetDeckDescription()->DeckType == pgsTypes::sdtCompositeSIP ) // SIP
-         DDV_UnitValueGreaterThanZero( pDX, pParent->m_BridgeDesc.GetDeckDescription()->PanelDepth, pDispUnits->GetXSectionDimUnit() );
+         DDV_UnitValueGreaterThanZero( pDX, pParent->m_BridgeDesc.GetDeckDescription()->PanelDepth, pDisplayUnits->GetXSectionDimUnit() );
 
-      DDX_UnitValueAndTag( pDX, IDC_PANEL_SUPPORT, IDC_PANEL_SUPPORT_UNIT,  pParent->m_BridgeDesc.GetDeckDescription()->PanelSupport, pDispUnits->GetComponentDimUnit() );
+      DDX_UnitValueAndTag( pDX, IDC_PANEL_SUPPORT, IDC_PANEL_SUPPORT_UNIT,  pParent->m_BridgeDesc.GetDeckDescription()->PanelSupport, pDisplayUnits->GetComponentDimUnit() );
 
       // slab material
       ExchangeConcreteData(pDX);
 
-      DDX_UnitValueAndTag( pDX, IDC_SACDEPTH,      IDC_SACDEPTH_UNIT,     pParent->m_BridgeDesc.GetDeckDescription()->SacrificialDepth, pDispUnits->GetComponentDimUnit() );
+      DDX_UnitValueAndTag( pDX, IDC_SACDEPTH,      IDC_SACDEPTH_UNIT,     pParent->m_BridgeDesc.GetDeckDescription()->SacrificialDepth, pDisplayUnits->GetComponentDimUnit() );
+
+      if ( pParent->m_BridgeDesc.GetDeckDescription()->DeckType == pgsTypes::sdtCompositeSIP ) // SIP
+         DDV_UnitValueLessThanLimit(pDX, pParent->m_BridgeDesc.GetDeckDescription()->SacrificialDepth, pParent->m_BridgeDesc.GetDeckDescription()->GrossDepth + pParent->m_BridgeDesc.GetDeckDescription()->PanelDepth, pDisplayUnits->GetComponentDimUnit(), "Please enter a sacrificial depth that is less than %f %s" );
+      else
+         DDV_UnitValueLessThanLimit(pDX, pParent->m_BridgeDesc.GetDeckDescription()->SacrificialDepth, pParent->m_BridgeDesc.GetDeckDescription()->GrossDepth, pDisplayUnits->GetComponentDimUnit(), "Please enter a sacrificial depth that is less than %f %s" );
    }
 
    // overlay
@@ -145,28 +150,28 @@ void CBridgeDescDeckDetailsPage::DoDataExchange(CDataExchange* pDX)
       pParent->m_BridgeDesc.GetDeckDescription()->bInputAsDepthAndDensity = (bInputAsDepthAndDensity == 1 ? true : false);
    }
    
-   DDX_UnitValueAndTag( pDX, IDC_OLAY_WEIGHT,   IDC_OLAY_WEIGHT_UNIT,  pParent->m_BridgeDesc.GetDeckDescription()->OverlayWeight, pDispUnits->GetOverlayWeightUnit() );
+   DDX_UnitValueAndTag( pDX, IDC_OLAY_WEIGHT,   IDC_OLAY_WEIGHT_UNIT,  pParent->m_BridgeDesc.GetDeckDescription()->OverlayWeight, pDisplayUnits->GetOverlayWeightUnit() );
 
-   DDX_UnitValueAndTag( pDX, IDC_OLAY_DEPTH,    IDC_OLAY_DEPTH_UNIT,   pParent->m_BridgeDesc.GetDeckDescription()->OverlayDepth, pDispUnits->GetComponentDimUnit() );
-   DDX_UnitValueAndTag( pDX, IDC_OLAY_DENSITY,  IDC_OLAY_DENSITY_UNIT, pParent->m_BridgeDesc.GetDeckDescription()->OverlayDensity, pDispUnits->GetDensityUnit() );
+   DDX_UnitValueAndTag( pDX, IDC_OLAY_DEPTH,    IDC_OLAY_DEPTH_UNIT,   pParent->m_BridgeDesc.GetDeckDescription()->OverlayDepth, pDisplayUnits->GetComponentDimUnit() );
+   DDX_UnitValueAndTag( pDX, IDC_OLAY_DENSITY,  IDC_OLAY_DENSITY_UNIT, pParent->m_BridgeDesc.GetDeckDescription()->OverlayDensity, pDisplayUnits->GetDensityUnit() );
 
    if ( pDX->m_bSaveAndValidate )
    {
       if ( pParent->m_BridgeDesc.GetDeckDescription()->WearingSurface == pgsTypes::wstSacrificialDepth )
       {
          pDX->PrepareEditCtrl(IDC_SACDEPTH);
-         DDV_UnitValueZeroOrMore( pDX, pParent->m_BridgeDesc.GetDeckDescription()->SacrificialDepth, pDispUnits->GetComponentDimUnit() );
-         DDV_UnitValueLessThanLimit( pDX, pParent->m_BridgeDesc.GetDeckDescription()->SacrificialDepth, pParent->m_BridgeDesc.GetDeckDescription()->GrossDepth, pDispUnits->GetComponentDimUnit() );
+         DDV_UnitValueZeroOrMore( pDX, pParent->m_BridgeDesc.GetDeckDescription()->SacrificialDepth, pDisplayUnits->GetComponentDimUnit() );
+         DDV_UnitValueLessThanLimit( pDX, pParent->m_BridgeDesc.GetDeckDescription()->SacrificialDepth, pParent->m_BridgeDesc.GetDeckDescription()->GrossDepth, pDisplayUnits->GetComponentDimUnit() );
       }
       else
       {
          if ( pParent->m_BridgeDesc.GetDeckDescription()->bInputAsDepthAndDensity )
          {
             pDX->PrepareEditCtrl(IDC_OLAY_DEPTH);
-            DDV_UnitValueZeroOrMore( pDX, pParent->m_BridgeDesc.GetDeckDescription()->OverlayDepth, pDispUnits->GetComponentDimUnit() );
+            DDV_UnitValueZeroOrMore( pDX, pParent->m_BridgeDesc.GetDeckDescription()->OverlayDepth, pDisplayUnits->GetComponentDimUnit() );
 
             pDX->PrepareEditCtrl(IDC_OLAY_DENSITY);
-            DDV_UnitValueZeroOrMore( pDX, pParent->m_BridgeDesc.GetDeckDescription()->OverlayDensity, pDispUnits->GetDensityUnit());
+            DDV_UnitValueZeroOrMore( pDX, pParent->m_BridgeDesc.GetDeckDescription()->OverlayDensity, pDisplayUnits->GetDensityUnit());
 
             Float64 g = unitSysUnitsMgr::GetGravitationalAcceleration();
             pParent->m_BridgeDesc.GetDeckDescription()->OverlayWeight = pParent->m_BridgeDesc.GetDeckDescription()->OverlayDepth * pParent->m_BridgeDesc.GetDeckDescription()->OverlayDensity * g;
@@ -174,7 +179,7 @@ void CBridgeDescDeckDetailsPage::DoDataExchange(CDataExchange* pDX)
          else
          {
             pDX->PrepareEditCtrl(IDC_OLAY_WEIGHT);
-            DDV_UnitValueZeroOrMore( pDX, pParent->m_BridgeDesc.GetDeckDescription()->OverlayWeight, pDispUnits->GetOverlayWeightUnit() );
+            DDV_UnitValueZeroOrMore( pDX, pParent->m_BridgeDesc.GetDeckDescription()->OverlayWeight, pDisplayUnits->GetOverlayWeightUnit() );
          }
       }
    }
@@ -189,7 +194,7 @@ void CBridgeDescDeckDetailsPage::DoDataExchange(CDataExchange* pDX)
 
          pDX->PrepareEditCtrl(IDC_ADIM);
 
-         DDV_UnitValueLimitOrMore( pDX, m_SlabOffset, pParent->m_BridgeDesc.GetDeckDescription()->GrossDepth + pParent->m_BridgeDesc.GetDeckDescription()->Fillet, pDispUnits->GetComponentDimUnit() );
+         DDV_UnitValueLimitOrMore( pDX, m_SlabOffset, pParent->m_BridgeDesc.GetDeckDescription()->GrossDepth + pParent->m_BridgeDesc.GetDeckDescription()->Fillet, pDisplayUnits->GetComponentDimUnit() );
          pParent->m_BridgeDesc.SetSlabOffset(m_SlabOffset);
          pParent->m_BridgeDesc.SetSlabOffsetType(pgsTypes::sotBridge);
 
@@ -252,9 +257,9 @@ void CBridgeDescDeckDetailsPage::DoDataExchange(CDataExchange* pDX)
             {
                CString msg;
                msg.Format("Gross slab depth must less than %s to accomodate the %s fillet and maximum slab offset of %s",
-                            FormatDimension(maxSlabOffset - pParent->m_BridgeDesc.GetDeckDescription()->Fillet,pDispUnits->GetComponentDimUnit()),
-                            FormatDimension(pParent->m_BridgeDesc.GetDeckDescription()->Fillet,pDispUnits->GetComponentDimUnit()),
-                            FormatDimension(maxSlabOffset,pDispUnits->GetComponentDimUnit()));
+                            FormatDimension(maxSlabOffset - pParent->m_BridgeDesc.GetDeckDescription()->Fillet,pDisplayUnits->GetComponentDimUnit()),
+                            FormatDimension(pParent->m_BridgeDesc.GetDeckDescription()->Fillet,pDisplayUnits->GetComponentDimUnit()),
+                            FormatDimension(maxSlabOffset,pDisplayUnits->GetComponentDimUnit()));
                AfxMessageBox(msg,MB_ICONEXCLAMATION);
                pDX->Fail();
             }
@@ -266,10 +271,10 @@ void CBridgeDescDeckDetailsPage::DoDataExchange(CDataExchange* pDX)
             {
                CString msg;
                msg.Format("Cast slab depth must less than %s to accomodate the %s panel, %s fillet and maximum slab offset of %s",
-                            FormatDimension(maxSlabOffset - pParent->m_BridgeDesc.GetDeckDescription()->PanelDepth - pParent->m_BridgeDesc.GetDeckDescription()->Fillet,pDispUnits->GetComponentDimUnit()),
-                            FormatDimension(pParent->m_BridgeDesc.GetDeckDescription()->PanelDepth,pDispUnits->GetComponentDimUnit()),
-                            FormatDimension(pParent->m_BridgeDesc.GetDeckDescription()->Fillet,pDispUnits->GetComponentDimUnit()),
-                            FormatDimension(maxSlabOffset,pDispUnits->GetComponentDimUnit()));
+                            FormatDimension(maxSlabOffset - pParent->m_BridgeDesc.GetDeckDescription()->PanelDepth - pParent->m_BridgeDesc.GetDeckDescription()->Fillet,pDisplayUnits->GetComponentDimUnit()),
+                            FormatDimension(pParent->m_BridgeDesc.GetDeckDescription()->PanelDepth,pDisplayUnits->GetComponentDimUnit()),
+                            FormatDimension(pParent->m_BridgeDesc.GetDeckDescription()->Fillet,pDisplayUnits->GetComponentDimUnit()),
+                            FormatDimension(maxSlabOffset,pDisplayUnits->GetComponentDimUnit()));
                AfxMessageBox(msg,MB_ICONEXCLAMATION);
                pDX->Fail();
             }
@@ -297,24 +302,24 @@ void CBridgeDescDeckDetailsPage::ExchangeConcreteData(CDataExchange* pDX)
 {
    CComPtr<IBroker> pBroker;
    AfxGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IDisplayUnits,pDispUnits);
+   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
 
    CBridgeDescDlg* pParent = (CBridgeDescDlg*)GetParent();
    ASSERT( pParent->IsKindOf(RUNTIME_CLASS(CBridgeDescDlg)) );
 
-   DDX_UnitValueAndTag( pDX, IDC_SLAB_FC, IDC_SLAB_FC_UNIT, pParent->m_BridgeDesc.GetDeckDescription()->SlabFc, pDispUnits->GetStressUnit() );
+   DDX_UnitValueAndTag( pDX, IDC_SLAB_FC, IDC_SLAB_FC_UNIT, pParent->m_BridgeDesc.GetDeckDescription()->SlabFc, pDisplayUnits->GetStressUnit() );
 
    DDX_Check_Bool(pDX,IDC_MOD_E, pParent->m_BridgeDesc.GetDeckDescription()->SlabUserEc);
-   DDX_UnitValueAndTag( pDX, IDC_EC,  IDC_EC_UNIT, pParent->m_BridgeDesc.GetDeckDescription()->SlabEc, pDispUnits->GetModEUnit() );
+   DDX_UnitValueAndTag( pDX, IDC_EC,  IDC_EC_UNIT, pParent->m_BridgeDesc.GetDeckDescription()->SlabEc, pDisplayUnits->GetModEUnit() );
 
 
    if ( pParent->m_BridgeDesc.GetDeckDescription()->DeckType != pgsTypes::sdtNone && pDX->m_bSaveAndValidate )
    {
       pDX->PrepareCtrl(IDC_SLAB_FC);
-      DDV_UnitValueGreaterThanZero( pDX, pParent->m_BridgeDesc.GetDeckDescription()->SlabFc, pDispUnits->GetStressUnit() );
+      DDV_UnitValueGreaterThanZero( pDX, pParent->m_BridgeDesc.GetDeckDescription()->SlabFc, pDisplayUnits->GetStressUnit() );
 
       pDX->PrepareCtrl(IDC_EC);
-      DDV_UnitValueGreaterThanZero( pDX, pParent->m_BridgeDesc.GetDeckDescription()->SlabEc, pDispUnits->GetModEUnit() );
+      DDV_UnitValueGreaterThanZero( pDX, pParent->m_BridgeDesc.GetDeckDescription()->SlabEc, pDisplayUnits->GetModEUnit() );
    }
 
    if ( pDX->m_bSaveAndValidate && m_ctrlEcCheck.GetCheck() == 1 )
@@ -352,11 +357,11 @@ BOOL CBridgeDescDeckDetailsPage::OnInitDialog()
 
    CComPtr<IBroker> pBroker;
    AfxGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IDisplayUnits,pDispUnits);
+   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
 
    // set density/weight labels
    CStatic* pStatic = (CStatic*)GetDlgItem( IDC_OLAY_DENSITY_LABEL );
-   if ( pDispUnits->GetUnitDisplayMode() == pgsTypes::umSI )
+   if ( pDisplayUnits->GetUnitDisplayMode() == pgsTypes::umSI )
       pStatic->SetWindowText( "Overlay Density" );
    else
       pStatic->SetWindowText( "Overlay Weight" );
@@ -389,7 +394,7 @@ BOOL CBridgeDescDeckDetailsPage::OnInitDialog()
 
    m_SlabOffset = pParent->m_BridgeDesc.GetSlabOffset();
    m_bSlabOffsetWholeBridge = pParent->m_BridgeDesc.GetSlabOffsetType() == pgsTypes::sotBridge ? true : false;
-   m_strSlabOffsetCache.Format("%s",FormatDimension(m_SlabOffset,pDispUnits->GetComponentDimUnit(), false));
+   m_strSlabOffsetCache.Format("%s",FormatDimension(m_SlabOffset,pDisplayUnits->GetComponentDimUnit(), false));
 
    CPropertyPage::OnInitDialog();
 
@@ -564,9 +569,9 @@ void CBridgeDescDeckDetailsPage::UpdateEc()
 
       CComPtr<IBroker> pBroker;
       AfxGetBroker(&pBroker);
-      GET_IFACE2(pBroker,IDisplayUnits,pDispUnits);
+      GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
 
-      strDensity.Format("%s",FormatDimension(pParent->m_BridgeDesc.GetDeckDescription()->SlabStrengthDensity,pDispUnits->GetDensityUnit(),false));
+      strDensity.Format("%s",FormatDimension(pParent->m_BridgeDesc.GetDeckDescription()->SlabStrengthDensity,pDisplayUnits->GetDensityUnit(),false));
       strK1.Format("%f",pParent->m_BridgeDesc.GetDeckDescription()->SlabK1);
 
       strEc = CConcreteDetailsDlg::UpdateEc(strFc,strDensity,strK1);

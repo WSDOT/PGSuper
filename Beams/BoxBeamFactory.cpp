@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -27,8 +27,6 @@
 #include "BeamFamilyCLSID.h"
 
 #include "BoxBeamFactory.h"
-#include "IBeamDistFactorEngineer.h"
-#include "UBeamDistFactorEngineer.h"
 #include "BoxBeamDistFactorEngineer.h"
 #include "PsBeamLossEngineer.h"
 #include "StrandMoverImpl.h"
@@ -72,6 +70,8 @@ HRESULT CBoxBeamFactory::FinalConstruct()
    m_DimNames.push_back("F2");
    m_DimNames.push_back("C1");
    m_DimNames.push_back("Jmax");
+   m_DimNames.push_back("ShearKeyDepth");
+   m_DimNames.push_back("EndBlockLength");
 
    m_DefaultDims.push_back(::ConvertToSysUnits( 5.0,unitMeasure::Inch)); // H1
    m_DefaultDims.push_back(::ConvertToSysUnits(29.5,unitMeasure::Inch)); // H2
@@ -88,6 +88,8 @@ HRESULT CBoxBeamFactory::FinalConstruct()
    m_DefaultDims.push_back(::ConvertToSysUnits( 5.0,unitMeasure::Inch)); // F2
    m_DefaultDims.push_back(::ConvertToSysUnits( 0.75,unitMeasure::Inch)); // C1
    m_DefaultDims.push_back(::ConvertToSysUnits( 1.0,unitMeasure::Inch)); // Jmax
+   m_DefaultDims.push_back(::ConvertToSysUnits( 0.0,unitMeasure::Inch)); // shear key
+   m_DefaultDims.push_back(::ConvertToSysUnits( 12.0,unitMeasure::Inch)); // end block
 
    // SI Units
    m_DimUnits[0].push_back(&unitMeasure::Millimeter); // H1
@@ -105,6 +107,8 @@ HRESULT CBoxBeamFactory::FinalConstruct()
    m_DimUnits[0].push_back(&unitMeasure::Millimeter); // F2
    m_DimUnits[0].push_back(&unitMeasure::Millimeter); // C1
    m_DimUnits[0].push_back(&unitMeasure::Millimeter); // Jmax
+   m_DimUnits[0].push_back(&unitMeasure::Millimeter); // shear key
+   m_DimUnits[0].push_back(&unitMeasure::Millimeter); // end block
 
    // US Units
    m_DimUnits[1].push_back(&unitMeasure::Inch); // H1
@@ -122,6 +126,8 @@ HRESULT CBoxBeamFactory::FinalConstruct()
    m_DimUnits[1].push_back(&unitMeasure::Inch); // F2
    m_DimUnits[1].push_back(&unitMeasure::Inch); // C1
    m_DimUnits[1].push_back(&unitMeasure::Inch); // Jmax
+   m_DimUnits[1].push_back(&unitMeasure::Inch); // shear key
+   m_DimUnits[1].push_back(&unitMeasure::Inch); // end block
 
    return S_OK;
 }
@@ -133,8 +139,8 @@ void CBoxBeamFactory::CreateGirderSection(IBroker* pBroker,long agentID,SpanInde
    CComPtr<IBoxBeam> beam;
    gdrsection->get_Beam(&beam);
 
-   double H1, H2, H3, H4, H5, H6, H7, W1, W2, W3, W4, F1, F2, C1, J;
-   GetDimensions(dimensions,H1, H2, H3, H4, H5, H6, H7, W1, W2, W3, W4, F1, F2, C1, J);
+   double H1, H2, H3, H4, H5, H6, H7, W1, W2, W3, W4, F1, F2, C1, J, shearKeyDepth, endBlockLength;
+   GetDimensions(dimensions,H1, H2, H3, H4, H5, H6, H7, W1, W2, W3, W4, F1, F2, C1, J, shearKeyDepth, endBlockLength);
 
    beam->put_H1(H1);
    beam->put_H2(H2);
@@ -154,224 +160,13 @@ void CBoxBeamFactory::CreateGirderSection(IBroker* pBroker,long agentID,SpanInde
    gdrsection.QueryInterface(ppSection);
 }
 
-void CBoxBeamFactory::CreateGirderProfile(IBroker* pBroker,long agentID,SpanIndexType spanIdx,GirderIndexType gdrIdx,const IBeamFactory::Dimensions& dimensions,IShape** ppShape)
-{
-   GET_IFACE2(pBroker,IBridge,pBridge);
-   Float64 length = pBridge->GetGirderLength(spanIdx,gdrIdx);
 
-   double H1, H2, H3, H4, H5, H6, H7, W1, W2, W3, W4, F1, F2, C1, J;
-   GetDimensions(dimensions,H1, H2, H3, H4, H5, H6, H7, W1, W2, W3, W4, F1, F2, C1, J);
 
-   Float64 height = H1 + H2 + H3;
-
-   CComPtr<IRectangle> rect;
-   rect.CoCreateInstance(CLSID_Rect);
-   rect->put_Height(height);
-   rect->put_Width(length);
-
-   CComQIPtr<IXYPosition> position(rect);
-   CComPtr<IPoint2d> topLeft;
-   position->get_LocatorPoint(lpTopLeft,&topLeft);
-   topLeft->Move(0,0);
-   position->put_LocatorPoint(lpTopLeft,topLeft);
-
-   rect->QueryInterface(ppShape);
-}
-
-void CBoxBeamFactory::LayoutGirderLine(IBroker* pBroker,long agentID,SpanIndexType spanIdx,GirderIndexType gdrIdx,ISuperstructureMember* ssmbr)
-{
-   CComPtr<IPrismaticSegment> segment;
-   segment.CoCreateInstance(CLSID_PrismaticSegment);
-
-   // Length of the segments will be measured fractionally
-   ssmbr->put_AreSegmentLengthsFractional(VARIANT_TRUE);
-   segment->put_Length(-1.0);
-
-   // Build up the beam shape
-   GET_IFACE2(pBroker,ILibrary,pLib);
-   GET_IFACE2(pBroker,IGirderData, pGirderData);
-   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
-
-   const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
-
-   const GirderLibraryEntry* pGdrEntry = pBridgeDesc->GetSpan(spanIdx)->GetGirderTypes()->GetGirderLibraryEntry(gdrIdx);
-   const GirderLibraryEntry::Dimensions& dimensions = pGdrEntry->GetDimensions();
-
-   CComPtr<IGirderSection> gdrsection;
-   CreateGirderSection(pBroker,agentID,spanIdx,gdrIdx,dimensions,&gdrsection);
-   CComQIPtr<IShape> shape(gdrsection);
-   segment->putref_Shape(shape);
-
-   // Beam materials
-   GET_IFACE2(pBroker,IBridgeMaterial,pMaterial);
-   CComPtr<IMaterial> material;
-   material.CoCreateInstance(CLSID_Material);
-   material->put_E(pMaterial->GetEcGdr(spanIdx,gdrIdx));
-   material->put_Density(pMaterial->GetStrDensityGdr(spanIdx,gdrIdx));
-   segment->putref_Material(material);
-
-   ssmbr->AddSegment(segment);
-}
-
-void CBoxBeamFactory::LayoutSectionChangePointsOfInterest(IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,pgsPoiMgr* pPoiMgr)
-{
-   // This is a prismatic beam so only add section change POI at the start and end of the beam
-   GET_IFACE2(pBroker,IBridge,pBridge);
-   Float64 gdrLength = pBridge->GetGirderLength(span,gdr);
-
-   pgsPointOfInterest poiStart(pgsTypes::CastingYard,span,gdr,0.00,POI_SECTCHANGE | POI_TABULAR | POI_GRAPHICAL);
-   pgsPointOfInterest poiEnd(pgsTypes::CastingYard,span,gdr,gdrLength,POI_SECTCHANGE | POI_TABULAR | POI_GRAPHICAL);
-   pPoiMgr->AddPointOfInterest(poiStart);
-   pPoiMgr->AddPointOfInterest(poiEnd);
-
-   // move bridge site poi to the start/end bearing
-   std::set<pgsTypes::Stage> stages;
-   stages.insert(pgsTypes::GirderPlacement);
-   stages.insert(pgsTypes::TemporaryStrandRemoval);
-   stages.insert(pgsTypes::BridgeSite1);
-   stages.insert(pgsTypes::BridgeSite2);
-   stages.insert(pgsTypes::BridgeSite3);
-   
-   Float64 start_length = pBridge->GetGirderStartConnectionLength(span,gdr);
-   Float64 end_length   = pBridge->GetGirderEndConnectionLength(span,gdr);
-   poiStart.SetDistFromStart(start_length);
-   poiEnd.SetDistFromStart(gdrLength-end_length);
-
-   poiStart.RemoveStage(pgsTypes::CastingYard);
-   poiEnd.RemoveStage(pgsTypes::CastingYard);
-
-   poiStart.AddStages(stages);
-   poiEnd.AddStages(stages);
-   
-   pPoiMgr->AddPointOfInterest(poiStart);
-   pPoiMgr->AddPointOfInterest(poiEnd);
-}
-
-void CBoxBeamFactory::CreateDistFactorEngineer(IBroker* pBroker,long agentID,
-                                               const pgsTypes::SupportedDeckType* pDeckType, const pgsTypes::AdjacentTransverseConnectivity* pConnect,
-                                               IDistFactorEngineer** ppEng)
-{
-   GET_IFACE2(pBroker,IBridge,pBridge);
-
-   // use passed value if not null
-   pgsTypes::SupportedDeckType deckType = (pDeckType!=NULL) ? *pDeckType : pBridge->GetDeckType();
-   
-   if ( deckType == pgsTypes::sdtCompositeOverlay || deckType == pgsTypes::sdtNone )
-   {
-      CComObject<CBoxBeamDistFactorEngineer>* pEngineer;
-      CComObject<CBoxBeamDistFactorEngineer>::CreateInstance(&pEngineer);
-      pEngineer->SetBroker(pBroker,agentID);
-      (*ppEng) = pEngineer;
-      (*ppEng)->AddRef();
-   }
-   else
-   {
-      // this is a type b section... type b's are the same as type c's which are U-beams
-      ATLASSERT( deckType == pgsTypes::sdtCompositeCIP || deckType == pgsTypes::sdtCompositeSIP );
-
-      CComObject<CUBeamDistFactorEngineer>* pEngineer;
-      CComObject<CUBeamDistFactorEngineer>::CreateInstance(&pEngineer);
-      pEngineer->Init(true); // this is a type b cross section
-      pEngineer->SetBroker(pBroker,agentID);
-      (*ppEng) = pEngineer;
-      (*ppEng)->AddRef();
-   }
-}
-
-void CBoxBeamFactory::CreatePsLossEngineer(IBroker* pBroker,long agentID,SpanIndexType spanIdx,GirderIndexType gdrIdx,IPsLossEngineer** ppEng)
-{
-    CComObject<CPsBeamLossEngineer>* pEngineer;
-    CComObject<CPsBeamLossEngineer>::CreateInstance(&pEngineer);
-    pEngineer->Init(CPsLossEngineer::BoxBeam);
-    pEngineer->SetBroker(pBroker,agentID);
-    (*ppEng) = pEngineer;
-    (*ppEng)->AddRef();
-}
-
-void CBoxBeamFactory::CreateStrandMover(const IBeamFactory::Dimensions& dimensions, 
-                                  IBeamFactory::BeamFace endTopFace, double endTopLimit, IBeamFactory::BeamFace endBottomFace, double endBottomLimit, 
-                                  IBeamFactory::BeamFace hpTopFace, double hpTopLimit, IBeamFactory::BeamFace hpBottomFace, double hpBottomLimit, 
-                                  double endIncrement, double hpIncrement, IStrandMover** strandMover)
-{
-   HRESULT hr = S_OK;
-
-   CComObject<CStrandMoverImpl>* pStrandMover;
-   CComObject<CStrandMoverImpl>::CreateInstance(&pStrandMover);
-
-   CComPtr<IStrandMover> sm = pStrandMover;
-
-   // set the shapes for harped strand bounds - only in the thinest part of the webs
-   double H1, H2, H3, H4, H5, H6, H7, W1, W2, W3, W4, F1, F2, C1, J;
-   GetDimensions(dimensions,H1, H2, H3, H4, H5, H6, H7, W1, W2, W3, W4, F1, F2, C1, J);
-
-   double width = W2;
-   double depth = H1+H2+H3;
-
-   CComPtr<IRectangle> lft_harp_rect, rgt_harp_rect;
-   hr = lft_harp_rect.CoCreateInstance(CLSID_Rect);
-   ATLASSERT (SUCCEEDED(hr));
-   hr = rgt_harp_rect.CoCreateInstance(CLSID_Rect);
-   ATLASSERT (SUCCEEDED(hr));
-
-   lft_harp_rect->put_Width(width);
-   lft_harp_rect->put_Height(depth);
-   rgt_harp_rect->put_Width(width);
-   rgt_harp_rect->put_Height(depth);
-
-   double hook_offset = (W3 + width)/2.0;
-
-   CComPtr<IPoint2d> lft_hook, rgt_hook;
-   lft_hook.CoCreateInstance(CLSID_Point2d);
-   rgt_hook.CoCreateInstance(CLSID_Point2d);
-
-   lft_hook->Move(-hook_offset, depth/2.0);
-   rgt_hook->Move( hook_offset, depth/2.0);
-
-   lft_harp_rect->putref_HookPoint(lft_hook);
-   rgt_harp_rect->putref_HookPoint(rgt_hook);
-
-   CComPtr<IShape> lft_shape, rgt_shape;
-   lft_harp_rect->get_Shape(&lft_shape);
-   rgt_harp_rect->get_Shape(&rgt_shape);
-
-   CComQIPtr<IConfigureStrandMover> configurer(sm);
-   hr = configurer->AddRegion(lft_shape, 0.0);
-   ATLASSERT (SUCCEEDED(hr));
-   hr = configurer->AddRegion(rgt_shape, 0.0);
-   ATLASSERT (SUCCEEDED(hr));
-
-   // set vertical offset bounds and increments
-   double hptb = hpTopFace==IBeamFactory::BeamBottom ? hpTopLimit : depth-hpTopLimit;
-   double hpbb = hpBottomFace==IBeamFactory::BeamBottom ? hpBottomLimit : depth-hpBottomLimit;
-   double endtb = endTopFace==IBeamFactory::BeamBottom ? endTopLimit : depth-endTopLimit;
-   double endbb = endBottomFace==IBeamFactory::BeamBottom ? endBottomLimit : depth-endBottomLimit;
-
-   hr = configurer->SetHarpedStrandOffsetBounds(depth, hptb, hpbb, endtb, endbb, endIncrement, hpIncrement);
-   ATLASSERT (SUCCEEDED(hr));
-
-   hr = sm.CopyTo(strandMover);
-   ATLASSERT (SUCCEEDED(hr));
-}
-
-std::vector<std::string> CBoxBeamFactory::GetDimensionNames()
-{
-   return m_DimNames;
-}
-
-std::vector<double> CBoxBeamFactory::GetDefaultDimensions()
-{
-   return m_DefaultDims;
-}
-
-std::vector<const unitLength*> CBoxBeamFactory::GetDimensionUnits(bool bSIUnits)
-{
-   return m_DimUnits[ bSIUnits ? 0 : 1 ];
-}
 
 bool CBoxBeamFactory::ValidateDimensions(const IBeamFactory::Dimensions& dimensions,bool bSI,std::string* strErrMsg)
 {
-   double H1, H2, H3, H4, H5, H6, H7, W1, W2, W3, W4, F1, F2, C1, J;
-   GetDimensions(dimensions,H1, H2, H3, H4, H5, H6, H7, W1, W2, W3, W4, F1, F2, C1, J);
+   double H1, H2, H3, H4, H5, H6, H7, W1, W2, W3, W4, F1, F2, C1, J, shearKeyDepth, endBlockLength;
+   GetDimensions(dimensions,H1, H2, H3, H4, H5, H6, H7, W1, W2, W3, W4, F1, F2, C1, J, shearKeyDepth, endBlockLength);
 
    if ( H1 <= 0.0 )
    {
@@ -381,7 +176,7 @@ bool CBoxBeamFactory::ValidateDimensions(const IBeamFactory::Dimensions& dimensi
       return false;
    }
 
-   if ( H2 < 0.0 )
+   if ( H2 <= 0.0 )
    {
       std::ostringstream os;
       os << "H2 must be a positive value" << std::ends;
@@ -389,7 +184,7 @@ bool CBoxBeamFactory::ValidateDimensions(const IBeamFactory::Dimensions& dimensi
       return false;
    }
 
-   if ( H3 < 0.0 )
+   if ( H3 <= 0.0 )
    {
       std::ostringstream os;
       os << "H3 must be a positive value" << std::ends;
@@ -541,13 +336,21 @@ bool CBoxBeamFactory::ValidateDimensions(const IBeamFactory::Dimensions& dimensi
       return false;
    }
 
+   if ( shearKeyDepth > H1+H2+H3+TOLERANCE )
+   {
+      std::ostringstream os;
+      os << "Shear Key Depth must be less than total section depth" << std::ends;
+      *strErrMsg = os.str();
+      return false;
+   }
+
    return true;
 }
 
 void CBoxBeamFactory::SaveSectionDimensions(sysIStructuredSave* pSave,const IBeamFactory::Dimensions& dimensions)
 {
    std::vector<std::string>::iterator iter;
-   pSave->BeginUnit("BoxBeamDimensions",2.0);
+   pSave->BeginUnit("BoxBeamDimensions",3.0);
    for ( iter = m_DimNames.begin(); iter != m_DimNames.end(); iter++ )
    {
       std::string name = *iter;
@@ -656,6 +459,9 @@ IBeamFactory::Dimensions CBoxBeamFactory::LoadSectionDimensions(sysIStructuredLo
       dimensions.push_back(Dimension("F2",F2));
       dimensions.push_back(Dimension("C1",C1));
       dimensions.push_back(Dimension("Jmax",J));
+
+      dimensions.push_back(Dimension("ShearKeyDepth",0.0));
+      dimensions.push_back(Dimension("EndBlockLength",0.0));
    }
    else
    {
@@ -685,7 +491,16 @@ IBeamFactory::Dimensions CBoxBeamFactory::LoadSectionDimensions(sysIStructuredLo
             }
             else if ( dimVersion < 2 && parent_version < 3.0 && name == "C1" )
             {
-               value = 0.0; // set the default value
+               value = 0.0;
+            }
+            // Added shear key and end block in version 3
+            else if ( dimVersion < 3 && name == "ShearKeyDepth" )
+            {
+               value = 0.0;
+            }
+            else if ( dimVersion < 3 && name == "EndBlockLength" )
+            {
+               value = 0.0;
             }
             else
             {
@@ -702,22 +517,6 @@ IBeamFactory::Dimensions CBoxBeamFactory::LoadSectionDimensions(sysIStructuredLo
    return dimensions;
 }
 
-bool CBoxBeamFactory::IsPrismatic(IBroker* pBroker,SpanIndexType spanIdx,GirderIndexType gdrIdx)
-{
-   return true;
-}
-
-Float64 CBoxBeamFactory::GetVolume(IBroker* pBroker,SpanIndexType spanIdx,GirderIndexType gdrIdx)
-{
-   GET_IFACE2(pBroker,ISectProp2,pSectProp2);
-   Float64 area = pSectProp2->GetAg(pgsTypes::CastingYard,pgsPointOfInterest(spanIdx,gdrIdx,0.00));
-   
-   GET_IFACE2(pBroker,IBridge,pBridge);
-   Float64 Lg = pBridge->GetGirderLength(spanIdx,gdrIdx);
-
-   Float64 volume = area*Lg;
-   return volume;
-}
 
 Float64 CBoxBeamFactory::GetSurfaceArea(IBroker* pBroker,SpanIndexType spanIdx,GirderIndexType gdrIdx,bool bReduceForPoorlyVentilatedVoids)
 {
@@ -747,226 +546,83 @@ Float64 CBoxBeamFactory::GetSurfaceArea(IBroker* pBroker,SpanIndexType spanIdx,G
    return surface_area;
 }
 
+void CBoxBeamFactory::CreateStrandMover(const IBeamFactory::Dimensions& dimensions, 
+                                  IBeamFactory::BeamFace endTopFace, double endTopLimit, IBeamFactory::BeamFace endBottomFace, double endBottomLimit, 
+                                  IBeamFactory::BeamFace hpTopFace, double hpTopLimit, IBeamFactory::BeamFace hpBottomFace, double hpBottomLimit, 
+                                  double endIncrement, double hpIncrement, IStrandMover** strandMover)
+{
+   HRESULT hr = S_OK;
+
+   CComObject<CStrandMoverImpl>* pStrandMover;
+   CComObject<CStrandMoverImpl>::CreateInstance(&pStrandMover);
+
+   CComPtr<IStrandMover> sm = pStrandMover;
+
+   // set the shapes for harped strand bounds - only in the thinest part of the webs
+   double H1 = GetDimension(dimensions,"H1");
+   double H2 = GetDimension(dimensions,"H2");
+   double H3 = GetDimension(dimensions,"H3");
+   double W2 = GetDimension(dimensions,"W2");
+   double W3 = GetDimension(dimensions,"W3");
+
+   double width = W2;
+   double depth = H1+H2+H3;
+
+   CComPtr<IRectangle> lft_harp_rect, rgt_harp_rect;
+   hr = lft_harp_rect.CoCreateInstance(CLSID_Rect);
+   ATLASSERT (SUCCEEDED(hr));
+   hr = rgt_harp_rect.CoCreateInstance(CLSID_Rect);
+   ATLASSERT (SUCCEEDED(hr));
+
+   lft_harp_rect->put_Width(width);
+   lft_harp_rect->put_Height(depth);
+   rgt_harp_rect->put_Width(width);
+   rgt_harp_rect->put_Height(depth);
+
+   double hook_offset = (W3 + width)/2.0;
+
+   CComPtr<IPoint2d> lft_hook, rgt_hook;
+   lft_hook.CoCreateInstance(CLSID_Point2d);
+   rgt_hook.CoCreateInstance(CLSID_Point2d);
+
+   lft_hook->Move(-hook_offset, depth/2.0);
+   rgt_hook->Move( hook_offset, depth/2.0);
+
+   lft_harp_rect->putref_HookPoint(lft_hook);
+   rgt_harp_rect->putref_HookPoint(rgt_hook);
+
+   CComPtr<IShape> lft_shape, rgt_shape;
+   lft_harp_rect->get_Shape(&lft_shape);
+   rgt_harp_rect->get_Shape(&rgt_shape);
+
+   CComQIPtr<IConfigureStrandMover> configurer(sm);
+   hr = configurer->AddRegion(lft_shape, 0.0);
+   ATLASSERT (SUCCEEDED(hr));
+   hr = configurer->AddRegion(rgt_shape, 0.0);
+   ATLASSERT (SUCCEEDED(hr));
+
+   // set vertical offset bounds and increments
+   double hptb = hpTopFace==IBeamFactory::BeamBottom ? hpTopLimit : depth-hpTopLimit;
+   double hpbb = hpBottomFace==IBeamFactory::BeamBottom ? hpBottomLimit : depth-hpBottomLimit;
+   double endtb = endTopFace==IBeamFactory::BeamBottom ? endTopLimit : depth-endTopLimit;
+   double endbb = endBottomFace==IBeamFactory::BeamBottom ? endBottomLimit : depth-endBottomLimit;
+
+   hr = configurer->SetHarpedStrandOffsetBounds(depth, hptb, hpbb, endtb, endbb, endIncrement, hpIncrement);
+   ATLASSERT (SUCCEEDED(hr));
+
+   hr = sm.CopyTo(strandMover);
+   ATLASSERT (SUCCEEDED(hr));
+}
+
 std::string CBoxBeamFactory::GetImage()
 {
-   return std::string("BoxBeam.jpg");
+   return std::string("BoxBeam.gif");
 }
 
-std::string CBoxBeamFactory::GetSlabDimensionsImage(pgsTypes::SupportedDeckType deckType)
-{
-   std::string strImage;
-   switch(deckType)
-   {
-   case pgsTypes::sdtCompositeCIP:
-      strImage = "BoxBeam_Composite_CIP.gif";
-      break;
-
-   case pgsTypes::sdtCompositeSIP:
-      strImage = "BoxBeam_Composite_SIP.gif";
-      break;
-
-   case pgsTypes::sdtCompositeOverlay:
-      strImage = "BoxBeam_Composite.gif";
-      break;
-
-   case pgsTypes::sdtNone:
-      strImage = "BoxBeam_Noncomposite.gif";
-      break;
-
-   default:
-      ATLASSERT(false); // shouldn't get here
-      break;
-   };
-
-   return strImage;
-}
-
-std::string CBoxBeamFactory::GetPositiveMomentCapacitySchematicImage(pgsTypes::SupportedDeckType deckType)
-{
-   std::string strImage;
-   switch(deckType)
-   {
-   case pgsTypes::sdtCompositeCIP:
-   case pgsTypes::sdtCompositeSIP:
-      strImage =  "+Mn_SpreadBoxBeam_Composite.gif";
-      break;
-
-   case pgsTypes::sdtCompositeOverlay:
-      strImage =  "+Mn_BoxBeam_Composite.gif";
-      break;
-
-   case pgsTypes::sdtNone:
-      strImage =  "+Mn_BoxBeam_Noncomposite.gif";
-      break;
-
-   default:
-      ATLASSERT(false); // shouldn't get here
-      break;
-   };
-
-   return strImage;
-}
-
-std::string CBoxBeamFactory::GetNegativeMomentCapacitySchematicImage(pgsTypes::SupportedDeckType deckType)
-{
-   std::string strImage;
-   switch(deckType)
-   {
-   case pgsTypes::sdtCompositeCIP:
-   case pgsTypes::sdtCompositeSIP:
-      strImage =  "-Mn_SpreadBoxBeam_Composite.gif";
-      break;
-
-   case pgsTypes::sdtCompositeOverlay:
-      strImage =  "-Mn_BoxBeam_Composite.gif";
-      break;
-
-   case pgsTypes::sdtNone:
-      strImage =  "-Mn_BoxBeam_Noncomposite.gif";
-      break;
-
-   default:
-      ATLASSERT(false); // shouldn't get here
-      break;
-   };
-
-   return strImage;
-}
-
-std::string CBoxBeamFactory::GetShearDimensionsSchematicImage(pgsTypes::SupportedDeckType deckType)
-{
-   std::string strImage;
-   switch(deckType)
-   {
-   case pgsTypes::sdtCompositeCIP:
-   case pgsTypes::sdtCompositeSIP:
-      strImage =  "Vn_SpreadBoxBeam_Composite.gif";
-      break;
-
-   case pgsTypes::sdtCompositeOverlay:
-      strImage =  "Vn_BoxBeam_Composite.gif";
-      break;
-
-   case pgsTypes::sdtNone:
-      strImage =  "Vn_BoxBeam_Noncomposite.gif";
-      break;
-
-   default:
-      ATLASSERT(false); // shouldn't get here
-      break;
-   };
-
-   return strImage;
-}
-
-std::string CBoxBeamFactory::GetInteriorGirderEffectiveFlangeWidthImage(IBroker* pBroker,pgsTypes::SupportedDeckType deckType)
-{
-   GET_IFACE2(pBroker, ILibrary,       pLib);
-   GET_IFACE2(pBroker, ISpecification, pSpec);
-   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
-
-   std::string strImage;
-   switch(deckType)
-   {
-   case pgsTypes::sdtCompositeCIP:
-   case pgsTypes::sdtCompositeSIP:
-      if ( pSpecEntry->GetEffectiveFlangeWidthMethod() == pgsTypes::efwmTribWidth || lrfdVersionMgr::FourthEditionWith2008Interims <= pSpecEntry->GetSpecificationType() )
-      {
-         strImage =  "SpreadBoxBeam_Effective_Flange_Width_Interior_Girder_2008.gif";
-      }
-      else
-      {
-         strImage =  "SpreadBoxBeam_Effective_Flange_Width_Interior_Girder.gif";
-      }
-      break;
-
-   case pgsTypes::sdtCompositeOverlay:
-      if ( pSpecEntry->GetEffectiveFlangeWidthMethod() == pgsTypes::efwmTribWidth || lrfdVersionMgr::FourthEditionWith2008Interims <= pSpecEntry->GetSpecificationType() )
-      {
-         strImage =  "BoxBeam_Effective_Flange_Width_Interior_Girder_2008.gif";
-      }
-      else
-      {
-         strImage =  "BoxBeam_Effective_Flange_Width_Interior_Girder.gif";
-      }
-      break;
-
-   case pgsTypes::sdtNone:
-   default:
-      ATLASSERT(false); // shouldn't get here
-      break;
-   };
-
-   return strImage;
-}
-
-std::string CBoxBeamFactory::GetExteriorGirderEffectiveFlangeWidthImage(IBroker* pBroker,pgsTypes::SupportedDeckType deckType)
-{
-   GET_IFACE2(pBroker, ILibrary,       pLib);
-   GET_IFACE2(pBroker, ISpecification, pSpec);
-   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
-
-   std::string strImage;
-   switch(deckType)
-   {
-   case pgsTypes::sdtCompositeCIP:
-   case pgsTypes::sdtCompositeSIP:
-      if ( pSpecEntry->GetEffectiveFlangeWidthMethod() == pgsTypes::efwmTribWidth || lrfdVersionMgr::FourthEditionWith2008Interims <= pSpecEntry->GetSpecificationType() )
-      {
-         strImage =  "SpreadBoxBeam_Effective_Flange_Width_Exterior_Girder_2008.gif";
-      }
-      else
-      {
-         strImage =  "SpreadBoxBeam_Effective_Flange_Width_Exterior_Girder.gif";
-      }
-      break;
-
-   case pgsTypes::sdtCompositeOverlay:
-      if ( pSpecEntry->GetEffectiveFlangeWidthMethod() == pgsTypes::efwmTribWidth || lrfdVersionMgr::FourthEditionWith2008Interims <= pSpecEntry->GetSpecificationType() )
-      {
-         strImage =  "BoxBeam_Effective_Flange_Width_Exterior_Girder_2008.gif";
-      }
-      else
-      {
-         strImage =  "BoxBeam_Effective_Flange_Width_Exterior_Girder.gif";
-      }
-      break;
-
-   case pgsTypes::sdtNone:
-   default:
-      ATLASSERT(false); // shouldn't get here
-      break;
-   };
-
-   return strImage;
-}
 
 CLSID CBoxBeamFactory::GetCLSID()
 {
    return CLSID_BoxBeamFactory;
-}
-
-CLSID CBoxBeamFactory::GetFamilyCLSID()
-{
-   return CLSID_BoxBeamFamily;
-}
-
-std::string CBoxBeamFactory::GetGirderFamilyName()
-{
-   USES_CONVERSION;
-   LPOLESTR pszUserType;
-   OleRegGetUserType(GetFamilyCLSID(),USERCLASSTYPE_SHORT,&pszUserType);
-   return std::string( OLE2A(pszUserType) );
-}
-
-std::string CBoxBeamFactory::GetPublisher()
-{
-   return std::string("WSDOT");
-}
-
-HINSTANCE CBoxBeamFactory::GetResourceInstance()
-{
-   return _Module.GetResourceInstance();
 }
 
 LPCTSTR CBoxBeamFactory::GetImageResourceName()
@@ -996,7 +652,9 @@ void CBoxBeamFactory::GetDimensions(const IBeamFactory::Dimensions& dimensions,
                                     double& F1, 
                                     double& F2, 
                                     double& C1,
-                                    double& J)
+                                    double& J,
+                                    double& shearKeyDepth,
+                                    double& endBlockLength)
 {
    H1 = GetDimension(dimensions,"H1");
    H2 = GetDimension(dimensions,"H2");
@@ -1013,63 +671,11 @@ void CBoxBeamFactory::GetDimensions(const IBeamFactory::Dimensions& dimensions,
    F2 = GetDimension(dimensions,"F2");
    C1 = GetDimension(dimensions,"C1");
    J  = GetDimension(dimensions,"Jmax");
-}
-
-double CBoxBeamFactory::GetDimension(const IBeamFactory::Dimensions& dimensions,
-                                        const std::string& name)
-{
-   Dimensions::const_iterator iter;
-   for ( iter = dimensions.begin(); iter != dimensions.end(); iter++ )
-   {
-      const Dimension& dim = *iter;
-      if ( name == dim.first )
-         return dim.second;
-   }
-
-   ATLASSERT(false); // should never get here
-   return -99999;
-}
-
-pgsTypes::SupportedDeckTypes CBoxBeamFactory::GetSupportedDeckTypes(pgsTypes::SupportedBeamSpacing sbs)
-{
-   pgsTypes::SupportedDeckTypes sdt;
-   switch( sbs )
-   {
-   case pgsTypes::sbsUniform:
-   case pgsTypes::sbsGeneral:
-      sdt.push_back(pgsTypes::sdtCompositeCIP);
-      sdt.push_back(pgsTypes::sdtCompositeSIP);
-      break;
-
-   case pgsTypes::sbsUniformAdjacent:
-   case pgsTypes::sbsGeneralAdjacent:
-      sdt.push_back(pgsTypes::sdtCompositeOverlay);
-      sdt.push_back(pgsTypes::sdtNone);
-      break;
-
-   default:
-      ATLASSERT(false);
-   }
-
-   return sdt;
-}
-
-pgsTypes::SupportedBeamSpacings CBoxBeamFactory::GetSupportedBeamSpacings()
-{
-   pgsTypes::SupportedBeamSpacings sbs;
-   sbs.push_back(pgsTypes::sbsUniform);
-   sbs.push_back(pgsTypes::sbsGeneral);
-   sbs.push_back(pgsTypes::sbsUniformAdjacent);
-   sbs.push_back(pgsTypes::sbsGeneralAdjacent);
-
-   return sbs;
+   shearKeyDepth   = GetDimension(dimensions,"ShearKeyDepth");
+   endBlockLength  = GetDimension(dimensions,"EndBlockLength");
 }
 
 
-long CBoxBeamFactory::GetNumberOfWebs(const IBeamFactory::Dimensions& dimensions)
-{
-   return 2;
-}
 
 void CBoxBeamFactory::GetAllowableSpacingRange(const IBeamFactory::Dimensions& dimensions,pgsTypes::SupportedDeckType sdt, 
                                                pgsTypes::SupportedBeamSpacing sbs, double* minSpacing, double* maxSpacing)
@@ -1115,13 +721,195 @@ void CBoxBeamFactory::GetAllowableSpacingRange(const IBeamFactory::Dimensions& d
    }
 }
 
-Float64 CBoxBeamFactory::GetBeamHeight(const IBeamFactory::Dimensions& dimensions,pgsTypes::MemberEndType endType)
+bool CBoxBeamFactory::IsShearKey(const IBeamFactory::Dimensions& dimensions, pgsTypes::SupportedBeamSpacing spacingType)
 {
-   double H1 = GetDimension(dimensions,"H1");
-   double H2 = GetDimension(dimensions,"H2");
-   double H3 = GetDimension(dimensions,"H3");
+   bool is_key;
 
-   return H1 + H2 + H3;
+   switch( spacingType )
+   {
+   case pgsTypes::sbsUniformAdjacent:
+   case pgsTypes::sbsGeneralAdjacent:
+      {
+      double sk = GetDimension(dimensions,"ShearKeyDepth");
+      is_key = sk > 0.0;
+      }
+      break;
+   default:
+      is_key = false;
+   }
+
+   return is_key;
+}
+
+// Free function to compute area of a horizontally chopped inverted triangle
+// as shown below
+//                       W
+//    |----------------------------------
+//    | ********w******** | ********   /
+//    |h***************** | ****   /
+//    | ***************** | ** /
+//  H |-------------------|/
+//    |                /
+//    |           /
+//    |      /
+//    | /
+//    V
+//
+//   Triangle above of Height (H) and Width (W). Want area chopped at depth (h)
+static Float64 AreaChoppedTriangle(Float64 W, Float64 H, Float64 h)
+{
+   ATLASSERT(h>=0.0 && h<=H);
+   ATLASSERT(H>0.0);
+
+   Float64 w = W * (1-h/H); // width of rectanglar part
+
+   return w*h + (W-w)*h/2.0;
+}
+
+
+void CBoxBeamFactory::GetShearKeyAreas(const IBeamFactory::Dimensions& dimensions, pgsTypes::SupportedBeamSpacing spacingType,Float64* uniformArea, Float64* areaPerJoint)
+{
+   *uniformArea = 0.0;
+   *areaPerJoint = 0.0;
+
+   if (!IsShearKey(dimensions, spacingType))
+   {
+      return;
+   }
+
+   double H1, H2, H3, H4, H5, H6, H7, W1, W2, W3, W4, F1, F2, C1, J, shearKeyDepth, endBlockLength;
+   GetDimensions(dimensions,H1, H2, H3, H4, H5, H6, H7, W1, W2, W3, W4, F1, F2, C1, J, shearKeyDepth, endBlockLength);
+
+   if (shearKeyDepth==0.0)
+   {
+      return;
+   }
+
+   // NOTE: To understand what is going on here, refer to figures in BoxBeam.vsd for descriptions 
+   //       of shear key area regions and variables
+   double Htotal = H1 + H2 + H3;
+   double HW = Htotal - (H4 + H5 + H6 + H7);
+
+   // First compute uniform area that occurs when beams have zero joint spacing. This is done for 
+   // each of the three comparisons of W4 and W1.
+   // Walk down section from top to bottom until shear key depth is depleted...
+   if (W4>W1)
+   {
+      // Bottom flange wider than top (Case 1)
+      // 5 sections to deal with
+      double A1(0.0), A2(0.0), A3(0.0), A4(0.0), A5(0.0);
+      double Hreg = shearKeyDepth; // shear key remaining from top of current section
+      double h;
+      if (Hreg > 0.0)
+      {
+         h = min(Hreg, H4);
+         A1 = (W4-W1) * h;
+
+         Hreg -= H4;
+         if (Hreg > 0.0)
+         {
+            h = min(Hreg, H5);
+            A2 = (W4-W1) * h;
+            A3 = W1*h / 2.0;
+
+            Hreg -= H5;
+            if (Hreg > 0.0)
+            {
+               h = min(Hreg, HW);
+               A4 = W4 * h;
+
+               Hreg -= HW;
+               if (Hreg > 0.0)
+               {
+                  if (Hreg < H6)
+                     A5 = AreaChoppedTriangle(W4, H6, Hreg);
+                  else
+                     A5 = W4 * H6 / 2.0;
+               }
+            }
+         }
+      }
+
+      *uniformArea = A1 + A2 + A3 + A4 + A5;
+   }
+   else if (W4<W1)
+   {
+      // Top wider than bottom (Case 2)
+      // 5 sections to deal with
+      double A1(0.0), A2(0.0), A3(0.0), A4(0.0), A5(0.0);
+      double Hreg = shearKeyDepth - H4; // shear key remaining from top of current section
+      double h;
+      if (Hreg > 0.0)
+      {
+         h = min(Hreg, H5);
+         A1 = W1 * h / 2.0;
+
+         Hreg -= H5;
+         if (Hreg > 0.0)
+         {
+            h = min(Hreg, HW);
+            A2 = W1 * h;
+
+            Hreg -= HW;
+            if (Hreg > 0.0)
+            {
+               h = min(Hreg, H6);
+               A3 = (W1-W4) * h;
+               A4 = AreaChoppedTriangle(W4, H6, h);
+
+               Hreg -= H6;
+               if (Hreg > 0.0)
+               {
+                  h = min(Hreg, H7);
+                  A5 = (W1-W4)*h;
+               }
+            }
+         }
+      }
+
+      *uniformArea = A1 + A2 + A3 + A4 + A5;
+
+   }
+   else // (W4==W1)
+   {
+      // Flange widths are equal (Case 3) - 3 sections to deal with
+      double A1(0.0), A2(0.0), A3(0.0);
+      double Hreg = shearKeyDepth - H4; // shear key remaining from top of current section
+      double h;
+      if (Hreg > 0.0)
+      {
+         h = min(Hreg, H5);
+         A1 = W1 * h / 2.0;
+
+         Hreg -= H5;
+         if (Hreg > 0.0)
+         {
+            h = min(Hreg, HW);
+            A2 = W1 * h;
+
+            Hreg -= HW;
+            if (Hreg > 0.0)
+            {
+               if (Hreg<H6)
+                  A3 = AreaChoppedTriangle(W1, H6, Hreg);
+               else
+                  A3 = W1 * H6 / 2.0;
+            }
+         }
+      }
+
+      *uniformArea = A1 + A2 + A3;
+   }
+
+   // Next pick up area of bottom chamfer
+   Float64 hc1 = shearKeyDepth - Htotal + C1;
+   if (hc1>0.0)
+   {
+      *uniformArea += hc1*C1/2.0;
+   }
+
+   // Lastly, compute portion of shear key area per joint spacing
+   *areaPerJoint = shearKeyDepth;
 }
 
 Float64 CBoxBeamFactory::GetBeamWidth(const IBeamFactory::Dimensions& dimensions,pgsTypes::MemberEndType endType)

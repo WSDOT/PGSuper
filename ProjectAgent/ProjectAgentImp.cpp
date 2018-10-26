@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -87,8 +87,8 @@ unitmgtIndirectMeasure init_si_units()
 
    im.ComponentDim.Update(    unitMeasure::Millimeter,                0.001, 8, 0, sysNumericFormatTool::Fixed );
    im.XSectionDim.Update(     unitMeasure::Meter,                     0.001, 7, 3, sysNumericFormatTool::Fixed );
-   im.SpanLength.Update(      unitMeasure::Meter,                     0.001, 8, 2, sysNumericFormatTool::Fixed );
-   im.AlignmentLength.Update( unitMeasure::Meter,                     0.001,16, 4, sysNumericFormatTool::Fixed );
+   im.SpanLength.Update(      unitMeasure::Meter,                     0.001, 9, 3, sysNumericFormatTool::Fixed );
+   im.AlignmentLength.Update( unitMeasure::Meter,                     0.001,16, 3, sysNumericFormatTool::Fixed );
    im.Displacement.Update(    unitMeasure::Millimeter,                0.001, 8, 1, sysNumericFormatTool::Fixed );
    im.Area.Update(            unitMeasure::Millimeter2,               0.001, 8, 0, sysNumericFormatTool::Fixed );
    im.MomentOfInertia.Update( unitMeasure::Millimeter4,               0.001, 7, 0, sysNumericFormatTool::Engineering );
@@ -2659,6 +2659,8 @@ STDMETHODIMP CProjectAgentImp::Init()
    //CComPtr<IConnectionPoint> pCP;
    //HRESULT hr = S_OK;
 
+   m_scidGirderDescriptionWarning = pStatusCenter->RegisterCallback(new pgsGirderDescriptionStatusCallback(m_pBroker,pgsTypes::statusWarning));
+
    return S_OK;
 }
 
@@ -4999,7 +5001,7 @@ ILoadModifiers::Level CProjectAgentImp::GetRedundancyLevel()
 // IImportProjectLibrary
 bool CProjectAgentImp::ImportProjectLibraries(IStructuredLoad* pStrLoad)
 {
-   return psglibImportEntries(pStrLoad,FILE_VERSION,m_pLibMgr);
+   return psglibImportEntries(pStrLoad,m_pLibMgr);
 }
 
 //////////////////////////////////////////////////////////////////
@@ -5071,12 +5073,12 @@ void CProjectAgentImp::SpecificationChanged(bool bFireEvent)
 
 /////////////////////////////////////////////////////////////////////////////
 // IUserDefinedLoadData
-Uint32 CProjectAgentImp::GetPointLoadCount() const
+CollectionIndexType CProjectAgentImp::GetPointLoadCount() const
 {
    return m_PointLoads.size();
 }
 
-Uint32 CProjectAgentImp::AddPointLoad(const CPointLoadData& pld)
+CollectionIndexType CProjectAgentImp::AddPointLoad(const CPointLoadData& pld)
 {
    m_PointLoads.push_back(pld);
 
@@ -5085,25 +5087,25 @@ Uint32 CProjectAgentImp::AddPointLoad(const CPointLoadData& pld)
    return GetPointLoadCount()-1;
 }
 
-const CPointLoadData& CProjectAgentImp::GetPointLoad(Uint32 idx) const
+const CPointLoadData& CProjectAgentImp::GetPointLoad(CollectionIndexType idx) const
 {
-   ATLASSERT(idx>=0 && idx< GetPointLoadCount() );
+   ATLASSERT(0 <= idx && idx < GetPointLoadCount() );
 
    return m_PointLoads[idx];
 }
 
-void CProjectAgentImp::UpdatePointLoad(Uint32 idx, const CPointLoadData& pld)
+void CProjectAgentImp::UpdatePointLoad(CollectionIndexType idx, const CPointLoadData& pld)
 {
-   ATLASSERT(idx>=0 && idx< GetPointLoadCount() );
+   ATLASSERT(0 <= idx && idx < GetPointLoadCount() );
 
    m_PointLoads[idx] = pld;
 
    Fire_GirderChanged(pld.m_Span,pld.m_Girder,GCH_LOADING);
 }
 
-void CProjectAgentImp::DeletePointLoad(Uint32 idx)
+void CProjectAgentImp::DeletePointLoad(CollectionIndexType idx)
 {
-   ATLASSERT(idx>=0 && idx< GetPointLoadCount() );
+   ATLASSERT(0 <= idx && idx < GetPointLoadCount() );
 
    PointLoadListIterator it = m_PointLoads.begin();
    it += idx;
@@ -5116,13 +5118,13 @@ void CProjectAgentImp::DeletePointLoad(Uint32 idx)
    Fire_GirderChanged(span,gdr,GCH_LOADING);
 }
 
-Uint32 CProjectAgentImp::GetDistributedLoadCount() const
+CollectionIndexType CProjectAgentImp::GetDistributedLoadCount() const
 {
    return m_DistributedLoads.size();
 }
 
 
-Uint32 CProjectAgentImp::AddDistributedLoad(const CDistributedLoadData& pld)
+CollectionIndexType CProjectAgentImp::AddDistributedLoad(const CDistributedLoadData& pld)
 {
    m_DistributedLoads.push_back(pld);
 
@@ -5131,25 +5133,25 @@ Uint32 CProjectAgentImp::AddDistributedLoad(const CDistributedLoadData& pld)
    return GetDistributedLoadCount()-1;
 }
 
-const CDistributedLoadData& CProjectAgentImp::GetDistributedLoad(Uint32 idx) const
+const CDistributedLoadData& CProjectAgentImp::GetDistributedLoad(CollectionIndexType idx) const
 {
-   ATLASSERT(idx>=0 && idx< GetDistributedLoadCount() );
+   ATLASSERT(0 <= idx && idx < GetDistributedLoadCount() );
 
    return m_DistributedLoads[idx];
 }
 
-void CProjectAgentImp::UpdateDistributedLoad(Uint32 idx, const CDistributedLoadData& pld)
+void CProjectAgentImp::UpdateDistributedLoad(CollectionIndexType idx, const CDistributedLoadData& pld)
 {
-   ATLASSERT(idx>=0 && idx< GetDistributedLoadCount() );
+   ATLASSERT(0 <= idx && idx < GetDistributedLoadCount() );
 
    m_DistributedLoads[idx] = pld;
 
    Fire_GirderChanged(pld.m_Span,pld.m_Girder,GCH_LOADING);
 }
 
-void CProjectAgentImp::DeleteDistributedLoad(Uint32 idx)
+void CProjectAgentImp::DeleteDistributedLoad(CollectionIndexType idx)
 {
-   ATLASSERT(idx>=0 && idx< GetDistributedLoadCount() );
+   ATLASSERT(0 <= idx && idx < GetDistributedLoadCount() );
 
    DistributedLoadListIterator it = m_DistributedLoads.begin();
    it += idx;
@@ -5162,12 +5164,12 @@ void CProjectAgentImp::DeleteDistributedLoad(Uint32 idx)
    Fire_GirderChanged(span,gdr,GCH_LOADING);
 }
 
-Uint32 CProjectAgentImp::GetMomentLoadCount() const
+CollectionIndexType CProjectAgentImp::GetMomentLoadCount() const
 {
    return m_MomentLoads.size();
 }
 
-Uint32 CProjectAgentImp::AddMomentLoad(const CMomentLoadData& pld)
+CollectionIndexType CProjectAgentImp::AddMomentLoad(const CMomentLoadData& pld)
 {
    m_MomentLoads.push_back(pld);
 
@@ -5176,25 +5178,25 @@ Uint32 CProjectAgentImp::AddMomentLoad(const CMomentLoadData& pld)
    return GetMomentLoadCount()-1;
 }
 
-const CMomentLoadData& CProjectAgentImp::GetMomentLoad(Uint32 idx) const
+const CMomentLoadData& CProjectAgentImp::GetMomentLoad(CollectionIndexType idx) const
 {
-   ATLASSERT(idx>=0 && idx< GetMomentLoadCount() );
+   ATLASSERT(0 <= idx && idx < GetMomentLoadCount() );
 
    return m_MomentLoads[idx];
 }
 
-void CProjectAgentImp::UpdateMomentLoad(Uint32 idx, const CMomentLoadData& pld)
+void CProjectAgentImp::UpdateMomentLoad(CollectionIndexType idx, const CMomentLoadData& pld)
 {
-   ATLASSERT(idx>=0 && idx< GetMomentLoadCount() );
+   ATLASSERT(0 <= idx && idx < GetMomentLoadCount() );
 
    m_MomentLoads[idx] = pld;
 
    Fire_GirderChanged(pld.m_Span,pld.m_Girder,GCH_LOADING);
 }
 
-void CProjectAgentImp::DeleteMomentLoad(Uint32 idx)
+void CProjectAgentImp::DeleteMomentLoad(CollectionIndexType idx)
 {
-   ATLASSERT(idx>=0 && idx< GetMomentLoadCount() );
+   ATLASSERT(0 <= idx && idx < GetMomentLoadCount() );
 
    MomentLoadListIterator it = m_MomentLoads.begin();
    it += idx;
@@ -5777,8 +5779,13 @@ bool CProjectAgentImp::ResolveLibraryConflicts(const ConflictList& rList)
    
    // if girder name conflicts, update the name
    const GirderLibrary&  girderLibrary = m_pLibMgr->GetGirderLibrary();
-   if (rList.IsConflict(girderLibrary, m_BridgeDescription.GetGirderName(), &new_name))
+
+   // only update at bridge level if gider is set for entire bridge
+   if (m_BridgeDescription.UseSameGirderForEntireBridge() &&
+       rList.IsConflict(girderLibrary, m_BridgeDescription.GetGirderName(), &new_name))
+   {
       m_BridgeDescription.SetGirderName(new_name.c_str());
+   }
 
    CSpanData* pSpan = m_BridgeDescription.GetSpan(0);
    while ( pSpan )
@@ -5965,12 +5972,13 @@ void CProjectAgentImp::DealWithGirderLibraryChanges(bool fromLibrary)
          const GirderLibraryEntry* pGdrEntry = girderTypes.GetGirderLibraryEntry(gdrIdx);
 
          Float64 xfer_length = pPrestress->GetXferLength(spanIdx,gdrIdx);
-         Float64 min_xfer = pGdrEntry->GetMinDebondSectionLength();
+         Float64 min_xfer = pGdrEntry->GetMinDebondSectionLength(); 
 
          if (min_xfer < xfer_length)
          {
-            std::string msg("The minimum debond section length in the girder library is shorter than the transfer length (e.g., 60*Db). This may cause the debonding design algorithm to generate designs that do not pass a specification check.");
-            AddGirderStatusItem(spanIdx, gdrIdx, msg);
+            std::ostringstream os;
+            os << "Span " << LABEL_SPAN(spanIdx) << " Girder " << LABEL_GIRDER(gdrIdx) << ": The minimum debond section length in the girder library is shorter than the transfer length (e.g., 60*Db). This may cause the debonding design algorithm to generate designs that do not pass a specification check." << std::endl;
+            AddGirderStatusItem(spanIdx, gdrIdx, os.str() );
          }
       }
 
@@ -6050,6 +6058,27 @@ void CProjectAgentImp::DealWithConnectionLibraryChanges(bool fromLibrary)
       pgsInformationalStatusItem* pStatusItem = new pgsInformationalStatusItem(m_AgentID,124,os.str().c_str());
       pStatusCenter->Add(pStatusItem);
    }
+
+   // Another possible problem is that orphaned connections at ends of bridge can become invalid if the connection library
+   // changes. Make sure our orphans have valid connection names
+   GET_IFACE(ILibrary,pLib);
+  
+   CPierData* pPier = m_BridgeDescription.GetPier(0);
+   pPier->SetConnectionLibraryEntry(pgsTypes::Back,NULL);
+   const ConnectionLibraryEntry* pConn = pLib->GetConnectionEntry(pPier->GetConnection(pgsTypes::Back));
+   if (pConn==NULL)
+   {
+      pPier->SetConnection(pgsTypes::Back, pPier->GetConnection(pgsTypes::Ahead)); // our ahead connection is good or we wouldn't be here
+   }
+
+   pPier = m_BridgeDescription.GetPier(nSpans);
+   pPier->SetConnectionLibraryEntry(pgsTypes::Ahead,NULL);
+   pConn = pLib->GetConnectionEntry(pPier->GetConnection(pgsTypes::Ahead));
+   if (pConn==NULL)
+   {
+      pPier->SetConnection(pgsTypes::Ahead, pPier->GetConnection(pgsTypes::Back));
+   }
+
 }
 
 bool CProjectAgentImp::CanHavePedestrianLoad() const
@@ -6072,7 +6101,7 @@ void CProjectAgentImp::AddGirderStatusItem(SpanIndexType span,GirderIndexType gi
 {
    // first post message
    GET_IFACE(IStatusCenter,pStatusCenter);
-   pgsGirderDescriptionStatusItem* pStatusItem =  new pgsGirderDescriptionStatusItem(span,girder,0,m_AgentID,113,message.c_str());
+   pgsGirderDescriptionStatusItem* pStatusItem =  new pgsGirderDescriptionStatusItem(span,girder,0,m_AgentID,m_scidGirderDescriptionWarning,message.c_str());
    long st_id = pStatusCenter->Add(pStatusItem);
 
    // then store message id's for a given span/girder

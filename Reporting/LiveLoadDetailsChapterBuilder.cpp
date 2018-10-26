@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -66,7 +66,7 @@ rptChapter* CLiveLoadDetailsChapterBuilder::Build(CReportSpecification* pRptSpec
    SpanIndexType span = pSGRptSpec->GetSpan();
    GirderIndexType girder = pSGRptSpec->GetGirder();
 
-   GET_IFACE2(pBroker,IDisplayUnits,pDispUnits);
+   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
@@ -98,7 +98,7 @@ rptChapter* CLiveLoadDetailsChapterBuilder::Build(CReportSpecification* pRptSpec
       pPara = new rptParagraph;
       *pChapter << pPara;
 
-      ReportLiveLoad(pBroker, load_name, pPara, pDispUnits);
+      ReportLiveLoad(pBroker, load_name, pPara, pDisplayUnits);
    }
 
    // Fatigue live loads
@@ -129,7 +129,7 @@ rptChapter* CLiveLoadDetailsChapterBuilder::Build(CReportSpecification* pRptSpec
          pPara = new rptParagraph;
          *pChapter << pPara;
 
-         ReportLiveLoad(pBroker, load_name, pPara, pDispUnits);
+         ReportLiveLoad(pBroker, load_name, pPara, pDisplayUnits);
       }
    }
 
@@ -159,20 +159,20 @@ rptChapter* CLiveLoadDetailsChapterBuilder::Build(CReportSpecification* pRptSpec
       pPara = new rptParagraph;
       *pChapter << pPara;
 
-      ReportLiveLoad(pBroker, load_name, pPara, pDispUnits);
+      ReportLiveLoad(pBroker, load_name, pPara, pDisplayUnits);
    }
 
 
    return pChapter;
 }
 
-void CLiveLoadDetailsChapterBuilder::ReportLiveLoad(IBroker* pBroker, std::string& load_name, rptParagraph* pPara,IDisplayUnits* pDispUnits)
+void CLiveLoadDetailsChapterBuilder::ReportLiveLoad(IBroker* pBroker, std::string& load_name, rptParagraph* pPara,IDisplayUnits* pDisplayUnits)
 {
-   INIT_UV_PROTOTYPE( rptLengthUnitValue,         dim,     pDispUnits->GetSpanLengthUnit(),  false );
-   INIT_UV_PROTOTYPE( rptForcePerLengthUnitValue, fpl, pDispUnits->GetForcePerLengthUnit(), false );
-   INIT_UV_PROTOTYPE( rptForceUnitValue,          force,    pDispUnits->GetGeneralForceUnit(), false );
-   INIT_UV_PROTOTYPE( rptPressureUnitValue,       pressure, pDispUnits->GetSidewalkPressureUnit(), true );
-   INIT_UV_PROTOTYPE( rptLengthUnitValue,         sw,     pDispUnits->GetSpanLengthUnit(),  true );
+   INIT_UV_PROTOTYPE( rptLengthUnitValue,         dim,     pDisplayUnits->GetSpanLengthUnit(),  false );
+   INIT_UV_PROTOTYPE( rptForcePerLengthUnitValue, fpl, pDisplayUnits->GetForcePerLengthUnit(), false );
+   INIT_UV_PROTOTYPE( rptForceUnitValue,          force,    pDisplayUnits->GetGeneralForceUnit(), false );
+   INIT_UV_PROTOTYPE( rptPressureUnitValue,       pressure, pDisplayUnits->GetSidewalkPressureUnit(), true );
+   INIT_UV_PROTOTYPE( rptLengthUnitValue,         sw,     pDisplayUnits->GetSpanLengthUnit(),  true );
 
    GET_IFACE2(pBroker,ILibrary,pLibrary);
    const LiveLoadLibraryEntry* ll_entry = pLibrary->GetLiveLoadEntry( load_name.c_str());
@@ -244,8 +244,8 @@ void CLiveLoadDetailsChapterBuilder::ReportLiveLoad(IBroker* pBroker, std::strin
       *pPara << p_table;
 
       (*p_table)(0,0) << "Axle";
-      (*p_table)(0,1) << COLHDR("Weight",       rptForceUnitTag, pDispUnits->GetGeneralForceUnit() );
-      (*p_table)(0,2) << COLHDR("Spacing",      rptLengthUnitTag, pDispUnits->GetSpanLengthUnit() );
+      (*p_table)(0,1) << COLHDR("Weight",       rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit() );
+      (*p_table)(0,2) << COLHDR("Spacing",      rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
 
       AxleIndexType var_axl = ll_entry->GetVariableAxleIndex();
 

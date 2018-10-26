@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 2009  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -52,3 +52,8 @@ DEFINE_GUID(CLSID_RibbedBeamFamily,
 // {07BDEB00-D913-4c67-8393-61263E065DC6}
 DEFINE_GUID(CLSID_SlabBeamFamily, 
 0x7bdeb00, 0xd913, 0x4c67, 0x83, 0x93, 0x61, 0x26, 0x3e, 0x6, 0x5d, 0xc6);
+
+// {BFC403E9-AAF5-4e49-86AB-B537F1C50066}
+DEFINE_GUID(CLSID_DeckedSlabBeamFamily, 
+0xbfc403e9, 0xaaf5, 0x4e49, 0x86, 0xab, 0xb5, 0x37, 0xf1, 0xc5, 0x0, 0x66);
+

@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -71,14 +71,14 @@ CVehicularLoadResultsTable& CVehicularLoadResultsTable::operator= (const CVehicu
 
 //======================== OPERATIONS =======================================
 rptRcTable* CVehicularLoadResultsTable::Build(IBroker* pBroker,SpanIndexType span,GirderIndexType girder,pgsTypes::LiveLoadType llType,const std::string& strLLName,VehicleIndexType vehicleIndex, pgsTypes::AnalysisType analysisType,
-                                              bool bReportTruckConfig,IDisplayUnits* pDispUnits) const
+                                              bool bReportTruckConfig,IDisplayUnits* pDisplayUnits) const
 {
    // Build table
-   INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDispUnits->GetSpanLengthUnit(), false );
-   INIT_UV_PROTOTYPE( rptMomentSectionValue, moment, pDispUnits->GetMomentUnit(), false );
-   INIT_UV_PROTOTYPE( rptForceSectionValue, shear, pDispUnits->GetShearUnit(), false );
-   INIT_UV_PROTOTYPE( rptLengthUnitValue, displacement, pDispUnits->GetDisplacementUnit(), false );
-   INIT_UV_PROTOTYPE( rptLengthUnitValue, span_location, pDispUnits->GetSpanLengthUnit(), false );
+   INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
+   INIT_UV_PROTOTYPE( rptMomentSectionValue, moment, pDisplayUnits->GetMomentUnit(), false );
+   INIT_UV_PROTOTYPE( rptForceSectionValue, shear, pDisplayUnits->GetShearUnit(), false );
+   INIT_UV_PROTOTYPE( rptLengthUnitValue, displacement, pDisplayUnits->GetDisplacementUnit(), false );
+   INIT_UV_PROTOTYPE( rptLengthUnitValue, span_location, pDisplayUnits->GetSpanLengthUnit(), false );
 
    GET_IFACE2(pBroker,IBridge,pBridge);
 
@@ -113,45 +113,45 @@ rptRcTable* CVehicularLoadResultsTable::Build(IBroker* pBroker,SpanIndexType spa
 
    if ( bReportTruckConfig )
    {
-      (*p_table)(0,col++) << COLHDR("X",rptLengthUnitTag, pDispUnits->GetSpanLengthUnit() );
+      (*p_table)(0,col++) << COLHDR("X",rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
    }
 
-   (*p_table)(0,col++) << COLHDR("Moment" << rptNewLine << "Max",   rptMomentUnitTag, pDispUnits->GetMomentUnit() );
+   (*p_table)(0,col++) << COLHDR("Moment" << rptNewLine << "Max",   rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
 
    if ( bReportTruckConfig )
    {
       (*p_table)(0,col++) << "Moment" << rptNewLine << "Max" << rptNewLine << "Config"; // for max moment
    }
 
-   (*p_table)(0,col++) << COLHDR("Moment" << rptNewLine << "Min",   rptMomentUnitTag, pDispUnits->GetMomentUnit() );
+   (*p_table)(0,col++) << COLHDR("Moment" << rptNewLine << "Min",   rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
 
    if ( bReportTruckConfig )
    {
       (*p_table)(0,col++) << "Moment" << rptNewLine << "Min" << rptNewLine << "Config"; // for max moment
    }
 
-   (*p_table)(0,col++) << COLHDR("Shear" << rptNewLine << "Max",   rptForceUnitTag, pDispUnits->GetShearUnit() );
+   (*p_table)(0,col++) << COLHDR("Shear" << rptNewLine << "Max",   rptForceUnitTag, pDisplayUnits->GetShearUnit() );
 
    if ( bReportTruckConfig )
    {
       (*p_table)(0,col++) << "Shear" << rptNewLine << "Max" << rptNewLine << "Config"; // for max moment
    }
 
-   (*p_table)(0,col++) << COLHDR("Shear" << rptNewLine << "Min",   rptForceUnitTag, pDispUnits->GetShearUnit() );
+   (*p_table)(0,col++) << COLHDR("Shear" << rptNewLine << "Min",   rptForceUnitTag, pDisplayUnits->GetShearUnit() );
 
    if ( bReportTruckConfig )
    {
       (*p_table)(0,col++) << "Shear" << rptNewLine << "Min" << rptNewLine << "Config"; // for max moment
    }
    
-   (*p_table)(0,col++) << COLHDR("Displacement" << rptNewLine << "Max", rptLengthUnitTag, pDispUnits->GetDisplacementUnit() );
+   (*p_table)(0,col++) << COLHDR("Displacement" << rptNewLine << "Max", rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
 
    if ( bReportTruckConfig )
    {
       (*p_table)(0,col++) << "Displacement" << rptNewLine << "Max" << rptNewLine << "Config"; // for max moment
    }
 
-   (*p_table)(0,col++) << COLHDR("Displacement" << rptNewLine << "Min", rptLengthUnitTag, pDispUnits->GetDisplacementUnit() );
+   (*p_table)(0,col++) << COLHDR("Displacement" << rptNewLine << "Min", rptLengthUnitTag, pDisplayUnits->GetDisplacementUnit() );
 
    if ( bReportTruckConfig )
    {
@@ -235,24 +235,24 @@ rptRcTable* CVehicularLoadResultsTable::Build(IBroker* pBroker,SpanIndexType spa
 
          if ( bReportTruckConfig )
          {
-            ReportTruckConfiguration(MmaxConfig[index],p_table,row,col++,pDispUnits);
+            ReportTruckConfiguration(MmaxConfig[index],p_table,row,col++,pDisplayUnits);
          }
 
          (*p_table)(row,col++) << moment.SetValue( Mmin[index] );
 
          if ( bReportTruckConfig )
          {
-            ReportTruckConfiguration(MminConfig[index],p_table,row,col++,pDispUnits);
+            ReportTruckConfiguration(MminConfig[index],p_table,row,col++,pDisplayUnits);
          }
 
          (*p_table)(row,col++) << shear.SetValue( Vmax[index] );
          if ( bReportTruckConfig )
          {
-            ReportTruckConfiguration(VmaxLeftConfig[index],p_table,row,col,pDispUnits);
+            ReportTruckConfiguration(VmaxLeftConfig[index],p_table,row,col,pDisplayUnits);
             if ( !IsEqual(Vmax[index].Left(),Vmax[index].Right()) )
             {
                (*p_table)(row,col) << "-----------" << rptNewLine;
-               ReportTruckConfiguration(VmaxRightConfig[index],p_table,row,col,pDispUnits);
+               ReportTruckConfiguration(VmaxRightConfig[index],p_table,row,col,pDisplayUnits);
             }
 
             col++;
@@ -262,11 +262,11 @@ rptRcTable* CVehicularLoadResultsTable::Build(IBroker* pBroker,SpanIndexType spa
 
          if ( bReportTruckConfig )
          {
-            ReportTruckConfiguration(VminLeftConfig[index],p_table,row,col,pDispUnits);
+            ReportTruckConfiguration(VminLeftConfig[index],p_table,row,col,pDisplayUnits);
             if ( !IsEqual(Vmin[index].Left(),Vmin[index].Right()) )
             {
                (*p_table)(row,col) << "-----------" << rptNewLine;
-               ReportTruckConfiguration(VminRightConfig[index],p_table,row,col,pDispUnits);
+               ReportTruckConfiguration(VminRightConfig[index],p_table,row,col,pDisplayUnits);
             }
 
             col++;
@@ -275,13 +275,13 @@ rptRcTable* CVehicularLoadResultsTable::Build(IBroker* pBroker,SpanIndexType spa
          (*p_table)(row,col++) << displacement.SetValue( Dmax[index] );
          if ( bReportTruckConfig )
          {
-            ReportTruckConfiguration(DmaxConfig[index],p_table,row,col++,pDispUnits);
+            ReportTruckConfiguration(DmaxConfig[index],p_table,row,col++,pDisplayUnits);
          }
 
          (*p_table)(row,col++) << displacement.SetValue( Dmin[index] );
          if ( bReportTruckConfig )
          {
-            ReportTruckConfiguration(DminConfig[index],p_table,row,col++,pDispUnits);
+            ReportTruckConfiguration(DminConfig[index],p_table,row,col++,pDisplayUnits);
          }
 
          row++;
@@ -312,7 +312,7 @@ void CVehicularLoadResultsTable::MakeAssignment(const CVehicularLoadResultsTable
    MakeCopy( rOther );
 }
 
-void CVehicularLoadResultsTable::ReportTruckConfiguration(const AxleConfiguration& config,rptRcTable* pTable,int row,int col,IDisplayUnits* pDispUnits)
+void CVehicularLoadResultsTable::ReportTruckConfiguration(const AxleConfiguration& config,rptRcTable* pTable,int row,int col,IDisplayUnits* pDisplayUnits)
 {
    if ( config.size() == 0 )
    {
@@ -320,8 +320,8 @@ void CVehicularLoadResultsTable::ReportTruckConfiguration(const AxleConfiguratio
       return;
    }
 
-   INIT_UV_PROTOTYPE( rptForceUnitValue, weight, pDispUnits->GetGeneralForceUnit(), true );
-   INIT_UV_PROTOTYPE( rptLengthUnitValue, position, pDispUnits->GetSpanLengthUnit(), true);
+   INIT_UV_PROTOTYPE( rptForceUnitValue, weight, pDisplayUnits->GetGeneralForceUnit(), true );
+   INIT_UV_PROTOTYPE( rptLengthUnitValue, position, pDisplayUnits->GetSpanLengthUnit(), true);
 
    int nRowsWritten = 0;
    AxleConfiguration::const_iterator axleIter;

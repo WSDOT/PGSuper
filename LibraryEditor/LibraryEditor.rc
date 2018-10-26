@@ -1,4 +1,4 @@
-//Microsoft Developer Studio generated resource script.
+// Microsoft Visual C++ generated resource script.
 //
 #include "resource.h"
 
@@ -29,12 +29,12 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 // TEXTINCLUDE
 //
 
-1 TEXTINCLUDE DISCARDABLE 
+1 TEXTINCLUDE 
 BEGIN
     "resource.h\0"
 END
 
-2 TEXTINCLUDE DISCARDABLE 
+2 TEXTINCLUDE 
 BEGIN
     "#include ""afxres.h""\r\n"
     "#if !defined NOGRID\r\n"
@@ -42,7 +42,7 @@ BEGIN
     "#endif\0"
 END
 
-3 TEXTINCLUDE DISCARDABLE 
+3 TEXTINCLUDE 
 BEGIN
     "#define _AFX_NO_SPLITTER_RESOURCES\r\n"
     "#define _AFX_NO_OLE_RESOURCES\r\n"
@@ -73,37 +73,37 @@ END
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
-IDR_MAINFRAME           ICON    DISCARDABLE     "res\\LibraryEditor.ico"
-IDR_LIBRARTYPE          ICON    DISCARDABLE     "res\\LibraryEditorDoc.ico"
-IDI_WSDOT               ICON    DISCARDABLE     "res\\Wsdot.ico"
-IDI_BSS                 ICON    DISCARDABLE     "res\\bss.ico"
-A                       ICON    DISCARDABLE     "res\\idr_main.ico"
-IDI_FOLDER              ICON    DISCARDABLE     "res\\icon1.ico"
-IDI_OPEN_FOLDER         ICON    DISCARDABLE     "res\\ico00001.ico"
-IDI_LIBRARY_MANAGER     ICON    DISCARDABLE     "res\\ico00002.ico"
-IDI_DEFAULT_ENTRY       ICON    DISCARDABLE     "res\\default_.ico"
+IDR_MAINFRAME           ICON                    "res\\LibraryEditor.ico"
+IDR_LIBRARTYPE          ICON                    "res\\LibraryEditorDoc.ico"
+IDI_WSDOT               ICON                    "res\\Wsdot.ico"
+IDI_BSS                 ICON                    "res\\bss.ico"
+A                       ICON                    "res\\idr_main.ico"
+IDI_FOLDER              ICON                    "res\\icon1.ico"
+IDI_OPEN_FOLDER         ICON                    "res\\ico00001.ico"
+IDI_LIBRARY_MANAGER     ICON                    "res\\ico00002.ico"
+IDI_DEFAULT_ENTRY       ICON                    "res\\default_.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 //
 // Bitmap
 //
 
-IDR_MAINFRAME           BITMAP  MOVEABLE PURE   "res\\Toolbar.bmp"
-FOLDER                  BITMAP  DISCARDABLE     "res\\bmp00003.bmp"
-GIRDER_LIBRARY_ENTRY    BITMAP  DISCARDABLE     "res\\bmp00004.bmp"
-IDB_IN_USE              BITMAP  DISCARDABLE     "res\\bmp00005.bmp"
-IDB_IN_USE_AND_READ_ONLY BITMAP  DISCARDABLE     "res\\bmp00006.bmp"
-IDB_LIBRARY             BITMAP  DISCARDABLE     "res\\bmp00007.bmp"
-IDB_READ_ONLY           BITMAP  DISCARDABLE     "res\\bmp00008.bmp"
-LIBRARY_MANAGER         BITMAP  DISCARDABLE     "res\\bmp00009.bmp"
-OPEN_FOLDER             BITMAP  DISCARDABLE     "res\\bmp00010.bmp"
+IDR_MAINFRAME           BITMAP                  "res\\Toolbar.bmp"
+FOLDER                  BITMAP                  "res\\bmp00003.bmp"
+GIRDER_LIBRARY_ENTRY    BITMAP                  "res\\bmp00004.bmp"
+IDB_IN_USE              BITMAP                  "res\\bmp00005.bmp"
+IDB_IN_USE_AND_READ_ONLY BITMAP                  "res\\bmp00006.bmp"
+IDB_LIBRARY             BITMAP                  "res\\bmp00007.bmp"
+IDB_READ_ONLY           BITMAP                  "res\\bmp00008.bmp"
+LIBRARY_MANAGER         BITMAP                  "res\\bmp00009.bmp"
+OPEN_FOLDER             BITMAP                  "res\\bmp00010.bmp"
 
 /////////////////////////////////////////////////////////////////////////////
 //
 // Toolbar
 //
 
-IDR_MAINFRAME TOOLBAR DISCARDABLE  16, 15
+IDR_MAINFRAME TOOLBAR  16, 15
 BEGIN
     BUTTON      ID_FILE_NEW
     BUTTON      ID_FILE_OPEN
@@ -130,7 +130,7 @@ END
 // Menu
 //
 
-IDR_MAINFRAME MENU PRELOAD DISCARDABLE 
+IDR_MAINFRAME MENU 
 BEGIN
     POPUP "&File"
     BEGIN
@@ -157,7 +157,7 @@ BEGIN
     END
 END
 
-IDR_LIBRARTYPE MENU PRELOAD DISCARDABLE 
+IDR_LIBRARTYPE MENU 
 BEGIN
     POPUP "&File"
     BEGIN
@@ -218,7 +218,7 @@ END
 // Accelerator
 //
 
-IDR_MAINFRAME ACCELERATORS PRELOAD MOVEABLE PURE 
+IDR_MAINFRAME ACCELERATORS 
 BEGIN
     "N",            ID_FILE_NEW,            VIRTKEY, CONTROL
     "O",            ID_FILE_OPEN,           VIRTKEY, CONTROL
@@ -244,32 +244,27 @@ END
 // Dialog
 //
 
-IDD_ABOUTBOX DIALOG DISCARDABLE  0, 0, 251, 165
-STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+IDD_ABOUTBOX DIALOG  0, 0, 251, 165
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "About LibraryEditor"
 FONT 8, "MS Sans Serif"
 BEGIN
     ICON            141,IDC_STATIC,11,10,20,20
-    LTEXT           "Library Editor Version 1.0",IDC_STATIC,39,10,135,8,
-                    SS_NOPREFIX
-    LTEXT           "Copyright © 2000-2007, All Rights Reserved",IDC_STATIC,
-                    39,30,191,8
+    LTEXT           "Library Editor Version 1.0",IDC_STATIC,39,10,135,8,SS_NOPREFIX
+    LTEXT           "Copyright © 2000-2007, All Rights Reserved",IDC_STATIC,39,30,191,8
     DEFPUSHBUTTON   "OK",IDOK,86,144,80,14,WS_GROUP
     LTEXT           "Written By",IDC_STATIC,38,74,59,8
     LTEXT           "Richard Brice, PE",IDC_STATIC,64,84,54,8
-    LTEXT           "Washington State Department of Transportation",
-                    IDC_STATIC,64,95,149,8
+    LTEXT           "Washington State Department of Transportation",IDC_STATIC,64,95,149,8
     LTEXT           "Richard Pickings, PE",IDC_STATIC,64,111,64,8
     LTEXT           "BridgeSight Software",IDC_STATIC,64,122,140,8
     ICON            IDI_WSDOT,IDC_STATIC,39,85,20,20
     ICON            IDI_BSS,IDC_STATIC,39,111,20,20
     LTEXT           "Release Date: May 14, 1999",IDC_STATIC,39,20,100,8
-    LTEXT           "This software is licensed under the terms and conditions of the Alternate Route Open Source License",
-                    IDC_STATIC,38,48,159,18
+    LTEXT           "This software is licensed under the terms and conditions of the Alternate Route Open Source License",IDC_STATIC,38,48,159,18
 END
 
 
-#ifndef _MAC
 /////////////////////////////////////////////////////////////////////////////
 //
 // Version
@@ -292,18 +287,15 @@ BEGIN
     BEGIN
         BLOCK "040904b0"
         BEGIN
-            VALUE "Comments", "A member of the Alternate Route Project\0"
-            VALUE "CompanyName", "Washington State Department of Transportation\0"
-            VALUE "FileDescription", "WSDOT Library Editor\0"
-            VALUE "FileVersion", "1.8.3\0"
-            VALUE "InternalName", "LibraryEditor\0"
-            VALUE "LegalCopyright", "Copyright © 2000-2007\0"
-            VALUE "LegalTrademarks", "\0"
-            VALUE "OriginalFilename", "LibraryEditor.EXE\0"
-            VALUE "PrivateBuild", "\0"
-            VALUE "ProductName", "WSDOT Library Editor\0"
-            VALUE "ProductVersion", "1.8.3\0"
-            VALUE "SpecialBuild", "\0"
+            VALUE "Comments", "A member of the Alternate Route Project"
+            VALUE "CompanyName", "Washington State Department of Transportation"
+            VALUE "FileDescription", "WSDOT Library Editor"
+            VALUE "FileVersion", "1.8.3"
+            VALUE "InternalName", "LibraryEditor"
+            VALUE "LegalCopyright", "Copyright © 1999-2010, Washington State Department of Transportation, All Rights Reserved"
+            VALUE "OriginalFilename", "LibraryEditor.EXE"
+            VALUE "ProductName", "WSDOT Library Editor"
+            VALUE "ProductVersion", "1.8.3"
         END
     END
     BLOCK "VarFileInfo"
@@ -312,8 +304,6 @@ BEGIN
     END
 END
 
-#endif    // !_MAC
-
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -321,7 +311,7 @@ END
 //
 
 #ifdef APSTUDIO_INVOKED
-GUIDELINES DESIGNINFO DISCARDABLE 
+GUIDELINES DESIGNINFO 
 BEGIN
     IDD_ABOUTBOX, DIALOG
     BEGIN
@@ -339,20 +329,20 @@ END
 // String Table
 //
 
-STRINGTABLE PRELOAD DISCARDABLE 
+STRINGTABLE 
 BEGIN
     IDR_MAINFRAME           "Library Editor"
     IDR_LIBRARTYPE          "\nUntitled\nUntitled\nLibrary File (*.lbr)\n.lbr\nWsdotLibrary.Document\nLibrary File"
 END
 
-STRINGTABLE PRELOAD DISCARDABLE 
+STRINGTABLE 
 BEGIN
     AFX_IDS_APP_TITLE       "Library Editor"
     AFX_IDS_IDLEMESSAGE     "For Help, press F1"
     AFX_IDS_HELPMODEMESSAGE "Select an object on which to get Help"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE 
 BEGIN
     ID_INDICATOR_EXT        "EXT"
     ID_INDICATOR_CAPS       "CAP"
@@ -362,7 +352,7 @@ BEGIN
     ID_INDICATOR_REC        "REC"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE 
 BEGIN
     ID_FILE_NEW             "Create a new document\nNew"
     ID_FILE_OPEN            "Open an existing document\nOpen"
@@ -375,7 +365,7 @@ BEGIN
     ID_FILE_PRINT_PREVIEW   "Display full pages\nPrint Preview"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE 
 BEGIN
     ID_APP_ABOUT            "Display program information, version number and copyright\nAbout"
     ID_APP_EXIT             "Quit the application; prompts to save documents\nExit"
@@ -386,7 +376,7 @@ BEGIN
     ID_HELP                 "Display help for current task or command\nHelp"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE 
 BEGIN
     ID_FILE_MRU_FILE1       "Open this document"
     ID_FILE_MRU_FILE2       "Open this document"
@@ -406,13 +396,13 @@ BEGIN
     ID_FILE_MRU_FILE16      "Open this document"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE 
 BEGIN
     ID_NEXT_PANE            "Switch to the next window pane\nNext Pane"
     ID_PREV_PANE            "Switch back to the previous window pane\nPrevious Pane"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE 
 BEGIN
     ID_WINDOW_NEW           "Open another window for the active document\nNew Window"
     ID_WINDOW_ARRANGE       "Arrange icons at the bottom of the window\nArrange Icons"
@@ -422,7 +412,7 @@ BEGIN
     ID_WINDOW_SPLIT         "Split the active window into panes\nSplit"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE 
 BEGIN
     ID_EDIT_CLEAR           "Erase the selection\nErase"
     ID_EDIT_CLEAR_ALL       "Erase everything\nErase All"
@@ -437,13 +427,13 @@ BEGIN
     ID_EDIT_REDO            "Redo the previously undone action\nRedo"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE 
 BEGIN
     ID_VIEW_TOOLBAR         "Show or hide the toolbar\nToggle ToolBar"
     ID_VIEW_STATUS_BAR      "Show or hide the status bar\nToggle StatusBar"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE 
 BEGIN
     AFX_IDS_SCSIZE          "Change the window size"
     AFX_IDS_SCMOVE          "Change the window position"
@@ -454,19 +444,19 @@ BEGIN
     AFX_IDS_SCCLOSE         "Close the active window and prompts to save the documents"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE 
 BEGIN
     AFX_IDS_SCRESTORE       "Restore the window to normal size"
     AFX_IDS_SCTASKLIST      "Activate Task List"
     AFX_IDS_MDICHILD        "Activate this window"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE 
 BEGIN
     AFX_IDS_PREVIEW_CLOSE   "Close print preview mode\nCancel Preview"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE 
 BEGIN
     IDM_ADD_ENTRY           "Add a new entry to the library\nAdd new entry"
     IDM_EDIT_ENTRY          "Open the entry for editing\nEdit entry"
@@ -478,7 +468,7 @@ BEGIN
     IDM_SMALL_ICONS         "View library entries using small icons\nSmall Icons"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE 
 BEGIN
     IDM_LIST_ICONS          "View library entries in a list\nList"
     IDM_ARRANGE_ICONS       "Arrange Icons\nArrange Icons"
@@ -486,17 +476,17 @@ BEGIN
     ID_APP_LEGAL            "Display legal notices"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE 
 BEGIN
     IDP_AFXOLEINIT_FAILED   "Failed to initialize Object Linking and Embedding"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE 
 BEGIN
     IDS_COMPANY             "Washington State Department of Transportation"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE 
 BEGIN
     IDS_E_BADINSTALL        "There is an error with the PGSuper installation.  Please re-install the program."
     IDS_E_PROBPERSISTS      "If this problem persists,  contact technical support at Bridge_Support@wsdot.wa.gov.\n Please include your project file and the %1 file found in the program directory."
@@ -510,14 +500,14 @@ BEGIN
     IDS_E_SAVERECOVER1      "An error occured while restoring your last sucessful save.  It is highly likely that the file %1 is corrupt.  Try saving your project to another locaion.  If this fails, see %2  for manual recovery instructions."
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE 
 BEGIN
     IDS_E_SAVERECOVER2      "An error occured while restoring your last sucessful save. The file %1 no longer exists.  Try saving your project again, preferable  to another locaion.  If this fails, see %2 for manual recovery instructions."
     IDS_E_CREATEWND         "An error occured while creating the window."
     IDS_E_LOWRESOURCES      "System resources are running low.  Please quit one or more applications and try again."
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE 
 BEGIN
     IDS_E_PARSER_INIT_FAIL  "An error has occured while initializing the file parser.\n\nThis is most commonly caused by having the wrong version of Internet Explorer.\n\nPGSuper requires Internet Explorer 4.01 SP 3 or greater."
     IDS_E_INVALIDVERSION    "The file %1 came from a newer version of PGSuper. You must upgrade in order to read it."

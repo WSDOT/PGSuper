@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -31,7 +31,7 @@
 #include <IFace\DisplayUnits.h>
 #include <IFace\Artifact.h>
 
-#include <Reporter\RcSectionScalar.h>
+#include <PgsExt\CapacityToDemand.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -61,7 +61,7 @@ CShearCheckTable::~CShearCheckTable()
 
 //======================== OPERATIONS =======================================
 rptRcTable* CShearCheckTable::Build(IBroker* pBroker,SpanIndexType span,GirderIndexType girder,
-                                               IDisplayUnits* pDispUnit,
+                                               IDisplayUnits* pDisplayUnits,
                                                pgsTypes::Stage stage,
                                                pgsTypes::LimitState ls,bool& bStrutAndTieRequired) const
 {
@@ -73,23 +73,20 @@ rptRcTable* CShearCheckTable::Build(IBroker* pBroker,SpanIndexType span,GirderIn
       table->TableLabel() << "Ultimate Shears for Strength II Limit State for Bridge Site Stage 3 [5.8]";
   
    if ( stage == pgsTypes::CastingYard )
-      (*table)(0,0)  << COLHDR(RPT_GDR_END_LOCATION, rptLengthUnitTag, pDispUnit->GetSpanLengthUnit());
+      (*table)(0,0)  << COLHDR(RPT_GDR_END_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
    else
-      (*table)(0,0)  << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDispUnit->GetSpanLengthUnit());
+      (*table)(0,0)  << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
 
    (*table)(0,1) << "Stirrups" << rptNewLine << "Required";
    (*table)(0,2) << "Stirrups" << rptNewLine << "Provided";
-   (*table)(0,3)  << COLHDR("|V" << Sub("u") << "|", rptForceUnitTag, pDispUnit->GetShearUnit() );
-   (*table)(0,4) << COLHDR(symbol(phi) << "V" << Sub("n"), rptForceUnitTag, pDispUnit->GetShearUnit() );
+   (*table)(0,3)  << COLHDR("|V" << Sub("u") << "|", rptForceUnitTag, pDisplayUnits->GetShearUnit() );
+   (*table)(0,4) << COLHDR(symbol(phi) << "V" << Sub("n"), rptForceUnitTag, pDisplayUnits->GetShearUnit() );
    (*table)(0,5) << "Status" << rptNewLine << "(" << symbol(phi) << Sub2("V","n") << "/" << Sub2("V","u") << ")";
 
-   INIT_UV_PROTOTYPE( rptPointOfInterest, location,  pDispUnit->GetSpanLengthUnit(),   false );
-   INIT_UV_PROTOTYPE( rptForceSectionValue,  shear,  pDispUnit->GetShearUnit(),        false );
+   INIT_UV_PROTOTYPE( rptPointOfInterest, location,  pDisplayUnits->GetSpanLengthUnit(),   false );
+   INIT_UV_PROTOTYPE( rptForceSectionValue,  shear,  pDisplayUnits->GetShearUnit(),        false );
 
-   rptRcSectionScalar scalar;
-   scalar.SetFormat( sysNumericFormatTool::Automatic );
-   scalar.SetWidth(6);
-   scalar.SetPrecision(2);
+   rptCapacityToDemand cap_demand;
 
    // Fill up the table
    GET_IFACE2(pBroker,IBridge,pBridge);
@@ -123,8 +120,8 @@ rptRcTable* CShearCheckTable::Build(IBroker* pBroker,SpanIndexType span,GirderIn
       (*table)(row,1) << (pArtifact->GetAreStirrupsReqd()     ? "Yes" : "No");
       (*table)(row,2) << (pArtifact->GetAreStirrupsProvided() ? "Yes" : "No");
 
-      sysSectionValue Vu;
-      sysSectionValue Vr;
+      Float64 Vu;
+      Float64 Vr;
       if ( pArtifact->IsApplicable() )
       {
          Vu = pArtifact->GetDemand();
@@ -149,19 +146,13 @@ rptRcTable* CShearCheckTable::Build(IBroker* pBroker,SpanIndexType span,GirderIn
 
       if ( pArtifact->IsApplicable() )
       {
-         if ( pArtifact->Passed() )
+         bool bPassed = pArtifact->Passed();
+         if ( bPassed )
             (*table)(row,5) << RPT_PASS;
          else
             (*table)(row,5) << RPT_FAIL;
 
-         if ( IsZero(Vu.Left()) || IsZero(Vu.Right()) )
-         {
-            (*table)(row,5) << rptNewLine << "(" << symbol(INFINITY) << ")";
-         }
-         else
-         {
-            (*table)(row,5) << rptNewLine << "(" << scalar.SetValue(Vr/Vu) << ")";
-         }
+         (*table)(row,5) << rptNewLine << "(" << cap_demand.SetValue(Vr,Vu,bPassed) << ")";
       }
       else
       {

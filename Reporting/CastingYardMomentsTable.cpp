@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -71,12 +71,12 @@ CCastingYardMomentsTable& CCastingYardMomentsTable::operator= (const CCastingYar
 
 //======================== OPERATIONS =======================================
 rptRcTable* CCastingYardMomentsTable::Build(IBroker* pBroker,SpanIndexType span,GirderIndexType girder,
-                                            IDisplayUnits* pDispUnits) const
+                                            IDisplayUnits* pDisplayUnits) const
 {
    // Build table
-   INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDispUnits->GetSpanLengthUnit(), false );
-   INIT_UV_PROTOTYPE( rptMomentSectionValue, moment, pDispUnits->GetMomentUnit(), false );
-   INIT_UV_PROTOTYPE( rptForceSectionValue, shear, pDispUnits->GetShearUnit(), false );
+   INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
+   INIT_UV_PROTOTYPE( rptMomentSectionValue, moment, pDisplayUnits->GetMomentUnit(), false );
+   INIT_UV_PROTOTYPE( rptForceSectionValue, shear, pDisplayUnits->GetShearUnit(), false );
 
    rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(3,"Casting Yard");
    p_table->SetNumberOfHeaderRows(2);
@@ -84,14 +84,14 @@ rptRcTable* CCastingYardMomentsTable::Build(IBroker* pBroker,SpanIndexType span,
    // Set up table headings
    p_table->SetRowSpan(0,0,2);
    p_table->SetRowSpan(1,0,-1);
-   (*p_table)(0,0) << COLHDR(RPT_GDR_END_LOCATION,        rptLengthUnitTag, pDispUnits->GetSpanLengthUnit() );
+   (*p_table)(0,0) << COLHDR(RPT_GDR_END_LOCATION,        rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
    
    p_table->SetColumnSpan(0,1,2);
    (*p_table)(0,1) << "Girder";
    p_table->SetColumnSpan(0,2,-1);
 
-   (*p_table)(1,1) << COLHDR("Moment", rptMomentUnitTag, pDispUnits->GetMomentUnit() );
-   (*p_table)(1,2) << COLHDR("Shear",  rptForceUnitTag, pDispUnits->GetShearUnit() );
+   (*p_table)(1,1) << COLHDR("Moment", rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
+   (*p_table)(1,2) << COLHDR("Shear",  rptForceUnitTag, pDisplayUnits->GetShearUnit() );
 
    // Get the interface pointers we need
    GET_IFACE2(pBroker,IPointOfInterest,pIPoi);

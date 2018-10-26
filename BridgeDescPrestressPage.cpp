@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -75,6 +75,10 @@ CString get_strand_size( bool bUnitsSI, matPsStrand::Size size )
       sz = ( !bUnitsSI ? "1/2\"" : "12.70mm" );
       break;
 
+   case matPsStrand::D1320:
+      sz = ( !bUnitsSI ? "1/2\" Special (0.52\")" : "1/2\" Special (13.20mm)" );
+      break;
+
    case matPsStrand::D1524:
       sz = ( !bUnitsSI ? "0.6\"" : "15.24mm" );
       break;
@@ -115,13 +119,17 @@ void CGirderDescPrestressPage::DoDataExchange(CDataExchange* pDX)
    CComPtr<IBroker> pBroker;
    AfxGetBroker(&pBroker);
    GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
-   GET_IFACE2(pBroker,IDisplayUnits,pDispUnits);
+   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
 
    CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
 
 	CPropertyPage::DoDataExchange(pDX);
 	//{{AFX_DATA_MAP(CGirderDescPrestressPage)
 	//}}AFX_DATA_MAP
+   DDX_Tag( pDX, IDC_HPOFFSET_END_UNIT, pDisplayUnits->GetComponentDimUnit() );
+   DDX_Tag( pDX, IDC_HPOFFSET_HP_UNIT, pDisplayUnits->GetComponentDimUnit() );
+
+
    DDX_CBIndex(pDX, IDC_STRAND_INPUT_TYPE, pParent->m_GirderData.NumPermStrandsType);
 
    if (!pDX->m_bSaveAndValidate)
@@ -136,7 +144,7 @@ void CGirderDescPrestressPage::DoDataExchange(CDataExchange* pDX)
 
       if (!pDX->m_bSaveAndValidate)
       {
-         DDX_UnitValueAndTag( pDX, IDC_HS_JACK_FORCE, IDC_HS_JACK_FORCE_UNIT, pParent->m_GirderData.Pjack[pgsTypes::Permanent], pDispUnits->GetGeneralForceUnit() );
+         DDX_UnitValueAndTag( pDX, IDC_HS_JACK_FORCE, IDC_HS_JACK_FORCE_UNIT, pParent->m_GirderData.Pjack[pgsTypes::Permanent], pDisplayUnits->GetGeneralForceUnit() );
       }
       else
       {
@@ -147,9 +155,9 @@ void CGirderDescPrestressPage::DoDataExchange(CDataExchange* pDX)
          }
          else
          {
-            DDX_UnitValueAndTag( pDX, IDC_HS_JACK_FORCE, IDC_HS_JACK_FORCE_UNIT, pParent->m_GirderData.Pjack[pgsTypes::Permanent],   pDispUnits->GetGeneralForceUnit() );
+            DDX_UnitValueAndTag( pDX, IDC_HS_JACK_FORCE, IDC_HS_JACK_FORCE_UNIT, pParent->m_GirderData.Pjack[pgsTypes::Permanent],   pDisplayUnits->GetGeneralForceUnit() );
          }
-         DDV_UnitValueLimitOrLess( pDX, pParent->m_GirderData.Pjack[pgsTypes::Permanent], GetMaxPjack( pParent->m_GirderData.Nstrands[pgsTypes::Permanent] ), pDispUnits->GetGeneralForceUnit() );
+         DDV_UnitValueLimitOrLess( pDX, pParent->m_GirderData.Pjack[pgsTypes::Permanent], GetUltPjack( pParent->m_GirderData.Nstrands[pgsTypes::Permanent] ), pDisplayUnits->GetGeneralForceUnit(), "PJack must be less than the ultimate value of %f %s" );
       }
 
       // compute number of straight and harped based on num permanent for possible later use below
@@ -175,10 +183,10 @@ void CGirderDescPrestressPage::DoDataExchange(CDataExchange* pDX)
       }
       else
       {
-         DDX_UnitValueAndTag( pDX, IDC_HS_JACK_FORCE, IDC_HS_JACK_FORCE_UNIT, pParent->m_GirderData.Pjack[pgsTypes::Harped],   pDispUnits->GetGeneralForceUnit() );
+         DDX_UnitValueAndTag( pDX, IDC_HS_JACK_FORCE, IDC_HS_JACK_FORCE_UNIT, pParent->m_GirderData.Pjack[pgsTypes::Harped],   pDisplayUnits->GetGeneralForceUnit() );
       }
 
-      DDV_UnitValueLimitOrLess( pDX, pParent->m_GirderData.Pjack[pgsTypes::Harped], GetMaxPjack( pParent->m_GirderData.Nstrands[pgsTypes::Harped] ), pDispUnits->GetGeneralForceUnit() );
+      DDV_UnitValueLimitOrLess( pDX, pParent->m_GirderData.Pjack[pgsTypes::Harped], GetUltPjack( pParent->m_GirderData.Nstrands[pgsTypes::Harped] ), pDisplayUnits->GetGeneralForceUnit(), "PJack must be less than the ultimate value of %f %s");
 
 
 	   DDX_Text(pDX, IDC_NUM_SS, pParent->m_GirderData.Nstrands[pgsTypes::Straight]);
@@ -190,10 +198,10 @@ void CGirderDescPrestressPage::DoDataExchange(CDataExchange* pDX)
       }
       else
       {
-         DDX_UnitValueAndTag( pDX, IDC_SS_JACK_FORCE, IDC_SS_JACK_FORCE_UNIT, pParent->m_GirderData.Pjack[pgsTypes::Straight], pDispUnits->GetGeneralForceUnit() );
+         DDX_UnitValueAndTag( pDX, IDC_SS_JACK_FORCE, IDC_SS_JACK_FORCE_UNIT, pParent->m_GirderData.Pjack[pgsTypes::Straight], pDisplayUnits->GetGeneralForceUnit() );
       }
 
-      DDV_UnitValueLimitOrLess( pDX, pParent->m_GirderData.Pjack[pgsTypes::Straight], GetMaxPjack( pParent->m_GirderData.Nstrands[pgsTypes::Straight] ), pDispUnits->GetGeneralForceUnit() );
+      DDV_UnitValueLimitOrLess( pDX, pParent->m_GirderData.Pjack[pgsTypes::Straight], GetUltPjack( pParent->m_GirderData.Nstrands[pgsTypes::Straight] ), pDisplayUnits->GetGeneralForceUnit(), "PJack must be less than the ultimate value of %f %s" );
    }
 
 	DDX_Text(pDX, IDC_NUM_TEMP, pParent->m_GirderData.Nstrands[pgsTypes::Temporary]);
@@ -206,10 +214,10 @@ void CGirderDescPrestressPage::DoDataExchange(CDataExchange* pDX)
    }
    else
    {
-      DDX_UnitValueAndTag( pDX, IDC_TEMP_JACK_FORCE, IDC_TEMP_JACK_FORCE_UNIT, pParent->m_GirderData.Pjack[pgsTypes::Temporary],  pDispUnits->GetGeneralForceUnit() );
+      DDX_UnitValueAndTag( pDX, IDC_TEMP_JACK_FORCE, IDC_TEMP_JACK_FORCE_UNIT, pParent->m_GirderData.Pjack[pgsTypes::Temporary],  pDisplayUnits->GetGeneralForceUnit() );
    }
 
-   DDV_UnitValueLimitOrLess( pDX, pParent->m_GirderData.Pjack[pgsTypes::Temporary], GetMaxPjack( pParent->m_GirderData.Nstrands[pgsTypes::Temporary] ), pDispUnits->GetGeneralForceUnit() );
+   DDV_UnitValueLimitOrLess( pDX, pParent->m_GirderData.Pjack[pgsTypes::Temporary], GetUltPjack( pParent->m_GirderData.Nstrands[pgsTypes::Temporary] ), pDisplayUnits->GetGeneralForceUnit(), "PJack must be less than the ultimate value of %f %s" );
 
    // Set up pjack controls - values that are auto-computed will be refreshed
    UpdateStrandControls();
@@ -242,7 +250,7 @@ void CGirderDescPrestressPage::DoDataExchange(CDataExchange* pDX)
          UpdateEndRangeLength(pParent->m_GirderData.HsoEndMeasurement,pParent->m_GirderData.Nstrands[pgsTypes::Harped]);
       }
 
-      DDX_UnitValueAndTag( pDX, IDC_HPOFFSET_END, IDC_HPOFFSET_END_UNIT, pParent->m_GirderData.HpOffsetAtEnd, pDispUnits->GetComponentDimUnit() );
+      DDX_UnitValueAndTag( pDX, IDC_HPOFFSET_END, IDC_HPOFFSET_END_UNIT, pParent->m_GirderData.HpOffsetAtEnd, pDisplayUnits->GetComponentDimUnit() );
    	DDX_CBItemData(pDX, IDC_HP_COMBO_END, pParent->m_GirderData.HsoEndMeasurement);
 
       if ( pParent->m_GirderData.Nstrands[pgsTypes::Harped] <=0)
@@ -278,7 +286,7 @@ void CGirderDescPrestressPage::DoDataExchange(CDataExchange* pDX)
          UpdateHpRangeLength(pParent->m_GirderData.HsoHpMeasurement,pParent->m_GirderData.Nstrands[pgsTypes::Harped]);
       }
 
-      DDX_UnitValueAndTag( pDX, IDC_HPOFFSET_HP, IDC_HPOFFSET_HP_UNIT, pParent->m_GirderData.HpOffsetAtHp, pDispUnits->GetComponentDimUnit() );
+      DDX_UnitValueAndTag( pDX, IDC_HPOFFSET_HP, IDC_HPOFFSET_HP_UNIT, pParent->m_GirderData.HpOffsetAtHp, pDisplayUnits->GetComponentDimUnit() );
    	DDX_CBItemData(pDX, IDC_HP_COMBO_HP, pParent->m_GirderData.HsoHpMeasurement);
 
       if ( pParent->m_GirderData.Nstrands[pgsTypes::Harped] <= 0)
@@ -595,7 +603,7 @@ void CGirderDescPrestressPage::OnNumStraightStrandsChanged(NMHDR* pNMHDR, LRESUL
    CComPtr<IBroker> pBroker;
    AfxGetBroker(&pBroker);
    GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
-   GET_IFACE2(pBroker,IDisplayUnits,pDispUnits);
+   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
 
    CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
 
@@ -619,7 +627,7 @@ void CGirderDescPrestressPage::OnNumStraightStrandsChanged(NMHDR* pNMHDR, LRESUL
    }
 
    CDataExchange dx(this,FALSE);
-   DDX_UnitValueAndTag( &dx, IDC_SS_JACK_FORCE, IDC_SS_JACK_FORCE_UNIT, Pjack, pDispUnits->GetGeneralForceUnit() );
+   DDX_UnitValueAndTag( &dx, IDC_SS_JACK_FORCE, IDC_SS_JACK_FORCE_UNIT, Pjack, pDisplayUnits->GetGeneralForceUnit() );
 
 	*pResult = 0;
 }
@@ -631,7 +639,7 @@ void CGirderDescPrestressPage::OnNumHarpedStrandsChanged(NMHDR* pNMHDR, LRESULT*
    CComPtr<IBroker> pBroker;
    AfxGetBroker(&pBroker);
    GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
-   GET_IFACE2(pBroker,IDisplayUnits,pDispUnits);
+   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
 
    CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
 
@@ -668,7 +676,7 @@ void CGirderDescPrestressPage::OnNumHarpedStrandsChanged(NMHDR* pNMHDR, LRESULT*
    }
 
    CDataExchange dx(this,FALSE);
-   DDX_UnitValueAndTag( &dx, IDC_HS_JACK_FORCE, IDC_HS_JACK_FORCE_UNIT, Pjack, pDispUnits->GetGeneralForceUnit() );
+   DDX_UnitValueAndTag( &dx, IDC_HS_JACK_FORCE, IDC_HS_JACK_FORCE_UNIT, Pjack, pDisplayUnits->GetGeneralForceUnit() );
 
    StrandIndexType numHarped;
    if (cursel==NPS_TOTAL_NUMBER)
@@ -723,7 +731,7 @@ void CGirderDescPrestressPage::OnNumTempStrandsChanged(NMHDR* pNMHDR, LRESULT* p
    CComPtr<IBroker> pBroker;
    AfxGetBroker(&pBroker);
    GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
-   GET_IFACE2(pBroker,IDisplayUnits,pDispUnits);
+   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
 
    CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
 
@@ -744,7 +752,7 @@ void CGirderDescPrestressPage::OnNumTempStrandsChanged(NMHDR* pNMHDR, LRESULT* p
    }
 
    CDataExchange dx(this,FALSE);
-   DDX_UnitValueAndTag( &dx, IDC_TEMP_JACK_FORCE, IDC_TEMP_JACK_FORCE_UNIT, Pjack, pDispUnits->GetGeneralForceUnit() );
+   DDX_UnitValueAndTag( &dx, IDC_TEMP_JACK_FORCE, IDC_TEMP_JACK_FORCE_UNIT, Pjack, pDisplayUnits->GetGeneralForceUnit() );
 
 	*pResult = 0;
 }
@@ -789,7 +797,7 @@ void CGirderDescPrestressPage::InitPjackEditEx( UINT nCheckBox )
 
    CComPtr<IBroker> pBroker;
    AfxGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IDisplayUnits,pDispUnits);
+   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
    CDataExchange dx(this,FALSE);
 
    // only update dialog values if they are auto-computed
@@ -810,20 +818,20 @@ void CGirderDescPrestressPage::InitPjackEditEx( UINT nCheckBox )
                pParent->m_GirderData.Pjack[pgsTypes::Harped] = GetMaxPjack(nStrands);
                Pjack = pParent->m_GirderData.Pjack[pgsTypes::Harped];
             }
-            DDX_UnitValueAndTag( &dx, IDC_HS_JACK_FORCE, IDC_HS_JACK_FORCE_UNIT, Pjack, pDispUnits->GetGeneralForceUnit() );
+            DDX_UnitValueAndTag( &dx, IDC_HS_JACK_FORCE, IDC_HS_JACK_FORCE_UNIT, Pjack, pDisplayUnits->GetGeneralForceUnit() );
          }
          break;
 
       case IDC_SS_JACK:
          pParent->m_GirderData.Pjack[pgsTypes::Straight] = GetMaxPjack(nStrands);
          Pjack = pParent->m_GirderData.Pjack[pgsTypes::Straight];
-         DDX_UnitValueAndTag( &dx, IDC_SS_JACK_FORCE, IDC_SS_JACK_FORCE_UNIT, Pjack, pDispUnits->GetGeneralForceUnit() );
+         DDX_UnitValueAndTag( &dx, IDC_SS_JACK_FORCE, IDC_SS_JACK_FORCE_UNIT, Pjack, pDisplayUnits->GetGeneralForceUnit() );
          break;
 
       case IDC_TEMP_JACK:
          pParent->m_GirderData.Pjack[pgsTypes::Temporary] = GetMaxPjack(nStrands);
          Pjack = pParent->m_GirderData.Pjack[pgsTypes::Temporary];
-         DDX_UnitValueAndTag( &dx, IDC_TEMP_JACK_FORCE, IDC_TEMP_JACK_FORCE_UNIT, Pjack, pDispUnits->GetGeneralForceUnit() );
+         DDX_UnitValueAndTag( &dx, IDC_TEMP_JACK_FORCE, IDC_TEMP_JACK_FORCE_UNIT, Pjack, pDisplayUnits->GetGeneralForceUnit() );
          break;
       }
    }
@@ -835,7 +843,7 @@ void CGirderDescPrestressPage::UpdatePjackEdit( UINT nCheckBox  )
 
    CComPtr<IBroker> pBroker;
    AfxGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IDisplayUnits,pDispUnits);
+   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
 
    CComboBox* box = (CComboBox*)GetDlgItem(IDC_STRAND_INPUT_TYPE);
    int cursel = box->GetCurSel();
@@ -901,13 +909,13 @@ void CGirderDescPrestressPage::UpdatePjackEdit( UINT nCheckBox  )
       CDataExchange dx(this,FALSE);
       CComPtr<IBroker> pBroker;
       AfxGetBroker(&pBroker);
-      GET_IFACE2(pBroker,IDisplayUnits,pDispUnits);
+      GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
 
       // Get the edit control value and save it as the last user input force
       CString val_as_text;
       pWnd->GetWindowText( val_as_text );
       Pjack = atof( val_as_text );
-      Pjack = ::ConvertToSysUnits( Pjack, pDispUnits->GetGeneralForceUnit().UnitOfMeasure );
+      Pjack = ::ConvertToSysUnits( Pjack, pDisplayUnits->GetGeneralForceUnit().UnitOfMeasure );
       
       switch( nCheckBox )
       {
@@ -923,20 +931,20 @@ void CGirderDescPrestressPage::UpdatePjackEdit( UINT nCheckBox  )
                pParent->m_GirderData.LastUserPjack[pgsTypes::Harped] = Pjack;
                Pjack = GetMaxPjackHarped();
             }
-         DDX_UnitValueAndTag( &dx, IDC_HS_JACK_FORCE, IDC_HS_JACK_FORCE_UNIT, Pjack, pDispUnits->GetGeneralForceUnit() );
+         DDX_UnitValueAndTag( &dx, IDC_HS_JACK_FORCE, IDC_HS_JACK_FORCE_UNIT, Pjack, pDisplayUnits->GetGeneralForceUnit() );
          }
          break;
 
       case IDC_SS_JACK:
          pParent->m_GirderData.LastUserPjack[pgsTypes::Straight] = Pjack;
          Pjack = GetMaxPjackStraight();
-         DDX_UnitValueAndTag( &dx, IDC_SS_JACK_FORCE, IDC_SS_JACK_FORCE_UNIT, Pjack, pDispUnits->GetGeneralForceUnit() );
+         DDX_UnitValueAndTag( &dx, IDC_SS_JACK_FORCE, IDC_SS_JACK_FORCE_UNIT, Pjack, pDisplayUnits->GetGeneralForceUnit() );
          break;
 
       case IDC_TEMP_JACK:
          pParent->m_GirderData.LastUserPjack[pgsTypes::Temporary] = Pjack;
          Pjack = GetMaxPjackTemp();
-         DDX_UnitValueAndTag( &dx, IDC_TEMP_JACK_FORCE, IDC_TEMP_JACK_FORCE_UNIT, Pjack, pDispUnits->GetGeneralForceUnit() );
+         DDX_UnitValueAndTag( &dx, IDC_TEMP_JACK_FORCE, IDC_TEMP_JACK_FORCE_UNIT, Pjack, pDisplayUnits->GetGeneralForceUnit() );
          break;
       }
    }
@@ -977,8 +985,19 @@ Float64 CGirderDescPrestressPage::GetMaxPjack(StrandIndexType nStrands)
    GET_IFACE2( pBroker, IPrestressForce, pPrestress );
 
    CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
-
    return pPrestress->GetPjackMax(pParent->m_CurrentSpanIdx,pParent->m_CurrentGirderIdx,*pParent->m_GirderData.Material.pStrandMaterial, nStrands);
+}
+
+Float64 CGirderDescPrestressPage::GetUltPjack(StrandIndexType nStrands)
+{
+   CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
+   const matPsStrand& strand = *(pParent->m_GirderData.Material.pStrandMaterial);
+
+   // Ultimate strength of strand group
+   Float64 ult = strand.GetUltimateStrength();
+   Float64 area = strand.GetNominalArea();
+
+   return nStrands*area*ult;
 }
 
 void CGirderDescPrestressPage::OnUpdateHsPjEdit() 
@@ -1351,13 +1370,13 @@ void CGirderDescPrestressPage::UpdateEndRangeLength(HarpedStrandOffsetType measu
       CComPtr<IBroker> pBroker;
       AfxGetBroker(&pBroker);
       GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
-      GET_IFACE2(pBroker,IDisplayUnits,pDispUnits);
+      GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
 
       Float64 lowRange, highRange;
       pStrandGeom->ComputeValidHarpedOffsetForMeasurementTypeEnd(pParent->m_CurrentSpanIdx, pParent->m_CurrentGirderIdx, Nh, measureType, &lowRange, &highRange);
 
-      lowRange  = ::ConvertFromSysUnits(lowRange, pDispUnits->GetComponentDimUnit().UnitOfMeasure);
-      highRange = ::ConvertFromSysUnits(highRange,pDispUnits->GetComponentDimUnit().UnitOfMeasure);
+      lowRange  = ::ConvertFromSysUnits(lowRange, pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
+      highRange = ::ConvertFromSysUnits(highRange,pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
 
       Float64 low  = min(lowRange, highRange);
       Float64 high = max(lowRange, highRange);
@@ -1384,14 +1403,14 @@ void CGirderDescPrestressPage::UpdateHpRangeLength(HarpedStrandOffsetType measur
       CComPtr<IBroker> pBroker;
       AfxGetBroker(&pBroker);
       GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
-      GET_IFACE2(pBroker,IDisplayUnits,pDispUnits);
+      GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
 
       Float64 lowRange, highRange;
       pStrandGeom->ComputeValidHarpedOffsetForMeasurementTypeHp(pParent->m_CurrentSpanIdx, pParent->m_CurrentGirderIdx, Nh, measureType, &lowRange, &highRange);
 
 
-      lowRange = ::ConvertFromSysUnits(lowRange,  pDispUnits->GetComponentDimUnit().UnitOfMeasure);
-      highRange = ::ConvertFromSysUnits(highRange,pDispUnits->GetComponentDimUnit().UnitOfMeasure);
+      lowRange = ::ConvertFromSysUnits(lowRange,  pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
+      highRange = ::ConvertFromSysUnits(highRange,pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
 
       Float64 low  = min(lowRange, highRange);
       Float64 high = max(lowRange, highRange);
@@ -1433,18 +1452,18 @@ void CGirderDescPrestressPage::OnSelchangeHpComboHp()
       CComPtr<IBroker> pBroker;
       AfxGetBroker(&pBroker);
       GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
-      GET_IFACE2(pBroker,IDisplayUnits,pDispUnits);
+      GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
 
       CString strOffset;
       CWnd* pWnd = GetDlgItem(IDC_HPOFFSET_HP);
       pWnd->GetWindowText(strOffset);
       double offset = atof(strOffset);
 
-      offset = ::ConvertToSysUnits(offset,  pDispUnits->GetComponentDimUnit().UnitOfMeasure);
+      offset = ::ConvertToSysUnits(offset,  pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
 
       offset = pStrandGeom->ConvertHarpedOffsetHp(pParent->m_CurrentSpanIdx, pParent->m_CurrentGirderIdx,nh,m_OldHpMeasureType, offset, measureType);
       
-      strOffset = ::FormatDimension(offset,pDispUnits->GetComponentDimUnit(),false);
+      strOffset = ::FormatDimension(offset,pDisplayUnits->GetComponentDimUnit(),false);
       pWnd->SetWindowText(strOffset);
    }
 
@@ -1467,17 +1486,17 @@ void CGirderDescPrestressPage::OnSelchangeHpComboEnd()
       CComPtr<IBroker> pBroker;
       AfxGetBroker(&pBroker);
       GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
-      GET_IFACE2(pBroker,IDisplayUnits,pDispUnits);
+      GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
 
       CString strOffset;
       CWnd* pWnd = GetDlgItem(IDC_HP_CB_END);
       pWnd->GetWindowText(strOffset);
       double offset = atof(strOffset);
-      offset = ::ConvertToSysUnits(offset,  pDispUnits->GetComponentDimUnit().UnitOfMeasure);
+      offset = ::ConvertToSysUnits(offset,  pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
 
       offset = pStrandGeom->ConvertHarpedOffsetEnd(pParent->m_CurrentSpanIdx, pParent->m_CurrentGirderIdx,nh,m_OldEndMeasureType, offset, measureType);
       
-      strOffset = FormatDimension(offset,pDispUnits->GetComponentDimUnit(),false);
+      strOffset = FormatDimension(offset,pDisplayUnits->GetComponentDimUnit(),false);
       pWnd->SetWindowText(strOffset);
    }
 
@@ -1516,7 +1535,7 @@ void CGirderDescPrestressPage::OnSelchangeStrandInputType()
    CComPtr<IBroker> pBroker;
    AfxGetBroker(&pBroker);
    GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
-   GET_IFACE2(pBroker,IDisplayUnits,pDispUnits);
+   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
 
    CComboBox* box = (CComboBox*)GetDlgItem(IDC_STRAND_INPUT_TYPE);
    int cursel = box->GetCurSel();
@@ -1579,7 +1598,7 @@ void CGirderDescPrestressPage::OnSelchangeStrandInputType()
          CString val_as_text;
          pWnd->GetWindowText( val_as_text );
          Float64 Pjack = atof( val_as_text );
-         jack_straight = ::ConvertToSysUnits( Pjack, pDispUnits->GetGeneralForceUnit().UnitOfMeasure );
+         jack_straight = ::ConvertToSysUnits( Pjack, pDisplayUnits->GetGeneralForceUnit().UnitOfMeasure );
          pParent->m_GirderData.LastUserPjack[pgsTypes::Straight] = Pjack;
       }
 
@@ -1595,7 +1614,7 @@ void CGirderDescPrestressPage::OnSelchangeStrandInputType()
          CString val_as_text;
          pWnd->GetWindowText( val_as_text );
          Float64 Pjack = atof( val_as_text );
-         jack_harped = ::ConvertToSysUnits( Pjack, pDispUnits->GetGeneralForceUnit().UnitOfMeasure );
+         jack_harped = ::ConvertToSysUnits( Pjack, pDisplayUnits->GetGeneralForceUnit().UnitOfMeasure );
          pParent->m_GirderData.LastUserPjack[pgsTypes::Harped] = jack_harped;
       }
 
@@ -1659,7 +1678,7 @@ void CGirderDescPrestressPage::OnSelchangeStrandInputType()
          CString val_as_text;
          pWnd->GetWindowText( val_as_text );
          Float64 Pjack = atof( val_as_text );
-         Pjack = ::ConvertToSysUnits( Pjack, pDispUnits->GetGeneralForceUnit().UnitOfMeasure );
+         Pjack = ::ConvertToSysUnits( Pjack, pDisplayUnits->GetGeneralForceUnit().UnitOfMeasure );
          pParent->m_GirderData.LastUserPjack[pgsTypes::Permanent] = Pjack;
 
          if (total_strands>0)

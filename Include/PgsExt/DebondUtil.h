@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -451,5 +451,108 @@ inline void DebondSectionComputer::GetRightSectionInfo(Int16 idx, Float64* pLoca
    *pLocation = sec.m_Location;
 }
 
+class StrandRowUtil
+{
+public:
+
+   // utility struct to temporarily store and sort rows
+   struct StrandRow
+   {
+      double Elevation;
+      StrandIndexType Count;
+
+      StrandRow():
+         Elevation(0.0),
+         Count(1)
+         {;}
+
+      StrandRow(Float64 elev):
+         Elevation(elev),
+         Count(1)
+         {;}
+
+      bool operator==(const StrandRow& rOther) const 
+      { 
+         return ::IsEqual(Elevation,rOther.Elevation); 
+      }
+
+      bool operator<(const StrandRow& rOther) const 
+      { 
+         return Elevation < rOther.Elevation; 
+      }
+   };
+   typedef std::set<StrandRow> StrandRowSet;
+   typedef StrandRowSet::iterator StrandRowIter;
+
+   static StrandRowSet GetStrandRowSet(IBroker* pBroker, const pgsPointOfInterest& midPoi);
+};
+
+inline StrandRowUtil::StrandRowSet StrandRowUtil::GetStrandRowSet(IBroker* pBroker, const pgsPointOfInterest& midPoi)
+{
+   GET_IFACE2(pBroker, IStrandGeometry, pStrandGeometry );
+
+   // Want number of strands in each row location. Count number of straight and harped per row
+   StrandRowSet strandrows;
+
+   // Straight
+   CComPtr<IPoint2dCollection> ss_points;
+   pStrandGeometry->GetStrandPositions(midPoi, pgsTypes::Straight, &ss_points);
+
+   RowIndexType nrows = pStrandGeometry->GetNumRowsWithStrand(midPoi.GetSpan(),midPoi.GetGirder(),pgsTypes::Straight);
+   for (RowIndexType rowIdx=0; rowIdx!=nrows; rowIdx++)
+   {
+      std::vector<StrandIndexType> sstrands = pStrandGeometry->GetStrandsInRow(midPoi.GetSpan(), midPoi.GetGirder(), rowIdx, pgsTypes::Straight);
+      for (std::vector<StrandIndexType>::iterator sit=sstrands.begin(); sit!=sstrands.end(); sit++)
+      {
+         StrandIndexType idx = *sit;
+         CComPtr<IPoint2d> point;
+         ss_points->get_Item(idx,&point);
+         Float64 Y;
+         point->get_Y(&Y);
+
+         StrandRow srow(Y);
+         StrandRowIter srit = strandrows.find(srow);
+         if (srit != strandrows.end())
+         {
+            srit->Count++;
+         }
+         else
+         {
+            strandrows.insert(srow);
+         }
+      }
+   }
+
+   // Harped
+   CComPtr<IPoint2dCollection> hs_points;
+   pStrandGeometry->GetStrandPositions(midPoi, pgsTypes::Harped, &hs_points);
+
+   nrows = pStrandGeometry->GetNumRowsWithStrand(midPoi.GetSpan(),midPoi.GetGirder(),pgsTypes::Harped);
+   for (RowIndexType rowIdx=0; rowIdx!=nrows; rowIdx++)
+   {
+      std::vector<StrandIndexType> hstrands = pStrandGeometry->GetStrandsInRow(midPoi.GetSpan(), midPoi.GetGirder(), rowIdx, pgsTypes::Harped);
+      for (std::vector<StrandIndexType>::iterator sit=hstrands.begin(); sit!=hstrands.end(); sit++)
+      {
+         StrandIndexType idx = *sit;
+         CComPtr<IPoint2d> point;
+         hs_points->get_Item(idx,&point);
+         Float64 Y;
+         point->get_Y(&Y);
+
+         StrandRow srow(Y);
+         StrandRowIter srit = strandrows.find(srow);
+         if (srit != strandrows.end())
+         {
+            srit->Count++;
+         }
+         else
+         {
+            strandrows.insert(srow);
+         }
+      }
+   }
+   
+   return strandrows;
+}
 
 #endif // INCLUDED_PGSEXT_TXDOTDEBONDUTIL_H_

@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 2009  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -67,7 +67,7 @@ private:
 #if defined NO_INTERFACE_CACHE
 #define DECLARE_AGENT_DATA \
    IBroker* m_pBroker; \
-   long m_AgentID;
+   AgentIDType m_AgentID;
 
 #define AGENT_SET_BROKER(broker) m_pBroker = broker
 #define AGENT_INIT     GET_IFACE(IStatusCenter,pStatusCenter); m_AgentID = pStatusCenter->GetAgentID()
@@ -81,7 +81,7 @@ private:
 #define DECLARE_AGENT_DATA \
    IBroker* m_pBroker; \
    pgsInterfaceCache m_InterfaceCache; \
-   long m_AgentID
+   AgentIDType m_AgentID
 
 #define AGENT_SET_BROKER(broker) m_InterfaceCache.SetBroker(broker); m_pBroker = &m_InterfaceCache
 #define AGENT_INIT     GET_IFACE(IStatusCenter,pStatusCenter); m_AgentID = pStatusCenter->GetAgentID()

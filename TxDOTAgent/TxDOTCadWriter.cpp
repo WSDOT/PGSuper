@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 2009 Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -40,6 +40,7 @@
 #include <PgsExt\GirderLabel.h>
 
 static void write_spec_check_results(FILE *fp, IBroker* pBroker, SpanIndexType span, GirderIndexType gdr, bool designSucceeded);
+static std::string MakeNonStandardStrandString(IBroker* pBroker, const pgsPointOfInterest& midPoi);
 
 // Return string for strand size
 static int txdString_ftofrac	/* <=  Completion value                   */
@@ -94,7 +95,7 @@ int TxDOT_WriteCADDataToFile (FILE *fp, IBroker* pBroker, SpanIndexType span, Gi
 	/* Interfaces to all relevant agents */
    GET_IFACE2(pBroker,IBridge,pBridge);
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
-   GET_IFACE2(pBroker, IDisplayUnits,pDispUnit);
+   GET_IFACE2(pBroker, IDisplayUnits,pDisplayUnits);
    GET_IFACE2(pBroker, IGirderData, pGirderData);
    GET_IFACE2(pBroker, IStrandGeometry, pStrandGeometry );
    GET_IFACE2(pBroker, ISectProp2, pSectProp2);
@@ -255,8 +256,16 @@ int TxDOT_WriteCADDataToFile (FILE *fp, IBroker* pBroker, SpanIndexType span, Gi
 
 	int reqMinUltimateMomentCapacity = (int)Round(::ConvertFromSysUnits( value, unitMeasure::KipFeet ));
 
-	/* 18. LIVE LOAD DISTRIBUTION FACTOR */
+	/* 17. LIVE LOAD DISTRIBUTION FACTOR */
    Float64 liveLoadDistFactor = pDistFact->GetMomentDistFactor(span, gdr, pgsTypes::StrengthI);
+
+   /* 17a - Non-Standard Design Data */
+   std::string ns_strand_str;
+   bool do_write_ns_data = isHarpedDesign && girderData.NumPermStrandsType != NPS_TOTAL_NUMBER && !isExtendedVersion;
+   if (do_write_ns_data)
+   {
+      ns_strand_str = MakeNonStandardStrandString(pBroker,pmid[0]);
+   }
 
    // WRITE DATA TO OUTPUT FILE
 	//----- COL 1 ----- 
@@ -322,6 +331,13 @@ int TxDOT_WriteCADDataToFile (FILE *fp, IBroker* pBroker, SpanIndexType span, Gi
 	//----- COL 17 ---- 
    workerB.WriteFloat64(liveLoadDistFactor," lldf ",6,"%6.3f",true);
 
+   if (do_write_ns_data)
+   {
+      int cnt = max(ns_strand_str.size(), 7);
+      workerB.WriteString(ns_strand_str.c_str(),"NS Data",cnt,"%s",true);
+   }
+
+
    // EXTENDED INFORMATION, IF REQUESTED // 
    if (isExtendedVersion)
    {
@@ -340,7 +356,8 @@ int TxDOT_WriteCADDataToFile (FILE *fp, IBroker* pBroker, SpanIndexType span, Gi
 
    	/* 19. DEFLECTION (SLAB AND DIAPHRAGMS)"  */
       value = pProductForces->GetDisplacement(pgsTypes::BridgeSite1, pftSlab,      pmid[0], SimpleSpan )
-            + pProductForces->GetDisplacement(pgsTypes::BridgeSite1, pftDiaphragm, pmid[0], SimpleSpan );
+            + pProductForces->GetDisplacement(pgsTypes::BridgeSite1, pftDiaphragm, pmid[0], SimpleSpan )
+            + pProductForces->GetDisplacement(pgsTypes::BridgeSite1, pftShearKey,  pmid[0], SimpleSpan );
 
       Float64 slabDiaphDeflection = ::ConvertFromSysUnits( value, unitMeasure::Feet );
 
@@ -472,9 +489,9 @@ void CadWriterWorkerBee::WriteInt16(Int16 val, const char* title, Int16 nchars, 
 void CadWriterWorkerBee::WriteString(const char* val, const char* title, Int16 nchars, const char* format, bool doDelim)
 {
    int nr = sprintf_s(m_DataLineCursor, DataBufferRemaining(), format, val);
-   m_DataLineCursor += nr;
+   m_DataLineCursor += max(nchars,nr);
 
-   ATLASSERT(nr==nchars);
+//   ATLASSERT(nr==nchars);
 
    if (doDelim)
    {
@@ -816,3 +833,24 @@ int TxDOT_WriteDistributionFactorsToFile (FILE *fp, IBroker* pBroker, SpanIndexT
    return CAD_SUCCESS;
 }
 
+std::string MakeNonStandardStrandString(IBroker* pBroker, const pgsPointOfInterest& midPoi)
+{
+   StrandRowUtil::StrandRowSet strandrows = StrandRowUtil::GetStrandRowSet(pBroker, midPoi);
+
+   // At this point, we have counted the number of strands per row. Now create string
+   bool first = true;
+   std::stringstream os;
+   for (StrandRowUtil::StrandRowIter srit=strandrows.begin(); srit!=strandrows.end(); srit++)
+   {
+      if (!first)
+         os<<",";
+      else
+         first=false;
+
+      const StrandRowUtil::StrandRow& srow = *srit;
+      Float64 elev_in = RoundOff(::ConvertFromSysUnits( srow.Elevation, unitMeasure::Inch ),0.001);
+      os<<elev_in<<"("<<srow.Count<<")";
+   }
+
+   return os.str();
+}

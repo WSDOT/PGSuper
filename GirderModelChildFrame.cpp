@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -354,9 +354,9 @@ void CGirderModelChildFrame::UpdateBar()
             ASSERT(0); // unknown cut location type
       }
 
-      GET_IFACE2(pBroker,IDisplayUnits,pDispUnits);
+      GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
       CString msg;
-      msg.Format("Section Cut Offset: %s",FormatDimension(m_CurrentCutLocation,pDispUnits->GetXSectionDimUnit()));
+      msg.Format("Section Cut Offset: %s",FormatDimension(m_CurrentCutLocation,pDisplayUnits->GetXSectionDimUnit()));
 
       plocation_static->SetWindowText(msg);
       plocation_static->EnableWindow();

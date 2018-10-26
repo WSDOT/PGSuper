@@ -62,6 +62,7 @@ protected:
 	//{{AFX_MSG(CSpecDescrPage)
 	virtual BOOL OnInitDialog();
 	afx_msg void OnCancelMode();
+   afx_msg void OnSpecificationChanged();
 	//}}AFX_MSG
    afx_msg LRESULT OnCommandHelp(WPARAM, LPARAM lParam);
 	DECLARE_MESSAGE_MAP()

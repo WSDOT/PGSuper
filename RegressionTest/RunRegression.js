@@ -12,6 +12,7 @@
 var PGSuperVersion = "Debug";
 var DoSendEmail=false;
 var EmailAddress = new String;
+var ExecuteCommands=true; // if false, only show commands
 
 var startDate = new Date();
 var startTime = startDate.getTime();
@@ -70,14 +71,20 @@ if (!FSO.FileExists(NewLibraryPathRegistrySetting))
 
 // First clean up results from any old runs and set up environment
 var CurrentFolder = StartFolderSpec;
-InitTest(CurrentFolder);
+if (ExecuteCommands)
+{
+    InitTest(CurrentFolder);
+}
 
 var CurrCommand="TestR";
 // DisplayMessage("Before RunTest, Command is " + CurrCommand);
 RunTest(CurrentFolder,CurrCommand);
 
-CheckResults(CurrentFolder);
-CleanUpTest();
+if(ExecuteCommands)
+{
+    CheckResults(CurrentFolder);
+    CleanUpTest();
+}
 
 var st = 0;
 if (!ErrorsExist)
@@ -140,9 +147,16 @@ function RunTest (currFolder, currCommand)
               cmd = Application + " /" + newCommand + " " + s; 
            }
 
-           DisplayMessage("Running: "+ cmd);
-           DisplayMessage("");
-           st = wsShell.Run(cmd,1,"TRUE");
+           if(ExecuteCommands)
+           {
+               DisplayMessage("Running: "+ cmd);
+               DisplayMessage("");
+               st = wsShell.Run(cmd,1,"TRUE");
+           }
+           else
+           {
+               DisplayMessage(cmd);
+           }
         }
      }
 
@@ -423,6 +437,7 @@ function ParseCommandLine()
          DisplayMessage("    /?             - Help (you are here)");
          DisplayMessage("    /D<drive-name> - Drive where PGSuper is installed (e.g., /DC:)");
          DisplayMessage("    /V<version>    - Version of PGSuper to test (either \"Debug\" or \"Release\"");
+         DisplayMessage("    /N             - No execute. Display but do not execute pgsuper commands.");
          DisplayMessage("");
          return 1;
        }
@@ -460,6 +475,11 @@ function ParseCommandLine()
           // set up for sending email
           EmailAddress = s.substring(2,s.length);
           DoSendEmail = true;
+       }
+       else if (s.charAt(1)=="N" || s.charAt(1)=="n")
+       {
+          // No execute. Display but do not execute commands.
+          ExecuteCommands=false;
        }
        else
        {

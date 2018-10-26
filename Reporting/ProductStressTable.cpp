@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 2006  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -73,11 +73,11 @@ CProductStressTable& CProductStressTable::operator= (const CProductStressTable& 
 
 //======================== OPERATIONS =======================================
 rptRcTable* CProductStressTable::Build(IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,pgsTypes::AnalysisType analysisType,
-                                      IDisplayUnits* pDispUnits) const
+                                      IDisplayUnits* pDisplayUnits) const
 {
    // Build table
-   INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDispUnits->GetSpanLengthUnit(), false );
-   INIT_UV_PROTOTYPE( rptStressUnitValue, stress, pDispUnits->GetStressUnit(), false );
+   INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
+   INIT_UV_PROTOTYPE( rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(), false );
 
    GET_IFACE2(pBroker,IBridge,pBridge);
    bool bDeckPanels = (pBridge->GetDeckType() == pgsTypes::sdtCompositeSIP ? true : false);
@@ -86,11 +86,12 @@ rptRcTable* CProductStressTable::Build(IBroker* pBroker,SpanIndexType span,Girde
    SpanIndexType startSpan = (span == ALL_SPANS ? 0 : span);
    SpanIndexType nSpans    = (span == ALL_SPANS ? pBridge->GetSpanCount() : startSpan+1 );
 
-   GET_IFACE2(pBroker,IProductForces,pForces);
+   GET_IFACE2(pBroker,IProductLoads,pLoads);
    GET_IFACE2(pBroker,IProductForces2,pForces2);
-   pgsTypes::Stage girderLoadStage = pForces->GetGirderDeadLoadStage(span,gdr);
-   bool bPedLoading = pForces->HasPedestrianLoad(startSpan,gdr);
-   bool bSidewalk = pForces->HasSidewalkLoad(startSpan,gdr);
+   pgsTypes::Stage girderLoadStage = pLoads->GetGirderDeadLoadStage(span,gdr);
+   bool bPedLoading = pLoads->HasPedestrianLoad(startSpan,gdr);
+   bool bSidewalk = pLoads->HasSidewalkLoad(startSpan,gdr);
+   bool bShearKey = pLoads->HasShearKeyLoad(startSpan,gdr);
 
    GET_IFACE2(pBroker,ILiveLoads,pLiveLoads);
    bool bPermit = pLiveLoads->IsLiveLoadDefined(pgsTypes::lltPermit);
@@ -147,8 +148,20 @@ rptRcTable* CProductStressTable::Build(IBroker* pBroker,SpanIndexType span,Girde
       }
    }
 
+   if ( bShearKey )
+   {
+      if (analysisType == pgsTypes::Envelope )
+      {
+         nCols += 2;
+      }
+      else
+      {
+         nCols++;
+      }
+   }
+
    rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(nCols,"Bridge Site Stress");
-   RowIndexType row = ConfigureProductLoadTableHeading<rptStressUnitTag,unitmgtStressData>(p_table,false,bDeckPanels,bSidewalk,bPedLoading,bPermit,analysisType,continuity_stage,pDispUnits,pDispUnits->GetStressUnit());
+   RowIndexType row = ConfigureProductLoadTableHeading<rptStressUnitTag,unitmgtStressData>(p_table,false,bDeckPanels,bSidewalk,bShearKey,bPedLoading,bPermit,analysisType,continuity_stage,pDisplayUnits,pDisplayUnits->GetStressUnit());
 
 
    // Get the interface pointers we need
@@ -164,6 +177,7 @@ rptRcTable* CProductStressTable::Build(IBroker* pBroker,SpanIndexType span,Girde
    std::vector<Float64> fTopMaxSlabPanel, fTopMinSlabPanel, fBotMaxSlabPanel, fBotMinSlabPanel;
    std::vector<Float64> fTopMaxOverlay, fTopMinOverlay, fBotMaxOverlay, fBotMinOverlay;
    std::vector<Float64> fTopMaxSidewalk, fTopMinSidewalk, fBotMaxSidewalk, fBotMinSidewalk;
+   std::vector<Float64> fTopMaxShearKey, fTopMinShearKey, fBotMaxShearKey, fBotMinShearKey;
    std::vector<Float64> fTopMaxTrafficBarrier, fTopMinTrafficBarrier, fBotMaxTrafficBarrier, fBotMinTrafficBarrier;
    std::vector<Float64> fTopMaxPedestrianLL, fBotMaxPedestrianLL;
    std::vector<Float64> fTopMinPedestrianLL, fBotMinPedestrianLL;
@@ -209,6 +223,12 @@ rptRcTable* CProductStressTable::Build(IBroker* pBroker,SpanIndexType span,Girde
          pForces2->GetStress( pgsTypes::BridgeSite2, pftSidewalk, vPoi, MinSimpleContinuousEnvelope, &fTopMinSidewalk, &fBotMinSidewalk);
       }
 
+      if ( bShearKey )
+      {
+         pForces2->GetStress( pgsTypes::BridgeSite1, pftShearKey, vPoi, MaxSimpleContinuousEnvelope, &fTopMaxShearKey, &fBotMaxShearKey);
+         pForces2->GetStress( pgsTypes::BridgeSite1, pftShearKey, vPoi, MinSimpleContinuousEnvelope, &fTopMinShearKey, &fBotMinShearKey);
+      }
+
       pForces2->GetStress( pgsTypes::BridgeSite2, pftTrafficBarrier, vPoi, MaxSimpleContinuousEnvelope, &fTopMaxTrafficBarrier, &fBotMaxTrafficBarrier);
       pForces2->GetStress( pgsTypes::BridgeSite2, pftTrafficBarrier, vPoi, MinSimpleContinuousEnvelope, &fTopMinTrafficBarrier, &fBotMinTrafficBarrier);
 
@@ -240,6 +260,9 @@ rptRcTable* CProductStressTable::Build(IBroker* pBroker,SpanIndexType span,Girde
    {
       if ( bSidewalk )
          pForces2->GetStress( pgsTypes::BridgeSite2, pftSidewalk, vPoi, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan, &fTopMaxSidewalk, &fBotMaxSidewalk);
+
+      if ( bShearKey )
+         pForces2->GetStress( pgsTypes::BridgeSite1, pftShearKey, vPoi, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan, &fTopMaxShearKey, &fBotMaxShearKey);
 
       pForces2->GetStress( pgsTypes::BridgeSite2, pftTrafficBarrier, vPoi, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan, &fTopMaxTrafficBarrier, &fBotMaxTrafficBarrier);
       pForces2->GetStress( overlay_stage, pftOverlay, vPoi, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan, &fTopMaxOverlay, &fBotMaxOverlay);
@@ -275,7 +298,7 @@ rptRcTable* CProductStressTable::Build(IBroker* pBroker,SpanIndexType span,Girde
    
       Float64 end_size = pBridge->GetGirderStartConnectionLength(spanIdx,gdrIdx);
 
-      pgsTypes::Stage girderLoadStage = pForces->GetGirderDeadLoadStage(spanIdx,gdrIdx);
+      pgsTypes::Stage girderLoadStage = pLoads->GetGirderDeadLoadStage(spanIdx,gdrIdx);
 
       ColumnIndexType col = 0;
 
@@ -288,6 +311,26 @@ rptRcTable* CProductStressTable::Build(IBroker* pBroker,SpanIndexType span,Girde
       (*p_table)(row,col) << RPT_FTOP << " = " << stress.SetValue(fTopDiaphragm[index]) << rptNewLine;
       (*p_table)(row,col) << RPT_FBOT << " = " << stress.SetValue(fBotDiaphragm[index]);
       col++;
+
+      if ( bShearKey )
+      {
+         if ( analysisType == pgsTypes::Envelope )
+         {
+            (*p_table)(row,col) << RPT_FTOP << " = " << stress.SetValue(fTopMaxShearKey[index]) << rptNewLine;
+            (*p_table)(row,col) << RPT_FBOT << " = " << stress.SetValue(fBotMaxShearKey[index]);
+            col++;
+
+            (*p_table)(row,col) << RPT_FTOP << " = " << stress.SetValue(fTopMinShearKey[index]) << rptNewLine;
+            (*p_table)(row,col) << RPT_FBOT << " = " << stress.SetValue(fBotMinShearKey[index]);
+            col++;
+         }
+         else
+         {
+            (*p_table)(row,col) << RPT_FTOP << " = " << stress.SetValue(fTopMaxShearKey[index]) << rptNewLine;
+            (*p_table)(row,col) << RPT_FBOT << " = " << stress.SetValue(fBotMaxShearKey[index]);
+            col++;
+         }
+      }
 
       if ( analysisType == pgsTypes::Envelope && continuity_stage == pgsTypes::BridgeSite1 )
       {

@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -77,13 +77,13 @@ rptRcTable* CVehicularLoadReactionTable::Build(IBroker* pBroker,
                                                VehicleIndexType vehicleIndex, 
                                                pgsTypes::AnalysisType analysisType,
                                                bool bReportTruckConfig,
-                                               IDisplayUnits* pDispUnits) const
+                                               IDisplayUnits* pDisplayUnits) const
 
 {
    // Build table
-   INIT_UV_PROTOTYPE( rptLengthUnitValue, location, pDispUnits->GetSpanLengthUnit(), false );
-   INIT_UV_PROTOTYPE( rptForceUnitValue,  reaction, pDispUnits->GetShearUnit(), false );
-   INIT_UV_PROTOTYPE( rptAngleUnitValue,  rotation, pDispUnits->GetRadAngleUnit(), false );
+   INIT_UV_PROTOTYPE( rptLengthUnitValue, location, pDisplayUnits->GetSpanLengthUnit(), false );
+   INIT_UV_PROTOTYPE( rptForceUnitValue,  reaction, pDisplayUnits->GetShearUnit(), false );
+   INIT_UV_PROTOTYPE( rptAngleUnitValue,  rotation, pDisplayUnits->GetRadAngleUnit(), false );
 
    GET_IFACE2(pBroker,IBridge,pBridge);
 
@@ -114,28 +114,28 @@ rptRcTable* CVehicularLoadReactionTable::Build(IBroker* pBroker,
    // Set up table headings
    ColumnIndexType col = 0;
    (*p_table)(0,col++) << "";
-   (*p_table)(0,col++) << COLHDR("Reaction" << rptNewLine << "Max",   rptForceUnitTag, pDispUnits->GetShearUnit() );
+   (*p_table)(0,col++) << COLHDR("Reaction" << rptNewLine << "Max",   rptForceUnitTag, pDisplayUnits->GetShearUnit() );
 
    if ( bReportTruckConfig )
    {
       (*p_table)(0,col++) << "Reaction" << rptNewLine << "Max" << rptNewLine << "Config";
    }
 
-   (*p_table)(0,col++) << COLHDR("Reaction" << rptNewLine << "Min",   rptForceUnitTag, pDispUnits->GetShearUnit() );
+   (*p_table)(0,col++) << COLHDR("Reaction" << rptNewLine << "Min",   rptForceUnitTag, pDisplayUnits->GetShearUnit() );
 
    if ( bReportTruckConfig )
    {
       (*p_table)(0,col++) << "Reaction" << rptNewLine << "Min" << rptNewLine << "Config";
    }
 
-   (*p_table)(0,col++) << COLHDR("Rotation" << rptNewLine << "Max",   rptAngleUnitTag, pDispUnits->GetRadAngleUnit() );
+   (*p_table)(0,col++) << COLHDR("Rotation" << rptNewLine << "Max",   rptAngleUnitTag, pDisplayUnits->GetRadAngleUnit() );
 
    if ( bReportTruckConfig )
    {
       (*p_table)(0,col++) << "Rotation" << rptNewLine << "Max" << rptNewLine << "Config";
    }
 
-   (*p_table)(0,col++) << COLHDR("Rotation" << rptNewLine << "Min",   rptAngleUnitTag, pDispUnits->GetRadAngleUnit() );
+   (*p_table)(0,col++) << COLHDR("Rotation" << rptNewLine << "Min",   rptAngleUnitTag, pDisplayUnits->GetRadAngleUnit() );
 
 
    if ( bReportTruckConfig )
@@ -181,7 +181,7 @@ rptRcTable* CVehicularLoadReactionTable::Build(IBroker* pBroker,
 
          if ( bReportTruckConfig )
          {
-            CVehicularLoadResultsTable::ReportTruckConfiguration(maxConfig,p_table,row,col++,pDispUnits);
+            CVehicularLoadResultsTable::ReportTruckConfiguration(maxConfig,p_table,row,col++,pDisplayUnits);
          }
 
          pForces->GetVehicularLiveLoadReaction( llType, vehicleIndex, pgsTypes::BridgeSite3, pier, girder, MinSimpleContinuousEnvelope,  true, false, &Rmin, &Rmax, &minConfig, &maxConfig );
@@ -189,7 +189,7 @@ rptRcTable* CVehicularLoadReactionTable::Build(IBroker* pBroker,
 
          if ( bReportTruckConfig )
          {
-            CVehicularLoadResultsTable::ReportTruckConfiguration(minConfig,p_table,row,col++,pDispUnits);
+            CVehicularLoadResultsTable::ReportTruckConfiguration(minConfig,p_table,row,col++,pDisplayUnits);
          }
 
          pForces->GetVehicularLiveLoadRotation( llType, vehicleIndex, pgsTypes::BridgeSite3, poi, MaxSimpleContinuousEnvelope, true, false, &Rmin, &Rmax, &minConfig, &maxConfig );
@@ -197,7 +197,7 @@ rptRcTable* CVehicularLoadReactionTable::Build(IBroker* pBroker,
 
          if ( bReportTruckConfig )
          {
-            CVehicularLoadResultsTable::ReportTruckConfiguration(maxConfig,p_table,row,col++,pDispUnits);
+            CVehicularLoadResultsTable::ReportTruckConfiguration(maxConfig,p_table,row,col++,pDisplayUnits);
          }
 
          pForces->GetVehicularLiveLoadRotation( llType, vehicleIndex, pgsTypes::BridgeSite3, poi, MinSimpleContinuousEnvelope, true, false, &Rmin, &Rmax, &minConfig, &maxConfig );
@@ -205,7 +205,7 @@ rptRcTable* CVehicularLoadReactionTable::Build(IBroker* pBroker,
 
          if ( bReportTruckConfig )
          {
-            CVehicularLoadResultsTable::ReportTruckConfiguration(minConfig,p_table,row,col++,pDispUnits);
+            CVehicularLoadResultsTable::ReportTruckConfiguration(minConfig,p_table,row,col++,pDisplayUnits);
          }
       }
       else
@@ -217,14 +217,14 @@ rptRcTable* CVehicularLoadReactionTable::Build(IBroker* pBroker,
 
          if ( bReportTruckConfig )
          {
-            CVehicularLoadResultsTable::ReportTruckConfiguration(maxConfig,p_table,row,col++,pDispUnits);
+            CVehicularLoadResultsTable::ReportTruckConfiguration(maxConfig,p_table,row,col++,pDisplayUnits);
          }
 
          (*p_table)(row,col++) << reaction.SetValue( Rmin );
 
          if ( bReportTruckConfig )
          {
-            CVehicularLoadResultsTable::ReportTruckConfiguration(minConfig,p_table,row,col++,pDispUnits);
+            CVehicularLoadResultsTable::ReportTruckConfiguration(minConfig,p_table,row,col++,pDisplayUnits);
          }
 
          pForces->GetVehicularLiveLoadRotation( llType, vehicleIndex, pgsTypes::BridgeSite3, poi, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan, true, false, &Rmin, &Rmax, &minConfig, &maxConfig );
@@ -232,14 +232,14 @@ rptRcTable* CVehicularLoadReactionTable::Build(IBroker* pBroker,
 
          if ( bReportTruckConfig )
          {
-            CVehicularLoadResultsTable::ReportTruckConfiguration(maxConfig,p_table,row,col++,pDispUnits);
+            CVehicularLoadResultsTable::ReportTruckConfiguration(maxConfig,p_table,row,col++,pDisplayUnits);
          }
 
          (*p_table)(row,col++) << rotation.SetValue( Rmin );
 
          if ( bReportTruckConfig )
          {
-            CVehicularLoadResultsTable::ReportTruckConfiguration(minConfig,p_table,row,col++,pDispUnits);
+            CVehicularLoadResultsTable::ReportTruckConfiguration(minConfig,p_table,row,col++,pDisplayUnits);
          }
       }
 

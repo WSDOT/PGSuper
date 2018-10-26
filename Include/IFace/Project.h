@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -728,28 +728,28 @@ DEFINE_GUID(IID_IUserDefinedLoadData,
 interface IUserDefinedLoadData : IUnknown
 {
    // point loads
-   virtual Uint32 GetPointLoadCount() const = 0;
+   virtual CollectionIndexType GetPointLoadCount() const = 0;
    // add point load and return current count
-   virtual Uint32 AddPointLoad(const CPointLoadData& pld)= 0;
-   virtual const CPointLoadData& GetPointLoad(Uint32 idx) const = 0;
-   virtual void UpdatePointLoad(Uint32 idx, const CPointLoadData& pld) = 0;
-   virtual void DeletePointLoad(Uint32 idx) = 0;
+   virtual CollectionIndexType AddPointLoad(const CPointLoadData& pld)= 0;
+   virtual const CPointLoadData& GetPointLoad(CollectionIndexType idx) const = 0;
+   virtual void UpdatePointLoad(CollectionIndexType idx, const CPointLoadData& pld) = 0;
+   virtual void DeletePointLoad(CollectionIndexType idx) = 0;
 
    // distributed loads
-   virtual Uint32 GetDistributedLoadCount() const = 0;
+   virtual CollectionIndexType GetDistributedLoadCount() const = 0;
    // add distributed load and return current count
-   virtual Uint32 AddDistributedLoad(const CDistributedLoadData& pld)= 0;
-   virtual const CDistributedLoadData& GetDistributedLoad(Uint32 idx) const = 0;
-   virtual void UpdateDistributedLoad(Uint32 idx, const CDistributedLoadData& pld) = 0;
-   virtual void DeleteDistributedLoad(Uint32 idx) = 0;
+   virtual CollectionIndexType AddDistributedLoad(const CDistributedLoadData& pld)= 0;
+   virtual const CDistributedLoadData& GetDistributedLoad(CollectionIndexType idx) const = 0;
+   virtual void UpdateDistributedLoad(CollectionIndexType idx, const CDistributedLoadData& pld) = 0;
+   virtual void DeleteDistributedLoad(CollectionIndexType idx) = 0;
 
    // moment loads
-   virtual Uint32 GetMomentLoadCount() const = 0;
+   virtual CollectionIndexType GetMomentLoadCount() const = 0;
    // add moment load and return current count
-   virtual Uint32 AddMomentLoad(const CMomentLoadData& pld)= 0;
-   virtual const CMomentLoadData& GetMomentLoad(Uint32 idx) const = 0;
-   virtual void UpdateMomentLoad(Uint32 idx, const CMomentLoadData& pld) = 0;
-   virtual void DeleteMomentLoad(Uint32 idx) = 0;
+   virtual CollectionIndexType AddMomentLoad(const CMomentLoadData& pld)= 0;
+   virtual const CMomentLoadData& GetMomentLoad(CollectionIndexType idx) const = 0;
+   virtual void UpdateMomentLoad(CollectionIndexType idx, const CMomentLoadData& pld) = 0;
+   virtual void DeleteMomentLoad(CollectionIndexType idx) = 0;
 };
 
 /*****************************************************************************

@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -40,8 +40,8 @@ static char THIS_FILE[] = __FILE__;
 // CConfigurePGSuperDlg dialog
 
 
-CConfigurePGSuperDlg::CConfigurePGSuperDlg(const CPGSuperCatalog& catalog,BOOL bFirstRun,CWnd* pParent /*=NULL*/)
-	: CDialog(CConfigurePGSuperDlg::IDD, pParent), m_Catalog(catalog)
+CConfigurePGSuperDlg::CConfigurePGSuperDlg(BOOL bFirstRun,CWnd* pParent /*=NULL*/)
+	: CDialog(CConfigurePGSuperDlg::IDD, pParent)
 {
 	//{{AFX_DATA_INIT(CConfigurePGSuperDlg)
 	m_Company = _T("");
@@ -65,24 +65,63 @@ void CConfigurePGSuperDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_LBString(pDX, IDC_PUBLISHERS, m_Publisher);
 	//}}AFX_DATA_MAP
 
-   // These are for the local network option
-   DDX_FilenameControl(pDX, IDC_LIBRARY_FILE_LOCATION, IDC_LIBRARY_FILE_BROWSE,m_ctrlLibraryFile, GF_FILEMUSTEXIST, "Please specify library file", "Library Files (*.lbr)|*.lbr||");
-   DDX_FilenameValue(pDX, m_ctrlLibraryFile, m_LocalMasterLibraryFile);
-
-   if ( pDX->m_bSaveAndValidate && m_Method == 2 )
-      DDV_FilenameControl(pDX, m_ctrlLibraryFile);
-
-   DDX_FolderControl(pDX, IDC_WORKGROUP_TEMPLATE_LOCATION, IDC_WORKGROUP_TEMPLATE_BROWSE, m_ctrlWorkgroupFolder, 0, "Please specify a folder");
-   DDX_FolderValue(pDX, m_ctrlWorkgroupFolder, m_LocalWorkgroupTemplateFolder);
-
-   if ( pDX->m_bSaveAndValidate && m_Method == 2 )
-      DDV_FolderControl(pDX, m_ctrlWorkgroupFolder, GFLDR_FOLDER_MUST_EXIST);
-
-   DDX_FolderControl(pDX, IDC_USER_TEMPLATE_LOCATION, IDC_USER_TEMPLATE_BROWSE, m_ctrlUserFolder, 0, "Please specify a folder");
-   DDX_FolderValue(pDX, m_ctrlUserFolder, m_UserFolder);
-   DDV_FolderControl(pDX, m_ctrlUserFolder, GFLDR_FOLDER_MUST_EXIST);
+   DDX_Control(pDX, IDC_PUBLISHER_HYPERLINK,  m_PublisherHyperLink);
 
    DDX_CBItemData(pDX,IDC_UPDATE_FREQUENCY,m_CacheUpdateFrequency);
+
+   // We need to force an update if our catalog server or publisher changed
+   if (!pDX->m_bSaveAndValidate)
+   {
+      // save original data on the way in
+      m_OriginalMethod = m_Method;
+      if ( m_Method != (int)srtDefault )
+      {
+	      m_OriginalPublisher = m_Publisher;
+         m_OriginalServer = m_CurrentServer;
+
+         // Taking a shortcut here - we know if a server is edited it will
+         // be reallocated, and given a new address. A better approach would 
+         // involve some way of diffing polymorphic types
+         m_OriginalServerPtr = m_Servers.GetServer(m_CurrentServer);
+      }
+   }
+   else
+   {
+      // check if we changed publishers (don't care if Default)
+      if ( !m_bUpdateCache && m_Method != (int)srtDefault)
+      {
+         bool bchanged = false;
+         bchanged |= m_OriginalMethod != m_Method;
+
+         if ( m_Method != (int)srtLocal)
+         {
+            bchanged |= m_OriginalPublisher != m_Publisher;
+         }
+
+         bchanged |= m_OriginalServer != m_CurrentServer;
+
+         if (m_OriginalServer == m_CurrentServer)
+         {
+            // use pointer comparison 
+            const CPGSuperCatalogServer* psvr = m_Servers.GetServer(m_CurrentServer); 
+            bchanged |= psvr != m_OriginalServerPtr;
+         }
+
+         if (bchanged)
+         {
+            // Prompt user to update server
+            int st = ::AfxMessageBox("A change has been made to the server configuration. You must run an update before the configuration can be saved. Do you want to run update now?",MB_YESNO);
+            if (st==IDYES)
+            {
+               m_bUpdateCache = true;
+            }
+            else
+            {
+               pDX->Fail();
+            }
+         }
+      }
+   }
 }
 
 
@@ -90,17 +129,13 @@ BEGIN_MESSAGE_MAP(CConfigurePGSuperDlg, CDialog)
 	//{{AFX_MSG_MAP(CConfigurePGSuperDlg)
 	ON_BN_CLICKED(ID_HELP, OnHelp)
 	ON_LBN_SETFOCUS(IDC_PUBLISHERS, OnSetfocusPublishers)
-	ON_EN_SETFOCUS(IDC_LIBRARY_FILE_LOCATION, OnSetFocusNetwork)
    ON_BN_CLICKED(IDC_ADD,OnAddCatalogServer)
 	ON_CBN_SELCHANGE(IDC_SERVERS, OnServerChanged)
 	ON_BN_CLICKED(IDC_UPDATENOW, OnUpdatenow)
-	ON_EN_SETFOCUS(IDC_WORKGROUP_TEMPLATE_LOCATION, OnSetFocusNetwork)
-	ON_BN_CLICKED(IDC_LIBRARY_FILE_BROWSE, OnSetFocusNetwork)
-	ON_BN_CLICKED(IDC_WORKGROUP_TEMPLATE_BROWSE, OnSetFocusNetwork)
 	ON_BN_CLICKED(IDC_GENERIC, OnGeneric)
-	ON_BN_CLICKED(IDC_LOCAL, OnLocal)
 	ON_BN_CLICKED(IDC_DOWNLOAD, OnDownload)
 	//}}AFX_MSG_MAP
+   ON_LBN_SELCHANGE(IDC_PUBLISHERS, &CConfigurePGSuperDlg::OnLbnSelchangePublishers)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -113,6 +148,9 @@ void CConfigurePGSuperDlg::OnHelp()
 
 BOOL CConfigurePGSuperDlg::OnInitDialog() 
 {
+   // no cache update until we're told
+   m_bUpdateCache = false;
+
    UpdateFrequencyList();
    ServerList();
 
@@ -121,7 +159,7 @@ BOOL CConfigurePGSuperDlg::OnInitDialog()
 
    pWnd = GetDlgItem(IDC_FIRST_RUN);
    if ( m_bFirstRun )
-      pWnd->SetWindowText("This is the first time you've run PGSuper since it was installed. Before you can use PGSuper, it must by configured.");
+      pWnd->SetWindowText("This is the first time you've run PGSuper since it was installed. Before you can use PGSuper, it must be configured.");
    else
       pWnd->SetWindowText("Set the User, Library, and Template Configuration information.");
 
@@ -131,6 +169,8 @@ BOOL CConfigurePGSuperDlg::OnInitDialog()
       HideOkAndCancelButtons();
 
    OnMethod();
+
+   ConfigureWebLink();
 
 	return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE
@@ -142,8 +182,8 @@ void CConfigurePGSuperDlg::HideOkAndCancelButtons()
    pCancel->ShowWindow(SW_HIDE);
 
 
-   CWnd* pOK = GetDlgItem(IDOK);
-   pOK->ShowWindow(SW_HIDE);
+//   CWnd* pOK = GetDlgItem(IDOK);
+//   pOK->ShowWindow(SW_HIDE);
 }
 
 void CConfigurePGSuperDlg::UpdateFrequencyList()
@@ -182,14 +222,14 @@ void CConfigurePGSuperDlg::ServerList()
    for ( long i = 0; i < nServers; i++ )
    {
       CString strName, strAddress;
-      m_Servers.GetServer(i,strName,strAddress);
+      const CPGSuperCatalogServer* pserver = m_Servers.GetServer(i);
 
-      pCB->AddString(strName);
+      pCB->AddString( pserver->GetServerName() );
    }
 
    if ( idx == CB_ERR )
    {
-      strCurrAddress = m_Catalog.GetCatalogName();
+      strCurrAddress = m_CurrentServer;
    }
    idx = pCB->SelectString(-1,strCurrAddress);
    
@@ -204,13 +244,9 @@ void CConfigurePGSuperDlg::ServerList()
 void CConfigurePGSuperDlg::OnSetfocusPublishers() 
 {
    // when the Publisher list gets the focus, select the radio button
-   CheckRadioButton(IDC_GENERIC,IDC_LOCAL,IDC_DOWNLOAD);
+   CheckRadioButton(IDC_GENERIC,IDC_DOWNLOAD,IDC_DOWNLOAD);
 }
 
-void CConfigurePGSuperDlg::OnSetFocusNetwork() 
-{
-   CheckRadioButton(IDC_GENERIC,IDC_LOCAL,IDC_LOCAL);
-}
 
 void CConfigurePGSuperDlg::OnAddCatalogServer()
 {
@@ -233,12 +269,15 @@ void CConfigurePGSuperDlg::OnServerChanged()
       CString strName;
       pCB->GetLBText(idx,strName);
 
-      CString strAddress = m_Servers.GetServerAddress(strName);
-      m_Catalog.SetCatalogServer(strName,strAddress);
+      const CPGSuperCatalogServer* pserver = m_Servers.GetServer(strName);
+      ATLASSERT(pserver);
+      m_CurrentServer = strName;
 
       PublisherList();
 
       OnSetfocusPublishers();
+
+      ConfigureWebLink();
    }
 }
 
@@ -246,11 +285,12 @@ void CConfigurePGSuperDlg::OnServerChanged()
 void CConfigurePGSuperDlg::PublisherList() 
 {
    // fill up the list box
-   m_bNetworkError = m_Catalog.IsNetworkError();
+   const CPGSuperCatalogServer* pserver = m_Servers.GetServer(m_CurrentServer);
+   m_bNetworkError = pserver->IsNetworkError();
 
    if ( !m_bNetworkError )
    {
-      std::vector<CString> items = m_Catalog.GetCatalogItems();
+      std::vector<CString> items = pserver->GetPublishers();
       CListBox* pLB = (CListBox*)GetDlgItem(IDC_PUBLISHERS);
 
       int idx = pLB->GetCurSel();
@@ -262,7 +302,7 @@ void CConfigurePGSuperDlg::PublisherList()
          pLB->AddString(strItem);
       }
 
-      if ( idx != LB_ERR )
+      if ( idx != LB_ERR && idx< (int)items.size() )
          pLB->SetCurSel(idx);
       else
          pLB->SetCurSel(0);
@@ -298,13 +338,16 @@ void CConfigurePGSuperDlg::PublisherList()
 
 void CConfigurePGSuperDlg::OnUpdatenow() 
 {
+   m_bUpdateCache = true;
+
 	if (!UpdateData(TRUE))
 	{
 		TRACE0("UpdateData failed during dialog termination.\n");
 		// the UpdateData routine will set focus to correct item
 		return;
 	}
-	EndDialog(IDC_UPDATENOW);
+
+	EndDialog(IDOK);
 }
 
 void CConfigurePGSuperDlg::OnGeneric() 
@@ -313,15 +356,11 @@ void CConfigurePGSuperDlg::OnGeneric()
    OnMethod();
 }
 
-void CConfigurePGSuperDlg::OnLocal() 
-{
-   GetDlgItem(IDC_UPDATENOW)->EnableWindow(TRUE);
-   OnMethod();
-}
-
 void CConfigurePGSuperDlg::OnDownload() 
 {
-   GetDlgItem(IDC_UPDATENOW)->EnableWindow( m_Catalog.IsNetworkError() ? FALSE : TRUE);
+   const CPGSuperCatalogServer* pserver = m_Servers.GetServer(m_CurrentServer);
+   m_bNetworkError = pserver->IsNetworkError();
+
    OnMethod();
 }
 
@@ -334,10 +373,44 @@ void CConfigurePGSuperDlg::OnMethod()
    GetDlgItem(IDC_SERVERS_STATIC2)->EnableWindow(bEnable);
    GetDlgItem(IDC_PUBLISHERS)->ShowWindow(bEnable ? SW_SHOW : SW_HIDE);
    GetDlgItem(IDC_SERVER_STATIC3)->ShowWindow(!bEnable ? SW_SHOW : SW_HIDE);
+   GetDlgItem(IDC_UPDATENOW)->EnableWindow( bEnable);
+   GetDlgItem(IDC_UPDATE_FREQUENCY)->EnableWindow( bEnable);
+   GetDlgItem(IDC_UPDATES_STATIC)->EnableWindow( bEnable);
+   GetDlgItem(IDC_STATIC_EARTH)->EnableWindow( bEnable);
+   m_PublisherHyperLink.EnableWindow(bEnable);
+}
 
-	bEnable = IsDlgButtonChecked(IDC_LOCAL);
-   GetDlgItem(IDC_LOCAL_STATIC)->EnableWindow(bEnable);
-   GetDlgItem(IDC_LIBRARY_FILE_LOCATION)->EnableWindow(bEnable);
-   GetDlgItem(IDC_LOCALS_STATIC2)->EnableWindow(bEnable);
-   GetDlgItem(IDC_WORKGROUP_TEMPLATE_LOCATION)->EnableWindow(bEnable);
+void CConfigurePGSuperDlg::OnLbnSelchangePublishers()
+{
+   ConfigureWebLink();
+}
+
+void CConfigurePGSuperDlg::ConfigureWebLink()
+{
+   const CPGSuperCatalogServer* pserver = m_Servers.GetServer(m_CurrentServer);
+   if(pserver!=NULL)
+   {
+      CListBox* pCB = (CListBox*)GetDlgItem(IDC_PUBLISHERS);
+      int idx = pCB->GetCurSel();
+      if ( idx != CB_ERR )
+      {
+         CString strName;
+         pCB->GetText(idx,strName);
+
+         CString url = pserver->GetWebLink(strName);
+
+         CWnd* pCB = (CWnd*)GetDlgItem(IDC_PUBLISHER_HYPERLINK);
+
+         if (!url.IsEmpty())
+         {
+            m_PublisherHyperLink.SetURL(url);
+            pCB->EnableWindow(TRUE);
+         }
+         else
+         {
+            pCB->EnableWindow(FALSE);
+            m_PublisherHyperLink.SetURL(CString("No web link defined for this publisher."));
+         }
+      }
+   }
 }

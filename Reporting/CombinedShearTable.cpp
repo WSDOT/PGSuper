@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -75,12 +75,12 @@ CCombinedShearTable& CCombinedShearTable::operator= (const CCombinedShearTable& 
 //======================== OPERATIONS =======================================
 void CCombinedShearTable::Build(IBroker* pBroker,rptChapter* pChapter,
                                        SpanIndexType span,GirderIndexType girder,
-                                       IDisplayUnits* pDispUnits,
+                                       IDisplayUnits* pDisplayUnits,
                                        pgsTypes::Stage stage,pgsTypes::AnalysisType analysisType) const
 {
    // Build table
-   INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDispUnits->GetSpanLengthUnit(), false );
-   INIT_UV_PROTOTYPE( rptForceSectionValue, shear, pDispUnits->GetShearUnit(), false );
+   INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
+   INIT_UV_PROTOTYPE( rptForceSectionValue, shear, pDisplayUnits->GetShearUnit(), false );
 
    if ( stage == pgsTypes::CastingYard )
       location.MakeGirderPoi();
@@ -115,11 +115,11 @@ void CCombinedShearTable::Build(IBroker* pBroker,rptChapter* pChapter,
    GET_IFACE2(pBroker,ILiveLoads,pLiveLoads);
    bool bPermit = pLiveLoads->IsLiveLoadDefined(pgsTypes::lltPermit);
 
-   GET_IFACE2(pBroker,IProductForces,pProductForces);
-   bool bPedLoading = pProductForces->HasPedestrianLoad(startSpan,girder);
+   GET_IFACE2(pBroker,IProductLoads,pProductLoads);
+   bool bPedLoading = pProductLoads->HasPedestrianLoad(startSpan,girder);
 
    ColumnIndexType col = 0;
-   RowIndexType row = CreateCombinedLoadingTableHeading<rptForceUnitTag,unitmgtForceData>(&p_table,"Shear",false,bPermit,bPedLoading,stage,continuity_stage,analysisType,pDispUnits,pDispUnits->GetShearUnit());
+   RowIndexType row = CreateCombinedLoadingTableHeading<rptForceUnitTag,unitmgtForceData>(&p_table,"Shear",false,bPermit,bPedLoading,stage,continuity_stage,analysisType,pDisplayUnits,pDisplayUnits->GetShearUnit());
 
    *p << p_table;
 
@@ -146,7 +146,7 @@ void CCombinedShearTable::Build(IBroker* pBroker,rptChapter* pChapter,
          nCols += 3;
 
       p_table2 = pgsReportStyleHolder::CreateDefaultTable(nCols,"");
-      row2 = ConfigureLimitStateTableHeading<rptForceUnitTag,unitmgtForceData>(p_table2,false,bPermit,analysisType,pDispUnits,pDispUnits->GetGeneralForceUnit());
+      row2 = ConfigureLimitStateTableHeading<rptForceUnitTag,unitmgtForceData>(p_table2,false,bPermit,false,analysisType,pDisplayUnits,pDisplayUnits->GetGeneralForceUnit());
       *p << p_table2;
    }
 

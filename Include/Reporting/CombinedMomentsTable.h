@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -75,7 +75,7 @@ public:
    // Builds the strand eccentricity table.
    virtual void Build(IBroker* pBroker, rptChapter* pChapter,
                       SpanIndexType span,GirderIndexType girder,
-                      IDisplayUnits* pDispUnits,
+                      IDisplayUnits* pDisplayUnits,
                       pgsTypes::Stage stage,pgsTypes::AnalysisType analysisType) const;
    // GROUP: ACCESS
    // GROUP: INQUIRY
@@ -125,7 +125,7 @@ public:
 // INLINE METHODS
 //
 template <class M,class T>
-int ConfigureLimitStateTableHeading(rptRcTable* pTable,bool bPierTable,bool bPermit,pgsTypes::AnalysisType analysisType,IDisplayUnits* pDispUnits,const T& unitT)
+int ConfigureLimitStateTableHeading(rptRcTable* pTable,bool bPierTable,bool bPermit,bool bMoment,pgsTypes::AnalysisType analysisType,IDisplayUnits* pDisplayUnits,const T& unitT)
 {
    pTable->SetNumberOfHeaderRows(2);
 
@@ -137,7 +137,7 @@ int ConfigureLimitStateTableHeading(rptRcTable* pTable,bool bPierTable,bool bPer
    row1col++;
    
    if ( !bPierTable )
-      (*pTable)(0,row0col) << COLHDR(RPT_LFT_SUPPORT_LOCATION ,    rptLengthUnitTag, pDispUnits->GetSpanLengthUnit() );
+      (*pTable)(0,row0col) << COLHDR(RPT_LFT_SUPPORT_LOCATION ,    rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
    else
       (*pTable)(0,row0col) << "";
 
@@ -175,18 +175,23 @@ int ConfigureLimitStateTableHeading(rptRcTable* pTable,bool bPierTable,bool bPer
          row0col++;
       }
 
-      pTable->SetColumnSpan(0,row0col,2);
+      pTable->SetColumnSpan(0,row0col,bMoment ? 3 : 2);
       (*pTable)(0,row0col) << "Strength I";
-      (*pTable)(1,row1col++) << COLHDR("Max", M, unitT );
-      (*pTable)(1,row1col++) << COLHDR("Min", M, unitT );
+      (*pTable)(1,row1col++) << COLHDR("Max",  M, unitT );
+      (*pTable)(1,row1col++) << COLHDR("Min",  M, unitT );
+      if ( bMoment )
+         (*pTable)(1,row1col++) << COLHDR("Slab", M, unitT );
+
       row0col++;
 
       if (bPermit)
       {
-         pTable->SetColumnSpan(0,row0col,2);
+         pTable->SetColumnSpan(0,row0col,bMoment ? 3 : 2);
          (*pTable)(0,row0col) << "Strength II";
-         (*pTable)(1,row1col++) << COLHDR("Max", M, unitT );
-         (*pTable)(1,row1col++)<< COLHDR("Min", M, unitT );
+         (*pTable)(1,row1col++) << COLHDR("Max",  M, unitT );
+         (*pTable)(1,row1col++) << COLHDR("Min",  M, unitT );
+         if ( bMoment )
+            (*pTable)(1,row1col++) << COLHDR("Slab", M, unitT );
       }
       else
       {
@@ -198,62 +203,68 @@ int ConfigureLimitStateTableHeading(rptRcTable* pTable,bool bPierTable,bool bPer
       pTable->SetColumnSpan(0,row0col++, -1);
       pTable->SetColumnSpan(0,row0col++, -1);
 
+      if ( bMoment )
+         pTable->SetColumnSpan(0,row0col++, -1);
+
       if ( bPermit )
       {
          pTable->SetColumnSpan(0,row0col++, -1);
          pTable->SetColumnSpan(0,row0col++, -1);
+
+         if ( bMoment )
+            pTable->SetColumnSpan(0,row0col++, -1);
       }
    }
    else
    {
       pTable->SetRowSpan(0,row0col,2);
-      (*pTable)(0,row0col) << COLHDR("Service I", M, unitT );
-      row0col++;
+      (*pTable)(0,row0col++) << COLHDR("Service I", M, unitT );
+      pTable->SetRowSpan(1,row1col++,-1);
 
       if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims )
       {
          pTable->SetRowSpan(0,row0col,2);
-         (*pTable)(0,row0col) << COLHDR("Service IA", M, unitT );
-         row0col++;
+         (*pTable)(0,row0col++) << COLHDR("Service IA", M, unitT );
+         pTable->SetRowSpan(1,row1col++,-1);
       }
       
       pTable->SetRowSpan(0,row0col,2);
-      (*pTable)(0,row0col) << COLHDR("Service III", M, unitT );
-      row0col++;
+      (*pTable)(0,row0col++) << COLHDR("Service III", M, unitT );
+      pTable->SetRowSpan(1,row1col++,-1);
 
       if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
       {
          pTable->SetRowSpan(0,row0col,2);
-         (*pTable)(0,row0col) << COLHDR("Fatigue I", M, unitT );
-         row0col++;
+         (*pTable)(0,row0col++) << COLHDR("Fatigue I", M, unitT );
+         pTable->SetRowSpan(1,row1col++,-1);
       }
 
-      pTable->SetRowSpan(1,row1col++,-1);
-      pTable->SetRowSpan(1,row1col++,-1);
-      pTable->SetRowSpan(1,row1col++,-1);
-
-      pTable->SetColumnSpan(0,row0col,2);
-      (*pTable)(0,row0col) << "Strength I";
+      pTable->SetColumnSpan(0,row0col,bMoment ? 3 : 2);
+      (*pTable)(0,row0col++) << "Strength I";
+      pTable->SetColumnSpan(0,row0col++,-1);
+      pTable->SetColumnSpan(0,row0col++,-1);
       (*pTable)(1,row1col++) << COLHDR("Max", M, unitT );
       (*pTable)(1,row1col++) << COLHDR("Min", M, unitT );
-      row0col++;
+      if ( bMoment )
+      {
+         (*pTable)(1,row1col++) << COLHDR("Slab", M, unitT );
+         pTable->SetColumnSpan(0,row0col++,-1);
+      }
 
 
       if (bPermit)
       {
-         pTable->SetColumnSpan(0,row0col,2);
-         (*pTable)(0,row0col) << "Strength II";
+         pTable->SetColumnSpan(0,row0col,bMoment ? 3 : 2);
+         (*pTable)(0,row0col++) << "Strength II";
+         pTable->SetColumnSpan(0,row0col++,-1);
+         pTable->SetColumnSpan(0,row0col++,-1);
          (*pTable)(1,row1col++) << COLHDR("Max", M, unitT );
          (*pTable)(1,row1col++) << COLHDR("Min", M, unitT );
-
-         row0col++;
-
-         pTable->SetColumnSpan(0,row0col++,-1);
-         pTable->SetColumnSpan(0,row0col++,-1);
-      }
-      else
-      {
-         pTable->SetColumnSpan(0,row0col,-1);
+         if ( bMoment )
+         {
+            (*pTable)(1,row1col++) << COLHDR("Slab", M, unitT );
+            pTable->SetColumnSpan(0,row0col++,-1);
+         }
       }
    }
 
@@ -263,7 +274,7 @@ int ConfigureLimitStateTableHeading(rptRcTable* pTable,bool bPierTable,bool bPer
 ///////////////////////////////////////////////////////////////////
 
 template <class M,class T>
-RowIndexType CreateCombinedLoadingTableHeading(rptRcTable** ppTable,const char* strLabel,bool bPierTable,bool bPermit,bool bPedLoading,pgsTypes::Stage stage,pgsTypes::Stage continuityStage,pgsTypes::AnalysisType analysisType,IDisplayUnits* pDispUnits,const T& unitT)
+RowIndexType CreateCombinedLoadingTableHeading(rptRcTable** ppTable,const char* strLabel,bool bPierTable,bool bPermit,bool bPedLoading,pgsTypes::Stage stage,pgsTypes::Stage continuityStage,pgsTypes::AnalysisType analysisType,IDisplayUnits* pDisplayUnits,const T& unitT)
 {
    int nRows = 0;
 
@@ -278,7 +289,7 @@ RowIndexType CreateCombinedLoadingTableHeading(rptRcTable** ppTable,const char* 
       pTable = pgsReportStyleHolder::CreateDefaultTable(nCols,strLabel);
 
       if ( !bPierTable )
-         (*pTable)(0,col1++) << COLHDR(RPT_GDR_END_LOCATION ,    rptLengthUnitTag, pDispUnits->GetSpanLengthUnit() );
+         (*pTable)(0,col1++) << COLHDR(RPT_GDR_END_LOCATION ,    rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
       else
          (*pTable)(0,col1++) << "";
 
@@ -302,7 +313,7 @@ RowIndexType CreateCombinedLoadingTableHeading(rptRcTable** ppTable,const char* 
          pTable->SetRowSpan(0,col1,2);
          pTable->SetRowSpan(1,col2++,-1);
          if ( !bPierTable )
-            (*pTable)(0,col1++) << COLHDR(RPT_LFT_SUPPORT_LOCATION ,    rptLengthUnitTag, pDispUnits->GetSpanLengthUnit() );
+            (*pTable)(0,col1++) << COLHDR(RPT_LFT_SUPPORT_LOCATION ,    rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
          else
             (*pTable)(0,col1++) << "";
 
@@ -334,7 +345,7 @@ RowIndexType CreateCombinedLoadingTableHeading(rptRcTable** ppTable,const char* 
       else
       {
          if ( !bPierTable )
-            (*pTable)(0,col1++) << COLHDR(RPT_LFT_SUPPORT_LOCATION ,    rptLengthUnitTag, pDispUnits->GetSpanLengthUnit() );
+            (*pTable)(0,col1++) << COLHDR(RPT_LFT_SUPPORT_LOCATION ,    rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
          else
             (*pTable)(0,col1++) << "";
 
@@ -364,7 +375,7 @@ RowIndexType CreateCombinedLoadingTableHeading(rptRcTable** ppTable,const char* 
          pTable->SetRowSpan(1,col2++,-1);
    
          if ( !bPierTable )
-            (*pTable)(0,col1++) << COLHDR(RPT_LFT_SUPPORT_LOCATION ,    rptLengthUnitTag, pDispUnits->GetSpanLengthUnit() );
+            (*pTable)(0,col1++) << COLHDR(RPT_LFT_SUPPORT_LOCATION ,    rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
          else
             (*pTable)(0,col1++) << "";
 
@@ -398,7 +409,7 @@ RowIndexType CreateCombinedLoadingTableHeading(rptRcTable** ppTable,const char* 
       else
       {
          if ( !bPierTable )
-            (*pTable)(0,col1++) << COLHDR(RPT_LFT_SUPPORT_LOCATION ,    rptLengthUnitTag, pDispUnits->GetSpanLengthUnit() );
+            (*pTable)(0,col1++) << COLHDR(RPT_LFT_SUPPORT_LOCATION ,    rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
          else
             (*pTable)(0,col1++) << "";
 
@@ -436,7 +447,7 @@ RowIndexType CreateCombinedLoadingTableHeading(rptRcTable** ppTable,const char* 
       pTable->SetRowSpan(1,col2++,-1);
    
       if ( !bPierTable )
-         (*pTable)(0,col1++) << COLHDR(RPT_LFT_SUPPORT_LOCATION ,    rptLengthUnitTag, pDispUnits->GetSpanLengthUnit() );
+         (*pTable)(0,col1++) << COLHDR(RPT_LFT_SUPPORT_LOCATION ,    rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
       else
          (*pTable)(0,col1++) << "";
 

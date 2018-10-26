@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -27,6 +27,7 @@
 #include <psgLib\psgLib.h>
 #include "ConcreteEntryDlg.h"
 #include <MfcTools\CustomDDX.h>
+#include <Colors.h>
 
 #include "..\htmlhelp\helptopics.hh"
 
@@ -48,6 +49,10 @@ CConcreteEntryDlg::CConcreteEntryDlg(libUnitsMode::Mode mode, bool allowEditing,
 	//{{AFX_DATA_INIT(CConcreteEntryDlg)
 	m_EntryName = _T("");
 	//}}AFX_DATA_INIT
+
+   m_MinNWCDensity = m_Mode == libUnitsMode::UNITS_US ? ::ConvertToSysUnits(135.0,unitMeasure::LbfPerFeet3) : ::ConvertToSysUnits(2150.,unitMeasure::KgPerMeter3);
+   m_bIsStrengthNWC = true;
+   m_bIsDensityNWC = true;
 }
 
 
@@ -94,6 +99,15 @@ void CConcreteEntryDlg::DoDataExchange(CDataExchange* pDX)
    DDX_Text(pDX, IDC_K1, m_K1 );
    DDV_GreaterThanZero(pDX,m_K1);
 
+   if ( m_Ds < m_MinNWCDensity )
+   {
+      m_bIsStrengthNWC = false;
+   }
+
+   if ( m_Dw < m_MinNWCDensity )
+   {
+      m_bIsDensityNWC = false;
+   }
 }
 
 
@@ -102,6 +116,9 @@ BEGIN_MESSAGE_MAP(CConcreteEntryDlg, CDialog)
 	ON_MESSAGE(WM_COMMANDHELP, OnCommandHelp)
 	ON_BN_CLICKED(IDC_MOD_E, OnModE)
 	//}}AFX_MSG_MAP
+   ON_EN_CHANGE(IDC_DS, &CConcreteEntryDlg::OnChangeDs)
+   ON_EN_CHANGE(IDC_DW, &CConcreteEntryDlg::OnChangeDw)
+   ON_WM_CTLCOLOR()
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -157,4 +174,85 @@ void CConcreteEntryDlg::OnModE()
    {
       pwnd->SetWindowText(m_InitialEc);
    }
+}
+
+void CConcreteEntryDlg::OnChangeDs()
+{
+   CWnd* pWnd = GetDlgItem(IDC_NWC_NOTE);
+   pWnd->Invalidate();
+}
+
+void CConcreteEntryDlg::OnChangeDw()
+{
+   CWnd* pWnd = GetDlgItem(IDC_NWC_NOTE);
+   pWnd->Invalidate();
+}
+
+HBRUSH CConcreteEntryDlg::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
+{
+   HBRUSH hbr = CDialog::OnCtlColor(pDC, pWnd, nCtlColor);
+
+   if ( pWnd->GetDlgCtrlID() == IDC_DS && 0 < pWnd->GetWindowTextLength())
+   {
+      try
+      {
+         bool bUnitsSI = (m_Mode == libUnitsMode::UNITS_SI ? true : false);
+         CDataExchange dx(this,TRUE);
+
+         Float64 value;
+         DDX_UnitValue(&dx, IDC_DS, value, bUnitsSI, unitMeasure::LbfPerFeet3, unitMeasure::KgPerMeter3 );
+
+         if (value < m_MinNWCDensity )
+         {
+            m_bIsStrengthNWC = false;
+            pDC->SetTextColor( RED );
+         }
+         else
+         {
+            m_bIsStrengthNWC = true;
+         }
+      }
+      catch(...)
+      {
+      }
+   }
+   else if ( pWnd->GetDlgCtrlID() == IDC_DW && 0 < pWnd->GetWindowTextLength() )
+   {
+      try
+      {
+         bool bUnitsSI = (m_Mode == libUnitsMode::UNITS_SI ? true : false);
+         CDataExchange dx(this,TRUE);
+
+         Float64 value;
+         DDX_UnitValue(&dx, IDC_DW, value, bUnitsSI, unitMeasure::LbfPerFeet3, unitMeasure::KgPerMeter3 );
+
+         if (value < m_MinNWCDensity )
+         {
+            m_bIsDensityNWC = false;
+            pDC->SetTextColor( RED );
+         }
+         else
+         {
+            m_bIsDensityNWC = true;
+         }
+      }
+      catch(...)
+      {
+      }
+   }
+   else if ( pWnd->GetDlgCtrlID() == IDC_NWC_NOTE )
+   {
+      if ( !(m_bIsStrengthNWC && m_bIsDensityNWC) )
+         pDC->SetTextColor( RED );
+   }
+
+   return hbr;
+}
+
+void CConcreteEntryDlg::OnOK()
+{
+   CDialog::OnOK();
+
+   if ( !(m_bIsStrengthNWC && m_bIsDensityNWC) )
+      AfxMessageBox(IDS_NWC_MESSAGE,MB_OK | MB_ICONINFORMATION);
 }

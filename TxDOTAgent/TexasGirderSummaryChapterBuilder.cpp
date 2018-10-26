@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -49,7 +49,7 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-static void girder_line_geometry(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType girder,IDisplayUnits* pDispUnits);
+static void girder_line_geometry(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType girder,IDisplayUnits* pDisplayUnits);
 
 /****************************************************************************
 CLASS
@@ -79,7 +79,7 @@ rptChapter* CTexasGirderSummaryChapterBuilder::Build(CReportSpecification* pRptS
    SpanIndexType span = pSGRptSpec->GetSpan();
    GirderIndexType girder = pSGRptSpec->GetGirder();
 
-   GET_IFACE2(pBroker,IDisplayUnits,pDispUnit);
+   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
@@ -100,12 +100,12 @@ rptChapter* CTexasGirderSummaryChapterBuilder::Build(CReportSpecification* pRptS
 
    // let the paragraph builder to all the work here...
    CTexasIBNSParagraphBuilder parabuilder;
-   rptParagraph* pcontent = parabuilder.Build(pBroker,span,girder,pDispUnit,level);
+   rptParagraph* pcontent = parabuilder.Build(pBroker,span,girder,pDisplayUnits,level);
 
    *pChapter << pcontent;
 
    // girder line geometry table
-   girder_line_geometry( pChapter, pBroker, span, girder, pDispUnit );
+   girder_line_geometry( pChapter, pBroker, span, girder, pDisplayUnits );
 
 
    return pChapter;
@@ -128,7 +128,7 @@ CChapterBuilder* CTexasGirderSummaryChapterBuilder::Clone() const
 //======================== INQUIRY    =======================================
 
 ////////////////////////// PRIVATE    ///////////////////////////////////////
-void girder_line_geometry(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType girder,IDisplayUnits* pDispUnits)
+void girder_line_geometry(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType girder,IDisplayUnits* pDisplayUnits)
 {
    rptParagraph* p = new rptParagraph;
    *pChapter << p;
@@ -137,10 +137,10 @@ void girder_line_geometry(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
    *p << pTable << rptNewLine;
 
    // Setup up some unit value prototypes
-   INIT_UV_PROTOTYPE( rptLengthUnitValue, length, pDispUnits->GetSpanLengthUnit(), true );
-   INIT_UV_PROTOTYPE( rptLengthUnitValue, component, pDispUnits->GetComponentDimUnit(), true );
-   INIT_UV_PROTOTYPE( rptForcePerLengthUnitValue, fpl, pDispUnits->GetForcePerLengthUnit(), true );
-   INIT_UV_PROTOTYPE( rptPressureUnitValue, olay,      pDispUnits->GetOverlayWeightUnit(), true );
+   INIT_UV_PROTOTYPE( rptLengthUnitValue, length, pDisplayUnits->GetSpanLengthUnit(), true );
+   INIT_UV_PROTOTYPE( rptLengthUnitValue, component, pDisplayUnits->GetComponentDimUnit(), true );
+   INIT_UV_PROTOTYPE( rptForcePerLengthUnitValue, fpl, pDisplayUnits->GetForcePerLengthUnit(), true );
+   INIT_UV_PROTOTYPE( rptPressureUnitValue, olay,      pDisplayUnits->GetOverlayWeightUnit(), true );
 
    // Get the interfaces we need
    GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
@@ -157,7 +157,7 @@ void girder_line_geometry(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
 
 
    GET_IFACE2(pBroker,IBridge,pBridge);
-   GET_IFACE2(pBroker,IProductForces,pProductForces);
+   GET_IFACE2(pBroker,IProductLoads,pProductLoads);
    std::string strGirderSpacingMeasureAtStartOfSpan, strGirderSpacingMeasureAtEndOfSpan;
    std::string* pStr;
    for ( int i = 0; i < 2; i++ )
@@ -361,7 +361,7 @@ void girder_line_geometry(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
    (*pTable)(row++,1) << pBridgeDesc->GetRightRailingSystem()->strExteriorRailing;
 
    (*pTable)(row,0) << "Traffic Barrier Weight (per girder)";
-   (*pTable)(row++,1) << fpl.SetValue( -pProductForces->GetTrafficBarrierLoad(span,girder) );
+   (*pTable)(row++,1) << fpl.SetValue( -pProductLoads->GetTrafficBarrierLoad(span,girder) );
 
    (*pTable)(row,0) << "Connection type at Pier " << LABEL_PIER(span);
    (*pTable)(row++,1) << pPrevPier->GetConnection(pgsTypes::Ahead);

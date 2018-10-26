@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -53,7 +53,7 @@ CLASS
                               const std::vector<pgsPointOfInterest>& rPoi,
                               Float64 endSize,
                               const pgsStirrupCheckArtifact* pstirrupArtifact,
-                              IDisplayUnits* pDispUnit,
+                              IDisplayUnits* pDisplayUnits,
                               Uint16 level);
 
    rptParagraph* create_table2(IBroker* pBroker,
@@ -62,7 +62,7 @@ CLASS
                               const std::vector<pgsPointOfInterest>& rPoi,
                               Float64 endSize,
                               const pgsStirrupCheckArtifact* pstirrupArtifact,
-                              IDisplayUnits* pDispUnit,
+                              IDisplayUnits* pDisplayUnits,
                               Uint16 level);
 
    rptParagraph* create_table3(IBroker* pBroker,
@@ -71,7 +71,7 @@ CLASS
                               const std::vector<pgsPointOfInterest>& rPoi,
                               Float64 endSize,
                               const pgsStirrupCheckArtifact* pstirrupArtifact,
-                              IDisplayUnits* pDispUnit,
+                              IDisplayUnits* pDisplayUnits,
                               Uint16 level);
 
 ////////////////////////// PUBLIC     ///////////////////////////////////////
@@ -98,7 +98,7 @@ rptChapter* CLongReinfShearCheckChapterBuilder::Build(CReportSpecification* pRpt
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
-   GET_IFACE2(pBroker,IDisplayUnits,pDispUnit);
+   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
    GET_IFACE2(pBroker,ILiveLoads,pLiveLoads);
    bool bPermit = pLiveLoads->IsLiveLoadDefined(pgsTypes::lltPermit);
    
@@ -118,10 +118,10 @@ rptChapter* CLongReinfShearCheckChapterBuilder::Build(CReportSpecification* pRpt
    pParagraph = new rptParagraph();
    *pChapter << pParagraph;
 
-   INIT_UV_PROTOTYPE( rptPointOfInterest,    location, pDispUnit->GetSpanLengthUnit(),      false );
-   INIT_UV_PROTOTYPE( rptStressUnitValue,    stress,   pDispUnit->GetStressUnit(),          false );
-   INIT_UV_PROTOTYPE( rptAreaPerLengthValue, avs,      pDispUnit->GetAvOverSUnit(),         false );
-   INIT_UV_PROTOTYPE( rptLengthUnitValue,    dim,      pDispUnit->GetComponentDimUnit(),    false );
+   INIT_UV_PROTOTYPE( rptPointOfInterest,    location, pDisplayUnits->GetSpanLengthUnit(),      false );
+   INIT_UV_PROTOTYPE( rptStressUnitValue,    stress,   pDisplayUnits->GetStressUnit(),          false );
+   INIT_UV_PROTOTYPE( rptAreaPerLengthValue, avs,      pDisplayUnits->GetAvOverSUnit(),         false );
+   INIT_UV_PROTOTYPE( rptLengthUnitValue,    dim,      pDisplayUnits->GetComponentDimUnit(),    false );
 
    GET_IFACE2(pBroker,IArtifact,pIArtifact);
    const pgsGirderArtifact* gdrArtifact = pIArtifact->GetArtifact(span,girder);
@@ -141,13 +141,13 @@ rptChapter* CLongReinfShearCheckChapterBuilder::Build(CReportSpecification* pRpt
    *pParagraph << "Strength I" << rptNewLine;
 
    // tables of details
-   rptParagraph* ppar1 = create_table1(pBroker, stage, ls, vPoi, end_size, pstirrup_artifact, pDispUnit, level);
+   rptParagraph* ppar1 = create_table1(pBroker, stage, ls, vPoi, end_size, pstirrup_artifact, pDisplayUnits, level);
    *pChapter <<ppar1;
    pParagraph = new rptParagraph(pgsReportStyleHolder::GetFootnoteStyle());
    *pChapter << pParagraph;
    *pParagraph << Super("*") << " " << "Adjusted for development length" << rptNewLine;
 
-   rptParagraph* ppar2 = create_table2(pBroker, stage, ls, vPoi, end_size, pstirrup_artifact, pDispUnit, level);
+   rptParagraph* ppar2 = create_table2(pBroker, stage, ls, vPoi, end_size, pstirrup_artifact, pDisplayUnits, level);
    *pChapter <<ppar2;
 
    if ( lrfdVersionMgr::SecondEditionWith2000Interims <= lrfdVersionMgr::GetVersion()  )
@@ -157,7 +157,7 @@ rptChapter* CLongReinfShearCheckChapterBuilder::Build(CReportSpecification* pRpt
       *pParagraph << Super("*") << " " << Sub2("V","s") << " shall not be taken greater than " << Sub2("V","u") << "/" << Sub2(symbol(phi),"v") << rptNewLine;
    }
 
-   rptParagraph* ppar3 = create_table3(pBroker, stage, ls, vPoi, end_size, pstirrup_artifact, pDispUnit, level);
+   rptParagraph* ppar3 = create_table3(pBroker, stage, ls, vPoi, end_size, pstirrup_artifact, pDisplayUnits, level);
    *pChapter <<ppar3;
 
    if ( bPermit )
@@ -169,13 +169,13 @@ rptChapter* CLongReinfShearCheckChapterBuilder::Build(CReportSpecification* pRpt
       *pParagraph << "Strength II" << rptNewLine;
 
       // tables of details
-      ppar1 = create_table1(pBroker, stage, ls, vPoi, end_size, pstirrup_artifact, pDispUnit, level);
+      ppar1 = create_table1(pBroker, stage, ls, vPoi, end_size, pstirrup_artifact, pDisplayUnits, level);
       *pChapter <<ppar1;
       pParagraph = new rptParagraph(pgsReportStyleHolder::GetFootnoteStyle());
       *pChapter << pParagraph;
       *pParagraph << Super("*") << " " << "Adjusted for development length" << rptNewLine;
 
-      ppar2 = create_table2(pBroker, stage, ls, vPoi, end_size, pstirrup_artifact, pDispUnit, level);
+      ppar2 = create_table2(pBroker, stage, ls, vPoi, end_size, pstirrup_artifact, pDisplayUnits, level);
       *pChapter <<ppar2;
 
       if ( lrfdVersionMgr::SecondEditionWith2000Interims <= lrfdVersionMgr::GetVersion()  )
@@ -185,7 +185,7 @@ rptChapter* CLongReinfShearCheckChapterBuilder::Build(CReportSpecification* pRpt
          *pParagraph << Super("*") << " " << Sub2("V","s") << " shall not be taken greater than " << Sub2("V","u") << "/" << Sub2(symbol(phi),"v") << rptNewLine;
       }
 
-      ppar3 = create_table3(pBroker, stage, ls, vPoi, end_size, pstirrup_artifact, pDispUnit, level);
+      ppar3 = create_table3(pBroker, stage, ls, vPoi, end_size, pstirrup_artifact, pDisplayUnits, level);
       *pChapter <<ppar3;
    }
 
@@ -223,32 +223,32 @@ rptParagraph* create_table1(IBroker* pBroker,
                            const std::vector<pgsPointOfInterest>& rPoi,
                            Float64 endSize,
                            const pgsStirrupCheckArtifact* pstirrupArtifact,
-                           IDisplayUnits* pDispUnit,
+                           IDisplayUnits* pDisplayUnits,
                            Uint16 level)
 {
    rptParagraph* pParagraph = new rptParagraph();
 
-   INIT_UV_PROTOTYPE( rptPointOfInterest,    location, pDispUnit->GetSpanLengthUnit(),   false );
-   INIT_UV_PROTOTYPE( rptStressUnitValue,    stress,   pDispUnit->GetStressUnit(),          false );
-   INIT_UV_PROTOTYPE( rptAreaUnitValue,      area,      pDispUnit->GetAreaUnit(),  false );
-   INIT_UV_PROTOTYPE( rptLengthUnitValue,    dim,     pDispUnit->GetComponentDimUnit(),  false );
-   INIT_UV_PROTOTYPE( rptForceSectionValue, shear,  pDispUnit->GetShearUnit(), false );
-   INIT_UV_PROTOTYPE( rptMomentSectionValue, moment,  pDispUnit->GetMomentUnit(), false );
+   INIT_UV_PROTOTYPE( rptPointOfInterest,    location, pDisplayUnits->GetSpanLengthUnit(),   false );
+   INIT_UV_PROTOTYPE( rptStressUnitValue,    stress,   pDisplayUnits->GetStressUnit(),          false );
+   INIT_UV_PROTOTYPE( rptAreaUnitValue,      area,      pDisplayUnits->GetAreaUnit(),  false );
+   INIT_UV_PROTOTYPE( rptLengthUnitValue,    dim,     pDisplayUnits->GetComponentDimUnit(),  false );
+   INIT_UV_PROTOTYPE( rptForceSectionValue, shear,  pDisplayUnits->GetShearUnit(), false );
+   INIT_UV_PROTOTYPE( rptMomentSectionValue, moment,  pDisplayUnits->GetMomentUnit(), false );
 
    rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(8,"Longitudinal Reinforcement Shear Check Details - Table 1 of 3");
    *pParagraph << table;
 
    if ( stage == pgsTypes::CastingYard )
-      (*table)(0,0)  << COLHDR(RPT_GDR_END_LOCATION, rptLengthUnitTag, pDispUnit->GetSpanLengthUnit());
+      (*table)(0,0)  << COLHDR(RPT_GDR_END_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
    else
-      (*table)(0,0)  << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDispUnit->GetSpanLengthUnit());
+      (*table)(0,0)  << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
 
-   (*table)(0,1)  << COLHDR(Sub2("A","s") << Super("*"),rptAreaUnitTag, pDispUnit->GetAreaUnit() );
-   (*table)(0,2)  << COLHDR("f"<<Sub("y"),rptStressUnitTag, pDispUnit->GetStressUnit() );
-   (*table)(0,3)  << COLHDR(Sub2("A","ps") << Super("*"),rptAreaUnitTag, pDispUnit->GetAreaUnit() );
-   (*table)(0,4)  << COLHDR("f"<<Sub("ps"),rptStressUnitTag, pDispUnit->GetStressUnit() );
-   (*table)(0,5)  << COLHDR("M"<<Sub("u"),rptMomentUnitTag, pDispUnit->GetMomentUnit() );
-   (*table)(0,6)  << COLHDR("d"<<Sub("v"),rptLengthUnitTag, pDispUnit->GetComponentDimUnit() );
+   (*table)(0,1)  << COLHDR(Sub2("A","s"),rptAreaUnitTag, pDisplayUnits->GetAreaUnit() );
+   (*table)(0,2)  << COLHDR("f"<<Sub("y") << Super("*"),rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*table)(0,3)  << COLHDR(Sub2("A","ps"),rptAreaUnitTag, pDisplayUnits->GetAreaUnit() );
+   (*table)(0,4)  << COLHDR("f"<<Sub("ps") << Super("*"),rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*table)(0,5)  << COLHDR("M"<<Sub("u"),rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
+   (*table)(0,6)  << COLHDR("d"<<Sub("v"),rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
    (*table)(0,7)  << "Flexure" << rptNewLine << Sub2(symbol(phi),"f");
 
    RowIndexType row = table->GetNumberOfHeaderRows();
@@ -288,18 +288,18 @@ rptParagraph* create_table2(IBroker* pBroker,
                            const std::vector<pgsPointOfInterest>& rPoi,
                            Float64 endSize,
                            const pgsStirrupCheckArtifact* pstirrupArtifact,
-                           IDisplayUnits* pDispUnit,
+                           IDisplayUnits* pDisplayUnits,
                            Uint16 level)
 {
    rptParagraph* pParagraph = new rptParagraph();
 
-   INIT_UV_PROTOTYPE( rptPointOfInterest,    location, pDispUnit->GetSpanLengthUnit(),   false );
-   INIT_UV_PROTOTYPE( rptStressUnitValue,    stress,   pDispUnit->GetStressUnit(),          false );
-   INIT_UV_PROTOTYPE( rptAreaUnitValue,      area,      pDispUnit->GetAreaUnit(),  false );
-   INIT_UV_PROTOTYPE( rptLengthUnitValue,    dim,     pDispUnit->GetComponentDimUnit(),  false );
-   INIT_UV_PROTOTYPE( rptForceSectionValue,  shear,  pDispUnit->GetShearUnit(), false );
-   INIT_UV_PROTOTYPE( rptMomentSectionValue, moment,  pDispUnit->GetMomentUnit(), false );
-   INIT_UV_PROTOTYPE( rptAngleUnitValue,     angle, pDispUnit->GetAngleUnit(), false );
+   INIT_UV_PROTOTYPE( rptPointOfInterest,    location, pDisplayUnits->GetSpanLengthUnit(),   false );
+   INIT_UV_PROTOTYPE( rptStressUnitValue,    stress,   pDisplayUnits->GetStressUnit(),          false );
+   INIT_UV_PROTOTYPE( rptAreaUnitValue,      area,      pDisplayUnits->GetAreaUnit(),  false );
+   INIT_UV_PROTOTYPE( rptLengthUnitValue,    dim,     pDisplayUnits->GetComponentDimUnit(),  false );
+   INIT_UV_PROTOTYPE( rptForceSectionValue,  shear,  pDisplayUnits->GetShearUnit(), false );
+   INIT_UV_PROTOTYPE( rptMomentSectionValue, moment,  pDisplayUnits->GetMomentUnit(), false );
+   INIT_UV_PROTOTYPE( rptAngleUnitValue,     angle, pDisplayUnits->GetAngleUnit(), false );
    rptRcScalar scalar;
    scalar.SetFormat( sysNumericFormatTool::Automatic );
    scalar.SetWidth(6);
@@ -314,22 +314,22 @@ rptParagraph* create_table2(IBroker* pBroker,
    *pParagraph << table;
 
    if ( stage == pgsTypes::CastingYard )
-      (*table)(0,0)  << COLHDR(RPT_GDR_END_LOCATION, rptLengthUnitTag, pDispUnit->GetSpanLengthUnit());
+      (*table)(0,0)  << COLHDR(RPT_GDR_END_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
    else
-      (*table)(0,0)  << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDispUnit->GetSpanLengthUnit());
+      (*table)(0,0)  << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
 
-   (*table)(0,1)  << COLHDR("N"<<Sub("u"),rptForceUnitTag, pDispUnit->GetShearUnit() );
+   (*table)(0,1)  << COLHDR("N"<<Sub("u"),rptForceUnitTag, pDisplayUnits->GetShearUnit() );
    (*table)(0,2)  << "Axial" << rptNewLine << Sub2(symbol(phi),"a");
-   (*table)(0,3)  << COLHDR("V"<<Sub("u"),rptForceUnitTag, pDispUnit->GetShearUnit() );
+   (*table)(0,3)  << COLHDR("V"<<Sub("u"),rptForceUnitTag, pDisplayUnits->GetShearUnit() );
    (*table)(0,4)  << "Shear" << rptNewLine << Sub2(symbol(phi),"v");
    
    if ( pSpecEntry->GetSpecificationType() < lrfdVersionMgr::SecondEditionWith2000Interims )
-      (*table)(0,5)  << COLHDR("V"<<Sub("s"),rptForceUnitTag, pDispUnit->GetShearUnit() );
+      (*table)(0,5)  << COLHDR("V"<<Sub("s"),rptForceUnitTag, pDisplayUnits->GetShearUnit() );
    else
-      (*table)(0,5)  << COLHDR("V"<<Sub("s") << Super("*"),rptForceUnitTag, pDispUnit->GetShearUnit() );
+      (*table)(0,5)  << COLHDR("V"<<Sub("s") << Super("*"),rptForceUnitTag, pDisplayUnits->GetShearUnit() );
 
-   (*table)(0,6)  << COLHDR("V"<<Sub("p"),rptForceUnitTag, pDispUnit->GetShearUnit() );
-   (*table)(0,7)  << COLHDR(symbol(theta),rptAngleUnitTag, pDispUnit->GetAngleUnit() );
+   (*table)(0,6)  << COLHDR("V"<<Sub("p"),rptForceUnitTag, pDisplayUnits->GetShearUnit() );
+   (*table)(0,7)  << COLHDR(symbol(theta),rptAngleUnitTag, pDisplayUnits->GetAngleUnit() );
 
    RowIndexType row = table->GetNumberOfHeaderRows();
 
@@ -369,18 +369,18 @@ rptParagraph* create_table3(IBroker* pBroker,
                            const std::vector<pgsPointOfInterest>& rPoi,
                            Float64 endSize,
                            const pgsStirrupCheckArtifact* pstirrupArtifact,
-                           IDisplayUnits* pDispUnit,
+                           IDisplayUnits* pDisplayUnits,
                            Uint16 level)
 {
    rptParagraph* pParagraph = new rptParagraph();
 
-   INIT_UV_PROTOTYPE( rptPointOfInterest,    location, pDispUnit->GetSpanLengthUnit(),   false );
-   INIT_UV_PROTOTYPE( rptStressUnitValue,    stress,   pDispUnit->GetStressUnit(),          false );
-   INIT_UV_PROTOTYPE( rptAreaUnitValue,      area,      pDispUnit->GetAreaUnit(),  false );
-   INIT_UV_PROTOTYPE( rptLengthUnitValue,    dim,     pDispUnit->GetComponentDimUnit(),  false );
-   INIT_UV_PROTOTYPE( rptForceSectionValue,  shear,  pDispUnit->GetShearUnit(), false );
-   INIT_UV_PROTOTYPE( rptMomentSectionValue, moment,  pDispUnit->GetMomentUnit(), false );
-   INIT_UV_PROTOTYPE( rptAngleUnitValue,     angle, pDispUnit->GetAngleUnit(), false );
+   INIT_UV_PROTOTYPE( rptPointOfInterest,    location, pDisplayUnits->GetSpanLengthUnit(),   false );
+   INIT_UV_PROTOTYPE( rptStressUnitValue,    stress,   pDisplayUnits->GetStressUnit(),          false );
+   INIT_UV_PROTOTYPE( rptAreaUnitValue,      area,      pDisplayUnits->GetAreaUnit(),  false );
+   INIT_UV_PROTOTYPE( rptLengthUnitValue,    dim,     pDisplayUnits->GetComponentDimUnit(),  false );
+   INIT_UV_PROTOTYPE( rptForceSectionValue,  shear,  pDisplayUnits->GetShearUnit(), false );
+   INIT_UV_PROTOTYPE( rptMomentSectionValue, moment,  pDisplayUnits->GetMomentUnit(), false );
+   INIT_UV_PROTOTYPE( rptAngleUnitValue,     angle, pDisplayUnits->GetAngleUnit(), false );
    rptRcScalar scalar;
    scalar.SetFormat( sysNumericFormatTool::Automatic );
    scalar.SetWidth(6); 
@@ -395,12 +395,12 @@ rptParagraph* create_table3(IBroker* pBroker,
    *pParagraph << table;
 
    if ( stage == pgsTypes::CastingYard )
-      (*table)(0,0)  << COLHDR(RPT_GDR_END_LOCATION, rptLengthUnitTag, pDispUnit->GetSpanLengthUnit());
+      (*table)(0,0)  << COLHDR(RPT_GDR_END_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
    else
-      (*table)(0,0)  << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDispUnit->GetSpanLengthUnit());
+      (*table)(0,0)  << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
 
-   (*table)(0,1)  << COLHDR("Demand",rptForceUnitTag, pDispUnit->GetShearUnit() );
-   (*table)(0,2)  << COLHDR("Capacity",rptForceUnitTag, pDispUnit->GetShearUnit() );
+   (*table)(0,1)  << COLHDR("Demand",rptForceUnitTag, pDisplayUnits->GetShearUnit() );
+   (*table)(0,2)  << COLHDR("Capacity",rptForceUnitTag, pDisplayUnits->GetShearUnit() );
    (*table)(0,3)  << "Equation";
 
    RowIndexType row = table->GetNumberOfHeaderRows();
