@@ -1,6 +1,6 @@
  RoadW Ng  Spcng  Span   GdrType   N   Ns   Size  Str EccCL EccEn Ndb Elev  Nsr Ndb  1  2  3  4  5  6  7  8  9 10  Fci    Fc       fcomp   ftens    ultMo LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---------  -   ---  ----  --- ----- ----- --- ----- --- --- -- -- -- -- -- -- -- -- -- -- ------ ------   ------  -------   ----- -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 44.00   7  6.67  1     1   5SB12       46   1/2  270  2.72  2.60   6  2.50  28   6  4  2  0  0  0  0  0  0  0  0  5.600  6.100    2.938   -3.950    1293 0.558  0.657  0.19 -0.10 -0.00 -0.00 -0.11 117.63 346.02   1.00   1.00   1.00
+ 44.00   7  6.67  1     1   5SB12       46   1/2  270  2.72  2.60   6  2.50  28   6  4  2  0  0  0  0  0  0  0  0  5.600  6.100    2.938   -3.950    1293 0.558  0.657  0.19 -0.10  0.00 -0.00 -0.10 117.63 348.50   1.00   1.00   1.00
 
 
 The Specification Check was Successful
@@ -8,7 +8,7 @@ The Specification Check was Successful
 
  RoadW Ng  Spcng  Span   GdrType   N   Ns   Size  Str EccCL EccEn Ndb Elev  Nsr Ndb  1  2  3  4  5  6  7  8  9 10  Fci    Fc       fcomp   ftens    ultMo LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---------  -   ---  ----  --- ----- ----- --- ----- --- --- -- -- -- -- -- -- -- -- -- -- ------ ------   ------  -------   ----- -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 44.00   7  6.67  1     2   5SB12       46   1/2  270  2.72  2.60   6  2.50  28   6  2  2  2  0  0  0  0  0  0  0  5.600  6.100    2.980   -3.989    1286 0.537  0.657  0.19 -0.10 -0.00 -0.00 -0.11 118.31 345.22   1.00   1.00   1.00
+ 44.00   7  6.67  1     2   5SB12       46   1/2  270  2.72  2.60   6  2.50  28   6  2  2  2  0  0  0  0  0  0  0  5.600  6.100    2.980   -3.989    1286 0.537  0.657  0.19 -0.10  0.00 -0.00 -0.11 118.31 348.55   1.00   1.00   1.00
 
 
 The Specification Check was Not Successful
@@ -17,7 +17,7 @@ Debond arrangement checks failed.
 
  RoadW Ng  Spcng  Span   GdrType   N   Ns   Size  Str EccCL EccEn Ndb Elev  Nsr Ndb  1  2  3  4  5  6  7  8  9 10  Fci    Fc       fcomp   ftens    ultMo LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---------  -   ---  ----  --- ----- ----- --- ----- --- --- -- -- -- -- -- -- -- -- -- -- ------ ------   ------  -------   ----- -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 44.00   7  6.67  1     4   5SB12       44   1/2  270  2.77  2.66   6  2.50  28   6  2  4  0  0  0  0  0  0  0  0  5.300  5.900    2.970   -3.904    1248 0.537  0.657  0.19 -0.10 -0.00  0.00 -0.11 111.62 323.71   1.00   1.00   1.00
+ 44.00   7  6.67  1     4   5SB12       44   1/2  270  2.77  2.66   6  2.50  28   6  2  4  0  0  0  0  0  0  0  0  5.300  5.900    2.970   -3.904    1248 0.537  0.657  0.19 -0.10  0.00  0.00 -0.10 111.62 326.92   1.00   1.00   1.00
 
 
 The Specification Check was Successful

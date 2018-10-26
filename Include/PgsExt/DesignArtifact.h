@@ -300,7 +300,10 @@ public:
 
    pgsTypes::TTSUsage GetTemporaryStrandUsage() const;
 
+   // Functions to create primary PGSuper girder data structures
    GDRCONFIG GetGirderConfiguration() const;
+
+   CGirderData GetGirderData() const;
 
    // design states for concrete strengths
    const ConcreteStrengthDesignState& GetReleaseDesignState() const;
@@ -398,6 +401,10 @@ private:
    // GROUP: OPERATORS
    // GROUP: OPERATIONS
    void Init(bool fromBirth);
+
+   void ModGirderDataForFlexureDesign(IBroker* pBroker, CGirderData& rdata) const;
+   void ModGirderDataForShearDesign(IBroker* pBroker, CGirderData& rdata) const;
+
    // GROUP: ACCESS
    // GROUP: INQUIRY
 };

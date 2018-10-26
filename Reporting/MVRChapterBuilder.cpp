@@ -360,8 +360,8 @@ rptChapter* CMVRChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 leve
 
       p = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
       *pChapter << p;
-      *p << _T("Responses - Superimposed Dead Loads (Bridge Site 2)") << rptNewLine;
-      p->SetName(_T("Combined Results - Superimposed Dead Loads (Bridge Site 2)"));
+      *p << _T("Responses - Final without Live Load (Bridge Site 2)") << rptNewLine;
+      p->SetName(_T("Combined Results - Final without Live Load (Bridge Site 2)"));
       CCombinedMomentsTable().Build(pBroker,pChapter,span,girder,pDisplayUnits,pgsTypes::BridgeSite2, analysisType,bDesign,bRating);
       CCombinedShearTable().Build(pBroker,pChapter,span,girder,pDisplayUnits,pgsTypes::BridgeSite2, analysisType, bDesign, bRating);
       CCombinedReactionTable().Build(pBroker,pChapter,span,girder,pDisplayUnits,pgsTypes::BridgeSite2, analysisType,PierReactionsTable, bDesign, bRating);

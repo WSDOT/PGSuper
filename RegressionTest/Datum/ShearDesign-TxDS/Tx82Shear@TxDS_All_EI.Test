@@ -1,24 +1,30 @@
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 44.00   6  8.00  1     1     Tx82       82   1/2  270 28.32 11.25  28 78.5  4.700  6.100    4.091   -4.142  15277  0.636  0.814  0.36 -0.19 -0.02 -0.02 -0.22 252.07 663.35   1.00   1.00   1.00
+ 44.00   6  8.00  1     1     Tx82       76   1/2  270 29.68 14.04  22 76.5  4.700  5.900    4.091   -4.142  15277  0.636  0.814  0.36 -0.19  0.00 -0.02 -0.21 220.40 588.62   1.00   1.00   1.00
 
 
-The Specification Check was Successful
-
-
- RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 44.00   6  8.00  1     2     Tx82       92   1/2  270 25.59  9.07  38 78.5  5.000  6.900    4.229   -4.339  15973  0.636  0.814  0.34 -0.22 -0.02 -0.02 -0.26 295.10 781.86   1.00   1.00   1.00
-
-
-The Specification Check was Successful
+The Specification Check was Not Successful
+Compressive stress check failed for Service I for the Superimposed Dead Load Stage (Bridge Site 2).
+Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
 
 
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 44.00   6  8.00  1     4     Tx82       92   1/2  270 25.59  9.07  38 78.5  5.000  6.900    4.229   -4.339  15973  0.636  0.814  0.34 -0.22 -0.02 -0.02 -0.26 295.10 781.86   1.00   1.00   1.00
+ 44.00   6  8.00  1     2     Tx82       80   1/2  270 28.80 11.90  26 78.5  4.700  6.400    4.229   -4.339  15973  0.636  0.814  0.36 -0.22  0.00 -0.02 -0.23 241.62 635.99   1.00   1.00   1.00
 
 
-The Specification Check was Successful
+The Specification Check was Not Successful
+Compressive stress check failed for Service I for the Superimposed Dead Load Stage (Bridge Site 2).
+Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
+
+
+ RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 44.00   6  8.00  1     4     Tx82       80   1/2  270 28.80 11.90  26 78.5  4.700  6.400    4.229   -4.339  15973  0.636  0.814  0.36 -0.22  0.00 -0.02 -0.23 241.62 635.99   1.00   1.00   1.00
+
+
+The Specification Check was Not Successful
+Compressive stress check failed for Service I for the Superimposed Dead Load Stage (Bridge Site 2).
+Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
 
 

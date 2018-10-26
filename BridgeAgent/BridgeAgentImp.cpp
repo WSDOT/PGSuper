@@ -8284,107 +8284,157 @@ REBARDEVLENGTHDETAILS CBridgeAgentImp::GetRebarDevelopmentLengthDetails(const CC
 
    details.fc = fc;
 
+   details.lambdaRl = 1.0; // intialize lambdas even though only used for 2015+
+   details.lambdaLw = 1.0;
+
    // LRFD 5.11.2.1
-   if ( lrfdVersionMgr::GetUnits() == lrfdVersionMgr::US )
+   if ( lrfdVersionMgr::SeventhEditionWith2015Interims <= lrfdVersionMgr::GetVersion())
    {
       Float64 Ab = ::ConvertFromSysUnits(details.Ab,unitMeasure::Inch2);
       Float64 db = ::ConvertFromSysUnits(details.db,unitMeasure::Inch);
       Float64 fc = ::ConvertFromSysUnits(details.fc,unitMeasure::KSI);
       Float64 fy = ::ConvertFromSysUnits(details.fy,unitMeasure::KSI);
    
-      if (name==_T("#14"))
-      {
-         details.ldb1 = 2.70*fy/sqrt(fc);
-         details.ldb1 = ::ConvertToSysUnits(details.ldb1,unitMeasure::Inch);
-      
-         details.ldb2 = 0.0;
-      }
-      else if (name==_T("#18"))
-      {
-         details.ldb1 = 3.5*fy/sqrt(fc);
-         details.ldb1 = ::ConvertToSysUnits(details.ldb1,unitMeasure::Inch);
-      
-         details.ldb2 = 0.0;
-      }
-      else
-      {
-         details.ldb1 = 1.25*Ab*fy/sqrt(fc);
-         details.ldb1 = ::ConvertToSysUnits(details.ldb1,unitMeasure::Inch);
-
-         details.ldb2 = 0.4*db*fy;
-         details.ldb2 = ::ConvertToSysUnits(details.ldb2,unitMeasure::Inch);
-      }
+      details.ldb1 = 2.4*db*fy/sqrt(fc);
+      details.ldb1 = ::ConvertToSysUnits(details.ldb1,unitMeasure::Inch);
+      details.ldb2 = 0.0;
 
       Float64 ldb_min = ::ConvertToSysUnits(12.0,unitMeasure::Inch);
 
       details.ldb = Max3(details.ldb1,details.ldb2,ldb_min);
-   }
-   else
-   {
-      Float64 Ab = ::ConvertFromSysUnits(details.Ab,unitMeasure::Millimeter2);
-      Float64 db = ::ConvertFromSysUnits(details.db,unitMeasure::Millimeter);
-      Float64 fc = ::ConvertFromSysUnits(details.fc,unitMeasure::MPa);
-      Float64 fy = ::ConvertFromSysUnits(details.fy,unitMeasure::MPa);
-   
-      if (name==_T("#14"))
+
+      // reinforcment location factor: only increase for concrete strength
+      // we could get more fancy here and actually use location information in the future
+      if (fc > 10.0)
       {
-         details.ldb1 = 25*fy/sqrt(fc);
-         details.ldb1 = ::ConvertToSysUnits(details.ldb1,unitMeasure::Millimeter);
-      
-         details.ldb2 = 0.0;
-      }
-      else if (name==_T("#18"))
-      {
-         details.ldb1 = 34*fy/sqrt(fc);
-         details.ldb1 = ::ConvertToSysUnits(details.ldb1,unitMeasure::Millimeter);
-      
-         details.ldb2 = 0.0;
+         details.lambdaRl = 1.3;
       }
       else
       {
-         details.ldb1 = 0.02*Ab*fy/sqrt(fc);
-         details.ldb1 = ::ConvertToSysUnits(details.ldb1,unitMeasure::Millimeter);
-      
-         details.ldb2 = 0.06*db*fy;
-         details.ldb2 = ::ConvertToSysUnits(details.ldb2,unitMeasure::Millimeter);
+         details.lambdaRl = 1.0;
       }
 
-      Float64 ldb_min = ::ConvertToSysUnits(12.0,unitMeasure::Millimeter);
-
-      details.ldb = Max3(details.ldb1,details.ldb2,ldb_min);
-   }
-
-   // Compute and apply factor for LWC
-   if (type==pgsTypes::Normal)
-   {
-      details.factor = 1.0;
-   }
-   else
-   {
-      if (isFct)
+      // lightweight concrete factor
+      if (type==pgsTypes::Normal)
       {
-         // compute factor
-         Float64 fck  = ::ConvertFromSysUnits(fc,unitMeasure::KSI);
-         Float64 fctk = ::ConvertFromSysUnits(Fct,unitMeasure::KSI);
-
-         details.factor = 0.22 * sqrt(fck) / fctk;
-         details.factor = min(details.factor, 1.0);
+         details.lambdaLw = 1.0;
+      }
+      else if (type==pgsTypes::AllLightweight || type==pgsTypes::SandLightweight)
+      {
+         details.lambdaLw = 1.3;
       }
       else
       {
-         // fct not specified
-         if (type==pgsTypes::AllLightweight)
+         ATLASSERT(0); // new type?
+         details.lambdaLw = 1.0;
+      }
+
+      details.factor = details.lambdaRl * details.lambdaLw;
+
+   }
+   else
+   {
+      if ( lrfdVersionMgr::GetUnits() == lrfdVersionMgr::US )
+      {
+         Float64 Ab = ::ConvertFromSysUnits(details.Ab,unitMeasure::Inch2);
+         Float64 db = ::ConvertFromSysUnits(details.db,unitMeasure::Inch);
+         Float64 fc = ::ConvertFromSysUnits(details.fc,unitMeasure::KSI);
+         Float64 fy = ::ConvertFromSysUnits(details.fy,unitMeasure::KSI);
+      
+         if (name==_T("#14"))
          {
-            details.factor = 1.3;
+            details.ldb1 = 2.70*fy/sqrt(fc);
+            details.ldb1 = ::ConvertToSysUnits(details.ldb1,unitMeasure::Inch);
+         
+            details.ldb2 = 0.0;
          }
-         else if (type==pgsTypes::SandLightweight)
+         else if (name==_T("#18"))
          {
-            details.factor = 1.2;
+            details.ldb1 = 3.5*fy/sqrt(fc);
+            details.ldb1 = ::ConvertToSysUnits(details.ldb1,unitMeasure::Inch);
+         
+            details.ldb2 = 0.0;
          }
          else
          {
-            ATLASSERT(0); // new type?
-            details.factor = 1.0;
+            details.ldb1 = 1.25*Ab*fy/sqrt(fc);
+            details.ldb1 = ::ConvertToSysUnits(details.ldb1,unitMeasure::Inch);
+
+            details.ldb2 = 0.4*db*fy;
+            details.ldb2 = ::ConvertToSysUnits(details.ldb2,unitMeasure::Inch);
+         }
+
+         Float64 ldb_min = ::ConvertToSysUnits(12.0,unitMeasure::Inch);
+
+         details.ldb = Max3(details.ldb1,details.ldb2,ldb_min);
+      }
+      else
+      {
+         Float64 Ab = ::ConvertFromSysUnits(details.Ab,unitMeasure::Millimeter2);
+         Float64 db = ::ConvertFromSysUnits(details.db,unitMeasure::Millimeter);
+         Float64 fc = ::ConvertFromSysUnits(details.fc,unitMeasure::MPa);
+         Float64 fy = ::ConvertFromSysUnits(details.fy,unitMeasure::MPa);
+      
+         if (name==_T("#14"))
+         {
+            details.ldb1 = 25*fy/sqrt(fc);
+            details.ldb1 = ::ConvertToSysUnits(details.ldb1,unitMeasure::Millimeter);
+         
+            details.ldb2 = 0.0;
+         }
+         else if (name==_T("#18"))
+         {
+            details.ldb1 = 34*fy/sqrt(fc);
+            details.ldb1 = ::ConvertToSysUnits(details.ldb1,unitMeasure::Millimeter);
+         
+            details.ldb2 = 0.0;
+         }
+         else
+         {
+            details.ldb1 = 0.02*Ab*fy/sqrt(fc);
+            details.ldb1 = ::ConvertToSysUnits(details.ldb1,unitMeasure::Millimeter);
+         
+            details.ldb2 = 0.06*db*fy;
+            details.ldb2 = ::ConvertToSysUnits(details.ldb2,unitMeasure::Millimeter);
+         }
+
+         Float64 ldb_min = ::ConvertToSysUnits(12.0,unitMeasure::Millimeter);
+
+         details.ldb = Max3(details.ldb1,details.ldb2,ldb_min);
+      }
+
+      // Compute and apply factor for LWC
+      if (type==pgsTypes::Normal)
+      {
+         details.factor = 1.0;
+      }
+      else
+      {
+         if (isFct)
+         {
+            // compute factor
+            Float64 fck  = ::ConvertFromSysUnits(fc,unitMeasure::KSI);
+            Float64 fctk = ::ConvertFromSysUnits(Fct,unitMeasure::KSI);
+
+            details.factor = 0.22 * sqrt(fck) / fctk;
+            details.factor = min(details.factor, 1.0);
+         }
+         else
+         {
+            // fct not specified
+            if (type==pgsTypes::AllLightweight)
+            {
+               details.factor = 1.3;
+            }
+            else if (type==pgsTypes::SandLightweight)
+            {
+               details.factor = 1.2;
+            }
+            else
+            {
+               ATLASSERT(0); // new type?
+               details.factor = 1.0;
+            }
          }
       }
    }

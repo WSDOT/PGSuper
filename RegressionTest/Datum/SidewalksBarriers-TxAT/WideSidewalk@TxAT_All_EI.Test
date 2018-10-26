@@ -1,6 +1,6 @@
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 57.04  10  6.00  1     1    WF74G        0  0.60  270  0.00  0.00   0  0.0  5.000  6.000    6.464   -6.692  17669  0.522  0.671 -1.21 -0.35 -0.01 -0.20 -0.56   0.00   0.00   1.75   5.00   5.00
+ 57.04  10  6.00  1     1    WF74G        0  0.60  270  0.00  0.00   0  0.0  5.000  6.000    5.875   -6.521  17669  0.522  0.671 -1.21 -0.35  0.00 -0.20 -0.55   0.00   0.00   1.75   5.00   5.00
 
 
 The Specification Check was Not Successful
@@ -21,7 +21,7 @@ Hauling checks failed
 
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 57.04  10  6.00  1     2    WF74G        0  0.60  270  0.00  0.00   0  0.0  5.000  6.000    6.572   -6.833  18003  0.522  0.671 -1.21 -0.38 -0.01 -0.20 -0.59   0.00   0.00   1.75   5.00   5.00
+ 57.04  10  6.00  1     2    WF74G        0  0.60  270  0.00  0.00   0  0.0  5.000  6.000    5.960   -6.656  18003  0.522  0.671 -1.21 -0.38  0.00 -0.20 -0.58   0.00   0.00   1.75   5.00   5.00
 
 
 The Specification Check was Not Successful
@@ -42,7 +42,7 @@ Hauling checks failed
 
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 57.04  10  6.00  1     6    WF74G        0  0.60  270  0.00  0.00   0  0.0  5.000  6.000    6.185   -6.114  16108  0.522  0.671 -1.21 -0.38 -0.01 -0.08 -0.48   0.00   0.00   1.75   5.00   5.00
+ 57.04  10  6.00  1     6    WF74G        0  0.60  270  0.00  0.00   0  0.0  5.000  6.000    5.574   -5.936  16108  0.522  0.671 -1.21 -0.38  0.00 -0.08 -0.47   0.00   0.00   1.75   5.00   5.00
 
 
 The Specification Check was Not Successful

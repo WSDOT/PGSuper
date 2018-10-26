@@ -136,7 +136,7 @@ void CFlexuralStressCheckTable::BuildNotes(rptChapter* pChapter, const pgsGirder
       break;
 
    case pgsTypes::BridgeSite2:
-      strStage = _T("Superimposed Dead Loads (Bridge Site 2)");
+      strStage = _T("Final without Live Load (Bridge Site 2)");
       aux_msg1 = _T("For stresses at service limit state after losses ");
       break;
 

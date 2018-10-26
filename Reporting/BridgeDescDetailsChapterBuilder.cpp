@@ -554,6 +554,7 @@ void write_concrete_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rpt
    GET_IFACE2(pBroker,ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
    bool b2005Edition = ( pSpecEntry->GetSpecificationType() >= lrfdVersionMgr::ThirdEditionWith2005Interims ? true : false );
+   bool b2015Edition = ( pSpecEntry->GetSpecificationType() >= lrfdVersionMgr::SeventhEditionWith2015Interims ? true : false );
 
    bool bSIUnits = IS_SI_UNITS(pDisplayUnits);
 
@@ -599,7 +600,12 @@ void write_concrete_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rpt
    }
    else
    {
-      if ( b2005Edition )
+      if ( b2015Edition )
+      {
+         ATLASSERT(!bSIUnits);
+         (*pTable)(row,0) << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("ModE_US_2015.png")) << rptNewLine;
+      }
+      else if ( b2005Edition )
       {
          (*pTable)(row,0) << rptRcImage(pgsReportStyleHolder::GetImagePath() + (bSIUnits ? _T("ModE_SI_2005.png") : _T("ModE_US_2005.png"))) << rptNewLine;
       }
@@ -674,7 +680,12 @@ void write_concrete_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rpt
       }
       else
       {
-         if ( b2005Edition )
+         if ( b2015Edition )
+         {
+            ATLASSERT(!bSIUnits);
+            (*pTable)(row,0) << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("ModE_US_2015.png")) << rptNewLine;
+         }
+         else if ( b2005Edition )
          {
             (*pTable)(row,0) << rptRcImage(pgsReportStyleHolder::GetImagePath() + (bSIUnits ? _T("ModE_SI_2005.png") : _T("ModE_US_2005.png"))) << rptNewLine;
          }

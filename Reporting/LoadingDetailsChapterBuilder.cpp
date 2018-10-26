@@ -1194,7 +1194,7 @@ rptChapter* CLoadingDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,
       (*p_table)(row,1) << strDC;
       row++;
 
-      (*p_table)(row,0) << _T("Superimposed Dead Loads (Bridge Site 2)");
+      (*p_table)(row,0) << _T("Final without Live Load (Bridge Site 2)");
       (*p_table)(row,1) << strDC<<_T(" + Traffic Barrier")<<rptNewLine
                       << _T("DW = Overlay");
       row++;

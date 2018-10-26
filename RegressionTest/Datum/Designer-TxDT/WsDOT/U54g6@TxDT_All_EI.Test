@@ -1,23 +1,20 @@
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 46.25   4 12.00  1     1    U54G6  *    74  0.60  270 15.16  4.81  18 50.0  5.600  9.300    7.619   -4.253  13838  0.740  1.064  0.36 -0.21 -0.01 -0.01 -0.23 309.46 556.07   1.75   5.00   5.00
+ 46.25   4 12.00  1     1    U54G6  *    70  0.60  270 15.19  5.14  16 50.0  5.400  9.200    6.625   -4.012  13029  0.740  1.064  0.33 -0.21  0.00 -0.01 -0.22 279.11 521.75   1.75   5.00   5.00
 
 
 The Specification Check was Not Successful
+Compressive stress check failed for Service I for the Superimposed Dead Load Stage (Bridge Site 2).
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
-Slab Offset ("A" Dimension) check failed
-Hauling checks failed
 
 
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 46.25   4 12.00  1     2    U54G6  *    74  0.60  270 15.16  4.81  18 50.0  5.600  9.100    7.618   -4.258  13815  0.740  1.064  0.36 -0.21 -0.01 -0.01 -0.23 309.46 553.15   1.75   5.00   5.00
+ 46.25   4 12.00  1     2    U54G6  *    70  0.60  270 15.19  5.14  16 50.0  5.200  9.100    6.597   -3.999  12951  0.740  1.064  0.34 -0.21  0.00 -0.01 -0.22 283.30 537.06   1.75   5.00   5.00
 
 
 The Specification Check was Not Successful
-Compressive stress check failed for Service I for the Final with Live Load Stage (Bridge Site 3).
+Compressive stress check failed for Service I for the Superimposed Dead Load Stage (Bridge Site 2).
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
-Slab Offset ("A" Dimension) check failed
-Hauling checks failed
 
 

@@ -40,15 +40,23 @@ static char THIS_FILE[] = __FILE__;
 // Some utility functions
 inline rptRcTable* CreateDevelopmentTable(IEAFDisplayUnits* pDisplayUnits)
 {
-   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(7,_T(""));
+   bool is_2015 = lrfdVersionMgr::SeventhEditionWith2015Interims <= lrfdVersionMgr::GetVersion();
 
-   (*pTable)(0,0) << _T("Bar Size");
-   (*pTable)(0,1) << COLHDR(Sub2(_T("A"),_T("b")),  rptAreaUnitTag, pDisplayUnits->GetAreaUnit() );
-   (*pTable)(0,2) << COLHDR(Sub2(_T("d"),_T("b")),  rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-   (*pTable)(0,3) << COLHDR(RPT_FY,  rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   (*pTable)(0,4) << COLHDR(RPT_FC,  rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   (*pTable)(0,5) << _T("Modification")<<rptNewLine<<_T("Factor");
-   (*pTable)(0,6) << COLHDR(Sub2(_T("l"),_T("d")),  rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable( is_2015?9:7 , _T(""));
+
+   ColumnIndexType col=0;
+   (*pTable)(0,col++) << _T("Bar Size");
+   (*pTable)(0,col++) << COLHDR(Sub2(_T("A"),_T("b")),  rptAreaUnitTag, pDisplayUnits->GetAreaUnit() );
+   (*pTable)(0,col++) << COLHDR(Sub2(_T("d"),_T("b")),  rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+   (*pTable)(0,col++) << COLHDR(RPT_FY,  rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*pTable)(0,col++) << COLHDR(RPT_FC,  rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   if (is_2015)
+   {
+      (*pTable)(0,col++) << symbol(lambda) << Sub(_T("rl"));
+      (*pTable)(0,col++) << symbol(lambda) << Sub(_T("lw"));
+   }
+   (*pTable)(0,col++) << _T("Modification")<<rptNewLine<<_T("Factor");
+   (*pTable)(0,col++) << COLHDR(Sub2(_T("l"),_T("d")),  rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
 
    return pTable;
 }
@@ -56,13 +64,21 @@ inline rptRcTable* CreateDevelopmentTable(IEAFDisplayUnits* pDisplayUnits)
 inline void WriteRowToDevelopmentTable(rptRcTable* pTable, RowIndexType row, CComBSTR barname, const REBARDEVLENGTHDETAILS& devDetails,
                                        rptAreaUnitValue& area, rptLengthUnitValue& length, rptStressUnitValue& stress, rptRcScalar& scalar)
 {
-   (*pTable)(row,0) << barname;
-   (*pTable)(row,1) << area.SetValue(devDetails.Ab);
-   (*pTable)(row,2) << length.SetValue(devDetails.db);
-   (*pTable)(row,3) << stress.SetValue(devDetails.fy);
-   (*pTable)(row,4) << stress.SetValue(devDetails.fc);
-   (*pTable)(row,5) << scalar.SetValue(devDetails.factor);
-   (*pTable)(row,6) << length.SetValue(devDetails.ldb);
+   bool is_2015 = lrfdVersionMgr::SeventhEditionWith2015Interims <= lrfdVersionMgr::GetVersion();
+
+   ColumnIndexType col=0;
+   (*pTable)(row,col++) << barname;
+   (*pTable)(row,col++) << area.SetValue(devDetails.Ab);
+   (*pTable)(row,col++) << length.SetValue(devDetails.db);
+   (*pTable)(row,col++) << stress.SetValue(devDetails.fy);
+   (*pTable)(row,col++) << stress.SetValue(devDetails.fc);
+   if (is_2015)
+   {
+      (*pTable)(row,col++) << scalar.SetValue(devDetails.lambdaRl);
+      (*pTable)(row,col++) << scalar.SetValue(devDetails.lambdaLw);
+   }
+   (*pTable)(row,col++) << scalar.SetValue(devDetails.factor);
+   (*pTable)(row,col++) << length.SetValue(devDetails.ldb);
 }
 
 
@@ -313,10 +329,17 @@ rptChapter* CDevLengthDetailsChapterBuilder::Build(CReportSpecification* pRptSpe
          }
          else
          {
-            if ( IS_US_UNITS(pDisplayUnits) )
-               *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("LongitudinalRebarDevelopment_US.png")) << rptNewLine;
+            if ( lrfdVersionMgr::SeventhEditionWith2015Interims <= lrfdVersionMgr::GetVersion())
+            {
+               *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("LongitudinalRebarDevelopment_2015.png")) << rptNewLine;
+            }
             else
-               *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("LongitudinalRebarDevelopment_SI.png")) << rptNewLine;
+            {
+               if ( IS_US_UNITS(pDisplayUnits) )
+                  *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("LongitudinalRebarDevelopment_US.png")) << rptNewLine;
+               else
+                  *pParagraph << rptRcImage(pgsReportStyleHolder::GetImagePath() + _T("LongitudinalRebarDevelopment_SI.png")) << rptNewLine;
+            }
 
             rptRcTable* pTable = CreateDevelopmentTable(pDisplayUnits);
             (*pParagraph) << pTable << rptNewLine;

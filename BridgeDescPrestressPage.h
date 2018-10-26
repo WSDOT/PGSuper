@@ -128,6 +128,7 @@ protected:
    void ShowHideNumStrandControls(int numPermStrandsType);
    void UpdateStrandControls();
    void UpdateAdjustableStrandControls();
+   void ShowOffsetControlGroup(BOOL show);
 
    StrandIndexType StrandSpinnerInc(IStrandGeometry* pStrands, pgsTypes::StrandType type,StrandIndexType currNum, bool bAdd );
    StrandIndexType PermStrandSpinnerInc(IStrandGeometry* pStrands, StrandIndexType currNum, bool bAdd );

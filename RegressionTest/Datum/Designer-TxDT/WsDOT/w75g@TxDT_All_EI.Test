@@ -1,33 +1,27 @@
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 28.25   5  6.00  1     1     W74G  *    32  0.60  270 34.46 22.37   6 69.5  6.000  7.100    3.758   -4.148   8692  0.560  0.671  0.36 -0.10 -0.01 -0.01 -0.12 135.51 254.64   1.75   5.00   5.00
+ 28.25   5  6.00  1     1     W74G  *    30  0.60  270 34.63 21.73   6 69.5  5.800  6.600    3.101   -3.984   8190  0.558  0.671  0.34 -0.11  0.00 -0.01 -0.13 120.18 231.04   1.75   5.00   5.00
 
 
 The Specification Check was Not Successful
-Compressive stress check failed for Service I for the Deck and Diaphragm Placement Stage (Bridge Site 1).
 Confinement zone checks failed.
-Slab Offset ("A" Dimension) check failed
 
 
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 28.25   5  6.00  1     2     W74G  *    32  0.60  270 34.46 22.37   6 69.5  6.000  7.100    3.784   -4.176   8691  0.560  0.671  0.36 -0.10 -0.01 -0.01 -0.13 135.51 253.20   1.75   5.00   5.00
+ 28.25   5  6.00  1     2     W74G  *    31  0.60  270 34.64 20.20   7 69.5  5.800  6.600    3.113   -3.997   8384  0.558  0.671  0.34 -0.11  0.00 -0.01 -0.13 129.02 246.17   1.75   5.00   5.00
 
 
 The Specification Check was Not Successful
-Compressive stress check failed for Service I for the Deck and Diaphragm Placement Stage (Bridge Site 1).
 Confinement zone checks failed.
-Slab Offset ("A" Dimension) check failed
 
 
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 28.25   5  6.00  1     3     W74G  *    32  0.60  270 34.46 22.37   6 69.5  6.000  7.100    3.784   -4.176   8691  0.560  0.671  0.36 -0.10 -0.01 -0.01 -0.13 135.51 253.20   1.75   5.00   5.00
+ 28.25   5  6.00  1     3     W74G  *    31  0.60  270 34.64 20.20   7 69.5  5.800  6.600    3.113   -3.997   8384  0.558  0.671  0.34 -0.11  0.00 -0.01 -0.13 129.02 246.17   1.75   5.00   5.00
 
 
 The Specification Check was Not Successful
-Compressive stress check failed for Service I for the Deck and Diaphragm Placement Stage (Bridge Site 1).
 Confinement zone checks failed.
-Slab Offset ("A" Dimension) check failed
 
 

@@ -407,8 +407,8 @@ rptChapter* CBridgeAnalysisChapterBuilder::Build(CReportSpecification* pRptSpec,
 
    p = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pChapter << p;
-   *p << _T("Responses - Superimposed Dead Loads (Bridge Site 2)") << rptNewLine;
-   p->SetName(_T("Superimposed Dead Loads (Bridge Site 2)"));
+   *p << _T("Responses - Final without Live Load (Bridge Site 2)") << rptNewLine;
+   p->SetName(_T("Final without Live Load (Bridge Site 2)"));
    CCombinedMomentsTable().Build(pBroker,pChapter,span,girder,pDisplayUnits,pgsTypes::BridgeSite2,m_AnalysisType, bDesign, bRating);
    CCombinedShearTable().Build(pBroker,pChapter,span,girder,pDisplayUnits,pgsTypes::BridgeSite2,m_AnalysisType, bDesign, bRating);
    CCombinedReactionTable().Build(pBroker,pChapter,span,girder,pDisplayUnits,pgsTypes::BridgeSite2,m_AnalysisType,PierReactionsTable, bDesign, bRating);

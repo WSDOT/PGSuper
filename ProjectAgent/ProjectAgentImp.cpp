@@ -6287,9 +6287,15 @@ bool CProjectAgentImp::ImportProjectLibraries(IStructuredLoad* pStrLoad)
 }
 
 //////////////////////////////////////////////////////////////////
-// Events?
+// Events
 void CProjectAgentImp::SpecificationChanged(bool bFireEvent)
 {
+   // When the specification changes the material model for prestressing strand can change too
+   // Make sure the material models are up to date with the selected specification
+
+   // Starting with LRFD 2015, "default" modulus Ec is computed with a different equation
+   // Recompute Ec based on the current spec...
+
    // Get the lookup key for the strand material based on the current units
    lrfdStrandPool* pPool = lrfdStrandPool::GetInstance();
 
@@ -6341,9 +6347,25 @@ void CProjectAgentImp::SpecificationChanged(bool bFireEvent)
             Int32 strand_pool_key = keys[i][hash];
             girderData.Material.pStrandMaterial[i] = pPool->GetStrand(strand_pool_key);
          }
+
+         if ( !girderData.Material.bUserEci )
+         {
+            girderData.Material.Eci = lrfdConcreteUtil::ModE(girderData.Material.Fci,girderData.Material.StrengthDensity,false);
+         }
+
+         if ( !girderData.Material.bUserEc )
+         {
+            girderData.Material.Ec = lrfdConcreteUtil::ModE(girderData.Material.Fc,girderData.Material.StrengthDensity,false);
+         }
       }
 
       pSpan->SetGirderTypes(girderTypes);
+   }
+
+   // Deal with deck concrete
+   if ( !m_BridgeDescription.GetDeckDescription()->SlabUserEc )
+   {
+      m_BridgeDescription.GetDeckDescription()->SlabEc = lrfdConcreteUtil::ModE(m_BridgeDescription.GetDeckDescription()->SlabFc,m_BridgeDescription.GetDeckDescription()->SlabStrengthDensity,false);
    }
 
    m_bUpdateJackingForce = true;
@@ -6791,14 +6813,14 @@ void CProjectAgentImp::FirePendingEvents()
       m_PendingEventsHash.clear();
       m_PendingEvents = 0;
 
-      Fire_OnFirePendingEvents();
-
       m_bFiringEvents = false;
    }
    else
    {
       m_EventHoldCount--;
    }
+
+   Fire_OnFirePendingEvents(); // let event listeners know there was an attempt to fire pending events
 
    GET_IFACE(IUIEvents,pUIEvents);
    pUIEvents->FirePendingEvents();
@@ -7350,11 +7372,14 @@ void CProjectAgentImp::DealWithGirderLibraryChanges(bool fromLibrary)
          
          if(asLibType==pgsTypes::asStraight && asType==pgsTypes::asHarped)
          {
-            // Library and project are out of sync - this is probably due to 421 version update
-            // change project data to match library
+            // Library and project are out of sync - this is probably due to 421 version update, but may
+            // also be due to a library change. Change project data to match library
             girder_data.PrestressData.SetAdjustableStrandType(pgsTypes::asStraight);
          }
-
+         else if(asLibType==pgsTypes::asHarped && asType==pgsTypes::asStraight)
+         {
+            girder_data.PrestressData.SetAdjustableStrandType(pgsTypes::asHarped);
+         }
 
          ValidateStrands(spanIdx,gdrIdx,girder_data,fromLibrary);
 

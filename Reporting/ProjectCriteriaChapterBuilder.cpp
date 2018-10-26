@@ -687,7 +687,7 @@ void write_bridge_site2(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits*
 {
    rptParagraph* pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pChapter << pPara;
-   *pPara<<_T("Superimposed Dead Load Stage (Bridge Site 2) Criteria")<<rptNewLine;
+   *pPara<<_T("Final without Live Load Stage (Bridge Site 2) Criteria")<<rptNewLine;
 
    pPara = new rptParagraph;
    *pChapter << pPara;

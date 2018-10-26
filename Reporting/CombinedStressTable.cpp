@@ -182,7 +182,7 @@ void CCombinedStressTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter* 
          nCols +=2;
 
       col = 0;
-      p_table = pgsReportStyleHolder::CreateDefaultTable(nCols,_T("Superimposed Dead Loads (Bridge Site 2)"));
+      p_table = pgsReportStyleHolder::CreateDefaultTable(nCols,_T("Final without Live Load (Bridge Site 2)"));
       (*p_table)(0,col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION ,    rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
       (*p_table)(0,col++) << COLHDR(_T("DC"),          rptStressUnitTag, pDisplayUnits->GetStressUnit() );
       (*p_table)(0,col++) << COLHDR(_T("DW"),          rptStressUnitTag, pDisplayUnits->GetStressUnit() );

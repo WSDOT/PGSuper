@@ -317,9 +317,11 @@ struct REBARDEVLENGTHDETAILS
    Float64 fy;
    Float64 fc;
    Float64 db;
-   Float64 factor; // Factor applied if light weight concrete (1.0 if not)
+   Float64 lambdaRl;  // Lambda's for location and lightweight concrete (only used for LRFD 2015 and later)
+   Float64 lambdaLw;
+   Float64 factor; // Total Factor applied to equation
 
-   // two equations for #11 or smaller
+   // Two equations for #11 or smaller (before 2015)
    Float64 ldb1;
    Float64 ldb2;
    Float64 ldb; // controlling value

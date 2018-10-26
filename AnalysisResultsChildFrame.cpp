@@ -308,7 +308,7 @@ int CAnalysisResultsChildFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
    idx = pstg_ctrl->AddString(_T("Deck and Diaphragm Placement (Bridge Site 1)"));
    pstg_ctrl->SetItemData(idx,pgsTypes::BridgeSite1);
 
-   idx = pstg_ctrl->AddString(_T("Superimposed Dead Loads (Bridge Site 2)"));
+   idx = pstg_ctrl->AddString(_T("Final without Live Load (Bridge Site 2)"));
    pstg_ctrl->SetItemData(idx,pgsTypes::BridgeSite2);
 
    idx = pstg_ctrl->AddString(_T("Final with Live Load (Bridge Site 3)"));

@@ -196,7 +196,7 @@ rptChapter* CStressChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 l
       
       p = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
       *pChapter << p;
-      p->SetName(_T("Combined Stresses - Superimposed Dead Loads (Bridge Site 2)"));
+      p->SetName(_T("Combined Stresses - Final without Live Load (Bridge Site 2)"));
       CCombinedStressTable().Build(pBroker,pChapter,span,girder,pDisplayUnits,pgsTypes::BridgeSite2, analysisType, bDesign, bRating);
    }
 

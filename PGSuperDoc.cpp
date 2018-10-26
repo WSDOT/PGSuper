@@ -143,6 +143,7 @@
 #include <PgsExt\DesignArtifact.h>
 #include <PgsExt\BridgeDescription.h>
 #include <PgsExt\StatusItem.h>
+#include <DesignConfigUtil.h>
 
 #include <PgsExt\ReportStyleHolder.h>
 
@@ -672,6 +673,7 @@ bool CPGSuperDoc::EditDirectInputPrestressing(SpanIndexType span,GirderIndexType
    GET_IFACE(IBridge,pBridge);
    GET_IFACE(ILibrary, pLib);
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   GET_IFACE(IStrandGeometry,pStrandGeometry);
 
    const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CSpanData* pSpan = pBridgeDesc->GetSpan(span);
@@ -691,15 +693,26 @@ bool CPGSuperDoc::EditDirectInputPrestressing(SpanIndexType span,GirderIndexType
    GET_IFACE(ISpecification, pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
 
+   bool allowEndAdjustment = 0.0 <= pStrandGeometry->GetHarpedEndOffsetIncrement(span, gdr);
+   bool allowHpAdjustment  = 0.0 <= pStrandGeometry->GetHarpedHpOffsetIncrement(span, gdr);
+
+   // Legacy strand adjustments cause problems in UI. Fix them if need be
+   if (allowEndAdjustment)
+   {
+      DealWithLegacyEndHarpedStrandAdjustment(span, gdr, girderData, pStrandGeometry);
+   }
+
+   if (allowHpAdjustment)
+   {
+      DealWithLegacyHpHarpedStrandAdjustment(span, gdr, girderData, pStrandGeometry);
+   }
+
    // Get current offset input values - dialog will force in bounds if needed
    HarpedStrandOffsetType endMeasureType = girderData.PrestressData.HsoEndMeasurement;
    HarpedStrandOffsetType hpMeasureType = girderData.PrestressData.HsoHpMeasurement;
 
    Float64 hpOffsetAtEnd = girderData.PrestressData.HpOffsetAtEnd;
    Float64 hpOffsetAtHp  = girderData.PrestressData.HpOffsetAtHp;
-
-   bool allowEndAdjustment = pGdrEntry->IsVerticalAdjustmentAllowedEnd();
-   bool allowHpAdjustment  = pGdrEntry->IsVerticalAdjustmentAllowedHP();
 
    // Max debond length is 1/2 girder length
    Float64 maxDebondLength = pBridge->GetGirderLength(span, gdr)/2.0;

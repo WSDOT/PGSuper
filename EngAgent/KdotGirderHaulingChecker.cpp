@@ -199,7 +199,7 @@ pgsHaulingAnalysisArtifact* pgsKdotGirderHaulingChecker::DesignHauling(SpanIndex
 {
    LOG(_T("Entering pgsKdotGirderHaulingChecker::DesignHauling"));
 
-   // We never fail global design because of hauling
+   // Assume the best
    *bSuccess = true;
 
    std::auto_ptr<pgsKdotHaulingAnalysisArtifact> pArtifact(new pgsKdotHaulingAnalysisArtifact);
@@ -292,6 +292,7 @@ pgsHaulingAnalysisArtifact* pgsKdotGirderHaulingChecker::DesignHauling(SpanIndex
 
    if (!did_pass)
    {
+      *bSuccess = false;
       LOG(_T("Design failed at first iteration - there is no hope"));
       pArtifact->SetDesignOutcome(pgsKdotHaulingAnalysisArtifact::doFailed);
    }

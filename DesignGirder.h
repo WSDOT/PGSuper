@@ -47,9 +47,6 @@ private:
 
    struct DesignData;
 
-   void CacheFlexureDesignResults(DesignData& rdata);
-   void CacheShearDesignResults(DesignData& rdata);
-
    void DoExecute(int i);
 
    // Store all design data for a girder
@@ -59,7 +56,6 @@ private:
 
       // index 0 = old data (before design), 1 = new data (design outcome)
       CGirderData m_GirderData[2];
-      CShearData m_ShearData[2];
       Float64 m_SlabOffset[2][2]; // first index is pgsTypes::MemberEndType
       pgsTypes::SlabOffsetType m_SlabOffsetType[2];
    };

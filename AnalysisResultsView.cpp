@@ -816,12 +816,34 @@ void CAnalysisResultsView::LimitStateLoadGraph(int graphIdx,pgsTypes::Stage stag
          else
          {
             bool bIncPrestress = (graph_type == graphDemand ? true : false);
+
+            // Limit state stress demand is a bit tricky. For completeness we should plot four stress graphs: one for
+            // each top/bot, min/max combination. 
+            // However, to simplify things let's make the following mostly accurate assumptions:
+            //    Critical compressions occur at end zones, bottom of girder
+            //    BSS3 Service III and BSS2 Service I Tensions are critical at bottom mid-span
+            //    All other cricital tensions occur at end zones, top of girder
+            // These assumptions will cover most critical cases
+            // 
             std::vector<Float64> fTopMin, fTopMax, fBotMin, fBotMax;
 
             if ( analysis_type == pgsTypes::Envelope )
             {
                pForces->GetStress( limit_state, stage, vPoi, pgsTypes::TopGirder,    bIncPrestress, MaxSimpleContinuousEnvelope, &fTopMin, &fTopMax);
-               pForces->GetStress( limit_state, stage, vPoi, pgsTypes::BottomGirder, bIncPrestress, MaxSimpleContinuousEnvelope, &fBotMin, &fBotMax);
+
+               if ( ls_type == pgsTypes::ServiceIII ||
+                    ls_type == pgsTypes::ServiceIII_Inventory ||
+                    ls_type == pgsTypes::ServiceIII_Operating ||
+                    ls_type == pgsTypes::ServiceIII_LegalRoutine ||
+                    ls_type == pgsTypes::ServiceIII_LegalSpecial ||
+                    stage==pgsTypes::BridgeSite2 && ls_type == pgsTypes::ServiceI && pAllowable->CheckFinalDeadLoadTensionStress())
+               {
+                  pForces->GetStress( limit_state, stage, vPoi, pgsTypes::BottomGirder, bIncPrestress, MaxSimpleContinuousEnvelope, &fBotMin, &fBotMax);
+               }
+               else
+               {
+                  pForces->GetStress( limit_state, stage, vPoi, pgsTypes::BottomGirder, bIncPrestress, MinSimpleContinuousEnvelope, &fBotMin, &fBotMax);
+               }
             }
             else
             {
@@ -832,7 +854,8 @@ void CAnalysisResultsView::LimitStateLoadGraph(int graphIdx,pgsTypes::Stage stag
             if ( stage == pgsTypes::CastingYard            || 
                  stage == pgsTypes::GirderPlacement        ||
                  stage == pgsTypes::TemporaryStrandRemoval ||
-                 stage == pgsTypes::BridgeSite1 )
+                 stage == pgsTypes::BridgeSite1            || 
+                 stage==pgsTypes::BridgeSite2 && !pAllowable->CheckFinalDeadLoadTensionStress())
             {
                AddGraphPoints(stress_top_max, xVals, fTopMax);
                AddGraphPoints(stress_bot_max, xVals, fBotMax);
@@ -854,8 +877,14 @@ void CAnalysisResultsView::LimitStateLoadGraph(int graphIdx,pgsTypes::Stage stag
                }
                else
                {
-                  if ( ls_type != pgsTypes::ServiceIII)
+                  if ( ls_type != pgsTypes::ServiceIII && 
+                       ls_type != pgsTypes::ServiceIII_Inventory &&
+                       ls_type != pgsTypes::ServiceIII_Operating &&
+                       ls_type != pgsTypes::ServiceIII_LegalRoutine &&
+                       ls_type != pgsTypes::ServiceIII_LegalSpecial)
+                  {
                      AddGraphPoints(stress_top_max, xVals, fTopMax);
+                  }
 
                   AddGraphPoints(stress_bot_max, xVals, fBotMax);
                }

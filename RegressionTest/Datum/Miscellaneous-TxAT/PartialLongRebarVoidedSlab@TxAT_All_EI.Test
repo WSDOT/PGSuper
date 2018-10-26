@@ -1,6 +1,6 @@
  RoadW Ng  Spcng  Span   GdrType   N   Ns   Size  Str EccCL EccEn Ndb Elev  Nsr Ndb  1  2  3  4  5  6  7  8  9 10  Fci    Fc       fcomp   ftens    ultMo LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---------  -   ---  ----  --- ----- ----- --- ----- --- --- -- -- -- -- -- -- -- -- -- -- ------ ------   ------  -------   ----- -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 32.17   7  0.00  1     1    Slab       14  0.60  270 15.86 15.91   2  2.00  14   2  2  0  0  0  0  0  0  0  0  0  4.000  5.300    0.870   -0.898    1935 0.406  0.662  0.04 -0.00 -0.00 -0.00 -0.01  60.76 145.82   1.00   3.00   3.00
+ 32.17   7  0.00  1     1    Slab       14  0.60  270 15.86 15.91   2  2.00  14   2  2  0  0  0  0  0  0  0  0  0  4.000  5.300    0.870   -0.898    1935 0.406  0.662  0.04 -0.00  0.00 -0.00 -0.00  60.76 145.82   1.00   3.00   3.00
 
 
 The Specification Check was Not Successful
@@ -10,7 +10,7 @@ Hauling checks failed
 
  RoadW Ng  Spcng  Span   GdrType   N   Ns   Size  Str EccCL EccEn Ndb Elev  Nsr Ndb  1  2  3  4  5  6  7  8  9 10  Fci    Fc       fcomp   ftens    ultMo LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---------  -   ---  ----  --- ----- ----- --- ----- --- --- -- -- -- -- -- -- -- -- -- -- ------ ------   ------  -------   ----- -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 32.17   7  0.00  1     2    Slab       14  0.60  270 15.70 15.81   6  2.00  14   6  4  2  0  0  0  0  0  0  0  0  4.000  5.500    0.886   -0.899    1927 0.406  0.679  0.04 -0.00 -0.00 -0.00 -0.01  60.76 145.82   1.00   1.00   1.00
+ 32.17   7  0.00  1     2    Slab       14  0.60  270 15.70 15.81   6  2.00  14   6  4  2  0  0  0  0  0  0  0  0  4.000  5.500    0.886   -0.899    1927 0.406  0.679  0.04 -0.00  0.00 -0.00 -0.00  60.76 145.82   1.00   1.00   1.00
 
 
 The Specification Check was Not Successful
@@ -20,7 +20,7 @@ Debond arrangement checks failed.
 
  RoadW Ng  Spcng  Span   GdrType   N   Ns   Size  Str EccCL EccEn Ndb Elev  Nsr Ndb  1  2  3  4  5  6  7  8  9 10  Fci    Fc       fcomp   ftens    ultMo LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---------  -   ---  ----  --- ----- ----- --- ----- --- --- -- -- -- -- -- -- -- -- -- -- ------ ------   ------  -------   ----- -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 32.17   7  0.00  1     4    Slab       14  0.60  270 15.70 15.81   4  2.00  14   4  0  2  2  0  0  0  0  0  0  0 12.000 12.000    0.894   -0.871    1845 0.404  0.676  0.02 -0.00 -0.00  0.00 -0.00  60.76 145.82   3.00   3.00   3.00
+ 32.17   7  0.00  1     4    Slab       14  0.60  270 15.70 15.81   4  2.00  14   4  0  2  2  0  0  0  0  0  0  0 12.000 12.000    0.894   -0.871    1845 0.404  0.676  0.02 -0.00  0.00  0.00 -0.00  60.76 145.82   3.00   3.00   3.00
 
 
 The Specification Check was Not Successful

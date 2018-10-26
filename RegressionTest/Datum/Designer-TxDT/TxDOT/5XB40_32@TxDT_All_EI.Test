@@ -1,6 +1,6 @@
  RoadW Ng  Spcng  Span   GdrType   N   Ns   Size  Str EccCL EccEn Ndb Elev  Nsr Ndb  1  2  3  4  5  6  7  8  9 10  Fci    Fc       fcomp   ftens    ultMo LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---------  -   ---  ----  --- ----- ----- --- ----- --- --- -- -- -- -- -- -- -- -- -- -- ------ ------   ------  -------   ----- -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 32.00   4  8.67  1     1   5XB40       14   1/2  270 15.70 15.70   0  2.50  14   0  0  0  0  0  0  0  0  0  0  0  4.000  5.000    0.565   -0.643    1934 0.752  0.890  0.03 -0.00 -0.00 -0.00 -0.00  14.17  54.06   1.00   1.00   1.00
+ 32.00   4  8.67  1     1   5XB40       14   1/2  270 15.70 15.70   0  2.50  14   0  0  0  0  0  0  0  0  0  0  0  4.000  5.000    0.565   -0.643    1934 0.752  0.890  0.03 -0.00  0.00 -0.00 -0.00  14.17  54.29   1.00   1.00   1.00
 
 
 The Specification Check was Successful
@@ -8,7 +8,7 @@ The Specification Check was Successful
 
  RoadW Ng  Spcng  Span   GdrType   N   Ns   Size  Str EccCL EccEn Ndb Elev  Nsr Ndb  1  2  3  4  5  6  7  8  9 10  Fci    Fc       fcomp   ftens    ultMo LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---------  -   ---  ----  --- ----- ----- --- ----- --- --- -- -- -- -- -- -- -- -- -- -- ------ ------   ------  -------   ----- -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 32.00   4  8.67  1     2   5XB40       14   1/2  270 15.70 15.70   0  2.50  14   0  0  0  0  0  0  0  0  0  0  0  4.000  5.000    0.567   -0.648    1944 0.743  0.890  0.03 -0.00 -0.00 -0.00 -0.00  14.17  53.93   1.00   1.00   1.00
+ 32.00   4  8.67  1     2   5XB40       14   1/2  270 15.70 15.70   0  2.50  14   0  0  0  0  0  0  0  0  0  0  0  4.000  5.000    0.567   -0.648    1944 0.743  0.890  0.03 -0.00  0.00 -0.00 -0.00  14.17  54.22   1.00   1.00   1.00
 
 
 The Specification Check was Successful
@@ -16,19 +16,21 @@ The Specification Check was Successful
 
  RoadW Ng  Spcng  Span   GdrType   N   Ns   Size  Str EccCL EccEn Ndb Elev  Nsr Ndb  1  2  3  4  5  6  7  8  9 10  Fci    Fc       fcomp   ftens    ultMo LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---------  -   ---  ----  --- ----- ----- --- ----- --- --- -- -- -- -- -- -- -- -- -- -- ------ ------   ------  -------   ----- -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 32.00   4  8.67  2     1   5XB40       64   1/2  270 14.27 13.60  24  2.50  28  20  8  4  2  4  2  0  0  0  0  0  4.200  5.000    3.319   -3.405    6560 0.593  0.809  0.39 -0.12 -0.01 -0.01 -0.15 165.13 433.76   1.00   1.00   1.00
+ 32.00   4  8.67  2     1   5XB40       60   1/2  270 14.50 13.93  24  2.50  28  20  8  6  2  2  2  0  0  0  0  0  4.000  5.000    3.319   -3.405    6560 0.593  0.809  0.37 -0.12  0.00 -0.01 -0.14 147.44 390.06   1.00   1.00   1.00
                                                                        4.50  28   4  4  0  0  0  0  0  0  0  0  0 
 
 
-The Specification Check was Successful
+The Specification Check was Not Successful
+Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
 
 
  RoadW Ng  Spcng  Span   GdrType   N   Ns   Size  Str EccCL EccEn Ndb Elev  Nsr Ndb  1  2  3  4  5  6  7  8  9 10  Fci    Fc       fcomp   ftens    ultMo LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---------  -   ---  ----  --- ----- ----- --- ----- --- --- -- -- -- -- -- -- -- -- -- -- ------ ------   ------  -------   ----- -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 32.00   4  8.67  2     2   5XB40       66   1/2  270 14.13 13.42  24  2.50  28  20  8  4  2  2  4  0  0  0  0  0  4.300  5.000    3.354   -3.457    6650 0.586  0.809  0.39 -0.13 -0.01 -0.01 -0.15 173.87 455.43   1.00   1.00   1.00
+ 32.00   4  8.67  2     2   5XB40       62   1/2  270 14.41 13.81  24  2.50  28  20  8  4  4  2  2  0  0  0  0  0  4.100  5.000    3.354   -3.457    6650 0.586  0.809  0.38 -0.13  0.00 -0.01 -0.14 156.51 413.66   1.00   1.00   1.00
                                                                        4.50  28   4  4  0  0  0  0  0  0  0  0  0 
 
 
-The Specification Check was Successful
+The Specification Check was Not Successful
+Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
 
 

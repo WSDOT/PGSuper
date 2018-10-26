@@ -1,20 +1,20 @@
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 14.25   1 12.00  1     1    U54G6  *    86  0.60  270 14.68  1.37  30 50.0  6.200 11.100    8.648   -4.860  15848  1.000  1.000  0.38 -0.25  0.00 -0.04 -0.29 398.42 634.03   3.00   4.50   4.50
+ 14.25   1 12.00  1     1    U54G6  *    86  0.60  270 14.68  1.37  30 50.0  6.200 11.100    7.551   -4.601  15789  1.000  1.000  0.38 -0.26  0.00 -0.04 -0.30 398.42 628.35   3.00   4.50   4.50
 
 
 The Specification Check was Not Successful
-Slab Offset ("A" Dimension) check failed
+Compressive stress check failed for Service I for the Superimposed Dead Load Stage (Bridge Site 2).
 Hauling checks failed
 
 
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 14.25   1 12.00  2     1    U54G6  *    84  0.60  270 14.74  1.50  28 50.0  6.000 10.800    8.625   -4.854  15463  1.000  1.000  0.37 -0.26  0.00 -0.04 -0.29 385.45 616.66   3.00   4.50   4.50
+ 14.25   1 12.00  2     1    U54G6  *    84  0.60  270 14.74  1.50  28 50.0  6.000 10.800    7.542   -4.599  15404  1.000  1.000  0.37 -0.26  0.00 -0.04 -0.30 385.45 610.97   3.00   4.50   4.50
 
 
 The Specification Check was Not Successful
-Slab Offset ("A" Dimension) check failed
+Compressive stress check failed for Service I for the Superimposed Dead Load Stage (Bridge Site 2).
 Hauling checks failed
 
 

@@ -186,7 +186,7 @@ void pgsStrandDesignTool::Initialize(IBroker* pBroker, StatusGroupIDType statusG
    m_FcControl.Init(ifc);
 
    // Initialize release strength
-   Float64 ifci = ::ConvertToSysUnits(4.0,unitMeasure::KSI);
+   Float64 ifci = GetMinimumReleaseStrength();
    m_ReleaseStrengthResult = ConcSuccess; // assume that no rebar is needed to make 4 ksi
    m_pArtifact->SetReleaseStrength( ifci );
    m_FciControl.Init(ifci);
@@ -254,6 +254,14 @@ void pgsStrandDesignTool::InitReleaseStrength(Float64 fci)
    m_bConfigDirty = true; // cache is dirty
 }
 
+void pgsStrandDesignTool::InitFinalStrength(Float64 fc)
+{
+   m_FcControl.Init(fc);
+   m_pArtifact->SetConcreteStrength(fc);
+   m_bConfigDirty = true; // cache is dirty
+}
+
+
 void pgsStrandDesignTool::RestoreDefaults(bool retainProportioning, bool justAddedRaisedStrands)
 {
    // set fill order back to user-requested while attempting to retain current number of strands
@@ -264,11 +272,21 @@ void pgsStrandDesignTool::RestoreDefaults(bool retainProportioning, bool justAdd
       if (justAddedRaisedStrands)
       {
          ATLASSERT(m_pRaisedStraightStrandDesignTool);
-         // Just added raised strands - reset number of strands to 1/2 of current
+         // Just added raised strands - reset number of strands to max of current
+         // and a newly computed minimum number of strands
+         ComputeMinStrands();
+
          // This will allow algorithm to rebalance strands and not have to start from scratch
-         StrandIndexType npnew = GetNextNumPermanentStrands(np/2);
+         StrandIndexType np = this->GetNumPermanentStrands();
+
+         StrandIndexType npnew = max(np, this->GetMinimumPermanentStrands());
 
          SetNumPermanentStrands(npnew);
+
+         // Also, conscrete strength may be out of wack. Init back to min
+         InitReleaseStrength( GetMinimumReleaseStrength() );
+         InitFinalStrength( GetMinimumConcreteStrength() );
+
       }
       else if (m_StrandFillType != m_DesignOptions.doStrandFillType)
       {
@@ -350,7 +368,7 @@ bool pgsStrandDesignTool::SetNumPermanentStrands(StrandIndexType numPerm)
       // Raised strand design - let tool do work
       StrandIndexType ns, nh;
       m_pRaisedStraightStrandDesignTool->ComputeNumStrands(numPerm, &ns, &nh);
-      LOG (_T("Using raised resequenced fill order to make Ns=")<<ns<<_T(", Nh=")<<nh<<_T(" from ")<< numPerm);
+      LOG (_T("Using raised resequenced fill order to make Ns=")<<ns<<_T(", Nh=")<<nh<<_T(" from ")<< numPerm << _T(" with ")<<m_pRaisedStraightStrandDesignTool->GetNumUsedRaisedStrandLocations()<<_T(" raised grid locations"));
 
       m_bConfigDirty = true; // cache is dirty
 
@@ -976,9 +994,12 @@ bool pgsStrandDesignTool::ResetEndZoneStrandConfig()
    }
    else if( IsDesignDebonding() )
    {
+      // Set debonding to max allowable
       bool bResult = MaximizeDebonding();
-      if (!m_DesignOptions.doDesignLifting )
+      if (bResult)
+      {
          bResult = LayoutDebonding(m_MaxPhysicalDebondLevels);
+      }
 
       return bResult;
    }
@@ -1056,8 +1077,6 @@ void pgsStrandDesignTool::ComputeMinStrands()
    // It's possible for users to enter strands at the beginning of the fill sequence that have
    // negative eccentricity. This is typically for hanging stirrups. If this occurs then design will crap out
 
-   m_MinPermanentStrands=1; // resonable starting point
-
    GET_IFACE(IStrandGeometry,pStrandGeom);
 
    LOG(_T("Compute m_MinPermanentStrands so next num strands give positive ecc"));
@@ -1117,9 +1136,18 @@ void pgsStrandDesignTool::ComputeMinStrands()
          }
 
          ConfigStrandFillVector sfillvec = pStrandGeom->ComputeStrandFill(m_Span, m_Girder, pgsTypes::Straight, ns);
-         ConfigStrandFillVector hfillvec = pStrandGeom->ComputeStrandFill(m_Span, m_Girder, pgsTypes::Harped, nh);
+         ConfigStrandFillVector hfillvec;
+         if (m_pRaisedStraightStrandDesignTool)
+         {
+            hfillvec = m_pRaisedStraightStrandDesignTool->CreateStrandFill(GirderLibraryEntry::stAdjustable, nh);
+         }
+         else
+         {
+            hfillvec = pStrandGeom->ComputeStrandFill(m_Span, m_Girder, pgsTypes::Harped, nh);
+         }
 
          config.PrestressConfig.SetStrandFill(pgsTypes::Straight, sfillvec);
+         config.PrestressConfig.Debond[pgsTypes::Straight].clear(); // clear out any debonding if we are in design loop
          config.PrestressConfig.SetStrandFill(pgsTypes::Harped,   hfillvec);
 
          Float64 neff;
@@ -1130,15 +1158,15 @@ void pgsStrandDesignTool::ComputeMinStrands()
             if (nIter == 0)
             {
                // Setting strand to a minimal number seems to give optimal results for cases without top strands
-               m_MinPermanentStrands = 1;
-               LOG(_T("Eccentricity positive on first iteration - m_MinPermanentStrands = ") << m_MinPermanentStrands << _T("Success"));
+               m_MinPermanentStrands = GetNextNumPermanentStrands(0);
+               LOG(_T("Eccentricity positive on first iteration - m_MinPermanentStrands = ") << m_MinPermanentStrands << _T(" Success"));
             }
             else
             {
                // TRICKY: Just finding the point where eccentricity is postitive turns out not to be enough.
                //         The design algorithm will likely get stuck. So we double it.
                m_MinPermanentStrands = GetNextNumPermanentStrands(2*ns_prev);
-               LOG(_T("Found m_MinPermanentStrands = ") << ns_prev << _T("Success"));
+               LOG(_T("Found m_MinPermanentStrands = ") << m_MinPermanentStrands << _T("Success"));
             }
 
             break;
@@ -1432,6 +1460,7 @@ bool pgsStrandDesignTool::AddTempStrands()
 
 bool pgsStrandDesignTool::AddRaisedStraightStrands()
 {
+   LOG(_T("** Attempting to add raised straight strands"));
    if ( IsDesignRaisedStraight() )
    {
       ATLASSERT(m_pRaisedStraightStrandDesignTool); // better be alive
@@ -1441,6 +1470,7 @@ bool pgsStrandDesignTool::AddRaisedStraightStrands()
    else
    {
       // not raised straight design
+      LOG(_T("Raised straight strands design not available for this girder type"));
       return false;
    }
 }
@@ -1972,6 +2002,10 @@ Float64 pgsStrandDesignTool::GetReleaseStrength(ConcStrengthResultType* pStrengt
    return m_pArtifact->GetReleaseStrength();
 }
 
+bool pgsStrandDesignTool::DoesReleaseRequireAdditionalRebar() const
+{
+   return m_ReleaseStrengthResult==ConcSuccessWithRebar;
+}
 
 Float64 pgsStrandDesignTool::GetPjackStraightStrands() const
 {

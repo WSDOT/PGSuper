@@ -145,6 +145,7 @@ public:
    void Initialize(IBroker* pBroker, StatusGroupIDType statusGroupID, pgsDesignArtifact* pArtifact);
 
    void InitReleaseStrength(Float64 fci);
+   void InitFinalStrength(Float64 fc);
 
    void RestoreDefaults(bool retainProportioning, bool justAddedRaisedStrands);
 
@@ -325,6 +326,7 @@ public:
    Float64 GetConcreteStrength() const;
    Float64 GetReleaseStrength() const;
    Float64 GetReleaseStrength(ConcStrengthResultType* pStrengthResult) const;
+   bool DoesReleaseRequireAdditionalRebar() const;
 
    Float64 GetMinimumReleaseStrength() const;
    Float64 GetMaximumReleaseStrength() const;
@@ -436,11 +438,11 @@ private:
    // Tool for dealing with raised straight strand design - only used if this is the design type
    boost::shared_ptr<pgsRaisedStraightStrandDesignTool> m_pRaisedStraightStrandDesignTool;
 
-   // Classes to store information on what controlled release strength
+   // Classes to store information on what controlled concrete strength or number of strands
    // and to control when to set values. 
    struct DesignState
    {
-      Float64                  m_Strength;
+      Float64                  m_Strength;   // concrete strength (release or final), or number of strands
       pgsTypes::Stage          m_Stage;      // controlling stage
       pgsTypes::StressType     m_StressType; // stress type (tension or compression) 
       pgsTypes::LimitState     m_LimitState; // 

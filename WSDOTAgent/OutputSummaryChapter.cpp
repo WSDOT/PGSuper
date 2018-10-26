@@ -977,7 +977,7 @@ void bridgesite2_stresses(rptChapter* pChapter,IBroker* pBroker,SpanIndexType sp
    rptParagraph* p = new rptParagraph;
    *pChapter << p;
 
-   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(5,_T("Superimposed Dead Load Stage Stresses (Bridge Site 2)"));
+   rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(5,_T("Final without Live Load Stage Stresses (Bridge Site 2)"));
    *p << pTable << rptNewLine;
 
    // Setup the table

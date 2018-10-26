@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2011  Washington State Department of Transportation
+// Copyright © 1999-2015  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -744,6 +744,80 @@ inline bool DoAllStirrupsEngageDeck( const STIRRUPCONFIG& config)
 
    return true;
 }
+
+// Some other utilities for dealing with strands. Perhaps we should have called this file strandutil.h
+inline ConfigStrandFillVector ComputeHarpedStrandFillVector(SpanIndexType span, GirderIndexType gdr, CGirderData& rgdata, IStrandGeometry* pStrandGeometry)
+{
+   if (rgdata.PrestressData.GetNumPermStrandsType() == NPS_DIRECT_SELECTION)
+   {
+      ConfigStrandFillVector vec = ConvertDirectToConfigFill(pStrandGeometry, pgsTypes::Harped, 
+                                   span, gdr,
+                                   *rgdata.PrestressData.GetDirectStrandFillHarped());
+
+      return vec;
+   }
+   else
+   {
+      // Num harped is in a control
+      StrandIndexType Nh = rgdata.PrestressData.GetNstrands(pgsTypes::Harped);
+
+      return pStrandGeometry->ComputeStrandFill(span, gdr, pgsTypes::Harped, Nh);
+   }
+}
+
+inline void DealWithLegacyEndHarpedStrandAdjustment(SpanIndexType span, GirderIndexType gdr, CGirderData& rgdata, IStrandGeometry* pStrandGeometry)
+{
+   // New girder types are given legacy status so we must modify data here
+   if(rgdata.PrestressData.HsoEndMeasurement==hsoLEGACY)
+   {
+      if(rgdata.PrestressData.GetNstrands(pgsTypes::Harped) > 0)
+      {
+         ConfigStrandFillVector fill = ComputeHarpedStrandFillVector(span, gdr, rgdata, pStrandGeometry);
+
+         Float64 absol_offset = pStrandGeometry->ComputeAbsoluteHarpedOffsetEnd(span, gdr, fill,
+                                                                               rgdata.PrestressData.HsoEndMeasurement, 
+                                                                               rgdata.PrestressData.HpOffsetAtEnd);
+
+         Float64 topcg_offset = pStrandGeometry->ComputeHarpedOffsetFromAbsoluteEnd(span, gdr, fill,
+                                                                                   hsoCGFROMTOP, absol_offset);
+
+         rgdata.PrestressData.HpOffsetAtEnd = topcg_offset;
+      }
+
+      rgdata.PrestressData.HsoEndMeasurement = hsoCGFROMTOP;
+   }
+}
+
+inline void DealWithLegacyHpHarpedStrandAdjustment(SpanIndexType span, GirderIndexType gdr, CGirderData& rgdata, IStrandGeometry* pStrandGeometry)
+{
+   // New girder types are given legacy status so we must modify data here for UI
+   if(rgdata.PrestressData.HsoHpMeasurement==hsoLEGACY)
+   {
+      if(rgdata.PrestressData.GetNstrands(pgsTypes::Harped) > 0)
+      {
+         ConfigStrandFillVector fill = ComputeHarpedStrandFillVector(span, gdr, rgdata, pStrandGeometry);
+
+         Float64 absol_offset = pStrandGeometry->ComputeAbsoluteHarpedOffsetHp(span, gdr, fill,
+                                                                               rgdata.PrestressData.HsoHpMeasurement, 
+                                                                               rgdata.PrestressData.HpOffsetAtHp);
+
+         Float64 botcg_offset = pStrandGeometry->ComputeHarpedOffsetFromAbsoluteHp(span, gdr, fill,
+                                                                                   hsoCGFROMBOTTOM, absol_offset);
+
+         rgdata.PrestressData.HpOffsetAtHp     = botcg_offset;
+      }
+
+      rgdata.PrestressData.HsoHpMeasurement = hsoCGFROMBOTTOM;
+   }
+}
+
+inline void DealWithLegacyHarpedStrandAdjustment(SpanIndexType span, GirderIndexType gdr, CGirderData& rgdata, IStrandGeometry* pStrandGeometry)
+{
+   DealWithLegacyEndHarpedStrandAdjustment(span, gdr, rgdata, pStrandGeometry);
+   DealWithLegacyHpHarpedStrandAdjustment(span, gdr, rgdata, pStrandGeometry);
+}
+
+
 // NOTE: The method below could be useful to a design algorithm sometime in the future.
 /*
 inline void  WriteLongitudinalRebarDataToConfig(const CLongitudinalRebarData& rRebarData, LONGITUDINALREBARCONFIG& rConfig)

@@ -115,9 +115,17 @@ CElasticGainDueToDeckShrinkageTable* CElasticGainDueToDeckShrinkageTable::Prepar
    *pParagraph << rptRcImage(strImagePath + _T("HumidityFactor.png")) << rptNewLine;
 
    if ( IS_SI_UNITS(pDisplayUnits) )
+   {
+      ATLASSERT( pSpecEntry->GetSpecificationType() < lrfdVersionMgr::SeventhEditionWith2015Interims );
       *pParagraph << rptRcImage(strImagePath + _T("ConcreteFactors_Deck_SI.png")) << rptNewLine;
+   }
    else
-      *pParagraph << rptRcImage(strImagePath + _T("ConcreteFactors_Deck_US.png")) << rptNewLine;
+   {
+      if ( pSpecEntry->GetSpecificationType() < lrfdVersionMgr::SeventhEditionWith2015Interims )
+         *pParagraph << rptRcImage(strImagePath + _T("ConcreteFactors_Deck_US.png")) << rptNewLine;
+      else
+         *pParagraph << rptRcImage(strImagePath + _T("ConcreteFactors_Deck_US2015.png")) << rptNewLine;
+   }
 
    *pParagraph << _T("Girder stresses due to slab shrinkage") << rptNewLine;
    *pParagraph << rptRcImage(strImagePath + _T("SlabShrinkageStress_Ftop.png")) << rptNewLine;
@@ -168,12 +176,12 @@ CElasticGainDueToDeckShrinkageTable* CElasticGainDueToDeckShrinkageTable::Prepar
    *pParagraph << pParamTable << rptNewLine;
    (*pParamTable)(0,0) << COLHDR( Sub2(_T("E"),_T("p")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    (*pParamTable)(0,1) << COLHDR( Sub2(_T("E"),_T("c")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   (*pParamTable)(0,2) << COLHDR( Sub2(_T("E"),_T("cd")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*pParamTable)(0,2) << COLHDR( Sub2(_T("E"),_T("c deck")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    (*pParamTable)(0,3) << Sub2(_T("K"),_T("sh"));
    (*pParamTable)(0,4) << Sub2(_T("K"),_T("1"));
    (*pParamTable)(0,5) << Sub2(_T("K"),_T("2"));
    (*pParamTable)(0,6) << Sub2(symbol(psi),_T("b")) << _T("(") << Sub2(_T("t"),_T("f")) << _T(",") << Sub2(_T("t"),_T("d")) << _T(")");
-   (*pParamTable)(0,7) << Sub2(symbol(psi),_T("bd")) << _T("(") << Sub2(_T("t"),_T("f")) << _T(",") << Sub2(_T("t"),_T("d")) << _T(")");
+   (*pParamTable)(0,7) << Sub2(symbol(psi),_T("d")) << _T("(") << Sub2(_T("t"),_T("f")) << _T(",") << Sub2(_T("t"),_T("d")) << _T(")");
 
    (*pParamTable)(1,0) << table->mod_e.SetValue( ptl->GetEp() );
    (*pParamTable)(1,1) << table->mod_e.SetValue( ptl->GetEc() );

@@ -2374,9 +2374,8 @@ void CAnalysisAgentImp::ApplyOverlayLoad(ILBAMModel* pModel,GirderIndexType gdr)
 
    GET_IFACE( IGirder,        pGdr);
 
-   // if this is a future overlay, add it to bridge site 3 otherwise it is in bridge site 2
    GET_IFACE(IStageMap,pStageMap);
-   pgsTypes::Stage stage = pBridge->IsFutureOverlay() ? pgsTypes::BridgeSite3 : pgsTypes::BridgeSite2;
+   pgsTypes::Stage stage = pgsTypes::BridgeSite2;
    CComBSTR bstrStage = pStageMap->GetStageName(stage);
    CComBSTR bstrLoadGroup = GetLoadGroupName(pftOverlay); 
    CComBSTR bstrLoadGroupRating = GetLoadGroupName(pftOverlayRating); 
@@ -9666,25 +9665,28 @@ void CAnalysisAgentImp::GetStress(pgsTypes::LimitState ls,pgsTypes::Stage stage,
                std::swap(fMin,fMax);
          }
 
+         Float64 k;
+         if (ls == pgsTypes::ServiceIA || ls == pgsTypes::FatigueI )
+            k = 0.5; // Use half prestress stress if service IA (See Tbl 5.9.4.2.1-1 2008 or before) or Fatige I (LRFD 5.5.3.1-2009)
+         else
+            k = 1.0;
+
          if ( bIncludePrestress )
          {
             Float64 ps = GetStress(stage,poi,loc);
-
-            Float64 k;
-            if (ls == pgsTypes::ServiceIA || ls == pgsTypes::FatigueI )
-               k = 0.5; // Use half prestress stress if service IA (See Tbl 5.9.4.2.1-1 2008 or before) or Fatige I (LRFD 5.5.3.1-2009)
-            else
-               k = 1.0;
 
             fMin += k*ps;
             fMax += k*ps;
          }
 
-         // if this is bridge site stage 3, add effect of deck shrinkage
-         if ( stage == pgsTypes::BridgeSite3 )
+         // if this is bridge site stage 2, add effect of deck shrinkage
+         if ( stage == pgsTypes::BridgeSite2 )
          {
             Float64 ft_ss, fb_ss;
             GetDeckShrinkageStresses(poi,&ft_ss,&fb_ss);
+
+            ft_ss *= k;
+            fb_ss *= k;
 
             if ( loc == pgsTypes::TopGirder )
             {

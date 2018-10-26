@@ -91,6 +91,42 @@ void CGirderDescPrestressPage::DoDataExchange(CDataExchange* pDX)
    if (!pDX->m_bSaveAndValidate)
    {
       m_CurrNumPermStrandsType = pParent->m_GirderData.PrestressData.GetNumPermStrandsType();
+
+      // Deal with adjustable strands 
+      GET_IFACE2( pBroker, ILibrary, pLib );
+      const GirderLibraryEntry* pGdrEntry = pLib->GetGirderEntry(pParent->m_strGirderName.c_str());
+      m_LibraryAdjustableStrandType = pGdrEntry->GetAdjustableStrandType();
+
+      CComboBox* pCB = (CComboBox*)GetDlgItem(IDC_STRAND_INPUT_TYPE);
+      pCB->ResetContent();
+
+      pCB->AddString(_T("Total Number of Permanent Strands"));
+      if(m_LibraryAdjustableStrandType == pgsTypes::asHarped)
+      {
+         pCB->AddString(_T("Number of Straight and Number of Harped"));
+         GetDlgItem(IDC_VERT_GROUP)->SetWindowText(_T("Vertical Location of Harped Strands"));
+         GetDlgItem(IDC_HPOFFSET_END_TITLE)->SetWindowText(_T("Girder Ends:"));
+      }
+      else if(m_LibraryAdjustableStrandType == pgsTypes::asStraight)
+      {    
+         pCB->AddString(_T("Number of Straight and Number of Adjustable Straight"));
+         GetDlgItem(IDC_VERT_GROUP)->SetWindowText(_T("Vertical Location of Adjustable Straight Strands"));
+         GetDlgItem(IDC_HPOFFSET_END_TITLE)->SetWindowText(_T("Along Girder:"));
+
+         ShowHpOffsetControls(FALSE);
+      }
+      else
+      {
+         // Strands can be straight or harped. need to be dynamic
+         pCB->AddString(_T("Number of Straight and Number of Adjustable"));
+         GetDlgItem(IDC_VERT_GROUP)->SetWindowText(_T("Vertical Location of Adjustable Strands"));
+      }
+
+      pCB->AddString(_T("Direct Selection of Strand Locations"));
+
+      CComboBox* pAdjList = (CComboBox*)GetDlgItem( IDC_ADJUSTABLE_COMBO );
+      pAdjList->SetCurSel((int)pParent->m_GirderData.PrestressData.GetAdjustableStrandType());
+      pAdjList->EnableWindow(m_LibraryAdjustableStrandType == pgsTypes::asStraightOrHarped ? TRUE:FALSE); // User can't choose if library doesn't allow
    }
 
    DDX_CBIndex(pDX, IDC_STRAND_INPUT_TYPE, m_CurrNumPermStrandsType);
@@ -281,7 +317,7 @@ void CGirderDescPrestressPage::DoDataExchange(CDataExchange* pDX)
    }
    else
    {
-      DisableEndOffsetControls(TRUE);
+      ShowEndOffsetControls(FALSE);
    }
 
    m_AllowHpAdjustment = false;
@@ -322,6 +358,9 @@ void CGirderDescPrestressPage::DoDataExchange(CDataExchange* pDX)
 
       DDX_UnitValueAndTag( pDX, IDC_HPOFFSET_HP, IDC_HPOFFSET_HP_UNIT, pParent->m_GirderData.PrestressData.HpOffsetAtHp, pDisplayUnits->GetComponentDimUnit() );
 	   DDX_CBItemData(pDX, IDC_HP_COMBO_HP, pParent->m_GirderData.PrestressData.HsoHpMeasurement);
+
+      if ( nh <=0)
+         DisableHpOffsetControls(TRUE);
    }
    else
    {
@@ -435,6 +474,10 @@ void CGirderDescPrestressPage::DoDataExchange(CDataExchange* pDX)
       key = (Int32)pList->GetItemData( (int)m_TempStrandSizeIdx );
       pParent->m_GirderData.Material.pStrandMaterial[pgsTypes::Temporary] = pPool->GetStrand( key );
    }
+   else
+   {
+      UpdateAdjustableStrandControls();
+   }
 }
 
 BEGIN_MESSAGE_MAP(CGirderDescPrestressPage, CPropertyPage)
@@ -470,11 +513,6 @@ BOOL CGirderDescPrestressPage::OnInitDialog()
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
-
-   // Deal with adjustable strands 
-   GET_IFACE2( pBroker, ILibrary, pLib );
-   const GirderLibraryEntry* pGdrEntry = pLib->GetGirderEntry(pParent->m_strGirderName.c_str());
-   m_LibraryAdjustableStrandType = pGdrEntry->GetAdjustableStrandType();
 
    // Fill the strand size combo box.
    UpdateStrandList(IDC_STRAND_SIZE);
@@ -531,48 +569,10 @@ BOOL CGirderDescPrestressPage::OnInitDialog()
    idx = pCB->AddString(_T("Temporary strands post-tensioned immedately before shipping"));
    pCB->SetItemData(idx,(DWORD)pgsTypes::ttsPTBeforeShipping);
 
-   pCB = (CComboBox*)GetDlgItem(IDC_STRAND_INPUT_TYPE);
-   
-   pCB->AddString(_T("Total Number of Permanent Strands"));
-   if(m_LibraryAdjustableStrandType == pgsTypes::asHarped)
-   {
-      pCB->AddString(_T("Number of Straight and Number of Harped"));
-      GetDlgItem(IDC_VERT_GROUP)->SetWindowText(_T("Vertical Location of Harped Strands"));
-      GetDlgItem(IDC_HPOFFSET_END_TITLE)->SetWindowText(_T("Girder Ends:"));
-   }
-   else if(m_LibraryAdjustableStrandType == pgsTypes::asStraight)
-   {    
-      pCB->AddString(_T("Number of Straight and Number of Adjustable Straight"));
-      GetDlgItem(IDC_VERT_GROUP)->SetWindowText(_T("Vertical Location of Adjustable Straight Strands"));
-      GetDlgItem(IDC_HPOFFSET_END_TITLE)->SetWindowText(_T("Along Girder:"));
-
-      ShowHpOffsetControls(FALSE);
-   }
-   else
-   {
-      // Strands can be straight or harped. need to be dynamic
-      pCB->AddString(_T("Number of Straight and Number of Adjustable"));
-      GetDlgItem(IDC_VERT_GROUP)->SetWindowText(_T("Vertical Location of Adjustable Strands"));
-   }
-
-   pCB->AddString(_T("Direct Selection of Strand Locations"));
-
    CPropertyPage::OnInitDialog();
 
    OnDropdownHpComboHp();
    OnDropdownHpComboEnd();
-
-   // adjustable strand controls
-   CComboBox* pAdjList = (CComboBox*)GetDlgItem( IDC_ADJUSTABLE_COMBO );
-   pAdjList->SetCurSel((int)pParent->m_GirderData.PrestressData.GetAdjustableStrandType());
-   if (m_LibraryAdjustableStrandType != pgsTypes::asStraightOrHarped)
-   {
-      pAdjList->EnableWindow(FALSE); // User can't choose if library doesn't allow
-   }
-   else
-   {
-      UpdateAdjustableStrandControls();
-   }
 
    EnableToolTips(TRUE);
 
@@ -1400,16 +1400,29 @@ void CGirderDescPrestressPage::UpdateEndRangeLength(HarpedStrandOffsetType measu
       pStrandGeom->ComputeValidHarpedOffsetForMeasurementTypeEnd(pParent->m_strGirderName.c_str(), pParent->m_GirderData.PrestressData.GetAdjustableStrandType(),
                                                                  harpFill, measureType, &lowRange, &highRange);
 
-      lowRange  = ::ConvertFromSysUnits(lowRange, pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
-      highRange = ::ConvertFromSysUnits(highRange,pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
-
       Float64 low  = min(lowRange, highRange);
       Float64 high = max(lowRange, highRange);
+
+      // If offset value is blank, we need to fill it. Place at highest location in valid range
+      CWnd* pWnd = GetDlgItem( IDC_HPOFFSET_END );
+      ASSERT( pWnd );
+      CString txt;
+      pWnd->GetWindowText(txt);
+      if (txt.IsEmpty())
+      {
+         CDataExchange DX(this, FALSE);
+         DDX_UnitValueAndTag( &DX, IDC_HPOFFSET_END, IDC_HPOFFSET_END_UNIT, high, pDisplayUnits->GetComponentDimUnit() );
+      }
+
+      // Update message
+      low  = ::ConvertFromSysUnits(low, pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
+      high = ::ConvertFromSysUnits(high,pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
 
       if ( IS_SI_UNITS(pDisplayUnits) )
          str.Format(_T("(Valid Range %.1f to %.1f)"), low, high);
       else
          str.Format(_T("(Valid Range %.3f to %.3f)"), low, high);
+
    }
 
    CEdit* pEdit = (CEdit*)GetDlgItem( IDC_HPOFFSET_END_NOTE );
@@ -1438,11 +1451,23 @@ void CGirderDescPrestressPage::UpdateHpRangeLength(HarpedStrandOffsetType measur
                                                                 harpFill, measureType, &lowRange, &highRange);
 
 
-      lowRange = ::ConvertFromSysUnits(lowRange,  pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
-      highRange = ::ConvertFromSysUnits(highRange,pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
-
       Float64 low  = min(lowRange, highRange);
       Float64 high = max(lowRange, highRange);
+
+      // If offset value is blank, we need to fill it. Place at lowest location in valid range
+      CWnd* pWnd = GetDlgItem( IDC_HPOFFSET_HP );
+      ASSERT( pWnd );
+      CString txt;
+      pWnd->GetWindowText(txt);
+      if (txt.IsEmpty())
+      {
+         CDataExchange DX(this, FALSE);
+         DDX_UnitValueAndTag( &DX, IDC_HPOFFSET_HP, IDC_HPOFFSET_HP_UNIT, low, pDisplayUnits->GetComponentDimUnit() );
+      }
+
+      // Update message
+      low = ::ConvertFromSysUnits(low,  pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
+      high = ::ConvertFromSysUnits(high,pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
 
       if ( IS_SI_UNITS(pDisplayUnits) )
          str.Format(_T("(Valid Range %.1f to %.1f)"), low, high);
@@ -2342,14 +2367,14 @@ void CGirderDescPrestressPage::OnCbnSelchangeAdjustableCombo()
 
 void CGirderDescPrestressPage::UpdateAdjustableStrandControls()
 {
-   ATLASSERT(m_LibraryAdjustableStrandType == pgsTypes::asStraightOrHarped);
-
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
    CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
 
    pgsTypes::AdjustableStrandType adjType = pParent->m_GirderData.PrestressData.GetAdjustableStrandType();
+
+   StrandIndexType nh = GetHarpedStrandCount();
 
    if (adjType == pgsTypes::asHarped)
    {
@@ -2368,6 +2393,7 @@ void CGirderDescPrestressPage::UpdateAdjustableStrandControls()
    else
    {
       GetDlgItem(IDC_HPOFFSET_END_TITLE)->SetWindowText(_T("Along Girder:"));
+      m_AllowHpAdjustment = false;
       ShowHpOffsetControls(FALSE);
    }
 
@@ -2375,6 +2401,27 @@ void CGirderDescPrestressPage::UpdateAdjustableStrandControls()
    m_AllowEndAdjustment = 0.0 <= pStrandGeometry->GetHarpedEndOffsetIncrement(pParent->m_strGirderName.c_str(), adjType);
 
    ShowEndOffsetControls(m_AllowEndAdjustment ? TRUE : FALSE);
-   DisableEndOffsetControls(m_AllowEndAdjustment ? FALSE : TRUE);
-   OnSelchangeHpComboEnd(); // Update allowable range message
+
+   if (m_AllowEndAdjustment)
+   {
+      DisableEndOffsetControls(m_AllowEndAdjustment && nh>0 ? FALSE : TRUE);
+      OnSelchangeHpComboEnd(); // Update allowable range message
+   }
+
+   ShowOffsetControlGroup(m_AllowEndAdjustment || m_AllowHpAdjustment);
+}
+
+void CGirderDescPrestressPage::ShowOffsetControlGroup(BOOL show)
+{
+   CWnd* pWnd;
+
+   int sShow = show ? SW_SHOW : SW_HIDE;
+
+   pWnd = GetDlgItem( IDC_VERT_GROUP );
+   ASSERT( pWnd );
+   pWnd->ShowWindow( sShow );
+
+   pWnd = GetDlgItem( IDC_VERT_STATIC );
+   ASSERT( pWnd );
+   pWnd->ShowWindow( sShow );
 }

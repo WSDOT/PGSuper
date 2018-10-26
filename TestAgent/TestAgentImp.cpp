@@ -748,7 +748,7 @@ bool CTestAgentImp::RunDeadLoadActionTest(std::_tofstream& resultsFile, std::_to
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30041, ")<<loc<<_T(", ")<< DISPLACEMENT(::ConvertFromSysUnits(pForces->GetDisplacement( lcDW, pgsTypes::BridgeSite1, poi, ctCummulative, bat ), unitMeasure::Millimeter)) <<_T(", 1, ")<<gdr<<std::endl;
 
       // overlay
-      pgsTypes::Stage overlay_stage = pBridge->IsFutureOverlay() ? pgsTypes::BridgeSite3 : pgsTypes::BridgeSite2;
+      pgsTypes::Stage overlay_stage = pgsTypes::BridgeSite2;
 
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30042, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pForce->GetMoment( overlay_stage, pftOverlay,poi, bat ), unitMeasure::NewtonMillimeter)) << _T(", 1, ")<<gdr<<std::endl;
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30043, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pForce->GetShear( overlay_stage, pftOverlay, poi, bat ).Left(), unitMeasure::Newton)) <<    _T(", 1, ")<<gdr<<std::endl;
