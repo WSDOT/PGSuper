@@ -29,11 +29,12 @@
 #include "LiveLoadDlg.h"
 #include <system\tokenizer.h>
 #include <Units\sysUnits.h>
+#include <EAF\EAFApp.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
-//#undef THIS_FILE
-//static char THIS_FILE[] = __FILE__;
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
 #endif
 
 GRID_IMPLEMENT_REGISTER(CLiveLoadAxleGrid, CS_DBLCLKS, 0, 0, 0);
@@ -62,9 +63,14 @@ END_MESSAGE_MAP()
 
 int CLiveLoadAxleGrid::GetColWidth(ROWCOL nCol)
 {
-	CRect rect = GetGridRect( );
+   if ( GetColCount() == 0 )
+      return CGXGridWnd::GetColWidth(nCol);
 
-   return rect.Width( )/3;
+	CRect rect = GetGridRect( );
+   int col_1 = rect.Width()/4;
+   int other_cols = (rect.Width()-col_1)/GetColCount();
+
+   return (nCol == 0 ? col_1 : other_cols);
 }
 
 BOOL CLiveLoadAxleGrid::OnLButtonClickedRowCol(ROWCOL nRow, ROWCOL nCol, UINT nFlags, CPoint pt)
@@ -139,10 +145,17 @@ void CLiveLoadAxleGrid::SetRowStyle(ROWCOL nRow)
 {
 	GetParam()->EnableUndo(FALSE);
 
+   // Axle #
+	this->SetStyleRange(CGXRange(nRow,0), CGXStyle()
+         .SetHorizontalAlignment(DT_CENTER)
+		);
+
+   // Weight
 	this->SetStyleRange(CGXRange(nRow,1), CGXStyle()
          .SetHorizontalAlignment(DT_RIGHT)
 		);
 
+   // Spacing
    if (nRow>1 )
    {
 	   this->SetStyleRange(CGXRange(nRow,2), CGXStyle()
@@ -256,8 +269,12 @@ BOOL CLiveLoadAxleGrid::OnValidateCell(ROWCOL nRow, ROWCOL nCol)
 
 void CLiveLoadAxleGrid::ResetGrid()
 {
-   CLiveLoadDlg* pdlg = (CLiveLoadDlg*)GetParent();
-   ASSERT(pdlg);
+   CEAFApp* pApp;
+   {
+      AFX_MANAGE_STATE(AfxGetAppModuleState());
+      pApp = (CEAFApp*)AfxGetApp();
+   }
+   const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
 	this->GetParam( )->EnableUndo(FALSE);
 
@@ -288,7 +305,8 @@ void CLiveLoadAxleGrid::ResetGrid()
 			.SetValue(_T("Axle #"))
 		);
 
-   CString cv = "Weight " + pdlg->GetForceUnitString();
+   CString cv;
+   cv.Format("Weight (%s)",pDisplayUnits->GeneralForce.UnitOfMeasure.UnitTag().c_str());
 	this->SetStyleRange(CGXRange(0,1), CGXStyle()
          .SetWrapText(TRUE)
 			.SetEnabled(FALSE)          // disables usage as current cell
@@ -297,7 +315,7 @@ void CLiveLoadAxleGrid::ResetGrid()
 			.SetValue(cv)
 		);
 
-   cv = "Spacing " + pdlg->GetLengthUnitString();
+   cv.Format("Spacing (%s)",pDisplayUnits->SpanLength.UnitOfMeasure.UnitTag().c_str());
 	this->SetStyleRange(CGXRange(0,2), CGXStyle()
          .SetWrapText(TRUE)
 			.SetEnabled(FALSE)          // disables usage as current cell
@@ -320,6 +338,13 @@ void CLiveLoadAxleGrid::ResetGrid()
 
 void CLiveLoadAxleGrid::UploadData(CDataExchange* pDX, CLiveLoadDlg* dlg)
 {
+   CEAFApp* pApp;
+   {
+      AFX_MANAGE_STATE(AfxGetAppModuleState());
+      pApp = (CEAFApp*)AfxGetApp();
+   }
+   const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
+
    AxleIndexType nAxles = (AxleIndexType)dlg->m_Axles.size();
    for (AxleIndexType axleIdx = 0; axleIdx < nAxles; axleIdx++)
    {
@@ -330,10 +355,10 @@ void CLiveLoadAxleGrid::UploadData(CDataExchange* pDX, CLiveLoadDlg* dlg)
    for (LiveLoadLibraryEntry::AxleContainer::const_iterator it = dlg->m_Axles.begin(); it!=dlg->m_Axles.end(); it++)
    {
       Float64 weight = it->Weight;
-      weight = ::ConvertFromSysUnits(weight, dlg->m_ForceUnit);
+      weight = ::ConvertFromSysUnits(weight, pDisplayUnits->GeneralForce.UnitOfMeasure  );
 
       Float64 spacing = it->Spacing;
-      spacing = ::ConvertFromSysUnits(spacing, dlg->m_LongLengthUnit);
+      spacing = ::ConvertFromSysUnits(spacing, pDisplayUnits->SpanLength.UnitOfMeasure );
 
       SetValueRange(CGXRange(nRow, 1), weight);
 
@@ -351,10 +376,10 @@ void CLiveLoadAxleGrid::UploadData(CDataExchange* pDX, CLiveLoadDlg* dlg)
    if (dlg->m_VariableAxleIndex != FIXED_AXLE_TRUCK)
    {
       Float64 min_spc = dlg->m_Axles[dlg->m_VariableAxleIndex].Spacing;
-      min_spc = ::ConvertFromSysUnits(min_spc, dlg->m_LongLengthUnit);
+      min_spc = ::ConvertFromSysUnits(min_spc, pDisplayUnits->SpanLength.UnitOfMeasure);
 
       Float64 max_spc = dlg->m_MaxVariableAxleSpacing;
-      max_spc = ::ConvertFromSysUnits(max_spc, dlg->m_LongLengthUnit);
+      max_spc = ::ConvertFromSysUnits(max_spc, pDisplayUnits->SpanLength.UnitOfMeasure);
 
       ATLASSERT(max_spc>min_spc);
       
@@ -369,6 +394,13 @@ void CLiveLoadAxleGrid::UploadData(CDataExchange* pDX, CLiveLoadDlg* dlg)
 
 void CLiveLoadAxleGrid::DownloadData(CDataExchange* pDX, CLiveLoadDlg* dlg)
 {
+   CEAFApp* pApp;
+   {
+      AFX_MANAGE_STATE(AfxGetAppModuleState());
+      pApp = (CEAFApp*)AfxGetApp();
+   }
+   const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
+
    ROWCOL naxles = GetRowCount();
 
    dlg->m_Axles.clear();
@@ -382,9 +414,9 @@ void CLiveLoadAxleGrid::DownloadData(CDataExchange* pDX, CLiveLoadDlg* dlg)
       double weight(0), min_spacing(0), max_spacing(0);
       SpacingType stype = ParseAxleRow(nRow, pDX, &weight, &min_spacing, &max_spacing);
 
-      weight = ::ConvertToSysUnits(weight, dlg->m_ForceUnit);
-      min_spacing = ::ConvertToSysUnits(min_spacing, dlg->m_LongLengthUnit);
-      max_spacing = ::ConvertToSysUnits(max_spacing, dlg->m_LongLengthUnit);
+      weight = ::ConvertToSysUnits(weight, pDisplayUnits->GeneralForce.UnitOfMeasure);
+      min_spacing = ::ConvertToSysUnits(min_spacing, pDisplayUnits->SpanLength.UnitOfMeasure);
+      max_spacing = ::ConvertToSysUnits(max_spacing, pDisplayUnits->SpanLength.UnitOfMeasure);
 
       LiveLoadLibraryEntry::Axle axle;
       if (stype==stNone)
@@ -542,4 +574,61 @@ void CLiveLoadAxleGrid::OnUpdateEditRemoverows(CCmdUI* pCmdUI)
 
 	CGXRangeList* pSelList = GetParam()->GetRangeList();
 	pCmdUI->Enable(pSelList->IsAnyCellFromCol(0) && pSelList->GetCount() == 1);
+}
+
+void CLiveLoadAxleGrid::Enable(BOOL bEnable)
+{
+	GetParam()->EnableUndo(FALSE);
+   GetParam()->SetLockReadOnly(FALSE);
+
+   CGXStyle style;
+   CGXRange range;
+   if ( bEnable )
+   {
+      // main grid field
+      style.SetEnabled(TRUE)
+           .SetReadOnly(FALSE)
+           .SetInterior(::GetSysColor(COLOR_WINDOW))
+           .SetTextColor(::GetSysColor(COLOR_WINDOWTEXT));
+
+      range = CGXRange(1,0,GetRowCount(),GetColCount());
+      SetStyleRange(range,style);
+
+      // Column Headings
+      style.SetInterior(::GetSysColor(COLOR_BTNFACE))
+           .SetEnabled(FALSE)
+           .SetReadOnly(TRUE);
+
+      range = CGXRange(0,0,0,GetColCount());
+      SetStyleRange(range,style);
+
+      // Row Headings
+      style.SetInterior(::GetSysColor(COLOR_BTNFACE))
+           .SetEnabled(FALSE)
+           .SetReadOnly(TRUE);
+
+      range = CGXRange(0,0,GetRowCount(),0);
+      SetStyleRange(range,style);
+
+
+      // spacing adjacent to axle 1 weight
+	   SetStyleRange(CGXRange(1,2), CGXStyle()
+            .SetEnabled(FALSE).
+            SetReadOnly(TRUE).
+            SetInterior( RGB(150,150,150) ));
+   }
+   else
+   {
+      style.SetEnabled(FALSE)
+           .SetReadOnly(TRUE)
+           .SetInterior(::GetSysColor(COLOR_BTNFACE))
+           .SetTextColor(::GetSysColor(COLOR_GRAYTEXT));
+
+      range = CGXRange(0,0,GetRowCount(),GetColCount());
+      SetStyleRange(range,style);
+   }
+
+
+   GetParam()->SetLockReadOnly(TRUE);
+   GetParam()->EnableUndo(FALSE);
 }

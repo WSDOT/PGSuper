@@ -22,7 +22,7 @@
 
 #include "StdAfx.h"
 #include "EditSpanLength.h"
-#include "PGSuper.h"
+#include "PGSuperDoc.h"
 #include <IFace\Project.h>
 
 txnEditSpanLength::txnEditSpanLength(SpanIndexType spanIdx,double oldSpanLength,double newSpanLength)
@@ -72,7 +72,7 @@ bool txnEditSpanLength::IsRepeatable()
 void txnEditSpanLength::DoExecute(int i)
 {
    CComPtr<IBroker> pBroker;
-   AfxGetBroker(&pBroker);
+   EAFGetBroker(&pBroker);
 
    GET_IFACE2(pBroker,IEvents, pEvents);
    pEvents->HoldEvents(); // don't fire any changed events until all changes are done

@@ -114,7 +114,7 @@ public:
 
    //------------------------------------------------------------------------
    void SetBroker(IBroker* pBroker);
-   void SetAgentID(AgentIDType agentID);
+   void SetStatusGroupID(StatusGroupIDType statusGroupID);
 
    pgsGirderArtifact Check(SpanIndexType span,GirderIndexType gdr);
    pgsDesignArtifact Design(SpanIndexType span,GirderIndexType gdr,arDesignOptions options);
@@ -143,7 +143,7 @@ private:
 
    // GROUP: DATA MEMBERS
    IBroker* m_pBroker;
-   AgentIDType m_AgentID;
+   StatusGroupIDType m_StatusGroupID;
 
    // ID of the status callbacks we have registered
    StatusCallbackIDType m_scidLiveLoad;

@@ -233,6 +233,10 @@ HRESULT CBridgeAgentImp::FinalConstruct()
    return S_OK;
 }
 
+void CBridgeAgentImp::FinalRelease()
+{
+}
+
 void CBridgeAgentImp::Invalidate( Uint16 level )
 {
 //   LOG("Invalidating");
@@ -277,7 +281,7 @@ void CBridgeAgentImp::Invalidate( Uint16 level )
 
       // remove our items from the status center
       GET_IFACE(IStatusCenter,pStatusCenter);
-      pStatusCenter->RemoveByAgentID(m_AgentID);
+      pStatusCenter->RemoveByStatusGroupID(m_StatusGroupID);
    }
 
    m_Level = level;
@@ -568,7 +572,7 @@ bool CBridgeAgentImp::ValidateConcrete()
 
       std::string strMsg = os.str();
 
-      pgsConcreteStrengthStatusItem* pStatusItem = new pgsConcreteStrengthStatusItem(pgsConcreteStrengthStatusItem::RailingSystem,pgsConcreteStrengthStatusItem::Density,0,0,m_AgentID,m_scidConcreteStrengthWarning,strMsg.c_str());
+      pgsConcreteStrengthStatusItem* pStatusItem = new pgsConcreteStrengthStatusItem(pgsConcreteStrengthStatusItem::RailingSystem,pgsConcreteStrengthStatusItem::Density,0,0,m_StatusGroupID,m_scidConcreteStrengthWarning,strMsg.c_str());
       pStatusCenter->Add(pStatusItem);
    }
 
@@ -579,37 +583,33 @@ bool CBridgeAgentImp::ValidateConcrete()
 
       std::string strMsg = os.str();
 
-      pgsConcreteStrengthStatusItem* pStatusItem = new pgsConcreteStrengthStatusItem(pgsConcreteStrengthStatusItem::RailingSystem,pgsConcreteStrengthStatusItem::Density,0,0,m_AgentID,m_scidConcreteStrengthWarning,strMsg.c_str());
+      pgsConcreteStrengthStatusItem* pStatusItem = new pgsConcreteStrengthStatusItem(pgsConcreteStrengthStatusItem::RailingSystem,pgsConcreteStrengthStatusItem::Density,0,0,m_StatusGroupID,m_scidConcreteStrengthWarning,strMsg.c_str());
       pStatusCenter->Add(pStatusItem);
    }
 
-
-   if ( pDeck->DeckType != pgsTypes::sdtNone )
+   // Check slab concrete
+   if ( m_pSlabConc->GetFc() < fcMin && !IsEqual(m_pSlabConc->GetFc(),fcMin) )
    {
-      // Check slab concrete
-      if ( m_pSlabConc->GetFc() < fcMin && !IsEqual(m_pSlabConc->GetFc(),fcMin) )
-      {
-         std::string strMsg;
-         strMsg = bSI ? "Slab concrete cannot be less than 28 MPa per LRFD 5.4.2.1" 
-                      : "Slab concrete cannot be less than 4 KSI per LRFD 5.4.2.1";
-         pgsConcreteStrengthStatusItem* pStatusItem = new pgsConcreteStrengthStatusItem(pgsConcreteStrengthStatusItem::Slab,pgsConcreteStrengthStatusItem::FinalStrength,0,0,m_AgentID,m_scidConcreteStrengthError,strMsg.c_str());
-         pStatusCenter->Add(pStatusItem);
-         strMsg += std::string("\nSee Status Center for Details");
-         THROW_UNWIND(strMsg.c_str(),-1);
-      }
+      std::string strMsg;
+      strMsg = bSI ? "Slab concrete cannot be less than 28 MPa per LRFD 5.4.2.1" 
+                   : "Slab concrete cannot be less than 4 KSI per LRFD 5.4.2.1";
+      pgsConcreteStrengthStatusItem* pStatusItem = new pgsConcreteStrengthStatusItem(pgsConcreteStrengthStatusItem::Slab,pgsConcreteStrengthStatusItem::FinalStrength,0,0,m_StatusGroupID,m_scidConcreteStrengthError,strMsg.c_str());
+      pStatusCenter->Add(pStatusItem);
+      //strMsg += std::string("\nSee Status Center for Details");
+      //THROW_UNWIND(strMsg.c_str(),-1);
+   }
 
-      double max_slab_fc = pLimits->GetMaxSlabFc();
-      if (  max_slab_fc < m_pSlabConc->GetFc() && !IsEqual(max_slab_fc,m_pSlabConc->GetFc()) )
-      {
-         double fcMax = ::ConvertFromSysUnits(max_slab_fc,pDisplayUnits->GetStressUnit().UnitOfMeasure);
-         std::ostringstream os;
-         os << "Slab concrete strength exceeds the normal value of " << fcMax << " " << pDisplayUnits->GetStressUnit().UnitOfMeasure.UnitTag();
+   double max_slab_fc = pLimits->GetMaxSlabFc();
+   if (  max_slab_fc < m_pSlabConc->GetFc() && !IsEqual(max_slab_fc,m_pSlabConc->GetFc()) )
+   {
+      double fcMax = ::ConvertFromSysUnits(max_slab_fc,pDisplayUnits->GetStressUnit().UnitOfMeasure);
+      std::ostringstream os;
+      os << "Slab concrete strength exceeds the normal value of " << fcMax << " " << pDisplayUnits->GetStressUnit().UnitOfMeasure.UnitTag();
 
          std::string strMsg = os.str();
 
-         pgsConcreteStrengthStatusItem* pStatusItem = new pgsConcreteStrengthStatusItem(pgsConcreteStrengthStatusItem::Slab,pgsConcreteStrengthStatusItem::FinalStrength,0,0,m_AgentID,m_scidConcreteStrengthWarning,strMsg.c_str());
-         pStatusCenter->Add(pStatusItem);
-      }
+      pgsConcreteStrengthStatusItem* pStatusItem = new pgsConcreteStrengthStatusItem(pgsConcreteStrengthStatusItem::Slab,pgsConcreteStrengthStatusItem::FinalStrength,0,0,m_StatusGroupID,m_scidConcreteStrengthWarning,strMsg.c_str());
+      pStatusCenter->Add(pStatusItem);
    }
 
    double max_wc = pLimits->GetMaxConcreteUnitWeight();
@@ -622,7 +622,7 @@ bool CBridgeAgentImp::ValidateConcrete()
 
       std::string strMsg = os.str();
 
-      pgsConcreteStrengthStatusItem* pStatusItem = new pgsConcreteStrengthStatusItem(pgsConcreteStrengthStatusItem::Slab,pgsConcreteStrengthStatusItem::Density,0,0,m_AgentID,m_scidConcreteStrengthWarning,strMsg.c_str());
+      pgsConcreteStrengthStatusItem* pStatusItem = new pgsConcreteStrengthStatusItem(pgsConcreteStrengthStatusItem::Slab,pgsConcreteStrengthStatusItem::Density,0,0,m_StatusGroupID,m_scidConcreteStrengthWarning,strMsg.c_str());
       pStatusCenter->Add(pStatusItem);
    }
 
@@ -633,7 +633,7 @@ bool CBridgeAgentImp::ValidateConcrete()
 
       std::string strMsg = os.str();
 
-      pgsConcreteStrengthStatusItem* pStatusItem = new pgsConcreteStrengthStatusItem(pgsConcreteStrengthStatusItem::Slab,pgsConcreteStrengthStatusItem::DensityForWeight,0,0,m_AgentID,m_scidConcreteStrengthWarning,strMsg.c_str());
+      pgsConcreteStrengthStatusItem* pStatusItem = new pgsConcreteStrengthStatusItem(pgsConcreteStrengthStatusItem::Slab,pgsConcreteStrengthStatusItem::DensityForWeight,0,0,m_StatusGroupID,m_scidConcreteStrengthWarning,strMsg.c_str());
       pStatusCenter->Add(pStatusItem);
    }
 
@@ -644,7 +644,7 @@ bool CBridgeAgentImp::ValidateConcrete()
 
       std::string strMsg = os.str();
 
-      pgsConcreteStrengthStatusItem* pStatusItem = new pgsConcreteStrengthStatusItem(pgsConcreteStrengthStatusItem::Slab,pgsConcreteStrengthStatusItem::Density,0,0,m_AgentID,m_scidConcreteStrengthWarning,strMsg.c_str());
+      pgsConcreteStrengthStatusItem* pStatusItem = new pgsConcreteStrengthStatusItem(pgsConcreteStrengthStatusItem::Slab,pgsConcreteStrengthStatusItem::Density,0,0,m_StatusGroupID,m_scidConcreteStrengthWarning,strMsg.c_str());
       pStatusCenter->Add(pStatusItem);
    }
 
@@ -658,7 +658,7 @@ bool CBridgeAgentImp::ValidateConcrete()
 
       std::string strMsg = os.str();
 
-      pgsConcreteStrengthStatusItem* pStatusItem = new pgsConcreteStrengthStatusItem(pgsConcreteStrengthStatusItem::Slab,pgsConcreteStrengthStatusItem::AggSize,0,0,m_AgentID,m_scidConcreteStrengthWarning,strMsg.c_str());
+      pgsConcreteStrengthStatusItem* pStatusItem = new pgsConcreteStrengthStatusItem(pgsConcreteStrengthStatusItem::Slab,pgsConcreteStrengthStatusItem::AggSize,0,0,m_StatusGroupID,m_scidConcreteStrengthWarning,strMsg.c_str());
       pStatusCenter->Add(pStatusItem);
    }
 
@@ -690,7 +690,7 @@ bool CBridgeAgentImp::ValidateConcrete()
 
             std::ostringstream os;
             os << "Span " << LABEL_SPAN(spanIdx) << " Girder " << LABEL_GIRDER(girderIdx) << ": " << strMsg;
-            pgsConcreteStrengthStatusItem* pStatusItem = new pgsConcreteStrengthStatusItem(pgsConcreteStrengthStatusItem::Girder,pgsConcreteStrengthStatusItem::FinalStrength,spanIdx,girderIdx,m_AgentID,m_scidConcreteStrengthError,os.str().c_str());
+            pgsConcreteStrengthStatusItem* pStatusItem = new pgsConcreteStrengthStatusItem(pgsConcreteStrengthStatusItem::Girder,pgsConcreteStrengthStatusItem::FinalStrength,spanIdx,girderIdx,m_StatusGroupID,m_scidConcreteStrengthError,os.str().c_str());
             pStatusCenter->Add(pStatusItem);
          }
 
@@ -701,7 +701,7 @@ bool CBridgeAgentImp::ValidateConcrete()
 
             std::string strMsg = os.str();
 
-            pgsConcreteStrengthStatusItem* pStatusItem = new pgsConcreteStrengthStatusItem(pgsConcreteStrengthStatusItem::Girder,pgsConcreteStrengthStatusItem::ReleaseStrength,spanIdx,girderIdx,m_AgentID,m_scidConcreteStrengthWarning,strMsg.c_str());
+            pgsConcreteStrengthStatusItem* pStatusItem = new pgsConcreteStrengthStatusItem(pgsConcreteStrengthStatusItem::Girder,pgsConcreteStrengthStatusItem::ReleaseStrength,spanIdx,girderIdx,m_StatusGroupID,m_scidConcreteStrengthWarning,strMsg.c_str());
             pStatusCenter->Add(pStatusItem);
 
             bThrow = false;
@@ -714,7 +714,7 @@ bool CBridgeAgentImp::ValidateConcrete()
 
             std::string strMsg = os.str();
 
-            pgsConcreteStrengthStatusItem* pStatusItem = new pgsConcreteStrengthStatusItem(pgsConcreteStrengthStatusItem::Girder,pgsConcreteStrengthStatusItem::FinalStrength,spanIdx,girderIdx,m_AgentID,m_scidConcreteStrengthWarning,strMsg.c_str());
+            pgsConcreteStrengthStatusItem* pStatusItem = new pgsConcreteStrengthStatusItem(pgsConcreteStrengthStatusItem::Girder,pgsConcreteStrengthStatusItem::FinalStrength,spanIdx,girderIdx,m_StatusGroupID,m_scidConcreteStrengthWarning,strMsg.c_str());
             pStatusCenter->Add(pStatusItem);
 
             bThrow = false;
@@ -728,7 +728,7 @@ bool CBridgeAgentImp::ValidateConcrete()
 
             std::string strMsg = os.str();
 
-            pgsConcreteStrengthStatusItem* pStatusItem = new pgsConcreteStrengthStatusItem(pgsConcreteStrengthStatusItem::Girder,pgsConcreteStrengthStatusItem::Density,spanIdx,girderIdx,m_AgentID,m_scidConcreteStrengthWarning,strMsg.c_str());
+            pgsConcreteStrengthStatusItem* pStatusItem = new pgsConcreteStrengthStatusItem(pgsConcreteStrengthStatusItem::Girder,pgsConcreteStrengthStatusItem::Density,spanIdx,girderIdx,m_StatusGroupID,m_scidConcreteStrengthWarning,strMsg.c_str());
             pStatusCenter->Add(pStatusItem);
 
             bThrow = false;
@@ -742,7 +742,7 @@ bool CBridgeAgentImp::ValidateConcrete()
 
             std::string strMsg = os.str();
 
-            pgsConcreteStrengthStatusItem* pStatusItem = new pgsConcreteStrengthStatusItem(pgsConcreteStrengthStatusItem::Girder,pgsConcreteStrengthStatusItem::DensityForWeight,spanIdx,girderIdx,m_AgentID,m_scidConcreteStrengthWarning,strMsg.c_str());
+            pgsConcreteStrengthStatusItem* pStatusItem = new pgsConcreteStrengthStatusItem(pgsConcreteStrengthStatusItem::Girder,pgsConcreteStrengthStatusItem::DensityForWeight,spanIdx,girderIdx,m_StatusGroupID,m_scidConcreteStrengthWarning,strMsg.c_str());
             pStatusCenter->Add(pStatusItem);
 
             bThrow = false;
@@ -755,7 +755,7 @@ bool CBridgeAgentImp::ValidateConcrete()
 
             std::string strMsg = os.str();
 
-            pgsConcreteStrengthStatusItem* pStatusItem = new pgsConcreteStrengthStatusItem(pgsConcreteStrengthStatusItem::Girder,pgsConcreteStrengthStatusItem::DensityForWeight,spanIdx,girderIdx,m_AgentID,m_scidConcreteStrengthWarning,strMsg.c_str());
+            pgsConcreteStrengthStatusItem* pStatusItem = new pgsConcreteStrengthStatusItem(pgsConcreteStrengthStatusItem::Girder,pgsConcreteStrengthStatusItem::DensityForWeight,spanIdx,girderIdx,m_StatusGroupID,m_scidConcreteStrengthWarning,strMsg.c_str());
             pStatusCenter->Add(pStatusItem);
 
             bThrow = false;
@@ -768,7 +768,7 @@ bool CBridgeAgentImp::ValidateConcrete()
 
             std::string strMsg = os.str();
 
-            pgsConcreteStrengthStatusItem* pStatusItem = new pgsConcreteStrengthStatusItem(pgsConcreteStrengthStatusItem::Girder,pgsConcreteStrengthStatusItem::AggSize,spanIdx,girderIdx,m_AgentID,m_scidConcreteStrengthWarning,strMsg.c_str());
+            pgsConcreteStrengthStatusItem* pStatusItem = new pgsConcreteStrengthStatusItem(pgsConcreteStrengthStatusItem::Girder,pgsConcreteStrengthStatusItem::AggSize,spanIdx,girderIdx,m_StatusGroupID,m_scidConcreteStrengthWarning,strMsg.c_str());
             pStatusCenter->Add(pStatusItem);
 
             bThrow = false;
@@ -794,7 +794,7 @@ void CBridgeAgentImp::InvalidateUserLoads()
 
    // remove our items from the status center
    GET_IFACE(IStatusCenter,pStatusCenter);
-   pStatusCenter->RemoveByAgentID(m_LoadAgentID);
+   pStatusCenter->RemoveByStatusGroupID(m_LoadStatusGroupID);
 }
 
 void CBridgeAgentImp::ValidateUserLoads()
@@ -845,7 +845,7 @@ void CBridgeAgentImp::ValidatePointLoads()
          {
             CString strMsg;
             strMsg.Format("Span %d for point load is out of range. Max span number is %d. This load will be ignored.", LABEL_SPAN(rpl.m_Span),num_spans);
-            pgsPointLoadStatusItem* pStatusItem = new pgsPointLoadStatusItem(ipl,m_LoadAgentID,m_scidPointLoadWarning,strMsg);
+            pgsPointLoadStatusItem* pStatusItem = new pgsPointLoadStatusItem(ipl,m_LoadStatusGroupID,m_scidPointLoadWarning,strMsg);
             pStatusCenter->Add(pStatusItem);
             continue; // break out of this cycle
          }
@@ -873,7 +873,7 @@ void CBridgeAgentImp::ValidatePointLoads()
             {
                CString strMsg;
                strMsg.Format("Girder %s for point load is out of range. Max girder number is %s. This load will be ignored.", LABEL_GIRDER(rpl.m_Girder), LABEL_GIRDER(num_gdrs-1));
-               pgsPointLoadStatusItem* pStatusItem = new pgsPointLoadStatusItem(ipl,m_LoadAgentID,m_scidPointLoadWarning,strMsg);
+               pgsPointLoadStatusItem* pStatusItem = new pgsPointLoadStatusItem(ipl,m_LoadStatusGroupID,m_scidPointLoadWarning,strMsg);
                pStatusCenter->Add(pStatusItem);
                continue;
             }
@@ -896,7 +896,7 @@ void CBridgeAgentImp::ValidatePointLoads()
             {
                CString strMsg;
                strMsg.Format("Magnitude of point load is zero - then why have it?");
-               pgsPointLoadStatusItem* pStatusItem = new pgsPointLoadStatusItem(ipl,m_LoadAgentID,m_scidPointLoadError,strMsg);
+               pgsPointLoadStatusItem* pStatusItem = new pgsPointLoadStatusItem(ipl,m_LoadStatusGroupID,m_scidPointLoadError,strMsg);
                pStatusCenter->Add(pStatusItem);
             }
 
@@ -914,7 +914,7 @@ void CBridgeAgentImp::ValidatePointLoads()
                {
                   CString strMsg;
                   strMsg.Format("Fractional location value for point load is out of range. Value must range from 0.0 to 1.0. This load will be ignored.");
-                  pgsPointLoadStatusItem* pStatusItem = new pgsPointLoadStatusItem(ipl,m_LoadAgentID,m_scidPointLoadWarning,strMsg);
+                  pgsPointLoadStatusItem* pStatusItem = new pgsPointLoadStatusItem(ipl,m_LoadStatusGroupID,m_scidPointLoadWarning,strMsg);
                   pStatusCenter->Add(pStatusItem);
                   continue;
                }
@@ -929,7 +929,7 @@ void CBridgeAgentImp::ValidatePointLoads()
                {
                   CString strMsg;
                   strMsg.Format("Location value for point load is out of range. Value must range from 0.0 to span length. This load will be ignored.");
-                  pgsPointLoadStatusItem* pStatusItem = new pgsPointLoadStatusItem(ipl,m_LoadAgentID,m_scidPointLoadWarning,strMsg);
+                  pgsPointLoadStatusItem* pStatusItem = new pgsPointLoadStatusItem(ipl,m_LoadStatusGroupID,m_scidPointLoadWarning,strMsg);
                   pStatusCenter->Add(pStatusItem);
                   continue;
                }
@@ -989,7 +989,7 @@ void CBridgeAgentImp::ValidateDistributedLoads()
          {
             CString strMsg;
             strMsg.Format("Span %d for Distributed load is out of range. Max span number is %d. This load will be ignored.", LABEL_SPAN(rpl.m_Span),num_spans);
-            pgsDistributedLoadStatusItem* pStatusItem = new pgsDistributedLoadStatusItem(ipl,m_LoadAgentID,m_scidDistributedLoadWarning,strMsg);
+            pgsDistributedLoadStatusItem* pStatusItem = new pgsDistributedLoadStatusItem(ipl,m_LoadStatusGroupID,m_scidDistributedLoadWarning,strMsg);
             pStatusCenter->Add(pStatusItem);
             continue; // break out of this cycle
          }
@@ -1017,7 +1017,7 @@ void CBridgeAgentImp::ValidateDistributedLoads()
             {
                CString strMsg;
                strMsg.Format("Girder %s for Distributed load is out of range. Max girder number is %s. This load will be ignored.", LABEL_GIRDER(rpl.m_Girder), LABEL_GIRDER(num_gdrs-1));
-               pgsDistributedLoadStatusItem* pStatusItem = new pgsDistributedLoadStatusItem(ipl,m_LoadAgentID,m_scidDistributedLoadWarning,strMsg);
+               pgsDistributedLoadStatusItem* pStatusItem = new pgsDistributedLoadStatusItem(ipl,m_LoadStatusGroupID,m_scidDistributedLoadWarning,strMsg);
                pStatusCenter->Add(pStatusItem);
                continue;
             }
@@ -1043,7 +1043,7 @@ void CBridgeAgentImp::ValidateDistributedLoads()
                {
                   CString strMsg;
                   strMsg.Format("Magnitude of Distributed load is zero - then why have it?");
-                  pgsDistributedLoadStatusItem* pStatusItem = new pgsDistributedLoadStatusItem(ipl,m_LoadAgentID,m_scidDistributedLoadError,strMsg);
+                  pgsDistributedLoadStatusItem* pStatusItem = new pgsDistributedLoadStatusItem(ipl,m_LoadStatusGroupID,m_scidDistributedLoadError,strMsg);
                   pStatusCenter->Add(pStatusItem);
                }
 
@@ -1061,7 +1061,7 @@ void CBridgeAgentImp::ValidateDistributedLoads()
                {
                   CString strMsg;
                   strMsg.Format("Magnitude of Distributed load is zero - then why have it?");
-                  pgsDistributedLoadStatusItem* pStatusItem = new pgsDistributedLoadStatusItem(ipl,m_LoadAgentID,m_scidDistributedLoadError,strMsg);
+                  pgsDistributedLoadStatusItem* pStatusItem = new pgsDistributedLoadStatusItem(ipl,m_LoadStatusGroupID,m_scidDistributedLoadError,strMsg);
                   pStatusCenter->Add(pStatusItem);
                }
 
@@ -1073,7 +1073,7 @@ void CBridgeAgentImp::ValidateDistributedLoads()
                {
                   CString strMsg;
                   strMsg.Format("Start locaton of distributed load is greater than end location. This load will be ignored.");
-                  pgsDistributedLoadStatusItem* pStatusItem = new pgsDistributedLoadStatusItem(ipl,m_LoadAgentID,103,strMsg);
+                  pgsDistributedLoadStatusItem* pStatusItem = new pgsDistributedLoadStatusItem(ipl,m_LoadStatusGroupID,103,strMsg);
                   pStatusCenter->Add(pStatusItem);
                   continue;
                }
@@ -1090,7 +1090,7 @@ void CBridgeAgentImp::ValidateDistributedLoads()
                   {
                      CString strMsg;
                      strMsg.Format("Fractional location value for Distributed load is out of range. Value must range from 0.0 to 1.0. This load will be ignored.");
-                     pgsDistributedLoadStatusItem* pStatusItem = new pgsDistributedLoadStatusItem(ipl,m_LoadAgentID,m_scidDistributedLoadWarning,strMsg);
+                     pgsDistributedLoadStatusItem* pStatusItem = new pgsDistributedLoadStatusItem(ipl,m_LoadStatusGroupID,m_scidDistributedLoadWarning,strMsg);
                      pStatusCenter->Add(pStatusItem);
                      continue;
                   }
@@ -1113,7 +1113,7 @@ void CBridgeAgentImp::ValidateDistributedLoads()
                   {
                      CString strMsg;
                      strMsg.Format("Location value for Distributed load is out of range. Value must range from 0.0 to span length. This load will be ignored.");
-                     pgsDistributedLoadStatusItem* pStatusItem = new pgsDistributedLoadStatusItem(ipl,m_LoadAgentID,m_scidDistributedLoadWarning,strMsg);
+                     pgsDistributedLoadStatusItem* pStatusItem = new pgsDistributedLoadStatusItem(ipl,m_LoadStatusGroupID,m_scidDistributedLoadWarning,strMsg);
                      pStatusCenter->Add(pStatusItem);
                      continue;
                   }
@@ -1165,7 +1165,7 @@ void CBridgeAgentImp::ValidateMomentLoads()
          {
             CString strMsg;
             strMsg.Format("Span %d for moment load is out of range. Max span number is %d. This load will be ignored.", LABEL_SPAN(rpl.m_Span),num_spans);
-            pgsMomentLoadStatusItem* pStatusItem = new pgsMomentLoadStatusItem(ipl,m_LoadAgentID,m_scidMomentLoadWarning,strMsg);
+            pgsMomentLoadStatusItem* pStatusItem = new pgsMomentLoadStatusItem(ipl,m_LoadStatusGroupID,m_scidMomentLoadWarning,strMsg);
             pStatusCenter->Add(pStatusItem);
             continue; // break out of this cycle
          }
@@ -1193,7 +1193,7 @@ void CBridgeAgentImp::ValidateMomentLoads()
             {
                CString strMsg;
                strMsg.Format("Girder %s for moment load is out of range. Max girder number is %s. This load will be ignored.", LABEL_GIRDER(rpl.m_Girder), LABEL_GIRDER(num_gdrs-1));
-               pgsMomentLoadStatusItem* pStatusItem = new pgsMomentLoadStatusItem(ipl,m_LoadAgentID,m_scidMomentLoadWarning,strMsg);
+               pgsMomentLoadStatusItem* pStatusItem = new pgsMomentLoadStatusItem(ipl,m_LoadStatusGroupID,m_scidMomentLoadWarning,strMsg);
                pStatusCenter->Add(pStatusItem);
                continue;
             }
@@ -1216,7 +1216,7 @@ void CBridgeAgentImp::ValidateMomentLoads()
             {
                CString strMsg;
                strMsg.Format("Magnitude of moment load is zero - then why have it?");
-               pgsMomentLoadStatusItem* pStatusItem = new pgsMomentLoadStatusItem(ipl,m_LoadAgentID,m_scidMomentLoadError,strMsg);
+               pgsMomentLoadStatusItem* pStatusItem = new pgsMomentLoadStatusItem(ipl,m_LoadStatusGroupID,m_scidMomentLoadError,strMsg);
                pStatusCenter->Add(pStatusItem);
             }
 
@@ -1234,7 +1234,7 @@ void CBridgeAgentImp::ValidateMomentLoads()
                {
                   CString strMsg;
                   strMsg.Format("Fractional location value for moment load is out of range. Value must range from 0.0 to 1.0. This load will be ignored.");
-                  pgsMomentLoadStatusItem* pStatusItem = new pgsMomentLoadStatusItem(ipl,m_LoadAgentID,m_scidMomentLoadWarning,strMsg);
+                  pgsMomentLoadStatusItem* pStatusItem = new pgsMomentLoadStatusItem(ipl,m_LoadStatusGroupID,m_scidMomentLoadWarning,strMsg);
                   pStatusCenter->Add(pStatusItem);
                   continue;
                }
@@ -1249,7 +1249,7 @@ void CBridgeAgentImp::ValidateMomentLoads()
                {
                   CString strMsg;
                   strMsg.Format("Location value for moment load is out of range. Value must range from 0.0 to span length. This load will be ignored.");
-                  pgsMomentLoadStatusItem* pStatusItem = new pgsMomentLoadStatusItem(ipl,m_LoadAgentID,m_scidMomentLoadWarning,strMsg);
+                  pgsMomentLoadStatusItem* pStatusItem = new pgsMomentLoadStatusItem(ipl,m_LoadStatusGroupID,m_scidMomentLoadWarning,strMsg);
                   pStatusCenter->Add(pStatusItem);
                   continue;
                }
@@ -1527,7 +1527,7 @@ bool CBridgeAgentImp::BuildCogoModel()
                std::ostringstream os;
                os << "The central angle of curve " << curveID << " is 0 or 180 degrees";
                std::string strMsg = os.str();
-               pgsAlignmentDescriptionStatusItem* p_status_item = new pgsAlignmentDescriptionStatusItem(m_AgentID,m_scidAlignmentError,0,strMsg.c_str());
+               pgsAlignmentDescriptionStatusItem* p_status_item = new pgsAlignmentDescriptionStatusItem(m_StatusGroupID,m_scidAlignmentError,0,strMsg.c_str());
                GET_IFACE(IStatusCenter,pStatusCenter);
                pStatusCenter->Add(p_status_item);
                strMsg += std::string("\nSee Status Center for Details");
@@ -1578,7 +1578,7 @@ bool CBridgeAgentImp::BuildCogoModel()
                      os << "Horizontal curve " << (curveIdx+1) << " begins before curve " << (curveIdx) << " ends. Curve " << (curveIdx+1) << " has been adjusted.";
                      std::string strMsg = os.str();
                      
-                     pgsAlignmentDescriptionStatusItem* p_status_item = new pgsAlignmentDescriptionStatusItem(m_AgentID,m_scidAlignmentWarning,0,strMsg.c_str());
+                     pgsAlignmentDescriptionStatusItem* p_status_item = new pgsAlignmentDescriptionStatusItem(m_StatusGroupID,m_scidAlignmentWarning,0,strMsg.c_str());
                      GET_IFACE(IStatusCenter,pStatusCenter);
                      pStatusCenter->Add(p_status_item);
 
@@ -1590,7 +1590,7 @@ bool CBridgeAgentImp::BuildCogoModel()
                      os << "Horizontal curve " << (curveIdx+1) << " begins before curve " << (curveIdx) << " ends. Correct the curve data before proceeding";
                      std::string strMsg = os.str();
                      
-                     pgsAlignmentDescriptionStatusItem* p_status_item = new pgsAlignmentDescriptionStatusItem(m_AgentID,m_scidAlignmentError,0,strMsg.c_str());
+                     pgsAlignmentDescriptionStatusItem* p_status_item = new pgsAlignmentDescriptionStatusItem(m_StatusGroupID,m_scidAlignmentError,0,strMsg.c_str());
                      GET_IFACE(IStatusCenter,pStatusCenter);
                      pStatusCenter->Add(p_status_item);
 
@@ -1799,7 +1799,7 @@ bool CBridgeAgentImp::BuildCogoModel()
 
                std::string strMsg = os.str();
 
-               pgsAlignmentDescriptionStatusItem* p_status_item = new pgsAlignmentDescriptionStatusItem(m_AgentID,m_scidAlignmentError,1,strMsg.c_str());
+               pgsAlignmentDescriptionStatusItem* p_status_item = new pgsAlignmentDescriptionStatusItem(m_StatusGroupID,m_scidAlignmentError,1,strMsg.c_str());
                GET_IFACE(IStatusCenter,pStatusCenter);
                pStatusCenter->Add(p_status_item);
 
@@ -1827,7 +1827,7 @@ bool CBridgeAgentImp::BuildCogoModel()
                os << "Entry and exit grades are the same on curve " << curveID;
                std::string strMsg = os.str();
 
-               pgsAlignmentDescriptionStatusItem* p_status_item = new pgsAlignmentDescriptionStatusItem(m_AgentID,m_scidAlignmentWarning,1,strMsg.c_str());
+               pgsAlignmentDescriptionStatusItem* p_status_item = new pgsAlignmentDescriptionStatusItem(m_StatusGroupID,m_scidAlignmentWarning,1,strMsg.c_str());
                GET_IFACE(IStatusCenter,pStatusCenter);
                pStatusCenter->Add(p_status_item);
             }
@@ -1890,7 +1890,6 @@ bool CBridgeAgentImp::BuildBridgeModel()
 
    if ( !LayoutTrafficBarriers(pBridgeDesc) )
       return false;
-  
 
    // check bridge for errors - will throw an exception if there are errors
    CheckBridge();
@@ -1901,7 +1900,7 @@ bool CBridgeAgentImp::BuildBridgeModel()
    // Create effective flange width tool
    CComObject<CEffectiveFlangeWidthTool>* pTool;
    HRESULT hr = CComObject<CEffectiveFlangeWidthTool>::CreateInstance(&pTool);
-   pTool->Init(m_pBroker,m_AgentID);
+   pTool->Init(m_pBroker,m_StatusGroupID);
    m_EffFlangeWidthTool = pTool;
    if ( FAILED(hr) || m_EffFlangeWidthTool == NULL )
       THROW_UNWIND("Custom Effective Flange Width Tool not created",-1);
@@ -1969,7 +1968,7 @@ bool CBridgeAgentImp::LayoutPiersAndSpans(const CBridgeDescription* pBridgeDesc)
          std::ostringstream os;
          os << "Pier " << pierIdx+1 << " has excessive Skew.";
 
-         pgsBridgeDescriptionStatusItem* pStatusItem = new pgsBridgeDescriptionStatusItem(m_AgentID,m_scidBridgeDescriptionError,0,os.str().c_str());
+         pgsBridgeDescriptionStatusItem* pStatusItem = new pgsBridgeDescriptionStatusItem(m_StatusGroupID,m_scidBridgeDescriptionError,0,os.str().c_str());
          pStatusCenter->Add(pStatusItem);
 
          os << "See Status Center for Details";
@@ -2180,7 +2179,7 @@ bool CBridgeAgentImp::LayoutGirders(const CBridgeDescription* pBridgeDesc)
          girder->put_AllowOddNumberOfHarpedStrands(pGirderEntry->OddNumberOfHarpedStrands() ? VARIANT_TRUE : VARIANT_FALSE);
 
          // Let beam factory build segments as necessary to represent the beam
-         beamFactory->LayoutGirderLine(m_pBroker,m_AgentID,spanIdx,gdrIdx,ssmbr);
+         beamFactory->LayoutGirderLine(m_pBroker,m_StatusGroupID,spanIdx,gdrIdx,ssmbr);
 
 #pragma Reminder("UPDATE: This is wrong for harping point measured as distance")
 
@@ -2801,7 +2800,7 @@ void CBridgeAgentImp::ValidateGirder()
          if (end_ecc>hp_ecc+TOLERANCE)
          {
             const char* msg = "Harped strand eccentricity at girder ends is larger than at harping points. Drape is upside down";
-            pgsGirderDescriptionStatusItem* pStatusItem = new pgsGirderDescriptionStatusItem(span,gdr,0,m_AgentID,m_scidGirderDescriptionWarning,msg);
+            pgsGirderDescriptionStatusItem* pStatusItem = new pgsGirderDescriptionStatusItem(span,gdr,0,m_StatusGroupID,m_scidGirderDescriptionWarning,msg);
             pStatusCenter->Add(pStatusItem);
          }
       }
@@ -3192,7 +3191,7 @@ void CBridgeAgentImp::LayoutHarpingPointPoi(SpanIndexType span,GirderIndexType g
          << " by changing the harping point location in the girder library entry."<<std::endl;
 
       pgsBridgeDescriptionStatusItem* pStatusItem = 
-         new pgsBridgeDescriptionStatusItem(m_AgentID,m_scidBridgeDescriptionError,0,os.str().c_str());
+         new pgsBridgeDescriptionStatusItem(m_StatusGroupID,m_scidBridgeDescriptionError,0,os.str().c_str());
 
       pStatusCenter->Add(pStatusItem);
 
@@ -3792,7 +3791,7 @@ STDMETHODIMP CBridgeAgentImp::Init()
 {
    CREATE_LOGFILE("BridgeAgent");
    AGENT_INIT; // this macro defines pStatusCenter
-   m_LoadAgentID = pStatusCenter->GetAgentID();
+   m_LoadStatusGroupID = pStatusCenter->CreateStatusGroupID();
 
    // Setup cogo model and roadway alignment
    // Alignment goes between two dummy cogo points
@@ -3823,20 +3822,20 @@ STDMETHODIMP CBridgeAgentImp::Init()
       THROW_UNWIND("GenericBridgeTools::SectionPropertyTool not created",-1);
 
    // Register status callbacks that we want to use
-   m_scidInformationalError       = pStatusCenter->RegisterCallback(new pgsInformationalStatusCallback(pgsTypes::statusError)); 
-   m_scidInformationalWarning     = pStatusCenter->RegisterCallback(new pgsInformationalStatusCallback(pgsTypes::statusWarning)); 
-   m_scidBridgeDescriptionError   = pStatusCenter->RegisterCallback(new pgsBridgeDescriptionStatusCallback(m_pBroker,pgsTypes::statusError));
-   m_scidAlignmentWarning         = pStatusCenter->RegisterCallback(new pgsAlignmentDescriptionStatusCallback(m_pBroker,pgsTypes::statusWarning));
-   m_scidAlignmentError           = pStatusCenter->RegisterCallback(new pgsAlignmentDescriptionStatusCallback(m_pBroker,pgsTypes::statusError));
-   m_scidGirderDescriptionWarning = pStatusCenter->RegisterCallback(new pgsGirderDescriptionStatusCallback(m_pBroker,pgsTypes::statusWarning));
-   m_scidConcreteStrengthWarning  = pStatusCenter->RegisterCallback(new pgsConcreteStrengthStatusCallback(m_pBroker,pgsTypes::statusWarning));
-   m_scidConcreteStrengthError    = pStatusCenter->RegisterCallback(new pgsConcreteStrengthStatusCallback(m_pBroker,pgsTypes::statusError));
-   m_scidPointLoadWarning         = pStatusCenter->RegisterCallback(new pgsPointLoadStatusCallback(m_pBroker,pgsTypes::statusWarning));
-   m_scidPointLoadError           = pStatusCenter->RegisterCallback(new pgsPointLoadStatusCallback(m_pBroker,pgsTypes::statusError));
-   m_scidDistributedLoadWarning   = pStatusCenter->RegisterCallback(new pgsDistributedLoadStatusCallback(m_pBroker,pgsTypes::statusWarning));
-   m_scidDistributedLoadError     = pStatusCenter->RegisterCallback(new pgsDistributedLoadStatusCallback(m_pBroker,pgsTypes::statusError));
-   m_scidMomentLoadWarning        = pStatusCenter->RegisterCallback(new pgsMomentLoadStatusCallback(m_pBroker,pgsTypes::statusWarning));
-   m_scidMomentLoadError          = pStatusCenter->RegisterCallback(new pgsMomentLoadStatusCallback(m_pBroker,pgsTypes::statusError));
+   m_scidInformationalError       = pStatusCenter->RegisterCallback(new pgsInformationalStatusCallback(eafTypes::statusError)); 
+   m_scidInformationalWarning     = pStatusCenter->RegisterCallback(new pgsInformationalStatusCallback(eafTypes::statusWarning)); 
+   m_scidBridgeDescriptionError   = pStatusCenter->RegisterCallback(new pgsBridgeDescriptionStatusCallback(m_pBroker,eafTypes::statusError));
+   m_scidAlignmentWarning         = pStatusCenter->RegisterCallback(new pgsAlignmentDescriptionStatusCallback(m_pBroker,eafTypes::statusWarning));
+   m_scidAlignmentError           = pStatusCenter->RegisterCallback(new pgsAlignmentDescriptionStatusCallback(m_pBroker,eafTypes::statusError));
+   m_scidGirderDescriptionWarning = pStatusCenter->RegisterCallback(new pgsGirderDescriptionStatusCallback(m_pBroker,eafTypes::statusWarning));
+   m_scidConcreteStrengthWarning  = pStatusCenter->RegisterCallback(new pgsConcreteStrengthStatusCallback(m_pBroker,eafTypes::statusWarning));
+   m_scidConcreteStrengthError    = pStatusCenter->RegisterCallback(new pgsConcreteStrengthStatusCallback(m_pBroker,eafTypes::statusError));
+   m_scidPointLoadWarning         = pStatusCenter->RegisterCallback(new pgsPointLoadStatusCallback(m_pBroker,eafTypes::statusWarning));
+   m_scidPointLoadError           = pStatusCenter->RegisterCallback(new pgsPointLoadStatusCallback(m_pBroker,eafTypes::statusError));
+   m_scidDistributedLoadWarning   = pStatusCenter->RegisterCallback(new pgsDistributedLoadStatusCallback(m_pBroker,eafTypes::statusWarning));
+   m_scidDistributedLoadError     = pStatusCenter->RegisterCallback(new pgsDistributedLoadStatusCallback(m_pBroker,eafTypes::statusError));
+   m_scidMomentLoadWarning        = pStatusCenter->RegisterCallback(new pgsMomentLoadStatusCallback(m_pBroker,eafTypes::statusWarning));
+   m_scidMomentLoadError          = pStatusCenter->RegisterCallback(new pgsMomentLoadStatusCallback(m_pBroker,eafTypes::statusError));
 
    return S_OK;
 }
@@ -3862,9 +3861,6 @@ STDMETHODIMP CBridgeAgentImp::Reset()
 
 STDMETHODIMP CBridgeAgentImp::ShutDown()
 {
-   AGENT_CLEAR_INTERFACE_CACHE;
-   CLOSE_LOGFILE;
-
    //
    // Detach to connection points
    //
@@ -3883,6 +3879,10 @@ STDMETHODIMP CBridgeAgentImp::ShutDown()
    hr = pCP->Unadvise( m_dwSpecificationCookie );
    CHECK( SUCCEEDED(hr) );
    pCP.Release(); // Recycle the connection point
+
+   CLOSE_LOGFILE;
+
+   AGENT_CLEAR_INTERFACE_CACHE;
 
    return S_OK;
 }
@@ -4067,6 +4067,21 @@ Float64 CBridgeAgentImp::GetLength()
    VALIDATE( BRIDGE );
    Float64 length;
    m_Bridge->get_Length(&length);
+   return length;
+}
+
+Float64 CBridgeAgentImp::GetSpanLength(SpanIndexType spanIdx)
+{
+   VALIDATE( BRIDGE );
+   CComPtr<ISpanCollection> spans;
+   m_Bridge->get_Spans(&spans);
+
+   CComPtr<ISpan> span;
+   spans->get_Item(spanIdx,&span);
+
+   Float64 length;
+   span->get_Length(&length);
+
    return length;
 }
 
@@ -4582,7 +4597,7 @@ Float64 CBridgeAgentImp::GetCLPierToCLBearingDistance(SpanIndexType span,GirderI
          break;
 
       case pgsTypes::Back: // at end of span
-         dist = GetGirderStartBearingOffset(span,gdr);
+         dist = GetGirderEndBearingOffset(span,gdr);
          break;
    }
 
@@ -4955,7 +4970,7 @@ std::vector<IntermedateDiaphragm> CBridgeAgentImp::GetIntermediateDiaphragms(pgs
          GET_IFACE(IStatusCenter,pStatusCenter);
          std::string str("An interior diaphragm is located outside of the girder length. The diaphragm load will not be applied. Check the diaphragm rules for this girder.");
 
-         pgsInformationalStatusItem* pStatusItem = new pgsInformationalStatusItem(m_AgentID,m_scidInformationalError,str.c_str());
+         pgsInformationalStatusItem* pStatusItem = new pgsInformationalStatusItem(m_StatusGroupID,m_scidInformationalError,str.c_str());
          pStatusCenter->Add(pStatusItem);
          break;
       }
@@ -5946,6 +5961,34 @@ bool CBridgeAgentImp::GetSkewAngle(Float64 station,const char* strOrientation,Fl
    return true;
 }
 
+bool CBridgeAgentImp::ProcessNegativeMoments(SpanIndexType spanIdx)
+{
+   bool bProcessNegativeMoments = false;
+
+   PierIndexType prev_pier = spanIdx;
+   PierIndexType next_pier = prev_pier + 1;
+
+   // don't need to process negative moment capacity if this is a simple span design
+   // or if there isn't any continuity
+   GET_IFACE(ISpecification,pSpec);
+   pgsTypes::AnalysisType analysisType = pSpec->GetAnalysisType();
+
+   if ( analysisType == pgsTypes::Continuous || analysisType == pgsTypes::Envelope )
+   {
+      bool bContinuousAtPrevPier,bContinuousAtNextPier,bValue;
+      IsContinuousAtPier(prev_pier,&bValue,&bContinuousAtPrevPier);
+      IsContinuousAtPier(next_pier,&bContinuousAtNextPier,&bValue);
+
+      bool bIntegralAtPrevPier,bIntegralAtNextPier;
+      IsIntegralAtPier(prev_pier,&bValue,&bIntegralAtPrevPier);
+      IsIntegralAtPier(next_pier,&bIntegralAtNextPier,&bValue);
+
+      bProcessNegativeMoments = ( bContinuousAtPrevPier || bContinuousAtNextPier || bIntegralAtPrevPier || bIntegralAtNextPier );
+   }
+
+   return bProcessNegativeMoments;
+}
+
 /////////////////////////////////////////////////////////////////////////
 // IBridgeMaterial
 //
@@ -6260,6 +6303,54 @@ CComBSTR CBridgeAgentImp::GetLimitStateName(pgsTypes::LimitState ls)
 
       case pgsTypes::FatigueI:
          bstrLimitState = "Fatigue I";
+         break;
+
+      case pgsTypes::StrengthI_Inventory:
+         bstrLimitState = "Strength I (Inventory)";
+         break;
+
+      case pgsTypes::StrengthI_Operating:
+         bstrLimitState = "Strength I (Operating)";
+         break;
+
+      case pgsTypes::ServiceIII_Inventory:
+         bstrLimitState = "Service III (Inventory)";
+         break;
+
+      case pgsTypes::ServiceIII_Operating:
+         bstrLimitState = "Service III (Operating)";
+         break;
+
+      case pgsTypes::StrengthI_LegalRoutine:
+         bstrLimitState = "Strength I (Legal - Routine)";
+         break;
+
+      case pgsTypes::StrengthI_LegalSpecial:
+         bstrLimitState = "Strength I (Legal - Special)";
+         break;
+
+      case pgsTypes::ServiceIII_LegalRoutine:
+         bstrLimitState = "Service III (Legal - Routine)";
+         break;
+
+      case pgsTypes::ServiceIII_LegalSpecial:
+         bstrLimitState = "Service III (Legal - Special)";
+         break;
+
+      case pgsTypes::StrengthII_PermitRoutine:
+         bstrLimitState = "Strength II (Routine Permit Rating)";
+         break;
+
+      case pgsTypes::ServiceI_PermitRoutine:
+         bstrLimitState = "Service I (Routine Permit Rating)";
+         break;
+
+      case pgsTypes::StrengthII_PermitSpecial:
+         bstrLimitState = "Strength II (Special Permit Rating)";
+         break;
+
+      case pgsTypes::ServiceI_PermitSpecial:
+         bstrLimitState = "Service I (Special Permit Rating)";
          break;
 
       default:
@@ -11332,7 +11423,7 @@ void CBridgeAgentImp::GetProfileShape(SpanIndexType spanIdx,GirderIndexType gdrI
    CComPtr<IBeamFactory> beamFactory;
    pGirderEntry->GetBeamFactory(&beamFactory);
 
-   beamFactory->CreateGirderProfile(m_pBroker,m_AgentID,spanIdx,gdrIdx,pGirderEntry->GetDimensions(),ppShape);
+   beamFactory->CreateGirderProfile(m_pBroker,m_StatusGroupID,spanIdx,gdrIdx,pGirderEntry->GetDimensions(),ppShape);
 }
 
 bool CBridgeAgentImp::HasShearKey(SpanIndexType spanIdx,GirderIndexType gdrIdx,pgsTypes::SupportedBeamSpacing spacingType)
@@ -12227,7 +12318,7 @@ void CBridgeAgentImp::CheckBridge()
                << " does not have a positive length." << std::endl;
 
             pgsBridgeDescriptionStatusItem* pStatusItem = 
-               new pgsBridgeDescriptionStatusItem(m_AgentID,m_scidBridgeDescriptionError,0,os.str().c_str());
+               new pgsBridgeDescriptionStatusItem(m_StatusGroupID,m_scidBridgeDescriptionError,0,os.str().c_str());
 
             pStatusCenter->Add(pStatusItem);
 
@@ -12256,7 +12347,7 @@ void CBridgeAgentImp::CheckBridge()
             {
                CString strMsg;
                strMsg.Format("Span %d Girder %s, Temporary strands are not in the top half of the girder",LABEL_SPAN(spanIdx),LABEL_GIRDER(gdrIdx));
-               pgsInformationalStatusItem* pStatusItem = new pgsInformationalStatusItem(m_AgentID,m_scidInformationalWarning,strMsg);
+               pgsInformationalStatusItem* pStatusItem = new pgsInformationalStatusItem(m_StatusGroupID,m_scidInformationalWarning,strMsg);
                pStatusCenter->Add(pStatusItem);
             }
          }

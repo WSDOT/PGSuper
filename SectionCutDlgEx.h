@@ -39,7 +39,7 @@ public:
    CSectionCutDlgEx(CWnd* pParent=NULL);   // standard constructor
 
 	CSectionCutDlgEx(long nHarpPoints,Float64 value, Float64 lowerBound, Float64 upperBound, 
-		bool isUnitsSI, CGirderModelChildFrame::CutLocation, CWnd* pParent = NULL);
+		CGirderModelChildFrame::CutLocation, CWnd* pParent = NULL);
 
    void SetValue(Float64 value);
    Float64 GetValue()const;
@@ -47,8 +47,6 @@ public:
    CGirderModelChildFrame::CutLocation GetCutLocation() const;
    void SetBounds(Float64 lowerBound, Float64 upperBound);
    void GetBounds(Float64* plowerBound, Float64* pupperBound);
-   void SetUnitMode(bool isUnitsSi) {m_IsUnitsSi=isUnitsSi;}
-   bool GetUnitMode() const {return m_IsUnitsSi;}
 // Dialog Data
 	//{{AFX_DATA(CSectionCutDlgEx)
 	enum { IDD = IDD_SECTION_CUT_DIALOG_EX };
@@ -82,7 +80,6 @@ protected:
 
 private:
    long m_nHarpPoints;
-   bool      m_IsUnitsSi;
    Float64	 m_Value;
    Float64   m_LowerBound;
    Float64   m_UpperBound;

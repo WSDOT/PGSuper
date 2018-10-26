@@ -113,7 +113,7 @@ BOOL CDesignGirderDlg::OnInitDialog()
    for ( SpanIndexType i = 0; i < cSpan; i++ )
    {
       CString strSpan;
-      strSpan.Format("Span %d",i+1);
+      strSpan.Format("Span %d",LABEL_SPAN(i));
       pSpanBox->AddString(strSpan);
    }
 
@@ -189,7 +189,6 @@ BOOL CDesignGirderDlg::OnToolTipNotify(UINT id,NMHDR* pNMHDR, LRESULT* pResult)
       switch(nID)
       {
       case IDC_PICTURE:
-         ::SendMessage(pNMHDR->hwndFrom,TTM_SETMAXTIPWIDTH,0,300); // makes it a multi-line tooltip
          pTTT->lpszText = m_strToolTip.LockBuffer();
          pTTT->hinst = NULL;
          break;
@@ -197,6 +196,9 @@ BOOL CDesignGirderDlg::OnToolTipNotify(UINT id,NMHDR* pNMHDR, LRESULT* pResult)
       default:
          return FALSE;
       }
+
+      ::SendMessage(pNMHDR->hwndFrom,TTM_SETDELAYTIME,TTDT_AUTOPOP,TOOLTIP_DURATION); // sets the display time to 10 seconds
+      ::SendMessage(pNMHDR->hwndFrom,TTM_SETMAXTIPWIDTH,0,TOOLTIP_WIDTH); // makes it a multi-line tooltip
 
       return TRUE;
    }

@@ -25,8 +25,8 @@ var machine = objNet.ComputerName;
 machine = machine.toUpperCase();
 if (machine=="RDPTHINKPAD")
    PGSuperDrive = "C:";
-else if (machine=="HQA0731002")
-   PGSuperDrive = "F:";
+else if (machine=="HQA7326026")
+   PGSuperDrive = "C:";
 
 var wsShell = new ActiveXObject("WScript.Shell");
 var FSO = new ActiveXObject("Scripting.FileSystemObject");
@@ -43,7 +43,6 @@ if (st!=0)
 var currSpan="All";
 var currGirder="EI";
 
-var OldLibraryPathRegistrySetting = new String;
 var OldCacheLibraryPathRegistrySetting = new String;
 var NewLibraryPathRegistrySetting = new String(PGSuperDrive+"\\Arp\\PGSuper\\RegressionTest\\PGSuperRegTestLibrary.lbr");
 
@@ -170,10 +169,7 @@ function InitTest (currFolder)
    CleanFolder(currFolder);
    
    // get current path for master library and replace it with local value
-   OldLibraryPathRegistrySetting = wsShell.RegRead("HKEY_CURRENT_USER\\Software\\Washington State Department of Transportation\\PGSuper\\Options\\MasterLibraryLocal");
    OldCacheLibraryPathRegistrySetting = wsShell.RegRead("HKEY_CURRENT_USER\\Software\\Washington State Department of Transportation\\PGSuper\\Options\\MasterLibraryCache");
-   wsShell.RegWrite("HKEY_CURRENT_USER\\Software\\Washington State Department of Transportation\\PGSuper\\Options\\MasterLibraryLocal",
-                    NewLibraryPathRegistrySetting);
    wsShell.RegWrite("HKEY_CURRENT_USER\\Software\\Washington State Department of Transportation\\PGSuper\\Options\\MasterLibraryCache",
                     NewLibraryPathRegistrySetting);
 }
@@ -217,13 +213,8 @@ function CleanUpTest()
    wsShell = new ActiveXObject("WScript.Shell");
    
    // restore registry to where it was before we started
-   if (OldLibraryPathRegistrySetting != "")
-   {
-      wsShell.RegWrite("HKEY_CURRENT_USER\\Software\\Washington State Department of Transportation\\PGSuper\\Options\\MasterLibraryLocal",
-                    OldLibraryPathRegistrySetting);
-      wsShell.RegWrite("HKEY_CURRENT_USER\\Software\\Washington State Department of Transportation\\PGSuper\\Options\\MasterLibraryCache",
-                    OldCacheLibraryPathRegistrySetting);
-   }
+   wsShell.RegWrite("HKEY_CURRENT_USER\\Software\\Washington State Department of Transportation\\PGSuper\\Options\\MasterLibraryCache",
+                OldCacheLibraryPathRegistrySetting);
 }
 
 function CheckResults(currFolder) 

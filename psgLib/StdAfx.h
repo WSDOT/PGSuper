@@ -60,9 +60,15 @@
 #endif // NOGRID
 
 #include <atlbase.h>
+#include <atlcom.h>
+
+#include <EAF\EAFResources.h> // so all files have EAF resource identifiers
+
 
 #include <LibraryFw\LibraryFw.h>
 #include <HtmlHelp.h>
+#include <afxdlgs.h>
+#include <afxwin.h>
 
 //{{AFX_INSERT_LOCATION}}
 // Microsoft Developer Studio will insert additional declarations immediately before the previous line.

@@ -27,6 +27,8 @@
 #include "AnalysisAgentImp.h"
 #include "..\PGSuperException.h"
 
+#include "PGSuperLoadCombinationResponse.h"
+
 #include "StatusItems.h"
 
 #include <..\HtmlHelp\HelpTopics.hh>
@@ -39,10 +41,11 @@
 #include <IFace\Alignment.h>
 #include <IFace\Project.h>
 #include <IFace\GirderHandlingPointOfInterest.h>
+#include <IFace\RatingSpecification.h>
 
 #include <PgsExt\PointOfInterest.h>
 #include <PgsExt\BridgeDescription.h>
-#include <PgsExt\AutoProgress.h>
+#include <EAF\EAFAutoProgress.h>
 #include <PgsExt\GirderData.h>
 #include <PgsExt\LoadFactors.h>
 #include <PgsExt\DebondUtil.h>
@@ -144,7 +147,16 @@ const Int32 g_TopSlab            = (Int32)pgsTypes::TopSlab;
 
 const Float64 TOL=1.0e-04;
 
-const LiveLoadModelType g_LiveLoadModelType[4] = {lltDesign,lltPermit,lltFatigue,lltPedestrian};
+const LiveLoadModelType g_LiveLoadModelType[] = 
+{ lltDesign,             // strength and service design
+  lltPermit,             // permit for Strength II design
+  lltFatigue,            // fatigue limit state design
+  lltPedestrian,
+  lltLegalRoutineRating, // legal rating, routine traffic
+  lltLegalSpecialRating, // legal rating, commercial traffic
+  lltPermitRoutineRating,        // permit rating
+  lltPermitSpecialRating
+}; 
 
 // useful struct's
 struct SuperstructureMemberData
@@ -260,8 +272,23 @@ static void AddLoadGroup(ILoadGroups* loadGroups, BSTR name, BSTR description)
 #define DEADLOADS       1
 #define LIVELOADS       2
 
-CAnalysisAgentImp::ModelData::ModelData()
+HRESULT CAnalysisAgentImp::FinalConstruct()
 {
+   HRESULT hr;
+   hr = m_LBAMUtility.CoCreateInstance(CLSID_LRFDFactory);
+   if ( FAILED(hr) )
+      return hr;
+
+   hr = m_UnitServer.CoCreateInstance(CLSID_UnitServer);
+   if ( FAILED(hr) )
+      return hr;
+
+   return S_OK;
+}
+
+CAnalysisAgentImp::ModelData::ModelData(CAnalysisAgentImp *pParent)
+{
+   m_pParent = pParent;
    HRESULT hr;
    hr = m_Model.CoCreateInstance(CLSID_LBAMModel);
    if ( FAILED(hr) ) THROW_SHUTDOWN("Can't create LBAM",XREASON_COMCREATE_ERROR,true);
@@ -332,6 +359,10 @@ void CAnalysisAgentImp::ModelData::CreateAnalysisEngine(ILBAMModel* theModel,Bri
    envelopedVehicularResponse.CoCreateInstance(CLSID_BruteForceVehicularResponse2);
 #endif
 
+   CComObject<CPGSuperLoadCombinationResponse>* pLCResponse;
+   HRESULT hr = CComObject<CPGSuperLoadCombinationResponse>::CreateInstance(&pLCResponse);
+   CComQIPtr<ILoadCombinationResponse> load_combo_response(pLCResponse);
+
    // initialize the engine with default values (NULL), except for the vehicular response enveloper
    engine->InitializeEx(theModel,atForce,
                         NULL, // load group response
@@ -341,7 +372,7 @@ void CAnalysisAgentImp::ModelData::CreateAnalysisEngine(ILBAMModel* theModel,Bri
                         NULL, // live load model response
                         envelopedVehicularResponse,
                         NULL, // load case response
-                        NULL, // load combination response
+                        load_combo_response/*NULL*/, // load combination response
                         NULL, // concurrent load combination response
                         NULL, // live load negative moment response
                         NULL); // contraflexure response
@@ -354,6 +385,9 @@ void CAnalysisAgentImp::ModelData::CreateAnalysisEngine(ILBAMModel* theModel,Bri
    engine->get_ConcurrentLoadCombinationResponse(&pConcurrentComboResponse[bat]);
    engine->get_LiveLoadModelResponse(&pLiveLoadResponse[bat]);
    engine->get_EnvelopedVehicularResponse(&pVehicularResponse[bat]);
+
+   CComQIPtr<ILoadCombinationResponse> load_combination_response_delegate(pLoadCaseResponse[bat]);
+   pLCResponse->Initialize(load_combination_response_delegate,theModel,m_pParent);
 
    (*ppEngine) = engine;
    (*ppEngine)->AddRef();
@@ -393,6 +427,8 @@ void CAnalysisAgentImp::ModelData::AddContinuousModel(ILBAMModel* pContModel)
 
 void CAnalysisAgentImp::ModelData::operator=(const CAnalysisAgentImp::ModelData& other)
 { 
+   m_pParent = other.m_pParent;
+
    PoiMap = other.PoiMap;
 
    m_Model             = other.m_Model;
@@ -487,6 +523,7 @@ CComBSTR CAnalysisAgentImp::GetLoadCaseName(LoadingCombination combo)
 
 CComBSTR CAnalysisAgentImp::GetLoadCombinationName(pgsTypes::LimitState ls)
 {
+   // if new load combinations names are added also updated GetLimitStateFromLoadCombination
    CComBSTR bstrLimitState;
    switch(ls)
    {
@@ -514,11 +551,107 @@ CComBSTR CAnalysisAgentImp::GetLoadCombinationName(pgsTypes::LimitState ls)
          bstrLimitState = "FATIGUE-I";
          break;
 
+      case pgsTypes::StrengthI_Inventory:
+         bstrLimitState = "STRENGTH-I-Inventory";
+         break;
+
+      case pgsTypes::StrengthI_Operating:
+         bstrLimitState = "STRENGTH-I-Operating";
+         break;
+
+      case pgsTypes::ServiceIII_Inventory:
+         bstrLimitState = "SERVICE-III-Inventory";
+         break;
+
+      case pgsTypes::ServiceIII_Operating:
+         bstrLimitState = "SERVICE-III-Operating";
+         break;
+
+      case pgsTypes::StrengthI_LegalRoutine:
+         bstrLimitState = "STRENGTH-I-Routine";
+         break;
+
+      case pgsTypes::StrengthI_LegalSpecial:
+         bstrLimitState = "STRENGTH-I-Special";
+         break;
+
+      case pgsTypes::ServiceIII_LegalRoutine:
+         bstrLimitState = "SERVICE-III-Routine";
+         break;
+
+      case pgsTypes::ServiceIII_LegalSpecial:
+         bstrLimitState = "SERVICE-III-Special";
+         break;
+
+      case pgsTypes::StrengthII_PermitRoutine:
+         bstrLimitState = "STRENGTH-II-RoutinePermit";
+         break;
+
+      case pgsTypes::ServiceI_PermitRoutine:
+         bstrLimitState = "SERVICE-I-RoutinePermit";
+         break;
+
+      case pgsTypes::StrengthII_PermitSpecial:
+         bstrLimitState = "STRENGTH-II-SpecialPermit";
+         break;
+
+      case pgsTypes::ServiceI_PermitSpecial:
+         bstrLimitState = "SERVICE-I-SpecialPermit";
+         break;
+
       default:
          ATLASSERT(false); // SHOULD NEVER GET HERE
    }
 
    return bstrLimitState;
+}
+
+pgsTypes::LimitState CAnalysisAgentImp::GetLimitStateFromLoadCombination(CComBSTR bstrLoadCombination)
+{
+   // if new load combinations names are added also updated GetLoadCombinationName
+   pgsTypes::LimitState ls;
+   if (CComBSTR("SERVICE-I") == bstrLoadCombination )
+      ls = pgsTypes::ServiceI;
+   else if ( CComBSTR("SERVICE-IA") == bstrLoadCombination )
+      ls = pgsTypes::ServiceIA;
+   else if ( CComBSTR("SERVICE-III") == bstrLoadCombination )
+      ls = pgsTypes::ServiceIII;
+   else if ( CComBSTR("STRENGTH-I") == bstrLoadCombination )
+      ls = pgsTypes::StrengthI;
+   else if ( CComBSTR("STRENGTH-II") == bstrLoadCombination )
+      ls = pgsTypes::StrengthII;
+   else if ( CComBSTR("FATIGUE-I") == bstrLoadCombination )
+      ls = pgsTypes::FatigueI;
+   else if ( CComBSTR("STRENGTH-I-Inventory") == bstrLoadCombination )
+      ls = pgsTypes::StrengthI_Inventory;
+   else if ( CComBSTR("STRENGTH-I-Operating") == bstrLoadCombination )
+      ls = pgsTypes::StrengthI_Operating;
+   else if ( CComBSTR("SERVICE-III-Inventory") == bstrLoadCombination )
+      ls = pgsTypes::ServiceIII_Inventory;
+   else if ( CComBSTR("SERVICE-III-Operating") == bstrLoadCombination )
+      ls = pgsTypes::ServiceIII_Operating;
+   else if ( CComBSTR("STRENGTH-I-Routine") == bstrLoadCombination )
+      ls = pgsTypes::StrengthI_LegalRoutine;
+   else if ( CComBSTR("STRENGTH-I-Special") == bstrLoadCombination )
+      ls = pgsTypes::StrengthI_LegalSpecial;
+   else if ( CComBSTR("SERVICE-III-Routine") == bstrLoadCombination )
+      ls = pgsTypes::ServiceIII_LegalRoutine;
+   else if ( CComBSTR("SERVICE-III-Special") == bstrLoadCombination )
+      ls = pgsTypes::ServiceIII_LegalSpecial;
+   else if ( CComBSTR("STRENGTH-II-RoutinePermit") == bstrLoadCombination )
+      ls = pgsTypes::StrengthII_PermitRoutine;
+   else if ( CComBSTR("SERVICE-I-RoutinePermit") == bstrLoadCombination )
+      ls = pgsTypes::ServiceI_PermitRoutine;
+   else if ( CComBSTR("STRENGTH-II-SpecialPermit") == bstrLoadCombination )
+      ls = pgsTypes::StrengthII_PermitSpecial;
+   else if ( CComBSTR("SERVICE-I-SpecialPermit") == bstrLoadCombination )
+      ls = pgsTypes::ServiceI_PermitSpecial;
+   else
+   {
+      ATLASSERT(false);
+   }
+
+   return ls;
 }
 
 CComBSTR CAnalysisAgentImp::GetLoadCombinationName(pgsTypes::LiveLoadType llt)
@@ -542,11 +675,72 @@ CComBSTR CAnalysisAgentImp::GetLoadCombinationName(pgsTypes::LiveLoadType llt)
          bstrLoadComboName = "PEDESTRIAN_LL";
          break;
 
+      case pgsTypes::lltLegalRating_Routine:
+         bstrLoadComboName = "LEGAL_ROUTINE_LL";
+         break;
+
+      case pgsTypes::lltLegalRating_Special:
+         bstrLoadComboName = "LEGAL_SPECIAL_LL";
+         break;
+
+      case pgsTypes::lltPermitRating_Routine:
+         bstrLoadComboName = "PERMIT_ROUTINE_LL";
+         break;
+
+      case pgsTypes::lltPermitRating_Special:
+         bstrLoadComboName = "PERMIT_SPECIAL_LL";
+         break;
+
       default:
          ATLASSERT(false); // SHOULD NEVER GET HERE
    }
 
    return bstrLoadComboName;
+}
+
+
+CComBSTR CAnalysisAgentImp::GetLiveLoadName(pgsTypes::LiveLoadType llt)
+{
+   CComBSTR bstrLiveLoadName;
+   switch(llt)
+   {
+      case pgsTypes::lltDesign:
+         bstrLiveLoadName = "LL+IM Design";
+         break;
+
+      case pgsTypes::lltPermit:
+         bstrLiveLoadName = "LL+IM Permit";
+         break;
+
+      case pgsTypes::lltFatigue:
+         bstrLiveLoadName = "LL+IM Fatigue";
+         break;
+
+      case pgsTypes::lltPedestrian:
+         bstrLiveLoadName = "LL+IM Pedestrian";
+         break;
+
+      case pgsTypes::lltLegalRating_Routine:
+         bstrLiveLoadName = "LL+IM Legal Rating (Routine)";
+         break;
+
+      case pgsTypes::lltLegalRating_Special:
+         bstrLiveLoadName = "LL+IM Legal Rating (Special)";
+         break;
+
+      case pgsTypes::lltPermitRating_Routine:
+         bstrLiveLoadName = "LL+IM Permit Rating (Routine)";
+         break;
+
+      case pgsTypes::lltPermitRating_Special:
+         bstrLiveLoadName = "LL+IM Permit Rating (Special)";
+         break;
+
+      default:
+         ATLASSERT(false); // SHOULD NEVER GET HERE
+   }
+
+   return bstrLiveLoadName;
 }
 
 CComBSTR GetLoadGroupName(ProductForceType type)
@@ -650,7 +844,7 @@ void CAnalysisAgentImp::Invalidate(bool clearStatus)
    if (clearStatus)
    {
       GET_IFACE(IStatusCenter,pStatusCenter);
-      pStatusCenter->RemoveByAgentID(m_AgentID);
+      pStatusCenter->RemoveByStatusGroupID(m_StatusGroupID);
    }
 }
 
@@ -666,7 +860,7 @@ void CAnalysisAgentImp::ValidateAnalysisModels(SpanIndexType span,GirderIndexTyp
    // Validating the analysis models consists of building the model
    // Analysis will occur when results are needed from the model.
    GET_IFACE(IProgress,pProgress);
-   pgsAutoProgress ap(pProgress);
+   CEAFAutoProgress ap(pProgress);
 
    try
    {
@@ -711,7 +905,7 @@ void CAnalysisAgentImp::DoCastingYardAnalysis(SpanIndexType span,GirderIndexType
 void CAnalysisAgentImp::BuildBridgeSiteModel(GirderIndexType gdr)
 {
    GET_IFACE(IProgress,pProgress);
-   pgsAutoProgress ap(pProgress);
+   CEAFAutoProgress ap(pProgress);
    
    std::ostringstream os;
    os << "Building Bridge Site Analysis model for Girderline " << LABEL_GIRDER(gdr) << std::ends;
@@ -722,7 +916,7 @@ void CAnalysisAgentImp::BuildBridgeSiteModel(GirderIndexType gdr)
    m_BridgeSiteModels.erase(gdr);
 
    // build the model
-   ModelData model_data;
+   ModelData model_data(this);
    CComPtr<ILBAMModel> model = model_data.m_Model;
    BuildBridgeSiteModel(gdr,false,model_data.pContraflexureResponse[SimpleSpan],model);
 
@@ -856,7 +1050,7 @@ void CAnalysisAgentImp::BuildBridgeSiteModel(GirderIndexType gdr,bool bContinuou
 
             os<<" of Girder "<<LABEL_GIRDER(gdrIdx)<<" in Span "<< LABEL_SPAN(spanIdx) <<". \r\nThis problem can be resolved by increasing the girder End Distance in the Connection library, or by decreasing the skew angle of the girder wrt the pier.";
 
-            pgsInformationalStatusItem* pStatusItem = new pgsInformationalStatusItem(m_AgentID,m_scidInformationalError,os.str().c_str());
+            pgsInformationalStatusItem* pStatusItem = new pgsInformationalStatusItem(m_StatusGroupID,m_scidInformationalError,os.str().c_str());
             pStatusCenter->Add(pStatusItem);
       
             os<<"\r\nSee the Status Center for Details";
@@ -1133,7 +1327,7 @@ Float64 CAnalysisAgentImp::GetSectionStress(cyGirderModels& model,pgsTypes::Stre
 void CAnalysisAgentImp::GetSectionResults(cyGirderModels& model,const pgsPointOfInterest& poi,Float64* pFx,Float64* pFy,Float64* pMz,Float64* pDx,Float64* pDy,Float64* pRz)
 {
    GET_IFACE(IProgress,pProgress);
-   pgsAutoProgress ap(pProgress);
+   CEAFAutoProgress ap(pProgress);
    pProgress->UpdateMessage("Computing section results");
 
    cyModelData* pModelData = GetModelData( model, poi.GetSpan(), poi.GetGirder() );
@@ -1698,15 +1892,15 @@ STDMETHODIMP CAnalysisAgentImp::RegInterfaces()
 {
    CComQIPtr<IBrokerInitEx2,&IID_IBrokerInitEx2> pBrokerInit(m_pBroker);
 
-   pBrokerInit->RegInterface( IID_IProductLoads,     this );
-   pBrokerInit->RegInterface( IID_IProductForces,     this );
-   pBrokerInit->RegInterface( IID_IProductForces2,    this );
-   pBrokerInit->RegInterface( IID_ICombinedForces,    this );
-   pBrokerInit->RegInterface( IID_ICombinedForces2,   this );
-   pBrokerInit->RegInterface( IID_ILimitStateForces,  this );
-   pBrokerInit->RegInterface( IID_ILimitStateForces2, this );
-   pBrokerInit->RegInterface( IID_IPrestressStresses, this );
-   pBrokerInit->RegInterface( IID_ICamber,            this );
+   pBrokerInit->RegInterface( IID_IProductLoads,        this );
+   pBrokerInit->RegInterface( IID_IProductForces,       this );
+   pBrokerInit->RegInterface( IID_IProductForces2,      this );
+   pBrokerInit->RegInterface( IID_ICombinedForces,      this );
+   pBrokerInit->RegInterface( IID_ICombinedForces2,     this );
+   pBrokerInit->RegInterface( IID_ILimitStateForces,    this );
+   pBrokerInit->RegInterface( IID_ILimitStateForces2,   this );
+   pBrokerInit->RegInterface( IID_IPrestressStresses,   this );
+   pBrokerInit->RegInterface( IID_ICamber,              this );
    pBrokerInit->RegInterface( IID_IContraflexurePoints, this );
    pBrokerInit->RegInterface( IID_IContinuity,          this );
    return S_OK;
@@ -1750,7 +1944,7 @@ STDMETHODIMP CAnalysisAgentImp::Init()
    m_LBAMPoi.CoCreateInstance(CLSID_LongArray);
 
    // Register status callbacks that we want to use
-   m_scidInformationalError = pStatusCenter->RegisterCallback(new pgsInformationalStatusCallback(pgsTypes::statusError,IDH_GIRDER_CONNECTION_ERROR)); // informational with help for girder end offset error
+   m_scidInformationalError = pStatusCenter->RegisterCallback(new pgsInformationalStatusCallback(eafTypes::statusError,IDH_GIRDER_CONNECTION_ERROR)); // informational with help for girder end offset error
    m_scidVSRatio            = pStatusCenter->RegisterCallback(new pgsVSRatioStatusCallback(m_pBroker));
    return S_OK;
 }
@@ -1778,9 +1972,6 @@ STDMETHODIMP CAnalysisAgentImp::ShutDown()
 {
    LOG("AnalysisAgent Log Closed");
 
-   AGENT_CLEAR_INTERFACE_CACHE;
-   CLOSE_LOGFILE;
-
    //
    // Detach to connection points
    //
@@ -1805,7 +1996,11 @@ STDMETHODIMP CAnalysisAgentImp::ShutDown()
    hr = pCP->Unadvise( m_dwLoadModifierCookie );
    CHECK( SUCCEEDED(hr) );
    pCP.Release(); // Recycle the connection point
-   
+
+   CLOSE_LOGFILE;
+
+   AGENT_CLEAR_INTERFACE_CACHE;
+
    return S_OK;
 }
 
@@ -2451,8 +2646,8 @@ void CAnalysisAgentImp::ApplyLiveLoadModel(ILBAMModel* pModel,GirderIndexType gd
    HRESULT hr = S_OK;
    GET_IFACE(ISpecification,pSpec);
    GET_IFACE(ILibrary,pLibrary);
-
    GET_IFACE(ILiveLoads,pLiveLoads);
+   GET_IFACE(IRatingSpecification,pRatingSpec);
 
    // get the live load object from the model
    CComPtr<ILiveLoad> live_load;
@@ -2461,20 +2656,27 @@ void CAnalysisAgentImp::ApplyLiveLoadModel(ILBAMModel* pModel,GirderIndexType gd
    // get the design, permit, and pedestrian live load models
    CComPtr<ILiveLoadModel> design_liveload_model;
    live_load->get_Design(&design_liveload_model);
-   design_liveload_model->put_DistributionFactorType(dftEnvelope);
 
    CComPtr<ILiveLoadModel> permit_liveload_model;
    live_load->get_Permit(&permit_liveload_model);
-   permit_liveload_model->put_DistributionFactorType(dftEnvelope);
 
    CComPtr<ILiveLoadModel> pedestrian_liveload_model;
    live_load->get_Pedestrian(&pedestrian_liveload_model);
-   pedestrian_liveload_model->put_DistributionFactorType(dftNone);
-   // NOTE: pedestrian live loads are per girder and need no further distribution
 
    CComPtr<ILiveLoadModel> fatigue_liveload_model;
    live_load->get_Fatigue(&fatigue_liveload_model);
-   fatigue_liveload_model->put_DistributionFactorType(dftFatigue);
+
+   CComPtr<ILiveLoadModel> legal_routine_liveload_model;
+   live_load->get_LegalRoutineRating(&legal_routine_liveload_model);
+
+   CComPtr<ILiveLoadModel> legal_special_liveload_model;
+   live_load->get_LegalSpecialRating(&legal_special_liveload_model);
+
+   CComPtr<ILiveLoadModel> permit_routine_liveload_model;
+   live_load->get_PermitRoutineRating(&permit_routine_liveload_model);
+
+   CComPtr<ILiveLoadModel> permit_special_liveload_model;
+   live_load->get_PermitSpecialRating(&permit_special_liveload_model);
 
    // get the design, permit, and pedestrian vehicular loads collection
    CComPtr<IVehicularLoads> design_vehicles;
@@ -2486,18 +2688,55 @@ void CAnalysisAgentImp::ApplyLiveLoadModel(ILBAMModel* pModel,GirderIndexType gd
    CComPtr<IVehicularLoads> pedestrian_vehicles;
    pedestrian_liveload_model->get_VehicularLoads(&pedestrian_vehicles);
 
+   CComPtr<IVehicularLoads> rating_pedestrian_vehicles;
+   if ( pRatingSpec->IncludePedestrianLiveLoad() )
+      rating_pedestrian_vehicles = pedestrian_vehicles;
+
    CComPtr<IVehicularLoads> fatigue_vehicles;
    fatigue_liveload_model->get_VehicularLoads(&fatigue_vehicles);
 
+   CComPtr<IVehicularLoads> legal_routine_vehicles;
+   legal_routine_liveload_model->get_VehicularLoads(&legal_routine_vehicles);
+
+   CComPtr<IVehicularLoads> legal_special_vehicles;
+   legal_special_liveload_model->get_VehicularLoads(&legal_special_vehicles);
+
+   CComPtr<IVehicularLoads> permit_routine_vehicles;
+   permit_routine_liveload_model->get_VehicularLoads(&permit_routine_vehicles);
+
+   CComPtr<IVehicularLoads> permit_special_vehicles;
+   permit_special_liveload_model->get_VehicularLoads(&permit_special_vehicles);
+
    // get the design and permit live load names
-   std::vector<std::string> design_loads     = pLiveLoads->GetLiveLoadNames(pgsTypes::lltDesign);
-   std::vector<std::string> permit_loads     = pLiveLoads->GetLiveLoadNames(pgsTypes::lltPermit);
-   std::vector<std::string> fatigue_loads    = pLiveLoads->GetLiveLoadNames(pgsTypes::lltFatigue);
+   std::vector<std::string> design_loads        = pLiveLoads->GetLiveLoadNames(pgsTypes::lltDesign);
+   std::vector<std::string> permit_loads        = pLiveLoads->GetLiveLoadNames(pgsTypes::lltPermit);
+   std::vector<std::string> fatigue_loads       = pLiveLoads->GetLiveLoadNames(pgsTypes::lltFatigue);
+   std::vector<std::string> routine_legal_loads = pLiveLoads->GetLiveLoadNames(pgsTypes::lltLegalRating_Routine);
+   std::vector<std::string> special_legal_loads = pLiveLoads->GetLiveLoadNames(pgsTypes::lltLegalRating_Special);
+   std::vector<std::string> routine_permit_loads = pLiveLoads->GetLiveLoadNames(pgsTypes::lltPermitRating_Routine);
+   std::vector<std::string> special_permit_loads = pLiveLoads->GetLiveLoadNames(pgsTypes::lltPermitRating_Special);
 
    // add the design and permit live loads to the models
-   AddUserLiveLoads(pModel, gdr, pgsTypes::lltDesign,  design_loads,  pLibrary, pLiveLoads, design_vehicles,  pedestrian_vehicles);
-   AddUserLiveLoads(pModel, gdr, pgsTypes::lltPermit,  permit_loads,  pLibrary, pLiveLoads, permit_vehicles,  pedestrian_vehicles);
-   AddUserLiveLoads(pModel, gdr, pgsTypes::lltFatigue, fatigue_loads, pLibrary, pLiveLoads, fatigue_vehicles, NULL);
+   AddUserLiveLoads(pModel, gdr, pgsTypes::lltDesign,              design_loads,          pLibrary, pLiveLoads, design_vehicles,  pedestrian_vehicles);
+   AddUserLiveLoads(pModel, gdr, pgsTypes::lltPermit,              permit_loads,          pLibrary, pLiveLoads, permit_vehicles,  pedestrian_vehicles);
+   AddUserLiveLoads(pModel, gdr, pgsTypes::lltFatigue,             fatigue_loads,         pLibrary, pLiveLoads, fatigue_vehicles, NULL);
+   AddUserLiveLoads(pModel, gdr, pgsTypes::lltLegalRating_Routine, routine_legal_loads,   pLibrary, pLiveLoads, legal_routine_vehicles,   rating_pedestrian_vehicles);
+   AddUserLiveLoads(pModel, gdr, pgsTypes::lltLegalRating_Special, special_legal_loads,   pLibrary, pLiveLoads, legal_special_vehicles,   rating_pedestrian_vehicles);
+   AddUserLiveLoads(pModel, gdr, pgsTypes::lltPermitRating_Routine,routine_permit_loads,  pLibrary, pLiveLoads, permit_routine_vehicles,  rating_pedestrian_vehicles);
+   AddUserLiveLoads(pModel, gdr, pgsTypes::lltPermitRating_Special,special_permit_loads,  pLibrary, pLiveLoads, permit_special_vehicles,  rating_pedestrian_vehicles);
+
+   // The call to AddUserLiveLoads above changes the distribution factor type to default values
+   // set by the LBAMUtility object that gets used to configure live load. Set the desired distribution
+   // factor type here
+   design_liveload_model->put_DistributionFactorType(GetLiveLoadDistributionFactorType(pgsTypes::lltDesign));
+   permit_liveload_model->put_DistributionFactorType(GetLiveLoadDistributionFactorType(pgsTypes::lltPermit));
+   pedestrian_liveload_model->put_DistributionFactorType(GetLiveLoadDistributionFactorType(pgsTypes::lltPedestrian));
+   // NOTE: pedestrian live loads are per girder and need no further distribution
+   fatigue_liveload_model->put_DistributionFactorType(GetLiveLoadDistributionFactorType(pgsTypes::lltFatigue));
+   legal_routine_liveload_model->put_DistributionFactorType(GetLiveLoadDistributionFactorType(pgsTypes::lltLegalRating_Routine));
+   legal_special_liveload_model->put_DistributionFactorType(GetLiveLoadDistributionFactorType(pgsTypes::lltLegalRating_Special));
+   permit_routine_liveload_model->put_DistributionFactorType(GetLiveLoadDistributionFactorType(pgsTypes::lltPermitRating_Routine));
+   permit_special_liveload_model->put_DistributionFactorType(GetLiveLoadDistributionFactorType(pgsTypes::lltPermitRating_Special));
 }
 
 void CAnalysisAgentImp::AddUserLiveLoads(ILBAMModel* pModel,GirderIndexType gdr,pgsTypes::LiveLoadType llType,std::vector<std::string>& strLLNames,
@@ -2531,6 +2770,18 @@ void CAnalysisAgentImp::AddUserLiveLoads(ILBAMModel* pModel,GirderIndexType gdr,
          double wPedLL = GetPedestrianLiveLoad(span,gdr);
          AddPedestrianLoad(strLLName,wPedLL,pPedVehicles);
       }
+      else if ( strLLName == std::string("AASHTO Legal Loads") )
+      {
+         AddLegalLiveLoad(pModel,pLibrary,llType,truck_impact,lane_impact);
+      }
+      else if ( strLLName == std::string("Notional Rating Load (NRL)") )
+      {
+         AddNotionalRatingLoad(pModel,pLibrary,llType,truck_impact,lane_impact);
+      }
+      else if ( strLLName == std::string("Single-Unit SHVs") )
+      {
+         AddSHVLoad(pModel,pLibrary,llType,truck_impact,lane_impact);
+      }
       else
       {
          AddUserTruck(strLLName,pLibrary,truck_impact,lane_impact,pVehicles);
@@ -2541,34 +2792,95 @@ void CAnalysisAgentImp::AddUserLiveLoads(ILBAMModel* pModel,GirderIndexType gdr,
 void CAnalysisAgentImp::AddHL93LiveLoad(ILBAMModel* pModel,ILibrary* pLibrary,pgsTypes::LiveLoadType llType,double IMtruck,double IMlane)
 {
    GET_IFACE(ISpecification,pSpec);
-   ATLASSERT( llType == pgsTypes::lltDesign || llType == pgsTypes::lltFatigue );
 
    // this is an HL-93 live load, use the LBAM configuration utility
-   CComPtr<ILBAMLRFDFactory2> util;
-   HRESULT hr = util.CoCreateInstance(CLSID_LRFDFactory);
-
-#pragma Reminder("UPDATE - in the future, use a system-wide unit server")
-   CComPtr<IUnitServer> unitServer;
-   hr = unitServer.CoCreateInstance(CLSID_UnitServer); // assume base units of unit server are same as for the old style unit system (they are by design)
-
    const SpecLibraryEntry* pSpecEntry = pLibrary->GetSpecEntry( pSpec->GetSpecification().c_str() );
    SpecUnitType units = pSpecEntry->GetSpecificationUnits() == lrfdVersionMgr::US ? suUS : suSI;
 
-   if ( llType == pgsTypes::lltDesign )
+   if ( llType == pgsTypes::lltFatigue )
+   {
+      m_LBAMUtility->ConfigureFatigueLiveLoad(pModel,IMtruck,IMlane,units,m_UnitServer);
+   }
+   else
    {
       ATLASSERT( llType != pgsTypes::lltPedestrian ); // we don't want to add HL-93 to the pedestrian live load model
       LiveLoadModelType llmt = g_LiveLoadModelType[llType];
 
-      pgsTypes::AnalysisType analysisType = pSpec->GetAnalysisType();
+      VARIANT_BOOL bUseNegativeMomentLiveLoad = VARIANT_FALSE;
+      GET_IFACE(IBridge,pBridge);
+      SpanIndexType nSpans = pBridge->GetSpanCount();
+      if ( 1 < nSpans )
+      {
+         for ( SpanIndexType spanIdx = 0; spanIdx < nSpans; spanIdx++ )
+         {
+            if ( pBridge->ProcessNegativeMoments(spanIdx) )
+            {
+               bUseNegativeMomentLiveLoad = VARIANT_TRUE;
+               break;
+            }
+         }
+      }
+      m_LBAMUtility->ConfigureDesignLiveLoad(pModel,llmt,IMtruck,IMlane,bUseNegativeMomentLiveLoad,bUseNegativeMomentLiveLoad,units,m_UnitServer);
+      m_LBAMUtility->ConfigureDeflectionLiveLoad(pModel,IMtruck,IMlane,units,m_UnitServer);
+   }
+}
 
-      VARIANT_BOOL bUseNegativeMomentLiveLoad = (analysisType == pgsTypes::Continuous || analysisType == pgsTypes::Envelope) ? VARIANT_TRUE : VARIANT_FALSE;
-      hr = util->ConfigureDesignLiveLoad(pModel,llmt,IMtruck,IMlane,bUseNegativeMomentLiveLoad,bUseNegativeMomentLiveLoad,units,unitServer);
-      hr = util->ConfigureDeflectionLiveLoad(pModel,IMtruck,IMlane,units,unitServer);
-   }
-   else if ( llType == pgsTypes::lltFatigue )
+void CAnalysisAgentImp::AddLegalLiveLoad(ILBAMModel* pModel,ILibrary* pLibrary,pgsTypes::LiveLoadType llType,double IMtruck,double IMlane)
+{
+   GET_IFACE(ISpecification,pSpec);
+
+   // this is an AASHTO Legal Load for rating, use the LBAM configuration utility
+   LiveLoadModelType llmt = g_LiveLoadModelType[llType];
+   VARIANT_BOOL bIncludeType33     = VARIANT_FALSE; // exclude 0.75(Type 3-3) + Lane unless span length is 200ft or more
+   VARIANT_BOOL bIncludeDualType33 = VARIANT_FALSE; // exclude dual 0.75(Type 3-3) + Lane unless negative moments need to be processed
+   VARIANT_BOOL bRemoveLaneLoad    = VARIANT_FALSE; // don't remove lane load unless directed by the engineer
+
+   bool bOver200 = false;
+   GET_IFACE(IBridge,pBridge);
+   SpanIndexType nSpans = pBridge->GetSpanCount();
+   for ( SpanIndexType spanIdx = 0; spanIdx < nSpans; spanIdx++ )
    {
-      hr = util->ConfigureFatigueLiveLoad(pModel,IMtruck,IMlane,units,unitServer);
+      Float64 span_length = pBridge->GetSpanLength(spanIdx);
+      if ( ::ConvertToSysUnits(200.0,unitMeasure::Feet) < span_length )
+         bOver200 = true;
+
+      if ( pBridge->ProcessNegativeMoments(spanIdx) )
+      {
+         bIncludeDualType33 = VARIANT_TRUE;
+         break;
+      }
    }
+
+   if ( bOver200 )
+   {
+      bIncludeType33 = VARIANT_TRUE;
+   }
+
+   GET_IFACE(IRatingSpecification,pRatingSpec);
+   if ( pRatingSpec->ExcludeLegalLoadLaneLoading() )
+   {
+      bRemoveLaneLoad = VARIANT_TRUE;
+   }
+
+   m_LBAMUtility->ConfigureLegalLiveLoad(pModel,llmt,IMtruck,IMlane,bIncludeType33,bIncludeDualType33,bRemoveLaneLoad,m_UnitServer);
+}
+
+void CAnalysisAgentImp::AddNotionalRatingLoad(ILBAMModel* pModel,ILibrary* pLibrary,pgsTypes::LiveLoadType llType,double IMtruck,double IMlane)
+{
+   GET_IFACE(ISpecification,pSpec);
+
+   // this is an AASHTO Legal Load for rating, use the LBAM configuration utility
+   LiveLoadModelType llmt = g_LiveLoadModelType[llType];
+   m_LBAMUtility->ConfigureNotionalRatingLoad(pModel,llmt,IMtruck,IMlane,m_UnitServer);
+}
+
+void CAnalysisAgentImp::AddSHVLoad(ILBAMModel* pModel,ILibrary* pLibrary,pgsTypes::LiveLoadType llType,double IMtruck,double IMlane)
+{
+   GET_IFACE(ISpecification,pSpec);
+
+   // this is an AASHTO Legal Load for rating, use the LBAM configuration utility
+   LiveLoadModelType llmt = g_LiveLoadModelType[llType];
+   m_LBAMUtility->ConfigureSpecializedHaulingUnits(pModel,llmt,IMtruck,IMlane,m_UnitServer);
 }
 
 void CAnalysisAgentImp::AddUserTruck(const std::string& strLLName,ILibrary* pLibrary,double IMtruck,double IMlane,IVehicularLoads* pVehicles)
@@ -2583,7 +2895,7 @@ void CAnalysisAgentImp::AddUserTruck(const std::string& strLLName,ILibrary* pLib
    ATLASSERT( strLLName == ll_entry->GetName() );
 
    vehicular_load->put_Name(CComBSTR(strLLName.c_str()));
-   vehicular_load->put_Applicability(llaEntireStructure);
+   vehicular_load->put_Applicability((LiveLoadApplicabilityType)ll_entry->GetLiveLoadApplicabilityType());
 
    LiveLoadLibraryEntry::LiveLoadConfigurationType ll_config = ll_entry->GetLiveLoadConfigurationType();
    VehicularLoadConfigurationType lb_ll_config = vlcDefault;
@@ -2619,13 +2931,30 @@ void CAnalysisAgentImp::AddUserTruck(const std::string& strLLName,ILibrary* pLib
    vehicular_load->put_LaneFactor(1.0);
    vehicular_load->put_TruckFactor(1.0);
 
+
    Float64 lane_load = 0;
    if ( ll_config != LiveLoadLibraryEntry::lcTruckOnly )
    {
       lane_load = ll_entry->GetLaneLoad();
    }
-   vehicular_load->put_LaneLoad(lane_load);
 
+   // only add the lane load if a span length is long enough
+   Float64 lane_load_span_length = ll_entry->GetLaneLoadSpanLength();
+
+   bool bIsOver = false;
+   GET_IFACE(IBridge,pBridge);
+   SpanIndexType nSpans = pBridge->GetSpanCount();
+   for ( SpanIndexType spanIdx = 0; spanIdx < nSpans; spanIdx++ )
+   {
+      Float64 span_length = pBridge->GetSpanLength(spanIdx);
+      if ( lane_load_span_length < span_length )
+         bIsOver = true;
+   }
+
+   if ( bIsOver )
+   {
+      vehicular_load->put_LaneLoad(lane_load);
+   }
 
    if ( ll_config != LiveLoadLibraryEntry::lcLaneOnly )
    {
@@ -2929,6 +3258,7 @@ void CAnalysisAgentImp::ApplyLiveLoadDistributionFactors(GirderIndexType gdr,boo
    }
 }
 
+
 void CAnalysisAgentImp::ConfigureLoadCombinations(ILBAMModel* pModel)
 {
    HRESULT hr;
@@ -3038,6 +3368,212 @@ void CAnalysisAgentImp::ConfigureLoadCombinations(ILBAMModel* pModel)
 
    loadcombos->Add(fatigue1);
 
+   GET_IFACE(IRatingSpecification,pRatingSpec);
+   Float64 DC, DW, LLIM;
+
+   // STRENGTH-I - Design Rating - Inventory Level
+   CComPtr<ILoadCombination> strengthI_inventory;
+   strengthI_inventory.CoCreateInstance(CLSID_LoadCombination);
+   strengthI_inventory->put_Name( GetLoadCombinationName(pgsTypes::StrengthI_Inventory) );
+   strengthI_inventory->put_LoadCombinationType(lctStrength);
+   strengthI_inventory->AddLiveLoadModel(lltDesign);
+
+   DC = pRatingSpec->GetDeadLoadFactor(      pgsTypes::StrengthI_Inventory);
+   DW = pRatingSpec->GetWearingSurfaceFactor(pgsTypes::StrengthI_Inventory);
+   LLIM = pRatingSpec->GetLiveLoadFactor(    pgsTypes::StrengthI_Inventory,true);
+   hr = strengthI_inventory->AddLoadCaseFactor(CComBSTR("DC"), DC, DC);
+   hr = strengthI_inventory->AddLoadCaseFactor(CComBSTR("DW"), DW, DW);
+   hr = strengthI_inventory->AddLoadCaseFactor(CComBSTR("LL_IM"), LLIM, LLIM);
+   strengthI_inventory->put_LiveLoadFactor(LLIM);
+   loadcombos->Add(strengthI_inventory);
+
+
+   // STRENGTH-I - Design Rating - Operating Level
+   CComPtr<ILoadCombination> strengthI_operating;
+   strengthI_operating.CoCreateInstance(CLSID_LoadCombination);
+   strengthI_operating->put_Name( GetLoadCombinationName(pgsTypes::StrengthI_Operating) );
+   strengthI_operating->put_LoadCombinationType(lctStrength);
+   strengthI_operating->AddLiveLoadModel(lltDesign);
+
+   DC = pRatingSpec->GetDeadLoadFactor(      pgsTypes::StrengthI_Operating);
+   DW = pRatingSpec->GetWearingSurfaceFactor(pgsTypes::StrengthI_Operating);
+   LLIM = pRatingSpec->GetLiveLoadFactor(    pgsTypes::StrengthI_Operating,true);
+   hr = strengthI_operating->AddLoadCaseFactor(CComBSTR("DC"), DC, DC);
+   hr = strengthI_operating->AddLoadCaseFactor(CComBSTR("DW"), DW, DW);
+   hr = strengthI_operating->AddLoadCaseFactor(CComBSTR("LL_IM"), LLIM, LLIM);
+   strengthI_operating->put_LiveLoadFactor(LLIM);
+
+   loadcombos->Add(strengthI_operating);
+
+   // SERVICE-III - Design Rating - Inventory Level
+   CComPtr<ILoadCombination> serviceIII_inventory;
+   serviceIII_inventory.CoCreateInstance(CLSID_LoadCombination);
+   serviceIII_inventory->put_Name( GetLoadCombinationName(pgsTypes::ServiceIII_Inventory) );
+   serviceIII_inventory->put_LoadCombinationType(lctService);
+   serviceIII_inventory->AddLiveLoadModel(lltDesign);
+
+   DC = pRatingSpec->GetDeadLoadFactor(      pgsTypes::ServiceIII_Inventory);
+   DW = pRatingSpec->GetWearingSurfaceFactor(pgsTypes::ServiceIII_Inventory);
+   LLIM = pRatingSpec->GetLiveLoadFactor(    pgsTypes::ServiceIII_Inventory,true);
+   hr = serviceIII_inventory->AddLoadCaseFactor(CComBSTR("DC"), DC, DC);
+   hr = serviceIII_inventory->AddLoadCaseFactor(CComBSTR("DW"), DW, DW);
+   hr = serviceIII_inventory->AddLoadCaseFactor(CComBSTR("LL_IM"), LLIM, LLIM);
+   serviceIII_inventory->put_LiveLoadFactor(LLIM);
+
+   loadcombos->Add(serviceIII_inventory);
+
+   // SERVICE-III - Design Rating - Operating Level
+   CComPtr<ILoadCombination> serviceIII_operating;
+   serviceIII_operating.CoCreateInstance(CLSID_LoadCombination);
+   serviceIII_operating->put_Name( GetLoadCombinationName(pgsTypes::ServiceIII_Operating) );
+   serviceIII_operating->put_LoadCombinationType(lctService);
+   serviceIII_operating->AddLiveLoadModel(lltDesign);
+
+   DC = pRatingSpec->GetDeadLoadFactor(      pgsTypes::ServiceIII_Operating);
+   DW = pRatingSpec->GetWearingSurfaceFactor(pgsTypes::ServiceIII_Operating);
+   LLIM = pRatingSpec->GetLiveLoadFactor(    pgsTypes::ServiceIII_Operating,true);
+   hr = serviceIII_operating->AddLoadCaseFactor(CComBSTR("DC"), DC, DC);
+   hr = serviceIII_operating->AddLoadCaseFactor(CComBSTR("DW"), DW, DW);
+   hr = serviceIII_operating->AddLoadCaseFactor(CComBSTR("LL_IM"), LLIM, LLIM);
+   serviceIII_operating->put_LiveLoadFactor(LLIM);
+
+   loadcombos->Add(serviceIII_operating);
+
+   // STRENGTH-I - Legal Rating - Routine Commercial Traffic
+   CComPtr<ILoadCombination> strengthI_routine;
+   strengthI_routine.CoCreateInstance(CLSID_LoadCombination);
+   strengthI_routine->put_Name( GetLoadCombinationName(pgsTypes::StrengthI_LegalRoutine) );
+   strengthI_routine->put_LoadCombinationType(lctStrength);
+   strengthI_routine->AddLiveLoadModel(lltLegalRoutineRating);
+
+   DC = pRatingSpec->GetDeadLoadFactor(      pgsTypes::StrengthI_LegalRoutine);
+   DW = pRatingSpec->GetWearingSurfaceFactor(pgsTypes::StrengthI_LegalRoutine);
+   LLIM = pRatingSpec->GetLiveLoadFactor(    pgsTypes::StrengthI_LegalRoutine,true);
+   hr = strengthI_routine->AddLoadCaseFactor(CComBSTR("DC"), DC, DC);
+   hr = strengthI_routine->AddLoadCaseFactor(CComBSTR("DW"), DW, DW);
+   hr = strengthI_routine->AddLoadCaseFactor(CComBSTR("LL_IM"), LLIM, LLIM);
+   strengthI_routine->put_LiveLoadFactor(LLIM);
+
+   loadcombos->Add(strengthI_routine);
+
+   // SERVICE-III - Legal Rating - Routine Commercial Traffic
+   CComPtr<ILoadCombination> serviceIII_routine;
+   serviceIII_routine.CoCreateInstance(CLSID_LoadCombination);
+   serviceIII_routine->put_Name( GetLoadCombinationName(pgsTypes::ServiceIII_LegalRoutine) );
+   serviceIII_routine->put_LoadCombinationType(lctService);
+   serviceIII_routine->AddLiveLoadModel(lltLegalRoutineRating);
+
+   DC = pRatingSpec->GetDeadLoadFactor(      pgsTypes::ServiceIII_LegalRoutine);
+   DW = pRatingSpec->GetWearingSurfaceFactor(pgsTypes::ServiceIII_LegalRoutine);
+   LLIM = pRatingSpec->GetLiveLoadFactor(    pgsTypes::ServiceIII_LegalRoutine,true);
+   hr = serviceIII_routine->AddLoadCaseFactor(CComBSTR("DC"), DC, DC);
+   hr = serviceIII_routine->AddLoadCaseFactor(CComBSTR("DW"), DW, DW);
+   hr = serviceIII_routine->AddLoadCaseFactor(CComBSTR("LL_IM"), LLIM, LLIM);
+   serviceIII_routine->put_LiveLoadFactor(LLIM);
+
+   loadcombos->Add(serviceIII_routine);
+
+   // STRENGTH-I - Legal Rating - Special Hauling Vehicles
+   CComPtr<ILoadCombination> strengthI_special;
+   strengthI_special.CoCreateInstance(CLSID_LoadCombination);
+   strengthI_special->put_Name( GetLoadCombinationName(pgsTypes::StrengthI_LegalSpecial) );
+   strengthI_special->put_LoadCombinationType(lctStrength);
+   strengthI_special->AddLiveLoadModel(lltLegalSpecialRating);
+
+   DC = pRatingSpec->GetDeadLoadFactor(      pgsTypes::StrengthI_LegalSpecial);
+   DW = pRatingSpec->GetWearingSurfaceFactor(pgsTypes::StrengthI_LegalSpecial);
+   LLIM = pRatingSpec->GetLiveLoadFactor(    pgsTypes::StrengthI_LegalSpecial,true);
+   hr = strengthI_special->AddLoadCaseFactor(CComBSTR("DC"), DC, DC);
+   hr = strengthI_special->AddLoadCaseFactor(CComBSTR("DW"), DW, DW);
+   hr = strengthI_special->AddLoadCaseFactor(CComBSTR("LL_IM"), LLIM, LLIM);
+   strengthI_special->put_LiveLoadFactor(LLIM);
+
+   loadcombos->Add(strengthI_special);
+
+   // SERVICE-III - Legal Rating - Special Hauling Vehicles
+   CComPtr<ILoadCombination> serviceIII_special;
+   serviceIII_special.CoCreateInstance(CLSID_LoadCombination);
+   serviceIII_special->put_Name( GetLoadCombinationName(pgsTypes::ServiceIII_LegalSpecial) );
+   serviceIII_special->put_LoadCombinationType(lctService);
+   serviceIII_special->AddLiveLoadModel(lltLegalSpecialRating);
+
+   DC = pRatingSpec->GetDeadLoadFactor(      pgsTypes::ServiceIII_LegalSpecial);
+   DW = pRatingSpec->GetWearingSurfaceFactor(pgsTypes::ServiceIII_LegalSpecial);
+   LLIM = pRatingSpec->GetLiveLoadFactor(    pgsTypes::ServiceIII_LegalSpecial,true);
+   hr = serviceIII_special->AddLoadCaseFactor(CComBSTR("DC"), DC, DC);
+   hr = serviceIII_special->AddLoadCaseFactor(CComBSTR("DW"), DW, DW);
+   hr = serviceIII_special->AddLoadCaseFactor(CComBSTR("LL_IM"), LLIM, LLIM);
+   serviceIII_special->put_LiveLoadFactor(LLIM);
+
+   loadcombos->Add(serviceIII_special);
+
+   // STRENGTH-II - Permit Rating
+   CComPtr<ILoadCombination> strengthII_routine;
+   strengthII_routine.CoCreateInstance(CLSID_LoadCombination);
+   strengthII_routine->put_Name( GetLoadCombinationName(pgsTypes::StrengthII_PermitRoutine) );
+   strengthII_routine->put_LoadCombinationType(lctStrength);
+   strengthII_routine->AddLiveLoadModel(lltPermitRoutineRating);
+
+   DC = pRatingSpec->GetDeadLoadFactor(      pgsTypes::StrengthII_PermitRoutine);
+   DW = pRatingSpec->GetWearingSurfaceFactor(pgsTypes::StrengthII_PermitRoutine);
+   LLIM = pRatingSpec->GetLiveLoadFactor(    pgsTypes::StrengthII_PermitRoutine,true);
+   hr = strengthII_routine->AddLoadCaseFactor(CComBSTR("DC"), DC, DC);
+   hr = strengthII_routine->AddLoadCaseFactor(CComBSTR("DW"), DW, DW);
+   hr = strengthII_routine->AddLoadCaseFactor(CComBSTR("LL_IM"), LLIM, LLIM);
+   strengthII_routine->put_LiveLoadFactor(LLIM);
+
+   loadcombos->Add(strengthII_routine);
+
+   CComPtr<ILoadCombination> strengthII_special;
+   strengthII_special.CoCreateInstance(CLSID_LoadCombination);
+   strengthII_special->put_Name( GetLoadCombinationName(pgsTypes::StrengthII_PermitSpecial) );
+   strengthII_special->put_LoadCombinationType(lctStrength);
+   strengthII_special->AddLiveLoadModel(lltPermitSpecialRating);
+
+   DC = pRatingSpec->GetDeadLoadFactor(      pgsTypes::StrengthII_PermitSpecial);
+   DW = pRatingSpec->GetWearingSurfaceFactor(pgsTypes::StrengthII_PermitSpecial);
+   LLIM = pRatingSpec->GetLiveLoadFactor(    pgsTypes::StrengthII_PermitSpecial,true);
+   hr = strengthII_special->AddLoadCaseFactor(CComBSTR("DC"), DC, DC);
+   hr = strengthII_special->AddLoadCaseFactor(CComBSTR("DW"), DW, DW);
+   hr = strengthII_special->AddLoadCaseFactor(CComBSTR("LL_IM"), LLIM, LLIM);
+   strengthII_special->put_LiveLoadFactor(LLIM);
+
+   loadcombos->Add(strengthII_special);
+
+   // SERVICE-I - Permit Rating
+   CComPtr<ILoadCombination> serviceI_routine;
+   serviceI_routine.CoCreateInstance(CLSID_LoadCombination);
+   serviceI_routine->put_Name( GetLoadCombinationName(pgsTypes::ServiceI_PermitRoutine) );
+   serviceI_routine->put_LoadCombinationType(lctService);
+   serviceI_routine->AddLiveLoadModel(lltPermitRoutineRating);
+
+   DC = pRatingSpec->GetDeadLoadFactor(      pgsTypes::ServiceI_PermitRoutine);
+   DW = pRatingSpec->GetWearingSurfaceFactor(pgsTypes::ServiceI_PermitRoutine);
+   LLIM = pRatingSpec->GetLiveLoadFactor(    pgsTypes::ServiceI_PermitRoutine,true);
+   hr = serviceI_routine->AddLoadCaseFactor(CComBSTR("DC"), DC, DC);
+   hr = serviceI_routine->AddLoadCaseFactor(CComBSTR("DW"), DW, DW);
+   hr = serviceI_routine->AddLoadCaseFactor(CComBSTR("LL_IM"), LLIM, LLIM);
+   serviceI_routine->put_LiveLoadFactor(LLIM);
+
+   loadcombos->Add(serviceI_routine);
+
+
+   CComPtr<ILoadCombination> serviceI_special;
+   serviceI_special.CoCreateInstance(CLSID_LoadCombination);
+   serviceI_special->put_Name( GetLoadCombinationName(pgsTypes::ServiceI_PermitSpecial) );
+   serviceI_special->put_LoadCombinationType(lctService);
+   serviceI_special->AddLiveLoadModel(lltPermitSpecialRating);
+
+   DC = pRatingSpec->GetDeadLoadFactor(      pgsTypes::ServiceI_PermitSpecial);
+   DW = pRatingSpec->GetWearingSurfaceFactor(pgsTypes::ServiceI_PermitSpecial);
+   LLIM = pRatingSpec->GetLiveLoadFactor(    pgsTypes::ServiceI_PermitSpecial,true);
+   hr = serviceI_special->AddLoadCaseFactor(CComBSTR("DC"), DC, DC);
+   hr = serviceI_special->AddLoadCaseFactor(CComBSTR("DW"), DW, DW);
+   hr = serviceI_special->AddLoadCaseFactor(CComBSTR("LL_IM"), LLIM, LLIM);
+   serviceI_routine->put_LiveLoadFactor(LLIM);
+
+   loadcombos->Add(serviceI_special);
+
    // Design load combination... A PGSuper specific load combination for adding user-defined live load to hl-93
    CComPtr<ILoadCombination> lc_design;
    lc_design.CoCreateInstance(CLSID_LoadCombination);
@@ -3074,7 +3610,7 @@ void CAnalysisAgentImp::ConfigureLoadCombinations(ILBAMModel* pModel)
 
    loadcombos->Add(lc_permit);
 
-   ///
+   // pedestrian live load
    CComPtr<ILoadCombination> lc_pedestrian;
    lc_pedestrian.CoCreateInstance(CLSID_LoadCombination);
    lc_pedestrian->put_Name( GetLoadCombinationName(pgsTypes::lltPedestrian) );
@@ -3085,6 +3621,46 @@ void CAnalysisAgentImp::ConfigureLoadCombinations(ILBAMModel* pModel)
    lc_pedestrian->AddLoadCaseFactor(CComBSTR("LL_IM"), 1.00, 1.00) ;
 
    loadcombos->Add(lc_pedestrian);
+
+   // legal - routine commercial traffic
+   CComPtr<ILoadCombination> lc_legal_routine;
+   lc_legal_routine.CoCreateInstance(CLSID_LoadCombination);
+   lc_legal_routine->put_Name( GetLoadCombinationName(pgsTypes::lltLegalRating_Routine) );
+   lc_legal_routine->put_LoadCombinationType(lctStrength);
+   lc_legal_routine->put_LiveLoadFactor(1.0);
+   lc_legal_routine->AddLiveLoadModel(lltLegalRoutineRating);
+   hr = lc_legal_routine->AddLoadCaseFactor(CComBSTR("LL_IM"), 1.00, 1.00);
+   loadcombos->Add(lc_legal_routine);
+
+   // legal - specialized hauling vehicle
+   CComPtr<ILoadCombination> lc_legal_special;
+   lc_legal_special.CoCreateInstance(CLSID_LoadCombination);
+   lc_legal_special->put_Name( GetLoadCombinationName(pgsTypes::lltLegalRating_Special) );
+   lc_legal_special->put_LoadCombinationType(lctStrength);
+   lc_legal_special->put_LiveLoadFactor(1.0);
+   lc_legal_special->AddLiveLoadModel(lltLegalSpecialRating);
+   hr = lc_legal_special->AddLoadCaseFactor(CComBSTR("LL_IM"), 1.00, 1.00);
+   loadcombos->Add(lc_legal_special);
+
+   // permit rating - routine
+   CComPtr<ILoadCombination> lc_permit_routine;
+   lc_permit_routine.CoCreateInstance(CLSID_LoadCombination);
+   lc_permit_routine->put_Name( GetLoadCombinationName(pgsTypes::lltPermitRating_Routine) );
+   lc_permit_routine->put_LoadCombinationType(lctStrength);
+   lc_permit_routine->put_LiveLoadFactor(1.0);
+   lc_permit_routine->AddLiveLoadModel(lltPermitRoutineRating);
+   hr = lc_permit_routine->AddLoadCaseFactor(CComBSTR("LL_IM"), 1.00, 1.00);
+   loadcombos->Add(lc_permit_routine);
+
+   // permit rating - special
+   CComPtr<ILoadCombination> lc_permit_special;
+   lc_permit_special.CoCreateInstance(CLSID_LoadCombination);
+   lc_permit_special->put_Name( GetLoadCombinationName(pgsTypes::lltPermitRating_Special) );
+   lc_permit_special->put_LoadCombinationType(lctStrength);
+   lc_permit_special->put_LiveLoadFactor(1.0);
+   lc_permit_special->AddLiveLoadModel(lltPermitSpecialRating);
+   hr = lc_permit_special->AddLoadCaseFactor(CComBSTR("LL_IM"), 1.00, 1.00);
+   loadcombos->Add(lc_permit_special);
 
    // Now we have to map our product loads (girder, diaphragms, etc) to the LRFD load cases (DC, DW, etc)
    CComPtr<ILoadCases> load_cases;
@@ -3113,17 +3689,17 @@ void CAnalysisAgentImp::ConfigureLoadCombinations(ILBAMModel* pModel)
    // set up load groups
    CComPtr<ILoadGroups> loadGroups;
    pModel->get_LoadGroups(&loadGroups);
-   AddLoadGroup(loadGroups,GetLoadGroupName(pftGirder),CComBSTR("Girder self weight"));
-   AddLoadGroup(loadGroups,GetLoadGroupName(pftSlab),CComBSTR("Slab self weight"));
-   AddLoadGroup(loadGroups,GetLoadGroupName(pftSlabPanel),CComBSTR("Slab Panel self weight"));
-   AddLoadGroup(loadGroups,GetLoadGroupName(pftDiaphragm),CComBSTR("Diaphragm self weight"));
-   AddLoadGroup(loadGroups,GetLoadGroupName(pftSidewalk),CComBSTR("Sidewalk self weight"));
-   AddLoadGroup(loadGroups,GetLoadGroupName(pftTrafficBarrier),CComBSTR("Traffic Barrier self weight"));
-   AddLoadGroup(loadGroups,GetLoadGroupName(pftShearKey),CComBSTR("Shear Key Weight"));
-   AddLoadGroup(loadGroups,GetLoadGroupName(pftOverlay),CComBSTR("Overlay self weight"));
-   AddLoadGroup(loadGroups,GetLoadGroupName(pftUserDC),CComBSTR("User applied loads in DC"));
-   AddLoadGroup(loadGroups,GetLoadGroupName(pftUserDW),CComBSTR("User applied loads in DW"));
-   AddLoadGroup(loadGroups,GetLoadGroupName(pftUserLLIM),CComBSTR("User applied live load"));
+   AddLoadGroup(loadGroups, GetLoadGroupName(pftGirder),         CComBSTR("Girder self weight"));
+   AddLoadGroup(loadGroups, GetLoadGroupName(pftSlab),           CComBSTR("Slab self weight"));
+   AddLoadGroup(loadGroups, GetLoadGroupName(pftSlabPanel),      CComBSTR("Slab Panel self weight"));
+   AddLoadGroup(loadGroups, GetLoadGroupName(pftDiaphragm),      CComBSTR("Diaphragm self weight"));
+   AddLoadGroup(loadGroups, GetLoadGroupName(pftSidewalk),       CComBSTR("Sidewalk self weight"));
+   AddLoadGroup(loadGroups, GetLoadGroupName(pftTrafficBarrier), CComBSTR("Traffic Barrier self weight"));
+   AddLoadGroup(loadGroups, GetLoadGroupName(pftShearKey),       CComBSTR("Shear Key Weight"));
+   AddLoadGroup(loadGroups, GetLoadGroupName(pftOverlay),        CComBSTR("Overlay self weight"));
+   AddLoadGroup(loadGroups, GetLoadGroupName(pftUserDC),         CComBSTR("User applied loads in DC"));
+   AddLoadGroup(loadGroups, GetLoadGroupName(pftUserDW),         CComBSTR("User applied loads in DW"));
+   AddLoadGroup(loadGroups, GetLoadGroupName(pftUserLLIM),       CComBSTR("User applied live load"));
 }
 
 void CAnalysisAgentImp::ApplyEndDiaphragmLoads( ILBAMModel* pModel, CComBSTR& bstrStage,CComBSTR& bstrLoadGroup, SpanIndexType span,GirderIndexType gdr )
@@ -3553,7 +4129,7 @@ Float64 CAnalysisAgentImp::GetReaction(pgsTypes::Stage stage,ProductForceType ty
 {
    USES_CONVERSION;
    GET_IFACE(IProgress,pProgress);
-   pgsAutoProgress  ap(pProgress);
+   CEAFAutoProgress  ap(pProgress);
    
    std::ostringstream os;
 
@@ -4951,62 +5527,100 @@ void CAnalysisAgentImp::GetLiveLoadReaction(pgsTypes::LiveLoadType llType,pgsTyp
    }
 }
 
-void CAnalysisAgentImp::GetLiveLoadStress(pgsTypes::LiveLoadType llType,pgsTypes::Stage stage,const pgsPointOfInterest& poi,BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,Float64* pfTopMin,Float64* pfTopMax,Float64* pfBotMin,Float64* pfBotMax)
+void CAnalysisAgentImp::GetLiveLoadStress(pgsTypes::LiveLoadType llType,pgsTypes::Stage stage,const pgsPointOfInterest& poi,BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,Float64* pfTopMin,Float64* pfTopMax,Float64* pfBotMin,Float64* pfBotMax,long* pTopMinConfig,long* pTopMaxConfig,long* pBotMinConfig,long* pBotMaxConfig)
 {
    std::vector<pgsPointOfInterest> vPoi;
    vPoi.push_back(poi);
 
    std::vector<Float64> fTopMin, fTopMax, fBotMin, fBotMax;
-   GetLiveLoadStress(llType,stage,vPoi,bat,bIncludeImpact,bIncludeLLDF,&fTopMin,&fTopMax,&fBotMin,&fBotMax);
+   std::vector<long> topMinConfig, topMaxConfig, botMinConfig, botMaxConfig;
+   GetLiveLoadStress(llType,stage,vPoi,bat,bIncludeImpact,bIncludeLLDF,&fTopMin,&fTopMax,&fBotMin,&fBotMax,&topMinConfig, &topMaxConfig, &botMinConfig, &botMaxConfig);
 
    ATLASSERT(fTopMin.size() == 1);
    ATLASSERT(fTopMax.size() == 1);
    ATLASSERT(fBotMin.size() == 1);
    ATLASSERT(fBotMax.size() == 1);
+   ATLASSERT(topMinConfig.size() == 1);
+   ATLASSERT(topMaxConfig.size() == 1);
+   ATLASSERT(botMinConfig.size() == 1);
+   ATLASSERT(botMaxConfig.size() == 1);
 
    *pfTopMin = fTopMin[0];
    *pfTopMax = fTopMax[0];
    *pfBotMin = fBotMin[0];
    *pfBotMax = fBotMax[0];
+
+   if ( pTopMinConfig )
+      *pTopMinConfig = topMinConfig[0];
+
+   if ( pTopMaxConfig )
+      *pTopMaxConfig = topMaxConfig[0];
+
+   if ( pBotMinConfig )
+      *pBotMinConfig = botMinConfig[0];
+
+   if ( pBotMaxConfig )
+      *pBotMaxConfig = botMaxConfig[0];
+}
+
+void CAnalysisAgentImp::GetLiveLoadModel(pgsTypes::LiveLoadType llType,GirderIndexType gdrIdx,ILiveLoadModel** ppLiveLoadModel)
+{
+   // if the gdr index is ALL_GIRDERS then we don't really care which girder line so use 0
+   // live load is the same on all girder lines
+   if ( gdrIdx == ALL_GIRDERS )
+      gdrIdx = 0;
+
+   ModelData* pModelData = GetModelData(gdrIdx);
+
+   CComPtr<ILiveLoad> live_load;
+   pModelData->m_Model->get_LiveLoad(&live_load);
+
+   // get the design and permit live load models
+   switch(llType)
+   {
+      case pgsTypes::lltDesign:
+         live_load->get_Design(ppLiveLoadModel);
+         break;
+
+      case pgsTypes::lltFatigue:
+         live_load->get_Fatigue(ppLiveLoadModel);
+         break;
+
+      case pgsTypes::lltPermit:
+         live_load->get_Permit(ppLiveLoadModel);
+         break;
+
+      case pgsTypes::lltPedestrian:
+         live_load->get_Pedestrian(ppLiveLoadModel);
+         break;
+
+      case pgsTypes::lltLegalRating_Routine:
+         live_load->get_LegalRoutineRating(ppLiveLoadModel);
+         break;
+
+      case pgsTypes::lltLegalRating_Special:
+         live_load->get_LegalSpecialRating(ppLiveLoadModel);
+         break;
+
+      case pgsTypes::lltPermitRating_Routine:
+         live_load->get_PermitRoutineRating(ppLiveLoadModel);
+         break;
+
+      case pgsTypes::lltPermitRating_Special:
+         live_load->get_PermitSpecialRating(ppLiveLoadModel);
+         break;
+
+      default:
+         ATLASSERT(false);
+   }
 }
 
 std::vector<std::string> CAnalysisAgentImp::GetVehicleNames(pgsTypes::LiveLoadType llType,GirderIndexType gdr)
 {
    USES_CONVERSION;
 
-   // if the gdr index is ALL_GIRDERS then we don't really care which girder line so use 0
-   // live load is the same on all girder lines
-   if ( gdr == ALL_GIRDERS )
-      gdr = 0;
-
-   ModelData* pModelData = GetModelData(gdr);
-
-   CComPtr<ILiveLoad> live_load;
-   pModelData->m_Model->get_LiveLoad(&live_load);
-
-   // get the design and permit live load models
    CComPtr<ILiveLoadModel> liveload_model;
-   switch(llType)
-   {
-      case pgsTypes::lltDesign:
-         live_load->get_Design(&liveload_model);
-         break;
-
-      case pgsTypes::lltFatigue:
-         live_load->get_Fatigue(&liveload_model);
-         break;
-
-      case pgsTypes::lltPermit:
-         live_load->get_Permit(&liveload_model);
-         break;
-
-      case pgsTypes::lltPedestrian:
-         live_load->get_Pedestrian(&liveload_model);
-         break;
-
-      default:
-         ATLASSERT(false);
-   }
+   GetLiveLoadModel(llType,gdr,&liveload_model);
 
    CComPtr<IVehicularLoads> vehicles;
    liveload_model->get_VehicularLoads(&vehicles);
@@ -5152,7 +5766,7 @@ void CAnalysisAgentImp::GetVehicularLiveLoadReaction(pgsTypes::LiveLoadType llTy
    m_LBAMPoi->Add(pier);
 
    VARIANT_BOOL vbIncludeImpact = (bIncludeImpact ? VARIANT_TRUE : VARIANT_FALSE);
-   DistributionFactorType dfType = (bIncludeLLDF   ? dftEnvelope : dftNone);
+   DistributionFactorType dfType = (bIncludeLLDF   ? GetLiveLoadDistributionFactorType(llType) : dftNone);
 
    CComPtr<ILiveLoadModelResults> minResults;
    CComPtr<ILiveLoadModelResults> maxResults;
@@ -5172,28 +5786,31 @@ void CAnalysisAgentImp::GetVehicularLiveLoadReaction(pgsTypes::LiveLoadType llTy
    *pRmin = Rmin;
    *pRmax = Rmax;
 
+   CComPtr<ILBAMModel> lbam_model;
+   GetModel(pModelData,bat,&lbam_model);
    if ( pMaxAxleConfig )
    {
       AxleConfiguration maxConfig;
-      CreateAxleConfig(pModelData, bat, RzMaxConfig, &maxConfig);
+      CreateAxleConfig(lbam_model, RzMaxConfig, &maxConfig);
       *pMaxAxleConfig = maxConfig;
    }
 
    if ( pMinAxleConfig )
    {
       AxleConfiguration minConfig;
-      CreateAxleConfig(pModelData, bat, RzMinConfig, &minConfig);
+      CreateAxleConfig(lbam_model, RzMinConfig, &minConfig);
       *pMinAxleConfig = minConfig;
    }
 }
 
-void CAnalysisAgentImp::GetVehicularLiveLoadStress(pgsTypes::LiveLoadType llType,VehicleIndexType vehicleIndex,pgsTypes::Stage stage,const pgsPointOfInterest& poi,BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,Float64* pfTopMin,Float64* pfTopMax,Float64* pfBotMin,Float64* pfBotMax)
+void CAnalysisAgentImp::GetVehicularLiveLoadStress(pgsTypes::LiveLoadType llType,VehicleIndexType vehicleIndex,pgsTypes::Stage stage,const pgsPointOfInterest& poi,BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,Float64* pfTopMin,Float64* pfTopMax,Float64* pfBotMin,Float64* pfBotMax,AxleConfiguration* pMinAxleConfigTop,AxleConfiguration* pMaxAxleConfigTop,AxleConfiguration* pMinAxleConfigBot,AxleConfiguration* pMaxAxleConfigBot)
 {
    std::vector<pgsPointOfInterest> vPoi;
    vPoi.push_back(poi);
 
    std::vector<Float64> fTopMin, fTopMax, fBotMin, fBotMax;
-   GetVehicularLiveLoadStress(llType,vehicleIndex,stage,vPoi,bat,bIncludeImpact,bIncludeLLDF,&fTopMin,&fTopMax,&fBotMin,&fBotMax);
+   std::vector<AxleConfiguration> minAxleConfigTop,maxAxleConfigTop,minAxleConfigBot,maxAxleConfigBot;
+   GetVehicularLiveLoadStress(llType,vehicleIndex,stage,vPoi,bat,bIncludeImpact,bIncludeLLDF,&fTopMin,&fTopMax,&fBotMin,&fBotMax,&minAxleConfigTop,&maxAxleConfigTop,&minAxleConfigBot,&maxAxleConfigBot);
 
    ATLASSERT(fTopMin.size() == 1);
    ATLASSERT(fTopMax.size() == 1);
@@ -5204,6 +5821,26 @@ void CAnalysisAgentImp::GetVehicularLiveLoadStress(pgsTypes::LiveLoadType llType
    *pfTopMax = fTopMax[0];
    *pfBotMin = fBotMin[0];
    *pfBotMax = fBotMax[0];
+
+   if ( pMinAxleConfigTop )
+   {
+      *pMinAxleConfigTop = minAxleConfigTop[0];
+   }
+
+   if ( pMaxAxleConfigTop )
+   {
+      *pMaxAxleConfigTop = maxAxleConfigTop[0];
+   }
+
+   if ( pMinAxleConfigBot )
+   {
+      *pMinAxleConfigBot = minAxleConfigBot[0];
+   }
+
+   if ( pMaxAxleConfigBot )
+   {
+      *pMaxAxleConfigBot = maxAxleConfigBot[0];
+   }
 }
 
 void CAnalysisAgentImp::GetDeflLiveLoadDisplacement(DeflectionLiveLoadType type, const pgsPointOfInterest& poi,Float64* pDmin,Float64* pDmax)
@@ -5386,16 +6023,69 @@ std::string CAnalysisAgentImp::GetLiveLoadName(pgsTypes::LiveLoadType llType,Veh
 
    LiveLoadModelType llmt = g_LiveLoadModelType[llType];
 
+   if ( vehicleIndex == INVALID_INDEX )
+   {
+      return OLE2A(GetLiveLoadName(llType));
+   }
+
    ModelData* pModelData = 0;
    pModelData = GetModelData(0); // get model data for girder line zero since all have the same live loads
 
+   CComPtr<ILBAMModel> lbam_model;
+   GetModel(pModelData,SimpleSpan,&lbam_model);
+
    CComPtr<IVehicularLoad> vehicle;
-   GetVehicularLoad(pModelData,SimpleSpan,llmt,vehicleIndex,&vehicle);
+   GetVehicularLoad(lbam_model,llmt,vehicleIndex,&vehicle);
 
    CComBSTR bstrName;
    vehicle->get_Name(&bstrName);
 
    return OLE2A(bstrName);
+}
+
+VehicleIndexType CAnalysisAgentImp::GetVehicleCount(pgsTypes::LiveLoadType llType)
+{
+   LiveLoadModelType llmt = g_LiveLoadModelType[llType];
+
+   CComPtr<ILiveLoadModel> liveload_model;
+   GetLiveLoadModel(llType,0,&liveload_model);
+
+   CComPtr<IVehicularLoads> vehicular_loads;
+   liveload_model->get_VehicularLoads(&vehicular_loads);
+
+   VehicleIndexType nVehicles;
+   vehicular_loads->get_Count(&nVehicles);
+   return nVehicles;
+}
+
+Float64 CAnalysisAgentImp::GetVehicleWeight(pgsTypes::LiveLoadType llType,VehicleIndexType vehicleIndex)
+{
+   LiveLoadModelType llmt = g_LiveLoadModelType[llType];
+
+   ModelData* pModelData = 0;
+   pModelData = GetModelData(0); // get model data for girder line zero since all have the same live loads
+
+   CComPtr<ILBAMModel> lbam_model;
+   GetModel(pModelData,SimpleSpan,&lbam_model);
+
+   CComPtr<IVehicularLoad> vehicle;
+   GetVehicularLoad(lbam_model,llmt,vehicleIndex,&vehicle);
+
+   Float64 W = 0;
+   vehicle->SumAxleWeights(&W);
+
+   // if it is one of the "Dual Trucks", divide the weight by 2
+   CComBSTR bstrName;
+   vehicle->get_Name(&bstrName);
+   if ( bstrName == CComBSTR("LRFD Truck Train [90%(Truck + Lane)]") ||
+        bstrName == CComBSTR("LRFD Low Boy (Dual Tandem + Lane)")    ||
+        bstrName == CComBSTR("Two Type 3-3 separated by 30ft")    ||
+        bstrName == CComBSTR("0.75(Two Type 3-3 separated by 30ft) + Lane Load") )
+   {
+      W /= 2; 
+   }
+
+   return W;
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -5405,7 +6095,7 @@ std::vector<sysSectionValue> CAnalysisAgentImp::GetShear(pgsTypes::Stage stage,P
 {
    USES_CONVERSION;
    GET_IFACE(IProgress,pProgress);
-   pgsAutoProgress  ap(pProgress);
+   CEAFAutoProgress  ap(pProgress);
  
    GET_IFACE(IStageMap,pStageMap);
    std::ostringstream os;
@@ -5476,7 +6166,7 @@ std::vector<Float64> CAnalysisAgentImp::GetMoment(pgsTypes::Stage stage,ProductF
 {
    USES_CONVERSION;
    GET_IFACE(IProgress,pProgress);
-   pgsAutoProgress  ap(pProgress);
+   CEAFAutoProgress  ap(pProgress);
 
    GET_IFACE(IStageMap,pStageMap);
    std::ostringstream os;
@@ -5584,7 +6274,7 @@ std::vector<Float64> CAnalysisAgentImp::GetDisplacement(pgsTypes::Stage stage,Pr
 {
    USES_CONVERSION;
    GET_IFACE(IProgress,pProgress);
-   pgsAutoProgress  ap(pProgress);
+   CEAFAutoProgress  ap(pProgress);
 
    GET_IFACE(IStageMap,pStageMap);
    std::ostringstream os;
@@ -5680,7 +6370,7 @@ std::vector<Float64> CAnalysisAgentImp::GetRotation(pgsTypes::Stage stage,Produc
 {
    USES_CONVERSION;
    GET_IFACE(IProgress,pProgress);
-   pgsAutoProgress  ap(pProgress);
+   CEAFAutoProgress  ap(pProgress);
 
    GET_IFACE(IStageMap,pStageMap);
    std::ostringstream os;
@@ -5776,7 +6466,7 @@ void CAnalysisAgentImp::GetStress(pgsTypes::Stage stage,ProductForceType type,co
 {
    USES_CONVERSION;
    GET_IFACE(IProgress,pProgress);
-   pgsAutoProgress  ap(pProgress);
+   CEAFAutoProgress  ap(pProgress);
 
    GET_IFACE(IStageMap,pStageMap);
    std::ostringstream os;
@@ -5921,12 +6611,14 @@ void CAnalysisAgentImp::GetStress(pgsTypes::Stage stage,ProductForceType type,co
 
 void CAnalysisAgentImp::GetLiveLoadMoment(pgsTypes::LiveLoadType llType,pgsTypes::Stage stage,const std::vector<pgsPointOfInterest>& vPoi,BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,std::vector<Float64>* pMmin,std::vector<Float64>* pMmax,std::vector<long>* pMminTruck,std::vector<long>* pMmaxTruck)
 {
+   USES_CONVERSION;
+
    GET_IFACE(IProgress,pProgress);
-   pgsAutoProgress  ap(pProgress);
+   CEAFAutoProgress  ap(pProgress);
 
    GET_IFACE(IStageMap,pStageMap);
    std::ostringstream os;
-   os << "Retrieving " << (llType == pgsTypes::lltDesign ? "Design" : llType == pgsTypes::lltFatigue ? "Fatigue" : "Permit") << " Live Load Moments" << std::ends;
+   os << "Retrieving " << OLE2A(GetLiveLoadTypeName(llType)) << " Live Load Moments" << std::ends;
    pProgress->UpdateMessage( os.str().c_str() );
 
    pMmin->clear();
@@ -6022,12 +6714,14 @@ void CAnalysisAgentImp::GetLiveLoadMoment(pgsTypes::LiveLoadType llType,pgsTypes
 
 void CAnalysisAgentImp::GetLiveLoadShear(pgsTypes::LiveLoadType llType,pgsTypes::Stage stage,const std::vector<pgsPointOfInterest>& vPoi,BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,std::vector<sysSectionValue>* pVmin,std::vector<sysSectionValue>* pVmax,std::vector<long>* pMinTruck,std::vector<long>* pMaxTruck)
 {
+   USES_CONVERSION;
+
    GET_IFACE(IProgress,pProgress);
-   pgsAutoProgress  ap(pProgress);
+   CEAFAutoProgress  ap(pProgress);
 
    GET_IFACE(IStageMap,pStageMap);
    std::ostringstream os;
-   os << "Retrieving " << (llType == pgsTypes::lltDesign ? "Design" : llType == pgsTypes::lltFatigue ? "Fatigue" : "Permit") << " Live Load Shears" << std::ends;
+   os << "Retrieving " << OLE2A(GetLiveLoadTypeName(llType)) << " Live Load Shears" << std::ends;
    pProgress->UpdateMessage( os.str().c_str() );
 
    pVmin->clear();
@@ -6061,13 +6755,13 @@ void CAnalysisAgentImp::GetLiveLoadShear(pgsTypes::LiveLoadType llType,pgsTypes:
 
       Float64 FyMaxLeft, FyMaxRight;
       CComPtr<ILiveLoadConfiguration> FyMaxLeftConfig, FyMaxRightConfig;
-      maxResults->GetResult(idx,&FyMaxLeft, pMaxTruck ? &FyMaxLeftConfig  : NULL,
-                                &FyMaxRight,pMaxTruck ? &FyMaxRightConfig : NULL);
+      maxResults->GetResult(idx,&FyMaxLeft, pMinTruck ? &FyMaxLeftConfig  : NULL,
+                                &FyMaxRight,pMinTruck ? &FyMaxRightConfig : NULL);
 
       Float64 FyMinLeft, FyMinRight;
       CComPtr<ILiveLoadConfiguration> FyMinLeftConfig, FyMinRightConfig;
-      minResults->GetResult(idx,&FyMinLeft, pMinTruck ? &FyMinLeftConfig  : NULL,
-                                &FyMinRight,pMinTruck ? &FyMinRightConfig : NULL);
+      minResults->GetResult(idx,&FyMinLeft, pMaxTruck ? &FyMinLeftConfig  : NULL,
+                                &FyMinRight,pMaxTruck ? &FyMinRightConfig : NULL);
 
       sysSectionValue maxValues(-FyMinLeft,FyMinRight);
       sysSectionValue minValues(-FyMaxLeft,FyMaxRight);
@@ -6075,36 +6769,36 @@ void CAnalysisAgentImp::GetLiveLoadShear(pgsTypes::LiveLoadType llType,pgsTypes:
       pVmin->push_back( minValues );
       pVmax->push_back( maxValues );
 
-      if ( pMaxTruck )
+      if ( pMinTruck )
       {
          if ( -FyMaxLeft < FyMaxRight && FyMaxRightConfig )
          {
             VehicleIndexType vehIdx;
             FyMaxRightConfig->get_VehicleIndex(&vehIdx);
-            pMaxTruck->push_back(vehIdx);
+            pMinTruck->push_back(vehIdx);
          }
          else if ( FyMaxLeftConfig )
          {
             VehicleIndexType vehIdx;
             FyMaxLeftConfig->get_VehicleIndex(&vehIdx);
-            pMaxTruck->push_back(vehIdx);
+            pMinTruck->push_back(vehIdx);
          }
       }
 
 
-      if ( pMinTruck )
+      if ( pMaxTruck )
       {
          if ( -FyMinLeft < FyMinRight  && FyMinRightConfig )
          {
             VehicleIndexType vehIdx;
             FyMinRightConfig->get_VehicleIndex(&vehIdx);
-            pMinTruck->push_back(vehIdx);
+            pMaxTruck->push_back(vehIdx);
          }
          else if ( FyMinLeftConfig )
          {
             VehicleIndexType vehIdx;
             FyMinLeftConfig->get_VehicleIndex(&vehIdx);
-            pMinTruck->push_back(vehIdx);
+            pMaxTruck->push_back(vehIdx);
          }
       }
    }
@@ -6112,12 +6806,14 @@ void CAnalysisAgentImp::GetLiveLoadShear(pgsTypes::LiveLoadType llType,pgsTypes:
 
 void CAnalysisAgentImp::GetLiveLoadDisplacement(pgsTypes::LiveLoadType llType,pgsTypes::Stage stage,const std::vector<pgsPointOfInterest>& vPoi,BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,std::vector<Float64>* pDmin,std::vector<Float64>* pDmax,std::vector<long>* pMinConfig,std::vector<long>* pMaxConfig)
 {
+   USES_CONVERSION;
+
    GET_IFACE(IProgress,pProgress);
-   pgsAutoProgress  ap(pProgress);
+   CEAFAutoProgress  ap(pProgress);
 
    GET_IFACE(IStageMap,pStageMap);
    std::ostringstream os;
-   os << "Retrieving " << (llType == pgsTypes::lltDesign ? "Design" : llType == pgsTypes::lltFatigue ? "Fatigue" : "Permit") << " Live Load Displacements" << std::ends;
+   os << "Retrieving " << OLE2A(GetLiveLoadTypeName(llType)) << " Live Load Displacements" << std::ends;
    pProgress->UpdateMessage( os.str().c_str() );
 
    pDmin->clear();
@@ -6178,12 +6874,14 @@ void CAnalysisAgentImp::GetLiveLoadDisplacement(pgsTypes::LiveLoadType llType,pg
 
 void CAnalysisAgentImp::GetLiveLoadRotation(pgsTypes::LiveLoadType llType,pgsTypes::Stage stage,const std::vector<pgsPointOfInterest>& vPoi,BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,std::vector<Float64>* pRmin,std::vector<Float64>* pRmax,std::vector<long>* pMinConfig,std::vector<long>* pMaxConfig)
 {
+   USES_CONVERSION;
+
    GET_IFACE(IProgress,pProgress);
-   pgsAutoProgress  ap(pProgress);
+   CEAFAutoProgress  ap(pProgress);
 
    GET_IFACE(IStageMap,pStageMap);
    std::ostringstream os;
-   os << "Retrieving " << (llType == pgsTypes::lltDesign ? "Design" : llType == pgsTypes::lltFatigue ? "Fatigue" : "Permit") << " Live Load Rotations" << std::ends;
+   os << "Retrieving " << OLE2A(GetLiveLoadTypeName(llType)) << " Live Load Rotations" << std::ends;
    pProgress->UpdateMessage( os.str().c_str() );
 
    pRmin->clear();
@@ -6242,20 +6940,34 @@ void CAnalysisAgentImp::GetLiveLoadRotation(pgsTypes::LiveLoadType llType,pgsTyp
    }
 }
 
-void CAnalysisAgentImp::GetLiveLoadStress(pgsTypes::LiveLoadType llType,pgsTypes::Stage stage,const std::vector<pgsPointOfInterest>& vPoi,BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,std::vector<Float64>* pfTopMin,std::vector<Float64>* pfTopMax,std::vector<Float64>* pfBotMin,std::vector<Float64>* pfBotMax)
+void CAnalysisAgentImp::GetLiveLoadStress(pgsTypes::LiveLoadType llType,pgsTypes::Stage stage,const std::vector<pgsPointOfInterest>& vPoi,BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,std::vector<Float64>* pfTopMin,std::vector<Float64>* pfTopMax,std::vector<Float64>* pfBotMin,std::vector<Float64>* pfBotMax,std::vector<long>* pTopMinIndex,std::vector<long>* pTopMaxIndex,std::vector<long>* pBotMinIndex,std::vector<long>* pBotMaxIndex)
 {
+   USES_CONVERSION;
+
    GET_IFACE(IProgress,pProgress);
-   pgsAutoProgress  ap(pProgress);
+   CEAFAutoProgress  ap(pProgress);
 
    GET_IFACE(IStageMap,pStageMap);
    std::ostringstream os;
-   os << "Retrieving " << (llType == pgsTypes::lltDesign ? "Design" : llType == pgsTypes::lltFatigue ? "Fatigue" : "Permit") << " Live Load Stresses" << std::ends;
+   os << "Retrieving " << OLE2A(GetLiveLoadTypeName(llType)) << " Live Load Stresses" << std::ends;
    pProgress->UpdateMessage( os.str().c_str() );
 
    pfTopMin->clear();
    pfTopMax->clear();
    pfBotMin->clear();
    pfBotMax->clear();
+
+   if ( pTopMinIndex )
+      pTopMinIndex->clear();
+
+   if ( pTopMaxIndex )
+      pTopMaxIndex->clear();
+
+   if ( pBotMinIndex )
+      pBotMinIndex->clear();
+
+   if ( pBotMaxIndex )
+      pBotMaxIndex->clear();
    
    ModelData* pModelData = UpdateLBAMPois(vPoi);
 
@@ -6268,9 +6980,9 @@ void CAnalysisAgentImp::GetLiveLoadStress(pgsTypes::LiveLoadType llType,pgsTypes
    CComPtr<ILiveLoadModelStressResults> maxResults;
    CComBSTR bstrStage = pStageMap->GetStageName(stage);
    pModelData->pLiveLoadResponse[bat]->ComputeStresses( m_LBAMPoi, bstrStage, llmt, 
-          fetMz, optMaximize, vlcDefault, vbIncludeImpact,vbIncludeLLDF,VARIANT_FALSE,&maxResults);
+          fetMz, optMaximize, vlcDefault, vbIncludeImpact,vbIncludeLLDF,VARIANT_TRUE,&maxResults);
    pModelData->pLiveLoadResponse[bat]->ComputeStresses( m_LBAMPoi, bstrStage, llmt, 
-          fetMz, optMinimize, vlcDefault, vbIncludeImpact,vbIncludeLLDF,VARIANT_FALSE,&minResults);
+          fetMz, optMinimize, vlcDefault, vbIncludeImpact,vbIncludeLLDF,VARIANT_TRUE,&minResults);
 
    std::vector<pgsPointOfInterest>::const_iterator iter;
    for ( iter = vPoi.begin(); iter != vPoi.end(); iter++ )
@@ -6279,10 +6991,12 @@ void CAnalysisAgentImp::GetLiveLoadStress(pgsTypes::LiveLoadType llType,pgsTypes
       long idx = iter - vPoi.begin();
 
       CComPtr<IStressResult> fLeftMax, fRightMax;
-      maxResults->GetResult(idx,&fLeftMax,NULL,&fRightMax,NULL);
+      CComPtr<ILiveLoadConfiguration> fLeftMaxConfig, fRightMaxConfig;
+      maxResults->GetResult(idx,&fLeftMax,pTopMaxIndex || pBotMaxIndex ? &fLeftMaxConfig : NULL,&fRightMax,pTopMaxIndex || pBotMaxIndex ? &fRightMaxConfig : NULL);
 
       CComPtr<IStressResult> fLeftMin, fRightMin;
-      minResults->GetResult(idx,&fLeftMin,NULL,&fRightMin,NULL);
+      CComPtr<ILiveLoadConfiguration> fLeftMinConfig, fRightMinConfig;
+      minResults->GetResult(idx,&fLeftMin,pTopMinIndex || pBotMinIndex ? &fLeftMinConfig : NULL,&fRightMin,pTopMinIndex || pBotMinIndex ? &fRightMinConfig : NULL);
 
       Float64 dist_from_start = poi.GetDistFromStart();
       GET_IFACE(IBridge,pBridge);
@@ -6295,6 +7009,34 @@ void CAnalysisAgentImp::GetLiveLoadStress(pgsTypes::LiveLoadType llType,pgsTypes
          fRightMax->GetResult(1,&fTopMin);
          fRightMin->GetResult(0,&fBotMin);
          fRightMin->GetResult(1,&fTopMax);
+
+         if ( pTopMinIndex )
+         {
+            VehicleIndexType vehIdx;
+            fRightMaxConfig->get_VehicleIndex(&vehIdx);
+            pTopMinIndex->push_back(vehIdx);
+         }
+
+         if ( pTopMaxIndex )
+         {
+            VehicleIndexType vehIdx;
+            fRightMinConfig->get_VehicleIndex(&vehIdx);
+            pTopMaxIndex->push_back(vehIdx);
+         }
+
+         if ( pBotMinIndex )
+         {
+            VehicleIndexType vehIdx;
+            fRightMinConfig->get_VehicleIndex(&vehIdx);
+            pBotMinIndex->push_back(vehIdx);
+         }
+
+         if ( pBotMaxIndex )
+         {
+            VehicleIndexType vehIdx;
+            fRightMaxConfig->get_VehicleIndex(&vehIdx);
+            pBotMaxIndex->push_back(vehIdx);
+         }
       }
       else
       {
@@ -6302,7 +7044,36 @@ void CAnalysisAgentImp::GetLiveLoadStress(pgsTypes::LiveLoadType llType,pgsTypes
          fLeftMax->GetResult(1,&fTopMin);
          fLeftMin->GetResult(0,&fBotMin);
          fLeftMin->GetResult(1,&fTopMax);
+
+         if ( pTopMinIndex )
+         {
+            VehicleIndexType vehIdx;
+            fLeftMaxConfig->get_VehicleIndex(&vehIdx);
+            pTopMinIndex->push_back(vehIdx);
+         }
+
+         if ( pTopMaxIndex )
+         {
+            VehicleIndexType vehIdx;
+            fLeftMinConfig->get_VehicleIndex(&vehIdx);
+            pTopMaxIndex->push_back(vehIdx);
+         }
+
+         if ( pBotMinIndex )
+         {
+            VehicleIndexType vehIdx;
+            fLeftMinConfig->get_VehicleIndex(&vehIdx);
+            pBotMinIndex->push_back(vehIdx);
+         }
+
+         if ( pBotMaxIndex )
+         {
+            VehicleIndexType vehIdx;
+            fLeftMaxConfig->get_VehicleIndex(&vehIdx);
+            pBotMaxIndex->push_back(vehIdx);
+         }
       }
+
       pfBotMax->push_back(fBotMax);
       pfBotMin->push_back(fBotMin);
       pfTopMax->push_back(fTopMax);
@@ -6312,12 +7083,14 @@ void CAnalysisAgentImp::GetLiveLoadStress(pgsTypes::LiveLoadType llType,pgsTypes
 
 void CAnalysisAgentImp::GetVehicularLiveLoadMoment(pgsTypes::LiveLoadType llType,VehicleIndexType vehicleIndex,pgsTypes::Stage stage,const std::vector<pgsPointOfInterest>& vPoi,BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,std::vector<Float64>* pMmin,std::vector<Float64>* pMmax,std::vector<AxleConfiguration>* pMinAxleConfig,std::vector<AxleConfiguration>* pMaxAxleConfig)
 {
+   USES_CONVERSION;
+
    GET_IFACE(IProgress,pProgress);
-   pgsAutoProgress  ap(pProgress);
+   CEAFAutoProgress  ap(pProgress);
 
    GET_IFACE(IStageMap,pStageMap);
    std::ostringstream os;
-   os << "Retrieving " << (llType == pgsTypes::lltDesign ? "Design" : llType == pgsTypes::lltFatigue ? "Fatigue" : "Permit") << " Live Load Moments for " << GetVehicleNames(llType,vPoi[0].GetGirder())[vehicleIndex] << std::ends;
+   os << "Retrieving " << OLE2A(GetLiveLoadTypeName(llType)) << " Live Load Moments for " << GetVehicleNames(llType,vPoi[0].GetGirder())[vehicleIndex] << std::ends;
    pProgress->UpdateMessage( os.str().c_str() );
 
    pMmin->clear();
@@ -6338,10 +7111,14 @@ void CAnalysisAgentImp::GetVehicularLiveLoadMoment(pgsTypes::LiveLoadType llType
    CComBSTR bstrStage = pStageMap->GetStageName(stage);
 
    VARIANT_BOOL vbIncludeImpact = (bIncludeImpact ? VARIANT_TRUE : VARIANT_FALSE);
-   DistributionFactorType dfType = (bIncludeLLDF   ? dftEnvelope : dftNone);
+   DistributionFactorType dfType = (bIncludeLLDF   ? GetLiveLoadDistributionFactorType(llType) : dftNone);
 
    pModelData->pVehicularResponse[bat]->ComputeForces( m_LBAMPoi, bstrStage, llmt, vehicleIndex, roMember, fetMz, optMinimize,vlcDefault, vbIncludeImpact, dfType, VARIANT_TRUE, &minResults);
    pModelData->pVehicularResponse[bat]->ComputeForces( m_LBAMPoi, bstrStage, llmt, vehicleIndex, roMember, fetMz, optMaximize,vlcDefault, vbIncludeImpact, dfType, VARIANT_TRUE, &maxResults);
+
+   CComPtr<ILBAMModel> lbam_model;
+   GetModel(pModelData,bat,&lbam_model);
+
 
    std::vector<pgsPointOfInterest>::const_iterator iter;
    for ( iter = vPoi.begin(); iter != vPoi.end(); iter++ )
@@ -6370,7 +7147,7 @@ void CAnalysisAgentImp::GetVehicularLiveLoadMoment(pgsTypes::LiveLoadType llType
          if ( pMinAxleConfig )
          {
             AxleConfiguration minConfig;
-            CreateAxleConfig(pModelData, bat, minRightConfig, &minConfig);
+            CreateAxleConfig(lbam_model, minRightConfig, &minConfig);
             pMinAxleConfig->push_back(minConfig);
          }
 
@@ -6379,7 +7156,7 @@ void CAnalysisAgentImp::GetVehicularLiveLoadMoment(pgsTypes::LiveLoadType llType
          if ( pMaxAxleConfig )
          {
             AxleConfiguration maxConfig;
-            CreateAxleConfig(pModelData, bat, maxRightConfig, &maxConfig);
+            CreateAxleConfig(lbam_model, maxRightConfig, &maxConfig);
             pMaxAxleConfig->push_back(maxConfig);
          }
       }
@@ -6390,7 +7167,7 @@ void CAnalysisAgentImp::GetVehicularLiveLoadMoment(pgsTypes::LiveLoadType llType
          if ( pMinAxleConfig )
          {
             AxleConfiguration minConfig;
-            CreateAxleConfig(pModelData, bat, minLeftConfig, &minConfig);
+            CreateAxleConfig(lbam_model, minLeftConfig, &minConfig);
             pMinAxleConfig->push_back(minConfig);
          }
 
@@ -6399,7 +7176,7 @@ void CAnalysisAgentImp::GetVehicularLiveLoadMoment(pgsTypes::LiveLoadType llType
          if ( pMaxAxleConfig )
          {
             AxleConfiguration maxConfig;
-            CreateAxleConfig(pModelData, bat, maxLeftConfig, &maxConfig);
+            CreateAxleConfig(lbam_model, maxLeftConfig, &maxConfig);
             pMaxAxleConfig->push_back(maxConfig);
          }
       }
@@ -6408,12 +7185,14 @@ void CAnalysisAgentImp::GetVehicularLiveLoadMoment(pgsTypes::LiveLoadType llType
 
 void CAnalysisAgentImp::GetVehicularLiveLoadShear(pgsTypes::LiveLoadType llType,VehicleIndexType vehicleIndex,pgsTypes::Stage stage,const std::vector<pgsPointOfInterest>& vPoi,BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,std::vector<sysSectionValue>* pVmin,std::vector<sysSectionValue>* pVmax,std::vector<AxleConfiguration>* pMinLeftAxleConfig,std::vector<AxleConfiguration>* pMinRightAxleConfig,std::vector<AxleConfiguration>* pMaxLeftAxleConfig,std::vector<AxleConfiguration>* pMaxRightAxleConfig)
 {
+   USES_CONVERSION;
+
    GET_IFACE(IProgress,pProgress);
-   pgsAutoProgress  ap(pProgress);
+   CEAFAutoProgress  ap(pProgress);
 
    GET_IFACE(IStageMap,pStageMap);
    std::ostringstream os;
-   os << "Retrieving " << (llType == pgsTypes::lltDesign ? "Design" : llType == pgsTypes::lltFatigue ? "Fatigue" : "Permit") << " Live Load Shear for " << GetVehicleNames(llType,vPoi[0].GetGirder())[vehicleIndex] << std::ends;
+   os << "Retrieving " << OLE2A(GetLiveLoadTypeName(llType)) << " Live Load Shear for " << GetVehicleNames(llType,vPoi[0].GetGirder())[vehicleIndex] << std::ends;
    pProgress->UpdateMessage( os.str().c_str() );
 
    pVmin->clear();
@@ -6440,10 +7219,13 @@ void CAnalysisAgentImp::GetVehicularLiveLoadShear(pgsTypes::LiveLoadType llType,
    CComBSTR bstrStage = pStageMap->GetStageName(stage);
 
    VARIANT_BOOL vbIncludeImpact = (bIncludeImpact ? VARIANT_TRUE : VARIANT_FALSE);
-   DistributionFactorType dfType = (bIncludeLLDF   ? dftEnvelope : dftNone);
+   DistributionFactorType dfType = (bIncludeLLDF   ? GetLiveLoadDistributionFactorType(llType) : dftNone);
 
    pModelData->pVehicularResponse[bat]->ComputeForces( m_LBAMPoi, bstrStage, llmt, vehicleIndex, roMember, fetFy, optMinimize,vlcDefault, vbIncludeImpact, dfType, VARIANT_TRUE, &minResults);
    pModelData->pVehicularResponse[bat]->ComputeForces( m_LBAMPoi, bstrStage, llmt, vehicleIndex, roMember, fetFy, optMaximize,vlcDefault, vbIncludeImpact, dfType, VARIANT_TRUE, &maxResults);
+
+   CComPtr<ILBAMModel> lbam_model;
+   GetModel(pModelData,bat,&lbam_model);
 
    std::vector<pgsPointOfInterest>::const_iterator iter;
    for ( iter = vPoi.begin(); iter != vPoi.end(); iter++ )
@@ -6452,16 +7234,16 @@ void CAnalysisAgentImp::GetVehicularLiveLoadShear(pgsTypes::LiveLoadType llType,
 
       Float64 FyMaxLeft, FyMaxRight;
       CComPtr<ILiveLoadConfiguration> maxLeftConfig, maxRightConfig;
-      maxResults->GetResult(idx,&FyMaxLeft, pMaxLeftAxleConfig  ? &maxLeftConfig  : NULL,
-                                &FyMaxRight,pMaxRightAxleConfig ? &maxRightConfig : NULL);
+      maxResults->GetResult(idx,&FyMaxLeft, pMinLeftAxleConfig  ? &maxLeftConfig  : NULL,
+                                &FyMaxRight,pMinRightAxleConfig ? &maxRightConfig : NULL);
 
       Float64 FyMinLeft, FyMinRight;
       CComPtr<ILiveLoadConfiguration> minLeftConfig, minRightConfig;
-      minResults->GetResult(idx,&FyMinLeft, pMinLeftAxleConfig  ? &minLeftConfig  : NULL,
-                                &FyMinRight,pMinRightAxleConfig ? &minRightConfig : NULL);
+      minResults->GetResult(idx,&FyMinLeft, pMaxLeftAxleConfig  ? &minLeftConfig  : NULL,
+                                &FyMinRight,pMaxRightAxleConfig ? &minRightConfig : NULL);
 
-      sysSectionValue minValues(-FyMinLeft,FyMinRight);
-      sysSectionValue maxValues(-FyMaxLeft,FyMaxRight);
+      sysSectionValue minValues(-FyMaxLeft,FyMaxRight);
+      sysSectionValue maxValues(-FyMinLeft,FyMinRight);
 
       pVmin->push_back( minValues );
       pVmax->push_back( maxValues );
@@ -6469,47 +7251,61 @@ void CAnalysisAgentImp::GetVehicularLiveLoadShear(pgsTypes::LiveLoadType llType,
       if ( pMinLeftAxleConfig )
       {
          AxleConfiguration minAxleLeftConfig;
-         CreateAxleConfig(pModelData, bat, minLeftConfig, &minAxleLeftConfig);
+         CreateAxleConfig(lbam_model, maxLeftConfig, &minAxleLeftConfig);
          pMinLeftAxleConfig->push_back(minAxleLeftConfig);
       }
 
       if ( pMaxLeftAxleConfig )
       {
          AxleConfiguration maxAxleLeftConfig;
-         CreateAxleConfig(pModelData, bat, maxLeftConfig, &maxAxleLeftConfig);
+         CreateAxleConfig(lbam_model, minLeftConfig, &maxAxleLeftConfig);
          pMaxLeftAxleConfig->push_back(maxAxleLeftConfig);
       }
 
       if ( pMinRightAxleConfig )
       {
          AxleConfiguration minAxleRightConfig;
-         CreateAxleConfig(pModelData, bat, minRightConfig, &minAxleRightConfig);
+         CreateAxleConfig(lbam_model, maxRightConfig, &minAxleRightConfig);
          pMinRightAxleConfig->push_back(minAxleRightConfig);
       }
 
       if ( pMaxRightAxleConfig )
       {
          AxleConfiguration maxAxleRightConfig;
-         CreateAxleConfig(pModelData, bat, maxRightConfig, &maxAxleRightConfig);
+         CreateAxleConfig(lbam_model, minRightConfig, &maxAxleRightConfig);
          pMaxRightAxleConfig->push_back(maxAxleRightConfig);
       }
    }
 }
 
-void CAnalysisAgentImp::GetVehicularLiveLoadStress(pgsTypes::LiveLoadType llType,VehicleIndexType vehicleIndex,pgsTypes::Stage stage,const std::vector<pgsPointOfInterest>& vPoi,BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,std::vector<Float64>* pfTopMin,std::vector<Float64>* pfTopMax,std::vector<Float64>* pfBotMin,std::vector<Float64>* pfBotMax)
+void CAnalysisAgentImp::GetVehicularLiveLoadStress(pgsTypes::LiveLoadType llType,VehicleIndexType vehicleIndex,pgsTypes::Stage stage,const std::vector<pgsPointOfInterest>& vPoi,BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,std::vector<Float64>* pfTopMin,std::vector<Float64>* pfTopMax,std::vector<Float64>* pfBotMin,std::vector<Float64>* pfBotMax,std::vector<AxleConfiguration>* pMinAxleConfigTop,std::vector<AxleConfiguration>* pMaxAxleConfigTop,std::vector<AxleConfiguration>* pMinAxleConfigBot,std::vector<AxleConfiguration>* pMaxAxleConfigBot)
 {
+   USES_CONVERSION;
+
    GET_IFACE(IProgress,pProgress);
-   pgsAutoProgress  ap(pProgress);
+   CEAFAutoProgress  ap(pProgress);
 
    GET_IFACE(IStageMap,pStageMap);
    std::ostringstream os;
-   os << "Retrieving " << (llType == pgsTypes::lltDesign ? "Design" : llType == pgsTypes::lltFatigue ? "Fatigue" : "Permit") << " Live Load Stresses for " << GetVehicleNames(llType,vPoi[0].GetGirder())[vehicleIndex] << std::ends;
+   os << "Retrieving " << OLE2A(GetLiveLoadTypeName(llType)) << " Live Load Stresses for " << GetVehicleNames(llType,vPoi[0].GetGirder())[vehicleIndex] << std::ends;
    pProgress->UpdateMessage( os.str().c_str() );
 
    pfTopMin->clear();
    pfTopMax->clear();
    pfBotMin->clear();
    pfBotMax->clear();
+
+   if ( pMinAxleConfigTop )
+      pMinAxleConfigTop->clear();
+
+   if ( pMaxAxleConfigTop )
+      pMaxAxleConfigTop->clear();
+
+   if ( pMinAxleConfigBot )
+      pMinAxleConfigBot->clear();
+
+   if ( pMaxAxleConfigBot )
+      pMaxAxleConfigBot->clear();
 
    ModelData* pModelData = UpdateLBAMPois(vPoi);
 
@@ -6521,10 +7317,13 @@ void CAnalysisAgentImp::GetVehicularLiveLoadStress(pgsTypes::LiveLoadType llType
 
 
    VARIANT_BOOL vbIncludeImpact = (bIncludeImpact ? VARIANT_TRUE : VARIANT_FALSE);
-   DistributionFactorType dfType = (bIncludeLLDF   ? dftEnvelope : dftNone);
+   DistributionFactorType dfType = (bIncludeLLDF   ? GetLiveLoadDistributionFactorType(llType) : dftNone);
 
    pModelData->pVehicularResponse[bat]->ComputeStresses(m_LBAMPoi, bstrStage, llmt, vehicleIndex, fetMz, optMinimize, vlcDefault, vbIncludeImpact, dfType, VARIANT_TRUE, &minResults);
    pModelData->pVehicularResponse[bat]->ComputeStresses(m_LBAMPoi, bstrStage, llmt, vehicleIndex, fetMz, optMaximize, vlcDefault, vbIncludeImpact, dfType, VARIANT_TRUE, &maxResults);
+
+   CComPtr<ILBAMModel> lbam_model;
+   GetModel(pModelData,bat,&lbam_model);
 
    std::vector<pgsPointOfInterest>::const_iterator iter;
    for ( iter = vPoi.begin(); iter != vPoi.end(); iter++ )
@@ -6533,10 +7332,12 @@ void CAnalysisAgentImp::GetVehicularLiveLoadStress(pgsTypes::LiveLoadType llType
       long idx = iter - vPoi.begin();
 
       CComPtr<IStressResult> fLeftMax, fRightMax;
-      maxResults->GetResult(idx,&fLeftMax,NULL,&fRightMax,NULL);
+      CComPtr<ILiveLoadConfiguration> maxLeftConfig, maxRightConfig;
+      maxResults->GetResult(idx,&fLeftMax,pMaxAxleConfigTop || pMaxAxleConfigBot ? &maxLeftConfig : NULL,&fRightMax,pMaxAxleConfigTop || pMaxAxleConfigBot ? &maxRightConfig : NULL);
 
       CComPtr<IStressResult> fLeftMin, fRightMin;
-      minResults->GetResult(idx,&fLeftMin,NULL,&fRightMin,NULL);
+      CComPtr<ILiveLoadConfiguration> minLeftConfig, minRightConfig;
+      minResults->GetResult(idx,&fLeftMin,pMinAxleConfigTop || pMinAxleConfigBot ? &minLeftConfig : NULL,&fRightMin,pMinAxleConfigTop || pMinAxleConfigBot ? &minRightConfig : NULL);
 
       Float64 dist_from_start = poi.GetDistFromStart();
       GET_IFACE(IBridge,pBridge);
@@ -6548,6 +7349,34 @@ void CAnalysisAgentImp::GetVehicularLiveLoadStress(pgsTypes::LiveLoadType llType
          fRightMax->GetResult(1,&fTopMin);
          fRightMin->GetResult(0,&fBotMin);
          fRightMin->GetResult(1,&fTopMax);
+
+         if ( pMaxAxleConfigBot )
+         {
+            AxleConfiguration maxAxleRightConfig;
+            CreateAxleConfig(lbam_model, maxRightConfig, &maxAxleRightConfig);
+            pMaxAxleConfigBot->push_back(maxAxleRightConfig);
+         }
+
+         if ( pMaxAxleConfigTop )
+         {
+            AxleConfiguration minAxleRightConfig;
+            CreateAxleConfig(lbam_model, minRightConfig, &minAxleRightConfig);
+            pMaxAxleConfigTop->push_back(minAxleRightConfig);
+         }
+
+         if ( pMinAxleConfigBot )
+         {
+            AxleConfiguration minAxleRightConfig;
+            CreateAxleConfig(lbam_model, minRightConfig, &minAxleRightConfig);
+            pMinAxleConfigBot->push_back(minAxleRightConfig);
+         }
+
+         if ( pMinAxleConfigTop )
+         {
+            AxleConfiguration maxAxleRightConfig;
+            CreateAxleConfig(lbam_model, maxRightConfig, &maxAxleRightConfig);
+            pMinAxleConfigTop->push_back(maxAxleRightConfig);
+         }
       }
       else
       {
@@ -6555,6 +7384,35 @@ void CAnalysisAgentImp::GetVehicularLiveLoadStress(pgsTypes::LiveLoadType llType
          fLeftMax->GetResult(1,&fTopMin);
          fLeftMin->GetResult(0,&fBotMin);
          fLeftMin->GetResult(1,&fTopMax);
+
+
+         if ( pMaxAxleConfigBot )
+         {
+            AxleConfiguration maxAxleLeftConfig;
+            CreateAxleConfig(lbam_model, maxLeftConfig, &maxAxleLeftConfig);
+            pMaxAxleConfigBot->push_back(maxAxleLeftConfig);
+         }
+
+         if ( pMaxAxleConfigTop )
+         {
+            AxleConfiguration minAxleLeftConfig;
+            CreateAxleConfig(lbam_model, minLeftConfig, &minAxleLeftConfig);
+            pMaxAxleConfigTop->push_back(minAxleLeftConfig);
+         }
+
+         if ( pMinAxleConfigBot )
+         {
+            AxleConfiguration minAxleLeftConfig;
+            CreateAxleConfig(lbam_model, minLeftConfig, &minAxleLeftConfig);
+            pMinAxleConfigBot->push_back(minAxleLeftConfig);
+         }
+
+         if ( pMinAxleConfigTop )
+         {
+            AxleConfiguration maxAxleLeftConfig;
+            CreateAxleConfig(lbam_model, maxLeftConfig, &maxAxleLeftConfig);
+            pMinAxleConfigTop->push_back(maxAxleLeftConfig);
+         }
       }
       pfBotMax->push_back(fBotMax);
       pfBotMin->push_back(fBotMin);
@@ -6565,12 +7423,14 @@ void CAnalysisAgentImp::GetVehicularLiveLoadStress(pgsTypes::LiveLoadType llType
 
 void CAnalysisAgentImp::GetVehicularLiveLoadDisplacement(pgsTypes::LiveLoadType llType,VehicleIndexType vehicleIndex,pgsTypes::Stage stage,const std::vector<pgsPointOfInterest>& vPoi,BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,std::vector<Float64>* pDmin,std::vector<Float64>* pDmax,std::vector<AxleConfiguration>* pMinAxleConfig,std::vector<AxleConfiguration>* pMaxAxleConfig)
 {
+   USES_CONVERSION;
+
    GET_IFACE(IProgress,pProgress);
-   pgsAutoProgress  ap(pProgress);
+   CEAFAutoProgress  ap(pProgress);
 
    GET_IFACE(IStageMap,pStageMap);
    std::ostringstream os;
-   os << "Retrieving " << (llType == pgsTypes::lltDesign ? "Design" : llType == pgsTypes::lltFatigue ? "Fatigue" : "Permit") << " Live Load Displacements for " << GetVehicleNames(llType,vPoi[0].GetGirder())[vehicleIndex] << std::ends;
+   os << "Retrieving " << OLE2A(GetLiveLoadTypeName(llType)) << " Live Load Displacements for " << GetVehicleNames(llType,vPoi[0].GetGirder())[vehicleIndex] << std::ends;
    pProgress->UpdateMessage( os.str().c_str() );
 
    pDmin->clear();
@@ -6591,11 +7451,14 @@ void CAnalysisAgentImp::GetVehicularLiveLoadDisplacement(pgsTypes::LiveLoadType 
    CComBSTR bstrStage = pStageMap->GetStageName(stage);
 
    VARIANT_BOOL vbIncludeImpact = (bIncludeImpact ? VARIANT_TRUE : VARIANT_FALSE);
-   DistributionFactorType dfType = (bIncludeLLDF   ? dftEnvelope : dftNone);
+   DistributionFactorType dfType = (bIncludeLLDF   ? GetLiveLoadDistributionFactorType(llType) : dftNone);
 
    pModelData->pVehicularResponse[bat]->ComputeDeflections( m_LBAMPoi, bstrStage, llmt, vehicleIndex, fetDy, optMinimize,vlcDefault, vbIncludeImpact, dfType, VARIANT_TRUE, &minResults);
    pModelData->pVehicularResponse[bat]->ComputeDeflections( m_LBAMPoi, bstrStage, llmt, vehicleIndex, fetDy, optMaximize,vlcDefault, vbIncludeImpact, dfType, VARIANT_TRUE, &maxResults);
    
+   CComPtr<ILBAMModel> lbam_model;
+   GetModel(pModelData,bat,&lbam_model);
+
    std::vector<pgsPointOfInterest>::const_iterator iter;
    for ( iter = vPoi.begin(); iter != vPoi.end(); iter++ )
    {
@@ -6616,7 +7479,7 @@ void CAnalysisAgentImp::GetVehicularLiveLoadDisplacement(pgsTypes::LiveLoadType 
       if ( pMinAxleConfig )
       {
          AxleConfiguration minConfig;
-         CreateAxleConfig(pModelData, bat, minLeftConfig, &minConfig);
+         CreateAxleConfig(lbam_model, minLeftConfig, &minConfig);
          pMinAxleConfig->push_back(minConfig);
       }
 
@@ -6625,7 +7488,7 @@ void CAnalysisAgentImp::GetVehicularLiveLoadDisplacement(pgsTypes::LiveLoadType 
       if ( pMaxAxleConfig )
       {
          AxleConfiguration maxConfig;
-         CreateAxleConfig(pModelData, bat, maxLeftConfig, &maxConfig);
+         CreateAxleConfig(lbam_model, maxLeftConfig, &maxConfig);
          pMaxAxleConfig->push_back(maxConfig);
       }
    }
@@ -6633,12 +7496,14 @@ void CAnalysisAgentImp::GetVehicularLiveLoadDisplacement(pgsTypes::LiveLoadType 
 
 void CAnalysisAgentImp::GetVehicularLiveLoadRotation(pgsTypes::LiveLoadType llType,VehicleIndexType vehicleIndex,pgsTypes::Stage stage,const std::vector<pgsPointOfInterest>& vPoi,BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,std::vector<Float64>* pDmin,std::vector<Float64>* pDmax,std::vector<AxleConfiguration>* pMinAxleConfig,std::vector<AxleConfiguration>* pMaxAxleConfig)
 {
+   USES_CONVERSION;
+
    GET_IFACE(IProgress,pProgress);
-   pgsAutoProgress  ap(pProgress);
+   CEAFAutoProgress  ap(pProgress);
 
    GET_IFACE(IStageMap,pStageMap);
    std::ostringstream os;
-   os << "Retrieving " << (llType == pgsTypes::lltDesign ? "Design" : llType == pgsTypes::lltFatigue ? "Fatigue" : "Permit") << " Live Load Rotation for " << GetVehicleNames(llType,vPoi[0].GetGirder())[vehicleIndex] << std::ends;
+   os << "Retrieving " << OLE2A(GetLiveLoadTypeName(llType)) << " Live Load Rotation for " << GetVehicleNames(llType,vPoi[0].GetGirder())[vehicleIndex] << std::ends;
    pProgress->UpdateMessage( os.str().c_str() );
 
    pDmin->clear();
@@ -6659,11 +7524,14 @@ void CAnalysisAgentImp::GetVehicularLiveLoadRotation(pgsTypes::LiveLoadType llTy
    CComBSTR bstrStage = pStageMap->GetStageName(stage);
 
    VARIANT_BOOL vbIncludeImpact = (bIncludeImpact ? VARIANT_TRUE : VARIANT_FALSE);
-   DistributionFactorType dfType = (bIncludeLLDF   ? dftEnvelope : dftNone);
+   DistributionFactorType dfType = (bIncludeLLDF   ? GetLiveLoadDistributionFactorType(llType) : dftNone);
 
    pModelData->pVehicularResponse[bat]->ComputeDeflections( m_LBAMPoi, bstrStage, llmt, vehicleIndex, fetRz, optMinimize,vlcDefault, vbIncludeImpact, dfType, VARIANT_TRUE, &minResults);
    pModelData->pVehicularResponse[bat]->ComputeDeflections( m_LBAMPoi, bstrStage, llmt, vehicleIndex, fetRz, optMaximize,vlcDefault, vbIncludeImpact, dfType, VARIANT_TRUE, &maxResults);
-   
+
+   CComPtr<ILBAMModel> lbam_model;
+   GetModel(pModelData,bat,&lbam_model);
+
    std::vector<pgsPointOfInterest>::const_iterator iter;
    for ( iter = vPoi.begin(); iter != vPoi.end(); iter++ )
    {
@@ -6683,14 +7551,14 @@ void CAnalysisAgentImp::GetVehicularLiveLoadRotation(pgsTypes::LiveLoadType llTy
       if ( pMaxAxleConfig )
       {
          AxleConfiguration maxConfig;
-         CreateAxleConfig(pModelData, bat, RzMaxConfig, &maxConfig);
+         CreateAxleConfig(lbam_model, RzMaxConfig, &maxConfig);
          pMaxAxleConfig->push_back(maxConfig);
       }
 
       if ( pMinAxleConfig )
       {
          AxleConfiguration maxConfig;
-         CreateAxleConfig(pModelData, bat, RzMinConfig, &maxConfig);
+         CreateAxleConfig(lbam_model, RzMinConfig, &maxConfig);
          pMinAxleConfig->push_back(maxConfig);
       }
    }
@@ -6735,7 +7603,7 @@ Float64 CAnalysisAgentImp::GetReaction(LoadingCombination combo,pgsTypes::Stage 
 {
    USES_CONVERSION;
    GET_IFACE(IProgress,pProgress);
-   pgsAutoProgress  ap(pProgress);
+   CEAFAutoProgress  ap(pProgress);
 
    GET_IFACE(IStageMap,pStageMap);
    std::ostringstream os;
@@ -6849,12 +7717,12 @@ void CAnalysisAgentImp::GetCombinedLiveLoadReaction(pgsTypes::LiveLoadType llTyp
 {
    USES_CONVERSION;
    GET_IFACE(IProgress,pProgress);
-   pgsAutoProgress  ap(pProgress);
+   CEAFAutoProgress  ap(pProgress);
 
    GET_IFACE(IStageMap,pStageMap);
    std::ostringstream os;
    os << "Retrieving reaction for " << OLE2A(pStageMap->GetStageName(stage))
-      << " " << (llType == pgsTypes::lltDesign ? "Design" : llType == pgsTypes::lltFatigue ? "Fatigue" : "Permit") << " Live Load for Pier " << LABEL_PIER(pier)
+      << " " << OLE2A(GetLiveLoadTypeName(llType)) << " Live Load for Pier " << LABEL_PIER(pier)
       << " Girder " << LABEL_GIRDER(gdr) << std::ends;
    pProgress->UpdateMessage( os.str().c_str() );
 
@@ -6910,7 +7778,7 @@ std::vector<sysSectionValue> CAnalysisAgentImp::GetShear(LoadingCombination comb
 {
    USES_CONVERSION;
    GET_IFACE(IProgress,pProgress);
-   pgsAutoProgress  ap(pProgress);
+   CEAFAutoProgress  ap(pProgress);
 
    GET_IFACE(IStageMap,pStageMap);
    std::ostringstream os;
@@ -6985,7 +7853,7 @@ std::vector<Float64> CAnalysisAgentImp::GetMoment(LoadingCombination combo,pgsTy
 {
    USES_CONVERSION;
    GET_IFACE(IProgress,pProgress);
-   pgsAutoProgress  ap(pProgress);
+   CEAFAutoProgress  ap(pProgress);
 
    GET_IFACE(IStageMap,pStageMap);
    std::ostringstream os;
@@ -7067,7 +7935,7 @@ std::vector<Float64> CAnalysisAgentImp::GetDisplacement(LoadingCombination combo
 {
    USES_CONVERSION;
    GET_IFACE(IProgress,pProgress);
-   pgsAutoProgress  ap(pProgress);
+   CEAFAutoProgress  ap(pProgress);
 
    GET_IFACE(IStageMap,pStageMap);
    std::ostringstream os;
@@ -7137,7 +8005,7 @@ void CAnalysisAgentImp::GetStress(LoadingCombination combo,pgsTypes::Stage stage
 {
    USES_CONVERSION;
    GET_IFACE(IProgress,pProgress);
-   pgsAutoProgress  ap(pProgress);
+   CEAFAutoProgress  ap(pProgress);
 
    GET_IFACE(IStageMap,pStageMap);
    std::ostringstream os;
@@ -7282,12 +8150,12 @@ void CAnalysisAgentImp::GetCombinedLiveLoadMoment(pgsTypes::LiveLoadType llType,
 
    USES_CONVERSION;
    GET_IFACE(IProgress,pProgress);
-   pgsAutoProgress  ap(pProgress);
+   CEAFAutoProgress  ap(pProgress);
 
    GET_IFACE(IStageMap,pStageMap);
    std::ostringstream os;
    os << "Retrieving moments for " << OLE2A(pStageMap->GetStageName(stage))
-      << " " << (llType == pgsTypes::lltDesign ? "Design" : llType == pgsTypes::lltFatigue ? "Fatigue" : "Permit") << " Live Load" << std::ends;
+      << " " << OLE2A(GetLiveLoadTypeName(llType)) << " Live Load" << std::ends;
    pProgress->UpdateMessage( os.str().c_str() );
 
    pMmax->clear();
@@ -7340,12 +8208,12 @@ void CAnalysisAgentImp::GetCombinedLiveLoadShear(pgsTypes::LiveLoadType llType,p
 
    USES_CONVERSION;
    GET_IFACE(IProgress,pProgress);
-   pgsAutoProgress  ap(pProgress);
+   CEAFAutoProgress  ap(pProgress);
 
    GET_IFACE(IStageMap,pStageMap);
    std::ostringstream os;
    os << "Retrieving shears for " << OLE2A(pStageMap->GetStageName(stage))
-      << " " << (llType == pgsTypes::lltDesign ? "Design" : llType == pgsTypes::lltFatigue ? "Fatigue" : "Permit") << " Live Load" << std::ends;
+      << " " << OLE2A(GetLiveLoadTypeName(llType)) << " Live Load" << std::ends;
    pProgress->UpdateMessage( os.str().c_str() );
 
    pVmax->clear();
@@ -7382,12 +8250,12 @@ void CAnalysisAgentImp::GetCombinedLiveLoadDisplacement(pgsTypes::LiveLoadType l
 
    USES_CONVERSION;
    GET_IFACE(IProgress,pProgress);
-   pgsAutoProgress  ap(pProgress);
+   CEAFAutoProgress  ap(pProgress);
 
    GET_IFACE(IStageMap,pStageMap);
    std::ostringstream os;
    os << "Retrieving displacement for " << OLE2A(pStageMap->GetStageName(stage))
-      << " " << (llType == pgsTypes::lltDesign ? "Design" : llType == pgsTypes::lltFatigue ? "Fatigue" : "Permit") << " Live Load" << std::ends;
+      << " " << OLE2A(GetLiveLoadTypeName(llType)) << " Live Load" << std::ends;
    pProgress->UpdateMessage( os.str().c_str() );
 
    pDmax->clear();
@@ -7424,12 +8292,12 @@ void CAnalysisAgentImp::GetCombinedLiveLoadStress(pgsTypes::LiveLoadType llType,
 
    USES_CONVERSION;
    GET_IFACE(IProgress,pProgress);
-   pgsAutoProgress  ap(pProgress);
+   CEAFAutoProgress  ap(pProgress);
 
    GET_IFACE(IStageMap,pStageMap);
    std::ostringstream os;
    os << "Retrieving stresses for " << OLE2A(pStageMap->GetStageName(stage))
-      << " " << (llType == pgsTypes::lltDesign ? "Design" : llType == pgsTypes::lltFatigue ? "Fatigue" : "Permit") << " Live Load" << std::ends;
+      << " " << OLE2A(GetLiveLoadTypeName(llType)) << " Live Load" << std::ends;
    pProgress->UpdateMessage( os.str().c_str() );
 
    pfTopMin->clear();
@@ -7565,79 +8433,11 @@ Float64 CAnalysisAgentImp::GetSlabDesignMoment(pgsTypes::LimitState ls,const pgs
 /////////////////////////////////////////////////////////////////////////////
 // ILimitStateForces2
 //
-void CAnalysisAgentImp::GetShear(pgsTypes::LimitState ls,pgsTypes::Stage stage,const std::vector<pgsPointOfInterest>& vPoi,BridgeAnalysisType bat,std::vector<sysSectionValue>* pMin,std::vector<sysSectionValue>* pMax)
-{
-   USES_CONVERSION;
-   GET_IFACE(IProgress,pProgress);
-   pgsAutoProgress  ap(pProgress);
-
-   GET_IFACE(IStageMap,pStageMap);
-   std::ostringstream os;
-   os << "Retrieving shear for " << OLE2A(pStageMap->GetStageName(stage))
-      << " " << OLE2A(pStageMap->GetLimitStateName(ls)) << " Limit State" << std::ends;
-   pProgress->UpdateMessage( os.str().c_str() );
-
-   pMin->clear();
-   pMax->clear();
-
-   try
-   {
-      if ( stage == pgsTypes::CastingYard )
-      {
-         std::vector<pgsPointOfInterest>::const_iterator iter;
-         for ( iter = vPoi.begin(); iter != vPoi.end(); iter++ )
-         {
-            const pgsPointOfInterest& poi = *iter;
-            ValidateAnalysisModels( poi.GetSpan(), poi.GetGirder() );
-
-            Float64 fx,fy,mz,dx,dy,rz;
-            GetSectionResults( m_CastingYardModels, poi, &fx, &fy, &mz, &dx, &dy, &rz );
-
-            pMin->push_back( fy );
-            pMax->push_back( fy );
-         }
-      }
-      else
-      {
-         ModelData* pModelData = UpdateLBAMPois(vPoi);
-
-         CComBSTR bstrLoadCombo = GetLoadCombinationName(ls);
-         CComBSTR bstrStage     = pStageMap->GetStageName(stage);
-
-         VARIANT_BOOL bIncludeLiveLoad = (stage == pgsTypes::BridgeSite3 ? VARIANT_TRUE : VARIANT_FALSE );
-         CComPtr<ILoadCombinationSectionResults> maxResults, minResults;
-         pModelData->pLoadComboResponse[bat]->ComputeForces(bstrLoadCombo, m_LBAMPoi, bstrStage, roMember, rsCumulative, fetFy, optMaximize, bIncludeLiveLoad, VARIANT_TRUE, VARIANT_FALSE, &maxResults);
-         pModelData->pLoadComboResponse[bat]->ComputeForces(bstrLoadCombo, m_LBAMPoi, bstrStage, roMember, rsCumulative, fetFy, optMinimize, bIncludeLiveLoad, VARIANT_TRUE, VARIANT_FALSE, &minResults);
-
-         std::vector<pgsPointOfInterest>::const_iterator iter;
-         for ( iter = vPoi.begin(); iter != vPoi.end(); iter++ )
-         {
-            long idx = iter - vPoi.begin();
-
-            double FyMaxLeft, FyMaxRight;
-            maxResults->GetResult(idx,&FyMaxLeft,NULL,&FyMaxRight,NULL);
-      
-            double FyMinLeft, FyMinRight;
-            minResults->GetResult(idx,&FyMinLeft,NULL,&FyMinRight,NULL);
-
-            pMin->push_back( sysSectionValue(-FyMaxLeft,FyMaxRight) );
-            pMax->push_back( sysSectionValue(-FyMinLeft,FyMinRight) );
-         }
-      }
-   }
-   catch(...)
-   {
-      // reset all of our data.
-      Invalidate(false);
-      throw;
-   }
-}
-
 void CAnalysisAgentImp::GetMoment(pgsTypes::LimitState ls,pgsTypes::Stage stage,const std::vector<pgsPointOfInterest>& vPoi,BridgeAnalysisType bat,std::vector<Float64>* pMin,std::vector<Float64>* pMax)
 {
    USES_CONVERSION;
    GET_IFACE(IProgress,pProgress);
-   pgsAutoProgress  ap(pProgress);
+   CEAFAutoProgress  ap(pProgress);
 
    GET_IFACE(IStageMap,pStageMap);
    std::ostringstream os;
@@ -7721,11 +8521,79 @@ void CAnalysisAgentImp::GetMoment(pgsTypes::LimitState ls,pgsTypes::Stage stage,
    }
 }
 
+void CAnalysisAgentImp::GetShear(pgsTypes::LimitState ls,pgsTypes::Stage stage,const std::vector<pgsPointOfInterest>& vPoi,BridgeAnalysisType bat,std::vector<sysSectionValue>* pMin,std::vector<sysSectionValue>* pMax)
+{
+   USES_CONVERSION;
+   GET_IFACE(IProgress,pProgress);
+   CEAFAutoProgress  ap(pProgress);
+
+   GET_IFACE(IStageMap,pStageMap);
+   std::ostringstream os;
+   os << "Retrieving shear for " << OLE2A(pStageMap->GetStageName(stage))
+      << " " << OLE2A(pStageMap->GetLimitStateName(ls)) << " Limit State" << std::ends;
+   pProgress->UpdateMessage( os.str().c_str() );
+
+   pMin->clear();
+   pMax->clear();
+
+   try
+   {
+      if ( stage == pgsTypes::CastingYard )
+      {
+         std::vector<pgsPointOfInterest>::const_iterator iter;
+         for ( iter = vPoi.begin(); iter != vPoi.end(); iter++ )
+         {
+            const pgsPointOfInterest& poi = *iter;
+            ValidateAnalysisModels( poi.GetSpan(), poi.GetGirder() );
+
+            Float64 fx,fy,mz,dx,dy,rz;
+            GetSectionResults( m_CastingYardModels, poi, &fx, &fy, &mz, &dx, &dy, &rz );
+
+            pMin->push_back( fy );
+            pMax->push_back( fy );
+         }
+      }
+      else
+      {
+         ModelData* pModelData = UpdateLBAMPois(vPoi);
+
+         CComBSTR bstrLoadCombo = GetLoadCombinationName(ls);
+         CComBSTR bstrStage     = pStageMap->GetStageName(stage);
+
+         VARIANT_BOOL bIncludeLiveLoad = (stage == pgsTypes::BridgeSite3 ? VARIANT_TRUE : VARIANT_FALSE );
+         CComPtr<ILoadCombinationSectionResults> maxResults, minResults;
+         pModelData->pLoadComboResponse[bat]->ComputeForces(bstrLoadCombo, m_LBAMPoi, bstrStage, roMember, rsCumulative, fetFy, optMaximize, bIncludeLiveLoad, VARIANT_TRUE, VARIANT_FALSE, &maxResults);
+         pModelData->pLoadComboResponse[bat]->ComputeForces(bstrLoadCombo, m_LBAMPoi, bstrStage, roMember, rsCumulative, fetFy, optMinimize, bIncludeLiveLoad, VARIANT_TRUE, VARIANT_FALSE, &minResults);
+
+         std::vector<pgsPointOfInterest>::const_iterator iter;
+         for ( iter = vPoi.begin(); iter != vPoi.end(); iter++ )
+         {
+            long idx = iter - vPoi.begin();
+
+            double FyMaxLeft, FyMaxRight;
+            maxResults->GetResult(idx,&FyMaxLeft,NULL,&FyMaxRight,NULL);
+      
+            double FyMinLeft, FyMinRight;
+            minResults->GetResult(idx,&FyMinLeft,NULL,&FyMinRight,NULL);
+
+            pMin->push_back( sysSectionValue(-FyMaxLeft,FyMaxRight) );
+            pMax->push_back( sysSectionValue(-FyMinLeft,FyMinRight) );
+         }
+      }
+   }
+   catch(...)
+   {
+      // reset all of our data.
+      Invalidate(false);
+      throw;
+   }
+}
+
 std::vector<Float64> CAnalysisAgentImp::GetSlabDesignMoment(pgsTypes::LimitState ls,const std::vector<pgsPointOfInterest>& vPoi,BridgeAnalysisType bat)
 {
    USES_CONVERSION;
    GET_IFACE(IProgress,pProgress);
-   pgsAutoProgress  ap(pProgress);
+   CEAFAutoProgress  ap(pProgress);
 
    GET_IFACE(IStageMap,pStageMap);
    std::ostringstream os;
@@ -7855,7 +8723,7 @@ void CAnalysisAgentImp::GetDisplacement(pgsTypes::LimitState ls,pgsTypes::Stage 
 {
    USES_CONVERSION;
    GET_IFACE(IProgress,pProgress);
-   pgsAutoProgress  ap(pProgress);
+   CEAFAutoProgress  ap(pProgress);
 
    GET_IFACE(IStageMap,pStageMap);
    std::ostringstream os;
@@ -7926,7 +8794,7 @@ void CAnalysisAgentImp::GetStress(pgsTypes::LimitState ls,pgsTypes::Stage stage,
 {
    USES_CONVERSION;
    GET_IFACE(IProgress,pProgress);
-   pgsAutoProgress  ap(pProgress);
+   CEAFAutoProgress  ap(pProgress);
 
    GET_IFACE(IStageMap,pStageMap);
    std::ostringstream os;
@@ -7952,6 +8820,7 @@ void CAnalysisAgentImp::GetStress(pgsTypes::LimitState ls,pgsTypes::Stage stage,
       if (stage != pgsTypes::CastingYard )
       {
          pModelData = UpdateLBAMPois(vPoi);
+
          pModelData->pLoadComboResponse[bat]->ComputeStresses(bstrLoadCombo, m_LBAMPoi, bstrStage, rsCumulative, fetMz, optMaximize, bIncludeLiveLoad, VARIANT_TRUE, VARIANT_FALSE, &maxResults);
          pModelData->pLoadComboResponse[bat]->ComputeStresses(bstrLoadCombo, m_LBAMPoi, bstrStage, rsCumulative, fetMz, optMinimize, bIncludeLiveLoad, VARIANT_TRUE, VARIANT_FALSE, &minResults);
       }
@@ -8050,6 +8919,21 @@ void CAnalysisAgentImp::GetReaction(pgsTypes::LimitState ls,pgsTypes::Stage stag
          GET_IFACE(IStageMap,pStageMap);
          CComBSTR bstrLoadCombo = GetLoadCombinationName(ls);
          CComBSTR bstrStage     = pStageMap->GetStageName(stage);
+
+
+         CComPtr<ILoadCombinations> loadCombos;
+         pModelData->m_Model->get_LoadCombinations(&loadCombos) ;
+         CComPtr<ILoadCombination> loadCombo;
+         loadCombos->Find(bstrLoadCombo,&loadCombo);
+         Float64 gLLmin, gLLmax;
+         loadCombo->FindLoadCaseFactor(CComBSTR("LL_IM"),&gLLmin,&gLLmax);
+         ATLASSERT( 0 < gLLmin && 0 < gLLmax); // if this assert fires, we have to do the load combination "manually"
+                                               // because the load factor is a function of POI and axle weights
+                                               // this can only happen for permit limit states
+         if ( gLLmin < 0 || gLLmax < 0 )
+         {
+            ATLASSERT( ::IsRatingLimitState(ls) ); // this can only happen for ratings
+         }
 
          VARIANT_BOOL vbIncludeImpact = (bIncludeImpact ? VARIANT_TRUE : VARIANT_FALSE);
 
@@ -8309,6 +9193,21 @@ void CAnalysisAgentImp::GetDesignStress(pgsTypes::LimitState ls,pgsTypes::Stage 
    *pMin = (IsZero(*pMin) ? 0 : *pMin);
 }
 
+std::vector<Float64> CAnalysisAgentImp::GetStress(pgsTypes::Stage stage,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::StressLocation loc)
+{
+   std::vector<Float64> stresses;
+   std::vector<pgsPointOfInterest>::const_iterator iter;
+   for ( iter = vPoi.begin(); iter != vPoi.end(); iter++ )
+   {
+      const pgsPointOfInterest& poi = *iter;
+
+      Float64 stress = GetStress(stage,poi,loc);
+      stresses.push_back(stress);
+   }
+
+   return stresses;
+}
+
 void CAnalysisAgentImp::GetConcurrentShear(pgsTypes::LimitState ls,pgsTypes::Stage stage,const pgsPointOfInterest& poi,BridgeAnalysisType bat,sysSectionValue* pMin,sysSectionValue* pMax)
 {
    ATLASSERT(stage != pgsTypes::CastingYard); // this method only works for bridge site stages
@@ -8331,6 +9230,20 @@ void CAnalysisAgentImp::GetConcurrentShear(pgsTypes::LimitState ls,pgsTypes::Sta
       GET_IFACE(IStageMap,pStageMap);
       CComBSTR bstrLoadCombo = GetLoadCombinationName(ls);
       CComBSTR bstrStage     = pStageMap->GetStageName(stage);
+
+         CComPtr<ILoadCombinations> loadCombos;
+         pModelData->m_Model->get_LoadCombinations(&loadCombos) ;
+         CComPtr<ILoadCombination> loadCombo;
+         loadCombos->Find(bstrLoadCombo,&loadCombo);
+         Float64 gLLmin, gLLmax;
+         loadCombo->FindLoadCaseFactor(CComBSTR("LL_IM"),&gLLmin,&gLLmax);
+//         ATLASSERT( 0 < gLLmin && 0 < gLLmax); // if this assert fires, we have to do the load combination "manually"
+                                               // because the load factor is a function of POI and axle weights
+                                               // this can only happen for permit limit states
+         if ( gLLmin < 0 || gLLmax < 0 )
+         {
+            ATLASSERT( ::IsRatingLimitState(ls) ); // this can only happen for ratings
+         }
 
       // Get the Max/Min moments
       VARIANT_BOOL bIncludeLiveLoad = (stage == pgsTypes::BridgeSite3 ? VARIANT_TRUE : VARIANT_FALSE );
@@ -8577,7 +9490,7 @@ CREEPCOEFFICIENTDETAILS CAnalysisAgentImp::GetCreepCoefficientDetails(SpanIndexT
 
          std::string strMsg("V/S Ratio exceeds maximum value per C5.4.2.3.2. Use a different method for estimating creep");
       
-         pgsVSRatioStatusItem* pStatusItem = new pgsVSRatioStatusItem(span,gdr,m_AgentID,m_scidVSRatio,strMsg.c_str());
+         pgsVSRatioStatusItem* pStatusItem = new pgsVSRatioStatusItem(span,gdr,m_StatusGroupID,m_scidVSRatio,strMsg.c_str());
          pStatusCenter->Add(pStatusItem);
       
          THROW_UNWIND(strMsg.c_str(),-1);
@@ -8664,7 +9577,7 @@ CREEPCOEFFICIENTDETAILS CAnalysisAgentImp::GetCreepCoefficientDetails(SpanIndexT
 
          std::string strMsg("V/S Ratio exceeds maximum value per C5.4.2.3.2. Use a different method for estimating creep");
       
-         pgsVSRatioStatusItem* pStatusItem = new pgsVSRatioStatusItem(span,gdr,m_AgentID,m_scidVSRatio,strMsg.c_str());
+         pgsVSRatioStatusItem* pStatusItem = new pgsVSRatioStatusItem(span,gdr,m_StatusGroupID,m_scidVSRatio,strMsg.c_str());
          pStatusCenter->Add(pStatusItem);
       
          THROW_UNWIND(strMsg.c_str(),-1);
@@ -11259,11 +12172,8 @@ CAnalysisAgentImp::ModelData* CAnalysisAgentImp::UpdateLBAMPois(const std::vecto
    return pModelData;
 }
 
-void CAnalysisAgentImp::GetVehicularLoad(ModelData* pModelData,BridgeAnalysisType bat,LiveLoadModelType llType,VehicleIndexType vehicleIndex,IVehicularLoad** pVehicle)
+void CAnalysisAgentImp::GetVehicularLoad(ILBAMModel* pModel,LiveLoadModelType llType,VehicleIndexType vehicleIndex,IVehicularLoad** pVehicle)
 {
-   CComPtr<ILBAMModel> pModel;
-   GetModel(pModelData,bat,&pModel);
-
    CComPtr<ILiveLoad> live_load;
    pModel->get_LiveLoad(&live_load);
 
@@ -11294,7 +12204,28 @@ void CAnalysisAgentImp::GetVehicularLoad(ModelData* pModelData,BridgeAnalysisTyp
          live_load->get_Special(&liveload_model);
          break;
 
+      case lltLegalRoutineRating:
+         live_load->get_LegalRoutineRating(&liveload_model);
+         break;
+
+      case lltLegalSpecialRating :
+         live_load->get_LegalSpecialRating(&liveload_model);
+         break;
+
+      case lltPermitRoutineRating:
+         live_load->get_PermitRoutineRating(&liveload_model);
+         break;
+
+      case lltPermitSpecialRating:
+         live_load->get_PermitSpecialRating(&liveload_model);
+         break;
+
+      case lltNone:
+         *pVehicle = NULL;
+         return;
+
      default:
+        ATLASSERT(false); // is there a new load?
         *pVehicle = NULL;
         return;
    }
@@ -11305,7 +12236,7 @@ void CAnalysisAgentImp::GetVehicularLoad(ModelData* pModelData,BridgeAnalysisTyp
    vehicles->get_Item(vehicleIndex,pVehicle);
 }
 
-void CAnalysisAgentImp::CreateAxleConfig(ModelData* pModelData,BridgeAnalysisType bat,ILiveLoadConfiguration* pConfig,AxleConfiguration* pAxles)
+void CAnalysisAgentImp::CreateAxleConfig(ILBAMModel* pModel,ILiveLoadConfiguration* pConfig,AxleConfiguration* pAxles)
 {
    pAxles->clear();
 
@@ -11315,7 +12246,7 @@ void CAnalysisAgentImp::CreateAxleConfig(ModelData* pModelData,BridgeAnalysisTyp
    CComPtr<IVehicularLoad> pVehicle;
    VehicleIndexType vehicleIndex;
    pConfig->get_VehicleIndex(&vehicleIndex);
-   GetVehicularLoad(pModelData,bat,llType,(VehicleIndexType)vehicleIndex,&pVehicle);
+   GetVehicularLoad(pModel,llType,vehicleIndex,&pVehicle);
 
    if ( !pVehicle )
       return;
@@ -11421,4 +12352,51 @@ void CAnalysisAgentImp::GetModel(ModelData* pModelData,BridgeAnalysisType bat,IL
    default:
       ATLASSERT(false);
    }
+}
+
+DistributionFactorType CAnalysisAgentImp::GetLiveLoadDistributionFactorType(pgsTypes::LiveLoadType llType)
+{
+   DistributionFactorType dfType;
+   GET_IFACE(IRatingSpecification,pRatingSpec);
+
+   switch (llType )
+   {
+   case pgsTypes::lltDesign:
+      dfType = dftEnvelope;
+      break;
+
+   case pgsTypes::lltFatigue:
+      dfType = dftFatigue;
+      break;
+
+   case pgsTypes::lltPedestrian:
+      dfType = dftNone;
+      break;
+
+   case pgsTypes::lltPermit:
+      dfType = dftFatigue;
+      break;
+
+   case pgsTypes::lltLegalRating_Routine:
+      dfType = dftEnvelope;
+      break;
+
+   case pgsTypes::lltLegalRating_Special:
+      dfType = dftEnvelope;
+      break;
+
+   case pgsTypes::lltPermitRating_Routine:
+     dfType = dftEnvelope;
+     break;
+
+   case pgsTypes::lltPermitRating_Special:
+     dfType = dftFatigue;
+     break;
+
+   default:
+      ATLASSERT(false); // should never get here
+      dfType = dftEnvelope;
+   }
+
+   return dfType;
 }

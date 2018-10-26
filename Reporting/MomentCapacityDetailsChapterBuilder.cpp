@@ -88,8 +88,9 @@ void write_over_reinforced_moment_data_table(IBroker* pBroker,
 ////////////////////////// PUBLIC     ///////////////////////////////////////
 
 //======================== LIFECYCLE  =======================================
-CMomentCapacityDetailsChapterBuilder::CMomentCapacityDetailsChapterBuilder()
+CMomentCapacityDetailsChapterBuilder::CMomentCapacityDetailsChapterBuilder(bool bReportCapacityOnly)
 {
+   m_bCapacityOnly = bReportCapacityOnly;
 }
 
 //======================== OPERATORS  =======================================
@@ -109,6 +110,10 @@ rptChapter* CMomentCapacityDetailsChapterBuilder::Build(CReportSpecification* pR
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
+   rptParagraph* pPara = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
+   *pChapter << pPara;
+   *pPara << "Positive Moment Capacity Details" << rptNewLine;
+
    GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
    GET_IFACE2(pBroker,IBridge,pBridge);
    GET_IFACE2(pBroker,IPointOfInterest,pIPOI);
@@ -124,39 +129,26 @@ rptChapter* CMomentCapacityDetailsChapterBuilder::Build(CReportSpecification* pR
 
    vPoi = pIPOI->GetPointsOfInterest(pgsTypes::BridgeSite3, span, girder, POI_FLEXURECAPACITY | POI_SHEAR, POIFIND_OR );
    write_moment_data_table(pBroker,pDisplayUnits,span,girder, vPoi, pChapter, pgsTypes::BridgeSite3, "Final with Live Load (Bridge Site 3)",true);
-   write_crack_moment_data_table(pBroker,pDisplayUnits,span,girder, vPoi, pChapter, pgsTypes::BridgeSite3, "Final with Live Load (Bridge Site 3)",true);
-   write_min_moment_data_table(pBroker,pDisplayUnits,span,girder, vPoi, pChapter, pgsTypes::BridgeSite3, "Final with Live Load (Bridge Site 3)",true);
-   write_over_reinforced_moment_data_table(pBroker,pDisplayUnits,span,girder, vPoi, pChapter, pgsTypes::BridgeSite3, "Final with Live Load (Bridge Site 3)",true);
-
-   PierIndexType prev_pier = span;
-   PierIndexType next_pier = prev_pier + 1;
-
-   bool bComputeNegativeMomentCapacity = false;
-
-   // don't need to write out negative moment capacity if this is a simple span design
-   // or if there isn't any continuity
-   GET_IFACE2(pBroker,ISpecification,pSpec);
-   pgsTypes::AnalysisType analysisType = pSpec->GetAnalysisType();
-
-   if ( analysisType == pgsTypes::Continuous || analysisType == pgsTypes::Envelope )
+   if ( !m_bCapacityOnly )
    {
-      bool bContinuousAtPrevPier,bContinuousAtNextPier,bValue;
-      pBridge->IsContinuousAtPier(prev_pier,&bValue,&bContinuousAtPrevPier);
-      pBridge->IsContinuousAtPier(next_pier,&bContinuousAtNextPier,&bValue);
-
-      bool bIntegralAtPrevPier,bIntegralAtNextPier;
-      pBridge->IsIntegralAtPier(prev_pier,&bValue,&bIntegralAtPrevPier);
-      pBridge->IsIntegralAtPier(next_pier,&bIntegralAtNextPier,&bValue);
-
-      bComputeNegativeMomentCapacity = ( bContinuousAtPrevPier || bContinuousAtNextPier || bIntegralAtPrevPier || bIntegralAtNextPier );
+      write_crack_moment_data_table(pBroker,pDisplayUnits,span,girder, vPoi, pChapter, pgsTypes::BridgeSite3, "Final with Live Load (Bridge Site 3)",true);
+      write_min_moment_data_table(pBroker,pDisplayUnits,span,girder, vPoi, pChapter, pgsTypes::BridgeSite3, "Final with Live Load (Bridge Site 3)",true);
+      write_over_reinforced_moment_data_table(pBroker,pDisplayUnits,span,girder, vPoi, pChapter, pgsTypes::BridgeSite3, "Final with Live Load (Bridge Site 3)",true);
    }
 
-   if ( bComputeNegativeMomentCapacity )
+   if ( pBridge->ProcessNegativeMoments(span) )
    {
+      pPara = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
+      *pChapter << pPara;
+      *pPara << "Negative Moment Capacity Details" << rptNewLine;
+
       write_moment_data_table(pBroker,pDisplayUnits,span,girder, vPoi, pChapter, pgsTypes::BridgeSite3, "Final with Live Load (Bridge Site 3)",false);
-      write_crack_moment_data_table(pBroker,pDisplayUnits,span,girder, vPoi, pChapter, pgsTypes::BridgeSite3, "Final with Live Load (Bridge Site 3)",false);
-      write_min_moment_data_table(pBroker,pDisplayUnits,span,girder, vPoi, pChapter, pgsTypes::BridgeSite3, "Final with Live Load (Bridge Site 3)",false);
-      write_over_reinforced_moment_data_table(pBroker,pDisplayUnits,span,girder, vPoi, pChapter, pgsTypes::BridgeSite3, "Final with Live Load (Bridge Site 3)",false);
+      if ( !m_bCapacityOnly )
+      {
+         write_crack_moment_data_table(pBroker,pDisplayUnits,span,girder, vPoi, pChapter, pgsTypes::BridgeSite3, "Final with Live Load (Bridge Site 3)",false);
+         write_min_moment_data_table(pBroker,pDisplayUnits,span,girder, vPoi, pChapter, pgsTypes::BridgeSite3, "Final with Live Load (Bridge Site 3)",false);
+         write_over_reinforced_moment_data_table(pBroker,pDisplayUnits,span,girder, vPoi, pChapter, pgsTypes::BridgeSite3, "Final with Live Load (Bridge Site 3)",false);
+      }
    }
 
    return pChapter;
@@ -164,7 +156,7 @@ rptChapter* CMomentCapacityDetailsChapterBuilder::Build(CReportSpecification* pR
 
 CChapterBuilder* CMomentCapacityDetailsChapterBuilder::Clone() const
 {
-   return new CMomentCapacityDetailsChapterBuilder;
+   return new CMomentCapacityDetailsChapterBuilder(m_bCapacityOnly);
 }
 
 //======================== ACCESS     =======================================
@@ -226,7 +218,7 @@ void write_moment_data_table(IBroker* pBroker,
    *pChapter << pPara;
 
    std::ostringstream os;
-   os << (bPositiveMoment ? "Positive" : "Negative") << " Moment Capacity Details - " << strStageName << std::endl;
+   os << strStageName << std::endl;
    ColumnIndexType nColumns = (bPositiveMoment ? 14 : 10);
    rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(nColumns,os.str());
 
@@ -305,6 +297,7 @@ void write_moment_data_table(IBroker* pBroker,
       (*table)(row,col++) << force.SetValue( -mcd.C );
       (*table)(row,col++) << force.SetValue( mcd.T );
       (*table)(row,col++) << moment.SetValue( mcd.Mn );
+
 
       row++;
       count++;

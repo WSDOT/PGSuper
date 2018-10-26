@@ -1,0 +1,25 @@
+HKCR
+{
+	PGSuperLibrary.PGSuperComponentInfo.1 = s 'PGSuper Component Information'
+	{
+		CLSID = s '{3EB252D0-84CF-4f09-98CA-9C0A80472258}'
+	}
+	PGSuperLibrary.PGSuperComponentInfo = s 'PGSuper Component Information'
+	{
+		CLSID = s '{3EB252D0-84CF-4f09-98CA-9C0A80472258}'
+		CurVer = s 'PGSuperLibrary.PGSuperComponentInfo.1'
+	}
+	NoRemove CLSID
+	{
+		ForceRemove {3EB252D0-84CF-4f09-98CA-9C0A80472258} = s 'PGSuper Component Information'
+		{
+			ProgID = s 'PGSuperLibrary.PGSuperComponentInfo.1'
+			VersionIndependentProgID = s 'PGSuperLibrary.PGSuperComponentInfo'
+			ForceRemove 'Programmable'
+			InprocServer32 = s '%MODULE%'
+			{
+				val ThreadingModel = s 'Apartment'
+			}
+		}
+	}
+}

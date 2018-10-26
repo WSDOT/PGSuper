@@ -31,6 +31,7 @@
 #include <IFace\PrestressForce.h>
 #include <IFace\AnalysisResults.h>
 #include <IFace\Project.h>
+#include <IFace\DisplayUnits.h>
 
 #include "..\PGSuperException.h"
 
@@ -60,10 +61,10 @@ CLASS
 
 
 //======================== LIFECYCLE  =======================================
-pgsGirderHandlingChecker::pgsGirderHandlingChecker(IBroker* pBroker,AgentIDType agentID)
+pgsGirderHandlingChecker::pgsGirderHandlingChecker(IBroker* pBroker,StatusGroupIDType statusGroupID)
 {
    m_pBroker = pBroker;
-   m_AgentID = agentID;
+   m_StatusGroupID = statusGroupID;
 
    GET_IFACE(IStatusCenter,pStatusCenter);
    m_scidLiftingSupportLocation = pStatusCenter->RegisterCallback( new pgsLiftingSupportLocationStatusCallback(m_pBroker) );
@@ -303,7 +304,7 @@ bool pgsGirderHandlingChecker::DesignShipping(SpanIndexType span,GirderIndexType
       LOG("");
 
       //
-      pgsGirderHandlingChecker checker(m_pBroker,m_AgentID);
+      pgsGirderHandlingChecker checker(m_pBroker,m_StatusGroupID);
 
       pgsHaulingAnalysisArtifact curr_artifact;
 
@@ -557,7 +558,7 @@ void pgsGirderHandlingChecker::PrepareLiftingAnalysisArtifact(SpanIndexType span
       GET_IFACE(IStatusCenter,pStatusCenter);
 
       const char* msg = "Lifting support overhang cannot exceed one-half of the span length";
-      pgsLiftingSupportLocationStatusItem* pStatusItem = new pgsLiftingSupportLocationStatusItem(span,gdr,m_AgentID,m_scidLiftingSupportLocation,msg);
+      pgsLiftingSupportLocationStatusItem* pStatusItem = new pgsLiftingSupportLocationStatusItem(span,gdr,m_StatusGroupID,m_scidLiftingSupportLocation,msg);
       pStatusCenter->Add(pStatusItem);
 
       std::string str(msg);
@@ -1002,7 +1003,7 @@ void pgsGirderHandlingChecker::PrepareHaulingAnalysisArtifact(SpanIndexType span
       GET_IFACE(IStatusCenter,pStatusCenter);
 
       const char* msg = "Hauling support overhang cannot exceed one-half of the span length";
-      pgsLiftingSupportLocationStatusItem* pStatusItem = new pgsLiftingSupportLocationStatusItem(span,gdr,m_AgentID,m_scidLiftingSupportLocation,msg);
+      pgsLiftingSupportLocationStatusItem* pStatusItem = new pgsLiftingSupportLocationStatusItem(span,gdr,m_StatusGroupID,m_scidLiftingSupportLocation,msg);
       pStatusCenter->Add(pStatusItem);
 
       std::string str(msg);
@@ -1446,7 +1447,7 @@ void pgsGirderHandlingChecker::ComputeHaulingRollAngle(SpanIndexType span,Girder
       GET_IFACE(IStatusCenter,pStatusCenter);
 
       const char* msg = "Truck spring stiffness is inadequate - girder/trailer is unstable";
-      pgsTruckStiffnessStatusItem* pStatusItem = new pgsTruckStiffnessStatusItem(m_AgentID,m_scidTruckStiffness,msg);
+      pgsTruckStiffnessStatusItem* pStatusItem = new pgsTruckStiffnessStatusItem(m_StatusGroupID,m_scidTruckStiffness,msg);
       pStatusCenter->Add(pStatusItem);
 
       std::string str(msg);
@@ -1465,8 +1466,8 @@ void pgsGirderHandlingChecker::GetRequirementsForAlternativeTensileStress(const 
     GET_IFACE(ISectProp2,pSectProp2);
     GET_IFACE(IBridgeMaterial,pMaterial);
 
-    GET_IFACE(IProjectSettings,pProjectSettings);
-    bool bUnitsSI = (pProjectSettings->GetUnitsMode() == pgsTypes::umSI ? true : false);
+    GET_IFACE(IDisplayUnits,pDisplayUnits);
+    bool bUnitsSI = IS_SI_UNITS(pDisplayUnits);
 
    SpanIndexType span  = poi.GetSpan();
    GirderIndexType gdr = poi.GetGirder();

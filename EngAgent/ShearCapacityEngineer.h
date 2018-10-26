@@ -67,7 +67,7 @@ public:
 
    //------------------------------------------------------------------------
    // Default constructor
-   pgsShearCapacityEngineer(IBroker* pBroker,AgentIDType agentID);
+   pgsShearCapacityEngineer(IBroker* pBroker,StatusGroupIDType statusGroupID);
 
    //------------------------------------------------------------------------
    // Copy constructor
@@ -85,7 +85,7 @@ public:
    // GROUP: OPERATIONS
 
    void SetBroker(IBroker* pBroker);
-   void SetAgentID(AgentIDType agentID);
+   void SetStatusGroupID(StatusGroupIDType statusGroupID);
 
    // Shear capacity
    //------------------------------------------------------------------------
@@ -132,7 +132,7 @@ protected:
 private:
    // GROUP: DATA MEMBERS
    IBroker* m_pBroker;
-   AgentIDType m_AgentID;
+   StatusGroupIDType m_StatusGroupID;
    StatusCallbackIDType m_scidGirderDescriptionError;
 
 

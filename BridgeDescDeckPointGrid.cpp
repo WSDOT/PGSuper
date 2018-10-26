@@ -24,10 +24,10 @@
 //
 
 #include "stdafx.h"
-#include "PGSuper.h"
+#include "BridgeDescDeckPointGrid.h"
+#include "PGSuperDoc.h"
 #include "PGSuperUnits.h"
 #include "BridgeDescDlg.h"
-#include "BridgeDescDeckPointGrid.h"
 #include "BridgeDescDeckDetailsPage.h"
 #include <Units\Measure.h>
 
@@ -153,7 +153,7 @@ void CBridgeDescDeckPointGrid::CustomInit()
    SetMergeCellsMode(gxnMergeDelayEval);
 
    CComPtr<IBroker> pBroker;
-   AfxGetBroker(&pBroker);
+   EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
 
 	GetParam( )->EnableUndo(FALSE);
@@ -248,7 +248,7 @@ void CBridgeDescDeckPointGrid::SetPointRowData(ROWCOL row,const CDeckPoint& poin
       );
 
    CComPtr<IBroker> pBroker;
-   AfxGetBroker(&pBroker);
+   EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
    CString strStation = FormatStation(pDisplayUnits->GetStationFormat(),point.Station);
 
@@ -287,12 +287,12 @@ void CBridgeDescDeckPointGrid::SetPointRowData(ROWCOL row,const CDeckPoint& poin
 void CBridgeDescDeckPointGrid::GetPointRowData(ROWCOL row,CDeckPoint* pPoint)
 {
    CComPtr<IBroker> pBroker;
-   AfxGetBroker(&pBroker);
+   EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
 
    // Station
    CString strStation = GetCellValue(row,1);
-   UnitModeType unitMode = (UnitModeType)(pDisplayUnits->GetUnitDisplayMode());
+   UnitModeType unitMode = (UnitModeType)(pDisplayUnits->GetUnitMode());
    m_objStation->FromString(CComBSTR(strStation),unitMode);
 
    double station;

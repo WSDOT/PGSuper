@@ -30,35 +30,6 @@ COPYRIGHT
    All Rights Reserved
 *****************************************************************************/
 
-#include <PGSuperTypes.h>
-#include <PgsExt\StatusItem.h>
-
-
-/*****************************************************************************
-INTERFACE
-   IStatusCenter
-
-   Interface for the status center.
-
-DESCRIPTION
-   Interface for the status center. The status center maintains current application
-   status information.
-*****************************************************************************/
-// {77977E9B-B074-401f-8994-73A418FC4FFF}
-DEFINE_GUID(IID_IStatusCenter, 
-0x77977e9b, 0xb074, 0x401f, 0x89, 0x94, 0x73, 0xa4, 0x18, 0xfc, 0x4f, 0xff);
-interface IStatusCenter : IUnknown
-{
-   virtual AgentIDType GetAgentID() = 0;
-   virtual StatusItemIDType Add(pgsStatusItem* pItem) = 0;
-   virtual bool RemoveByID(StatusItemIDType id) = 0;
-   virtual bool RemoveByIndex(CollectionIndexType index) = 0;
-   virtual bool RemoveByAgentID(AgentIDType agentID) = 0;
-   virtual pgsStatusItem* GetByID(StatusItemIDType id) = 0;
-   virtual pgsStatusItem* GetByIndex(CollectionIndexType index) = 0;
-   virtual pgsTypes::StatusSeverityType GetSeverity(const pgsStatusItem* pItem) = 0;
-   virtual CollectionIndexType Count() = 0;
-   virtual StatusCallbackIDType RegisterCallback(iStatusCallback* pCallback) = 0;
-};
+#include <EAF\EAFStatusCenter.h>
 
 #endif // INCLUDED_IFACE_STATUSCENTER_H_

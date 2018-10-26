@@ -24,7 +24,7 @@
 //
 
 #include "stdafx.h"
-#include "PGSuper.h"
+#include "PGSuperDoc.h"
 #include "BridgeDescFramingPage.h"
 #include <MFCTools\CogoDDX.h>
 #include <MFCTools\CustomDDX.h>
@@ -91,7 +91,7 @@ void CBridgeDescFramingPage::DoDataExchange(CDataExchange* pDX)
    }
 
    CComPtr<IBroker> pBroker;
-   AfxGetBroker(&pBroker);
+   EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
 
    if ( !pDX->m_bSaveAndValidate )
@@ -140,10 +140,10 @@ BOOL CBridgeDescFramingPage::OnInitDialog()
    CString fmt;
 
    CComPtr<IBroker> pBroker;
-   AfxGetBroker(&pBroker);
+   EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
    
-   fmt.LoadString(( pDisplayUnits->GetUnitDisplayMode() == pgsTypes::umSI ? IDS_DLG_STATIONFMT_SI : IDS_DLG_STATIONFMT_US ));
+   fmt.LoadString( IS_SI_UNITS(pDisplayUnits) ? IDS_DLG_STATIONFMT_SI : IDS_DLG_STATIONFMT_US );
    m_StationFormat.SetWindowText( fmt );
 
    fmt.LoadString( IDS_DLG_ORIENTATIONFMT );
@@ -198,13 +198,11 @@ BOOL CBridgeDescFramingPage::OnToolTipNotify(UINT id,NMHDR* pNMHDR, LRESULT* pRe
       switch(nID)
       {
       case IDC_ADD_SPAN:
-         ::SendMessage(pNMHDR->hwndFrom,TTM_SETMAXTIPWIDTH,0,300); // makes it a multi-line tooltip
          pTTT->lpszText = m_strAddSpanTip.LockBuffer();
          pTTT->hinst = NULL;
          break;
 
       case IDC_REMOVE_SPAN:
-         ::SendMessage(pNMHDR->hwndFrom,TTM_SETMAXTIPWIDTH,0,300); // makes it a multi-line tooltip
          pTTT->lpszText = m_strRemoveSpanTip.LockBuffer();
          pTTT->hinst = NULL;
          break;
@@ -212,6 +210,9 @@ BOOL CBridgeDescFramingPage::OnToolTipNotify(UINT id,NMHDR* pNMHDR, LRESULT* pRe
       default:
          return FALSE;
       }
+
+      ::SendMessage(pNMHDR->hwndFrom,TTM_SETDELAYTIME,TTDT_AUTOPOP,TOOLTIP_DURATION); // sets the display time to 10 seconds
+      ::SendMessage(pNMHDR->hwndFrom,TTM_SETMAXTIPWIDTH,0,TOOLTIP_WIDTH); // makes it a multi-line tooltip
 
       return TRUE;
    }

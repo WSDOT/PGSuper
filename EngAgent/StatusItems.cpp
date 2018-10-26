@@ -26,12 +26,12 @@
 
 ////////////////
 
-pgsLiveLoadStatusItem::pgsLiveLoadStatusItem(AgentIDType agentID,StatusCallbackIDType callbackID,const char* strDescription) :
-pgsStatusItem(agentID,callbackID,strDescription)
+pgsLiveLoadStatusItem::pgsLiveLoadStatusItem(StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,const char* strDescription) :
+CEAFStatusItem(statusGroupID,callbackID,strDescription)
 {
 }
 
-bool pgsLiveLoadStatusItem::IsEqual(pgsStatusItem* pOther)
+bool pgsLiveLoadStatusItem::IsEqual(CEAFStatusItem* pOther)
 {
    pgsLiveLoadStatusItem* other = dynamic_cast<pgsLiveLoadStatusItem*>(pOther);
    if ( !other )
@@ -46,12 +46,12 @@ m_pBroker(pBroker)
 {
 }
 
-pgsTypes::StatusSeverityType pgsLiveLoadStatusCallback::GetSeverity()
+eafTypes::StatusSeverityType pgsLiveLoadStatusCallback::GetSeverity()
 {
-   return pgsTypes::statusWarning;
+   return eafTypes::statusWarning;
 }
 
-void pgsLiveLoadStatusCallback::Execute(pgsStatusItem* pStatusItem)
+void pgsLiveLoadStatusCallback::Execute(CEAFStatusItem* pStatusItem)
 {
    GET_IFACE(IEditByUI,pEdit);
    pEdit->EditLiveLoads();
@@ -59,12 +59,12 @@ void pgsLiveLoadStatusCallback::Execute(pgsStatusItem* pStatusItem)
 
 ////////////////
 
-pgsLiftingSupportLocationStatusItem::pgsLiftingSupportLocationStatusItem(SpanIndexType span,GirderIndexType gdr,AgentIDType agentID,StatusCallbackIDType callbackID,const char* strDescription) :
-pgsStatusItem(agentID,callbackID,strDescription), m_Span(span),m_Girder(gdr)
+pgsLiftingSupportLocationStatusItem::pgsLiftingSupportLocationStatusItem(SpanIndexType span,GirderIndexType gdr,StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,const char* strDescription) :
+CEAFStatusItem(statusGroupID,callbackID,strDescription), m_Span(span),m_Girder(gdr)
 {
 }
 
-bool pgsLiftingSupportLocationStatusItem::IsEqual(pgsStatusItem* pOther)
+bool pgsLiftingSupportLocationStatusItem::IsEqual(CEAFStatusItem* pOther)
 {
    pgsLiftingSupportLocationStatusItem* other = dynamic_cast<pgsLiftingSupportLocationStatusItem*>(pOther);
    if ( !other )
@@ -79,12 +79,12 @@ m_pBroker(pBroker)
 {
 }
 
-pgsTypes::StatusSeverityType pgsLiftingSupportLocationStatusCallback::GetSeverity()
+eafTypes::StatusSeverityType pgsLiftingSupportLocationStatusCallback::GetSeverity()
 {
-   return pgsTypes::statusError;
+   return eafTypes::statusError;
 }
 
-void pgsLiftingSupportLocationStatusCallback::Execute(pgsStatusItem* pStatusItem)
+void pgsLiftingSupportLocationStatusCallback::Execute(CEAFStatusItem* pStatusItem)
 {
    pgsLiftingSupportLocationStatusItem* pItem = dynamic_cast<pgsLiftingSupportLocationStatusItem*>(pStatusItem);
    ATLASSERT(pItem!=NULL);
@@ -95,12 +95,12 @@ void pgsLiftingSupportLocationStatusCallback::Execute(pgsStatusItem* pStatusItem
 
 ////////////////
 
-pgsTruckStiffnessStatusItem::pgsTruckStiffnessStatusItem(AgentIDType agentID,StatusCallbackIDType callbackID,const char* strDescription) :
-pgsStatusItem(agentID,callbackID,strDescription)
+pgsTruckStiffnessStatusItem::pgsTruckStiffnessStatusItem(StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,const char* strDescription) :
+CEAFStatusItem(statusGroupID,callbackID,strDescription)
 {
 }
 
-bool pgsTruckStiffnessStatusItem::IsEqual(pgsStatusItem* pOther)
+bool pgsTruckStiffnessStatusItem::IsEqual(CEAFStatusItem* pOther)
 {
    pgsTruckStiffnessStatusItem* other = dynamic_cast<pgsTruckStiffnessStatusItem*>(pOther);
    if ( !other )
@@ -115,12 +115,12 @@ m_pBroker(pBroker)
 {
 }
 
-pgsTypes::StatusSeverityType pgsTruckStiffnessStatusCallback::GetSeverity()
+eafTypes::StatusSeverityType pgsTruckStiffnessStatusCallback::GetSeverity()
 {
-   return pgsTypes::statusError;
+   return eafTypes::statusError;
 }
 
-void pgsTruckStiffnessStatusCallback::Execute(pgsStatusItem* pStatusItem)
+void pgsTruckStiffnessStatusCallback::Execute(CEAFStatusItem* pStatusItem)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 

@@ -28,12 +28,12 @@
 #include "TrafficBarrierGrid.h"
 #include "TrafficBarrierDlg.h"
 #include <system\tokenizer.h>
-#include <Units\sysUnits.h>
+#include <EAF\EAFApp.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
-//#undef THIS_FILE
-//static char THIS_FILE[] = __FILE__;
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
 #endif
 
 GRID_IMPLEMENT_REGISTER(CTrafficBarrierGrid, CS_DBLCLKS, 0, 0, 0);
@@ -211,6 +211,14 @@ BOOL CTrafficBarrierGrid::OnValidateCell(ROWCOL nRow, ROWCOL nCol)
 
 void CTrafficBarrierGrid::ResetGrid()
 {
+   CEAFApp* pApp;
+   {
+      AFX_MANAGE_STATE(AfxGetAppModuleState());
+      pApp = (CEAFApp*)AfxGetApp();
+   }
+   const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
+
+
    CTrafficBarrierDlg* pdlg = (CTrafficBarrierDlg*)GetParent();
    ASSERT(pdlg);
 
@@ -243,7 +251,8 @@ void CTrafficBarrierGrid::ResetGrid()
 			.SetValue(_T("Point"))
 		);
 
-   CString cv = "X " + pdlg->GetLengthUnitString();
+   CString cv;
+   cv.Format("X (%s)",pDisplayUnits->ComponentDim.UnitOfMeasure.UnitTag().c_str());
 	SetStyleRange(CGXRange(0,1), CGXStyle()
          .SetWrapText(TRUE)
 			.SetEnabled(FALSE)          // disables usage as current cell
@@ -252,7 +261,7 @@ void CTrafficBarrierGrid::ResetGrid()
 			.SetValue(cv)
 		);
 
-   cv = "Y " + pdlg->GetLengthUnitString();
+   cv.Format("Y (%s)",pDisplayUnits->ComponentDim.UnitOfMeasure.UnitTag().c_str());
 	SetStyleRange(CGXRange(0,2), CGXStyle()
          .SetWrapText(TRUE)
 			.SetEnabled(FALSE)          // disables usage as current cell
@@ -273,8 +282,15 @@ void CTrafficBarrierGrid::ResetGrid()
 	GetParam( )->EnableUndo(TRUE);
 }
 
-void CTrafficBarrierGrid::UploadData(CDataExchange* pDX,  CTrafficBarrierDlg* dlg, IPoint2dCollection* points)
+void CTrafficBarrierGrid::UploadData(CDataExchange* pDX, IPoint2dCollection* points)
 {
+   CEAFApp* pApp;
+   {
+      AFX_MANAGE_STATE(AfxGetAppModuleState());
+      pApp = (CEAFApp*)AfxGetApp();
+   }
+   const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
+
    CComPtr<IEnumPoint2d> enum_points;
    points->get__Enum(&enum_points);
 
@@ -286,8 +302,8 @@ void CTrafficBarrierGrid::UploadData(CDataExchange* pDX,  CTrafficBarrierDlg* dl
       point->get_X(&x);
       point->get_Y(&y);
 
-      x = ::ConvertFromSysUnits(x,dlg->m_LongLengthUnit);
-      y = ::ConvertFromSysUnits(y,dlg->m_LongLengthUnit);
+      x = ::ConvertFromSysUnits(x,pDisplayUnits->ComponentDim.UnitOfMeasure);
+      y = ::ConvertFromSysUnits(y,pDisplayUnits->ComponentDim.UnitOfMeasure);
 
       AppendRow();
       SetValueRange(CGXRange(nRow,1),x);
@@ -300,8 +316,15 @@ void CTrafficBarrierGrid::UploadData(CDataExchange* pDX,  CTrafficBarrierDlg* dl
    SelectRow(1);
 }
 
-void CTrafficBarrierGrid::DownloadData(CDataExchange* pDX, CTrafficBarrierDlg* dlg, IPoint2dCollection* points)
+void CTrafficBarrierGrid::DownloadData(CDataExchange* pDX, IPoint2dCollection* points)
 {
+   CEAFApp* pApp;
+   {
+      AFX_MANAGE_STATE(AfxGetAppModuleState());
+      pApp = (CEAFApp*)AfxGetApp();
+   }
+   const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
+
    points->Clear();
 
    ROWCOL nRows = GetRowCount();
@@ -312,8 +335,8 @@ void CTrafficBarrierGrid::DownloadData(CDataExchange* pDX, CTrafficBarrierDlg* d
       double x,y;
       ParseRow(nRow,pDX,&x,&y);
 
-      x = ::ConvertToSysUnits(x,dlg->m_LongLengthUnit);
-      y = ::ConvertToSysUnits(y,dlg->m_LongLengthUnit);
+      x = ::ConvertToSysUnits(x,pDisplayUnits->ComponentDim.UnitOfMeasure);
+      y = ::ConvertToSysUnits(y,pDisplayUnits->ComponentDim.UnitOfMeasure);
 
       CComPtr<IPoint2d> p;
       p.CoCreateInstance(CLSID_Point2d);

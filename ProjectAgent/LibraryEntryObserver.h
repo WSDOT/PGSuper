@@ -32,6 +32,7 @@
 #include <PsgLib\ConnectionLibraryEntry.h>
 #include <PsgLib\GirderLibraryEntry.h>
 #include <PsgLib\SpecLibraryEntry.h>
+#include <PsgLib\RatingLibraryEntry.h>
 #include <PsgLib\TrafficBarrierEntry.h>
 #include <PsgLib\LiveLoadLibraryEntry.h>
 
@@ -73,6 +74,7 @@ class pgsLibraryEntryObserver : public ConcreteLibraryEntryObserver,
                                 public ConnectionLibraryEntryObserver,
                                 public GirderLibraryEntryObserver,
                                 public SpecLibraryEntryObserver,
+                                public RatingLibraryEntryObserver,
                                 public TrafficBarrierEntryObserver,
                                 public LiveLoadLibraryEntryObserver
 {
@@ -93,6 +95,7 @@ public:
    virtual void Update(ConnectionLibraryEntry* pSubject, Int32 hint);
    virtual void Update(GirderLibraryEntry* pSubject, Int32 hint);
    virtual void Update(SpecLibraryEntry* pSubject, Int32 hint);
+   virtual void Update(RatingLibraryEntry* pSubject, Int32 hint);
    virtual void Update(TrafficBarrierEntry* pSubject, Int32 hint);
    virtual void Update(LiveLoadLibraryEntry* pSubject,Int32 hint);
 

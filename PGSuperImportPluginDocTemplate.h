@@ -20,28 +20,35 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-#ifndef INCLUDED_PGSUPERIMPORTPLUGINDOCTEMPLATE_H_
-#define INCLUDED_PGSUPERIMPORTPLUGINDOCTEMPLATE_H_
-
-#if _MSC_VER >= 1000
 #pragma once
-#endif // _MSC_VER >= 1000
 
-#include "CountedMultiDocTemplate.h"
+#include <EAF\EAFDocTemplate.h>
 #include "PGSuperDoc.h"
+#include "Plugins\PGSuperIEPlugin.h"
+#include "PGSuperProjectImporterMgr.h"
 
-class CPGSuperImportPluginDocTemplate : public CCountedMultiDocTemplate
+class CPGSuperImportPluginDocTemplate : public CEAFDocTemplate
 {
 public:
    CPGSuperImportPluginDocTemplate(UINT nIDResource,
                             CRuntimeClass* pDocClass,
                             CRuntimeClass* pFrameClass,
                             CRuntimeClass* pViewClass,
+                            HMENU hSharedMenu = NULL,
                             int maxViewCount = -1);
+   
+   ~CPGSuperImportPluginDocTemplate();
 
-   CPGSuperDoc* Import(UINT nID);
+   virtual CString GetTemplateGroupItemDescription(const CEAFTemplateItem* pItem) const;
+
+	virtual BOOL GetDocString(CString& rString,enum DocStringIndex index) const;
+
+   const CPGSuperProjectImporterMgr& GetProjectImporterManager() const;
+
+protected:
+   virtual BOOL DoOpenDocumentFile(LPCTSTR lpszPathName,BOOL bMakeVisible,CEAFDocument* pDocument,CFrameWnd* pFrame);
 
    DECLARE_DYNAMIC(CPGSuperImportPluginDocTemplate)
+   CPGSuperProjectImporterMgr m_ProjectImporterMgr;
 };
 
-#endif // INCLUDED_PGSUPERIMPORTPLUGINDOCTEMPLATE_H_

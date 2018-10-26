@@ -101,7 +101,7 @@ private:
    std::vector<double> m_DefaultDims;
    std::vector<const unitLength*> m_DimUnits[2];
 
-   void GetDimensions(const IBeamFactory::Dimensions& dimensions,
+   void GetDimensions(const IBeamFactory::Dimensions& dimensions, double& c1,
                       double& d1,double& d2,double& d3,double& d4,double& d5,double& d6,double& d7,double& d8,
                                   double& w1,double& w2,double& w3,double& w4,double& wmin,double& wmax,
                       double& t1,double& t2);

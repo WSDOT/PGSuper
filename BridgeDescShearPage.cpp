@@ -24,7 +24,7 @@
 //
 
 #include "stdafx.h"
-#include "PGSuper.h"
+#include "PGSuperDoc.h"
 #include "BridgeDescShearPage.h"
 #include "GirderDescDlg.h"
 #include <IFace\Project.h>
@@ -66,7 +66,7 @@ void CGirderDescShearPage::DoDataExchange(CDataExchange* pDX)
    DDX_CBStringExactCase(pDX,IDC_MILD_STEEL_SELECTOR,m_ShearData.strRebarMaterial);
 
    CComPtr<IBroker> pBroker;
-   AfxGetBroker(&pBroker);
+   EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
 
 
@@ -359,7 +359,7 @@ void CGirderDescShearPage::FillLastZone(int siz)
 void CGirderDescShearPage::RestoreToLibraryDefaults()
 {
    CComPtr<IBroker> pBroker;
-   AfxGetBroker(&pBroker);
+   EAFGetBroker(&pBroker);
 
    // get shear information from library
    GET_IFACE2( pBroker, ILibrary, pLib );

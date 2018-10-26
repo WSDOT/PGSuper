@@ -34,6 +34,7 @@ CLASS
 #include <IFace\Project.h>
 #include <IFace\Allowables.h>
 #include <IFace\GirderHandlingSpecCriteria.h>
+#include <IFace\RatingSpecification.h>
 
 #include <Lrfd\VersionMgr.h>
 
@@ -62,12 +63,15 @@ void write_losses(rptChapter* pChapter,IBroker* pBroker, IDisplayUnits* pDisplay
 void write_strand_stress(rptChapter* pChapter,IBroker* pBroker, IDisplayUnits* pDisplayUnits, const SpecLibraryEntry* pSpecEntry,SpanIndexType span,GirderIndexType gdr);
 void write_structural_analysis(rptChapter* pChapter,IBroker* pBroker, IDisplayUnits* pDisplayUnits);
 void write_deflections(rptChapter* pChapter,IBroker* pBroker, IDisplayUnits* pDisplayUnits, const SpecLibraryEntry* pSpecEntry,SpanIndexType span,GirderIndexType gdr);
+void write_rating_criteria(rptChapter* pChapter,IBroker* pBroker, IDisplayUnits* pDisplayUnits, const RatingLibraryEntry* pRatingEntry,SpanIndexType span,GirderIndexType gdr);
+void write_load_factors(rptChapter* pChapter,IDisplayUnits* pDisplayUnits,const char* lpszName,const CLiveLoadFactorModel& model);
 
 ////////////////////////// PUBLIC     ///////////////////////////////////////
 
 //======================== LIFECYCLE  =======================================
-CProjectCriteriaChapterBuilder::CProjectCriteriaChapterBuilder()
+CProjectCriteriaChapterBuilder::CProjectCriteriaChapterBuilder(bool bRating)
 {
+   m_bRating = bRating;
 }
 
 //======================== OPERATORS  =======================================
@@ -87,13 +91,58 @@ rptChapter* CProjectCriteriaChapterBuilder::Build(CReportSpecification* pRptSpec
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
+   GET_IFACE2(pBroker,IRatingSpecification,pRatingSpec);
+
+   bool bRating;
+   
+   if ( m_bRating )
+   {
+      bRating = true;
+   }
+   else
+   {
+      // include load rating results if we are always load rating
+      bRating = pRatingSpec->AlwaysLoadRate();
+   }
+
    GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
    GET_IFACE2( pBroker, ISpecification, pSpec );
    std::string spec_name = pSpec->GetSpecification();
+   std::string rating_name = pRatingSpec->GetRatingSpecification();
+
    GET_IFACE2( pBroker, ILibrary, pLib );
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( spec_name.c_str() );
+   const RatingLibraryEntry* pRatingEntry = pLib->GetRatingEntry( rating_name.c_str() );
 
-   rptParagraph* pPara = new rptParagraph;
+   rptParagraph* pPara;
+
+   if ( bRating )
+   {
+      pPara = new rptParagraph;
+      *pChapter << pPara;
+      *pPara << "Load Rating Criteria" << rptNewLine;
+      *pPara << Bold("Name: ") << rating_name << rptNewLine;
+      *pPara << Bold("Description: ") << pRatingEntry->GetDescription() << rptNewLine;
+      *pPara <<Bold("Based on:  ");
+      switch( pRatingEntry->GetSpecificationVersion() )
+      {
+      case lrfrVersionMgr::FirstEdition2008:
+         *pPara << "AASHTO Manual for Bridge Evaluation, 1st Edition, 2008" << rptNewLine;
+         break;
+
+      default:
+         ATLASSERT(false);
+         *pPara <<"Unknown" << rptNewLine;
+         break;
+      }
+
+      // write load rating criteria here
+
+      *pPara << "Load Rating Criteria includes " << spec_name << rptNewLine;
+   }
+
+
+   pPara = new rptParagraph;
    *pChapter << pPara;
 
    *pPara <<Bold("Name: ")<< spec_name << rptNewLine;
@@ -189,13 +238,17 @@ rptChapter* CProjectCriteriaChapterBuilder::Build(CReportSpecification* pRptSpec
    write_strand_stress(pChapter, pBroker, pDisplayUnits, pSpecEntry, span, girder);
    write_deflections(pChapter, pBroker, pDisplayUnits, pSpecEntry, span, girder);
 
+   if ( bRating )
+      write_rating_criteria(pChapter,pBroker,pDisplayUnits,pRatingEntry,span,girder);
+
+
    return pChapter;
 }
 
 
 CChapterBuilder* CProjectCriteriaChapterBuilder::Clone() const
 {
-   return new CProjectCriteriaChapterBuilder;
+   return new CProjectCriteriaChapterBuilder(m_bRating);
 }
 
 //======================== ACCESS     =======================================
@@ -866,5 +919,150 @@ void write_deflections(rptChapter* pChapter,IBroker* pBroker, IDisplayUnits* pDi
    else
    {
       *pPara << "Live Load Deflection Limit not evaluated" << rptNewLine;
+   }
+}
+
+void write_rating_criteria(rptChapter* pChapter,IBroker* pBroker, IDisplayUnits* pDisplayUnits, const RatingLibraryEntry* pRatingEntry,SpanIndexType span,GirderIndexType gdr)
+{
+   rptParagraph* pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+   *pChapter << pPara;
+   *pPara<<"Live Load Factors for Load Rating"<<rptNewLine;
+
+   write_load_factors(pChapter,pDisplayUnits,"Design - Inventory",pRatingEntry->GetLiveLoadFactorModel(pgsTypes::lrDesign_Inventory));
+   write_load_factors(pChapter,pDisplayUnits,"Design - Operating",pRatingEntry->GetLiveLoadFactorModel(pgsTypes::lrDesign_Operating));
+   write_load_factors(pChapter,pDisplayUnits,"Legal - Routine",pRatingEntry->GetLiveLoadFactorModel(pgsTypes::lrLegal_Routine));
+   write_load_factors(pChapter,pDisplayUnits,"Legal - Special",pRatingEntry->GetLiveLoadFactorModel(pgsTypes::lrLegal_Special));
+   write_load_factors(pChapter,pDisplayUnits,"Permit - Routine",pRatingEntry->GetLiveLoadFactorModel(pgsTypes::lrPermit_Routine));
+   write_load_factors(pChapter,pDisplayUnits,"Permit - Special - Single Trip, escorted",pRatingEntry->GetLiveLoadFactorModel(pgsTypes::ptSingleTripWithEscort));
+   write_load_factors(pChapter,pDisplayUnits,"Permit - Special - Single Trip, mixed with traffic",pRatingEntry->GetLiveLoadFactorModel(pgsTypes::ptSingleTripWithTraffic));
+   write_load_factors(pChapter,pDisplayUnits,"Permit - Special - Multiple Trip, mixed with traffic",pRatingEntry->GetLiveLoadFactorModel(pgsTypes::ptMultipleTripWithTraffic));
+}
+
+void write_load_factors(rptChapter* pChapter,IDisplayUnits* pDisplayUnits,const char* lpszName,const CLiveLoadFactorModel& model)
+{
+   INIT_UV_PROTOTYPE( rptForceUnitValue, force, pDisplayUnits->GetGeneralForceUnit(),    true );
+
+   rptRcScalar scalar;
+   scalar.SetFormat(sysNumericFormatTool::Fixed);
+   scalar.SetWidth(6);
+   scalar.SetPrecision(2);
+   scalar.SetTolerance(1.0e-6);
+
+   std::string strModel;
+   pgsTypes::LiveLoadFactorType llfType = model.GetLiveLoadFactorType();
+   switch( llfType )
+   {
+   case pgsTypes::gllSingleValue:
+      strModel = "Single Value";
+      break;
+
+   case pgsTypes::gllStepped:
+      strModel = "Stepped";
+      break;
+
+   case pgsTypes::gllLinear:
+      strModel = "Linear";
+      break;
+
+   case pgsTypes::gllBilinear:
+      strModel = "Bilinear";
+      break;
+
+   case pgsTypes::gllBilinearWithWeight:
+      strModel = "Bilinear with Vehicle Weight";
+      break;
+
+   }
+
+   rptParagraph* pPara = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
+   *pChapter << pPara;
+   *pPara << lpszName << rptNewLine;
+
+   pPara = new rptParagraph;
+   *pChapter << pPara;
+   *pPara << "Live Load Factor Model: " << strModel << rptNewLine;
+
+   Int16 adtt1, adtt2, adtt3, adtt4;
+   model.GetADTT(&adtt1,&adtt2,&adtt3,&adtt4);
+
+   Float64 g1,g2,g3,g4;
+   model.GetLowerLiveLoadFactor(&g1,&g2,&g3,&g4);
+
+   if ( llfType == pgsTypes::gllSingleValue )
+   {
+      *pPara << Sub2(symbol(gamma),"LL") << " = " << scalar.SetValue(g1) << rptNewLine;
+   }
+   else if ( llfType == pgsTypes::gllStepped )
+   {
+      *pPara << "ADTT < " << adtt1 << " " << Sub2(symbol(gamma),"LL") << " = " << scalar.SetValue(g1) << rptNewLine;
+      *pPara << "Otherwise " << Sub2(symbol(gamma),"LL") << " = " << scalar.SetValue(g2) << rptNewLine;
+      *pPara << "ADTT = Unknown " << Sub2(symbol(gamma),"LL") << " = " << scalar.SetValue(g4) << rptNewLine;
+   }
+   else if ( llfType == pgsTypes::gllLinear )
+   {
+      *pPara << "ADTT < " << adtt1 << " " << Sub2(symbol(gamma),"LL") << " = " << scalar.SetValue(g1) << rptNewLine;
+      *pPara << "ADTT > " << adtt2 << " " << Sub2(symbol(gamma),"LL") << " = " << scalar.SetValue(g2) << rptNewLine;
+      *pPara << "ADTT = Unknown " << Sub2(symbol(gamma),"LL") << " = " << scalar.SetValue(g4) << rptNewLine;
+
+      *pPara << rptNewLine;
+      if ( model.GetLiveLoadFactorModifier() == pgsTypes::gllmRoundUp )
+      {
+         *pPara << "Load factors are rounded up" << rptNewLine;
+      }
+      else
+      {
+         *pPara << "Load factors are linearly interpolated" << rptNewLine;
+      }
+   }
+   else if ( llfType == pgsTypes::gllBilinear )
+   {
+      *pPara << "ADTT < " << adtt1 << " " << Sub2(symbol(gamma),"LL") << " = " << scalar.SetValue(g1) << rptNewLine;
+      *pPara << "ADTT = " << adtt2 << " " << Sub2(symbol(gamma),"LL") << " = " << scalar.SetValue(g2) << rptNewLine;
+      *pPara << "ADTT > " << adtt3 << " " << Sub2(symbol(gamma),"LL") << " = " << scalar.SetValue(g3) << rptNewLine;
+      *pPara << "ADTT = Unknown " << Sub2(symbol(gamma),"LL") << " = " << scalar.SetValue(g4) << rptNewLine;
+
+      *pPara << rptNewLine;
+      if ( model.GetLiveLoadFactorModifier() == pgsTypes::gllmRoundUp )
+      {
+         *pPara << "Load factors are rounded up" << rptNewLine;
+      }
+      else
+      {
+         *pPara << "Load factors are linearly interpolated" << rptNewLine;
+      }
+   }
+   else if ( llfType == pgsTypes::gllBilinearWithWeight )
+   {
+      Float64 Wlower, Wupper;
+      model.GetVehicleWeight(&Wlower,&Wupper);
+      *pPara << "For vehicle weight up to " << force.SetValue(Wlower) << rptNewLine;
+      *pPara << "ADTT < " << adtt1 << " " << Sub2(symbol(gamma),"LL") << " = " << scalar.SetValue(g1) << rptNewLine;
+      *pPara << "ADTT = " << adtt2 << " " << Sub2(symbol(gamma),"LL") << " = " << scalar.SetValue(g2) << rptNewLine;
+      *pPara << "ADTT > " << adtt3 << " " << Sub2(symbol(gamma),"LL") << " = " << scalar.SetValue(g3) << rptNewLine;
+      *pPara << "ADTT = Unknown " << Sub2(symbol(gamma),"LL") << " = " << scalar.SetValue(g4) << rptNewLine;
+
+      *pPara << rptNewLine;
+
+      Float64 ga,gb,gc,gd;
+      model.GetUpperLiveLoadFactor(&ga,&gb,&gc,&gd);
+      *pPara << "For vehicle weight of " << force.SetValue(Wupper) << " or more" << rptNewLine;
+      *pPara << "ADTT < " << adtt1 << " " << Sub2(symbol(gamma),"LL") << " = " << scalar.SetValue(ga) << rptNewLine;
+      *pPara << "ADTT = " << adtt2 << " " << Sub2(symbol(gamma),"LL") << " = " << scalar.SetValue(gb) << rptNewLine;
+      *pPara << "ADTT > " << adtt3 << " " << Sub2(symbol(gamma),"LL") << " = " << scalar.SetValue(gc) << rptNewLine;
+      *pPara << "ADTT = Unknown " << Sub2(symbol(gamma),"LL") << " = " << scalar.SetValue(gd) << rptNewLine;
+
+      *pPara << rptNewLine;
+      if ( model.GetLiveLoadFactorModifier() == pgsTypes::gllmRoundUp )
+      {
+         *pPara << "Load factors are rounded up" << rptNewLine;
+      }
+      else
+      {
+         *pPara << "Load factors are linearly interpolated" << rptNewLine;
+      }
+   }
+   else
+   {
+      ATLASSERT(false); // is there a new model???
    }
 }

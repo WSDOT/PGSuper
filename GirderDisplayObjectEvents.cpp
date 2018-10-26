@@ -81,10 +81,8 @@ void CBridgePlanViewGirderDisplayObjectEvents::SelectPrevGirder()
 {
    if ( m_GirderIdx == 0 )
    {
-      CMainFrame* pWnd = (CMainFrame*)AfxGetMainWnd();
-      CPGSuperDoc* pDoc = pWnd->GetPGSuperDocument();
       CComPtr<IBroker> pBroker;
-      pDoc->GetBroker(&pBroker);
+      EAFGetBroker(&pBroker);
 
       GET_IFACE2(pBroker,IBridge,pBridge);
 
@@ -212,11 +210,6 @@ STDMETHODIMP_(bool) CBridgePlanViewGirderDisplayObjectEvents::XEvents::OnContext
 
    if ( pDO->IsSelected() )
    {
-      CMenu menu;
-      menu.LoadMenu(IDR_SELECTED_GIRDER_CONTEXT);
-
-      CMenu* pmnuReport = menu.GetSubMenu(0);
-
       CComPtr<iDisplayList> pList;
       pDO->GetDisplayList(&pList);
 
@@ -225,22 +218,17 @@ STDMETHODIMP_(bool) CBridgePlanViewGirderDisplayObjectEvents::XEvents::OnContext
 
       CDisplayView* pView = pDispMgr->GetView();
       CDocument* pDoc = pView->GetDocument();
-      CComPtr<IBroker> pBroker;
-      ((CPGSuperDoc*)pDoc)->GetBroker(&pBroker);
 
-      GET_IFACE2( pBroker, IReportManager, pRptMgr );
-      std::vector<std::string> rptNames = pRptMgr->GetReportNames();
+      CPGSuperDoc* pPGSuperDoc = (CPGSuperDoc*)pDoc;
 
-      int i = 0;
-      std::vector<std::string>::iterator iter;
-      for ( iter = rptNames.begin(); iter != rptNames.end(); iter++ )
-      {
-         std::string rptName = *iter;
-         pmnuReport->AppendMenuA(MF_STRING,IDM_REPORT+i,rptName.c_str());
-         i++;
-      }
+      CMenu menu;
+      VERIFY(menu.LoadMenu(IDR_SELECTED_GIRDER_CONTEXT));
 
-      menu.GetSubMenu(0)->TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, point.x, point.y,pThis->m_pFrame);
+      CMenu* pmnuReport = menu.GetSubMenu(0);
+
+      pPGSuperDoc->BuildReportMenu(pmnuReport,true);
+
+      pmnuReport->TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, point.x, point.y,pThis->m_pFrame);
 
       return true;
    }
@@ -436,11 +424,6 @@ STDMETHODIMP_(bool) CBridgeSectionViewGirderDisplayObjectEvents::XEvents::OnCont
 
    if ( pDO->IsSelected() )
    {
-      CMenu menu;
-      menu.LoadMenu(IDR_SELECTED_GIRDER_CONTEXT);
-
-      CMenu* pmnuReport = menu.GetSubMenu(0);
-
       CComPtr<iDisplayList> pList;
       pDO->GetDisplayList(&pList);
 
@@ -449,22 +432,17 @@ STDMETHODIMP_(bool) CBridgeSectionViewGirderDisplayObjectEvents::XEvents::OnCont
 
       CDisplayView* pView = pDispMgr->GetView();
       CDocument* pDoc = pView->GetDocument();
-      CComPtr<IBroker> pBroker;
-      ((CPGSuperDoc*)pDoc)->GetBroker(&pBroker);
 
-      GET_IFACE2( pBroker, IReportManager, pRptMgr );
-      std::vector<std::string> rptNames = pRptMgr->GetReportNames();
+      CPGSuperDoc* pPGSuperDoc = (CPGSuperDoc*)pDoc;
 
-      int i = 0;
-      std::vector<std::string>::iterator iter;
-      for ( iter = rptNames.begin(); iter != rptNames.end(); iter++ )
-      {
-         std::string rptName = *iter;
-         pmnuReport->AppendMenuA(MF_STRING,IDM_REPORT+i,rptName.c_str());
-         i++;
-      }
+      CMenu menu;
+      VERIFY(menu.LoadMenu(IDR_SELECTED_GIRDER_CONTEXT));
 
-      menu.GetSubMenu(0)->TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, point.x, point.y,pThis->m_pFrame);
+      CMenu* pmnuReport = menu.GetSubMenu(0);
+
+      pPGSuperDoc->BuildReportMenu(pmnuReport,true);
+
+      pmnuReport->TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, point.x, point.y,pThis->m_pFrame);
 
       return true;
    }

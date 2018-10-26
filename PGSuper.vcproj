@@ -23,6 +23,7 @@
 			ConfigurationType="1"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops"
 			UseOfMFC="2"
+			UseOfATL="2"
 			ATLMinimizesCRunTimeLibraryUsage="false"
 			>
 			<Tool
@@ -55,7 +56,7 @@
 				AdditionalOptions="/Zm200 "
 				Optimization="0"
 				AdditionalIncludeDirectories=".\;.\Include;\ARP\WBFL\Include;&quot;\ARP\WBFL\Include\$(ConfigurationName)&quot;;&quot;$(ProjectDir)\LibraryEditor&quot;;&quot;$(VCInstallDir)atlmfc\src\mfc&quot;"
-				PreprocessorDefinitions="PGSUPER_DEBUG;_DEBUG;ENABLE_LOGGING;_GXDLL;WIN32;_WINDOWS;_BETA_VERSION;_HAS_ITERATOR_DEBUGGING=0;_SECURE_SCL=0"
+				PreprocessorDefinitions="PGSUPER_DEBUG;_DEBUG;ENABLE_LOGGING;_GXDLL;WIN32;_WINDOWS;_ATL_NO_UUIDOF;_BETA_VERSION;_HAS_ITERATOR_DEBUGGING=0;_SECURE_SCL=0"
 				MinimalRebuild="true"
 				RuntimeLibrary="3"
 				RuntimeTypeInfo="true"
@@ -76,7 +77,7 @@
 				Name="VCResourceCompilerTool"
 				PreprocessorDefinitions="_DEBUG"
 				Culture="1033"
-				AdditionalIncludeDirectories="$(IntDir)"
+				AdditionalIncludeDirectories="&quot;$(IntDir)&quot;;\ARP\WBFL\Include\"
 			/>
 			<Tool
 				Name="VCPreLinkEventTool"
@@ -100,7 +101,7 @@
 			/>
 			<Tool
 				Name="VCManifestTool"
-				AdditionalManifestFiles="\ARP\WBFL\RegFreeCOM\$(ConfigurationName)\WBFL.manifest"
+				AdditionalManifestFiles="\ARP\WBFL\RegFreeCOM\$(ConfigurationName)\WBFL.manifest;\ARP\PGSuper\psgLib\PGSuperLibrary.$(ConfigurationName).manifest"
 			/>
 			<Tool
 				Name="VCXDCMakeTool"
@@ -128,6 +129,7 @@
 			ConfigurationType="1"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops"
 			UseOfMFC="2"
+			UseOfATL="2"
 			ATLMinimizesCRunTimeLibraryUsage="false"
 			>
 			<Tool
@@ -159,7 +161,7 @@
 				Name="VCCLCompilerTool"
 				AdditionalOptions="/Zm200 "
 				AdditionalIncludeDirectories=".\;.\Include;\ARP\WBFL\Include;&quot;\ARP\WBFL\Include\$(ConfigurationName)&quot;;&quot;$(ProjectDir)\LibraryEditor&quot;;&quot;$(VCInstallDir)atlmfc\src\mfc&quot;"
-				PreprocessorDefinitions="NDEBUG;_GXDLL;WIN32;_WINDOWS;_BETA_VERSION"
+				PreprocessorDefinitions="NDEBUG;_GXDLL;WIN32;_WINDOWS;_ATL_NO_UUIDOF;_BETA_VERSION"
 				RuntimeLibrary="2"
 				RuntimeTypeInfo="true"
 				UsePrecompiledHeader="2"
@@ -179,7 +181,7 @@
 				Name="VCResourceCompilerTool"
 				PreprocessorDefinitions="NDEBUG"
 				Culture="1033"
-				AdditionalIncludeDirectories="$(IntDir)"
+				AdditionalIncludeDirectories="&quot;$(IntDir)&quot;;\ARP\WBFL\Include\"
 			/>
 			<Tool
 				Name="VCPreLinkEventTool"
@@ -203,7 +205,7 @@
 			/>
 			<Tool
 				Name="VCManifestTool"
-				AdditionalManifestFiles="\ARP\WBFL\RegFreeCOM\$(ConfigurationName)\WBFL.manifest"
+				AdditionalManifestFiles="\ARP\WBFL\RegFreeCOM\$(ConfigurationName)\WBFL.manifest;\ARP\PGSuper\psgLib\PGSuperLibrary.$(ConfigurationName).manifest"
 			/>
 			<Tool
 				Name="VCXDCMakeTool"
@@ -322,50 +324,6 @@
 			</File>
 			<File
 				RelativePath="AnalysisResultsView.cpp"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="AutoCalcDoc.cpp"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="AutoCalcView.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -717,6 +675,10 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\BridgeDescRatingPage.cpp"
+				>
+			</File>
+			<File
 				RelativePath="BridgeDescShearGrid.cpp"
 				>
 				<FileConfiguration
@@ -959,28 +921,6 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="ChangeUnits.cpp"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-			</File>
-			<File
 				RelativePath="ChildFrm.cpp"
 				>
 				<FileConfiguration
@@ -1179,28 +1119,6 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="CountedMultiDocTemplate.cpp"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-			</File>
-			<File
 				RelativePath="CrownSlopeGrid.cpp"
 				>
 				<FileConfiguration
@@ -1224,28 +1142,6 @@
 			</File>
 			<File
 				RelativePath="CrownSlopePage.cpp"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="custsite.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -1377,6 +1273,10 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\DesignRatingPage.cpp"
+				>
+			</File>
+			<File
 				RelativePath="DisplayObjectFactory.cpp"
 				>
 				<FileConfiguration
@@ -1421,249 +1321,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="DocProxyAgent.cpp"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="EditAlignment.cpp"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="EditAnalysisType.cpp"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="EditBoundaryConditions.cpp"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="EditBridge.cpp"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-			</File>
-			<File
 				RelativePath="EditDistributedLoadDlg.cpp"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="EditEnvironment.cpp"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="EditGirder.cpp"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="EditLiveLoad.cpp"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="EditLLDF.cpp"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="EditLoadsChildFrm.cpp"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="EditLoadsView.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -1707,117 +1365,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="EditPier.cpp"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="EditPierStation.cpp"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-			</File>
-			<File
 				RelativePath="EditPointLoadDlg.cpp"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="EditProjectCriteria.cpp"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="EditSpan.cpp"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="EditSpanLength.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -1905,6 +1453,10 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\GeneralRatingOptionsPage.cpp"
+				>
+			</File>
+			<File
 				RelativePath="GirderDescDlg.cpp"
 				>
 				<FileConfiguration
@@ -1925,6 +1477,10 @@
 						PreprocessorDefinitions=""
 					/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\GirderDescRatingPage.cpp"
+				>
 			</File>
 			<File
 				RelativePath="GirderDisplayObjectEvents.cpp"
@@ -2371,140 +1927,8 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="LibChildFrm.cpp"
+				RelativePath=".\LegalRatingPage.cpp"
 				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="LibraryEditor\LibEditorListView.cpp"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="LibraryEditor.cpp"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="LibraryEditor\LibraryEditorChildFrm.cpp"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath=".\LibraryEditor\LibraryEditorDoc.cpp"
-				>
-			</File>
-			<File
-				RelativePath="LibraryEditor\libraryEditorView.cpp"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="LicensePlateChildFrm.cpp"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="LiveLoadDistFactorsDlg.cpp"
@@ -2661,30 +2085,8 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\LibraryEditor\MyChildFrame.cpp"
+				RelativePath=".\PermitRatingPage.cpp"
 				>
-			</File>
-			<File
-				RelativePath="OutputChildFrame.cpp"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="PGSuper.cpp"
@@ -2753,6 +2155,14 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\PGSuperAppPlugin.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\PGSuperBaseAppPlugin.cpp"
+				>
+			</File>
+			<File
 				RelativePath="PGSuperCalculationSheet.cpp"
 				>
 				<FileConfiguration
@@ -2775,8 +2185,26 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\PGSuperCatalog.cpp"
+				RelativePath="PGSuperCatalog.cpp"
 				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\PGSuperCatalogServer.cpp"
@@ -2849,26 +2277,16 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="PGSuperDocManager.cpp"
+				RelativePath=".\PGSuperDocManager.cpp"
 				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\PGSuperDocProxyAgent.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\PGSuperDocTemplate.cpp"
+				>
 			</File>
 			<File
 				RelativePath="PGSuperImportPluginDocTemplate.cpp"
@@ -2913,6 +2331,14 @@
 						PreprocessorDefinitions=""
 					/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\PGSuperProjectImporterAppPlugin.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\PGSuperProjectImporterMgr.cpp"
+				>
 			</File>
 			<File
 				RelativePath="PGSuperStatusBar.cpp"
@@ -3073,6 +2499,14 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\PluginManagerDlg.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\PluginPage.cpp"
+				>
+			</File>
+			<File
 				RelativePath="PointLoadDrawStrategyImpl.cpp"
 				>
 				<FileConfiguration
@@ -3161,29 +2595,11 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="ReportView.cpp"
+				RelativePath=".\RatingOptionsDlg.cpp"
 				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\ReportViewDocTemplate.cpp"
+				RelativePath=".\ReportView.cpp"
 				>
 			</File>
 			<File
@@ -3411,10 +2827,6 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\SelectReportDlg.cpp"
-				>
-			</File>
-			<File
 				RelativePath="ServerDefinitionDlg.cpp"
 				>
 				<FileConfiguration
@@ -3617,28 +3029,6 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="Splash.cpp"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-			</File>
-			<File
 				RelativePath="SplitChildFrm.cpp"
 				>
 				<FileConfiguration
@@ -3662,50 +3052,6 @@
 			</File>
 			<File
 				RelativePath="StationCutDlg.cpp"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="StatusCenterDlg.cpp"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="StatusCenterImp.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -3795,73 +3141,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="TipDlg.cpp"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="ToolBarDlg.cpp"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-			</File>
-			<File
 				RelativePath="UIHintsDlg.cpp"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="UnitsDlg.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -3913,14 +3193,6 @@
 			</File>
 			<File
 				RelativePath="AnalysisResultsView.h"
-				>
-			</File>
-			<File
-				RelativePath="AutoCalcDoc.h"
-				>
-			</File>
-			<File
-				RelativePath="AutoCalcView.h"
 				>
 			</File>
 			<File
@@ -3984,6 +3256,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\BridgeDescRatingPage.h"
+				>
+			</File>
+			<File
 				RelativePath="BridgeDescShearGrid.h"
 				>
 			</File>
@@ -4028,10 +3304,6 @@
 				>
 			</File>
 			<File
-				RelativePath="ChangeUnits.h"
-				>
-			</File>
-			<File
 				RelativePath="ChildFrm.h"
 				>
 			</File>
@@ -4068,23 +3340,11 @@
 				>
 			</File>
 			<File
-				RelativePath="CountedMultiDocTemplate.h"
-				>
-			</File>
-			<File
 				RelativePath="CrownSlopeGrid.h"
 				>
 			</File>
 			<File
 				RelativePath="CrownSlopePage.h"
-				>
-			</File>
-			<File
-				RelativePath="custsite.h"
-				>
-			</File>
-			<File
-				RelativePath="CustSiteVars.h"
 				>
 			</File>
 			<File
@@ -4108,6 +3368,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\DesignRatingPage.h"
+				>
+			</File>
+			<File
 				RelativePath="Include\Details.h"
 				>
 			</File>
@@ -4124,51 +3388,7 @@
 				>
 			</File>
 			<File
-				RelativePath="DocProxyAgent.h"
-				>
-			</File>
-			<File
-				RelativePath="EditAlignment.h"
-				>
-			</File>
-			<File
-				RelativePath="EditBoundaryConditions.h"
-				>
-			</File>
-			<File
-				RelativePath="EditBridge.h"
-				>
-			</File>
-			<File
-				RelativePath=".\Include\IFace\EditByUI.h"
-				>
-			</File>
-			<File
 				RelativePath="EditDistributedLoadDlg.h"
-				>
-			</File>
-			<File
-				RelativePath="EditEnvironment.h"
-				>
-			</File>
-			<File
-				RelativePath="EditGirder.h"
-				>
-			</File>
-			<File
-				RelativePath="EditLiveLoad.h"
-				>
-			</File>
-			<File
-				RelativePath="EditLLDF.h"
-				>
-			</File>
-			<File
-				RelativePath="EditLoadsChildFrm.h"
-				>
-			</File>
-			<File
-				RelativePath="EditLoadsView.h"
 				>
 			</File>
 			<File
@@ -4176,27 +3396,7 @@
 				>
 			</File>
 			<File
-				RelativePath="EditPier.h"
-				>
-			</File>
-			<File
-				RelativePath="EditPierStation.h"
-				>
-			</File>
-			<File
 				RelativePath="EditPointLoadDlg.h"
-				>
-			</File>
-			<File
-				RelativePath="EditProjectCriteria.h"
-				>
-			</File>
-			<File
-				RelativePath="EditSpan.h"
-				>
-			</File>
-			<File
-				RelativePath="EditSpanLength.h"
 				>
 			</File>
 			<File
@@ -4212,11 +3412,19 @@
 				>
 			</File>
 			<File
+				RelativePath=".\GeneralRatingOptionsPage.h"
+				>
+			</File>
+			<File
 				RelativePath="GevEditLoad.h"
 				>
 			</File>
 			<File
 				RelativePath="GirderDescDlg.h"
+				>
+			</File>
+			<File
+				RelativePath=".\GirderDescRatingPage.h"
 				>
 			</File>
 			<File
@@ -4312,35 +3520,7 @@
 				>
 			</File>
 			<File
-				RelativePath="LibChildFrm.h"
-				>
-			</File>
-			<File
-				RelativePath="LibraryEditor\LibEditorListView.h"
-				>
-			</File>
-			<File
-				RelativePath="LibraryEditor.h"
-				>
-			</File>
-			<File
-				RelativePath=".\LibraryEditor\LibraryEditorChildFrm.h"
-				>
-			</File>
-			<File
-				RelativePath=".\LibraryEditor\LibraryEditorDoc.h"
-				>
-			</File>
-			<File
-				RelativePath="LibraryEditor\libraryEditorView.h"
-				>
-			</File>
-			<File
-				RelativePath="..\wbfl\Include\LibraryFw\LibraryEntry.h"
-				>
-			</File>
-			<File
-				RelativePath="LicensePlateChildFrm.h"
+				RelativePath=".\LegalRatingPage.h"
 				>
 			</File>
 			<File
@@ -4372,11 +3552,7 @@
 				>
 			</File>
 			<File
-				RelativePath=".\LibraryEditor\MyChildFrame.h"
-				>
-			</File>
-			<File
-				RelativePath="OutputChildFrame.h"
+				RelativePath=".\PermitRatingPage.h"
 				>
 			</File>
 			<File
@@ -4384,11 +3560,23 @@
 				>
 			</File>
 			<File
+				RelativePath=".\Include\PGSuperAll.h"
+				>
+			</File>
+			<File
+				RelativePath=".\PGSuperAppPlugin.h"
+				>
+			</File>
+			<File
+				RelativePath=".\PGSuperBaseAppPlugin.h"
+				>
+			</File>
+			<File
 				RelativePath="PGSuperCalculationSheet.h"
 				>
 			</File>
 			<File
-				RelativePath=".\PGSuperCatalog.h"
+				RelativePath="PGSuperCatalog.h"
 				>
 			</File>
 			<File
@@ -4420,7 +3608,15 @@
 				>
 			</File>
 			<File
-				RelativePath="PGSuperDocManager.h"
+				RelativePath=".\PGSuperDocManager.h"
+				>
+			</File>
+			<File
+				RelativePath=".\PGSuperDocProxyAgent.h"
+				>
+			</File>
+			<File
+				RelativePath=".\PGSuperDocTemplate.h"
 				>
 			</File>
 			<File
@@ -4433,6 +3629,14 @@
 			</File>
 			<File
 				RelativePath="PGSuperPluginMgr.h"
+				>
+			</File>
+			<File
+				RelativePath=".\PGSuperProjectImporterAppPlugin.h"
+				>
+			</File>
+			<File
+				RelativePath=".\PGSuperProjectImporterMgr.h"
 				>
 			</File>
 			<File
@@ -4472,6 +3676,14 @@
 				>
 			</File>
 			<File
+				RelativePath=".\PluginManagerDlg.h"
+				>
+			</File>
+			<File
+				RelativePath=".\PluginPage.h"
+				>
+			</File>
+			<File
 				RelativePath="PointLoadDrawStrategy.h"
 				>
 			</File>
@@ -4492,11 +3704,11 @@
 				>
 			</File>
 			<File
-				RelativePath="ReportView.h"
+				RelativePath=".\RatingOptionsDlg.h"
 				>
 			</File>
 			<File
-				RelativePath=".\ReportViewDocTemplate.h"
+				RelativePath=".\ReportView.h"
 				>
 			</File>
 			<File
@@ -4556,10 +3768,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\SelectReportDlg.h"
-				>
-			</File>
-			<File
 				RelativePath="ServerDefinitionDlg.h"
 				>
 			</File>
@@ -4600,27 +3808,11 @@
 				>
 			</File>
 			<File
-				RelativePath="Splash.h"
-				>
-			</File>
-			<File
 				RelativePath="SplitChildFrm.h"
 				>
 			</File>
 			<File
 				RelativePath="StationCutDlg.h"
-				>
-			</File>
-			<File
-				RelativePath="Include\IFace\StatusCenter.h"
-				>
-			</File>
-			<File
-				RelativePath="StatusCenterDlg.h"
-				>
-			</File>
-			<File
-				RelativePath="StatusCenterImp.h"
 				>
 			</File>
 			<File
@@ -4640,31 +3832,11 @@
 				>
 			</File>
 			<File
-				RelativePath="TipDlg.h"
-				>
-			</File>
-			<File
-				RelativePath="ToolBarDlg.h"
-				>
-			</File>
-			<File
 				RelativePath="Include\IFace\Tools.h"
 				>
 			</File>
 			<File
 				RelativePath="UIHintsDlg.h"
-				>
-			</File>
-			<File
-				RelativePath="UnitsDlg.h"
-				>
-			</File>
-			<File
-				RelativePath=".\MakePgz\unzip.h"
-				>
-			</File>
-			<File
-				RelativePath=".\MakePgz\UnzipPgz.h"
 				>
 			</File>
 			<File
@@ -4745,6 +3917,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\res\Bridge2.ico"
+				>
+			</File>
+			<File
 				RelativePath="res\bss.ico"
 				>
 			</File>
@@ -4757,11 +3933,11 @@
 				>
 			</File>
 			<File
-				RelativePath="LibraryEditor\res\connecti.ico"
+				RelativePath="psgLib\LibraryEditor\res\connecti.ico"
 				>
 			</File>
 			<File
-				RelativePath="psgLib\LibraryEditor\res\connecti.ico"
+				RelativePath="LibraryEditor\res\connecti.ico"
 				>
 			</File>
 			<File
@@ -4785,11 +3961,11 @@
 				>
 			</File>
 			<File
-				RelativePath="LibraryEditor\res\girder_l.ico"
+				RelativePath="psgLib\LibraryEditor\res\girder_l.ico"
 				>
 			</File>
 			<File
-				RelativePath="psgLib\LibraryEditor\res\girder_l.ico"
+				RelativePath="LibraryEditor\res\girder_l.ico"
 				>
 			</File>
 			<File
@@ -4798,6 +3974,10 @@
 			</File>
 			<File
 				RelativePath="res\GirderView.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\res\globe.ico"
 				>
 			</File>
 			<File
@@ -4813,11 +3993,11 @@
 				>
 			</File>
 			<File
-				RelativePath="res\ico00001.ico"
+				RelativePath="LibraryEditor\res\ico00001.ico"
 				>
 			</File>
 			<File
-				RelativePath="LibraryEditor\res\ico00001.ico"
+				RelativePath="res\ico00001.ico"
 				>
 			</File>
 			<File
@@ -4829,15 +4009,11 @@
 				>
 			</File>
 			<File
+				RelativePath="psgLib\LibraryEditor\res\ico00002.ico"
+				>
+			</File>
+			<File
 				RelativePath="res\ico00002.ico"
-				>
-			</File>
-			<File
-				RelativePath="LibraryEditor\res\ico00002.ico"
-				>
-			</File>
-			<File
-				RelativePath="LibraryEditor\res\ico00003.ico"
 				>
 			</File>
 			<File
@@ -4845,7 +4021,7 @@
 				>
 			</File>
 			<File
-				RelativePath="res\ico00004.ico"
+				RelativePath="LibraryEditor\res\ico00003.ico"
 				>
 			</File>
 			<File
@@ -4853,7 +4029,15 @@
 				>
 			</File>
 			<File
+				RelativePath="res\ico00004.ico"
+				>
+			</File>
+			<File
 				RelativePath="psgLib\LibraryEditor\res\ico00004.ico"
+				>
+			</File>
+			<File
+				RelativePath="LibraryEditor\res\ico00005.ico"
 				>
 			</File>
 			<File
@@ -4865,11 +4049,11 @@
 				>
 			</File>
 			<File
-				RelativePath="LibraryEditor\res\ico00005.ico"
+				RelativePath="psgLib\LibraryEditor\res\ico00006.ico"
 				>
 			</File>
 			<File
-				RelativePath="psgLib\LibraryEditor\res\ico00006.ico"
+				RelativePath=".\res\ico00006.ico"
 				>
 			</File>
 			<File
@@ -4881,11 +4065,11 @@
 				>
 			</File>
 			<File
-				RelativePath="LibraryEditor\res\ico00007.ico"
+				RelativePath="psgLib\LibraryEditor\res\ico00007.ico"
 				>
 			</File>
 			<File
-				RelativePath="psgLib\LibraryEditor\res\ico00007.ico"
+				RelativePath="LibraryEditor\res\ico00007.ico"
 				>
 			</File>
 			<File
@@ -4897,19 +4081,19 @@
 				>
 			</File>
 			<File
-				RelativePath="LibraryEditor\res\ico00009.ico"
-				>
-			</File>
-			<File
 				RelativePath="psgLib\LibraryEditor\res\ico00009.ico"
 				>
 			</File>
 			<File
-				RelativePath="LibraryEditor\res\ico00010.ico"
+				RelativePath="LibraryEditor\res\ico00009.ico"
 				>
 			</File>
 			<File
 				RelativePath="psgLib\LibraryEditor\res\ico00010.ico"
+				>
+			</File>
+			<File
+				RelativePath="LibraryEditor\res\ico00010.ico"
 				>
 			</File>
 			<File
@@ -4929,11 +4113,11 @@
 				>
 			</File>
 			<File
-				RelativePath="res\icon1.ico"
+				RelativePath="psgLib\LibraryEditor\res\icon1.ico"
 				>
 			</File>
 			<File
-				RelativePath="psgLib\LibraryEditor\res\icon1.ico"
+				RelativePath="res\icon1.ico"
 				>
 			</File>
 			<File
@@ -4953,7 +4137,11 @@
 				>
 			</File>
 			<File
-				RelativePath="psgLib\LibraryEditor\res\library_.ico"
+				RelativePath=".\res\libeditortoolbar.bmp"
+				>
+			</File>
+			<File
+				RelativePath="LibraryEditor\res\library_.ico"
 				>
 			</File>
 			<File
@@ -5196,6 +4384,452 @@
 				RelativePath="hlp\Scmin.bmp"
 				>
 			</File>
+		</Filter>
+		<Filter
+			Name="Transactions"
+			>
+			<Filter
+				Name="Header Files"
+				>
+				<File
+					RelativePath="EditAlignment.h"
+					>
+				</File>
+				<File
+					RelativePath="EditBoundaryConditions.h"
+					>
+				</File>
+				<File
+					RelativePath="EditBridge.h"
+					>
+				</File>
+				<File
+					RelativePath=".\Include\IFace\EditByUI.h"
+					>
+				</File>
+				<File
+					RelativePath="EditEnvironment.h"
+					>
+				</File>
+				<File
+					RelativePath="EditGirder.h"
+					>
+				</File>
+				<File
+					RelativePath="EditLiveLoad.h"
+					>
+				</File>
+				<File
+					RelativePath="EditLLDF.h"
+					>
+				</File>
+				<File
+					RelativePath="EditLoadsChildFrm.h"
+					>
+				</File>
+				<File
+					RelativePath="EditLoadsView.h"
+					>
+				</File>
+				<File
+					RelativePath="EditPier.h"
+					>
+				</File>
+				<File
+					RelativePath="EditPierStation.h"
+					>
+				</File>
+				<File
+					RelativePath="EditProjectCriteria.h"
+					>
+				</File>
+				<File
+					RelativePath=".\EditRatingCriteria.h"
+					>
+				</File>
+				<File
+					RelativePath="EditSpan.h"
+					>
+				</File>
+				<File
+					RelativePath="EditSpanLength.h"
+					>
+				</File>
+			</Filter>
+			<Filter
+				Name="Source Files"
+				>
+				<File
+					RelativePath="EditAlignment.cpp"
+					>
+					<FileConfiguration
+						Name="Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+				</File>
+				<File
+					RelativePath="EditAnalysisType.cpp"
+					>
+					<FileConfiguration
+						Name="Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+				</File>
+				<File
+					RelativePath="EditBoundaryConditions.cpp"
+					>
+					<FileConfiguration
+						Name="Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+				</File>
+				<File
+					RelativePath="EditBridge.cpp"
+					>
+					<FileConfiguration
+						Name="Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+				</File>
+				<File
+					RelativePath="EditEnvironment.cpp"
+					>
+					<FileConfiguration
+						Name="Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+				</File>
+				<File
+					RelativePath="EditGirder.cpp"
+					>
+					<FileConfiguration
+						Name="Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+				</File>
+				<File
+					RelativePath="EditLiveLoad.cpp"
+					>
+					<FileConfiguration
+						Name="Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+				</File>
+				<File
+					RelativePath="EditLLDF.cpp"
+					>
+					<FileConfiguration
+						Name="Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+				</File>
+				<File
+					RelativePath="EditLoadsChildFrm.cpp"
+					>
+					<FileConfiguration
+						Name="Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+				</File>
+				<File
+					RelativePath="EditLoadsView.cpp"
+					>
+					<FileConfiguration
+						Name="Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+				</File>
+				<File
+					RelativePath="EditPier.cpp"
+					>
+					<FileConfiguration
+						Name="Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+				</File>
+				<File
+					RelativePath="EditPierStation.cpp"
+					>
+					<FileConfiguration
+						Name="Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+				</File>
+				<File
+					RelativePath="EditProjectCriteria.cpp"
+					>
+					<FileConfiguration
+						Name="Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+				</File>
+				<File
+					RelativePath=".\EditRatingCriteria.cpp"
+					>
+				</File>
+				<File
+					RelativePath="EditSpan.cpp"
+					>
+					<FileConfiguration
+						Name="Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+				</File>
+				<File
+					RelativePath="EditSpanLength.cpp"
+					>
+					<FileConfiguration
+						Name="Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+						/>
+					</FileConfiguration>
+				</File>
+			</Filter>
+		</Filter>
+		<Filter
+			Name="MakePgz"
+			>
+			<Filter
+				Name="Header Files"
+				>
+				<File
+					RelativePath=".\MakePgz\unzip.h"
+					>
+				</File>
+				<File
+					RelativePath=".\MakePgz\UnzipPgz.h"
+					>
+				</File>
+				<File
+					RelativePath=".\MakePgz\zip.h"
+					>
+				</File>
+			</Filter>
+			<Filter
+				Name="Source Files"
+				>
+				<File
+					RelativePath=".\MakePgz\unzip.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\MakePgz\UnzipPgz.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\MakePgz\zip.cpp"
+					>
+				</File>
+			</Filter>
 		</Filter>
 		<File
 			RelativePath="PGSuper.tip"

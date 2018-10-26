@@ -29,7 +29,7 @@
 // FactorOfSafetyView.h : header file
 //
 
-#include "AutoCalcView.h"
+#include <EAF\EAFAutoCalcView.h>
 
 #if !defined INCLUDED_GRAPHICSLIB_GRAPHXY_H_
 #include <GraphicsLib\GraphXY.h>
@@ -43,7 +43,8 @@ class arvPhysicalConverter;
 /////////////////////////////////////////////////////////////////////////////
 // CFactorOfSafetyView view
 
-class CFactorOfSafetyView : public CAutoCalcView
+class CFactorOfSafetyView : public CView,
+                            public CEAFAutoCalcViewMixin
 {
 protected:
 	CFactorOfSafetyView();           // protected constructor used by dynamic creation
@@ -65,6 +66,7 @@ public:
 	//{{AFX_VIRTUAL(CFactorOfSafetyView)
 	protected:
 	virtual void OnDraw(CDC* pDC);      // overridden to draw this view
+   virtual void OnInitialUpdate();
 	virtual void OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint);
 	virtual void OnBeginPrinting(CDC* pDC, CPrintInfo* pInfo);
 	virtual void OnEndPrinting(CDC* pDC, CPrintInfo* pInfo);

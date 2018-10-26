@@ -102,7 +102,7 @@ BOOL CMovePierDlg::OnInitDialog()
         m_PrevPierStation < m_ToStation && m_ToStation < m_NextPierStation ) // can't move pier beyond adjacent piers
    {
       options[nOptions] = pgsTypes::AdjustAdjacentSpans;
-      strOptions[nOptions++].Format("Adjust length of Span %d and %d",m_PierIdx,m_PierIdx+1);
+      strOptions[nOptions++].Format("Adjust length of Span %d and %d",LABEL_SPAN(m_PierIdx-1),LABEL_SPAN(m_PierIdx));
    }
 
    if ( m_PierIdx == 0 && m_ToStation < m_NextPierStation )
@@ -110,9 +110,9 @@ BOOL CMovePierDlg::OnInitDialog()
       // adjust length of first span only
       options[nOptions] = pgsTypes::AdjustNextSpan;
       if ( m_nSpans == 1 )
-         strOptions[nOptions++].Format("Adjust length of Span %d by moving %s %d", m_PierIdx+1,strName,m_PierIdx+1);
+         strOptions[nOptions++].Format("Adjust length of Span %d by moving %s %d", LABEL_SPAN(m_PierIdx-1),strName,LABEL_SPAN(m_PierIdx));
       else
-         strOptions[nOptions++].Format("Adjust length of Span %d, retain length of all other spans",m_PierIdx+1);
+         strOptions[nOptions++].Format("Adjust length of Span %d, retain length of all other spans",LABEL_SPAN(m_PierIdx));
    }
    else if ( m_PierIdx == m_nSpans && m_PrevPierStation < m_ToStation )
    {

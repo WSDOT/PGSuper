@@ -444,10 +444,6 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\StatusItems.cpp"
-				>
-			</File>
-			<File
 				RelativePath="StdAfx.cpp"
 				>
 				<FileConfiguration
@@ -477,15 +473,7 @@
 			Filter="h;hpp;hxx;hm;inl"
 			>
 			<File
-				RelativePath="..\Include\IFace\Alignment.h"
-				>
-			</File>
-			<File
 				RelativePath="BrgPointIdMgr.h"
-				>
-			</File>
-			<File
-				RelativePath="..\Include\IFace\Bridge.h"
 				>
 			</File>
 			<File
@@ -517,15 +505,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\Include\IFace\GirderHandlingPointOfInterest.h"
-				>
-			</File>
-			<File
 				RelativePath="Resource.h"
-				>
-			</File>
-			<File
-				RelativePath=".\StatusItems.h"
 				>
 			</File>
 			<File
@@ -539,6 +519,34 @@
 			>
 			<File
 				RelativePath="BridgeAgent.rgs"
+				>
+			</File>
+		</Filter>
+		<Filter
+			Name="IFace"
+			>
+			<File
+				RelativePath="..\Include\IFace\Alignment.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Include\IFace\Bridge.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Include\IFace\GirderHandlingPointOfInterest.h"
+				>
+			</File>
+		</Filter>
+		<Filter
+			Name="Status Items"
+			>
+			<File
+				RelativePath=".\StatusItems.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\StatusItems.h"
 				>
 			</File>
 		</Filter>

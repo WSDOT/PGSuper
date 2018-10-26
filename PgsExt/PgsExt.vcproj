@@ -220,7 +220,7 @@
 			Filter="cpp"
 			>
 			<File
-				RelativePath="AutoProgress.cpp"
+				RelativePath="BridgeDescription.cpp"
 				>
 				<FileConfiguration
 					Name="Release|Win32"
@@ -242,26 +242,8 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="BridgeDescription.cpp"
+				RelativePath=".\CapacityToDemand.cpp"
 				>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\CapacityToDemand.cpp"
@@ -694,10 +676,6 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\InterfaceCache.cpp"
-				>
-			</File>
-			<File
 				RelativePath="LiftingAnalysisArtifact.cpp"
 				>
 				<FileConfiguration
@@ -852,6 +830,10 @@
 						PreprocessorDefinitions=""
 					/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\MomentRatingArtifact.cpp"
+				>
 			</File>
 			<File
 				RelativePath="PgsExt.rc"
@@ -1032,6 +1014,10 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\RatingArtifact.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\RefinedAnalysisOptionsDlg.cpp"
 				>
 			</File>
@@ -1056,6 +1042,10 @@
 						PreprocessorDefinitions=""
 					/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\ShearRatingArtifact.cpp"
+				>
 			</File>
 			<File
 				RelativePath="ShearZoneData.cpp"
@@ -1241,6 +1231,14 @@
 					/>
 				</FileConfiguration>
 			</File>
+			<File
+				RelativePath=".\StressRatingArtifact.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\YieldStressRatioArtifact.cpp"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -1355,10 +1353,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\Include\PgsExt\InterfaceCache.h"
-				>
-			</File>
-			<File
 				RelativePath="..\Include\PgsExt\LiftHaulConstants.h"
 				>
 			</File>
@@ -1384,6 +1378,10 @@
 			</File>
 			<File
 				RelativePath="..\Include\PgsExt\MomentLoadData.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Include\PgsExt\MomentRatingArtifact.h"
 				>
 			</File>
 			<File
@@ -1435,6 +1433,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\Include\PgsExt\RatingArtifact.h"
+				>
+			</File>
+			<File
 				RelativePath=".\RefinedAnalysisOptionsDlg.h"
 				>
 			</File>
@@ -1444,6 +1446,10 @@
 			</File>
 			<File
 				RelativePath="..\Include\PgsExt\ShearData.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Include\PgsExt\ShearRatingArtifact.h"
 				>
 			</File>
 			<File
@@ -1488,6 +1494,14 @@
 			</File>
 			<File
 				RelativePath="..\Include\PgsExt\StrandStressArtifact.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Include\PgsExt\StressRatingArtifact.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Include\PgsExt\YieldStressRatioArtifact.h"
 				>
 			</File>
 		</Filter>

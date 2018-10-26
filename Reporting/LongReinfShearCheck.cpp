@@ -170,8 +170,7 @@ void CLongReinfShearCheck::Build(rptChapter* pChapter,
             (*table)(row,4) << "*";
          }
 
-         if (!IsEqual(C,0.0))
-            (*table)(row,4) << rptNewLine << "(" << cap_demand.SetValue(C,D,bPassed) << ")";
+         (*table)(row,4) << rptNewLine << "(" << cap_demand.SetValue(C,D,bPassed) << ")";
 
          row++;
       }

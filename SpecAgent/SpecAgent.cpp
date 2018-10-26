@@ -44,6 +44,7 @@
 
 #include <IFace\StatusCenter.h>
 #include <IFace\PrestressForce.h>
+#include <IFace\RatingSpecification.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

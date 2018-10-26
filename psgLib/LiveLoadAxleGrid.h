@@ -81,6 +81,8 @@ public:
    // get a cell value whether is is selected or not
    CString GetCellValue(ROWCOL nRow, ROWCOL nCol);
 
+   void Enable(BOOL bEnable);
+
 private:
    // set up styles for interior rows
    void SetRowStyle(ROWCOL nRow);

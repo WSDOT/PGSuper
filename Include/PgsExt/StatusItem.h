@@ -26,77 +26,15 @@
 // SYSTEM INCLUDES
 //
 #include <PgsExt\PgsExtExp.h>
+#include <EAF\EAFStatusItem.h>
 
-
-// PROJECT INCLUDES
-//
-
-// LOCAL INCLUDES
-//
-
-// FORWARD DECLARATIONS
-//
-
-class pgsStatusItem;
-
-interface iStatusCallback
-{
-   virtual pgsTypes::StatusSeverityType GetSeverity() = 0;
-   virtual void Execute(pgsStatusItem* pItem) = 0;
-};
-
-// MISCELLANEOUS
-//
-
-/*****************************************************************************
-CLASS 
-   pgsStatusItem
-   
-DESCRIPTION
-   Base class for Status Items. Derived classes must implement the IsEqual
-   method.
-   
-COPYRIGHT
-   Copyright © 1997-2004
-   Washington State Department Of Transportation
-   All Rights Reserved
-*****************************************************************************/
-
-class PGSEXTCLASS pgsStatusItem
-{
-public:
-   pgsStatusItem(AgentIDType agentID,StatusCallbackIDType callbackID,const char* strDescription);
-
-   // Called by the framework to assign a unique identifier
-   // to the status item. Don't call this method
-   void SetID(StatusItemIDType id);
-
-   StatusItemIDType GetID() const;
-   AgentIDType GetAgentID() const;
-
-   // framework will remove status item after edit if true
-   bool RemoveAfterEdit();
-   void RemoveAfterEdit(bool bRemoveAfterEdit);
-
-   const std::string& GetDescription() const;
-   StatusCallbackIDType GetCallbackID() const;
-
-   virtual bool IsEqual(pgsStatusItem* pOther) = 0;
-
-private:
-   StatusItemIDType m_ID;
-   AgentIDType m_AgentID;
-   StatusCallbackIDType m_CallbackID;
-   bool m_bRemoveAfterEdit;
-   std::string m_Description;
-};
 
 // status for refined analysis
-class PGSEXTCLASS pgsRefinedAnalysisStatusItem : public pgsStatusItem
+class PGSEXTCLASS pgsRefinedAnalysisStatusItem : public CEAFStatusItem
 {
 public:
-   pgsRefinedAnalysisStatusItem(AgentIDType agentID,StatusCallbackIDType callbackID,const char* strDescription);
-   bool IsEqual(pgsStatusItem* pOther);
+   pgsRefinedAnalysisStatusItem(StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,const char* strDescription);
+   bool IsEqual(CEAFStatusItem* pOther);
 };
 
 ///////////////////////////
@@ -104,19 +42,19 @@ class PGSEXTCLASS pgsRefinedAnalysisStatusCallback : public iStatusCallback
 {
 public:
    pgsRefinedAnalysisStatusCallback(IBroker* pBroker);
-   virtual pgsTypes::StatusSeverityType GetSeverity();
-   virtual void Execute(pgsStatusItem* pStatusItem);
+   virtual eafTypes::StatusSeverityType GetSeverity();
+   virtual void Execute(CEAFStatusItem* pStatusItem);
 
 private:
    IBroker* m_pBroker;
 };
 
 // status for install error
-class PGSEXTCLASS pgsInstallationErrorStatusItem : public pgsStatusItem
+class PGSEXTCLASS pgsInstallationErrorStatusItem : public CEAFStatusItem
 {
 public:
-   pgsInstallationErrorStatusItem(AgentIDType agentID,StatusCallbackIDType callbackID,const char* strComponent,const char* strDescription);
-   bool IsEqual(pgsStatusItem* pOther);
+   pgsInstallationErrorStatusItem(StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,const char* strComponent,const char* strDescription);
+   bool IsEqual(CEAFStatusItem* pOther);
    std::string m_Component;
 };
 
@@ -125,16 +63,16 @@ class PGSEXTCLASS pgsInstallationErrorStatusCallback : public iStatusCallback
 {
 public:
    pgsInstallationErrorStatusCallback();
-   virtual pgsTypes::StatusSeverityType GetSeverity();
-   virtual void Execute(pgsStatusItem* pStatusItem);
+   virtual eafTypes::StatusSeverityType GetSeverity();
+   virtual void Execute(CEAFStatusItem* pStatusItem);
 };
 
 // status for unknown error
-class PGSEXTCLASS pgsUnknownErrorStatusItem : public pgsStatusItem
+class PGSEXTCLASS pgsUnknownErrorStatusItem : public CEAFStatusItem
 {
 public:
-   pgsUnknownErrorStatusItem(AgentIDType agentID,StatusCallbackIDType callbackID,const char* file,long line,const char* strDescription);
-   bool IsEqual(pgsStatusItem* pOther);
+   pgsUnknownErrorStatusItem(StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,const char* file,long line,const char* strDescription);
+   bool IsEqual(CEAFStatusItem* pOther);
    std::string m_File;
    long m_Line;
 };
@@ -144,37 +82,37 @@ class PGSEXTCLASS pgsUnknownErrorStatusCallback : public iStatusCallback
 {
 public:
    pgsUnknownErrorStatusCallback();
-   virtual pgsTypes::StatusSeverityType GetSeverity();
-   virtual void Execute(pgsStatusItem* pStatusItem);
+   virtual eafTypes::StatusSeverityType GetSeverity();
+   virtual void Execute(CEAFStatusItem* pStatusItem);
 };
 
 // status informational message
-class PGSEXTCLASS pgsInformationalStatusItem : public pgsStatusItem
+class PGSEXTCLASS pgsInformationalStatusItem : public CEAFStatusItem
 {
 public:
-   pgsInformationalStatusItem(AgentIDType agentID,StatusCallbackIDType callbackID,const char* strDescription);
-   bool IsEqual(pgsStatusItem* pOther);
+   pgsInformationalStatusItem(StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,const char* strDescription);
+   bool IsEqual(CEAFStatusItem* pOther);
 
 };
 
 class PGSEXTCLASS pgsInformationalStatusCallback : public iStatusCallback
 {
 public:
-   pgsInformationalStatusCallback(pgsTypes::StatusSeverityType severity,UINT helpID=0);
-   virtual pgsTypes::StatusSeverityType GetSeverity();
-   virtual void Execute(pgsStatusItem* pStatusItem);
+   pgsInformationalStatusCallback(eafTypes::StatusSeverityType severity,UINT helpID=0);
+   virtual eafTypes::StatusSeverityType GetSeverity();
+   virtual void Execute(CEAFStatusItem* pStatusItem);
 
 private:
-   pgsTypes::StatusSeverityType m_Severity;
+   eafTypes::StatusSeverityType m_Severity;
    UINT m_HelpID;
 };
 
 // status for girder input
-class PGSEXTCLASS pgsGirderDescriptionStatusItem : public pgsStatusItem
+class PGSEXTCLASS pgsGirderDescriptionStatusItem : public CEAFStatusItem
 {
 public:
-   pgsGirderDescriptionStatusItem(SpanIndexType span,GirderIndexType gdr,Uint16 page,AgentIDType agentID,StatusCallbackIDType callbackID,const char* strDescription);
-   bool IsEqual(pgsStatusItem* pOther);
+   pgsGirderDescriptionStatusItem(SpanIndexType span,GirderIndexType gdr,Uint16 page,StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,const char* strDescription);
+   bool IsEqual(CEAFStatusItem* pOther);
 
    SpanIndexType m_Span;
    GirderIndexType m_Girder;
@@ -186,37 +124,37 @@ public:
 class PGSEXTCLASS pgsGirderDescriptionStatusCallback : public iStatusCallback
 {
 public:
-   pgsGirderDescriptionStatusCallback(IBroker* pBroker,pgsTypes::StatusSeverityType severity);
-   virtual pgsTypes::StatusSeverityType GetSeverity();
-   virtual void Execute(pgsStatusItem* pStatusItem);
+   pgsGirderDescriptionStatusCallback(IBroker* pBroker,eafTypes::StatusSeverityType severity);
+   virtual eafTypes::StatusSeverityType GetSeverity();
+   virtual void Execute(CEAFStatusItem* pStatusItem);
 
 private:
    IBroker* m_pBroker;
-   pgsTypes::StatusSeverityType m_Severity;
+   eafTypes::StatusSeverityType m_Severity;
 };
 
 // status for structural analysis type
-class PGSEXTCLASS pgsStructuralAnalysisTypeStatusItem : public pgsStatusItem
+class PGSEXTCLASS pgsStructuralAnalysisTypeStatusItem : public CEAFStatusItem
 {
 public:
-   pgsStructuralAnalysisTypeStatusItem(AgentIDType agentID,StatusCallbackIDType callbackID,const char* strDescription);
-   bool IsEqual(pgsStatusItem* pOther);
+   pgsStructuralAnalysisTypeStatusItem(StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,const char* strDescription);
+   bool IsEqual(CEAFStatusItem* pOther);
 };
 
 class PGSEXTCLASS pgsStructuralAnalysisTypeStatusCallback : public iStatusCallback
 {
 public:
    pgsStructuralAnalysisTypeStatusCallback();
-   virtual pgsTypes::StatusSeverityType GetSeverity();
-   virtual void Execute(pgsStatusItem* pStatusItem);
+   virtual eafTypes::StatusSeverityType GetSeverity();
+   virtual void Execute(CEAFStatusItem* pStatusItem);
 };
 
 // status for general bridge description input
-class PGSEXTCLASS pgsBridgeDescriptionStatusItem : public pgsStatusItem
+class PGSEXTCLASS pgsBridgeDescriptionStatusItem : public CEAFStatusItem
 {
 public:
-   pgsBridgeDescriptionStatusItem(AgentIDType agentID,StatusCallbackIDType callbackID,long dlgPage,const char* strDescription);
-   bool IsEqual(pgsStatusItem* pOther);
+   pgsBridgeDescriptionStatusItem(StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,long dlgPage,const char* strDescription);
+   bool IsEqual(CEAFStatusItem* pOther);
 
    long m_DlgPage;
 };
@@ -225,13 +163,13 @@ public:
 class PGSEXTCLASS pgsBridgeDescriptionStatusCallback : public iStatusCallback
 {
 public:
-   pgsBridgeDescriptionStatusCallback(IBroker* pBroker,pgsTypes::StatusSeverityType severity);
-   virtual pgsTypes::StatusSeverityType GetSeverity();
-   virtual void Execute(pgsStatusItem* pStatusItem);
+   pgsBridgeDescriptionStatusCallback(IBroker* pBroker,eafTypes::StatusSeverityType severity);
+   virtual eafTypes::StatusSeverityType GetSeverity();
+   virtual void Execute(CEAFStatusItem* pStatusItem);
 
 private:
    IBroker* m_pBroker;
-   pgsTypes::StatusSeverityType m_Severity;
+   eafTypes::StatusSeverityType m_Severity;
 };
 
 #endif // INCLUDED_STATUSITEM_H_

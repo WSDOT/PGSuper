@@ -110,6 +110,9 @@ CGirderData::CGirderData()
    ResetPrestressData();
 
    NumPermStrandsType = NPS_STRAIGHT_HARPED;
+
+   Condition = pgsTypes::cfGood;
+   ConditionFactor = 1.0;
 }  
 
 CGirderData::CGirderData(const CGirderData& rOther)
@@ -209,6 +212,12 @@ bool CGirderData::operator==(const CGirderData& rOther) const
       return false;
 
    if ( HandlingData != rOther.HandlingData )
+      return false;
+
+   if ( Condition != rOther.Condition )
+      return false;
+
+   if ( !IsEqual(ConditionFactor,rOther.ConditionFactor) )
       return false;
 
    return true;
@@ -324,6 +333,11 @@ int CGirderData::GetChangeType(const CGirderData& rOther) const
         !IsEqual(HandlingData.TrailingSupportPoint, rOther.HandlingData.TrailingSupportPoint) )
    {
       ct |= ctShipping;
+   }
+
+   if ( Condition != rOther.Condition || !IsEqual(ConditionFactor,rOther.ConditionFactor) )
+   {
+      ct |= ctCondition;
    }
 
    return ct;
@@ -686,6 +700,19 @@ HRESULT CGirderData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress,
       HandlingData.Load(pStrLoad,pProgress);
    }
 
+   if ( SUCCEEDED(pStrLoad->BeginUnit("Condition")) )
+   {
+      var.vt = VT_I4;
+      pStrLoad->get_Property("ConditionFactorType",&var);
+      Condition = (pgsTypes::ConditionFactorType)(var.lVal);
+
+      var.vt = VT_R8;
+      pStrLoad->get_Property("ConditionFactor",&var);
+      ConditionFactor = var.dblVal;
+   
+      pStrLoad->EndUnit();
+   }
+
    return hr;
 }
 
@@ -777,6 +804,11 @@ HRESULT CGirderData::Save(IStructuredSave* pStrSave,IProgress* pProgress)
    LongitudinalRebarData.Save(pStrSave,pProgress);
    HandlingData.Save(pStrSave,pProgress);
 
+   pStrSave->BeginUnit("Condition",1.0);
+   pStrSave->put_Property("ConditionFactorType",CComVariant(Condition));
+   pStrSave->put_Property("ConditionFactor",CComVariant(ConditionFactor));
+   pStrSave->EndUnit();
+
    return hr;
 }
 
@@ -825,6 +857,9 @@ void CGirderData::MakeCopy(const CGirderData& rOther)
 {
    CopyPrestressingFrom(rOther);
    CopyMaterialFrom(rOther);
+
+   Condition = rOther.Condition;
+   ConditionFactor = rOther.ConditionFactor;
 }
 
 void CGirderData::CopyPrestressingFrom(const CGirderData& rOther)

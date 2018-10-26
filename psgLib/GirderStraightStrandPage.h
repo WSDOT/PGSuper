@@ -77,8 +77,6 @@ protected:
 
 public:
    void OnEnableDelete(const CGirderStrandGrid* pgrid, bool canDelete);
-   CString GetLengthUnitString();
-   unitLength GetLengthUnit();
 };
 
 //{{AFX_INSERT_LOCATION}}

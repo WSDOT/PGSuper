@@ -31,7 +31,7 @@ COPYRIGHT
 *****************************************************************************/
 
 #include <IFace\Project.h>
-#include <IFace\DisplayUnits.h>
+#include <IFace\RatingSpecification.h>
 #include <IFace\VersionInfo.h>
 
 #endif // INCLUDED_PROJECTAGENT_H_

@@ -32,6 +32,8 @@
 #include <PgsExt\PgsExtExp.h>
 #endif
 
+#include <EAF\EAFCommandLineInfo.h>
+
 // LOCAL INCLUDES
 //
 
@@ -66,7 +68,7 @@ LOG
 // Below is to take a sample exterior and interior girder (A and mid-most)
 #define TXEIGIRDERS  -6 
 
-class  CPGSuperCommandLineInfo : public CCommandLineInfo
+class  CPGSuperCommandLineInfo : public CEAFCommandLineInfo
 {
 public:
    // Different types of Analysis/Design and level of detail (Ext==exteneded) for TxDOT CAD reports
@@ -88,11 +90,9 @@ public:
 
    //------------------------------------------------------------------------
    // derive new version to parse new commands
-   void ParseParam(LPCTSTR lpszParam, BOOL bFlag, BOOL bLast);
+   virtual void ParseParam(LPCTSTR lpszParam, BOOL bFlag, BOOL bLast);
 
-   bool  m_CommandLineMode; // true if we are batching
-
-   bool   m_bAbort; // command line problem
+   virtual CString GetUsageMessage();
 
    bool   m_bDo1250Test;
    long   m_SubdomainId;

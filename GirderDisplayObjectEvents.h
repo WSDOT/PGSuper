@@ -29,6 +29,7 @@
 // GirderDisplayObjectEvents.h : header file
 //
 
+#include "BridgeModelViewChildFrame.h"
 #include <DManip\DManip.h>
 
 

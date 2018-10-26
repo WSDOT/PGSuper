@@ -53,7 +53,7 @@ class REPORTINGCLASS CLiveLoadDetailsChapterBuilder : public CPGSuperChapterBuil
 {
 public:
    // GROUP: LIFECYCLE
-   CLiveLoadDetailsChapterBuilder();
+   CLiveLoadDetailsChapterBuilder(bool bDesign,bool bRating);
 
    // GROUP: OPERATORS
    // GROUP: OPERATIONS
@@ -81,6 +81,8 @@ protected:
 
 private:
    // GROUP: DATA MEMBERS
+   bool m_bDesign, m_bRating;
+
    // GROUP: LIFECYCLE
 
    // Prevent accidental copying and assignment

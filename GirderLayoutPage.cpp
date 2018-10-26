@@ -24,7 +24,8 @@
 //
 
 #include "stdafx.h"
-#include "pgsuper.h"
+#include "resource.h"
+#include "PGSuperDoc.h"
 #include "GirderLayoutPage.h"
 #include "SpanDetailsDlg.h"
 #include "SelectItemDlg.h"
@@ -51,7 +52,7 @@ static char THIS_FILE[] = __FILE__;
 inline void GetBearingMeasurementTypes(const CString& startConnectionName, const CString& endConnectionName, ConnectionLibraryEntry::BearingOffsetMeasurementType* pStartMeasure, ConnectionLibraryEntry::BearingOffsetMeasurementType* pEndMeasure)
 {
    CComPtr<IBroker> pBroker;
-   AfxGetBroker(&pBroker);
+   EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,ILibrary,pLib);
 
    const ConnectionLibraryEntry* pConEntry = pLib->GetConnectionEntry(startConnectionName);
@@ -137,7 +138,7 @@ void CSpanGirderLayoutPage::DoDataExchange(CDataExchange* pDX)
    DDV_SpacingGrid(pDX,IDC_NEXT_PIER_SPACING_GRID,&m_SpacingGrid[pgsTypes::Back]);
 
    CComPtr<IBroker> pBroker;
-   AfxGetBroker(&pBroker);
+   EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
    DDX_CBItemData(pDX, IDC_PREV_REF_GIRDER, m_RefGirderIdx[pgsTypes::Ahead]);
    DDX_CBItemData(pDX, IDC_NEXT_REF_GIRDER, m_RefGirderIdx[pgsTypes::Back]);
@@ -156,6 +157,38 @@ void CSpanGirderLayoutPage::DoDataExchange(CDataExchange* pDX)
       {
          DDX_UnitValueAndTag(pDX, IDC_START_SLAB_OFFSET, IDC_START_SLAB_OFFSET_UNIT, m_SlabOffset[pgsTypes::metStart], pDisplayUnits->GetComponentDimUnit() );
          DDX_UnitValueAndTag(pDX, IDC_END_SLAB_OFFSET,   IDC_END_SLAB_OFFSET_UNIT,   m_SlabOffset[pgsTypes::metEnd],   pDisplayUnits->GetComponentDimUnit() );
+
+         if ( pDX->m_bSaveAndValidate )
+         {
+            GET_IFACE2(pBroker,IBridge,pBridge);
+            Float64 Lg = pBridge->GetGirderLength(pParent->m_pSpanData->GetSpanIndex(),0);
+            pgsPointOfInterest poiStart(pParent->m_pSpanData->GetSpanIndex(),0,0.0);
+            pgsPointOfInterest poiEnd(pParent->m_pSpanData->GetSpanIndex(),0,Lg);
+            Float64 grossDeckThicknessStart = pBridge->GetGrossSlabDepth(poiStart) + pBridge->GetFillet();
+            Float64 grossDeckThicknessEnd   = pBridge->GetGrossSlabDepth(poiEnd) + pBridge->GetFillet();
+            
+            m_SlabOffset[pgsTypes::metStart] = (IsEqual(m_SlabOffset[pgsTypes::metStart],grossDeckThicknessStart) ? grossDeckThicknessStart : m_SlabOffset[pgsTypes::metStart]);
+            m_SlabOffset[pgsTypes::metEnd]   = (IsEqual(m_SlabOffset[pgsTypes::metEnd],  grossDeckThicknessEnd  ) ? grossDeckThicknessEnd   : m_SlabOffset[pgsTypes::metEnd]);
+
+            if ( m_SlabOffset[pgsTypes::metStart] < grossDeckThicknessStart )
+            {
+               pDX->PrepareEditCtrl(IDC_START_SLAB_OFFSET);
+               CString msg;
+               msg.Format("The slab offset at the start of the girder must be at equal to the slab + fillet depth of %s",FormatDimension(grossDeckThicknessStart,pDisplayUnits->GetComponentDimUnit()));
+               AfxMessageBox(msg,MB_ICONEXCLAMATION);
+               pDX->Fail();
+            }
+
+            if ( m_SlabOffset[pgsTypes::metEnd] < grossDeckThicknessEnd )
+            {
+               pDX->PrepareEditCtrl(IDC_END_SLAB_OFFSET);
+               CString msg;
+               msg.Format("The slab offset at the end of the girder must be at equal to the slab + fillet depth of %s",FormatDimension(grossDeckThicknessEnd,pDisplayUnits->GetComponentDimUnit()));
+               AfxMessageBox(msg,MB_ICONEXCLAMATION);
+               pDX->Fail();
+            }
+         }
+
       }
    }
 }
@@ -279,7 +312,7 @@ void CSpanGirderLayoutPage::GetPierSkewAngles(double& skew1,double& skew2)
    const CPierData* pNextPier = pParent->m_pSpanData->GetNextPier();
 
    CComPtr<IBroker> broker;
-   AfxGetBroker(&broker);
+   EAFGetBroker(&broker);
    GET_IFACE2(broker,IBridge,pBridge);
 
    double skew_angle_1;
@@ -362,6 +395,15 @@ BOOL CSpanGirderLayoutPage::OnInitDialog()
 
   
    UpdateChildWindowState();
+
+   //CComPtr<IBroker> pBroker;
+   //EAFGetBroker(&pBroker);
+   //GET_IFACE2(pBroker,IBridgeDescription,pBridgeDesc);
+   //if ( pBridgeDesc->IsPostTensioningModeled() )
+   //{
+   //   // disable elements of the UI that can't be changed when the bridge model has PT
+   //   GetDlgItem(IDC_NUMGDR_NOTE)->EnableWindow(FALSE);
+   //}
 
    return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE
@@ -511,7 +553,7 @@ void CSpanGirderLayoutPage::CacheEndSpacing()
 
    // cache the reference girder offset
    CComPtr<IBroker> pBroker;
-   AfxGetBroker(&pBroker);
+   EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
 
    CDataExchange dx(this,TRUE);
@@ -592,7 +634,7 @@ void CSpanGirderLayoutPage::RestoreEndSpacing()
    GetDlgItem(IDC_NEXT_REF_GIRDER)->EnableWindow(TRUE);
 
    CComPtr<IBroker> pBroker;
-   AfxGetBroker(&pBroker);
+   EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
    DDX_OffsetAndTag(&dx, IDC_NEXT_REF_GIRDER_OFFSET,IDC_NEXT_REF_GIRDER_OFFSET_UNIT, m_CacheRefGirderOffset[pgsTypes::Back], pDisplayUnits->GetXSectionDimUnit());
    GetDlgItem(IDC_NEXT_REF_GIRDER_OFFSET)->EnableWindow(TRUE);
@@ -669,7 +711,7 @@ GirderIndexType CSpanGirderLayoutPage::GetMinGirderCount()
    std::string strGdrName = pParent->m_pSpanData->GetGirderTypes()->GetGirderName(0);
 
    CComPtr<IBroker> pBroker;
-   AfxGetBroker(&pBroker);
+   EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,ILibrary,pLib);
    const GirderLibraryEntry* pGdrEntry = pLib->GetGirderEntry(strGdrName.c_str());
 
@@ -777,7 +819,7 @@ LRESULT CSpanGirderLayoutPage::OnChangeSameGirderSpacing(WPARAM wParam,LPARAM lP
          // there is more than one unique girder spacing... which one do we want to use
          // for the entire bridge???
          CComPtr<IBroker> broker;
-         AfxGetBroker(&broker);
+         EAFGetBroker(&broker);
          GET_IFACE2(broker,IDisplayUnits,pDisplayUnits);
 
          CResolveGirderSpacingDlg dlg;
@@ -971,7 +1013,7 @@ LRESULT CSpanGirderLayoutPage::OnChangeSameGirderType(WPARAM wParam,LPARAM lPara
 LRESULT CSpanGirderLayoutPage::OnChangeSlabOffset(WPARAM wParam,LPARAM lParam)
 {
    CComPtr<IBroker> pBroker;
-   AfxGetBroker(&pBroker);
+   EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
 
    if ( m_SlabOffsetTypeCache == pgsTypes::sotBridge )
@@ -1229,7 +1271,7 @@ bool CSpanGirderLayoutPage::AllowConnectionChange(pgsTypes::PierFaceType side, c
 {
    // See if we need to change our current spacing for this connection
    CComPtr<IBroker> pBroker;
-   AfxGetBroker(&pBroker);
+   EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,ILibrary,pLib);
    const ConnectionLibraryEntry* pConEntry = pLib->GetConnectionEntry(connectionName);
 

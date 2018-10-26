@@ -38,57 +38,12 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-pgsStatusItem::pgsStatusItem(AgentIDType agentID,StatusCallbackIDType callbackID,const char* strDescription) :
-m_Description(strDescription), m_bRemoveAfterEdit(false)
-{
-   m_AgentID = agentID;
-   m_CallbackID = callbackID;
-}
-
-void pgsStatusItem::SetID(StatusItemIDType id)
-{
-   m_ID = id;
-}
-
-StatusItemIDType pgsStatusItem::GetID() const
-{
-   return m_ID;
-}
-
-AgentIDType pgsStatusItem::GetAgentID() const
-{
-   return m_AgentID;
-}
-
-const std::string& pgsStatusItem::GetDescription() const
-{
-   return m_Description;
-}
-
-StatusCallbackIDType pgsStatusItem::GetCallbackID() const
-{
-   return m_CallbackID;
-}
-
-bool pgsStatusItem::RemoveAfterEdit()
-{
-   return m_bRemoveAfterEdit;
-}
-
-void pgsStatusItem::RemoveAfterEdit(bool bRemoveAfterEdit)
-{
-   m_bRemoveAfterEdit = bRemoveAfterEdit;
-}
-
-
-////////////////
-
-pgsRefinedAnalysisStatusItem::pgsRefinedAnalysisStatusItem(AgentIDType agentID,StatusCallbackIDType callbackID,const char* strDescription) :
-pgsStatusItem(agentID,callbackID,strDescription)
+pgsRefinedAnalysisStatusItem::pgsRefinedAnalysisStatusItem(StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,const char* strDescription) :
+CEAFStatusItem(statusGroupID,callbackID,strDescription)
 {
 }
 
-bool pgsRefinedAnalysisStatusItem::IsEqual(pgsStatusItem* pOther)
+bool pgsRefinedAnalysisStatusItem::IsEqual(CEAFStatusItem* pOther)
 {
    pgsRefinedAnalysisStatusItem* other = dynamic_cast<pgsRefinedAnalysisStatusItem*>(pOther);
    if ( !other )
@@ -103,12 +58,12 @@ m_pBroker(pBroker)
 {
 }
 
-pgsTypes::StatusSeverityType pgsRefinedAnalysisStatusCallback::GetSeverity()
+eafTypes::StatusSeverityType pgsRefinedAnalysisStatusCallback::GetSeverity()
 {
-   return pgsTypes::statusError;
+   return eafTypes::statusError;
 }
 
-void pgsRefinedAnalysisStatusCallback::Execute(pgsStatusItem* pStatusItem)
+void pgsRefinedAnalysisStatusCallback::Execute(CEAFStatusItem* pStatusItem)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
    pgsRefinedAnalysisStatusItem* pItem = dynamic_cast<pgsRefinedAnalysisStatusItem*>(pStatusItem);
@@ -164,12 +119,12 @@ void pgsRefinedAnalysisStatusCallback::Execute(pgsStatusItem* pStatusItem)
 
 ////////////////
 
-pgsInstallationErrorStatusItem::pgsInstallationErrorStatusItem(AgentIDType agentID,StatusCallbackIDType callbackID,const char* strComponent,const char* strDescription) :
-pgsStatusItem(agentID,callbackID,strDescription), m_Component(strComponent)
+pgsInstallationErrorStatusItem::pgsInstallationErrorStatusItem(StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,const char* strComponent,const char* strDescription) :
+CEAFStatusItem(statusGroupID,callbackID,strDescription), m_Component(strComponent)
 {
 }
 
-bool pgsInstallationErrorStatusItem::IsEqual(pgsStatusItem* pOther)
+bool pgsInstallationErrorStatusItem::IsEqual(CEAFStatusItem* pOther)
 {
    pgsInstallationErrorStatusItem* other = dynamic_cast<pgsInstallationErrorStatusItem*>(pOther);
    if ( !other )
@@ -186,12 +141,12 @@ pgsInstallationErrorStatusCallback::pgsInstallationErrorStatusCallback()
 {
 }
 
-pgsTypes::StatusSeverityType pgsInstallationErrorStatusCallback::GetSeverity()
+eafTypes::StatusSeverityType pgsInstallationErrorStatusCallback::GetSeverity()
 {
-   return pgsTypes::statusError;
+   return eafTypes::statusError;
 }
 
-void pgsInstallationErrorStatusCallback::Execute(pgsStatusItem* pStatusItem)
+void pgsInstallationErrorStatusCallback::Execute(CEAFStatusItem* pStatusItem)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
    pgsInstallationErrorStatusItem* pItem = dynamic_cast<pgsInstallationErrorStatusItem*>(pStatusItem);
@@ -205,12 +160,12 @@ void pgsInstallationErrorStatusCallback::Execute(pgsStatusItem* pStatusItem)
 
 ////////////////
 
-pgsUnknownErrorStatusItem::pgsUnknownErrorStatusItem(AgentIDType agentID,StatusCallbackIDType callbackID,const char* strFile,long line,const char* strDescription) :
-pgsStatusItem(agentID,callbackID,strDescription), m_File(strFile), m_Line(line)
+pgsUnknownErrorStatusItem::pgsUnknownErrorStatusItem(StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,const char* strFile,long line,const char* strDescription) :
+CEAFStatusItem(statusGroupID,callbackID,strDescription), m_File(strFile), m_Line(line)
 {
 }
 
-bool pgsUnknownErrorStatusItem::IsEqual(pgsStatusItem* pOther)
+bool pgsUnknownErrorStatusItem::IsEqual(CEAFStatusItem* pOther)
 {
    pgsUnknownErrorStatusItem* other = dynamic_cast<pgsUnknownErrorStatusItem*>(pOther);
    if ( !other )
@@ -230,12 +185,12 @@ pgsUnknownErrorStatusCallback::pgsUnknownErrorStatusCallback()
 {
 }
 
-pgsTypes::StatusSeverityType pgsUnknownErrorStatusCallback::GetSeverity()
+eafTypes::StatusSeverityType pgsUnknownErrorStatusCallback::GetSeverity()
 {
-   return pgsTypes::statusError;
+   return eafTypes::statusError;
 }
 
-void pgsUnknownErrorStatusCallback::Execute(pgsStatusItem* pStatusItem)
+void pgsUnknownErrorStatusCallback::Execute(CEAFStatusItem* pStatusItem)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
@@ -249,12 +204,12 @@ void pgsUnknownErrorStatusCallback::Execute(pgsStatusItem* pStatusItem)
 
 ////////////////
 
-pgsInformationalStatusItem::pgsInformationalStatusItem(AgentIDType agentID,StatusCallbackIDType callbackID,const char* strDescription) :
-pgsStatusItem(agentID,callbackID,strDescription)
+pgsInformationalStatusItem::pgsInformationalStatusItem(StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,const char* strDescription) :
+CEAFStatusItem(statusGroupID,callbackID,strDescription)
 {
 }
 
-bool pgsInformationalStatusItem::IsEqual(pgsStatusItem* pOther)
+bool pgsInformationalStatusItem::IsEqual(CEAFStatusItem* pOther)
 {
    pgsInformationalStatusItem* other = dynamic_cast<pgsInformationalStatusItem*>(pOther);
    if ( !other )
@@ -267,17 +222,17 @@ bool pgsInformationalStatusItem::IsEqual(pgsStatusItem* pOther)
 }
 
 //////////////////////////////////////////////////////////
-pgsInformationalStatusCallback::pgsInformationalStatusCallback(pgsTypes::StatusSeverityType severity,UINT helpID):
+pgsInformationalStatusCallback::pgsInformationalStatusCallback(eafTypes::StatusSeverityType severity,UINT helpID):
 m_Severity(severity), m_HelpID(helpID)
 {
 }
 
-pgsTypes::StatusSeverityType pgsInformationalStatusCallback::GetSeverity()
+eafTypes::StatusSeverityType pgsInformationalStatusCallback::GetSeverity()
 {
    return m_Severity;
 }
 
-void pgsInformationalStatusCallback::Execute(pgsStatusItem* pStatusItem)
+void pgsInformationalStatusCallback::Execute(CEAFStatusItem* pStatusItem)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
@@ -288,7 +243,7 @@ void pgsInformationalStatusCallback::Execute(pgsStatusItem* pStatusItem)
       msg += std::string("\r\n\r\nClick on Help button for more details.");
    }
 
-   bool is_severe = m_Severity==pgsTypes::statusError;
+   bool is_severe = m_Severity==eafTypes::statusError;
    if (!is_severe)
    {
       msg += std::string("\r\n\r\nClick OK to remove this message.");
@@ -312,12 +267,12 @@ void pgsInformationalStatusCallback::Execute(pgsStatusItem* pStatusItem)
 
 ////////////////
 
-pgsGirderDescriptionStatusItem::pgsGirderDescriptionStatusItem(SpanIndexType span,GirderIndexType gdr,Uint16 page,AgentIDType agentID,StatusCallbackIDType callbackID,const char* strDescription) :
-pgsStatusItem(agentID,callbackID,strDescription), m_Span(span), m_Girder(gdr), m_Page(page)
+pgsGirderDescriptionStatusItem::pgsGirderDescriptionStatusItem(SpanIndexType span,GirderIndexType gdr,Uint16 page,StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,const char* strDescription) :
+CEAFStatusItem(statusGroupID,callbackID,strDescription), m_Span(span), m_Girder(gdr), m_Page(page)
 {
 }
 
-bool pgsGirderDescriptionStatusItem::IsEqual(pgsStatusItem* pOther)
+bool pgsGirderDescriptionStatusItem::IsEqual(CEAFStatusItem* pOther)
 {
    pgsGirderDescriptionStatusItem* other = dynamic_cast<pgsGirderDescriptionStatusItem*>(pOther);
    if ( !other )
@@ -339,17 +294,17 @@ bool pgsGirderDescriptionStatusItem::IsEqual(pgsStatusItem* pOther)
 }
 
 //////////////////////////////////////////////////////////
-pgsGirderDescriptionStatusCallback::pgsGirderDescriptionStatusCallback(IBroker* pBroker,pgsTypes::StatusSeverityType severity):
+pgsGirderDescriptionStatusCallback::pgsGirderDescriptionStatusCallback(IBroker* pBroker,eafTypes::StatusSeverityType severity):
 m_pBroker(pBroker), m_Severity(severity)
 {
 }
 
-pgsTypes::StatusSeverityType pgsGirderDescriptionStatusCallback::GetSeverity()
+eafTypes::StatusSeverityType pgsGirderDescriptionStatusCallback::GetSeverity()
 {
    return m_Severity;
 }
 
-void pgsGirderDescriptionStatusCallback::Execute(pgsStatusItem* pStatusItem)
+void pgsGirderDescriptionStatusCallback::Execute(CEAFStatusItem* pStatusItem)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
@@ -376,12 +331,12 @@ void pgsGirderDescriptionStatusCallback::Execute(pgsStatusItem* pStatusItem)
 
 ////////////////
 
-pgsStructuralAnalysisTypeStatusItem::pgsStructuralAnalysisTypeStatusItem(AgentIDType agentID,StatusCallbackIDType callbackID,const char* strDescription) :
-pgsStatusItem(agentID,callbackID,strDescription)
+pgsStructuralAnalysisTypeStatusItem::pgsStructuralAnalysisTypeStatusItem(StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,const char* strDescription) :
+CEAFStatusItem(statusGroupID,callbackID,strDescription)
 {
 }
 
-bool pgsStructuralAnalysisTypeStatusItem::IsEqual(pgsStatusItem* pOther)
+bool pgsStructuralAnalysisTypeStatusItem::IsEqual(CEAFStatusItem* pOther)
 {
    pgsStructuralAnalysisTypeStatusItem* other = dynamic_cast<pgsStructuralAnalysisTypeStatusItem*>(pOther);
    if ( !other )
@@ -396,23 +351,23 @@ pgsStructuralAnalysisTypeStatusCallback::pgsStructuralAnalysisTypeStatusCallback
 {
 }
 
-pgsTypes::StatusSeverityType pgsStructuralAnalysisTypeStatusCallback::GetSeverity()
+eafTypes::StatusSeverityType pgsStructuralAnalysisTypeStatusCallback::GetSeverity()
 {
-   return pgsTypes::statusWarning;
+   return eafTypes::statusWarning;
 }
 
-void pgsStructuralAnalysisTypeStatusCallback::Execute(pgsStatusItem* pStatusItem)
+void pgsStructuralAnalysisTypeStatusCallback::Execute(CEAFStatusItem* pStatusItem)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
    AfxMessageBox(pStatusItem->GetDescription().c_str(),MB_OK);
 }
 
-pgsBridgeDescriptionStatusItem::pgsBridgeDescriptionStatusItem(AgentIDType agentID,StatusCallbackIDType callbackID,long dlgPage,const char* strDescription) :
-pgsStatusItem(agentID,callbackID,strDescription), m_DlgPage(dlgPage)
+pgsBridgeDescriptionStatusItem::pgsBridgeDescriptionStatusItem(StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,long dlgPage,const char* strDescription) :
+CEAFStatusItem(statusGroupID,callbackID,strDescription), m_DlgPage(dlgPage)
 {
 }
 
-bool pgsBridgeDescriptionStatusItem::IsEqual(pgsStatusItem* pOther)
+bool pgsBridgeDescriptionStatusItem::IsEqual(CEAFStatusItem* pOther)
 {
    pgsBridgeDescriptionStatusItem* other = dynamic_cast<pgsBridgeDescriptionStatusItem*>(pOther);
    if ( !other )
@@ -428,17 +383,17 @@ bool pgsBridgeDescriptionStatusItem::IsEqual(pgsStatusItem* pOther)
 }
 
 //////////////////////////////////////////////////////////
-pgsBridgeDescriptionStatusCallback::pgsBridgeDescriptionStatusCallback(IBroker* pBroker,pgsTypes::StatusSeverityType severity):
+pgsBridgeDescriptionStatusCallback::pgsBridgeDescriptionStatusCallback(IBroker* pBroker,eafTypes::StatusSeverityType severity):
 m_pBroker(pBroker), m_Severity(severity)
 {
 }
 
-pgsTypes::StatusSeverityType pgsBridgeDescriptionStatusCallback::GetSeverity()
+eafTypes::StatusSeverityType pgsBridgeDescriptionStatusCallback::GetSeverity()
 {
    return m_Severity;
 }
 
-void pgsBridgeDescriptionStatusCallback::Execute(pgsStatusItem* pStatusItem)
+void pgsBridgeDescriptionStatusCallback::Execute(CEAFStatusItem* pStatusItem)
 {
    pgsBridgeDescriptionStatusItem* pItem = dynamic_cast<pgsBridgeDescriptionStatusItem*>(pStatusItem);
    ATLASSERT(pItem!=NULL);

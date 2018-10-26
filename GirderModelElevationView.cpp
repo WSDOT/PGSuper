@@ -211,7 +211,7 @@ END_MESSAGE_MAP()
 // CGirderModelElevationView drawing
 void CGirderModelElevationView::OnInitialUpdate() 
 {
-   HRESULT hr;
+   HRESULT hr = S_OK;
 
 	CDisplayView::OnInitialUpdate();
    EnableToolTips();
@@ -406,8 +406,7 @@ void CGirderModelElevationView::UpdateDisplayObjects()
    CComPtr<IBroker> pBroker;
    pDoc->GetBroker(&pBroker);
 
-   CPGSuperApp* papp =(CPGSuperApp*) AfxGetApp();
-   UINT settings = papp->GetGirderEditorSettings();
+   UINT settings = pDoc->GetGirderEditorSettings();
 
    BuildGirderDisplayObjects(pDoc, pBroker, span, girder, dispMgr);
    BuildSupportDisplayObjects(pDoc, pBroker, span, girder, dispMgr);
@@ -742,7 +741,8 @@ void CGirderModelElevationView::BuildGirderDisplayObjects(CPGSuperDoc* pDoc,IBro
 
    CString strMsg = strMsg1 + strMsg2 + strMsg3;
 
-   doPnt->SetMaxTipWidth(300);
+   doPnt->SetMaxTipWidth(TOOLTIP_WIDTH);
+   doPnt->SetTipDisplayTime(TOOLTIP_DURATION);
    doPnt->SetToolTipText(strMsg);
 
    // create a drop site for drag and drop loads
@@ -1275,7 +1275,7 @@ void CGirderModelElevationView::BuildPointLoadDisplayObjects(CPGSuperDoc* pDoc, 
 
          // tool tip
          CComPtr<IBroker> pBroker;
-         AfxGetBroker(&pBroker);
+         EAFGetBroker(&pBroker);
          GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
          CString strMagnitude = FormatDimension(load.m_Magnitude,pDisplayUnits->GetGeneralForceUnit(),true);
          CString strLocation  = FormatDimension(location_from_left_end,pDisplayUnits->GetSpanLengthUnit(),true);
@@ -1294,7 +1294,8 @@ void CGirderModelElevationView::BuildPointLoadDisplayObjects(CPGSuperDoc* pDoc, 
             os << load.m_Description;
          }
 
-         point_disp->SetMaxTipWidth(300);
+         point_disp->SetMaxTipWidth(TOOLTIP_WIDTH);
+         point_disp->SetTipDisplayTime(TOOLTIP_DURATION);
          point_disp->SetToolTipText(os.str().c_str());
          point_disp->SetID(ild);
 
@@ -1402,7 +1403,7 @@ void CGirderModelElevationView::BuildDistributedLoadDisplayObjects(CPGSuperDoc* 
 
          // tool tip
          CComPtr<IBroker> pBroker;
-         AfxGetBroker(&pBroker);
+         EAFGetBroker(&pBroker);
          GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
          CString strStartMagnitude = FormatDimension(load.m_WStart,pDisplayUnits->GetForcePerLengthUnit(),true);
          CString strEndMagnitude   = FormatDimension(load.m_WEnd,pDisplayUnits->GetForcePerLengthUnit(),true);
@@ -1427,7 +1428,8 @@ void CGirderModelElevationView::BuildDistributedLoadDisplayObjects(CPGSuperDoc* 
             os << load.m_Description;
          }
 
-         point_disp->SetMaxTipWidth(300);
+         point_disp->SetMaxTipWidth(TOOLTIP_WIDTH);
+         point_disp->SetTipDisplayTime(TOOLTIP_DURATION);
          point_disp->SetToolTipText(os.str().c_str());
          point_disp->SetID(ild);
 
@@ -1513,7 +1515,7 @@ void CGirderModelElevationView::BuildMomentLoadDisplayObjects(CPGSuperDoc* pDoc,
 
          // tool tip
          CComPtr<IBroker> pBroker;
-         AfxGetBroker(&pBroker);
+         EAFGetBroker(&pBroker);
          GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
          CString strMagnitude = FormatDimension(load.m_Magnitude,pDisplayUnits->GetMomentUnit(),true);
          CString strLocation  = FormatDimension(location,pDisplayUnits->GetSpanLengthUnit(),true);
@@ -1532,7 +1534,8 @@ void CGirderModelElevationView::BuildMomentLoadDisplayObjects(CPGSuperDoc* pDoc,
             os << load.m_Description;
          }
 
-         point_disp->SetMaxTipWidth(300);
+         point_disp->SetMaxTipWidth(TOOLTIP_WIDTH);
+         point_disp->SetTipDisplayTime(TOOLTIP_DURATION);
          point_disp->SetToolTipText(os.str().c_str());
          point_disp->SetID(ild);
 
@@ -1943,7 +1946,7 @@ iDimensionLine* CGirderModelElevationView::BuildDimensionLine(iDisplayList* pDL,
 
    // Format the dimension text
    CComPtr<IBroker> pBroker;
-   AfxGetBroker(&pBroker);
+   EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
    CString strDimension = FormatDimension(dimension,pDisplayUnits->GetSpanLengthUnit());
 

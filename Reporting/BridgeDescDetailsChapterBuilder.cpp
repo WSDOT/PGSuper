@@ -305,7 +305,7 @@ void write_girder_details(IBroker* pBroker,IDisplayUnits* pDisplayUnits,rptChapt
    pTable->EnableRowStriping(false);
    *pPara << pTable;
 
-   bool bUnitsSI = (pDisplayUnits->GetUnitDisplayMode() == pgsTypes::umSI);
+   bool bUnitsSI = IS_SI_UNITS(pDisplayUnits);
 
    CComPtr<IBeamFactory> factory;
    pGdrEntry->GetBeamFactory(&factory);
@@ -542,7 +542,7 @@ void write_concrete_details(IBroker* pBroker,IDisplayUnits* pDisplayUnits,rptCha
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
    bool b2005Edition = ( pSpecEntry->GetSpecificationType() >= lrfdVersionMgr::ThirdEditionWith2005Interims ? true : false );
 
-   bool bSIUnits = (pDisplayUnits->GetUnitDisplayMode() == pgsTypes::umSI);
+   bool bSIUnits = IS_SI_UNITS(pDisplayUnits);
 
    rptParagraph* pPara = new rptParagraph;
    *pChapter << pPara;

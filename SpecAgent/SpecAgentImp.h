@@ -27,7 +27,7 @@
 
 #include "resource.h"       // main symbols
 
-#include <PgsExt\InterfaceCache.h>
+#include <EAF\EAFInterfaceCache.h>
 
 class GirderLibraryEntry;
 class SpecLibraryEntry;

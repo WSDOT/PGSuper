@@ -31,8 +31,8 @@
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
-//#undef THIS_FILE
-//static char THIS_FILE[] = __FILE__;
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
 #endif
 
 /////////////////////////////////////////////////////////////////////////////
@@ -125,16 +125,16 @@ void CStrandGridLocation::DoDataExchange(CDataExchange* pDX)
 	//}}AFX_DATA_MAP
 
 	DDX_Text(pDX, IDC_HPX, m_HpX);
-	DDV_NonNegativeDouble(pDX, m_HpX);
+	DDV_NonNegativeDouble(pDX, IDC_HPX, m_HpX);
 	DDX_Text(pDX, IDC_HPY, m_HpY);
-	DDV_NonNegativeDouble(pDX, m_HpY);
+	DDV_NonNegativeDouble(pDX, IDC_HPY, m_HpY);
 
    if (m_StrandType==1 && m_UseHarpedGrid)
    {
 	   DDX_Text(pDX, IDC_GEX, m_EndX);
-	   DDV_NonNegativeDouble(pDX, m_EndX);
+	   DDV_NonNegativeDouble(pDX, IDC_GEX, m_EndX);
 	   DDX_Text(pDX, IDC_GEY, m_EndY);
-	   DDV_NonNegativeDouble(pDX, m_EndY);
+	   DDV_NonNegativeDouble(pDX, IDC_GEY, m_EndY);
    }
 
 	DDX_Text(pDX, IDC_HPY_T, m_UnitString);

@@ -96,7 +96,7 @@ HRESULT CMultiWebFactory::FinalConstruct()
    return S_OK;
 }
 
-void CMultiWebFactory::CreateGirderSection(IBroker* pBroker,long agentID,SpanIndexType spanIdx,GirderIndexType gdrIdx,const IBeamFactory::Dimensions& dimensions,IGirderSection** ppSection)
+void CMultiWebFactory::CreateGirderSection(IBroker* pBroker,long statusGroupID,SpanIndexType spanIdx,GirderIndexType gdrIdx,const IBeamFactory::Dimensions& dimensions,IGirderSection** ppSection)
 {
    CComPtr<IMultiWebSection> gdrsection;
    gdrsection.CoCreateInstance(CLSID_MultiWebSection);
@@ -156,7 +156,7 @@ void CMultiWebFactory::CreateGirderSection(IBroker* pBroker,long agentID,SpanInd
    gdrsection.QueryInterface(ppSection);
 }
 
-void CMultiWebFactory::CreateGirderProfile(IBroker* pBroker,long agentID,SpanIndexType spanIdx,GirderIndexType gdrIdx,const IBeamFactory::Dimensions& dimensions,IShape** ppShape)
+void CMultiWebFactory::CreateGirderProfile(IBroker* pBroker,long statusGroupID,SpanIndexType spanIdx,GirderIndexType gdrIdx,const IBeamFactory::Dimensions& dimensions,IShape** ppShape)
 {
    GET_IFACE2(pBroker,IBridge,pBridge);
    Float64 length = pBridge->GetGirderLength(spanIdx,gdrIdx);
@@ -183,7 +183,7 @@ void CMultiWebFactory::CreateGirderProfile(IBroker* pBroker,long agentID,SpanInd
    rect->QueryInterface(ppShape);
 }
 
-void CMultiWebFactory::LayoutGirderLine(IBroker* pBroker,long agentID,SpanIndexType spanIdx,GirderIndexType gdrIdx,ISuperstructureMember* ssmbr)
+void CMultiWebFactory::LayoutGirderLine(IBroker* pBroker,long statusGroupID,SpanIndexType spanIdx,GirderIndexType gdrIdx,ISuperstructureMember* ssmbr)
 {
    CComPtr<IPrismaticSegment> segment;
    segment.CoCreateInstance(CLSID_PrismaticSegment);
@@ -202,7 +202,7 @@ void CMultiWebFactory::LayoutGirderLine(IBroker* pBroker,long agentID,SpanIndexT
    const GirderLibraryEntry::Dimensions& dimensions = pGdrEntry->GetDimensions();
 
    CComPtr<IGirderSection> gdrsection;
-   CreateGirderSection(pBroker,agentID,spanIdx,gdrIdx,dimensions,&gdrsection);
+   CreateGirderSection(pBroker,statusGroupID,spanIdx,gdrIdx,dimensions,&gdrsection);
    CComQIPtr<IShape> shape(gdrsection);
    segment->putref_Shape(shape);
 
@@ -251,11 +251,11 @@ void CMultiWebFactory::LayoutSectionChangePointsOfInterest(IBroker* pBroker,Span
    pPoiMgr->AddPointOfInterest(poiEnd);
 }
 
-void CMultiWebFactory::CreateDistFactorEngineer(IBroker* pBroker,long agentID,const pgsTypes::SupportedDeckType* pDeckType, const pgsTypes::AdjacentTransverseConnectivity* pConnect,IDistFactorEngineer** ppEng)
+void CMultiWebFactory::CreateDistFactorEngineer(IBroker* pBroker,long statusGroupID,const pgsTypes::SupportedDeckType* pDeckType, const pgsTypes::AdjacentTransverseConnectivity* pConnect,IDistFactorEngineer** ppEng)
 {
    CComObject<CMultiWebDistFactorEngineer>* pEngineer;
    CComObject<CMultiWebDistFactorEngineer>::CreateInstance(&pEngineer);
-   pEngineer->SetBroker(pBroker,agentID);
+   pEngineer->SetBroker(pBroker,statusGroupID);
 
    pEngineer->SetBeamType(CMultiWebDistFactorEngineer::btMultiWebTee);
 
@@ -263,12 +263,12 @@ void CMultiWebFactory::CreateDistFactorEngineer(IBroker* pBroker,long agentID,co
    (*ppEng)->AddRef();
 }
 
-void CMultiWebFactory::CreatePsLossEngineer(IBroker* pBroker,long agentID,SpanIndexType spanIdx,GirderIndexType gdrIdx,IPsLossEngineer** ppEng)
+void CMultiWebFactory::CreatePsLossEngineer(IBroker* pBroker,long statusGroupID,SpanIndexType spanIdx,GirderIndexType gdrIdx,IPsLossEngineer** ppEng)
 {
     CComObject<CPsBeamLossEngineer>* pEngineer;
     CComObject<CPsBeamLossEngineer>::CreateInstance(&pEngineer);
     pEngineer->Init(CPsLossEngineer::IBeam);
-    pEngineer->SetBroker(pBroker,agentID);
+    pEngineer->SetBroker(pBroker,statusGroupID);
     (*ppEng) = pEngineer;
     (*ppEng)->AddRef();
 }

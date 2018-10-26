@@ -115,6 +115,7 @@ public:
    // ConfigurationType - how truck/lane are combined
    enum LiveLoadConfigurationType {lcTruckOnly,lcLaneOnly,lcTruckPlusLane,lcTruckLaneEnvelope};
 
+   enum LiveLoadApplicabilityType { llaEntireStructure, llaContraflexure, llaNegMomentAndInteriorPierReaction };
 
    // GROUP: LIFECYCLE
    //------------------------------------------------------------------------
@@ -138,7 +139,7 @@ public:
 
    //------------------------------------------------------------------------
    // Edit the entry
-   virtual bool Edit(libUnitsMode::Mode mode, bool allowEditing);
+   virtual bool Edit(bool allowEditing);
 
    //------------------------------------------------------------------------
    // Save to structured storage
@@ -165,9 +166,19 @@ public:
    LiveLoadConfigurationType GetLiveLoadConfigurationType() const;
 
    //------------------------------------------------------------------------
+   // LiveLoadApplicabilityType - Determines how and where results are used
+   void SetLiveLoadApplicabilityType(LiveLoadApplicabilityType applicability);
+   LiveLoadApplicabilityType GetLiveLoadApplicabilityType() const;
+
+   //------------------------------------------------------------------------
    // LaneLoad - Value of distributed lane load
    void SetLaneLoad(Float64 val);
    Float64 GetLaneLoad() const;
+
+   //------------------------------------------------------------------------
+   // LaneLoadSpanLength - Minimum span length for which the lane load will be applied
+   void SetLaneLoadSpanLength(Float64 val);
+   Float64 GetLaneLoadSpanLength() const;
 
    //------------------------------------------------------------------------
    // GetNumAxles - returns the number of axles
@@ -228,7 +239,9 @@ private:
    // GROUP: DATA MEMBERS
    bool m_IsNotional;
    LiveLoadConfigurationType m_LiveLoadConfigurationType;
+   LiveLoadApplicabilityType m_LiveLoadApplicabilityType;
    Float64 m_LaneLoad;
+   Float64 m_LaneLoadSpanLength;
    Float64 m_MaxVariableAxleSpacing;
    AxleIndexType   m_VariableAxleIndex;
 

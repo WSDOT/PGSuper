@@ -27,7 +27,7 @@
 
 #include "resource.h"       // main symbols
 
-#include <PgsExt\InterfaceCache.h>
+#include <EAF\EAFInterfaceCache.h>
 
 #include <boost\shared_ptr.hpp>
 

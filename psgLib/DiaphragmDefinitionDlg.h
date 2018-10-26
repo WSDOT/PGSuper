@@ -17,7 +17,7 @@ class CDiaphragmDefinitionDlg : public CDialog
 {
 // Construction
 public:
-	CDiaphragmDefinitionDlg(bool bUnitsSI, CWnd* pParent = NULL);   // standard constructor
+	CDiaphragmDefinitionDlg(CWnd* pParent = NULL);   // standard constructor
 
 // Dialog Data
 	//{{AFX_DATA(CDiaphragmDefinitionDlg)
@@ -44,8 +44,6 @@ protected:
 	virtual BOOL OnInitDialog();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
-
-   bool m_bUnitsSI;
 };
 
 //{{AFX_INSERT_LOCATION}}

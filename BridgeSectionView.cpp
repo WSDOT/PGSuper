@@ -354,7 +354,7 @@ void CBridgeSectionView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
    if ( lHint == HINT_BRIDGECHANGED )
    {
       CComPtr<IBroker> pBroker;
-      AfxGetBroker(&pBroker);
+      EAFGetBroker(&pBroker);
       GET_IFACE2(pBroker,IBridge,pBridge);
       double first_station = pBridge->GetPierStation(0);
       double last_station  = pBridge->GetPierStation(pBridge->GetPierCount()-1);
@@ -555,7 +555,8 @@ void CBridgeSectionView::UpdateGirderTooltips()
 
       CString strMsg = strMsg1 + strMsg2 + strMsg3 + strMsg4;
 
-      pDO->SetMaxTipWidth(500);
+      pDO->SetMaxTipWidth(TOOLTIP_WIDTH);
+      pDO->SetTipDisplayTime(TOOLTIP_DURATION);
       pDO->SetToolTipText(strMsg);
    }
 }
@@ -632,8 +633,7 @@ void CBridgeSectionView::BuildGirderDisplayObjects()
    GET_IFACE2(pBroker,IBridge,pBridge);
    GET_IFACE2(pBroker,ISectProp2,pSectProp);
 
-   CPGSuperApp* papp =(CPGSuperApp*) AfxGetApp();
-   UINT settings = papp->GetBridgeEditorSettings();;
+   UINT settings = pDoc->GetBridgeEditorSettings();;
 
    SpanIndexType spanIdx = GetSpanIndex();
 
@@ -881,7 +881,8 @@ void CBridgeSectionView::BuildDeckDisplayObjects()
 
    CString strMsg = strMsg1 + strMsg2 + strMsg3;
    dispObj->SetToolTipText(strMsg);
-   dispObj->SetMaxTipWidth(300);
+   dispObj->SetTipDisplayTime(TOOLTIP_DURATION);
+   dispObj->SetMaxTipWidth(TOOLTIP_WIDTH);
 
    dispObj->SetSelectionType(stAll);
 
@@ -1138,14 +1139,14 @@ void CBridgeSectionView::BuildTrafficBarrierDisplayObjects()
 
 void CBridgeSectionView::BuildDimensionLineDisplayObjects()
 {
-   CPGSuperApp* papp =(CPGSuperApp*) AfxGetApp();
-   UINT settings = papp->GetBridgeEditorSettings();
+   CPGSuperDoc* pDoc = (CPGSuperDoc*)GetDocument();
+
+   UINT settings = pDoc->GetBridgeEditorSettings();
 
    if ( !(settings & IDB_CS_SHOW_DIMENSIONS ) )
       return;
 
 
-   CPGSuperDoc* pDoc = (CPGSuperDoc*)GetDocument();
    CComPtr<IBroker> pBroker;
    pDoc->GetBroker(&pBroker);
 

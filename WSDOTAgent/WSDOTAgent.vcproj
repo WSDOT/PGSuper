@@ -285,6 +285,10 @@
 				RelativePath=".\WSDOTAgentImp.cpp"
 				>
 			</File>
+			<File
+				RelativePath=".\WSDOTComponentInfo.cpp"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -323,12 +327,20 @@
 				RelativePath=".\WSDOTAgentImp.h"
 				>
 			</File>
+			<File
+				RelativePath=".\WSDOTComponentInfo.h"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Resource Files"
 			Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav"
 			UniqueIdentifier="{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}"
 			>
+			<File
+				RelativePath=".\res\Wsdot.ico"
+				>
+			</File>
 			<File
 				RelativePath=".\WSDOTAgent.rc"
 				>
@@ -339,6 +351,10 @@
 			</File>
 			<File
 				RelativePath=".\WSDOTAgentImp.rgs"
+				>
+			</File>
+			<File
+				RelativePath=".\WSDOTComponentInfo.rgs"
 				>
 			</File>
 		</Filter>
@@ -372,6 +388,14 @@
 				RelativePath=".\WSDOTAgent_i.h"
 				>
 			</File>
+		</Filter>
+		<Filter
+			Name="IFace"
+			>
+		</Filter>
+		<Filter
+			Name="Status Items"
+			>
 		</Filter>
 		<File
 			RelativePath=".\ReadMe.txt"

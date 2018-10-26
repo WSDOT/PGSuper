@@ -40,10 +40,6 @@
 #include "GirderDebondCriteriaPage.h"
 #include "GirderErrorDlg.h"
 
-#if !defined INCLUDED_LIBRARYFW_UNITSMODE_H_
-#include <LibraryFw\UnitsMode.h>
-#endif
-
 #include <units\Measure.h>
 
 /////////////////////////////////////////////////////////////////////////////
@@ -56,10 +52,10 @@ class CGirderMainSheet : public CPropertySheet
 // Construction
 public:
 	CGirderMainSheet( GirderLibraryEntry& rentry, UINT nIDCaption, 
-      libUnitsMode::Mode mode,  bool allowEditing,
+      bool allowEditing,
       CWnd* pParentWnd = NULL, UINT iSelectPage = 0);
 	CGirderMainSheet( GirderLibraryEntry& rentry, LPCTSTR pszCaption, 
-      libUnitsMode::Mode mode,  bool allowEditing,
+      bool allowEditing,
       CWnd* pParentWnd = NULL, UINT iSelectPage = 0);
 
 // Attributes
@@ -75,13 +71,7 @@ public:
 
    CGirderErrorDlg       m_GirderErrorDlg;
 
-   libUnitsMode::Mode  m_Mode;
    bool                m_AllowEditing;
-
-   unitLength          m_LongLengthUnit;
-   CString             m_LongLengthUnitString;
-   unitLength          m_ShortLengthUnit;
-   CString             m_ShortLengthUnitString;
 
    // work directly on an entry so we don't duplicate data.
    GirderLibraryEntry& m_Entry;
@@ -125,10 +115,6 @@ public:
    void ExchangeDiaphragmData(CDataExchange* pDX);
    void ExchangeHarpPointData(CDataExchange* pDX);
    void ExchangeDebondCriteriaData(CDataExchange* pDX);
-   CString GetLongLengthUnitString() const { return m_LongLengthUnitString; }
-   unitLength GetLongLengthUnit() const { return m_LongLengthUnit; }
-   CString GetShortLengthUnitString() const { return m_ShortLengthUnitString; }
-   unitLength GetShortLengthUnit() const { return m_ShortLengthUnit; }
 
    void MiscOnFractional();
    void MiscOnAbsolute();

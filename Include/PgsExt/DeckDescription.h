@@ -113,6 +113,10 @@ public:
    bool bInputAsDepthAndDensity; // indicates if the input is by depth and density (true) or pressure load/OverlayWeight (false)
    Float64 SacrificialDepth; 
 
+   // Rating
+   pgsTypes::ConditionFactorType Condition;
+   Float64 ConditionFactor;
+
    CDeckRebarData DeckRebarData;
 
    std::vector<CDeckPoint> DeckEdgePoints;

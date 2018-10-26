@@ -23,49 +23,8 @@
 #ifndef INCLUDED_IFACE_TOOLS_H_
 #define INCLUDED_IFACE_TOOLS_H_
 
-#if !defined INCLUDED_ATLBASE_H_
-#include <ATLBase.h>
-#define INCLUDED_ATLBASE_H_
-#endif
-
 #include <WBFLCore.h>
-
-/*---------------------------------------------------------------------+
-|
-|	GET_IFACE									< C++ MACRO >
-|
-|	Get interface information for current class.
-|
-|	rb.ddmmmyyyy  -  Created.
-|
-|	GET_IFACE may only be called from within a class method within a
-|	class that has a broker pointer member 'm_pBroker'. To get
-|	interface info from outside the class, use GET_IFACE2 instead.
-+---------------------------------------------------------------------*/
-#define GET_IFACE(i,p) \
-   i* p; \
-   m_pBroker->GetInterface( IID_##i, (void**)&p ); \
-   ATLASSERT( p )
-
-/*---------------------------------------------------------------------+
-|																       |
-|	GET_IFACE2									< C++ MACRO >      	   |
-|                                                                      |
-|	Get interface information for class given its broker handle.       |
-|																	   |
-|	rb.ddmmmyyyy  -  Created.								    	   |
-|																	   |
-|	GET_IFACE2 may be called from anywhere as long as the first        |
-|	argument is a valid broker pointer.  To get interface information  |
-|	from within a class method within a class that has a broker		   |
-|	pointer member 'm_pBroker', the macro GET_IFACE may be used.	   |
-|																       |
-+---------------------------------------------------------------------*/
-#define GET_IFACE2(b,i,p) \
-   i* p; \
-   b->GetInterface( IID_##i, (void**)&p ); \
-   ATLASSERT( p )
-
+#include <AgentTools.h>
 
 #define VALIDATE_AND_CHECK_TO_LEVEL(lvl,bfn,cfn) \
 if ( level >= lvl && m_Level < lvl ) \

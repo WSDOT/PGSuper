@@ -317,6 +317,10 @@
 				RelativePath=".\TxDOTCadWriter.cpp"
 				>
 			</File>
+			<File
+				RelativePath=".\TxDOTComponentInfo.cpp"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -391,12 +395,20 @@
 				RelativePath=".\TxDOTCadWriter.h"
 				>
 			</File>
+			<File
+				RelativePath=".\TxDOTComponentInfo.h"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Resource Files"
 			Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav"
 			UniqueIdentifier="{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}"
 			>
+			<File
+				RelativePath=".\res\txdot.ico"
+				>
+			</File>
 			<File
 				RelativePath=".\TxDOTAgent.rc"
 				>
@@ -411,6 +423,10 @@
 			</File>
 			<File
 				RelativePath=".\TxDOTCadExporter.rgs"
+				>
+			</File>
+			<File
+				RelativePath=".\TxDOTComponentInfo.rgs"
 				>
 			</File>
 		</Filter>
@@ -444,6 +460,14 @@
 				RelativePath=".\TxDOTAgent_i.h"
 				>
 			</File>
+		</Filter>
+		<Filter
+			Name="IFace"
+			>
+		</Filter>
+		<Filter
+			Name="Status Items"
+			>
 		</Filter>
 		<File
 			RelativePath=".\ReadMe.txt"

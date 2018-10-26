@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright (C) 1999  Washington State Department of Transportation
-//                     Bridge and Structures Office
+// Copyright © 1999-2010  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the Alternate Route Open Source License as 
@@ -46,12 +46,6 @@
 #include "SpecShearPage.h"
 #include "SpecMomentPage.h"
 
-#if !defined INCLUDED_LIBRARYFW_UNITSMODE_H_
-#include <LibraryFw\UnitsMode.h>
-#endif
-
-#include <units\Measure.h>
-
 class SpecLibraryEntry;
 
 /////////////////////////////////////////////////////////////////////////////
@@ -64,10 +58,10 @@ class CSpecMainSheet : public CPropertySheet
 // Construction
 public:
 	CSpecMainSheet( SpecLibraryEntry& rentry, UINT nIDCaption, 
-      libUnitsMode::Mode mode,   bool allowEditing,
+      bool allowEditing,
       CWnd* pParentWnd = NULL, UINT iSelectPage = 0);
 	CSpecMainSheet( SpecLibraryEntry& rentry, LPCTSTR pszCaption, 
-      libUnitsMode::Mode mode,  bool allowEditing,
+      bool allowEditing,
       CWnd* pParentWnd = NULL, UINT iSelectPage = 0);
 
 // Attributes
@@ -89,13 +83,7 @@ public:
    CSpecShearPage          m_SpecShearPage;
    CSpecMomentPage         m_SpecMomentPage;
 
-   libUnitsMode::Mode  m_Mode;
    bool                m_AllowEditing;
-
-   unitLength          m_LongLengthUnit;
-   CString             m_LongLengthUnitString;
-   unitLength          m_ShortLengthUnit;
-   CString             m_ShortLengthUnitString;
 
    // work directly on an entry so we don't duplicate data.
    SpecLibraryEntry& m_Entry;
@@ -124,11 +112,6 @@ protected:
 	DECLARE_MESSAGE_MAP()
 public:
 // implementation stuff
-   // exchange dimension dialog data
-   CString GetLongLengthUnitString() const { return m_LongLengthUnitString; }
-   unitLength GetLongLengthUnit() const { return m_LongLengthUnit; }
-   CString GetShortLengthUnitString() const { return m_ShortLengthUnitString; }
-   unitLength GetShortLengthUnit() const { return m_ShortLengthUnit; }
 
    void ExchangeDescrData(CDataExchange* pDX);
    void ExchangeCyData(CDataExchange* pDX);

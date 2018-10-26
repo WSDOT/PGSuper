@@ -44,6 +44,26 @@ protected:
    SpanIndexType m_Span;
 };
 
+
+class REPORTINGCLASS CGirderReportSpecification :
+   public CBrokerReportSpecification
+{
+public:
+   CGirderReportSpecification(const char* strReportName,IBroker* pBroker,GirderIndexType gdrIdx);
+   ~CGirderReportSpecification(void);
+
+   virtual std::string GetReportTitle() const;
+
+   void SetGirder(GirderIndexType gdrIdx);
+   GirderIndexType GetGirder() const;
+
+   virtual HRESULT Validate() const;
+
+protected:
+   GirderIndexType m_Girder;
+};
+
+
 class REPORTINGCLASS CSpanGirderReportSpecification :
    public CSpanReportSpecification
 {

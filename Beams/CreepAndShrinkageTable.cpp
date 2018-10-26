@@ -68,7 +68,7 @@ CCreepAndShrinkageTable* CCreepAndShrinkageTable::PrepareTable(rptChapter* pChap
    *pChapter << pParagraph;
 
    *pParagraph << rptRcImage(strImagePath + "Delta FpCR Equation.jpg") << rptNewLine;
-   if ( pDisplayUnits->GetUnitDisplayMode() == pgsTypes::umSI )
+   if ( IS_SI_UNITS(pDisplayUnits) )
       *pParagraph << rptRcImage(strImagePath + "Delta FpSR Equation SI.jpg") << rptNewLine;
    else
       *pParagraph << rptRcImage(strImagePath + "Delta FpSR Equation US.jpg") << rptNewLine;

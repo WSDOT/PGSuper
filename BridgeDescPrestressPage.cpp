@@ -24,7 +24,8 @@
 //
 
 #include "stdafx.h"
-#include "PGSuper.h"
+#include "Resource.h"
+#include "PGSuperDoc.h"
 #include "PGSuperUnits.h"
 #include "BridgeDescPrestressPage.h"
 #include "GirderDescDlg.h"
@@ -83,6 +84,10 @@ CString get_strand_size( bool bUnitsSI, matPsStrand::Size size )
       sz = ( !bUnitsSI ? "0.6\"" : "15.24mm" );
       break;
 
+   case matPsStrand::D1575:
+      sz = ( !bUnitsSI ? "0.62\"" : "15.75mm" );
+      break;
+
    case matPsStrand::D1778:
       sz = ( !bUnitsSI ? "0.7\"" : "17.78mm" );
       break;
@@ -117,7 +122,7 @@ CGirderDescPrestressPage::~CGirderDescPrestressPage()
 void CGirderDescPrestressPage::DoDataExchange(CDataExchange* pDX)
 {
    CComPtr<IBroker> pBroker;
-   AfxGetBroker(&pBroker);
+   EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
    GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
 
@@ -388,7 +393,7 @@ void CGirderDescPrestressPage::DoDataExchange(CDataExchange* pDX)
    }
 
 
-	DDX_Radio(pDX, IDC_GRADE250, m_Grade);
+	DDX_Radio(pDX, IDC_GRADE1725, m_Grade);
 	DDX_Radio(pDX, IDC_LOWRELAX, m_Type);
 	DDX_CBIndex(pDX, IDC_STRAND_SIZE, m_StrandSizeIdx);
 
@@ -419,8 +424,8 @@ BEGIN_MESSAGE_MAP(CGirderDescPrestressPage, CPropertyPage)
 	ON_WM_CTLCOLOR()
 	ON_CBN_DROPDOWN(IDC_HP_COMBO_HP, OnDropdownHpComboHp)
 	ON_CBN_DROPDOWN(IDC_HP_COMBO_END, OnDropdownHpComboEnd)
-	ON_BN_CLICKED(IDC_GRADE250, OnStrandTypeChanged)
-   ON_BN_CLICKED(IDC_GRADE270, OnStrandTypeChanged)
+	ON_BN_CLICKED(IDC_GRADE1725, OnStrandTypeChanged)
+   ON_BN_CLICKED(IDC_GRADE1860, OnStrandTypeChanged)
 	ON_BN_CLICKED(IDC_LOWRELAX, OnStrandTypeChanged)
 	ON_BN_CLICKED(IDC_STRESSREL, OnStrandTypeChanged)
 	ON_CBN_SELCHANGE(IDC_STRAND_SIZE, OnStrandTypeChanged)
@@ -458,9 +463,9 @@ BOOL CGirderDescPrestressPage::OnInitDialog()
 	m_Type  = pParent->m_GirderData.Material.pStrandMaterial->GetType()  == matPsStrand::LowRelaxation ? 0 : 1;
 
    CComPtr<IBroker> pBroker;
-   AfxGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IProjectSettings,pProjectSettings);
-   bool bUnitsSI = pProjectSettings->GetUnitsMode() == pgsTypes::umSI ? true : false;
+   EAFGetBroker(&pBroker);
+   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
+   bool bUnitsSI = IS_SI_UNITS(pDisplayUnits);
 
    // Set text for Grade radio buttons
    CWnd* pBtn;
@@ -601,7 +606,7 @@ void CGirderDescPrestressPage::OnNumStraightStrandsChanged(NMHDR* pNMHDR, LRESUL
 	NM_UPDOWN* pNMUpDown = (NM_UPDOWN*)pNMHDR;
 
    CComPtr<IBroker> pBroker;
-   AfxGetBroker(&pBroker);
+   EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
    GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
 
@@ -637,7 +642,7 @@ void CGirderDescPrestressPage::OnNumHarpedStrandsChanged(NMHDR* pNMHDR, LRESULT*
 	NM_UPDOWN* pNMUpDown = (NM_UPDOWN*)pNMHDR;
 
    CComPtr<IBroker> pBroker;
-   AfxGetBroker(&pBroker);
+   EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
    GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
 
@@ -729,7 +734,7 @@ void CGirderDescPrestressPage::OnNumTempStrandsChanged(NMHDR* pNMHDR, LRESULT* p
 	NM_UPDOWN* pNMUpDown = (NM_UPDOWN*)pNMHDR;
 
    CComPtr<IBroker> pBroker;
-   AfxGetBroker(&pBroker);
+   EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
    GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
 
@@ -796,7 +801,7 @@ void CGirderDescPrestressPage::InitPjackEditEx( UINT nCheckBox )
    pWnd->EnableWindow( bEnable );
 
    CComPtr<IBroker> pBroker;
-   AfxGetBroker(&pBroker);
+   EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
    CDataExchange dx(this,FALSE);
 
@@ -842,7 +847,7 @@ void CGirderDescPrestressPage::UpdatePjackEdit( UINT nCheckBox  )
    CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
 
    CComPtr<IBroker> pBroker;
-   AfxGetBroker(&pBroker);
+   EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
 
    CComboBox* box = (CComboBox*)GetDlgItem(IDC_STRAND_INPUT_TYPE);
@@ -908,7 +913,7 @@ void CGirderDescPrestressPage::UpdatePjackEdit( UINT nCheckBox  )
    {
       CDataExchange dx(this,FALSE);
       CComPtr<IBroker> pBroker;
-      AfxGetBroker(&pBroker);
+      EAFGetBroker(&pBroker);
       GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
 
       // Get the edit control value and save it as the last user input force
@@ -981,7 +986,7 @@ Float64 CGirderDescPrestressPage::GetMaxPjackTemp()
 Float64 CGirderDescPrestressPage::GetMaxPjack(StrandIndexType nStrands)
 {
    CComPtr<IBroker> pBroker;
-   AfxGetBroker(&pBroker);
+   EAFGetBroker(&pBroker);
    GET_IFACE2( pBroker, IPrestressForce, pPrestress );
 
    CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
@@ -1024,7 +1029,7 @@ void CGirderDescPrestressPage::UpdateStrandControls()
    // If the current number of strands exceeds the max number of strands,  set the current
    // number of strands to the max number of strands and recompute the jacking forces.
    CComPtr<IBroker> pBroker;
-   AfxGetBroker(&pBroker);
+   EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
 
    CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
@@ -1122,7 +1127,7 @@ void CGirderDescPrestressPage::HideControls(int key)
    CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
 
    CComPtr<IBroker> pBroker;
-   AfxGetBroker(&pBroker);
+   EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
 
    int nTitle;
@@ -1299,7 +1304,7 @@ StrandIndexType CGirderDescPrestressPage::GetStraightStrandCount()
 	      DDX_Text(&DX, IDC_NUM_HS, total_strands);
          
          CComPtr<IBroker> pBroker;
-         AfxGetBroker(&pBroker);
+         EAFGetBroker(&pBroker);
          GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
 
          StrandIndexType numStraight, numHarped;
@@ -1338,7 +1343,7 @@ StrandIndexType CGirderDescPrestressPage::GetHarpedStrandCount()
 	      DDX_Text(&DX, IDC_NUM_HS, total_strands);
 
          CComPtr<IBroker> pBroker;
-         AfxGetBroker(&pBroker);
+         EAFGetBroker(&pBroker);
          GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
 
          StrandIndexType numStraight, numHarped;
@@ -1368,7 +1373,7 @@ void CGirderDescPrestressPage::UpdateEndRangeLength(HarpedStrandOffsetType measu
    if (0 < Nh)
    {
       CComPtr<IBroker> pBroker;
-      AfxGetBroker(&pBroker);
+      EAFGetBroker(&pBroker);
       GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
       GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
 
@@ -1381,9 +1386,7 @@ void CGirderDescPrestressPage::UpdateEndRangeLength(HarpedStrandOffsetType measu
       Float64 low  = min(lowRange, highRange);
       Float64 high = max(lowRange, highRange);
 
-      GET_IFACE2(pBroker,IProjectSettings,pProjectSettings);
-
-      if (pProjectSettings->GetUnitsMode() == pgsTypes::umSI)
+      if ( IS_SI_UNITS(pDisplayUnits) )
          str.Format("(Valid Range %.1f to %.1f)", low, high);
       else
          str.Format("(Valid Range %.3f to %.3f)", low, high);
@@ -1401,7 +1404,7 @@ void CGirderDescPrestressPage::UpdateHpRangeLength(HarpedStrandOffsetType measur
    if (0 < Nh)
    {
       CComPtr<IBroker> pBroker;
-      AfxGetBroker(&pBroker);
+      EAFGetBroker(&pBroker);
       GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
       GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
 
@@ -1415,9 +1418,7 @@ void CGirderDescPrestressPage::UpdateHpRangeLength(HarpedStrandOffsetType measur
       Float64 low  = min(lowRange, highRange);
       Float64 high = max(lowRange, highRange);
 
-      GET_IFACE2(pBroker,IProjectSettings,pProjectSettings);
-
-      if (pProjectSettings->GetUnitsMode() == pgsTypes::umSI)
+      if ( IS_SI_UNITS(pDisplayUnits) )
          str.Format("(Valid Range %.1f to %.1f)", low, high);
       else
          str.Format("(Valid Range %.3f to %.3f)", low, high);
@@ -1450,7 +1451,7 @@ void CGirderDescPrestressPage::OnSelchangeHpComboHp()
    if ( keyState < 0 )
    {
       CComPtr<IBroker> pBroker;
-      AfxGetBroker(&pBroker);
+      EAFGetBroker(&pBroker);
       GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
       GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
 
@@ -1484,7 +1485,7 @@ void CGirderDescPrestressPage::OnSelchangeHpComboEnd()
    if ( keyState < 0 )
    {
       CComPtr<IBroker> pBroker;
-      AfxGetBroker(&pBroker);
+      EAFGetBroker(&pBroker);
       GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
       GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
 
@@ -1533,7 +1534,7 @@ void CGirderDescPrestressPage::OnSelchangeStrandInputType()
    CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
 
    CComPtr<IBroker> pBroker;
-   AfxGetBroker(&pBroker);
+   EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
    GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
 
@@ -1725,10 +1726,10 @@ void CGirderDescPrestressPage::UpdateStrandList(matPsStrand::Grade grade,matPsSt
    CComboBox* pList = (CComboBox*)GetDlgItem( IDC_STRAND_SIZE );
 
    CComPtr<IBroker> pBroker;
-   AfxGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IProjectSettings,pProjectSettings);
+   EAFGetBroker(&pBroker);
+   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
 
-   bool bUnitsSI = pProjectSettings->GetUnitsMode() == pgsTypes::umSI ? true : false;
+   bool bUnitsSI = IS_SI_UNITS(pDisplayUnits);
 
    // Retain information about the current selection so we can attempt to re-select the
    // same size after the combo box is updated.
@@ -1820,7 +1821,6 @@ BOOL CGirderDescPrestressPage::OnToolTipNotify(UINT id,NMHDR* pNMHDR, LRESULT* p
       {
       case IDC_HP_COMBO_END:
       case IDC_HP_COMBO_HP:
-         ::SendMessage(pNMHDR->hwndFrom,TTM_SETMAXTIPWIDTH,0,300); // makes it a multi-line tooltip
          m_strTip = "Hold the CTRL key when making your selection to convert the harped strand location";
          break;
 
@@ -1828,6 +1828,8 @@ BOOL CGirderDescPrestressPage::OnToolTipNotify(UINT id,NMHDR* pNMHDR, LRESULT* p
          return FALSE;
       }
 
+      ::SendMessage(pNMHDR->hwndFrom,TTM_SETDELAYTIME,TTDT_AUTOPOP,TOOLTIP_DURATION); // sets the display time to 10 seconds
+      ::SendMessage(pNMHDR->hwndFrom,TTM_SETMAXTIPWIDTH,0,TOOLTIP_WIDTH); // makes it a multi-line tooltip
       pTTT->lpszText = m_strTip.LockBuffer();
       pTTT->hinst = NULL;
       return TRUE;

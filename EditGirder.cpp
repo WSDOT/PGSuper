@@ -22,7 +22,7 @@
 
 #include "StdAfx.h"
 #include "EditGirder.h"
-#include "PGSuper.h"
+#include "PGSuperDoc.h"
 #include <PgsExt\BridgeDescription.h>
 #include <IFace\GirderHandling.h>
 
@@ -134,7 +134,7 @@ bool txnEditGirder::IsRepeatable()
 void txnEditGirder::DoExecute(int i)
 {
    CComPtr<IBroker> pBroker;
-   AfxGetBroker(&pBroker);
+   EAFGetBroker(&pBroker);
 
    GET_IFACE2(pBroker,IEvents, pEvents);
    pEvents->HoldEvents(); // don't fire any changed events until all changes are done

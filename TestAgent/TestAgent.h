@@ -32,7 +32,6 @@ COPYRIGHT
 
 #include <WBFLCore.h>
 
-#include <IFace\File.h>
 #include <IFace\VersionInfo.h>
 #include <IFace\Test1250.h>
 #include <IFace\AnalysisResults.h>

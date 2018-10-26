@@ -30,61 +30,43 @@
 #include <psgLib\LiveLoadLibraryEntry.h>
 #include <..\htmlhelp\helptopics.hh>
 
+#include <EAF\EAFApp.h>
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
-//#undef THIS_FILE
-//static char THIS_FILE[] = __FILE__;
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
 #endif
 
 /////////////////////////////////////////////////////////////////////////////
 // CLiveLoadDlg dialog
 
 
-CLiveLoadDlg::CLiveLoadDlg(libUnitsMode::Mode mode,  bool allowEditing, CWnd* pParent /*=NULL*/)
+CLiveLoadDlg::CLiveLoadDlg(bool allowEditing, CWnd* pParent /*=NULL*/)
 	: CDialog(CLiveLoadDlg::IDD, pParent),
-   m_Mode(mode),
-   m_LongLengthUnit(unitMeasure::Meter),
-   m_ForceUnit(unitMeasure::Kip),
    m_AllowEditing(allowEditing)
 {
 	//{{AFX_DATA_INIT(CLiveLoadDlg)
 	m_EntryName = _T("");
 	m_LaneLoad = 0.0;
+   m_LaneLoadSpanLength = 0;
 	m_IsNotional = FALSE;
 	//}}AFX_DATA_INIT
 
+   m_bHasVariableAxle = false;
    m_VariableAxleIndex = FIXED_AXLE_TRUCK;
 
-   Init();
-}
-
-void CLiveLoadDlg::Init()
-{
-   if (m_Mode==libUnitsMode::UNITS_SI)
-   {
-      m_LongLengthUnit = unitMeasure::Meter;
-      m_LongLengthUnitString = "(m)";
-      m_ForceUnit = unitMeasure::Kilonewton;
-      m_ForceUnitString = "(kN)";
-   }
-   else
-   {
-      m_LongLengthUnit = unitMeasure::Feet;
-      m_LongLengthUnitString = "(ft)";
-      m_ForceUnit = unitMeasure::Kip;
-      m_ForceUnitString = "(kip)";
-   }
+   m_UsageType = LiveLoadLibraryEntry::llaEntireStructure;
 }
 
 void CLiveLoadDlg::DoDataExchange(CDataExchange* pDX)
 {
-   bool bUnitsSI = m_Mode==libUnitsMode::UNITS_SI;
-   const unitLength& long_length_unit_us     = unitMeasure::Feet;
-   const unitLength& long_length_unit_si     = unitMeasure::Meter;
-   const unitForce&  force_unit_us           = unitMeasure::Kip;
-   const unitForce&  force_unit_si           = unitMeasure::Kilonewton;
-   const unitForcePerLength& fpl_unit_si     = unitMeasure::NewtonPerMillimeter;
-   const unitForcePerLength& fpl_unit_us     = unitMeasure::KipPerFoot;
+   CEAFApp* pApp;
+   {
+      AFX_MANAGE_STATE(AfxGetAppModuleState());
+      pApp = (CEAFApp*)AfxGetApp();
+   }
+   const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
 	CDialog::DoDataExchange(pDX);
 	//{{AFX_DATA_MAP(CLiveLoadDlg)
@@ -93,9 +75,18 @@ void CLiveLoadDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Check(pDX, IDC_CHECK_NOTIONAL, m_IsNotional);
 	//}}AFX_DATA_MAP
 	DDX_CBItemData(pDX, IDC_CONFIG_TYPE, m_ConfigType);
+	DDX_CBItemData(pDX, IDC_USAGE, m_UsageType);
 
-   DDX_UnitValueAndTag( pDX, IDC_LANE_LOAD,  IDC_LANE_LOAD_UNITS, m_LaneLoad , bUnitsSI, fpl_unit_us, fpl_unit_si );
-   DDV_UnitValueZeroOrMore( pDX, m_LaneLoad, bUnitsSI, fpl_unit_us, fpl_unit_si );
+   DDX_UnitValueAndTag( pDX, IDC_LANE_LOAD,  IDC_LANE_LOAD_UNITS, m_LaneLoad, pDisplayUnits->ForcePerLength);
+   DDV_UnitValueZeroOrMore( pDX, m_LaneLoad, pDisplayUnits->ForcePerLength );
+
+   DDX_UnitValueAndTag( pDX, IDC_BRIDGE_LENGTH,  IDC_BRIDGE_LENGTH_UNITS, m_LaneLoadSpanLength, pDisplayUnits->SpanLength );
+   DDV_UnitValueZeroOrMore( pDX, m_LaneLoadSpanLength, pDisplayUnits->SpanLength );
+
+   DDX_Check_Bool(pDX,IDC_IS_VARIABLE_AXLE_TRUCK,m_bHasVariableAxle);
+   DDX_CBIndex(pDX, IDC_AXLE_LIST, m_VariableAxleIndex );
+
+   DDX_UnitValueAndTag( pDX, IDC_VARIABLE_AXLE_SPACING,  IDC_VARIABLE_AXLE_SPACING_UNITS, m_MaxVariableAxleSpacing, pDisplayUnits->SpanLength );
 
    DDV_GXGridWnd(pDX, &m_Grid);
    if (pDX->m_bSaveAndValidate)
@@ -108,7 +99,8 @@ void CLiveLoadDlg::DoDataExchange(CDataExchange* pDX)
          // lane load must be >0
          if (m_LaneLoad<=0.0)
          {
-            ::AfxMessageBox("Error - Lane load must be a positive number");
+            pDX->PrepareEditCtrl(IDC_LANE_LOAD);
+            ::AfxMessageBox("Error - Lane load must be a positive number",MB_OK | MB_ICONEXCLAMATION);
             pDX->Fail();
          }
       }
@@ -117,9 +109,26 @@ void CLiveLoadDlg::DoDataExchange(CDataExchange* pDX)
       {
          if (m_Axles.empty())
          {
-            ::AfxMessageBox("Error - The truck must have at least one axle");
+            pDX->PrepareCtrl(IDC_AXLES_GRID);
+            ::AfxMessageBox("Error - The truck must have at least one axle",MB_OK | MB_ICONEXCLAMATION);
             pDX->Fail();
          }
+      }
+
+      if ( m_bHasVariableAxle )
+      {
+         // max variable axle spacing must be greater than spacing given in the girder
+         LiveLoadLibraryEntry::Axle axle = m_Axles[m_VariableAxleIndex];
+         if ( m_MaxVariableAxleSpacing < axle.Spacing )
+         {
+            pDX->PrepareEditCtrl(IDC_VARIABLE_AXLE_SPACING);
+            AfxMessageBox("Variable axle maximum spacing must be greater than the minimum spacing given in the truck configuration grid",MB_OK | MB_ICONEXCLAMATION);
+            pDX->Fail();
+         }
+      }
+      else
+      {
+         m_VariableAxleIndex = FIXED_AXLE_TRUCK;
       }
    }
    else
@@ -138,6 +147,7 @@ BEGIN_MESSAGE_MAP(CLiveLoadDlg, CDialog)
 	ON_BN_CLICKED(IDC_DELETE, OnDelete)
 	ON_CBN_SELCHANGE(IDC_CONFIG_TYPE, OnSelchangeConfigType)
 	ON_MESSAGE(WM_COMMANDHELP, OnCommandHelp)
+   ON_BN_CLICKED(IDC_IS_VARIABLE_AXLE_TRUCK,OnVariableAxleTruck)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -154,6 +164,7 @@ BOOL CLiveLoadDlg::OnInitDialog()
 	m_Grid.SubclassDlgItem(IDC_AXLES_GRID, this);
    m_Grid.CustomInit();
 
+   // Fill Load Type combo box
    CComboBox* pCB = (CComboBox*)GetDlgItem(IDC_CONFIG_TYPE);
    int idx = pCB->AddString("Truck Only");
    pCB->SetItemData(idx,LiveLoadLibraryEntry::lcTruckOnly);
@@ -167,7 +178,24 @@ BOOL CLiveLoadDlg::OnInitDialog()
    idx = pCB->AddString("Envelope of Lane Load and Truck");
    pCB->SetItemData(idx,LiveLoadLibraryEntry::lcTruckLaneEnvelope);
 
+   // Fill Usage combo box
+   pCB = (CComboBox*)GetDlgItem(IDC_USAGE);
+   idx = pCB->AddString("Use for all actions at all locations");
+   pCB->SetItemData(idx,LiveLoadLibraryEntry::llaEntireStructure);
+
+   idx = pCB->AddString("Use only for negative moments between points of contraflexure and interior pier reactions");
+   pCB->SetItemData(idx,LiveLoadLibraryEntry::llaContraflexure);
+
+   idx = pCB->AddString("Use only for negative moments and interior pier reactions");
+   pCB->SetItemData(idx,LiveLoadLibraryEntry::llaNegMomentAndInteriorPierReaction);
+
+
+   m_bHasVariableAxle = (m_VariableAxleIndex == FIXED_AXLE_TRUCK ? false : true);
+
 	CDialog::OnInitDialog();
+
+   UpdateVariableAxleChoice();
+   OnVariableAxleTruck();
 	
 	OnEnableDelete(false);
    UpdateConfig();	
@@ -193,11 +221,15 @@ BOOL CLiveLoadDlg::OnInitDialog()
 void CLiveLoadDlg::OnAdd() 
 {
 	m_Grid.Appendrow();
+
+   UpdateVariableAxleChoice();
 }
 
 void CLiveLoadDlg::OnDelete() 
 {
    m_Grid.Removerows();
+
+   UpdateVariableAxleChoice();
 }
 
 void CLiveLoadDlg::OnEnableDelete(bool canDelete)
@@ -217,12 +249,17 @@ void CLiveLoadDlg::UpdateConfig()
    CComboBox* pList = (CComboBox*)GetDlgItem( IDC_CONFIG_TYPE );
    int cur_sel = pList->GetCurSel();
 
+   CWnd* planelabel = GetDlgItem(IDC_LANE_LOAD_LABEL);
    CWnd* plane  = GetDlgItem(IDC_LANE_LOAD);
+   CWnd* planeunit  = GetDlgItem(IDC_LANE_LOAD_UNITS);
+   CWnd* pbridgelengthlabel = GetDlgItem(IDC_BRIDGE_LENGTH_LABEL);
+   CWnd* pbridgelength = GetDlgItem(IDC_BRIDGE_LENGTH);
+   CWnd* pbridgelengthunit = GetDlgItem(IDC_BRIDGE_LENGTH_UNITS);
    CWnd* pnotl  = GetDlgItem(IDC_CHECK_NOTIONAL);
-   CWnd* paxles = GetDlgItem(IDC_AXLES_GRID);
+   //CWnd* paxles = GetDlgItem(IDC_AXLES_GRID);
    CWnd* pdel   = GetDlgItem(IDC_DELETE);
    CWnd* padd   = GetDlgItem(IDC_ADD);
-   CWnd* psgrd  = GetDlgItem(IDC_STATIC_GRID);
+   CWnd* pvariable = GetDlgItem(IDC_IS_VARIABLE_AXLE_TRUCK);
 
    bool do_live(true), do_lane(true);
 
@@ -240,13 +277,51 @@ void CLiveLoadDlg::UpdateConfig()
       case LiveLoadLibraryEntry::lcTruckLaneEnvelope:
          break;
       default:
-         ATLASSERT(0);
+         ATLASSERT(false);
    };
 
+   planelabel->EnableWindow(do_lane?TRUE:FALSE);
    plane->EnableWindow(do_lane?TRUE:FALSE);
+   planeunit->EnableWindow(do_lane?TRUE:FALSE);
+   pbridgelengthlabel->EnableWindow(do_lane?TRUE:FALSE);
+   pbridgelength->EnableWindow(do_lane?TRUE:FALSE);
+   pbridgelengthunit->EnableWindow(do_lane?TRUE:FALSE);
    pnotl->EnableWindow(do_live?TRUE:FALSE);
-   paxles->ShowWindow(do_live?SW_SHOW:SW_HIDE);
-   psgrd->ShowWindow(do_live?SW_HIDE:SW_SHOW);
+   //paxles->EnableWindow(do_live?TRUE:FALSE);
    pdel->EnableWindow(do_live?TRUE:FALSE);
    padd->EnableWindow(do_live?TRUE:FALSE);
+   pvariable->EnableWindow(do_live?TRUE:FALSE);
+
+   this->m_Grid.Enable(do_live?TRUE:FALSE);
+}
+
+void CLiveLoadDlg::UpdateVariableAxleChoice()
+{
+   CComboBox* pCB = (CComboBox*)GetDlgItem(IDC_AXLE_LIST);
+
+   int selIdx = pCB->GetCurSel();
+   pCB->ResetContent();
+   int nAxles = m_Grid.GetRowCount();
+   for ( int i = 1; i < nAxles; i++ )
+   {
+      CString str;
+      str.Format("%d",i+1);
+      pCB->AddString(str);
+   }
+
+   if ( selIdx == CB_ERR )
+      pCB->SetCurSel(0);
+   else if ( selIdx < nAxles )
+      pCB->SetCurSel(selIdx);
+   else
+      pCB->SetCurSel(pCB->GetCount()-1);
+}
+
+void CLiveLoadDlg::OnVariableAxleTruck()
+{
+   BOOL bEnable = IsDlgButtonChecked(IDC_IS_VARIABLE_AXLE_TRUCK);
+   GetDlgItem(IDC_AXLE_LIST_LABEL)->EnableWindow(bEnable);
+   GetDlgItem(IDC_AXLE_LIST)->EnableWindow(bEnable);
+   GetDlgItem(IDC_VARIABLE_AXLE_SPACING)->EnableWindow(bEnable);
+   GetDlgItem(IDC_VARIABLE_AXLE_SPACING_UNITS)->EnableWindow(bEnable);
 }

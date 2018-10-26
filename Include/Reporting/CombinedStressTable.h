@@ -76,7 +76,8 @@ public:
    virtual void Build(IBroker* pBroker, rptChapter* pChapter,
                       SpanIndexType span,GirderIndexType girder,
                       IDisplayUnits* pDisplayUnits,
-                      pgsTypes::Stage stage,pgsTypes::AnalysisType analysisType) const;
+                      pgsTypes::Stage stage,pgsTypes::AnalysisType analysisType,
+                      bool bDesign = true,bool bRating = true) const;
    // GROUP: ACCESS
    // GROUP: INQUIRY
 

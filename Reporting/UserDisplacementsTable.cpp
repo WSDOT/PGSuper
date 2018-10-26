@@ -91,7 +91,7 @@ rptRcTable* CUserDisplacementsTable::Build(IBroker* pBroker,SpanIndexType span,G
    RowIndexType row = p_table->GetNumberOfHeaderRows();
    for ( SpanIndexType spanIdx = startSpan; spanIdx < nSpans; spanIdx++ )
    {
-      std::vector<pgsPointOfInterest> vPoi = pIPoi->GetPointsOfInterest( pgsTypes::BridgeSite1, spanIdx, girder, POI_TABULAR );
+      std::vector<pgsPointOfInterest> vPoi = pIPoi->GetPointsOfInterest( pgsTypes::BridgeSite1, spanIdx, girder, POI_ALL, POIFIND_OR );
 
       Float64 end_size = pBridge->GetGirderStartConnectionLength(spanIdx,girder);
 

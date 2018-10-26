@@ -72,7 +72,7 @@
 				Name="VCResourceCompilerTool"
 				PreprocessorDefinitions="_DEBUG"
 				Culture="1033"
-				AdditionalIncludeDirectories="$(IntDir)"
+				AdditionalIncludeDirectories="&quot;$(IntDir)&quot;;\ARP\WBFL\Include\"
 			/>
 			<Tool
 				Name="VCPreLinkEventTool"
@@ -171,7 +171,7 @@
 				Name="VCResourceCompilerTool"
 				PreprocessorDefinitions="NDEBUG"
 				Culture="1033"
-				AdditionalIncludeDirectories="$(IntDir)"
+				AdditionalIncludeDirectories="&quot;$(IntDir)&quot;;\ARP\WBFL\Include\"
 			/>
 			<Tool
 				Name="VCPreLinkEventTool"
@@ -402,6 +402,10 @@
 						PreprocessorDefinitions=""
 					/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\dllmain.cpp"
+				>
 			</File>
 			<File
 				RelativePath="GirderDebondCriteriaPage.cpp"
@@ -646,6 +650,34 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\LibChildFrm.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\LibEditorListView.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\LibraryAppPlugin.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\LibraryDocTemplate.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\LibraryEditorChildFrm.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\LibraryEditorDoc.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\libraryEditorView.cpp"
+				>
+			</File>
+			<File
 				RelativePath="LibraryEntryConflict.cpp"
 				>
 				<FileConfiguration
@@ -734,6 +766,10 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\LiveLoadFactorsPage.cpp"
+				>
+			</File>
+			<File
 				RelativePath="LiveLoadLibraryEntry.cpp"
 				>
 				<FileConfiguration
@@ -800,6 +836,30 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\PGSuperComponentInfo.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\PGSuperLibrary.idl"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCMIDLTool"
+						HeaderFileName="$(InputDir)PGSuperLibrary_i.h"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCMIDLTool"
+						HeaderFileName="$(InputDir)PGSuperLibrary_i.h"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
 				RelativePath="psgLib.cpp"
 				>
 				<FileConfiguration
@@ -853,6 +913,18 @@
 						AdditionalIncludeDirectories=""
 					/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\RatingDescriptionPage.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\RatingDialog.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\RatingLibraryEntry.cpp"
+				>
 			</File>
 			<File
 				RelativePath="RenameLibraryEntry.cpp"
@@ -1363,6 +1435,10 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\StrandGenerationDlg.cpp"
+				>
+			</File>
+			<File
 				RelativePath="StrandGridLocation.cpp"
 				>
 				<FileConfiguration
@@ -1580,6 +1656,18 @@
 				>
 			</File>
 			<File
+				RelativePath=".\dllmain.h"
+				>
+			</File>
+			<File
+				RelativePath=".\GirderGlobalStrandGrid.h"
+				>
+			</File>
+			<File
+				RelativePath=".\GirderHarpedStrandPage.h"
+				>
+			</File>
+			<File
 				RelativePath="..\Include\PsgLib\GirderLibraryEntry.h"
 				>
 			</File>
@@ -1604,6 +1692,34 @@
 				>
 			</File>
 			<File
+				RelativePath="..\Include\psgLib\LibChildFrm.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Include\psgLib\LibEditorListView.h"
+				>
+			</File>
+			<File
+				RelativePath=".\LibraryAppPlugin.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Include\psgLib\LibraryDocTemplate.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Include\psgLib\LibraryEditorChildFrm.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Include\psgLib\LibraryEditorDoc.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Include\psgLib\libraryEditorView.h"
+				>
+			</File>
+			<File
 				RelativePath="LibraryEntryConflict.h"
 				>
 			</File>
@@ -1613,6 +1729,14 @@
 			</File>
 			<File
 				RelativePath=".\LiveLoadAxleGrid.h"
+				>
+			</File>
+			<File
+				RelativePath=".\LiveLoadDlg.h"
+				>
+			</File>
+			<File
+				RelativePath=".\LiveLoadFactorsPage.h"
 				>
 			</File>
 			<File
@@ -1628,11 +1752,23 @@
 				>
 			</File>
 			<File
+				RelativePath=".\PGSuperComponentInfo.h"
+				>
+			</File>
+			<File
 				RelativePath="..\Include\PsgLib\psgLib.h"
 				>
 			</File>
 			<File
 				RelativePath="..\Include\PsgLib\psgLibLib.h"
+				>
+			</File>
+			<File
+				RelativePath=".\RatingDialog.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Include\psgLib\RatingLibraryEntry.h"
 				>
 			</File>
 			<File
@@ -1652,6 +1788,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\SpecDescrPage.h"
+				>
+			</File>
+			<File
 				RelativePath="..\Include\psgLib\SpecLibraryEntry.h"
 				>
 			</File>
@@ -1661,6 +1801,10 @@
 			</File>
 			<File
 				RelativePath="SpecLossPage.h"
+				>
+			</File>
+			<File
+				RelativePath=".\SpecMainSheet.h"
 				>
 			</File>
 			<File
@@ -1677,6 +1821,10 @@
 			</File>
 			<File
 				RelativePath="StdAfx.h"
+				>
+			</File>
+			<File
+				RelativePath=".\StrandGenerationDlg.h"
 				>
 			</File>
 			<File
@@ -1749,6 +1897,26 @@
 				>
 			</File>
 			<File
+				RelativePath=".\res\DefaultEntry.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\res\GenerateStrands_StartEnd_Sequential.emf"
+				>
+			</File>
+			<File
+				RelativePath=".\res\GenerateStrands_StartEnd_Skipped.emf"
+				>
+			</File>
+			<File
+				RelativePath=".\res\GenerateStrands_StartSpacing_Sequential.emf"
+				>
+			</File>
+			<File
+				RelativePath=".\res\GenerateStrands_StartSpacing_Skipped.emf"
+				>
+			</File>
+			<File
 				RelativePath="res\GirderDim.emf"
 				>
 			</File>
@@ -1757,19 +1925,19 @@
 				>
 			</File>
 			<File
-				RelativePath="ico00001.ico"
-				>
-			</File>
-			<File
 				RelativePath="res\ico00001.ico"
 				>
 			</File>
 			<File
-				RelativePath="ico00002.ico"
+				RelativePath="ico00001.ico"
 				>
 			</File>
 			<File
 				RelativePath="res\ico00002.ico"
+				>
+			</File>
+			<File
+				RelativePath="ico00002.ico"
 				>
 			</File>
 			<File
@@ -1789,11 +1957,11 @@
 				>
 			</File>
 			<File
-				RelativePath="ico00005.ico"
+				RelativePath="res\ico00005.ico"
 				>
 			</File>
 			<File
-				RelativePath="res\ico00005.ico"
+				RelativePath="ico00005.ico"
 				>
 			</File>
 			<File
@@ -1805,11 +1973,35 @@
 				>
 			</File>
 			<File
+				RelativePath=".\res\LibEditorToolbar.bmp"
+				>
+			</File>
+			<File
+				RelativePath=".\LibraryAppPlugin.rgs"
+				>
+			</File>
+			<File
+				RelativePath=".\res\LibraryEditorDoc.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\res\LibraryManager.ico"
+				>
+			</File>
+			<File
 				RelativePath="res\live_loa.ico"
 				>
 			</File>
 			<File
+				RelativePath=".\res\PGSuperComponentInfo.rgs"
+				>
+			</File>
+			<File
 				RelativePath="res\psgLib.rc2"
+				>
+			</File>
+			<File
+				RelativePath=".\res\Rating.ico"
 				>
 			</File>
 			<File

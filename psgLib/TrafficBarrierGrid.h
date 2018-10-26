@@ -72,8 +72,8 @@ public:
    void CustomInit();
    void ResetGrid();
 
-   void UploadData(CDataExchange* pDX, CTrafficBarrierDlg* dlg,IPoint2dCollection* points);
-   void DownloadData(CDataExchange* pDX, CTrafficBarrierDlg* dlg,IPoint2dCollection* points);
+   void UploadData(CDataExchange* pDX, IPoint2dCollection* points);
+   void DownloadData(CDataExchange* pDX, IPoint2dCollection* points);
 
    // add and remove rows
    void RemoveRows();

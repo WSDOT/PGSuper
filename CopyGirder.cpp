@@ -22,9 +22,9 @@
 
 #include "StdAfx.h"
 #include "CopyGirder.h"
-#include "PGSuper.h"
+#include "PGSuperDoc.h"
 
-#include <PgsExt\AutoProgress.h>
+#include <EAF\EAFAutoProgress.h>
 #include <IFace\Bridge.h>
 #include <IFace\GirderHandling.h>
 
@@ -59,7 +59,7 @@ bool txnCopyGirder::Execute()
    GetGirderData(from_span,from_gdr,&m_SourceGirderData);
 
    CComPtr<IBroker> pBroker;
-   AfxGetBroker(&pBroker);
+   EAFGetBroker(&pBroker);
 
    GET_IFACE2(pBroker,IGirderData, pGirderData);
    GET_IFACE2(pBroker,IShear, pShear);
@@ -68,7 +68,7 @@ bool txnCopyGirder::Execute()
    GET_IFACE2(pBroker,IGirderHauling,pGirderHauling);
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    GET_IFACE2(pBroker,IProgress,pProgress);
-   pgsAutoProgress ap(pProgress);
+   CEAFAutoProgress ap(pProgress);
 
    const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
@@ -143,7 +143,7 @@ bool txnCopyGirder::Execute()
 void txnCopyGirder::Undo()
 {
    CComPtr<IBroker> pBroker;
-   AfxGetBroker(&pBroker);
+   EAFGetBroker(&pBroker);
 
    GET_IFACE2(pBroker,IGirderData, pGirderData);
    GET_IFACE2(pBroker,IShear, pShear);
@@ -152,7 +152,7 @@ void txnCopyGirder::Undo()
    GET_IFACE2(pBroker,IGirderHauling,pGirderHauling);
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    GET_IFACE2(pBroker,IProgress,pProgress);
-   pgsAutoProgress ap(pProgress);
+   CEAFAutoProgress ap(pProgress);
 
    const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
@@ -237,7 +237,7 @@ bool txnCopyGirder::IsRepeatable()
 void txnCopyGirder::GetGirderData(SpanIndexType spanIdx,GirderIndexType gdrIdx,txnCopyGirderData* ptxnGirderData)
 {
    CComPtr<IBroker> pBroker;
-   AfxGetBroker(&pBroker);
+   EAFGetBroker(&pBroker);
 
    // gather data about the source girder
    GET_IFACE2(pBroker,IBridge,pBridge);

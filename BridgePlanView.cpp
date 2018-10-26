@@ -586,7 +586,8 @@ void CBridgePlanView::UpdateGirderTooltips()
 
          CString strMsg = strMsg1 + strMsg2 + strMsg3 + strMsg4;
 
-         pDO->SetMaxTipWidth(300);
+         pDO->SetMaxTipWidth(TOOLTIP_WIDTH);
+         pDO->SetTipDisplayTime(TOOLTIP_DURATION);
          pDO->SetToolTipText(strMsg);
       }
    }
@@ -950,7 +951,8 @@ void CBridgePlanView::BuildAlignmentDisplayObjects()
    doAlignment->QueryInterface(IID_iDisplayObject,(void**)&dispObj);
    dispObj->RegisterEventSink(events);
    dispObj->SetToolTipText("Double click to edit alignment.\r\nRight click for more options.");
-   dispObj->SetMaxTipWidth(300);
+   dispObj->SetMaxTipWidth(TOOLTIP_WIDTH);
+   dispObj->SetTipDisplayTime(TOOLTIP_DURATION);
 
    // display object for CL bridge
    CComPtr<iPolyLineDisplayObject> doCLBridge;
@@ -1036,8 +1038,7 @@ void CBridgePlanView::BuildGirderDisplayObjects()
    //
    // set up some drawing strategies
    //
-   CPGSuperApp* papp =(CPGSuperApp*) AfxGetApp();
-   UINT settings = papp->GetBridgeEditorSettings();
+   UINT settings = pDoc->GetBridgeEditorSettings();
 
    // drawing the bearings
    CComPtr<iSimpleDrawLineStrategy> strategy_brg;
@@ -1331,8 +1332,7 @@ void CBridgePlanView::BuildPierDisplayObjects()
    dispMgr->FindDisplayList(LABEL_DISPLAY_LIST,&label_display_list);
    //label_display_list->Clear(); // Don't clear it...BuildGirderDisplayObjects put some stuff in here
 
-   CPGSuperApp* papp =(CPGSuperApp*) AfxGetApp();
-   UINT settings = papp->GetBridgeEditorSettings();
+   UINT settings = pDoc->GetBridgeEditorSettings();
 
    GET_IFACE2(pBroker,IRoadway,pAlignment);
    GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
@@ -1411,7 +1411,8 @@ void CBridgePlanView::BuildPierDisplayObjects()
       CString strMsg = strMsg1 + "\r\n\r\n" + strMsg2 + "\r\n" + strConnectionTip;
 
       doCenterLine->SetToolTipText(strMsg);
-      doCenterLine->SetMaxTipWidth(300);
+      doCenterLine->SetMaxTipWidth(TOOLTIP_WIDTH);
+      doCenterLine->SetTipDisplayTime(TOOLTIP_DURATION);
 
       doCenterLine->SetID(pierIdx);
       PierDisplayObjectInfo* pInfo = new PierDisplayObjectInfo(pierIdx,PIER_DISPLAY_LIST);
@@ -1565,7 +1566,8 @@ void CBridgePlanView::BuildPierDisplayObjects()
          doStation->SetSelectionType(stAll);
          
          doStation->SetToolTipText("Click to edit");
-         doStation->SetMaxTipWidth(300);
+         doStation->SetMaxTipWidth(TOOLTIP_WIDTH);
+         doStation->SetTipDisplayTime(TOOLTIP_DURATION);
 
          CInplacePierStationEditEvents* pPierStationEvents = new CInplacePierStationEditEvents(pBroker,pierIdx);
          IUnknown* unkPierStationEvents = pPierStationEvents->GetInterface(&IID_iDisplayObjectEvents);
@@ -1653,7 +1655,8 @@ void CBridgePlanView::BuildPierDisplayObjects()
             doSpanLength->SetSelectionType(stAll);
 
             doSpanLength->SetToolTipText("Click to edit");
-            doSpanLength->SetMaxTipWidth(300);
+            doSpanLength->SetMaxTipWidth(TOOLTIP_WIDTH);
+            doSpanLength->SetTipDisplayTime(TOOLTIP_DURATION);
 
             // Register an event sink with the text block object so that we can handle change events
             CInplaceSpanLengthEditEvents* pSpanLengthEvents = new CInplaceSpanLengthEditEvents(pBroker,pierIdx-1);
@@ -1825,7 +1828,8 @@ void CBridgePlanView::BuildSpanDisplayObjects()
       CString strMsg("Double click to edit span.\r\nRight click for more options.");
 
       dispObj->SetToolTipText(strMsg);
-      dispObj->SetMaxTipWidth(300);
+      dispObj->SetMaxTipWidth(TOOLTIP_WIDTH);
+      dispObj->SetTipDisplayTime(TOOLTIP_DURATION);
 
       display_list->AddDisplayObject(doPnt);
    }
@@ -1924,14 +1928,15 @@ void CBridgePlanView::BuildSlabDisplayObjects()
    CString strMsg = strMsg1 + strMsg2 + strMsg3;
 
    dispObj->SetToolTipText(strMsg);
-   dispObj->SetMaxTipWidth(300);
+   dispObj->SetMaxTipWidth(TOOLTIP_WIDTH);
+   dispObj->SetTipDisplayTime(TOOLTIP_DURATION);
 
    display_list->AddDisplayObject(doPnt);
 }
 
 void CBridgePlanView::BuildSectionCutDisplayObjects()
 {
-//   AfxGetBroker(&pBroker); // this call doesn't work during initial startup
+//   EAFGetBroker(&pBroker); // this call doesn't work during initial startup
    CPGSuperDoc* pDoc = (CPGSuperDoc*)(GetDocument());
    CComPtr<IBroker> pBroker;
    pDoc->GetBroker(&pBroker);
@@ -1954,8 +1959,9 @@ void CBridgePlanView::BuildSectionCutDisplayObjects()
    disp_obj->SetSelectionType(stAll);
 
    CComQIPtr<iPointDisplayObject,&IID_iPointDisplayObject> point_disp(disp_obj);
-   point_disp->SetMaxTipWidth(300);
+   point_disp->SetMaxTipWidth(TOOLTIP_WIDTH);
    point_disp->SetToolTipText("Drag me along the alignment to move section cut.\r\nDouble click to enter the cut station\r\nPress CTRL + -> to move ahead\r\nPress CTRL + <- to move back");
+   point_disp->SetTipDisplayTime(TOOLTIP_DURATION);
 
    GET_IFACE2(pBroker,IRoadway,pRoadway);
    GET_IFACE2(pBroker,IBridge,pBridge);
@@ -2107,7 +2113,8 @@ void CBridgePlanView::BuildDiaphragmDisplayObjects()
 
             CString strTip;
             strTip.Format("%s x %s intermediate diaphragm",::FormatDimension(left_diaphragm.T,pDisplayUnits->GetComponentDimUnit()),::FormatDimension(left_diaphragm.H,pDisplayUnits->GetComponentDimUnit()));
-            doDiaphragmLine->SetMaxTipWidth(300);
+            doDiaphragmLine->SetMaxTipWidth(TOOLTIP_WIDTH);
+            doDiaphragmLine->SetTipDisplayTime(TOOLTIP_DURATION);
             doDiaphragmLine->SetToolTipText(strTip);
 
 

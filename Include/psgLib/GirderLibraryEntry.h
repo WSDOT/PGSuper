@@ -332,7 +332,7 @@ public:
 
    //------------------------------------------------------------------------
    // Edit the entry
-   virtual bool Edit(libUnitsMode::Mode mode, bool allowEditing);
+   virtual bool Edit(bool allowEditing);
 
    //------------------------------------------------------------------------
    // Save to structured storage
@@ -613,6 +613,10 @@ public:
    // Get name of section from factory
    std::string GetSectionName() const;
 
+   //------------------------------------------------------------------------
+   // Returns true if this girder can be post-tensioned
+   bool CanPostTension() const;
+
    // GROUP: INQUIRY
 
 protected:
@@ -633,6 +637,8 @@ private:
    Dimensions m_Dimensions;
 
    bool m_bUseDifferentHarpedGridAtEnds;
+
+   bool m_bCanPostTension;
 
    std::string m_ShearSteelMaterial;
    BarSizeType m_ShearSteelBarSize;

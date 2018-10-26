@@ -31,6 +31,7 @@
 #include <IFace\Bridge.h>
 #include <IFace\DisplayUnits.h>
 #include <IFace\AnalysisResults.h>
+#include <IFace\RatingSpecification.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -73,7 +74,7 @@ CProductStressTable& CProductStressTable::operator= (const CProductStressTable& 
 
 //======================== OPERATIONS =======================================
 rptRcTable* CProductStressTable::Build(IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,pgsTypes::AnalysisType analysisType,
-                                      IDisplayUnits* pDisplayUnits) const
+                                       bool bDesign,bool bRating,IDisplayUnits* pDisplayUnits) const
 {
    // Build table
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
@@ -96,6 +97,8 @@ rptRcTable* CProductStressTable::Build(IBroker* pBroker,SpanIndexType span,Girde
    GET_IFACE2(pBroker,ILiveLoads,pLiveLoads);
    bool bPermit = pLiveLoads->IsLiveLoadDefined(pgsTypes::lltPermit);
 
+   GET_IFACE2(pBroker,IRatingSpecification,pRatingSpec);
+
    pgsTypes::Stage continuity_stage = pgsTypes::BridgeSite2;
    SpanIndexType spanIdx;
    for ( spanIdx = startSpan; spanIdx < nSpans; spanIdx++ )
@@ -111,7 +114,7 @@ rptRcTable* CProductStressTable::Build(IBroker* pBroker,SpanIndexType span,Girde
    continuity_stage = _cpp_min(continuity_stage,left_stage);
    continuity_stage = _cpp_min(continuity_stage,right_stage);
 
-   ColumnIndexType nCols = 8;
+   ColumnIndexType nCols = 6;
 
    if ( bDeckPanels )
    {
@@ -127,14 +130,21 @@ rptRcTable* CProductStressTable::Build(IBroker* pBroker,SpanIndexType span,Girde
    if ( analysisType == pgsTypes::Envelope )
       nCols += 2; // add one more each for min/max overlay and min/max traffic barrier
 
-   if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
+   if ( bDesign )
+   {
+      if ( bPedLoading )
+         nCols += 2;
+
+
       nCols += 2;
 
-   if ( bPermit )
-      nCols += 2;
+      if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
+         nCols += 2;
 
-   if ( bPedLoading )
-      nCols += 2;
+      if ( bPermit )
+         nCols += 2;
+   }
+
 
    if ( bSidewalk )
    {
@@ -160,8 +170,28 @@ rptRcTable* CProductStressTable::Build(IBroker* pBroker,SpanIndexType span,Girde
       }
    }
 
+   if ( bRating )
+   {
+      if ( !bDesign && (pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) || pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating)) )
+      {
+         nCols += 2;
+      }
+
+      if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) )
+         nCols += 2;
+
+      if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
+         nCols += 2;
+
+      if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine) )
+         nCols += 2;
+
+      if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Special) )
+         nCols += 2;
+   }
+
    rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(nCols,"Bridge Site Stress");
-   RowIndexType row = ConfigureProductLoadTableHeading<rptStressUnitTag,unitmgtStressData>(p_table,false,bDeckPanels,bSidewalk,bShearKey,bPedLoading,bPermit,analysisType,continuity_stage,pDisplayUnits,pDisplayUnits->GetStressUnit());
+   RowIndexType row = ConfigureProductLoadTableHeading<rptStressUnitTag,unitmgtStressData>(p_table,false,bDeckPanels,bSidewalk,bShearKey,bDesign,bPedLoading,bPermit,bRating,analysisType,continuity_stage,pRatingSpec,pDisplayUnits,pDisplayUnits->GetStressUnit());
 
 
    // Get the interface pointers we need
@@ -169,7 +199,7 @@ rptRcTable* CProductStressTable::Build(IBroker* pBroker,SpanIndexType span,Girde
 
    // Get all the tabular poi's for flexure and shear
    // Merge the two vectors to form one vector to report on.
-   std::vector<pgsPointOfInterest> vPoi = pIPoi->GetPointsOfInterest(pgsTypes::BridgeSite1,span,gdr, POI_TABULAR);
+   std::vector<pgsPointOfInterest> vPoi = pIPoi->GetPointsOfInterest(pgsTypes::BridgeSite3,span,gdr, POI_ALL, POIFIND_OR);
 
    std::vector<Float64> fTopGirder, fBotGirder;
    std::vector<Float64> fTopDiaphragm, fBotDiaphragm;
@@ -187,6 +217,14 @@ rptRcTable* CProductStressTable::Build(IBroker* pBroker,SpanIndexType span,Girde
    std::vector<Float64> fTopMinFatigueLL, fBotMinFatigueLL;
    std::vector<Float64> fTopMaxPermitLL, fBotMaxPermitLL;
    std::vector<Float64> fTopMinPermitLL, fBotMinPermitLL;
+   std::vector<Float64> fTopMaxLegalRoutineLL, fBotMaxLegalRoutineLL;
+   std::vector<Float64> fTopMinLegalRoutineLL, fBotMinLegalRoutineLL;
+   std::vector<Float64> fTopMaxLegalSpecialLL, fBotMaxLegalSpecialLL;
+   std::vector<Float64> fTopMinLegalSpecialLL, fBotMinLegalSpecialLL;
+   std::vector<Float64> fTopMaxPermitRoutineLL, fBotMaxPermitRoutineLL;
+   std::vector<Float64> fTopMinPermitRoutineLL, fBotMinPermitRoutineLL;
+   std::vector<Float64> fTopMaxPermitSpecialLL, fBotMaxPermitSpecialLL;
+   std::vector<Float64> fTopMinPermitSpecialLL, fBotMinPermitSpecialLL;
    std::vector<Float64> dummy1, dummy2;
 
    pForces2->GetStress( girderLoadStage, pftGirder, vPoi, SimpleSpan, &fTopGirder, &fBotGirder);
@@ -235,25 +273,61 @@ rptRcTable* CProductStressTable::Build(IBroker* pBroker,SpanIndexType span,Girde
       pForces2->GetStress( overlay_stage, pftOverlay, vPoi, MaxSimpleContinuousEnvelope, &fTopMaxOverlay, &fBotMaxOverlay);
       pForces2->GetStress( overlay_stage, pftOverlay, vPoi, MinSimpleContinuousEnvelope, &fTopMinOverlay, &fBotMinOverlay);
 
-      if ( bPedLoading )
+      if ( bDesign )
       {
-         pForces2->GetLiveLoadStress(pgsTypes::lltPedestrian, pgsTypes::BridgeSite3, vPoi, MaxSimpleContinuousEnvelope, true, false, &dummy1, &fTopMaxPedestrianLL, &dummy2, &fBotMaxPedestrianLL);
-         pForces2->GetLiveLoadStress(pgsTypes::lltPedestrian, pgsTypes::BridgeSite3, vPoi, MinSimpleContinuousEnvelope, true, false, &fTopMinPedestrianLL, &dummy1, &fBotMinPedestrianLL, &dummy2);
+         if ( bPedLoading )
+         {
+            pForces2->GetLiveLoadStress(pgsTypes::lltPedestrian, pgsTypes::BridgeSite3, vPoi, MaxSimpleContinuousEnvelope, true, false, &dummy1, &fTopMaxPedestrianLL, &dummy2, &fBotMaxPedestrianLL);
+            pForces2->GetLiveLoadStress(pgsTypes::lltPedestrian, pgsTypes::BridgeSite3, vPoi, MinSimpleContinuousEnvelope, true, false, &fTopMinPedestrianLL, &dummy1, &fBotMinPedestrianLL, &dummy2);
+         }
+
+         pForces2->GetLiveLoadStress(pgsTypes::lltDesign, pgsTypes::BridgeSite3, vPoi, MaxSimpleContinuousEnvelope, true, false, &dummy1, &fTopMaxDesignLL, &dummy2, &fBotMaxDesignLL);
+         pForces2->GetLiveLoadStress(pgsTypes::lltDesign, pgsTypes::BridgeSite3, vPoi, MinSimpleContinuousEnvelope, true, false, &fTopMinDesignLL, &dummy1, &fBotMinDesignLL, &dummy2);
+
+         if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
+         {
+            pForces2->GetLiveLoadStress(pgsTypes::lltFatigue, pgsTypes::BridgeSite3, vPoi, MaxSimpleContinuousEnvelope, true, false, &dummy1, &fTopMaxFatigueLL, &dummy2, &fBotMaxFatigueLL);
+            pForces2->GetLiveLoadStress(pgsTypes::lltFatigue, pgsTypes::BridgeSite3, vPoi, MinSimpleContinuousEnvelope, true, false, &fTopMinFatigueLL, &dummy1, &fBotMinFatigueLL, &dummy2);
+         }
+
+         if ( bPermit )
+         {
+            pForces2->GetLiveLoadStress(pgsTypes::lltPermit, pgsTypes::BridgeSite3, vPoi, MaxSimpleContinuousEnvelope, true, false, &dummy1, &fTopMaxPermitLL, &dummy2, &fBotMaxPermitLL);
+            pForces2->GetLiveLoadStress(pgsTypes::lltPermit, pgsTypes::BridgeSite3, vPoi, MinSimpleContinuousEnvelope, true, false, &fTopMinPermitLL, &dummy1, &fBotMinPermitLL, &dummy2);
+         }
       }
 
-      pForces2->GetLiveLoadStress(pgsTypes::lltDesign, pgsTypes::BridgeSite3, vPoi, MaxSimpleContinuousEnvelope, true, false, &dummy1, &fTopMaxDesignLL, &dummy2, &fBotMaxDesignLL);
-      pForces2->GetLiveLoadStress(pgsTypes::lltDesign, pgsTypes::BridgeSite3, vPoi, MinSimpleContinuousEnvelope, true, false, &fTopMinDesignLL, &dummy1, &fBotMinDesignLL, &dummy2);
-
-      if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
+      if ( bRating )
       {
-         pForces2->GetLiveLoadStress(pgsTypes::lltFatigue, pgsTypes::BridgeSite3, vPoi, MaxSimpleContinuousEnvelope, true, false, &dummy1, &fTopMaxFatigueLL, &dummy2, &fBotMaxFatigueLL);
-         pForces2->GetLiveLoadStress(pgsTypes::lltFatigue, pgsTypes::BridgeSite3, vPoi, MinSimpleContinuousEnvelope, true, false, &fTopMinFatigueLL, &dummy1, &fBotMinFatigueLL, &dummy2);
-      }
+         if ( !bDesign && (pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) || pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating)) )
+         {
+            pForces2->GetLiveLoadStress(pgsTypes::lltDesign, pgsTypes::BridgeSite3, vPoi, MaxSimpleContinuousEnvelope, true, false, &dummy1, &fTopMaxDesignLL, &dummy2, &fBotMaxDesignLL);
+            pForces2->GetLiveLoadStress(pgsTypes::lltDesign, pgsTypes::BridgeSite3, vPoi, MinSimpleContinuousEnvelope, true, false, &fTopMinDesignLL, &dummy1, &fBotMinDesignLL, &dummy2);
+         }
 
-      if ( bPermit )
-      {
-         pForces2->GetLiveLoadStress(pgsTypes::lltPermit, pgsTypes::BridgeSite3, vPoi, MaxSimpleContinuousEnvelope, true, false, &dummy1, &fTopMaxPermitLL, &dummy2, &fBotMaxPermitLL);
-         pForces2->GetLiveLoadStress(pgsTypes::lltPermit, pgsTypes::BridgeSite3, vPoi, MinSimpleContinuousEnvelope, true, false, &fTopMinPermitLL, &dummy1, &fBotMinPermitLL, &dummy2);
+         if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) )
+         {
+            pForces2->GetLiveLoadStress(pgsTypes::lltLegalRating_Routine, pgsTypes::BridgeSite3, vPoi, MaxSimpleContinuousEnvelope, true, false, &dummy1, &fTopMaxLegalRoutineLL, &dummy2, &fBotMaxLegalRoutineLL);
+            pForces2->GetLiveLoadStress(pgsTypes::lltLegalRating_Routine, pgsTypes::BridgeSite3, vPoi, MinSimpleContinuousEnvelope, true, false, &fTopMinLegalRoutineLL, &dummy1, &fBotMinLegalRoutineLL, &dummy2);
+         }
+
+         if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
+         {
+            pForces2->GetLiveLoadStress(pgsTypes::lltLegalRating_Special, pgsTypes::BridgeSite3, vPoi, MaxSimpleContinuousEnvelope, true, false, &dummy1, &fTopMaxLegalSpecialLL, &dummy2, &fBotMaxLegalSpecialLL);
+            pForces2->GetLiveLoadStress(pgsTypes::lltLegalRating_Special, pgsTypes::BridgeSite3, vPoi, MinSimpleContinuousEnvelope, true, false, &fTopMinLegalSpecialLL, &dummy1, &fBotMinLegalSpecialLL, &dummy2);
+         }
+
+         if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine) )
+         {
+            pForces2->GetLiveLoadStress(pgsTypes::lltPermitRating_Routine, pgsTypes::BridgeSite3, vPoi, MaxSimpleContinuousEnvelope, true, false, &dummy1, &fTopMaxPermitRoutineLL, &dummy2, &fBotMaxPermitRoutineLL);
+            pForces2->GetLiveLoadStress(pgsTypes::lltPermitRating_Routine, pgsTypes::BridgeSite3, vPoi, MinSimpleContinuousEnvelope, true, false, &fTopMinPermitRoutineLL, &dummy1, &fBotMinPermitRoutineLL, &dummy2);
+         }
+
+         if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Special) )
+         {
+            pForces2->GetLiveLoadStress(pgsTypes::lltPermitRating_Special, pgsTypes::BridgeSite3, vPoi, MaxSimpleContinuousEnvelope, true, false, &dummy1, &fTopMaxPermitSpecialLL, &dummy2, &fBotMaxPermitSpecialLL);
+            pForces2->GetLiveLoadStress(pgsTypes::lltPermitRating_Special, pgsTypes::BridgeSite3, vPoi, MinSimpleContinuousEnvelope, true, false, &fTopMinPermitSpecialLL, &dummy1, &fBotMinPermitSpecialLL, &dummy2);
+         }
       }
    }
    else
@@ -267,21 +341,52 @@ rptRcTable* CProductStressTable::Build(IBroker* pBroker,SpanIndexType span,Girde
       pForces2->GetStress( pgsTypes::BridgeSite2, pftTrafficBarrier, vPoi, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan, &fTopMaxTrafficBarrier, &fBotMaxTrafficBarrier);
       pForces2->GetStress( overlay_stage, pftOverlay, vPoi, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan, &fTopMaxOverlay, &fBotMaxOverlay);
 
-      if ( bPedLoading )
+      if ( bDesign )
       {
-         pForces2->GetLiveLoadStress(pgsTypes::lltPedestrian, pgsTypes::BridgeSite3, vPoi, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan, true, false, &fTopMinPedestrianLL, &fTopMaxPedestrianLL, &fBotMinPedestrianLL, &fBotMaxPedestrianLL);
+         if ( bPedLoading )
+         {
+            pForces2->GetLiveLoadStress(pgsTypes::lltPedestrian, pgsTypes::BridgeSite3, vPoi, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan, true, false, &fTopMinPedestrianLL, &fTopMaxPedestrianLL, &fBotMinPedestrianLL, &fBotMaxPedestrianLL);
+         }
+
+         pForces2->GetLiveLoadStress(pgsTypes::lltDesign, pgsTypes::BridgeSite3, vPoi, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan, true, false, &fTopMinDesignLL, &fTopMaxDesignLL, &fBotMinDesignLL, &fBotMaxDesignLL);
+
+         if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
+         {
+            pForces2->GetLiveLoadStress(pgsTypes::lltFatigue, pgsTypes::BridgeSite3, vPoi, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan, true, false, &fTopMinFatigueLL, &fTopMaxFatigueLL, &fBotMinFatigueLL, &fBotMaxFatigueLL);
+         }
+
+         if ( bPermit )
+         {
+            pForces2->GetLiveLoadStress(pgsTypes::lltPermit, pgsTypes::BridgeSite3, vPoi, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan, true, false, &fTopMinPermitLL, &fTopMaxPermitLL, &fBotMinPermitLL, &fBotMaxPermitLL);
+         }
       }
 
-      pForces2->GetLiveLoadStress(pgsTypes::lltDesign, pgsTypes::BridgeSite3, vPoi, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan, true, false, &fTopMinDesignLL, &fTopMaxDesignLL, &fBotMinDesignLL, &fBotMaxDesignLL);
-
-      if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
+      if ( bRating )
       {
-         pForces2->GetLiveLoadStress(pgsTypes::lltFatigue, pgsTypes::BridgeSite3, vPoi, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan, true, false, &fTopMinFatigueLL, &fTopMaxFatigueLL, &fBotMinFatigueLL, &fBotMaxFatigueLL);
-      }
+         if ( !bDesign && (pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) || pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating)) )
+         {
+            pForces2->GetLiveLoadStress(pgsTypes::lltDesign, pgsTypes::BridgeSite3, vPoi, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan, true, false, &fTopMinDesignLL, &fTopMaxDesignLL, &fBotMinDesignLL, &fBotMaxDesignLL);
+         }
 
-      if ( bPermit )
-      {
-         pForces2->GetLiveLoadStress(pgsTypes::lltPermit, pgsTypes::BridgeSite3, vPoi, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan, true, false, &fTopMinPermitLL, &fTopMaxPermitLL, &fBotMinPermitLL, &fBotMaxPermitLL);
+         if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) )
+         {
+            pForces2->GetLiveLoadStress(pgsTypes::lltLegalRating_Routine, pgsTypes::BridgeSite3, vPoi, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan, true, false, &fTopMinLegalRoutineLL, &fTopMaxLegalRoutineLL, &fBotMinLegalRoutineLL, &fBotMaxLegalRoutineLL);
+         }
+
+         if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
+         {
+            pForces2->GetLiveLoadStress(pgsTypes::lltLegalRating_Special, pgsTypes::BridgeSite3, vPoi, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan, true, false, &fTopMinLegalSpecialLL, &fTopMaxLegalSpecialLL, &fBotMinLegalSpecialLL, &fBotMaxLegalSpecialLL);
+         }
+
+         if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine) )
+         {
+            pForces2->GetLiveLoadStress(pgsTypes::lltPermitRating_Routine, pgsTypes::BridgeSite3, vPoi, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan, true, false, &fTopMinPermitRoutineLL, &fTopMaxPermitRoutineLL, &fBotMinPermitRoutineLL, &fBotMaxPermitRoutineLL);
+         }
+
+         if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Special) )
+         {
+            pForces2->GetLiveLoadStress(pgsTypes::lltPermitRating_Special, pgsTypes::BridgeSite3, vPoi, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan, true, false, &fTopMinPermitSpecialLL, &fTopMaxPermitSpecialLL, &fBotMinPermitSpecialLL, &fBotMaxPermitSpecialLL);
+         }
       }
    }
 
@@ -417,45 +522,106 @@ rptRcTable* CProductStressTable::Build(IBroker* pBroker,SpanIndexType span,Girde
       }
 
 
-      if ( bPedLoading )
+      if ( bDesign )
       {
-         (*p_table)(row,col) << RPT_FTOP << " = " << stress.SetValue(fTopMaxPedestrianLL[index]) << rptNewLine;
-         (*p_table)(row,col) << RPT_FBOT << " = " << stress.SetValue(fBotMaxPedestrianLL[index]);
+         if ( bPedLoading )
+         {
+            (*p_table)(row,col) << RPT_FTOP << " = " << stress.SetValue(fTopMaxPedestrianLL[index]) << rptNewLine;
+            (*p_table)(row,col) << RPT_FBOT << " = " << stress.SetValue(fBotMaxPedestrianLL[index]);
+            col++;
+
+            (*p_table)(row,col) << RPT_FTOP << " = " << stress.SetValue(fTopMinPedestrianLL[index]) << rptNewLine;
+            (*p_table)(row,col) << RPT_FBOT << " = " << stress.SetValue(fBotMinPedestrianLL[index]);
+            col++;
+         }
+
+         (*p_table)(row,col) << RPT_FTOP << " = " << stress.SetValue(fTopMaxDesignLL[index]) << rptNewLine;
+         (*p_table)(row,col) << RPT_FBOT << " = " << stress.SetValue(fBotMaxDesignLL[index]);
          col++;
 
-         (*p_table)(row,col) << RPT_FTOP << " = " << stress.SetValue(fTopMinPedestrianLL[index]) << rptNewLine;
-         (*p_table)(row,col) << RPT_FBOT << " = " << stress.SetValue(fBotMinPedestrianLL[index]);
+         (*p_table)(row,col) << RPT_FTOP << " = " << stress.SetValue(fTopMinDesignLL[index]) << rptNewLine;
+         (*p_table)(row,col) << RPT_FBOT << " = " << stress.SetValue(fBotMinDesignLL[index]);
          col++;
+
+         if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
+         {
+            (*p_table)(row,col) << RPT_FTOP << " = " << stress.SetValue(fTopMaxFatigueLL[index]) << rptNewLine;
+            (*p_table)(row,col) << RPT_FBOT << " = " << stress.SetValue(fBotMaxFatigueLL[index]);
+            col++;
+
+            (*p_table)(row,col) << RPT_FTOP << " = " << stress.SetValue(fTopMinFatigueLL[index]) << rptNewLine;
+            (*p_table)(row,col) << RPT_FBOT << " = " << stress.SetValue(fBotMinFatigueLL[index]);
+            col++;
+         }
+
+         if ( bPermit )
+         {
+            (*p_table)(row,col) << RPT_FTOP << " = " << stress.SetValue(fTopMaxPermitLL[index]) << rptNewLine;
+            (*p_table)(row,col) << RPT_FBOT << " = " << stress.SetValue(fBotMaxPermitLL[index]);
+            col++;
+
+            (*p_table)(row,col) << RPT_FTOP << " = " << stress.SetValue(fTopMinPermitLL[index]) << rptNewLine;
+            (*p_table)(row,col) << RPT_FBOT << " = " << stress.SetValue(fBotMinPermitLL[index]);
+            col++;
+         }
       }
 
-      (*p_table)(row,col) << RPT_FTOP << " = " << stress.SetValue(fTopMaxDesignLL[index]) << rptNewLine;
-      (*p_table)(row,col) << RPT_FBOT << " = " << stress.SetValue(fBotMaxDesignLL[index]);
-      col++;
-
-      (*p_table)(row,col) << RPT_FTOP << " = " << stress.SetValue(fTopMinDesignLL[index]) << rptNewLine;
-      (*p_table)(row,col) << RPT_FBOT << " = " << stress.SetValue(fBotMinDesignLL[index]);
-      col++;
-
-      if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
+      if ( bRating )
       {
-         (*p_table)(row,col) << RPT_FTOP << " = " << stress.SetValue(fTopMaxFatigueLL[index]) << rptNewLine;
-         (*p_table)(row,col) << RPT_FBOT << " = " << stress.SetValue(fBotMaxFatigueLL[index]);
-         col++;
+         if ( !bDesign && (pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) || pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating)) )
+         {
+            (*p_table)(row,col) << RPT_FTOP << " = " << stress.SetValue(fTopMaxDesignLL[index]) << rptNewLine;
+            (*p_table)(row,col) << RPT_FBOT << " = " << stress.SetValue(fBotMaxDesignLL[index]);
+            col++;
 
-         (*p_table)(row,col) << RPT_FTOP << " = " << stress.SetValue(fTopMinFatigueLL[index]) << rptNewLine;
-         (*p_table)(row,col) << RPT_FBOT << " = " << stress.SetValue(fBotMinFatigueLL[index]);
-         col++;
-      }
+            (*p_table)(row,col) << RPT_FTOP << " = " << stress.SetValue(fTopMinDesignLL[index]) << rptNewLine;
+            (*p_table)(row,col) << RPT_FBOT << " = " << stress.SetValue(fBotMinDesignLL[index]);
+            col++;
+         }
 
-      if ( bPermit )
-      {
-         (*p_table)(row,col) << RPT_FTOP << " = " << stress.SetValue(fTopMaxPermitLL[index]) << rptNewLine;
-         (*p_table)(row,col) << RPT_FBOT << " = " << stress.SetValue(fBotMaxPermitLL[index]);
-         col++;
+         if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) )
+         {
+            (*p_table)(row,col) << RPT_FTOP << " = " << stress.SetValue(fTopMaxLegalRoutineLL[index]) << rptNewLine;
+            (*p_table)(row,col) << RPT_FBOT << " = " << stress.SetValue(fBotMaxLegalRoutineLL[index]);
+            col++;
 
-         (*p_table)(row,col) << RPT_FTOP << " = " << stress.SetValue(fTopMinPermitLL[index]) << rptNewLine;
-         (*p_table)(row,col) << RPT_FBOT << " = " << stress.SetValue(fBotMinPermitLL[index]);
-         col++;
+            (*p_table)(row,col) << RPT_FTOP << " = " << stress.SetValue(fTopMinLegalRoutineLL[index]) << rptNewLine;
+            (*p_table)(row,col) << RPT_FBOT << " = " << stress.SetValue(fBotMinLegalRoutineLL[index]);
+            col++;
+         }
+
+         if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
+         {
+            (*p_table)(row,col) << RPT_FTOP << " = " << stress.SetValue(fTopMaxLegalSpecialLL[index]) << rptNewLine;
+            (*p_table)(row,col) << RPT_FBOT << " = " << stress.SetValue(fBotMaxLegalSpecialLL[index]);
+            col++;
+
+            (*p_table)(row,col) << RPT_FTOP << " = " << stress.SetValue(fTopMinLegalSpecialLL[index]) << rptNewLine;
+            (*p_table)(row,col) << RPT_FBOT << " = " << stress.SetValue(fBotMinLegalSpecialLL[index]);
+            col++;
+         }
+
+         if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine) )
+         {
+            (*p_table)(row,col) << RPT_FTOP << " = " << stress.SetValue(fTopMaxPermitRoutineLL[index]) << rptNewLine;
+            (*p_table)(row,col) << RPT_FBOT << " = " << stress.SetValue(fBotMaxPermitRoutineLL[index]);
+            col++;
+
+            (*p_table)(row,col) << RPT_FTOP << " = " << stress.SetValue(fTopMinPermitRoutineLL[index]) << rptNewLine;
+            (*p_table)(row,col) << RPT_FBOT << " = " << stress.SetValue(fBotMinPermitRoutineLL[index]);
+            col++;
+         }
+
+         if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Special) )
+         {
+            (*p_table)(row,col) << RPT_FTOP << " = " << stress.SetValue(fTopMaxPermitSpecialLL[index]) << rptNewLine;
+            (*p_table)(row,col) << RPT_FBOT << " = " << stress.SetValue(fBotMaxPermitSpecialLL[index]);
+            col++;
+
+            (*p_table)(row,col) << RPT_FTOP << " = " << stress.SetValue(fTopMinPermitSpecialLL[index]) << rptNewLine;
+            (*p_table)(row,col) << RPT_FBOT << " = " << stress.SetValue(fBotMinPermitSpecialLL[index]);
+            col++;
+         }
       }
 
       row++;

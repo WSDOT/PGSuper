@@ -22,7 +22,7 @@
 
 #include "StdAfx.h"
 #include "DesignGirder.h"
-#include "PGSuper.h"
+#include "PGSuperDoc.h"
 #include <PgsExt\BridgeDescription.h>
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
@@ -106,7 +106,7 @@ void txnDesignGirder::Init()
 void txnDesignGirder::DoExecute(int i)
 {
    CComPtr<IBroker> pBroker;
-   AfxGetBroker(&pBroker);
+   EAFGetBroker(&pBroker);
 
    GET_IFACE2(pBroker,IEvents, pEvents);
    pEvents->HoldEvents(); // don't fire any changed events until all changes are done
@@ -139,7 +139,7 @@ void txnDesignGirder::DoExecute(int i)
 void txnDesignGirder::CacheFlexureDesignResults()
 {
    CComPtr<IBroker> pBroker;
-   AfxGetBroker(&pBroker);
+   EAFGetBroker(&pBroker);
 
    GET_IFACE2(pBroker,IGirderData,pGirderData);
    GET_IFACE2(pBroker,IStrandGeometry, pStrandGeometry );
@@ -300,7 +300,7 @@ void txnDesignGirder::CacheFlexureDesignResults()
 void txnDesignGirder::CacheShearDesignResults()
 {
    CComPtr<IBroker> pBroker;
-   AfxGetBroker(&pBroker);
+   EAFGetBroker(&pBroker);
 
    GET_IFACE2(pBroker,IShear,pShear);
    // get the current data

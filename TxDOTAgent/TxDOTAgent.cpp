@@ -33,6 +33,8 @@
 #include "PGSuperCatCom.h"
 #include <System\ComCatMgr.h>
 
+#include <EAF\EAFComponentInfo.h>
+
 // interfaces used in this DLL.... resolves symbols for the linker
 #include <WBFLCore_i.c>
 #include <PGSuperIEPlugin_i.c>
@@ -65,7 +67,6 @@ STDAPI DllGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID* ppv)
     return _AtlModule.DllGetClassObject(rclsid, riid, ppv);
 }
 
-
 // DllRegisterServer - Adds entries to the system registry
 STDAPI DllRegisterServer(void)
 {
@@ -74,11 +75,15 @@ STDAPI DllRegisterServer(void)
    if ( FAILED(hr) )
       return hr;
 
-   hr = sysComCatMgr::RegWithCategory(CLSID_TxDOTAgent,CATID_PGSuperAgent,true);
+   hr = sysComCatMgr::RegWithCategory(CLSID_TxDOTAgent,CATID_PGSuperExtensionAgent,true);
    if ( FAILED(hr) )
       return hr;
 
-   hr = sysComCatMgr::RegWithCategory(CLSID_TxDOTCadExporter,CATID_PGSuperIEPlugin,true);
+   hr = sysComCatMgr::RegWithCategory(CLSID_TxDOTCadExporter,CATID_PGSuperDataExporter,true);
+   if ( FAILED(hr) )
+      return hr;
+
+   hr = sysComCatMgr::RegWithCategory(CLSID_TxDOTComponentInfo,CATID_PGSuperComponents,true);
    if ( FAILED(hr) )
       return hr;
 
@@ -93,11 +98,15 @@ STDAPI DllUnregisterServer(void)
    if ( FAILED(hr) )
       return hr;
 
-   hr = sysComCatMgr::RegWithCategory(CLSID_TxDOTAgent,CATID_PGSuperAgent,false);
+   hr = sysComCatMgr::RegWithCategory(CLSID_TxDOTAgent,CATID_PGSuperExtensionAgent,false);
    if ( FAILED(hr) )
       return hr;
 
-   hr = sysComCatMgr::RegWithCategory(CLSID_TxDOTCadExporter,CATID_PGSuperIEPlugin,false);
+   hr = sysComCatMgr::RegWithCategory(CLSID_TxDOTCadExporter,CATID_PGSuperDataExporter,false);
+   if ( FAILED(hr) )
+      return hr;
+
+   hr = sysComCatMgr::RegWithCategory(CLSID_TxDOTComponentInfo,CATID_PGSuperComponents,false);
    if ( FAILED(hr) )
       return hr;
 

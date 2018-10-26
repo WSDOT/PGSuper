@@ -132,7 +132,7 @@ HRESULT CBoxBeamFactory::FinalConstruct()
    return S_OK;
 }
 
-void CBoxBeamFactory::CreateGirderSection(IBroker* pBroker,long agentID,SpanIndexType spanIdx,GirderIndexType gdrIdx,const IBeamFactory::Dimensions& dimensions,IGirderSection** ppSection)
+void CBoxBeamFactory::CreateGirderSection(IBroker* pBroker,long statusGroupID,SpanIndexType spanIdx,GirderIndexType gdrIdx,const IBeamFactory::Dimensions& dimensions,IGirderSection** ppSection)
 {
    CComPtr<IBoxBeamSection> gdrsection;
    gdrsection.CoCreateInstance(CLSID_BoxBeamSection);

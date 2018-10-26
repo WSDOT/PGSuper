@@ -24,7 +24,7 @@
 //
 
 #include "stdafx.h"
-#include "PGSuper.h"
+#include "PGSuperDoc.h"
 #include "DebondGrid.h"
 #include "DebondDlg.h"
 #include "GirderDescDlg.h"
@@ -82,7 +82,7 @@ int CGirderDescDebondGrid::GetColWidth(ROWCOL nCol)
 void CGirderDescDebondGrid::InsertRow()
 {
    CComPtr<IBroker> pBroker;
-   AfxGetBroker(&pBroker);
+   EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
 
    CGirderDescDebondPage* pParent = (CGirderDescDebondPage*)GetParent();
@@ -132,7 +132,7 @@ void CGirderDescDebondGrid::CustomInit(bool bSymmetricDebond)
 // essential. For view based grids this initialization is done 
 // in OnInitialUpdate.
    CComPtr<IBroker> pBroker;
-   AfxGetBroker(&pBroker);
+   EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
 
 	Initialize( );
@@ -261,7 +261,7 @@ CString CGirderDescDebondGrid::GetCellValue(ROWCOL nRow, ROWCOL nCol)
 void CGirderDescDebondGrid::FillGrid(const std::vector<CDebondInfo>& debondInfo)
 {
    CComPtr<IBroker> pBroker;
-   AfxGetBroker(&pBroker);
+   EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
 
    GetParam()->EnableUndo(FALSE);
@@ -374,7 +374,7 @@ Float64 CGirderDescDebondGrid::GetRightDebondLength(ROWCOL row)
 Float64 CGirderDescDebondGrid::GetDebondLength(ROWCOL row,ROWCOL col)
 {
    CComPtr<IBroker> pBroker;
-   AfxGetBroker(&pBroker);
+   EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
 
    Float64 length;
@@ -485,7 +485,7 @@ StrandIndexType CGirderDescDebondGrid::GetNumDebondedStrands()
 void CGirderDescDebondGrid::SymmetricDebond(bool bSymmetricDebond)
 {
    CComPtr<IBroker> pBroker;
-   AfxGetBroker(&pBroker);
+   EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
 
 

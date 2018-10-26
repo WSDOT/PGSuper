@@ -34,6 +34,7 @@
 #include "BridgeDescLiftingPage.h"
 #include "DebondDlg.h"
 #include "BridgeDescGirderMaterialsPage.h"
+#include "GirderDescRatingPage.h"
 
 /////////////////////////////////////////////////////////////////////////////
 // CGirderDescDlg
@@ -57,6 +58,7 @@ public:
    CGirderDescLongitudinalRebar m_LongRebar;
    CGirderDescLiftingPage       m_Lifting;
    CGirderDescDebondPage        m_Debond;
+   CGirderDescRatingPage        m_Rating;
 
    std::string m_strGirderName;
    CGirderData m_GirderData;
@@ -87,6 +89,7 @@ protected:
    friend CGirderDescShearPage;
    friend CGirderDescDebondPage;
    friend CGirderDescLongitudinalRebar;
+   friend CGirderDescRatingPage;
 
 	//{{AFX_MSG(CGirderDescDlg)
 		// NOTE - the ClassWizard will add and remove member functions here.

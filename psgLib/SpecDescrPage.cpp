@@ -31,8 +31,8 @@
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
-//#undef THIS_FILE
-//static char THIS_FILE[] = __FILE__;
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
 #endif
 
 /////////////////////////////////////////////////////////////////////////////
@@ -66,7 +66,7 @@ void CSpecDescrPage::DoDataExchange(CDataExchange* pDX)
 BEGIN_MESSAGE_MAP(CSpecDescrPage, CPropertyPage)
 	//{{AFX_MSG_MAP(CSpecDescrPage)
 	ON_WM_CANCELMODE()
-   ON_CBN_SELCHANGE(IDC_SPECIFICATION,OnSpecificationChanged)
+    ON_CBN_SELCHANGE(IDC_SPECIFICATION,OnSpecificationChanged)
 	//}}AFX_MSG_MAP
 	ON_MESSAGE(WM_COMMANDHELP, OnCommandHelp)
 END_MESSAGE_MAP()
@@ -159,9 +159,7 @@ void CSpecDescrPage::OnSpecificationChanged()
    BOOL enable_si = TRUE;
    if (id > (DWORD)lrfdVersionMgr::ThirdEditionWith2006Interims)
    {
-      CButton* pUs = (CButton*)GetDlgItem(IDC_SPEC_UNITS_US);
-      pUs->SetCheck(BST_CHECKED);
-
+      CheckRadioButton(IDC_SPEC_UNITS_SI,IDC_SPEC_UNITS_US,IDC_SPEC_UNITS_US);
       enable_si = FALSE;
    }
 

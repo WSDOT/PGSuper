@@ -40,9 +40,10 @@
 #include <afxcmn.h>			// MFC support for Windows Common Controls
 #endif // _AFX_NO_AFXCMN_SUPPORT
 
+#include <atlbase.h>
+#include <atlcom.h>
 
 #include <IFace\Tools.h>
-#include "TipDlg.h"
 
 #if defined NOGRID
 #include "nogrid.h"
@@ -60,6 +61,15 @@
 
 #include <PgsExt\GirderLabel.h>
 #include <afxwin.h>
+
+#include <EAF\EAFUtilities.h> // so all files have EAFGetBroker
+#include <EAF\EAFResources.h> // so all files have EAF resource identifiers
+#include <EAF\EAFHints.h>     // so all files have EAF Doc/View hints
+
+#include <afxdlgs.h>
+
+#include "MakePgz\zip.h"
+#include "MakePgz\unzip.h"
 
 //{{AFX_INSERT_LOCATION}}
 // Microsoft Developer Studio will insert additional declarations immediately before the previous line.

@@ -28,11 +28,12 @@
 #include "SpecLossPage.h"
 #include "SpecMainSheet.h"
 #include "..\htmlhelp\HelpTopics.hh"
+#include <EAF\EAFApp.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
-//#undef THIS_FILE
-//static char THIS_FILE[] = __FILE__;
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
 #endif
 
 /////////////////////////////////////////////////////////////////////////////
@@ -199,6 +200,13 @@ BOOL CSpecLossPage::IsFractionalShippingLoss()
 
 void CSpecLossPage::OnShippingLossMethodChanged() 
 {
+   CEAFApp* pApp;
+   {
+      AFX_MANAGE_STATE(AfxGetAppModuleState());
+      pApp = (CEAFApp*)AfxGetApp();
+   }
+   const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
+
    CWnd* pTag = GetDlgItem(IDC_SHIPPING_TAG);
 
 	if ( IsFractionalShippingLoss() )
@@ -207,10 +215,7 @@ void CSpecLossPage::OnShippingLossMethodChanged()
    }
    else
    {
-      CSpecMainSheet* pDad = (CSpecMainSheet*)GetParent();
-      bool bUnitsSI = (pDad->m_Mode == libUnitsMode::UNITS_SI ? true : false);
-      const unitPressure& unit = (bUnitsSI ? unitMeasure::MPa : unitMeasure::KSI);
-      pTag->SetWindowText(unit.UnitTag().c_str());
+      pTag->SetWindowText(pDisplayUnits->Stress.UnitOfMeasure.UnitTag().c_str());
    }
 }
 

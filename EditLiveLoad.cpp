@@ -22,7 +22,7 @@
 
 #include "StdAfx.h"
 #include "EditLiveLoad.h"
-#include "PGSuper.h"
+#include "PGSuperDoc.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -80,7 +80,7 @@ bool txnEditLiveLoad::IsRepeatable()
 void txnEditLiveLoad::DoExecute(int i)
 {
    CComPtr<IBroker> pBroker;
-   AfxGetBroker(&pBroker);
+   EAFGetBroker(&pBroker);
 
    GET_IFACE2( pBroker, ILiveLoads, pLiveLoad );
    GET_IFACE2( pBroker, IEvents,    pEvents   );

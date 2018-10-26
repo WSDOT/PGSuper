@@ -37,6 +37,7 @@
 #include <psgLib\DiaphragmLayoutEntry.h>
 #include <psgLib\TrafficBarrierEntry.h>
 #include <psgLib\SpecLibraryEntry.h>
+#include <psgLib\RatingLibraryEntry.h>
 #include <psgLib\LiveLoadLibraryEntry.h>
 
 // LOCAL INCLUDES
@@ -49,17 +50,18 @@
 //
 // the available library types
 
-#define DECLARE_LIBRARY(name,entry_type) \
-   PSGLIBTPL libLibrary<entry_type>; \
-   typedef libLibrary<entry_type> name;
+#define DECLARE_LIBRARY(name,entry_type,min_count) \
+   PSGLIBTPL libLibrary<entry_type,min_count>; \
+   typedef libLibrary<entry_type,min_count> name;
 
-DECLARE_LIBRARY( ConcreteLibrary,        ConcreteLibraryEntry )
-DECLARE_LIBRARY( ConnectionLibrary,      ConnectionLibraryEntry )
-DECLARE_LIBRARY( GirderLibrary,          GirderLibraryEntry )
-DECLARE_LIBRARY( DiaphragmLayoutLibrary, DiaphragmLayoutEntry )
-DECLARE_LIBRARY( TrafficBarrierLibrary,  TrafficBarrierEntry )
-DECLARE_LIBRARY( SpecLibrary,            SpecLibraryEntry )
-DECLARE_LIBRARY( LiveLoadLibrary,        LiveLoadLibraryEntry )
+DECLARE_LIBRARY( ConcreteLibrary,        ConcreteLibraryEntry,   0 )
+DECLARE_LIBRARY( ConnectionLibrary,      ConnectionLibraryEntry, 1 )
+DECLARE_LIBRARY( GirderLibrary,          GirderLibraryEntry,     1 )
+DECLARE_LIBRARY( DiaphragmLayoutLibrary, DiaphragmLayoutEntry,   0 )
+DECLARE_LIBRARY( TrafficBarrierLibrary,  TrafficBarrierEntry,    1 )
+DECLARE_LIBRARY( SpecLibrary,            SpecLibraryEntry,       1 )
+DECLARE_LIBRARY( RatingLibrary,          RatingLibraryEntry,     1 )
+DECLARE_LIBRARY( LiveLoadLibrary,        LiveLoadLibraryEntry,   0 )
 
 
 /*****************************************************************************
@@ -113,6 +115,8 @@ public:
    const TrafficBarrierLibrary& GetTrafficBarrierLibrary() const;
    SpecLibrary* GetSpecLibrary();
    const SpecLibrary* GetSpecLibrary() const;
+   RatingLibrary* GetRatingLibrary();
+   const RatingLibrary* GetRatingLibrary() const;
    LiveLoadLibrary* GetLiveLoadLibrary();
    const LiveLoadLibrary* GetLiveLoadLibrary() const;
 
@@ -140,6 +144,7 @@ private:
    Uint32 m_DiapLibIdx;
    Uint32 m_BarrLibIdx;
    Uint32 m_SpecLibIdx;
+   Uint32 m_RatingLibIdx;
    Uint32 m_LiveLibIdx;
 
    std::string m_strPublisher;

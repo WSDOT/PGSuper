@@ -211,6 +211,7 @@ void CSectionCutDisplayImpl::Draw(iPointDisplayObject* pDO,CDC* pDC,COLORREF col
 {
    Float64 x;
    userLoc->get_X(&x);
+   x = ::ForceIntoRange(0.0,x,m_gdrLength);
 
    Float64 wtop, wleft, wright, wbottom;
    GetBoundingBox(pDO, x, &wtop, &wleft, &wright, &wbottom);

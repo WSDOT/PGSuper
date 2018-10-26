@@ -23,6 +23,7 @@
 #include "stdafx.h"
 #include "resource.h"
 #include "PGSuperPluginMgr.h"
+#include <EAF\EAFApp.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -38,6 +39,8 @@ bool CPGSuperPluginMgr::LoadPlugins()
 {
    USES_CONVERSION;
 
+   CWaitCursor cursor;
+
    CComPtr<ICatRegister> pICatReg;
    HRESULT hr = pICatReg.CoCreateInstance(CLSID_StdComponentCategoriesMgr);
    if ( FAILED(hr) )
@@ -51,46 +54,102 @@ bool CPGSuperPluginMgr::LoadPlugins()
 
    const int nID = 1;
    CATID ID[nID];
-   ID[0] = CATID_PGSuperIEPlugin;
 
+   ID[0] = CATID_PGSuperDataImporter;
    pICatInfo->EnumClassesOfCategories(nID,ID,0,NULL,&pIEnumCLSID);
 
-   // load all importers
-   UINT cmdImporter = FIRST_IMPORT_PLUGIN;
-   UINT cmdExporter = FIRST_EXPORT_PLUGIN;
+   CEAFApp* pApp = (CEAFApp*)AfxGetApp();
 
-   CLSID clsid[5]; 
+   const int nPlugins = 5;
+   CLSID clsid[nPlugins]; 
    ULONG nFetched = 0;
-   while ( SUCCEEDED(pIEnumCLSID->Next(5,clsid,&nFetched)) && 0 < nFetched)
+
+   // Load Importers
+   UINT cmdImporter = FIRST_DATA_IMPORTER_PLUGIN;
+   while ( SUCCEEDED(pIEnumCLSID->Next(nPlugins,clsid,&nFetched)) && 0 < nFetched)
    {
       for ( ULONG i = 0; i < nFetched; i++ )
       {
-         CComPtr<IUnknown> unknown;
-         unknown.CoCreateInstance(clsid[i]);
+         LPOLESTR pszCLSID;
+         ::StringFromCLSID(clsid[i],&pszCLSID);
+         CString strState = pApp->GetProfileString(_T("Plugins"),OLE2A(pszCLSID),_T("Enabled"));
 
-         if ( !unknown )
+         if ( strState.CompareNoCase("Enabled") == 0 )
          {
-            LPOLESTR pszUserType;
-            OleRegGetUserType(clsid[i],USERCLASSTYPE_SHORT,&pszUserType);
-            CString strMsg;
-            strMsg.Format("Failed to load %s Import/Export plug in",OLE2A(pszUserType));
-            AfxMessageBox(strMsg);
+            CComPtr<IPGSuperDataImporter> importer;
+            importer.CoCreateInstance(clsid[i]);
+
+            if ( !importer )
+            {
+               LPOLESTR pszUserType;
+               OleRegGetUserType(clsid[i],USERCLASSTYPE_SHORT,&pszUserType);
+               CString strMsg;
+               strMsg.Format("Failed to load %s PGSuper Data Importer plug in.\n\nWould you like to disable this plug-in?",OLE2A(pszUserType));
+               if ( AfxMessageBox(strMsg,MB_YESNO | MB_ICONQUESTION) == IDYES )
+               {
+                  pApp->WriteProfileString(_T("Plugins"),OLE2A(pszCLSID),_T("Disabled"));
+               }
+            }
+            else
+            {
+               ImporterRecord record;
+               record.commandID = cmdImporter++;
+               record.Plugin    = importer;
+
+               HBITMAP hBmp;
+               importer->GetBitmapHandle(&hBmp);
+               record.Bitmap.Attach(hBmp);
+               m_ImporterPlugins.push_back( record );
+            }
          }
-         else
+
+         ::CoTaskMemFree((void*)pszCLSID);
+      }
+   }
+
+   // Load Exporters
+   ID[0] = CATID_PGSuperDataExporter;
+   pIEnumCLSID.Release();
+   pICatInfo->EnumClassesOfCategories(nID,ID,0,NULL,&pIEnumCLSID);
+   UINT cmdExporter = FIRST_DATA_EXPORTER_PLUGIN;
+   while ( SUCCEEDED(pIEnumCLSID->Next(nPlugins,clsid,&nFetched)) && 0 < nFetched)
+   {
+      for ( ULONG i = 0; i < nFetched; i++ )
+      {
+         LPOLESTR pszCLSID;
+         ::StringFromCLSID(clsid[i],&pszCLSID);
+         CString strState = pApp->GetProfileString(_T("Plugins"),OLE2A(pszCLSID),_T("Enabled"));
+
+         if ( strState.CompareNoCase("Enabled") == 0 )
          {
-            CComQIPtr<IPGSuperImporter> importer(unknown);
-            CComQIPtr<IPGSuperExporter> exporter(unknown);
+            CComPtr<IPGSuperDataExporter> exporter;
+            exporter.CoCreateInstance(clsid[i]);
 
-            if ( importer )
+            if ( !exporter )
             {
-               m_ImporterPlugins.push_back( std::make_pair(cmdImporter++,importer) );
+               LPOLESTR pszUserType;
+               OleRegGetUserType(clsid[i],USERCLASSTYPE_SHORT,&pszUserType);
+               CString strMsg;
+               strMsg.Format("Failed to load %s PGSuper Data Export plug in.\n\nWould you like to disable this plug-in?",OLE2A(pszUserType));
+               if ( AfxMessageBox(strMsg,MB_YESNO | MB_ICONQUESTION) == IDYES )
+               {
+                  pApp->WriteProfileString(_T("Plugins"),OLE2A(pszCLSID),_T("Disabled"));
+               }
             }
-
-            if ( exporter )
+            else
             {
-               m_ExporterPlugins.push_back( std::make_pair(cmdExporter++,exporter) );
+               ExporterRecord record;
+               record.commandID = cmdExporter++;
+               record.Plugin    = exporter;
+
+               HBITMAP hBmp;
+               exporter->GetBitmapHandle(&hBmp);
+               record.Bitmap.Attach(hBmp);
+               m_ExporterPlugins.push_back( record );
             }
          }
+
+         ::CoTaskMemFree((void*)pszCLSID);
       }
    }
 
@@ -113,11 +172,11 @@ Uint32 CPGSuperPluginMgr::GetExporterCount()
    return m_ExporterPlugins.size();
 }
 
-void CPGSuperPluginMgr::GetPGSuperImporter(Uint32 key,bool bByIndex,IPGSuperImporter** ppImporter)
+void CPGSuperPluginMgr::GetPGSuperImporter(Uint32 key,bool bByIndex,IPGSuperDataImporter** ppImporter)
 {
    if ( bByIndex )
    {
-      (*ppImporter) = m_ImporterPlugins[key].second;
+      (*ppImporter) = m_ImporterPlugins[key].Plugin;
       (*ppImporter)->AddRef();
    }
    else
@@ -125,9 +184,9 @@ void CPGSuperPluginMgr::GetPGSuperImporter(Uint32 key,bool bByIndex,IPGSuperImpo
       std::vector<ImporterRecord>::iterator iter;
       for ( iter = m_ImporterPlugins.begin(); iter != m_ImporterPlugins.end(); iter++ )
       {
-         if ( key == (*iter).first )
+         if ( key == (*iter).commandID )
          {
-            (*ppImporter) = (*iter).second;
+            (*ppImporter) = (*iter).Plugin;
             (*ppImporter)->AddRef();
             return;
          }
@@ -135,11 +194,11 @@ void CPGSuperPluginMgr::GetPGSuperImporter(Uint32 key,bool bByIndex,IPGSuperImpo
    }
 }
 
-void CPGSuperPluginMgr::GetPGSuperExporter(Uint32 key,bool bByIndex,IPGSuperExporter** ppExporter)
+void CPGSuperPluginMgr::GetPGSuperExporter(Uint32 key,bool bByIndex,IPGSuperDataExporter** ppExporter)
 {
    if ( bByIndex )
    {
-      (*ppExporter) = m_ExporterPlugins[key].second;
+      (*ppExporter) = m_ExporterPlugins[key].Plugin;
       (*ppExporter)->AddRef();
    }
    else
@@ -147,9 +206,9 @@ void CPGSuperPluginMgr::GetPGSuperExporter(Uint32 key,bool bByIndex,IPGSuperExpo
       std::vector<ExporterRecord>::iterator iter;
       for ( iter = m_ExporterPlugins.begin(); iter != m_ExporterPlugins.end(); iter++ )
       {
-         if ( key == (*iter).first )
+         if ( key == (*iter).commandID )
          {
-            (*ppExporter) = (*iter).second;
+            (*ppExporter) = (*iter).Plugin;
             (*ppExporter)->AddRef();
             return;
          }
@@ -159,10 +218,20 @@ void CPGSuperPluginMgr::GetPGSuperExporter(Uint32 key,bool bByIndex,IPGSuperExpo
 
 UINT CPGSuperPluginMgr::GetPGSuperImporterCommand(Uint32 idx)
 {
-   return m_ImporterPlugins[idx].first;
+   return m_ImporterPlugins[idx].commandID;
 }
 
 UINT CPGSuperPluginMgr::GetPGSuperExporterCommand(Uint32 idx)
 {
-   return m_ExporterPlugins[idx].first;
+   return m_ExporterPlugins[idx].commandID;
+}
+
+const CBitmap* CPGSuperPluginMgr::GetPGSuperImporterBitmap(Uint32 idx)
+{
+   return &m_ImporterPlugins[idx].Bitmap;
+}
+
+const CBitmap* CPGSuperPluginMgr::GetPGSuperExporterBitmap(Uint32 idx)
+{
+   return &m_ExporterPlugins[idx].Bitmap;
 }

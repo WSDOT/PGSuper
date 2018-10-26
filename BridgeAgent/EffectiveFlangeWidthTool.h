@@ -70,7 +70,7 @@ public:
 	{
 	}
 
-   void Init(IBroker* pBroker,AgentIDType agentID);
+   void Init(IBroker* pBroker,StatusGroupIDType statusGroupID);
 
    HRESULT FinalConstruct();
    void FinalRelease();
@@ -89,7 +89,7 @@ END_COM_MAP()
 private:
    CComPtr<IEffectiveFlangeWidthTool> m_Tool;
    IBroker* m_pBroker;
-   AgentIDType m_AgentID;
+   StatusGroupIDType m_StatusGroupID;
 
    // callback IDs for the status callbacks we register
    StatusCallbackIDType m_scidInformationalWarning;

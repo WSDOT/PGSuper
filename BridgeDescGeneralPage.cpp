@@ -24,7 +24,8 @@
 //
 
 #include "stdafx.h"
-#include "pgsuper.h"
+#include "PGSuper.h"
+#include "PGSuperDoc.h"
 #include "PGSuperUnits.h"
 #include "BridgeDescGeneralPage.h"
 #include "BridgeDescDlg.h"
@@ -102,7 +103,7 @@ void CBridgeDescGeneralPage::DoDataExchange(CDataExchange* pDX)
    }
 
    CComPtr<IBroker> pBroker;
-   AfxGetBroker(&pBroker);
+   EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
 
    if ( IsGirderSpacing(m_GirderSpacingType) )
@@ -235,7 +236,7 @@ void CBridgeDescGeneralPage::Init()
    CBridgeDescDlg* pParent = (CBridgeDescDlg*)GetParent();
 
    CComPtr<IBroker> pBroker;
-   AfxGetBroker(&pBroker);
+   EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker, IDisplayUnits, pDisplayUnits);
 
    m_bSameNumberOfGirders = pParent->m_BridgeDesc.UseSameNumberOfGirdersInAllSpans();
@@ -304,6 +305,17 @@ void CBridgeDescGeneralPage::Init()
    m_CacheDeckEdgePoints = m_Deck.DeckEdgePoints;
 
    UpdateMinimumGirderCount();
+
+   //GET_IFACE2(pBroker,IBridgeDescription,pBridgeDesc);
+   //if ( pBridgeDesc->IsPostTensioningModeled() )
+   //{
+   //   // disable elements of the UI that can't be changed when the bridge model has PT
+   //   CWnd* pWnd = GetDlgItem(IDC_NUMGDR_SPIN);
+   //   pWnd->EnableWindow(FALSE);
+
+   //   pWnd = GetDlgItem(IDC_SAME_NUM_GIRDERLINES);
+   //   pWnd->EnableWindow(FALSE);
+   //}
 }
 
 void CBridgeDescGeneralPage::UpdateBridgeDescription()
@@ -326,7 +338,7 @@ void CBridgeDescGeneralPage::UpdateBridgeDescription()
       pParent->m_BridgeDesc.SetGirderName(m_GirderName);
 
       CComPtr<IBroker> pBroker;
-      AfxGetBroker(&pBroker);
+      EAFGetBroker(&pBroker);
       GET_IFACE2( pBroker, ILibrary, pLib );
    
       const GirderLibraryEntry* pGdrEntry = pLib->GetGirderEntry(m_GirderName);
@@ -514,7 +526,7 @@ void CBridgeDescGeneralPage::OnNumGirdersChanged(NMHDR* pNMHDR, LRESULT* pResult
 void CBridgeDescGeneralPage::FillGirderFamilyComboBox()
 {
    CComPtr<IBroker> pBroker;
-   AfxGetBroker(&pBroker);
+   EAFGetBroker(&pBroker);
    GET_IFACE2( pBroker, ILibraryNames, pLibNames );
    std::vector<std::string> names;
    std::vector<std::string>::iterator iter;
@@ -543,7 +555,7 @@ void CBridgeDescGeneralPage::FillGirderFamilyComboBox()
 void CBridgeDescGeneralPage::FillGirderNameComboBox()
 {
    CComPtr<IBroker> pBroker;
-   AfxGetBroker(&pBroker);
+   EAFGetBroker(&pBroker);
 
    GET_IFACE2( pBroker, ILibraryNames, pLibNames );
    std::vector<std::string> names;
@@ -670,7 +682,7 @@ void CBridgeDescGeneralPage::FillGirderSpacingTypeComboBox()
 
    // update the unit tag that goes with the spacing input box
    CComPtr<IBroker> pBroker;
-   AfxGetBroker(&pBroker);
+   EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
    CDataExchange dx(this,FALSE);
    if ( IsGirderSpacing(m_GirderSpacingType) )
@@ -721,7 +733,7 @@ void CBridgeDescGeneralPage::FillGirderSpacingMeasurementComboBox()
 bool CBridgeDescGeneralPage::AreAnyBearingsMeasuredAlongGirder()
 {
    CComPtr<IBroker> pBroker;
-   AfxGetBroker(&pBroker);
+   EAFGetBroker(&pBroker);
    GET_IFACE2( pBroker, ILibrary, pLib );
    
    bool test=false;
@@ -844,7 +856,7 @@ void CBridgeDescGeneralPage::FillGirderConnectivityComboBox()
 void CBridgeDescGeneralPage::UpdateGirderFactory()
 {
    CComPtr<IBroker> pBroker;
-   AfxGetBroker(&pBroker);
+   EAFGetBroker(&pBroker);
 
    GET_IFACE2( pBroker, ILibraryNames, pLibNames );
    m_Factory.Release();
@@ -907,7 +919,7 @@ void CBridgeDescGeneralPage::UpdateMinimumGirderCount()
 {
    // Determine minimum number of girders
    CComPtr<IBroker> pBroker;
-   AfxGetBroker(&pBroker);
+   EAFGetBroker(&pBroker);
    GET_IFACE2( pBroker, ILibrary, pLib );
    const GirderLibraryEntry* pGdrEntry = pLib->GetGirderEntry(m_GirderName);
 
@@ -1066,7 +1078,7 @@ void CBridgeDescGeneralPage::OnGirderSpacingTypeChanged()
 
    // update the the unit of measure
    CComPtr<IBroker> pBroker;
-   AfxGetBroker(&pBroker);
+   EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker, IDisplayUnits, pDisplayUnits);
 
    CWnd* pWnd = GetDlgItem(IDC_SPACING_UNIT);
@@ -1176,7 +1188,7 @@ BOOL CBridgeDescGeneralPage::UpdateGirderSpacingLimits()
    }
 
    CComPtr<IBroker> pBroker;
-   AfxGetBroker(&pBroker);
+   EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker, IBridge,       pBridge);
    GET_IFACE2(pBroker, IDisplayUnits, pDisplayUnits);
 
@@ -1318,7 +1330,7 @@ void CBridgeDescGeneralPage::UpdateSuperstructureDescription()
    ASSERT( pParent->IsKindOf(RUNTIME_CLASS(CBridgeDescDlg)) );
 
    CComPtr<IBroker> pBroker;
-   AfxGetBroker(&pBroker);
+   EAFGetBroker(&pBroker);
    GET_IFACE2( pBroker, ILibrary, pLib );
 
    CComboBox* pCBGirders = (CComboBox*)GetDlgItem(IDC_GDR_TYPE);
@@ -1447,7 +1459,8 @@ BOOL CBridgeDescGeneralPage::OnToolTipNotify(UINT id,NMHDR* pNMHDR, LRESULT* pRe
 
       if ( bShowTip )
       {
-         ::SendMessage(pNMHDR->hwndFrom,TTM_SETMAXTIPWIDTH,0,300); // makes it a multi-line tooltip
+         ::SendMessage(pNMHDR->hwndFrom,TTM_SETDELAYTIME,TTDT_AUTOPOP,TOOLTIP_DURATION); // sets the display time to 10 seconds
+         ::SendMessage(pNMHDR->hwndFrom,TTM_SETMAXTIPWIDTH,0,TOOLTIP_WIDTH); // makes it a multi-line tooltip
          pTTT->lpszText = m_strToolTipText.LockBuffer();
          pTTT->hinst = NULL;
          return TRUE;
@@ -1463,8 +1476,9 @@ BOOL CBridgeDescGeneralPage::OnToolTipNotify(UINT id,NMHDR* pNMHDR, LRESULT* pRe
 
 void CBridgeDescGeneralPage::UIHint(const CString& strText,UINT mask)
 {
-   CPGSuperApp* pApp = (CPGSuperApp*)AfxGetApp();
-   Uint32 hintSettings = pApp->GetUIHintSettings();
+   CMainFrame* pFrame = (CMainFrame*)AfxGetMainWnd();
+   CPGSuperDoc* pDoc  = (CPGSuperDoc*)pFrame->GetDocument();
+   Uint32 hintSettings = pDoc->GetUIHintSettings();
    if ( sysFlags<Uint32>::IsClear(hintSettings,mask) )
    {
       CUIHintsDlg dlg;
@@ -1474,7 +1488,7 @@ void CBridgeDescGeneralPage::UIHint(const CString& strText,UINT mask)
       if ( dlg.m_bDontShowAgain )
       {
          sysFlags<Uint32>::Set(&hintSettings,mask);
-         pApp->SetUIHintSettings(hintSettings);
+         pDoc->SetUIHintSettings(hintSettings);
       }
    }
 }
@@ -1513,7 +1527,7 @@ void CBridgeDescGeneralPage::InitGirderName()
 {
    // Gets the first girder name for the current girder family
    CComPtr<IBroker> pBroker;
-   AfxGetBroker(&pBroker);
+   EAFGetBroker(&pBroker);
    GET_IFACE2( pBroker, ILibraryNames, pLibNames );
    std::vector<std::string> names;
    pLibNames->EnumGirderNames(m_GirderFamilyName, &names );

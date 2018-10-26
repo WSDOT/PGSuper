@@ -35,117 +35,6 @@ m_cFolderSeparator(chSep)
 {
 }
 
-//void CPGSuperTemplateManager::GetTemplatesFromFTP(CFtpConnection* pFTP,const CString& strRootSourcePath,const CString& strRootDestinationPath,IProgressMonitor* pProgress)
-//{
-//   // Get files at the root level
-//   GetTemplateFilesFromFTP(pFTP,strRootSourcePath,strRootDestinationPath,pProgress);
-//
-//   // Drill down into sub folders
-//   CFtpFileFind finder(pFTP);
-//   CString strObject = strRootSourcePath + "/";
-//   BOOL bWorkingOnFolders = finder.FindFile(strObject);
-//   std::vector<std::pair<CString,CString>> folders;
-//   while ( bWorkingOnFolders )
-//   {
-//      bWorkingOnFolders = finder.FindNextFile();
-//      if ( finder.IsDirectory() && !finder.IsDots() )
-//      {
-//         CString strSourcePath;
-//         strSourcePath.Format("%s/%s",strRootSourcePath,finder.GetFileTitle());
-//
-//         CString strDestinationPath;
-//         strDestinationPath.Format("%s\\%s",strRootDestinationPath,finder.GetFileTitle());
-//
-//         folders.push_back(std::make_pair(strSourcePath,strDestinationPath));
-//      }
-//   }
-//   finder.Close();
-//
-//   std::vector<std::pair<CString,CString>>::iterator iter;
-//   for ( iter = folders.begin(); iter != folders.end(); iter++ )
-//   {
-//      CString strSourcePath      = iter->first;
-//      CString strDestinationPath = iter->second;
-//
-//
-//      ::CreateDirectory(strDestinationPath,NULL);
-//
-//      GetTemplatesFromFTP(pFTP,strSourcePath,strDestinationPath,pProgress);
-//   }
-//}
-//
-//void CPGSuperTemplateManager::GetTemplateFilesFromFTP(CFtpConnection* pFTP,const CString& strSourcePath,const CString& strDestinationPath,IProgressMonitor* pProgress)
-//{
-//   CString strTemplateSuffix;
-//   VERIFY(strTemplateSuffix.LoadString(IDS_TEMPLATE_FILE_SUFFIX));
-//   ASSERT(!strTemplateSuffix.IsEmpty());
-//
-//   CFtpFileFind template_finder(pFTP);
-//   CString strTemplateFileSpec = strSourcePath + CString("/*.") + strTemplateSuffix;
-//
-//   BOOL bWorkingOnFiles = template_finder.FindFile(strTemplateFileSpec);
-//   while ( bWorkingOnFiles )
-//   {
-//      bWorkingOnFiles = template_finder.FindNextFile();
-//      CString strRemoteFile = template_finder.GetFilePath();
-//
-//      CString strLocalFile = strDestinationPath + "\\" + template_finder.GetFileName();
-//
-//      CString strMessage;
-//      strMessage.Format("Downloading %s",template_finder.GetFileTitle());
-//      pProgress->put_Message(0,CComBSTR(strMessage));
-//
-//      BOOL bSuccess = false;
-//      int count = 0;
-//
-//      do
-//      {
-//         bSuccess = pFTP->GetFile(strRemoteFile,strLocalFile,FALSE,FILE_ATTRIBUTE_NORMAL,FTP_TRANSFER_TYPE_ASCII | INTERNET_FLAG_RELOAD);
-//      } while (!bSuccess && count++ < 3);
-//
-//      if ( !bSuccess )
-//      {
-//         strMessage.Format("Failed to download %s",template_finder.GetFileTitle());
-//         pProgress->put_Message(0,CComBSTR(strMessage));
-//      }
-//   } // end of while
-//
-//   template_finder.Close();
-//
-//
-//   CFtpFileFind icon_finder(pFTP);
-//   CString strIconFileSpec = strSourcePath + CString("/*.ico");
-//
-//   bWorkingOnFiles = icon_finder.FindFile(strIconFileSpec);
-//   while ( bWorkingOnFiles )
-//   {
-//      bWorkingOnFiles = icon_finder.FindNextFile();
-//      CString strRemoteFile = icon_finder.GetFilePath();
-//
-//      CString strLocalFile = strDestinationPath + "\\" + icon_finder.GetFileName();
-//
-//      CString strMessage;
-//      strMessage.Format("Downloading icon for %s",icon_finder.GetFileTitle());
-//      pProgress->put_Message(0,CComBSTR(strMessage));
-//
-//      BOOL bSuccess = false;
-//      int count = 0;
-//
-//      do
-//      {
-//         bSuccess = pFTP->GetFile(strRemoteFile,strLocalFile,FALSE,FILE_ATTRIBUTE_NORMAL,FTP_TRANSFER_TYPE_ASCII | INTERNET_FLAG_RELOAD);
-//      } while (!bSuccess && count++ < 3);
-//
-//      if ( !bSuccess )
-//      {
-//         strMessage.Format("Failed to download icon for %s",icon_finder.GetFileTitle());
-//         pProgress->put_Message(0,CComBSTR(strMessage));
-//      }
-//   } // end of while
-//
-//   icon_finder.Close();
-//}
-
 void CPGSuperTemplateManager::GetTemplates(const CString& strRootSourcePath,const CString& strRootDestinationPath,IProgressMonitor* pProgress)
 {
    // Get files at the root level
@@ -158,20 +47,22 @@ void CPGSuperTemplateManager::GetTemplates(const CString& strRootSourcePath,cons
    if ( strObject.GetAt(strObject.GetLength()-1) != m_cFolderSeparator )
       strObject += CString(m_cFolderSeparator);
 
-   strObject += "*";
+   strObject += "*.*";
 
    BOOL bWorkingOnFolders = pFinder->FindFile(strObject);
    std::vector<std::pair<CString,CString>> folders;
    while ( bWorkingOnFolders )
    {
       bWorkingOnFolders = pFinder->FindNextFile();
-      if ( pFinder->IsDirectory() && !pFinder->IsDots() )
+      CString strFileTitle = pFinder->GetFileTitle();
+      if ( pFinder->IsDirectory() && !pFinder->IsDots() && strFileTitle != "" )
       {
+
          CString strSourcePath;
-         strSourcePath.Format("%s%c%s",strRootSourcePath,m_cFolderSeparator,pFinder->GetFileTitle());
+         strSourcePath.Format("%s%c%s",strRootSourcePath,m_cFolderSeparator,strFileTitle);
 
          CString strDestinationPath;
-         strDestinationPath.Format("%s\\%s",strRootDestinationPath,pFinder->GetFileTitle());
+         strDestinationPath.Format("%s\\%s",strRootDestinationPath,strFileTitle);
 
          folders.push_back(std::make_pair(strSourcePath,strDestinationPath));
       }

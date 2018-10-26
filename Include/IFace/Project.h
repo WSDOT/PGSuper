@@ -41,6 +41,8 @@ COPYRIGHT
 
 #include <Material\Material.h>
 
+#include <EAF\EAFProjectLog.h> // IProjectLog was moved... do the include here so other files don't have to change
+
 // LOCAL INCLUDES
 //
 
@@ -114,34 +116,6 @@ inline LldfRangeOfApplicabilityAction GetLldfActionForInt(long iaction)
 
 /*****************************************************************************
 INTERFACE
-   IProjectLog
-
-   Interface for project wide message/error logging.
-
-DESCRIPTION
-   Interface for project wide message/error logging.
-*****************************************************************************/
-// {95DE8B60-2D53-11d2-8EB4-006097DF3C68}
-DEFINE_GUID(IID_IProjectLog,
-0x95DE8B60, 0x2D53, 0x11d2, 0x8E, 0xB4, 0x00, 0x60, 0x97, 0xDF, 0x3C, 0x68);
-interface IProjectLog : IUnknown
-{
-   //------------------------------------------------------------------------
-   // Returns the name of the log file
-   virtual std::string GetName() = 0;
-
-   //------------------------------------------------------------------------
-   // Writes a message to the log file
-   virtual void LogMessage( const char* lpszMsg ) = 0;
-
-   //------------------------------------------------------------------------
-   // Destroys the log file.
-   virtual void Destroy() = 0;
-};
-
-
-/*****************************************************************************
-INTERFACE
    IProjectProperties
 
    Interface to edit project properties.
@@ -190,41 +164,6 @@ DEFINE_GUID(IID_IProjectPropertiesEventSink,
 interface IProjectPropertiesEventSink : IUnknown
 {
    virtual HRESULT OnProjectPropertiesChanged() = 0;
-};
-
-/*****************************************************************************
-INTERFACE
-   IProjectSettings
-
-   Interface for general project settings.
-
-DESCRIPTION
-   Interface for general project settings.
-*****************************************************************************/
-// {A012AC80-2727-11d2-8EB0-006097DF3C68}
-DEFINE_GUID(IID_IProjectSettings,
-0xA012AC80, 0x2727, 0x11d2, 0x8E, 0xB0, 0x00, 0x60, 0x97, 0xDF, 0x3C, 0x68);
-interface IProjectSettings : IUnknown
-{
-   virtual pgsTypes::UnitMode GetUnitsMode() const = 0;
-	virtual void SetUnitsMode(pgsTypes::UnitMode newVal) = 0;
-};
-
-/*****************************************************************************
-INTERFACE
-   IProjectSettingsEventSink
-
-   Callback interface for project settings.
-
-DESCRIPTION
-   Callback interface for project settings.
-*****************************************************************************/
-// {015A4130-272C-11d2-8EB0-006097DF3C68}
-DEFINE_GUID(IID_IProjectSettingsEventSink,
-0x015A4130, 0x272C, 0x11d2, 0x8E, 0xB0, 0x00, 0x60, 0x97, 0xDF, 0x3C, 0x68);
-interface IProjectSettingsEventSink : IUnknown
-{
-   virtual HRESULT OnUnitsChanged(Int32 units) = 0;
 };
 
 /*****************************************************************************
@@ -524,6 +463,9 @@ interface ISpecification : IUnknown
    virtual bool IsSlabOffsetDesignEnabled() = 0; // global setting from library
 
    virtual pgsTypes::OverlayLoadDistributionType GetOverlayLoadDistributionType() = 0;
+
+   virtual std::string GetRatingSpecification() const = 0;
+   virtual void SetRatingSpecification(const std::string& spec) = 0;
 };
 
 /*****************************************************************************
@@ -569,6 +511,8 @@ interface ILibraryNames : IUnknown
 
    virtual void EnumGirderFamilyNames( std::vector<std::string>* pNames ) = 0;
    virtual void GetBeamFactory(const std::string& strBeamFamily,const std::string& strBeamName,IBeamFactory** ppFactory) = 0;
+
+   virtual void EnumRatingCriteriaNames( std::vector<std::string>* pNames) const = 0;
 };
 
 /*****************************************************************************
@@ -586,6 +530,7 @@ DEFINE_GUID(IID_ILibrary,
 interface ILibrary : IUnknown
 {
    virtual void SetLibraryManager(psgLibraryManager* pNewLibMgr)=0; 
+   virtual psgLibraryManager* GetLibraryManager()=0; 
    virtual const ConnectionLibraryEntry* GetConnectionEntry(const char* lpszName ) const = 0;
    virtual const GirderLibraryEntry* GetGirderEntry( const char* lpszName ) const = 0;
    virtual const ConcreteLibraryEntry* GetConcreteEntry( const char* lpszName ) const = 0;
@@ -599,9 +544,14 @@ interface ILibrary : IUnknown
    virtual DiaphragmLayoutLibrary& GetDiaphragmLayoutLibrary() = 0;
    virtual TrafficBarrierLibrary&  GetTrafficBarrierLibrary() = 0;
    virtual SpecLibrary*            GetSpecLibrary() = 0;
+   virtual LiveLoadLibrary*        GetLiveLoadLibrary() = 0;
 
    virtual std::vector<libEntryUsageRecord> GetLibraryUsageRecords() const = 0;
    virtual void GetMasterLibraryInfo(std::string& strPublisher,std::string& strMasterLib,sysTime& time) const = 0;
+
+   virtual const RatingLibrary* GetRatingLibrary() const = 0;
+   virtual RatingLibrary* GetRatingLibrary() = 0;
+   virtual const RatingLibraryEntry* GetRatingEntry( const char* lpszName ) const = 0;
 };
 
 
@@ -916,6 +866,20 @@ interface IBridgeDescription : IUnknown
    virtual void SetSlabOffset( SpanIndexType spanIdx, GirderIndexType gdrIdx, Float64 start, Float64 end) = 0;
    virtual pgsTypes::SlabOffsetType GetSlabOffsetType() = 0;
    virtual void GetSlabOffset( SpanIndexType spanIdx, GirderIndexType gdrIdx, Float64* pStart, Float64* pEnd) = 0;
+
+   //// POST-TENSIONING
+
+   //// returns true if the bridge configuration is adequate to model post-tensioning
+   //virtual bool CanModelPostTensioning() = 0;
+
+   //// returns true if post-tensioning is actually modeled in the bridge
+   //virtual bool IsPostTensioningModeled() = 0;
+
+   //// alters the bridge configuration so that post-tensioning can be modeled
+   //virtual void ConfigureBridgeForPostTensioning() = 0;
+
+   //// returns true if the girder can have post-tensionng
+   //virtual bool CanBePostTensioned(SpanIndexType spanIdx,GirderIndexType gdrIdx) = 0;
 };
 
 #endif // INCLUDED_IFACE_PROJECT_H_

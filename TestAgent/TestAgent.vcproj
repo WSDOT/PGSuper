@@ -357,10 +357,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\Include\IFace\Test1250.h"
-				>
-			</File>
-			<File
 				RelativePath="TestAgent.h"
 				>
 			</File>
@@ -375,6 +371,14 @@
 			>
 			<File
 				RelativePath="TestAgent.rgs"
+				>
+			</File>
+		</Filter>
+		<Filter
+			Name="IFace"
+			>
+			<File
+				RelativePath="..\Include\IFace\Test1250.h"
 				>
 			</File>
 		</Filter>

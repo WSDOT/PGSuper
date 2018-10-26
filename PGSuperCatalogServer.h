@@ -52,6 +52,48 @@ class CPGSuperApp;
 CPGSuperCatalogServer* CreateCatalogServer(const CString& createString);
 CString GetCreationString(const CPGSuperCatalogServer* pServer);
 
+// Exception class for catalog server errors
+class CCatalogServerException
+{
+public:
+   enum ErrorType
+   {
+      ceNetworkConnection,
+      ceGettingCatalogFile,
+      ceParsingURL,
+      ceMissingMd5Deep,
+      ceFindingFile,
+      ceDownloadingFile
+   };
+
+   CCatalogServerException(ErrorType error, const CString& msg = CString()):
+   m_ErrorType(error),
+   m_ErrorMessage(msg)
+   {
+   }
+
+   ErrorType GetErrorType()
+   {
+      return m_ErrorType;
+   }
+
+   CString GetErrorMessage()
+   {
+      return m_ErrorMessage;
+   }
+
+   void SetErrorMessage(const CString& error)
+   {
+      m_ErrorMessage = error;
+   }
+
+private:
+   ErrorType m_ErrorType;
+   CString m_ErrorMessage;
+
+   CCatalogServerException();
+};
+
 // Semi-abstract Base class for all catalog servers
 class CPGSuperCatalogServer
 {
@@ -61,8 +103,12 @@ public:
    CString GetServerName() const;
    SharedResourceType GetServerType() const;
 
+   // ** Any below can throw a CCatalogServerException **
+   //////////////////////////////////////////////////////
    // The catalogs associated with this server
    virtual std::vector<CString> GetPublishers() const=0;
+
+   virtual bool DoesPublisherExist(const CString& publisher) const=0;
 
    // path to master library - for reporting
    virtual CString GetMasterLibraryURL(const CString& publisher) const=0;
@@ -71,7 +117,6 @@ public:
    virtual CString GetWebLink(const CString& publisher) const=0;
 
    // Check to see if updates are needed from server.
-   // This will throw a bool if no such publisher exists
    virtual bool CheckForUpdates(const CString& publisher, IProgressMonitor* pProgress, 
                                 const CString& cacheFolder) const=0;
 
@@ -79,6 +124,8 @@ public:
    virtual bool PopulateCatalog(const CString& publisher, IProgressMonitor* pProgress,
                                 const CString& cacheFolder) const=0;
 
+   // ** These do not throw **
+   //////////////////////////////////////////////////////
    virtual bool TestServer(CString& errorMessage) const=0;
    virtual bool IsNetworkError() const=0;
    virtual void FakeNetworkError(bool bFake) const=0; // used for testing... causes IsNetworkError to always return true
@@ -107,6 +154,7 @@ public:
 
    // virtual's
    virtual std::vector<CString> GetPublishers() const;
+   virtual bool DoesPublisherExist(const CString& publisher) const;
    virtual CString GetMasterLibraryURL(const CString& publisher) const;
    virtual CString GetWebLink(const CString& publisher) const;
    virtual bool CheckForUpdates(const CString& publisher, IProgressMonitor* pProgress, 
@@ -120,22 +168,13 @@ public:
 private:
    void Init();
    void SetAddress(const CString& address);
-   bool FetchCatalog(IProgressMonitor* pProgress) const;
+   void FetchCatalog(IProgressMonitor* pProgress, bool toTempfolder=false) const;
    bool PopulateLibraryFile(IProgressMonitor* pProgress,const CString& masterLibraryURL, const CString& cachedMasterLibFile) const;
    bool PopulateTemplateFolder(IProgressMonitor* pProgress,const CString& templateFolderURL, const CString& cachedTemplateFolder) const;
    bool PopulatePgz(const CString& publisher, IProgressMonitor* pProgress, const CString& cacheFolder) const;
 
    bool CheckForUpdatesOriginal(const CString& publisher, IProgressMonitor* pProgress, const CString& cacheFolder) const;
-
-
-   enum UpdateResult
-   {
-      urUpdateNotRequired,
-      urmd5NoMatch,
-      urNoMd5OnServer
-   };
-
-   UpdateResult CheckForUpdatesPgz(const CString& publisher, IProgressMonitor* pProgress, const CString& cacheFolder) const;
+   bool CheckForUpdatesPgz(const CString& publisher, IProgressMonitor* pProgress, const CString& cacheFolder) const;
 
    CString m_ServerAddress;
 
@@ -143,9 +182,8 @@ private:
    // local state
    mutable CPGSuperCatalog m_Catalog; // catalog parser
    mutable CString m_strLocalCatalog; // full path to local catalog file in temp folder
-   mutable bool m_bError;
-   mutable bool m_bFakeError;
    mutable bool m_bDoFetchCatalog;
+   mutable bool m_bFakeError;
 };
 
 //////////////////////  CHttpPGSuperCatalogServer    ////////////////////////////////
@@ -160,6 +198,7 @@ public:
 
    // virtual's
    virtual std::vector<CString> GetPublishers() const;
+   virtual bool DoesPublisherExist(const CString& publisher) const;
    virtual CString GetMasterLibraryURL(const CString& publisher) const;
    virtual CString GetWebLink(const CString& publisher) const;
    virtual bool CheckForUpdates(const CString& publisher, IProgressMonitor* pProgress, 
@@ -173,7 +212,7 @@ public:
 private:
    void Init();
    void SetAddress(const CString& address);
-   bool FetchCatalog(IProgressMonitor* pProgress) const;
+   void FetchCatalog(IProgressMonitor* pProgress) const;
 
    enum gwResult
    {
@@ -189,7 +228,6 @@ private:
 
    mutable CPGSuperCatalog m_Catalog; // catalog parser
    mutable CString m_strLocalCatalog; // full path to local catalog file in temp folder
-   mutable bool m_bError;
    mutable bool m_bFakeError;
    mutable bool m_bDoFetchCatalog;
 
@@ -209,6 +247,7 @@ public:
 
    // virtual's
    virtual std::vector<CString> GetPublishers() const;
+   virtual bool DoesPublisherExist(const CString& publisher) const;
    virtual CString GetMasterLibraryURL(const CString& publisher) const;
    virtual CString GetWebLink(const CString& publisher) const;
    virtual bool CheckForUpdates(const CString& publisher, IProgressMonitor* pProgress, 

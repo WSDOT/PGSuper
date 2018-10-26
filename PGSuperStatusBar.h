@@ -29,36 +29,39 @@
 // PGSuperStatusBar.h : header file
 //
 
+#include <EAF\EAFStatusBar.h>
+
 /////////////////////////////////////////////////////////////////////////////
 // CPGSuperStatusBar window
 
-class CPGSuperStatusBar : public CStatusBar
+class CPGSuperStatusBar : public CEAFStatusBar
 {
-// Construction
 public:
 	CPGSuperStatusBar();
+	virtual ~CPGSuperStatusBar();
 
-// Attributes
-public:
+   virtual void GetStatusIndicators(const UINT** lppIDArray,int* pnIDCount);
 
-// Operations
-public:
-   void DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct);
+   int GetAnalysisModePaneIndex();
+   int GetAutoCalcPaneIndex();
+
+   virtual void Reset();
 
 // Overrides
 	// ClassWizard generated virtual function overrides
 	//{{AFX_VIRTUAL(CPGSuperStatusBar)
 	//}}AFX_VIRTUAL
 
-// Implementation
-public:
-	virtual ~CPGSuperStatusBar();
-
 	// Generated message map functions
 protected:
 	//{{AFX_MSG(CPGSuperStatusBar)
 	afx_msg void OnLButtonDblClk(UINT nFlags, CPoint point);
 	//}}AFX_MSG
+
+
+private:
+   int m_AnalysisModePaneIdx;
+   int m_AutoCalcPaneIdx;
 
 	DECLARE_MESSAGE_MAP()
 };

@@ -27,7 +27,7 @@
 #include "resource.h"
 #include "GirderSpacingGrid.h"
 
-#include "PGSuper.h"
+#include "PGSuperDoc.h"
 #include "PGSuperUnits.h"
 #include <IFace\DisplayUnits.h>
 #include <IFace\Bridge.h>
@@ -198,7 +198,7 @@ void CGirderSpacingGrid::FillGrid()
    GetParam()->SetLockReadOnly(FALSE);
 
    CComPtr<IBroker> pBroker;
-   AfxGetBroker(&pBroker);
+   EAFGetBroker(&pBroker);
 
    GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
    const unitmgtLengthData& spacingUnit = IsGirderSpacing(m_GirderSpacingType) // if
@@ -689,7 +689,7 @@ BOOL CGirderSpacingGrid::OnValidateCell(ROWCOL nRow, ROWCOL nCol)
    }
 
    CComPtr<IBroker> pBroker;
-   AfxGetBroker(&pBroker);
+   EAFGetBroker(&pBroker);
 
    GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
    if ( IsGirderSpacing(m_GirderSpacingType) )
@@ -723,7 +723,7 @@ BOOL CGirderSpacingGrid::OnEndEditing(ROWCOL nRow,ROWCOL nCol)
    if ( nRow == 1 && 1 <= nCol )
    {
       CComPtr<IBroker> pBroker;
-      AfxGetBroker(&pBroker);
+      EAFGetBroker(&pBroker);
 
       GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
 

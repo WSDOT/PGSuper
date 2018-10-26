@@ -33,10 +33,12 @@
 
 #include <LRFD\ConcreteUtil.h>
 
+#include <EAF\EAFApp.h>
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
-//#undef THIS_FILE
-//static char THIS_FILE[] = __FILE__;
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
 #endif
 
 /////////////////////////////////////////////////////////////////////////////
@@ -44,27 +46,14 @@
 
 IMPLEMENT_DYNAMIC(CTrafficBarrierDlg, CDialog)
 
-CTrafficBarrierDlg::CTrafficBarrierDlg(libUnitsMode::Mode mode, bool allowEditing,
+CTrafficBarrierDlg::CTrafficBarrierDlg(bool allowEditing,
                                        CWnd* pParent /*=NULL*/)
 	: CDialog(CTrafficBarrierDlg::IDD, pParent),
-   m_Mode(mode),
-   m_LongLengthUnit(unitMeasure::Meter),
    m_AllowEditing(allowEditing)
 {
 	//{{AFX_DATA_INIT(CTrafficBarrierDlg)
 	m_Name = _T("");
 	//}}AFX_DATA_INIT
-
-   if (m_Mode==libUnitsMode::UNITS_SI)
-   {
-      m_LongLengthUnit = unitMeasure::Millimeter;
-      m_LongLengthUnitString = "(mm)";
-   }
-   else
-   {
-      m_LongLengthUnit = unitMeasure::Inch;
-      m_LongLengthUnitString = "(in)";
-   }
 
    m_BarrierPoints.CoCreateInstance(CLSID_Point2dCollection);
 
@@ -76,7 +65,15 @@ CTrafficBarrierDlg::CTrafficBarrierDlg(libUnitsMode::Mode mode, bool allowEditin
 
 void CTrafficBarrierDlg::DoDataExchange(CDataExchange* pDX)
 {
-	CDialog::DoDataExchange(pDX);
+   CEAFApp* pApp;
+   {
+      AFX_MANAGE_STATE(AfxGetAppModuleState());
+      pApp = (CEAFApp*)AfxGetApp();
+   }
+   const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
+
+
+   CDialog::DoDataExchange(pDX);
 	//{{AFX_DATA_MAP(CTrafficBarrierDlg)
 	DDX_Text(pDX, IDC_NAME, m_Name);
 	//}}AFX_DATA_MAP
@@ -93,21 +90,19 @@ void CTrafficBarrierDlg::DoDataExchange(CDataExchange* pDX)
 
    if ( pDX->m_bSaveAndValidate )
    {
-      m_PointsGrid.DownloadData(pDX,this,m_BarrierPoints);
+      m_PointsGrid.DownloadData(pDX,m_BarrierPoints);
    }
    else
    {
-      m_PointsGrid.UploadData(pDX,this,m_BarrierPoints);
+      m_PointsGrid.UploadData(pDX,m_BarrierPoints);
    }
 
    DDX_Control(pDX,IDC_TRAFFIC_BARRIER, m_Picture);
 
    DDX_Check_Bool(pDX,IDC_CONTINOUOUS_BARRIER,m_bStructurallyContinuous);
 
-   bool bUnitsSI = (m_Mode == libUnitsMode::UNITS_SI ? true : false);
-
    DDX_CBEnum(pDX,IDC_WEIGHT_METHOD,m_WeightMethod);
-   DDX_UnitValueAndTag(pDX, IDC_WEIGHT, IDC_WEIGHT_UNIT, m_Weight, bUnitsSI, unitMeasure::KipPerFoot, unitMeasure::KilonewtonPerMeter );
+   DDX_UnitValueAndTag(pDX, IDC_WEIGHT, IDC_WEIGHT_UNIT, m_Weight, pDisplayUnits->ForcePerLength  );
    if ( !pDX->m_bSaveAndValidate )
    {
       CString strTag;
@@ -116,9 +111,9 @@ void CTrafficBarrierDlg::DoDataExchange(CDataExchange* pDX)
       GetDlgItem(IDC_WEIGHT_UNIT)->SetWindowText(strTag);
    }
 
-   DDX_UnitValueAndTag(pDX, IDC_EC, IDC_EC_UNIT, m_Ec, bUnitsSI, unitMeasure::KSI, unitMeasure::kPa);
+   DDX_UnitValueAndTag(pDX, IDC_EC, IDC_EC_UNIT, m_Ec, pDisplayUnits->Stress );
 
-   DDX_UnitValueAndTag(pDX, IDC_CURBOFFSET, IDC_CURBOFFSET_UNIT, m_CurbOffset, bUnitsSI, unitMeasure::Inch, unitMeasure::Millimeter );
+   DDX_UnitValueAndTag(pDX, IDC_CURBOFFSET, IDC_CURBOFFSET_UNIT, m_CurbOffset, pDisplayUnits->ComponentDim );
 }
 
 

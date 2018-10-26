@@ -24,9 +24,13 @@
 #define INCLUDED_PGSUPERTYPES_H_
 #pragma once
 
-#include <WbflTypes.h>
+#include <WBFLTypes.h>
+#include <EAF\EAFTypes.h>
 #include <MathEx.h>
 #include <vector>
+
+#define TOOLTIP_WIDTH 300
+#define TOOLTIP_DURATION 10000
 
 // defines the method used for prestress loss computations
 #define LOSSES_AASHTO_REFINED       0
@@ -77,10 +81,6 @@
 // need to have a reasonable upper limit of skew angle... use 88 degrees
 #define MAX_SKEW_ANGLE ::ToRadians(88.0)
 
-typedef Int32 AgentIDType;
-typedef Int32 StatusCallbackIDType;
-typedef Int32 StatusItemIDType;
-
 struct pgsTypes
 {
       enum Stage { CastingYard = 0, 
@@ -102,7 +102,19 @@ struct pgsTypes
                      ServiceIII = 2, 
                      StrengthI  = 3,
                      StrengthII = 4,
-                     FatigueI   = 5   // added in LRFD 2009 (replaces Service IA)
+                     FatigueI   = 5,   // added in LRFD 2009 (replaces Service IA)
+                     StrengthI_Inventory = 6,
+                     StrengthI_Operating = 7,
+                     ServiceIII_Inventory = 8,
+                     ServiceIII_Operating = 9,
+                     StrengthI_LegalRoutine = 10,
+                     StrengthI_LegalSpecial = 11,
+                     ServiceIII_LegalRoutine = 12,
+                     ServiceIII_LegalSpecial = 13,
+                     StrengthII_PermitRoutine = 14,
+                     ServiceI_PermitRoutine = 15,
+                     StrengthII_PermitSpecial = 16,
+                     ServiceI_PermitSpecial = 17
                    }; 
 
    enum StressLocation { BottomGirder, TopGirder, TopSlab };
@@ -123,10 +135,14 @@ struct pgsTypes
 
    enum LiveLoadType
    {
-      lltDesign     = 0,
-      lltPermit     = 1,
-      lltFatigue    = 2,
-      lltPedestrian = 3
+      lltDesign     = 0,   // for design limit states
+      lltPermit     = 1,   // for permit limit state during design (Strength II)
+      lltFatigue    = 2,   // for fatigue limit states
+      lltPedestrian = 3,   // for pedestrian loads to be combined in any limit state
+      lltLegalRating_Routine = 4,  // for legal load ratings for routine commercial traffic
+      lltLegalRating_Special = 5,  // for legal load ratings for specialized hauling vehicles
+      lltPermitRating_Routine = 6,  // for routine permit load ratings
+      lltPermitRating_Special = 7   // for special permit load ratings
    };
 
    enum DebondLengthControl   // which criteria controlled for max debond length
@@ -246,12 +262,6 @@ struct pgsTypes
    typedef std::vector<SupportedDeckType>    SupportedDeckTypes;
    typedef std::vector<SupportedBeamSpacing> SupportedBeamSpacings;
 
-   typedef enum UnitMode
-   {
-      umSI = 1,
-      umUS = 2
-   } UnitMode;
-
    typedef enum RemovePierType
    {
       PrevPier,
@@ -304,13 +314,48 @@ struct pgsTypes
       sdHorizontal
    };
 
-   // Status Item Severity Type
-   enum StatusSeverityType
+   // enum to represent condition factors (MBE 6A.4.2.3)
+   enum ConditionFactorType
    {
-      statusOK,
-      statusWarning,
-      statusError
+      cfGood,
+      cfFair,
+      cfPoor,
+      cfOther
    };
+
+   enum LoadRatingType
+   {
+      lrDesign_Inventory,  // design rating at the inventory level
+      lrDesign_Operating,  // design rating at the operating level
+      lrLegal_Routine,     // legal rating for routine commercial traffic
+      lrLegal_Special,     // legal rating for specialized hauling vehicles
+      lrPermit_Routine,    // routine permit ratings
+      lrPermit_Special     // special permit ratings
+   };
+
+   enum SpecialPermitType
+   {
+      ptSingleTripWithEscort,    // special or limited crossing permit
+      ptSingleTripWithTraffic,   // special or limited crossing permit
+      ptMultipleTripWithTraffic,  // special or limited crossing permit
+   };
+
+   // describes the model used for determining live load factors for rating
+   enum LiveLoadFactorType
+   {
+      gllSingleValue,  // a single constanst value is used
+      gllStepped,      // ADTT < a1 gll = g1, otherwise gll = g2
+      gllLinear,       // ADTT < a1 gll = g1, ADTT > a2 gll = g2
+      gllBilinear,     // ADTT < a1 gll = g1, ADTT = a2, gll = g2, ADTT > a3, gll = g3
+      gllBilinearWithWeight // same as glBilinear with second set of values base on vehicle weight
+   };
+
+   enum LiveLoadFactorModifier
+   {
+      gllmInterpolate, // linear interpolate between ADTT values
+      gllmRoundUp      // round up the ADTT value to match a control value
+   };
+
 };
 
 
@@ -531,17 +576,211 @@ inline bool IsAdjacentSpacing(pgsTypes::SupportedBeamSpacing sbs)
    return !IsSpreadSpacing(sbs);
 }
 
+inline bool IsRatingLimitState(pgsTypes::LimitState ls)
+{
+   if ( ls == pgsTypes::StrengthI_Inventory    ||
+        ls == pgsTypes::StrengthI_Operating    ||
+        ls == pgsTypes::StrengthI_LegalRoutine ||
+        ls == pgsTypes::StrengthI_LegalSpecial ||
+        ls == pgsTypes::StrengthII_PermitRoutine ||
+        ls == pgsTypes::StrengthII_PermitSpecial 
+      )
+   {
+      return true;
+   }
+   else
+   {
+      return false;
+   }
+}
+
 inline bool IsStrengthLimitState(pgsTypes::LimitState ls)
 {
-   if ( ls == pgsTypes::StrengthI || ls == pgsTypes::StrengthII )
+   if ( ls == pgsTypes::StrengthI              || 
+        ls == pgsTypes::StrengthII             ||
+        ls == pgsTypes::StrengthI_Inventory    ||
+        ls == pgsTypes::StrengthI_Operating    ||
+        ls == pgsTypes::StrengthI_LegalRoutine ||
+        ls == pgsTypes::StrengthI_LegalSpecial ||
+        ls == pgsTypes::StrengthII_PermitRoutine ||
+        ls == pgsTypes::StrengthII_PermitSpecial 
+      )
+   {
       return true;
+   }
    else
+   {
       return false;
+   }
+}
+
+inline bool IsFatigueLimitState(pgsTypes::LimitState ls)
+{
+   return (ls == pgsTypes::FatigueI);
 }
 
 inline bool IsServiceLimitState(pgsTypes::LimitState ls)
 {
-   return !IsStrengthLimitState(ls);
+   return !IsStrengthLimitState(ls) && !IsFatigueLimitState(ls);
+}
+
+inline bool IsRatingLiveLoad(pgsTypes::LiveLoadType llType)
+{
+   if ( llType == pgsTypes::lltDesign              || // doubles as a design and rating live load
+        llType == pgsTypes::lltLegalRating_Routine ||
+        llType == pgsTypes::lltLegalRating_Special ||
+        llType == pgsTypes::lltPermitRating_Routine || 
+        llType == pgsTypes::lltPermitRating_Special
+      )
+   {
+      return true;
+   }
+   else
+   {
+      return false;
+   }
+}
+
+inline bool IsDesignLiveLoad(pgsTypes::LiveLoadType llType)
+{
+   if ( llType == pgsTypes::lltDesign )
+      return true;
+   else
+      return !IsRatingLiveLoad(llType);
+}
+
+inline pgsTypes::LoadRatingType RatingTypeFromLimitState(pgsTypes::LimitState ls)
+{
+   pgsTypes::LoadRatingType ratingType;
+   switch(ls)
+   {
+   case pgsTypes::StrengthI_Inventory:
+   case pgsTypes::ServiceIII_Inventory:
+      ratingType = pgsTypes::lrDesign_Inventory;
+      break;
+
+   case pgsTypes::StrengthI_Operating:
+   case pgsTypes::ServiceIII_Operating:
+      ratingType = pgsTypes::lrDesign_Operating;
+      break;
+
+   case pgsTypes::StrengthI_LegalRoutine:
+   case pgsTypes::ServiceIII_LegalRoutine:
+      ratingType = pgsTypes::lrLegal_Routine;
+      break;
+
+   case pgsTypes::StrengthI_LegalSpecial:
+   case pgsTypes::ServiceIII_LegalSpecial:
+      ratingType = pgsTypes::lrLegal_Special;
+      break;
+
+   case pgsTypes::StrengthII_PermitRoutine:
+   case pgsTypes::ServiceI_PermitRoutine:
+      ratingType = pgsTypes::lrPermit_Routine;
+      break;
+
+   case pgsTypes::StrengthII_PermitSpecial:
+   case pgsTypes::ServiceI_PermitSpecial:
+      ratingType = pgsTypes::lrPermit_Special;
+      break;
+
+   default:
+      ATLASSERT(false); // either there is a new rating type or you used a design limit state
+      ratingType = pgsTypes::lrDesign_Inventory;
+   }
+
+   return ratingType;
+}
+
+inline pgsTypes::LiveLoadType GetLiveLoadType(pgsTypes::LoadRatingType ratingType)
+{
+   pgsTypes::LiveLoadType llType;
+   switch( ratingType )
+   {
+   case pgsTypes::lrDesign_Inventory:
+   case pgsTypes::lrDesign_Operating:
+      llType = pgsTypes::lltDesign;
+      break;
+
+   case pgsTypes::lrLegal_Routine:
+      llType = pgsTypes::lltLegalRating_Routine;
+      break;
+
+   case pgsTypes::lrLegal_Special:
+      llType = pgsTypes::lltLegalRating_Special;
+      break;
+
+   case pgsTypes::lrPermit_Routine:
+      llType = pgsTypes::lltPermitRating_Routine;
+      break;
+
+   case pgsTypes::lrPermit_Special:
+      llType = pgsTypes::lltPermitRating_Special;
+      break;
+
+   default:
+      ATLASSERT(false); // SHOULD NEVER GET HERE
+   }
+
+   return llType;
+}
+
+inline CComBSTR GetLiveLoadTypeName(pgsTypes::LiveLoadType llType)
+{
+   CComBSTR bstrName;
+   switch(llType)
+   {
+   case pgsTypes::lltDesign:
+      bstrName = "Design";
+      break;
+
+   case pgsTypes::lltFatigue:
+      bstrName = "Fatigue";
+      break;
+
+   case pgsTypes::lltLegalRating_Routine:
+      bstrName = "Legal Load - Routine Commercial Traffic";
+      break;
+
+   case pgsTypes::lltLegalRating_Special:
+      bstrName = "Legal Load - Specialized Hauling Vehicles";
+      break;
+
+   case pgsTypes::lltPedestrian:
+      bstrName = "Pedestrian";
+      break;
+
+   case pgsTypes::lltPermit:
+      bstrName = "Design Permit";
+      break;
+
+   case pgsTypes::lltPermitRating_Routine:
+      bstrName = "Rating Permit - Routine/Annual Permit";
+      break;
+
+   case pgsTypes::lltPermitRating_Special:
+      bstrName = "Rating Permit - Special/Limited Crossing Permit";
+      break;
+
+   default:
+      ATLASSERT(false); // SHOULD NEVER GET HERE
+   }
+
+   return bstrName;
+}
+
+inline CComBSTR GetLiveLoadTypeName(pgsTypes::LoadRatingType ratingType)
+{
+   pgsTypes::LiveLoadType llType = ::GetLiveLoadType(ratingType);
+   CComBSTR bstrName = GetLiveLoadTypeName(llType);
+
+   if ( ratingType == pgsTypes::lrDesign_Inventory )
+      bstrName += CComBSTR(" - Inventory");
+
+   if ( ratingType == pgsTypes::lrDesign_Operating )
+      bstrName += CComBSTR(" - Operating");
+
+   return bstrName;
 }
 
 #endif // INCLUDED_PGSUPERTYPES_H_

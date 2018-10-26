@@ -23,10 +23,6 @@
 #if !defined INCLUDED_ISUPPORTLIBRARYMANAGER_H_
 #define INCLUDED_ISUPPORTLIBRARYMANAGER_H_
 
-#if !defined INCLUDED_LIBRARYFW_UNITSMODE_H_
-#include <LibraryFw\UnitsMode.h>
-#endif
-
 class libLibraryManager;
 
 interface libISupportLibraryManager
@@ -40,11 +36,6 @@ interface libISupportLibraryManager
    // return a pointer to the ONLY library manager that 
    // is a target for copied items
    virtual libLibraryManager* GetTargetLibraryManager()=0;
-
-   // units mode
-   virtual void SetUnitsMode(libUnitsMode::Mode mode)=0;
-   virtual libUnitsMode::Mode GetUnitsMode() const=0;
-
 };
 
 #endif

@@ -26,8 +26,8 @@
 <meta name=filetype content=kadov>
 <meta name=filetype-version content=1>
 <meta name=page-count content=1>
-<meta name=layout-height content=1005>
-<meta name=layout-width content=682>
+<meta name=layout-height content=1034>
+<meta name=layout-width content=873>
 
 
 <!--(Links)=========================================================-->
@@ -50,7 +50,8 @@
  href="../User%27s Guide/Appendix B - PGSuper Library Dialogs/PsglibSpecification_Entry_Dialog.htm">Project 
  Criteria library entry</a>, input manually, or computed using only the 
  lever rule. Options are also available to override safeguards when parameters 
- lie outside of the ranges of applicability specified in the AASHTO LRFD.</p>
+ lie outside of the ranges of applicability specified in the AASHTO LRFD 
+ Bridge Design Specifications.</p>
 
 <h2>Compute Live Load Distribution Factors in Accordance With the Currently 
  Selected Project Criteria</h2>
@@ -102,8 +103,91 @@
 <p>When this option is selected, user-input distribution factors are used 
  directly.</p>
 
-<p CLASS=Tip>Tip: Use this dialog to enter your own live load distribution 
- factors if you don't like the values PGSuper calculates.</p>
+<!--(Table)=========================================================-->
+<table x-use-null-cells
+		style="x-cell-content-align: top;
+				border-spacing: 0;
+				width: 42.907%;"
+		width=42.907%
+		cellspacing=0>
+<col style="width: 16.531%;">
+<col style="width: 83.469%;">
+
+<tr valign=top>
+<td style="padding-right: 10px;
+			padding-left: 10px;
+			border-bottom-style: none;
+			border-right-style: none;
+			border-left-style: none;
+			border-top-style: none;"
+	width=16.531%>
+<p style="text-align: right;"
+	align=right>+M</td>
+<td style="padding-right: 10px;
+			padding-left: 10px;
+			border-bottom-style: none;
+			border-top-style: none;
+			border-right-style: none;"
+	width=83.469%>
+<p>Positive Moment</td></tr>
+
+<tr valign=top>
+<td style="padding-right: 10px;
+			padding-left: 10px;
+			border-bottom-style: none;
+			border-right-style: none;
+			border-left-style: none;"
+	width=16.531%>
+<p style="text-align: right;"
+	align=right>-M</td>
+<td style="padding-right: 10px;
+			padding-left: 10px;
+			border-bottom-style: none;
+			border-right-style: none;"
+	width=83.469%>
+<p>Negative Moment</td></tr>
+
+<tr valign=top>
+<td style="padding-right: 10px;
+			padding-left: 10px;
+			border-bottom-style: none;
+			border-right-style: none;
+			border-left-style: none;"
+	width=16.531%>
+<p style="text-align: right;"
+	align=right>V</td>
+<td style="padding-right: 10px;
+			padding-left: 10px;
+			border-bottom-style: none;
+			border-right-style: none;"
+	width=83.469%>
+<p>Shear</td></tr>
+
+<tr valign=top>
+<td colspan=1
+	rowspan=1
+	style="padding-right: 10px;
+			padding-left: 10px;
+			border-right-style: none;
+			border-left-style: none;
+			border-bottom-style: none;"
+	width=16.531%>
+<p style="text-align: right;"
+	align=right>R</td>
+<td colspan=1
+	rowspan=1
+	style="padding-right: 10px;
+			padding-left: 10px;
+			border-bottom-style: none;
+			border-right-style: none;"
+	width=83.469%>
+<p>Reactions</td></tr>
+</table>
+
+<p CLASS=Tip>Tip: If the configuration of the bridge you are designing 
+ doesn't conform to the simplified method of analysis described in the 
+ AASHTO LRFD Bridge Design Specifications, compute the live load distribution 
+ factors using another method and then input them into this dialog.</p>
 
 <!--kadov_tag{{<placeholder id="footer">}}-->
 </body>

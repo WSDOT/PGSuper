@@ -28,6 +28,7 @@
 #include <IFace\DisplayUnits.h>
 #include <IFace\AnalysisResults.h>
 #include <IFace\Project.h>
+#include <IFace\RatingSpecification.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -70,105 +71,43 @@ CProductReactionTable& CProductReactionTable::operator= (const CProductReactionT
 
 //======================== OPERATIONS =======================================
 rptRcTable* CProductReactionTable::Build(IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,pgsTypes::AnalysisType analysisType,
-                                         bool bIncludeImpact, bool bIncludeLLDF,bool bIndicateControllingLoad,IDisplayUnits* pDisplayUnits) const
+                                         bool bIncludeImpact, bool bIncludeLLDF,bool bDesign,bool bRating,bool bIndicateControllingLoad,IDisplayUnits* pDisplayUnits) const
 {
    // Build table
    INIT_UV_PROTOTYPE( rptLengthUnitValue, location, pDisplayUnits->GetSpanLengthUnit(), false );
    INIT_UV_PROTOTYPE( rptForceSectionValue, reaction, pDisplayUnits->GetShearUnit(), false );
 
    GET_IFACE2(pBroker,IBridge,pBridge);
-   bool bDeckPanels = (pBridge->GetDeckType() == pgsTypes::sdtCompositeSIP ? true : false);
    pgsTypes::Stage overlay_stage = pBridge->IsFutureOverlay() ? pgsTypes::BridgeSite3 : pgsTypes::BridgeSite2;
 
-   PierIndexType nPiers = pBridge->GetPierCount();
+   bool bDeckPanels, bPedLoading, bSidewalk, bShearKey, bPermit;
+   SpanIndexType startSpan, nSpans;
+   pgsTypes::Stage continuity_stage;
 
-   PierIndexType startPier = (span == ALL_SPANS ? 0 : span);
+   GET_IFACE2(pBroker, IRatingSpecification, pRatingSpec);
+
+   ColumnIndexType nCols = GetProductLoadTableColumnCount(pBroker,span,gdr,analysisType,bDesign,bRating,&bDeckPanels,&bSidewalk,&bShearKey,&bPedLoading,&bPermit,&continuity_stage,&startSpan,&nSpans);
+
+   PierIndexType nPiers = nSpans+1;
+   PierIndexType startPier = startSpan;
    PierIndexType endPier   = (span == ALL_SPANS ? nPiers : startPier+2 );
-
-   GET_IFACE2(pBroker,ILiveLoads,pLiveLoads);
-   bool bPermit = pLiveLoads->IsLiveLoadDefined(pgsTypes::lltPermit);
-
-   GET_IFACE2(pBroker,IProductLoads,pLoads);
-   bool bPedLoading = pLoads->HasPedestrianLoad(startPier,gdr);
-   bool bSidewalk = pLoads->HasSidewalkLoad(startPier,gdr);
-   bool bShearKey = pLoads->HasShearKeyLoad(startPier,gdr);
-
-   pgsTypes::Stage continuity_stage = pgsTypes::BridgeSite2;
-   PierIndexType pier;
-   for ( pier = startPier; pier < endPier; pier++ )
-   {
-      pgsTypes::Stage left_stage, right_stage;
-      pBridge->GetContinuityStage(pier,&left_stage,&right_stage);
-      continuity_stage = _cpp_min(continuity_stage,left_stage);
-      continuity_stage = _cpp_min(continuity_stage,right_stage);
-   }
-
-   ColumnIndexType nCols = 8;
-
-   if ( bDeckPanels )
-   {
-      if ( analysisType == pgsTypes::Envelope && continuity_stage == pgsTypes::BridgeSite1)
-         nCols += 2;
-      else
-         nCols++;
-   }
-
-   if ( analysisType == pgsTypes::Envelope && continuity_stage == pgsTypes::BridgeSite1 )
-      nCols++; // add on more column for min/max slab
-
-   if ( analysisType == pgsTypes::Envelope )
-      nCols += 2; // add one more each for min/max overlay and min/max traffic barrier
-
-   if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
-      nCols += 2; // fatigue live load
-
-   if ( bPermit )
-      nCols += 2;
-
-   if ( bPedLoading )
-      nCols += 2;
-
-   if ( bSidewalk )
-   {
-      if (analysisType == pgsTypes::Envelope )
-      {
-         nCols += 2;
-      }
-      else
-      {
-         nCols++;
-      }
-   }
-
-   if ( bShearKey )
-   {
-      if (analysisType == pgsTypes::Envelope )
-      {
-         nCols += 2;
-      }
-      else
-      {
-         nCols++;
-      }
-   }
-
+   
    rptRcTable* p_table = pgsReportStyleHolder::CreateDefaultTable(nCols,"Reactions");
-   RowIndexType row = ConfigureProductLoadTableHeading<rptForceUnitTag,unitmgtForceData>(p_table,true,bDeckPanels,bSidewalk,bShearKey,bPedLoading,bPermit,analysisType,continuity_stage,pDisplayUnits,pDisplayUnits->GetShearUnit());
+   RowIndexType row = ConfigureProductLoadTableHeading<rptForceUnitTag,unitmgtForceData>(p_table,true,bDeckPanels,bSidewalk,bShearKey,bDesign,bPedLoading,bPermit,bRating,analysisType,continuity_stage,pRatingSpec,pDisplayUnits,pDisplayUnits->GetShearUnit());
 
    // get the stage the girder dead load is applied in
+   GET_IFACE2(pBroker,IProductLoads,pLoads);
    pgsTypes::Stage girderLoadStage = pLoads->GetGirderDeadLoadStage(gdr);
 
    GET_IFACE2(pBroker,IProductForces,pForces);
-
-    // Fill up the table
-   for ( pier = startPier; pier < endPier; pier++ )
+   for ( PierIndexType pier = startPier; pier < endPier; pier++ )
    {
-      int col = 0;
+      ColumnIndexType col = 0;
 
-      if ( pier == 0 || pier == nPiers-1 )
-         (*p_table)(row,col++) << "Abutment " << (Int32)(pier+1);
+      if ( pier == 0 || pier == pBridge->GetPierCount()-1 )
+         (*p_table)(row,col++) << "Abutment " << LABEL_PIER(pier);
       else
-         (*p_table)(row,col++) << "Pier " << (Int32)(pier+1);
+         (*p_table)(row,col++) << "Pier " << LABEL_PIER(pier);
    
       (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( girderLoadStage, pftGirder,         pier, gdr, SimpleSpan ) );
       (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( pgsTypes::BridgeSite1, pftDiaphragm,      pier, gdr, SimpleSpan ) );
@@ -224,80 +163,205 @@ rptRcTable* CProductReactionTable::Build(IBroker* pBroker,SpanIndexType span,Gir
 
          Float64 min, max;
          long minConfig, maxConfig;
-         if ( bPedLoading )
+
+         if ( bDesign )
          {
-            pForces->GetLiveLoadReaction( pgsTypes::lltPedestrian, pgsTypes::BridgeSite3, pier, gdr, MaxSimpleContinuousEnvelope, bIncludeImpact, bIncludeLLDF, &min, &max );
-            (*p_table)(row,col++) << reaction.SetValue( max );
+            if ( bPedLoading )
+            {
+               pForces->GetLiveLoadReaction( pgsTypes::lltPedestrian, pgsTypes::BridgeSite3, pier, gdr, MaxSimpleContinuousEnvelope, bIncludeImpact, bIncludeLLDF, &min, &max );
+               (*p_table)(row,col++) << reaction.SetValue( max );
 
-            pForces->GetLiveLoadReaction( pgsTypes::lltPedestrian, pgsTypes::BridgeSite3, pier, gdr, MinSimpleContinuousEnvelope, bIncludeImpact, bIncludeLLDF, &min, &max );
-            (*p_table)(row,col++) << reaction.SetValue( min );
-         }
+               pForces->GetLiveLoadReaction( pgsTypes::lltPedestrian, pgsTypes::BridgeSite3, pier, gdr, MinSimpleContinuousEnvelope, bIncludeImpact, bIncludeLLDF, &min, &max );
+               (*p_table)(row,col++) << reaction.SetValue( min );
+            }
 
-         pForces->GetLiveLoadReaction( pgsTypes::lltDesign, pgsTypes::BridgeSite3, pier, gdr, MaxSimpleContinuousEnvelope, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig );
-         (*p_table)(row,col) << reaction.SetValue( max );
-
-         if ( bIndicateControllingLoad )
-         {
-            (*p_table)(row,col) << rptNewLine << "(D" << maxConfig << ")";
-         }
-
-         col++;
-
-         pForces->GetLiveLoadReaction( pgsTypes::lltDesign, pgsTypes::BridgeSite3, pier, gdr, MinSimpleContinuousEnvelope, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig  );
-         (*p_table)(row,col) << reaction.SetValue( min );
-
-         if ( bIndicateControllingLoad )
-         {
-            (*p_table)(row,col) << rptNewLine << "(D" << minConfig << ")";
-         }
-
-         col++;
-
-         if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
-         {
-            pForces->GetLiveLoadReaction( pgsTypes::lltFatigue, pgsTypes::BridgeSite3, pier, gdr, MaxSimpleContinuousEnvelope, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig );
+            pForces->GetLiveLoadReaction( pgsTypes::lltDesign, pgsTypes::BridgeSite3, pier, gdr, MaxSimpleContinuousEnvelope, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig );
             (*p_table)(row,col) << reaction.SetValue( max );
 
             if ( bIndicateControllingLoad )
             {
-               (*p_table)(row,col) << rptNewLine << "(F" << maxConfig << ")";
+               (*p_table)(row,col) << rptNewLine <<  "(" << LiveLoadPrefix(pgsTypes::lltDesign) << maxConfig << ")";
             }
 
             col++;
 
-            pForces->GetLiveLoadReaction( pgsTypes::lltFatigue, pgsTypes::BridgeSite3, pier, gdr, MinSimpleContinuousEnvelope, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig  );
+            pForces->GetLiveLoadReaction( pgsTypes::lltDesign, pgsTypes::BridgeSite3, pier, gdr, MinSimpleContinuousEnvelope, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig  );
             (*p_table)(row,col) << reaction.SetValue( min );
 
             if ( bIndicateControllingLoad )
             {
-               (*p_table)(row,col) << rptNewLine << "(F" << minConfig << ")";
+               (*p_table)(row,col) << rptNewLine <<  "(" << LiveLoadPrefix(pgsTypes::lltDesign)<< minConfig << ")";
             }
 
             col++;
+
+            if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
+            {
+               pForces->GetLiveLoadReaction( pgsTypes::lltFatigue, pgsTypes::BridgeSite3, pier, gdr, MaxSimpleContinuousEnvelope, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig );
+               (*p_table)(row,col) << reaction.SetValue( max );
+
+               if ( bIndicateControllingLoad )
+               {
+                  (*p_table)(row,col) << rptNewLine <<  "(" << LiveLoadPrefix(pgsTypes::lltFatigue) << maxConfig << ")";
+               }
+
+               col++;
+
+               pForces->GetLiveLoadReaction( pgsTypes::lltFatigue, pgsTypes::BridgeSite3, pier, gdr, MinSimpleContinuousEnvelope, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig  );
+               (*p_table)(row,col) << reaction.SetValue( min );
+
+               if ( bIndicateControllingLoad )
+               {
+                  (*p_table)(row,col) << rptNewLine <<  "(" << LiveLoadPrefix(pgsTypes::lltFatigue) << minConfig << ")";
+               }
+
+               col++;
+            }
+
+            if ( bPermit )
+            {
+               pForces->GetLiveLoadReaction( pgsTypes::lltPermit, pgsTypes::BridgeSite3, pier, gdr, MaxSimpleContinuousEnvelope, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig );
+               (*p_table)(row,col) << reaction.SetValue( max );
+
+               if ( bIndicateControllingLoad )
+               {
+                  (*p_table)(row,col) << rptNewLine <<  "(" << LiveLoadPrefix(pgsTypes::lltPermit) << maxConfig << ")";
+               }
+
+               col++;
+
+               pForces->GetLiveLoadReaction( pgsTypes::lltPermit, pgsTypes::BridgeSite3, pier, gdr, MinSimpleContinuousEnvelope, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig );
+               (*p_table)(row,col) << reaction.SetValue( min );
+
+               if ( bIndicateControllingLoad )
+               {
+                  (*p_table)(row,col) << rptNewLine <<  "(" << LiveLoadPrefix(pgsTypes::lltPermit) << minConfig << ")";
+               }
+
+               col++;
+            }
          }
 
-
-         if ( bPermit )
+         if ( bRating )
          {
-            pForces->GetLiveLoadReaction( pgsTypes::lltPermit, pgsTypes::BridgeSite3, pier, gdr, MaxSimpleContinuousEnvelope, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig );
-            (*p_table)(row,col) << reaction.SetValue( max );
-
-            if ( bIndicateControllingLoad )
+            if ( !bDesign && (pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) || pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating)) )
             {
-               (*p_table)(row,col) << rptNewLine << "(P" << maxConfig << ")";
+               pForces->GetLiveLoadReaction( pgsTypes::lltDesign, pgsTypes::BridgeSite3, pier, gdr, MaxSimpleContinuousEnvelope, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig );
+               (*p_table)(row,col) << reaction.SetValue( max );
+
+               if ( bIndicateControllingLoad )
+               {
+                  (*p_table)(row,col) << rptNewLine <<  "(" << LiveLoadPrefix(pgsTypes::lltDesign) << maxConfig << ")";
+               }
+
+               col++;
+
+               pForces->GetLiveLoadReaction( pgsTypes::lltDesign, pgsTypes::BridgeSite3, pier, gdr, MinSimpleContinuousEnvelope, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig  );
+               (*p_table)(row,col) << reaction.SetValue( min );
+
+               if ( bIndicateControllingLoad )
+               {
+                  (*p_table)(row,col) << rptNewLine <<  "(" << LiveLoadPrefix(pgsTypes::lltDesign)<< minConfig << ")";
+               }
+
+               col++;
             }
 
-            col++;
-
-            pForces->GetLiveLoadReaction( pgsTypes::lltPermit, pgsTypes::BridgeSite3, pier, gdr, MinSimpleContinuousEnvelope, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig );
-            (*p_table)(row,col) << reaction.SetValue( min );
-
-            if ( bIndicateControllingLoad )
+            // Legal - Routine
+            if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) )
             {
-               (*p_table)(row,col) << rptNewLine << "(P" << minConfig << ")";
+               pForces->GetLiveLoadReaction( pgsTypes::lltLegalRating_Routine, pgsTypes::BridgeSite3, pier, gdr, MaxSimpleContinuousEnvelope, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig );
+               (*p_table)(row,col) << reaction.SetValue( max );
+
+               if ( bIndicateControllingLoad )
+               {
+                  (*p_table)(row,col) << rptNewLine << "(" << LiveLoadPrefix(pgsTypes::lltLegalRating_Routine) << maxConfig << ")";
+               }
+
+               col++;
+
+               pForces->GetLiveLoadReaction( pgsTypes::lltLegalRating_Routine, pgsTypes::BridgeSite3, pier, gdr, MinSimpleContinuousEnvelope, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig );
+               (*p_table)(row,col) << reaction.SetValue( min );
+
+               if ( bIndicateControllingLoad )
+               {
+                  (*p_table)(row,col) << rptNewLine << "(" << LiveLoadPrefix(pgsTypes::lltLegalRating_Routine) << minConfig << ")";
+               }
+
+               col++;
             }
 
-            col++;
+            // Legal - Special
+            if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
+            {
+               pForces->GetLiveLoadReaction( pgsTypes::lltLegalRating_Special, pgsTypes::BridgeSite3, pier, gdr, MaxSimpleContinuousEnvelope, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig );
+               (*p_table)(row,col) << reaction.SetValue( max );
+
+               if ( bIndicateControllingLoad )
+               {
+                  (*p_table)(row,col) << rptNewLine << "(" << LiveLoadPrefix(pgsTypes::lltLegalRating_Special) << maxConfig << ")";
+               }
+
+               col++;
+
+               pForces->GetLiveLoadReaction( pgsTypes::lltLegalRating_Special, pgsTypes::BridgeSite3, pier, gdr, MinSimpleContinuousEnvelope, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig );
+               (*p_table)(row,col) << reaction.SetValue( min );
+
+               if ( bIndicateControllingLoad )
+               {
+                  (*p_table)(row,col) << rptNewLine << "(" << LiveLoadPrefix(pgsTypes::lltLegalRating_Special) << minConfig << ")";
+               }
+
+               col++;
+            }
+
+            // Permit Rating - Routine
+            if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine) )
+            {
+               pForces->GetLiveLoadReaction( pgsTypes::lltPermitRating_Routine, pgsTypes::BridgeSite3, pier, gdr, MaxSimpleContinuousEnvelope, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig );
+               (*p_table)(row,col) << reaction.SetValue( max );
+
+               if ( bIndicateControllingLoad )
+               {
+                  (*p_table)(row,col) << rptNewLine << "(" << LiveLoadPrefix(pgsTypes::lltPermitRating_Routine) << maxConfig << ")";
+               }
+
+               col++;
+
+               pForces->GetLiveLoadReaction( pgsTypes::lltPermitRating_Routine, pgsTypes::BridgeSite3, pier, gdr, MinSimpleContinuousEnvelope, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig );
+               (*p_table)(row,col) << reaction.SetValue( min );
+
+               if ( bIndicateControllingLoad )
+               {
+                  (*p_table)(row,col) << rptNewLine << "(" << LiveLoadPrefix(pgsTypes::lltPermitRating_Routine) << minConfig << ")";
+               }
+
+               col++;
+            }
+
+            // Permit Rating - Special
+            if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Special) )
+            {
+               pForces->GetLiveLoadReaction( pgsTypes::lltPermitRating_Special, pgsTypes::BridgeSite3, pier, gdr, MaxSimpleContinuousEnvelope, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig );
+               (*p_table)(row,col) << reaction.SetValue( max );
+
+               if ( bIndicateControllingLoad )
+               {
+                  (*p_table)(row,col) << rptNewLine << "(" << LiveLoadPrefix(pgsTypes::lltPermitRating_Special) << maxConfig << ")";
+               }
+
+               col++;
+
+               pForces->GetLiveLoadReaction( pgsTypes::lltPermitRating_Special, pgsTypes::BridgeSite3, pier, gdr, MinSimpleContinuousEnvelope, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig );
+               (*p_table)(row,col) << reaction.SetValue( min );
+
+               if ( bIndicateControllingLoad )
+               {
+                  (*p_table)(row,col) << rptNewLine << "(" << LiveLoadPrefix(pgsTypes::lltPermitRating_Special) << minConfig << ")";
+               }
+
+               col++;
+            }
          }
       }
       else
@@ -312,37 +376,20 @@ rptRcTable* CProductReactionTable::Build(IBroker* pBroker,SpanIndexType span,Gir
 
          Float64 min, max;
          long minConfig, maxConfig;
-         if ( bPedLoading )
+         if ( bDesign )
          {
-            pForces->GetLiveLoadReaction( pgsTypes::lltPedestrian, pgsTypes::BridgeSite3, pier, gdr, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan, bIncludeImpact, bIncludeLLDF, &min, &max );
-            (*p_table)(row,col++) << reaction.SetValue( max );
-            (*p_table)(row,col++) << reaction.SetValue( min );
-         }
+            if ( bPedLoading )
+            {
+               pForces->GetLiveLoadReaction( pgsTypes::lltPedestrian, pgsTypes::BridgeSite3, pier, gdr, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan, bIncludeImpact, bIncludeLLDF, &min, &max );
+               (*p_table)(row,col++) << reaction.SetValue( max );
+               (*p_table)(row,col++) << reaction.SetValue( min );
+            }
 
-         pForces->GetLiveLoadReaction( pgsTypes::lltDesign, pgsTypes::BridgeSite3, pier, gdr, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig );
-         (*p_table)(row,col) << reaction.SetValue( max );
-         if ( bIndicateControllingLoad )
-         {
-            (*p_table)(row,col) << rptNewLine << "(D" << maxConfig << ")";
-         }
-
-         col++;
-
-         (*p_table)(row,col) << reaction.SetValue( min );
-         if ( bIndicateControllingLoad )
-         {
-            (*p_table)(row,col) << rptNewLine << "(D" << minConfig << ")";
-         }
-
-         col++;
-
-         if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
-         {
-            pForces->GetLiveLoadReaction( pgsTypes::lltFatigue, pgsTypes::BridgeSite3, pier, gdr, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig );
+            pForces->GetLiveLoadReaction( pgsTypes::lltDesign, pgsTypes::BridgeSite3, pier, gdr, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig );
             (*p_table)(row,col) << reaction.SetValue( max );
             if ( bIndicateControllingLoad )
             {
-               (*p_table)(row,col) << rptNewLine << "(F" << maxConfig << ")";
+               (*p_table)(row,col) << rptNewLine << "(" << LiveLoadPrefix(pgsTypes::lltDesign) << maxConfig << ")";
             }
 
             col++;
@@ -350,28 +397,147 @@ rptRcTable* CProductReactionTable::Build(IBroker* pBroker,SpanIndexType span,Gir
             (*p_table)(row,col) << reaction.SetValue( min );
             if ( bIndicateControllingLoad )
             {
-               (*p_table)(row,col) << rptNewLine << "(F" << minConfig << ")";
+               (*p_table)(row,col) << rptNewLine << "(" << LiveLoadPrefix(pgsTypes::lltDesign) << minConfig << ")";
             }
 
             col++;
+
+            if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
+            {
+               pForces->GetLiveLoadReaction( pgsTypes::lltFatigue, pgsTypes::BridgeSite3, pier, gdr, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig );
+               (*p_table)(row,col) << reaction.SetValue( max );
+               if ( bIndicateControllingLoad )
+               {
+                  (*p_table)(row,col) << rptNewLine << "(" << LiveLoadPrefix(pgsTypes::lltFatigue) << maxConfig << ")";
+               }
+
+               col++;
+
+               (*p_table)(row,col) << reaction.SetValue( min );
+               if ( bIndicateControllingLoad )
+               {
+                  (*p_table)(row,col) << rptNewLine << "(" << LiveLoadPrefix(pgsTypes::lltFatigue) << minConfig << ")";
+               }
+
+               col++;
+            }
+
+            if ( bPermit )
+            {
+               pForces->GetLiveLoadReaction( pgsTypes::lltPermit, pgsTypes::BridgeSite3, pier, gdr, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig );
+               (*p_table)(row,col) << reaction.SetValue( max );
+               if ( bIndicateControllingLoad )
+               {
+                  (*p_table)(row,col) << rptNewLine << "(" << LiveLoadPrefix(pgsTypes::lltPermit) << maxConfig << ")";
+               }
+               col++;
+
+               (*p_table)(row,col) << reaction.SetValue( min );
+               if ( bIndicateControllingLoad )
+               {
+                  (*p_table)(row,col) << rptNewLine << "(" << LiveLoadPrefix(pgsTypes::lltPermit)<< minConfig << ")";
+               }
+               col++;
+            }
          }
 
-         if ( bPermit )
+         if ( bRating )
          {
-            pForces->GetLiveLoadReaction( pgsTypes::lltPermit, pgsTypes::BridgeSite3, pier, gdr, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig );
-            (*p_table)(row,col) << reaction.SetValue( max );
-            if ( bIndicateControllingLoad )
+            if ( !bDesign && (pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) || pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating))  )
             {
-               (*p_table)(row,col) << rptNewLine << "(P" << maxConfig << ")";
-            }
-            col++;
+               pForces->GetLiveLoadReaction( pgsTypes::lltDesign, pgsTypes::BridgeSite3, pier, gdr, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig );
+               (*p_table)(row,col) << reaction.SetValue( max );
+               if ( bIndicateControllingLoad )
+               {
+                  (*p_table)(row,col) << rptNewLine << "(" << LiveLoadPrefix(pgsTypes::lltDesign) << maxConfig << ")";
+               }
 
-            (*p_table)(row,col) << reaction.SetValue( min );
-            if ( bIndicateControllingLoad )
-            {
-               (*p_table)(row,col) << rptNewLine << "(P" << minConfig << ")";
+               col++;
+
+               (*p_table)(row,col) << reaction.SetValue( min );
+               if ( bIndicateControllingLoad )
+               {
+                  (*p_table)(row,col) << rptNewLine << "(" << LiveLoadPrefix(pgsTypes::lltDesign) << minConfig << ")";
+               }
+
+               col++;
             }
-            col++;
+
+            // Legal - Routine
+            if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) )
+            {
+               pForces->GetLiveLoadReaction( pgsTypes::lltLegalRating_Routine, pgsTypes::BridgeSite3, pier, gdr, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig );
+               (*p_table)(row,col) << reaction.SetValue( max );
+               if ( bIndicateControllingLoad )
+               {
+                  (*p_table)(row,col) << rptNewLine << "(" << LiveLoadPrefix(pgsTypes::lltLegalRating_Routine) << maxConfig << ")";
+               }
+               col++;
+
+               (*p_table)(row,col) << reaction.SetValue( min );
+               if ( bIndicateControllingLoad )
+               {
+                  (*p_table)(row,col) << rptNewLine << "(" << LiveLoadPrefix(pgsTypes::lltLegalRating_Routine)<< minConfig << ")";
+               }
+               col++;
+            }
+
+            // Legal - Special
+            if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
+            {
+               pForces->GetLiveLoadReaction( pgsTypes::lltLegalRating_Special, pgsTypes::BridgeSite3, pier, gdr, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig );
+               (*p_table)(row,col) << reaction.SetValue( max );
+               if ( bIndicateControllingLoad )
+               {
+                  (*p_table)(row,col) << rptNewLine << "(" << LiveLoadPrefix(pgsTypes::lltLegalRating_Special) << maxConfig << ")";
+               }
+               col++;
+
+               (*p_table)(row,col) << reaction.SetValue( min );
+               if ( bIndicateControllingLoad )
+               {
+                  (*p_table)(row,col) << rptNewLine << "(" << LiveLoadPrefix(pgsTypes::lltLegalRating_Special)<< minConfig << ")";
+               }
+               col++;
+            }
+
+            // Permit Rating - Routine
+            if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine) )
+            {
+               pForces->GetLiveLoadReaction( pgsTypes::lltPermitRating_Routine, pgsTypes::BridgeSite3, pier, gdr, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig );
+               (*p_table)(row,col) << reaction.SetValue( max );
+               if ( bIndicateControllingLoad )
+               {
+                  (*p_table)(row,col) << rptNewLine << "(" << LiveLoadPrefix(pgsTypes::lltPermitRating_Routine) << maxConfig << ")";
+               }
+               col++;
+
+               (*p_table)(row,col) << reaction.SetValue( min );
+               if ( bIndicateControllingLoad )
+               {
+                  (*p_table)(row,col) << rptNewLine << "(" << LiveLoadPrefix(pgsTypes::lltPermitRating_Routine)<< minConfig << ")";
+               }
+               col++;
+            }
+
+            // Permit Rating - Special
+            if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Special) )
+            {
+               pForces->GetLiveLoadReaction( pgsTypes::lltPermitRating_Special, pgsTypes::BridgeSite3, pier, gdr, analysisType == pgsTypes::Simple ? SimpleSpan : ContinuousSpan, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig );
+               (*p_table)(row,col) << reaction.SetValue( max );
+               if ( bIndicateControllingLoad )
+               {
+                  (*p_table)(row,col) << rptNewLine << "(" << LiveLoadPrefix(pgsTypes::lltPermitRating_Special) << maxConfig << ")";
+               }
+               col++;
+
+               (*p_table)(row,col) << reaction.SetValue( min );
+               if ( bIndicateControllingLoad )
+               {
+                  (*p_table)(row,col) << rptNewLine << "(" << LiveLoadPrefix(pgsTypes::lltPermitRating_Special)<< minConfig << ")";
+               }
+               col++;
+            }
          }
       }
 

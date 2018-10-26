@@ -24,7 +24,7 @@
 //
 
 #include "stdafx.h"
-#include "pgsuper.h"
+#include "resource.h"
 #include "AlignmentDescriptionDlg.h"
 #include "htmlhelp\HelpTopics.hh"
 

@@ -27,6 +27,9 @@
 #pragma once
 #endif // _MSC_VER >= 1000
 // GirderModelSectionView.h : header file
+
+#include <DManip\DisplayView.h>
+
 //
 class CGirderModelChildFrame;
 /////////////////////////////////////////////////////////////////////////////

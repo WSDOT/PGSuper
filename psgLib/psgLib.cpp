@@ -24,18 +24,29 @@
 //
 
 #include "stdafx.h"
+#include "resource.h"
 #include <psgLib\psgLib.h>
 #include <psgLib\StructuredLoad.h>
+
 #include "LibraryEntryConflict.h"
 
 #include <initguid.h>
 #include <WBFLGeometry_i.c>
+#include <WBFLCore_i.c>
 #include <IFace\BeamFamily.h>
+#include "PGSuperLibrary_i.h"
+#include "LibraryAppPlugin.h"
+
+#include <PGSuperCatCom.h>
+#include "PGSuperComponentInfo.h"
+#include "PGSuperLibraryMgrCATID.h"
+
+#include "dllmain.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
-//#undef THIS_FILE
-//static char THIS_FILE[] = __FILE__;
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
 #endif
 
 
@@ -137,6 +148,8 @@ BOOL CPsgLibApp::InitInstance()
    std::string rpath = "PGSuper.chm";
 
    SetHelpFilePath(rpath);
+
+   sysComCatMgr::CreateCategory(L"PGSuper Library Editor Components",CATID_PGSuperLibraryManagerPlugin);
 
 	return TRUE;
 }
@@ -287,6 +300,10 @@ bool PSGLIBFUNC WINAPI psglibDealWithLibraryConflicts(ConflictList* pList, psgLi
                                     *(projectMgr.GetLiveLoadLibrary()), "User Defined Live Load Library", LiveLoadLibraryEntry(),isImported,bForceUpdate))
         return false;
 
+     if (!do_deal_with_library_conflicts( pList, pMasterMgr->GetRatingLibrary(), 
+                                    *(projectMgr.GetRatingLibrary()), "Rating Criteria Library", RatingLibraryEntry(),isImported,bForceUpdate))
+        return false;
+
    return true;
 }
 
@@ -338,6 +355,10 @@ bool PSGLIBFUNC WINAPI psglibMakeSaveableCopy(const psgLibraryManager& libMgr, p
 
    // user defined live load
    if (!do_make_saveable_copy( *(libMgr.GetLiveLoadLibrary()), ptempManager->GetLiveLoadLibrary()))
+      return false;
+
+   // rating specification
+   if (!do_make_saveable_copy( *(libMgr.GetRatingLibrary()), ptempManager->GetRatingLibrary()))
       return false;
 
    return true;
@@ -395,4 +416,107 @@ bool PSGLIBFUNC WINAPI psglibImportEntries(IStructuredLoad* pStrLoad,psgLibraryM
       return false;
 
    return true;
+}
+
+HRESULT pgslibPGSuperDocHeader(IStructuredLoad* pStrLoad)
+{
+   HRESULT hr = pStrLoad->BeginUnit("PGSuper");
+   if ( FAILED(hr) )
+      return hr;
+
+   double ver;
+   pStrLoad->get_Version(&ver);
+
+   if ( 1.0 < ver )
+   {
+      CComVariant var;
+      var.vt = VT_BSTR;
+      hr = pStrLoad->get_Property("Version",&var);
+      if ( FAILED(hr) )
+         return hr;
+
+      hr = pStrLoad->BeginUnit("Broker");
+      if ( FAILED(hr) )
+         return hr;
+
+      hr = pStrLoad->BeginUnit("Agent");
+      if ( FAILED(hr) )
+         return hr;
+
+      hr = pStrLoad->get_Property("CLSID",&var);
+      if ( FAILED(hr) )
+         return hr;
+   }
+
+   return S_OK;
+}
+
+HRESULT pgslibReadLibraryDocHeader(IStructuredLoad* pStrLoad,eafTypes::UnitMode* pUnitsMode)
+{
+   USES_CONVERSION;
+
+   HRESULT hr = pStrLoad->BeginUnit("LIBRARY_EDITOR");
+   if ( FAILED(hr) )
+      return hr;
+
+   double ver;
+   pStrLoad->get_Version(&ver);
+   if (ver!=1.0)
+      return E_FAIL; // bad version
+
+   // editor units
+   CComVariant var;
+   var.vt = VT_BSTR;
+   hr = pStrLoad->get_Property("EDIT_UNITS",&var);
+   if ( FAILED(hr) )
+      return hr;
+
+   std::string str(OLE2A(var.bstrVal));
+
+   if (str=="US")
+      *pUnitsMode = eafTypes::umUS;
+   else
+      *pUnitsMode = eafTypes::umSI;
+
+   return S_OK;
+}
+
+// Used to determine whether the DLL can be unloaded by OLE
+STDAPI DllCanUnloadNow(void)
+{
+    AFX_MANAGE_STATE(AfxGetStaticModuleState());
+    return (AfxDllCanUnloadNow()==S_OK && _AtlModule.GetLockCount()==0) ? S_OK : S_FALSE;
+}
+
+// Returns a class factory to create an object of the requested type
+STDAPI DllGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID* ppv)
+{
+    return _AtlModule.DllGetClassObject(rclsid, riid, ppv);
+}
+
+// DllRegisterServer - Adds entries to the system registry
+STDAPI DllRegisterServer(void)
+{
+    // registers object, typelib and all interfaces in typelib
+    HRESULT hr = _AtlModule.DllRegisterServer();
+
+#pragma Reminder("PGSuperComponentInfo needs to be moved to the PGSuper.dll when we go to dynamic app-plugins")
+   // PGSuperComponentInfo.cpp/h need to be moved
+   // This registration needs to be removed
+   sysComCatMgr::RegWithCategory(CLSID_PGSuperComponentInfo,CATID_PGSuperComponents,true);
+
+   return S_OK;
+}
+
+
+// DllUnregisterServer - Removes entries from the system registry
+STDAPI DllUnregisterServer(void)
+{
+   HRESULT hr = _AtlModule.DllUnregisterServer();
+#pragma Reminder("PGSuperComponentInfo needs to be moved to the PGSuper.dll when we go to dynamic app-plugins")
+   // PGSuperComponentInfo.cpp/h need to be moved
+   // This registration needs to be removed
+   sysComCatMgr::RegWithCategory(CLSID_PGSuperComponentInfo,CATID_PGSuperComponents,false);
+
+   return hr;
 }

@@ -34,6 +34,7 @@
 #include <IFace\DisplayUnits.h>
 #include <IFace\AnalysisResults.h>
 #include <IFace\Project.h>
+#include <IFace\RatingSpecification.h>
 
 #include <psgLib\SpecLibraryEntry.h>
 
@@ -52,8 +53,10 @@ CLASS
 ////////////////////////// PUBLIC     ///////////////////////////////////////
 
 //======================== LIFECYCLE  =======================================
-CStressChapterBuilder::CStressChapterBuilder()
+CStressChapterBuilder::CStressChapterBuilder(bool bDesign,bool bRating)
 {
+   m_bDesign = bDesign;
+   m_bRating = bRating;
 }
 
 //======================== OPERATORS  =======================================
@@ -80,6 +83,33 @@ rptChapter* CStressChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 l
    GET_IFACE2(pBroker,ISpecification,pSpec);
    pgsTypes::AnalysisType analysisType = pSpec->GetAnalysisType();
 
+   bool bDesign = m_bDesign;
+   bool bRating;
+   
+   if ( m_bRating )
+   {
+      GET_IFACE2(pBroker,IRatingSpecification,pRatingSpec);
+      if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) ||
+         //pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating) || // operating does not apply
+           pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) ||
+           pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) 
+         )
+      {
+         bRating = true;
+      }
+      else
+      {
+         // if only permit rating is enabled, there aren't any stresses to report
+         bRating = false;
+      }
+   }
+   else
+   {
+      // include load rating results if we are always load rating
+      GET_IFACE2(pBroker,IRatingSpecification,pRatingSpec);
+      bRating = pRatingSpec->AlwaysLoadRate();
+   }
+
    // Product Stresses
    p = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *p << "Product Load Stresses" << rptNewLine;
@@ -94,7 +124,7 @@ rptChapter* CStressChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 l
    *pChapter << p;
    p = new rptParagraph;
    *pChapter << p;
-   *p << CProductStressTable().Build(pBroker,span,girder,analysisType,pDisplayUnits) << rptNewLine;
+   *p << CProductStressTable().Build(pBroker,span,girder,analysisType,bDesign,bRating,pDisplayUnits) << rptNewLine;
    *p << LIVELOAD_PER_LANE << rptNewLine;
 
    GET_IFACE2(pBroker,IUserDefinedLoads,pUDL);
@@ -138,7 +168,7 @@ rptChapter* CStressChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 l
    p = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pChapter << p;
    p->SetName("Combined Stresses - Final with Live Load (Bridge Site 3)");
-   CCombinedStressTable().Build(pBroker,pChapter,span,girder,pDisplayUnits,pgsTypes::BridgeSite3, analysisType);
+   CCombinedStressTable().Build(pBroker,pChapter,span,girder,pDisplayUnits,pgsTypes::BridgeSite3, analysisType, bDesign, bRating);
 
    p = new rptParagraph(pgsReportStyleHolder::GetFootnoteStyle());
    *pChapter << p;
@@ -155,24 +185,5 @@ rptChapter* CStressChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 l
 
 CChapterBuilder* CStressChapterBuilder::Clone() const
 {
-   return new CStressChapterBuilder;
+   return new CStressChapterBuilder(m_bDesign,m_bRating);
 }
-
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PROTECTED  ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PRIVATE    ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-//======================== INQUERY    =======================================

@@ -303,7 +303,7 @@ void CLLDFGrid::AddSpanRow(pgsTypes::LimitState ls,const CSpanData* pSpan)
    InsertRows(nRows,1);
 
    CString strLabel;
-   strLabel.Format("Span %d",pSpan->GetSpanIndex()+1);
+   strLabel.Format("Span %d",LABEL_SPAN(pSpan->GetSpanIndex()));
    SetStyleRange(CGXRange(nRows,0), CGXStyle().SetHorizontalAlignment(DT_RIGHT).SetValue(strLabel));
 
    SetStyleRange(CGXRange(nRows,1), CGXStyle()

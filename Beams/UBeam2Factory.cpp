@@ -116,7 +116,7 @@ HRESULT CUBeam2Factory::FinalConstruct()
    return S_OK;
 }
 
-void CUBeam2Factory::CreateGirderSection(IBroker* pBroker,long agentID,SpanIndexType spanIdx,GirderIndexType gdrIdx,const IBeamFactory::Dimensions& dimensions,IGirderSection** ppSection)
+void CUBeam2Factory::CreateGirderSection(IBroker* pBroker,long statusGroupID,SpanIndexType spanIdx,GirderIndexType gdrIdx,const IBeamFactory::Dimensions& dimensions,IGirderSection** ppSection)
 {
    CComPtr<IUGirderSection2> gdrsection;
    gdrsection.CoCreateInstance(CLSID_UGirderSection2);
@@ -128,7 +128,7 @@ void CUBeam2Factory::CreateGirderSection(IBroker* pBroker,long agentID,SpanIndex
    gdrsection.QueryInterface(ppSection);
 }
 
-void CUBeam2Factory::CreateGirderProfile(IBroker* pBroker,long agentID,SpanIndexType spanIdx,GirderIndexType gdrIdx,const IBeamFactory::Dimensions& dimensions,IShape** ppShape)
+void CUBeam2Factory::CreateGirderProfile(IBroker* pBroker,long statusGroupID,SpanIndexType spanIdx,GirderIndexType gdrIdx,const IBeamFactory::Dimensions& dimensions,IShape** ppShape)
 {
    GET_IFACE2(pBroker,IBridge,pBridge);
    Float64 length = pBridge->GetGirderLength(spanIdx,gdrIdx);
@@ -178,7 +178,7 @@ void CUBeam2Factory::ConfigureShape(const IBeamFactory::Dimensions& dimensions, 
 
 
 
-void CUBeam2Factory::LayoutGirderLine(IBroker* pBroker,long agentID,SpanIndexType spanIdx,GirderIndexType gdrIdx,ISuperstructureMember* ssmbr)
+void CUBeam2Factory::LayoutGirderLine(IBroker* pBroker,long statusGroupID,SpanIndexType spanIdx,GirderIndexType gdrIdx,ISuperstructureMember* ssmbr)
 {
    CComPtr<IPrismaticSegment> segment;
    segment.CoCreateInstance(CLSID_PrismaticSegment);
@@ -197,7 +197,7 @@ void CUBeam2Factory::LayoutGirderLine(IBroker* pBroker,long agentID,SpanIndexTyp
    const GirderLibraryEntry::Dimensions& dimensions = pGdrEntry->GetDimensions();
 
    CComPtr<IGirderSection> gdrsection;
-   CreateGirderSection(pBroker,agentID,spanIdx,gdrIdx,dimensions,&gdrsection);
+   CreateGirderSection(pBroker,statusGroupID,spanIdx,gdrIdx,dimensions,&gdrsection);
    CComQIPtr<IShape> shape(gdrsection);
    segment->putref_Shape(shape);
 
@@ -246,21 +246,21 @@ void CUBeam2Factory::LayoutSectionChangePointsOfInterest(IBroker* pBroker,SpanIn
    pPoiMgr->AddPointOfInterest(poiEnd);
 }
 
-void CUBeam2Factory::CreateDistFactorEngineer(IBroker* pBroker,long agentID,const pgsTypes::SupportedDeckType* pDeckType, const pgsTypes::AdjacentTransverseConnectivity* pConnect,IDistFactorEngineer** ppEng)
+void CUBeam2Factory::CreateDistFactorEngineer(IBroker* pBroker,long statusGroupID,const pgsTypes::SupportedDeckType* pDeckType, const pgsTypes::AdjacentTransverseConnectivity* pConnect,IDistFactorEngineer** ppEng)
 {
    CComObject<CUBeamDistFactorEngineer>* pEngineer;
    CComObject<CUBeamDistFactorEngineer>::CreateInstance(&pEngineer);
-   pEngineer->SetBroker(pBroker,agentID);
+   pEngineer->SetBroker(pBroker,statusGroupID);
    (*ppEng) = pEngineer;
    (*ppEng)->AddRef();
 }
 
-void CUBeam2Factory::CreatePsLossEngineer(IBroker* pBroker,long agentID,SpanIndexType spanIdx,GirderIndexType gdrIdx,IPsLossEngineer** ppEng)
+void CUBeam2Factory::CreatePsLossEngineer(IBroker* pBroker,long statusGroupID,SpanIndexType spanIdx,GirderIndexType gdrIdx,IPsLossEngineer** ppEng)
 {
    CComObject<CPsBeamLossEngineer>* pEngineer;
    CComObject<CPsBeamLossEngineer>::CreateInstance(&pEngineer);
    pEngineer->Init(CPsLossEngineer::UBeam);
-   pEngineer->SetBroker(pBroker,agentID);
+   pEngineer->SetBroker(pBroker,statusGroupID);
    (*ppEng) = pEngineer;
    (*ppEng)->AddRef();
 }

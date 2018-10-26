@@ -28,7 +28,6 @@ copy /Y PGSuper.tip			%BINTARGET%\App\
 copy /Y License.txt			%BINTARGET%\App\
 copy /Y PGSuper.chm			%BINTARGET%\App\
 copy /Y Trucks.pgs			%BINTARGET%\App\
-copy /Y LibrariesAndTemplates.html	%BINTARGET%\App\
 
 REM - Template Files
 copy /Y WSDOT.lbr				%BINTARGET%\Templates\

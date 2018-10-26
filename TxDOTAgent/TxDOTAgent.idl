@@ -54,6 +54,14 @@ library TxDOTAgentLib
    ]
    coclass TxDOTCadExporter
    {
-      [default] interface IPGSuperExporter;
+      [default] interface IPGSuperDataExporter;
+   };
+
+   [
+      uuid(539E5AB9-4302-45f9-9FAD-B8E2DB6867F1)
+   ]
+   coclass TxDOTComponentInfo
+   {
+      [default] interface IUnknown;
    };
 };

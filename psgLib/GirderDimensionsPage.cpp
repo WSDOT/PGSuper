@@ -35,8 +35,8 @@
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
-//#undef THIS_FILE
-//static char THIS_FILE[] = __FILE__;
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
 #endif
 
 /////////////////////////////////////////////////////////////////////////////
@@ -93,7 +93,8 @@ LRESULT CGirderDimensionsPage::OnCommandHelp(WPARAM, LPARAM lParam)
 
 BOOL CGirderDimensionsPage::OnInitDialog() 
 {
-	
+	CWaitCursor cursor;
+
 	m_Grid.SubclassDlgItem(IDC_DIMENSIONS, this);
    m_Grid.CustomInit();
 
@@ -186,7 +187,7 @@ void CGirderDimensionsPage::ViewSection(bool isEnd)
 
    CGirderMainSheet* pDad = (CGirderMainSheet*)GetParent();
 
-   CSectionViewDialog dlg(&(pDad->m_Entry), isEnd,pDad->m_Mode);
+   CSectionViewDialog dlg(&(pDad->m_Entry),isEnd);
    dlg.DoModal();
 
 }

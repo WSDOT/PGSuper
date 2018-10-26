@@ -73,10 +73,6 @@ inline UserLoads::Stage GetCBStage(int sel)
 }
 
 
-static CString Get_Unit_Tag(bool siMode);
-static Float64 Convert_Length_To_Display(Float64 val,bool siMode);
-static Float64 Convert_Length_From_Display(Float64 val,bool siMode);
-
 /////////////////////////////////////////////////////////////////////////////
 // CGirderModelChildFrame
 
@@ -169,7 +165,8 @@ int CGirderModelChildFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
    point_load_tool->SetToolTipText("Drag me onto girder to create a point load");
 
    CComQIPtr<iToolIcon, &IID_iToolIcon> pti(point_load_tool);
-   pti->SetIcon(::AfxGetInstanceHandle(), IDI_POINT_LOAD);
+   HRESULT hr = pti->SetIcon(::AfxGetInstanceHandle(), IDI_POINT_LOAD);
+   ATLASSERT(SUCCEEDED(hr));
 
    m_SettingsBar.AddTool(point_load_tool);
 
@@ -180,7 +177,8 @@ int CGirderModelChildFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
    distributed_load_tool->SetToolTipText("Drag me onto girder to create a distributed load");
 
    CComQIPtr<iToolIcon, &IID_iToolIcon> dti(distributed_load_tool);
-   dti->SetIcon(::AfxGetInstanceHandle(), IDI_DISTRIBUTED_LOAD);
+   hr = dti->SetIcon(::AfxGetInstanceHandle(), IDI_DISTRIBUTED_LOAD);
+   ATLASSERT(SUCCEEDED(hr));
 
    m_SettingsBar.AddTool(distributed_load_tool);
 
@@ -191,20 +189,20 @@ int CGirderModelChildFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
    moment_load_tool->SetToolTipText("Drag me onto girder to create a moment load");
    
    CComQIPtr<iToolIcon, &IID_iToolIcon> mti(moment_load_tool);
-   mti->SetIcon(::AfxGetInstanceHandle(), IDI_MOMENT_LOAD);
+   hr = mti->SetIcon(::AfxGetInstanceHandle(), IDI_MOMENT_LOAD);
+   ATLASSERT(SUCCEEDED(hr));
 
    m_SettingsBar.AddTool(moment_load_tool);
 
-   CPGSuperApp* pApp = (CPGSuperApp*)AfxGetApp();
-   UINT settings = pApp->GetGirderEditorSettings();
+   CPGSuperDoc* pDoc = (CPGSuperDoc*)GetActiveDocument();
+   UINT settings = pDoc->GetGirderEditorSettings();
    CButton* pBtn = (CButton*)m_SettingsBar.GetDlgItem(IDC_SYNC);
    pBtn->SetCheck( settings & IDG_SV_SYNC_GIRDER ? TRUE : FALSE);
 
    if ( SyncWithBridgeModelView() ) 
    {
-      CPGSuperDoc* pdoc = (CPGSuperDoc*) GetActiveDocument();
-      m_CurrentSpanIdx = pdoc->GetSpanIdx();
-      m_CurrentGirderIdx = pdoc->GetGirderIdx();
+      m_CurrentSpanIdx   = pDoc->GetSpanIdx();
+      m_CurrentGirderIdx = pDoc->GetGirderIdx();
    }
 
    UpdateBar();
@@ -263,7 +261,7 @@ void CGirderModelChildFrame::UpdateBar()
    GetSpanAndGirderSelection(&spanIdx,&gdrIdx);
 
    CComPtr<IBroker> pBroker;
-   AfxGetBroker(&pBroker);
+   EAFGetBroker(&pBroker);
 
    GET_IFACE2(pBroker, IBridge, pBridge);
 
@@ -401,7 +399,7 @@ void CGirderModelChildFrame::OnSpanChanged()
    m_CurrentSpanIdx = pspan_ctrl->GetCurSel();
 
    CComPtr<IBroker> pBroker;
-   AfxGetBroker(&pBroker);
+   EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IBridge,pBridge);
    GirderIndexType nGirders = pBridge->GetGirderCount(m_CurrentSpanIdx);
    m_CurrentGirderIdx = min(m_CurrentGirderIdx,nGirders-1);
@@ -432,7 +430,6 @@ void CGirderModelChildFrame::OnSectionCut()
 void CGirderModelChildFrame::ShowCutDlg()
 {
    CPGSuperDoc* pdoc = (CPGSuperDoc*) GetActiveDocument();
-   bool si_mode = pdoc->GetUnitsMode() == libUnitsMode::UNITS_SI;
    Float64 val  = m_CurrentCutLocation;
    Float64 high = m_MaxCutLocation;
 
@@ -447,7 +444,7 @@ void CGirderModelChildFrame::ShowCutDlg()
    ATLASSERT( span != ALL_SPANS && gdr != ALL_GIRDERS  );
    Uint16 nHarpPoints = pStrandGeom->GetNumHarpPoints(span,gdr);
 
-   CSectionCutDlgEx dlg(nHarpPoints,m_CurrentCutLocation,0.0,high,si_mode,m_CutLocation);
+   CSectionCutDlgEx dlg(nHarpPoints,m_CurrentCutLocation,0.0,high,m_CutLocation);
 
    int st = dlg.DoModal();
    if (st==IDOK)
@@ -509,17 +506,21 @@ void CGirderModelChildFrame::CutAtPrev()
 
 void CGirderModelChildFrame::CutAtLocation()
 {
-   CPGSuperDoc* pdoc = (CPGSuperDoc*) GetActiveDocument();
-   bool si_mode = pdoc->GetUnitsMode() == libUnitsMode::UNITS_SI;
-   Float64 val  = Convert_Length_To_Display(m_CurrentCutLocation,si_mode);
-   Float64 high = Convert_Length_To_Display(m_MaxCutLocation,si_mode);
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
 
-   CSectionCutDlg dlg(val,0.0,high,Get_Unit_Tag(si_mode));
+   CPGSuperDoc* pdoc = (CPGSuperDoc*) GetActiveDocument();
+
+   Float64 val  = ::ConvertFromSysUnits(m_CurrentCutLocation,pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure);
+   Float64 high = ::ConvertFromSysUnits(m_MaxCutLocation,pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure);
+
+   CSectionCutDlg dlg(val,0.0,high,pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure.UnitTag().c_str());
 
    int st = dlg.DoModal();
    if (st==IDOK)
    {
-      val = Convert_Length_From_Display(dlg.GetValue(),si_mode);
+      val = ::ConvertToSysUnits(dlg.GetValue(),pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure);
       CutAt(val);
    }
 
@@ -527,32 +528,6 @@ void CGirderModelChildFrame::CutAtLocation()
    // force an update (this is a hack because of the selection tool).
    GetGirderModelElevationView()->Invalidate();
    GetGirderModelElevationView()->UpdateWindow();
-}
-
-/////// utility functions
-CString Get_Unit_Tag(bool siMode)
-{
-
-   if (siMode)
-      return unitMeasure::Meter.UnitTag().c_str();
-   else
-      return unitMeasure::Feet.UnitTag().c_str();
-}
-
-Float64 Convert_Length_To_Display(Float64 val,bool siMode)
-{
-   if (siMode)
-      return ConvertFromSysUnits(val, unitMeasure::Meter);
-   else
-      return ConvertFromSysUnits(val, unitMeasure::Feet);
-}
-
-Float64 Convert_Length_From_Display(Float64 val,bool siMode)
-{
-   if (siMode)
-      return ConvertToSysUnits(val, unitMeasure::Meter);
-   else
-      return ConvertToSysUnits(val, unitMeasure::Feet);
 }
 
 void CGirderModelChildFrame::OnFilePrintDirect() 
@@ -663,8 +638,8 @@ LRESULT CGirderModelChildFrame::OnCommandHelp(WPARAM, LPARAM lParam)
 
 void CGirderModelChildFrame::OnSync() 
 {
-   CPGSuperApp* pApp = (CPGSuperApp*)AfxGetApp();
-   UINT settings = pApp->GetGirderEditorSettings();
+   CPGSuperDoc* pDoc = (CPGSuperDoc*)GetActiveDocument();
+   UINT settings = pDoc->GetGirderEditorSettings();
 
    if ( SyncWithBridgeModelView() )
    {
@@ -673,7 +648,6 @@ void CGirderModelChildFrame::OnSync()
       SpanIndexType spanIdx, gdrIdx;
       GetSpanAndGirderSelection(&spanIdx,&gdrIdx);
 
-      CPGSuperDoc* pDoc = (CPGSuperDoc*) GetActiveDocument();
       pDoc->SelectGirder(spanIdx,gdrIdx);
    }
    else
@@ -684,5 +658,5 @@ void CGirderModelChildFrame::OnSync()
       GetGirderModelSectionView()->Invalidate();
    }
 
-   pApp->SetGirderEditorSettings(settings);
+   pDoc->SetGirderEditorSettings(settings);
 }

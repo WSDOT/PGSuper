@@ -72,17 +72,17 @@ interface IBeamFactory : IUnknown
 
    //---------------------------------------------------------------------------------
    // Creates a new girder section using the supplied dimensions
-   virtual void CreateGirderSection(IBroker* pBroker,long agentID,SpanIndexType spanIdx,GirderIndexType gdrIdx,const IBeamFactory::Dimensions& dimensions,IGirderSection** ppSection) = 0;
+   virtual void CreateGirderSection(IBroker* pBroker,long statusGroupID,SpanIndexType spanIdx,GirderIndexType gdrIdx,const IBeamFactory::Dimensions& dimensions,IGirderSection** ppSection) = 0;
 
    //---------------------------------------------------------------------------------
    // Creates a new girder profile shape using the supplied dimensions
    // This shape is used to draw the girder in profile (elevation)
-   virtual void CreateGirderProfile(IBroker* pBroker,long agentID,SpanIndexType spanIdx,GirderIndexType gdrIdx,const IBeamFactory::Dimensions& dimensions,IShape** ppShape) = 0;
+   virtual void CreateGirderProfile(IBroker* pBroker,long statusGroupID,SpanIndexType spanIdx,GirderIndexType gdrIdx,const IBeamFactory::Dimensions& dimensions,IShape** ppShape) = 0;
 
    //---------------------------------------------------------------------------------
    // Lays out the girder along the given superstructure member. This function must
    // create the segments that describe the girder line
-   virtual void LayoutGirderLine(IBroker* pBroker,long agentID,SpanIndexType spanIdx,GirderIndexType gdrIdx,ISuperstructureMember* ssmbr) = 0;
+   virtual void LayoutGirderLine(IBroker* pBroker,long statusGroupID,SpanIndexType spanIdx,GirderIndexType gdrIdx,ISuperstructureMember* ssmbr) = 0;
 
    //---------------------------------------------------------------------------------
    // Adds Points of interest at all cross section changes.
@@ -99,7 +99,7 @@ interface IBeamFactory : IUnknown
    // Implementation Note: You must call SetBroker on the newly create object and supply
    // it with the pointer to the broker object provided by the caller.
    // const pointers have valid values to be used if non-NULL
-   virtual void CreateDistFactorEngineer(IBroker* pBroker,long agentID,const pgsTypes::SupportedDeckType* pDeckType, const pgsTypes::AdjacentTransverseConnectivity* pConnect,IDistFactorEngineer** ppEng) = 0;
+   virtual void CreateDistFactorEngineer(IBroker* pBroker,long statusGroupID,const pgsTypes::SupportedDeckType* pDeckType, const pgsTypes::AdjacentTransverseConnectivity* pConnect,IDistFactorEngineer** ppEng) = 0;
 
    //---------------------------------------------------------------------------------
    // Creates an object that implements the IPsLossEngineer interface. The returned
@@ -107,7 +107,7 @@ interface IBeamFactory : IUnknown
    //
    // Implementation Note: You must call SetBroker on the newly create object and supply
    // it with the pointer to the broker object provided by the caller.
-   virtual void CreatePsLossEngineer(IBroker* pBroker,long agentID,SpanIndexType spanIdx,GirderIndexType gdrIdx,IPsLossEngineer** ppEng) = 0;
+   virtual void CreatePsLossEngineer(IBroker* pBroker,long statusGroupID,SpanIndexType spanIdx,GirderIndexType gdrIdx,IPsLossEngineer** ppEng) = 0;
 
    //---------------------------------------------------------------------------------
    // The StrandMover object knows how to move harped strands within the section when

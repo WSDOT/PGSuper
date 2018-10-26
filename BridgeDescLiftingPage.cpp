@@ -24,7 +24,8 @@
 //
 
 #include "stdafx.h"
-#include "pgsuper.h"
+#include "resource.h"
+#include "PGSuperDoc.h"
 #include "BridgeDescLiftingPage.h"
 
 #include "GirderDescDlg.h"
@@ -72,7 +73,7 @@ void CGirderDescLiftingPage::DoDataExchange(CDataExchange* pDX)
    DDX_MetaFileStatic(pDX, IDC_HAULINGOVERHANGS, m_Picture, _T("HaulingOverhangs"), _T("Metafile") );
 
    CComPtr<IBroker> pBroker;
-   AfxGetBroker(&pBroker);
+   EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
 
    DDX_UnitValueAndTag( pDX, IDC_LIFTING_LOOP_LOCATION, IDC_LIFTING_LOOP_LOCATION_UNITS, m_LiftingLocation, pDisplayUnits->GetSpanLengthUnit() );
@@ -110,7 +111,7 @@ END_MESSAGE_MAP()
 BOOL CGirderDescLiftingPage::OnSetActive() 
 {
    CComPtr<IBroker> pBroker;
-   AfxGetBroker(&pBroker);
+   EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IGirderLiftingSpecCriteria,pGirderLiftingSpecCriteria);
    GET_IFACE2(pBroker,IGirderHaulingSpecCriteria,pGirderHaulingSpecCriteria);
 

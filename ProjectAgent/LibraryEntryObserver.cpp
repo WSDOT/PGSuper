@@ -157,6 +157,20 @@ void pgsLibraryEntryObserver::Update(SpecLibraryEntry* pSubject, Int32 hint)
    m_pAgent->FirePendingEvents();
 }
 
+void pgsLibraryEntryObserver::Update(RatingLibraryEntry* pSubject, Int32 hint)
+{
+   m_pAgent->HoldEvents();
+   if (hint & LibraryHints::EntryRenamed)
+      m_pAgent->m_Spec = pSubject->GetName();
+
+   if (hint & LibraryHints::EntryEdited)
+   {
+      ClearStatusItems();
+      m_pAgent->RatingSpecificationChanged(true);
+   }
+   m_pAgent->FirePendingEvents();
+}
+
 void pgsLibraryEntryObserver::Update(TrafficBarrierEntry* pSubject, Int32 hint)
 {
    m_pAgent->HoldEvents();
@@ -230,7 +244,7 @@ void pgsLibraryEntryObserver::SetAgent(CProjectAgentImp* pAgent)
 void pgsLibraryEntryObserver::ClearStatusItems()
 {
    GET_IFACE2(m_pAgent->m_pBroker,IStatusCenter,pStatusCenter);
-   pStatusCenter->RemoveByAgentID(m_pAgent->m_AgentID);
+   pStatusCenter->RemoveByStatusGroupID(m_pAgent->m_StatusGroupID);
 }
 
 //======================== INQUIRY    =======================================

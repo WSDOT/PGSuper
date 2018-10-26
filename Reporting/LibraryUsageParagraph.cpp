@@ -57,9 +57,18 @@ rptParagraph* CLibraryUsageParagraph::Build(IBroker* pBroker) const
    std::string strMasterLibFile;
    pLibrary->GetMasterLibraryInfo(strPublisher,strMasterLibFile,time);
 
-   *pParagraph << "Master Library Publisher  : " << strPublisher << rptNewLine;
-   *pParagraph << "Master Library File       : " << strMasterLibFile << rptNewLine;
-   *pParagraph << "Master Library Date Stamp : " << time.AsString() << rptNewLine;
+   *pParagraph << "Master Library Publisher: " << strPublisher << rptNewLine;
+
+   if (std::string::npos != strMasterLibFile.find(".pgz"))
+   {
+      *pParagraph << "Library and Template Package URL: " << strMasterLibFile << rptNewLine;
+   }
+   else
+   {
+      *pParagraph << "Master Library File: " << strMasterLibFile << rptNewLine;
+   }
+
+    *pParagraph << "Master Library Date Stamp: " << time.AsString() << rptNewLine;
    rptRcTable* table = CLibraryUsageTable().Build(pBroker);
 
    *pParagraph << table << rptNewLine;

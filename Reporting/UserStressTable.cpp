@@ -95,7 +95,7 @@ rptRcTable* CUserStressTable::Build(IBroker* pBroker,SpanIndexType span,GirderIn
    {
       // Get all the tabular poi's for flexure and shear
       // Merge the two vectors to form one vector to report on.
-      std::vector<pgsPointOfInterest> vPoi = pIPoi->GetPointsOfInterest(pgsTypes::BridgeSite1,spanIdx,girder, POI_TABULAR);
+      std::vector<pgsPointOfInterest> vPoi = pIPoi->GetPointsOfInterest(pgsTypes::BridgeSite1,spanIdx,girder, POI_ALL, POIFIND_OR);
 
       Float64 end_size = pBridge->GetGirderStartConnectionLength(spanIdx,girder);
 

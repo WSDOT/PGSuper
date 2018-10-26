@@ -260,7 +260,7 @@ void CCopyGirderDlg::CopyToSelectionChanged()
    UnhashSpanGirder(copyFrom,&fromSpan,&fromGirder);
 
    CComPtr<IBroker> pBroker;
-   AfxGetBroker(&pBroker);
+   EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 

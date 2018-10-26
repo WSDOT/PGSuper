@@ -22,7 +22,7 @@
 
 #include "StdAfx.h"
 #include "InsertDeleteLoad.h"
-#include "PGSuper.h"
+#include "PGSuperDoc.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -63,7 +63,7 @@ bool txnInsertPointLoad::IsRepeatable()
 bool txnInsertPointLoad::Execute()
 {
    CComPtr<IBroker> pBroker;
-   AfxGetBroker(&pBroker);
+   EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IEvents,pEvents);
    pEvents->HoldEvents();
 
@@ -78,7 +78,7 @@ bool txnInsertPointLoad::Execute()
 void txnInsertPointLoad::Undo()
 {
    CComPtr<IBroker> pBroker;
-   AfxGetBroker(&pBroker);
+   EAFGetBroker(&pBroker);
 
    GET_IFACE2(pBroker,IEvents,pEvents);
    pEvents->HoldEvents();
@@ -119,7 +119,7 @@ bool txnDeletePointLoad::IsRepeatable()
 bool txnDeletePointLoad::Execute()
 {
    CComPtr<IBroker> pBroker;
-   AfxGetBroker(&pBroker);
+   EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IEvents,pEvents);
    pEvents->HoldEvents();
 
@@ -135,7 +135,7 @@ bool txnDeletePointLoad::Execute()
 void txnDeletePointLoad::Undo()
 {
    CComPtr<IBroker> pBroker;
-   AfxGetBroker(&pBroker);
+   EAFGetBroker(&pBroker);
 
    GET_IFACE2(pBroker,IEvents,pEvents);
    pEvents->HoldEvents();
@@ -189,7 +189,7 @@ bool txnEditPointLoad::IsRepeatable()
 void txnEditPointLoad::DoExecute(int i)
 {
    CComPtr<IBroker> pBroker;
-   AfxGetBroker(&pBroker);
+   EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IEvents,pEvents);
    pEvents->HoldEvents();
 
@@ -232,7 +232,7 @@ bool txnInsertDistributedLoad::IsRepeatable()
 bool txnInsertDistributedLoad::Execute()
 {
    CComPtr<IBroker> pBroker;
-   AfxGetBroker(&pBroker);
+   EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IEvents,pEvents);
    pEvents->HoldEvents();
 
@@ -247,7 +247,7 @@ bool txnInsertDistributedLoad::Execute()
 void txnInsertDistributedLoad::Undo()
 {
    CComPtr<IBroker> pBroker;
-   AfxGetBroker(&pBroker);
+   EAFGetBroker(&pBroker);
 
    GET_IFACE2(pBroker,IEvents,pEvents);
    pEvents->HoldEvents();
@@ -288,7 +288,7 @@ bool txnDeleteDistributedLoad::IsRepeatable()
 bool txnDeleteDistributedLoad::Execute()
 {
    CComPtr<IBroker> pBroker;
-   AfxGetBroker(&pBroker);
+   EAFGetBroker(&pBroker);
 
    GET_IFACE2(pBroker,IEvents,pEvents);
    pEvents->HoldEvents();
@@ -305,7 +305,7 @@ bool txnDeleteDistributedLoad::Execute()
 void txnDeleteDistributedLoad::Undo()
 {
    CComPtr<IBroker> pBroker;
-   AfxGetBroker(&pBroker);
+   EAFGetBroker(&pBroker);
 
    GET_IFACE2(pBroker,IEvents,pEvents);
    pEvents->HoldEvents();
@@ -359,7 +359,7 @@ bool txnEditDistributedLoad::IsRepeatable()
 void txnEditDistributedLoad::DoExecute(int i)
 {
    CComPtr<IBroker> pBroker;
-   AfxGetBroker(&pBroker);
+   EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IEvents,pEvents);
    pEvents->HoldEvents();
 
@@ -402,7 +402,7 @@ bool txnInsertMomentLoad::IsRepeatable()
 bool txnInsertMomentLoad::Execute()
 {
    CComPtr<IBroker> pBroker;
-   AfxGetBroker(&pBroker);
+   EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IEvents,pEvents);
    pEvents->HoldEvents();
 
@@ -417,7 +417,7 @@ bool txnInsertMomentLoad::Execute()
 void txnInsertMomentLoad::Undo()
 {
    CComPtr<IBroker> pBroker;
-   AfxGetBroker(&pBroker);
+   EAFGetBroker(&pBroker);
 
    GET_IFACE2(pBroker,IEvents,pEvents);
    pEvents->HoldEvents();
@@ -458,7 +458,7 @@ bool txnDeleteMomentLoad::IsRepeatable()
 bool txnDeleteMomentLoad::Execute()
 {
    CComPtr<IBroker> pBroker;
-   AfxGetBroker(&pBroker);
+   EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IEvents,pEvents);
    pEvents->HoldEvents();
 
@@ -474,7 +474,7 @@ bool txnDeleteMomentLoad::Execute()
 void txnDeleteMomentLoad::Undo()
 {
    CComPtr<IBroker> pBroker;
-   AfxGetBroker(&pBroker);
+   EAFGetBroker(&pBroker);
 
    GET_IFACE2(pBroker,IEvents,pEvents);
    pEvents->HoldEvents();
@@ -528,7 +528,7 @@ bool txnEditMomentLoad::IsRepeatable()
 void txnEditMomentLoad::DoExecute(int i)
 {
    CComPtr<IBroker> pBroker;
-   AfxGetBroker(&pBroker);
+   EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IEvents,pEvents);
    pEvents->HoldEvents();
 

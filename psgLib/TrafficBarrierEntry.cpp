@@ -45,8 +45,8 @@ CLASS
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
-//#undef THIS_FILE
-//static char THIS_FILE[] = __FILE__;
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
 #endif
 
 // obsolete enum... need to use it to load old files
@@ -480,12 +480,12 @@ double TrafficBarrierEntry::GetCurbOffset() const
 //======================== LIFECYCLE  =======================================
 //======================== OPERATORS  =======================================
 //======================== OPERATIONS =======================================
-bool TrafficBarrierEntry::Edit(libUnitsMode::Mode mode, bool allowEditing)
+bool TrafficBarrierEntry::Edit(bool allowEditing)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
    // exchange data with dialog
-   CTrafficBarrierDlg dlg(mode, allowEditing);
+   CTrafficBarrierDlg dlg(allowEditing);
 
    dlg.m_WeightMethod = m_WeightMethod;
    dlg.m_Weight       = m_Weight;

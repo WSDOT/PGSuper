@@ -74,7 +74,7 @@ void CSpanDetailsDlg::SetSpanData(const CSpanData* pSpan)
 
    // Set dialog title
    CString strTitle;
-   strTitle.Format("Span %d Details",pSpan->GetSpanIndex()+1);
+   strTitle.Format("Span %d Details",LABEL_SPAN(pSpan->GetSpanIndex()));
    SetTitle(strTitle);
 }
 

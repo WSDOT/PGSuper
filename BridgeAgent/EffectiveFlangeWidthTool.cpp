@@ -50,15 +50,15 @@ static char THIS_FILE[] = __FILE__;
 
 /////////////////////////////////////////////////////////////////////////////
 // CEffectiveFlangeWidthTool
-void CEffectiveFlangeWidthTool::Init(IBroker* pBroker,AgentIDType agentID)
+void CEffectiveFlangeWidthTool::Init(IBroker* pBroker,StatusGroupIDType statusGroupID)
 {
    m_pBroker = pBroker;
-   m_AgentID = agentID;
+   m_StatusGroupID = statusGroupID;
 
    // Register status callbacks that we want to use
    GET_IFACE(IStatusCenter,pStatusCenter);
-   m_scidInformationalWarning = pStatusCenter->RegisterCallback(new pgsInformationalStatusCallback(pgsTypes::statusWarning)); 
-   m_scidBridgeDescriptionError = pStatusCenter->RegisterCallback( new pgsBridgeDescriptionStatusCallback(m_pBroker,pgsTypes::statusError));
+   m_scidInformationalWarning = pStatusCenter->RegisterCallback(new pgsInformationalStatusCallback(eafTypes::statusWarning)); 
+   m_scidBridgeDescriptionError = pStatusCenter->RegisterCallback( new pgsBridgeDescriptionStatusCallback(m_pBroker,eafTypes::statusError));
 }
 
 HRESULT CEffectiveFlangeWidthTool::FinalConstruct()
@@ -317,7 +317,7 @@ HRESULT CEffectiveFlangeWidthTool::EffectiveFlangeWidthDetails(IGenericBridge* b
          os << "The ratio of span length to girder spacing (L/S) is less that 2. The effective flange width cannot be computed (LRFD 4.6.2.6.1)" << std::endl;
 
          pgsBridgeDescriptionStatusItem* pStatusItem = 
-            new pgsBridgeDescriptionStatusItem(m_AgentID,m_scidBridgeDescriptionError,0,os.str().c_str());
+            new pgsBridgeDescriptionStatusItem(m_StatusGroupID,m_scidBridgeDescriptionError,0,os.str().c_str());
 
          pStatusCenter->Add(pStatusItem);
 
@@ -345,7 +345,7 @@ HRESULT CEffectiveFlangeWidthTool::EffectiveFlangeWidthDetails(IGenericBridge* b
          std::ostringstream os;
          os << "The slab overhang exceeds S/2. The overhang is taken to be equal to S/2 for purposes of computing the effective flange width and the effect of structurally continuous barriers has been ignored. (LRFD 4.6.2.6.1)" << std::endl;
 
-         pgsInformationalStatusItem* pStatusItem = new pgsInformationalStatusItem(m_AgentID,m_scidInformationalWarning,os.str().c_str());
+         pgsInformationalStatusItem* pStatusItem = new pgsInformationalStatusItem(m_StatusGroupID,m_scidInformationalWarning,os.str().c_str());
          pStatusCenter->Add(pStatusItem);
 
          wTrib = twLeft + twRight;
@@ -400,7 +400,7 @@ HRESULT CEffectiveFlangeWidthTool::EffectiveFlangeWidthDetails(IGenericBridge* b
          os << "The maximum skew angle in the bridge system exceeds the limit of 75 degrees for computing effective flange width (LRFD 4.6.2.6.1)" << std::endl;
 
          pgsBridgeDescriptionStatusItem* pStatusItem = 
-            new pgsBridgeDescriptionStatusItem(m_AgentID,m_scidBridgeDescriptionError,0,os.str().c_str());
+            new pgsBridgeDescriptionStatusItem(m_StatusGroupID,m_scidBridgeDescriptionError,0,os.str().c_str());
 
          pStatusCenter->Add(pStatusItem);
 

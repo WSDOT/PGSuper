@@ -4,6 +4,7 @@
 	Version="9.00"
 	Name="EngAgent"
 	ProjectGUID="{B8979601-544D-41D7-A6A2-20A03E2473A4}"
+	RootNamespace="EngAgent"
 	Keyword="MFCProj"
 	TargetFrameworkVersion="0"
 	>
@@ -372,6 +373,10 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\LoadRater.cpp"
+				>
+			</File>
+			<File
 				RelativePath="MomentCapacityEngineer.cpp"
 				>
 				<FileConfiguration
@@ -438,10 +443,6 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\StatusItems.cpp"
-				>
-			</File>
-			<File
 				RelativePath="StdAfx.cpp"
 				>
 				<FileConfiguration
@@ -493,23 +494,11 @@
 			Filter="h;hpp;hxx;hm;inl"
 			>
 			<File
-				RelativePath="..\Include\IFace\Artifact.h"
-				>
-			</File>
-			<File
-				RelativePath="..\Include\IFace\Constructability.h"
-				>
-			</File>
-			<File
 				RelativePath="DesignCodes.h"
 				>
 			</File>
 			<File
 				RelativePath="Designer2.h"
-				>
-			</File>
-			<File
-				RelativePath="..\Include\IFace\DistributionFactors.h"
 				>
 			</File>
 			<File
@@ -525,15 +514,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\Include\IFace\MomentCapacity.h"
+				RelativePath=".\LoadRater.h"
 				>
 			</File>
 			<File
 				RelativePath="MomentCapacityEngineer.h"
-				>
-			</File>
-			<File
-				RelativePath="..\Include\IFace\PrestressForce.h"
 				>
 			</File>
 			<File
@@ -545,15 +530,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\Include\IFace\ShearCapacity.h"
-				>
-			</File>
-			<File
 				RelativePath="ShearCapacityEngineer.h"
-				>
-			</File>
-			<File
-				RelativePath=".\StatusItems.h"
 				>
 			</File>
 			<File
@@ -571,6 +548,50 @@
 			>
 			<File
 				RelativePath="EngAgent.rgs"
+				>
+			</File>
+		</Filter>
+		<Filter
+			Name="IFace"
+			>
+			<File
+				RelativePath="..\Include\IFace\Artifact.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Include\IFace\Constructability.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Include\IFace\CrackedSection.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Include\IFace\DistributionFactors.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Include\IFace\MomentCapacity.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Include\IFace\PrestressForce.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Include\IFace\ShearCapacity.h"
+				>
+			</File>
+		</Filter>
+		<Filter
+			Name="Status Items"
+			>
+			<File
+				RelativePath=".\StatusItems.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\StatusItems.h"
 				>
 			</File>
 		</Filter>

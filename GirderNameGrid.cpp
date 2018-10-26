@@ -24,7 +24,7 @@
 //
 
 #include "stdafx.h"
-#include "PGSuper.h"
+#include "PGSuperDoc.h"
 #include "resource.h"
 #include "GirderNameGrid.h"
 
@@ -112,7 +112,7 @@ void CGirderNameGrid::CustomInit(const CSpanData* pSpanData)
 void CGirderNameGrid::FillGrid()
 {
    CComPtr<IBroker> pBroker;
-   AfxGetBroker(&pBroker);
+   EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,ILibrary,pLib);
 
 	GetParam()->EnableUndo(FALSE);
@@ -341,7 +341,7 @@ BOOL CGirderNameGrid::OnEndEditing(ROWCOL nRow,ROWCOL nCol)
       m_GirderTypes.SetGirderName(grpIdx,strNewName);
 
       CComPtr<IBroker> pBroker;
-      AfxGetBroker(&pBroker);
+      EAFGetBroker(&pBroker);
       GET_IFACE2(pBroker,ILibrary,pLib);
       const GirderLibraryEntry* pGdrEntry = pLib->GetGirderEntry( strNewName );
       
@@ -355,7 +355,7 @@ void CGirderNameGrid::UpdateGirderFamilyList(const char* strGirderFamily)
 {
    // fill the girder list
    CComPtr<IBroker> pBroker;
-   AfxGetBroker(&pBroker);
+   EAFGetBroker(&pBroker);
 
    GET_IFACE2( pBroker, ILibraryNames, pLibNames );
    std::vector<std::string> names;

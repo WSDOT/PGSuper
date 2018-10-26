@@ -89,6 +89,61 @@ boost::shared_ptr<CReportSpecification> CSpanReportSpecificationBuilder::CreateD
 ////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////
 
+CGirderReportSpecificationBuilder::CGirderReportSpecificationBuilder(IBroker* pBroker) :
+CBrokerReportSpecificationBuilder(pBroker)
+{
+}
+
+CGirderReportSpecificationBuilder::~CGirderReportSpecificationBuilder(void)
+{
+}
+
+boost::shared_ptr<CReportSpecification> CGirderReportSpecificationBuilder::CreateReportSpec(const CReportDescription& rptDesc,boost::shared_ptr<CReportSpecification>& pRptSpec)
+{
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
+   // Prompt for span and chapter list
+   GET_IFACE(ISelection,pSelection);
+   GirderIndexType gdrIdx = pSelection->GetGirderIdx();
+
+   gdrIdx = (gdrIdx == INVALID_INDEX ? 0 : gdrIdx );
+
+   CSpanGirderReportDlg dlg(m_pBroker,rptDesc,GirderAndChapters,pRptSpec); // girder only mode
+   dlg.m_Girder = gdrIdx;
+
+   if ( dlg.DoModal() == IDOK )
+   {
+      boost::shared_ptr<CReportSpecification> pRptSpec( new CGirderReportSpecification(rptDesc.GetReportName(),m_pBroker,dlg.m_Girder) );
+
+      std::vector<std::string> chList = dlg.m_ChapterList;
+      AddChapters(rptDesc,chList,pRptSpec);
+
+      return pRptSpec;
+   }
+
+   return boost::shared_ptr<CReportSpecification>();
+}
+
+boost::shared_ptr<CReportSpecification> CGirderReportSpecificationBuilder::CreateDefaultReportSpec(const CReportDescription& rptDesc)
+{
+   // Get the selected span and girder
+   GET_IFACE(ISelection,pSelection);
+   GirderIndexType gdrIdx = pSelection->GetGirderIdx();
+
+   ATLASSERT( gdrIdx != INVALID_INDEX );
+
+   gdrIdx = (gdrIdx == INVALID_INDEX ? 0 : gdrIdx );
+   boost::shared_ptr<CReportSpecification> pRptSpec( new CGirderReportSpecification(rptDesc.GetReportName(),m_pBroker,gdrIdx) );
+
+   AddChapters(rptDesc,pRptSpec);
+
+   return pRptSpec;
+}
+
+////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////
+
 CSpanGirderReportSpecificationBuilder::CSpanGirderReportSpecificationBuilder(IBroker* pBroker) :
 CSpanReportSpecificationBuilder(pBroker)
 {

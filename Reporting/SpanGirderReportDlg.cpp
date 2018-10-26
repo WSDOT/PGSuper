@@ -44,8 +44,8 @@ static char THIS_FILE[] = __FILE__;
 
 IMPLEMENT_DYNAMIC(CSpanGirderReportDlg, CDialog)
 
-CSpanGirderReportDlg::CSpanGirderReportDlg(IBroker* pBroker,const CReportDescription& rptDesc,RptDialogMode mode,boost::shared_ptr<CReportSpecification>& pRptSpec,CWnd* pParent)
-	: CDialog(CSpanGirderReportDlg::IDD, pParent), m_RptDesc(rptDesc), m_pInitRptSpec(pRptSpec)
+CSpanGirderReportDlg::CSpanGirderReportDlg(IBroker* pBroker,const CReportDescription& rptDesc,RptDialogMode mode,boost::shared_ptr<CReportSpecification>& pRptSpec,UINT nIDTemplate,CWnd* pParent)
+	: CDialog(nIDTemplate, pParent), m_RptDesc(rptDesc), m_pInitRptSpec(pRptSpec)
 {
    m_Span   = INVALID_INDEX;
    m_Girder = INVALID_INDEX;
@@ -71,7 +71,7 @@ void CSpanGirderReportDlg::DoDataExchange(CDataExchange* pDX)
 	   DDX_CBIndex(pDX, IDC_SPAN, m_Span);
    }
 
-   if ( m_Mode == SpanGirderAndChapters )
+   if ( m_Mode == SpanGirderAndChapters || m_Mode == GirderAndChapters )
    {
       DDX_CBIndex(pDX, IDC_GIRDER, m_Girder);
    }
@@ -94,6 +94,7 @@ void CSpanGirderReportDlg::DoDataExchange(CDataExchange* pDX)
             m_ChapterList.push_back(std::string(strChapter));
          }
       }
+
       if ( cSelChapters == 0 )
       {
          pDX->PrepareCtrl(IDC_LIST);
@@ -124,8 +125,21 @@ void CSpanGirderReportDlg::UpdateGirderComboBox(SpanIndexType spanIdx)
    Uint16 curSel = pGdrBox->GetCurSel();
    pGdrBox->ResetContent();
 
-   Uint32 cGirder = pBridge->GetGirderCount( spanIdx );
-   for ( Uint32 j = 0; j < cGirder; j++ )
+   GirderIndexType cGirders = 0;
+   if ( spanIdx == ALL_SPANS )
+   {
+      SpanIndexType nSpans = pBridge->GetSpanCount();
+      for ( SpanIndexType i = 0; i < nSpans; i++ )
+      {
+         cGirders = max(cGirders,pBridge->GetGirderCount(i));
+      }
+   }
+   else
+   {
+      cGirders = pBridge->GetGirderCount( spanIdx );
+   }
+
+   for ( GirderIndexType j = 0; j < cGirders; j++ )
    {
       CString strGdr;
       strGdr.Format( "Girder %s", LABEL_GIRDER(j));
@@ -168,17 +182,21 @@ BOOL CSpanGirderReportDlg::OnInitDialog()
 {
 //   AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
+   CWnd* pwndTitle = GetDlgItem(IDC_REPORT_TITLE);
+   pwndTitle->SetWindowTextA(m_RptDesc.GetReportName());
+
    // Fill up the span and girder combo boxes
    GET_IFACE( IBridge, pBridge );
 
    if ( m_Mode == SpanAndChapters || m_Mode == SpanGirderAndChapters )
    {
+      // fill up the span box
       CComboBox* pSpanBox = (CComboBox*)GetDlgItem( IDC_SPAN );
       Uint32 cSpan = pBridge->GetSpanCount();
       for ( Uint32 i = 0; i < cSpan; i++ )
       {
          CString strSpan;
-         strSpan.Format("Span %d",i+1);
+         strSpan.Format("Span %d",LABEL_SPAN(i));
          pSpanBox->AddString(strSpan);
       }
       pSpanBox->SetCurSel(m_Span);
@@ -195,6 +213,29 @@ BOOL CSpanGirderReportDlg::OnInitDialog()
 
       CWnd* pGroupBox = GetDlgItem(IDC_GROUP);
       pGroupBox->SetWindowText("Select a Span");
+   }
+   else if ( m_Mode == GirderAndChapters )
+   {
+      m_Span = ALL_SPANS;
+      UpdateGirderComboBox(m_Span);
+
+      CWnd* pGroupBox = GetDlgItem(IDC_GROUP);
+      pGroupBox->SetWindowText("Select a Girder Line");
+
+      CComboBox* pSpanBox   = (CComboBox*)GetDlgItem( IDC_SPAN );
+      CRect rSpan;
+      pSpanBox->GetWindowRect(&rSpan);
+      pSpanBox->ShowWindow( SW_HIDE );
+      pSpanBox->EnableWindow( FALSE );
+
+      CComboBox* pGirderBox = (CComboBox*)GetDlgItem( IDC_GIRDER );
+      CRect rGirder;
+      pGirderBox->GetWindowRect(&rGirder);
+      rGirder.left = rSpan.left;
+
+      ScreenToClient(&rGirder);
+
+      pGirderBox->MoveWindow(&rGirder);
    }
    else if ( m_Mode == ChaptersOnly )
    {

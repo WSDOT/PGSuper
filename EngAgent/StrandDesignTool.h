@@ -114,7 +114,7 @@ public:
    // Default constructor
    pgsStrandDesignTool(SHARED_LOGFILE lf);
    
-   void Initialize(IBroker* pBroker, long agentID, pgsDesignArtifact* pArtifact);
+   void Initialize(IBroker* pBroker, long statusGroupID, pgsDesignArtifact* pArtifact);
 
    void InitReleaseStrength(Float64 fci);
 
@@ -350,7 +350,7 @@ private:
    bool KeepHarpedStrandsInBounds();
 
    IBroker* m_pBroker;
-   long m_AgentID;
+   long m_StatusGroupID;
 
    Float64 m_ConcreteAccuracy; // 100 PSI
 

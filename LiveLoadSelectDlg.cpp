@@ -154,36 +154,39 @@ BOOL CLiveLoadSelectDlg::OnInitDialog()
 
    // Set the check marks for the various loads
    // design
-   std::vector< std::string>::iterator iter;
-   for ( iter = m_DesignNames.begin(); iter != m_DesignNames.end(); iter++)
+   std::vector< std::string>::reverse_iterator iter;
+   for ( iter = m_DesignNames.rbegin(); iter != m_DesignNames.rend(); iter++)
    {
       const char* str = iter->c_str();
       int idx = m_ctlDesignLL.FindString(-1, str);
       if (idx != LB_ERR)
       {
          m_ctlDesignLL.SetCheck( idx, 1 );
+         m_ctlDesignLL.SetTopIndex(idx);
       }
    }
 
    // fatigue
-   for (iter = m_FatigueNames.begin(); iter != m_FatigueNames.end(); iter++)
+   for (iter = m_FatigueNames.rbegin(); iter != m_FatigueNames.rend(); iter++)
    {
       const char* str = iter->c_str();
       int idx = m_ctlFatigueLL.FindString(-1, str);
       if (idx != LB_ERR)
       {
          m_ctlFatigueLL.SetCheck( idx, 1 );
+         m_ctlFatigueLL.SetTopIndex(idx);
       }
    }
 
    // permit
-   for (iter = m_PermitNames.begin(); iter != m_PermitNames.end(); iter++)
+   for (iter = m_PermitNames.rbegin(); iter != m_PermitNames.rend(); iter++)
    {
       const char* str = iter->c_str();
       int idx = m_ctlPermitLL.FindString(-1, str);
       if (idx != LB_ERR)
       {
          m_ctlPermitLL.SetCheck( idx, 1 );
+         m_ctlPermitLL.SetTopIndex(idx);
       }
    }
 

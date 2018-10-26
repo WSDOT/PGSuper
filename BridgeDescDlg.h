@@ -35,6 +35,7 @@
 #include "BridgeDescDeckDetailsPage.h"
 #include "BridgeDescDeckReinforcementPage.h"
 #include "BridgeDescEnvironmental.h"
+#include "BridgeDescRatingPage.h"
 
 /////////////////////////////////////////////////////////////////////////////
 // CBridgeDescDlg
@@ -57,6 +58,7 @@ public:
    CBridgeDescRailingSystemPage     m_RailingSystemPage;
    CBridgeDescDeckDetailsPage       m_DeckDetailsPage;
    CBridgeDescDeckReinforcementPage m_DeckRebarPage;
+   CBridgeDescRatingPage            m_RatingPage;
    CBridgeDescEnvironmental         m_EnvironmentalPage;
 
 // Operations
@@ -84,6 +86,7 @@ protected:
    friend CBridgeDescEnvironmental;
    friend CBridgeDescDeckRebarGrid;
    friend CBridgeDescFramingGrid;
+   friend CBridgeDescRatingPage;
 
 	//{{AFX_MSG(CBridgeDescDlg)
 		// NOTE - the ClassWizard will add and remove member functions here.

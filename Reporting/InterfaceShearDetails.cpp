@@ -213,7 +213,7 @@ void CInterfaceShearDetails::Build( IBroker* pBroker, rptChapter* pChapter,
       *pPara << Sub2("v","ni")<<" = min( ca"<<Sub("cv")<<" + "<<symbol(mu)<<"[ a"<<Sub("vf ")<<"f"<<Sub("y")<<" + p"<<Sub("c")<<"], "
                                        <<"0.2 f'"<<Sub("c")<<"a"<<Sub("cv")<<", ";
 
-      if ( pDisplayUnits->GetUnitDisplayMode() == pgsTypes::umSI )
+      if ( IS_SI_UNITS(pDisplayUnits) )
          *pPara<<" 5.5 a"<<Sub("cv")<<" )"<<rptNewLine;
       else
          *pPara<<" 0.8 a"<<Sub("cv")<<" )"<<rptNewLine;
@@ -241,7 +241,7 @@ void CInterfaceShearDetails::Build( IBroker* pBroker, rptChapter* pChapter,
    else
    {
       (*table)(0,5)  << COLHDR("0.2 f'"<<Sub("c")<<"a"<<Sub("cv"), rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
-      if ( pDisplayUnits->GetUnitDisplayMode() == pgsTypes::umSI )
+      if ( IS_SI_UNITS(pDisplayUnits) )
          (*table)(0,6)  << COLHDR("5.5 a"<<Sub("cv"), rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
       else
          (*table)(0,6)  << COLHDR("0.8 a"<<Sub("cv"), rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
@@ -352,14 +352,14 @@ void CInterfaceShearDetails::Build( IBroker* pBroker, rptChapter* pChapter,
    {
       (*table)(0,3)<<COLHDR(Sub2("a","vf min"), rptAreaPerLengthUnitTag, pDisplayUnits->GetAvOverSUnit() );
 
-      if ( pDisplayUnits->GetUnitDisplayMode() == pgsTypes::umSI )
+      if ( IS_SI_UNITS(pDisplayUnits) )
          *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + "AvfMin_SI.gif") << rptNewLine;
       else
          *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + "AvfMin_US.gif") << rptNewLine;
    }
    else
    {
-      if ( pDisplayUnits->GetUnitDisplayMode() == pgsTypes::umSI )
+      if ( IS_SI_UNITS(pDisplayUnits) )
          (*table)(0,3)<<COLHDR(Sub2("a","vf min") << " = " << Sub2("0.35a","cv") <<"/" << Sub2("f","y") , rptAreaPerLengthUnitTag, pDisplayUnits->GetAvOverSUnit() );
       else
          (*table)(0,3)<<COLHDR(Sub2("a","vf min") << " = " << Sub2("0.05a","cv") <<"/" << Sub2("f","y") , rptAreaPerLengthUnitTag, pDisplayUnits->GetAvOverSUnit() );

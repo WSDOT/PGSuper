@@ -81,7 +81,7 @@ CShrinkageAtDeckPlacementTable* CShrinkageAtDeckPlacementTable::PrepareTable(rpt
 
    if ( pSpecEntry->GetSpecificationType() <= lrfdVersionMgr::ThirdEditionWith2005Interims )
    {
-      if ( pDisplayUnits->GetUnitDisplayMode() == pgsTypes::umSI )
+      if ( IS_SI_UNITS(pDisplayUnits) )
          *pParagraph << rptRcImage(strImagePath + "VSFactor_SI_2005.gif") << rptNewLine;
       else
          *pParagraph << rptRcImage(strImagePath + "VSFactor_US_2005.gif") << rptNewLine;
@@ -89,7 +89,7 @@ CShrinkageAtDeckPlacementTable* CShrinkageAtDeckPlacementTable::PrepareTable(rpt
 #if defined IGNORE_2007_CHANGES
    else
    {
-      if ( pDisplayUnits->GetUnitDisplayMode() == pgsTypes::umSI )
+      if ( IS_SI_UNITS(pDisplayUnits) )
          *pParagraph << rptRcImage(strImagePath + "VSFactor_SI_2006.gif") << rptNewLine;
       else
          *pParagraph << rptRcImage(strImagePath + "VSFactor_US_2006.gif") << rptNewLine;
@@ -111,7 +111,7 @@ CShrinkageAtDeckPlacementTable* CShrinkageAtDeckPlacementTable::PrepareTable(rpt
    }
 #endif // IGNORE_2007_CHANGES
    *pParagraph << rptRcImage(strImagePath + "HumidityFactor.gif") << rptNewLine;
-   if ( pDisplayUnits->GetUnitDisplayMode() == pgsTypes::umSI )
+   if ( IS_SI_UNITS(pDisplayUnits) )
       *pParagraph << rptRcImage(strImagePath + "ConcreteFactors_SI.gif") << rptNewLine;
    else
       *pParagraph << rptRcImage(strImagePath + "ConcreteFactors_US.gif") << rptNewLine;

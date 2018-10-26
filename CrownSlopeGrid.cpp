@@ -27,7 +27,7 @@
 #include "CrownSlopeGrid.h"
 #include "ProfilePage.h"
 #include "PGSuperUnits.h"
-#include "PGSuper.h"
+#include "PGSuperDoc.h"
 
 #include <IFace\DisplayUnits.h>
 #include <algorithm>
@@ -225,7 +225,7 @@ void CCrownSlopeGrid::SetRowData(ROWCOL nRow,CrownData2& data)
    CProfilePage* pParent = (CProfilePage*)GetParent();
 
    GET_IFACE2(pParent->GetBroker(),IDisplayUnits,pDisplayUnits);
-   UnitModeType unit_mode = (UnitModeType)(pDisplayUnits->GetUnitDisplayMode());
+   UnitModeType unit_mode = (UnitModeType)(pDisplayUnits->GetUnitMode());
 
    double station = data.Station;
    station = ::ConvertFromSysUnits(station,pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure);
@@ -251,7 +251,7 @@ bool CCrownSlopeGrid::GetRowData(ROWCOL nRow,double* pStation,double* pLeft,doub
    CProfilePage* pParent = (CProfilePage*)GetParent();
 
    GET_IFACE2(pParent->GetBroker(),IDisplayUnits,pDisplayUnits);
-   UnitModeType unit_mode = (UnitModeType)(pDisplayUnits->GetUnitDisplayMode());
+   UnitModeType unit_mode = (UnitModeType)(pDisplayUnits->GetUnitMode());
 
    CString strStation = GetCellValue(nRow,1);
    CComPtr<IStation> station;
@@ -332,7 +332,7 @@ void CCrownSlopeGrid::SortCrossSections()
 double CCrownSlopeGrid::GetCrownPointOffset(const CString& strAlignmentOffset)
 {
    CComPtr<IBroker> pBroker;
-   AfxGetBroker(&pBroker);
+   EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
 
    double sign = 1;
@@ -355,7 +355,7 @@ CString CCrownSlopeGrid::GetCrownPointOffset(double alignmentOffset)
    int sign = Sign(alignmentOffset);
 
    CComPtr<IBroker> pBroker;
-   AfxGetBroker(&pBroker);
+   EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
 
    CString strAlignmentOffset;

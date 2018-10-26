@@ -71,7 +71,7 @@ public:
 
    //------------------------------------------------------------------------
    // Constructor
-   pgsGirderHandlingChecker(IBroker* pBroker,AgentIDType agentID);
+   pgsGirderHandlingChecker(IBroker* pBroker,StatusGroupIDType statusGroupID);
 
    //------------------------------------------------------------------------
    // Destructor
@@ -104,7 +104,7 @@ protected:
 private:
    // GROUP: DATA MEMBERS
    IBroker* m_pBroker;
-   AgentIDType m_AgentID;
+   StatusGroupIDType m_StatusGroupID;
    StatusCallbackIDType m_scidLiftingSupportLocation;
    StatusCallbackIDType m_scidTruckStiffness;
 

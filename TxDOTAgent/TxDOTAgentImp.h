@@ -27,7 +27,7 @@
 
 #include "TxDOTAgent_i.h"
 
-#include <PgsExt\InterfaceCache.h>
+#include <EAF\EAFInterfaceCache.h>
 
 #include <IFace\TxDOTCadExport.h>
 

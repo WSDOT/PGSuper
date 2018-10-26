@@ -30,6 +30,7 @@
 #include <IFace\Project.h>
 #include <IFace\ShearCapacity.h>
 #include <IFace\Bridge.h>
+#include <IFace\RatingSpecification.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -54,8 +55,10 @@ struct LocPair
 };
 
 //======================== LIFECYCLE  =======================================
-CCritSectionChapterBuilder::CCritSectionChapterBuilder()
+CCritSectionChapterBuilder::CCritSectionChapterBuilder(bool bDesign,bool bRating)
 {
+   m_bDesign = bDesign;
+   m_bRating = bRating;
 }
 
 //======================== OPERATORS  =======================================
@@ -75,30 +78,83 @@ rptChapter* CCritSectionChapterBuilder::Build(CReportSpecification* pRptSpec,Uin
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
-   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
-   Build(pChapter,pgsTypes::StrengthI,pBroker,span,gdr,pDisplayUnits,level);
+   GET_IFACE2(pBroker,IRatingSpecification,pRatingSpec);
 
+   bool bDesign = m_bDesign;
+   bool bRating;
+   
+   if ( m_bRating )
+   {
+      bRating = true;
+   }
+   else
+   {
+      // include load rating results if we are always load rating
+      bRating = pRatingSpec->AlwaysLoadRate();
+   }
+
+   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
    GET_IFACE2(pBroker,ILiveLoads,pLiveLoads);
-   if ( pLiveLoads->IsLiveLoadDefined(pgsTypes::lltPermit) )
-      Build(pChapter,pgsTypes::StrengthII,pBroker,span,gdr,pDisplayUnits,level);
+
+   GET_IFACE2(pBroker,ILibrary,pLib);
+   GET_IFACE2(pBroker,ISpecification,pSpec);
+   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
+   bool bAfterThirdEdition = ( pSpecEntry->GetSpecificationType() >= lrfdVersionMgr::ThirdEdition2004 ? true : false );
+
+   if ( bDesign )
+   {
+      Build(pChapter,pgsTypes::StrengthI,pBroker,span,gdr,pDisplayUnits,level);
+
+      if ( pLiveLoads->IsLiveLoadDefined(pgsTypes::lltPermit) && !bAfterThirdEdition )
+         Build(pChapter,pgsTypes::StrengthII,pBroker,span,gdr,pDisplayUnits,level);
+   }
+
+   if ( bRating )
+   {
+      if ( bAfterThirdEdition )
+      {
+         Build(pChapter,pgsTypes::StrengthI,pBroker,span,gdr,pDisplayUnits,level);
+      }
+      else
+      {
+         if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) )
+            Build(pChapter,pgsTypes::StrengthI_Inventory,pBroker,span,gdr,pDisplayUnits,level);
+
+         if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating) )
+            Build(pChapter,pgsTypes::StrengthI_Operating,pBroker,span,gdr,pDisplayUnits,level);
+
+         if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) )
+            Build(pChapter,pgsTypes::StrengthI_LegalRoutine,pBroker,span,gdr,pDisplayUnits,level);
+
+         if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
+            Build(pChapter,pgsTypes::StrengthI_LegalSpecial,pBroker,span,gdr,pDisplayUnits,level);
+
+         if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine) )
+            Build(pChapter,pgsTypes::StrengthII_PermitRoutine,pBroker,span,gdr,pDisplayUnits,level);
+
+         if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Special) )
+            Build(pChapter,pgsTypes::StrengthII_PermitSpecial,pBroker,span,gdr,pDisplayUnits,level);
+      }
+   }
 
    return pChapter;
 }
 
 void CCritSectionChapterBuilder::Build(rptChapter* pChapter,pgsTypes::LimitState limitState,IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,IDisplayUnits* pDisplayUnits,Uint16 level) const
 {
-
+   USES_CONVERSION;
+   GET_IFACE2(pBroker,IStageMap,pStageMap);
    GET_IFACE2(pBroker,ILibrary,pLib);
    GET_IFACE2(pBroker,ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
-   bool bThirdEdition = ( pSpecEntry->GetSpecificationType() >= lrfdVersionMgr::ThirdEdition2004 ? true : false );
+   bool bAfterThirdEdition = ( pSpecEntry->GetSpecificationType() >= lrfdVersionMgr::ThirdEdition2004 ? true : false );
 
 
    rptParagraph* pPara = new rptParagraph(pgsReportStyleHolder::GetSubheadingStyle());
-   if ( limitState == pgsTypes::StrengthI )
-      *pPara << "Strength I Limit State" << rptNewLine;
-   else
-      *pPara << "Strength II Limit State" << rptNewLine;
+   if ( !bAfterThirdEdition )
+   {
+      *pPara << OLE2A(pStageMap->GetLimitStateName(limitState));
+   }
 
    *pChapter << pPara;
 
@@ -106,7 +162,7 @@ void CCritSectionChapterBuilder::Build(rptChapter* pChapter,pgsTypes::LimitState
    *pChapter << pPara;
 
    ColumnIndexType nColumns;
-   if ( bThirdEdition )
+   if ( bAfterThirdEdition )
    {
       *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + "Critical Section Picture 2004.jpg") << rptNewLine;
       *pPara << "LRFD 5.8.3.2"<<rptNewLine;
@@ -130,7 +186,7 @@ void CCritSectionChapterBuilder::Build(rptChapter* pChapter,pgsTypes::LimitState
    (*ptable)(0,0)  << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
    (*ptable)(0,1)  << COLHDR("Assumed C.S."<<rptNewLine<<"Location", rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
    (*ptable)(0,2)  << COLHDR("d"<<Sub("v") , rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-   if ( bThirdEdition )
+   if ( bAfterThirdEdition )
    {
       (*ptable)(0,3)  << "CS"<<rptNewLine<<"Intersects?";
    }
@@ -178,7 +234,7 @@ void CCritSectionChapterBuilder::Build(rptChapter* pChapter,pgsTypes::LimitState
       sorted_list.insert(std::make_pair(mylp, &detp));
    }
 
-   if ( !bThirdEdition )
+   if ( !bAfterThirdEdition )
    {
       // next put in intersection values - give them a wart so we can catch them
       // on the way out.
@@ -240,7 +296,7 @@ void CCritSectionChapterBuilder::Build(rptChapter* pChapter,pgsTypes::LimitState
       else
          (*ptable)(row,3) << "No";
 
-      if ( !bThirdEdition )
+      if ( !bAfterThirdEdition )
       {
          if (pdetp->InRange)
          {
@@ -276,7 +332,7 @@ void CCritSectionChapterBuilder::Build(rptChapter* pChapter,pgsTypes::LimitState
 
 CChapterBuilder* CCritSectionChapterBuilder::Clone() const
 {
-   return new CCritSectionChapterBuilder;
+   return new CCritSectionChapterBuilder(m_bDesign,m_bRating);
 }
 
 //======================== ACCESS     =======================================

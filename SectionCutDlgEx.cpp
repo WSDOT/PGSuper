@@ -30,6 +30,7 @@
 #include <ostream>
 #include <MfcTools\CustomDDx.h>
 #include "HtmlHelp\HelpTopics.hh"
+#include <IFace\DisplayUnits.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -41,9 +42,8 @@ static char THIS_FILE[] = __FILE__;
 // CSectionCutDlgEx dialog
 
 CSectionCutDlgEx::CSectionCutDlgEx(long nHarpPoints,Float64 value, Float64 lowerBound, Float64 upperBound, 
-                     bool isUnitsSi, CGirderModelChildFrame::CutLocation location, CWnd* pParent):
+                     CGirderModelChildFrame::CutLocation location, CWnd* pParent):
 CDialog(CSectionCutDlgEx::IDD, pParent),
-m_IsUnitsSi(isUnitsSi),
 m_Value(value),
 m_LowerBound(lowerBound),
 m_UpperBound(upperBound),
@@ -81,15 +81,19 @@ void CSectionCutDlgEx::SetBounds(Float64 lowerBound, Float64 upperBound)
 
 void CSectionCutDlgEx::DoDataExchange(CDataExchange* pDX)
 {
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
+
 	CDialog::DoDataExchange(pDX);
 	//{{AFX_DATA_MAP(CSectionCutDlgEx) 
 	//}}AFX_DATA_MAP
 	DDX_Radio(pDX, IDC_LEFT_END, m_CutIndex);
 	DDX_Text(pDX, IDC_VALUE, m_Value);
-   DDX_UnitValueAndTag( pDX, IDC_VALUE, IDC_VALUE_UNITS, m_Value, m_IsUnitsSi, unitMeasure::Feet, unitMeasure::Meter );
+   DDX_UnitValueAndTag( pDX, IDC_VALUE, IDC_VALUE_UNITS, m_Value, pDisplayUnits->GetSpanLengthUnit() );
 
    if ( pDX->m_bSaveAndValidate && m_CutIndex == IDC_USER_CUT )
-      DDV_UnitValueRange(pDX, m_Value, m_LowerBound, m_UpperBound, m_IsUnitsSi, unitMeasure::Feet, unitMeasure::Meter );
+      DDV_UnitValueRange(pDX, m_Value, m_LowerBound, m_UpperBound, pDisplayUnits->GetSpanLengthUnit() );
 
    if (!pDX->m_bSaveAndValidate)
    {
@@ -99,18 +103,9 @@ void CSectionCutDlgEx::DoDataExchange(CDataExchange* pDX)
       CString str;
       std::string tag;
       Float64 lower, upper;
-      if (m_IsUnitsSi)
-      {
-         lower = ::ConvertFromSysUnits(m_LowerBound, unitMeasure::Meter);
-         upper = ::ConvertFromSysUnits(m_UpperBound, unitMeasure::Meter);
-         tag = unitMeasure::Meter.UnitTag();
-      }
-      else
-      {
-         lower = ::ConvertFromSysUnits(m_LowerBound, unitMeasure::Feet);
-         upper = ::ConvertFromSysUnits(m_UpperBound, unitMeasure::Feet);
-         tag = unitMeasure::Feet.UnitTag();
-      }
+      lower = ::ConvertFromSysUnits(m_LowerBound, pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure);
+      upper = ::ConvertFromSysUnits(m_UpperBound, pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure);
+      tag = pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure.UnitTag();
       str.Format("Enter a Value Between %g and %g %s",lower, upper, tag.c_str());
       pprompt->SetWindowText(str);
    }

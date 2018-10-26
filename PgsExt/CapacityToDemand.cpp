@@ -98,7 +98,7 @@ std::string rptCapacityToDemand::AsString() const
 {
    if(IsEqual(m_Capacity,0.0))
    {
-      ATLASSERT(0); // c/d for c==0.0 makes no sense - return return 0.00, but this should be caught by caller
+//      ATLASSERT(0); // c/d for c==0.0 makes no sense - return return 0.00, but this should be caught by caller
       return std::string("0.00"); 
    }
    else if (IsEqual(m_Demand,0.0))

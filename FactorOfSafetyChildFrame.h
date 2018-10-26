@@ -27,7 +27,7 @@
 #pragma once
 #endif // _MSC_VER >= 1000
 //
-#include "OutputChildFrame.h"
+#include <EAF\EAFOutputChildFrame.h>
 #include "PGSuperTypes.h"
 #include "IFace\AnalysisResults.h"
 
@@ -36,7 +36,7 @@ class CFactorOfSafetyView;
 /////////////////////////////////////////////////////////////////////////////
 // CFactorOfSafetyChildFrame frame
 
-class CFactorOfSafetyChildFrame : public COutputChildFrame
+class CFactorOfSafetyChildFrame : public CEAFOutputChildFrame
 {
 	DECLARE_DYNCREATE(CFactorOfSafetyChildFrame)
 protected:

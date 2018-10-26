@@ -24,7 +24,8 @@
 //
 
 #include "stdafx.h"
-#include "pgsuper.h"
+#include "resource.h"
+#include "PGSuperDoc.h"
 #include "PGSuperUnits.h"
 #include "ConcreteDetailsDlg.h"
 #include "HtmlHelp\HelpTopics.hh"
@@ -53,7 +54,7 @@ CConcreteDetailsDlg::CConcreteDetailsDlg(CWnd* pParent /*=NULL*/)
 	//{{AFX_DATA_INIT(CConcreteDetailsDlg)
 		// NOTE: the ClassWizard will add member initialization here
 	//}}AFX_DATA_INIT
-   AfxGetBroker(&m_pBroker);
+   EAFGetBroker(&m_pBroker);
 
    GET_IFACE(IBridgeMaterial,pMaterial);
    m_MinNWCDensity = pMaterial->GetNWCDensityLimit();
@@ -95,7 +96,7 @@ void CConcreteDetailsDlg::DoDataExchange(CDataExchange* pDX)
    DDX_UnitValueAndTag(pDX, IDC_AGG_SIZE, IDC_AGG_SIZE_UNIT, m_AggSize, pDisplayUnits->GetComponentDimUnit() );
    DDV_UnitValueGreaterThanZero(pDX, m_AggSize, pDisplayUnits->GetComponentDimUnit() );
    DDX_Text(pDX, IDC_K1, m_K1 );
-   DDV_GreaterThanZero(pDX,m_K1);
+   DDV_GreaterThanZero(pDX,IDC_K1, m_K1);
 
    if ( pDX->m_bSaveAndValidate && m_ctrlEcCheck.GetCheck() == 1 )
    {
@@ -242,7 +243,7 @@ CString CConcreteDetailsDlg::UpdateEc(const CString& strFc,const CString& strDen
        )
    {
          CComPtr<IBroker> pBroker;
-         AfxGetBroker(&pBroker);
+         EAFGetBroker(&pBroker);
          GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
 
          const unitPressure& stress_unit = pDisplayUnits->GetStressUnit().UnitOfMeasure;

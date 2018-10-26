@@ -89,6 +89,7 @@ protected:
 	afx_msg void OnEndview();
 	afx_msg void OnMidview();
    afx_msg void OnReverseHarpedStrandOrder();
+   afx_msg void OnGenerateStrandPositions();
 	//}}AFX_MSG
 	afx_msg BOOL OnNcActivate(BOOL bActive);
 	DECLARE_MESSAGE_MAP()
@@ -96,8 +97,6 @@ protected:
 public:
    // capture event fired from grid that allows deletion of rows
    void OnEnableDelete(bool canDelete);
-   CString GetLengthUnitString();
-   unitLength GetLengthUnit();
    bool DoUseHarpedGrid();
    void UpdateStrandStatus(Uint16 ns, Uint16 ndb, Uint16 nh); 
 

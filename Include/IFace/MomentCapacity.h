@@ -83,6 +83,10 @@ interface IMomentCapacity : IUnknown
    virtual Float64 GetMinMomentCapacity(pgsTypes::Stage stage,const pgsPointOfInterest& poi,bool bPositiveMoment) = 0;
    virtual void GetMinMomentCapacityDetails(pgsTypes::Stage stage,const pgsPointOfInterest& poi,bool bPositiveMoment,MINMOMENTCAPDETAILS* pmmcd) = 0;
    virtual void GetMinMomentCapacityDetails(pgsTypes::Stage stage,const pgsPointOfInterest& poi,const GDRCONFIG& config,bool bPositiveMoment,MINMOMENTCAPDETAILS* pmmcd) = 0;
+
+   virtual std::vector<MOMENTCAPACITYDETAILS> GetMomentCapacityDetails(pgsTypes::Stage stage,const std::vector<pgsPointOfInterest>& vPoi,bool bPositiveMoment) = 0;
+   virtual std::vector<MINMOMENTCAPDETAILS> GetMinMomentCapacityDetails(pgsTypes::Stage stage,const std::vector<pgsPointOfInterest>& vPoi,bool bPositiveMoment) = 0;
+   virtual std::vector<CRACKINGMOMENTDETAILS> GetCrackingMomentDetails(pgsTypes::Stage stage,const std::vector<pgsPointOfInterest>& vPoi,bool bPositiveMoment) = 0;
 };
 
 #endif // INCLUDED_IFACE_MOMENTCAPACITY_H_

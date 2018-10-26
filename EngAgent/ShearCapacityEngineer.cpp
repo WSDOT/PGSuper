@@ -51,10 +51,10 @@ CLASS
 ////////////////////////// PUBLIC     ///////////////////////////////////////
 
 //======================== LIFECYCLE  =======================================
-pgsShearCapacityEngineer::pgsShearCapacityEngineer(IBroker* pBroker,AgentIDType agentID)
+pgsShearCapacityEngineer::pgsShearCapacityEngineer(IBroker* pBroker,StatusGroupIDType statusGroupID)
 {
    m_pBroker = pBroker;
-   m_AgentID = agentID;
+   m_StatusGroupID = statusGroupID;
 }
 
 pgsShearCapacityEngineer::pgsShearCapacityEngineer(const pgsShearCapacityEngineer& rOther)
@@ -83,12 +83,12 @@ void pgsShearCapacityEngineer::SetBroker(IBroker* pBroker)
    m_pBroker = pBroker;
 }
 
-void pgsShearCapacityEngineer::SetAgentID(AgentIDType agentID)
+void pgsShearCapacityEngineer::SetStatusGroupID(StatusGroupIDType statusGroupID)
 {
-   m_AgentID = agentID;
+   m_StatusGroupID = statusGroupID;
 
    GET_IFACE(IStatusCenter,pStatusCenter);
-   m_scidGirderDescriptionError   = pStatusCenter->RegisterCallback(new pgsGirderDescriptionStatusCallback(m_pBroker,pgsTypes::statusError) );
+   m_scidGirderDescriptionError   = pStatusCenter->RegisterCallback(new pgsGirderDescriptionStatusCallback(m_pBroker,eafTypes::statusError) );
 
 }
 
@@ -118,11 +118,9 @@ void pgsShearCapacityEngineer::ComputeShearCapacityDetails(pgsTypes::LimitState 
                                                            const pgsPointOfInterest& poi,
                                                            SHEARCAPACITYDETAILS* pscd)
 {
-   PRECONDITION(m_pBroker);
    // limited to when and where we calculate capacities
-   CHECK( stage == pgsTypes::BridgeSite3 );
-   CHECK( ls == pgsTypes::StrengthI || ls == pgsTypes::StrengthII); 
-   CHECK( poi.GetID() >= 0 );
+   ATLASSERT( stage == pgsTypes::BridgeSite3 );
+   ATLASSERT( 0 <= poi.GetID() );
 
    SpanIndexType span  = poi.GetSpan();
    GirderIndexType gdr = poi.GetGirder();
@@ -172,7 +170,7 @@ void pgsShearCapacityEngineer::ComputeShearCapacityDetails(pgsTypes::LimitState 
 
       std::string msg("An error occured while computing shear capacity");
       pgsGirderDescriptionStatusItem* pStatusItem =
-            new pgsGirderDescriptionStatusItem(span,gdr,2,m_AgentID,m_scidGirderDescriptionError,msg.c_str());
+            new pgsGirderDescriptionStatusItem(span,gdr,2,m_StatusGroupID,m_scidGirderDescriptionError,msg.c_str());
 
       pStatusCenter->Add(pStatusItem);
 
@@ -303,7 +301,7 @@ void pgsShearCapacityEngineer::ComputeFpc(const pgsPointOfInterest& poi, const G
 void pgsShearCapacityEngineer::MakeCopy(const pgsShearCapacityEngineer& rOther)
 {
    m_pBroker = rOther.m_pBroker;
-   m_AgentID = rOther.m_AgentID;
+   m_StatusGroupID = rOther.m_StatusGroupID;
 }
 
 void pgsShearCapacityEngineer::MakeAssignment(const pgsShearCapacityEngineer& rOther)
@@ -467,7 +465,7 @@ bool pgsShearCapacityEngineer::GetGeneralInformation(pgsTypes::LimitState ls, pg
    pscd->Ec = pMaterial->GetEcGdr(span,gdr);
 
    const matPsStrand* pStrand = pMaterial->GetStrand(span,gdr);
-   CHECK(pStrand!=0);
+   ATLASSERT(pStrand!=0);
    pscd->Ep = pStrand->GetE();
 
    // stirrup properties
@@ -754,7 +752,7 @@ bool pgsShearCapacityEngineer::ComputeVc(const pgsPointOfInterest& poi, SHEARCAP
 
          std::string msg("Error computing shear capacity - could not converge on a solution");
          pgsGirderDescriptionStatusItem* pStatusItem =
-            new pgsGirderDescriptionStatusItem(poi.GetSpan(),poi.GetGirder(),2,m_AgentID,m_scidGirderDescriptionError,msg.c_str());
+            new pgsGirderDescriptionStatusItem(poi.GetSpan(),poi.GetGirder(),2,m_StatusGroupID,m_scidGirderDescriptionError,msg.c_str());
 
          pStatusCenter->Add(pStatusItem);
 
@@ -782,19 +780,19 @@ bool pgsShearCapacityEngineer::ComputeVc(const pgsPointOfInterest& poi, SHEARCAP
       if (shear_in_range)
       {
          pscd->ShearInRange = true;
-         pscd->vfc  = data.vfc;
-         pscd->ex   = data.ex;
-         pscd->Fe   = data.Fe;
-         pscd->Beta = data.Beta;
-         pscd->Theta = data.Theta;
-         pscd->Equation = data.Eqn;
-         pscd->ex_tbl = data.ex_tbl;
-         pscd->vfc_tbl = data.vfc_tbl;
+         pscd->vfc          = data.vfc;
+         pscd->ex           = data.ex;
+         pscd->Fe           = data.Fe;
+         pscd->Beta         = data.Beta;
+         pscd->Theta        = data.Theta;
+         pscd->Equation     = data.Eqn;
+         pscd->ex_tbl       = data.ex_tbl;
+         pscd->vfc_tbl      = data.vfc_tbl;
 
-         Float64 Beta = data.Beta;
+         Float64 Beta  = data.Beta;
          Float64 Theta = data.Theta;
-         Float64 dv = pscd->dv;
-         Float64 bv = pscd->bv;
+         Float64 dv    = pscd->dv;
+         Float64 bv    = pscd->bv;
 
          dv = ::ConvertFromSysUnits( dv, unitMeasure::Millimeter);
          bv = ::ConvertFromSysUnits( bv, unitMeasure::Millimeter);

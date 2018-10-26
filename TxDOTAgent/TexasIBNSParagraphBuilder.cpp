@@ -249,7 +249,7 @@ rptParagraph* CTexasIBNSParagraphBuilder::Build(IBroker*	pBroker, SpanIndexType	
 {
    rptParagraph* p = new rptParagraph;
 
-   bool bUnitsSI = (pDisplayUnits->GetUnitDisplayMode() == pgsTypes::umSI);
+   bool bUnitsSI = IS_SI_UNITS(pDisplayUnits);
 
 	/* For broker passed in, get interface information */
    GET_IFACE2(pBroker,IArtifact,pIArtifact);

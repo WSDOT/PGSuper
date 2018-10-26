@@ -27,11 +27,11 @@
 
 
 // status for Volume to Surface Ratio
-class pgsVSRatioStatusItem : public pgsStatusItem
+class pgsVSRatioStatusItem : public CEAFStatusItem
 {
 public:
-   pgsVSRatioStatusItem(SpanIndexType span,GirderIndexType gdr,AgentIDType agentID,StatusCallbackIDType callbackID,const char* strDescription);
-   bool IsEqual(pgsStatusItem* pOther);
+   pgsVSRatioStatusItem(SpanIndexType span,GirderIndexType gdr,StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,const char* strDescription);
+   bool IsEqual(CEAFStatusItem* pOther);
 
    SpanIndexType m_Span;
    GirderIndexType m_Girder;
@@ -41,8 +41,8 @@ class pgsVSRatioStatusCallback : public iStatusCallback
 {
 public:
    pgsVSRatioStatusCallback(IBroker* pBroker);
-   virtual pgsTypes::StatusSeverityType GetSeverity();
-   virtual void Execute(pgsStatusItem* pStatusItem);
+   virtual eafTypes::StatusSeverityType GetSeverity();
+   virtual void Execute(CEAFStatusItem* pStatusItem);
 
 private:
    IBroker* m_pBroker;

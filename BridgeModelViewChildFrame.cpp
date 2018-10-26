@@ -35,6 +35,7 @@
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
 #include <IFace\EditByUI.h>
+#include <IFace\DisplayUnits.h>
 #include "htmlhelp\HelpTopics.hh"
 #include <PgsExt\BridgeDescription.h>
 #include "EditBoundaryConditions.h"
@@ -183,10 +184,8 @@ void CBridgeModelViewChildFrame::ShowCutDlg()
    double start = pBridge->GetPierStation(0);
    double end   = pBridge->GetPierStation(nPiers-1);
 
-   GET_IFACE2(pBroker,IProjectSettings,pProjSettings);
-   bool bUnitsSI;
-   Int32 units = pProjSettings->GetUnitsMode();
-   bUnitsSI = (units == pgsTypes::umSI) ? true : false;
+   GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
+   bool bUnitsSI = IS_SI_UNITS(pDisplayUnits);
 
    CStationCutDlg dlg(m_CurrentCutLocation,start,end,bUnitsSI);
    if ( dlg.DoModal() == IDOK )
@@ -200,7 +199,7 @@ void CBridgeModelViewChildFrame::UpdateCutLocation(Float64 cut)
    m_CurrentCutLocation = cut;
 
    CComPtr<IBroker> pBroker;
-   AfxGetBroker(&pBroker);
+   EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IBridge,pBridge);
 
    double start = pBridge->GetPierStation(0);
@@ -218,7 +217,7 @@ Float64 CBridgeModelViewChildFrame::GetCurrentCutLocation()
    if ( !m_bCutLocationInitialized )
    {
       CComPtr<IBroker> pBroker;
-      AfxGetBroker(&pBroker);
+      EAFGetBroker(&pBroker);
 
       GET_IFACE2(pBroker,IBridge,pBridge);
       double start = pBridge->GetPierStation(0);
@@ -247,8 +246,8 @@ void CBridgeModelViewChildFrame::OnViewGirder()
    GirderIndexType gdrIdx;
    if ( GetBridgePlanView()->GetSelectedGirder(&spanIdx,&gdrIdx) )
    {
-      CMainFrame* pFrame = (CMainFrame*)AfxGetMainWnd();
-      pFrame->CreateGirderEditorView(spanIdx,gdrIdx);
+      CPGSuperDoc* pDoc = (CPGSuperDoc*)(GetBridgePlanView()->GetDocument());
+      pDoc->OnViewGirderEditor();
    }
 }
 
@@ -395,7 +394,7 @@ void CBridgeModelViewChildFrame::OnDeletePier()
 void CBridgeModelViewChildFrame::OnUpdateDeletePier(CCmdUI* pCmdUI) 
 {
    CComPtr<IBroker> pBroker;
-   AfxGetBroker(&pBroker);
+   EAFGetBroker(&pBroker);
 
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
 
@@ -430,7 +429,7 @@ void CBridgeModelViewChildFrame::OnDeleteSpan()
 void CBridgeModelViewChildFrame::OnUpdateDeleteSpan(CCmdUI* pCmdUI) 
 {
    CComPtr<IBroker> pBroker;
-   AfxGetBroker(&pBroker);
+   EAFGetBroker(&pBroker);
 
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
 
@@ -495,7 +494,7 @@ void CBridgeModelViewChildFrame::OnInsertPier()
 	if ( pView->GetSelectedPier(&pierIdx) )
    {
       CComPtr<IBroker> pBroker;
-      AfxGetBroker(&pBroker);
+      EAFGetBroker(&pBroker);
 
       GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
 
@@ -566,7 +565,7 @@ void CBridgeModelViewChildFrame::OnBoundaryCondition(UINT nIDC)
       }
 
       CComPtr<IBroker> pBroker;
-      AfxGetBroker(&pBroker);
+      EAFGetBroker(&pBroker);
 
       GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
       pgsTypes::PierConnectionType oldConnectionType = pIBridgeDesc->GetPier(pierIdx)->GetConnectionType();
@@ -585,7 +584,7 @@ void CBridgeModelViewChildFrame::OnUpdateBoundaryCondition(CCmdUI* pCmdUI)
 	if ( pView->GetSelectedPier(&pierIdx) )
    {
       CComPtr<IBroker> pBroker;
-      AfxGetBroker(&pBroker);
+      EAFGetBroker(&pBroker);
 
       GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
       pgsTypes::PierConnectionType connectionType = pIBridgeDesc->GetPier(pierIdx)->GetConnectionType();

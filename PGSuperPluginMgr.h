@@ -37,14 +37,44 @@ public:
    void UnloadPlugins();
    Uint32 GetImporterCount();
    Uint32 GetExporterCount();
-   void GetPGSuperImporter(Uint32 key,bool bByIndex,IPGSuperImporter** ppImporter);
-   void GetPGSuperExporter(Uint32 key,bool bByIndex,IPGSuperExporter** ppExporter);
+   void GetPGSuperImporter(Uint32 key,bool bByIndex,IPGSuperDataImporter** ppImporter);
+   void GetPGSuperExporter(Uint32 key,bool bByIndex,IPGSuperDataExporter** ppExporter);
    UINT GetPGSuperImporterCommand(Uint32 idx);
    UINT GetPGSuperExporterCommand(Uint32 idx);
+   const CBitmap* GetPGSuperImporterBitmap(Uint32 idx);
+   const CBitmap* GetPGSuperExporterBitmap(Uint32 idx);
 
 private:
-   typedef std::pair<Uint32,CComPtr<IPGSuperImporter> > ImporterRecord;
-   typedef std::pair<Uint32,CComPtr<IPGSuperExporter> > ExporterRecord;
+   template <class T> 
+   struct Record
+   { Uint32 commandID; CBitmap Bitmap; CComPtr<T> Plugin; 
+   Record() {}
+   Record(const Record& other) 
+   {
+      Bitmap.Detach();
+
+      CBitmap* pBmp = const_cast<CBitmap*>(&(other.Bitmap));
+      Bitmap.Attach(pBmp->Detach());
+
+      commandID = other.commandID;
+      Plugin = other.Plugin;
+   }
+   Record& operator=(const Record& other)
+   {
+      Bitmap.Detach();
+
+      CBitmap* pBmp = const_cast<CBitmap*>(&(other.Bitmap));
+      Bitmap.Attach(pBmp->Detach());
+
+      commandID = other.commandID;
+      Plugin = other.Plugin;
+      return *this;
+   }
+   };
+
+   typedef Record<IPGSuperDataImporter> ImporterRecord;
+   typedef Record<IPGSuperDataExporter> ExporterRecord;
+
    std::vector<ImporterRecord> m_ImporterPlugins;
    std::vector<ExporterRecord> m_ExporterPlugins;
 };

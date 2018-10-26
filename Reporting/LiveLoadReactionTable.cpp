@@ -195,10 +195,10 @@ void CLiveLoadReactionTable::Build(IBroker* pBroker, rptChapter* pChapter,
    RowIndexType row = 2;
    for ( PierIndexType pier = startPier; pier < endPier; pier++ )
    {
-      if (pier == 0 || pier == nPiers-1 )
-         (*p_table)(row,0) << "Abutment " << (Int32)(pier+1);
+      if (pier == 0 || pier == pBridge->GetPierCount()-1 )
+         (*p_table)(row,0) << "Abutment " << LABEL_PIER(pier);
       else
-         (*p_table)(row,0) << "Pier " << (Int32)(pier+1);
+         (*p_table)(row,0) << "Pier " << LABEL_PIER(pier);
 
      ColumnIndexType col = 1;
 

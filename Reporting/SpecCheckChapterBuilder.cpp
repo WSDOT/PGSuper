@@ -134,7 +134,7 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
    double fc_reqd  = pArtifact->GetRequiredConcreteStrength();
    if ( 0 <= fci_reqd )
    {
-      double fci_rounded = (pDisplayUnits->GetUnitDisplayMode() == pgsTypes::umSI ? CeilOff(fci_reqd,::ConvertToSysUnits(6,unitMeasure::MPa)) : CeilOff(fci_reqd,::ConvertToSysUnits(100,unitMeasure::PSI)));
+      double fci_rounded = IS_SI_UNITS(pDisplayUnits) ? CeilOff(fci_reqd,::ConvertToSysUnits(6,unitMeasure::MPa)) : CeilOff(fci_reqd,::ConvertToSysUnits(100,unitMeasure::PSI));
       *p << "Required " << RPT_FCI << " = " << stress_u.SetValue(fci_reqd);
       *p << " " << symbol(RIGHT_DOUBLE_ARROW) << " " << stress_u.SetValue(fci_rounded) << rptNewLine;
 
@@ -149,7 +149,7 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
 
    if ( 0 <= fc_reqd )
    {
-      double fc_rounded = (pDisplayUnits->GetUnitDisplayMode() == pgsTypes::umSI ? CeilOff(fc_reqd,::ConvertToSysUnits(6,unitMeasure::MPa)) : CeilOff(fc_reqd,::ConvertToSysUnits(100,unitMeasure::PSI)));
+      double fc_rounded = IS_SI_UNITS(pDisplayUnits) ? CeilOff(fc_reqd,::ConvertToSysUnits(6,unitMeasure::MPa)) : CeilOff(fc_reqd,::ConvertToSysUnits(100,unitMeasure::PSI));
       *p << "Required " << RPT_FC  << " = " << stress_u.SetValue(fc_reqd);
       *p << " " << symbol(RIGHT_DOUBLE_ARROW) << " " << stress_u.SetValue(fc_rounded) << rptNewLine;
 
@@ -222,29 +222,7 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
    
    *p << rptNewLine;
 
-   PierIndexType prev_pier = span;
-   PierIndexType next_pier = prev_pier + 1;
-
-   bool bComputeNegativeMomentCapacity = false;
-
-   // don't need to write out negative moment capacity if this is a simple span design
-   // or if there isn't any continuity
-   pgsTypes::AnalysisType analysisType = pSpec->GetAnalysisType();
-
-   if ( analysisType == pgsTypes::Continuous || analysisType == pgsTypes::Envelope )
-   {
-      bool bContinuousAtPrevPier,bContinuousAtNextPier,bValue;
-      pBridge->IsContinuousAtPier(prev_pier,&bValue,&bContinuousAtPrevPier);
-      pBridge->IsContinuousAtPier(next_pier,&bContinuousAtNextPier,&bValue);
-
-      bool bIntegralAtPrevPier,bIntegralAtNextPier;
-      pBridge->IsIntegralAtPier(prev_pier,&bValue,&bIntegralAtPrevPier);
-      pBridge->IsIntegralAtPier(next_pier,&bIntegralAtNextPier,&bValue);
-
-      bComputeNegativeMomentCapacity = ( bContinuousAtPrevPier || bContinuousAtNextPier || bIntegralAtPrevPier || bIntegralAtNextPier );
-   }
-
-   if ( bComputeNegativeMomentCapacity )
+   if ( pBridge->ProcessNegativeMoments(span) )
    {
       p = new rptParagraph;
       *p << CFlexuralCapacityCheckTable().Build(pBroker,span,girder,pDisplayUnits,pgsTypes::BridgeSite3,pgsTypes::StrengthI,false,&bOverReinforced) << rptNewLine;

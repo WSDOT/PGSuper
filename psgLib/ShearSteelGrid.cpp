@@ -28,11 +28,12 @@
 #include "ShearSteelGrid.h"
 #include "ShearSteelPage.h"
 #include <system\tokenizer.h>
+#include <EAF\EAFApp.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
-//#undef THIS_FILE
-//static char THIS_FILE[] = __FILE__;
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
 #endif
 
 GRID_IMPLEMENT_REGISTER(CShearSteelGrid, CS_DBLCLKS, 0, 0, 0);
@@ -193,8 +194,13 @@ void CShearSteelGrid::OnUpdateEditRemoveRows(CCmdUI* pCmdUI)
 
 void CShearSteelGrid::CustomInit()
 {
-   CShearSteelPage* pdlg = (CShearSteelPage*)GetParent();
-   ASSERT(pdlg);
+   CEAFApp* pApp;
+   {
+      AFX_MANAGE_STATE(AfxGetAppModuleState());
+      pApp = (CEAFApp*)AfxGetApp();
+   }
+   const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
+
 
 // Initialize the grid. For CWnd based grids this call is // 
 // essential. For view based grids this initialization is done 
@@ -230,7 +236,8 @@ void CShearSteelGrid::CustomInit()
 			.SetValue(_T("Zone\n#"))
 		);
 
-   CString cv = "Zone Length\n" + pdlg->GetLongLengthUnitString();
+   CString cv;
+   cv.Format("Zone Length\n(%s)",pDisplayUnits->SpanLength.UnitOfMeasure.UnitTag().c_str());
 	this->SetStyleRange(CGXRange(0,1), CGXStyle()
          .SetWrapText(TRUE)
 			.SetEnabled(FALSE)          // disables usage as current cell
@@ -239,7 +246,7 @@ void CShearSteelGrid::CustomInit()
 			.SetValue(cv)
 		);
 
-   cv = "Spacing\n" + pdlg->GetShortLengthUnitString();
+   cv.Format("Spacing\n(%s)",pDisplayUnits->ComponentDim.UnitOfMeasure.UnitTag().c_str());
 	this->SetStyleRange(CGXRange(0,2), CGXStyle()
          .SetWrapText(TRUE)
 			.SetEnabled(FALSE)          // disables usage as current cell

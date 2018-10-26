@@ -153,7 +153,7 @@ rptChapter* CCreepCoefficientChapterBuilder::Build_CIP_TempStrands(CReportSpecif
    //////////////////////////////
    // Report LRFD method
    //////////////////////////////
-   bool bSI = (pDisplayUnits->GetUnitDisplayMode() == pgsTypes::umSI);
+   bool bSI = IS_SI_UNITS(pDisplayUnits);
 
    for ( Int16 i = CREEP_MINTIME; i <= CREEP_MAXTIME; i++ )
    {
@@ -368,7 +368,7 @@ rptChapter* CCreepCoefficientChapterBuilder::Build_CIP(CReportSpecification* pRp
    //////////////////////////////
    // Report LRFD method
    //////////////////////////////
-   bool bSI = (pDisplayUnits->GetUnitDisplayMode() == pgsTypes::umSI);
+   bool bSI = IS_SI_UNITS(pDisplayUnits);
 
    for ( Int16 i = CREEP_MINTIME; i <= CREEP_MAXTIME; i++ )
    {
@@ -529,7 +529,7 @@ rptChapter* CCreepCoefficientChapterBuilder::Build_NoDeck_TempStrands(CReportSpe
    //////////////////////////////
    // Report LRFD method
    //////////////////////////////
-   bool bSI = (pDisplayUnits->GetUnitDisplayMode() == pgsTypes::umSI);
+   bool bSI = IS_SI_UNITS(pDisplayUnits);
 
    for ( Int16 i = CREEP_MINTIME; i <= CREEP_MAXTIME; i++ )
    {

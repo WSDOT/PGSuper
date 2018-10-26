@@ -411,15 +411,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\Include\IFace\DisplayUnits.h"
-				>
-			</File>
-			<File
 				RelativePath="LibraryEntryObserver.h"
-				>
-			</File>
-			<File
-				RelativePath="..\Include\IFace\Project.h"
 				>
 			</File>
 			<File
@@ -439,10 +431,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\Include\IFace\VersionInfo.h"
-				>
-			</File>
-			<File
 				RelativePath="XSectionData.h"
 				>
 			</File>
@@ -455,6 +443,46 @@
 				RelativePath="ProjectAgent.rgs"
 				>
 			</File>
+		</Filter>
+		<Filter
+			Name="IFace"
+			>
+			<File
+				RelativePath="..\Include\IFace\Project.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Include\IFace\RatingSpecification.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Include\IFace\VersionInfo.h"
+				>
+			</File>
+		</Filter>
+		<Filter
+			Name="Status Items"
+			>
+		</Filter>
+		<Filter
+			Name="Transactions"
+			>
+			<Filter
+				Name="Header Files"
+				>
+				<File
+					RelativePath=".\txnEditBridgeDescription.h"
+					>
+				</File>
+			</Filter>
+			<Filter
+				Name="Source Files"
+				>
+				<File
+					RelativePath=".\txnEditBridgeDescription.cpp"
+					>
+				</File>
+			</Filter>
 		</Filter>
 	</Files>
 	<Globals>

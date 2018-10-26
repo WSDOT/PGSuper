@@ -33,6 +33,7 @@
 
 #include <IFace\StatusCenter.h>
 #include <IFace\PrestressForce.h>
+#include <IFace\RatingSpecification.h>
 
 #include <Units\SysUnits.h>
 
@@ -97,8 +98,8 @@ STDMETHODIMP CSpecAgentImp::Reset()
 
 STDMETHODIMP CSpecAgentImp::ShutDown()
 {
-   AGENT_CLEAR_INTERFACE_CACHE;
    CLOSE_LOGFILE;
+   AGENT_CLEAR_INTERFACE_CACHE;
    return S_OK;
 }
 
@@ -229,28 +230,55 @@ const GirderLibraryEntry* CSpecAgentImp::GetGirderEntry(SpanIndexType spanIdx,Gi
 //
 Float64 CSpecAgentImp::GetAllowableStress(const pgsPointOfInterest& poi, pgsTypes::Stage stage,pgsTypes::LimitState ls,pgsTypes::StressType type)
 {
-   GET_IFACE(IBridgeMaterial,pMat);
-   Float64 fc;
-   
-   switch( stage )
+   SpanIndexType spanIdx = poi.GetSpan();
+   GirderIndexType gdrIdx = poi.GetGirder();
+
+   if ( stage == pgsTypes::BridgeSite3 && ( ls == pgsTypes::ServiceIII_Inventory ||
+                                            ls == pgsTypes::ServiceIII_Operating ||
+                                            ls == pgsTypes::ServiceIII_LegalRoutine ||
+                                            ls == pgsTypes::ServiceIII_LegalSpecial ) )
    {
-   case pgsTypes::CastingYard:
-      fc = pMat->GetFciGdr(poi.GetSpan(), poi.GetGirder());
-      break;
+      GET_IFACE(IRatingSpecification,pRatingSpec);
+      if ( ls == pgsTypes::ServiceIII_Inventory )
+         return pRatingSpec->GetAllowableTension(pgsTypes::lrDesign_Inventory,spanIdx,gdrIdx);
 
-//   case pgsTypes::GirderPlacement:
-   case pgsTypes::TemporaryStrandRemoval:
-   case pgsTypes::BridgeSite1:
-   case pgsTypes::BridgeSite2:
-   case pgsTypes::BridgeSite3:
-      fc = pMat->GetFcGdr(poi.GetSpan(), poi.GetGirder());
-      break;
+      if ( ls == pgsTypes::ServiceIII_Operating )
+         return pRatingSpec->GetAllowableTension(pgsTypes::lrDesign_Operating,spanIdx,gdrIdx);
 
-   default:
-      ATLASSERT(false);// should never get here
+      if ( ls == pgsTypes::ServiceIII_LegalRoutine )
+         return pRatingSpec->GetAllowableTension(pgsTypes::lrLegal_Routine,spanIdx,gdrIdx);
+
+      if ( ls == pgsTypes::ServiceIII_LegalSpecial )
+         return pRatingSpec->GetAllowableTension(pgsTypes::lrLegal_Special,spanIdx,gdrIdx);
+
+      ATLASSERT(false); // should never get here
+      return -1;
    }
+   else
+   {
+      GET_IFACE(IBridgeMaterial,pMat);
+      Float64 fc;
+      
+      switch( stage )
+      {
+      case pgsTypes::CastingYard:
+         fc = pMat->GetFciGdr(spanIdx,gdrIdx);
+         break;
 
-   return GetAllowableStress(stage,ls,type,fc);
+   //   case pgsTypes::GirderPlacement:
+      case pgsTypes::TemporaryStrandRemoval:
+      case pgsTypes::BridgeSite1:
+      case pgsTypes::BridgeSite2:
+      case pgsTypes::BridgeSite3:
+         fc = pMat->GetFcGdr(spanIdx,gdrIdx);
+         break;
+
+      default:
+         ATLASSERT(false);// should never get here
+      }
+
+      return GetAllowableStress(stage,ls,type,fc);
+   }
 }
 
 std::vector<Float64> CSpecAgentImp::GetAllowableStress(const std::vector<pgsPointOfInterest>& vPoi, pgsTypes::Stage stage,pgsTypes::LimitState ls,pgsTypes::StressType type)

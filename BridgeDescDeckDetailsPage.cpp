@@ -24,7 +24,7 @@
 //
 
 #include "stdafx.h"
-#include "pgsuper.h"
+#include "PGSuper.h"
 #include "PGSuperDoc.h"
 #include "BridgeDescDeckDetailsPage.h"
 #include "BridgeDescDlg.h"
@@ -69,7 +69,7 @@ CBridgeDescDeckDetailsPage::~CBridgeDescDeckDetailsPage()
 void CBridgeDescDeckDetailsPage::DoDataExchange(CDataExchange* pDX)
 {
    CComPtr<IBroker> pBroker;
-   AfxGetBroker(&pBroker);
+   EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
 	
    CBridgeDescDlg* pParent = (CBridgeDescDlg*)GetParent();
@@ -127,7 +127,6 @@ void CBridgeDescDeckDetailsPage::DoDataExchange(CDataExchange* pDX)
       ExchangeConcreteData(pDX);
 
       DDX_UnitValueAndTag( pDX, IDC_SACDEPTH,      IDC_SACDEPTH_UNIT,     pParent->m_BridgeDesc.GetDeckDescription()->SacrificialDepth, pDisplayUnits->GetComponentDimUnit() );
-
       if ( pParent->m_BridgeDesc.GetDeckDescription()->DeckType == pgsTypes::sdtCompositeSIP ) // SIP
          DDV_UnitValueLessThanLimit(pDX, pParent->m_BridgeDesc.GetDeckDescription()->SacrificialDepth, pParent->m_BridgeDesc.GetDeckDescription()->GrossDepth + pParent->m_BridgeDesc.GetDeckDescription()->PanelDepth, pDisplayUnits->GetComponentDimUnit(), "Please enter a sacrificial depth that is less than %f %s" );
       else
@@ -301,7 +300,7 @@ void CBridgeDescDeckDetailsPage::DoDataExchange(CDataExchange* pDX)
 void CBridgeDescDeckDetailsPage::ExchangeConcreteData(CDataExchange* pDX)
 {
    CComPtr<IBroker> pBroker;
-   AfxGetBroker(&pBroker);
+   EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
 
    CBridgeDescDlg* pParent = (CBridgeDescDlg*)GetParent();
@@ -356,12 +355,12 @@ BOOL CBridgeDescDeckDetailsPage::OnInitDialog()
    ASSERT( pParent->IsKindOf(RUNTIME_CLASS(CBridgeDescDlg)) );
 
    CComPtr<IBroker> pBroker;
-   AfxGetBroker(&pBroker);
+   EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
 
    // set density/weight labels
    CStatic* pStatic = (CStatic*)GetDlgItem( IDC_OLAY_DENSITY_LABEL );
-   if ( pDisplayUnits->GetUnitDisplayMode() == pgsTypes::umSI )
+   if ( IS_SI_UNITS(pDisplayUnits) )
       pStatic->SetWindowText( "Overlay Density" );
    else
       pStatic->SetWindowText( "Overlay Weight" );
@@ -445,7 +444,7 @@ BOOL CBridgeDescDeckDetailsPage::OnSetActive()
    GetDlgItem(IDC_DECK_TYPE)->SetWindowText(strDeckType);
 
 
-   CWnd* pWnd = GetDlgItem(IDC_DEPTH_LABEL);
+   CWnd* pWnd = GetDlgItem(IDC_GROSS_DEPTH_LABEL);
    pWnd->SetWindowText(deckType == pgsTypes::sdtCompositeCIP || deckType == pgsTypes::sdtCompositeOverlay ? "Gross Depth" : "Cast Depth");
 
    GetDlgItem(IDC_GROSS_DEPTH_LABEL)->EnableWindow( deckType != pgsTypes::sdtNone);
@@ -568,7 +567,7 @@ void CBridgeDescDeckDetailsPage::UpdateEc()
       m_ctrlFc.GetWindowText(strFc);
 
       CComPtr<IBroker> pBroker;
-      AfxGetBroker(&pBroker);
+      EAFGetBroker(&pBroker);
       GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
 
       strDensity.Format("%s",FormatDimension(pParent->m_BridgeDesc.GetDeckDescription()->SlabStrengthDensity,pDisplayUnits->GetDensityUnit(),false));
@@ -696,7 +695,6 @@ BOOL CBridgeDescDeckDetailsPage::OnToolTipNotify(UINT id,NMHDR* pNMHDR, LRESULT*
       switch(nID)
       {
       case IDC_MORE:
-         ::SendMessage(pNMHDR->hwndFrom,TTM_SETMAXTIPWIDTH,0,300); // makes it a multi-line tooltip
          UpdateConcreteParametersToolTip();
          break;
 
@@ -704,6 +702,8 @@ BOOL CBridgeDescDeckDetailsPage::OnToolTipNotify(UINT id,NMHDR* pNMHDR, LRESULT*
          return FALSE;
       }
 
+      ::SendMessage(pNMHDR->hwndFrom,TTM_SETDELAYTIME,TTDT_AUTOPOP,TOOLTIP_DURATION); // sets the display time to 10 seconds
+      ::SendMessage(pNMHDR->hwndFrom,TTM_SETMAXTIPWIDTH,0,TOOLTIP_WIDTH); // makes it a multi-line tooltip
       pTTT->lpszText = m_strTip.GetBuffer();
       pTTT->hinst = NULL;
       return TRUE;
@@ -717,7 +717,7 @@ void CBridgeDescDeckDetailsPage::UpdateConcreteParametersToolTip()
    ASSERT( pParent->IsKindOf(RUNTIME_CLASS(CBridgeDescDlg)) );
 
    CComPtr<IBroker> pBroker;
-   AfxGetBroker(&pBroker);
+   EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
 
    const unitmgtDensityData& density = pDisplayUnits->GetDensityUnit();
@@ -847,8 +847,10 @@ void CBridgeDescDeckDetailsPage::UpdateSlabOffsetControls()
 
 void CBridgeDescDeckDetailsPage::UIHint(const CString& strText,UINT mask)
 {
-   CPGSuperApp* pApp = (CPGSuperApp*)AfxGetApp();
-   Uint32 hintSettings = pApp->GetUIHintSettings();
+   CMainFrame* pFrame = (CMainFrame*)AfxGetMainWnd();
+   CPGSuperDoc* pDoc  = (CPGSuperDoc*)pFrame->GetDocument();
+
+   Uint32 hintSettings = pDoc->GetUIHintSettings();
    if ( sysFlags<Uint32>::IsClear(hintSettings,mask) )
    {
       CUIHintsDlg dlg;
@@ -858,7 +860,7 @@ void CBridgeDescDeckDetailsPage::UIHint(const CString& strText,UINT mask)
       if ( dlg.m_bDontShowAgain )
       {
          sysFlags<Uint32>::Set(&hintSettings,mask);
-         pApp->SetUIHintSettings(hintSettings);
+         pDoc->SetUIHintSettings(hintSettings);
       }
    }
 }

@@ -51,7 +51,7 @@ class REPORTINGCLASS CShearCapacityDetailsChapterBuilder : public CPGSuperChapte
 {
 public:
    // GROUP: LIFECYCLE
-   CShearCapacityDetailsChapterBuilder();
+   CShearCapacityDetailsChapterBuilder(bool bDesign,bool bRating);
 
    // GROUP: OPERATORS
    // GROUP: OPERATIONS
@@ -80,6 +80,8 @@ protected:
 private:
    // GROUP: DATA MEMBERS
    // GROUP: LIFECYCLE
+   bool m_bDesign;
+   bool m_bRating;
 
    // Prevent accidental copying and assignment
    CShearCapacityDetailsChapterBuilder(const CShearCapacityDetailsChapterBuilder&);

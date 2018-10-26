@@ -373,6 +373,14 @@
 				>
 			</File>
 		</Filter>
+		<Filter
+			Name="IFace"
+			>
+		</Filter>
+		<Filter
+			Name="Status Items"
+			>
+		</Filter>
 	</Files>
 	<Globals>
 	</Globals>

@@ -28,7 +28,7 @@
 #include "resource.h"       // main symbols
 #include <PgsExt\PoiMap.h>
 
-#include <PgsExt\InterfaceCache.h>
+#include <EAF\EAFInterfaceCache.h>
 
 #include <boost\shared_ptr.hpp>
 
@@ -63,6 +63,8 @@ public:
       m_NextPoi = 0;
       m_DefaultAnalysisType = pgsTypes::Simple;
    }
+
+   HRESULT FinalConstruct();
 
 DECLARE_REGISTRY_RESOURCEID(IDR_ANALYSISAGENT)
 DECLARE_NOT_AGGREGATABLE(CAnalysisAgentImp)
@@ -127,6 +129,8 @@ public:
    virtual void GetShearKeyLoad(SpanIndexType spanIdx,GirderIndexType gdrIdx,std::vector<ShearKeyLoad>* pLoads);
 
    virtual std::string GetLiveLoadName(pgsTypes::LiveLoadType llType,VehicleIndexType vehicleIndex);
+   virtual VehicleIndexType GetVehicleCount(pgsTypes::LiveLoadType llType);
+   virtual Float64 GetVehicleWeight(pgsTypes::LiveLoadType llType,VehicleIndexType vehicleIndex);
 
 private:
    virtual void GetMainSpanSlabLoad(SpanIndexType spanIdx,GirderIndexType gdrIdx, std::vector<SlabLoad>* pSlabLoads);
@@ -153,7 +157,7 @@ public:
    virtual void GetLiveLoadRotation(pgsTypes::LiveLoadType llType,pgsTypes::Stage stage,PierIndexType pier,GirderIndexType gdr,pgsTypes::PierFaceType pierFace,BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,Float64* pTmin,Float64* pTmax,Float64* pRmin,Float64* pRmax,long* pMinConfig,long* pMaxConfig);
    virtual void GetLiveLoadReaction(pgsTypes::LiveLoadType llType,pgsTypes::Stage stage,PierIndexType pier,GirderIndexType gdr,BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,Float64* pRmin,Float64* pRmax,long* pMinConfig = NULL,long* pMaxConfig = NULL);
    virtual void GetLiveLoadReaction(pgsTypes::LiveLoadType llType,pgsTypes::Stage stage,PierIndexType pier,GirderIndexType gdr,BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,Float64* pRmin,Float64* pRmax,Float64* pTmin,Float64* pTmax,long* pMinConfig = NULL,long* pMaxConfig = NULL);
-   virtual void GetLiveLoadStress(pgsTypes::LiveLoadType llType,pgsTypes::Stage stage,const pgsPointOfInterest& poi,BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,Float64* pfTopMin,Float64* pfTopMax,Float64* pfBotMin,Float64* pfBotMax);
+   virtual void GetLiveLoadStress(pgsTypes::LiveLoadType llType,pgsTypes::Stage stage,const pgsPointOfInterest& poi,BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,Float64* pfTopMin,Float64* pfTopMax,Float64* pfBotMin,Float64* pfBotMax,long* pTopMinConfig=NULL,long* pTopMaxConfig=NULL,long* pBotMinConfig=NULL,long* pBotMaxConfig=NULL);
 
    virtual std::vector<std::string> GetVehicleNames(pgsTypes::LiveLoadType llType,GirderIndexType gdr);
    virtual void GetVehicularLiveLoadMoment(pgsTypes::LiveLoadType llType,VehicleIndexType vehicleIndex,pgsTypes::Stage stage,const pgsPointOfInterest& poi,BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,Float64* pMmin,Float64* pMmax,AxleConfiguration* pMinAxleConfig=NULL,AxleConfiguration* pMaxAxleConfig=NULL);
@@ -165,7 +169,7 @@ public:
    virtual void GetVehicularLiveLoadDisplacement(pgsTypes::LiveLoadType llType,VehicleIndexType vehicleIndex,pgsTypes::Stage stage,const pgsPointOfInterest& poi,BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,Float64* pDmin,Float64* pDmax,AxleConfiguration* pMinAxleConfig=NULL,AxleConfiguration* pMaxAxleConfig=NULL);
    virtual void GetVehicularLiveLoadRotation(pgsTypes::LiveLoadType llType,VehicleIndexType vehicleIndex,pgsTypes::Stage stage,const pgsPointOfInterest& poi,BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,Float64* pRmin,Float64* pRmax,AxleConfiguration* pMinAxleConfig=NULL,AxleConfiguration* pMaxAxleConfig=NULL);
    virtual void GetVehicularLiveLoadReaction(pgsTypes::LiveLoadType llType,VehicleIndexType vehicleIndex,pgsTypes::Stage stage,PierIndexType pier,GirderIndexType gdr,BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,Float64* pRmin,Float64* pRmax,AxleConfiguration* pMinAxleConfig=NULL,AxleConfiguration* pMaxAxleConfig=NULL);
-   virtual void GetVehicularLiveLoadStress(pgsTypes::LiveLoadType llType,VehicleIndexType vehicleIndex,pgsTypes::Stage stage,const pgsPointOfInterest& poi,BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,Float64* pfTopMin,Float64* pfTopMax,Float64* pfBotMin,Float64* pfBotMax);
+   virtual void GetVehicularLiveLoadStress(pgsTypes::LiveLoadType llType,VehicleIndexType vehicleIndex,pgsTypes::Stage stage,const pgsPointOfInterest& poi,BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,Float64* pfTopMin,Float64* pfTopMax,Float64* pfBotMin,Float64* pfBotMax,AxleConfiguration* pMinAxleConfigTop=NULL,AxleConfiguration* pMaxAxleConfigTop=NULL,AxleConfiguration* pMinAxleConfigBot=NULL,AxleConfiguration* pMaxAxleConfigBot=NULL);
 
    virtual void GetDeflLiveLoadDisplacement(DeflectionLiveLoadType type, const pgsPointOfInterest& poi,Float64* pDmin,Float64* pDmax);
 
@@ -187,7 +191,7 @@ public:
    virtual void GetLiveLoadShear(pgsTypes::LiveLoadType llType,pgsTypes::Stage stage,const std::vector<pgsPointOfInterest>& vPoi,BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,std::vector<sysSectionValue>* pVmin,std::vector<sysSectionValue>* pVmax,std::vector<long>* pMminTruck = NULL,std::vector<long>* pMmaxTruck = NULL);
    virtual void GetLiveLoadDisplacement(pgsTypes::LiveLoadType llType,pgsTypes::Stage stage,const std::vector<pgsPointOfInterest>& vPoi,BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,std::vector<Float64>* pDmin,std::vector<Float64>* pDmax,std::vector<long>* pMinConfig = NULL,std::vector<long>* pMaxConfig = NULL);
    virtual void GetLiveLoadRotation(pgsTypes::LiveLoadType llType,pgsTypes::Stage stage,const std::vector<pgsPointOfInterest>& vPoi,BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,std::vector<Float64>* pRmin,std::vector<Float64>* pRmax,std::vector<long>* pMinConfig = NULL,std::vector<long>* pMaxConfig = NULL);
-   virtual void GetLiveLoadStress(pgsTypes::LiveLoadType llType,pgsTypes::Stage stage,const std::vector<pgsPointOfInterest>& vPoi,BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,std::vector<Float64>* pfTopMin,std::vector<Float64>* pfTopMax,std::vector<Float64>* pfBotMin,std::vector<Float64>* pfBotMax);
+   virtual void GetLiveLoadStress(pgsTypes::LiveLoadType llType,pgsTypes::Stage stage,const std::vector<pgsPointOfInterest>& vPoi,BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,std::vector<Float64>* pfTopMin,std::vector<Float64>* pfTopMax,std::vector<Float64>* pfBotMin,std::vector<Float64>* pfBotMax,std::vector<long>* pTopMinIndex=NULL,std::vector<long>* pTopMaxIndex=NULL,std::vector<long>* pBotMinIndex=NULL,std::vector<long>* pBotMaxIndex=NULL);
 
    virtual void GetVehicularLiveLoadMoment(pgsTypes::LiveLoadType llType,VehicleIndexType vehicleIndex,pgsTypes::Stage stage,const std::vector<pgsPointOfInterest>& vPoi,BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,std::vector<Float64>* pMmin,std::vector<Float64>* pMmax,std::vector<AxleConfiguration>* pMinAxleConfig=NULL,std::vector<AxleConfiguration>* pMaxAxleConfig=NULL);
    virtual void GetVehicularLiveLoadShear(pgsTypes::LiveLoadType llType,VehicleIndexType vehicleIndex,pgsTypes::Stage stage,const std::vector<pgsPointOfInterest>& vPoi,BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,std::vector<sysSectionValue>* pVmin,std::vector<sysSectionValue>* pVmax,
@@ -197,7 +201,7 @@ public:
                                           std::vector<AxleConfiguration>* pMaxRightAxleConfig = NULL);
    virtual void GetVehicularLiveLoadDisplacement(pgsTypes::LiveLoadType llType,VehicleIndexType vehicleIndex,pgsTypes::Stage stage,const std::vector<pgsPointOfInterest>& vPoi,BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,std::vector<Float64>* pDmin,std::vector<Float64>* pDmax,std::vector<AxleConfiguration>* pMinAxleConfig=NULL,std::vector<AxleConfiguration>* pMaxAxleConfig=NULL);
    virtual void GetVehicularLiveLoadRotation(pgsTypes::LiveLoadType llType,VehicleIndexType vehicleIndex,pgsTypes::Stage stage,const std::vector<pgsPointOfInterest>& vPoi,BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,std::vector<Float64>* pRmin,std::vector<Float64>* pRmax,std::vector<AxleConfiguration>* pMinAxleConfig=NULL,std::vector<AxleConfiguration>* pMaxAxleConfig=NULL);
-   virtual void GetVehicularLiveLoadStress(pgsTypes::LiveLoadType llType,VehicleIndexType vehicleIndex,pgsTypes::Stage stage,const std::vector<pgsPointOfInterest>& vPoi,BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,std::vector<Float64>* pfTopMin,std::vector<Float64>* pfTopMax,std::vector<Float64>* pfBotMin,std::vector<Float64>* pfBotMax);
+   virtual void GetVehicularLiveLoadStress(pgsTypes::LiveLoadType llType,VehicleIndexType vehicleIndex,pgsTypes::Stage stage,const std::vector<pgsPointOfInterest>& vPoi,BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,std::vector<Float64>* pfTopMin,std::vector<Float64>* pfTopMax,std::vector<Float64>* pfBotMin,std::vector<Float64>* pfBotMax,std::vector<AxleConfiguration>* pMinAxleConfigTop=NULL,std::vector<AxleConfiguration>* pMaxAxleConfigTop=NULL,std::vector<AxleConfiguration>* pMinAxleConfigBot=NULL,std::vector<AxleConfiguration>* pMaxAxleConfigBot=NULL);
 
 // ICombinedForces
 public:
@@ -251,6 +255,7 @@ public:
    virtual Float64 GetStress(const pgsPointOfInterest& poi,pgsTypes::StressLocation loc,Float64 P,Float64 e);
    virtual Float64 GetStressPerStrand(pgsTypes::Stage stage,const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,pgsTypes::StressLocation loc);
    virtual Float64 GetDesignStress(pgsTypes::Stage stage,const pgsPointOfInterest& poi,pgsTypes::StressLocation loc,const GDRCONFIG& config);
+   virtual std::vector<Float64> GetStress(pgsTypes::Stage stage,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::StressLocation loc);
 
 // ICamber
 public:
@@ -318,6 +323,12 @@ public:
 public:
    virtual HRESULT OnLoadModifiersChanged();
 
+public:
+   // this methods need to be public so the PGSuperLoadCombinationResponse object use them
+   void GetVehicularLoad(ILBAMModel* pModel,LiveLoadModelType llType,VehicleIndexType vehicleIndex,IVehicularLoad** pVehicle);
+   void CreateAxleConfig(ILBAMModel* pModel,ILiveLoadConfiguration* pConfig,AxleConfiguration* pAxles);
+   pgsTypes::LimitState GetLimitStateFromLoadCombination(CComBSTR bstrLoadCombination);
+
 private:
    DECLARE_AGENT_DATA;
    Uint16 m_Level;
@@ -325,6 +336,8 @@ private:
    DWORD m_dwSpecCookie;
    DWORD m_dwLoadModifierCookie;
    CComPtr<ILongArray> m_LBAMPoi;   // array for LBAM poi
+   CComPtr<ILBAMLRFDFactory3> m_LBAMUtility;
+   CComPtr<IUnitServer> m_UnitServer;
 
    PoiIDType m_NextPoi;
 
@@ -350,6 +363,8 @@ private:
    // lbam model of structure at bridge site
    struct ModelData
    {
+      CAnalysisAgentImp* m_pParent;
+
       // Model and response engines for the bridge site force analysis
       CComPtr<ILBAMModel>               m_Model;
       CComPtr<ILBAMModel>               m_ContinuousModel;
@@ -385,7 +400,7 @@ private:
 
       pgsPoiMap PoiMap;
 
-      ModelData();
+      ModelData(CAnalysisAgentImp *pParent);
       ModelData(const ModelData& other);
       ~ModelData();
       void CreateAnalysisEngine(ILBAMModel* theModel,BridgeAnalysisType bat,ILBAMAnalysisEngine** ppEngine);
@@ -442,7 +457,8 @@ private:
    CComBSTR GetLoadCaseName(LoadingCombination combo);
    CComBSTR GetStageName(ProductForceType type);
    CComBSTR GetLoadCombinationName(pgsTypes::LimitState ls);
-   CComBSTR GetLoadCombinationName(pgsTypes::LiveLoadType llt);
+   CComBSTR GetLoadCombinationName(pgsTypes::LiveLoadType llt); // load combo name for LBAM
+   CComBSTR GetLiveLoadName(pgsTypes::LiveLoadType llt); // friendly live load name
 
 
    void BuildBridgeSiteModel(GirderIndexType gdr,bool bContinuous,IContraflexureResponse* pContraflexureResponse,ILBAMModel* pModel);
@@ -463,6 +479,9 @@ private:
 
    Float64 GetPedestrianLiveLoad(SpanIndexType spanIdx,GirderIndexType gdrIdx);
    void AddHL93LiveLoad(ILBAMModel* pModel,ILibrary* pLibrary,pgsTypes::LiveLoadType llType,double IMtruck,double IMlane);
+   void AddLegalLiveLoad(ILBAMModel* pModel,ILibrary* pLibrary,pgsTypes::LiveLoadType llType,double IMtruck,double IMlane);
+   void AddNotionalRatingLoad(ILBAMModel* pModel,ILibrary* pLibrary,pgsTypes::LiveLoadType llType,double IMtruck,double IMlane);
+   void AddSHVLoad(ILBAMModel* pModel,ILibrary* pLibrary,pgsTypes::LiveLoadType llType,double IMtruck,double IMlane);
    void AddPedestrianLoad(const std::string& strLLName,double wPedLL,IVehicularLoads* pVehicles);
    void AddUserTruck(const std::string& strLLName,ILibrary* pLibrary,double IMtruck,double IMlane,IVehicularLoads* pVehicles);
    void AddDummyLiveLoad(IVehicularLoads* pVehicles);
@@ -548,9 +567,11 @@ private:
 
    ModelData* UpdateLBAMPois(const std::vector<pgsPointOfInterest>& vPoi);
    void RenameLiveLoad(ILBAMModel* pModel,pgsTypes::LiveLoadType llType,const char* strOldName,const char* strNewName);
-   void GetVehicularLoad(ModelData* pModelData,BridgeAnalysisType bat,LiveLoadModelType llType,VehicleIndexType vehicleIndex,IVehicularLoad** pVehicle);
-   void CreateAxleConfig(ModelData* pModelData,BridgeAnalysisType bat,ILiveLoadConfiguration* pConfig,AxleConfiguration* pAxles);
    void GetModel(ModelData* pModelData,BridgeAnalysisType bat,ILBAMModel** ppModel);
+
+   void GetLiveLoadModel(pgsTypes::LiveLoadType llType,GirderIndexType gdrIdx,ILiveLoadModel** ppLiveLoadModel);
+
+   DistributionFactorType GetLiveLoadDistributionFactorType(pgsTypes::LiveLoadType llType);
 };
 
 #endif //__ANALYSISAGENT_H_

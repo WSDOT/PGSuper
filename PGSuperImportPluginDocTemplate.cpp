@@ -21,7 +21,9 @@
 ///////////////////////////////////////////////////////////////////////
 
 #include "stdafx.h"
+#include "PGSuper.h"
 #include "PGSuperImportPluginDocTemplate.h"
+#include "SelectItemDlg.h"
 #include <IFace\Project.h>
 
 #ifdef _DEBUG
@@ -30,74 +32,135 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-IMPLEMENT_DYNAMIC(CPGSuperImportPluginDocTemplate,CCountedMultiDocTemplate)
+class CMyTemplateItem : public CEAFTemplateItem
+{
+public:
+   CMyTemplateItem(LPCTSTR name,LPCTSTR path,HICON hIcon,IPGSuperProjectImporter* pImporter) :
+      CEAFTemplateItem(name,path,hIcon)
+      {
+         m_Importer = pImporter;
+      }
+
+   CComPtr<IPGSuperProjectImporter> m_Importer;
+   DECLARE_DYNAMIC(CMyTemplateItem)
+};
+
+IMPLEMENT_DYNAMIC(CMyTemplateItem,CEAFTemplateItem)
+
+
+IMPLEMENT_DYNAMIC(CPGSuperImportPluginDocTemplate,CEAFDocTemplate)
 
 CPGSuperImportPluginDocTemplate::CPGSuperImportPluginDocTemplate(UINT nIDResource,
  																 CRuntimeClass* pDocClass,
  																 CRuntimeClass* pFrameClass,
  																 CRuntimeClass* pViewClass,
-																 int maxViewCount)
-: CCountedMultiDocTemplate(nIDResource,pDocClass,pFrameClass,pViewClass,maxViewCount)
+                                                 HMENU hSharedMenu,
+                                                 int maxViewCount) :
+CEAFDocTemplate(nIDResource,pDocClass,pFrameClass,pViewClass,hSharedMenu,maxViewCount)
 {
+   USES_CONVERSION;
+
+   m_ProjectImporterMgr.LoadImporters();
+
+   Uint32 nImporters = m_ProjectImporterMgr.GetImporterCount();
+   for ( Uint32 idx = 0; idx < nImporters; idx++ )
+   {
+      CComPtr<IPGSuperProjectImporter> importer;
+      m_ProjectImporterMgr.GetImporter(idx,true,&importer);
+
+      CComBSTR bstrText;
+      importer->GetItemText(&bstrText);
+
+      HICON hIcon;
+      importer->GetIcon(&hIcon);
+      m_TemplateGroup.AddItem( new CMyTemplateItem(OLE2A(bstrText),NULL,hIcon,importer) );
+   }
 }
 
-CPGSuperDoc* CPGSuperImportPluginDocTemplate::Import(UINT nID)
+CPGSuperImportPluginDocTemplate::~CPGSuperImportPluginDocTemplate()
 {
-   // This is stolen from CMultiDocTemplate::OpenDocumentFile
-   // and tweaked so that CPGSuperDoc::Import is called insted of CDocument::OnNewDocument
+   m_ProjectImporterMgr.UnloadImporters();
+}
 
-	CPGSuperDoc* pDocument = (CPGSuperDoc*)CreateNewDocument();
-   ASSERT_KINDOF(CPGSuperDoc,pDocument);
+BOOL CPGSuperImportPluginDocTemplate::DoOpenDocumentFile(LPCTSTR lpszPathName,BOOL bMakeVisible,CEAFDocument* pDocument,CFrameWnd* pFrame)
+{
+   // Importers "open" documents completely different then the default base class method
+   // Don't call the base class version of this method
+   // CEAFDocTemplate::DoOpenDocumentFile(lpszPathName,bMakeVisible,pDocument,pFrame);
 
-	if (pDocument == NULL)
-	{
-		TRACE0("CDocTemplate::CreateNewDocument returned NULL.\n");
-		AfxMessageBox(AFX_IDP_FAILED_TO_CREATE_DOC);
-		return NULL;
-	}
-	ASSERT_VALID(pDocument);
+   // Creating a new document
+   ASSERT_KINDOF(CMyTemplateItem,m_pTemplateItem);
+   CMyTemplateItem* pTemplateItem = (CMyTemplateItem*)m_pTemplateItem;
 
-	BOOL bAutoDelete = pDocument->m_bAutoDelete;
-	pDocument->m_bAutoDelete = FALSE;   // don't destroy if something goes wrong
-	CFrameWnd* pFrame = CreateNewFrame(pDocument, NULL);
-	pDocument->m_bAutoDelete = bAutoDelete;
-	if (pFrame == NULL)
-	{
-		AfxMessageBox(AFX_IDP_FAILED_TO_CREATE_DOC);
-		delete pDocument;       // explicit delete on error
-		return NULL;
-	}
-	ASSERT_VALID(pFrame);
-
-	// create a new document - with default document name
+   // create a new document - with default document name
 	SetDefaultTitle(pDocument);
 
+	// avoid creating temporary compound file when starting up invisible
+	if (!bMakeVisible)
+		pDocument->m_bEmbedded = TRUE;
 
-   // NOTE: OnImportDocument holds events, but doesn't release them
-   //       It doesn't release them because they will fire before the views
-   //       are created and bad things (ie. crash) happens.
-   //       We have to release the events below.
-	if (!pDocument->OnImportDocument(nID) )
+	if (!pDocument->OnNewDocument())
 	{
 		// user has be alerted to what failed in OnNewDocument
-		TRACE0("CDocument::OnNewDocument returned FALSE.\n");
-		pFrame->DestroyWindow();
-		return NULL;
+		TRACE(traceAppMsg, 0, "CPGSuperImportPluginDocTemplate::OnNewDocument returned FALSE.\n");
+      return FALSE;
 	}
 
-	// it worked, now bump untitled count
-	m_nUntitledCount++;
-
-	InitialUpdateFrame(pFrame, pDocument, TRUE);
-
-   // NOTE: Now that the views are created, we can release the events
-   //       held by the document class
+   // Hold the UI events (release in CPGSuperDoc::OnCreateFinalize)
    CComPtr<IBroker> broker;
-   pDocument->GetBroker(&broker);
+   EAFGetBroker(&broker);
+   ATLASSERT(broker != NULL);
    GET_IFACE2(broker,IEvents,pEvents);
    GET_IFACE2(broker,IUIEvents,pUIEvents);
-   pEvents->FirePendingEvents(); 
-   pUIEvents->HoldEvents(false); // stop holding events, but don't fire then either
+   pEvents->HoldEvents();
+   pUIEvents->HoldEvents();
 
-   return pDocument;
+   // do the importing
+   try
+   {
+      if ( FAILED(pTemplateItem->m_Importer->Import(broker)) )
+      {
+         return FALSE;
+      }
+   }
+   catch(...)
+   {
+   }
+
+   // it worked, now bump untitled count (for untitled documents... from MFC for multidoc applications)
+	m_nUntitledCount++;
+
+   // Can't release events here because the views have not yet been created
+   // Events are released in CPGSuperDoc::OnCreateFinalize
+
+   return TRUE;
+}
+
+CString CPGSuperImportPluginDocTemplate::GetTemplateGroupItemDescription(const CEAFTemplateItem* pItem) const
+{
+   CString strName = pItem->GetName();
+   CString strDescription;
+   strDescription.Format("Create a new PGSuper project using the %s importer",strName);
+   return strDescription;
+}
+
+BOOL CPGSuperImportPluginDocTemplate::GetDocString(CString& rString,enum DocStringIndex index) const
+{
+   if ( index == CDocTemplate::fileNewName )
+   {
+      rString = "PGSuper Project Importers";
+      return TRUE;
+   }
+   else if ( index == CDocTemplate::filterExt || index == CDocTemplate::filterName )
+   {
+      rString.Empty();
+      return TRUE;
+   }
+
+   return CEAFDocTemplate::GetDocString(rString,index);
+}
+
+const CPGSuperProjectImporterMgr& CPGSuperImportPluginDocTemplate::GetProjectImporterManager() const
+{
+   return m_ProjectImporterMgr;
 }

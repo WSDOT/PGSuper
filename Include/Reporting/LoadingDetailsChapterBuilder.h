@@ -51,11 +51,11 @@ class REPORTINGCLASS CLoadingDetailsChapterBuilder : public CPGSuperChapterBuild
 {
 public:
    // GROUP: LIFECYCLE
-   CLoadingDetailsChapterBuilder();
+   CLoadingDetailsChapterBuilder(bool bDesign,bool bRating);
 
    // use this constructor if a simplified (shortened) version of the chapter
    // is desired
-   CLoadingDetailsChapterBuilder(bool SimplifiedVersion);
+   CLoadingDetailsChapterBuilder(bool SimplifiedVersion,bool bDesign,bool bRating);
 
    // GROUP: OPERATORS
    // GROUP: OPERATIONS
@@ -85,7 +85,9 @@ private:
    // GROUP: DATA MEMBERS
 
    // set this to true for a shortened version of the chapter
-   bool m_SimplifiedVersion;
+   bool m_bSimplifiedVersion;
+   bool m_bDesign;
+   bool m_bRating;
 
    // GROUP: LIFECYCLE
 

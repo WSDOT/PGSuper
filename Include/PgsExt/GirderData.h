@@ -123,6 +123,9 @@ public:
    CLongitudinalRebarData LongitudinalRebarData;
    CHandlingData HandlingData;
 
+   // Rating and Condition
+   pgsTypes::ConditionFactorType Condition;
+   Float64 ConditionFactor;
 
    // GROUP: LIFECYCLE
 
@@ -157,7 +160,8 @@ public:
                     ctConcrete     = 0x0002,  // concrete material properties changed
                     ctStrand       = 0x0004,
                     ctLifting      = 0x0008,
-                    ctShipping     = 0x0010
+                    ctShipping     = 0x0010,
+                    ctCondition    = 0x0020
    };
 
    // return or'ed enums above 

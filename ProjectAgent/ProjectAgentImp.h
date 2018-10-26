@@ -35,7 +35,7 @@
 
 #include <Units\SysUnits.h>
 
-#include <PgsExt\InterfaceCache.h>
+#include <EAF\EAFInterfaceCache.h>
 
 #include <PgsExt\PierData.h>
 #include <PgsExt\GirderData.h>
@@ -63,19 +63,16 @@ class ATL_NO_VTABLE CProjectAgentImp :
 	public CComCoClass<CProjectAgentImp, &CLSID_ProjectAgent>,
 	public IConnectionPointContainerImpl<CProjectAgentImp>,
    public CProxyIProjectPropertiesEventSink<CProjectAgentImp>,
-   public CProxyIProjectSettingsEventSink<CProjectAgentImp>,
    public CProxyIEnvironmentEventSink<CProjectAgentImp>,
    public CProxyIBridgeDescriptionEventSink<CProjectAgentImp>,
    public CProxyISpecificationEventSink<CProjectAgentImp>,
+   public CProxyIRatingSpecificationEventSink<CProjectAgentImp>,
    public CProxyILibraryConflictEventSink<CProjectAgentImp>,
    public CProxyILoadModifiersEventSink<CProjectAgentImp>,
    public IAgentEx,
    public IAgentPersist,
    public IVersionInfo,
    public IProjectProperties,
-   public IProjectSettings,
-   public IProjectLog,
-   public IDisplayUnits,
    public IEnvironment,
    public IRoadwayData,
    public IBridgeDescription,
@@ -83,6 +80,7 @@ class ATL_NO_VTABLE CProjectAgentImp :
    public IShear,
    public ILongitudinalRebar,
    public ISpecification,
+   public IRatingSpecification,
    public ILibraryNames,
    public ILibrary,
    public ILoadModifiers,
@@ -107,9 +105,6 @@ BEGIN_COM_MAP(CProjectAgentImp)
 	COM_INTERFACE_ENTRY(IAgentPersist)
    COM_INTERFACE_ENTRY(IVersionInfo)
 	COM_INTERFACE_ENTRY(IProjectProperties)
-	COM_INTERFACE_ENTRY(IProjectSettings)
-	COM_INTERFACE_ENTRY(IProjectLog)
-   COM_INTERFACE_ENTRY(IDisplayUnits)
    COM_INTERFACE_ENTRY(IEnvironment)
    COM_INTERFACE_ENTRY(IRoadwayData)
    COM_INTERFACE_ENTRY(IBridgeDescription)
@@ -117,6 +112,7 @@ BEGIN_COM_MAP(CProjectAgentImp)
    COM_INTERFACE_ENTRY(IShear)
    COM_INTERFACE_ENTRY(ILongitudinalRebar)
    COM_INTERFACE_ENTRY(ISpecification)
+   COM_INTERFACE_ENTRY(IRatingSpecification)
    COM_INTERFACE_ENTRY(ILibraryNames)
    COM_INTERFACE_ENTRY(ILibrary)
    COM_INTERFACE_ENTRY(ILoadModifiers)
@@ -133,10 +129,10 @@ END_COM_MAP()
 
 BEGIN_CONNECTION_POINT_MAP(CProjectAgentImp)
    CONNECTION_POINT_ENTRY( IID_IProjectPropertiesEventSink )
-   CONNECTION_POINT_ENTRY( IID_IProjectSettingsEventSink )
    CONNECTION_POINT_ENTRY( IID_IEnvironmentEventSink )
    CONNECTION_POINT_ENTRY( IID_IBridgeDescriptionEventSink )
    CONNECTION_POINT_ENTRY( IID_ISpecificationEventSink )
+   CONNECTION_POINT_ENTRY( IID_IRatingSpecificationEventSink )
    CONNECTION_POINT_ENTRY( IID_ILibraryConflictEventSink )
    CONNECTION_POINT_ENTRY( IID_ILoadModifiersEventSink )
 END_CONNECTION_POINT_MAP()
@@ -183,50 +179,6 @@ public:
    virtual void EnableUpdate(bool bEnable);
    virtual bool IsUpdatedEnabled();
    virtual bool AreUpdatesPending();
-
-// IProjectSettings
-public:
-	virtual pgsTypes::UnitMode GetUnitsMode() const;
-	virtual void SetUnitsMode(pgsTypes::UnitMode newVal);
-
-// IProjectLog
-public:
-   virtual std::string GetName();
-   virtual void LogMessage( const char* lpszMsg );
-   virtual void Destroy();
-
-// IDisplayUnits
-public:
-	virtual pgsTypes::UnitMode              GetUnitDisplayMode();
- 	virtual const unitStationFormat&        GetStationFormat();
-   virtual const unitmgtScalar&            GetScalarFormat();
-   virtual const unitmgtLengthData&        GetComponentDimUnit();
-   virtual const unitmgtLengthData&        GetXSectionDimUnit();
-   virtual const unitmgtLengthData&        GetSpanLengthUnit();
-   virtual const unitmgtLengthData&        GetDisplacementUnit() ;
-   virtual const unitmgtLengthData&        GetAlignmentLengthUnit();
-   virtual const unitmgtLength2Data&       GetAreaUnit();
-   virtual const unitmgtLength4Data&       GetMomentOfInertiaUnit();
-   virtual const unitmgtLength3Data&       GetSectModulusUnit();
-   virtual const unitmgtPressureData&      GetStressUnit();
-   virtual const unitmgtPressureData&      GetModEUnit();
-   virtual const unitmgtForceData&         GetGeneralForceUnit();
-   virtual const unitmgtForceData&         GetShearUnit();
-   virtual const unitmgtMomentData&        GetMomentUnit();
-   virtual const unitmgtAngleData&         GetAngleUnit();
-   virtual const unitmgtAngleData&         GetRadAngleUnit();  // Radians always
-   virtual const unitmgtDensityData&       GetDensityUnit();
-   virtual const unitmgtMassPerLengthData& GetMassPerLengthUnit();
-   virtual const unitmgtForcePerLengthData& GetForcePerLengthUnit();
-   virtual const unitmgtMomentPerAngleData& GetMomentPerAngleUnit();
-   virtual const unitmgtTimeData&          GetShortTimeUnit();
-   virtual const unitmgtTimeData&          GetLongTimeUnit();
-   virtual const unitmgtAreaPerLengthData& GetAvOverSUnit();
-   virtual const unitmgtForceLength2Data&  GetStiffnessUnit();
-   virtual const unitmgtSqrtPressureData&   GetTensionCoefficientUnit();
-   virtual const unitmgtPerLengthData&      GetPerLengthUnit();
-   virtual const unitmgtPressureData&       GetSidewalkPressureUnit();
-   virtual const unitmgtPressureData&       GetOverlayWeightUnit();
 
 // IEnvironment
 public:
@@ -288,6 +240,10 @@ public:
    virtual void SetSlabOffset( SpanIndexType spanIdx, GirderIndexType gdrIdx, Float64 start, Float64 end);
    virtual pgsTypes::SlabOffsetType GetSlabOffsetType();
    virtual void GetSlabOffset( SpanIndexType spanIdx, GirderIndexType gdrIdx, Float64* pStart, Float64* pEnd);
+   //virtual bool CanModelPostTensioning();
+   //virtual bool IsPostTensioningModeled();
+   //virtual void ConfigureBridgeForPostTensioning();
+   //virtual bool CanBePostTensioned(SpanIndexType spanIdx,GirderIndexType gdrIdx);
 
 // IGirderData
 public:
@@ -332,6 +288,48 @@ public:
    virtual bool IsSlabOffsetDesignEnabled();
    virtual pgsTypes::OverlayLoadDistributionType GetOverlayLoadDistributionType();
 
+// IRatingSpecification
+public:
+   virtual bool AlwaysLoadRate() const;
+   virtual bool IsRatingEnabled(pgsTypes::LoadRatingType ratingType) const;
+   virtual void EnableRating(pgsTypes::LoadRatingType ratingType,bool bEnable);
+   virtual std::string GetRatingSpecification() const;
+   virtual void SetADTT(Int16 adtt);
+   virtual Int16 GetADTT() const;
+   virtual void SetRatingSpecification(const std::string& spec);
+   virtual void IncludePedestrianLiveLoad(bool bInclude);
+   virtual bool IncludePedestrianLiveLoad() const;
+   virtual void SetGirderConditionFactor(SpanIndexType spanIdx,GirderIndexType gdrIdx,pgsTypes::ConditionFactorType conditionFactorType,Float64 conditionFactor);
+   virtual void GetGirderConditionFactor(SpanIndexType spanIdx,GirderIndexType gdrIdx,pgsTypes::ConditionFactorType* pConditionFactorType,Float64 *pConditionFactor) const;
+   virtual Float64 GetGirderConditionFactor(SpanIndexType spanIdx,GirderIndexType gdrIdx) const;
+   virtual void SetDeckConditionFactor(pgsTypes::ConditionFactorType conditionFactorType,Float64 conditionFactor);
+   virtual void GetDeckConditionFactor(pgsTypes::ConditionFactorType* pConditionFactorType,Float64 *pConditionFactor) const;
+   virtual Float64 GetDeckConditionFactor() const;
+   virtual void SetSystemFactorFlexure(Float64 sysFactor);
+   virtual Float64 GetSystemFactorFlexure() const;
+   virtual void SetSystemFactorShear(Float64 sysFactor);
+   virtual Float64 GetSystemFactorShear() const;
+   virtual void SetDeadLoadFactor(pgsTypes::LimitState ls,Float64 gDC);
+   virtual Float64 GetDeadLoadFactor(pgsTypes::LimitState ls) const;
+   virtual void SetWearingSurfaceFactor(pgsTypes::LimitState ls,Float64 gDW);
+   virtual Float64 GetWearingSurfaceFactor(pgsTypes::LimitState ls) const;
+   virtual void SetLiveLoadFactor(pgsTypes::LimitState ls,Float64 gLL);
+   virtual Float64 GetLiveLoadFactor(pgsTypes::LimitState ls,bool bResolveIfDefault=false) const;
+   virtual Float64 GetLiveLoadFactor(pgsTypes::LimitState ls,Int16 adtt,const RatingLibraryEntry* pRatingEntry,bool bResolveIfDefault=false) const;
+   virtual void SetAllowableTensionCoefficient(pgsTypes::LoadRatingType ratingType,Float64 t);
+   virtual Float64 GetAllowableTensionCoefficient(pgsTypes::LoadRatingType ratingType) const;
+   virtual Float64 GetAllowableTension(pgsTypes::LoadRatingType ratingType,SpanIndexType spanIdx,GirderIndexType gdrIdx) const;
+   virtual void RateForStress(pgsTypes::LoadRatingType ratingType,bool bRateForStress);
+   virtual bool RateForStress(pgsTypes::LoadRatingType ratingType) const;
+   virtual void RateForShear(pgsTypes::LoadRatingType ratingType,bool bRateForShear);
+   virtual bool RateForShear(pgsTypes::LoadRatingType ratingType) const;
+   virtual void ExcludeLegalLoadLaneLoading(bool bExclude);
+   virtual bool ExcludeLegalLoadLaneLoading() const;
+   virtual void SetYieldStressLimitCoefficient(Float64 x);
+   virtual Float64 GetYieldStressLimitCoefficient() const;
+   virtual void SetSpecialPermitType(pgsTypes::SpecialPermitType type);
+   virtual pgsTypes::SpecialPermitType GetSpecialPermitType() const;
+
 // ILibraryNames
 public:
    virtual void EnumGdrConnectionNames( std::vector<std::string>* pNames ) const;
@@ -341,6 +339,7 @@ public:
    virtual void EnumDiaphragmNames( std::vector<std::string>* pNames ) const;
    virtual void EnumTrafficBarrierNames( std::vector<std::string>* pNames ) const;
    virtual void EnumSpecNames( std::vector<std::string>* pNames) const;
+   virtual void EnumRatingCriteriaNames( std::vector<std::string>* pNames) const;
    virtual void EnumLiveLoadNames( std::vector<std::string>* pNames) const;
    virtual void EnumGirderFamilyNames( std::vector<std::string>* pNames );
    virtual void GetBeamFactory(const std::string& strBeamFamily,const std::string& strBeamName,IBeamFactory** ppFactory);
@@ -348,6 +347,7 @@ public:
 // ILibrary
 public:
    virtual void SetLibraryManager(psgLibraryManager* pNewLibMgr);
+   virtual psgLibraryManager* GetLibraryManager(); 
    virtual const ConnectionLibraryEntry* GetConnectionEntry(const char* lpszName ) const;
    virtual const GirderLibraryEntry* GetGirderEntry( const char* lpszName ) const;
    virtual const ConcreteLibraryEntry* GetConcreteEntry( const char* lpszName ) const;
@@ -360,9 +360,13 @@ public:
    virtual GirderLibrary&          GetGirderLibrary();
    virtual DiaphragmLayoutLibrary& GetDiaphragmLayoutLibrary();
    virtual TrafficBarrierLibrary&  GetTrafficBarrierLibrary();
+   virtual LiveLoadLibrary*        GetLiveLoadLibrary();
    virtual SpecLibrary*            GetSpecLibrary();
    virtual std::vector<libEntryUsageRecord> GetLibraryUsageRecords() const;
    virtual void GetMasterLibraryInfo(std::string& strPublisher,std::string& strMasterLib,sysTime& time) const;
+   virtual RatingLibrary* GetRatingLibrary();
+   virtual const RatingLibrary* GetRatingLibrary() const;
+   virtual const RatingLibraryEntry* GetRatingEntry( const char* lpszName ) const;
 
 // ILoadModifiers
 public:
@@ -476,21 +480,31 @@ private:
    bool m_bPropertyUpdatesEnabled;
    bool m_bPropertyUpdatesPending;
 
-   pgsTypes::UnitMode m_Units;
    pgsTypes::AnalysisType m_AnalysisType;
    bool m_bGetAnalysisTypeFromLibrary; // if true, we are reading old input... get the analysis type from the library entry
-
-#if defined UNICODE
-   std::wstring m_LogFileName;
-#else
-   std::string m_LogFileName;
-#endif
-   DWORD m_dwLogFileCookie;
 
    std::string m_VersionString; // version string
    std::string m_Version; // version string
 
    std::vector<std::string> m_GirderFamilyNames;
+
+   // rating data
+   std::string m_RatingSpec;
+   const RatingLibraryEntry* m_pRatingEntry;
+   bool m_bExcludeLegalLoadLaneLoading;
+   bool m_bIncludePedestrianLiveLoad;
+   pgsTypes::SpecialPermitType m_SpecialPermitType;
+   Float64 m_SystemFactorFlexure;
+   Float64 m_SystemFactorShear;
+   Float64 m_gDC[12]; // use the IndexFromLimitState to access array
+   Float64 m_gDW[12]; // use the IndexFromLimitState to access array
+   Float64 m_gLL[12]; // use the IndexFromLimitState to access array
+   Float64 m_AllowableTensionCoefficient[6]; // index is load rating type
+   bool    m_bRateForStress[6]; // index is load rating type (for permit rating, it means to do the service I checks, otherwise service III)
+   bool    m_bRateForShear[6]; // index is load rating type
+   bool    m_bEnableRating[6]; // index is load rating type
+   Int16 m_ADTT; // < 0 = Unknown
+   Float64 m_AllowableYieldStressCoefficient; // fr <= xfy for Service I permit rating
 
    // Environment Data
    enumExposureCondition m_ExposureCondition;
@@ -516,6 +530,7 @@ private:
    std::string m_Spec;
    const SpecLibraryEntry* m_pSpecEntry;
 
+
    // Live load selection
    struct LiveLoadSelection
    {
@@ -532,18 +547,17 @@ private:
    typedef LiveLoadSelectionContainer::iterator LiveLoadSelectionIterator;
 
    // index is pgsTypes::LiveLoadTypes constant
-   LiveLoadSelectionContainer m_SelectedLiveLoads[3];
-   double m_TruckImpact[3];
-   double m_LaneImpact[3];
+   LiveLoadSelectionContainer m_SelectedLiveLoads[8];
+   double m_TruckImpact[8];
+   double m_LaneImpact[8];
+
+   std::vector<std::string> m_ReservedLiveLoads; // reserved live load names (names not found in library)
+   bool IsReservedLiveLoad(const std::string& strName);
 
    void OnLiveLoadEntryRenamed(LiveLoadLibraryEntry* pEntry);
 
    LldfRangeOfApplicabilityAction m_LldfRangeOfApplicabilityAction;
    bool m_bGetIgnoreROAFromLibrary; // if true, we are reading old input... get the Ignore ROA setting from the spec library entry
-
-   // Display Units Stuff
-   unitmgtLibrary m_UnitLibrary;
-   const unitmgtIndirectMeasure* m_pDisplayUnits; // current setting
 
    // Load Modifiers
    ILoadModifiers::Level m_DuctilityLevel;
@@ -581,6 +595,8 @@ private:
 
    // Callback methods for structured storage map
    static HRESULT SpecificationProc(IStructuredSave* pSave,IStructuredLoad* pLoad,IProgress* pProgress,CProjectAgentImp* pObj);
+   static HRESULT RatingSpecificationProc(IStructuredSave* pSave,IStructuredLoad* pLoad,IProgress* pProgress,CProjectAgentImp* pObj);
+   static HRESULT UnitModeProc(IStructuredSave*,IStructuredLoad*,IProgress*,CProjectAgentImp*);
    static HRESULT AlignmentProc(IStructuredSave*,IStructuredLoad*,IProgress*,CProjectAgentImp*);
    static HRESULT ProfileProc(IStructuredSave*,IStructuredLoad*,IProgress*,CProjectAgentImp*);
    static HRESULT SuperelevationProc(IStructuredSave*,IStructuredLoad*,IProgress*,CProjectAgentImp*);
@@ -601,17 +617,14 @@ private:
    static HRESULT DistFactorMethodDataProc2(IStructuredSave* pSave,IStructuredLoad* pLoad,IProgress* pProgress,CProjectAgentImp* pObj);
    static HRESULT UserLoadsDataProc(IStructuredSave* pSave,IStructuredLoad* pLoad,IProgress* pProgress,CProjectAgentImp* pObj);
    static HRESULT LiveLoadsDataProc(IStructuredSave* pSave,IStructuredLoad* pLoad,IProgress* pProgress,CProjectAgentImp* pObj);
-
-   bool IsLogFileOpen();
-   void OpenLogFile();
+   static HRESULT SaveLiveLoad(IStructuredSave* pSave,IProgress* pProgress,CProjectAgentImp* pObj,LPTSTR lpszUnitName,pgsTypes::LiveLoadType llType);
+   static HRESULT LoadLiveLoad(IStructuredLoad* pLoad,IProgress* pProgress,CProjectAgentImp* pObj,LPTSTR lpszUnitName,pgsTypes::LiveLoadType llType);
 
    HRESULT BuildDummyBridge();
    void ValidateStrands(SpanIndexType span,GirderIndexType girder,CGirderData& girder_data,bool fromLibrary);
 
    Float64 GetMaxPjack(SpanIndexType span,GirderIndexType gdr,StrandIndexType nStrands) const;
    Float64 GetMaxPjack(SpanIndexType span,GirderIndexType gdr,StrandIndexType nStrands,const matPsStrand* pStrand) const;
-
-   void UpdateDisplayUnits();
 
    bool ResolveLibraryConflicts(const ConflictList& rList);
    void DealWithGirderLibraryChanges(bool fromLibrary);  // behavior is different if problem is caused by a library change
@@ -627,6 +640,9 @@ private:
    void SpecificationChanged(bool bFireEvent);
    void InitSpecification(const std::string& spec);
 
+   void RatingSpecificationChanged(bool bFireEvent);
+   void InitRatingSpecification(const std::string& spec);
+
    void UseBridgeLibraryEntries();
    void UseGirderLibraryEntries();
    void ReleaseBridgeLibraryEntries();
@@ -639,10 +655,10 @@ private:
    friend pgsLibraryEntryObserver;
 
    friend CProxyIProjectPropertiesEventSink<CProjectAgentImp>;
-   friend CProxyIProjectSettingsEventSink<CProjectAgentImp>;
    friend CProxyIEnvironmentEventSink<CProjectAgentImp>;
    friend CProxyIBridgeDescriptionEventSink<CProjectAgentImp>;
    friend CProxyISpecificationEventSink<CProjectAgentImp>;
+   friend CProxyIRatingSpecificationEventSink<CProjectAgentImp>;
    friend CProxyILibraryConflictEventSink<CProjectAgentImp>;
    friend CProxyILoadModifiersEventSink<CProjectAgentImp>;
 

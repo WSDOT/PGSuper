@@ -24,7 +24,7 @@
 //
 
 #include "stdafx.h"
-#include "pgsuper.h"
+#include "PGSuperDoc.h"
 #include "BridgeDescLongitudinalRebar.h"
 #include "GirderDescDlg.h"
 #include <IFace\Project.h>
@@ -66,7 +66,7 @@ void CGirderDescLongitudinalRebar::DoDataExchange(CDataExchange* pDX)
 
    // longitudinal steel information from grid and store it
    CComPtr<IBroker> pBroker;
-   AfxGetBroker(&pBroker);
+   EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IDisplayUnits,pDisplayUnits);
 
    if (pDX->m_bSaveAndValidate)
@@ -121,7 +121,7 @@ void CGirderDescLongitudinalRebar::RestoreToLibraryDefaults()
 {
    // get shear information from library
    CComPtr<IBroker> pBroker;
-   AfxGetBroker(&pBroker);
+   EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker, ILibrary, pLib );
    const GirderLibraryEntry* pGird = pLib->GetGirderEntry( m_CurGrdName.c_str());
    ASSERT(pGird!=0);

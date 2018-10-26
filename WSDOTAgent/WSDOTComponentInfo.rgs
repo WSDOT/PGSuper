@@ -1,0 +1,25 @@
+HKCR
+{
+	PGSuper.WSDOTComponentInfo.1 = s 'WSDOT Component Information'
+	{
+		CLSID = s '{78D50F7D-4825-4FB0-86CC-CAAF7326B8FB}'
+	}
+	PGSuper.WSDOTComponentInfo = s 'WSDOT Component Information'
+	{
+		CLSID = s '{78D50F7D-4825-4FB0-86CC-CAAF7326B8FB}'
+		CurVer = s 'PGSuper.WSDOTComponentInfo.1'
+	}
+	NoRemove CLSID
+	{
+		ForceRemove {78D50F7D-4825-4FB0-86CC-CAAF7326B8FB} = s 'WSDOT Component Information'
+		{
+			ProgID = s 'PGSuper.WSDOTComponentInfo.1'
+			VersionIndependentProgID = s 'PGSuper.WSDOTComponentInfo'
+			InprocServer32 = s '%MODULE%'
+			{
+				val ThreadingModel = s 'Apartment'
+			}
+			'TypeLib' = s '{3B6BF48B-C530-486E-918F-7705E13D6330}'
+		}
+	}
+}

@@ -66,6 +66,55 @@ HRESULT CSpanReportSpecification::Validate() const
 
    return CBrokerReportSpecification::Validate();
 }
+
+//////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////
+
+CGirderReportSpecification::CGirderReportSpecification(const char* strReportName,IBroker* pBroker,GirderIndexType gdrIdx) :
+CBrokerReportSpecification(strReportName,pBroker)
+{
+   SetGirder(gdrIdx);
+}
+
+CGirderReportSpecification::~CGirderReportSpecification(void)
+{
+}
+
+std::string CGirderReportSpecification::GetReportTitle() const
+{
+   CString msg;
+   msg.Format("%s - Girder Line %s",GetReportName().c_str(),LABEL_GIRDER(GetGirder()));
+   return std::string(msg);
+}
+
+void CGirderReportSpecification::SetGirder(GirderIndexType gdrIdx)
+{
+   m_Girder = gdrIdx;
+}
+
+GirderIndexType CGirderReportSpecification::GetGirder() const
+{
+   return m_Girder;
+}
+
+HRESULT CGirderReportSpecification::Validate() const
+{
+   GET_IFACE2(m_Broker,IBridge,pBridge);
+   GirderIndexType nGirders = 0;
+
+   SpanIndexType nSpans = pBridge->GetSpanCount();
+   for (SpanIndexType spanIdx = 0; spanIdx < nSpans; spanIdx++ )
+   {
+      nGirders = max(nGirders,pBridge->GetGirderCount(spanIdx));
+   }
+
+   if ( nGirders <= m_Girder )
+      return RPT_E_INVALIDGIRDER;
+
+   return CBrokerReportSpecification::Validate();
+}
+
 //////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////
@@ -103,9 +152,24 @@ HRESULT CSpanGirderReportSpecification::Validate() const
       return hr;
 
    GET_IFACE2(m_Broker,IBridge,pBridge);
-   GirderIndexType nGirders = pBridge->GetGirderCount(m_Span);
+   GirderIndexType nGirders = 0;
+
+   if ( m_Span == ALL_SPANS )
+   {
+      SpanIndexType nSpans = pBridge->GetSpanCount();
+      for (SpanIndexType spanIdx = 0; spanIdx < nSpans; spanIdx++ )
+      {
+         nGirders = max(nGirders,pBridge->GetGirderCount(spanIdx));
+      }
+   }
+   else
+   {
+      nGirders = pBridge->GetGirderCount(m_Span);
+   }
+
    if ( nGirders <= m_Girder )
       return RPT_E_INVALIDGIRDER;
 
    return S_OK;
+
 }

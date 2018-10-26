@@ -135,7 +135,7 @@ void CConcurrentShearTable::Build(IBroker* pBroker,rptChapter* pChapter,
       if ( stage == pgsTypes::CastingYard )
          end_size = 0; // don't adjust if CY stage
 
-      std::vector<pgsPointOfInterest> vPoi = pIPoi->GetPointsOfInterest( stage, spanIdx, girder, POI_ALLACTIONS | POI_ALLOUTPUT | POI_CRITSECTSHEAR1 | POI_CRITSECTSHEAR2, POIFIND_OR );
+      std::vector<pgsPointOfInterest> vPoi = pIPoi->GetPointsOfInterest( stage, spanIdx, girder, POI_ALL, POIFIND_OR );
       std::vector<pgsPointOfInterest>::const_iterator i;
       for ( i = vPoi.begin(); i != vPoi.end(); i++ )
       {

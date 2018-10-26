@@ -22,7 +22,7 @@
 
 #include "StdAfx.h"
 #include "EditAlignment.h"
-#include "PGSuper.h"
+#include "PGSuperDoc.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -63,7 +63,7 @@ void txnEditAlignment::Undo()
 void txnEditAlignment::Execute(int i)
 {
    CComPtr<IBroker> pBroker;
-   AfxGetBroker(&pBroker);
+   EAFGetBroker(&pBroker);
 
    GET_IFACE2(pBroker,IRoadwayData,pAlignment);
    GET_IFACE2(pBroker,IEvents, pEvents);
