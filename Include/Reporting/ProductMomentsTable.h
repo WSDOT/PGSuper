@@ -231,7 +231,7 @@ int ConfigureProductLoadTableHeading(rptRcTable* p_table,bool bPierTable,bool bC
       if ( bPedLoading )
       {
          p_table->SetColumnSpan(0,row1col,2);
-         (*p_table)(0,row1col++) << "* Pedestrian";
+         (*p_table)(0,row1col++) << "$ Pedestrian";
          (*p_table)(1,row2col++) << COLHDR("Max", M, unitT );
          (*p_table)(1,row2col++) << COLHDR("Min", M, unitT );
       }

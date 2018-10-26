@@ -3650,7 +3650,7 @@ void CAnalysisAgentImp::ConfigureLoadCombinations(ILBAMModel* pModel)
    CComPtr<ILoadCombination> lc_permit_routine;
    lc_permit_routine.CoCreateInstance(CLSID_LoadCombination);
    lc_permit_routine->put_Name( GetLoadCombinationName(pgsTypes::lltPermitRating_Routine) );
-   lc_permit_routine->put_LoadCombinationType(lctStrength);
+   lc_permit_routine->put_LoadCombinationType(lctFatigue);
    lc_permit_routine->put_LiveLoadFactor(1.0);
    lc_permit_routine->AddLiveLoadModel(lltPermitRoutineRating);
    hr = lc_permit_routine->AddLoadCaseFactor(CComBSTR("LL_IM"), 1.00, 1.00);
@@ -4364,7 +4364,7 @@ bool CAnalysisAgentImp::HasPedestrianLoad(SpanIndexType spanIdx,GirderIndexType 
    //// for design purposes, consider it applied to all girders
    //return HasPedestrianLoad();
 //
-// NOTE: This code below is for distributing the pedestrian load the say way the sidewalk
+// NOTE: This code below is for distributing the pedestrian load the same way the sidewalk
 //       and traffic barrier dead loads are distributed
 //
    bool bHasPedLoad = HasPedestrianLoad();
@@ -10019,13 +10019,10 @@ void CAnalysisAgentImp::GetCreepDeflection(const pgsPointOfInterest& poi, CreepP
    GirderIndexType gdr = poi.GetGirder();
 
    GDRCONFIG dummy_config;
-   
-   CamberModelData model;
-   BuildCamberModel(span,gdr,false,dummy_config,&model);
 
-   CamberModelData model1,model2;
-   BuildTempCamberModel(span,gdr,false,dummy_config,&model1,&model2);
-
+   CamberModelData model  = GetPrestressDeflectionModel(span,gdr,m_PrestressDeflectionModels);
+   CamberModelData model1 = GetPrestressDeflectionModel(span,gdr,m_InitialTempPrestressDeflectionModels);
+   CamberModelData model2 = GetPrestressDeflectionModel(span,gdr,m_ReleaseTempPrestressDeflectionModels);
    GetCreepDeflection(poi,false,dummy_config,model,model1,model2, creepPeriod, constructionRate, pDy, pRz);
 }
 

@@ -182,102 +182,84 @@ void pgsGirderModelFactory::CreateGirderModel(IBroker* pBroker,SpanIndexType spa
       if ( !bIncludeCantilevers && ::IsLT(start,leftSupportLoc) )
       {
          // this load segment begins before the left support and we are ignoring loads out there
-
+  
          // compute load intensity at the left support
-         Float64 w = ::LinInterp(leftSupportLoc,wStart,wEnd,end-start);
-
-         // apply load from left support to end
-         Float64 x;
-         FindMember(*ppModel,(leftSupportLoc+end)/2,&mbrID,&x);
-
-         CComPtr<IFem2dDistributedLoad> distLoad;
-         distributedLoads->Create(loadID++,mbrID,loadDirFy,0.0,-1.0,w,wEnd,lotMember,&distLoad);
+         wStart = ::LinInterp(leftSupportLoc,wStart,wEnd,end-start);
+         start = leftSupportLoc;
       }
       else if ( !bIncludeCantilevers && ::IsLT(rightSupportLoc,end) )
       {
          // this load segment ends after the right support and we are ignoring loads out there
 
          // compute load intensity at the right support
-         Float64 w = ::LinInterp(rightSupportLoc-start,wStart,wEnd,end-start);
-
-         // apply load from start of segment to right support
-         Float64 x;
-         FindMember(*ppModel,(start+rightSupportLoc)/2,&mbrID,&x);
-
-         CComPtr<IFem2dDistributedLoad> distLoad;
-         distributedLoads->Create(loadID++,mbrID,loadDirFy,0.0,-1.0,wStart,w,lotMember,&distLoad);
+         wEnd = ::LinInterp(rightSupportLoc-start,wStart,wEnd,end-start);
+         end = rightSupportLoc;
       }
-      else if ( bIncludeCantilevers && ::IsLT(start,leftSupportLoc) && ::IsLT(rightSupportLoc,end) )
+
+      // apply the loading
+      MemberIDType mbrIDStart; // member ID at the start of the load
+      MemberIDType mbrIDEnd;   // member ID at the end of the load
+      Float64 xStart; // distance from start of member mbrIDStart to the start of the load
+      Float64 xEnd;   // distance from start of member mbrIDEnd to end of the load
+      FindMember(*ppModel,start,&mbrIDStart,&xStart);
+      FindMember(*ppModel,end,  &mbrIDEnd,  &xEnd);
+
+      if ( mbrIDStart == mbrIDEnd )
       {
-         // this load segment goes over both the left and right supports... it needs to
-         // be applied as 3 loads
-
-         // Compute load intensity at supports
-         Float64 wLeft  = ::LinInterp(leftSupportLoc, wStart,wEnd,end-start);
-         Float64 wRight = ::LinInterp(rightSupportLoc,wStart,wEnd,end-start);
-
-         // apply load from start of load segment to left support
-         Float64 x;
-         FindMember(*ppModel,(start+leftSupportLoc)/2,&mbrID,&x);
-
+         // load is contained on a single member
          CComPtr<IFem2dDistributedLoad> distLoad;
-         distributedLoads->Create(loadID++,mbrID,loadDirFy,0.0,-1.0,wStart,wLeft,lotMember,&distLoad);
-
-         // apply load between supports
-         FindMember(*ppModel,(leftSupportLoc+rightSupportLoc)/2,&mbrID,&x);
-         distLoad.Release();
-         distributedLoads->Create(loadID++,mbrID,loadDirFy,0.0,-1.0,wLeft,wRight,lotMember,&distLoad);
-
-         // apply load from right support to end of load segment
-         FindMember(*ppModel,(rightSupportLoc+end)/2,&mbrID,&x);
-         distLoad.Release();
-         distributedLoads->Create(loadID++,mbrID,loadDirFy,0.0,-1.0,wRight,wEnd,lotMember,&distLoad);
-      }
-      else if ( bIncludeCantilevers && ::IsLT(start,leftSupportLoc) && ::IsLT(leftSupportLoc,end) )
-      {
-         // this loading segment straddles the the left support location ... it needs to
-         // be applied as 2 loads
-         Float64 x;
-         FindMember(*ppModel,(start+leftSupportLoc)/2,&mbrID,&x);
-         
-         // compute load intensity at left support
-         Float64 w = ::LinInterp(leftSupportLoc,wStart,wEnd,end-start);
-
-         // apply load from start to left support
-         CComPtr<IFem2dDistributedLoad> distLoad;
-         distributedLoads->Create(loadID++,mbrID,loadDirFy,0.0,-1.0,wStart,w,lotMember,&distLoad);
-
-         // apply load from left support to end
-         distLoad.Release();
-         FindMember(*ppModel,(leftSupportLoc+end)/2,&mbrID,&x);
-         distributedLoads->Create(loadID++,mbrID,loadDirFy,0.0,-1.0,w,wEnd,lotMember,&distLoad);
-      }
-      else if ( bIncludeCantilevers && ::IsLT(start,rightSupportLoc) && ::IsLT(rightSupportLoc,end) )
-      {
-         // this loading segment straddles the right support... it needs to
-         // be applied as 2 loads
-         Float64 x;
-         FindMember(*ppModel,(start+rightSupportLoc)/2,&mbrID,&x);
-         
-         // compute load intensity at right support
-         Float64 w = ::LinInterp(rightSupportLoc,wStart,wEnd,end-start);
-
-         // apply load from start to right support
-         CComPtr<IFem2dDistributedLoad> distLoad;
-         distributedLoads->Create(loadID++,mbrID,loadDirFy,0.0,-1.0,wStart,w,lotMember,&distLoad);
-
-         // apply load from right support to end
-         distLoad.Release();
-         FindMember(*ppModel,(rightSupportLoc+end)/2,&mbrID,&x);
-         distributedLoads->Create(loadID++,mbrID,loadDirFy,0.0,-1.0,w,wEnd,lotMember,&distLoad);
+         distributedLoads->Create(loadID++,mbrIDStart,loadDirFy,xStart,xEnd,wStart,wEnd,lotMember,&distLoad);
       }
       else
       {
-         // apply the loading
-         Float64 x;
-         FindMember(*ppModel,(start+end)/2,&mbrID,&x);
-         CComPtr<IFem2dDistributedLoad> distLoad;
-         distributedLoads->Create(loadID++,mbrID,loadDirFy,0.0,-1.0,wStart,wEnd,lotMember,&distLoad);
+         // load straddles two or more members
+         for ( MemberIDType mbrID = mbrIDStart; mbrID <= mbrIDEnd; mbrID++ )
+         {
+            Float64 w1,w2; // start and end load intensity on this member
+            Float64 x1,x2; // start and end load location from the start of this member
+
+            Float64 Lmbr;
+            CComPtr<IFem2dMember> mbr;
+            members->Find(mbrID,&mbr);
+            mbr->get_Length(&Lmbr); 
+
+            JointIDType jntIDStart,jntIDEnd;
+            mbr->get_StartJoint(&jntIDStart);
+            mbr->get_EndJoint(&jntIDEnd);
+
+            CComPtr<IFem2dJoint> jntStart, jntEnd;
+            joints->Find(jntIDStart,&jntStart);
+            joints->Find(jntIDEnd,  &jntEnd);
+
+            Float64 xMbrStart, xMbrEnd;
+            jntStart->get_X(&xMbrStart);
+            jntEnd->get_X(&xMbrEnd);
+
+            if ( mbrID == mbrIDStart )
+            {
+               w1 = wStart;
+               x1 = xStart;
+            }
+            else
+            {
+               w1 = ::LinInterp(xMbrStart,wStart,wEnd,end-start);
+               x1 = 0; // start of member
+            }
+
+            if (mbrID == mbrIDEnd )
+            {
+               w2 = wEnd;
+               x2 = xEnd;
+            }
+            else
+            {
+               w2 = ::LinInterp(xMbrEnd,wStart,wEnd,end-start);
+               x2 = Lmbr; // end of member
+            }
+
+            CComPtr<IFem2dDistributedLoad> distLoad;
+            distributedLoads->Create(loadID++,mbrID,loadDirFy,x1,x2,w1,w2,lotMember,&distLoad);
+         }
       }
    }
 

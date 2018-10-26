@@ -28,6 +28,7 @@
 #include <EAF\EAFDisplayUnits.h>
 #include <IFace\Bridge.h>
 #include <IFace\RatingSpecification.h>
+#include <IFace\DistributionFactors.h>
 
 #include <PgsExt\RatingArtifact.h>
 #include <PgsExt\CapacityToDemand.h>
@@ -90,6 +91,11 @@ void CLoadRatingDetailsChapterBuilder::ReportRatingDetails(rptChapter* pChapter,
    if ( !pRatingSpec->IsRatingEnabled(ratingType) )
       return;
 
+   pgsTypes::LiveLoadType llType = ::GetLiveLoadType(ratingType);
+   std::string strName = pProductLoads->GetLiveLoadName(llType,0);
+   if ( strName == "No Live Load Defined" )
+      return;
+
    bool bNegMoments = pBridge->ProcessNegativeMoments(ALL_SPANS);
 
    CComBSTR bstrLiveLoadType = ::GetLiveLoadTypeName(ratingType);
@@ -98,7 +104,6 @@ void CLoadRatingDetailsChapterBuilder::ReportRatingDetails(rptChapter* pChapter,
    pPara->SetName(OLE2A(bstrLiveLoadType));
    *pPara << pPara->GetName() << rptNewLine;
 
-   pgsTypes::LiveLoadType llType = ::GetLiveLoadType(ratingType);
    VehicleIndexType nVehicles = pProductLoads->GetVehicleCount(llType);
    VehicleIndexType firstVehicleIdx = (ratingType == pgsTypes::lrDesign_Inventory || ratingType == pgsTypes::lrDesign_Operating ? INVALID_INDEX : 0);
    VehicleIndexType lastVehicleIdx  = (ratingType == pgsTypes::lrDesign_Inventory || ratingType == pgsTypes::lrDesign_Operating ? 0 : nVehicles);
@@ -155,14 +160,19 @@ void CLoadRatingDetailsChapterBuilder::MomentRatingDetails(rptChapter* pChapter,
 
    *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + "MomentRatingEquation.png" ) << rptNewLine;
 
-   rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(13,"");
-   
+   rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(14,"");
+
    table->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
    table->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
 
    *pPara << table << rptNewLine;
 
+   pPara = new rptParagraph(pgsReportStyleHolder::GetFootnoteStyle());
+   *pChapter << pPara;
+   *pPara << LIVELOAD_PER_GIRDER << rptNewLine;
+
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,ILiveLoadDistributionFactors,pDistFact);
 
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(),   false );
    location.IncludeSpanAndGirder(true);
@@ -190,6 +200,7 @@ void CLoadRatingDetailsChapterBuilder::MomentRatingDetails(rptChapter* pChapter,
    (*table)(0,col++) << Sub2(symbol(gamma),"DW");
    (*table)(0,col++) << COLHDR(Sub2("M","DW"), rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
    (*table)(0,col++) << Sub2(symbol(gamma),"LL");
+   (*table)(0,col++) << "gM";
    (*table)(0,col++) << COLHDR(Sub2("M","LL+IM"), rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
    (*table)(0,col++) << "RF";
 
@@ -207,6 +218,11 @@ void CLoadRatingDetailsChapterBuilder::MomentRatingDetails(rptChapter* pChapter,
       GirderIndexType gdrIdx = poi.GetGirder();
       Float64 end_size = pBridge->GetGirderStartConnectionLength(spanIdx,gdrIdx);
 
+      double pM, nM, V;
+      pgsTypes::LoadRatingType ratingType = artifact.GetLoadRatingType();
+      pgsTypes::LimitState limit_state = (ratingType == pgsTypes::lrPermit_Special ? pgsTypes::FatigueI : pgsTypes::StrengthI);
+      pDistFact->GetDistributionFactors(poi,limit_state,&pM,&nM,&V);
+
       (*table)(row,col++) << location.SetValue( pgsTypes::BridgeSite3, poi, end_size );
       (*table)(row,col++) << scalar.SetValue(artifact.GetConditionFactor());
       (*table)(row,col++) << scalar.SetValue(artifact.GetSystemFactor());
@@ -218,6 +234,7 @@ void CLoadRatingDetailsChapterBuilder::MomentRatingDetails(rptChapter* pChapter,
       (*table)(row,col++) << scalar.SetValue(artifact.GetWearingSurfaceFactor());
       (*table)(row,col++) << moment.SetValue(artifact.GetWearingSurfaceMoment());
       (*table)(row,col++) << scalar.SetValue(artifact.GetLiveLoadFactor());
+      (*table)(row,col++) << scalar.SetValue(bPositiveMoment ? pM : nM);
       (*table)(row,col++) << moment.SetValue(artifact.GetLiveLoadMoment());
 
       Float64 RF = artifact.GetRatingFactor();
@@ -238,14 +255,18 @@ void CLoadRatingDetailsChapterBuilder::ShearRatingDetails(rptChapter* pChapter,I
 
    *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + "ShearRatingEquation.png" ) << rptNewLine;
 
-   rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(12,"");
+   rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(13,"");
    
    table->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
    table->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
 
    *pPara << table << rptNewLine;
+   pPara = new rptParagraph(pgsReportStyleHolder::GetFootnoteStyle());
+   *pChapter << pPara;
+   *pPara << LIVELOAD_PER_GIRDER << rptNewLine;
 
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,ILiveLoadDistributionFactors,pDistFact);
 
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(),   false );
    location.IncludeSpanAndGirder(true);
@@ -273,6 +294,7 @@ void CLoadRatingDetailsChapterBuilder::ShearRatingDetails(rptChapter* pChapter,I
    (*table)(0,col++) << Sub2(symbol(gamma),"DW");
    (*table)(0,col++) << COLHDR(Sub2("V","DW"), rptForceUnitTag, pDisplayUnits->GetShearUnit() );
    (*table)(0,col++) << Sub2(symbol(gamma),"LL");
+   (*table)(0,col++) << "gV";
    (*table)(0,col++) << COLHDR(Sub2("V","LL+IM"), rptForceUnitTag, pDisplayUnits->GetShearUnit() );
    (*table)(0,col++) << "RF";
 
@@ -290,6 +312,11 @@ void CLoadRatingDetailsChapterBuilder::ShearRatingDetails(rptChapter* pChapter,I
       GirderIndexType gdrIdx = poi.GetGirder();
       Float64 end_size = pBridge->GetGirderStartConnectionLength(spanIdx,gdrIdx);
 
+      double pM, nM, V;
+      pgsTypes::LoadRatingType ratingType = artifact.GetLoadRatingType();
+      pgsTypes::LimitState limit_state = (ratingType == pgsTypes::lrPermit_Special ? pgsTypes::FatigueI : pgsTypes::StrengthI);
+      pDistFact->GetDistributionFactors(poi,limit_state,&pM,&nM,&V);
+
       (*table)(row,col++) << location.SetValue( pgsTypes::BridgeSite3, poi, end_size );
       (*table)(row,col++) << scalar.SetValue(artifact.GetConditionFactor());
       (*table)(row,col++) << scalar.SetValue(artifact.GetSystemFactor());
@@ -300,6 +327,7 @@ void CLoadRatingDetailsChapterBuilder::ShearRatingDetails(rptChapter* pChapter,I
       (*table)(row,col++) << scalar.SetValue(artifact.GetWearingSurfaceFactor());
       (*table)(row,col++) << shear.SetValue(artifact.GetWearingSurfaceShear());
       (*table)(row,col++) << scalar.SetValue(artifact.GetLiveLoadFactor());
+      (*table)(row,col++) << scalar.SetValue(V);
       (*table)(row,col++) << shear.SetValue(artifact.GetLiveLoadShear());
 
       Float64 RF = artifact.GetRatingFactor();
@@ -320,14 +348,18 @@ void CLoadRatingDetailsChapterBuilder::StressRatingDetails(rptChapter* pChapter,
 
    *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + "StressRatingEquation.png" ) << rptNewLine;
 
-   rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(10,"");
+   rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(11,"");
    
    table->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
    table->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
 
    *pPara << table << rptNewLine;
+   pPara = new rptParagraph(pgsReportStyleHolder::GetFootnoteStyle());
+   *pChapter << pPara;
+   *pPara << LIVELOAD_PER_GIRDER << rptNewLine;
 
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,ILiveLoadDistributionFactors,pDistFact);
 
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(),   false );
    location.IncludeSpanAndGirder(true);
@@ -353,6 +385,7 @@ void CLoadRatingDetailsChapterBuilder::StressRatingDetails(rptChapter* pChapter,
    (*table)(0,col++) << Sub2(symbol(gamma),"DW");
    (*table)(0,col++) << COLHDR(Sub2("f","DW"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    (*table)(0,col++) << Sub2(symbol(gamma),"LL");
+   (*table)(0,col++) << "gM";
    (*table)(0,col++) << COLHDR(Sub2("f","LL+IM"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    (*table)(0,col++) << "RF";
 
@@ -370,6 +403,11 @@ void CLoadRatingDetailsChapterBuilder::StressRatingDetails(rptChapter* pChapter,
       GirderIndexType gdrIdx = poi.GetGirder();
       Float64 end_size = pBridge->GetGirderStartConnectionLength(spanIdx,gdrIdx);
 
+      double pM, nM, V;
+      pgsTypes::LoadRatingType ratingType = artifact.GetLoadRatingType();
+      pgsTypes::LimitState limit_state = (ratingType == pgsTypes::lrPermit_Special ? pgsTypes::FatigueI : pgsTypes::StrengthI);
+      pDistFact->GetDistributionFactors(poi,limit_state,&pM,&nM,&V);
+
       (*table)(row,col++) << location.SetValue( pgsTypes::BridgeSite3,  poi, end_size );
       (*table)(row,col++) << stress.SetValue(artifact.GetAllowableStress());
       (*table)(row,col++) << scalar.SetValue(artifact.GetDeadLoadFactor());
@@ -378,6 +416,7 @@ void CLoadRatingDetailsChapterBuilder::StressRatingDetails(rptChapter* pChapter,
       (*table)(row,col++) << scalar.SetValue(artifact.GetWearingSurfaceFactor());
       (*table)(row,col++) << stress.SetValue(artifact.GetWearingSurfaceStress());
       (*table)(row,col++) << scalar.SetValue(artifact.GetLiveLoadFactor());
+      (*table)(row,col++) << scalar.SetValue(pM);
       (*table)(row,col++) << stress.SetValue(artifact.GetLiveLoadStress());
 
       Float64 RF = artifact.GetRatingFactor();
@@ -401,7 +440,7 @@ void CLoadRatingDetailsChapterBuilder::ReinforcementYieldingDetails(rptChapter* 
 
    *pPara << rptRcImage(pgsReportStyleHolder::GetImagePath() + "ReinforcementYieldingEquation.png" ) << rptNewLine;
 
-   rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(16,"");
+   rptRcTable* table = pgsReportStyleHolder::CreateDefaultTable(17,"");
    
    table->SetColumnStyle(0,pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_LEFT));
    table->SetStripeRowColumnStyle(0,pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
@@ -409,6 +448,7 @@ void CLoadRatingDetailsChapterBuilder::ReinforcementYieldingDetails(rptChapter* 
    //*pPara << table << rptNewLine; // don't add table here... see below
 
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,ILiveLoadDistributionFactors,pDistFact);
 
    INIT_UV_PROTOTYPE( rptPointOfInterest,  location, pDisplayUnits->GetSpanLengthUnit(),      false );
    location.IncludeSpanAndGirder(true);
@@ -433,6 +473,7 @@ void CLoadRatingDetailsChapterBuilder::ReinforcementYieldingDetails(rptChapter* 
    (*table)(0,col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
    (*table)(0,col++) << COLHDR(Sub2("M","DC"), rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
    (*table)(0,col++) << COLHDR(Sub2("M","DW"), rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
+   (*table)(0,col++) << "gM";
    (*table)(0,col++) << COLHDR(Sub2("M","LL+IM"), rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
    (*table)(0,col++) << COLHDR(Sub2("M","cr"), rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
    (*table)(0,col++) << COLHDR(Sub2("M","bcr"), rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
@@ -455,7 +496,12 @@ void CLoadRatingDetailsChapterBuilder::ReinforcementYieldingDetails(rptChapter* 
    *pPara << Sub2(symbol(gamma),"DC") << " = " << scalar.SetValue(artifacts[0].second.GetDeadLoadFactor()) << rptNewLine;
    *pPara << Sub2(symbol(gamma),"DW") << " = " << scalar.SetValue(artifacts[0].second.GetWearingSurfaceFactor()) << rptNewLine;
    *pPara << Sub2(symbol(gamma),"LL") << " = " << scalar.SetValue(artifacts[0].second.GetLiveLoadFactor()) << rptNewLine;
+
+   // Add table here
    *pPara << table << rptNewLine;
+   pPara = new rptParagraph(pgsReportStyleHolder::GetFootnoteStyle());
+   *pChapter << pPara;
+   *pPara << LIVELOAD_PER_GIRDER << rptNewLine;
 
    RowIndexType row = 1;
    pgsRatingArtifact::YieldStressRatios::iterator iter;
@@ -469,9 +515,15 @@ void CLoadRatingDetailsChapterBuilder::ReinforcementYieldingDetails(rptChapter* 
       GirderIndexType gdrIdx = poi.GetGirder();
       Float64 end_size = pBridge->GetGirderStartConnectionLength(spanIdx,gdrIdx);
 
+      double pM, nM, V;
+      pgsTypes::LoadRatingType ratingType = artifact.GetLoadRatingType();
+      pgsTypes::LimitState limit_state = (ratingType == pgsTypes::lrPermit_Special ? pgsTypes::FatigueI : pgsTypes::StrengthI);
+      pDistFact->GetDistributionFactors(poi,limit_state,&pM,&nM,&V);
+
       (*table)(row,col++) << location.SetValue( pgsTypes::BridgeSite3,  poi, end_size );
       (*table)(row,col++) << moment.SetValue(artifact.GetDeadLoadMoment());
       (*table)(row,col++) << moment.SetValue(artifact.GetWearingSurfaceMoment());
+      (*table)(row,col++) << scalar.SetValue(bPositiveMoment ? pM : nM);
       (*table)(row,col++) << moment.SetValue(artifact.GetLiveLoadMoment());
       (*table)(row,col++) << moment.SetValue(artifact.GetCrackingMoment());
       (*table)(row,col++) << moment.SetValue(artifact.GetExcessMoment());

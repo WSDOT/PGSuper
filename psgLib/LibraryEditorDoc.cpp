@@ -436,3 +436,16 @@ void CLibraryEditorDoc::HandleSaveDocumentError( HRESULT hr, LPCTSTR lpszPathNam
 
    AfxMessageBox( msg1 );
 }
+
+
+BOOL CLibraryEditorDoc::GetStatusBarMessageString(UINT nID,CString& rMessage) const
+{
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+   return __super::GetStatusBarMessageString(nID,rMessage);
+}
+
+BOOL CLibraryEditorDoc::GetToolTipMessageString(UINT nID, CString& rMessage) const
+{
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+   return __super::GetToolTipMessageString(nID,rMessage);
+}

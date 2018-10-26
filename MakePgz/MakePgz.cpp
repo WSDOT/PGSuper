@@ -66,6 +66,17 @@ int _tmain(int argc, _TCHAR* argv[])
          }
 
          std::basic_string<wchar_t>::size_type loc = strMD5Deep.find(_T("makepgz.exe"));
+         if (loc == std::basic_string<wchar_t>::npos)
+         {
+            // alternate command is to drop the .exe
+            loc = strMD5Deep.find(_T("makepgz"));
+
+            if (loc == std::basic_string<wchar_t>::npos)
+            {
+               _tprintf(_T("FATAL ERROR - Could not parse command line to make MD5"));
+            }
+         }
+
          strMD5Deep.replace(strMD5Deep.begin()+loc,strMD5Deep.end(),_T("md5deep.exe"));
 
          wchar_t arg1[MAX_PATH], arg2[MAX_PATH];
@@ -74,7 +85,7 @@ int _tmain(int argc, _TCHAR* argv[])
          int result = _wspawnl(_P_WAIT,strMD5Deep.c_str(),_T("-q"),arg1,_T(">"),arg2,NULL);
 
          wchar_t cmd[MAX_PATH];
-         _stprintf(cmd, _T("%s -q %s > %s.md5"),strMD5Deep.c_str(),argv[1],argv[1]);
+         _stprintf(cmd, _T("\"%s\" -q %s > %s.md5"),strMD5Deep.c_str(),argv[1],argv[1]); 
 
          _tprintf(_T("  Executing command: \"%s\"\n"), cmd);
          result = _wsystem(cmd);

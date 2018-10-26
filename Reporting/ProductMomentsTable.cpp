@@ -198,7 +198,7 @@ ColumnIndexType GetProductLoadTableColumnCount(IBroker* pBroker,SpanIndexType sp
 
    *pStartSpan = (span == ALL_SPANS ? 0 : span);
    *pNSpans    = (span == ALL_SPANS ? pBridge->GetSpanCount() : (*pStartSpan)+1 );
-   *pbPedLoading = pLiveLoads->IsLiveLoadDefined(pgsTypes::lltPedestrian);
+   *pbPedLoading = pLoads->HasPedestrianLoad(*pStartSpan,gdrIdx);
    *pbSidewalk   = pLoads->HasSidewalkLoad(*pStartSpan,gdrIdx);
    *pbShearKey   = pLoads->HasShearKeyLoad(*pStartSpan,gdrIdx);
    *pbConstruction = !IsZero(pUserLoads->GetConstructionLoad());

@@ -23,6 +23,9 @@
 #ifndef INCLUDED_TEXASIBNSCHAPTERBUILDER_H_
 #define INCLUDED_TEXASIBNSCHAPTERBUILDER_H_
 
+#include <ReportManager\ReportManager.h>
+#include <Reporting\PGSuperChapterBuilder.h>
+
 interface IEAFDisplayUnits;
 
 /*****************************************************************************

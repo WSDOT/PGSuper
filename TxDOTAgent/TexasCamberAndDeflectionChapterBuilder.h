@@ -25,6 +25,9 @@
 
 interface IEAFDisplayUnits;
 
+#include <ReportManager\ReportManager.h>
+#include <Reporting\PGSuperChapterBuilder.h>
+
 /*****************************************************************************
 CLASS 
    CTexasCamberAndDeflectionChapterBuilder

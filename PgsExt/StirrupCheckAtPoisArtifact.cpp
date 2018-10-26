@@ -549,7 +549,8 @@ m_VsAvg(0),
 m_VsLimit(0),
 m_Dv(0),
 m_I(0),
-m_Q(0)
+m_Q(0),
+m_UltimateHorizontalShear(0)
 {
 }
 

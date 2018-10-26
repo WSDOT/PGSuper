@@ -78,6 +78,9 @@ interface IRoadway : IUnknown
    virtual void GetCurve(CollectionIndexType idx,IHorzCurve** ppCurve) = 0;
    virtual CollectionIndexType GetVertCurveCount() = 0;
    virtual void GetVertCurve(CollectionIndexType idx,IVertCurve** ppCurve) = 0;
+
+   virtual void GetCrownPoint(Float64 station,IDirection* dir,IPoint2d** ppPoint) = 0;
+   virtual void GetCrownPoint(Float64 station,IDirection* dir,IPoint3d** ppPoint) = 0;
 };
 
 #endif // INCLUDED_IFACE_ALIGNMENT_H_

@@ -62,6 +62,8 @@ public:
    virtual HRESULT OpenDocumentRootNode(IStructuredSave* pStrSave);
 
    virtual CString GetRootNodeName();
+   virtual BOOL GetStatusBarMessageString(UINT nID,CString& rMessage) const;
+   virtual BOOL GetToolTipMessageString(UINT nID, CString& rMessage) const;
 
    void OnImport(); // import library entries (command handler)
 

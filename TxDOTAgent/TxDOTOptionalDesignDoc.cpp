@@ -28,7 +28,6 @@
 
 #include "TxDOTOptionalDesignView.h"
 
-#include <initguid.h>
 #include "TxDOTOptionalDesignDocProxyAgent.h"
 
 #include "PGSuperCatCom.h"
@@ -127,7 +126,8 @@ END_MESSAGE_MAP()
 CTxDOTOptionalDesignDoc::CTxDOTOptionalDesignDoc():
 m_ChangeStatus(ITxDataObserver::ctTemplateFile), // assume that all data must be rebuilt
 m_VirginBroker(true),
-m_InExportMode(false)
+m_InExportMode(false),
+m_GirderModelEditorSettings(DEF_GV)
 {
 	EnableAutomation();
 	AfxOleLockApp();
@@ -1364,4 +1364,49 @@ void CTxDOTOptionalDesignDoc::VerifyPgsuperTemplateData(CBridgeDescription& brid
       throw exc;
    }
 
+}
+
+BOOL CTxDOTOptionalDesignDoc::GetStatusBarMessageString(UINT nID,CString& rMessage) const
+{
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+   return __super::GetStatusBarMessageString(nID,rMessage);
+}
+
+BOOL CTxDOTOptionalDesignDoc::GetToolTipMessageString(UINT nID, CString& rMessage) const
+{
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+   return __super::GetToolTipMessageString(nID,rMessage);
+}
+
+UINT CTxDOTOptionalDesignDoc::GetGirderEditorSettings() const
+{
+   return m_GirderModelEditorSettings;
+}
+
+void CTxDOTOptionalDesignDoc::SetGirderEditorSettings(UINT settings)
+{
+   m_GirderModelEditorSettings = settings;
+}
+
+void CTxDOTOptionalDesignDoc::EditGirderViewSettings(int nPage)
+{
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
+   UINT settings = GetGirderEditorSettings();
+
+/*
+	CGirderEditorSettingsSheet dlg(IDS_GM_VIEW_SETTINGS);
+   dlg.SetSettings(settings);
+   dlg.SetActivePage(nPage);
+
+   int st = dlg.DoModal();
+   if (st==IDOK)
+   {
+      settings = dlg.GetSettings();
+      SetGirderEditorSettings(settings);
+
+      // tell the world we've changed settings
+      UpdateAllViews( 0, HINT_GIRDERVIEWSETTINGSCHANGED, 0 );
+   }
+*/
 }

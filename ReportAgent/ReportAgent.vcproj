@@ -158,7 +158,7 @@
 				AdditionalOptions="/Zm400 "
 				Optimization="0"
 				AdditionalIncludeDirectories="..\Include;..\Include\IFace;\ARP\WBFL\Include;&quot;\ARP\WBFL\Include\$(ConfigurationName)&quot;"
-				PreprocessorDefinitions="_USRDLL;_ATL_NO_UUIDOF;IGNORE_2007_CHANGES;_DEBUG;WIN32;_WINDOWS;ENABLE_LOGGING;_HAS_ITERATOR_DEBUGGING=0;_SECURE_SCL=0"
+				PreprocessorDefinitions="_USRDLL;_ATL_NO_UUIDOF;IGNORE_2007_CHANGES;_DEBUG;WIN32;_WINDOWS;ENABLE_LOGGING;x_HAS_ITERATOR_DEBUGGING=0;x_SECURE_SCL=0"
 				MinimalRebuild="true"
 				RuntimeLibrary="3"
 				RuntimeTypeInfo="true"

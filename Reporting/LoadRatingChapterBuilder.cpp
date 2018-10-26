@@ -92,16 +92,22 @@ rptChapter* CLoadRatingChapterBuilder::Build(CReportSpecification* pRptSpec,Uint
 
       if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) )
       {
-         (*pPara) << CRatingSummaryTable().BuildByVehicle(pBroker,gdrLineIdx, pgsTypes::lrLegal_Routine) << rptNewLine;
-         rptRcTable* pTable = CRatingSummaryTable().BuildLoadPosting(pBroker,gdrLineIdx, pgsTypes::lrLegal_Routine);
+         rptRcTable* pTable = CRatingSummaryTable().BuildByVehicle(pBroker,gdrLineIdx, pgsTypes::lrLegal_Routine);
+         if ( pTable )
+            (*pPara) << pTable << rptNewLine;
+
+         pTable = CRatingSummaryTable().BuildLoadPosting(pBroker,gdrLineIdx, pgsTypes::lrLegal_Routine);
          if ( pTable )
             (*pPara) << pTable << rptNewLine;
       }
 
       if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
       {
-         (*pPara) << CRatingSummaryTable().BuildByVehicle(pBroker,gdrLineIdx, pgsTypes::lrLegal_Special) << rptNewLine;
-         rptRcTable* pTable = CRatingSummaryTable().BuildLoadPosting(pBroker,gdrLineIdx, pgsTypes::lrLegal_Special);
+         rptRcTable* pTable = CRatingSummaryTable().BuildByVehicle(pBroker,gdrLineIdx, pgsTypes::lrLegal_Special);
+         if ( pTable )
+            (*pPara) << pTable << rptNewLine;
+
+         pTable = CRatingSummaryTable().BuildLoadPosting(pBroker,gdrLineIdx, pgsTypes::lrLegal_Special);
          if ( pTable )
             (*pPara) << pTable << rptNewLine;
       }
@@ -119,12 +125,16 @@ rptChapter* CLoadRatingChapterBuilder::Build(CReportSpecification* pRptSpec,Uint
 
       if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine) )
       {
-         (*pPara) << CRatingSummaryTable().BuildByVehicle(pBroker,gdrLineIdx, pgsTypes::lrPermit_Routine) << rptNewLine;
+         rptRcTable* pTable = CRatingSummaryTable().BuildByVehicle(pBroker,gdrLineIdx, pgsTypes::lrPermit_Routine);
+         if ( pTable )
+            (*pPara) << pTable << rptNewLine;
       }
 
       if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Special) )
       {
-         (*pPara) << CRatingSummaryTable().BuildByVehicle(pBroker,gdrLineIdx, pgsTypes::lrPermit_Special) << rptNewLine;
+         rptRcTable* pTable = CRatingSummaryTable().BuildByVehicle(pBroker,gdrLineIdx, pgsTypes::lrPermit_Special);
+         if ( pTable )
+            (*pPara) << pTable << rptNewLine;
       }
    }
 

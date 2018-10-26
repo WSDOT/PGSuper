@@ -106,6 +106,9 @@ rptChapter* CBridgeAnalysisChapterBuilder::Build(CReportSpecification* pRptSpec,
    bool bDesign = pBridgeAnalysisRptSpec->ReportDesignResults();
    bool bRating = pBridgeAnalysisRptSpec->ReportRatingResults();
 
+   GET_IFACE2(pBroker,IProductLoads,pProductLoads);
+   bool bPedestrian = pProductLoads->HasPedestrianLoad();
+
    bool bIndicateControllingLoad = true;
 
    // Product Moments
@@ -116,6 +119,10 @@ rptChapter* CBridgeAnalysisChapterBuilder::Build(CReportSpecification* pRptSpec,
    p = new rptParagraph;
    *pChapter << p;
    *p << CProductMomentsTable().Build(pBroker,span,girder,m_AnalysisType,bDesign,bRating,bIndicateControllingLoad,pDisplayUnits) << rptNewLine;
+
+   if ( bPedestrian )
+      *p << "$ Pedestrian values are per girder" << rptNewLine;
+ 
    *p << LIVELOAD_PER_LANE << rptNewLine;
    LiveLoadTableFooter(pBroker,p,girder,bDesign,bRating);
     
@@ -131,6 +138,10 @@ rptChapter* CBridgeAnalysisChapterBuilder::Build(CReportSpecification* pRptSpec,
    p = new rptParagraph;
    *pChapter << p;
    *p << CProductShearTable().Build(pBroker,span,girder,m_AnalysisType,bDesign,bRating,bIndicateControllingLoad,pDisplayUnits) << rptNewLine;
+
+   if ( bPedestrian )
+      *p << "$ Pedestrian values are per girder" << rptNewLine;
+
    *p << LIVELOAD_PER_LANE << rptNewLine;
    *p << rptNewLine;
    LiveLoadTableFooter(pBroker,p,girder,bDesign,bRating);
@@ -144,6 +155,10 @@ rptChapter* CBridgeAnalysisChapterBuilder::Build(CReportSpecification* pRptSpec,
    p = new rptParagraph;
    *pChapter << p;
    *p << CProductReactionTable().Build(pBroker,span,girder,m_AnalysisType,true,false,bDesign,bRating,bIndicateControllingLoad,pDisplayUnits) << rptNewLine;
+
+   if ( bPedestrian )
+      *p << "$ Pedestrian values are per girder" << rptNewLine;
+
    *p << LIVELOAD_PER_LANE << rptNewLine;
    *p << rptNewLine;
    LiveLoadTableFooter(pBroker,p,girder,bDesign,bRating);
@@ -157,6 +172,10 @@ rptChapter* CBridgeAnalysisChapterBuilder::Build(CReportSpecification* pRptSpec,
    p = new rptParagraph;
    *pChapter << p;
    *p << CProductDisplacementsTable().Build(pBroker,span,girder,m_AnalysisType,bDesign,bRating,bIndicateControllingLoad,pDisplayUnits) << rptNewLine;
+
+   if ( bPedestrian )
+      *p << "$ Pedestrian values are per girder" << rptNewLine;
+
    *p << LIVELOAD_PER_LANE << rptNewLine;
    *p << rptNewLine;
    LiveLoadTableFooter(pBroker,p,girder,bDesign,bRating);
@@ -170,6 +189,10 @@ rptChapter* CBridgeAnalysisChapterBuilder::Build(CReportSpecification* pRptSpec,
    p = new rptParagraph;
    *pChapter << p;
    *p << CProductRotationTable().Build(pBroker,span,girder,m_AnalysisType,true,false,bDesign,bRating,bIndicateControllingLoad,pDisplayUnits) << rptNewLine;
+
+   if ( bPedestrian )
+      *p << "$ Pedestrian values are per girder" << rptNewLine;
+
    *p << LIVELOAD_PER_LANE << rptNewLine;
    *p << rptNewLine;
    LiveLoadTableFooter(pBroker,p,girder,bDesign,bRating);

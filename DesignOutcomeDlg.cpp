@@ -201,7 +201,7 @@ BOOL CDesignOutcomeDlg::OnInitDialog()
    {
       CEAFApp* pApp = EAFGetApp();
       WINDOWPLACEMENT wp;
-      if (pApp->ReadWindowPlacement("DesignOutcome",&wp))
+      if (pApp->ReadWindowPlacement("Settings","DesignOutcome",&wp))
       {
          CRect rect(wp.rcNormalPosition);
          SetWindowPos(NULL,0,0,rect.Size().cx,rect.Size().cy,SWP_NOMOVE);
@@ -228,7 +228,7 @@ void CDesignOutcomeDlg::CleanUp()
       {
          wp.flags = 0;
          wp.showCmd = SW_SHOWNORMAL;
-         pApp->WriteWindowPlacement("DesignOutcome",&wp);
+         pApp->WriteWindowPlacement("Settings","DesignOutcome",&wp);
       }
    }
 }

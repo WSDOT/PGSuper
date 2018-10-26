@@ -26,8 +26,21 @@
 #include "stdafx.h"
 #include "resource.h"
 
+#include <WBFLDManip.h>
+#include <WBFLDManipTools.h>
+#include <WBFLGeometry.h>
+
 #include <initguid.h>
 #include "TxDOTAgent_i.h"
+
+// interfaces used in this DLL.... resolves symbols for the linker
+#include <initguid.h>
+#include <WBFLDManip_i.c>
+#include <WBFLDManipTools_i.c>
+#include <DManip\DManip.h>
+#include <WBFLCore_i.c>
+#include <WBFLGeometry_i.c>
+#include <WBFLCogo_i.c>
 #include "dllmain.h"
 
 #include <EAF\EAFAppPlugin.h>
@@ -39,11 +52,11 @@
 #include <EAF\EAFComponentInfo.h>
 #include <EAF\EAFUIIntegration.h>
 
-// interfaces used in this DLL.... resolves symbols for the linker
-#include <WBFLCore_i.c>
 #include <PGSuperIEPlugin_i.c>
+#include <WBFLReportManagerAgent_i.c>
+#include "TxDOTOptionalDesignDocProxyAgent.h"
+
 #include <IReportManager.h>
-#include <IFace\StatusCenter.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <IFace\Selection.h>
 #include <IFace\TxDOTCadExport.h>
@@ -57,8 +70,10 @@
 #include <IFace\UpdateTemplates.h>
 #include <IFace\Test1250.h>
 #include <IFace\GirderHandling.h>
-#include "TxDOTOptionalDesignData.h"
 
+#include "TxDOTOptionalDesignData.h"
+#include "TogaSupportDrawStrategy.h"
+#include "TogaSectionCutDrawStrategy.h"
 
 // Used to determine whether the DLL can be unloaded by OLE
 STDAPI DllCanUnloadNow(void)

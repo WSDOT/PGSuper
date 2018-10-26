@@ -98,9 +98,12 @@ rptRcTable* CUserShearTable::Build(IBroker* pBroker,SpanIndexType span,GirderInd
    RowIndexType row = p_table->GetNumberOfHeaderRows();
    for ( SpanIndexType spanIdx = startSpan; spanIdx < nSpans; spanIdx++ )
    {
-      std::vector<pgsPointOfInterest> vPoi = pIPoi->GetPointsOfInterest( spanIdx, girder, pgsTypes::BridgeSite1, POI_ALL, POIFIND_OR );
+      GirderIndexType nGirders = pBridge->GetGirderCount(spanIdx);
+      GirderIndexType gdrIdx = (nGirders <= girder ? nGirders-1 : girder);
 
-      Float64 end_size = pBridge->GetGirderStartConnectionLength(spanIdx,girder);
+      std::vector<pgsPointOfInterest> vPoi = pIPoi->GetPointsOfInterest( spanIdx, gdrIdx, pgsTypes::BridgeSite1, POI_ALL, POIFIND_OR );
+
+      Float64 end_size = pBridge->GetGirderStartConnectionLength(spanIdx,gdrIdx);
 
       std::vector<sysSectionValue> minDC1, maxDC1, minDC2, maxDC2;
       std::vector<sysSectionValue> minDW1, maxDW1, minDW2, maxDW2;

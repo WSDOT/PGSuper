@@ -553,6 +553,13 @@ rptRcTable* CRatingSummaryTable::BuildByVehicle(IBroker* pBroker,GirderIndexType
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    GET_IFACE2(pBroker,IProductLoads,pProductLoads);
    GET_IFACE2(pBroker,IArtifact,pArtifact);
+   GET_IFACE2(pBroker,IBridge,pBridge);
+
+   pgsTypes::LiveLoadType llType = ::GetLiveLoadType(ratingType);
+
+   std::string strName = pProductLoads->GetLiveLoadName(llType,0);
+   if ( strName == "No Live Load Defined" )
+      return NULL;
 
    rptCapacityToDemand rating_factor;
 
@@ -564,11 +571,6 @@ rptRcTable* CRatingSummaryTable::BuildByVehicle(IBroker* pBroker,GirderIndexType
 
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), true );
    location.IncludeSpanAndGirder(true);
-
-   GET_IFACE2(pBroker,IBridge,pBridge);
-
-   pgsTypes::LiveLoadType llType = ::GetLiveLoadType(ratingType);
-
 
    CComBSTR bstrTitle = ::GetLiveLoadTypeName(ratingType);
    rptRcTable* pTable = pgsReportStyleHolder::CreateDefaultTable(5,OLE2A(bstrTitle));
@@ -589,7 +591,6 @@ rptRcTable* CRatingSummaryTable::BuildByVehicle(IBroker* pBroker,GirderIndexType
    (*pTable)(0,4) << "Cause";
 
    RowIndexType row = pTable->GetNumberOfHeaderRows();
-
    VehicleIndexType nVehicles = pProductLoads->GetVehicleCount(llType);
    for ( VehicleIndexType vehIdx = 0; vehIdx < nVehicles; vehIdx++ )
    {

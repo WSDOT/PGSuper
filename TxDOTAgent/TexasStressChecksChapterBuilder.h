@@ -24,6 +24,8 @@
 #define INCLUDED_TEXASSTRESSCHECKSCHAPTERBUILDER_H_
 
 #include <Reporter\Chapter.h>
+#include <ReportManager\ReportManager.h>
+#include <Reporting\PGSuperChapterBuilder.h>
 
 interface IEAFDisplayUnits;
 

@@ -56,7 +56,7 @@
 				AdditionalOptions="/Zm600 "
 				Optimization="0"
 				AdditionalIncludeDirectories=".\;..\Include;\ARP\WBFL\Include;\ARP\WBFL\Include\$(ConfigurationName)"
-				PreprocessorDefinitions="_AFXDLL;_ATL_NO_UUIDOF;_DEBUG;WIN32;_WINDOWS;ENABLE_LOGGING;_HAS_ITERATOR_DEBUGGING=0;_SECURE_SCL=0"
+				PreprocessorDefinitions="_AFXDLL;_ATL_NO_UUIDOF;_DEBUG;WIN32;_WINDOWS;ENABLE_LOGGING;x_HAS_ITERATOR_DEBUGGING=0;x_SECURE_SCL=0"
 				MinimalRebuild="true"
 				RuntimeLibrary="3"
 				RuntimeTypeInfo="true"

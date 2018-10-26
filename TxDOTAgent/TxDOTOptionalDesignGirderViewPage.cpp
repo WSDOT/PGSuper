@@ -3,7 +3,9 @@
 
 #include "stdafx.h"
 #include "TxDOTOptionalDesignGirderViewPage.h"
+#include "TxDOTOptionalDesignUtilities.h"
 
+#include <EAF\EAFDisplayUnits.h>
 
 // CTxDOTOptionalDesignGirderViewPage dialog
 
@@ -125,4 +127,135 @@ void CTxDOTOptionalDesignGirderViewPage::AssertValid() const
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
    __super::AssertValid();
+}
+
+void CTxDOTOptionalDesignGirderViewPage::GetSpanAndGirderSelection(SpanIndexType* pSpan,GirderIndexType* pGirder)
+{
+   *pSpan = TOGA_SPAN;
+   *pGirder = TOGA_FABR_GDR;
+}
+
+
+
+void CTxDOTOptionalDesignGirderViewPage::ShowCutDlg()
+{
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
+   Float64 val  = m_CurrentCutLocation;
+   Float64 high = m_MaxCutLocation;
+
+   CComPtr<IBroker> pBroker = m_pBrokerRetriever->GetUpdatedBroker();
+   GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
+
+   SpanIndexType span;
+   GirderIndexType gdr;
+   GetSpanAndGirderSelection(&span,&gdr);
+
+   ATLASSERT( span != ALL_SPANS && gdr != ALL_GIRDERS  );
+   Uint16 nHarpPoints = pStrandGeom->GetNumHarpPoints(span,gdr);
+
+   ASSERT(0);
+/*
+   CSectionCutDlgEx dlg(nHarpPoints,m_CurrentCutLocation,0.0,high,m_CutLocation);
+
+   int st = dlg.DoModal();
+   if (st==IDOK)
+   {
+      m_CurrentCutLocation = dlg.GetValue();
+      UpdateCutLocation(dlg.GetCutLocation(),m_CurrentCutLocation);
+   }
+*/
+}
+
+void CTxDOTOptionalDesignGirderViewPage::CutAt(Float64 cut)
+{
+   UpdateCutLocation(UserInput,cut);
+}
+
+void CTxDOTOptionalDesignGirderViewPage::CutAtLeftEnd() 
+{
+   UpdateCutLocation(LeftEnd);
+}
+
+void CTxDOTOptionalDesignGirderViewPage::CutAtLeftHp() 
+{
+   UpdateCutLocation(LeftHarp);
+}
+
+void CTxDOTOptionalDesignGirderViewPage::CutAtCenter() 
+{
+   UpdateCutLocation(Center);
+}
+
+void CTxDOTOptionalDesignGirderViewPage::CutAtRightHp() 
+{
+   UpdateCutLocation(RightHarp);
+}
+
+void CTxDOTOptionalDesignGirderViewPage::CutAtRightEnd() 
+{
+   UpdateCutLocation(RightEnd);
+}
+
+void CTxDOTOptionalDesignGirderViewPage::CutAtNext()
+{
+   double f = m_CurrentCutLocation/m_MaxCutLocation;
+   f = ::RoundOff(f+0.1,0.1);
+   if ( 1 < f )
+      f = 1;
+
+   CutAt(f*m_MaxCutLocation);
+}
+
+void CTxDOTOptionalDesignGirderViewPage::CutAtPrev()
+{
+   double f = m_CurrentCutLocation/m_MaxCutLocation;
+   f = ::RoundOff(f-0.1,0.1);
+   if ( f < 0 )
+      f = 0;
+
+   CutAt(f*m_MaxCutLocation);
+}
+
+void CTxDOTOptionalDesignGirderViewPage::CutAtLocation()
+{
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
+   CComPtr<IBroker> pBroker = m_pBrokerRetriever->GetUpdatedBroker();
+
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+
+   Float64 val  = ::ConvertFromSysUnits(m_CurrentCutLocation,pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure);
+   Float64 high = ::ConvertFromSysUnits(m_MaxCutLocation,pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure);
+
+   ASSERT(0);
+/*
+   CSectionCutDlg dlg(val,0.0,high,pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure.UnitTag().c_str());
+
+   int st = dlg.DoModal();
+   if (st==IDOK)
+   {
+      val = ::ConvertToSysUnits(dlg.GetValue(),pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure);
+      CutAt(val);
+   }
+
+   // Because the dialog messes with the screen
+   // force an update (this is a hack because of the selection tool).
+   GetGirderModelElevationView()->Invalidate();
+   GetGirderModelElevationView()->UpdateWindow();
+*/
+}
+
+
+void CTxDOTOptionalDesignGirderViewPage::UpdateCutLocation(CutLocation cutLoc,Float64 cut)
+{
+   m_CurrentCutLocation = cut;
+   m_CutLocation = cutLoc;
+
+   ASSERT(0);
+/*
+   UpdateBar();
+   GetGirderModelSectionView()->OnUpdate(NULL, HINT_GIRDERVIEWSECTIONCUTCHANGED, NULL);
+   GetGirderModelElevationView()->OnUpdate(NULL, HINT_GIRDERVIEWSECTIONCUTCHANGED, NULL);
+*/
 }

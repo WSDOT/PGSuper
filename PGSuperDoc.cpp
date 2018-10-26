@@ -1840,6 +1840,8 @@ bool CPGSuperDoc::LoadMasterLibrary()
 
 bool CPGSuperDoc::DoLoadMasterLibrary(const CString& strMasterLibraryFile)
 {
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
    // loop until a library file is opened or user gives up trying to find it
    CString strFile = strMasterLibraryFile;
    CString err_msg;
@@ -2211,6 +2213,18 @@ void CPGSuperDoc::OnLiveLoads()
       GET_IFACE(IEAFTransactions,pTransactions);
       pTransactions->Execute(pTxn);
    }
+}
+
+BOOL CPGSuperDoc::GetStatusBarMessageString(UINT nID,CString& rMessage) const
+{
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+   return __super::GetStatusBarMessageString(nID,rMessage);
+}
+
+BOOL CPGSuperDoc::GetToolTipMessageString(UINT nID, CString& rMessage) const
+{
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+   return __super::GetToolTipMessageString(nID,rMessage);
 }
 
 void CPGSuperDoc::CreateReportView(CollectionIndexType rptIdx,bool bPrompt)

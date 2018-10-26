@@ -59,8 +59,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 2,3,0,5
- PRODUCTVERSION 2,3,0,5
+ FILEVERSION 2,3,0,6
+ PRODUCTVERSION 2,3,0,6
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -78,12 +78,12 @@ BEGIN
             VALUE "Comments", "A member of the Alternate Route Project"
             VALUE "CompanyName", "Washington State Department of Transportation"
             VALUE "FileDescription", "TxDOTAgent Module"
-            VALUE "FileVersion", "2.3.0.5"
+            VALUE "FileVersion", "2.3.0.6"
             VALUE "InternalName", "TxDOTAgent"
             VALUE "LegalCopyright", "Copyright © 1999-2010, Washington State Department of Transportation, All Rights Reserved"
             VALUE "OriginalFilename", "PGSuperTxDOTAgent.DLL"
             VALUE "ProductName", "PGSuper"
-            VALUE "ProductVersion", "2.3.0.5"
+            VALUE "ProductVersion", "2.3.0.6"
         END
     END
     BLOCK "VarFileInfo"
@@ -181,9 +181,9 @@ BEGIN
     RTEXT           "f'c, Slab",IDC_STATIC,302,208,40,8
     LTEXT           "ksi",IDC_FC_SLAB_UNITS,390,208,15,8
     GROUPBOX        "Design Data",IDC_STATIC,7,235,413,53
-    RTEXT           "*ft, Design Compressive Stress, Top CL",IDC_STATIC,9,250,136,8
+    RTEXT           "* ft, Design Compressive Stress, Top CL",IDC_STATIC,9,250,136,8
     LTEXT           "ksi",IDC_FT_UNITS,191,249,15,8
-    RTEXT           "*fb, Design Tensile Stress, Bottom CL",IDC_STATIC,226,250,126,8
+    RTEXT           "* fb, Design Tensile Stress, Bottom CL",IDC_STATIC,226,250,126,8
     LTEXT           "ksi",IDC_FB_UNITS,399,250,15,8
     RTEXT           "Mu, Required Ultimate Moment",IDC_STATIC,17,268,126,8
     LTEXT           "kip-ft",IDC_MU_UNITS,191,268,25,8
@@ -194,7 +194,7 @@ BEGIN
     LTEXT           "kip/ft",IDC_W_COMP_DC_UNITS,244,313,26,8
     RTEXT           "w comp, dw",IDC_STATIC,288,313,51,8
     LTEXT           "kip/ft",IDC_W_COMP_DW_UNITS,387,313,21,8
-    RTEXT           "*Note: Tension is negative",IDC_STATIC,232,268,135,8
+    RTEXT           "* Note: Tension is negative",IDC_STATIC,232,268,135,8
 END
 
 IDD_GIRDER_INPUT_PAGE DIALOGEX 0, 0, 468, 390

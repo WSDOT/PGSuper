@@ -129,8 +129,8 @@ void CDeckEdgeBuilder::NextDeckPoint()
    }
 
    CComPtr<IPoint2d> left_point, right_point;
-   m_Alignment->LocatePoint(CComVariant(deckPoint.Station),left_offset, CComVariant(alignmentNormal),&left_point);
-   m_Alignment->LocatePoint(CComVariant(deckPoint.Station),right_offset,CComVariant(alignmentNormal),&right_point);
+   m_Alignment->LocatePoint(CComVariant(deckPoint.Station),omtAlongDirection, left_offset, CComVariant(alignmentNormal),&left_point);
+   m_Alignment->LocatePoint(CComVariant(deckPoint.Station),omtAlongDirection, right_offset,CComVariant(alignmentNormal),&right_point);
 
    if ( m_LeftEdgeState < 0 )
    {
@@ -428,7 +428,7 @@ pgsTypes::DeckPointTransitionType CDeckEdgeBuilder::EndSpline(IPath* pPath,IPoin
       double offset  = (bLeft ? -nextDeckPoint.LeftEdge : nextDeckPoint.RightEdge);
 
       CComPtr<IPoint2d> next_point;
-      m_Alignment->LocatePoint(CComVariant(nextDeckPoint.Station), offset, CComVariant(nextAlignmentNormal),&next_point);
+      m_Alignment->LocatePoint(CComVariant(nextDeckPoint.Station), omtAlongDirection, offset, CComVariant(nextAlignmentNormal),&next_point);
 
       CComQIPtr<IMeasure2> measure(m_CogoEngine);
       measure->Direction(pPoint, next_point, &tangent);

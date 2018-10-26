@@ -501,7 +501,15 @@ HRESULT pgslibLoadLibrary(LPCTSTR strFileName,psgLibraryManager* pLibMgr,eafType
    if ( FAILED(hr) )
       return hr;
 
-   return pgslibLoadLibrary(pStrLoad,pLibMgr,pUnitMode);
+   hr =  pgslibLoadLibrary(pStrLoad,pLibMgr,pUnitMode);
+   if ( FAILED(hr) )
+      return hr;
+
+   hr = pStrLoad->Close();
+   if ( FAILED(hr) )
+      return hr;
+
+   return S_OK;
 }
 
 HRESULT pgslibLoadLibrary(IStructuredLoad* pStrLoad,psgLibraryManager* pLibMgr,eafTypes::UnitMode* pUnitMode)

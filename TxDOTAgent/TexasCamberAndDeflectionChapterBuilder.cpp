@@ -125,6 +125,12 @@ void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker,SpanIndexType s
    rptRcTable* pTable = pgsReportStyleHolder::CreateTableNoHeading(3,"Camber and Deflection");
    *p << pTable << rptNewLine;
 
+   // Right justify columns with numbers
+   pTable->SetColumnStyle( 1, pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_RIGHT) );
+   pTable->SetColumnStyle( 2, pgsReportStyleHolder::GetTableCellStyle(CB_NONE | CJ_RIGHT) );
+   pTable->SetStripeRowColumnStyle( 1, pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_RIGHT) );
+   pTable->SetStripeRowColumnStyle( 2, pgsReportStyleHolder::GetTableStripeRowCellStyle(CB_NONE | CJ_RIGHT) );
+
    // Setup up some unit value prototypes
    INIT_UV_PROTOTYPE( rptLengthUnitValue, disp,   pDisplayUnits->GetDisplacementUnit(), true );
    INIT_UV_PROTOTYPE( rptLengthUnitValue, dispft, pDisplayUnits->GetSpanLengthUnit(),   true );
@@ -252,7 +258,7 @@ void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker,SpanIndexType s
 
    (*pTable)(row,0) << "Deflection (Slab and Diaphragms)";
    (*pTable)(row,1) << disp.SetValue( delta_dl );
-   (*pTable)(row,2) << disp.SetValue( delta_dl );
+   (*pTable)(row,2) << dispft.SetValue( delta_dl );
    row++;
 
    if ( pProductLoads->HasShearKeyLoad(span,girder) )

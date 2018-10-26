@@ -56,7 +56,7 @@
 				AdditionalOptions="/Zm200 "
 				Optimization="0"
 				AdditionalIncludeDirectories=".\;.\Include;\ARP\WBFL\Include;&quot;\ARP\WBFL\Include\$(ConfigurationName)&quot;;&quot;$(ProjectDir)\LibraryEditor&quot;;&quot;$(VCInstallDir)atlmfc\src\mfc&quot;"
-				PreprocessorDefinitions="PGSUPER_DEBUG;_DEBUG;ENABLE_LOGGING;_GXDLL;WIN32;_WINDOWS;_ATL_NO_UUIDOF;_BETA_VERSION;_HAS_ITERATOR_DEBUGGING=0;_SECURE_SCL=0"
+				PreprocessorDefinitions="PGSUPER_DEBUG;_DEBUG;ENABLE_LOGGING;_GXDLL;WIN32;_WINDOWS;_ATL_NO_UUIDOF;_BETA_VERSION;x_HAS_ITERATOR_DEBUGGING=0;x_SECURE_SCL=0"
 				MinimalRebuild="true"
 				RuntimeLibrary="3"
 				RuntimeTypeInfo="true"
@@ -487,19 +487,19 @@
 				>
 			</File>
 			<File
-				RelativePath="LibraryEditor\res\concrete.ico"
-				>
-			</File>
-			<File
 				RelativePath="psgLib\LibraryEditor\res\concrete.ico"
 				>
 			</File>
 			<File
-				RelativePath="LibraryEditor\res\connecti.ico"
+				RelativePath="LibraryEditor\res\concrete.ico"
 				>
 			</File>
 			<File
 				RelativePath="psgLib\LibraryEditor\res\connecti.ico"
+				>
+			</File>
+			<File
+				RelativePath="LibraryEditor\res\connecti.ico"
 				>
 			</File>
 			<File
@@ -523,11 +523,11 @@
 				>
 			</File>
 			<File
-				RelativePath="LibraryEditor\res\girder_l.ico"
+				RelativePath="psgLib\LibraryEditor\res\girder_l.ico"
 				>
 			</File>
 			<File
-				RelativePath="psgLib\LibraryEditor\res\girder_l.ico"
+				RelativePath="LibraryEditor\res\girder_l.ico"
 				>
 			</File>
 			<File
@@ -571,19 +571,19 @@
 				>
 			</File>
 			<File
-				RelativePath="psgLib\LibraryEditor\res\ico00002.ico"
-				>
-			</File>
-			<File
 				RelativePath="res\ico00002.ico"
 				>
 			</File>
 			<File
-				RelativePath="LibraryEditor\res\ico00003.ico"
+				RelativePath="psgLib\LibraryEditor\res\ico00002.ico"
 				>
 			</File>
 			<File
 				RelativePath="res\ico00003.ico"
+				>
+			</File>
+			<File
+				RelativePath="LibraryEditor\res\ico00003.ico"
 				>
 			</File>
 			<File
@@ -599,15 +599,15 @@
 				>
 			</File>
 			<File
-				RelativePath="LibraryEditor\res\ico00005.ico"
-				>
-			</File>
-			<File
 				RelativePath="psgLib\LibraryEditor\res\ico00005.ico"
 				>
 			</File>
 			<File
 				RelativePath="res\ico00005.ico"
+				>
+			</File>
+			<File
+				RelativePath="LibraryEditor\res\ico00005.ico"
 				>
 			</File>
 			<File
@@ -627,15 +627,11 @@
 				>
 			</File>
 			<File
-				RelativePath="LibraryEditor\res\ico00007.ico"
-				>
-			</File>
-			<File
 				RelativePath="psgLib\LibraryEditor\res\ico00007.ico"
 				>
 			</File>
 			<File
-				RelativePath="psgLib\LibraryEditor\res\ico00008.ico"
+				RelativePath="LibraryEditor\res\ico00007.ico"
 				>
 			</File>
 			<File
@@ -643,11 +639,15 @@
 				>
 			</File>
 			<File
-				RelativePath="LibraryEditor\res\ico00009.ico"
+				RelativePath="psgLib\LibraryEditor\res\ico00008.ico"
 				>
 			</File>
 			<File
 				RelativePath="psgLib\LibraryEditor\res\ico00009.ico"
+				>
+			</File>
+			<File
+				RelativePath="LibraryEditor\res\ico00009.ico"
 				>
 			</File>
 			<File
@@ -659,19 +659,19 @@
 				>
 			</File>
 			<File
-				RelativePath="psgLib\LibraryEditor\res\ico00012.ico"
-				>
-			</File>
-			<File
 				RelativePath="LibraryEditor\res\ico00012.ico"
 				>
 			</File>
 			<File
-				RelativePath="psgLib\LibraryEditor\res\ico00013.ico"
+				RelativePath="psgLib\LibraryEditor\res\ico00012.ico"
 				>
 			</File>
 			<File
 				RelativePath="LibraryEditor\res\ico00013.ico"
+				>
+			</File>
+			<File
+				RelativePath="psgLib\LibraryEditor\res\ico00013.ico"
 				>
 			</File>
 			<File
@@ -687,11 +687,11 @@
 				>
 			</File>
 			<File
-				RelativePath="psgLib\LibraryEditor\res\icon2.ico"
+				RelativePath="LibraryEditor\res\icon2.ico"
 				>
 			</File>
 			<File
-				RelativePath="LibraryEditor\res\icon2.ico"
+				RelativePath="psgLib\LibraryEditor\res\icon2.ico"
 				>
 			</File>
 			<File

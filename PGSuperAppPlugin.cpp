@@ -147,7 +147,7 @@ CEAFDocTemplate* CPGSuperAppPlugin::CreateDocTemplate()
 
    CPGSuperDocTemplate* pTemplate = new CPGSuperDocTemplate(
 		IDR_BRIDGEMODELEDITOR,
-      this,
+      NULL,
 		RUNTIME_CLASS(CPGSuperDoc),
 		RUNTIME_CLASS(CBridgeModelViewChildFrame),
 		RUNTIME_CLASS(CBridgePlanView),
