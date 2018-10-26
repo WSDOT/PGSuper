@@ -1475,6 +1475,9 @@ interface IGirder : public IUnknown
 
    virtual void GetSegmentEndPoints(const CSegmentKey& segmentKey,pgsTypes::PlanCoordinateType pcType,IPoint2d** pntPier1,IPoint2d** pntEnd1,IPoint2d** pntBrg1,IPoint2d** pntBrg2,IPoint2d** pntEnd2,IPoint2d** pntPier2) = 0;
 
+   // Returns the four plan view points that define the outline of a segment
+   virtual void GetSegmentPlanPoints(const CSegmentKey& segmentKey, pgsTypes::PlanCoordinateType pcType, IPoint2d** ppEnd1Left, IPoint2d** ppEnd1,IPoint2d** ppEnd1Right, IPoint2d** ppEnd2Right, IPoint2d** ppEnd2,IPoint2d** ppEnd2Left) = 0;
+
    virtual Float64 GetOrientation(const CSegmentKey& segmentKey) = 0;
 
    // Top Girder Reference Chord is a straight line that intersections the top of deck at the CL Brg at start and end of girder

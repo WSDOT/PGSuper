@@ -448,6 +448,11 @@ void CGirderDescPrestressPage::DoDataExchange(CDataExchange* pDX)
       {
          pParent->m_pSegment->Strands.SetHarpStrandOffsetMeasurementAtHarpPoint(offsetType);
       }
+
+      if (nh <= 0)
+      {
+         DisableHpOffsetControls(TRUE);
+      }
    }
    else
    {

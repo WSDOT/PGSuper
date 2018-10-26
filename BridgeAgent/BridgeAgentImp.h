@@ -993,6 +993,7 @@ public:
    virtual Float64 GetCL2ExteriorWebDistance(const pgsPointOfInterest& poi) override;
    virtual Float64 GetWebWidth(const pgsPointOfInterest& poi) override;
    virtual void GetSegmentEndPoints(const CSegmentKey& segmentKey,pgsTypes::PlanCoordinateType pcType,IPoint2d** pntPier1,IPoint2d** pntEnd1,IPoint2d** pntBrg1,IPoint2d** pntBrg2,IPoint2d** pntEnd2,IPoint2d** pntPier2) override;
+   virtual void GetSegmentPlanPoints(const CSegmentKey& segmentKey, pgsTypes::PlanCoordinateType pcType, IPoint2d** ppEnd1Left, IPoint2d** ppEnd1, IPoint2d** ppEnd1Right, IPoint2d** ppEnd2Right, IPoint2d** ppEnd2, IPoint2d** ppEnd2Left) override;
    virtual Float64 GetOrientation(const CSegmentKey& segmentKey) override;
    virtual Float64 GetProfileChordElevation(const pgsPointOfInterest& poi) override;
    virtual Float64 GetTopGirderChordElevation(const pgsPointOfInterest& poi) override;
@@ -1465,6 +1466,7 @@ private:
    void GetSegmentAtPier(PierIndexType pierIdx,const CGirderKey& girderKey,ISuperstructureMemberSegment** ppSegment);
    void GetPierLine(PierIndexType pierIdx,IPierLine** ppPierLine);
    void GetTemporarySupportLine(SupportIndexType tsIdx,IPierLine** ppPierLine);
+   void GetSupports(const CSegmentKey& segmentKey, IPierLine** ppStartLine, IPierLine** ppEndLine);
 
    const GirderLibraryEntry* GetGirderLibraryEntry(const CGirderKey& girderKey);
    GroupIndexType GetGirderGroupAtPier(PierIndexType pierIdx,pgsTypes::PierFaceType pierFace);

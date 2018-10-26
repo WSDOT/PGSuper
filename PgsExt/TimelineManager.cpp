@@ -1420,6 +1420,7 @@ EventIndexType CTimelineManager::GetFirstSegmentErectionEventIndex() const
       {
          return eventIdx;
       }
+      eventIdx++;
    }
 
    ATLASSERT(false); // there aren't any segments erected

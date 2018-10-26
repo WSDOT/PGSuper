@@ -1,0 +1,9 @@
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 21.54    6   0.00                     2     2     Slab          30  1/2  270   6.76   6.79                                              4.000  5.000   2.453    -2.209     1477   0.323  0.462   0.878  0.000 -0.123 -0.106 -0.230  32.00  140.74    1.75    5.00    5.00 
+
+
+The Specification Check was Not Successful
+Splitting zone check failed.
+
+

@@ -22698,6 +22698,47 @@ void CBridgeAgentImp::GetSegmentEndPoints(const CSegmentKey& segmentKey,pgsTypes
    }
 }
 
+void CBridgeAgentImp::GetSegmentPlanPoints(const CSegmentKey& segmentKey, pgsTypes::PlanCoordinateType pcType, IPoint2d** ppEnd1Left, IPoint2d** ppEnd1, IPoint2d** ppEnd1Right, IPoint2d** ppEnd2Right, IPoint2d** ppEnd2, IPoint2d** ppEnd2Left)
+{
+   CComPtr<IPoint2d> pntSupport1, pntEnd1, pntBrg1, pntBrg2, pntEnd2, pntSupport2;
+   GetSegmentEndPoints(segmentKey, pcType, &pntSupport1, &pntEnd1, &pntBrg1, &pntBrg2, &pntEnd2, &pntSupport2);
+
+   CComPtr<IPierLine> startLine, endLine;
+   GetSupports(segmentKey, &startLine, &endLine);
+
+   pgsPointOfInterest startPoi = GetPointOfInterest(segmentKey, 0.0);
+   pgsPointOfInterest endPoi = GetPointOfInterest(segmentKey, GetSegmentLength(segmentKey));
+
+   Float64 startWtf = GetTopWidth(startPoi);
+   Float64 endWtf   = GetTopWidth(endPoi);
+
+   CComPtr<IDirection> segmentDirection;
+   GetSegmentDirection(segmentKey, &segmentDirection);
+   Float64 dirSegment;
+   segmentDirection->get_Value(&dirSegment);
+
+   CComPtr<IDirection> startDirection;
+   startLine->get_Direction(&startDirection);
+   Float64 dirStart;
+   startDirection->get_Value(&dirStart);
+
+   CComPtr<IDirection> endDirection;
+   endLine->get_Direction(&endDirection);
+   Float64 dirEnd;
+   endDirection->get_Value(&dirEnd);
+
+   Float64 startOffset = startWtf / (2 * sin(dirStart - dirSegment));
+   Float64 endOffset = endWtf / (2 * sin(dirEnd - dirSegment));
+
+   ByDistDir(pntEnd1, startOffset, CComVariant(startDirection), 0.0, ppEnd1Left);
+   pntEnd1.CopyTo(ppEnd1);
+   ByDistDir(pntEnd1, -startOffset, CComVariant(startDirection), 0.0, ppEnd1Right);
+
+   ByDistDir(pntEnd2, endOffset, CComVariant(endDirection), 0.0, ppEnd2Left);
+   pntEnd2.CopyTo(ppEnd2);
+   ByDistDir(pntEnd2, -endOffset, CComVariant(endDirection), 0.0, ppEnd2Right);
+}
+
 Float64 CBridgeAgentImp::GetSegmentLength(const CSegmentKey& segmentKey)
 {
    // returns the end-to-end length of the segment.
@@ -28932,6 +28973,37 @@ void CBridgeAgentImp::GetPierLine(PierIndexType pierIdx,IPierLine** ppPierLine)
    PierIDType pierID = ::GetPierLineID(pierIdx);
 
    bridgeGeometry->FindPierLine(pierID,ppPierLine);
+}
+
+void CBridgeAgentImp::GetSupports(const CSegmentKey& segmentKey, IPierLine** ppStartLine, IPierLine** ppEndLine)
+{
+   GET_IFACE(IBridgeDescription, pIBridgeDesc);
+   const CPrecastSegmentData* pSegment = pIBridgeDesc->GetPrecastSegmentData(segmentKey);
+
+   const CPierData2* pStartPier;
+   const CPierData2* pEndPier;
+   const CTemporarySupportData* pStartTS;
+   const CTemporarySupportData* pEndTS;
+   pSegment->GetSupport(pgsTypes::metStart, &pStartPier, &pStartTS);
+   pSegment->GetSupport(pgsTypes::metEnd, &pEndPier, &pEndTS);
+
+   if (pStartPier)
+   {
+      GetPierLine(pStartPier->GetIndex(), ppStartLine);
+   }
+   else
+   {
+      GetTemporarySupportLine(pStartTS->GetIndex(), ppStartLine);
+   }
+
+   if (pEndPier)
+   {
+      GetPierLine(pEndPier->GetIndex(), ppEndLine);
+   }
+   else
+   {
+      GetTemporarySupportLine(pEndTS->GetIndex(), ppEndLine);
+   }
 }
 
 PierIndexType CBridgeAgentImp::GetGenericBridgePierIndex(const CSegmentKey& segmentKey,pgsTypes::MemberEndType endType)

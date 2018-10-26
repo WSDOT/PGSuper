@@ -365,31 +365,73 @@ void CAlignmentPlanView::BuildBridgeDisplayObjects()
    dispMgr->FindDisplayList(BRIDGE_DISPLAY_LIST,&display_list);
 
    display_list->Clear();
-
+   
+   // Build the deck shape
+   CComPtr<IShape> shape;
+   CComPtr<IPoint2d> pntShape;
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
+   GET_IFACE2(pBroker, IBridge, pBridge);
+   if (pBridge->GetDeckType() == pgsTypes::sdtNone)
+   {
+      GET_IFACE2(pBroker, IGirder, pGirder);
 
-   GET_IFACE2(pBroker,IRoadway,pRoadway);
-   GET_IFACE2(pBroker,IBridge,pBridge);
+      CComPtr<ICompositeShape> compShape;
+      compShape.CoCreateInstance(CLSID_CompositeShape);
+      GroupIndexType nGroups = pBridge->GetGirderGroupCount();
+      for (GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++)
+      {
+         GirderIndexType nGirders = pBridge->GetGirderCount(grpIdx);
+         for (GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++)
+         {
+            SegmentIndexType nSegments = pBridge->GetSegmentCount(grpIdx, gdrIdx);
+            for (SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++)
+            {
+               CSegmentKey segmentKey(grpIdx, gdrIdx, segIdx);
+               CComPtr<IPoint2d> pntEnd1Left, pntEnd1, pntEnd1Right, pntEnd2Left, pntEnd2, pntEnd2Right;
+               pGirder->GetSegmentPlanPoints(segmentKey, pgsTypes::pcGlobal, &pntEnd1Left, &pntEnd1, &pntEnd1Right, &pntEnd2Right, &pntEnd2, &pntEnd2Left);
 
-   // Draw the deck
-   SpanIndexType nSpans = pBridge->GetSpanCount();
-   CComPtr<IPoint2dCollection> points;
-   pBridge->GetSlabPerimeter(0,nSpans-1,10*nSpans,pgsTypes::pcGlobal,&points);
+               CComPtr<IPolyShape> gdrShape;
+               gdrShape.CoCreateInstance(CLSID_PolyShape);
+               gdrShape->AddPointEx(pntEnd1Left);
+               gdrShape->AddPointEx(pntEnd1Right);
+               gdrShape->AddPointEx(pntEnd2Right);
+               gdrShape->AddPointEx(pntEnd2Left);
 
-   CComPtr<IPolyShape> poly_shape;
-   poly_shape.CoCreateInstance(CLSID_PolyShape);
-   poly_shape->AddPoints(points);
+               CComQIPtr<IShape> shape(gdrShape);
+               compShape->AddShape(shape, VARIANT_FALSE);
+
+               if (grpIdx == 0 && gdrIdx == 0 && segIdx == 0)
+               {
+                  pntShape = pntEnd1Left;
+               }
+            }
+         }
+      }
+
+      compShape.QueryInterface(&shape);
+   }
+   else
+   {
+      SpanIndexType nSpans = pBridge->GetSpanCount();
+      CComPtr<IPoint2dCollection> points;
+      pBridge->GetSlabPerimeter(0, nSpans - 1, 10 * nSpans, pgsTypes::pcGlobal, &points);
+
+      CComPtr<IPolyShape> poly_shape;
+      poly_shape.CoCreateInstance(CLSID_PolyShape);
+      poly_shape->AddPoints(points);
+
+      poly_shape.QueryInterface(&shape);
+
+      points->get_Item(0, &pntShape);
+   }
 
    CComPtr<iPointDisplayObject> doBridge;
    doBridge.CoCreateInstance(CLSID_PointDisplayObject);
-   CComPtr<IPoint2d> p;
-   points->get_Item(0,&p);
-   doBridge->SetPosition(p,FALSE,FALSE);
+   doBridge->SetPosition(pntShape,FALSE,FALSE);
 
    CComPtr<iShapeDrawStrategy> strategy;
    strategy.CoCreateInstance(CLSID_ShapeDrawStrategy);
-   CComQIPtr<IShape> shape(poly_shape);
    strategy->SetShape(shape);
    strategy->SetSolidLineColor(DECK_BORDER_COLOR);
    strategy->SetSolidFillColor(DECK_FILL_COLOR);
@@ -424,6 +466,7 @@ void CAlignmentPlanView::BuildBridgeDisplayObjects()
    Float64 alignment_offset = pBridge->GetAlignmentOffset();
 
    // model the alignment as a series of individual points
+   GET_IFACE2(pBroker, IRoadway, pRoadway);
    long nPoints = 20;
    Float64 station_inc = (end_station - start_station)/(nPoints-1);
    Float64 station = start_station;
