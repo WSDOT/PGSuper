@@ -584,6 +584,10 @@ HRESULT pgslibLoadLibrary(IStructuredLoad* pStrLoad,psgLibraryManager* pLibMgr,e
       AfxMessageBox(cmsg,MB_OK | MB_ICONEXCLAMATION);
       return E_FAIL;
    }
+   catch (...)
+   {
+      return E_FAIL;
+   }
 
    return S_OK;
 }

@@ -155,7 +155,9 @@ void CSplicedNUBeamFactory::CreateGirderSection(IBroker* pBroker,StatusGroupIDTy
    {
       d3 += overallHeight - (d1+d2+d3+d4+d5);
       if ( 0 < d3 )
+      {
          beam->put_D3(d3);
+      }
    }
 
    gdrsection.QueryInterface(ppSection);
@@ -312,10 +314,14 @@ void CSplicedNUBeamFactory::LayoutSectionChangePointsOfInterest(IBroker* pBroker
       Float64 xRight = pSegment->GetVariationLength(pgsTypes::sztRightPrismatic);
 
       if ( !IsZero(xLeft) )
+      {
          xLeft -= start_offset;
+      }
 
       if ( !IsZero(xRight) )
+      {
          xRight -= end_offset;
+      }
 
       pgsPointOfInterest poiStart( segmentKey, xLeft, POI_SECTCHANGE_TRANSITION);
       pPoiMgr->AddPointOfInterest( poiStart );
@@ -329,10 +335,14 @@ void CSplicedNUBeamFactory::LayoutSectionChangePointsOfInterest(IBroker* pBroker
       Float64 xRight = pSegment->GetVariationLength(pgsTypes::sztRightPrismatic); // measured from CL Pier/TS
 
       if ( !IsZero(xLeft) )
+      {
          xLeft -= start_offset;
+      }
 
       if ( !IsZero(xRight) )
+      {
          xRight -= end_offset;
+      }
 
       pgsPointOfInterest poiStart( segmentKey, xLeft, POI_SECTCHANGE_TRANSITION);
       pPoiMgr->AddPointOfInterest( poiStart );
@@ -605,9 +615,13 @@ IBeamFactory::Dimensions CSplicedNUBeamFactory::LoadSectionDimensions(sysIStruct
 {
    Float64 parent_version;
    if ( pLoad->GetParentUnit() == _T("GirderLibraryEntry") )
+   {
       parent_version = pLoad->GetParentVersion();
+   }
    else
+   {
       parent_version = pLoad->GetVersion();
+   }
 
    IBeamFactory::Dimensions dimensions;
    std::vector<std::_tstring>::iterator iter;
@@ -616,9 +630,13 @@ IBeamFactory::Dimensions CSplicedNUBeamFactory::LoadSectionDimensions(sysIStruct
    if ( 14 <= parent_version )
    {
       if ( pLoad->BeginUnit(_T("NUBeamDimensions")) )
+      {
          dimVersion = pLoad->GetVersion();
+      }
       else
+      {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
    }
 
    for ( iter = m_DimNames.begin(); iter != m_DimNames.end(); iter++ )
@@ -642,7 +660,9 @@ IBeamFactory::Dimensions CSplicedNUBeamFactory::LoadSectionDimensions(sysIStruct
    }
 
    if ( 14 <= parent_version && !pLoad->EndUnit() )
+   {
       THROW_LOAD(InvalidFileFormat,pLoad);
+   }
 
    return dimensions;
 }
@@ -853,7 +873,9 @@ Float64 CSplicedNUBeamFactory::GetDimension(const IBeamFactory::Dimensions& dime
    {
       const Dimension& dim = *iter;
       if ( name == dim.first )
+      {
          return dim.second;
+      }
    }
 
    ATLASSERT(false); // should never get here

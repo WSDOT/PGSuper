@@ -82,7 +82,7 @@ public:
    CAnalysisResultsGraphDefinition(IDType id,const std::_tstring& name,
                 const std::vector<IntervalIndexType>& intervals,int actions);
    
-   // constructor for prestress
+   // constructor for deck shrinkage stress
    CAnalysisResultsGraphDefinition(IDType id,const std::_tstring& name,GraphType type,const std::vector<IntervalIndexType>& intervals);
    
    // constructor for demands

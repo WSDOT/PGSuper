@@ -270,8 +270,14 @@ bool pgsFlexuralStressArtifact::IsWithRebarAllowableStressApplicable(pgsTypes::S
 bool pgsFlexuralStressArtifact::WasWithRebarAllowableStressUsed(pgsTypes::StressLocation stressLocation) const
 {
    // If na<0.0, then section was in compression
-   ATLASSERT(m_bIsAltTensileStressApplicable[stressLocation]);
-   return (0.0 < m_Yna[stressLocation]) && (m_AsRequired[stressLocation] <= m_AsProvided[stressLocation]) ? true : false;
+   bool bWasUsed = (0.0 < m_Yna[stressLocation]) && (m_AsRequired[stressLocation] <= m_AsProvided[stressLocation]) ? true : false;
+#if defined _DEBUG
+   if ( bWasUsed )
+   {
+      ATLASSERT(m_bIsAltTensileStressApplicable[stressLocation]);
+   }
+#endif
+   return bWasUsed;
 }
 
 bool pgsFlexuralStressArtifact::Passed(pgsTypes::StressLocation stressLocation) const
@@ -523,6 +529,8 @@ void pgsFlexuralStressArtifact::MakeCopy(const pgsFlexuralStressArtifact& rOther
       m_AsProvided[i]          = rOther.m_AsProvided[i];
       m_AsRequired[i]          = rOther.m_AsRequired[i];
       m_fAltAllowableStress[i] = rOther.m_fAltAllowableStress[i];
+
+      m_bIsAltTensileStressApplicable[i] = rOther.m_bIsAltTensileStressApplicable[i];
 
       m_FcReqd[i]              = rOther.m_FcReqd[i];
    }

@@ -95,15 +95,17 @@ int actions
    m_ApplicableActions = actions;
 }
 
-// constructor for prestress
+// constructor for deck shrinkage stress
 CAnalysisResultsGraphDefinition::CAnalysisResultsGraphDefinition(
 IDType id,
 const std::_tstring& name,
 GraphType type,
 const std::vector<IntervalIndexType>& intervals
-): m_ID(id),m_Name(name),m_GraphType(type),m_ApplicableActions(ACTIONS_STRESS_ONLY | ACTIONS_DEFLECTION_ONLY)
+): m_ID(id),m_Name(name),m_GraphType(type)
 {
+   ATLASSERT(m_GraphType == graphDeckShrinkageStress); // only type supported now
    m_IntervalApplicability.insert(intervals.begin(),intervals.end());
+   m_ApplicableActions = ACTIONS_STRESS_ONLY;
 }
 
 // constructor for demands

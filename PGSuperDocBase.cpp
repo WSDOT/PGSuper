@@ -3316,6 +3316,12 @@ void CPGSuperDocBase::DeleteSpan(SpanIndexType spanIdx)
    CSelectItemDlg dlg;
    SpanIndexType nSpans = pBridgeDesc->GetSpanCount();
 
+   PierIndexType prevPierIdx = (PierIndexType)spanIdx;
+   PierIndexType nextPierIdx = prevPierIdx + 1;
+
+   CString strPier1Label = pBridgeDesc->GetPier(prevPierIdx)->IsAbutment() ? _T("Abutment") : _T("Pier");
+   CString strPier2Label = pBridgeDesc->GetPier(nextPierIdx)->IsAbutment() ? _T("Abutment") : _T("Pier");
+
    CString strTitle;
    strTitle.Format(_T("Deleting Span %d"),LABEL_SPAN(spanIdx));
    dlg.m_strTitle = strTitle;
@@ -3325,19 +3331,7 @@ void CPGSuperDocBase::DeleteSpan(SpanIndexType spanIdx)
    dlg.m_strLabel = strLabel;
 
    CString strItems;
-   if ( spanIdx == 0 )
-   {
-      strItems.Format(_T("%s"),_T("Pier 1\nPier 2\n"));
-   }
-   else if ( spanIdx == nSpans-1)
-   {
-      strItems.Format(_T("Pier %d\nPier %d\n"),LABEL_PIER(nSpans-1),LABEL_PIER(nSpans));
-   }
-   else
-   {
-      strItems.Format(_T("Pier %d\nPier %d\n"),LABEL_PIER(spanIdx),LABEL_PIER(spanIdx+1));
-   }
-
+   strItems.Format(_T("%s %d\n%s %d"),strPier1Label,LABEL_PIER(prevPierIdx),strPier2Label,LABEL_PIER(nextPierIdx));
    dlg.m_strItems = strItems;
    if ( dlg.DoModal() == IDOK )
    {

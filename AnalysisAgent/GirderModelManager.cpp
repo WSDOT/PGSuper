@@ -1180,22 +1180,31 @@ void CGirderModelManager::GetDeckShrinkageStresses(const pgsPointOfInterest& poi
 
    VERIFY_NOT_TIME_STEP_ANALYSIS;
 
-   GET_IFACE(IIntervals,pIntervals);
-   IntervalIndexType compositeIntervalIdx = pIntervals->GetCompositeDeckInterval();
+   GET_IFACE(IPointOfInterest,pPoi);
+   if (pPoi->IsOnSegment(poi) )
+   {
+      GET_IFACE(IIntervals,pIntervals);
+      IntervalIndexType compositeIntervalIdx = pIntervals->GetCompositeDeckInterval();
 
-   GET_IFACE(ILosses,pLosses);
-   const LOSSDETAILS* pDetails = pLosses->GetLossDetails(poi,INVALID_INDEX);
+      GET_IFACE(ILosses,pLosses);
+      const LOSSDETAILS* pDetails = pLosses->GetLossDetails(poi,INVALID_INDEX);
 
-   Float64 P, M;
-   pDetails->pLosses->GetDeckShrinkageEffects(&P,&M);
+      Float64 P, M;
+      pDetails->pLosses->GetDeckShrinkageEffects(&P,&M);
 
-   GET_IFACE(ISectionProperties,pProps);
-   Float64 A  = pProps->GetAg(compositeIntervalIdx,poi);
-   Float64 St = pProps->GetS(compositeIntervalIdx,poi,pgsTypes::TopGirder);
-   Float64 Sb = pProps->GetS(compositeIntervalIdx,poi,pgsTypes::BottomGirder);
+      GET_IFACE(ISectionProperties,pProps);
+      Float64 A  = pProps->GetAg(compositeIntervalIdx,poi);
+      Float64 St = pProps->GetS(compositeIntervalIdx,poi,pgsTypes::TopGirder);
+      Float64 Sb = pProps->GetS(compositeIntervalIdx,poi,pgsTypes::BottomGirder);
 
-   *pftop = P/A + M/St;
-   *pfbot = P/A + M/Sb;
+      *pftop = P/A + M/St;
+      *pfbot = P/A + M/Sb;
+   }
+   else
+   {
+      *pftop = 0.0;
+      *pfbot = 0.0;
+   }
 }
 
 ///////////////////////////////////////////////////////
@@ -3940,13 +3949,20 @@ void CGirderModelManager::GetDeflection(IntervalIndexType intervalIdx,pgsTypes::
 
    if ( bIncludePrestress )
    {
+      // prestress deflection is not included in the LBAM models... get the product results load
+      // and add them in
       std::vector<Float64> deltaPS = GetDeflection(intervalIdx,pftPretension,vPoi,bat,rtCumulative);
       std::transform(deltaPS.begin(),deltaPS.end(),pMin->begin(),pMin->begin(),std::plus<Float64>());
       std::transform(deltaPS.begin(),deltaPS.end(),pMax->begin(),pMax->begin(),std::plus<Float64>());
 
+      // PT already included because it is in the pftSecondaryEffects product load
+   }
+   else
+   {
+      // Results are to be without prestress so remove the PT effect
       std::vector<Float64> deltaPT = GetDeflection(intervalIdx,pftPostTensioning,vPoi,bat,rtCumulative);
-      std::transform(deltaPT.begin(),deltaPT.end(),pMin->begin(),pMin->begin(),std::plus<Float64>());
-      std::transform(deltaPT.begin(),deltaPT.end(),pMax->begin(),pMax->begin(),std::plus<Float64>());
+      std::transform(pMin->begin(),pMin->end(),deltaPT.begin(),pMin->begin(),std::minus<Float64>());
+      std::transform(pMax->begin(),pMax->end(),deltaPT.begin(),pMax->begin(),std::minus<Float64>());
    }
 }
 
@@ -3990,13 +4006,20 @@ void CGirderModelManager::GetRotation(IntervalIndexType intervalIdx,pgsTypes::Li
 
    if ( bIncludePrestress )
    {
+      // prestress deflection is not included in the LBAM models... get the product results load
+      // and add them in
       std::vector<Float64> deltaPS = GetRotation(intervalIdx,pftPretension,vPoi,bat,rtCumulative);
       std::transform(deltaPS.begin(),deltaPS.end(),pMin->begin(),pMin->begin(),std::plus<Float64>());
       std::transform(deltaPS.begin(),deltaPS.end(),pMax->begin(),pMax->begin(),std::plus<Float64>());
 
+      // PT already included because it is in the pftSecondaryEffects product load
+   }
+   else
+   {
+      // Results are to be without prestress so remove the PT effect
       std::vector<Float64> deltaPT = GetRotation(intervalIdx,pftPostTensioning,vPoi,bat,rtCumulative);
-      std::transform(deltaPT.begin(),deltaPT.end(),pMin->begin(),pMin->begin(),std::plus<Float64>());
-      std::transform(deltaPT.begin(),deltaPT.end(),pMax->begin(),pMax->begin(),std::plus<Float64>());
+      std::transform(pMin->begin(),pMin->end(),deltaPT.begin(),pMin->begin(),std::minus<Float64>());
+      std::transform(pMax->begin(),pMax->end(),deltaPT.begin(),pMax->begin(),std::minus<Float64>());
    }
 }
 

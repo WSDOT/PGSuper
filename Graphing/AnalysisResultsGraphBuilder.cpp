@@ -45,6 +45,7 @@
 #include <IFace\MomentCapacity.h>
 #include <IFace\ShearCapacity.h>
 #include <IFace\Artifact.h>
+#include <IFace\PrestressForce.h>
 
 #include <EAF\EAFGraphView.h>
 
@@ -238,11 +239,15 @@ void CAnalysisResultsGraphBuilder::UpdateGraphDefinitions()
    vDeckAndDiaphragmIntervals.push_back(castDeckIntervalIdx);
 
    std::vector<IntervalIndexType> vRailingSystemIntervals;
-   vRailingSystemIntervals.push_back(railingSystemIntervalIdx);
+   for ( IntervalIndexType rintervalIdx = railingSystemIntervalIdx; rintervalIdx < nIntervals; rintervalIdx++ )
+   {
+      vRailingSystemIntervals.push_back(rintervalIdx);
+   }
+//   vRailingSystemIntervals.push_back(railingSystemIntervalIdx);
 
    std::vector<IntervalIndexType> vOverlayIntervals;
    vOverlayIntervals.push_back(overlayIntervalIdx);
-
+   
    // all intervals
    std::vector<IntervalIndexType> vAllIntervals;
    for ( IntervalIndexType intervalIdx = releaseIntervalIdx; intervalIdx < nIntervals; intervalIdx++ )
@@ -352,6 +357,13 @@ void CAnalysisResultsGraphBuilder::UpdateGraphDefinitions()
    }
 
    m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, pProductLoads->GetProductLoadName(pftPretension),    pftPretension,   vAllIntervals,   ACTIONS_ALL) );
+
+   // Deck shrinkage is different animal
+   GET_IFACE(ILosses, pLosses);
+   if( pLosses->IsDeckShrinkageApplicable() )
+   {
+      m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("Deck Shrinkage"),   graphDeckShrinkageStress ,   vRailingSystemIntervals) );
+   }
 
    GET_IFACE(IDocumentType,pDocType);
    if ( pDocType->IsPGSpliceDocument() )
@@ -1282,6 +1294,15 @@ void CAnalysisResultsGraphBuilder::UpdateGraphData()
                   VehicularLiveLoadGraph(selectedGraphIdx,graphDef,intervalIdx,vPoi,xVals,false);
                }
                break;
+
+            case graphDeckShrinkageStress:
+               {
+                  ATLASSERT(actionType == actionStress);
+
+                  // Casting yard stress is its own animal
+                  DeckShrinkageStressGraph(selectedGraphIdx,graphDef,intervalIdx,vPoi,xVals);
+                  break; 
+               }
 
             default:
                ASSERT(false); // should never get here
@@ -3067,6 +3088,61 @@ void CAnalysisResultsGraphBuilder::CyStressCapacityGraph(IndexType graphIdx,cons
       }
 
       first = false;
+   }
+}
+
+void CAnalysisResultsGraphBuilder::DeckShrinkageStressGraph(IndexType graphIdx,const CAnalysisResultsGraphDefinition& graphDef,IntervalIndexType intervalIdx,const std::vector<pgsPointOfInterest>& vPoi,const std::vector<Float64>& xVals)
+{
+   ResultsType resultsType = ((CAnalysisResultsGraphController*)m_pGraphController)->GetResultsType();
+
+   COLORREF c(GetGraphColor(graphIdx,intervalIdx));
+   CString strDataLabel(GetDataLabel(graphIdx,graphDef,intervalIdx));
+
+   int penWeight = GRAPH_PEN_WEIGHT;
+
+   bool bPlotTop = ((CAnalysisResultsGraphController*)m_pGraphController)->PlotStresses(pgsTypes::TopGirder);
+   bool bPlotBot = ((CAnalysisResultsGraphController*)m_pGraphController)->PlotStresses(pgsTypes::BottomGirder);
+
+   // Deck shrinkage call is not stage dependent - assume deck shrinks after railing in installed
+   GET_IFACE(IIntervals,pIntervals);
+   IntervalIndexType dsIntervalIdx = pIntervals->GetCompositeDeckInterval();
+
+   // data series top/bot
+   IndexType top_data_series(0), bot_data_series(0);
+
+   if (bPlotTop)
+   {
+      CString dl = strDataLabel + _T(" - Top");
+      top_data_series = m_Graph.CreateDataSeries(dl,PS_STRESS_TOP_GIRDER,penWeight,c);
+   }
+
+   if (bPlotBot)
+   {
+      CString dl = strDataLabel + _T(" - Bottom");
+      bot_data_series = m_Graph.CreateDataSeries(dl, PS_STRESS_BOTTOM_GIRDER,penWeight,c);
+   }
+
+   GET_IFACE_NOCHECK(IProductForces,pProductForces);
+
+   std::vector<pgsPointOfInterest>::const_iterator i(vPoi.begin());
+   std::vector<pgsPointOfInterest>::const_iterator end(vPoi.end());
+   std::vector<Float64>::const_iterator xIter(xVals.begin());
+   for ( ; i != end; i++, xIter++ )
+   {
+      const pgsPointOfInterest& poi = *i;
+      Float64 x = *xIter;
+
+      Float64 fTop(0.0), fBot(0.0);
+      if(intervalIdx >= dsIntervalIdx)
+      {
+         pProductForces->GetDeckShrinkageStresses(poi, &fTop, &fBot);
+      }
+
+      if(bPlotTop)
+         AddGraphPoint(top_data_series, x, fTop);
+
+      if(bPlotBot)
+      AddGraphPoint(bot_data_series, x, fBot);
    }
 }
 

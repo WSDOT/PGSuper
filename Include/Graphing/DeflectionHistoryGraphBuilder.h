@@ -71,6 +71,6 @@ protected:
    void UpdateGraphTitle(const pgsPointOfInterest& poi);
    void UpdateGraphData(const pgsPointOfInterest& poi);
    Float64 GetX(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType,IIntervals* pIntervals);
-   void PlotDeflection(Float64 x,const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,IndexType dataSeries,ILimitStateForces* pLimitStateForces);
+   void PlotDeflection(Float64 x,const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,IndexType dataSeries,pgsTypes::BridgeAnalysisType bat,ILimitStateForces* pLimitStateForces);
    void AddGraphPoint(IndexType series, Float64 xval, Float64 yval);
 };

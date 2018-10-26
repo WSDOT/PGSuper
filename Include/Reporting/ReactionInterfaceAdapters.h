@@ -83,6 +83,7 @@ CLASS
 class IProductReactionAdapter
 {
 public:
+   virtual ~IProductReactionAdapter() {};
    virtual ReactionLocationIter GetReactionLocations(IBridge* pBridge)=0;
    virtual bool DoReportAtPier(PierIndexType pier,const CGirderKey& girderKey)=0;
 
@@ -101,6 +102,7 @@ class REPORTINGCLASS ProductForcesReactionAdapter: public IProductReactionAdapte
 {
 public:
    ProductForcesReactionAdapter(IReactions* pReactions,const CGirderKey& girderKey);
+   virtual ~ProductForcesReactionAdapter();
 
    virtual ReactionLocationIter GetReactionLocations(IBridge* pBridge);
    virtual bool DoReportAtPier(PierIndexType pier,const CGirderKey& girderKey);
@@ -124,6 +126,7 @@ class REPORTINGCLASS BearingDesignProductReactionAdapter: public IProductReactio
 {
 public:
    BearingDesignProductReactionAdapter(IBearingDesign* pForces, IntervalIndexType intervalIdx, const CGirderKey& girderKey);
+   virtual ~BearingDesignProductReactionAdapter();
 
    virtual ReactionLocationIter GetReactionLocations(IBridge* pBridge);
    virtual bool DoReportAtPier(PierIndexType pier,const CGirderKey& girderKey);
@@ -159,6 +162,7 @@ LOG
 class ICmbLsReactionAdapter
 {
 public:
+   virtual ~ICmbLsReactionAdapter() {};
    virtual ReactionLocationIter GetReactionLocations(IBridge* pBridge)=0;
    virtual bool DoReportAtPier(PierIndexType pier,const CGirderKey& girderKey)=0;
 
@@ -174,6 +178,7 @@ class REPORTINGCLASS CombinedLsForcesReactionAdapter: public ICmbLsReactionAdapt
 {
 public:
    CombinedLsForcesReactionAdapter(IReactions* pReactions, ILimitStateForces* pForces, const CGirderKey& girderKey);
+   virtual ~CombinedLsForcesReactionAdapter();
 
    virtual ReactionLocationIter GetReactionLocations(IBridge* pBridge);
    virtual bool DoReportAtPier(PierIndexType pier,const CGirderKey& girderKey);
@@ -197,6 +202,7 @@ class REPORTINGCLASS CmbLsBearingDesignReactionAdapter: public ICmbLsReactionAda
 {
 public:
    CmbLsBearingDesignReactionAdapter(IBearingDesign* pForces, IntervalIndexType intervalIdx, const CGirderKey& girderKey);
+   virtual ~CmbLsBearingDesignReactionAdapter();
 
    virtual ReactionLocationIter GetReactionLocations(IBridge* pBridge);
    virtual bool DoReportAtPier(PierIndexType pier,const CGirderKey& girderKey);

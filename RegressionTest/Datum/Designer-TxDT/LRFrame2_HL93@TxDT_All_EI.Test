@@ -1,31 +1,21 @@
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 102.19  11  9.83  1     1     1)    *    70  0.60  270 31.26 12.74  24 70.0  4.000  7.800    6.024   -6.527  17903  0.768  0.940  1.03 -0.33  0.00 -0.03 -0.36 520.03 785.87   0.00   0.00   0.00
+ 102.19  11  9.83  1     1     1)    *    63  0.60  270 31.44 15.82  17 70.0  7.700  9.600    5.723   -6.279  17873  0.890  0.940  0.53 -0.24  0.00 -0.03 -0.27 326.00 436.89   3.00   6.17   6.17
 
 
-Girder design was Not Successful
 The Specification Check was Not Successful
-Compressive stress check failed for Service I for the Casting Yard Stage (At Release).
-Compressive stress check failed for Service I for the Deck and Diaphragm Placement Stage (Bridge Site 1).
-Compressive stress check failed for Service I for the Superimposed Dead Load Stage (Bridge Site 2).
-Compressive stress check failed for Service I for the Final with Live Load Stage (Bridge Site 3).
-Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
+Compressive stress check failed for Service I for the Final without Live Load Stage (Bridge Site 2).
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State for the Bridge Site Stage 3.
-Ultimate vertical shear capacity check failed for Strength I Limit State for the Bridge Site Stage 3.
-Stirrup detailing checks failed for the Strength I Limit State.
 Splitting zone checks failed.
-Slab Offset ("A" Dimension) check failed
-Lifting checks failed
-Hauling checks failed
 
 
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 102.19  11 10.67  1     2     1)    *    62  0.60  270 31.46 16.37  16 70.0  7.600  9.600    5.668   -6.148  17127  0.799  0.968  0.51 -0.25  0.00 -0.03 -0.28 317.75 423.05   3.00   6.17   6.17
+ 102.19  11 10.67  1     2     1)    *    62  0.60  270 31.46 16.37  16 70.0  7.600  9.600    5.668   -6.148  17128  0.799  0.968  0.51 -0.25  0.00 -0.03 -0.28 317.75 423.05   3.00   6.17   6.17
 
 
 The Specification Check was Not Successful
-Compressive stress check failed for Service I for the Superimposed Dead Load Stage (Bridge Site 2).
+Compressive stress check failed for Service I for the Final without Live Load Stage (Bridge Site 2).
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State for the Bridge Site Stage 3.
 Splitting zone checks failed.
 Confinement zone checks failed.
@@ -33,22 +23,22 @@ Confinement zone checks failed.
 
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 102.19  11  9.00  1     6     1)    *    55  0.60  270 31.84 17.58  13 70.0  6.700  7.900    5.237   -5.455  15157  0.771  0.940  0.49 -0.26  0.00  0.00 -0.26 266.25 384.69   3.00   6.17   6.17
+ 102.19  11  9.00  1     6     1)    *    55  0.60  270 31.84 17.58  13 70.0  6.700  7.900    5.237   -5.455  15158  0.771  0.940  0.49 -0.26  0.00  0.00 -0.26 266.25 384.69   3.00   6.17   6.17
 
 
 The Specification Check was Not Successful
-Compressive stress check failed for Service I for the Superimposed Dead Load Stage (Bridge Site 2).
+Compressive stress check failed for Service I for the Final without Live Load Stage (Bridge Site 2).
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State for the Bridge Site Stage 3.
 Confinement zone checks failed.
 
 
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 102.19  11  9.83  2     1     1)    *    62  0.60  270 31.46 16.37  16 70.0  7.500  9.600    5.670   -6.147  17105  0.773  0.940  0.55 -0.25  0.00 -0.03 -0.28 318.84 421.54   3.00   6.17   6.17
+ 102.19  11  9.83  2     1     1)    *    64  0.60  270 31.41 15.28  18 70.0  7.800  9.700    5.783   -6.348  18060  0.886  0.940  0.53 -0.25  0.00 -0.03 -0.28 333.26 443.52   3.00   6.17   6.17
 
 
 The Specification Check was Not Successful
-Compressive stress check failed for Service I for the Superimposed Dead Load Stage (Bridge Site 2).
+Compressive stress check failed for Service I for the Final without Live Load Stage (Bridge Site 2).
 Splitting zone checks failed.
 
 
@@ -58,7 +48,7 @@ Splitting zone checks failed.
 
 
 The Specification Check was Not Successful
-Compressive stress check failed for Service I for the Superimposed Dead Load Stage (Bridge Site 2).
+Compressive stress check failed for Service I for the Final without Live Load Stage (Bridge Site 2).
 Splitting zone checks failed.
 Confinement zone checks failed.
 
@@ -69,27 +59,28 @@ Confinement zone checks failed.
 
 
 The Specification Check was Not Successful
-Compressive stress check failed for Service I for the Superimposed Dead Load Stage (Bridge Site 2).
+Compressive stress check failed for Service I for the Final without Live Load Stage (Bridge Site 2).
 Splitting zone checks failed.
 Confinement zone checks failed.
 
 
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 102.19  11  9.83  3     1     1)    *    59  0.60  270 31.56 18.27  13 70.0  7.200  9.200    5.436   -5.852  16306  0.776  0.941  0.53 -0.23  0.00 -0.03 -0.26 296.17 407.06   3.00   6.17   6.17
+ 102.19  11  9.83  3     1     1)    *    60  0.60  270 31.52 17.59  14 70.0  7.300  9.300    5.480   -5.943  16796  0.842  0.940  0.52 -0.22  0.00 -0.03 -0.25 303.37 425.73   3.00   6.17   6.17
 
 
 The Specification Check was Not Successful
-Compressive stress check failed for Service I for the Superimposed Dead Load Stage (Bridge Site 2).
+Compressive stress check failed for Service I for the Final without Live Load Stage (Bridge Site 2).
+Splitting zone checks failed.
 
 
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 102.19  11 10.67  3     2     1)    *    61  0.60  270 31.49 16.97  15 70.0  7.400  9.200    5.590   -6.078  16949  0.799  0.968  0.53 -0.25  0.00 -0.03 -0.28 313.13 411.47   3.00   6.17   6.17
+ 102.19  11 10.67  3     2     1)    *    61  0.60  270 31.49 16.97  15 70.0  7.400  9.200    5.590   -6.078  16948  0.799  0.968  0.53 -0.25  0.00 -0.03 -0.28 313.13 411.47   3.00   6.17   6.17
 
 
 The Specification Check was Not Successful
-Compressive stress check failed for Service I for the Superimposed Dead Load Stage (Bridge Site 2).
+Compressive stress check failed for Service I for the Final without Live Load Stage (Bridge Site 2).
 Splitting zone checks failed.
 Confinement zone checks failed.
 
@@ -100,31 +91,40 @@ Confinement zone checks failed.
 
 
 The Specification Check was Not Successful
-Compressive stress check failed for Service I for the Superimposed Dead Load Stage (Bridge Site 2).
+Compressive stress check failed for Service I for the Final without Live Load Stage (Bridge Site 2).
 Splitting zone checks failed.
 Confinement zone checks failed.
 
 
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 102.19  11  9.83  4     1     1)    *    60  0.60  270 31.52 17.59  14 70.0  7.300  9.300    5.510   -5.945  16555  0.776  0.941  0.53 -0.23  0.00 -0.03 -0.26 304.64 411.32   3.00   6.17   6.17
-
-
-The Specification Check was Not Successful
-Compressive stress check failed for Service I for the Superimposed Dead Load Stage (Bridge Site 2).
-Splitting zone checks failed.
-
-
- RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 102.19  11 10.67  4     2     1)    *    70  0.60  270 31.26 12.74  24 70.0  4.000  7.600    5.904   -6.463  17857  0.792  0.968  1.03 -0.32  0.00 -0.03 -0.35 522.08 788.59   0.00   0.00   0.00
+ 102.19  11  9.83  4     1     1)    *    70  0.60  270 31.26 12.74  24 70.0  4.000  7.500    5.851   -6.390  17840  0.833  0.940  1.03 -0.31  0.00 -0.03 -0.34 522.14 803.16   0.00   0.00   0.00
 
 
 Girder design was Not Successful
 The Specification Check was Not Successful
 Compressive stress check failed for Service I for the Casting Yard Stage (At Release).
 Compressive stress check failed for Service I for the Deck and Diaphragm Placement Stage (Bridge Site 1).
-Compressive stress check failed for Service I for the Superimposed Dead Load Stage (Bridge Site 2).
+Compressive stress check failed for Service I for the Final without Live Load Stage (Bridge Site 2).
+Compressive stress check failed for Service I for the Final with Live Load Stage (Bridge Site 3).
+Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
+Stirrup detailing checks failed for the Strength I Limit State.
+Splitting zone checks failed.
+Slab Offset ("A" Dimension) check failed
+Lifting checks failed
+Hauling checks failed
+
+
+ RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 102.19  11 10.67  4     2     1)    *    70  0.60  270 31.26 12.74  24 70.0  4.000  7.600    5.904   -6.462  17857  0.792  0.968  1.03 -0.32  0.00 -0.03 -0.35 522.08 788.59   0.00   0.00   0.00
+
+
+Girder design was Not Successful
+The Specification Check was Not Successful
+Compressive stress check failed for Service I for the Casting Yard Stage (At Release).
+Compressive stress check failed for Service I for the Deck and Diaphragm Placement Stage (Bridge Site 1).
+Compressive stress check failed for Service I for the Final without Live Load Stage (Bridge Site 2).
 Compressive stress check failed for Service I for the Final with Live Load Stage (Bridge Site 3).
 Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
 Stirrup detailing checks failed for the Strength I Limit State.
@@ -144,7 +144,7 @@ Girder design was Not Successful
 The Specification Check was Not Successful
 Compressive stress check failed for Service I for the Casting Yard Stage (At Release).
 Compressive stress check failed for Service I for the Deck and Diaphragm Placement Stage (Bridge Site 1).
-Compressive stress check failed for Service I for the Superimposed Dead Load Stage (Bridge Site 2).
+Compressive stress check failed for Service I for the Final without Live Load Stage (Bridge Site 2).
 Compressive stress check failed for Service I for the Final with Live Load Stage (Bridge Site 3).
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State for the Bridge Site Stage 3.
 Splitting zone checks failed.
@@ -156,21 +156,12 @@ Hauling checks failed
 
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 102.19  11  9.85  5     1     1)    *    70  0.60  270 31.26 12.74  24 70.0  4.000  7.500    5.801   -6.295  17359  0.769  0.942  1.03 -0.31  0.00 -0.03 -0.34 521.73 801.53   0.00   0.00   0.00
+ 102.19  11  9.85  5     1     1)    *    61  0.60  270 31.49 16.97  15 70.0  7.400  9.300    5.579   -6.081  17221  0.855  0.942  0.54 -0.23  0.00 -0.03 -0.26 312.88 421.58   3.00   6.17   6.17
 
 
-Girder design was Not Successful
 The Specification Check was Not Successful
-Compressive stress check failed for Service I for the Casting Yard Stage (At Release).
-Compressive stress check failed for Service I for the Deck and Diaphragm Placement Stage (Bridge Site 1).
-Compressive stress check failed for Service I for the Superimposed Dead Load Stage (Bridge Site 2).
-Compressive stress check failed for Service I for the Final with Live Load Stage (Bridge Site 3).
-Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
-Stirrup detailing checks failed for the Strength I Limit State.
+Compressive stress check failed for Service I for the Final without Live Load Stage (Bridge Site 2).
 Splitting zone checks failed.
-Slab Offset ("A" Dimension) check failed
-Lifting checks failed
-Hauling checks failed
 
 
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
@@ -182,7 +173,7 @@ Girder design was Not Successful
 The Specification Check was Not Successful
 Compressive stress check failed for Service I for the Casting Yard Stage (At Release).
 Compressive stress check failed for Service I for the Deck and Diaphragm Placement Stage (Bridge Site 1).
-Compressive stress check failed for Service I for the Superimposed Dead Load Stage (Bridge Site 2).
+Compressive stress check failed for Service I for the Final without Live Load Stage (Bridge Site 2).
 Compressive stress check failed for Service I for the Final with Live Load Stage (Bridge Site 3).
 Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
 Stirrup detailing checks failed for the Strength I Limit State.
@@ -194,7 +185,7 @@ Hauling checks failed
 
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 102.19  11  9.00  5     6     1)    *    70  0.60  270 31.26 12.74  24 70.0  6.100  7.200    4.937   -4.983  16697  0.748  0.918  0.70 -0.26  0.00 -0.00 -0.26 443.16 711.02   3.00   6.17   6.17
+ 102.19  11  9.00  5     6     1)    *    70  0.60  270 31.26 12.74  24 70.0  6.100  7.200    4.938   -4.983  16697  0.748  0.918  0.70 -0.26  0.00 -0.00 -0.26 443.16 711.02   3.00   6.17   6.17
 
 
 Girder design was Not Successful
@@ -202,7 +193,7 @@ The Specification Check was Not Successful
 Compressive stress check failed for Service I for the Casting Yard Stage (At Release).
 Compressive stress check failed for Service I for the Temporary Strand Removal Stage.
 Compressive stress check failed for Service I for the Deck and Diaphragm Placement Stage (Bridge Site 1).
-Compressive stress check failed for Service I for the Superimposed Dead Load Stage (Bridge Site 2).
+Compressive stress check failed for Service I for the Final without Live Load Stage (Bridge Site 2).
 Compressive stress check failed for Service I for the Final with Live Load Stage (Bridge Site 3).
 Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State for the Bridge Site Stage 3.
@@ -215,21 +206,30 @@ Hauling checks failed
 
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 102.19  10  9.85  6     1     1)    *    60  0.60  270 31.52 17.59  14 70.0  7.300  9.300    5.534   -5.975  16642  0.777  0.942  0.52 -0.24  0.00 -0.03 -0.26 303.00 414.66   3.00   6.17   6.17
+ 102.19  10  9.85  6     1     1)    *    70  0.60  270 31.26 12.74  24 70.0  4.000  7.700    5.962   -6.504  18163  0.848  0.942  1.03 -0.31  0.00 -0.03 -0.34 521.62 799.61   0.00   0.00   0.00
 
 
+Girder design was Not Successful
 The Specification Check was Not Successful
-Compressive stress check failed for Service I for the Superimposed Dead Load Stage (Bridge Site 2).
+Compressive stress check failed for Service I for the Casting Yard Stage (At Release).
+Compressive stress check failed for Service I for the Deck and Diaphragm Placement Stage (Bridge Site 1).
+Compressive stress check failed for Service I for the Final without Live Load Stage (Bridge Site 2).
+Compressive stress check failed for Service I for the Final with Live Load Stage (Bridge Site 3).
+Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
+Stirrup detailing checks failed for the Strength I Limit State.
 Splitting zone checks failed.
+Slab Offset ("A" Dimension) check failed
+Lifting checks failed
+Hauling checks failed
 
 
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 102.19  10  9.51  6     2     1)    *    61  0.60  270 31.49 16.97  15 70.0  7.400  9.300    5.583   -6.047  16779  0.767  0.930  0.51 -0.25  0.00 -0.03 -0.27 311.51 417.17   3.00   6.17   6.17
+ 102.19  10  9.51  6     2     1)    *    61  0.60  270 31.49 16.97  15 70.0  7.400  9.300    5.583   -6.047  16780  0.767  0.930  0.51 -0.25  0.00 -0.03 -0.27 311.51 417.17   3.00   6.17   6.17
 
 
 The Specification Check was Not Successful
-Compressive stress check failed for Service I for the Superimposed Dead Load Stage (Bridge Site 2).
+Compressive stress check failed for Service I for the Final without Live Load Stage (Bridge Site 2).
 Splitting zone checks failed.
 Confinement zone checks failed.
 
@@ -244,7 +244,7 @@ The Specification Check was Not Successful
 Compressive stress check failed for Service I for the Casting Yard Stage (At Release).
 Compressive stress check failed for Service I for the Temporary Strand Removal Stage.
 Compressive stress check failed for Service I for the Deck and Diaphragm Placement Stage (Bridge Site 1).
-Compressive stress check failed for Service I for the Superimposed Dead Load Stage (Bridge Site 2).
+Compressive stress check failed for Service I for the Final without Live Load Stage (Bridge Site 2).
 Compressive stress check failed for Service I for the Final with Live Load Stage (Bridge Site 3).
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State for the Bridge Site Stage 3.
 Splitting zone checks failed.
@@ -256,21 +256,12 @@ Hauling checks failed
 
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 102.19   9  9.84  7     1     1)    *    70  0.60  270 31.26 12.74  24 70.0  4.000  7.500    5.784   -6.277  17315  0.769  0.941  1.03 -0.31  0.00 -0.03 -0.33 521.83 803.36   0.00   0.00   0.00
+ 102.19   9  9.84  7     1     1)    *    61  0.60  270 31.49 16.97  15 70.0  7.400  9.300    5.559   -6.058  17151  0.851  0.941  0.54 -0.23  0.00 -0.03 -0.26 312.95 422.79   3.00   6.17   6.17
 
 
-Girder design was Not Successful
 The Specification Check was Not Successful
-Compressive stress check failed for Service I for the Casting Yard Stage (At Release).
-Compressive stress check failed for Service I for the Deck and Diaphragm Placement Stage (Bridge Site 1).
-Compressive stress check failed for Service I for the Superimposed Dead Load Stage (Bridge Site 2).
-Compressive stress check failed for Service I for the Final with Live Load Stage (Bridge Site 3).
-Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
-Stirrup detailing checks failed for the Strength I Limit State.
+Compressive stress check failed for Service I for the Final without Live Load Stage (Bridge Site 2).
 Splitting zone checks failed.
-Slab Offset ("A" Dimension) check failed
-Lifting checks failed
-Hauling checks failed
 
 
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
@@ -282,7 +273,7 @@ Girder design was Not Successful
 The Specification Check was Not Successful
 Compressive stress check failed for Service I for the Casting Yard Stage (At Release).
 Compressive stress check failed for Service I for the Deck and Diaphragm Placement Stage (Bridge Site 1).
-Compressive stress check failed for Service I for the Superimposed Dead Load Stage (Bridge Site 2).
+Compressive stress check failed for Service I for the Final without Live Load Stage (Bridge Site 2).
 Compressive stress check failed for Service I for the Final with Live Load Stage (Bridge Site 3).
 Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
 Stirrup detailing checks failed for the Strength I Limit State.
@@ -303,7 +294,7 @@ The Specification Check was Not Successful
 Compressive stress check failed for Service I for the Casting Yard Stage (At Release).
 Compressive stress check failed for Service I for the Temporary Strand Removal Stage.
 Compressive stress check failed for Service I for the Deck and Diaphragm Placement Stage (Bridge Site 1).
-Compressive stress check failed for Service I for the Superimposed Dead Load Stage (Bridge Site 2).
+Compressive stress check failed for Service I for the Final without Live Load Stage (Bridge Site 2).
 Compressive stress check failed for Service I for the Final with Live Load Stage (Bridge Site 3).
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State for the Bridge Site Stage 3.
 Splitting zone checks failed.
@@ -315,14 +306,14 @@ Hauling checks failed
 
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 102.19   9  9.84  8     1     1)    *    70  0.60  270 31.26 12.74  24 70.0  4.000  7.500    5.788   -6.282  17327  0.769  0.941  1.03 -0.31  0.00 -0.03 -0.34 521.75 802.87   0.00   0.00   0.00
+ 102.19   9  9.84  8     1     1)    *    70  0.60  270 31.26 12.74  24 70.0  4.000  7.600    5.905   -6.451  18031  0.844  0.941  1.03 -0.31  0.00 -0.03 -0.34 521.75 801.50   0.00   0.00   0.00
 
 
 Girder design was Not Successful
 The Specification Check was Not Successful
 Compressive stress check failed for Service I for the Casting Yard Stage (At Release).
 Compressive stress check failed for Service I for the Deck and Diaphragm Placement Stage (Bridge Site 1).
-Compressive stress check failed for Service I for the Superimposed Dead Load Stage (Bridge Site 2).
+Compressive stress check failed for Service I for the Final without Live Load Stage (Bridge Site 2).
 Compressive stress check failed for Service I for the Final with Live Load Stage (Bridge Site 3).
 Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
 Stirrup detailing checks failed for the Strength I Limit State.
@@ -341,7 +332,7 @@ Girder design was Not Successful
 The Specification Check was Not Successful
 Compressive stress check failed for Service I for the Casting Yard Stage (At Release).
 Compressive stress check failed for Service I for the Deck and Diaphragm Placement Stage (Bridge Site 1).
-Compressive stress check failed for Service I for the Superimposed Dead Load Stage (Bridge Site 2).
+Compressive stress check failed for Service I for the Final without Live Load Stage (Bridge Site 2).
 Compressive stress check failed for Service I for the Final with Live Load Stage (Bridge Site 3).
 Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
 Stirrup detailing checks failed for the Strength I Limit State.
@@ -366,21 +357,21 @@ Confinement zone checks failed.
 
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 102.19   8  9.84  9     1     1)    *    48  0.60  270 32.07 19.16  10 70.0  6.100  7.800    4.304   -4.679  13481  0.798  0.941  0.41 -0.15  0.00 -0.02 -0.17 224.11 355.84   3.00   6.17   6.17
+ 102.19   8  9.84  9     1     1)    *    49  0.60  270 31.98 20.51   9 70.0  6.200  8.200    4.388   -4.795  13782  0.874  0.941  0.41 -0.14  0.00 -0.02 -0.16 230.34 375.64   3.00   6.17   6.17
 
 
 The Specification Check was Not Successful
-Compressive stress check failed for Service I for the Superimposed Dead Load Stage (Bridge Site 2).
+Compressive stress check failed for Service I for the Final without Live Load Stage (Bridge Site 2).
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State for the Bridge Site Stage 3.
 
 
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 102.19   8  9.52  9     2     1)    *    49  0.60  270 31.98 20.51   9 70.0  6.200  8.200    4.401   -4.791  13768  0.790  0.930  0.40 -0.15  0.00 -0.02 -0.17 230.31 366.68   3.00   6.17   6.17
+ 102.19   8  9.52  9     2     1)    *    49  0.60  270 31.98 20.51   9 70.0  6.200  8.200    4.401   -4.790  13768  0.790  0.930  0.40 -0.15  0.00 -0.02 -0.17 230.31 366.68   3.00   6.17   6.17
 
 
 The Specification Check was Not Successful
-Compressive stress check failed for Service I for the Superimposed Dead Load Stage (Bridge Site 2).
+Compressive stress check failed for Service I for the Final without Live Load Stage (Bridge Site 2).
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State for the Bridge Site Stage 3.
 Confinement zone checks failed.
 

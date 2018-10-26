@@ -291,6 +291,7 @@ void CLiveLoadDistFactorsDlg::DealWithGridStates()
    GetDlgItem(IDC_GIRDER_RADIO)->EnableWindow(bEnable);
    GetDlgItem(IDC_PIER_RADIO)->EnableWindow(bEnable);
    GetDlgItem(IDC_LLDF_FILL2)->EnableWindow(bEnable);
+   GetDlgItem(IDC_USER_LLDF_NOTE)->EnableWindow(bEnable);
 
    CButton* pBut = (CButton*)GetDlgItem(IDC_GIRDER_RADIO);
    if (pBut->GetCheck()==BST_CHECKED)

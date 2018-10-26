@@ -42,6 +42,15 @@
 
 #include "BeamDimensionGrid.h"
 
+// Want to be able to update the girder image as the user scrolls
+// over the list of girders... the only way to do this is with
+// an owner draw combo box.
+class CGirderComboBox : public CComboBox
+{
+public:
+   virtual void DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct);
+};
+
 /////////////////////////////////////////////////////////////////////////////
 // CGirderDimensionsPage dialog
 
@@ -88,9 +97,14 @@ protected:
 private:
    CMetaFileStatic m_GirderPicture;
    CBeamDimensionGrid m_Grid;
+   CGirderComboBox m_cbGirder;
    int m_LastBeamType;
 
+   void UpdateGirderImage(const CLSID& factoryCLSID);
+
    friend CGirderMainSheet;
+   friend CGirderComboBox;
+
 public:
    afx_msg void OnBnClickedVariableDepthCheck();
 };

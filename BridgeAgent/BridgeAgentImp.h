@@ -1083,7 +1083,10 @@ private:
    Float64 ComputeYtopGirder(IShapeProperties* compositeProps,IShapeProperties* beamProps);
 
    // Points of interest for precast segments (precast girders/spliced girder segments)
-   pgsPoiMgr m_PoiMgr;
+   std::auto_ptr<pgsPoiMgr> m_pPoiMgr;
+   pgsPoiMgr* CreatePoiManager();
+   void InvalidatePointsOfInterest();
+   static UINT DeletePoiManager(LPVOID pParam);
    std::set<CGirderKey> m_ValidatedPoi;
 
    // keeps track of which girders have had critical sections locations determined

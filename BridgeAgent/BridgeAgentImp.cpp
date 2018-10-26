@@ -568,6 +568,34 @@ UINT CBridgeAgentImp::DeleteSectionProperties(LPVOID pParam)
    return 0;
 }
 
+pgsPoiMgr* CBridgeAgentImp::CreatePoiManager()
+{
+   pgsPoiMgr* pPoiMgr = new pgsPoiMgr;
+   pPoiMgr->SetTolerance(gs_PoiTolerance);
+   return pPoiMgr;
+}
+
+void CBridgeAgentImp::InvalidatePointsOfInterest()
+{
+   pgsPoiMgr* pOldPoiMgr = m_pPoiMgr.release();
+   m_pPoiMgr.reset(CreatePoiManager());
+
+#if defined _USE_MULTITHREADING
+   m_ThreadManager.CreateThread(CBridgeAgentImp::DeletePoiManager,(LPVOID)(pOldPoiMgr));
+#else
+   CBridgeAgentImp::DeletePoiManager((LPVOID)(pOldPoiMgr));
+#endif
+}
+
+UINT CBridgeAgentImp::DeletePoiManager(LPVOID pParam)
+{
+   WATCH(_T("Begin: Delete Poi Manager"));
+   pgsPoiMgr* pPoiMgr = (pgsPoiMgr*)pParam;
+   delete pPoiMgr;
+   WATCH(_T("End: Delete Poi Manager"));
+   return 0;
+}
+
 pgsTypes::SectionPropertyType CBridgeAgentImp::GetSectionPropertiesType()
 {
    pgsTypes::SectionPropertyType spType = (GetSectionPropertiesMode() == pgsTypes::spmGross ? pgsTypes::sptGross : pgsTypes::sptTransformed);
@@ -576,7 +604,7 @@ pgsTypes::SectionPropertyType CBridgeAgentImp::GetSectionPropertiesType()
 
 HRESULT CBridgeAgentImp::FinalConstruct()
 {
-   m_PoiMgr.SetTolerance(gs_PoiTolerance);
+   m_pPoiMgr.reset(CreatePoiManager());
 
    HRESULT hr = m_BridgeGeometryTool.CoCreateInstance(CLSID_BridgeGeometryTool);
    if ( FAILED(hr) )
@@ -631,7 +659,8 @@ void CBridgeAgentImp::Invalidate( Uint16 level )
 
       // If bridge is invalid, so are points of interest
       m_ValidatedPoi.clear();
-      m_PoiMgr.RemoveAll();
+
+      InvalidatePointsOfInterest();
 
       m_CriticalSectionState[0].clear();
       m_CriticalSectionState[1].clear();
@@ -1015,7 +1044,7 @@ void CBridgeAgentImp::ValidatePointLoads()
             Xs = ::ForceIntoRange(0.0,Xs,segLength);
 
             pgsPointOfInterest poi(segmentKey,Xs,POI_CONCLOAD);
-            m_PoiMgr.AddPointOfInterest( poi );
+            m_pPoiMgr->AddPointOfInterest( poi );
 
             // put load into our collection
             IntervalIndexType intervalIdx;
@@ -1227,7 +1256,7 @@ void CBridgeAgentImp::ValidateDistributedLoads()
             Xs = ::ForceIntoRange(0.0,Xs,segLength);
 
             pgsPointOfInterest poiStart(segmentKey,Xs);
-            m_PoiMgr.AddPointOfInterest( poiStart );
+            m_pPoiMgr->AddPointOfInterest( poiStart );
 
             ConvertSpanPointToSegmentCoordiante(thisSpanKey,upl.m_EndLocation,&segmentKey,&Xs);
 
@@ -1235,7 +1264,7 @@ void CBridgeAgentImp::ValidateDistributedLoads()
             Xs = ::ForceIntoRange(0.0,Xs,segLength);
 
             pgsPointOfInterest poiEnd(segmentKey,Xs);
-            m_PoiMgr.AddPointOfInterest( poiEnd );
+            m_pPoiMgr->AddPointOfInterest( poiEnd );
 
             IntervalIndexType intervalIdx;
             if ( pDistLoad->m_LoadCase == UserLoads::LL_IM )
@@ -1404,7 +1433,7 @@ void CBridgeAgentImp::ValidateMomentLoads()
             Xs = ::ForceIntoRange(0.0,Xs,segLength);
 
             pgsPointOfInterest poi(segmentKey,Xs,POI_CONCLOAD);
-            m_PoiMgr.AddPointOfInterest( poi );
+            m_pPoiMgr->AddPointOfInterest( poi );
 
             // put load into our collection
             IntervalIndexType intervalIdx;
@@ -4014,7 +4043,7 @@ void CBridgeAgentImp::LayoutSpanPoi(const CSpanKey& spanKey,Uint16 nPnts)
       }
 
       poi.MakeTenthPoint(POI_SPAN,tenthPoint);
-      m_PoiMgr.AddPointOfInterest( poi );
+      m_pPoiMgr->AddPointOfInterest( poi );
    }
 }
 
@@ -4081,7 +4110,7 @@ void CBridgeAgentImp::LayoutRegularPoi(const CSegmentKey& segmentKey,Uint16 nPnt
       Float64 Xg  = Xgp - first_segment_start_offset;  // distance from left face of first segment
       pgsPointOfInterest cyPoi(segmentKey,Xs,Xsp,Xg,Xgp,attribute | POI_RELEASED_SEGMENT);
       cyPoi.MakeTenthPoint(POI_RELEASED_SEGMENT,tenthPoint);
-      m_PoiMgr.AddPointOfInterest( cyPoi );
+      m_pPoiMgr->AddPointOfInterest( cyPoi );
 
       Xs  = left_end_size + bridge_site_dist;
       Xsp = start_offset + Xs;
@@ -4099,7 +4128,7 @@ void CBridgeAgentImp::LayoutRegularPoi(const CSegmentKey& segmentKey,Uint16 nPnt
          bsPoi.SetNonReferencedAttributes(bsPoi.GetNonReferencedAttributes() | POI_ABUTMENT);
       }
 
-      m_PoiMgr.AddPointOfInterest( bsPoi );
+      m_pPoiMgr->AddPointOfInterest( bsPoi );
 
       Xs  = left_storage_point + storage_dist;
       Xsp = start_offset + Xs;
@@ -4108,7 +4137,7 @@ void CBridgeAgentImp::LayoutRegularPoi(const CSegmentKey& segmentKey,Uint16 nPnt
       pgsPointOfInterest stPoi(segmentKey,Xs,Xsp,Xg,Xgp,attribute | POI_STORAGE_SEGMENT);
       stPoi.MakeTenthPoint(POI_STORAGE_SEGMENT,tenthPoint);
 
-      m_PoiMgr.AddPointOfInterest( stPoi );
+      m_pPoiMgr->AddPointOfInterest( stPoi );
 
       // if this is the last poi on the segment, and there is a closure joint on the right end
       // of the segment, then add a closure POI
@@ -4134,7 +4163,7 @@ void CBridgeAgentImp::LayoutRegularPoi(const CSegmentKey& segmentKey,Uint16 nPnt
             {
                cpPOI.SetNonReferencedAttributes(cpPOI.GetNonReferencedAttributes() | POI_BOUNDARY_PIER);
             }
-            m_PoiMgr.AddPointOfInterest( cpPOI );
+            m_pPoiMgr->AddPointOfInterest( cpPOI );
          }
       }
    }
@@ -4240,7 +4269,7 @@ void CBridgeAgentImp::LayoutEndSizePoi(const CSegmentKey& segmentKey,Float64 seg
          Float64 Xg = Xgp - first_segment_start_offset;
          pgsPointOfInterest poi(segmentKey, Xs, Xsp, Xg, Xgp,POI_SPAN | POI_CANTILEVER);
          poi.SetReferencedAttributes(POI_ERECTED_SEGMENT | POI_CANTILEVER);
-         m_PoiMgr.AddPointOfInterest(poi);
+         m_pPoiMgr->AddPointOfInterest(poi);
          Xs += poi_spacing;
       }
    }
@@ -4266,7 +4295,7 @@ void CBridgeAgentImp::LayoutEndSizePoi(const CSegmentKey& segmentKey,Float64 seg
          Float64 Xg = Xgp - first_segment_start_offset;
          pgsPointOfInterest poi(segmentKey, Xs, Xsp, Xg, Xgp,POI_SPAN | POI_CANTILEVER);
          poi.SetReferencedAttributes(POI_ERECTED_SEGMENT | POI_CANTILEVER);
-         m_PoiMgr.AddPointOfInterest( poi );
+         m_pPoiMgr->AddPointOfInterest( poi );
          Xs += poi_spacing;
       }
    }
@@ -4289,7 +4318,7 @@ void CBridgeAgentImp::LayoutEndSizePoi(const CSegmentKey& segmentKey,Float64 seg
       Float64 Xgp = segmentOffset + Xsp;
       Float64 Xg  = Xgp - first_segment_start_offset;
       pgsPointOfInterest poi(segmentKey,Xs,Xsp,Xg,Xgp);
-      m_PoiMgr.AddPointOfInterest(poi);
+      m_pPoiMgr->AddPointOfInterest(poi);
    }
 
    if ( !((segmentKey.segmentIndex == nSegments-1) && (segmentKey.groupIndex == nGroups-1)) )
@@ -4299,7 +4328,7 @@ void CBridgeAgentImp::LayoutEndSizePoi(const CSegmentKey& segmentKey,Float64 seg
       Float64 Xgp = segmentOffset + Xsp;
       Float64 Xg  = Xgp - first_segment_start_offset;
       pgsPointOfInterest poi(segmentKey,Xs,Xsp,Xg,Xgp);
-      m_PoiMgr.AddPointOfInterest(poi);
+      m_pPoiMgr->AddPointOfInterest(poi);
    }
 }
 
@@ -4423,8 +4452,8 @@ void CBridgeAgentImp::LayoutHarpingPointPoi(const CSegmentKey& segmentKey,Float6
 //      THROW_UNWIND(os.str().c_str(),XREASON_NEGATIVE_GIRDER_LENGTH);
 //   }
 
-   m_PoiMgr.AddPointOfInterest( poiHP1 );
-   m_PoiMgr.AddPointOfInterest( poiHP2 );
+   m_pPoiMgr->AddPointOfInterest( poiHP1 );
+   m_pPoiMgr->AddPointOfInterest( poiHP2 );
 
 
    // add POI on either side of the harping point. Because the vertical component of prestress, Vp, is zero
@@ -4436,8 +4465,8 @@ void CBridgeAgentImp::LayoutHarpingPointPoi(const CSegmentKey& segmentKey,Float6
    poiHP1.SetNonReferencedAttributes(0);
    poiHP2.SetNonReferencedAttributes(0);
    
-   m_PoiMgr.AddPointOfInterest( poiHP1 );
-   m_PoiMgr.AddPointOfInterest( poiHP2 );
+   m_pPoiMgr->AddPointOfInterest( poiHP1 );
+   m_pPoiMgr->AddPointOfInterest( poiHP2 );
 }
 
 void CBridgeAgentImp::LayoutPrestressTransferAndDebondPoi(const CSegmentKey& segmentKey,Float64 segmentOffset)
@@ -4452,16 +4481,16 @@ void CBridgeAgentImp::LayoutPrestressTransferAndDebondPoi(const CSegmentKey& seg
 
    // remove any current ps-xfer and debond pois
    std::vector<pgsPointOfInterest> poi;
-   m_PoiMgr.GetPointsOfInterest(segmentKey,POI_DEBOND | POI_PSXFER,POIMGR_OR,&poi);
+   m_pPoiMgr->GetPointsOfInterest(segmentKey,POI_DEBOND | POI_PSXFER,POIMGR_OR,&poi);
    std::vector<pgsPointOfInterest>::iterator iter(poi.begin());
    std::vector<pgsPointOfInterest>::iterator iterEnd(poi.end());
    for ( ; iter != iterEnd; iter++ )
    {
-      m_PoiMgr.RemovePointOfInterest(*iter);
+      m_pPoiMgr->RemovePointOfInterest(*iter);
    }
 
 #if defined _DEBUG
-   m_PoiMgr.GetPointsOfInterest(segmentKey,POI_DEBOND | POI_PSXFER,POIMGR_OR,&poi);
+   m_pPoiMgr->GetPointsOfInterest(segmentKey,POI_DEBOND | POI_PSXFER,POIMGR_OR,&poi);
    ATLASSERT(poi.size() == 0);
 #endif
 
@@ -4486,14 +4515,14 @@ void CBridgeAgentImp::LayoutPrestressTransferAndDebondPoi(const CSegmentKey& seg
    Float64 Xgp = segmentOffset + Xsp;
    Float64 Xg  = Xgp - first_segment_start_offset;
    pgsPointOfInterest poiXfer1(segmentKey,Xs,Xsp,Xg,Xgp,attrib_xfer);
-   m_PoiMgr.AddPointOfInterest( poiXfer1 );
+   m_pPoiMgr->AddPointOfInterest( poiXfer1 );
 
    Xs  = d2;
    Xsp = Xs + start_offset;
    Xgp = segmentOffset + Xsp;
    Xg  = Xgp - first_segment_start_offset;
    pgsPointOfInterest poiXfer2(segmentKey,Xs,Xsp,Xg,Xgp,attrib_xfer);
-   m_PoiMgr.AddPointOfInterest( poiXfer2 );
+   m_pPoiMgr->AddPointOfInterest( poiXfer2 );
 
    ////////////////////////////////////////////////////////////////
    // debonded strands
@@ -4523,14 +4552,14 @@ void CBridgeAgentImp::LayoutPrestressTransferAndDebondPoi(const CSegmentKey& seg
             Xgp = segmentOffset + Xsp;
             Xg  = Xgp - first_segment_start_offset;
             pgsPointOfInterest poiDBD(segmentKey,Xs,Xsp,Xg,Xgp,attrib_debond);
-            m_PoiMgr.AddPointOfInterest( poiDBD );
+            m_pPoiMgr->AddPointOfInterest( poiDBD );
 
             Xs  = d2;
             Xsp = Xs + start_offset;
             Xgp = segmentOffset + Xsp;
             Xg  = Xgp - first_segment_start_offset;
             pgsPointOfInterest poiXFR(segmentKey,Xs,Xsp,Xg,Xgp,attrib_xfer);
-            m_PoiMgr.AddPointOfInterest( poiXFR );
+            m_pPoiMgr->AddPointOfInterest( poiXFR );
          }
 
          d1 = segment_length - debond_info.Length[pgsTypes::metEnd];
@@ -4543,14 +4572,14 @@ void CBridgeAgentImp::LayoutPrestressTransferAndDebondPoi(const CSegmentKey& seg
             Xgp = segmentOffset + Xsp;
             Xg  = Xgp - first_segment_start_offset;
             pgsPointOfInterest poiDBD(segmentKey,Xs,Xsp,Xg,Xgp,attrib_debond);
-            m_PoiMgr.AddPointOfInterest( poiDBD );
+            m_pPoiMgr->AddPointOfInterest( poiDBD );
 
             Xs  = d2;
             Xsp = Xs + start_offset;
             Xgp = segmentOffset + Xsp;
             Xg  = Xgp - first_segment_start_offset;
             pgsPointOfInterest poiXFR(segmentKey,Xs,Xsp,Xg,Xgp,attrib_xfer);
-            m_PoiMgr.AddPointOfInterest( poiXFR );
+            m_pPoiMgr->AddPointOfInterest( poiXFR );
          }
       }
    }
@@ -4580,7 +4609,7 @@ void CBridgeAgentImp::LayoutPoiForPrecastDiaphragmLoads(const CSegmentKey& segme
       Float64 Xgp = segmentOffset + Xsp;  // location in girder path coordinates
       Float64 Xg  = Xgp - first_segment_start_offset;   // location in girder coordinates
       pgsPointOfInterest poi( segmentKey, Xs, Xsp, Xg, Xgp, POI_DIAPHRAGM);
-      m_PoiMgr.AddPointOfInterest( poi );
+      m_pPoiMgr->AddPointOfInterest( poi );
    }
 }
 
@@ -4600,7 +4629,7 @@ void CBridgeAgentImp::LayoutPoiForIntermediateDiaphragmLoads(const CSpanKey& spa
       pgsPointOfInterest poi = ConvertSpanPointToPoi(spanKey,Xspan);
       poi.SetNonReferencedAttributes(POI_DIAPHRAGM);
 
-      m_PoiMgr.AddPointOfInterest( poi );
+      m_pPoiMgr->AddPointOfInterest( poi );
    }
 }
 
@@ -4654,28 +4683,28 @@ void CBridgeAgentImp::LayoutPoiForShear(const CSegmentKey& segmentKey,Float64 se
       Xgp = segmentOffset + Xsp;
       Xg  = Xgp - first_segment_start_offset;
       pgsPointOfInterest poi_075h( segmentKey, Xs, Xsp, Xg, Xgp);
-      m_PoiMgr.AddPointOfInterest(poi_075h);
+      m_pPoiMgr->AddPointOfInterest(poi_075h);
 
       Xs  = start_end_dist + support_width/2 + Hg;
       Xsp = Xs + start_offset;
       Xgp = segmentOffset + Xsp;
       Xg  = Xgp - first_segment_start_offset;
       pgsPointOfInterest poi_h( segmentKey, Xs, Xsp, Xg, Xgp, POI_H);
-      m_PoiMgr.AddPointOfInterest(poi_h);
+      m_pPoiMgr->AddPointOfInterest(poi_h);
 
       Xs  = start_end_dist + support_width/2 + 1.5*Hg;
       Xsp = Xs + start_offset;
       Xgp = segmentOffset + Xsp;
       Xg  = Xgp - first_segment_start_offset;
       pgsPointOfInterest poi_15h( segmentKey, Xs, Xsp, Xg, Xgp, POI_15H);
-      m_PoiMgr.AddPointOfInterest(poi_15h);
+      m_pPoiMgr->AddPointOfInterest(poi_15h);
 
       Xs  = start_end_dist + support_width/2;
       Xsp = Xs + start_offset;
       Xgp = segmentOffset + Xsp;
       Xg  = Xgp - first_segment_start_offset;
       pgsPointOfInterest poi_fos( segmentKey, Xs, Xsp, Xg, Xgp, POI_FACEOFSUPPORT);
-      m_PoiMgr.AddPointOfInterest(poi_fos);
+      m_pPoiMgr->AddPointOfInterest(poi_fos);
    }
 
    pSegment->GetSupport(pgsTypes::metEnd,&pPier,&pTS);
@@ -4705,28 +4734,28 @@ void CBridgeAgentImp::LayoutPoiForShear(const CSegmentKey& segmentKey,Float64 se
       Xgp = Xsp + segmentOffset;
       Xg  = Xgp - first_segment_start_offset;
       pgsPointOfInterest poi_075h( segmentKey, Xs, Xsp, Xg, Xgp);
-      m_PoiMgr.AddPointOfInterest(poi_075h);
+      m_pPoiMgr->AddPointOfInterest(poi_075h);
 
       Xs  = segment_length - (end_end_dist + support_width/2 + Hg);
       Xsp = Xs + start_offset;
       Xgp = Xsp + segmentOffset;
       Xg  = Xgp - first_segment_start_offset;
       pgsPointOfInterest poi_h( segmentKey, Xs, Xsp, Xg, Xgp, POI_H);
-      m_PoiMgr.AddPointOfInterest(poi_h);
+      m_pPoiMgr->AddPointOfInterest(poi_h);
 
       Xs  = segment_length - (end_end_dist + support_width/2 + 1.5*Hg);
       Xsp = Xs + start_offset;
       Xgp = Xsp + segmentOffset;
       Xg  = Xgp - first_segment_start_offset;
       pgsPointOfInterest poi_15h( segmentKey, Xs, Xsp, Xg, Xgp, POI_15H);
-      m_PoiMgr.AddPointOfInterest(poi_15h);
+      m_pPoiMgr->AddPointOfInterest(poi_15h);
 
       Xs  = segment_length - (end_end_dist + support_width/2);
       Xsp = Xs + start_offset;
       Xgp = Xsp + segmentOffset;
       Xg  = Xgp - first_segment_start_offset;
       pgsPointOfInterest poi_fos( segmentKey, Xs, Xsp, Xg, Xgp, POI_FACEOFSUPPORT);
-      m_PoiMgr.AddPointOfInterest(poi_fos);
+      m_pPoiMgr->AddPointOfInterest(poi_fos);
    }
 
 
@@ -4752,7 +4781,7 @@ void CBridgeAgentImp::LayoutPoiForShear(const CSegmentKey& segmentKey,Float64 se
          Xg  = Xgp - first_segment_start_offset;
 
          pgsPointOfInterest poi(segmentKey, Xs, Xsp, Xg, Xgp, POI_STIRRUP_ZONE);
-         m_PoiMgr.AddPointOfInterest(poi);
+         m_pPoiMgr->AddPointOfInterest(poi);
       }
    }
 }
@@ -4813,12 +4842,12 @@ void CBridgeAgentImp::LayoutPoiForSlabBarCutoffs(const CGirderKey& girderKey)
             poi.SetID(INVALID_ID);
             poi.ClearAttributes();
             poi.SetNonReferencedAttributes(POI_DECKBARCUTOFF);
-            m_PoiMgr.AddPointOfInterest( poi );
+            m_pPoiMgr->AddPointOfInterest( poi );
 
             // put a POI just after the bar cutoff so we capture jumps in capacity
             poi.ClearAttributes();
             poi.SetDistFromStart(poi.GetDistFromStart()+DECK_REBAR_OFFSET);
-            m_PoiMgr.AddPointOfInterest( poi );
+            m_pPoiMgr->AddPointOfInterest( poi );
          }
 
          if ( pierIdx != startPierIdx )
@@ -4847,12 +4876,12 @@ void CBridgeAgentImp::LayoutPoiForSlabBarCutoffs(const CGirderKey& girderKey)
             poi.SetID(INVALID_ID);
             poi.ClearAttributes();
             poi.SetNonReferencedAttributes(POI_DECKBARCUTOFF);
-            m_PoiMgr.AddPointOfInterest( poi );
+            m_pPoiMgr->AddPointOfInterest( poi );
 
             // put a POI just before the bar cutoff so we capture jumps in capacity
             poi.ClearAttributes();
             poi.SetDistFromStart(poi.GetDistFromStart()-DECK_REBAR_OFFSET);
-            m_PoiMgr.AddPointOfInterest( poi );
+            m_pPoiMgr->AddPointOfInterest( poi );
          }
       }
    }
@@ -4914,12 +4943,12 @@ void CBridgeAgentImp::LayoutPoiForSegmentBarCutoffs(const CSegmentKey& segmentKe
       // Add pois at cutoffs if they are within bearing locations
       if (left_brg_loc < startLoc && startLoc < right_brg_loc)
       {
-         m_PoiMgr.AddPointOfInterest( pgsPointOfInterest(segmentKey, startLoc, cut_attribute) );
+         m_pPoiMgr->AddPointOfInterest( pgsPointOfInterest(segmentKey, startLoc, cut_attribute) );
       }
 
       if (left_brg_loc < endLoc && endLoc < right_brg_loc)
       {
-         m_PoiMgr.AddPointOfInterest( pgsPointOfInterest(segmentKey, endLoc, cut_attribute) );
+         m_pPoiMgr->AddPointOfInterest( pgsPointOfInterest(segmentKey, endLoc, cut_attribute) );
       }
 
       // we only create one pattern per layout
@@ -4946,12 +4975,12 @@ void CBridgeAgentImp::LayoutPoiForSegmentBarCutoffs(const CSegmentKey& segmentKe
 
                if (left_brg_loc < startLoc && startLoc < right_brg_loc)
                {
-                  m_PoiMgr.AddPointOfInterest( pgsPointOfInterest(segmentKey, startLoc, dev_attribute) );
+                  m_pPoiMgr->AddPointOfInterest( pgsPointOfInterest(segmentKey, startLoc, dev_attribute) );
                }
 
                if (left_brg_loc < endLoc && endLoc < right_brg_loc)
                {
-                  m_PoiMgr.AddPointOfInterest( pgsPointOfInterest(segmentKey, endLoc,   dev_attribute) );
+                  m_pPoiMgr->AddPointOfInterest( pgsPointOfInterest(segmentKey, endLoc,   dev_attribute) );
                }
             }
          }
@@ -4984,7 +5013,7 @@ void CBridgeAgentImp::LayoutPoiForSectionChanges(const CSegmentKey& segmentKey)
    CComPtr<IBeamFactory> beamFactory;
    pGirderEntry->GetBeamFactory(&beamFactory);
 
-   beamFactory->LayoutSectionChangePointsOfInterest(m_pBroker,segmentKey,&m_PoiMgr);
+   beamFactory->LayoutSectionChangePointsOfInterest(m_pBroker,segmentKey,m_pPoiMgr.get());
 }
 
 void CBridgeAgentImp::LayoutPoiForPiers(const CSegmentKey& segmentKey)
@@ -5020,7 +5049,7 @@ void CBridgeAgentImp::LayoutPoiForPiers(const CSegmentKey& segmentKey)
          Float64 Xpoi;
          VERIFY(GetPierLocation(pPier->GetIndex(),segmentKey,&Xpoi));
          pgsPointOfInterest poi(segmentKey,Xpoi,POI_INTERMEDIATE_PIER);
-         m_PoiMgr.AddPointOfInterest(poi);
+         m_pPoiMgr->AddPointOfInterest(poi);
 
          // POI at h and 1.5h from cl-brg (also at 2.5h for purposes of computing critical section)
          Float64 Hg = GetHeight(poi);
@@ -5042,7 +5071,7 @@ void CBridgeAgentImp::LayoutPoiForPiers(const CSegmentKey& segmentKey)
             location = Ls + (BOl - EDl) + (BOr - EDr) + location;
          }
          pgsPointOfInterest left_H(thisSegmentKey,location,POI_H);
-         m_PoiMgr.AddPointOfInterest(left_H);
+         m_pPoiMgr->AddPointOfInterest(left_H);
 
          thisSegmentKey = segmentKey;
          location = Xpoi - 1.5*Hg;
@@ -5059,7 +5088,7 @@ void CBridgeAgentImp::LayoutPoiForPiers(const CSegmentKey& segmentKey)
             location = Ls + (BOl - EDl) + (BOr - EDr) + location;
          }
          pgsPointOfInterest left_15H(thisSegmentKey,location,POI_15H);
-         m_PoiMgr.AddPointOfInterest(left_15H);
+         m_pPoiMgr->AddPointOfInterest(left_15H);
 
          thisSegmentKey = segmentKey;
          location = Xpoi - 2.5*Hg;
@@ -5076,7 +5105,7 @@ void CBridgeAgentImp::LayoutPoiForPiers(const CSegmentKey& segmentKey)
             location = Ls + (BOl - EDl) + (BOr - EDr) + location;
          }
          pgsPointOfInterest left_25H(thisSegmentKey,location);
-         m_PoiMgr.AddPointOfInterest(left_25H);
+         m_pPoiMgr->AddPointOfInterest(left_25H);
 
          // right side of pier
          Float64 segment_length = GetSegmentLength(segmentKey);
@@ -5094,7 +5123,7 @@ void CBridgeAgentImp::LayoutPoiForPiers(const CSegmentKey& segmentKey)
             location = location - segment_length - dist_between_segments;
          }
          pgsPointOfInterest right_H(thisSegmentKey,location,POI_H);
-         m_PoiMgr.AddPointOfInterest(right_H);
+         m_pPoiMgr->AddPointOfInterest(right_H);
 
          thisSegmentKey = segmentKey;
          location = Xpoi + 1.5*Hg;
@@ -5110,7 +5139,7 @@ void CBridgeAgentImp::LayoutPoiForPiers(const CSegmentKey& segmentKey)
             location = location - segment_length - dist_between_segments;
          }
          pgsPointOfInterest right_15H(thisSegmentKey,location,POI_15H);
-         m_PoiMgr.AddPointOfInterest(right_15H);
+         m_pPoiMgr->AddPointOfInterest(right_15H);
 
          thisSegmentKey = segmentKey;
          location = Xpoi + 2.5*Hg;
@@ -5126,19 +5155,19 @@ void CBridgeAgentImp::LayoutPoiForPiers(const CSegmentKey& segmentKey)
             location = location - segment_length - dist_between_segments;
          }
          pgsPointOfInterest right_25H(thisSegmentKey,location);
-         m_PoiMgr.AddPointOfInterest(right_25H);
+         m_pPoiMgr->AddPointOfInterest(right_25H);
 
          // Add POIs for face of support
          Float64 left_support_width  = pPier->GetSupportWidth(pgsTypes::Back);
          Float64 right_support_width = pPier->GetSupportWidth(pgsTypes::Ahead);
 
          pgsPointOfInterest leftFOS(segmentKey,Xpoi - left_support_width,POI_FACEOFSUPPORT);
-         m_PoiMgr.AddPointOfInterest(leftFOS);
+         m_pPoiMgr->AddPointOfInterest(leftFOS);
 
          if ( !IsZero(left_support_width) && !IsZero(right_support_width) )
          {
             pgsPointOfInterest rightFOS(segmentKey,Xpoi + right_support_width,POI_FACEOFSUPPORT);
-            m_PoiMgr.AddPointOfInterest(rightFOS);
+            m_pPoiMgr->AddPointOfInterest(rightFOS);
          }
       } // next pier
    }
@@ -5157,7 +5186,7 @@ void CBridgeAgentImp::LayoutPoiForPiers(const CSegmentKey& segmentKey)
          Float64 Xs; // pier is in segment coordinates
          GetPierLocation(pPier->GetIndex(),segmentKey,&Xs);
          pgsPointOfInterest poi(segmentKey,Xs,POI_BOUNDARY_PIER);
-         m_PoiMgr.AddPointOfInterest(poi);
+         m_pPoiMgr->AddPointOfInterest(poi);
       }
    }
 }
@@ -5202,7 +5231,7 @@ void CBridgeAgentImp::LayoutPoiForTemporarySupports(const CSegmentKey& segmentKe
          VERIFY(GetTemporarySupportLocation(pTS->GetIndex(),segmentKey,&Xpoi));
          pgsPointOfInterest poi(segmentKey,Xpoi,POI_INTERMEDIATE_TEMPSUPPORT);
 
-         m_PoiMgr.AddPointOfInterest(poi);
+         m_pPoiMgr->AddPointOfInterest(poi);
       }
    } // next temporary support
 }
@@ -5263,7 +5292,7 @@ void CBridgeAgentImp::LayoutPoiForTendon(const CGirderKey& girderKey,const CLine
       pgsPointOfInterest poi = ConvertGirderCoordinateToPoi(girderKey,Xg);
       poi.SetReferencedAttributes(0);
       poi.SetNonReferencedAttributes(0);
-      m_PoiMgr.AddPointOfInterest(poi);
+      m_pPoiMgr->AddPointOfInterest(poi);
    }
 }
 
@@ -5284,7 +5313,7 @@ void CBridgeAgentImp::LayoutLiftingPoi(const CSegmentKey& segmentKey,Uint16 nPnt
    LayoutHandlingPoi(GetLiftSegmentInterval(segmentKey),segmentKey,
                      nPnts, 
                      0,
-                     &m_PoiMgr); 
+                     m_pPoiMgr.get()); 
                      
 }
 
@@ -5295,7 +5324,7 @@ void CBridgeAgentImp::LayoutHaulingPoi(const CSegmentKey& segmentKey,Uint16 nPnt
    LayoutHandlingPoi(GetHaulSegmentInterval(segmentKey),segmentKey,
                      nPnts, 
                      0,
-                     &m_PoiMgr);
+                     m_pPoiMgr.get());
 }
 
 //-----------------------------------------------------------------------------
@@ -16258,13 +16287,13 @@ Float64 CBridgeAgentImp::ConvertHarpedOffsetHp(LPCTSTR strGirderName,pgsTypes::A
 std::vector<pgsPointOfInterest> CBridgeAgentImp::GetPointsOfInterest(const CSegmentKey& segmentKey)
 {
    ValidatePointsOfInterest(segmentKey);
-   return m_PoiMgr.GetPointsOfInterest(segmentKey);
+   return m_pPoiMgr->GetPointsOfInterest(segmentKey);
 }
 
 pgsPointOfInterest CBridgeAgentImp::GetPointOfInterest(PoiIDType poiID)
 {
    ValidatePointsOfInterest(CGirderKey(ALL_GROUPS,ALL_GIRDERS));
-   return m_PoiMgr.GetPointOfInterest(poiID);
+   return m_pPoiMgr->GetPointOfInterest(poiID);
 }
 
 pgsPointOfInterest CBridgeAgentImp::GetPointOfInterest(const CSegmentKey& segmentKey,Float64 Xpoi)
@@ -16273,34 +16302,34 @@ pgsPointOfInterest CBridgeAgentImp::GetPointOfInterest(const CSegmentKey& segmen
    // The main validate calls this method which calls ValidatePointsOfInterest which calls the main validate
    // ... recursion ==> CRASH
    //ValidatePointsOfInterest(segmentKey);
-   return m_PoiMgr.GetPointOfInterest(segmentKey,Xpoi);
+   return m_pPoiMgr->GetPointOfInterest(segmentKey,Xpoi);
 }
 
 pgsPointOfInterest CBridgeAgentImp::GetNearestPointOfInterest(const CSegmentKey& segmentKey,Float64 Xpoi)
 {
    ValidatePointsOfInterest(segmentKey);
-   return m_PoiMgr.GetNearestPointOfInterest(segmentKey,Xpoi);
+   return m_pPoiMgr->GetNearestPointOfInterest(segmentKey,Xpoi);
 }
 
 pgsPointOfInterest CBridgeAgentImp::GetPrevPointOfInterest(PoiIDType poiID,PoiAttributeType attrib,Uint32 mode)
 {
    ATLASSERT(poiID != INVALID_ID);
    // assumes the POIs are already validated.... if they weren't we would have a valid poiID
-   return m_PoiMgr.GetPrevPointOfInterest(poiID,attrib,mode == POIFIND_OR ? POIMGR_OR : POIMGR_AND);
+   return m_pPoiMgr->GetPrevPointOfInterest(poiID,attrib,mode == POIFIND_OR ? POIMGR_OR : POIMGR_AND);
 }
 
 pgsPointOfInterest CBridgeAgentImp::GetNextPointOfInterest(PoiIDType poiID,PoiAttributeType attrib,Uint32 mode)
 {
    ATLASSERT(poiID != INVALID_ID);
    // assumes the POIs are already validated.... if they weren't we would have a valid poiID
-   return m_PoiMgr.GetNextPointOfInterest(poiID,attrib,mode == POIFIND_OR ? POIMGR_OR : POIMGR_AND);
+   return m_pPoiMgr->GetNextPointOfInterest(poiID,attrib,mode == POIFIND_OR ? POIMGR_OR : POIMGR_AND);
 }
 
 std::vector<pgsPointOfInterest> CBridgeAgentImp::GetPointsOfInterest(const CSegmentKey& segmentKey,PoiAttributeType attrib,Uint32 mode)
 {
    ValidatePointsOfInterest(segmentKey);
    std::vector<pgsPointOfInterest> vPoi;
-   m_PoiMgr.GetPointsOfInterest(segmentKey,attrib,mode,&vPoi);
+   m_pPoiMgr->GetPointsOfInterest(segmentKey,attrib,mode,&vPoi);
    return vPoi;
 }
 
@@ -16313,7 +16342,7 @@ std::vector<pgsPointOfInterest> CBridgeAgentImp::GetPointsOfInterest(const CSpan
 {
    ValidatePointsOfInterest(CGirderKey(ALL_GROUPS,spanKey.girderIndex));
    std::vector<pgsPointOfInterest> vPoi;
-   m_PoiMgr.GetPointsOfInterest(CSegmentKey(ALL_GROUPS,spanKey.girderIndex,ALL_SEGMENTS),attrib,mode,&vPoi);
+   m_pPoiMgr->GetPointsOfInterest(CSegmentKey(ALL_GROUPS,spanKey.girderIndex,ALL_SEGMENTS),attrib,mode,&vPoi);
    vPoi.erase(std::remove_if(vPoi.begin(),vPoi.end(),PoiNotInSpan(this,spanKey)),vPoi.end());
    return vPoi;
 }
@@ -16348,11 +16377,11 @@ std::vector<pgsPointOfInterest> CBridgeAgentImp::GetCriticalSections(pgsTypes::L
          const CRITSECTDETAILS& csDetails(*iter);
          if ( csDetails.bAtFaceOfSupport )
          {
-            m_PoiMgr.AddPointOfInterest(csDetails.poiFaceOfSupport);
+            m_pPoiMgr->AddPointOfInterest(csDetails.poiFaceOfSupport);
          }
          else
          {
-            m_PoiMgr.AddPointOfInterest(csDetails.pCriticalSection->Poi);
+            m_pPoiMgr->AddPointOfInterest(csDetails.pCriticalSection->Poi);
          }
       }
 
@@ -16360,7 +16389,7 @@ std::vector<pgsPointOfInterest> CBridgeAgentImp::GetCriticalSections(pgsTypes::L
    }
 
    std::vector<pgsPointOfInterest> vPoi;
-   m_PoiMgr.GetPointsOfInterest(CSegmentKey(girderKey,ALL_SEGMENTS),(limitState == pgsTypes::StrengthI ? POI_CRITSECTSHEAR1 : POI_CRITSECTSHEAR2),POIMGR_OR,&vPoi);
+   m_pPoiMgr->GetPointsOfInterest(CSegmentKey(girderKey,ALL_SEGMENTS),(limitState == pgsTypes::StrengthI ? POI_CRITSECTSHEAR1 : POI_CRITSECTSHEAR2),POIMGR_OR,&vPoi);
    return vPoi;
 }
 
@@ -16604,7 +16633,7 @@ std::vector<pgsPointOfInterest> CBridgeAgentImp::GetPointsOfInterestInRange(Floa
    Float64 xMax = poi.GetDistFromStart() + xRight;
 
    std::vector<pgsPointOfInterest> vPoi;
-   m_PoiMgr.GetPointsOfInterestInRange(poi.GetSegmentKey(),xMin,xMax,&vPoi);
+   m_pPoiMgr->GetPointsOfInterestInRange(poi.GetSegmentKey(),xMin,xMax,&vPoi);
    return vPoi;
 }
 
@@ -18814,12 +18843,12 @@ std::vector<pgsPointOfInterest> CBridgeAgentImp::GetLiftingPointsOfInterest(cons
    Uint32 mgrMode = (mode == POIFIND_AND ? POIMGR_AND : POIMGR_OR);
 
    std::vector<pgsPointOfInterest> vPoi;
-   m_PoiMgr.GetPointsOfInterest(segmentKey,POI_LIFT_SEGMENT | attrib, mgrMode,&vPoi);
+   m_pPoiMgr->GetPointsOfInterest(segmentKey,POI_LIFT_SEGMENT | attrib, mgrMode,&vPoi);
 
    if ( attrib == 0 )
    {
       std::vector<pgsPointOfInterest> vPoi2;
-      m_PoiMgr.GetPointsOfInterest(segmentKey,POI_SECTCHANGE,POIMGR_OR,&vPoi2);
+      m_pPoiMgr->GetPointsOfInterest(segmentKey,POI_SECTCHANGE,POIMGR_OR,&vPoi2);
       vPoi.insert(vPoi.end(),vPoi2.begin(),vPoi2.end());
       std::sort(vPoi.begin(),vPoi.end());
       vPoi.erase(std::unique(vPoi.begin(),vPoi.end()),vPoi.end());
@@ -18849,12 +18878,12 @@ std::vector<pgsPointOfInterest> CBridgeAgentImp::GetHaulingPointsOfInterest(cons
    Uint32 mgrMode = (mode == POIFIND_AND ? POIMGR_AND : POIMGR_OR);
 
    std::vector<pgsPointOfInterest> vPoi;
-   m_PoiMgr.GetPointsOfInterest(segmentKey,POI_HAUL_SEGMENT | attrib, mgrMode,&vPoi);
+   m_pPoiMgr->GetPointsOfInterest(segmentKey,POI_HAUL_SEGMENT | attrib, mgrMode,&vPoi);
 
    if ( attrib == 0 )
    {
       std::vector<pgsPointOfInterest> vPoi2;
-      m_PoiMgr.GetPointsOfInterest(segmentKey,POI_SECTCHANGE,POIMGR_OR,&vPoi2);
+      m_pPoiMgr->GetPointsOfInterest(segmentKey,POI_SECTCHANGE,POIMGR_OR,&vPoi2);
       vPoi.insert(vPoi.end(),vPoi2.begin(),vPoi2.end());
       std::sort(vPoi.begin(),vPoi.end());
       vPoi.erase(std::unique(vPoi.begin(),vPoi.end()),vPoi.end());
@@ -22608,8 +22637,8 @@ HRESULT CBridgeAgentImp::OnAnalysisTypeChanged()
    m_CriticalSectionState[0].clear();
    m_CriticalSectionState[1].clear();
 
-   m_PoiMgr.RemovePointsOfInterest(POI_CRITSECTSHEAR1);
-   m_PoiMgr.RemovePointsOfInterest(POI_CRITSECTSHEAR2);
+   m_pPoiMgr->RemovePointsOfInterest(POI_CRITSECTSHEAR1);
+   m_pPoiMgr->RemovePointsOfInterest(POI_CRITSECTSHEAR2);
    return S_OK;
 }
 

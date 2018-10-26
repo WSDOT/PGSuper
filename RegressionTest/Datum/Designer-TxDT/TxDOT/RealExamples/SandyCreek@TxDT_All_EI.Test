@@ -1,31 +1,28 @@
  RoadW Ng  Spcng  Span   GdrType   N   Ns   Size  Str EccCL EccEn Ndb Elev  Nsr Ndb  1  2  3  4  5  6  7  8  9 10  Fci    Fc       fcomp   ftens    ultMo LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---------  -   ---  ----  --- ----- ----- --- ----- --- --- -- -- -- -- -- -- -- -- -- -- ------ ------   ------  -------   ----- -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 24.17   6  0.12  1     1    5B28       22   1/2  270 11.24 11.24   0  2.50  22   0  0  0  0  0  0  0  0  0  0  0  4.000  5.000    1.944   -2.224    2105 0.387  0.641  0.13 -0.03  0.00 -0.01 -0.04  32.16 103.33   1.00   1.00   1.00
+ 24.17   6  0.12  1     1    5B28       24   1/2  270 11.24 11.24   0  2.50  24   0  0  0  0  0  0  0  0  0  0  0  4.000  5.000    1.944   -2.224    2105 0.387  0.641  0.16 -0.03  0.00 -0.01 -0.04  39.37 121.01   1.00   1.00   1.00
 
 
 The Specification Check was Not Successful
-Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
 Bursting zone checks failed.
 
 
  RoadW Ng  Spcng  Span   GdrType   N   Ns   Size  Str EccCL EccEn Ndb Elev  Nsr Ndb  1  2  3  4  5  6  7  8  9 10  Fci    Fc       fcomp   ftens    ultMo LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---------  -   ---  ----  --- ----- ----- --- ----- --- --- -- -- -- -- -- -- -- -- -- -- ------ ------   ------  -------   ----- -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 24.17   6  0.12  1     2    4B28       20   1/2  270 11.12 11.12   2  2.50  20   2  2  0  0  0  0  0  0  0  0  0  4.000  5.000    2.067   -2.337    1821 0.333  0.465  0.16 -0.03  0.00 -0.01 -0.04  32.21 100.32   1.00   1.00   1.00
+ 24.17   6  0.12  1     2    4B28       20   1/2  270 11.12 11.12   2  2.50  20   2  2  0  0  0  0  0  0  0  0  0  4.000  5.000    2.067   -2.337    1821 0.333  0.465  0.16 -0.03  0.00 -0.01 -0.04  32.21  98.66   1.00   1.00   1.00
 
 
 The Specification Check was Not Successful
-Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
 
 
  RoadW Ng  Spcng  Span   GdrType   N   Ns   Size  Str EccCL EccEn Ndb Elev  Nsr Ndb  1  2  3  4  5  6  7  8  9 10  Fci    Fc       fcomp   ftens    ultMo LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---------  -   ---  ----  --- ----- ----- --- ----- --- --- -- -- -- -- -- -- -- -- -- -- ------ ------   ------  -------   ----- -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 24.17   6  0.12  1     4    4B28       20   1/2  270 11.12 11.12   2  2.50  20   2  2  0  0  0  0  0  0  0  0  0  4.000  5.000    2.067   -2.337    1821 0.333  0.465  0.16 -0.03  0.00 -0.01 -0.04  32.21 100.32   1.00   1.00   1.00
+ 24.17   6  0.12  1     4    4B28       20   1/2  270 11.12 11.12   2  2.50  20   2  2  0  0  0  0  0  0  0  0  0  4.000  5.000    2.067   -2.337    1821 0.333  0.465  0.16 -0.03  0.00 -0.01 -0.04  32.21  98.66   1.00   1.00   1.00
 
 
 The Specification Check was Not Successful
-Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
 
 

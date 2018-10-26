@@ -80,6 +80,9 @@ HRESULT CPGSpliceReporterImp::InitReportBuilders()
 
    boost::shared_ptr<CReportSpecificationBuilder> pEquilibriumCheckSpecBuilder(new CEquilibriumCheckReportSpecificationBuilder(m_pBroker));
    CReportBuilder* pMyRptBuilder = new CReportBuilder(_T("Equilibrium Check"));
+#if defined _DEBUG || defined _BETA_VERSION
+   pMyRptBuilder->IncludeTimingChapter();
+#endif
    pMyRptBuilder->AddTitlePageBuilder( boost::shared_ptr<CTitlePageBuilder>(CreateTitlePageBuilder(pMyRptBuilder->GetName())) );
    pMyRptBuilder->SetReportSpecificationBuilder( pEquilibriumCheckSpecBuilder );
    pMyRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CEquilibriumCheckChapterBuilder) );

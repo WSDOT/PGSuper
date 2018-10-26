@@ -39,6 +39,10 @@ copy /Y Trucks.pgs				%BINTARGET%\App\
 
 REM - Template Files
 copy /Y Templates\WSDOT.lbr				%BINTARGET%\Templates\
+copy /Y Templates\PGSuper\WSDOT\WF_DG-Girders\*.ico	%BINTARGET%\Templates\PGSuper\WF_DG-Girders\
+copy /Y Templates\PGSuper\WSDOT\WF_DG-Girders\*.pgt	%BINTARGET%\Templates\PGSuper\WF_DG-Girders\
+copy /Y Templates\PGSuper\WSDOT\WF_TDG-Girders\*.ico	%BINTARGET%\Templates\PGSuper\WF_TDG-Girders\
+copy /Y Templates\PGSuper\WSDOT\WF_TDG-Girders\*.pgt	%BINTARGET%\Templates\PGSuper\WF_TDG-Girders\
 copy /Y Templates\PGSuper\WSDOT\W-Girders\*.ico		%BINTARGET%\Templates\PGSuper\W-Girders\
 copy /Y Templates\PGSuper\WSDOT\W-Girders\*.pgt		%BINTARGET%\Templates\PGSuper\W-Girders\
 copy /Y Templates\PGSuper\WSDOT\U-Girders\*.ico		%BINTARGET%\Templates\PGSuper\U-Girders\
@@ -58,4 +62,3 @@ copy /Y Templates\PGSplice\WSDOT\I-Beams\*.ico          %BINTARGET%\Templates\PG
 copy /Y Templates\PGSplice\WSDOT\I-Beams\*.spt          %BINTARGET%\Templates\PGSplice\I-Beams\
 copy /Y Templates\PGSplice\WSDOT\U-Beams\*.ico          %BINTARGET%\Templates\PGSplice\U-Beams\
 copy /Y Templates\PGSplice\WSDOT\U-Beams\*.spt          %BINTARGET%\Templates\PGSplice\U-Beams\
-

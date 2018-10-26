@@ -880,6 +880,11 @@ void CIntervalManager::ProcessStep2(EventIndexType eventIdx,const CTimelineEvent
                for ( SpanIndexType spanIdx = startSpanIdx; spanIdx <= endSpanIdx; spanIdx++ )
                {
                   const CSpanData2* pSpan = pBridgeDesc->GetSpan(spanIdx);
+                  if ( pSpan == NULL )
+                  {
+                     // loading is out of range... ValidateLoad will deal with it. We'll just ignore it and continue
+                     continue;
+                  }
                   const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(pSpan);
                   GirderIndexType nGirders = pGroup->GetGirderCount();
                   GirderIndexType startGirderIdx = (spanKey.girderIndex == ALL_GIRDERS ? 0 : spanKey.girderIndex);

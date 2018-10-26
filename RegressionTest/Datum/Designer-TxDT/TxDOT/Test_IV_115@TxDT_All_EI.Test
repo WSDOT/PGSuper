@@ -1,32 +1,29 @@
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 44.00   6  8.00  1     1     IV         54   1/2  270 19.12 11.34  10 52.0  6.000  6.200    3.956   -4.355   7428  0.632  0.814  0.38 -0.17  0.00 -0.01 -0.18 166.08 464.30   0.00   0.00   0.00
+ 44.00   6  8.00  1     1     IV         58   1/2  270 18.68 10.41  12 52.0  6.200  6.300    3.956   -4.355   7428  0.632  0.814  0.40 -0.17  0.00 -0.01 -0.18 186.92 517.96   0.00   0.00   0.00
 
 
 The Specification Check was Not Successful
-Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
 Bursting zone checks failed.
 
 
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 44.00   6  8.00  1     2     IV         58   1/2  270 18.68 10.41  12 52.0  6.200  6.300    4.097   -4.514   7630  0.632  0.814  0.40 -0.19  0.00 -0.01 -0.20 186.92 519.62   0.00   0.00   0.00
+ 44.00   6  8.00  1     2     IV         62   1/2  270 18.24  9.65  14 52.0  6.400  6.500    4.097   -4.514   7629  0.632  0.814  0.41 -0.19  0.00 -0.01 -0.20 207.97 574.34   0.00   0.00   0.00
 
 
 The Specification Check was Not Successful
-Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
 Bursting zone checks failed.
 
 
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 44.00   6  8.00  1     4     IV         58   1/2  270 18.68 10.41  12 52.0  6.200  6.300    4.097   -4.514   7630  0.632  0.814  0.40 -0.19  0.00 -0.01 -0.20 186.92 519.62   0.00   0.00   0.00
+ 44.00   6  8.00  1     4     IV         62   1/2  270 18.24  9.65  14 52.0  6.400  6.500    4.097   -4.514   7629  0.632  0.814  0.41 -0.19  0.00 -0.01 -0.20 207.97 574.34   0.00   0.00   0.00
 
 
 The Specification Check was Not Successful
-Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
 Bursting zone checks failed.
 

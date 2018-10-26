@@ -84,18 +84,13 @@ HRESULT CPGSuperReporterImp::InitReportBuilders()
    boost::shared_ptr<CReportSpecificationBuilder> pMultiViewRptSpecBuilder(      new CMultiViewSpanGirderReportSpecificationBuilder(m_pBroker) );
    boost::shared_ptr<CReportSpecificationBuilder> pGirderRptSpecBuilder(         new CGirderReportSpecificationBuilder(m_pBroker,CGirderKey(0,0)) );
 
-#if defined _DEBUG
-   // Test Report
-   CReportBuilder* pTestRptBuilder = new CReportBuilder(_T("Test"));
-   pTestRptBuilder->SetReportSpecificationBuilder( pGirderRptSpecBuilder );
-   pTestRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CIntervalChapterBuilder) );
-   pRptMgr->AddReportBuilder(pTestRptBuilder);
-#endif
-
    CreateMultiGirderSpecCheckReport();
 
    // Design Outcome
    CReportBuilder* pRptBuilder = new CReportBuilder(_T("Design Outcome Report"),true); // hidden report
+#if defined _DEBUG || defined _BETA_VERSION
+   pRptBuilder->IncludeTimingChapter();
+#endif
    //pRptBuilder->AddTitlePageBuilder(NULL); // no title page for this report
    pRptBuilder->SetReportSpecificationBuilder( pMultiGirderRptSpecBuilder );
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CDesignOutcomeChapterBuilder) );
@@ -103,6 +98,9 @@ HRESULT CPGSuperReporterImp::InitReportBuilders()
 
    // Girder Comparison Report
    pRptBuilder = new CReportBuilder(_T("Girder Comparison Report"));
+#if defined _DEBUG || defined _BETA_VERSION
+   pRptBuilder->IncludeTimingChapter();
+#endif
    pRptBuilder->AddTitlePageBuilder( boost::shared_ptr<CTitlePageBuilder>(new CPGSuperTitlePageBuilder(m_pBroker,pRptBuilder->GetName())) );
    pRptBuilder->SetReportSpecificationBuilder( pSpanRptSpecBuilder );
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CGirderComparisonChapterBuilder) );
@@ -110,6 +108,9 @@ HRESULT CPGSuperReporterImp::InitReportBuilders()
 
    // Fabrication Options Report
    pRptBuilder = new CReportBuilder(_T("Fabrication Options Report"));
+#if defined _DEBUG || defined _BETA_VERSION
+   pRptBuilder->IncludeTimingChapter();
+#endif
    pRptBuilder->AddTitlePageBuilder( boost::shared_ptr<CTitlePageBuilder>(new CPGSuperTitlePageBuilder(m_pBroker,pRptBuilder->GetName())) );
    pRptBuilder->SetReportSpecificationBuilder( pMultiViewRptSpecBuilder );
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new COptimizedFabricationChapterBuilder) );
@@ -207,6 +208,7 @@ STDMETHODIMP CPGSuperReporterImp::ShutDown()
 //
 HRESULT CPGSuperReporterImp::OnSpecificationChanged()
 {
+#pragma Reminder("REVIEW: do we need to do this in the final release build?")
 #if defined _DEBUG || defined _BETA_VERSION
    // Show/Hide time-step analysis reports based on the loss method
    std::vector<std::_tstring> strReportNames;

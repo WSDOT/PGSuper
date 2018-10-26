@@ -353,7 +353,7 @@ BEGIN
     END
     POPUP "&View"
     BEGIN
-        MENUITEM "&Bridge Model View",          ID_VIEW_BRIDGEMODELEDITOR
+        MENUITEM "&Bridge Model View\tCtrl+B",  ID_VIEW_BRIDGEMODELEDITOR
         MENUITEM "&Girder View\tCtrl+G",        ID_VIEW_GIRDEREDITOR
         POPUP "Gr&aphs"
         BEGIN
@@ -502,7 +502,7 @@ BEGIN
     END
     POPUP "&View",                          65535,MFT_STRING,MFS_ENABLED
     BEGIN
-        MENUITEM "&Bridge Model View",          ID_VIEW_BRIDGEMODELEDITOR,MFT_STRING | MFT_RIGHTJUSTIFY,MFS_ENABLED
+        MENUITEM "&Bridge Model View\tCtrl+B",  ID_VIEW_BRIDGEMODELEDITOR,MFT_STRING | MFT_RIGHTJUSTIFY,MFS_ENABLED
         MENUITEM "&Girder View\tCtrl+G",        ID_VIEW_GIRDEREDITOR,MFT_STRING | MFT_RIGHTJUSTIFY,MFS_ENABLED
         POPUP "Gr&aphs",                        65535,MFT_STRING,MFS_ENABLED
         BEGIN
@@ -1192,17 +1192,18 @@ BEGIN
                     "Button",BS_AUTORADIOBUTTON,16,67,215,10
     CONTROL         "Directly Input Live Load Distribution Factors",IDC_LLDF_INPUT,
                     "Button",BS_AUTORADIOBUTTON,16,81,153,10
-    CONTROL         "Girder Factors",IDC_GIRDER_RADIO,"Button",BS_AUTORADIOBUTTON | WS_GROUP,52,115,60,10
-    CONTROL         "Abutment/Pier Factors",IDC_PIER_RADIO,"Button",BS_AUTORADIOBUTTON,132,115,87,10
-    CONTROL         "Custom1",IDC_LLDF_PIERS_TABW,"GXWND",WS_BORDER | WS_TABSTOP,33,134,271,144
-    CONTROL         "Custom1",IDC_LLDF_GIRDERS_TABW,"GXWND",WS_BORDER | WS_TABSTOP,33,134,271,144
-    PUSHBUTTON      "Fill With Computed Values...",IDC_LLDF_FILL2,113,289,116,14
-    DEFPUSHBUTTON   "OK",IDOK,142,343,50,14
-    PUSHBUTTON      "Cancel",IDCANCEL,202,343,50,14
+    CONTROL         "Span Factors",IDC_GIRDER_RADIO,"Button",BS_AUTORADIOBUTTON | WS_GROUP,36,115,58,10
+    CONTROL         "Abutment/Pier Factors",IDC_PIER_RADIO,"Button",BS_AUTORADIOBUTTON,99,115,87,10
+    CONTROL         "Custom1",IDC_LLDF_PIERS_TABW,"GXWND",WS_BORDER | WS_TABSTOP,33,153,271,144
+    CONTROL         "Custom1",IDC_LLDF_GIRDERS_TABW,"GXWND",WS_BORDER | WS_TABSTOP,33,153,271,144
+    PUSHBUTTON      "Fill With Computed Values...",IDC_LLDF_FILL2,113,306,116,14
+    DEFPUSHBUTTON   "OK",IDOK,178,343,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,231,343,50,14
     PUSHBUTTON      "Help",ID_HELP,284,343,50,14
     GROUPBOX        "Select How Live Load Distribution Factors are to be Determined for the Current Project",IDC_STATIC,6,7,328,324
     LTEXT           "When parameters are outside of the Range Of Applicablity (ROA) requirements: ",IDC_ROA_STATIC,30,37,274,8
-    GROUPBOX        "User Input Factors",IDC_STATIC,25,99,292,215
+    GROUPBOX        "User Input Factors",IDC_STATIC,25,99,292,227
+    LTEXT           "Distibution factors must be entered for both the main spans and at the piers.\nSelect both options above and enter your distribution factors",IDC_USER_LLDF_NOTE,37,130,260,19
 END
 
 IDD_BRIDGEDESC_ENVIRONMENTAL DIALOG  0, 0, 249, 141
@@ -3439,8 +3440,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 3,0,0,33
- PRODUCTVERSION 3,0,0,33
+ FILEVERSION 3,0,0,34
+ PRODUCTVERSION 3,0,0,34
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -3457,12 +3458,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "Washington State Department of Transportation"
             VALUE "FileDescription", "PGSuper"
-            VALUE "FileVersion", "3.0.0.33"
+            VALUE "FileVersion", "3.0.0.34"
             VALUE "InternalName", "PGSuper"
             VALUE "LegalCopyright", "Copyright © 1999-2015, Washington State Department of Transportation, All Rights Reserved"
             VALUE "OriginalFilename", "PGSuperAppPlugin.DLL"
             VALUE "ProductName", "PGSuper"
-            VALUE "ProductVersion", "3.0.0.33"
+            VALUE "ProductVersion", "3.0.0.34"
         END
     END
     BLOCK "VarFileInfo"
@@ -4539,15 +4540,15 @@ END
 
 STRINGTABLE 
 BEGIN
-    ID_FILE_NEW             "Create a new project\nNew"
-    ID_FILE_OPEN            "Open an existing project\nOpen"
+    ID_FILE_NEW             "Create a new BridgeLink Project\nNew (Ctrl+N)"
+    ID_FILE_OPEN            "Open an existing project\nOpen (Ctrl+O)"
     ID_FILE_CLOSE           "Close the current project\nClose"
-    ID_FILE_SAVE            "Save the current project\nSave"
+    ID_FILE_SAVE            "Save the current project\nSave (Ctrl+S)"
     ID_FILE_SAVE_AS         "Save the current project with a new name\nSave As"
     ID_FILE_PAGE_SETUP      "Change the printing options\nPage Setup"
     ID_FILE_PRINT_SETUP     "Change the printer and printing options\nPrint Setup"
-    ID_FILE_PRINT           "Print the active view\nPrint"
-    ID_FILE_PRINT_DIRECT    "Print the current view\nPrint"
+    ID_FILE_PRINT           "Print the active view\nPrint (Ctrl+P)"
+    ID_FILE_PRINT_DIRECT    "Print the current view\nPrint (Ctrl+P)"
     ID_FILE_PRINT_PREVIEW   "Display full pages\nPrint Preview"
     ID_FILE_SEND_MAIL       "Send the current project through electronic mail\nSend project via E-mail"
 END
@@ -4610,8 +4611,8 @@ BEGIN
     ID_EDIT_REPEAT          "Repeat the last action\nRepeat"
     ID_EDIT_REPLACE         "Replace specific text with different text\nReplace"
     ID_EDIT_SELECT_ALL      "Select the entire document\nSelect All"
-    ID_EDIT_UNDO            "Undo\nUndo"
-    ID_EDIT_REDO            "Redo\nRedo"
+    ID_EDIT_UNDO            "Undo\nUndo (Ctrl+Z)"
+    ID_EDIT_REDO            "Redo\nRedo (Ctrl+Y)"
 END
 
 STRINGTABLE 
@@ -4691,10 +4692,10 @@ END
 STRINGTABLE 
 BEGIN
     ID_PROJECT_PIERDESC     "Edit an abutment\\pier\nEdit an abutment\\pier"
-    ID_DELETE               "Delete\nDelete"
-    ID_INSERT               "Insert Span\nInsert Span"
-    ID_INSERT_SPAN          "Insert Span\nInsert Span"
-    ID_INSERT_PIER          "Insert Span\nInsert Span"
+    ID_DELETE               "Delete\nDelete (Del)"
+    ID_INSERT               "Insert Span\nInsert Span (Ins)"
+    ID_INSERT_SPAN          "Insert Span\nInsert Span (Ins)"
+    ID_INSERT_PIER          "Insert Span\nInsert Span (Ins)"
     ID_OPTIONS_HINTS        "Edit User Interface Hint Options\nHints"
     ID_OPTIONS_LABELS       "Set the format for girder labels\nEdit girder label format"
     ID_RATING_SPEC          "Edit load rating options for this project\nEdit Load Rating Options"
@@ -4752,12 +4753,13 @@ STRINGTABLE
 BEGIN
     ID_FILE_PROJECT_PROPERTIES 
                             "Shows the properties for the current project\nProject Properties"
-    ID_VIEW_BRIDGEMODELEDITOR "Shows the Bridge Model\nBridge Model View"
+    ID_VIEW_BRIDGEMODELEDITOR 
+                            "Shows the Bridge Model\nBridge Model View (Ctrl+B)"
 END
 
 STRINGTABLE 
 BEGIN
-    ID_VIEW_GIRDEREDITOR    "Shows Detail View of a Girder\nGirder View"
+    ID_VIEW_GIRDEREDITOR    "Shows Detail View of a Girder\nGirder View (Ctrl+G)"
     ID_VIEW_ANALYSISMODELEDITOR 
                             "Shows the Analysis Model View\nAnalysis Model View"
     ID_VIEW_LIBRARYEDITOR   "Shows the Library Editor\nEdit Library"
@@ -4768,8 +4770,8 @@ BEGIN
     ID_VIEWSETTINGS_LIBRARYEDITOR "Library Editor view settings"
     ID_CONFIGURE_PGSUPER    "Configure the library, template, and user information settings\nConfigure PGSuper"
     ID_PROJECT_AUTOCALC     "Toggles AutoCalc mode.\nAutoCalc"
-    ID_PROJECT_UPDATENOW    "Update all views, reports, and graphs\nUpdate Now"
-    ID_PROJECT_DESIGNGIRDER "Run Preliminary Girder Designer\nPreliminary Girder Designer"
+    ID_PROJECT_UPDATENOW    "Update all views, reports, and graphs\nUpdate Now (F5)"
+    ID_PROJECT_DESIGNGIRDER "Run Preliminary Girder Designer\nDesign Girder (Ctrl+D)"
     ID_PROJECT_SPEC         "Choose the design and analysis criteria for your project\nSelect Project Criteria"
     ID_VIEW_ANALYSISRESULTS "View analysis results\nAnalysis Results"
 END

@@ -1,29 +1,26 @@
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 44.00   6  8.00  1     1     Tx34       38   1/2  270 11.22  8.38   6 24.5  5.100  5.800    3.054   -3.704   3767  0.638  0.814  0.35 -0.11  0.00 -0.01 -0.12 109.64 301.29   1.00   1.00   1.00
+ 44.00   6  8.00  1     1     Tx34       42   1/2  270 10.92  6.73   8 30.5  5.100  5.800    3.054   -3.703   3767  0.637  0.814  0.37 -0.11  0.00 -0.01 -0.12 131.83 356.26   1.00   1.00   1.00
 
 
-The Specification Check was Not Successful
-Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
-
-
- RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 44.00   6  8.00  1     2     Tx34       42   1/2  270 10.92  6.73   8 30.5  5.100  5.800    3.188   -3.894   3927  0.638  0.814  0.37 -0.13  0.00 -0.01 -0.13 131.83 355.96   1.00   1.00   1.00
-
-
-The Specification Check was Not Successful
-Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
+The Specification Check was Successful
 
 
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 44.00   6  8.00  1     4     Tx34       50   1/2  270 10.21  6.21  10 30.5  5.800  6.400    3.690   -4.316   4177  0.638  0.814  0.39 -0.13  0.00 -0.01 -0.13 169.71 461.65   1.00   1.00   1.00
+ 44.00   6  8.00  1     2     Tx34       44   1/2  270 10.74  6.74   8 30.5  5.300  6.200    3.188   -3.894   3926  0.637  0.814  0.38 -0.13  0.00 -0.01 -0.13 140.97 378.30   1.00   1.00   1.00
+
+
+The Specification Check was Successful
+
+
+ RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 44.00   6  8.00  1     4     Tx34       54   1/2  270  9.75  5.75  12 30.5  6.200  6.700    3.690   -4.316   4176  0.637  0.814  0.38 -0.13  0.00 -0.01 -0.13 186.86 513.14   1.00   1.00   1.00
 
 
 Girder design was Not Successful
 The Specification Check was Not Successful
-Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
 Ultimate vertical shear capacity check failed for Strength I Limit State for the Bridge Site Stage 3.
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
 Stirrup detailing checks failed for the Strength I Limit State.

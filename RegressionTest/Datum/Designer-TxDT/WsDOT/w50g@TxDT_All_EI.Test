@@ -1,6 +1,17 @@
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 27.25   5  6.00  1     1     W50G  *    26  0.60  270 19.61 10.15   6 46.0  7.400 11.800    3.953   -4.206   5044  0.561  0.671  0.32 -0.09  0.00 -0.01 -0.10 105.78 187.18   1.75   5.00   5.00
+ 27.25   5  6.00  1     1     W50G  *    26  0.60  270 19.61 10.15   6 46.0  6.200  6.900    4.589   -4.411   4830  0.548  0.671  0.36 -0.12  0.00 -0.01 -0.13 113.53 189.20   1.75   5.00   5.00
+
+
+Girder design was Not Successful
+The Specification Check was Not Successful
+Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
+Hauling checks failed
+
+
+ RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 27.25   5  6.00  1     2     W50G  *    26  0.60  270 19.61 10.15   6 46.0  7.600  7.900    4.678   -4.465   5019  0.551  0.671  0.31 -0.11  0.00 -0.01 -0.12 104.66 164.15   1.75   5.00   5.00
 
 
 The Specification Check was Not Successful
@@ -9,16 +20,7 @@ Hauling checks failed
 
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 27.25   5  6.00  1     2     W50G  *    25  0.60  270 19.93  5.73   9 46.0  7.200 10.400    3.883   -4.210   4911  0.558  0.671  0.29 -0.10  0.00 -0.01 -0.11 100.16 173.68   1.75   5.00   5.00
-
-
-The Specification Check was Not Successful
-Hauling checks failed
-
-
- RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 27.25   5  6.00  1     3     W50G  *    25  0.60  270 19.93  5.73   9 46.0  7.200 10.400    3.883   -4.210   4911  0.558  0.671  0.29 -0.10  0.00 -0.01 -0.11 100.16 173.68   1.75   5.00   5.00
+ 27.25   5  6.00  1     3     W50G  *    26  0.60  270 19.61 10.15   6 46.0  7.600  7.900    4.678   -4.465   5019  0.551  0.671  0.31 -0.11  0.00 -0.01 -0.12 104.66 164.15   1.75   5.00   5.00
 
 
 The Specification Check was Not Successful

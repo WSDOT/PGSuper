@@ -338,7 +338,6 @@ rptChapter* CTimeStepDetailsChapterBuilder::Build(CReportSpecification* pRptSpec
       rowIdx++;
 
       int nLoads = sizeof(tsDetails.Girder.dPi)/sizeof(tsDetails.Girder.dPi[0]);
-      //nLoads -= 3; // don't include creep, shrinkage, or relaxation
       Float64 dP = 0;
       Float64 dM = 0;
       for ( int i = 0; i < nLoads; i++, rowIdx++ )
@@ -582,7 +581,13 @@ rptChapter* CTimeStepDetailsChapterBuilder::Build(CReportSpecification* pRptSpec
       
       *pPara << rptNewLine;
 
-      // Distribution of internal forces to each element of the cross section
+      // Stress in girder concrete
+      Float64 fTop = 0;
+      for ( int i = 0; i < nLoads; i++ )
+      {
+         fTop += tsDetails.Girder.f[pgsTypes::TopFace][i][rtCumulative];
+      }
+      *pPara << _T("f top Girder = ") << stress.SetValue(fTop) << rptNewLine;
 
    } // next interval
 

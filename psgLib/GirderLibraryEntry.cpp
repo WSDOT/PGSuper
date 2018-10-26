@@ -718,13 +718,11 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
          {
             CString strMsg;
             strMsg.Format(_T("Unable to create the \"%s\" section, published by %s\n\nThe \"%s\" section is not available on this computer.\n\nPlease contact the publisher for assistance.\n%s"),strSectionName.c_str(),strPublisher.c_str(),strSectionName.c_str(),strPublisherContactInfo.c_str());
-            sysXStructuredLoad e(sysXStructuredLoad::UserDefined,_T(__FILE__),__LINE__);
-            e.SetExtendedMessage(strMsg);
 
             AFX_MANAGE_STATE(AfxGetAppModuleState());
             AfxMessageBox(strMsg);
 
-            e.Throw();
+            throw 0; // just a dummy exception... will be caught in pgslibLoadLibrary
          }
 
          ATLASSERT(m_pBeamFactory != NULL);

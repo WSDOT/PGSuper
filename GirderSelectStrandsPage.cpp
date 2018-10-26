@@ -393,6 +393,12 @@ void CGirderSelectStrandsPage::OnPaint()
    Float64 bottom_width;
    gdrSection->get_BottomWidth(&bottom_width);
 
+   Float64 top_width;
+   gdrSection->get_TopWidth(&top_width);
+
+   Float64 height;
+   gdrSection->get_GirderHeight(&height);
+
    CComPtr<IRect2d> shape_box;
    shape->get_BoundingBox(&shape_box);
 
@@ -432,9 +438,9 @@ void CGirderSelectStrandsPage::OnPaint()
    gpRect2d strand_bounds = ComputeStrandBounds(strand_mover, absol_end_offset, absol_hp_offset);
 
    gpSize2d world_size;
-   world_size.Dx() = Max(bottom_width,strand_bounds.Width());
+   world_size.Dx() = Max(top_width,bottom_width,strand_bounds.Width());
 
-   world_size.Dy() = strand_bounds.Height();
+   world_size.Dy() = Max(height,strand_bounds.Height());
    if ( IsZero(world_size.Dy()) )
    {
       world_size.Dy() = world_size.Dx()/2;

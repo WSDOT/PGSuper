@@ -221,6 +221,11 @@ m_pReactions(pReactions), m_GirderKey(girderKey)
 {
 }
 
+ProductForcesReactionAdapter::~ProductForcesReactionAdapter()
+{
+   m_Locations.clear();
+}
+
 ReactionLocationIter ProductForcesReactionAdapter::GetReactionLocations(IBridge* pBridge)
 {
    if (m_Locations.empty())
@@ -260,6 +265,11 @@ BearingDesignProductReactionAdapter::BearingDesignProductReactionAdapter(IBearin
    m_GirderKey(girderKey),
    m_IntervalIdx(intervalIdx)
 {
+}
+
+BearingDesignProductReactionAdapter::~BearingDesignProductReactionAdapter()
+{
+   m_Locations.clear();
 }
 
 ReactionLocationIter BearingDesignProductReactionAdapter::GetReactionLocations(IBridge* pBridge)
@@ -330,6 +340,11 @@ CombinedLsForcesReactionAdapter::CombinedLsForcesReactionAdapter(IReactions* pRe
    m_pReactions(pReactions), m_LsPointer(pForces), m_GirderKey(girderKey)
 {;}
 
+CombinedLsForcesReactionAdapter::~CombinedLsForcesReactionAdapter()
+{
+   m_Locations.clear();
+}
+
 ReactionLocationIter CombinedLsForcesReactionAdapter::GetReactionLocations(IBridge* pBridge)
 {
    if (m_Locations.empty())
@@ -375,6 +390,11 @@ CmbLsBearingDesignReactionAdapter::CmbLsBearingDesignReactionAdapter(IBearingDes
    m_IntervalIdx(intervalIdx),
    m_GirderKey(girderKey)
 {
+}
+
+CmbLsBearingDesignReactionAdapter::~CmbLsBearingDesignReactionAdapter()
+{
+   m_Locations.clear();
 }
 
 ReactionLocationIter CmbLsBearingDesignReactionAdapter::GetReactionLocations(IBridge* pBridge)

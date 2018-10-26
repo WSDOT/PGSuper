@@ -42,6 +42,7 @@ enum GraphType
    graphDemand, 
    graphAllowable, 
    graphCapacity,
-   graphMinCapacity
+   graphMinCapacity,
+   graphDeckShrinkageStress
 };
 

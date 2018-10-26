@@ -88,12 +88,20 @@ void CSpecLossPage::OnLossMethodChanged()
       EnableTxDOT2013(method==3);
       EnableTimeDependentModel(FALSE);
 
-      BOOL bEnable = lrfdVersionMgr::ThirdEdition2004 < m_SpecVersion && (method == 0 || method == 1 || method == 4) ? TRUE : FALSE;
-      BOOL bEnableShrk = bEnable && method != 4 ? TRUE : FALSE;
+      CSpecMainSheet* pDad = (CSpecMainSheet*)GetParent();
+      if ( pDad->m_Entry.GetSectionPropertyMode() == pgsTypes::spmGross )
+      {
+         BOOL bEnable = lrfdVersionMgr::ThirdEdition2004 < m_SpecVersion && (method == 0 || method == 1 || method == 4) ? TRUE : FALSE;
+         BOOL bEnableShrk = bEnable && method != 4 ? TRUE : FALSE;
+         EnableElasticGains(bEnable, bEnableShrk);
+      }
+      else
+      {
+         // no elastic gains for transformed section analysis (they are implicit)
+         EnableElasticGains(FALSE,FALSE);
+      }
 
-      EnableElasticGains(bEnable, bEnableShrk);
-
-      bEnable = (0 <= method && method < 4) ? TRUE : FALSE;
+      BOOL bEnable = (0 <= method && method < 4) ? TRUE : FALSE;
       EnableRelaxation(bEnable);
    }
    else

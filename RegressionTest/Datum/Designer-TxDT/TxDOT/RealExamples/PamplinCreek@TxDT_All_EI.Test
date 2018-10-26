@@ -1,37 +1,36 @@
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 44.00   6  8.00  1     1     IV         28   1/2  270 21.32 17.47   6 24.0  4.000  5.000    2.391   -2.716   4883  0.678  0.889  0.21 -0.05  0.00 -0.00 -0.06  63.30 174.42   0.00   0.00   0.00
+ 44.00   6  8.00  1     1     IV         28   1/2  270 21.32 17.47   6 24.0  4.000  5.000    2.391   -2.716   4884  0.678  0.889  0.21 -0.05  0.00 -0.00 -0.06  63.30 171.42   0.00   0.00   0.00
 
 
 The Specification Check was Not Successful
-Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
 Bursting zone checks failed.
 
 
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 44.00   6  8.00  1     2     IV         30   1/2  270 21.15 16.75   6 28.0  4.000  5.000    2.511   -2.868   5095  0.677  0.890  0.23 -0.07  0.00 -0.00 -0.07  72.58 193.90   0.00   0.00   0.00
+ 44.00   6  8.00  1     2     IV         32   1/2  270 21.00 14.63   6 40.0  4.000  5.000    2.511   -2.868   5095  0.677  0.890  0.24 -0.07  0.00 -0.00 -0.07  82.71 215.95   0.00   0.00   0.00
 
 
 The Specification Check was Not Successful
-Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
+Longitudinal Reinforcement for Shear check failed for Strength I Limit State for the Bridge Site Stage 3.
 Bursting zone checks failed.
 
 
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 44.00   6  8.00  1     4     IV         30   1/2  270 21.15 16.75   6 28.0  4.000  5.000    2.566   -2.926   5185  0.675  0.890  0.23 -0.07  0.00 -0.00 -0.07  71.99 191.98   0.00   0.00   0.00
+ 44.00   6  8.00  1     4     IV         32   1/2  270 21.00 14.63   6 40.0  4.000  5.000    2.566   -2.926   5185  0.675  0.890  0.24 -0.07  0.00 -0.00 -0.07  82.10 213.84   0.00   0.00   0.00
 
 
 The Specification Check was Not Successful
-Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
+Longitudinal Reinforcement for Shear check failed for Strength I Limit State for the Bridge Site Stage 3.
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
 Bursting zone checks failed.
 
 
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 44.00   6  8.00  2     1     IV         22   1/2  270 21.84 18.93   4 20.0  4.000  5.000    1.925   -2.225   4090  0.700  0.887  0.14 -0.03  0.00 -0.00 -0.04  42.08 122.02   0.00   0.00   0.00
+ 44.00   6  8.00  2     1     IV         22   1/2  270 21.84 18.93   4 20.0  4.000  5.000    1.925   -2.225   4090  0.700  0.887  0.14 -0.03  0.00 -0.00 -0.04  42.08 120.14   0.00   0.00   0.00
 
 
 The Specification Check was Not Successful
@@ -40,80 +39,79 @@ Longitudinal Reinforcement for Shear check failed for Strength I Limit State for
 
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 44.00   6  8.00  2     2     IV         22   1/2  270 21.84 18.93   4 20.0  4.000  5.000    2.011   -2.338   4250  0.698  0.887  0.14 -0.04  0.00 -0.00 -0.04  41.90 119.27   0.00   0.00   0.00
-
-
-The Specification Check was Not Successful
-Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
-Longitudinal Reinforcement for Shear check failed for Strength I Limit State for the Bridge Site Stage 3.
-
-
- RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 44.00   6  8.00  2     4     IV         22   1/2  270 21.84 18.93   4 20.0  4.000  5.000    2.054   -2.384   4324  0.696  0.887  0.14 -0.04  0.00 -0.00 -0.05  41.55 118.10   0.00   0.00   0.00
-
-
-The Specification Check was Not Successful
-Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
-Longitudinal Reinforcement for Shear check failed for Strength I Limit State for the Bridge Site Stage 3.
-
-
- RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 44.00   6  8.00  3     1     IV         22   1/2  270 21.84 18.93   4 20.0  4.000  5.000    1.925   -2.225   4090  0.700  0.887  0.14 -0.03  0.00 -0.00 -0.04  42.08 122.02   0.00   0.00   0.00
+ 44.00   6  8.00  2     2     IV         24   1/2  270 21.75 18.42   4 24.0  4.000  5.000    2.011   -2.338   4250  0.699  0.887  0.16 -0.04  0.00 -0.00 -0.04  50.26 138.71   0.00   0.00   0.00
 
 
 The Specification Check was Not Successful
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State for the Bridge Site Stage 3.
-
-
- RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 44.00   6  8.00  3     2     IV         22   1/2  270 21.84 18.93   4 20.0  4.000  5.000    2.011   -2.338   4250  0.698  0.887  0.14 -0.04  0.00 -0.00 -0.04  41.90 119.27   0.00   0.00   0.00
-
-
-The Specification Check was Not Successful
-Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
-Longitudinal Reinforcement for Shear check failed for Strength I Limit State for the Bridge Site Stage 3.
-
-
- RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 44.00   6  8.00  3     4     IV         22   1/2  270 21.84 18.93   4 20.0  4.000  5.000    2.054   -2.384   4324  0.696  0.887  0.14 -0.04  0.00 -0.00 -0.05  41.55 118.10   0.00   0.00   0.00
-
-
-The Specification Check was Not Successful
-Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
-Longitudinal Reinforcement for Shear check failed for Strength I Limit State for the Bridge Site Stage 3.
-
-
- RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
- ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 44.00   6  8.00  4     1     IV         28   1/2  270 21.32 17.47   6 24.0  4.000  5.000    2.392   -2.717   4885  0.678  0.889  0.21 -0.06  0.00 -0.00 -0.06  63.30 174.40   0.00   0.00   0.00
-
-
-The Specification Check was Not Successful
-Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
 Bursting zone checks failed.
 
 
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 44.00   6  8.00  4     2     IV         30   1/2  270 21.15 16.75   6 28.0  4.000  5.000    2.513   -2.870   5097  0.677  0.890  0.23 -0.07  0.00 -0.00 -0.07  72.57 193.88   0.00   0.00   0.00
+ 44.00   6  8.00  2     4     IV         24   1/2  270 21.75 18.42   4 24.0  4.000  5.000    2.054   -2.384   4324  0.696  0.887  0.16 -0.04  0.00 -0.00 -0.05  49.87 137.40   0.00   0.00   0.00
 
 
 The Specification Check was Not Successful
-Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
+Longitudinal Reinforcement for Shear check failed for Strength I Limit State for the Bridge Site Stage 3.
 Bursting zone checks failed.
 
 
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 44.00   6  8.00  4     4     IV         30   1/2  270 21.15 16.75   6 28.0  4.000  5.000    2.567   -2.927   5187  0.675  0.890  0.23 -0.07  0.00 -0.00 -0.08  71.99 191.96   0.00   0.00   0.00
+ 44.00   6  8.00  3     1     IV         22   1/2  270 21.84 18.93   4 20.0  4.000  5.000    1.925   -2.225   4090  0.700  0.887  0.14 -0.03  0.00 -0.00 -0.04  42.08 120.14   0.00   0.00   0.00
 
 
 The Specification Check was Not Successful
-Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
+Longitudinal Reinforcement for Shear check failed for Strength I Limit State for the Bridge Site Stage 3.
+
+
+ RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 44.00   6  8.00  3     2     IV         24   1/2  270 21.75 18.42   4 24.0  4.000  5.000    2.011   -2.338   4250  0.699  0.887  0.16 -0.04  0.00 -0.00 -0.04  50.26 138.71   0.00   0.00   0.00
+
+
+The Specification Check was Not Successful
+Longitudinal Reinforcement for Shear check failed for Strength I Limit State for the Bridge Site Stage 3.
+Bursting zone checks failed.
+
+
+ RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 44.00   6  8.00  3     4     IV         24   1/2  270 21.75 18.42   4 24.0  4.000  5.000    2.054   -2.384   4324  0.696  0.887  0.16 -0.04  0.00 -0.00 -0.05  49.87 137.40   0.00   0.00   0.00
+
+
+The Specification Check was Not Successful
+Longitudinal Reinforcement for Shear check failed for Strength I Limit State for the Bridge Site Stage 3.
+Bursting zone checks failed.
+
+
+ RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 44.00   6  8.00  4     1     IV         28   1/2  270 21.32 17.47   6 24.0  4.000  5.000    2.392   -2.717   4885  0.678  0.889  0.21 -0.06  0.00 -0.00 -0.06  63.30 171.40   0.00   0.00   0.00
+
+
+The Specification Check was Not Successful
+Bursting zone checks failed.
+
+
+ RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 44.00   6  8.00  4     2     IV         32   1/2  270 21.00 14.63   6 40.0  4.000  5.000    2.513   -2.870   5097  0.677  0.890  0.24 -0.07  0.00 -0.00 -0.07  82.71 215.92   0.00   0.00   0.00
+
+
+The Specification Check was Not Successful
+Longitudinal Reinforcement for Shear check failed for Strength I Limit State for the Bridge Site Stage 3.
+Bursting zone checks failed.
+
+
+ RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 44.00   6  8.00  4     4     IV         32   1/2  270 21.00 14.63   6 40.0  4.000  5.000    2.567   -2.927   5187  0.675  0.890  0.24 -0.07  0.00 -0.00 -0.08  82.09 213.82   0.00   0.00   0.00
+
+
+The Specification Check was Not Successful
+Longitudinal Reinforcement for Shear check failed for Strength I Limit State for the Bridge Site Stage 3.
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
 Bursting zone checks failed.
 

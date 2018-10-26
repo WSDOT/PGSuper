@@ -1252,6 +1252,7 @@
 #define IDC_VERT_STATIC                 1643
 #define IDC_RIGHT_TAPERED_LABEL         1643
 #define IDS_E_READ                      1644
+#define IDC_USER_LLDF_NOTE              1644
 #define IDC_RIGHT_PRISMATIC_LABEL       1644
 #define IDC_SERVER_STATIC3              1645
 #define IDS_E_FORMAT                    1646

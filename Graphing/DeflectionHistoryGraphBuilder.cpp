@@ -249,16 +249,19 @@ void CDeflectionHistoryGraphBuilder::UpdateGraphData(const pgsPointOfInterest& p
    GET_IFACE(ILimitStateForces,pLimitStateForces);
    GET_IFACE(IIntervals,pIntervals);
 
+   GET_IFACE(IProductForces,pProductForces);
+   pgsTypes::BridgeAnalysisType bat = pProductForces->GetBridgeAnalysisType(pgsTypes::Minimize);
+
    IntervalIndexType startIntervalIdx = 0;
    IntervalIndexType nIntervals = pIntervals->GetIntervalCount();
 
    Float64 x = GetX(segmentKey,startIntervalIdx,pgsTypes::Start,pIntervals);
-   PlotDeflection(x,poi,startIntervalIdx,dataSeries,pLimitStateForces);
+   PlotDeflection(x,poi,startIntervalIdx,dataSeries,bat,pLimitStateForces);
 
    for ( IntervalIndexType intervalIdx = startIntervalIdx; intervalIdx < nIntervals; intervalIdx++ )
    {
       Float64 x = GetX(segmentKey,intervalIdx,pgsTypes::End,pIntervals);
-      PlotDeflection(x,poi,intervalIdx,dataSeries,pLimitStateForces);
+      PlotDeflection(x,poi,intervalIdx,dataSeries,bat,pLimitStateForces);
    }
 }
 
@@ -283,14 +286,14 @@ Float64 CDeflectionHistoryGraphBuilder::GetX(const CSegmentKey& segmentKey,Inter
    return x;
 }
 
-void CDeflectionHistoryGraphBuilder::PlotDeflection(Float64 x,const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,IndexType dataSeries,ILimitStateForces* pLimitStateForces)
+void CDeflectionHistoryGraphBuilder::PlotDeflection(Float64 x,const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,IndexType dataSeries,pgsTypes::BridgeAnalysisType bat,ILimitStateForces* pLimitStateForces)
 {
    bool bIncludePrestress = true;
    bool bIncludeLiveLoad  = false;
    bool bIncludeElevationAdjustment = ((CDeflectionHistoryGraphController*)m_pGraphController)->IncludeElevationAdjustment();
 
    Float64 y;
-   pLimitStateForces->GetDeflection(intervalIdx,pgsTypes::ServiceI,poi,pgsTypes::ContinuousSpan,bIncludePrestress,bIncludeLiveLoad,bIncludeElevationAdjustment,&y,  &y);
+   pLimitStateForces->GetDeflection(intervalIdx,pgsTypes::ServiceI,poi,bat,bIncludePrestress,bIncludeLiveLoad,bIncludeElevationAdjustment,&y,  &y);
    AddGraphPoint(dataSeries, x, y);
 }
 

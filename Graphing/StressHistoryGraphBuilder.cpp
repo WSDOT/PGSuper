@@ -383,7 +383,7 @@ void CStressHistoryGraphBuilder::PlotStressPoints(Float64 x,const pgsPointOfInte
    bool bIncludePrestress = true;
 
    Float64 fMinEnd, fMaxEnd;
-   pLimitStateForces->GetStress(intervalIdx,limitState,poi,pgsTypes::ContinuousSpan,bIncludePrestress,stressLocation,&fMinEnd,&fMaxEnd);
+   pLimitStateForces->GetStress(intervalIdx,limitState,poi,bat,bIncludePrestress,stressLocation,&fMinEnd,&fMaxEnd);
 
    // get live load stress
    Float64 fTopMin(0), fTopMax(0), fBotMin(0), fBotMax(0);

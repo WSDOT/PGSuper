@@ -1923,16 +1923,13 @@ void pgsDesigner2::CheckSegmentStresses(const CSegmentKey& segmentKey,const std:
                      // other that the precompressed tensile zone
                      artifact.IsApplicable( stressLocation, !bIsInPTZ );
                   }
-                  else if ( bCheckTemporaryStresses )
+                  else if ( bCheckTemporaryStresses && task.intervalIdx == tsRemovalIntervalIdx )
                   {
-                     if ( task.intervalIdx == tsRemovalIntervalIdx )
-                     {
-                        artifact.IsApplicable( stressLocation, !bIsInPTZ );
-                     }
-                     else if ( task.intervalIdx == castDeckIntervalIdx )
-                     {
-                        artifact.IsApplicable( stressLocation, bIsInPTZ );
-                     }
+                     artifact.IsApplicable( stressLocation, !bIsInPTZ );
+                  }
+                  else if ( bCheckTemporaryStresses && task.intervalIdx == castDeckIntervalIdx )
+                  {
+                     artifact.IsApplicable( stressLocation, bIsInPTZ );
                   }
                   else
                   {

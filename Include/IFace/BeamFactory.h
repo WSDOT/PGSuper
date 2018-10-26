@@ -51,25 +51,6 @@ struct ISuperstructureMember;
 struct IGirderSection;
 struct IStrandMover;
 
-// In order for PGSuper 2.x to work on the same computer as PGSuper 3.x we
-// had to change all the Class IDs of the beam factories. Files saved with
-// version 2.x have the old CLSIDs and we need the new CLSID to create
-// the beam factory. This is easy to implement for our own beam factories,
-// however, we need a way to translate CLSIDs for extension beams. That is
-// what objects of this type do. External publishers of beam factors
-// must register their BeamFactoryCLSIDTranslator with the BeamFactoryCLSIDTranslator
-// category. We will discover all registered translaters and include them in the
-// CLSID translation process.
-
-// {2A687193-C7AD-4943-83AC-BF577CF805E2}
-DEFINE_GUID(IID_IBeamFactoryCLSIDTranslator, 
-0x2a687193, 0xc7ad, 0x4943, 0x83, 0xac, 0xbf, 0x57, 0x7c, 0xf8, 0x5, 0xe2);
-interface IBeamFactoryCLSIDTranslator : public IUnknown
-{
-   virtual bool TranslateCLSID(LPCTSTR oldCLSID,LPCTSTR* newCLSID) = 0;
-};
-
-
 /*****************************************************************************
 INTERFACE
    IBeamFactory
@@ -91,31 +72,29 @@ interface IBeamFactory : IUnknown
    enum BeamFace {BeamTop, BeamBottom};
 
    //---------------------------------------------------------------------------------
-   // Creates a new girder section using the supplied dimensions.
-   // The overall height and top flange height parameters alter the dimensions of the section
-   // Use -1 to use the actual dimensions. These parameters are typically used for spliced girders
-   virtual void CreateGirderSection(IBroker* pBroker,StatusGroupIDType statusGroupID,const IBeamFactory::Dimensions& dimensions,Float64 overallHeight,Float64 bottomFlangeHeight,IGirderSection** ppSection) = 0;
+   // Creates a new girder section using the supplied dimensions
+   virtual void CreateGirderSection(IBroker* pBroker,StatusGroupIDType statusGroupID,SpanIndexType spanIdx,GirderIndexType gdrIdx,const IBeamFactory::Dimensions& dimensions,IGirderSection** ppSection) = 0;
 
    //---------------------------------------------------------------------------------
    // Creates a new girder profile shape using the supplied dimensions
    // This shape is used to draw the girder in profile (elevation)
-   virtual void CreateGirderProfile(IBroker* pBroker,StatusGroupIDType statusGroupID,const CSegmentKey& segmentKey,const IBeamFactory::Dimensions& dimensions,IShape** ppShape) = 0;
+   virtual void CreateGirderProfile(IBroker* pBroker,StatusGroupIDType statusGroupID,SpanIndexType spanIdx,GirderIndexType gdrIdx,const IBeamFactory::Dimensions& dimensions,IShape** ppShape) = 0;
 
    //---------------------------------------------------------------------------------
    // Lays out the girder along the given superstructure member. This function must
    // create the segments that describe the girder line
-   virtual void CreateSegment(IBroker* pBroker,StatusGroupIDType statusGroupID,const CSegmentKey& segmentKey,ISuperstructureMember* ssmbr) = 0;
+   virtual void LayoutGirderLine(IBroker* pBroker,StatusGroupIDType statusGroupID,SpanIndexType spanIdx,GirderIndexType gdrIdx,ISuperstructureMember* ssmbr) = 0;
 
    //---------------------------------------------------------------------------------
    // Adds Points of interest at all cross section changes.
-   // Note to implementer: use the <section change type> | attribute. Add other attributes as needed.
+   // Note to implementer: use the <section change type> | POI_TABULAR | POI_GRAPHICAL attribute. Add other attributes as needed (such as POI_ALLACTIONS).
    // Section change type attributes are POI_SECTCHANGE_LEFTFACE, POI_SECTCHANGE_RIGHTFACE, and POI_SECTCHANGE_TRANSITION.
    // Use POI_SECTCHANGE_RIGHTFACE at start of member and POI_SECTCHANGE_LEFT face at end of member. Also,
    // use when there is an abrupt change in the section. Use POI_SECTCHANGE_TRANSITION wherever there is a smooth transition point.
    // For the casting yard POIs, put at least one poi at the start and end of the girder. 
    // For the bridge site POIs, put at least one poi at the stand and end bearings. DO NOT put bridge site POIs
    // before or after the girder bearings
-   virtual void LayoutSectionChangePointsOfInterest(IBroker* pBroker,const CSegmentKey& segmentKey,pgsPoiMgr* pPoiMgr) = 0;
+   virtual void LayoutSectionChangePointsOfInterest(IBroker* pBroker,SpanIndexType spanIdx,GirderIndexType gdrIdx,pgsPoiMgr* pPoiMgr) = 0;
 
    //---------------------------------------------------------------------------------
    // Creates an object that implements the IDistFactorEngineer interface. The returned
@@ -132,7 +111,7 @@ interface IBeamFactory : IUnknown
    //
    // Implementation Note: You must call SetBroker on the newly create object and supply
    // it with the pointer to the broker object provided by the caller.
-   virtual void CreatePsLossEngineer(IBroker* pBroker,StatusGroupIDType statusGroupID,const CGirderKey& girderKey,IPsLossEngineer** ppEng) = 0;
+   virtual void CreatePsLossEngineer(IBroker* pBroker,StatusGroupIDType statusGroupID,SpanIndexType spanIdx,GirderIndexType gdrIdx,IPsLossEngineer** ppEng) = 0;
 
    //---------------------------------------------------------------------------------
    // The StrandMover object knows how to move harped strands within the section when
@@ -174,11 +153,17 @@ interface IBeamFactory : IUnknown
 
    //---------------------------------------------------------------------------------
    // Returns true if the non-composite beam section is prismatic
-   virtual bool IsPrismatic(IBroker* pBroker,const CSegmentKey& segmentKey) = 0;
+   virtual bool IsPrismatic(IBroker* pBroker,SpanIndexType spanIdx,GirderIndexType gdrIdx) = 0;
 
    //---------------------------------------------------------------------------------
-   // Returns the interal surface area of voids within the member
-   virtual Float64 GetInternalSurfaceAreaOfVoids(IBroker* pBroker,const CSegmentKey& segmentKey) = 0;
+   // Returns the volume of the member
+   virtual Float64 GetVolume(IBroker* pBroker,SpanIndexType spanIdx,GirderIndexType gdrIdx) = 0;
+
+   //---------------------------------------------------------------------------------
+   // Returns the surface area of the member including that of internal voids
+   // If bReduceForPoorlyVentilatedVoids is true, the surface area of internal voids is
+   // reduce by 50% per LRFD 5.4.2.3.2
+   virtual Float64 GetSurfaceArea(IBroker* pBroker,SpanIndexType spanIdx,GirderIndexType gdrIdx,bool bReduceForPoorlyVentilatedVoids) = 0;
 
    //---------------------------------------------------------------------------------
    // Returns the name of an image file that will be used in reports when the
@@ -242,16 +227,6 @@ interface IBeamFactory : IUnknown
    //---------------------------------------------------------------------------------
    // Returns all of methods of beam spacing measurement, supported by this beam
    virtual pgsTypes::SupportedBeamSpacings GetSupportedBeamSpacings() = 0;
-   
-   //---------------------------------------------------------------------------------
-   // Returns all of methods of intermediate diaphragms, supported by this beam
-   // if the vector is empty, the beam doesn't support diaphragms
-   virtual pgsTypes::SupportedDiaphragmTypes GetSupportedDiaphragms() = 0;
-
-   //---------------------------------------------------------------------------------
-   // Returns all the types of intermediate diaphragm locations for a specified diaphragm type
-   // supported by this beam
-   virtual pgsTypes::SupportedDiaphragmLocationTypes GetSupportedDiaphragmLocations(pgsTypes::DiaphragmType type) = 0;
 
    //---------------------------------------------------------------------------------
    // Returns allowable spacing distances for the given deck and spacing type.
@@ -261,7 +236,7 @@ interface IBeamFactory : IUnknown
 
    //---------------------------------------------------------------------------------
    // Returns the number of webs that the section has
-   virtual WebIndexType GetWebCount(const IBeamFactory::Dimensions& dimensions) = 0;
+   virtual WebIndexType GetNumberOfWebs(const IBeamFactory::Dimensions& dimensions) = 0;
 
    //---------------------------------------------------------------------------------
    // Returns the height of the beam at the specified end
@@ -285,26 +260,3 @@ interface IBeamFactory : IUnknown
    virtual GirderIndexType GetMinimumBeamCount() = 0;
 };
 
-// {E97F7992-BE87-43cf-8657-A477EFC32B47}
-DEFINE_GUID(IID_ISplicedBeamFactory, 
-0xe97f7992, 0xbe87, 0x43cf, 0x86, 0x57, 0xa4, 0x77, 0xef, 0xc3, 0x2b, 0x47);
-interface ISplicedBeamFactory : IBeamFactory
-{
-   // returns true if the section depth can be variable
-   virtual bool SupportsVariableDepthSection() = 0;
-   
-   // returns the dimension label for the depth of the section
-   virtual LPCTSTR GetVariableDepthDimension() = 0;
-
-   // returns the supported segment depth variations based on the varible depth section mode
-   virtual std::vector<pgsTypes::SegmentVariationType> GetSupportedSegmentVariations(bool bIsVariableDepthSection) = 0;
-
-   // returns true if variable depth bottom flange is support.
-   virtual bool CanBottomFlangeDepthVary() = 0;
-
-   // returns the dimension label for the bottom flange depth
-   virtual LPCTSTR GetBottomFlangeDepthDimension() = 0;
-
-   // returns true if the section supports end blocks
-   virtual bool SupportsEndBlocks() = 0;
-};

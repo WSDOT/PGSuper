@@ -130,6 +130,9 @@ void CReporterBase::CreateBridgeGeometryReport()
    boost::shared_ptr<CReportSpecificationBuilder> pBrokerRptSpecBuilder(  new CBrokerReportSpecificationBuilder(m_pBroker) );
 
    CReportBuilder* pRptBuilder = new CReportBuilder(_T("Bridge Geometry Report"));
+#if defined _DEBUG || defined _BETA_VERSION
+   pRptBuilder->IncludeTimingChapter();
+#endif
    pRptBuilder->AddTitlePageBuilder( boost::shared_ptr<CTitlePageBuilder>(CreateTitlePageBuilder(pRptBuilder->GetName())) );
    pRptBuilder->SetReportSpecificationBuilder( pBrokerRptSpecBuilder );
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CAlignmentChapterBuilder) );
@@ -146,6 +149,9 @@ void CReporterBase::CreateDetailsReport()
    boost::shared_ptr<CReportSpecificationBuilder> pGirderRptSpecBuilder(new CGirderReportSpecificationBuilder(m_pBroker,CGirderKey(0,0)));
 
    CReportBuilder* pRptBuilder = new CReportBuilder(_T("Details Report"));
+#if defined _DEBUG || defined _BETA_VERSION
+   pRptBuilder->IncludeTimingChapter();
+#endif
    pRptBuilder->AddTitlePageBuilder( boost::shared_ptr<CTitlePageBuilder>(CreateTitlePageBuilder(pRptBuilder->GetName())) );
    pRptBuilder->SetReportSpecificationBuilder( pGirderRptSpecBuilder );
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CAlignmentChapterBuilder) );
@@ -190,6 +196,9 @@ void CReporterBase::CreateLoadRatingReport()
    boost::shared_ptr<CReportSpecificationBuilder> pLoadRatingRptSpecBuilder(new CLoadRatingReportSpecificationBuilder(m_pBroker) );
 
    CReportBuilder* pRptBuilder = new CReportBuilder(_T("Load Rating Report"));
+#if defined _DEBUG || defined _BETA_VERSION
+   pRptBuilder->IncludeTimingChapter();
+#endif
    pRptBuilder->AddTitlePageBuilder( boost::shared_ptr<CTitlePageBuilder>(CreateTitlePageBuilder(pRptBuilder->GetName())) );
    pRptBuilder->SetReportSpecificationBuilder( pLoadRatingRptSpecBuilder );
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CLoadRatingChapterBuilder(true)) );
@@ -228,6 +237,9 @@ void CReporterBase::CreateBearingDesignReport()
    boost::shared_ptr<CReportSpecificationBuilder> pMultiViewRptSpecBuilder(new CMultiViewSpanGirderReportSpecificationBuilder(m_pBroker) );
 
    CReportBuilder* pRptBuilder = new CReportBuilder(_T("Bearing Design Parameters Report"));
+#if defined _DEBUG || defined _BETA_VERSION
+   pRptBuilder->IncludeTimingChapter();
+#endif
    pRptBuilder->AddTitlePageBuilder( boost::shared_ptr<CTitlePageBuilder>(CreateTitlePageBuilder(pRptBuilder->GetName())) );
    pRptBuilder->SetReportSpecificationBuilder( pMultiViewRptSpecBuilder );
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CBearingDesignParametersChapterBuilder) );
@@ -241,6 +253,9 @@ void CReporterBase::CreateSpecChecReport()
    boost::shared_ptr<CReportSpecificationBuilder> pMultiViewRptSpecBuilder(new CMultiViewSpanGirderReportSpecificationBuilder(m_pBroker) );
 
    CReportBuilder* pRptBuilder = new CReportBuilder(_T("Spec Check Report"));
+#if defined _DEBUG || defined _BETA_VERSION
+   pRptBuilder->IncludeTimingChapter();
+#endif
    pRptBuilder->AddTitlePageBuilder( boost::shared_ptr<CTitlePageBuilder>(CreateTitlePageBuilder(pRptBuilder->GetName())) );
    pRptBuilder->SetReportSpecificationBuilder( pMultiViewRptSpecBuilder );
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CSpecCheckSummaryChapterBuilder(false)) );
@@ -255,6 +270,9 @@ void CReporterBase::CreateMultiGirderSpecCheckReport()
    boost::shared_ptr<CReportSpecificationBuilder> pMultiGirderRptSpecBuilder( new CMultiGirderReportSpecificationBuilder(m_pBroker) );
 
    CReportBuilder* pRptBuilder = new CReportBuilder(_T("Multi-Girder Spec Check Summary"));
+#if defined _DEBUG || defined _BETA_VERSION
+   pRptBuilder->IncludeTimingChapter();
+#endif
    pRptBuilder->AddTitlePageBuilder( boost::shared_ptr<CTitlePageBuilder>(CreateTitlePageBuilder(pRptBuilder->GetName())) );
    pRptBuilder->SetReportSpecificationBuilder( pMultiGirderRptSpecBuilder );
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CSpecCheckSummaryChapterBuilder(false)) );
@@ -268,6 +286,9 @@ void CReporterBase::CreateLiftingReport()
    boost::shared_ptr<CReportSpecificationBuilder> pMultiViewRptSpecBuilder(new CMultiViewSpanGirderReportSpecificationBuilder(m_pBroker) );
 
    CReportBuilder* pRptBuilder = new CReportBuilder(_T("Lifting Report"));
+#if defined _DEBUG || defined _BETA_VERSION
+   pRptBuilder->IncludeTimingChapter();
+#endif
    pRptBuilder->AddTitlePageBuilder( boost::shared_ptr<CTitlePageBuilder>(CreateTitlePageBuilder(pRptBuilder->GetName())) );
    pRptBuilder->SetReportSpecificationBuilder( pMultiViewRptSpecBuilder );
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CLiftingCheckChapterBuilder) );
@@ -282,6 +303,9 @@ void CReporterBase::CreateHaulingReport()
    boost::shared_ptr<CReportSpecificationBuilder> pMultiViewRptSpecBuilder(new CMultiViewSpanGirderReportSpecificationBuilder(m_pBroker) );
 
    CReportBuilder* pRptBuilder = new CReportBuilder(_T("Hauling Report"));
+#if defined _DEBUG || defined _BETA_VERSION
+   pRptBuilder->IncludeTimingChapter();
+#endif
    pRptBuilder->AddTitlePageBuilder( boost::shared_ptr<CTitlePageBuilder>(CreateTitlePageBuilder(pRptBuilder->GetName())) );
    pRptBuilder->SetReportSpecificationBuilder( pMultiViewRptSpecBuilder );
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CHaulingCheckChapterBuilder) );
@@ -296,6 +320,9 @@ void CReporterBase::CreateBridgeAnalysisReport()
    boost::shared_ptr<CReportSpecificationBuilder> pBridgeAnalysisRptSpecBuilder( new CBridgeAnalysisReportSpecificationBuilder(m_pBroker) );
 
    CReportBuilder* pRptBuilder = new CReportBuilder(_T("Bridge Analysis Report"));
+#if defined _DEBUG || defined _BETA_VERSION
+   pRptBuilder->IncludeTimingChapter();
+#endif
    pRptBuilder->AddTitlePageBuilder( boost::shared_ptr<CTitlePageBuilder>(CreateTitlePageBuilder(pRptBuilder->GetName())) );
    pRptBuilder->SetReportSpecificationBuilder( pBridgeAnalysisRptSpecBuilder );
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CBridgeAnalysisChapterBuilder(_T("Simple Span"),pgsTypes::Simple)) );
@@ -311,6 +338,9 @@ void CReporterBase::CreateDistributionFactorSummaryReport()
    boost::shared_ptr<CReportSpecificationBuilder> pBrokerRptSpecBuilder( new CBrokerReportSpecificationBuilder(m_pBroker) );
 
    CReportBuilder* pRptBuilder = new CReportBuilder(_T("Live Load Distribution Factors Summary"));
+#if defined _DEBUG || defined _BETA_VERSION
+   pRptBuilder->IncludeTimingChapter();
+#endif
    pRptBuilder->AddTitlePageBuilder( boost::shared_ptr<CTitlePageBuilder>(CreateTitlePageBuilder(pRptBuilder->GetName())) );
    pRptBuilder->SetReportSpecificationBuilder( pBrokerRptSpecBuilder );
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CDistributionFactorSummaryChapterBuilder) );
@@ -325,6 +355,9 @@ void CReporterBase::CreateDistributionFactorsReport()
    boost::shared_ptr<CReportSpecificationBuilder> pMultiViewRptSpecBuilder(new CMultiViewSpanGirderReportSpecificationBuilder(m_pBroker) );
 
    CReportBuilder* pRptBuilder = new CReportBuilder(_T("Live Load Distribution Factors Report"));
+#if defined _DEBUG || defined _BETA_VERSION
+   pRptBuilder->IncludeTimingChapter();
+#endif
    pRptBuilder->AddTitlePageBuilder( boost::shared_ptr<CTitlePageBuilder>(CreateTitlePageBuilder(pRptBuilder->GetName())) );
    pRptBuilder->SetReportSpecificationBuilder( pMultiViewRptSpecBuilder );
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CDistributionFactorDetailsChapterBuilder) );
@@ -339,6 +372,9 @@ void CReporterBase::CreateStageByStageDetailsReport()
    boost::shared_ptr<CReportSpecificationBuilder> pGirderRptSpecBuilder(  new CGirderReportSpecificationBuilder(m_pBroker,CGirderKey(0,0)) );
 
    CReportBuilder* pRptBuilder = new CReportBuilder(_T("Stage by Stage Details Report"));
+#if defined _DEBUG || defined _BETA_VERSION
+   pRptBuilder->IncludeTimingChapter();
+#endif
    pRptBuilder->AddTitlePageBuilder( boost::shared_ptr<CTitlePageBuilder>(CreateTitlePageBuilder(pRptBuilder->GetName())) );
    pRptBuilder->SetReportSpecificationBuilder( pGirderRptSpecBuilder );
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CIntervalChapterBuilder) );
@@ -353,6 +389,9 @@ void CReporterBase::CreateTimeStepDetailsReport()
    boost::shared_ptr<CReportSpecificationBuilder> pPoiRptSpecBuilder(  new CPointOfInterestReportSpecificationBuilder(m_pBroker) );
 
    CReportBuilder* pRptBuilder = new CReportBuilder(_T("Time Step Details Report"));
+#if defined _DEBUG || defined _BETA_VERSION
+   pRptBuilder->IncludeTimingChapter();
+#endif
    pRptBuilder->AddTitlePageBuilder( boost::shared_ptr<CTitlePageBuilder>(CreateTitlePageBuilder(pRptBuilder->GetName())) );
    pRptBuilder->SetReportSpecificationBuilder( pPoiRptSpecBuilder );
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CTimeStepDetailsChapterBuilder) );
@@ -365,6 +404,9 @@ void CReporterBase::CreatePointOfInterestReport()
    boost::shared_ptr<CReportSpecificationBuilder> pGirderRptSpecBuilder(  new CGirderLineReportSpecificationBuilder(m_pBroker) );
 
    CReportBuilder* pRptBuilder = new CReportBuilder(_T("Points of Interest Report"));
+#if defined _DEBUG || defined _BETA_VERSION
+   pRptBuilder->IncludeTimingChapter();
+#endif
    pRptBuilder->AddTitlePageBuilder( boost::shared_ptr<CTitlePageBuilder>(CreateTitlePageBuilder(pRptBuilder->GetName())) );
    pRptBuilder->SetReportSpecificationBuilder( pGirderRptSpecBuilder );
    pRptBuilder->AddChapterBuilder( boost::shared_ptr<CChapterBuilder>(new CPointOfInterestChapterBuilder) );

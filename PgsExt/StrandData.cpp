@@ -1833,6 +1833,20 @@ void CStrandData::ProcessStrandRowData()
 
    GridIndexType rowStartGridIdx = 0; // strand strand grid index for the first grid point in the current strand row
 
+   // reset the vectors
+   for ( int i = 0; i < 3; i++ )
+   {
+      pgsTypes::StrandType strandType = (pgsTypes::StrandType)i;
+      m_Debond[strandType].clear();
+
+      for ( int j = 0; j < 2; j++ )
+      {
+         pgsTypes::MemberEndType endType = (pgsTypes::MemberEndType)j;
+         m_NextendedStrands[strandType][endType].clear();
+      }
+   }
+
+
    CStrandRowCollection::iterator iter(m_StrandRows.begin());
    CStrandRowCollection::iterator iterEnd(m_StrandRows.end());
    for ( ; iter != iterEnd; iter++ )

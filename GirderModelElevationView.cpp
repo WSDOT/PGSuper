@@ -2842,12 +2842,9 @@ void CGirderModelElevationView::BuildStirrupDisplayObjects(CPGSuperDocBase* pDoc
          Float64 start_end_distance = pBridge->GetSegmentStartEndDistance(segmentKey);
          Float64 start_offset = start_brg_offset - start_end_distance;
 
-         if ( !(grpIdx == 0 && segIdx == 0) )
-         {
-            // running_segment_length goes to the CL of the closure... adjust the distance
-            // so that it goes to the left face of the current segment
-            running_segment_length += start_offset;
-         }
+         // running_segment_length goes to the CL of the closure... adjust the distance
+         // so that it goes to the left face of the current segment
+         running_segment_length += start_offset;
 
          PierIndexType startPierIdx = pBridge->GetGirderGroupStartPier(segmentKey.groupIndex);
          Float64 slab_offset = pBridge->GetSlabOffset(segmentKey.groupIndex,startPierIdx,segmentKey.girderIndex); // use for dummy top of stirrup if they are extended into deck

@@ -1,6 +1,6 @@
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 46.92   8  6.00  1     1     III        10  0.60  270 20.08 14.48   2 30.0  4.000  5.000    1.070   -1.606   2349  0.668  0.668  0.08 -0.01  0.00 -0.00 -0.01  21.97  67.38   1.00   5.00   5.00
+ 46.92   8  6.00  1     1     III        10  0.60  270 20.08 14.48   2 30.0  4.000  5.000    1.781   -1.896   2349  0.668  0.668  0.08 -0.01  0.00 -0.00 -0.01  21.97  67.38   1.00   5.00   5.00
 
 
 The Specification Check was Not Successful
@@ -12,7 +12,7 @@ Hauling checks failed
 
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 46.92   8  6.00  1     2     III        10  0.60  270 20.08 14.48   2 30.0  4.000  5.000    1.025   -1.526   2353  0.604  0.651  0.08 -0.01  0.00 -0.00 -0.01  21.98  68.07   1.00   5.00   5.00
+ 46.92   8  6.00  1     2     III        10  0.60  270 20.08 14.48   2 30.0  4.000  5.000    1.705   -1.804   2353  0.604  0.651  0.08 -0.01  0.00 -0.00 -0.01  21.98  68.07   1.00   5.00   5.00
 
 
 The Specification Check was Not Successful
@@ -24,7 +24,7 @@ Hauling checks failed
 
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 46.92   8  6.00  1     5     III        10  0.60  270 20.08 14.48   2 30.0  4.000  5.000    0.935   -1.278   2034  0.605  0.651  0.08 -0.01  0.00 -0.00 -0.01  21.99  71.36   1.00   5.00   5.00
+ 46.92   8  6.00  1     5     III        10  0.60  270 20.08 14.48   2 30.0  4.000  5.000    1.615   -1.556   2034  0.605  0.651  0.08 -0.01  0.00 -0.00 -0.01  21.99  71.36   1.00   5.00   5.00
 
 
 The Specification Check was Not Successful
@@ -36,7 +36,7 @@ Hauling checks failed
 
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 46.92   8  5.00  2     1     III        10  0.60  270 20.08 14.48   2 30.0  4.000  5.000    1.078   -1.525   2303  0.658  0.658  0.08 -0.01  0.00 -0.00 -0.01  21.97  68.52   1.00   5.00   5.00
+ 46.92   8  5.00  2     1     III        10  0.60  270 20.08 14.48   2 30.0  4.000  5.000    1.831   -1.833   2303  0.658  0.658  0.08 -0.01  0.00 -0.00 -0.01  21.97  68.52   1.00   5.00   5.00
 
 
 The Specification Check was Not Successful
@@ -48,7 +48,7 @@ Hauling checks failed
 
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 46.92   8  5.00  2     2     III        10  0.60  270 20.08 14.48   2 30.0  4.000  5.000    0.972   -1.358   2158  0.529  0.576  0.08 -0.01  0.00 -0.00 -0.01  21.98  70.35   1.00   5.00   5.00
+ 46.92   8  5.00  2     2     III        10  0.60  270 20.08 14.48   2 30.0  4.000  5.000    1.618   -1.622   2158  0.529  0.576  0.08 -0.01  0.00 -0.00 -0.01  21.98  70.35   1.00   5.00   5.00
 
 
 The Specification Check was Not Successful
@@ -60,7 +60,7 @@ Hauling checks failed
 
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 46.92   8  5.00  2     5     III        10  0.60  270 20.08 14.48   2 30.0  4.000  5.000    0.893   -1.171   1820  0.529  0.576  0.08 -0.01  0.00 -0.00 -0.01  21.99  72.76   1.00   5.00   5.00
+ 46.92   8  5.00  2     5     III        10  0.60  270 20.08 14.48   2 30.0  4.000  5.000    1.539   -1.436   1820  0.529  0.576  0.08 -0.01  0.00 -0.00 -0.01  21.99  72.76   1.00   5.00   5.00
 
 
 The Specification Check was Not Successful
