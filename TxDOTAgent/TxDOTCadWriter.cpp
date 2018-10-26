@@ -49,40 +49,50 @@
 static void write_spec_check_results(FILE *fp, IBroker* pBroker, const CGirderKey& girderKey, bool designSucceeded);
 static std::_tstring MakeNonStandardStrandString(IBroker* pBroker, const pgsPointOfInterest& midPoi);
 
-// Return string for strand size
+// Return fractional string for strand size
 static int txdString_ftofrac	/* <=  Completion value                   */
 (
 LPTSTR      stringP,		      /* <=  Output text string                 */
 size_t      size,             /* <= size of output string               */
-Float64		value,			   /*  => Value to convert                   */
-Float64		resolution		   /*  => Fractional resolution              */
+Float64		value 			   /*  => Value to convert                   */
 )
 {
-	Float64	fraction = 0.0, whole = 0.0;
-	int		index = 0;
-	TCHAR table[][4] = {_T(" "),_T("1/8"),_T("1/4"),_T("3/8"),_T("1/2"),_T("5/8"),_T("3/4"),_T("7/8")};
+    if(value < 0.0 || 1.0 < value)
+    {
+        ATLASSERT(0); // we don't deal with more than an inch
+        _stprintf_s(stringP, 4, _T("Err "));
+        return CAD_FAIL;
+    }
 
-	/* Validate arguments */
-	if (stringP == NULL) return (ERROR);
-	stringP[0] = 0;
-	resolution = 0.125;	// temp
+    // See if we can resolve to 1/16th's
+    const Float64 stinkth = 1.0/16;
+    Float64 mod16 = fmod(value, stinkth);
+    if (1.0e-05 < mod16)
+    {
+        // Not a 16th - Print decimal value
+        _stprintf_s(stringP, size, _T("%4.2f"),value);
+    }
+    else
+    {
+        Float64 num_16ths = Round(value/stinkth);
+        Float64 numerator(num_16ths), denominator(16.0);
+        // loop until we get an odd numerator
+        while(IsZero(fmod(numerator, 2.0)))
+        {
+            numerator /= 2.0;
+            denominator /= 2.0;
+        }
 
-	/* Break number into whole & fraction */
-	fraction = modf (value, &whole);	
-	
-	/* Create output string */
-	if (whole > 0) _stprintf_s(stringP, size, _T("%.0lf "),whole);
+        Int32 num = (Int32)Round(numerator);
+        Int32 den = (Int32)Round(denominator);
 
-	/* Apply resolution to fraction */
-	index = (int)((fraction + (resolution / 2.0)) / resolution);
+        _stprintf_s(stringP, size, _T("%d/%-d"), num, den);
 
-	/* Append fraction string */
-	_tcscat_s(stringP,size, table[index]);
+        int a = 0;
+    }
 
-	return (CAD_SUCCESS);
+	return CAD_SUCCESS;
 }
-	
-
 
 int TxDOT_WriteCADDataToFile (FILE *fp, IBroker* pBroker, const CGirderKey& girderKey, TxDOTCadExportFormatType format, bool designSucceeded)
 {
@@ -112,10 +122,8 @@ int TxDOT_WriteCADDataToFile (FILE *fp, IBroker* pBroker, const CGirderKey& gird
 	/* Interfaces to all relevant agents */
    GET_IFACE2(pBroker, IBridge,pBridge);
    GET_IFACE2(pBroker, IBridgeDescription,pIBridgeDesc);
-   GET_IFACE2(pBroker, IEAFDisplayUnits,pDisplayUnits);
    GET_IFACE2(pBroker, ISegmentData,pSegmentData);
    GET_IFACE2(pBroker, IStrandGeometry, pStrandGeometry );
-   GET_IFACE2(pBroker, ISectionProperties, pSectProp);
 	GET_IFACE2(pBroker, IPointOfInterest, pPointOfInterest );
    GET_IFACE2(pBroker, IMomentCapacity, pMomentCapacity);
    GET_IFACE2(pBroker, ILiveLoadDistributionFactors, pDistFact);
@@ -138,7 +146,7 @@ int TxDOT_WriteCADDataToFile (FILE *fp, IBroker* pBroker, const CGirderKey& gird
 
 	/* Create pois at the start of girder and mid-span */
    pgsPointOfInterest pois(segmentKey, 0.0);
-	std::vector<pgsPointOfInterest> pmid( pPointOfInterest->GetPointsOfInterest(segmentKey, POI_5L | POI_ERECTED_SEGMENT) );
+	std::vector<pgsPointOfInterest> pmid( pPointOfInterest->GetPointsOfInterest(segmentKey, POI_5L | POI_SPAN) );
 	ATLASSERT(pmid.size() == 1);
 
 
@@ -232,7 +240,7 @@ int TxDOT_WriteCADDataToFile (FILE *fp, IBroker* pBroker, const CGirderKey& gird
    value = ::ConvertFromSysUnits( value, unitMeasure::Inch );
 
 	/* Convert value to fraction representation */
-	txdString_ftofrac (charBuffer, sizeof(charBuffer)/sizeof(TCHAR), value, 0.125); 
+	txdString_ftofrac (charBuffer, sizeof(charBuffer)/sizeof(TCHAR), value); 
 	_tcscpy_s(strandSize, sizeof(strandSize)/sizeof(TCHAR), charBuffer);
 
    /* 7. STRAND STRENGTH */
@@ -301,21 +309,25 @@ int TxDOT_WriteCADDataToFile (FILE *fp, IBroker* pBroker, const CGirderKey& gird
 
    // WRITE DATA TO OUTPUT FILE
 	//----- COL 1 ----- 
-   workerB.WriteString(spanNumber,_T("Span "),5,_T("%5s"),true);
+	workerB.WriteBlankSpaces(1);
+   workerB.WriteString(spanNumber,_T("Span"),4,_T("%-4s"),true);
 	//----- COL 2 ----- 
-   workerB.WriteString(beamNumber,_T(" Gdr "),5,_T("%5s"),true);
+	workerB.WriteBlankSpaces(1);
+   workerB.WriteString(beamNumber,_T(" Gdr"),4,_T("%-4s"), isHarpedDesign); // no trailing space for debond design
 	//----- COL 3 ----- 
-   workerB.WriteString(beamType,_T("Type "),5,_T("%5s"),true);
+   workerB.WriteString(beamType,_T("Type "),5,_T("%-5s"),true);
 	//----- COL 4 ----- 
 	workerB.WriteBlankSpaces(1);
    workerB.WriteString(strandPat,_T("N"),1,_T("%1s"),true);
 	workerB.WriteBlankSpaces(2);
 	//----- COL 5 ----- 
    workerB.WriteInt16((Int16)strandNum,_T("Ns "),3,_T("%3d"),true);
+	workerB.WriteBlankSpaces(1);
 	//----- COL 6 ----- 
-   workerB.WriteString(strandSize,_T("Size "),5,_T("%5s"),true);
+   workerB.WriteString(strandSize,_T("Size "),4,_T("%4s"),true);
+	workerB.WriteBlankSpaces(1);
 	//----- COL 7 ----- 
-   workerB.WriteInt16(strandStrength,_T("Strn"),4,_T("%4d"),true);
+   workerB.WriteInt16(strandStrength,_T("Strn"),3,_T("%3d"),true);
 	//----- COL 8 ----- 
    workerB.WriteFloat64(strandEccCL,_T("EccCL"),5,_T("%5.2f"),true);
 	//----- COL 9 ----- 
@@ -333,6 +345,11 @@ int TxDOT_WriteCADDataToFile (FILE *fp, IBroker* pBroker, const CGirderKey& gird
 
 	   /* 11. DEPRESSED (HARPED) STRAND */
       pStrandGeometry->GetHighestHarpedStrandLocation(segmentKey, &value);
+
+      // value is measured down from top of girder... we want it measured up from the bottom
+      GET_IFACE2(pBroker,ISectionProperties,pSectProp);
+      Float64 Hg = pSectProp->GetHg(releaseIntervalIdx, pois);
+      value += Hg;
 
       Float64 dstrandTo = ::ConvertFromSysUnits( value, unitMeasure::Inch );
 
@@ -353,17 +370,28 @@ int TxDOT_WriteCADDataToFile (FILE *fp, IBroker* pBroker, const CGirderKey& gird
    workerB.WriteFloat64(concreteRelStrength,_T(" Fci  "),6,_T("%6.3f"),true);
 	//----- COL 13 ---- 
    workerB.WriteFloat64(min28dayCompStrength,_T(" Fc   "),6,_T("%6.3f"),true);
-	workerB.WriteBlankSpaces(1);
+	workerB.WriteBlankSpaces(2);
 	//----- COL 14 ---- 
-   workerB.WriteFloat64(designLoadCompStress,_T(" fcomp "),7,_T("%7.3f"),true);
+   workerB.WriteFloat64(designLoadCompStress,_T(" fcomp"),6,_T("%6.3f"),true);
+	workerB.WriteBlankSpaces(1);
 	//----- COL 15 ---- 
-   workerB.WriteFloat64(designLoadTensileStress,_T(" ftens  "),8,_T("%8.3f"),true);
+   workerB.WriteFloat64(designLoadTensileStress,_T(" ftens "),7,_T("%7.3f"),true);
+	workerB.WriteBlankSpaces(1);
+   if (!isHarpedDesign)
+   {
+    	workerB.WriteBlankSpaces(1);
+   }
 	//----- COL 16 ---- 
-   workerB.WriteInt16(reqMinUltimateMomentCapacity,_T("ultMom"),6,_T("%6d"),true);
+   workerB.WriteInt16(reqMinUltimateMomentCapacity,_T("ultMo"),5,_T("%5d"),true);
+   if (isHarpedDesign)
+   {
+    	workerB.WriteBlankSpaces(1);
+   }
 	//----- COL 17 ---- 
-   workerB.WriteFloat64(momentDistFactor,_T("LLDFmo"),6,_T("%6.3f"),true);
+   workerB.WriteFloat64(momentDistFactor,_T("LLDFm"),5,_T("%5.3f"),true);
+	workerB.WriteBlankSpaces(1);
 	//----- COL 17aa ---- 
-   workerB.WriteFloat64(shearDistFactor,_T("LLDFsh"),6,_T("%6.3f"),true);
+   workerB.WriteFloat64(shearDistFactor,_T("LLDFs"),5,_T("%5.3f"),true);
 
    if (do_write_ns_data)
    {
@@ -377,7 +405,6 @@ int TxDOT_WriteCADDataToFile (FILE *fp, IBroker* pBroker, const CGirderKey& gird
    {
       GET_IFACE2(pBroker,ICamber,pCamber);
       GET_IFACE2(pBroker,IProductForces, pProductForces);
-      GET_IFACE2(pBroker,ISpecification, pSpec );
       GET_IFACE2(pBroker,ILosses,pLosses);
 
       pgsTypes::BridgeAnalysisType bat = pProductForces->GetBridgeAnalysisType(pgsTypes::Minimize);
@@ -410,12 +437,12 @@ int TxDOT_WriteCADDataToFile (FILE *fp, IBroker* pBroker, const CGirderKey& gird
 
    	/* 23. LOSSES (INITIAL)  */
       Float64 aps = pStrandGeometry->GetAreaPrestressStrands(segmentKey,releaseIntervalIdx,false);
-      value = pLosses->GetEffectivePrestressLoss(pmid[0],pgsTypes::Permanent,releaseIntervalIdx,pgsTypes::Start) * aps;
+      value = pLosses->GetEffectivePrestressLoss(pmid[0],pgsTypes::Permanent,releaseIntervalIdx,pgsTypes::End) * aps;
 
       Float64 initialLoss = ::ConvertFromSysUnits( value, unitMeasure::Kip );
 
    	/* 24. LOSSES (FINAL)  */
-      value = pLosses->GetEffectivePrestressLoss(pmid[0],pgsTypes::Permanent,railingSystemIntervalIdx,pgsTypes::Middle) * aps;
+      value = pLosses->GetEffectivePrestressLoss(pmid[0],pgsTypes::Permanent,railingSystemIntervalIdx,pgsTypes::End) * aps;
 
       Float64 finalLoss = ::ConvertFromSysUnits( value, unitMeasure::Kip );
 

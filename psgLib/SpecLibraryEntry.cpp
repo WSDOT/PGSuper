@@ -277,17 +277,17 @@ m_LimitStateConcreteStrength(pgsTypes::lscStrengthAtTimeOfLoading)
 
    m_PhiFlexureTensionPS[pgsTypes::Normal]      = 1.00;
    m_PhiFlexureTensionRC[pgsTypes::Normal]      = 0.90;
-   m_PhiFlexureTensionSpliced[pgsTypes::Normal] = 0.95;
+   m_PhiFlexureTensionSpliced[pgsTypes::Normal] = 1.00;
    m_PhiFlexureCompression[pgsTypes::Normal]    = 0.75;
 
    m_PhiFlexureTensionPS[pgsTypes::SandLightweight]      = 1.00;
    m_PhiFlexureTensionRC[pgsTypes::SandLightweight]      = 0.90;
-   m_PhiFlexureTensionSpliced[pgsTypes::SandLightweight] = 0.95;
+   m_PhiFlexureTensionSpliced[pgsTypes::SandLightweight] = 1.00;
    m_PhiFlexureCompression[pgsTypes::SandLightweight]    = 0.75;
 
    m_PhiFlexureTensionPS[pgsTypes::AllLightweight]      = 1.00;
    m_PhiFlexureTensionRC[pgsTypes::AllLightweight]      = 0.90;
-   m_PhiFlexureTensionSpliced[pgsTypes::AllLightweight] = 0.95;
+   m_PhiFlexureTensionSpliced[pgsTypes::AllLightweight] = 1.00;
    m_PhiFlexureCompression[pgsTypes::AllLightweight]    = 0.75;
 
    m_PhiShear[pgsTypes::Normal]          = 0.9;

@@ -106,13 +106,9 @@ void CStrandEccentricities::Build(rptChapter* pChapter,IBroker* pBroker,const CS
             }
             else
             {
-               std::vector<IntervalIndexType> vIntervals(pIntervals->GetSpecCheckIntervals(thisSegmentKey));
-
-               BOOST_FOREACH(IntervalIndexType intervalIdx,vIntervals)
-               {
-                  CStrandEccTable ecc_table;
-                  *p << ecc_table.Build(pBroker,thisSegmentKey,intervalIdx,pDisplayUnits) << rptNewLine;
-               }
+               IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(thisSegmentKey);
+               CStrandEccTable ecc_table;
+               *p << ecc_table.Build(pBroker,thisSegmentKey,releaseIntervalIdx,pDisplayUnits) << rptNewLine;
             }
 
             p = new rptParagraph(pgsReportStyleHolder::GetFootnoteStyle());

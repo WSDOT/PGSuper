@@ -382,8 +382,6 @@ void CLoadRatingDetailsChapterBuilder::ShearRatingDetails(rptChapter* pChapter,I
 
    rptCapacityToDemand rating_factor;
 
-   GET_IFACE2(pBroker,IBridge,pBridge);
-
    ColumnIndexType col = 0;
 
    (*table)(0,col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
@@ -558,8 +556,6 @@ void CLoadRatingDetailsChapterBuilder::StressRatingDetails(rptChapter* pChapter,
    pgsPointOfInterest controllingPoi = pControllingRating->GetPointOfInterest();
 
    const pgsRatingArtifact::StressRatings& artifacts = pRatingArtifact->GetStressRatings();
-
-   GET_IFACE2(pBroker,IBridge,pBridge);
 
    LPCTSTR stressLocation[] = {_T("Bottom Girder"),_T("Top Girder"),_T("Bottom Deck"),_T("Top Deck")};
 

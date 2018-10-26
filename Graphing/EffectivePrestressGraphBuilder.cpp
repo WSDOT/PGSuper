@@ -86,7 +86,7 @@ CGraphBuilder* CEffectivePrestressGraphBuilder::Clone()
 void CEffectivePrestressGraphBuilder::UpdateXAxis()
 {
    CGirderGraphBuilderBase::UpdateXAxis();
-   m_Graph.SetXAxisTitle(_T("Distance From Left End of Girder (")+m_pXFormat->UnitTag()+_T(")"));
+   m_Graph.SetXAxisTitle(std::_tstring(_T("Distance From Left End of Girder (")+m_pXFormat->UnitTag()+_T(")")).c_str());
 }
 
 void CEffectivePrestressGraphBuilder::UpdateYAxis()
@@ -108,14 +108,14 @@ void CEffectivePrestressGraphBuilder::UpdateYAxis()
       const unitmgtStressData& stressUnit = pDisplayUnits->GetStressUnit();
       m_pYFormat = new StressTool(stressUnit);
       m_Graph.SetYAxisValueFormat(*m_pYFormat);
-      m_Graph.SetYAxisTitle(_T("fpe (")+m_pYFormat->UnitTag()+_T(")"));
+      m_Graph.SetYAxisTitle(std::_tstring(_T("fpe (")+m_pYFormat->UnitTag()+_T(")")).c_str());
    }
    else
    {
       const unitmgtForceData& forceUnit = pDisplayUnits->GetGeneralForceUnit();
       m_pYFormat = new ForceTool(forceUnit);
       m_Graph.SetYAxisValueFormat(*m_pYFormat);
-      m_Graph.SetYAxisTitle(_T("Fpe (")+m_pYFormat->UnitTag()+_T(")"));
+      m_Graph.SetYAxisTitle(std::_tstring(_T("Fpe (")+m_pYFormat->UnitTag()+_T(")")).c_str());
    }
 }
 
@@ -165,7 +165,7 @@ void CEffectivePrestressGraphBuilder::UpdateGraphTitle(GroupIndexType grpIdx,Gir
    }
    
    m_Graph.SetTitle(_T("Effective Prestress"));
-   m_Graph.SetSubtitle(std::_tstring(strGraphSubTitle));
+   m_Graph.SetSubtitle(strGraphSubTitle);
 }
 
 void CEffectivePrestressGraphBuilder::UpdateGraphData(GroupIndexType grpIdx,GirderIndexType gdrIdx,DuctIndexType ductIdx)

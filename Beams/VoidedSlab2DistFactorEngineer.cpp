@@ -1307,7 +1307,7 @@ std::_tstring CVoidedSlab2DistFactorEngineer::GetComputationDescription(const CG
    }
    else if ( lldfMethod == LLDF_LRFD || lldfMethod == LLDF_WSDOT  )
    {
-      if (decktype == pgsTypes::sdtCompositeOverlay || decktype == pgsTypes::sdtNone)
+      if (decktype == pgsTypes::sdtCompositeCIP || decktype == pgsTypes::sdtCompositeOverlay || decktype == pgsTypes::sdtNone)
       {
          descr += std::_tstring(_T("AASHTO Type (f) using AASHTO LRFD Method per Article 4.6.2.2"));
       }

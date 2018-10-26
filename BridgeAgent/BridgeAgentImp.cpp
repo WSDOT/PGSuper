@@ -3503,7 +3503,8 @@ void CBridgeAgentImp::ValidateElevationAdjustments(const CSegmentKey& segmentKey
 
    // elevation adjustments at permanent piers are measured relative to the "A" dimension
    // at the first pier. Get "A" at the first pier
-   Float64 Ao = pIBridgeDesc->GetGirderGroup(0)->GetSlabOffset(0,segmentKey.girderIndex);
+   GirderIndexType gdrIdx = Min(pIBridgeDesc->GetGirderGroup(0)->GetGirderCount()-1,segmentKey.girderIndex);
+   Float64 Ao = pIBridgeDesc->GetGirderGroup(0)->GetSlabOffset(0,gdrIdx);
 
    // We want to get an equation for the slope of the segment in terms of y=mx+b
    // The range of the equation is the segment coordinate system
@@ -13359,11 +13360,10 @@ Float64 CBridgeAgentImp::GetSsEccentricity(pgsTypes::SectionPropertyType spType,
       }
 
       // get all current straight strand locations
-      CComPtr<IIndexArray> strand_fill;
-      m_StrandFillers[segmentKey].ComputeStraightStrandFill(girder, Ns, &strand_fill);
+      CIndexArrayWrapper strand_fill(rconfig.PrestressConfig.GetStrandFill(pgsTypes::Straight));
 
       CComPtr<IPoint2dCollection> points;
-      girder->get_StraightStrandPositionsEx(Xpoi, strand_fill, &points);
+      girder->get_StraightStrandPositionsEx(Xpoi, &strand_fill, &points);
 
       CollectionIndexType num_strand_positions;
       points->get_Count(&num_strand_positions);
@@ -13551,11 +13551,10 @@ Float64 CBridgeAgentImp::GetTempEccentricity(pgsTypes::SectionPropertyType spTyp
       }
 
       // use continuous interface to set strands
-      CComPtr<IIndexArray> strand_fill;
-      m_StrandFillers[segmentKey].ComputeTemporaryStrandFill(girder, Nt, &strand_fill);
+      CIndexArrayWrapper strand_fill(rconfig.PrestressConfig.GetStrandFill(pgsTypes::Temporary));
 
       CComPtr<IPoint2dCollection> points;
-      girder->get_TemporaryStrandPositionsEx(Xpoi, strand_fill, &points);
+      girder->get_TemporaryStrandPositionsEx(Xpoi, &strand_fill, &points);
 
       Float64 ecc = 0.0;
 

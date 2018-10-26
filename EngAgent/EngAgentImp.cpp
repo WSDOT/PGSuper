@@ -236,14 +236,14 @@ void CEngAgentImp::ValidateLiveLoadDistributionFactors(const CGirderKey& girderK
             if (action == roaIgnore)
             {
                GET_IFACE(IEAFStatusCenter,pStatusCenter);
-               std::_tstring str(_T("Ranges of Applicability for Load Distribution Factor Equations are to be Ignored."));
+               std::_tstring str(_T("Ranges of Applicability for Live Load Distribution Factor Equations have been ignored."));
                pgsLldfWarningStatusItem* pStatusItem = new pgsLldfWarningStatusItem(m_StatusGroupID,m_scidLldfWarning,str.c_str());
                pStatusCenter->Add(pStatusItem);
             }
             else if (action == roaIgnoreUseLeverRule)
             {
                GET_IFACE(IEAFStatusCenter,pStatusCenter);
-               std::_tstring str(_T("The Lever Rule is to be used for all cases where Ranges of Applicability for Load Distribution Factor Equations are Exceeded. Otherwise, factors are computed using the Equations."));
+               std::_tstring str(_T("The Lever Rule has been used for all cases where Ranges of Applicability for Live Load Distribution Factor Equations are exceeded. Otherwise, factors are computed using the Equations."));
                pgsLldfWarningStatusItem* pStatusItem = new pgsLldfWarningStatusItem(m_StatusGroupID,m_scidLldfWarning,str.c_str());
                pStatusCenter->Add(pStatusItem);
             }

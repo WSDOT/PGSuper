@@ -108,4 +108,5 @@ private:
                       Float64& H,Float64& W,Float64& D1,Float64& D2,Float64& H1,Float64& H2,Float64& S1,Float64& S2,Float64& C1,Float64& C2,Float64& C3,WebIndexType& N,Float64& J,Float64& EndBlockLength);
 
    Float64 GetDimension(const IBeamFactory::Dimensions& dimensions,const std::_tstring& name);
+   bool IsSupportedDeckType(pgsTypes::SupportedDeckType sdt,pgsTypes::SupportedBeamSpacing sbs);
 };

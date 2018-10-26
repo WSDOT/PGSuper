@@ -55,7 +55,7 @@ Confinement zone checks failed.
 
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 102.19  11  9.00  2     6     1)    *    65  0.60  270 31.38 14.80  19 70.0  8.000  8.900    5.411   -5.585  17015  0.773  0.940  0.52 -0.26  0.00  0.00 -0.26 341.99 483.35   3.00   6.17   6.17
+ 102.19  11  9.00  2     6     1)    *    68  0.60  270 31.30 13.48  22 70.0  8.400  9.200    5.450   -5.612  17683  0.774  0.940  0.53 -0.26  0.00  0.00 -0.26 366.90 511.73   3.00   6.17   6.17
 
 
 The Specification Check was Not Successful
@@ -87,7 +87,7 @@ Confinement zone checks failed.
 
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 102.19  11  9.00  3     6     1)    *    62  0.60  270 31.46 16.37  16 70.0  7.600  8.800    5.338   -5.526  16407  0.774  0.940  0.53 -0.25  0.00  0.00 -0.25 319.86 453.64   3.00   6.17   6.17
+ 102.19  11  9.00  3     6     1)    *    65  0.60  270 31.38 14.80  19 70.0  8.000  8.900    5.322   -5.507  17021  0.774  0.940  0.52 -0.25  0.00  0.00 -0.25 343.09 488.92   3.00   6.17   6.17
 
 
 The Specification Check was Not Successful
@@ -345,7 +345,7 @@ Hauling checks failed
 
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 102.19   9  8.71  8     5     1)    *    60  0.60  270 31.52 17.59  14 70.0  7.200  8.700    4.822   -4.721  15525  0.675  0.824  0.54 -0.22  0.00  0.00 -0.22 306.03 494.66   3.00   6.17   6.17
+ 102.19   9  8.71  8     5     1)    *    62  0.60  270 31.46 16.37  16 70.0  7.600  8.900    4.832   -4.725  16001  0.676  0.824  0.53 -0.21  0.00  0.00 -0.21 319.80 508.32   3.00   6.17   6.17
 
 
 Girder design was Not Successful
@@ -378,7 +378,7 @@ Confinement zone checks failed.
 
  RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
  ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
- 102.19   8  9.00  9     5     1)    *    51  0.60  270 31.89 20.87   9 70.0  6.600  8.000    3.993   -3.950  13830  0.743  0.878  0.43 -0.15  0.00  0.00 -0.15 244.49 429.03   3.00   6.17   6.17
+ 102.19   8  9.00  9     5     1)    *    52  0.60  270 31.89 19.97  10 70.0  6.700  8.000    4.001   -3.958  14036  0.743  0.878  0.43 -0.15  0.00  0.00 -0.15 252.75 439.71   3.00   6.17   6.17
 
 
 Girder design was Not Successful

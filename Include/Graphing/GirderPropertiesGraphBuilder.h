@@ -44,7 +44,6 @@ public:
       EffectiveFlangeWidth,
       Fc,
       Ec,
-      Ece,
       PropertyTypeCount // this must always be last
    };
 

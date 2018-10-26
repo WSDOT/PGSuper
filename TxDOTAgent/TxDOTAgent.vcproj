@@ -1222,10 +1222,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\Include\IFace\TxDOTCadExport.h"
-				>
-			</File>
-			<File
 				RelativePath=".\TxDOTCadExporter.h"
 				>
 			</File>
@@ -1418,6 +1414,10 @@
 		<Filter
 			Name="IFace"
 			>
+			<File
+				RelativePath="..\Include\IFace\TxDOTCadExport.h"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Status Items"

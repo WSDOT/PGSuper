@@ -3508,8 +3508,6 @@ void pgsDesigner2::CheckLongReinfShear(const pgsPointOfInterest& poi,
    pArtifact->SetAs(as);
 
    // prestress
-   GET_IFACE(IStrandGeometry,pStrandGeom);
-   GET_IFACE(ITendonGeometry,pTendonGeom);
 
    // area of prestress on flexural tension side
    // NOTE: fps (see below) from the moment capacity analysis already accounts for a reduction
@@ -3518,11 +3516,15 @@ void pgsDesigner2::CheckLongReinfShear(const pgsPointOfInterest& poi,
    Float64 aps,apt;
    if ( pConfig == NULL)
    {
+      GET_IFACE(IStrandGeometry,pStrandGeom);
       aps = (scd.bTensionBottom ? pStrandGeom->GetApsBottomHalf(poi,dlaNone) : pStrandGeom->GetApsTopHalf(poi,dlaNone));
+
+      GET_IFACE(ITendonGeometry,pTendonGeom);
       apt = (scd.bTensionBottom ? pTendonGeom->GetAptBottomHalf(poi)         : pTendonGeom->GetAptTopHalf(poi));
    }
    else
    {
+      GET_IFACE(IStrandGeometry,pStrandGeom);
       aps = (scd.bTensionBottom ? pStrandGeom->GetApsBottomHalf(poi,*pConfig,dlaNone) : pStrandGeom->GetApsTopHalf(poi,*pConfig,dlaNone));
       apt = 0;
    }

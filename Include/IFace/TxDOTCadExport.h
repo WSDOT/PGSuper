@@ -32,6 +32,7 @@ COPYRIGHT
 #include <PgsExt\Keys.h>
 
 #define CAD_SUCCESS  0
+#define CAD_FAIL    -1
 
 enum TxDOTCadExportFormatType {tcxNormal, tcxExtended, tcxTest};
 

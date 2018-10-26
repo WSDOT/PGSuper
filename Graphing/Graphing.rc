@@ -69,8 +69,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 3,0,0,39
- PRODUCTVERSION 3,0,0,39
+ FILEVERSION 3,0,0,40
+ PRODUCTVERSION 3,0,0,40
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -88,12 +88,12 @@ BEGIN
             VALUE "Comments", "A member of the Alternate Route Project"
             VALUE "CompanyName", "Washington State Department of Transportation"
             VALUE "FileDescription", "PGSuper Graphing"
-            VALUE "FileVersion", "3.0.0.39"
+            VALUE "FileVersion", "3.0.0.40"
             VALUE "InternalName", "Graphing"
             VALUE "LegalCopyright", "Copyright © 1999-2015, Washington State Department of Transportation, All Rights Reserved"
             VALUE "OriginalFilename", "PGSuperGraphing.dll"
             VALUE "ProductName", "PGSuper"
-            VALUE "ProductVersion", "3.0.0.39"
+            VALUE "ProductVersion", "3.0.0.40"
         END
     END
     BLOCK "VarFileInfo"
@@ -222,19 +222,18 @@ BEGIN
     COMBOBOX        IDC_GIRDER,13,48,67,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     COMBOBOX        IDC_SEGMENT,13,63,67,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     COMBOBOX        IDC_CLOSURE,13,90,135,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    GROUPBOX        "Property",IDC_STATIC,6,127,142,81
+    GROUPBOX        "Property",IDC_STATIC,6,127,142,69
     CONTROL         "f'c",IDC_FC,"Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,13,140,23,10
-    CONTROL         "Ec",IDC_EC,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,13,154,23,10
-    CONTROL         "Age Adjusted Ec",IDC_ECE,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,13,167,69,10
-    CONTROL         "Shrinkage Strain",IDC_SH,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,13,180,68,10
-    CONTROL         "Creep Coefficients",IDC_CR,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,13,193,75,10
-    GROUPBOX        "Horizontal Axis",IDC_STATIC,6,215,142,78
-    CONTROL         "Time (Linear Scale)",IDC_TIME_LINEAR,"Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,13,228,76,10
-    CONTROL         "Time (Logarithmic Scale)",IDC_TIME_LOG,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,13,240,93,10
-    CONTROL         "Age (Linear Scale)",IDC_AGE_LINEAR,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,13,252,74,10
-    CONTROL         "Age (Logarithmic Scale)",IDC_AGE_LOG,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,13,264,91,10
-    CONTROL         "Interval",IDC_INTERVALS,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,13,276,41,10
-    CONTROL         "Show Grid",IDC_GRID,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,301,48,10
+    CONTROL         "Ec",IDC_EC,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,13,153,23,10
+    CONTROL         "Shrinkage Strain",IDC_SH,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,13,166,68,10
+    CONTROL         "Creep Coefficients",IDC_CR,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,13,179,75,10
+    GROUPBOX        "Horizontal Axis",IDC_STATIC,6,201,142,78
+    CONTROL         "Time (Linear Scale)",IDC_TIME_LINEAR,"Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,13,214,76,10
+    CONTROL         "Time (Logarithmic Scale)",IDC_TIME_LOG,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,13,226,93,10
+    CONTROL         "Age (Linear Scale)",IDC_AGE_LINEAR,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,13,238,74,10
+    CONTROL         "Age (Logarithmic Scale)",IDC_AGE_LOG,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,13,250,91,10
+    CONTROL         "Interval",IDC_INTERVALS,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,13,262,41,10
+    CONTROL         "Show Grid",IDC_GRID,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,287,48,10
 END
 
 IDD_INITIALSTRAIN_GRAPH_CONTROLLER DIALOGEX 0, 0, 156, 190

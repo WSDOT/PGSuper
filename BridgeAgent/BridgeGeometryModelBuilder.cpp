@@ -448,7 +448,7 @@ bool CBridgeGeometryModelBuilder::LayoutUniformGirderLines(const CBridgeDescript
 
    if ( !pBridgeDesc->UseSameNumberOfGirdersInAllGroups() ||
         !pBridgeDesc->UseSameGirderForEntireBridge()      || 
-        measureType == mtAlongItem )
+        measureType == pgsTypes::AlongItem )
    {
       // if there is a different number of girders in each group, but the spacing is uniform, this is the
       // same as general spacing... use the general spacing function and return
@@ -503,15 +503,6 @@ bool CBridgeGeometryModelBuilder::LayoutUniformGirderLines(const CBridgeDescript
       // a specific girder is the reference girder
       refGirderOffset -= spacing*refGirderIdx;
       refGirderIdx = 0;
-   }
-
-   if ( measureType == pgsTypes::AlongItem )
-   {
-      // girder spacing is measured along CL pier
-      // adjust the spacing and the reference girder offset so
-      // that it is measured normal to the alignment
-#pragma Reminder("IMPLEMENT")
-      ATLASSERT(false); // need to implement this
    }
 
    // if the ref girder is measured from the bridge, convert it to being measured from the alignment

@@ -39,9 +39,8 @@
 #define IDC_GROSS                       3033
 #define IDC_FC                          3034
 #define IDC_EC                          3035
-#define IDC_ECE                         3036
-#define IDC_SH                          3037
-#define IDC_CR                          3040
+#define IDC_SH                          3036
+#define IDC_CR                          3037
 #define IDC_TIME_LINEAR                 3041
 #define IDC_TIME_LOG                    3042
 #define IDC_AGE_LINEAR                  3043

@@ -37,7 +37,7 @@ Ultimate vertical shear capacity check failed for Strength II Limit State for th
 Girder design was Not Successful
 The Specification Check was Not Successful
 Compressive stress check failed for Service I for the Deck and Diaphragm Placement Stage (Bridge Site 1).
-Compressive stress check failed for Service I for the Superimposed Dead Load Stage (Bridge Site 2).
+Compressive stress check failed for Service I for the Final without Live Load Stage (Bridge Site 2).
 Compressive stress check failed for Service I for the Final with Live Load Stage (Bridge Site 3).
 Tensile stress check failed for Service III for the Final with Live Load Stage (Bridge Site 3).
 Splitting zone checks failed.

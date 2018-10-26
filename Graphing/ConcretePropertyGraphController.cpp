@@ -59,7 +59,6 @@ BEGIN_MESSAGE_MAP(CConcretePropertyGraphController, CEAFGraphControlWindow)
    ON_BN_CLICKED(IDC_DECK,OnGraphElement)
    ON_BN_CLICKED(IDC_FC,OnGraphType)
    ON_BN_CLICKED(IDC_EC,OnGraphType)
-   ON_BN_CLICKED(IDC_ECE,OnGraphType)
    ON_BN_CLICKED(IDC_SH,OnGraphType)
    ON_BN_CLICKED(IDC_CR,OnGraphType)
    ON_CBN_SELCHANGE(IDC_GROUP,OnGroupChanged)
@@ -124,9 +123,6 @@ int CConcretePropertyGraphController::GetGraphType()
 
    case IDC_EC:
       return GRAPH_TYPE_EC;
-
-   case IDC_ECE:
-      return GRAPH_TYPE_ECE;
 
    case IDC_SH:
       return GRAPH_TYPE_SH;

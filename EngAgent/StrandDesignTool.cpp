@@ -431,14 +431,14 @@ bool pgsStrandDesignTool::SetNumPermanentStrands(StrandIndexType numPerm)
       m_pArtifact->SetNumHarpedStrands(nh);
       m_pArtifact->SetNumStraightStrands(ns);
 
+      // update jacking forces
+      UpdateJackingForces();
+
       // if we had no harped strands and now we have some, set offsets to maximize harp
       if (IsDesignHarping() && nh_old == 0 && 0 < nh)
       {
          ResetHarpedStrandConfiguration();
       }
-
-      // update jacking forces
-      UpdateJackingForces();
 
       // Make sure we are within offset bounds. Force if necessary
       return KeepHarpedStrandsInBounds();
@@ -3561,7 +3561,7 @@ void pgsStrandDesignTool::InitHarpedPhysicalBounds(const matPsStrand* pstrand)
 
    if (m_DoDesignForHoldDownForce)
    {
-      LOG(_T("We will be designing for harped strand hold down allowable: ") << m_AllowableHoldDownForce);
+      LOG(_T("We will be designing for harped strand hold down allowable: ") << ::ConvertFromSysUnits(m_AllowableHoldDownForce,unitMeasure::Kip) << _T(" kips"));
    }
    else
    {

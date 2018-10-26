@@ -13871,13 +13871,20 @@ void CGirderModelManager::GetMainSpanSlabLoad(const CSegmentKey& segmentKey, std
             // deck overhang tapers to the bottom of the top flange
             FlangeIndexType nFlanges = pGdr->GetNumberOfTopFlanges(segmentKey);
             Float64 flange_thickness;
-            if ( gdrIdx == 0 )
+            if ( nFlanges == 0 )
             {
-               flange_thickness = pGdr->GetTopFlangeThickness(poi,0);
+               flange_thickness = pGdr->GetMinTopFlangeThickness(poi);
             }
             else
             {
-               flange_thickness = pGdr->GetTopFlangeThickness(poi,nFlanges-1);
+               if ( gdrIdx == 0 )
+               {
+                  flange_thickness = pGdr->GetTopFlangeThickness(poi,0);
+               }
+               else
+               {
+                  flange_thickness = pGdr->GetTopFlangeThickness(poi,nFlanges-1);
+               }
             }
 
             overhang_depth_at_flange_tip = slab_offset + flange_thickness;

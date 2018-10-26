@@ -205,7 +205,7 @@ boost::shared_ptr<CReportSpecification> CGirderReportSpecificationBuilder::Creat
    GET_IFACE(ISelection,pSelection);
    CSelection selection = pSelection->GetSelection();
    CGirderKey girderKey(m_GirderKey);
-   if ( selection.Type == CSelection::Segment )
+   if ( selection.Type == CSelection::Girder || selection.Type == CSelection::Segment )
    {
       girderKey.groupIndex   = selection.GroupIdx;
       girderKey.girderIndex  = selection.GirderIdx;

@@ -1990,23 +1990,31 @@ std::vector<Float64> CAnalysisAgentImp::GetAxial(IntervalIndexType intervalIdx,p
 
    if ( pfType == pgsTypes::pftCreep || pfType == pgsTypes::pftShrinkage || pfType == pgsTypes::pftRelaxation )
    {
-      GET_IFACE(ILosses,pLosses);
-      ComputeTimeDependentEffects(vPoi.front().GetSegmentKey(),intervalIdx);
-      
-      if ( resultsType == rtCumulative )
+      GET_IFACE( ILossParameters, pLossParams);
+      if ( pLossParams->GetLossMethod() == pgsTypes::TIME_STEP )
       {
-         results.resize(vPoi.size(),0);
-         for ( IntervalIndexType iIdx = 0; iIdx <= intervalIdx; iIdx++ )
+         GET_IFACE(ILosses,pLosses);
+         ComputeTimeDependentEffects(vPoi.front().GetSegmentKey(),intervalIdx);
+         
+         if ( resultsType == rtCumulative )
          {
-            CString strLoadingName = pLosses->GetRestrainingLoadName(iIdx,pfType - pgsTypes::pftCreep);
-            std::vector<Float64> fx = GetAxial(iIdx,strLoadingName,vPoi,bat,rtIncremental);
-            std::transform(results.begin(),results.end(),fx.begin(),results.begin(),std::plus<Float64>());
+            results.resize(vPoi.size(),0);
+            for ( IntervalIndexType iIdx = 0; iIdx <= intervalIdx; iIdx++ )
+            {
+               CString strLoadingName = pLosses->GetRestrainingLoadName(iIdx,pfType - pgsTypes::pftCreep);
+               std::vector<Float64> fx = GetAxial(iIdx,strLoadingName,vPoi,bat,rtIncremental);
+               std::transform(results.begin(),results.end(),fx.begin(),results.begin(),std::plus<Float64>());
+            }
+         }
+         else
+         {
+            CString strLoadingName = pLosses->GetRestrainingLoadName(intervalIdx,pfType - pgsTypes::pftCreep);
+            results = GetAxial(intervalIdx,strLoadingName,vPoi,bat,resultsType);
          }
       }
       else
       {
-         CString strLoadingName = pLosses->GetRestrainingLoadName(intervalIdx,pfType - pgsTypes::pftCreep);
-         results = GetAxial(intervalIdx,strLoadingName,vPoi,bat,resultsType);
+         results.resize(vPoi.size(),0.0);
       }
       return results;
    }
@@ -2062,23 +2070,31 @@ std::vector<sysSectionValue> CAnalysisAgentImp::GetShear(IntervalIndexType inter
 
    if ( pfType == pgsTypes::pftCreep || pfType == pgsTypes::pftShrinkage || pfType == pgsTypes::pftRelaxation )
    {
-      GET_IFACE(ILosses,pLosses);
-      ComputeTimeDependentEffects(vPoi.front().GetSegmentKey(),intervalIdx);
-      
-      if ( resultsType == rtCumulative )
+      GET_IFACE( ILossParameters, pLossParams);
+      if ( pLossParams->GetLossMethod() == pgsTypes::TIME_STEP )
       {
-         results.resize(vPoi.size(),sysSectionValue(0,0));
-         for ( IntervalIndexType iIdx = 0; iIdx <= intervalIdx; iIdx++ )
+         GET_IFACE(ILosses,pLosses);
+         ComputeTimeDependentEffects(vPoi.front().GetSegmentKey(),intervalIdx);
+         
+         if ( resultsType == rtCumulative )
          {
-            CString strLoadingName = pLosses->GetRestrainingLoadName(iIdx,pfType - pgsTypes::pftCreep);
-            std::vector<sysSectionValue> fy = GetShear(iIdx,strLoadingName,vPoi,bat,rtIncremental);
-            std::transform(results.begin(),results.end(),fy.begin(),results.begin(),std::plus<sysSectionValue>());
+            results.resize(vPoi.size(),sysSectionValue(0,0));
+            for ( IntervalIndexType iIdx = 0; iIdx <= intervalIdx; iIdx++ )
+            {
+               CString strLoadingName = pLosses->GetRestrainingLoadName(iIdx,pfType - pgsTypes::pftCreep);
+               std::vector<sysSectionValue> fy = GetShear(iIdx,strLoadingName,vPoi,bat,rtIncremental);
+               std::transform(results.begin(),results.end(),fy.begin(),results.begin(),std::plus<sysSectionValue>());
+            }
+         }
+         else
+         {
+            CString strLoadingName = pLosses->GetRestrainingLoadName(intervalIdx,pfType - pgsTypes::pftCreep);
+            results = GetShear(intervalIdx,strLoadingName,vPoi,bat,resultsType);
          }
       }
       else
       {
-         CString strLoadingName = pLosses->GetRestrainingLoadName(intervalIdx,pfType - pgsTypes::pftCreep);
-         results = GetShear(intervalIdx,strLoadingName,vPoi,bat,resultsType);
+         results.resize(vPoi.size(),sysSectionValue(0,0));
       }
       return results;
    }
@@ -2164,23 +2180,31 @@ std::vector<Float64> CAnalysisAgentImp::GetMoment(IntervalIndexType intervalIdx,
 
    if ( pfType == pgsTypes::pftCreep || pfType == pgsTypes::pftShrinkage || pfType == pgsTypes::pftRelaxation )
    {
-      GET_IFACE(ILosses,pLosses);
-      ComputeTimeDependentEffects(vPoi.front().GetSegmentKey(),intervalIdx);
-   
-      if ( resultsType == rtCumulative )
+      GET_IFACE( ILossParameters, pLossParams);
+      if ( pLossParams->GetLossMethod() == pgsTypes::TIME_STEP )
       {
-         results.resize(vPoi.size(),0);
-         for ( IntervalIndexType iIdx = 0; iIdx <= intervalIdx; iIdx++ )
+         GET_IFACE(ILosses,pLosses);
+         ComputeTimeDependentEffects(vPoi.front().GetSegmentKey(),intervalIdx);
+      
+         if ( resultsType == rtCumulative )
          {
-            CString strLoadingName = pLosses->GetRestrainingLoadName(iIdx,pfType - pgsTypes::pftCreep);
-            std::vector<Float64> mz = GetMoment(iIdx,strLoadingName,vPoi,bat,rtIncremental);
-            std::transform(results.begin(),results.end(),mz.begin(),results.begin(),std::plus<Float64>());
+            results.resize(vPoi.size(),0);
+            for ( IntervalIndexType iIdx = 0; iIdx <= intervalIdx; iIdx++ )
+            {
+               CString strLoadingName = pLosses->GetRestrainingLoadName(iIdx,pfType - pgsTypes::pftCreep);
+               std::vector<Float64> mz = GetMoment(iIdx,strLoadingName,vPoi,bat,rtIncremental);
+               std::transform(results.begin(),results.end(),mz.begin(),results.begin(),std::plus<Float64>());
+            }
+         }
+         else
+         {
+            CString strLoadingName = pLosses->GetRestrainingLoadName(intervalIdx,pfType - pgsTypes::pftCreep);
+            results = GetMoment(intervalIdx,strLoadingName,vPoi,bat,resultsType);
          }
       }
       else
       {
-         CString strLoadingName = pLosses->GetRestrainingLoadName(intervalIdx,pfType - pgsTypes::pftCreep);
-         results = GetMoment(intervalIdx,strLoadingName,vPoi,bat,resultsType);
+         results.resize(vPoi.size(),0.0);
       }
       return results;
    }
@@ -2635,25 +2659,33 @@ std::vector<Float64> CAnalysisAgentImp::GetAxial(IntervalIndexType intervalIdx,L
    //if comboType is  lcCR, lcSH, or lcRE, need to do the time-step analysis because it adds loads to the LBAM
    if ( comboType == lcCR || comboType == lcSH || comboType == lcRE )
    {
-      GET_IFACE(ILosses,pLosses);
-      ComputeTimeDependentEffects(vPoi.front().GetSegmentKey(),intervalIdx);
-
-      if ( resultsType == rtCumulative )
+      GET_IFACE(ILossParameters,pLossParameters);
+      if ( pLossParameters->GetLossMethod() == pgsTypes::TIME_STEP )
       {
-         results.resize(vPoi.size(),0);
-         GET_IFACE(IIntervals,pIntervals);
-         IntervalIndexType releaseIntervalIdx = pIntervals->GetFirstPrestressReleaseInterval(vPoi.front().GetSegmentKey());
-         for ( IntervalIndexType iIdx = releaseIntervalIdx; iIdx <= intervalIdx; iIdx++ )
+         GET_IFACE(ILosses,pLosses);
+         ComputeTimeDependentEffects(vPoi.front().GetSegmentKey(),intervalIdx);
+
+         if ( resultsType == rtCumulative )
          {
-            CString strLoadingName = pLosses->GetRestrainingLoadName(iIdx,comboType - lcCR);
-            std::vector<Float64> fx = GetAxial(iIdx,strLoadingName,vPoi,bat,rtIncremental);
-            std::transform(results.begin(),results.end(),fx.begin(),results.begin(),std::plus<Float64>());
+            results.resize(vPoi.size(),0);
+            GET_IFACE(IIntervals,pIntervals);
+            IntervalIndexType releaseIntervalIdx = pIntervals->GetFirstPrestressReleaseInterval(vPoi.front().GetSegmentKey());
+            for ( IntervalIndexType iIdx = releaseIntervalIdx; iIdx <= intervalIdx; iIdx++ )
+            {
+               CString strLoadingName = pLosses->GetRestrainingLoadName(iIdx,comboType - lcCR);
+               std::vector<Float64> fx = GetAxial(iIdx,strLoadingName,vPoi,bat,rtIncremental);
+               std::transform(results.begin(),results.end(),fx.begin(),results.begin(),std::plus<Float64>());
+            }
+         }
+         else
+         {
+            CString strLoadingName = pLosses->GetRestrainingLoadName(intervalIdx,comboType - lcCR);
+            results = GetAxial(intervalIdx,strLoadingName,vPoi,bat,resultsType);
          }
       }
       else
       {
-         CString strLoadingName = pLosses->GetRestrainingLoadName(intervalIdx,comboType - lcCR);
-         results = GetAxial(intervalIdx,strLoadingName,vPoi,bat,resultsType);
+         results.resize(vPoi.size(),0.0);
       }
       return results;
    }
@@ -2694,12 +2726,6 @@ std::vector<sysSectionValue> CAnalysisAgentImp::GetShear(IntervalIndexType inter
 {
    USES_CONVERSION;
 
-   //if comboType is  lcCR, lcSH, or lcRE, need to do the time-step analysis because it adds loads to the LBAM
-   if ( comboType == lcCR || comboType == lcSH || comboType == lcRE )
-   {
-      ComputeTimeDependentEffects(vPoi.front().GetSegmentKey(),intervalIdx);
-   }
-
    std::vector<sysSectionValue> results;
    if ( comboType == lcPS )
    {
@@ -2723,26 +2749,33 @@ std::vector<sysSectionValue> CAnalysisAgentImp::GetShear(IntervalIndexType inter
 
    if ( comboType == lcCR || comboType == lcSH || comboType == lcRE )
    {
-      GET_IFACE(ILosses,pLosses);
-      ComputeTimeDependentEffects(vPoi.front().GetSegmentKey(),intervalIdx);
-      
-
-      if ( resultsType == rtCumulative )
+      GET_IFACE(ILossParameters,pLossParameters);
+      if ( pLossParameters->GetLossMethod() == pgsTypes::TIME_STEP )
       {
-         results.resize(vPoi.size(),sysSectionValue(0,0));
-         GET_IFACE(IIntervals,pIntervals);
-         IntervalIndexType releaseIntervalIdx = pIntervals->GetFirstPrestressReleaseInterval(vPoi.front().GetSegmentKey());
-         for ( IntervalIndexType iIdx = releaseIntervalIdx; iIdx <= intervalIdx; iIdx++ )
+         GET_IFACE(ILosses,pLosses);
+         ComputeTimeDependentEffects(vPoi.front().GetSegmentKey(),intervalIdx);
+         
+         if ( resultsType == rtCumulative )
          {
-            CString strLoadingName = pLosses->GetRestrainingLoadName(iIdx,comboType - lcCR);
-            std::vector<sysSectionValue> fy = GetShear(iIdx,strLoadingName,vPoi,bat,rtIncremental);
-            std::transform(results.begin(),results.end(),fy.begin(),results.begin(),std::plus<sysSectionValue>());
+            results.resize(vPoi.size(),sysSectionValue(0,0));
+            GET_IFACE(IIntervals,pIntervals);
+            IntervalIndexType releaseIntervalIdx = pIntervals->GetFirstPrestressReleaseInterval(vPoi.front().GetSegmentKey());
+            for ( IntervalIndexType iIdx = releaseIntervalIdx; iIdx <= intervalIdx; iIdx++ )
+            {
+               CString strLoadingName = pLosses->GetRestrainingLoadName(iIdx,comboType - lcCR);
+               std::vector<sysSectionValue> fy = GetShear(iIdx,strLoadingName,vPoi,bat,rtIncremental);
+               std::transform(results.begin(),results.end(),fy.begin(),results.begin(),std::plus<sysSectionValue>());
+            }
+         }
+         else
+         {
+            CString strLoadingName = pLosses->GetRestrainingLoadName(intervalIdx,comboType - lcCR);
+            results = GetShear(intervalIdx,strLoadingName,vPoi,bat,resultsType);
          }
       }
       else
       {
-         CString strLoadingName = pLosses->GetRestrainingLoadName(intervalIdx,comboType - lcCR);
-         results = GetShear(intervalIdx,strLoadingName,vPoi,bat,resultsType);
+         results.resize(vPoi.size(),sysSectionValue(0,0));
       }
       return results;
    }
@@ -2807,25 +2840,33 @@ std::vector<Float64> CAnalysisAgentImp::GetMoment(IntervalIndexType intervalIdx,
    //if comboType is  lcCR, lcSH, or lcRE, need to do the time-step analysis because it adds loads to the LBAM
    if ( comboType == lcCR || comboType == lcSH || comboType == lcRE )
    {
-      GET_IFACE(ILosses,pLosses);
-      ComputeTimeDependentEffects(vPoi.front().GetSegmentKey(),intervalIdx);
-
-      if ( resultsType == rtCumulative )
+      GET_IFACE(ILossParameters,pLossParameters);
+      if ( pLossParameters->GetLossMethod() == pgsTypes::TIME_STEP )
       {
-         results.resize(vPoi.size(),0);
-         GET_IFACE(IIntervals,pIntervals);
-         IntervalIndexType releaseIntervalIdx = pIntervals->GetFirstPrestressReleaseInterval(vPoi.front().GetSegmentKey());
-         for ( IntervalIndexType iIdx = releaseIntervalIdx; iIdx <= intervalIdx; iIdx++ )
+         GET_IFACE(ILosses,pLosses);
+         ComputeTimeDependentEffects(vPoi.front().GetSegmentKey(),intervalIdx);
+
+         if ( resultsType == rtCumulative )
          {
-            CString strLoadingName = pLosses->GetRestrainingLoadName(iIdx,comboType - lcCR);
-            std::vector<Float64> mz = GetMoment(iIdx,strLoadingName,vPoi,bat,rtIncremental);
-            std::transform(results.begin(),results.end(),mz.begin(),results.begin(),std::plus<Float64>());
+            results.resize(vPoi.size(),0);
+            GET_IFACE(IIntervals,pIntervals);
+            IntervalIndexType releaseIntervalIdx = pIntervals->GetFirstPrestressReleaseInterval(vPoi.front().GetSegmentKey());
+            for ( IntervalIndexType iIdx = releaseIntervalIdx; iIdx <= intervalIdx; iIdx++ )
+            {
+               CString strLoadingName = pLosses->GetRestrainingLoadName(iIdx,comboType - lcCR);
+               std::vector<Float64> mz = GetMoment(iIdx,strLoadingName,vPoi,bat,rtIncremental);
+               std::transform(results.begin(),results.end(),mz.begin(),results.begin(),std::plus<Float64>());
+            }
+         }
+         else
+         {
+            CString strLoadingName = pLosses->GetRestrainingLoadName(intervalIdx,comboType - lcCR);
+            results = GetMoment(intervalIdx,strLoadingName,vPoi,bat,resultsType);
          }
       }
       else
       {
-         CString strLoadingName = pLosses->GetRestrainingLoadName(intervalIdx,comboType - lcCR);
-         results = GetMoment(intervalIdx,strLoadingName,vPoi,bat,resultsType);
+         results.resize(vPoi.size(),0.0);
       }
       return results;
    }
@@ -5204,9 +5245,7 @@ Float64 CAnalysisAgentImp::GetSidlDeflection(const pgsPointOfInterest& poi)
 
 Float64 CAnalysisAgentImp::GetSidlDeflection(const pgsPointOfInterest& poi,const GDRCONFIG& config)
 {
-   GET_IFACE(ISpecification,pSpec);
-   pgsTypes::AnalysisType analysisType = pSpec->GetAnalysisType();
-   pgsTypes::BridgeAnalysisType bat = (analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : analysisType == pgsTypes::Continuous ? pgsTypes::ContinuousSpan : pgsTypes::MinSimpleContinuousEnvelope);
+   pgsTypes::BridgeAnalysisType bat = GetBridgeAnalysisType(pgsTypes::Minimize);
 
    GET_IFACE(IBridge,pBridge);
    pgsTypes::SupportedDeckType deckType = pBridge->GetDeckType();
@@ -5338,9 +5377,7 @@ void CAnalysisAgentImp::GetScreedCamber(const pgsPointOfInterest& poi,Float64* p
 {
    // Screen camber is equal to and opposite the deflection caused by loads applied to the structure
    // from just before deck casting to the bridge opening to traffic.
-   GET_IFACE(ISpecification,pSpec);
-   pgsTypes::AnalysisType analysisType = pSpec->GetAnalysisType();
-   pgsTypes::BridgeAnalysisType bat = (analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : analysisType == pgsTypes::Continuous ? pgsTypes::ContinuousSpan : pgsTypes::MinSimpleContinuousEnvelope);
+   pgsTypes::BridgeAnalysisType bat = GetBridgeAnalysisType(pgsTypes::Minimize);
 
    const CSegmentKey& segmentKey(poi.GetSegmentKey());
 
@@ -5378,9 +5415,7 @@ void CAnalysisAgentImp::GetScreedCamber(const pgsPointOfInterest& poi,Float64* p
 void CAnalysisAgentImp::GetScreedCamber(const pgsPointOfInterest& poi,const GDRCONFIG& config,Float64* pDy,Float64* pRz)
 {
    // this version is only for PGSuper design mode
-   GET_IFACE(ISpecification,pSpec);
-   pgsTypes::AnalysisType analysisType = pSpec->GetAnalysisType();
-   pgsTypes::BridgeAnalysisType bat = (analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : analysisType == pgsTypes::Continuous ? pgsTypes::ContinuousSpan : pgsTypes::MinSimpleContinuousEnvelope);
+   pgsTypes::BridgeAnalysisType bat = GetBridgeAnalysisType(pgsTypes::Minimize);
 
    GET_IFACE(IBridge,pBridge);
    pgsTypes::SupportedDeckType deckType = pBridge->GetDeckType();
@@ -6134,8 +6169,9 @@ void CAnalysisAgentImp::GetCreepDeflection_CIP_TempStrands(const pgsPointOfInter
    Float64 Ct3 = (bUseConfig ? GetCreepCoefficient(segmentKey,config,cpDiaphragmToDeck,constructionRate) :
                                GetCreepCoefficient(segmentKey,cpDiaphragmToDeck,constructionRate) );
 
-   Float64 Ddiaphragm = GetDeflection(castDiaphragmIntervalIdx,pgsTypes::pftDiaphragm,poi,pgsTypes::SimpleSpan, rtIncremental, false);
-   Float64 Rdiaphragm = GetRotation(  castDiaphragmIntervalIdx,pgsTypes::pftDiaphragm,poi,pgsTypes::SimpleSpan, rtIncremental, false);
+   pgsTypes::BridgeAnalysisType bat = GetBridgeAnalysisType(pgsTypes::Minimize); // want the largest downward deflection
+   Float64 Ddiaphragm = GetDeflection(castDiaphragmIntervalIdx,pgsTypes::pftDiaphragm,poi,bat, rtIncremental, false);
+   Float64 Rdiaphragm = GetRotation(  castDiaphragmIntervalIdx,pgsTypes::pftDiaphragm,poi,bat, rtIncremental, false);
 
    Float64 Dtpsr,Rtpsr;
    GetPrestressDeflection( poi, releaseTempModelData, g_lcidTemporaryStrand, true, &Dtpsr, &Rtpsr);
@@ -8093,7 +8129,7 @@ void CAnalysisAgentImp::GetElasticStress(IntervalIndexType intervalIdx,pgsTypes:
    pfTop->clear();
    pfBot->clear();
 
-   if ( pfType == pgsTypes::pftPostTensioning )
+   if ( pfType == pgsTypes::pftPostTensioning || pfType == pgsTypes::pftCreep || pfType == pgsTypes::pftShrinkage || pfType == pgsTypes::pftRelaxation )
    {
       // no direct post-tension stress in the elastic analysis
       pfTop->resize(vPoi.size(),0.0);

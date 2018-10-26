@@ -2502,8 +2502,11 @@ HRESULT CProjectAgentImp::PrestressingDataProc2(IStructuredSave* pSave,IStructur
             return hr;
          }
 
+         Int32 key = var.lVal;
+         key |= matPsStrand::None;
+
          lrfdStrandPool* pPool = lrfdStrandPool::GetInstance();
-         pStrandMaterial = pPool->GetStrand( var.lVal );
+         pStrandMaterial = pPool->GetStrand( key );
          ATLASSERT(pStrandMaterial!=0);
       }
 

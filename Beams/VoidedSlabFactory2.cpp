@@ -377,23 +377,35 @@ void CVoidedSlab2Factory::CreateStrandMover(const IBeamFactory::Dimensions& dime
 
       Float64 t_ext;
       if ( nIntVoids == 0 )
+      {
          t_ext = (width - (nExtVoids-1)*S1 - D1)/2;
+      }
       else
+      {
          t_ext = (width - (nIntVoids-1)*S2 - 2*S1 - D1)/2;
+      }
 
       // thickness of interior "web" (between interior voids)
       Float64 t_int;
       if ( nIntVoids == 0 )
+      {
          t_int = 0;
+      }
       else
+      {
          t_int = S2 - D2;
+      }
 
       // thickness of "web" between interior and exterior voids)
       Float64 t_ext_int;
       if ( nIntVoids == 0 )
+      {
          t_ext_int = S1 - D1;
+      }
       else
+      {
          t_ext_int = S1 - D1/2 - D2/2;
+      }
 
       Float64 end_loc = (width-t_ext)/2.0; 
 
@@ -678,9 +690,13 @@ IBeamFactory::Dimensions CVoidedSlab2Factory::LoadSectionDimensions(sysIStructur
 {
    Float64 parent_version;
    if ( pLoad->GetParentUnit() == _T("GirderLibraryEntry") )
+   {
       parent_version = pLoad->GetParentVersion();
+   }
    else
+   {
       parent_version = pLoad->GetVersion();
+   }
 
 
    IBeamFactory::Dimensions dimensions;
@@ -690,9 +706,13 @@ IBeamFactory::Dimensions CVoidedSlab2Factory::LoadSectionDimensions(sysIStructur
    if ( 14 <= parent_version )
    {
       if ( pLoad->BeginUnit(_T("VoidedSlab2Dimensions")) )
+      {
          dimVersion = pLoad->GetVersion();
+      }
       else
+      {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
    }
 
    for ( iter = m_DimNames.begin(); iter != m_DimNames.end(); iter++ )
@@ -717,7 +737,9 @@ IBeamFactory::Dimensions CVoidedSlab2Factory::LoadSectionDimensions(sysIStructur
    }
 
    if ( 14 <= parent_version && !pLoad->EndUnit() )
+   {
       THROW_LOAD(InvalidFileFormat,pLoad);
+   }
 
    return dimensions;
 }
@@ -779,6 +801,7 @@ std::_tstring CVoidedSlab2Factory::GetSlabDimensionsImage(pgsTypes::SupportedDec
    std::_tstring strImage;
    switch(deckType)
    {
+   case pgsTypes::sdtCompositeCIP:
    case pgsTypes::sdtCompositeOverlay:
       strImage = _T("VoidedSlab_Composite.gif");
       break;
@@ -800,6 +823,7 @@ std::_tstring CVoidedSlab2Factory::GetPositiveMomentCapacitySchematicImage(pgsTy
    std::_tstring strImage;
    switch(deckType)
    {
+   case pgsTypes::sdtCompositeCIP:
    case pgsTypes::sdtCompositeOverlay:
       strImage =  _T("+Mn_VoidedSlab_Composite.gif");
       break;
@@ -821,6 +845,7 @@ std::_tstring CVoidedSlab2Factory::GetNegativeMomentCapacitySchematicImage(pgsTy
    std::_tstring strImage;
    switch(deckType)
    {
+   case pgsTypes::sdtCompositeCIP:
    case pgsTypes::sdtCompositeOverlay:
       strImage =  _T("-Mn_VoidedSlab_Composite.gif");
       break;
@@ -842,6 +867,7 @@ std::_tstring CVoidedSlab2Factory::GetShearDimensionsSchematicImage(pgsTypes::Su
    std::_tstring strImage;
    switch(deckType)
    {
+   case pgsTypes::sdtCompositeCIP:
    case pgsTypes::sdtCompositeOverlay:
       strImage =  _T("Vn_VoidedSlab_Composite.gif");
       break;
@@ -968,7 +994,9 @@ Float64 CVoidedSlab2Factory::GetDimension(const IBeamFactory::Dimensions& dimens
    {
       const Dimension& dim = *iter;
       if ( name == dim.first )
+      {
          return dim.second;
+      }
    }
 
    ATLASSERT(false); // should never get here
@@ -982,6 +1010,7 @@ pgsTypes::SupportedDeckTypes CVoidedSlab2Factory::GetSupportedDeckTypes(pgsTypes
    {
    case pgsTypes::sbsUniformAdjacent:
    case pgsTypes::sbsGeneralAdjacent:
+      sdt.push_back(pgsTypes::sdtCompositeCIP);
       sdt.push_back(pgsTypes::sdtCompositeOverlay);
       sdt.push_back(pgsTypes::sdtNone);
       break;
@@ -1033,7 +1062,7 @@ void CVoidedSlab2Factory::GetAllowableSpacingRange(const IBeamFactory::Dimension
    Float64 gw = GetDimension(dimensions,_T("W"));
    Float64 J  = GetDimension(dimensions,_T("Jmax"));
 
-   if ( sdt == pgsTypes::sdtCompositeOverlay || sdt == pgsTypes::sdtNone )
+   if ( IsSupportedDeckType(sdt,sbs) )
    {
       if(sbs == pgsTypes::sbsUniformAdjacent || sbs == pgsTypes::sbsGeneralAdjacent)
       {
@@ -1081,4 +1110,11 @@ void CVoidedSlab2Factory::GetShearKeyAreas(const IBeamFactory::Dimensions& dimen
 GirderIndexType CVoidedSlab2Factory::GetMinimumBeamCount()
 {
    return 1;
+}
+
+bool CVoidedSlab2Factory::IsSupportedDeckType(pgsTypes::SupportedDeckType sdt,pgsTypes::SupportedBeamSpacing sbs)
+{
+   pgsTypes::SupportedDeckTypes deckTypes = GetSupportedDeckTypes(sbs);
+   pgsTypes::SupportedDeckTypes::iterator found = std::find(deckTypes.begin(),deckTypes.end(),sdt);
+   return (found == deckTypes.end() ? false : true);
 }

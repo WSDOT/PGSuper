@@ -198,9 +198,7 @@ bool CDeflectionHistoryGraphBuilder::UpdateNow()
 
 void CDeflectionHistoryGraphBuilder::UpdateGraphTitle(const pgsPointOfInterest& poi)
 {
-   CString strGraphTitle;
-   strGraphTitle.Format(_T("Deflection History"));
-   m_Graph.SetTitle(std::_tstring(strGraphTitle));
+   m_Graph.SetTitle(_T("Deflection History"));
 
    const CSegmentKey& segmentKey(poi.GetSegmentKey());
 
@@ -230,7 +228,7 @@ void CDeflectionHistoryGraphBuilder::UpdateGraphTitle(const pgsPointOfInterest& 
          strAttributes.c_str());
    }
 
-   m_Graph.SetSubtitle(std::_tstring(strSubtitle));
+   m_Graph.SetSubtitle(strSubtitle);
 }
 
 void CDeflectionHistoryGraphBuilder::UpdateGraphData(const pgsPointOfInterest& poi)
@@ -374,7 +372,7 @@ void CDeflectionHistoryGraphBuilder::UpdateYAxis()
    const unitmgtLengthData& deflectionUnit = pDisplayUnits->GetDeflectionUnit();
    m_pYFormat = new DeflectionTool(deflectionUnit);
    m_Graph.SetYAxisValueFormat(*m_pYFormat);
-   m_Graph.SetYAxisTitle(_T("Deflection (")+m_pYFormat->UnitTag()+_T(")"));
+   m_Graph.SetYAxisTitle(std::_tstring(_T("Deflection (")+m_pYFormat->UnitTag()+_T(")")).c_str());
    m_Graph.SetYAxisNiceRange(true);
    m_Graph.SetYAxisNumberOfMinorTics(5);
    m_Graph.SetYAxisNumberOfMajorTics(21);

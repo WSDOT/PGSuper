@@ -3292,8 +3292,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 3,0,0,39
- PRODUCTVERSION 3,0,0,39
+ FILEVERSION 3,0,0,40
+ PRODUCTVERSION 3,0,0,40
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -3310,12 +3310,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "Washington State Department of Transportation"
             VALUE "FileDescription", "PGSuper"
-            VALUE "FileVersion", "3.0.0.39"
+            VALUE "FileVersion", "3.0.0.40"
             VALUE "InternalName", "PGSuper"
             VALUE "LegalCopyright", "Copyright © 1999-2015, Washington State Department of Transportation, All Rights Reserved"
             VALUE "OriginalFilename", "PGSuperAppPlugin.DLL"
             VALUE "ProductName", "PGSuper"
-            VALUE "ProductVersion", "3.0.0.39"
+            VALUE "ProductVersion", "3.0.0.40"
         END
     END
     BLOCK "VarFileInfo"

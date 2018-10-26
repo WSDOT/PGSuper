@@ -951,7 +951,7 @@ void girder_spacing(IBroker*pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* 
       }
    }
 
-   (*pPara) << symbol(NORMAL) << _T(" to Alignment: spacing is measured along a line that is normal to the alignment and passes through the point where the CL Pier or CL Brg intersect the alignment.") << rptNewLine;
+   (*pPara) << symbol(NORMAL) << _T(" to Alignment: spacing is measured along a line that is normal to the alignment at the CL Pier and passes through the point where the CL Pier or CL Brg intersect the alignment.") << rptNewLine;
 }
 
 

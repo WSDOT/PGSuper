@@ -179,7 +179,7 @@ int CStressHistoryGraphBuilder::InitializeGraphController(CWnd* pParent,UINT nID
    const unitmgtStressData& stressUnit = pDisplayUnits->GetStressUnit();
    m_pYFormat = new StressTool(stressUnit);
    m_Graph.SetYAxisValueFormat(*m_pYFormat);
-   m_Graph.SetYAxisTitle(_T("Stress (")+m_pYFormat->UnitTag()+_T(")"));
+   m_Graph.SetYAxisTitle(std::_tstring(_T("Stress (")+m_pYFormat->UnitTag()+_T(")")).c_str());
    m_Graph.SetYAxisNiceRange(true);
    m_Graph.SetYAxisNumberOfMinorTics(5);
    m_Graph.SetYAxisNumberOfMajorTics(21);
@@ -267,7 +267,7 @@ void CStressHistoryGraphBuilder::UpdateGraphTitle(const pgsPointOfInterest& poi)
 
    CString strGraphTitle;
    strGraphTitle.Format(_T("Stress History (%s - Without Live Load)"),pProductLoads->GetLimitStateName(limitState));
-   m_Graph.SetTitle(std::_tstring(strGraphTitle));
+   m_Graph.SetTitle(strGraphTitle);
 
    const CSegmentKey& segmentKey(poi.GetSegmentKey());
 
@@ -298,7 +298,7 @@ void CStressHistoryGraphBuilder::UpdateGraphTitle(const pgsPointOfInterest& poi)
          strAttributes.c_str());
    }
 
-   m_Graph.SetSubtitle(std::_tstring(strSubtitle));
+   m_Graph.SetSubtitle(strSubtitle);
 }
 
 void CStressHistoryGraphBuilder::UpdateGraphData(const pgsPointOfInterest& poi)
@@ -471,5 +471,5 @@ void CStressHistoryGraphBuilder::UpdateYAxis()
    const unitmgtStressData& stressUnit = pDisplayUnits->GetStressUnit();
    m_pYFormat = new StressTool(stressUnit);
    m_Graph.SetYAxisValueFormat(*m_pYFormat);
-   m_Graph.SetYAxisTitle(_T("Stress (")+m_pYFormat->UnitTag()+_T(")"));
+   m_Graph.SetYAxisTitle(std::_tstring(_T("Stress (")+m_pYFormat->UnitTag()+_T(")")).c_str());
 }

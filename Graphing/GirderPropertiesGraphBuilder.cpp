@@ -99,7 +99,7 @@ CGraphBuilder* CGirderPropertiesGraphBuilder::Clone()
 void CGirderPropertiesGraphBuilder::UpdateXAxis()
 {
    CGirderGraphBuilderBase::UpdateXAxis();
-   m_Graph.SetXAxisTitle(_T("Distance From CL Bearing at Left End of Girder (")+m_pXFormat->UnitTag()+_T(")"));
+   m_Graph.SetXAxisTitle(std::_tstring(_T("Distance From CL Bearing at Left End of Girder (")+m_pXFormat->UnitTag()+_T(")")).c_str());
 }
 
 CGirderGraphControllerBase* CGirderPropertiesGraphBuilder::CreateGraphController()
@@ -150,7 +150,7 @@ void CGirderPropertiesGraphBuilder::UpdateYAxisUnits(PropertyType propertyType)
       m_pYFormat = new LengthTool(heightUnit);
       m_Graph.SetYAxisValueFormat(*m_pYFormat);
       std::_tstring strYAxisTitle = _T("Height (") + ((LengthTool*)m_pYFormat)->UnitTag() + _T(")");
-      m_Graph.SetYAxisTitle(strYAxisTitle);
+      m_Graph.SetYAxisTitle(strYAxisTitle.c_str());
       break;
       }
 
@@ -160,7 +160,7 @@ void CGirderPropertiesGraphBuilder::UpdateYAxisUnits(PropertyType propertyType)
       m_pYFormat = new AreaTool(areaUnit);
       m_Graph.SetYAxisValueFormat(*m_pYFormat);
       std::_tstring strYAxisTitle = _T("Area (") + ((AreaTool*)m_pYFormat)->UnitTag() + _T(")");
-      m_Graph.SetYAxisTitle(strYAxisTitle);
+      m_Graph.SetYAxisTitle(strYAxisTitle.c_str());
       break;
       }
 
@@ -170,7 +170,7 @@ void CGirderPropertiesGraphBuilder::UpdateYAxisUnits(PropertyType propertyType)
       m_pYFormat = new MomentOfInertiaTool(momentOfInertiaUnit);
       m_Graph.SetYAxisValueFormat(*m_pYFormat);
       std::_tstring strYAxisTitle = _T("Moment of Insertia (") + ((MomentOfInertiaTool*)m_pYFormat)->UnitTag() + _T(")");
-      m_Graph.SetYAxisTitle(strYAxisTitle);
+      m_Graph.SetYAxisTitle(strYAxisTitle.c_str());
       break;
       }
 
@@ -180,7 +180,7 @@ void CGirderPropertiesGraphBuilder::UpdateYAxisUnits(PropertyType propertyType)
       m_pYFormat = new LengthTool(heightUnit);
       m_Graph.SetYAxisValueFormat(*m_pYFormat);
       std::_tstring strYAxisTitle = _T("Centroid (") + ((LengthTool*)m_pYFormat)->UnitTag() + _T(")");
-      m_Graph.SetYAxisTitle(strYAxisTitle);
+      m_Graph.SetYAxisTitle(strYAxisTitle.c_str());
       break;
       }
 
@@ -190,7 +190,7 @@ void CGirderPropertiesGraphBuilder::UpdateYAxisUnits(PropertyType propertyType)
       m_pYFormat = new SectionModulusTool(sectionModulusUnit);
       m_Graph.SetYAxisValueFormat(*m_pYFormat);
       std::_tstring strYAxisTitle = _T("Section Modulus (") + ((SectionModulusTool*)m_pYFormat)->UnitTag() + _T(")");
-      m_Graph.SetYAxisTitle(strYAxisTitle);
+      m_Graph.SetYAxisTitle(strYAxisTitle.c_str());
       break;
       }
 
@@ -200,7 +200,7 @@ void CGirderPropertiesGraphBuilder::UpdateYAxisUnits(PropertyType propertyType)
       m_pYFormat = new LengthTool(heightUnit);
       m_Graph.SetYAxisValueFormat(*m_pYFormat);
       std::_tstring strYAxisTitle = _T("Kern Point (") + ((LengthTool*)m_pYFormat)->UnitTag() + _T(")");
-      m_Graph.SetYAxisTitle(strYAxisTitle);
+      m_Graph.SetYAxisTitle(strYAxisTitle.c_str());
       break;
       }
 
@@ -211,7 +211,7 @@ void CGirderPropertiesGraphBuilder::UpdateYAxisUnits(PropertyType propertyType)
       m_pYFormat = new LengthTool(heightUnit);
       m_Graph.SetYAxisValueFormat(*m_pYFormat);
       std::_tstring strYAxisTitle = _T("Eccentricty (") + ((LengthTool*)m_pYFormat)->UnitTag() + _T(")");
-      m_Graph.SetYAxisTitle(strYAxisTitle);
+      m_Graph.SetYAxisTitle(strYAxisTitle.c_str());
       break;
       }
 
@@ -221,7 +221,7 @@ void CGirderPropertiesGraphBuilder::UpdateYAxisUnits(PropertyType propertyType)
       m_pYFormat = new LengthTool(heightUnit);
       m_Graph.SetYAxisValueFormat(*m_pYFormat);
       std::_tstring strYAxisTitle = _T("Elevation (") + ((LengthTool*)m_pYFormat)->UnitTag() + _T(")");
-      m_Graph.SetYAxisTitle(strYAxisTitle);
+      m_Graph.SetYAxisTitle(strYAxisTitle.c_str());
       break;
       }
 
@@ -231,7 +231,7 @@ void CGirderPropertiesGraphBuilder::UpdateYAxisUnits(PropertyType propertyType)
       m_pYFormat = new LengthTool(heightUnit);
       m_Graph.SetYAxisValueFormat(*m_pYFormat);
       std::_tstring strYAxisTitle = _T("Effective Flange Width (") + ((LengthTool*)m_pYFormat)->UnitTag() + _T(")");
-      m_Graph.SetYAxisTitle(strYAxisTitle);
+      m_Graph.SetYAxisTitle(strYAxisTitle.c_str());
       break;
       }
 
@@ -241,7 +241,7 @@ void CGirderPropertiesGraphBuilder::UpdateYAxisUnits(PropertyType propertyType)
       m_pYFormat = new StressTool(stressUnit);
       m_Graph.SetYAxisValueFormat(*m_pYFormat);
       std::_tstring strYAxisTitle = _T("f'c (") + ((StressTool*)m_pYFormat)->UnitTag() + _T(")");
-      m_Graph.SetYAxisTitle(strYAxisTitle);
+      m_Graph.SetYAxisTitle(strYAxisTitle.c_str());
       break;
       }
 
@@ -251,17 +251,7 @@ void CGirderPropertiesGraphBuilder::UpdateYAxisUnits(PropertyType propertyType)
       m_pYFormat = new StressTool(stressUnit);
       m_Graph.SetYAxisValueFormat(*m_pYFormat);
       std::_tstring strYAxisTitle = _T("Ec (") + ((StressTool*)m_pYFormat)->UnitTag() + _T(")");
-      m_Graph.SetYAxisTitle(strYAxisTitle);
-      break;
-      }
-
-   case Ece:
-      {
-      const unitmgtStressData& stressUnit = pDisplayUnits->GetModEUnit();
-      m_pYFormat = new StressTool(stressUnit);
-      m_Graph.SetYAxisValueFormat(*m_pYFormat);
-      std::_tstring strYAxisTitle = _T("Age Adjusted Ec (") + ((StressTool*)m_pYFormat)->UnitTag() + _T(")");
-      m_Graph.SetYAxisTitle(strYAxisTitle);
+      m_Graph.SetYAxisTitle(strYAxisTitle.c_str());
       break;
       }
 
@@ -285,7 +275,7 @@ void CGirderPropertiesGraphBuilder::UpdateGraphTitle(GroupIndexType grpIdx,Girde
       strGraphTitle.Format(_T("Group %d Girder %s - %s - Interval %d: %s"),LABEL_GROUP(grpIdx),LABEL_GIRDER(gdrIdx),GetPropertyLabel(propertyType),LABEL_INTERVAL(intervalIdx),strInterval);
    }
    
-   m_Graph.SetTitle(std::_tstring(strGraphTitle));
+   m_Graph.SetTitle(strGraphTitle);
 }
 
 void CGirderPropertiesGraphBuilder::UpdateGraphData(GroupIndexType grpIdx,GirderIndexType gdrIdx,IntervalIndexType intervalIdx,PropertyType propertyType,pgsTypes::SectionPropertyType sectPropType)
@@ -462,29 +452,6 @@ void CGirderPropertiesGraphBuilder::UpdateGraphData(GroupIndexType grpIdx,Girder
          break;
          }
 
-      case Ece:
-         {
-         GET_IFACE(IMaterials,pMaterials);
-         GET_IFACE(IPointOfInterest,pPoi);
-         CClosureKey closureKey;
-         if ( pPoi->IsInClosureJoint(poi,&closureKey) )
-         {
-            value1 = pMaterials->GetClosureJointAgeAdjustedEc(closureKey,intervalIdx);
-         }
-         else
-         {
-            value1 = pMaterials->GetSegmentAgeAdjustedEc(poi.GetSegmentKey(),intervalIdx);
-         }
-
-         GET_IFACE(IIntervals,pIntervals);
-         IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
-         if ( compositeDeckIntervalIdx <= intervalIdx )
-         {
-            value2 = pMaterials->GetDeckAgeAdjustedEc(intervalIdx);
-         }
-         break;
-         }
-
       default:
          ATLASSERT(false);
       }
@@ -612,10 +579,6 @@ LPCTSTR CGirderPropertiesGraphBuilder::GetPropertyLabel(PropertyType propertyTyp
       return _T("Ec");
       break;
 
-   case Ece:
-      return _T("Age Adjusted Ec");
-      break;
-
    default:
       ATLASSERT(false);
    }
@@ -655,7 +618,6 @@ void CGirderPropertiesGraphBuilder::InitializeGraph(PropertyType propertyType,co
       break;
 
    case Ec:
-   case Ece:
       strPropertyLabel1 += _T(" Girder");
       *pGraph1 = m_Graph.CreateDataSeries(strPropertyLabel1.c_str(),PS_SOLID,GRAPH_PEN_WEIGHT,ORANGE);
       if ( pIntervals->GetCompositeDeckInterval() <= intervalIdx )

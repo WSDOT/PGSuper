@@ -237,8 +237,8 @@ bool CStabilityGraphBuilder::UpdateNow()
       {
          CString strTitle;
          strTitle.Format(_T("Effect of support location - Lifting Stage - %s"),m_PrintSubtitle.c_str());
-         m_Graph.SetTitle(std::_tstring(strTitle));
-         m_Graph.SetXAxisTitle(_T("Lift Point Location from End of Girder (") + m_pXFormat->UnitTag() + _T(")"));
+         m_Graph.SetTitle(strTitle);
+         m_Graph.SetXAxisTitle(std::_tstring(_T("Lift Point Location from End of Girder (") + m_pXFormat->UnitTag() + _T(")")).c_str());
 
          Float64 FS1 = pSegmentLiftingSpecCriteria->GetLiftingCrackingFs();
          Float64 FS2 = pSegmentLiftingSpecCriteria->GetLiftingFailureFs();
@@ -268,8 +268,8 @@ bool CStabilityGraphBuilder::UpdateNow()
       {
          CString strTitle;
          strTitle.Format(_T("Effect of support location - Transportation Stage - %s"),m_PrintSubtitle.c_str());
-         m_Graph.SetTitle(std::_tstring(strTitle));
-         m_Graph.SetXAxisTitle(_T("Truck Support Location from End of Girder (") + m_pXFormat->UnitTag() + _T(")"));
+         m_Graph.SetTitle(strTitle);
+         m_Graph.SetXAxisTitle(std::_tstring(_T("Truck Support Location from End of Girder (") + m_pXFormat->UnitTag() + _T(")")).c_str());
 
          Float64 FS1 = pSegmentHaulingSpecCriteria->GetHaulingCrackingFs();
          Float64 FS2 = pSegmentHaulingSpecCriteria->GetHaulingRolloverFs();
@@ -400,7 +400,7 @@ void CStabilityGraphBuilder::DrawTheGraph(CWnd* pGraphWnd,CDC* pDC)
          pCriteria->GetHaulingCrackingFs(),
          pCriteria->GetHaulingRolloverFs() );
    }
-   m_Graph.SetSubtitle(std::_tstring(buffer));
+   m_Graph.SetSubtitle(buffer);
 
    m_Graph.Draw(pDC->GetSafeHdc());
    DrawLegend(pDC);

@@ -821,7 +821,7 @@ void CAnalysisResultsGraphBuilder::UpdateYAxisUnits()
       m_pYFormat = new MomentTool(momentUnit);
       m_Graph.SetYAxisValueFormat(*m_pYFormat);
       std::_tstring strYAxisTitle = _T("Moment (") + ((MomentTool*)m_pYFormat)->UnitTag() + _T(")");
-      m_Graph.SetYAxisTitle(strYAxisTitle);
+      m_Graph.SetYAxisTitle(strYAxisTitle.c_str());
       break;
       }
    case actionShear:
@@ -830,7 +830,7 @@ void CAnalysisResultsGraphBuilder::UpdateYAxisUnits()
       m_pYFormat = new ShearTool(shearUnit);
       m_Graph.SetYAxisValueFormat(*m_pYFormat);
       std::_tstring strYAxisTitle = _T("Shear (") + ((ShearTool*)m_pYFormat)->UnitTag() + _T(")");
-      m_Graph.SetYAxisTitle(strYAxisTitle);
+      m_Graph.SetYAxisTitle(strYAxisTitle.c_str());
       break;
       }
    case actionAxial:
@@ -839,7 +839,7 @@ void CAnalysisResultsGraphBuilder::UpdateYAxisUnits()
       m_pYFormat = new ForceTool(axialUnit);
       m_Graph.SetYAxisValueFormat(*m_pYFormat);
       std::_tstring strYAxisTitle = _T("Axial (") + ((ForceTool*)m_pYFormat)->UnitTag() + _T(")");
-      m_Graph.SetYAxisTitle(strYAxisTitle);
+      m_Graph.SetYAxisTitle(strYAxisTitle.c_str());
       break;
       }
    case actionDeflection:
@@ -848,7 +848,7 @@ void CAnalysisResultsGraphBuilder::UpdateYAxisUnits()
       m_pYFormat = new DeflectionTool(deflectionUnit);
       m_Graph.SetYAxisValueFormat(*m_pYFormat);
       std::_tstring strYAxisTitle = _T("Deflection (") + ((DeflectionTool*)m_pYFormat)->UnitTag() + _T(")");
-      m_Graph.SetYAxisTitle(strYAxisTitle);
+      m_Graph.SetYAxisTitle(strYAxisTitle.c_str());
       break;
       }
    case actionRotation:
@@ -857,7 +857,7 @@ void CAnalysisResultsGraphBuilder::UpdateYAxisUnits()
       m_pYFormat = new RotationTool(rotationUnit);
       m_Graph.SetYAxisValueFormat(*m_pYFormat);
       std::_tstring strYAxisTitle = _T("Rotation (") + ((RotationTool*)m_pYFormat)->UnitTag() + _T(")");
-      m_Graph.SetYAxisTitle(strYAxisTitle);
+      m_Graph.SetYAxisTitle(strYAxisTitle.c_str());
       break;
       }
    case actionStress:
@@ -866,7 +866,7 @@ void CAnalysisResultsGraphBuilder::UpdateYAxisUnits()
       m_pYFormat = new StressTool(stressUnit);
       m_Graph.SetYAxisValueFormat(*m_pYFormat);
       std::_tstring strYAxisTitle = _T("Stress (") + ((StressTool*)m_pYFormat)->UnitTag() + _T(")");
-      m_Graph.SetYAxisTitle(strYAxisTitle);
+      m_Graph.SetYAxisTitle(strYAxisTitle.c_str());
       break;
       }
    case actionReaction:
@@ -875,7 +875,7 @@ void CAnalysisResultsGraphBuilder::UpdateYAxisUnits()
       m_pYFormat = new ShearTool(shearUnit);
       m_Graph.SetYAxisValueFormat(*m_pYFormat);
       std::_tstring strYAxisTitle = _T("Reaction (") + ((ShearTool*)m_pYFormat)->UnitTag() + _T(")");
-      m_Graph.SetYAxisTitle(strYAxisTitle);
+      m_Graph.SetYAxisTitle(strYAxisTitle.c_str());
       break;
       }
    default:
@@ -897,11 +897,11 @@ void CAnalysisResultsGraphBuilder::UpdateXAxisTitle()
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(CSegmentKey(0,0,0));
    if ( intervalIdx == releaseIntervalIdx )
    {
-      m_Graph.SetXAxisTitle(_T("Distance From Left End of Girder (")+m_pXFormat->UnitTag()+_T(")"));
+      m_Graph.SetXAxisTitle(std::_tstring(_T("Distance From Left End of Girder (")+m_pXFormat->UnitTag()+_T(")")).c_str());
    }
    else
    {
-      m_Graph.SetXAxisTitle(_T("Distance From CL Bearing at Left End of Girder (")+m_pXFormat->UnitTag()+_T(")"));
+      m_Graph.SetXAxisTitle(std::_tstring(_T("Distance From CL Bearing at Left End of Girder (")+m_pXFormat->UnitTag()+_T(")")).c_str());
    }
 }
 
@@ -974,7 +974,7 @@ void CAnalysisResultsGraphBuilder::UpdateGraphTitle()
          }
       }
       
-      m_Graph.SetTitle(std::_tstring(strGraphTitle));
+      m_Graph.SetTitle(strGraphTitle);
    }
    else
    {
@@ -999,7 +999,7 @@ void CAnalysisResultsGraphBuilder::UpdateGraphTitle()
          }
       }
 
-      m_Graph.SetTitle(std::_tstring(strGraphTitle));
+      m_Graph.SetTitle(strGraphTitle);
    }
 
    if ( pDocType->IsPGSuperDocument() )
@@ -1020,7 +1020,7 @@ void CAnalysisResultsGraphBuilder::UpdateGraphTitle()
          break;
       }
 
-      m_Graph.SetSubtitle(std::_tstring(strSubtitle));
+      m_Graph.SetSubtitle(strSubtitle);
    }
 }
 

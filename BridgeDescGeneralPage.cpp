@@ -921,7 +921,8 @@ void CBridgeDescGeneralPage::FillGirderConnectivityComboBox()
    int cursel = pcbConnectivity->GetCurSel();
    pcbConnectivity->ResetContent();
 
-   if ( IsConstantWidthDeck(m_Deck.DeckType) )
+   bool bConnectivity = (m_GirderSpacingType == pgsTypes::sbsUniformAdjacent || m_GirderSpacingType == pgsTypes::sbsGeneralAdjacent || m_GirderSpacingType == pgsTypes::sbsConstantAdjacent);
+   if ( bConnectivity )
    {
       int idx = pcbConnectivity->AddString(_T("Sufficient to make girders act as a unit"));
       pcbConnectivity->SetItemData(idx,pgsTypes::atcConnectedAsUnit);

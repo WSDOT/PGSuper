@@ -338,7 +338,7 @@ rptChapter* CSectPropChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16
             else if ( !bIsPrismatic_CastingYard && !bIsPrismatic_Final )
             {
                GET_IFACE2(pBroker, ISectionProperties, pSectProp);
-               //GET_IFACE2(pBroker,ILossParameters,pLossParams);
+               GET_IFACE2(pBroker,ILossParameters,pLossParams);
                //if ( pLossParams->GetLossMethod() == pgsTypes::TIME_STEP )
                //{
                //   IntervalIndexType nIntervals = pIntervals->GetIntervalCount();
@@ -372,33 +372,36 @@ rptChapter* CSectPropChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16
                   }
                }
 
-               pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
-               *pChapter << pPara;
-               (*pPara) << _T("Net Section Properties") << rptNewLine;
-
-               pPara = new rptParagraph;
-               *pChapter << pPara;
-
-               //if ( pLossParams->GetLossMethod() == pgsTypes::TIME_STEP )
-               //{
-               //   IntervalIndexType nIntervals = pIntervals->GetIntervalCount();
-               //   IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(thisSegmentKey);
-               //   for ( IntervalIndexType intervalIdx = releaseIntervalIdx; intervalIdx < nIntervals; intervalIdx++ )
-               //   {
-               //      rptRcTable* pTable = CNetGirderPropertiesTable().Build(pBroker,thisSegmentKey,intervalIdx,pDisplayUnits);
-               //      *pPara << pTable << rptNewLine;
-               //   }
-               //}
-               //else
+               if ( pLossParams->GetLossMethod() == pgsTypes::TIME_STEP )
                {
-                  std::vector<IntervalIndexType> vIntervals = pIntervals->GetSpecCheckIntervals(thisSegmentKey);
-                  vIntervals.push_back(pIntervals->GetLiveLoadInterval());
-                  std::sort(vIntervals.begin(),vIntervals.end());
-                  vIntervals.erase(std::unique(vIntervals.begin(),vIntervals.end()),vIntervals.end());
-                  BOOST_FOREACH(IntervalIndexType intervalIdx,vIntervals)
+                  pPara = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
+                  *pChapter << pPara;
+                  (*pPara) << _T("Net Section Properties") << rptNewLine;
+
+                  pPara = new rptParagraph;
+                  *pChapter << pPara;
+
+                  //if ( pLossParams->GetLossMethod() == pgsTypes::TIME_STEP )
+                  //{
+                  //   IntervalIndexType nIntervals = pIntervals->GetIntervalCount();
+                  //   IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(thisSegmentKey);
+                  //   for ( IntervalIndexType intervalIdx = releaseIntervalIdx; intervalIdx < nIntervals; intervalIdx++ )
+                  //   {
+                  //      rptRcTable* pTable = CNetGirderPropertiesTable().Build(pBroker,thisSegmentKey,intervalIdx,pDisplayUnits);
+                  //      *pPara << pTable << rptNewLine;
+                  //   }
+                  //}
+                  //else
                   {
-                     rptRcTable* pTable = CNetGirderPropertiesTable().Build(pBroker,thisSegmentKey,intervalIdx,pDisplayUnits);
-                     *pPara << pTable << rptNewLine;
+                     std::vector<IntervalIndexType> vIntervals = pIntervals->GetSpecCheckIntervals(thisSegmentKey);
+                     vIntervals.push_back(pIntervals->GetLiveLoadInterval());
+                     std::sort(vIntervals.begin(),vIntervals.end());
+                     vIntervals.erase(std::unique(vIntervals.begin(),vIntervals.end()),vIntervals.end());
+                     BOOST_FOREACH(IntervalIndexType intervalIdx,vIntervals)
+                     {
+                        rptRcTable* pTable = CNetGirderPropertiesTable().Build(pBroker,thisSegmentKey,intervalIdx,pDisplayUnits);
+                        *pPara << pTable << rptNewLine;
+                     }
                   }
                }
             }
