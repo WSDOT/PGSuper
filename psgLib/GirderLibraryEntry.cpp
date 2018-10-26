@@ -1445,9 +1445,6 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
       m_LongSteelInfo.clear();
       while(pLoad->BeginUnit(_T("LongSteelInfo")))
       {
-         if(pLoad->GetVersion()!=1.0)
-            THROW_LOAD(BadVersion,pLoad);
-
          if(!pLoad->Property(_T("Face"), &tmp))
             THROW_LOAD(InvalidFileFormat,pLoad);
 

@@ -59,6 +59,7 @@ class CPGSuperApp;
 
 // Factory functions for creating and saving servers
 CPGSuperCatalogServer* CreateCatalogServer(const CString& createString);
+CPGSuperCatalogServer* CreateCatalogServer(const CString& strServerName,const CString& createString);
 CString GetCreationString(const CPGSuperCatalogServer* pServer);
 
 // Exception class for catalog server errors

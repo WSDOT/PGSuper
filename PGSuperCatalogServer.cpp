@@ -101,6 +101,60 @@ CPGSuperCatalogServer* CreateCatalogServer(const CString& createString)
    }
 }
 
+CPGSuperCatalogServer* CreateCatalogServer(const CString& strServerName,const CString& createString)
+{
+   int p = createString.Find(_T('|'));
+   if ( p != -1 )
+   {
+      CString strType = createString.Left(p);
+      CString strAddress = createString.Mid(p+1);
+      if (strType==_T("FTP"))
+      {
+         CFtpPGSuperCatalogServer* psvr = new CFtpPGSuperCatalogServer(strServerName, strAddress);
+         return psvr;
+      }
+      else if (strType==_T("HTTP"))
+      {
+         CHttpPGSuperCatalogServer* psvr = new CHttpPGSuperCatalogServer(strServerName, strAddress);
+         return psvr;
+      }
+      else
+      {
+         ATLASSERT(strType==_T("FILSYS"));
+         p = strAddress.Find(_T('|'));
+         if ( p != -1 )
+         {
+            CString strLibraryFileName = strAddress.Left(p);
+            CString strTemplateFolder = strAddress.Mid(p+1);
+            CFileSystemPGSuperCatalogServer* psvr = new CFileSystemPGSuperCatalogServer(strServerName, strLibraryFileName, strTemplateFolder);
+            return psvr;
+         }
+         else
+         {
+            ATLASSERT(0);
+            return NULL;
+         }
+      }
+   }
+   else
+   {
+      // old style string - equal or previous to pgsuper 2.2.3
+      // only supported ftp at that time
+      p = createString.Find(_T('!'));
+      if ( p != -1 )
+      {
+         CString strAddress = createString.Left(p);
+         CFtpPGSuperCatalogServer* psvr = new CFtpPGSuperCatalogServer(strServerName, strAddress);
+         return psvr;
+      }
+      else
+      {
+         ATLASSERT(0);
+         return NULL;
+      }
+   }
+}
+
 CString GetCreationString(const CPGSuperCatalogServer* pServer)
 {
    CString creastr;
@@ -109,19 +163,19 @@ CString GetCreationString(const CPGSuperCatalogServer* pServer)
    {
       const CFtpPGSuperCatalogServer* psvr = dynamic_cast<const CFtpPGSuperCatalogServer*>(pServer);
       ATLASSERT(psvr);
-      creastr.Format(_T("FTP|%s|%s"),psvr->GetServerName(), psvr->GetAddress());
+      creastr.Format(_T("FTP|%s"),psvr->GetAddress());
    }
    else if (type==srtInternetHttp)
    {
       const CHttpPGSuperCatalogServer* psvr = dynamic_cast<const CHttpPGSuperCatalogServer*>(pServer);
       ATLASSERT(psvr);
-      creastr.Format(_T("HTTP|%s|%s"),psvr->GetServerName(), psvr->GetAddress());
+      creastr.Format(_T("HTTP|%s"),psvr->GetAddress());
    }
    else if (type==srtLocal)
    {
       const CFileSystemPGSuperCatalogServer* psvr = dynamic_cast<const CFileSystemPGSuperCatalogServer*>(pServer);
       ATLASSERT(psvr);
-      creastr.Format(_T("FILSYS|%s|%s|%s"),psvr->GetServerName(), psvr->GetLibraryFileName(), psvr->GetTemplateFolderPath());
+      creastr.Format(_T("FILSYS|%s|%s"), psvr->GetLibraryFileName(), psvr->GetTemplateFolderPath());
    }
 
    return creastr;
