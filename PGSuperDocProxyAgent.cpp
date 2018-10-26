@@ -79,7 +79,8 @@ CLASS
 CPGSuperDocProxyAgent::CPGSuperDocProxyAgent()
 {
    m_pPGSuperDoc = NULL;
-   m_bHoldingEvents = false;
+   m_EventHoldCount = 0;
+   m_bFiringEvents = false;
    m_StdToolBarID = -1;
    m_LibToolBarID = -1;
    m_HelpToolBarID = -1;
@@ -947,37 +948,58 @@ bool CPGSuperDocProxyAgent::UpdatingTemplates()
 void CPGSuperDocProxyAgent::HoldEvents(bool bHold)
 {
    AFX_MANAGE_STATE(AfxGetAppModuleState());
-   m_bHoldingEvents = bHold;
-   if ( !m_bHoldingEvents )
+   if ( bHold )
+      m_EventHoldCount++;
+   else
+      m_EventHoldCount--;
+
+   if ( m_EventHoldCount <= 0 && !m_bFiringEvents )
+   {
+      m_EventHoldCount = 0;
       m_UIEvents.clear();
+   }
 }
 
 void CPGSuperDocProxyAgent::FirePendingEvents()
 {
    AFX_MANAGE_STATE(AfxGetAppModuleState());
-   if ( m_bHoldingEvents )
+   if ( 1 == m_EventHoldCount )
    {
-      m_bHoldingEvents = false;
-      std::vector<UIEvent>::iterator iter;
-      for ( iter = m_UIEvents.begin(); iter != m_UIEvents.end(); iter++ )
+      m_EventHoldCount--;
+
+      m_bFiringEvents = true;
+
+      std::vector<UIEvent>::iterator iter(m_UIEvents.begin());
+      std::vector<UIEvent>::iterator iterEnd(m_UIEvents.end());
+      for ( ; iter != iterEnd; iter++ )
       {
          UIEvent event = *iter;
          m_pPGSuperDoc->UpdateAllViews(event.pSender,event.lHint,event.pHint.get());
       }
+
+      m_bFiringEvents = false;
       m_UIEvents.clear();
+   }
+   else
+   {
+      m_EventHoldCount--;
    }
 }
 
 void CPGSuperDocProxyAgent::CancelPendingEvents()
 {
-   m_UIEvents.clear();
-   m_bHoldingEvents = false;
+   m_EventHoldCount--;
+   if ( m_EventHoldCount <= 0 && !m_bFiringEvents )
+   {
+      m_EventHoldCount = 0;
+      m_UIEvents.clear();
+   }
 }
 
 void CPGSuperDocProxyAgent::FireEvent(CView* pSender,LPARAM lHint,boost::shared_ptr<CObject> pHint)
 {
    AFX_MANAGE_STATE(AfxGetAppModuleState());
-   if ( m_bHoldingEvents )
+   if ( 0 < m_EventHoldCount )
    {
       UIEvent event;
       event.pSender = pSender;
@@ -987,8 +1009,9 @@ void CPGSuperDocProxyAgent::FireEvent(CView* pSender,LPARAM lHint,boost::shared_
       // skip all but one result hint - firing multiple result hints 
       // causes the UI to unnecessarilly update multiple times
       bool skip = false;
-      std::vector<UIEvent>::iterator iter;
-      for ( iter = m_UIEvents.begin(); iter != m_UIEvents.end(); iter++ )
+      std::vector<UIEvent>::iterator iter(m_UIEvents.begin());
+      std::vector<UIEvent>::iterator iterEnd(m_UIEvents.end());
+      for ( ; iter != iterEnd; iter++ )
       {
          UIEvent e = *iter;
          if ( MIN_RESULTS_HINT <= e.lHint && e.lHint <= MAX_RESULTS_HINT )
@@ -1000,6 +1023,7 @@ void CPGSuperDocProxyAgent::FireEvent(CView* pSender,LPARAM lHint,boost::shared_
 
       if (!skip)
       {
+         ATLASSERT( !m_bFiringEvents ); // don't add to the container while we are iterating through it
          m_UIEvents.push_back(event);
       }
    }

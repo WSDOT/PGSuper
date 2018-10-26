@@ -619,7 +619,8 @@ private:
    HRESULT LoadMomentLoads(IStructuredLoad* pLoad);
 
    Uint32 m_PendingEvents;
-   bool m_bHoldingEvents;
+   int m_EventHoldCount;
+   bool m_bFiringEvents;
    std::map<SpanGirderHashType,Uint32> m_PendingEventsHash; // hash values for span/girders that have pending events
    std::vector<CBridgeChangedHint*> m_PendingBridgeChangedHints;
 

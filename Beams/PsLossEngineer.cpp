@@ -62,6 +62,7 @@
 #include "RelaxationAtHaulingTable.h"
 #include "ShrinkageAtDeckPlacementTable.h"
 #include "ChangeOfConcreteStressTable.h"
+#include "TxDOT2013ChangeOfConcreteStressTable.h"
 #include "CreepAtDeckPlacementTable.h"
 #include "RelaxationAtDeckPlacementTable.h"
 #include "TimeDependentLossesAtDeckPlacementTable.h"
@@ -1670,7 +1671,7 @@ void CPsLossEngineer::ReportRefinedMethodTxDOT2013(rptChapter* pChapter,CPsLossE
    *pChapter << pParagraph;
    *pParagraph << _T("Time dependent losses") << rptNewLine;
 
-   CChangeOfConcreteStressTable*            pDeltaFcdp = CChangeOfConcreteStressTable::PrepareTable(pChapter,m_pBroker,span,gdr,pDisplayUnits,level);
+   CTxDOT2013ChangeOfConcreteStressTable*   pDeltaFcdp = CTxDOT2013ChangeOfConcreteStressTable::PrepareTable(pChapter,m_pBroker,span,gdr,pDisplayUnits,level);
    CTxDOT2013CreepAndShrinkageTable*        pCR        = CTxDOT2013CreepAndShrinkageTable::PrepareTable(pChapter,m_pBroker,span,gdr,details,pDisplayUnits,level);
    CTxDOT2013RelaxationAfterTransferTable*  pR2        = CTxDOT2013RelaxationAfterTransferTable::PrepareTable(pChapter,m_pBroker,span,gdr,details,pDisplayUnits,level);
    CTxDOT2013TimeDependentLossesTable*      pLT        = CTxDOT2013TimeDependentLossesTable::PrepareTable(pChapter,m_pBroker,span,gdr,pDisplayUnits,level);

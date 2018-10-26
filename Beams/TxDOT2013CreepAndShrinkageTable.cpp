@@ -73,9 +73,9 @@ CTxDOT2013CreepAndShrinkageTable* CTxDOT2013CreepAndShrinkageTable::PrepareTable
 
    GET_IFACE2(pBroker,IEnvironment,pEnv);
    *pParagraph << _T("H = ") << pEnv->GetRelHumidity() << _T("%") << rptNewLine;
-   *pParagraph << RPT_FCI << stress.SetValue( details.pLosses->GetFci() ) << rptNewLine;
-   *pParagraph << RPT_ECI << stress.SetValue( details.pLosses->GetEci() ) << rptNewLine;
-   *pParagraph << RPT_EP << stress.SetValue( details.pLosses->GetEp() )   << rptNewLine;
+   *pParagraph << RPT_FCI << _T(" = ") << stress.SetValue( details.pLosses->GetFci() ) << rptNewLine;
+   *pParagraph << RPT_ECI << _T(" = ") << stress.SetValue( details.pLosses->GetEci() ) << rptNewLine;
+   *pParagraph << RPT_EP  << _T(" = ") << stress.SetValue( details.pLosses->GetEp() )  << rptNewLine;
 
    *pParagraph << table << rptNewLine;
 
@@ -100,6 +100,6 @@ void CTxDOT2013CreepAndShrinkageTable::AddRow(rptChapter* pChapter,IBroker* pBro
 
    (*this)(row,1) << stress.SetValue( ptl->ShrinkageLosses() );
    (*this)(row,2) << stress.SetValue( details.pLosses->ElasticShortening().PermanentStrand_Fcgp() );
-   (*this)(row,3) << stress.SetValue( -details.pLosses->GetDeltaFcd1() );
+   (*this)(row,3) << stress.SetValue( details.pLosses->GetDeltaFcd1() );
    (*this)(row,4) << stress.SetValue( ptl->CreepLosses() );
 }

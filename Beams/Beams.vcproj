@@ -847,11 +847,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\Include\Iface\PsLossEngineer.h"
+				RelativePath="PsLossEngineer.h"
 				>
 			</File>
 			<File
-				RelativePath="PsLossEngineer.h"
+				RelativePath="..\Include\Iface\PsLossEngineer.h"
 				>
 			</File>
 			<File
@@ -920,6 +920,10 @@
 			</File>
 			<File
 				RelativePath="TotalPrestressLossTable.h"
+				>
+			</File>
+			<File
+				RelativePath=".\TxDOT2013ChangeOfConcreteStressTable.h"
 				>
 			</File>
 			<File
@@ -3759,6 +3763,10 @@
 						PreprocessorDefinitions=""
 					/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\TxDOT2013ChangeOfConcreteStressTable.cpp"
+				>
 			</File>
 			<File
 				RelativePath=".\TxDOT2013CreepAndShrinkageTable.cpp"

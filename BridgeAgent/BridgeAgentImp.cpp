@@ -4015,7 +4015,7 @@ void CBridgeAgentImp::LayoutPoiForSlabBarCutoffs(SpanIndexType span,GirderIndexT
          {
             Float64 dist_from_start = nmRebarData.RightCutoff - girder_start_dist;
             if ( gdr_length < dist_from_start )
-               dist_from_start = gdr_length - 0.0015;
+               dist_from_start = gdr_length - girder_start_dist;
 
             m_PoiMgr.AddPointOfInterest( pgsPointOfInterest(stages,span,gdr,dist_from_start,attribute) );
             m_PoiMgr.AddPointOfInterest( pgsPointOfInterest(stages,span,gdr,dist_from_start+0.0015,POI_FLEXURECAPACITY | POI_GRAPHICAL) );
@@ -4028,7 +4028,7 @@ void CBridgeAgentImp::LayoutPoiForSlabBarCutoffs(SpanIndexType span,GirderIndexT
          {
             Float64 dist_from_start = gdr_length - (nmRebarData.LeftCutoff - girder_end_dist);
             if ( dist_from_start < 0 )
-               dist_from_start = 0.0015;
+               dist_from_start = girder_end_dist;
 
             m_PoiMgr.AddPointOfInterest( pgsPointOfInterest(stages,span,gdr,dist_from_start-0.0015,POI_FLEXURECAPACITY | POI_GRAPHICAL) );
             m_PoiMgr.AddPointOfInterest( pgsPointOfInterest(stages,span,gdr,dist_from_start,attribute) );
@@ -16594,7 +16594,7 @@ Float64 CBridgeAgentImp::GetAsDeckMats(const pgsPointOfInterest& poi,ILongRebarG
          if ( rebarData.TopRebarSize != matRebar::bsNone )
          {
             pBar = lrfdRebarPool::GetInstance()->GetRebar( rebarData.TopRebarType, rebarData.TopRebarGrade, rebarData.TopRebarSize );
-            As_Top = pBar->GetNominalArea()/rebarData.TopSpacing;
+            As_Top = IsZero(rebarData.TopSpacing) ? 0 : pBar->GetNominalArea()/rebarData.TopSpacing;
          }
 
          As_Top += rebarData.TopLumpSum;
@@ -16606,7 +16606,7 @@ Float64 CBridgeAgentImp::GetAsDeckMats(const pgsPointOfInterest& poi,ILongRebarG
          if ( rebarData.BottomRebarSize != matRebar::bsNone )
          {
             pBar = lrfdRebarPool::GetInstance()->GetRebar( rebarData.BottomRebarType, rebarData.BottomRebarGrade, rebarData.BottomRebarSize );
-            As_Bottom = pBar->GetNominalArea()/rebarData.BottomSpacing;
+            As_Bottom = IsZero(rebarData.BottomSpacing) ? 0 : pBar->GetNominalArea()/rebarData.BottomSpacing;
          }
 
          As_Bottom += rebarData.BottomLumpSum;

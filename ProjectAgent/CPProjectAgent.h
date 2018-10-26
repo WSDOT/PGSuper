@@ -51,7 +51,7 @@ public:
 	{
 		T* pT = (T*)this;
 
-      if ( pT->m_bHoldingEvents )
+      if ( 0 < pT->m_EventHoldCount )
       {
          sysFlags<Uint32>::Set(&pT->m_PendingEvents,EVT_PROJECTPROPERTIES);
          return S_OK;
@@ -87,7 +87,7 @@ public:
 	{
 		T* pT = (T*)this;
 
-      if ( pT->m_bHoldingEvents )
+      if ( 0 < pT->m_EventHoldCount )
       {
          sysFlags<Uint32>::Set(&pT->m_PendingEvents,EVT_EXPOSURECONDITION);
          return S_OK;
@@ -112,7 +112,7 @@ public:
 	{
 		T* pT = (T*)this;
 
-      if ( pT->m_bHoldingEvents )
+      if ( 0 < pT->m_EventHoldCount )
       {
          sysFlags<Uint32>::Set(&pT->m_PendingEvents,EVT_RELHUMIDITY);
          return S_OK;
@@ -148,7 +148,7 @@ public:
 	{
 		T* pT = (T*)this;
 
-      if ( pT->m_bHoldingEvents )
+      if ( 0 < pT->m_EventHoldCount )
       {
          sysFlags<Uint32>::Set(&pT->m_PendingEvents,EVT_BRIDGE);
          pT->m_PendingBridgeChangedHints.push_back(pHint);
@@ -181,7 +181,7 @@ public:
 	{
 		T* pT = (T*)this;
 
-      if ( pT->m_bHoldingEvents )
+      if ( 0 < pT->m_EventHoldCount )
       {
          sysFlags<Uint32>::Set(&pT->m_PendingEvents,EVT_GIRDERFAMILY);
          return S_OK;
@@ -207,7 +207,7 @@ public:
 	{
 		T* pT = (T*)this;
 
-      if ( pT->m_bHoldingEvents )
+      if ( 0 < pT->m_EventHoldCount )
       {
          SpanGirderHashType hash = HashSpanGirder(span,gdr);
          std::map<SpanGirderHashType,Uint32>::iterator found = pT->m_PendingEventsHash.find(hash);
@@ -246,7 +246,7 @@ public:
    {
 		T* pT = (T*)this;
       
-      if ( pT->m_bHoldingEvents )
+      if ( 0 < pT->m_EventHoldCount )
       {
          sysFlags<Uint32>::Set(&pT->m_PendingEvents,EVT_CONSTRUCTIONLOAD);
          return S_OK;
@@ -272,7 +272,7 @@ public:
 	{
 		T* pT = (T*)this;
       
-      if ( pT->m_bHoldingEvents )
+      if ( 0 < pT->m_EventHoldCount )
       {
          sysFlags<Uint32>::Set(&pT->m_PendingEvents,EVT_LIVELOAD);
          return S_OK;
@@ -299,7 +299,7 @@ public:
 	{
 		T* pT = (T*)this;
       
-      if ( pT->m_bHoldingEvents )
+      if ( 0 < pT->m_EventHoldCount )
       {
          sysFlags<Uint32>::Set(&pT->m_PendingEvents,EVT_LIVELOADNAME);
          return S_OK;
@@ -336,14 +336,11 @@ public:
 	{
 		T* pT = (T*)this;
 
-      if ( pT->m_bHoldingEvents )
+      if ( 0 < pT->m_EventHoldCount )
       {
          sysFlags<Uint32>::Set(&pT->m_PendingEvents,EVT_SPECIFICATION);
          return S_OK;
       }
-
-      if ( pT->m_bHoldingEvents )
-         return S_OK;
 
 		pT->Lock();
 		HRESULT ret;
@@ -365,7 +362,7 @@ public:
 	{
 		T* pT = (T*)this;
 
-      if ( pT->m_bHoldingEvents )
+      if ( 0 < pT->m_EventHoldCount )
       {
          sysFlags<Uint32>::Set(&pT->m_PendingEvents,EVT_ANALYSISTYPE);
          return S_OK;
@@ -403,14 +400,11 @@ public:
 	{
 		T* pT = (T*)this;
 
-      if ( pT->m_bHoldingEvents )
+      if ( 0 < pT->m_EventHoldCount )
       {
          sysFlags<Uint32>::Set(&pT->m_PendingEvents,EVT_RATING_SPECIFICATION);
          return S_OK;
       }
-
-      if ( pT->m_bHoldingEvents )
-         return S_OK;
 
 		pT->Lock();
 		HRESULT ret;
@@ -442,7 +436,7 @@ public:
 	{
 		T* pT = (T*)this;
 
-      if ( pT->m_bHoldingEvents )
+      if ( 0 < pT->m_EventHoldCount )
       {
          sysFlags<Uint32>::Set(&pT->m_PendingEvents,EVT_LIBRARYCONFLICT);
          return S_OK;
@@ -478,7 +472,7 @@ public:
 	{
 		T* pT = (T*)this;
 
-      if ( pT->m_bHoldingEvents )
+      if ( 0 < pT->m_EventHoldCount )
       {
          sysFlags<Uint32>::Set(&pT->m_PendingEvents,EVT_LOADMODIFIER);
          return S_OK;

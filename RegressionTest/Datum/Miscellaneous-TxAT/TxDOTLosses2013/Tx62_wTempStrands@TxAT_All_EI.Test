@@ -1,0 +1,26 @@
+ RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 44.00   6  8.00  1     1    Tx62-       66   1/2  270 21.84 13.47  12 58.5  5.400  6.100    3.800   -3.931   9567  0.630  0.814  0.32 -0.18  0.00 -0.01 -0.19 185.48 501.48   1.00   1.00   1.00
+
+
+The Specification Check was Not Successful
+Compressive stress check failed for Service I for the Temporary Strand Removal Stage.
+
+
+ RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 44.00   6  8.00  1     2    Tx62-       70   1/2  270 21.32 12.18  16 56.5  5.500  6.500    3.926   -4.076   9844  0.630  0.814  0.33 -0.20  0.00 -0.01 -0.22 206.10 544.88   1.00   1.00   1.00
+
+
+The Specification Check was Not Successful
+Compressive stress check failed for Service I for the Temporary Strand Removal Stage.
+
+
+ RoadW Ng  Spcng  Span   Gdr Type   N   Ns   Size  Str EccCL EccEn Nh   To   Fci    Fc       fcomp   ftens   ultMo  LLDFm  LLDFs Dinit Dslab Dolay Dothr Dtot  LossIn LossFn LiftLc fwHaul trHaul
+ ----- --- -----  ----  ---- -----  -   ---  ----  --- ----- ----- --- ---- ------ ------   ------  -------  -----  -----  ----- ----- ----- ----- ----- ----- ------ ------ ------ ------ ------
+ 44.00   6  8.00  1     4    Tx62-       70   1/2  270 21.32 12.18  16 56.5  5.500  6.500    3.926   -4.076   9844  0.630  0.814  0.33 -0.20  0.00 -0.01 -0.22 206.94 545.51   1.00   1.00   1.00
+
+
+The Specification Check was Successful
+
+

@@ -307,7 +307,8 @@ private:
    DWORD m_dwLoadModiferCookie;
    DWORD m_dwLibraryConflictGuiCookie;
 
-   bool m_bHoldingEvents;
+   int m_EventHoldCount;
+   bool m_bFiringEvents;
    struct UIEvent
    {
       CView* pSender;

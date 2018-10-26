@@ -226,6 +226,9 @@ void CBridgeDescDlg::DoDataExchange(CDataExchange* pDX)
    {
       // force the active page to update its data
    	CPropertyPage* pPage = GetPage(GetActiveIndex());
-      pPage->UpdateData(TRUE);
+      if ( !pPage->UpdateData(TRUE) )
+      {
+         pDX->Fail();
+      }
    }
 }

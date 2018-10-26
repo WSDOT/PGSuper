@@ -42,12 +42,6 @@ rptRcTable(NumColumns,0)
 
 CTxDOT2013RelaxationAfterTransferTable* CTxDOT2013RelaxationAfterTransferTable::PrepareTable(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,GirderIndexType gdr,LOSSDETAILS& details,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
 {
-   // Create and configure the table
-   ColumnIndexType numColumns = 4;
-
-   CTxDOT2013RelaxationAfterTransferTable* table = new CTxDOT2013RelaxationAfterTransferTable( numColumns, pDisplayUnits );
-   pgsReportStyleHolder::ConfigureTable(table);
-
    std::_tstring strImagePath(pgsReportStyleHolder::GetImagePath());
 
    INIT_UV_PROTOTYPE( rptStressUnitValue,  stress, pDisplayUnits->GetStressUnit(), true );
@@ -55,30 +49,47 @@ CTxDOT2013RelaxationAfterTransferTable* CTxDOT2013RelaxationAfterTransferTable::
    rptParagraph* pParagraph = new rptParagraph(pgsReportStyleHolder::GetHeadingStyle());
    *pChapter << pParagraph;
    *pParagraph << _T("Losses due to Relaxation") << rptNewLine;
-   *pParagraph << rptRcImage(strImagePath + _T("Delta_Fpr_TxDOT_2013.png")) << rptNewLine;
    pParagraph = new rptParagraph;
    *pChapter << pParagraph;
    *pParagraph << symbol(DELTA) << Sub2(_T("f"),_T("fpr1"))<<_T(" = loss from transfer to deck placement. ")
                << symbol(DELTA) << Sub2(_T("f"),_T("fpr2"))<<_T(" = loss from deck placement to final. ")  << rptNewLine;
+   *pParagraph << rptRcImage(strImagePath + _T("Delta_Fpr_TxDOT_2013.png")) << rptNewLine;
 
    const lrfdRefinedLossesTxDOT2013* pLosses = dynamic_cast<const lrfdRefinedLossesTxDOT2013*>(details.pLosses.get());
    if (pLosses==NULL)
    {
       ATLASSERT(0);
-      return NULL; // we have bigger problems that a memory leak at this point
+      return NULL; // we have bigger problems than a memory leak at this point
    }
 
    *pParagraph << Sub2(_T("K"),_T("L"))<<_T(" = ")<<pLosses->GetKL() << rptNewLine;
    *pParagraph << Sub2(_T("f"),_T("py"))<<_T(" = ")<< stress.SetValue(pLosses->GetFpy()) << rptNewLine;
 
-   *pParagraph << table << rptNewLine;
+   if (pLosses->ElasticShortening().GetFcgpComputationMethod() == lrfdElasticShortening::fcgp07Fpu)
+   {
+      // fpt is the same along girder - we don't need a table
+      *pParagraph << Sub2(_T("f"),_T("pt"))<<_T(" = 0.7 ")<<Sub2(_T("f"),_T("pu"))<<_T(" = ")<< stress.SetValue(pLosses->Getfpt()) << rptNewLine << rptNewLine;
+      *pParagraph << symbol(DELTA) << Sub2(_T("f"),_T("fpr1"))<<_T(" = ")<< symbol(DELTA) << Sub2(_T("f"),_T("fpr2"))<<_T(" = ")<<stress.SetValue(pLosses->RelaxationLossBeforeDeckPlacement()) << rptNewLine;
 
-   (*table)(0,0) << COLHDR(_T("Location from")<<rptNewLine<<_T("Left Support"),rptLengthUnitTag,  pDisplayUnits->GetSpanLengthUnit() );
-   (*table)(0,1) << COLHDR( _T("f") << Sub(_T("pt")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   (*table)(0,2) << COLHDR( symbol(DELTA) << _T("f") << Sub(_T("pR1")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   (*table)(0,3) << COLHDR( symbol(DELTA) << _T("f") << Sub(_T("pR2")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   
-   return table;
+      return NULL;
+   }
+   else
+   {
+      // Create and configure the table
+      ColumnIndexType numColumns = 4;
+
+      CTxDOT2013RelaxationAfterTransferTable* table = new CTxDOT2013RelaxationAfterTransferTable( numColumns, pDisplayUnits );
+      pgsReportStyleHolder::ConfigureTable(table);
+
+      *pParagraph << table << rptNewLine;
+
+      (*table)(0,0) << COLHDR(_T("Location from")<<rptNewLine<<_T("Left Support"),rptLengthUnitTag,  pDisplayUnits->GetSpanLengthUnit() );
+      (*table)(0,1) << COLHDR( _T("f") << Sub(_T("pt")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      (*table)(0,2) << COLHDR( symbol(DELTA) << _T("f") << Sub(_T("pR1")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      (*table)(0,3) << COLHDR( symbol(DELTA) << _T("f") << Sub(_T("pR2")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      
+      return table;
+   }
 }
 
 void CTxDOT2013RelaxationAfterTransferTable::AddRow(rptChapter* pChapter,IBroker* pBroker,const pgsPointOfInterest& poi,RowIndexType row,LOSSDETAILS& details,IEAFDisplayUnits* pDisplayUnits,Uint16 level)

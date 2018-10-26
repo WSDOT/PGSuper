@@ -1164,7 +1164,7 @@ bool CTestAgentImp::RunPrestressedISectionTest(std::_tofstream& resultsFile, std
    const pgsConstructabilityArtifact* pConstruct =  gdrArtifact->GetConstructabilityArtifact();
    if ( pConstruct->IsSlabOffsetApplicable() )
    {
-      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 122005, ")<<loc<<_T(", ")<<(int)(pConstruct->Passed?1:0)<<_T(", 15, ")<<gdr<<std::endl;
+      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 122005, ")<<loc<<_T(", ")<<(int)(pConstruct->Pass()?1:0)<<_T(", 15, ")<<gdr<<std::endl;
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 122014, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pConstruct->GetRequiredSlabOffset(), unitMeasure::Millimeter)) <<_T(", 2, ")<<gdr<<std::endl;
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 122015, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pConstruct->GetProvidedSlabOffset(), unitMeasure::Millimeter)) <<_T(", 2, ")<<gdr<<std::endl;
    }
@@ -1592,7 +1592,6 @@ bool CTestAgentImp::RunWsdotGirderScheduleTest(std::_tofstream& resultsFile, std
 
    GET_IFACE(IArtifact,pArtifacts);
    const pgsGirderArtifact* pGdrArtifact = pArtifacts->GetArtifact(span,gdr);
-   const pgsConstructabilityArtifact* pConstArtifact = pGdrArtifact->GetConstructabilityArtifact();
 
    GET_IFACE(ICamber,pCamber);
    // create pois at the start of girder and mid-span
