@@ -31,6 +31,8 @@
 // PROJECT INCLUDES
 //
 #include <Material\PsStrand.h>
+#include <System\Tokenizer.h>
+#include <System\FileStream.h>
 
 // LOCAL INCLUDES
 //
@@ -122,6 +124,43 @@ inline CString get_strand_size( matPsStrand::Size size )
    return sz;
 }
 
+inline BOOL ParseTemplateFile(const LPCTSTR lpszPathName, CString& girderEntry, CString& leftConnEntry, CString& rightConnEntry)
+{
+   // Read girder type, connection types, and pgsuper template file name
+   std::ifstream ifile(lpszPathName);
+   if ( !ifile )
+   {
+      CString msg;
+      msg.Format("Error opening template file: %s - File not found?",lpszPathName);
+      AfxMessageBox(msg );
+      ASSERT( 0 ); // this should never happen
+      return FALSE;
+   }
+
+   char line[1024];
+   ifile.getline(line,1024);
+
+   // comma delimited file in format of:
+   // GirderEntryName, EndConnection, StartConnection, TemplateFile
+   sysTokenizer tokenizer(",");
+   tokenizer.push_back(line);
+
+   int nitems = tokenizer.size();
+   if (nitems!=4 && nitems!=3)
+   {
+      CString msg;
+      msg.Format("Error reading template file: %s - Invalid Format",lpszPathName);
+      AfxMessageBox(msg );
+      return FALSE;
+   }
+
+   // set our data values
+   girderEntry = tokenizer[0].c_str();
+   leftConnEntry = tokenizer[1].c_str();
+   rightConnEntry = tokenizer[2].c_str();
+
+   return TRUE;
+}
 
 #endif // INCLUDED_PGSEXT_TXDOTOPTIONALDESIGNUTILILITIES_H_
 

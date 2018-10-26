@@ -5,6 +5,7 @@
 #define IDS_PROJNAME                    100
 #define IDR_TXDOTAGENT                  101
 #define IDS_TEMPLATE_SUFFIX             101
+#define IDR_GIRDER_VIEW_CTX             101
 #define IDS_SHEETNAME                   102
 #define IDR_TXDOTAGENTIMP               103
 #define IDR_TXDOTCADEXPORTER            104
@@ -14,6 +15,10 @@
 #define IDR_TXDOTOPTIONALDESIGNTOOLBAR  107
 #define IDD_REPORT_PAGE                 107
 #define IDD_BRIDGE_INPUT_PAGE           108
+#define IDD_GIRDER_EDITOR_SECTION_PAGE  160
+#define IDD_GIRDER_EDITOR_ELEVATION_PAGE 161
+#define IDR_GIRDER_CTX                  162
+#define IDD_SECTION_CUT_DIALOG_EX       188
 #define IDD_EXPORT_TXDOTCADDATA         201
 #define IDC_SPAN                        202
 #define IDD_GIRDER_INPUT_PAGE           202
@@ -97,7 +102,25 @@
 #define IDC_END_NO_STRANDS              261
 #define IDC_ORIG_USE_DEPRESSED          261
 #define IDC_ENDS_GROUP                  262
+#define IDC_ERROR_MSG                   263
+#define IDC_VALUE                       1018
+#define IDC_VALUE_UNITS                 1026
+#define ID_SELECTED_GIRDER              1086
+#define IDC_SHOW_PS_CG                  1092
+#define IDC_SHOW_DIMENSIONS             1151
+#define IDC_SHOW_SCHEMATIC              1155
+#define IDC_SHOW_STRANDS                1157
+#define IDC_SHOW_LONG_REINF             1158
+#define IDC_SHOW_SHOW_LONG_REINF        1159
+#define IDC_SECTION_CUT                 1161
 #define IDC_BROWSER                     1177
+#define IDC_LEFT_END                    1179
+#define IDC_LEFT_HARP                   1183
+#define IDC_GIRDER_MIDDLE               1184
+#define IDC_RIGHT_HARP                  1186
+#define IDC_RIGHT_END                   1188
+#define IDC_USER_CUT                    1191
+#define IDC_SHOW_TRANSV_REINF           1457
 #define IDS_E_BADINSTALL                1636
 #define IDS_E_PROBPERSISTS              1638
 #define IDS_E_INVALIDFORMAT             1640
@@ -106,18 +129,39 @@
 #define IDS_E_FORMAT                    1646
 #define IDS_E_INVALIDVERSION            1750
 #define IDS_E_USERDEFINED               1752
+#define IDS_GDR_ERROR                   1754
+#define IDS_GDR_ERROR2                  1755
+#define IDS_CONN_ERROR                  1755
+#define ID_LEFTEND                      33174
+#define ID_RIGHTEND                     33175
+#define ID_LEFT_HP                      33176
+#define ID_CENTER                       33177
+#define ID_RIGHT_HP                     33178
+#define ID_USER_CUT                     33179
+#define ID_HELP_JOINARPLIST             33188
 #define ID_FILE_SAVEAS                  33300
 #define ID_FILE_EXPORTPGSUPERMODEL      33301
 #define ID_FILE_CLOSE33302              33302
 #define ID_BUTTON33303                  33303
+#define ID_GIRDERSECTION_EDITVIEWSETTINGS 33304
+#define ID_SECTION_VIEWSETTINGS         33305
+#define ID_VIEWSETTINGS                 33306
+#define ID_HELP_INFO                    33307
+#define ID_LICENSE_AGREEMENT            33308
+#define ID_HELP_ABOUTPGSUPER            33309
+#define ID_HELP_A                       33310
+#define ID_VIEW_SECTIONCUTLOCATION      33312
+#define ID_VIEW_GIRDERVIEWSETTINGS      33313
+#define ID_VIEW_STATUSCENTER            33314
+#define ID_STATUSCENTER_VIEW            33315
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        214
-#define _APS_NEXT_COMMAND_VALUE         33304
-#define _APS_NEXT_CONTROL_VALUE         263
+#define _APS_NEXT_RESOURCE_VALUE        216
+#define _APS_NEXT_COMMAND_VALUE         33316
+#define _APS_NEXT_CONTROL_VALUE         264
 #define _APS_NEXT_SYMED_VALUE           109
 #endif
 #endif

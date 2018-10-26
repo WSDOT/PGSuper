@@ -2,6 +2,8 @@
 //
 
 #include "stdafx.h"
+#include "resource.h"
+#include "HtmlHelp\TogaHelp.hh"
 #include "TxDOTOptionalDesignBridgeInputPage.h"
 
 #include "TxDOTOptionalDesignUtilities.h"
@@ -24,6 +26,14 @@ CTxDOTOptionalDesignBridgeInputPage::CTxDOTOptionalDesignBridgeInputPage()
 CTxDOTOptionalDesignBridgeInputPage::~CTxDOTOptionalDesignBridgeInputPage()
 {
 }
+
+BEGIN_MESSAGE_MAP(CTxDOTOptionalDesignBridgeInputPage, CPropertyPage)
+   ON_WM_ERASEBKGND()
+   ON_WM_CTLCOLOR()
+   ON_COMMAND(ID_HELP, &CTxDOTOptionalDesignBridgeInputPage::OnHelpFinder)
+   ON_COMMAND(ID_HELP_FINDER, &CTxDOTOptionalDesignBridgeInputPage::OnHelpFinder)
+END_MESSAGE_MAP()
+
 
 void CTxDOTOptionalDesignBridgeInputPage::DoDataExchange(CDataExchange* pDX)
 {
@@ -117,17 +127,19 @@ void CTxDOTOptionalDesignBridgeInputPage::DoDataExchange(CDataExchange* pDX)
    DDX_UnitValueAndTag( pDX, IDC_W_COMP_DW,   IDC_W_COMP_DW_UNITS,  m_WCompDw, pDisplayUnits->GetForcePerLengthUnit() );
    DDV_UnitValueZeroOrMore( pDX, IDC_W_COMP_DW,m_WCompDw, pDisplayUnits->GetForcePerLengthUnit() );
 
+   // Error checking that library entries exist for the selected girder type
+   bool st = CheckLibraryData(); // function will message the problem
+   if (!st && pDX->m_bSaveAndValidate)
+   {
+      pDX->PrepareCtrl(IDC_BEAM_TYPE);
+      pDX->Fail();
+   }
+
    if (pDX->m_bSaveAndValidate)
    {
       SaveDialogData();
    }
 }
-
-
-BEGIN_MESSAGE_MAP(CTxDOTOptionalDesignBridgeInputPage, CPropertyPage)
-   ON_WM_ERASEBKGND()
-   ON_WM_CTLCOLOR()
-END_MESSAGE_MAP()
 
 
 // CTxDOTOptionalDesignBridgeInputPage message handlers
@@ -265,6 +277,60 @@ void CTxDOTOptionalDesignBridgeInputPage::LoadGirderNames()
       ::AfxMessageBox(msg,MB_OK | MB_ICONWARNING);
    }
 }
+
+bool CTxDOTOptionalDesignBridgeInputPage::CheckLibraryData()
+{
+   // have to read .togt file based on girder selection
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+   CString suffix;
+   suffix.LoadString(IDS_TEMPLATE_SUFFIX);
+
+   CString template_name = GetTOGAFolder() + CString("\\") + m_BeamType + "." + suffix;
+
+   CString girderEntry, leftConnEntry, rightConnEntry;
+   if(!::ParseTemplateFile(template_name, girderEntry, leftConnEntry, rightConnEntry))
+   {
+      return false;
+   }
+
+   GirderLibrary* pGdrLib = m_pBrokerRetriever->GetGirderLibrary();
+
+   const GirderLibraryEntry* pGdrEntry = dynamic_cast<const GirderLibraryEntry*>(pGdrLib->GetEntry(girderEntry));
+   if (pGdrEntry==NULL)
+   {
+      ASSERT(0);
+      CString msg, stmp;
+      stmp.LoadStringA(IDS_GDR_ERROR);
+      msg.Format(stmp,girderEntry);
+      ::AfxMessageBox(msg);
+      return false;
+   }
+
+   ConnectionLibrary* pConnLib = m_pBrokerRetriever->GetConnectionLibrary();
+
+   const ConnectionLibraryEntry* pConnEntry = dynamic_cast<const ConnectionLibraryEntry*>(pConnLib->GetEntry(leftConnEntry));
+   if (pConnEntry==NULL)
+   {
+      CString msg, stmp;
+      stmp.LoadStringA(IDS_CONN_ERROR);
+      msg.Format(stmp,leftConnEntry);
+      ::AfxMessageBox(msg);
+       return false;
+   }
+
+   pConnEntry = dynamic_cast<const ConnectionLibraryEntry*>(pConnLib->GetEntry(rightConnEntry));
+   if (pConnEntry==NULL)
+   {
+      CString msg, stmp;
+      stmp.LoadStringA(IDS_CONN_ERROR);
+      msg.Format(stmp,rightConnEntry);
+      ::AfxMessageBox(msg);
+      return false;
+   }
+
+   return true;
+}
+
 BOOL CTxDOTOptionalDesignBridgeInputPage::OnEraseBkgnd(CDC* pDC)
 {
    // Set brush to dialog background color
@@ -292,4 +358,11 @@ HBRUSH CTxDOTOptionalDesignBridgeInputPage::OnCtlColor(CDC* pDC, CWnd* pWnd, UIN
    backBrush.CreateSolidBrush(TXDOT_BACK_COLOR);
 
    return (HBRUSH)backBrush;
+}
+
+void CTxDOTOptionalDesignBridgeInputPage::OnHelpFinder()
+{
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+   CWinApp* pApp = AfxGetApp();
+   ::HtmlHelp( *this, pApp->m_pszHelpFilePath, HH_HELP_CONTEXT, IDH_BRIDGE_DESCRIPTION );
 }

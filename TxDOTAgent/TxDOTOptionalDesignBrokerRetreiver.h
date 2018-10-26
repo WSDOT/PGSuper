@@ -84,6 +84,9 @@ public:
 
    // Get girder library without updating broker
    virtual GirderLibrary* GetGirderLibrary()=0;
+
+   // Get girder connection library without updating broker
+   virtual ConnectionLibrary* GetConnectionLibrary()=0;
 };
 
 

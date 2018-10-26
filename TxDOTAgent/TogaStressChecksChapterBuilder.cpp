@@ -132,10 +132,10 @@ void CTogaStressChecksChapterBuilder::BuildTableAndNotes(rptChapter* pChapter, I
       *pChapter << p;
 
       Float64 stress_val, stress_fac, stress_loc;
-      pGetTogaResults->GetControllingTensileStress(&stress_val, &stress_fac, &stress_loc);
+      pGetTogaResults-> GetControllingCompressiveStress(&stress_val, &stress_fac, &stress_loc);
       *p<<"Ratio applied to Top Stresses = "<< stress_fac << rptNewLine;
 
-      pGetTogaResults->GetControllingCompressiveStress(&stress_val, &stress_fac, &stress_loc);
+      pGetTogaResults->GetControllingTensileStress(&stress_val, &stress_fac, &stress_loc);
       *p<<"Ratio applied to Bottom Stresses = "<< stress_fac << rptNewLine;
    }
 
@@ -394,12 +394,12 @@ void CTogaStressChecksChapterBuilder::BuildTable(rptChapter* pChapter, IBroker* 
       if (stage != pgsTypes::CastingYard)
       {
          pUnfactoredStressArtifact->GetExternalEffects( &fTop, &fBot );
-      if (limitState != pgsTypes::ServiceIII)
-      {
-         (*p_table)(row,++col) << stress.SetValue( fTop );
-      }
+         if (limitState != pgsTypes::ServiceIII)
+         {
+            (*p_table)(row,++col) << stress.SetValue( fTop );
+         }
 
-      (*p_table)(row,++col) << stress.SetValue( fBot );
+         (*p_table)(row,++col) << stress.SetValue( fBot );
       }
 
       // Analysis

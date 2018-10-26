@@ -637,6 +637,9 @@ bool CPGSuperBaseAppPlugin::DoCacheUpdate()
          bSuccessful = pserver->PopulateCatalog(m_Publisher,progress,GetCacheFolder());
 
          m_MasterLibraryFileURL = pserver->GetMasterLibraryURL(m_Publisher);
+
+         if ( m_MasterLibraryFileURL == "" )
+            m_MasterLibraryFileCache = "";
       }
       catch(CCatalogServerException exp)
       {

@@ -718,9 +718,19 @@ void pgsGirderHandlingChecker::ComputeLiftingStresses(SpanIndexType span,GirderI
    {
       const pgsPointOfInterest& poi = rpoiVec[i];
 
-      Float64 ag = pSectProp2->GetAg(pgsTypes::CastingYard,poi,liftConfig.GdrConfig.Fci);
-      Float64 stg = pSectProp2->GetSt(pgsTypes::CastingYard,poi,liftConfig.GdrConfig.Fci);
-      Float64 sbg = pSectProp2->GetSb(pgsTypes::CastingYard,poi,liftConfig.GdrConfig.Fci);
+      Float64 ag,stg,sbg;
+      if ( bUseConfig )
+      {
+         ag  = pSectProp2->GetAg(pgsTypes::CastingYard,poi,liftConfig.GdrConfig.Fci);
+         stg = pSectProp2->GetSt(pgsTypes::CastingYard,poi,liftConfig.GdrConfig.Fci);
+         sbg = pSectProp2->GetSb(pgsTypes::CastingYard,poi,liftConfig.GdrConfig.Fci);
+      }
+      else
+      {
+         ag  = pSectProp2->GetAg(pgsTypes::CastingYard,poi);
+         stg = pSectProp2->GetSt(pgsTypes::CastingYard,poi);
+         sbg = pSectProp2->GetSb(pgsTypes::CastingYard,poi);
+      }
 
       Float64 dist_from_start = poi.GetDistFromStart();
 
@@ -1190,10 +1200,21 @@ void pgsGirderHandlingChecker::ComputeHaulingStresses(SpanIndexType span,GirderI
 
       Float64 bt_bot = pGdr->GetBottomWidth(poi);
       Float64 bt_top = pGdr->GetTopWidth(poi);
-      Float64 ag     = pSectProp2->GetAg(pgsTypes::CastingYard,poi,haulConfig.GdrConfig.Fc);
-      Float64 iy     = pSectProp2->GetIy(pgsTypes::CastingYard,poi,haulConfig.GdrConfig.Fc);
-      Float64 stg    = pSectProp2->GetSt(pgsTypes::CastingYard,poi,haulConfig.GdrConfig.Fc);
-      Float64 sbg    = pSectProp2->GetSb(pgsTypes::CastingYard,poi,haulConfig.GdrConfig.Fc);
+      Float64 ag,iy,stg,sbg;
+      if ( bUseConfig )
+      {
+         ag     = pSectProp2->GetAg(pgsTypes::CastingYard,poi,haulConfig.GdrConfig.Fc);
+         iy     = pSectProp2->GetIy(pgsTypes::CastingYard,poi,haulConfig.GdrConfig.Fc);
+         stg    = pSectProp2->GetSt(pgsTypes::CastingYard,poi,haulConfig.GdrConfig.Fc);
+         sbg    = pSectProp2->GetSb(pgsTypes::CastingYard,poi,haulConfig.GdrConfig.Fc);
+      }
+      else
+      {
+         ag     = pSectProp2->GetAg(pgsTypes::CastingYard,poi);
+         iy     = pSectProp2->GetIy(pgsTypes::CastingYard,poi);
+         stg    = pSectProp2->GetSt(pgsTypes::CastingYard,poi);
+         sbg    = pSectProp2->GetSb(pgsTypes::CastingYard,poi);
+      }
 
 
       pgsHaulingStressAnalysisArtifact haul_artifact;

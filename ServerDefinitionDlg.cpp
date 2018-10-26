@@ -122,7 +122,7 @@ void CServerDefinitionDlg::DoDataExchange(CDataExchange* pDX)
    //}}AFX_DATA_MAP
 
    // These are for the local network option
-   DDX_FilenameControl(pDX, IDC_LIBRARY_FILE_LOCATION, IDC_LIBRARY_FILE_BROWSE,m_ctrlLibraryFile, GF_FILEMUSTEXIST, "Please specify library file", "Library Files (*.lbr)|*.lbr||");
+   DDX_FilenameControl(pDX, IDC_LIBRARY_FILE_LOCATION, IDC_LIBRARY_FILE_BROWSE,m_ctrlLibraryFile, 0/*GF_FILEMUSTEXIST*/, "Please specify library file", "Library Files (*.lbr)|*.lbr||");
    DDX_FilenameValue(pDX, m_ctrlLibraryFile, m_LocalMasterLibraryFile);
 
    if ( pDX->m_bSaveAndValidate && m_ServerType==srtLocal )

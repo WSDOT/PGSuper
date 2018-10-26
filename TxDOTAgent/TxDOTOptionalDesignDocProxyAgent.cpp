@@ -244,6 +244,13 @@ Float64 CTxDOTOptionalDesignDocProxyAgent::GetRequiredUltimateMoment()
    return m_RequiredUltimateMoment;
 }
 
+Float64 CTxDOTOptionalDesignDocProxyAgent::GetUltimateMomentCapacity()
+{
+   Validate();
+
+   return m_UltimateMomentCapacity;
+}
+
 Float64 CTxDOTOptionalDesignDocProxyAgent::GetMaximumCamber()
 {
    Validate();
@@ -400,6 +407,7 @@ void CTxDOTOptionalDesignDocProxyAgent::Validate()
       pCap = m_GirderArtifact.GetPositiveMomentFlexuralCapacityArtifact(pgsFlexuralCapacityArtifactKey(pgsTypes::BridgeSite3,pgsTypes::StrengthI,fabr_ms_poi.GetDistFromStart()));
 
       m_RequiredUltimateMoment = pCap->GetDemand();
+      m_UltimateMomentCapacity = pCap->GetCapacity();
 
       // Required concrete strengths - fabricator model
       m_RequiredFc  = m_GirderArtifact.GetRequiredConcreteStrength();

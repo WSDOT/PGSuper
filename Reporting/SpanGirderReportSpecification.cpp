@@ -30,6 +30,125 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
+/////////////////////////////////////////////////////////////////////////////////////////////
+CSpanReportHint::CSpanReportHint()
+{
+   m_SpanIdx = INVALID_INDEX;
+}
+
+CSpanReportHint::CSpanReportHint(SpanIndexType spanIdx) :
+m_SpanIdx(spanIdx)
+{
+}
+
+void CSpanReportHint::SetSpan(SpanIndexType spanIdx)
+{
+   m_SpanIdx = spanIdx;
+}
+
+SpanIndexType CSpanReportHint::GetSpan()
+{
+   return m_SpanIdx;
+}
+
+int CSpanReportHint::IsMySpan(CReportHint* pHint,CReportSpecification* pRptSpec)
+{
+   CSpanReportSpecification* pSpanRptSpec = dynamic_cast<CSpanReportSpecification*>(pRptSpec);
+   if ( pSpanRptSpec == NULL )
+      return -1;
+
+   CSpanReportHint* pSpanRptHint = dynamic_cast<CSpanReportHint*>(pHint);
+   if ( pSpanRptHint == NULL )
+      return -1;
+
+   return (pSpanRptHint->m_SpanIdx == pSpanRptSpec->GetSpan() ? 1 : 0);
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////
+CGirderReportHint::CGirderReportHint()
+{
+   m_GdrIdx = INVALID_INDEX;
+}
+
+CGirderReportHint::CGirderReportHint(GirderIndexType gdrIdx) :
+m_GdrIdx(gdrIdx)
+{
+}
+
+void CGirderReportHint::SetGirder(GirderIndexType gdrIdx)
+{
+   m_GdrIdx = gdrIdx;
+}
+
+GirderIndexType CGirderReportHint::GetGirder()
+{
+   return m_GdrIdx;
+}
+
+int CGirderReportHint::IsMyGirder(CReportHint* pHint,CReportSpecification* pRptSpec)
+{
+   CGirderReportSpecification* pGdrRptSpec = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
+   if ( pGdrRptSpec == NULL )
+      return -1;
+
+   CGirderReportHint* pGirderRptHint = dynamic_cast<CGirderReportHint*>(pHint);
+   if ( pGirderRptHint == NULL )
+      return -1;
+
+   return (pGirderRptHint->m_GdrIdx == pGdrRptSpec->GetGirder() ? 1 : 0);
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////
+
+CSpanGirderReportHint::CSpanGirderReportHint()
+{
+   m_SpanIdx = INVALID_INDEX;
+   m_GdrIdx  = INVALID_INDEX;
+   m_Hint    = 0;
+}
+
+CSpanGirderReportHint::CSpanGirderReportHint(SpanIndexType spanIdx,GirderIndexType gdrIdx,Uint32 lHint) :
+m_SpanIdx(spanIdx), m_GdrIdx(gdrIdx),m_Hint(lHint)
+{
+}
+
+void CSpanGirderReportHint::SetHint(Uint32 lHint)
+{
+   m_Hint = lHint;
+}
+
+Uint32 CSpanGirderReportHint::GetHint()
+{
+   return m_Hint;
+}
+
+void CSpanGirderReportHint::SetGirder(SpanIndexType spanIdx,GirderIndexType gdrIdx)
+{
+   m_SpanIdx = spanIdx;
+   m_GdrIdx  = gdrIdx;
+}
+
+void CSpanGirderReportHint::GetGirder(SpanIndexType& spanIdx,GirderIndexType& gdrIdx)
+{
+   spanIdx = m_SpanIdx;
+   gdrIdx  = m_GdrIdx;
+}
+
+int CSpanGirderReportHint::IsMyGirder(CReportHint* pHint,CReportSpecification* pRptSpec)
+{
+   CSpanGirderReportSpecification* pSGRptSpec = dynamic_cast<CSpanGirderReportSpecification*>(pRptSpec);
+   if ( pSGRptSpec == NULL )
+      return -1;
+
+   CSpanGirderReportHint* pSGRptHint = dynamic_cast<CSpanGirderReportHint*>(pHint);
+   if ( pSGRptHint == NULL )
+      return -1;
+
+   return (pSGRptHint->m_SpanIdx == pSGRptSpec->GetSpan() && pSGRptHint->m_GdrIdx == pSGRptSpec->GetGirder() ? 1 : false);
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////
 CSpanReportSpecification::CSpanReportSpecification(const char* strReportName,IBroker* pBroker,SpanIndexType spanIdx) :
 CBrokerReportSpecification(strReportName,pBroker)
 {

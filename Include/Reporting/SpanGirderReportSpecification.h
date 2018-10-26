@@ -24,7 +24,58 @@
 #include <Reporting\ReportingExp.h>
 #include <Reporting\BrokerReportSpecification.h>
 #include <ReportManager\ReportManager.h>
+#include <ReportManager\ReportHint.h>
 #include <WBFLCore.h>
+
+class REPORTINGCLASS CSpanReportHint : public CReportHint
+{
+public:
+   CSpanReportHint();
+   CSpanReportHint(SpanIndexType spanIdx);
+
+   void SetSpan(SpanIndexType spanIdx);
+   SpanIndexType GetSpan();
+
+   static int IsMySpan(CReportHint* pHint,CReportSpecification* pRptSpec);
+
+protected:
+   SpanIndexType m_SpanIdx;
+};
+
+class REPORTINGCLASS CGirderReportHint : public CReportHint
+{
+public:
+   CGirderReportHint();
+   CGirderReportHint(GirderIndexType gdrIdx);
+
+   void SetGirder(GirderIndexType gdrIdx);
+   GirderIndexType GetGirder();
+
+   static int IsMyGirder(CReportHint* pHint,CReportSpecification* pRptSpec);
+
+protected:
+   GirderIndexType m_GdrIdx;
+};
+
+class REPORTINGCLASS CSpanGirderReportHint : public CReportHint
+{
+public:
+   CSpanGirderReportHint();
+   CSpanGirderReportHint(SpanIndexType spanIdx,GirderIndexType gdrIdx,Uint32 lHint);
+
+   void SetHint(Uint32 lHint);
+   Uint32 GetHint();
+
+   void SetGirder(SpanIndexType spanIdx,GirderIndexType gdrIdx);
+   void GetGirder(SpanIndexType& spanIdx,GirderIndexType& gdrIdx);
+
+   static int IsMyGirder(CReportHint* pHint,CReportSpecification* pRptSpec);
+
+protected:
+   SpanIndexType m_SpanIdx;
+   GirderIndexType m_GdrIdx;
+   Uint32 m_Hint; // one of GCH_xxx constants in IFace\Project.h
+};
 
 class REPORTINGCLASS CSpanReportSpecification :
    public CBrokerReportSpecification

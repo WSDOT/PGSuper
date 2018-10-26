@@ -284,9 +284,9 @@ void CSpecMainSheet::ExchangeLiftingData(CDataExchange* pDX)
    DDX_Text(pDX,IDC_LIFT_TENS2,tag);
    DDV_UnitValueZeroOrMore(pDX, IDC_LIFT_TENS2,m_Entry.m_TensStressLiftingWithRebar, pDisplayUnits->SqrtPressure );
 
-   DDX_Text(pDX, IDC_IMPACT_UPWARD_LIFTING, m_Entry.m_LiftingUpwardImpact);
+   DDX_Percentage(pDX, IDC_IMPACT_UPWARD_LIFTING, m_Entry.m_LiftingUpwardImpact);
    DDV_MinMaxDouble(pDX, m_Entry.m_LiftingUpwardImpact, 0.0, 1.0);
-	DDX_Text(pDX, IDC_IMPACT_DOWNWARD_LIFTING, m_Entry.m_LiftingDownwardImpact);
+	DDX_Percentage(pDX, IDC_IMPACT_DOWNWARD_LIFTING, m_Entry.m_LiftingDownwardImpact);
    DDV_MinMaxDouble(pDX, m_Entry.m_LiftingDownwardImpact, 0.0, 1.0);
  
    DDX_KeywordUnitValueAndTag(pDX,IDC_MIN_LIFTING_POINT,IDC_MIN_LIFTING_POINT_UNIT,_T("H"),m_Entry.m_MinLiftPoint, pDisplayUnits->SpanLength);
@@ -364,9 +364,9 @@ void CSpecMainSheet::ExchangeHaulingData(CDataExchange* pDX)
    DDV_UnitValueGreaterThanZero(pDX, IDC_SUPPORT_PLACEMENT_TOLERANCE,m_Entry.m_HaulingSupportPlacementTolerance, pDisplayUnits->ComponentDim );
 	DDX_Text(pDX, IDC_CAMBER_CG_ADJUSTMENT, m_Entry.m_HaulingCamberPercentEstimate);
    DDV_MinMaxDouble(pDX, m_Entry.m_HaulingCamberPercentEstimate, 0.0, 100.0);
-	DDX_Text(pDX, IDC_IMPACT_UPWARD_HAULING, m_Entry.m_HaulingUpwardImpact);
+	DDX_Percentage(pDX, IDC_IMPACT_UPWARD_HAULING, m_Entry.m_HaulingUpwardImpact);
    DDV_MinMaxDouble(pDX, m_Entry.m_HaulingUpwardImpact, 0.0, 1.0);
-	DDX_Text(pDX, IDC_IMPACT_DOWNWARD_HAULING, m_Entry.m_HaulingDownwardImpact);
+	DDX_Percentage(pDX, IDC_IMPACT_DOWNWARD_HAULING, m_Entry.m_HaulingDownwardImpact);
    DDV_MinMaxDouble(pDX, m_Entry.m_HaulingDownwardImpact, 0.0, 1.0);
    DDX_UnitValueAndTag(pDX, IDC_MAXWGT, IDC_MAXWGT_UNITS, m_Entry.m_MaxGirderWgt, pDisplayUnits->GeneralForce );
    DDV_UnitValueGreaterThanZero(pDX, IDC_MAXWGT,m_Entry.m_MaxGirderWgt, pDisplayUnits->GeneralForce );

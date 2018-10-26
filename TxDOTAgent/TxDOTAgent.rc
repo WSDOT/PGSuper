@@ -59,8 +59,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 2,3,0,6
- PRODUCTVERSION 2,3,0,6
+ FILEVERSION 2,3,1,0
+ PRODUCTVERSION 2,3,1,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -78,12 +78,12 @@ BEGIN
             VALUE "Comments", "A member of the Alternate Route Project"
             VALUE "CompanyName", "Washington State Department of Transportation"
             VALUE "FileDescription", "TxDOTAgent Module"
-            VALUE "FileVersion", "2.3.0.6"
-            VALUE "InternalName", "TxDOTAgent"
+            VALUE "FileVersion", "2.3.1.0"
+            VALUE "InternalName", "TOGA"
             VALUE "LegalCopyright", "Copyright © 1999-2010, Washington State Department of Transportation, All Rights Reserved"
             VALUE "OriginalFilename", "PGSuperTxDOTAgent.DLL"
             VALUE "ProductName", "PGSuper"
-            VALUE "ProductVersion", "2.3.0.6"
+            VALUE "ProductVersion", "2.3.1.0"
         END
     END
     BLOCK "VarFileInfo"
@@ -232,17 +232,19 @@ BEGIN
     RTEXT           "Strand Type",IDC_STATIC,16,75,39,8,0,WS_EX_TRANSPARENT
 END
 
-IDD_GIRDER_VIEW_PAGE DIALOGEX 0, 0, 294, 163
+IDD_GIRDER_VIEW_PAGE DIALOGEX 0, 0, 396, 163
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Girder View"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    LTEXT           "I'm the girder view",IDC_STATIC,73,74,90,8
+    COMBOBOX        ID_SELECTED_GIRDER,60,7,141,95,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    PUSHBUTTON      "Section Cut Location",IDC_SECTION_CUT,236,7,125,12,BS_LEFT
+    LTEXT           "Select Girder:",IDC_STATIC,10,9,44,8
+    LTEXT           "Error:",IDC_ERROR_MSG,47,64,231,37
 END
 
 IDD_REPORT_PAGE DIALOGEX 0, 0, 395, 271
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_DISABLED | WS_CAPTION
-EXSTYLE WS_EX_CONTROLPARENT
 CAPTION "Analysis Report"
 FONT 8, "MS Shell Dlg", 400, 0, 0x0
 BEGIN
@@ -288,6 +290,53 @@ BEGIN
     LTEXT           "No. Strands = ??",IDC_END_NO_STRANDS,141,153,85,8
 END
 
+IDD_SECTION_CUT_DIALOG_EX DIALOG  0, 0, 194, 152
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION
+CAPTION "Section Cut Location"
+FONT 8, "MS Sans Serif"
+BEGIN
+    GROUPBOX        "Select Section Location",IDC_STATIC,7,7,180,114
+    CONTROL         "Left End",IDC_LEFT_END,"Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,12,19,43,10
+    CONTROL         "Left Harping Point",IDC_LEFT_HARP,"Button",BS_AUTORADIOBUTTON,12,33,73,10
+    CONTROL         "Middle of Girder",IDC_GIRDER_MIDDLE,"Button",BS_AUTORADIOBUTTON,12,47,65,10
+    CONTROL         "Right Harping Point",IDC_RIGHT_HARP,"Button",BS_AUTORADIOBUTTON,12,61,77,10
+    CONTROL         "Right End",IDC_RIGHT_END,"Button",BS_AUTORADIOBUTTON,12,75,93,10
+    CONTROL         "Enter a Value Between ## and ## units",IDC_USER_CUT,
+                    "Button",BS_AUTORADIOBUTTON,12,89,148,10
+    EDITTEXT        IDC_VALUE,21,101,71,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Units",IDC_VALUE_UNITS,98,104,39,8
+    DEFPUSHBUTTON   "OK",IDOK,20,131,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,72,131,50,14
+    PUSHBUTTON      "Help",ID_HELP,124,131,50,14
+END
+
+IDD_GIRDER_EDITOR_SECTION_PAGE DIALOG  0, 0, 143, 85
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION
+CAPTION "Section View"
+FONT 8, "MS Sans Serif"
+BEGIN
+    CONTROL         "Show Strands",IDC_SHOW_STRANDS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,7,60,10
+    CONTROL         "Show C.G. of Prestress Force",IDC_SHOW_PS_CG,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,43,109,10
+    CONTROL         "Show Dimensions",IDC_SHOW_DIMENSIONS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,61,72,10
+    CONTROL         "Show Longitudinal Reinforcement",IDC_SHOW_SHOW_LONG_REINF,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,25,129,10
+END
+
+IDD_GIRDER_EDITOR_ELEVATION_PAGE DIALOGEX 0, 0, 192, 116
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION
+CAPTION "Elevation View"
+FONT 8, "MS Sans Serif", 0, 0, 0x0
+BEGIN
+    CONTROL         "Show Strands",IDC_SHOW_STRANDS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,0,7,60,10
+    CONTROL         "Show Longitudinal Reinforcement",IDC_SHOW_LONG_REINF,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,0,24,154,10
+    CONTROL         "Show Transverse Reinforcement (Stirrups)",IDC_SHOW_TRANSV_REINF,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,0,41,149,10
+    CONTROL         "Show C.G. of Prestress Force",IDC_SHOW_PS_CG,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,0,58,109,10
+    CONTROL         "Show Dimensions",IDC_SHOW_DIMENSIONS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,0,75,72,10
+    CONTROL         "Schematic",IDC_SHOW_SCHEMATIC,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,0,92,49,10
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -309,9 +358,9 @@ BEGIN
     BEGIN
         MENUITEM "&New\tCtrl+N",                ID_FILE_NEW
         MENUITEM "&Open...\tCtrl+O",            ID_FILE_OPEN
+        MENUITEM "&Close",                      ID_FILE_CLOSE
         MENUITEM "&Save\tCtrl+S",               ID_FILE_SAVE
         MENUITEM "Save &As",                    ID_FILE_SAVEAS
-        MENUITEM "&Close",                      ID_FILE_CLOSE
         MENUITEM SEPARATOR
         MENUITEM "&Print",                      ID_FILE_PRINT
         MENUITEM "P&rint Setup...",             ID_FILE_PRINT_SETUP
@@ -324,12 +373,33 @@ BEGIN
     END
     POPUP "&View"
     BEGIN
+        MENUITEM "Section Cut &Location...",    ID_VIEW_SECTIONCUTLOCATION
+        MENUITEM SEPARATOR
+        MENUITEM "&Girder View Settings...",    ID_VIEW_GIRDERVIEWSETTINGS
         MENUITEM "&Toolbars...",                ID_VIEW_TOOLBAR
-        MENUITEM "&Status Bar",                 ID_VIEW_STATUS_BAR
     END
     POPUP "&Help"
     BEGIN
         MENUITEM "&Help Topics",                ID_HELP_FINDER
+        MENUITEM SEPARATOR
+        MENUITEM "&License Agreement",          ID_LICENSE_AGREEMENT
+        MENUITEM "&About PGSuper...",           ID_APP_ABOUT
+    END
+END
+
+IDR_GIRDER_VIEW_CTX MENU 
+BEGIN
+    POPUP "Girder Section"
+    BEGIN
+        MENUITEM "&Left End",                   ID_LEFTEND
+        MENUITEM "Left &Harping Point",         ID_LEFT_HP
+        MENUITEM "&Center",                     ID_CENTER
+        MENUITEM "Right Harping &Point",        ID_RIGHT_HP
+        MENUITEM "&Right End",                  ID_RIGHTEND
+        MENUITEM SEPARATOR
+        MENUITEM "Cut &Location...",            ID_USER_CUT
+        MENUITEM SEPARATOR
+        MENUITEM "&Edit View Settings",         ID_VIEWSETTINGS
     END
 END
 
@@ -363,7 +433,7 @@ BEGIN
     IDD_GIRDER_VIEW_PAGE, DIALOG
     BEGIN
         LEFTMARGIN, 7
-        RIGHTMARGIN, 287
+        RIGHTMARGIN, 389
         TOPMARGIN, 7
         BOTTOMMARGIN, 156
     END
@@ -399,6 +469,29 @@ BEGIN
         TOPMARGIN, 7
         BOTTOMMARGIN, 168
     END
+
+    IDD_SECTION_CUT_DIALOG_EX, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 187
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 145
+    END
+
+    IDD_GIRDER_EDITOR_SECTION_PAGE, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 136
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 78
+    END
+
+    IDD_GIRDER_EDITOR_ELEVATION_PAGE, DIALOG
+    BEGIN
+        RIGHTMARGIN, 185
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 109
+    END
 END
 #endif    // APSTUDIO_INVOKED
 
@@ -414,6 +507,7 @@ BEGIN
     BUTTON      ID_FILE_OPEN
     BUTTON      ID_FILE_SAVE
     BUTTON      ID_FILE_PRINT
+    BUTTON      ID_HELP_FINDER
 END
 
 
@@ -438,6 +532,16 @@ BEGIN
     0
 END
 
+IDD_GIRDER_VIEW_PAGE DLGINIT
+BEGIN
+    ID_SELECTED_GIRDER, 0x403, 16, 0
+0x724f, 0x6769, 0x6e69, 0x6c61, 0x4420, 0x7365, 0x6769, 0x006e, 
+    ID_SELECTED_GIRDER, 0x403, 27, 0
+0x6146, 0x7262, 0x6369, 0x7461, 0x726f, 0x4f20, 0x7470, 0x6f69, 0x616e, 
+0x206c, 0x6544, 0x6973, 0x6e67, "\000" 
+    0
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -446,7 +550,7 @@ END
 
 STRINGTABLE 
 BEGIN
-    IDS_PROJNAME            "TxDOTAgent"
+    IDS_PROJNAME            "TOGA"
     IDS_TEMPLATE_SUFFIX     "togt"
     IDS_SHEETNAME           "TOGA"
     IDR_TXDOTOPTIONALDESIGN "\n\nTxDOT Optional Girder Analysis\nTxDOT Optional Girder Analysis File (*.toga)\n.toga\nTxDOTOptionalDesign.Document\nTxDOT Optional Girder Analysis File"
@@ -466,6 +570,8 @@ STRINGTABLE
 BEGIN
     IDS_E_INVALIDVERSION    "The file %1 came from a newer version of PGSuper. You must upgrade in order to read it."
     IDS_E_USERDEFINED       "An unknown error occured while reading %1"
+    IDS_GDR_ERROR           "The girder: ""%s"" does not exist in the master library.\nAnalyis cannot continue.\nIs PGSuper configured to use the TxDOT libraries and templates package?\nClose this project and go to the Configure PGSuper menu to fix problem."
+    IDS_CONN_ERROR          "The connection: ""%s"" does not exist in the master library.\nAnalyis cannot continue.\nIs PGSuper configured to use the TxDOT libraries and templates package?\nClose project and go to the Configure PGSuper menu to fix problem."
 END
 
 STRINGTABLE 
@@ -491,6 +597,30 @@ BEGIN
     ID_FILE_MRU_FILE14      "Open this document"
     ID_FILE_MRU_FILE15      "Open this document"
     ID_FILE_MRU_FILE16      "Open this document"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_FILE_SAVEAS          "Save current document to a new file"
+    ID_FILE_EXPORTPGSUPERMODEL 
+                            "Export current TOGA data to a PGSuper file for further evaulation"
+    ID_LICENSE_AGREEMENT    "Read license agreement"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_VIEW_SECTIONCUTLOCATION "Move section cut location in Girder View"
+    ID_VIEW_GIRDERVIEWSETTINGS "Change display settings in Girder View"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_VIEW_TOOLBAR         "Show or hide toolbars"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_HELP_FINDER          "Open help"
 END
 
 #endif    // English (U.S.) resources

@@ -34,7 +34,7 @@ public:
 
    DECLARE_INTERFACE_MAP()
 
-   BEGIN_INTERFACE_PART(Strategy,iSectionCutDrawStrategy)
+   BEGIN_INTERFACE_PART(Strategy,iTogaSectionCutDrawStrategy)
    STDMETHOD_(void,SetColor)(COLORREF color);
 	STDMETHOD_(void,Init)(iPointDisplayObject* pDO, IBroker* pBroker,SpanIndexType spanIdx,GirderIndexType gdrIdx, iCutLocation* pCutLoc);
    END_INTERFACE_PART(Strategy)

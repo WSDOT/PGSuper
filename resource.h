@@ -22,12 +22,6 @@
 #define IDC_MOREINFO                    1013
 #define IDC_WIDTH                       1270
 #define IDC_HEIGHT                      1629
-#define IDS_E_BADINSTALL                1636
-#define IDS_E_PROBPERSISTS              1638
-#define IDS_E_INVALIDFORMAT             1640
-#define IDS_E_FILENOTFOUND              1642
-#define IDS_E_READ                      1644
-#define IDS_E_FORMAT                    1646
 #define IDS_E_WRITE                     1650
 #define IDS_E_UNSAFESAVE                1652
 #define IDS_E_SAVERECOVER1              1654

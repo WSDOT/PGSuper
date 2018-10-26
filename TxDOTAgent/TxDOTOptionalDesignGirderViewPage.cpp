@@ -2,10 +2,17 @@
 //
 
 #include "stdafx.h"
+#include "HtmlHelp\TogaHelp.hh"
 #include "TxDOTOptionalDesignGirderViewPage.h"
 #include "TxDOTOptionalDesignUtilities.h"
 
 #include <EAF\EAFDisplayUnits.h>
+#include "PGSuperUnits.h"
+
+#include "TogaGirderModelElevationView.h"
+#include "TogaGirderModelSectionView.h"
+#include "TxDOTOptionalDesignDoc.h"
+#include "TogaSectionCutDlgEx.h"
 
 // CTxDOTOptionalDesignGirderViewPage dialog
 
@@ -15,7 +22,12 @@ CTxDOTOptionalDesignGirderViewPage::CTxDOTOptionalDesignGirderViewPage()
 	: CPropertyPage(CTxDOTOptionalDesignGirderViewPage::IDD),
    m_pData(NULL),
    m_pBrokerRetriever(NULL),
-   m_ChangeStatus(0)
+   m_pElevationView(NULL),
+   m_pSectionView(NULL),
+   m_ChangeStatus(0),
+   m_CurrentCutLocation(0),
+   m_CutLocation(Center),
+   m_SelectedGirder(TOGA_FABR_GDR)
 {
 }
 
@@ -25,14 +37,22 @@ CTxDOTOptionalDesignGirderViewPage::~CTxDOTOptionalDesignGirderViewPage()
 
 void CTxDOTOptionalDesignGirderViewPage::DoDataExchange(CDataExchange* pDX)
 {
-	CPropertyPage::DoDataExchange(pDX);
+   CPropertyPage::DoDataExchange(pDX);
+   DDX_Control(pDX, IDC_ERROR_MSG, m_ErrorMsgStatic);
+   DDX_Control(pDX, ID_SELECTED_GIRDER, m_GirderCtrl);
+   DDX_Control(pDX, IDC_SECTION_CUT, m_SectionBtn);
 }
-
 
 BEGIN_MESSAGE_MAP(CTxDOTOptionalDesignGirderViewPage, CPropertyPage)
    ON_WM_ERASEBKGND()
    ON_WM_CTLCOLOR()
-   ON_COMMAND(ID_FILE_PRINT, &CTxDOTOptionalDesignGirderViewPage::OnFilePrint)
+   ON_WM_CREATE()
+   ON_WM_SIZE()
+   ON_CBN_SELCHANGE(ID_SELECTED_GIRDER, &CTxDOTOptionalDesignGirderViewPage::OnCbnSelchangeSelectedGirder)
+   ON_BN_CLICKED(IDC_SECTION_CUT, &CTxDOTOptionalDesignGirderViewPage::OnBnClickedSectionCut)
+   ON_COMMAND(ID_VIEW_SECTIONCUTLOCATION, &CTxDOTOptionalDesignGirderViewPage::OnViewSectioncutlocation)
+   ON_COMMAND(ID_HELP, &CTxDOTOptionalDesignGirderViewPage::OnHelpFinder)
+   ON_COMMAND(ID_HELP_FINDER, &CTxDOTOptionalDesignGirderViewPage::OnHelpFinder)
 END_MESSAGE_MAP()
 
 
@@ -40,12 +60,18 @@ END_MESSAGE_MAP()
 
 BOOL CTxDOTOptionalDesignGirderViewPage::OnSetActive()
 {
+   UpdateBar();
+
    if (m_ChangeStatus!=0)
    {
       try
       {
-         // We need an updated broker to work for us
-         CComPtr<IBroker> pBroker = m_pBrokerRetriever->GetUpdatedBroker();
+         m_pSectionView->ShowWindow(SW_SHOW);
+         m_pElevationView->ShowWindow(SW_SHOW);
+
+         // any change forces an update
+         m_pElevationView->OnUpdate(NULL, HINT_GIRDERCHANGED, NULL);
+         m_pSectionView->OnUpdate(NULL, HINT_GIRDERCHANGED, NULL);
 
          // our data is updated
          m_ChangeStatus = 0;
@@ -53,11 +79,13 @@ BOOL CTxDOTOptionalDesignGirderViewPage::OnSetActive()
       }
       catch(TxDOTBrokerRetrieverException exc)
       {
-         ASSERT(0);
+         m_pSectionView->ShowWindow(SW_HIDE);
+         m_pElevationView->ShowWindow(SW_HIDE);
       }
       catch(...)
       {
-         ASSERT(0);
+         m_pSectionView->ShowWindow(SW_HIDE);
+         m_pElevationView->ShowWindow(SW_HIDE);
       }
    }
 
@@ -76,6 +104,30 @@ BOOL CTxDOTOptionalDesignGirderViewPage::OnInitDialog()
 
    // This is our first update - we know changes have happened
    m_ChangeStatus = ITxDataObserver::ctPGSuper;
+
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
+   // Selected Girder
+   m_SelectedGirder  = TOGA_FABR_GDR;
+   CComboBox* pgirder_ctrl   = (CComboBox*)GetDlgItem(ID_SELECTED_GIRDER);
+   pgirder_ctrl->SetCurSel(1);
+
+   // Embed views
+   CCreateContext pContext;
+	CWnd* pFrameWnd = this;
+	pContext.m_pCurrentDoc = m_pDocument;
+
+   // Elevation
+	pContext.m_pNewViewClass = RUNTIME_CLASS(CTogaGirderModelElevationView);
+	m_pElevationView = (CTogaGirderModelElevationView *)((CFrameWnd*)pFrameWnd)->CreateView(&pContext);
+   m_pElevationView->SendMessage(WM_INITIALUPDATE);
+	m_pElevationView->ShowWindow(SW_NORMAL);
+
+   // Section view
+	pContext.m_pNewViewClass = RUNTIME_CLASS(CTogaGirderModelSectionView);
+	m_pSectionView = (CTogaGirderModelSectionView *)((CFrameWnd*)pFrameWnd)->CreateView(&pContext);
+   m_pSectionView->SendMessage(WM_INITIALUPDATE);
+	m_pSectionView->ShowWindow(SW_NORMAL);
 
    return TRUE;  // return TRUE unless you set the focus to a control
    // EXCEPTION: OCX Property Pages should return FALSE
@@ -116,11 +168,6 @@ HBRUSH CTxDOTOptionalDesignGirderViewPage::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT
    return (HBRUSH)backBrush;
 }
 
-void CTxDOTOptionalDesignGirderViewPage::OnFilePrint()
-{
-   // TODO: Add your command handler code here
-}
-
 void CTxDOTOptionalDesignGirderViewPage::AssertValid() const
 {
    // Asserts will fire if not in static module state
@@ -132,10 +179,8 @@ void CTxDOTOptionalDesignGirderViewPage::AssertValid() const
 void CTxDOTOptionalDesignGirderViewPage::GetSpanAndGirderSelection(SpanIndexType* pSpan,GirderIndexType* pGirder)
 {
    *pSpan = TOGA_SPAN;
-   *pGirder = TOGA_FABR_GDR;
+   *pGirder = m_SelectedGirder;
 }
-
-
 
 void CTxDOTOptionalDesignGirderViewPage::ShowCutDlg()
 {
@@ -154,9 +199,7 @@ void CTxDOTOptionalDesignGirderViewPage::ShowCutDlg()
    ATLASSERT( span != ALL_SPANS && gdr != ALL_GIRDERS  );
    Uint16 nHarpPoints = pStrandGeom->GetNumHarpPoints(span,gdr);
 
-   ASSERT(0);
-/*
-   CSectionCutDlgEx dlg(nHarpPoints,m_CurrentCutLocation,0.0,high,m_CutLocation);
+   CTogaSectionCutDlgEx dlg(nHarpPoints,m_CurrentCutLocation,0.0,high,m_CutLocation);
 
    int st = dlg.DoModal();
    if (st==IDOK)
@@ -164,7 +207,6 @@ void CTxDOTOptionalDesignGirderViewPage::ShowCutDlg()
       m_CurrentCutLocation = dlg.GetValue();
       UpdateCutLocation(dlg.GetCutLocation(),m_CurrentCutLocation);
    }
-*/
 }
 
 void CTxDOTOptionalDesignGirderViewPage::CutAt(Float64 cut)
@@ -219,31 +261,14 @@ void CTxDOTOptionalDesignGirderViewPage::CutAtPrev()
 
 void CTxDOTOptionalDesignGirderViewPage::CutAtLocation()
 {
-   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+   m_CutLocation = UserInput;
 
-   CComPtr<IBroker> pBroker = m_pBrokerRetriever->GetUpdatedBroker();
-
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
-
-   Float64 val  = ::ConvertFromSysUnits(m_CurrentCutLocation,pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure);
-   Float64 high = ::ConvertFromSysUnits(m_MaxCutLocation,pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure);
-
-   ASSERT(0);
-/*
-   CSectionCutDlg dlg(val,0.0,high,pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure.UnitTag().c_str());
-
-   int st = dlg.DoModal();
-   if (st==IDOK)
-   {
-      val = ::ConvertToSysUnits(dlg.GetValue(),pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure);
-      CutAt(val);
-   }
+   ShowCutDlg();
 
    // Because the dialog messes with the screen
    // force an update (this is a hack because of the selection tool).
-   GetGirderModelElevationView()->Invalidate();
-   GetGirderModelElevationView()->UpdateWindow();
-*/
+   m_pElevationView->Invalidate();
+   m_pElevationView->UpdateWindow();
 }
 
 
@@ -252,10 +277,182 @@ void CTxDOTOptionalDesignGirderViewPage::UpdateCutLocation(CutLocation cutLoc,Fl
    m_CurrentCutLocation = cut;
    m_CutLocation = cutLoc;
 
-   ASSERT(0);
-/*
    UpdateBar();
-   GetGirderModelSectionView()->OnUpdate(NULL, HINT_GIRDERVIEWSECTIONCUTCHANGED, NULL);
-   GetGirderModelElevationView()->OnUpdate(NULL, HINT_GIRDERVIEWSECTIONCUTCHANGED, NULL);
-*/
+   m_pElevationView->OnUpdate(NULL, HINT_GIRDERVIEWSECTIONCUTCHANGED, NULL);
+   m_pSectionView->OnUpdate(NULL, HINT_GIRDERVIEWSECTIONCUTCHANGED, NULL);
+}
+
+void CTxDOTOptionalDesignGirderViewPage::UpdateBar()
+{
+   SpanIndexType spanIdx, gdrIdx;
+   GetSpanAndGirderSelection(&spanIdx,&gdrIdx);
+
+   try
+   {
+      CComPtr<IBroker> pBroker = m_pBrokerRetriever->GetUpdatedBroker();
+      GET_IFACE2(pBroker, IBridge, pBridge);
+
+      // cut location
+      Float64 gird_len = pBridge->GetGirderLength(spanIdx,gdrIdx);
+      m_MaxCutLocation = gird_len;
+
+      if (m_CutLocation==UserInput)
+      {
+         if (m_CurrentCutLocation > gird_len)
+            m_CurrentCutLocation = gird_len;
+      }
+      else if (m_CutLocation == LeftEnd)
+      {
+         m_CurrentCutLocation = 0.0;
+      }
+      else if (m_CutLocation == RightEnd)
+      {
+         m_CurrentCutLocation = gird_len;
+      }
+      else if (m_CutLocation == Center)
+      {
+         m_CurrentCutLocation = gird_len/2.0;
+      }
+      else
+      {
+         // cut was taken at a harping point, must enlist poi interface
+         GET_IFACE2(pBroker, IPointOfInterest, pPoi);
+         std::vector<pgsPointOfInterest> poi;
+         std::vector<pgsPointOfInterest>::iterator iter;
+         poi = pPoi->GetPointsOfInterest(spanIdx, gdrIdx, pgsTypes::CastingYard, POI_HARPINGPOINT);
+         int nPoi = poi.size();
+         ASSERT(0 < nPoi && nPoi <3);
+         iter = poi.begin();
+         pgsPointOfInterest left_hp_poi = *iter++;
+         pgsPointOfInterest right_hp_poi = left_hp_poi;
+         if ( nPoi == 2 )
+            right_hp_poi = *iter++;
+
+         if (m_CutLocation == LeftHarp)
+         {
+            m_CurrentCutLocation = left_hp_poi.GetDistFromStart();
+         }
+         else if (m_CutLocation == RightHarp)
+         {
+            m_CurrentCutLocation = right_hp_poi.GetDistFromStart();
+         }
+         else
+            ASSERT(0); // unknown cut location type
+      }
+
+      GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+      CString msg;
+      msg.Format("Section Cut Offset: %s",FormatDimension(m_CurrentCutLocation,pDisplayUnits->GetXSectionDimUnit()));
+
+      m_SectionBtn.SetWindowText(msg);
+
+      // made it - we can show our controls
+      m_pSectionView->ShowWindow(SW_SHOW);
+      m_pElevationView->ShowWindow(SW_SHOW);
+      m_GirderCtrl.EnableWindow(TRUE);
+      m_SectionBtn.EnableWindow(TRUE);
+   }
+   catch(TxDOTBrokerRetrieverException exc)
+   {
+      // An error occurred in analysis - go to error mode
+      DisplayErrorMode(exc);
+   }
+   catch(...)
+   {
+      ASSERT(0);
+      TxDOTBrokerRetrieverException exc;
+      exc.Message = "An Unknown Error has Occurred";
+      DisplayErrorMode(exc);
+   }
+
+}
+
+void CTxDOTOptionalDesignGirderViewPage::OnSize(UINT nType, int cx, int cy)
+{
+//   __super::OnSize(nType, cx, cy);
+
+   if (m_pElevationView && m_pSectionView)
+   {
+      // Convert a 7du x 7du rect into pixels
+      CRect sizeRect(0,0,7,7);
+      MapDialogRect(&sizeRect);
+
+      CRect toolBarRect(0,0,22,22); // tool bar is 22du high
+      MapDialogRect(&toolBarRect);
+
+      CRect clientRect;
+      GetClientRect( &clientRect );
+
+      // Rect around both windows
+      clientRect.bottom = clientRect.bottom - 3 * sizeRect.Height();
+      clientRect.left = clientRect.left + sizeRect.Width();
+      clientRect.top  = clientRect.top + toolBarRect.Height();
+      clientRect.right  = clientRect.right  - sizeRect.Width();
+
+      int orig_hgt = clientRect.Height();
+
+      // Figure out the new position
+      if (::IsWindow(m_pElevationView->m_hWnd) && ::IsWindow(m_pSectionView->m_hWnd))
+      {
+         // elevation view on top 1/3
+         CRect elevRect(clientRect);
+         elevRect.bottom = elevRect.top + orig_hgt/3 - sizeRect.Height()/2;
+
+         m_pElevationView->MoveWindow( elevRect, FALSE );
+
+         CRect sectRect(clientRect);
+         sectRect.top = elevRect.bottom + sizeRect.Height();
+
+         m_pSectionView->MoveWindow( sectRect, FALSE );
+      }
+   }
+
+   Invalidate();
+}
+
+void CTxDOTOptionalDesignGirderViewPage::OnCbnSelchangeSelectedGirder()
+{
+   CComboBox* pgirder_ctrl   = (CComboBox*)GetDlgItem(ID_SELECTED_GIRDER);
+   if (pgirder_ctrl->GetCurSel()==0)
+      m_SelectedGirder = TOGA_ORIG_GDR;
+   else
+      m_SelectedGirder = TOGA_FABR_GDR;
+
+   m_pElevationView->OnUpdate(NULL, HINT_GIRDERCHANGED, NULL);
+   m_pSectionView->OnUpdate(NULL, HINT_GIRDERCHANGED, NULL);
+}
+
+void CTxDOTOptionalDesignGirderViewPage::OnBnClickedSectionCut()
+{
+   CutAtLocation();
+}
+
+
+
+
+void CTxDOTOptionalDesignGirderViewPage::DisplayErrorMode(TxDOTBrokerRetrieverException& exc)
+{
+   m_pSectionView->ShowWindow(SW_HIDE);
+   m_pElevationView->ShowWindow(SW_HIDE);
+   m_GirderCtrl.EnableWindow(FALSE);
+   m_SectionBtn.EnableWindow(FALSE);
+
+   CString msg;
+   msg.Format("Error - Analysis run Failed because: \n %s \n More Information May be in Status Center",exc.Message);
+
+   m_ErrorMsgStatic.SetWindowTextA(msg);
+   m_ErrorMsgStatic.ShowWindow(SW_SHOW);
+}
+
+void CTxDOTOptionalDesignGirderViewPage::OnViewSectioncutlocation()
+{
+   this->ShowCutDlg();
+}
+
+
+void CTxDOTOptionalDesignGirderViewPage::OnHelpFinder()
+{
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+   CWinApp* pApp = AfxGetApp();
+   ::HtmlHelp( *this, pApp->m_pszHelpFilePath, HH_HELP_CONTEXT, IDH_GIRDER_VIEW );
 }

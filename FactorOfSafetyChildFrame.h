@@ -48,6 +48,7 @@ public:
    enum Stage { Lifting, Hauling };
    // Update from doc/view - called by section view
    void Update();
+   void SelectSpan(SpanIndexType spanIdx,GirderIndexType gdrIdx);
    // status of the current view settings
    GirderIndexType GetGirderIdx() const;
    SpanIndexType   GetSpanIdx() const;

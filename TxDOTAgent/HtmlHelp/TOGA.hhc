@@ -1,0 +1,103 @@
+<html>
+<!-- Sitemap 1.0 -->
+<object type="text/site properties">
+  <param name="SiteType" value="toc">
+  <param name="Image Width" value="16">
+  <param name="Window Styles" value="0x800002">
+  <param name="ExWindow Styles" value="0x100">
+</object>
+<ul>
+  <li><object type="text/sitemap">
+    <param name="Name" value="Welcome!">
+    <param name="Local" value="Welcome.htm">
+  </object>
+  <li><object type="text/sitemap">
+    <param name="Name" value="Support">
+    <param name="Local" value="Support.htm">
+  </object>
+  <li><object type="text/sitemap">
+    <param name="Name" value="License Agreement">
+    <param name="Local" value="License_Agreement.htm">
+  </object>
+  <li><object type="text/sitemap">
+    <param name="Name" value="User Guide">
+    <param name="Local" value="User_Guide.htm">
+  </object>
+  <ul>
+    <li><object type="text/sitemap">
+      <param name="Name" value="Getting Started">
+      <param name="Local" value="Getting_Started.htm">
+    </object>
+    <li><object type="text/sitemap">
+      <param name="Name" value="Installation and Troubleshooting">
+      <param name="Local" value="Installation.htm">
+    </object>
+    <li><object type="text/sitemap">
+      <param name="Name" value="User Interface">
+      <param name="Local" value="User_Interface.htm">
+    </object>
+    <ul>
+      <li><object type="text/sitemap">
+        <param name="Name" value="Main Menu">
+        <param name="Local" value="Main_Menu.htm">
+      </object>
+      <li><object type="text/sitemap">
+        <param name="Name" value="Bridge Input Tab">
+        <param name="Local" value="Bridge_Description_Tab.htm">
+      </object>
+      <li><object type="text/sitemap">
+        <param name="Name" value="Girder Input Tab">
+        <param name="Local" value="Girder_Description_Tab.htm">
+      </object>
+      <li><object type="text/sitemap">
+        <param name="Name" value="Girder View Tab">
+        <param name="Local" value="Girder_View_Tab.htm">
+      </object>
+      <li><object type="text/sitemap">
+        <param name="Name" value="Analysis Report Tab">
+        <param name="Local" value="Analysis_Report_Tab.htm">
+      </object>
+      </ul>
+    </ul>
+  <li><object type="text/sitemap">
+    <param name="Name" value="Theoretical Manual">
+    <param name="Local" value="Theoretical_Manual.htm">
+  </object>
+  <ul>
+    <li><object type="text/sitemap">
+      <param name="Name" value="Background">
+      <param name="Local" value="tmbackground.htm">
+    </object>
+    <li><object type="text/sitemap">
+      <param name="Name" value="Optional Design Analysis">
+      <param name="Local" value="Optional_Design_Analysis.htm">
+    </object>
+    <li><object type="text/sitemap">
+      <param name="Name" value="Girder Models Used In Analysis">
+      <param name="Local" value="Girder_Models_Used_In_Analysis.htm">
+    </object>
+    <li><object type="text/sitemap">
+      <param name="Name" value="Generation of the PGSuper Model">
+      <param name="Local" value="Generation_of_the_PGSuper_Model.htm">
+    </object>
+    <li><object type="text/sitemap">
+      <param name="Name" value="Row-Based Strand Fill">
+      <param name="Local" value="Row-Based_Strand_Fill.htm">
+    </object>
+    </ul>
+  <li><object type="text/sitemap">
+    <param name="Name" value="Administrator Guide">
+    <param name="Local" value="Administrator_Guide.htm">
+  </object>
+  <ul>
+    <li><object type="text/sitemap">
+      <param name="Name" value="PGSuper Template Bridge">
+      <param name="Local" value="PGSuper_Template_Bridge.htm">
+    </object>
+    <li><object type="text/sitemap">
+      <param name="Name" value="The Templates Text Files">
+      <param name="Local" value="The_Templates_Text_File.htm">
+    </object>
+    </ul>
+</ul>
+</html>

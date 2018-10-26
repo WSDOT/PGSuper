@@ -286,7 +286,7 @@ void CBridgePlanView::SelectGirder(SpanIndexType spanIdx,GirderIndexType gdrIdx,
       dispMgr->ClearSelectedObjects();
 }
 
-void CBridgePlanView::SelectDeck(bool bSelect,bool bNotifyViews)
+void CBridgePlanView::SelectDeck(bool bSelect)
 {
    CComPtr<iDisplayMgr> dispMgr;
    GetDisplayMgr(&dispMgr);
@@ -297,12 +297,6 @@ void CBridgePlanView::SelectDeck(bool bSelect,bool bNotifyViews)
    if ( pDO )
    {
       dispMgr->SelectObject(pDO,bSelect);
-
-      if ( bNotifyViews )
-      {
-         CPGSuperDoc* pDoc = (CPGSuperDoc*)GetDocument();
-         pDoc->UpdateAllViews(this,HINT_DECKSELECTED,NULL);
-      }
    }
    else
    {
@@ -310,7 +304,7 @@ void CBridgePlanView::SelectDeck(bool bSelect,bool bNotifyViews)
    }
 }
 
-void CBridgePlanView::SelectAlignment(bool bSelect,bool bNotifyViews)
+void CBridgePlanView::SelectAlignment(bool bSelect)
 {
    CComPtr<iDisplayMgr> dispMgr;
    GetDisplayMgr(&dispMgr);
@@ -321,12 +315,6 @@ void CBridgePlanView::SelectAlignment(bool bSelect,bool bNotifyViews)
    if ( pDO )
    {
       dispMgr->SelectObject(pDO,bSelect);
-
-      if ( bNotifyViews )
-      {
-         CPGSuperDoc* pDoc = (CPGSuperDoc*)GetDocument();
-         pDoc->UpdateAllViews(this,HINT_ALIGNMENTSELECTED,NULL);
-      }
    }
    else
    {
@@ -478,13 +466,40 @@ void CBridgePlanView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
    {
       UpdateSectionCut();
    }
-   else if ( lHint == HINT_GIRDERSELECTIONCHANGED )
+   else if ( lHint == HINT_SELECTIONCHANGED )
    {
-      CPGSuperDoc* pDoc = (CPGSuperDoc*)GetDocument();
-      SpanIndexType spanIdx = pDoc->GetSpanIdx();
-      GirderIndexType gdrIdx  = pDoc->GetGirderIdx();
-      if ( spanIdx != ALL_SPANS && gdrIdx != ALL_GIRDERS )
-         SelectGirder(spanIdx,gdrIdx,true);  
+      CSelection* pSelection = (CSelection*)pHint;
+      switch( pSelection->Type )
+      {
+      case CSelection::None:
+         this->ClearSelection();
+         break;
+
+      case CSelection::Span:
+         this->SelectSpan( pSelection->SpanIdx, true );
+         break;
+
+      case CSelection::Girder:
+         this->SelectGirder( pSelection->SpanIdx,pSelection->GirderIdx,true);
+         break;
+
+      case CSelection::Pier:
+         this->SelectPier( pSelection->PierIdx, true );
+         break;
+
+      case CSelection::Deck:
+         this->SelectDeck(true);
+         break;
+
+      case CSelection::Alignment:
+         this->SelectAlignment(true);
+         break;
+
+      default:
+         ATLASSERT(FALSE); // is there a new type of object to be selected?
+         this->ClearSelection();
+         break;
+      }
    }
 }
 
@@ -679,11 +694,11 @@ void CBridgePlanView::HandleContextMenu(CWnd* pWnd,CPoint logPoint)
       logPoint = center;
    }
 
-   std::vector<IBridgePlanViewEventCallback*> callbacks = pDoc->GetBridgePlanViewCallbacks();
-   std::vector<IBridgePlanViewEventCallback*>::iterator iter;
+   std::map<Uint32,IBridgePlanViewEventCallback*> callbacks = pDoc->GetBridgePlanViewCallbacks();
+   std::map<Uint32,IBridgePlanViewEventCallback*>::iterator iter;
    for ( iter = callbacks.begin(); iter != callbacks.end(); iter++ )
    {
-      IBridgePlanViewEventCallback* callback = *iter;
+      IBridgePlanViewEventCallback* callback = iter->second;
       callback->OnBackgroundContextMenu(pMenu);
    }
 
@@ -786,7 +801,7 @@ void CBridgePlanView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
          dispMgr->GetSelectedObjects(&selObjs);
          if ( 0 == selObjs.size() )
          {
-            m_pFrame->SelectAlignment();
+            SelectAlignment(true);
             return;
          }
       }

@@ -950,15 +950,15 @@ BEGIN
     LTEXT           "%",IDC_STATIC,48,72,8,8
 END
 
-IDD_COPY_CONC_ENTRY DIALOG  0, 0, 246, 113
+IDD_COPY_CONC_ENTRY DIALOGEX 0, 0, 246, 113
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Copy Concrete Properties"
-FONT 8, "MS Sans Serif"
+FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
     DEFPUSHBUTTON   "OK",IDOK,34,92,50,14
     PUSHBUTTON      "Cancel",IDCANCEL,98,92,50,14
     COMBOBOX        IDC_CONC_ENTRIES,7,33,232,153,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Select Concrete Library Entry To Be Copied",IDC_STATIC,7,18,138,8
+    LTEXT           "Select Concrete Library Entry To Be Copied",IDC_LABEL,7,18,138,8
     ICON            IDI_WARNING2,IDC_WARNING,22,57,20,20,SS_NOTIFY
     LTEXT           "Note that the concrete strength at release, f'c, is not specified by the library entry. You must specify it manually after you close this dialog.",IDC_WARNOTE,50,55,184,29
     PUSHBUTTON      "Help",IDHELP,162,92,50,14
@@ -1671,11 +1671,11 @@ BEGIN
     EDITTEXT        IDC_SPACING,81,124,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "Static",IDC_SPACING_UNIT,125,126,21,8
     LTEXT           "(Allowable Spacing = )",IDC_ALLOWABLE_SPACING,151,126,79,8
-    LTEXT           "Locate",IDC_STATIC,14,143,23,8
+    LTEXT           "Locate",IDC_REF_GIRDER_LABEL,14,143,23,8
     COMBOBOX        IDC_REF_GIRDER,41,141,80,79,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     EDITTEXT        IDC_REF_GIRDER_OFFSET,123,141,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "Static",IDC_REF_GIRDER_OFFSET_UNIT,165,143,11,8
-    LTEXT           "from",IDC_STATIC,181,143,14,8
+    LTEXT           "from",IDC_REF_GIRDER_OFFSET_TYPE_LABEL,181,143,14,8
     COMBOBOX        IDC_REF_GIRDER_OFFSET_TYPE,198,141,63,78,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
     COMBOBOX        IDC_GIRDER_SPACING_MEASURE,14,158,247,60,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     LTEXT           "Girder Connectivity",IDC_GIRDER_CONNECTIVITY_S,14,183,65,9
@@ -2036,8 +2036,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 2,3,0,6
- PRODUCTVERSION 2,3,0,6
+ FILEVERSION 2,3,1,0
+ PRODUCTVERSION 2,3,1,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -2054,12 +2054,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "Washington State Department of Transportation"
             VALUE "FileDescription", "PGSuper"
-            VALUE "FileVersion", "2.3.0.6"
+            VALUE "FileVersion", "2.3.1.0"
             VALUE "InternalName", "PGSuper"
             VALUE "LegalCopyright", "Copyright © 1999-2010, Washington State Department of Transportation, All Rights Reserved"
             VALUE "OriginalFilename", "PGSuperAppPlugin.DLL"
             VALUE "ProductName", "PGSuper"
-            VALUE "ProductVersion", "2.3.0.6"
+            VALUE "ProductVersion", "2.3.1.0"
         END
     END
     BLOCK "VarFileInfo"
@@ -3034,7 +3034,7 @@ BEGIN
     IDS_CANT_FIND_LIBRARY_FILE 
                             "There is a problem with the software configuration. The master library file could not be found. Please use the next window to update the Libraries and Templates configuration."
     IDS_CORRUPTED_LIBRARY_FILE 
-                            "Error - loading master library file: %1 The file may be corrupted. Choose Yes to find a new file, or No to abort."
+                            "Error loading Master Library: %1.\nWould you like to re-configure PGSuper for a different Library and Templates Package?\nYes = Update PGSuper Library and Template Configuration\nNo = Proceed without Master Library"
     IDS_E_EXCESSIVE_SKEW    "Pier %1 is skewed %2 or more.\nPlease adjust the orientation of Pier %1."
     IDS_E_EXCESSIVE_DELTA_SKEW 
                             "The difference in skew angles between Pier %u and Pier %u is more than %s.\nPlease adjust the orientation of the piers."
@@ -3060,6 +3060,16 @@ BEGIN
     IDM_COPY_GIRDER_PROPS   "Copy Properties From One Girder to Another\nCopy Girder Properties"
     IDM_IMPORT_PROJECT_LIBRARY 
                             "Get Library Entries From Another Project\nGet Library Entries From Another Project"
+END
+
+STRINGTABLE 
+BEGIN
+    IDS_E_BADINSTALL        "There is an error with the %1 installation.  Please re-install the program."
+    IDS_E_PROBPERSISTS      "If this problem persists,  contact technical support at Bridge_Support@wsdot.wa.gov.\n Please include your project file and the %1 file found in the program directory."
+    IDS_E_INVALIDFORMAT     "%1 is not a valid PGSuper project file."
+    IDS_E_FILENOTFOUND      "File %1 was not found"
+    IDS_E_READ              "An error has occured while reading %1"
+    IDS_E_FORMAT            "%1\n\n %2"
 END
 
 STRINGTABLE 

@@ -67,3 +67,38 @@ interface ISelection : IUnknown
    virtual void SelectGirder(SpanIndexType spanIdx,GirderIndexType gdrIdx) = 0;
    virtual Float64 GetSectionCutStation() = 0; // bridge model view section cut station
 };
+
+
+struct CSelection
+{
+public:
+   enum Type { None, Pier, Span, Girder, Deck, Alignment } Type;
+   SpanIndexType SpanIdx;
+   PierIndexType PierIdx;
+   GirderIndexType GirderIdx;
+};
+
+
+/*****************************************************************************
+INTERFACE
+   ISelectionEx
+
+   Interface for interrogating the UI for the current selection
+
+DESCRIPTION
+   Interface for interrogating the UI for the current selection.
+
+   ISelection is obsolute, use ISelectionEx
+*****************************************************************************/
+// {7CDC51A1-57DF-43bc-A828-5933AC369766}
+DEFINE_GUID(IID_ISelectionEx, 
+0x7cdc51a1, 0x57df, 0x43bc, 0xa8, 0x28, 0x59, 0x33, 0xac, 0x36, 0x97, 0x66);
+interface ISelectionEx : ISelection
+{
+   // returns information about the current selection
+   virtual CSelection GetSelection() = 0;
+
+   virtual void SelectDeck() = 0;
+   virtual void SelectAlignment() = 0;
+   virtual void ClearSelection() = 0;
+};

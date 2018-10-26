@@ -61,8 +61,9 @@ public:
 protected:
 	virtual ~CPGSuperReportView();
 
-   virtual HRESULT UpdateReportBrowser();
+   virtual HRESULT UpdateReportBrowser(CReportHint* pHint);
    virtual void RefreshReport();
+   virtual CReportHint* TranslateHint(CView* pSender, LPARAM lHint, CObject* pHint);
 
 #ifdef _DEBUG
 	virtual void AssertValid() const;

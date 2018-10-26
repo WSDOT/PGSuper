@@ -54,8 +54,6 @@ public:
    enum CutLocation {LeftEnd,LeftHarp,Center,RightHarp,RightEnd,UserInput};
 
 // Operations
-   // Update from doc/view - called by section view
-   void Update();
    // status of the current views
    UserLoads::Stage  GetLoadingStage() const {return m_LoadingStage;}
    Float64 GetCurrentCutLocation() {return m_CurrentCutLocation;}
@@ -123,6 +121,8 @@ protected:
    virtual double GetTopFrameFraction() const;
    void UpdateCutLocation(CutLocation cutLoc,Float64 cut = 0.0);
    void OnUpdateFrameTitle(BOOL bAddToTitle);
+   
+   virtual BOOL OnCreateClient(LPCREATESTRUCT lpcs, CCreateContext* pContext);
 
    CGirderModelElevationView* GetGirderModelElevationView() const;
    CGirderModelSectionView*   GetGirderModelSectionView() const;

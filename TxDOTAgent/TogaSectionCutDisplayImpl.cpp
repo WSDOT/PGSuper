@@ -39,7 +39,7 @@ static char THIS_FILE[] = __FILE__;
 static const Uint32 SSIZE = 1440 * 3/8; // (twips)
 
 
-UINT CTogaSectionCutDisplayImpl::ms_Format = ::RegisterClipboardFormat("SectionCutData");
+UINT CTogaSectionCutDisplayImpl::ms_Format = ::RegisterClipboardFormat("TogaSectionCutData");
 
 CTogaSectionCutDisplayImpl::CTogaSectionCutDisplayImpl():
 m_pCutLocation(NULL),
@@ -63,15 +63,13 @@ END_MESSAGE_MAP()
 
 BEGIN_INTERFACE_MAP(CTogaSectionCutDisplayImpl,CCmdTarget)
    INTERFACE_PART(CTogaSectionCutDisplayImpl,IID_iDrawPointStrategy,DrawPointStrategy)
-   INTERFACE_PART(CTogaSectionCutDisplayImpl,IID_iSectionCutDrawStrategy,Strategy)
-//   INTERFACE_PART(CTogaSectionCutDisplayImpl,IID_iSectionCutEvents,Events)
+   INTERFACE_PART(CTogaSectionCutDisplayImpl,IID_iTogaSectionCutDrawStrategy,Strategy)
    INTERFACE_PART(CTogaSectionCutDisplayImpl,IID_iDisplayObjectEvents,DisplayObjectEvents)
    INTERFACE_PART(CTogaSectionCutDisplayImpl,IID_iDragData,DragData)
 END_INTERFACE_MAP()
 
 DELEGATE_CUSTOM_INTERFACE(CTogaSectionCutDisplayImpl,DrawPointStrategy);
 DELEGATE_CUSTOM_INTERFACE(CTogaSectionCutDisplayImpl,Strategy);
-//DELEGATE_CUSTOM_INTERFACE(CTogaSectionCutDisplayImpl,Events);
 DELEGATE_CUSTOM_INTERFACE(CTogaSectionCutDisplayImpl,DisplayObjectEvents);
 DELEGATE_CUSTOM_INTERFACE(CTogaSectionCutDisplayImpl,DragData);
 
@@ -449,32 +447,6 @@ STDMETHODIMP_(bool) CTogaSectionCutDisplayImpl::XDisplayObjectEvents::OnContextM
       pList->GetDisplayMgr(&pDispMgr);
 
       CDisplayView* pView = pDispMgr->GetView();
-/*
-      CPGSuperDoc* pDoc = (CPGSuperDoc*)pView->GetDocument();
-
-      std::vector<IBridgePlanViewEventCallback*> callbacks = pDoc->GetBridgePlanViewCallbacks();
-      if ( callbacks.size() == 0 )
-         return false;
-
-      CEAFMenu* pMenu = CEAFMenu::CreateContextMenu(pDoc->GetPluginCommandManager());
-      std::vector<IBridgePlanViewEventCallback*>::iterator iter;
-      for ( iter = callbacks.begin(); iter != callbacks.end(); iter++ )
-      {
-         IBridgePlanViewEventCallback* callback = *iter;
-         callback->OnAlignmentContextMenu(pMenu);
-      }
-
-      bool bResult = false;
-      if ( 0 < pMenu->GetMenuItemCount() )
-      {
-         pMenu->TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, point.x, point.y,pWnd);
-         bResult = true;
-      }
-
-      delete pMenu;
-
-      return bResult;
-*/
    }
 
    return false;

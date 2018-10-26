@@ -90,6 +90,27 @@ END_MESSAGE_MAP()
 /////////////////////////////////////////////////////////////////////////////
 // CFactorOfSafetyChildFrame message handlers
 
+void CFactorOfSafetyChildFrame::SelectSpan(SpanIndexType spanIdx,GirderIndexType gdrIdx)
+{
+   CComboBox* pcbSpans = (CComboBox*)m_SettingsBar.GetDlgItem(IDC_SPAN);
+   ASSERT(pcbSpans);
+
+   int nItems = pcbSpans->GetCount();
+   for ( int i = 0; i < nItems; i++ )
+   {
+      if ( (SpanIndexType)pcbSpans->GetItemData(i) == spanIdx )
+      {
+         pcbSpans->SetCurSel(i);
+         OnSpanChanged();
+         break;
+      }
+   }
+
+   CComboBox* pcbGirders = (CComboBox*)m_SettingsBar.GetDlgItem(IDC_GIRDER);
+   pcbGirders->SetCurSel(gdrIdx);
+   OnGirderChanged();
+}
+
 GirderIndexType CFactorOfSafetyChildFrame::GetGirderIdx() const 
 {
    return m_GirderIdx;
@@ -179,7 +200,8 @@ void CFactorOfSafetyChildFrame::UpdateBar()
       int sel = pspan_ctrl->GetCurSel();
       if (sel == CB_ERR)
       {
-         sel = pDoc->GetSpanIdx();
+         CSelection selection = pDoc->GetSelection();
+         sel = selection.SpanIdx;
          if ( sel == ALL_SPANS )
             sel = 0;
 
@@ -209,7 +231,8 @@ void CFactorOfSafetyChildFrame::UpdateBar()
    int sel = pgirder_ctrl->GetCurSel();
    if (sel==CB_ERR) 
    {
-      sel = pDoc->GetGirderIdx();
+      CSelection selection = pDoc->GetSelection();
+      sel = selection.GirderIdx;
       if ( sel < 0 )
          sel = 0;
 

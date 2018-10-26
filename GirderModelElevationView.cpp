@@ -236,7 +236,7 @@ void CGirderModelElevationView::OnInitialUpdate()
    dispMgr->AddDisplayObjectFactory(pfac2);
 
    // set up default event handler for canvas
-   CGMDisplayMgrEventsImpl* events = new CGMDisplayMgrEventsImpl(pDoc, m_pFrame, this);
+   CGMDisplayMgrEventsImpl* events = new CGMDisplayMgrEventsImpl(pDoc, m_pFrame, this, true);
    unk = events->GetInterface(&IID_iDisplayMgrEvents);
    dispMgr->RegisterEventSink((iDisplayMgrEvents*)unk);
 
@@ -373,6 +373,14 @@ void CGirderModelElevationView::OnUpdate(CView* pSender, LPARAM lHint, CObject* 
       m_bUpdateError = true;
       Invalidate();
    }
+   else if ( lHint == HINT_SELECTIONCHANGED )
+   {
+      CSelection* pSelection = (CSelection*)pHint;
+      if ( pSelection->Type != CSelection::Girder )
+      {
+         m_pFrame->SelectSpanAndGirder(INVALID_INDEX,INVALID_INDEX);
+      }
+   }
 
 	Invalidate(TRUE);
 }
@@ -392,8 +400,9 @@ void CGirderModelElevationView::UpdateDisplayObjects()
    GirderIndexType girder;
    if ( m_pFrame->SyncWithBridgeModelView() )
    {
-      span      = pDoc->GetSpanIdx();
-      girder    = pDoc->GetGirderIdx();
+      CSelection selection = pDoc->GetSelection();
+      span      = selection.SpanIdx;
+      girder    = selection.GirderIdx;
    }
    else
    {
@@ -531,32 +540,7 @@ DROPEFFECT CGirderModelElevationView::CanDrop(COleDataObject* pDataObject,DWORD 
 
 void CGirderModelElevationView::OnDropped(COleDataObject* pDataObject,DROPEFFECT dropEffect,IPoint2d* point)
 {
-//   AfxMessageBox("OnDropped");
 }
-
-
-//void CGirderModelElevationView::OnLButtonDown(UINT nFlags, CPoint point) 
-//{
-//   CDisplayView::OnLButtonDown(nFlags, point);
-//}
-//
-//void CGirderModelElevationView::OnLButtonUp(UINT nFlags, CPoint point) 
-//{
-//   if ( GetCapture() == this )
-//   {
-//      ReleaseCapture();
-//
-///*	Commented out because OnMouseMove is doing real time updates
-//      // Update the cut location
-//      Float64 x,y;
-//      m_PointMapper.DPtoWP(m_ToolPosition,0,&x,&y);
-//      m_pFrame->CutAt(x);
-//*/
-//   }
-//
-//   CDisplayView::OnLButtonUp(nFlags, point);
-//}
-
 
 void CGirderModelElevationView::OnLeftEnd() 
 {
@@ -2062,7 +2046,15 @@ void CGirderModelElevationView::OnDraw(CDC* pDC)
    {
       CString msg;
       AfxFormatString1(msg,IDS_E_UPDATE,m_ErrorMsg.c_str());
+      CFont font;
+      CFont* pOldFont = NULL;
+      if ( font.CreatePointFont(100,"Arial",pDC) )
+         pOldFont = pDC->SelectObject(&font);
+
       MultiLineTextOut(pDC,0,0,msg);
+
+      if ( pOldFont )
+         pDC->SelectObject(pOldFont);
       return;
    }
 
@@ -2071,8 +2063,9 @@ void CGirderModelElevationView::OnDraw(CDC* pDC)
    if ( m_pFrame->SyncWithBridgeModelView() )
    {
       CPGSuperDoc* pDoc = (CPGSuperDoc*)GetDocument();
-      spanIdx = pDoc->GetSpanIdx();
-      gdrIdx  = pDoc->GetGirderIdx();
+      CSelection selection = pDoc->GetSelection();
+      spanIdx = selection.SpanIdx;
+      gdrIdx  = selection.GirderIdx;
    }
    else
    {
@@ -2086,7 +2079,15 @@ void CGirderModelElevationView::OnDraw(CDC* pDC)
    else
    {
       CString msg("Select a girder to display");
+      CFont font;
+      CFont* pOldFont = NULL;
+      if ( font.CreatePointFont(100,"Arial",pDC) )
+         pOldFont = pDC->SelectObject(&font);
+
       MultiLineTextOut(pDC,0,0,msg);
+
+      if ( pOldFont )
+         pDC->SelectObject(pOldFont);
    }
 }
 

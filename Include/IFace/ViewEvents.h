@@ -99,4 +99,9 @@ interface IRegisterViewEvents : IUnknown
    virtual Uint32 RegisterBridgeSectionViewCallback(IBridgeSectionViewEventCallback* pCallback) = 0;
    virtual Uint32 RegisterGirderElevationViewCallback(IGirderElevationViewEventCallback* pCallback) = 0;
    virtual Uint32 RegisterGirderSectionViewCallback(IGirderSectionViewEventCallback* pCallback) = 0;
+
+   virtual bool UnregisterBridgePlanViewCallback(Uint32 ID) = 0;
+   virtual bool UnregisterBridgeSectionViewCallback(Uint32 ID) = 0;
+   virtual bool UnregisterGirderElevationViewCallback(Uint32 ID) = 0;
+   virtual bool UnregisterGirderSectionViewCallback(Uint32 ID) = 0;
 };

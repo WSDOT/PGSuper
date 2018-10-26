@@ -41,7 +41,7 @@
 #include "TogaSupportDrawStrategyImpl.h"
 #include "TogaSectionCutDrawStrategy.h"
 #include "TogaSectionCutDisplayImpl.h"
-//#include "GMDisplayMgrEventsImpl.h"
+#include "TogaGMDisplayMgrEventsImpl.h"
 
 #include <MfcTools\Text.h>
 #include <sstream>
@@ -113,25 +113,19 @@ BEGIN_MESSAGE_MAP(CTogaGirderModelElevationView, CDisplayView)
 	//{{AFX_MSG_MAP(CTogaGirderModelElevationView)
 	ON_WM_CREATE()
 	ON_WM_LBUTTONDOWN()
-/*
+
 	ON_COMMAND(ID_LEFTEND, OnLeftEnd)
 	ON_COMMAND(ID_LEFT_HP, OnLeftHp)
 	ON_COMMAND(ID_CENTER, OnCenter)
 	ON_COMMAND(ID_RIGHT_HP, OnRightHp)
 	ON_COMMAND(ID_RIGHTEND, OnRightEnd)
 	ON_COMMAND(ID_USER_CUT, OnUserCut)
-*/
 	ON_WM_SIZE()
 	ON_WM_LBUTTONUP()
-/*
-	ON_COMMAND(ID_EDIT_PRESTRESSING, OnEditPrestressing)
-	ON_COMMAND(ID_EDIT_GIRDER, OnEditGirder)
+
 	ON_COMMAND(ID_VIEWSETTINGS, OnViewSettings)
-	ON_COMMAND(ID_EDIT_STIRRUPS, OnEditStirrups)
-	ON_COMMAND(ID_EDIT_LOAD, OnGevCtxEditLoad)
-	ON_COMMAND(ID_DELETE_LOAD, OnGevCtxDeleteLoad)
-*/
-//	ON_WM_CONTEXTMENU()
+
+	ON_WM_CONTEXTMENU()
 	ON_WM_MOUSEMOVE()
 	ON_WM_LBUTTONDBLCLK()
 	ON_WM_TIMER()
@@ -169,11 +163,10 @@ void CTogaGirderModelElevationView::OnInitialUpdate()
    dispMgr->AddDisplayObjectFactory(pfac2);
 
    // set up default event handler for canvas
-/*
-   CGMDisplayMgrEventsImpl* events = new CGMDisplayMgrEventsImpl(pDoc, m_pFrame, this);
+   CTogaGMDisplayMgrEventsImpl* events = new CTogaGMDisplayMgrEventsImpl(pDoc, m_pFrame, this);
    unk = events->GetInterface(&IID_iDisplayMgrEvents);
    dispMgr->RegisterEventSink((iDisplayMgrEvents*)unk);
-*/
+
    // Create display lists
    // section cut - add first so it's always on top
    CComPtr<iDisplayList> sc_list;
@@ -228,14 +221,6 @@ void CTogaGirderModelElevationView::OnInitialUpdate()
    ::CoCreateInstance(CLSID_DisplayList,NULL,CLSCTX_ALL,IID_iDisplayList,(void**)&gdr_list);
    gdr_list->SetID(GDR_LIST);
    dispMgr->AddDisplayList(gdr_list);
-
-   // build display objects
-   // set up a valid dc first
-   CDManipClientDC dc2(this);
-
-   UpdateDisplayObjects();
-
-   ScaleToFit();
 }
 
 void CTogaGirderModelElevationView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint) 
@@ -259,12 +244,8 @@ void CTogaGirderModelElevationView::OnUpdate(CView* pSender, LPARAM lHint, CObje
       m_First = false;
       return;
    }
-/*
    else if ( lHint == 0 ||
         lHint == HINT_GIRDERVIEWSETTINGSCHANGED ||
-        lHint == HINT_UNITSCHANGED || 
-        lHint == HINT_BRIDGECHANGED ||
-        lHint == HINT_GIRDERFAMILYCHANGED ||
         lHint == HINT_GIRDERCHANGED )
    {
       // set up a valid dc first
@@ -273,7 +254,6 @@ void CTogaGirderModelElevationView::OnUpdate(CView* pSender, LPARAM lHint, CObje
       UpdateDisplayObjects();
       ScaleToFit(false);
    }
-*/
    else if (lHint==HINT_GIRDERVIEWSECTIONCUTCHANGED)
    {
       // set up a valid dc first
@@ -303,6 +283,8 @@ void CTogaGirderModelElevationView::OnUpdate(CView* pSender, LPARAM lHint, CObje
       m_bUpdateError = true;
       Invalidate();
    }
+   else
+      ASSERT(0);
 
 	Invalidate(TRUE);
 }
@@ -323,13 +305,8 @@ void CTogaGirderModelElevationView::UpdateDisplayObjects()
 
    m_pFrame->GetSpanAndGirderSelection(&span,&girder);
 
-
-   if ( span == ALL_SPANS || girder == ALL_GIRDERS )
-      return;
-
    // Grab hold of the broker so we can pass it as a parameter
-   CComPtr<IBroker> pBroker;
-   pDoc->GetBroker(&pBroker);
+   CComPtr<IBroker> pBroker = pDoc->GetUpdatedBroker();
 
    UINT settings = pDoc->GetGirderEditorSettings();
 
@@ -372,7 +349,8 @@ void CTogaGirderModelElevationView::DoPrint(CDC* pDC, CPrintInfo* pInfo)
 #ifdef _DEBUG
 void CTogaGirderModelElevationView::AssertValid() const
 {
-   AFX_MANAGE_STATE(AfxGetAppModuleState());
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+//   AFX_MANAGE_STATE(AfxGetAppModuleState());
 	CDisplayView::AssertValid();
 }
 
@@ -390,7 +368,7 @@ int CTogaGirderModelElevationView::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	if (CDisplayView::OnCreate(lpCreateStruct) == -1)
 		return -1;
 	
-   // m_pFrame = (CGirderModelChildFrame*)GetParent()->GetParent();
+   m_pFrame = (CTxDOTOptionalDesignGirderViewPage*)GetParent();
    ASSERT( m_pFrame != 0 );
 
 	return 0;
@@ -445,9 +423,6 @@ void CTogaGirderModelElevationView::OnDropped(COleDataObject* pDataObject,DROPEF
 //   AfxMessageBox("OnDropped");
 }
 
-
-
-/*
 void CTogaGirderModelElevationView::OnLeftEnd() 
 {
    m_pFrame->CutAtLeftEnd();
@@ -477,13 +452,14 @@ void CTogaGirderModelElevationView::OnUserCut()
 {
 	m_pFrame->CutAtLocation();
 }
-*/
+
 void CTogaGirderModelElevationView::OnSize(UINT nType, int cx, int cy) 
 {
 	CDisplayView::OnSize(nType, cx, cy);
 
    if (!m_First)
    {
+
       CRect rect;
       this->GetClientRect(&rect);
       rect.DeflateRect(5,5,5,5);
@@ -1095,7 +1071,7 @@ void CTogaGirderModelElevationView::BuildDimensionDisplayObjects(CTxDOTOptionalD
 
    // need to layout dimension line witness lines in twips
    const long twip_offset = 1440/2;
-
+/*
    // girder length (top dimension line)
    from_point->put_X(0.0);
    from_point->put_Y(0.0);
@@ -1118,7 +1094,7 @@ void CTogaGirderModelElevationView::BuildDimensionDisplayObjects(CTxDOTOptionalD
       dimLine = BuildDimensionLine(pDL, from_point, to_point, gdr_length-rgt_harp);
       dimLine->SetWitnessLength(twip_offset/2);
    }
-
+*/
    // support distances (along bottom)
    from_point->put_X(start_lgth);
    from_point->put_Y(-max(Hg_start,Hg_end));
@@ -1155,7 +1131,7 @@ void CTogaGirderModelElevationView::BuildSectionCutDisplayObjects(CTxDOTOptional
    CComQIPtr<iPointDisplayObject,&IID_iPointDisplayObject> point_disp(disp_obj);
    point_disp->SetToolTipText("Click on me and drag to move section cut");
 
-   CComQIPtr<iSectionCutDrawStrategy,&IID_iSectionCutDrawStrategy> sc_strat(sink);
+   CComQIPtr<iTogaSectionCutDrawStrategy,&IID_iTogaSectionCutDrawStrategy> sc_strat(sink);
    sc_strat->Init(point_disp, pBroker, span, girder, m_pFrame);
    sc_strat->SetColor(CUT_COLOR);
 

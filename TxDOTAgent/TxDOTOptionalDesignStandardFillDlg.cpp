@@ -65,15 +65,15 @@ void CTxDOTOptionalDesignStandardFillDlg::DoDataExchange(CDataExchange* pDX)
    bool st = sysTokenizer::ParseLong(m_strNumStrands, &m_NumStrands);  // save num strands as integral value as well
    ASSERT(st);
 
-   DDX_UnitValueAndTag(pDX,IDC_OPT_TO, IDC_OPT_TO_UNITS, m_To, pDisplayUnits->GetComponentDimUnit() );
-
-   if (pDX->m_bSaveAndValidate)
+   if (m_NumStrands>0) // only parse To value if we have strands
    {
-      // some effort to respect To range
-      GirderLibrary* pLib = m_pBrokerRetriever->GetGirderLibrary();
+      DDX_UnitValueAndTag(pDX,IDC_OPT_TO, IDC_OPT_TO_UNITS, m_To, pDisplayUnits->GetComponentDimUnit() );
 
-      if (m_NumStrands>0)
+      if (pDX->m_bSaveAndValidate)
       {
+         // some effort to respect To range
+         GirderLibrary* pLib = m_pBrokerRetriever->GetGirderLibrary();
+
          Float64 toLower, toUpper;
          m_pGirderData->ComputeToRange(pLib, m_NumStrands, &toLower, &toUpper);
 

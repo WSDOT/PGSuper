@@ -2,6 +2,7 @@
 //
 
 #include "stdafx.h"
+#include "HtmlHelp\TogaHelp.hh"
 #include "TxDOTOptionalDesignGirderInputPage.h"
 #include "TxDOTOptionalDesignUtilities.h"
 
@@ -209,6 +210,8 @@ BEGIN_MESSAGE_MAP(CTxDOTOptionalDesignGirderInputPage, CPropertyPage)
    ON_BN_CLICKED(IDC_ORIG_USE_DEPRESSED, &CTxDOTOptionalDesignGirderInputPage::OnBnClickedOrigUseDepressed)
    ON_WM_ERASEBKGND()
    ON_WM_CTLCOLOR()
+   ON_COMMAND(ID_HELP, &CTxDOTOptionalDesignGirderInputPage::OnHelpFinder)
+   ON_COMMAND(ID_HELP_FINDER, &CTxDOTOptionalDesignGirderInputPage::OnHelpFinder)
 END_MESSAGE_MAP()
 
 void CTxDOTOptionalDesignGirderInputPage::OnTxDotDataChanged(int change)
@@ -607,4 +610,12 @@ HBRUSH CTxDOTOptionalDesignGirderInputPage::OnCtlColor(CDC* pDC, CWnd* pWnd, UIN
    backBrush.CreateSolidBrush(TXDOT_BACK_COLOR);
 
    return (HBRUSH)backBrush;
+}
+
+
+void CTxDOTOptionalDesignGirderInputPage::OnHelpFinder()
+{
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+   CWinApp* pApp = AfxGetApp();
+   ::HtmlHelp( *this, pApp->m_pszHelpFilePath, HH_HELP_CONTEXT, IDH_GIRDER_INPUT );
 }

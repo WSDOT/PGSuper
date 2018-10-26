@@ -112,14 +112,14 @@ CShrinkageAtHaulingTable* CShrinkageAtHaulingTable::PrepareTable(rptChapter* pCh
 #else
    else if ( pSpecEntry->GetSpecificationType() == lrfdVersionMgr::ThirdEditionWith2006Interims )
    {
-      if ( pDisplayUnits->GetUnitDisplayMode() == pgsTypes::umSI )
+      if ( IS_SI_UNITS(pDisplayUnits) )
          *pParagraph << rptRcImage(strImagePath + "VSFactor_SI_2006.gif") << rptNewLine;
       else
          *pParagraph << rptRcImage(strImagePath + "VSFactor_US_2006.gif") << rptNewLine;
    }
    else
    {
-      if ( pDisplayUnits->GetUnitDisplayMode() == pgsTypes::umSI )
+      if ( IS_SI_UNITS(pDisplayUnits) )
          *pParagraph << rptRcImage(strImagePath + "VSFactor_SI_2007.gif") << rptNewLine;
       else
          *pParagraph << rptRcImage(strImagePath + "VSFactor_US_2007.gif") << rptNewLine;

@@ -51,6 +51,11 @@ COPYRIGHT
 LOG
    rab : 04.25.208 : Created file
 *****************************************************************************/
+#if defined _DEBUG
+#define IS_VALID AssertValid();
+#else
+#define IS_VALID
+#endif
 
 class PGSEXTCLASS CGirderSpacingData
 {
@@ -96,6 +101,7 @@ public:
 
 #if defined _DEBUG
    long Debug_GetGirderCount() const { return m_GirderSpacing.size()+1; }
+   void AssertValid() const;
 #endif
 
 protected:

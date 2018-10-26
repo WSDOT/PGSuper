@@ -82,6 +82,7 @@ interface IGetTogaResults : IUnknown
    virtual void GetControllingCompressiveStress(Float64* pStress, Float64* pStressFactor, Float64* pDistFromStart)=0;
 
    virtual Float64 GetRequiredUltimateMoment()=0;
+   virtual Float64 GetUltimateMomentCapacity()=0;
 
    virtual Float64 GetMaximumCamber()=0;
 

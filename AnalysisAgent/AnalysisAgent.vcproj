@@ -159,7 +159,7 @@
 				AdditionalOptions="/Zm400 "
 				Optimization="0"
 				AdditionalIncludeDirectories="..\Include;\ARP\WBFL\Include;\ARP\WBFL\Include\$(ConfigurationName)"
-				PreprocessorDefinitions="_USRDLL;_ATL_NO_UUIDOF;ENABLE_LOGGING;_DEBUG;WIN32;_WINDOWS;x_USE_ORIGINAL_LIVELOADER;x_HAS_ITERATOR_DEBUGGING=0;x_SECURE_SCL=0"
+				PreprocessorDefinitions="_USRDLL;_ATL_NO_UUIDOF;ENABLE_LOGGING;_DEBUG;WIN32;_WINDOWS;x_USE_ORIGINAL_LIVELOADER"
 				MinimalRebuild="true"
 				RuntimeLibrary="3"
 				RuntimeTypeInfo="true"

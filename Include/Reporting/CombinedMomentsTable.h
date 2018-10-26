@@ -166,7 +166,7 @@ int ConfigureLimitStateTableHeading(rptRcTable* pTable,bool bPierTable,bool bDes
          pTable->SetColumnSpan(ll_title_row,ll_title_col,nCols);
          (*pTable)(ll_title_row,ll_title_col++) << "Design";
 
-         for ( int i = 0; i < nCols; i++ )
+         for ( int i = 0; i < nCols-1; i++ )
          {
             pTable->SetColumnSpan(ll_title_row,ll_title_col++,-1);
          }
@@ -383,7 +383,7 @@ int ConfigureLimitStateTableHeading(rptRcTable* pTable,bool bPierTable,bool bDes
          pTable->SetColumnSpan(ll_title_row,ll_title_col,nCol);
          (*pTable)(ll_title_row,ll_title_col++) << "Design";
 
-         for ( ColumnIndexType i = 0; i < nCol; i++ )
+         for ( ColumnIndexType i = 0; i < nCol-1; i++ )
          {
             pTable->SetColumnSpan(ll_title_row,ll_title_col++,-1);
          }

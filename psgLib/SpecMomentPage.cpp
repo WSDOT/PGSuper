@@ -78,3 +78,28 @@ LRESULT CSpecMomentPage::OnCommandHelp(WPARAM, LPARAM lParam)
    ::HtmlHelp( *this, AfxGetApp()->m_pszHelpFilePath, HH_HELP_CONTEXT, IDH_MOMENT_TAB );
    return TRUE;
 }
+
+BOOL CSpecMomentPage::OnInitDialog()
+{
+   CPropertyPage::OnInitDialog();
+
+   return TRUE;  // return TRUE unless you set the focus to a control
+   // EXCEPTION: OCX Property Pages should return FALSE
+}
+
+BOOL CSpecMomentPage::OnSetActive()
+{
+   // move windows based on current spec here
+   CSpecMainSheet* pDad = (CSpecMainSheet*)GetParent();
+   CWnd* wndMoment = GetDlgItem(IDC_MOMENT);
+   if ( lrfdVersionMgr::ThirdEditionWith2005Interims < pDad->m_Entry.GetSpecificationType() )
+   {
+      wndMoment->ShowWindow(SW_HIDE);
+   }
+   else
+   {
+      wndMoment->ShowWindow(SW_SHOW);
+   }
+
+   return CPropertyPage::OnSetActive();
+}

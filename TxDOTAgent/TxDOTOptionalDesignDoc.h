@@ -40,6 +40,7 @@ class CBridgeDescription;
 #define HINT_GIRDERVIEWSETTINGSCHANGED    1
 #define HINT_GIRDERVIEWSECTIONCUTCHANGED  3
 #define HINT_GIRDERSELECTIONCHANGED       5
+#define HINT_GIRDERCHANGED                7
 #include <EAF\EAFHints.h>
 
 // Girder Model Editor
@@ -65,6 +66,7 @@ class CBridgeDescription;
 #define IDG_EV_SHOW_STIRRUPS    ((DWORD)0x00002000)
 #define IDG_EV_SHOW_LONG_REINF  ((DWORD)0x00004000)
 
+// show everything by default
 const UINT DEF_GV =  IDG_SV_SHOW_STRANDS     |
                      IDG_SV_SHOW_STRANDS     |
                      IDG_SV_SHOW_PS_CG       |
@@ -79,8 +81,6 @@ const UINT DEF_GV =  IDG_SV_SHOW_STRANDS     |
                      IDG_EV_DRAW_TO_SCALE    |
                      IDG_EV_SHOW_STIRRUPS    |
                      IDG_EV_SHOW_LONG_REINF;
-
-
 
 /*--------------------------------------------------------------------*/
 class CTxDOTOptionalDesignDoc : public CEAFBrokerDocument, public ITxDataObserver, public ITxDOTBrokerRetriever
@@ -111,13 +111,22 @@ public:
    virtual BOOL GetStatusBarMessageString(UINT nID,CString& rMessage) const;
    virtual BOOL GetToolTipMessageString(UINT nID, CString& rMessage) const;
 
+protected:
+   virtual void OnCreateInitialize();
+   virtual void OnCreateFinalize();
+
+   virtual CString GetRootNodeName();
+   virtual Float64 GetRootNodeVersion();
+   virtual HRESULT OpenDocumentRootNode(IStructuredSave* pStrSave);
+
+public:
    // ITxDOTBrokerRetriever
    virtual IBroker* GetUpdatedBroker();
    virtual IBroker* GetClassicBroker();
    virtual GirderLibrary* GetGirderLibrary();
+   virtual ConnectionLibrary* GetConnectionLibrary();
 
 // Operations
-public:
    // listen to data events
    virtual void OnTxDotDataChanged(int change);
 
@@ -136,10 +145,6 @@ public:
 	virtual void AssertValid() const;
 	virtual void Dump(CDumpContext& dc) const;
 #endif
-
-protected:
-   virtual void OnCreateInitialize();
-   virtual void OnCreateFinalize();
 
 // Generated message map functions
 protected:
@@ -201,6 +206,8 @@ public:
    void SetGirderEditorSettings(UINT settings);
 
    void EditGirderViewSettings(int nPage);
+   afx_msg void OnViewGirderviewsettings();
+   afx_msg void OnStatuscenterView();
 };
 
 /////////////////////////////////////////////////////////////////////////////

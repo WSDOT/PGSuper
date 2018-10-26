@@ -267,15 +267,17 @@ END_MESSAGE_MAP()
 // CPGSuperDoc construction/destruction
 
 CPGSuperDoc::CPGSuperDoc():
-m_CurrentPierIdx(-1),
-m_CurrentSpanIdx(-1),
-m_CurrentGirderIdx(-1),
-m_DesignSlabOffset(true),
+m_bDesignSlabOffset(true),
 m_bAutoCalcEnabled(true)
 {
 	EnableAutomation();
 
 	AfxOleLockApp();
+
+   m_Selection.Type      = CSelection::None;
+   m_Selection.PierIdx   = INVALID_INDEX;
+   m_Selection.SpanIdx   = INVALID_INDEX;
+   m_Selection.GirderIdx = INVALID_INDEX;
 
    m_LibMgr.SetName( "PGSuper Library" );
 
@@ -286,6 +288,8 @@ m_bAutoCalcEnabled(true)
    m_pPGSuperDocProxyAgent = NULL;
 
    m_PluginMgr.LoadPlugins(); // these are the data importers and exporters
+
+   m_ViewCallbackID = 0;
 
    // Set the base command ID for EAFDocumentPlugin objects (not currently supported)
    // and extension agents (supported)
@@ -529,8 +533,8 @@ bool CPGSuperDoc::EditGirderDescription(SpanIndexType span,GirderIndexType girde
    else
       spanIdx = nspans-1;
 
-   GirderIndexType ngrds = pBridge->GetGirderCount(m_CurrentSpanIdx == ALL_SPANS ? 0 : m_CurrentSpanIdx);
-   if ( m_CurrentGirderIdx < ngrds)
+   GirderIndexType ngrds = pBridge->GetGirderCount(m_Selection.SpanIdx == ALL_SPANS ? 0 : m_Selection.SpanIdx);
+   if ( m_Selection.GirderIdx < ngrds)
       gdrIdx = girder;
    else
       gdrIdx = ngrds-1;
@@ -547,13 +551,18 @@ bool CPGSuperDoc::EditGirderDescription(SpanIndexType span,GirderIndexType girde
    double trailingOverhang          = pGirderHauling->GetTrailingOverhang( spanIdx, gdrIdx );
    double leadingOverhang           = pGirderHauling->GetLeadingOverhang( spanIdx, gdrIdx );
 
-   pgsTypes::SlabOffsetType slabOffsetType = pBridgeDesc->GetSlabOffsetType();
-   Float64 slabOffset[2];
-   pIBridgeDesc->GetSlabOffset(spanIdx,gdrIdx,&slabOffset[pgsTypes::metStart],&slabOffset[pgsTypes::metEnd]);
-
    CGirderDescDlg dlg(spanIdx,gdrIdx);
    dlg.m_strGirderName = strGirderName;
    dlg.m_GirderData    = girderData;
+
+   pgsTypes::SlabOffsetType slabOffsetType = pBridgeDesc->GetSlabOffsetType();
+   Float64 slabOffset[2];
+   pIBridgeDesc->GetSlabOffset(spanIdx,gdrIdx,&slabOffset[pgsTypes::metStart],&slabOffset[pgsTypes::metEnd]);
+   dlg.m_General.m_SlabOffsetType = slabOffsetType;
+   dlg.m_General.m_SlabOffset[pgsTypes::metStart] = slabOffset[pgsTypes::metStart];
+   dlg.m_General.m_SlabOffset[pgsTypes::metEnd]   = slabOffset[pgsTypes::metEnd];
+
+
 
    // resequence page if no debonding
    CGirderData girderDatad = pGirderData->GetGirderData(dlg.m_CurrentSpanIdx,dlg.m_CurrentGirderIdx);
@@ -602,6 +611,18 @@ bool CPGSuperDoc::EditGirderDescription(SpanIndexType span,GirderIndexType girde
       return false;
    }
 }
+   
+void CPGSuperDoc::AddPointLoad(const CPointLoadData& loadData)
+{
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+   CEditPointLoadDlg dlg(loadData,m_pBroker);
+   if ( dlg.DoModal() == IDOK )
+   {
+      txnInsertPointLoad* pTxn = new txnInsertPointLoad(dlg.m_Load);
+      GET_IFACE(IEAFTransactions,pTransactions);
+      pTransactions->Execute(pTxn);
+   }
+}
 
 bool CPGSuperDoc::EditPointLoad(CollectionIndexType loadIdx)
 {
@@ -624,6 +645,29 @@ bool CPGSuperDoc::EditPointLoad(CollectionIndexType loadIdx)
    }
 
    return false;
+}
+
+void CPGSuperDoc::DeletePointLoad(CollectionIndexType loadIdx)
+{
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
+   GET_IFACE(IUserDefinedLoadData, pUserDefinedLoads);
+   txnDeletePointLoad* pTxn = new txnDeletePointLoad(loadIdx);
+
+   GET_IFACE(IEAFTransactions,pTransactions);
+   pTransactions->Execute(pTxn);
+}
+
+void CPGSuperDoc::AddDistributedLoad(const CDistributedLoadData& loadData)
+{
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+   CEditDistributedLoadDlg dlg(loadData,m_pBroker);
+   if ( dlg.DoModal() == IDOK )
+   {
+      txnInsertDistributedLoad* pTxn = new txnInsertDistributedLoad(dlg.m_Load);
+      GET_IFACE(IEAFTransactions,pTransactions);
+      pTransactions->Execute(pTxn);
+   }
 }
 
 bool CPGSuperDoc::EditDistributedLoad(CollectionIndexType loadIdx)
@@ -649,6 +693,29 @@ bool CPGSuperDoc::EditDistributedLoad(CollectionIndexType loadIdx)
    return false;
 }
 
+void CPGSuperDoc::DeleteDistributedLoad(CollectionIndexType loadIdx)
+{
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
+   GET_IFACE(IUserDefinedLoadData, pUserDefinedLoads);
+   txnDeleteDistributedLoad* pTxn = new txnDeleteDistributedLoad(loadIdx);
+
+   GET_IFACE(IEAFTransactions,pTransactions);
+   pTransactions->Execute(pTxn);
+}
+
+void CPGSuperDoc::AddMomentLoad(const CMomentLoadData& loadData)
+{
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+   CEditMomentLoadDlg dlg(loadData,m_pBroker);
+   if ( dlg.DoModal() == IDOK )
+   {
+      txnInsertMomentLoad* pTxn = new txnInsertMomentLoad(dlg.m_Load);
+      GET_IFACE(IEAFTransactions,pTransactions);
+      pTransactions->Execute(pTxn);
+   }
+}
+
 bool CPGSuperDoc::EditMomentLoad(CollectionIndexType loadIdx)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
@@ -670,6 +737,17 @@ bool CPGSuperDoc::EditMomentLoad(CollectionIndexType loadIdx)
    }
 
    return false;
+}
+
+void CPGSuperDoc::DeleteMomentLoad(CollectionIndexType loadIdx)
+{
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
+   GET_IFACE(IUserDefinedLoadData, pUserDefinedLoads);
+   txnDeleteMomentLoad* pTxn = new txnDeleteMomentLoad(loadIdx);
+
+   GET_IFACE(IEAFTransactions,pTransactions);
+   pTransactions->Execute(pTxn);
 }
 
 void CPGSuperDoc::EditGirderViewSettings(int nPage)
@@ -786,48 +864,92 @@ BOOL CPGSuperDoc::UpdateTemplates()
 
 Uint32 CPGSuperDoc::RegisterBridgePlanViewCallback(IBridgePlanViewEventCallback* pCallback)
 {
-   Uint32 index = m_BridgePlanViewCallbacks.size();
-   m_BridgePlanViewCallbacks.push_back(pCallback);
-   return index;
+   Uint32 key = m_ViewCallbackID++;
+   m_BridgePlanViewCallbacks.insert(std::make_pair(key,pCallback));
+   return key;
 }
 
-std::vector<IBridgePlanViewEventCallback*> CPGSuperDoc::GetBridgePlanViewCallbacks()
+bool CPGSuperDoc::UnregisterBridgePlanViewCallback(Uint32 ID)
+{
+   std::map<Uint32,IBridgePlanViewEventCallback*>::iterator found = m_BridgePlanViewCallbacks.find(ID);
+   if ( found == m_BridgePlanViewCallbacks.end() )
+      return false;
+
+   m_BridgePlanViewCallbacks.erase(found);
+
+   return true;
+}
+
+std::map<Uint32,IBridgePlanViewEventCallback*> CPGSuperDoc::GetBridgePlanViewCallbacks()
 {
    return m_BridgePlanViewCallbacks;
 }
 
 Uint32 CPGSuperDoc::RegisterBridgeSectionViewCallback(IBridgeSectionViewEventCallback* pCallback)
 {
-   Uint32 index = m_BridgeSectionViewCallbacks.size();
-   m_BridgeSectionViewCallbacks.push_back(pCallback);
-   return index;
+   Uint32 key = m_ViewCallbackID++;
+   m_BridgeSectionViewCallbacks.insert(std::make_pair(key,pCallback));
+   return key;
 }
 
-std::vector<IBridgeSectionViewEventCallback*> CPGSuperDoc::GetBridgeSectionViewCallbacks()
+bool CPGSuperDoc::UnregisterBridgeSectionViewCallback(Uint32 ID)
+{
+   std::map<Uint32,IBridgeSectionViewEventCallback*>::iterator found = m_BridgeSectionViewCallbacks.find(ID);
+   if ( found == m_BridgeSectionViewCallbacks.end() )
+      return false;
+
+   m_BridgeSectionViewCallbacks.erase(found);
+
+   return true;
+}
+
+std::map<Uint32,IBridgeSectionViewEventCallback*> CPGSuperDoc::GetBridgeSectionViewCallbacks()
 {
    return m_BridgeSectionViewCallbacks;
 }
 
 Uint32 CPGSuperDoc::RegisterGirderElevationViewCallback(IGirderElevationViewEventCallback* pCallback)
 {
-   Uint32 index = m_GirderElevationViewCallbacks.size();
-   m_GirderElevationViewCallbacks.push_back(pCallback);
-   return index;
+   Uint32 key = m_ViewCallbackID++;
+   m_GirderElevationViewCallbacks.insert(std::make_pair(key,pCallback));
+   return key;
 }
 
-std::vector<IGirderElevationViewEventCallback*> CPGSuperDoc::GetGirderElevationViewCallbacks()
+bool CPGSuperDoc::UnregisterGirderElevationViewCallback(Uint32 ID)
+{
+   std::map<Uint32,IGirderElevationViewEventCallback*>::iterator found = m_GirderElevationViewCallbacks.find(ID);
+   if ( found == m_GirderElevationViewCallbacks.end() )
+      return false;
+
+   m_GirderElevationViewCallbacks.erase(found);
+
+   return true;
+}
+
+std::map<Uint32,IGirderElevationViewEventCallback*> CPGSuperDoc::GetGirderElevationViewCallbacks()
 {
    return m_GirderElevationViewCallbacks;
 }
 
 Uint32 CPGSuperDoc::RegisterGirderSectionViewCallback(IGirderSectionViewEventCallback* pCallback)
 {
-   Uint32 index = m_GirderSectionViewCallbacks.size();
-   m_GirderSectionViewCallbacks.push_back(pCallback);
-   return index;
+   Uint32 key = m_ViewCallbackID++;
+   m_GirderSectionViewCallbacks.insert(std::make_pair(key,pCallback));
+   return key;
 }
 
-std::vector<IGirderSectionViewEventCallback*> CPGSuperDoc::GetGirderSectionViewCallbacks()
+bool CPGSuperDoc::UnregisterGirderSectionViewCallback(Uint32 ID)
+{
+   std::map<Uint32,IGirderSectionViewEventCallback*>::iterator found = m_GirderSectionViewCallbacks.find(ID);
+   if ( found == m_GirderSectionViewCallbacks.end() )
+      return false;
+
+   m_GirderSectionViewCallbacks.erase(found);
+
+   return true;
+}
+
+std::map<Uint32,IGirderSectionViewEventCallback*> CPGSuperDoc::GetGirderSectionViewCallbacks()
 {
    return m_GirderSectionViewCallbacks;
 }
@@ -995,10 +1117,6 @@ long CPGSuperDoc::ConvertTheDocument(LPCTSTR lpszPathName, CString* prealFileNam
          *prealFileName = CString(lpszPathName);
          return S_FALSE; // succeeded, but not converted
       }
-   }
-   else
-   {
-      return REGDB_E_CLASSNOTREG;
    }
 
    return E_FAIL;
@@ -1213,6 +1331,7 @@ void CPGSuperDoc::OnFileProjectProperties()
 
 void CPGSuperDoc::HandleOpenDocumentError( HRESULT hr, LPCTSTR lpszPathName )
 {
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
    // Skipping the default functionality and replacing it with something better
    //CEAFBrokerDocument::HandleOpenDocumentError(hr,lpszPathName);
 
@@ -1227,7 +1346,7 @@ void CPGSuperDoc::HandleOpenDocumentError( HRESULT hr, LPCTSTR lpszPathName )
    {
    case REGDB_E_CLASSNOTREG:
       pLog->LogMessage( TEXT("CLSID_StructuredLoad not registered") );
-      msg1.LoadString( IDS_E_BADINSTALL );
+      AfxFormatString1(msg1,IDS_E_BADINSTALL, ::AfxGetAppName() );
       break;
 
    case STRLOAD_E_CANTOPEN:
@@ -1274,6 +1393,7 @@ void CPGSuperDoc::HandleOpenDocumentError( HRESULT hr, LPCTSTR lpszPathName )
 
 void CPGSuperDoc::HandleSaveDocumentError( HRESULT hr, LPCTSTR lpszPathName )
 {
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
    // Skipping the default functionality and replacing it with something better
    //CEAFBrokerDocument::HandleSaveDocumentError(hr,lpszPathName);
 
@@ -1288,7 +1408,7 @@ void CPGSuperDoc::HandleSaveDocumentError( HRESULT hr, LPCTSTR lpszPathName )
    {
    case REGDB_E_CLASSNOTREG:
       pLog->LogMessage( TEXT("CLSID_StructuredSave not registered") );
-      msg1.LoadString( IDS_E_BADINSTALL );
+      AfxFormatString1(msg1,IDS_E_BADINSTALL, ::AfxGetAppName() );
       break;
 
    case STRSAVE_E_CANTOPEN:
@@ -1321,6 +1441,8 @@ void CPGSuperDoc::HandleSaveDocumentError( HRESULT hr, LPCTSTR lpszPathName )
 
 void CPGSuperDoc::HandleConvertDocumentError( HRESULT hr, LPCTSTR lpszPathName )
 {
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
    // Skipping the default functionality and replacing it with something better
    //CEAFBrokerDocument::HandleConvertDocumentError(hr,lpszPathName);
 
@@ -1335,7 +1457,7 @@ void CPGSuperDoc::HandleConvertDocumentError( HRESULT hr, LPCTSTR lpszPathName )
    {
    case REGDB_E_CLASSNOTREG:
       pLog->LogMessage( TEXT("File converter is not registered") );
-      msg1.LoadString( IDS_E_BADINSTALL );
+      AfxFormatString1(msg1,IDS_E_BADINSTALL, ::AfxGetAppName() );
       break;
 
    case E_INVALIDARG:
@@ -1681,7 +1803,7 @@ void CPGSuperDoc::UpdateAnalysisTypeStatusIndicator()
    pStatusBar->SetAnalysisTypeStatusIndicator(pSpec->GetAnalysisType());
 }
 
-void CPGSuperDoc::OnProjectDesignGirder() 
+void CPGSuperDoc::DesignGirder(bool bPrompt,bool bDesignSlabOffset,SpanIndexType spanIdx,GirderIndexType gdrIdx)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
@@ -1692,86 +1814,12 @@ void CPGSuperDoc::OnProjectDesignGirder()
       return;
    }
 
-   GET_IFACE(ISpecification,pSpecification);
-   GET_IFACE(IBridge,pBridge);
+   spanIdx = (spanIdx == INVALID_INDEX ? 0 : spanIdx);
+   gdrIdx  = (gdrIdx  == INVALID_INDEX ? 0 : gdrIdx);
 
-   // only allow A design if it's allowed in the library, then save setting for future visits.
-   // Do not save this in registry because library selection should be default for new documents
-   bool enable_so_selection = pSpecification->IsSlabOffsetDesignEnabled() && pBridge->GetDeckType() != pgsTypes::sdtNone;
-
-   CDesignGirderDlg dlg(m_CurrentSpanIdx   == ALL_SPANS   ? 0 : m_CurrentSpanIdx, 
-                        m_CurrentGirderIdx == ALL_GIRDERS ? 0 : m_CurrentGirderIdx,
-                        enable_so_selection, m_DesignSlabOffset, m_pBroker);
-
-   // Set initial dialog values based on last stored in registry. These may be changed
-   // internally by dialog based on girder type, and other library values
-   dlg.m_DesignForFlexure = (IsDesignFlexureEnabled()  ? TRUE : FALSE);
-   dlg.m_DesignForShear   = (IsDesignShearEnabled()    ? TRUE : FALSE);
-   if ( dlg.DoModal() == IDOK )
-   {
-      arDesignOptions des_options = pSpecification->GetDesignOptions(dlg.m_Span,dlg.m_Girder);
-
-      if (dlg.m_DesignForFlexure==FALSE)
-      {
-         des_options.doDesignForFlexure = dtNoDesign;
-      }
-
-      des_options.doDesignForShear   = dlg.m_DesignForShear==TRUE ? true : false;
-
-      // we can override library setting here
-      des_options.doDesignSlabOffset = dlg.m_DesignA && enable_so_selection;
-      m_DesignSlabOffset = dlg.m_DesignA; // retain value for current document
-
-      EnableDesignFlexure(dlg.m_DesignForFlexure == TRUE ? true : false);
-      EnableDesignShear(  dlg.m_DesignForShear   == TRUE ? true : false);
-
-
-      DoDesignGirder(dlg.m_Span,dlg.m_Girder,des_options);
-   }
-}
-
-void CPGSuperDoc::OnUpdateProjectDesignGirderDirect(CCmdUI* pCmdUI)
-{
-   pCmdUI->Enable( m_CurrentSpanIdx != ALL_SPANS && m_CurrentGirderIdx != ALL_GIRDERS );
-}
-
-void CPGSuperDoc::OnUpdateProjectDesignGirderDirectHoldSlabOffset(CCmdUI* pCmdUI)
-{
-   GET_IFACE(ISpecification,pSpecification);
-   GET_IFACE(IBridge,pBridge);
-   bool bDesignSlabOffset = pSpecification->IsSlabOffsetDesignEnabled() && pBridge->GetDeckType() != pgsTypes::sdtNone;
-   pCmdUI->Enable( m_CurrentSpanIdx != ALL_SPANS && m_CurrentGirderIdx != ALL_GIRDERS && bDesignSlabOffset );
-}
-
-void CPGSuperDoc::OnProjectDesignGirderDirect()
-{
-   GET_IFACE(ISpecification,pSpecification);
-   GET_IFACE(IBridge,pBridge);
-   bool bDesignSlabOffset = pSpecification->IsSlabOffsetDesignEnabled() && pBridge->GetDeckType() != pgsTypes::sdtNone;
-   DesignGirderDirect(bDesignSlabOffset);
-}
-
-void CPGSuperDoc::OnProjectDesignGirderDirectHoldSlabOffset()
-{
-   DesignGirderDirect(false);
-}
-
-void CPGSuperDoc::DesignGirderDirect(bool bDesignSlabOffset)
-{
-   GET_IFACE(IEAFStatusCenter,pStatusCenter);
-   if ( pStatusCenter->GetSeverity() == eafTypes::statusError )
-   {
-      AfxMessageBox("There are errors that must be corrected before you can design a girder\r\n\r\nSee the Status Center for details.",MB_OK);
-      return;
-   }
-
-
-   SpanIndexType spanIdx   = m_CurrentSpanIdx   == ALL_SPANS ? 0 : m_CurrentSpanIdx;
-   GirderIndexType gdrIdx  = m_CurrentGirderIdx == ALL_GIRDERS ? 0 : m_CurrentGirderIdx;
-
+   // set up default design options
    GET_IFACE(ISpecification,pSpecification);
    arDesignOptions des_options = pSpecification->GetDesignOptions(spanIdx,gdrIdx);
-
    des_options.doDesignSlabOffset = bDesignSlabOffset;
 
    if ( !IsDesignFlexureEnabled() )
@@ -1780,9 +1828,85 @@ void CPGSuperDoc::DesignGirderDirect(bool bDesignSlabOffset)
    }
 
    des_options.doDesignForShear = IsDesignShearEnabled();
-   DoDesignGirder(spanIdx,
-                  gdrIdx,
-                  des_options);
+
+   if ( bPrompt )
+   {
+      GET_IFACE(ISpecification,pSpecification);
+      GET_IFACE(IBridge,pBridge);
+
+      // only allow A design if it's allowed in the library, then save setting for future visits.
+      // Do not save this in registry because library selection should be default for new documents
+      bool enable_so_selection = pSpecification->IsSlabOffsetDesignEnabled() && pBridge->GetDeckType() != pgsTypes::sdtNone;
+
+      CDesignGirderDlg dlg(spanIdx, 
+                           gdrIdx,
+                           enable_so_selection, bDesignSlabOffset, m_pBroker);
+
+      // Set initial dialog values based on last stored in registry. These may be changed
+      // internally by dialog based on girder type, and other library values
+      dlg.m_DesignForFlexure = (IsDesignFlexureEnabled()  ? TRUE : FALSE);
+      dlg.m_DesignForShear   = (IsDesignShearEnabled()    ? TRUE : FALSE);
+      if ( dlg.DoModal() == IDOK )
+      {
+         // update design options based on results from dialog
+         des_options = pSpecification->GetDesignOptions(dlg.m_Span,dlg.m_Girder);
+
+         if (dlg.m_DesignForFlexure==FALSE)
+         {
+            des_options.doDesignForFlexure = dtNoDesign;
+         }
+
+         des_options.doDesignForShear   = dlg.m_DesignForShear==TRUE ? true : false;
+
+         // we can override library setting here
+         des_options.doDesignSlabOffset = dlg.m_DesignA && enable_so_selection;
+         m_bDesignSlabOffset = dlg.m_DesignA; // retain value for current document
+
+         EnableDesignFlexure(dlg.m_DesignForFlexure == TRUE ? true : false);
+         EnableDesignShear(  dlg.m_DesignForShear   == TRUE ? true : false);
+
+         spanIdx = dlg.m_Span;
+         gdrIdx  = dlg.m_Girder;
+      }
+      else
+      {
+         return;
+      }
+   }
+
+
+   DoDesignGirder(spanIdx,gdrIdx,des_options);
+}
+
+void CPGSuperDoc::OnProjectDesignGirder() 
+{
+   DesignGirder(true,m_bDesignSlabOffset,m_Selection.SpanIdx,m_Selection.GirderIdx);
+}
+
+void CPGSuperDoc::OnUpdateProjectDesignGirderDirect(CCmdUI* pCmdUI)
+{
+   pCmdUI->Enable( m_Selection.SpanIdx != ALL_SPANS && m_Selection.GirderIdx != ALL_GIRDERS );
+}
+
+void CPGSuperDoc::OnUpdateProjectDesignGirderDirectHoldSlabOffset(CCmdUI* pCmdUI)
+{
+   GET_IFACE(ISpecification,pSpecification);
+   GET_IFACE(IBridge,pBridge);
+   bool bDesignSlabOffset = pSpecification->IsSlabOffsetDesignEnabled() && pBridge->GetDeckType() != pgsTypes::sdtNone;
+   pCmdUI->Enable( m_Selection.SpanIdx != ALL_SPANS && m_Selection.GirderIdx != ALL_GIRDERS && bDesignSlabOffset );
+}
+
+void CPGSuperDoc::OnProjectDesignGirderDirect()
+{
+   GET_IFACE(ISpecification,pSpecification);
+   GET_IFACE(IBridge,pBridge);
+   bool bDesignSlabOffset = pSpecification->IsSlabOffsetDesignEnabled() && pBridge->GetDeckType() != pgsTypes::sdtNone;
+   DesignGirder(false,bDesignSlabOffset,m_Selection.SpanIdx,m_Selection.GirderIdx);
+}
+
+void CPGSuperDoc::OnProjectDesignGirderDirectHoldSlabOffset()
+{
+   DesignGirder(false,false,m_Selection.SpanIdx,m_Selection.GirderIdx);
 }
 
 void CPGSuperDoc::DoDesignGirder(SpanIndexType span,GirderIndexType gdr,const arDesignOptions& designOptions)
@@ -1792,7 +1916,7 @@ void CPGSuperDoc::DoDesignGirder(SpanIndexType span,GirderIndexType gdr,const ar
    GET_IFACE(IArtifact,pIArtifact);
    const pgsDesignArtifact* pArtifact = pIArtifact->CreateDesignArtifact( span, gdr, designOptions);
 
-   if ( pArtifact->GetOutcome() == pgsDesignArtifact::DesignCancelled )
+   if ( pArtifact == NULL )
    {
       AfxMessageBox("Design Cancelled",MB_OK);
       return;
@@ -1840,6 +1964,9 @@ bool CPGSuperDoc::LoadMasterLibrary()
 
 bool CPGSuperDoc::DoLoadMasterLibrary(const CString& strMasterLibraryFile)
 {
+   if ( strMasterLibraryFile.GetLength() == 0 )
+      return true;
+
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
    // loop until a library file is opened or user gives up trying to find it
@@ -1859,15 +1986,20 @@ bool CPGSuperDoc::DoLoadMasterLibrary(const CString& strMasterLibraryFile)
          // if we are here, an error occured. Issue the message and give
          // the user a chance to load another library file
 
-         AfxMessageBox(err_msg,MB_OK|MB_ICONSTOP);
+         if ( AfxMessageBox(err_msg,MB_YESNO|MB_ICONSTOP) == IDYES )
+         {
+            CEAFDocTemplate* pTemplate = (CEAFDocTemplate*)GetDocTemplate();
+            CComPtr<IEAFAppPlugin> pAppPlugin;
+            pTemplate->GetPlugin(&pAppPlugin);
+            CPGSuperBaseAppPlugin* pPGSuper = dynamic_cast<CPGSuperBaseAppPlugin*>(pAppPlugin.p);
 
-         CEAFDocTemplate* pTemplate = (CEAFDocTemplate*)GetDocTemplate();
-         CComPtr<IEAFAppPlugin> pAppPlugin;
-         pTemplate->GetPlugin(&pAppPlugin);
-         CPGSuperBaseAppPlugin* pPGSuper = dynamic_cast<CPGSuperBaseAppPlugin*>(pAppPlugin.p);
-
-         pPGSuper->UpdateProgramSettings(TRUE);
-         strFile = pPGSuper->GetCachedMasterLibraryFile();
+            pPGSuper->UpdateProgramSettings(TRUE);
+            strFile = pPGSuper->GetCachedMasterLibraryFile();
+         }
+         else
+         {
+            bSuccess = true;
+         }
       }
       else
       {
@@ -1886,8 +2018,8 @@ void CPGSuperDoc::OnEditGirder()
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
    CSelectGirderDlg dlg(m_pBroker);
-   dlg.m_Span   = m_CurrentSpanIdx   == ALL_SPANS   ? 0 : m_CurrentSpanIdx;
-   dlg.m_Girder = m_CurrentGirderIdx == ALL_GIRDERS ? 0 : m_CurrentGirderIdx;
+   dlg.m_Span   = m_Selection.SpanIdx   == ALL_SPANS   ? 0 : m_Selection.SpanIdx;
+   dlg.m_Girder = m_Selection.GirderIdx == ALL_GIRDERS ? 0 : m_Selection.GirderIdx;
 
    if ( dlg.DoModal() == IDOK )
    {
@@ -1895,55 +2027,87 @@ void CPGSuperDoc::OnEditGirder()
    }
 }
 
-PierIndexType CPGSuperDoc::GetPierIdx()
+CSelection CPGSuperDoc::GetSelection()
 {
-   return m_CurrentPierIdx;
-}
-
-SpanIndexType CPGSuperDoc::GetSpanIdx()
-{
-   return m_CurrentSpanIdx;
-}
-
-GirderIndexType CPGSuperDoc::GetGirderIdx()
-{
-   return m_CurrentGirderIdx;
+   return m_Selection;
 }
 
 void CPGSuperDoc::SelectPier(PierIndexType pierIdx)
 {
-   m_CurrentPierIdx = pierIdx;
+   m_Selection.Type      = CSelection::Pier;
+   m_Selection.GirderIdx = INVALID_INDEX;
+   m_Selection.SpanIdx   = INVALID_INDEX;
+   m_Selection.PierIdx   = pierIdx;
 
-   if (m_CurrentPierIdx != ALL_PIERS)
-   {
-      m_CurrentSpanIdx   = INVALID_INDEX;
-      m_CurrentGirderIdx = INVALID_INDEX;
-   }
-
-   UpdateAllViews(0,HINT_GIRDERSELECTIONCHANGED,0);
+   CSelection selection = m_Selection;
+   UpdateAllViews(0,HINT_SELECTIONCHANGED,(CObject*)&selection);
 }
 
 void CPGSuperDoc::SelectSpan(SpanIndexType spanIdx)
 {
-   m_CurrentSpanIdx = spanIdx;
+   m_Selection.Type      = CSelection::Span;
+   m_Selection.GirderIdx = INVALID_INDEX;
+   m_Selection.SpanIdx   = spanIdx;
+   m_Selection.PierIdx   = INVALID_INDEX;
 
-   if ( m_CurrentSpanIdx != ALL_SPANS)
-   {
-      m_CurrentPierIdx   = INVALID_INDEX;
-      m_CurrentGirderIdx = INVALID_INDEX;
-   }
-
-   UpdateAllViews(0,HINT_GIRDERSELECTIONCHANGED,0);
+   CSelection selection = m_Selection;
+   UpdateAllViews(0,HINT_SELECTIONCHANGED,(CObject*)&selection);
 }
 
 void CPGSuperDoc::SelectGirder(SpanIndexType spanIdx,GirderIndexType gdrIdx)
 {
-   m_CurrentSpanIdx   = spanIdx;
-   m_CurrentGirderIdx = gdrIdx;
+   m_Selection.Type      = CSelection::Girder;
+   m_Selection.GirderIdx = gdrIdx;
+   m_Selection.SpanIdx   = spanIdx;
+   m_Selection.PierIdx   = INVALID_INDEX;
 
-   m_CurrentPierIdx = INVALID_INDEX;
+   static bool bProcessingSelectionChanged = false;
+   if ( !bProcessingSelectionChanged )
+   {
+      bProcessingSelectionChanged = true;
+      CSelection selection = m_Selection;
+      UpdateAllViews(0,HINT_SELECTIONCHANGED,(CObject*)&selection);
+      bProcessingSelectionChanged = false;
+   }
+}
 
-   UpdateAllViews(0,HINT_GIRDERSELECTIONCHANGED,0);
+void CPGSuperDoc::SelectDeck()
+{
+   m_Selection.Type      = CSelection::Deck;
+   m_Selection.GirderIdx = INVALID_INDEX;
+   m_Selection.SpanIdx   = INVALID_INDEX;
+   m_Selection.PierIdx   = INVALID_INDEX;
+
+   CSelection selection = m_Selection;
+   UpdateAllViews(0,HINT_SELECTIONCHANGED,(CObject*)&selection);
+}
+
+void CPGSuperDoc::SelectAlignment()
+{
+   m_Selection.Type      = CSelection::Alignment;
+   m_Selection.GirderIdx = INVALID_INDEX;
+   m_Selection.SpanIdx   = INVALID_INDEX;
+   m_Selection.PierIdx   = INVALID_INDEX;
+
+   CSelection selection = m_Selection;
+   UpdateAllViews(0,HINT_SELECTIONCHANGED,(CObject*)&selection);
+}
+
+void CPGSuperDoc::ClearSelection()
+{
+   m_Selection.Type      = CSelection::None;
+   m_Selection.GirderIdx = INVALID_INDEX;
+   m_Selection.SpanIdx   = INVALID_INDEX;
+   m_Selection.PierIdx   = INVALID_INDEX;
+
+   static bool bProcessingSelectionChanged = false;
+   if ( !bProcessingSelectionChanged )
+   {
+      bProcessingSelectionChanged = true;
+      CSelection selection = m_Selection;
+      UpdateAllViews(0,HINT_SELECTIONCHANGED,(CObject*)&selection);
+      bProcessingSelectionChanged = false;
+   }
 }
 
 void CPGSuperDoc::OnCopyGirderProps() 
@@ -2232,8 +2396,8 @@ void CPGSuperDoc::CreateReportView(CollectionIndexType rptIdx,bool bPrompt)
    if ( !bPrompt )
    {
       // this is a quick report... make sure there is a current span and girder
-      m_CurrentSpanIdx   = (m_CurrentSpanIdx   == INVALID_INDEX ? 0 : m_CurrentSpanIdx);
-      m_CurrentGirderIdx = (m_CurrentGirderIdx == INVALID_INDEX ? 0 : m_CurrentGirderIdx);
+      m_Selection.SpanIdx   = (m_Selection.SpanIdx   == INVALID_INDEX ? 0 : m_Selection.SpanIdx);
+      m_Selection.GirderIdx = (m_Selection.GirderIdx == INVALID_INDEX ? 0 : m_Selection.GirderIdx);
    }
 
    m_pPGSuperDocProxyAgent->CreateReportView(rptIdx,bPrompt);
@@ -2248,20 +2412,23 @@ void CPGSuperDoc::OnViewBridgeModelEditor()
 
 void CPGSuperDoc::OnViewGirderEditor()
 {
-   SpanIndexType spanIdx  = GetSpanIdx();
-   GirderIndexType gdrIdx = GetGirderIdx();
-
+   SpanIndexType spanIdx  = m_Selection.SpanIdx;
+   GirderIndexType gdrIdx = m_Selection.GirderIdx;
    m_pPGSuperDocProxyAgent->CreateGirderView(spanIdx,gdrIdx);
 }
 
 void CPGSuperDoc::OnViewAnalysisResults()
 {
-   m_pPGSuperDocProxyAgent->CreateAnalysisResultsView();
+   SpanIndexType spanIdx  = m_Selection.SpanIdx;
+   GirderIndexType gdrIdx = m_Selection.GirderIdx;
+   m_pPGSuperDocProxyAgent->CreateAnalysisResultsView(spanIdx,gdrIdx);
 }
 
 void CPGSuperDoc::OnViewStability()
 {
-   m_pPGSuperDocProxyAgent->CreateStabilityView();
+   SpanIndexType spanIdx  = m_Selection.SpanIdx;
+   GirderIndexType gdrIdx = m_Selection.GirderIdx;
+   m_pPGSuperDocProxyAgent->CreateStabilityView(spanIdx,gdrIdx);
 }
 
 void CPGSuperDoc::OnEditUserLoads()
@@ -2317,7 +2484,7 @@ void CPGSuperDoc::OnEditPier()
    dlg.m_strTitle = "Select pier to edit";
    dlg.m_strItems = strItems;
    dlg.m_strLabel = "Select pier to edit";
-   dlg.m_ItemIdx = m_CurrentPierIdx;
+   dlg.m_ItemIdx = m_Selection.PierIdx;
 
    if ( dlg.DoModal() == IDOK )
    {
@@ -2346,7 +2513,7 @@ void CPGSuperDoc::OnEditSpan()
    dlg.m_strTitle = "Select span to edit";
    dlg.m_strItems = strItems;
    dlg.m_strLabel = "Select span to edit";
-   dlg.m_ItemIdx = m_CurrentSpanIdx;
+   dlg.m_ItemIdx = m_Selection.SpanIdx;
 
    if ( dlg.DoModal() == IDOK )
    {
@@ -2432,13 +2599,13 @@ void CPGSuperDoc::DeleteSpan(SpanIndexType spanIdx)
 
 void CPGSuperDoc::OnDeleteSelection() 
 {
-   if (  m_CurrentPierIdx != ALL_PIERS )
+   if (  m_Selection.PierIdx != ALL_PIERS )
    {
-      DeletePier(m_CurrentPierIdx);
+      DeletePier(m_Selection.PierIdx);
    }
-   else if ( m_CurrentSpanIdx != ALL_SPANS )
+   else if ( m_Selection.SpanIdx != ALL_SPANS )
    {
-      DeleteSpan(m_CurrentSpanIdx);
+      DeleteSpan(m_Selection.SpanIdx);
    }
    else
    {
@@ -2459,21 +2626,21 @@ void CPGSuperDoc::OnUpdateDeleteSelection(CCmdUI* pCmdUI)
       return;
    }
 
-   if ( m_CurrentPierIdx != ALL_PIERS )
+   if ( m_Selection.PierIdx != ALL_PIERS )
    {
       long nPiers = pBridgeDesc->GetPierCount();
       CString strLabel;
-      if ( m_CurrentPierIdx == 0 || m_CurrentPierIdx == nPiers-1 )
-         strLabel.Format("Delete Abutment %d",m_CurrentPierIdx+1);
+      if ( m_Selection.PierIdx == 0 || m_Selection.PierIdx == nPiers-1 )
+         strLabel.Format("Delete Abutment %d",m_Selection.PierIdx+1);
       else
-         strLabel.Format("Delete Pier %d",m_CurrentPierIdx+1);
+         strLabel.Format("Delete Pier %d",m_Selection.PierIdx+1);
 
       pCmdUI->SetText(strLabel);
       pCmdUI->Enable(TRUE);
    }
-   else if ( m_CurrentSpanIdx != ALL_SPANS  )
+   else if ( m_Selection.SpanIdx != ALL_SPANS  )
    {
-      if ( m_CurrentGirderIdx != ALL_GIRDERS  )
+      if ( m_Selection.GirderIdx != ALL_GIRDERS  )
       {
          // girder is selected.. can't delete an individual girder
          pCmdUI->Enable(FALSE);
@@ -2482,7 +2649,7 @@ void CPGSuperDoc::OnUpdateDeleteSelection(CCmdUI* pCmdUI)
       {
          // only span is selected
          CString strLabel;
-         strLabel.Format("Delete Span %d",LABEL_SPAN(m_CurrentSpanIdx));
+         strLabel.Format("Delete Span %d",LABEL_SPAN(m_Selection.SpanIdx));
          pCmdUI->SetText(strLabel);
          pCmdUI->Enable(TRUE);
       }
@@ -2905,16 +3072,21 @@ void CPGSuperDoc::OnImport(UINT nID)
    CComPtr<IPGSuperDataImporter> importer;
    m_PluginMgr.GetPGSuperImporter(nID,false,&importer);
 
-   CComPtr<IBroker> broker;
-   EAFGetBroker(&broker);
-   importer->Import(broker);
+   if ( importer )
+   {
+      importer->Import(m_pBroker);
+   }
 }
 
 void CPGSuperDoc::OnExport(UINT nID)
 {
    CComPtr<IPGSuperDataExporter> exporter;
    m_PluginMgr.GetPGSuperExporter(nID,false,&exporter);
-   exporter->Export(m_pBroker);
+
+   if ( exporter )
+   {
+      exporter->Export(m_pBroker);
+   }
 }
 
 UINT CPGSuperDoc::GetBridgeEditorSettings() const

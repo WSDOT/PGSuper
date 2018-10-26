@@ -92,23 +92,30 @@ BOOL CCopyConcreteEntry::OnInitDialog()
    std::vector<std::string> names;
    pLibNames->EnumConcreteNames(&names);
 
-   if ( names.size() == 0 )
-      return FALSE; // no concrete in the library
-
    CComboBox* pBox = (CComboBox*)GetDlgItem( IDC_CONC_ENTRIES );
    ASSERT( pBox );
-
-   bool first = true;
-   std::vector<std::string>::iterator iter;
-   for ( iter = names.begin(); iter < names.end(); iter++ )
+   if ( names.size() == 0 )
    {
-      CString conc( (*iter).c_str() );
-      pBox->AddString( conc );
+      pBox->EnableWindow(FALSE);
+      GetDlgItem(IDOK)->EnableWindow(FALSE);
+      SendMessage(DM_SETDEFID, IDCANCEL); // make the Cancel button default
+      GetDlgItem(IDC_LABEL)->SetWindowText(_T("Concrete Library is empty"));
+   }
+   else
+   {
 
-      if (first)
+      bool first = true;
+      std::vector<std::string>::iterator iter;
+      for ( iter = names.begin(); iter < names.end(); iter++ )
       {
-         m_Concrete = conc;
-         first = false;
+         CString conc( (*iter).c_str() );
+         pBox->AddString( conc );
+
+         if (first)
+         {
+            m_Concrete = conc;
+            first = false;
+         }
       }
    }
 

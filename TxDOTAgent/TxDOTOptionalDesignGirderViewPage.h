@@ -2,9 +2,14 @@
 
 #include "TxDOTOptionalDesignData.h"
 #include "TxDOTOptionalDesignBrokerRetreiver.h"
-
 #include "TogaSectionCutDrawStrategy.h"
+
 #include "resource.h"
+#include "afxwin.h"
+
+class CTogaGirderModelElevationView;
+class CTogaGirderModelSectionView;
+class CTxDOTOptionalDesignDoc;
 
 // CTxDOTOptionalDesignGirderViewPage dialog
 
@@ -29,12 +34,13 @@ public:
 // listen to data change events
    virtual void OnTxDotDataChanged(int change);
 
+   // our views need the document
+   CTxDOTOptionalDesignDoc* m_pDocument;
+
    SpanIndexType span;
    GirderIndexType girder;
 
    void GetSpanAndGirderSelection(SpanIndexType* pSpan,GirderIndexType* pGirder);
-
-
 
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
@@ -45,8 +51,8 @@ public:
    virtual BOOL OnInitDialog();
    afx_msg BOOL OnEraseBkgnd(CDC* pDC);
    afx_msg HBRUSH OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor);
-   afx_msg void OnFilePrint();
    virtual void AssertValid() const;
+   afx_msg void OnSize(UINT nType, int cx, int cy);
 
    // iCutLocation
 public:
@@ -68,6 +74,9 @@ public:
    void CutAtPrev();
 
    void UpdateCutLocation(CutLocation cutLoc,Float64 cut = 0.0);
+   void UpdateBar();
+
+   void DisplayErrorMode(TxDOTBrokerRetrieverException& exc);
 
 private:
    bool m_bCutLocationInitialized;
@@ -75,5 +84,16 @@ private:
    Float64 m_CurrentCutLocation;
    CutLocation m_CutLocation;
    Float64 m_MaxCutLocation;
+   GirderIndexType m_SelectedGirder;
 
+public:
+   CTogaGirderModelSectionView*   m_pSectionView;
+   CTogaGirderModelElevationView* m_pElevationView;
+   afx_msg void OnCbnSelchangeSelectedGirder();
+   afx_msg void OnBnClickedSectionCut();
+   CStatic m_ErrorMsgStatic;
+   CComboBox m_GirderCtrl;
+   CButton m_SectionBtn;
+   afx_msg void OnViewSectioncutlocation();
+   afx_msg void OnHelpFinder();
 };

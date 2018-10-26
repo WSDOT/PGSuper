@@ -89,14 +89,14 @@ CDeckShrinkageLossTable* CDeckShrinkageLossTable::PrepareTable(rptChapter* pChap
 #else
    if ( pSpecEntry->GetSpecificationType() < lrfdVersionMgr::FourthEdition2007 )
    {
-      if ( pDisplayUnits->GetUnitDisplayMode() == pgsTypes::umSI )
+      if ( IS_SI_UNITS(pDisplayUnits) )
          *pParagraph << rptRcImage(strImagePath + "Delta_FpSS_SI_2006.gif") << rptNewLine;
       else
          *pParagraph << rptRcImage(strImagePath + "Delta_FpSS_US_2006.gif") << rptNewLine;
    }
    else
    {
-      if ( pDisplayUnits->GetUnitDisplayMode() == pgsTypes::umSI )
+      if ( IS_SI_UNITS(pDisplayUnits) )
          *pParagraph << rptRcImage(strImagePath + "Delta_FpSS_SI_2007.gif") << rptNewLine;
       else
          *pParagraph << rptRcImage(strImagePath + "Delta_FpSS_US_2007.gif") << rptNewLine;

@@ -28,8 +28,10 @@
 #include <IFace\UpdateTemplates.h>
 #include <IFace\Selection.h>
 #include <IFace\EditByUI.h>
+#include <IFace\Design.h>
 #include <IFace\RatingSpecification.h>
 #include <IFace\VersionInfo.h>
+#include <IFace\Views.h>
 #include <IFace\ViewEvents.h>
 #include <EAF\EAFDisplayUnits.h>
 
@@ -82,8 +84,11 @@ class CPGSuperDocProxyAgent :
    public ILibraryConflictEventSink,
    public IUIEvents,
    public IUpdateTemplates,
-   public ISelection,
-   public IEditByUI,
+   //public ISelection,
+   public ISelectionEx,
+   public IEditByUIEx,
+   public IDesign,
+   public IViews,
    public IVersionInfo,
    public IRegisterViewEvents
 {
@@ -106,22 +111,17 @@ BEGIN_COM_MAP(CPGSuperDocProxyAgent)
    COM_INTERFACE_ENTRY(IUIEvents)
    COM_INTERFACE_ENTRY(IUpdateTemplates)
    COM_INTERFACE_ENTRY(ISelection)
+   COM_INTERFACE_ENTRY(ISelectionEx)
    COM_INTERFACE_ENTRY(IEditByUI)
+   COM_INTERFACE_ENTRY(IEditByUIEx)
+   COM_INTERFACE_ENTRY(IDesign)
+   COM_INTERFACE_ENTRY(IViews)
    COM_INTERFACE_ENTRY(IVersionInfo)
    COM_INTERFACE_ENTRY(IRegisterViewEvents)
 END_COM_MAP()
 
 public:
    void SetDocument(CPGSuperDoc* pDoc);
-
-   void CreateBridgeModelView();
-   void CreateGirderView(SpanIndexType spanIdx,GirderIndexType gdrIdx);
-   void CreateAnalysisResultsView();
-   void CreateStabilityView();
-   void CreateLoadsView();
-   void CreateLibraryEditorView();
-   void CreateReportView(CollectionIndexType rptIdx,bool bPromptForSpec=true);
-
    void OnStatusChanged();
 
 // IAgentEx
@@ -203,6 +203,13 @@ public:
    virtual void SelectGirder(SpanIndexType spanIdx,GirderIndexType gdrIdx);
    virtual Float64 GetSectionCutStation();
 
+// ISelectionEx
+public:
+   virtual CSelection GetSelection();
+   virtual void SelectDeck();
+   virtual void SelectAlignment();
+   virtual void ClearSelection();
+
 // IEditByUI
 public:
    virtual void EditBridgeDescription(int nPage);
@@ -219,12 +226,40 @@ public:
    virtual UINT GetLibToolBarID();
    virtual UINT GetHelpToolBarID();
 
+// IEditByUIEx
+public:
+   virtual void AddPointLoad(const CPointLoadData& loadData);
+   virtual void DeletePointLoad(CollectionIndexType loadIdx);
+   virtual void AddDistributedLoad(const CDistributedLoadData& loadData);
+   virtual void DeleteDistributedLoad(CollectionIndexType loadIdx);
+   virtual void AddMomentLoad(const CMomentLoadData& loadData);
+   virtual void DeleteMomentLoad(CollectionIndexType loadIdx);
+
+// IDesign
+public:
+   virtual void DesignGirder(bool bPrompt,bool bDesignSlabOffset,SpanIndexType spanIdx,GirderIndexType gdrIdx);
+
+// IViews
+public:
+   virtual void CreateGirderView(SpanIndexType spanIdx,GirderIndexType gdrIdx);
+   virtual void CreateBridgeModelView();
+   virtual void CreateAnalysisResultsView(SpanIndexType spanIdx,GirderIndexType gdrIdx);
+   virtual void CreateStabilityView(SpanIndexType spanIdx,GirderIndexType gdrIdx);
+   virtual void CreateLoadsView();
+   virtual void CreateLibraryEditorView();
+   virtual void CreateReportView(CollectionIndexType rptIdx,bool bPromptForSpec=true);
+   virtual void BuildReportMenu(CEAFMenu* pMenu,bool bQuickReport);
+
 // IRegisterViewEvents
 public:
    virtual Uint32 RegisterBridgePlanViewCallback(IBridgePlanViewEventCallback* pCallback);
    virtual Uint32 RegisterBridgeSectionViewCallback(IBridgeSectionViewEventCallback* pCallback);
    virtual Uint32 RegisterGirderElevationViewCallback(IGirderElevationViewEventCallback* pCallback);
    virtual Uint32 RegisterGirderSectionViewCallback(IGirderSectionViewEventCallback* pCallback);
+   virtual bool UnregisterBridgePlanViewCallback(Uint32 ID);
+   virtual bool UnregisterBridgeSectionViewCallback(Uint32 ID);
+   virtual bool UnregisterGirderElevationViewCallback(Uint32 ID);
+   virtual bool UnregisterGirderSectionViewCallback(Uint32 ID);
 
 private:
    DECLARE_AGENT_DATA;

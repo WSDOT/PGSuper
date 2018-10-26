@@ -36,6 +36,8 @@
 #include <EAF\EAFAutoProgress.h>
 #include <EAF\EAFStatusCenter.h>
 
+#include <Reporting\SpanGirderReportSpecification.h>
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
@@ -131,17 +133,17 @@ BOOL CPGSuperReportView::PreTranslateMessage(MSG* pMsg)
 	return CEAFAutoCalcReportView::PreTranslateMessage(pMsg);
 }
 
-HRESULT CPGSuperReportView::UpdateReportBrowser()
+HRESULT CPGSuperReportView::UpdateReportBrowser(CReportHint* pHint)
 {
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
 
    GET_IFACE2(pBroker,IProgress,pProgress);
-   CEAFAutoProgress ap(pProgress,0);
+   CEAFAutoProgress ap(pProgress);
 
    pProgress->UpdateMessage("Working...");
 
-   return CEAFAutoCalcReportView::UpdateReportBrowser();
+   return CEAFAutoCalcReportView::UpdateReportBrowser(pHint);
 }
 
 void CPGSuperReportView::RefreshReport()
@@ -153,6 +155,17 @@ void CPGSuperReportView::RefreshReport()
    pProgress->UpdateMessage("Updating report...");
 
    CEAFAutoCalcReportView::RefreshReport();
+}
+
+CReportHint* CPGSuperReportView::TranslateHint(CView* pSender, LPARAM lHint, CObject* pHint)
+{
+   if ( lHint == HINT_GIRDERCHANGED )
+   {
+      CGirderHint* pGdrHint = (CGirderHint*)pHint;
+      CSpanGirderReportHint* pSGHint = new CSpanGirderReportHint(pGdrHint->spanIdx,pGdrHint->gdrIdx,pGdrHint->lHint);
+      return pSGHint;
+   }
+   return NULL;
 }
 
 int CPGSuperReportView::OnCreate(LPCREATESTRUCT lpCreateStruct) 

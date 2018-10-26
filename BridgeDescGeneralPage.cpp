@@ -452,6 +452,9 @@ void CBridgeDescGeneralPage::EnableGirderName(BOOL bEnable)
 
 void CBridgeDescGeneralPage::EnableGirderSpacing(BOOL bEnable,BOOL bClearControls)
 {
+   CWnd* pLabel = GetDlgItem(IDC_GIRDER_SPACING_LABEL);
+   pLabel->EnableWindow(bEnable);
+
    CEdit* pEdit = (CEdit*)GetDlgItem(IDC_SPACING);
    pEdit->EnableWindow(bEnable);
 
@@ -471,6 +474,10 @@ void CBridgeDescGeneralPage::EnableGirderSpacing(BOOL bEnable,BOOL bClearControl
    pcbRefGirder->EnableWindow(bEnable);
    pcbRefGirder->ShowWindow(bClearControls ? SW_HIDE : SW_SHOW);
 
+   CWnd* pcbRefGirderLabel = GetDlgItem(IDC_REF_GIRDER_LABEL);
+   pcbRefGirderLabel->EnableWindow(bEnable);
+   pcbRefGirderLabel->ShowWindow(bClearControls ? SW_HIDE : SW_SHOW);
+
    CEdit* pRefGirderOffset = (CEdit*)GetDlgItem(IDC_REF_GIRDER_OFFSET);
    pRefGirderOffset->EnableWindow(bEnable);
    pRefGirderOffset->ShowWindow(bClearControls ? SW_HIDE : SW_SHOW);
@@ -482,6 +489,10 @@ void CBridgeDescGeneralPage::EnableGirderSpacing(BOOL bEnable,BOOL bClearControl
    CComboBox* pcbRefGirderOffsetType = (CComboBox*)GetDlgItem(IDC_REF_GIRDER_OFFSET_TYPE);
    pcbRefGirderOffsetType->EnableWindow(bEnable);
    pcbRefGirderOffsetType->ShowWindow(bClearControls ? SW_HIDE : SW_SHOW);
+
+   CWnd* pcbRefGirderOffsetTypeLabel = GetDlgItem(IDC_REF_GIRDER_OFFSET_TYPE_LABEL);
+   pcbRefGirderOffsetTypeLabel->EnableWindow(bEnable);
+   pcbRefGirderOffsetTypeLabel->ShowWindow(bClearControls ? SW_HIDE : SW_SHOW);
 
    if ( !bEnable && bClearControls )
    {
@@ -903,6 +914,7 @@ void CBridgeDescGeneralPage::OnGirderFamilyChanged()
    UpdateGirderFactory();     // gets the new factory for this girder family
    FillGirderNameComboBox();  // fills the girder name combo box with girders from this family
    FillGirderSpacingTypeComboBox(); // get new spacing options for this girder family
+   OnGirderSpacingTypeChanged();
    FillDeckTypeComboBox();          // set deck type options to match this girder family
    UpdateGirderConnectivity();      // fills the combo box and enables/disables
 
@@ -912,6 +924,7 @@ void CBridgeDescGeneralPage::OnGirderFamilyChanged()
       EnableGirderSpacing(FALSE,FALSE);
    else
       EnableGirderSpacing(TRUE,FALSE);
+
 
 
    UpdateSuperstructureDescription();
@@ -1068,14 +1081,17 @@ void CBridgeDescGeneralPage::OnGirderSpacingTypeChanged()
          ATLASSERT(false); // is there a new spacing type????
    }
 
+   GetDlgItem(IDC_GIRDER_SPACING_LABEL)->EnableWindow(bEnable);
    GetDlgItem(IDC_SPACING)->EnableWindow(bEnable);
    GetDlgItem(IDC_SPACING_UNIT)->EnableWindow(bEnable);
    GetDlgItem(IDC_ALLOWABLE_SPACING)->EnableWindow(bEnable);
    GetDlgItem(IDC_GIRDER_SPACING_MEASURE)->EnableWindow(bEnable);
 
+   GetDlgItem(IDC_REF_GIRDER_LABEL)->EnableWindow(bEnable);
    GetDlgItem(IDC_REF_GIRDER)->EnableWindow(bEnable);
    GetDlgItem(IDC_REF_GIRDER_OFFSET)->EnableWindow(bEnable);
    GetDlgItem(IDC_REF_GIRDER_OFFSET_UNIT)->EnableWindow(bEnable);
+   GetDlgItem(IDC_REF_GIRDER_OFFSET_TYPE_LABEL)->EnableWindow(bEnable);
    GetDlgItem(IDC_REF_GIRDER_OFFSET_TYPE)->EnableWindow(bEnable);
 
    // update the the unit of measure

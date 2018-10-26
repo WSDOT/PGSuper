@@ -215,8 +215,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 2,3,0,6
- PRODUCTVERSION 2,3,0,6
+ FILEVERSION 2,3,1,0
+ PRODUCTVERSION 2,3,1,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -233,11 +233,11 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "Washington State Department of Transportation"
             VALUE "FileDescription", "PGSuper"
-            VALUE "FileVersion", "2.3.0.6"
+            VALUE "FileVersion", "2.3.1.0"
             VALUE "InternalName", "PGSuper"
             VALUE "OriginalFilename", "PGSuper.EXE"
             VALUE "ProductName", "PGSuper"
-            VALUE "ProductVersion", "2.3.0.6"
+            VALUE "ProductVersion", "2.3.1.0"
         END
     END
     BLOCK "VarFileInfo"
@@ -423,16 +423,6 @@ BEGIN
     ID_MANAGE_PLUGINS       "Manage PGSuper Plug-ins and Extensions\nManage Plug-ins and Extensions"
     ID_HELP_INET_WSDOT      "Open the WSDOT Home Page at www.wsdot.wa.gov"
     ID_HELP_INET_PGSUPER    "Open the PGSuper Home Page\nPGSuper Online Resources"
-END
-
-STRINGTABLE 
-BEGIN
-    IDS_E_BADINSTALL        "There is an error with the %1 installation.  Please re-install the program."
-    IDS_E_PROBPERSISTS      "If this problem persists,  contact technical support at Bridge_Support@wsdot.wa.gov.\n Please include your project file and the %1 file found in the program directory."
-    IDS_E_INVALIDFORMAT     "%1 is not a valid PGSuper project file."
-    IDS_E_FILENOTFOUND      "File %1 was not found"
-    IDS_E_READ              "An error has occured while reading %1"
-    IDS_E_FORMAT            "%1\n\n %2"
 END
 
 STRINGTABLE 

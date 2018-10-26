@@ -117,15 +117,7 @@ STDMETHODIMP_(void) CGirderDropSite::XDropSite::OnDropped(COleDataObject* pDataO
 
       SpanIndexType spanIdx;
       GirderIndexType gdrIdx;
-      if ( pThis->m_pFrame->SyncWithBridgeModelView() )
-      {
-         spanIdx = pThis->m_pDoc->GetSpanIdx();
-         gdrIdx  = pThis->m_pDoc->GetGirderIdx();
-      }
-      else
-      {
-         pThis->m_pFrame->GetSpanAndGirderSelection(&spanIdx,&gdrIdx);
-      }
+      pThis->m_pFrame->GetSpanAndGirderSelection(&spanIdx,&gdrIdx);
       ATLASSERT( spanIdx != ALL_SPANS && gdrIdx != ALL_GIRDERS );
 
       // Was it the concentrated load tool?

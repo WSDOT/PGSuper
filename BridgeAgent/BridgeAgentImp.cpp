@@ -3543,12 +3543,18 @@ void CBridgeAgentImp::LayoutPoiForBarCutoffs(SpanIndexType span,GirderIndexType 
       if ( nmRebarData.PierIdx == prev_pier )
       {
          Float64 dist_from_start = nmRebarData.RightCutoff - left_brg_offset + left_end_size;
+         if ( gdr_length < dist_from_start )
+            dist_from_start = gdr_length - 0.0015;
+
          m_PoiMgr.AddPointOfInterest( pgsPointOfInterest(pgsTypes::BridgeSite3,span,gdr,dist_from_start,attribute) );
          m_PoiMgr.AddPointOfInterest( pgsPointOfInterest(pgsTypes::BridgeSite3,span,gdr,dist_from_start+0.0015,POI_FLEXURECAPACITY | POI_GRAPHICAL) );
       }
       else if ( nmRebarData.PierIdx == next_pier )
       {
          Float64 dist_from_start = gdr_length - (nmRebarData.LeftCutoff - right_brg_offset + right_end_size);
+         if ( dist_from_start < 0 )
+            dist_from_start = 0.0015;
+
          m_PoiMgr.AddPointOfInterest( pgsPointOfInterest(pgsTypes::BridgeSite3,span,gdr,dist_from_start-0.0015,POI_FLEXURECAPACITY | POI_GRAPHICAL) );
          m_PoiMgr.AddPointOfInterest( pgsPointOfInterest(pgsTypes::BridgeSite3,span,gdr,dist_from_start,attribute) );
       }
@@ -9749,17 +9755,37 @@ std::vector<pgsPointOfInterest> CBridgeAgentImp::GetPointsOfInterest(SpanIndexTy
 
 struct PoiBefore
 {
-   static bool Compare(const pgsPointOfInterest& poi) { return poi.GetDistFromStart() < PoiBefore::m_Before; }
+   static bool Compare(const pgsPointOfInterest& poi) 
+   { 
+      if ( m_SpanIdx != poi.GetSpan() || m_GirderIdx != poi.GetGirder() )
+         return false;
+
+      return poi.GetDistFromStart() < PoiBefore::m_Before; 
+   }
+   static SpanIndexType m_SpanIdx;
+   static GirderIndexType m_GirderIdx;
    static Float64 m_Before;
 };
 Float64 PoiBefore::m_Before = 0;
+SpanIndexType PoiBefore::m_SpanIdx = INVALID_INDEX;
+GirderIndexType PoiBefore::m_GirderIdx = INVALID_INDEX;
 
 struct PoiAfter
 {
-   static bool Compare(const pgsPointOfInterest& poi) { return PoiAfter::m_After < poi.GetDistFromStart(); }
+   static bool Compare(const pgsPointOfInterest& poi)
+   { 
+      if ( m_SpanIdx != poi.GetSpan() || m_GirderIdx != poi.GetGirder() )
+         return false;
+
+      return PoiAfter::m_After < poi.GetDistFromStart(); 
+   }
+   static SpanIndexType m_SpanIdx;
+   static GirderIndexType m_GirderIdx;
    static Float64 m_After;
 };
 Float64 PoiAfter::m_After = 0;
+SpanIndexType PoiAfter::m_SpanIdx = INVALID_INDEX;
+GirderIndexType PoiAfter::m_GirderIdx = INVALID_INDEX;
 
 std::vector<pgsPointOfInterest> CBridgeAgentImp::GetPointsOfInterest(SpanIndexType span,GirderIndexType gdr,pgsTypes::Stage stage,PoiAttributeType attrib,Uint32 mode)
 {
@@ -9809,7 +9835,12 @@ std::vector<pgsPointOfInterest> CBridgeAgentImp::GetPointsOfInterest(SpanIndexTy
          // remove all poi that are before the first bearing or after the last bearing
          Float64 start_dist = GetGirderStartConnectionLength(spanIdx,gdrIdx);
          Float64 end_dist   = GetGirderLength(spanIdx,gdrIdx) - GetGirderEndConnectionLength(spanIdx,gdrIdx);
+         PoiBefore::m_SpanIdx = spanIdx;
+         PoiBefore::m_GirderIdx = gdrIdx;
          PoiBefore::m_Before = start_dist;
+
+         PoiAfter::m_SpanIdx = spanIdx;
+         PoiAfter::m_GirderIdx = gdrIdx;
          PoiAfter::m_After   = end_dist;
          std::vector<pgsPointOfInterest>::iterator found = std::find_if(poi.begin(),poi.end(),&PoiBefore::Compare);
          while ( found != poi.end() )
@@ -11928,6 +11959,8 @@ void CBridgeAgentImp::GetBarrierProperties(pgsTypes::TrafficBarrierOrientation o
 
 CBridgeAgentImp::SectProp CBridgeAgentImp::GetSectionProperties(pgsTypes::Stage stage,const pgsPointOfInterest& poi)
 {
+   VALIDATE(BRIDGE);
+
    USES_CONVERSION;
 
    if ( StageCompare(stage,pgsTypes::BridgeSite2) < 0 )

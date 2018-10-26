@@ -302,7 +302,7 @@ Float64 pgsYieldStressRatioArtifact::GetStressRatio() const
 
    // moment in excess of cracking
    Float64 M = GetExcessMoment();
-   m_fcr = (m_Es/m_Eg)*M*(m_dps-m_c)/m_Icr; // stress added to strand at instance of cracking
+   m_fcr = (m_Es/m_Eg)*fabs(M)*(m_dps-m_c)/m_Icr; // stress added to strand at instance of cracking
    m_fs = m_fpe + m_fcr; // total stress in strand just after cracking
    if ( IsZero(m_fs) )
    {

@@ -90,8 +90,8 @@ public:
    void SelectPier(PierIndexType pierIdx,bool bSelect);
    bool GetSelectedGirder(SpanIndexType* pSpanIdx,GirderIndexType* pGirderIdx);
    void SelectGirder(SpanIndexType spanIdx,GirderIndexType gdrIdx,bool bSelect);
-   void SelectDeck(bool bSelect,bool bNotifyViews = true);
-   void SelectAlignment(bool bSelect,bool bNotifyViews = true);
+   void SelectDeck(bool bSelect);
+   void SelectAlignment(bool bSelect);
    void ClearSelection();
    bool IsDeckSelected();
    bool IsAlignmentSelected();

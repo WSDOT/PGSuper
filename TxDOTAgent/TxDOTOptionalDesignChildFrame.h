@@ -68,6 +68,10 @@ public:
    virtual void ActivateFrame(int nCmdShow = -1);
 protected:
    virtual void OnUpdateFrameTitle(BOOL bAddToTitle);
+public:
+   afx_msg void OnLicenseAgreement();
+   afx_msg BOOL OnHelpInfo(HELPINFO* pHelpInfo);
+   afx_msg void OnHelpFinder();
 };
 
 /////////////////////////////////////////////////////////////////////////////

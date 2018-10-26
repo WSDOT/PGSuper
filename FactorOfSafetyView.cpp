@@ -326,6 +326,18 @@ void CFactorOfSafetyView::OnInitialUpdate()
 {
    CView::OnInitialUpdate();
    CEAFAutoCalcViewMixin::Initialize();
+
+   CDocument* pDoc = GetDocument();
+   CDocTemplate* pDocTemplate = pDoc->GetDocTemplate();
+   ASSERT( pDocTemplate->IsKindOf(RUNTIME_CLASS(CEAFDocTemplate)) );
+
+   CEAFDocTemplate* pTemplate = (CEAFDocTemplate*)pDocTemplate;
+   SpanGirderHashType* pHash = (SpanGirderHashType*)pTemplate->GetViewCreationData();
+   SpanIndexType spanIdx;
+   GirderIndexType gdrIdx;
+   UnhashSpanGirder(*pHash,&spanIdx,&gdrIdx);
+
+   m_pFrame->SelectSpan(spanIdx,gdrIdx);
 }
 
 void CFactorOfSafetyView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint) 

@@ -21,7 +21,6 @@
 ///////////////////////////////////////////////////////////////////////
 
 #include "stdafx.h"
-//#include "PGSuperAppPlugin\PGSuperApp.h"
 #include "TxDOTOptionalDesignDoc.h"
 #include "TogaSupportDrawStrategyImpl.h"
 #include "mfcdual.h"

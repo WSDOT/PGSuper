@@ -53,8 +53,8 @@ public:
    void SelectPier(PierIndexType pierIdx,bool bSelect);
    void SelectSpan(PierIndexType pierIdx,bool bSelect);
    void SelectGirder(SpanIndexType spanIdx,GirderIndexType gdrIdx,bool bSelect);
-   void SelectDeck(bool bSelect,bool bNotifyViews = true);
-   void SelectAlignment(bool bSelect,bool bNotifyViews = true);
+   void SelectDeck(bool bSelect);
+   void SelectAlignment(bool bSelect);
    void ClearSelection();
 
    SpanIndexType GetSpanIndex();

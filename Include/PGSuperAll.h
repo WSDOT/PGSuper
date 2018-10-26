@@ -25,7 +25,7 @@
 #pragma once
 
 #ifndef _PGSUPER_VERSION
-#define _PGSUPER_VERSION 230 // version 2.3.x
+#define _PGSUPER_VERSION 231 // version 2.3.1
 #endif
 
 #ifndef WINVER                          // Specifies that the minimum required platform is Windows Vista.

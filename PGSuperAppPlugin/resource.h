@@ -814,7 +814,9 @@
 #define IDC_HELPME                      1601
 #define IDC_LEFT_INTERIOR_BARRIER       1602
 #define IDC_LEFT_SIDEWALK_WIDTH_LABEL   1603
+#define IDC_REF_GIRDER_LABEL            1603
 #define IDC_LEFT_SIDEWALK_LEFT_DEPTH_LABEL 1604
+#define IDC_REF_GIRDER_OFFSET_TYPE_LABEL 1604
 #define IDC_RIGHT_INTERIOR_BARRIER      1605
 #define IDC_LEFT_SIDEWALK_RIGHT_DEPTH_LABEL 1606
 #define IDC_RIGHT_SIDEWALK_WIDTH        1607
@@ -845,11 +847,17 @@
 #define IDC_RADIO_IGNORE                1633
 #define IDC_DS_TITLE                    1634
 #define IDS_E_CLASSNOTREG               1635
+#define IDS_E_BADINSTALL                1636
 #define IDC_SERVERS_STATIC              1637
+#define IDS_E_PROBPERSISTS              1638
 #define IDC_SERVERS_STATIC2             1639
+#define IDS_E_INVALIDFORMAT             1640
 #define IDC_LOCAL_STATIC                1641
+#define IDS_E_FILENOTFOUND              1642
 #define IDC_LOCALS_STATIC2              1643
+#define IDS_E_READ                      1644
 #define IDC_SERVER_STATIC3              1645
+#define IDS_E_FORMAT                    1646
 #define IDC_NORTHING                    1647
 #define IDC_EASTING                     1649
 #define IDC_BOUNDARY_CONDITIONS         1651
@@ -1102,7 +1110,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        317
 #define _APS_NEXT_COMMAND_VALUE         33235
-#define _APS_NEXT_CONTROL_VALUE         1603
+#define _APS_NEXT_CONTROL_VALUE         1605
 #define _APS_NEXT_SYMED_VALUE           111
 #endif
 #endif

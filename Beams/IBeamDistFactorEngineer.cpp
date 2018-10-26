@@ -543,7 +543,11 @@ void CIBeamDistFactorEngineer::ReportMoment(rptParagraph* pPara,IBEAM_LLDFDETAIL
          ATLASSERT(df_method==LLDF_WSDOT || df_method==LLDF_TXDOT);
 
          (*pPara) << Bold("1 Loaded Lane: Spec Equations") << rptNewLine;
-         (*pPara) << "Note: Interior rule controlled"<< rptNewLine;
+         if ( df_method == LLDF_WSDOT )
+            (*pPara) << "Note: Using distribution factor for interior girder per BDM 3.9.4A" << rptNewLine;
+         else if ( df_method == LLDF_TXDOT )
+            (*pPara) << "Note: Using distribution factor for interior girder per BDM Section 3.5" << rptNewLine;
+
          (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg 1 MI Type K SI.gif" : "mg 1 MI Type K US.gif")) << rptNewLine;
          (*pPara) << "mg" << Super("ME") << Sub("1") << " = " << "mg" << Super("MI") << Sub("1") << " = " << scalar.SetValue(gM1.EqnData.mg) << rptNewLine;
       }
@@ -553,7 +557,10 @@ void CIBeamDistFactorEngineer::ReportMoment(rptParagraph* pPara,IBEAM_LLDFDETAIL
          (*pPara) << Bold("1 Loaded Lane: Lever Rule") << rptNewLine;
          if (gM1.ControllingMethod & INTERIOR_OVERRIDE)
          {
-            (*pPara) << "Note: Interior lever rule controlled"<< rptNewLine;
+            if ( df_method == LLDF_WSDOT )
+               (*pPara) << "Note: Using distribution factor for interior girder per BDM 3.9.4A" << rptNewLine;
+            else if ( df_method == LLDF_TXDOT )
+               (*pPara) << "Note: Using distribution factor for interior girder per BDM Section 3.5" << rptNewLine;
          }
 
          ReportLeverRule(pPara,true,1.0,gM1.LeverRuleData,m_pBroker,pDisplayUnits);
@@ -580,13 +587,23 @@ void CIBeamDistFactorEngineer::ReportMoment(rptParagraph* pPara,IBEAM_LLDFDETAIL
          {
             if ( gM2.ControllingMethod & INTERIOR_OVERRIDE )
             {
-               (*pPara) << Bold("2+ Loaded Lanes: Spec Equation - using interior girder override") << rptNewLine;
+               (*pPara) << Bold("2+ Loaded Lanes: Spec Equations") << rptNewLine;
+               if ( df_method == LLDF_WSDOT )
+                  (*pPara) << "Note: Using distribution factor for interior girder per BDM 3.9.4A" << rptNewLine;
+               else if ( df_method == LLDF_TXDOT )
+                  (*pPara) << "Note: Using distribution factor for interior girder per BDM Section 3.5" << rptNewLine;
+
                (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg 2 MI Type K SI.gif" : "mg 2 MI Type K US.gif")) << rptNewLine;
                (*pPara) << "mg" << Super("ME") << Sub("2+") << " = " << "mg" << Super("MI") << Sub("2+") << " = " << scalar.SetValue(gM2.EqnData.mg) << rptNewLine;
             }
             else
             {
-               (*pPara) << Bold("2+ Loaded Lanes: Spec Equation for interior beam") << rptNewLine;
+               (*pPara) << Bold("2+ Loaded Lanes: Spec Equations") << rptNewLine;
+               if ( df_method == LLDF_WSDOT )
+                  (*pPara) << "Note: Using distribution factor for interior girder per BDM 3.9.4A" << rptNewLine;
+               else if ( df_method == LLDF_TXDOT )
+                  (*pPara) << "Note: Using distribution factor for interior girder per BDM Section 3.5" << rptNewLine;
+
                (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg 2 ME Type K SI.gif" : "mg 2 ME Type K US.gif")) << rptNewLine;
                (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg 2 MI Type K SI.gif" : "mg 2 MI Type K US.gif")) << rptNewLine;
                (*pPara) << "mg" << Super("MI") << Sub("2+") << " = " << scalar.SetValue(gM2.EqnData.mg) << rptNewLine;
@@ -603,7 +620,10 @@ void CIBeamDistFactorEngineer::ReportMoment(rptParagraph* pPara,IBEAM_LLDFDETAIL
 
             if (gM2.ControllingMethod & INTERIOR_OVERRIDE)
             {
-               (*pPara) << "Note: Interior rule controlled"<< rptNewLine;
+               if ( df_method == LLDF_WSDOT )
+                  (*pPara) << "Note: Using distribution factor for interior girder per BDM 3.9.4A" << rptNewLine;
+               else if ( df_method == LLDF_TXDOT )
+                  (*pPara) << "Note: Using distribution factor for interior girder per BDM Section 3.5" << rptNewLine;
             }
    
             ReportLeverRule(pPara,true,1.0,gM2.LeverRuleData,m_pBroker,pDisplayUnits);
@@ -746,7 +766,10 @@ void CIBeamDistFactorEngineer::ReportShear(rptParagraph* pPara,IBEAM_LLDFDETAILS
          (*pPara) << Bold("1 Loaded Lane: Lever Rule") << rptNewLine;
          if (gV1.ControllingMethod & INTERIOR_OVERRIDE)
          {
-            (*pPara) << "Note: Interior lever rule controlled"<< rptNewLine;
+            if ( df_method == LLDF_WSDOT )
+               (*pPara) << "Note: Using distribution factor for interior girder per BDM 3.9.4A" << rptNewLine;
+            else if ( df_method == LLDF_TXDOT )
+               (*pPara) << "Note: Using distribution factor for interior girder per BDM Section 3.5" << rptNewLine;
          }
 
           ReportLeverRule(pPara,false,1.0,gV1.LeverRuleData,m_pBroker,pDisplayUnits);
@@ -772,7 +795,12 @@ void CIBeamDistFactorEngineer::ReportShear(rptParagraph* pPara,IBEAM_LLDFDETAILS
          if ( gV2.ControllingMethod & E_OVERRIDE )
          {
             ATLASSERT( gV2.ControllingMethod & SPEC_EQN );
-            (*pPara) << Bold("2+ Loaded Lanes: Spec Equation for interior beam") << rptNewLine;
+            (*pPara) << Bold("2+ Loaded Lanes: Spec Equation") << rptNewLine;
+            if ( df_method == LLDF_WSDOT )
+               (*pPara) << "Note: Using distribution factor for interior girder per BDM 3.9.4A" << rptNewLine;
+                  else if ( df_method == LLDF_TXDOT )
+               (*pPara) << "Note: Using distribution factor for interior girder per BDM Section 3.5" << rptNewLine;
+
             (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg 2 VE Type K SI.gif" : "mg 2 VE Type K US.gif")) << rptNewLine;
             (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg 2 VI Type K SI.gif" : "mg 2 VI Type K US.gif")) << rptNewLine;
             (*pPara) << "mg" << Super("VI") << Sub("2+") << " = " << scalar.SetValue(gV2.EqnData.mg) << rptNewLine;
@@ -786,7 +814,12 @@ void CIBeamDistFactorEngineer::ReportShear(rptParagraph* pPara,IBEAM_LLDFDETAILS
             if ( gV2.EqnData.bWasUsed )
             {
                ATLASSERT( gV2.ControllingMethod & INTERIOR_OVERRIDE);
-               (*pPara) << Bold("2+ Loaded Lanes: Spec Equation - using interior girder override") << rptNewLine;
+               (*pPara) << Bold("2+ Loaded Lanes: Spec Equation") << rptNewLine;
+               if ( df_method == LLDF_WSDOT )
+                  (*pPara) << "Note: Using distribution factor for interior girder per BDM 3.9.4A" << rptNewLine;
+                  else if ( df_method == LLDF_TXDOT )
+                  (*pPara) << "Note: Using distribution factor for interior girder per BDM Section 3.5" << rptNewLine;
+
                (*pPara) << rptRcImage(strImagePath + (bSIUnits ? "mg 2 VI Type K SI.gif" : "mg 2 VI Type K US.gif")) << rptNewLine;
                (*pPara) << "mg" << Super("VE") << Sub("2+") << " = " << "mg" << Super("VI") << Sub("2+") << " = " << scalar.SetValue(gV2.EqnData.mg) << rptNewLine;
             }
@@ -797,7 +830,10 @@ void CIBeamDistFactorEngineer::ReportShear(rptParagraph* pPara,IBEAM_LLDFDETAILS
 
                if (gV2.ControllingMethod & INTERIOR_OVERRIDE)
                {
-                  (*pPara) << "Note: Interior lever rule controlled"<< rptNewLine;
+                  if ( df_method == LLDF_WSDOT )
+                     (*pPara) << "Note: Using distribution factor for interior girder per BDM 3.9.4A" << rptNewLine;
+                  else if ( df_method == LLDF_TXDOT )
+                     (*pPara) << "Note: Using distribution factor for interior girder per BDM Section 3.5" << rptNewLine;
                }
          
                ReportLeverRule(pPara,false,1.0,gV2.LeverRuleData,m_pBroker,pDisplayUnits);
@@ -909,7 +945,7 @@ std::string CIBeamDistFactorEngineer::GetComputationDescription(SpanIndexType sp
 
    if ( lldfMethod == LLDF_WSDOT )
    {
-      descr += std::string("WSDOT Method per Design Memorandum 2-1999 Dated February 22, 1999");
+      descr += std::string("WSDOT Method per Bridge Design Manual Section 3.9.4A");
    }
    else if ( lldfMethod == LLDF_TXDOT )
    {

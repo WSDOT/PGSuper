@@ -49,6 +49,12 @@ CPGSuperTitlePageBuilder::~CPGSuperTitlePageBuilder(void)
 {
 }
 
+bool CPGSuperTitlePageBuilder::NeedsUpdate(CReportHint* pHint,boost::shared_ptr<CReportSpecification>& pRptSpec)
+{
+   // don't let the title page control whether or not a report needs updating
+   return false;
+}
+
 rptChapter* CPGSuperTitlePageBuilder::Build(boost::shared_ptr<CReportSpecification>& pRptSpec)
 {
    // Create a title page for the report

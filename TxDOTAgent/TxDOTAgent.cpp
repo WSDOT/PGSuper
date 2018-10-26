@@ -37,7 +37,9 @@
 #include <initguid.h>
 #include <WBFLDManip_i.c>
 #include <WBFLDManipTools_i.c>
-#include <DManip\DManip.h>
+#include <DManip\DManip_clsid.cpp>
+#include <DManipTools\DManipTools_clsid.cpp>
+#include "TxDOTAgent_i.h"
 #include <WBFLCore_i.c>
 #include <WBFLGeometry_i.c>
 #include <WBFLCogo_i.c>

@@ -24,6 +24,9 @@
 
 #include <WbflTypes.h>
 #include <Lrfd\LiveLoadDistributionFactorBase.h>
+#include <PgsExt\PointLoadData.h>
+#include <PgsExt\DistributedLoadData.h>
+#include <PgsExt\MomentLoadData.h>
 
 #define EBD_ROADWAY        0
 
@@ -78,4 +81,18 @@ interface IEditByUI : IUnknown
    virtual UINT GetStdToolBarID() = 0;
    virtual UINT GetLibToolBarID() = 0;
    virtual UINT GetHelpToolBarID() = 0;
+};
+
+// Extends the load editing capabilities... presents user with load editing UI as needed
+// {9E1D97F8-8315-4c77-AF6F-909310E114E6}
+DEFINE_GUID(IID_IEditByUIEx, 
+0x9e1d97f8, 0x8315, 0x4c77, 0xaf, 0x6f, 0x90, 0x93, 0x10, 0xe1, 0x14, 0xe6);
+interface IEditByUIEx : IEditByUI
+{
+   virtual void AddPointLoad(const CPointLoadData& loadData) = 0;
+   virtual void DeletePointLoad(CollectionIndexType loadIdx) = 0;
+   virtual void AddDistributedLoad(const CDistributedLoadData& loadData) = 0;
+   virtual void DeleteDistributedLoad(CollectionIndexType loadIdx) = 0;
+   virtual void AddMomentLoad(const CMomentLoadData& loadData) = 0;
+   virtual void DeleteMomentLoad(CollectionIndexType loadIdx) = 0;
 };

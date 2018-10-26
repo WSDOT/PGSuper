@@ -213,7 +213,7 @@ void CBridgeSectionView::SelectGirder(SpanIndexType spanIdx,GirderIndexType gdrI
       dispMgr->ClearSelectedObjects();
 }
 
-void CBridgeSectionView::SelectDeck(bool bSelect,bool bNotifyViews)
+void CBridgeSectionView::SelectDeck(bool bSelect)
 {
    CComPtr<iDisplayMgr> dispMgr;
    GetDisplayMgr(&dispMgr);
@@ -224,12 +224,6 @@ void CBridgeSectionView::SelectDeck(bool bSelect,bool bNotifyViews)
    if ( pDO )
    {
       dispMgr->SelectObject(pDO,bSelect);
-
-      if ( bNotifyViews )
-      {
-         CPGSuperDoc* pDoc = (CPGSuperDoc*)GetDocument();
-         pDoc->UpdateAllViews(this,HINT_DECKSELECTED,NULL);
-      }
    }
    else
    {
@@ -237,7 +231,7 @@ void CBridgeSectionView::SelectDeck(bool bSelect,bool bNotifyViews)
    }
 }
 
-void CBridgeSectionView::SelectAlignment(bool bSelect,bool bNotifyViews)
+void CBridgeSectionView::SelectAlignment(bool bSelect)
 {
    // sort of a dummy function to clear the selection in this view
    // when a span is selected in another view
@@ -381,13 +375,40 @@ void CBridgeSectionView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
    {
       UpdateGirderTooltips();
    }
-   else if ( lHint == HINT_GIRDERSELECTIONCHANGED )
+   else if ( lHint == HINT_SELECTIONCHANGED )
    {
-      CPGSuperDoc* pDoc = (CPGSuperDoc*)GetDocument();
-      SpanIndexType spanIdx = pDoc->GetSpanIdx();
-      GirderIndexType gdrIdx  = pDoc->GetGirderIdx();
-      if ( spanIdx != ALL_SPANS && gdrIdx != ALL_GIRDERS )
-         SelectGirder(spanIdx,gdrIdx,true);  
+      CSelection* pSelection = (CSelection*)pHint;
+      switch( pSelection->Type )
+      {
+      case CSelection::None:
+         this->ClearSelection();
+         break;
+
+      case CSelection::Span:
+         this->SelectSpan( pSelection->SpanIdx, true );
+         break;
+
+      case CSelection::Girder:
+         this->SelectGirder( pSelection->SpanIdx,pSelection->GirderIdx,true);
+         break;
+
+      case CSelection::Pier:
+         this->SelectPier( pSelection->PierIdx, true );
+         break;
+
+      case CSelection::Deck:
+         this->SelectDeck(true);
+         break;
+
+      case CSelection::Alignment:
+         this->SelectAlignment(true);
+         break;
+
+      default:
+         ATLASSERT(FALSE); // is there a new type of object to be selected?
+         this->ClearSelection();
+         break;
+      }
    }
 }
 
@@ -422,11 +443,11 @@ void CBridgeSectionView::HandleContextMenu(CWnd* pWnd,CPoint logPoint)
       logPoint = center;
    }
 
-   std::vector<IBridgePlanViewEventCallback*> callbacks = pDoc->GetBridgePlanViewCallbacks();
-   std::vector<IBridgePlanViewEventCallback*>::iterator iter;
+   std::map<Uint32,IBridgeSectionViewEventCallback*> callbacks = pDoc->GetBridgeSectionViewCallbacks();
+   std::map<Uint32,IBridgeSectionViewEventCallback*>::iterator iter;
    for ( iter = callbacks.begin(); iter != callbacks.end(); iter++ )
    {
-      IBridgePlanViewEventCallback* callback = *iter;
+      IBridgeSectionViewEventCallback* callback = iter->second;
       callback->OnBackgroundContextMenu(pMenu);
    }
 

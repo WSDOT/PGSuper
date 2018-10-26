@@ -34,6 +34,7 @@ public:
    ~CPGSuperTitlePageBuilder(void);
 
    virtual rptChapter* Build(boost::shared_ptr<CReportSpecification>& pRptSpec);
+   virtual bool NeedsUpdate(CReportHint* pHint,boost::shared_ptr<CReportSpecification>& pRptSpec);
 
 protected:
    CComPtr<IBroker> m_pBroker;

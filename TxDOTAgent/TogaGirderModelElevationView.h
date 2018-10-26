@@ -28,7 +28,6 @@
 #endif // _MSC_VER >= 1000
 // TogaGirderModelElevationView.h : header file
 //
-class CGirderModelChildFrame;
 class CTxDOTOptionalDesignDoc;
 
 #include <DManip\DManip.h>
@@ -42,7 +41,6 @@ interface IBroker;
 
 class CTogaGirderModelElevationView : public CDisplayView
 {
-   friend CGirderModelChildFrame;
 protected:
 	CTogaGirderModelElevationView();           // protected constructor used by dynamic creation
 	DECLARE_DYNCREATE(CTogaGirderModelElevationView)
@@ -63,7 +61,6 @@ public:
 	//{{AFX_VIRTUAL(CTogaGirderModelElevationView)
 	public:
 	virtual void OnInitialUpdate();
-	protected:
 	virtual void OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint);
 	virtual void OnDraw(CDC* pDC);
 	//}}AFX_VIRTUAL

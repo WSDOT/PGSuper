@@ -65,6 +65,9 @@ protected:
    afx_msg LRESULT OnCommandHelp(WPARAM, LPARAM lParam);
 	DECLARE_MESSAGE_MAP()
 
+public:
+   virtual BOOL OnInitDialog();
+   virtual BOOL OnSetActive();
 };
 
 //{{AFX_INSERT_LOCATION}}
