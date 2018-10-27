@@ -84,7 +84,7 @@ rptRcTable* CProductDeflectionsTable::Build(IBroker* pBroker,const CGirderKey& g
    bool bHasOverlay    = pBridge->HasOverlay();
    bool bFutureOverlay = pBridge->IsFutureOverlay();
 
-   bool bSegments,bConstruction, bDeckPanels, bPedLoading, bSidewalk, bShearKey, bPermit;
+   bool bSegments,bConstruction, bDeck, bDeckPanels, bPedLoading, bSidewalk, bShearKey, bLongitudinalJoint, bPermit;
    bool bContinuousBeforeDeckCasting;
    GroupIndexType startGroup, endGroup;
 
@@ -95,9 +95,10 @@ rptRcTable* CProductDeflectionsTable::Build(IBroker* pBroker,const CGirderKey& g
    pgsTypes::BridgeAnalysisType minBAT = pProdForces->GetBridgeAnalysisType(analysisType,pgsTypes::Minimize);
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
+   IntervalIndexType overlayIntervalIdx = pIntervals->GetOverlayInterval();
    IntervalIndexType lastIntervalIdx = pIntervals->GetIntervalCount()-1;
 
-   ColumnIndexType nCols = GetProductLoadTableColumnCount(pBroker,girderKey,analysisType,bDesign,bRating,false,&bSegments,&bConstruction,&bDeckPanels,&bSidewalk,&bShearKey,&bPedLoading,&bPermit,&bContinuousBeforeDeckCasting,&startGroup,&endGroup);
+   ColumnIndexType nCols = GetProductLoadTableColumnCount(pBroker,girderKey,analysisType,bDesign,bRating,false,&bSegments,&bConstruction,&bDeck,&bDeckPanels,&bSidewalk,&bShearKey,&bLongitudinalJoint,&bPedLoading,&bPermit,&bContinuousBeforeDeckCasting,&startGroup,&endGroup);
 
    rptRcTable* p_table = rptStyleManager::CreateDefaultTable(nCols,_T("Deflections"));
 
@@ -110,7 +111,7 @@ rptRcTable* CProductDeflectionsTable::Build(IBroker* pBroker,const CGirderKey& g
    location.IncludeSpanAndGirder(girderKey.groupIndex == ALL_GROUPS);
    PoiAttributeType poiRefAttribute(girderKey.groupIndex == ALL_GROUPS ? POI_SPAN : POI_ERECTED_SEGMENT);
 
-   RowIndexType row = ConfigureProductLoadTableHeading<rptLengthUnitTag,unitmgtLengthData>(pBroker,p_table,false,false,bSegments,bConstruction,bDeckPanels,bSidewalk,bShearKey,bHasOverlay,bFutureOverlay,bDesign,bPedLoading,bPermit,bRating,analysisType,bContinuousBeforeDeckCasting,pRatingSpec,pDisplayUnits,pDisplayUnits->GetDeflectionUnit());
+   RowIndexType row = ConfigureProductLoadTableHeading<rptLengthUnitTag,unitmgtLengthData>(pBroker,p_table,false,false,bSegments,bConstruction,bDeck,bDeckPanels,bSidewalk,bShearKey,bLongitudinalJoint,bHasOverlay,bFutureOverlay,bDesign,bPedLoading,bPermit,bRating,analysisType,bContinuousBeforeDeckCasting,pRatingSpec,pDisplayUnits,pDisplayUnits->GetDeflectionUnit());
 
    // Get the interface pointers we need
    GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
@@ -125,14 +126,10 @@ rptRcTable* CProductDeflectionsTable::Build(IBroker* pBroker,const CGirderKey& g
       CGirderKey thisGirderKey(grpIdx,gdrIdx);
 
       IntervalIndexType erectSegmentIntervalIdx  = pIntervals->GetLastSegmentErectionInterval(thisGirderKey);
-      IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval();
-      IntervalIndexType overlayIntervalIdx       = pIntervals->GetOverlayInterval();
-      IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval();
-      IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval();
-      IntervalIndexType loadRatingIntervalIdx    = pIntervals->GetLoadRatingInterval();
 
       CSegmentKey allSegmentsKey(grpIdx,gdrIdx,ALL_SEGMENTS);
-      std::vector<pgsPointOfInterest> vPoi( pIPoi->GetPointsOfInterest(allSegmentsKey,poiRefAttribute) );
+      PoiList vPoi;
+      pIPoi->GetPointsOfInterest(allSegmentsKey, poiRefAttribute, &vPoi);
 
       // Get the results for this span (it is faster to get them as a vector rather than individually)
       std::vector<Float64> segment;
@@ -146,28 +143,32 @@ rptRcTable* CProductDeflectionsTable::Build(IBroker* pBroker,const CGirderKey& g
       {
          girder = pForces2->GetDeflection(erectSegmentIntervalIdx,pgsTypes::pftGirder,vPoi,maxBAT, rtCumulative, false);
       }
+
       std::vector<Float64> diaphragm = pForces2->GetDeflection(lastIntervalIdx,pgsTypes::pftDiaphragm,vPoi,maxBAT, rtCumulative, false);
 
       std::vector<Float64> minSlab, maxSlab;
       std::vector<Float64> minSlabPad, maxSlabPad;
-      maxSlab = pForces2->GetDeflection( castDeckIntervalIdx, pgsTypes::pftSlab, vPoi, maxBAT, rtCumulative, false );
-      minSlab = pForces2->GetDeflection( castDeckIntervalIdx, pgsTypes::pftSlab, vPoi, minBAT, rtCumulative, false );
+      if (bDeck)
+      {
+         maxSlab = pForces2->GetDeflection(lastIntervalIdx, pgsTypes::pftSlab, vPoi, maxBAT, rtCumulative, false);
+         minSlab = pForces2->GetDeflection(lastIntervalIdx, pgsTypes::pftSlab, vPoi, minBAT, rtCumulative, false);
 
-      maxSlabPad = pForces2->GetDeflection( castDeckIntervalIdx, pgsTypes::pftSlabPad, vPoi, maxBAT, rtCumulative, false );
-      minSlabPad = pForces2->GetDeflection( castDeckIntervalIdx, pgsTypes::pftSlabPad, vPoi, minBAT, rtCumulative, false );
+         maxSlabPad = pForces2->GetDeflection(lastIntervalIdx, pgsTypes::pftSlabPad, vPoi, maxBAT, rtCumulative, false);
+         minSlabPad = pForces2->GetDeflection(lastIntervalIdx, pgsTypes::pftSlabPad, vPoi, minBAT, rtCumulative, false);
+      }
 
       std::vector<Float64> minConstruction, maxConstruction;
       if ( bConstruction )
       {
-         maxConstruction = pForces2->GetDeflection( castDeckIntervalIdx, pgsTypes::pftConstruction, vPoi, maxBAT, rtCumulative, false);
-         minConstruction = pForces2->GetDeflection( castDeckIntervalIdx, pgsTypes::pftConstruction, vPoi, minBAT, rtCumulative, false);
+         maxConstruction = pForces2->GetDeflection(lastIntervalIdx, pgsTypes::pftConstruction, vPoi, maxBAT, rtCumulative, false);
+         minConstruction = pForces2->GetDeflection(lastIntervalIdx, pgsTypes::pftConstruction, vPoi, minBAT, rtCumulative, false);
       }
 
       std::vector<Float64> minDeckPanel, maxDeckPanel;
       if ( bDeckPanels )
       {
-         maxDeckPanel = pForces2->GetDeflection( castDeckIntervalIdx, pgsTypes::pftSlabPanel, vPoi, maxBAT, rtCumulative, false);
-         minDeckPanel = pForces2->GetDeflection( castDeckIntervalIdx, pgsTypes::pftSlabPanel, vPoi, minBAT, rtCumulative, false);
+         maxDeckPanel = pForces2->GetDeflection(lastIntervalIdx, pgsTypes::pftSlabPanel, vPoi, maxBAT, rtCumulative, false);
+         minDeckPanel = pForces2->GetDeflection(lastIntervalIdx, pgsTypes::pftSlabPanel, vPoi, minBAT, rtCumulative, false);
       }
 
       std::vector<Float64> dummy;
@@ -175,6 +176,7 @@ rptRcTable* CProductDeflectionsTable::Build(IBroker* pBroker,const CGirderKey& g
       std::vector<Float64> minTrafficBarrier, maxTrafficBarrier;
       std::vector<Float64> minSidewalk, maxSidewalk;
       std::vector<Float64> minShearKey, maxShearKey;
+      std::vector<Float64> minLongitudinalJoint, maxLongitudinalJoint;
       std::vector<Float64> minPedestrian, maxPedestrian;
       std::vector<Float64> minDesignLL, maxDesignLL;
       std::vector<Float64> minFatigueLL, maxFatigueLL;
@@ -205,46 +207,52 @@ rptRcTable* CProductDeflectionsTable::Build(IBroker* pBroker,const CGirderKey& g
 
       if ( bSidewalk )
       {
-         maxSidewalk = pForces2->GetDeflection( railingSystemIntervalIdx, pgsTypes::pftSidewalk, vPoi, maxBAT, rtCumulative, false );
-         minSidewalk = pForces2->GetDeflection( railingSystemIntervalIdx, pgsTypes::pftSidewalk, vPoi, minBAT, rtCumulative, false );
+         maxSidewalk = pForces2->GetDeflection(lastIntervalIdx, pgsTypes::pftSidewalk, vPoi, maxBAT, rtCumulative, false );
+         minSidewalk = pForces2->GetDeflection(lastIntervalIdx, pgsTypes::pftSidewalk, vPoi, minBAT, rtCumulative, false );
       }
 
-      if ( bShearKey )
+      if (bShearKey)
       {
-         maxShearKey = pForces2->GetDeflection( castDeckIntervalIdx, pgsTypes::pftShearKey, vPoi, maxBAT, rtCumulative, false );
-         minShearKey = pForces2->GetDeflection( castDeckIntervalIdx, pgsTypes::pftShearKey, vPoi, minBAT, rtCumulative, false );
+         maxShearKey = pForces2->GetDeflection(lastIntervalIdx, pgsTypes::pftShearKey, vPoi, maxBAT, rtCumulative, false);
+         minShearKey = pForces2->GetDeflection(lastIntervalIdx, pgsTypes::pftShearKey, vPoi, minBAT, rtCumulative, false);
       }
 
-      maxTrafficBarrier = pForces2->GetDeflection( railingSystemIntervalIdx, pgsTypes::pftTrafficBarrier, vPoi, maxBAT, rtCumulative, false );
-      minTrafficBarrier = pForces2->GetDeflection( railingSystemIntervalIdx, pgsTypes::pftTrafficBarrier, vPoi, minBAT, rtCumulative, false );
+      if (bLongitudinalJoint)
+      {
+         maxLongitudinalJoint = pForces2->GetDeflection(lastIntervalIdx, pgsTypes::pftLongitudinalJoint, vPoi, maxBAT, rtCumulative, false);
+         minLongitudinalJoint = pForces2->GetDeflection(lastIntervalIdx, pgsTypes::pftLongitudinalJoint, vPoi, minBAT, rtCumulative, false);
+      }
+
+      maxTrafficBarrier = pForces2->GetDeflection(lastIntervalIdx, pgsTypes::pftTrafficBarrier, vPoi, maxBAT, rtCumulative, false );
+      minTrafficBarrier = pForces2->GetDeflection(lastIntervalIdx, pgsTypes::pftTrafficBarrier, vPoi, minBAT, rtCumulative, false );
 
       if ( bHasOverlay )
       {
-         maxOverlay = pForces2->GetDeflection( overlayIntervalIdx, bRating && !bDesign ? pgsTypes::pftOverlayRating : pgsTypes::pftOverlay, vPoi, maxBAT, rtCumulative, false );
-         minOverlay = pForces2->GetDeflection( overlayIntervalIdx, bRating && !bDesign ? pgsTypes::pftOverlayRating : pgsTypes::pftOverlay, vPoi, minBAT, rtCumulative, false );
+         maxOverlay = pForces2->GetDeflection(lastIntervalIdx, bRating && !bDesign ? pgsTypes::pftOverlayRating : pgsTypes::pftOverlay, vPoi, maxBAT, rtCumulative, false );
+         minOverlay = pForces2->GetDeflection(lastIntervalIdx, bRating && !bDesign ? pgsTypes::pftOverlayRating : pgsTypes::pftOverlay, vPoi, minBAT, rtCumulative, false );
       }
 
       if ( bDesign )
       {
          if ( bPedLoading )
          {
-            pForces2->GetLiveLoadDeflection( liveLoadIntervalIdx, pgsTypes::lltPedestrian, vPoi, maxBAT, true, true, &dummy, &maxPedestrian );
-            pForces2->GetLiveLoadDeflection( liveLoadIntervalIdx, pgsTypes::lltPedestrian, vPoi, minBAT, true, true, &minPedestrian, &dummy );
+            pForces2->GetLiveLoadDeflection(lastIntervalIdx, pgsTypes::lltPedestrian, vPoi, maxBAT, true, true, &dummy, &maxPedestrian );
+            pForces2->GetLiveLoadDeflection(lastIntervalIdx, pgsTypes::lltPedestrian, vPoi, minBAT, true, true, &minPedestrian, &dummy );
          }
 
-         pForces2->GetLiveLoadDeflection( liveLoadIntervalIdx, pgsTypes::lltDesign, vPoi, maxBAT, true, false, &dummy, &maxDesignLL, &dummyTruck, &maxDesignLLtruck );
-         pForces2->GetLiveLoadDeflection( liveLoadIntervalIdx, pgsTypes::lltDesign, vPoi, minBAT, true, false, &minDesignLL, &dummy, &minDesignLLtruck, &dummyTruck );
+         pForces2->GetLiveLoadDeflection(lastIntervalIdx, pgsTypes::lltDesign, vPoi, maxBAT, true, false, &dummy, &maxDesignLL, &dummyTruck, &maxDesignLLtruck );
+         pForces2->GetLiveLoadDeflection(lastIntervalIdx, pgsTypes::lltDesign, vPoi, minBAT, true, false, &minDesignLL, &dummy, &minDesignLLtruck, &dummyTruck );
 
          if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
          {
-            pForces2->GetLiveLoadDeflection( liveLoadIntervalIdx, pgsTypes::lltFatigue, vPoi, maxBAT, true, false, &dummy, &maxFatigueLL, &dummyTruck, &maxFatigueLLtruck );
-            pForces2->GetLiveLoadDeflection( liveLoadIntervalIdx, pgsTypes::lltFatigue, vPoi, minBAT, true, false, &minFatigueLL, &dummy, &minFatigueLLtruck, &dummyTruck );
+            pForces2->GetLiveLoadDeflection(lastIntervalIdx, pgsTypes::lltFatigue, vPoi, maxBAT, true, false, &dummy, &maxFatigueLL, &dummyTruck, &maxFatigueLLtruck );
+            pForces2->GetLiveLoadDeflection(lastIntervalIdx, pgsTypes::lltFatigue, vPoi, minBAT, true, false, &minFatigueLL, &dummy, &minFatigueLLtruck, &dummyTruck );
          }
 
          if ( bPermit )
          {
-            pForces2->GetLiveLoadDeflection( liveLoadIntervalIdx, pgsTypes::lltPermit, vPoi, maxBAT, true, false, &dummy, &maxPermitLL, &dummyTruck, &maxPermitLLtruck );
-            pForces2->GetLiveLoadDeflection( liveLoadIntervalIdx, pgsTypes::lltPermit, vPoi, minBAT, true, false, &minPermitLL, &dummy, &minPermitLLtruck, &dummyTruck );
+            pForces2->GetLiveLoadDeflection(lastIntervalIdx, pgsTypes::lltPermit, vPoi, maxBAT, true, false, &dummy, &maxPermitLL, &dummyTruck, &maxPermitLLtruck );
+            pForces2->GetLiveLoadDeflection(lastIntervalIdx, pgsTypes::lltPermit, vPoi, minBAT, true, false, &minPermitLL, &dummy, &minPermitLLtruck, &dummyTruck );
          }
       }
 
@@ -252,50 +260,46 @@ rptRcTable* CProductDeflectionsTable::Build(IBroker* pBroker,const CGirderKey& g
       {
          if ( !bDesign && (pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) || pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating)) )
          {
-            pForces2->GetLiveLoadDeflection( loadRatingIntervalIdx, pgsTypes::lltDesign, vPoi, maxBAT, true, false, &dummy, &maxDesignLL, &dummyTruck, &maxDesignLLtruck );
-            pForces2->GetLiveLoadDeflection( loadRatingIntervalIdx, pgsTypes::lltDesign, vPoi, minBAT, true, false, &minDesignLL, &dummy, &minDesignLLtruck, &dummyTruck );
+            pForces2->GetLiveLoadDeflection(lastIntervalIdx, pgsTypes::lltDesign, vPoi, maxBAT, true, false, &dummy, &maxDesignLL, &dummyTruck, &maxDesignLLtruck );
+            pForces2->GetLiveLoadDeflection(lastIntervalIdx, pgsTypes::lltDesign, vPoi, minBAT, true, false, &minDesignLL, &dummy, &minDesignLLtruck, &dummyTruck );
          }
 
          if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) )
          {
-            pForces2->GetLiveLoadDeflection( loadRatingIntervalIdx, pgsTypes::lltLegalRating_Routine, vPoi, maxBAT, true, false, &dummy, &maxLegalRoutineLL, &dummyTruck, &maxLegalRoutineLLtruck );
-            pForces2->GetLiveLoadDeflection( loadRatingIntervalIdx, pgsTypes::lltLegalRating_Routine, vPoi, minBAT, true, false, &minLegalRoutineLL, &dummy, &minLegalRoutineLLtruck, &dummyTruck );
+            pForces2->GetLiveLoadDeflection(lastIntervalIdx, pgsTypes::lltLegalRating_Routine, vPoi, maxBAT, true, false, &dummy, &maxLegalRoutineLL, &dummyTruck, &maxLegalRoutineLLtruck );
+            pForces2->GetLiveLoadDeflection(lastIntervalIdx, pgsTypes::lltLegalRating_Routine, vPoi, minBAT, true, false, &minLegalRoutineLL, &dummy, &minLegalRoutineLLtruck, &dummyTruck );
          }
 
          if (pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special))
          {
-            pForces2->GetLiveLoadDeflection(loadRatingIntervalIdx, pgsTypes::lltLegalRating_Special, vPoi, maxBAT, true, false, &dummy, &maxLegalSpecialLL, &dummyTruck, &maxLegalSpecialLLtruck);
-            pForces2->GetLiveLoadDeflection(loadRatingIntervalIdx, pgsTypes::lltLegalRating_Special, vPoi, minBAT, true, false, &minLegalSpecialLL, &dummy, &minLegalSpecialLLtruck, &dummyTruck);
+            pForces2->GetLiveLoadDeflection(lastIntervalIdx, pgsTypes::lltLegalRating_Special, vPoi, maxBAT, true, false, &dummy, &maxLegalSpecialLL, &dummyTruck, &maxLegalSpecialLLtruck);
+            pForces2->GetLiveLoadDeflection(lastIntervalIdx, pgsTypes::lltLegalRating_Special, vPoi, minBAT, true, false, &minLegalSpecialLL, &dummy, &minLegalSpecialLLtruck, &dummyTruck);
          }
 
          if (pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Emergency))
          {
-            pForces2->GetLiveLoadDeflection(loadRatingIntervalIdx, pgsTypes::lltLegalRating_Emergency, vPoi, maxBAT, true, false, &dummy, &maxLegalEmergencyLL, &dummyTruck, &maxLegalEmergencyLLtruck);
-            pForces2->GetLiveLoadDeflection(loadRatingIntervalIdx, pgsTypes::lltLegalRating_Emergency, vPoi, minBAT, true, false, &minLegalEmergencyLL, &dummy, &minLegalEmergencyLLtruck, &dummyTruck);
+            pForces2->GetLiveLoadDeflection(lastIntervalIdx, pgsTypes::lltLegalRating_Emergency, vPoi, maxBAT, true, false, &dummy, &maxLegalEmergencyLL, &dummyTruck, &maxLegalEmergencyLLtruck);
+            pForces2->GetLiveLoadDeflection(lastIntervalIdx, pgsTypes::lltLegalRating_Emergency, vPoi, minBAT, true, false, &minLegalEmergencyLL, &dummy, &minLegalEmergencyLLtruck, &dummyTruck);
          }
 
          if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine) )
          {
-            pForces2->GetLiveLoadDeflection( loadRatingIntervalIdx, pgsTypes::lltPermitRating_Routine, vPoi, maxBAT, true, false, &dummy, &maxPermitRoutineLL, &dummyTruck, &maxPermitRoutineLLtruck );
-            pForces2->GetLiveLoadDeflection( loadRatingIntervalIdx, pgsTypes::lltPermitRating_Routine, vPoi, minBAT, true, false, &minPermitRoutineLL, &dummy, &minPermitRoutineLLtruck, &dummyTruck );
+            pForces2->GetLiveLoadDeflection(lastIntervalIdx, pgsTypes::lltPermitRating_Routine, vPoi, maxBAT, true, false, &dummy, &maxPermitRoutineLL, &dummyTruck, &maxPermitRoutineLLtruck );
+            pForces2->GetLiveLoadDeflection(lastIntervalIdx, pgsTypes::lltPermitRating_Routine, vPoi, minBAT, true, false, &minPermitRoutineLL, &dummy, &minPermitRoutineLLtruck, &dummyTruck );
          }
 
          if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Special) )
          {
-            pForces2->GetLiveLoadDeflection( loadRatingIntervalIdx, pgsTypes::lltPermitRating_Special, vPoi, maxBAT, true, false, &dummy, &maxPermitSpecialLL, &dummyTruck, &maxPermitSpecialLLtruck );
-            pForces2->GetLiveLoadDeflection( loadRatingIntervalIdx, pgsTypes::lltPermitRating_Special, vPoi, minBAT, true, false, &minPermitSpecialLL, &dummy, &minPermitSpecialLLtruck, &dummyTruck );
+            pForces2->GetLiveLoadDeflection(lastIntervalIdx, pgsTypes::lltPermitRating_Special, vPoi, maxBAT, true, false, &dummy, &maxPermitSpecialLL, &dummyTruck, &maxPermitSpecialLLtruck );
+            pForces2->GetLiveLoadDeflection(lastIntervalIdx, pgsTypes::lltPermitRating_Special, vPoi, minBAT, true, false, &minPermitSpecialLL, &dummy, &minPermitSpecialLLtruck, &dummyTruck );
          }
       }
 
 
       // write out the results
-      std::vector<pgsPointOfInterest>::const_iterator i(vPoi.begin());
-      std::vector<pgsPointOfInterest>::const_iterator end(vPoi.end());
       CollectionIndexType index = 0;
-      for ( ; i != end; i++, index++ )
+      for (const pgsPointOfInterest& poi : vPoi)
       {
-         const pgsPointOfInterest& poi = *i;
-
          ColumnIndexType col = 0;
 
          (*p_table)(row,col++) << location.SetValue( poiRefAttribute, poi );
@@ -312,16 +316,29 @@ rptRcTable* CProductDeflectionsTable::Build(IBroker* pBroker,const CGirderKey& g
 
          (*p_table)(row,col++) << deflection.SetValue( diaphragm[index] );
 
-         if ( bShearKey )
+         if (bShearKey)
          {
-            if ( analysisType == pgsTypes::Envelope && bContinuousBeforeDeckCasting )
+            if (analysisType == pgsTypes::Envelope && bContinuousBeforeDeckCasting)
             {
-               (*p_table)(row,col++) << deflection.SetValue( maxShearKey[index] );
-               (*p_table)(row,col++) << deflection.SetValue( minShearKey[index] );
+               (*p_table)(row, col++) << deflection.SetValue(maxShearKey[index]);
+               (*p_table)(row, col++) << deflection.SetValue(minShearKey[index]);
             }
             else
             {
-               (*p_table)(row,col++) << deflection.SetValue( maxShearKey[index] );
+               (*p_table)(row, col++) << deflection.SetValue(maxShearKey[index]);
+            }
+         }
+
+         if (bLongitudinalJoint)
+         {
+            if (analysisType == pgsTypes::Envelope && bContinuousBeforeDeckCasting)
+            {
+               (*p_table)(row, col++) << deflection.SetValue(maxLongitudinalJoint[index]);
+               (*p_table)(row, col++) << deflection.SetValue(minLongitudinalJoint[index]);
+            }
+            else
+            {
+               (*p_table)(row, col++) << deflection.SetValue(maxLongitudinalJoint[index]);
             }
          }
 
@@ -338,19 +355,22 @@ rptRcTable* CProductDeflectionsTable::Build(IBroker* pBroker,const CGirderKey& g
             }
          }
 
-         if ( analysisType == pgsTypes::Envelope && bContinuousBeforeDeckCasting )
+         if (bDeck)
          {
-            (*p_table)(row,col++) << deflection.SetValue( maxSlab[index] );
-            (*p_table)(row,col++) << deflection.SetValue( minSlab[index] );
-            
-            (*p_table)(row,col++) << deflection.SetValue( maxSlabPad[index] );
-            (*p_table)(row,col++) << deflection.SetValue( minSlabPad[index] );
-         }
-         else
-         {
-            (*p_table)(row,col++) << deflection.SetValue( maxSlab[index] );
-            
-            (*p_table)(row,col++) << deflection.SetValue( maxSlabPad[index] );
+            if (analysisType == pgsTypes::Envelope && bContinuousBeforeDeckCasting)
+            {
+               (*p_table)(row, col++) << deflection.SetValue(maxSlab[index]);
+               (*p_table)(row, col++) << deflection.SetValue(minSlab[index]);
+
+               (*p_table)(row, col++) << deflection.SetValue(maxSlabPad[index]);
+               (*p_table)(row, col++) << deflection.SetValue(minSlabPad[index]);
+            }
+            else
+            {
+               (*p_table)(row, col++) << deflection.SetValue(maxSlab[index]);
+
+               (*p_table)(row, col++) << deflection.SetValue(maxSlabPad[index]);
+            }
          }
 
          if ( bDeckPanels )
@@ -592,6 +612,7 @@ rptRcTable* CProductDeflectionsTable::Build(IBroker* pBroker,const CGirderKey& g
          }
 
          row++;
+         index++;
       }
    }
 
@@ -623,7 +644,8 @@ rptRcTable* CProductDeflectionsTable::BuildLiveLoadTable(IBroker* pBroker,const 
 
    // Get the interface pointers we need
    GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
-   std::vector<pgsPointOfInterest> vPoi( pIPoi->GetPointsOfInterest( CSegmentKey(girderKey,ALL_SEGMENTS),POI_ERECTED_SEGMENT ) );
+   PoiList vPoi;
+   pIPoi->GetPointsOfInterest(CSegmentKey(girderKey, ALL_SEGMENTS), POI_ERECTED_SEGMENT, &vPoi);
 
    GET_IFACE2(pBroker,IProductForces,pForces);
 
@@ -633,12 +655,8 @@ rptRcTable* CProductDeflectionsTable::BuildLiveLoadTable(IBroker* pBroker,const 
    // Fill up the table
    RowIndexType row = p_table->GetNumberOfHeaderRows();
 
-   std::vector<pgsPointOfInterest>::const_iterator i(vPoi.begin());
-   std::vector<pgsPointOfInterest>::const_iterator end(vPoi.end());
-   for ( ; i != end; i++ )
+   for (const pgsPointOfInterest& poi : vPoi)
    {
-      const pgsPointOfInterest& poi = *i;
-
       (*p_table)(row,0) << location.SetValue( POI_ERECTED_SEGMENT, poi );
 
       Float64 min, max;

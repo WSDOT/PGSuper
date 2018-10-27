@@ -27,6 +27,7 @@
 #include <psgLib\psgLib.h>
 #include "LiveLoadDlg.h"
 #include <MfcTools\CustomDDX.h>
+#include <MfcTools\Format.h>
 #include <psgLib\LiveLoadLibraryEntry.h>
 
 #include <EAF\EAFApp.h>
@@ -257,4 +258,33 @@ void CLiveLoadDlg::UpdateConfig()
    padd->EnableWindow(do_live?TRUE:FALSE);
 
    this->m_Grid.Enable(do_live?TRUE:FALSE);
+}
+
+void CLiveLoadDlg::UpdateTruckDimensions()
+{
+   Float64 W, Lmin, Lmax;
+   bool bSuccessful = m_Grid.GetTruckDimensions(&W, &Lmin, &Lmax);
+
+   CWnd* pWnd = GetDlgItem(IDC_TRUCK_DIMENSIONS);
+   CString strText;
+   if (bSuccessful)
+   {
+      CEAFApp* pApp = EAFGetApp();
+      const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
+
+      if (IsEqual(Lmin,Lmax))
+      {
+         strText.Format(_T("Weight: %s\n\rLength: %s"), FormatDimension(W,pDisplayUnits->GeneralForce), FormatDimension(Lmin,pDisplayUnits->SpanLength));
+      }
+      else
+      {
+         strText.Format(_T("Weight: %s\n\rLength: %s - %s"), FormatDimension(W,pDisplayUnits->GeneralForce), FormatDimension(Lmin,pDisplayUnits->SpanLength), FormatDimension(Lmax,pDisplayUnits->SpanLength));
+      }
+   }
+   else
+   {
+      strText = _T("Truck definition incomplete");
+   }
+
+   pWnd->SetWindowText(strText);
 }

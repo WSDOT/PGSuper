@@ -1,6 +1,6 @@
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 48.00    6   9.00                     1     1     BT72          48  1/2  270  31.69  17.19   8.50   8.50                                              12  70.0 12.0  5.800  6.500   2.924    -3.916     8978   0.733  0.733   2.436 -1.343 -0.186 -0.093 -1.621 157.79  430.25    4.00   10.00   10.00 
+ 48.00    6   9.00                     1     1     BT72          48  1/2  270  31.69  17.19   8.50   8.50                                              12  70.0 12.0  5.800  6.500   2.924    -3.916     8978   0.733  0.733   4.698 -1.343 -0.186 -0.093 -1.621 157.79  430.25    4.00   10.00   10.00 
 
 
 The Specification Check was Not Successful
@@ -15,11 +15,11 @@ Minimum fillet value exceeded for bridge check failed
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 48.00    6   9.00                     1     2     BT72          48  1/2  270  29.69  17.19   8.50   8.50                                              12  70.0 20.0  5.800  6.500   3.039    -4.105     9307   0.731  0.884   2.282 -1.612 -0.177 -0.088 -1.877 150.68  404.99    4.00   10.00   10.00 
+ 48.00    6   9.00                     1     2     BT72          48  1/2  270  29.69  17.19   8.50   8.50                                              12  70.0 20.0  5.800  6.500   3.039    -4.105     9307   0.731  0.884   4.401 -1.612 -0.177 -0.088 -1.877 150.68  404.99    4.00   10.00   10.00 
 
 
 The Specification Check was Not Successful
-Tensile stress check failed for Service III Limit State in Interval 15 Open to Traffic (Bridge Site 3)
+Tensile stress check failed for Service III Limit State in Interval 15 Open to Traffic
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
 Slab Offset ("A" Dimension) check failed
@@ -28,7 +28,7 @@ Minimum fillet value exceeded for bridge check failed
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 48.00    6   9.00                     1     4     BT72          48  1/2  270  31.69  17.19   8.50   8.50                                              12  70.0 12.0  5.800  6.500   3.039    -4.105     9307   0.731  0.884   2.436 -1.612 -0.177 -0.088 -1.877 157.79  421.13    4.00   10.00   10.00 
+ 48.00    6   9.00                     1     4     BT72          48  1/2  270  31.69  17.19   8.50   8.50                                              12  70.0 12.0  5.800  6.500   3.039    -4.105     9307   0.731  0.884   4.698 -1.612 -0.177 -0.088 -1.877 157.79  421.13    4.00   10.00   10.00 
 
 
 The Specification Check was Not Successful

@@ -78,7 +78,7 @@ CShrinkageAtFinalTable* CShrinkageAtFinalTable::PrepareTable(rptChapter* pChapte
 
    rptParagraph* pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pParagraph;
-   *pParagraph << _T("[5.9.5.4.3a] Shrinkage of Girder Concrete : ") << symbol(DELTA) << RPT_STRESS(_T("pSD")) << rptNewLine;
+   *pParagraph << _T("[") << LrfdCw8th(_T("5.9.5.4.3a"),_T("5.9.3.4.3a")) << _T("] Shrinkage of Girder Concrete : ") << symbol(DELTA) << RPT_STRESS(_T("pSD")) << rptNewLine;
 
    pParagraph = new rptParagraph;
    *pChapter << pParagraph;

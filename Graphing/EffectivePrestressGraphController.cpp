@@ -47,10 +47,10 @@ m_DuctIdx(INVALID_INDEX)
 }
 
 BEGIN_MESSAGE_MAP(CEffectivePrestressGraphController, CMultiIntervalGirderGraphControllerBase)
-	//{{AFX_MSG_MAP(CEffectivePrestressGraphController)
-   ON_CBN_SELCHANGE( IDC_DUCT, OnDuctChanged )
-   ON_CONTROL_RANGE( BN_CLICKED, IDC_PERMANENT, IDC_TEMPORARY, OnRadioButton)
-   ON_CONTROL_RANGE( BN_CLICKED, IDC_STRESS, IDC_FORCE, OnRadioButton)
+   //{{AFX_MSG_MAP(CEffectivePrestressGraphController)
+   ON_CBN_SELCHANGE(IDC_DUCT, OnDuctChanged)
+   ON_CONTROL_RANGE(BN_CLICKED, IDC_PERMANENT, IDC_TEMPORARY, OnRadioButton)
+   ON_CONTROL_RANGE(BN_CLICKED, IDC_STRESS, IDC_FORCE, OnRadioButton)
    //}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -75,7 +75,52 @@ void CEffectivePrestressGraphController::OnUpdate(CView* pSender, LPARAM lHint, 
    }
 }
 
-DuctIndexType CEffectivePrestressGraphController::GetDuct()
+void CEffectivePrestressGraphController::SetViewMode(CEffectivePrestressGraphController::ViewMode mode)
+{
+   UINT nIDC = (mode == Stress ? IDC_STRESS : IDC_FORCE);
+   CheckRadioButton(IDC_STRESS, IDC_FORCE, nIDC);
+   UpdateGraph();
+}
+
+CEffectivePrestressGraphController::ViewMode CEffectivePrestressGraphController::GetViewMode() const
+{
+   int nIDC = GetCheckedRadioButton(IDC_STRESS, IDC_FORCE);
+   ATLASSERT(nIDC != 0); // 0 means nothing is selected
+   return (nIDC == IDC_STRESS ? Stress : Force);
+}
+
+void CEffectivePrestressGraphController::SetStrandType(CEffectivePrestressGraphController::StrandType strandType)
+{
+   UINT nIDC = (strandType == Permanent ? IDC_PERMANENT : IDC_TEMPORARY);
+   CheckRadioButton(IDC_PERMANENT, IDC_TEMPORARY, nIDC);
+   UpdateGraph();
+}
+
+CEffectivePrestressGraphController::StrandType CEffectivePrestressGraphController::GetStrandType() const
+{
+   int nIDC = GetCheckedRadioButton(IDC_PERMANENT, IDC_TEMPORARY);
+   ATLASSERT(nIDC != 0); // 0 means nothing is selected
+   return (nIDC == IDC_PERMANENT ? Permanent : Temporary);
+}
+
+void CEffectivePrestressGraphController::SetDuct(DuctIndexType ductIdx)
+{
+   if (m_DuctIdx != ductIdx)
+   {
+      m_DuctIdx = ductIdx;
+      FillIntervalCtrl();
+
+      // only show Permanent/Temporary radio buttons if
+      // pre-tensioning is selected (m_DuctIdx == INVALID_INDEX meams show prestress strands)
+      int swShow = (m_DuctIdx == INVALID_INDEX ? SW_SHOW : SW_HIDE);
+      GetDlgItem(IDC_PERMANENT)->ShowWindow(swShow);
+      GetDlgItem(IDC_TEMPORARY)->ShowWindow(swShow);
+
+      UpdateGraph();
+   }
+}
+
+DuctIndexType CEffectivePrestressGraphController::GetDuct() const
 {
    return m_DuctIdx;
 }
@@ -88,7 +133,9 @@ bool CEffectivePrestressGraphController::IsStressGraph()
    }
    else
    {
-      return GetCheckedRadioButton(IDC_STRESS,IDC_FORCE) == IDC_STRESS ? true : false;
+      int nIDC = GetCheckedRadioButton(IDC_STRESS, IDC_FORCE);
+      ATLASSERT(nIDC != 0); // 0 means nothing is selected
+      return (nIDC == IDC_STRESS ? true : false);
    }
 }
 
@@ -100,7 +147,9 @@ bool CEffectivePrestressGraphController::IsPermanentStrands()
    }
    else
    {
-      return GetCheckedRadioButton(IDC_PERMANENT,IDC_TEMPORARY) == IDC_PERMANENT ? true : false;
+      int nIDC = GetCheckedRadioButton(IDC_PERMANENT, IDC_TEMPORARY);
+      ATLASSERT(nIDC != 0); // 0 means nothing is selected
+      return (nIDC == IDC_PERMANENT ? true : false);
    }
 }
 
@@ -124,19 +173,7 @@ void CEffectivePrestressGraphController::OnDuctChanged()
    CComboBox* pcbDuct = (CComboBox*)GetDlgItem(IDC_DUCT);
    int curSel = pcbDuct->GetCurSel();
    DuctIndexType ductIdx = (DuctIndexType)pcbDuct->GetItemData(curSel);
-   if ( m_DuctIdx != ductIdx )
-   {
-      m_DuctIdx = ductIdx;
-      FillIntervalCtrl();
-
-      // only show Permanent/Temporary radio buttons if
-      // pre-tensioning is selected
-      int swShow = (m_DuctIdx == INVALID_INDEX ? SW_SHOW : SW_HIDE);
-      GetDlgItem(IDC_PERMANENT)->ShowWindow(swShow);
-      GetDlgItem(IDC_TEMPORARY)->ShowWindow(swShow);
-
-      UpdateGraph();
-   }
+   SetDuct(ductIdx);
 }
 
 void CEffectivePrestressGraphController::FillDuctCtrl()

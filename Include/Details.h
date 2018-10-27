@@ -74,7 +74,7 @@ struct MOMENTCAPACITYDETAILS
 
    int Method;        // LRFD_METHOD or WSDOT_METHOD
                       // WSDOT_METHOD = variable phi factor
-                      // LRFD_METHOD = over reinforce capacity per C5.7.3.3.1
+                      // LRFD_METHOD = over reinforce capacity per C5.7.3.3.1 (removed from spec 2005)
 
    // WSDOT_METHOD
    Float64 dt;        // Depth from extreme compression fiber to cg of lowest piece of reinforcement
@@ -86,7 +86,7 @@ struct MOMENTCAPACITYDETAILS
    Float64 fpt_avg;   // Average stress in tendons at nominal resistance
 
    // LRFD_METHOD 
-   // For C5.7.3.3.1... Capacity of over reinforced section
+   // For C5.7.3.3.1... Capacity of over reinforced section  (removed from spec 2005)
    bool    bOverReinforced; // True if section is over reinforced
    bool    bRectSection;    // True if rectangular section behavior
    Float64 Beta1Slab;       // Beta1 for slab only... B1 and f'c of slab are used in these calcs
@@ -117,7 +117,7 @@ struct CRACKINGMOMENTDETAILS
    Float64 Sbc;  // Bottom section modulus of composite girder
    Float64 McrLimit; // Limiting cracking moment ... per 2nd Edition + 2003 interims (changed in 2005 interims)
 
-   Float64 g1,g2,g3; // gamma factors from LRFD 5.7.3.3.2 (LRFD 6th Edition, 2012)
+   Float64 g1,g2,g3; // gamma factors from LRFD 5.6.3.3 (pre2017: 5.7.3.3.2) (starting LRFD 6th Edition, 2012)
 };
 
 struct MINMOMENTCAPDETAILS
@@ -139,7 +139,7 @@ struct SHEARCAPACITYDETAILS
    };
 
    // [IN]
-   ShearCapacityMethod Method; // General or Simplfied per LRFD 5.8.3.4.3 (Vci/Vcw - added to LRFD in 2007)
+   ShearCapacityMethod Method; // General or Simplified per LRFD 5.8.3.4.3 (Vci/Vcw - added to LRFD in 2007) (removed from LRFD in 2017)
    Float64 Nu;
    Float64 Mu;
    Float64 RealMu; // Actual Mu computed from structural analysis. Same as Mu if MuLimitUsed is false
@@ -401,6 +401,10 @@ struct INCREMENTALRELAXATIONDETAILS
 #define TIMESTEP_SH  1
 #define TIMESTEP_RE  2
 
+// the number of product forces that we need to consider from the pgsTypes::ProductForceType enum.
+// all of the product forces count except for the special cases at the end of the enum.
+constexpr auto pftTimeStepSize = ((int)pgsTypes::pftProductForceTypeCount) - 1; // remove pgsTypes::pftOverlayRating from the count as it is a special case and don't apply here
+
 // This struct holds the computation details for a cross section of a concrete part
 // for a specific interval for a time step loss analysis
 // The concrete part could be a girder segment, closure joint, or deck
@@ -482,31 +486,31 @@ struct TIME_STEP_CONCRETE
    // TIME STEP ANALYSIS OUTPUT PARAMETERS
    //
 
-   Float64 dei[19];
+   Float64 dei[pftTimeStepSize];
    Float64 de;
 
-   Float64 ei[19];
+   Float64 ei[pftTimeStepSize];
    Float64 e;
 
-   Float64 dri[19];
+   Float64 dri[pftTimeStepSize];
    Float64 dr;
 
-   Float64 ri[19];
+   Float64 ri[pftTimeStepSize];
    Float64 r;
 
    // Force on this concrete part due to elastic effects during this interval
-   Float64 dPi[19]; // index is one of the pgsTypes::ProductForceType enum values
-   Float64 dMi[19];
+   Float64 dPi[pftTimeStepSize]; // index is one of the pgsTypes::ProductForceType enum values
+   Float64 dMi[pftTimeStepSize];
    Float64 dP, dM; // summation of dPi and dMi
 
    // Force on this concrete part at the end of this interval
-   Float64 Pi[19]; // = (P in previous interval) + dP;
-   Float64 Mi[19]; // = (M in previous interval) + dM;
+   Float64 Pi[pftTimeStepSize]; // = (P in previous interval) + dP;
+   Float64 Mi[pftTimeStepSize]; // = (M in previous interval) + dM;
    Float64 P, M; // summation of Pi and Mi
 
    // Stress at the end of this interval = stress at end of previous interval + dP/An + dM*y/In 
    // where y is the depth from the top of the concrete part
-   Float64 f[2][19][2]; // first index is one of the pgsTypes::FaceType enums, second index is one of the pgsTypes::ProductForceType enum values
+   Float64 f[2][pftTimeStepSize][2]; // first index is one of the pgsTypes::FaceType enums, second index is one of the pgsTypes::ProductForceType enum values
                         // third index is one of the ResultsType enum values
 
    // Stress in this due to live load
@@ -597,20 +601,20 @@ struct TIME_STEP_STRAND
    //
    // TIME STEP ANALYSIS OUTPUT PARAMETERS
    //
-   Float64 dei[19]; // change in strain in strand due to deformations in this interval
+   Float64 dei[pftTimeStepSize]; // change in strain in strand due to deformations in this interval
    Float64 de; // summation of dei
 
-   Float64 dPi[19]; // change in force in strand due to deformations in this interval
+   Float64 dPi[pftTimeStepSize]; // change in force in strand due to deformations in this interval
    Float64 dP; // summation of dPi
 
-   Float64 ei[19]; // strain in strand at end of this interval = (e previous interval + de)
+   Float64 ei[pftTimeStepSize]; // strain in strand at end of this interval = (e previous interval + de)
    Float64 e; // summation of ei
    
-   Float64 Pi[19]; // force in strand at end of this interval = (P previous interval + dP)
+   Float64 Pi[pftTimeStepSize]; // force in strand at end of this interval = (P previous interval + dP)
    Float64 P; // summation of Pi
 
    // Loss/Gain during this interval (change in effective prestress this interval)
-   Float64 dfpei[19]; // = dP/Aps
+   Float64 dfpei[pftTimeStepSize]; // = dP/Aps
    Float64 dfpe; // summation of dfpei
 
    // Effective prestress
@@ -693,16 +697,16 @@ struct TIME_STEP_REBAR
    //
    // TIME STEP ANALYSIS OUTPUT PARAMETERS
    //
-   Float64 dei[19]; // change in strain in bar due to deformations in this interval
+   Float64 dei[pftTimeStepSize]; // change in strain in bar due to deformations in this interval
    Float64 de; // summation of dei
 
-   Float64 dPi[19]; // change in force in bar during this interval
+   Float64 dPi[pftTimeStepSize]; // change in force in bar during this interval
    Float64 dP; // summation of dPi
 
-   Float64 ei[19]; // strain in bar at end of this interval = (e previous interval + de)
+   Float64 ei[pftTimeStepSize]; // strain in bar at end of this interval = (e previous interval + de)
    Float64 e; // summation of ei
 
-   Float64 Pi[19]; // force in rebar at end of this interval = (P previous interval + dP)
+   Float64 Pi[pftTimeStepSize]; // force in rebar at end of this interval = (P previous interval + dP)
    Float64 P; // summation of Pi
 
    TIME_STEP_REBAR()
@@ -750,7 +754,7 @@ struct TIME_STEP_DETAILS
    // Change in total loading on the section due to externally applied loads during this interval
    // Array index is one of the pgsTypes::ProductForceType enum values
    // upto and including pgsTypes::pftRelaxation
-   Float64 dPi[19], dMi[19];
+   Float64 dPi[pftTimeStepSize], dMi[pftTimeStepSize];
 
    // total change in loading on the section (summation of dPi and dMi)
    Float64 dP, dM;
@@ -758,7 +762,7 @@ struct TIME_STEP_DETAILS
    // Total loading on the section due to externally applied loads in all intervals upto
    // and including this interval. Array index is one of the pgsTypes::ProductForceType enum values
    // upto and including pgsTypes::pftRelaxation
-   Float64 Pi[19], Mi[19];
+   Float64 Pi[pftTimeStepSize], Mi[pftTimeStepSize];
 
    // total change in loading on the section (summation of Pi and Mi)
    Float64 P, M;
@@ -792,12 +796,12 @@ struct TIME_STEP_DETAILS
    Float64 r[3];
 
    // Deformation due to externally applied loads and restraining forces in this interval
-   Float64 der[19]; // axial strain
-   Float64 drr[19]; // curvature
+   Float64 der[pftTimeStepSize]; // axial strain
+   Float64 drr[pftTimeStepSize]; // curvature
 
    // Total deformation due to externally applied loads and restraining forces
-   Float64 er[19]; // axial strain
-   Float64 rr[19]; // curvature
+   Float64 er[pftTimeStepSize]; // axial strain
+   Float64 rr[pftTimeStepSize]; // curvature
 
    // Check equilibrium
    Float64 dPext, dPint; // change in external and internal axial force during this interval (dPext == dPint)
@@ -970,7 +974,7 @@ struct XFERLENGTHDETAILS
 struct STRANDDEVLENGTHDETAILS
 {
     // details of bonded and debonded strand development and transfer
-    // length calculations... see LRFD 5.11.4.1  and 5.11.4.2
+    // length calculations... see LRFD 5.9.4.3.1 and 5.9.4.3.2 (pre2017: 5.11.4.1  and 5.11.4.2)
     Float64 db; // strand diameter
     Float64 fpe;
     Float64 fps;

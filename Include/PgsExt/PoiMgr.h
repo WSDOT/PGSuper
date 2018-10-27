@@ -23,6 +23,7 @@
 #pragma once
 
 #include <PgsExt\PgsExtExp.h>
+#include <PgsExt\PointOfInterest.h>
 #include <PgsExt\ReportPointOfInterest.h>
 #include <set>
 
@@ -81,37 +82,43 @@ public:
    // Removes all points of interest.
    void RemoveAll();
 
-   //------------------------------------------------------------------------
-   // Returns the point of interest at the specified location. If not found,
-   // returns a default poi
-   pgsPointOfInterest GetPointOfInterest(const CSegmentKey& segmentKey,Float64 Xs);
+   pgsPointOfInterest GetPointOfInterest(const CSegmentKey& segmentKey, Float64 Xs) const;
 
    //------------------------------------------------------------------------
    // Returns the point of interest nearest to the specified location. A default POI is
    // returned if a poi could not be found
-   pgsPointOfInterest GetNearestPointOfInterest(const CSegmentKey& segmentKey,Float64 Xs);
+   const pgsPointOfInterest& GetNearestPointOfInterest(const CSegmentKey& segmentKey,Float64 Xs) const;
 
-   pgsPointOfInterest GetPrevPointOfInterest(PoiIDType poiID,PoiAttributeType attrib = 0,Uint32 mode = POIMGR_OR) const;
-   pgsPointOfInterest GetNextPointOfInterest(PoiIDType poiID,PoiAttributeType attrib = 0,Uint32 mode = POIMGR_OR) const;
+   const pgsPointOfInterest& GetPrevPointOfInterest(PoiIDType poiID,PoiAttributeType attrib = 0,Uint32 mode = POIMGR_OR) const;
+   const pgsPointOfInterest& GetNextPointOfInterest(PoiIDType poiID,PoiAttributeType attrib = 0,Uint32 mode = POIMGR_OR) const;
 
    //------------------------------------------------------------------------
    // Returns the point of interest at the specified location or a default if not found. 
-   pgsPointOfInterest GetPointOfInterest(PoiIDType id) const;
+   const pgsPointOfInterest& GetPointOfInterest(PoiIDType id) const;
 
    //------------------------------------------------------------------------
    // Returns a vector of pointers to Points of Interest that have the
    // specified attributes.
-   void GetPointsOfInterest(const CSegmentKey& segmentKey,PoiAttributeType attrib,Uint32 mode,std::vector<pgsPointOfInterest>* pPois) const;
+   void GetPointsOfInterest(const CSegmentKey& segmentKey,PoiAttributeType attrib,Uint32 mode, PoiList* pPois) const;
 
    //------------------------------------------------------------------------
    // Gets all the POIs on the specified segment. ALL_GROUPS, ALL_GIRDERS, ALL_SEGMENTS can be used
-   std::vector<pgsPointOfInterest> GetPointsOfInterest(const CSegmentKey& segmentKey) const;
+   void GetPointsOfInterest(const CSegmentKey& segmentKey,PoiList* pPoiList) const;
 
    //------------------------------------------------------------------------
-   void GetTenthPointPOIs(PoiAttributeType reference,const CSegmentKey& segmentKey,std::vector<pgsPointOfInterest>* pPois) const;
+   // Merges two Poi lists into a single list, sorting and removing duplicate entries
+   void MergePoiLists(const PoiList& list1, const PoiList& list2,PoiList* pPoiList) const;
 
+   //------------------------------------------------------------------------
+   // Sorts a Poi list, removing any duplicate entries
+   void SortPoiList(PoiList* pPoiList) const;
+
+   //------------------------------------------------------------------------
+   void GetTenthPointPOIs(PoiAttributeType reference,const CSegmentKey& segmentKey, PoiList* pPois) const;
+
+   //------------------------------------------------------------------------
    // Gets all the points of interest on the specified section with distance from start between xMin and xMax
-   void GetPointsOfInterestInRange(const CSegmentKey& segmentKey,Float64 xMin,Float64 xMax,std::vector<pgsPointOfInterest>* pPois) const;
+   void GetPointsOfInterestInRange(const CSegmentKey& segmentKey,Float64 xMin,Float64 xMax, PoiList* pPois) const;
 
 
    //------------------------------------------------------------------------
@@ -141,21 +148,29 @@ private:
    // make these private so we can't have copy or assignment
    // may want it in the future, but for now, we don't want to bother
    // copying the internal data structure
-   pgsPoiMgr(const pgsPoiMgr& rOther);
-   pgsPoiMgr& operator = (const pgsPoiMgr& rOther);
+   pgsPoiMgr(const pgsPoiMgr& rOther) = delete;
+   pgsPoiMgr& operator=(const pgsPoiMgr& rOther) = delete;
 
    static PoiIDType ms_NextID;
    Float64 m_Tolerance;
 
-   std::map<CSegmentKey,std::vector<pgsPointOfInterest>*> m_PoiData;
-   std::vector<std::vector<pgsPointOfInterest>*> GetPoiContainer(const CSegmentKey& segmentKey);
-   std::vector<const std::vector<pgsPointOfInterest>*> GetPoiContainer(const CSegmentKey& segmentKey) const;
+   pgsPointOfInterest m_DefaultPoi;
 
+   // Since PoiList (see PointOfInterest.h) is a container of references to pgsPointOfInterest objects
+   // we must store pointers to POIs... Consider this... if a function is holding a PoiList and
+   // another thread causes a new POI to be added to the POI manager and the PoiContainer must be
+   // resized, the POIs in the container get copied... The function holding the PoiList now holds
+   // references to POIs that no longer exist. If we instead hold pointers, only the pointers
+   // move when a container resizes but the actual POI remains
+   typedef std::vector<std::unique_ptr<pgsPointOfInterest>> PoiContainer; // because of unique_ptr, containers of this type are not copy-able
+   mutable std::map<CSegmentKey,PoiContainer> m_PoiData;
+   const PoiContainer& GetPoiContainer(const CSegmentKey& segmentKey) const;
+   PoiContainer& GetPoiContainer(const CSegmentKey& segmentKey);
 
-   void AndFind(const CSegmentKey& segmentKey,PoiAttributeType attrib,std::vector<pgsPointOfInterest>* pPois) const;
+   void AndFind(const CSegmentKey& segmentKey,PoiAttributeType attrib,PoiList* pPois) const;
    bool AndFind(const pgsPointOfInterest& poi,const CSegmentKey& segmentKey,PoiAttributeType attrib) const;
    bool AndAttributeEvaluation(const pgsPointOfInterest& poi,PoiAttributeType attrib) const;
-   void OrFind(const CSegmentKey& segmentKey,PoiAttributeType attrib,std::vector<pgsPointOfInterest>* pPois) const;
+   void OrFind(const CSegmentKey& segmentKey,PoiAttributeType attrib,PoiList* pPois) const;
    bool OrFind(const pgsPointOfInterest& poi,const CSegmentKey& segmentKey,PoiAttributeType attrib) const;
    bool OrAttributeEvaluation(const pgsPointOfInterest& poi,PoiAttributeType attrib) const;
 };

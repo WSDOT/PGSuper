@@ -24,9 +24,7 @@
 
 #pragma once
 #include "resource.h"       // main symbols
-
-#include "WSDOTAgent_i.h"
-
+#include "CLSID.h"
 #include <EAF\EAFInterfaceCache.h>
 
 
@@ -79,6 +77,7 @@ public:
 
 private:
    DECLARE_EAF_AGENT_DATA;
+   DECLARE_LOGFILE;
 };
 
 OBJECT_ENTRY_AUTO(__uuidof(WSDOTAgent), CWSDOTAgentImp)

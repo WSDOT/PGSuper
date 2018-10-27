@@ -172,6 +172,15 @@ int CTimelineManager::AddTimelineEvent(CTimelineEvent* pTimelineEvent,bool bAdju
    // Move activities if necessary
    if ( pTimelineEvent->GetApplyLoadActivity().IsEnabled() )
    {
+      if (pTimelineEvent->GetApplyLoadActivity().IsIntermediateDiaphragmLoadApplied())
+      {
+         CTimelineEvent* pOtherTimelineEvent = GetEventByIndex(GetIntermediateDiaphragmsLoadEventIndex());
+         if (pOtherTimelineEvent)
+         {
+            pOtherTimelineEvent->GetApplyLoadActivity().ApplyIntermediateDiaphragmLoad(false);
+         }
+      }
+
       if ( pTimelineEvent->GetApplyLoadActivity().IsLiveLoadApplied() )
       {
          CTimelineEvent* pOtherTimelineEvent = GetEventByIndex(GetLiveLoadEventIndex());
@@ -252,6 +261,15 @@ int CTimelineManager::AddTimelineEvent(CTimelineEvent* pTimelineEvent,bool bAdju
       if ( pOtherTimelineEvent )
       {
          pOtherTimelineEvent->GetCastDeckActivity().Enable(false);
+      }
+   }
+
+   if (pTimelineEvent->GetCastLongitudinalJointActivity().IsEnabled())
+   {
+      CTimelineEvent* pOtherTimelineEvent = GetEventByIndex(GetCastLongitudinalJointEventIndex());
+      if (pOtherTimelineEvent)
+      {
+         pOtherTimelineEvent->GetCastLongitudinalJointActivity().Enable(false);
       }
    }
 
@@ -375,8 +393,8 @@ int CTimelineManager::AddTimelineEvent(CTimelineEvent* pTimelineEvent,bool bAdju
 
 int CTimelineManager::AddTimelineEvent(const CTimelineEvent& timelineEvent,bool bAdjustTimeline,EventIndexType* pEventIdx)
 {
-   CTimelineEvent* pTimelineEvent = new CTimelineEvent(timelineEvent);
-   return AddTimelineEvent(pTimelineEvent,bAdjustTimeline,pEventIdx);
+   std::unique_ptr<CTimelineEvent> pTimelineEvent(std::make_unique<CTimelineEvent>(timelineEvent));
+   return AddTimelineEvent(pTimelineEvent.release(),bAdjustTimeline,pEventIdx);
 }
 
 void CTimelineManager::RemoveEventByIndex(EventIndexType eventIdx)
@@ -870,6 +888,11 @@ CTimelineEvent* CTimelineManager::GetEventByID(IDType id)
 bool CTimelineManager::IsDeckCast() const
 {
    return GetCastDeckEventIndex() != INVALID_INDEX;
+}
+
+bool CTimelineManager::IsLongitudinalJointCast() const
+{
+   return GetCastLongitudinalJointEventIndex() != INVALID_INDEX;
 }
 
 bool CTimelineManager::IsOverlayInstalled() const
@@ -1799,6 +1822,93 @@ int CTimelineManager::SetCastDeckEventByID(EventIDType ID,bool bAdjustTimeline)
    return TLM_EVENT_NOT_FOUND;
 }
 
+EventIndexType CTimelineManager::GetCastLongitudinalJointEventIndex() const
+{
+   PGS_ASSERT_VALID;
+
+   auto& iter(m_TimelineEvents.cbegin());
+   const auto& end(m_TimelineEvents.cend());
+   for (; iter != end; iter++)
+   {
+      const auto* pTimelineEvent = *iter;
+      if (pTimelineEvent->GetCastLongitudinalJointActivity().IsEnabled())
+      {
+         return std::distance(m_TimelineEvents.begin(),iter);
+      }
+   }
+   return INVALID_INDEX;
+}
+
+EventIDType CTimelineManager::GetCastLongitudinalJointEventID() const
+{
+   PGS_ASSERT_VALID;
+
+   for ( const auto* pTimelineEvent : m_TimelineEvents)
+   {
+      if (pTimelineEvent->GetCastLongitudinalJointActivity().IsEnabled())
+      {
+         return pTimelineEvent->GetID();
+      }
+   }
+   return INVALID_ID;
+}
+
+int CTimelineManager::SetCastLongitudinalJointEventByIndex(EventIndexType eventIdx, bool bAdjustTimeline)
+{
+   bool bUpdateAge = false;
+   Float64 age_at_continuity = 7.0;
+   CTimelineEvent* pOldCastLongitudinalJointEvent = nullptr;
+
+   // search for the event where the longitudinal joint is cast
+   for( auto* pTimelineEvent : m_TimelineEvents)
+   {
+      if (pTimelineEvent->GetCastLongitudinalJointActivity().IsEnabled())
+      {
+         bUpdateAge = true;
+         age_at_continuity = pTimelineEvent->GetCastLongitudinalJointActivity().GetConcreteAgeAtContinuity();
+         pTimelineEvent->GetCastLongitudinalJointActivity().Enable(false);
+         pOldCastLongitudinalJointEvent = pTimelineEvent; // hang onto the event in case the edit needs to be rolled back
+         break;
+      }
+   }
+
+   if (eventIdx != INVALID_INDEX)
+   {
+      CTimelineEvent longitudinal_joint_event = *m_TimelineEvents[eventIdx];
+      longitudinal_joint_event.GetCastLongitudinalJointActivity().Enable(true);
+
+      if (bUpdateAge)
+      {
+         longitudinal_joint_event.GetCastLongitudinalJointActivity().SetConcreteAgeAtContinuity(age_at_continuity);
+      }
+
+      int result = SetEventByIndex(eventIdx, longitudinal_joint_event, bAdjustTimeline);
+      if (result != TLM_SUCCESS)
+      {
+         // there was a problem... roll back the edit
+         pOldCastLongitudinalJointEvent->GetCastLongitudinalJointActivity().Enable(true);
+         return result;
+      }
+   }
+
+   return TLM_SUCCESS;
+}
+
+int CTimelineManager::SetCastLongitudinalJointEventByID(EventIDType eventID, bool bAdjustTimeline)
+{
+   auto& iter(m_TimelineEvents.cbegin());
+   const auto& end(m_TimelineEvents.cend());
+   for (; iter != end; iter++)
+   {
+      const auto* pTimelineEvent = *iter;
+      if (pTimelineEvent->GetID() == eventID)
+      {
+         return SetCastLongitudinalJointEventByIndex(std::distance(m_TimelineEvents.cbegin(),iter), bAdjustTimeline);
+      }
+   }
+
+   return TLM_EVENT_NOT_FOUND;
+}
 
 EventIndexType CTimelineManager::GetIntermediateDiaphragmsLoadEventIndex() const
 {
@@ -2448,21 +2558,21 @@ HRESULT CTimelineManager::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
 
       CComVariant var;
       var.vt = VT_INDEX;
-      pStrLoad->get_Property(_T("Count"),&var);
+      pStrLoad->get_Property(_T("Count"), &var);
       EventIndexType nEvents = VARIANT2INDEX(var);
-      for ( EventIndexType eventIdx = 0; eventIdx < nEvents; eventIdx++ )
+      for (EventIndexType eventIdx = 0; eventIdx < nEvents; eventIdx++)
       {
          CTimelineEvent* pTimelineEvent = new CTimelineEvent;
          pTimelineEvent->SetTimelineManager(this);
 
-         pTimelineEvent->Load(pStrLoad,pProgress);
-         if ( pTimelineEvent->GetID() == INVALID_ID )
+         pTimelineEvent->Load(pStrLoad, pProgress);
+         if (pTimelineEvent->GetID() == INVALID_ID)
          {
             pTimelineEvent->SetID(ms_ID++);
          }
          else
          {
-            ms_ID = Max(ms_ID,pTimelineEvent->GetID()+1);
+            ms_ID = Max(ms_ID, pTimelineEvent->GetID() + 1);
          }
 
          // because of bugs in early versions, we need to make sure that the same tendon
@@ -2481,7 +2591,7 @@ HRESULT CTimelineManager::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
                }
                else
                {
-                  stressTendonActivity.RemoveTendon(tendonKey.girderID, tendonKey.ductIdx,false);
+                  stressTendonActivity.RemoveTendon(tendonKey.girderID, tendonKey.ductIdx, false);
                }
             }
          }
@@ -2591,6 +2701,7 @@ void CTimelineManager::Sort()
    EventIndexType nLiveLoadEvents = 0;
    EventIndexType nRailingSystemEvents = 0;
    EventIndexType nOverlayEvents = 0;
+   EventIndexType nIntermediateDiaphragmEvents = 0;
 
    EventIndexType nEvents = m_TimelineEvents.size();
    ATLASSERT(0 < nEvents);
@@ -2654,6 +2765,17 @@ void CTimelineManager::Sort()
       else
       {
          pTimelineEvent->GetApplyLoadActivity().ApplyOverlayLoad(false);
+      }
+
+      // keep track of the number of intermediate diaphragm events... keep the first one
+      // and then remove any subsequent intermediate diaphragm events
+      if (nIntermediateDiaphragmEvents < 1 && pTimelineEvent->GetApplyLoadActivity().IsEnabled() && pTimelineEvent->GetApplyLoadActivity().IsIntermediateDiaphragmLoadApplied())
+      {
+         nIntermediateDiaphragmEvents++;
+      }
+      else
+      {
+         pTimelineEvent->GetApplyLoadActivity().ApplyIntermediateDiaphragmLoad(false);
       }
    }
 }

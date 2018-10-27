@@ -107,7 +107,7 @@ void CStrandGrid::CustomInit(const CPrecastSegmentData* pSegment)
    const int num_rows = 1;
    const int num_cols = 26;
 
-	SetRowCount(num_rows);
+   SetRowCount(num_rows);
 	SetColCount(num_cols);
 
 	GetParam( )->EnableUndo(FALSE);
@@ -205,23 +205,21 @@ void CStrandGrid::CustomInit(const CPrecastSegmentData* pSegment)
       .SetMergeCell(GX_MERGE_HORIZONTAL | GX_MERGE_COMPVALUE)
       );
 
-   SetStyleRange(CGXRange(1,col,1,col+1),CGXStyle()
+   SetStyleRange(CGXRange(1,col++,1,col++),CGXStyle()
       .SetHorizontalAlignment(DT_CENTER)
       .SetVerticalAlignment(DT_TOP)
       .SetEnabled(FALSE)
       .SetMergeCell(GX_MERGE_HORIZONTAL | GX_MERGE_COMPVALUE)
       .SetValue(_T("Dist"))
       );
-   col += 2;
 
-   SetStyleRange(CGXRange(1,col,1,col+1),CGXStyle()
+   SetStyleRange(CGXRange(1,col++,1,col++),CGXStyle()
       .SetHorizontalAlignment(DT_CENTER)
       .SetVerticalAlignment(DT_TOP)
       .SetEnabled(FALSE)
       .SetMergeCell(GX_MERGE_HORIZONTAL | GX_MERGE_COMPVALUE)
       .SetValue(_T("X"))
       );
-   col += 2;
 
    strLabel.Format(_T("Y (%s)"),pDisplayUnits->GetComponentDimUnit().UnitOfMeasure.UnitTag().c_str());
 	SetStyleRange(CGXRange(1,col++), CGXStyle()
@@ -246,23 +244,21 @@ void CStrandGrid::CustomInit(const CPrecastSegmentData* pSegment)
       .SetMergeCell(GX_MERGE_HORIZONTAL | GX_MERGE_COMPVALUE)
       );
 
-   SetStyleRange(CGXRange(1,col,1,col+1),CGXStyle()
+   SetStyleRange(CGXRange(1,col++,1,col++),CGXStyle()
       .SetHorizontalAlignment(DT_CENTER)
       .SetVerticalAlignment(DT_TOP)
       .SetEnabled(FALSE)
       .SetMergeCell(GX_MERGE_HORIZONTAL | GX_MERGE_COMPVALUE)
       .SetValue(_T("X"))
       );
-   col += 2;
 
-   SetStyleRange(CGXRange(1,col,1,col+1),CGXStyle()
+   SetStyleRange(CGXRange(1,col++,1,col++),CGXStyle()
       .SetHorizontalAlignment(DT_CENTER)
       .SetVerticalAlignment(DT_TOP)
       .SetEnabled(FALSE)
       .SetMergeCell(GX_MERGE_HORIZONTAL | GX_MERGE_COMPVALUE)
       .SetValue(_T("Dist"))
       );
-   col += 2;
 
    strLabel.Format(_T("Y (%s)"),pDisplayUnits->GetComponentDimUnit().UnitOfMeasure.UnitTag().c_str());
 	SetStyleRange(CGXRange(1,col++), CGXStyle()

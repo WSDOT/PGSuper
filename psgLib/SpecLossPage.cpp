@@ -229,11 +229,11 @@ BOOL CSpecLossPage::OnInitDialog()
 {
    // Fill up combo box for loss methods
    CComboBox* pBox = (CComboBox*)GetDlgItem(IDC_LOSS_METHOD);
-   pBox->AddString(_T("Refined Estimate per LRFD 5.9.5.4"));
+   pBox->AddString(CString(_T("Refined Estimate per LRFD ")) + CString(LrfdCw8th(_T("5.9.5.4"),_T("5.9.3.4"))));
    pBox->AddString(_T("Refined Estimate per WSDOT Bridge Design Manual"));
    pBox->AddString(_T("Refined Estimate per TxDOT Bridge Design Manual"));
    pBox->AddString(_T("Refined Estimate per TxDOT Research Report 0-6374-2"));
-   pBox->AddString(_T("Approximate Lump Sum per LRFD 5.9.5.3"));
+   pBox->AddString(CString(_T("Approximate Lump Sum per LRFD ")) + CString(LrfdCw8th(_T("5.9.5.3"),_T("5.9.3.3"))));
    pBox->AddString(_T("Approximate Lump Sum per WSDOT Bridge Design Manual"));
    pBox->AddString(_T("Time-Step Method"));
    pBox->SetCurSel(0);
@@ -244,13 +244,13 @@ BOOL CSpecLossPage::OnInitDialog()
    pBox->SetCurSel(0);
 
    pBox = (CComboBox*)GetDlgItem(IDC_RELAXATION_LOSS_METHOD);
-   pBox->AddString(_T("LRFD Equation 5.9.5.4.2c-1"));  // simplified
-   pBox->AddString(_T("LRFD Equation C5.9.5.4.2c-1")); // refined
-   pBox->AddString(_T("1.2 KSI (LRFD 5.9.5.4.2c)"));   // lump sum
+   pBox->AddString(CString(_T("LRFD Equation ")) + CString(LrfdCw8th(_T("5.9.5.4.2c-1"), _T("5.9.3.4.2c-1"))));  // simplified
+   pBox->AddString(CString(_T("LRFD Equation ")) + CString(LrfdCw8th(_T("C5.9.5.4.2c-1"),_T("C5.9.3.4.2c-1")))); // refined
+   pBox->AddString(CString(_T("1.2 KSI (LRFD ")) + CString(LrfdCw8th(_T("C5.9.5.4.2c"),  _T("C5.9.3.4.2c"))));   // lump sum
 
    pBox = (CComboBox*)GetDlgItem(IDC_FCPG_COMBO);
    pBox->AddString(_T("Assumption that strand stress at release is 0.7 fpu"));
-   pBox->AddString(_T("Iterative method described in LRFD C5.9.5.2.3a"));
+   pBox->AddString(_T("Iterative method described in LRFD ") + CString(LrfdCw8th(_T("C5.9.5.2.3a"),_T("C5.9.3.2.3a"))));
    pBox->AddString(_T("Assumption of 0.7 fpu unless special conditions"));
 
    pBox = (CComboBox*)GetDlgItem(IDC_TIME_DEPENDENT_MODEL);

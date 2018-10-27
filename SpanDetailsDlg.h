@@ -33,6 +33,7 @@
 #include "SpanLayoutPage.h"
 #include "GirderLayoutPage.h"
 #include "PierConnectionsPage.h"
+#include "PGSuperAppPlugin\SpanGdrDetailsBearingsPage.h"
 #include "EditSpan.h"
 #include <IFace\ExtendUI.h>
 
@@ -103,11 +104,13 @@ protected:
 
    friend CSpanLayoutPage;
    friend CSpanGirderLayoutPage;
+   friend CSpanGdrDetailsBearingsPage;
 
    CSpanLayoutPage m_SpanLayoutPage;
    CPierConnectionsPage m_StartPierPage;
    CPierConnectionsPage m_EndPierPage;
    CSpanGirderLayoutPage m_GirderLayoutPage;
+   CSpanGdrDetailsBearingsPage m_SpanGdrDetailsBearingsPage;
 
    txnMacroTxn m_Macro;
    std::vector<std::pair<IEditSpanCallback*,CPropertyPage*>> m_ExtensionPages;

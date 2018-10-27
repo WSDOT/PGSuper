@@ -166,7 +166,6 @@ public:
    void SetEndDistanceMeasurementType(EndDistanceMeasurementType mt);
    EndDistanceMeasurementType GetEndDistanceMeasurementType() const;
 
-   void SetSupportWidth(Float64 w);
    Float64 GetSupportWidth() const;
 
    //------------------------------------------------------------------------

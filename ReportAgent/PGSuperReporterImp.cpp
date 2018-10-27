@@ -22,7 +22,6 @@
 
 // PGSuperReporterImp.cpp : Implementation of CPGSuperReporterImp
 #include "stdafx.h"
-#include "ReportAgent_i.h"
 #include "PGSuperReporterImp.h"
 
 #include <Reporting\PGSuperTitlePageBuilder.h>

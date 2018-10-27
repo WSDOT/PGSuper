@@ -1,7 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClCompile Include="TxDOTAgent_i.c" />
     <ClCompile Include="dllmain.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -187,7 +186,6 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="TxDOTAgent_i.h" />
     <ClInclude Include="dllmain.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -383,6 +381,9 @@
     <ClInclude Include="TxDOTAgentApp.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="CLSID.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Image Include="res\toolbar1.bmp">
@@ -391,9 +392,6 @@
     <Image Include="res\txdot.ico">
       <Filter>Resource Files</Filter>
     </Image>
-  </ItemGroup>
-  <ItemGroup>
-    <Midl Include="TxDOTAgent.idl" />
   </ItemGroup>
   <ItemGroup>
     <None Include="TxDOTAgent.def" />
@@ -413,6 +411,9 @@
       <Filter>Resource Files</Filter>
     </None>
     <None Include="TxDOTAppPluginComponentInfo.rgs">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\registry.bin">
       <Filter>Resource Files</Filter>
     </None>
   </ItemGroup>

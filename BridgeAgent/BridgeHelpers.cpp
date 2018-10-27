@@ -128,23 +128,17 @@ CSegmentKey GetSegmentKey(GirderIDType gdrID)
    return segmentKey;
 }
 
-void GetSuperstructureMemberIDs(GroupIndexType grpIdx,GirderIndexType gdrIdx,GirderIDType* pLeftID,GirderIDType* pThisID,GirderIDType* pRightID)
+void GetSuperstructureMemberIDs(GroupIndexType grpIdx,GirderIndexType gdrIdx,GirderIndexType nGirders,GirderIDType* pLeftID,GirderIDType* pThisID,GirderIDType* pRightID)
 {
    *pLeftID = (gdrIdx == 0 ? INVALID_ID : GetSuperstructureMemberID(grpIdx,gdrIdx-1));
    *pThisID = GetSuperstructureMemberID(grpIdx,gdrIdx);
-
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IBridge,pBridge);
-
-   GirderIndexType nGirders = pBridge->GetGirderCount(grpIdx);
    *pRightID = (gdrIdx == nGirders-1 ? INVALID_ID : GetSuperstructureMemberID(grpIdx,gdrIdx+1));
 }
 
-void GetAdjacentSuperstructureMemberIDs(const CSegmentKey& segmentKey,GirderIDType* pLeftID,GirderIDType* pThisID,GirderIDType* pRightID)
+void GetAdjacentSuperstructureMemberIDs(const CGirderKey& girderKey,GirderIDType* pLeftID,GirderIDType* pThisID,GirderIDType* pRightID)
 {
-   GroupIndexType grpIdx = segmentKey.groupIndex;
-   GirderIndexType gdrIdx = segmentKey.girderIndex;
+   GroupIndexType grpIdx = girderKey.groupIndex;
+   GirderIndexType gdrIdx = girderKey.girderIndex;
 
    *pLeftID = (gdrIdx == 0 ? INVALID_ID : GetSuperstructureMemberID(grpIdx,gdrIdx-1));
 
@@ -158,7 +152,7 @@ void GetAdjacentSuperstructureMemberIDs(const CSegmentKey& segmentKey,GirderIDTy
    *pRightID = (gdrIdx == nGirders-1 ? INVALID_ID : GetSuperstructureMemberID(grpIdx,gdrIdx+1));
 }
 
-void GetAdjacentGirderKeys(const CSegmentKey& segmentKey,CSegmentKey* pLeftKey,CSegmentKey* pRightKey)
+void GetAdjacentSegmentKeys(const CSegmentKey& segmentKey,CSegmentKey* pLeftKey,CSegmentKey* pRightKey)
 {
    GroupIndexType grpIdx = segmentKey.groupIndex;
    GirderIndexType gdrIdx = segmentKey.girderIndex;
@@ -179,7 +173,7 @@ void GetAdjacentGirderKeys(const CSegmentKey& segmentKey,CSegmentKey* pLeftKey,C
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IBridgeDescription,pBridgeDesc);
 
-   GirderIndexType nGirders = pBridgeDesc->GetBridgeDescription()->GetGirderGroup(grpIdx)->GetGirderCount();
+   GirderIndexType nGirders = pBridgeDesc->GetBridgeDescription()->GetGirderCount();
    if ( gdrIdx == nGirders-1 )
    {
       pRightKey->groupIndex = INVALID_INDEX;

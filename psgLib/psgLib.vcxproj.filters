@@ -211,9 +211,6 @@
     <ClCompile Include="SpecLimitsPage.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="SpecLoadsPage.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="SpecLossPage.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -265,9 +262,14 @@
     <ClCompile Include="HorizShearGrid.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="SpecDeadLoadsPage.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SpecLiveLoadsPage.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="PGSuperLibrary_i.h" />
     <ClInclude Include="AASHTOConcretePage.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -505,9 +507,6 @@
     <ClInclude Include="SpecLimitsPage.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="SpecLoadsPage.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="SpecLossPage.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -554,6 +553,15 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="WsdotHaulingDlg.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SpecDeadLoadsPage.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SpecLiveLoadsPage.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CLSID.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -663,9 +671,6 @@
     <Image Include="res\LibraryManager.ico">
       <Filter>Resource Files</Filter>
     </Image>
-  </ItemGroup>
-  <ItemGroup>
-    <Midl Include="PGSuperLibrary.idl" />
   </ItemGroup>
   <ItemGroup>
     <None Include="res\Connection.emf">

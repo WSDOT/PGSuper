@@ -93,7 +93,8 @@ void CSpecMainSheet::Init()
    m_SpecDesignPage.m_psp.dwFlags          |= PSP_HASHELP;
    m_SpecClosurePage.m_psp.dwFlags         |= PSP_HASHELP;
 
-   m_SpecLoadsPage.m_psp.dwFlags           |= PSP_HASHELP;
+   m_SpecDeadLoadsPage.m_psp.dwFlags |= PSP_HASHELP;
+   m_SpecLiveLoadsPage.m_psp.dwFlags |= PSP_HASHELP;
    m_SpecGirderStressPage.m_psp.dwFlags    |= PSP_HASHELP;
 
    AddPage(&m_SpecDescrPage);
@@ -103,7 +104,8 @@ void CSpecMainSheet::Init()
    AddPage(&m_SpecStrandStressPage);
    AddPage(&m_SpecLiftingPage);
    AddPage(&m_SpecHaulingErectionPage);
-   AddPage(&m_SpecLoadsPage);
+   AddPage(&m_SpecDeadLoadsPage);
+   AddPage(&m_SpecLiveLoadsPage);
    AddPage(&m_SpecMomentPage);
    AddPage(&m_SpecShearPage);
    AddPage(&m_SpecCreepPage);
@@ -185,7 +187,7 @@ void CSpecMainSheet::ExchangeDescriptionData(CDataExchange* pDX)
    }
 }
 
-void CSpecMainSheet::ExchangeLoadsData(CDataExchange* pDX)
+void CSpecMainSheet::ExchangeDeadLoadsData(CDataExchange* pDX)
 {
    CEAFApp* pApp = EAFGetApp();
    const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
@@ -194,26 +196,8 @@ void CSpecMainSheet::ExchangeLoadsData(CDataExchange* pDX)
    DDX_CBItemData(pDX,IDC_DIST_TRAFFIC_BARRIER_BASIS,m_Entry.m_TrafficBarrierDistributionType);
 	DDX_Text(pDX, IDC_DIST_TRAFFIC_BARRIER, m_Entry.m_Bs2MaxGirdersTrafficBarrier);
 
-   // pedestrian live loads
-   DDX_UnitValueAndTag(pDX, IDC_PED_LIVE_LOAD, IDC_PED_LIVE_LOAD_UNIT, m_Entry.m_PedestrianLoad, pDisplayUnits->SmallStress );
-   DDV_UnitValueZeroOrMore(pDX, IDC_PED_LIVE_LOAD,m_Entry.m_PedestrianLoad, pDisplayUnits->SpanLength );
-   DDX_UnitValueAndTag(pDX, IDC_MIN_SIDEWALK_WIDTH, IDC_MIN_SIDEWALK_WIDTH_UNIT, m_Entry.m_MinSidewalkWidth, pDisplayUnits->SpanLength );
-   DDV_UnitValueZeroOrMore(pDX, IDC_MIN_SIDEWALK_WIDTH,m_Entry.m_MinSidewalkWidth, pDisplayUnits->SpanLength );
-
    // overlay load distribution
    DDX_CBEnum(pDX, IDC_OVERLAY_DISTR,m_Entry.m_OverlayLoadDistribution);
-
-   // live load distribution
-   DDX_CBIndex(pDX, IDC_LLDF, m_Entry.m_LldfMethod);
-
-   DDX_UnitValueAndTag(pDX, IDC_MAXGIRDERANGLE, IDC_MAXGIRDERANGLE_UNIT, m_Entry.m_MaxAngularDeviationBetweenGirders, pDisplayUnits->Angle );
-   DDX_Text(pDX,IDC_GIRDERSTIFFNESSRATIO,m_Entry.m_MinGirderStiffnessRatio);
-   DDV_MinMaxDouble(pDX,m_Entry.m_MinGirderStiffnessRatio,0.0,1.0);
-
-   DDX_Text(pDX,IDC_GIRDER_SPACING_LOCATION,m_Entry.m_LLDFGirderSpacingLocation);
-   DDV_MinMaxDouble(pDX,m_Entry.m_LLDFGirderSpacingLocation,0.0,1.0);
-
-   DDX_Check_Bool(pDX, IDC_LANESBEAMS, m_Entry.m_LimitDistributionFactorsToLanesBeams);
 
    // computation of haunch load
    DDX_CBEnum(pDX, IDC_HAUNCH_COMP_CB,m_Entry.m_HaunchLoadComputationType);
@@ -236,7 +220,7 @@ void CSpecMainSheet::ExchangeLoadsData(CDataExchange* pDX)
          }
       }
    }
-
+   
    DDX_Percentage(pDX, IDC_HAUNCH_FACTOR, m_Entry.m_HaunchLoadCamberFactor);
    if (pDX->m_bSaveAndValidate)
    {
@@ -250,7 +234,33 @@ void CSpecMainSheet::ExchangeLoadsData(CDataExchange* pDX)
          ::AfxMessageBox(_T("Haunch load camber factor must be less than or equal to 100%"));
          pDX->Fail();
       }
-   }
+   }   
+}
+
+void CSpecMainSheet::ExchangeLiveLoadsData(CDataExchange* pDX)
+{
+   CEAFApp* pApp = EAFGetApp();
+   const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
+
+   DDX_Check_Bool(pDX, IDC_DUAL_TANDEM, m_Entry.m_bIncludeDualTandem);
+
+   // pedestrian live loads
+   DDX_UnitValueAndTag(pDX, IDC_PED_LIVE_LOAD, IDC_PED_LIVE_LOAD_UNIT, m_Entry.m_PedestrianLoad, pDisplayUnits->SmallStress);
+   DDV_UnitValueZeroOrMore(pDX, IDC_PED_LIVE_LOAD, m_Entry.m_PedestrianLoad, pDisplayUnits->SpanLength);
+   DDX_UnitValueAndTag(pDX, IDC_MIN_SIDEWALK_WIDTH, IDC_MIN_SIDEWALK_WIDTH_UNIT, m_Entry.m_MinSidewalkWidth, pDisplayUnits->SpanLength);
+   DDV_UnitValueZeroOrMore(pDX, IDC_MIN_SIDEWALK_WIDTH, m_Entry.m_MinSidewalkWidth, pDisplayUnits->SpanLength);
+
+   // live load distribution
+   DDX_CBIndex(pDX, IDC_LLDF, m_Entry.m_LldfMethod);
+
+   DDX_UnitValueAndTag(pDX, IDC_MAXGIRDERANGLE, IDC_MAXGIRDERANGLE_UNIT, m_Entry.m_MaxAngularDeviationBetweenGirders, pDisplayUnits->Angle);
+   DDX_Text(pDX, IDC_GIRDERSTIFFNESSRATIO, m_Entry.m_MinGirderStiffnessRatio);
+   DDV_MinMaxDouble(pDX, m_Entry.m_MinGirderStiffnessRatio, 0.0, 1.0);
+
+   DDX_Text(pDX, IDC_GIRDER_SPACING_LOCATION, m_Entry.m_LLDFGirderSpacingLocation);
+   DDV_MinMaxDouble(pDX, m_Entry.m_LLDFGirderSpacingLocation, 0.0, 1.0);
+
+   DDX_Check_Bool(pDX, IDC_LANESBEAMS, m_Entry.m_LimitDistributionFactorsToLanesBeams);
 }
 
 void CSpecMainSheet::ExchangeGirderData(CDataExchange* pDX)
@@ -1334,6 +1344,10 @@ void CSpecMainSheet::ExchangeDesignData(CDataExchange* pDX)
    {
       m_Entry.m_LimitStateConcreteStrength = (pgsTypes::LimitStateConcreteStrength)value;
    }
+
+   // Roadway elevations
+   DDX_UnitValueAndTag(pDX, IDC_ELEVATION_TOLERANCE, IDC_ELEVATION_TOLERANCE_UNIT, m_Entry.m_FinishedElevationTolerance, pDisplayUnits->ComponentDim);
+   DDV_UnitValueZeroOrMore(pDX, IDC_ELEVATION_TOLERANCE, m_Entry.m_FinishedElevationTolerance, pDisplayUnits->ComponentDim);
 }
 
 BOOL CSpecMainSheet::OnInitDialog() 

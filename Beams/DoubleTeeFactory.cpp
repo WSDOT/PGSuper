@@ -57,47 +57,47 @@ static char THIS_FILE[] = __FILE__;
 HRESULT CDoubleTeeFactory::FinalConstruct()
 {
    // Initialize with default values... This are not necessarily valid dimensions
-   m_DimNames.push_back(_T("D1"));
-   m_DimNames.push_back(_T("D2"));
-   m_DimNames.push_back(_T("T1"));
-   m_DimNames.push_back(_T("T2"));
-   m_DimNames.push_back(_T("W1"));
-   m_DimNames.push_back(_T("Wmax"));
-   m_DimNames.push_back(_T("Wmin"));
+   m_DimNames.emplace_back(_T("D1"));
+   m_DimNames.emplace_back(_T("D2"));
+   m_DimNames.emplace_back(_T("T1"));
+   m_DimNames.emplace_back(_T("T2"));
+   m_DimNames.emplace_back(_T("W1"));
+   m_DimNames.emplace_back(_T("Wmax"));
+   m_DimNames.emplace_back(_T("Wmin"));
 
    std::sort(m_DimNames.begin(),m_DimNames.end());
 
    // Default beam is a 4' wide tri-beam
-   m_DefaultDims.push_back(::ConvertToSysUnits( 6.0,unitMeasure::Inch)); // D1
-   m_DefaultDims.push_back(::ConvertToSysUnits(21.0,unitMeasure::Inch)); // D2
-   m_DefaultDims.push_back(::ConvertToSysUnits(7.25,unitMeasure::Inch)); // T1
-   m_DefaultDims.push_back(::ConvertToSysUnits(5.25,unitMeasure::Inch)); // T2
-   m_DefaultDims.push_back(::ConvertToSysUnits(12.0,unitMeasure::Inch)); // W1
-   m_DefaultDims.push_back(::ConvertToSysUnits(6.000,unitMeasure::Feet)); // Wmax
-   m_DefaultDims.push_back(::ConvertToSysUnits(4.000,unitMeasure::Feet)); // Wmin
+   m_DefaultDims.emplace_back(::ConvertToSysUnits( 6.0,unitMeasure::Inch)); // D1
+   m_DefaultDims.emplace_back(::ConvertToSysUnits(21.0,unitMeasure::Inch)); // D2
+   m_DefaultDims.emplace_back(::ConvertToSysUnits(7.25,unitMeasure::Inch)); // T1
+   m_DefaultDims.emplace_back(::ConvertToSysUnits(5.25,unitMeasure::Inch)); // T2
+   m_DefaultDims.emplace_back(::ConvertToSysUnits(12.0,unitMeasure::Inch)); // W1
+   m_DefaultDims.emplace_back(::ConvertToSysUnits(6.000,unitMeasure::Feet)); // Wmax
+   m_DefaultDims.emplace_back(::ConvertToSysUnits(4.000,unitMeasure::Feet)); // Wmin
 
    // SI Units
-   m_DimUnits[0].push_back(&unitMeasure::Millimeter); // D1
-   m_DimUnits[0].push_back(&unitMeasure::Millimeter); // D2
-   m_DimUnits[0].push_back(&unitMeasure::Millimeter); // T1
-   m_DimUnits[0].push_back(&unitMeasure::Millimeter); // T2
-   m_DimUnits[0].push_back(&unitMeasure::Millimeter); // W1
-   m_DimUnits[0].push_back(&unitMeasure::Meter);      // Wmax
-   m_DimUnits[0].push_back(&unitMeasure::Meter);      // Wmin
+   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // D1
+   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // D2
+   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // T1
+   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // T2
+   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // W1
+   m_DimUnits[0].emplace_back(&unitMeasure::Meter);      // Wmax
+   m_DimUnits[0].emplace_back(&unitMeasure::Meter);      // Wmin
 
    // US Units
-   m_DimUnits[1].push_back(&unitMeasure::Inch); // D1
-   m_DimUnits[1].push_back(&unitMeasure::Inch); // D2
-   m_DimUnits[1].push_back(&unitMeasure::Inch); // T1
-   m_DimUnits[1].push_back(&unitMeasure::Inch); // T2
-   m_DimUnits[1].push_back(&unitMeasure::Inch); // W1
-   m_DimUnits[1].push_back(&unitMeasure::Feet); // Wmax
-   m_DimUnits[1].push_back(&unitMeasure::Feet); // Wmin
+   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // D1
+   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // D2
+   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // T1
+   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // T2
+   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // W1
+   m_DimUnits[1].emplace_back(&unitMeasure::Feet); // Wmax
+   m_DimUnits[1].emplace_back(&unitMeasure::Feet); // Wmin
 
    return S_OK;
 }
 
-void CDoubleTeeFactory::CreateGirderSection(IBroker* pBroker,StatusGroupIDType statusGroupID,const IBeamFactory::Dimensions& dimensions,Float64 overallHeight,Float64 bottomFlangeHeight,IGirderSection** ppSection)
+void CDoubleTeeFactory::CreateGirderSection(IBroker* pBroker,StatusGroupIDType statusGroupID,const IBeamFactory::Dimensions& dimensions,Float64 overallHeight,Float64 bottomFlangeHeight,IGirderSection** ppSection) const
 {
    CComPtr<IMultiWebSection> gdrSection;
    gdrSection.CoCreateInstance(CLSID_MultiWebSection);
@@ -158,7 +158,7 @@ void CDoubleTeeFactory::CreateGirderSection(IBroker* pBroker,StatusGroupIDType s
    gdrSection.QueryInterface(ppSection);
 }
 
-void CDoubleTeeFactory::CreateGirderProfile(IBroker* pBroker,StatusGroupIDType statusGroupID,const CSegmentKey& segmentKey,const IBeamFactory::Dimensions& dimensions,IShape** ppShape)
+void CDoubleTeeFactory::CreateGirderProfile(IBroker* pBroker,StatusGroupIDType statusGroupID,const CSegmentKey& segmentKey,const IBeamFactory::Dimensions& dimensions,IShape** ppShape) const
 {
    GET_IFACE2(pBroker,IBridge,pBridge);
    Float64 length = pBridge->GetSegmentLength(segmentKey);
@@ -185,7 +185,7 @@ void CDoubleTeeFactory::CreateGirderProfile(IBroker* pBroker,StatusGroupIDType s
    rect->QueryInterface(ppShape);
 }
 
-void CDoubleTeeFactory::CreateSegment(IBroker* pBroker,StatusGroupIDType statusGroupID,const CSegmentKey& segmentKey,ISuperstructureMember* ssmbr)
+void CDoubleTeeFactory::CreateSegment(IBroker* pBroker,StatusGroupIDType statusGroupID,const CSegmentKey& segmentKey,ISuperstructureMemberSegment** ppSegment) const
 {
    CComPtr<IPrismaticSuperstructureMemberSegment> segment;
    segment.CoCreateInstance(CLSID_PrismaticSuperstructureMemberSegment);
@@ -233,10 +233,16 @@ void CDoubleTeeFactory::CreateSegment(IBroker* pBroker,StatusGroupIDType statusG
    ATLASSERT(shape);
    segment->AddShape(shape,material,nullptr);
 
-   ssmbr->AddSegment(segment);
+   CComQIPtr<ISuperstructureMemberSegment> ssmbrSegment(segment);
+   ssmbrSegment.CopyTo(ppSegment);
 }
 
-void CDoubleTeeFactory::LayoutSectionChangePointsOfInterest(IBroker* pBroker,const CSegmentKey& segmentKey,pgsPoiMgr* pPoiMgr)
+void CDoubleTeeFactory::ConfigureSegment(IBroker* pBroker, StatusItemIDType statusID, const CSegmentKey& segmentKey, ISuperstructureMemberSegment* pSSMbrSegment) const
+{
+   // do nothing... all the configuration was done in CreateSegment
+}
+
+void CDoubleTeeFactory::LayoutSectionChangePointsOfInterest(IBroker* pBroker,const CSegmentKey& segmentKey,pgsPoiMgr* pPoiMgr) const
 {
    // This is a prismatic beam so only add section change POI at the start and end of the beam
    GET_IFACE2(pBroker,IBridge,pBridge);
@@ -249,7 +255,7 @@ void CDoubleTeeFactory::LayoutSectionChangePointsOfInterest(IBroker* pBroker,con
    pPoiMgr->AddPointOfInterest(poiEnd);
 }
 
-void CDoubleTeeFactory::CreateDistFactorEngineer(IBroker* pBroker,StatusGroupIDType statusGroupID,const pgsTypes::SupportedBeamSpacing* pSpacingType,const pgsTypes::SupportedDeckType* pDeckType, const pgsTypes::AdjacentTransverseConnectivity* pConnect,IDistFactorEngineer** ppEng)
+void CDoubleTeeFactory::CreateDistFactorEngineer(IBroker* pBroker,StatusGroupIDType statusGroupID,const pgsTypes::SupportedBeamSpacing* pSpacingType,const pgsTypes::SupportedDeckType* pDeckType, const pgsTypes::AdjacentTransverseConnectivity* pConnect,IDistFactorEngineer** ppEng) const
 {
    CComObject<CMultiWebDistFactorEngineer>* pEngineer;
    CComObject<CMultiWebDistFactorEngineer>::CreateInstance(&pEngineer);
@@ -261,7 +267,7 @@ void CDoubleTeeFactory::CreateDistFactorEngineer(IBroker* pBroker,StatusGroupIDT
    (*ppEng)->AddRef();
 }
 
-void CDoubleTeeFactory::CreatePsLossEngineer(IBroker* pBroker,StatusGroupIDType statusGroupID,const CGirderKey& girderKey,IPsLossEngineer** ppEng)
+void CDoubleTeeFactory::CreatePsLossEngineer(IBroker* pBroker,StatusGroupIDType statusGroupID,const CGirderKey& girderKey,IPsLossEngineer** ppEng) const
 {
    GET_IFACE2(pBroker, ILossParameters, pLossParams);
    if ( pLossParams->GetLossMethod() == pgsTypes::TIME_STEP )
@@ -286,7 +292,7 @@ void CDoubleTeeFactory::CreatePsLossEngineer(IBroker* pBroker,StatusGroupIDType 
 void CDoubleTeeFactory::CreateStrandMover(const IBeamFactory::Dimensions& dimensions,  Float64 Hg,
                                   IBeamFactory::BeamFace endTopFace, Float64 endTopLimit, IBeamFactory::BeamFace endBottomFace, Float64 endBottomLimit, 
                                   IBeamFactory::BeamFace hpTopFace, Float64 hpTopLimit, IBeamFactory::BeamFace hpBottomFace, Float64 hpBottomLimit, 
-                                  Float64 endIncrement, Float64 hpIncrement, IStrandMover** strandMover)
+                                  Float64 endIncrement, Float64 hpIncrement, IStrandMover** strandMover) const
 {
    HRESULT hr = S_OK;
 
@@ -351,22 +357,22 @@ void CDoubleTeeFactory::CreateStrandMover(const IBeamFactory::Dimensions& dimens
    ATLASSERT (SUCCEEDED(hr));
 }
 
-std::vector<std::_tstring> CDoubleTeeFactory::GetDimensionNames()
+const std::vector<std::_tstring>& CDoubleTeeFactory::GetDimensionNames() const
 {
    return m_DimNames;
 }
 
-std::vector<Float64> CDoubleTeeFactory::GetDefaultDimensions()
+const std::vector<Float64>& CDoubleTeeFactory::GetDefaultDimensions() const
 {
    return m_DefaultDims;
 }
 
-std::vector<const unitLength*> CDoubleTeeFactory::GetDimensionUnits(bool bSIUnits)
+const std::vector<const unitLength*>& CDoubleTeeFactory::GetDimensionUnits(bool bSIUnits) const
 {
    return m_DimUnits[ bSIUnits ? 0 : 1 ];
 }
 
-bool CDoubleTeeFactory::ValidateDimensions(const IBeamFactory::Dimensions& dimensions,bool bSIUnits,std::_tstring* strErrMsg)
+bool CDoubleTeeFactory::ValidateDimensions(const IBeamFactory::Dimensions& dimensions,bool bSIUnits,std::_tstring* strErrMsg) const
 {
    Float64 d1,d2;
    Float64 w,wmin,wmax;
@@ -424,68 +430,77 @@ bool CDoubleTeeFactory::ValidateDimensions(const IBeamFactory::Dimensions& dimen
    return true;
 }
 
-void CDoubleTeeFactory::SaveSectionDimensions(sysIStructuredSave* pSave,const IBeamFactory::Dimensions& dimensions)
+void CDoubleTeeFactory::SaveSectionDimensions(sysIStructuredSave* pSave,const IBeamFactory::Dimensions& dimensions) const
 {
-   std::vector<std::_tstring>::iterator iter;
    pSave->BeginUnit(_T("DoubleTeeDimensions"),1.0);
-   for ( iter = m_DimNames.begin(); iter != m_DimNames.end(); iter++ )
+   for ( const auto& name : m_DimNames)
    {
-      std::_tstring name = *iter;
       Float64 value = GetDimension(dimensions,name);
       pSave->Property(name.c_str(),value);
    }
    pSave->EndUnit();
 }
 
-IBeamFactory::Dimensions CDoubleTeeFactory::LoadSectionDimensions(sysIStructuredLoad* pLoad)
+IBeamFactory::Dimensions CDoubleTeeFactory::LoadSectionDimensions(sysIStructuredLoad* pLoad) const
 {
    IBeamFactory::Dimensions dimensions;
 
    Float64 parent_version;
    if (pLoad->GetParentUnit() == _T("GirderLibraryEntry"))
-      parent_version = pLoad->GetParentVersion();
-   else
-      parent_version = pLoad->GetVersion();
-
-   if ( 14 <= parent_version && !pLoad->BeginUnit(_T("DoubleTeeDimensions")) )
-      THROW_LOAD(InvalidFileFormat,pLoad);
-
-   std::vector<std::_tstring>::iterator iter;
-   for ( iter = m_DimNames.begin(); iter != m_DimNames.end(); iter++ )
    {
-      std::_tstring name = *iter;
-      Float64 value;
-      pLoad->Property(name.c_str(),&value);
-      dimensions.push_back( std::make_pair(name,value) );
+      parent_version = pLoad->GetParentVersion();
+   }
+   else
+   {
+      parent_version = pLoad->GetVersion();
    }
 
-   if ( 14 <= parent_version && !pLoad->EndUnit() )
-      THROW_LOAD(InvalidFileFormat,pLoad);
+   if (14 <= parent_version && !pLoad->BeginUnit(_T("DoubleTeeDimensions")))
+   {
+      THROW_LOAD(InvalidFileFormat, pLoad);
+   }
+
+   for(const auto& name : m_DimNames)
+   {
+      Float64 value;
+      pLoad->Property(name.c_str(),&value);
+      dimensions.emplace_back(name,value);
+   }
+
+   if (14 <= parent_version && !pLoad->EndUnit())
+   {
+      THROW_LOAD(InvalidFileFormat, pLoad);
+   }
 
    return dimensions;
 }
 
-bool CDoubleTeeFactory::IsPrismatic(const IBeamFactory::Dimensions& dimensions)
+bool CDoubleTeeFactory::IsPrismatic(const IBeamFactory::Dimensions& dimensions) const
 {
    return true;
 }
 
-bool CDoubleTeeFactory::IsSymmetric(const IBeamFactory::Dimensions& dimensions)
+bool CDoubleTeeFactory::IsPrismatic(const CSegmentKey& segmentKey) const
 {
    return true;
 }
 
-Float64 CDoubleTeeFactory::GetInternalSurfaceAreaOfVoids(IBroker* pBroker,const CSegmentKey& segmentKey)
+bool CDoubleTeeFactory::IsSymmetric(const CSegmentKey& segmentKey) const
+{
+   return true;
+}
+
+Float64 CDoubleTeeFactory::GetInternalSurfaceAreaOfVoids(IBroker* pBroker,const CSegmentKey& segmentKey) const
 {
    return 0;
 }
 
-std::_tstring CDoubleTeeFactory::GetImage()
+std::_tstring CDoubleTeeFactory::GetImage() const
 {
    return std::_tstring(_T("DoubleTee.jpg"));
 }
 
-std::_tstring CDoubleTeeFactory::GetSlabDimensionsImage(pgsTypes::SupportedDeckType deckType)
+std::_tstring CDoubleTeeFactory::GetSlabDimensionsImage(pgsTypes::SupportedDeckType deckType) const
 {
    std::_tstring strImage;
 
@@ -507,7 +522,7 @@ std::_tstring CDoubleTeeFactory::GetSlabDimensionsImage(pgsTypes::SupportedDeckT
    return strImage;
 }
 
-std::_tstring CDoubleTeeFactory::GetPositiveMomentCapacitySchematicImage(pgsTypes::SupportedDeckType deckType)
+std::_tstring CDoubleTeeFactory::GetPositiveMomentCapacitySchematicImage(pgsTypes::SupportedDeckType deckType) const
 {
    std::_tstring strImage;
 
@@ -529,7 +544,7 @@ std::_tstring CDoubleTeeFactory::GetPositiveMomentCapacitySchematicImage(pgsType
    return strImage;
 }
 
-std::_tstring CDoubleTeeFactory::GetNegativeMomentCapacitySchematicImage(pgsTypes::SupportedDeckType deckType)
+std::_tstring CDoubleTeeFactory::GetNegativeMomentCapacitySchematicImage(pgsTypes::SupportedDeckType deckType) const
 {
    std::_tstring strImage;
 
@@ -551,7 +566,7 @@ std::_tstring CDoubleTeeFactory::GetNegativeMomentCapacitySchematicImage(pgsType
    return strImage;
 }
 
-std::_tstring CDoubleTeeFactory::GetShearDimensionsSchematicImage(pgsTypes::SupportedDeckType deckType)
+std::_tstring CDoubleTeeFactory::GetShearDimensionsSchematicImage(pgsTypes::SupportedDeckType deckType) const
 {
    std::_tstring strImage;
 
@@ -573,7 +588,7 @@ std::_tstring CDoubleTeeFactory::GetShearDimensionsSchematicImage(pgsTypes::Supp
    return strImage;
 }
 
-std::_tstring CDoubleTeeFactory::GetInteriorGirderEffectiveFlangeWidthImage(IBroker* pBroker,pgsTypes::SupportedDeckType deckType)
+std::_tstring CDoubleTeeFactory::GetInteriorGirderEffectiveFlangeWidthImage(IBroker* pBroker,pgsTypes::SupportedDeckType deckType) const
 {
    GET_IFACE2(pBroker, ILibrary,       pLib);
    GET_IFACE2(pBroker, ISpecification, pSpec);
@@ -588,7 +603,7 @@ std::_tstring CDoubleTeeFactory::GetInteriorGirderEffectiveFlangeWidthImage(IBro
    }
 }
 
-std::_tstring CDoubleTeeFactory::GetExteriorGirderEffectiveFlangeWidthImage(IBroker* pBroker,pgsTypes::SupportedDeckType deckType)
+std::_tstring CDoubleTeeFactory::GetExteriorGirderEffectiveFlangeWidthImage(IBroker* pBroker,pgsTypes::SupportedDeckType deckType) const
 {
    GET_IFACE2(pBroker, ILibrary,       pLib);
    GET_IFACE2(pBroker, ISpecification, pSpec);
@@ -603,12 +618,12 @@ std::_tstring CDoubleTeeFactory::GetExteriorGirderEffectiveFlangeWidthImage(IBro
    }
 }
 
-CLSID CDoubleTeeFactory::GetCLSID()
+CLSID CDoubleTeeFactory::GetCLSID() const
 {
    return CLSID_DoubleTeeFactory;
 }
 
-std::_tstring CDoubleTeeFactory::GetName()
+std::_tstring CDoubleTeeFactory::GetName() const
 {
    USES_CONVERSION;
    LPOLESTR pszUserType;
@@ -616,12 +631,12 @@ std::_tstring CDoubleTeeFactory::GetName()
    return std::_tstring( OLE2T(pszUserType) );
 }
 
-CLSID CDoubleTeeFactory::GetFamilyCLSID()
+CLSID CDoubleTeeFactory::GetFamilyCLSID() const
 {
    return CLSID_DoubleTeeBeamFamily;
 }
 
-std::_tstring CDoubleTeeFactory::GetGirderFamilyName()
+std::_tstring CDoubleTeeFactory::GetGirderFamilyName() const
 {
    USES_CONVERSION;
    LPOLESTR pszUserType;
@@ -629,27 +644,27 @@ std::_tstring CDoubleTeeFactory::GetGirderFamilyName()
    return std::_tstring( OLE2T(pszUserType) );
 }
 
-std::_tstring CDoubleTeeFactory::GetPublisher()
+std::_tstring CDoubleTeeFactory::GetPublisher() const
 {
    return std::_tstring(_T("WSDOT"));
 }
 
-std::_tstring CDoubleTeeFactory::GetPublisherContactInformation()
+std::_tstring CDoubleTeeFactory::GetPublisherContactInformation() const
 {
    return std::_tstring(_T("http://www.wsdot.wa.gov/eesc/bridge"));
 }
 
-HINSTANCE CDoubleTeeFactory::GetResourceInstance()
+HINSTANCE CDoubleTeeFactory::GetResourceInstance() const
 {
    return _Module.GetResourceInstance();
 }
 
-LPCTSTR CDoubleTeeFactory::GetImageResourceName()
+LPCTSTR CDoubleTeeFactory::GetImageResourceName() const
 {
    return _T("DoubleTee");
 }
 
-HICON  CDoubleTeeFactory::GetIcon() 
+HICON  CDoubleTeeFactory::GetIcon()  const
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
@@ -660,7 +675,7 @@ void CDoubleTeeFactory::GetDimensions(const IBeamFactory::Dimensions& dimensions
                                   Float64& d1,Float64& d2,
                                   Float64& w,Float64& wmin,Float64& wmax,
                                   Float64& t1,Float64& t2,
-                                  WebIndexType& nWebs)
+                                  WebIndexType& nWebs) const
 {
    d1 = GetDimension(dimensions,_T("D1"));
    d2 = GetDimension(dimensions,_T("D2"));
@@ -672,21 +687,21 @@ void CDoubleTeeFactory::GetDimensions(const IBeamFactory::Dimensions& dimensions
    nWebs = 2;
 }
 
-Float64 CDoubleTeeFactory::GetDimension(const IBeamFactory::Dimensions& dimensions,const std::_tstring& name)
+Float64 CDoubleTeeFactory::GetDimension(const IBeamFactory::Dimensions& dimensions,const std::_tstring& name) const
 {
-   Dimensions::const_iterator iter;
-   for ( iter = dimensions.begin(); iter != dimensions.end(); iter++ )
+   for (const auto& dim : dimensions)
    {
-      const Dimension& dim = *iter;
-      if ( name == dim.first )
+      if (name == dim.first)
+      {
          return dim.second;
+      }
    }
 
    ATLASSERT(false); // should never get here
    return -99999;
 }
 
-pgsTypes::SupportedDeckTypes CDoubleTeeFactory::GetSupportedDeckTypes(pgsTypes::SupportedBeamSpacing sbs)
+pgsTypes::SupportedDeckTypes CDoubleTeeFactory::GetSupportedDeckTypes(pgsTypes::SupportedBeamSpacing sbs) const
 {
    pgsTypes::SupportedDeckTypes sdt;
    switch( sbs )
@@ -703,14 +718,49 @@ pgsTypes::SupportedDeckTypes CDoubleTeeFactory::GetSupportedDeckTypes(pgsTypes::
    return sdt;
 }
 
-pgsTypes::SupportedBeamSpacings CDoubleTeeFactory::GetSupportedBeamSpacings()
+pgsTypes::SupportedBeamSpacings CDoubleTeeFactory::GetSupportedBeamSpacings() const
 {
    pgsTypes::SupportedBeamSpacings sbs;
    sbs.push_back(pgsTypes::sbsConstantAdjacent);
    return sbs;
 }
 
-pgsTypes::SupportedDiaphragmTypes CDoubleTeeFactory::GetSupportedDiaphragms()
+bool CDoubleTeeFactory::IsSupportedBeamSpacing(pgsTypes::SupportedBeamSpacing spacingType) const
+{
+   pgsTypes::SupportedBeamSpacings sbs = GetSupportedBeamSpacings();
+   auto found = std::find(sbs.cbegin(), sbs.cend(),spacingType);
+   return found == sbs.end() ? false : true;
+}
+
+bool CDoubleTeeFactory::ConvertBeamSpacing(const IBeamFactory::Dimensions& dimensions,pgsTypes::SupportedBeamSpacing spacingType, Float64 spacing, pgsTypes::SupportedBeamSpacing* pNewSpacingType, Float64* pNewSpacing, Float64* pNewTopWidth) const
+{
+   if (spacingType == pgsTypes::sbsUniform)
+   {
+      *pNewSpacingType = pgsTypes::sbsConstantAdjacent;
+      *pNewSpacing = spacing;
+      *pNewTopWidth = 0.0;
+      return true;
+   }
+   return false;
+}
+
+std::vector<pgsTypes::GirderOrientationType> CDoubleTeeFactory::GetSupportedGirderOrientation() const
+{
+   std::vector<pgsTypes::GirderOrientationType> types{ /*pgsTypes::Plumb,*/pgsTypes::StartNormal,pgsTypes::MidspanNormal,pgsTypes::EndNormal };
+   return types;
+}
+
+bool CDoubleTeeFactory::IsSupportedGirderOrientation(pgsTypes::GirderOrientationType orientation) const
+{
+   return orientation != pgsTypes::Plumb ? true : false;
+}
+
+pgsTypes::GirderOrientationType CDoubleTeeFactory::ConvertGirderOrientation(pgsTypes::GirderOrientationType orientation) const
+{
+   return orientation == pgsTypes::Plumb ? pgsTypes::StartNormal : orientation;
+}
+
+pgsTypes::SupportedDiaphragmTypes CDoubleTeeFactory::GetSupportedDiaphragms() const
 {
    pgsTypes::SupportedDiaphragmTypes diaphragmTypes;
    diaphragmTypes.push_back(pgsTypes::dtPrecast);
@@ -718,7 +768,7 @@ pgsTypes::SupportedDiaphragmTypes CDoubleTeeFactory::GetSupportedDiaphragms()
    return diaphragmTypes;
 }
 
-pgsTypes::SupportedDiaphragmLocationTypes CDoubleTeeFactory::GetSupportedDiaphragmLocations(pgsTypes::DiaphragmType type)
+pgsTypes::SupportedDiaphragmLocationTypes CDoubleTeeFactory::GetSupportedDiaphragmLocations(pgsTypes::DiaphragmType type) const
 {
    pgsTypes::SupportedDiaphragmLocationTypes locations;
    switch(type)
@@ -738,8 +788,7 @@ pgsTypes::SupportedDiaphragmLocationTypes CDoubleTeeFactory::GetSupportedDiaphra
    return locations;
 }
 
-void CDoubleTeeFactory::GetAllowableSpacingRange(const IBeamFactory::Dimensions& dimensions,pgsTypes::SupportedDeckType sdt, 
-                                               pgsTypes::SupportedBeamSpacing sbs, Float64* minSpacing, Float64* maxSpacing)
+void CDoubleTeeFactory::GetAllowableSpacingRange(const IBeamFactory::Dimensions& dimensions,pgsTypes::SupportedDeckType sdt, pgsTypes::SupportedBeamSpacing sbs, Float64* minSpacing, Float64* maxSpacing) const
 {
    *minSpacing = 0.0;
    *maxSpacing = 0.0;
@@ -765,12 +814,12 @@ void CDoubleTeeFactory::GetAllowableSpacingRange(const IBeamFactory::Dimensions&
    }
 }
 
-WebIndexType CDoubleTeeFactory::GetWebCount(const IBeamFactory::Dimensions& dimensions)
+WebIndexType CDoubleTeeFactory::GetWebCount(const IBeamFactory::Dimensions& dimensions) const
 {
    return 1;
 }
 
-Float64 CDoubleTeeFactory::GetBeamHeight(const IBeamFactory::Dimensions& dimensions,pgsTypes::MemberEndType endType)
+Float64 CDoubleTeeFactory::GetBeamHeight(const IBeamFactory::Dimensions& dimensions,pgsTypes::MemberEndType endType) const
 {
    Float64 D1 = GetDimension(dimensions,_T("D1"));
    Float64 D2 = GetDimension(dimensions,_T("D2"));
@@ -778,23 +827,43 @@ Float64 CDoubleTeeFactory::GetBeamHeight(const IBeamFactory::Dimensions& dimensi
    return D1 + D2;
 }
 
-Float64 CDoubleTeeFactory::GetBeamWidth(const IBeamFactory::Dimensions& dimensions,pgsTypes::MemberEndType endType)
+Float64 CDoubleTeeFactory::GetBeamWidth(const IBeamFactory::Dimensions& dimensions,pgsTypes::MemberEndType endType) const
 {
    return GetDimension(dimensions,_T("Wmax"));
 }
 
-bool CDoubleTeeFactory::IsShearKey(const IBeamFactory::Dimensions& dimensions, pgsTypes::SupportedBeamSpacing spacingType)
+bool CDoubleTeeFactory::IsShearKey(const IBeamFactory::Dimensions& dimensions, pgsTypes::SupportedBeamSpacing spacingType) const
 {
    return false;
 }
 
-void CDoubleTeeFactory::GetShearKeyAreas(const IBeamFactory::Dimensions& dimensions, pgsTypes::SupportedBeamSpacing spacingType,Float64* uniformArea, Float64* areaPerJoint)
+void CDoubleTeeFactory::GetShearKeyAreas(const IBeamFactory::Dimensions& dimensions, pgsTypes::SupportedBeamSpacing spacingType,Float64* uniformArea, Float64* areaPerJoint) const
 {
    *uniformArea = 0.0;
    *areaPerJoint = 0.0;
 }
 
-GirderIndexType CDoubleTeeFactory::GetMinimumBeamCount()
+bool CDoubleTeeFactory::HasLongitudinalJoints() const
+{
+   return false;
+}
+
+bool CDoubleTeeFactory::IsLongitudinalJointStructural(pgsTypes::SupportedDeckType deckType,pgsTypes::AdjacentTransverseConnectivity connectivity) const
+{
+   return false;
+}
+
+bool CDoubleTeeFactory::HasTopFlangeThickening() const
+{
+   return false;
+}
+
+bool CDoubleTeeFactory::CanPrecamber() const
+{
+   return true;
+}
+
+GirderIndexType CDoubleTeeFactory::GetMinimumBeamCount() const
 {
    return 1;
 }

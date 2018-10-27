@@ -324,7 +324,7 @@ void CDeckEdgeBuilder::GetDeckEdges(IPath** ppLeftEdgePath,IPath** ppRightEdgePa
    (*ppRightEdgePath)->AddRef();
 }
 
-int CDeckEdgeBuilder::BeginSpline(IPath* pPath,IPoint2d* pPoint,ICubicSpline** ppSpline,pgsTypes::DeckPointTransitionType transition,bool bLeft)
+pgsTypes::DeckPointTransitionType CDeckEdgeBuilder::BeginSpline(IPath* pPath,IPoint2d* pPoint,ICubicSpline** ppSpline,pgsTypes::DeckPointTransitionType transition,bool bLeft)
 {
    ATLASSERT( *ppSpline == nullptr );
 
@@ -397,14 +397,14 @@ int CDeckEdgeBuilder::BeginSpline(IPath* pPath,IPoint2d* pPoint,ICubicSpline** p
    return transition;
 }
 
-int CDeckEdgeBuilder::Spline(IPath* pPath,IPoint2d* pPoint,ICubicSpline* pSpline,pgsTypes::DeckPointTransitionType transition)
+pgsTypes::DeckPointTransitionType CDeckEdgeBuilder::Spline(IPath* pPath,IPoint2d* pPoint,ICubicSpline* pSpline,pgsTypes::DeckPointTransitionType transition)
 {
    ATLASSERT(pSpline != nullptr );
    pSpline->AddPointEx(pPoint);
    return transition;
 }
 
-int CDeckEdgeBuilder::EndSpline(IPath* pPath,IPoint2d* pPoint,ICubicSpline* pSpline,pgsTypes::DeckPointTransitionType transition,bool bLeft)
+pgsTypes::DeckPointTransitionType CDeckEdgeBuilder::EndSpline(IPath* pPath,IPoint2d* pPoint,ICubicSpline* pSpline,pgsTypes::DeckPointTransitionType transition,bool bLeft)
 {
    ATLASSERT(pSpline != nullptr );
 
@@ -444,17 +444,17 @@ int CDeckEdgeBuilder::EndSpline(IPath* pPath,IPoint2d* pPoint,ICubicSpline* pSpl
 
    pSpline = nullptr;
 
-   return (m_DeckPointIdx == m_nDeckPoints - 1 ? -1 : transition);
+   return transition;
 }
 
-int CDeckEdgeBuilder::BeginParallel(Float64 station,Float64 offset,Float64* pStartStation,Float64* pOffset,pgsTypes::DeckPointTransitionType transition)
+pgsTypes::DeckPointTransitionType CDeckEdgeBuilder::BeginParallel(Float64 station,Float64 offset,Float64* pStartStation,Float64* pOffset,pgsTypes::DeckPointTransitionType transition)
 {
    *pStartStation = station;
    *pOffset = offset;
    return transition;
 }
 
-int CDeckEdgeBuilder::EndParallel(IPath* pPath,Float64 startStation,Float64 endStation,Float64 offset,pgsTypes::DeckPointTransitionType transition)
+pgsTypes::DeckPointTransitionType CDeckEdgeBuilder::EndParallel(IPath* pPath,Float64 startStation,Float64 endStation,Float64 offset,pgsTypes::DeckPointTransitionType transition)
 {
    CComPtr<IPath> subPath;
    m_Alignment->CreateSubPath(CComVariant(startStation),CComVariant(endStation),&subPath);
@@ -472,13 +472,13 @@ int CDeckEdgeBuilder::EndParallel(IPath* pPath,Float64 startStation,Float64 endS
       pPath->Add(pe);
    }
 
-   return (m_DeckPointIdx == m_nDeckPoints - 1 ? -1 : transition);
+   return transition;
 }
 
-int CDeckEdgeBuilder::LinearTransition(IPath* pPath,IPoint2d* pPoint,pgsTypes::DeckPointTransitionType transition)
+pgsTypes::DeckPointTransitionType CDeckEdgeBuilder::LinearTransition(IPath* pPath,IPoint2d* pPoint,pgsTypes::DeckPointTransitionType transition)
 {
    pPath->AddEx(pPoint);
-   return (m_DeckPointIdx == m_nDeckPoints-1 ? -1 : transition);
+   return transition;
 }
 
 Float64 CDeckEdgeBuilder::GetAlignmentOffset(Float64 station)

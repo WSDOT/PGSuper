@@ -24,6 +24,7 @@
 #include "resource.h"
 #include <Graphing\StabilityGraphBuilder.h>
 #include "StabilityGraphController.h"
+#include "StabilityGraphViewControllerImp.h"
 
 #include "GraphColor.h"
 
@@ -61,7 +62,6 @@ static unitmgtLengthData DUMMY(unitMeasure::Meter);
 static LengthTool    DUMMY_TOOL(DUMMY);
 
 BEGIN_MESSAGE_MAP(CStabilityGraphBuilder, CEAFGraphBuilderBase)
-   ON_BN_CLICKED(IDC_GRID, OnShowGrid)
 END_MESSAGE_MAP()
 
 
@@ -110,6 +110,19 @@ CStabilityGraphBuilder::~CStabilityGraphBuilder()
 CEAFGraphControlWindow* CStabilityGraphBuilder::GetGraphControlWindow()
 {
    return m_pGraphController;
+}
+
+void CStabilityGraphBuilder::CreateViewController(IEAFViewController** ppController)
+{
+   CComPtr<IEAFViewController> stdController;
+   __super::CreateViewController(&stdController);
+
+   CComObject<CStabilityGraphViewController>* pController;
+   CComObject<CStabilityGraphViewController>::CreateInstance(&pController);
+   pController->Init(m_pGraphController, stdController);
+
+   (*ppController) = pController;
+   (*ppController)->AddRef();
 }
 
 CGraphBuilder* CStabilityGraphBuilder::Clone() const
@@ -183,9 +196,9 @@ void CStabilityGraphBuilder::UpdateXAxis()
    m_Graph.SetXAxisValueFormat(*m_pXFormat);
 }
 
-void CStabilityGraphBuilder::OnShowGrid()
+void CStabilityGraphBuilder::ShowGrid(bool bShowGrid)
 {
-   m_Graph.SetDoDrawGrid( !m_Graph.GetDoDrawGrid() );
+   m_Graph.SetDoDrawGrid(bShowGrid);
    GetView()->Invalidate();
 }
 
@@ -201,9 +214,12 @@ bool CStabilityGraphBuilder::UpdateNow()
    CWaitCursor wait;
 
    int graphType = m_pGraphController->GetGraphType();
-   const CSegmentKey& segmentKey(m_pGraphController->GetSegmentKey());
+   const CSegmentKey& segmentKey(m_pGraphController->GetSegment());
+   bool bShowGrid = m_pGraphController->ShowGrid();
 
    m_Graph.ClearData();
+
+   m_Graph.SetDoDrawGrid(bShowGrid);
 
    IndexType seriesFS1 = m_Graph.CreateDataSeries();
    m_Graph.SetPenStyle(seriesFS1, CURVE_STYLE, CURVE_PEN_WEIGHT, CURVE1_COLOR);
@@ -220,7 +236,7 @@ bool CStabilityGraphBuilder::UpdateNow()
    IndexType limitFS2 = m_Graph.CreateDataSeries();
    m_Graph.SetPenStyle(limitFS2, LIMIT_STYLE, CURVE_PEN_WEIGHT, CURVE2_COLOR);
 
-   GET_IFACE(IArtifact,pArtifact);
+   GET_IFACE_NOCHECK(IArtifact,pArtifact);
    GET_IFACE(IStrandGeometry,pStrandGeom);
    GET_IFACE(IBridge,pBridge);
 

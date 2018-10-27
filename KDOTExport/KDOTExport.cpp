@@ -8,8 +8,8 @@
 #include "stdafx.h"
 #include "resource.h"
 #include <initguid.h>
-#include "KDOTExport_i.h"
-#include "KDOTExport_i.c"
+#include "KDOTExport.h"
+#include <PGSuperIEPlugin.h>
 #include "PGSuperCatCom.h"
 #include <BridgeLinkCATID.h>
 #include <WBFLCore_i.c>
@@ -26,6 +26,7 @@ CComModule _Module;
 
 BEGIN_OBJECT_MAP(ObjectMap)
    OBJECT_ENTRY(CLSID_PGSuperDataExporter,    CPGSuperDataExporter)
+   OBJECT_ENTRY(CLSID_KDOTComponentInfo, CKDOTComponentInfo)
 END_OBJECT_MAP()
 
 class CKDOTExportAppPlugin : public CWinApp

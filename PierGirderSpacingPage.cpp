@@ -460,6 +460,12 @@ BOOL CPierGirderSpacingPage::OnInitDialog()
       m_cbGirderSpacingType.AddString(_T("Joint spacing is defined span by span"));
       m_cbGirderSpacingType.SetCurSel(1);
    }
+   else if (spacingType == pgsTypes::sbsUniformAdjacentWithTopWidth || spacingType == pgsTypes::sbsGeneralAdjacentWithTopWidth)
+   {
+      m_cbGirderSpacingType.AddString(_T("The same top flange width and joint spacing is used for the entire bridge"));
+      m_cbGirderSpacingType.AddString(_T("Top flange width and joint spacing is defined span by span"));
+      m_cbGirderSpacingType.SetCurSel(spacingType == pgsTypes::sbsUniformAdjacentWithTopWidth ? 0 : 1);
+   }
    else
    {
       ATLASSERT(false); // is there a new spacing type???
@@ -829,7 +835,7 @@ void CPierGirderSpacingPage::OnChangeSameGirderSpacing()
    long backGirderSpacingDatum, aheadGirderSpacingDatum;
 
    pgsTypes::PierFaceType pierFace = pParent->m_pSpan[pgsTypes::Ahead] ? pgsTypes::Ahead : pgsTypes::Back;
-   if ( spacingType == pgsTypes::sbsUniform || spacingType == pgsTypes::sbsUniformAdjacent )
+   if (IsBridgeSpacing(spacingType))
    {
       // we are going from general to uniform spacing
       // if the grid has more than one spacing, we need to ask the user which one is to be
@@ -891,13 +897,19 @@ void CPierGirderSpacingPage::OnChangeSameGirderSpacing()
                Float64 spacing = *iter;
 
                CString strItem;
-               if ( IsGirderSpacing(oldSpacingType) )
-                  strItem.Format(_T("%s"),FormatDimension(spacing,pDisplayUnits->GetXSectionDimUnit(),true));
+               if (IsGirderSpacing(oldSpacingType))
+               {
+                  strItem.Format(_T("%s"), FormatDimension(spacing, pDisplayUnits->GetXSectionDimUnit(), true));
+               }
                else
-                  strItem.Format(_T("%s"),FormatDimension(spacing,pDisplayUnits->GetComponentDimUnit(),true));
+               {
+                  strItem.Format(_T("%s"), FormatDimension(spacing, pDisplayUnits->GetComponentDimUnit(), true));
+               }
 
-               if ( iter != spacings.begin() )
+               if (iter != spacings.begin())
+               {
                   strItems += _T("\n");
+               }
 
                strItems += strItem;
             }
@@ -906,8 +918,10 @@ void CPierGirderSpacingPage::OnChangeSameGirderSpacing()
             if ( dlg.DoModal() == IDOK )
             {
                iter = spacings.begin();
-               for ( IndexType i = 0; i < dlg.m_ItemIdx; i++ )
+               for (IndexType i = 0; i < dlg.m_ItemIdx; i++)
+               {
                   iter++;
+               }
 
                bridgeSpacing = *iter;
             }

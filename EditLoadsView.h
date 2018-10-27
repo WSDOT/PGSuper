@@ -44,6 +44,10 @@
 
 class CEditLoadsView : public CFormView
 {
+public:
+   enum Field { Type, Event, LoadCase, Location, Magnitude, Description };
+   enum Direction {Ascending, Descending};
+
 protected:
 	CEditLoadsView();           // protected constructor used by dynamic creation
 	DECLARE_DYNCREATE(CEditLoadsView)
@@ -64,6 +68,10 @@ public:
 
 // Attributes
 public:
+   void SortBy(Field field,Direction direction);
+   IndexType GetLoadCount() const;
+   std::_tstring GetFieldValue(IndexType idx, Field field) const;
+   void DeleteLoad(IndexType idx);
 
 // Operations
 public:
@@ -122,6 +130,8 @@ protected:
    int m_SortColIdx;
    bool m_bSortAscending;
    void Sort(int columnIdx,bool bReverse=true);
+
+   int GetColumnIndex(Field field) const;
 
    CString GetEventName(EventIDType loadID);
 

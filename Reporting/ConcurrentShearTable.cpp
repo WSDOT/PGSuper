@@ -110,7 +110,7 @@ void CConcurrentShearTable::Build(IBroker* pBroker,rptChapter* pChapter,
    *p << p_table;
 
    // Get the interface pointers we need
-   GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
+   GET_IFACE2(pBroker,IPointOfInterest,pPoi);
 
    GET_IFACE2(pBroker,ILimitStateForces,pLsForces);
 
@@ -123,13 +123,10 @@ void CConcurrentShearTable::Build(IBroker* pBroker,rptChapter* pChapter,
    {
       CGirderKey thisGirderKey(grpIdx,girderKey.girderIndex);
 
-      std::vector<pgsPointOfInterest> vPoi( pIPoi->GetPointsOfInterest(CSegmentKey(thisGirderKey,ALL_SEGMENTS),POI_ERECTED_SEGMENT) );
-      std::vector<pgsPointOfInterest>::const_iterator i(vPoi.begin());
-      std::vector<pgsPointOfInterest>::const_iterator end(vPoi.end());
-      for ( ; i != end; i++ )
+      PoiList vPoi;
+      pPoi->GetPointsOfInterest(CSegmentKey(thisGirderKey, ALL_SEGMENTS), POI_ERECTED_SEGMENT, &vPoi);
+      for (const pgsPointOfInterest& poi : vPoi)
       {
-         const pgsPointOfInterest& poi = *i;
-
          col = 0;
 
          (*p_table)(row,col++) << location.SetValue( POI_ERECTED_SEGMENT, poi );

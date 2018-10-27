@@ -85,44 +85,26 @@
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC60.props" />
-    <Import Project="..\..\BridgeLink\BridgeLink.props" />
-    <Import Project="..\..\WBFL\WBFL.props" />
-    <Import Project="..\..\BridgeLink\ObjectiveGrid.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC60.props" />
-    <Import Project="..\..\BridgeLink\BridgeLink.props" />
-    <Import Project="..\..\WBFL\WBFL.props" />
-    <Import Project="..\..\BridgeLink\ObjectiveGrid.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC60.props" />
-    <Import Project="..\..\BridgeLink\BridgeLink.props" />
-    <Import Project="..\..\WBFL\WBFL.props" />
-    <Import Project="..\..\BridgeLink\ObjectiveGrid.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Profile|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC60.props" />
-    <Import Project="..\..\BridgeLink\BridgeLink.props" />
-    <Import Project="..\..\WBFL\WBFL.props" />
-    <Import Project="..\..\BridgeLink\ObjectiveGrid.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC60.props" />
-    <Import Project="..\..\BridgeLink\BridgeLink.props" />
-    <Import Project="..\..\WBFL\WBFL.props" />
-    <Import Project="..\..\BridgeLink\ObjectiveGrid.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC60.props" />
-    <Import Project="..\..\BridgeLink\BridgeLink.props" />
-    <Import Project="..\..\WBFL\WBFL.props" />
-    <Import Project="..\..\BridgeLink\ObjectiveGrid.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
@@ -490,12 +472,14 @@
     <ClCompile Include="ACIParametersDlg.cpp" />
     <ClCompile Include="ApplyLoadActivity.cpp" />
     <ClCompile Include="BaseCommandLineInfo.cpp" />
+    <ClCompile Include="BearingData2.cpp" />
     <ClCompile Include="BoundaryConditionComboBox.cpp" />
     <ClCompile Include="BoundaryConditionDlg.cpp" />
     <ClCompile Include="BridgeDescription.cpp" />
     <ClCompile Include="BridgeDescription2.cpp" />
     <ClCompile Include="CapacityToDemand.cpp" />
     <ClCompile Include="CastDeckActivity.cpp" />
+    <ClCompile Include="CastLongitudinalJointActivity.cpp" />
     <ClCompile Include="Catalog.cpp" />
     <ClCompile Include="CatalogServer.cpp" />
     <ClCompile Include="CatalogServerAppMixin.cpp">
@@ -639,10 +623,12 @@
     <ClInclude Include="..\Include\PgsExt\ApplyLoadActivity.h" />
     <ClInclude Include="..\Include\PgsExt\AutoLib.h" />
     <ClInclude Include="..\Include\PgsExt\BaseCommandLineInfo.h" />
+    <ClInclude Include="..\Include\PgsExt\BearingData2.h" />
     <ClInclude Include="..\Include\PgsExt\BoundaryConditionComboBox.h" />
     <ClInclude Include="..\Include\PgsExt\BridgeDescription2.h" />
     <ClInclude Include="..\Include\PgsExt\CapacityToDemand.h" />
     <ClInclude Include="..\Include\PgsExt\CastDeckActivity.h" />
+    <ClInclude Include="..\Include\PgsExt\CastLongitudinalJointActivity.h" />
     <ClInclude Include="..\Include\PgsExt\CatalogServerAppMixin.h" />
     <ClInclude Include="..\Include\PgsExt\CEBFIPConcretePage.h" />
     <ClInclude Include="..\Include\PgsExt\ClosureJointData.h" />

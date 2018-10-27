@@ -38,6 +38,8 @@
 #include <PgsExt\StatusItem.h>
 #include "..\PGSuperException.h"
 
+#include <WBFLGenericBridgeTools.h>
+
 #include <Details.h>
 
 #include <numeric>
@@ -480,7 +482,8 @@ void CTimeStepLossEngineer::ComputeFrictionLosses(const CGirderKey& girderKey,LO
    Float64 Dset, wobble, friction;
    m_pLossParams->GetTendonPostTensionParameters(&Dset,&wobble,&friction);
 
-   std::vector<pgsPointOfInterest> vPoi(GetAnalysisLocations(girderKey));
+   PoiList vPoi;
+   GetAnalysisLocations(girderKey, &vPoi);
 
    WebIndexType nWebs = m_pGirder->GetWebCount(girderKey);
 
@@ -489,12 +492,12 @@ void CTimeStepLossEngineer::ComputeFrictionLosses(const CGirderKey& girderKey,LO
    DuctIndexType nDucts = m_pTendonGeom->GetDuctCount(girderKey);
    Float64 Lg = m_pBridge->GetGirderLength(girderKey);
 
-   std::vector<pgsPointOfInterest>::iterator begin(vPoi.begin());
-   std::vector<pgsPointOfInterest>::iterator iter(vPoi.begin());
-   std::vector<pgsPointOfInterest>::iterator end(vPoi.end());
+   auto begin(std::cbegin(vPoi));
+   auto iter(std::cbegin(vPoi));
+   auto end(std::cend(vPoi));
    for ( ; iter != end; iter++ )
    {
-      pgsPointOfInterest& poi(*iter);
+      const pgsPointOfInterest& poi(*iter);
 
       LOSSDETAILS details;
       details.FrictionLossDetails.reserve(nDucts);
@@ -583,7 +586,7 @@ void CTimeStepLossEngineer::ComputeFrictionLosses(const CGirderKey& girderKey,LO
             }
             else
             {
-               pgsPointOfInterest& prevPoi(*(iter-1));
+               const pgsPointOfInterest& prevPoi(*(iter-1));
                Float64 dX = frDetails.X - pLosses->SectionLosses[prevPoi].FrictionLossDetails[ductIdx].X;
                Float64 df = fpj - 0.5*(frDetails.dfpF + pLosses->SectionLosses[prevPoi].FrictionLossDetails[ductIdx].dfpF);
                m_Elongation[tendonKey].first += df*dX;
@@ -974,7 +977,7 @@ void CTimeStepLossEngineer::InitializeTimeStepAnalysis(IntervalIndexType interva
 
    // TRANSFORMED PROPERTIES OF COMPOSITE SECTION (all parts are transformed to equivalent girder concrete)
    tsDetails.Atr = m_pSectProp->GetAg(pgsTypes::sptTransformed,intervalIdx,poi);
-   tsDetails.Itr = m_pSectProp->GetIx(pgsTypes::sptTransformed,intervalIdx,poi);
+   tsDetails.Itr = m_pSectProp->GetIxx(pgsTypes::sptTransformed,intervalIdx,poi);
    tsDetails.Ytr = -m_pSectProp->GetY(pgsTypes::sptTransformed,intervalIdx,poi,pgsTypes::TopGirder); // Negative because this is measured down from Y=0 at the top of the girder
    tsDetails.E   = EaGirder;
 
@@ -1372,9 +1375,9 @@ void CTimeStepLossEngineer::InitializeTimeStepAnalysis(IntervalIndexType interva
 
    if ( 0 < intervalIdx )
    {
-      for ( IntervalIndexType i = 0; i < intervalIdx; i++ )
+      for (IntervalIndexType i = 0; i < intervalIdx; i++)
       {
-         TIME_STEP_CONCRETE::CREEP_STRAIN    girderCreepStrain,    deckCreepStrain;
+         TIME_STEP_CONCRETE::CREEP_STRAIN    girderCreepStrain, deckCreepStrain;
          TIME_STEP_CONCRETE::CREEP_CURVATURE girderCreepCurvature, deckCreepCurvature;
 
          TIME_STEP_DETAILS& iTimeStepDetails(details.TimeStepDetails[i]); // time step details for interval i
@@ -1383,7 +1386,7 @@ void CTimeStepLossEngineer::InitializeTimeStepAnalysis(IntervalIndexType interva
          INCREMENTALCREEPDETAILS girderCreepDetails;
          Float64 Cs, Ce;
          Float64 Xs, Xe;
-         if ( bIgnoreCreepEffects )
+         if (bIgnoreCreepEffects)
          {
             Cs = 0;
             Ce = 0;
@@ -1393,21 +1396,21 @@ void CTimeStepLossEngineer::InitializeTimeStepAnalysis(IntervalIndexType interva
          }
          else
          {
-            if ( bIsInClosure )
+            if (bIsInClosure)
             {
-               girderCreepDetails.pStartDetails = m_pMaterials->GetClosureJointCreepCoefficientDetails(closureKey,i,pgsTypes::Middle,intervalIdx,pgsTypes::Start);
-               girderCreepDetails.pEndDetails   = m_pMaterials->GetClosureJointCreepCoefficientDetails(closureKey,i,pgsTypes::Middle,intervalIdx,pgsTypes::End);
+               girderCreepDetails.pStartDetails = m_pMaterials->GetClosureJointCreepCoefficientDetails(closureKey, i, pgsTypes::Middle, intervalIdx, pgsTypes::Start);
+               girderCreepDetails.pEndDetails = m_pMaterials->GetClosureJointCreepCoefficientDetails(closureKey, i, pgsTypes::Middle, intervalIdx, pgsTypes::End);
             }
             else
             {
-               girderCreepDetails.pStartDetails = m_pMaterials->GetSegmentCreepCoefficientDetails(segmentKey,i,pgsTypes::Middle,intervalIdx,pgsTypes::Start);
-               girderCreepDetails.pEndDetails   = m_pMaterials->GetSegmentCreepCoefficientDetails(segmentKey,i,pgsTypes::Middle,intervalIdx,pgsTypes::End);
+               girderCreepDetails.pStartDetails = m_pMaterials->GetSegmentCreepCoefficientDetails(segmentKey, i, pgsTypes::Middle, intervalIdx, pgsTypes::Start);
+               girderCreepDetails.pEndDetails = m_pMaterials->GetSegmentCreepCoefficientDetails(segmentKey, i, pgsTypes::Middle, intervalIdx, pgsTypes::End);
             }
             Cs = girderCreepDetails.pStartDetails->Ct;
             Ce = girderCreepDetails.pEndDetails->Ct;
 
-            Xs = (bIsInClosure ? m_pMaterials->GetClosureJointAgingCoefficient(closureKey,intervalIdx) : m_pMaterials->GetSegmentAgingCoefficient(segmentKey,intervalIdx));
-            Xe = (bIsInClosure ? m_pMaterials->GetClosureJointAgingCoefficient(closureKey,intervalIdx) : m_pMaterials->GetSegmentAgingCoefficient(segmentKey,intervalIdx));
+            Xs = (bIsInClosure ? m_pMaterials->GetClosureJointAgingCoefficient(closureKey, intervalIdx) : m_pMaterials->GetSegmentAgingCoefficient(segmentKey, intervalIdx));
+            Xe = (bIsInClosure ? m_pMaterials->GetClosureJointAgingCoefficient(closureKey, intervalIdx) : m_pMaterials->GetSegmentAgingCoefficient(segmentKey, intervalIdx));
          }
          tsDetails.Girder.Creep.push_back(girderCreepDetails);
 
@@ -1416,10 +1419,10 @@ void CTimeStepLossEngineer::InitializeTimeStepAnalysis(IntervalIndexType interva
          Float64 dM_Girder = 0;
          Float64 dP_Deck = 0;
          Float64 dM_Deck = 0;
-         std::vector<pgsTypes::ProductForceType> vProductForces = GetApplicableProductLoads(i,poi);
+         std::vector<pgsTypes::ProductForceType> vProductForces = GetApplicableProductLoads(i, poi);
          std::vector<pgsTypes::ProductForceType>::iterator pfIter(vProductForces.begin());
          std::vector<pgsTypes::ProductForceType>::iterator pfIterEnd(vProductForces.end());
-         for ( ; pfIter != pfIterEnd; pfIter++ )
+         for (; pfIter != pfIterEnd; pfIter++)
          {
             pgsTypes::ProductForceType pfType = *pfIter;
             dP_Girder += iTimeStepDetails.Girder.dPi[pfType];
@@ -1430,11 +1433,11 @@ void CTimeStepLossEngineer::InitializeTimeStepAnalysis(IntervalIndexType interva
          }
 
          // Modulus in interval i (not age adjusted because we apply the creep coefficients Ce and Cs)
-         Float64 EiGirder = (bIsInClosure ? m_pMaterials->GetClosureJointEc(closureKey,i) : m_pMaterials->GetSegmentEc(segmentKey,i));
+         Float64 EiGirder = (bIsInClosure ? m_pMaterials->GetClosureJointEc(closureKey, i) : m_pMaterials->GetSegmentEc(segmentKey, i));
          Float64 EiAGirder = EiGirder*iTimeStepDetails.Girder.An;
          Float64 EiIGirder = EiGirder*iTimeStepDetails.Girder.In;
-         Float64 e = IsZero(EiAGirder) ? 0 : (Xe*Ce-Xs*Cs)*dP_Girder/EiAGirder;
-         Float64 r = IsZero(EiIGirder) ? 0 : (Xe*Ce-Xs*Cs)*dM_Girder/EiIGirder;
+         Float64 e = IsZero(EiAGirder) ? 0 : (Xe*Ce - Xs*Cs)*dP_Girder / EiAGirder;
+         Float64 r = IsZero(EiIGirder) ? 0 : (Xe*Ce - Xs*Cs)*dM_Girder / EiIGirder;
 
          tsDetails.Girder.eci += e;
          tsDetails.Girder.rci += r;
@@ -1462,22 +1465,22 @@ void CTimeStepLossEngineer::InitializeTimeStepAnalysis(IntervalIndexType interva
 
          // Deck
          INCREMENTALCREEPDETAILS deckCreepDetails;
-         if ( bIgnoreCreepEffects )
+         if (m_pBridge->IsCompositeDeck() && !bIgnoreCreepEffects)
          {
-            Cs = 0;
-            Ce = 0;
-            Xs = 1.0;
-            Xe = 1.0;
-         }
-         else
-         {
-            deckCreepDetails.pStartDetails = m_pMaterials->GetDeckCreepCoefficientDetails(i,pgsTypes::Middle,intervalIdx,pgsTypes::Start);
-            deckCreepDetails.pEndDetails   = m_pMaterials->GetDeckCreepCoefficientDetails(i,pgsTypes::Middle,intervalIdx,pgsTypes::End);
+            deckCreepDetails.pStartDetails = m_pMaterials->GetDeckCreepCoefficientDetails(i, pgsTypes::Middle, intervalIdx, pgsTypes::Start);
+            deckCreepDetails.pEndDetails = m_pMaterials->GetDeckCreepCoefficientDetails(i, pgsTypes::Middle, intervalIdx, pgsTypes::End);
             Cs = deckCreepDetails.pStartDetails->Ct;
             Ce = deckCreepDetails.pEndDetails->Ct;
 
             Xs = m_pMaterials->GetDeckAgingCoefficient(intervalIdx);
             Xe = m_pMaterials->GetDeckAgingCoefficient(intervalIdx);
+         }
+         else
+         {
+            Cs = 0;
+            Ce = 0;
+            Xs = 1.0;
+            Xe = 1.0;
          }
          tsDetails.Deck.Creep.push_back(deckCreepDetails);
 
@@ -1486,8 +1489,8 @@ void CTimeStepLossEngineer::InitializeTimeStepAnalysis(IntervalIndexType interva
          Float64 EiADeck = EiDeck*iTimeStepDetails.Deck.An;
          Float64 EiIDeck = EiDeck*iTimeStepDetails.Deck.In;
 
-         e = IsZero(EiADeck) ? 0 : (Xe*Ce-Xs*Cs)*dP_Deck/EiADeck;
-         r = IsZero(EiIDeck) ? 0 : (Xe*Ce-Xs*Cs)*dM_Deck/EiIDeck;
+         e = IsZero(EiADeck) ? 0 : (Xe*Ce - Xs*Cs)*dP_Deck / EiADeck;
+         r = IsZero(EiIDeck) ? 0 : (Xe*Ce - Xs*Cs)*dM_Deck / EiIDeck;
 
          tsDetails.Deck.eci += e;
          tsDetails.Deck.rci += r;
@@ -1523,7 +1526,7 @@ void CTimeStepLossEngineer::InitializeTimeStepAnalysis(IntervalIndexType interva
          tsDetails.Girder.Shrinkage.esi = tsDetails.Girder.Shrinkage.pEndDetails->esh - tsDetails.Girder.Shrinkage.pStartDetails->esh;
       }
 
-      if ( !bIgnoreShrinkageEffects )
+      if ( m_pBridge->IsCompositeDeck() && !bIgnoreShrinkageEffects )
       {
          tsDetails.Deck.Shrinkage.pStartDetails = m_pMaterials->GetTotalDeckFreeShrinkageStrainDetails(intervalIdx,pgsTypes::Start);
          tsDetails.Deck.Shrinkage.pEndDetails   = m_pMaterials->GetTotalDeckFreeShrinkageStrainDetails(intervalIdx,pgsTypes::End);
@@ -2047,8 +2050,7 @@ void CTimeStepLossEngineer::FinalizeTimeStepAnalysis(IntervalIndexType intervalI
       //
       // Compute total change of force on the section during this interval
       //
-      int n = GetProductForceCount();
-      for ( int i = 0; i < n; i++ ) 
+      for ( int i = 0; i < pftTimeStepSize; i++ )
       {
          pgsTypes::ProductForceType pfType = (pgsTypes::ProductForceType)(i);
 
@@ -2847,8 +2849,7 @@ void CTimeStepLossEngineer::FinalizeTimeStepAnalysis(IntervalIndexType intervalI
    tsDetails.dMext = 0;
    tsDetails.dPint = 0;
    tsDetails.dMint = 0;
-   int N = GetProductForceCount();
-   for ( int i = 0; i < N; i++ )
+   for ( int i = 0; i < pftTimeStepSize; i++ )
    {
       // Sum the change in externally applied loads
       pgsTypes::ProductForceType pfType = (pgsTypes::ProductForceType)i;
@@ -3064,13 +3065,11 @@ void CTimeStepLossEngineer::BuildReport(const CGirderKey& girderKey,rptChapter* 
 
       // Get the losses for this segment
       GET_IFACE(IPointOfInterest,pPoi);
-      std::vector<pgsPointOfInterest> vPoi(pPoi->GetPointsOfInterest(CSegmentKey(girderKey,segIdx),POI_ERECTED_SEGMENT | POI_TENTH_POINTS));
-      std::vector<pgsPointOfInterest>::iterator iter(vPoi.begin());
-      std::vector<pgsPointOfInterest>::iterator end(vPoi.end());
-      for ( ; iter != end; iter++, row++ )
+      PoiList vPoi;
+      pPoi->GetPointsOfInterest(CSegmentKey(girderKey, segIdx), POI_ERECTED_SEGMENT | POI_TENTH_POINTS, &vPoi);
+      for ( const pgsPointOfInterest& poi : vPoi)
       {
          col = 0;
-         const pgsPointOfInterest& poi(*iter);
          const LOSSDETAILS* pLossDetails = GetLosses(poi,INVALID_INDEX);
 
          (*pPSLossTable)(row,col++) << location.SetValue( POI_ERECTED_SEGMENT, poi );
@@ -3103,6 +3102,8 @@ void CTimeStepLossEngineer::BuildReport(const CGirderKey& girderKey,rptChapter* 
          (*pPSLossTable)(row,col) << rptNewLine; //stress.SetValue( pLossDetails->TimeStepDetails.back().Strands[pgsTypes::Harped].loss );
 #endif // LLUMP_STRANDS
       } // next POI
+      
+      row++;
    } // next segment
 
   
@@ -3138,12 +3139,10 @@ void CTimeStepLossEngineer::BuildReport(const CGirderKey& girderKey,rptChapter* 
       RowIndexType row = pPTLossTable[0]->GetNumberOfHeaderRows();
 
       GET_IFACE(IPointOfInterest,pPoi);
-      std::vector<pgsPointOfInterest> vPoi(pPoi->GetPointsOfInterest(CSegmentKey(girderKey,ALL_SEGMENTS)));
-      std::vector<pgsPointOfInterest>::iterator iter(vPoi.begin());
-      std::vector<pgsPointOfInterest>::iterator end(vPoi.end());
-      for ( ; iter != end; iter++, row++ )
+      PoiList vPoi;
+      pPoi->GetPointsOfInterest(CSegmentKey(girderKey, ALL_SEGMENTS), &vPoi);
+      for ( const pgsPointOfInterest& poi : vPoi)
       {
-         const pgsPointOfInterest& poi(*iter);
          if ( pPoi->IsOnGirder(poi) )
          {
             const LOSSDETAILS* pLossDetails = GetLosses(poi,INVALID_INDEX);
@@ -3170,6 +3169,7 @@ void CTimeStepLossEngineer::BuildReport(const CGirderKey& girderKey,rptChapter* 
                (*pPTLossTable[ductIdx])(row,ductCol++) << stress.SetValue( pLossDetails->TimeStepDetails.back().Tendons[ductIdx].loss );
             }
          }
+         row++;
       }
 
       // deletes the array of points, not the pointers themselves
@@ -3748,7 +3748,7 @@ std::vector<pgsTypes::ProductForceType> CTimeStepLossEngineer::GetApplicableProd
       for ( ; constrLoadIter != constrLoadIterEnd; constrLoadIter++ )
       {
          ConstructionLoad& load = *constrLoadIter;
-         if ( !IsZero(load.wStart) || !IsZero(load.wEnd) )
+         if ( !IsZero(load.Wstart) || !IsZero(load.Wend) )
          {
             vProductForces.push_back(pgsTypes::pftConstruction);
             break;
@@ -3759,6 +3759,10 @@ std::vector<pgsTypes::ProductForceType> CTimeStepLossEngineer::GetApplicableProd
       {
          vProductForces.push_back(pgsTypes::pftShearKey);
       }
+
+#pragma Reminder("WORKING HERE - longitudinal joint - need longitudinal joint in time-step analysis")
+      // also need to look at code above regarding deck and diaphragms.
+      //vProductForces.push_back(pgsTypes::pftLongitudinalJoint);
    }
 
    IntervalIndexType installOverlayIntervalIdx = m_pIntervals->GetOverlayInterval();
@@ -3875,7 +3879,7 @@ std::vector<pgsTypes::ProductForceType> CTimeStepLossEngineer::GetApplicableProd
       }
    }
 
-   ATLASSERT(vProductForces.size() <= (bExternalForcesOnly ? 14 : GetProductForceCount()));
+   ATLASSERT(vProductForces.size() <= (bExternalForcesOnly ? 15 : pftTimeStepSize));
 
    return vProductForces;
 }
@@ -3907,33 +3911,20 @@ const std::vector<pgsTypes::StrandType>& CTimeStepLossEngineer::GetStrandTypes(c
    return found->second;
 }
 
-int CTimeStepLossEngineer::GetProductForceCount()
-{
-   // returns the number of product forces that we need to consider from the pgsTypes::ProductForceType enum.
-   // all of the product forces count except for the special case at the end of the enum.
-   int n = (int)pgsTypes::pftProductForceTypeCount;
-   n -= 1; // remove pgsTypes::pftOverlayRating from the count as it is a special case and don't apply here
-   return n;
-}
-
-std::vector<pgsPointOfInterest> CTimeStepLossEngineer::GetAnalysisLocations(const CGirderKey& girderKey)
+void CTimeStepLossEngineer::GetAnalysisLocations(const CGirderKey& girderKey,PoiList* pPoiList)
 {
    // this does time-step analysis using every POI
 #if defined USE_ALL_POI
-   return m_pPoi->GetPointsOfInterest(CSegmentKey(girderKey,ALL_SEGMENTS));
+   m_pPoi->GetPointsOfInterest(CSegmentKey(girderKey,ALL_SEGMENTS),pPoiList);
 #else
     //this does time-step analysis using span 10th points, segment start/end points, and closure joints
     //this method is about 2x-6x faster. However, need to interpolate results for POIs that are not
     //explicitly analyzed. This interpolation isn't done yet.
-   std::vector<pgsPointOfInterest> vPoi = m_pPoi->GetPointsOfInterest(CSegmentKey(girderKey,ALL_SEGMENTS),POI_SPAN);
-   std::vector<pgsPointOfInterest> vPoi2 = m_pPoi->GetPointsOfInterest(CSegmentKey(girderKey,ALL_SEGMENTS),POI_0L | POI_RELEASED_SEGMENT);
-   std::vector<pgsPointOfInterest> vPoi3 = m_pPoi->GetPointsOfInterest(CSegmentKey(girderKey,ALL_SEGMENTS),POI_10L | POI_RELEASED_SEGMENT);
-   std::vector<pgsPointOfInterest> vPoi4 = m_pPoi->GetPointsOfInterest(CSegmentKey(girderKey,ALL_SEGMENTS),POI_CLOSURE | POI_START_FACE | POI_END_FACE);
-   vPoi.insert(vPoi.end(),vPoi2.begin(),vPoi2.end());
-   vPoi.insert(vPoi.end(),vPoi3.begin(),vPoi3.end());
-   vPoi.insert(vPoi.end(),vPoi4.begin(),vPoi4.end());
-   std::sort(vPoi.begin(),vPoi.end());
-   vPoi.erase(std::unique(vPoi.begin(),vPoi.end()),vPoi.end());
-   return vPoi;
+   pPoiList->reserve(pPoiList->size() + 40);
+   m_pPoi->GetPointsOfInterest(CSegmentKey(girderKey, ALL_SEGMENTS), POI_SPAN, pPoiLlist);
+   m_pPoi->GetPointsOfInterest(CSegmentKey(girderKey,ALL_SEGMENTS),POI_0L | POI_RELEASED_SEGMENT, pPoiLlist);
+   m_pPoi->GetPointsOfInterest(CSegmentKey(girderKey,ALL_SEGMENTS),POI_10L | POI_RELEASED_SEGMENT, pPoiLlist);
+   m_pPoi->GetPointsOfInterest(CSegmentKey(girderKey,ALL_SEGMENTS),POI_CLOSURE | POI_START_FACE | POI_END_FACE, pPoiLlist;
+   *pPoiLlist = m_pPoi->SetPoiList(pPoiLlist);
 #endif
 }

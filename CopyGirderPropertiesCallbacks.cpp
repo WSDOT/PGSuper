@@ -56,15 +56,15 @@ bool txnCopyGirderType::Execute()
 
    // When changing girder type, we need to reset strands to zero and copy default seed data from library
    // to insure data compatibility
-   const GirderLibraryEntry* pGird = pLib->GetGirderEntry( strNewName.c_str());
-   ASSERT(pGird!=0);
+   const GirderLibraryEntry* pGirderEntry = pLib->GetGirderEntry( strNewName.c_str());
+   ASSERT(pGirderEntry != nullptr);
 
    // Seed shear data
    CShearData2 sheardata;
-   sheardata.CopyGirderEntryData(*pGird);
+   sheardata.CopyGirderEntryData(pGirderEntry);
 
    CLongitudinalRebarData rebardata;
-   rebardata.CopyGirderEntryData(*pGird);
+   rebardata.CopyGirderEntryData(pGirderEntry);
 
    m_strOldNames.clear();
    m_OldPrestressData.clear();

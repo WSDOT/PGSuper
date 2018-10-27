@@ -278,7 +278,7 @@ m_StatusGroupID(INVALID_ID)
 {
 }
 
-void pgsShearDesignTool::Initialize(IBroker* pBroker, LongReinfShearChecker* pLongShearChecker,
+void pgsShearDesignTool::Initialize(IBroker* pBroker, const LongReinfShearChecker* pLongShearChecker,
                                     StatusGroupIDType statusGroupID, pgsSegmentDesignArtifact* pArtif, 
                                     Float64 startConfinementZl, Float64 endConfinementZl,
                                     bool bPermit, bool bDesignFromScratch)
@@ -387,7 +387,7 @@ void pgsShearDesignTool::Initialize(IBroker* pBroker, LongReinfShearChecker* pLo
 #pragma Reminder("UPDATE: need to get the real dv value")
    // The original code for this tool had a bug in it. It only got the basic max spacing values
    // without looking at the upper limit on the max spacing values. The limitations are
-   // in LRFD Equations 5.8.2.7-1 and -2. The m_SMaxMax cannot be more than 0.8dv 
+   // in LRFD Equations 5.7.2.6-1 and -2 (pre2017: 5.8.2.7). The m_SMaxMax cannot be more than 0.8dv 
    // and S_over cannot be more than 0.4dv.
    //
    // When updating for LRFD 7th Edition, 2014, the GetMaxStirrupSpacing function was
@@ -409,10 +409,11 @@ void pgsShearDesignTool::Initialize(IBroker* pBroker, LongReinfShearChecker* pLo
       GET_IFACE(IPointOfInterest,pPOI);
 
       // Splitting is computed and end transfer locations
-      std::vector<pgsPointOfInterest> vPOI( pPOI->GetPointsOfInterest(m_SegmentKey,POI_PSXFER) );
+      PoiList vPOI;
+      pPOI->GetPointsOfInterest(m_SegmentKey, POI_PSXFER, &vPOI);
       ATLASSERT(vPOI.size() != 0);
-      pgsPointOfInterest start_poi( vPOI.front() );
-      pgsPointOfInterest end_poi( vPOI.back() );
+      const pgsPointOfInterest& start_poi( vPOI.front() );
+      const pgsPointOfInterest& end_poi( vPOI.back() );
 
       Float64 start_h = pGdr->GetSplittingZoneHeight( start_poi );
       Float64 end_h   = pGdr->GetSplittingZoneHeight( end_poi );
@@ -427,7 +428,7 @@ void pgsShearDesignTool::Initialize(IBroker* pBroker, LongReinfShearChecker* pLo
    }
 }
 
-void pgsShearDesignTool::ResetDesign(const std::vector<pgsPointOfInterest>& pois)
+void pgsShearDesignTool::ResetDesign(const PoiList& pois)
 {
    ATLASSERT(m_pBroker!=nullptr); // make sure Intialize was called
 
@@ -442,15 +443,15 @@ void pgsShearDesignTool::ResetDesign(const std::vector<pgsPointOfInterest>& pois
    ValidatePointsOfInterest(pois);
 }
 
-const std::vector<pgsPointOfInterest>& pgsShearDesignTool::GetDesignPoi() const
+const PoiList& pgsShearDesignTool::GetDesignPoi() const
 {
    ATLASSERT(!m_DesignPois.empty());
    return m_DesignPois;
 }
 
-std::vector<pgsPointOfInterest> pgsShearDesignTool::GetCriticalSections() const
+PoiList pgsShearDesignTool::GetCriticalSections() const
 {
-   std::vector<pgsPointOfInterest> vPoi;
+   PoiList vPoi;
    m_PoiMgr.GetPointsOfInterest(m_SegmentKey,POI_CRITSECTSHEAR1,POIFIND_OR,&vPoi);
    return vPoi;
 }
@@ -465,7 +466,7 @@ const CSegmentKey& pgsShearDesignTool::GetSegmentKey() const
    return m_SegmentKey;
 }
 
-GDRCONFIG pgsShearDesignTool::GetSegmentConfiguration()
+GDRCONFIG pgsShearDesignTool::GetSegmentConfiguration() const
 {
    return m_pArtifact->GetSegmentConfiguration();
 }
@@ -589,17 +590,14 @@ bool pgsShearDesignTool::GetLongShearCapacityRequiresStirrupTightening() const
    return m_bLongShearCapacityRequiresStirrupTightening;
 }
 
-void pgsShearDesignTool::ValidatePointsOfInterest(const std::vector<pgsPointOfInterest>& vPois)
+void pgsShearDesignTool::ValidatePointsOfInterest(const PoiList& vPois) const
 {
    // POI's are managed locally
    m_PoiMgr.RemoveAll();
 
    // Add all Poi's used from the flexure analysis. 
-   std::vector<pgsPointOfInterest>::const_iterator poiIter(vPois.begin());
-   std::vector<pgsPointOfInterest>::const_iterator poiIterEnd(vPois.end());
-   for ( ; poiIter != poiIterEnd; poiIter++)
+   for ( const pgsPointOfInterest& poi : vPois)
    {
-      const pgsPointOfInterest& poi = *poiIter;
       if (poi.HasAttribute(POI_CRITSECTSHEAR1))
       {
          // Strip CSS's of their attribute
@@ -617,22 +615,27 @@ void pgsShearDesignTool::ValidatePointsOfInterest(const std::vector<pgsPointOfIn
    GDRCONFIG gconfig = GetSegmentConfiguration();
 
    GET_IFACE(IPointOfInterest,pPoi);
-   std::vector<pgsPointOfInterest> vCSPoi = pPoi->GetCriticalSections(pgsTypes::StrengthI,m_SegmentKey,gconfig);
+   std::vector<pgsPointOfInterest> vCSPoi;
+   pPoi->GetCriticalSections(pgsTypes::StrengthI, m_SegmentKey, gconfig, &vCSPoi);
    ATLASSERT(vCSPoi.size() == 2);
-
-   std::vector<pgsPointOfInterest>::iterator csIter(vCSPoi.begin());
-   std::vector<pgsPointOfInterest>::iterator csIterEnd(vCSPoi.end());
-   for ( ; csIter != csIterEnd; csIter++ )
+   for (const pgsPointOfInterest& csPoi : vCSPoi)
    {
-      m_PoiMgr.AddPointOfInterest(*csIter);
+      m_PoiMgr.AddPointOfInterest(csPoi);
    }
 
    // Create some additional pois at 2H, 3H, 4H at each end of girder
    // This will give a better spacing layout for our stirrups
    GET_IFACE(IGirder,pGdr);
    Float64 hgLeft, hgRight; // height of girder at left and right ends
-   hgLeft  = pGdr->GetHeight(pgsPointOfInterest(m_SegmentKey,0.00));
-   hgRight = pGdr->GetHeight(pgsPointOfInterest(m_SegmentKey,m_SegmentLength));
+   PoiList vEndPois;
+   pPoi->GetPointsOfInterest(m_SegmentKey, POI_0L | POI_10L | POI_RELEASED_SEGMENT, &vEndPois);
+   ATLASSERT(vEndPois.size() == 2);
+   const pgsPointOfInterest& poiLeftEnd(vEndPois.front());
+   const pgsPointOfInterest& poiRightEnd(vEndPois.back());
+   ATLASSERT(IsEqual(poiLeftEnd.GetDistFromStart(), 0.0));
+   ATLASSERT(IsEqual(poiRightEnd.GetDistFromStart(), m_SegmentLength));
+   hgLeft  = pGdr->GetHeight(poiLeftEnd);
+   hgRight = pGdr->GetHeight(poiRightEnd);
 
    pgsPointOfInterest poiL2H(m_SegmentKey, m_LeftFosLocation+2.0*hgLeft);
    m_PoiMgr.AddPointOfInterest(poiL2H);
@@ -696,18 +699,16 @@ void pgsShearDesignTool::ValidatePointsOfInterest(const std::vector<pgsPointOfIn
    // Update our Vector to allow ordered access to design pois
 
    // Design at span 10th points
-   std::vector<pgsPointOfInterest> pois;
+   PoiList pois;
    m_PoiMgr.GetPointsOfInterest(m_SegmentKey,POI_SPAN,POIFIND_OR,&pois);
 
    // Add other important POI
    // POI_H and POI_15H are for the WSDOT summary report. They are traditional location for reporting shear checks
-   std::vector<pgsPointOfInterest> morePois;
+   PoiList morePois;
    m_PoiMgr.GetPointsOfInterest(m_SegmentKey,POI_H | POI_15H | POI_CRITSECTSHEAR1 | POI_FACEOFSUPPORT | POI_HARPINGPOINT | POI_STIRRUP_ZONE | POI_CONCLOAD | POI_DIAPHRAGM | POI_DECKBARCUTOFF | POI_BARCUTOFF | POI_BARDEVELOP | POI_DEBOND, POIFIND_OR, &morePois);
-   pois.insert(pois.end(),morePois.begin(),morePois.end()); 
-
-   // sort and remove duplicates
-   std::sort(pois.begin(),pois.end());
-   pois.erase(std::unique(pois.begin(),pois.end()),pois.end());
+   
+   // merge, sort and remove duplicates
+   m_PoiMgr.MergePoiLists(pois, morePois, &pois);
 
    // remove all POI from the container that are outside of the CL Bearings...
    // PoiIsOusideOfBearings does the filtering and it keeps POIs that are at the closure joint (and this is what we want)
@@ -719,10 +720,11 @@ void pgsShearDesignTool::ValidatePointsOfInterest(const std::vector<pgsPointOfIn
    std::remove_copy_if(pois.begin(), pois.end(), std::back_inserter(m_DesignPois), PoiIsOutsideOfBearings(m_SegmentKey,endDist,endDist+segmentSpanLength));
 
    // Remove any POIs that are out on the cantilever (some may be at the bearings and didn't get removed in the previous call)
-   m_DesignPois.erase(std::remove_if(m_DesignPois.begin(),m_DesignPois.end(),RemoveIfPoiHasAttribute(POI_CANTILEVER)),m_DesignPois.end());
+   // if a poi has the POI_CANTILEVER attribute, remove it
+   m_DesignPois.erase(std::remove_if(std::begin(m_DesignPois), std::end(m_DesignPois), [targetAttribute = POI_CANTILEVER](const pgsPointOfInterest& poi) { return poi.HasAttribute(targetAttribute);}), std::end(m_DesignPois));
 }
 
-pgsShearDesignTool::ShearDesignOutcome pgsShearDesignTool::Validate()
+pgsShearDesignTool::ShearDesignOutcome pgsShearDesignTool::Validate() const
 {
    // Copy shear data from girder artifact. This is the data we design on
    m_ShearData = *m_pArtifact->GetShearData();
@@ -738,7 +740,7 @@ pgsShearDesignTool::ShearDesignOutcome pgsShearDesignTool::Validate()
    return sd;
 }
 
-pgsShearDesignTool::ShearDesignOutcome pgsShearDesignTool::ValidateVerticalAvsDemand()
+pgsShearDesignTool::ShearDesignOutcome pgsShearDesignTool::ValidateVerticalAvsDemand() const
 {
    GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
@@ -781,9 +783,9 @@ pgsShearDesignTool::ShearDesignOutcome pgsShearDesignTool::ValidateVerticalAvsDe
             GDRCONFIG config = this->GetSegmentConfiguration(); // current design
 
             SHEARCAPACITYDETAILS scd;
-            pShearCapacity->GetShearCapacityDetails( pgsTypes::StrengthI, liveLoadIntervalIdx, poi, config, &scd );
+            pShearCapacity->GetShearCapacityDetails( pgsTypes::StrengthI, liveLoadIntervalIdx, poi, &config, &scd );
 
-            Float64 fcreq = fabs(scd.vufc * config.Fc / 0.18); // LRFD 5.8.3.2
+            Float64 fcreq = fabs(scd.vufc * config.Fc / 0.18); // LRFD 5.7.3.2 (pre2017: 5.8.3.2)
 
             // FUDGE: Give concrete strength a small bump up. Found some regression tests that were missing
             //        by just a smidge...
@@ -808,9 +810,9 @@ pgsShearDesignTool::ShearDesignOutcome pgsShearDesignTool::ValidateVerticalAvsDe
             GDRCONFIG config = this->GetSegmentConfiguration(); // current design
 
             SHEARCAPACITYDETAILS scd;
-            pShearCapacity->GetShearCapacityDetails( pgsTypes::StrengthII, liveLoadIntervalIdx, poi, config, &scd );
+            pShearCapacity->GetShearCapacityDetails( pgsTypes::StrengthII, liveLoadIntervalIdx, poi, &config, &scd );
 
-            Float64 fcreq = fabs(scd.vufc * config.Fc / 0.18); // LRFD 5.8.3.2
+            Float64 fcreq = fabs(scd.vufc * config.Fc / 0.18); // LRFD 5.7.3.2 (pre2017: 5.8.3.2)
 
             FcRequiredForStrutTieStress = Max(FcRequiredForStrutTieStress, fcreq);
 
@@ -848,7 +850,7 @@ pgsShearDesignTool::ShearDesignOutcome pgsShearDesignTool::ValidateVerticalAvsDe
    return sd;
 }
 
-void pgsShearDesignTool::ProcessAvsDemand(std::vector<Float64>& rDemandAtPois, mathPwLinearFunction2dUsingPoints& rDemandAtLocations)
+void pgsShearDesignTool::ProcessAvsDemand(std::vector<Float64>& rDemandAtPois, mathPwLinearFunction2dUsingPoints& rDemandAtLocations) const
 {
    IndexType numpois = m_DesignPois.size();
 
@@ -859,11 +861,8 @@ void pgsShearDesignTool::ProcessAvsDemand(std::vector<Float64>& rDemandAtPois, m
       mathPwLinearFunction2dUsingPoints mirror_avs;
       IndexType idx=0;
       Float64 last_x = -99999;
-      std::vector<pgsPointOfInterest>::const_iterator i( m_DesignPois.begin());
-      std::vector<pgsPointOfInterest>::const_iterator end( m_DesignPois.end());
-      for ( ; i != end; i++, idx++ )
+      for ( const pgsPointOfInterest& poi : m_DesignPois)
       {
-         const pgsPointOfInterest& poi = *i;
          Float64 x = poi.GetDistFromStart();
          Float64 y  = rDemandAtPois[idx];
          if ( !IsEqual(last_x,x) )
@@ -871,6 +870,7 @@ void pgsShearDesignTool::ProcessAvsDemand(std::vector<Float64>& rDemandAtPois, m
             mirror_avs.AddPoint(gpPoint2d(x,y));
          }
          last_x = x;
+         idx++;
       }
       
       // mathPwLinearFunction2dUsingPoints can throw, and it's probably not the end of the world
@@ -890,12 +890,9 @@ void pgsShearDesignTool::ProcessAvsDemand(std::vector<Float64>& rDemandAtPois, m
    
          // Since we have mirrored, we aren't gauranteed to have x values in same locations as POI's.
          // Use function2d class to get x,y locations for mirror
-         idx=0;
-         i = m_DesignPois.begin();
-         for ( ; i != end; i++ )
+         idx = 0;
+         for ( const pgsPointOfInterest& poi : m_DesignPois)
          {
-            const pgsPointOfInterest& poi = *i;
-   
             Float64 x = poi.GetDistFromStart();
             Float64& ry  = rDemandAtPois[idx]; // grab reference for reassignment below
             Float64 mry = mirror_avs.Evaluate(x);
@@ -904,7 +901,7 @@ void pgsShearDesignTool::ProcessAvsDemand(std::vector<Float64>& rDemandAtPois, m
    
             ry = maxy;
    
-            if (spn2_idx==0 && x>spn2)
+            if (spn2_idx == 0 && spn2 < x)
             {
                spn2_idx = idx;
             }
@@ -947,7 +944,7 @@ void pgsShearDesignTool::ProcessAvsDemand(std::vector<Float64>& rDemandAtPois, m
 
       // Right end
       first = true;
-      for(idx=spn2_idx; idx<numpois; idx++)
+      for(idx = spn2_idx; idx < numpois; idx++)
       {
          if (first)
          {
@@ -973,11 +970,9 @@ void pgsShearDesignTool::ProcessAvsDemand(std::vector<Float64>& rDemandAtPois, m
       LOG(_T("----------------------------------------------------"));
       LOG(_T("Mirrored generic Av/S values at ")<<numpois<<_T(" pois"));
       LOG(_T("Location, mirror_avs, processed_avs"));
-      idx=0;
-      for ( i = m_DesignPois.begin(); i != m_DesignPois.end(); i++ )
+      idx = 0;
+      for ( const pgsPointOfInterest& poi : m_DesignPois)
       {
-         const pgsPointOfInterest& poi = *i;
-
          Float64 x = poi.GetDistFromStart();
          Float64 ry  = rDemandAtPois[idx];
          Float64 mry = mirror_avs.Evaluate(x);
@@ -991,12 +986,8 @@ void pgsShearDesignTool::ProcessAvsDemand(std::vector<Float64>& rDemandAtPois, m
    // Store Av/s at locations
    rDemandAtLocations.Clear();
    IndexType pidx = 0;
-   std::vector<pgsPointOfInterest>::const_iterator i( m_DesignPois.begin());
-   std::vector<pgsPointOfInterest>::const_iterator end( m_DesignPois.end());
-   while (i != end)
+   for ( const pgsPointOfInterest& poi : m_DesignPois)
    {
-      const pgsPointOfInterest& poi = *i;
-
       // Stretch demand at supports to ends of girder
       Float64 x;
       if (pidx==0)
@@ -1016,17 +1007,16 @@ void pgsShearDesignTool::ProcessAvsDemand(std::vector<Float64>& rDemandAtPois, m
 
       rDemandAtLocations.AddPoint(gpPoint2d(x,y));
       pidx++;
-      i++;
    }
 }
 
-Float64 pgsShearDesignTool::GetVerticalAvsDemand(IndexType PoiIdx)
+Float64 pgsShearDesignTool::GetVerticalAvsDemand(IndexType PoiIdx) const
 {
    ATLASSERT(PoiIdx < m_VertShearAvsDemandAtPois.size() && PoiIdx != INVALID_INDEX);
    return m_VertShearAvsDemandAtPois[PoiIdx];
 }
 
-Float64 pgsShearDesignTool::GetVerticalAvsDemand(Float64 distFromStart)
+Float64 pgsShearDesignTool::GetVerticalAvsDemand(Float64 distFromStart) const
 {
    try
    {
@@ -1041,7 +1031,7 @@ Float64 pgsShearDesignTool::GetVerticalAvsDemand(Float64 distFromStart)
    }
 }
 
-void pgsShearDesignTool::ValidateHorizontalAvsDemand()
+void pgsShearDesignTool::ValidateHorizontalAvsDemand() const
 {
    GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
@@ -1102,13 +1092,13 @@ void pgsShearDesignTool::ValidateHorizontalAvsDemand()
    ProcessAvsDemand(m_HorizShearAvsDemandAtPois, m_HorizShearAvsDemandAtX);
 }
 
-Float64 pgsShearDesignTool::GetHorizontalAvsDemand(IndexType PoiIdx)
+Float64 pgsShearDesignTool::GetHorizontalAvsDemand(IndexType PoiIdx) const
 {
    ATLASSERT(PoiIdx < m_HorizShearAvsDemandAtPois.size() && PoiIdx != INVALID_INDEX);
    return m_HorizShearAvsDemandAtPois[PoiIdx];
 }
 
-Float64 pgsShearDesignTool::GetHorizontalAvsDemand(Float64 distFromStart)
+Float64 pgsShearDesignTool::GetHorizontalAvsDemand(Float64 distFromStart) const
 {
    try
    {
@@ -1123,7 +1113,7 @@ Float64 pgsShearDesignTool::GetHorizontalAvsDemand(Float64 distFromStart)
    }
 }
 
-Float64 pgsShearDesignTool::GetVerticalAvsMaxInRange(Float64 leftBound, Float64 rightBound)
+Float64 pgsShearDesignTool::GetVerticalAvsMaxInRange(Float64 leftBound, Float64 rightBound) const
 {
    try
    {
@@ -1140,7 +1130,7 @@ Float64 pgsShearDesignTool::GetVerticalAvsMaxInRange(Float64 leftBound, Float64 
    }
 }
 
-Float64 pgsShearDesignTool::GetHorizontalAvsMaxInRange(Float64 leftBound, Float64 rightBound)
+Float64 pgsShearDesignTool::GetHorizontalAvsMaxInRange(Float64 leftBound, Float64 rightBound) const
 {
    // Tweak boundaries slightly so we don't bleed into next range
    leftBound  += SPACING_TOL;
@@ -1161,7 +1151,7 @@ Float64 pgsShearDesignTool::GetHorizontalAvsMaxInRange(Float64 leftBound, Float6
    }
 }
 
-pgsShearDesignTool::ShearDesignOutcome pgsShearDesignTool::DesignStirrups(Float64 leftCSS, Float64 rightCSS)
+pgsShearDesignTool::ShearDesignOutcome pgsShearDesignTool::DesignStirrups(Float64 leftCSS, Float64 rightCSS) const
 {
 #if defined _DEBUG
    // design is only for PGSuper documents
@@ -1256,7 +1246,7 @@ Float64 pgsShearDesignTool::GetFcRequiredForShearStress() const
    return m_RequiredFcForShearStress;
 }
 
-bool pgsShearDesignTool::LayoutPrimaryStirrupZones()
+bool pgsShearDesignTool::LayoutPrimaryStirrupZones() const
 {
    m_ShearData.ShearZones.clear(); // clear out any existing data
 
@@ -1301,7 +1291,7 @@ bool pgsShearDesignTool::LayoutPrimaryStirrupZones()
       Float64 S_reqd;
       Float64 zone_len;
 
-      pgsPointOfInterest& poi = m_DesignPois[ipoi];
+      const pgsPointOfInterest& poi = m_DesignPois[ipoi];
       Float64 location = poi.GetDistFromStart();
       if (gl2 <= location) 
       {
@@ -1327,9 +1317,9 @@ bool pgsShearDesignTool::LayoutPrimaryStirrupZones()
             }
          }
 
-         // get minimum stirrup spacing requirements (LRFD 5.8.2.5)
+         // get minimum stirrup spacing requirements (LRFD 5.7.2.5 (pre2017: 5.8.2.5))
          Float64 bv = pGdr->GetShearWidth( poi );
-         Float64 avs_min = lrfdRebar::GetAvOverSMin(fc,bv,fy); // LRFD 5.8.2.5
+         Float64 avs_min = lrfdRebar::GetAvOverSMin(fc,bv,fy); // LRFD 5.7.2.5 (pre2017: 5.8.2.5)
          avs_demand = Max(avs_min,avs_demand); // make sure demand is at least the minimum
 
          if (ipoi == 0)
@@ -1510,7 +1500,7 @@ bool pgsShearDesignTool::LayoutPrimaryStirrupZones()
    return true; // Success
 }
 
-bool  pgsShearDesignTool::ModifyPreExistingStirrupDesign()
+bool pgsShearDesignTool::ModifyPreExistingStirrupDesign() const
 {
    ATLASSERT(!m_ShearData.ShearZones.empty()); // We should have shear zones before we get here
    GET_IFACE(IMaterials,pMaterial);
@@ -1551,7 +1541,7 @@ bool  pgsShearDesignTool::ModifyPreExistingStirrupDesign()
    return true;
 }
 
-bool pgsShearDesignTool::DesignPreExistingStirrups(StirrupZoneIter& rIter, Float64 locCSS,  matRebar::Grade barGrade, matRebar::Type barType, lrfdRebarPool* pool)
+bool pgsShearDesignTool::DesignPreExistingStirrups(StirrupZoneIter& rIter, Float64 locCSS,  matRebar::Grade barGrade, matRebar::Type barType, lrfdRebarPool* pool) const
 {
    // Loop over shear zones using iterator and increase Av/S if need be
    Float64 S_max_next(Float64_Max); // spacing in first zone not limited by pre-zones
@@ -1715,7 +1705,7 @@ bool pgsShearDesignTool::DesignPreExistingStirrups(StirrupZoneIter& rIter, Float
    return true;
 }
 
-void pgsShearDesignTool::ExpandStirrupZoneLengths(CShearData2::ShearZoneVec& shearZones)
+void pgsShearDesignTool::ExpandStirrupZoneLengths(CShearData2::ShearZoneVec& shearZones) const
 {
    CShearData2::ShearZoneIterator it = shearZones.begin();
    CShearData2::ShearZoneIterator ite = shearZones.end();
@@ -1755,7 +1745,7 @@ void pgsShearDesignTool::ExpandStirrupZoneLengths(CShearData2::ShearZoneVec& she
    }
 }
 
-bool pgsShearDesignTool::DetailHorizontalInterfaceShear()
+bool pgsShearDesignTool::DetailHorizontalInterfaceShear() const
 {
    ATLASSERT(!GetExtendBarsIntoDeck());
 
@@ -1930,7 +1920,7 @@ bool pgsShearDesignTool::DetailHorizontalInterfaceShear()
    return true;
 }
 
-bool pgsShearDesignTool::DetailAdditionalSplitting()
+bool pgsShearDesignTool::DetailAdditionalSplitting() const
 {
    if (!DoDesignForSplitting())
    {
@@ -1939,7 +1929,7 @@ bool pgsShearDesignTool::DetailAdditionalSplitting()
    }
    else
    {
-      pgsSplittingZoneArtifact* pSplittingArtifact = m_StirrupCheckArtifact.GetSplittingZoneArtifact();
+      const pgsSplittingZoneArtifact* pSplittingArtifact = m_StirrupCheckArtifact.GetSplittingZoneArtifact();
       if (pSplittingArtifact->GetIsApplicable())
       {
          // Only design splitting if it is applicable
@@ -2074,7 +2064,7 @@ bool pgsShearDesignTool::DetailAdditionalSplitting()
    }
 }
 
-bool pgsShearDesignTool::DetailAdditionalConfinement()
+bool pgsShearDesignTool::DetailAdditionalConfinement() const
 {
    if (!DoDesignForConfinement())
    {
@@ -2212,7 +2202,7 @@ bool pgsShearDesignTool::DetailAdditionalConfinement()
    return true;
 }
 
-pgsShearDesignTool::ShearDesignOutcome pgsShearDesignTool::DesignLongReinfShear()
+pgsShearDesignTool::ShearDesignOutcome pgsShearDesignTool::DesignLongReinfShear() const
 {
    LOG(_T("*** Entering pgsShearDesignTool::DesignLongReinfShear **"));
 
@@ -2254,25 +2244,24 @@ pgsShearDesignTool::ShearDesignOutcome pgsShearDesignTool::DesignLongReinfShear(
 
    // make sure we have the POI's at the end faces of the precast element
    GET_IFACE(IPointOfInterest,pPoi);
-   std::vector<pgsPointOfInterest> vPoi = m_DesignPois;
-   std::vector<pgsPointOfInterest> vPoi2(pPoi->GetPointsOfInterest(m_SegmentKey,POI_FACEOFSUPPORT));
-   vPoi.insert(vPoi.end(),vPoi2.begin(),vPoi2.end());
-   std::sort(vPoi.begin(),vPoi.end());
-   vPoi.erase(std::unique(vPoi.begin(),vPoi.end()),vPoi.end());
+   PoiList vPoi = m_DesignPois;
+   PoiList vPoi2;
+   pPoi->GetPointsOfInterest(m_SegmentKey, POI_FACEOFSUPPORT, &vPoi2);
+   pPoi->MergePoiLists(vPoi, vPoi2, &vPoi);
 
    Float64 As=0.0;
    for(Int32 ils=0; ils<nls; ils++)
    {
       LOG(_T("Checking LRS (failures reported only) at ")<<vPoi.size()<<_T(" Pois, ils = ")<<ils);
 
-      for (const auto& poi : vPoi)
+      for (const pgsPointOfInterest& poi : vPoi)
       {
          Float64 location = poi.GetDistFromStart();
 
          if ( startSl <= location && location <= endSl )
          {
             SHEARCAPACITYDETAILS scd;
-            pShearCapacity->GetShearCapacityDetails( limit_states[ils], liveLoadIntervalIdx, poi, config, &scd);
+            pShearCapacity->GetShearCapacityDetails( limit_states[ils], liveLoadIntervalIdx, poi, &config, &scd);
 
             // We only design for the positive moment case. Users are on their own for negative moment (slab reinforcement)
             if(scd.bTensionBottom)
@@ -2370,7 +2359,7 @@ pgsShearDesignTool::ShearDesignOutcome pgsShearDesignTool::DesignLongReinfShear(
    }
 }
 
-Float64 pgsShearDesignTool::ComputeMaxStirrupSpacing(IndexType PoiIdx)
+Float64 pgsShearDesignTool::ComputeMaxStirrupSpacing(IndexType PoiIdx) const
 {
    GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
@@ -2382,7 +2371,7 @@ Float64 pgsShearDesignTool::ComputeMaxStirrupSpacing(IndexType PoiIdx)
    Float64 spec_spacing=Float64_Max;
 
    const pgsStirrupCheckAtPoisArtifact* pStrI_artf = m_StirrupCheckArtifact.GetStirrupCheckAtPoisArtifact(liveLoadIntervalIdx,pgsTypes::StrengthI,PoiIdx);
-   ATLASSERT(IsEqual(pStrI_artf->GetPointOfInterest().GetDistFromStart(),m_DesignPois[PoiIdx].GetDistFromStart()));
+   ATLASSERT(IsEqual(pStrI_artf->GetPointOfInterest().GetDistFromStart(),m_DesignPois[PoiIdx].get().GetDistFromStart()));
    const pgsStirrupDetailArtifact* pDet = pStrI_artf->GetStirrupDetailArtifact();
    spec_spacing = pDet->GetSMax();
 
@@ -2413,26 +2402,23 @@ Float64 pgsShearDesignTool::ComputeMaxStirrupSpacing(IndexType PoiIdx)
    return spacing;
 }
 
-Float64 pgsShearDesignTool::ComputeMaxStirrupSpacing(Float64 location)
+Float64 pgsShearDesignTool::ComputeMaxStirrupSpacing(Float64 location) const
 {
    IndexType poi_idx = GetPoiIdxForLocation(location);
 
    return ComputeMaxStirrupSpacing(poi_idx);
 }
 
-IndexType pgsShearDesignTool::GetPoiIdxForLocation(Float64 location)
+IndexType pgsShearDesignTool::GetPoiIdxForLocation(Float64 location) const
 {
    // Get index of POI just inboard of location
    IndexType poi_idx;
    if (location <= m_SegmentLength/2.0)
    {
       poi_idx = 0;
-      std::vector<pgsPointOfInterest>::const_iterator it = m_DesignPois.begin();
-      std::vector<pgsPointOfInterest>::const_iterator end = m_DesignPois.end();
-      for( ; it != end; it++)
+      for ( const pgsPointOfInterest& poi : m_DesignPois)
       {
-         const pgsPointOfInterest& rpoi(*it);
-         if(rpoi.GetDistFromStart() > location)
+         if(location < poi.GetDistFromStart())
          {
             break;
          }
@@ -2443,8 +2429,8 @@ IndexType pgsShearDesignTool::GetPoiIdxForLocation(Float64 location)
    else
    {
       poi_idx = m_DesignPois.size()-1;
-      std::vector<pgsPointOfInterest>::const_reverse_iterator it = m_DesignPois.rbegin();
-      std::vector<pgsPointOfInterest>::const_reverse_iterator end = m_DesignPois.rend();
+      auto it = m_DesignPois.rbegin();
+      auto end = m_DesignPois.rend();
       for(; it != end; it++)
       {
          const pgsPointOfInterest& rpoi(*it);
@@ -2460,7 +2446,7 @@ IndexType pgsShearDesignTool::GetPoiIdxForLocation(Float64 location)
    return poi_idx;
 }
 
-Float64 pgsShearDesignTool::GetMinStirrupSpacing(matRebar::Size size)
+Float64 pgsShearDesignTool::GetMinStirrupSpacing(matRebar::Size size) const
 {
    GET_IFACE(ITransverseReinforcementSpec,pTransverseReinforcementSpec);
    GET_IFACE(IMaterials,pMaterial);
@@ -2478,31 +2464,29 @@ Float64 pgsShearDesignTool::GetMinStirrupSpacing(matRebar::Size size)
    return s_min;
 }
 
-bool pgsShearDesignTool::GetBarSizeSpacingForAvs(Float64 avsDemand, Float64 maxSpacing, 
-                                                 matRebar::Size* pSize, Float64* pNLegs, Float64* pAv, Float64* pSpacing)
+bool pgsShearDesignTool::GetBarSizeSpacingForAvs(Float64 avsDemand, Float64 maxSpacing, matRebar::Size* pSize, Float64* pNLegs, Float64* pAv, Float64* pSpacing) const
 {
    // Cycle through available bars/legs (already in order of user precedence)
    ATLASSERT(!m_BarLegCollection.empty());
    ATLASSERT(!m_AvailableBarSpacings.empty());
 
-   for(BarLegCollectionIterator it=m_BarLegCollection.begin(); it!=m_BarLegCollection.end(); it++)
+   for ( const auto& barlegs : m_BarLegCollection)
    {
-      const BarLegCombo& barlegs = *it;
       Float64 Av = barlegs.m_Av;
-      ATLASSERT(Av>0.0);
+      ATLASSERT(0.0 < Av);
 
       Float64 min_spacing = GetMinStirrupSpacing( barlegs.m_Size );
 
       // Find largest available spacing from user list that meets requirements
-      for(std::vector<Float64>::const_reverse_iterator sit = m_AvailableBarSpacings.rbegin(); sit!=m_AvailableBarSpacings.rend(); sit++)
+      for(auto sit = m_AvailableBarSpacings.crbegin(); sit!=m_AvailableBarSpacings.crend(); sit++)
       {
          Float64 spac = *sit;
 
          // If we fit in spacing requirements, 
-         if (spac+SPACING_TOL>=min_spacing && spac<=maxSpacing+SPACING_TOL)
+         if ((min_spacing <= spac + SPACING_TOL) && (spac <= maxSpacing+SPACING_TOL) )
          {
             // and we satisify avs demand,
-            if (Av/spac >= avsDemand)
+            if (avsDemand <= Av/spac)
             {
                // then we are the best available candidate.
                *pSize    = barlegs.m_Size;
@@ -2519,7 +2503,7 @@ bool pgsShearDesignTool::GetBarSizeSpacingForAvs(Float64 avsDemand, Float64 maxS
    return false;
 }
 
-bool pgsShearDesignTool::GetMinAvailableBarSize(matRebar::Size minSize, matRebar::Grade barGrade, matRebar::Type barType, lrfdRebarPool* pool, matRebar::Size* pSize)
+bool pgsShearDesignTool::GetMinAvailableBarSize(matRebar::Size minSize, matRebar::Grade barGrade, matRebar::Type barType, lrfdRebarPool* pool, matRebar::Size* pSize) const
 {
    // This should be made more efficient if it's called frequently
    const matRebar* pRebar = pool->GetRebar(barType,barGrade, minSize);
@@ -2538,10 +2522,10 @@ bool pgsShearDesignTool::GetMinAvailableBarSize(matRebar::Size minSize, matRebar
    };
 
    std::vector<SizeArea> availableSizes;
-   for(BarLegCollectionIterator it=m_BarLegCollection.begin(); it!=m_BarLegCollection.end(); it++)
+   for ( const auto& item : m_BarLegCollection)
    {
       SizeArea sa;
-      sa.Size = it->m_Size;
+      sa.Size = item.m_Size;
 
       pRebar = pool->GetRebar(barType,barGrade, sa.Size);
       sa.Area = pRebar->GetNominalArea();
@@ -2552,11 +2536,11 @@ bool pgsShearDesignTool::GetMinAvailableBarSize(matRebar::Size minSize, matRebar
    std::sort(availableSizes.begin(), availableSizes.end());
 
    // Have sorted list, now we can find a bar that fits our needs
-   for (std::vector<SizeArea>::iterator ita=availableSizes.begin(); ita!=availableSizes.end(); ita++)
+   for (const auto& sizeArea : availableSizes)
    {
-      if(minArea <= ita->Area)
+      if(minArea <= sizeArea.Area)
       {
-         *pSize = ita->Size;
+         *pSize = sizeArea.Size;
          return true;
       }
    }
@@ -2566,19 +2550,19 @@ bool pgsShearDesignTool::GetMinAvailableBarSize(matRebar::Size minSize, matRebar
    return false;
 }
 
-bool pgsShearDesignTool::GetBarSpacingForAvs(Float64 avsDemand, Float64 maxSpacing, matRebar::Size Size, Float64 Av, Float64* pSpacing)
+bool pgsShearDesignTool::GetBarSpacingForAvs(Float64 avsDemand, Float64 maxSpacing, matRebar::Size Size, Float64 Av, Float64* pSpacing) const
 {
    Float64 spacing(0.0);
 
    Float64 min_spacing = GetMinStirrupSpacing( Size );
 
    // Available spacings as defined by user
-   for(std::vector<Float64>::const_reverse_iterator sit = m_AvailableBarSpacings.rbegin(); sit!=m_AvailableBarSpacings.rend(); sit++)
+   for(auto sit = m_AvailableBarSpacings.crbegin(); sit!=m_AvailableBarSpacings.crend(); sit++)
    {
       Float64 spac = *sit;
 
       // If we fit in spacing requirements, 
-      if (spac+SPACING_TOL>=min_spacing && spac<=maxSpacing+SPACING_TOL)
+      if ((min_spacing <= spac + SPACING_TOL) && (spac <= maxSpacing+SPACING_TOL) )
       {
          // and we satisify avs demand,
          if (avsDemand <= Av/spac)
@@ -2593,7 +2577,7 @@ bool pgsShearDesignTool::GetBarSpacingForAvs(Float64 avsDemand, Float64 maxSpaci
    return false; // no spacing works
 }
 
-Float64 pgsShearDesignTool::ComputeMaxNextSpacing(Float64 currentSpacing)
+Float64 pgsShearDesignTool::ComputeMaxNextSpacing(Float64 currentSpacing) const
 {
    // Get a candidate spacing from required criteria, then get nearest spacing from our list
    Float64 candidate = Min(currentSpacing + m_MaxSpacingChangeInZone, 
@@ -2603,7 +2587,7 @@ Float64 pgsShearDesignTool::ComputeMaxNextSpacing(Float64 currentSpacing)
    return GetDesignSpacingFromList(candidate);
 }
 
-Float64 pgsShearDesignTool::GetDesignSpacingFromList(Float64 spacing)
+Float64 pgsShearDesignTool::GetDesignSpacingFromList(Float64 spacing) const
 {
    if (spacing < m_AvailableBarSpacings.front())
    {
@@ -2613,7 +2597,7 @@ Float64 pgsShearDesignTool::GetDesignSpacingFromList(Float64 spacing)
    else
    {
       // Get largest spacing in list that is <= our test value
-      for (std::vector<Float64>::reverse_iterator rit = m_AvailableBarSpacings.rbegin(); rit!=m_AvailableBarSpacings.rend(); rit++)
+      for (auto rit = m_AvailableBarSpacings.crbegin(); rit!=m_AvailableBarSpacings.crend(); rit++)
       {
          Float64 spac = *rit;
          if (spac <= spacing+SPACING_TOL)
@@ -2626,7 +2610,7 @@ Float64 pgsShearDesignTool::GetDesignSpacingFromList(Float64 spacing)
    return 0.0;
 }
 
-bool pgsShearDesignTool::IsLocationInConfinementZone(Float64 distFromStart)
+bool pgsShearDesignTool::IsLocationInConfinementZone(Float64 distFromStart) const
 {
    return distFromStart < m_StartConfinementZl+SPACING_TOL || 
           m_SegmentLength-distFromStart < m_EndConfinementZl+SPACING_TOL;

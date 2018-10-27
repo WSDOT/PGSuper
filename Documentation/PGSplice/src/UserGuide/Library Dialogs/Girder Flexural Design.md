@@ -2,7 +2,7 @@ Debonding {#ug_library_dialogs_girder_segment_flexural_design}
 ==============================================
 Parameters that control debonding of strands are defined on this tab.
 
-Debonding Strand Limits (5.11.4.3)
+Debonding Strand Limits (5.9.4.3.3 (*pre-2017: 5.11.4.3*))
 ----------------------------------
 These parameters are used to check debonded sections to ensure that local stress concentrations at debond locations are excessive
 

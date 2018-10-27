@@ -38,6 +38,8 @@
 #include <EAF\EAFDisplayUnits.h>
 #include <IFace\Intervals.h>
 
+#include <PgsExt\PierData2.h>
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
@@ -412,12 +414,14 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(CReportSpecification* 
 
    ///////////////////////////////////////
 
+   GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
+
    p = new rptParagraph;
    *pChapter << p;
 
-   pTable = rptStyleManager::CreateDefaultTable(8,_T("Bearing Geometry (based on assumed values)"));
+   pTable = rptStyleManager::CreateDefaultTable(8,_T("Bearing Recess Geometry"));
    *p << pTable << rptNewLine;
-   *p << _T("W and D are assumed typical values") << rptNewLine;
+   *p << _T("* W is maximum of input bearing length and recess length") << rptNewLine;
    *p << rptRcImage( std::_tstring(rptStyleManager::GetImagePath()) + _T("BearingRecessSlope.gif")) << rptNewLine;
 
    std::_tstring strSlopeTag = pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure.UnitTag();
@@ -430,8 +434,8 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(CReportSpecification* 
    (*pTable)(0,col++) << _T("Girder") << rptNewLine << _T("Slope") << rptNewLine << _T("(") << strSlopeTag << _T("/") << strSlopeTag << _T(")");
    (*pTable)(0,col++) << _T("Excess") << rptNewLine << _T("Camber") << rptNewLine << _T("Slope") << rptNewLine << _T("(") << strSlopeTag << _T("/") << strSlopeTag << _T(")");
    (*pTable)(0,col++) << _T("Bearing") << rptNewLine << _T("Recess") << rptNewLine << _T("Slope") << rptNewLine << _T("(") << strSlopeTag << _T("/") << strSlopeTag << _T(")");
-   (*pTable)(0,col++) << _T("W");
-   (*pTable)(0,col++) << _T("D");
+   (*pTable)(0,col++) << _T("* W") << rptNewLine << _T("Recess") << rptNewLine << _T("Length");
+   (*pTable)(0,col++) << _T("D") << rptNewLine << _T("Recess") << rptNewLine << _T("Height");
    (*pTable)(0,col++) << Sub2(_T("D"),_T("1"));
    (*pTable)(0,col++) << Sub2(_T("D"),_T("2"));
 
@@ -462,14 +466,19 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(CReportSpecification* 
       (*pTable)(row,col++) << scalar.SetValue(slope1);
 
       pgsPointOfInterest poi;
+      pgsTypes::PierFaceType pierFace(pgsTypes::Back);
       if ( pierIdx == startPierIdx )
       {
-         std::vector<pgsPointOfInterest> vPoi(pPoi->GetPointsOfInterest(segmentKey,POI_ERECTED_SEGMENT | POI_0L));
+         PoiList vPoi;
+         pPoi->GetPointsOfInterest(segmentKey, POI_0L | POI_ERECTED_SEGMENT, &vPoi);
          poi = vPoi.front();
+
+         pierFace = pgsTypes::Ahead;
       }
       else if ( pierIdx == endPierIdx )
       {
-         std::vector<pgsPointOfInterest> vPoi(pPoi->GetPointsOfInterest(segmentKey,POI_ERECTED_SEGMENT | POI_10L));
+         PoiList vPoi;
+         pPoi->GetPointsOfInterest(segmentKey, POI_10L | POI_ERECTED_SEGMENT, &vPoi);
          poi = vPoi.front();
       }
       else
@@ -480,11 +489,13 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(CReportSpecification* 
       Float64 slope2 = pCamber->GetExcessCamberRotation(poi,CREEP_MAXTIME);
       (*pTable)(row,col++) << scalar.SetValue(slope2);
 
+      const CBearingData2* pbd = pIBridgeDesc->GetBearingData(pierIdx, pierFace, girderKey.girderIndex);
+
       Float64 slope3 = slope1 + slope2;
       (*pTable)(row,col++) << scalar.SetValue(slope3);
 
-      Float64 W = ::ConvertToSysUnits(12.0,unitMeasure::Inch);
-      Float64 D = ::ConvertToSysUnits(0.50,unitMeasure::Inch);
+      Float64 W = max(pbd->RecessLength, pbd->Length); // don't allow recess to be shorter than bearing
+      Float64 D = pbd->RecessHeight;
       Float64 D1 = D + W*slope3/2;
       Float64 D2 = D - W*slope3/2;
 

@@ -37,9 +37,14 @@ public:
 
    virtual void OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint) override;
 
-   CGirderKey GetGirderKey();
-   pgsPointOfInterest GetLocation();
-   int GetXAxisType();
+   const CGirderKey& GetGirderKey() const;
+   void SelectGirder(const CGirderKey& girderKey);
+
+   const pgsPointOfInterest& GetLocation() const;
+   void SelectLocation(const pgsPointOfInterest& poi);
+
+   void SetXAxisType(int type);
+   int GetXAxisType() const;
 
    // if set to TRUE, the location control is always selected to a valid value
    // otherwise and unselected state is acceptable

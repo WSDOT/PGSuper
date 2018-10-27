@@ -29,22 +29,32 @@
 #include <IFace\DocumentType.h>
 #include <IFace\Project.h>
 #include <IFace\Intervals.h>
+#include <IFace\Bridge.h>
 
 #include <Hints.h>
 
 IMPLEMENT_DYNCREATE(CAnalysisResultsGraphController,CGirderGraphControllerBase)
 
 CAnalysisResultsGraphController::CAnalysisResultsGraphController():
-CGirderGraphControllerBase(true/*false*//*exclude ALL_GROUPS*/),
-m_GraphMode(GRAPH_MODE_LOADING),
-m_ActionType(actionMoment),
-m_AnalysisType(pgsTypes::Simple)
+CGirderGraphControllerBase(true/*false*//*exclude ALL_GROUPS*/)
 {
 }
 
-int CAnalysisResultsGraphController::GetGraphMode()
+void CAnalysisResultsGraphController::SetGraphMode(CAnalysisResultsGraphController::GraphModeType mode)
 {
-   return m_GraphMode;
+   CComboBox* pCB = (CComboBox*)GetDlgItem(IDC_MODE);
+   pCB->SetCurSel((CAnalysisResultsGraphController::GraphModeType)(pCB->GetItemData(0)) == mode ? 0 : 1);
+   FillDropListCtrl(false);
+   FillSelectListCtrl(false);
+   UpdateListInfo();
+   UpdateGraph();
+}
+
+CAnalysisResultsGraphController::GraphModeType CAnalysisResultsGraphController::GetGraphMode() const
+{
+   CComboBox* pCB = (CComboBox*)GetDlgItem(IDC_MODE);
+   int curSel = pCB->GetCurSel();
+   return (CAnalysisResultsGraphController::GraphModeType)(pCB->GetItemData(curSel));
 }
 
 BEGIN_MESSAGE_MAP(CAnalysisResultsGraphController, CGirderGraphControllerBase)
@@ -62,7 +72,8 @@ BEGIN_MESSAGE_MAP(CAnalysisResultsGraphController, CGirderGraphControllerBase)
    ON_BN_CLICKED(IDC_TOP_DECK, OnStress)
    ON_BN_CLICKED(IDC_BOTTOM_DECK, OnStress)
 
-   ON_BN_CLICKED(IDC_ELEV_ADJUSTMENT,OnElevAdjustment)
+   ON_BN_CLICKED(IDC_ELEV_ADJUSTMENT, OnElevAdjustment)
+   ON_BN_CLICKED(IDC_PRECAMBER, OnPrecamber)
 
    ON_BN_CLICKED(IDC_SIMPLE,OnAnalysisTypeClicked)
    ON_BN_CLICKED(IDC_SIMPLE2,OnAnalysisTypeClicked)
@@ -73,6 +84,9 @@ END_MESSAGE_MAP()
 BOOL CAnalysisResultsGraphController::OnInitDialog()
 {
    CGirderGraphControllerBase::OnInitDialog();
+
+   GET_IFACE(IBridge, pBridge);
+   m_bHasStructuralDeck = IsStructuralDeck(pBridge->GetDeckType());
 
    FillModeCtrl();
    FillActionTypeCtrl();
@@ -87,31 +101,82 @@ BOOL CAnalysisResultsGraphController::OnInitDialog()
    UpdateStressControls();
    UpdateAnalysisType();
    UpdateElevAdjustment();
-
-   OnModeChanged();
+   UpdatePrecamberAdjustment();
 
    return TRUE;
 }
 
-ActionType CAnalysisResultsGraphController::GetActionType()
+void CAnalysisResultsGraphController::SetResultsType(ResultsType resultsType)
 {
-   return m_ActionType;
+   CheckRadioButton(IDC_INCREMENTAL, IDC_CUMULATIVE, (resultsType == rtIncremental ? IDC_INCREMENTAL : IDC_CUMULATIVE));
+   UpdateGraph();
 }
 
-ResultsType CAnalysisResultsGraphController::GetResultsType()
+ResultsType CAnalysisResultsGraphController::GetResultsType() const
 {
    return IsDlgButtonChecked(IDC_INCREMENTAL) == BST_CHECKED ? rtIncremental : rtCumulative;
 }
 
-bool CAnalysisResultsGraphController::PlotStresses(pgsTypes::StressLocation stressLocation)
+void CAnalysisResultsGraphController::SetActionType(ActionType actionType)
 {
-   UINT nID[4] = {IDC_BOTTOM_GIRDER,IDC_TOP_GIRDER,IDC_BOTTOM_DECK,IDC_TOP_DECK};
-   return IsDlgButtonChecked(nID[stressLocation]) == BST_CHECKED ? true : false;
+   CComboBox* pcbAction = (CComboBox*)GetDlgItem(IDC_ACTION);
+
+   int nActions = pcbAction->GetCount();
+   for (int idx = 0; idx < nActions; idx++)
+   {
+      if ((ActionType)(pcbAction->GetItemData(idx)) == actionType)
+      {
+         pcbAction->SetCurSel(idx);
+
+         UpdateElevAdjustment();
+         UpdatePrecamberAdjustment();
+         UpdateStressControls();
+
+         // the loads that are available to plot for a particular action depend on the
+         // current action type... update the loading list for this new action
+         if (GetGraphMode() == Loading)
+         {
+            FillSelectListCtrl(true);
+         }
+         else
+         {
+            FillDropListCtrl(true);
+         }
+
+         UpdateGraph();
+
+         return;
+      }
+   }
+
+}
+
+ActionType CAnalysisResultsGraphController::GetActionType() const
+{
+   CComboBox* pcbAction = (CComboBox*)GetDlgItem(IDC_ACTION);
+   int curSel = pcbAction->GetCurSel();
+   return (ActionType)(pcbAction->GetItemData(curSel));
+}
+
+void CAnalysisResultsGraphController::PlotStresses(pgsTypes::StressLocation stressLocation, bool bPlot)
+{
+   static UINT nIDC[4] = { IDC_BOTTOM_GIRDER,IDC_TOP_GIRDER,IDC_BOTTOM_DECK,IDC_TOP_DECK };
+   if (PlotStresses(stressLocation) != bPlot)
+   {
+      CheckDlgButton(nIDC[stressLocation], bPlot ? BST_CHECKED : BST_UNCHECKED);
+      UpdateGraph();
+   }
+}
+
+bool CAnalysisResultsGraphController::PlotStresses(pgsTypes::StressLocation stressLocation) const
+{
+   static UINT nIDC[4] = {IDC_BOTTOM_GIRDER,IDC_TOP_GIRDER,IDC_BOTTOM_DECK,IDC_TOP_DECK};
+   return IsDlgButtonChecked(nIDC[stressLocation]) == BST_CHECKED ? true : false;
 }
 
 IntervalIndexType CAnalysisResultsGraphController::GetInterval()
 {
-   if ( m_GraphMode == GRAPH_MODE_INTERVAL )
+   if ( GetGraphMode() == Interval )
    {
       return INVALID_INDEX; // graphing multiple intervals
    }
@@ -126,7 +191,7 @@ std::vector<IntervalIndexType> CAnalysisResultsGraphController::GetSelectedInter
 {
    std::vector<IntervalIndexType> vIntervals;
 
-   if (m_GraphMode == GRAPH_MODE_LOADING )
+   if (GetGraphMode() == Loading )
    {
       vIntervals.push_back(GetInterval());
    }
@@ -151,19 +216,45 @@ std::vector<IntervalIndexType> CAnalysisResultsGraphController::GetSelectedInter
    return vIntervals;
 }
 
-bool CAnalysisResultsGraphController::IncludeElevationAdjustment()
+void CAnalysisResultsGraphController::IncludeElevationAdjustment(bool bInclude)
+{
+   CheckDlgButton(IDC_ELEV_ADJUSTMENT, bInclude ? BST_CHECKED : BST_UNCHECKED);
+   UpdateGraph();
+}
+
+bool CAnalysisResultsGraphController::IncludeElevationAdjustment() const
 {
    return IsDlgButtonChecked(IDC_ELEV_ADJUSTMENT) == BST_CHECKED ? true : false;
 }
 
-pgsTypes::AnalysisType CAnalysisResultsGraphController::GetAnalysisType()
+void CAnalysisResultsGraphController::IncludePrecamber(bool bInclude)
 {
-   return m_AnalysisType;
+   CheckDlgButton(IDC_PRECAMBER, bInclude ? BST_CHECKED : BST_UNCHECKED);
+   UpdateGraph();
+}
+
+bool CAnalysisResultsGraphController::IncludePrecamber() const
+{
+   return IsDlgButtonChecked(IDC_PRECAMBER) == BST_CHECKED ? true : false;
+}
+
+void CAnalysisResultsGraphController::SetAnalysisType(pgsTypes::AnalysisType analysisType)
+{
+   int nIDC = IDC_SIMPLE + (int)(analysisType);
+   CheckRadioButton(IDC_SIMPLE, IDC_SIMPLE3, nIDC);
+   UpdateGraph();
+}
+
+pgsTypes::AnalysisType CAnalysisResultsGraphController::GetAnalysisType() const
+{
+   int nIDC = GetCheckedRadioButton(IDC_SIMPLE, IDC_SIMPLE3);
+   ATLASSERT(nIDC != 0); // 0 means nothing is selected
+   return (pgsTypes::AnalysisType)(nIDC - IDC_SIMPLE);
 }
 
 IDType CAnalysisResultsGraphController::SelectedGraphIndexToGraphID(IndexType graphIdx)
 {
-   if (m_GraphMode == GRAPH_MODE_LOADING )
+   if (GetGraphMode() == Loading )
    {
       CListBox* plbLoading = (CListBox*)GetDlgItem(IDC_SELECT_LIST);
 
@@ -187,13 +278,52 @@ IDType CAnalysisResultsGraphController::SelectedGraphIndexToGraphID(IndexType gr
    }
 }
 
-IndexType CAnalysisResultsGraphController::GetMaxGraphCount()
+IndexType CAnalysisResultsGraphController::GetGraphTypeCount() const
+{
+   CComboBox* pcbLoading = (CComboBox*)GetDlgItem(IDC_DROP_LIST);
+   return pcbLoading->GetCount();
+}
+
+CString CAnalysisResultsGraphController::GetGraphType(IndexType idx) const
+{
+   CComboBox* pcbLoading = (CComboBox*)GetDlgItem(IDC_DROP_LIST);
+   CString strType;
+   pcbLoading->GetLBText((int)idx, strType);
+   return strType;
+}
+
+void CAnalysisResultsGraphController::SelectGraphType(IndexType idx)
+{
+   CComboBox* pcbLoading = (CComboBox*)GetDlgItem(IDC_DROP_LIST);
+   pcbLoading->SetCurSel((int)idx);
+
+   if (GetGraphMode() == Loading)
+   {
+      FillSelectListCtrl(true);
+   }
+   else
+   {
+      UpdateResultsType();
+      FillDropListCtrl(true);
+   }
+
+   UpdateGraph();
+}
+
+void CAnalysisResultsGraphController::SelectGraphType(LPCTSTR lpszType)
+{
+   CComboBox* pcbLoading = (CComboBox*)GetDlgItem(IDC_DROP_LIST);
+   int idx = pcbLoading->FindStringExact(-1,lpszType);
+   SelectGraphType(idx);
+}
+
+IndexType CAnalysisResultsGraphController::GetGraphCount() const
 {
    CListBox* plbSelectList = (CListBox*)GetDlgItem(IDC_SELECT_LIST);
    return (IndexType)(plbSelectList->GetCount());
 }
 
-IndexType CAnalysisResultsGraphController::GetGraphCount()
+IndexType CAnalysisResultsGraphController::GetSelectedGraphCount() const
 {
    CListBox* plbSelectList = (CListBox*)GetDlgItem(IDC_SELECT_LIST);
    IndexType count = plbSelectList->GetSelCount();
@@ -201,18 +331,86 @@ IndexType CAnalysisResultsGraphController::GetGraphCount()
    return count;
 }
 
+std::vector<IndexType> CAnalysisResultsGraphController::GetSelectedGraphs() const
+{
+   std::vector<IndexType> vSelectedGraphs;
+   CListBox* plbSelectList = (CListBox*)GetDlgItem(IDC_SELECT_LIST);
+   int count = plbSelectList->GetSelCount();
+   CArray<int, int> selectedItems;
+   selectedItems.SetSize(count);
+   plbSelectList->GetSelItems(count, selectedItems.GetData());
+   ATLASSERT(count == selectedItems.GetCount());
+   for (int i = 0; i < count; i++)
+   {
+      vSelectedGraphs.push_back(selectedItems.GetAt(i));
+   }
+
+   return vSelectedGraphs;
+}
+
+CString CAnalysisResultsGraphController::GetGraphName(IndexType idx) const
+{
+   CListBox* plbSelectList = (CListBox*)GetDlgItem(IDC_SELECT_LIST);
+   CString str;
+   plbSelectList->GetText((int)idx, str);
+   return str;
+}
+
+void CAnalysisResultsGraphController::SelectGraph(IndexType idx)
+{
+   CListBox* plbLoading = (CListBox*)GetDlgItem(IDC_SELECT_LIST);
+   plbLoading->SetSel((int)idx);
+
+   UpdateResultsType();
+   UpdateGraph();
+}
+
+void CAnalysisResultsGraphController::SelectGraphs(const std::vector<IndexType>& vGraphs)
+{
+   CListBox* plbLoading = (CListBox*)GetDlgItem(IDC_SELECT_LIST);
+   plbLoading->SelItemRange(FALSE,0,plbLoading->GetCount()-1); // unselect evertyhing
+   for (const auto& idx : vGraphs)
+   {
+      plbLoading->SetSel((int)idx);
+   }
+
+   UpdateResultsType();
+   UpdateGraph();
+}
+
+void CAnalysisResultsGraphController::SelectGraph(LPCTSTR lpszGraphName)
+{
+   CListBox* plbLoading = (CListBox*)GetDlgItem(IDC_SELECT_LIST);
+   int idx = plbLoading->FindStringExact(-1, lpszGraphName);
+   if (idx != LB_ERR)
+   {
+      SelectGraph(idx);
+   }
+}
+
+void CAnalysisResultsGraphController::SelectGraphs(const std::vector<CString>& vGraphs)
+{
+   CListBox* plbLoading = (CListBox*)GetDlgItem(IDC_SELECT_LIST);
+   plbLoading->SelItemRange(FALSE, 0, plbLoading->GetCount() - 1); // unselect evertyhing
+   for (const auto& strGraph : vGraphs)
+   {
+      int idx = plbLoading->FindStringExact(-1, strGraph);
+      if (idx != LB_ERR)
+      {
+         plbLoading->SetSel(idx);
+      }
+   }
+
+   UpdateResultsType();
+   UpdateGraph();
+}
+
 void CAnalysisResultsGraphController::OnModeChanged()
 {
    CComboBox* pcbMode = (CComboBox*)GetDlgItem(IDC_MODE);
    int curSel = pcbMode->GetCurSel();
-   if ( m_GraphMode != curSel )
-   {
-      m_GraphMode = curSel;
-      FillDropListCtrl(false);
-      FillSelectListCtrl(false);
-      UpdateListInfo();
-      UpdateGraph();
-   }
+   GraphModeType mode = (GraphModeType)(pcbMode->GetItemData(curSel));
+   SetGraphMode(mode);
 }
 
 void CAnalysisResultsGraphController::OnActionChanged()
@@ -221,34 +419,12 @@ void CAnalysisResultsGraphController::OnActionChanged()
 
    int curSel = pcbAction->GetCurSel();
    ActionType actionType = ActionType(pcbAction->GetItemData(curSel));
-   if ( m_ActionType == actionType )
-   {
-      // action type didn't change
-      return;
-   }
-
-   m_ActionType = actionType;
-
-   UpdateElevAdjustment();
-   UpdateStressControls();
-
-   // the loads that are available to plot for a particular action depend on the
-   // current action type... update the loading list for this new action
-   if ( GetGraphMode() == GRAPH_MODE_LOADING )
-   {
-      FillSelectListCtrl(true);
-   }
-   else
-   {
-      FillDropListCtrl(true);
-   }
-
-   UpdateGraph();
+   SetActionType(actionType);
 }
 
 void CAnalysisResultsGraphController::OnDropDownChanged()
 {
-   if ( GetGraphMode() == GRAPH_MODE_LOADING )
+   if ( GetGraphMode() == Loading )
    {
       FillSelectListCtrl(true);
    }
@@ -263,7 +439,7 @@ void CAnalysisResultsGraphController::OnDropDownChanged()
 
 void CAnalysisResultsGraphController::OnSelectListChanged()
 {
-   if ( GetGraphMode() == GRAPH_MODE_LOADING) 
+   if ( GetGraphMode() == Loading) 
    {
       UpdateResultsType();
    }
@@ -286,36 +462,17 @@ void CAnalysisResultsGraphController::OnElevAdjustment()
    UpdateGraph();
 }
 
+void CAnalysisResultsGraphController::OnPrecamber()
+{
+   UpdateGraph();
+}
+
 void CAnalysisResultsGraphController::OnAnalysisTypeClicked()
 {
-   int id = GetCheckedRadioButton(IDC_SIMPLE,IDC_SIMPLE3);
-   pgsTypes::AnalysisType analysisType;
-   switch (id)
-   {
-   case IDC_SIMPLE:
-      analysisType = pgsTypes::Simple;
-      break;
-
-   case IDC_SIMPLE2:
-      analysisType = pgsTypes::Continuous;
-      break;
-
-   case IDC_SIMPLE3:
-      analysisType = pgsTypes::Envelope;
-      break;
-
-   default:
-      ATLASSERT(false); // is there a new analysis type?
-   }
-
-   if ( m_AnalysisType == analysisType )
-   {
-      return;
-   }
-
-   m_AnalysisType = analysisType;
-
-   UpdateGraph();
+   int nIDC = GetCheckedRadioButton(IDC_SIMPLE,IDC_SIMPLE3);
+   ATLASSERT(nIDC != 0); // 0 means nothing is selected
+   pgsTypes::AnalysisType analysisType = (pgsTypes::AnalysisType)(nIDC - IDC_SIMPLE);
+   SetAnalysisType(analysisType);
 }
 
 void CAnalysisResultsGraphController::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
@@ -343,9 +500,87 @@ void CAnalysisResultsGraphController::OnUpdate(CView* pSender, LPARAM lHint, COb
 void CAnalysisResultsGraphController::FillModeCtrl()
 {
    CComboBox* pcbMode = (CComboBox*)GetDlgItem(IDC_MODE);
-   pcbMode->AddString(_T("Plot by Interval"));
-   pcbMode->AddString(_T("Plot by Loading"));
-   pcbMode->SetCurSel(m_GraphMode);
+   pcbMode->SetItemData(pcbMode->AddString(_T("Plot by Interval")),(DWORD_PTR)Interval);
+   pcbMode->SetItemData(pcbMode->AddString(_T("Plot by Loading")),(DWORD_PTR)Loading);
+   pcbMode->SetCurSel(1);
+}
+
+std::vector<ActionType> CAnalysisResultsGraphController::GetActionTypes() const
+{
+   std::vector<ActionType> vActions;
+
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+   GET_IFACE2(pBroker, IProductLoads, pProductLoads);
+   if (pProductLoads->ReportAxialResults())
+   {
+      vActions.push_back(actionAxial);
+   }
+
+   vActions.push_back(actionShear);
+   vActions.push_back(actionMoment);
+
+   GET_IFACE2(pBroker, IBridge, pBridge);
+   if (pBridge->HasAsymmetricGirders() || pBridge->HasTiltedGirders())
+   {
+      vActions.push_back(actionXDeflection);
+      vActions.push_back(actionDeflection);
+   }
+   else
+   {
+      vActions.push_back(actionDeflection);
+   }
+
+   vActions.push_back(actionRotation);
+   vActions.push_back(actionStress);
+   vActions.push_back(actionReaction);
+
+   return vActions;
+}
+
+LPCTSTR CAnalysisResultsGraphController::GetActionName(ActionType action) const
+{
+   if (action == actionDeflection)
+   {
+      CComPtr<IBroker> pBroker;
+      EAFGetBroker(&pBroker);
+      GET_IFACE2(pBroker, IBridge, pBridge);
+      if (pBridge->HasAsymmetricGirders() || pBridge->HasTiltedGirders())
+      {
+         return _T("Deflection Y");
+      }
+   }
+
+   static LPCTSTR actions[] =
+   {
+      _T("Axial"),
+      _T("Shear"),
+      _T("Moment"),
+      _T("Reaction"),
+      _T("Deflection"),
+      _T("Deflection X"),
+      _T("Rotation"),
+      _T("Stress")
+   };
+
+#if defined _DEBUG
+   switch(action)
+   {
+   case actionAxial:
+   case actionShear:
+   case actionMoment:
+   case actionReaction:
+   case actionDeflection:
+   case actionXDeflection:
+   case actionRotation:
+   case actionStress:
+      break;
+   default:
+      ATLASSERT(false); // is there a new action type?
+   };
+#endif
+
+   return actions[action];
 }
 
 void CAnalysisResultsGraphController::FillActionTypeCtrl()
@@ -356,40 +591,27 @@ void CAnalysisResultsGraphController::FillActionTypeCtrl()
 
    pcbAction->ResetContent();
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IProductLoads,pProductLoads);
-   bool bReportAxial = pProductLoads->ReportAxialResults();
-
-   if ( bReportAxial )
+   std::vector<ActionType> vActions = GetActionTypes();
+   for (const auto& action : vActions)
    {
-      pcbAction->SetItemData(pcbAction->AddString(_T("Axial")),      actionAxial);
+      pcbAction->SetItemData(pcbAction->AddString(GetActionName(action)), action);
    }
-
-   pcbAction->SetItemData(pcbAction->AddString(_T("Shear")),      actionShear);
-   pcbAction->SetItemData(pcbAction->AddString(_T("Moment")),     actionMoment);
-   pcbAction->SetItemData(pcbAction->AddString(_T("Deflection")), actionDeflection);
-   pcbAction->SetItemData(pcbAction->AddString(_T("Rotation")),   actionRotation);
-   pcbAction->SetItemData(pcbAction->AddString(_T("Stress")),     actionStress);
-   pcbAction->SetItemData(pcbAction->AddString(_T("Reaction")),   actionReaction);
 
    if ( curSel == CB_ERR || pcbAction->GetCount() <= curSel)
    {
-      pcbAction->SetCurSel(bReportAxial ? 2 : 1); // select moment by default
+      pcbAction->SetCurSel(std::find(vActions.cbegin(),vActions.cend(),actionAxial) != vActions.cend() ? 2 : 1);
    }
    else
    {
       pcbAction->SetCurSel(curSel);
    }
-
-   m_ActionType = (ActionType)pcbAction->GetItemData(pcbAction->GetCurSel());
 }
 
 void CAnalysisResultsGraphController::FillDropListCtrl(bool bRetainSelection)
 {
    // NOTE: the two calls in this method are supposed to look backwards
    // in Interval mode, the drop down list contains loadings and visa-versa
-   if ( GetGraphMode() == GRAPH_MODE_INTERVAL )
+   if ( GetGraphMode() == Interval )
    {
       FillDropListCtrl_Loadings(bRetainSelection);
    }
@@ -480,7 +702,7 @@ void CAnalysisResultsGraphController::FillDropListCtrl_Loadings(bool bRetainSele
 
 void CAnalysisResultsGraphController::FillSelectListCtrl(bool bRetainSelection)
 {
-   if ( GetGraphMode() == GRAPH_MODE_INTERVAL )
+   if ( GetGraphMode() == Interval )
    {
       GetDlgItem(IDC_SELECT_LIST_TITLE)->SetWindowText(_T("Interval"));
       FillSelectListCtrl_Intervals(bRetainSelection);
@@ -611,16 +833,22 @@ void CAnalysisResultsGraphController::FillSelectListCtrl_Loadings(bool bRetainSe
 void CAnalysisResultsGraphController::UpdateStressControls()
 {
    // only show the stress check boxes if the action type is actionStress
-   int nCmdShow = (m_ActionType == actionStress ? SW_SHOW : SW_HIDE);
+   int nCmdShow = (GetActionType() == actionStress ? SW_SHOW : SW_HIDE);
    GetDlgItem(IDC_TOP_GIRDER   )->ShowWindow(nCmdShow);
    GetDlgItem(IDC_BOTTOM_GIRDER)->ShowWindow(nCmdShow);
+
+   if (nCmdShow == SW_SHOW && !m_bHasStructuralDeck)
+   {
+      // don't show top/bottom deck controls if we don't have a structural deck
+      nCmdShow = SW_HIDE;
+   }
    GetDlgItem(IDC_TOP_DECK     )->ShowWindow(nCmdShow);
    GetDlgItem(IDC_BOTTOM_DECK  )->ShowWindow(nCmdShow);
 }
 
 void CAnalysisResultsGraphController::UpdateListInfo()
 {
-   CString strType(GetGraphMode() == GRAPH_MODE_INTERVAL ? _T("intervals") : _T("loadings"));
+   CString strType(GetGraphMode() == Interval ? _T("intervals") : _T("loadings"));
    CString strHint;
    strHint.Format(_T("Hold CTRL key to select multiple %s\nHold SHIFT key to select range of %s"),strType,strType);
    GetDlgItem(IDC_LIST_INFO)->SetWindowText(strHint);
@@ -639,7 +867,7 @@ void CAnalysisResultsGraphController::UpdateResultsType()
 {
    bool bCumulativeOnly = false;
    CAnalysisResultsGraphBuilder* pGraphBuilder = (CAnalysisResultsGraphBuilder*)GetGraphBuilder();
-   if ( GetGraphMode() == GRAPH_MODE_INTERVAL )
+   if ( GetGraphMode() == Interval )
    {
       IDType graphID = SelectedGraphIndexToGraphID(0);
       GraphType graphType = pGraphBuilder->GetGraphType(graphID);
@@ -647,7 +875,7 @@ void CAnalysisResultsGraphController::UpdateResultsType()
    }
    else
    {
-      IndexType nGraphs = GetGraphCount();
+      IndexType nGraphs = GetSelectedGraphCount();
       for ( IndexType graphIdx = 0; graphIdx < nGraphs; graphIdx++ )
       {
          IDType graphID = SelectedGraphIndexToGraphID(graphIdx);
@@ -672,30 +900,53 @@ void CAnalysisResultsGraphController::UpdateResultsType()
 
 void CAnalysisResultsGraphController::UpdateElevAdjustment()
 {
+   CWnd* pWnd = GetDlgItem(IDC_ELEV_ADJUSTMENT);
+   GET_IFACE(IDocumentType, pDocType);
+   if (pDocType->IsPGSuperDocument())
+   {
+      // elevation adjustment doesn't apply to PGSuper
+      pWnd->ShowWindow(SW_HIDE);
+      return;
+   }
+
    ActionType actionType = GetActionType();
    if ( actionType == actionDeflection || actionType == actionRotation )
    {
       if ( actionType == actionDeflection )
       {
-         GetDlgItem(IDC_ELEV_ADJUSTMENT)->SetWindowText(_T("Include Elevation Adjustment"));
+         pWnd->SetWindowText(_T("Include Elevation Adjustment"));
       }
       else
       {
-         GetDlgItem(IDC_ELEV_ADJUSTMENT)->SetWindowText(_T("Include Slope Adjustment"));
+         pWnd->SetWindowText(_T("Include Slope Adjustment"));
       }
 
-      GetDlgItem(IDC_ELEV_ADJUSTMENT)->ShowWindow(SW_SHOW);
+      pWnd->ShowWindow(SW_SHOW);
    }
    else
    {
-      GetDlgItem(IDC_ELEV_ADJUSTMENT)->ShowWindow(SW_HIDE);
+      pWnd->ShowWindow(SW_HIDE);
+   }
+}
+
+void CAnalysisResultsGraphController::UpdatePrecamberAdjustment()
+{
+   CWnd* pWnd = GetDlgItem(IDC_PRECAMBER);
+   ActionType actionType = GetActionType();
+   if (actionType == actionDeflection || actionType == actionRotation)
+   {
+      pWnd->ShowWindow(SW_SHOW);
+   }
+   else
+   {
+      pWnd->ShowWindow(SW_HIDE);
    }
 }
 
 void CAnalysisResultsGraphController::UpdateAnalysisType()
 {
    GET_IFACE(ISpecification,pSpec);
-   m_AnalysisType = pSpec->GetAnalysisType();
+   pgsTypes::AnalysisType analysisType = pSpec->GetAnalysisType();
 
    GET_IFACE(IDocumentType,pDocType);
    if ( pDocType->IsPGSpliceDocument() )
@@ -704,12 +955,13 @@ void CAnalysisResultsGraphController::UpdateAnalysisType()
       GetDlgItem(IDC_SIMPLE)->ShowWindow(SW_HIDE);  // Simple Span
       GetDlgItem(IDC_SIMPLE2)->ShowWindow(SW_HIDE); // Simple Spans made Continuous
       GetDlgItem(IDC_SIMPLE3)->ShowWindow(SW_HIDE); // Envelope
-      ATLASSERT(m_AnalysisType == pgsTypes::Continuous);
+      ATLASSERT(analysisType == pgsTypes::Continuous);
+      CheckRadioButton(IDC_SIMPLE, IDC_SIMPLE3, IDC_SIMPLE3);
    }
    else
    {
       int idx;
-      switch( m_AnalysisType )
+      switch( analysisType )
       {
       case pgsTypes::Simple:
          idx = IDC_SIMPLE;
@@ -749,8 +1001,7 @@ IntervalIndexType CAnalysisResultsGraphController::GetFirstInterval()
       girderKey.groupIndex = 0;
    }
 
-   // want the first segment release interval... which is one interval after strand stressing
-   return pIntervals->GetFirstStressStrandInterval(girderKey)+1;
+   return pIntervals->GetFirstPrestressReleaseInterval(girderKey);
 }
 
 IntervalIndexType CAnalysisResultsGraphController::GetLastInterval()

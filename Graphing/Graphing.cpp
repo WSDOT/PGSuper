@@ -66,6 +66,10 @@
 BEGIN_MESSAGE_MAP(CGraphingApp, CWinApp)
 END_MESSAGE_MAP()
 
+CComModule _Module;
+
+BEGIN_OBJECT_MAP(ObjectMap)
+END_OBJECT_MAP()
 
 // CGraphingApp construction
 
@@ -85,7 +89,12 @@ CGraphingApp theApp;
 
 BOOL CGraphingApp::InitInstance()
 {
-	CWinApp::InitInstance();
+   _Module.Init(ObjectMap, m_hInstance);
+   return CWinApp::InitInstance();
+}
 
-	return TRUE;
+int CGraphingApp::ExitInstance()
+{
+   _Module.Term();
+   return CWinApp::ExitInstance();
 }

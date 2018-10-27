@@ -46,6 +46,7 @@ static char THIS_FILE[] = __FILE__;
 static bool IsSlabLoadUniform(const std::vector<SlabLoad>& slabLoads, pgsTypes::SupportedDeckType deckType);
 static bool IsOverlayLoadUniform(const std::vector<OverlayLoad>& overlayLoads);
 static bool IsShearKeyLoadUniform(const std::vector<ShearKeyLoad>& loads);
+static bool IsLongitudinalJointLoadUniform(const std::vector<LongitudinalJointLoad>& loads);
 static bool IsConstructionLoadUniform(const std::vector<ConstructionLoad>& loads);
 
 /****************************************************************************
@@ -189,22 +190,22 @@ rptChapter* CLoadingDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,
             std::vector<DiaphragmLoad> diaLoad;
             std::vector<ClosureJointLoad> cjLoad;
             pProdLoads->GetSegmentSelfWeightLoad(thisSegmentKey,&segLoad,&diaLoad,&cjLoad);
-            bool bUniformGirderDeadLoad = (segLoad.size() == 1 && IsEqual(segLoad[0].wStart,segLoad[0].wEnd) ? true : false);
+            bool bUniformGirderDeadLoad = (segLoad.size() == 1 && IsEqual(segLoad[0].Wstart,segLoad[0].Wend) ? true : false);
 
             bool bCJLoad = cjLoad.size() == 0 ? false : true;
-            bool bUniformCJDeadLoad = bCJLoad ? (IsEqual(cjLoad[0].wStart,cjLoad[0].wEnd) && IsEqual(cjLoad[1].wStart,cjLoad[1].wEnd)) : true;;
+            bool bUniformCJDeadLoad = bCJLoad ? (IsEqual(cjLoad[0].Wstart,cjLoad[0].Wend) && IsEqual(cjLoad[1].Wstart,cjLoad[1].Wend)) : true;;
 
             if ( bUniformGirderDeadLoad )
             {
                // girder load is uniform
                (*p_table)(row,0) << _T("Girder");
-               (*p_table)(row++,1) << fpl.SetValue(-segLoad[0].wStart);
+               (*p_table)(row++,1) << fpl.SetValue(-segLoad[0].Wstart);
             }
 
             if ( bCJLoad && bUniformCJDeadLoad )
             {
                (*p_table)(row,0) << _T("Closure Joint");
-               (*p_table)(row++,1) << fpl.SetValue(-cjLoad[0].wStart);
+               (*p_table)(row++,1) << fpl.SetValue(-cjLoad[0].Wstart);
             }
 
             // Sum of railing system loads not shown in simplified version
@@ -246,10 +247,10 @@ rptChapter* CLoadingDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,
                {
                   SegmentLoad& load = *iter;
 
-                  (*p_table)(row,0) << loc.SetValue(load.StartLoc);
-                  (*p_table)(row,1) << loc.SetValue(load.EndLoc);
-                  (*p_table)(row,2) << fpl.SetValue(-load.wStart);
-                  (*p_table)(row,3) << fpl.SetValue(-load.wEnd);
+                  (*p_table)(row,0) << loc.SetValue(load.Xstart);
+                  (*p_table)(row,1) << loc.SetValue(load.Xend);
+                  (*p_table)(row,2) << fpl.SetValue(-load.Wstart);
+                  (*p_table)(row,3) << fpl.SetValue(-load.Wend);
                   row++;
                }
             }
@@ -271,20 +272,21 @@ rptChapter* CLoadingDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,
                {
                   ClosureJointLoad& load = *iter;
 
-                  (*p_table)(row,0) << loc.SetValue(load.StartLoc);
-                  (*p_table)(row,1) << loc.SetValue(load.EndLoc);
-                  (*p_table)(row,2) << fpl.SetValue(-load.wStart);
-                  (*p_table)(row,3) << fpl.SetValue(-load.wEnd);
+                  (*p_table)(row,0) << loc.SetValue(load.Xstart);
+                  (*p_table)(row,1) << loc.SetValue(load.Xend);
+                  (*p_table)(row,2) << fpl.SetValue(-load.Wstart);
+                  (*p_table)(row,3) << fpl.SetValue(-load.Wend);
                   row++;
                }
             }
 
-            ReportPedestrianLoad(  pChapter,pBroker,pBridge,pProdLoads,pDisplayUnits,thisSegmentKey);
+            ReportPrecastDiaphragmLoad(pChapter, pBridge, pProdLoads, pDisplayUnits, thisSegmentKey);
+            ReportLongitudinalJointLoad(pChapter, pBridge, pProdLoads, pDisplayUnits, thisSegmentKey);
+            ReportConstructionLoad(pChapter, pBridge, pProdLoads, pDisplayUnits, thisSegmentKey);
+            ReportShearKeyLoad(pChapter, pBridge, pProdLoads, pDisplayUnits, thisSegmentKey, one_girder_has_shear_key);
             ReportSlabLoad(        pChapter,pBridge,pProdLoads,pDisplayUnits,thisSegmentKey);
             ReportOverlayLoad(     pChapter,pBridge,pProdLoads,pDisplayUnits,bRating,thisSegmentKey);
-            ReportConstructionLoad(pChapter,pBridge,pProdLoads,pDisplayUnits,thisSegmentKey);
-            ReportShearKeyLoad(    pChapter,pBridge,pProdLoads,pDisplayUnits,thisSegmentKey,one_girder_has_shear_key);
-            ReportPrecastDiaphragmLoad(pChapter,pBridge,pProdLoads,pDisplayUnits,thisSegmentKey);
+            ReportPedestrianLoad(pChapter, pBroker, pBridge, pProdLoads, pDisplayUnits, thisSegmentKey);
          } // segIdx
       } // gdrIdx
    } // grpIdx
@@ -726,14 +728,12 @@ void CLoadingDetailsChapterBuilder::ReportSlabLoad(rptChapter* pChapter,IBridge*
             row++;
          }
 
-         if (report_camber)
-         {
-            Float64 factor = pSpec->GetHaunchLoadCamberFactor();
+         Float64 factor = pSpec->GetHaunchLoadCamberFactor();
 
-            pNotePara = new rptParagraph;
-            *pChapter << pNotePara;
-            *pNotePara << _T("* Factor of ") << factor*100.0 << _T("% applied to assumed excess camber per project criteria");
-         }
+         pNotePara = new rptParagraph;
+         *pChapter << pNotePara;
+         *pNotePara << _T("* Factor of ") << factor*100.0 << _T("% applied to assumed excess camber per project criteria");
+
       }
    } // end if ( pBridge->GetDeckType() != pgsTypes::sdtNone )
 }
@@ -799,7 +799,7 @@ void CLoadingDetailsChapterBuilder::ReportOverlayLoad(rptChapter* pChapter,IBrid
 
          (*p_table)(row,0) << _T("Overlay Weight");
          (*p_table)(row,1) << loc.SetValue(ovl_load.StartWcc);
-         (*p_table)(row++,2) << fpl.SetValue(-ovl_load.wStart);
+         (*p_table)(row++,2) << fpl.SetValue(-ovl_load.Wstart);
       }
       else
       {
@@ -827,12 +827,12 @@ void CLoadingDetailsChapterBuilder::ReportOverlayLoad(rptChapter* pChapter,IBrid
          for (std::vector<OverlayLoad>::iterator i = overlay_loads.begin(); i != overlay_loads.end(); i++)
          {
             OverlayLoad& load = *i;
-            Float64 x1 = load.StartLoc - end_size;
-            Float64 x2 = load.EndLoc   - end_size;
+            Float64 x1 = load.Xstart - end_size;
+            Float64 x2 = load.Xend   - end_size;
             Float64 Wcc1 = load.StartWcc;
             Float64 Wcc2 = load.EndWcc;
-            Float64 w1   = load.wStart;
-            Float64 w2   = load.wEnd;
+            Float64 w1   = load.Wstart;
+            Float64 w2   = load.Wend;
 
             (*p_table)(row,0) << loc.SetValue(x1);
             (*p_table)(row,1) << loc.SetValue(x2);
@@ -901,7 +901,7 @@ void CLoadingDetailsChapterBuilder::ReportConstructionLoad(rptChapter* pChapter,
          const ConstructionLoad& cnst_load = *(construction_loads.begin());
 
          (*p_table)(row,0) << _T("Construction Weight");
-         (*p_table)(row++,1) << fpl.SetValue(-cnst_load.wStart);
+         (*p_table)(row++,1) << fpl.SetValue(-cnst_load.Wstart);
       }
       else
       {
@@ -922,12 +922,12 @@ void CLoadingDetailsChapterBuilder::ReportConstructionLoad(rptChapter* pChapter,
          for (std::vector<ConstructionLoad>::iterator i = construction_loads.begin(); i != construction_loads.end(); i++)
          {
             ConstructionLoad& load = *i;
-            Float64 x1 = load.StartLoc - end_size;
-            Float64 x2 = load.EndLoc   - end_size;
+            Float64 x1 = load.Xstart - end_size;
+            Float64 x2 = load.Xend   - end_size;
             Float64 Wcc1 = load.StartWcc;
             Float64 Wcc2 = load.EndWcc;
-            Float64 w1   = load.wStart;
-            Float64 w2   = load.wEnd;
+            Float64 w1   = load.Wstart;
+            Float64 w2   = load.Wend;
 
             (*p_table)(row,0) << loc.SetValue(x1);
             (*p_table)(row,1) << loc.SetValue(x2);
@@ -935,6 +935,81 @@ void CLoadingDetailsChapterBuilder::ReportConstructionLoad(rptChapter* pChapter,
             (*p_table)(row,3) << loc.SetValue(Wcc2);
             (*p_table)(row,4) << fpl.SetValue(-w1);
             (*p_table)(row,5) << fpl.SetValue(-w2);
+
+            row++;
+         }
+      }
+   }
+}
+
+void CLoadingDetailsChapterBuilder::ReportLongitudinalJointLoad(rptChapter* pChapter, IBridge* pBridge, IProductLoads* pProdLoads, IEAFDisplayUnits* pDisplayUnits, const CSegmentKey& thisSegmentKey) const
+{
+   INIT_UV_PROTOTYPE(rptLengthUnitValue, loc, pDisplayUnits->GetSpanLengthUnit(), false);
+   INIT_UV_PROTOTYPE(rptForcePerLengthUnitValue, fpl, pDisplayUnits->GetForcePerLengthUnit(), false);
+
+   Float64 end_size = pBridge->GetSegmentStartEndDistance(thisSegmentKey);
+
+   rptParagraph* pPara = nullptr;
+
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+
+   GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
+   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+   if (pBridgeDesc->HasStructuralLongitudinalJoints())
+   {
+      pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
+      *pChapter << pPara;
+      *pPara << _T("Longitudinal Joints") << rptNewLine;
+      pPara = new rptParagraph;
+      *pChapter << pPara;
+
+      std::vector<LongitudinalJointLoad> loads;
+      pProdLoads->GetLongitudinalJointLoad(thisSegmentKey, &loads);
+
+      bool is_uniform = IsLongitudinalJointLoadUniform(loads);
+
+      if (is_uniform)
+      {
+         *pPara << _T("Longitudinal Joint load is uniform along entire girder length.") << rptNewLine;
+
+         rptRcTable* p_table = rptStyleManager::CreateDefaultTable(2, _T(""));
+         *pPara << p_table << rptNewLine;
+         p_table->SetColumnStyle(0, rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+         p_table->SetStripeRowColumnStyle(0, rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+         (*p_table)(0, 0) << _T("Load Type");
+         (*p_table)(0, 1) << COLHDR(_T("w"), rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit());
+         RowIndexType row = p_table->GetNumberOfHeaderRows();
+
+         const LongitudinalJointLoad& load = loads.front();
+
+         (*p_table)(row, 0) << _T("Weight");
+         (*p_table)(row++, 1) << fpl.SetValue(-load.Wstart);
+      }
+      else
+      {
+         rptRcTable* p_table = rptStyleManager::CreateDefaultTable(4, _T(""));
+         *pPara << p_table;
+
+         (*p_table)(0, 0) << COLHDR(_T("Load Start,") << rptNewLine << _T("From Left Bearing"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
+         (*p_table)(0, 1) << COLHDR(_T("Load End,") << rptNewLine << _T("From Left Bearing"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
+
+         (*p_table)(0, 4) << COLHDR(_T("Start Weight"), rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit());
+         (*p_table)(0, 5) << COLHDR(_T("End Weight"), rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit());
+
+
+         RowIndexType row = p_table->GetNumberOfHeaderRows();
+         for( const auto& load : loads)
+         {
+            Float64 x1 = load.Xstart - end_size;
+            Float64 x2 = load.Xstart - end_size;
+            Float64 w1 = load.Wstart;
+            Float64 w2 = load.Wend;
+
+            (*p_table)(row, 0) << loc.SetValue(x1);
+            (*p_table)(row, 1) << loc.SetValue(x2);
+            (*p_table)(row, 2) << fpl.SetValue(-w1);
+            (*p_table)(row, 3) << fpl.SetValue(-w2);
 
             row++;
          }
@@ -1461,63 +1536,6 @@ void CLoadingDetailsChapterBuilder::ReportLimitStates(rptChapter* pChapter,bool 
    GET_IFACE2(pBroker,ILossParameters,pLossParameters);
    pgsTypes::LossMethod loss_method = pLossParameters->GetLossMethod();
 
-   //RowIndexType row = 0;
-
-   //rptParagraph* pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
-   //*pChapter << pPara;
-   //*pPara<< _T("Limit States")<<rptNewLine;
-
-   //pPara = new rptParagraph;
-   //*pChapter << pPara;
-
-   //rptRcTable* p_table = rptStyleManager::CreateDefaultTable(2);
-   //*pPara << p_table;
-
-   //p_table->SetColumnStyle(0, rptStyleManager::GetTableCellStyle( CB_NONE | CJ_LEFT) );
-   //p_table->SetStripeRowColumnStyle(0, rptStyleManager::GetTableStripeRowCellStyle( CB_NONE | CJ_LEFT) );
-
-   //p_table->SetColumnStyle(1, rptStyleManager::GetTableCellStyle( CB_NONE | CJ_LEFT) );
-   //p_table->SetStripeRowColumnStyle(1, rptStyleManager::GetTableStripeRowCellStyle( CB_NONE | CJ_LEFT) );
-
-   //(*p_table)(row,0) << _T("Stage");
-   //(*p_table)(row,1) << _T("Load Case");
-   //row++;
-
-   //std::_tstring strDC;
-   //if (one_girder_has_shear_key)
-   //{
-   //   strDC = _T("DC = Girder + Diaphragms + Shear Key + Construction + Deck");
-   //}
-   //else
-   //{
-   //   strDC = _T("DC = Girder + Diaphragms + Construction + Deck");
-   //}
-
-   //if ( bDesign )
-   //{
-   //   (*p_table)(row,0) << _T("Casting Yard");
-   //   (*p_table)(row,1) << _T("DC = Girder");
-   //   row++;
-
-
-   //   (*p_table)(row,0) << _T("Deck and Diaphragm Placement (Bridge Site 1)");
-   //   (*p_table)(row,1) << strDC;
-   //   row++;
-
-   //   (*p_table)(row,0) << _T("Final without Live Load (Bridge Site 2)");
-   //   (*p_table)(row,1) << strDC<<_T(" + Traffic Barrier")<<rptNewLine
-   //                   << _T("DW = Overlay");
-   //   row++;
-   //}
-
-   //(*p_table)(row,0) << _T("Final with Live Load (Bridge Site 3)");
-   //(*p_table)(row,1) << strDC<<_T(" + Traffic Barrier")<<rptNewLine
-   //                << _T("DW = Future Overlay")<< rptNewLine
-   //                << _T("LL+IM = Live Load + Impact") << rptNewLine
-   //                << _T("PL = Pedestrian Live Load") << rptNewLine;
-   //row++;
-
-
    // LRFD Limit States Load Factors
    rptParagraph* pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pPara;
@@ -1556,14 +1574,14 @@ void CLoadingDetailsChapterBuilder::ReportLimitStates(rptChapter* pChapter,bool 
    {
       col = 0;
       (*p_table)(row,col++) << GetLimitStateString(pgsTypes::ServiceI);
-      (*p_table)(row,col++) << scalar.SetValue(pLoadFactors->DCmax[pgsTypes::ServiceI]);
-      (*p_table)(row,col++) << scalar.SetValue(pLoadFactors->DWmax[pgsTypes::ServiceI]);
-      (*p_table)(row,col++) << scalar.SetValue(pLoadFactors->LLIMmax[pgsTypes::ServiceI]);
+      (*p_table)(row,col++) << scalar.SetValue(pLoadFactors->GetDCMax(pgsTypes::ServiceI));
+      (*p_table)(row,col++) << scalar.SetValue(pLoadFactors->GetDWMax(pgsTypes::ServiceI));
+      (*p_table)(row,col++) << scalar.SetValue(pLoadFactors->GetLLIMMax(pgsTypes::ServiceI));
       if ( loss_method == pgsTypes::TIME_STEP )
       {
-         (*p_table)(row,col++) << scalar.SetValue(pLoadFactors->CRmax[pgsTypes::ServiceI]);
-         (*p_table)(row,col++) << scalar.SetValue(pLoadFactors->SHmax[pgsTypes::ServiceI]);
-         (*p_table)(row,col++) << scalar.SetValue(pLoadFactors->PSmax[pgsTypes::ServiceI]);
+         (*p_table)(row,col++) << scalar.SetValue(pLoadFactors->GetCRMax(pgsTypes::ServiceI));
+         (*p_table)(row,col++) << scalar.SetValue(pLoadFactors->GetSHMax(pgsTypes::ServiceI));
+         (*p_table)(row,col++) << scalar.SetValue(pLoadFactors->GetPSMax(pgsTypes::ServiceI));
       }
       row++;
 
@@ -1571,28 +1589,28 @@ void CLoadingDetailsChapterBuilder::ReportLimitStates(rptChapter* pChapter,bool 
       {
          col = 0;
          (*p_table)(row,col++) << GetLimitStateString(pgsTypes::ServiceIA);
-         (*p_table)(row,col++) << scalar.SetValue(pLoadFactors->DCmax[pgsTypes::ServiceIA]);
-         (*p_table)(row,col++) << scalar.SetValue(pLoadFactors->DWmax[pgsTypes::ServiceIA]);
-         (*p_table)(row,col++) << scalar.SetValue(pLoadFactors->LLIMmax[pgsTypes::ServiceIA]);
+         (*p_table)(row,col++) << scalar.SetValue(pLoadFactors->GetDCMax(pgsTypes::ServiceIA));
+         (*p_table)(row,col++) << scalar.SetValue(pLoadFactors->GetDWMax(pgsTypes::ServiceIA));
+         (*p_table)(row,col++) << scalar.SetValue(pLoadFactors->GetLLIMMax(pgsTypes::ServiceIA));
          if ( loss_method == pgsTypes::TIME_STEP )
          {
-            (*p_table)(row,col++) << scalar.SetValue(pLoadFactors->CRmax[pgsTypes::ServiceIA]);
-            (*p_table)(row,col++) << scalar.SetValue(pLoadFactors->SHmax[pgsTypes::ServiceIA]);
-            (*p_table)(row,col++) << scalar.SetValue(pLoadFactors->PSmax[pgsTypes::ServiceIA]);
+            (*p_table)(row,col++) << scalar.SetValue(pLoadFactors->GetCRMax(pgsTypes::ServiceIA));
+            (*p_table)(row,col++) << scalar.SetValue(pLoadFactors->GetSHMax(pgsTypes::ServiceIA));
+            (*p_table)(row,col++) << scalar.SetValue(pLoadFactors->GetPSMax(pgsTypes::ServiceIA));
          }
          row++;
       }
 
       col = 0;
       (*p_table)(row,col++) << GetLimitStateString(pgsTypes::ServiceIII);
-      (*p_table)(row,col++) << scalar.SetValue(pLoadFactors->DCmax[pgsTypes::ServiceIII]);
-      (*p_table)(row,col++) << scalar.SetValue(pLoadFactors->DWmax[pgsTypes::ServiceIII]);
-      (*p_table)(row,col++) << scalar.SetValue(pLoadFactors->LLIMmax[pgsTypes::ServiceIII]);
+      (*p_table)(row,col++) << scalar.SetValue(pLoadFactors->GetDCMax(pgsTypes::ServiceIII));
+      (*p_table)(row,col++) << scalar.SetValue(pLoadFactors->GetDWMax(pgsTypes::ServiceIII));
+      (*p_table)(row,col++) << scalar.SetValue(pLoadFactors->GetLLIMMax(pgsTypes::ServiceIII));
       if ( loss_method == pgsTypes::TIME_STEP )
       {
-         (*p_table)(row,col++) << scalar.SetValue(pLoadFactors->CRmax[pgsTypes::ServiceIII]);
-         (*p_table)(row,col++) << scalar.SetValue(pLoadFactors->SHmax[pgsTypes::ServiceIII]);
-         (*p_table)(row,col++) << scalar.SetValue(pLoadFactors->PSmax[pgsTypes::ServiceIII]);
+         (*p_table)(row,col++) << scalar.SetValue(pLoadFactors->GetCRMax(pgsTypes::ServiceIII));
+         (*p_table)(row,col++) << scalar.SetValue(pLoadFactors->GetSHMax(pgsTypes::ServiceIII));
+         (*p_table)(row,col++) << scalar.SetValue(pLoadFactors->GetPSMax(pgsTypes::ServiceIII));
       }
       row++;
 
@@ -1600,30 +1618,30 @@ void CLoadingDetailsChapterBuilder::ReportLimitStates(rptChapter* pChapter,bool 
       {
          col = 0;
          (*p_table)(row,col++) << GetLimitStateString(pgsTypes::FatigueI);
-         (*p_table)(row,col++) << scalar.SetValue(pLoadFactors->DCmax[pgsTypes::FatigueI]);
-         (*p_table)(row,col++) << scalar.SetValue(pLoadFactors->DWmax[pgsTypes::FatigueI]);
-         (*p_table)(row,col++) << scalar.SetValue(pLoadFactors->LLIMmax[pgsTypes::FatigueI]);
+         (*p_table)(row,col++) << scalar.SetValue(pLoadFactors->GetDCMax(pgsTypes::FatigueI));
+         (*p_table)(row,col++) << scalar.SetValue(pLoadFactors->GetDWMax(pgsTypes::FatigueI));
+         (*p_table)(row,col++) << scalar.SetValue(pLoadFactors->GetLLIMMax(pgsTypes::FatigueI));
          if ( loss_method == pgsTypes::TIME_STEP )
          {
-            (*p_table)(row,col++) << scalar.SetValue(pLoadFactors->CRmax[pgsTypes::FatigueI]);
-            (*p_table)(row,col++) << scalar.SetValue(pLoadFactors->SHmax[pgsTypes::FatigueI]);
-            (*p_table)(row,col++) << scalar.SetValue(pLoadFactors->PSmax[pgsTypes::FatigueI]);
+            (*p_table)(row,col++) << scalar.SetValue(pLoadFactors->GetCRMax(pgsTypes::FatigueI));
+            (*p_table)(row,col++) << scalar.SetValue(pLoadFactors->GetSHMax(pgsTypes::FatigueI));
+            (*p_table)(row,col++) << scalar.SetValue(pLoadFactors->GetPSMax(pgsTypes::FatigueI));
          }
          row++;
       }
 
       col = 0;
       (*p_table)(row,col++) << GetLimitStateString(pgsTypes::StrengthI);
-      (*p_table)(row,col  ) << scalar.SetValue(pLoadFactors->DCmax[pgsTypes::StrengthI]) << _T("/");
-      (*p_table)(row,col++) << scalar.SetValue(pLoadFactors->DCmin[pgsTypes::StrengthI]);
-      (*p_table)(row,col  ) << scalar.SetValue(pLoadFactors->DWmax[pgsTypes::StrengthI]) << _T("/");
-      (*p_table)(row,col++) << scalar.SetValue(pLoadFactors->DWmin[pgsTypes::StrengthI]);
-      (*p_table)(row,col++) << scalar.SetValue(pLoadFactors->LLIMmax[pgsTypes::StrengthI]);
+      (*p_table)(row,col  ) << scalar.SetValue(pLoadFactors->GetDCMax(pgsTypes::StrengthI)) << _T("/");
+      (*p_table)(row,col++) << scalar.SetValue(pLoadFactors->GetDCMin(pgsTypes::StrengthI));
+      (*p_table)(row,col  ) << scalar.SetValue(pLoadFactors->GetDWMax(pgsTypes::StrengthI)) << _T("/");
+      (*p_table)(row,col++) << scalar.SetValue(pLoadFactors->GetDWMin(pgsTypes::StrengthI));
+      (*p_table)(row,col++) << scalar.SetValue(pLoadFactors->GetLLIMMax(pgsTypes::StrengthI));
       if ( loss_method == pgsTypes::TIME_STEP )
       {
-         (*p_table)(row,col++) << scalar.SetValue(pLoadFactors->CRmax[pgsTypes::StrengthI]);
-         (*p_table)(row,col++) << scalar.SetValue(pLoadFactors->SHmax[pgsTypes::StrengthI]);
-         (*p_table)(row,col++) << scalar.SetValue(pLoadFactors->PSmax[pgsTypes::StrengthI]);
+         (*p_table)(row,col++) << scalar.SetValue(pLoadFactors->GetCRMax(pgsTypes::StrengthI));
+         (*p_table)(row,col++) << scalar.SetValue(pLoadFactors->GetSHMax(pgsTypes::StrengthI));
+         (*p_table)(row,col++) << scalar.SetValue(pLoadFactors->GetPSMax(pgsTypes::StrengthI));
       }
       row++;
 
@@ -1631,16 +1649,16 @@ void CLoadingDetailsChapterBuilder::ReportLimitStates(rptChapter* pChapter,bool 
       {
          col = 0;
          (*p_table)(row,col++) << GetLimitStateString(pgsTypes::StrengthII);
-         (*p_table)(row,col  ) << scalar.SetValue(pLoadFactors->DCmax[pgsTypes::StrengthII]) << _T("/");
-         (*p_table)(row,col++) << scalar.SetValue(pLoadFactors->DCmin[pgsTypes::StrengthII]);
-         (*p_table)(row,col  ) << scalar.SetValue(pLoadFactors->DWmax[pgsTypes::StrengthII]) << _T("/");
-         (*p_table)(row,col++) << scalar.SetValue(pLoadFactors->DWmin[pgsTypes::StrengthII]);
-         (*p_table)(row,col++) << scalar.SetValue(pLoadFactors->LLIMmax[pgsTypes::StrengthII]);
+         (*p_table)(row,col  ) << scalar.SetValue(pLoadFactors->GetDCMax(pgsTypes::StrengthII)) << _T("/");
+         (*p_table)(row,col++) << scalar.SetValue(pLoadFactors->GetDCMin(pgsTypes::StrengthII));
+         (*p_table)(row,col  ) << scalar.SetValue(pLoadFactors->GetDWMax(pgsTypes::StrengthII)) << _T("/");
+         (*p_table)(row,col++) << scalar.SetValue(pLoadFactors->GetDWMin(pgsTypes::StrengthII));
+         (*p_table)(row,col++) << scalar.SetValue(pLoadFactors->GetLLIMMax(pgsTypes::StrengthII));
          if ( loss_method == pgsTypes::TIME_STEP )
          {
-            (*p_table)(row,col++) << scalar.SetValue(pLoadFactors->CRmax[pgsTypes::StrengthII]);
-            (*p_table)(row,col++) << scalar.SetValue(pLoadFactors->SHmax[pgsTypes::StrengthII]);
-            (*p_table)(row,col++) << scalar.SetValue(pLoadFactors->PSmax[pgsTypes::StrengthII]);
+            (*p_table)(row,col++) << scalar.SetValue(pLoadFactors->GetCRMax(pgsTypes::StrengthII));
+            (*p_table)(row,col++) << scalar.SetValue(pLoadFactors->GetSHMax(pgsTypes::StrengthII));
+            (*p_table)(row,col++) << scalar.SetValue(pLoadFactors->GetPSMax(pgsTypes::StrengthII));
          }
          row++;
       }
@@ -2050,6 +2068,24 @@ void CLoadingDetailsChapterBuilder::ReportLimitStates(rptChapter* pChapter,bool 
    }
 }
 
+std::_tstring GetImageName(LPCTSTR lpszBase, bool bAsymmetric, bool bPrecamber, bool bTopFlangeThickening)
+{
+   std::_tstring strName(lpszBase);
+   strName += (bAsymmetric ? _T("_Asymmetric") : _T("_Symmetric"));
+   if (bPrecamber)
+   {
+      strName += _T("_Precamber");
+   }
+
+   if (bTopFlangeThickening)
+   {
+      strName += _T("_TopFlangeThickening");
+   }
+
+   strName += _T(".png");
+   return strName;
+}
+
 void CLoadingDetailsChapterBuilder::ReportEquivPretensionLoads(rptChapter* pChapter,bool bRating,IBridge* pBridge,IEAFDisplayUnits* pDisplayUnits,const CGirderKey& girderKey) const
 {
    if ( m_bSimplifiedVersion || bRating )
@@ -2061,19 +2097,25 @@ void CLoadingDetailsChapterBuilder::ReportEquivPretensionLoads(rptChapter* pChap
    EAFGetBroker(&pBroker);
 
    GET_IFACE2(pBroker,IProductLoads,pProductLoads);
+   GET_IFACE2_NOCHECK(pBroker, IBridgeDescription, pIBridgeDesc);
+
+   bool bHasAsymmetricGirders = pBridge->HasAsymmetricGirders();
 
    INIT_UV_PROTOTYPE( rptLengthUnitValue,         loc,    pDisplayUnits->GetSpanLengthUnit(),     true );
    INIT_UV_PROTOTYPE( rptMomentUnitValue,         moment, pDisplayUnits->GetMomentUnit(),         true );
-   INIT_UV_PROTOTYPE( rptForceUnitValue,          force,  pDisplayUnits->GetGeneralForceUnit(),   true );
+   INIT_UV_PROTOTYPE(rptForceUnitValue, force, pDisplayUnits->GetGeneralForceUnit(), true);
+   INIT_UV_PROTOTYPE(rptLengthUnitValue, ecc, pDisplayUnits->GetComponentDimUnit(), true);
+   INIT_UV_PROTOTYPE(rptForcePerLengthUnitValue, distributed, pDisplayUnits->GetForcePerLengthUnit(), true);
 
    // Equivalent prestress loading for camber
    rptParagraph* pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pPara;
-   *pPara<< _T("Equivalent Pretension Loading")<<rptNewLine<<rptNewLine;
+   *pPara<< _T("Equivalent Pretension Loading")<<rptNewLine;
 
    pPara = new rptParagraph;
    *pChapter << pPara;
 
+   *pPara << _T("These loads are used to determine girder deflections due to pretension forces") << rptNewLine;
    *pPara << _T("Loads shown in positive directions") << rptNewLine;
 
    GroupIndexType nGroups = pBridge->GetGirderGroupCount();
@@ -2102,22 +2144,56 @@ void CLoadingDetailsChapterBuilder::ReportEquivPretensionLoads(rptChapter* pChap
             *pChapter << pPara;
 
             std::vector<EquivPretensionLoad> vEquivLoad = pProductLoads->GetEquivPretensionLoads(thisSegmentKey,pgsTypes::Straight);
-            std::vector<EquivPretensionLoad>::iterator loadIter;
-            std::vector<EquivPretensionLoad>::iterator loadIterEnd;
             if ( 0 < vEquivLoad.size() )
             {
+               const CPrecastSegmentData* pSegment = pIBridgeDesc->GetPrecastSegmentData(thisSegmentKey);
+               bool bPrecamber = !IsZero(pSegment->Precamber);
+               bool bTopFlangeThickening = pSegment->TopFlangeThickeningType != pgsTypes::tftNone;
+               std::_tstring strImage = GetImageName(_T("StraightStrandEquivPSLoading"),bHasAsymmetricGirders,bPrecamber,bTopFlangeThickening);
+
                *pPara << Bold(_T("Straight Strands")) << rptNewLine;
-               *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("StraightStrandCamberLoading.gif")) << rptNewLine;
-               loadIter    = vEquivLoad.begin();
-               loadIterEnd = vEquivLoad.end();
-               for ( ; loadIter != loadIterEnd; loadIter++ )
+               *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + strImage) << rptNewLine;
+               for ( const auto& equivLoad : vEquivLoad)
                {
-                  EquivPretensionLoad& equivLoad = *loadIter;
-                  Float64 X = equivLoad.Xs;
-                  Float64 M = equivLoad.M;
                   ATLASSERT(IsZero(equivLoad.N));
 
-                  *pPara << _T("M = ") << moment.SetValue(M) << _T(" at ") << loc.SetValue(X) << rptNewLine;
+                  *pPara << Sub2(_T("M"), _T("x")) << _T(" = ");
+                  if (bPrecamber && !bTopFlangeThickening)
+                  {
+                     *pPara << _T("(") << force.SetValue(equivLoad.P) << _T(")[") << ecc.SetValue(equivLoad.eye) << _T(" + (2/3)(");
+                     *pPara << ecc.SetValue(equivLoad.Precamber) << _T(")]");
+                  }
+                  else if (!bPrecamber && bTopFlangeThickening)
+                  {
+                     *pPara << _T("(") << force.SetValue(equivLoad.P) << _T(")[") << ecc.SetValue(equivLoad.eye) << _T(" + (2/3)(");
+                     *pPara << ecc.SetValue(equivLoad.Ybm) << _T(" - ");
+                     *pPara << ecc.SetValue(equivLoad.Ybe) << _T(")]");
+                  }
+                  else if (bPrecamber && bTopFlangeThickening)
+                  {
+                     *pPara << _T("(") << force.SetValue(equivLoad.P) << _T(")[") << ecc.SetValue(equivLoad.eye) << _T(" + (2/3)(");
+                     *pPara << ecc.SetValue(equivLoad.Ybm) << _T(" - ");
+                     *pPara << ecc.SetValue(equivLoad.Ybe) << _T(" + ");
+                     *pPara << ecc.SetValue(equivLoad.Precamber) << _T(")]");
+                  }
+                  else
+                  {
+                     *pPara << _T("(") << force.SetValue(equivLoad.P) << _T(")(") << ecc.SetValue(equivLoad.eye) << _T(")");
+                  }
+                  *pPara << _T(" = ") << moment.SetValue(equivLoad.Mx) << _T(" at ") << loc.SetValue(equivLoad.Xs) << rptNewLine;
+
+                  if (bHasAsymmetricGirders)
+                  {
+                     *pPara << Sub2(_T("M"),_T("y")) << _T(" = (") << force.SetValue(equivLoad.P) << _T(")(") << ecc.SetValue(equivLoad.ex) << _T(") = ") << moment.SetValue(equivLoad.My) << _T(" at ") << loc.SetValue(equivLoad.Xs) << rptNewLine;
+                  }
+
+                  if (!IsZero(equivLoad.wy))
+                  {
+                     *pPara << Sub2(_T("w"), _T("y")) << _T(" = -8(") << force.SetValue(equivLoad.P) << _T(")(") << ecc.SetValue(equivLoad.Precamber) << _T(")/");
+                     *pPara << _T("(") << loc.SetValue(equivLoad.Ls) << Super2(_T(")"), _T("2")) << _T(" = ");
+                     *pPara << distributed.SetValue(equivLoad.wy) << _T(" from ") << loc.SetValue(equivLoad.Xs);
+                     *pPara << _T(" to ") << loc.SetValue(equivLoad.Xe) << rptNewLine;
+                  }
                }
 
                *pPara << rptNewLine;
@@ -2126,7 +2202,6 @@ void CLoadingDetailsChapterBuilder::ReportEquivPretensionLoads(rptChapter* pChap
             vEquivLoad = pProductLoads->GetEquivPretensionLoads(thisSegmentKey,pgsTypes::Harped);
             if ( 0 < vEquivLoad.size() )
             {
-               GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
                const CPrecastSegmentData* pSegment = pIBridgeDesc->GetPrecastSegmentData(thisSegmentKey);
                pgsTypes::AdjustableStrandType adj_type = pSegment->Strands.GetAdjustableStrandType();
                if (pgsTypes::asHarped == adj_type)
@@ -2137,19 +2212,84 @@ void CLoadingDetailsChapterBuilder::ReportEquivPretensionLoads(rptChapter* pChap
                {
                   *pPara << Bold(_T("Adjustable Straight Strands")) << rptNewLine;
                }
-               *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("HarpedStrandCamberLoading.gif")) << rptNewLine;
-               loadIter    = vEquivLoad.begin();
-               loadIterEnd = vEquivLoad.end();
-               for ( ; loadIter != loadIterEnd; loadIter++ )
+
+               bool bPrecamber = !IsZero(pSegment->Precamber);
+               bool bTopFlangeThickening = pSegment->TopFlangeThickeningType != pgsTypes::tftNone;
+               std::_tstring strImage = GetImageName(_T("HarpedStrandEquivPSLoading"), bHasAsymmetricGirders, bPrecamber, bTopFlangeThickening);
+               *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + strImage) << rptNewLine;
+
+               for(const auto& equivLoad : vEquivLoad)
                {
-                  EquivPretensionLoad& equivLoad = *loadIter;
-                  if ( IsZero(equivLoad.M) )
+                  if ( IsZero(equivLoad.Mx) )
                   {
-                     *pPara << _T("N = ") << force.SetValue(equivLoad.N) << _T(" at ") << loc.SetValue(equivLoad.Xs) << rptNewLine;
+                     if (bPrecamber && !bTopFlangeThickening)
+                     {
+                        *pPara << Sub2(_T("e'"), _T("y")) << _T(" = ");
+                        *pPara << _T("(") << ecc.SetValue(equivLoad.eyh) << _T(" - ");
+                        *pPara << ecc.SetValue(equivLoad.eye) << _T(") - ");
+                        *pPara << ecc.SetValue(equivLoad.PrecamberAtHarpPoint);
+                        *pPara << _T(" = ") << ecc.SetValue(equivLoad.eprime) << rptNewLine;
+                     }
+                     else if (!bPrecamber && bTopFlangeThickening)
+                     {
+                        *pPara << Sub2(_T("e'"), _T("y")) << _T(" = ");
+                        *pPara << _T("(") << ecc.SetValue(equivLoad.eyh) << _T(" - ");
+                        *pPara << ecc.SetValue(equivLoad.eye) << _T(") + (");
+                        *pPara << ecc.SetValue(equivLoad.Ybe) << _T(" - ");
+                        *pPara << ecc.SetValue(equivLoad.Ybh) << _T(")");
+                        *pPara << _T(" = ") << ecc.SetValue(equivLoad.eprime) << rptNewLine;
+                     }
+                     else if (bPrecamber && bTopFlangeThickening)
+                     {
+                        *pPara << Sub2(_T("e'"), _T("y")) << _T(" = ");
+                        *pPara << _T("(") << ecc.SetValue(equivLoad.eyh) << _T(" - ");
+                        *pPara << ecc.SetValue(equivLoad.eye) << _T(") + (");
+                        *pPara << ecc.SetValue(equivLoad.Ybe) << _T(" - ");
+                        *pPara << ecc.SetValue(equivLoad.Ybh) << _T(") - ");
+                        *pPara << ecc.SetValue(equivLoad.PrecamberAtHarpPoint);
+                        *pPara << _T(" = ") << ecc.SetValue(equivLoad.eprime) << rptNewLine;
+                     }
+                     else
+                     {
+                        *pPara << Sub2(_T("e'"), _T("y")) << _T(" = ");
+                        *pPara << _T("(") << ecc.SetValue(equivLoad.eyh) << _T(" - ");
+                        *pPara << ecc.SetValue(equivLoad.eye) << _T(")");
+                        *pPara << _T(" = ") << ecc.SetValue(equivLoad.eprime) << rptNewLine;
+                     }
+                     *pPara << _T("N = (") << force.SetValue(equivLoad.P) << _T(")(") << ecc.SetValue(equivLoad.eprime) << _T(")/(") << loc.SetValue(equivLoad.b) << _T(") = ");
+                     *pPara << force.SetValue(equivLoad.N) << _T(" at ") << loc.SetValue(equivLoad.Xs) << rptNewLine;
                   }
                   else
                   {
-                     *pPara << _T("M = ") << moment.SetValue(equivLoad.M) << _T(" at ") << loc.SetValue(equivLoad.Xs) << rptNewLine;
+                     *pPara << Sub2(_T("M"), _T("x")) << _T(" = ");
+                     if (bPrecamber && !bTopFlangeThickening)
+                     {
+                        *pPara << _T("(") << force.SetValue(equivLoad.P) << _T(")[") << ecc.SetValue(equivLoad.eye) << _T(" + ");
+                        *pPara << _T("(2/3)(") << ecc.SetValue(equivLoad.Precamber) << _T(")]");
+                     }
+                     else if (!bPrecamber && bTopFlangeThickening)
+                     {
+                        *pPara << _T("(") << force.SetValue(equivLoad.P) << _T(")[") << ecc.SetValue(equivLoad.eye) << _T(" + ");
+                        *pPara << _T("(2/3)(") << ecc.SetValue(equivLoad.Ybm) << _T(" - ");
+                        *pPara << ecc.SetValue(equivLoad.Ybe) << _T(")]");
+                     }
+                     else if (bPrecamber && bTopFlangeThickening)
+                     {
+                        *pPara << _T("(") << force.SetValue(equivLoad.P) << _T(")[") << ecc.SetValue(equivLoad.eye) << _T(" + ");
+                        *pPara << _T("(2/3)(") << ecc.SetValue(equivLoad.Ybm) << _T(" - ");
+                        *pPara << ecc.SetValue(equivLoad.Ybe) << _T(" + ");
+                        *pPara << ecc.SetValue(equivLoad.Precamber) << _T(")]");
+                     }
+                     else
+                     {
+                        *pPara << _T("(") << force.SetValue(equivLoad.P) << _T(")(") << ecc.SetValue(equivLoad.eye) << _T(")");
+                     }
+                     *pPara << _T(" = ") << moment.SetValue(equivLoad.Mx) << _T(" at ") << loc.SetValue(equivLoad.Xs) << rptNewLine;
+
+                     if (bHasAsymmetricGirders)
+                     {
+                        *pPara << Sub2(_T("M"), _T("y")) << _T(" = (") << force.SetValue(equivLoad.P) << _T(")(") << ecc.SetValue(equivLoad.ex) << _T(") = ") << moment.SetValue(equivLoad.My) << _T(" at ") << loc.SetValue(equivLoad.Xs) << rptNewLine;
+                     }
                   }
                }
 
@@ -2159,18 +2299,66 @@ void CLoadingDetailsChapterBuilder::ReportEquivPretensionLoads(rptChapter* pChap
             vEquivLoad = pProductLoads->GetEquivPretensionLoads(thisSegmentKey,pgsTypes::Temporary);
             if ( 0 < vEquivLoad.size() )
             {
-               *pPara << Bold(_T("Temporary Strands")) << rptNewLine;
-               *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("TempStrandCamberLoading.gif")) << rptNewLine;
-               loadIter    = vEquivLoad.begin();
-               loadIterEnd = vEquivLoad.end();
-               for ( ; loadIter != loadIterEnd; loadIter++ )
-               {
-                  EquivPretensionLoad& equivLoad = *loadIter;
-                  Float64 X = equivLoad.Xs;
-                  Float64 M = equivLoad.M;
-                  ATLASSERT(IsZero(equivLoad.N));
+               const CPrecastSegmentData* pSegment = pIBridgeDesc->GetPrecastSegmentData(thisSegmentKey);
+               bool bPrecamber = !IsZero(pSegment->Precamber);
+               bool bTopFlangeThickening = pSegment->TopFlangeThickeningType != pgsTypes::tftNone;
+               std::_tstring strImage = GetImageName(_T("TemporaryStrandEquivPSLoading"), bHasAsymmetricGirders, bPrecamber, bTopFlangeThickening);
 
-                  *pPara << _T("M = ") << moment.SetValue(M) << _T(" at ") << loc.SetValue(X) << rptNewLine;
+               *pPara << Bold(_T("Temporary Strands")) << rptNewLine;
+               *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + strImage) << rptNewLine;
+               for (int i = 0; i < 2; i++)
+               {
+                  if (i == 0)
+                  {
+                     *pPara << _T("At installation") << rptNewLine;
+                  }
+                  else
+                  {
+                     *pPara << _T("At removal") << rptNewLine;
+                     vEquivLoad = pProductLoads->GetEquivPretensionLoads(thisSegmentKey, pgsTypes::Temporary, false /*not at installation = at removal*/);
+                  }
+
+                  for (const auto& equivLoad : vEquivLoad)
+                  {
+                     ATLASSERT(IsZero(equivLoad.N));
+                     *pPara << Sub2(_T("M"), _T("x")) << _T(" = ");
+                     if (bPrecamber && !bTopFlangeThickening)
+                     {
+                        *pPara << _T("(") << force.SetValue(equivLoad.P) << _T(")[") << ecc.SetValue(equivLoad.eye) << _T(" + (2/3)(");
+                        *pPara << ecc.SetValue(equivLoad.Precamber) << _T(")]");
+                     }
+                     else if (!bPrecamber && bTopFlangeThickening)
+                     {
+                        *pPara << _T("(") << force.SetValue(equivLoad.P) << _T(")[") << ecc.SetValue(equivLoad.eye) << _T(" + (2/3)(");
+                        *pPara << ecc.SetValue(equivLoad.Ybm) << _T(" - ");
+                        *pPara << ecc.SetValue(equivLoad.Ybe) << _T(")]");
+                     }
+                     else if (bPrecamber && bTopFlangeThickening)
+                     {
+                        *pPara << _T("(") << force.SetValue(equivLoad.P) << _T(")[") << ecc.SetValue(equivLoad.eye) << _T(" + (2/3)(");
+                        *pPara << ecc.SetValue(equivLoad.Ybm) << _T(" - ");
+                        *pPara << ecc.SetValue(equivLoad.Ybe) << _T(" + ");
+                        *pPara << ecc.SetValue(equivLoad.Precamber) << _T(")]");
+                     }
+                     else
+                     {
+                        *pPara << _T("(") << force.SetValue(equivLoad.P) << _T(")(") << ecc.SetValue(equivLoad.eye) << _T(")");
+                     }
+                     *pPara << _T(" = ") << moment.SetValue(equivLoad.Mx) << _T(" at ") << loc.SetValue(equivLoad.Xs) << rptNewLine;
+
+                     if (bHasAsymmetricGirders)
+                     {
+                        *pPara << Sub2(_T("M"), _T("y")) << _T(" = (") << force.SetValue(equivLoad.P) << _T(")(") << ecc.SetValue(equivLoad.ex) << _T(") = ") << moment.SetValue(equivLoad.My) << _T(" at ") << loc.SetValue(equivLoad.Xs) << rptNewLine;
+                     }
+
+                     if (!IsZero(equivLoad.wy))
+                     {
+                        *pPara << Sub2(_T("w"), _T("y")) << _T(" = -8(") << force.SetValue(equivLoad.P) << _T(")(") << ecc.SetValue(equivLoad.Precamber) << _T(")/");
+                        *pPara << _T("(") << loc.SetValue(equivLoad.Ls) << Super2(_T(")"), _T("2")) << _T(" = ");
+                        *pPara << distributed.SetValue(equivLoad.wy) << _T(" from ") << loc.SetValue(equivLoad.Xs);
+                        *pPara << _T(" to ") << loc.SetValue(equivLoad.Xe) << rptNewLine;
+                     }
+                  }
                }
             } // end if
          } // segmentIdx
@@ -2497,6 +2685,11 @@ static bool IsOverlayLoadUniform(const std::vector<OverlayLoad>& overlayLoads)
       return true;
    }
 
+   if (overlayLoads.size() == 1 && IsEqual(overlayLoads.front().Wstart, overlayLoads.front().Wend))
+   {
+      return true;
+   }
+
    std::vector<OverlayLoad>::const_iterator i1,i2;
    i1 = overlayLoads.begin();
    i2 = overlayLoads.begin()+1;
@@ -2507,12 +2700,12 @@ static bool IsOverlayLoadUniform(const std::vector<OverlayLoad>& overlayLoads)
       const OverlayLoad& load_2 = *i2;
 
       // only takes one difference to be nonuniform
-      if ( !IsEqual(load_1.wStart,load_2.wStart) )
+      if ( !IsEqual(load_1.Wstart,load_2.Wstart) )
       {
          return false;
       }
 
-      if ( !IsEqual(load_1.wEnd,load_2.wEnd) )
+      if ( !IsEqual(load_1.Wend,load_2.Wend) )
       {
          return false;
       }
@@ -2557,9 +2750,50 @@ static bool IsShearKeyLoadUniform(const std::vector<ShearKeyLoad>& loads)
    return true;
 }
 
+static bool IsLongitudinalJointLoadUniform(const std::vector<LongitudinalJointLoad>& loads)
+{
+   if (loads.size() == 0)
+   {
+      return true;
+   }
+
+   if (loads.size() == 1 && IsEqual(loads.front().Wstart, loads.front().Wend))
+   {
+      return true;
+   }
+
+   std::vector<LongitudinalJointLoad>::const_iterator i1, i2;
+   i1 = loads.begin();
+   i2 = loads.begin() + 1;
+   std::vector<LongitudinalJointLoad>::const_iterator end(loads.end());
+   for (; i2 != end; i1++, i2++)
+   {
+      const LongitudinalJointLoad& load_1 = *i1;
+      const LongitudinalJointLoad& load_2 = *i2;
+
+      // only takes one difference to be nonuniform
+      if (!IsEqual(load_1.Wstart, load_2.Wstart))
+      {
+         return false;
+      }
+
+      if (!IsEqual(load_1.Wend, load_2.Wend))
+      {
+         return false;
+      }
+   }
+
+   return true;
+}
+
 static bool IsConstructionLoadUniform(const std::vector<ConstructionLoad>& loads)
 {
    if ( loads.size() == 0 )
+   {
+      return true;
+   }
+
+   if (loads.size() == 1 && IsEqual(loads.front().Wstart, loads.front().Wend))
    {
       return true;
    }
@@ -2574,12 +2808,12 @@ static bool IsConstructionLoadUniform(const std::vector<ConstructionLoad>& loads
       const ConstructionLoad& load_2 = *i2;
 
       // only takes one difference to be nonuniform
-      if ( !IsEqual(load_1.wStart,load_2.wStart) )
+      if ( !IsEqual(load_1.Wstart,load_2.Wstart) )
       {
          return false;
       }
 
-      if ( !IsEqual(load_1.wEnd,load_2.wEnd) )
+      if ( !IsEqual(load_1.Wend,load_2.Wend) )
       {
          return false;
       }
@@ -2587,5 +2821,3 @@ static bool IsConstructionLoadUniform(const std::vector<ConstructionLoad>& loads
 
    return true;
 }
-
-

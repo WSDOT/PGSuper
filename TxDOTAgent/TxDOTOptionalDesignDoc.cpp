@@ -63,6 +63,8 @@
 #include <PsgLib\BeamFamilyManager.h>
 
 #include <MFCTools\AutoRegistry.h>
+#include <MFCTools\VersionInfo.h>
+#include <system\tokenizer.h>
 
 #include <limits>
 
@@ -1164,6 +1166,10 @@ void CTxDOTOptionalDesignDoc::UpdatePgsuperModelWithData()
       throw exc;
    }
 
+   /// TRICKY: Sections like Box shapes can support both spread and adjacent spacing. We have to make some
+   //          assumptions here. So for this case, we try to use adjacent spacing if the joint spacing is in
+   //          the allowable range. If it is larger, we convert to spread
+
    // Spacing cannot be less than girder width for any case
    const Float64 Tol=0.001; // millimeter
    Float64 gdr_width = pGdrEntry->GetBeamWidth(pgsTypes::metStart);
@@ -1182,34 +1188,39 @@ void CTxDOTOptionalDesignDoc::UpdatePgsuperModelWithData()
       pgsTypes::SupportedDeckType sdt = sd > 0 ? pgsTypes::sdtCompositeOverlay : pgsTypes::sdtNone;
       Float64 minSpc, maxSpc;
       factory->GetAllowableSpacingRange(pGdrEntry->GetDimensions(), sdt, pgsTypes::sbsUniformAdjacent, &minSpc, &maxSpc);
+
+      // Function above returns joint spacing - convert
+      Float64 joint_spacing = spacing - gdr_width;
  
-      if (spacing > maxSpc+Tol)
+      if (joint_spacing > maxSpc+Tol)
       {
          if(is_spread)
          {
-            // spacing to big to be adjacent. continue to spread
+            // spacing to big to be adjacent, but we have an option: continue to spread
             ;
          }
          else
          {
             maxSpc = ::ConvertFromSysUnits(maxSpc, unitMeasure::Feet);
+            maxSpc += gdr_width;
             TxDOTBrokerRetrieverException exc;
-            exc.Message.Format(_T("For an adjacent-only beam, allowable Beam Spacing may not be greater than %f feet"),maxSpc);
+            exc.Message.Format(_T("For an adjacent-only beam, allowable Beam Spacing may not be greater than %f feet"),maxSpc+gdr_width);
             throw exc;
          }
       }
-      else if (spacing < minSpc-Tol)
+      else if (joint_spacing < minSpc-Tol)
       {
          minSpc = ::ConvertFromSysUnits(minSpc, unitMeasure::Feet);
+         minSpc += gdr_width;
          TxDOTBrokerRetrieverException exc;
-         exc.Message.Format(_T("Beam Spacing may not be less than %f feet"),minSpc);
+         exc.Message.Format(_T("Beam Spacing may not be less than %f feet"),minSpc+gdr_width);
          throw exc;
       }
       else
       {
          is_spread = false;
          bridgeDesc.SetGirderSpacingType(pgsTypes::sbsUniformAdjacent);
-         bridgeDesc.SetGirderSpacing(spacing-minSpc); // input value is joint width
+         bridgeDesc.SetGirderSpacing(joint_spacing); // input value is joint width
          pDeck->SetDeckType(sdt);
       }
    }
@@ -1248,7 +1259,6 @@ void CTxDOTOptionalDesignDoc::UpdatePgsuperModelWithData()
    CPierData2* pLftPier =  bridgeDesc.GetPier(0);
    pLftPier->SetGirderEndDistance(pgsTypes::Ahead,pConLEntry->GetGirderEndDistance(),pConLEntry->GetEndDistanceMeasurementType());
    pLftPier->SetBearingOffset(pgsTypes::Ahead,pConLEntry->GetGirderBearingOffset(),pConLEntry->GetBearingOffsetMeasurementType());
-   pLftPier->SetSupportWidth(pgsTypes::Ahead,pConLEntry->GetSupportWidth());
    pLftPier->SetDiaphragmHeight(pgsTypes::Ahead,pConLEntry->GetDiaphragmHeight());
    pLftPier->SetDiaphragmWidth(pgsTypes::Ahead,pConLEntry->GetDiaphragmWidth());
    pLftPier->SetDiaphragmLoadType(pgsTypes::Ahead,pConLEntry->GetDiaphragmLoadType());
@@ -1269,7 +1279,6 @@ void CTxDOTOptionalDesignDoc::UpdatePgsuperModelWithData()
    CPierData2* pRgtPier =  bridgeDesc.GetPier(1);
    pRgtPier->SetGirderEndDistance(pgsTypes::Back,pConREntry->GetGirderEndDistance(),pConREntry->GetEndDistanceMeasurementType());
    pRgtPier->SetBearingOffset(pgsTypes::Back,pConREntry->GetGirderBearingOffset(),pConREntry->GetBearingOffsetMeasurementType());
-   pRgtPier->SetSupportWidth(pgsTypes::Back,pConREntry->GetSupportWidth());
    pRgtPier->SetDiaphragmHeight(pgsTypes::Back,pConREntry->GetDiaphragmHeight());
    pRgtPier->SetDiaphragmWidth(pgsTypes::Back,pConREntry->GetDiaphragmWidth());
    pRgtPier->SetDiaphragmLoadType(pgsTypes::Back,pConREntry->GetDiaphragmLoadType());
@@ -1396,7 +1405,20 @@ void CTxDOTOptionalDesignDoc::UpdatePgsuperModelWithData()
    wncdc.m_SpanKey.spanIndex = 0;
    wncdc.m_SpanKey.girderIndex = TOGA_ORIG_GDR; // first load original girder, then fab'd
 
-   EventIDType eventID = pBridgeDesc->GetEventByIndex(pBridgeDesc->GetCastDeckEventIndex())->GetID(); // pgsTypes::BridgeSite1
+   pgsTypes::SupportedDeckType deckType = pDeck->GetDeckType();
+
+   EventIDType eventID;
+   if (deckType != pgsTypes::sdtNone)
+   {
+      eventID = pBridgeDesc->GetEventByIndex(pBridgeDesc->GetCastDeckEventIndex())->GetID(); // pgsTypes::BridgeSite1
+   }
+   else
+   {
+      eventID = pBridgeDesc->GetEventByIndex(pBridgeDesc->GetIntermediateDiaphragmsLoadEventIndex())->GetID();
+   }
+
+   ATLASSERT(eventID != INVALID_INDEX);
+
    pUserDefinedLoadData->AddDistributedLoad(eventID,wncdc);
 
    wncdc.m_SpanKey.girderIndex = TOGA_FABR_GDR;
@@ -1488,8 +1510,8 @@ void CTxDOTOptionalDesignDoc::SetGirderData(CTxDOTOptionalDesignGirderData* pOdG
    }
 
    // Set seed data
-   shearData.CopyGirderEntryData( *pGdrEntry );
-   lrd.CopyGirderEntryData( *pGdrEntry );
+   shearData.CopyGirderEntryData( pGdrEntry );
+   lrd.CopyGirderEntryData( pGdrEntry );
 
    // See if standard or nonstandard fill
    CTxDOTOptionalDesignGirderData::StrandFillType fill_type =  pOdGirderData->GetStrandFillType();

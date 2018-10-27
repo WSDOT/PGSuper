@@ -101,7 +101,7 @@ void pgsWsdotHaulingAnalysisArtifact::BuildHaulingCheckReport(const CSegmentKey&
 {
    stbHaulingStabilityReporter reporter;
    GET_IFACE2(pBroker,IGirder,pGirder);
-   const stbIGirder* pStabilityModel = pGirder->GetSegmentStabilityModel(segmentKey);
+   const stbIGirder* pStabilityModel = pGirder->GetSegmentHaulingStabilityModel(segmentKey);
    const stbIHaulingStabilityProblem* pStabilityProblem = pGirder->GetSegmentHaulingStabilityProblem(segmentKey);
    Float64 Ll, Lr;
    pStabilityProblem->GetSupportLocations(&Ll,&Lr);
@@ -112,7 +112,7 @@ void pgsWsdotHaulingAnalysisArtifact::BuildHaulingDetailsReport(const CSegmentKe
 {
    stbHaulingStabilityReporter reporter;
    GET_IFACE2(pBroker,IGirder,pGirder);
-   const stbIGirder* pStabilityModel = pGirder->GetSegmentStabilityModel(segmentKey);
+   const stbIGirder* pStabilityModel = pGirder->GetSegmentHaulingStabilityModel(segmentKey);
    const stbIHaulingStabilityProblem* pStabilityProblem = pGirder->GetSegmentHaulingStabilityProblem(segmentKey);
    Float64 Ll, Lr;
    pStabilityProblem->GetSupportLocations(&Ll,&Lr);
@@ -125,10 +125,10 @@ void pgsWsdotHaulingAnalysisArtifact::Write1250Data(const CSegmentKey& segmentKe
 {
    GET_IFACE2(pBroker,ISegmentHaulingPointsOfInterest,pSegmentHaulingPointsOfInterest);
 
-   std::vector<pgsPointOfInterest> vPoi;
-   vPoi = pSegmentHaulingPointsOfInterest->GetHaulingPointsOfInterest(segmentKey,POI_5L);
+   PoiList vPoi;
+   pSegmentHaulingPointsOfInterest->GetHaulingPointsOfInterest(segmentKey, POI_5L,&vPoi);
    ATLASSERT(vPoi.size()==1);
-   pgsPointOfInterest& poi = vPoi[0];
+   const pgsPointOfInterest& poi = vPoi.front();
    Float64 loc = poi.GetDistFromStart();
 
    GET_IFACE2(pBroker,IGirder,pGirder);
@@ -239,7 +239,7 @@ void pgsWsdotHaulingAnalysisArtifact::Dump(dbgDumpContext& os) const
 {
    ATLASSERT(m_pStabilityProblem != nullptr);
    os << _T("Dump for pgsWsdotHaulingAnalysisArtifact") << endl;
-   os <<_T(" Stress Artifacts - Plumb Girder: ")<<endl;
+   os <<_T(" Stress Artifacts - Normal Crown Slope: ")<<endl;
    os << _T("=================================") <<endl;
    stbTypes::WindDirection wind = stbTypes::Left;
    stbTypes::WindDirection cf   = stbTypes::Left;
@@ -252,24 +252,36 @@ void pgsWsdotHaulingAnalysisArtifact::Dump(dbgDumpContext& os) const
       os <<_T("At ") << ::ConvertFromSysUnits(loc,unitMeasure::Feet) << _T(" ft: ");
 
       os<<endl;
-      Float64 fps = sectionResult.fps[stbTypes::Top];
-      Float64 fup = sectionResult.fDirect[stbTypes::CrownSlope][stbTypes::ImpactUp][wind][stbTypes::TopLeft];
-      Float64 fno = sectionResult.fDirect[stbTypes::CrownSlope][stbTypes::NoImpact][wind][stbTypes::TopLeft];
-      Float64 fdown = sectionResult.fDirect[stbTypes::CrownSlope][stbTypes::ImpactDown][wind][stbTypes::TopLeft];
-      os<<_T("TopStress fps=")<<::ConvertFromSysUnits(fps,unitMeasure::KSI)<<_T("ksi, fup=")<<::ConvertFromSysUnits(fup,unitMeasure::KSI)<<_T("ksi, fno=")<<::ConvertFromSysUnits(fno,unitMeasure::KSI)<<_T("ksi, fdown=")<<::ConvertFromSysUnits(fdown,unitMeasure::KSI)<<_T("ksi")<<endl;
+      Float64 fps = sectionResult.fps[stbTypes::TopLeft];
+      Float64 fup = sectionResult.f[stbTypes::CrownSlope][stbTypes::ImpactUp][wind][stbTypes::TopLeft];
+      Float64 fno = sectionResult.f[stbTypes::CrownSlope][stbTypes::NoImpact][wind][stbTypes::TopLeft];
+      Float64 fdown = sectionResult.f[stbTypes::CrownSlope][stbTypes::ImpactDown][wind][stbTypes::TopLeft];
+      os<<_T("Top Left Corner       fps=")<<::ConvertFromSysUnits(fps,unitMeasure::KSI)<<_T("ksi, fup=")<<::ConvertFromSysUnits(fup,unitMeasure::KSI)<<_T("ksi, fno=")<<::ConvertFromSysUnits(fno,unitMeasure::KSI)<<_T("ksi, fdown=")<<::ConvertFromSysUnits(fdown,unitMeasure::KSI)<<_T("ksi")<<endl;
 
-      fps = sectionResult.fps[stbTypes::Bottom];
-      fup = sectionResult.fDirect[stbTypes::CrownSlope][stbTypes::ImpactUp][wind][stbTypes::BottomLeft];
-      fno = sectionResult.fDirect[stbTypes::CrownSlope][stbTypes::NoImpact][wind][stbTypes::BottomLeft];
-      fdown = sectionResult.fDirect[stbTypes::CrownSlope][stbTypes::ImpactDown][wind][stbTypes::BottomLeft];
-      os<<_T("BotStress fps=")<<::ConvertFromSysUnits(fps,unitMeasure::KSI)<<_T("ksi, fup=")<<::ConvertFromSysUnits(fup,unitMeasure::KSI)<<_T("ksi, fno=")<<::ConvertFromSysUnits(fno,unitMeasure::KSI)<<_T("ksi, fdown=")<<::ConvertFromSysUnits(fdown,unitMeasure::KSI)<<_T("ksi")<<endl;
+      fps = sectionResult.fps[stbTypes::TopRight];
+      fup = sectionResult.f[stbTypes::CrownSlope][stbTypes::ImpactUp][wind][stbTypes::TopRight];
+      fno = sectionResult.f[stbTypes::CrownSlope][stbTypes::NoImpact][wind][stbTypes::TopRight];
+      fdown = sectionResult.f[stbTypes::CrownSlope][stbTypes::ImpactDown][wind][stbTypes::TopRight];
+      os << _T("Top Right Corner    fps=") << ::ConvertFromSysUnits(fps, unitMeasure::KSI) << _T("ksi, fup=") << ::ConvertFromSysUnits(fup, unitMeasure::KSI) << _T("ksi, fno=") << ::ConvertFromSysUnits(fno, unitMeasure::KSI) << _T("ksi, fdown=") << ::ConvertFromSysUnits(fdown, unitMeasure::KSI) << _T("ksi") << endl;
 
-      Float64 max_stress = Max(sectionResult.fMaxDirect[stbTypes::CrownSlope][stbTypes::Top],sectionResult.fMaxDirect[stbTypes::CrownSlope][stbTypes::Bottom]);
-      Float64 min_stress = Min(sectionResult.fMinDirect[stbTypes::CrownSlope][stbTypes::Top],sectionResult.fMinDirect[stbTypes::CrownSlope][stbTypes::Bottom]);
-      os<<_T("Total Stress: Min =")<<::ConvertFromSysUnits(min_stress,unitMeasure::KSI)<<_T("ksi, Max=")<<::ConvertFromSysUnits(max_stress,unitMeasure::KSI)<<_T("ksi")<<endl;
+      fps = sectionResult.fps[stbTypes::BottomLeft];
+      fup = sectionResult.f[stbTypes::CrownSlope][stbTypes::ImpactUp][wind][stbTypes::BottomLeft];
+      fno = sectionResult.f[stbTypes::CrownSlope][stbTypes::NoImpact][wind][stbTypes::BottomLeft];
+      fdown = sectionResult.f[stbTypes::CrownSlope][stbTypes::ImpactDown][wind][stbTypes::BottomLeft];
+      os<<_T("Bottom Left Corner    fps=")<<::ConvertFromSysUnits(fps,unitMeasure::KSI)<<_T("ksi, fup=")<<::ConvertFromSysUnits(fup,unitMeasure::KSI)<<_T("ksi, fno=")<<::ConvertFromSysUnits(fno,unitMeasure::KSI)<<_T("ksi, fdown=")<<::ConvertFromSysUnits(fdown,unitMeasure::KSI)<<_T("ksi")<<endl;
+
+      fps = sectionResult.fps[stbTypes::BottomRight];
+      fup = sectionResult.f[stbTypes::CrownSlope][stbTypes::ImpactUp][wind][stbTypes::BottomRight];
+      fno = sectionResult.f[stbTypes::CrownSlope][stbTypes::NoImpact][wind][stbTypes::BottomRight];
+      fdown = sectionResult.f[stbTypes::CrownSlope][stbTypes::ImpactDown][wind][stbTypes::BottomRight];
+      os << _T("Bottom Right Corner fps=") << ::ConvertFromSysUnits(fps, unitMeasure::KSI) << _T("ksi, fup=") << ::ConvertFromSysUnits(fup, unitMeasure::KSI) << _T("ksi, fno=") << ::ConvertFromSysUnits(fno, unitMeasure::KSI) << _T("ksi, fdown=") << ::ConvertFromSysUnits(fdown, unitMeasure::KSI) << _T("ksi") << endl;
+
+      Float64 max_stress = Max(sectionResult.fMax[stbTypes::CrownSlope][stbTypes::Top],sectionResult.fMax[stbTypes::CrownSlope][stbTypes::Bottom]);
+      Float64 min_stress = Min(sectionResult.fMin[stbTypes::CrownSlope][stbTypes::Top],sectionResult.fMin[stbTypes::CrownSlope][stbTypes::Bottom]);
+      os<<_T("Controlling Stress: Min =")<<::ConvertFromSysUnits(min_stress,unitMeasure::KSI)<<_T("ksi, Max=")<<::ConvertFromSysUnits(max_stress,unitMeasure::KSI)<<_T("ksi")<<endl;
    }
 
-   os <<_T(" Stress Artifacts - Inclined Girder: ")<<endl;
+   os <<_T(" Stress Artifacts - Max Superelevation: ")<<endl;
    os << _T("=================================") <<endl;
    for (const auto& sectionResult : results.vSectionResults)
    {
@@ -278,9 +290,33 @@ void pgsWsdotHaulingAnalysisArtifact::Dump(dbgDumpContext& os) const
       os <<_T("At ") << ::ConvertFromSysUnits(loc,unitMeasure::Feet) << _T(" ft: ");
 
       os<<endl;
-      Float64 max_stress = Max(sectionResult.fMax[stbTypes::Superelevation][stbTypes::Top],sectionResult.fMax[stbTypes::Superelevation][stbTypes::Bottom]);
-      Float64 min_stress = Min(sectionResult.fMin[stbTypes::Superelevation][stbTypes::Top],sectionResult.fMin[stbTypes::Superelevation][stbTypes::Bottom]);
-      os<<_T("Stress: Tensile =")<<::ConvertFromSysUnits(min_stress,unitMeasure::KSI)<<_T("ksi, Compressive =")<<::ConvertFromSysUnits(max_stress,unitMeasure::KSI)<<_T("ksi")<<endl;
+      Float64 fps = sectionResult.fps[stbTypes::TopLeft];
+      Float64 fup = sectionResult.f[stbTypes::Superelevation][stbTypes::ImpactUp][wind][stbTypes::TopLeft];
+      Float64 fno = sectionResult.f[stbTypes::Superelevation][stbTypes::NoImpact][wind][stbTypes::TopLeft];
+      Float64 fdown = sectionResult.f[stbTypes::Superelevation][stbTypes::ImpactDown][wind][stbTypes::TopLeft];
+      os << _T("Top Left Corner     fps=") << ::ConvertFromSysUnits(fps, unitMeasure::KSI) << _T("ksi, fup=") << ::ConvertFromSysUnits(fup, unitMeasure::KSI) << _T("ksi, fno=") << ::ConvertFromSysUnits(fno, unitMeasure::KSI) << _T("ksi, fdown=") << ::ConvertFromSysUnits(fdown, unitMeasure::KSI) << _T("ksi") << endl;
+
+      fps = sectionResult.fps[stbTypes::TopRight];
+      fup = sectionResult.f[stbTypes::Superelevation][stbTypes::ImpactUp][wind][stbTypes::TopRight];
+      fno = sectionResult.f[stbTypes::Superelevation][stbTypes::NoImpact][wind][stbTypes::TopRight];
+      fdown = sectionResult.f[stbTypes::Superelevation][stbTypes::ImpactDown][wind][stbTypes::TopRight];
+      os << _T("Top Right Corner    fps=") << ::ConvertFromSysUnits(fps, unitMeasure::KSI) << _T("ksi, fup=") << ::ConvertFromSysUnits(fup, unitMeasure::KSI) << _T("ksi, fno=") << ::ConvertFromSysUnits(fno, unitMeasure::KSI) << _T("ksi, fdown=") << ::ConvertFromSysUnits(fdown, unitMeasure::KSI) << _T("ksi") << endl;
+
+      fps = sectionResult.fps[stbTypes::BottomLeft];
+      fup = sectionResult.f[stbTypes::Superelevation][stbTypes::ImpactUp][wind][stbTypes::BottomLeft];
+      fno = sectionResult.f[stbTypes::Superelevation][stbTypes::NoImpact][wind][stbTypes::BottomLeft];
+      fdown = sectionResult.f[stbTypes::Superelevation][stbTypes::ImpactDown][wind][stbTypes::BottomLeft];
+      os << _T("Bottom Left Corner  fps=") << ::ConvertFromSysUnits(fps, unitMeasure::KSI) << _T("ksi, fup=") << ::ConvertFromSysUnits(fup, unitMeasure::KSI) << _T("ksi, fno=") << ::ConvertFromSysUnits(fno, unitMeasure::KSI) << _T("ksi, fdown=") << ::ConvertFromSysUnits(fdown, unitMeasure::KSI) << _T("ksi") << endl;
+
+      fps = sectionResult.fps[stbTypes::BottomRight];
+      fup = sectionResult.f[stbTypes::Superelevation][stbTypes::ImpactUp][wind][stbTypes::BottomRight];
+      fno = sectionResult.f[stbTypes::Superelevation][stbTypes::NoImpact][wind][stbTypes::BottomRight];
+      fdown = sectionResult.f[stbTypes::Superelevation][stbTypes::ImpactDown][wind][stbTypes::BottomRight];
+      os << _T("Bottom Right Corner fps=") << ::ConvertFromSysUnits(fps, unitMeasure::KSI) << _T("ksi, fup=") << ::ConvertFromSysUnits(fup, unitMeasure::KSI) << _T("ksi, fno=") << ::ConvertFromSysUnits(fno, unitMeasure::KSI) << _T("ksi, fdown=") << ::ConvertFromSysUnits(fdown, unitMeasure::KSI) << _T("ksi") << endl;
+
+      Float64 max_stress = Max(sectionResult.fMax[stbTypes::Superelevation][stbTypes::Top], sectionResult.fMax[stbTypes::Superelevation][stbTypes::Bottom]);
+      Float64 min_stress = Min(sectionResult.fMin[stbTypes::Superelevation][stbTypes::Top], sectionResult.fMin[stbTypes::Superelevation][stbTypes::Bottom]);
+      os << _T("Controlling Stress: Min =") << ::ConvertFromSysUnits(min_stress, unitMeasure::KSI) << _T("ksi, Max=") << ::ConvertFromSysUnits(max_stress, unitMeasure::KSI) << _T("ksi") << endl;
    }
    os <<_T(" Dump Complete")<<endl;
    os << _T("=============") <<endl;

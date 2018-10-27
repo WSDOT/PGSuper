@@ -41,6 +41,7 @@ public:
       m_bIsDeck    = false;
       m_bIsClosure = false;
       m_bIsSegment = false;
+      m_bIsLongitudinalJoint = false;
 	}
 
    HRESULT FinalConstruct();
@@ -60,6 +61,7 @@ private:
    bool m_bIsDeck;
    bool m_bIsClosure;
    bool m_bIsSegment;
+   bool m_bIsLongitudinalJoint;
 
    // use weak refereces so we don't have circular dependencies
    IMaterials* m_pMaterials;
@@ -67,12 +69,14 @@ private:
    bool IsDeck();
    bool IsClosureJoint();
    bool IsSegment();
+   bool IsLongitudinalJoint();
 
 // IAgeAdjustedMaterial
 public:
-   STDMETHOD(InitSegment)(const CSegmentKey& segmentKey,IMaterials* pMaterials);
-   STDMETHOD(InitClosureJoint)(const CClosureKey& closureKey,IMaterials* pMaterials);
-   STDMETHOD(InitDeck)(const CGirderKey& girderKey,IMaterials* pMaterials);
+   STDMETHOD(InitSegment)(const CSegmentKey& segmentKey,IMaterials* pMaterials) override;
+   STDMETHOD(InitClosureJoint)(const CClosureKey& closureKey,IMaterials* pMaterials) override;
+   STDMETHOD(InitDeck)(const CGirderKey& girderKey,IMaterials* pMaterials) override;
+   STDMETHOD(InitLongitudinalJoint)(const CSegmentKey& segmentKey, IMaterials* pMaterials) override;
 
 // IMaterial
 public:

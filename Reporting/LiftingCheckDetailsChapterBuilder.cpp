@@ -81,7 +81,7 @@ rptChapter* CLiftingCheckDetailsChapterBuilder::Build(CReportSpecification* pRpt
    {
       rptParagraph* pTitle = new rptParagraph( rptStyleManager::GetHeadingStyle() );
       *pChapter << pTitle;
-      *pTitle << _T("Details for Check for Lifting In Casting Yard [5.5.4.3][5.9.4.1]")<<rptNewLine;
+      *pTitle << _T("Details for Check for Lifting In Casting Yard [5.5.4.3][") << LrfdCw8th(_T("5.9.4.1"),_T("5.9.2.3.1")) << _T("]")<<rptNewLine;
 
       rptParagraph* p = new rptParagraph;
       *pChapter << p;
@@ -120,7 +120,7 @@ rptChapter* CLiftingCheckDetailsChapterBuilder::Build(CReportSpecification* pRpt
             }
 
             const stbLiftingCheckArtifact* pArtifact = pArtifacts->GetLiftingCheckArtifact(thisSegmentKey);
-            const stbIGirder* pStabilityModel = pGirder->GetSegmentStabilityModel(thisSegmentKey);
+            const stbIGirder* pStabilityModel = pGirder->GetSegmentLiftingStabilityModel(thisSegmentKey);
             const stbILiftingStabilityProblem* pStabilityProblem = pGirder->GetSegmentLiftingStabilityProblem(thisSegmentKey);
             const stbLiftingResults& results = pArtifact->GetLiftingResults();
 

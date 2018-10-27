@@ -84,39 +84,21 @@
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="..\..\BridgeLink\BridgeLink.props" />
-    <Import Project="..\..\WBFL\WBFL.props" />
-    <Import Project="..\..\BridgeLink\ObjectiveGrid.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="..\..\BridgeLink\BridgeLink.props" />
-    <Import Project="..\..\WBFL\WBFL.props" />
-    <Import Project="..\..\BridgeLink\ObjectiveGrid.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="..\..\BridgeLink\BridgeLink.props" />
-    <Import Project="..\..\WBFL\WBFL.props" />
-    <Import Project="..\..\BridgeLink\ObjectiveGrid.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Profile|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="..\..\BridgeLink\BridgeLink.props" />
-    <Import Project="..\..\WBFL\WBFL.props" />
-    <Import Project="..\..\BridgeLink\ObjectiveGrid.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="..\..\BridgeLink\BridgeLink.props" />
-    <Import Project="..\..\WBFL\WBFL.props" />
-    <Import Project="..\..\BridgeLink\ObjectiveGrid.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="..\..\BridgeLink\BridgeLink.props" />
-    <Import Project="..\..\WBFL\WBFL.props" />
-    <Import Project="..\..\BridgeLink\ObjectiveGrid.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
@@ -384,7 +366,7 @@ xcopy /y/d/s \ARP\PGSuper\Configurations \ARP\BridgeLink\Configurations\
       <AdditionalDependencies>htmlhelp.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>\ARP\WBFL\RegFreeCOM\$(Platform)\$(Configuration);\ARP\BridgeLink\RegFreeCOM\$(Platform)\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <ModuleDefinitionFile>.\PGSuperAppPlugin.def</ModuleDefinitionFile>
-      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
       <OptimizeReferences>true</OptimizeReferences>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
@@ -548,6 +530,7 @@ xcopy /y/d/s \ARP\PGSuper\Configurations \ARP\BridgeLink\Configurations\
     <ClCompile Include="..\BridgeEditorSectionPage.cpp" />
     <ClCompile Include="..\BridgeEditorSettingsSheet.cpp" />
     <ClCompile Include="..\BridgeModelViewChildFrame.cpp" />
+    <ClCompile Include="..\BridgeModelViewControllerImp.cpp" />
     <ClCompile Include="..\BridgePlanView.cpp" />
     <ClCompile Include="..\BridgeSectionCutDisplayImpl.cpp" />
     <ClCompile Include="..\BridgeSectionView.cpp" />
@@ -606,10 +589,12 @@ xcopy /y/d/s \ARP\PGSuper\Configurations \ARP\BridgeLink\Configurations\
     <ClCompile Include="..\GirderModelChildFrame.cpp" />
     <ClCompile Include="..\GirderModelElevationView.cpp" />
     <ClCompile Include="..\GirderModelSectionView.cpp" />
+    <ClCompile Include="..\GirderModelViewControllerImp.cpp" />
     <ClCompile Include="..\GirderNameGrid.cpp" />
     <ClCompile Include="..\GirderSelectStrandsDlg.cpp" />
     <ClCompile Include="..\GirderSelectStrandsPage.cpp" />
     <ClCompile Include="..\GirderSpacingGrid.cpp" />
+    <ClCompile Include="..\GirderTopWidthGrid.cpp" />
     <ClCompile Include="..\GirderViewPrintJob.cpp" />
     <ClCompile Include="..\GMDisplayMgrEventsImpl.cpp" />
     <ClCompile Include="..\GraphView.cpp" />
@@ -626,6 +611,7 @@ xcopy /y/d/s \ARP\PGSuper\Configurations \ARP\BridgeLink\Configurations\
     <ClCompile Include="..\LLDFFillDlg.cpp" />
     <ClCompile Include="..\LLDFGrid.cpp" />
     <ClCompile Include="..\LLDFPierGrid.cpp" />
+    <ClCompile Include="..\LoadsViewControllerImp.cpp" />
     <ClCompile Include="..\mfcdual.cpp" />
     <ClCompile Include="..\MomentLoadDrawStrategyImpl.cpp" />
     <ClCompile Include="..\MovePierDlg.cpp" />
@@ -711,8 +697,21 @@ xcopy /y/d/s \ARP\PGSuper\Configurations \ARP\BridgeLink\Configurations\
     <ClCompile Include="AboutDlg.cpp" />
     <ClCompile Include="ActivityGrid.cpp" />
     <ClCompile Include="ApplyLoadsDlg.cpp" />
+    <ClCompile Include="AssExcessCamberByGirderDlg.cpp" />
+    <ClCompile Include="AssExcessCamberGirderGrid.cpp" />
+    <ClCompile Include="AssExcessCamberGrid.cpp" />
+    <ClCompile Include="AssExcessCamberSame4BridgeDlg.cpp" />
+    <ClCompile Include="AssExcessCamberSpanBySpanDlg.cpp" />
+    <ClCompile Include="AssExcessCamberSpanGrid.cpp" />
+    <ClCompile Include="BearingGdrByGdrDlg.cpp" />
+    <ClCompile Include="BearingGdrGrid.cpp" />
+    <ClCompile Include="BearingPierByPierDlg.cpp" />
+    <ClCompile Include="BearingPierGrid.cpp" />
+    <ClCompile Include="BearingSame4BridgeDlg.cpp" />
+    <ClCompile Include="BridgeDescrBearings.cpp" />
     <ClCompile Include="CastClosureJointDlg.cpp" />
     <ClCompile Include="CastDeckDlg.cpp" />
+    <ClCompile Include="CastLongitudinalJointsDlg.cpp" />
     <ClCompile Include="ClosureJointDisplayObjectEvents.cpp" />
     <ClCompile Include="ClosureJointDlg.cpp" />
     <ClCompile Include="ClosureJointGeneralPage.cpp" />
@@ -744,6 +743,8 @@ xcopy /y/d/s \ARP\PGSuper\Configurations \ARP\BridgeLink\Configurations\
     <ClCompile Include="DrawStrandControl.cpp" />
     <ClCompile Include="DrawTendonsControl.cpp" />
     <ClCompile Include="DuctGrid.cpp" />
+    <ClCompile Include="EditBearingDlg.cpp" />
+    <ClCompile Include="PierDetailsBearingsPage.cpp" />
     <ClCompile Include="EditBridge.cpp" />
     <ClCompile Include="EditClosureJoint.cpp" />
     <ClCompile Include="EditGirderline.cpp" />
@@ -756,12 +757,6 @@ xcopy /y/d/s \ARP\PGSuper\Configurations \ARP\BridgeLink\Configurations\
     <ClCompile Include="EditTimelineDlg.cpp" />
     <ClCompile Include="ErectPiersDlg.cpp" />
     <ClCompile Include="ErectSegmentsDlg.cpp" />
-    <ClCompile Include="AssExcessCamberByGirderDlg.cpp" />
-    <ClCompile Include="AssExcessCamberGirderGrid.cpp" />
-    <ClCompile Include="AssExcessCamberGrid.cpp" />
-    <ClCompile Include="AssExcessCamberSame4BridgeDlg.cpp" />
-    <ClCompile Include="AssExcessCamberSpanBySpanDlg.cpp" />
-    <ClCompile Include="AssExcessCamberSpanGrid.cpp" />
     <ClCompile Include="GirderGrid.cpp" />
     <ClCompile Include="GirderSegmentDlg.cpp" />
     <ClCompile Include="GirderSegmentGeneralPage.cpp" />
@@ -831,6 +826,7 @@ xcopy /y/d/s \ARP\PGSuper\Configurations \ARP\BridgeLink\Configurations\
     <ClCompile Include="SelectClosureJointDlg.cpp" />
     <ClCompile Include="SelectGirderSegmentDlg.cpp" />
     <ClCompile Include="SlabOffsetGrid.cpp" />
+    <ClCompile Include="SpanGdrDetailsBearingsPage.cpp" />
     <ClCompile Include="SplicedGirderGeneralPage.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
@@ -942,6 +938,7 @@ xcopy /y/d/s \ARP\PGSuper\Configurations \ARP\BridgeLink\Configurations\
     <ClInclude Include="..\BridgeEditorSectionPage.h" />
     <ClInclude Include="..\BridgeEditorSettingsSheet.h" />
     <ClInclude Include="..\BridgeModelViewChildFrame.h" />
+    <ClInclude Include="..\BridgeModelViewControllerImp.h" />
     <ClInclude Include="..\BridgePlanView.h" />
     <ClInclude Include="..\BridgeSectionCutDisplayImpl.h" />
     <ClInclude Include="..\BridgeSectionView.h" />
@@ -1003,10 +1000,12 @@ xcopy /y/d/s \ARP\PGSuper\Configurations \ARP\BridgeLink\Configurations\
     <ClInclude Include="..\GirderModelChildFrame.h" />
     <ClInclude Include="..\GirderModelElevationView.h" />
     <ClInclude Include="..\GirderModelSectionView.h" />
+    <ClInclude Include="..\GirderModelViewControllerImp.h" />
     <ClInclude Include="..\GirderNameGrid.h" />
     <ClInclude Include="..\GirderSelectStrandsDlg.h" />
     <ClInclude Include="..\GirderSelectStrandsPage.h" />
     <ClInclude Include="..\GirderSpacingGrid.h" />
+    <ClInclude Include="..\GirderTopWidthGrid.h" />
     <ClInclude Include="..\GirderViewPrintJob.h" />
     <ClInclude Include="..\GMDisplayMgrEventsImpl.h" />
     <ClInclude Include="..\GraphView.h" />
@@ -1014,7 +1013,9 @@ xcopy /y/d/s \ARP\PGSuper\Configurations \ARP\BridgeLink\Configurations\
     <ClInclude Include="..\Hints.h" />
     <ClInclude Include="..\HorizontalAlignmentGrid.h" />
     <ClInclude Include="..\HorizontalAlignmentPage.h" />
+    <ClInclude Include="..\Include\BridgeModelViewController.h" />
     <ClInclude Include="..\Include\Details.h" />
+    <ClInclude Include="..\Include\GirderModelViewController.h" />
     <ClInclude Include="..\Include\IFace\Design.h" />
     <ClInclude Include="..\Include\IFace\DocumentType.h" />
     <ClInclude Include="..\Include\IFace\DrawBridgeSettings.h" />
@@ -1026,6 +1027,7 @@ xcopy /y/d/s \ARP\PGSuper\Configurations \ARP\BridgeLink\Configurations\
     <ClInclude Include="..\Include\IFace\VersionInfo.h" />
     <ClInclude Include="..\Include\IFace\ViewEvents.h" />
     <ClInclude Include="..\Include\IFace\Views.h" />
+    <ClInclude Include="..\Include\LoadsViewController.h" />
     <ClInclude Include="..\Include\PGSComponentInfo.h" />
     <ClInclude Include="..\Include\PGSpliceCatCom.h" />
     <ClInclude Include="..\Include\PGSuperAll.h" />
@@ -1046,6 +1048,7 @@ xcopy /y/d/s \ARP\PGSuper\Configurations \ARP\BridgeLink\Configurations\
     <ClInclude Include="..\LLDFFillDlg.h" />
     <ClInclude Include="..\LLDFGrid.h" />
     <ClInclude Include="..\LLDFPierGrid.h" />
+    <ClInclude Include="..\LoadsViewControllerImp.h" />
     <ClInclude Include="..\MomentLoadDrawStrategy.h" />
     <ClInclude Include="..\MomentLoadDrawStrategyImpl.h" />
     <ClInclude Include="..\MovePierDlg.h" />
@@ -1120,8 +1123,21 @@ xcopy /y/d/s \ARP\PGSuper\Configurations \ARP\BridgeLink\Configurations\
     <ClInclude Include="AboutDlg.h" />
     <ClInclude Include="ActivityGrid.h" />
     <ClInclude Include="ApplyLoadsDlg.h" />
+    <ClInclude Include="AssExcessCamberByGirderDlg.h" />
+    <ClInclude Include="AssExcessCamberGirderGrid.h" />
+    <ClInclude Include="AssExcessCamberGrid.h" />
+    <ClInclude Include="AssExcessCamberSame4BridgeDlg.h" />
+    <ClInclude Include="AssExcessCamberSpanBySpanDlg.h" />
+    <ClInclude Include="AssExcessCamberSpanGrid.h" />
+    <ClInclude Include="BearingGdrByGdrDlg.h" />
+    <ClInclude Include="BearingGdrGrid.h" />
+    <ClInclude Include="BearingPierByPierDlg.h" />
+    <ClInclude Include="BearingPierGrid.h" />
+    <ClInclude Include="BearingSame4BridgeDlg.h" />
+    <ClInclude Include="BridgeDescrBearings.h" />
     <ClInclude Include="CastClosureJointDlg.h" />
     <ClInclude Include="CastDeckDlg.h" />
+    <ClInclude Include="CastLongitudinalJointsDlg.h" />
     <ClInclude Include="ClosureJointDisplayObjectEvents.h" />
     <ClInclude Include="ClosureJointDlg.h" />
     <ClInclude Include="ClosureJointGeneralPage.h" />
@@ -1134,6 +1150,8 @@ xcopy /y/d/s \ARP\PGSuper\Configurations \ARP\BridgeLink\Configurations\
     <ClInclude Include="DrawStrandControl.h" />
     <ClInclude Include="DrawTendonsControl.h" />
     <ClInclude Include="DuctGrid.h" />
+    <ClInclude Include="EditBearingDlg.h" />
+    <ClInclude Include="PierDetailsBearingsPage.h" />
     <ClInclude Include="EditBridge.h" />
     <ClInclude Include="EditClosureJoint.h" />
     <ClInclude Include="EditGirderline.h" />
@@ -1147,12 +1165,6 @@ xcopy /y/d/s \ARP\PGSuper\Configurations \ARP\BridgeLink\Configurations\
     <ClInclude Include="ErectPiersActivity.h" />
     <ClInclude Include="ErectPiersDlg.h" />
     <ClInclude Include="ErectSegmentsDlg.h" />
-    <ClInclude Include="AssExcessCamberByGirderDlg.h" />
-    <ClInclude Include="AssExcessCamberGirderGrid.h" />
-    <ClInclude Include="AssExcessCamberGrid.h" />
-    <ClInclude Include="AssExcessCamberSame4BridgeDlg.h" />
-    <ClInclude Include="AssExcessCamberSpanBySpanDlg.h" />
-    <ClInclude Include="AssExcessCamberSpanGrid.h" />
     <ClInclude Include="GirderGrid.h" />
     <ClInclude Include="GirderSegmentDlg.h" />
     <ClInclude Include="GirderSegmentGeneralPage.h" />
@@ -1188,6 +1200,7 @@ xcopy /y/d/s \ARP\PGSuper\Configurations \ARP\BridgeLink\Configurations\
     <ClInclude Include="SelectClosureJointDlg.h" />
     <ClInclude Include="SelectGirderSegmentDlg.h" />
     <ClInclude Include="SlabOffsetGrid.h" />
+    <ClInclude Include="SpanGdrDetailsBearingsPage.h" />
     <ClInclude Include="SplicedGirderGeneralPage.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="StrandGrid.h" />
@@ -1203,6 +1216,7 @@ xcopy /y/d/s \ARP\PGSuper\Configurations \ARP\BridgeLink\Configurations\
   </ItemGroup>
   <ItemGroup>
     <Image Include="..\res\AnalysisResultsView.ico" />
+    <Image Include="..\res\bitmap1.bmp" />
     <Image Include="..\res\Bridge.ico" />
     <Image Include="..\res\Bridge2.ico" />
     <Image Include="..\res\bss.ico" />
@@ -1210,6 +1224,7 @@ xcopy /y/d/s \ARP\PGSuper\Configurations \ARP\BridgeLink\Configurations\
     <Image Include="..\res\Continuous.bmp" />
     <Image Include="..\res\CopyProperties.ico" />
     <Image Include="..\res\DefaultEntry.ico" />
+    <Image Include="..\res\Dimensions.ico" />
     <Image Include="..\res\distributed_load.ico" />
     <Image Include="..\res\EditBridge.ico" />
     <Image Include="..\res\EditGirder.ico" />
@@ -1220,14 +1235,17 @@ xcopy /y/d/s \ARP\PGSuper\Configurations \ARP\BridgeLink\Configurations\
     <Image Include="..\res\GirderView.ico" />
     <Image Include="..\res\HelpToolbar.bmp" />
     <Image Include="..\res\Hinges.bmp" />
+    <Image Include="..\res\Labels.ico" />
     <Image Include="..\res\LibEntryInUse.bmp" />
     <Image Include="..\res\LibEntryInUseAndReadOnly.bmp" />
     <Image Include="..\res\LibEntryReadOnly.bmp" />
     <Image Include="..\res\LibraryToolbar.bmp" />
     <Image Include="..\res\library_manager.ico" />
     <Image Include="..\res\LiveLoad.ico" />
+    <Image Include="..\res\LongitudinalReinforcement.ico" />
     <Image Include="..\res\moment.ico" />
     <Image Include="..\res\moment_l.bmp" />
+    <Image Include="..\res\North.ico" />
     <Image Include="..\res\north_ar.bmp" />
     <Image Include="..\res\PGSpliceDoc.ico" />
     <Image Include="..\res\PGSpliceTemplate.ico" />
@@ -1238,12 +1256,22 @@ xcopy /y/d/s \ARP\PGSuper\Configurations \ARP\BridgeLink\Configurations\
     <Image Include="..\res\PGSuperToolbar.bmp" />
     <Image Include="..\res\pgs_template.ico" />
     <Image Include="..\res\point_load.ico" />
+    <Image Include="..\res\Properties.ico" />
     <Image Include="..\res\RatingFactor.ico" />
     <Image Include="..\res\ReportView.ico" />
     <Image Include="..\res\Rollers.bmp" />
+    <Image Include="..\res\Schematic.ico" />
+    <Image Include="..\res\SchematicProfile.ico" />
+    <Image Include="..\res\SectionCG.ico" />
     <Image Include="..\res\Stable.ico" />
+    <Image Include="..\res\Stirrups.ico" />
+    <Image Include="..\res\Strands.bmp" />
+    <Image Include="..\res\Strands.ico" />
+    <Image Include="..\res\StrandsCG.ico" />
     <Image Include="..\res\Toolbar.bmp" />
     <Image Include="..\res\txdot.ico" />
+    <Image Include="..\res\UserLoads.ico" />
+    <Image Include="..\res\ViewBridge.ico" />
     <Image Include="..\res\warning2.ico" />
     <Image Include="..\res\Wsdot.ico" />
     <Image Include="res\bss.ico" />
@@ -1294,10 +1322,6 @@ xcopy /y/d/s \ARP\PGSuper\Configurations \ARP\BridgeLink\Configurations\
     </ProjectReference>
     <ProjectReference Include="..\PgsExt\PgsExt.vcxproj">
       <Project>{716009be-959b-4338-80f5-69abb0b12a91}</Project>
-      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-    </ProjectReference>
-    <ProjectReference Include="..\PGSuperIDL\PGSuperIDL.vcxproj">
-      <Project>{8042f343-0709-45cc-90a6-97be1a70fc37}</Project>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>
     <ProjectReference Include="..\ProjectAgent\ProjectAgent.vcxproj">

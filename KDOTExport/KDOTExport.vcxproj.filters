@@ -49,9 +49,6 @@
     <CXX_Tree_Mapping_Rule Include="Schema\KDOTExporter.xsd" />
   </ItemGroup>
   <ItemGroup>
-    <Midl Include="KDOTExport.idl" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="KDOTExport.def" />
     <None Include="KDOTComponentInfo.rgs">
       <Filter>Resource Files</Filter>

@@ -64,12 +64,11 @@ END_MESSAGE_MAP()
 CGirderGraphBuilderBase::CGirderGraphBuilderBase() :
 CEAFAutoCalcGraphBuilder(),
 m_Graph(DUMMY_TOOL,DUMMY_TOOL),
-m_pXFormat(0),
-m_pYFormat(0),
+m_pXFormat(nullptr),
+m_pYFormat(nullptr),
 m_ZeroToleranceX(TOLERANCE),
 m_ZeroToleranceY(TOLERANCE),
-m_pGraphController(0),
-m_bShowBeam(true),
+m_pGraphController(nullptr),
 m_bShift(false)
 {
 }
@@ -77,12 +76,11 @@ m_bShift(false)
 CGirderGraphBuilderBase::CGirderGraphBuilderBase(const CGirderGraphBuilderBase& other) :
 CEAFAutoCalcGraphBuilder(other),
 m_Graph(DUMMY_TOOL,DUMMY_TOOL),
-m_pXFormat(0),
-m_pYFormat(0),
+m_pXFormat(nullptr),
+m_pYFormat(nullptr),
 m_ZeroToleranceX(TOLERANCE),
 m_ZeroToleranceY(TOLERANCE),
-m_pGraphController(0),
-m_bShowBeam(other.m_bShowBeam)
+m_pGraphController(nullptr)
 {
 }
 
@@ -136,10 +134,7 @@ int CGirderGraphBuilderBase::InitializeGraphController(CWnd* pParent,UINT nID)
    UpdateYAxis();
 
    // Show the grid by default... set the control to checked
-   m_Graph.SetDoDrawGrid(); // show grid by default
-
-   // show the beam by default
-   m_bShowBeam = true;
+   m_Graph.SetDoDrawGrid(m_pGraphController->ShowGrid());
 
    // Default settings for graph controller
    m_pGraphController->CheckDlgButton(IDC_GRID,BST_CHECKED);
@@ -180,28 +175,6 @@ void CGirderGraphBuilderBase::UpdateYAxis()
    m_Graph.SetYAxisNiceRange(true);
    m_Graph.SetYAxisNumberOfMinorTics(5);
    m_Graph.SetYAxisNumberOfMajorTics(21);
-}
-
-void CGirderGraphBuilderBase::ShowGrid(bool bShow)
-{
-   m_Graph.SetDoDrawGrid( bShow );
-   GetView()->Invalidate();
-}
-
-bool CGirderGraphBuilderBase::ShowGrid() const
-{
-   return m_Graph.GetDoDrawGrid();
-}
-
-void CGirderGraphBuilderBase::ShowBeam(bool bShow)
-{
-   m_bShowBeam = bShow;
-   GetView()->Invalidate();
-}
-
-bool CGirderGraphBuilderBase::ShowBeam() const
-{
-   return m_bShowBeam;
 }
 
 void CGirderGraphBuilderBase::Shift(bool bShift)
@@ -246,7 +219,7 @@ Float64 CGirderGraphBuilderBase::ComputeShift(const CGirderKey& girderKey)
    return shift;
 }
 
-void CGirderGraphBuilderBase::GetXValues(const std::vector<pgsPointOfInterest>& vPoi,std::vector<Float64>* pXVals)
+void CGirderGraphBuilderBase::GetXValues(const PoiList& vPoi,std::vector<Float64>* pXVals)
 {
    GET_IFACE(IPointOfInterest,pPoi);
 
@@ -256,16 +229,12 @@ void CGirderGraphBuilderBase::GetXValues(const std::vector<pgsPointOfInterest>& 
    Float64 shift = 0;
    if ( m_bShift )
    {
-      const CGirderKey& girderKey(vPoi.front().GetSegmentKey());
+      const CGirderKey& girderKey(vPoi.front().get().GetSegmentKey());
       shift = ComputeShift(girderKey);
    }
 
-   std::vector<pgsPointOfInterest>::const_iterator poiIter(vPoi.begin());
-   std::vector<pgsPointOfInterest>::const_iterator poiIterEnd(vPoi.end());
-   for ( ; poiIter != poiIterEnd; poiIter++ )
+   for (const pgsPointOfInterest& poi : vPoi)
    {
-      const pgsPointOfInterest& poi(*poiIter);
-
       Float64 Xg = pPoi->ConvertPoiToGirderlineCoordinate(poi);
       
       Xg += shift;
@@ -328,7 +297,7 @@ void CGirderGraphBuilderBase::DrawGraphNow(CWnd* pGraphWnd,CDC* pDC)
 
    // before drawing the graph background, which also draws the axes
    // make sure the graph is big enough to hold the beam
-   if ( m_bShowBeam )
+   if (m_pGraphController->ShowBeam())
    {
       CGirderKey girderKey(m_pGraphController->GetGirderGroup(),m_pGraphController->GetGirder());
 
@@ -369,7 +338,7 @@ void CGirderGraphBuilderBase::DrawGraphNow(CWnd* pGraphWnd,CDC* pDC)
    m_Graph.DrawBackground(pDC->GetSafeHdc());
 
    // superimpose the beam on the background
-   if ( m_bShowBeam )
+   if ( m_pGraphController->ShowBeam() )
    {
       CGirderKey girderKey(m_pGraphController->GetGirderGroup(),m_pGraphController->GetGirder());
 
@@ -389,4 +358,15 @@ void CGirderGraphBuilderBase::DrawGraphNow(CWnd* pGraphWnd,CDC* pDC)
    m_Graph.DrawDataSeries(pDC->GetSafeHdc());
 
    pDC->RestoreDC(save);
+}
+
+void CGirderGraphBuilderBase::ShowGrid(bool bShow)
+{
+   m_Graph.SetDoDrawGrid(bShow);
+   GetView()->Invalidate();
+}
+
+void CGirderGraphBuilderBase::ShowBeam(bool bShow)
+{
+   GetView()->Invalidate();
 }

@@ -42,23 +42,23 @@ END_COM_MAP()
 // IPGSDataExporter
 public:
    STDMETHOD(Init)(UINT nCmdID) override;
-   STDMETHOD(GetMenuText)(/*[out,retval]*/BSTR*  bstrText) override;
-   STDMETHOD(GetBitmapHandle)(/*[out]*/HBITMAP* phBmp) override;
-   STDMETHOD(GetCommandHintText)(BSTR*  bstrText) override;
+   STDMETHOD(GetMenuText)(/*[out,retval]*/BSTR*  bstrText) const override;
+   STDMETHOD(GetBitmapHandle)(/*[out]*/HBITMAP* phBmp) const override;
+   STDMETHOD(GetCommandHintText)(BSTR*  bstrText) const override;
    STDMETHOD(Export)(/*[in]*/IBroker* pBroker) override;
 
 // IPGSDocumentation
 public:
-   STDMETHOD(GetDocumentationSetName)(BSTR* pbstrName) override;
+   STDMETHOD(GetDocumentationSetName)(BSTR* pbstrName) const override;
    STDMETHOD(LoadDocumentationMap)() override;
-   STDMETHOD(GetDocumentLocation)(UINT nHID,BSTR* pbstrURL) override;
+   STDMETHOD(GetDocumentLocation)(UINT nHID,BSTR* pbstrURL) const override;
 
 private:
    Float64 m_BearingHeight;
    HRESULT Export(IBroker* pBroker,CString& strFileName, const std::vector<CGirderKey>& girderKeys);
 
    std::map<UINT,CString> m_HelpTopics;
-   CString GetDocumentationURL();
+   CString GetDocumentationURL() const;
 };
 
 #endif //__PGSUPEREXPORTER_H_

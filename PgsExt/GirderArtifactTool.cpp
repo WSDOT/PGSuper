@@ -68,9 +68,9 @@ void ListStressFailures(IBroker* pBroker, FailureList& rFailures,
    GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
    GET_IFACE2(pBroker,IIntervals,pIntervals);
 
-   IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval();
-   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
-   IntervalIndexType lastIntervalIdx          = pIntervals->GetIntervalCount()-1;
+   IntervalIndexType noncompositeIntervalIdx = pIntervals->GetLastNoncompositeInterval();
+   IntervalIndexType compositeIntervalIdx = pIntervals->GetLastCompositeInterval();
+   IntervalIndexType lastIntervalIdx      = pIntervals->GetIntervalCount()-1;
 
    GET_IFACE2(pBroker,ITendonGeometry,pTendonGeom);
    DuctIndexType nDucts = pTendonGeom->GetDuctCount(girderKey);
@@ -104,7 +104,8 @@ void ListStressFailures(IBroker* pBroker, FailureList& rFailures,
       {
          if (referToDetailsReport)
          {
-            rFailures.push_back(_T("Strand Stresses [5.9.3] have been exceeded.  See the Details Report for more information"));
+            std::_tstring msg(_T("Strand Stresses [") + std::_tstring(LrfdCw8th(_T("5.9.3"), _T("5.9.2.2"))) + _T("] have been exceeded.  See the Details Report for more information"));
+            rFailures.push_back(msg);
          }
          else
          {
@@ -204,10 +205,10 @@ void ListStressFailures(IBroker* pBroker, FailureList& rFailures,
                      }
                   }
 
-                  if ( FlexureStressFailures(pBroker,segmentKey,castDeckIntervalIdx,pgsTypes::ServiceI,pgsTypes::Compression,pArtifact,bBeamStresses) )
+                  if ( FlexureStressFailures(pBroker,segmentKey,noncompositeIntervalIdx,pgsTypes::ServiceI,pgsTypes::Compression,pArtifact,bBeamStresses) )
                   {
                      std::_tostringstream os;
-                     os << _T("Compression stress check failed for ") << GetLimitStateString(pgsTypes::ServiceI) << _T(" Limit State in Interval ") << LABEL_INTERVAL(castDeckIntervalIdx) << _T(" ") << pIntervals->GetDescription(castDeckIntervalIdx);
+                     os << _T("Compression stress check failed for ") << GetLimitStateString(pgsTypes::ServiceI) << _T(" Limit State in Interval ") << LABEL_INTERVAL(noncompositeIntervalIdx) << _T(" ") << pIntervals->GetDescription(noncompositeIntervalIdx);
                      if ( 1 < nSegments )
                      {
                         os << _T(" for Segment ") << LABEL_SEGMENT(segIdx);
@@ -215,10 +216,10 @@ void ListStressFailures(IBroker* pBroker, FailureList& rFailures,
                      rFailures.push_back(os.str());
                   }
 
-                  if ( FlexureStressFailures(pBroker,segmentKey,castDeckIntervalIdx,pgsTypes::ServiceI,pgsTypes::Tension,pArtifact,bBeamStresses) )
+                  if ( FlexureStressFailures(pBroker,segmentKey, noncompositeIntervalIdx,pgsTypes::ServiceI,pgsTypes::Tension,pArtifact,bBeamStresses) )
                   {
                      std::_tostringstream os;
-                     os << _T("Tensile stress check failed for ") << GetLimitStateString(pgsTypes::ServiceI) << _T(" Limit State in Interval ") << LABEL_INTERVAL(castDeckIntervalIdx) << _T(" ") << pIntervals->GetDescription(castDeckIntervalIdx);
+                     os << _T("Tensile stress check failed for ") << GetLimitStateString(pgsTypes::ServiceI) << _T(" Limit State in Interval ") << LABEL_INTERVAL(noncompositeIntervalIdx) << _T(" ") << pIntervals->GetDescription(noncompositeIntervalIdx);
                      if ( 1 < nSegments )
                      {
                         os << _T(" for Segment ") << LABEL_SEGMENT(segIdx);
@@ -228,34 +229,37 @@ void ListStressFailures(IBroker* pBroker, FailureList& rFailures,
                }
             } // end if bBeamStresses
 
-            if ( FlexureStressFailures(pBroker,segmentKey,compositeDeckIntervalIdx,pgsTypes::ServiceI,pgsTypes::Compression,pArtifact,bBeamStresses) )
+            if (noncompositeIntervalIdx != compositeIntervalIdx)
             {
-               std::_tostringstream os;
-               os << _T("Compression stress check failed for ") << GetLimitStateString(pgsTypes::ServiceI) << _T(" Limit State in Interval ") << LABEL_INTERVAL(compositeDeckIntervalIdx) << _T(" ") << pIntervals->GetDescription(compositeDeckIntervalIdx);
-               if ( bBeamStresses && 1 < nSegments )
+               if (FlexureStressFailures(pBroker, segmentKey, compositeIntervalIdx, pgsTypes::ServiceI, pgsTypes::Compression, pArtifact, bBeamStresses))
                {
-                  os << _T(" for Segment ") << LABEL_SEGMENT(segIdx);
+                  std::_tostringstream os;
+                  os << _T("Compression stress check failed for ") << GetLimitStateString(pgsTypes::ServiceI) << _T(" Limit State in Interval ") << LABEL_INTERVAL(compositeIntervalIdx) << _T(" ") << pIntervals->GetDescription(compositeIntervalIdx);
+                  if (bBeamStresses && 1 < nSegments)
+                  {
+                     os << _T(" for Segment ") << LABEL_SEGMENT(segIdx);
+                  }
+                  else if (!bBeamStresses)
+                  {
+                     os << _T(" for Deck");
+                  }
+                  rFailures.push_back(os.str());
                }
-               else if ( !bBeamStresses )
-               {
-                  os << _T(" for Deck");
-               }
-               rFailures.push_back(os.str());
-            }
 
-            if (FlexureStressFailures(pBroker, segmentKey, compositeDeckIntervalIdx, pgsTypes::ServiceI, pgsTypes::Tension, pArtifact, bBeamStresses))
-            {
-               std::_tostringstream os;
-               os << _T("Tensile stress check failed for ") << GetLimitStateString(pgsTypes::ServiceI) << _T(" Limit State in Interval ") << LABEL_INTERVAL(compositeDeckIntervalIdx) << _T(" ") << pIntervals->GetDescription(compositeDeckIntervalIdx);
-               if (bBeamStresses && 1 < nSegments)
+               if (FlexureStressFailures(pBroker, segmentKey, compositeIntervalIdx, pgsTypes::ServiceI, pgsTypes::Tension, pArtifact, bBeamStresses))
                {
-                  os << _T(" for Segment ") << LABEL_SEGMENT(segIdx);
+                  std::_tostringstream os;
+                  os << _T("Tensile stress check failed for ") << GetLimitStateString(pgsTypes::ServiceI) << _T(" Limit State in Interval ") << LABEL_INTERVAL(compositeIntervalIdx) << _T(" ") << pIntervals->GetDescription(compositeIntervalIdx);
+                  if (bBeamStresses && 1 < nSegments)
+                  {
+                     os << _T(" for Segment ") << LABEL_SEGMENT(segIdx);
+                  }
+                  else if (!bBeamStresses)
+                  {
+                     os << _T(" for Deck");
+                  }
+                  rFailures.push_back(os.str());
                }
-               else if (!bBeamStresses)
-               {
-                  os << _T(" for Deck");
-               }
-               rFailures.push_back(os.str());
             }
 
             if (bFutureOverlay)
@@ -263,7 +267,7 @@ void ListStressFailures(IBroker* pBroker, FailureList& rFailures,
                if (FlexureStressFailures(pBroker, segmentKey, overlayIntervalIdx, pgsTypes::ServiceI, pgsTypes::Compression, pArtifact, bBeamStresses))
                {
                   std::_tostringstream os;
-                  os << _T("Compression stress check failed for ") << GetLimitStateString(pgsTypes::ServiceI) << _T(" Limit State in Interval ") << LABEL_INTERVAL(compositeDeckIntervalIdx) << _T(" ") << pIntervals->GetDescription(overlayIntervalIdx);
+                  os << _T("Compression stress check failed for ") << GetLimitStateString(pgsTypes::ServiceI) << _T(" Limit State in Interval ") << LABEL_INTERVAL(overlayIntervalIdx) << _T(" ") << pIntervals->GetDescription(overlayIntervalIdx);
                   if (bBeamStresses && 1 < nSegments)
                   {
                      os << _T(" for Segment ") << LABEL_SEGMENT(segIdx);
@@ -278,7 +282,7 @@ void ListStressFailures(IBroker* pBroker, FailureList& rFailures,
                if (FlexureStressFailures(pBroker, segmentKey, overlayIntervalIdx, pgsTypes::ServiceI, pgsTypes::Tension, pArtifact, bBeamStresses))
                {
                   std::_tostringstream os;
-                  os << _T("Tensile stress check failed for ") << GetLimitStateString(pgsTypes::ServiceI) << _T(" Limit State in Interval ") << LABEL_INTERVAL(compositeDeckIntervalIdx) << _T(" ") << pIntervals->GetDescription(overlayIntervalIdx);
+                  os << _T("Tensile stress check failed for ") << GetLimitStateString(pgsTypes::ServiceI) << _T(" Limit State in Interval ") << LABEL_INTERVAL(overlayIntervalIdx) << _T(" ") << pIntervals->GetDescription(overlayIntervalIdx);
                   if (bBeamStresses && 1 < nSegments)
                   {
                      os << _T(" for Segment ") << LABEL_SEGMENT(segIdx);
@@ -294,10 +298,10 @@ void ListStressFailures(IBroker* pBroker, FailureList& rFailures,
             GET_IFACE2(pBroker,IAllowableConcreteStress,pAllowable);
             if ( pAllowable->CheckFinalDeadLoadTensionStress() )
             {
-               if ( FlexureStressFailures(pBroker,segmentKey,compositeDeckIntervalIdx,pgsTypes::ServiceI,pgsTypes::Tension,pArtifact,bBeamStresses) )
+               if ( FlexureStressFailures(pBroker,segmentKey,compositeIntervalIdx,pgsTypes::ServiceI,pgsTypes::Tension,pArtifact,bBeamStresses) )
                {
                   std::_tostringstream os;
-                  os << _T("Tension stress check failed for ") << GetLimitStateString(pgsTypes::ServiceI) << _T(" Limit State in Interval ") << LABEL_INTERVAL(compositeDeckIntervalIdx) << _T(" ") << pIntervals->GetDescription(compositeDeckIntervalIdx);
+                  os << _T("Tension stress check failed for ") << GetLimitStateString(pgsTypes::ServiceI) << _T(" Limit State in Interval ") << LABEL_INTERVAL(compositeIntervalIdx) << _T(" ") << pIntervals->GetDescription(compositeIntervalIdx);
                   if ( bBeamStresses && 1 < nSegments )
                   {
                      os << _T(" for Segment ") << LABEL_SEGMENT(segIdx);
@@ -538,7 +542,7 @@ void ListHorizontalShearFailures(IBroker* pBroker,FailureList& rFailures,const p
          if ( !pShear->Passed() )
          {
             std::_tostringstream os;
-            os << _T("Horizontal Interface Shears/Length check failed for ") << strLimitState << _T(" Limit State [5.8.4].") << std::ends;
+            os << _T("Horizontal Interface Shears/Length check failed for ") << strLimitState << _T(" Limit State [") << LrfdCw8th(_T("5.8.4"),_T("5.7.4")) << _T("].") << std::ends;
             rFailures.push_back(os.str());
 
             return;
@@ -759,6 +763,11 @@ void ListVariousFailures(IBroker* pBroker,FailureList& rFailures,const pgsGirder
    {
       CString strMsg(_T("Minimum fillet value exceeded for bridge check failed"));
       rFailures.push_back(strMsg.GetBuffer());
+   }
+
+   if (!pConstruct->PrecamberPassed())
+   {
+      rFailures.push_back(_T("Precamber check failed"));
    }
 
    if ( !pConstruct->BottomFlangeClearancePassed() )

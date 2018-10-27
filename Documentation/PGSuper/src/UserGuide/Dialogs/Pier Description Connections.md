@@ -37,7 +37,9 @@ Item | Description
 -----|---------------
 Bearing Offset | Distance from the abutment/pier line to the centerline of bearing line. Use the drop down list to define how this dimension is measured.
 End Distance | Distance from the centerline of bearing line to the nearest end of the girder. Use the drop down list to define how this dimension is measured.
-Support Width | Total width of the support (bearing). This dimension is always measured along the centerline of the girder. The support is assumed to be centered on the centerline bearing. The face of support for various shear releated computations is located one-half of the total support width from the centerline bearing.
+
+> Note: The face of support for various shear releated computations is located one-half of the bearing length from the centerline bearing.
+
 
 Diaphragm
 -----------

@@ -22,6 +22,7 @@
 
 #include "StdAfx.h"
 #include <Reporting\BridgeDescChapterBuilder.h>
+#include <Reporting\ReactionInterfaceAdapters.h>
 
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
@@ -61,6 +62,7 @@ static void write_ts_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptCh
 static void write_framing_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,Uint16 level);
 static void write_span_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,Uint16 level);
 static void write_girder_spacing(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptRcTable* pTable,const CGirderSpacing2* pGirderSpacing,RowIndexType row,ColumnIndexType col);
+static void write_bearing_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,Uint16 level,const CGirderKey& girderKey);
 static void write_ps_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,Uint16 level,const CGirderKey& girderKey);
 static void write_segment_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,GroupIndexType grpIdx,GirderIndexType gdrIdx,Uint16 level);
 static void write_slab_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,Uint16 level);
@@ -122,6 +124,7 @@ rptChapter* CBridgeDescChapterBuilder::Build(CReportSpecification* pRptSpec,Uint
    write_bridge_data( pBroker, pDisplayUnits, pChapter, level);
    write_concrete_details(pBroker,pDisplayUnits,pChapter,girderKey,level);
    write_pier_data( pBroker, pDisplayUnits, pChapter, level);
+   write_bearing_data( pBroker, pDisplayUnits, pChapter, level,girderKey );
    write_span_data( pBroker, pDisplayUnits, pChapter, level);
    write_ps_data( pBroker, pDisplayUnits, pChapter, level,girderKey );
    write_slab_data( pBroker, pDisplayUnits, pChapter, level );
@@ -176,7 +179,7 @@ void write_alignment_data(IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, rpt
    pPara = new rptParagraph;
    *pChapter << pPara;
 
-   const AlignmentData2& alignment = pAlignment->GetAlignmentData2();
+   AlignmentData2 alignment = pAlignment->GetAlignmentData2();
 
    CComBSTR bstrBearing;
    direction_formatter->Format(alignment.Direction, CComBSTR("°,\',\""), &bstrBearing);
@@ -386,11 +389,10 @@ void write_alignment_data(IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, rpt
 
    ColumnIndexType col = 1;
    IndexType hcIdx = 0; // keeps tracks of the actual curves in the model (curves with zero radius input are not curves in the alignment model)
-   auto iter = std::cbegin(alignment.HorzCurves);
-   auto end = std::cend(alignment.HorzCurves);
-   for ( ; iter != end; iter++, col++)
+   std::vector<HorzCurveData>::iterator iter;
+   for (iter = alignment.HorzCurves.begin(); iter != alignment.HorzCurves.end(); iter++, col++)
    {
-      const auto& hc_data = *iter;
+      HorzCurveData& hc_data = *iter;
       row = 0;
 
       (*pTable)(row++, col) << _T("Curve ") << col;
@@ -954,7 +956,7 @@ void write_profile_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChap
    *pChapter << pPara;
    *pPara << _T("Profile Details") << rptNewLine;
 
-   const ProfileData2& profile = pAlignment->GetProfileData2();
+   ProfileData2 profile = pAlignment->GetProfileData2();
 
    pPara = new rptParagraph;
    *pChapter << pPara;
@@ -998,21 +1000,19 @@ void write_profile_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChap
 
    col++;
 
-   auto begin = std::cbegin(profile.VertCurves);
-   auto iter = begin;
-   auto end = std::cend(profile.VertCurves);
-   for ( ; iter != end; iter++)
+   std::vector<VertCurveData>::iterator iter;
+   for ( iter = profile.VertCurves.begin(); iter != profile.VertCurves.end(); iter++ )
    {
       row = 0;
 
-      const auto& vcd(*iter);
+      VertCurveData& vcd = *iter;
 
       (*pTable)(row++,col) << _T("Curve ") << col;
       if ( IsZero(vcd.L1) && IsZero(vcd.L2) )
       {
          Float64 pvi_elevation = pRoadway->GetElevation(vcd.PVIStation,0.0);
          Float64 g1;
-         if ( iter == begin )
+         if ( iter == profile.VertCurves.begin() )
          {
             g1 = profile.Grade;
          }
@@ -1157,11 +1157,13 @@ void write_crown_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapte
 
    INIT_UV_PROTOTYPE( rptLengthUnitValue, length, pDisplayUnits->GetAlignmentLengthUnit(), false );
 
-   const RoadwaySectionData& section = pAlignment->GetRoadwaySectionData();
+   RoadwaySectionData section = pAlignment->GetRoadwaySectionData();
 
    RowIndexType row = pTable->GetNumberOfHeaderRows();
-   for ( const auto& crown : section.Superelevations )
+   std::vector<CrownData2>::iterator iter;
+   for ( iter = section.Superelevations.begin(); iter != section.Superelevations.end(); iter++ )
    {
+      CrownData2& crown = *iter;
       (*pTable)(row,0) << row;
       (*pTable)(row,1) << rptRcStation(crown.Station,&pDisplayUnits->GetStationFormat());
       (*pTable)(row,2) << crown.Left;
@@ -1417,6 +1419,20 @@ void write_lrfd_concrete_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnit
 
       (*pTable)(row,0) << _T("Deck");
       write_lrfd_concrete_row(pDisplayUnits,pTable,-1.0,fc,-1.0,Ec,lambda,pDeck->Concrete,row);
+      row++;
+   }
+
+   if (pBridgeDesc->HasStructuralLongitudinalJoints())
+   {
+      IntervalIndexType intervalIdx = pIntervals->GetCompositeLongitudinalJointInterval();
+
+      Float64 fc = pMaterials->GetLongitudinalJointFc(intervalIdx);
+      Float64 Ec = pMaterials->GetLongitudinalJointEc(intervalIdx);
+      Float64 lambda = pMaterials->GetLongitudinalJointLambda();
+
+      (*pTable)(row, 0) << _T("Longitudinal Joint");
+      write_lrfd_concrete_row(pDisplayUnits, pTable, -1.0, fc, -1.0, Ec, lambda, pBridgeDesc->GetLongitudinalJointMaterial(), row);
+      row++;
    }
 }
 
@@ -1908,7 +1924,7 @@ void write_pier_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter
    pPara = new rptParagraph;
    *pChapter << pPara;
 
-   rptRcTable* pConnectionTable = rptStyleManager::CreateDefaultTable(11,_T("Pier Connections"));
+   rptRcTable* pConnectionTable = rptStyleManager::CreateDefaultTable(9,_T("Pier Connections"));
    *pPara << pConnectionTable << rptNewLine;
 
    pConnectionTable->SetNumberOfHeaderRows(2);
@@ -1920,29 +1936,25 @@ void write_pier_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter
    pConnectionTable->SetRowSpan(1,0,SKIP_CELL);
    (*pConnectionTable)(0,0) << _T("");
 
-   pConnectionTable->SetColumnSpan(0,1,5);
+   pConnectionTable->SetColumnSpan(0,1,4);
    pConnectionTable->SetColumnSpan(0,2,SKIP_CELL);
    pConnectionTable->SetColumnSpan(0,3,SKIP_CELL);
    pConnectionTable->SetColumnSpan(0,4,SKIP_CELL);
-   pConnectionTable->SetColumnSpan(0,5,SKIP_CELL);
    (*pConnectionTable)(0,1) << _T("Back");
    (*pConnectionTable)(1,1) << COLHDR(_T("Bearing") << rptNewLine << _T("Offset"),rptLengthUnitTag,pDisplayUnits->GetComponentDimUnit());
    (*pConnectionTable)(1,2) << _T("Bearing") << rptNewLine << _T("Offset") << rptNewLine << _T("Measure");
    (*pConnectionTable)(1,3) << COLHDR(_T("End") << rptNewLine << _T("Distance"),rptLengthUnitTag,pDisplayUnits->GetComponentDimUnit());
    (*pConnectionTable)(1,4) << _T("End") << rptNewLine << _T("Distance") << rptNewLine << _T("Measure");
-   (*pConnectionTable)(1,5) << COLHDR(_T("Support") << rptNewLine << _T("Width"),rptLengthUnitTag,pDisplayUnits->GetComponentDimUnit());
 
-   pConnectionTable->SetColumnSpan(0,6,5);
+   pConnectionTable->SetColumnSpan(0,5,4);
+   pConnectionTable->SetColumnSpan(0,6,SKIP_CELL);
    pConnectionTable->SetColumnSpan(0,7,SKIP_CELL);
    pConnectionTable->SetColumnSpan(0,8,SKIP_CELL);
-   pConnectionTable->SetColumnSpan(0,9,SKIP_CELL);
-   pConnectionTable->SetColumnSpan(0,10,SKIP_CELL);
-   (*pConnectionTable)(0,6) << _T("Ahead");
-   (*pConnectionTable)(1,6) << COLHDR(_T("Bearing") << rptNewLine << _T("Offset"),rptLengthUnitTag,pDisplayUnits->GetComponentDimUnit());
-   (*pConnectionTable)(1,7) << _T("Bearing") << rptNewLine << _T("Offset") << rptNewLine << _T("Measure");
-   (*pConnectionTable)(1,8) << COLHDR(_T("End") << rptNewLine << _T("Distance"),rptLengthUnitTag,pDisplayUnits->GetComponentDimUnit());
-   (*pConnectionTable)(1,9) << _T("End") << rptNewLine << _T("Distance") << rptNewLine << _T("Measure");
-   (*pConnectionTable)(1,10)<< COLHDR(_T("Support") << rptNewLine << _T("Width"),rptLengthUnitTag,pDisplayUnits->GetComponentDimUnit());
+   (*pConnectionTable)(0,5) << _T("Ahead");
+   (*pConnectionTable)(1,5) << COLHDR(_T("Bearing") << rptNewLine << _T("Offset"),rptLengthUnitTag,pDisplayUnits->GetComponentDimUnit());
+   (*pConnectionTable)(1,6) << _T("Bearing") << rptNewLine << _T("Offset") << rptNewLine << _T("Measure");
+   (*pConnectionTable)(1,7) << COLHDR(_T("End") << rptNewLine << _T("Distance"),rptLengthUnitTag,pDisplayUnits->GetComponentDimUnit());
+   (*pConnectionTable)(1,8) << _T("End") << rptNewLine << _T("Distance") << rptNewLine << _T("Measure");
 
    pPara = new rptParagraph(rptStyleManager::GetFootnoteStyle());
    *pChapter << pPara;
@@ -1962,7 +1974,7 @@ void write_pier_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter
    *pPara << GetEndDistanceMeasureString(ConnectionLibraryEntry::FromPierNormalToPier,    true,  true) << _T(" = ") << GetEndDistanceMeasureString(ConnectionLibraryEntry::FromPierNormalToPier,    true,  false) << rptNewLine;
    *pPara << GetEndDistanceMeasureString(ConnectionLibraryEntry::FromPierNormalToPier,    false, true) << _T(" = ") << GetEndDistanceMeasureString(ConnectionLibraryEntry::FromPierNormalToPier,    false, false) << rptNewLine;
 
-   bool bNoDeck = pBridgeDesc->GetDeckDescription()->GetDeckType() == pgsTypes::sdtNone;
+   bool bNoDeck = IsNonstructuralDeck(pBridgeDesc->GetDeckDescription()->GetDeckType());
 
    const CPierData2* pPier = pBridgeDesc->GetPier(0);
    RowIndexType row1 = pLayoutTable->GetNumberOfHeaderRows();
@@ -2132,8 +2144,6 @@ void write_pier_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter
          pPier->GetGirderEndDistance(pgsTypes::Back,&endDist,&endDistMeasure);
          (*pConnectionTable)(row3,3) << cmpdim.SetValue(endDist);
          (*pConnectionTable)(row3,4) << GetEndDistanceMeasureString(endDistMeasure,bAbutment,true);
-
-         (*pConnectionTable)(row3,5) << cmpdim.SetValue(pPier->GetSupportWidth(pgsTypes::Back));
       }
       else
       {
@@ -2141,7 +2151,6 @@ void write_pier_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter
          (*pConnectionTable)(row3,2) << _T("");
          (*pConnectionTable)(row3,3) << _T("");
          (*pConnectionTable)(row3,4) << _T("");
-         (*pConnectionTable)(row3,5) << _T("");
       }
 
       // Ahead side
@@ -2150,24 +2159,21 @@ void write_pier_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter
          Float64 brgOffset;
          ConnectionLibraryEntry::BearingOffsetMeasurementType brgOffsetMeasure;
          pPier->GetBearingOffset(pgsTypes::Ahead,&brgOffset,&brgOffsetMeasure);
-         (*pConnectionTable)(row3,6) << cmpdim.SetValue(brgOffset);
-         (*pConnectionTable)(row3,7) << GetBearingOffsetMeasureString(brgOffsetMeasure,bAbutment,true);
+         (*pConnectionTable)(row3,5) << cmpdim.SetValue(brgOffset);
+         (*pConnectionTable)(row3,6) << GetBearingOffsetMeasureString(brgOffsetMeasure,bAbutment,true);
 
          Float64 endDist;
          ConnectionLibraryEntry::EndDistanceMeasurementType endDistMeasure;
          pPier->GetGirderEndDistance(pgsTypes::Ahead,&endDist,&endDistMeasure);
-         (*pConnectionTable)(row3,8) << cmpdim.SetValue(endDist);
-         (*pConnectionTable)(row3,9) << GetEndDistanceMeasureString(endDistMeasure,bAbutment,true);
-
-         (*pConnectionTable)(row3,10)<< cmpdim.SetValue(pPier->GetSupportWidth(pgsTypes::Ahead));
+         (*pConnectionTable)(row3,7) << cmpdim.SetValue(endDist);
+         (*pConnectionTable)(row3,8) << GetEndDistanceMeasureString(endDistMeasure,bAbutment,true);
       }
       else
       {
+         (*pConnectionTable)(row3,5) << _T("");
          (*pConnectionTable)(row3,6) << _T("");
          (*pConnectionTable)(row3,7) << _T("");
          (*pConnectionTable)(row3,8) << _T("");
-         (*pConnectionTable)(row3,9) << _T("");
-         (*pConnectionTable)(row3,10)<< _T("");
       }
 
       if ( pPier->GetNextSpan() )
@@ -2180,6 +2186,101 @@ void write_pier_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter
       }
 
       row3++;
+   }
+}
+
+void write_bearing_data(IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, rptChapter* pChapter, Uint16 level, const CGirderKey& girderKey)
+{
+   INIT_UV_PROTOTYPE(rptLengthUnitValue, cmpdim, pDisplayUnits->GetComponentDimUnit(), false);
+
+   rptParagraph* pPara1 = new rptParagraph;
+   pPara1->SetStyleName(rptStyleManager::GetHeadingStyle());
+   *pChapter << pPara1;
+   *pPara1 << _T("Bearing Details");
+
+   rptParagraph* pPara;
+   pPara = new rptParagraph;
+   *pChapter << pPara;
+
+   *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("BearingDetails.png")) << rptNewLine;
+
+   GET_IFACE2(pBroker, IBridge, pBridge);
+   GET_IFACE2_NOCHECK(pBroker, IBridgeDescription, pIBridgeDesc);
+
+   PierIndexType nPiers = pBridge->GetPierCount();
+
+   // don't want temp supports so use last interval
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   IntervalIndexType lastIntervalIdx = pIntervals->GetIntervalCount()-1;
+
+   rptRcTable* ptable = rptStyleManager::CreateDefaultTable(10, _T(""));
+   *pPara << ptable;
+   (*ptable)(0,0) << _T("Location");
+   (*ptable)(0,1) << _T("Shape");
+   (*ptable)(0,2) << _T("# of") << rptNewLine << _T("Bearings");
+   (*ptable)(0,3) << COLHDR(_T("Spacing"),rptLengthUnitTag,pDisplayUnits->GetComponentDimUnit());
+   (*ptable)(0,4) << COLHDR(_T("Length or")<<rptNewLine<<_T("Diameter"),rptLengthUnitTag,pDisplayUnits->GetComponentDimUnit());
+   (*ptable)(0,5) << COLHDR(_T("Width"),rptLengthUnitTag,pDisplayUnits->GetComponentDimUnit());
+   (*ptable)(0,6) << COLHDR(_T("Height"),rptLengthUnitTag,pDisplayUnits->GetComponentDimUnit());
+   (*ptable)(0,7) << COLHDR(_T("Recess")<<rptNewLine<<_T("Height"),rptLengthUnitTag,pDisplayUnits->GetComponentDimUnit());
+   (*ptable)(0,8) << COLHDR(_T("Recess")<<rptNewLine<<_T("Length"),rptLengthUnitTag,pDisplayUnits->GetComponentDimUnit());
+   (*ptable)(0,9) << COLHDR(_T("Sole Plate")<<rptNewLine<<_T("Height"),rptLengthUnitTag,pDisplayUnits->GetComponentDimUnit());
+
+   ptable->SetColumnStyle(0,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+   ptable->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+
+   // TRICKY: use adapter class to get bearing lines over piers
+   GET_IFACE2(pBroker,IBearingDesign,pBearingDesign);
+   std::unique_ptr<IProductReactionAdapter> pBearingLines =  std::make_unique<BearingDesignProductReactionAdapter>(pBearingDesign,lastIntervalIdx,girderKey);
+
+   RowIndexType row = 1;
+   ReactionLocationIter iter = pBearingLines->GetReactionLocations(pBridge);
+   for (iter.First(); !iter.IsDone(); iter.Next())
+   {
+      ColumnIndexType col = 0;
+      const ReactionLocation& brgLoc(iter.CurrentItem());
+
+      pgsTypes::PierFaceType pf = brgLoc.Face == rftBack ? pgsTypes::Back : pgsTypes::Ahead;
+
+      const CBearingData2* pbd = pIBridgeDesc->GetBearingData(brgLoc.PierIdx, pf, girderKey.girderIndex);
+
+      if (pbd != nullptr)
+      {
+         bool is_rect = pbd->Shape == bsRectangular;
+
+         (*ptable)(row, col++) << brgLoc.PierLabel;
+         (*ptable)(row, col++) << (is_rect ? _T("Rectangular") : _T("Round"));
+         (*ptable)(row, col++) << pbd->BearingCount;
+         if (pbd->BearingCount > 1)
+         {
+            (*ptable)(row, col++) << cmpdim.SetValue(pbd->Spacing);
+         }
+         else
+         {
+            (*ptable)(row, col++) << RPT_NA;;
+         }
+
+         (*ptable)(row, col++) << cmpdim.SetValue(pbd->Length);
+         if (is_rect)
+         {
+            (*ptable)(row, col++) << cmpdim.SetValue(pbd->Width);
+         }
+         else
+         {
+            (*ptable)(row, col++) << RPT_NA;;
+         }
+
+         (*ptable)(row, col++) << cmpdim.SetValue(pbd->Height);
+         (*ptable)(row, col++) << cmpdim.SetValue(pbd->RecessHeight);
+         (*ptable)(row, col++) << cmpdim.SetValue(pbd->RecessLength);
+         (*ptable)(row, col++) << cmpdim.SetValue(pbd->SolePlateHeight);
+
+         row++;
+      }
+      else
+      {
+         ATLASSERT(0); // should never happen
+      }
    }
 }
 
@@ -2210,7 +2311,7 @@ void write_ts_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* 
    rptParagraph* pPara = new rptParagraph;
    *pChapter << pPara;
 
-   rptRcTable* pLayoutTable = rptStyleManager::CreateDefaultTable(7,_T("Temporary Supports"));
+   rptRcTable* pLayoutTable = rptStyleManager::CreateDefaultTable(6,_T("Temporary Supports"));
    *pPara << pLayoutTable << rptNewLine;
 
    pLayoutTable->SetColumnStyle(0,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
@@ -2242,8 +2343,7 @@ void write_ts_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* 
    (*pConnectionsTable)(0,3) << _T("Bearing") << rptNewLine << _T("Offset") << rptNewLine << _T("Measure");
    (*pConnectionsTable)(0,4) << COLHDR(_T("End") << rptNewLine << _T("Distance"),rptLengthUnitTag,pDisplayUnits->GetComponentDimUnit());
    (*pConnectionsTable)(0,5) << _T("End") << rptNewLine << _T("Distance") << rptNewLine << _T("Measure");
-   (*pConnectionsTable)(0,6) << COLHDR(_T("Support") << rptNewLine << _T("Width"),rptLengthUnitTag,pDisplayUnits->GetComponentDimUnit());
-   (*pConnectionsTable)(0,7) << _T("Closure") << rptNewLine << _T("Stage");
+   (*pConnectionsTable)(0,6) << _T("Closure") << rptNewLine << _T("Stage");
 
    RowIndexType row1 = pLayoutTable->GetNumberOfHeaderRows();
    RowIndexType row2 = pConnectionsTable->GetNumberOfHeaderRows();
@@ -2310,7 +2410,7 @@ void write_ts_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* 
          IDType cpID = pClosureJoint->GetID();
          EventIndexType castClosureEventIdx = pTimelineMgr->GetCastClosureJointEventIndex(cpID);
          const CTimelineEvent* pCastClosureEvent = pTimelineMgr->GetEventByIndex(castClosureEventIdx);
-         (*pConnectionsTable)(row2,7) << _T("Event ") << LABEL_EVENT(castClosureEventIdx) << _T(": ") << pCastClosureEvent->GetDescription();
+         (*pConnectionsTable)(row2,6) << _T("Event ") << LABEL_EVENT(castClosureEventIdx) << _T(": ") << pCastClosureEvent->GetDescription();
       }
       else
       {
@@ -2318,11 +2418,9 @@ void write_ts_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* 
          (*pConnectionsTable)(row2,3) << RPT_NA;
          (*pConnectionsTable)(row2,4) << RPT_NA;
          (*pConnectionsTable)(row2,5) << RPT_NA;
-
-         (*pConnectionsTable)(row2,7) << RPT_NA;
+         (*pConnectionsTable)(row2,6) << RPT_NA;
       }
 
-      (*pConnectionsTable)(row2,6) << cmpdim.SetValue(pTS->GetSupportWidth());
       row2++;
    }
 }
@@ -2622,6 +2720,8 @@ void write_ps_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* 
       
       for ( GirderIndexType gdrIdx = firstGirderIdx; gdrIdx <= lastGirderIdx; gdrIdx++ )
       {
+         const CSplicedGirderData* pGirder = pGroup->GetGirder(gdrIdx);
+
          SegmentIndexType nSegments = pBridge->GetSegmentCount(CGirderKey(grpIdx,gdrIdx));
          for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
          {
@@ -2663,6 +2763,24 @@ void write_ps_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* 
                }
             }
 
+            if (IsTopWidthSpacing(pBridgeDesc->GetGirderSpacingType()))
+            {
+               (*pTable)(row, 0) << _T("Top Flange Width");
+               Float64 wLeft, wRight;
+               Float64 wStart = pGirder->GetTopWidth(pgsTypes::metStart, &wLeft, &wRight);
+               Float64 wEnd = pGirder->GetTopWidth(pgsTypes::metEnd, &wLeft, &wRight);
+               if (IsEqual(wStart, wEnd))
+               {
+                  (*pTable)(row, 1) << xdim.SetValue(wStart);
+               }
+               else
+               {
+                  (*pTable)(row, 1) << _T("Start: ") << xdim.SetValue(wStart) << rptNewLine;
+                  (*pTable)(row, 1) << _T("End: ") << xdim.SetValue(wEnd);
+               }
+               row++;
+            }
+            
             if (pSpec->IsAssExcessCamberInputEnabled())
             {
                (*pTable)(row, 0) << _T("Assumed Excess Camber");
@@ -2758,20 +2876,20 @@ void write_ps_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* 
             bool bSymmetric = pGirder->IsSymmetricSegment(thisSegmentKey);
 
             GET_IFACE2(pBroker,IPointOfInterest,pPoi);
-            std::vector<pgsPointOfInterest> vPoi;
+            PoiList vPoi;
             int nHarpedAdjustments;
             if ( harpedAreStraight )
             {
                if ( bSymmetric )
                {
                   nHarpedAdjustments = 1;
-                  vPoi = pPoi->GetPointsOfInterest(thisSegmentKey,POI_START_FACE);
+                  pPoi->GetPointsOfInterest(thisSegmentKey, POI_START_FACE,&vPoi);
                   ATLASSERT(vPoi.size() == 1);
                }
                else
                {
                   nHarpedAdjustments = 2;
-                  vPoi = pPoi->GetPointsOfInterest(thisSegmentKey,POI_START_FACE | POI_END_FACE);
+                  pPoi->GetPointsOfInterest(thisSegmentKey,POI_START_FACE | POI_END_FACE,&vPoi);
                   ATLASSERT(vPoi.size() == 2);
                }
             }
@@ -2780,9 +2898,10 @@ void write_ps_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* 
                if ( bSymmetric )
                {
                   nHarpedAdjustments = 2;
-                  vPoi = pPoi->GetPointsOfInterest(thisSegmentKey,POI_END_FACE);
+                  pPoi->GetPointsOfInterest(thisSegmentKey,POI_END_FACE,&vPoi);
                   ATLASSERT(vPoi.size() == 1);
-                  std::vector<pgsPointOfInterest> vHPPoi = pPoi->GetPointsOfInterest(thisSegmentKey,POI_HARPINGPOINT);
+                  PoiList vHPPoi;
+                  pPoi->GetPointsOfInterest(thisSegmentKey, POI_HARPINGPOINT,&vHPPoi);
                   if ( vHPPoi.size() != 0 )
                   {
                      vPoi.push_back(vHPPoi.front());
@@ -2791,11 +2910,11 @@ void write_ps_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* 
                else
                {
                   nHarpedAdjustments = 4;
-                  vPoi = pPoi->GetPointsOfInterest(thisSegmentKey,POI_START_FACE | POI_END_FACE);
+                  pPoi->GetPointsOfInterest(thisSegmentKey,POI_START_FACE | POI_END_FACE,&vPoi);
                   ATLASSERT(vPoi.size() == 2);
-                  std::vector<pgsPointOfInterest> vHpPoi(pPoi->GetPointsOfInterest(thisSegmentKey,POI_HARPINGPOINT));
-                  vPoi.insert(vPoi.end(),vHpPoi.begin(),vHpPoi.end());
-                  std::sort(vPoi.begin(),vPoi.end());
+                  PoiList vHpPoi;
+                  pPoi->GetPointsOfInterest(thisSegmentKey, POI_HARPINGPOINT, &vHpPoi);
+                  pPoi->MergePoiLists(vPoi, vHpPoi,&vPoi);
                }
             }
 
@@ -3370,30 +3489,7 @@ void write_slab_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter
    std::_tstring strPicture = pFactory->GetSlabDimensionsImage(deckType);
 
    // Slab Types
-   (*table)(0,0) << Bold(_T("Deck Type")) << rptNewLine;
-   switch( deckType )
-   {
-      case pgsTypes::sdtCompositeCIP:
-         (*table)(0,0) << _T("Composite Cast-in-Place Deck") << rptNewLine;
-         break;
-
-      case pgsTypes::sdtCompositeSIP:
-         (*table)(0,0) << _T("Composite Stay-in-Place Deck Panels") << rptNewLine;
-         break;
-
-      case pgsTypes::sdtCompositeOverlay:
-         (*table)(0,0) << _T("Composite Overlay") << rptNewLine;
-         break;
-
-      case pgsTypes::sdtNone:
-         (*table)(0,0) << _T("No Deck") << rptNewLine;
-         break;
-
-      default:
-         ATLASSERT(false); // should never get here
-   }
-
-   (*table)(0,0) << rptNewLine;
+   (*table)(0, 0) << Bold(_T("Deck Type")) << rptNewLine << GetDeckTypeName(deckType) << rptNewLine;
 
    // Slab Dimensions
    if ( deckType != pgsTypes::sdtNone )
@@ -3409,7 +3505,7 @@ void write_slab_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter
          (*table)(0,0) << _T("Panel Depth") << _T(" = ") << dim.SetValue(pDeck->PanelDepth) << rptNewLine;
          (*table)(0,0) << _T("Panel Support") << _T(" = ") << dim.SetValue(pDeck->PanelSupport) << rptNewLine;
       }
-      else if ( deckType == pgsTypes::sdtCompositeOverlay )
+      else if ( IsOverlayDeck(deckType) )
       {
          (*table)(0,0) << _T("Overlay Deck") << rptNewLine;
          (*table)(0,0) << _T("Gross Depth") << _T(" = ") << dim.SetValue(pDeck->GrossDepth) << rptNewLine;
@@ -3435,7 +3531,10 @@ void write_slab_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter
          }
       }
 
-      (*table)(0,0) << _T("Fillet = ") << dim.SetValue(pBridgeDesc->GetFillet()) << rptNewLine;
+      if (!IsOverlayDeck(deckType))
+      {
+         (*table)(0, 0) << _T("Fillet = ") << dim.SetValue(pBridgeDesc->GetFillet()) << rptNewLine;
+      }
 
       if ( pBridgeDesc->GetSlabOffsetType() == pgsTypes::sotBridge )
       {
@@ -3566,8 +3665,10 @@ void write_deck_reinforcing_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnit
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CDeckDescription2* pDeck = pBridgeDesc->GetDeckDescription();
 
-   if (pDeck->GetDeckType() == pgsTypes::sdtNone)
+   if (IsNonstructuralDeck(pDeck->GetDeckType()))
+   {
       return; // if there is no deck, there is no deck reinforcement
+   }
 
    INIT_UV_PROTOTYPE( rptLengthUnitValue, cover, pDisplayUnits->GetComponentDimUnit(), true );
    INIT_UV_PROTOTYPE( rptLengthUnitValue, spacing, pDisplayUnits->GetComponentDimUnit(), false );

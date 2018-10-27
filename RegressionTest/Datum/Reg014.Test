@@ -1,11 +1,11 @@
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 33.25    6   6.00                     1     1     W83G    *     43  0.6  270  36.81  21.70   8.75   8.75                                              11  66.6  3.0  5.400  7.200   3.876    -4.097    13474   0.577  0.655   2.110 -1.849  0.000 -0.268 -2.117 138.23  438.70    6.50   18.00   18.00 
+ 33.25    6   6.00                     1     1     W83G    *     43  0.6  270  36.81  21.70   8.75   8.75                                              11  66.6  3.0  5.400  7.200   3.876    -4.097    13474   0.577  0.655   3.937 -1.849  0.000 -0.268 -2.117 138.23  438.70    6.50   18.00   18.00 
 
 
 The Specification Check was Not Successful
 Stresses in the prestressing strands are too high.
-Compression stress check failed for Service I Limit State in Interval 2 Prestress Release (Casting Yard)
+Compression stress check failed for Service I Limit State in Interval 2 Prestress Release
 Lifting checks failed
 Hauling checks failed
 Slab Offset ("A" Dimension) check failed
@@ -13,12 +13,12 @@ Slab Offset ("A" Dimension) check failed
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 33.25    6   6.00                     1     2     W83G    *     43  0.6  270  36.81  21.70   8.75   8.75                                              11  66.6  3.0  5.400  7.200   3.948    -4.145    13263   0.509  0.731   1.957 -2.159  0.000 -0.262 -2.420 138.23  438.70    6.50   18.00   18.00 
+ 33.25    6   6.00                     1     2     W83G    *     43  0.6  270  36.81  21.70   8.75   8.75                                              11  66.6  3.0  5.400  7.200   3.948    -4.145    13263   0.509  0.731   3.714 -2.159  0.000 -0.262 -2.420 138.23  438.70    6.50   18.00   18.00 
 
 
 The Specification Check was Not Successful
 Stresses in the prestressing strands are too high.
-Compression stress check failed for Service I Limit State in Interval 2 Prestress Release (Casting Yard)
+Compression stress check failed for Service I Limit State in Interval 2 Prestress Release
 Lifting checks failed
 Hauling checks failed
 Slab Offset ("A" Dimension) check failed

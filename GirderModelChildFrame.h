@@ -32,6 +32,7 @@
 #include "SectionCutDrawStrategy.h"
 #include "pgsExt\PointLoadData.h"
 #include <DManip\ToolPalette.h>
+#include <EAF\EAFViewControllerFactory.h>
 
 class CGirderModelElevationView;
 class CGirderModelSectionView;
@@ -41,7 +42,7 @@ class CGirderViewPrintJob;
 /////////////////////////////////////////////////////////////////////////////
 // CGirderModelChildFrame frame
 
-class CGirderModelChildFrame : public CSplitChildFrame, public iCutLocation
+class CGirderModelChildFrame : public CSplitChildFrame, public iCutLocation, public CEAFViewControllerFactory
 {
 	DECLARE_DYNCREATE(CGirderModelChildFrame)
 
@@ -55,8 +56,42 @@ public:
    // Let our views tell us about updates
 	void OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint);
 
-   // status of the current views
+   void SyncWithBridgeModelView(bool bSync);
+   bool SyncWithBridgeModelView() const;
+
+   void SelectGirder(const CGirderKey& girderKey, bool bDoUpdate);
+   const CGirderKey& GetSelection() const;
+
    EventIndexType GetEvent() const {return m_EventIndex;}
+   bool SetEvent(EventIndexType eventIdx);
+
+   void ShowStrands(bool bShow);
+   bool ShowStrands() const;
+
+   void ShowStrandCG(bool bShow);
+   bool ShowStrandCG() const;
+
+   void ShowCG(bool bShow);
+   bool ShowCG() const;
+
+   void ShowSectionProperties(bool bShow);
+   bool ShowSectionProperties() const;
+
+   void ShowDimensions(bool bShow);
+   bool ShowDimensions() const;
+
+   void ShowLongitudinalReinforcement(bool bShow);
+   bool ShowLongitudinalReinforcement() const;
+
+   void ShowTransverseReinforcement(bool bShow);
+   bool ShowTransverseReinforcement() const;
+
+   void ShowLoads(bool bShow);
+   bool ShowLoads() const;
+
+   void Schematic(bool bSchematic);
+   bool Schematic() const;
+
 
    // iCutLocation
    virtual Float64 GetCurrentCutLocation();
@@ -69,13 +104,12 @@ public:
 
    pgsPointOfInterest GetCutLocation();
 
-
-
-   void SelectGirder(const CGirderKey& girderKey,bool bDoUpdate);
-   const CGirderKey& GetSelection() const;
+   // CEAFViewControllerFactory
+protected:
+   virtual void CreateViewController(IEAFViewController** ppController) override;
 
 protected:
-   bool DoSyncWithBridgeModelView() const;
+   void DoSyncWithBridgeModelView(bool bSync);
 
    void RefreshGirderLabeling();
 
@@ -113,7 +147,25 @@ protected:
    afx_msg void OnUpdateDesignGirderDirectHoldSlabOffset(CCmdUI* pCmdUI);
    afx_msg void OnDesignGirderDirect();
    afx_msg void OnDesignGirderDirectHoldSlabOffset();
-	//}}AFX_MSG
+   afx_msg void OnUpdateStrandsButton(CCmdUI* pCmdUI);
+   afx_msg void OnStrandsButton();
+   afx_msg void OnUpdateStrandsCGButton(CCmdUI* pCmdUI);
+   afx_msg void OnStrandsCGButton();
+   afx_msg void OnUpdateDimensionsButton(CCmdUI* pCmdUI);
+   afx_msg void OnDimensionsButton();
+   afx_msg void OnUpdatePropertiesButton(CCmdUI* pCmdUI);
+   afx_msg void OnPropertiesButton();
+   afx_msg void OnUpdateLongitudinalReinforcementButton(CCmdUI* pCmdUI);
+   afx_msg void OnLongitudinalReinforcementButton();
+   afx_msg void OnUpdateStirrupsButton(CCmdUI* pCmdUI);
+   afx_msg void OnStirrupsButton();
+   afx_msg void OnUpdateUserLoadsButton(CCmdUI* pCmdUI);
+   afx_msg void OnUserLoadsButton();
+   afx_msg void OnUpdateSchematicButton(CCmdUI* pCmdUI);
+   afx_msg void OnSchematicButton();
+   afx_msg void OnUpdateSectionCGButton(CCmdUI* pCmdUI);
+   afx_msg void OnSectionCGButton();
+   //}}AFX_MSG
    afx_msg LRESULT OnCommandHelp(WPARAM, LPARAM lParam);
 	DECLARE_MESSAGE_MAP()
 
@@ -162,8 +214,7 @@ private:
 
       GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
 
-      bool bSync = DoSyncWithBridgeModelView();
-      if (bSync)
+      if (SyncWithBridgeModelView())
       {
          GET_IFACE2(pBroker, ISelection, pSelection);
          CSelection selection = pSelection->GetSelection();

@@ -99,8 +99,9 @@
 #define IDD_AASHTO_CONCRETE             210
 #define IDD_ACI_CONCRETE                211
 #define IDD_SPEC_GIRDER                 212
-#define IDD_SPEC_LOADS                  213
-#define IDD_SPEC_CLOSURE                216
+#define IDD_SPEC_DEAD_LOADS             213
+#define IDD_SPEC_LIVE_LOADS             214
+#define IDD_SPEC_CLOSURE                215
 #define IDD_LIVE_LOAD_FACTORS1          306
 #define IDD_LIVE_LOAD_FACTORS2          307
 #define IDI_DUCT_ENTRY                  308
@@ -868,6 +869,7 @@
 #define IDC_CHECK_STIRRUP_COMPATIBILITY 1444
 #define IDC_CHECK_TEMPORARY_STRESSES    1444
 #define IDC_STRAIGHT_DESIGN_CHECK       1444
+#define IDC_DUAL_TANDEM                 1444
 #define IDC_BRIDGE_LENGTH               1445
 #define IDC_EXTEND_DECK_BARS            1445
 #define IDC_DESIGN_SPLITTING            1445
@@ -1269,6 +1271,7 @@
 #define IDC_HAULING_TENSION_SUPER_UNIT  1677
 #define IDC_SAG_OPTIONS_LABEL           1677
 #define IDC_CHECK_HAULING_TENSION_MAX_SUPER 1678
+#define IDC_GPRES                       1678 
 #define IDC_HAULING_TENSION_MAX_SUPER   1679
 #define IDC_INCLINDED_GIRDER_BRGPADDEDUCT_LABEL 1679
 #define IDC_HAULING_TENSION_MAX_UNIT_SUPER 1680
@@ -1277,10 +1280,31 @@
 #define IDC_INCLINDED_GIRDER_BRGPADDEDUCT_UNIT 1681
 #define IDC_HAULING_TENSION_WITH_REBAR_UNIT_SUPER 1682
 #define IDC_INCLINDED_GIRDER_FS_LABEL   1682
-#define IDC_SEED_VALUE_NOTE             1683
+#define IDC_TRUCK_DIMENSIONS            1683
+#define IDC_PRECAMBER_NOTE              1684
+#define IDC_PRECAMBER_LIMIT_NOTE        1684
+#define IDC_PRECAMBER_LIMIT_LABEL       1685
+#define IDC_PRECAMBER_LIMIT             1686
+#define IDC_EDIT6                       1687
+#define IDC_ELEVATION_TOLERANCE         1687
+#define IDC_ELEVATION_TOLERANCE_GROUP   1688
+#define IDC_ELEVATION_TOLERANCE_LABEL   1689
+#define IDC_ELEVATION_TOLERANCE_UNIT    1690
+#define IDC_ELEVATION_TOLERANCE_NOTE    1691
+#define IDC_GPOST                       1692
+#define IDC_SSPLITTING                  1693
+#define IDC_SCONFINEMENT                1694
+#define IDC_SCLOSURE                    1695
+#define IDC_SLTSPACING                  1696
+#define IDC_SGTSPACING                  1697
+#define IDC_SHIS                        1698
+#define IDC_GDEBOND_LIMITS              1699
+#define IDC_GTEMP                       1700
+#define IDC_GPERM                       1701
 #define IDS_E_INVALIDVERSION            1750
 #define IDS_E_USERDEFINED               1752
 #define IDC_DIAPHRAGM_NOTE              1858
+#define IDC_SEED_VALUE_NOTE             1859
 #define IDC_ALWC_FR                     2017
 #define IDR_LIBEDITORTOOLBAR            12132
 #define IDM_ADD_ENTRY                   36864
@@ -1308,7 +1332,7 @@
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        320
 #define _APS_NEXT_COMMAND_VALUE         36881
-#define _APS_NEXT_CONTROL_VALUE         1684
+#define _APS_NEXT_CONTROL_VALUE         1702
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

@@ -34,6 +34,7 @@
 #include "BridgeDescLiftingPage.h"
 #include "DebondDlg.h"
 #include "BridgeDescGirderMaterialsPage.h"
+#include "PGSuperAppPlugin\SpanGdrDetailsBearingsPage.h"
 
 #include <PgsExt\SplicedGirderData.h>
 #include <PgsExt\BridgeDescription2.h>
@@ -91,7 +92,7 @@ inline bool ReconcileExtendedStrands(const ConfigStrandFillVector& fillvec, std:
 /////////////////////////////////////////////////////////////////////////////
 // CGirderDescDlg
 
-class CGirderDescDlg : public CPropertySheet, public IEditGirderData
+class CGirderDescDlg : public CPropertySheet, public IEditGirderData, public CShearSteelPageParent
 {
 	DECLARE_DYNAMIC(CGirderDescDlg)
 
@@ -100,10 +101,14 @@ public:
 	CGirderDescDlg(const CBridgeDescription2* pBridgeDesc,const CSegmentKey& segmentKey,CWnd* pParentWnd = nullptr, UINT iSelectPage = 0);
 
    // IEditGirderData
-   const CSegmentKey& GetSegmentKey() { return m_SegmentKey; }
+   virtual const CSegmentKey& GetSegmentKey() override { return m_SegmentKey; }
+
+   //CShearSteelPageParent
+   virtual bool HasDeck() const override;
 
 // Attributes
 public:
+   pgsTypes::SupportedBeamSpacing m_GirderSpacingType;
    CTimelineManager m_TimelineMgr; // copy of the timeine manager we are editing
    CSplicedGirderData m_Girder; // copy of the girder we are editing (contains the segment we are editing)
    CPrecastSegmentData* m_pSegment;
@@ -116,6 +121,7 @@ public:
    CGirderDescLongitudinalRebar m_LongRebar;
    CGirderDescLiftingPage       m_Lifting;
    CGirderDescDebondPage        m_Debond;
+   CSpanGdrDetailsBearingsPage m_SpanGdrDetailsBearingsPage;
 
    std::_tstring m_strGirderName;
    void SetSegment(const CPrecastSegmentData& segment);
@@ -177,6 +183,7 @@ protected:
    friend CGirderDescDebondPage;
    friend CGirderDescDebondGrid;
    friend CGirderDescLongitudinalRebar;
+   friend CSpanGdrDetailsBearingsPage;
 
 	// Generated message map functions
 	//{{AFX_MSG(CGirderDescDlg)
@@ -189,6 +196,7 @@ protected:
    pgsTypes::ConditionFactorType m_ConditionFactorType;
    Float64 m_ConditionFactor;
 
+   pgsTypes::SupportedDeckType m_DeckType;
    bool m_bCanAssExcessCamberInputBeEnabled;
 
    CButton m_CheckBox;

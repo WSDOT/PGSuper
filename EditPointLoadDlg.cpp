@@ -328,20 +328,39 @@ void CEditPointLoadDlg::UpdateLocationUnit()
 void CEditPointLoadDlg::UpdateEventLoadCase(bool isInitial)
 {
    CComboBox* pcbLoadCase = (CComboBox*)GetDlgItem(IDC_LOADCASE);
-   CComboBox* pcbEvent    = (CComboBox*)GetDlgItem(IDC_EVENT);
+   CComboBox* pcbEvent = (CComboBox*)GetDlgItem(IDC_EVENT);
 
-   EventIndexType castDeckEventIdx      = m_TimelineMgr.GetCastDeckEventIndex();
+   EventIndexType castDiaphragmEventIdx = m_TimelineMgr.GetIntermediateDiaphragmsLoadEventIndex();
+   EventIndexType castLongitudinalJointEventIdx = m_TimelineMgr.GetCastLongitudinalJointEventIndex();
+   EventIndexType castDeckEventIdx = m_TimelineMgr.GetCastDeckEventIndex();
+   EventIndexType noncompositeLoadEventIdx;
+   if (castDeckEventIdx == INVALID_INDEX)
+   {
+      if (castLongitudinalJointEventIdx == INVALID_INDEX)
+      {
+         noncompositeLoadEventIdx = castDiaphragmEventIdx;
+      }
+      else
+      {
+         noncompositeLoadEventIdx = castLongitudinalJointEventIdx;
+      }
+   }
+   else
+   {
+      noncompositeLoadEventIdx = castDeckEventIdx;
+   }
+
    EventIndexType railingSystemEventIdx = m_TimelineMgr.GetRailingSystemLoadEventIndex();
-   EventIndexType liveLoadEventIdx      = m_TimelineMgr.GetLiveLoadEventIndex();
+   EventIndexType liveLoadEventIdx = m_TimelineMgr.GetLiveLoadEventIndex();
 
-   if(pcbLoadCase->GetCurSel() == UserLoads::LL_IM)
+   if (pcbLoadCase->GetCurSel() == UserLoads::LL_IM)
    {
       pcbEvent->ResetContent();
       const CTimelineEvent* pTimelineEvent = m_TimelineMgr.GetEventByIndex(liveLoadEventIdx);
       CString strEvent;
-      strEvent.Format(_T("Event %d: %s"),LABEL_EVENT(liveLoadEventIdx),pTimelineEvent->GetDescription());
+      strEvent.Format(_T("Event %d: %s"), LABEL_EVENT(liveLoadEventIdx), pTimelineEvent->GetDescription());
       int idx = pcbEvent->AddString(strEvent);
-      pcbEvent->SetItemData(idx,DWORD_PTR(pTimelineEvent->GetID()));
+      pcbEvent->SetItemData(idx, DWORD_PTR(pTimelineEvent->GetID()));
       pcbEvent->SetCurSel(0);
       pcbEvent->EnableWindow(FALSE);
 
@@ -352,36 +371,36 @@ void CEditPointLoadDlg::UpdateEventLoadCase(bool isInitial)
       if (isInitial || m_WasLiveLoad)
       {
          pcbEvent->ResetContent();
-         const CTimelineEvent* pTimelineEvent = m_TimelineMgr.GetEventByIndex(castDeckEventIdx);
+         const CTimelineEvent* pTimelineEvent = m_TimelineMgr.GetEventByIndex(noncompositeLoadEventIdx);
          CString strEvent;
-         strEvent.Format(_T("Event %d: %s"),LABEL_EVENT(castDeckEventIdx),pTimelineEvent->GetDescription());
+         strEvent.Format(_T("Event %d: %s"), LABEL_EVENT(noncompositeLoadEventIdx), pTimelineEvent->GetDescription());
          int idx = pcbEvent->AddString(strEvent);
-         pcbEvent->SetItemData(idx,DWORD_PTR(pTimelineEvent->GetID()));
+         pcbEvent->SetItemData(idx, DWORD_PTR(pTimelineEvent->GetID()));
 
          pTimelineEvent = m_TimelineMgr.GetEventByIndex(railingSystemEventIdx);
-         strEvent.Format(_T("Event %d: %s"),LABEL_EVENT(railingSystemEventIdx),pTimelineEvent->GetDescription());
+         strEvent.Format(_T("Event %d: %s"), LABEL_EVENT(railingSystemEventIdx), pTimelineEvent->GetDescription());
          idx = pcbEvent->AddString(strEvent);
-         pcbEvent->SetItemData(idx,DWORD_PTR(pTimelineEvent->GetID()));
+         pcbEvent->SetItemData(idx, DWORD_PTR(pTimelineEvent->GetID()));
 
          pcbEvent->EnableWindow(TRUE);
 
          if (isInitial)
          {
-            EventIDType castDeckEventID      = m_TimelineMgr.GetCastDeckEventID();
+            EventIDType noncompositeLoadEventID = m_TimelineMgr.GetEventByIndex(noncompositeLoadEventIdx)->GetID();
             EventIDType railingSystemEventID = m_TimelineMgr.GetRailingSystemLoadEventID();
-            EventIDType liveLoadEventID      = m_TimelineMgr.GetLiveLoadEventID();
-            if ( m_EventID == castDeckEventID )
+            EventIDType liveLoadEventID = m_TimelineMgr.GetLiveLoadEventID();
+            if (m_EventID == noncompositeLoadEventID)
             {
                pcbEvent->SetCurSel(0);
             }
-            else if ( m_EventID == railingSystemEventID )
+            else if (m_EventID == railingSystemEventID)
             {
                pcbEvent->SetCurSel(1);
             }
             else
             {
                pcbEvent->SetCurSel(0);
-               m_EventID = castDeckEventID;
+               m_EventID = noncompositeLoadEventID;
             }
          }
          else
@@ -389,7 +408,7 @@ void CEditPointLoadDlg::UpdateEventLoadCase(bool isInitial)
             pcbEvent->SetCurSel(0);
          }
       }
-  
+
       m_WasLiveLoad = false;
    }
 }

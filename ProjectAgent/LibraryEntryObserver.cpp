@@ -23,11 +23,15 @@
 #include "StdAfx.h"
 #include "LibraryEntryObserver.h"
 #include "ProjectAgent.h"
-#include "ProjectAgent_i.h"
+#include "CLSID.h"
 #include "ProjectAgentImp.h"
 #include <IFace\StatusCenter.h>
 #include <EAF\EAFUIIntegration.h>
 #include <algorithm>
+
+#if defined _USE_MULTITHREADING
+#include <future>
+#endif
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -67,9 +71,14 @@ void pgsLibraryEntryObserver::Update(GirderLibraryEntry* pSubject, Int32 hint)
    m_pAgent->HoldEvents();
    if (hint & LibraryHints::EntryRenamed)
    {
-      if ( m_pAgent->m_BridgeDescription.GetGirderLibraryEntry() == pSubject )
-         m_pAgent->m_BridgeDescription.RenameGirder( pSubject->GetName().c_str() );
+      if (m_pAgent->m_BridgeDescription.GetGirderLibraryEntry() == pSubject)
+      {
+         m_pAgent->m_BridgeDescription.RenameGirder(pSubject->GetName().c_str());
+      }
 
+#if defined _USE_MULTITHREADING
+      std::vector<std::future<void>> vFutures;
+#endif
       GroupIndexType nGroups = m_pAgent->m_BridgeDescription.GetGirderGroupCount();
       for ( GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )
       {
@@ -83,10 +92,25 @@ void pgsLibraryEntryObserver::Update(GirderLibraryEntry* pSubject, Int32 hint)
 
             if (pGirderGroup->GetGirderLibraryEntry(firstGdrIdx) == pSubject )
             {
-               pGirderGroup->RenameGirder(gdrGroupIdx, pSubject->GetName().c_str() );
+#if defined _USE_MULTITHREADING
+               // must capture by value into the lambda expression... as the loop progresses
+               // pGirderGroup and gdrGroupIdx change values. If we capture by reference the values
+               // will get changed when they should be constant during each async call.
+               std::future<void> f(std::async([=]{pGirderGroup->RenameGirder(gdrGroupIdx, pSubject->GetName().c_str());}));
+               vFutures.push_back(std::move(f));
+#else
+               pGirderGroup->RenameGirder(gdrGroupIdx, pSubject->GetName().c_str());
+#endif
             }
          }
       }
+
+#if defined _USE_MULTITHREADING
+      for (auto& f : vFutures)
+      {
+         f.wait(); // wait until the threads are done running (use f.get() if there is a return value)
+      }
+#endif
 
       m_pAgent->Fire_BridgeChanged(); // if we had a lessor event, we should fire that
                                       // need to fire something so that the bridge view tooltips
@@ -176,7 +200,7 @@ void pgsLibraryEntryObserver::Update(LiveLoadLibraryEntry* pSubject, Int32 hint)
    m_pAgent->HoldEvents();
    if ( hint & LibraryHints::EntryRenamed )
    {
-      for ( int i = 0; i < 8; i++ )
+      for ( int i = 0; i < (int)pgsTypes::lltLiveLoadTypeCount; i++ )
       {
          pgsTypes::LiveLoadType llType = (pgsTypes::LiveLoadType)i;
          CProjectAgentImp::LiveLoadSelectionIterator begin = m_pAgent->m_SelectedLiveLoads[llType].begin();

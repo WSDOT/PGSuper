@@ -141,11 +141,11 @@ rptChapter* CSplittingZoneDetailsChapterBuilder::Build(CReportSpecification* pRp
 
       if (!pArtifact->GetIsApplicable())
       {
-         (*pPara) << _T("Check for ")<<strName<<_T(" resistance (LRFD 5.10.10.1) is disabled in Project Criteria library.") << rptNewLine;
+         (*pPara) << _T("Check for ")<<strName<<_T(" resistance (LRFD ") << LrfdCw8th(_T("5.10.10.1"),_T("5.9.4.4")) << _T(") is disabled in Project Criteria library.") << rptNewLine;
       }
       else
       {
-         (*pPara) << _T("LRFD 5.10.10.1") << rptNewLine;
+         (*pPara) << _T("LRFD ") << LrfdCw8th(_T("5.10.10.1"),_T("5.9.4.4")) << rptNewLine;
          (*pPara) << Bold(_T("Left End:")) << rptNewLine;
          (*pPara) << strName << _T(" Dimension: h = ") << length.SetValue(pArtifact->GetStartH()) << rptNewLine;
          (*pPara) << strName << _T(" Length: h/") << scalar.SetValue(pArtifact->GetSplittingZoneLengthFactor()) << _T(" = ") << length.SetValue(pArtifact->GetStartSplittingZoneLength()) << rptNewLine;

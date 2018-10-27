@@ -35,9 +35,10 @@
 
 IMPLEMENT_DYNAMIC(CCastDeckDlg, CDialog)
 
-CCastDeckDlg::CCastDeckDlg(const CTimelineManager& timelineMgr,EventIndexType eventIdx,BOOL bReadOnly,CWnd* pParent /*=nullptr*/)
+CCastDeckDlg::CCastDeckDlg(LPCTSTR lpszTitle,const CTimelineManager& timelineMgr,EventIndexType eventIdx,BOOL bReadOnly,CWnd* pParent /*=nullptr*/)
 	: CDialog(CCastDeckDlg::IDD, pParent)
 {
+   m_strTitle = lpszTitle;
    m_TimelineMgr = timelineMgr;
    m_EventIndex = eventIdx;
    m_bReadOnly = bReadOnly;
@@ -100,6 +101,8 @@ BOOL CCastDeckDlg::OnInitDialog()
       GetDlgItem(IDCANCEL)->SetWindowText(_T("Close"));
       SetDefID(IDCANCEL);
    }
+
+   SetWindowText(m_strTitle);
 
    return TRUE;  // return TRUE unless you set the focus to a control
    // EXCEPTION: OCX Property Pages should return FALSE

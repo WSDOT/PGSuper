@@ -24,7 +24,7 @@ You can get detailed framing plan geometry from the Bridge Geometry Report.
 In the Girder View, you can specify the location where the cross section is cut by pressing the Section Cut Offset button.
 Comments and suggestions can be sent to Bridge_Support@wsdot.wa.gov
 You can change the length of a span by clicking on the span length in the Bridge Plan View and entering a new value.
-Equation 5.7.3.1.1-1, average stress in prestressing steel, is only applicable near the mid-point of a span (See C5.7.3.1.1).  PGSuper uses a strain compatibility analysis to determine the ultimate moment capacity at a section.
+Equation 5.6.3.1.1-1, average stress in prestressing steel, is only applicable near the mid-point of a span (See C5.6.3.1.1).  PGSuper uses a strain compatibility analysis to determine the ultimate moment capacity at a section.
 There are no HS loads in the LRFD specification.  LRFD has a notional live load model called HL93 and its design truck (coincidentially) has the same configuration has an HS20 truck from the Standard Specification, but no HS trucks.
 PGSuper can model sidewalks and pedestrian live load on sidewalks.
 The Texas Deparment of Transportation is a PGSuper development partner. You can be too! Contact us at http://pgsuper.com for details.

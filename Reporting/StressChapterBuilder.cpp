@@ -146,6 +146,8 @@ rptChapter* CStressChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 l
    GroupIndexType firstGroupIdx = (girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex);
    GroupIndexType lastGroupIdx  = (girderKey.groupIndex == ALL_GROUPS ? nGroups-1 : firstGroupIdx);
 
+   pgsTypes::SupportedDeckType deckType = pBridge->GetDeckType();
+
    // Product Stresses
    p = new rptParagraph(rptStyleManager::GetHeadingStyle());
    p->SetName(_T("Product Load Stresses"));
@@ -221,10 +223,13 @@ rptChapter* CStressChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 l
       *p << LIVELOAD_PER_LANE << rptNewLine;
 
       // product stresses in deck
-      p = new rptParagraph;
-      *pChapter << p;
-      *p << CProductStressTable().Build(pBroker,thisGirderKey,analysisType,bDesign,bRating,pDisplayUnits,false/*deck stresses*/) << rptNewLine;
-      *p << LIVELOAD_PER_LANE << rptNewLine;
+      if (IsStructuralDeck(deckType))
+      {
+         p = new rptParagraph;
+         *pChapter << p;
+         *p << CProductStressTable().Build(pBroker, thisGirderKey, analysisType, bDesign, bRating, pDisplayUnits, false/*deck stresses*/) << rptNewLine;
+         *p << LIVELOAD_PER_LANE << rptNewLine;
+      }
 
       // stresses in girder
       GET_IFACE2(pBroker,IUserDefinedLoads,pUDL);

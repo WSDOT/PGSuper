@@ -92,9 +92,28 @@ protected:
    //------------------------------------------------------------------------
    void MakeAssignment(const CCamberTable& rOther);
 
-   void GetPointsOfInterest(IBroker* pBroker,const CSegmentKey& segmentKey,std::vector<pgsPointOfInterest>* pvPoiRelease,std::vector<pgsPointOfInterest>* pvPoiStorage,std::vector<pgsPointOfInterest>* pvPoiErected) const;
+   void GetPointsOfInterest(IBroker* pBroker,const CSegmentKey& segmentKey,PoiList* pvPoiRelease,PoiList* pvPoiStorage,PoiList* pvPoiErected) const;
    // GROUP: ACCESS
    // GROUP: INQUIRY
+   void Build_Deck_Y(IBroker* pBroker, const CSegmentKey& segmentKey,
+      bool bTempStrands, bool bSidewalk, bool bShearKey, bool bConstruction, bool bOverlay, bool bDeckPanels,
+      IEAFDisplayUnits* pDisplayUnits, Int16 time, const CamberMultipliers& cm,
+      rptRcTable** pTable1, rptRcTable** pTable2, rptRcTable** pTable3) const;
+
+   void Build_Deck_XY(IBroker* pBroker, const CSegmentKey& segmentKey,
+      bool bTempStrands, bool bSidewalk, bool bShearKey, bool bConstruction, bool bOverlay, bool bDeckPanels,
+      IEAFDisplayUnits* pDisplayUnits, Int16 time, const CamberMultipliers& cm,
+      rptRcTable** pTable1, rptRcTable** pTable2, rptRcTable** pTable3) const;
+
+   void Build_NoDeck_Y(IBroker* pBroker, const CSegmentKey& segmentKey,
+      bool bTempStrands, bool bSidewalk, bool bShearKey, bool bConstruction, bool bOverlay,
+      IEAFDisplayUnits* pDisplayUnits, Int16 time, const CamberMultipliers& cm,
+      rptRcTable** pTable1, rptRcTable** pTable2, rptRcTable** pTable3) const;
+
+   void Build_NoDeck_XY(IBroker* pBroker, const CSegmentKey& segmentKey,
+      bool bTempStrands, bool bSidewalk, bool bShearKey, bool bConstruction, bool bOverlay,
+      IEAFDisplayUnits* pDisplayUnits, Int16 time, const CamberMultipliers& cm,
+      rptRcTable** pTable1, rptRcTable** pTable2, rptRcTable** pTable3) const;
 
 private:
    // GROUP: DATA MEMBERS
@@ -103,25 +122,6 @@ private:
    // GROUP: OPERATIONS
    // GROUP: ACCESS
    // GROUP: INQUIRY
-
-public:
-   // GROUP: DEBUG
-   #if defined _DEBUG
-   //------------------------------------------------------------------------
-   // Returns true if the object is in a valid state, otherwise returns false.
-   virtual bool AssertValid() const;
-
-   //------------------------------------------------------------------------
-   // Dumps the contents of the object to the given dump context.
-   virtual void Dump(dbgDumpContext& os) const;
-   #endif // _DEBUG
-
-   #if defined _UNITTEST
-   //------------------------------------------------------------------------
-   // Runs a self-diagnostic test.  Returns true if the test passed,
-   // otherwise false.
-   static bool TestMe(dbgLog& rlog);
-   #endif // _UNITTEST
 };
 
 // INLINE METHODS

@@ -29,6 +29,7 @@ enum ActionType
    actionMoment, 
    actionReaction,
    actionDeflection, 
+   actionXDeflection,
    actionRotation,
    actionStress
 };

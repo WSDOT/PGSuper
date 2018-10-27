@@ -33,7 +33,6 @@
 
 #include <EAF\EAFDisplayUnits.h>
 #include <MFCTools\CustomDDX.h>
-#include <IFace\Project.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -133,7 +132,7 @@ void CSpanLayoutPage::DoDataExchange(CDataExchange* pDX)
 
       if (pParent->m_BridgeDesc.GetDeckDescription()->GetDeckType() != pgsTypes::sdtNone)
       {
-         Float64 minA = pParent->m_BridgeDesc.GetDeckDescription()->GrossDepth;
+         Float64 minA  = pParent->m_BridgeDesc.GetDeckDescription()->GrossDepth;
          if (pParent->m_BridgeDesc.GetDeckDescription()->GetDeckType() == pgsTypes::sdtCompositeSIP)
          {
             minA += pParent->m_BridgeDesc.GetDeckDescription()->PanelDepth;
@@ -189,20 +188,20 @@ void CSpanLayoutPage::DoDataExchange(CDataExchange* pDX)
          if (m_bCanAssExcessCamberInputBeEnabled)
          {
             if (pParent->m_BridgeDesc.GetAssExcessCamberType() == pgsTypes::aecBridge)
-            {
+         {
                pParent->m_BridgeDesc.SetAssExcessCamber(AssExcessCamber);
-            }
+         }
             else if (pParent->m_BridgeDesc.GetAssExcessCamberType() == pgsTypes::aecSpan)
-            {
+         {
                pParent->m_pSpanData->SetAssExcessCamber(AssExcessCamber);
-            }
-            else
-            {
+         }
+         else
+         {
                if (m_InitialAssExcessCamberType != pgsTypes::aecGirder)
-               {
-                  GirderIndexType nGirders = pParent->m_pSpanData->GetGirderCount();
+            {
+               GirderIndexType nGirders = pParent->m_pSpanData->GetGirderCount();
                   for (GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++)
-                  {
+               {
                      pParent->m_pSpanData->SetAssExcessCamber(gdrIdx, AssExcessCamber);
                   }
                }
@@ -271,7 +270,7 @@ BOOL CSpanLayoutPage::OnInitDialog()
    {
       ShowCantilevers(FALSE,FALSE);
    }
-
+   
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,ISpecification, pSpec );
@@ -285,7 +284,7 @@ BOOL CSpanLayoutPage::OnInitDialog()
    if (m_bCanAssExcessCamberInputBeEnabled)
    {
       if (m_InitialAssExcessCamberType == pgsTypes::aecGirder)
-      {
+   {
          m_ctrlAssExcessCamber.ShowDefaultWhenDisabled(FALSE);
       }
       else
@@ -547,14 +546,14 @@ void CSpanLayoutPage::UpdateAssExcessCamberWindowState()
 {
    if (m_bCanAssExcessCamberInputBeEnabled)
    {
-      CSpanDetailsDlg* pParent = (CSpanDetailsDlg*)GetParent();
+   CSpanDetailsDlg* pParent = (CSpanDetailsDlg*)GetParent();
       pgsTypes::AssExcessCamberType AssExcessCamberType = pParent->m_BridgeDesc.GetAssExcessCamberType();
 
-      BOOL bEnable = TRUE;
+   BOOL bEnable = TRUE;
       if (AssExcessCamberType == pgsTypes::aecBridge || AssExcessCamberType == pgsTypes::aecGirder)
-      {
-         bEnable = FALSE;
-      }
+   {
+      bEnable = FALSE;
+   }
 
       m_ctrlAssExcessCamber.EnableWindow(bEnable);
       GetDlgItem(IDC_ASSEXCESSCAMBER_UNIT)->EnableWindow(bEnable);

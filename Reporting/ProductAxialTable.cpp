@@ -87,16 +87,17 @@ rptRcTable* CProductAxialTable::Build(IBroker* pBroker,const CGirderKey& girderK
    bool bHasOverlay = pBridge->HasOverlay();
    bool bFutureOverlay = pBridge->IsFutureOverlay();
 
-   bool bSegments,bConstruction, bDeckPanels, bPedLoading, bSidewalk, bShearKey, bPermit;
+   bool bSegments,bConstruction, bDeck, bDeckPanels, bPedLoading, bSidewalk, bShearKey, bLongitudinalJoint, bPermit;
    bool bContinuousBeforeDeckCasting;
    GroupIndexType startGroup, endGroup;
 
    GET_IFACE2(pBroker, IRatingSpecification, pRatingSpec);
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
+   IntervalIndexType overlayIntervalIdx = pIntervals->GetOverlayInterval();
    IntervalIndexType lastIntervalIdx = pIntervals->GetIntervalCount()-1;
 
-   ColumnIndexType nCols = GetProductLoadTableColumnCount(pBroker,girderKey,analysisType,bDesign,bRating,false,&bSegments,&bConstruction,&bDeckPanels,&bSidewalk,&bShearKey,&bPedLoading,&bPermit,&bContinuousBeforeDeckCasting,&startGroup,&endGroup);
+   ColumnIndexType nCols = GetProductLoadTableColumnCount(pBroker,girderKey,analysisType,bDesign,bRating,false,&bSegments,&bConstruction,&bDeck,&bDeckPanels,&bSidewalk,&bShearKey,&bLongitudinalJoint,&bPedLoading,&bPermit,&bContinuousBeforeDeckCasting,&startGroup,&endGroup);
 
    rptRcTable* p_table = rptStyleManager::CreateDefaultTable(nCols,_T("Axial"));
 
@@ -109,7 +110,7 @@ rptRcTable* CProductAxialTable::Build(IBroker* pBroker,const CGirderKey& girderK
    location.IncludeSpanAndGirder(girderKey.groupIndex == ALL_GROUPS);
    PoiAttributeType poiRefAttribute(girderKey.groupIndex == ALL_GROUPS ? POI_SPAN : POI_ERECTED_SEGMENT);
 
-   RowIndexType row = ConfigureProductLoadTableHeading<rptForceUnitTag,unitmgtForceData>(pBroker,p_table,false,false,bSegments,bConstruction,bDeckPanels,bSidewalk,bShearKey,bHasOverlay,bFutureOverlay,bDesign,bPedLoading,
+   RowIndexType row = ConfigureProductLoadTableHeading<rptForceUnitTag,unitmgtForceData>(pBroker,p_table,false,false,bSegments,bConstruction,bDeck,bDeckPanels,bSidewalk,bShearKey,bLongitudinalJoint,bHasOverlay,bFutureOverlay,bDesign,bPedLoading,
                                                                                            bPermit,bRating,analysisType,bContinuousBeforeDeckCasting,
                                                                                            pRatingSpec,pDisplayUnits,pDisplayUnits->GetGeneralForceUnit());
    // Get the results
@@ -128,14 +129,10 @@ rptRcTable* CProductAxialTable::Build(IBroker* pBroker,const CGirderKey& girderK
       CGirderKey thisGirderKey(grpIdx,gdrIdx);
 
       IntervalIndexType erectSegmentIntervalIdx  = pIntervals->GetLastSegmentErectionInterval(thisGirderKey);
-      IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval();
-      IntervalIndexType overlayIntervalIdx       = pIntervals->GetOverlayInterval();
-      IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval();
-      IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval();
-      IntervalIndexType loadRatingIntervalIdx    = pIntervals->GetLoadRatingInterval();
 
       CSegmentKey allSegmentsKey(grpIdx,gdrIdx,ALL_SEGMENTS);
-      std::vector<pgsPointOfInterest> vPoi( pIPoi->GetPointsOfInterest(allSegmentsKey,poiRefAttribute) );
+      PoiList vPoi;
+      pIPoi->GetPointsOfInterest(allSegmentsKey, poiRefAttribute, &vPoi);
 
       std::vector<Float64> segment;
       std::vector<Float64> girder;
@@ -148,28 +145,31 @@ rptRcTable* CProductAxialTable::Build(IBroker* pBroker,const CGirderKey& girderK
       {
          girder = pForces2->GetAxial(erectSegmentIntervalIdx, pgsTypes::pftGirder,    vPoi, maxBAT, rtCumulative);
       }
-      std::vector<Float64> diaphragm = pForces2->GetAxial(castDeckIntervalIdx,     pgsTypes::pftDiaphragm, vPoi, maxBAT, rtCumulative);
+      std::vector<Float64> diaphragm = pForces2->GetAxial(lastIntervalIdx,     pgsTypes::pftDiaphragm, vPoi, maxBAT, rtCumulative);
 
       std::vector<Float64> minSlab, maxSlab;
       std::vector<Float64> minSlabPad, maxSlabPad;
-      maxSlab = pForces2->GetAxial( castDeckIntervalIdx, pgsTypes::pftSlab, vPoi, maxBAT, rtCumulative );
-      minSlab = pForces2->GetAxial( castDeckIntervalIdx, pgsTypes::pftSlab, vPoi, minBAT, rtCumulative );
+      if (bDeck)
+      {
+         maxSlab = pForces2->GetAxial(lastIntervalIdx, pgsTypes::pftSlab, vPoi, maxBAT, rtCumulative);
+         minSlab = pForces2->GetAxial(lastIntervalIdx, pgsTypes::pftSlab, vPoi, minBAT, rtCumulative);
 
-      maxSlabPad = pForces2->GetAxial( castDeckIntervalIdx, pgsTypes::pftSlabPad, vPoi, maxBAT, rtCumulative );
-      minSlabPad = pForces2->GetAxial( castDeckIntervalIdx, pgsTypes::pftSlabPad, vPoi, minBAT, rtCumulative );
+         maxSlabPad = pForces2->GetAxial(lastIntervalIdx, pgsTypes::pftSlabPad, vPoi, maxBAT, rtCumulative);
+         minSlabPad = pForces2->GetAxial(lastIntervalIdx, pgsTypes::pftSlabPad, vPoi, minBAT, rtCumulative);
+      }
 
       std::vector<Float64> minDeckPanel, maxDeckPanel;
       if ( bDeckPanels )
       {
-         maxDeckPanel = pForces2->GetAxial( castDeckIntervalIdx, pgsTypes::pftSlabPanel, vPoi, maxBAT, rtCumulative );
-         minDeckPanel = pForces2->GetAxial( castDeckIntervalIdx, pgsTypes::pftSlabPanel, vPoi, minBAT, rtCumulative );
+         maxDeckPanel = pForces2->GetAxial(lastIntervalIdx, pgsTypes::pftSlabPanel, vPoi, maxBAT, rtCumulative );
+         minDeckPanel = pForces2->GetAxial(lastIntervalIdx, pgsTypes::pftSlabPanel, vPoi, minBAT, rtCumulative );
       }
 
       std::vector<Float64> minConstruction, maxConstruction;
       if ( bConstruction )
       {
-         maxConstruction = pForces2->GetAxial( castDeckIntervalIdx, pgsTypes::pftConstruction, vPoi, maxBAT, rtCumulative );
-         minConstruction = pForces2->GetAxial( castDeckIntervalIdx, pgsTypes::pftConstruction, vPoi, minBAT, rtCumulative );
+         maxConstruction = pForces2->GetAxial(lastIntervalIdx, pgsTypes::pftConstruction, vPoi, maxBAT, rtCumulative );
+         minConstruction = pForces2->GetAxial(lastIntervalIdx, pgsTypes::pftConstruction, vPoi, minBAT, rtCumulative );
       }
 
       std::vector<Float64> dummy;
@@ -177,6 +177,7 @@ rptRcTable* CProductAxialTable::Build(IBroker* pBroker,const CGirderKey& girderK
       std::vector<Float64> minTrafficBarrier, maxTrafficBarrier;
       std::vector<Float64> minSidewalk, maxSidewalk;
       std::vector<Float64> minShearKey, maxShearKey;
+      std::vector<Float64> minLongitudinalJoint, maxLongitudinalJoint;
       std::vector<Float64> minPedestrian, maxPedestrian;
       std::vector<Float64> minDesignLL, maxDesignLL;
       std::vector<Float64> minFatigueLL, maxFatigueLL;
@@ -207,45 +208,52 @@ rptRcTable* CProductAxialTable::Build(IBroker* pBroker,const CGirderKey& girderK
 
       if ( bSidewalk )
       {
-         maxSidewalk = pForces2->GetAxial( railingSystemIntervalIdx, pgsTypes::pftSidewalk, vPoi, maxBAT, rtCumulative );
-         minSidewalk = pForces2->GetAxial( railingSystemIntervalIdx, pgsTypes::pftSidewalk, vPoi, minBAT, rtCumulative );
+         maxSidewalk = pForces2->GetAxial(lastIntervalIdx, pgsTypes::pftSidewalk, vPoi, maxBAT, rtCumulative );
+         minSidewalk = pForces2->GetAxial(lastIntervalIdx, pgsTypes::pftSidewalk, vPoi, minBAT, rtCumulative );
       }
 
-      if ( bShearKey )
+      if (bShearKey)
       {
-         maxShearKey = pForces2->GetAxial( castDeckIntervalIdx, pgsTypes::pftShearKey, vPoi, maxBAT, rtCumulative );
-         minShearKey = pForces2->GetAxial( castDeckIntervalIdx, pgsTypes::pftShearKey, vPoi, minBAT, rtCumulative );
+         maxShearKey = pForces2->GetAxial(lastIntervalIdx, pgsTypes::pftShearKey, vPoi, maxBAT, rtCumulative);
+         minShearKey = pForces2->GetAxial(lastIntervalIdx, pgsTypes::pftShearKey, vPoi, minBAT, rtCumulative);
       }
 
-      maxTrafficBarrier = pForces2->GetAxial( railingSystemIntervalIdx, pgsTypes::pftTrafficBarrier, vPoi, maxBAT, rtCumulative );
-      minTrafficBarrier = pForces2->GetAxial( railingSystemIntervalIdx, pgsTypes::pftTrafficBarrier, vPoi, minBAT, rtCumulative );
+      if (bLongitudinalJoint)
+      {
+         maxLongitudinalJoint = pForces2->GetAxial(lastIntervalIdx, pgsTypes::pftLongitudinalJoint, vPoi, maxBAT, rtCumulative);
+         minLongitudinalJoint = pForces2->GetAxial(lastIntervalIdx, pgsTypes::pftLongitudinalJoint, vPoi, minBAT, rtCumulative);
+      }
+
+      maxTrafficBarrier = pForces2->GetAxial(lastIntervalIdx, pgsTypes::pftTrafficBarrier, vPoi, maxBAT, rtCumulative );
+      minTrafficBarrier = pForces2->GetAxial(lastIntervalIdx, pgsTypes::pftTrafficBarrier, vPoi, minBAT, rtCumulative );
+
       if ( bHasOverlay )
       {
-         maxOverlay = pForces2->GetAxial( overlayIntervalIdx, bRating && !bDesign ? pgsTypes::pftOverlayRating : pgsTypes::pftOverlay, vPoi, maxBAT, rtCumulative );
-         minOverlay = pForces2->GetAxial( overlayIntervalIdx, bRating && !bDesign ? pgsTypes::pftOverlayRating : pgsTypes::pftOverlay, vPoi, minBAT, rtCumulative );
+         maxOverlay = pForces2->GetAxial(lastIntervalIdx, bRating && !bDesign ? pgsTypes::pftOverlayRating : pgsTypes::pftOverlay, vPoi, maxBAT, rtCumulative );
+         minOverlay = pForces2->GetAxial(lastIntervalIdx, bRating && !bDesign ? pgsTypes::pftOverlayRating : pgsTypes::pftOverlay, vPoi, minBAT, rtCumulative );
       }
 
       if ( bPedLoading )
       {
-         pForces2->GetLiveLoadAxial( liveLoadIntervalIdx, pgsTypes::lltPedestrian, vPoi, maxBAT, true, true, &dummy, &maxPedestrian );
-         pForces2->GetLiveLoadAxial( liveLoadIntervalIdx, pgsTypes::lltPedestrian, vPoi, minBAT, true, true, &minPedestrian, &dummy );
+         pForces2->GetLiveLoadAxial(lastIntervalIdx, pgsTypes::lltPedestrian, vPoi, maxBAT, true, true, &dummy, &maxPedestrian );
+         pForces2->GetLiveLoadAxial(lastIntervalIdx, pgsTypes::lltPedestrian, vPoi, minBAT, true, true, &minPedestrian, &dummy );
       }
 
       if ( bDesign )
       {
-         pForces2->GetLiveLoadAxial( liveLoadIntervalIdx, pgsTypes::lltDesign, vPoi, maxBAT, true, false, &dummy, &maxDesignLL, &dummyTruck, &maxDesignLLtruck );
-         pForces2->GetLiveLoadAxial( liveLoadIntervalIdx, pgsTypes::lltDesign, vPoi, minBAT, true, false, &minDesignLL, &dummy, &minDesignLLtruck, &dummyTruck );
+         pForces2->GetLiveLoadAxial(lastIntervalIdx, pgsTypes::lltDesign, vPoi, maxBAT, true, false, &dummy, &maxDesignLL, &dummyTruck, &maxDesignLLtruck );
+         pForces2->GetLiveLoadAxial(lastIntervalIdx, pgsTypes::lltDesign, vPoi, minBAT, true, false, &minDesignLL, &dummy, &minDesignLLtruck, &dummyTruck );
 
          if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
          {
-            pForces2->GetLiveLoadAxial( liveLoadIntervalIdx, pgsTypes::lltFatigue, vPoi, maxBAT, true, false, &dummy, &maxFatigueLL, &dummyTruck, &maxFatigueLLtruck );
-            pForces2->GetLiveLoadAxial( liveLoadIntervalIdx, pgsTypes::lltFatigue, vPoi, minBAT, true, false, &minFatigueLL, &dummy, &minFatigueLLtruck, &dummyTruck );
+            pForces2->GetLiveLoadAxial(lastIntervalIdx, pgsTypes::lltFatigue, vPoi, maxBAT, true, false, &dummy, &maxFatigueLL, &dummyTruck, &maxFatigueLLtruck );
+            pForces2->GetLiveLoadAxial(lastIntervalIdx, pgsTypes::lltFatigue, vPoi, minBAT, true, false, &minFatigueLL, &dummy, &minFatigueLLtruck, &dummyTruck );
          }
 
          if ( bPermit )
          {
-            pForces2->GetLiveLoadAxial( liveLoadIntervalIdx, pgsTypes::lltPermit, vPoi, maxBAT, true, false, &dummy, &maxPermitLL, &dummyTruck, &maxPermitLLtruck );
-            pForces2->GetLiveLoadAxial( liveLoadIntervalIdx, pgsTypes::lltPermit, vPoi, minBAT, true, false, &minPermitLL, &dummy, &minPermitLLtruck, &dummyTruck );
+            pForces2->GetLiveLoadAxial(lastIntervalIdx, pgsTypes::lltPermit, vPoi, maxBAT, true, false, &dummy, &maxPermitLL, &dummyTruck, &maxPermitLLtruck );
+            pForces2->GetLiveLoadAxial(lastIntervalIdx, pgsTypes::lltPermit, vPoi, minBAT, true, false, &minPermitLL, &dummy, &minPermitLLtruck, &dummyTruck );
          }
       }
 
@@ -253,100 +261,112 @@ rptRcTable* CProductAxialTable::Build(IBroker* pBroker,const CGirderKey& girderK
       {
          if ( !bDesign && (pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) || pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating)) )
          {
-            pForces2->GetLiveLoadAxial( loadRatingIntervalIdx, pgsTypes::lltDesign, vPoi, maxBAT, true, false, &dummy, &maxDesignLL, &dummyTruck, &maxDesignLLtruck );
-            pForces2->GetLiveLoadAxial( loadRatingIntervalIdx, pgsTypes::lltDesign, vPoi, minBAT, true, false, &minDesignLL, &dummy, &minDesignLLtruck, &dummyTruck );
+            pForces2->GetLiveLoadAxial(lastIntervalIdx, pgsTypes::lltDesign, vPoi, maxBAT, true, false, &dummy, &maxDesignLL, &dummyTruck, &maxDesignLLtruck );
+            pForces2->GetLiveLoadAxial(lastIntervalIdx, pgsTypes::lltDesign, vPoi, minBAT, true, false, &minDesignLL, &dummy, &minDesignLLtruck, &dummyTruck );
          }
 
          if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) )
          {
-            pForces2->GetLiveLoadAxial( loadRatingIntervalIdx, pgsTypes::lltLegalRating_Routine, vPoi, maxBAT, true, false, &dummy, &maxLegalRoutineLL, &dummyTruck, &maxLegalRoutineLLtruck );
-            pForces2->GetLiveLoadAxial( loadRatingIntervalIdx, pgsTypes::lltLegalRating_Routine, vPoi, minBAT, true, false, &minLegalRoutineLL, &dummy, &minLegalRoutineLLtruck, &dummyTruck );
+            pForces2->GetLiveLoadAxial(lastIntervalIdx, pgsTypes::lltLegalRating_Routine, vPoi, maxBAT, true, false, &dummy, &maxLegalRoutineLL, &dummyTruck, &maxLegalRoutineLLtruck );
+            pForces2->GetLiveLoadAxial(lastIntervalIdx, pgsTypes::lltLegalRating_Routine, vPoi, minBAT, true, false, &minLegalRoutineLL, &dummy, &minLegalRoutineLLtruck, &dummyTruck );
          }
 
          if (pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special))
          {
-            pForces2->GetLiveLoadAxial(loadRatingIntervalIdx, pgsTypes::lltLegalRating_Special, vPoi, maxBAT, true, false, &dummy, &maxLegalSpecialLL, &dummyTruck, &maxLegalSpecialLLtruck);
-            pForces2->GetLiveLoadAxial(loadRatingIntervalIdx, pgsTypes::lltLegalRating_Special, vPoi, minBAT, true, false, &minLegalSpecialLL, &dummy, &minLegalSpecialLLtruck, &dummyTruck);
+            pForces2->GetLiveLoadAxial(lastIntervalIdx, pgsTypes::lltLegalRating_Special, vPoi, maxBAT, true, false, &dummy, &maxLegalSpecialLL, &dummyTruck, &maxLegalSpecialLLtruck);
+            pForces2->GetLiveLoadAxial(lastIntervalIdx, pgsTypes::lltLegalRating_Special, vPoi, minBAT, true, false, &minLegalSpecialLL, &dummy, &minLegalSpecialLLtruck, &dummyTruck);
          }
 
          if (pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Emergency))
          {
-            pForces2->GetLiveLoadAxial(loadRatingIntervalIdx, pgsTypes::lltLegalRating_Emergency, vPoi, maxBAT, true, false, &dummy, &maxLegalEmergencyLL, &dummyTruck, &maxLegalEmergencyLLtruck);
-            pForces2->GetLiveLoadAxial(loadRatingIntervalIdx, pgsTypes::lltLegalRating_Emergency, vPoi, minBAT, true, false, &minLegalEmergencyLL, &dummy, &minLegalEmergencyLLtruck, &dummyTruck);
+            pForces2->GetLiveLoadAxial(lastIntervalIdx, pgsTypes::lltLegalRating_Emergency, vPoi, maxBAT, true, false, &dummy, &maxLegalEmergencyLL, &dummyTruck, &maxLegalEmergencyLLtruck);
+            pForces2->GetLiveLoadAxial(lastIntervalIdx, pgsTypes::lltLegalRating_Emergency, vPoi, minBAT, true, false, &minLegalEmergencyLL, &dummy, &minLegalEmergencyLLtruck, &dummyTruck);
          }
 
          if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine) )
          {
-            pForces2->GetLiveLoadAxial( loadRatingIntervalIdx, pgsTypes::lltPermitRating_Routine, vPoi, maxBAT, true, false, &dummy, &maxPermitRoutineLL, &dummyTruck, &maxPermitRoutineLLtruck );
-            pForces2->GetLiveLoadAxial( loadRatingIntervalIdx, pgsTypes::lltPermitRating_Routine, vPoi, minBAT, true, false, &minPermitRoutineLL, &dummy, &minPermitRoutineLLtruck, &dummyTruck );
+            pForces2->GetLiveLoadAxial(lastIntervalIdx, pgsTypes::lltPermitRating_Routine, vPoi, maxBAT, true, false, &dummy, &maxPermitRoutineLL, &dummyTruck, &maxPermitRoutineLLtruck );
+            pForces2->GetLiveLoadAxial(lastIntervalIdx, pgsTypes::lltPermitRating_Routine, vPoi, minBAT, true, false, &minPermitRoutineLL, &dummy, &minPermitRoutineLLtruck, &dummyTruck );
          }
 
          if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Special) )
          {
-            pForces2->GetLiveLoadAxial( loadRatingIntervalIdx, pgsTypes::lltPermitRating_Special, vPoi, maxBAT, true, false, &dummy, &maxPermitSpecialLL, &dummyTruck, &maxPermitSpecialLLtruck );
-            pForces2->GetLiveLoadAxial( loadRatingIntervalIdx, pgsTypes::lltPermitRating_Special, vPoi, minBAT, true, false, &minPermitSpecialLL, &dummy, &minPermitSpecialLLtruck, &dummyTruck );
+            pForces2->GetLiveLoadAxial(lastIntervalIdx, pgsTypes::lltPermitRating_Special, vPoi, maxBAT, true, false, &dummy, &maxPermitSpecialLL, &dummyTruck, &maxPermitSpecialLLtruck );
+            pForces2->GetLiveLoadAxial(lastIntervalIdx, pgsTypes::lltPermitRating_Special, vPoi, minBAT, true, false, &minPermitSpecialLL, &dummy, &minPermitSpecialLLtruck, &dummyTruck );
          }
       }
 
 
       // write out the results
-      std::vector<pgsPointOfInterest>::const_iterator i(vPoi.begin());
-      std::vector<pgsPointOfInterest>::const_iterator end(vPoi.end());
-      long index = 0;
-      for ( ; i != end; i++, index++ )
+      IndexType index = 0;
+      for (const pgsPointOfInterest& poi : vPoi)
       {
-         const pgsPointOfInterest& poi = *i;
-
          ColumnIndexType col = 0;
 
-         (*p_table)(row,col++) << location.SetValue( poiRefAttribute, poi );
-         if ( bSegments )
+         (*p_table)(row, col++) << location.SetValue(poiRefAttribute, poi);
+         if (bSegments)
          {
-            (*p_table)(row,col++) << axial.SetValue( segment[index] );
+            (*p_table)(row, col++) << axial.SetValue(segment[index]);
          }
 
-         (*p_table)(row,col++) << axial.SetValue( girder[index] );
-         (*p_table)(row,col++) << axial.SetValue( diaphragm[index] );
+         (*p_table)(row, col++) << axial.SetValue(girder[index]);
+         (*p_table)(row, col++) << axial.SetValue(diaphragm[index]);
 
-         if ( bShearKey )
+         if (bShearKey)
          {
-            if ( analysisType == pgsTypes::Envelope )
+            if (analysisType == pgsTypes::Envelope)
             {
-               (*p_table)(row,col++) << axial.SetValue( maxShearKey[index] );
-               (*p_table)(row,col++) << axial.SetValue( minShearKey[index] );
+               (*p_table)(row, col++) << axial.SetValue(maxShearKey[index]);
+               (*p_table)(row, col++) << axial.SetValue(minShearKey[index]);
             }
             else
             {
-               (*p_table)(row,col++) << axial.SetValue( maxShearKey[index] );
+               (*p_table)(row, col++) << axial.SetValue(maxShearKey[index]);
             }
          }
 
-         if ( bConstruction )
+         if (bLongitudinalJoint)
          {
-            if ( analysisType == pgsTypes::Envelope && bContinuousBeforeDeckCasting )
+            if (analysisType == pgsTypes::Envelope && bContinuousBeforeDeckCasting)
             {
-               (*p_table)(row,col++) << axial.SetValue( maxConstruction[index] );
-               (*p_table)(row,col++) << axial.SetValue( minConstruction[index] );
+               (*p_table)(row, col++) << axial.SetValue(maxLongitudinalJoint[index]);
+               (*p_table)(row, col++) << axial.SetValue(minLongitudinalJoint[index]);
             }
             else
             {
-               (*p_table)(row,col++) << axial.SetValue( maxConstruction[index] );
+               (*p_table)(row, col++) << axial.SetValue(maxLongitudinalJoint[index]);
             }
          }
 
-         if ( analysisType == pgsTypes::Envelope && bContinuousBeforeDeckCasting )
+         if (bConstruction)
          {
-            (*p_table)(row,col++) << axial.SetValue( maxSlab[index] );
-            (*p_table)(row,col++) << axial.SetValue( minSlab[index] );
-
-            (*p_table)(row,col++) << axial.SetValue( maxSlabPad[index] );
-            (*p_table)(row,col++) << axial.SetValue( minSlabPad[index] );
+            if (analysisType == pgsTypes::Envelope && bContinuousBeforeDeckCasting)
+            {
+               (*p_table)(row, col++) << axial.SetValue(maxConstruction[index]);
+               (*p_table)(row, col++) << axial.SetValue(minConstruction[index]);
+            }
+            else
+            {
+               (*p_table)(row, col++) << axial.SetValue(maxConstruction[index]);
+            }
          }
-         else
-         {
-            (*p_table)(row,col++) << axial.SetValue( maxSlab[index] );
 
-            (*p_table)(row,col++) << axial.SetValue( maxSlabPad[index] );
+         if (bDeck)
+         {
+            if (analysisType == pgsTypes::Envelope && bContinuousBeforeDeckCasting)
+            {
+               (*p_table)(row, col++) << axial.SetValue(maxSlab[index]);
+               (*p_table)(row, col++) << axial.SetValue(minSlab[index]);
+
+               (*p_table)(row, col++) << axial.SetValue(maxSlabPad[index]);
+               (*p_table)(row, col++) << axial.SetValue(minSlabPad[index]);
+            }
+            else
+            {
+               (*p_table)(row, col++) << axial.SetValue(maxSlab[index]);
+
+               (*p_table)(row, col++) << axial.SetValue(maxSlabPad[index]);
+            }
          }
 
          if ( bDeckPanels )
@@ -586,6 +606,7 @@ rptRcTable* CProductAxialTable::Build(IBroker* pBroker,const CGirderKey& girderK
          }
 
          row++;
+         index++;
       } // next poi
    } // next group
 

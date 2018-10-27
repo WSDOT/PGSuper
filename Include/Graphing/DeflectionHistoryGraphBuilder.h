@@ -47,12 +47,14 @@ public:
 
    virtual CEAFGraphControlWindow* GetGraphControlWindow() override;
 
+   virtual void CreateViewController(IEAFViewController** ppController) override;
+
+   void ShowGrid(bool bShowGrid);
+
 protected:
    void Init();
 
    CDeflectionHistoryGraphController* m_pGraphController;
-
-   afx_msg void OnShowGrid();
 
    DECLARE_MESSAGE_MAP()
 

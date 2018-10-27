@@ -31,14 +31,13 @@
 #include <WBFLGeometry.h>
 
 #include <initguid.h>
-#include "TxDOTAgent_i.h"
+#include "CLSID.h"
 
 // interfaces used in this DLL.... resolves symbols for the linker
 #include <WBFLDManip_i.c>
 #include <WBFLDManipTools_i.c>
 #include <DManip\DManip_clsid.cpp>
 #include <DManipTools\DManipTools_clsid.cpp>
-#include "TxDOTAgent_i.h"
 #include <WBFLCore_i.c>
 #include <WBFLGeometry_i.c>
 #include <WBFLCogo_i.c>
@@ -55,7 +54,7 @@
 #include <EAF\EAFUIIntegration.h>
 
 #include "PGSComponentInfo.h"
-#include <PGSuperIEPlugin_i.c>
+#include <PGSuperIEPlugin.h>
 #include <WBFLReportManagerAgent_i.c>
 #include "TxDOTOptionalDesignDocProxyAgent.h"
 

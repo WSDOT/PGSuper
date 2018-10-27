@@ -57,11 +57,11 @@ void CShearSteelPage2::DoRestoreDefaults()
 
    // get shear information from library
    GET_IFACE2( pBroker, ILibrary, pLib );
-   const GirderLibraryEntry* pGird = pLib->GetGirderEntry( m_CurGrdName.c_str());
-   ASSERT(pGird!=0);
+   const GirderLibraryEntry* pGirderEntry = pLib->GetGirderEntry( m_CurGrdName.c_str());
+   ASSERT(pGirderEntry != nullptr);
 
    // update data member
-   m_ShearData.CopyGirderEntryData(*pGird);
+   m_ShearData.CopyGirderEntryData(pGirderEntry);
 }
 
 void CShearSteelPage2::EnableClosureJointMode()

@@ -185,7 +185,7 @@ void CDesignOutcomeDlg::OnSize(UINT nType, int cx, int cy)
    staticRect.top    = staticRect.bottom - btnSizeRect.Height();
 
    // A Design options control positions
-   CRect aDimCheckSizeRect(0,0,133,14);
+   CRect aDimCheckSizeRect(0,0,143,14);
    MapDialogRect( &aDimCheckSizeRect );
 
    CRect ADimCheckRect;

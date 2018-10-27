@@ -32,8 +32,7 @@
 #include "initguid.h"
 #include "EngAgent.h"
 
-#include "EngAgent_i.h"
-#include "EngAgent_i.c"
+#include "CLSID.h"
 
 #include "EngAgentImp.h"
 

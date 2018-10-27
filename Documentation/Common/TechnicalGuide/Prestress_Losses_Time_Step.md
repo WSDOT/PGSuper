@@ -2,7 +2,7 @@ Prestress Losses (Time Step Analysis) {#tg_prestress_losses_time_step}
 ======================================
 The LRFD specifications required that prestress losses in post-tensioned spliced precast girders be determined by the time-step method. The time-step method can also be used for precast prestressed girders when a rigourous analysis is required. 
 
-From LRFD 5.9.5.4.1:
+From LRFD 5.9.3.4.1 (*pre-2017: 5.9.5.4.1*):
 
 <i>
 For segmental construction and <b>post-tensioned spliced precast girders, other than during preliminary design, prestress losses shall be determined by the time-step method... including consideration of the time-dependent construction stages</b> and schedule shown in the contract documents. 

@@ -35,6 +35,7 @@
 #include "BridgeDescDeckDetailsPage.h"
 #include "BridgeDescDeckReinforcementPage.h"
 #include "BridgeDescEnvironmental.h"
+#include "PGSuperAppPlugin\BridgeDescrBearings.h"
 
 #include <IFace\ExtendUI.h>
 
@@ -64,6 +65,7 @@ public:
    CBridgeDescDeckDetailsPage       m_DeckDetailsPage;
    CBridgeDescDeckReinforcementPage m_DeckRebarPage;
    CBridgeDescEnvironmental         m_EnvironmentalPage;
+   CBridgeDescrBearings             m_BridgeDescrBearings;
 
 // Operations
 public:
@@ -104,7 +106,7 @@ protected:
    friend CBridgeDescEnvironmental;
    friend CBridgeDescDeckRebarGrid;
    friend CBridgeDescFramingGrid;
-
+   friend CBridgeDescrBearings;
 
    txnMacroTxn m_Macro;
    std::vector<EditBridgeExtension> m_ExtensionPages;

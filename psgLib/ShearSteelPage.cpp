@@ -366,6 +366,16 @@ BOOL CShearSteelPage::OnInitDialog()
 
 	CPropertyPage::OnInitDialog();
 
+   CWnd* pWnd = GetParent();
+   CShearSteelPageParent* pParent = dynamic_cast<CShearSteelPageParent*>(pWnd);
+   if (pParent && !pParent->HasDeck())
+   {
+      m_pGrid->HideCols(5, 5);
+      m_pHorizGrid->EnableWindow(FALSE);
+      GetDlgItem(IDC_INSERTHORIZROW)->EnableWindow(FALSE);
+      GetDlgItem(IDC_REMOVEHORIZROWS)->EnableWindow(FALSE);
+   }
+
 	return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE
 }

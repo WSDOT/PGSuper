@@ -24,6 +24,8 @@
 
 #pragma once
 
+#include "CLSID.h"
+
 #include "resource.h"       // main symbols
 #include "GrapherBase.h"
 

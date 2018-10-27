@@ -21,6 +21,7 @@
 ///////////////////////////////////////////////////////////////////////
 
 #include "StdAfx.h"
+#include <PgsExt\PgsExtLib.h>
 
 #include <IFace\PointOfInterest.h>
 #include <IFace\StatusCenter.h>
@@ -139,7 +140,7 @@ void pgsGirderHandlingChecker::ComputeMoments(IBroker* pBroker, pgsGirderModelFa
                                               Float64 leftOH,Float64 glen,Float64 rightOH,
                                               Float64 E,
                                               PoiAttributeType poiReference,
-                                              const std::vector<pgsPointOfInterest>& rpoiVec,
+                                              const PoiList& rpoiVec,
                                               std::vector<Float64>* pmomVec, Float64* pMidSpanDeflection)
 {
    CComPtr<IFem2dModel> pModel;
@@ -149,7 +150,7 @@ void pgsGirderHandlingChecker::ComputeMoments(IBroker* pBroker, pgsGirderModelFa
    Float64 leftSupportLocation = leftOH;
    Float64 rightSupportLocation = glen - rightOH;
    LoadCaseIDType lcid = 0;
-   pGirderModelFactory->CreateGirderModel(pBroker,intervalIdx,segmentKey,leftSupportLocation,rightSupportLocation,E,lcid,true,true,rpoiVec,&pModel,&poiMap);
+   pGirderModelFactory->CreateGirderModel(pBroker,intervalIdx,segmentKey,leftSupportLocation,rightSupportLocation,glen,E,lcid,true,true,rpoiVec,&pModel,&poiMap);
 
    // Get results
    CComQIPtr<IFem2dModelResults> results(pModel);
@@ -158,11 +159,8 @@ void pgsGirderHandlingChecker::ComputeMoments(IBroker* pBroker, pgsGirderModelFa
    bool found_mid = false;
 
    Float64 dx,dy,rz;
-   std::vector<pgsPointOfInterest>::const_iterator poiIter(rpoiVec.begin());
-   std::vector<pgsPointOfInterest>::const_iterator poiIterEnd(rpoiVec.end());
-   for ( ; poiIter != poiIterEnd; poiIter++ )
+   for ( const pgsPointOfInterest& poi : rpoiVec)
    {
-      const pgsPointOfInterest& poi = *poiIter;
       Float64 fx,fy,mz;
       PoiIDPairType femPoiID = poiMap.GetModelPoi(poi);
       HRESULT hr = results->ComputePOIForces(lcid,femPoiID.first,mftLeft,lotMember,&fx,&fy,&mz);

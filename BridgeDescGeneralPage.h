@@ -70,7 +70,12 @@ public:
 
 // Implementation
 protected:
-	// Generated message map functions
+   CEdit	m_ctrlEc;
+   CButton m_ctrlEcCheck;
+   CEdit	m_ctrlFc;
+   CString m_strUserEc;
+
+   // Generated message map functions
 	//{{AFX_MSG(CBridgeDescGeneralPage)
 	virtual BOOL OnInitDialog();
 	afx_msg void OnSameNumGirders();
@@ -83,9 +88,13 @@ protected:
 	afx_msg void OnGirderConnectivityChanged();
    afx_msg void OnSpacingDatumChanged();
    afx_msg void OnGirderSpacingTypeChanged();
+   afx_msg void OnTopWidthTypeChanged();
    afx_msg BOOL OnToolTipNotify(UINT id,NMHDR* pNMHDR, LRESULT* pResult);
    afx_msg void OnHelp();
 	afx_msg void OnPostTension();
+   afx_msg void OnMoreProperties();
+   afx_msg void OnBnClickedEc();
+   afx_msg void OnChangeFc();
    //}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 
@@ -101,21 +110,27 @@ protected:
    void FillRefGirderOffsetTypeComboBox();
    void FillRefGirderComboBox();
    void FillGirderConnectivityComboBox();
+   void FillTopWidthComboBox();
    void UpdatePTControls();
 
    void UpdateGirderFactory();
-   CString GetDeckString(pgsTypes::SupportedDeckType deckType);
    void UpdateSuperstructureDescription();
    BOOL UpdateGirderSpacingLimits();
+   void UpdateGirderTopWidthSpacingLimits();
    void UpdateGirderConnectivity();
    void UpdateMinimumGirderCount();
 
    void EnableNumGirderLines(BOOL bEnable);
    void EnableGirderName(BOOL bEnable);
    void EnableGirderSpacing(BOOL bEnable,BOOL bClearControls);
+   void EnableTopWidth(BOOL bEnable);
+   void EnableLongitudinalJointMaterial();
    bool AreAnyBearingsMeasuredAlongGirder();
 
    void UIHint(const CString& strText,UINT mask);
+
+   void UpdateConcreteTypeLabel();
+   void UpdateEc();
 
    CComPtr<IBeamFactory> m_Factory;
    GirderIndexType m_MinGirderCount;
@@ -128,7 +143,12 @@ protected:
    CString m_GirderName;
    CString m_GirderFamilyName;
    pgsTypes::GirderOrientationType m_GirderOrientation;
-   Float64 m_GirderSpacing;
+   Float64 m_GirderSpacing; // can be joint spacing for adjacent girder types
+
+   pgsTypes::TopWidthType m_TopWidthType;
+   Float64 m_LeftTopWidth; // top flange width of girder, if the girder type needs this information, otherwise undefined
+   Float64 m_RightTopWidth;
+
    pgsTypes::SupportedBeamSpacing m_GirderSpacingType;
    pgsTypes::MeasurementType      m_GirderSpacingMeasurementType;
    pgsTypes::MeasurementLocation  m_GirderSpacingMeasurementLocation;
@@ -137,9 +157,15 @@ protected:
    Float64 m_RefGirderOffset;
    pgsTypes::OffsetMeasurementType m_RefGirderOffsetType;
 
+   Float64 m_MinGirderTopWidth;
+   Float64 m_MaxGirderTopWidth;
+
    Float64 m_MinGirderSpacing;
    Float64 m_MaxGirderSpacing;
    Float64 m_GirderSpacingTolerance;
+
+   pgsTypes::AdjacentTransverseConnectivity m_TransverseConnectivity;
+   CConcreteMaterial m_JointConcrete;
 
    std::vector<CDeckPoint> m_CacheDeckEdgePoints;
 
@@ -147,13 +173,15 @@ protected:
 
    GirderIndexType m_GirderNameIdx;
 
-   bool m_bSetActive; // true if call come from OnSetActive
+   bool m_bSetActive; // true if call comes from OnSetActive
 
    // cache values so that some controls can be blanked and then
    // restored
    CString m_strCacheNumGirders;
    CString m_strCacheGirderSpacing;
    CString m_strCacheJointSpacing;
+   CString m_strCacheLeftTopWidth;
+   CString m_strCacheRightTopWidth;
    CString m_strCacheRefGirderOffset;
    int m_CacheGirderNameIdx;
    int m_CacheGirderSpacingMeasureIdx;

@@ -281,3 +281,47 @@ void BuildAgeAdjustedGirderMaterialModel(IBroker* pBroker,const CPrecastSegmentD
       }
    }
 }
+
+void BuildAgeAdjustedJointMaterialModel(IBroker* pBroker, const CPrecastSegmentData* pSegment, ISuperstructureMemberSegment* segment, IAgeAdjustedMaterial** ppMaterial)
+{
+   const CSegmentKey& segmentKey(pSegment->GetSegmentKey());
+   const CSplicedGirderData* pGirder = pSegment->GetGirder();
+
+   // NOTE: TRICKY CODE FOR SPLICED GIRDER BEAMS
+   // We need to model the material with an age adjusted modulus. The age adjusted modulus
+   // is E/(1+XY) where XY is the age adjusted creep coefficient. In order to get the creep coefficient
+   // we need the Volume and Surface Area of the segment (for the V/S ratio). This method
+   // gets called during the creation of the bridge model. The bridge model is not
+   // ready to compute V or S. Calling IMaterial::GetSegmentAgeAdjustedEc() will cause
+   // recusion and validation errors. Using the age adjusted material object we can
+   // delay the calls to GetAgeAdjustedEc until well after the time the bridge model
+   // is validated.
+   GET_IFACE2(pBroker, IMaterials, pMaterials);
+
+   CComObject<CAgeAdjustedMaterial>* pJointMaterial;
+   CComObject<CAgeAdjustedMaterial>::CreateInstance(&pJointMaterial);
+   CComPtr<IAgeAdjustedMaterial> jointMaterial = pJointMaterial;
+   jointMaterial->InitLongitudinalJoint(segmentKey, pMaterials);
+
+   jointMaterial.CopyTo(ppMaterial);
+}
+
+void MakeRectangle(Float64 width, Float64 depth, Float64 xOffset, Float64 yOffset,IShape** ppShape)
+{
+   CComPtr<IRectangle> harp_rect;
+   HRESULT hr = harp_rect.CoCreateInstance(CLSID_Rect);
+   ATLASSERT(SUCCEEDED(hr));
+
+   harp_rect->put_Width(width);
+   harp_rect->put_Height(depth);
+
+   Float64 hook_offset = 0.0;
+
+   CComPtr<IPoint2d> hook;
+   hook.CoCreateInstance(CLSID_Point2d);
+   hook->Move(xOffset, yOffset - depth / 2.0);
+
+   harp_rect->putref_HookPoint(hook);
+
+   harp_rect->get_Shape(ppShape);
+}

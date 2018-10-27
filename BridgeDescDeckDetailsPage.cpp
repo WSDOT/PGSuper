@@ -85,6 +85,7 @@ CBridgeDescDeckDetailsPage::CBridgeDescDeckDetailsPage() : CPropertyPage(CBridge
 	//{{AFX_DATA_INIT(CBridgeDescDeckDetailsPage)
 		// NOTE: the ClassWizard will add member initialization here
 	//}}AFX_DATA_INIT
+   m_AgeAtContinuity = 0;
 }
 
 CBridgeDescDeckDetailsPage::~CBridgeDescDeckDetailsPage()
@@ -93,21 +94,33 @@ CBridgeDescDeckDetailsPage::~CBridgeDescDeckDetailsPage()
 
 void CBridgeDescDeckDetailsPage::DoDataExchange(CDataExchange* pDX)
 {
+   CBridgeDescDlg* pParent = (CBridgeDescDlg*)GetParent();
+   ASSERT( pParent->IsKindOf(RUNTIME_CLASS(CBridgeDescDlg)) );
+
+   pgsTypes::SupportedDeckType deckType = pParent->m_BridgeDesc.GetDeckDescription()->GetDeckType();
+
+   bool doAssExcessCamber = m_bCanAssExcessCamberInputBeEnabled && deckType != pgsTypes::sdtNone;
+	
+   CPropertyPage::DoDataExchange(pDX);
+
+   //{{AFX_DATA_MAP(CBridgeDescDeckDetailsPage)
+   // NOTE: the ClassWizard will add DDX and DDV calls here
+   DDX_Control(pDX, IDC_EC, m_ctrlEc);
+   DDX_Control(pDX, IDC_MOD_E, m_ctrlEcCheck);
+   DDX_Control(pDX, IDC_SLAB_FC, m_ctrlFc);
+   DDX_Control(pDX, IDC_HAUNCH_SHAPE2, m_cbHaunchShape);
+   //}}AFX_DATA_MAP
+   DDX_Control(pDX, IDC_OVERHANG_DEPTH, m_ctrlOverhangEdgeDepth);
+   DDX_Control(pDX, IDC_OVERHANG_TAPER, m_ctrlOverhangTaper);
+   DDX_Control(pDX, IDC_PANEL_DEPTH, m_ctrlPanelDepth);
+   DDX_Control(pDX, IDC_PANEL_SUPPORT, m_ctrlPanelSupportWidth);
+
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 	
-   CBridgeDescDlg* pParent = (CBridgeDescDlg*)GetParent();
-   ASSERT( pParent->IsKindOf(RUNTIME_CLASS(CBridgeDescDlg)) );
-
    CEAFDocument* pDoc = EAFGetDocument();
    
-   pgsTypes::SupportedDeckType deckType = pParent->m_BridgeDesc.GetDeckDescription()->GetDeckType();
-
-   bool doAssExcessCamber = m_bCanAssExcessCamberInputBeEnabled && deckType != pgsTypes::sdtNone;
-
-   CPropertyPage::DoDataExchange(pDX);
-
    // Slab offset data
    if (!pDX->m_bSaveAndValidate)
    {
@@ -122,14 +135,6 @@ void CBridgeDescDeckDetailsPage::DoDataExchange(CDataExchange* pDX)
       m_strAssExcessCamberCache.Format(_T("%s"),FormatDimension(m_AssExcessCamber,pDisplayUnits->GetComponentDimUnit(), false));
    }
 
-	//{{AFX_DATA_MAP(CBridgeDescDeckDetailsPage)
-		// NOTE: the ClassWizard will add DDX and DDV calls here
-	DDX_Control(pDX, IDC_EC,      m_ctrlEc);
-	DDX_Control(pDX, IDC_MOD_E,   m_ctrlEcCheck);
-	DDX_Control(pDX, IDC_SLAB_FC, m_ctrlFc);
-	//}}AFX_DATA_MAP
-
-   DDX_Control(pDX,IDC_HAUNCH_SHAPE2,m_cbHaunchShape);
    DDX_CBItemData(pDX, IDC_HAUNCH_SHAPE2,  pParent->m_BridgeDesc.GetDeckDescription()->HaunchShape);
 
    // make sure unit tags are always displayed (even if disabled)
@@ -295,7 +300,8 @@ void CBridgeDescDeckDetailsPage::DoDataExchange(CDataExchange* pDX)
       {
          // Slab offset applies to the entire bridge... have users adjust Slab offset if it doesn't
          // fit with the slab depth
-         DDV_UnitValueLimitOrMore( pDX, IDC_ADIM,m_SlabOffset, pParent->m_BridgeDesc.GetDeckDescription()->GrossDepth, pDisplayUnits->GetComponentDimUnit() );
+
+         DDV_UnitValueLimitOrMore(pDX, IDC_ADIM, m_SlabOffset, pParent->m_BridgeDesc.GetDeckDescription()->GrossDepth + pParent->m_BridgeDesc.GetFillet(), pDisplayUnits->GetComponentDimUnit());
          pParent->m_BridgeDesc.SetSlabOffset(m_SlabOffset);
          pParent->m_BridgeDesc.SetSlabOffsetType(pgsTypes::sotBridge);
 
@@ -303,17 +309,17 @@ void CBridgeDescDeckDetailsPage::DoDataExchange(CDataExchange* pDX)
          bool bCheckDepth = false;
          CString strMsg;
 
-         if ( pParent->m_BridgeDesc.GetDeckDescription()->GetDeckType() == pgsTypes::sdtCompositeCIP ||
-              pParent->m_BridgeDesc.GetDeckDescription()->GetDeckType() == pgsTypes::sdtCompositeOverlay ) // CIP deck
+         if ( pParent->m_BridgeDesc.GetDeckDescription()->GetDeckType() == pgsTypes::sdtCompositeCIP || // CIP deck or overlay
+              IsOverlayDeck(pParent->m_BridgeDesc.GetDeckDescription()->GetDeckType())) 
          {
-            grossDepth = pParent->m_BridgeDesc.GetDeckDescription()->GrossDepth;
-            strMsg = _T("Slab Offset must be larger than the gross slab depth");
+            grossDepth = pParent->m_BridgeDesc.GetDeckDescription()->GrossDepth + pParent->m_BridgeDesc.GetFillet();
+            strMsg = _T("Slab Offset must be larger than the gross slab depth + fillet");
             bCheckDepth = true;
          }
          else if ( pParent->m_BridgeDesc.GetDeckDescription()->GetDeckType() == pgsTypes::sdtCompositeSIP ) // SIP
          {
-            grossDepth = pParent->m_BridgeDesc.GetDeckDescription()->GrossDepth + pParent->m_BridgeDesc.GetDeckDescription()->PanelDepth;
-            strMsg = _T("Slab Offset must be larger than the cast depth + panel depth");
+            grossDepth = pParent->m_BridgeDesc.GetDeckDescription()->GrossDepth + pParent->m_BridgeDesc.GetFillet() + pParent->m_BridgeDesc.GetDeckDescription()->PanelDepth;
+            strMsg = _T("Slab Offset must be larger than the cast depth + fillet + panel depth");
             bCheckDepth = true;
          }
          else
@@ -336,7 +342,7 @@ void CBridgeDescDeckDetailsPage::DoDataExchange(CDataExchange* pDX)
          Float64 minSlabOffset = pParent->m_BridgeDesc.GetMinSlabOffset();
 
          if ( pParent->m_BridgeDesc.GetDeckDescription()->GetDeckType() == pgsTypes::sdtCompositeCIP || 
-              pParent->m_BridgeDesc.GetDeckDescription()->GetDeckType() == pgsTypes::sdtCompositeOverlay )
+              IsOverlayDeck(pParent->m_BridgeDesc.GetDeckDescription()->GetDeckType()))
          {
             pDX->PrepareEditCtrl(IDC_GROSS_DEPTH);
             Float64 maxGrossDepth = minSlabOffset;
@@ -480,10 +486,13 @@ BOOL CBridgeDescDeckDetailsPage::OnInitDialog()
 
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
-   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
-   const CTimelineManager* pTimelineMgr = pIBridgeDesc->GetTimelineManager();
-   EventIndexType eventIdx = pTimelineMgr->GetCastDeckEventIndex();
-   m_AgeAtContinuity = pTimelineMgr->GetEventByIndex(eventIdx)->GetCastDeckActivity().GetConcreteAgeAtContinuity();
+   if ( pParent->m_BridgeDesc.GetDeckDescription()->GetDeckType() != pgsTypes::sdtNone)
+   {
+      const CTimelineManager* pTimelineMgr = pParent->m_BridgeDesc.GetTimelineManager();
+      EventIndexType eventIdx = pTimelineMgr->GetCastDeckEventIndex();
+      m_AgeAtContinuity = pTimelineMgr->GetEventByIndex(eventIdx)->GetCastDeckActivity().GetConcreteAgeAtContinuity();
+   }
+
 
 
    // set density/weight labels
@@ -561,6 +570,10 @@ BOOL CBridgeDescDeckDetailsPage::OnInitDialog()
 
    CPropertyPage::OnInitDialog();
 
+   m_ctrlOverhangEdgeDepth.ShowDefaultWhenDisabled(FALSE);
+   m_ctrlPanelDepth.ShowDefaultWhenDisabled(FALSE);
+   m_ctrlPanelSupportWidth.ShowDefaultWhenDisabled(FALSE);
+
    if ( m_strUserEc == _T("") )
    {
       m_ctrlEc.GetWindowText(m_strUserEc);
@@ -597,48 +610,33 @@ BOOL CBridgeDescDeckDetailsPage::OnSetActive()
 
    pgsTypes::SupportedDeckType deckType = pParent->m_BridgeDesc.GetDeckDescription()->GetDeckType();
 
-   CString strDeckType;
-   switch ( deckType )
-   {
-      case pgsTypes::sdtCompositeCIP:
-         strDeckType = _T("Composite Cast-In-Place Deck");
-         break;
-
-      case pgsTypes::sdtCompositeSIP:
-         strDeckType = _T("Composite Stay-In-Place Deck Panels");
-         break;
-
-      case pgsTypes::sdtCompositeOverlay:
-         strDeckType = _T("Composite Cast-In-Place Overlay");
-         break;
-
-      case pgsTypes::sdtNone:
-         strDeckType = _T("No deck");
-   }
+   CString strDeckType = GetDeckTypeName(deckType);
    GetDlgItem(IDC_DECK_TYPE)->SetWindowText(strDeckType);
 
 
    CWnd* pWnd = GetDlgItem(IDC_GROSS_DEPTH_LABEL);
-   pWnd->SetWindowText(deckType == pgsTypes::sdtCompositeCIP || deckType == pgsTypes::sdtCompositeOverlay ? _T("Gross Depth") : _T("Cast Depth"));
+   pWnd->SetWindowText(deckType == pgsTypes::sdtCompositeCIP || IsOverlayDeck(deckType) ? _T("Gross Depth") : _T("Cast Depth"));
 
    GetDlgItem(IDC_GROSS_DEPTH_LABEL)->EnableWindow( deckType != pgsTypes::sdtNone);
    GetDlgItem(IDC_GROSS_DEPTH)->EnableWindow(       deckType != pgsTypes::sdtNone);
    GetDlgItem(IDC_GROSS_DEPTH_UNIT)->EnableWindow(  deckType != pgsTypes::sdtNone);
 
    GetDlgItem(IDC_OVERHANG_DEPTH_LABEL)->EnableWindow( deckType == pgsTypes::sdtCompositeCIP || deckType == pgsTypes::sdtCompositeSIP);
-   GetDlgItem(IDC_OVERHANG_DEPTH)->EnableWindow(       deckType == pgsTypes::sdtCompositeCIP || deckType == pgsTypes::sdtCompositeSIP);
+   m_ctrlOverhangEdgeDepth.EnableWindow(       deckType == pgsTypes::sdtCompositeCIP || deckType == pgsTypes::sdtCompositeSIP);
    GetDlgItem(IDC_OVERHANG_DEPTH_UNIT)->EnableWindow(  deckType == pgsTypes::sdtCompositeCIP || deckType == pgsTypes::sdtCompositeSIP);
-   GetDlgItem(IDC_OVERHANG_TAPER)->EnableWindow(       deckType == pgsTypes::sdtCompositeCIP || deckType == pgsTypes::sdtCompositeSIP);
+   m_ctrlOverhangTaper.EnableWindow(       deckType == pgsTypes::sdtCompositeCIP || deckType == pgsTypes::sdtCompositeSIP);
 
 
    UpdateDeckRelatedControls();
    UpdateSlabOffsetControls();
    UpdateAssExcessCamberControls();
 
-   GetDlgItem(IDC_SLAB_FC_LABEL)->EnableWindow( deckType != pgsTypes::sdtNone);
-   GetDlgItem(IDC_SLAB_FC)->EnableWindow(       deckType != pgsTypes::sdtNone);
-   GetDlgItem(IDC_SLAB_FC_UNIT)->EnableWindow(  deckType != pgsTypes::sdtNone);
-   GetDlgItem(IDC_MORE)->EnableWindow(  deckType != pgsTypes::sdtNone);
+   BOOL bEnableSlabConcrete = (deckType == pgsTypes::sdtNone /*|| deckType == pgsTypes::sdtNonstructuralOverlay*/ ? FALSE : TRUE);
+   // need deck concrete properties for Nonstructural Overlay... need the density of material for dead load
+   GetDlgItem(IDC_SLAB_FC_LABEL)->EnableWindow(bEnableSlabConcrete);
+   GetDlgItem(IDC_SLAB_FC)->EnableWindow(bEnableSlabConcrete);
+   GetDlgItem(IDC_SLAB_FC_UNIT)->EnableWindow(bEnableSlabConcrete);
+   GetDlgItem(IDC_MORE)->EnableWindow(bEnableSlabConcrete);
    
    GetDlgItem(IDC_ADD)->EnableWindow( deckType == pgsTypes::sdtCompositeCIP || deckType == pgsTypes::sdtCompositeSIP );
    GetDlgItem(IDC_REMOVE)->EnableWindow( deckType == pgsTypes::sdtCompositeCIP || deckType == pgsTypes::sdtCompositeSIP );
@@ -651,13 +649,17 @@ BOOL CBridgeDescDeckDetailsPage::OnSetActive()
    GetDlgItem(IDC_SIP_LABEL)->EnableWindow( deckType == pgsTypes::sdtCompositeSIP);
 
    GetDlgItem(IDC_PANEL_DEPTH_LABEL)->EnableWindow( deckType == pgsTypes::sdtCompositeSIP);
-   GetDlgItem(IDC_PANEL_DEPTH)->EnableWindow(       deckType == pgsTypes::sdtCompositeSIP);
+   m_ctrlPanelDepth.EnableWindow(       deckType == pgsTypes::sdtCompositeSIP);
    GetDlgItem(IDC_PANEL_DEPTH_UNIT)->EnableWindow(  deckType == pgsTypes::sdtCompositeSIP);
 
    GetDlgItem(IDC_PANEL_SUPPORT_LABEL)->EnableWindow( deckType == pgsTypes::sdtCompositeSIP);
-   GetDlgItem(IDC_PANEL_SUPPORT)->EnableWindow(       deckType == pgsTypes::sdtCompositeSIP);
+   m_ctrlPanelSupportWidth.EnableWindow(       deckType == pgsTypes::sdtCompositeSIP);
    GetDlgItem(IDC_PANEL_SUPPORT_UNIT)->EnableWindow(  deckType == pgsTypes::sdtCompositeSIP);
-	
+
+   BOOL bEnableConditionFactor = (deckType == pgsTypes::sdtNone || deckType == pgsTypes::sdtNonstructuralOverlay ? FALSE : TRUE); // if no deck, or overlay is not structural, there isn't a condition state
+   GetDlgItem(IDC_CONDITION_FACTOR_TYPE)->EnableWindow(bEnableConditionFactor);
+   GetDlgItem(IDC_CONDITION_FACTOR)->EnableWindow(bEnableConditionFactor);
+
    OnUserEc();
    OnWearingSurfaceTypeChanged();
 
@@ -666,6 +668,7 @@ BOOL CBridgeDescDeckDetailsPage::OnSetActive()
    {
       GetDlgItem(IDC_GROSS_DEPTH)->SetWindowText(_T(""));
       GetDlgItem(IDC_OVERHANG_DEPTH)->SetWindowText(_T(""));
+      GetDlgItem(IDC_FILLET)->SetWindowText(_T(""));
       GetDlgItem(IDC_ADIM)->SetWindowText(_T(""));
       GetDlgItem(IDC_PANEL_DEPTH)->SetWindowText(_T(""));
       GetDlgItem(IDC_PANEL_SUPPORT)->SetWindowText(_T(""));
@@ -763,6 +766,7 @@ void CBridgeDescDeckDetailsPage::OnWearingSurfaceTypeChanged()
    BOOL bOverlayDepthAndDensity;
 
    int iOption = GetCheckedRadioButton(IDC_OLAY_WEIGHT_LABEL,IDC_OLAY_DEPTH_LABEL);
+   ATLASSERT(iOption != 0); // 0 means nothing is selected
 
    CBridgeDescDlg* pParent = (CBridgeDescDlg*)GetParent();
    ASSERT( pParent->IsKindOf(RUNTIME_CLASS(CBridgeDescDlg)) );
@@ -1159,6 +1163,7 @@ void CBridgeDescDeckDetailsPage::UpdateSlabOffsetControls()
    BOOL bEnable = (deckType != pgsTypes::sdtNone) ? TRUE : FALSE; // if enabled, disable if deck type is none
 
    GetDlgItem(IDC_SAMESLABOFFSET)->EnableWindow( bEnable );
+   GetDlgItem(IDC_ADIM_LABEL)->ShowWindow(ShowInput);
    GetDlgItem(IDC_ADIM)->ShowWindow(ShowInput);
    GetDlgItem(IDC_ADIM_UNIT)->ShowWindow(ShowInput);
    GetDlgItem(IDC_ADIM_LABEL)->EnableWindow(bEnable);
@@ -1177,17 +1182,15 @@ void CBridgeDescDeckDetailsPage::UpdateDeckRelatedControls()
    // enable/disable slab offset controls
    pgsTypes::SupportedDeckType deckType = pParent->m_BridgeDesc.GetDeckDescription()->GetDeckType();
 
-   BOOL bEnable = (deckType != pgsTypes::sdtNone) ? TRUE : FALSE; 
-
+   BOOL bEnable = deckType == pgsTypes::sdtNone ? FALSE : TRUE; // no fillet for "no deck" or overlay
    // haunch shape not applicable to adjacent beams
    BOOL enableShape = (bEnable && !::IsAdjacentSpacing(pParent->m_BridgeDesc.GetGirderSpacingType())) ? TRUE:FALSE;
-
+   
    GetDlgItem(IDC_FILLET)->EnableWindow(bEnable);
    GetDlgItem(IDC_FILLET_LABEL)->EnableWindow(bEnable);
    GetDlgItem(IDC_FILLET_UNIT)->EnableWindow(bEnable);
 
    GetDlgItem(IDC_HAUNCH_SHAPE2)->EnableWindow(enableShape);
-   GetDlgItem(IDC_HAUNCH_SHAPE_LABEL)->EnableWindow(enableShape);
 }
 
 void CBridgeDescDeckDetailsPage::UpdateAssExcessCamberControls()

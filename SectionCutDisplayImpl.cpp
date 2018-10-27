@@ -27,6 +27,7 @@
 #include <PGSuperColors.h>
 #include <IFace\Bridge.h>
 #include <IFace\Intervals.h>
+#include <IFace\AnalysisResults.h>
 #include "PGSuperDocBase.h"
 
 #include <PgsExt\BridgeDescription2.h>
@@ -177,8 +178,7 @@ STDMETHODIMP_(void) CSectionCutDisplayImpl::XDrawPointStrategy::DrawDragImage(iP
 
    Float64 wx, wy;
    map->LPtoWP(dragPoint.x, dragPoint.y, &wx, &wy);
-   pThis->m_CachePoint->put_X(wx);
-   pThis->m_CachePoint->put_Y(wy);
+   pThis->m_CachePoint->Move(wx, wy);
 
    pThis->Draw(pDO,pDC,SELECTED_OBJECT_LINE_COLOR,pThis->m_CachePoint);
 }
@@ -226,13 +226,22 @@ void CSectionCutDisplayImpl::GetBoundingBox(iPointDisplayObject* pDO, Float64 Xg
    Float64 x2,y2;
    pMap->TPtoWP(SSIZE,SSIZE,&x2,&y2);
 
-   Float64 width = (x2-xo)/2.0;  // width is half of height
-   Float64 height = y2-yo;
+   Float64 dx = (x2 - xo) / 2.0;  // width is half of height
+   Float64 dy = y2-yo;
 
-   *top    = height;
-   *bottom = -(GetGirderHeight(Xgl) + height);
+   pgsPointOfInterest poi = GetCutPOI(Xgl);
+
+   GET_IFACE(IGirder, pGirder);
+   Float64 Hg = pGirder->GetHeight(poi);
+   Float64 top_flange_thickening = pGirder->GetTopFlangeThickening(poi);
+   
+   GET_IFACE(ICamber, pCamber);
+   Float64 precamber = pCamber->GetPrecamber(poi,pgsTypes::pddErected);
+
+   *top = dy + top_flange_thickening + precamber;
+   *bottom = *top - Hg - 2*dy;
    *left   = Xgl + m_StartOffset; // add offset to get into correct coord's
-   *right  = *left + width;
+   *right  = *left + dx;
 }
 
 void CSectionCutDisplayImpl::Draw(iPointDisplayObject* pDO,CDC* pDC,COLORREF color,IPoint2d* userLoc)
@@ -306,15 +315,6 @@ pgsPointOfInterest CSectionCutDisplayImpl::GetCutPOI(Float64 Xgl)
    {
       return pPoi->ConvertGirderCoordinateToPoi(m_GirderKey,Xgl);
    }
-}
-
-Float64 CSectionCutDisplayImpl::GetGirderHeight(Float64 Xgl)
-{
-   pgsPointOfInterest poi = GetCutPOI(Xgl);
-
-   GET_IFACE(IGirder,pGirder);
-   Float64 height = pGirder->GetHeight(poi);
-   return height;
 }
 
 STDMETHODIMP_(void) CSectionCutDisplayImpl::XDisplayObjectEvents::OnChanged(iDisplayObject* pDO)

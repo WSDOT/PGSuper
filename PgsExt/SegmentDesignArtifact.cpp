@@ -428,9 +428,14 @@ LPCTSTR pgsSegmentDesignArtifact::GetHaulTruck() const
    return m_strHaulTruck.c_str();
 }
 
+void pgsSegmentDesignArtifact::SetTemporaryStrandUsage(pgsTypes::TTSUsage usage)
+{
+   m_TTSUsage = usage;
+}
+
 pgsTypes::TTSUsage pgsSegmentDesignArtifact::GetTemporaryStrandUsage() const
 {
-   return pgsTypes::ttsPretensioned;
+   return m_TTSUsage;
 }
 
 GDRCONFIG pgsSegmentDesignArtifact::GetSegmentConfiguration() const
@@ -763,6 +768,7 @@ void pgsSegmentDesignArtifact::MakeCopy(const pgsSegmentDesignArtifact& rOther)
 
    m_DesignOptions  = rOther.m_DesignOptions;
 
+   m_TTSUsage = rOther.m_TTSUsage;
    m_Ns                  = rOther.m_Ns;
    m_Nh                  = rOther.m_Nh;
    m_RaisedAdjustableStrandFill = rOther.m_RaisedAdjustableStrandFill;
@@ -830,6 +836,8 @@ void pgsSegmentDesignArtifact::Init()
    m_DesignNotes.clear();
 
    m_DesignOptions = arDesignOptions();
+
+   m_TTSUsage = pgsTypes::ttsPretensioned;
 
    m_Ns                  = 0;
    m_Nh                  = 0;

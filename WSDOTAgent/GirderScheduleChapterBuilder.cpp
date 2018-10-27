@@ -131,8 +131,7 @@ rptChapter* CGirderScheduleChapterBuilder::Build(CReportSpecification* pRptSpec,
       return pChapter;
    }
 
-   const GirderLibraryEntry::Dimensions& dimensions = pGdrLibEntry->GetDimensions();
-   if ( !factory->IsSymmetric(dimensions) )
+   if ( !factory->IsSymmetric(segmentKey) )
    {
       rptParagraph* pPara = new rptParagraph;
       *pPara << _T("WSDOT girder schedules can only be created for constant depth sections.") << rptNewLine;
@@ -204,9 +203,10 @@ rptChapter* CGirderScheduleChapterBuilder::Build(CReportSpecification* pRptSpec,
    Float64 max_days =  ::ConvertFromSysUnits(pSpecEntry->GetCreepDuration2Max(), unitMeasure::Day);
 
    GET_IFACE2(pBroker, IPointOfInterest, pPointOfInterest );
-   std::vector<pgsPointOfInterest> pmid = pPointOfInterest->GetPointsOfInterest(segmentKey,POI_ERECTED_SEGMENT | POI_5L, POIFIND_AND);
+   PoiList pmid;
+   pPointOfInterest->GetPointsOfInterest(segmentKey, POI_5L | POI_ERECTED_SEGMENT, &pmid);
    ATLASSERT(pmid.size()==1);
-   pgsPointOfInterest poiMidSpan(pmid.front());
+   const pgsPointOfInterest& poiMidSpan(pmid.front());
 
    GET_IFACE2(pBroker,IBridge,pBridge);
    GET_IFACE2(pBroker,IGirder,pIGirder);
@@ -269,7 +269,6 @@ rptChapter* CGirderScheduleChapterBuilder::Build(CReportSpecification* pRptSpec,
 
    (*pTable)(++row,0) << Sub2(symbol(theta),_T("2"));
    (*pTable)(row  ,1) << angle.SetValue(t2);
-
 
    if (familyCLSID != CLSID_SlabBeamFamily)
    {

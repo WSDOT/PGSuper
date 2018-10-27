@@ -881,7 +881,7 @@ lrfdLiveLoadDistributionFactorBase* CBoxBeamDistFactorEngineer::GetLLDFParameter
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CDeckDescription2* pDeck = pBridgeDesc->GetDeckDescription();
 
-   ATLASSERT(pDeck->GetDeckType()==pgsTypes::sdtCompositeOverlay ||pDeck->GetDeckType()==pgsTypes::sdtNone);
+   ATLASSERT(pDeck->GetDeckType()==pgsTypes::sdtCompositeOverlay || pDeck->GetDeckType()==pgsTypes::sdtNone);
    ATLASSERT(pBridgeDesc->GetDistributionFactorMethod() != pgsTypes::DirectlyInput);
 
    // Determine span/pier index... This is the index of a pier and the next span.
@@ -973,11 +973,11 @@ lrfdLiveLoadDistributionFactorBase* CBoxBeamDistFactorEngineer::GetLLDFParameter
       Float64 eff_wid = pSectProp->GetEffectiveFlangeWidth(poi);
       if ( fcgdr < 0 )
       {
-         plldf->I  = pSectProp->GetIx(pgsTypes::sptGross,lastIntervalIdx,poi);
+         plldf->I  = pSectProp->GetIxx(pgsTypes::sptGross,lastIntervalIdx,poi);
       }
       else
       {
-         plldf->I  = pSectProp->GetIx(pgsTypes::sptGross,lastIntervalIdx,poi,fcgdr);
+         plldf->I  = pSectProp->GetIxx(pgsTypes::sptGross,lastIntervalIdx,poi,fcgdr);
       }
 
       Float64 t_top = top_flg_thk;
@@ -991,10 +991,10 @@ lrfdLiveLoadDistributionFactorBase* CBoxBeamDistFactorEngineer::GetLLDFParameter
       Float64 s_top  = inner_width + t_ext;
       Float64 s_side = inner_height + (t_top + t_bot)/2;
 
-      Jvoid.Elements.push_back(BOXBEAM_J_VOID::Element(s_top,t_top)); // top
-      Jvoid.Elements.push_back(BOXBEAM_J_VOID::Element(s_top,t_bot)); // bottom
-      Jvoid.Elements.push_back(BOXBEAM_J_VOID::Element(s_side,t_ext)); // left
-      Jvoid.Elements.push_back(BOXBEAM_J_VOID::Element(s_side,t_ext)); // right
+      Jvoid.Elements.emplace_back(s_top,t_top); // top
+      Jvoid.Elements.emplace_back(s_top,t_bot); // bottom
+      Jvoid.Elements.emplace_back(s_side,t_ext); // left
+      Jvoid.Elements.emplace_back(s_side,t_ext); // right
 
       Float64 Sum_s_over_t = 0;
       std::vector<BOXBEAM_J_VOID::Element>::iterator iter;
@@ -1018,7 +1018,7 @@ lrfdLiveLoadDistributionFactorBase* CBoxBeamDistFactorEngineer::GetLLDFParameter
    else
    {
       // No deck: base I and J on bare beam properties
-      plldf->I  = pSectProp->GetIx(pgsTypes::sptGross,releaseIntervalIdx,poi);
+      plldf->I  = pSectProp->GetIxx(pgsTypes::sptGross,releaseIntervalIdx,poi);
 
       Float64 t_top = top_flg_thk;
       Float64 t_bot = bot_flg_thk;
@@ -1027,10 +1027,10 @@ lrfdLiveLoadDistributionFactorBase* CBoxBeamDistFactorEngineer::GetLLDFParameter
       Float64 s_top  = inner_width + t_ext;
       Float64 s_side = inner_height + (t_top + t_bot)/2;
 
-      Jvoid.Elements.push_back(BOXBEAM_J_VOID::Element(s_top,t_top)); // top
-      Jvoid.Elements.push_back(BOXBEAM_J_VOID::Element(s_top,t_bot)); // bottom
-      Jvoid.Elements.push_back(BOXBEAM_J_VOID::Element(s_side,t_ext)); // left
-      Jvoid.Elements.push_back(BOXBEAM_J_VOID::Element(s_side,t_ext)); // right
+      Jvoid.Elements.emplace_back(s_top,t_top); // top
+      Jvoid.Elements.emplace_back(s_top,t_bot); // bottom
+      Jvoid.Elements.emplace_back(s_side,t_ext); // left
+      Jvoid.Elements.emplace_back(s_side,t_ext); // right
 
       Float64 Sum_s_over_t = 0;
       std::vector<BOXBEAM_J_VOID::Element>::iterator iter;
@@ -1194,18 +1194,27 @@ std::_tstring CBoxBeamDistFactorEngineer::GetComputationDescription(const CGirde
    {
       descr = _T("AASHTO LRFD Method per Article 4.6.2.2.");
 
-      if ( decktype == pgsTypes::sdtCompositeOverlay)
+      if (decktype == pgsTypes::sdtCompositeOverlay)
+      {
          descr += std::_tstring(_T(" type (f) cross section"));
+      }
       else if (decktype == pgsTypes::sdtNone)
+      {
          descr += std::_tstring(_T(" type (g) cross section"));
+      }
       else
+      {
          ATLASSERT(false);
+      }
 
       if (connect == pgsTypes::atcConnectedAsUnit)
+      {
          descr += std::_tstring(_T(" connected transversely sufficiently to act as a unit."));
+      }
       else
+      {
          descr += std::_tstring(_T(" connected transversely only enough to prevent relative vertical displacement along interface."));
-
+      }
    }
 
    return descr;

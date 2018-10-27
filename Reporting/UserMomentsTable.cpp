@@ -108,7 +108,8 @@ rptRcTable* CUserMomentsTable::Build(IBroker* pBroker,const CGirderKey& girderKe
       GirderIndexType nGirders = pBridge->GetGirderCount(grpIdx);
       GirderIndexType gdrIdx = (nGirders <= girderKey.girderIndex ? nGirders-1 : girderKey.girderIndex);
 
-      std::vector<pgsPointOfInterest> vPoi( pIPoi->GetPointsOfInterest(CSegmentKey(grpIdx,gdrIdx,ALL_SEGMENTS),POI_ERECTED_SEGMENT) );
+      PoiList vPoi;
+      pIPoi->GetPointsOfInterest(CSegmentKey(grpIdx, gdrIdx, ALL_SEGMENTS), POI_ERECTED_SEGMENT, &vPoi);
 
       std::vector<Float64> minDC, maxDC;
       std::vector<Float64> minDW, maxDW;
@@ -126,12 +127,9 @@ rptRcTable* CUserMomentsTable::Build(IBroker* pBroker,const CGirderKey& girderKe
 
       // Fill up the table
       IndexType index = 0;
-      std::vector<pgsPointOfInterest>::const_iterator i(vPoi.begin());
-      std::vector<pgsPointOfInterest>::const_iterator end(vPoi.end());
-      for ( ; i != end; i++, index++ )
+      for (const pgsPointOfInterest& poi : vPoi)
       {
          ColumnIndexType col = 0;
-         const pgsPointOfInterest& poi = *i;
 
          (*p_table)(row,col++) << location.SetValue( POI_ERECTED_SEGMENT, poi );
 

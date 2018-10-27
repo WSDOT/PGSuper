@@ -341,16 +341,17 @@ void CTxDOTOptionalDesignGirderViewPage::UpdateBar()
       {
          // cut was taken at a harping point, must enlist poi interface
          GET_IFACE2(pBroker, IPointOfInterest, pPoi);
-         std::vector<pgsPointOfInterest> poi;
-         std::vector<pgsPointOfInterest>::iterator iter;
-         poi = pPoi->GetPointsOfInterest(segmentKey, POI_HARPINGPOINT);
-         IndexType nPoi = poi.size();
+         PoiList vPoi;
+         pPoi->GetPointsOfInterest(segmentKey, POI_HARPINGPOINT, &vPoi);
+         IndexType nPoi = vPoi.size();
          ATLASSERT( 0 <= nPoi && nPoi <= 2 );
-         iter = poi.begin();
+         auto iter = vPoi.begin();
          pgsPointOfInterest left_hp_poi = *iter++;
          pgsPointOfInterest right_hp_poi = left_hp_poi;
-         if ( nPoi == 2 )
+         if (nPoi == 2)
+         {
             right_hp_poi = *iter++;
+         }
 
          if (m_CutLocation == LeftHarp)
          {
@@ -361,7 +362,9 @@ void CTxDOTOptionalDesignGirderViewPage::UpdateBar()
             m_CurrentCutLocation = right_hp_poi.GetDistFromStart();
          }
          else
+         {
             ASSERT(0); // unknown cut location type
+         }
       }
 
       GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);

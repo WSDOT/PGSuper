@@ -26,7 +26,7 @@
 #include <PgsExt\TimelineEvent.h>
 #include <PgsExt\Keys.h>
 
-#define CREATE_TIMELINE_EVENT INVALID_ID-1
+#define CREATE_TIMELINE_EVENT INVALID_ID-1  // special event ID used in the UI to indicate that we want to create a timeline event on the fly
 
 #define TLM_OVERLAPS_PREVIOUS_EVENT                      0x00000001 // the new event occurs before the previous event ends
 #define TLM_OVERRUNS_NEXT_EVENT                          0x00000002 // the new event ends after the next event begins
@@ -44,13 +44,14 @@
 #define TLM_REMOVE_TEMPORARY_SUPPORTS_ACTIVITY_REQUIRED  0x00001000 // an activity for temporary supports is required
 #define TLM_CAST_CLOSURE_JOINT_ACTIVITY_REQUIRED         0x00002000 // an activity for casting closure joints is required
 #define TLM_STRESS_TENDONS_ACTIVITY_REQUIRED             0x00004000 // an activity for stressing tendons is required
+#define TLM_CAST_LONGITUDINAL_JOINT_ACTIVITY_REQUIRED    0x00008000 // an activity for casting the longitudinal joints is required
 
-#define TLM_TEMPORARY_SUPPORT_REMOVAL_ERROR              0x00008000 // temporary support was removed before it was erected or before the segments were lifted off by PT
-#define TLM_SEGMENT_ERECTION_ERROR                       0x00010000 // segment erected before its supports are erected
-#define TLM_CLOSURE_JOINT_ERROR                          0x00020000 // closure joint is cast before the segment is erected or PT is applied before it is cased and cured
-#define TLM_RAILING_SYSTEM_ERROR                         0x00040000 // railing system is installed before deck is cast
-#define TLM_STRESS_TENDON_ERROR                          0x00080000 // tendon stressed before closure joints are cast or segments are erected
-#define TLM_LOAD_RATING_ERROR                            0x00100000 // load rating occurs before bridge is open to traffic
+#define TLM_TEMPORARY_SUPPORT_REMOVAL_ERROR              0x00010000 // temporary support was removed before it was erected or before the segments were lifted off by PT
+#define TLM_SEGMENT_ERECTION_ERROR                       0x00020000 // segment erected before its supports are erected
+#define TLM_CLOSURE_JOINT_ERROR                          0x00040000 // closure joint is cast before the segment is erected or PT is applied before it is cased and cured
+#define TLM_RAILING_SYSTEM_ERROR                         0x00080000 // railing system is installed before deck is cast
+#define TLM_STRESS_TENDON_ERROR                          0x00100000 // tendon stressed before closure joints are cast or segments are erected
+#define TLM_LOAD_RATING_ERROR                            0x00200000 // load rating occurs before bridge is open to traffic
 
 #define TLM_SUCCESS                                      0xffffffff // event was successfully added
 
@@ -145,6 +146,7 @@ public:
    bool AreAllClosureJointsCast() const;
    bool AreAllTendonsStressed() const;
 
+   bool IsLongitudinalJointCast() const;
    bool IsDeckCast() const;
    bool IsOverlayInstalled() const;
    bool IsIntermediateDiaphragmInstalled() const;
@@ -217,10 +219,15 @@ public:
    void SetStressTendonEventByIndex(GirderIDType girderID,DuctIndexType ductIdx,EventIndexType eventIdx);
    void SetStressTendonEventByID(GirderIDType girderID,DuctIndexType ductIdx,EventIDType ID);
 
+   EventIndexType GetCastLongitudinalJointEventIndex() const;
+   EventIDType GetCastLongitudinalJointEventID() const;
+   int SetCastLongitudinalJointEventByIndex(EventIndexType eventIdx, bool bAdjustTimeline);
+   int SetCastLongitudinalJointEventByID(EventIDType eventID, bool bAdjustTimeline);
+
    EventIndexType GetCastDeckEventIndex() const;
    EventIDType GetCastDeckEventID() const;
-   int SetCastDeckEventByIndex(EventIndexType eventIdx,bool bAdjustTimeline);
-   int SetCastDeckEventByID(EventIDType ID,bool bAdjustTimeline);
+   int SetCastDeckEventByIndex(EventIndexType eventIdx, bool bAdjustTimeline);
+   int SetCastDeckEventByID(EventIDType eventID, bool bAdjustTimeline);
 
    EventIndexType GetIntermediateDiaphragmsLoadEventIndex() const;
    EventIDType GetIntermediateDiaphragmsLoadEventID() const;
@@ -230,23 +237,23 @@ public:
    EventIndexType GetRailingSystemLoadEventIndex() const;
    EventIDType GetRailingSystemLoadEventID() const;
    void SetRailingSystemLoadEventByIndex(EventIndexType eventIdx);
-   void SetRailingSystemLoadEventByID(EventIDType ID);
+   void SetRailingSystemLoadEventByID(EventIDType eventID);
 
    EventIndexType GetOverlayLoadEventIndex() const;
    EventIDType GetOverlayLoadEventID() const;
    void SetOverlayLoadEventByIndex(EventIndexType eventIdx);
-   void SetOverlayLoadEventByID(EventIDType ID);
+   void SetOverlayLoadEventByID(EventIDType eventID);
    void RemoveOverlayLoadEvent();
 
    EventIndexType GetLiveLoadEventIndex() const;
    EventIDType GetLiveLoadEventID() const;
    void SetLiveLoadEventByIndex(EventIndexType eventIdx);
-   void SetLiveLoadEventByID(EventIDType ID);
+   void SetLiveLoadEventByID(EventIDType eventID);
 
    EventIndexType GetLoadRatingEventIndex() const;
    EventIDType GetLoadRatingEventID() const;
    void SetLoadRatingEventByIndex(EventIndexType eventIdx);
-   void SetLoadRatingEventByID(EventIDType ID);
+   void SetLoadRatingEventByID(EventIDType eventID);
 
    void SetUserLoadEventByIndex(LoadIDType loadID,EventIndexType eventIdx);
    void SetUserLoadEventByID(LoadIDType loadID,EventIDType eventID);

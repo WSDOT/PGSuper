@@ -62,7 +62,8 @@ rptChapter* CInitialStrainAnalysisChapterBuilder::Build(CReportSpecification* pR
    *pPara << _T("Interval ") << LABEL_INTERVAL(intervalIdx) << rptNewLine;
 
    GET_IFACE2(pBroker,IPointOfInterest,pPoi);
-   std::vector<pgsPointOfInterest> vPoi(pPoi->GetPointsOfInterest(CSegmentKey(girderKey,ALL_SEGMENTS)));
+   PoiList vPoi;
+   pPoi->GetPointsOfInterest(CSegmentKey(girderKey, ALL_SEGMENTS), &vPoi);
 
    GET_IFACE2(pBroker,ILosses,pLosses);
 
@@ -93,12 +94,9 @@ rptChapter* CInitialStrainAnalysisChapterBuilder::Build(CReportSpecification* pR
       (*pTable)(0,colIdx++) << COLHDR(Sub2(_T("M"),_T("re")),rptMomentUnitTag,pDisplayUnits->GetSmallMomentUnit());
 
       RowIndexType rowIdx = pTable->GetNumberOfHeaderRows();
-      std::vector<pgsPointOfInterest>::iterator iter(vPoi.begin());
-      std::vector<pgsPointOfInterest>::iterator end(vPoi.end());
-      for ( ; iter != end; iter++, rowIdx++ )
+      for (const pgsPointOfInterest& poi : vPoi)
       {
          colIdx = 0;
-         pgsPointOfInterest& poi = *iter;
          (*pTable)(rowIdx,colIdx++) << poi.GetID();
 
          Float64 Xg = pPoi->ConvertPoiToGirderCoordinate(poi);
@@ -120,6 +118,8 @@ rptChapter* CInitialStrainAnalysisChapterBuilder::Build(CReportSpecification* pR
 
          //(*pTable)(rowIdx,colIdx++) << force.SetValue(tsDetails.Pre[i]);
          //(*pTable)(rowIdx,colIdx++) << moment.SetValue(tsDetails.Mre[i]);
+
+         rowIdx++;
       } // next POI
    } // next i
 

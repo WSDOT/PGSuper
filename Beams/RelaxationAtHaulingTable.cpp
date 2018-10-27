@@ -97,7 +97,7 @@ CRelaxationAtHaulingTable* CRelaxationAtHaulingTable::PrepareTable(rptChapter* p
    
    rptParagraph* pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pParagraph;
-   *pParagraph << _T("[5.9.5.4.2c] Relaxation of Prestressing Strands : ") << symbol(DELTA) << RPT_STRESS(_T("pR1H")) << rptNewLine;
+   *pParagraph << _T("[") << LrfdCw8th(_T("5.9.5.4.2c"),_T("5.9.3.4.2c")) << _T("] Relaxation of Prestressing Strands : ") << symbol(DELTA) << RPT_STRESS(_T("pR1H")) << rptNewLine;
 
    pParagraph = new rptParagraph(rptStyleManager::GetSubheadingStyle());
    *pChapter << pParagraph;

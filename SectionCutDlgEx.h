@@ -72,7 +72,7 @@ private:
    pgsPointOfInterest m_InitialPOI;
    CGirderKey m_GirderKey;
 
-   std::vector<pgsPointOfInterest> m_vPOI;
+   PoiList m_vPOI;
 
    CSliderCtrl m_Slider;
    CStatic m_Label;

@@ -39,5 +39,5 @@ interface ICrackedSection : IUnknown
 {
    virtual void GetCrackedSectionDetails(const pgsPointOfInterest& poi,bool bPositiveMoment,CRACKEDSECTIONDETAILS* pCSD) const = 0;
    virtual Float64 GetIcr(const pgsPointOfInterest& poi,bool bPositiveMoment) const = 0;
-   virtual std::vector<CRACKEDSECTIONDETAILS> GetCrackedSectionDetails(const std::vector<pgsPointOfInterest>& vPoi,bool bPositiveMoment) const = 0;
+   virtual std::vector<CRACKEDSECTIONDETAILS> GetCrackedSectionDetails(const PoiList& vPoi,bool bPositiveMoment) const = 0;
 };

@@ -28,10 +28,10 @@ class CProductLoadMap
 {
 public:
    CProductLoadMap();
-   pgsTypes::ProductForceType GetProductForceType(CComBSTR bstrLoadGroupName);
-   CComBSTR GetGroupLoadName(pgsTypes::ProductForceType pfType);
-   LoadCaseIDType GetLoadCaseID(pgsTypes::ProductForceType pfType);
-   LoadCaseIDType GetMaxLoadCaseID();
+   pgsTypes::ProductForceType GetProductForceType(CComBSTR bstrLoadGroupName) const;
+   CComBSTR GetGroupLoadName(pgsTypes::ProductForceType pfType) const;
+   LoadCaseIDType GetLoadCaseID(pgsTypes::ProductForceType pfType) const;
+   LoadCaseIDType GetMaxLoadCaseID() const;
 
    static std::vector<pgsTypes::ProductForceType> GetProductForces(IBroker* pBroker,LoadingCombinationType combo);
 

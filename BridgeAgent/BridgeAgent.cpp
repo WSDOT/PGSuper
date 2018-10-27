@@ -31,8 +31,7 @@
 #include "resource.h"
 #include "initguid.h"
 #include "BridgeAgent.h"
-#include "BridgeAgent_i.h"
-#include "BridgeAgent_i.c"
+#include "CLSID.h"
 
 #include <WBFLCore_i.c>
 #include <WBFLTools_i.c>

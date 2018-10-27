@@ -53,4 +53,5 @@ protected:
 
 public:
    virtual BOOL OnInitDialog();
+   virtual BOOL OnSetActive();
 };

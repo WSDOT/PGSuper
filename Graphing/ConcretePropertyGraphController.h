@@ -22,7 +22,6 @@
 
 #pragma once
 
-#include <Graphing\ConcretePropertyGraphBuilder.h>
 #include <EAF\EAFGraphControlWindow.h>
 
 class CConcretePropertyGraphController : public CEAFGraphControlWindow
@@ -31,20 +30,28 @@ public:
    CConcretePropertyGraphController();
    DECLARE_DYNCREATE(CConcretePropertyGraphController);
 
-   int GetGraphElement();
-   int GetGraphType();
-   CSegmentKey GetSegmentKey();
-   CClosureKey GetClosureKey();
-   int GetXAxisType();
+   void SetGraphElement(int element);
+   int GetGraphElement() const;
+
+   void SetGraphType(int graphType);
+   int GetGraphType() const;
+
+   void SetSegment(const CSegmentKey& segmentKey);
+   const CSegmentKey& GetSegment() const;
+
+   void SetClosureJoint(const CClosureKey& closureKey);
+   const CClosureKey& GetClosureJoint() const;
+
+   void SetXAxisType(int type);
+   int GetXAxisType() const;
+
+   void ShowGrid(bool bShow);
+   bool ShowGrid() const;
 
 protected:
    virtual BOOL OnInitDialog() override;
 
 	//{{AFX_MSG(CConcretePropertyGraphController)
-   //}}AFX_MSG
-
-	DECLARE_MESSAGE_MAP()
-
    afx_msg void OnGraphElement();
    afx_msg void OnGraphType();
    afx_msg void OnGroupChanged();
@@ -52,6 +59,10 @@ protected:
    afx_msg void OnSegmentChanged();
    afx_msg void OnClosureChanged();
    afx_msg void OnXAxis();
+   afx_msg void OnShowGrid();
+   //}}AFX_MSG
+
+	DECLARE_MESSAGE_MAP()
 
    void UpdateElementControls();
 
@@ -60,13 +71,12 @@ protected:
    void FillSegmentControl();
    void FillClosureControl();
 
-   GroupIndexType GetGroupIndex();
-   GirderIndexType GetGirderIndex();
-   SegmentIndexType GetSegmentIndex();
-
    void UpdateGraph();
 
    CComPtr<IBroker> m_pBroker;
+
+   CSegmentKey m_SegmentKey;
+   CClosureKey m_ClosureKey;
 
 #ifdef _DEBUG
 public:

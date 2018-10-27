@@ -2,7 +2,7 @@ Learn about the Timeline Manager {#tutorial_timeline_learn_about_the_timeline_ma
 ========================================================================================
 The construction sequence is an important element of the time step analysis. Forces, stresses, and displacements change with time due to changes in material properties, structure topology, loading conditions, and time dependent effects due to creep and shrinkage of concrete, and relaxation of strands and tendons. At design time you typically will not know the exact construction schedule the bridge builder will use. Assumptions about the timing and sequence of construction activities will have to be made at design time.
 
-> NOTE: LRFD 5.14.1.3.1 "The method of construction assumed for the design shall be shown in the contract documents."
+> NOTE: LRFD 5.12.3.4.1 (*pre-2017: 5.14.1.3.1*) "The method of construction assumed for the design shall be shown in the contract documents."
 
 The construction sequence is modeled with a sequence of timeline events. Each event corresponds to one or more construction activities such as Erect Segment and Cast Deck. The Timeline Manager provides an overall view of the timeline and allows you to modify the timeline to fit your particular project and assumptions.
 

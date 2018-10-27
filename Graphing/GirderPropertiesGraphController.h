@@ -31,8 +31,12 @@ public:
    CGirderPropertiesGraphController();
    DECLARE_DYNCREATE(CGirderPropertiesGraphController);
 
-   CGirderPropertiesGraphBuilder::PropertyType GetPropertyType();
-   pgsTypes::SectionPropertyType GetSectionPropertyType();
+   bool SetPropertyType(CGirderPropertiesGraphBuilder::PropertyType propertyType);
+   CGirderPropertiesGraphBuilder::PropertyType GetPropertyType() const;
+   bool IsInvariantProperty(CGirderPropertiesGraphBuilder::PropertyType propertyType) const;
+
+   bool SetSectionPropertyType(pgsTypes::SectionPropertyType type);
+   pgsTypes::SectionPropertyType GetSectionPropertyType() const;
 
    virtual IndexType GetGraphCount();
 
@@ -54,6 +58,8 @@ protected:
    pgsTypes::SectionPropertyType m_SectionPropertyType;
 
    void UpdateSectionPropertyTypeControls();
+   int GetSectionPropertyControlID(pgsTypes::SectionPropertyType type);
+   pgsTypes::SectionPropertyType GetSectionPropertyType(int nIDC);
 
 #ifdef _DEBUG
 public:

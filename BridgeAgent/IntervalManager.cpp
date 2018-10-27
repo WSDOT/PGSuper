@@ -109,6 +109,8 @@ void CIntervalManager::BuildIntervals(const CTimelineManager* pTimelineMgr)
 
    // reset everything
    m_CastIntermediateDiaphragmsIntervalIdx = INVALID_INDEX;
+   m_CastLongitudinalJointsIntervalIdx = INVALID_INDEX;
+   m_CompositeLongitudinalJointsIntervalIdx = INVALID_INDEX;
    m_CastDeckIntervalIdx      = INVALID_INDEX;
    m_CompositeDeckIntervalIdx = INVALID_INDEX;
    m_LiveLoadIntervalIdx      = INVALID_INDEX;
@@ -151,26 +153,6 @@ void CIntervalManager::BuildIntervals(const CTimelineManager* pTimelineMgr)
       ProcessStep5(eventIdx,pTimelineEvent);
    } // next event
    
-   // If we aren't doing time step analysis, this is a PGSuper project
-   // Append the old Bridge Site names to the interval descriptions for
-   // continuity with previous versions
-   ATLASSERT(0 < m_Intervals.size());
-   if ( m_bIsPGSuper )
-   {
-      m_Intervals[m_ReleaseIntervals.begin()->second].Description += _T(" (Casting Yard)");
-      m_Intervals[m_CastDeckIntervalIdx].Description              += _T(" (Bridge Site 1)");
-      if ( m_OverlayIntervalIdx == INVALID_INDEX )
-      {
-         // no overlay case
-         m_Intervals[m_RailingSystemIntervalIdx].Description      += _T(" (Bridge Site 2)");
-      }
-      else
-      {
-         m_Intervals[m_OverlayIntervalIdx].Description            += _T(" (Bridge Site 2)");
-      }
-      m_Intervals[m_LiveLoadIntervalIdx].Description              += _T(" (Bridge Site 3)");
-   }
-
 
    ASSERT_VALID;
 }
@@ -256,7 +238,7 @@ IntervalIndexType CIntervalManager::GetInterval(EventIndexType eventIdx) const
 
 IntervalIndexType CIntervalManager::GetErectPierInterval(PierIndexType pierIdx) const
 {
-   std::map<PierIndexType,IntervalIndexType>::const_iterator found = m_ErectPierIntervals.find(pierIdx);
+   const auto& found = m_ErectPierIntervals.find(pierIdx);
    if ( found == m_ErectPierIntervals.end() )
    {
       return INVALID_INDEX;
@@ -276,6 +258,16 @@ IntervalIndexType CIntervalManager::GetCompositeIntermediateDiaphragmsInterval()
    return m_CastIntermediateDiaphragmsIntervalIdx;
 }
 
+IntervalIndexType CIntervalManager::GetCastLongitudinalJointInterval() const
+{
+   return m_CastLongitudinalJointsIntervalIdx;
+}
+
+IntervalIndexType CIntervalManager::GetCompositeLongitudinalJointInterval() const
+{
+   return m_CompositeLongitudinalJointsIntervalIdx;
+}
+
 IntervalIndexType CIntervalManager::GetCastDeckInterval() const
 {
    return m_CastDeckIntervalIdx;
@@ -291,16 +283,14 @@ IntervalIndexType CIntervalManager::GetFirstStressStrandInterval(const CGirderKe
    if ( girderKey.groupIndex == ALL_GROUPS || girderKey.girderIndex == ALL_GIRDERS )
    {
       IntervalIndexType intervalIdx = MAX_INDEX;
-      std::map<CGirderKey,std::pair<IntervalIndexType,IntervalIndexType>>::const_iterator iter(m_StrandStressingSequenceIntervalLimits.begin());
-      std::map<CGirderKey,std::pair<IntervalIndexType,IntervalIndexType>>::const_iterator iterEnd(m_StrandStressingSequenceIntervalLimits.end());
-      for ( ; iter != iterEnd; iter++ )
+      for (const auto& iter : m_StrandStressingSequenceIntervalLimits)
       {
          if ( (girderKey.groupIndex == ALL_GROUPS && girderKey.girderIndex == ALL_GIRDERS) ||
-              (girderKey.groupIndex == ALL_GROUPS && girderKey.girderIndex == iter->first.girderIndex) ||
-              (girderKey.groupIndex == iter->first.groupIndex && girderKey.girderIndex == ALL_GIRDERS) 
+              (girderKey.groupIndex == ALL_GROUPS && girderKey.girderIndex == iter.first.girderIndex) ||
+              (girderKey.groupIndex == iter.first.groupIndex && girderKey.girderIndex == ALL_GIRDERS) 
             )
          {
-            intervalIdx = Min(intervalIdx,iter->second.first);
+            intervalIdx = Min(intervalIdx,iter.second.first);
          }
       }
       return intervalIdx;
@@ -310,8 +300,8 @@ IntervalIndexType CIntervalManager::GetFirstStressStrandInterval(const CGirderKe
       std::map<CGirderKey,std::pair<IntervalIndexType,IntervalIndexType>>::const_iterator found(m_StrandStressingSequenceIntervalLimits.find(girderKey));
       if( found != m_StrandStressingSequenceIntervalLimits.end() )
       {
-      return found->second.first;
-   }
+         return found->second.first;
+      }
       else
       {
          // probably an unequal number of girders per group, and this one has less.
@@ -328,31 +318,29 @@ IntervalIndexType CIntervalManager::GetLastStressStrandInterval(const CGirderKey
    if ( girderKey.groupIndex == ALL_GROUPS || girderKey.girderIndex == ALL_GIRDERS )
    {
       IntervalIndexType intervalIdx = INVALID_INDEX;
-      std::map<CGirderKey,std::pair<IntervalIndexType,IntervalIndexType>>::const_iterator iter(m_StrandStressingSequenceIntervalLimits.begin());
-      std::map<CGirderKey,std::pair<IntervalIndexType,IntervalIndexType>>::const_iterator iterEnd(m_StrandStressingSequenceIntervalLimits.end());
-      for ( ; iter != iterEnd; iter++ )
+      for( const auto& iter : m_StrandStressingSequenceIntervalLimits )
       {
          if ( (girderKey.groupIndex == ALL_GROUPS && girderKey.girderIndex == ALL_GIRDERS) ||
-              (girderKey.groupIndex == ALL_GROUPS && girderKey.girderIndex == iter->first.girderIndex) ||
-              (girderKey.groupIndex == iter->first.groupIndex && girderKey.girderIndex == ALL_GIRDERS) 
+              (girderKey.groupIndex == ALL_GROUPS && girderKey.girderIndex == iter.first.girderIndex) ||
+              (girderKey.groupIndex == iter.first.groupIndex && girderKey.girderIndex == ALL_GIRDERS) 
             )
          {
             if ( intervalIdx == MAX_INDEX )
             {
                intervalIdx = 0;
             }
-            intervalIdx = Max(intervalIdx,iter->second.second);
+            intervalIdx = Max(intervalIdx,iter.second.second);
          }
       }
       return intervalIdx;
    }
    else
    {
-      std::map<CGirderKey,std::pair<IntervalIndexType,IntervalIndexType>>::const_iterator found(m_StrandStressingSequenceIntervalLimits.find(girderKey));
+      auto found(m_StrandStressingSequenceIntervalLimits.find(girderKey));
       if(found != m_StrandStressingSequenceIntervalLimits.end())
       {
-      return found->second.second;
-   }
+         return found->second.second;
+      }
       else
       {
          // probably an unequal number of girders per group, and this one has less.
@@ -367,11 +355,11 @@ IntervalIndexType CIntervalManager::GetLastStressStrandInterval(const CGirderKey
 IntervalIndexType CIntervalManager::GetStressStrandInterval(const CSegmentKey& segmentKey) const
 {
    ASSERT_SEGMENT_KEY(segmentKey); // must be a specific segment key
-   std::map<CSegmentKey,IntervalIndexType>::const_iterator found(m_StressStrandIntervals.find(segmentKey));
+   auto found(m_StressStrandIntervals.find(segmentKey));
    if( found != m_StressStrandIntervals.end() )
    {
-   return found->second;
-}
+      return found->second;
+   }
    else
    {
       // there is an unequal number of girders per group, and this one has less. use the right-most girder
@@ -387,27 +375,25 @@ IntervalIndexType CIntervalManager::GetFirstPrestressReleaseInterval(const CGird
    if ( girderKey.groupIndex == ALL_GROUPS || girderKey.girderIndex == ALL_GIRDERS )
    {
       IntervalIndexType intervalIdx = MAX_INDEX;
-      std::map<CGirderKey,std::pair<IntervalIndexType,IntervalIndexType>>::const_iterator iter(m_ReleaseSequenceIntervalLimits.begin());
-      std::map<CGirderKey,std::pair<IntervalIndexType,IntervalIndexType>>::const_iterator iterEnd(m_ReleaseSequenceIntervalLimits.end());
-      for ( ; iter != iterEnd; iter++ )
+      for ( const auto& iter : m_ReleaseSequenceIntervalLimits)
       {
          if ( (girderKey.groupIndex == ALL_GROUPS && girderKey.girderIndex == ALL_GIRDERS) ||
-              (girderKey.groupIndex == ALL_GROUPS && girderKey.girderIndex == iter->first.girderIndex) ||
-              (girderKey.groupIndex == iter->first.groupIndex && girderKey.girderIndex == ALL_GIRDERS) 
+              (girderKey.groupIndex == ALL_GROUPS && girderKey.girderIndex == iter.first.girderIndex) ||
+              (girderKey.groupIndex == iter.first.groupIndex && girderKey.girderIndex == ALL_GIRDERS) 
             )
          {
-            intervalIdx = Min(intervalIdx,iter->second.first);
+            intervalIdx = Min(intervalIdx,iter.second.first);
          }
       }
       return intervalIdx;
    }
    else
    {
-      std::map<CGirderKey,std::pair<IntervalIndexType,IntervalIndexType>>::const_iterator found(m_ReleaseSequenceIntervalLimits.find(girderKey));
+      auto found(m_ReleaseSequenceIntervalLimits.find(girderKey));
       if(found != m_ReleaseSequenceIntervalLimits.end())
       {
-      return found->second.first;
-   }
+         return found->second.first;
+      }
       else
       {
          // probably an unequal number of girders per group, and this one has less.
@@ -424,27 +410,25 @@ IntervalIndexType CIntervalManager::GetLastPrestressReleaseInterval(const CGirde
    if ( girderKey.groupIndex == ALL_GROUPS || girderKey.girderIndex == ALL_GIRDERS )
    {
       IntervalIndexType intervalIdx = MAX_INDEX;
-      std::map<CGirderKey,std::pair<IntervalIndexType,IntervalIndexType>>::const_iterator iter(m_ReleaseSequenceIntervalLimits.begin());
-      std::map<CGirderKey,std::pair<IntervalIndexType,IntervalIndexType>>::const_iterator iterEnd(m_ReleaseSequenceIntervalLimits.end());
-      for ( ; iter != iterEnd; iter++ )
+      for ( const auto& iter : m_ReleaseSequenceIntervalLimits)
       {
          if ( (girderKey.groupIndex == ALL_GROUPS && girderKey.girderIndex == ALL_GIRDERS) ||
-              (girderKey.groupIndex == ALL_GROUPS && girderKey.girderIndex == iter->first.girderIndex) ||
-              (girderKey.groupIndex == iter->first.groupIndex && girderKey.girderIndex == ALL_GIRDERS) 
+              (girderKey.groupIndex == ALL_GROUPS && girderKey.girderIndex == iter.first.girderIndex) ||
+              (girderKey.groupIndex == iter.first.groupIndex && girderKey.girderIndex == ALL_GIRDERS) 
             )
          {
             if ( intervalIdx == MAX_INDEX )
             {
                intervalIdx = 0;
             }
-            intervalIdx = Max(intervalIdx,iter->second.second);
+            intervalIdx = Max(intervalIdx,iter.second.second);
          }
       }
       return intervalIdx;
    }
    else
    {
-      std::map<CGirderKey,std::pair<IntervalIndexType,IntervalIndexType>>::const_iterator found(m_ReleaseSequenceIntervalLimits.find(girderKey));
+      auto found(m_ReleaseSequenceIntervalLimits.find(girderKey));
       if(found != m_ReleaseSequenceIntervalLimits.end())
       {
       return found->second.second;
@@ -463,7 +447,7 @@ IntervalIndexType CIntervalManager::GetLastPrestressReleaseInterval(const CGirde
 IntervalIndexType CIntervalManager::GetPrestressReleaseInterval(const CSegmentKey& segmentKey) const
 {
    ASSERT_SEGMENT_KEY(segmentKey); // must be a specific segment key
-   std::map<CSegmentKey,IntervalIndexType>::const_iterator found(m_ReleaseIntervals.find(segmentKey));
+   auto found(m_ReleaseIntervals.find(segmentKey));
    if( found != m_ReleaseIntervals.end())
    {
    return found->second;
@@ -512,7 +496,7 @@ IntervalIndexType CIntervalManager::GetLastStorageInterval(const CGirderKey& gir
 IntervalIndexType CIntervalManager::GetHaulingInterval(const CSegmentKey& segmentKey) const
 {
    ASSERT_SEGMENT_KEY(segmentKey); // must be a specific segment key
-   std::map<CSegmentKey,IntervalIndexType>::const_iterator found(m_SegmentHaulingIntervals.find(segmentKey));
+   auto found(m_SegmentHaulingIntervals.find(segmentKey));
    if( found != m_SegmentHaulingIntervals.end())
    {
    return found->second;
@@ -530,7 +514,7 @@ IntervalIndexType CIntervalManager::GetHaulingInterval(const CSegmentKey& segmen
 IntervalIndexType CIntervalManager::GetErectSegmentInterval(const CSegmentKey& segmentKey) const
 {
    ASSERT_SEGMENT_KEY(segmentKey); // must be a specific segment key
-   std::map<CSegmentKey,IntervalIndexType>::const_iterator found(m_SegmentErectionIntervals.find(segmentKey));
+   auto found(m_SegmentErectionIntervals.find(segmentKey));
    if(found != m_SegmentErectionIntervals.end())
    {
    return found->second;
@@ -548,11 +532,9 @@ IntervalIndexType CIntervalManager::GetErectSegmentInterval(const CSegmentKey& s
 bool CIntervalManager::IsSegmentErectionInterval(IntervalIndexType intervalIdx) const
 {
    ATLASSERT(intervalIdx != INVALID_INDEX);
-   std::map<CSegmentKey,IntervalIndexType>::const_iterator iter(m_SegmentErectionIntervals.begin());
-   std::map<CSegmentKey,IntervalIndexType>::const_iterator iterEnd(m_SegmentErectionIntervals.end());
-   for ( ; iter != iterEnd; iter++ )
+   for ( const auto& iter : m_SegmentErectionIntervals)
    {
-      if ( iter->second == intervalIdx )
+      if ( iter.second == intervalIdx )
       {
          return true;
       }
@@ -566,14 +548,12 @@ bool CIntervalManager::IsSegmentErectionInterval(const CGirderKey& girderKey,Int
    ASSERT_GIRDER_KEY(girderKey);
    ATLASSERT(intervalIdx != INVALID_INDEX);
 
-   std::map<CSegmentKey,IntervalIndexType>::const_iterator iter(m_SegmentErectionIntervals.begin());
-   std::map<CSegmentKey,IntervalIndexType>::const_iterator iterEnd(m_SegmentErectionIntervals.end());
-   for ( ; iter != iterEnd; iter++ )
+   for ( const auto& iter : m_SegmentErectionIntervals)
    {
-      const CSegmentKey& segmentKey = iter->first;
+      const CSegmentKey& segmentKey = iter.first;
       if ( girderKey.IsEqual(segmentKey) )
       {
-         IntervalIndexType erectionIntervalIdx = iter->second;
+         IntervalIndexType erectionIntervalIdx = iter.second;
          if ( erectionIntervalIdx == intervalIdx )
          {
             return true;
@@ -586,7 +566,7 @@ bool CIntervalManager::IsSegmentErectionInterval(const CGirderKey& girderKey,Int
 
 IntervalIndexType CIntervalManager::GetTemporaryStrandRemovalInterval(const CSegmentKey& segmentKey) const
 {
-   std::map<CSegmentKey,IntervalIndexType>::const_iterator found(m_RemoveTemporaryStrandsIntervals.find(segmentKey));
+   auto found(m_RemoveTemporaryStrandsIntervals.find(segmentKey));
    if ( found != m_RemoveTemporaryStrandsIntervals.end() )
    {
       return found->second;
@@ -601,11 +581,11 @@ IntervalIndexType CIntervalManager::GetTemporaryStrandRemovalInterval(const CSeg
 IntervalIndexType CIntervalManager::GetCastClosureInterval(const CClosureKey& clousreKey) const
 {
    ASSERT_CLOSURE_KEY(clousreKey); // must be a specific segment key
-   std::map<CClosureKey,IntervalIndexType>::const_iterator found(m_CastClosureIntervals.find(clousreKey));
+   auto found(m_CastClosureIntervals.find(clousreKey));
    if(found != m_CastClosureIntervals.end())
    {
-   return found->second;
-}
+      return found->second;
+   }
    else
    {
       // probably an unequal number of girders per group, and this one has less.
@@ -620,14 +600,12 @@ IntervalIndexType CIntervalManager::GetFirstCastClosureJointInterval(const CGird
 {
    ASSERT_GIRDER_KEY(girderKey);
    IntervalIndexType intervalIdx = INVALID_INDEX;
-   std::map<CClosureKey,IntervalIndexType>::const_iterator iter(m_CastClosureIntervals.begin());
-   std::map<CClosureKey,IntervalIndexType>::const_iterator end(m_CastClosureIntervals.end());
-   for ( ; iter != end; iter++ )
+   for ( const auto& iter : m_CastClosureIntervals)
    {
-      const CClosureKey& closureKey = iter->first;
+      const auto& closureKey = iter.first;
       if ( closureKey.groupIndex == girderKey.groupIndex && closureKey.girderIndex == girderKey.girderIndex )
       {
-         intervalIdx = Min(intervalIdx,iter->second);
+         intervalIdx = Min(intervalIdx,iter.second);
       }
    }
 
@@ -638,14 +616,12 @@ IntervalIndexType CIntervalManager::GetLastCastClosureJointInterval(const CGirde
 {
    ASSERT_GIRDER_KEY(girderKey);
    IntervalIndexType intervalIdx = 0;
-   std::map<CClosureKey,IntervalIndexType>::const_iterator iter(m_CastClosureIntervals.begin());
-   std::map<CClosureKey,IntervalIndexType>::const_iterator end(m_CastClosureIntervals.end());
-   for ( ; iter != end; iter++ )
+   for ( const auto& iter : m_CastClosureIntervals)
    {
-      const CClosureKey& closureKey = iter->first;
+      const auto& closureKey = iter.first;
       if ( closureKey.groupIndex == girderKey.groupIndex && closureKey.girderIndex == girderKey.girderIndex )
       {
-         intervalIdx = Max(intervalIdx,iter->second);
+         intervalIdx = Max(intervalIdx,iter.second);
       }
    }
 
@@ -662,27 +638,25 @@ IntervalIndexType CIntervalManager::GetFirstSegmentErectionInterval(const CGirde
    if ( girderKey.groupIndex == ALL_GROUPS || girderKey.girderIndex == ALL_GIRDERS )
    {
       IntervalIndexType intervalIdx = MAX_INDEX;
-      std::map<CGirderKey,std::pair<IntervalIndexType,IntervalIndexType>>::const_iterator iter(m_SegmentErectionSequenceIntervalLimits.begin());
-      std::map<CGirderKey,std::pair<IntervalIndexType,IntervalIndexType>>::const_iterator iterEnd(m_SegmentErectionSequenceIntervalLimits.end());
-      for ( ; iter != iterEnd; iter++ )
+      for ( const auto& iter : m_SegmentErectionIntervals)
       {
          if ( (girderKey.groupIndex == ALL_GROUPS && girderKey.girderIndex == ALL_GIRDERS) ||
-              (girderKey.groupIndex == ALL_GROUPS && girderKey.girderIndex == iter->first.girderIndex) ||
-              (girderKey.groupIndex == iter->first.groupIndex && girderKey.girderIndex == ALL_GIRDERS) 
+              (girderKey.groupIndex == ALL_GROUPS && girderKey.girderIndex == iter.first.girderIndex) ||
+              (girderKey.groupIndex == iter.first.groupIndex && girderKey.girderIndex == ALL_GIRDERS) 
             )
          {
-            intervalIdx = Min(intervalIdx,iter->second.first);
+            intervalIdx = Min(intervalIdx,iter.second);
          }
       }
       return intervalIdx;
    }
    else
    {
-      std::map<CGirderKey,std::pair<IntervalIndexType,IntervalIndexType>>::const_iterator found(m_SegmentErectionSequenceIntervalLimits.find(girderKey));
+      auto found(m_SegmentErectionSequenceIntervalLimits.find(girderKey));
       if(found != m_SegmentErectionSequenceIntervalLimits.end())
       {
-      return found->second.first;
-   }
+         return found->second.first;
+      }
       else
       {
          // probably an unequal number of girders per group, and this one has less.
@@ -699,30 +673,28 @@ IntervalIndexType CIntervalManager::GetLastSegmentErectionInterval(const CGirder
    if ( girderKey.groupIndex == ALL_GROUPS || girderKey.girderIndex == ALL_GIRDERS )
    {
       IntervalIndexType intervalIdx = MAX_INDEX;
-      std::map<CGirderKey,std::pair<IntervalIndexType,IntervalIndexType>>::const_iterator iter(m_SegmentErectionSequenceIntervalLimits.begin());
-      std::map<CGirderKey,std::pair<IntervalIndexType,IntervalIndexType>>::const_iterator iterEnd(m_SegmentErectionSequenceIntervalLimits.end());
-      for ( ; iter != iterEnd; iter++ )
+      for ( const auto& iter : m_SegmentErectionSequenceIntervalLimits)
       {
          if ( (girderKey.groupIndex == ALL_GROUPS && girderKey.girderIndex == ALL_GIRDERS) ||
-              (girderKey.groupIndex == ALL_GROUPS && girderKey.girderIndex == iter->first.girderIndex) ||
-              (girderKey.groupIndex == iter->first.groupIndex && girderKey.girderIndex == ALL_GIRDERS) 
+              (girderKey.groupIndex == ALL_GROUPS && girderKey.girderIndex == iter.first.girderIndex) ||
+              (girderKey.groupIndex == iter.first.groupIndex && girderKey.girderIndex == ALL_GIRDERS) 
             )
          {
             if ( intervalIdx == MAX_INDEX )
             {
                intervalIdx = 0;
             }
-            intervalIdx = Max(intervalIdx,iter->second.second);
+            intervalIdx = Max(intervalIdx,iter.second.second);
          }
       }
       return intervalIdx;
    }
    else
    {
-      std::map<CGirderKey,std::pair<IntervalIndexType,IntervalIndexType>>::const_iterator found(m_SegmentErectionSequenceIntervalLimits.find(girderKey));
+      auto found(m_SegmentErectionSequenceIntervalLimits.find(girderKey));
       if(found != m_SegmentErectionSequenceIntervalLimits.end())
       {
-      return found->second.second;
+          return found->second.second;
       }
       else
       {
@@ -756,7 +728,7 @@ IntervalIndexType CIntervalManager::GetUserLoadInterval(const CSpanKey& spanKey,
    ASSERT(loadCase == UserLoads::DC || loadCase == UserLoads::DW);
 
    CUserLoadKey key(spanKey,userLoadID);
-   std::map<CUserLoadKey,IntervalIndexType>::const_iterator found(m_UserLoadInterval[loadCase].find(key));
+   auto found(m_UserLoadInterval[loadCase].find(key));
    if ( found == m_UserLoadInterval[loadCase].end() )
    {
       ATLASSERT(false);
@@ -769,7 +741,7 @@ IntervalIndexType CIntervalManager::GetUserLoadInterval(const CSpanKey& spanKey,
 IntervalIndexType CIntervalManager::GetStressTendonInterval(const CGirderKey& girderKey,DuctIndexType ductIdx) const
 {
    ASSERT_GIRDER_KEY(girderKey); // must be a specific girder key
-   std::map<CTendonKey,IntervalIndexType>::const_iterator found(m_StressTendonIntervals.find(CTendonKey(girderKey,ductIdx)));
+   auto found(m_StressTendonIntervals.find(CTendonKey(girderKey,ductIdx)));
    if ( found == m_StressTendonIntervals.end() )
    {
       ATLASSERT(false);
@@ -783,13 +755,11 @@ IntervalIndexType CIntervalManager::GetFirstTendonStressingInterval(const CGirde
 {
    ASSERT_GIRDER_KEY(girderKey); // must be a specific girder key
    std::set<IntervalIndexType> intervals;
-   std::map<CTendonKey,IntervalIndexType>::const_iterator iter(m_StressTendonIntervals.begin());
-   std::map<CTendonKey,IntervalIndexType>::const_iterator end(m_StressTendonIntervals.end());
-   for ( ; iter != end; iter++ )
+   for ( const auto& iter : m_StressTendonIntervals)
    {
-      if ( girderKey == iter->first.girderKey )
+      if ( girderKey == iter.first.girderKey )
       {
-         intervals.insert(iter->second);
+         intervals.insert(iter.second);
       }
    }
 
@@ -805,13 +775,11 @@ IntervalIndexType CIntervalManager::GetLastTendonStressingInterval(const CGirder
 {
    ASSERT_GIRDER_KEY(girderKey); // must be a specific girder key
    std::set<IntervalIndexType> intervals;
-   std::map<CTendonKey,IntervalIndexType>::const_iterator iter(m_StressTendonIntervals.begin());
-   std::map<CTendonKey,IntervalIndexType>::const_iterator end(m_StressTendonIntervals.end());
-   for ( ; iter != end; iter++ )
+   for ( const auto& iter : m_StressTendonIntervals)
    {
-      if ( girderKey == iter->first.girderKey )
+      if ( girderKey == iter.first.girderKey )
       {
-         intervals.insert(iter->second);
+         intervals.insert(iter.second);
       }
    }
 
@@ -825,7 +793,7 @@ IntervalIndexType CIntervalManager::GetLastTendonStressingInterval(const CGirder
 
 IntervalIndexType CIntervalManager::GetTemporarySupportErectionInterval(SupportIndexType tsIdx) const
 {
-   std::map<SupportIndexType,IntervalIndexType>::const_iterator found(m_ErectTemporarySupportIntervals.find(tsIdx) );
+   auto found(m_ErectTemporarySupportIntervals.find(tsIdx) );
    if ( found == m_ErectTemporarySupportIntervals.end() )
    {
       ATLASSERT(false);
@@ -837,7 +805,7 @@ IntervalIndexType CIntervalManager::GetTemporarySupportErectionInterval(SupportI
 
 IntervalIndexType CIntervalManager::GetTemporarySupportRemovalInterval(SupportIndexType tsIdx) const
 {
-   std::map<SupportIndexType,IntervalIndexType>::const_iterator found(m_RemoveTemporarySupportIntervals.find(tsIdx) );
+   auto found(m_RemoveTemporarySupportIntervals.find(tsIdx) );
    if ( found == m_RemoveTemporarySupportIntervals.end() )
    {
       ATLASSERT(false);
@@ -954,7 +922,7 @@ void CIntervalManager::ProcessStep2(EventIndexType eventIdx,const CTimelineEvent
          }
 
          // this is for keeping track of when the first and last segments in a girder are erected
-         std::map<CGirderKey,std::pair<IntervalIndexType,IntervalIndexType>>::iterator found(m_SegmentErectionSequenceIntervalLimits.find(segmentKey));
+         auto found(m_SegmentErectionSequenceIntervalLimits.find(segmentKey));
          if ( found == m_SegmentErectionSequenceIntervalLimits.end() )
          {
             // this is the first segment from the girder to be erected
@@ -1028,10 +996,17 @@ void CIntervalManager::ProcessStep2(EventIndexType eventIdx,const CTimelineEvent
       }
    }
 
+   const CCastLongitudinalJointActivity& castLJActivity = pTimelineEvent->GetCastLongitudinalJointActivity();
+   if (castLJActivity.IsEnabled())
+   {
+      strDescriptions.push_back(CString(_T("Cast Longitudinal Joints")));
+      m_CastLongitudinalJointsIntervalIdx = intervalIdx;
+   }
+
    const CCastDeckActivity& castDeckActivity = pTimelineEvent->GetCastDeckActivity();
    if ( castDeckActivity.IsEnabled() )
    {
-      strDescriptions.push_back(CString(_T("Cast Deck")));
+      strDescriptions.push_back(CString(GetCastDeckEventName(pBridgeDesc->GetDeckDescription()->GetDeckType())));
       m_CastDeckIntervalIdx = intervalIdx;
    } // end if cast deck activity
 
@@ -1123,12 +1098,13 @@ void CIntervalManager::ProcessStep2(EventIndexType eventIdx,const CTimelineEvent
 
 #define SEGMENT 1
 #define CLOSURE 2
-#define DECK 3
-
+#define LONGITUDINAL_JOINT 3
+#define DECK 4
 void CIntervalManager::ProcessStep3(EventIndexType eventIdx,const CTimelineEvent* pTimelineEvent)
 {
    // Step 3: Create curing duration intervals
    const CConstructSegmentActivity& constructSegmentActivity = pTimelineEvent->GetConstructSegmentsActivity();
+   const CCastLongitudinalJointActivity& castLongitudinalJointActivity = pTimelineEvent->GetCastLongitudinalJointActivity();
    const CCastDeckActivity& castDeckActivity = pTimelineEvent->GetCastDeckActivity();
    const CCastClosureJointActivity& castClosureJointActivity = pTimelineEvent->GetCastClosureJointActivity();
 
@@ -1136,6 +1112,11 @@ void CIntervalManager::ProcessStep3(EventIndexType eventIdx,const CTimelineEvent
    if ( constructSegmentActivity.IsEnabled() )
    {
       curingDurations.insert( std::make_pair(constructSegmentActivity.GetRelaxationTime(),SEGMENT) );
+   }
+
+   if (castLongitudinalJointActivity.IsEnabled())
+   {
+      curingDurations.insert(std::make_pair(castLongitudinalJointActivity.GetConcreteAgeAtContinuity(), LONGITUDINAL_JOINT));
    }
 
    if ( castDeckActivity.IsEnabled() )
@@ -1157,12 +1138,10 @@ void CIntervalManager::ProcessStep3(EventIndexType eventIdx,const CTimelineEvent
 
    // work in order of shortest duration first
    Float64 previous_curing_duration = 0;
-   std::map<Float64,int>::iterator iter(curingDurations.begin());
-   std::map<Float64,int>::iterator end(curingDurations.end());
-   for ( ; iter != end; iter++ )
+   for ( const auto& iter : curingDurations)
    {
-      Float64 duration = iter->first;
-      int activityType = iter->second;
+      Float64 duration = iter.first;
+      int activityType = iter.second;
 
       // the concrete for all concrete casting activities during this event
       // are cast at the same time. the curing intervals are based on the
@@ -1229,7 +1208,7 @@ void CIntervalManager::ProcessStep3(EventIndexType eventIdx,const CTimelineEvent
             m_ReleaseIntervals.insert(std::make_pair(segmentKey,releaseIntervalIdx));
 
             // this is for keeping track of when the strands are stressed for the first and last segments constructed for this girder
-            std::map<CGirderKey,std::pair<IntervalIndexType,IntervalIndexType>>::iterator strandStressingFound(m_StrandStressingSequenceIntervalLimits.find(segmentKey));
+            auto strandStressingFound(m_StrandStressingSequenceIntervalLimits.find(segmentKey));
             if ( strandStressingFound == m_StrandStressingSequenceIntervalLimits.end() )
             {
                // this is the first segment from the girder have strands stressed
@@ -1243,7 +1222,7 @@ void CIntervalManager::ProcessStep3(EventIndexType eventIdx,const CTimelineEvent
             }
 
             // this is for keeping track of when the strands are released for the first and last segments constructed for this girder
-            std::map<CGirderKey,std::pair<IntervalIndexType,IntervalIndexType>>::iterator releaseFound(m_ReleaseSequenceIntervalLimits.find(segmentKey));
+            auto releaseFound(m_ReleaseSequenceIntervalLimits.find(segmentKey));
             if ( releaseFound == m_ReleaseSequenceIntervalLimits.end() )
             {
                // this is the first segment from the girder to have its strands released
@@ -1257,37 +1236,79 @@ void CIntervalManager::ProcessStep3(EventIndexType eventIdx,const CTimelineEvent
             }
          } // next segment
       }
+      else if (activityType == LONGITUDINAL_JOINT)
+      {
+         CInterval cureLongitudinalJointInterval;
+         ATLASSERT(IsEqual(duration, castLongitudinalJointActivity.GetConcreteAgeAtContinuity()));
+         if (0 < duration)
+         {
+            // only model longitudinal joint curing if we are doing a time-step analysis
+            ATLASSERT(m_CastLongitudinalJointsIntervalIdx != INVALID_INDEX); // longitudinal joints must have been previously cast
+            cureLongitudinalJointInterval.StartEventIdx = eventIdx;
+            cureLongitudinalJointInterval.EndEventIdx = eventIdx;
+            cureLongitudinalJointInterval.Start = m_Intervals.back().End; // curing starts when the previous interval ends
+            cureLongitudinalJointInterval.Duration = remaining_duration;
+            cureLongitudinalJointInterval.End = cureLongitudinalJointInterval.Start + cureLongitudinalJointInterval.Duration;
+            cureLongitudinalJointInterval.Middle = 0.5*(cureLongitudinalJointInterval.Start + cureLongitudinalJointInterval.End);
+            cureLongitudinalJointInterval.Description = _T("Longitudinal joints curing");
+            StoreInterval(cureLongitudinalJointInterval);
+
+            CInterval compositeLongitudinalJointInterval;
+            compositeLongitudinalJointInterval.StartEventIdx = eventIdx;
+            compositeLongitudinalJointInterval.EndEventIdx = eventIdx;
+            compositeLongitudinalJointInterval.Start = cureLongitudinalJointInterval.End;
+            compositeLongitudinalJointInterval.Duration = 0;
+            compositeLongitudinalJointInterval.End = compositeLongitudinalJointInterval.Start + compositeLongitudinalJointInterval.Duration;
+            compositeLongitudinalJointInterval.Middle = 0.5*(compositeLongitudinalJointInterval.Start + compositeLongitudinalJointInterval.End);
+
+            compositeLongitudinalJointInterval.Description = _T("Composite longitudinal joints");
+
+            m_CompositeLongitudinalJointsIntervalIdx = StoreInterval(compositeLongitudinalJointInterval);
+         }
+         else
+         {
+            // for non-timestep analysis (PGSuper) longitudinal joints are composite the interval after they are cast
+            m_CompositeLongitudinalJointsIntervalIdx = m_CastLongitudinalJointsIntervalIdx + 1;
+         }
+      }
       else if ( activityType == DECK )
       {
          CInterval cureDeckInterval;
          ATLASSERT(IsEqual(duration,castDeckActivity.GetConcreteAgeAtContinuity()));
-         if ( 0 < duration )
+         ATLASSERT(pBridgeDesc->GetDeckDescription()->GetDeckType() != pgsTypes::sdtNone);
+         if (0 < duration)
          {
             // only model deck curing if we are doing a time-step analysis
             ATLASSERT(m_CastDeckIntervalIdx != INVALID_INDEX); // deck must have been previously cast
             cureDeckInterval.StartEventIdx = eventIdx;
-            cureDeckInterval.EndEventIdx   = eventIdx;
-            cureDeckInterval.Start         = m_Intervals.back().End; // curing starts when the previous interval ends
-            cureDeckInterval.Duration      = remaining_duration;
-            cureDeckInterval.End           = cureDeckInterval.Start + cureDeckInterval.Duration;
-            cureDeckInterval.Middle        = 0.5*(cureDeckInterval.Start + cureDeckInterval.End);
+            cureDeckInterval.EndEventIdx = eventIdx;
+            cureDeckInterval.Start = m_Intervals.back().End; // curing starts when the previous interval ends
+            cureDeckInterval.Duration = remaining_duration;
+            cureDeckInterval.End = cureDeckInterval.Start + cureDeckInterval.Duration;
+            cureDeckInterval.Middle = 0.5*(cureDeckInterval.Start + cureDeckInterval.End);
             cureDeckInterval.Description = _T("Deck curing");
             StoreInterval(cureDeckInterval);
 
-            CInterval compositeDeckInterval;
-            compositeDeckInterval.StartEventIdx = eventIdx;
-            compositeDeckInterval.EndEventIdx   = eventIdx;
-            compositeDeckInterval.Start = cureDeckInterval.End;
-            compositeDeckInterval.Duration = 0;
-            compositeDeckInterval.End = compositeDeckInterval.Start + compositeDeckInterval.Duration;
-            compositeDeckInterval.Middle = 0.5*(compositeDeckInterval.Start + compositeDeckInterval.End);
-            compositeDeckInterval.Description = _T("Composite Deck");
-            m_CompositeDeckIntervalIdx = StoreInterval(compositeDeckInterval);
+            if (IsStructuralDeck(pBridgeDesc->GetDeckDescription()->GetDeckType()))
+            {
+               CInterval compositeDeckInterval;
+               compositeDeckInterval.StartEventIdx = eventIdx;
+               compositeDeckInterval.EndEventIdx = eventIdx;
+               compositeDeckInterval.Start = cureDeckInterval.End;
+               compositeDeckInterval.Duration = 0;
+               compositeDeckInterval.End = compositeDeckInterval.Start + compositeDeckInterval.Duration;
+               compositeDeckInterval.Middle = 0.5*(compositeDeckInterval.Start + compositeDeckInterval.End);
+               compositeDeckInterval.Description = _T("Composite deck");
+               m_CompositeDeckIntervalIdx = StoreInterval(compositeDeckInterval);
+            }
          }
          else
          {
             // for non-timestep analysis (PGSuper) deck is composite the interval after it is cast
-            m_CompositeDeckIntervalIdx = m_CastDeckIntervalIdx+1;
+            if (IsStructuralDeck(pBridgeDesc->GetDeckDescription()->GetDeckType()))
+            {
+               m_CompositeDeckIntervalIdx = m_CastDeckIntervalIdx + 1;
+            }
          }
       }
       else if ( activityType == CLOSURE )
@@ -1309,7 +1330,7 @@ void CIntervalManager::ProcessStep3(EventIndexType eventIdx,const CTimelineEvent
    }
 }
 
-void CIntervalManager::ProcessStep4(EventIndexType eventIdx,const CTimelineEvent* pTimelineEvent)
+void CIntervalManager::ProcessStep4(EventIndexType eventIdx, const CTimelineEvent* pTimelineEvent)
 {
    // Step 4: Create a single interval for loadings
 
@@ -1318,7 +1339,13 @@ void CIntervalManager::ProcessStep4(EventIndexType eventIdx,const CTimelineEvent
    // been added to the m_Intervals collection yet, the interval index is the size of the collection
    IntervalIndexType intervalIdx = INVALID_INDEX;
    bool bNeedNewInterval = true;
-   if ( pTimelineEvent->GetCastDeckActivity().IsEnabled() )
+   if (pTimelineEvent->GetCastLongitudinalJointActivity().IsEnabled())
+   {
+      // loads are being applied with the longitudinal joints, use the longitudinal joint casting interval
+      intervalIdx = m_CastLongitudinalJointsIntervalIdx;
+      bNeedNewInterval = false;
+   }
+   else if ( pTimelineEvent->GetCastDeckActivity().IsEnabled() )
    {
       // loads are being applied with the deck, use the deck casting interval
       intervalIdx = m_CastDeckIntervalIdx;
@@ -1335,7 +1362,15 @@ void CIntervalManager::ProcessStep4(EventIndexType eventIdx,const CTimelineEvent
    else
    {
       intervalIdx = m_Intervals.size();
-      if ( m_CompositeDeckIntervalIdx+1 == intervalIdx )
+      if (m_CompositeLongitudinalJointsIntervalIdx + 1 == intervalIdx)
+      {
+         // loads are being applied in the same interval the longitudinal joints become composite.
+         // the longitudinal joints becoming composite is a zero duration interval and so is this loading
+         // interval. put the loading in the composite longitudinal joint interval
+         intervalIdx = m_CompositeLongitudinalJointsIntervalIdx;
+         bNeedNewInterval = false;
+      }
+      else if ( m_CompositeDeckIntervalIdx+1 == intervalIdx )
       {
          // loads are being applied in the same interval the deck becomes composite.
          // the deck becoming composite is a zero duration interval and so is this loading
@@ -1404,7 +1439,7 @@ void CIntervalManager::ProcessStep4(EventIndexType eventIdx,const CTimelineEvent
          // been accounted for
          if ( bLiveLoad && !bHasLiveLoadBeenApplied )
          {
-            // overaly and live load has been applied at the same tine
+            // overlay and live load has been applied at the same tine
             // not a future overlay
             strDescriptions.push_back(CString(_T("Open to Traffic")));
             bHasOverlayBeenApplied = true;

@@ -32,6 +32,9 @@
 #include "GirderModelSectionView.h"
 #include "GirderModelElevationView.h"
 
+#include <GirderModelViewController.h>
+#include "GirderModelViewControllerImp.h"
+
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
 #include <IFace\DrawBridgeSettings.h>
@@ -90,6 +93,8 @@ m_EventIndex(0),
 m_GirderKey(ALL_GROUPS,0),
 m_bIsAfterFirstUpdate(false)
 {
+
+   CEAFViewControllerFactory::Init(this);
 }
 
 CGirderModelChildFrame::~CGirderModelChildFrame()
@@ -121,7 +126,7 @@ BOOL CGirderModelChildFrame::OnCmdMsg(UINT nID,int nCode,void* pExtra,AFX_CMDHAN
    // capture the current selection
    CSelection selection = pDoc->GetSelection();
 
-   bool bSync = DoSyncWithBridgeModelView();
+   bool bSync = SyncWithBridgeModelView();
    BOOL bIsQuickReportCommand = pDoc->IsReportCommand(nID,TRUE);
    if ( bIsQuickReportCommand && nCode == CN_COMMAND /*&& !bSync*/ )
    {
@@ -170,10 +175,49 @@ BEGIN_MESSAGE_MAP(CGirderModelChildFrame, CSplitChildFrame)
    ON_COMMAND(ID_GIRDERVIEW_DESIGNGIRDERDIRECTHOLDSLABOFFSET, OnDesignGirderDirectHoldSlabOffset)
    ON_UPDATE_COMMAND_UI(ID_GIRDERVIEW_DESIGNGIRDERDIRECTHOLDSLABOFFSET, OnUpdateDesignGirderDirectHoldSlabOffset)
    ON_WM_SETFOCUS()
+   ON_BN_CLICKED(IDC_STRANDS,OnStrandsButton)
+   ON_UPDATE_COMMAND_UI(IDC_STRANDS,OnUpdateStrandsButton)
+   ON_BN_CLICKED(IDC_STRANDS_CG, OnStrandsCGButton)
+   ON_UPDATE_COMMAND_UI(IDC_STRANDS_CG, OnUpdateStrandsCGButton)
+   ON_BN_CLICKED(IDC_DIMENSIONS, OnDimensionsButton)
+   ON_UPDATE_COMMAND_UI(IDC_DIMENSIONS, OnUpdateDimensionsButton)
+   ON_BN_CLICKED(IDC_PROPERTIES, OnPropertiesButton)
+   ON_UPDATE_COMMAND_UI(IDC_PROPERTIES, OnUpdatePropertiesButton)
+   ON_BN_CLICKED(IDC_LONGITUDINAL_REINFORCEMENT, OnLongitudinalReinforcementButton)
+   ON_UPDATE_COMMAND_UI(IDC_LONGITUDINAL_REINFORCEMENT, OnUpdateLongitudinalReinforcementButton)
+   ON_BN_CLICKED(IDC_STIRRUPS, OnStirrupsButton)
+   ON_UPDATE_COMMAND_UI(IDC_STIRRUPS, OnUpdateStirrupsButton)
+   ON_BN_CLICKED(IDC_USER_LOADS, OnUserLoadsButton)
+   ON_UPDATE_COMMAND_UI(IDC_USER_LOADS, OnUpdateUserLoadsButton)
+   ON_BN_CLICKED(IDC_SCHEMATIC, OnSchematicButton)
+   ON_UPDATE_COMMAND_UI(IDC_SCHEMATIC, OnUpdateSchematicButton)
+   ON_BN_CLICKED(IDC_SECTION_CG, OnSectionCGButton)
+   ON_UPDATE_COMMAND_UI(IDC_SECTION_CG, OnUpdateSectionCGButton)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
 // CGirderModelChildFrame message handlers
+bool CGirderModelChildFrame::SetEvent(EventIndexType eventIdx)
+{
+   CComboBox* pcbEvents = (CComboBox*)m_SettingsBar.GetDlgItem(IDC_SELEVENT);
+   int nItems = pcbEvents->GetCount();
+   for (int idx = 0; idx < nItems; idx++)
+   {
+      EventIndexType eIdx = (EventIndexType)(pcbEvents->GetItemData(idx));
+      if (eIdx == eventIdx)
+      {
+         m_EventIndex = eventIdx;
+
+         pcbEvents->SetCurSel(idx);
+         UpdateBar();
+         UpdateViews();
+
+         return true;
+      }
+   }
+   return false;
+}
+
 void CGirderModelChildFrame::SelectGirder(const CGirderKey& girderKey,bool bDoUpdate)
 {
    if ( girderKey.groupIndex != INVALID_INDEX && girderKey.girderIndex != INVALID_INDEX )
@@ -197,10 +241,227 @@ const CGirderKey& CGirderModelChildFrame::GetSelection() const
    return m_GirderKey;
 }
 
-bool CGirderModelChildFrame::DoSyncWithBridgeModelView() const
+void CGirderModelChildFrame::DoSyncWithBridgeModelView(bool bSync)
+{
+   CPGSDocBase* pDoc = (CPGSDocBase*)GetActiveDocument();
+   UINT settings = pDoc->GetGirderEditorSettings();
+
+   if (bSync)
+   {
+      settings |= IDG_SV_SYNC_GIRDER;
+      pDoc->SelectGirder(m_GirderKey);
+   }
+   else
+   {
+      settings &= ~IDG_SV_SYNC_GIRDER;
+   }
+
+   pDoc->SetGirderEditorSettings(settings);
+}
+
+void CGirderModelChildFrame::SyncWithBridgeModelView(bool bSync)
+{
+   DoSyncWithBridgeModelView(bSync);
+   CButton* pBtn = (CButton*)m_SettingsBar.GetDlgItem(IDC_SYNC);
+   pBtn->SetCheck(bSync ? BST_CHECKED : BST_UNCHECKED);
+}
+
+bool CGirderModelChildFrame::SyncWithBridgeModelView() const
 {
    CButton* pBtn = (CButton*)m_SettingsBar.GetDlgItem(IDC_SYNC);
    return (pBtn->GetCheck() == 0 ? false : true);
+}
+
+void CGirderModelChildFrame::ShowStrands(bool bShow)
+{
+   CPGSDocBase* pDoc = (CPGSDocBase*)EAFGetDocument();
+   UINT settings = pDoc->GetGirderEditorSettings();
+   if (bShow)
+   {
+      sysFlags<UINT>::Set(&settings, IDG_EV_SHOW_STRANDS);
+      sysFlags<UINT>::Set(&settings, IDG_SV_SHOW_STRANDS);
+   }
+   else
+   {
+      sysFlags<UINT>::Clear(&settings, IDG_EV_SHOW_STRANDS);
+      sysFlags<UINT>::Clear(&settings, IDG_SV_SHOW_STRANDS);
+   }
+   pDoc->SetGirderEditorSettings(settings);
+}
+
+bool CGirderModelChildFrame::ShowStrands() const
+{
+   return m_SettingsBar.IsDlgButtonChecked(IDC_STRANDS) ? true : false;
+}
+
+void CGirderModelChildFrame::ShowStrandCG(bool bShow)
+{
+   CPGSDocBase* pDoc = (CPGSDocBase*)EAFGetDocument();
+   UINT settings = pDoc->GetGirderEditorSettings();
+   if (bShow)
+   {
+      sysFlags<UINT>::Set(&settings, IDG_EV_SHOW_PS_CG);
+      sysFlags<UINT>::Set(&settings, IDG_SV_SHOW_PS_CG);
+   }
+   else
+   {
+      sysFlags<UINT>::Clear(&settings, IDG_EV_SHOW_PS_CG);
+      sysFlags<UINT>::Clear(&settings, IDG_SV_SHOW_PS_CG);
+   }
+   pDoc->SetGirderEditorSettings(settings);
+}
+
+bool CGirderModelChildFrame::ShowStrandCG() const
+{
+   return m_SettingsBar.IsDlgButtonChecked(IDC_STRANDS_CG) ? true : false;
+}
+
+void CGirderModelChildFrame::ShowCG(bool bShow)
+{
+   CPGSDocBase* pDoc = (CPGSDocBase*)EAFGetDocument();
+   UINT settings = pDoc->GetGirderEditorSettings();
+   if (bShow)
+   {
+      sysFlags<UINT>::Set(&settings, IDG_SV_GIRDER_CG);
+      sysFlags<UINT>::Set(&settings, IDG_EV_GIRDER_CG);
+   }
+   else
+   {
+      sysFlags<UINT>::Clear(&settings, IDG_SV_GIRDER_CG);
+      sysFlags<UINT>::Clear(&settings, IDG_EV_GIRDER_CG);
+   }
+   pDoc->SetGirderEditorSettings(settings);
+}
+
+bool CGirderModelChildFrame::ShowCG() const
+{
+   return m_SettingsBar.IsDlgButtonChecked(IDC_SECTION_CG) ? true : false;
+}
+
+void CGirderModelChildFrame::ShowSectionProperties(bool bShow)
+{
+   CPGSDocBase* pDoc = (CPGSDocBase*)EAFGetDocument();
+   UINT settings = pDoc->GetGirderEditorSettings();
+   if (bShow)
+   {
+      sysFlags<UINT>::Set(&settings, IDG_SV_PROPERTIES);
+   }
+   else
+   {
+      sysFlags<UINT>::Clear(&settings, IDG_SV_PROPERTIES);
+   }
+   pDoc->SetGirderEditorSettings(settings);
+}
+
+bool CGirderModelChildFrame::ShowSectionProperties() const
+{
+   return m_SettingsBar.IsDlgButtonChecked(IDC_PROPERTIES) ? true : false;
+}
+
+void CGirderModelChildFrame::ShowDimensions(bool bShow)
+{
+   CPGSDocBase* pDoc = (CPGSDocBase*)EAFGetDocument();
+   UINT settings = pDoc->GetGirderEditorSettings();
+   if (bShow)
+   {
+      sysFlags<UINT>::Set(&settings, IDG_EV_SHOW_DIMENSIONS);
+      sysFlags<UINT>::Set(&settings, IDG_SV_SHOW_DIMENSIONS);
+   }
+   else
+   {
+      sysFlags<UINT>::Clear(&settings, IDG_EV_SHOW_DIMENSIONS);
+      sysFlags<UINT>::Clear(&settings, IDG_SV_SHOW_DIMENSIONS);
+   }
+   pDoc->SetGirderEditorSettings(settings);
+}
+
+bool CGirderModelChildFrame::ShowDimensions() const
+{
+   return m_SettingsBar.IsDlgButtonChecked(IDC_DIMENSIONS) ? true : false;
+}
+
+void CGirderModelChildFrame::ShowLongitudinalReinforcement(bool bShow)
+{
+   CPGSDocBase* pDoc = (CPGSDocBase*)EAFGetDocument();
+   UINT settings = pDoc->GetGirderEditorSettings();
+   if (bShow)
+   {
+      sysFlags<UINT>::Set(&settings, IDG_EV_SHOW_LONG_REINF);
+      sysFlags<UINT>::Set(&settings, IDG_SV_SHOW_LONG_REINF);
+   }
+   else
+   {
+      sysFlags<UINT>::Clear(&settings, IDG_EV_SHOW_LONG_REINF);
+      sysFlags<UINT>::Clear(&settings, IDG_SV_SHOW_LONG_REINF);
+   }
+   pDoc->SetGirderEditorSettings(settings);
+}
+
+bool CGirderModelChildFrame::ShowLongitudinalReinforcement() const
+{
+   return m_SettingsBar.IsDlgButtonChecked(IDC_LONGITUDINAL_REINFORCEMENT) ? true : false;
+}
+
+void CGirderModelChildFrame::ShowTransverseReinforcement(bool bShow)
+{
+   CPGSDocBase* pDoc = (CPGSDocBase*)EAFGetDocument();
+   UINT settings = pDoc->GetGirderEditorSettings();
+   if (bShow)
+   {
+      sysFlags<UINT>::Set(&settings, IDG_EV_SHOW_STIRRUPS);
+   }
+   else
+   {
+      sysFlags<UINT>::Clear(&settings, IDG_EV_SHOW_STIRRUPS);
+   }
+   pDoc->SetGirderEditorSettings(settings);
+}
+
+bool CGirderModelChildFrame::ShowTransverseReinforcement() const
+{
+   return m_SettingsBar.IsDlgButtonChecked(IDC_STIRRUPS) ? true : false;
+}
+
+void CGirderModelChildFrame::ShowLoads(bool bShow)
+{
+   CPGSDocBase* pDoc = (CPGSDocBase*)EAFGetDocument();
+   UINT settings = pDoc->GetGirderEditorSettings();
+   if (bShow)
+   {
+      sysFlags<UINT>::Set(&settings, IDG_EV_SHOW_LOADS);
+      sysFlags<UINT>::Set(&settings, IDG_EV_SHOW_LEGEND);
+   }
+   else
+   {
+      sysFlags<UINT>::Clear(&settings, IDG_EV_SHOW_LOADS);
+      sysFlags<UINT>::Clear(&settings, IDG_EV_SHOW_LEGEND);
+   }
+   pDoc->SetGirderEditorSettings(settings);
+}
+
+bool CGirderModelChildFrame::ShowLoads() const
+{
+   return m_SettingsBar.IsDlgButtonChecked(IDC_USER_LOADS) ? true : false;
+}
+
+void CGirderModelChildFrame::Schematic(bool bSchematic)
+{
+   CPGSDocBase* pDoc = (CPGSDocBase*)EAFGetDocument();
+   UINT settings = pDoc->GetGirderEditorSettings();
+   if (bSchematic)
+   {
+      sysFlags<UINT>::Set(&settings, IDG_EV_DRAW_ISOTROPIC);
+   }
+   else
+   {
+      sysFlags<UINT>::Clear(&settings, IDG_EV_DRAW_ISOTROPIC);
+   }
+   pDoc->SetGirderEditorSettings(settings);
+}
+
+bool CGirderModelChildFrame::Schematic() const
+{
+   return m_SettingsBar.IsDlgButtonChecked(IDC_SCHEMATIC) ? true : false;
 }
 
 void CGirderModelChildFrame::RefreshGirderLabeling()
@@ -248,7 +509,7 @@ int CGirderModelChildFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
    }
 	
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
-	if ( !m_SettingsBar.Create( this, IDD_GIRDER_ELEVATION_BAR, CBRS_TOP, IDD_GIRDER_ELEVATION_BAR) )
+	if ( !m_SettingsBar.Create( this, IDD_GIRDER_EDITOR_BAR, CBRS_TOP, IDD_GIRDER_EDITOR_BAR) )
 	{
 		TRACE0("Failed to create control bar\n");
 		return -1;      // fail to create
@@ -274,8 +535,10 @@ int CGirderModelChildFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
    distributed_load_tool->SetID(IDC_DISTRIBUTED_LOAD_DRAG);
    distributed_load_tool->SetToolTipText(_T("Drag me onto girder to create a distributed load"));
 
+   HINSTANCE hInstance = AfxGetInstanceHandle();
+
    CComQIPtr<iToolIcon, &IID_iToolIcon> dti(distributed_load_tool);
-   hr = dti->SetIcon(::AfxGetInstanceHandle(), IDI_DISTRIBUTED_LOAD);
+   hr = dti->SetIcon(hInstance, IDI_DISTRIBUTED_LOAD);
    ATLASSERT(SUCCEEDED(hr));
 
    m_SettingsBar.AddTool(distributed_load_tool);
@@ -290,7 +553,7 @@ int CGirderModelChildFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
       moment_load_tool->SetToolTipText(_T("Drag me onto girder to create a moment load"));
       
       CComQIPtr<iToolIcon, &IID_iToolIcon> mti(moment_load_tool);
-      hr = mti->SetIcon(::AfxGetInstanceHandle(), IDI_MOMENT_LOAD);
+      hr = mti->SetIcon(hInstance, IDI_MOMENT_LOAD);
       ATLASSERT(SUCCEEDED(hr));
 
       m_SettingsBar.AddTool(moment_load_tool);
@@ -300,13 +563,49 @@ int CGirderModelChildFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
       m_SettingsBar.GetDlgItem(IDC_MOMENT_LOAD_DRAG)->ShowWindow(SW_HIDE);
    }
 
+   CButton* pBtn = (CButton*)m_SettingsBar.GetDlgItem(IDC_STRANDS);
+   pBtn->SetIcon((HICON)::LoadImage(hInstance, MAKEINTRESOURCE(IDI_STRANDS), IMAGE_ICON, 16, 16, LR_DEFAULTCOLOR | LR_SHARED));
+   m_SettingsBar.AddTooltip(pBtn);
+
+   pBtn = (CButton*)m_SettingsBar.GetDlgItem(IDC_STRANDS_CG);
+   pBtn->SetIcon((HICON)::LoadImage(hInstance, MAKEINTRESOURCE(IDI_STRANDS_CG), IMAGE_ICON, 16, 16, LR_DEFAULTCOLOR | LR_SHARED));
+   m_SettingsBar.AddTooltip(pBtn);
+
+   pBtn = (CButton*)m_SettingsBar.GetDlgItem(IDC_DIMENSIONS);
+   pBtn->SetIcon((HICON)::LoadImage(hInstance, MAKEINTRESOURCE(IDI_DIMENSIONS), IMAGE_ICON, 16, 16, LR_DEFAULTCOLOR | LR_SHARED));
+   m_SettingsBar.AddTooltip(pBtn);
+
+   pBtn = (CButton*)m_SettingsBar.GetDlgItem(IDC_PROPERTIES);
+   pBtn->SetIcon((HICON)::LoadImage(hInstance, MAKEINTRESOURCE(IDI_PROPERTIES), IMAGE_ICON, 16, 16, LR_DEFAULTCOLOR | LR_SHARED));
+   m_SettingsBar.AddTooltip(pBtn);
+
+   pBtn = (CButton*)m_SettingsBar.GetDlgItem(IDC_LONGITUDINAL_REINFORCEMENT);
+   pBtn->SetIcon((HICON)::LoadImage(hInstance, MAKEINTRESOURCE(IDI_LONGITUDINAL_REINFORCEMENT), IMAGE_ICON, 16, 16, LR_DEFAULTCOLOR | LR_SHARED));
+   m_SettingsBar.AddTooltip(pBtn);
+
+   pBtn = (CButton*)m_SettingsBar.GetDlgItem(IDC_STIRRUPS);
+   pBtn->SetIcon((HICON)::LoadImage(hInstance, MAKEINTRESOURCE(IDI_STIRRUPS), IMAGE_ICON, 16, 16, LR_DEFAULTCOLOR | LR_SHARED));
+   m_SettingsBar.AddTooltip(pBtn);
+
+   pBtn = (CButton*)m_SettingsBar.GetDlgItem(IDC_USER_LOADS);
+   pBtn->SetIcon((HICON)::LoadImage(hInstance, MAKEINTRESOURCE(IDI_USER_LOADS), IMAGE_ICON, 16, 16, LR_DEFAULTCOLOR | LR_SHARED));
+   m_SettingsBar.AddTooltip(pBtn);
+
+   pBtn = (CButton*)m_SettingsBar.GetDlgItem(IDC_SCHEMATIC);
+   pBtn->SetIcon((HICON)::LoadImage(hInstance, MAKEINTRESOURCE(IDI_SCHEMATIC), IMAGE_ICON, 16, 16, LR_DEFAULTCOLOR | LR_SHARED));
+   m_SettingsBar.AddTooltip(pBtn);
+
+   pBtn = (CButton*)m_SettingsBar.GetDlgItem(IDC_SECTION_CG);
+   pBtn->SetIcon((HICON)::LoadImage(hInstance, MAKEINTRESOURCE(IDI_SECTION_CG), IMAGE_ICON, 16, 16, LR_DEFAULTCOLOR | LR_SHARED));
+   m_SettingsBar.AddTooltip(pBtn);
+
    // sets the check state of the sync button
    CPGSDocBase* pDoc = (CPGSDocBase*)GetActiveDocument();
    UINT settings = pDoc->GetGirderEditorSettings();
-   CButton* pBtn = (CButton*)m_SettingsBar.GetDlgItem(IDC_SYNC);
+   pBtn = (CButton*)m_SettingsBar.GetDlgItem(IDC_SYNC);
    pBtn->SetCheck( settings & IDG_SV_SYNC_GIRDER ? TRUE : FALSE);
 
-   if ( DoSyncWithBridgeModelView() ) 
+   if ( SyncWithBridgeModelView() ) 
    {
       // Sync only if we can
       CSelection selection = pDoc->GetSelection();
@@ -322,10 +621,11 @@ int CGirderModelChildFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IPointOfInterest,pPoi);
-   std::vector<pgsPointOfInterest> vPoi(pPoi->GetPointsOfInterest(CSegmentKey(m_GirderKey,ALL_SEGMENTS)));
+   PoiList vPoi;
+   pPoi->GetPointsOfInterest(CSegmentKey(m_GirderKey, ALL_SEGMENTS), &vPoi);
 
    IndexType pos = vPoi.size()/2; // default is mid-span
-   pgsPointOfInterest poi(vPoi.at(pos));
+   const pgsPointOfInterest& poi(vPoi.at(pos));
    m_CurrentCutLocation = pPoi->ConvertPoiToGirderlineCoordinate(poi);
 
    FillEventComboBox();
@@ -343,7 +643,7 @@ void CGirderModelChildFrame::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHi
    else if ( lHint == HINT_SELECTIONCHANGED )
    {
       CSelection* pSelection = (CSelection*)pHint;
-      if( (pSelection->Type == CSelection::Girder || pSelection->Type == CSelection::Segment) && DoSyncWithBridgeModelView() )
+      if( (pSelection->Type == CSelection::Girder || pSelection->Type == CSelection::Segment) && SyncWithBridgeModelView() )
       {
          if ( m_GirderKey.groupIndex != pSelection->GroupIdx || m_GirderKey.girderIndex != pSelection->GirderIdx )
          {
@@ -563,7 +863,7 @@ void CGirderModelChildFrame::OnGirderChanged()
    UpdateBar();
    UpdateViews();
 
-   if ( DoSyncWithBridgeModelView() )
+   if ( SyncWithBridgeModelView() )
    {
       CPGSDocBase* pDoc = (CPGSDocBase*)GetActiveDocument();
       pDoc->SelectGirder(m_GirderKey);
@@ -592,7 +892,7 @@ void CGirderModelChildFrame::OnGroupChanged()
    UpdateBar();
    UpdateViews();
 
-   if ( DoSyncWithBridgeModelView() ) 
+   if ( SyncWithBridgeModelView() ) 
    {
       CPGSDocBase* pDoc = (CPGSDocBase*)GetActiveDocument();
       pDoc->SelectGirder(m_GirderKey);
@@ -698,6 +998,19 @@ pgsPointOfInterest CGirderModelChildFrame::GetCutLocation()
    return GetGirderModelElevationView()->GetCutLocation();
 }
 
+void CGirderModelChildFrame::CreateViewController(IEAFViewController** ppController)
+{
+   CComPtr<IEAFViewController> stdController;
+   CEAFViewControllerFactory::CreateViewController(&stdController);
+
+   CComObject<CGirderModelViewController>* pController;
+   CComObject<CGirderModelViewController>::CreateInstance(&pController);
+   pController->Init(this, stdController);
+
+   (*ppController) = pController;
+   (*ppController)->AddRef();
+}
+
 void CGirderModelChildFrame::OnFilePrintDirect() 
 {
    DoFilePrint(true);
@@ -782,20 +1095,7 @@ LRESULT CGirderModelChildFrame::OnCommandHelp(WPARAM, LPARAM lParam)
 
 void CGirderModelChildFrame::OnSync() 
 {
-   CPGSDocBase* pDoc = (CPGSDocBase*)GetActiveDocument();
-   UINT settings = pDoc->GetGirderEditorSettings();
-
-   if ( DoSyncWithBridgeModelView() )
-   {
-      settings |= IDG_SV_SYNC_GIRDER;
-      pDoc->SelectGirder(m_GirderKey);
-   }
-   else
-   {
-      settings &= ~IDG_SV_SYNC_GIRDER;
-   }
-
-   pDoc->SetGirderEditorSettings(settings);
+   DoSyncWithBridgeModelView(SyncWithBridgeModelView());
 }
 
 void CGirderModelChildFrame::OnUpdateDesignGirderDirect(CCmdUI* pCmdUI)
@@ -830,7 +1130,7 @@ void CGirderModelChildFrame::OnSetFocus(CWnd* pOldWnd)
 {
    __super::OnSetFocus(pOldWnd);
 
-   if ( m_bIsAfterFirstUpdate && DoSyncWithBridgeModelView() ) 
+   if ( m_bIsAfterFirstUpdate && SyncWithBridgeModelView() ) 
    {
       CPGSDocBase* pDoc = (CPGSDocBase*)GetActiveDocument();
       pDoc->SelectGirder(m_GirderKey);
@@ -873,4 +1173,145 @@ void CGirderModelChildFrame::FillEventComboBox()
       pcbEvents->SetCurSel(0);
    }
    m_EventIndex = (EventIndexType)pcbEvents->GetItemData(pcbEvents->GetCurSel());
+}
+
+void CGirderModelChildFrame::OnUpdateStrandsButton(CCmdUI* pCmdUI)
+{
+   CPGSDocBase* pDoc = (CPGSDocBase*)EAFGetDocument();
+   UINT settings = pDoc->GetGirderEditorSettings();
+   pCmdUI->SetCheck(sysFlags<UINT>::IsSet(settings, IDG_EV_SHOW_STRANDS) || sysFlags<UINT>::IsSet(settings, IDG_SV_SHOW_STRANDS) ? BST_CHECKED : BST_UNCHECKED);
+}
+
+void CGirderModelChildFrame::OnStrandsButton()
+{
+   CPGSDocBase* pDoc = (CPGSDocBase*)EAFGetDocument();
+   UINT settings = pDoc->GetGirderEditorSettings();
+   sysFlags<UINT>::Toggle(&settings, IDG_EV_SHOW_STRANDS);
+   sysFlags<UINT>::Toggle(&settings, IDG_SV_SHOW_STRANDS);
+   pDoc->SetGirderEditorSettings(settings);
+}
+
+void CGirderModelChildFrame::OnUpdateStrandsCGButton(CCmdUI* pCmdUI)
+{
+   CPGSDocBase* pDoc = (CPGSDocBase*)EAFGetDocument();
+   UINT settings = pDoc->GetGirderEditorSettings();
+   pCmdUI->SetCheck(sysFlags<UINT>::IsSet(settings, IDG_EV_SHOW_PS_CG) || sysFlags<UINT>::IsSet(settings, IDG_SV_SHOW_PS_CG) ? BST_CHECKED : BST_UNCHECKED);
+}
+
+void CGirderModelChildFrame::OnStrandsCGButton()
+{
+   CPGSDocBase* pDoc = (CPGSDocBase*)EAFGetDocument();
+   UINT settings = pDoc->GetGirderEditorSettings();
+   sysFlags<UINT>::Toggle(&settings, IDG_EV_SHOW_PS_CG);
+   sysFlags<UINT>::Toggle(&settings, IDG_SV_SHOW_PS_CG);
+   pDoc->SetGirderEditorSettings(settings);
+}
+
+void CGirderModelChildFrame::OnUpdateDimensionsButton(CCmdUI* pCmdUI)
+{
+   CPGSDocBase* pDoc = (CPGSDocBase*)EAFGetDocument();
+   UINT settings = pDoc->GetGirderEditorSettings();
+   pCmdUI->SetCheck(sysFlags<UINT>::IsSet(settings, IDG_EV_SHOW_DIMENSIONS) || sysFlags<UINT>::IsSet(settings, IDG_SV_SHOW_DIMENSIONS)  ? BST_CHECKED : BST_UNCHECKED);
+}
+
+void CGirderModelChildFrame::OnDimensionsButton()
+{
+   CPGSDocBase* pDoc = (CPGSDocBase*)EAFGetDocument();
+   UINT settings = pDoc->GetGirderEditorSettings();
+   sysFlags<UINT>::Toggle(&settings, IDG_EV_SHOW_DIMENSIONS);
+   sysFlags<UINT>::Toggle(&settings, IDG_SV_SHOW_DIMENSIONS);
+   pDoc->SetGirderEditorSettings(settings);
+}
+
+void CGirderModelChildFrame::OnUpdatePropertiesButton(CCmdUI* pCmdUI)
+{
+   CPGSDocBase* pDoc = (CPGSDocBase*)EAFGetDocument();
+   UINT settings = pDoc->GetGirderEditorSettings();
+   pCmdUI->SetCheck(sysFlags<UINT>::IsSet(settings, IDG_SV_PROPERTIES) ? BST_CHECKED : BST_UNCHECKED);
+}
+
+void CGirderModelChildFrame::OnPropertiesButton()
+{
+   CPGSDocBase* pDoc = (CPGSDocBase*)EAFGetDocument();
+   UINT settings = pDoc->GetGirderEditorSettings();
+   sysFlags<UINT>::Toggle(&settings, IDG_SV_PROPERTIES);
+   pDoc->SetGirderEditorSettings(settings);
+}
+
+void CGirderModelChildFrame::OnUpdateLongitudinalReinforcementButton(CCmdUI* pCmdUI)
+{
+   CPGSDocBase* pDoc = (CPGSDocBase*)EAFGetDocument();
+   UINT settings = pDoc->GetGirderEditorSettings();
+   pCmdUI->SetCheck(sysFlags<UINT>::IsSet(settings, IDG_EV_SHOW_LONG_REINF) || sysFlags<UINT>::IsSet(settings, IDG_SV_SHOW_LONG_REINF) ? BST_CHECKED : BST_UNCHECKED);
+}
+
+void CGirderModelChildFrame::OnLongitudinalReinforcementButton()
+{
+   CPGSDocBase* pDoc = (CPGSDocBase*)EAFGetDocument();
+   UINT settings = pDoc->GetGirderEditorSettings();
+   sysFlags<UINT>::Toggle(&settings, IDG_EV_SHOW_LONG_REINF);
+   sysFlags<UINT>::Toggle(&settings, IDG_SV_SHOW_LONG_REINF);
+   pDoc->SetGirderEditorSettings(settings);
+}
+
+void CGirderModelChildFrame::OnUpdateStirrupsButton(CCmdUI* pCmdUI)
+{
+   CPGSDocBase* pDoc = (CPGSDocBase*)EAFGetDocument();
+   UINT settings = pDoc->GetGirderEditorSettings();
+   pCmdUI->SetCheck(sysFlags<UINT>::IsSet(settings, IDG_EV_SHOW_STIRRUPS) ? BST_CHECKED : BST_UNCHECKED);
+}
+
+void CGirderModelChildFrame::OnStirrupsButton()
+{
+   CPGSDocBase* pDoc = (CPGSDocBase*)EAFGetDocument();
+   UINT settings = pDoc->GetGirderEditorSettings();
+   sysFlags<UINT>::Toggle(&settings, IDG_EV_SHOW_STIRRUPS);
+   pDoc->SetGirderEditorSettings(settings);
+}
+
+void CGirderModelChildFrame::OnUpdateUserLoadsButton(CCmdUI* pCmdUI)
+{
+   CPGSDocBase* pDoc = (CPGSDocBase*)EAFGetDocument();
+   UINT settings = pDoc->GetGirderEditorSettings();
+   pCmdUI->SetCheck(sysFlags<UINT>::IsSet(settings, IDG_EV_SHOW_LOADS) || sysFlags<UINT>::IsSet(settings, IDG_EV_SHOW_LEGEND) ? BST_CHECKED : BST_UNCHECKED);
+}
+
+void CGirderModelChildFrame::OnUserLoadsButton()
+{
+   CPGSDocBase* pDoc = (CPGSDocBase*)EAFGetDocument();
+   UINT settings = pDoc->GetGirderEditorSettings();
+   sysFlags<UINT>::Toggle(&settings, IDG_EV_SHOW_LOADS);
+   sysFlags<UINT>::Toggle(&settings, IDG_EV_SHOW_LEGEND);
+   pDoc->SetGirderEditorSettings(settings);
+}
+
+void CGirderModelChildFrame::OnUpdateSchematicButton(CCmdUI* pCmdUI)
+{
+   CPGSDocBase* pDoc = (CPGSDocBase*)EAFGetDocument();
+   UINT settings = pDoc->GetGirderEditorSettings();
+   pCmdUI->SetCheck(sysFlags<UINT>::IsSet(settings, IDG_EV_DRAW_ISOTROPIC) ? BST_UNCHECKED : BST_CHECKED);
+}
+
+void CGirderModelChildFrame::OnSchematicButton()
+{
+   CPGSDocBase* pDoc = (CPGSDocBase*)EAFGetDocument();
+   UINT settings = pDoc->GetGirderEditorSettings();
+   sysFlags<UINT>::Toggle(&settings, IDG_EV_DRAW_ISOTROPIC);
+   pDoc->SetGirderEditorSettings(settings);
+}
+
+void CGirderModelChildFrame::OnUpdateSectionCGButton(CCmdUI* pCmdUI)
+{
+   CPGSDocBase* pDoc = (CPGSDocBase*)EAFGetDocument();
+   UINT settings = pDoc->GetGirderEditorSettings();
+   pCmdUI->SetCheck(sysFlags<UINT>::IsSet(settings, IDG_SV_GIRDER_CG) || sysFlags<UINT>::IsSet(settings, IDG_EV_GIRDER_CG) ? BST_CHECKED : BST_UNCHECKED);
+}
+
+void CGirderModelChildFrame::OnSectionCGButton()
+{
+   CPGSDocBase* pDoc = (CPGSDocBase*)EAFGetDocument();
+   UINT settings = pDoc->GetGirderEditorSettings();
+   sysFlags<UINT>::Toggle(&settings, IDG_SV_GIRDER_CG);
+   sysFlags<UINT>::Toggle(&settings, IDG_EV_GIRDER_CG);
+   pDoc->SetGirderEditorSettings(settings);
 }

@@ -31,9 +31,11 @@
 #pragma once
 #endif // _MSC_VER > 1000
 
+#include <EAF\EAFViewControllerFactory.h>
 #include <EAF\EAFChildFrame.h>
 
-class CEditLoadsChildFrame : public CEAFChildFrame
+
+class CEditLoadsChildFrame : public CEAFChildFrame, public CEAFViewControllerFactory
 {
 	DECLARE_DYNCREATE(CEditLoadsChildFrame)
 public:
@@ -58,6 +60,10 @@ public:
 	//}}AFX_VIRTUAL
 
    void OnUpdateFrameTitle(BOOL bAddToTitle);
+
+   // CEAFViewControllerFactory
+protected:
+   virtual void CreateViewController(IEAFViewController** ppController) override;
 
 // Implementation
 public:

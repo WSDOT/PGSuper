@@ -24,6 +24,7 @@
 #include "resource.h"
 #include "DeflectionHistoryGraphController.h"
 #include <Graphing\DeflectionHistoryGraphBuilder.h>
+#include <IFace\DocumentType.h>
 
 IMPLEMENT_DYNCREATE(CDeflectionHistoryGraphController,CLocationGraphController)
 
@@ -35,12 +36,21 @@ CDeflectionHistoryGraphController::CDeflectionHistoryGraphController()
 BEGIN_MESSAGE_MAP(CDeflectionHistoryGraphController, CLocationGraphController)
 	//{{AFX_MSG_MAP(CStressHistoryGraphController)
    ON_BN_CLICKED(IDC_ELEV_ADJUSTMENT,OnElevAdjustment)
+   ON_BN_CLICKED(IDC_PRECAMBER,OnPrecamber)
+   ON_BN_CLICKED(IDC_GRID, OnShowGrid)
    //}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
 BOOL CDeflectionHistoryGraphController::OnInitDialog()
 {
    CLocationGraphController::OnInitDialog();
+
+   GET_IFACE(IDocumentType, pDocType);
+   if (pDocType->IsPGSuperDocument())
+   {
+      // elevation adjustments don't apply to PGSuper
+      GetDlgItem(IDC_ELEV_ADJUSTMENT)->ShowWindow(SW_HIDE);
+   }
 
    return TRUE;
 }
@@ -50,15 +60,65 @@ void CDeflectionHistoryGraphController::OnElevAdjustment()
    UpdateGraph();
 }
 
+void CDeflectionHistoryGraphController::OnPrecamber()
+{
+   UpdateGraph();
+}
+
+void CDeflectionHistoryGraphController::OnShowGrid()
+{
+   // toggle the grid setting
+   ((CDeflectionHistoryGraphBuilder*)GetGraphBuilder())->ShowGrid(ShowGrid());
+}
+
 void CDeflectionHistoryGraphController::UpdateGraph()
 {
    ((CDeflectionHistoryGraphBuilder*)GetGraphBuilder())->InvalidateGraph();
    ((CDeflectionHistoryGraphBuilder*)GetGraphBuilder())->Update();
 }
 
-bool CDeflectionHistoryGraphController::IncludeElevationAdjustment()
+void CDeflectionHistoryGraphController::IncludeElevationAdjustment(bool bAdjust)
+{
+   if (IncludeElevationAdjustment() != bAdjust)
+   {
+      CheckDlgButton(IDC_ELEV_ADJUSTMENT, bAdjust ? BST_CHECKED : BST_UNCHECKED);
+      UpdateGraph();
+   }
+}
+
+bool CDeflectionHistoryGraphController::IncludeElevationAdjustment() const
 {
    return IsDlgButtonChecked(IDC_ELEV_ADJUSTMENT) == BST_CHECKED ? true : false;
+}
+
+void CDeflectionHistoryGraphController::IncludePrecamber(bool bInclude)
+{
+   if (IncludePrecamber() != bInclude)
+   {
+      CheckDlgButton(IDC_PRECAMBER, bInclude ? BST_CHECKED : BST_UNCHECKED);
+      UpdateGraph();
+   }
+}
+
+bool CDeflectionHistoryGraphController::IncludePrecamber() const
+{
+   return IsDlgButtonChecked(IDC_PRECAMBER) == BST_CHECKED ? true : false;
+}
+
+bool CDeflectionHistoryGraphController::ShowGrid() const
+{
+   CButton* pBtn = (CButton*)GetDlgItem(IDC_GRID);
+   return (pBtn->GetCheck() == BST_CHECKED ? true : false);
+}
+
+void CDeflectionHistoryGraphController::ShowGrid(bool bShowGrid)
+{
+   if (bShowGrid != ShowGrid())
+   {
+      CButton* pBtn = (CButton*)GetDlgItem(IDC_GRID);
+      pBtn->SetCheck(bShowGrid ? BST_CHECKED : BST_UNCHECKED);
+      ((CDeflectionHistoryGraphBuilder*)GetGraphBuilder())->ShowGrid(bShowGrid);
+   }
 }
 
 #ifdef _DEBUG

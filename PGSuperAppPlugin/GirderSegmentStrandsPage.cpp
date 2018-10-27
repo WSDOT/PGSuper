@@ -153,6 +153,13 @@ void CGirderSegmentStrandsPage::DoDataExchange(CDataExchange* pDX)
    DDX_CBItemData(pDX, IDC_STRAND_SIZE, m_StrandKey);
    DDX_CBItemData(pDX, IDC_TEMP_STRAND_SIZE, m_TempStrandKey);
 
+   pgsTypes::TTSUsage ttsUsage = m_pSegment->Strands.GetTemporaryStrandUsage();
+   DDX_CBItemData(pDX, IDC_TTS_USE, ttsUsage);
+   if (pDX->m_bSaveAndValidate)
+   {
+      m_pSegment->Strands.SetTemporaryStrandUsage(ttsUsage);
+   }
+
    if (pDX->m_bSaveAndValidate)
    {
       // strand material
@@ -217,6 +224,18 @@ BOOL CGirderSegmentStrandsPage::OnInitDialog()
    strSegmentLengthLabel.Format(_T("%s Length: %s"),pDocType->IsPGSuperDocument() ? _T("Girder") : _T("Segment"),FormatDimension(L,pDisplayUnits->GetSpanLengthUnit()));
    GetDlgItem(IDC_SEGMENT_LENGTH_LABEL)->SetWindowText(strSegmentLengthLabel);
 
+   CComboBox* pCB = (CComboBox*)GetDlgItem(IDC_TTS_USE);
+   int idx = pCB->AddString(_T("Pretensioned with permanent strands"));
+   pCB->SetItemData(idx, (DWORD)pgsTypes::ttsPretensioned);
+
+   idx = pCB->AddString(_T("Post-tensioned before lifting"));
+   pCB->SetItemData(idx, (DWORD)pgsTypes::ttsPTBeforeLifting);
+
+   idx = pCB->AddString(_T("Post-tensioned immedately after lifting"));
+   pCB->SetItemData(idx, (DWORD)pgsTypes::ttsPTAfterLifting);
+
+   idx = pCB->AddString(_T("Post-tensioned immedately before shipping"));
+   pCB->SetItemData(idx, (DWORD)pgsTypes::ttsPTBeforeShipping);
 
    // All this work has to be done before CPropertyPage::OnInitDialog().
    // This code sets up the "current" selections which must be done prior to

@@ -140,9 +140,7 @@ private:
    LOSSDETAILS* GetLossDetails(LOSSES* pLosses,const pgsPointOfInterest& poi);
    std::vector<pgsTypes::ProductForceType> GetApplicableProductLoads(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,bool bExternalForcesOnly=false);
 
-   int GetProductForceCount();
-
-   std::vector<pgsPointOfInterest> GetAnalysisLocations(const CGirderKey& girderKey);
+   void GetAnalysisLocations(const CGirderKey& girderKey,PoiList* pPoiList);
 
    CSegmentKey m_SegmentKey; // segment for which we are currently computing deflections
 };

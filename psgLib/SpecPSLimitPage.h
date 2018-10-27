@@ -67,6 +67,8 @@ protected:
 	DECLARE_MESSAGE_MAP()
 
    void EnableControls(BOOL bEnable,UINT nSR,UINT nLR);
+public:
+   virtual BOOL OnSetActive();
 };
 
 //{{AFX_INSERT_LOCATION}}

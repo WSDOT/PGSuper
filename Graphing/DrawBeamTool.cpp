@@ -468,7 +468,8 @@ void CDrawBeamTool::DrawSegmentEndSupport(Float64 beamShift,const CPrecastSegmen
    }
 
    PoiAttributeType attribute = (endType == pgsTypes::metStart ? POI_0L : POI_10L);
-   std::vector<pgsPointOfInterest> vPoi(pIPoi->GetPointsOfInterest(segmentKey,poiReference | attribute,POIFIND_AND));
+   PoiList vPoi;
+   pIPoi->GetPointsOfInterest(segmentKey, poiReference | attribute, &vPoi);
    ATLASSERT(vPoi.size() == 1);
    pgsPointOfInterest poiCLBrg(vPoi.front());
 

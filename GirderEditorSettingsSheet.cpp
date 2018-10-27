@@ -105,12 +105,15 @@ void CGirderEditorSettingsSheet::SetSettings(UINT set)
    m_GirderEditorElevationSettingsPage.m_ShowLongReinf  = (set&IDG_EV_SHOW_LONG_REINF)!=0;
    m_GirderEditorElevationSettingsPage.m_ShowLoads      = (set&IDG_EV_SHOW_LOADS)!=0;
    m_GirderEditorElevationSettingsPage.m_ShowLegend      = (set&IDG_EV_SHOW_LEGEND)!=0;
+   m_GirderEditorElevationSettingsPage.m_ShowSectionCG = (set&IDG_EV_GIRDER_CG) != 0;
 
    // section view
    m_GirderEditorSectionSettingsPage.m_ShowPsCg       = (set&IDG_SV_SHOW_PS_CG)!=0;
    m_GirderEditorSectionSettingsPage.m_ShowDimensions = (set&IDG_SV_SHOW_DIMENSIONS)!=0;
    m_GirderEditorSectionSettingsPage.m_ShowStrands    = (set&IDG_SV_SHOW_STRANDS)!=0;
    m_GirderEditorSectionSettingsPage.m_ShowLongReinf  = (set&IDG_SV_SHOW_LONG_REINF)!=0;
+   m_GirderEditorSectionSettingsPage.m_ShowSectionCG = (set&IDG_SV_GIRDER_CG) != 0;
+   m_GirderEditorSectionSettingsPage.m_ShowGirderProperties = (set&IDG_SV_PROPERTIES) != 0;
 }
 
 UINT CGirderEditorSettingsSheet::GetSettings()const 
@@ -145,6 +148,9 @@ UINT CGirderEditorSettingsSheet::GetSettings()const
    if (m_GirderEditorElevationSettingsPage.m_ShowLegend)
       set |= IDG_EV_SHOW_LEGEND;
 
+   if (m_GirderEditorElevationSettingsPage.m_ShowSectionCG)
+      set |= IDG_EV_GIRDER_CG;
+
    // section view
    if (m_GirderEditorSectionSettingsPage.m_ShowPsCg)
       set |= IDG_SV_SHOW_PS_CG;
@@ -158,6 +164,11 @@ UINT CGirderEditorSettingsSheet::GetSettings()const
    if (m_GirderEditorSectionSettingsPage.m_ShowLongReinf)
       set |= IDG_SV_SHOW_LONG_REINF;
 
+   if (m_GirderEditorSectionSettingsPage.m_ShowSectionCG)
+      set |= IDG_SV_GIRDER_CG;
+
+   if (m_GirderEditorSectionSettingsPage.m_ShowGirderProperties)
+      set |= IDG_SV_PROPERTIES;
 
    return set;
 }

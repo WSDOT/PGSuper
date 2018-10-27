@@ -451,14 +451,14 @@ void CPsLossEngineer::LossesByRefinedEstimateBefore2005(BeamType beamType,const 
          }
          else
          {
-            msg = _T("Prestress losses could not be computed because the prestress jacking stress fpj does not exceed 0.5fpu (see Article 5.9.5.4.2c)\nAdjust the prestress jacking forces");
+            msg = _T("Prestress losses could not be computed because the prestress jacking stress fpj does not exceed 0.5fpu (see Article ") + std::_tstring(LrfdCw8th(_T("5.9.5.4.2c"),_T("5.9.3.4.2c"))) + _T("\nAdjust the prestress jacking forces");
          }
          pStatusItem = new pgsGirderDescriptionStatusItem(segmentKey,1,m_StatusGroupID,m_scidGirderDescriptionError,msg.c_str());
       }
       else if ( e.GetReasonCode() == lrfdXPsLosses::fcOutOfRange )
       {
          reason |= XREASON_ASSUMPTIONVIOLATED;
-         msg = _T("Concrete strength is out of range per LRFD 5.4.2.1 and 5.9.5.1");
+         msg = _T("Concrete strength is out of range per LRFD 5.4.2.1 and ") +  std::_tstring(LrfdCw8th(_T("5.9.5.1"),_T("5.9.3.1")));
          pStatusItem = new pgsGirderDescriptionStatusItem(segmentKey,2,m_StatusGroupID,m_scidGirderDescriptionWarning,msg.c_str());
       }
       else
@@ -622,7 +622,7 @@ void CPsLossEngineer::LossesByRefinedEstimate2005(BeamType beamType,const pgsPoi
                                 td,
                                 tf,
                                 pSpecEntry->GetCuringMethod() == CURING_ACCELERATED ? lrfdCreepCoefficient2005::Accelerated : lrfdCreepCoefficient2005::Normal,
-                                ::ConvertToSysUnits(pSpecEntry->GetCuringMethodTimeAdjustmentFactor(), unitMeasure::Day),
+                                pSpecEntry->GetCuringMethodTimeAdjustmentFactor(),
                                 lossAgency!=laWSDOT, // ignore initial relaxation if not WSDOT
                                 false,
                                 relaxationMethod));
@@ -654,20 +654,20 @@ void CPsLossEngineer::LossesByRefinedEstimate2005(BeamType beamType,const pgsPoi
          }
          else
          {
-            msg = _T("Prestress losses could not be computed because the prestress jacking stress fpj does not exceed 0.5fpu (see Article 5.9.5.4.2c)\nAdjust the prestress jacking forces");
+            msg = _T("Prestress losses could not be computed because the prestress jacking stress fpj does not exceed 0.5fpu (see Article") + std::_tstring(LrfdCw8th(_T("5.9.5.4.2c"),_T("5.9.3.4.2c"))) + _T("\nAdjust the prestress jacking forces");
          }
          pStatusItem = new pgsGirderDescriptionStatusItem(segmentKey,1,m_StatusGroupID,m_scidGirderDescriptionError,msg.c_str());
       }
       else if ( e.GetReasonCode() == lrfdXPsLosses::StrandType )
       {
          reason |= XREASON_ASSUMPTIONVIOLATED;
-         msg = _T("The relaxation loss of 1.2 ksi can only be used with low relaxation strands (see Article 5.9.5.4.2c)\nChange the strand type or select a different method for computing losses");
+         msg = _T("The relaxation loss of 1.2 ksi can only be used with low relaxation strands (see Article ") + std::_tstring(LrfdCw8th(_T("5.9.5.4.2c"),_T("5.9.3.4.2c"))) +_T("\nChange the strand type or select a different method for computing losses");
          pStatusItem = new pgsGirderDescriptionStatusItem(segmentKey,1,m_StatusGroupID,m_scidGirderDescriptionError,msg.c_str());
       }
       else if ( e.GetReasonCode() == lrfdXPsLosses::fcOutOfRange )
       {
          reason |= XREASON_ASSUMPTIONVIOLATED;
-         msg = _T("Concrete strength is out of range per LRFD 5.4.2.1 and 5.9.5.1");
+         msg = _T("Concrete strength is out of range per LRFD 5.4.2.1 and ") + std::_tstring(LrfdCw8th(_T("5.9.5.1"),_T("5.9.3.1")));
          pStatusItem = new pgsGirderDescriptionStatusItem(segmentKey,2,m_StatusGroupID,m_scidGirderDescriptionWarning,msg.c_str());
       }
       else
@@ -697,10 +697,11 @@ void CPsLossEngineer::LossesByRefinedEstimateTxDOT2013(BeamType beamType,const p
    if(method == lrfdElasticShortening::fcgp07Fpu)
    {
       // Elastic shortening uses the 0.7Fpu method. We only need to compute at mid-girder and then cache results for other locations
-         GET_IFACE( IPointOfInterest, pPoi);
-         std::vector<pgsPointOfInterest> vPoi( pPoi->GetPointsOfInterest( poi.GetSegmentKey(), POI_RELEASED_SEGMENT | POI_5L) );
-         ATLASSERT(vPoi.size() == 1);
-         pgsPointOfInterest midpoi = vPoi.front();
+      GET_IFACE( IPointOfInterest, pPoi);
+      PoiList vPoi;
+      pPoi->GetPointsOfInterest(poi.GetSegmentKey(), POI_5L | POI_RELEASED_SEGMENT, &vPoi);
+      ATLASSERT(vPoi.size() == 1);
+      const pgsPointOfInterest& midpoi = vPoi.front();
 
       lrfdElasticShortening::FcgpComputationMethod newmethod = LossesByRefinedEstimateTxDOT2013_Compute(beamType, midpoi, config, pLosses);
       ATLASSERT(newmethod == lrfdElasticShortening::fcgp07Fpu);
@@ -912,14 +913,14 @@ lrfdElasticShortening::FcgpComputationMethod CPsLossEngineer::LossesByRefinedEst
          }
          else
          {
-            msg = _T("Prestress losses could not be computed because the prestress jacking stress fpj does not exceed 0.5fpu (see Article 5.9.5.4.2c)\nAdjust the prestress jacking forces");
+            msg = _T("Prestress losses could not be computed because the prestress jacking stress fpj does not exceed 0.5fpu (see Article ") +  std::_tstring(LrfdCw8th(_T("5.9.5.4.2c"),_T("5.9.3.4.2c"))) +_T(")\nAdjust the prestress jacking forces");
          }
          pStatusItem = new pgsGirderDescriptionStatusItem(segmentKey,1,m_StatusGroupID,m_scidGirderDescriptionError,msg.c_str());
       }
       else if ( e.GetReasonCode() == lrfdXPsLosses::fcOutOfRange )
       {
          reason |= XREASON_ASSUMPTIONVIOLATED;
-         msg = _T("Concrete strength is out of range per LRFD 5.4.2.1 and 5.9.5.1");
+         msg = _T("Concrete strength is out of range per LRFD 5.4.2.1 and ") +  std::_tstring(LrfdCw8th(_T("5.9.5.1"),_T("5.9.3.1")));
          pStatusItem = new pgsGirderDescriptionStatusItem(segmentKey,2,m_StatusGroupID,m_scidGirderDescriptionWarning,msg.c_str());
       }
       else
@@ -1005,7 +1006,7 @@ void CPsLossEngineer::LossesByApproxLumpSum(BeamType beamType,const pgsPointOfIn
    if ( girderConcreteType != pgsTypes::Normal || slabConcreteType != pgsTypes::Normal )
    {
       GET_IFACE(IEAFStatusCenter,pStatusCenter);
-      std::_tstring msg(_T("The approximate estimate of time-dependent losses given in LRFD 5.9.5.3 is for members made from normal-weight concrete"));
+      std::_tstring msg(_T("The approximate estimate of time-dependent losses given in LRFD  ") +  std::_tstring(LrfdCw8th(_T("5.9.5.3"),_T("5.9.3.3"))) + _T("is for members made from normal-weight concrete"));
       pgsInformationalStatusItem* pStatusItem = new pgsInformationalStatusItem(m_StatusGroupID,m_scidConcreteTypeError,msg.c_str());
       pStatusCenter->Add(pStatusItem);
 
@@ -1123,13 +1124,13 @@ void CPsLossEngineer::LossesByApproxLumpSum(BeamType beamType,const pgsPointOfIn
       {
          // 3rd edition /w 2005 interims and later
 
-         // LRFD 5th Edition, 2010, C5.9.5.3
-         // The approximate estimates of time-dependent prestress losses given in Eq 5.9.5.3-1 are intended for sections with composite decks only
+         // LRFD 5th Edition, 2010, C5.9.5.3 ( or >= 2017, C5.9.3.3)
+         // The approximate estimates of time-dependent prestress losses given in Eq 5.9.3.3-1 are intended for sections with composite decks only
          GET_IFACE_NOCHECK(IBridge,pBridge);
          if ( lrfdVersionMgr::FifthEdition2010 <= lrfdVersionMgr::GetVersion() && !pBridge->IsCompositeDeck() )
          {
             GET_IFACE(IEAFStatusCenter,pStatusCenter);
-            std::_tstring msg(_T("The approximate estimates of time-dependent prestress losses given in Eq 5.9.5.3-1 are intended for sections with composite decks only."));
+            std::_tstring msg(_T("The approximate estimates of time-dependent prestress losses given in Eq ") + std::_tstring(LrfdCw8th(_T("5.9.5.3-1"),_T("5.9.3.3-1"))) + _T(" are intended for sections with composite decks only."));
             pgsInformationalStatusItem* pStatusItem = new pgsInformationalStatusItem(m_StatusGroupID,m_scidLRFDVersionError,msg.c_str());
             pStatusCenter->Add(pStatusItem);
 
@@ -1226,14 +1227,14 @@ void CPsLossEngineer::LossesByApproxLumpSum(BeamType beamType,const pgsPointOfIn
          }
          else
          {
-            msg = _T("Prestress losses could not be computed because the prestress jacking stress fpj does not exceed 0.5fpu (see Article 5.9.5.4.2c)\nAdjust the prestress jacking forces");
+            msg = _T("Prestress losses could not be computed because the prestress jacking stress fpj does not exceed 0.5fpu (see Article ") +  std::_tstring(LrfdCw8th(_T("5.9.5.4.2c"),_T("5.9.3.4.2c"))) +_T(")\nAdjust the prestress jacking forces");
          }
          pStatusItem = new pgsGirderDescriptionStatusItem(segmentKey,1,m_StatusGroupID,m_scidGirderDescriptionError,msg.c_str());
       }
       else if ( e.GetReasonCode() == lrfdXPsLosses::fcOutOfRange )
       {
          reason |= XREASON_ASSUMPTIONVIOLATED;
-         msg = _T("Concrete strength is out of range per LRFD 5.4.2.1 and 5.9.5.1");
+         msg = _T("Concrete strength is out of range per LRFD 5.4.2.1 and ") + std::_tstring(LrfdCw8th(_T("5.9.5.1"),_T("5.9.3.1")));
          pStatusItem = new pgsGirderDescriptionStatusItem(segmentKey,0,m_StatusGroupID,m_scidGirderDescriptionWarning,msg.c_str());
       }
       else
@@ -1379,12 +1380,13 @@ void CPsLossEngineer::ReportRefinedMethodBefore2005(rptChapter* pChapter,CPsLoss
 
    pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pParagraph;
-   *pParagraph << _T("Refined Estimate of Time-Dependent Losses [5.9.5.4]") << rptNewLine;
+   *pParagraph << _T("Refined Estimate of Time-Dependent Losses [") << LrfdCw8th(_T("5.9.5.4"),_T("5.9.3.4")) <<_T("]") << rptNewLine;
 
-   std::vector<pgsPointOfInterest> vPoi(GetPointsOfInterest(girderKey));
+   PoiList vPoi;
+   GetPointsOfInterest(girderKey, &vPoi);
 
    GET_IFACE(ILosses,pILosses);
-   const LOSSDETAILS* pDetails = pILosses->GetLossDetails( vPoi[0] );
+   const LOSSDETAILS* pDetails = pILosses->GetLossDetails( vPoi.front() );
 
    // Do some preliminary setup for the tables.
    INIT_UV_PROTOTYPE( rptForceUnitValue,   force,       pDisplayUnits->GetGeneralForceUnit(),    false );
@@ -1446,13 +1448,9 @@ void CPsLossEngineer::ReportRefinedMethodBefore2005(rptChapter* pChapter,CPsLoss
    bool bSkipToNextRow = false;
    RowIndexType row1 = 1;
    RowIndexType row2 = 1;
-   std::vector<pgsPointOfInterest>::iterator iter(vPoi.begin());
-   std::vector<pgsPointOfInterest>::iterator end(vPoi.end());
-   for ( ; iter != end; iter++ )
+   for ( const pgsPointOfInterest& poi : vPoi)
    {
       bSkipToNextRow = false;
-
-      pgsPointOfInterest& poi = *iter;
 
       if ( row1 != 1 && IsEqual(prev_poi.GetDistFromStart(),poi.GetDistFromStart()) )
       {
@@ -1524,17 +1522,20 @@ void CPsLossEngineer::ReportRefinedMethod2005(rptChapter* pChapter,BeamType beam
 
    pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pParagraph;
-   *pParagraph << _T("Refined Estimate of Time-Dependent Losses [5.9.5.4]") << rptNewLine;
+   *pParagraph << _T("Refined Estimate of Time-Dependent Losses [") << LrfdCw8th(_T("5.9.5.4"),_T("5.9.3.4")) <<_T("]") << rptNewLine;
 
-   std::vector<pgsPointOfInterest> vPoi(GetPointsOfInterest(girderKey));
+   PoiList vPoi;
+   GetPointsOfInterest(girderKey, &vPoi);
 
    GET_IFACE(ILosses,pILosses);
-   const LOSSDETAILS* pDetails = pILosses->GetLossDetails( vPoi[0] );
+   const LOSSDETAILS* pDetails = pILosses->GetLossDetails( vPoi.front() );
 
    GET_IFACE(ISegmentData,pSegmentData);
    const CStrandData* pStrands = pSegmentData->GetStrandData(segmentKey);
 
    bool bTemporaryStrands = ( 0 < Nt && pStrands->GetTemporaryStrandUsage() == pgsTypes::ttsPretensioned ? true : false);
+
+   bool bDeckShrinkage = pILosses->IsDeckShrinkageApplicable();
 
    ReportInitialRelaxation(pChapter,bTemporaryStrands,pDetails->pLosses.get(),pDisplayUnits,level);
 
@@ -1566,7 +1567,7 @@ void CPsLossEngineer::ReportRefinedMethod2005(rptChapter* pChapter,BeamType beam
    // temporary strand removal effects depend on losses at end of hauling stage
 	pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
 	*pChapter << pParagraph;
-	*pParagraph << _T("Time dependent losses between transfer and hauling [5.9.5.4.2]") << rptNewLine << rptNewLine;
+	*pParagraph << _T("Time dependent losses between transfer and hauling [") << LrfdCw8th(_T("5.9.5.4.2"),_T("5.9.3.4.2")) << _T("]") << rptNewLine << rptNewLine;
 	
 	pSRH = CShrinkageAtHaulingTable::PrepareTable(pChapter,m_pBroker,segmentKey,bTemporaryStrands,pDetails,pDisplayUnits,level);
 	pCRH = CCreepAtHaulingTable::PrepareTable(pChapter,m_pBroker,segmentKey,bTemporaryStrands,pDetails,pDisplayUnits,level);
@@ -1583,11 +1584,11 @@ void CPsLossEngineer::ReportRefinedMethod2005(rptChapter* pChapter,BeamType beam
    *pChapter << pParagraph;
    if ( pBridge->IsCompositeDeck() )
    {
-      *pParagraph << _T("Time dependent losses between transfer and deck placement [5.9.5.4.2]") << rptNewLine;
+      *pParagraph << _T("Time dependent losses between transfer and deck placement [") << LrfdCw8th(_T("5.9.5.4.2"), _T("5.9.3.4.2")) << _T("]") << rptNewLine;
    }
    else
    {
-      *pParagraph << _T("Time dependent losses between transfer and installation of precast members [5.9.5.4.2, 5.9.5.4.4]") << rptNewLine;
+      *pParagraph << _T("Time dependent losses between transfer and installation of precast members [") << LrfdCw8th(_T("5.9.5.4.2, "), _T("5.9.3.4.2, ")) << LrfdCw8th(_T("5.9.5.4.4"), _T("5.9.3.4.4")) << _T("]") << rptNewLine;
    }
 
    CShrinkageAtDeckPlacementTable*      pSR = CShrinkageAtDeckPlacementTable::PrepareTable(pChapter,m_pBroker,segmentKey,pDetails,pDisplayUnits,level);
@@ -1609,17 +1610,21 @@ void CPsLossEngineer::ReportRefinedMethod2005(rptChapter* pChapter,BeamType beam
    *pChapter << pParagraph;
    if ( pBridge->IsCompositeDeck() )
    {
-      *pParagraph << _T("Losses: Time of Deck Placement to Final Time [5.9.5.4.3]") << rptNewLine;
+      *pParagraph << _T("Losses: Time of Deck Placement to Final Time [[") << LrfdCw8th(_T("5.9.5.4.3, "),_T("5.9.3.4.3, ")) << _T("]") << rptNewLine;
    }
    else
    {
-      *pParagraph << _T("Losses: Time of Installation of Precast Members to Final Time [5.9.5.4.3, 5.9.5.4.4]") << rptNewLine;
+      *pParagraph << _T("Losses: Time of Installation of Precast Members to Final Time [") << LrfdCw8th(_T("5.9.5.4.3, "),_T("5.9.3.4.3, ")) << LrfdCw8th(_T("5.9.5.4.4"),_T("5.9.3.4.4")) << _T("]") << rptNewLine;
    }
    
    CShrinkageAtFinalTable*      pSD = CShrinkageAtFinalTable::PrepareTable(pChapter,m_pBroker,segmentKey,pDetails,pDisplayUnits,level);
    CCreepAtFinalTable*          pCD = CCreepAtFinalTable::PrepareTable(pChapter,m_pBroker,segmentKey,pDetails,pDisplayUnits,level);
    CRelaxationAtFinalTable*     pR2 = CRelaxationAtFinalTable::PrepareTable(pChapter,m_pBroker,segmentKey,pDisplayUnits,level);
-   CElasticGainDueToDeckShrinkageTable*   pSS   = CElasticGainDueToDeckShrinkageTable::PrepareTable(pChapter,m_pBroker,segmentKey,pDetails,pDisplayUnits,level);
+   CElasticGainDueToDeckShrinkageTable*   pSS = nullptr;
+   if (bDeckShrinkage)
+   {
+      pSS = CElasticGainDueToDeckShrinkageTable::PrepareTable(pChapter, m_pBroker, segmentKey, pDetails, pDisplayUnits, level);
+   }
 
    CTimeDependentLossFinalTable* pLTdf = CTimeDependentLossFinalTable::PrepareTable(pChapter,m_pBroker,segmentKey,pDisplayUnits,level);
    CTimeDependentLossesTable*    pLT   = CTimeDependentLossesTable::PrepareTable(pChapter,m_pBroker,segmentKey,pDisplayUnits,level);
@@ -1637,13 +1642,9 @@ void CPsLossEngineer::ReportRefinedMethod2005(rptChapter* pChapter,BeamType beam
    bool bSkipToNextRow = false;
    RowIndexType row1 = 1;
    RowIndexType row2 = 1;
-   std::vector<pgsPointOfInterest>::iterator sIter(vPoi.begin());
-   std::vector<pgsPointOfInterest>::iterator sIterEnd(vPoi.end());
-   for ( ; sIter != sIterEnd; sIter++ )
+   for ( const pgsPointOfInterest& poi : vPoi)
    {
       bSkipToNextRow = false;
-
-      pgsPointOfInterest& poi = (*sIter);
 
       if ( row1 != 1 && IsEqual(prev_poi.GetDistFromStart(),poi.GetDistFromStart()) )
       {
@@ -1671,7 +1672,10 @@ void CPsLossEngineer::ReportRefinedMethod2005(rptChapter* pChapter,BeamType beam
       ReportLocation(pSD,   row2, poi, pDisplayUnits);
       ReportLocation(pCD,   row2, poi, pDisplayUnits);
       ReportLocation(pR2,   row2, poi, pDisplayUnits);
-      ReportLocation(pSS,   row2, poi, pDisplayUnits);
+      if (bDeckShrinkage)
+      {
+         ReportLocation(pSS, row2, poi, pDisplayUnits);
+      }
       ReportLocation(pLTdf, row2, poi, pDisplayUnits);
       ReportLocation(pLT,   row2, poi, pDisplayUnits);
       ReportLocation(pED,   row2, poi, pDisplayUnits);
@@ -1705,7 +1709,10 @@ void CPsLossEngineer::ReportRefinedMethod2005(rptChapter* pChapter,BeamType beam
       ReportRow(pSD,  pChapter,m_pBroker,poi,row2,pDetails,pDisplayUnits,level);
       ReportRow(pCD,  pChapter,m_pBroker,poi,row2,pDetails,pDisplayUnits,level);
       ReportRow(pR2,  pChapter,m_pBroker,poi,row2,pDetails,pDisplayUnits,level);
-      ReportRow(pSS,  pChapter,m_pBroker,poi,row2,pDetails,pDisplayUnits,level);
+      if (bDeckShrinkage)
+      {
+         ReportRow(pSS, pChapter, m_pBroker, poi, row2, pDetails, pDisplayUnits, level);
+      }
       ReportRow(pED,  pChapter,m_pBroker,poi,row2,pDetails,pDisplayUnits,level);
       ReportRow(pSIDL,pChapter,m_pBroker,poi,row2,pDetails,pDisplayUnits,level);
       ReportRow(pLLIM,pChapter,m_pBroker,poi,row2,pDetails,pDisplayUnits,level);
@@ -1743,10 +1750,11 @@ void CPsLossEngineer::ReportRefinedMethodTxDOT2013(rptChapter* pChapter,CPsLossE
    *pChapter << pParagraph;
    *pParagraph << _T("Refined Estimate of Time-Dependent Losses Per TxDOT Research Report 0-6374-2") << rptNewLine;
 
-   std::vector<pgsPointOfInterest> vPoi(GetPointsOfInterest(girderKey));
+   PoiList vPoi;
+   GetPointsOfInterest(girderKey, &vPoi);
 
    GET_IFACE(ILosses,pILosses);
-   const LOSSDETAILS* pDetails = pILosses->GetLossDetails( vPoi[0] );
+   const LOSSDETAILS* pDetails = pILosses->GetLossDetails( vPoi.front() );
 
    // Do some preliminary setup for the tables.
    INIT_UV_PROTOTYPE( rptForceUnitValue,   force,       pDisplayUnits->GetGeneralForceUnit(),    false );
@@ -1813,13 +1821,9 @@ void CPsLossEngineer::ReportRefinedMethodTxDOT2013(rptChapter* pChapter,CPsLossE
    bool bSkipToNextRow = false;
    RowIndexType row1 = 1;
    RowIndexType row2 = 1;
-   std::vector<pgsPointOfInterest>::iterator sIter(vPoi.begin());
-   std::vector<pgsPointOfInterest>::iterator sIterEnd(vPoi.end());
-   for ( ; sIter != sIterEnd; sIter++ )
+   for ( const pgsPointOfInterest& poi : vPoi)
    {
       bSkipToNextRow = false;
-
-      pgsPointOfInterest& poi = (*sIter);
 
       if ( row1 != 1 && IsEqual(prev_poi.GetDistFromStart(),poi.GetDistFromStart()) )
       {
@@ -1888,10 +1892,11 @@ void CPsLossEngineer::ReportApproxMethod(rptChapter* pChapter,CPsLossEngineer::B
    GET_IFACE(ISegmentData,pSegmentData);
    const CStrandData* pStrands = pSegmentData->GetStrandData(segmentKey);
 
-   std::vector<pgsPointOfInterest> vPoi(GetPointsOfInterest(girderKey));
+   PoiList vPoi;
+   GetPointsOfInterest(girderKey, &vPoi);
 
    GET_IFACE(ILosses,pILosses);
-   const LOSSDETAILS* pDetails = pILosses->GetLossDetails( vPoi[0] );
+   const LOSSDETAILS* pDetails = pILosses->GetLossDetails( vPoi.front() );
 
    pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pParagraph;
@@ -1901,7 +1906,7 @@ void CPsLossEngineer::ReportApproxMethod(rptChapter* pChapter,CPsLossEngineer::B
    }
    else
    {
-      *pParagraph << _T("Approximate Lump Sum Estimate of Time-Dependent Losses [5.9.5.3]") << rptNewLine;
+      *pParagraph << _T("Approximate Lump Sum Estimate of Time-Dependent Losses [") << LrfdCw8th(_T("5.9.5.3"),_T("5.9.3.3")) << _T("]") << rptNewLine;
    }
 
    bool bTemporaryStrands = ( 0 < Nt && pStrands->GetTemporaryStrandUsage() == pgsTypes::ttsPretensioned ? true : false);
@@ -1949,19 +1954,9 @@ void CPsLossEngineer::ReportApproxMethod(rptChapter* pChapter,CPsLossEngineer::B
    RowIndexType row1 = 1;
    RowIndexType row2 = 1;
    // **** NOTE **** Use 2 row counters.. one for the table with CY and BS poi, and a different on for BS poi only
-   //PoiSet::iterator siter(sPoi.begin());
-   //PoiSet::iterator sIterEnd(sPoi.end());
-   //for ( ; siter != sIterEnd; siter++ )
-   std::vector<pgsPointOfInterest>::iterator iter(vPoi.begin());
-   std::vector<pgsPointOfInterest>::iterator end(vPoi.end());
-   for ( ; iter != end; iter++ )
+   for ( const pgsPointOfInterest& poi : vPoi)
    {
       bSkipToNextRow = false;
-
-      //pgsPointOfInterest& poi = (*siter).first;
-      //IntervalIndexType intervalIdx = (*siter).second;
-
-      pgsPointOfInterest& poi(*iter);
 
       if ( row1 != 1 && IsEqual(prev_poi.GetDistFromStart(),poi.GetDistFromStart()) )
       {
@@ -2022,14 +2017,15 @@ void CPsLossEngineer::ReportApproxMethod2005(rptChapter* pChapter,CPsLossEnginee
    GET_IFACE(IStrandGeometry,pStrandGeom);
    StrandIndexType Nt = pStrandGeom->GetStrandCount(segmentKey,pgsTypes::Temporary);
 
-   std::vector<pgsPointOfInterest> vPoi(GetPointsOfInterest(girderKey));
+   PoiList vPoi;
+   GetPointsOfInterest(girderKey, &vPoi);
 
    GET_IFACE(ILosses,pILosses);
-   const LOSSDETAILS* pDetails = pILosses->GetLossDetails( vPoi[0] );
+   const LOSSDETAILS* pDetails = pILosses->GetLossDetails( vPoi.front() );
 
    pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pParagraph;
-   *pParagraph << _T("Approximate Estimate of Time-Dependent Losses [5.9.5.3]") << rptNewLine;
+   *pParagraph << _T("Approximate Estimate of Time-Dependent Losses [") << LrfdCw8th(_T("5.9.5.3"),_T("5.9.3.3")) << _T("]") << rptNewLine;
 
    bool bTemporaryStrands = ( 0 < Nt && pStrands->GetTemporaryStrandUsage() == pgsTypes::ttsPretensioned ? true : false);
 
@@ -2081,18 +2077,9 @@ void CPsLossEngineer::ReportApproxMethod2005(rptChapter* pChapter,CPsLossEnginee
    RowIndexType row1 = 1;
    RowIndexType row2 = 1;
    // **** NOTE **** Use 2 row counters.. one for the table with CY and BS poi, and a different one for BS poi only
-   //PoiSet::iterator siter(sPoi.begin());
-   //PoiSet::iterator siterEnd(sPoi.end());
-   //for ( ; siter != siterEnd; siter++ )
-   std::vector<pgsPointOfInterest>::iterator iter(vPoi.begin());
-   std::vector<pgsPointOfInterest>::iterator end(vPoi.end());
-   for ( ; iter != end; iter++ )
+   for( const pgsPointOfInterest& poi : vPoi)
    {
       bSkipToNextRow = false;
-
-      //pgsPointOfInterest& poi = (*siter).first;
-      //IntervalIndexType intervalIdx = (*siter).second;
-      pgsPointOfInterest& poi(*iter);
 
       if ( row1 != 1 && IsEqual(prev_poi.GetDistFromStart(),poi.GetDistFromStart()) )
       {
@@ -2177,10 +2164,11 @@ void CPsLossEngineer::ReportLumpSumMethod(rptChapter* pChapter,CPsLossEngineer::
    // Do some preliminary setup for the tables.
    INIT_UV_PROTOTYPE( rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(), false );
 
-   std::vector<pgsPointOfInterest> vPoi(GetPointsOfInterest(girderKey));
+   PoiList vPoi;
+   GetPointsOfInterest(girderKey, &vPoi);
 
    GET_IFACE(ILosses,pILosses);
-   const LOSSDETAILS* pDetails = pILosses->GetLossDetails( vPoi[0] );
+   const LOSSDETAILS* pDetails = pILosses->GetLossDetails( vPoi.front() );
 
    // Typecast to our known type (eating own doggy food)
    std::shared_ptr<const lrfdLumpSumLosses> ptl = std::dynamic_pointer_cast<const lrfdLumpSumLosses>(pDetails->pLosses);
@@ -2551,8 +2539,8 @@ void CPsLossEngineer::ReportLumpSumTimeDependentLosses(rptChapter* pChapter,cons
    }
 }
 
-void CPsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi,const GDRCONFIG& config,
-                                        lrfdLosses::SectionPropertiesType* pSectionProperties,
+void CPsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi, const GDRCONFIG& config,
+   lrfdLosses::SectionPropertiesType* pSectionProperties,
    matPsStrand::Grade* pGradePerm,
    matPsStrand::Type* pTypePerm,
    matPsStrand::Coating* pCoatingPerm,
@@ -2624,19 +2612,19 @@ void CPsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi,const GDRC
    Float64* pAngleChange
 )
 {
-   GET_IFACE( IBridge,                 pBridge );
-   GET_IFACE( IStrandGeometry,         pStrandGeom );
-   GET_IFACE( ISegmentData,            pSegmentData );
-   GET_IFACE( ISectionProperties,      pSectProp );
-   GET_IFACE( IProductForces,          pProdForces );
-   GET_IFACE( IEnvironment,            pEnv );
-   GET_IFACE( IMaterials,              pMaterial );
-   GET_IFACE( ISpecification,          pSpec);
-   GET_IFACE( IBridgeDescription,      pIBridgeDesc);
-   GET_IFACE( ILibrary,                pLibrary);
-   GET_IFACE_NOCHECK( ILoadFactors,            pILoadFactors );
-   GET_IFACE( IIntervals,              pIntervals );
-   GET_IFACE( IGirder,                 pGirder);
+   GET_IFACE(IBridge, pBridge);
+   GET_IFACE(IStrandGeometry, pStrandGeom);
+   GET_IFACE(ISegmentData, pSegmentData);
+   GET_IFACE(ISectionProperties, pSectProp);
+   GET_IFACE(IProductForces, pProdForces);
+   GET_IFACE(IEnvironment, pEnv);
+   GET_IFACE(IMaterials, pMaterial);
+   GET_IFACE(ISpecification, pSpec);
+   GET_IFACE(IBridgeDescription, pIBridgeDesc);
+   GET_IFACE(ILibrary, pLibrary);
+   GET_IFACE_NOCHECK(ILoadFactors, pILoadFactors);
+   GET_IFACE(IIntervals, pIntervals);
+   GET_IFACE(IGirder, pGirder);
 
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CDeckDescription2* pDeck = pBridgeDesc->GetDeckDescription();
@@ -2647,96 +2635,119 @@ void CPsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi,const GDRC
 
    *pPjS = config.PrestressConfig.Pjack[pgsTypes::Straight];
    *pNs = config.PrestressConfig.GetStrandCount(pgsTypes::Straight);
-   
+
    *pPjH = config.PrestressConfig.Pjack[pgsTypes::Harped];
    *pNh = config.PrestressConfig.GetStrandCount(pgsTypes::Harped);
-   
-   *pPjT = config.PrestressConfig.Pjack[pgsTypes::Temporary];
-   *pNt  = config.PrestressConfig.GetStrandCount(pgsTypes::Temporary);
 
-   const matPsStrand* pPermStrand = pSegmentData->GetStrandMaterial(segmentKey,pgsTypes::Permanent);
+   *pPjT = config.PrestressConfig.Pjack[pgsTypes::Temporary];
+   *pNt = config.PrestressConfig.GetStrandCount(pgsTypes::Temporary);
+
+   const matPsStrand* pPermStrand = pSegmentData->GetStrandMaterial(segmentKey, pgsTypes::Permanent);
    ATLASSERT(pPermStrand);
    *pGradePerm = pPermStrand->GetGrade();
-   *pTypePerm  = pPermStrand->GetType();
+   *pTypePerm = pPermStrand->GetType();
    *pCoatingPerm = pPermStrand->GetCoating();
-   *paps   = pPermStrand->GetNominalArea();
+   *paps = pPermStrand->GetNominalArea();
 
-   const matPsStrand* pTempStrand = pSegmentData->GetStrandMaterial(segmentKey,pgsTypes::Temporary);
+   const matPsStrand* pTempStrand = pSegmentData->GetStrandMaterial(segmentKey, pgsTypes::Temporary);
    ATLASSERT(pTempStrand);
    *pGradeTemp = pTempStrand->GetGrade();
-   *pTypeTemp  = pTempStrand->GetType();
+   *pTypeTemp = pTempStrand->GetType();
    *pCoatingTemp = pTempStrand->GetCoating();
 
 
    Float64 Aps[3];
-   Aps[pgsTypes::Straight] = pSegmentData->GetStrandMaterial(segmentKey,pgsTypes::Straight)->GetNominalArea();
-   Aps[pgsTypes::Harped]   = pSegmentData->GetStrandMaterial(segmentKey,pgsTypes::Harped)->GetNominalArea();
-   Aps[pgsTypes::Temporary]= pSegmentData->GetStrandMaterial(segmentKey,pgsTypes::Temporary)->GetNominalArea();
+   Aps[pgsTypes::Straight] = pSegmentData->GetStrandMaterial(segmentKey, pgsTypes::Straight)->GetNominalArea();
+   Aps[pgsTypes::Harped] = pSegmentData->GetStrandMaterial(segmentKey, pgsTypes::Harped)->GetNominalArea();
+   Aps[pgsTypes::Temporary] = pSegmentData->GetStrandMaterial(segmentKey, pgsTypes::Temporary)->GetNominalArea();
 
    *pGirderLength = pBridge->GetSegmentLength(segmentKey);
-   *pSpanLength   = pBridge->GetSegmentSpanLength(segmentKey);
-   
+   *pSpanLength = pBridge->GetSegmentSpanLength(segmentKey);
+
    Float64 end_size = pBridge->GetSegmentStartEndDistance(segmentKey);
 
    Float64 nStrandsEffective;
 
-   IntervalIndexType releaseIntervalIdx       = pIntervals->GetPrestressReleaseInterval(segmentKey);
-   IntervalIndexType erectIntervalIdx         = pIntervals->GetErectSegmentInterval(segmentKey);
+   IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
+   IntervalIndexType erectIntervalIdx = pIntervals->GetErectSegmentInterval(segmentKey);
    IntervalIndexType castDiaphragmIntervalIdx = pIntervals->GetCastIntermediateDiaphragmsInterval();
-   IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval();
+   IntervalIndexType castShearKeyIntervalIdx = pIntervals->GetCastShearKeyInterval();
+   IntervalIndexType castLongitudinalJointIntervalIdx = pIntervals->GetCastLongitudinalJointInterval();
+   IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval();
    IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
    IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval();
-   IntervalIndexType overlayIntervalIdx       = pIntervals->GetOverlayInterval();
-   IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval();
+   IntervalIndexType overlayIntervalIdx = pIntervals->GetOverlayInterval();
+   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
+   IntervalIndexType noncompositeIntervalIdx = pIntervals->GetLastNoncompositeInterval();
+   IntervalIndexType noncompositeUserLoadIntervalIdx = pIntervals->GetNoncompositeUserLoadInterval();
+   IntervalIndexType compositeUserLoadIntervalIdx = pIntervals->GetCompositeUserLoadInterval();
 
+   //
    // Material Properties
-   *pGdrCreepK1      = pMaterial->GetSegmentCreepK1(segmentKey);
-   *pGdrCreepK2      = pMaterial->GetSegmentCreepK2(segmentKey);
-   *pGdrShrinkageK1  = pMaterial->GetSegmentShrinkageK1(segmentKey);
-   *pGdrShrinkageK2  = pMaterial->GetSegmentShrinkageK2(segmentKey);
-   *pDeckCreepK1     = pMaterial->GetDeckCreepK1();
-   *pDeckCreepK2     = pMaterial->GetDeckCreepK2();
-   *pDeckShrinkageK1 = pMaterial->GetDeckShrinkageK1();
-   *pDeckShrinkageK2 = pMaterial->GetDeckShrinkageK2();
+   //
 
+   // Girder
+   *pGdrCreepK1 = pMaterial->GetSegmentCreepK1(segmentKey);
+   *pGdrCreepK2 = pMaterial->GetSegmentCreepK2(segmentKey);
+   *pGdrShrinkageK1 = pMaterial->GetSegmentShrinkageK1(segmentKey);
+   *pGdrShrinkageK2 = pMaterial->GetSegmentShrinkageK2(segmentKey);
+   *pFci = config.Fci;
+   *pFc = config.Fc;
 
-   *pFci    = config.Fci;
-   *pFc     = config.Fc;
-   *pFcSlab = pMaterial->GetDeckFc(compositeDeckIntervalIdx);
-
-   if ( config.bUserEci )
+   if (config.bUserEci)
    {
       *pEci = config.Eci;
    }
    else
    {
-      *pEci = pMaterial->GetEconc(config.Fci,pMaterial->GetSegmentStrengthDensity(segmentKey),pMaterial->GetSegmentEccK1(segmentKey),pMaterial->GetSegmentEccK2(segmentKey));
+      *pEci = pMaterial->GetEconc(config.Fci, pMaterial->GetSegmentStrengthDensity(segmentKey), pMaterial->GetSegmentEccK1(segmentKey), pMaterial->GetSegmentEccK2(segmentKey));
    }
 
-   if( config.bUserEc )
+   if (config.bUserEc)
    {
       *pEc = config.Ec;
    }
    else
    {
-      *pEc  = pMaterial->GetEconc(config.Fc, pMaterial->GetSegmentStrengthDensity(segmentKey),pMaterial->GetSegmentEccK1(segmentKey),pMaterial->GetSegmentEccK2(segmentKey));
+      *pEc = pMaterial->GetEconc(config.Fc, pMaterial->GetSegmentStrengthDensity(segmentKey), pMaterial->GetSegmentEccK1(segmentKey), pMaterial->GetSegmentEccK2(segmentKey));
    }
 
-   if (pDeck->Concrete.bUserEc)
+   // Deck
+   if (IsNonstructuralDeck(pBridge->GetDeckType()))
    {
-      *pEcSlab = pDeck->Concrete.Ec;
+      *pDeckCreepK1 = 0;
+      *pDeckCreepK2 = 0;
+      *pDeckShrinkageK1 = 0;
+      *pDeckShrinkageK2 = 0;
+
+      *pFcSlab = 0;
+      *pEcSlab = 0;
    }
    else
    {
-      *pEcSlab = pMaterial->GetDeckEc(compositeDeckIntervalIdx);
+      *pDeckCreepK1 = pMaterial->GetDeckCreepK1();
+      *pDeckCreepK2 = pMaterial->GetDeckCreepK2();
+      *pDeckShrinkageK1 = pMaterial->GetDeckShrinkageK1();
+      *pDeckShrinkageK2 = pMaterial->GetDeckShrinkageK2();
+
+      *pFcSlab = pMaterial->GetDeckFc(compositeDeckIntervalIdx);
+
+      if (pDeck->Concrete.bUserEc)
+      {
+         *pEcSlab = pDeck->Concrete.Ec;
+      }
+      else
+      {
+         *pEcSlab = pMaterial->GetDeckEc(compositeDeckIntervalIdx);
+      }
    }
 
    
    // eccentricity of the permanent strands at release
    *pepermRelease = pStrandGeom->GetEccentricity( releaseIntervalIdx,  poi, pgsTypes::Permanent, &config, &nStrandsEffective);
 
-   // eccentricity of permanent strands when the deck is cast
-   *pepermFinal   = pStrandGeom->GetEccentricity( castDeckIntervalIdx, poi, pgsTypes::Permanent, &config, &nStrandsEffective);
+   // eccentricity of permanent strands at the last interval when the girder is noncomposite
+   *pepermFinal   = pStrandGeom->GetEccentricity( noncompositeIntervalIdx, poi, pgsTypes::Permanent, &config, &nStrandsEffective);
 
    // eccentricity of the temporary strands
    *petemp = pStrandGeom->GetEccentricity( releaseIntervalIdx, poi, pgsTypes::Temporary, &config, &nStrandsEffective);
@@ -2746,10 +2757,10 @@ void CPsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi,const GDRC
 
    *pPerimeter = pSectProp->GetPerimeter(poi);
    *pAg  = pSectProp->GetAg( spType, releaseIntervalIdx, poi );
-   *pIg  = pSectProp->GetIx( spType, releaseIntervalIdx, poi );
+   *pIg  = pSectProp->GetIxx( spType, releaseIntervalIdx, poi );
    *pYbg = pSectProp->GetY(  spType, releaseIntervalIdx, poi, pgsTypes::BottomGirder );
    *pAc  = pSectProp->GetAg( spType, liveLoadIntervalIdx, poi, config.Fc );
-   *pIc  = pSectProp->GetIx( spType, liveLoadIntervalIdx, poi, config.Fc );
+   *pIc  = pSectProp->GetIxx( spType, liveLoadIntervalIdx, poi, config.Fc );
    *pYbc = pSectProp->GetY(  spType, liveLoadIntervalIdx, poi, pgsTypes::BottomGirder, config.Fc );
 
    *pVolume = pSectProp->GetSegmentVolume(segmentKey);
@@ -2802,16 +2813,18 @@ void CPsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi,const GDRC
       {
          *pAd  = pSectProp->GetGrossDeckArea( poi );
       }
+
+      // eccentricity of deck
+      *ped = pSectProp->GetY(compositeDeckIntervalIdx, poi, pgsTypes::TopGirder, config.Fc)
+         + pBridge->GetStructuralSlabDepth(poi) / 2;
+      *ped *= -1;
    }
    else
    {
        *pAd = 0.0;
+       *ped = 0.0;
    }
 
-   // eccentricity of deck... use gross slab depth because sacrifical wearing surface hasn't worn off while early age shrinkage is occuring
-   *ped  = pSectProp->GetY( compositeDeckIntervalIdx, poi, pgsTypes::TopGirder, config.Fc )
-         + pBridge->GetGrossSlabDepth(poi)/2;
-   *ped *= -1;
 
    *pApsPerm = Aps[pgsTypes::Straight]*(*pNs) + Aps[pgsTypes::Harped]*(*pNh);
    *pApsTTS  = Aps[pgsTypes::Temporary]*(*pNt);
@@ -2876,10 +2889,28 @@ void CPsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi,const GDRC
    }
    else
    {
-      *pMadlg = K_slab    * pProdForces->GetMoment( castDeckIntervalIdx, pgsTypes::pftSlab,      poi, bat, rtCumulative ) +
-                K_slabpad * pProdForces->GetMoment( castDeckIntervalIdx, pgsTypes::pftSlabPad,   poi, bat, rtCumulative ) + 
-                K_dia     *(pProdForces->GetMoment( castDiaphragmIntervalIdx, pgsTypes::pftDiaphragm, poi, bat, rtCumulative ) + 
-                            pProdForces->GetMoment( castDeckIntervalIdx, pgsTypes::pftShearKey,  poi, bat, rtCumulative ));
+      *pMadlg = 0;
+      if (castDiaphragmIntervalIdx != INVALID_INDEX)
+      {
+         *pMadlg +=  K_dia*(pProdForces->GetMoment(castDiaphragmIntervalIdx, pgsTypes::pftDiaphragm, poi, bat, rtCumulative));
+
+      }
+
+      if (castShearKeyIntervalIdx != INVALID_INDEX)
+      {
+         *pMadlg += K_dia*(pProdForces->GetMoment(castShearKeyIntervalIdx, pgsTypes::pftShearKey, poi, bat, rtCumulative));
+      }
+
+      if (castLongitudinalJointIntervalIdx != INVALID_INDEX)
+      {
+         *pMadlg += K_slab*(pProdForces->GetMoment(castLongitudinalJointIntervalIdx, pgsTypes::pftLongitudinalJoint, poi, bat, rtCumulative));
+      }
+
+      if (castDeckIntervalIdx != INVALID_INDEX)
+      {
+         *pMadlg += K_slab    * pProdForces->GetMoment(castDeckIntervalIdx, pgsTypes::pftSlab, poi, bat, rtCumulative) +
+                    K_slabpad * pProdForces->GetMoment(castDeckIntervalIdx, pgsTypes::pftSlabPad, poi, bat, rtCumulative);
+      }
 
       GET_IFACE(IPointOfInterest,pPoi);
       CSpanKey spanKey;
@@ -2892,7 +2923,7 @@ void CPsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi,const GDRC
          std::vector<IntervalIndexType> vUserLoadIntervals = pIntervals->GetUserDefinedLoadIntervals(spanKey,pfType);
          for( const auto& intervalIdx : vUserLoadIntervals)
          {
-            if ( intervalIdx <= castDeckIntervalIdx )
+            if ( intervalIdx <= noncompositeUserLoadIntervalIdx )
             {
                *pMadlg += K * pProdForces->GetMoment(intervalIdx, pfType, poi, bat, rtIncremental);
             }
@@ -2930,7 +2961,7 @@ void CPsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi,const GDRC
       std::vector<IntervalIndexType> vUserLoadIntervals = pIntervals->GetUserDefinedLoadIntervals(spanKey,pfType);
       for( const auto& intervalIdx : vUserLoadIntervals)
       {
-         if ( castDeckIntervalIdx < intervalIdx )
+         if (compositeUserLoadIntervalIdx <= intervalIdx )
          {
             *pMsidl += K * pProdForces->GetMoment(intervalIdx, pfType, poi, bat, rtIncremental);
          }
@@ -2955,7 +2986,7 @@ void CPsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi,const GDRC
    *ptd = pSpecEntry->GetCreepDuration2Max();
    *ptf = pSpecEntry->GetTotalCreepDuration();
 
-   *pAslab = pSectProp->GetGrossDeckArea(poi);
+   *pAslab = pSectProp->GetTributaryDeckArea(poi);
 
    Float64 wTop = 0;
    FlangeIndexType nFlanges = pGirder->GetNumberOfTopFlanges(segmentKey);
@@ -2989,7 +3020,10 @@ void CPsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi,const GDRC
 
    GET_IFACE(ILossParameters,pLossParameters);
    pLossParameters->GetTemporaryStrandPostTensionParameters(pAnchorSet,pWobble,pCoeffFriction);
-   *pAngleChange = 0;
+
+   Float64 precamber = pGirder->GetPrecamber(segmentKey);
+   Float64 L = *pGirderLength;
+   *pAngleChange = fabs(8*precamber/L);
 }
 
 void CPsLossEngineer::ReportFinalLosses(BeamType beamType,const CGirderKey& girderKey,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits)
@@ -3064,22 +3098,19 @@ void CPsLossEngineer::ReportFinalLossesRefinedMethod(rptChapter* pChapter,BeamTy
    *pChapter << pParagraph;
    *pParagraph << _T("Final Prestress Losses") << rptNewLine;
 
-   std::vector<pgsPointOfInterest> vPoi(GetPointsOfInterest(girderKey));
+   PoiList vPoi;
+   GetPointsOfInterest(girderKey, &vPoi);
 
    GET_IFACE(ILosses,pILosses);
-   const LOSSDETAILS* pDetails = pILosses->GetLossDetails( vPoi[0] );
+   const LOSSDETAILS* pDetails = pILosses->GetLossDetails( vPoi.front() );
 
    CTotalPrestressLossTable* pT = CTotalPrestressLossTable::PrepareTable(pChapter,m_pBroker,segmentKey,pDetails,pDisplayUnits,0);
 
    ///////////////////////////////////////////////////////////////////////
    // Loop over all the POIs and populate the tables with loss information
    RowIndexType row = 1;
-   std::vector<pgsPointOfInterest>::iterator iter(vPoi.begin());
-   std::vector<pgsPointOfInterest>::iterator end(vPoi.end());
-   for ( ; iter != end; iter++ )
+   for ( const pgsPointOfInterest& poi : vPoi)
    {
-      pgsPointOfInterest& poi = *iter;
-
       const LOSSDETAILS* pDetails = pILosses->GetLossDetails( poi );
 
       ReportLocation(pT,row,poi,pDisplayUnits);
@@ -3103,21 +3134,18 @@ void CPsLossEngineer::ReportFinalLossesRefinedMethodBefore2005(rptChapter* pChap
 
    pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pParagraph;
-   *pParagraph << _T("Refined Estimate of Time-Dependent Losses [5.9.5.4]") << rptNewLine;
+   *pParagraph << _T("Refined Estimate of Time-Dependent Losses [") << LrfdCw8th(_T("5.9.5.4"),_T("5.9.3.4")) << _T("]") << rptNewLine;
 
-   std::vector<pgsPointOfInterest> vPoi(GetPointsOfInterest(girderKey));
+   PoiList vPoi;
+   GetPointsOfInterest(girderKey, &vPoi);
 
    GET_IFACE(ILosses,pILosses);
 
    CFinalPrestressLossTable* pT = CFinalPrestressLossTable::PrepareTable(pChapter,m_pBroker,segmentKey,pDisplayUnits,0);
 
    RowIndexType row = 1;
-   std::vector<pgsPointOfInterest>::iterator iter(vPoi.begin());
-   std::vector<pgsPointOfInterest>::iterator end(vPoi.end());
-   for ( ; iter != end; iter++ )
+   for ( const pgsPointOfInterest& poi : vPoi)
    {
-      pgsPointOfInterest& poi = *iter;
-
       ReportLocation(pT,row,poi,pDisplayUnits);
       const LOSSDETAILS* pDetails = pILosses->GetLossDetails( poi );
 
@@ -3127,7 +3155,7 @@ void CPsLossEngineer::ReportFinalLossesRefinedMethodBefore2005(rptChapter* pChap
    }
 }
 
-std::vector<pgsPointOfInterest> CPsLossEngineer::GetPointsOfInterest(const CGirderKey& girderKey)
+void CPsLossEngineer::GetPointsOfInterest(const CGirderKey& girderKey,PoiList* pPoiList)
 {
 #if defined _DEBUG
    // this method is only applicable to PGSuper
@@ -3137,19 +3165,17 @@ std::vector<pgsPointOfInterest> CPsLossEngineer::GetPointsOfInterest(const CGird
    CSegmentKey segmentKey(girderKey,0);
 
    GET_IFACE(IPointOfInterest,pPoi);
-   std::vector<pgsPointOfInterest> vPoi( pPoi->GetPointsOfInterest(segmentKey,POI_ERECTED_SEGMENT) );
-   std::vector<pgsPointOfInterest> vPoi2( pPoi->GetPointsOfInterest(segmentKey,POI_RELEASED_SEGMENT) );
-   std::vector<pgsPointOfInterest> vPoi3( pPoi->GetPointsOfInterest(segmentKey,POI_SPAN) );
-   std::vector<pgsPointOfInterest> vMiscPoi( pPoi->GetPointsOfInterest(segmentKey,POI_PSXFER | POI_STIRRUP_ZONE | POI_H | POI_15H | POI_DEBOND | POI_FACEOFSUPPORT | POI_START_FACE | POI_END_FACE,POIFIND_OR) );
-   vPoi.insert(vPoi.end(),vPoi2.begin(),vPoi2.end());
-   vPoi.insert(vPoi.end(),vPoi3.begin(),vPoi3.end());
-   vPoi.insert(vPoi.end(),vMiscPoi.begin(),vMiscPoi.end());
-   std::sort(vPoi.begin(),vPoi.end());
-   vPoi.erase(std::unique(vPoi.begin(),vPoi.end()),vPoi.end());
+   PoiList vPoi;
+   pPoi->GetPointsOfInterest(segmentKey,POI_ERECTED_SEGMENT, pPoiList);
+   PoiList vPoi2;
+   pPoi->GetPointsOfInterest(segmentKey,POI_RELEASED_SEGMENT, &vPoi2);
+   pPoiList->insert(std::end(*pPoiList), std::cbegin(vPoi2), std::cend(vPoi2));
+   pPoi->GetPointsOfInterest(segmentKey,POI_SPAN, pPoiList);
+   pPoi->GetPointsOfInterest(segmentKey,POI_PSXFER | POI_STIRRUP_ZONE | POI_H | POI_15H | POI_DEBOND | POI_FACEOFSUPPORT | POI_START_FACE | POI_END_FACE, pPoiList, POIFIND_OR);
+   pPoi->SortPoiList(pPoiList); // sorts and removes duplicates
 
    // remove all POI that are not between the ends of the actual segment
-   Float64 Xmin = vPoi2.front().GetDistFromStart(); // poi's at end of released segment
-   Float64 Xmax = vPoi2.back().GetDistFromStart();
-   vPoi.erase(std::remove_if(vPoi.begin(), vPoi.end(), [Xmin=Xmin, Xmax=Xmax](const auto& poi) {return poi.GetDistFromStart() < Xmin || Xmax < poi.GetDistFromStart();}),vPoi.end());
-   return vPoi;
+   Float64 Xmin = vPoi2.front().get().GetDistFromStart(); // poi's at end of released segment
+   Float64 Xmax = vPoi2.back().get().GetDistFromStart();
+   pPoiList->erase(std::remove_if(std::begin(*pPoiList), std::end(*pPoiList), [Xmin=Xmin, Xmax=Xmax](const pgsPointOfInterest& poi) {return poi.GetDistFromStart() < Xmin || Xmax < poi.GetDistFromStart();}),std::end(*pPoiList));
 }

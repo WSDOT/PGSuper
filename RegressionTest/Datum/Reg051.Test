@@ -1,10 +1,10 @@
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 39.25    7   6.00                     1     1    WF74G    *     42  0.6  270  32.57  12.38  10.50  10.50                                              14  70.0  6.0  5.100  6.400   4.726    -4.621    13043   0.544  0.671   4.365 -1.925 -0.207 -0.247 -2.379 166.08  308.76    1.75    9.00    9.00 
+ 39.25    7   6.00                     1     1    WF74G    *     42  0.6  270  32.57  12.38  10.50  10.50                                              14  70.0  6.0  5.100  6.400   4.723    -4.616    13043   0.544  0.671   4.373 -1.925 -0.207 -0.247 -2.379 166.08  308.94    1.75    9.00    9.00 
 
 
 The Specification Check was Not Successful
-Tensile stress check failed for Service III Limit State in Interval 16 Open to Traffic (Bridge Site 3)
+Tensile stress check failed for Service III Limit State in Interval 16 Open to Traffic
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Ultimate moment capacity (negative moment) check failed for Strength I Limit State
 Ultimate moment capacity (positive moment) check failed for Strength II Limit State
@@ -18,16 +18,16 @@ Slab Offset ("A" Dimension) check failed
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 39.25    7   6.00                     1     2    WF74G           0  0.6  270   0.00   0.00  10.50  10.50                                               0   0.0  0.0  5.000  6.000   4.775    -4.712    13266   0.543  0.671  -6.690 -2.176 -0.206 -0.247 -2.629   0.00    0.00    1.25    9.00    9.00 
+ 39.25    7   6.00                     1     2    WF74G           0  0.6  270   0.00   0.00  10.50  10.50                                               0   0.0  0.0  5.000  6.000   4.773    -4.708    13266   0.543  0.671  -6.637 -2.176 -0.206 -0.247 -2.629   0.00    0.00    1.25    9.00    9.00 
 
 
 The Specification Check was Not Successful
-Compression stress check failed for Service I Limit State in Interval 11 Cast Deck (Bridge Site 1)
-Tensile stress check failed for Service I Limit State in Interval 11 Cast Deck (Bridge Site 1)
-Compression stress check failed for Service I Limit State in Interval 13 Install Overlay (Bridge Site 2)
-Compression stress check failed for Service I Limit State in Interval 16 Open to Traffic (Bridge Site 3)
-Compression stress check failed for Service IA Limit State in Interval 16 Open to Traffic (Bridge Site 3)
-Tensile stress check failed for Service III Limit State in Interval 16 Open to Traffic (Bridge Site 3)
+Compression stress check failed for Service I Limit State in Interval 11 Cast Deck
+Tensile stress check failed for Service I Limit State in Interval 11 Cast Deck
+Compression stress check failed for Service I Limit State in Interval 15 Install Overlay
+Compression stress check failed for Service I Limit State in Interval 16 Open to Traffic
+Compression stress check failed for Service IA Limit State in Interval 16 Open to Traffic
+Tensile stress check failed for Service III Limit State in Interval 16 Open to Traffic
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Ultimate moment capacity (negative moment) check failed for Strength I Limit State
 Ultimate moment capacity (positive moment) check failed for Strength II Limit State

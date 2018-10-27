@@ -58,10 +58,10 @@ inline static Float64 GetPointY(StrandIndexType idx, IPoint2dCollection* points)
 }
 
 
-static void SortDebondLevels(std::vector<DebondLevelType>& rDebondLevelsAtSections)
+void SortDebondLevels(std::vector<DebondLevelType>& rDebondLevelsAtSections)
 {
    DebondLevelType max_level=0;
-   for(std::vector<DebondLevelType>::reverse_iterator rit=rDebondLevelsAtSections.rbegin(); rit!=rDebondLevelsAtSections.rend(); rit++)
+   for(auto rit=rDebondLevelsAtSections.rbegin(); rit!=rDebondLevelsAtSections.rend(); rit++)
    {
       DebondLevelType& rlvl = *rit;
 
@@ -556,17 +556,17 @@ bool pgsStrandDesignTool::SetNumStraightHarped(StrandIndexType ns, StrandIndexTy
    return KeepHarpedStrandsInBounds();
 }
 
-StrandIndexType pgsStrandDesignTool::GetNumPermanentStrands()
+StrandIndexType pgsStrandDesignTool::GetNumPermanentStrands() const
 {
    return m_pArtifact->GetNumStraightStrands() + m_pArtifact->GetNumHarpedStrands();
 }
 
-StrandIndexType pgsStrandDesignTool::GetNumTotalStrands()
+StrandIndexType pgsStrandDesignTool::GetNumTotalStrands() const
 {
    return GetNumPermanentStrands() + GetNt();
 }
 
-StrandIndexType pgsStrandDesignTool::GetMaxPermanentStrands()
+StrandIndexType pgsStrandDesignTool::GetMaxPermanentStrands() const
 {
    if (m_pRaisedStraightStrandDesignTool)
    {
@@ -579,17 +579,17 @@ StrandIndexType pgsStrandDesignTool::GetMaxPermanentStrands()
    }
 }
 
-StrandIndexType pgsStrandDesignTool::GetNh()
+StrandIndexType pgsStrandDesignTool::GetNh() const
 {
    return m_pArtifact->GetNumHarpedStrands();
 }
 
-StrandIndexType pgsStrandDesignTool::GetNs()
+StrandIndexType pgsStrandDesignTool::GetNs() const
 {
    return m_pArtifact->GetNumStraightStrands();
 }
 
-StrandIndexType pgsStrandDesignTool::GetNt()
+StrandIndexType pgsStrandDesignTool::GetNt() const
 {
    return m_pArtifact->GetNumTempStrands();;
 }
@@ -615,7 +615,7 @@ const GDRCONFIG& pgsStrandDesignTool::GetSegmentConfiguration() const
    return m_CachedConfig;
 }
 
-StrandIndexType pgsStrandDesignTool::GetNextNumPermanentStrands(StrandIndexType prevNum)
+StrandIndexType pgsStrandDesignTool::GetNextNumPermanentStrands(StrandIndexType prevNum) const
 {
    if (prevNum == INVALID_INDEX)
    {
@@ -648,7 +648,7 @@ StrandIndexType pgsStrandDesignTool::GetNextNumPermanentStrands(StrandIndexType 
    }
 }
 
-StrandIndexType pgsStrandDesignTool::GetPreviousNumPermanentStrands(StrandIndexType nextNum)
+StrandIndexType pgsStrandDesignTool::GetPreviousNumPermanentStrands(StrandIndexType nextNum) const
 {
    StrandIndexType maxNum = GetMaxPermanentStrands();
 
@@ -693,8 +693,7 @@ StrandIndexType pgsStrandDesignTool::GetPreviousNumPermanentStrands(StrandIndexT
    }
 }
 
-
-StrandIndexType pgsStrandDesignTool::ComputeNextNumProportionalStrands(StrandIndexType prevNum, StrandIndexType* pns, StrandIndexType* pnh)
+StrandIndexType pgsStrandDesignTool::ComputeNextNumProportionalStrands(StrandIndexType prevNum, StrandIndexType* pns, StrandIndexType* pnh) const
 {
    ATLASSERT(!m_pRaisedStraightStrandDesignTool);
 
@@ -811,9 +810,7 @@ StrandIndexType pgsStrandDesignTool::ComputeNextNumProportionalStrands(StrandInd
    }
 }
 
-
-
-bool pgsStrandDesignTool::IsValidNumPermanentStrands(StrandIndexType num)
+bool pgsStrandDesignTool::IsValidNumPermanentStrands(StrandIndexType num) const
 {
    ATLASSERT(num != INVALID_INDEX);
    if (num == 0)
@@ -836,7 +833,7 @@ void pgsStrandDesignTool::SetMinimumPermanentStrands(StrandIndexType num)
    m_MinPermanentStrands = num;
 }
 
-StrandIndexType pgsStrandDesignTool::GetMinimumPermanentStrands()
+StrandIndexType pgsStrandDesignTool::GetMinimumPermanentStrands() const
 {
    // Make sure raised strand tool can control minimum number of strands
    if(m_pRaisedStraightStrandDesignTool)
@@ -851,8 +848,7 @@ StrandIndexType pgsStrandDesignTool::GetMinimumPermanentStrands()
    return m_MinPermanentStrands;
 }
 
-
-Float64 pgsStrandDesignTool::ComputeEccentricity(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx)
+Float64 pgsStrandDesignTool::ComputeEccentricity(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx) const
 {
    ATLASSERT(poi.GetSegmentKey() == m_SegmentKey);
 
@@ -886,7 +882,7 @@ Float64 pgsStrandDesignTool::GetTransferLength(pgsTypes::StrandType strandType) 
    return m_XFerLength[strandType];
 }
 
-void pgsStrandDesignTool::ComputePermanentStrandsRequiredForPrestressForce(const pgsPointOfInterest& poi,InitialDesignParameters* pDesignParams)
+void pgsStrandDesignTool::ComputePermanentStrandsRequiredForPrestressForce(const pgsPointOfInterest& poi,InitialDesignParameters* pDesignParams) const
 {
    ATLASSERT(poi.GetSegmentKey() == m_SegmentKey);
 
@@ -1020,7 +1016,7 @@ StrandIndexType pgsStrandDesignTool::GuessInitialStrands()
 }
 
 // return artifact updated with current design information
-void pgsStrandDesignTool::UpdateJackingForces()
+void pgsStrandDesignTool::UpdateJackingForces() const
 {
    // Compute Jacking Force
    GET_IFACE(IPretensionForce,pPrestressForce);
@@ -1154,7 +1150,8 @@ void pgsStrandDesignTool::ComputeMinStrands()
    GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(m_SegmentKey);
 
-   std::vector<pgsPointOfInterest> mid_pois( GetDesignPoi(releaseIntervalIdx,POI_5L | POI_RELEASED_SEGMENT) );
+   PoiList mid_pois;
+   GetDesignPoi(releaseIntervalIdx, POI_5L | POI_RELEASED_SEGMENT, &mid_pois);
    if (mid_pois.empty())
    {
       ATLASSERT(false); // no-midspan? this shouldn't happen, but take a default and carry on
@@ -1341,7 +1338,8 @@ bool pgsStrandDesignTool::AdjustForHoldDownForce()
    const GDRCONFIG& config = GetSegmentConfiguration();
 
    GET_IFACE(IPointOfInterest,pPOI);
-   std::vector<pgsPointOfInterest> vPOI( pPOI->GetPointsOfInterest(m_SegmentKey,POI_HARPINGPOINT) );
+   PoiList vPOI;
+   pPOI->GetPointsOfInterest(m_SegmentKey, POI_HARPINGPOINT, &vPOI);
 
    // no hold down force if there aren't any harped strands
    if ( vPOI.size() == 0 )
@@ -1359,12 +1357,8 @@ bool pgsStrandDesignTool::AdjustForHoldDownForce()
    GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType stressStrandsIntervalIdx = pIntervals->GetStressStrandInterval(m_SegmentKey);
 
-   std::vector<pgsPointOfInterest>::iterator iter(vPOI.begin());
-   std::vector<pgsPointOfInterest>::iterator end(vPOI.end());
-   for ( ; iter != end; iter++ )
+   for ( const pgsPointOfInterest& thisPOI : vPOI)
    {
-      pgsPointOfInterest& thisPOI(*iter);
-
       Float64 s = pStrandGeom->GetAvgStrandSlope( thisPOI, &config);
       s = fabs(s); // slope could be + or -
       LOG(_T("Average Strand Slope = 1 : ") << s);
@@ -1601,7 +1595,7 @@ bool pgsStrandDesignTool::AddRaisedStraightStrands()
    }
 }
 
-void pgsStrandDesignTool::SimplifyDesignFillOrder(pgsSegmentDesignArtifact* pArtifact)
+void pgsStrandDesignTool::SimplifyDesignFillOrder(pgsSegmentDesignArtifact* pArtifact) const
 {
    // This only can happen for raised straight designs. For this case, it is assummed that
    // we filled using direct fill. However, if we did not, we simply used girder fill order
@@ -1647,7 +1641,7 @@ public:
    }
 };
 
-void pgsStrandDesignTool::DumpDesignParameters()
+void pgsStrandDesignTool::DumpDesignParameters() const
 {
 #if defined ENABLE_LOGGING
 
@@ -1916,7 +1910,7 @@ bool pgsStrandDesignTool::UpdateReleaseStrength(Float64 fciRequired,ConcStrength
    return true;
 }
 
-ConcStrengthResultType pgsStrandDesignTool::ComputeRequiredConcreteStrength(Float64 fControl,IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::StressType stressType,Float64* pfc)
+ConcStrengthResultType pgsStrandDesignTool::ComputeRequiredConcreteStrength(Float64 fControl,IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::StressType stressType,Float64* pfc) const
 {
    LOG(_T("Entering ComputeRequiredConcreteStrength"));
    Float64 fc_reqd;
@@ -2407,7 +2401,7 @@ Float64 pgsStrandDesignTool::GetHarpedEndOffsetIncrement(IStrandGeometry* pStran
    return offset_inc;
 }
 
-Float64 pgsStrandDesignTool::GetPrestressForceAtLifting(const GDRCONFIG &guess,const pgsPointOfInterest& poi)
+Float64 pgsStrandDesignTool::GetPrestressForceAtLifting(const GDRCONFIG &guess,const pgsPointOfInterest& poi) const
 {
    Float64 distFromStart = poi.GetDistFromStart();
    ATLASSERT( !IsZero(distFromStart) && !IsEqual(distFromStart,m_SegmentLength));
@@ -2477,7 +2471,7 @@ Float64 pgsStrandDesignTool::GetPrestressForceAtLifting(const GDRCONFIG &guess,c
    return force;
 }
 
-Float64 pgsStrandDesignTool::GetPrestressForceMidZone(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi)
+Float64 pgsStrandDesignTool::GetPrestressForceMidZone(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi) const
 {
    LOG(_T("Compute total prestessing force in mid-zone for the current configuration"));
 
@@ -2555,7 +2549,7 @@ Float64 pgsStrandDesignTool::GetPrestressForceMidZone(IntervalIndexType interval
 }
 
 
-Float64 pgsStrandDesignTool::ComputeEndOffsetForEccentricity(const pgsPointOfInterest& poi, Float64 ecc)
+Float64 pgsStrandDesignTool::ComputeEndOffsetForEccentricity(const pgsPointOfInterest& poi, Float64 ecc) const
 {
    ATLASSERT(poi.GetSegmentKey() == m_SegmentKey);
 
@@ -2607,7 +2601,7 @@ Float64 pgsStrandDesignTool::ComputeEndOffsetForEccentricity(const pgsPointOfInt
    return off;
 }
 
-Float64 pgsStrandDesignTool::ComputeHpOffsetForEccentricity(const pgsPointOfInterest& poi, Float64 ecc,IntervalIndexType intervalIdx)
+Float64 pgsStrandDesignTool::ComputeHpOffsetForEccentricity(const pgsPointOfInterest& poi, Float64 ecc,IntervalIndexType intervalIdx) const
 {
    ATLASSERT(poi.GetSegmentKey() == m_SegmentKey);
 
@@ -2674,7 +2668,7 @@ Float64 pgsStrandDesignTool::ComputeHpOffsetForEccentricity(const pgsPointOfInte
    }
 }
 
-bool pgsStrandDesignTool::ComputeMinHarpedForEndZoneEccentricity(const pgsPointOfInterest& poi, Float64 eccTarget, IntervalIndexType intervalIdx, StrandIndexType* pNs, StrandIndexType* pNh)
+bool pgsStrandDesignTool::ComputeMinHarpedForEndZoneEccentricity(const pgsPointOfInterest& poi, Float64 eccTarget, IntervalIndexType intervalIdx, StrandIndexType* pNs, StrandIndexType* pNh) const
 {
    // don't do anything if we aren't in minimize harped mode
    if (m_DesignOptions.doStrandFillType != ftMinimizeHarping)
@@ -2703,9 +2697,9 @@ bool pgsStrandDesignTool::ComputeMinHarpedForEndZoneEccentricity(const pgsPointO
 
    GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(m_SegmentKey);
-   IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval();
-   ATLASSERT(castDeckIntervalIdx != INVALID_INDEX);
-   bool bIncTempStrands = (intervalIdx < castDeckIntervalIdx ? true : false);
+   IntervalIndexType nonCompoisteIntervalIdx = pIntervals->GetLastNoncompositeInterval();
+   ATLASSERT(nonCompoisteIntervalIdx != INVALID_INDEX);
+   bool bIncTempStrands = (intervalIdx < nonCompoisteIntervalIdx ? true : false);
    // NOTE: Can't use the following code block. If the original input (before design) does not have
    // temporary strands then the install and remove intervals will be INVALID_INDEX. If the interval
    // in question is before the deck is cast, then include temporary strands. Otherwise, the deck
@@ -2866,7 +2860,7 @@ bool pgsStrandDesignTool::ComputeMinHarpedForEndZoneEccentricity(const pgsPointO
    }
 }
 
-bool pgsStrandDesignTool::ComputeAddHarpedForMidZoneReleaseEccentricity(const pgsPointOfInterest& poi, Float64 eccMax, Float64 eccMin, StrandIndexType* pNs, StrandIndexType* pNh)
+bool pgsStrandDesignTool::ComputeAddHarpedForMidZoneReleaseEccentricity(const pgsPointOfInterest& poi, Float64 eccMax, Float64 eccMin, StrandIndexType* pNs, StrandIndexType* pNh) const
 {
    ATLASSERT(poi.GetSegmentKey() == m_SegmentKey);
 
@@ -3044,7 +3038,7 @@ bool pgsStrandDesignTool::ComputeAddHarpedForMidZoneReleaseEccentricity(const pg
 }
 
 
-Float64 pgsStrandDesignTool::GetMinimumFinalMidZoneEccentricity()
+Float64 pgsStrandDesignTool::GetMinimumFinalMidZoneEccentricity() const
 {
    return m_MinimumFinalMzEccentricity;
 }
@@ -3118,109 +3112,102 @@ pgsSegmentDesignArtifact::ConcreteStrengthDesignState pgsStrandDesignTool::GetFi
    return state;
 }
 
-void pgsStrandDesignTool::GetMidZoneBoundaries(Float64* leftEnd, Float64* rightEnd)
+void pgsStrandDesignTool::GetMidZoneBoundaries(Float64* leftEnd, Float64* rightEnd) const
 {
    // values are cached at initialization
    *leftEnd  = m_lftMz;
    *rightEnd = m_rgtMz;
 }
 
-std::vector<pgsPointOfInterest> pgsStrandDesignTool::GetDesignPoi(IntervalIndexType intervalIdx)
+pgsPointOfInterest pgsStrandDesignTool::GetPointOfInterest(const CSegmentKey& segmentKey, Float64 Xpoi) const
 {
-   return m_PoiMgr.GetPointsOfInterest(m_SegmentKey);
+   return m_PoiMgr.GetPointOfInterest(segmentKey, Xpoi);
 }
 
-std::vector<pgsPointOfInterest> pgsStrandDesignTool::GetDesignPoi(IntervalIndexType intervalIdx,PoiAttributeType attrib)
+void pgsStrandDesignTool::GetPointsOfInterest(const CSegmentKey& segmentKey, PoiAttributeType attrib, PoiList* pPoiList) const
 {
-   std::vector<pgsPointOfInterest> vPoi;
-   m_PoiMgr.GetPointsOfInterest(m_SegmentKey, attrib, POIMGR_OR, &vPoi);
+   m_PoiMgr.GetPointsOfInterest(segmentKey, attrib, POIFIND_OR, pPoiList);
+}
+
+void pgsStrandDesignTool::GetDesignPoi(IntervalIndexType intervalIdx, PoiList* pPoiList) const
+{
+   m_PoiMgr.GetPointsOfInterest(m_SegmentKey,pPoiList);
+}
+
+void pgsStrandDesignTool::GetDesignPoi(IntervalIndexType intervalIdx,PoiAttributeType attrib, PoiList* pPoiList) const
+{
+   m_PoiMgr.GetPointsOfInterest(m_SegmentKey, attrib, POIMGR_OR, pPoiList);
 
    if ( pgsPointOfInterest::IsReferenceAttribute(attrib) )
    {
-      std::vector<pgsPointOfInterest> vPoi2;
+      PoiList vPoi2;
       m_PoiMgr.GetPointsOfInterest(m_SegmentKey,POI_HARPINGPOINT,POIMGR_OR,&vPoi2);
 
-      vPoi.insert(vPoi.end(),vPoi2.begin(),vPoi2.end());
-      std::sort(vPoi.begin(),vPoi.end());
-      vPoi.erase(std::unique(vPoi.begin(),vPoi.end()),vPoi.end());
+      m_PoiMgr.MergePoiLists(*pPoiList, vPoi2,pPoiList);
    }
-
-   return vPoi;
 }
 
-std::vector<pgsPointOfInterest> pgsStrandDesignTool::GetDesignPoiEndZone(IntervalIndexType intervalIdx)
+void pgsStrandDesignTool::GetDesignPoiEndZone(IntervalIndexType intervalIdx, PoiList* pPoiList) const
 {
-   std::vector<pgsPointOfInterest> vPoi( GetDesignPoi(intervalIdx) );
+   PoiList vPoi;
+   GetDesignPoi(intervalIdx, &vPoi);
 
    Float64 rgt_end, lft_end;
    GetMidZoneBoundaries(&lft_end, &rgt_end);
 
-   std::vector<pgsPointOfInterest> end_pois;
-   end_pois.reserve(vPoi.size());
+   pPoiList->reserve(vPoi.size());
 
-   std::vector<pgsPointOfInterest>::iterator it(vPoi.begin());
-   std::vector<pgsPointOfInterest>::iterator end(vPoi.end());
-   for ( ; it != end; it++)
+   for ( const pgsPointOfInterest& poi : vPoi)
    {
-      const pgsPointOfInterest& rpoi = *it;
-      Float64 dist = rpoi.GetDistFromStart();
+      Float64 dist = poi.GetDistFromStart();
 
       // accept only pois in end zones
       if (dist <= lft_end || rgt_end <= dist)
       {
-         end_pois.push_back(rpoi);
+         pPoiList->push_back(poi);
       }
    }
-
-   return end_pois;
 }
 
-std::vector<pgsPointOfInterest> pgsStrandDesignTool::GetDesignPoiEndZone(IntervalIndexType intervalIdx,PoiAttributeType attrib)
+void pgsStrandDesignTool::GetDesignPoiEndZone(IntervalIndexType intervalIdx,PoiAttributeType attrib, PoiList* pPoiList) const
 {
-   std::vector<pgsPointOfInterest> vPoi( GetDesignPoi(intervalIdx, attrib) );
+   PoiList vPoi;
+   GetDesignPoi(intervalIdx, attrib, &vPoi);
 
    Float64 rgt_end, lft_end;
    GetMidZoneBoundaries(&lft_end, &rgt_end);
 
-   std::vector<pgsPointOfInterest> end_pois;
-   end_pois.reserve(vPoi.size());
+   pPoiList->reserve(vPoi.size());
 
-   std::vector<pgsPointOfInterest>::iterator it(vPoi.begin());
-   std::vector<pgsPointOfInterest>::iterator end(vPoi.end());
-   for ( ; it != end; it++)
+   for ( const pgsPointOfInterest& poi : vPoi)
    {
-      const pgsPointOfInterest& rpoi = *it;
-      Float64 dist = rpoi.GetDistFromStart();
+      Float64 dist = poi.GetDistFromStart();
 
       // accept only pois in end zones
       if (dist <= lft_end || rgt_end <= dist)
       {
-         end_pois.push_back(rpoi);
+         pPoiList->push_back(poi);
       }
    }
-
-   return end_pois;
 }
 
 pgsPointOfInterest pgsStrandDesignTool::GetDebondSamplingPOI(IntervalIndexType intervalIdx) const
 {
-   std::vector<pgsPointOfInterest> vPoi(m_PoiMgr.GetPointsOfInterest(m_SegmentKey));
+   PoiList vPoi;
+   m_PoiMgr.GetPointsOfInterest(m_SegmentKey, &vPoi);
 
    // grab first poi past transfer length
    Float64 xferLength = GetTransferLength(pgsTypes::Permanent);
    Float64 bound = Max( xferLength, ::ConvertToSysUnits(2.0,unitMeasure::Inch)); // value is fairly arbitrary, we just don't want end poi
 
-   std::vector<pgsPointOfInterest>::iterator it(vPoi.begin());
-   std::vector<pgsPointOfInterest>::iterator end(vPoi.end());
-   for ( ; it != end; it++)
+   for ( const pgsPointOfInterest& poi : vPoi)
    {
-      const pgsPointOfInterest& rpoi = *it;
-      Float64 dist = rpoi.GetDistFromStart();
+      Float64 dist = poi.GetDistFromStart();
 
       // accept only pois in end zones
       if (bound <= dist)
       {
-         return rpoi;
+         return poi;
       }
    }
 
@@ -3228,17 +3215,17 @@ pgsPointOfInterest pgsStrandDesignTool::GetDebondSamplingPOI(IntervalIndexType i
    return pgsPointOfInterest( m_SegmentKey,1.0);
 }
 
-std::vector<pgsPointOfInterest> pgsStrandDesignTool::GetLiftingDesignPointsOfInterest(const CSegmentKey& segmentKey,Float64 overhang,PoiAttributeType poiReference,Uint32 mode)
+void pgsStrandDesignTool::GetLiftingDesignPointsOfInterest(const CSegmentKey& segmentKey,Float64 overhang,PoiAttributeType poiReference, std::vector<pgsPointOfInterest>* pvPoi,Uint32 mode) const
 {
-   return GetHandlingDesignPointsOfInterest(segmentKey,overhang,overhang,POI_LIFT_SEGMENT,POI_PICKPOINT,mode);
+   return GetHandlingDesignPointsOfInterest(segmentKey,overhang,overhang,POI_LIFT_SEGMENT,POI_PICKPOINT,pvPoi,mode);
 }
 
-std::vector<pgsPointOfInterest> pgsStrandDesignTool::GetHaulingDesignPointsOfInterest(const CSegmentKey& segmentKey,Uint16 nPnts,Float64 leftOverhang,Float64 rightOverhang,PoiAttributeType poiReference,Uint32 mode)
+void pgsStrandDesignTool::GetHaulingDesignPointsOfInterest(const CSegmentKey& segmentKey,Uint16 nPnts,Float64 leftOverhang,Float64 rightOverhang,PoiAttributeType poiReference, std::vector<pgsPointOfInterest>* pvPoi,Uint32 mode) const
 {
-   return GetHandlingDesignPointsOfInterest(segmentKey,leftOverhang,rightOverhang,POI_HAUL_SEGMENT,POI_BUNKPOINT,mode);
+   return GetHandlingDesignPointsOfInterest(segmentKey,leftOverhang,rightOverhang,POI_HAUL_SEGMENT,POI_BUNKPOINT,pvPoi,mode);
 }
 
-std::vector<pgsPointOfInterest> pgsStrandDesignTool::GetHandlingDesignPointsOfInterest(const CSegmentKey& segmentKey,Float64 leftOverhang,Float64 rightOverhang,PoiAttributeType poiReference,PoiAttributeType supportAttribute,Uint32 mode)
+void pgsStrandDesignTool::GetHandlingDesignPointsOfInterest(const CSegmentKey& segmentKey,Float64 leftOverhang,Float64 rightOverhang,PoiAttributeType poiReference,PoiAttributeType supportAttribute, std::vector<pgsPointOfInterest>* pvPoi,Uint32 mode) const
 {
    m_PoiMgr.RemovePointsOfInterest(poiReference);
 
@@ -3251,14 +3238,17 @@ std::vector<pgsPointOfInterest> pgsStrandDesignTool::GetHandlingDesignPointsOfIn
    ATLASSERT( 0 < span_length);
 
    // Remove any current support point poi's if not at different location
-   std::vector<pgsPointOfInterest> vPoi;
-   m_PoiMgr.GetPointsOfInterest(segmentKey,poiReference | supportAttribute,POIMGR_AND,&vPoi); // get all pois with the support attribute
+   PoiList vPoiList;
+   m_PoiMgr.GetPointsOfInterest(segmentKey,poiReference | supportAttribute,POIMGR_AND,&vPoiList); // get all pois with the support attribute
 
-   std::vector<pgsPointOfInterest>::iterator iter(vPoi.begin());
-   std::vector<pgsPointOfInterest>::iterator end(vPoi.end());
-   for ( ; iter != end; iter++ )
+   // vPoiList holds references to constant pois.... we want to change the pois
+   // covert the list into copies so we can manipulate them
+   std::vector<pgsPointOfInterest> vPoi;
+   MakePoiVector(vPoiList,&vPoi);
+
+
+   for (pgsPointOfInterest& poi : vPoi) 
    {
-      pgsPointOfInterest& poi = *iter;
       Float64 poi_loc = poi.GetDistFromStart();
       if (IsEqual(poi_loc,left_support_point_loc) )
       {
@@ -3338,23 +3328,18 @@ std::vector<pgsPointOfInterest> pgsStrandDesignTool::GetHandlingDesignPointsOfIn
    }
    
 
-   std::vector<pgsPointOfInterest> vPoi2;
+   PoiList vPoi2;
    m_PoiMgr.GetPointsOfInterest(segmentKey, poiReference, mode, &vPoi2);
 
    // get the ps xfer, debond, and harping point locations
-   std::vector<pgsPointOfInterest> vPoi3;
-   m_PoiMgr.GetPointsOfInterest(segmentKey, POI_PSXFER | POI_BARDEVELOP | POI_DEBOND | POI_SECTCHANGE | POI_HARPINGPOINT, POIMGR_OR, &vPoi3);
-   vPoi2.insert(vPoi2.end(),vPoi3.begin(),vPoi3.end());
+   m_PoiMgr.GetPointsOfInterest(segmentKey, POI_PSXFER | POI_BARDEVELOP | POI_DEBOND | POI_SECTCHANGE | POI_HARPINGPOINT, POIMGR_OR, &vPoi2);
 
    // v2.9 lifting design considered 10th point POI at release, so we will add them here
-   m_PoiMgr.GetPointsOfInterest(segmentKey, POI_RELEASED_SEGMENT, POIMGR_OR, &vPoi3);
-   vPoi2.insert(vPoi2.end(),vPoi3.begin(),vPoi3.end());
+   m_PoiMgr.GetPointsOfInterest(segmentKey, POI_RELEASED_SEGMENT, POIMGR_OR, &vPoi2);
 
-   // eliminate duplicates
-   std::sort(vPoi2.begin(),vPoi2.end());
-   vPoi2.erase(std::unique(vPoi2.begin(),vPoi2.end()), vPoi2.end() );
+   m_PoiMgr.SortPoiList(&vPoi2);
 
-   return vPoi2;
+   MakePoiVector(vPoi2,pvPoi);
 }
 
 void pgsStrandDesignTool::ClearHandingAttributes(pgsPointOfInterest& poi)
@@ -3387,7 +3372,8 @@ void pgsStrandDesignTool::ValidatePointsOfInterest()
    GET_IFACE(IPointOfInterest,pPoi);
 
    // Get all points of interest, regardless of stage and attributes
-   std::vector<pgsPointOfInterest> vPoi( pPoi->GetPointsOfInterest(m_SegmentKey) );
+   PoiList vPoi;
+   pPoi->GetPointsOfInterest(m_SegmentKey, &vPoi);
 
    if (m_DesignOptions.doDesignForFlexure == dtDesignForHarping || 
        m_DesignOptions.doDesignForFlexure == dtNoDesign)
@@ -3395,12 +3381,8 @@ void pgsStrandDesignTool::ValidatePointsOfInterest()
       // For Harped designs, add all vPoi 
       // The none option is also considered here because if we are designing for shear only (no flexure design)
       // we need the same POI.
-      std::vector<pgsPointOfInterest>::iterator poiIter(vPoi.begin());
-      std::vector<pgsPointOfInterest>::iterator poiIterEnd(vPoi.end());
-      for ( ; poiIter != poiIterEnd; poiIter++)
+      for ( pgsPointOfInterest poi : vPoi) // not using const reference because we want a copy since we will be altering it
       {
-         pgsPointOfInterest& poi = *poiIter;
-
          // Clear any lifting or hauling attributes
          ClearHandingAttributes(poi);
 
@@ -3441,12 +3423,8 @@ void pgsStrandDesignTool::ValidatePointsOfInterest()
    {
       ATLASSERT(m_DesignOptions.doDesignForFlexure!=dtNoDesign);
       // Debonding or straight strands: add all pois except those at at debond and transfer locations
-      std::vector<pgsPointOfInterest>::iterator iter(vPoi.begin());
-      std::vector<pgsPointOfInterest>::iterator end(vPoi.end());
-      for ( ; iter != end; iter++)
+      for (pgsPointOfInterest poi : vPoi) // not using const reference because we want a copy since we will be altering it
       {
-         pgsPointOfInterest& poi = *iter;
-
          // Clear any lifting or hauling attributes
          ClearHandingAttributes(poi);
 
@@ -3568,7 +3546,7 @@ void pgsStrandDesignTool::ComputeMidZoneBoundaries()
       // Need development length for design and this is a chicken and egg kinda thing
       // make some basic assumptions;
 
-      // According to Article 5.7.3.1.1, fpe must be at least 50% of fps  (where fps is fpu at the most)
+      // According to Article 5.6.3.1.1 (pre2017: 5.7.3.1.1), fpe must be at least 50% of fps  (where fps is fpu at the most)
       // Substitute into (5.11.4.2-1)
       // k = 2.0  (from 5.11.4.3)
       // We get:
@@ -4222,7 +4200,7 @@ Float64 pgsStrandDesignTool::GetDebondSectionLocation(SectionIndexType sectionId
    }
 }
 
-void pgsStrandDesignTool::GetDebondSectionForLocation(Float64 location, SectionIndexType* pOutBoardSectionIdx, SectionIndexType* pInBoardSectionIdx, Float64* pOutToInDistance)
+void pgsStrandDesignTool::GetDebondSectionForLocation(Float64 location, SectionIndexType* pOutBoardSectionIdx, SectionIndexType* pInBoardSectionIdx, Float64* pOutToInDistance) const
 {
    Float64 max_deb_loc = (m_NumDebondSections-1) * m_DebondSectionLength;
    Float64 rgt_loc = m_SegmentLength - max_deb_loc;
@@ -4274,7 +4252,7 @@ void pgsStrandDesignTool::GetDebondSectionForLocation(Float64 location, SectionI
 }
 
 
-DebondLevelType pgsStrandDesignTool::GetMaxDebondLevel(StrandIndexType numStrands, SectionIndexType numLeadingSections )
+DebondLevelType pgsStrandDesignTool::GetMaxDebondLevel(StrandIndexType numStrands, SectionIndexType numLeadingSections ) const
 {
    ATLASSERT(0 <= numStrands);
    ATLASSERT(0 <= numLeadingSections);
@@ -4287,7 +4265,7 @@ DebondLevelType pgsStrandDesignTool::GetMaxDebondLevel(StrandIndexType numStrand
       level = DebondLevelType(num_levels-1);
       // Find max level based on raw number of strands, and number of leading sections
       // Going backwards, as levels increase min number of strands
-      for (DebondLevelReverseIterator dbit=m_DebondLevels.rbegin(); dbit!=m_DebondLevels.rend(); dbit++)
+      for (auto dbit=m_DebondLevels.crbegin(); dbit!=m_DebondLevels.crend(); dbit++)
       {
          const DebondLevel& rlevel = *dbit;
 
@@ -4314,12 +4292,12 @@ DebondLevelType pgsStrandDesignTool::GetMaxDebondLevel(StrandIndexType numStrand
    return level;
 }
 
-std::vector<DebondLevelType> pgsStrandDesignTool::GetMaxPhysicalDebonding()
+const std::vector<DebondLevelType>& pgsStrandDesignTool::GetMaxPhysicalDebonding() const
 {
    return m_MaxPhysicalDebondLevels;
 }
 
-void pgsStrandDesignTool::RefineDebondLevels(std::vector<DebondLevelType>& rDebondLevelsAtSections)
+void pgsStrandDesignTool::RefineDebondLevels(std::vector<DebondLevelType>& rDebondLevelsAtSections) const
 {
    SectionIndexType num_sects = GetMaxNumberOfDebondSections();
    LOG(_T("Entering RefineDebondLevels, max debond sections = ")<<num_sects);
@@ -4352,9 +4330,9 @@ void pgsStrandDesignTool::RefineDebondLevels(std::vector<DebondLevelType>& rDebo
 
       // check levels against physical max computed in MaximizeDebonding
       ATLASSERT(m_MaxPhysicalDebondLevels.size()==num_sects);
-      std::vector<DebondLevelType>::iterator mit = m_MaxPhysicalDebondLevels.begin();
+      auto mit = m_MaxPhysicalDebondLevels.begin();
       SectionIndexType sectno = 0;
-      for(std::vector<DebondLevelType>::iterator it = rDebondLevelsAtSections.begin(); it != rDebondLevelsAtSections.end(); it++)
+      for(auto it = rDebondLevelsAtSections.begin(); it != rDebondLevelsAtSections.end(); it++)
       {
          DebondLevelType debond_level_at_section = *it;
          DebondLevelType max_debond_level = *mit;
@@ -4379,7 +4357,7 @@ void pgsStrandDesignTool::RefineDebondLevels(std::vector<DebondLevelType>& rDebo
    LOG(_T("Exiting RefineDebondLevels"));
 }
 
-bool pgsStrandDesignTool::SmoothDebondLevelsAtSections(std::vector<DebondLevelType>& rDebondLevelsAtSections)
+bool pgsStrandDesignTool::SmoothDebondLevelsAtSections(std::vector<DebondLevelType>& rDebondLevelsAtSections) const
 {
    // make sure we abide to max bond terminations at a section
    // Get number of debonded strands (max level will be at end). Assuming that levels have been sorted
@@ -4454,7 +4432,7 @@ bool pgsStrandDesignTool::SmoothDebondLevelsAtSections(std::vector<DebondLevelTy
    return true;
 }
 
-DebondLevelType pgsStrandDesignTool::GetMinAdjacentDebondLevel(DebondLevelType currLevel, StrandIndexType maxDbsTermAtSection)
+DebondLevelType pgsStrandDesignTool::GetMinAdjacentDebondLevel(DebondLevelType currLevel, StrandIndexType maxDbsTermAtSection) const
 {
    // We are at a certain debond level that exceeds section debonding limits. See what 
    // level toward mid-span can get us within limits
@@ -4566,7 +4544,7 @@ static Float64 ComprDebondFudge = 1.03; // fudge compression more because it's e
 
 void pgsStrandDesignTool::GetDebondLevelForTopTension(Float64 psForcePerStrand, StrandIndexType nss, Float64 tensDemand, Float64 outboardDistance,
                                                       Float64 Hg, Float64 Yb, Float64 Ag, Float64 St,
-                                                      DebondLevelType* pOutboardLevel, DebondLevelType* pInboardLevel)
+                                                      DebondLevelType* pOutboardLevel, DebondLevelType* pInboardLevel) const
 {
    ATLASSERT(outboardDistance<=m_DebondSectionLength);
 
@@ -4575,7 +4553,7 @@ void pgsStrandDesignTool::GetDebondLevelForTopTension(Float64 psForcePerStrand, 
       // First determine minimum level required to alleviate demand
       Uint16 level=0;
       bool found = false;
-      DebondLevelIterator it = m_DebondLevels.begin();
+      auto it = m_DebondLevels.begin();
       while(true)
       {
          level++;
@@ -4659,7 +4637,7 @@ void pgsStrandDesignTool::GetDebondLevelForTopTension(Float64 psForcePerStrand, 
 
 void pgsStrandDesignTool::GetDebondLevelForBottomCompression(Float64 psForcePerStrand, StrandIndexType nss, Float64 compDemand, Float64 outboardDistance,
                                                              Float64 Hg,Float64 Yb, Float64 Ag, Float64 Sb,
-                                                             DebondLevelType* pOutboardLevel, DebondLevelType* pInboardLevel)
+                                                             DebondLevelType* pOutboardLevel, DebondLevelType* pInboardLevel) const
 {
    ATLASSERT(outboardDistance<=m_DebondSectionLength);
 
@@ -4668,12 +4646,12 @@ void pgsStrandDesignTool::GetDebondLevelForBottomCompression(Float64 psForcePerS
       // First determine minimum level required to alleviate demand
       DebondLevelType level=0;
       bool found = false;
-      DebondLevelIterator it = m_DebondLevels.begin();
+      auto it = m_DebondLevels.cbegin();
       while(true)
       {
          level++;
          it++;
-         if ( it != m_DebondLevels.end() )
+         if ( it != m_DebondLevels.cend() )
          {
            const DebondLevel& lvl = *it;
 
@@ -4751,7 +4729,7 @@ void pgsStrandDesignTool::GetDebondLevelForBottomCompression(Float64 psForcePerS
 }
 
 std::vector<DebondLevelType> pgsStrandDesignTool::ComputeDebondsForDemand(const std::vector<StressDemand>& demands, StrandIndexType nss, Float64 psForcePerStrand, 
-                                                                Float64 allowTens, Float64 allowComp)
+                                                                Float64 allowTens, Float64 allowComp) const
 {
    GET_IFACE(ISectionProperties,pSectProp);
 
@@ -4764,7 +4742,7 @@ std::vector<DebondLevelType> pgsStrandDesignTool::ComputeDebondsForDemand(const 
    GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(m_SegmentKey);
 
-   for (std::vector<StressDemand>::const_iterator sit=demands.begin(); sit!=demands.end(); sit++)
+   for (auto sit=demands.cbegin(); sit!=demands.cend(); sit++)
    {
       const StressDemand& demand = *sit;
 
@@ -4784,7 +4762,7 @@ std::vector<DebondLevelType> pgsStrandDesignTool::ComputeDebondsForDemand(const 
          // get debond increment this poi is just outside of
          SectionIndexType outboard_inc, inboard_inc;
          Float64 out_to_in_distance;
-         this->GetDebondSectionForLocation(demand.m_Poi.GetDistFromStart(), &outboard_inc, &inboard_inc, &out_to_in_distance);
+         GetDebondSectionForLocation(demand.m_Poi.GetDistFromStart(), &outboard_inc, &inboard_inc, &out_to_in_distance);
          ATLASSERT(0 <= outboard_inc && outboard_inc < max_db_sections);
          ATLASSERT(0 <= inboard_inc  && inboard_inc  < max_db_sections);
 
@@ -4796,8 +4774,7 @@ std::vector<DebondLevelType> pgsStrandDesignTool::ComputeDebondsForDemand(const 
             Float64 tens_demand = demand.m_TopStress - allowTens;
 
             DebondLevelType out_top_db_level, in_top_db_level;
-            this->GetDebondLevelForTopTension(psForcePerStrand, nss, tens_demand, out_to_in_distance, Hg, Yb, Ag, St,
-                                              &out_top_db_level, &in_top_db_level);
+            GetDebondLevelForTopTension(psForcePerStrand, nss, tens_demand, out_to_in_distance, Hg, Yb, Ag, St, &out_top_db_level, &in_top_db_level);
 
             LOG(_T("Debonding needed to control top tensile overstress of ") << ::ConvertFromSysUnits(tens_demand,unitMeasure::KSI) << _T(" KSI at ")<<::ConvertFromSysUnits(demand.m_Poi.GetDistFromStart(),unitMeasure::Feet) << _T(" ft. Outboard level required was ")<< out_top_db_level<<_T(" Inboard level required was ")<< in_top_db_level);
 
@@ -4825,8 +4802,7 @@ std::vector<DebondLevelType> pgsStrandDesignTool::ComputeDebondsForDemand(const 
             Float64 comp_demand = demand.m_BottomStress - allowComp;
 
             DebondLevelType out_bot_db_level, in_bot_db_level;
-            this->GetDebondLevelForBottomCompression(psForcePerStrand, nss, comp_demand, out_to_in_distance, Hg, Yb, Ag, Sb,
-                                                     &out_bot_db_level, &in_bot_db_level);
+            GetDebondLevelForBottomCompression(psForcePerStrand, nss, comp_demand, out_to_in_distance, Hg, Yb, Ag, Sb, &out_bot_db_level, &in_bot_db_level);
 
             LOG(_T("Debonding needed to control bottom compressive overstress of ") << ::ConvertFromSysUnits(comp_demand,unitMeasure::KSI) << _T(" KSI at ")<<::ConvertFromSysUnits(demand.m_Poi.GetDistFromStart(),unitMeasure::Feet) << _T(" ft. Outboard level required was ")<< out_bot_db_level<<_T(" Inboard level required was ")<< in_bot_db_level);
 
@@ -4850,7 +4826,7 @@ std::vector<DebondLevelType> pgsStrandDesignTool::ComputeDebondsForDemand(const 
          }
 
          // replace level at current location only if new is larger
-         DebondLevelType curr_lvl = debond_levels[outboard_inc];
+         auto curr_lvl = debond_levels[outboard_inc];
          if (curr_lvl < out_db_level)
          {
             debond_levels[outboard_inc] = out_db_level;

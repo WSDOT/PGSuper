@@ -1,6 +1,6 @@
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 68.75   10   7.04         S           1     1    W83MG    *     30  0.6  270  36.99  25.76  11.81  11.81                                               6  61.0  3.0  5.000  6.962   2.398    -2.587     9776   0.701  0.756   1.228 -0.748  0.000 -0.061 -0.809  98.77  310.37    6.56   12.30   12.30 
+ 68.75   10   7.04         S           1     1    W83MG    *     30  0.6  270  36.99  25.76  11.81  11.81                                               6  61.0  3.0  5.000  6.962   2.398    -2.587     9776   0.701  0.756   2.405 -0.748  0.000 -0.061 -0.809  98.77  310.37    6.56   12.30   12.30 
 
 
 The Specification Check was Not Successful
@@ -9,16 +9,17 @@ Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 68.75   10   7.04         S           1     2    W83MG    *     53  0.6  270  36.05  18.99  11.81  11.81                                              15  70.9  8.9  7.000  6.962   2.419    -2.586    11547   0.659  0.756   1.993 -0.781  0.000 -0.061 -0.843 264.11  642.33    6.56   12.30   12.30 
+ 68.75   10   7.04         S           1     2    W83MG    *     53  0.6  270  36.05  18.99  11.81  11.81                                              15  70.9  8.9  7.000  6.962   2.419    -2.586    11547   0.659  0.756   3.486 -0.781  0.000 -0.061 -0.843 264.11  642.33    6.56   12.30   12.30 
 
 
 The Specification Check was Not Successful
-Compression stress check failed for Service I Limit State in Interval 2 Prestress Release (Casting Yard)
+Compression stress check failed for Service I Limit State in Interval 2 Prestress Release
 Compression stress check failed for Service I Limit State in Interval 8 Remove temporary strands
-Compression stress check failed for Service I Limit State in Interval 11 Cast Deck (Bridge Site 1)
-Compression stress check failed for Service I Limit State in Interval 13 Composite Deck, Install Railing System (Bridge Site 2)
+Compression stress check failed for Service I Limit State in Interval 11 Cast Deck
+Compression stress check failed for Service I Limit State in Interval 13 Composite deck, Install Railing System
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
 Bursting zone check failed.
 Lifting checks failed
+Slab Offset ("A" Dimension) check failed
 
 

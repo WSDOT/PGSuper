@@ -101,11 +101,11 @@ rptRcTable* CCastingYardStressTable::Build(IBroker* pBroker,const CSegmentKey& s
 
    // Get the interface pointers we need
    GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
-   std::vector<pgsPointOfInterest> vPoi( pIPoi->GetPointsOfInterest(segmentKey,poiRefAttribute) );
-   std::vector<pgsPointOfInterest> vPoi2( pIPoi->GetPointsOfInterest(segmentKey,POI_START_FACE | POI_END_FACE | POI_HARPINGPOINT | POI_PSXFER | POI_DEBOND,POIFIND_OR) );
-   vPoi.insert(vPoi.end(),vPoi2.begin(),vPoi2.end());
-   std::sort(vPoi.begin(),vPoi.end());
-   vPoi.erase(std::unique(vPoi.begin(),vPoi.end()),vPoi.end());
+   PoiList vPoi;
+   pIPoi->GetPointsOfInterest(segmentKey, poiRefAttribute, &vPoi);
+   PoiList vPoi2;
+   pIPoi->GetPointsOfInterest(segmentKey, POI_START_FACE | POI_END_FACE | POI_HARPINGPOINT | POI_PSXFER | POI_DEBOND, &vPoi2, POIFIND_OR);
+   pIPoi->MergePoiLists(vPoi, vPoi2,&vPoi);
    pIPoi->RemovePointsOfInterest(vPoi,POI_CLOSURE);
    pIPoi->RemovePointsOfInterest(vPoi,POI_BOUNDARY_PIER);
 
@@ -115,11 +115,8 @@ rptRcTable* CCastingYardStressTable::Build(IBroker* pBroker,const CSegmentKey& s
 
    // Fill up the table
    RowIndexType row = p_table->GetNumberOfHeaderRows();
-   std::vector<pgsPointOfInterest>::iterator i(vPoi.begin());
-   std::vector<pgsPointOfInterest>::iterator end(vPoi.end());
-   for ( ; i != end; i++ )
+   for (const pgsPointOfInterest& poi : vPoi)
    {
-      const pgsPointOfInterest& poi = *i;
       (*p_table)(row,0) << location.SetValue( poiRefAttribute, poi );
 
       Float64 fTop, fBot;

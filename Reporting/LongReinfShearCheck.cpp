@@ -95,7 +95,7 @@ void CLongReinfShearCheck::Build(rptChapter* pChapter,
 
    rptParagraph* pTitle = new rptParagraph( rptStyleManager::GetHeadingStyle() );
    *pChapter << pTitle;
-   *pTitle << _T("Longitudinal Reinforcement for Shear Check - ") << GetLimitStateString(ls) << _T(" [5.8.3.5]");
+   *pTitle << _T("Longitudinal Reinforcement for Shear Check - ") << GetLimitStateString(ls) << _T(" [") << LrfdCw8th(_T("5.8.3.5"),_T("5.7.3.5")) << _T("]");
 
    rptParagraph* pBody = new rptParagraph;
    *pChapter << pBody;
@@ -103,9 +103,15 @@ void CLongReinfShearCheck::Build(rptChapter* pChapter,
    GET_IFACE2(pBroker,ITendonGeometry,pTendonGeom);
    DuctIndexType nDucts = pTendonGeom->GetDuctCount(girderKey);
 
+   lrfdVersionMgr::Version vers = lrfdVersionMgr::GetVersion();
+
    if ( 0 < nDucts )
    {
-      if ( lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion() )
+      if ( lrfdVersionMgr::EighthEdition2017 <= vers )
+      {
+         *pBody <<rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("LongitudinalReinforcementForShear2017_with_PT.png"))<<rptNewLine;
+      }
+      else if ( lrfdVersionMgr::ThirdEditionWith2005Interims <= vers )
       {
          *pBody <<rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("LongitudinalReinforcementForShear2005_with_PT.png"))<<rptNewLine;
       }
@@ -116,7 +122,11 @@ void CLongReinfShearCheck::Build(rptChapter* pChapter,
    }
    else
    {
-      if ( lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion() )
+      if (lrfdVersionMgr::EighthEdition2017 <= vers )
+      {
+         *pBody <<rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("LongitudinalReinforcementForShear2017.png"))<<rptNewLine;
+      }
+      else if ( lrfdVersionMgr::ThirdEditionWith2005Interims <= vers )
       {
          *pBody <<rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("LongitudinalReinforcementForShear2005.png"))<<rptNewLine;
       }
@@ -170,7 +180,7 @@ void CLongReinfShearCheck::Build(rptChapter* pChapter,
             (*table)(row,1) << shear.SetValue( C );
             (*table)(row,2) << shear.SetValue( D );
 
-            (*table)(row,3) << _T("5.8.3.5-") << pArtifact->GetEquation();
+            (*table)(row,3) << LrfdCw8th(_T("5.8.3.5-"),_T("5.7.3.5-")) << pArtifact->GetEquation();
 
             bool bPassed = pArtifact->Passed();
             if ( bPassed )
@@ -222,7 +232,7 @@ void CLongReinfShearCheck::Build(rptChapter* pChapter,
    rptParagraph* pTitle = new rptParagraph( rptStyleManager::GetHeadingStyle() );
    *pChapter << pTitle;
 
-   *pTitle << _T("Longitudinal Reinforcement for Shear Check - ") << GetLimitStateString(ls) << _T(" [5.8.3.5]");
+   *pTitle << _T("Longitudinal Reinforcement for Shear Check - ") << GetLimitStateString(ls) << _T(" [") << LrfdCw8th(_T("5.8.3.5"),_T("5.7.3.5")) << _T("]");
 
    rptParagraph* pBody = new rptParagraph;
    *pChapter << pBody;
@@ -281,7 +291,7 @@ void CLongReinfShearCheck::Build(rptChapter* pChapter,
          (*table)(row,1) << shear.SetValue( C );
          (*table)(row,2) << shear.SetValue( D );
 
-         (*table)(row,3) << _T("5.8.3.5-") << artifact.GetEquation();
+         (*table)(row,3) << LrfdCw8th(_T("5.8.3.5-"),_T("5.7.3.5-")) << artifact.GetEquation();
 
          bool bPassed = artifact.Passed();
          if ( bPassed )

@@ -39,16 +39,15 @@ CLASS
 
 
 // Predicate STL objects.
-
 class SamePlace
 {
 public:
    SamePlace(const pgsPointOfInterest& poi,Float64 tol) : m_Poi(poi), m_Tol(tol) {}
 
-   bool operator()(const pgsPointOfInterest& other) const
+   bool operator()(const std::unique_ptr<pgsPointOfInterest>& pOther) const
    {
-      if ( m_Poi.GetSegmentKey().IsEqual(other.GetSegmentKey()) &&
-           IsZero( m_Poi.GetDistFromStart() - other.GetDistFromStart(), m_Tol ) )
+      if ( m_Poi.GetSegmentKey().IsEqual(pOther->GetSegmentKey()) &&
+           IsZero( m_Poi.GetDistFromStart() - pOther->GetDistFromStart(), m_Tol ) )
       {
          return true;
       }
@@ -68,12 +67,12 @@ class ExactlySame
 public:
    ExactlySame(const pgsPointOfInterest& poi,Float64 tol) : m_SamePlace(poi,tol) {}
    
-   bool operator()(const pgsPointOfInterest& other) const
+   bool operator()(const std::unique_ptr<pgsPointOfInterest>& pOther) const
    {
-      if ( m_SamePlace.operator()(other) )
+      if ( m_SamePlace.operator()(pOther) )
       {
          // poi are at the same place, do they have the same attributes?
-         if ( other.GetNonReferencedAttributes() != m_SamePlace.GetPoi().GetNonReferencedAttributes() )
+         if ( pOther->GetNonReferencedAttributes() != m_SamePlace.GetPoi().GetNonReferencedAttributes() )
          {
             return false;
          }
@@ -89,7 +88,7 @@ public:
          };
          for ( int i = 0; i < 6; i++ )
          {
-            if (other.GetReferencedAttributes(refAttribute[i]) != m_SamePlace.GetPoi().GetReferencedAttributes(refAttribute[i]) )
+            if (pOther->GetReferencedAttributes(refAttribute[i]) != m_SamePlace.GetPoi().GetReferencedAttributes(refAttribute[i]) )
             {
                return false;
             }
@@ -110,10 +109,10 @@ class RemoveTest
 public:
    RemoveTest(PoiAttributeType targetAttribute,PoiAttributeType exceptAttribute) : m_TargetAttribute(targetAttribute), m_ExceptAttribute(exceptAttribute) {}
 
-   bool operator()(pgsPointOfInterest& poi)
+   bool operator()(std::unique_ptr<pgsPointOfInterest>& poi)
    {
       // return true if the poi has the target attribute, except if it has the exception attribute
-      if ( poi.HasAttribute(m_TargetAttribute) && !poi.HasAttribute(m_ExceptAttribute) )
+      if ( poi->HasAttribute(m_TargetAttribute) && !poi->HasAttribute(m_ExceptAttribute) )
       {
          // the poi can possibly be removed... more testing is needed
          // at minimum we can remove the target attribute, but the actual poi may need to
@@ -122,14 +121,14 @@ public:
          // but retain the poi)
          if ( pgsPointOfInterest::IsReferenceAttribute(m_TargetAttribute) )
          {
-            poi.RemoveAttributes(m_TargetAttribute | POI_TENTH_POINTS);
+            poi->RemoveAttributes(m_TargetAttribute | POI_TENTH_POINTS);
          }
          else
          {
-            poi.RemoveAttributes(m_TargetAttribute);
+            poi->RemoveAttributes(m_TargetAttribute);
          }
 
-         if ( poi.GetNonReferencedAttributes() != 0 )
+         if ( poi->GetNonReferencedAttributes() != 0 )
          {
             return false; // has attributes, don't remove the poi from the container
          }
@@ -145,7 +144,7 @@ public:
          };
          for ( int i = 0; i < 6; i++ )
          {
-            if (poi.GetReferencedAttributes(refAttribute[i]) != 0 )
+            if (poi->GetReferencedAttributes(refAttribute[i]) != 0 )
             {
                return false; // has attributes, don't remove the poi from the container
             }
@@ -162,64 +161,46 @@ private:
    PoiAttributeType m_ExceptAttribute;
 };
 
-class FindByID
-{
-public:
-   FindByID(PoiIDType id) : m_ID(id) {}
-   bool operator()(const pgsPointOfInterest& other) const
-   {
-      if ( m_ID == other.GetID() )
-      {
-         return true;
-      }
+//class NotFindPoi
+//{
+//public:
+//   NotFindPoi(const CSegmentKey& segmentKey) {m_GroupIdx = segmentKey.groupIndex; m_GirderIdx = segmentKey.girderIndex; m_SegmentIdx = segmentKey.segmentIndex;}
+//   bool operator()(const std::unique_ptr<pgsPointOfInterest>& pOther) const
+//   {
+//      // returning true causes the poi to be excluded from the container
+//      // return false for those poi that match the search criteria... return false for the poi we want to keep
+//
+//      const CSegmentKey& segmentKey = pOther->GetSegmentKey();
+//      GroupIndexType grpIdx = segmentKey.groupIndex;
+//      GirderIndexType gdrIdx = segmentKey.girderIndex;
+//
+//      if ( (m_GroupIdx   == INVALID_INDEX || m_GroupIdx   == grpIdx) &&  // group matches -AND-
+//           (m_GirderIdx  == INVALID_INDEX || m_GirderIdx  == gdrIdx) &&  // girder matches -AND-
+//           (m_SegmentIdx == INVALID_INDEX || m_SegmentIdx == segmentKey.segmentIndex) // segment matches
+//         )
+//      {
+//         // we want to keep the POI
+//         return false;
+//      }
+//
+//      return true;
+//   }
+//
+//private:
+//   GroupIndexType   m_GroupIdx;
+//   GirderIndexType  m_GirderIdx;
+//   SegmentIndexType m_SegmentIdx;
+//};
 
-      return false;
-   }
-
-private:
-   PoiIDType m_ID;
-};
-
-class NotFindPoi
-{
-public:
-   NotFindPoi(const CSegmentKey& segmentKey) {m_GroupIdx = segmentKey.groupIndex; m_GirderIdx = segmentKey.girderIndex; m_SegmentIdx = segmentKey.segmentIndex;}
-   bool operator()(const pgsPointOfInterest& other) const
-   {
-      // returning true causes the poi to be excluded from the container
-      // return false for those poi that match the search criteria... return false for the poi we want to keep
-
-      const CSegmentKey& segmentKey = other.GetSegmentKey();
-      GroupIndexType grpIdx = segmentKey.groupIndex;
-      GirderIndexType gdrIdx = segmentKey.girderIndex;
-
-      if ( (m_GroupIdx   == INVALID_INDEX || m_GroupIdx   == grpIdx) &&  // group matches -AND-
-           (m_GirderIdx  == INVALID_INDEX || m_GirderIdx  == gdrIdx) &&  // girder matches -AND-
-           (m_SegmentIdx == INVALID_INDEX || m_SegmentIdx == segmentKey.segmentIndex) // segment matches
-         )
-      {
-         // we want to keep the POI
-         return false;
-      }
-
-      return true;
-   }
-
-private:
-   GroupIndexType   m_GroupIdx;
-   GirderIndexType  m_GirderIdx;
-   SegmentIndexType m_SegmentIdx;
-};
-
-bool MergeDuplicatePoi(pgsPointOfInterest& poi1,pgsPointOfInterest& poi2)
+bool MergeDuplicatePoi(std::unique_ptr<pgsPointOfInterest>& poi1, std::unique_ptr<pgsPointOfInterest>& poi2)
 {
    // merges poi2 into poi1 if possible
-   if (poi2.CanMerge() && poi1.AtExactSamePlace(poi2))
+   if (poi2->CanMerge() && poi1->AtExactSamePlace(*poi2))
    {
       // poi2 is mergable and poi1 and poi2 are at the exact same place... there is a chance we can merge them
 
       bool doMerge = true;
-      if (poi1.GetID() == poi2.GetID())
+      if (poi1->GetID() == poi2->GetID())
       {
          // There are rare cases when a function attempts to put in a duplicate POI and we need to merge attributes if this happens.
          // An example is in PCI_BDM_Ex9.6.pgs span 2, girder 1 when computing the CS shear.
@@ -227,12 +208,12 @@ bool MergeDuplicatePoi(pgsPointOfInterest& poi1,pgsPointOfInterest& poi2)
       }
       else if (
          // don't mess with
-         sysFlags<PoiAttributeType>::IsSet(poi1.GetReferencedAttributes(POI_SPAN), POI_CANTILEVER) || // points on the cantilevers
-         sysFlags<PoiAttributeType>::IsSet(poi2.GetReferencedAttributes(POI_SPAN), POI_CANTILEVER) ||
-         poi1.HasAttribute(POI_LIFT_SEGMENT | POI_PICKPOINT) || // pick points
-         poi1.HasAttribute(POI_HAUL_SEGMENT | POI_BUNKPOINT) || // bunk points
-         poi2.HasAttribute(POI_LIFT_SEGMENT | POI_PICKPOINT) ||
-         poi2.HasAttribute(POI_HAUL_SEGMENT | POI_BUNKPOINT)
+         sysFlags<PoiAttributeType>::IsSet(poi1->GetReferencedAttributes(POI_SPAN), POI_CANTILEVER) || // points on the cantilevers
+         sysFlags<PoiAttributeType>::IsSet(poi2->GetReferencedAttributes(POI_SPAN), POI_CANTILEVER) ||
+         poi1->HasAttribute(POI_LIFT_SEGMENT | POI_PICKPOINT) || // pick points
+         poi1->HasAttribute(POI_HAUL_SEGMENT | POI_BUNKPOINT) || // bunk points
+         poi2->HasAttribute(POI_LIFT_SEGMENT | POI_PICKPOINT) ||
+         poi2->HasAttribute(POI_HAUL_SEGMENT | POI_BUNKPOINT)
          )
       {
          doMerge = false;
@@ -240,10 +221,10 @@ bool MergeDuplicatePoi(pgsPointOfInterest& poi1,pgsPointOfInterest& poi2)
       else
       {
          // section change locations. Don't merge unless to ends of segments. It is possible that an end already has a section change
-         bool isP1EF = poi1.HasAttribute(POI_END_FACE) || poi1.HasAttribute(POI_START_FACE);
-         bool isP2EF = poi2.HasAttribute(POI_END_FACE) || poi2.HasAttribute(POI_START_FACE);
-         bool isP1SC = poi1.HasAttribute(POI_SECTCHANGE);
-         bool isP2SC = poi2.HasAttribute(POI_SECTCHANGE);
+         bool isP1EF = poi1->HasAttribute(POI_END_FACE) || poi1->HasAttribute(POI_START_FACE);
+         bool isP2EF = poi2->HasAttribute(POI_END_FACE) || poi2->HasAttribute(POI_START_FACE);
+         bool isP1SC = poi1->HasAttribute(POI_SECTCHANGE);
+         bool isP2SC = poi2->HasAttribute(POI_SECTCHANGE);
 
          if (isP1SC || isP2SC)
          {
@@ -261,10 +242,10 @@ bool MergeDuplicatePoi(pgsPointOfInterest& poi1,pgsPointOfInterest& poi2)
 
       if (doMerge)
       {
-         bool bCanMerge = poi1.CanMerge();
-         poi1.CanMerge(true);
-         VERIFY(poi1.MergeAttributes(poi2));
-         poi1.CanMerge(bCanMerge);
+         bool bCanMerge = poi1->CanMerge();
+         poi1->CanMerge(true);
+         poi1->MergeAttributes(*poi2);
+         poi1->CanMerge(bCanMerge);
          return true;
       }
    }
@@ -292,60 +273,58 @@ pgsPoiMgr::~pgsPoiMgr()
 PoiIDType pgsPoiMgr::AddPointOfInterest(const pgsPointOfInterest& poi)
 {
    const CSegmentKey& segmentKey = poi.GetSegmentKey();
-   ASSERT_SEGMENT_KEY(segmentKey);
 
    // first see if we have an existing poi at this location. Just merge attributes into existing if we do
-   std::vector<std::vector<pgsPointOfInterest>*> vpvPoi = GetPoiContainer(segmentKey);
-   ATLASSERT(vpvPoi.size() == 1);
-   std::vector<pgsPointOfInterest>* pvPoi(vpvPoi.front());
-
-   std::vector<pgsPointOfInterest>::iterator iter(pvPoi->begin());
-   std::vector<pgsPointOfInterest>::iterator end(pvPoi->end());
-   for (; iter != end; iter++)
+   auto& poiContainer = GetPoiContainer(segmentKey);
+   auto iter(std::begin(poiContainer));
+   auto end(std::end(poiContainer));
+   for ( ; iter != end; iter++)
    {
-      pgsPointOfInterest& curpoi = *iter;
-      ATLASSERT(curpoi.GetSegmentKey().IsEqual(segmentKey));
+      auto& pCurrentPoi(*iter);
+      ATLASSERT(pCurrentPoi->GetSegmentKey().IsEqual(segmentKey));
 
       // first try strict merging of poi's... if two POIs are at exactly the same location
       // they can always be merged
-      if (curpoi.AtExactSamePlace(poi) )
+      if (pCurrentPoi->AtExactSamePlace(poi) )
       {
-         if (curpoi.MergeAttributes(poi))
+         if (pCurrentPoi->MergeAttributes(poi))
          {
             if (poi.CanMerge() == false)
             {
-               curpoi.CanMerge(false);
+               pCurrentPoi->CanMerge(false);
             }
-            return curpoi.m_ID; // no need to re-sort vector
+            return pCurrentPoi->m_ID; // no need to re-sort vector
          }
          else
          {
             // sometimes there are multiple POI at the same location... make sure
             // the next poi is not at the same location... if it is, continue, otherwise bail out
-            if (iter + 1 != end && !poi.AtExactSamePlace(*(iter + 1)))
+            auto iter_next = iter + 1;
+            if (iter_next != end && !poi.AtExactSamePlace(*(*(iter_next))))
             {
                break; // poi's can't be merged... just break out of here and continue
             }
          }
       }
-      else if (curpoi.AtSamePlace(poi)) // are POI's close enough?
+      else if (pCurrentPoi->AtSamePlace(poi)) // are POI's close enough?
       {
-         if (poi.CanMerge() && curpoi.CanMerge() && curpoi.MergeAttributes(poi))
+         if (poi.CanMerge() && pCurrentPoi->CanMerge() && pCurrentPoi->MergeAttributes(poi))
          {
-            return curpoi.m_ID; // no need to re-sort vector
+            return pCurrentPoi->m_ID; // no need to re-sort vector
          }
          else
          {
             // sometimes there are multiple POI at the same location... make sure
             // the next poi is not at the same location... if it is, continue, otherwise bail out
-            if (iter + 1 != end && !poi.AtSamePlace(*(iter + 1)))
+            auto iter_next = iter + 1;
+            if (iter_next != end && !poi.AtSamePlace(*(*(iter_next))))
             {
                break; // poi's can't be merged... just break out of here and continue
             }
          }
       }
 
-      if (poi.GetDistFromStart() < curpoi.GetDistFromStart())
+      if (poi.GetDistFromStart() < pCurrentPoi->GetDistFromStart())
       {
          // the containers are sorted... once we go past the new poi there wont be a match
          break;
@@ -365,65 +344,62 @@ PoiIDType pgsPoiMgr::AddPointOfInterest(const pgsPointOfInterest& poi)
       // make sure the next POI ID won't conflict with it
       ms_NextID = Max(ms_NextID,id+1);
 
-      std::vector<pgsPointOfInterest>::iterator found(std::find_if(pvPoi->begin(), pvPoi->end(), FindByID(id)));
-      if (found != pvPoi->end())
+      auto found(std::find_if(std::begin(poiContainer), std::end(poiContainer), [id](auto& p) {return p->GetID() == id; }));
+      if (found != std::end(poiContainer))
       {
          // this POI is already in the container... merge it with itself
          // This is very rare, but happens when we are creating critical section for shear POI and the critical
          // section is at the face of support. The face of support POI will already be in the collection
-         pgsPointOfInterest& curPoi(*found);
-         ATLASSERT(curPoi.AtSamePlace(poi));
+         auto& pFoundPoi(*found);
+         ATLASSERT(pFoundPoi->AtSamePlace(poi));
 
          // these next two POI are not absolute error checks... FOS and critical section are the most common
          // reason this case will occur. The asserts will fire if a different case occurs. The different case
          // would be one that we haven't thought of yet and should investigate
-         ATLASSERT(curPoi.HasAttribute(POI_FACEOFSUPPORT));
+         ATLASSERT(pFoundPoi->HasAttribute(POI_FACEOFSUPPORT));
          ATLASSERT(poi.HasAttribute(POI_CRITSECTSHEAR1) || poi.HasAttribute(POI_CRITSECTSHEAR2));
 
-         curPoi.MergeAttributes(poi);
-         return curPoi.m_ID;
+         pFoundPoi->MergeAttributes(poi);
+         return pFoundPoi->m_ID;
       }
    }
 
    // Don't copy poi and put it in because this is a very highly utilized function and copies don't come cheap
 #if defined _DEBUG
-   std::vector<pgsPointOfInterest>::const_iterator found( std::find_if(pvPoi->begin(),pvPoi->end(), FindByID(id) ) );
-   ATLASSERT(found == pvPoi->end());
+   auto found(std::find_if(std::begin(poiContainer), std::end(poiContainer), [id](auto& p) {return p->GetID() == id; }));
+   ATLASSERT(found == std::end(poiContainer));
 #endif
-   pvPoi->push_back(poi);
-   pvPoi->back().m_ID = id;
 
-   std::sort(pvPoi->begin(),pvPoi->end());
+   poiContainer.emplace_back(std::make_unique<pgsPointOfInterest>(poi));
+   poiContainer.back()->m_ID = id;
 
-   pvPoi->erase(std::unique(pvPoi->begin(),pvPoi->end(),MergeDuplicatePoi),pvPoi->end());
+   // sort POIs, not their pointers
+   std::sort(std::begin(poiContainer), std::end(poiContainer), [](auto& a, auto& b) {return *a < *b;});
+
+   poiContainer.erase(std::unique(std::begin(poiContainer), std::end(poiContainer),MergeDuplicatePoi), std::end(poiContainer));
 
    return id;
 }
 
 bool pgsPoiMgr::RemovePointOfInterest(const pgsPointOfInterest& poi,bool bConsiderAttributes)
 {
-   ASSERT_SEGMENT_KEY(poi.GetSegmentKey());
+   const CSegmentKey& segmentKey(poi.GetSegmentKey());
 
-   std::vector<std::vector<pgsPointOfInterest>*> vpvPoi = GetPoiContainer(poi.GetSegmentKey());
-   ATLASSERT(vpvPoi.size() != 0);
+   auto& poiContainer = GetPoiContainer(segmentKey);
 
-   std::vector<pgsPointOfInterest>* pvPoi(vpvPoi.front());
-
-   std::vector<pgsPointOfInterest>::iterator begin(pvPoi->begin());
-   std::vector<pgsPointOfInterest>::iterator end(pvPoi->end());
-   std::vector<pgsPointOfInterest>::iterator found;
+   PoiContainer::iterator found;
    if ( bConsiderAttributes )
    {
-      found = std::find_if(begin, end, ExactlySame(poi,m_Tolerance) );
+      found = std::find_if(std::begin(poiContainer),std::end(poiContainer), ExactlySame(poi,m_Tolerance) );
    }
    else
    {
-      found = std::find_if(begin, end, SamePlace(poi,m_Tolerance) );
+      found = std::find_if(std::begin(poiContainer), std::end(poiContainer), SamePlace(poi,m_Tolerance) );
    }
 
-   if ( found != end )
+   if ( found != std::end(poiContainer) )
    {
-      pvPoi->erase(found);
+      poiContainer.erase(found);
       return true;
    }
 
@@ -438,17 +414,15 @@ bool pgsPoiMgr::RemovePointOfInterest(PoiIDType poiID)
       return false;
    }
 
-   std::map<CSegmentKey,std::vector<pgsPointOfInterest>*>::iterator iter(m_PoiData.begin());
-   std::map<CSegmentKey,std::vector<pgsPointOfInterest>*>::iterator end(m_PoiData.end());
-   for ( ; iter != end; iter++ )
+   for ( auto& poiData : m_PoiData)
    {
-      std::vector<pgsPointOfInterest>* pvPoi = iter->second;
+      PoiContainer& poiContainer(poiData.second);
 
-      std::vector<pgsPointOfInterest>::const_iterator found( std::find_if(pvPoi->begin(), pvPoi->end(), FindByID(poiID) ) );
-      if ( found != pvPoi->end() )
+      auto found( std::find_if(std::begin(poiContainer),std::end(poiContainer), [poiID](auto& p) {return p->GetID() == poiID; }) );
+      if ( found != std::end(poiContainer) )
       {
-         pvPoi->erase(found);
-         return true; // fond it... stop searching
+         poiContainer.erase(found);
+         return true; // found it... stop searching
       }
    }
 
@@ -457,54 +431,39 @@ bool pgsPoiMgr::RemovePointOfInterest(PoiIDType poiID)
 
 void pgsPoiMgr::RemovePointsOfInterest(PoiAttributeType targetAttribute,PoiAttributeType exceptionAttribute)
 {
-   std::map<CSegmentKey,std::vector<pgsPointOfInterest>*>::iterator iter(m_PoiData.begin());
-   std::map<CSegmentKey,std::vector<pgsPointOfInterest>*>::iterator end(m_PoiData.end());
-   for ( ; iter != end; iter++ )
+   for (auto& poiData : m_PoiData)
    {
-      std::vector<pgsPointOfInterest>* pvPoi = iter->second;
-      std::vector<pgsPointOfInterest>::iterator newEnd( std::remove_if(pvPoi->begin(),pvPoi->end(),RemoveTest(targetAttribute,exceptionAttribute)) );
-      pvPoi->erase(newEnd,pvPoi->end());
+      PoiContainer& poiContainer(poiData.second);
+      auto newEnd( std::remove_if(std::begin(poiContainer),std::end(poiContainer),RemoveTest(targetAttribute,exceptionAttribute)) );
+      poiContainer.erase(newEnd,std::end(poiContainer));
    }
 }
 
 void pgsPoiMgr::RemoveAll()
 {
-   std::map<CSegmentKey,std::vector<pgsPointOfInterest>*>::iterator iter(m_PoiData.begin());
-   std::map<CSegmentKey,std::vector<pgsPointOfInterest>*>::iterator end(m_PoiData.end());
-   for ( ; iter != end; iter++ )
-   {
-      std::vector<pgsPointOfInterest>* pvPoi = iter->second;
-      delete pvPoi;
-      iter->second = nullptr;
-   }
    m_PoiData.clear();
 }
 
-pgsPointOfInterest pgsPoiMgr::GetPointOfInterest(const CSegmentKey& segmentKey,Float64 Xpoi) 
+pgsPointOfInterest pgsPoiMgr::GetPointOfInterest(const CSegmentKey& segmentKey,Float64 Xpoi) const
 {
+   // there may not be an actual poi at (segmentKey,Xpoi)... this is why we need to return the
+   // poi by value
    pgsPointOfInterest poi(segmentKey,Xpoi);
 
-   std::vector<std::vector<pgsPointOfInterest>*> vpvPoi = GetPoiContainer(segmentKey);
-   if ( vpvPoi.size() == 0 )
-   {
-      return poi;
-   }
+   const auto& poiContainer = GetPoiContainer(segmentKey);
 
-   ATLASSERT(vpvPoi.size() == 1);
-   std::vector<pgsPointOfInterest>* pvPoi(vpvPoi.front());
-
-   std::vector<pgsPointOfInterest>::const_iterator begin(pvPoi->begin());
-   std::vector<pgsPointOfInterest>::const_iterator end(pvPoi->end());
+   auto begin(std::begin(poiContainer));
+   auto end(std::end(poiContainer));
 
    // find all poi that are within m_Tolerance of Xpoi
-   std::vector<pgsPointOfInterest>::const_iterator found = begin;
+   auto found = begin;
    std::vector<pgsPointOfInterest> vPoi;
    while ( found != end )
    {
       found = std::find_if(begin,end,SamePlace(poi,m_Tolerance));
       if ( found != end )
       {
-         vPoi.push_back(*found);
+         vPoi.push_back(*(*found));
          begin = found+1;
       }
    }
@@ -516,67 +475,49 @@ pgsPointOfInterest pgsPoiMgr::GetPointOfInterest(const CSegmentKey& segmentKey,F
    }
 
    // figure out which poi is closest to Xpoi
-   std::vector<pgsPointOfInterest>::const_iterator iter(vPoi.begin());
-   end   = vPoi.end();
-   poi = (*iter);
+   auto poi_iter(std::begin(vPoi));
+   auto poi_iter_end(std::end(vPoi));
+   poi = (*poi_iter);
    Float64 minDist = fabs(Xpoi - poi.GetDistFromStart());
-   iter++;
-   for ( ; iter != end; iter++ )
+   poi_iter++;
+   for ( ; poi_iter != poi_iter_end; poi_iter++ )
    {
-      Float64 dist = fabs(Xpoi - iter->GetDistFromStart());
+      Float64 dist = fabs(Xpoi - poi_iter->GetDistFromStart());
       if ( dist < minDist )
       {
          minDist = dist;
-         poi = (*iter);
+         poi = (*poi_iter);
       }
    }
    return poi;
 }
 
-pgsPointOfInterest pgsPoiMgr::GetNearestPointOfInterest(const CSegmentKey& segmentKey,Float64 Xpoi) 
+const pgsPointOfInterest& pgsPoiMgr::GetNearestPointOfInterest(const CSegmentKey& segmentKey,Float64 Xpoi) const
 {
-   std::vector<std::vector<pgsPointOfInterest>*> vpvPoi = GetPoiContainer(segmentKey);
-   if ( vpvPoi.size() == 0 )
+   auto& poiContainer = GetPoiContainer(segmentKey);
+
+   if ( poiContainer.empty() )
    {
-      return pgsPointOfInterest();
+      return m_DefaultPoi;
    }
 
-   ATLASSERT(vpvPoi.size() == 1);
-   std::vector<pgsPointOfInterest>* pvPoi(vpvPoi.front());
-
-   // get the poi just for this segment
-   std::vector<pgsPointOfInterest> vPOI;
-   std::vector<pgsPointOfInterest>::const_iterator iter(pvPoi->begin());
-   std::vector<pgsPointOfInterest>::const_iterator end(pvPoi->end());
-   for ( ; iter != end; iter++ )
-   {
-      const pgsPointOfInterest& poi = *iter;
-      if ( poi.GetSegmentKey() == segmentKey)
-      {
-         vPOI.push_back(poi);
-      }
-   }
-
-   if ( vPOI.empty() )
-   {
-      return pgsPointOfInterest();
-   }
-
-   // is the location before the start?
+   // is the Xpoi before the start?
    // this happens if a poi is referenced to this segment, but
    // located in the previous closure joint
-   if ( ::IsLE(Xpoi,vPOI.front().GetDistFromStart()) )
+   if ( ::IsLE(Xpoi,poiContainer.front()->GetDistFromStart()) )
    {
-      return vPOI.front();
+      return *poiContainer.front();
    }
 
-   std::vector<pgsPointOfInterest>::const_iterator iter1(vPOI.begin());
-   std::vector<pgsPointOfInterest>::const_iterator iter2(iter1+1);
-   std::vector<pgsPointOfInterest>::const_iterator end2(vPOI.end());
+   auto iter1(std::begin(poiContainer));
+   auto iter2(iter1+1);
+   auto end2(std::end(poiContainer));
    for ( ; iter2 != end2; iter1++, iter2++ )
    {
-      const pgsPointOfInterest& prevPOI = *iter1;
-      const pgsPointOfInterest& nextPOI = *iter2;
+      auto& ptrPrevPoi(*iter1);
+      auto& ptrNextPoi(*iter2);
+      const pgsPointOfInterest& prevPOI(*ptrPrevPoi);
+      const pgsPointOfInterest& nextPOI(*ptrNextPoi);
 
       ATLASSERT( prevPOI.GetSegmentKey() == segmentKey);
       ATLASSERT( nextPOI.GetSegmentKey() == segmentKey);
@@ -598,42 +539,39 @@ pgsPointOfInterest pgsPoiMgr::GetNearestPointOfInterest(const CSegmentKey& segme
    }
 
    ATLASSERT(false); // nearest poi not found
-   return pgsPointOfInterest();
+   return m_DefaultPoi;
 }
 
-pgsPointOfInterest pgsPoiMgr::GetPrevPointOfInterest(PoiIDType poiID,PoiAttributeType attrib,Uint32 mode) const
+const pgsPointOfInterest& pgsPoiMgr::GetPrevPointOfInterest(PoiIDType poiID,PoiAttributeType attrib,Uint32 mode) const
 {
    if ( poiID == INVALID_ID )
    {
-      return pgsPointOfInterest();
+      return m_DefaultPoi;
    }
 
-   pgsPointOfInterest currentPoi = GetPointOfInterest(poiID);
-   CSegmentKey segmentKey(currentPoi.GetSegmentKey());
-   std::vector<const std::vector<pgsPointOfInterest>*> vpvPoi = GetPoiContainer(segmentKey);
-   ATLASSERT(vpvPoi.size() == 1);
-   const std::vector<pgsPointOfInterest>* pvPoi(vpvPoi.front());
+   const pgsPointOfInterest& currentPoi = GetPointOfInterest(poiID);
+   CSegmentKey segmentKey(currentPoi.GetSegmentKey()); // want a copy, not a reference... we change the segment key below
 
-   std::vector<pgsPointOfInterest>::const_iterator begin(pvPoi->begin());
-   std::vector<pgsPointOfInterest>::const_iterator end(pvPoi->end());
-   std::vector<pgsPointOfInterest>::const_iterator found( std::find_if(begin, end, FindByID(poiID)) );
+   const auto& poiContainer = GetPoiContainer(segmentKey);
+
+   auto begin(std::begin(poiContainer));
+   auto end(std::end(poiContainer));
+   auto found( std::find_if(begin, end, [poiID](auto& p) {return p->GetID() == poiID; }) );
    ATLASSERT(found != end);
    if ( found == begin )
    {
       if ( segmentKey.segmentIndex == 0 )
       {
          // at the beginning so we can't back up one poi
-         return pgsPointOfInterest();
+         return m_DefaultPoi;
       }
       else
       {
          // the previous poi is in the container for the previous segment
          CSegmentKey prevSegmentKey(segmentKey);
          prevSegmentKey.segmentIndex--;
-         vpvPoi = GetPoiContainer(prevSegmentKey);
-         ATLASSERT(vpvPoi.size() == 1);
-         pvPoi = vpvPoi.front();
-         found = pvPoi->end()-1; // make found point to the first candidate POI
+         const auto& poiContainer = GetPoiContainer(prevSegmentKey);
+         found = std::end(poiContainer)-1; // make found point to the first candidate POI
       }
    }
    else
@@ -642,64 +580,60 @@ pgsPointOfInterest pgsPoiMgr::GetPrevPointOfInterest(PoiIDType poiID,PoiAttribut
       found--;
    }
 
-   pgsPointOfInterest poi;
    if ( attrib == 0 )
    {
       // unconditionally want the previous poi
-      return *found;
+      return *(*found);
    }
 
    // work backwards through the container from "found" to the first poi which is at the end of the reverse collection
    while ( true )
    {
-      std::vector<pgsPointOfInterest>::const_reverse_iterator iter(found);
-      std::vector<pgsPointOfInterest>::const_reverse_iterator rend(pvPoi->rend());
+      PoiContainer::const_reverse_iterator iter(found);
+      PoiContainer::const_reverse_iterator rend(poiContainer.rend());
       for ( ; iter != rend; iter++ )
       {
-         const pgsPointOfInterest& thisPoi(*iter);
-         ATLASSERT(thisPoi.GetSegmentKey().girderIndex == segmentKey.girderIndex);
-         if ( mode == POIMGR_OR ? OrAttributeEvaluation(thisPoi,attrib) : AndAttributeEvaluation(thisPoi,attrib) )
+         const auto& thisPoi(*iter);
+         ATLASSERT(thisPoi->GetSegmentKey().girderIndex == segmentKey.girderIndex);
+         if ( mode == POIMGR_OR ? OrAttributeEvaluation(*thisPoi,attrib) : AndAttributeEvaluation(*thisPoi,attrib) )
          {
-            return thisPoi;
+            return *thisPoi;
          }
       }
 
       if ( segmentKey.segmentIndex == 0 )
       {
          // we are at the start and the previous POI wasn't found... there isn't a previous one
-         return pgsPointOfInterest();
+         return m_DefaultPoi;
       }
       else
       {
          // the container was exhausted... the poi must be in a previous container
          segmentKey.segmentIndex--;
-         vpvPoi = GetPoiContainer(segmentKey);
-         ATLASSERT(vpvPoi.size() == 1);
-         pvPoi = vpvPoi.front();
-         found = pvPoi->end()-1; // make found point to the next candidate POI
+         const auto& poiContainer = GetPoiContainer(segmentKey);
+         found = std::end(poiContainer)-1; // make found point to the next candidate POI
       }
    }
 
    ATLASSERT(false); // should never get here
-   return pgsPointOfInterest();
+   return m_DefaultPoi;
 }
 
-pgsPointOfInterest pgsPoiMgr::GetNextPointOfInterest(PoiIDType poiID,PoiAttributeType attrib,Uint32 mode) const
+const pgsPointOfInterest& pgsPoiMgr::GetNextPointOfInterest(PoiIDType poiID,PoiAttributeType attrib,Uint32 mode) const
 {
    if ( poiID == INVALID_ID )
    {
-      return pgsPointOfInterest();
+      return m_DefaultPoi;
    }
 
-   pgsPointOfInterest currentPoi = GetPointOfInterest(poiID);
-   CSegmentKey segmentKey(currentPoi.GetSegmentKey());
-   std::vector<const std::vector<pgsPointOfInterest>*> vpvPoi = GetPoiContainer(segmentKey);
-   ATLASSERT(vpvPoi.size() == 1);
-   const std::vector<pgsPointOfInterest>* pvPoi(vpvPoi.front());
+   const pgsPointOfInterest& currentPoi = GetPointOfInterest(poiID);
+   CSegmentKey segmentKey(currentPoi.GetSegmentKey()); // want a copy, not a ref... segmentKey gets changed below
 
-   std::vector<pgsPointOfInterest>::const_iterator begin(pvPoi->begin());
-   std::vector<pgsPointOfInterest>::const_iterator end(pvPoi->end());
-   std::vector<pgsPointOfInterest>::const_iterator found( std::find_if(begin, end, FindByID(poiID)) );
+   const auto& poiContainer = GetPoiContainer(segmentKey);
+
+   auto begin(std::begin(poiContainer));
+   auto end(std::end(poiContainer));
+   auto found( std::find_if(begin, end, [poiID](auto& p) {return p->GetID() == poiID; }) );
    ATLASSERT(found != end);
    if ( found == end-1 )
    {
@@ -707,17 +641,15 @@ pgsPointOfInterest pgsPoiMgr::GetNextPointOfInterest(PoiIDType poiID,PoiAttribut
       // look in the container for the next segment
       CSegmentKey nextSegmentKey(segmentKey);
       nextSegmentKey.segmentIndex++;
-      vpvPoi = GetPoiContainer(nextSegmentKey);
-      if ( vpvPoi.size() == 0 )
+      const auto& poiContainer = GetPoiContainer(nextSegmentKey);
+      if (poiContainer.size() == 0 )
       {
          // there isn't a container for the next segment so we can't go any further
-         return pgsPointOfInterest();
+         return m_DefaultPoi;
       }
       else
       {
-         ATLASSERT(vpvPoi.size() == 1);
-         pvPoi = vpvPoi.front();
-         found = pvPoi->end()-1; // make found point to the first candidate POI
+         found = std::end(poiContainer)-1; // make found point to the first candidate POI
       }
    }
    else
@@ -726,74 +658,69 @@ pgsPointOfInterest pgsPoiMgr::GetNextPointOfInterest(PoiIDType poiID,PoiAttribut
       found++;
    }
 
-   pgsPointOfInterest poi;
    if ( attrib == 0 )
    {
       // unconditionally want the previous poi
-      return *found;
+      return *(*found);
    }
 
    // work forward through the container from "found" to the end
    while ( true )
    {
-      std::vector<pgsPointOfInterest>::const_iterator iter(found);
-      std::vector<pgsPointOfInterest>::const_iterator end(pvPoi->end());
+      auto iter(found);
+      auto end(std::end(poiContainer));
       for ( ; iter != end; iter++ )
       {
-         const pgsPointOfInterest& thisPoi(*iter);
-         ATLASSERT(thisPoi.GetSegmentKey().girderIndex == segmentKey.girderIndex);
-         if ( mode == POIMGR_OR ? OrAttributeEvaluation(thisPoi,attrib) : AndAttributeEvaluation(thisPoi,attrib) )
+         const auto& thisPoi(*iter);
+         ATLASSERT(thisPoi->GetSegmentKey().girderIndex == segmentKey.girderIndex);
+         if ( mode == POIMGR_OR ? OrAttributeEvaluation(*thisPoi,attrib) : AndAttributeEvaluation(*thisPoi,attrib) )
          {
-            return thisPoi;
+            return *thisPoi;
          }
       }
 
       // the container was exhausted... try the container for the next segment
       segmentKey.segmentIndex++;
-      vpvPoi = GetPoiContainer(segmentKey);
-      if ( vpvPoi.size() == 0 )
+      const auto& poiContainer = GetPoiContainer(segmentKey);
+      if (poiContainer.size() == 0 )
       {
          // there isn't a next poi
-         return pgsPointOfInterest();
+         return m_DefaultPoi;
       }
       else
       {
-         ATLASSERT(vpvPoi.size() == 1);
-         pvPoi = vpvPoi.front();
-         found = pvPoi->begin(); // make found point to the next candidate POI
+         found = std::begin(poiContainer); // make found point to the next candidate POI
       }
    }
 
    ATLASSERT(false); // should never get here
-   return pgsPointOfInterest();
+   return m_DefaultPoi;
 }
 
-pgsPointOfInterest pgsPoiMgr::GetPointOfInterest(PoiIDType poiID) const
+const pgsPointOfInterest& pgsPoiMgr::GetPointOfInterest(PoiIDType poiID) const
 {
    if ( poiID == INVALID_ID )
    {
-      return pgsPointOfInterest();
+      return m_DefaultPoi;
    }
 
-   std::map<CSegmentKey,std::vector<pgsPointOfInterest>*>::const_iterator iter(m_PoiData.begin());
-   std::map<CSegmentKey,std::vector<pgsPointOfInterest>*>::const_iterator end(m_PoiData.end());
-   for ( ; iter != end; iter++ )
+   for( const auto& poiData : m_PoiData )
    {
-      const std::vector<pgsPointOfInterest>* pvPoi = iter->second;
+      const PoiContainer& poiContainer(poiData.second);
 
-      std::vector<pgsPointOfInterest>::const_iterator begin(pvPoi->begin());
-      std::vector<pgsPointOfInterest>::const_iterator end(pvPoi->end());
-      std::vector<pgsPointOfInterest>::const_iterator found( std::find_if(begin, end, FindByID(poiID) ) );
+      auto begin(std::begin(poiContainer));
+      auto end(std::end(poiContainer));
+      auto found( std::find_if(begin, end, [poiID](auto& p) {return p->GetID() == poiID; } ) );
       if ( found != end )
       {
-         return (*found);
+         return *(*found);
       }
    }
 
-   return pgsPointOfInterest();
+   return m_DefaultPoi;
 }
 
-void pgsPoiMgr::GetPointsOfInterest(const CSegmentKey& segmentKey,PoiAttributeType attrib,Uint32 mode,std::vector<pgsPointOfInterest>* pPois) const
+void pgsPoiMgr::GetPointsOfInterest(const CSegmentKey& segmentKey,PoiAttributeType attrib,Uint32 mode,PoiList* pPois) const
 {
    if ( mode == POIMGR_AND )
    {
@@ -805,42 +732,54 @@ void pgsPoiMgr::GetPointsOfInterest(const CSegmentKey& segmentKey,PoiAttributeTy
    }
 }
 
-std::vector<pgsPointOfInterest> pgsPoiMgr::GetPointsOfInterest(const CSegmentKey& segmentKey) const
+void pgsPoiMgr::GetPointsOfInterest(const CSegmentKey& segmentKey,PoiList* pPoiList) const
 {
-   std::vector<pgsPointOfInterest> copy_poi;
-
-   std::vector<const std::vector<pgsPointOfInterest>*> vpvPoi = GetPoiContainer(segmentKey);
-   std::vector<const std::vector<pgsPointOfInterest>*>::iterator iter(vpvPoi.begin());
-   std::vector<const std::vector<pgsPointOfInterest>*>::iterator end(vpvPoi.end());
-   for ( ; iter != end; iter++ )
+   for (const auto& poiData : m_PoiData)
    {
-      const std::vector<pgsPointOfInterest>* pvPoi = *iter;
-      // This has to be the most poorly named function in the stl. 
-      // (which really should be called copy_if_not)
-      std::remove_copy_if(pvPoi->begin(), pvPoi->end(), std::back_inserter(copy_poi), NotFindPoi(segmentKey));
+      if (segmentKey == poiData.first) // NOTE: segmentKey is the one that could have ALL_GIRDER, etc so it has to be the LHS operand
+      {
+         const PoiContainer& poiContainer(poiData.second);
+         for (const auto& pPoi : poiContainer)
+         {
+            pPoiList->emplace_back(*pPoi.get());
+         }
+      }
    }
 
-   std::sort(copy_poi.begin(),copy_poi.end());
+//   std::sort(poiList.begin(), poiList.end(), [](const auto& a, const auto& b) {return *a.get() < *b.get();});
+   ATLASSERT(std::is_sorted(std::begin(*pPoiList), std::end(*pPoiList), [](const pgsPointOfInterest& a, const pgsPointOfInterest& b) {return a < b; }));
+}
 
-   return copy_poi;
+void pgsPoiMgr::MergePoiLists(const PoiList& list1, const PoiList& list2,PoiList* pPoiList) const
+{
+   *pPoiList = list1;
+   pPoiList->insert(std::end(*pPoiList), std::begin(list2),std::end(list2));
+   SortPoiList(pPoiList);
+}
+
+void pgsPoiMgr::SortPoiList(PoiList* pPoiList) const
+{
+   std::sort(std::begin(*pPoiList), std::end(*pPoiList), [](const pgsPointOfInterest& a, const pgsPointOfInterest& b) {return a < b;});
+   pPoiList->erase(std::unique(std::begin(*pPoiList), std::end(*pPoiList), [](const pgsPointOfInterest& a, const pgsPointOfInterest& b) {return a == b; }), std::end(*pPoiList));
+
+   ATLASSERT(std::is_sorted(std::begin(*pPoiList), std::end(*pPoiList), [](const pgsPointOfInterest& a, const pgsPointOfInterest& b) {return a < b; })); // must be sorted
+   ATLASSERT(std::adjacent_find(std::begin(*pPoiList), std::end(*pPoiList), [](const pgsPointOfInterest& a, const pgsPointOfInterest& b) {return a == b; }) == std::end(*pPoiList)); // can't be duplicates
 }
 
 bool pgsPoiMgr::ReplacePointOfInterest(PoiIDType ID,const pgsPointOfInterest& poi)
 {
-   std::map<CSegmentKey,std::vector<pgsPointOfInterest>*>::iterator iter(m_PoiData.begin());
-   std::map<CSegmentKey,std::vector<pgsPointOfInterest>*>::iterator end(m_PoiData.end());
-   for ( ; iter != end; iter++ )
+   for ( auto& poiData : m_PoiData)
    {
-      std::vector<pgsPointOfInterest>* pvPoi = iter->second;
+      PoiContainer& poiContainer(poiData.second);
 
-      std::vector<pgsPointOfInterest>::iterator begin(pvPoi->begin());
-      std::vector<pgsPointOfInterest>::iterator end(pvPoi->end());
-      std::vector<pgsPointOfInterest>::iterator found(std::find_if(begin, end, FindByID(ID) ) );
+      auto begin(std::begin(poiContainer));
+      auto end(std::end(poiContainer));
+      auto found(std::find_if(begin, end, [ID](auto& p) {return p->GetID() == ID; }) );
       if ( found != end )
       {
-         ATLASSERT(found->GetSegmentKey() == poi.GetSegmentKey()); // the replacement poi should be on the same segment
-         *found = poi;
-         (*found).m_ID = ID;
+         ATLASSERT((*found)->GetSegmentKey() == poi.GetSegmentKey()); // the replacement poi must be on the same segment
+         *(*found) = poi;
+         (*found)->m_ID = ID;
          return true;
       }
    }
@@ -866,92 +805,90 @@ Float64 pgsPoiMgr::GetTolerance() const
 CollectionIndexType pgsPoiMgr::GetPointOfInterestCount() const
 {
    CollectionIndexType nPoi = 0;
-   std::map<CSegmentKey,std::vector<pgsPointOfInterest>*>::const_iterator iter(m_PoiData.begin());
-   std::map<CSegmentKey,std::vector<pgsPointOfInterest>*>::const_iterator end(m_PoiData.end());
-   for ( ; iter != end; iter++ )
+   for( const auto& poiData : m_PoiData)
    {
-      const std::vector<pgsPointOfInterest>* pvPoi = iter->second;
-      nPoi += pvPoi->size();
+      const PoiContainer& poiContainer(poiData.second);
+      nPoi += poiContainer.size();
    }
 
    return nPoi;
 }
 
-void pgsPoiMgr::GetTenthPointPOIs(PoiAttributeType reference,const CSegmentKey& segmentKey,std::vector<pgsPointOfInterest>* pPois) const
+void pgsPoiMgr::GetTenthPointPOIs(PoiAttributeType reference,const CSegmentKey& segmentKey,PoiList* pPois) const
 {
-   ASSERT_SEGMENT_KEY(segmentKey);
-   std::vector<const std::vector<pgsPointOfInterest>*> vpvPoi = GetPoiContainer(segmentKey);
-   ATLASSERT(vpvPoi.size() != 0);
-   const std::vector<pgsPointOfInterest>* pvPoi(vpvPoi.front());
+   pPois->reserve(pPois->size() + 11);
 
-   if ( pvPoi == nullptr )
+   if (segmentKey.groupIndex == ALL_GROUPS || segmentKey.girderIndex == ALL_GIRDERS || segmentKey.segmentIndex == ALL_SEGMENTS)
    {
-      return;
-   }
-
-   pPois->clear();
-   std::vector<pgsPointOfInterest>::const_iterator iter(pvPoi->begin());
-   std::vector<pgsPointOfInterest>::const_iterator end(pvPoi->end());
-   for ( ; iter != end; iter++ )
-   {
-      const pgsPointOfInterest& poi = *iter;
-      if ( poi.GetSegmentKey() == segmentKey && poi.IsTenthPoint(reference) )
+      // caller is asking for something like 10th points in all segments for all girders in group 1....
+      for (const auto& poiData : m_PoiData)
       {
-         pPois->push_back( poi );
+         const auto& poiContainer(poiData.second);
+         for (const auto& poi : poiContainer)
+         {
+            if (poi->GetSegmentKey() == segmentKey && poi->IsTenthPoint(reference))
+            {
+               pPois->push_back(*(poi.get()));
+            }
+         }
+      }
+   }
+   else
+   {
+      // we can limit our search to a specific container because the caller used a specific segmentKey
+      const auto& poiContainer = GetPoiContainer(segmentKey);
+      for (const auto& poi : poiContainer)
+      {
+         if (poi->IsTenthPoint(reference))
+         {
+            pPois->push_back(*(poi.get()));
+         }
       }
    }
 }
 
-void pgsPoiMgr::GetPointsOfInterestInRange(const CSegmentKey& segmentKey,Float64 xMin,Float64 xMax,std::vector<pgsPointOfInterest>* pPois) const
+void pgsPoiMgr::GetPointsOfInterestInRange(const CSegmentKey& segmentKey,Float64 xMin,Float64 xMax,PoiList* pPois) const
 {
-   ASSERT_SEGMENT_KEY(segmentKey);
-   std::vector<const std::vector<pgsPointOfInterest>*> vpvPoi = GetPoiContainer(segmentKey);
-   if ( vpvPoi.size() == 0 )
+   const auto& poiContainer = GetPoiContainer(segmentKey);
+   for ( const auto& poi : poiContainer)
    {
-      return;
-   }
-
-   ATLASSERT(vpvPoi.size());
-   const std::vector<pgsPointOfInterest>* pvPoi(vpvPoi.front());
-
-   pPois->clear();
-   std::vector<pgsPointOfInterest>::const_iterator iter(pvPoi->begin());
-   std::vector<pgsPointOfInterest>::const_iterator end(pvPoi->end());
-   for ( ; iter != end; iter++ )
-   {
-      const pgsPointOfInterest& poi = *iter;
-      if ( poi.GetSegmentKey() == segmentKey && ::InRange(xMin,poi.GetDistFromStart(),xMax) )
+      if ( ::InRange(xMin,poi->GetDistFromStart(),xMax) )
       {
-         pPois->push_back( poi );
+         pPois->push_back( *(poi.get()) );
       }
    }
 }
 
 
-void pgsPoiMgr::AndFind(const CSegmentKey& segmentKey,PoiAttributeType attrib,std::vector<pgsPointOfInterest>* pPois) const
+void pgsPoiMgr::AndFind(const CSegmentKey& segmentKey, PoiAttributeType attrib, PoiList* pPois) const
 {
-   std::vector<const std::vector<pgsPointOfInterest>*> vpvPoi = GetPoiContainer(segmentKey);
-   if ( vpvPoi.size() == 0 )
+   if (segmentKey.groupIndex == ALL_GROUPS || segmentKey.girderIndex == ALL_GIRDERS || segmentKey.segmentIndex == ALL_SEGMENTS)
    {
-      return;
-   }
-
-   pPois->clear();
-
-   std::vector<const std::vector<pgsPointOfInterest>*>::iterator iter(vpvPoi.begin());
-   std::vector<const std::vector<pgsPointOfInterest>*>::iterator end(vpvPoi.end());
-   for ( ; iter != end; iter++ )
-   {
-      const std::vector<pgsPointOfInterest>* pvPoi(*iter);
-      std::vector<pgsPointOfInterest>::const_iterator poiIter(pvPoi->begin());
-      std::vector<pgsPointOfInterest>::const_iterator poiIterEnd(pvPoi->end());
-      for ( ; poiIter != poiIterEnd; poiIter++ )
+      for (const auto& poiData : m_PoiData)
       {
-         const pgsPointOfInterest& poi = *poiIter;
-         if ( AndFind(poi,segmentKey,attrib) ) 
+         if (segmentKey == poiData.first) // NOTE: segmentKey is the one that could have ALL_GIRDER, etc so it has to be the LHS operand
+         {
+            const auto& poiContainer(poiData.second);
+            for (const auto& pPoi : poiContainer)
+            {
+               if (AndFind(*pPoi, segmentKey, attrib))
+               {
+                  // poi has desired attributes - keep it
+                  pPois->push_back(*(pPoi.get()));
+               }
+            }
+         }
+      }
+   }
+   else
+   {
+      const auto& poiContainer = GetPoiContainer(segmentKey);
+      for (const auto& pPoi : poiContainer)
+      {
+         if (AndFind(*pPoi, segmentKey, attrib))
          {
             // poi has desired attributes - keep it
-            pPois->push_back(poi);
+            pPois->push_back(*(pPoi.get()));
          }
       }
    }
@@ -1058,31 +995,34 @@ bool pgsPoiMgr::AndAttributeEvaluation(const pgsPointOfInterest& poi,PoiAttribut
    return false;
 }
 
-void pgsPoiMgr::OrFind(const CSegmentKey& segmentKey,PoiAttributeType attrib,std::vector<pgsPointOfInterest>* pPois) const
+void pgsPoiMgr::OrFind(const CSegmentKey& segmentKey,PoiAttributeType attrib,PoiList* pPois) const
 {
-   std::vector<const std::vector<pgsPointOfInterest>*> vpvPoi = GetPoiContainer(segmentKey);
-   if ( vpvPoi.size() == 0 )
+   if (segmentKey.groupIndex == ALL_GROUPS || segmentKey.girderIndex == ALL_GIRDERS || segmentKey.segmentIndex == ALL_SEGMENTS)
    {
-      return;
-   }
-
-   pPois->clear();
-
-   std::vector<const std::vector<pgsPointOfInterest>*>::iterator iter(vpvPoi.begin());
-   std::vector<const std::vector<pgsPointOfInterest>*>::iterator end(vpvPoi.end());
-   for ( ; iter != end; iter++ )
-   {
-      const std::vector<pgsPointOfInterest>* pvPoi(*iter);
-      std::vector<pgsPointOfInterest>::const_iterator poiIter(pvPoi->begin());
-      std::vector<pgsPointOfInterest>::const_iterator poiIterEnd(pvPoi->end());
-      for ( ; poiIter != poiIterEnd; poiIter++ )
+      for (const auto& poiData : m_PoiData)
       {
-         const pgsPointOfInterest& poi = *poiIter;
-
-         if ( OrFind(poi,segmentKey,attrib) )
+         if (segmentKey == poiData.first) // NOTE: segmentKey is the one that could have ALL_GIRDER, etc so it has to be the LHS operand
+         {
+            const auto& poiContainer(poiData.second);
+            for (const auto& pPoi : poiContainer)
+            {
+               if (OrFind(*pPoi, segmentKey, attrib))
+               {
+                  pPois->push_back(*(pPoi.get()));
+               }
+            }
+         }
+      }
+   }
+   else
+   {
+      const auto& poiContainer = GetPoiContainer(segmentKey);
+      for (const auto& pPoi : poiContainer)
+      {
+         if (OrFind(*pPoi, segmentKey, attrib))
          {
             // poi has desired attributes - keep it
-            pPois->push_back(poi);
+            pPois->push_back(*(pPoi.get()));
          }
       }
    }
@@ -1191,68 +1131,32 @@ bool pgsPoiMgr::OrAttributeEvaluation(const pgsPointOfInterest& poi,PoiAttribute
    return false;
 }
 
-std::vector<std::vector<pgsPointOfInterest>*> pgsPoiMgr::GetPoiContainer(const CSegmentKey& segmentKey)
+pgsPoiMgr::PoiContainer& pgsPoiMgr::GetPoiContainer(const CSegmentKey& segmentKey)
 {
-   std::vector<std::vector<pgsPointOfInterest>*> vpvPoi;
-   if ( segmentKey.groupIndex == INVALID_INDEX || segmentKey.girderIndex == INVALID_INDEX || segmentKey.segmentIndex == INVALID_INDEX )
+   ASSERT_SEGMENT_KEY(segmentKey);
+   auto found = m_PoiData.find(segmentKey);
+   if (found == std::end(m_PoiData))
    {
-      // want POIs for multiple groups, girders, or segments
-      std::map<CSegmentKey,std::vector<pgsPointOfInterest>*>::iterator iter = m_PoiData.begin();
-      std::map<CSegmentKey,std::vector<pgsPointOfInterest>*>::iterator end  = m_PoiData.end();
-      for ( ; iter != end; iter++ )
-      {
-         const CSegmentKey& key = iter->first;
-         if ( key == segmentKey)
-         {
-            vpvPoi.push_back(iter->second);
-         }
-      }
-   }
-   else
-   {
-      // want POIs for specific segment
-      std::map<CSegmentKey,std::vector<pgsPointOfInterest>*>::iterator found = m_PoiData.find(segmentKey);
-      std::vector<pgsPointOfInterest>* pvPoi = nullptr;
-      if ( found == m_PoiData.end() )
-      {
-         pvPoi = new std::vector<pgsPointOfInterest>();
-         m_PoiData.insert(std::make_pair(segmentKey,pvPoi));
-      }
-      else
-      {
-         pvPoi = found->second;
-      }
-      ATLASSERT( pvPoi != nullptr);
-      vpvPoi.push_back(pvPoi);
+      auto result = m_PoiData.insert(std::make_pair(segmentKey, PoiContainer()));
+      ATLASSERT(result.second);
+      found = m_PoiData.find(segmentKey);
+      ATLASSERT(found != std::end(m_PoiData));
    }
 
-   return vpvPoi;
+   return found->second;
 }
 
-std::vector<const std::vector<pgsPointOfInterest>*> pgsPoiMgr::GetPoiContainer(const CSegmentKey& segmentKey) const
+const pgsPoiMgr::PoiContainer& pgsPoiMgr::GetPoiContainer(const CSegmentKey& segmentKey) const
 {
-   std::vector<const std::vector<pgsPointOfInterest>*> vpvPoi;
-   if ( segmentKey.groupIndex == INVALID_INDEX || segmentKey.girderIndex == INVALID_INDEX || segmentKey.segmentIndex == INVALID_INDEX )
+   ASSERT_SEGMENT_KEY(segmentKey);
+   auto found = m_PoiData.find(segmentKey);
+   if (found == std::end(m_PoiData))
    {
-      // want POIs for multiple groups, girders, or segments
-      for (auto poiData : m_PoiData)
-      {
-         auto key = poiData.first;
-         if ( segmentKey == key )
-         {
-            vpvPoi.push_back(poiData.second);
-         }
-      }
-   }
-   else
-   {
-      // want POIs for specific segment
-      auto found = m_PoiData.find(segmentKey);
-      if ( found != m_PoiData.end() )
-      {
-         vpvPoi.push_back(found->second);
-      }
+      auto result = m_PoiData.insert(std::make_pair(segmentKey, PoiContainer()));
+      ATLASSERT(result.second);
+      found = m_PoiData.find(segmentKey);
+      ATLASSERT(found != std::end(m_PoiData));
    }
 
-   return vpvPoi;
+   return found->second;
 }

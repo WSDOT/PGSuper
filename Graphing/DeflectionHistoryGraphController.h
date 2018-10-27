@@ -31,13 +31,22 @@ public:
    CDeflectionHistoryGraphController();
    DECLARE_DYNCREATE(CDeflectionHistoryGraphController);
 
-   bool IncludeElevationAdjustment();
+   void IncludeElevationAdjustment(bool bAdjust);
+   bool IncludeElevationAdjustment() const;
+
+   void IncludePrecamber(bool bInclude);
+   bool IncludePrecamber() const;
+
+   bool ShowGrid() const;
+   void ShowGrid(bool bShowGrid);
 
 protected:
    virtual BOOL OnInitDialog() override;
 
 	//{{AFX_MSG(CStressHistoryGraphController)
    afx_msg void OnElevAdjustment();
+   afx_msg void OnPrecamber();
+   afx_msg void OnShowGrid();
    //}}AFX_MSG
 
 	DECLARE_MESSAGE_MAP()

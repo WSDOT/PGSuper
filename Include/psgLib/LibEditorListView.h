@@ -124,8 +124,6 @@ private:
    bool GetSelectedEntry(CString* entryName, libILibrary** pplib)const;
    int InsertEntryToList(const libLibraryEntry* pentry, const libILibrary* plib, int i);
 
-public:
-   afx_msg void OnSize(UINT nType, int cx, int cy);
 };
 
 /////////////////////////////////////////////////////////////////////////////

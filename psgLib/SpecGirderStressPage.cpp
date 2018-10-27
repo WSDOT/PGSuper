@@ -83,6 +83,12 @@ BOOL CSpecGirderStressPage::OnInitDialog()
 	OnCheckSevereServiceIIITensionMax();
    OnCheckTemporaryStresses();
 
+   return TRUE;  // return TRUE unless you set the focus to a control
+   // EXCEPTION: OCX Property Pages should return FALSE
+}
+
+BOOL CSpecGirderStressPage::OnSetActive()
+{
    CWnd* pWnd = GetDlgItem(IDC_FATIGUE_LABEL);
    CWnd* pGrp = GetDlgItem(IDC_FATIGUE_GROUP);
    CSpecMainSheet* pDad = (CSpecMainSheet*)GetParent();
@@ -93,12 +99,15 @@ BOOL CSpecGirderStressPage::OnInitDialog()
    }
    else
    {
-      pGrp->SetWindowText(_T("Stress limit at Fatigue Limit State (LRFD 5.5.3.1)"));
+      pGrp->SetWindowText(_T("Stress limit for Fatigue (LRFD 5.5.3.1)"));
       pWnd->SetWindowText(_T("Fatigue I plus one-half the sum of effective prestress and permanent loads"));
    }
 
-   return TRUE;  // return TRUE unless you set the focus to a control
-   // EXCEPTION: OCX Property Pages should return FALSE
+   // 2017 crosswalk chapter 5 reorg
+   GetDlgItem(IDC_GTEMP)->SetWindowText(CString(_T("Stress Limits for Temporary Stresses before Losses (LRFD ")) +  pDad->LrfdCw8th(_T("5.9.4.1"),_T("5.9.2.3.1")) + _T(")"));
+   GetDlgItem(IDC_GPERM)->SetWindowText(CString(_T("Stress Limits at Service Limit State after Losses (LRFD ")) +  pDad->LrfdCw8th(_T("5.9.4.2"),_T("5.9.2.3.2")) + _T(")"));
+
+   return CPropertyPage::OnSetActive();
 }
 
 void CSpecGirderStressPage::OnCheckReleaseTensionMax()

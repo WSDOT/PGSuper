@@ -3,11 +3,13 @@ PGSplice Dialogs {#ug_dialogs}
 
 * @subpage ug_dialogs_alignment_description
 * @subpage ug_dialogs_apply_loads
+* @subpage ug_dialogs_bearings
 * @subpage ug_dialogs_bridge_description
 * @subpage ug_dialogs_bridge_view_settings
 * @subpage ug_dialogs_bridge_view_section_cut
 * @subpage ug_dialogs_cast_closure_joints
 * @subpage ug_dialogs_cast_deck
+* @subpage ug_dialogs_cast_longitudinal_joints
 * @subpage ug_dialogs_closure_joint_details
 * @subpage ug_dialogs_configure_prestress_losses
 * @subpage ug_dialogs_configure_reports

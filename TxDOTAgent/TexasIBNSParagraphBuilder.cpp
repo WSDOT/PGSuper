@@ -323,13 +323,15 @@ rptParagraph* CTexasIBNSParagraphBuilder::Build(IBroker*	pBroker, const std::vec
          areAnyHarpedStrandsInTable = true;
 
          // check that eccentricity is same at ends and mid-girder
-         pgsPointOfInterest pois(segmentKey,0.0);
-         std::vector<pgsPointOfInterest> pmid = pPointOfInterest->GetPointsOfInterest(segmentKey,POI_5L | POI_RELEASED_SEGMENT);
-         ATLASSERT(pmid.size()==1);
+         PoiList vPoi;
+         pPointOfInterest->GetPointsOfInterest(segmentKey, POI_0L | POI_5L | POI_RELEASED_SEGMENT, &vPoi);
+         ATLASSERT(vPoi.size()==2);
+         const pgsPointOfInterest& pois(vPoi.front());
+         const pgsPointOfInterest& pmid(vPoi.back());
 
          Float64 nEff;
          Float64 hs_ecc_end = pStrandGeometry->GetEccentricity(releaseIntervalIdx,pois, pgsTypes::Harped, &nEff);
-         Float64 hs_ecc_mid = pStrandGeometry->GetEccentricity(releaseIntervalIdx,pmid[0], pgsTypes::Harped, &nEff);
+         Float64 hs_ecc_mid = pStrandGeometry->GetEccentricity(releaseIntervalIdx,pmid, pgsTypes::Harped, &nEff);
          if (! IsEqual(hs_ecc_end, hs_ecc_mid) )
          {
             areAnyBentHarpedStrandsInTable = true;
@@ -448,10 +450,12 @@ rptParagraph* CTexasIBNSParagraphBuilder::Build(IBroker*	pBroker, const std::vec
          {
             rbEjectPage = false;
             // Nonstandard strands table
-            std::vector<pgsPointOfInterest> pmid = pPointOfInterest->GetPointsOfInterest(segmentKey,POI_5L | POI_ERECTED_SEGMENT);
-            ATLASSERT(pmid.size()==1);
+            PoiList vPoi;
+            pPointOfInterest->GetPointsOfInterest(segmentKey, POI_5L | POI_ERECTED_SEGMENT, &vPoi);
+            ATLASSERT(vPoi.size()==1);
+            const pgsPointOfInterest& pmid(vPoi.front());
 
-            OptionalDesignHarpedFillUtil::StrandRowSet strandrows = OptionalDesignHarpedFillUtil::GetStrandRowSet(pBroker, pmid[0]);
+            OptionalDesignHarpedFillUtil::StrandRowSet strandrows = OptionalDesignHarpedFillUtil::GetStrandRowSet(pBroker, pmid);
 
             SpanIndexType spanIdx = segmentKey.groupIndex;
             GirderIndexType gdrIdx = segmentKey.girderIndex;
@@ -552,9 +556,11 @@ void WriteGirderScheduleTable(rptParagraph* p, IBroker* pBroker, IEAFDisplayUnit
       const matPsStrand* pstrand = pStrands->GetStrandMaterial(pgsTypes::Straight);
 
       // create pois at the start of girder and mid-span
-      pgsPointOfInterest pois(segmentKey,0.0);
-      std::vector<pgsPointOfInterest> pmid = pPointOfInterest->GetPointsOfInterest(segmentKey, POI_5L | POI_RELEASED_SEGMENT);
-      ATLASSERT(pmid.size()==1);
+      PoiList vPoi;
+      pPointOfInterest->GetPointsOfInterest(segmentKey, POI_0L | POI_5L | POI_RELEASED_SEGMENT, &vPoi);
+      ATLASSERT(vPoi.size()==2);
+      const pgsPointOfInterest& pois(vPoi.front());
+      const pgsPointOfInterest& pmid(vPoi.back());
 
       SpanIndexType spanIdx = segmentKey.groupIndex;
       GirderIndexType gdrIdx = segmentKey.girderIndex;
@@ -598,7 +604,7 @@ void WriteGirderScheduleTable(rptParagraph* p, IBroker* pBroker, IEAFDisplayUnit
       {
          Float64 nEff;
          Float64 hs_ecc_end = pStrandGeometry->GetEccentricity(releaseIntervalIdx, pois, pgsTypes::Harped, &nEff);
-         Float64 hs_ecc_mid = pStrandGeometry->GetEccentricity(releaseIntervalIdx, pmid[0], pgsTypes::Harped, &nEff);
+         Float64 hs_ecc_mid = pStrandGeometry->GetEccentricity(releaseIntervalIdx, pmid, pgsTypes::Harped, &nEff);
          are_harped_straight = IsEqual(hs_ecc_end, hs_ecc_mid);
       }
 
@@ -643,7 +649,7 @@ void WriteGirderScheduleTable(rptParagraph* p, IBroker* pBroker, IEAFDisplayUnit
       }
 
       Float64 nEff;
-      (*p_table)(row++,col) << ecc.SetValue( pStrandGeometry->GetEccentricity( releaseIntervalIdx, pmid[0], false, &nEff ) );
+      (*p_table)(row++,col) << ecc.SetValue( pStrandGeometry->GetEccentricity( releaseIntervalIdx, pmid, false, &nEff ) );
 
       if(bFirst)
       {
@@ -740,12 +746,8 @@ void WriteGirderScheduleTable(rptParagraph* p, IBroker* pBroker, IEAFDisplayUnit
       const pgsFlexuralStressArtifact* pArtifact;
       Float64 fcTop = 0.0, fcBot = 0.0, ftTop = 0.0, ftBot = 0.0;
 
-
-      pmid = pPointOfInterest->GetPointsOfInterest(segmentKey, POI_5L | POI_SPAN);
-      ATLASSERT(pmid.size()==1);
-
       const pgsSegmentArtifact* pSegmentArtifact = pIArtifact->GetSegmentArtifact(segmentKey);
-      pArtifact = pSegmentArtifact->GetFlexuralStressArtifactAtPoi( lastIntervalIdx,pgsTypes::ServiceI,pgsTypes::Compression,pmid[0].GetID() );
+      pArtifact = pSegmentArtifact->GetFlexuralStressArtifactAtPoi( lastIntervalIdx,pgsTypes::ServiceI,pgsTypes::Compression,pmid.GetID() );
       fcTop = pArtifact->GetExternalEffects(pgsTypes::TopGirder);
       fcBot = pArtifact->GetExternalEffects(pgsTypes::BottomGirder);
 
@@ -754,7 +756,7 @@ void WriteGirderScheduleTable(rptParagraph* p, IBroker* pBroker, IEAFDisplayUnit
 
       (*p_table)(row++,col) << stress.SetValue(-fcTop);
 
-      pArtifact = pSegmentArtifact->GetFlexuralStressArtifactAtPoi( lastIntervalIdx,pgsTypes::ServiceIII,pgsTypes::Tension,pmid[0].GetID() );
+      pArtifact = pSegmentArtifact->GetFlexuralStressArtifactAtPoi( lastIntervalIdx,pgsTypes::ServiceIII,pgsTypes::Tension,pmid.GetID() );
       ftTop = pArtifact->GetExternalEffects(pgsTypes::TopGirder);
       ftBot = pArtifact->GetExternalEffects(pgsTypes::BottomGirder);
 
@@ -765,7 +767,7 @@ void WriteGirderScheduleTable(rptParagraph* p, IBroker* pBroker, IEAFDisplayUnit
 
       //const pgsFlexuralCapacityArtifact* pFlexureArtifact = pGdrArtifact->GetFlexuralCapacityArtifact( pgsFlexuralCapacityArtifactKey(pgsTypes::BridgeSite3,pgsTypes::StrengthI,pmid[0].GetDistFromStart()) );
       MINMOMENTCAPDETAILS mmcd;
-      pMomentCapacity->GetMinMomentCapacityDetails(lastIntervalIdx,pmid[0],true,&mmcd);
+      pMomentCapacity->GetMinMomentCapacityDetails(lastIntervalIdx,pmid,true,&mmcd);
 
       if (bFirst)
          (*p_table)(row,0) << _T("Required minimum ultimate moment capacity ");

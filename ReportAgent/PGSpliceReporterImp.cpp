@@ -22,7 +22,6 @@
 
 // PGSpliceReporterImp.cpp : Implementation of CPGSpliceReporterImp
 #include "stdafx.h"
-#include "ReportAgent_i.h"
 #include "PGSpliceReporterImp.h"
 #include <Reporting\PGSpliceTitlePageBuilder.h>
 

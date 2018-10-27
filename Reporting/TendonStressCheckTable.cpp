@@ -90,7 +90,7 @@ void CTendonStressCheckTable::Build(rptChapter* pChapter,IBroker* pBroker,const 
 
    pPara = new rptParagraph;
    *pChapter << pPara;
-   *pPara << _T("5.9.3 - Stress Limitations for Prestressing Tendons") << rptNewLine;
+   *pPara << LrfdCw8th(_T("5.9.3"),_T("5.9.2.2")) << _T(" - Stress Limitations for Prestressing Tendons") << rptNewLine;
 
    for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
    {

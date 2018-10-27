@@ -42,7 +42,6 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-#pragma Reminder("UPDATE - need to model Brg Height, Recess, and Grout Pad Height (this will come from TxDOT)")
 // maybe not here, but somewhere... these parameters are needed so compute the column
 // height if it is input by bottom elevation
 
@@ -83,16 +82,16 @@ CPierData2::CPierData2()
    m_RefColumnIdx = 0;
    m_TransverseOffset = 0;
    m_TransverseOffsetMeasurement = pgsTypes::omtAlignment;
-   m_XBeamHeight[pgsTypes::pstLeft]  = ::ConvertToSysUnits(5,unitMeasure::Feet);
-   m_XBeamHeight[pgsTypes::pstRight] = ::ConvertToSysUnits(5,unitMeasure::Feet);
-   m_XBeamTaperHeight[pgsTypes::pstLeft]  = 0;
-   m_XBeamTaperHeight[pgsTypes::pstRight] = 0;
-   m_XBeamTaperLength[pgsTypes::pstLeft]  = 0;
-   m_XBeamTaperLength[pgsTypes::pstRight] = 0;
-   m_XBeamEndSlopeOffset[pgsTypes::pstLeft] = 0;
-   m_XBeamEndSlopeOffset[pgsTypes::pstRight] = 0;
-   m_XBeamOverhang[pgsTypes::pstLeft]  = ::ConvertToSysUnits(5,unitMeasure::Feet);
-   m_XBeamOverhang[pgsTypes::pstRight] = ::ConvertToSysUnits(5,unitMeasure::Feet);
+   m_XBeamHeight[pgsTypes::stLeft]  = ::ConvertToSysUnits(5,unitMeasure::Feet);
+   m_XBeamHeight[pgsTypes::stRight] = ::ConvertToSysUnits(5,unitMeasure::Feet);
+   m_XBeamTaperHeight[pgsTypes::stLeft]  = 0;
+   m_XBeamTaperHeight[pgsTypes::stRight] = 0;
+   m_XBeamTaperLength[pgsTypes::stLeft]  = 0;
+   m_XBeamTaperLength[pgsTypes::stRight] = 0;
+   m_XBeamEndSlopeOffset[pgsTypes::stLeft] = 0;
+   m_XBeamEndSlopeOffset[pgsTypes::stRight] = 0;
+   m_XBeamOverhang[pgsTypes::stLeft]  = ::ConvertToSysUnits(5,unitMeasure::Feet);
+   m_XBeamOverhang[pgsTypes::stRight] = ::ConvertToSysUnits(5,unitMeasure::Feet);
    m_XBeamWidth = ::ConvertToSysUnits(5,unitMeasure::Feet);
 
    m_ColumnFixity = pgsTypes::cftFixed;
@@ -106,8 +105,6 @@ CPierData2::CPierData2()
 
       m_GirderBearingOffset[i]          = ::ConvertToSysUnits(1.0,unitMeasure::Feet);
       m_BearingOffsetMeasurementType[i] = ConnectionLibraryEntry::NormalToPier;
-
-      m_SupportWidth[i]                 = ::ConvertToSysUnits(1.0,unitMeasure::Feet);
 
       m_DiaphragmHeight[i] = 0;
       m_DiaphragmWidth[i] = 0;
@@ -265,11 +262,15 @@ bool CPierData2::operator==(const CPierData2& rOther) const
       }
    }
 
+   // Must update mutable bearing data before comparison
+   this->ProtectBearingData();
+   rOther.ProtectBearingData();
+
    for ( int i = 0; i < 2; i++ )
    {
       if ( m_PierModelType == pgsTypes::pmtPhysical )
       {
-         pgsTypes::PierSideType side = (pgsTypes::PierSideType)i;
+         pgsTypes::SideType side = (pgsTypes::SideType)i;
 
          if ( !IsEqual(m_XBeamHeight[side],rOther.m_XBeamHeight[side]) )
          {
@@ -333,9 +334,12 @@ bool CPierData2::operator==(const CPierData2& rOther) const
          }
       }
 
-      if ( !IsEqual(m_SupportWidth[face], rOther.m_SupportWidth[face]) )
+      if (m_pBridgeDesc->GetBearingType() != pgsTypes::brtBridge)
       {
-         return false;
+         if (m_BearingData[face] != rOther.m_BearingData[face])
+         {
+            return false;
+         }
       }
 
       if ( !IsEqual(m_DiaphragmHeight[face], rOther.m_DiaphragmHeight[face]) )
@@ -490,7 +494,7 @@ HRESULT CPierData2::Save(IStructuredSave* pStrSave,IProgress* pProgress)
 {
    HRESULT hr = S_OK;
 
-   pStrSave->BeginUnit(_T("PierDataDetails"),17.0);
+   pStrSave->BeginUnit(_T("PierDataDetails"),18.0);
    
    pStrSave->put_Property(_T("ID"),CComVariant(m_PierID));
 
@@ -519,16 +523,16 @@ HRESULT CPierData2::Save(IStructuredSave* pStrSave,IProgress* pProgress)
       pStrSave->put_Property(_T("RefColumnIndex"),CComVariant(m_RefColumnIdx));
       pStrSave->put_Property(_T("TransverseOffset"),CComVariant(m_TransverseOffset));
       pStrSave->put_Property(_T("TransverseOffsetMeasurement"),CComVariant(m_TransverseOffsetMeasurement));
-      pStrSave->put_Property(_T("XBeamHeight_Left"),CComVariant(m_XBeamHeight[pgsTypes::pstLeft]));
-      pStrSave->put_Property(_T("XBeamHeight_Right"),CComVariant(m_XBeamHeight[pgsTypes::pstRight]));
-      pStrSave->put_Property(_T("XBeamTaperHeight_Left"),CComVariant(m_XBeamTaperHeight[pgsTypes::pstLeft]));
-      pStrSave->put_Property(_T("XBeamTaperHeight_Right"),CComVariant(m_XBeamTaperHeight[pgsTypes::pstRight]));
-      pStrSave->put_Property(_T("XBeamTaperLength_Left"),CComVariant(m_XBeamTaperLength[pgsTypes::pstLeft]));
-      pStrSave->put_Property(_T("XBeamTaperLength_Right"),CComVariant(m_XBeamTaperLength[pgsTypes::pstRight]));
-      pStrSave->put_Property(_T("XBeamEndSlopeOffset_Left"), CComVariant(m_XBeamEndSlopeOffset[pgsTypes::pstLeft])); // added version 17
-      pStrSave->put_Property(_T("XBeamEndSlopeOffset_Right"), CComVariant(m_XBeamEndSlopeOffset[pgsTypes::pstRight])); // added version 17
-      pStrSave->put_Property(_T("XBeamOverhang_Left"),CComVariant(m_XBeamOverhang[pgsTypes::pstLeft]));
-      pStrSave->put_Property(_T("XBeamOverhang_Right"),CComVariant(m_XBeamOverhang[pgsTypes::pstRight]));
+      pStrSave->put_Property(_T("XBeamHeight_Left"),CComVariant(m_XBeamHeight[pgsTypes::stLeft]));
+      pStrSave->put_Property(_T("XBeamHeight_Right"),CComVariant(m_XBeamHeight[pgsTypes::stRight]));
+      pStrSave->put_Property(_T("XBeamTaperHeight_Left"),CComVariant(m_XBeamTaperHeight[pgsTypes::stLeft]));
+      pStrSave->put_Property(_T("XBeamTaperHeight_Right"),CComVariant(m_XBeamTaperHeight[pgsTypes::stRight]));
+      pStrSave->put_Property(_T("XBeamTaperLength_Left"),CComVariant(m_XBeamTaperLength[pgsTypes::stLeft]));
+      pStrSave->put_Property(_T("XBeamTaperLength_Right"),CComVariant(m_XBeamTaperLength[pgsTypes::stRight]));
+      pStrSave->put_Property(_T("XBeamEndSlopeOffset_Left"), CComVariant(m_XBeamEndSlopeOffset[pgsTypes::stLeft])); // added version 17
+      pStrSave->put_Property(_T("XBeamEndSlopeOffset_Right"), CComVariant(m_XBeamEndSlopeOffset[pgsTypes::stRight])); // added version 17
+      pStrSave->put_Property(_T("XBeamOverhang_Left"),CComVariant(m_XBeamOverhang[pgsTypes::stLeft]));
+      pStrSave->put_Property(_T("XBeamOverhang_Right"),CComVariant(m_XBeamOverhang[pgsTypes::stRight]));
       pStrSave->put_Property(_T("XBeamWidth"),CComVariant(m_XBeamWidth));
 
       pStrSave->put_Property(_T("ColumnFixity"),CComVariant(m_ColumnFixity)); // added version 16
@@ -556,7 +560,32 @@ HRESULT CPierData2::Save(IStructuredSave* pStrSave,IProgress* pProgress)
    pStrSave->put_Property(_T("EndDistanceMeasurementType"), CComVariant(ConnectionLibraryEntry::StringForEndDistanceMeasurementType(m_EndDistanceMeasurementType[pgsTypes::Back]).c_str()) );
    pStrSave->put_Property(_T("GirderBearingOffset"),CComVariant(m_GirderBearingOffset[pgsTypes::Back]));
    pStrSave->put_Property(_T("BearingOffsetMeasurementType"),CComVariant(ConnectionLibraryEntry::StringForBearingOffsetMeasurementType(m_BearingOffsetMeasurementType[pgsTypes::Back]).c_str()) );
-   pStrSave->put_Property(_T("SupportWidth"),CComVariant(m_SupportWidth[pgsTypes::Back]));
+
+   if (m_pBridgeDesc->GetBearingType() != pgsTypes::brtBridge)
+   {
+      pStrSave->BeginUnit(_T("BearingDataVec"), 1.0);
+
+      // if bearing data is by pier, only save first entry
+      if (m_pBridgeDesc->GetBearingType() == pgsTypes::brtPier)
+      {
+         std::size_t cnt = m_BearingData[pgsTypes::Back].size();
+         pStrSave->put_Property(_T("Count"), CComVariant(std::size_t(1)));
+         if (cnt > 0)
+         {
+            m_BearingData[pgsTypes::Back][0].Save(pStrSave, pProgress);
+         }
+      }
+      else
+      {
+         pStrSave->put_Property(_T("Count"), CComVariant(m_BearingData[pgsTypes::Back].size()));
+         for (const auto& val : m_BearingData[pgsTypes::Back])
+         {
+            val.Save(pStrSave, pProgress);
+         }
+      }
+
+      pStrSave->EndUnit();
+   }
 
    if ( HasSpacing() )
    {
@@ -594,7 +623,32 @@ HRESULT CPierData2::Save(IStructuredSave* pStrSave,IProgress* pProgress)
    pStrSave->put_Property(_T("EndDistanceMeasurementType"), CComVariant(ConnectionLibraryEntry::StringForEndDistanceMeasurementType(m_EndDistanceMeasurementType[pgsTypes::Ahead]).c_str()) );
    pStrSave->put_Property(_T("GirderBearingOffset"),CComVariant(m_GirderBearingOffset[pgsTypes::Ahead]));
    pStrSave->put_Property(_T("BearingOffsetMeasurementType"),CComVariant(ConnectionLibraryEntry::StringForBearingOffsetMeasurementType(m_BearingOffsetMeasurementType[pgsTypes::Ahead]).c_str()) );
-   pStrSave->put_Property(_T("SupportWidth"),CComVariant(m_SupportWidth[pgsTypes::Ahead]));
+
+   if (m_pBridgeDesc->GetBearingType() != pgsTypes::brtBridge)
+   {
+      pStrSave->BeginUnit(_T("BearingDataVec"), 1.0);
+
+      // if bearing data is by pier, only save first entry
+      if (m_pBridgeDesc->GetBearingType() == pgsTypes::brtPier)
+      {
+         std::size_t cnt = m_BearingData[pgsTypes::Ahead].size();
+         pStrSave->put_Property(_T("Count"), CComVariant(std::size_t(1)));
+         if (cnt > 0)
+         {
+            m_BearingData[pgsTypes::Ahead][0].Save(pStrSave, pProgress);
+         }
+      }
+      else
+      {
+         pStrSave->put_Property(_T("Count"), CComVariant(m_BearingData[pgsTypes::Ahead].size()));
+         for (const auto& val : m_BearingData[pgsTypes::Ahead])
+         {
+            val.Save(pStrSave, pProgress);
+         }
+      }
+
+      pStrSave->EndUnit();
+   }
 
    if ( HasSpacing() )
    {
@@ -791,38 +845,38 @@ HRESULT CPierData2::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
 
             var.vt = VT_R8;
             hr = pStrLoad->get_Property(_T("XBeamHeight_Left"),&var);
-            m_XBeamHeight[pgsTypes::pstLeft] = var.dblVal;
+            m_XBeamHeight[pgsTypes::stLeft] = var.dblVal;
 
             hr = pStrLoad->get_Property(_T("XBeamHeight_Right"),&var);
-            m_XBeamHeight[pgsTypes::pstRight] = var.dblVal;
+            m_XBeamHeight[pgsTypes::stRight] = var.dblVal;
 
             hr = pStrLoad->get_Property(_T("XBeamTaperHeight_Left"),&var);
-            m_XBeamTaperHeight[pgsTypes::pstLeft] = var.dblVal;
+            m_XBeamTaperHeight[pgsTypes::stLeft] = var.dblVal;
 
             hr = pStrLoad->get_Property(_T("XBeamTaperHeight_Right"),&var);
-            m_XBeamTaperHeight[pgsTypes::pstRight] = var.dblVal;
+            m_XBeamTaperHeight[pgsTypes::stRight] = var.dblVal;
 
             hr = pStrLoad->get_Property(_T("XBeamTaperLength_Left"),&var);
-            m_XBeamTaperLength[pgsTypes::pstLeft] = var.dblVal;
+            m_XBeamTaperLength[pgsTypes::stLeft] = var.dblVal;
 
             hr = pStrLoad->get_Property(_T("XBeamTaperLength_Right"),&var);
-            m_XBeamTaperLength[pgsTypes::pstRight] = var.dblVal;
+            m_XBeamTaperLength[pgsTypes::stRight] = var.dblVal;
 
             if ( 16 < version )
             {
                // Added version 17
                hr = pStrLoad->get_Property(_T("XBeamEndSlopeOffset_Left"), &var);
-               m_XBeamEndSlopeOffset[pgsTypes::pstLeft] = var.dblVal;
+               m_XBeamEndSlopeOffset[pgsTypes::stLeft] = var.dblVal;
 
                hr = pStrLoad->get_Property(_T("XBeamEndSlopeOffset_Right"), &var);
-               m_XBeamEndSlopeOffset[pgsTypes::pstRight] = var.dblVal;
+               m_XBeamEndSlopeOffset[pgsTypes::stRight] = var.dblVal;
             }
 
             hr = pStrLoad->get_Property(_T("XBeamOverhang_Left"),&var);
-            m_XBeamOverhang[pgsTypes::pstLeft] = var.dblVal;
+            m_XBeamOverhang[pgsTypes::stLeft] = var.dblVal;
 
             hr = pStrLoad->get_Property(_T("XBeamOverhang_Right"),&var);
-            m_XBeamOverhang[pgsTypes::pstRight] = var.dblVal;
+            m_XBeamOverhang[pgsTypes::stRight] = var.dblVal;
 
             hr = pStrLoad->get_Property(_T("XBeamWidth"),&var);
             m_XBeamWidth = var.dblVal;
@@ -891,9 +945,38 @@ HRESULT CPierData2::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
       hr = pStrLoad->get_Property(_T("BearingOffsetMeasurementType"),&var);
       m_BearingOffsetMeasurementType[pgsTypes::Back] = ConnectionLibraryEntry::BearingOffsetMeasurementTypeFromString(OLE2T(var.bstrVal));
 
-      var.vt = VT_R8;
-      hr = pStrLoad->get_Property(_T("SupportWidth"),&var);
-      m_SupportWidth[pgsTypes::Back] = var.dblVal;
+      // Some gymnastics to load support width from older versions and assign to bearingdata. Assign to first bearing on bearing line
+      if (version < 18)
+      {
+         Float64 suppwidth;
+         var.vt = VT_R8;
+         hr = pStrLoad->get_Property(_T("SupportWidth"), &var);
+         suppwidth = var.dblVal;
+
+         CBearingData2 bd;
+         bd.Length = suppwidth;
+         m_BearingData[pgsTypes::Back].push_back(bd);
+      }
+      else
+      {
+         // Bearing Data in vers 18 or later
+         if (m_pBridgeDesc->GetBearingType() != pgsTypes::brtBridge)
+         {
+            hr = pStrLoad->BeginUnit(_T("BearingDataVec"));
+
+            var.vt = VT_I4;
+            hr = pStrLoad->get_Property(_T("Count"),&var);
+            Uint32 cnt = var.lVal;
+            for (Uint32 ib = 0; ib < cnt; ib++)
+            {
+               CBearingData2 bd;
+               hr = bd.Load(pStrLoad, pProgress);
+               m_BearingData[pgsTypes::Back].push_back(bd);
+            }
+
+            hr = pStrLoad->EndUnit();
+         }
+      }
 
       if ( back_version < 2 )
       {
@@ -977,9 +1060,37 @@ HRESULT CPierData2::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
       hr = pStrLoad->get_Property(_T("BearingOffsetMeasurementType"),&var);
       m_BearingOffsetMeasurementType[pgsTypes::Ahead] = ConnectionLibraryEntry::BearingOffsetMeasurementTypeFromString(OLE2T(var.bstrVal));
 
-      var.vt = VT_R8;
-      hr = pStrLoad->get_Property(_T("SupportWidth"),&var);
-      m_SupportWidth[pgsTypes::Ahead] = var.dblVal;
+      if (version < 18)
+      {
+         Float64 suppwidth;
+         var.vt = VT_R8;
+         hr = pStrLoad->get_Property(_T("SupportWidth"), &var);
+         suppwidth = var.dblVal;
+
+         CBearingData2 bd;
+         bd.Length = suppwidth;
+         m_BearingData[pgsTypes::Ahead].push_back(bd);
+      }
+      else
+      {
+         // Bearing Data in vers 18 or later
+         if (m_pBridgeDesc->GetBearingType() != pgsTypes::brtBridge)
+         {
+            hr = pStrLoad->BeginUnit(_T("BearingDataVec"));
+
+            var.vt = VT_I4;
+            hr = pStrLoad->get_Property(_T("Count"),&var);
+            Uint32 cnt = var.lVal;
+            for (Uint32 ib = 0; ib < cnt; ib++)
+            {
+               CBearingData2 bd;
+               hr = bd.Load(pStrLoad, pProgress);
+               m_BearingData[pgsTypes::Ahead].push_back(bd);
+            }
+
+            hr = pStrLoad->EndUnit();
+         }
+      }
 
       if ( ahead_version < 2 )
       {
@@ -1268,7 +1379,7 @@ void CPierData2::MakeCopy(const CPierData2& rOther,bool bCopyDataOnly)
       m_EndDistanceMeasurementType[i]   = rOther.m_EndDistanceMeasurementType[i];
       m_GirderBearingOffset[i]          = rOther.m_GirderBearingOffset[i];
       m_BearingOffsetMeasurementType[i] = rOther.m_BearingOffsetMeasurementType[i];
-      m_SupportWidth[i]                 = rOther.m_SupportWidth[i];
+      m_BearingData[i]                  = rOther.m_BearingData[i];
 
       m_GirderSpacing[i] = rOther.m_GirderSpacing[i];
       m_GirderSpacing[i].SetPier(this);
@@ -1592,14 +1703,140 @@ void CPierData2::GetBearingOffset(pgsTypes::PierFaceType face,Float64* pOffset,C
    *pMeasure = m_BearingOffsetMeasurementType[face];
 }
 
-void CPierData2::SetSupportWidth(pgsTypes::PierFaceType face,Float64 w)
+void CPierData2::SetBearingData(pgsTypes::PierFaceType face, const CBearingData2 & bd)
 {
-   m_SupportWidth[face] = w;
+   // Interior piers have a single bearing - use ahead slot to store
+   if (IsInteriorPier())
+   {
+      face = pgsTypes::Ahead;
+   }
+
+   m_BearingData[face].clear();
+   m_BearingData[face].push_back(bd);
+
+   ProtectBearingData();
 }
 
-Float64 CPierData2::GetSupportWidth(pgsTypes::PierFaceType face) const
+void CPierData2::SetBearingData(GirderIndexType gdrIdx, pgsTypes::PierFaceType face, const CBearingData2 & bd)
 {
-   return m_SupportWidth[face];
+   if (IsInteriorPier())
+   {
+      face = pgsTypes::Ahead;
+   }
+
+   ProtectBearingData();
+   ATLASSERT(gdrIdx < m_BearingData[face].size());
+
+   m_BearingData[face][gdrIdx] = bd;
+}
+
+void CPierData2::MirrorBearingData(pgsTypes::PierFaceType face)
+{
+   if (face==pgsTypes::Ahead)
+   {
+      m_BearingData[pgsTypes::Back] = m_BearingData[pgsTypes::Ahead];
+   }
+   else
+   {
+      m_BearingData[pgsTypes::Ahead] = m_BearingData[pgsTypes::Back];
+   }
+}
+
+CBearingData2* CPierData2::GetBearingData(GirderIndexType gdrIdx, pgsTypes::PierFaceType face)
+{
+   ProtectBearingData();
+   ATLASSERT(gdrIdx < m_BearingData[face].size());
+
+   return &m_BearingData[face][gdrIdx];
+}
+
+const CBearingData2* CPierData2::GetBearingData(GirderIndexType gdrIdx, pgsTypes::PierFaceType face) const
+{
+   ProtectBearingData();
+   ATLASSERT(gdrIdx < m_BearingData[face].size());
+
+   return &m_BearingData[face][gdrIdx];
+}
+
+Float64 CPierData2::GetSupportWidth(GirderIndexType gdrIdx, pgsTypes::PierFaceType face) const
+{
+   ProtectBearingData();
+   ATLASSERT(gdrIdx < m_BearingData[face].size());
+
+   return m_BearingData[face][gdrIdx].Length;
+}
+
+Float64 CPierData2::GetNetBearingHeight(GirderIndexType gdrIdx, pgsTypes::PierFaceType face) const
+{
+   ProtectBearingData();
+   ATLASSERT(gdrIdx < m_BearingData[face].size());
+
+   const CBearingData2& rb = m_BearingData[face][gdrIdx];
+   return rb.GetNetBearingHeight();
+}
+
+void CPierData2::ProtectBearingData() const
+{
+   // This function keeps bearing data from being compromized when the bearing type (bridge, pier, girder) changes
+   ATLASSERT(0 == (int)pgsTypes::Ahead); // whole scheme below breaks if this is not true
+
+   for (Uint32 i = 0; i < 2; i++)
+   {
+      pgsTypes::PierFaceType face = (pgsTypes::PierFaceType)i;
+
+      const CSpanData2* pSpan = GetSpan(face);
+      if (pSpan)
+      {
+         // First: Compare size of our collection with current number of girders and resize if they don't match
+         GirderIndexType nGirders = max(1, GetGirderCount(face));
+         IndexType nBrgs = m_BearingData[face].size();
+
+         if (nBrgs == 0)
+         {
+            // probably switched from brtBridge. Get bearing data from bridge and assign as a default
+            const CBearingData2* pdefVal = m_pBridgeDesc->GetBearingData();
+            m_BearingData[face].assign(nGirders, *pdefVal);
+         }
+         else if (nBrgs < nGirders)
+         {
+            // More girders than data - use back value for remaining girders
+            CBearingData2 back = m_BearingData[face].back();
+
+            m_BearingData[face].reserve(nGirders); // performance
+            for (IndexType i = nBrgs; i < nGirders; i++)
+            {
+               m_BearingData[face].push_back(back);
+            }
+         }
+         else if (nGirders < nBrgs)
+         {
+            // more bearings than girders - truncate
+            m_BearingData[face].resize(nGirders);
+         }
+      }
+
+      if (i == 0 && IsInteriorPier())
+      {
+         // Interior piers have a single bearing line. Enforce this
+         m_BearingData[pgsTypes::Back] = m_BearingData[pgsTypes::Ahead];
+         break;
+      }
+   }
+}
+
+GirderIndexType CPierData2::GetGirderCount(pgsTypes::PierFaceType face) const
+{
+   const CSpanData2* pSpan = GetSpan(face);
+   if ( pSpan )
+   {
+      const CGirderGroupData* pGroup = pSpan->GetBridgeDescription()->GetGirderGroup(pSpan);
+      return pGroup->GetGirderCount();
+   }
+   else
+   {
+      ATLASSERT(0); // probably should be protected by caller
+      return 0;
+   }
 }
 
 void CPierData2::SetGirderSpacing(pgsTypes::PierFaceType pierFace,const CGirderSpacing2& spacing)
@@ -1735,7 +1972,7 @@ void CPierData2::GetTransverseOffset(ColumnIndexType* pRefColumnIdx,Float64* pOf
    *pOffsetType = m_TransverseOffsetMeasurement;
 }
 
-void CPierData2::SetXBeamDimensions(pgsTypes::PierSideType side,Float64 height,Float64 taperHeight,Float64 taperLength,Float64 endSlopeOffset)
+void CPierData2::SetXBeamDimensions(pgsTypes::SideType side,Float64 height,Float64 taperHeight,Float64 taperLength,Float64 endSlopeOffset)
 {
    m_XBeamHeight[side]         = height;
    m_XBeamTaperHeight[side]    = taperHeight;
@@ -1743,7 +1980,7 @@ void CPierData2::SetXBeamDimensions(pgsTypes::PierSideType side,Float64 height,F
    m_XBeamEndSlopeOffset[side] = endSlopeOffset;
 }
 
-void CPierData2::GetXBeamDimensions(pgsTypes::PierSideType side,Float64* pHeight,Float64* pTaperHeight,Float64* pTaperLength,Float64* pEndSlopeOffset) const
+void CPierData2::GetXBeamDimensions(pgsTypes::SideType side,Float64* pHeight,Float64* pTaperHeight,Float64* pTaperLength,Float64* pEndSlopeOffset) const
 {
    *pHeight         = m_XBeamHeight[side];
    *pTaperHeight    = m_XBeamTaperHeight[side];
@@ -1761,26 +1998,26 @@ Float64 CPierData2::GetXBeamWidth() const
    return m_XBeamWidth;
 }
 
-void CPierData2::SetXBeamOverhang(pgsTypes::PierSideType side,Float64 overhang)
+void CPierData2::SetXBeamOverhang(pgsTypes::SideType side,Float64 overhang)
 {
    m_XBeamOverhang[side] = overhang;
 }
 
 void CPierData2::SetXBeamOverhangs(Float64 leftOverhang,Float64 rightOverhang)
 {
-   m_XBeamOverhang[pgsTypes::pstLeft]  = leftOverhang;
-   m_XBeamOverhang[pgsTypes::pstRight] = rightOverhang;
+   m_XBeamOverhang[pgsTypes::stLeft]  = leftOverhang;
+   m_XBeamOverhang[pgsTypes::stRight] = rightOverhang;
 }
 
-Float64 CPierData2::GetXBeamOverhang(pgsTypes::PierSideType side) const
+Float64 CPierData2::GetXBeamOverhang(pgsTypes::SideType side) const
 {
    return m_XBeamOverhang[side];
 }
 
 void CPierData2::GetXBeamOverhangs(Float64* pLeftOverhang,Float64* pRightOverhang) const
 {
-   *pLeftOverhang  = m_XBeamOverhang[pgsTypes::pstLeft];
-   *pRightOverhang = m_XBeamOverhang[pgsTypes::pstRight];
+   *pLeftOverhang  = m_XBeamOverhang[pgsTypes::stLeft];
+   *pRightOverhang = m_XBeamOverhang[pgsTypes::stRight];
 }
 
 Float64 CPierData2::GetXBeamLength() const
@@ -1790,7 +2027,7 @@ Float64 CPierData2::GetXBeamLength() const
    {
       L += s;
    }
-   L += (m_XBeamOverhang[pgsTypes::pstLeft]-m_XBeamEndSlopeOffset[pgsTypes::pstLeft]) + (m_XBeamOverhang[pgsTypes::pstRight]-m_XBeamEndSlopeOffset[pgsTypes::pstRight]);
+   L += (m_XBeamOverhang[pgsTypes::stLeft]-m_XBeamEndSlopeOffset[pgsTypes::stLeft]) + (m_XBeamOverhang[pgsTypes::stRight]-m_XBeamEndSlopeOffset[pgsTypes::stRight]);
    return L;
 }
 
@@ -2287,8 +2524,16 @@ void CPierData2::SetPierData(CPierData* pPier)
    SetBearingOffset(pgsTypes::Back, pPier->m_GirderBearingOffset[pgsTypes::Back], pPier->m_BearingOffsetMeasurementType[pgsTypes::Back]);
    SetBearingOffset(pgsTypes::Ahead,pPier->m_GirderBearingOffset[pgsTypes::Ahead],pPier->m_BearingOffsetMeasurementType[pgsTypes::Ahead]);
 
-   SetSupportWidth(pgsTypes::Back, pPier->m_SupportWidth[pgsTypes::Back]);
-   SetSupportWidth(pgsTypes::Ahead,pPier->m_SupportWidth[pgsTypes::Ahead]);
+   m_BearingData[pgsTypes::Back].clear();
+   m_BearingData[pgsTypes::Ahead].clear();
+
+   // older data only had support width (which is now bearing length)
+   ATLASSERT(m_pBridgeDesc==nullptr || m_pBridgeDesc->GetBearingType()==pgsTypes::brtPier);
+   CBearingData2 bd;
+   bd.Length = pPier->m_SupportWidth[pgsTypes::Back];
+   m_BearingData[pgsTypes::Back].push_back(bd);
+   bd.Length = pPier->m_SupportWidth[pgsTypes::Ahead];
+   m_BearingData[pgsTypes::Ahead].push_back(bd);
 
    SetDiaphragmHeight(pgsTypes::Back,pPier->m_DiaphragmHeight[pgsTypes::Back]);
    SetDiaphragmWidth(pgsTypes::Back,pPier->m_DiaphragmWidth[pgsTypes::Back]);

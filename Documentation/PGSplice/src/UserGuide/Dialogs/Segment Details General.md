@@ -13,7 +13,7 @@ Erection | Select the event when the segment is erected
 
 Section Variation
 --------------------
-Define variations in the segment depth.
+Define variations in the segment. Variations include depth, end blocks, and precamber
 
 Item | Description
 -----|----------------
@@ -21,14 +21,10 @@ Variation Type | Select a segment profile variation type from the drop down list
 Length | Enter the length of the variation
 Height | Enter the overall height of the segment at the end of the variation
 Bottom Flange Depth | If checked, the bottom flange depth is also variable. Enter the depth of the bottom flange at the ends of the variations.
-
-Precast segments can also have end blocks.
-
-Item | Description
------|-------------
-Length | Length of the constant width portion of the end block
-Transition Length | Length of the transition from the end block section to the typical section
-Width | The width of the end block at the end of the girder
+End Block Length | Length of the full end block excluding the transition
+End Block Transition Length | Length of the transition from the end of the full end block to the normal cross section
+End Block Width | Width of the end block
+Precamber | Precamber built into the segment during fabrication
 
 See @ref ug_girder_modeling_defining_a_girder in the @ref user_guide for more details about defining variations in the segment depth.
 

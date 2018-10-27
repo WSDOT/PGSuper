@@ -92,9 +92,6 @@ public:
    void SetBearingOffset(Float64 offset,ConnectionLibraryEntry::BearingOffsetMeasurementType measure);
    void GetBearingOffset(Float64* pOffset,ConnectionLibraryEntry::BearingOffsetMeasurementType* pMeasure) const;
 
-   void SetSupportWidth(Float64 w);
-   Float64 GetSupportWidth() const;
-
    void SetElevationAdjustment(Float64 elevAdj);
    Float64 GetElevationAdjustment() const;
 
@@ -137,7 +134,6 @@ private:
    ConnectionLibraryEntry::EndDistanceMeasurementType m_EndDistanceMeasurementType;
    Float64 m_GirderBearingOffset;
    ConnectionLibraryEntry::BearingOffsetMeasurementType m_BearingOffsetMeasurementType;
-   Float64 m_SupportWidth;
    Float64 m_ElevationAdjustment;
 
    // Spacing at the centerline of this temporary support

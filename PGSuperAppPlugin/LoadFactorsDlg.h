@@ -42,6 +42,22 @@ public:
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
 
+   static constexpr int nLimitStates = ((int)pgsTypes::FatigueI) + 1;
+   Float64 DCmin[nLimitStates];   // index is one of pgsTypes::LimitState constants (except for CLLIM)
+   Float64 DWmin[nLimitStates];
+   Float64 CRmin[nLimitStates];
+   Float64 SHmin[nLimitStates];
+   Float64 REmin[nLimitStates];
+   Float64 PSmin[nLimitStates];
+   Float64 LLIMmin[nLimitStates];
+   Float64 DCmax[nLimitStates];
+   Float64 DWmax[nLimitStates];
+   Float64 CRmax[nLimitStates];
+   Float64 SHmax[nLimitStates];
+   Float64 REmax[nLimitStates];
+   Float64 PSmax[nLimitStates];
+   Float64 LLIMmax[nLimitStates];
+
 	DECLARE_MESSAGE_MAP()
 public:
    virtual BOOL OnInitDialog();

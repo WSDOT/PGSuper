@@ -79,7 +79,7 @@ rptChapter* CHaulingCheckDetailsChapterBuilder::Build(CReportSpecification* pRpt
    {
       rptParagraph* pTitle = new rptParagraph( rptStyleManager::GetHeadingStyle() );
       *pChapter << pTitle;
-      *pTitle << _T("Details for Check for Hauling to Bridge Site [5.5.4.3][5.9.4.1]")<<rptNewLine;
+      *pTitle << _T("Details for Check for Hauling to Bridge Site [5.5.4.3]") << LrfdCw8th(_T("[5.9.4.1]"),_T("[5.9.2.3.1]"))<<rptNewLine;
 
       rptParagraph* p = new rptParagraph;
       *pChapter << p;

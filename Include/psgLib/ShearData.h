@@ -131,7 +131,7 @@ public:
 	HRESULT Save(sysIStructuredSave* pStrSave);
 
    // copy shear data from a girder entry
-   void CopyGirderEntryData(const GirderLibraryEntry& rGird);
+   void CopyGirderEntryData(const GirderLibraryEntry* pGirderEntry);
 
    // GROUP: ACCESS
    // GROUP: INQUIRY

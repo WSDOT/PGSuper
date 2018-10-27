@@ -97,8 +97,11 @@ bool txnEditGirder::Execute()
       oldGirderData.m_SlabOffsetType = pBridgeDesc->GetSlabOffsetType();
 
       // this is a precast girder (only one segment per girder)
-      oldGirderData.m_SlabOffset[pgsTypes::metStart] = pIBridgeDesc->GetSlabOffset(m_GirderKey.groupIndex,pGroup->GetPierIndex(pgsTypes::metStart),gdrIdx);
-      oldGirderData.m_SlabOffset[pgsTypes::metEnd]   = pIBridgeDesc->GetSlabOffset(m_GirderKey.groupIndex,pGroup->GetPierIndex(pgsTypes::metEnd),  gdrIdx);
+      PierIndexType startPierIdx = pGroup->GetPierIndex(pgsTypes::metStart);
+      PierIndexType endPierIdx = pGroup->GetPierIndex(pgsTypes::metEnd);
+
+      oldGirderData.m_SlabOffset[pgsTypes::metStart] = pIBridgeDesc->GetSlabOffset(m_GirderKey.groupIndex,startPierIdx,gdrIdx);
+      oldGirderData.m_SlabOffset[pgsTypes::metEnd]   = pIBridgeDesc->GetSlabOffset(m_GirderKey.groupIndex,endPierIdx,  gdrIdx);
 
       oldGirderData.m_AssExcessCamberType = pBridgeDesc->GetAssExcessCamberType();
       // this is a precast girder (only one segment per girder)
@@ -106,6 +109,10 @@ bool txnEditGirder::Execute()
 
       oldGirderData.m_Girder = *pGroup->GetGirder(gdrIdx);
       oldGirderData.m_TimelineMgr = (*pIBridgeDesc->GetTimelineManager());
+
+      oldGirderData.m_BearingType = pIBridgeDesc->GetBearingType();
+      oldGirderData.m_BearingData[pgsTypes::metStart] = *pIBridgeDesc->GetBearingData(startPierIdx, pgsTypes::Ahead, gdrIdx);
+      oldGirderData.m_BearingData[pgsTypes::metEnd] =   *pIBridgeDesc->GetBearingData(endPierIdx, pgsTypes::Back, gdrIdx);
 
       m_OldGirderData.insert(oldGirderData);
 
@@ -250,6 +257,36 @@ void txnEditGirder::SetGirderData(const CGirderKey& girderKey,const txnEditGirde
       // change the girder that was edited
       pIBridgeDesc->SetAssExcessCamber(segmentKey.groupIndex, segmentKey.girderIndex, gdrData.m_AssExcessCamber);
    }
+
+   // set the bearing data
+   pIBridgeDesc->SetBearingType( gdrData.m_BearingType );
+   if ( gdrData.m_BearingType == pgsTypes::brtBridge )
+   {
+      // for the entire bridge
+      pIBridgeDesc->SetBearingData( &gdrData.m_BearingData[pgsTypes::metStart] );
+   }
+   else if ( gdrData.m_BearingType == pgsTypes::brtPier )
+   {
+      // for this span
+      const CGirderGroupData* pGroup = pIBridgeDesc->GetGirderGroup(girderKey.groupIndex);
+      PierIndexType startPierIdx = pGroup->GetPier(pgsTypes::metStart)->GetIndex();
+      PierIndexType endPierIdx   = pGroup->GetPier(pgsTypes::metEnd)->GetIndex();
+
+      pIBridgeDesc->SetBearingData(girderKey.groupIndex, startPierIdx, pgsTypes::Ahead, &gdrData.m_BearingData[pgsTypes::metStart]);
+      pIBridgeDesc->SetBearingData(girderKey.groupIndex, endPierIdx,   pgsTypes::Back,  &gdrData.m_BearingData[pgsTypes::metEnd]);
+   }
+   else
+   {
+      // by girder
+      const CGirderGroupData* pGroup = pIBridgeDesc->GetGirderGroup(segmentKey.groupIndex);
+      PierIndexType startPierIdx = pGroup->GetPierIndex(pgsTypes::metStart);
+      PierIndexType endPierIdx   = pGroup->GetPierIndex(pgsTypes::metEnd);
+      
+      // change the girder that was edited
+      pIBridgeDesc->SetBearingData(segmentKey.groupIndex, startPierIdx, pgsTypes::Ahead, segmentKey.girderIndex, &gdrData.m_BearingData[pgsTypes::metStart]);
+      pIBridgeDesc->SetBearingData(segmentKey.groupIndex, endPierIdx,   pgsTypes::Back,  segmentKey.girderIndex, &gdrData.m_BearingData[pgsTypes::metEnd]  );
+   }
+
 
    if ( !gdrData.m_bUseSameGirder )
    {

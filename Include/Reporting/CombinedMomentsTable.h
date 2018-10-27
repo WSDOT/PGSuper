@@ -143,7 +143,7 @@ public:
    #endif // _UNITTEST
 };
 
-void GetCombinedResultsPoi(IBroker* pBroker,const CGirderKey& girderKey,IntervalIndexType intervalIdx,std::vector<pgsPointOfInterest>* pPoi,PoiAttributeType* pRefAttribute);
+void GetCombinedResultsPoi(IBroker* pBroker,const CGirderKey& girderKey,IntervalIndexType intervalIdx,PoiList* pPoi,PoiAttributeType* pRefAttribute);
 
 
 // INLINE METHODS

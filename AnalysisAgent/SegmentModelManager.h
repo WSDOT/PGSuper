@@ -39,58 +39,59 @@ public:
 
    void Clear();
 
-   void DumpAnalysisModels(GirderIndexType gdrIdx);
+   void DumpAnalysisModels(GirderIndexType gdrIdx) const;
 
-   Float64 GetAxial(IntervalIndexType intervalIdx,pgsTypes::ProductForceType pfType,const pgsPointOfInterest& poi,ResultsType resultsType);
-   sysSectionValue GetShear(IntervalIndexType intervalIdx,pgsTypes::ProductForceType pfType,const pgsPointOfInterest& poi,ResultsType resultsType);
-   Float64 GetMoment(IntervalIndexType intervalIdx,pgsTypes::ProductForceType pfType,const pgsPointOfInterest& poi,ResultsType resultsType);
-   Float64 GetDeflection(IntervalIndexType intervalIdx,pgsTypes::ProductForceType pfType,const pgsPointOfInterest& poi,ResultsType resultsType);
-   Float64 GetRotation(IntervalIndexType intervalIdx,pgsTypes::ProductForceType pfType,const pgsPointOfInterest& poi,ResultsType resultsType);
-   void GetStress(IntervalIndexType intervalIdx,pgsTypes::ProductForceType pfType,const pgsPointOfInterest& poi,ResultsType resultsType,pgsTypes::StressLocation topLocation,pgsTypes::StressLocation botLocation,Float64* pfTop,Float64* pfBot);
-   Float64 GetReaction(IntervalIndexType intervalIdx,pgsTypes::ProductForceType pfType,PierIndexType pierIdx,const CGirderKey& girderKey,ResultsType resultsType);
+   Float64 GetAxial(IntervalIndexType intervalIdx,pgsTypes::ProductForceType pfType,const pgsPointOfInterest& poi,ResultsType resultsType) const;
+   sysSectionValue GetShear(IntervalIndexType intervalIdx,pgsTypes::ProductForceType pfType,const pgsPointOfInterest& poi,ResultsType resultsType) const;
+   Float64 GetMoment(IntervalIndexType intervalIdx,pgsTypes::ProductForceType pfType,const pgsPointOfInterest& poi,ResultsType resultsType) const;
+   Float64 GetDeflection(IntervalIndexType intervalIdx, pgsTypes::ProductForceType pfType, const pgsPointOfInterest& poi, ResultsType resultsType) const;
+   Float64 GetRotation(IntervalIndexType intervalIdx,pgsTypes::ProductForceType pfType,const pgsPointOfInterest& poi,ResultsType resultsType) const;
+   void GetStress(IntervalIndexType intervalIdx,pgsTypes::ProductForceType pfType,const pgsPointOfInterest& poi,ResultsType resultsType,pgsTypes::StressLocation topLocation,pgsTypes::StressLocation botLocation,Float64* pfTop,Float64* pfBot) const;
+   Float64 GetReaction(IntervalIndexType intervalIdx,pgsTypes::ProductForceType pfType,PierIndexType pierIdx,const CGirderKey& girderKey,ResultsType resultsType) const;
 
    // IReactions
-   void GetReaction(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx,pgsTypes::ProductForceType pfType,ResultsType resultsType,Float64* pRleft,Float64* pRright);
-   void GetReaction(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx,LoadingCombinationType comboType,ResultsType resultsType,Float64* pRleft,Float64* pRright);
-   void GetReaction(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,Float64* pRleftMin,Float64* pRleftMax,Float64* pRrightMin,Float64* pRrightMax);
+   void GetReaction(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx,pgsTypes::ProductForceType pfType,ResultsType resultsType,Float64* pRleft,Float64* pRright) const;
+   void GetReaction(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx,LoadingCombinationType comboType,ResultsType resultsType,Float64* pRleft,Float64* pRright) const;
+   void GetReaction(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,Float64* pRleftMin,Float64* pRleftMax,Float64* pRrightMin,Float64* pRrightMax) const;
 
-   std::vector<Float64> GetAxial(IntervalIndexType intervalIdx,pgsTypes::ProductForceType pfType,const std::vector<pgsPointOfInterest>& vPoi,ResultsType resultsType);
-   std::vector<sysSectionValue> GetShear(IntervalIndexType intervalIdx,pgsTypes::ProductForceType pfType,const std::vector<pgsPointOfInterest>& vPoi,ResultsType resultsType);
-   std::vector<Float64> GetMoment(IntervalIndexType intervalIdx,pgsTypes::ProductForceType pfType,const std::vector<pgsPointOfInterest>& vPoi,ResultsType resultsType);
-   std::vector<Float64> GetDeflection(IntervalIndexType intervalIdx,pgsTypes::ProductForceType pfType,const std::vector<pgsPointOfInterest>& vPoi,ResultsType resultsType);
-   std::vector<Float64> GetRotation(IntervalIndexType intervalIdx,pgsTypes::ProductForceType pfType,const std::vector<pgsPointOfInterest>& vPoi,ResultsType resultsType);
-   void GetStress(IntervalIndexType intervalIdx,pgsTypes::ProductForceType pfType,const std::vector<pgsPointOfInterest>& vPoi,ResultsType resultsType,pgsTypes::StressLocation topLocation,pgsTypes::StressLocation botLocation,std::vector<Float64>* pfTop,std::vector<Float64>* pfBot);
+   std::vector<Float64> GetAxial(IntervalIndexType intervalIdx,pgsTypes::ProductForceType pfType,const PoiList& vPoi,ResultsType resultsType) const;
+   std::vector<sysSectionValue> GetShear(IntervalIndexType intervalIdx,pgsTypes::ProductForceType pfType,const PoiList& vPoi,ResultsType resultsType) const;
+   std::vector<Float64> GetMoment(IntervalIndexType intervalIdx,pgsTypes::ProductForceType pfType,const PoiList& vPoi,ResultsType resultsType) const;
+   std::vector<Float64> GetDeflection(IntervalIndexType intervalIdx, pgsTypes::ProductForceType pfType, const PoiList& vPoi, ResultsType resultsType) const;
+   std::vector<Float64> GetPretensionXDeflection(IntervalIndexType intervalIdx, const PoiList& vPoi, ResultsType resultsType) const;
+   std::vector<Float64> GetRotation(IntervalIndexType intervalIdx,pgsTypes::ProductForceType pfType,const PoiList& vPoi,ResultsType resultsType) const;
+   void GetStress(IntervalIndexType intervalIdx,pgsTypes::ProductForceType pfType,const PoiList& vPoi,ResultsType resultsType,pgsTypes::StressLocation topLocation,pgsTypes::StressLocation botLocation,std::vector<Float64>* pfTop,std::vector<Float64>* pfBot) const;
 
-   std::vector<Float64> GetUnitLoadMoment(IntervalIndexType intervalIdx,const std::vector<pgsPointOfInterest>& vPoi,const pgsPointOfInterest& unitLoadPOI);
-   std::vector<sysSectionValue> GetUnitCoupleMoment(IntervalIndexType intervalIdx,const std::vector<pgsPointOfInterest>& vPoi,const pgsPointOfInterest& unitMomentPOI);
+   std::vector<Float64> GetUnitLoadMoment(IntervalIndexType intervalIdx,const PoiList& vPoi,const pgsPointOfInterest& unitLoadPOI) const;
+   std::vector<sysSectionValue> GetUnitCoupleMoment(IntervalIndexType intervalIdx,const PoiList& vPoi,const pgsPointOfInterest& unitMomentPOI) const;
 
-   Float64 GetAxial(IntervalIndexType intervalIdx,LoadingCombinationType comboType,const pgsPointOfInterest& poi,ResultsType resultsType);
-   sysSectionValue GetShear(IntervalIndexType intervalIdx,LoadingCombinationType comboType,const pgsPointOfInterest& poi,ResultsType resultsType);
-   Float64 GetMoment(IntervalIndexType intervalIdx,LoadingCombinationType comboType,const pgsPointOfInterest& poi,ResultsType resultsType);
-   Float64 GetDeflection(IntervalIndexType intervalIdx,LoadingCombinationType comboType,const pgsPointOfInterest& poi,ResultsType resultsType);
-   Float64 GetRotation(IntervalIndexType intervalIdx,LoadingCombinationType comboType,const pgsPointOfInterest& poi,ResultsType resultsType);
-   Float64 GetReaction(IntervalIndexType intervalIdx,LoadingCombinationType comboType,PierIndexType pierIdx,const CGirderKey& girderKey,ResultsType resultsType);
-   void GetStress(IntervalIndexType intervalIdx,LoadingCombinationType comboType,const pgsPointOfInterest& poi,ResultsType resultsType,pgsTypes::StressLocation topLocation,pgsTypes::StressLocation botLocation,Float64* pfTop,Float64* pfBot);
+   Float64 GetAxial(IntervalIndexType intervalIdx,LoadingCombinationType comboType,const pgsPointOfInterest& poi,ResultsType resultsType) const;
+   sysSectionValue GetShear(IntervalIndexType intervalIdx,LoadingCombinationType comboType,const pgsPointOfInterest& poi,ResultsType resultsType) const;
+   Float64 GetMoment(IntervalIndexType intervalIdx,LoadingCombinationType comboType,const pgsPointOfInterest& poi,ResultsType resultsType) const;
+   Float64 GetDeflection(IntervalIndexType intervalIdx,LoadingCombinationType comboType,const pgsPointOfInterest& poi,ResultsType resultsType) const;
+   Float64 GetRotation(IntervalIndexType intervalIdx,LoadingCombinationType comboType,const pgsPointOfInterest& poi,ResultsType resultsType) const;
+   Float64 GetReaction(IntervalIndexType intervalIdx,LoadingCombinationType comboType,PierIndexType pierIdx,const CGirderKey& girderKey,ResultsType resultsType) const;
+   void GetStress(IntervalIndexType intervalIdx,LoadingCombinationType comboType,const pgsPointOfInterest& poi,ResultsType resultsType,pgsTypes::StressLocation topLocation,pgsTypes::StressLocation botLocation,Float64* pfTop,Float64* pfBot) const;
 
-   std::vector<Float64> GetAxial(IntervalIndexType intervalIdx,LoadingCombinationType comboType,const std::vector<pgsPointOfInterest>& vPoi,ResultsType resultsType);
-   std::vector<sysSectionValue> GetShear(IntervalIndexType intervalIdx,LoadingCombinationType comboType,const std::vector<pgsPointOfInterest>& vPoi,ResultsType resultsType);
-   std::vector<Float64> GetMoment(IntervalIndexType intervalIdx,LoadingCombinationType comboType,const std::vector<pgsPointOfInterest>& vPoi,ResultsType resultsType);
-   std::vector<Float64> GetDeflection(IntervalIndexType intervalIdx,LoadingCombinationType comboType,const std::vector<pgsPointOfInterest>& vPoi,ResultsType resultsType);
-   std::vector<Float64> GetRotation(IntervalIndexType intervalIdx,LoadingCombinationType comboType,const std::vector<pgsPointOfInterest>& vPoi,ResultsType resultsType);
-   void GetStress(IntervalIndexType intervalIdx,LoadingCombinationType comboType,const std::vector<pgsPointOfInterest>& vPoi,ResultsType resultsType,pgsTypes::StressLocation topLocation,pgsTypes::StressLocation botLocation,std::vector<Float64>* pfTop,std::vector<Float64>* pfBot);
+   std::vector<Float64> GetAxial(IntervalIndexType intervalIdx,LoadingCombinationType comboType,const PoiList& vPoi,ResultsType resultsType) const;
+   std::vector<sysSectionValue> GetShear(IntervalIndexType intervalIdx,LoadingCombinationType comboType,const PoiList& vPoi,ResultsType resultsType) const;
+   std::vector<Float64> GetMoment(IntervalIndexType intervalIdx,LoadingCombinationType comboType,const PoiList& vPoi,ResultsType resultsType) const;
+   std::vector<Float64> GetDeflection(IntervalIndexType intervalIdx,LoadingCombinationType comboType,const PoiList& vPoi,ResultsType resultsType) const;
+   std::vector<Float64> GetRotation(IntervalIndexType intervalIdx,LoadingCombinationType comboType,const PoiList& vPoi,ResultsType resultsType) const;
+   void GetStress(IntervalIndexType intervalIdx,LoadingCombinationType comboType,const PoiList& vPoi,ResultsType resultsType,pgsTypes::StressLocation topLocation,pgsTypes::StressLocation botLocation,std::vector<Float64>* pfTop,std::vector<Float64>* pfBot) const;
 
-   void GetShear(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,const pgsPointOfInterest& poi,sysSectionValue* pMin,sysSectionValue* pMax);
-   void GetMoment(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,const pgsPointOfInterest& poi,Float64* pMin,Float64* pMax);
-   void GetDeflection(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,const pgsPointOfInterest& poi,bool bIncludePrestress,Float64* pMin,Float64* pMax);
-   void GetReaction(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,PierIndexType pierIdx,const CGirderKey& girderKey,bool bIncludeImpact,Float64* pMin,Float64* pMax);
-   void GetStress(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,const pgsPointOfInterest& poi,pgsTypes::StressLocation stressLocation,bool bIncludePrestress,Float64* pMin,Float64* pMax);
+   void GetShear(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,const pgsPointOfInterest& poi,sysSectionValue* pMin,sysSectionValue* pMax) const;
+   void GetMoment(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,const pgsPointOfInterest& poi,Float64* pMin,Float64* pMax) const;
+   void GetDeflection(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,const pgsPointOfInterest& poi,bool bIncludePrestress,Float64* pMin,Float64* pMax) const;
+   void GetReaction(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,PierIndexType pierIdx,const CGirderKey& girderKey,bool bIncludeImpact,Float64* pMin,Float64* pMax) const;
+   void GetStress(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,const pgsPointOfInterest& poi,pgsTypes::StressLocation stressLocation,bool bIncludePrestress,Float64* pMin,Float64* pMax) const;
 
-   void GetAxial(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,const std::vector<pgsPointOfInterest>& vPoi,std::vector<Float64>* pMin,std::vector<Float64>* pMax);
-   void GetShear(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,const std::vector<pgsPointOfInterest>& vPoi,std::vector<sysSectionValue>* pMin,std::vector<sysSectionValue>* pMax);
-   void GetMoment(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,const std::vector<pgsPointOfInterest>& vPoi,std::vector<Float64>* pMin,std::vector<Float64>* pMax);
-   void GetDeflection(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,const std::vector<pgsPointOfInterest>& vPoi,bool bIncludePrestress,std::vector<Float64>* pMin,std::vector<Float64>* pMax);
-   void GetRotation(IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,const std::vector<pgsPointOfInterest>& vPoi,bool bIncludePrestress,std::vector<Float64>* pMin,std::vector<Float64>* pMax);
-   void GetStress(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::StressLocation stressLocation,bool bIncludePrestress,std::vector<Float64>* pMin,std::vector<Float64>* pMax);
+   void GetAxial(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,const PoiList& vPoi,std::vector<Float64>* pMin,std::vector<Float64>* pMax) const;
+   void GetShear(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,const PoiList& vPoi,std::vector<sysSectionValue>* pMin,std::vector<sysSectionValue>* pMax) const;
+   void GetMoment(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,const PoiList& vPoi,std::vector<Float64>* pMin,std::vector<Float64>* pMax) const;
+   void GetDeflection(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,const PoiList& vPoi,bool bIncludePrestress,std::vector<Float64>* pMin,std::vector<Float64>* pMax) const;
+   void GetRotation(IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,const PoiList& vPoi,bool bIncludePrestress,std::vector<Float64>* pMin,std::vector<Float64>* pMax) const;
+   void GetStress(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,const PoiList& vPoi,pgsTypes::StressLocation stressLocation,bool bIncludePrestress,std::vector<Float64>* pMin,std::vector<Float64>* pMax) const;
 
    // IExternalLoad
    bool CreateLoading(GirderIndexType girderLineIdx,LPCTSTR strLoadingName);
@@ -101,14 +102,13 @@ public:
    bool CreateUniformLoad(IntervalIndexType intervalIdx,pgsTypes::ProductForceType pfType,const pgsPointOfInterest& poi1,const pgsPointOfInterest& poi2,Float64 wx,Float64 wy);
    bool CreateInitialStrainLoad(IntervalIndexType intervalIdx,LPCTSTR strLoadingName,const pgsPointOfInterest& poi1,const pgsPointOfInterest& poi2,Float64 e,Float64 r);
    bool CreateInitialStrainLoad(IntervalIndexType intervalIdx,pgsTypes::ProductForceType pfType,const pgsPointOfInterest& poi1,const pgsPointOfInterest& poi2,Float64 e,Float64 r);
-   std::vector<Float64> GetAxial(IntervalIndexType intervalIdx,LPCTSTR strLoadingName,const std::vector<pgsPointOfInterest>& vPoi,ResultsType resultsType);
-   std::vector<sysSectionValue> GetShear(IntervalIndexType intervalIdx,LPCTSTR strLoadingName,const std::vector<pgsPointOfInterest>& vPoi,ResultsType resultsType);
-   std::vector<Float64> GetMoment(IntervalIndexType intervalIdx,LPCTSTR strLoadingName,const std::vector<pgsPointOfInterest>& vPoi,ResultsType resultsType);
-   std::vector<Float64> GetDeflection(IntervalIndexType intervalIdx,LPCTSTR strLoadingName,const std::vector<pgsPointOfInterest>& vPoi,ResultsType resultsType);
-   std::vector<Float64> GetRotation(IntervalIndexType intervalIdx,LPCTSTR strLoadingName,const std::vector<pgsPointOfInterest>& vPoi,ResultsType resultsType);
-   //Float64 GetReaction(IntervalIndexType intervalIdx,LPCTSTR strLoadingName,PierIndexType pierIdx,const CGirderKey& girderKey,ResultsType resultsType);
-   void GetStress(IntervalIndexType intervalIdx,LPCTSTR strLoadingName,const std::vector<pgsPointOfInterest>& vPoi,ResultsType resultsType,pgsTypes::StressLocation topLocation,pgsTypes::StressLocation botLocation,std::vector<Float64>* pfTop,std::vector<Float64>* pfBot);
-   void GetReaction(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx,LPCTSTR strLoadingName,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType,Float64* pRleft,Float64* pRright);
+   std::vector<Float64> GetAxial(IntervalIndexType intervalIdx,LPCTSTR strLoadingName,const PoiList& vPoi,ResultsType resultsType) const;
+   std::vector<sysSectionValue> GetShear(IntervalIndexType intervalIdx,LPCTSTR strLoadingName,const PoiList& vPoi,ResultsType resultsType) const;
+   std::vector<Float64> GetMoment(IntervalIndexType intervalIdx,LPCTSTR strLoadingName,const PoiList& vPoi,ResultsType resultsType) const;
+   std::vector<Float64> GetDeflection(IntervalIndexType intervalIdx,LPCTSTR strLoadingName,const PoiList& vPoi,ResultsType resultsType) const;
+   std::vector<Float64> GetRotation(IntervalIndexType intervalIdx,LPCTSTR strLoadingName,const PoiList& vPoi,ResultsType resultsType) const;
+   void GetStress(IntervalIndexType intervalIdx,LPCTSTR strLoadingName,const PoiList& vPoi,ResultsType resultsType,pgsTypes::StressLocation topLocation,pgsTypes::StressLocation botLocation,std::vector<Float64>* pfTop,std::vector<Float64>* pfBot) const;
+   void GetReaction(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx,LPCTSTR strLoadingName,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType,Float64* pRleft,Float64* pRright) const;
 
 private:
 	DECLARE_SHARED_LOGFILE;
@@ -117,70 +117,71 @@ private:
    CProductLoadMap m_ProductLoadMap;
 
    typedef std::map<CSegmentKey,CSegmentModelData> SegmentModels;
-   SegmentModels m_ReleaseModels;
-   SegmentModels m_LiftingModels;
-   SegmentModels m_StorageModels;
-   SegmentModels m_HaulingModels;
+   mutable SegmentModels m_ReleaseModels;
+   mutable SegmentModels m_LiftingModels;
+   mutable SegmentModels m_StorageModels;
+   mutable SegmentModels m_HaulingModels;
 
    typedef std::multimap<LoadingCombinationType,std::_tstring> LoadCombinationMap;
-   std::map<CGirderKey,LoadCombinationMap> m_LoadCombinationMaps;
+   mutable std::map<CGirderKey,LoadCombinationMap> m_LoadCombinationMaps;
+   const LoadCombinationMap& GetLoadCombinationMap(const CGirderKey& girderKey) const;
    LoadCombinationMap& GetLoadCombinationMap(const CGirderKey& girderKey);
 
-   void DumpAnalysisModels(GirderIndexType gdrIdx,SegmentModels* pModels,LPCTSTR name);
+   void DumpAnalysisModels(GirderIndexType gdrIdx,const SegmentModels* pModels,LPCTSTR name) const;
 
-   void GetPrestressSectionStresses(IntervalIndexType intervalIdx,const std::vector<pgsPointOfInterest>& vPoi,ResultsType resultsType,pgsTypes::StressLocation topLocation,pgsTypes::StressLocation botLocation,std::vector<Float64>* pfTop,std::vector<Float64>* pfBot);
-   void GetPrestressSectionResults(IntervalIndexType intervalIdx,const std::vector<pgsPointOfInterest>& vPoi,ResultsType resultsType,std::vector<sysSectionValue>* pvFx,std::vector<sysSectionValue>* pvFy,std::vector<sysSectionValue>* pvMz,std::vector<Float64>* pvDx,std::vector<Float64>* pvDy,std::vector<Float64>* pvRz);
-   void GetPrestressSectionResults(IntervalIndexType intervalIdx,const std::vector<pgsPointOfInterest>& vPoi,std::vector<sysSectionValue>* pvFx,std::vector<sysSectionValue>* pvFy,std::vector<sysSectionValue>* pvMz,std::vector<Float64>* pvDx,std::vector<Float64>* pvDy,std::vector<Float64>* pvRz);
-
-
-   void GetSectionResults(IntervalIndexType intervalIdx,LoadCaseIDType lcid,const std::vector<pgsPointOfInterest>& vPoi,ResultsType resultsType,std::vector<sysSectionValue>* pvFx,std::vector<sysSectionValue>* pvFy,std::vector<sysSectionValue>* pvMz,std::vector<Float64>* pvDx,std::vector<Float64>* pvDy,std::vector<Float64>* pvRz);
-   void GetSectionResults(IntervalIndexType intervalIdx,pgsTypes::ProductForceType pfType,const std::vector<pgsPointOfInterest>& vPoi,std::vector<sysSectionValue>* pvFx,std::vector<sysSectionValue>* pvFy,std::vector<sysSectionValue>* pvMz,std::vector<Float64>* pvDx,std::vector<Float64>* pvDy,std::vector<Float64>* pvRz);
-   void GetSectionResults(IntervalIndexType intervalIdx,LoadCaseIDType lcid,const std::vector<pgsPointOfInterest>& vPoi,std::vector<sysSectionValue>* pvFx,std::vector<sysSectionValue>* pvFy,std::vector<sysSectionValue>* pvMz,std::vector<Float64>* pvDx,std::vector<Float64>* pvDy,std::vector<Float64>* pvRz);
-
-   void GetSectionStresses(IntervalIndexType intervalIdx,LoadCaseIDType lcid,ResultsType resultsType,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::StressLocation topLocation,pgsTypes::StressLocation botLocation,std::vector<Float64>* pfTop,std::vector<Float64>* pfBot);
-   void GetSectionStress(IntervalIndexType intervalIdx,LoadCaseIDType lcid,const pgsPointOfInterest& poi,pgsTypes::StressLocation topLocation,pgsTypes::StressLocation botLocation,Float64* pfTop,Float64* pfBot);
-
-   void GetReaction(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx,LoadCaseIDType lcid,ResultsType resultsType,Float64* pRleft,Float64* pRright);
-   Float64 GetReaction(IntervalIndexType intervalIdx,LoadCaseIDType lcid,PierIndexType pierIdx,const CGirderKey& girderKey,ResultsType resultsType);
-   Float64 GetReaction(IntervalIndexType intervalIdx,LoadCaseIDType lcid,PierIndexType pierIdx,const CGirderKey& girderKey);
+   void GetPrestressSectionResults(IntervalIndexType intervalIdx,const PoiList& vPoi,ResultsType resultsType,std::vector<sysSectionValue>* pvFx,std::vector<sysSectionValue>* pvFy,std::vector<sysSectionValue>* pvMz,std::vector<Float64>* pvDx,std::vector<Float64>* pvDy,std::vector<Float64>* pvRz) const;
+   void GetPrestressSectionResults(IntervalIndexType intervalIdx,const PoiList& vPoi,std::vector<sysSectionValue>* pvFx,std::vector<sysSectionValue>* pvFy,std::vector<sysSectionValue>* pvMz,std::vector<Float64>* pvDx,std::vector<Float64>* pvDy,std::vector<Float64>* pvRz) const;
 
 
-   PoiIDPairType AddPointOfInterest(CSegmentModelData* pModelData,const pgsPointOfInterest& poi);
-   void ZeroResults(const std::vector<pgsPointOfInterest>& vPoi,std::vector<sysSectionValue>* pvFx,std::vector<sysSectionValue>* pvFy,std::vector<sysSectionValue>* pvMz,std::vector<Float64>* pvDx,std::vector<Float64>* pvDy,std::vector<Float64>* pvRz);
+   void GetSectionResults(IntervalIndexType intervalIdx,LoadCaseIDType lcid,const PoiList& vPoi,ResultsType resultsType,std::vector<sysSectionValue>* pvFx,std::vector<sysSectionValue>* pvFy,std::vector<sysSectionValue>* pvMz,std::vector<Float64>* pvDx,std::vector<Float64>* pvDy,std::vector<Float64>* pvRz) const;
+   void GetSectionResults(IntervalIndexType intervalIdx,pgsTypes::ProductForceType pfType,const PoiList& vPoi,std::vector<sysSectionValue>* pvFx,std::vector<sysSectionValue>* pvFy,std::vector<sysSectionValue>* pvMz,std::vector<Float64>* pvDx,std::vector<Float64>* pvDy,std::vector<Float64>* pvRz) const;
+   void GetSectionResults(IntervalIndexType intervalIdx,LoadCaseIDType lcid,const PoiList& vPoi,std::vector<sysSectionValue>* pvFx,std::vector<sysSectionValue>* pvFy,std::vector<sysSectionValue>* pvMz,std::vector<Float64>* pvDx,std::vector<Float64>* pvDy,std::vector<Float64>* pvRz) const;
+
+   void GetSectionStresses(IntervalIndexType intervalIdx,LoadCaseIDType lcid,ResultsType resultsType,const PoiList& vPoi,pgsTypes::StressLocation topLocation,pgsTypes::StressLocation botLocation,std::vector<Float64>* pfTop,std::vector<Float64>* pfBot) const;
+   void GetSectionStress(IntervalIndexType intervalIdx,LoadCaseIDType lcid,const pgsPointOfInterest& poi,pgsTypes::StressLocation topLocation,pgsTypes::StressLocation botLocation,Float64* pfTop,Float64* pfBot) const;
+
+   void GetReaction(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx,LoadCaseIDType lcid,ResultsType resultsType,Float64* pRleft,Float64* pRright) const;
+   Float64 GetReaction(IntervalIndexType intervalIdx,LoadCaseIDType lcid,PierIndexType pierIdx,const CGirderKey& girderKey,ResultsType resultsType) const;
+   Float64 GetReaction(IntervalIndexType intervalIdx,LoadCaseIDType lcid,PierIndexType pierIdx,const CGirderKey& girderKey) const;
 
 
-   CSegmentModelData* GetSegmentModel(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx);
+   PoiIDPairType AddPointOfInterest(CSegmentModelData* pModelData,const pgsPointOfInterest& poi) const;
+   void ZeroResults(const PoiList& vPoi,std::vector<sysSectionValue>* pvFx,std::vector<sysSectionValue>* pvFy,std::vector<sysSectionValue>* pvMz,std::vector<Float64>* pvDx,std::vector<Float64>* pvDy,std::vector<Float64>* pvRz) const;
 
 
-   void BuildReleaseModel(const CSegmentKey& segmentKey);
-   void BuildLiftingModel(const CSegmentKey& segmentKey);
-   void BuildStorageModel(const CSegmentKey& segmentKey);
-   void BuildHaulingModel(const CSegmentKey& segmentKey);
+   CSegmentModelData* GetSegmentModel(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx) const;
 
-   CSegmentModelData* GetReleaseModel(const CSegmentKey& segmentKey);
-   CSegmentModelData* GetLiftingModel(const CSegmentKey& segmentKey);
-   CSegmentModelData* GetStorageModel(const CSegmentKey& segmentKey);
-   CSegmentModelData* GetHaulingModel(const CSegmentKey& segmentKey);
 
-   CSegmentModelData BuildSegmentModel(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx,Float64 leftSupportDistance,Float64 rightSupportDistance,PoiAttributeType refAttribute);
-   PoiIDType AddPointOfInterest(SegmentModels& models,const pgsPointOfInterest& poi);
+   void BuildReleaseModel(const CSegmentKey& segmentKey) const;
+   void BuildLiftingModel(const CSegmentKey& segmentKey) const;
+   void BuildStorageModel(const CSegmentKey& segmentKey) const;
+   void BuildHaulingModel(const CSegmentKey& segmentKey) const;
 
-   void ApplyPretensionLoad(CSegmentModelData* pModelData,const CSegmentKey& segmentKey,IntervalIndexType intervalIdx);
+   CSegmentModelData* GetReleaseModel(const CSegmentKey& segmentKey) const;
+   CSegmentModelData* GetLiftingModel(const CSegmentKey& segmentKey) const;
+   CSegmentModelData* GetStorageModel(const CSegmentKey& segmentKey) const;
+   CSegmentModelData* GetHaulingModel(const CSegmentKey& segmentKey) const;
 
-   CSegmentModelData* GetModelData(SegmentModels& models,const CSegmentKey& segmentKey);
+   CSegmentModelData BuildSegmentModel(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx,Float64 leftSupportDistance,Float64 rightSupportDistance,PoiAttributeType refAttribute) const;
+   PoiIDType AddPointOfInterest(SegmentModels& models,const pgsPointOfInterest& poi) const;
 
-   LoadCaseIDType GetLoadCaseID(pgsTypes::ProductForceType pfType);
-   LoadCaseIDType GetLoadCaseID(pgsTypes::StrandType strandType);
-   LoadCaseIDType GetLoadCaseID(CSegmentModelData* pModelData,LPCTSTR strLoadingName);
-   LoadCaseIDType GetFirstExternalLoadCaseID();
+   void ApplyPretensionLoad(CSegmentModelData* pModelData,const CSegmentKey& segmentKey,IntervalIndexType intervalIdx) const;
+
+   CSegmentModelData* GetModelData(SegmentModels& models,const CSegmentKey& segmentKey) const;
+
+   LoadCaseIDType GetLoadCaseID(pgsTypes::ProductForceType pfType) const;
+   void GetLoadCaseID(pgsTypes::StrandType strandType,LoadCaseIDType* plcidMx,LoadCaseIDType* plcidMy) const;
+   LoadCaseIDType GetLoadCaseID(CSegmentModelData* pModelData,LPCTSTR strLoadingName) const;
+   LoadCaseIDType GetGirderIncrementalLoadCaseID() const;
+   LoadCaseIDType GetFirstExternalLoadCaseID() const;
 
    void GetMemberLocation(const pgsPointOfInterest& poi,CSegmentModelData* pModelData,MemberIDType* pMbrID,Float64* pLocation);
 
-   CSegmentKey GetSegmentKey(const CGirderKey& girderKey,PierIndexType pierIdx);
+   CSegmentKey GetSegmentKey(const CGirderKey& girderKey,PierIndexType pierIdx) const;
 
-   void AddLoading(CSegmentModelData& model_data,pgsTypes::ProductForceType pfType);
+   void AddLoading(CSegmentModelData& model_data,pgsTypes::ProductForceType pfType) const;
 
-   bool CreateConcentratedLoad(IntervalIndexType intervalIdx,pgsTypes::ProductForceType pfType,LPCTSTR strLoadingName,const pgsPointOfInterest& poi,Float64 Fx,Float64 Fy,Float64 Mz);
-   bool CreateUniformLoad(IntervalIndexType intervalIdx,pgsTypes::ProductForceType pfType,LPCTSTR strLoadingName,const pgsPointOfInterest& poi1,const pgsPointOfInterest& poi2,Float64 wx,Float64 wy);
-   bool CreateInitialStrainLoad(IntervalIndexType intervalIdx,pgsTypes::ProductForceType pfType,LPCTSTR strLoadingName,const pgsPointOfInterest& poi1,const pgsPointOfInterest& poi2,Float64 e,Float64 r);
+   bool CreateConcentratedLoad(IntervalIndexType intervalIdx, LoadCaseIDType lcid,const pgsPointOfInterest& poi,Float64 Fx,Float64 Fy,Float64 Mz);
+   bool CreateUniformLoad(IntervalIndexType intervalIdx,LoadCaseIDType lcid,const pgsPointOfInterest& poi1,const pgsPointOfInterest& poi2,Float64 wx,Float64 wy);
+   bool CreateInitialStrainLoad(IntervalIndexType intervalIdx, LoadCaseIDType lcid,const pgsPointOfInterest& poi1,const pgsPointOfInterest& poi2,Float64 e,Float64 r);
 };

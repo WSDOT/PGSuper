@@ -28,6 +28,7 @@
 #include <PgsExt\ApplyLoadActivity.h>
 #include <PgsExt\SegmentActivity.h>
 #include <PgsExt\StressTendonActivity.h>
+#include <PgsExt\CastLongitudinalJointActivity.h>
 
 class CTimelineManager;
 
@@ -105,6 +106,10 @@ public:
    const CCastDeckActivity& GetCastDeckActivity() const;
    CCastDeckActivity& GetCastDeckActivity();
 
+   void SetCastLongitudinalJointActivity(const CCastLongitudinalJointActivity& activity);
+   const CCastLongitudinalJointActivity& GetCastLongitudinalJointActivity() const;
+   CCastLongitudinalJointActivity& GetCastLongitudinalJointActivity();
+
    void SetStressTendonActivity(const CStressTendonActivity& activity);
    const CStressTendonActivity& GetStressTendonActivity() const;
    CStressTendonActivity& GetStressTendonActivity();
@@ -143,6 +148,7 @@ protected:
    CCastDeckActivity m_CastDeck;
    CStressTendonActivity m_StressTendons;
    CRemoveTemporarySupportsActivity m_RemoveTempSupports;
+   CCastLongitudinalJointActivity m_CastLongitudinalJoints;
 
    Uint16 GetActivityScore() const;
 

@@ -22,6 +22,8 @@
 
 #pragma once
 
+#include "CLSID.h"
+
 #include <EAF\EAFInterfaceCache.h>
 
 #include <IFace\UpdateTemplates.h>

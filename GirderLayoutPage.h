@@ -32,8 +32,10 @@
 
 #include "GirderNameGrid.h"
 #include "GirderSpacingGrid.h"
+#include "GirderTopWidthGrid.h"
 
 class CSpanDetailsDlg;
+interface IBeamFactory;
 
 /////////////////////////////////////////////////////////////////////////////
 // CSpanGirderLayoutPage dialog
@@ -50,7 +52,9 @@ public:
 
    GirderIndexType m_MinGirderCount;
 
-// Dialog Data
+   void GetBeamFactory(IBeamFactory** ppFactory);
+   
+   // Dialog Data
 	//{{AFX_DATA(CSpanGirderLayoutPage)
 	enum { IDD = IDD_GIRDERLAYOUT };
 		// NOTE - ClassWizard will add data members here.
@@ -72,6 +76,7 @@ private:
    // array index is pgsTypes::MemberEndType constant
    CGirderNameGrid    m_GirderNameGrid;
    CGirderSpacingGrid m_SpacingGrid[2];
+   CGirderTopWidthGrid m_TopWidthGrid;
 
    GirderIndexType m_nGirders;
    DWORD m_GirderSpacingMeasure[2];
@@ -97,7 +102,8 @@ protected:
 	//}}AFX_MSG
    afx_msg void OnChangeSameGirderSpacing();
    afx_msg void OnChangeSameGirderType();
-	DECLARE_MESSAGE_MAP()
+   afx_msg void OnCbnSelchangeNgdrsCombo();
+   DECLARE_MESSAGE_MAP()
 
    void GetPierSkewAngles(Float64& skew1,Float64& skew2);
 
@@ -108,10 +114,13 @@ protected:
    void FillRefGirderOffsetTypeComboBox(pgsTypes::MemberEndType end);
    void FillRefGirderComboBox(pgsTypes::MemberEndType end);
 
+   void FillTopWidthTypeComboBox();
+
    GirderIndexType GetMinGirderCount();
    void UpdateGirderSpacingState();
    void UpdateGirderNumState();
    void UpdateGirderTypeState();
+   void UpdateGirderTopWidthState();
 
    DWORD m_CacheGirderSpacingMeasure[2];
    CGirderSpacing2 m_GirderSpacingCache[2];
@@ -120,12 +129,12 @@ protected:
    Float64 m_CacheRefGirderOffset[2];
    pgsTypes::OffsetMeasurementType m_CacheRefGirderOffsetType[2];
 
-   CGirderGroupData m_GirderGroupCache;
+   std::vector<CGirderTypeGroup> m_GirderTypeCache;
+   std::vector<CGirderTopWidthGroup> m_TopWidthCache;
 
    bool IsAbutment(pgsTypes::MemberEndType end);
-public:
-   afx_msg void OnCbnSelchangeNgdrsCombo();
 };
+
 
 //{{AFX_INSERT_LOCATION}}
 // Microsoft Visual C++ will insert additional declarations immediately before the previous line.

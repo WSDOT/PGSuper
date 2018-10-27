@@ -31,7 +31,18 @@ public:
    CEffectivePrestressGraphController();
    DECLARE_DYNCREATE(CEffectivePrestressGraphController);
 
-   DuctIndexType GetDuct();
+   enum ViewMode { Stress, Force };
+   enum StrandType { Permanent, Temporary };
+
+   void SetViewMode(ViewMode mode);
+   ViewMode GetViewMode() const;
+
+   void SetStrandType(StrandType strandType);
+   StrandType GetStrandType() const;
+
+   void SetDuct(DuctIndexType ductIdx);
+   DuctIndexType GetDuct() const;
+
    bool IsStressGraph();
    bool IsPermanentStrands();
 

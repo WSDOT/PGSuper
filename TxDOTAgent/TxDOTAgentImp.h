@@ -25,7 +25,7 @@
 #pragma once
 #include "resource.h"       // main symbols
 
-#include "TxDOTAgent_i.h"
+#include "CLSID.h"
 
 #include <EAF\EAFInterfaceCache.h>
 #include <EAF\EAFUIIntegration.h>
@@ -109,6 +109,7 @@ protected:
 
 private:
    DECLARE_EAF_AGENT_DATA;
+   DECLARE_LOGFILE;
 };
 
 OBJECT_ENTRY_AUTO(__uuidof(TxDOTAgent), CTxDOTAgentImp)

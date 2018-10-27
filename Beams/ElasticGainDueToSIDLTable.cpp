@@ -103,7 +103,7 @@ CElasticGainDueToSIDLTable* CElasticGainDueToSIDLTable::PrepareTable(rptChapter*
 
    rptParagraph* pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pParagraph;
-   *pParagraph << _T("Elastic Gain Due to Superimposed Dead Load [5.9.5.2.3a]") << rptNewLine;
+   *pParagraph << _T("Elastic Gain Due to Superimposed Dead Load [") << LrfdCw8th(_T("5.9.5.2.3a"), _T("5.9.3.2.3a")) << _T("]") << rptNewLine;
 
    pParagraph = new rptParagraph;
    *pChapter << pParagraph;
@@ -214,7 +214,7 @@ void CElasticGainDueToSIDLTable::AddRow(rptChapter* pChapter,IBroker* pBroker,co
    GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval();
    IntervalIndexType overlayIntervalIdx       = pIntervals->GetOverlayInterval();
-   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
+   IntervalIndexType compositeUserLoadIntervalIdx = pIntervals->GetCompositeUserLoadInterval();
 
    if ( m_bHasSidewalk )
    {
@@ -230,8 +230,8 @@ void CElasticGainDueToSIDLTable::AddRow(rptChapter* pChapter,IBroker* pBroker,co
 
    if ( m_bHasUserLoads )
    {
-      (*this)(row,col++) << moment.SetValue( pProdForces->GetMoment( compositeDeckIntervalIdx, pgsTypes::pftUserDC,      poi, m_BAT, rtIncremental ) );
-      (*this)(row,col++) << moment.SetValue( pProdForces->GetMoment( compositeDeckIntervalIdx, pgsTypes::pftUserDW,      poi, m_BAT, rtIncremental ) );
+      (*this)(row,col++) << moment.SetValue( pProdForces->GetMoment(compositeUserLoadIntervalIdx, pgsTypes::pftUserDC,      poi, m_BAT, rtIncremental ) );
+      (*this)(row,col++) << moment.SetValue( pProdForces->GetMoment(compositeUserLoadIntervalIdx, pgsTypes::pftUserDW,      poi, m_BAT, rtIncremental ) );
    }
 
    (*this)(row,col++) << moment.SetValue( pDetails->pLosses->GetSidlMoment() );

@@ -107,13 +107,12 @@ void CStrandLocations::Build(rptChapter* pChapter,IBroker* pBroker,const CSegmen
    }
 
    // Straight strands
-   pgsPointOfInterest end_poi(segmentKey,0.0);
    StrandIndexType nDebonded = pStrandGeometry->GetNumDebondedStrands(segmentKey,pgsTypes::Straight,pgsTypes::dbetEither);
    StrandIndexType nExtendedLeft  = pStrandGeometry->GetNumExtendedStrands(segmentKey,pgsTypes::metStart,pgsTypes::Straight);
    StrandIndexType nExtendedRight = pStrandGeometry->GetNumExtendedStrands(segmentKey,pgsTypes::metEnd,pgsTypes::Straight);
    if (0 < Ns)
    {
-      ColumnIndexType nColumns = 3;
+      ColumnIndexType nColumns = 5;
       if ( 0 < nDebonded )
       {
          nColumns += 2;
@@ -127,42 +126,85 @@ void CStrandLocations::Build(rptChapter* pChapter,IBroker* pBroker,const CSegmen
       rptRcTable* p_table = rptStyleManager::CreateDefaultTable(nColumns,_T("Straight Strands"));
       *pPara << p_table;
 
+      p_table->SetNumberOfHeaderRows(2);
+
       ColumnIndexType col = 0;
-      (*p_table)(0,col++) << _T("Strand");
-      (*p_table)(0,col++) << COLHDR(_T("X"),rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-      (*p_table)(0,col++) << COLHDR(_T("Y"),rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+
+      p_table->SetRowSpan(0, col, 2);
+      (*p_table)(0,col) << _T("Strand");
+      p_table->SetRowSpan(1, col, SKIP_CELL);
+      col++;
+
+      p_table->SetColumnSpan(0, col, 2);
+      (*p_table)(0, col) << _T("Left End");
+      p_table->SetColumnSpan(0, col + 1, SKIP_CELL);
+      (*p_table)(1,col++) << COLHDR(_T("X"),rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+      (*p_table)(1,col++) << COLHDR(_T("Y"),rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+
+      p_table->SetColumnSpan(0, col, 2);
+      (*p_table)(0, col) << _T("Right End");
+      p_table->SetColumnSpan(0, col + 1, SKIP_CELL);
+      (*p_table)(1, col++) << COLHDR(_T("X"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+      (*p_table)(1, col++) << COLHDR(_T("Y"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
 
       if ( 0 < nDebonded )
       {
-         (*p_table)(0,col++) << COLHDR(_T("Debonded from") << rptNewLine << _T("Left End"),rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
-         (*p_table)(0,col++) << COLHDR(_T("Debonded from") << rptNewLine << _T("Right End"),rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+         p_table->SetRowSpan(0, col, 2);
+         (*p_table)(0,col) << COLHDR(_T("Debonded from") << rptNewLine << _T("Left End"),rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+         p_table->SetRowSpan(1, col, SKIP_CELL);
+         col++;
+
+         p_table->SetRowSpan(0, col, 2);
+         (*p_table)(0, col) << COLHDR(_T("Debonded from") << rptNewLine << _T("Right End"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
+         p_table->SetRowSpan(1, col, SKIP_CELL);
+         col++;
       }
 
       if ( 0 < nExtendedLeft || 0 < nExtendedRight )
       {
+         p_table->SetRowSpan(0, col, 2);
          p_table->SetColumnStyle(col,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_CENTER));
          p_table->SetStripeRowColumnStyle(col,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_CENTER));
-         (*p_table)(0,col++) << _T("Extended") << rptNewLine << _T("Left End");
+         (*p_table)(0,col) << _T("Extended") << rptNewLine << _T("Left End");
+         p_table->SetRowSpan(1, col, SKIP_CELL);
+         col++;
 
-         p_table->SetColumnStyle(col,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_CENTER));
-         p_table->SetStripeRowColumnStyle(col,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_CENTER));
-         (*p_table)(0,col++) << _T("Extended") << rptNewLine << _T("Right End");
+         p_table->SetRowSpan(0, col, 2);
+         p_table->SetColumnStyle(col, rptStyleManager::GetTableCellStyle(CB_NONE | CJ_CENTER));
+         p_table->SetStripeRowColumnStyle(col, rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_CENTER));
+         (*p_table)(0, col) << _T("Extended") << rptNewLine << _T("Right End");
+         p_table->SetRowSpan(1, col, SKIP_CELL);
+         col++;
       }
 
-      CComPtr<IPoint2dCollection> spts;
-      pStrandGeometry->GetStrandPositions(end_poi, pgsTypes::Straight, &spts);
+      GET_IFACE2(pBroker,IPointOfInterest, pPoi);
+      PoiList vPoi;
+      pPoi->GetPointsOfInterest(segmentKey, POI_0L | POI_10L | POI_RELEASED_SEGMENT, &vPoi);
+      ATLASSERT(vPoi.size() == 2);
+      const pgsPointOfInterest& leftPoi(vPoi.front());
+      const pgsPointOfInterest& rightPoi(vPoi.back());
+
+      CComPtr<IPoint2dCollection> leftPoints, rightPoints;
+      pStrandGeometry->GetStrandPositions(leftPoi, pgsTypes::Straight, &leftPoints);
+      pStrandGeometry->GetStrandPositions(rightPoi, pgsTypes::Straight, &rightPoints);
       RowIndexType row = p_table->GetNumberOfHeaderRows();
       for (StrandIndexType is = 0; is < Ns; is++, row++)
       {
          col = 0;
          (*p_table)(row,col++) << row;
-         CComPtr<IPoint2d> spt;
-         spts->get_Item(is, &spt);
+
+         CComPtr<IPoint2d> leftPoint;
+         leftPoints->get_Item(is, &leftPoint);
          Float64 x,y;
-         spt->Location(&x,&y);
+         leftPoint->Location(&x,&y);
          (*p_table)(row,col++) << dim.SetValue(x);
          (*p_table)(row,col++) << dim.SetValue(y);
 
+         CComPtr<IPoint2d> rightPoint;
+         rightPoints->get_Item(is, &rightPoint);
+         rightPoint->Location(&x, &y);
+         (*p_table)(row, col++) << dim.SetValue(x);
+         (*p_table)(row, col++) << dim.SetValue(y);
 
          if ( 0 < nDebonded ) 
          {
@@ -217,46 +259,85 @@ void CStrandLocations::Build(rptChapter* pChapter,IBroker* pBroker,const CSegmen
 
       nDebonded = pStrandGeometry->GetNumDebondedStrands(segmentKey,pgsTypes::Temporary,pgsTypes::dbetEither);
 
-      rptRcTable* p_table = rptStyleManager::CreateDefaultTable(3 + (0 < nDebonded ? 2 : 0),_T("Temporary Strand"));
+      rptRcTable* p_table = rptStyleManager::CreateDefaultTable(5 + (0 < nDebonded ? 2 : 0),_T("Temporary Strand"));
       *pPara << p_table;
 
-      (*p_table)(0,0) << _T("Strand");
-      (*p_table)(0,1) << COLHDR(_T("X"),rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-      (*p_table)(0,2) << COLHDR(_T("Y"),rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+      p_table->SetNumberOfHeaderRows(2);
 
-      if ( 0 < nDebonded )
+      ColumnIndexType col = 0;
+
+      p_table->SetRowSpan(0, col, 2);
+      (*p_table)(0, col) << _T("Strand");
+      p_table->SetRowSpan(1, col, SKIP_CELL);
+      col++;
+
+      p_table->SetColumnSpan(0, col, 2);
+      (*p_table)(0, col) << _T("Left End");
+      p_table->SetColumnSpan(0, col + 1, SKIP_CELL);
+      (*p_table)(1, col++) << COLHDR(_T("X"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+      (*p_table)(1, col++) << COLHDR(_T("Y"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+
+      p_table->SetColumnSpan(0, col, 2);
+      (*p_table)(0, col) << _T("Right End");
+      p_table->SetColumnSpan(0, col + 1, SKIP_CELL);
+      (*p_table)(1, col++) << COLHDR(_T("X"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+      (*p_table)(1, col++) << COLHDR(_T("Y"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+
+      if (0 < nDebonded)
       {
-         (*p_table)(0,3) << COLHDR(_T("Left End"),rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
-         (*p_table)(0,4) << COLHDR(_T("Right End"),rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+         p_table->SetRowSpan(0, col, 2);
+         (*p_table)(0, col) << COLHDR(_T("Debonded from") << rptNewLine << _T("Left End"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
+         p_table->SetRowSpan(1, col, SKIP_CELL);
+         col++;
+
+         p_table->SetRowSpan(0, col, 2);
+         (*p_table)(0, col) << COLHDR(_T("Debonded from") << rptNewLine << _T("Right End"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
+         p_table->SetRowSpan(1, col, SKIP_CELL);
+         col++;
       }
 
-      CComPtr<IPoint2dCollection> spts;
-      pStrandGeometry->GetStrandPositions(end_poi, pgsTypes::Temporary, &spts);
+      GET_IFACE2(pBroker, IPointOfInterest, pPoi);
+      PoiList vPoi;
+      pPoi->GetPointsOfInterest(segmentKey, POI_0L | POI_10L | POI_RELEASED_SEGMENT, &vPoi);
+      ATLASSERT(vPoi.size() == 2);
+      const pgsPointOfInterest& leftPoi(vPoi.front());
+      const pgsPointOfInterest& rightPoi(vPoi.back());
+
+      CComPtr<IPoint2dCollection> leftPoints, rightPoints;
+      pStrandGeometry->GetStrandPositions(leftPoi, pgsTypes::Temporary, &leftPoints);
+      pStrandGeometry->GetStrandPositions(rightPoi, pgsTypes::Temporary, &rightPoints);
 
       RowIndexType row = p_table->GetNumberOfHeaderRows();
       for (StrandIndexType is = 0; is < Nt; is++, row++)
       {
-         (*p_table)(row,0) << row;
-         CComPtr<IPoint2d> spt;
-         spts->get_Item(is, &spt);
-         Float64 x,y;
-         spt->get_X(&x);
-         spt->get_Y(&y);
-         (*p_table)(row,1) << dim.SetValue(x);
-         (*p_table)(row,2) << dim.SetValue(y);
+         col = 0;
+         (*p_table)(row,col++) << row;
+
+         CComPtr<IPoint2d> leftPoint;
+         leftPoints->get_Item(is, &leftPoint);
+         Float64 x, y;
+         leftPoint->Location(&x, &y);
+         (*p_table)(row, col++) << dim.SetValue(x);
+         (*p_table)(row, col++) << dim.SetValue(y);
+
+         CComPtr<IPoint2d> rightPoint;
+         rightPoints->get_Item(is, &rightPoint);
+         rightPoint->Location(&x, &y);
+         (*p_table)(row, col++) << dim.SetValue(x);
+         (*p_table)(row, col++) << dim.SetValue(y);
 
          if ( 0 < nDebonded ) 
          {
             Float64 start,end;
             if ( pStrandGeometry->IsStrandDebonded(segmentKey,is,pgsTypes::Temporary,nullptr,&start,&end) )
             {
-               (*p_table)(row,3) << len.SetValue(start);
-               (*p_table)(row,4) << len.SetValue(end);
+               (*p_table)(row,col++) << len.SetValue(start);
+               (*p_table)(row,col++) << len.SetValue(end);
             }
             else
             {
-               (*p_table)(row,3) << _T("-");
-               (*p_table)(row,4) << _T("-");
+               (*p_table)(row,col++) << _T("-");
+               (*p_table)(row,col++) << _T("-");
             }
          }
       }
@@ -271,7 +352,7 @@ void CStrandLocations::Build(rptChapter* pChapter,IBroker* pBroker,const CSegmen
    bool bSymmetric = pGirder->IsSymmetricSegment(segmentKey);
 
    GET_IFACE2(pBroker,IPointOfInterest,pPoi);
-   std::vector<pgsPointOfInterest> vPoi;
+   PoiList vPoi;
 
    bool areHarpedStraight = pStrandGeometry->GetAreHarpedStrandsForcedStraight(segmentKey);
    StrandIndexType Nh = pStrandGeometry->GetStrandCount(segmentKey,pgsTypes::Harped);
@@ -283,13 +364,13 @@ void CStrandLocations::Build(rptChapter* pChapter,IBroker* pBroker,const CSegmen
       if ( bSymmetric )
       {
          nStrandGrids = 1;
-         vPoi = pPoi->GetPointsOfInterest(segmentKey,POI_START_FACE);
+         pPoi->GetPointsOfInterest(segmentKey,POI_START_FACE,&vPoi);
          ATLASSERT(vPoi.size() == 1);
       }
       else
       {
          nStrandGrids = 2;
-         vPoi = pPoi->GetPointsOfInterest(segmentKey,POI_START_FACE | POI_END_FACE);
+         pPoi->GetPointsOfInterest(segmentKey,POI_START_FACE | POI_END_FACE,&vPoi);
          ATLASSERT(vPoi.size() == 2);
       }
    }
@@ -298,18 +379,20 @@ void CStrandLocations::Build(rptChapter* pChapter,IBroker* pBroker,const CSegmen
       if ( bSymmetric )
       {
          nStrandGrids = 2;
-         vPoi = pPoi->GetPointsOfInterest(segmentKey,POI_START_FACE);
+         pPoi->GetPointsOfInterest(segmentKey, POI_START_FACE, &vPoi);
          ATLASSERT(vPoi.size() == 1);
-         vPoi.push_back(pPoi->GetPointsOfInterest(segmentKey,POI_HARPINGPOINT).front());
+         PoiList vHpPoi;
+         pPoi->GetPointsOfInterest(segmentKey, POI_HARPINGPOINT, &vHpPoi);
+         vPoi.push_back(vHpPoi.front());
       }
       else
       {
          nStrandGrids = 4;
-         vPoi = pPoi->GetPointsOfInterest(segmentKey,POI_START_FACE | POI_END_FACE);
+         pPoi->GetPointsOfInterest(segmentKey, POI_START_FACE | POI_END_FACE, &vPoi);
          ATLASSERT(vPoi.size() == 2);
-         std::vector<pgsPointOfInterest> vHpPoi(pPoi->GetPointsOfInterest(segmentKey,POI_HARPINGPOINT));
-         vPoi.insert(vPoi.end(),vHpPoi.begin(),vHpPoi.end());
-         std::sort(vPoi.begin(),vPoi.end());
+         PoiList vHpPoi;
+         pPoi->GetPointsOfInterest(segmentKey, POI_HARPINGPOINT, &vHpPoi);
+         pPoi->MergePoiLists(vPoi, vHpPoi, &vPoi);
       }
    }
 

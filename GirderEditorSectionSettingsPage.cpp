@@ -46,6 +46,8 @@ CGirderEditorSectionSettingsPage::CGirderEditorSectionSettingsPage() : CProperty
 	m_ShowPsCg = FALSE;
 	m_ShowStrands = FALSE;
 	m_ShowLongReinf = FALSE;
+   m_ShowSectionCG = FALSE;
+   m_ShowGirderProperties = FALSE;
 	//}}AFX_DATA_INIT
 }
 
@@ -61,7 +63,9 @@ void CGirderEditorSectionSettingsPage::DoDataExchange(CDataExchange* pDX)
 	DDX_Check(pDX, IDC_SHOW_PS_CG, m_ShowPsCg);
 	DDX_Check(pDX, IDC_SHOW_STRANDS, m_ShowStrands);
 	DDX_Check(pDX, IDC_SHOW_SHOW_LONG_REINF, m_ShowLongReinf);
-	//}}AFX_DATA_MAP
+   DDX_Check(pDX, IDC_SHOW_SECTION_CG, m_ShowSectionCG);
+   DDX_Check(pDX, IDC_SHOW_PROPERTIES, m_ShowGirderProperties);
+   //}}AFX_DATA_MAP
 }
 
 

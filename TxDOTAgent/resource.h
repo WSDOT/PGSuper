@@ -2,6 +2,15 @@
 // Microsoft Visual C++ generated include file.
 // Used by TxDOTAgent.rc
 //
+#define EAFID_INDICATOR_MIN             1
+#define EAFID_INDICATOR_MODIFIED        1
+#define EAFID_INDICATOR_STATUS          2
+#define EAFID_INDICATOR_AUTOCALC_ON     3
+#define EAFID_INDICATOR_AUTOCALC_OFF    4
+#define EAFID_INDICATOR_MAX             4
+#define EAF_TOOLBAR_MENU_COUNT          40
+#define EAF_REPORT_MENU_COUNT           50
+#define EAF_GRAPH_MENU_COUNT            50
 #define IDS_PROJNAME                    100
 #define IDR_TXDOTAGENT                  101
 #define IDS_TEMPLATE_SUFFIX             101
@@ -45,7 +54,9 @@
 #define IDD_DIRECT_FILL_DLG             217
 #define IDC_BEAM_SPACING                218
 #define IDC_SPAN_LENGTH                 219
+#define IDR_REGISTRY1                   219
 #define IDC_SLAB_THICKNESS              220
+#define IDR_REGISTRY2                   220
 #define IDC_RELATIVE_HUMIDITY           221
 #define IDC_LLDF_MOMENT                 222
 #define IDC_LLDF_SHEAR                  223
@@ -162,6 +173,8 @@
 #define IDS_GDR_ERROR3                  1756
 #define IDC_GROUP                       3003
 #define IDS_E_NOGIRDERS                 3005
+#define EAF_RESERVED_COMMAND_BASE       0x8000
+#define EAFID_HELP_SOURCE               32782
 #define ID_LEFTEND                      36864
 #define ID_RIGHTEND                     36865
 #define ID_LEFT_HP                      36866
@@ -185,7 +198,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        219
+#define _APS_NEXT_RESOURCE_VALUE        221
 #define _APS_NEXT_COMMAND_VALUE         36883
 #define _APS_NEXT_CONTROL_VALUE         271
 #define _APS_NEXT_SYMED_VALUE           110

@@ -165,7 +165,7 @@ void CCombinedAxialTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter* p
       CGirderKey thisGirderKey(grpIdx,gdrIdx);
 
       PoiAttributeType poiRefAttribute;
-      std::vector<pgsPointOfInterest> vPoi;
+      PoiList vPoi;
       GetCombinedResultsPoi(pBroker,thisGirderKey,intervalIdx,&vPoi,&poiRefAttribute);
       poiRefAttribute = (girderKey.groupIndex == ALL_GROUPS ? POI_SPAN : poiRefAttribute);
 
@@ -230,11 +230,8 @@ void CCombinedAxialTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter* p
       }
 
       IndexType index = 0;
-      std::vector<pgsPointOfInterest>::const_iterator i(vPoi.begin());
-      std::vector<pgsPointOfInterest>::const_iterator end(vPoi.end());
-      for ( ; i != end; i++, index++ )
+      for (const pgsPointOfInterest& poi : vPoi)
       {
-         const pgsPointOfInterest& poi = *i;
          const CSegmentKey& thisSegmentKey = poi.GetSegmentKey();
 
          IntervalIndexType releaseIntervalIdx       = pIntervals->GetPrestressReleaseInterval(thisSegmentKey);
@@ -340,6 +337,7 @@ void CCombinedAxialTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter* p
          }
 
          row++;
+         index++;
       }
    }
 }
@@ -417,7 +415,7 @@ void CCombinedAxialTable::BuildCombinedLiveTable(IBroker* pBroker, rptChapter* p
       IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
 
       PoiAttributeType poiRefAttribute;
-      std::vector<pgsPointOfInterest> vPoi;
+      PoiList vPoi;
       GetCombinedResultsPoi(pBroker,thisGirderKey,liveLoadIntervalIdx,&vPoi,&poiRefAttribute);
       poiRefAttribute = (girderKey.groupIndex == ALL_GROUPS ? POI_SPAN : poiRefAttribute);
 
@@ -503,14 +501,11 @@ void CCombinedAxialTable::BuildCombinedLiveTable(IBroker* pBroker, rptChapter* p
       }
 
       // fill table (first half if design/ped load)
-      std::vector<pgsPointOfInterest>::const_iterator i(vPoi.begin());
-      std::vector<pgsPointOfInterest>::const_iterator end(vPoi.end());
       IndexType index = 0;
       ColumnIndexType col = 0;
       RowIndexType row2 = row;
-      for ( ; i != end; i++, index++ )
+      for (const pgsPointOfInterest& poi : vPoi)
       {
-         const pgsPointOfInterest& poi = *i;
          col = 0;
 
          (*p_table)(row,col++) << location.SetValue( poiRefAttribute, poi );
@@ -585,6 +580,7 @@ void CCombinedAxialTable::BuildCombinedLiveTable(IBroker* pBroker, rptChapter* p
          }
 
          row++;
+         index++;
       }
 
 
@@ -722,7 +718,7 @@ void CCombinedAxialTable::BuildLimitStateTable(IBroker* pBroker, rptChapter* pCh
       CGirderKey thisGirderKey(grpIdx,gdrIdx);
 
       PoiAttributeType poiRefAttribute;
-      std::vector<pgsPointOfInterest> vPoi;
+      PoiList vPoi;
       GetCombinedResultsPoi(pBroker,thisGirderKey,intervalIdx,&vPoi,&poiRefAttribute);
       poiRefAttribute = (girderKey.groupIndex == ALL_GROUPS ? POI_SPAN : poiRefAttribute);
 
@@ -904,13 +900,9 @@ void CCombinedAxialTable::BuildLimitStateTable(IBroker* pBroker, rptChapter* pCh
       }
 
       IndexType index = 0;
-      std::vector<pgsPointOfInterest>::const_iterator i(vPoi.begin());
-      std::vector<pgsPointOfInterest>::const_iterator end(vPoi.end());
-      for ( ; i != end; i++, index++ )
+      for (const pgsPointOfInterest& poi : vPoi)
       {
          ColumnIndexType col = 0;
-
-         const pgsPointOfInterest& poi = *i;
 
          IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(poi.GetSegmentKey());
 
@@ -1072,6 +1064,7 @@ void CCombinedAxialTable::BuildLimitStateTable(IBroker* pBroker, rptChapter* pCh
          }
 
          row2++;
+         index++;
       }
    }
 }

@@ -24,6 +24,7 @@
 #include "resource.h"
 #include <Graphing\DeflectionHistoryGraphBuilder.h>
 #include "DeflectionHistoryGraphController.h"
+#include "DeflectionHistoryGraphViewControllerImp.h"
 
 #include "GraphColor.h"
 #include <PgsExt\IntervalTool.h>
@@ -57,7 +58,6 @@ static unitmgtLengthData DUMMY(unitMeasure::Meter);
 static LengthTool    DUMMY_TOOL(DUMMY);
 
 BEGIN_MESSAGE_MAP(CDeflectionHistoryGraphBuilder, CEAFGraphBuilderBase)
-   ON_BN_CLICKED(IDC_GRID, OnShowGrid)
 END_MESSAGE_MAP()
 
 
@@ -133,6 +133,19 @@ CEAFGraphControlWindow* CDeflectionHistoryGraphBuilder::GetGraphControlWindow()
    return m_pGraphController;
 }
 
+void CDeflectionHistoryGraphBuilder::CreateViewController(IEAFViewController** ppController)
+{
+   CComPtr<IEAFViewController> stdController;
+   __super::CreateViewController(&stdController);
+
+   CComObject<CDeflectionHistoryGraphViewController>* pController;
+   CComObject<CDeflectionHistoryGraphViewController>::CreateInstance(&pController);
+   pController->Init(m_pGraphController, stdController);
+
+   (*ppController) = pController;
+   (*ppController)->AddRef();
+}
+
 CGraphBuilder* CDeflectionHistoryGraphBuilder::Clone() const
 {
    // set the module state or the commands wont route to the
@@ -178,9 +191,9 @@ BOOL CDeflectionHistoryGraphBuilder::CreateGraphController(CWnd* pParent,UINT nI
    return TRUE;
 }
 
-void CDeflectionHistoryGraphBuilder::OnShowGrid()
+void CDeflectionHistoryGraphBuilder::ShowGrid(bool bShowGrid)
 {
-   m_Graph.SetDoDrawGrid( !m_Graph.GetDoDrawGrid() );
+   m_Graph.SetDoDrawGrid(bShowGrid);
    GetView()->Invalidate();
 }
 
@@ -224,18 +237,16 @@ void CDeflectionHistoryGraphBuilder::UpdateGraphTitle(const pgsPointOfInterest& 
    std::_tstring strAttributes = poi.GetAttributes(POI_SPAN,false);
    if ( strAttributes.size() == 0 )
    {
-      strSubtitle.Format(_T("Group %d Girder %s Span %d (%s)"),
-         LABEL_GROUP(segmentKey.groupIndex),
-         LABEL_GIRDER(segmentKey.girderIndex),
+      strSubtitle.Format(_T("Span %d Girder %s (%s)"),
          LABEL_SPAN(spanKey.spanIndex),
+         LABEL_GIRDER(segmentKey.girderIndex),
          FormatDimension(Xspan,pDisplayUnits->GetSpanLengthUnit()));
    }
    else
    {
-      strSubtitle.Format(_T("Group %d Girder %s Span %d, (%s (%s))"),
-         LABEL_GROUP(segmentKey.groupIndex),
-         LABEL_GIRDER(segmentKey.girderIndex),
+      strSubtitle.Format(_T("Span %d, Girder %s (%s (%s))"),
          LABEL_SPAN(spanKey.spanIndex),
+         LABEL_GIRDER(segmentKey.girderIndex),
          FormatDimension(Xspan,pDisplayUnits->GetSpanLengthUnit()),
          strAttributes.c_str());
    }
@@ -323,9 +334,10 @@ void CDeflectionHistoryGraphBuilder::PlotDeflection(Float64 x,const pgsPointOfIn
    bool bIncludePrestress = true;
    bool bIncludeLiveLoad  = false;
    bool bIncludeElevationAdjustment = ((CDeflectionHistoryGraphController*)m_pGraphController)->IncludeElevationAdjustment();
+   bool bIncludePrecamber = ((CDeflectionHistoryGraphController*)m_pGraphController)->IncludePrecamber();
 
    Float64 Ymin, Ymax;
-   pLimitStateForces->GetDeflection(intervalIdx,pgsTypes::ServiceI,poi,bat,bIncludePrestress,bIncludeLiveLoad,bIncludeElevationAdjustment,&Ymin,&Ymax);
+   pLimitStateForces->GetDeflection(intervalIdx,pgsTypes::ServiceI,poi,bat,bIncludePrestress,bIncludeLiveLoad,bIncludeElevationAdjustment,bIncludePrecamber,&Ymin,&Ymax);
    AddGraphPoint(dataSeries, x, Ymin);
 }
 

@@ -22,7 +22,6 @@
 
 #include "stdafx.h"
 #include "resource.h"
-#include "WSDOTAgent_i.h"
 #include "PGSuperComponentInfo.h"
 #include <MFCTools\VersionInfo.h>
 
@@ -44,29 +43,29 @@ void CPGSuperComponentInfo::Terminate()
 {
 }
 
-CString CPGSuperComponentInfo::GetName()
+CString CPGSuperComponentInfo::GetName() const
 {
    return _T("WSDOT PGSuper Extensions");
 }
 
-CString CPGSuperComponentInfo::GetDescription()
+CString CPGSuperComponentInfo::GetDescription() const
 {
    CString strDesc;
    strDesc.Format(_T("WSDOT-specific features for PGSuper"));
    return strDesc;
 }
 
-HICON CPGSuperComponentInfo::GetIcon()
+HICON CPGSuperComponentInfo::GetIcon() const
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
    return AfxGetApp()->LoadIcon(IDI_WSDOT);
 }
 
-bool CPGSuperComponentInfo::HasMoreInfo()
+bool CPGSuperComponentInfo::HasMoreInfo() const
 {
    return false;
 }
 
-void CPGSuperComponentInfo::OnMoreInfo()
+void CPGSuperComponentInfo::OnMoreInfo() const
 {
 }

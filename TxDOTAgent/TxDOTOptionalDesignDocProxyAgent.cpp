@@ -23,7 +23,6 @@
 #include "StdAfx.h"
 #include "TxDOTOptionalDesignDocProxyAgent.h"
 #include "TxDOTOptionalDesignDoc.h"
-#include "TxDOTAgent_i.h"
 #include "TxDOTAppPlugin.h"
 #include "TxDOTOptionalDesignUtilities.h"
 
@@ -407,9 +406,10 @@ void CTxDOTOptionalDesignDocProxyAgent::Validate()
 
       // Our model is always prismatic - max's will occur at mid-span poi
       GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
-      std::vector<pgsPointOfInterest> vPOI( pIPoi->GetPointsOfInterest(origSegmentKey, POI_5L | POI_ERECTED_SEGMENT) );
+      PoiList vPOI;
+      pIPoi->GetPointsOfInterest(origSegmentKey, POI_5L | POI_ERECTED_SEGMENT, &vPOI);
       ATLASSERT( vPOI.size() == 1 );
-      pgsPointOfInterest orig_ms_poi = vPOI.front();
+      const pgsPointOfInterest& orig_ms_poi = vPOI.front();
 
       // Find max compressive stress and compute stress factor from original model
       const pgsFlexuralStressArtifact* pOriginalStressArtifact;
@@ -435,7 +435,7 @@ void CTxDOTOptionalDesignDocProxyAgent::Validate()
 
       // Camber from original model
       GET_IFACE2(pBroker,ICamber,pCamber);
-      m_MaximumCamber = pCamber->GetDCamberForGirderSchedule(orig_ms_poi,CREEP_MAXTIME);
+      m_MaximumCamber = pCamber->GetDCamberForGirderScheduleUnfactored(orig_ms_poi,CREEP_MAXTIME);
 
       // Now we need results from fabricator model
       // =========================================
@@ -466,7 +466,8 @@ void CTxDOTOptionalDesignDocProxyAgent::Validate()
 
       for (int icase=0; icase<num_cases; icase++)
       {
-         vPOI = pIPoi->GetPointsOfInterest(fabrSegmentKey);
+         vPOI.clear(); // recycle list
+         pIPoi->GetPointsOfInterest(fabrSegmentKey,&vPOI);
          ATLASSERT(vPOI.size()>0);
 
          if ( (lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims && lstates[icase] == pgsTypes::FatigueI) || 
@@ -483,7 +484,7 @@ void CTxDOTOptionalDesignDocProxyAgent::Validate()
 
          Float64 k;
          if (lstates[icase] == pgsTypes::ServiceIA || lstates[icase] == pgsTypes::FatigueI )
-            k = 0.5; // Use half prestress stress if service IA (See Tbl 5.9.4.2.1-1)
+            k = 0.5; // Use half prestress stress if service IA  (See Tbl 5.9.4.2.1-1 2008 or before) or Fatigue I (LRFD 5.5.3.1 2009)
          else
             k = 1.0;
 
@@ -575,7 +576,8 @@ void CTxDOTOptionalDesignDocProxyAgent::Validate()
       }
    
       // mid span in fab model
-      vPOI = pIPoi->GetPointsOfInterest(fabrSegmentKey, POI_5L | POI_ERECTED_SEGMENT);
+      vPOI.clear(); // recycle list
+      pIPoi->GetPointsOfInterest(fabrSegmentKey, POI_5L | POI_ERECTED_SEGMENT,&vPOI);
       ATLASSERT( vPOI.size() == 1 );
       pgsPointOfInterest fabr_ms_poi = vPOI.front();
 
@@ -598,7 +600,7 @@ void CTxDOTOptionalDesignDocProxyAgent::Validate()
       m_RequiredFc  =  Max(m_GirderArtifact.GetRequiredGirderConcreteStrength(), ::ConvertToSysUnits(5.0, unitMeasure::KSI));
 
       // Get camber from fabricator model
-      m_FabricatorMaximumCamber = pCamber->GetDCamberForGirderSchedule(fabr_ms_poi,CREEP_MAXTIME);
+      m_FabricatorMaximumCamber = pCamber->GetDCamberForGirderScheduleUnfactored(fabr_ms_poi,CREEP_MAXTIME);
 
       // Shear 
       CheckShear(pIPoi);

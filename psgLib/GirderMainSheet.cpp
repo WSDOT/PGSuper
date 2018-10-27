@@ -76,6 +76,24 @@ bool CGirderMainSheet::IsSplicedGirder()
    return (splicedBeamFactory == nullptr ? false : true);
 }
 
+bool CGirderMainSheet::HasDeck() const
+{
+   std::vector<pgsTypes::SupportedBeamSpacing> vSpacings = m_Entry.m_pBeamFactory->GetSupportedBeamSpacings();
+   for (auto spacing : vSpacings)
+   {
+      auto vDeckTypes = m_Entry.m_pBeamFactory->GetSupportedDeckTypes(spacing);
+      for (auto deckType : vDeckTypes)
+      {
+         if (deckType != pgsTypes::sdtNone)
+         {
+            return true;
+         }
+      }
+   }
+
+   return false;
+}
+
 void CGirderMainSheet::UpdatePropertyPages()
 {
    // Certain pages don't apply to spliced girders
@@ -169,24 +187,26 @@ void CGirderMainSheet::ExchangeDimensionData(CDataExchange* pDX)
    if ( pDX->m_bSaveAndValidate )
    {
       // Pull the values from the grid... Convert back to system units
-      std::vector<std::_tstring> names = m_Entry.m_pBeamFactory->GetDimensionNames();
-      std::vector<const unitLength*> units = m_Entry.m_pBeamFactory->GetDimensionUnits(bUnitsSI);
+      const auto& names = m_Entry.m_pBeamFactory->GetDimensionNames();
+      const auto& units = m_Entry.m_pBeamFactory->GetDimensionUnits(bUnitsSI);
 
       ATLASSERT(names.size() == units.size());
 
-      std::vector<std::_tstring>::iterator name_iter;
-      std::vector<const unitLength*>::iterator unit_iter;
+      auto name_iter(names.begin());
+      auto name_end(names.end());
+      auto unit_iter(units.begin());
+      auto unit_end(units.end());
       long nRow = 1;
-      for ( name_iter = names.begin(), unit_iter = units.begin(); 
-            name_iter != names.end() || unit_iter != units.end();
-            name_iter++, unit_iter++ )
+      for ( ; name_iter != name_end || unit_iter != unit_end; name_iter++, unit_iter++ )
       {
          CString strValue = m_GirderDimensionsPage.m_Grid.GetCellValue(nRow,1);
          Float64 value = _tstof(strValue);
 
          const unitLength* pUnit = *unit_iter;
-         if ( pUnit != nullptr )
-            value = ::ConvertToSysUnits(value,*pUnit);
+         if (pUnit != nullptr)
+         {
+            value = ::ConvertToSysUnits(value, *pUnit);
+         }
 
          m_Entry.SetDimension(*name_iter,value,true);
          nRow++;
@@ -203,18 +223,18 @@ void CGirderMainSheet::ExchangeDimensionData(CDataExchange* pDX)
    else
    {
       // Fill up the grid
-      std::vector<std::_tstring> names = m_Entry.m_pBeamFactory->GetDimensionNames();
-      std::vector<const unitLength*> units = m_Entry.m_pBeamFactory->GetDimensionUnits(bUnitsSI);
+      const auto& names = m_Entry.m_pBeamFactory->GetDimensionNames();
+      const auto& units = m_Entry.m_pBeamFactory->GetDimensionUnits(bUnitsSI);
 
       ATLASSERT(names.size() == units.size());
 
-      std::vector<std::_tstring>::iterator name_iter(names.begin());
-      std::vector<std::_tstring>::iterator name_iter_end(names.end());
-      std::vector<const unitLength*>::iterator unit_iter(units.begin());
+      auto name_iter(names.begin());
+      auto name_iter_end(names.end());
+      auto unit_iter(units.begin());
       long nRow = 1;
       for ( ; name_iter != name_iter_end; name_iter++, unit_iter++ )
       {
-         std::_tstring name = *name_iter;
+         auto name = *name_iter;
 
          Float64 value = m_Entry.GetDimension(name);
 
@@ -652,6 +672,9 @@ void CGirderMainSheet::ExchangeHaunchData(CDataExchange* pDX)
  	   DDX_Text(pDX, IDC_SLAB,       m_Entry.m_CamberMultipliers.SlabUser1Factor);
  	   DDX_Text(pDX, IDC_HAUNCH,     m_Entry.m_CamberMultipliers.SlabPadLoadFactor);
  	   DDX_Text(pDX, IDC_BARRIER,    m_Entry.m_CamberMultipliers.BarrierSwOverlayUser2Factor);
+
+      DDX_Text(pDX, IDC_PRECAMBER_LIMIT, m_Entry.m_PrecamberLimit);
+      DDV_LimitOrMore(pDX, IDC_PRECAMBER_LIMIT, m_Entry.m_PrecamberLimit, 0.0);
    }
 }
 
@@ -1067,25 +1090,18 @@ void CGirderMainSheet::MiscOnAbsolute()
 
 bool CGirderMainSheet::CanHarpStrands() const
 {
-   if (pgsTypes::asStraight != m_Entry.GetAdjustableStrandType() && m_Entry.GetNumHarpedStrandCoordinates() > 0)
-   {
-      return true;
-   }
-   else
-   {
-      return false;
-   }
+   return pgsTypes::asStraight == m_Entry.GetAdjustableStrandType() ? false : true;
 }
 
 bool CGirderMainSheet::CanDebondStrands() const
 {
-   if (m_Entry.CanDebondStraightStrands() && !CanHarpStrands())
+   if (pgsTypes::asHarped == m_Entry.GetAdjustableStrandType())
    {
-      return true;
+      return false;
    }
    else
    {
-      return false;
+      return m_Entry.CanDebondStraightStrands();
    }
 }
 

@@ -1,26 +1,26 @@
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 48.25    6   8.00                     1     1    U48G4          40  0.6  270  15.50  11.35  10.63  10.63                                             15.000 15.000   5.893    -4.385     8461   0.935  1.385   1.181 -1.484  0.000 -0.086 -1.570  72.03  254.31    1.00    5.00    5.00 
+ 48.25    6   8.00                     1     1    U48G4          40  0.6  270  15.50  11.35  10.63  10.63                                             15.000 15.000   5.893    -4.385     8461   0.935  1.385   1.709 -1.484  0.000 -0.086 -1.570  72.03  254.31    1.00    5.00    5.00 
 
 
 The Specification Check was Not Successful
-Tensile stress check failed for Service I Limit State in Interval 2 Prestress Release (Casting Yard)
-Tensile stress check failed for Service III Limit State in Interval 14 Open to Traffic (Bridge Site 3)
+Tensile stress check failed for Service I Limit State in Interval 2 Prestress Release
+Tensile stress check failed for Service III Limit State in Interval 14 Open to Traffic
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
 Lifting checks failed
 
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 48.25    6   8.00                     1     2    U48G4          48  0.6  270  15.34  11.09  10.63  10.63                                              5.000  6.000   4.851    -3.487     7835   0.489  0.997   2.711 -2.039  0.000 -0.115 -2.153 183.81  402.54    0.00    0.00    0.00 
+ 48.25    6   8.00                     1     2    U48G4          48  0.6  270  15.34  11.09  10.63  10.63                                              5.000  6.000   4.851    -3.487     7835   0.489  0.997   5.024 -2.039  0.000 -0.115 -2.153 183.81  402.54    0.00    0.00    0.00 
 
 
 The Specification Check was Not Successful
 Stresses in the prestressing strands are too high.
-Compression stress check failed for Service I Limit State in Interval 2 Prestress Release (Casting Yard)
-Tensile stress check failed for Service I Limit State in Interval 2 Prestress Release (Casting Yard)
-Compression stress check failed for Service I Limit State in Interval 10 Cast Deck (Bridge Site 1)
-Compression stress check failed for Service I Limit State in Interval 12 Composite Deck, Install Railing System (Bridge Site 2)
+Compression stress check failed for Service I Limit State in Interval 2 Prestress Release
+Tensile stress check failed for Service I Limit State in Interval 2 Prestress Release
+Compression stress check failed for Service I Limit State in Interval 10 Cast Deck
+Compression stress check failed for Service I Limit State in Interval 12 Composite deck, Install Railing System
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
 Lifting checks failed
 Hauling checks failed

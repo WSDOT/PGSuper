@@ -72,7 +72,7 @@ protected:
    void GetSkewAndDirection(IAlignment* pAlignment,Float64 station,LPCTSTR strOrientation,IAngle** ppSkew,IDirection** ppDirection);
 
    const CGirderGroupData* GetGirderGroup(const CGirderSpacing2* pSpacing);
-   Float64 GetGirderWidth(const CSplicedGirderData* pGirder);
+   void GetGirderWidth(const CSplicedGirderData* pGirder,pgsTypes::MemberEndType endType,Float64* pLeft,Float64* pRight);
 
    // Gets the pier line properties based on girder spacing, measured along the CL pier
    void GetPierLineProperties(const CBridgeDescription2* pBridgeDesc,const CGirderSpacing2* pSpacing,Float64 skewAngle,Float64* pWidth,Float64* pOffset);

@@ -117,11 +117,11 @@ BOOL CInsertSpanDlg::OnInitDialog()
 
          CString strItem;
          strItem.Format(_T("Before %s %d\n"),strType,LABEL_PIER(pierIdx));
-         m_Keys.push_back( std::make_pair(pierIdx,pgsTypes::Back) );
+         m_Keys.emplace_back(pierIdx,pgsTypes::Back);
          pcbPiers->AddString(strItem);
 
          strItem.Format(_T("After %s %d\n"),strType,LABEL_PIER(pierIdx));
-         m_Keys.push_back( std::make_pair(pierIdx,pgsTypes::Ahead) );
+         m_Keys.emplace_back(pierIdx,pgsTypes::Ahead);
          pcbPiers->AddString(strItem);
       }
    }

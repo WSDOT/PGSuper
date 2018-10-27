@@ -293,7 +293,7 @@ HRESULT CDeckDescription2::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
       OverhangTaper = (pgsTypes::DeckOverhangTaper)(var.lVal);
 
       // Fillet was moved to bridge in version 3. Save fillet here for bridge to get later
-      if (version < 3)
+      if (3 > version)
       {
          var.Clear();
          var.vt = VT_R8;
@@ -422,8 +422,11 @@ HRESULT CDeckDescription2::Save(IStructuredSave* pStrSave,IProgress* pProgress)
    if ( 0 < DeckEdgePoints.size() )
    {
       pStrSave->BeginUnit(_T("DeckEdgePoints"),1.0);
-      for(auto& point : DeckEdgePoints)
+      std::vector<CDeckPoint>::iterator iter(DeckEdgePoints.begin());
+      std::vector<CDeckPoint>::iterator end(DeckEdgePoints.end());
+      for ( ; iter != end; iter++ )
       {
+         CDeckPoint& point = *iter;
          point.Save(pStrSave,pProgress);
       }
       pStrSave->EndUnit();
@@ -476,27 +479,42 @@ const CBridgeDescription2* CDeckDescription2::GetBridgeDescription() const
 
 void CDeckDescription2::SetDeckType(pgsTypes::SupportedDeckType deckType)
 {
-   DeckType = deckType;
-   if (deckType == pgsTypes::sdtNone)
+   if (DeckType != deckType)
    {
-      // deck just got changed to a "no deck" type.. update the boundary conditions to be compatable
-      CPierData2* pPier = m_pBridgeDesc->GetPier(0);
-      while (pPier != nullptr)
+      DeckType = deckType;
+      if (deckType == pgsTypes::sdtNone)
       {
-         auto bc = pPier->GetBoundaryConditionType();
-         if (!IsNoDeckBoundaryCondition(bc))
+         // deck just got changed to a "no deck" type.. 
+
+         // first remove the deck casting event from the timeline
+         // NOTE: If you are setting the deck type to an actual deck, you must set the deck casting activity in the timeline manager
+         EventIndexType eventIdx = m_pBridgeDesc->GetTimelineManager()->GetCastDeckEventIndex();
+         if (eventIdx != INVALID_INDEX)
          {
-            pPier->SetBoundaryConditionType(GetNoDeckBoundaryCondition(bc));
+            CTimelineEvent* pEvent = m_pBridgeDesc->GetTimelineManager()->GetEventByIndex(eventIdx);
+            ATLASSERT(pEvent->GetCastDeckActivity().IsEnabled());
+            pEvent->GetCastDeckActivity().Enable(false);
          }
 
-         auto pSpan = pPier->GetNextSpan();
-         if (pSpan)
+         // update the boundary conditions to be compatable
+         CPierData2* pPier = m_pBridgeDesc->GetPier(0);
+         while (pPier != nullptr)
          {
-            pPier = pSpan->GetNextPier();
-         }
-         else
-         {
-            pPier = nullptr;
+            auto bc = pPier->GetBoundaryConditionType();
+            if (!IsNoDeckBoundaryCondition(bc))
+            {
+               pPier->SetBoundaryConditionType(GetNoDeckBoundaryCondition(bc));
+            }
+
+            auto pSpan = pPier->GetNextSpan();
+            if (pSpan)
+            {
+               pPier = pSpan->GetNextPier();
+            }
+            else
+            {
+               pPier = nullptr;
+            }
          }
       }
    }

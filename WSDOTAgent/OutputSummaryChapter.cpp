@@ -233,6 +233,7 @@ void creep_and_losses(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& s
          case pgsTypes::sdtCompositeCIP:
          case pgsTypes::sdtCompositeOverlay:
          case pgsTypes::sdtCompositeSIP:
+         case pgsTypes::sdtNonstructuralOverlay:
             if ( bTempStrands )
             {
                details = pCamber->GetCreepCoefficientDetails(segmentKey,ICamber::cpReleaseToDiaphragm,col);
@@ -294,6 +295,9 @@ void creep_and_losses(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& s
                (*pTable)(row,col) << symbol(psi) << _T("(") << time2.SetValue(details.t);
                (*pTable)(row,col) << _T(",") << time2.SetValue(details.ti) << _T(") = ") << details.Ct;
             break;
+
+         default:
+            ATLASSERT(false);
       }
    }
 
@@ -303,9 +307,10 @@ void creep_and_losses(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& s
    *p << pTable << rptNewLine;
 
    GET_IFACE2(pBroker,IPointOfInterest,pIPOI);
-   std::vector<pgsPointOfInterest> vPoi( pIPOI->GetPointsOfInterest(segmentKey,POI_5L | POI_ERECTED_SEGMENT) );
+   PoiList vPoi;
+   pIPOI->GetPointsOfInterest(segmentKey, POI_5L | POI_ERECTED_SEGMENT, &vPoi);
    ATLASSERT(vPoi.size()==1);
-   pgsPointOfInterest poi( *vPoi.begin() );
+   const pgsPointOfInterest& poi( vPoi.front() );
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType liftSegmentIntervalIdx = pIntervals->GetLiftSegmentInterval(segmentKey);
@@ -361,9 +366,10 @@ void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker,const CSegmentK
    bool bSidewalk = pProductLoads->HasSidewalkLoad(segmentKey);
 
    // Get Midspan std::vector<pgsPointOfInterest>
-   std::vector<pgsPointOfInterest> vPoi( pIPOI->GetPointsOfInterest(segmentKey,POI_5L | POI_ERECTED_SEGMENT) );
+   PoiList vPoi;
+   pIPOI->GetPointsOfInterest(segmentKey, POI_5L | POI_ERECTED_SEGMENT, &vPoi);
    ATLASSERT(vPoi.size()==1);
-   pgsPointOfInterest poi( *vPoi.begin() );
+   const pgsPointOfInterest& poi( vPoi.front() );
 
    // Compute mid span deflections
    Float64 delta_gdr;  // due to girder self weight
@@ -377,6 +383,7 @@ void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker,const CSegmentK
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType castDiaphragmIntervalIdx = pIntervals->GetCastIntermediateDiaphragmsInterval();
+   IntervalIndexType castShearKeyIntervalIdx  = pIntervals->GetCastShearKeyInterval();
    IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval();
    IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval();
    IntervalIndexType overlayIntervalIdx       = pIntervals->GetOverlayInterval();
@@ -386,9 +393,16 @@ void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker,const CSegmentK
 
    pgsTypes::BridgeAnalysisType bat = pProductForces->GetBridgeAnalysisType(pgsTypes::Minimize);
 
-   delta_dl = pProductForces->GetDeflection(castDeckIntervalIdx, pgsTypes::pftSlab, poi, bat, rtIncremental, false )
-            + pProductForces->GetDeflection(castDiaphragmIntervalIdx, pgsTypes::pftDiaphragm, poi, bat, rtIncremental, false )
-            + pProductForces->GetDeflection(castDeckIntervalIdx, pgsTypes::pftShearKey, poi, bat, rtIncremental, false );
+   delta_dl = pProductForces->GetDeflection(castDiaphragmIntervalIdx, pgsTypes::pftDiaphragm, poi, bat, rtIncremental, false);
+   if (castDeckIntervalIdx != INVALID_INDEX)
+   {
+      delta_dl += pProductForces->GetDeflection(castDeckIntervalIdx, pgsTypes::pftSlab, poi, bat, rtIncremental, false);
+   }
+
+   if (castShearKeyIntervalIdx != INVALID_INDEX)
+   {
+      delta_dl += pProductForces->GetDeflection(castShearKeyIntervalIdx, pgsTypes::pftShearKey, poi, bat, rtIncremental, false);
+   }
 
    if ( overlayIntervalIdx == INVALID_INDEX )
    {
@@ -416,7 +430,7 @@ void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker,const CSegmentK
 
    // Populate the table
    RowIndexType row = 0;
-   if ( deckType == pgsTypes::sdtNone )
+   if ( IsNonstructuralDeck(deckType) )
    {
       (*pTable)(row,0) << _T("Estimated camber immediately before superimposed dead loads at ")<< min_days<<_T(" days, D");
    }
@@ -436,7 +450,7 @@ void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker,const CSegmentK
    }
    row++;
 
-   if ( deckType == pgsTypes::sdtNone )
+   if ( IsNonstructuralDeck(deckType) )
    {
       (*pTable)(row,0) << _T("Estimated camber immediately before superimposed dead loads at ")<< max_days<<_T(" days, D");
    }
@@ -498,7 +512,7 @@ void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker,const CSegmentK
    (*pTable)(row,1) << disp.SetValue( delta_overlay );
    row++;
 
-   if ( deckType == pgsTypes::sdtNone )
+   if ( IsNonstructuralDeck(deckType) )
    {
       (*pTable)(row,0) << _T("Initial Camber, ") << Sub2(_T("C"),_T("i"));
       (*pTable)(row,1) << camber.SetValue( pCamber->GetCreepDeflection(poi,ICamber::cpReleaseToDiaphragm,CREEP_MAXTIME,pgsTypes::pddErected) );
@@ -577,14 +591,11 @@ void castingyard_stresses(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
 
    StrandIndexType NhMax = pStrandGeom->GetMaxStrands(segmentKey,pgsTypes::Harped);
 
-   // Get std::vector<pgsPointOfInterest>
-   std::vector<pgsPointOfInterest> vPoi;
-   std::vector<pgsPointOfInterest>::iterator iter;
-
    //    PS Xfer from end of segment
-   vPoi = pIPOI->GetPointsOfInterest(segmentKey,POI_PSXFER);
-   pgsPointOfInterest PSXFR_left( vPoi.front() );
-   pgsPointOfInterest PSXFR_right( vPoi.back() );
+   PoiList vPoi;
+   pIPOI->GetPointsOfInterest(segmentKey, POI_PSXFER, &vPoi);
+   const pgsPointOfInterest& PSXFR_left( vPoi.front() );
+   const pgsPointOfInterest& PSXFR_right( vPoi.back() );
 
    //   Harping points
    pgsPointOfInterest hp_left;
@@ -592,10 +603,11 @@ void castingyard_stresses(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
    std::vector<pgsPointOfInterest>::size_type hp_count = 0;
    if ( 0 < NhMax )
    {
-      vPoi = pIPOI->GetPointsOfInterest(segmentKey,POI_HARPINGPOINT);
+      vPoi.clear();
+      pIPOI->GetPointsOfInterest(segmentKey,POI_HARPINGPOINT,&vPoi);
       ATLASSERT( 0 <= vPoi.size() && vPoi.size() <= 2 );
       hp_count = vPoi.size();
-      iter = vPoi.begin();
+      auto iter = vPoi.begin();
       hp_left = *iter;
       hp_right = hp_left;
       if ( 1 < hp_count )
@@ -855,12 +867,12 @@ void bridgesite1_stresses(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
 
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
-   IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval();
+   IntervalIndexType noncompositeIntervalIdx = pIntervals->GetLastNoncompositeInterval();
 
    rptParagraph* p = new rptParagraph;
    *pChapter << p;
 
-   rptRcTable* pTable = rptStyleManager::CreateDefaultTable(5,pIntervals->GetDescription(castDeckIntervalIdx));
+   rptRcTable* pTable = rptStyleManager::CreateDefaultTable(5,pIntervals->GetDescription(noncompositeIntervalIdx));
    *p << pTable << rptNewLine;
 
    // Setup the table
@@ -886,18 +898,15 @@ void bridgesite1_stresses(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
    GET_IFACE2(pBroker,IArtifact,pIArtifact);
    GET_IFACE2(pBroker,IBridge,pBridge);
 
-   // Get std::vector<pgsPointOfInterest>
-   std::vector<pgsPointOfInterest> vPoi;
-   std::vector<pgsPointOfInterest>::iterator iter;
-
    // PSXFR from end of segment (used to be at H)
    Float64 segment_length = pBridge->GetSegmentLength(segmentKey);
    pgsPointOfInterest h_left;
    pgsPointOfInterest h_right;
-   vPoi = pIPOI->GetPointsOfInterest(segmentKey,POI_PSXFER);
+   PoiList vPoi;
+   pIPOI->GetPointsOfInterest(segmentKey, POI_PSXFER, &vPoi);
    if ( 0 < vPoi.size() )
    {
-      iter = vPoi.begin();
+      auto iter = vPoi.begin();
       if ( vPoi.size() == 2 )
       {
          h_left  = *iter++;
@@ -905,7 +914,7 @@ void bridgesite1_stresses(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
       }
       else
       {
-         if ( iter->GetDistFromStart() < segment_length/2 )
+         if ( iter->get().GetDistFromStart() < segment_length/2 )
          {
             h_left = *iter;
          }
@@ -917,8 +926,9 @@ void bridgesite1_stresses(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
    }
 
    //   Midspan
-   vPoi = pIPOI->GetPointsOfInterest(segmentKey,POI_5L | POI_SPAN);
-   pgsPointOfInterest cl( *vPoi.begin() );
+   vPoi.clear();
+   pIPOI->GetPointsOfInterest(segmentKey, POI_5L | POI_SPAN, &vPoi);
+   const pgsPointOfInterest& cl( vPoi.front() );
 
    // Get artifacts
    const pgsSegmentArtifact* pSegmentArtifact = pIArtifact->GetSegmentArtifact(segmentKey);
@@ -933,7 +943,7 @@ void bridgesite1_stresses(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
 
    if ( h_left.GetID() != INVALID_ID )
    {
-      pArtifact = pSegmentArtifact->GetFlexuralStressArtifactAtPoi(castDeckIntervalIdx,pgsTypes::ServiceI,pgsTypes::Tension,h_left.GetID());
+      pArtifact = pSegmentArtifact->GetFlexuralStressArtifactAtPoi(noncompositeIntervalIdx,pgsTypes::ServiceI,pgsTypes::Tension,h_left.GetID());
       fTop      = pArtifact->GetDemand(pgsTypes::TopGirder);
       fAllowTop = pArtifact->GetCapacity(pgsTypes::TopGirder);
 
@@ -951,7 +961,7 @@ void bridgesite1_stresses(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
       }
       row++;
 
-      pArtifact = pSegmentArtifact->GetFlexuralStressArtifactAtPoi(castDeckIntervalIdx,pgsTypes::ServiceI,pgsTypes::Compression,h_left.GetID());
+      pArtifact = pSegmentArtifact->GetFlexuralStressArtifactAtPoi(noncompositeIntervalIdx,pgsTypes::ServiceI,pgsTypes::Compression,h_left.GetID());
       fBot      = pArtifact->GetDemand(pgsTypes::BottomGirder);
       fAllowBot = pArtifact->GetCapacity(pgsTypes::BottomGirder);
       (*pTable)(row,0) << _T("Bottom of girder at PSXFR from left end");
@@ -969,7 +979,7 @@ void bridgesite1_stresses(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
       row++;
    }
 
-   pArtifact = pSegmentArtifact->GetFlexuralStressArtifactAtPoi(castDeckIntervalIdx,pgsTypes::ServiceI,pgsTypes::Tension,cl.GetID());
+   pArtifact = pSegmentArtifact->GetFlexuralStressArtifactAtPoi(noncompositeIntervalIdx,pgsTypes::ServiceI,pgsTypes::Tension,cl.GetID());
    fTop      = pArtifact->GetDemand(pgsTypes::TopGirder);
    fAllowTop = pArtifact->GetCapacity(pgsTypes::TopGirder);
    (*pTable)(row,0) << _T("Top of girder at mid-span");
@@ -986,7 +996,7 @@ void bridgesite1_stresses(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
    }
    row++;
 
-   pArtifact = pSegmentArtifact->GetFlexuralStressArtifactAtPoi(castDeckIntervalIdx,pgsTypes::ServiceI,pgsTypes::Compression,cl.GetID());
+   pArtifact = pSegmentArtifact->GetFlexuralStressArtifactAtPoi(noncompositeIntervalIdx,pgsTypes::ServiceI,pgsTypes::Compression,cl.GetID());
    fBot      = pArtifact->GetDemand(pgsTypes::BottomGirder);
    fAllowBot = pArtifact->GetCapacity(pgsTypes::BottomGirder);
    (*pTable)(row,0) << _T("Bottom of girder at mid-span");
@@ -1005,7 +1015,7 @@ void bridgesite1_stresses(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
 
    if ( h_right.GetID() != INVALID_ID )
    {
-      pArtifact = pSegmentArtifact->GetFlexuralStressArtifactAtPoi(castDeckIntervalIdx,pgsTypes::ServiceI,pgsTypes::Tension,h_right.GetID());
+      pArtifact = pSegmentArtifact->GetFlexuralStressArtifactAtPoi(noncompositeIntervalIdx,pgsTypes::ServiceI,pgsTypes::Tension,h_right.GetID());
       fTop      = pArtifact->GetDemand(pgsTypes::TopGirder);
       fAllowTop = pArtifact->GetCapacity(pgsTypes::TopGirder);
 
@@ -1023,7 +1033,7 @@ void bridgesite1_stresses(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
       }
       row++;
 
-      pArtifact = pSegmentArtifact->GetFlexuralStressArtifactAtPoi(castDeckIntervalIdx,pgsTypes::ServiceI,pgsTypes::Compression,h_right.GetID());
+      pArtifact = pSegmentArtifact->GetFlexuralStressArtifactAtPoi(noncompositeIntervalIdx,pgsTypes::ServiceI,pgsTypes::Compression,h_right.GetID());
       fBot      = pArtifact->GetDemand(pgsTypes::BottomGirder);
       fAllowBot = pArtifact->GetCapacity(pgsTypes::BottomGirder);
       (*pTable)(row,0) << _T("Bottom of girder at PSXFR from right end");
@@ -1079,18 +1089,15 @@ void bridgesite2_stresses(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
    GET_IFACE2(pBroker,IArtifact,pIArtifact);
    GET_IFACE2(pBroker,IBridge,pBridge);
 
-   // Get std::vector<pgsPointOfInterest>
-   std::vector<pgsPointOfInterest> vPoi;
-   std::vector<pgsPointOfInterest>::iterator iter;
-
    // PSXFR from end of segment (used to be H)
    Float64 segment_length = pBridge->GetSegmentLength(segmentKey);
    pgsPointOfInterest h_left;
    pgsPointOfInterest h_right;
-   vPoi = pIPOI->GetPointsOfInterest(segmentKey,POI_PSXFER);
+   PoiList vPoi;
+   pIPOI->GetPointsOfInterest(segmentKey, POI_PSXFER, &vPoi);
    if ( 0 < vPoi.size() )
    {
-      iter = vPoi.begin();
+      auto iter = vPoi.begin();
       if ( vPoi.size() == 2 )
       {
          h_left  = *iter++;
@@ -1098,7 +1105,7 @@ void bridgesite2_stresses(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
       }
       else
       {
-         if ( iter->GetDistFromStart() < segment_length/2 )
+         if ( iter->get().GetDistFromStart() < segment_length/2 )
          {
             h_left = *iter;
          }
@@ -1110,8 +1117,9 @@ void bridgesite2_stresses(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
    }
 
    //   Midspan
-   vPoi = pIPOI->GetPointsOfInterest(segmentKey,POI_5L | POI_SPAN);
-   pgsPointOfInterest cl = *vPoi.begin();
+   vPoi.clear();
+   pIPOI->GetPointsOfInterest(segmentKey, POI_5L | POI_SPAN, &vPoi);
+   const pgsPointOfInterest& cl(vPoi.front());
 
    // Get artifacts
    const pgsSegmentArtifact* pSegmentArtifact = pIArtifact->GetSegmentArtifact(segmentKey);
@@ -1236,18 +1244,15 @@ void bridgesite3_stresses(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
    GET_IFACE2(pBroker,IArtifact,pIArtifact);
    GET_IFACE2(pBroker,IBridge,pBridge);
 
-   // Get std::vector<pgsPointOfInterest>
-   std::vector<pgsPointOfInterest> vPoi;
-   std::vector<pgsPointOfInterest>::iterator iter;
-
    // PSXFR from end of segment (used to be H)
    Float64 segment_length = pBridge->GetSegmentLength(segmentKey);
    pgsPointOfInterest h_left;
    pgsPointOfInterest h_right;
-   vPoi = pIPOI->GetPointsOfInterest(segmentKey,POI_PSXFER);
+   PoiList vPoi;
+   pIPOI->GetPointsOfInterest(segmentKey, POI_PSXFER, &vPoi);
    if ( 0 < vPoi.size() )
    {
-      iter = vPoi.begin();
+      auto iter = vPoi.begin();
       if ( vPoi.size() == 2 )
       {
          h_left  = *iter++;
@@ -1255,7 +1260,7 @@ void bridgesite3_stresses(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
       }
       else
       {
-         if ( iter->GetDistFromStart() < segment_length/2 )
+         if ( iter->get().GetDistFromStart() < segment_length/2 )
          {
             h_left = *iter;
          }
@@ -1267,10 +1272,10 @@ void bridgesite3_stresses(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
    }
 
    //   Midspan
-   vPoi = pIPOI->GetPointsOfInterest(segmentKey,POI_5L | POI_SPAN);
+   vPoi.clear();
+   pIPOI->GetPointsOfInterest(segmentKey, POI_5L | POI_SPAN, &vPoi);
    ATLASSERT(vPoi.size() == 1);
-   iter = vPoi.begin();
-   pgsPointOfInterest cl( *iter );
+   const pgsPointOfInterest& cl(vPoi.front());
 
    // Get artifacts
    const pgsSegmentArtifact* pSegmentArtifact = pIArtifact->GetSegmentArtifact(segmentKey);
@@ -1527,17 +1532,14 @@ void shear_capacity(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& seg
 
    StrandIndexType NhMax = pStrandGeom->GetMaxStrands(segmentKey,pgsTypes::Harped);
 
-   // Get Points of Interest
-   std::vector<pgsPointOfInterest> vPoi;
-   std::vector<pgsPointOfInterest>::iterator iter;
-
    Float64 segment_length = pBridge->GetSegmentLength(segmentKey);
    pgsPointOfInterest h_left;
    pgsPointOfInterest h_right;
-   vPoi = pIPOI->GetPointsOfInterest(segmentKey,POI_H);
+   PoiList vPoi;
+   pIPOI->GetPointsOfInterest(segmentKey, POI_H, &vPoi);
    if ( 0 < vPoi.size() )
    {
-      iter = vPoi.begin();
+      auto iter = vPoi.begin();
       if ( vPoi.size() == 2 )
       {
          h_left  = *iter++;
@@ -1545,7 +1547,7 @@ void shear_capacity(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& seg
       }
       else
       {
-         if ( iter->GetDistFromStart() < segment_length/2 )
+         if ( iter->get().GetDistFromStart() < segment_length/2 )
          {
             h_left = *iter;
          }
@@ -1558,10 +1560,11 @@ void shear_capacity(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& seg
 
    pgsPointOfInterest left_15h;
    pgsPointOfInterest right_15h;
-   vPoi = pIPOI->GetPointsOfInterest(segmentKey,POI_15H);
+   vPoi.clear();
+   pIPOI->GetPointsOfInterest(segmentKey, POI_15H,&vPoi);
    if ( 0 < vPoi.size() )
    {
-      iter = vPoi.begin();
+      auto iter = vPoi.begin();
       if ( vPoi.size() == 2 )
       {
          left_15h  = *iter++;
@@ -1569,7 +1572,7 @@ void shear_capacity(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& seg
       }
       else
       {
-         if ( iter->GetDistFromStart() < segment_length/2 )
+         if ( iter->get().GetDistFromStart() < segment_length/2 )
          {
             left_15h = *iter;
          }
@@ -1583,11 +1586,12 @@ void shear_capacity(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& seg
    pgsPointOfInterest hp_left;
    pgsPointOfInterest hp_right;
    IndexType hp_count = 0;
-   vPoi = pIPOI->GetPointsOfInterest(segmentKey,POI_HARPINGPOINT);
+   vPoi.clear();
+   pIPOI->GetPointsOfInterest(segmentKey, POI_HARPINGPOINT,&vPoi);
    ATLASSERT( 0 <= vPoi.size() && vPoi.size() <= 2 );
    if ( 0 < vPoi.size() && 0 < NhMax )
    {
-      iter = vPoi.begin();
+      auto iter = vPoi.begin();
       if ( vPoi.size() == 2 )
       {
          hp_left  = *iter++;
@@ -1597,7 +1601,7 @@ void shear_capacity(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& seg
       else
       {
          hp_count = 1;
-         if ( iter->GetDistFromStart() < segment_length/2 )
+         if ( iter->get().GetDistFromStart() < segment_length/2 )
          {
             hp_left = *iter;
          }
@@ -1608,26 +1612,25 @@ void shear_capacity(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& seg
       }
    }
 
-   std::vector<pgsPointOfInterest> vCsPoi(pIPOI->GetCriticalSections(pgsTypes::StrengthI,segmentKey));
-   pgsPointOfInterest left_cs( vCsPoi.front() );
-   pgsPointOfInterest right_cs( vCsPoi.back() );
+   PoiList vCsPoi;
+   pIPOI->GetCriticalSections(pgsTypes::StrengthI, segmentKey, &vCsPoi);
+   const pgsPointOfInterest& left_cs( vCsPoi.front() );
+   const pgsPointOfInterest& right_cs( vCsPoi.back() );
 
    const pgsSegmentArtifact* pSegmentArtifact = pIArtifact->GetSegmentArtifact(segmentKey);
    const pgsStirrupCheckArtifact* pstirrup_artifact = pSegmentArtifact->GetStirrupCheckArtifact();
    ATLASSERT(pstirrup_artifact != nullptr);
-   const pgsStirrupCheckAtPoisArtifact* pPoiArtifact;
-   const pgsVerticalShearArtifact* pArtifact;
 
    RowIndexType row = 1;
 
-   pPoiArtifact = pstirrup_artifact->GetStirrupCheckAtPoisArtifactAtPOI(lastIntervalIdx,pgsTypes::StrengthI,left_cs.GetID());
+   const pgsStirrupCheckAtPoisArtifact*pPoiArtifact = pstirrup_artifact->GetStirrupCheckAtPoisArtifactAtPOI(lastIntervalIdx,pgsTypes::StrengthI,left_cs.GetID());
    if ( pPoiArtifact == nullptr )
    {
       return;
    }
 
-   pArtifact = pPoiArtifact->GetVerticalShearArtifact();
-   ATLASSERT(pArtifact!=0);
+   const pgsVerticalShearArtifact*pArtifact = pPoiArtifact->GetVerticalShearArtifact();
+   ATLASSERT(pArtifact  != nullptr);
    write_shear_capacity(pTable,row++,_T("Left Critical Section"), pArtifact, pDisplayUnits );
 
    if ( h_left.GetID() != INVALID_ID )

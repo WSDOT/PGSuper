@@ -176,7 +176,7 @@ void CTxDOTOptionalDesignDocTemplate::FindTemplateFiles(LPCTSTR strPath,CEAFTemp
          file.FilePath = templateFile;
          file.FileTitle = finder.GetFileTitle();
 
-         // Have to play games with const casting here. Note that if "file" affected sorting in container, this could cause a bug, but it does not.
+         // Have to play games with const casting here. Note that if "file" affected sorting, this could cause a bug.
          std::vector<TemplateFile>& rfiles( const_cast<std::vector<TemplateFile>&>(itfolder.first->Files));
          rfiles.push_back(file);
       }

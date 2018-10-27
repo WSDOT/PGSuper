@@ -32,6 +32,10 @@
 #include "SectionCutDrawStrategy.h"
 #include "PGSuperTypes.h"
 
+#include <DManip\ToolPalette.h>
+
+#include <EAF\EAFViewControllerFactory.h>
+
 class CBridgeViewPane;
 class CBridgePlanView;
 class CBridgeSectionView;
@@ -41,7 +45,7 @@ class CAlignmentProfileView;
 /////////////////////////////////////////////////////////////////////////////
 // CBridgeModelViewChildFrame frame
 
-class CBridgeModelViewChildFrame : public CSplitChildFrame, public iCutLocation
+class CBridgeModelViewChildFrame : public CSplitChildFrame, public iCutLocation, public CEAFViewControllerFactory
 {
 	DECLARE_DYNCREATE(CBridgeModelViewChildFrame)
 protected:
@@ -49,6 +53,7 @@ protected:
 
 // Attributes
 public:
+   enum ViewMode {Bridge,Alignment};
 
 // Operations
 public:
@@ -85,10 +90,14 @@ public:
    virtual Float64 GetMinCutLocation();
    virtual Float64 GetMaxCutLocation();
 
+   // CEAFViewControllerFactory
+protected:
+   virtual void CreateViewController(IEAFViewController** ppController) override;
 
+
+   // my stuff
+public:
    Float64 GetNextCutStation(Float64 direction);
-
-   LPCTSTR GetDeckTypeName(pgsTypes::SupportedDeckType deckType) const;
 
    CBridgePlanView* GetBridgePlanView();
    CBridgeSectionView* GetBridgeSectionView();
@@ -98,6 +107,20 @@ public:
    CBridgeViewPane* GetLowerView();
 
    void InitSpanRange(); // call this method to initialize the span range controls
+
+   void SetViewMode(ViewMode viewMode);
+   ViewMode GetViewMode() const;
+   void NorthUp(bool bNorthUp);
+   bool NorthUp() const;
+   void ShowLabels(bool bShowLabels);
+   bool ShowLabels() const;
+   void ShowDimensions(bool bShowDimensions);
+   bool ShowDimensions() const;
+   void ShowBridge(bool bShowBridge);
+   bool ShowBridge() const;
+   void Schematic(bool bSchematic);
+   bool Schematic() const;
+
 
 #ifdef _DEBUG
 	virtual void AssertValid() const;
@@ -123,10 +146,23 @@ protected:
 	afx_msg void OnUpdateDeleteSpan(CCmdUI* pCmdUI);
 	afx_msg void OnInsertSpan();
 	afx_msg void OnInsertPier();
-	//}}AFX_MSG
+   afx_msg void OnViewModeChanged(UINT nIDC);
+   afx_msg void OnStartSpanChanged(NMHDR *pNMHDR, LRESULT *pResult);
+   afx_msg void OnEndSpanChanged(NMHDR *pNMHDR, LRESULT *pResult);
+   afx_msg void OnNorth();
+   afx_msg void OnUpdateNorth(CCmdUI* pCmdUI);
+   afx_msg void OnShowLabels();
+   afx_msg void OnUpdateShowLabels(CCmdUI* pCmdUI);
+   afx_msg void OnDimensions();
+   afx_msg void OnUpdateDimensions(CCmdUI* pCmdUI);
+   afx_msg void OnBridge();
+   afx_msg void OnUpdateBridge(CCmdUI* pCmdUI);
+   afx_msg void OnSchematic();
+   afx_msg void OnUpdateSchematic(CCmdUI* pCmdUI);
    afx_msg void OnBoundaryCondition(UINT nIDC);
    afx_msg void OnUpdateBoundaryCondition(CCmdUI* pCmdUI);
    afx_msg LRESULT OnCommandHelp(WPARAM, LPARAM lParam);
+   //}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 
    bool m_bCutLocationInitialized;
@@ -140,11 +176,7 @@ protected:
    Float64 m_CurrentCutLocation;
    void UpdateCutLocation(Float64 cut);
 
-   CDialogBar m_SettingsBar;
-public:
-   afx_msg void OnStartSpanChanged(NMHDR *pNMHDR, LRESULT *pResult);
-   afx_msg void OnEndSpanChanged(NMHDR *pNMHDR, LRESULT *pResult);
-   afx_msg void OnViewModeChanged(UINT nIDC);
+   CToolPalette m_SettingsBar;
 };
 
 /////////////////////////////////////////////////////////////////////////////

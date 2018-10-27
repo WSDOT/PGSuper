@@ -21,6 +21,7 @@
 ///////////////////////////////////////////////////////////////////////
 
 #include "StdAfx.h"
+#include <PgsExt\PgsExtLib.h>
 
 #include <IFace\PointOfInterest.h>
 #include <IFace\Bridge.h>
@@ -119,7 +120,7 @@ void pgsGirderLiftingChecker::AnalyzeLifting(const CSegmentKey& segmentKey,const
 void pgsGirderLiftingChecker::AnalyzeLifting(const CSegmentKey& segmentKey,bool bUseConfig,const HANDLINGCONFIG& liftConfig,ISegmentLiftingDesignPointsOfInterest* pPoiD,stbLiftingCheckArtifact* pArtifact,const stbLiftingStabilityProblem** ppStabilityProblem)
 {
    GET_IFACE(IGirder,pGirder);
-   const stbGirder* pStabilityModel = bUseConfig ? pGirder->GetSegmentStabilityModel(segmentKey,liftConfig) : pGirder->GetSegmentStabilityModel(segmentKey);
+   const stbGirder* pStabilityModel = pGirder->GetSegmentLiftingStabilityModel(segmentKey);
    const stbLiftingStabilityProblem* pStabilityProblem = bUseConfig ? pGirder->GetSegmentLiftingStabilityProblem(segmentKey,liftConfig,pPoiD) : pGirder->GetSegmentLiftingStabilityProblem(segmentKey);
    if ( ppStabilityProblem )
    {
@@ -129,14 +130,7 @@ void pgsGirderLiftingChecker::AnalyzeLifting(const CSegmentKey& segmentKey,bool 
    GET_IFACE(ISegmentLiftingSpecCriteria,pSegmentLiftingSpecCriteria);
    stbLiftingCriteria criteria = (bUseConfig ? pSegmentLiftingSpecCriteria->GetLiftingStabilityCriteria(segmentKey,liftConfig) : pSegmentLiftingSpecCriteria->GetLiftingStabilityCriteria(segmentKey));
 
-   GET_IFACE(IDocumentUnitSystem,pDocUnitSystem);
-   CComPtr<IUnitServer> unitServer;
-   pDocUnitSystem->GetUnitServer(&unitServer);
-
-   CComPtr<IUnitConvert> unitConvert;
-   unitServer->get_UnitConvert(&unitConvert);
-
-   stbStabilityEngineer engineer(unitConvert);
+   stbStabilityEngineer engineer;
    *pArtifact = engineer.CheckLifting(pStabilityModel,pStabilityProblem,criteria);
 }
 

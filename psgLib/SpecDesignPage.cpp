@@ -239,11 +239,21 @@ void CSpecDesignPage::OnBnClickedCheckInclindedGirder()
 
 BOOL CSpecDesignPage::OnSetActive()
 {
-   CSpecMainSheet* pParent = (CSpecMainSheet*)GetParent();
-   int show = ( pParent->m_Entry.GetLossMethod() == pgsTypes::TIME_STEP ? SW_SHOW : SW_HIDE);
+   CSpecMainSheet* pDad = (CSpecMainSheet*)GetParent();
+   int show = ( pDad->m_Entry.GetLossMethod() == pgsTypes::TIME_STEP ? SW_SHOW : SW_HIDE);
    GetDlgItem(IDC_FC_GROUP)->ShowWindow(show);
    GetDlgItem(IDC_FC1)->ShowWindow(show);
    GetDlgItem(IDC_FC2)->ShowWindow(show);
+
+   // deal with 2017 crosswalk
+   CWnd* pWnd = GetDlgItem(IDC_SSPLITTING);
+   pWnd->SetWindowText(CString(_T("Splitting Resistance (")) + pDad->LrfdCw8th(_T("5.10.10.1"),_T("5.9.4.4.1")) + _T(")"));
+
+   pWnd = GetDlgItem(IDC_SCONFINEMENT);
+   pWnd->SetWindowText(CString(_T("Confinement Reinforcement (")) + pDad->LrfdCw8th(_T("5.10.10.2"),_T("5.9.4.4.2")) + _T(")"));
+
+   pWnd = GetDlgItem(IDC_FC1);
+   pWnd->SetWindowText(CString(_T("Use f'ci and f'c at the time of loading (")) + pDad->LrfdCw8th(_T("5.14.1.3.2d and 5.14.1.3.3"),_T("5.12.3.4.2d and 5.12.3.4.3")) + _T(")"));
 
    return CPropertyPage::OnSetActive();
 }

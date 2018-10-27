@@ -87,6 +87,11 @@ protected:
 
    // GROUP: ACCESS
    // GROUP: INQUIRY
+   rptRcTable* Build_XY(IBroker* pBroker, const CSegmentKey& segmentKey, IntervalIndexType intervalIdx,
+      IEAFDisplayUnits* pDisplayUnits) const;
+
+   rptRcTable* Build_Y(IBroker* pBroker, const CSegmentKey& segmentKey, IntervalIndexType intervalIdx,
+      IEAFDisplayUnits* pDisplayUnits) const;
 
 private:
    // GROUP: DATA MEMBERS

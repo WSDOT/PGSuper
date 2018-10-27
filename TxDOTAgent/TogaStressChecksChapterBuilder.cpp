@@ -99,8 +99,8 @@ rptChapter* CTogaStressChecksChapterBuilder::Build(CReportSpecification* pRptSpe
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType releaseIntervalIdx       = pIntervals->GetPrestressReleaseInterval(segmentKey);
-   IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval();
-   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
+   IntervalIndexType castDeckIntervalIdx      = pIntervals->GetLastNoncompositeInterval();
+   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetLastCompositeInterval();
    IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval();
 
 
@@ -184,8 +184,8 @@ void CTogaStressChecksChapterBuilder::BuildTable(rptChapter* pChapter, IBroker* 
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType releaseIntervalIdx       = pIntervals->GetPrestressReleaseInterval(fabrSegmentKey);
-   IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval();
-   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
+   IntervalIndexType castDeckIntervalIdx      = pIntervals->GetLastNoncompositeInterval();
+   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetLastCompositeInterval();
    IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval();
 
    GET_IFACE2_NOCHECK(pBroker,IAllowableConcreteStress,pAllowable);

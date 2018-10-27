@@ -1,6 +1,6 @@
 // PGSuperExporter.cpp : Implementation of CPGSuperExporter
 #include "stdafx.h"
-#include "KDOTExport_i.h"
+#include "KDOTExport.h"
 #include "PGSuperDataExporter.h"
 #include "ExportDlg.h"
 
@@ -78,19 +78,19 @@ STDMETHODIMP CPGSuperDataExporter::Init(UINT nCmdID)
    return S_OK;
 }
 
-STDMETHODIMP CPGSuperDataExporter::GetMenuText(BSTR*  bstrText)
+STDMETHODIMP CPGSuperDataExporter::GetMenuText(BSTR*  bstrText) const
 {
    *bstrText = CComBSTR("KDOT CAD Data...");
    return S_OK;
 }
 
-STDMETHODIMP CPGSuperDataExporter::GetBitmapHandle(HBITMAP* phBmp)
+STDMETHODIMP CPGSuperDataExporter::GetBitmapHandle(HBITMAP* phBmp) const
 {
    *phBmp = m_bmpLogo;
    return S_OK;
 }
 
-STDMETHODIMP CPGSuperDataExporter::GetCommandHintText(BSTR*  bstrText)
+STDMETHODIMP CPGSuperDataExporter::GetCommandHintText(BSTR*  bstrText) const
 {
    *bstrText = CComBSTR("Export PGSuper data to KDOT CAD XML format\nExport PGSuper data to KDOT CAD format");
    return S_OK;   
@@ -497,22 +497,23 @@ HRESULT CPGSuperDataExporter::Export(IBroker* pBroker,CString& strFileName, cons
          gd.IsPrismatic(bIsPrismatic_Final);
 
          // Take sample at mid-span
-         std::vector<pgsPointOfInterest> vPoi(pPoi->GetPointsOfInterest(segmentKey,POI_ERECTED_SEGMENT | POI_5L));
-         ATLASSERT(vPoi.size() == 1);
-         pgsPointOfInterest mid_poi(vPoi.front());
+         PoiList vPoi;
+         pPoi->GetPointsOfInterest(segmentKey, POI_0L | POI_5L | POI_ERECTED_SEGMENT, &vPoi);
+         ATLASSERT(vPoi.size() == 2);
+         const pgsPointOfInterest& end_poi(vPoi.front()); // poi at left end
+         const pgsPointOfInterest& mid_poi(vPoi.back()); // poi at mid-span
 
-         pgsPointOfInterest end_poi(segmentKey,0.0); // Left end of girder
 
           // Non-composite properties
          dval = pSectProp->GetAg(releaseIntervalIdx,mid_poi);
          dval = ::ConvertFromSysUnits(dval, unitMeasure::Inch2);
          gd.Area(dval);
 
-         dval = pSectProp->GetIx(releaseIntervalIdx,mid_poi);
+         dval = pSectProp->GetIxx(releaseIntervalIdx,mid_poi);
          dval = ::ConvertFromSysUnits(dval, unitMeasure::Inch4);
          gd.Ix(dval);
 
-         dval = pSectProp->GetIy(releaseIntervalIdx,mid_poi);
+         dval = pSectProp->GetIyy(releaseIntervalIdx,mid_poi);
          dval = ::ConvertFromSysUnits(dval, unitMeasure::Inch4);
          gd.Iy(dval);
 
@@ -553,11 +554,11 @@ HRESULT CPGSuperDataExporter::Export(IBroker* pBroker,CString& strFileName, cons
          dval = ::ConvertFromSysUnits(dval, unitMeasure::Inch2);
          gd.Area_c(dval);
 
-         dval = pSectProp->GetIx(finalIntervalIdx,mid_poi);
+         dval = pSectProp->GetIxx(finalIntervalIdx,mid_poi);
          dval = ::ConvertFromSysUnits(dval, unitMeasure::Inch4);
          gd.Ix_c(dval);
 
-         dval = pSectProp->GetIy(finalIntervalIdx,mid_poi);
+         dval = pSectProp->GetIyy(finalIntervalIdx,mid_poi);
          dval = ::ConvertFromSysUnits(dval, unitMeasure::Inch4);
          gd.Iy_c(dval);
 
@@ -1044,45 +1045,11 @@ HRESULT CPGSuperDataExporter::Export(IBroker* pBroker,CString& strFileName, cons
 
 //////////////////////////////////////////////////
 // IPGSDocumentation
-STDMETHODIMP CPGSuperDataExporter::GetDocumentationSetName(BSTR* pbstrName)
+STDMETHODIMP CPGSuperDataExporter::GetDocumentationSetName(BSTR* pbstrName) const
 {
    CComBSTR bstrDocSetName(_T("KDOT"));
    bstrDocSetName.CopyTo(pbstrName);
    return S_OK;
-}
-
-CString CPGSuperDataExporter::GetDocumentationURL()
-{
-   CComBSTR bstrDocSetName;
-   GetDocumentationSetName(&bstrDocSetName);
-   CString strDocSetName(OLE2T(bstrDocSetName));
-
-   CEAFApp* pApp = EAFGetApp();
-   CString strDocumentationRootLocation = pApp->GetDocumentationRootLocation();
-
-   CString strDocumentationURL;
-   strDocumentationURL.Format(_T("%s%s/"),strDocumentationRootLocation,strDocSetName);
-
-   AFX_MANAGE_STATE(AfxGetStaticModuleState());
-
-   CVersionInfo verInfo;
-   CString strAppName = AfxGetAppName(); // needs module state
-   strAppName += _T(".dll");
-   verInfo.Load(strAppName);
-
-   CString strVersion = verInfo.GetProductVersionAsString();
-
-   // remove the build and release number
-   int pos = strVersion.ReverseFind(_T('.')); // find the last '.'
-   strVersion = strVersion.Left(pos);
-   pos = strVersion.ReverseFind(_T('.')); // find the last '.'
-   strVersion = strVersion.Left(pos);
-
-   CString strURL;
-   strURL.Format(_T("%s%s/"),strDocumentationURL,strVersion);
-   strDocumentationURL = strURL;
-
-   return strDocumentationURL;
 }
 
 STDMETHODIMP CPGSuperDataExporter::LoadDocumentationMap()
@@ -1102,9 +1069,9 @@ STDMETHODIMP CPGSuperDataExporter::LoadDocumentationMap()
    return S_OK;
 }
 
-STDMETHODIMP CPGSuperDataExporter::GetDocumentLocation(UINT nHID,BSTR* pbstrURL)
+STDMETHODIMP CPGSuperDataExporter::GetDocumentLocation(UINT nHID,BSTR* pbstrURL) const
 {
-   std::map<UINT,CString>::iterator found = m_HelpTopics.find(nHID);
+   auto found = m_HelpTopics.find(nHID);
    if ( found == m_HelpTopics.end() )
    {
       return E_FAIL;
@@ -1115,4 +1082,38 @@ STDMETHODIMP CPGSuperDataExporter::GetDocumentLocation(UINT nHID,BSTR* pbstrURL)
    CComBSTR bstrURL(strURL);
    bstrURL.CopyTo(pbstrURL);
    return S_OK;
+}
+
+CString CPGSuperDataExporter::GetDocumentationURL() const
+{
+   CComBSTR bstrDocSetName;
+   GetDocumentationSetName(&bstrDocSetName);
+   CString strDocSetName(OLE2T(bstrDocSetName));
+
+   CEAFApp* pApp = EAFGetApp();
+   CString strDocumentationRootLocation = pApp->GetDocumentationRootLocation();
+
+   CString strDocumentationURL;
+   strDocumentationURL.Format(_T("%s%s/"), strDocumentationRootLocation, strDocSetName);
+
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
+   CVersionInfo verInfo;
+   CString strAppName = AfxGetAppName(); // needs module state
+   strAppName += _T(".dll");
+   verInfo.Load(strAppName);
+
+   CString strVersion = verInfo.GetProductVersionAsString();
+
+   // remove the build and release number
+   int pos = strVersion.ReverseFind(_T('.')); // find the last '.'
+   strVersion = strVersion.Left(pos);
+   pos = strVersion.ReverseFind(_T('.')); // find the last '.'
+   strVersion = strVersion.Left(pos);
+
+   CString strURL;
+   strURL.Format(_T("%s%s/"), strDocumentationURL, strVersion);
+   strDocumentationURL = strURL;
+
+   return strDocumentationURL;
 }

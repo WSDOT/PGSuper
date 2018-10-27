@@ -474,7 +474,7 @@ void pgsKdotHaulingAnalysisArtifact::BuildHaulingCheckReport(const CSegmentKey& 
 {
    rptParagraph* pTitle = new rptParagraph( rptStyleManager::GetHeadingStyle() );
    *pChapter << pTitle;
-   *pTitle << _T("Check for Hauling to Bridge Site [5.9.4.1]")<<rptNewLine;
+   *pTitle << _T("Check for Hauling to Bridge Site [") << LrfdCw8th(_T("5.9.4.1"),_T("5.9.2.3.1")) << _T("]")<<rptNewLine;
    *pTitle << _T("Hauling Stresses for Girder with KDOT Dynamic Effects")<<rptNewLine;
 
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
@@ -755,7 +755,7 @@ void pgsKdotHaulingAnalysisArtifact::BuildHaulingDetailsReport(const CSegmentKey
 
    rptParagraph* pTitle = new rptParagraph( rptStyleManager::GetHeadingStyle() );
    *pChapter << pTitle;
-   *pTitle << _T("Details for Check for Hauling to Bridge Site [5.9.4.1]")<<rptNewLine;
+   *pTitle << _T("Details for Check for Hauling to Bridge Site [") << LrfdCw8th(_T("5.9.4.1"),_T("5.9.2.3.1")) << _T("]")<<rptNewLine;
 
    rptParagraph* p = new rptParagraph;
    *pChapter << p;
@@ -892,7 +892,7 @@ void pgsKdotHaulingAnalysisArtifact::BuildRebarTable(IBroker* pBroker,rptChapter
    rptParagraph* p = new rptParagraph;
    *pChapter << p;
 
-   std::_tstring tablename(_T("Rebar Requirements for Tension stress limit [C5.9.4.1.2] - Hauling"));
+   std::_tstring tablename(_T("Rebar Requirements for Tension stress limit [") + std::_tstring(LrfdCw8th(_T("C5.9.4.1.2"),_T("C5.9.2.3.1b"))) + _T("] - Hauling"));
 
    rptRcTable* pTable = rptStyleManager::CreateDefaultTable(10,tablename);
    *p << pTable << rptNewLine;
@@ -979,16 +979,16 @@ void pgsKdotHaulingAnalysisArtifact::Write1250Data(const CSegmentKey& segmentKey
 {
    GET_IFACE2(pBroker,ISegmentHaulingPointsOfInterest,pSegmentHaulingPointsOfInterest);
 
-   std::vector<pgsPointOfInterest> vPoi(pSegmentHaulingPointsOfInterest->GetHaulingPointsOfInterest(segmentKey,POI_HAUL_SEGMENT | POI_BUNKPOINT | POI_5L));
-   std::vector<pgsPointOfInterest> vPoi2(pSegmentHaulingPointsOfInterest->GetHaulingPointsOfInterest(segmentKey,POI_HARPINGPOINT));
-   vPoi.insert(vPoi.end(),vPoi2.begin(),vPoi2.end());
-   std::sort(vPoi.begin(),vPoi.end());
+   PoiList vPoi;
+   pSegmentHaulingPointsOfInterest->GetHaulingPointsOfInterest(segmentKey, POI_HAUL_SEGMENT | POI_BUNKPOINT | POI_5L, &vPoi);
+   PoiList vPoi2;
+   pSegmentHaulingPointsOfInterest->GetHaulingPointsOfInterest(segmentKey, POI_HARPINGPOINT, &vPoi2);
 
-   std::vector<pgsPointOfInterest>::const_iterator poiIter(vPoi.begin());
-   std::vector<pgsPointOfInterest>::const_iterator poiIterEnd(vPoi.end());
-   for ( ; poiIter != poiIterEnd; poiIter++ )
+   GET_IFACE2(pBroker, IPointOfInterest, pPoi);
+   pPoi->MergePoiLists(vPoi, vPoi2, &vPoi);
+
+   for (const pgsPointOfInterest& poi : vPoi)
    {
-      const pgsPointOfInterest& poi(*poiIter);
       Float64 loc = poi.GetDistFromStart();
 
       const pgsKdotHaulingStressAnalysisArtifact* pStress = GetHaulingStressAnalysisArtifact(poi);

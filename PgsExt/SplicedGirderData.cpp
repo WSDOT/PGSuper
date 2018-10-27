@@ -63,21 +63,7 @@ static char THIS_FILE[] = __FILE__;
 
 CSplicedGirderData::CSplicedGirderData()
 {
-   m_GirderIndex                   = INVALID_INDEX;
-   m_GirderID                      = INVALID_ID;
-
-   m_GirderGroupIndex              = INVALID_INDEX;
-   m_PierIndex[pgsTypes::metStart] = INVALID_INDEX;
-   m_PierIndex[pgsTypes::metEnd]   = INVALID_INDEX;
-
-   m_PTData.SetGirder(this);
-
-   m_pGirderGroup = nullptr;
-   
-   m_pGirderLibraryEntry = nullptr;
-
-   m_ConditionFactor = 1.0;
-   m_ConditionFactorType = pgsTypes::cfGood;
+   Init();
 
    Resize(1); 
 
@@ -86,21 +72,7 @@ CSplicedGirderData::CSplicedGirderData()
 
 CSplicedGirderData::CSplicedGirderData(const CSplicedGirderData& rOther)
 {
-   m_GirderIndex                   = INVALID_INDEX;
-   m_GirderID                      = INVALID_ID;
-
-   m_GirderGroupIndex              = INVALID_INDEX;
-   m_PierIndex[pgsTypes::metStart] = INVALID_INDEX;
-   m_PierIndex[pgsTypes::metEnd]   = INVALID_INDEX;
-
-   m_PTData.SetGirder(this);
-
-   m_pGirderGroup = nullptr;
-   
-   m_pGirderLibraryEntry = nullptr;
-
-   m_ConditionFactor = 1.0;
-   m_ConditionFactorType = pgsTypes::cfGood;
+   Init();
 
    m_bCreatingNewGirder = false;
    MakeCopy(rOther,true);
@@ -108,21 +80,11 @@ CSplicedGirderData::CSplicedGirderData(const CSplicedGirderData& rOther)
 
 CSplicedGirderData::CSplicedGirderData(CGirderGroupData* pGirderGroup,GirderIndexType gdrIdx,GirderIDType gdrID,const CSplicedGirderData& rOther)
 {
+   Init();
+
    m_GirderIndex                   = gdrIdx;
    m_GirderID                      = gdrID;
-
-   m_GirderGroupIndex              = INVALID_INDEX;
-   m_PierIndex[pgsTypes::metStart] = INVALID_INDEX;
-   m_PierIndex[pgsTypes::metEnd]   = INVALID_INDEX;
-
-   m_PTData.SetGirder(this);
-
    m_pGirderGroup = pGirderGroup;
-   
-   m_pGirderLibraryEntry = nullptr;
-
-   m_ConditionFactor = 1.0;
-   m_ConditionFactorType = pgsTypes::cfGood;
 
    m_bCreatingNewGirder = true;
    MakeCopy(rOther,true);
@@ -131,21 +93,9 @@ CSplicedGirderData::CSplicedGirderData(CGirderGroupData* pGirderGroup,GirderInde
 
 CSplicedGirderData::CSplicedGirderData(CGirderGroupData* pGirderGroup)
 {
-   m_GirderIndex                   = INVALID_INDEX;
-   m_GirderID                      = INVALID_ID;
-
-   m_GirderGroupIndex              = INVALID_INDEX;
-   m_PierIndex[pgsTypes::metStart] = INVALID_INDEX;
-   m_PierIndex[pgsTypes::metEnd]   = INVALID_INDEX;
-
-   m_PTData.SetGirder(this);
+   Init();
 
    m_pGirderGroup = pGirderGroup;
-   
-   m_pGirderLibraryEntry = nullptr;
-
-   m_ConditionFactor = 1.0;
-   m_ConditionFactorType = pgsTypes::cfGood;
 
    Resize(1);
    m_bCreatingNewGirder = false;
@@ -155,6 +105,31 @@ CSplicedGirderData::~CSplicedGirderData()
 {
    DeleteSegments();
    DeleteClosures();
+}
+
+void CSplicedGirderData::Init()
+{
+   m_GirderIndex = INVALID_INDEX;
+   m_GirderID = INVALID_ID;
+
+   m_GirderGroupIndex = INVALID_INDEX;
+   m_PierIndex[pgsTypes::metStart] = INVALID_INDEX;
+   m_PierIndex[pgsTypes::metEnd] = INVALID_INDEX;
+
+   m_PTData.SetGirder(this);
+
+   m_pGirderGroup = nullptr;
+
+   m_pGirderLibraryEntry = nullptr;
+
+   m_ConditionFactor = 1.0;
+   m_ConditionFactorType = pgsTypes::cfGood;
+
+   m_TopWidthType = pgsTypes::twtSymmetric;
+   m_LeftTopWidth[pgsTypes::metStart] = 0;
+   m_RightTopWidth[pgsTypes::metStart] = 0;
+   m_LeftTopWidth[pgsTypes::metEnd] = 0;
+   m_RightTopWidth[pgsTypes::metEnd] = 0;
 }
 
 void CSplicedGirderData::Clear()
@@ -226,9 +201,10 @@ void CSplicedGirderData::Resize(SegmentIndexType nSegments)
          }
 
          CPrecastSegmentData* pNewSegment = new CPrecastSegmentData(this);
-         if ( m_pGirderGroup && m_pGirderGroup->GetBridgeDescription() )
+         CBridgeDescription2* pBridgeDesc = GetBridgeDescription();
+         if ( pBridgeDesc )
          {
-            pNewSegment->SetID( m_pGirderGroup->GetBridgeDescription()->GetNextSegmentID() );
+            pNewSegment->SetID( pBridgeDesc->GetNextSegmentID() );
          }
          m_Segments.push_back(pNewSegment);
       }
@@ -259,7 +235,8 @@ void CSplicedGirderData::CopySplicedGirderData(const CSplicedGirderData* pGirder
 
 bool CSplicedGirderData::operator==(const CSplicedGirderData& rOther) const
 {
-   if ( !m_pGirderGroup->GetBridgeDescription()->UseSameGirderForEntireBridge() && m_GirderType != rOther.m_GirderType )
+   const CBridgeDescription2* pBridgeDesc = GetBridgeDescription();
+   if ( !pBridgeDesc->UseSameGirderForEntireBridge() && m_GirderType != rOther.m_GirderType )
    {
       return false;
    }
@@ -267,6 +244,28 @@ bool CSplicedGirderData::operator==(const CSplicedGirderData& rOther) const
    if ( m_PTData != rOther.m_PTData )
    {
       return false;
+   }
+
+   if (pBridgeDesc->GetGirderSpacingType() == pgsTypes::sbsGeneralAdjacentWithTopWidth)
+   {
+      if (m_TopWidthType != rOther.m_TopWidthType)
+      {
+         return false;
+      }
+
+      for (int i = 0; i < 2; i++)
+      {
+         pgsTypes::MemberEndType endType = (pgsTypes::MemberEndType)i;
+         if (!IsEqual(m_LeftTopWidth[endType], rOther.m_LeftTopWidth[endType]))
+         {
+            return false;
+         }
+
+         if (m_TopWidthType == pgsTypes::twtAsymmetric && !IsEqual(m_RightTopWidth[endType], rOther.m_RightTopWidth[endType]))
+         {
+            return false;
+         }
+      }
    }
 
    CollectionIndexType nSegments = m_Segments.size();
@@ -318,6 +317,14 @@ void CSplicedGirderData::MakeCopy(const CSplicedGirderData& rOther,bool bCopyDat
    m_GirderGroupIndex = rOther.GetGirderGroupIndex();
    m_PierIndex[pgsTypes::metStart] = rOther.GetPierIndex(pgsTypes::metStart);
    m_PierIndex[pgsTypes::metEnd]   = rOther.GetPierIndex(pgsTypes::metEnd);
+
+   m_TopWidthType = rOther.m_TopWidthType;
+   for (int i = 0; i < 2; i++)
+   {
+      pgsTypes::MemberEndType endType = (pgsTypes::MemberEndType)(i);
+      m_LeftTopWidth[endType] = rOther.m_LeftTopWidth[endType];
+      m_RightTopWidth[endType] = rOther.m_RightTopWidth[endType];
+   }
 
    m_PTData = rOther.m_PTData;
 
@@ -404,11 +411,12 @@ void CSplicedGirderData::MakeAssignment(const CSplicedGirderData& rOther)
 
 HRESULT CSplicedGirderData::Save(IStructuredSave* pStrSave,IProgress* pProgress)
 {
-   pStrSave->BeginUnit(_T("Girder"),1.0);
+   pStrSave->BeginUnit(_T("Girder"),3.0);
 
    pStrSave->put_Property(_T("ID"),CComVariant(m_GirderID));
 
-   if ( !m_pGirderGroup->GetBridgeDescription()->UseSameGirderForEntireBridge() )
+   CBridgeDescription2* pBridgeDesc = GetBridgeDescription();
+   if ( !pBridgeDesc->UseSameGirderForEntireBridge() )
    {
       pStrSave->put_Property(_T("GirderType"),CComVariant(m_GirderType.c_str()));
    }
@@ -425,6 +433,22 @@ HRESULT CSplicedGirderData::Save(IStructuredSave* pStrSave,IProgress* pProgress)
       {
          m_Closures[segIdx]->Save(pStrSave,pProgress);
       }
+   }
+
+   if (pBridgeDesc->GetGirderSpacingType() == pgsTypes::sbsGeneralAdjacentWithTopWidth)
+   {
+      // added in version 2... changed to start/end in version 3
+      pStrSave->put_Property(_T("TopWidthType"), CComVariant(m_TopWidthType));
+
+      pStrSave->BeginUnit(_T("TopWidthStartOfSpan"), 1.0);
+      pStrSave->put_Property(_T("LeftTopWidth"), CComVariant(m_LeftTopWidth[pgsTypes::metStart]));
+      pStrSave->put_Property(_T("RightTopWidth"), CComVariant(m_RightTopWidth[pgsTypes::metStart]));
+      pStrSave->EndUnit(); // TopWidthStartOfSpan
+
+      pStrSave->BeginUnit(_T("TopWidthEndOfSpan"), 1.0);
+      pStrSave->put_Property(_T("LeftTopWidth"), CComVariant(m_LeftTopWidth[pgsTypes::metEnd]));
+      pStrSave->put_Property(_T("RightTopWidth"), CComVariant(m_RightTopWidth[pgsTypes::metEnd]));
+      pStrSave->EndUnit(); // TopWidthEndOfSpan
    }
 
    pStrSave->put_Property(_T("ConditionFactorType"),CComVariant(m_ConditionFactorType));
@@ -447,7 +471,10 @@ HRESULT CSplicedGirderData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
    {
       hr = pStrLoad->BeginUnit(_T("Girder"));
 
-      CBridgeDescription2* pBridgeDesc = m_pGirderGroup->GetBridgeDescription();
+      Float64 version;
+      pStrLoad->get_Version(&version);
+
+      CBridgeDescription2* pBridgeDesc = GetBridgeDescription();
 
       CComVariant var;
       var.vt = VT_ID;
@@ -496,6 +523,50 @@ HRESULT CSplicedGirderData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
          }
       }
 
+      if (1 < version && pBridgeDesc->GetGirderSpacingType() == pgsTypes::sbsGeneralAdjacentWithTopWidth)
+      {
+         // added in version 2.. changed to Start/End in version 3
+         var.vt = VT_I8;
+         hr = pStrLoad->get_Property(_T("TopWidthType"), &var);
+         m_TopWidthType = (pgsTypes::TopWidthType)(var.lVal);
+
+         if (version < 3)
+         {
+            var.vt = VT_R8;
+            hr = pStrLoad->get_Property(_T("LeftTopWidth"), &var);
+            m_LeftTopWidth[pgsTypes::metStart] = var.dblVal;
+
+            var.vt = VT_R8;
+            hr = pStrLoad->get_Property(_T("RightTopWidth"), &var);
+            m_RightTopWidth[pgsTypes::metStart] = var.dblVal;
+
+            m_LeftTopWidth[pgsTypes::metEnd]  = m_LeftTopWidth[pgsTypes::metStart];
+            m_RightTopWidth[pgsTypes::metEnd] = m_RightTopWidth[pgsTypes::metStart];
+         }
+         else
+         {
+            hr = pStrLoad->BeginUnit(_T("TopWidthStartOfSpan"));
+            var.vt = VT_R8;
+            hr = pStrLoad->get_Property(_T("LeftTopWidth"), &var);
+            m_LeftTopWidth[pgsTypes::metStart] = var.dblVal;
+
+            var.vt = VT_R8;
+            hr = pStrLoad->get_Property(_T("RightTopWidth"), &var);
+            m_RightTopWidth[pgsTypes::metStart] = var.dblVal;
+            hr = pStrLoad->EndUnit(); // TopWidthStartOfSpan
+
+
+            hr = pStrLoad->BeginUnit(_T("TopWidthEndOfSpan"));
+            var.vt = VT_R8;
+            hr = pStrLoad->get_Property(_T("LeftTopWidth"), &var);
+            m_LeftTopWidth[pgsTypes::metEnd] = var.dblVal;
+
+            var.vt = VT_R8;
+            hr = pStrLoad->get_Property(_T("RightTopWidth"), &var);
+            m_RightTopWidth[pgsTypes::metEnd] = var.dblVal;
+            hr = pStrLoad->EndUnit(); // TopWidthEndOfSpan
+         }
+      }
 
       var.vt = VT_I8;
       hr = pStrLoad->get_Property(_T("ConditionFactorType"),&var);
@@ -669,9 +740,10 @@ void CSplicedGirderData::UpdateLinks()
 void CSplicedGirderData::UpdateSegments()
 {
    // Assigns the span where each segment starts/ends to the segment
+   CBridgeDescription2* pBridgeDesc = GetBridgeDescription();
 
    // If girder is not part of a group, or group is not part of a bridge, then this can't be done
-   if ( m_pGirderGroup == nullptr || m_pGirderGroup->GetBridgeDescription() == nullptr )
+   if ( pBridgeDesc == nullptr )
    {
       return;
    }
@@ -730,7 +802,7 @@ void CSplicedGirderData::UpdateSegments()
 
       if ( pSegment->GetID() == INVALID_ID )
       {
-         pSegment->SetID(m_pGirderGroup->GetBridgeDescription()->GetNextSegmentID());
+         pSegment->SetID(pBridgeDesc->GetNextSegmentID());
       }
    }
 
@@ -811,9 +883,10 @@ const CClosureJointData* CSplicedGirderData::GetClosureJoint(CollectionIndexType
 
 LPCTSTR CSplicedGirderData::GetGirderName() const
 {
-   if ( m_pGirderGroup && m_pGirderGroup->GetBridgeDescription() && m_pGirderGroup->GetBridgeDescription()->UseSameGirderForEntireBridge() )
+   const CBridgeDescription2* pBridgeDesc = GetBridgeDescription();
+   if ( pBridgeDesc && pBridgeDesc->UseSameGirderForEntireBridge() )
    {
-      return m_pGirderGroup->GetBridgeDescription()->GetGirderName();
+      return pBridgeDesc->GetGirderName();
    }
    else
    {
@@ -833,14 +906,10 @@ void CSplicedGirderData::SetGirderName(LPCTSTR strName)
 const GirderLibraryEntry* CSplicedGirderData::GetGirderLibraryEntry() const
 {
    const GirderLibraryEntry* pLibEntry = m_pGirderLibraryEntry;
-   const CBridgeDescription2* pBridgeDesc = nullptr;
-   if ( m_pGirderGroup )
+   const CBridgeDescription2* pBridgeDesc = GetBridgeDescription();
+   if ( pBridgeDesc && pBridgeDesc->UseSameGirderForEntireBridge() )
    {
-      pBridgeDesc = m_pGirderGroup->GetBridgeDescription();
-      if ( pBridgeDesc && pBridgeDesc->UseSameGirderForEntireBridge() )
-      {
-         pLibEntry = pBridgeDesc->GetGirderLibraryEntry();
-      }
+      pLibEntry = pBridgeDesc->GetGirderLibraryEntry();
    }
 
    return pLibEntry;
@@ -889,6 +958,68 @@ void CSplicedGirderData::SetGirderLibraryEntry(const GirderLibraryEntry* pEntry)
          } // if spliced girder
       } // if not null
    } // if lib entry different
+}
+
+void CSplicedGirderData::SetTopWidth(pgsTypes::TopWidthType type,Float64 leftStart,Float64 rightStart,Float64 leftEnd,Float64 rightEnd)
+{
+   m_TopWidthType = type;
+   m_LeftTopWidth[pgsTypes::metStart] = leftStart;
+   m_RightTopWidth[pgsTypes::metStart] = rightStart;
+
+   m_LeftTopWidth[pgsTypes::metEnd] = leftEnd;
+   m_RightTopWidth[pgsTypes::metEnd] = rightEnd;
+}
+
+void CSplicedGirderData::GetTopWidth(pgsTypes::TopWidthType* pType,Float64* pLeftStart,Float64* pRightStart,Float64* pLeftEnd,Float64* pRightEnd) const
+{
+   const CBridgeDescription2* pBridgeDesc = GetBridgeDescription();
+   if (pBridgeDesc && pBridgeDesc->GetGirderSpacingType() == pgsTypes::sbsUniformAdjacentWithTopWidth)
+   {
+      pBridgeDesc->GetGirderTopWidth(pType,pLeftStart,pRightStart);
+      *pLeftEnd = *pLeftStart;
+      *pRightEnd = *pRightStart;
+   }
+   else
+   {
+      *pType = m_TopWidthType;
+      *pLeftStart = m_LeftTopWidth[pgsTypes::metStart];
+      *pRightStart = m_RightTopWidth[pgsTypes::metStart];
+      *pLeftEnd = m_LeftTopWidth[pgsTypes::metEnd];
+      *pRightEnd = m_RightTopWidth[pgsTypes::metEnd];
+   }
+}
+
+Float64 CSplicedGirderData::GetTopWidth(pgsTypes::MemberEndType endType,Float64* pLeft,Float64* pRight) const
+{
+   pgsTypes::TopWidthType type;
+   Float64 left[2], right[2];
+   GetTopWidth(&type, &left[pgsTypes::metStart], &right[pgsTypes::metStart], &left[pgsTypes::metEnd], &right[pgsTypes::metEnd]);
+
+   Float64 width;
+   switch (type)
+   {
+   case pgsTypes::twtSymmetric:
+   case pgsTypes::twtCenteredCG:
+      width = left[endType];
+      *pLeft = width / 2;
+      *pRight = *pLeft;
+      break;
+
+   case pgsTypes::twtAsymmetric:
+      width = left[endType] + right[endType];
+      *pLeft = left[endType];
+      *pRight = right[endType];
+      break;
+      
+   default:
+      ATLASSERT(false); // should never get here... assume full
+      width = left[endType];
+      *pLeft = width / 2;
+      *pRight = *pLeft;
+      break;
+   }
+
+   return width;
 }
 
 Float64 CSplicedGirderData::GetConditionFactor() const
@@ -1704,15 +1835,32 @@ void CSplicedGirderData::Initialize()
    m_Segments.push_back(pSegment);
 }
 
+CBridgeDescription2* CSplicedGirderData::GetBridgeDescription()
+{
+   if (m_pGirderGroup)
+   {
+      return m_pGirderGroup->GetBridgeDescription();
+   }
+
+   return nullptr;
+}
+
+const CBridgeDescription2* CSplicedGirderData::GetBridgeDescription() const
+{
+   if (m_pGirderGroup)
+   {
+      return m_pGirderGroup->GetBridgeDescription();
+   }
+
+   return nullptr;
+}
+
 CTimelineManager* CSplicedGirderData::GetTimelineManager()
 {
-   if ( m_pGirderGroup )
+   CBridgeDescription2* pBridgeDesc = GetBridgeDescription();
+   if ( pBridgeDesc )
    {
-      CBridgeDescription2* pBridgeDesc = m_pGirderGroup->GetBridgeDescription();
-      if ( pBridgeDesc )
-      {
-         return pBridgeDesc->GetTimelineManager();
-      }
+      return pBridgeDesc->GetTimelineManager();
    }
 
    return nullptr;

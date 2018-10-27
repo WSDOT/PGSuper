@@ -95,7 +95,7 @@ public:
                        Float64 leftOH,Float64 glen,Float64 rightOH,
                        Float64 E, 
                        PoiAttributeType poiReference,
-                       const std::vector<pgsPointOfInterest>& rpoiVec,
+                       const PoiList& rpoiVec,
                        std::vector<Float64>* pmomVec, Float64* pMidSpanDeflection);
 
    // GROUP: ACCESS

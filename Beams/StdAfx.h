@@ -46,14 +46,6 @@ extern CComModule _Module;
 
 #include <WBFLAtlExt.h>
 
-
-#include <WBFLCore.h>
-#include <WBFLTools.h>
-#include <WBFLGeometry.h>
-#include <WBFLSections.h>
-#include <WBFLCogo.h>
-#include <WBFLGenericBridge.h>
-
 static const Float64 SPACING_TOLER=::ConvertToSysUnits( 1.0,unitMeasure::Millimeter);
 
 //{{AFX_INSERT_LOCATION}}

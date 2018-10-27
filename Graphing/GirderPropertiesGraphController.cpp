@@ -69,19 +69,74 @@ BOOL CGirderPropertiesGraphController::OnInitDialog()
    GET_IFACE(ISectionProperties,pSectProp);
    m_SectionPropertyType = (pSectProp->GetSectionPropertiesMode() == pgsTypes::spmGross ? pgsTypes::sptGross : pgsTypes::sptTransformed );
 
-   CheckRadioButton(IDC_TRANSFORMED,IDC_NET_DECK,(m_SectionPropertyType == pgsTypes::spmGross ? 1 : 0) + IDC_TRANSFORMED);
+   CheckRadioButton(IDC_TRANSFORMED,IDC_NET_DECK,(m_SectionPropertyType == pgsTypes::sptGross ? 1 : 0) + IDC_TRANSFORMED);
 
    UpdateSectionPropertyTypeControls();
+
 
    return TRUE;
 }
 
-CGirderPropertiesGraphBuilder::PropertyType CGirderPropertiesGraphController::GetPropertyType()
+bool CGirderPropertiesGraphController::SetPropertyType(CGirderPropertiesGraphBuilder::PropertyType propertyType)
+{
+   GET_IFACE(IDocumentType, pDocType);
+   bool bPGSuperDoc = pDocType->IsPGSuperDocument();
+
+   if (bPGSuperDoc && (propertyType == CGirderPropertiesGraphBuilder::TendonEccentricity || propertyType == CGirderPropertiesGraphBuilder::TendonProfile))
+   {
+      return false; // invalid property type
+   }
+
+   if (m_PropertyType != propertyType)
+   {
+      m_PropertyType = propertyType;
+
+      CComboBox* pcbProperties = (CComboBox*)GetDlgItem(IDC_PROPERTY);
+      int count = pcbProperties->GetCount();
+      for (int i = 0; i < count; i++)
+      {
+         CGirderPropertiesGraphBuilder::PropertyType propType = (CGirderPropertiesGraphBuilder::PropertyType)(pcbProperties->GetItemData(i));
+         if (propType == m_PropertyType)
+         {
+            pcbProperties->SetCurSel(i);
+            break;
+         }
+      }
+
+      ATLASSERT(pcbProperties->GetCurSel() != CB_ERR);
+
+      UpdateSectionPropertyTypeControls();
+      UpdateGraph();
+   }
+
+   return true;
+}
+
+CGirderPropertiesGraphBuilder::PropertyType CGirderPropertiesGraphController::GetPropertyType() const
 {
    return m_PropertyType;
 }
 
-pgsTypes::SectionPropertyType CGirderPropertiesGraphController::GetSectionPropertyType()
+bool CGirderPropertiesGraphController::SetSectionPropertyType(pgsTypes::SectionPropertyType type)
+{
+   if (m_SectionPropertyType != type)
+   {
+      m_SectionPropertyType = type;
+      int nIDC = GetSectionPropertyControlID(m_SectionPropertyType);
+      if (nIDC < 0)
+      {
+         return false;
+      }
+
+      CheckRadioButton(IDC_TRANSFORMED, IDC_NET_DECK, nIDC);
+      UpdateSectionPropertyTypeControls();
+      UpdateGraph();
+   }
+
+   return true;
+}
+
+pgsTypes::SectionPropertyType CGirderPropertiesGraphController::GetSectionPropertyType() const
 {
    return m_SectionPropertyType;
 }
@@ -106,26 +161,52 @@ void CGirderPropertiesGraphController::OnPropertyChanged()
    }
 }
 
-void CGirderPropertiesGraphController::OnSectionPropertiesChanged()
+int CGirderPropertiesGraphController::GetSectionPropertyControlID(pgsTypes::SectionPropertyType type)
 {
-   int i = GetCheckedRadioButton(IDC_TRANSFORMED,IDC_NET_DECK);
-   pgsTypes::SectionPropertyType spType;
-   if ( i == IDC_TRANSFORMED )
+   int nIDC = -1;
+   switch (type)
+   {
+   case pgsTypes::sptTransformed: nIDC = IDC_TRANSFORMED; break;
+   case pgsTypes::sptGross: nIDC = IDC_GROSS; break;
+   case pgsTypes::sptNetGirder: nIDC = IDC_NET_GIRDER; break;
+   case pgsTypes::sptNetDeck: nIDC = IDC_NET_DECK; break;
+   }
+   return nIDC;
+}
+
+pgsTypes::SectionPropertyType CGirderPropertiesGraphController::GetSectionPropertyType(int nIDC)
+{
+   pgsTypes::SectionPropertyType spType = pgsTypes::sptGross;
+   if (nIDC == IDC_TRANSFORMED)
    {
       spType = pgsTypes::sptTransformed;
    }
-   else if ( i == IDC_GROSS )
+   else if (nIDC == IDC_GROSS)
    {
       spType = pgsTypes::sptGross;
    }
-   else if ( i == IDC_NET_GIRDER )
+   else if (nIDC == IDC_NET_GIRDER)
    {
       spType = pgsTypes::sptNetGirder;
    }
-   else if ( i == IDC_NET_DECK )
+   else if (nIDC == IDC_NET_DECK)
    {
       spType = pgsTypes::sptNetDeck;
    }
+#if defined _DEBUG
+   else
+   {
+      ATLASSERT(false); // should never get here
+   }
+#endif
+   return spType;
+}
+
+void CGirderPropertiesGraphController::OnSectionPropertiesChanged()
+{
+   int nIDC = GetCheckedRadioButton(IDC_TRANSFORMED,IDC_NET_DECK);
+   ATLASSERT(nIDC != 0); // 0 means nothing is selected
+   pgsTypes::SectionPropertyType spType = GetSectionPropertyType(nIDC);
 
    if ( spType != m_SectionPropertyType )
    {
@@ -161,15 +242,25 @@ void CGirderPropertiesGraphController::FillPropertyCtrl()
    }
 }
 
+bool CGirderPropertiesGraphController::IsInvariantProperty(CGirderPropertiesGraphBuilder::PropertyType propertyType) const
+{
+   // this properties don't depend on section properties type (gross, transformed, etc)
+   if (propertyType == CGirderPropertiesGraphBuilder::Height ||
+      propertyType == CGirderPropertiesGraphBuilder::TendonProfile ||
+      propertyType == CGirderPropertiesGraphBuilder::EffectiveFlangeWidth ||
+      propertyType == CGirderPropertiesGraphBuilder::Fc ||
+      propertyType == CGirderPropertiesGraphBuilder::Ec
+      )
+   {
+      return true;
+   }
+   return false;
+}
+
 void CGirderPropertiesGraphController::UpdateSectionPropertyTypeControls()
 {
    BOOL bEnable = TRUE;
-   if ( m_PropertyType == CGirderPropertiesGraphBuilder::Height ||
-        m_PropertyType == CGirderPropertiesGraphBuilder::TendonProfile ||
-        m_PropertyType == CGirderPropertiesGraphBuilder::EffectiveFlangeWidth ||
-        m_PropertyType == CGirderPropertiesGraphBuilder::Fc ||
-        m_PropertyType == CGirderPropertiesGraphBuilder::Ec
-      )
+   if ( IsInvariantProperty(m_PropertyType) )
    {
       bEnable = FALSE;
    }
@@ -178,6 +269,12 @@ void CGirderPropertiesGraphController::UpdateSectionPropertyTypeControls()
    GetDlgItem(IDC_GROSS)->EnableWindow(bEnable);
    GetDlgItem(IDC_NET_GIRDER)->EnableWindow(bEnable);
    GetDlgItem(IDC_NET_DECK)->EnableWindow(bEnable);
+
+   GET_IFACE(IBridge, pBridge);
+   if (IsNonstructuralDeck(pBridge->GetDeckType()))
+   {
+      GetDlgItem(IDC_NET_DECK)->EnableWindow(FALSE);
+   }
 }
 
 #ifdef _DEBUG

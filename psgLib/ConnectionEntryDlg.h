@@ -52,7 +52,6 @@ public:
 	//}}AFX_DATA
    Float64 m_GirderEndDistance;
    Float64 m_GirderBearingOffset;
-   Float64 m_SupportWidth;
    Float64 m_DiaphragmHeight;
    Float64 m_DiaphragmWidth;
    ConnectionLibraryEntry::DiaphragmLoadType m_DiaphragmLoadType;

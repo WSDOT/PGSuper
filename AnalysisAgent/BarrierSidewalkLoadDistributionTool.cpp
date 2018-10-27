@@ -342,13 +342,11 @@ void pgsBarrierSidewalkLoadDistributionTool::DistributeBSWLoadToNNearest(pgsType
    std::vector<SwBDist> distances;
    distances.reserve(m_GMSWInterSectionPoints.size());
 
-   GMSWInterSectionIterator iter(m_GMSWInterSectionPoints.begin());
-   GMSWInterSectionIterator iterEnd(m_GMSWInterSectionPoints.end());
-   for ( ; iter != iterEnd; iter++ )
+   for (const auto& sectionPoint : m_GMSWInterSectionPoints)
    {
       Float64 dist;
-      barswIntersect->DistanceEx(iter->m_IntersectionPoint, &dist);
-      distances.push_back(SwBDist(iter->m_Gdr, dist));
+      barswIntersect->DistanceEx(sectionPoint.m_IntersectionPoint, &dist);
+      distances.emplace_back(sectionPoint.m_Gdr, dist);
    }
 
    // We have distances. Now sort them to get N nearest GMSW's
@@ -392,21 +390,17 @@ bool pgsBarrierSidewalkLoadDistributionTool::DistributeSidewalkLoadUnderSw(pgsTy
    std::vector<GirderIndexType> GMSWs_under_sidewalk;
    GMSWs_under_sidewalk.reserve(m_GMSWInterSectionPoints.size());
 
-   GMSWInterSectionIterator it(m_GMSWInterSectionPoints.begin());
-   GMSWInterSectionIterator it_end(m_GMSWInterSectionPoints.end());
-   while(it!= it_end)
+   for ( const auto& sectionPoint : m_GMSWInterSectionPoints)
    {
       Float64 dist;
-      m_GeomUtil->ShortestDistanceToPoint(swLine, it->m_IntersectionPoint, &dist);
+      m_GeomUtil->ShortestDistanceToPoint(swLine, sectionPoint.m_IntersectionPoint, &dist);
 
       dist *= sign; // compensate for left or right sidewalk
 
       if (0.0 <= dist)
       {
-         GMSWs_under_sidewalk.push_back(it->m_Gdr);
+         GMSWs_under_sidewalk.push_back(sectionPoint.m_Gdr);
       }
-
-      it++;
    }
 
    // If we have more than m_nMaxDistributed GMSW's beneath the sidewalk, distribute the load evenly between them
@@ -520,7 +514,7 @@ void pgsBarrierSidewalkLoadDistributionTool::BuildGeometryModel()
          CComPtr<IPoint2d> inters;
          m_GeomUtil->LineLineIntersect(m_RefLine, constrLine, &inters);
 
-         m_GMSWInterSectionPoints.push_back( GMSWInterSectionPoint(gdrIdx, 0, inters) );
+         m_GMSWInterSectionPoints.emplace_back( gdrIdx, 0, inters );
       }
       else 
       {
@@ -540,7 +534,7 @@ void pgsBarrierSidewalkLoadDistributionTool::BuildGeometryModel()
 
                CComPtr<IPoint2d> inters;
                m_GeomUtil->LineLineIntersect(m_RefLine, constrLine, &inters);
-               m_GMSWInterSectionPoints.push_back( GMSWInterSectionPoint(gdrIdx, 0, inters) );
+               m_GMSWInterSectionPoints.emplace_back( gdrIdx, 0, inters );
 
                constrLine->Offset(-offset); // move back to original location
             }
@@ -557,7 +551,7 @@ void pgsBarrierSidewalkLoadDistributionTool::BuildGeometryModel()
 
                CComPtr<IPoint2d> inters;
                m_GeomUtil->LineLineIntersect(m_RefLine, constrLine, &inters);
-               m_GMSWInterSectionPoints.push_back( GMSWInterSectionPoint(gdrIdx, 0, inters) );
+               m_GMSWInterSectionPoints.emplace_back( gdrIdx, 0, inters );
 
                constrLine->Offset(-offset); // move back to original location
             }

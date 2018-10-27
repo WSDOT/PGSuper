@@ -21,6 +21,7 @@
 ///////////////////////////////////////////////////////////////////////
 
 #include "StdAfx.h"
+#include <PgsExt\PgsExtLib.h>
 #include "AlternativeTensileStressCalculator.h"
 #include <IFace\Bridge.h>
 
@@ -113,7 +114,7 @@ Float64 pgsAlternativeTensileStressCalculator::ComputeAlternativeStressRequireme
       m_pMaterials->GetDeckRebarProperties(&Es,&fy,&fu);
    }
 
-   // Max bar stress for computing higher allowable temporary tensile (5.9.4.1.2)
+   // Max bar stress for computing higher allowable temporary tensile [lrfd 5.9.2.3.1b (pre2017: 5.9.4.1.2)]
    Float64 allowable_bar_stress = 0.5*fy;
    if ( m_bLimitBarStress && m_fsMax < allowable_bar_stress )
    {

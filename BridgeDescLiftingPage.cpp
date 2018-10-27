@@ -94,7 +94,7 @@ void CGirderDescLiftingPage::DoDataExchange(CDataExchange* pDX)
    Float64 segmentLength = pBridge->GetSegmentLength(segmentKey);
    DDX_UnitValueAndTag( pDX, IDC_GIRDERLENGTH, IDC_GIRDERLENGTH_UNIT, segmentLength, pDisplayUnits->GetSpanLengthUnit() );
 
-   DDX_KeywordUnitValueAndTag(pDX,IDC_RELEASE_LOCATION,IDC_RELEASE_LOCATION_UNITS,_T("END"),pSegment->HandlingData.LeftReleasePoint, pDisplayUnits->GetSpanLengthUnit() );
+   DDX_KeywordUnitValueAndTag(pDX,IDC_RELEASE_LOCATION,IDC_RELEASE_LOCATION_UNITS,_T("END|BRG"),pSegment->HandlingData.LeftReleasePoint, pDisplayUnits->GetSpanLengthUnit() );
    DDX_UnitValueAndTag( pDX, IDC_LIFTING_LOOP_LOCATION, IDC_LIFTING_LOOP_LOCATION_UNITS, pSegment->HandlingData.LeftLiftPoint, pDisplayUnits->GetSpanLengthUnit() );
    DDX_KeywordUnitValueAndTag(pDX,IDC_STORAGE_LOCATION,IDC_STORAGE_LOCATION_UNITS,_T("BRG"),pSegment->HandlingData.LeftStoragePoint, pDisplayUnits->GetSpanLengthUnit() );
 
@@ -108,7 +108,7 @@ void CGirderDescLiftingPage::DoDataExchange(CDataExchange* pDX)
       pSegment->HandlingData.RightStoragePoint = pSegment->HandlingData.LeftStoragePoint;
    }
 
-   if ( pSegment->HandlingData.LeftReleasePoint != -1 )
+   if ( pSegment->HandlingData.LeftReleasePoint != -1 && pSegment->HandlingData.LeftReleasePoint != -2)
    {
       DDV_UnitValueZeroOrMore( pDX, IDC_RELEASE_LOCATION, pSegment->HandlingData.LeftReleasePoint, pDisplayUnits->GetSpanLengthUnit() );
       DDV_UnitValueLessThanLimit(pDX, IDC_RELEASE_LOCATION, pSegment->HandlingData.LeftReleasePoint, segmentLength/2, pDisplayUnits->GetSpanLengthUnit(),_T("Release support location must be less than half the segment length. Please enter a value that is less than %f %s") );
@@ -157,23 +157,6 @@ BOOL CGirderDescLiftingPage::OnInitDialog()
    }
 
 	CPropertyPage::OnInitDialog();
-	
-   CWnd* pWnd = GetParent();
-   if ( pWnd->IsKindOf(RUNTIME_CLASS(CGirderDescDlg)) )
-   {
-      // always assume support is at end of girder for regular prestressed girders
-      // disable input so it can't be changed
-      GetDlgItem(IDC_RELEASE_LOCATION)->EnableWindow(FALSE);
-   }
-   else if ( pWnd->IsKindOf(RUNTIME_CLASS(CGirderSegmentDlg)) )
-   {
-      GetDlgItem(IDC_RELEASE_LOCATION)->EnableWindow(TRUE);
-   }
-   else
-   {
-      ATLASSERT(false); // should never get here
-      // is there a new parent dialog???
-   }
 
    return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE

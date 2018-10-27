@@ -112,4 +112,7 @@ interface IEditByUI : IUnknown
 
    // Displays the project criteria selection dialog
    virtual bool SelectProjectCriteria() = 0;
+
+   // Bearing dialog
+   virtual bool EditBearings() = 0;
 };

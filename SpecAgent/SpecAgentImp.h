@@ -25,6 +25,7 @@
 #ifndef __SPECAGENT_H_
 #define __SPECAGENT_H_
 
+#include "CLSID.h"
 #include "resource.h"       // main symbols
 
 #include <EAF\EAFInterfaceCache.h>
@@ -141,10 +142,10 @@ public:
    virtual Float64 GetAllowableCompressionStressCoefficient(const pgsPointOfInterest& poi,pgsTypes::StressLocation stressLocation,IntervalIndexType intervalIdx,pgsTypes::LimitState ls) override;
    virtual void GetAllowableTensionStressCoefficient(const pgsPointOfInterest& poi,pgsTypes::StressLocation stressLocation,IntervalIndexType intervalIdx,pgsTypes::LimitState ls,bool bWithBondedReinforcement,bool bInPrecompressedTensileZone,Float64* pCoeff,bool* pbMax,Float64* pMaxValue) override;
 
-   virtual std::vector<Float64> CSpecAgentImp::GetGirderAllowableCompressionStress(const std::vector<pgsPointOfInterest>& vPoi,IntervalIndexType intervalIdx,pgsTypes::LimitState ls) override;
-   virtual std::vector<Float64> CSpecAgentImp::GetDeckAllowableCompressionStress(const std::vector<pgsPointOfInterest>& vPoi,IntervalIndexType intervalIdx,pgsTypes::LimitState ls) override;
-   virtual std::vector<Float64> CSpecAgentImp::GetGirderAllowableTensionStress(const std::vector<pgsPointOfInterest>& vPoi,IntervalIndexType intervalIdx,pgsTypes::LimitState ls,bool bWithBondededReinforcement,bool bInPrecompressedTensileZone) override;
-   virtual std::vector<Float64> CSpecAgentImp::GetDeckAllowableTensionStress(const std::vector<pgsPointOfInterest>& vPoi,IntervalIndexType intervalIdx,pgsTypes::LimitState ls,bool bWithBondededReinforcement) override;
+   virtual std::vector<Float64> CSpecAgentImp::GetGirderAllowableCompressionStress(const PoiList& vPoi,IntervalIndexType intervalIdx,pgsTypes::LimitState ls) override;
+   virtual std::vector<Float64> CSpecAgentImp::GetDeckAllowableCompressionStress(const PoiList& vPoi,IntervalIndexType intervalIdx,pgsTypes::LimitState ls) override;
+   virtual std::vector<Float64> CSpecAgentImp::GetGirderAllowableTensionStress(const PoiList& vPoi,IntervalIndexType intervalIdx,pgsTypes::LimitState ls,bool bWithBondededReinforcement,bool bInPrecompressedTensileZone) override;
+   virtual std::vector<Float64> CSpecAgentImp::GetDeckAllowableTensionStress(const PoiList& vPoi,IntervalIndexType intervalIdx,pgsTypes::LimitState ls,bool bWithBondededReinforcement) override;
 
    virtual Float64 GetSegmentAllowableCompressionStress(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::LimitState ls) override;
    virtual Float64 GetClosureJointAllowableCompressionStress(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::LimitState ls) override;
@@ -325,6 +326,7 @@ public:
 
 private:
    DECLARE_EAF_AGENT_DATA;
+   DECLARE_LOGFILE;
 
    DWORD m_dwBridgeDescCookie;
 

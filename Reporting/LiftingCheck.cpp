@@ -89,7 +89,7 @@ void CLiftingCheck::Build(rptChapter* pChapter,
       {
          CSegmentKey thisSegmentKey(girderKey, segIdx);
          const stbLiftingCheckArtifact* pArtifact = pArtifacts->GetLiftingCheckArtifact(thisSegmentKey);
-         const stbIGirder* pStabilityModel = pGirder->GetSegmentStabilityModel(thisSegmentKey);
+         const stbIGirder* pStabilityModel = pGirder->GetSegmentLiftingStabilityModel(thisSegmentKey);
          const stbILiftingStabilityProblem* pStabilityProblem = pGirder->GetSegmentLiftingStabilityProblem(thisSegmentKey);
          Float64 Ll, Lr;
          pStabilityProblem->GetSupportLocations(&Ll, &Lr);

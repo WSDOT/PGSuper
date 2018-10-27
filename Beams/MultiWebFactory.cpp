@@ -59,49 +59,49 @@ static char THIS_FILE[] = __FILE__;
 HRESULT CMultiWebFactory::FinalConstruct()
 {
    // Initialize with default values... This are not necessarily valid dimensions
-   m_DimNames.push_back(_T("D1"));
-   m_DimNames.push_back(_T("D2"));
-   m_DimNames.push_back(_T("T1"));
-   m_DimNames.push_back(_T("T2"));
-   m_DimNames.push_back(_T("W1"));
-   m_DimNames.push_back(_T("Wmax"));
-   m_DimNames.push_back(_T("Wmin"));
+   m_DimNames.emplace_back(_T("D1"));
+   m_DimNames.emplace_back(_T("D2"));
+   m_DimNames.emplace_back(_T("T1"));
+   m_DimNames.emplace_back(_T("T2"));
+   m_DimNames.emplace_back(_T("W1"));
+   m_DimNames.emplace_back(_T("Wmax"));
+   m_DimNames.emplace_back(_T("Wmin"));
 
    std::sort(m_DimNames.begin(),m_DimNames.end());
 
    // Default beam is a 4' wide tri-beam
-   m_DefaultDims.push_back(::ConvertToSysUnits( 6.0,unitMeasure::Inch)); // D1
-   m_DefaultDims.push_back(::ConvertToSysUnits(21.0,unitMeasure::Inch)); // D2
-   m_DefaultDims.push_back(::ConvertToSysUnits(7.25,unitMeasure::Inch)); // T1
-   m_DefaultDims.push_back(::ConvertToSysUnits(5.25,unitMeasure::Inch)); // T2
-   m_DefaultDims.push_back(::ConvertToSysUnits(12.0,unitMeasure::Inch)); // W1
-   m_DefaultDims.push_back(::ConvertToSysUnits(6.000,unitMeasure::Feet)); // Wmax
-   m_DefaultDims.push_back(::ConvertToSysUnits(4.000,unitMeasure::Feet)); // Wmin
+   m_DefaultDims.emplace_back(::ConvertToSysUnits( 6.0,unitMeasure::Inch)); // D1
+   m_DefaultDims.emplace_back(::ConvertToSysUnits(21.0,unitMeasure::Inch)); // D2
+   m_DefaultDims.emplace_back(::ConvertToSysUnits(7.25,unitMeasure::Inch)); // T1
+   m_DefaultDims.emplace_back(::ConvertToSysUnits(5.25,unitMeasure::Inch)); // T2
+   m_DefaultDims.emplace_back(::ConvertToSysUnits(12.0,unitMeasure::Inch)); // W1
+   m_DefaultDims.emplace_back(::ConvertToSysUnits(6.000,unitMeasure::Feet)); // Wmax
+   m_DefaultDims.emplace_back(::ConvertToSysUnits(4.000,unitMeasure::Feet)); // Wmin
 
 
    // SI Units
-   m_DimUnits[0].push_back(&unitMeasure::Millimeter); // D1
-   m_DimUnits[0].push_back(&unitMeasure::Millimeter); // D2
-   m_DimUnits[0].push_back(&unitMeasure::Millimeter); // T1
-   m_DimUnits[0].push_back(&unitMeasure::Millimeter); // T2
-   m_DimUnits[0].push_back(&unitMeasure::Millimeter); // W1
-   m_DimUnits[0].push_back(&unitMeasure::Meter);      // Wmax
-   m_DimUnits[0].push_back(&unitMeasure::Meter);      // Wmin
+   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // D1
+   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // D2
+   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // T1
+   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // T2
+   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // W1
+   m_DimUnits[0].emplace_back(&unitMeasure::Meter);      // Wmax
+   m_DimUnits[0].emplace_back(&unitMeasure::Meter);      // Wmin
 
    // US Units
-   m_DimUnits[1].push_back(&unitMeasure::Inch); // D1
-   m_DimUnits[1].push_back(&unitMeasure::Inch); // D2
-   m_DimUnits[1].push_back(&unitMeasure::Inch); // T1
-   m_DimUnits[1].push_back(&unitMeasure::Inch); // T2
-   m_DimUnits[1].push_back(&unitMeasure::Inch); // W1
-   m_DimUnits[1].push_back(&unitMeasure::Feet); // Wmax
-   m_DimUnits[1].push_back(&unitMeasure::Feet); // Wmin
+   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // D1
+   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // D2
+   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // T1
+   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // T2
+   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // W1
+   m_DimUnits[1].emplace_back(&unitMeasure::Feet); // Wmax
+   m_DimUnits[1].emplace_back(&unitMeasure::Feet); // Wmin
    
 
    return S_OK;
 }
 
-void CMultiWebFactory::CreateGirderSection(IBroker* pBroker,StatusGroupIDType statusGroupID,const IBeamFactory::Dimensions& dimensions,Float64 overallHeight,Float64 bottomFlangeHeight,IGirderSection** ppSection)
+void CMultiWebFactory::CreateGirderSection(IBroker* pBroker,StatusGroupIDType statusGroupID,const IBeamFactory::Dimensions& dimensions,Float64 overallHeight,Float64 bottomFlangeHeight,IGirderSection** ppSection) const
 {
    CComPtr<IMultiWebSection> gdrSection;
    gdrSection.CoCreateInstance(CLSID_MultiWebSection);
@@ -161,7 +161,7 @@ void CMultiWebFactory::CreateGirderSection(IBroker* pBroker,StatusGroupIDType st
    gdrSection.QueryInterface(ppSection);
 }
 
-void CMultiWebFactory::CreateGirderProfile(IBroker* pBroker,StatusGroupIDType statusGroupID,const CSegmentKey& segmentKey,const IBeamFactory::Dimensions& dimensions,IShape** ppShape)
+void CMultiWebFactory::CreateGirderProfile(IBroker* pBroker,StatusGroupIDType statusGroupID,const CSegmentKey& segmentKey,const IBeamFactory::Dimensions& dimensions,IShape** ppShape) const
 {
    GET_IFACE2(pBroker,IBridge,pBridge);
    Float64 length = pBridge->GetSegmentLength(segmentKey);
@@ -188,7 +188,7 @@ void CMultiWebFactory::CreateGirderProfile(IBroker* pBroker,StatusGroupIDType st
    rect->QueryInterface(ppShape);
 }
 
-void CMultiWebFactory::CreateSegment(IBroker* pBroker,StatusGroupIDType statusGroupID,const CSegmentKey& segmentKey,ISuperstructureMember* ssmbr)
+void CMultiWebFactory::CreateSegment(IBroker* pBroker,StatusGroupIDType statusGroupID,const CSegmentKey& segmentKey,ISuperstructureMemberSegment** ppSegment) const
 {
    CComPtr<IPrismaticSuperstructureMemberSegment> segment;
    segment.CoCreateInstance(CLSID_PrismaticSuperstructureMemberSegment);
@@ -236,10 +236,16 @@ void CMultiWebFactory::CreateSegment(IBroker* pBroker,StatusGroupIDType statusGr
    ATLASSERT(shape);
    segment->AddShape(shape,material,nullptr);
 
-   ssmbr->AddSegment(segment);
+   CComQIPtr<ISuperstructureMemberSegment> ssmbrSegment(segment);
+   ssmbrSegment.CopyTo(ppSegment);
 }
 
-void CMultiWebFactory::LayoutSectionChangePointsOfInterest(IBroker* pBroker,const CSegmentKey& segmentKey,pgsPoiMgr* pPoiMgr)
+void CMultiWebFactory::ConfigureSegment(IBroker* pBroker, StatusItemIDType statusID, const CSegmentKey& segmentKey, ISuperstructureMemberSegment* pSSMbrSegment) const
+{
+   // do nothing... all the configuration was done in CreateSegment
+}
+
+void CMultiWebFactory::LayoutSectionChangePointsOfInterest(IBroker* pBroker,const CSegmentKey& segmentKey,pgsPoiMgr* pPoiMgr) const
 {
    // This is a prismatic beam so only add section change POI at the start and end of the beam
    GET_IFACE2(pBroker,IBridge,pBridge);
@@ -252,7 +258,7 @@ void CMultiWebFactory::LayoutSectionChangePointsOfInterest(IBroker* pBroker,cons
    pPoiMgr->AddPointOfInterest(poiEnd);
 }
 
-void CMultiWebFactory::CreateDistFactorEngineer(IBroker* pBroker,StatusGroupIDType statusGroupID,const pgsTypes::SupportedBeamSpacing* pSpacingType,const pgsTypes::SupportedDeckType* pDeckType, const pgsTypes::AdjacentTransverseConnectivity* pConnect,IDistFactorEngineer** ppEng)
+void CMultiWebFactory::CreateDistFactorEngineer(IBroker* pBroker,StatusGroupIDType statusGroupID,const pgsTypes::SupportedBeamSpacing* pSpacingType,const pgsTypes::SupportedDeckType* pDeckType, const pgsTypes::AdjacentTransverseConnectivity* pConnect,IDistFactorEngineer** ppEng) const
 {
    CComObject<CMultiWebDistFactorEngineer>* pEngineer;
    CComObject<CMultiWebDistFactorEngineer>::CreateInstance(&pEngineer);
@@ -264,7 +270,7 @@ void CMultiWebFactory::CreateDistFactorEngineer(IBroker* pBroker,StatusGroupIDTy
    (*ppEng)->AddRef();
 }
 
-void CMultiWebFactory::CreatePsLossEngineer(IBroker* pBroker,StatusGroupIDType statusGroupID,const CGirderKey& girderKey,IPsLossEngineer** ppEng)
+void CMultiWebFactory::CreatePsLossEngineer(IBroker* pBroker,StatusGroupIDType statusGroupID,const CGirderKey& girderKey,IPsLossEngineer** ppEng) const
 {
    GET_IFACE2(pBroker, ILossParameters, pLossParams);
    if ( pLossParams->GetLossMethod() == pgsTypes::TIME_STEP )
@@ -289,7 +295,7 @@ void CMultiWebFactory::CreatePsLossEngineer(IBroker* pBroker,StatusGroupIDType s
 void CMultiWebFactory::CreateStrandMover(const IBeamFactory::Dimensions& dimensions,  Float64 Hg,
                                   IBeamFactory::BeamFace endTopFace, Float64 endTopLimit, IBeamFactory::BeamFace endBottomFace, Float64 endBottomLimit, 
                                   IBeamFactory::BeamFace hpTopFace, Float64 hpTopLimit, IBeamFactory::BeamFace hpBottomFace, Float64 hpBottomLimit, 
-                                  Float64 endIncrement, Float64 hpIncrement, IStrandMover** strandMover)
+                                  Float64 endIncrement, Float64 hpIncrement, IStrandMover** strandMover) const
 {
    HRESULT hr = S_OK;
 
@@ -365,22 +371,22 @@ void CMultiWebFactory::CreateStrandMover(const IBeamFactory::Dimensions& dimensi
    ATLASSERT (SUCCEEDED(hr));
 }
 
-std::vector<std::_tstring> CMultiWebFactory::GetDimensionNames()
+const std::vector<std::_tstring>& CMultiWebFactory::GetDimensionNames() const
 {
    return m_DimNames;
 }
 
-std::vector<Float64> CMultiWebFactory::GetDefaultDimensions()
+const std::vector<Float64>& CMultiWebFactory::GetDefaultDimensions() const
 {
    return m_DefaultDims;
 }
 
-std::vector<const unitLength*> CMultiWebFactory::GetDimensionUnits(bool bSIUnits)
+const std::vector<const unitLength*>& CMultiWebFactory::GetDimensionUnits(bool bSIUnits) const
 {
    return m_DimUnits[ bSIUnits ? 0 : 1 ];
 }
 
-bool CMultiWebFactory::ValidateDimensions(const IBeamFactory::Dimensions& dimensions,bool bSIUnits,std::_tstring* strErrMsg)
+bool CMultiWebFactory::ValidateDimensions(const IBeamFactory::Dimensions& dimensions,bool bSIUnits,std::_tstring* strErrMsg) const
 {
    Float64 d1,d2;
    Float64 w1,wmin,wmax;
@@ -462,69 +468,78 @@ bool CMultiWebFactory::ValidateDimensions(const IBeamFactory::Dimensions& dimens
    return true;
 }
 
-void CMultiWebFactory::SaveSectionDimensions(sysIStructuredSave* pSave,const IBeamFactory::Dimensions& dimensions)
+void CMultiWebFactory::SaveSectionDimensions(sysIStructuredSave* pSave,const IBeamFactory::Dimensions& dimensions) const
 {
-   std::vector<std::_tstring>::iterator iter;
    pSave->BeginUnit(_T("MultiWebDimensions"),1.0);
-   for ( iter = m_DimNames.begin(); iter != m_DimNames.end(); iter++ )
+   for(const auto& name : m_DimNames)
    {
-      std::_tstring name = *iter;
       Float64 value = GetDimension(dimensions,name);
       pSave->Property(name.c_str(),value);
    }
    pSave->EndUnit();
 }
 
-IBeamFactory::Dimensions CMultiWebFactory::LoadSectionDimensions(sysIStructuredLoad* pLoad)
+IBeamFactory::Dimensions CMultiWebFactory::LoadSectionDimensions(sysIStructuredLoad* pLoad) const
 {
    Float64 parent_version;
-   if ( pLoad->GetParentUnit() == _T("GirderLibraryEntry") )
+   if (pLoad->GetParentUnit() == _T("GirderLibraryEntry"))
+   {
       parent_version = pLoad->GetParentVersion();
+   }
    else
+   {
       parent_version = pLoad->GetVersion();
+   }
 
 
    IBeamFactory::Dimensions dimensions;
 
-   if ( 14 <= parent_version && !pLoad->BeginUnit(_T("MultiWebDimensions")) )
-      THROW_LOAD(InvalidFileFormat,pLoad);
-
-   std::vector<std::_tstring>::iterator iter;
-   for ( iter = m_DimNames.begin(); iter != m_DimNames.end(); iter++ )
+   if (14 <= parent_version && !pLoad->BeginUnit(_T("MultiWebDimensions")))
    {
-      std::_tstring name = *iter;
-      Float64 value;
-      pLoad->Property(name.c_str(),&value);
-      dimensions.push_back( std::make_pair(name,value) );
+      THROW_LOAD(InvalidFileFormat, pLoad);
    }
 
-   if ( 14 <= parent_version && !pLoad->EndUnit() )
-      THROW_LOAD(InvalidFileFormat,pLoad);
+   for( const auto& name : m_DimNames)
+   {
+      Float64 value;
+      pLoad->Property(name.c_str(),&value);
+      dimensions.emplace_back(name,value);
+   }
+
+   if (14 <= parent_version && !pLoad->EndUnit())
+   {
+      THROW_LOAD(InvalidFileFormat, pLoad);
+   }
 
    return dimensions;
 }
 
-bool CMultiWebFactory::IsPrismatic(const IBeamFactory::Dimensions& dimensions)
+bool CMultiWebFactory::IsPrismatic(const IBeamFactory::Dimensions& dimensions) const
 {
    return true;
 }
 
-bool CMultiWebFactory::IsSymmetric(const IBeamFactory::Dimensions& dimensions)
+bool CMultiWebFactory::IsPrismatic(const CSegmentKey& segmentKey) const
 {
    return true;
 }
 
-Float64 CMultiWebFactory::GetInternalSurfaceAreaOfVoids(IBroker* pBroker,const CSegmentKey& segmentKey)
+bool CMultiWebFactory::IsSymmetric(const CSegmentKey& segmentKey) const
+{
+   return true;
+}
+
+Float64 CMultiWebFactory::GetInternalSurfaceAreaOfVoids(IBroker* pBroker,const CSegmentKey& segmentKey) const
 {
    return 0;
 }
 
-std::_tstring CMultiWebFactory::GetImage()
+std::_tstring CMultiWebFactory::GetImage() const
 {
    return std::_tstring(_T("MultiWeb.jpg"));
 }
 
-std::_tstring CMultiWebFactory::GetSlabDimensionsImage(pgsTypes::SupportedDeckType deckType)
+std::_tstring CMultiWebFactory::GetSlabDimensionsImage(pgsTypes::SupportedDeckType deckType) const
 {
    std::_tstring strImage;
 
@@ -546,7 +561,7 @@ std::_tstring CMultiWebFactory::GetSlabDimensionsImage(pgsTypes::SupportedDeckTy
    return strImage;
 }
 
-std::_tstring CMultiWebFactory::GetPositiveMomentCapacitySchematicImage(pgsTypes::SupportedDeckType deckType)
+std::_tstring CMultiWebFactory::GetPositiveMomentCapacitySchematicImage(pgsTypes::SupportedDeckType deckType) const
 {
    std::_tstring strImage;
 
@@ -568,7 +583,7 @@ std::_tstring CMultiWebFactory::GetPositiveMomentCapacitySchematicImage(pgsTypes
    return strImage;
 }
 
-std::_tstring CMultiWebFactory::GetNegativeMomentCapacitySchematicImage(pgsTypes::SupportedDeckType deckType)
+std::_tstring CMultiWebFactory::GetNegativeMomentCapacitySchematicImage(pgsTypes::SupportedDeckType deckType) const
 {
    std::_tstring strImage;
 
@@ -590,7 +605,7 @@ std::_tstring CMultiWebFactory::GetNegativeMomentCapacitySchematicImage(pgsTypes
    return strImage;
 }
 
-std::_tstring CMultiWebFactory::GetShearDimensionsSchematicImage(pgsTypes::SupportedDeckType deckType)
+std::_tstring CMultiWebFactory::GetShearDimensionsSchematicImage(pgsTypes::SupportedDeckType deckType) const
 {
    std::_tstring strImage;
 
@@ -612,7 +627,7 @@ std::_tstring CMultiWebFactory::GetShearDimensionsSchematicImage(pgsTypes::Suppo
    return strImage;
 }
 
-std::_tstring CMultiWebFactory::GetInteriorGirderEffectiveFlangeWidthImage(IBroker* pBroker,pgsTypes::SupportedDeckType deckType)
+std::_tstring CMultiWebFactory::GetInteriorGirderEffectiveFlangeWidthImage(IBroker* pBroker,pgsTypes::SupportedDeckType deckType) const
 {
    GET_IFACE2(pBroker, ILibrary,       pLib);
    GET_IFACE2(pBroker, ISpecification, pSpec);
@@ -627,7 +642,7 @@ std::_tstring CMultiWebFactory::GetInteriorGirderEffectiveFlangeWidthImage(IBrok
    }
 }
 
-std::_tstring CMultiWebFactory::GetExteriorGirderEffectiveFlangeWidthImage(IBroker* pBroker,pgsTypes::SupportedDeckType deckType)
+std::_tstring CMultiWebFactory::GetExteriorGirderEffectiveFlangeWidthImage(IBroker* pBroker,pgsTypes::SupportedDeckType deckType) const
 {
    GET_IFACE2(pBroker, ILibrary,       pLib);
    GET_IFACE2(pBroker, ISpecification, pSpec);
@@ -642,12 +657,12 @@ std::_tstring CMultiWebFactory::GetExteriorGirderEffectiveFlangeWidthImage(IBrok
    }
 }
 
-CLSID CMultiWebFactory::GetCLSID()
+CLSID CMultiWebFactory::GetCLSID() const
 {
    return CLSID_MultiWebFactory;
 }
 
-std::_tstring CMultiWebFactory::GetName()
+std::_tstring CMultiWebFactory::GetName() const
 {
    USES_CONVERSION;
    LPOLESTR pszUserType;
@@ -655,12 +670,12 @@ std::_tstring CMultiWebFactory::GetName()
    return std::_tstring( OLE2T(pszUserType) );
 }
 
-CLSID CMultiWebFactory::GetFamilyCLSID()
+CLSID CMultiWebFactory::GetFamilyCLSID() const
 {
    return CLSID_RibbedBeamFamily;
 }
 
-std::_tstring CMultiWebFactory::GetGirderFamilyName()
+std::_tstring CMultiWebFactory::GetGirderFamilyName() const
 {
    USES_CONVERSION;
    LPOLESTR pszUserType;
@@ -668,27 +683,27 @@ std::_tstring CMultiWebFactory::GetGirderFamilyName()
    return std::_tstring( OLE2T(pszUserType) );
 }
 
-std::_tstring CMultiWebFactory::GetPublisher()
+std::_tstring CMultiWebFactory::GetPublisher() const
 {
    return std::_tstring(_T("WSDOT"));
 }
 
-std::_tstring CMultiWebFactory::GetPublisherContactInformation()
+std::_tstring CMultiWebFactory::GetPublisherContactInformation() const
 {
    return std::_tstring(_T("http://www.wsdot.wa.gov/eesc/bridge"));
 }
 
-HINSTANCE CMultiWebFactory::GetResourceInstance()
+HINSTANCE CMultiWebFactory::GetResourceInstance() const
 {
    return _Module.GetResourceInstance();
 }
 
-LPCTSTR CMultiWebFactory::GetImageResourceName()
+LPCTSTR CMultiWebFactory::GetImageResourceName() const
 {
    return _T("MultiWeb");
 }
 
-HICON  CMultiWebFactory::GetIcon() 
+HICON  CMultiWebFactory::GetIcon() const
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
@@ -699,7 +714,7 @@ void CMultiWebFactory::GetDimensions(const IBeamFactory::Dimensions& dimensions,
                                   Float64& d1,Float64& d2,
                                   Float64& w,Float64& wmin,Float64& wmax,
                                   Float64& t1,Float64& t2,
-                                  WebIndexType& nWebs)
+                                  WebIndexType& nWebs) const
 {
    d1 = GetDimension(dimensions,_T("D1"));
    d2 = GetDimension(dimensions,_T("D2"));
@@ -711,21 +726,21 @@ void CMultiWebFactory::GetDimensions(const IBeamFactory::Dimensions& dimensions,
    nWebs = 3;
 }
 
-Float64 CMultiWebFactory::GetDimension(const IBeamFactory::Dimensions& dimensions,const std::_tstring& name)
+Float64 CMultiWebFactory::GetDimension(const IBeamFactory::Dimensions& dimensions,const std::_tstring& name) const
 {
-   Dimensions::const_iterator iter;
-   for ( iter = dimensions.begin(); iter != dimensions.end(); iter++ )
+   for (const auto& dim : dimensions)
    {
-      const Dimension& dim = *iter;
-      if ( name == dim.first )
+      if (name == dim.first)
+      {
          return dim.second;
+      }
    }
 
    ATLASSERT(false); // should never get here
    return -99999;
 }
 
-pgsTypes::SupportedDeckTypes CMultiWebFactory::GetSupportedDeckTypes(pgsTypes::SupportedBeamSpacing sbs)
+pgsTypes::SupportedDeckTypes CMultiWebFactory::GetSupportedDeckTypes(pgsTypes::SupportedBeamSpacing sbs) const
 {
    pgsTypes::SupportedDeckTypes sdt;
    switch(sbs)
@@ -741,14 +756,49 @@ pgsTypes::SupportedDeckTypes CMultiWebFactory::GetSupportedDeckTypes(pgsTypes::S
    return sdt;
 }
 
-pgsTypes::SupportedBeamSpacings CMultiWebFactory::GetSupportedBeamSpacings()
+pgsTypes::SupportedBeamSpacings CMultiWebFactory::GetSupportedBeamSpacings() const
 {
    pgsTypes::SupportedBeamSpacings sbs;
    sbs.push_back(pgsTypes::sbsConstantAdjacent);
    return sbs;
 }
 
-pgsTypes::SupportedDiaphragmTypes CMultiWebFactory::GetSupportedDiaphragms()
+bool CMultiWebFactory::IsSupportedBeamSpacing(pgsTypes::SupportedBeamSpacing spacingType) const
+{
+   pgsTypes::SupportedBeamSpacings sbs = GetSupportedBeamSpacings();
+   auto found = std::find(sbs.cbegin(), sbs.cend(), spacingType);
+   return found == sbs.end() ? false : true;
+}
+
+bool CMultiWebFactory::ConvertBeamSpacing(const IBeamFactory::Dimensions& dimensions, pgsTypes::SupportedBeamSpacing spacingType, Float64 spacing, pgsTypes::SupportedBeamSpacing* pNewSpacingType, Float64* pNewSpacing, Float64* pNewTopWidth) const
+{
+   if (spacingType == pgsTypes::sbsUniform || spacingType == pgsTypes::sbsUniformAdjacent)
+   {
+      *pNewSpacingType = pgsTypes::sbsConstantAdjacent;
+      *pNewSpacing = spacing;
+      *pNewTopWidth = 0.0;
+      return true;
+   }
+   return false;
+}
+
+std::vector<pgsTypes::GirderOrientationType> CMultiWebFactory::GetSupportedGirderOrientation() const
+{
+   std::vector<pgsTypes::GirderOrientationType> types{ pgsTypes::Plumb, pgsTypes::StartNormal,pgsTypes::MidspanNormal,pgsTypes::EndNormal };
+   return types;
+}
+
+bool CMultiWebFactory::IsSupportedGirderOrientation(pgsTypes::GirderOrientationType orientation) const
+{
+   return true;
+}
+
+pgsTypes::GirderOrientationType CMultiWebFactory::ConvertGirderOrientation(pgsTypes::GirderOrientationType orientation) const
+{
+   return orientation;
+}
+
+pgsTypes::SupportedDiaphragmTypes CMultiWebFactory::GetSupportedDiaphragms() const
 {
    pgsTypes::SupportedDiaphragmTypes diaphragmTypes;
    diaphragmTypes.push_back(pgsTypes::dtPrecast);
@@ -756,7 +806,7 @@ pgsTypes::SupportedDiaphragmTypes CMultiWebFactory::GetSupportedDiaphragms()
    return diaphragmTypes;
 }
 
-pgsTypes::SupportedDiaphragmLocationTypes CMultiWebFactory::GetSupportedDiaphragmLocations(pgsTypes::DiaphragmType type)
+pgsTypes::SupportedDiaphragmLocationTypes CMultiWebFactory::GetSupportedDiaphragmLocations(pgsTypes::DiaphragmType type) const
 {
    pgsTypes::SupportedDiaphragmLocationTypes locations;
    switch(type)
@@ -776,8 +826,7 @@ pgsTypes::SupportedDiaphragmLocationTypes CMultiWebFactory::GetSupportedDiaphrag
    return locations;
 }
 
-void CMultiWebFactory::GetAllowableSpacingRange(const IBeamFactory::Dimensions& dimensions,pgsTypes::SupportedDeckType sdt, 
-                                               pgsTypes::SupportedBeamSpacing sbs, Float64* minSpacing, Float64* maxSpacing)
+void CMultiWebFactory::GetAllowableSpacingRange(const IBeamFactory::Dimensions& dimensions,pgsTypes::SupportedDeckType sdt, pgsTypes::SupportedBeamSpacing sbs, Float64* minSpacing, Float64* maxSpacing) const
 {
    *minSpacing = 0.0;
    *maxSpacing = 0.0;
@@ -803,12 +852,12 @@ void CMultiWebFactory::GetAllowableSpacingRange(const IBeamFactory::Dimensions& 
    }
 }
 
-WebIndexType CMultiWebFactory::GetWebCount(const IBeamFactory::Dimensions& dimensions)
+WebIndexType CMultiWebFactory::GetWebCount(const IBeamFactory::Dimensions& dimensions) const
 {
    return 3;
 }
 
-Float64 CMultiWebFactory::GetBeamHeight(const IBeamFactory::Dimensions& dimensions,pgsTypes::MemberEndType endType)
+Float64 CMultiWebFactory::GetBeamHeight(const IBeamFactory::Dimensions& dimensions,pgsTypes::MemberEndType endType) const
 {
    Float64 D1 = GetDimension(dimensions,_T("D1"));
    Float64 D2 = GetDimension(dimensions,_T("D2"));
@@ -816,23 +865,43 @@ Float64 CMultiWebFactory::GetBeamHeight(const IBeamFactory::Dimensions& dimensio
    return D1 + D2;
 }
 
-Float64 CMultiWebFactory::GetBeamWidth(const IBeamFactory::Dimensions& dimensions,pgsTypes::MemberEndType endType)
+Float64 CMultiWebFactory::GetBeamWidth(const IBeamFactory::Dimensions& dimensions,pgsTypes::MemberEndType endType) const
 {
    return GetDimension(dimensions,_T("Wmax"));
 }
 
-bool CMultiWebFactory::IsShearKey(const IBeamFactory::Dimensions& dimensions, pgsTypes::SupportedBeamSpacing spacingType)
+bool CMultiWebFactory::IsShearKey(const IBeamFactory::Dimensions& dimensions, pgsTypes::SupportedBeamSpacing spacingType) const
 {
    return false;
 }
 
-void CMultiWebFactory::GetShearKeyAreas(const IBeamFactory::Dimensions& dimensions, pgsTypes::SupportedBeamSpacing spacingType,Float64* uniformArea, Float64* areaPerJoint)
+void CMultiWebFactory::GetShearKeyAreas(const IBeamFactory::Dimensions& dimensions, pgsTypes::SupportedBeamSpacing spacingType,Float64* uniformArea, Float64* areaPerJoint) const
 {
    *uniformArea = 0.0;
    *areaPerJoint = 0.0;
 }
 
-GirderIndexType CMultiWebFactory::GetMinimumBeamCount()
+bool CMultiWebFactory::HasLongitudinalJoints() const
+{
+   return false;
+}
+
+bool CMultiWebFactory::IsLongitudinalJointStructural(pgsTypes::SupportedDeckType deckType,pgsTypes::AdjacentTransverseConnectivity connectivity) const
+{
+   return false;
+}
+
+bool CMultiWebFactory::HasTopFlangeThickening() const
+{
+   return false;
+}
+
+bool CMultiWebFactory::CanPrecamber() const
+{
+   return false;
+}
+
+GirderIndexType CMultiWebFactory::GetMinimumBeamCount() const
 {
    return 1;
 }

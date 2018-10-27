@@ -88,7 +88,6 @@ void CAbutmentConnectionsPage::DoDataExchange(CDataExchange* pDX)
    // Connection Dimensions
    DDX_UnitValueAndTag(pDX,IDC_BEARING_OFFSET, IDC_BEARING_OFFSET_T,  m_BearingOffset,  pDisplayUnits->GetComponentDimUnit());
    DDX_UnitValueAndTag(pDX,IDC_END_DISTANCE,   IDC_END_DISTANCE_T,    m_EndDistance,    pDisplayUnits->GetComponentDimUnit());
-   DDX_UnitValueAndTag(pDX,IDC_SUPPORT_WIDTH,  IDC_SUPPORT_WIDTH_T,   m_SupportWidth,   pDisplayUnits->GetComponentDimUnit());
 
    DDX_CBItemData(pDX,IDC_BEARING_OFFSET_MEASURE,m_BearingOffsetMeasurementType);
    DDX_CBItemData(pDX,IDC_END_DISTANCE_MEASURE,m_EndDistanceMeasurementType);
@@ -135,7 +134,6 @@ void CAbutmentConnectionsPage::DoDataExchange(CDataExchange* pDX)
          pgsTypes::PierFaceType face = pgsTypes::PierFaceType(i);
          m_pPier->SetBearingOffset(    face,m_BearingOffset,m_BearingOffsetMeasurementType);
          m_pPier->SetGirderEndDistance(face,m_EndDistance,  m_EndDistanceMeasurementType);
-         m_pPier->SetSupportWidth(     face,m_SupportWidth);
 
          m_pPier->SetDiaphragmHeight(      face,m_DiaphragmHeight);
          m_pPier->SetDiaphragmWidth(       face,m_DiaphragmWidth);
@@ -169,7 +167,6 @@ BOOL CAbutmentConnectionsPage::OnInitDialog()
    pgsTypes::PierFaceType face = (m_pPier->GetPrevSpan() == nullptr ? pgsTypes::Ahead : pgsTypes::Back);
    m_pPier->GetBearingOffset(face,&m_BearingOffset,&m_BearingOffsetMeasurementType);
    m_pPier->GetGirderEndDistance(face,&m_EndDistance,&m_EndDistanceMeasurementType);
-   m_SupportWidth = m_pPier->GetSupportWidth(face);
 
    m_DiaphragmHeight       = m_pPier->GetDiaphragmHeight(face);
    m_DiaphragmWidth        = m_pPier->GetDiaphragmWidth(face);
@@ -508,7 +505,6 @@ void CAbutmentConnectionsPage::OnCopyFromLibrary()
 	
          m_BearingOffset = pEntry->GetGirderBearingOffset();
          m_EndDistance   = pEntry->GetGirderEndDistance();
-         m_SupportWidth  = pEntry->GetSupportWidth();
    
          m_DiaphragmHeight       = pEntry->GetDiaphragmHeight();
          m_DiaphragmWidth        = pEntry->GetDiaphragmWidth();

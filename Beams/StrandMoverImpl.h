@@ -25,8 +25,11 @@
 #ifndef __STRANDMOVERIMPL_H_
 #define __STRANDMOVERIMPL_H_
 
+#include <Plugins\ConfigureStrandMover.h>
 #include "resource.h"       // main symbols
 #include "IBeamFactory.h" // CLSID
+
+#include <WBFLGenericBridgeTools.h>
 
 /////////////////////////////////////////////////////////////////////////////
 // CStrandMoverImpl
@@ -80,24 +83,26 @@ public:
 	STDMETHOD(TranslateHpStrand)(/*[in]*/EndType endType,/*[in]*/Float64 originalX, /*[in]*/Float64 originalY, /*[in]*/Float64 Yoffset, /*[out]*/Float64* newX, /*[out]*/Float64* newY );
 	STDMETHOD(TranslateEndStrand)(/*[in]*/EndType endType,/*[in]*/Float64 originalX, /*[in]*/Float64 originalY, /*[in]*/Float64 Yoffset, /*[out]*/Float64* newX, /*[out]*/Float64* newY );
 
-// IConfigureStrandMover
    STDMETHOD(get_TopElevation)(Float64* topElevation);
    STDMETHOD(get_SectionHeight)(Float64* pHeight);
+
+// IConfigureStrandMover
+public:
    // offset limits and default increments for harped strands
    STDMETHOD(SetHarpedStrandOffsetBounds)(Float64 topElevation, Float64 Hg,
                                           Float64 topStartElevationBoundary,Float64 botStartElevationBoundary,
                                           Float64 topHp1ElevationBoundary,Float64 botHp1ElevationBoundary,
                                           Float64 topHp2ElevationBoundary,Float64 botHp2ElevationBoundary,
                                           Float64 topEndElevationBoundary,Float64 botEndElevationBoundary,
-                                          Float64 endIncrement,Float64 hpIncrement);
+                                          Float64 endIncrement,Float64 hpIncrement) override;
    // remove all regions
-   STDMETHOD(ClearAll)();
+   STDMETHOD(ClearAll)() override;
    // Add a shape that is to be tested for PointInShape, and arcSlope (x/y) that a strand
    // point is to be moved along
-   STDMETHOD(AddRegion)(IShape* shape, Float64 arcSlope);
+   STDMETHOD(AddRegion)(IShape* shape, Float64 arcSlope) override;
    // debuggin
-   STDMETHOD(get_NumRegions)(ZoneIndexType* pNum);
-   STDMETHOD(GetRegion)(ZoneIndexType index, IShape** shape, Float64* arcSlope);
+   STDMETHOD(GetRegionCount)(ZoneIndexType* pNum) const override;
+   STDMETHOD(GetRegion)(ZoneIndexType index, IShape** shape, Float64* arcSlope) const override;
 
 private:
    Float64 m_TopElevation;

@@ -23,7 +23,7 @@
 #pragma once
 
 #ifndef _PGSUPER_VERSION
-#define _PGSUPER_VERSION 318 // version 3.1.8
+#define _PGSUPER_VERSION 400 // version 4.0.0
 #endif
 
 #include <\ARP\BridgeLink\Include\BridgeLinkVersion.h>

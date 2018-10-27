@@ -209,22 +209,26 @@ void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker, const std::vec
    GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval();
    IntervalIndexType castDiaphragmIntervalIdx = pIntervals->GetCastIntermediateDiaphragmsInterval();
+   IntervalIndexType castShearKeyIntervalIdx = pIntervals->GetCastShearKeyInterval();
    IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval();
    IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval();
    IntervalIndexType overlayIntervalIdx       = pIntervals->GetOverlayInterval();
+   IntervalIndexType noncompositeUserLoadIntervalIdx = pIntervals->GetNoncompositeUserLoadInterval();
+   IntervalIndexType compositeUserLoadIntervalIdx = pIntervals->GetCompositeUserLoadInterval();
 
    // Build table column by column
    std::vector<CSegmentKey> BeamsWithExcessCamber;
    bool bFirst(true);
    ColumnIndexType col = isSingleGirder ? 2 : 1; 
-   for (ColumnIndexType gdr_idx=startIdx; gdr_idx<=endIdx; gdr_idx++)
+   for (ColumnIndexType gdr_idx = startIdx; gdr_idx <= endIdx; gdr_idx++)
    {
       CGirderKey girderKey(girderList[gdr_idx]);
 
       // Get Midspan poi
-      std::vector<pgsPointOfInterest> vPoi = pIPOI->GetPointsOfInterest(CSegmentKey(girderKey,0),POI_5L | POI_ERECTED_SEGMENT);
-      ATLASSERT(vPoi.size()==1);
-      pgsPointOfInterest poi = *vPoi.begin();
+      PoiList vPoi;
+      pIPOI->GetPointsOfInterest(CSegmentKey(girderKey, 0), POI_5L | POI_ERECTED_SEGMENT,&vPoi);
+      ATLASSERT(vPoi.size() == 1);
+      const pgsPointOfInterest& poi(vPoi.front());
 
       const CSegmentKey& segmentKey(poi.GetSegmentKey());
 
@@ -239,15 +243,25 @@ void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker, const std::vec
       Float64 delta_oll;  // due to optional live load
       Float64 temp;
 
-      delta_gdr = pProductForces->GetGirderDeflectionForCamber( poi );
+      delta_gdr = pProductForces->GetGirderDeflectionForCamber(poi);
 
       pgsTypes::BridgeAnalysisType bat = (analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan);
 
-      delta_dl = pProductForces->GetDeflection(castDeckIntervalIdx, pgsTypes::pftSlab, poi, bat, rtCumulative, false )
-               + pProductForces->GetDeflection(castDeckIntervalIdx, pgsTypes::pftSlabPanel, poi, bat, rtCumulative, false )
-               + pProductForces->GetDeflection(castDiaphragmIntervalIdx, pgsTypes::pftDiaphragm, poi, bat, rtCumulative, false );
-
-      delta_sk = pProductForces->GetDeflection(castDeckIntervalIdx, pgsTypes::pftShearKey, poi, bat, rtCumulative, false );
+      delta_dl = pProductForces->GetDeflection(castDiaphragmIntervalIdx, pgsTypes::pftDiaphragm, poi, bat, rtCumulative, false);
+      if (castDeckIntervalIdx != INVALID_INDEX)
+      {
+         delta_dl += pProductForces->GetDeflection(castDeckIntervalIdx, pgsTypes::pftSlab, poi, bat, rtCumulative, false) +
+                   + pProductForces->GetDeflection(castDeckIntervalIdx, pgsTypes::pftSlabPanel, poi, bat, rtCumulative, false);
+      }
+   
+      if (castShearKeyIntervalIdx == INVALID_INDEX)
+      {
+         delta_sk = 0;
+      }
+      else
+      {
+         delta_sk = pProductForces->GetDeflection(castShearKeyIntervalIdx, pgsTypes::pftShearKey, poi, bat, rtCumulative, false);
+      }
       
       if ( overlayIntervalIdx == INVALID_INDEX )
       {
@@ -261,8 +275,8 @@ void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker, const std::vec
       delta_tb = pProductForces->GetDeflection(railingSystemIntervalIdx, pgsTypes::pftTrafficBarrier, poi, bat, rtCumulative, false );
       delta_sw = pProductForces->GetDeflection(railingSystemIntervalIdx, pgsTypes::pftSidewalk, poi, bat, rtCumulative, false );
 
-      Float64 delta_dcu = pProductForces->GetDeflection(railingSystemIntervalIdx,pgsTypes::pftUserDC, poi, bat, rtCumulative, false);
-      Float64 delta_dwu = pProductForces->GetDeflection(railingSystemIntervalIdx,pgsTypes::pftUserDW, poi, bat, rtCumulative, false);
+      Float64 delta_dcu = pProductForces->GetDeflection(compositeUserLoadIntervalIdx,pgsTypes::pftUserDC, poi, bat, rtCumulative, false);
+      Float64 delta_dwu = pProductForces->GetDeflection(compositeUserLoadIntervalIdx,pgsTypes::pftUserDW, poi, bat, rtCumulative, false);
 
       pProductForces->GetLiveLoadDeflection(liveLoadIntervalIdx, pgsTypes::lltDesign, poi, bat, true, false, &delta_ll, &temp );
 
@@ -292,48 +306,48 @@ void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker, const std::vec
       }
 
       // Unfactored Design camber
-      if (bFirst)
-         (*pTable)(row,0) << _T("Unfactored Design Camber");
+         if (bFirst)
+            (*pTable)(row,0) << _T("Unfactored Design Camber");
 
       Float64 Du = pCamber->GetDCamberForGirderScheduleUnfactored( poi,CREEP_MAXTIME);
       if ( Du < 0 )
-      {
-         if (isSingleGirder)
+         {
+            if (isSingleGirder)
             (*pTable)(row,1) << color(Red) << disp.SetValue( Du ) << color(Black);
 
          (*pTable)(row,col) << color(Red) << dispft.SetValue( Du ) << color(Black);
-      }
-      else
-      {
-         if (isSingleGirder)
+         }
+         else
+         {
+            if (isSingleGirder)
             (*pTable)(row,1) << disp.SetValue( Du );
 
          (*pTable)(row,col) << dispft.SetValue( Du );
       }
 
-      row++;
+         row++;
 
       // Factored design camber
-      if (bFirst)
-         (*pTable)(row,0) << _T("Factored Design Camber, ")<<Sub2(symbol(DELTA),_T("4"))<<Super(_T("**"));
+         if (bFirst)
+            (*pTable)(row,0) << _T("Factored Design Camber, ")<<Sub2(symbol(DELTA),_T("4"))<<Super(_T("**"));
 
       Float64 Df = pCamber->GetDCamberForGirderSchedule( poi,CREEP_MAXTIME);
       if ( Df < 0 )
-      {
-         if (isSingleGirder)
+         {
+            if (isSingleGirder)
             (*pTable)(row,1) << color(Red) << disp.SetValue( Df ) << color(Black);
 
          (*pTable)(row,col) << color(Red) << dispft.SetValue( Df ) << color(Black);
-      }
-      else
-      {
-         if (isSingleGirder)
+         }
+         else
+         {
+            if (isSingleGirder)
             (*pTable)(row,1) << disp.SetValue( Df );
 
          (*pTable)(row,col) << dispft.SetValue( Df );
-      }
+         }
 
-      row++;
+         row++;
 
       if ( 0 < pSegmentData->GetStrandData(segmentKey)->GetStrandCount(pgsTypes::Temporary) && pSegmentData->GetStrandData(segmentKey)->GetTemporaryStrandUsage() != pgsTypes::ttsPTBeforeShipping )
       {

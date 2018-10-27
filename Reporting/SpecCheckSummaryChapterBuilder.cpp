@@ -210,11 +210,11 @@ void CSpecCheckSummaryChapterBuilder::CreateContent(rptChapter* pChapter, IBroke
       ListVariousFailures(pBroker,failures,pGirderArtifact,m_ReferToDetailsReport);
 
       // Put failures into report
-      for (FailureListIterator it=failures.begin(); it!=failures.end(); it++)
+      for ( const auto& failure : failures)
       {
          rptParagraph* pPara = new rptParagraph;
          *pChapter << pPara;
-         *pPara << *it << rptNewLine;
+         *pPara << failure << rptNewLine;
       }
    }
 
@@ -254,9 +254,10 @@ void CSpecCheckSummaryChapterBuilder::CreateContent(rptChapter* pChapter, IBroke
       for ( SpanIndexType spanIdx = startSpanIdx; spanIdx <= endSpanIdx; spanIdx++ )
       {
          CSpanKey spanKey(spanIdx,girderKey.girderIndex);
-         std::vector<pgsPointOfInterest> vPoi = pPointOfInterest->GetPointsOfInterest(spanKey,POI_SPAN | POI_5L);
+         PoiList vPoi;
+         pPointOfInterest->GetPointsOfInterest(spanKey, POI_5L | POI_SPAN, &vPoi);
          ATLASSERT(vPoi.size()==1);
-         pgsPointOfInterest poiMidSpan(vPoi.front());
+         const pgsPointOfInterest& poiMidSpan(vPoi.front());
    
          Float64 C = 0;
          if ( deckType != pgsTypes::sdtNone )

@@ -33,6 +33,7 @@
 #include <Reporting\DeckElevationChapterBuilder.h>
 #include <Reporting\PierGeometryChapterBuilder.h>
 #include <Reporting\GirderGeometryChapterBuilder.h>
+#include "Reporting\BearingSeatElevationsChapterBuilder2.h"
 
 #include <Reporting\BridgeDescChapterBuilder.h>
 #include <Reporting\BridgeDescDetailsChapterBuilder.h>
@@ -59,6 +60,7 @@
 #include <Reporting\EffFlangeWidthDetailsChapterBuilder.h>
 #include <Reporting\UserDefinedLoadsChapterBuilder.h>
 #include <Reporting\CastingYardRebarRequirementChapterBuilder.h>
+#include <Reporting\BearingSeatElevationsDetailsChapterBuilder2.h>
 
 #include <Reporting\LoadRatingChapterBuilder.h>
 #include <Reporting\LoadRatingDetailsChapterBuilder.h>
@@ -148,6 +150,8 @@ void CReporterBase::CreateBridgeGeometryReport()
    pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CDeckElevationChapterBuilder) );
    pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CPierGeometryChapterBuilder) );
    pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CGirderGeometryChapterBuilder) );
+   pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CBearingSeatElevationsChapterBuilder2) );
+   pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CBearingSeatElevationsDetailsChapterBuilder2) );
    pRptMgr->AddReportBuilder( pRptBuilder.release() );
 }
 
@@ -165,6 +169,7 @@ void CReporterBase::CreateDetailsReport()
    pRptBuilder->SetReportSpecificationBuilder( pGirderRptSpecBuilder );
    pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CAlignmentChapterBuilder) );
    pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CDeckElevationChapterBuilder) );
+   pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CBearingSeatElevationsChapterBuilder2) );
    pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CBridgeDescChapterBuilder) );
    pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CIntervalChapterBuilder) );
    pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CSpanDataChapterBuilder) );
@@ -193,6 +198,7 @@ void CReporterBase::CreateDetailsReport()
    pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CCreepCoefficientChapterBuilder) );
    pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CCamberChapterBuilder) );
    pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CADimChapterBuilder) );
+   pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CBearingSeatElevationsDetailsChapterBuilder2) );
    pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CBearingDesignParametersChapterBuilder) );
    pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CLiftingCheckDetailsChapterBuilder) );
    pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CHaulingCheckDetailsChapterBuilder) );

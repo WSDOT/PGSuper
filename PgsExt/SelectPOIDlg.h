@@ -50,7 +50,7 @@ protected:
 public:
    virtual BOOL OnInitDialog() override;
 
-   std::vector<pgsPointOfInterest> m_vPOI;
+   PoiList m_vPOI;
 
    CComboBox m_cbGroup;
    CComboBox m_cbGirder;

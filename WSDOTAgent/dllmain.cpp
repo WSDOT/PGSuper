@@ -24,7 +24,6 @@
 
 #include "stdafx.h"
 #include "resource.h"
-#include "WSDOTAgent_i.h"
 #include "dllmain.h"
 
 CWSDOTAgentModule _AtlModule;

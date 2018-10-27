@@ -28,6 +28,8 @@
 #include <IFace\AnalysisResults.h>
 #include <IFace\Project.h>
 
+#include <PgsExt\BridgeDescription2.h>
+
 
 #include <WBFLCogo.h>
 
@@ -55,25 +57,48 @@ CPGSuperChapterBuilder(bSelect)
 //======================== OPERATIONS =======================================
 LPCTSTR CDeckElevationChapterBuilder::GetName() const
 {
-   return TEXT("Deck Elevations");
+   return TEXT("Roadway Elevations");
 }
 
 rptChapter* CDeckElevationChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
 {
-   USES_CONVERSION;
-
    CBrokerReportSpecification* pSpec = dynamic_cast<CBrokerReportSpecification*>(pRptSpec);
    CComPtr<IBroker> pBroker;
    pSpec->GetBroker(&pBroker);
 
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
+   const CBridgeDescription2* pBridge = pIBridgeDesc->GetBridgeDescription();
+   if (pBridge->GetDeckDescription()->GetDeckType() == pgsTypes::sdtNone)
+   {
+      return BuildNoDeck(pRptSpec, level);
+   }
+   else
+   {
+      return BuildDeckOnGirder(pRptSpec, level);
+   }
 
-   rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
+}
+
+
+CChapterBuilder* CDeckElevationChapterBuilder::Clone() const
+{
+   return new CDeckElevationChapterBuilder;
+}
+
+rptChapter* CDeckElevationChapterBuilder::BuildDeckOnGirder(CReportSpecification* pRptSpec, Uint16 level) const
+{
+   CBrokerReportSpecification* pSpec = dynamic_cast<CBrokerReportSpecification*>(pRptSpec);
+   CComPtr<IBroker> pBroker;
+   pSpec->GetBroker(&pBroker);
+
+   GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
+
+   rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec, level);
 
    CGirderReportSpecification* pSGRptSpec = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
 
    CGirderKey girderKey;
-   if ( pSGRptSpec )
+   if (pSGRptSpec)
    {
       girderKey = pSGRptSpec->GetGirderKey();
    }
@@ -91,14 +116,14 @@ rptChapter* CDeckElevationChapterBuilder::Build(CReportSpecification* pRptSpec,U
    // Bridge Elevation Table
    //
 
-   INIT_UV_PROTOTYPE( rptLengthSectionValue, webDim, pDisplayUnits->GetSpanLengthUnit(), false );
-   INIT_UV_PROTOTYPE( rptLengthSectionValue, dist, pDisplayUnits->GetSpanLengthUnit(), false );
-   INIT_UV_PROTOTYPE( rptLengthSectionValue, cogoPoint, pDisplayUnits->GetAlignmentLengthUnit(), true );
+   INIT_UV_PROTOTYPE(rptLengthSectionValue, webDim, pDisplayUnits->GetSpanLengthUnit(), false);
+   INIT_UV_PROTOTYPE(rptLengthSectionValue, dist, pDisplayUnits->GetSpanLengthUnit(), false);
+   INIT_UV_PROTOTYPE(rptLengthSectionValue, cogoPoint, pDisplayUnits->GetAlignmentLengthUnit(), true);
 
-   GET_IFACE2(pBroker, IBridge,pBridge);
+   GET_IFACE2(pBroker, IBridge, pBridge);
    GET_IFACE2(pBroker, IRoadway, pAlignment);
-   GET_IFACE2(pBroker, IPointOfInterest, pPOI);
-   GET_IFACE2(pBroker, IGirder, pGirder );
+   GET_IFACE2(pBroker, IPointOfInterest, pPoi);
+   GET_IFACE2(pBroker, IGirder, pGirder);
 
    RowIndexType row_step = 4; // number of rows reported for each web
 
@@ -106,110 +131,107 @@ rptChapter* CDeckElevationChapterBuilder::Build(CReportSpecification* pRptSpec,U
    GroupIndexType nGroups = pBridge->GetGirderGroupCount();
 
    SpanIndexType startSpanIdx = (girderKey.groupIndex == ALL_GROUPS ? 0 : pBridge->GetGirderGroupStartSpan(girderKey.groupIndex));
-   SpanIndexType endSpanIdx   = (girderKey.groupIndex == ALL_GROUPS ? nSpans-1 : pBridge->GetGirderGroupEndSpan(girderKey.groupIndex));
+   SpanIndexType endSpanIdx = (girderKey.groupIndex == ALL_GROUPS ? nSpans - 1 : pBridge->GetGirderGroupEndSpan(girderKey.groupIndex));
 
-   for ( SpanIndexType spanIdx = startSpanIdx; spanIdx <= endSpanIdx; spanIdx++ )
+   for (SpanIndexType spanIdx = startSpanIdx; spanIdx <= endSpanIdx; spanIdx++)
    {
       std::_tostringstream os;
       os << _T("Span ") << LABEL_SPAN(spanIdx) << std::endl;
-      rptRcTable* pTable = rptStyleManager::CreateDefaultTable(14,os.str().c_str());
+      rptRcTable* pTable = rptStyleManager::CreateDefaultTable(14, os.str().c_str());
       (*pPara) << pTable << rptNewLine;
 
       pTable->SetNumberOfHeaderRows(1);
       pTable->SetNumberOfStripedRows(row_step); // stripe in bands of row_step
 
       ColumnIndexType col = 0;
-      for ( col = 0; col < pTable->GetNumberOfColumns(); col++ )
+      for (col = 0; col < pTable->GetNumberOfColumns(); col++)
       {
-         pTable->SetColumnStyle(col,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
-         pTable->SetStripeRowColumnStyle(col,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+         pTable->SetColumnStyle(col, rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+         pTable->SetStripeRowColumnStyle(col, rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
       }
 
       col = 0;
-      (*pTable)(0,col++) << _T("Girder");
-      (*pTable)(0,col++) << _T("Web");
-      (*pTable)(0,col++) << _T("");
-      (*pTable)(0,col++) << _T("CL Brg");
-      (*pTable)(0,col++) << Sub2(_T("0.1L"),_T("s"));
-      (*pTable)(0,col++) << Sub2(_T("0.2L"),_T("s"));
-      (*pTable)(0,col++) << Sub2(_T("0.3L"),_T("s"));
-      (*pTable)(0,col++) << Sub2(_T("0.4L"),_T("s"));
-      (*pTable)(0,col++) << Sub2(_T("0.5L"),_T("s"));
-      (*pTable)(0,col++) << Sub2(_T("0.6L"),_T("s"));
-      (*pTable)(0,col++) << Sub2(_T("0.7L"),_T("s"));
-      (*pTable)(0,col++) << Sub2(_T("0.8L"),_T("s"));
-      (*pTable)(0,col++) << Sub2(_T("0.9L"),_T("s"));
-      (*pTable)(0,col++) << _T("CL Brg");
+      (*pTable)(0, col++) << _T("Girder");
+      (*pTable)(0, col++) << _T("Web");
+      (*pTable)(0, col++) << _T("");
+      (*pTable)(0, col++) << _T("CL Brg");
+      (*pTable)(0, col++) << Sub2(_T("0.1L"), _T("s"));
+      (*pTable)(0, col++) << Sub2(_T("0.2L"), _T("s"));
+      (*pTable)(0, col++) << Sub2(_T("0.3L"), _T("s"));
+      (*pTable)(0, col++) << Sub2(_T("0.4L"), _T("s"));
+      (*pTable)(0, col++) << Sub2(_T("0.5L"), _T("s"));
+      (*pTable)(0, col++) << Sub2(_T("0.6L"), _T("s"));
+      (*pTable)(0, col++) << Sub2(_T("0.7L"), _T("s"));
+      (*pTable)(0, col++) << Sub2(_T("0.8L"), _T("s"));
+      (*pTable)(0, col++) << Sub2(_T("0.9L"), _T("s"));
+      (*pTable)(0, col++) << _T("CL Brg");
 
       RowIndexType row = pTable->GetNumberOfHeaderRows();
       col = 0;
 
       GirderIndexType nGirders = pBridge->GetGirderCountBySpan(spanIdx);
       GirderIndexType startGirderIdx = (girderKey.girderIndex == ALL_GIRDERS ? 0 : girderKey.girderIndex);
-      GirderIndexType endGirderIdx   = (girderKey.girderIndex == ALL_GIRDERS ? nGirders-1 : startGirderIdx);
+      GirderIndexType endGirderIdx = (girderKey.girderIndex == ALL_GIRDERS ? nGirders - 1 : startGirderIdx);
 
-      for ( GirderIndexType gdrIdx = startGirderIdx; gdrIdx <= endGirderIdx; gdrIdx++ )
+      for (GirderIndexType gdrIdx = startGirderIdx; gdrIdx <= endGirderIdx; gdrIdx++)
       {
-         CSpanKey spanKey(spanIdx,gdrIdx);
+         CSpanKey spanKey(spanIdx, gdrIdx);
 
-         std::vector<pgsPointOfInterest> vPoi( pPOI->GetPointsOfInterest(spanKey,POI_SPAN | POI_TENTH_POINTS) );
+         PoiList vPoi;
+         pPoi->GetPointsOfInterest(spanKey, POI_SPAN | POI_TENTH_POINTS, &vPoi);
          ATLASSERT(vPoi.size() == 11);
 
          GroupIndexType grpIdx = pBridge->GetGirderGroupIndex(spanIdx);
-         CSegmentKey segmentKey(grpIdx,gdrIdx,0);
+         CSegmentKey segmentKey(grpIdx, gdrIdx, 0);
 
          MatingSurfaceIndexType nWebs = pGirder->GetNumberOfMatingSurfaces(segmentKey);
-         pTable->SetRowSpan(row,0,Int16(row_step*nWebs));
+         pTable->SetRowSpan(row, 0, Int16(row_step*nWebs));
 
          RowIndexType r;
-         for ( r = row+1; r < row+row_step*nWebs; r++ )
+         for (r = row + 1; r < row + row_step*nWebs; r++)
          {
-            pTable->SetRowSpan(r,0,SKIP_CELL);
-            pTable->SetRowSpan(r,1,SKIP_CELL);
+            pTable->SetRowSpan(r, 0, SKIP_CELL);
+            pTable->SetRowSpan(r, 1, SKIP_CELL);
          }
 
-         (*pTable)(row,0) << LABEL_GIRDER(gdrIdx);
+         (*pTable)(row, 0) << LABEL_GIRDER(gdrIdx);
 
-         for ( MatingSurfaceIndexType web = 0; web < nWebs; web++ )
+         for (MatingSurfaceIndexType web = 0; web < nWebs; web++)
          {
             col = 1;
 
-            pTable->SetRowSpan(row,col,row_step);
-            for ( r = row+1; r < row+row_step; r++ )
+            pTable->SetRowSpan(row, col, row_step);
+            for (r = row + 1; r < row + row_step; r++)
             {
-               pTable->SetRowSpan(r,col,SKIP_CELL);
+               pTable->SetRowSpan(r, col, SKIP_CELL);
             }
 
-            (*pTable)(row,col++) << MatingSurfaceIndexType(web+1) << rptNewLine;
+            (*pTable)(row, col++) << MatingSurfaceIndexType(web + 1) << rptNewLine;
 
-            (*pTable)(row,col)   << Bold(_T("Web Offset (")) << Bold(pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure.UnitTag() ) << Bold(_T(")"));
-            (*pTable)(row+1,col) << Bold(_T("Station"));
-            (*pTable)(row+2,col) << Bold(_T("Offset (")) << Bold(pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure.UnitTag() ) << Bold(_T(")"));
-            (*pTable)(row+3,col) << Bold(_T("Elev (")) << Bold(pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure.UnitTag() ) << Bold(_T(")"));
-            
+            (*pTable)(row, col) << Bold(_T("Web Offset (")) << Bold(pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure.UnitTag()) << Bold(_T(")"));
+            (*pTable)(row + 1, col) << Bold(_T("Station"));
+            (*pTable)(row + 2, col) << Bold(_T("Offset (")) << Bold(pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure.UnitTag()) << Bold(_T(")"));
+            (*pTable)(row + 3, col) << Bold(_T("Elev (")) << Bold(pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure.UnitTag()) << Bold(_T(")"));
+
             col++;
 
-            std::vector<pgsPointOfInterest>::iterator iter(vPoi.begin());
-            std::vector<pgsPointOfInterest>::iterator end(vPoi.end());
-            for ( ; iter != end; iter++ )
+            for (const pgsPointOfInterest& poi : vPoi)
             {
-               pgsPointOfInterest& poi = *iter;
-
                // offset to centerline of web, measured from centerline of girder
                // < 0 = left of centerline
                // in a nonprismatic member, web offset can  very with location
-               Float64 webOffset = pGirder->GetMatingSurfaceLocation(poi,web);
+               Float64 webOffset = pGirder->GetMatingSurfaceLocation(poi, web);
 
                Float64 sta, offset;
-               pBridge->GetStationAndOffset(poi,&sta,&offset);
+               pBridge->GetStationAndOffset(poi, &sta, &offset);
 
                Float64 total_offset = offset + webOffset;
-               Float64 elev = pAlignment->GetElevation(sta,total_offset);
+               Float64 elev = pAlignment->GetElevation(sta, total_offset);
 
-               (*pTable)(row,col)   << RPT_OFFSET(webOffset,dist);
-               (*pTable)(row+1,col) << rptRcStation(sta, &pDisplayUnits->GetStationFormat() );
-               (*pTable)(row+2,col) << RPT_OFFSET(total_offset,dist);
-               (*pTable)(row+3,col) << dist.SetValue(elev);
+               (*pTable)(row, col) << RPT_OFFSET(webOffset, dist);
+               (*pTable)(row + 1, col) << rptRcStation(sta, &pDisplayUnits->GetStationFormat());
+               (*pTable)(row + 2, col) << RPT_OFFSET(total_offset, dist);
+               (*pTable)(row + 3, col) << dist.SetValue(elev);
 
                col++;
             }
@@ -222,27 +244,253 @@ rptChapter* CDeckElevationChapterBuilder::Build(CReportSpecification* pRptSpec,U
    return pChapter;
 }
 
-
-CChapterBuilder* CDeckElevationChapterBuilder::Clone() const
+rptChapter* CDeckElevationChapterBuilder::BuildNoDeck(CReportSpecification* pRptSpec, Uint16 level) const
 {
-   return new CDeckElevationChapterBuilder;
+   CBrokerReportSpecification* pSpec = dynamic_cast<CBrokerReportSpecification*>(pRptSpec);
+   CComPtr<IBroker> pBroker;
+   pSpec->GetBroker(&pBroker);
+
+   GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
+
+   rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec, level);
+
+   CGirderReportSpecification* pSGRptSpec = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
+
+   CGirderKey girderKey;
+   if (pSGRptSpec)
+   {
+      girderKey = pSGRptSpec->GetGirderKey();
+   }
+
+   rptParagraph* pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
+   *pPara << _T("Design and Finished Elevations") << rptNewLine;
+   (*pChapter) << pPara;
+
+   pPara = new rptParagraph();
+   (*pChapter) << pPara;
+   *pPara << _T("Design elevations are the deck surface elevations defined by the alignment, profile, and superelevations") << rptNewLine;
+   *pPara << _T("Finished elevations are the top of the finished girder, or overlay if applicable, including the effects of camber") << rptNewLine;
+
+   GET_IFACE2(pBroker,ILibrary, pLib);
+   GET_IFACE2(pBroker, ISpecification, pISpec);
+   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pISpec->GetSpecification().c_str());
+   Float64 tolerance = pSpecEntry->GetFinishedElevationTolerance();
+   
+   INIT_UV_PROTOTYPE(rptLengthSectionValue, dim1, pDisplayUnits->GetSpanLengthUnit(), true);
+   INIT_UV_PROTOTYPE(rptLengthSectionValue, dim2, pDisplayUnits->GetComponentDimUnit(), true);
+   *pPara << _T("Finished elevations in red text differ from the design elevation by more than ") << symbol(PLUS_MINUS) << dim1.SetValue(tolerance) << _T(" (") << symbol(PLUS_MINUS) << dim2.SetValue(tolerance) << _T(")") << rptNewLine;
+
+   GET_IFACE2(pBroker, IBridge, pBridge);
+   GET_IFACE2(pBroker,IBridgeDescription, pIBridgeDesc);
+   const CDeckDescription2* pDeck = pIBridgeDesc->GetDeckDescription();
+   Float64 overlay = 0;
+   if (pDeck->WearingSurface == pgsTypes::wstOverlay)
+   {
+      overlay = pBridge->GetOverlayDepth();
+
+      if (pDeck->bInputAsDepthAndDensity == false)
+      {
+         INIT_UV_PROTOTYPE(rptLengthSectionValue, olay, pDisplayUnits->GetComponentDimUnit(), true);
+         *pPara << _T("Overlay is defined by weight. Overlay depth assumed to be ") << olay.SetValue(overlay) << _T(".") << rptNewLine;
+      }
+   }
+
+   //
+   // Bridge Elevation Table
+   //
+
+   INIT_UV_PROTOTYPE(rptLengthSectionValue, webDim, pDisplayUnits->GetSpanLengthUnit(), false);
+   INIT_UV_PROTOTYPE(rptLengthSectionValue, dist, pDisplayUnits->GetSpanLengthUnit(), false);
+   INIT_UV_PROTOTYPE(rptLengthSectionValue, cogoPoint, pDisplayUnits->GetAlignmentLengthUnit(), true);
+
+   GET_IFACE2(pBroker, IRoadway, pAlignment);
+   GET_IFACE2(pBroker, IPointOfInterest, pPoi);
+   GET_IFACE2(pBroker, IGirder, pGirder);
+   GET_IFACE2(pBroker, IGeometry, pGeometry);
+
+   RowIndexType row_step = 4; // number of rows used for each location (left,center,right)
+
+   SpanIndexType nSpans = pBridge->GetSpanCount();
+   GroupIndexType nGroups = pBridge->GetGirderGroupCount();
+
+   SpanIndexType startSpanIdx = (girderKey.groupIndex == ALL_GROUPS ? 0 : pBridge->GetGirderGroupStartSpan(girderKey.groupIndex));
+   SpanIndexType endSpanIdx = (girderKey.groupIndex == ALL_GROUPS ? nSpans - 1 : pBridge->GetGirderGroupEndSpan(girderKey.groupIndex));
+
+
+   const int Left = 0;
+   const int Center = 1;
+   const int Right = 2;
+
+   CComPtr<IDirection> direction;
+   direction.CoCreateInstance(CLSID_Direction);
+
+   LPCTSTR lpszLocation[] = { _T("Left"),_T("Center"),_T("Right") };
+
+   for (SpanIndexType spanIdx = startSpanIdx; spanIdx <= endSpanIdx; spanIdx++)
+   {
+      PierIndexType startPierIdx = (PierIndexType)spanIdx;
+      PierIndexType endPierIdx = startPierIdx + 1;
+      CComPtr<IDirection> brgStart, brgEnd;
+      pBridge->GetPierDirection(startPierIdx, &brgStart);
+      pBridge->GetPierDirection(endPierIdx, &brgEnd);
+
+      Float64 startBearing, endBearing;
+      brgStart->get_Value(&startBearing);
+      brgEnd->get_Value(&endBearing);
+
+      Float64 brgStep = (endBearing - startBearing) / 11; // 10th points so use 11
+      Float64 bearing = startBearing;
+      direction->put_Value(bearing);
+
+      std::_tostringstream os;
+      os << _T("Span ") << LABEL_SPAN(spanIdx) << std::endl;
+      rptRcTable* pTable = rptStyleManager::CreateDefaultTable(14, os.str().c_str());
+      (*pPara) << pTable << rptNewLine;
+
+      pTable->SetNumberOfHeaderRows(1);
+      pTable->SetNumberOfStripedRows(row_step); // stripe in bands of row_step
+
+      ColumnIndexType col = 0;
+      for (col = 0; col < 3; col++)
+      {
+         pTable->SetColumnStyle(col, rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+         pTable->SetStripeRowColumnStyle(col, rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+      }
+
+      col = 0;
+      (*pTable)(0, col++) << _T("Girder");
+      
+      (*pTable)(0, col) << _T("Location");
+      pTable->SetColumnSpan(0, col, 2);
+      pTable->SetColumnSpan(0, col + 1, SKIP_CELL);
+      col += 2;
+
+      (*pTable)(0, col++) << _T("CL Brg");
+      (*pTable)(0, col++) << Sub2(_T("0.1L"), _T("s"));
+      (*pTable)(0, col++) << Sub2(_T("0.2L"), _T("s"));
+      (*pTable)(0, col++) << Sub2(_T("0.3L"), _T("s"));
+      (*pTable)(0, col++) << Sub2(_T("0.4L"), _T("s"));
+      (*pTable)(0, col++) << Sub2(_T("0.5L"), _T("s"));
+      (*pTable)(0, col++) << Sub2(_T("0.6L"), _T("s"));
+      (*pTable)(0, col++) << Sub2(_T("0.7L"), _T("s"));
+      (*pTable)(0, col++) << Sub2(_T("0.8L"), _T("s"));
+      (*pTable)(0, col++) << Sub2(_T("0.9L"), _T("s"));
+      (*pTable)(0, col++) << _T("CL Brg");
+
+      RowIndexType row = pTable->GetNumberOfHeaderRows();
+
+      GirderIndexType nGirders = pBridge->GetGirderCountBySpan(spanIdx);
+      GirderIndexType startGirderIdx = (girderKey.girderIndex == ALL_GIRDERS ? 0 : girderKey.girderIndex);
+      GirderIndexType endGirderIdx = (girderKey.girderIndex == ALL_GIRDERS ? nGirders - 1 : startGirderIdx);
+
+      for (GirderIndexType gdrIdx = startGirderIdx; gdrIdx <= endGirderIdx; gdrIdx++)
+      {
+         CSpanKey spanKey(spanIdx, gdrIdx);
+
+         PoiList vPoi;
+         pPoi->GetPointsOfInterest(spanKey, POI_SPAN | POI_TENTH_POINTS, &vPoi);
+         ATLASSERT(vPoi.size() == 11);
+
+         GroupIndexType grpIdx = pBridge->GetGirderGroupIndex(spanIdx);
+         CSegmentKey segmentKey(grpIdx, gdrIdx, 0);
+
+         CComPtr<IDirection> segmentNormal;
+         pBridge->GetSegmentNormal(segmentKey,&segmentNormal);
+
+         CComPtr<IAngle> skewAngle;
+         direction->AngleBetween(segmentNormal, &skewAngle);
+
+         Float64 angle;
+         skewAngle->get_Value(&angle);
+
+
+         col = 0;
+
+         pTable->SetRowSpan(row, col, Int16(3 * row_step));
+         (*pTable)(row, col) << LABEL_GIRDER(gdrIdx);
+
+         RowIndexType r;
+         for (r = row + 1; r < row + 3*row_step; r++)
+         {
+            pTable->SetRowSpan(r, col, SKIP_CELL);
+         }
+
+         for (int i = 0; i < 3; i++) // left, center, right
+         {
+            col = 1;
+            pTable->SetRowSpan(row + i*row_step, col, row_step);
+            for (r = row + i*row_step + 1; r < row + (i+1)*row_step; r++)
+            {
+               pTable->SetRowSpan(r, col, SKIP_CELL);
+            }
+            (*pTable)(row + i*row_step, col) << lpszLocation[i] << rptNewLine;
+
+            col = 2;
+
+            (*pTable)(row + i*row_step + 0, col) << Bold(_T("Station"));
+            (*pTable)(row + i*row_step + 1, col) << Bold(_T("Offset (")) << Bold(pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure.UnitTag()) << Bold(_T(")"));
+            (*pTable)(row + i*row_step + 2, col) << Bold(_T("Design Elev (")) << Bold(pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure.UnitTag()) << Bold(_T(")"));
+            (*pTable)(row + i*row_step + 3, col) << Bold(_T("Finished Elev (")) << Bold(pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure.UnitTag()) << Bold(_T(")"));
+         }
+
+         col = 3;
+
+         for ( const auto& poi : vPoi)
+         {
+            // get parameters for design elevation
+
+            // distance left/right of CL girder, measured normal to CL girder
+            Float64 edge_offset[3] = { 0,0,0 };
+            pGirder->GetTopWidth(poi, &edge_offset[Left], &edge_offset[Right]);
+
+            // CL Girder location
+            CComPtr<IPoint2d> point_on_cl_girder;
+            pBridge->GetPoint(poi, pgsTypes::pcLocal, &point_on_cl_girder);
+
+            // compute location of left and right edge, using the direction of the "cut line"
+            CComPtr<IPoint2d> point_on_left_edge;
+            pGeometry->ByDistDir(point_on_cl_girder, edge_offset[Left] / cos(angle), CComVariant(direction), 0, &point_on_left_edge);
+
+            CComPtr<IPoint2d> point_on_right_edge;
+            pGeometry->ByDistDir(point_on_cl_girder, -edge_offset[Right] / cos(angle), CComVariant(direction), 0, &point_on_right_edge);
+
+            // get station and offset of left, center, and right locations
+            Float64 station[3], offset[3];
+            pAlignment->GetStationAndOffset(pgsTypes::pcLocal, point_on_left_edge, &station[Left], &offset[Left]);
+            pBridge->GetStationAndOffset(poi, &station[Center], &offset[Center]);
+            pAlignment->GetStationAndOffset(pgsTypes::pcLocal, point_on_right_edge, &station[Right], &offset[Right]);
+
+            // get parameters for finished elevation... for no deck, the finished elevation is the top of the girder
+            Float64 finished_elevation[3];
+            pGirder->GetTopGirderElevation(poi, direction, &finished_elevation[Left], &finished_elevation[Center], &finished_elevation[Right]);
+
+
+            for (int i = 0; i < 3; i++) // left, center, right
+            {
+               // so far, finished elevation is just the top of the girder.... need to add the overlay
+               // overlay will be zero if (1) doesn't exist or (2) is a future overlay
+               finished_elevation[i] += overlay;
+
+               Float64 design_elevation = pAlignment->GetElevation(station[i], offset[i]);
+
+               (*pTable)(row + i*row_step + 0, col) << rptRcStation(station[i], &pDisplayUnits->GetStationFormat());
+               (*pTable)(row + i*row_step + 1, col) << RPT_OFFSET(offset[i], dist);
+               (*pTable)(row + i*row_step + 2, col) << dist.SetValue(design_elevation);
+
+               // if finished elevation differs from design_elevation by more than tolerance, use red text for the finished_elevation
+               rptRiStyle::FontColor color = IsEqual(design_elevation, finished_elevation[i], tolerance) ? rptRiStyle::Black : rptRiStyle::Red;
+               rptRcColor* pColor = new rptRcColor(color);
+               (*pTable)(row + i*row_step + 3, col) << pColor << dist.SetValue(finished_elevation[i]) << color(Black);
+            }
+
+            col++;
+            bearing += brgStep;
+            direction->put_Value(bearing);
+         } // next poi
+
+         row += 3 * row_step;
+      } // next girder
+   } // next span
+
+   return pChapter;
 }
-
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PROTECTED  ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PRIVATE    ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-//======================== INQUERY    =======================================

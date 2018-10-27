@@ -82,17 +82,12 @@ private:
    void ReportApproxMethod2005(rptChapter* pChapter,CPsLossEngineer::BeamType beamType,const CGirderKey& girderKey,IEAFDisplayUnits* pDisplayUnits,Uint16 level);
    void ReportRefinedMethodTxDOT2013(rptChapter* pChapter,CPsLossEngineer::BeamType beamType,const CGirderKey& girderKey,IEAFDisplayUnits* pDisplayUnits,Uint16 level);
 
-   typedef std::set< std::pair<pgsPointOfInterest,IntervalIndexType> > PoiSet;
-   typedef std::vector<pgsPointOfInterest> PoiVector;
-
    void ReportLocation( rptRcTable* pTable,RowIndexType row,const pgsPointOfInterest& poi,IEAFDisplayUnits* pDisplayUnits);
    void ReportLocation2(rptRcTable* pTable,RowIndexType row,const pgsPointOfInterest& poi,IEAFDisplayUnits* pDisplayUnits);
 
    void ReportInitialRelaxation(rptChapter* pChapter,bool bTemporaryStrands,const lrfdLosses* pLosses,IEAFDisplayUnits* pDisplayUnits,Uint16 level);
    void ReportLumpSumTimeDependentLossesAtShipping(rptChapter* pChapter,const LOSSDETAILS* pDetails,IEAFDisplayUnits* pDisplayUnits,Uint16 level);
    void ReportLumpSumTimeDependentLosses(rptChapter* pChapter,const LOSSDETAILS* pDetails,IEAFDisplayUnits* pDisplayUnits,Uint16 level);
-
-   void ReportTotalPrestressLoss(rptChapter* pChapter,const CSegmentKey& segmentKey,PoiVector::iterator begin,PoiVector::iterator end,IEAFDisplayUnits* pDisplayUnits,Uint16 level);
 
    void GetLossParameters(const pgsPointOfInterest& poi,const GDRCONFIG& config,
                            lrfdLosses::SectionPropertiesType* pSectionProperties,
@@ -171,7 +166,7 @@ private:
    void ReportFinalLossesRefinedMethod(rptChapter* pChapter,BeamType beamType,const CGirderKey& girderKey,IEAFDisplayUnits* pDisplayUnits);
    void ReportFinalLossesRefinedMethodBefore2005(rptChapter* pChapter,CPsLossEngineer::BeamType beamType,const CGirderKey& girderKey,IEAFDisplayUnits* pDisplayUnits);
 
-   std::vector<pgsPointOfInterest> GetPointsOfInterest(const CGirderKey& girderKey);
+   void GetPointsOfInterest(const CGirderKey& girderKey,PoiList* pPoiList);
 
    bool m_bComputingLossesForDesign; 
 };

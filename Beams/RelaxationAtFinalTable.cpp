@@ -71,7 +71,7 @@ CRelaxationAtFinalTable* CRelaxationAtFinalTable::PrepareTable(rptChapter* pChap
    rptParagraph* pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pParagraph;
 
-   *pParagraph << _T("[5.9.5.4.3c] Relaxation of Prestressing Strands : ") << symbol(DELTA) << RPT_STRESS(_T("pR2")) << rptNewLine;
+   *pParagraph << _T("[") << LrfdCw8th(_T("5.9.5.4.3c"),_T("5.9.3.4.3c")) << _T("] Relaxation of Prestressing Strands : ") << symbol(DELTA) << RPT_STRESS(_T("pR2")) << rptNewLine;
 
    pParagraph = new rptParagraph;
    *pChapter << pParagraph;

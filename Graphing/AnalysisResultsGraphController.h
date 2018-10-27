@@ -28,9 +28,6 @@
 
 #include <IFace\AnalysisResults.h>
 
-#define GRAPH_MODE_INTERVAL  0
-#define GRAPH_MODE_LOADING   1
-
 class CAnalysisResultsGraphController : public CGirderGraphControllerBase
 {
 public:
@@ -38,21 +35,52 @@ public:
    DECLARE_DYNCREATE(CAnalysisResultsGraphController);
 
    // returns one of the GRAPH_MODE_xxx constants
-   int GetGraphMode();
+   enum GraphModeType {Interval, Loading};
+   void SetGraphMode(GraphModeType mode);
+   GraphModeType GetGraphMode() const;
 
-   ActionType GetActionType();
-   ResultsType GetResultsType();
-   bool PlotStresses(pgsTypes::StressLocation stressLocation);
+   void SetResultsType(ResultsType resultsType);
+   ResultsType GetResultsType() const;
+
+   std::vector<ActionType> GetActionTypes() const;
+   LPCTSTR GetActionName(ActionType action) const;
+
+   void SetActionType(ActionType actionType);
+   ActionType GetActionType() const;
+
+   void SetAnalysisType(pgsTypes::AnalysisType analysisType);
+   pgsTypes::AnalysisType GetAnalysisType() const;
+
+   void PlotStresses(pgsTypes::StressLocation stressLocation, bool bPlot);
+   bool PlotStresses(pgsTypes::StressLocation stressLocation) const;
+
+   // These methods are for the drop down list box used to
+   // select either the interval that loads are being graphed for
+   // of a load to graph over multiple intervals
+   IndexType GetGraphTypeCount() const;
+   CString GetGraphType(IndexType idx) const;
+   void SelectGraphType(IndexType idx);
+   void SelectGraphType(LPCTSTR lpszType);
+
+   // These methods are for the list box for each individual graph
+   // Graphs depend on the current graphing mode
+   IndexType GetGraphCount() const;
+   IndexType GetSelectedGraphCount() const;
+   std::vector<IndexType> GetSelectedGraphs() const;
+   CString GetGraphName(IndexType idx) const;
+   void SelectGraph(IndexType idx);
+   void SelectGraphs(const std::vector<IndexType>& vGraphs);
+   void SelectGraph(LPCTSTR lpszGraphName);
+   void SelectGraphs(const std::vector<CString>& vGraphs);
 
    IntervalIndexType GetInterval();
    std::vector<IntervalIndexType> GetSelectedIntervals();
 
-   bool IncludeElevationAdjustment();
+   void IncludeElevationAdjustment(bool bInclude);
+   bool IncludeElevationAdjustment() const;
 
-   pgsTypes::AnalysisType GetAnalysisType();
-
-   IndexType GetMaxGraphCount();
-   IndexType GetGraphCount();
+   void IncludePrecamber(bool bInclude);
+   bool IncludePrecamber() const;
 
    IDType SelectedGraphIndexToGraphID(IndexType graphIdx);
 
@@ -68,6 +96,7 @@ protected:
    afx_msg void OnPlotTypeClicked();
    afx_msg void OnStress();
    afx_msg void OnElevAdjustment();
+   afx_msg void OnPrecamber();
    afx_msg void OnAnalysisTypeClicked();
    //}}AFX_MSG
 
@@ -86,6 +115,7 @@ protected:
 
    void UpdateStressControls();
    void UpdateElevAdjustment();
+   void UpdatePrecamberAdjustment();
    void UpdateAnalysisType();
    void UpdateListInfo();
    void UpdateResultsType();
@@ -93,10 +123,7 @@ protected:
    IntervalIndexType GetFirstInterval();
    IntervalIndexType GetLastInterval();
 
-   // conotrl variables
-   int                    m_GraphMode;
-   ActionType             m_ActionType;
-   pgsTypes::AnalysisType m_AnalysisType;
+   bool m_bHasStructuralDeck;
 
 #ifdef _DEBUG
 public:

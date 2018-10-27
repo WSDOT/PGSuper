@@ -82,39 +82,21 @@
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="..\..\BridgeLink\BridgeLink.props" />
-    <Import Project="..\..\WBFL\WBFL.props" />
-    <Import Project="..\..\BridgeLink\ObjectiveGrid.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="..\..\BridgeLink\BridgeLink.props" />
-    <Import Project="..\..\WBFL\WBFL.props" />
-    <Import Project="..\..\BridgeLink\ObjectiveGrid.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="..\..\BridgeLink\BridgeLink.props" />
-    <Import Project="..\..\WBFL\WBFL.props" />
-    <Import Project="..\..\BridgeLink\ObjectiveGrid.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Profile|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="..\..\BridgeLink\BridgeLink.props" />
-    <Import Project="..\..\WBFL\WBFL.props" />
-    <Import Project="..\..\BridgeLink\ObjectiveGrid.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="..\..\BridgeLink\BridgeLink.props" />
-    <Import Project="..\..\WBFL\WBFL.props" />
-    <Import Project="..\..\BridgeLink\ObjectiveGrid.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="..\..\BridgeLink\BridgeLink.props" />
-    <Import Project="..\..\WBFL\WBFL.props" />
-    <Import Project="..\..\BridgeLink\ObjectiveGrid.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
@@ -419,6 +401,8 @@
     <ClCompile Include="AlignmentChapterBuilder.cpp" />
     <ClCompile Include="BasicCamberChapterBuilder.cpp" />
     <ClCompile Include="BearingDesignParametersChapterBuilder.cpp" />
+    <ClCompile Include="BearingSeatElevationsChapterBuilder2.cpp" />
+    <ClCompile Include="BearingSeatElevationsDetailsChapterBuilder2.cpp" />
     <ClCompile Include="BridgeAnalysisChapterBuilder.cpp" />
     <ClCompile Include="BridgeAnalysisReportDlg.cpp" />
     <ClCompile Include="BridgeAnalysisReportSpecification.cpp" />
@@ -596,6 +580,8 @@
     <ClInclude Include="..\Include\Reporting\AutoLib.h" />
     <ClInclude Include="..\Include\Reporting\BasicCamberChapterBuilder.h" />
     <ClInclude Include="..\Include\Reporting\BearingDesignParametersChapterBuilder.h" />
+    <ClInclude Include="..\Include\Reporting\BearingSeatElevationsChapterBuilder2.h" />
+    <ClInclude Include="..\Include\Reporting\BearingSeatElevationsDetailsChapterBuilder2.h" />
     <ClInclude Include="..\Include\Reporting\BridgeAnalysisChapterBuilder.h" />
     <ClInclude Include="..\Include\Reporting\BridgeAnalysisReportDlg.h" />
     <ClInclude Include="..\Include\Reporting\BridgeAnalysisReportSpecification.h" />

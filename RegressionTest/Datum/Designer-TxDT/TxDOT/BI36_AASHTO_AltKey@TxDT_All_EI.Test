@@ -1,32 +1,46 @@
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 12.17    5   0.00                     1     1    BI-36          19  0.6  270  11.23   5.89   7.00   7.00                                              4.400  5.000   3.631    -3.687     1826   0.210  0.501   3.395 -0.941 -0.121 -0.427 -1.489  53.67  120.60    1.75    5.00    5.00 
+ 12.17    5   0.00                     1     1    BI-36          26  0.6  270  10.75   5.54   6.75   6.75                                              4.100 14.600   5.065    -4.862     2326   0.203  0.497   2.524 -0.531 -0.082 -0.288 -0.900  82.08  211.01    1.75    5.00    5.00 
 
 
+Girder design was Not Successful
 The Specification Check was Not Successful
+Compression stress check failed for Service I Limit State in Interval 2 Prestress Release
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
-Ultimate vertical shear capacity check failed for Strength I Limit State
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
+Stirrup detailing checks failed for the Strength I Limit State.
 Splitting zone check failed.
+Lifting checks failed
+Hauling checks failed
 
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 12.17    5   0.00                     1     2    BI-36          19  0.6  270  11.20   5.87   7.00   7.00                                              4.400  5.000   3.602    -3.627     1792   0.194  0.421   3.372 -0.944 -0.121 -0.427 -1.492  53.31  119.93    1.75    5.00    5.00 
+ 12.17    5   0.00                     1     2    BI-36          26  0.6  270  10.72   5.52   6.62   6.62                                              4.100 14.600   5.019    -4.789     2323   0.187  0.418   2.491 -0.523 -0.082 -0.288 -0.892  81.48  210.21    1.75    5.00    5.00 
 
 
+Girder design was Not Successful
 The Specification Check was Not Successful
+Compression stress check failed for Service I Limit State in Interval 2 Prestress Release
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
+Stirrup detailing checks failed for the Strength I Limit State.
 Splitting zone check failed.
+Lifting checks failed
+Hauling checks failed
+Slab Offset ("A" Dimension) check failed
 
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 12.17    5   0.00                     1     3    BI-36          19  0.6  270  11.20   5.87   7.50   7.50                                              4.400  5.000   3.650    -3.674     1791   0.194  0.421   3.372 -1.011 -0.121 -0.427 -1.559  53.31  118.19    1.75    5.00    5.00 
+ 12.17    5   0.00                     1     3    BI-36          24  0.6  270  10.82   5.20   6.25   6.25                                              4.100 14.600   4.941    -4.712     2224   0.187  0.418   1.710 -0.493 -0.082 -0.288 -0.863  65.97  177.21    1.75    5.00    5.00 
 
 
+Girder design was Not Successful
 The Specification Check was Not Successful
+Compression stress check failed for Service I Limit State in Interval 2 Prestress Release
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
+Stirrup detailing checks failed for the Strength I Limit State.
 Splitting zone check failed.
+Hauling checks failed
 
 

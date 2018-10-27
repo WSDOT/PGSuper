@@ -23,7 +23,6 @@
 // TxDOTAgentImp.cpp : Implementation of CTxDOTAgentImp
 
 #include "stdafx.h"
-#include "TxDOTAgent_i.h"
 #include "TxDOTCadExporter.h"
 #include "TxDOTCadWriter.h"
 #include "ExportCadData.h" 
@@ -57,19 +56,19 @@ STDMETHODIMP CTxDOTCadExporter::Init(UINT nCmdID)
    return S_OK;
 }
 
-STDMETHODIMP CTxDOTCadExporter::GetMenuText(BSTR*  bstrText)
+STDMETHODIMP CTxDOTCadExporter::GetMenuText(BSTR*  bstrText) const
 {
    *bstrText = CComBSTR("TxDOT &CAD Data...");
    return S_OK;
 }
 
-STDMETHODIMP CTxDOTCadExporter::GetBitmapHandle(HBITMAP* phBmp)
+STDMETHODIMP CTxDOTCadExporter::GetBitmapHandle(HBITMAP* phBmp) const
 {
    *phBmp = nullptr;
    return S_OK;
 }
 
-STDMETHODIMP CTxDOTCadExporter::GetCommandHintText(BSTR*  bstrText)
+STDMETHODIMP CTxDOTCadExporter::GetCommandHintText(BSTR*  bstrText) const
 {
    *bstrText = CComBSTR("Export TxDOT CAD Data\nExport TxDOT CAD Data");
    return S_OK;

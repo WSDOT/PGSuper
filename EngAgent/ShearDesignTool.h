@@ -96,7 +96,7 @@ public:
                                      pgsTypes::LimitState ls,
                                      const SHEARCAPACITYDETAILS& scd,
                                      const GDRCONFIG* pConfig,
-                                     pgsLongReinfShearArtifact* pArtifact )=0;
+                                     pgsLongReinfShearArtifact* pArtifact ) const = 0;
 };
 
 /*****************************************************************************
@@ -132,16 +132,16 @@ public:
    // Default constructor
    pgsShearDesignTool(SHARED_LOGFILE lf);
    
-   void Initialize(IBroker* pBroker, LongReinfShearChecker* pLongShearChecker, 
+   void Initialize(IBroker* pBroker, const LongReinfShearChecker* pLongShearChecker, 
                    StatusGroupIDType statusGroupID, pgsSegmentDesignArtifact* pArtifact, 
                    Float64 startConfinementZl, Float64 endConfinementZl,
                    bool bPermit, bool bDesignFromScratch);
 
    // Start a new design
-   void ResetDesign(const std::vector< pgsPointOfInterest >& pois);
+   void ResetDesign(const PoiList& pois);
 
    // Primary design function
-   ShearDesignOutcome DesignStirrups(Float64 leftCSS, Float64 rightCSS);
+   ShearDesignOutcome DesignStirrups(Float64 leftCSS, Float64 rightCSS) const;
 
    // Area of steel required for long reinf shear if outcome requires design restart
    // Note that this can be area of strands, or area of #5 bars adjusted for development
@@ -151,40 +151,40 @@ public:
    Float64 GetFcRequiredForShearStress() const;
 
    // Pois for spec check and design
-   const std::vector<pgsPointOfInterest>& GetDesignPoi() const;
+   const PoiList& GetDesignPoi() const;
 
-   std::vector<pgsPointOfInterest> GetCriticalSections() const;
+   PoiList GetCriticalSections() const;
 
    // Get our check artifact to hand off to spec check routine
    pgsStirrupCheckArtifact* GetStirrupCheckArtifact();
 
 private:
    // Stirrup design from scratch
-   bool LayoutPrimaryStirrupZones();
+   bool LayoutPrimaryStirrupZones() const;
 
    // Design by Modifying existing stirrup layout 
-   bool ModifyPreExistingStirrupDesign();
-   bool DesignPreExistingStirrups(StirrupZoneIter& rIter, Float64 locCSS,  matRebar::Grade barGrade, matRebar::Type barType, lrfdRebarPool* pool);
-   void ExpandStirrupZoneLengths(CShearData2::ShearZoneVec& ShearZones);
+   bool ModifyPreExistingStirrupDesign() const;
+   bool DesignPreExistingStirrups(StirrupZoneIter& rIter, Float64 locCSS,  matRebar::Grade barGrade, matRebar::Type barType, lrfdRebarPool* pool) const;
+   void ExpandStirrupZoneLengths(CShearData2::ShearZoneVec& ShearZones) const;
 
    // Design additional horizontal shear bars if needed
-   bool DetailHorizontalInterfaceShear();
+   bool DetailHorizontalInterfaceShear() const;
 
    // Design additional splitting reinforcement if needed
-   bool DetailAdditionalSplitting();
+   bool DetailAdditionalSplitting() const;
 
    // Design additional confinement reinforcement if needed
-   bool DetailAdditionalConfinement();
+   bool DetailAdditionalConfinement() const;
 
    // Check and design longitudinal reinforcement for shear
-   ShearDesignOutcome DesignLongReinfShear();
+   ShearDesignOutcome DesignLongReinfShear() const;
 
    // GROUP: OPERATIONS
 
    // ACCESS
    //////////
 
-   GDRCONFIG GetSegmentConfiguration();
+   GDRCONFIG GetSegmentConfiguration() const;
 
    const CSegmentKey& GetSegmentKey() const;
    Float64 GetSegmentLength() const;
@@ -240,9 +240,9 @@ private:
    StatusGroupIDType m_StatusGroupID;
 
    pgsSegmentDesignArtifact* m_pArtifact;
-   CShearData2 m_ShearData; // in-progress shear design data'
+   mutable CShearData2 m_ShearData; // in-progress shear design data'
 
-   LongReinfShearChecker* m_pLongReinfShearChecker;
+   const LongReinfShearChecker* m_pLongReinfShearChecker;
 
    CSegmentKey m_SegmentKey;
 
@@ -266,18 +266,18 @@ private:
    Float64 m_EndConfinementZl;
 
    // locations of critical sections for shear
-   Float64 m_LeftCSS;
-   Float64 m_RightCSS;
+   mutable Float64 m_LeftCSS;
+   mutable Float64 m_RightCSS;
 
    // Splitting zone lengths at both ends of girder
    Float64 m_StartSplittingZl;
    Float64 m_EndSplittingZl;
 
    // Area of steel required if longitudinal reinf for shear design kicks in
-   Float64 m_LongReinfShearAs;
+   mutable Float64 m_LongReinfShearAs;
 
    // f'c required for shear stress
-   Float64 m_RequiredFcForShearStress;
+   mutable Float64 m_RequiredFcForShearStress;
 
    // Shear design parameters
    struct BarLegCombo
@@ -310,72 +310,72 @@ private:
 
    // Transient values for each design iteration
    // -------------------------------------------
-   pgsPoiMgr m_PoiMgr;
+   mutable pgsPoiMgr m_PoiMgr;
 
    // Points of interest to be used for design
    // Note that the following block of vectors are the same size, and in the same order as, 
    // m_DesignPois. This allows quick storage and retreival in poi order
    // -------------------------------------------
-   std::vector<pgsPointOfInterest> m_DesignPois; // sorted along girder
+   mutable PoiList m_DesignPois; // sorted along girder
 
    // Two ways to store same vert av/s demand data here, by POI, and by X location
-   std::vector<Float64> m_VertShearAvsDemandAtPois;    // Avs demand by POI
-   mathPwLinearFunction2dUsingPoints m_VertShearAvsDemandAtX; // Avs demand at locations along girder
+   mutable std::vector<Float64> m_VertShearAvsDemandAtPois;    // Avs demand by POI
+   mutable mathPwLinearFunction2dUsingPoints m_VertShearAvsDemandAtX; // Avs demand at locations along girder
 
    // Two ways to store same Horiz av/s demand data here, by POI, and by X location
-   std::vector<Float64> m_HorizShearAvsDemandAtPois;    // Avs demand by POI
-   mathPwLinearFunction2dUsingPoints m_HorizShearAvsDemandAtX; // Avs demand at locations along girder
+   mutable std::vector<Float64> m_HorizShearAvsDemandAtPois;    // Avs demand by POI
+   mutable mathPwLinearFunction2dUsingPoints m_HorizShearAvsDemandAtX; // Avs demand at locations along girder
 
    // Store entire stirrup check artifact
    pgsStirrupCheckArtifact m_StirrupCheckArtifact;
 
    // PoiIdx in the following functions refer to indexes into m_DesignPois
    // Max stirrup spacing for a given location
-   Float64 ComputeMaxStirrupSpacing(IndexType PoiIdx);
+   Float64 ComputeMaxStirrupSpacing(IndexType PoiIdx) const;
 
-   Float64 ComputeMaxStirrupSpacing(Float64 location);
+   Float64 ComputeMaxStirrupSpacing(Float64 location) const;
 
    // Get min stirrup spacing for given bar size
-   Float64 GetMinStirrupSpacing(matRebar::Size size);
+   Float64 GetMinStirrupSpacing(matRebar::Size size) const;
 
    // Get bar size - nlegs - spacing for av/s demand
-   bool GetBarSizeSpacingForAvs(Float64 avsDemand, Float64 maxSpacing, matRebar::Size* pSize, Float64* pNLegs, Float64* pAv, Float64* pSpacing);
+   bool GetBarSizeSpacingForAvs(Float64 avsDemand, Float64 maxSpacing, matRebar::Size* pSize, Float64* pNLegs, Float64* pAv, Float64* pSpacing) const;
 
    // Get bar size - nlegs - spacing for av/s demand - For a particular bar size
-   bool GetBarSpacingForAvs(Float64 avsDemand, Float64 maxSpacing, matRebar::Size Size, Float64 Av, Float64* pSpacing);
+   bool GetBarSpacingForAvs(Float64 avsDemand, Float64 maxSpacing, matRebar::Size Size, Float64 Av, Float64* pSpacing) const;
 
    // Get next (or same) available bar size for a given min bar size
-   bool GetMinAvailableBarSize(matRebar::Size minSize, matRebar::Grade barGrade, matRebar::Type barType, lrfdRebarPool* pool, matRebar::Size* pSize);
+   bool GetMinAvailableBarSize(matRebar::Size minSize, matRebar::Grade barGrade, matRebar::Type barType, lrfdRebarPool* pool, matRebar::Size* pSize) const;
 
    // Av/S demand at poi
-   Float64 GetVerticalAvsDemand(IndexType PoiIdx);
+   Float64 GetVerticalAvsDemand(IndexType PoiIdx) const;
 
    // Av/S demand at locations along girder
-   Float64 GetVerticalAvsDemand(Float64 distFromStart);
+   Float64 GetVerticalAvsDemand(Float64 distFromStart) const;
 
    // Horiz Av/S demand at poi
-   Float64 GetHorizontalAvsDemand(IndexType PoiIdx);
+   Float64 GetHorizontalAvsDemand(IndexType PoiIdx) const;
 
    // Horiz Av/S demand at locations along girder
-   Float64 GetHorizontalAvsDemand(Float64 distFromStart);
+   Float64 GetHorizontalAvsDemand(Float64 distFromStart) const;
 
    // Av/S demand in a range - useful for stirrup zones
-   Float64 GetVerticalAvsMaxInRange(Float64 leftBound, Float64 rightBound);
+   Float64 GetVerticalAvsMaxInRange(Float64 leftBound, Float64 rightBound) const;
 
    // Horiz Av/S demand in a range - useful for stirrup zones
-   Float64 GetHorizontalAvsMaxInRange(Float64 leftBound, Float64 rightBound);
+   Float64 GetHorizontalAvsMaxInRange(Float64 leftBound, Float64 rightBound) const;
 
    // Max stirrup spacing in next zone
-   Float64 ComputeMaxNextSpacing(Float64 currentSpacing);
+   Float64 ComputeMaxNextSpacing(Float64 currentSpacing) const;
 
    // Find a design stirrup spacing that works for input spacing
-   Float64 GetDesignSpacingFromList(Float64 spacing);
+   Float64 GetDesignSpacingFromList(Float64 spacing) const;
 
    // determine if a location is in confinement zone
-   bool IsLocationInConfinementZone(Float64 distFromStart);
+   bool IsLocationInConfinementZone(Float64 distFromStart) const;
 
    // utility to get closeby poi for a location
-   IndexType GetPoiIdxForLocation(Float64 location);
+   IndexType GetPoiIdxForLocation(Float64 location) const;
 
    // Av/S required for splitting
    Float64 GetAvsReqdForSplitting() const;
@@ -384,14 +384,14 @@ private:
    // Private functions called at initialization
    ///////////////////////////////////////////
    // compute and cache pois
-   void ValidatePointsOfInterest(const std::vector<pgsPointOfInterest>& pois);
+   void ValidatePointsOfInterest(const PoiList& pois) const;
 
-   ShearDesignOutcome Validate();
+   ShearDesignOutcome Validate() const;
    // Compute and cache Av/S demand
-   ShearDesignOutcome ValidateVerticalAvsDemand();
-   void ValidateHorizontalAvsDemand();
+   ShearDesignOutcome ValidateVerticalAvsDemand() const;
+   void ValidateHorizontalAvsDemand() const;
 
-   void ProcessAvsDemand(std::vector<Float64>& rDemandAtPois, mathPwLinearFunction2dUsingPoints& rDemandAtLocations);
+   void ProcessAvsDemand(std::vector<Float64>& rDemandAtPois, mathPwLinearFunction2dUsingPoints& rDemandAtLocations) const;
 
 private:
 	DECLARE_SHARED_LOGFILE;

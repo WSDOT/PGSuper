@@ -144,7 +144,6 @@ protected:
 
    void HandleRangeOfApplicabilityError(const lrfdXRangeOfApplicability& e);
 
-   lrfdTypes::LimitState MapLimitState(pgsTypes::LimitState ls);
    int LimitStateType(pgsTypes::LimitState ls);
 };
 
@@ -253,13 +252,13 @@ void CDistFactorEngineerImpl<T>::GetPierReactionDF(PierIndexType pierIdx,GirderI
          // Reaction distribution factor
          plldf->gR1 = pLLDF->ReactionDFEx(loc,
                               lrfdILiveLoadDistributionFactor::OneLoadedLane,
-                              MapLimitState(ls));
+                              PGSLimitStateToLRFDLimitState(ls));
 
          if ( 2 <= plldf->Nl  && ls != pgsTypes::FatigueI  )
          {
             plldf->gR2 = pLLDF->ReactionDFEx(loc,
                                  lrfdILiveLoadDistributionFactor::TwoOrMoreLoadedLanes,
-                                 MapLimitState(ls));
+                                 PGSLimitStateToLRFDLimitState(ls));
          }
          else
          {
@@ -362,13 +361,13 @@ void CDistFactorEngineerImpl<T>::GetPierDF(PierIndexType pierIdx,GirderIndexType
       {
          plldf->gM1 = pLLDF->MomentDFEx(loc,
                       lrfdILiveLoadDistributionFactor::OneLoadedLane,
-                      MapLimitState(ls));
+                      PGSLimitStateToLRFDLimitState(ls));
 
          if ( 2 <= plldf->Nl  && ls != pgsTypes::FatigueI )
          {
             plldf->gM2 = pLLDF->MomentDFEx(loc,
                          lrfdILiveLoadDistributionFactor::TwoOrMoreLoadedLanes,
-                         MapLimitState(ls));
+                         PGSLimitStateToLRFDLimitState(ls));
          }
          else
          {
@@ -468,13 +467,13 @@ void CDistFactorEngineerImpl<T>::GetSpanDF(const CSpanKey& spanKey,pgsTypes::Lim
       {
          plldf->gM1 = pLLDF->MomentDFEx(loc,
                             lrfdILiveLoadDistributionFactor::OneLoadedLane,
-                            MapLimitState(ls));
+                            PGSLimitStateToLRFDLimitState(ls));
 
          if ( 2 <= plldf->Nl  && ls != pgsTypes::FatigueI)
          {
             plldf->gM2 = pLLDF->MomentDFEx(loc,
                                lrfdILiveLoadDistributionFactor::TwoOrMoreLoadedLanes,
-                               MapLimitState(ls));
+                               PGSLimitStateToLRFDLimitState(ls));
          }
          else
          {
@@ -484,13 +483,13 @@ void CDistFactorEngineerImpl<T>::GetSpanDF(const CSpanKey& spanKey,pgsTypes::Lim
 
          plldf->gV1 = pLLDF->ShearDFEx(loc,
                            lrfdILiveLoadDistributionFactor::OneLoadedLane,
-                           MapLimitState(ls));
+                           PGSLimitStateToLRFDLimitState(ls));
 
          if ( 2 <= plldf->Nl && ls != pgsTypes::FatigueI)
          {
             plldf->gV2 = pLLDF->ShearDFEx(loc,
                               lrfdILiveLoadDistributionFactor::TwoOrMoreLoadedLanes,
-                              MapLimitState(ls));
+                              PGSLimitStateToLRFDLimitState(ls));
          }
          else
          {
@@ -620,42 +619,6 @@ void CDistFactorEngineerImpl<T>::HandleRangeOfApplicabilityError(const lrfdXRang
 }
 
 template <class T>
-lrfdTypes::LimitState CDistFactorEngineerImpl<T>::MapLimitState(pgsTypes::LimitState ls)
-{
-   lrfdTypes::LimitState lrfdLimitState;
-   if (IsStrengthILimitState(ls))
-   {
-      lrfdLimitState = lrfdTypes::StrengthI;
-   }
-   else if (IsStrengthIILimitState(ls))
-   {
-      lrfdLimitState = lrfdTypes::StrengthII;
-   }
-   else if (IsServiceILimitState(ls))
-   {
-      lrfdLimitState = lrfdTypes::ServiceI;
-   }
-   else if (IsServiceIIILimitState(ls))
-   {
-      lrfdLimitState = lrfdTypes::ServiceIII;
-   }
-   else if (ls == pgsTypes::ServiceIA)
-   {
-      lrfdLimitState = lrfdTypes::ServiceIA;
-   }
-   else if (ls == pgsTypes::FatigueI)
-   {
-      lrfdLimitState = lrfdTypes::FatigueI;
-   }
-   else
-   {
-      ATLASSERT(false);
-   }
-
-   return lrfdLimitState;
-}
-
-template <class T>
 int CDistFactorEngineerImpl<T>::LimitStateType(pgsTypes::LimitState ls)
 {
    // maps specific limit state to a general limit state type
@@ -763,8 +726,8 @@ void CDistFactorEngineerImpl<T>::GetGirderSpacingAndOverhang(const CSpanKey& spa
 #if defined _DEBUG
       CClosureKey closureKey;
       bool bIsInClosureJoint = pPoi->IsInClosureJoint(ctrl_poi, &closureKey);
-      bool bIsInIntermediateDiaphragm = pPoi->IsInIntermediateDiaphragm(ctrl_poi);
-      ATLASSERT(bIsInClosureJoint || bIsInIntermediateDiaphragm);
+      bool bIsInBoundaryPierDiaphragm = pPoi->IsInBoundaryPierDiaphragm(ctrl_poi);
+      ATLASSERT(bIsInClosureJoint || bIsInBoundaryPierDiaphragm);
 #endif
 
       Float64 Ls = pBridge->GetSegmentLength(segmentKey);
@@ -789,7 +752,7 @@ void CDistFactorEngineerImpl<T>::GetGirderSpacingAndOverhang(const CSpanKey& spa
    pDetails->wLane = lrfdUtility::GetDesignLaneWidth( pDetails->wCurbToCurb );
 
    // overhangs
-   if(pBridge->GetDeckType() == pgsTypes::sdtNone)
+   if(IsNonstructuralDeck(pBridge->GetDeckType()))
    {
       // Use top width of beam as deck, for lack of better ideas
       GET_IFACE(IGirder,pGirder);

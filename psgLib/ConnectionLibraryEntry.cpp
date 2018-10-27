@@ -212,13 +212,13 @@ ConnectionLibraryEntry& ConnectionLibraryEntry::operator= (const ConnectionLibra
 //======================== OPERATIONS =======================================
 bool ConnectionLibraryEntry::SaveMe(sysIStructuredSave* pSave)
 {
-   pSave->BeginUnit(_T("ConnectionLibraryEntry"), 5.0);
+   pSave->BeginUnit(_T("ConnectionLibraryEntry"), 6.0);
 
    pSave->Property(_T("Name"),this->GetName().c_str());
    pSave->Property(_T("DiaphragmHeight"), m_DiaphragmHeight);
    pSave->Property(_T("GirderEndDistance"), m_GirderEndDistance);
    pSave->Property(_T("GirderBearingOffset"), m_GirderBearingOffset);
-   pSave->Property(_T("SupportWidth"),m_SupportWidth);// added in version 4
+//   pSave->Property(_T("SupportWidth"),m_SupportWidth);// added in version 4. Removed in version 6
 
    // changed/added in version 5
    pSave->Property(_T("EndDistanceMeasurementType"), StringForEndDistanceMeasurementType(m_EndDistanceMeasure).c_str() );
@@ -255,7 +255,7 @@ bool ConnectionLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
    if(pLoad->BeginUnit(_T("ConnectionLibraryEntry")))
    {
       Float64 version = pLoad->GetVersion();
-      if (5.0 < version)
+      if (6.0 < version)
       {
          THROW_LOAD(BadVersion,pLoad);
       }
@@ -285,7 +285,7 @@ bool ConnectionLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
          THROW_LOAD(InvalidFileFormat,pLoad);
       }
 
-      if ( 4.0 <= version )
+      if ( 4.0 <= version && 6.0 > version )
       {
          if(!pLoad->Property(_T("SupportWidth"), &m_SupportWidth))
          {
@@ -456,12 +456,6 @@ bool ConnectionLibraryEntry::Compare(const ConnectionLibraryEntry& rOther, std::
       vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Bearing Offset Measure"),GetBearingOffsetMeasurementType(m_BearingOffsetMeasure),GetBearingOffsetMeasurementType(rOther.m_BearingOffsetMeasure)));
    }
 
-   if ( !::IsEqual(m_SupportWidth,rOther.m_SupportWidth) )
-   {
-      RETURN_ON_DIFFERENCE;
-      vDifferences.push_back(new pgsLibraryEntryDifferenceLengthItem(_T("Support Width"),m_SupportWidth,rOther.m_SupportWidth,pDisplayUnits->ComponentDim));
-   }
-
    if ( !::IsEqual(m_DiaphragmHeight,rOther.m_DiaphragmHeight) )
    {
       RETURN_ON_DIFFERENCE;
@@ -540,11 +534,6 @@ ConnectionLibraryEntry::BearingOffsetMeasurementType ConnectionLibraryEntry::Get
    return m_BearingOffsetMeasure;
 }
 
-void ConnectionLibraryEntry::SetSupportWidth(Float64 w)
-{
-   m_SupportWidth = w;
-}
-
 Float64 ConnectionLibraryEntry::GetSupportWidth() const
 {
    return m_SupportWidth;
@@ -613,7 +602,6 @@ bool ConnectionLibraryEntry::Edit(bool allowEditing,int nPage)
    dlg.m_Name    = this->GetName().c_str();
    dlg.m_DiaphragmLoadType = this->GetDiaphragmLoadType();
    dlg.m_DiaphragmLoadLocation = this->m_DiaphragmLoadLocation;
-   dlg.m_SupportWidth = GetSupportWidth();
 
    INT_PTR i = dlg.DoModal();
    if (i==IDOK)
@@ -626,7 +614,6 @@ bool ConnectionLibraryEntry::Edit(bool allowEditing,int nPage)
       this->SetDiaphragmLoadType(dlg.m_DiaphragmLoadType);
       this->SetEndDistanceMeasurementType(dlg.m_EndDistanceMeasurementType);
       this->SetBearingOffsetMeasurementType(dlg.m_BearingOffsetMeasurementType);
-      this->SetSupportWidth(dlg.m_SupportWidth);
       if (dlg.m_DiaphragmLoadType==ApplyAtSpecifiedLocation)
       {
          this->SetDiaphragmLoadLocation(dlg.m_DiaphragmLoadLocation);

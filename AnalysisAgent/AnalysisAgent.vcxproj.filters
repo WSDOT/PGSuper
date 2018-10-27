@@ -19,9 +19,6 @@
     <ClCompile Include="PGSuperLoadCombinationResponse.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="PrestressTool.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="ProductLoadMap.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -75,18 +72,15 @@
     <ClInclude Include="PGSuperLoadCombinationResponse.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="PrestressTool.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="AnalysisResult.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\Include\IFace\AnalysisResults.h">
       <Filter>IFace</Filter>
     </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <Midl Include="AnalysisAgent.idl" />
+    <ClInclude Include="CLSID.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="AnalysisAgent.def" />

@@ -36,20 +36,20 @@ static char THIS_FILE[] = __FILE__;
 
 /////////////////////////////////////////////////////////////////////////////
 // 
-void CBulbTeeDistFactorEngineer::Init(bool treatAsWsDotI)
+void CBulbTeeDistFactorEngineer::Init(/*bool treatAsWsDotI*/)
 {
    ATLASSERT(!m_pImpl);
 
-   if ( treatAsWsDotI)
-   {
-      // WSDOT treats connected bulb tees as I beams
-      CComObject<CIBeamDistFactorEngineer>* pEngineer;
-      CComObject<CIBeamDistFactorEngineer>::CreateInstance(&pEngineer);
+   //if ( treatAsWsDotI)
+   //{
+   //   // WSDOT treats connected bulb tees as I beams
+   //   CComObject<CIBeamDistFactorEngineer>* pEngineer;
+   //   CComObject<CIBeamDistFactorEngineer>::CreateInstance(&pEngineer);
 
-      m_pImpl = pEngineer;
-   }
-   else
-   {
+   //   m_pImpl = pEngineer;
+   //}
+   //else
+   //{
       // Otherwise bulb tees are same as other multi-web sections
       CComObject<CMultiWebDistFactorEngineer>* pEngineer;
       CComObject<CMultiWebDistFactorEngineer>::CreateInstance(&pEngineer);
@@ -57,7 +57,7 @@ void CBulbTeeDistFactorEngineer::Init(bool treatAsWsDotI)
       pEngineer->SetBeamType(CMultiWebDistFactorEngineer::btDeckBulbTee);
 
       m_pImpl = pEngineer;
-   }
+   //}
 
    ATLASSERT(m_pImpl);
 }
@@ -153,11 +153,7 @@ std::_tstring CBulbTeeDistFactorEngineer::GetComputationDescription(const CGirde
    std::_tstring descr;
    if (method==LLDF_WSDOT)
    {
-      if (decktype == pgsTypes::sdtCompositeOverlay && connect == pgsTypes::atcConnectedAsUnit)
-      {
-         descr = _T("WSDOT Method per Bridge Design Manual Section 3.9.4. Using type (k) cross section.");
-      }
-      else if (connect == pgsTypes::atcConnectedAsUnit)
+      if (connect == pgsTypes::atcConnectedAsUnit)
       {
          descr = _T("AASHTO LRFD Method per Article 4.6.2.2. Using type (i,j) cross section connected transversely sufficiently to act as a unit.");
       }

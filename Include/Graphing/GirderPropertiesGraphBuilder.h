@@ -59,6 +59,8 @@ public:
 
    LPCTSTR GetPropertyLabel(PropertyType propertyType);
 
+   virtual void CreateViewController(IEAFViewController** ppController) override;
+
 protected:
    virtual CGirderGraphControllerBase* CreateGraphController() override;
    virtual bool UpdateNow() override;
@@ -70,8 +72,8 @@ protected:
    void UpdateGraphTitle(const CGirderKey& girderKey,IntervalIndexType intervalIdx,PropertyType propertyType);
    void UpdateGraphData(const CGirderKey& girderKey,IntervalIndexType intervalIdx,PropertyType propertType,pgsTypes::SectionPropertyType sectPropType);
 
-   void InitializeGraph(PropertyType propertyType,const CGirderKey& girderKey,IntervalIndexType intervalIdx,IndexType* pGraph1,IndexType* pGraph2);
-   void UpdateTendonGraph(PropertyType propertyType,const CGirderKey& girderKey,IntervalIndexType intervalIdx,const std::vector<pgsPointOfInterest>& vPoi,const std::vector<Float64>& xVals);
+   void InitializeGraph(PropertyType propertyType,const CGirderKey& girderKey,IntervalIndexType intervalIdx,IndexType* pGraph1,IndexType* pGraph2, IndexType* pGraph3, IndexType* pGraph4);
+   void UpdateTendonGraph(PropertyType propertyType,const CGirderKey& girderKey,IntervalIndexType intervalIdx,const PoiList& vPoi,const std::vector<Float64>& xVals);
 
    virtual IntervalIndexType GetBeamDrawInterval() override;
 };

@@ -51,93 +51,105 @@ void CLoadFactorsDlg::DoDataExchange(CDataExchange* pDX)
 
 	CDialog::DoDataExchange(pDX);
 
-   DDX_Text(pDX,IDC_SERVICE_I_DC,m_LoadFactors.DCmin[pgsTypes::ServiceI]);
-   DDX_Text(pDX,IDC_SERVICE_I_DC,m_LoadFactors.DCmax[pgsTypes::ServiceI]);
-   DDX_Text(pDX,IDC_SERVICE_I_DW,m_LoadFactors.DWmin[pgsTypes::ServiceI]);
-   DDX_Text(pDX,IDC_SERVICE_I_DW,m_LoadFactors.DWmax[pgsTypes::ServiceI]);
-   DDX_Text(pDX,IDC_SERVICE_I_LLIM,m_LoadFactors.LLIMmin[pgsTypes::ServiceI]);
-   DDX_Text(pDX,IDC_SERVICE_I_LLIM,m_LoadFactors.LLIMmax[pgsTypes::ServiceI]);
-   DDX_Text(pDX,IDC_SERVICE_I_CR,m_LoadFactors.CRmin[pgsTypes::ServiceI]);
-   DDX_Text(pDX,IDC_SERVICE_I_CR,m_LoadFactors.CRmax[pgsTypes::ServiceI]);
-   DDX_Text(pDX,IDC_SERVICE_I_SH,m_LoadFactors.SHmin[pgsTypes::ServiceI]);
-   DDX_Text(pDX,IDC_SERVICE_I_SH,m_LoadFactors.SHmax[pgsTypes::ServiceI]);
-   DDX_Text(pDX,IDC_SERVICE_I_PS,m_LoadFactors.PSmin[pgsTypes::ServiceI]);
-   DDX_Text(pDX,IDC_SERVICE_I_PS,m_LoadFactors.PSmax[pgsTypes::ServiceI]);
+   DDX_Text(pDX,IDC_SERVICE_I_DC,DCmin[pgsTypes::ServiceI]);
+   DDX_Text(pDX,IDC_SERVICE_I_DC,DCmax[pgsTypes::ServiceI]);
+   DDX_Text(pDX,IDC_SERVICE_I_DW,DWmin[pgsTypes::ServiceI]);
+   DDX_Text(pDX,IDC_SERVICE_I_DW,DWmax[pgsTypes::ServiceI]);
+   DDX_Text(pDX,IDC_SERVICE_I_LLIM,LLIMmin[pgsTypes::ServiceI]);
+   DDX_Text(pDX,IDC_SERVICE_I_LLIM,LLIMmax[pgsTypes::ServiceI]);
+   DDX_Text(pDX,IDC_SERVICE_I_CR,CRmin[pgsTypes::ServiceI]);
+   DDX_Text(pDX,IDC_SERVICE_I_CR,CRmax[pgsTypes::ServiceI]);
+   DDX_Text(pDX,IDC_SERVICE_I_SH,SHmin[pgsTypes::ServiceI]);
+   DDX_Text(pDX,IDC_SERVICE_I_SH,SHmax[pgsTypes::ServiceI]);
+   DDX_Text(pDX,IDC_SERVICE_I_PS,PSmin[pgsTypes::ServiceI]);
+   DDX_Text(pDX,IDC_SERVICE_I_PS,PSmax[pgsTypes::ServiceI]);
 
-   DDX_Text(pDX,IDC_SERVICE_III_DC,m_LoadFactors.DCmin[pgsTypes::ServiceIII]);
-   DDX_Text(pDX,IDC_SERVICE_III_DC,m_LoadFactors.DCmax[pgsTypes::ServiceIII]);
-   DDX_Text(pDX,IDC_SERVICE_III_DW,m_LoadFactors.DWmin[pgsTypes::ServiceIII]);
-   DDX_Text(pDX,IDC_SERVICE_III_DW,m_LoadFactors.DWmax[pgsTypes::ServiceIII]);
-   DDX_Text(pDX,IDC_SERVICE_III_LLIM,m_LoadFactors.LLIMmin[pgsTypes::ServiceIII]);
-   DDX_Text(pDX,IDC_SERVICE_III_LLIM,m_LoadFactors.LLIMmax[pgsTypes::ServiceIII]);
-   DDX_Text(pDX,IDC_SERVICE_III_CR,m_LoadFactors.CRmin[pgsTypes::ServiceIII]);
-   DDX_Text(pDX,IDC_SERVICE_III_CR,m_LoadFactors.CRmax[pgsTypes::ServiceIII]);
-   DDX_Text(pDX,IDC_SERVICE_III_SH,m_LoadFactors.SHmin[pgsTypes::ServiceIII]);
-   DDX_Text(pDX,IDC_SERVICE_III_SH,m_LoadFactors.SHmax[pgsTypes::ServiceIII]);
-   DDX_Text(pDX,IDC_SERVICE_III_PS,m_LoadFactors.PSmin[pgsTypes::ServiceIII]);
-   DDX_Text(pDX,IDC_SERVICE_III_PS,m_LoadFactors.PSmax[pgsTypes::ServiceIII]);
+   DDX_Text(pDX,IDC_SERVICE_III_DC,DCmin[pgsTypes::ServiceIII]);
+   DDX_Text(pDX,IDC_SERVICE_III_DC,DCmax[pgsTypes::ServiceIII]);
+   DDX_Text(pDX,IDC_SERVICE_III_DW,DWmin[pgsTypes::ServiceIII]);
+   DDX_Text(pDX,IDC_SERVICE_III_DW,DWmax[pgsTypes::ServiceIII]);
+   DDX_Text(pDX,IDC_SERVICE_III_LLIM,LLIMmin[pgsTypes::ServiceIII]);
+   DDX_Text(pDX,IDC_SERVICE_III_LLIM,LLIMmax[pgsTypes::ServiceIII]);
+   DDX_Text(pDX,IDC_SERVICE_III_CR,CRmin[pgsTypes::ServiceIII]);
+   DDX_Text(pDX,IDC_SERVICE_III_CR,CRmax[pgsTypes::ServiceIII]);
+   DDX_Text(pDX,IDC_SERVICE_III_SH,SHmin[pgsTypes::ServiceIII]);
+   DDX_Text(pDX,IDC_SERVICE_III_SH,SHmax[pgsTypes::ServiceIII]);
+   DDX_Text(pDX,IDC_SERVICE_III_PS,PSmin[pgsTypes::ServiceIII]);
+   DDX_Text(pDX,IDC_SERVICE_III_PS,PSmax[pgsTypes::ServiceIII]);
 
-   DDX_Text(pDX,IDC_STRENGTH_I_DC_MIN,m_LoadFactors.DCmin[pgsTypes::StrengthI]);
-   DDX_Text(pDX,IDC_STRENGTH_I_DC_MAX,m_LoadFactors.DCmax[pgsTypes::StrengthI]);
-   DDX_Text(pDX,IDC_STRENGTH_I_DW_MIN,m_LoadFactors.DWmin[pgsTypes::StrengthI]);
-   DDX_Text(pDX,IDC_STRENGTH_I_DW_MAX,m_LoadFactors.DWmax[pgsTypes::StrengthI]);
-   DDX_Text(pDX,IDC_STRENGTH_I_LLIM,m_LoadFactors.LLIMmin[pgsTypes::StrengthI]);
-   DDX_Text(pDX,IDC_STRENGTH_I_LLIM,m_LoadFactors.LLIMmax[pgsTypes::StrengthI]);
-   DDX_Text(pDX,IDC_STRENGTH_I_CR_MIN,m_LoadFactors.CRmin[pgsTypes::StrengthI]);
-   DDX_Text(pDX,IDC_STRENGTH_I_CR_MAX,m_LoadFactors.CRmax[pgsTypes::StrengthI]);
-   DDX_Text(pDX,IDC_STRENGTH_I_SH_MIN,m_LoadFactors.SHmin[pgsTypes::StrengthI]);
-   DDX_Text(pDX,IDC_STRENGTH_I_SH_MAX,m_LoadFactors.SHmax[pgsTypes::StrengthI]);
-   DDX_Text(pDX,IDC_STRENGTH_I_PS,m_LoadFactors.PSmin[pgsTypes::StrengthI]);
-   DDX_Text(pDX,IDC_STRENGTH_I_PS,m_LoadFactors.PSmax[pgsTypes::StrengthI]);
+   DDX_Text(pDX,IDC_STRENGTH_I_DC_MIN,DCmin[pgsTypes::StrengthI]);
+   DDX_Text(pDX,IDC_STRENGTH_I_DC_MAX,DCmax[pgsTypes::StrengthI]);
+   DDX_Text(pDX,IDC_STRENGTH_I_DW_MIN,DWmin[pgsTypes::StrengthI]);
+   DDX_Text(pDX,IDC_STRENGTH_I_DW_MAX,DWmax[pgsTypes::StrengthI]);
+   DDX_Text(pDX,IDC_STRENGTH_I_LLIM,LLIMmin[pgsTypes::StrengthI]);
+   DDX_Text(pDX,IDC_STRENGTH_I_LLIM,LLIMmax[pgsTypes::StrengthI]);
+   DDX_Text(pDX,IDC_STRENGTH_I_CR_MIN,CRmin[pgsTypes::StrengthI]);
+   DDX_Text(pDX,IDC_STRENGTH_I_CR_MAX,CRmax[pgsTypes::StrengthI]);
+   DDX_Text(pDX,IDC_STRENGTH_I_SH_MIN,SHmin[pgsTypes::StrengthI]);
+   DDX_Text(pDX,IDC_STRENGTH_I_SH_MAX,SHmax[pgsTypes::StrengthI]);
+   DDX_Text(pDX,IDC_STRENGTH_I_PS,PSmin[pgsTypes::StrengthI]);
+   DDX_Text(pDX,IDC_STRENGTH_I_PS,PSmax[pgsTypes::StrengthI]);
 
-   DDX_Text(pDX,IDC_STRENGTH_II_DC_MIN,m_LoadFactors.DCmin[pgsTypes::StrengthII]);
-   DDX_Text(pDX,IDC_STRENGTH_II_DC_MAX,m_LoadFactors.DCmax[pgsTypes::StrengthII]);
-   DDX_Text(pDX,IDC_STRENGTH_II_DW_MIN,m_LoadFactors.DWmin[pgsTypes::StrengthII]);
-   DDX_Text(pDX,IDC_STRENGTH_II_DW_MAX,m_LoadFactors.DWmax[pgsTypes::StrengthII]);
-   DDX_Text(pDX,IDC_STRENGTH_II_LLIM,m_LoadFactors.LLIMmin[pgsTypes::StrengthII]);
-   DDX_Text(pDX,IDC_STRENGTH_II_LLIM,m_LoadFactors.LLIMmax[pgsTypes::StrengthII]);
-   DDX_Text(pDX,IDC_STRENGTH_II_CR_MIN,m_LoadFactors.CRmin[pgsTypes::StrengthII]);
-   DDX_Text(pDX,IDC_STRENGTH_II_CR_MAX,m_LoadFactors.CRmax[pgsTypes::StrengthII]);
-   DDX_Text(pDX,IDC_STRENGTH_II_SH_MIN,m_LoadFactors.SHmin[pgsTypes::StrengthII]);
-   DDX_Text(pDX,IDC_STRENGTH_II_SH_MAX,m_LoadFactors.SHmax[pgsTypes::StrengthII]);
-   DDX_Text(pDX,IDC_STRENGTH_II_PS,m_LoadFactors.PSmin[pgsTypes::StrengthII]);
-   DDX_Text(pDX,IDC_STRENGTH_II_PS,m_LoadFactors.PSmax[pgsTypes::StrengthII]);
+   DDX_Text(pDX,IDC_STRENGTH_II_DC_MIN,DCmin[pgsTypes::StrengthII]);
+   DDX_Text(pDX,IDC_STRENGTH_II_DC_MAX,DCmax[pgsTypes::StrengthII]);
+   DDX_Text(pDX,IDC_STRENGTH_II_DW_MIN,DWmin[pgsTypes::StrengthII]);
+   DDX_Text(pDX,IDC_STRENGTH_II_DW_MAX,DWmax[pgsTypes::StrengthII]);
+   DDX_Text(pDX,IDC_STRENGTH_II_LLIM,LLIMmin[pgsTypes::StrengthII]);
+   DDX_Text(pDX,IDC_STRENGTH_II_LLIM,LLIMmax[pgsTypes::StrengthII]);
+   DDX_Text(pDX,IDC_STRENGTH_II_CR_MIN,CRmin[pgsTypes::StrengthII]);
+   DDX_Text(pDX,IDC_STRENGTH_II_CR_MAX,CRmax[pgsTypes::StrengthII]);
+   DDX_Text(pDX,IDC_STRENGTH_II_SH_MIN,SHmin[pgsTypes::StrengthII]);
+   DDX_Text(pDX,IDC_STRENGTH_II_SH_MAX,SHmax[pgsTypes::StrengthII]);
+   DDX_Text(pDX,IDC_STRENGTH_II_PS,PSmin[pgsTypes::StrengthII]);
+   DDX_Text(pDX,IDC_STRENGTH_II_PS,PSmax[pgsTypes::StrengthII]);
 
-   DDX_Text(pDX,IDC_FATIGUE_I_DC,m_LoadFactors.DCmin[pgsTypes::FatigueI]);
-   DDX_Text(pDX,IDC_FATIGUE_I_DC,m_LoadFactors.DCmax[pgsTypes::FatigueI]);
-   DDX_Text(pDX,IDC_FATIGUE_I_DW,m_LoadFactors.DWmin[pgsTypes::FatigueI]);
-   DDX_Text(pDX,IDC_FATIGUE_I_DW,m_LoadFactors.DWmax[pgsTypes::FatigueI]);
-   DDX_Text(pDX,IDC_FATIGUE_I_LLIM,m_LoadFactors.LLIMmin[pgsTypes::FatigueI]);
-   DDX_Text(pDX,IDC_FATIGUE_I_LLIM,m_LoadFactors.LLIMmax[pgsTypes::FatigueI]);
-   DDX_Text(pDX,IDC_FATIGUE_I_CR,m_LoadFactors.CRmin[pgsTypes::FatigueI]);
-   DDX_Text(pDX,IDC_FATIGUE_I_CR,m_LoadFactors.CRmax[pgsTypes::FatigueI]);
-   DDX_Text(pDX,IDC_FATIGUE_I_SH,m_LoadFactors.SHmin[pgsTypes::FatigueI]);
-   DDX_Text(pDX,IDC_FATIGUE_I_SH,m_LoadFactors.SHmax[pgsTypes::FatigueI]);
-   DDX_Text(pDX,IDC_FATIGUE_I_PS,m_LoadFactors.PSmin[pgsTypes::FatigueI]);
-   DDX_Text(pDX,IDC_FATIGUE_I_PS,m_LoadFactors.PSmax[pgsTypes::FatigueI]);
+   DDX_Text(pDX,IDC_FATIGUE_I_DC,DCmin[pgsTypes::FatigueI]);
+   DDX_Text(pDX,IDC_FATIGUE_I_DC,DCmax[pgsTypes::FatigueI]);
+   DDX_Text(pDX,IDC_FATIGUE_I_DW,DWmin[pgsTypes::FatigueI]);
+   DDX_Text(pDX,IDC_FATIGUE_I_DW,DWmax[pgsTypes::FatigueI]);
+   DDX_Text(pDX,IDC_FATIGUE_I_LLIM,LLIMmin[pgsTypes::FatigueI]);
+   DDX_Text(pDX,IDC_FATIGUE_I_LLIM,LLIMmax[pgsTypes::FatigueI]);
+   DDX_Text(pDX,IDC_FATIGUE_I_CR,CRmin[pgsTypes::FatigueI]);
+   DDX_Text(pDX,IDC_FATIGUE_I_CR,CRmax[pgsTypes::FatigueI]);
+   DDX_Text(pDX,IDC_FATIGUE_I_SH,SHmin[pgsTypes::FatigueI]);
+   DDX_Text(pDX,IDC_FATIGUE_I_SH,SHmax[pgsTypes::FatigueI]);
+   DDX_Text(pDX,IDC_FATIGUE_I_PS,PSmin[pgsTypes::FatigueI]);
+   DDX_Text(pDX,IDC_FATIGUE_I_PS,PSmax[pgsTypes::FatigueI]);
 
-   DDX_Text(pDX,IDC_SERVICE_IA_DC,m_LoadFactors.DCmin[pgsTypes::ServiceIA]);
-   DDX_Text(pDX,IDC_SERVICE_IA_DC,m_LoadFactors.DCmax[pgsTypes::ServiceIA]);
-   DDX_Text(pDX,IDC_SERVICE_IA_DW,m_LoadFactors.DWmin[pgsTypes::ServiceIA]);
-   DDX_Text(pDX,IDC_SERVICE_IA_DW,m_LoadFactors.DWmax[pgsTypes::ServiceIA]);
-   DDX_Text(pDX,IDC_SERVICE_IA_LLIM,m_LoadFactors.LLIMmin[pgsTypes::ServiceIA]);
-   DDX_Text(pDX,IDC_SERVICE_IA_LLIM,m_LoadFactors.LLIMmax[pgsTypes::ServiceIA]);
-   DDX_Text(pDX,IDC_SERVICE_IA_CR,m_LoadFactors.CRmin[pgsTypes::ServiceIA]);
-   DDX_Text(pDX,IDC_SERVICE_IA_CR,m_LoadFactors.CRmax[pgsTypes::ServiceIA]);
-   DDX_Text(pDX,IDC_SERVICE_IA_SH,m_LoadFactors.SHmin[pgsTypes::ServiceIA]);
-   DDX_Text(pDX,IDC_SERVICE_IA_SH,m_LoadFactors.SHmax[pgsTypes::ServiceIA]);
-   DDX_Text(pDX,IDC_SERVICE_IA_PS,m_LoadFactors.PSmin[pgsTypes::ServiceIA]);
-   DDX_Text(pDX,IDC_SERVICE_IA_PS,m_LoadFactors.PSmax[pgsTypes::ServiceIA]);
+   DDX_Text(pDX,IDC_SERVICE_IA_DC,DCmin[pgsTypes::ServiceIA]);
+   DDX_Text(pDX,IDC_SERVICE_IA_DC,DCmax[pgsTypes::ServiceIA]);
+   DDX_Text(pDX,IDC_SERVICE_IA_DW,DWmin[pgsTypes::ServiceIA]);
+   DDX_Text(pDX,IDC_SERVICE_IA_DW,DWmax[pgsTypes::ServiceIA]);
+   DDX_Text(pDX,IDC_SERVICE_IA_LLIM,LLIMmin[pgsTypes::ServiceIA]);
+   DDX_Text(pDX,IDC_SERVICE_IA_LLIM,LLIMmax[pgsTypes::ServiceIA]);
+   DDX_Text(pDX,IDC_SERVICE_IA_CR,CRmin[pgsTypes::ServiceIA]);
+   DDX_Text(pDX,IDC_SERVICE_IA_CR,CRmax[pgsTypes::ServiceIA]);
+   DDX_Text(pDX,IDC_SERVICE_IA_SH,SHmin[pgsTypes::ServiceIA]);
+   DDX_Text(pDX,IDC_SERVICE_IA_SH,SHmax[pgsTypes::ServiceIA]);
+   DDX_Text(pDX,IDC_SERVICE_IA_PS,PSmin[pgsTypes::ServiceIA]);
+   DDX_Text(pDX,IDC_SERVICE_IA_PS,PSmax[pgsTypes::ServiceIA]);
 
    if ( pDX->m_bSaveAndValidate )
    {
       // since LRFD doesn't have a load case for relaxation, and relaxation is most closely related to creep
       // copy the creep factor
-      int n = sizeof(m_LoadFactors.CRmax)/sizeof(m_LoadFactors.CRmax[0]);
+      int n = sizeof(CRmax)/sizeof(CRmax[0]);
       for ( int i = 0; i < n; i++ )
       {
-         m_LoadFactors.REmax[i] = m_LoadFactors.CRmax[i];
-         m_LoadFactors.REmin[i] = m_LoadFactors.CRmin[i];
+         REmax[i] = CRmax[i];
+         REmin[i] = CRmin[i];
+      }
+
+      for (int i = 0; i < nLimitStates; i++)
+      {
+         pgsTypes::LimitState limitState = (pgsTypes::LimitState)i;
+         m_LoadFactors.SetDC(limitState, DCmin[limitState], DCmax[limitState]);
+         m_LoadFactors.SetDW(limitState, DWmin[limitState], DWmax[limitState]);
+         m_LoadFactors.SetCR(limitState, CRmin[limitState], CRmax[limitState]);
+         m_LoadFactors.SetSH(limitState, SHmin[limitState], SHmax[limitState]);
+         m_LoadFactors.SetRE(limitState, REmin[limitState], REmax[limitState]);
+         m_LoadFactors.SetPS(limitState, PSmin[limitState], PSmax[limitState]);
+         m_LoadFactors.SetLLIM(limitState, LLIMmin[limitState], LLIMmax[limitState]);
       }
    }
 }
@@ -152,6 +164,18 @@ END_MESSAGE_MAP()
 
 BOOL CLoadFactorsDlg::OnInitDialog()
 {
+   for (int i = 0; i < nLimitStates; i++)
+   {
+      pgsTypes::LimitState limitState = (pgsTypes::LimitState)i;
+      m_LoadFactors.GetDC(limitState, &DCmin[limitState], &DCmax[limitState]);
+      m_LoadFactors.GetDW(limitState, &DWmin[limitState], &DWmax[limitState]);
+      m_LoadFactors.GetCR(limitState, &CRmin[limitState], &CRmax[limitState]);
+      m_LoadFactors.GetSH(limitState, &SHmin[limitState], &SHmax[limitState]);
+      m_LoadFactors.GetRE(limitState, &REmin[limitState], &REmax[limitState]);
+      m_LoadFactors.GetPS(limitState, &PSmin[limitState], &PSmax[limitState]);
+      m_LoadFactors.GetLLIM(limitState, &LLIMmin[limitState], &LLIMmax[limitState]);
+   }
+
    CDialog::OnInitDialog();
 
    // TODO:  Add extra initialization here

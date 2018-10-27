@@ -24,6 +24,7 @@
 #include "resource.h"
 #include <Graphing\StressHistoryGraphBuilder.h>
 #include "StressHistoryGraphController.h"
+#include "StressHistoryGraphViewControllerImp.h"
 
 #include "GraphColor.h"
 
@@ -58,11 +59,6 @@ static unitmgtLengthData DUMMY(unitMeasure::Meter);
 static LengthTool    DUMMY_TOOL(DUMMY);
 
 BEGIN_MESSAGE_MAP(CStressHistoryGraphBuilder, CEAFGraphBuilderBase)
-   ON_BN_CLICKED(IDC_TOPDECK,OnTopDeck)
-   ON_BN_CLICKED(IDC_BOTTOMDECK,OnBottomDeck)
-   ON_BN_CLICKED(IDC_TOPGIRDER,OnTopGirder)
-   ON_BN_CLICKED(IDC_BOTTOMGIRDER,OnBottomGirder)
-   ON_BN_CLICKED(IDC_GRID, OnShowGrid)
 END_MESSAGE_MAP()
 
 
@@ -148,6 +144,19 @@ CEAFGraphControlWindow* CStressHistoryGraphBuilder::GetGraphControlWindow()
    return m_pGraphController;
 }
 
+void CStressHistoryGraphBuilder::CreateViewController(IEAFViewController** ppController)
+{
+   CComPtr<IEAFViewController> stdController;
+   __super::CreateViewController(&stdController);
+
+   CComObject<CStressHistoryGraphViewController>* pController;
+   CComObject<CStressHistoryGraphViewController>::CreateInstance(&pController);
+   pController->Init(m_pGraphController, stdController);
+
+   (*ppController) = pController;
+   (*ppController)->AddRef();
+}
+
 CGraphBuilder* CStressHistoryGraphBuilder::Clone() const
 {
    // set the module state or the commands wont route to the
@@ -213,41 +222,17 @@ BOOL CStressHistoryGraphBuilder::CreateGraphController(CWnd* pParent,UINT nID)
    return TRUE;
 }
 
-void CStressHistoryGraphBuilder::OnTopDeck()
+void CStressHistoryGraphBuilder::Stresses(pgsTypes::StressLocation stressLocation, bool bShow)
 {
-   m_bPlot[pgsTypes::TopDeck] = !m_bPlot[pgsTypes::TopDeck];
+   m_bPlot[stressLocation] = bShow;
    InvalidateGraph();
    Update();
    GetView()->Invalidate();
 }
 
-void CStressHistoryGraphBuilder::OnBottomDeck()
+void CStressHistoryGraphBuilder::ShowGrid(bool bShowGrid)
 {
-   m_bPlot[pgsTypes::BottomDeck] = !m_bPlot[pgsTypes::BottomDeck];
-   InvalidateGraph();
-   Update();
-   GetView()->Invalidate();
-}
-
-void CStressHistoryGraphBuilder::OnTopGirder()
-{
-   m_bPlot[pgsTypes::TopGirder] = !m_bPlot[pgsTypes::TopGirder];
-   InvalidateGraph();
-   Update();
-   GetView()->Invalidate();
-}
-
-void CStressHistoryGraphBuilder::OnBottomGirder()
-{
-   m_bPlot[pgsTypes::BottomGirder] = !m_bPlot[pgsTypes::BottomGirder];
-   InvalidateGraph();
-   Update();
-   GetView()->Invalidate();
-}
-
-void CStressHistoryGraphBuilder::OnShowGrid()
-{
-   m_Graph.SetDoDrawGrid( !m_Graph.GetDoDrawGrid() );
+   m_Graph.SetDoDrawGrid(bShowGrid);
    GetView()->Invalidate();
 }
 
@@ -264,7 +249,6 @@ bool CStressHistoryGraphBuilder::UpdateNow()
    UpdateXAxis();
    UpdateYAxis();
 
-
    // Update graph properties
    pgsPointOfInterest poi = m_pGraphController->GetLocation();
    UpdateGraphTitle(poi);
@@ -277,7 +261,7 @@ void CStressHistoryGraphBuilder::UpdateGraphTitle(const pgsPointOfInterest& poi)
    pgsTypes::LimitState limitState = GetLimitState();
 
    CString strGraphTitle;
-   strGraphTitle.Format(_T("Stress History (%s - Without Live Load)"),GetLimitStateString(limitState));
+   strGraphTitle.Format(_T("Stress History (%s - without live load)"),GetLimitStateString(limitState));
    m_Graph.SetTitle(strGraphTitle);
 
    const CSegmentKey& segmentKey(poi.GetSegmentKey());
@@ -333,7 +317,7 @@ void CStressHistoryGraphBuilder::UpdateGraphData(const pgsPointOfInterest& poi)
 
    pgsTypes::LimitState limitState = GetLimitState();
    GET_IFACE(ILoadFactors,pLoadFactors);
-   Float64 gLL = pLoadFactors->GetLoadFactors()->LLIMmin[limitState];
+   Float64 gLL = pLoadFactors->GetLoadFactors()->GetLLIMMin(limitState);
 
    GET_IFACE(IProductForces,pProductForces);
    pgsTypes::BridgeAnalysisType bat = pProductForces->GetBridgeAnalysisType(pgsTypes::Minimize);

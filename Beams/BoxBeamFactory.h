@@ -54,27 +54,29 @@ END_COM_MAP()
 
 public:
    // IBeamFactory
-   virtual void CreateGirderSection(IBroker* pBroker,StatusGroupIDType statusGroupID,const IBeamFactory::Dimensions& dimensions,Float64 overallHeight,Float64 bottomFlangeHeight,IGirderSection** ppSection) override;
-   virtual bool ValidateDimensions(const IBeamFactory::Dimensions& dimensions,bool bSIUnits,std::_tstring* strErrMsg) override;
-   virtual void SaveSectionDimensions(sysIStructuredSave* pSave,const IBeamFactory::Dimensions& dimensions) override;
-   virtual IBeamFactory::Dimensions LoadSectionDimensions(sysIStructuredLoad* pLoad) override;
-   virtual Float64 GetInternalSurfaceAreaOfVoids(IBroker* pBroker,const CSegmentKey& segmentKey) override;
+   virtual void CreateGirderSection(IBroker* pBroker,StatusGroupIDType statusGroupID,const IBeamFactory::Dimensions& dimensions,Float64 overallHeight,Float64 bottomFlangeHeight,IGirderSection** ppSection) const override;
+   virtual bool ValidateDimensions(const IBeamFactory::Dimensions& dimensions,bool bSIUnits,std::_tstring* strErrMsg) const override;
+   virtual void SaveSectionDimensions(sysIStructuredSave* pSave,const IBeamFactory::Dimensions& dimensions) const override;
+   virtual IBeamFactory::Dimensions LoadSectionDimensions(sysIStructuredLoad* pLoad) const override;
+   virtual Float64 GetInternalSurfaceAreaOfVoids(IBroker* pBroker,const CSegmentKey& segmentKey) const override;
    virtual void CreateStrandMover(const IBeamFactory::Dimensions& dimensions, Float64 Hg,
                                   IBeamFactory::BeamFace endTopFace, Float64 endTopLimit, IBeamFactory::BeamFace endBottomFace, Float64 endBottomLimit, 
                                   IBeamFactory::BeamFace hpTopFace, Float64 hpTopLimit, IBeamFactory::BeamFace hpBottomFace, Float64 hpBottomLimit, 
-                                  Float64 endIncrement, Float64 hpIncrement, IStrandMover** strandMover) override;
-   virtual std::_tstring GetImage() override;
-   virtual CLSID GetCLSID() override;
-   virtual LPCTSTR GetImageResourceName() override;
-   virtual HICON GetIcon() override;
-   virtual bool IsShearKey(const IBeamFactory::Dimensions& dimensions, pgsTypes::SupportedBeamSpacing spacingType) override;
-   virtual void GetShearKeyAreas(const IBeamFactory::Dimensions& dimensions, pgsTypes::SupportedBeamSpacing spacingType,Float64* uniformArea, Float64* areaPerJoint) override;
-   virtual Float64 GetBeamWidth(const IBeamFactory::Dimensions& dimensions,pgsTypes::MemberEndType endType) override;
-   virtual void GetAllowableSpacingRange(const IBeamFactory::Dimensions& dimensions,pgsTypes::SupportedDeckType sdt, pgsTypes::SupportedBeamSpacing sbs, Float64* minSpacing, Float64* maxSpacing) override;
+                                  Float64 endIncrement, Float64 hpIncrement, IStrandMover** strandMover) const override;
+   virtual std::_tstring GetImage() const override;
+   virtual CLSID GetCLSID() const override;
+   virtual LPCTSTR GetImageResourceName() const override;
+   virtual HICON GetIcon() const override;
+   virtual bool IsShearKey(const IBeamFactory::Dimensions& dimensions, pgsTypes::SupportedBeamSpacing spacingType) const override;
+   virtual void GetShearKeyAreas(const IBeamFactory::Dimensions& dimensions, pgsTypes::SupportedBeamSpacing spacingType,Float64* uniformArea, Float64* areaPerJoint) const override;
+   virtual bool HasLongitudinalJoints() const override;
+   virtual bool IsLongitudinalJointStructural(pgsTypes::SupportedDeckType deckType,pgsTypes::AdjacentTransverseConnectivity connectivity) const override;
+   virtual Float64 GetBeamWidth(const IBeamFactory::Dimensions& dimensions,pgsTypes::MemberEndType endType) const override;
+   virtual void GetAllowableSpacingRange(const IBeamFactory::Dimensions& dimensions,pgsTypes::SupportedDeckType sdt, pgsTypes::SupportedBeamSpacing sbs, Float64* minSpacing, Float64* maxSpacing) const override;
 
 protected:
-   virtual bool ExcludeExteriorBeamShearKeys() override { return false; }
-   virtual bool UseOverallWidth()  override { return false; }
+   virtual bool ExcludeExteriorBeamShearKeys() const override { return false; }
+   virtual bool UseOverallWidth() const override { return false; }
 
 private:
    void GetDimensions(const IBeamFactory::Dimensions& dimensions,
@@ -94,7 +96,7 @@ private:
                                     Float64& C1,
                                     Float64& J,
                                     Float64& shearKeyDepth,
-                                    Float64& endBlockLength);
+                                    Float64& endBlockLength) const;
 
 };
 

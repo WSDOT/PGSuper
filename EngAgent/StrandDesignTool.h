@@ -153,12 +153,12 @@ public:
    Float64 GetSegmentLength() const; // a little utility function to return a commonly used value
 
    // adding and removing strands
-   StrandIndexType GetNumPermanentStrands();
-   StrandIndexType GetMaxPermanentStrands();
-   StrandIndexType GetNumTotalStrands();
-   StrandIndexType GetNh();
-   StrandIndexType GetNs();
-   StrandIndexType GetNt();
+   StrandIndexType GetNumPermanentStrands() const;
+   StrandIndexType GetMaxPermanentStrands() const;
+   StrandIndexType GetNumTotalStrands() const;
+   StrandIndexType GetNh() const;
+   StrandIndexType GetNs() const;
+   StrandIndexType GetNt() const;
 
    void SetConcreteAccuracy(Float64 accuracy);
    Float64 GetConcreteAccuracy() const;
@@ -175,14 +175,14 @@ public:
    bool AddRaisedStraightStrands();
 
    // If fill order can be simplified - do it at final end of flexural design
-   void SimplifyDesignFillOrder(pgsSegmentDesignArtifact* pArtifact);
+   void SimplifyDesignFillOrder(pgsSegmentDesignArtifact* pArtifact) const;
 
-   StrandIndexType GetNextNumPermanentStrands(StrandIndexType prevNum);
-   StrandIndexType GetPreviousNumPermanentStrands(StrandIndexType nextNum); 
-   bool IsValidNumPermanentStrands(StrandIndexType num);
+   StrandIndexType GetNextNumPermanentStrands(StrandIndexType prevNum) const;
+   StrandIndexType GetPreviousNumPermanentStrands(StrandIndexType nextNum) const;
+   bool IsValidNumPermanentStrands(StrandIndexType num) const;
 
    void SetMinimumPermanentStrands(StrandIndexType num);
-   StrandIndexType GetMinimumPermanentStrands();
+   StrandIndexType GetMinimumPermanentStrands() const;
 
    StrandIndexType GuessInitialStrands();
    arDesignStrandFillType GetOriginalStrandFillType() const;
@@ -193,14 +193,14 @@ public:
    Float64 GetPjackHarpedStrands() const;
 
    // returns the prestress force at lifting
-   Float64 GetPrestressForceAtLifting(const GDRCONFIG& guess,const pgsPointOfInterest& poi);
+   Float64 GetPrestressForceAtLifting(const GDRCONFIG& guess,const pgsPointOfInterest& poi) const;
 
-   Float64 GetPrestressForceMidZone(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi);
+   Float64 GetPrestressForceMidZone(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi) const;
 
    // if Np is set to INVALID_INDEX, cannot handle force
-   void ComputePermanentStrandsRequiredForPrestressForce(const pgsPointOfInterest& poi,InitialDesignParameters* pDesignParams);
+   void ComputePermanentStrandsRequiredForPrestressForce(const pgsPointOfInterest& poi,InitialDesignParameters* pDesignParams) const;
 
-   Float64 ComputeEccentricity(const pgsPointOfInterest& poi, IntervalIndexType intervalIdx);
+   Float64 ComputeEccentricity(const pgsPointOfInterest& poi, IntervalIndexType intervalIdx) const;
 
    Float64 GetTransferLength(pgsTypes::StrandType strandType) const;
 
@@ -210,7 +210,7 @@ public:
    // Harped Strand Design
    ///////////////////////
    // Harp adjustments
-   Float64 GetMinimumFinalMidZoneEccentricity(); 
+   Float64 GetMinimumFinalMidZoneEccentricity() const;
    void SetMinimumFinalMidZoneEccentricity(Float64 ecc); 
 
    // offsets are measured from original strand grid location from library
@@ -220,18 +220,15 @@ public:
    void SetHarpStrandOffsetEnd(pgsTypes::MemberEndType endType,Float64 off);
    void SetHarpStrandOffsetHp(pgsTypes::MemberEndType endType,Float64 off);
 
-   //void GetEndOffsetBounds(Float64* pLower, Float64* pUpper) const;
-   //void GetHpOffsetBounds(Float64* pLower, Float64* pUpper) const;
-
    Float64 GetHarpedHpOffsetIncrement(IStrandGeometry* pStrandGeom) const;
    Float64 GetHarpedEndOffsetIncrement(IStrandGeometry* pStrandGeom) const;
 
-   Float64 ComputeEndOffsetForEccentricity(const pgsPointOfInterest& poi, Float64 ecc);
-   bool ComputeMinHarpedForEndZoneEccentricity(const pgsPointOfInterest& poi, Float64 ecc, IntervalIndexType intervalIdx, StrandIndexType* pNs, StrandIndexType* pNh);
+   Float64 ComputeEndOffsetForEccentricity(const pgsPointOfInterest& poi, Float64 ecc) const;
+   bool ComputeMinHarpedForEndZoneEccentricity(const pgsPointOfInterest& poi, Float64 ecc, IntervalIndexType intervalIdx, StrandIndexType* pNs, StrandIndexType* pNh) const;
 
-   bool ComputeAddHarpedForMidZoneReleaseEccentricity(const pgsPointOfInterest& poi, Float64 ecc, Float64 minEcc, StrandIndexType* pNs, StrandIndexType* pNh);
+   bool ComputeAddHarpedForMidZoneReleaseEccentricity(const pgsPointOfInterest& poi, Float64 ecc, Float64 minEcc, StrandIndexType* pNs, StrandIndexType* pNh) const;
 
-   Float64 ComputeHpOffsetForEccentricity(const pgsPointOfInterest& poi, Float64 ecc,IntervalIndexType intervalIdx);
+   Float64 ComputeHpOffsetForEccentricity(const pgsPointOfInterest& poi, Float64 ecc,IntervalIndexType intervalIdx) const;
 
    // Debonded Strand Design
    /////////////////////////
@@ -249,35 +246,35 @@ public:
       Float64 m_BottomStress;
    };
 
-   std::vector<DebondLevelType> ComputeDebondsForDemand(const std::vector<StressDemand>& demands, StrandIndexType nss, Float64 psForcePerStrand, Float64 allowTens, Float64 allowComp);
+   std::vector<DebondLevelType> ComputeDebondsForDemand(const std::vector<StressDemand>& demands, StrandIndexType nss, Float64 psForcePerStrand, Float64 allowTens, Float64 allowComp) const;
 
 
    // section zero is at GetDebondSectionLength from end of girder
    Float64 GetDebondSectionLocation(SectionIndexType sectionIdx, DebondEndType end) const;
 
    // Get Indices of Section just inboard and outboard of location and distance from outboard section to location
-   void GetDebondSectionForLocation(Float64 location, SectionIndexType* pOutBoardSectionIdx, SectionIndexType* pInBoardSectionIdx, Float64* pOutToInDistance); 
+   void GetDebondSectionForLocation(Float64 location, SectionIndexType* pOutBoardSectionIdx, SectionIndexType* pInBoardSectionIdx, Float64* pOutToInDistance) const;
 
    // Given an amount of stress demand, return the minimum debond level to relieve the stress
    void GetDebondLevelForTopTension(Float64 psForcePerStrand, StrandIndexType nss, Float64 tensDemand, Float64 outboardDistance,
                                     Float64 Hg, Float64 Yb, Float64 Ag, Float64 St,
-                                    DebondLevelType* pOutboardLevel, DebondLevelType* pInboardLevel);
+                                    DebondLevelType* pOutboardLevel, DebondLevelType* pInboardLevel) const;
 
    void GetDebondLevelForBottomCompression(Float64 psForcePerStrand, StrandIndexType nss, Float64 tensDemand, Float64 outboardDistance,
                                            Float64 Hg, Float64 Yb, Float64 Ag, Float64 Sb,
-                                           DebondLevelType* pOutboardLevel, DebondLevelType* pInboardLevel);
+                                           DebondLevelType* pOutboardLevel, DebondLevelType* pInboardLevel) const;
 
    // Debonding levels are integer values used to quantify the amount of strands debonded at
    // a given section.
    // Get max level based on given number of strands, and number of sections outboard of desired section
-   DebondLevelType GetMaxDebondLevel(StrandIndexType numStrands, SectionIndexType numLeadingSections );
+   DebondLevelType GetMaxDebondLevel(StrandIndexType numStrands, SectionIndexType numLeadingSections ) const;
 
    // returns the maximum physically debonding the girder can handle based on the current number of strands
-   std::vector<DebondLevelType> GetMaxPhysicalDebonding();
+   const std::vector<DebondLevelType>& GetMaxPhysicalDebonding() const;
 
    // take a raw debond level layout, smooth debonding if necessary, and check that it is 
    // within maximum limits. Return an empty vector if we fail
-   void RefineDebondLevels( std::vector<DebondLevelType>& rDebondLevelsAtSections );
+   void RefineDebondLevels( std::vector<DebondLevelType>& rDebondLevelsAtSections ) const;
 
    // workhorse function to go from debond levels to set actual debond layout. 
    // Returns false if layout cannot be created
@@ -298,21 +295,23 @@ public:
    }
 
    // left and right ends of mid-zone. Measured from girder start
-   void GetMidZoneBoundaries(Float64* leftEnd, Float64* rightEnd); 
+   void GetMidZoneBoundaries(Float64* leftEnd, Float64* rightEnd) const;
 
    // POI's for design
-   std::vector<pgsPointOfInterest> GetDesignPoi(IntervalIndexType intervalIdx);
-   std::vector<pgsPointOfInterest> GetDesignPoi(IntervalIndexType intervalIdx,PoiAttributeType attrib);
-   std::vector<pgsPointOfInterest> GetDesignPoiEndZone(IntervalIndexType intervalIdx);
-   std::vector<pgsPointOfInterest> GetDesignPoiEndZone(IntervalIndexType intervalIdx,PoiAttributeType attrib);
+   pgsPointOfInterest GetPointOfInterest(const CSegmentKey& segmentKey,Float64 Xpoi) const;
+   void GetPointsOfInterest(const CSegmentKey& segmentKey, PoiAttributeType attrib,PoiList* pPoiList) const;
+   void GetDesignPoi(IntervalIndexType intervalIdx, PoiList* pPoiList) const;
+   void GetDesignPoi(IntervalIndexType intervalIdx,PoiAttributeType attrib, PoiList* pPoiList) const;
+   void GetDesignPoiEndZone(IntervalIndexType intervalIdx, PoiList* pPoiList) const;
+   void GetDesignPoiEndZone(IntervalIndexType intervalIdx,PoiAttributeType attrib, PoiList* pPoiList) const;
 
    pgsPointOfInterest GetDebondSamplingPOI(IntervalIndexType intervalIdx) const;
    // interface ISegmentLiftingDesignPointsOfInterest
    // locations of points of interest
-   virtual std::vector<pgsPointOfInterest> GetLiftingDesignPointsOfInterest(const CSegmentKey& segmentKey,Float64 overhang,PoiAttributeType attrib,Uint32 mode) override;
+   virtual void GetLiftingDesignPointsOfInterest(const CSegmentKey& segmentKey, Float64 overhang, PoiAttributeType attrib, std::vector<pgsPointOfInterest>* pvPoi, Uint32 mode = POIFIND_OR) const override;
 
    //ISegmentLiftingDesignPointsOfInterest
-   virtual std::vector<pgsPointOfInterest> GetHaulingDesignPointsOfInterest(const CSegmentKey& segmentKey,Uint16 nPnts,Float64 leftOverhang,Float64 rightOverhang,PoiAttributeType attrib,Uint32 mode = POIFIND_AND) override;
+   virtual void GetHaulingDesignPointsOfInterest(const CSegmentKey& segmentKey, Uint16 nPnts, Float64 leftOverhang, Float64 rightOverhang, PoiAttributeType attrib, std::vector<pgsPointOfInterest>* pvPoi,Uint32 mode = POIFIND_OR) const override;
 
    // Concrete
    ////////////
@@ -333,7 +332,7 @@ public:
    bool Bump500(IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,pgsTypes::StressType stressType,pgsTypes::StressLocation stressLocation);
    bool UpdateConcreteStrengthForShear(Float64 fcRequired,IntervalIndexType intervalIdx,pgsTypes::LimitState limitState);
 
-   ConcStrengthResultType ComputeRequiredConcreteStrength(Float64 fControl,IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::StressType stressType,Float64* pfc);
+   ConcStrengthResultType ComputeRequiredConcreteStrength(Float64 fControl,IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::StressType stressType,Float64* pfc) const;
 
    // "A"
    void SetSlabOffset(pgsTypes::MemberEndType end,Float64 offset);
@@ -369,7 +368,7 @@ public:
    pgsSegmentDesignArtifact::ConcreteStrengthDesignState GetFinalConcreteDesignState() const;
 
    // GROUP: INQUIRY
-   void DumpDesignParameters();
+   void DumpDesignParameters() const;
 
 protected:
    // GROUP: DATA MEMBERS
@@ -391,7 +390,7 @@ protected:
 
 private:
    // updates jacking forces with current design information
-   void UpdateJackingForces();
+   void UpdateJackingForces() const;
 
    // move strands at ends and hp's to highest and lowest possible positions, respectfully.
    bool ResetHarpedStrandConfiguration();
@@ -422,7 +421,7 @@ private:
    arDesignStrandFillType m_StrandFillType;
    Float64                m_HarpedRatio;
 
-   StrandIndexType        m_MinPermanentStrands;
+   mutable StrandIndexType        m_MinPermanentStrands;
    StrandIndexType        m_MinTempStrands;
    Float64                m_MinSlabOffset;
    Float64                m_AbsoluteMinimumSlabOffset;
@@ -448,7 +447,7 @@ private:
    Float64 m_AssExcessCamberTolerance;
 
    // Points of interest to be used for design
-   pgsPoiMgr m_PoiMgr;
+   mutable pgsPoiMgr m_PoiMgr;
 
    // Tool for dealing with raised straight strand design - only used if this is the design type
    std::shared_ptr<pgsRaisedStraightStrandDesignTool> m_pRaisedStraightStrandDesignTool;
@@ -706,7 +705,7 @@ private:
    bool AdjustForStrandSlope();
    bool AdjustForHoldDownForce();
 
-   StrandIndexType ComputeNextNumProportionalStrands(StrandIndexType prevNum, StrandIndexType* ns, StrandIndexType* nh);
+   StrandIndexType ComputeNextNumProportionalStrands(StrandIndexType prevNum, StrandIndexType* ns, StrandIndexType* nh) const;
 
    bool AdjustStrandsForSlope(Float64 targetSlope, Float64 currentSlope, pgsTypes::MemberEndType endType,StrandIndexType nh, IStrandGeometry* pStrandGeom);
 
@@ -730,8 +729,8 @@ private:
    void InitDebondData();
    void ComputeDebondLevels(IPretensionForce* pPrestressForce);
    void DumpDebondLevels(Float64 Hg);
-   bool SmoothDebondLevelsAtSections(std::vector<DebondLevelType>& rDebondLevelsAtSections);
-   DebondLevelType GetMinAdjacentDebondLevel(DebondLevelType currLevel, StrandIndexType maxDbsTermAtSection);
+   bool SmoothDebondLevelsAtSections(std::vector<DebondLevelType>& rDebondLevelsAtSections) const;
+   DebondLevelType GetMinAdjacentDebondLevel(DebondLevelType currLevel, StrandIndexType maxDbsTermAtSection) const;
 
    // Each debond level represents the constraints needed to debond a given list of strands
    // 
@@ -768,7 +767,7 @@ private:
    std::vector<DebondLevelType> m_MaxPhysicalDebondLevels;
 
 
-   std::vector<pgsPointOfInterest> GetHandlingDesignPointsOfInterest(const CSegmentKey& segmentKey,Float64 leftOverhang,Float64 rightOverhang,PoiAttributeType poiReference,PoiAttributeType supportAttribute,Uint32 mode);
+   void GetHandlingDesignPointsOfInterest(const CSegmentKey& segmentKey,Float64 leftOverhang,Float64 rightOverhang,PoiAttributeType poiReference,PoiAttributeType supportAttribute, std::vector<pgsPointOfInterest>* pvPoi, Uint32 mode) const;
 
 
 private:

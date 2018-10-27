@@ -201,7 +201,8 @@ rptRcTable* CVehicularLoadResultsTable::Build(IBroker* pBroker,const CGirderKey&
 
       CGirderKey thisGirderKey(grpIdx,gdrIdx);
 
-      std::vector<pgsPointOfInterest> vPoi( pIPoi->GetPointsOfInterest( CSegmentKey(thisGirderKey,ALL_SEGMENTS), POI_SPAN) );
+      PoiList vPoi;
+      pIPoi->GetPointsOfInterest(CSegmentKey(thisGirderKey, ALL_SEGMENTS), POI_SPAN, &vPoi);
 
       std::vector<Float64> dummy;
       std::vector<Float64> Pmin, Pmax;
@@ -258,13 +259,9 @@ rptRcTable* CVehicularLoadResultsTable::Build(IBroker* pBroker,const CGirderKey&
       }
 
       // Fill up the table
-      long index = 0;
-      std::vector<pgsPointOfInterest>::const_iterator i(vPoi.begin());
-      std::vector<pgsPointOfInterest>::const_iterator end(vPoi.end());
-      for ( ; i != end; i++, index++ )
+      IndexType index = 0;
+      for(const pgsPointOfInterest& poi : vPoi)
       {
-         const pgsPointOfInterest& poi = *i;
-
          col = 0;
 
          (*p_table)(row,col++) << location.SetValue( POI_SPAN, poi );
@@ -346,6 +343,7 @@ rptRcTable* CVehicularLoadResultsTable::Build(IBroker* pBroker,const CGirderKey&
          }
 
          row++;
+         index++;
       }
    }
 

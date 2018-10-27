@@ -98,6 +98,7 @@ protected:
 
    void BuildTitleDisplayObjects();
    void BuildGirderDisplayObjects();
+   void BuildLongitudinalJointDisplayObject();
    void BuildDeckDisplayObjects();
    void BuildOverlayDisplayObjects();
    void BuildTrafficBarrierDisplayObjects();
@@ -116,6 +117,8 @@ protected:
    typedef std::map<CGirderKey,IDType> GirderIDCollection;
    GirderIDCollection m_GirderIDs; // maps girder keys into DMANIP display object IDs
    IDType m_NextGirderID;
+
+   std::vector<pgsPointOfInterest> GetPointsOfInterest();
 };
 
 /////////////////////////////////////////////////////////////////////////////

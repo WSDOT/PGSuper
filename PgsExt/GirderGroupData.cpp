@@ -34,7 +34,7 @@ static char THIS_FILE[] = __FILE__;
 
 CGirderGroupData::CGirderGroupData()
 {
-   m_pBridge                     = nullptr;
+   m_pBridgeDesc                     = nullptr;
    m_pPier[pgsTypes::metStart]   = nullptr;
    m_pPier[pgsTypes::metEnd]     = nullptr;
 
@@ -46,7 +46,7 @@ CGirderGroupData::CGirderGroupData()
 
 CGirderGroupData::CGirderGroupData(CBridgeDescription2* pBridge)
 {
-   m_pBridge      = pBridge;
+   m_pBridgeDesc      = pBridge;
 
    m_pPier[pgsTypes::metStart]   = nullptr;
    m_pPier[pgsTypes::metEnd]     = nullptr;
@@ -63,7 +63,7 @@ CGirderGroupData::CGirderGroupData(CPierData2* pStartPier,CPierData2* pEndPier)
    ATLASSERT(pStartPier->GetIndex() != INVALID_INDEX);
    ATLASSERT(pEndPier->GetIndex()   != INVALID_INDEX);
 
-   m_pBridge = pStartPier->GetBridgeDescription();
+   m_pBridgeDesc = pStartPier->GetBridgeDescription();
 
    m_PierIndex[pgsTypes::metStart] = INVALID_INDEX;
    m_PierIndex[pgsTypes::metEnd]   = INVALID_INDEX;
@@ -77,7 +77,7 @@ CGirderGroupData::CGirderGroupData(CPierData2* pStartPier,CPierData2* pEndPier)
 
 CGirderGroupData::CGirderGroupData(const CGirderGroupData& rOther)
 {
-   m_pBridge                     = nullptr;
+   m_pBridgeDesc                     = nullptr;
    m_pPier[pgsTypes::metStart]   = nullptr;
    m_pPier[pgsTypes::metEnd]     = nullptr;
 
@@ -135,7 +135,7 @@ bool CGirderGroupData::operator==(const CGirderGroupData& rOther) const
       return false;
    }
 
-   if ( m_pBridge && !m_pBridge->UseSameNumberOfGirdersInAllGroups() )
+   if ( m_pBridgeDesc && !m_pBridgeDesc->UseSameNumberOfGirdersInAllGroups() )
    {
       if ( m_Girders.size() != rOther.m_Girders.size() )
       {
@@ -143,8 +143,24 @@ bool CGirderGroupData::operator==(const CGirderGroupData& rOther) const
       }
    }
 
+   if ( m_pBridgeDesc && !m_pBridgeDesc->UseSameGirderForEntireBridge() )
+   {
+      if (m_GirderTypeGroups != rOther.m_GirderTypeGroups)
+      {
+         return false;
+      }
+   }
+
+   if (m_pBridgeDesc && !IsBridgeSpacing(m_pBridgeDesc->GetGirderSpacingType()) && IsTopWidthSpacing(m_pBridgeDesc->GetGirderSpacingType()))
+   {
+      if (m_GirderTopWidthGroups != rOther.m_GirderTopWidthGroups)
+      {
+         return false;
+      }
+   }
+
    bool bCheckSlabOffset = false;
-   if ( m_pBridge && (m_pBridge->GetSlabOffsetType() == pgsTypes::sotPier || m_pBridge->GetSlabOffsetType() == pgsTypes::sotGirder))
+   if ( m_pBridgeDesc && (m_pBridgeDesc->GetSlabOffsetType() == pgsTypes::sotPier || m_pBridgeDesc->GetSlabOffsetType() == pgsTypes::sotGirder))
    {
       bCheckSlabOffset = true;
    }
@@ -201,18 +217,18 @@ GroupIDType CGirderGroupData::GetID() const
 
 void CGirderGroupData::SetBridgeDescription(CBridgeDescription2* pBridge)
 {
-   m_pBridge = pBridge;
+   m_pBridgeDesc = pBridge;
    UpdatePiers();
 }
 
 CBridgeDescription2* CGirderGroupData::GetBridgeDescription()
 {
-   return m_pBridge;
+   return m_pBridgeDesc;
 }
 
 const CBridgeDescription2* CGirderGroupData::GetBridgeDescription() const
 {
-   return m_pBridge;
+   return m_pBridgeDesc;
 }
 
 void CGirderGroupData::SetPier(pgsTypes::MemberEndType end,CPierData2* pPier)
@@ -257,12 +273,12 @@ void CGirderGroupData::SetPier(pgsTypes::MemberEndType end,CPierData2* pPier)
    }
 
 #if defined _DEBUG
-   if ( m_pBridge != nullptr )
+   if ( m_pBridgeDesc != nullptr )
    {
-      ATLASSERT(m_pBridge == pPier->GetBridgeDescription());
+      ATLASSERT(m_pBridgeDesc == pPier->GetBridgeDescription());
    }
 #endif
-   m_pBridge = pPier->GetBridgeDescription();
+   m_pBridgeDesc = pPier->GetBridgeDescription();
 }
 
 void CGirderGroupData::SetPiers(CPierData2* pStartPier,CPierData2* pEndPier)
@@ -367,7 +383,7 @@ CGirderGroupData* CGirderGroupData::GetPrevGirderGroup()
    if ( m_pPier[pgsTypes::metStart] )
    {
       CSpanData2* pSpan = m_pPier[pgsTypes::metStart]->GetPrevSpan();
-      CGirderGroupData* pGroup = m_pBridge->GetGirderGroup(pSpan);
+      CGirderGroupData* pGroup = m_pBridgeDesc->GetGirderGroup(pSpan);
       return pGroup;
    }
 
@@ -379,7 +395,7 @@ const CGirderGroupData* CGirderGroupData::GetPrevGirderGroup() const
    if ( m_pPier[pgsTypes::metStart] )
    {
       const CSpanData2* pSpan = m_pPier[pgsTypes::metStart]->GetPrevSpan();
-      const CGirderGroupData* pGroup = m_pBridge->GetGirderGroup(pSpan);
+      const CGirderGroupData* pGroup = m_pBridgeDesc->GetGirderGroup(pSpan);
       return pGroup;
    }
 
@@ -391,7 +407,7 @@ CGirderGroupData* CGirderGroupData::GetNextGirderGroup()
    if ( m_pPier[pgsTypes::metEnd] )
    {
       CSpanData2* pSpan = m_pPier[pgsTypes::metEnd]->GetNextSpan();
-      CGirderGroupData* pGroup = m_pBridge->GetGirderGroup(pSpan);
+      CGirderGroupData* pGroup = m_pBridgeDesc->GetGirderGroup(pSpan);
       return pGroup;
    }
 
@@ -403,7 +419,7 @@ const CGirderGroupData* CGirderGroupData::GetNextGirderGroup() const
    if ( m_pPier[pgsTypes::metEnd] )
    {
       const CSpanData2* pSpan = m_pPier[pgsTypes::metEnd]->GetNextSpan();
-      const CGirderGroupData* pGroup = m_pBridge->GetGirderGroup(pSpan);
+      const CGirderGroupData* pGroup = m_pBridgeDesc->GetGirderGroup(pSpan);
       return pGroup;
    }
 
@@ -418,14 +434,15 @@ void CGirderGroupData::SetGirderCount(GirderIndexType nGirders)
 
       CSplicedGirderData* pGirder = new CSplicedGirderData;
       pGirder->SetIndex(0);
-      pGirder->SetID( m_pBridge ? m_pBridge->GetNextGirderID() : INVALID_ID );
+      pGirder->SetID( m_pBridgeDesc ? m_pBridgeDesc->GetNextGirderID() : INVALID_ID );
       pGirder->SetGirderGroup(this);
       m_Girders.push_back(pGirder);
 
-      GirderTypeGroup group;
+      GirderGroup group;
       group.first = 0;
       group.second = 0;
       m_GirderTypeGroups.push_back(group);
+      m_GirderTopWidthGroups.push_back(group);
 
       std::vector<std::vector<Float64>>::iterator iter(m_SlabOffsets.begin());
       std::vector<std::vector<Float64>>::iterator end(m_SlabOffsets.end());
@@ -486,7 +503,7 @@ void CGirderGroupData::Initialize(GirderIndexType nGirders)
       pNewGirder->SetIndex(m_Girders.size());
       m_Girders.push_back(pNewGirder);
 
-      pNewGirder->SetID( m_pBridge->GetNextGirderID() );
+      pNewGirder->SetID( m_pBridgeDesc->GetNextGirderID() );
       GirderIDType newGdrID = pNewGirder->GetID();
 
       pNewGirder->Initialize(); // creates the default segment
@@ -500,7 +517,8 @@ void CGirderGroupData::Initialize(GirderIndexType nGirders)
       }
    }
 
-   m_GirderTypeGroups.push_back( GirderTypeGroup(0,m_Girders.size()-1) );
+   m_GirderTypeGroups.push_back( GirderGroup(0,m_Girders.size()-1) );
+   m_GirderTopWidthGroups.push_back( GirderGroup(0, m_Girders.size() - 1));
 }
 
 void CGirderGroupData::RemoveGirders(GirderIndexType nGirdersToRemove)
@@ -517,9 +535,15 @@ void CGirderGroupData::RemoveGirders(GirderIndexType nGirdersToRemove)
       pSplicedGirder = nullptr;
 
       m_GirderTypeGroups.back().second--;
-      if ( m_GirderTypeGroups.back().second < m_GirderTypeGroups.back().first )
+      if (m_GirderTypeGroups.back().second < m_GirderTypeGroups.back().first)
       {
          m_GirderTypeGroups.pop_back();
+      }
+
+      m_GirderTopWidthGroups.back().second--;
+      if (m_GirderTopWidthGroups.back().second < m_GirderTopWidthGroups.back().first)
+      {
+         m_GirderTopWidthGroups.pop_back();
       }
    }
 
@@ -554,7 +578,7 @@ void CGirderGroupData::AddGirders(GirderIndexType nGirdersToAdd)
    SegmentIndexType nSegments = pRefGirder->GetSegmentCount();
    std::vector<EventIndexType> constructionEvents(nSegments);
    std::vector<EventIndexType> erectionEvents(nSegments);
-   CTimelineManager* pTimelineManager = m_pBridge->GetTimelineManager();
+   CTimelineManager* pTimelineManager = m_pBridgeDesc->GetTimelineManager();
    for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
    {
       const CPrecastSegmentData* pSegment = pRefGirder->GetSegment(segIdx);
@@ -580,7 +604,7 @@ void CGirderGroupData::AddGirders(GirderIndexType nGirdersToAdd)
    for ( GirderIndexType i = 0; i < nGirdersToAdd; i++ )
    {
       GirderIndexType gdrIdx = m_Girders.size();
-      GirderIDType gdrID = m_pBridge->GetNextGirderID();
+      GirderIDType gdrID = m_pBridgeDesc->GetNextGirderID();
       CSplicedGirderData* pNewGirder = new CSplicedGirderData(this,gdrIdx,gdrID,*pRefGirder);
       m_Girders.push_back(pNewGirder);
 
@@ -619,6 +643,7 @@ void CGirderGroupData::AddGirders(GirderIndexType nGirdersToAdd)
 
    // Update the girder type group
    m_GirderTypeGroups.back().second = m_Girders.size()-1;
+   m_GirderTopWidthGroups.back().second = m_Girders.size() - 1;
 
    // Update the girder spacing (number of girders and number of spaces are related)
    CPierData2* pStartPier = m_pPier[pgsTypes::metStart];
@@ -653,9 +678,9 @@ void CGirderGroupData::AddGirders(GirderIndexType nGirdersToAdd)
 
 GirderIndexType CGirderGroupData::GetGirderCount() const
 {
-   if ( m_pBridge && m_pBridge->UseSameNumberOfGirdersInAllGroups() )
+   if ( m_pBridgeDesc && m_pBridgeDesc->UseSameNumberOfGirdersInAllGroups() )
    {
-      return m_pBridge->GetGirderCount();
+      return m_pBridgeDesc->GetGirderCount();
    }
    else
    {
@@ -730,14 +755,14 @@ Float64 CGirderGroupData::GetSlabOffset(PierIndexType pierIdx,GirderIndexType gd
    }
    else
    {
-      pgsTypes::SlabOffsetType slabOffsetType = m_pBridge->GetSlabOffsetType();
+      pgsTypes::SlabOffsetType slabOffsetType = m_pBridgeDesc->GetSlabOffsetType();
       if ( slabOffsetType == pgsTypes::sotBridge )
       {
-         offset = m_pBridge->GetSlabOffset();
+         offset = m_pBridgeDesc->GetSlabOffset();
       }
       else if ( slabOffsetType == pgsTypes::sotPier )
       {
-         if ( m_pBridge->GetDeckDescription()->GetDeckType() == pgsTypes::sdtNone )
+         if ( m_pBridgeDesc->GetDeckDescription()->GetDeckType() == pgsTypes::sdtNone )
          {
             return 0;
          }
@@ -753,7 +778,7 @@ Float64 CGirderGroupData::GetSlabOffset(PierIndexType pierIdx,GirderIndexType gd
       }
       else
       {
-         if ( m_pBridge->GetDeckDescription()->GetDeckType() == pgsTypes::sdtNone )
+         if ( m_pBridgeDesc->GetDeckDescription()->GetDeckType() == pgsTypes::sdtNone )
          {
             return 0;
          }
@@ -786,152 +811,25 @@ void CGirderGroupData::CopySlabOffset(GirderIndexType sourceGdrIdx,GirderIndexTy
 
 GroupIndexType CGirderGroupData::CreateGirderTypeGroup(GirderIndexType firstGdrIdx,GirderIndexType lastGdrIdx)
 {
-   if ( m_pBridge->UseSameGirderForEntireBridge() )
+   if ( m_pBridgeDesc->UseSameGirderForEntireBridge() )
    {
       return 0; // can't create a new group... return group 0
    }
 
-   GroupIndexType newGroupIdx = 9999;
-
-   std::vector<GirderTypeGroup> gdrGroups;
-
-   std::vector<GirderTypeGroup>::const_iterator iter;
-   for ( iter = m_GirderTypeGroups.begin(); iter != m_GirderTypeGroups.end(); iter++ )
-   {
-      GirderTypeGroup gdrGroup = *iter;
-      if ( gdrGroup.first == firstGdrIdx && gdrGroup.second == lastGdrIdx )
-      {
-         // no need to create a new group
-         newGroupIdx = iter - m_GirderTypeGroups.begin();
-         return newGroupIdx;
-      }
-
-      if ( gdrGroup.first < firstGdrIdx && firstGdrIdx <= gdrGroup.second )
-      {
-         // the new group starts in the middle of this group
-         gdrGroup.second = firstGdrIdx-1; // set the end of this group one girder before the 
-         gdrGroups.push_back(gdrGroup);
-         break;
-      }
-      else if ( lastGdrIdx <= gdrGroup.second )
-      {
-         // the new group is totally within this group
-         if ( gdrGroup.first == firstGdrIdx )
-         {
-            GirderTypeGroup newGrp;
-            newGrp.first  = firstGdrIdx;
-            newGrp.second = lastGdrIdx;
-            gdrGroups.push_back(newGrp);
-            newGroupIdx = gdrGroups.size()-1;
-
-            newGrp.first = lastGdrIdx+1;
-            newGrp.second = gdrGroup.second;
-            gdrGroups.push_back(newGrp);
-         }
-         else if ( gdrGroup.second == lastGdrIdx )
-         {
-            GirderTypeGroup newGrp;
-            newGrp.first  = gdrGroup.first;
-            newGrp.second = firstGdrIdx-1;
-            gdrGroups.push_back(newGrp);
-
-            newGrp.first = firstGdrIdx;
-            newGrp.second = lastGdrIdx;
-            gdrGroups.push_back(newGrp);
-            newGroupIdx = gdrGroups.size()-1;
-         }
-         else
-         {
-            GirderTypeGroup newGrp;
-            newGrp.first  = gdrGroup.first;
-            newGrp.second = firstGdrIdx-1;
-            gdrGroups.push_back(newGrp);
-
-            newGrp.first = firstGdrIdx;
-            newGrp.second = lastGdrIdx;
-            gdrGroups.push_back(newGrp);
-            newGroupIdx = gdrGroups.size()-1;
-
-            newGrp.first = lastGdrIdx+1;
-            newGrp.second = gdrGroup.second;
-            gdrGroups.push_back(newGrp);
-         }
-         iter++;
-         break;
-      }
-      else
-      {
-         gdrGroups.push_back(gdrGroup);
-      }
-   }
-
-   for ( iter; iter != m_GirderTypeGroups.end(); iter++ )
-   {
-      GirderTypeGroup gdrGroup = *iter;
-      if ( gdrGroup.first < lastGdrIdx && lastGdrIdx <= gdrGroup.second )
-      {
-         // the new group ends in the middle of this group
-
-         // add the new group
-         gdrGroup.first = firstGdrIdx;
-         gdrGroup.second = lastGdrIdx;
-         gdrGroups.push_back(gdrGroup);
-         newGroupIdx = gdrGroups.size()-1;
-
-         // get the current group back
-         gdrGroup = *iter;
-         gdrGroup.first = lastGdrIdx + 1; // group begins one girder after the last group
-         if ( gdrGroup.first <= gdrGroup.second ) 
-         {
-            gdrGroups.push_back(gdrGroup); // if last is < first, then this isn't a group... the new group ends at the last girder
-         }
-      }
-      else
-      {
-         gdrGroups.push_back(gdrGroup); // save the rest of the groups
-      }
-   }
-
-   m_GirderTypeGroups = gdrGroups;
-
-   PGS_ASSERT_VALID;
-
+   GroupIndexType newGroupIdx;
+   CreateGirderGroup(firstGdrIdx, lastGdrIdx, &m_GirderTypeGroups, &newGroupIdx);
    return newGroupIdx;
+
 }
 
 void CGirderGroupData::ExpandAll()
 {
-   m_GirderTypeGroups.clear();
-   GirderIndexType nGirders = m_Girders.size();
-   for ( GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++ )
-   {
-      m_GirderTypeGroups.push_back(std::make_pair(gdrIdx,gdrIdx));
-   }
-   PGS_ASSERT_VALID;
+   ExpandAll(&m_GirderTypeGroups);
 }
 
 void CGirderGroupData::Expand(GroupIndexType girderTypeGroupIdx)
 {
-   GirderIndexType firstGdrIdx, lastGdrIdx;
-   std::_tstring strName;
-   GetGirderTypeGroup(girderTypeGroupIdx,&firstGdrIdx,&lastGdrIdx,&strName);
-
-   if ( firstGdrIdx == lastGdrIdx )
-   {
-      return; // nothing to expand
-   }
-
-   std::vector<GirderTypeGroup>::iterator iter = m_GirderTypeGroups.begin() + girderTypeGroupIdx;
-   std::vector<GirderTypeGroup>::iterator pos = m_GirderTypeGroups.erase(iter); // returns the iter the element after the one removed
-
-   // inserted element goes before the iterator... insert retuns position of newly inserted item
-   // go in reverse order
-   for ( GirderIndexType gdrIdx = lastGdrIdx; firstGdrIdx <= gdrIdx; gdrIdx-- )
-   {
-      GirderTypeGroup group(gdrIdx,gdrIdx);
-      pos = m_GirderTypeGroups.insert(pos,group);
-   }
-   PGS_ASSERT_VALID;
+   Expand(girderTypeGroupIdx, &m_GirderTypeGroups);
 }
 
 
@@ -945,10 +843,10 @@ void CGirderGroupData::JoinAll(GirderIndexType gdrIdx)
    std::_tstring strName = m_Girders[gdrIdx]->GetGirderName();
    const GirderLibraryEntry* pGdrEntry = m_Girders[gdrIdx]->GetGirderLibraryEntry();
 
-   GirderTypeGroup firstGroup = m_GirderTypeGroups.front();
-   GirderTypeGroup lastGroup  = m_GirderTypeGroups.back();
+   GirderGroup firstGroup = m_GirderTypeGroups.front();
+   GirderGroup lastGroup  = m_GirderTypeGroups.back();
 
-   GirderTypeGroup joinedGroup;
+   GirderGroup joinedGroup;
    joinedGroup.first  = firstGroup.first;
    joinedGroup.second = lastGroup.second;
 
@@ -983,65 +881,12 @@ void CGirderGroupData::Join(GirderIndexType firstGdrIdx,GirderIndexType lastGdrI
       m_Girders[i]->SetGirderLibraryEntry(pGdrEntry);
    }
 
-   // firstGdrIdx must match the "first" parameter of a GirderTypeGroup
-   // lastGdrIdx  must match the "last"  parameter of a GirderTypeGroup
-   // this is the way the UI grid works so we don't need to allow
-   // for any more complicated joining than this.
-
-   // create a local girder groups container. It is easier to fill it up as we go
-   // rather than manipulating the class data member... update the class data member
-   // at the end of this function
-   std::vector<GirderTypeGroup> gdrGroups;
-
-   // loop until the first index in a group matches firstGdrIdx
-   // save any group that comes before the first group
-   std::vector<GirderTypeGroup>::iterator iter;
-   for ( iter = m_GirderTypeGroups.begin(); iter != m_GirderTypeGroups.end(); iter++ )
-   {
-      GirderTypeGroup gdrGroup = *iter;
-      if ( gdrGroup.first == firstGdrIdx )
-      {
-         break;
-      }
-      else
-      {
-         gdrGroups.push_back(gdrGroup);
-      }
-   }
-
-   _ASSERT(iter != m_GirderTypeGroups.end()); // shouldn't have gone through the full vector
-
-   // loop until the last index in a group matches lastGdrIdx
-   // don't save any groups in the middle... these are the groups
-   // being joined
-   for ( ; iter != m_GirderTypeGroups.end(); iter++ )
-   {
-      GirderTypeGroup gdrGroup = *iter;
-      if ( gdrGroup.second == lastGdrIdx )
-      {
-         iter++; // move iter to next position... breaking out of the loop skips the incrementer
-         break;
-      }
-   }
-
-   // save the new group
-   GirderTypeGroup newGroup(firstGdrIdx,lastGdrIdx);
-   gdrGroups.push_back(newGroup);
-
-   // copy the remaining groups
-   if ( iter != m_GirderTypeGroups.end() )
-   {
-      gdrGroups.insert(gdrGroups.end(),iter,m_GirderTypeGroups.end());
-   }
-
-   // finally replace the data member with the local girder groups
-   m_GirderTypeGroups = gdrGroups;
-   PGS_ASSERT_VALID;
+   Join(firstGdrIdx, lastGdrIdx, gdrIdx, &m_GirderTypeGroups);
 }
 
 GroupIndexType CGirderGroupData::GetGirderTypeGroupCount() const
 {
-   if ( m_pBridge && m_pBridge->UseSameGirderForEntireBridge() )
+   if ( m_pBridgeDesc && m_pBridgeDesc->UseSameGirderForEntireBridge() )
    {
       return 1;
    }
@@ -1053,17 +898,17 @@ GroupIndexType CGirderGroupData::GetGirderTypeGroupCount() const
 
 void CGirderGroupData::GetGirderTypeGroup(GroupIndexType girderTypeGroupIdx,GirderIndexType* pFirstGdrIdx,GirderIndexType* pLastGdrIdx,std::_tstring* pName) const
 {
-   if ( m_pBridge && m_pBridge->UseSameNumberOfGirdersInAllGroups() &&
-        m_pBridge->UseSameGirderForEntireBridge() )
+   if ( m_pBridgeDesc && m_pBridgeDesc->UseSameNumberOfGirdersInAllGroups() &&
+        m_pBridgeDesc->UseSameGirderForEntireBridge() )
    {
       *pFirstGdrIdx = 0;
-      *pLastGdrIdx = m_pBridge->GetGirderCount()-1;
-      *pName = m_pBridge->GetGirderName();
+      *pLastGdrIdx = m_pBridgeDesc->GetGirderCount()-1;
+      *pName = m_pBridgeDesc->GetGirderName();
    }
    else
    {
       _ASSERT( girderTypeGroupIdx < (SpacingIndexType)m_GirderTypeGroups.size() );
-      GirderTypeGroup group = m_GirderTypeGroups[girderTypeGroupIdx];
+      GirderGroup group = m_GirderTypeGroups[girderTypeGroupIdx];
 
       *pFirstGdrIdx = group.first;
       *pLastGdrIdx  = group.second;
@@ -1080,31 +925,60 @@ void CGirderGroupData::GetGirderTypeGroup(GroupIndexType girderTypeGroupIdx,Gird
    }
 }
 
+CGirderTypeGroup CGirderGroupData::GetGirderTypeGroup(GroupIndexType girderTypeGroupIdx) const
+{
+   CGirderTypeGroup group;
+   GetGirderTypeGroup(girderTypeGroupIdx, &group.firstGdrIdx, &group.lastGdrIdx, &group.strName);
+   return group;
+}
+
+std::vector<CGirderTypeGroup> CGirderGroupData::GetGirderTypeGroups() const
+{
+   std::vector<CGirderTypeGroup> groups;
+   for (const auto& p : m_GirderTypeGroups)
+   {
+      CGirderTypeGroup group;
+      group.firstGdrIdx = p.first;
+      group.lastGdrIdx = p.second;
+      group.strName = m_Girders[p.first]->GetGirderName();
+      group.pGdrEntry = m_Girders[p.first]->GetGirderLibraryEntry();
+      groups.push_back(group);
+   }
+   return groups;
+}
+
+void CGirderGroupData::SetGirderTypeGroups(const std::vector<CGirderTypeGroup>& girderTypeGroups)
+{
+#if defined _DEBUG
+   GirderIndexType firstGdrIdx = girderTypeGroups.front().firstGdrIdx;
+   GirderIndexType lastGdrIdx = girderTypeGroups.back().lastGdrIdx;
+   GirderIndexType nGirders = lastGdrIdx - firstGdrIdx + 1;
+   ATLASSERT(nGirders == m_Girders.size());
+#endif
+
+   m_GirderTypeGroups.clear();
+   for (const auto& typeGroup : girderTypeGroups)
+   {
+      GirderGroup group;
+      group.first = typeGroup.firstGdrIdx;
+      group.second = typeGroup.lastGdrIdx;
+      m_GirderTypeGroups.push_back(group);
+      for (GirderIndexType gdrIdx = typeGroup.firstGdrIdx; gdrIdx <= typeGroup.lastGdrIdx; gdrIdx++)
+      {
+         m_Girders[gdrIdx]->SetGirderName(typeGroup.strName.c_str());
+         m_Girders[gdrIdx]->SetGirderLibraryEntry(typeGroup.pGdrEntry);
+      }
+   }
+}
+
 GroupIndexType CGirderGroupData::FindGroup(GirderIndexType gdrIdx) const
 {
-   if ( m_pBridge && m_pBridge->UseSameGirderForEntireBridge() )
+   if ( m_pBridgeDesc && m_pBridgeDesc->UseSameGirderForEntireBridge() )
    {
       return 0; // can't create a new group... return group 0
    }
 
-   GroupIndexType nGroups = GetGirderTypeGroupCount();
-   for ( GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )
-   {
-      GirderIndexType firstGdrIdx, lastGdrIdx;
-
-      GirderTypeGroup group = m_GirderTypeGroups[grpIdx];
-
-      firstGdrIdx = group.first;
-      lastGdrIdx  = group.second;
-
-      if ( firstGdrIdx <= gdrIdx && gdrIdx <= lastGdrIdx )
-      {
-         return grpIdx;
-      }
-   }
-
-   ATLASSERT(false); // should never get here
-   return INVALID_INDEX;
+   return FindGroup(gdrIdx, m_GirderTypeGroups);
 }
 
 void CGirderGroupData::SetGirderName(GroupIndexType grpIdx,LPCTSTR strName)
@@ -1133,15 +1007,457 @@ void CGirderGroupData::RenameGirder(GroupIndexType grpIdx,LPCTSTR strName)
 
 LPCTSTR CGirderGroupData::GetGirderName(GirderIndexType gdrIdx) const
 {
-   if ( m_pBridge && m_pBridge->UseSameGirderForEntireBridge() )
+   if ( m_pBridgeDesc && m_pBridgeDesc->UseSameGirderForEntireBridge() )
    {
-      return m_pBridge->GetGirderName();
+      return m_pBridgeDesc->GetGirderName();
    }
    else
    {
       return m_Girders[gdrIdx]->GetGirderName();
    }
 }
+
+GroupIndexType CGirderGroupData::CreateGirderTopWidthGroup(GirderIndexType firstGdrIdx, GirderIndexType lastGdrIdx)
+{
+   if (!IsTopWidthSpacing(m_pBridgeDesc->GetGirderSpacingType()))
+   {
+      return INVALID_INDEX; // top flange width is not applicable
+   }
+
+   if (IsBridgeSpacing(m_pBridgeDesc->GetGirderSpacingType()))
+   {
+      return 0; // can't create a new group... return 0
+   }
+
+   GroupIndexType newGroupIdx;
+   CreateGirderGroup(firstGdrIdx, lastGdrIdx, &m_GirderTopWidthGroups, &newGroupIdx);
+   return newGroupIdx;
+}
+
+GroupIndexType CGirderGroupData::GetGirderTopWidthGroupCount() const
+{
+   if (m_pBridgeDesc && IsBridgeSpacing(m_pBridgeDesc->GetGirderSpacingType()))
+   {
+      ATLASSERT(IsTopWidthSpacing(m_pBridgeDesc->GetGirderSpacingType()));
+      return 1;
+   }
+   else
+   {
+      return m_GirderTopWidthGroups.size();
+   }
+}
+
+void CGirderGroupData::GetGirderTopWidthGroup(GroupIndexType groupIdx, GirderIndexType* pFirstGdrIdx, GirderIndexType* pLastGdrIdx,pgsTypes::TopWidthType* pType,Float64* pLeftStart, Float64* pRightStart,Float64* pLeftEnd,Float64* pRightEnd) const
+{
+   if (m_pBridgeDesc && IsBridgeSpacing(m_pBridgeDesc->GetGirderSpacingType()))
+   {
+      *pFirstGdrIdx = 0;
+      *pLastGdrIdx = m_pBridgeDesc->GetGirderCount() - 1;
+      m_pBridgeDesc->GetGirderTopWidth(pType,pLeftStart,pRightStart);
+      *pLeftEnd = *pLeftStart;
+      *pRightEnd = *pRightStart;
+   }
+   else
+   {
+      _ASSERT(groupIdx < (SpacingIndexType)m_GirderTopWidthGroups.size());
+      GirderGroup group = m_GirderTopWidthGroups[groupIdx];
+
+      *pFirstGdrIdx = group.first;
+      *pLastGdrIdx = group.second;
+      m_Girders[group.first]->GetTopWidth(pType,pLeftStart,pRightStart,pLeftEnd,pRightEnd);
+
+#if defined _DEBUG
+      // make sure every girder in the group has the same name
+      for (GirderIndexType i = group.first + 1; i <= group.second; i++)
+      {
+         pgsTypes::TopWidthType type;
+         Float64 leftStart, rightStart, leftEnd, rightEnd;
+         m_Girders[i]->GetTopWidth(&type, &leftStart, &rightStart, &leftEnd, &rightEnd);
+         ATLASSERT(type == *pType);
+         ATLASSERT(IsEqual(*pLeftStart, leftStart));
+         ATLASSERT(IsEqual(*pLeftEnd, leftEnd));
+         if (type == pgsTypes::twtAsymmetric)
+         {
+            ATLASSERT(IsEqual(*pRightStart, rightStart));
+            ATLASSERT(IsEqual(*pRightEnd, rightEnd));
+         }
+      }
+#endif
+   }
+}
+
+CGirderTopWidthGroup CGirderGroupData::GetGirderTopWidthGroup(GroupIndexType groupIdx) const
+{
+   CGirderTopWidthGroup group;
+   GetGirderTopWidthGroup(groupIdx, &group.firstGdrIdx, &group.lastGdrIdx, &group.type, &group.left[pgsTypes::metStart], &group.right[pgsTypes::metStart], &group.left[pgsTypes::metEnd], &group.right[pgsTypes::metEnd]);
+   return group;
+}
+
+std::vector<CGirderTopWidthGroup>CGirderGroupData::GetGirderTopWidthGroups() const
+{
+   std::vector<CGirderTopWidthGroup> groups;
+   for (const auto& p : m_GirderTopWidthGroups)
+   {
+      CGirderTopWidthGroup group;
+      group.firstGdrIdx = p.first;
+      group.lastGdrIdx = p.second;
+      m_Girders[p.first]->GetTopWidth(&group.type, &group.left[pgsTypes::metStart], &group.right[pgsTypes::metStart], &group.left[pgsTypes::metEnd], &group.right[pgsTypes::metEnd]);
+      groups.push_back(group);
+   }
+   return groups;
+}
+
+void CGirderGroupData::SetGirderTopWidthGroups(const std::vector<CGirderTopWidthGroup>& girderTopWidthGroups)
+{
+#if defined _DEBUG
+   GirderIndexType firstGdrIdx = girderTopWidthGroups.front().firstGdrIdx;
+   GirderIndexType lastGdrIdx = girderTopWidthGroups.back().lastGdrIdx;
+   GirderIndexType nGirders = lastGdrIdx - firstGdrIdx + 1;
+   ATLASSERT(nGirders == m_Girders.size());
+#endif
+
+   m_GirderTopWidthGroups.clear();
+   for (const auto& typeGroup : girderTopWidthGroups)
+   {
+      GirderGroup group;
+      group.first = typeGroup.firstGdrIdx;
+      group.second = typeGroup.lastGdrIdx;
+      m_GirderTopWidthGroups.push_back(group);
+      for (GirderIndexType gdrIdx = typeGroup.firstGdrIdx; gdrIdx <= typeGroup.lastGdrIdx; gdrIdx++)
+      {
+         m_Girders[gdrIdx]->SetTopWidth(typeGroup.type, typeGroup.left[pgsTypes::metStart], typeGroup.right[pgsTypes::metStart], typeGroup.left[pgsTypes::metEnd], typeGroup.right[pgsTypes::metEnd]);
+      }
+   }
+}
+
+GroupIndexType CGirderGroupData::FindGirderTopWidthGroup(GirderIndexType gdrIdx) const
+{
+   if (m_pBridgeDesc && IsBridgeSpacing(m_pBridgeDesc->GetGirderSpacingType()))
+   {
+      return 0; // can't create a new group... return group 0
+   }
+
+   return FindGroup(gdrIdx, m_GirderTopWidthGroups);
+}
+
+void CGirderGroupData::ExpandAllGirderTopWidthGroups()
+{
+   ExpandAll(&m_GirderTopWidthGroups);
+}
+
+void CGirderGroupData::ExpandGirderTopWidthGroup(GroupIndexType girderTopWidthGroupIdx)
+{
+   Expand(girderTopWidthGroupIdx, &m_GirderTopWidthGroups);
+}
+
+void CGirderGroupData::JoinAllGirderTopWidthGroups(GirderIndexType gdrIdx)
+{
+   // this is almost identical to JoinAll for girder type(name).... 
+   // the functions could problem be combined into one if I could figure out how
+   // to pass a lambda expression to get the name/libentry/wtf and set them in the loop at the end
+   if (m_Girders.size() == 0)
+   {
+      return;
+   }
+
+   pgsTypes::TopWidthType type;
+   Float64 leftStart, rightStart, leftEnd, rightEnd;
+   m_Girders[gdrIdx]->GetTopWidth(&type,&leftStart,&rightStart,&leftEnd,&rightEnd);
+
+   GirderGroup firstGroup = m_GirderTopWidthGroups.front();
+   GirderGroup lastGroup = m_GirderTopWidthGroups.back();
+
+   GirderGroup joinedGroup;
+   joinedGroup.first = firstGroup.first;
+   joinedGroup.second = lastGroup.second;
+
+   m_GirderTopWidthGroups.clear();
+   m_GirderTopWidthGroups.push_back(joinedGroup);
+
+   // make girder name and lib entry the same for all members of the group
+   std::vector<CSplicedGirderData*>::iterator iter(m_Girders.begin());
+   std::vector<CSplicedGirderData*>::iterator iterEnd(m_Girders.end());
+   for (; iter != iterEnd; iter++)
+   {
+      CSplicedGirderData* pGirder = *iter;
+      pGirder->SetTopWidth(type,leftStart,rightStart,leftEnd,rightEnd);
+   }
+   PGS_ASSERT_VALID;
+}
+
+void CGirderGroupData::JoinGirderTopWidthGroup(GirderIndexType firstGdrIdx, GirderIndexType lastGdrIdx, GirderIndexType gdrIdx)
+{
+   // girder index must be in the range
+   _ASSERT(firstGdrIdx <= gdrIdx && gdrIdx <= lastGdrIdx);
+
+   // get the girder name for the group
+   pgsTypes::TopWidthType type;
+   Float64 leftStart, rightStart, leftEnd, rightEnd;
+   m_Girders[gdrIdx]->GetTopWidth(&type,&leftStart,&rightStart,&leftEnd,&rightEnd);
+
+   // assign the name for the group
+   for (GirderIndexType i = firstGdrIdx; i <= lastGdrIdx; i++)
+   {
+      m_Girders[i]->SetTopWidth(type,leftStart,rightStart,leftEnd,rightEnd);
+   }
+
+   Join(firstGdrIdx, lastGdrIdx, gdrIdx, &m_GirderTopWidthGroups);
+}
+
+void CGirderGroupData::SetGirderTopWidth(GroupIndexType groupIdx, pgsTypes::TopWidthType type,Float64 leftStart,Float64 rightStart,Float64 leftEnd,Float64 rightEnd)
+{
+   pgsTypes::TopWidthType sourceGroupType;
+   Float64 sourceGroupLeftStart, sourceGroupRightStart, sourceGroupLeftEnd, sourceGroupRightEnd;
+   GirderIndexType firstGdrIdx, lastGdrIdx;
+   GetGirderTopWidthGroup(groupIdx, &firstGdrIdx, &lastGdrIdx, &sourceGroupType, &sourceGroupLeftStart, &sourceGroupRightStart, &sourceGroupLeftEnd, &sourceGroupRightEnd);
+
+   for (GirderIndexType gdrIdx = firstGdrIdx; gdrIdx <= lastGdrIdx; gdrIdx++)
+   {
+      m_Girders[gdrIdx]->SetTopWidth(type,leftStart,rightStart,leftEnd,rightEnd);
+   }
+}
+
+void CGirderGroupData::GetGirderTopWidth(GirderIndexType gdrIdx, pgsTypes::TopWidthType* pType, Float64* pLeftStart, Float64* pRightStart,Float64* pLeftEnd,Float64* pRightEnd) const
+{
+   if (m_pBridgeDesc && IsBridgeSpacing(m_pBridgeDesc->GetGirderSpacingType()) )
+   {
+      m_pBridgeDesc->GetGirderTopWidth(pType, pLeftStart, pRightStart);
+      *pLeftEnd = *pLeftStart;
+      *pRightEnd = *pRightStart;
+   }
+   else
+   {
+      m_Girders[gdrIdx]->GetTopWidth(pType, pLeftStart, pRightStart, pLeftEnd, pRightEnd);
+   }
+}
+
+//-----------------------------------------------
+void CGirderGroupData::CreateGirderGroup(GirderIndexType firstGdrIdx, GirderIndexType lastGdrIdx,std::vector<GirderGroup>* pGroups,GroupIndexType* pNewGroupIdx)
+{
+   GroupIndexType newGroupIdx = INVALID_INDEX;
+   
+   std::vector<GirderGroup> gdrGroups;
+   
+   std::vector<GirderGroup>::const_iterator iter;
+   for (iter = pGroups->cbegin(); iter != pGroups->cend(); iter++)
+   {
+      GirderGroup gdrGroup = *iter; // we want a copy so do a direct assignment, don't use a reference
+      if (gdrGroup.first == firstGdrIdx && gdrGroup.second == lastGdrIdx)
+      {
+         // no need to create a new group
+         *pNewGroupIdx = iter - pGroups->cbegin();
+         return;
+      }
+
+      if (gdrGroup.first < firstGdrIdx && firstGdrIdx <= gdrGroup.second)
+      {
+         // the new group starts in the middle of this group
+         gdrGroup.second = firstGdrIdx - 1; // set the end of this group one girder before the 
+         gdrGroups.push_back(gdrGroup);
+         break;
+      }
+      else if (lastGdrIdx <= gdrGroup.second)
+      {
+         // the new group is totally within this group
+         if (gdrGroup.first == firstGdrIdx)
+         {
+            GirderGroup newGrp;
+            newGrp.first = firstGdrIdx;
+            newGrp.second = lastGdrIdx;
+            gdrGroups.push_back(newGrp);
+            newGroupIdx = gdrGroups.size() - 1;
+
+            newGrp.first = lastGdrIdx + 1;
+            newGrp.second = gdrGroup.second;
+            gdrGroups.push_back(newGrp);
+         }
+         else if (gdrGroup.second == lastGdrIdx)
+         {
+            GirderGroup newGrp;
+            newGrp.first = gdrGroup.first;
+            newGrp.second = firstGdrIdx - 1;
+            gdrGroups.push_back(newGrp);
+
+            newGrp.first = firstGdrIdx;
+            newGrp.second = lastGdrIdx;
+            gdrGroups.push_back(newGrp);
+            newGroupIdx = gdrGroups.size() - 1;
+         }
+         else
+         {
+            GirderGroup newGrp;
+            newGrp.first = gdrGroup.first;
+            newGrp.second = firstGdrIdx - 1;
+            gdrGroups.push_back(newGrp);
+
+            newGrp.first = firstGdrIdx;
+            newGrp.second = lastGdrIdx;
+            gdrGroups.push_back(newGrp);
+            newGroupIdx = gdrGroups.size() - 1;
+
+            newGrp.first = lastGdrIdx + 1;
+            newGrp.second = gdrGroup.second;
+            gdrGroups.push_back(newGrp);
+         }
+      }
+      else
+      {
+         gdrGroups.push_back(gdrGroup);
+      }
+   }
+
+   for (iter; iter != pGroups->end(); iter++)
+   {
+      GirderGroup gdrGroup = *iter;
+      if (gdrGroup.first < lastGdrIdx && lastGdrIdx <= gdrGroup.second)
+      {
+         // the new group ends in the middle of this group
+
+         // add the new group
+         gdrGroup.first = firstGdrIdx;
+         gdrGroup.second = lastGdrIdx;
+         gdrGroups.push_back(gdrGroup);
+         newGroupIdx = gdrGroups.size() - 1;
+
+         // get the current group back
+         gdrGroup = *iter;
+         gdrGroup.first = lastGdrIdx + 1; // group begins one girder after the last group
+         if (gdrGroup.first <= gdrGroup.second)
+         {
+            gdrGroups.push_back(gdrGroup); // if last is < first, then this isn't a group... the new group ends at the last girder
+         }
+      }
+      else
+      {
+         gdrGroups.push_back(gdrGroup); // save the rest of the groups
+      }
+   }
+
+   *pGroups = gdrGroups;
+   *pNewGroupIdx = newGroupIdx;
+   PGS_ASSERT_VALID;
+}
+
+void CGirderGroupData::ExpandAll(std::vector<GirderGroup>* pGroups)
+{
+   pGroups->clear();
+   GirderIndexType nGirders = m_Girders.size();
+   for (GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++)
+   {
+      pGroups->emplace_back(gdrIdx, gdrIdx);
+   }
+   PGS_ASSERT_VALID;
+}
+
+void CGirderGroupData::Expand(GroupIndexType groupIdx, std::vector<GirderGroup>* pGroups)
+{
+   GirderIndexType firstGdrIdx, lastGdrIdx;
+   firstGdrIdx = (*pGroups)[groupIdx].first;
+   lastGdrIdx = (*pGroups)[groupIdx].second;
+
+   if (firstGdrIdx == lastGdrIdx)
+   {
+      return; // nothing to expand
+   }
+
+   std::vector<GirderGroup>::iterator iter = pGroups->begin() + groupIdx;
+   std::vector<GirderGroup>::iterator pos = pGroups->erase(iter); // returns the iter the element after the one removed
+
+                                                                                // inserted element goes before the iterator... insert retuns position of newly inserted item
+                                                                                // go in reverse order
+   for (GirderIndexType gdrIdx = lastGdrIdx; firstGdrIdx <= gdrIdx && gdrIdx != INVALID_INDEX; gdrIdx--)
+   {
+      GirderGroup group(gdrIdx, gdrIdx);
+      pos = pGroups->insert(pos, group);
+   }
+   PGS_ASSERT_VALID;
+}
+
+void CGirderGroupData::Join(GirderIndexType firstGdrIdx, GirderIndexType lastGdrIdx, GirderIndexType gdrIdx, std::vector<GirderGroup>* pGroups)
+{
+   // girder index must be in the range
+   _ASSERT(firstGdrIdx <= gdrIdx && gdrIdx <= lastGdrIdx);
+
+   // firstGdrIdx must match the "first" parameter of a GirderTypeGroup
+   // lastGdrIdx  must match the "last"  parameter of a GirderTypeGroup
+   // this is the way the UI grid works so we don't need to allow
+   // for any more complicated joining than this.
+
+   // create a local girder groups container. It is easier to fill it up as we go
+   // rather than manipulating the class data member... update the class data member
+   // at the end of this function
+   std::vector<GirderGroup> gdrGroups;
+
+   // loop until the first index in a group matches firstGdrIdx
+   // save any group that comes before the first group
+   std::vector<GirderGroup>::iterator iter = pGroups->begin();
+   std::vector<GirderGroup>::iterator end(pGroups->end());
+   for (; iter != end; iter++)
+   {
+      GirderGroup gdrGroup = *iter;
+      if (gdrGroup.first == firstGdrIdx)
+      {
+         break;
+      }
+      else
+      {
+         gdrGroups.push_back(gdrGroup);
+      }
+   }
+
+   _ASSERT(iter != end); // shouldn't have gone through the full vector
+
+                                              // loop until the last index in a group matches lastGdrIdx
+                                              // don't save any groups in the middle... these are the groups
+                                              // being joined
+   for (; iter != end; iter++)
+   {
+      GirderGroup gdrGroup = *iter;
+      if (gdrGroup.second == lastGdrIdx)
+      {
+         iter++; // move iter to next position... breaking out of the loop skips the incrementer
+         break;
+      }
+   }
+
+   // save the new group
+   GirderGroup newGroup(firstGdrIdx, lastGdrIdx);
+   gdrGroups.push_back(newGroup);
+
+   // copy the remaining groups
+   if (iter != end)
+   {
+      gdrGroups.insert(gdrGroups.end(), iter, end);
+   }
+
+   // finally replace the data member with the local girder groups
+   *pGroups = gdrGroups;
+   PGS_ASSERT_VALID;
+}
+
+GroupIndexType CGirderGroupData::FindGroup(GirderIndexType gdrIdx, const std::vector<GirderGroup>& groups) const
+{
+   GroupIndexType nGroups = groups.size();
+   for (GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++)
+   {
+      GirderIndexType firstGdrIdx, lastGdrIdx;
+
+      GirderGroup group = groups[grpIdx];
+
+      firstGdrIdx = group.first;
+      lastGdrIdx = group.second;
+
+      if (firstGdrIdx <= gdrIdx && gdrIdx <= lastGdrIdx)
+      {
+         return grpIdx;
+      }
+   }
+
+   ATLASSERT(false); // should never get here
+   return INVALID_INDEX;
+}
+
+//-----------------------------------------------
 
 void CGirderGroupData::SetGirderLibraryEntry(GirderIndexType gdrIdx,const GirderLibraryEntry* pEntry)
 {
@@ -1190,6 +1506,9 @@ HRESULT CGirderGroupData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
    {
       hr = pStrLoad->BeginUnit(_T("GirderGroup"));
 
+      Float64 version;
+      pStrLoad->get_Version(&version);
+
       var.vt = VT_ID;
       hr = pStrLoad->get_Property(_T("ID"),&var);
       m_GroupID = VARIANT2ID(var);
@@ -1225,7 +1544,7 @@ HRESULT CGirderGroupData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
          hr = pGirder->Load(pStrLoad,pProgress);
          m_Girders.push_back(pGirder);
          ATLASSERT(pGirder->GetID() != INVALID_ID);
-         m_pBridge->UpdateNextGirderID(pGirder->GetID());
+         m_pBridgeDesc->UpdateNextGirderID(pGirder->GetID());
       }
 
       hr = pStrLoad->EndUnit(); // Girders
@@ -1236,7 +1555,7 @@ HRESULT CGirderGroupData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
       GroupIndexType nGirderTypeGroups = VARIANT2INDEX(var);
       for ( GroupIndexType gdrTypeGroupIdx = 0; gdrTypeGroupIdx < nGirderTypeGroups; gdrTypeGroupIdx++ )
       {
-         GirderTypeGroup group;
+         GirderGroup group;
 
          hr = pStrLoad->BeginUnit(_T("GirderTypeGroup"));
          
@@ -1252,12 +1571,46 @@ HRESULT CGirderGroupData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
       }
       hr = pStrLoad->EndUnit(); // GirderTypeGroups
 
-      if ( ::IsBridgeSpacing(m_pBridge->GetGirderSpacingType()) )
+      if (1 < version && !IsBridgeSpacing(m_pBridgeDesc->GetGirderSpacingType()) && IsTopWidthSpacing(m_pBridgeDesc->GetGirderSpacingType()) )
+      {
+         // added in version
+         hr = pStrLoad->BeginUnit(_T("GirderTopWidthGroups"));
+         var.vt = VT_INDEX;
+         hr = pStrLoad->get_Property(_T("Count"), &var);
+         GroupIndexType nGirderTypeGroups = VARIANT2INDEX(var);
+         for (GroupIndexType gdrTypeGroupIdx = 0; gdrTypeGroupIdx < nGirderTypeGroups; gdrTypeGroupIdx++)
+         {
+            GirderGroup group;
+
+            hr = pStrLoad->BeginUnit(_T("GirderTopWidthGroup"));
+
+            hr = pStrLoad->get_Property(_T("FirstGirderIndex"), &var);
+            group.first = VARIANT2INDEX(var);
+
+            hr = pStrLoad->get_Property(_T("LastGirderIndex"), &var);
+            group.second = VARIANT2INDEX(var);
+
+            m_GirderTopWidthGroups.push_back(group);
+
+            hr = pStrLoad->EndUnit(); // GirderTopWidthGroup
+         }
+         hr = pStrLoad->EndUnit(); // GirderTopWidthGroups
+      }
+      else
+      {
+         GirderIndexType nGirders = m_Girders.size();
+         for (GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++)
+         {
+            m_GirderTopWidthGroups.push_back(GirderGroup(gdrIdx,gdrIdx));
+         }
+      }
+
+      if ( ::IsBridgeSpacing(m_pBridgeDesc->GetGirderSpacingType()) )
       {
          // If the girder spacing type is a bridge spacing then individual girder spaces aren't loaded by
          // the CPierData2 objects. The girder spacing objects need to have spacing that is consistent
          // with the number of girders. Set those values here.
-         Float64 bridgeSpacing = m_pBridge->GetGirderSpacing();
+         Float64 bridgeSpacing = m_pBridgeDesc->GetGirderSpacing();
          CPierData2* pStartPier = m_pPier[pgsTypes::metStart];
          CPierData2* pEndPier   = m_pPier[pgsTypes::metEnd];
          CPierData2* pPier = pStartPier;
@@ -1339,10 +1692,10 @@ HRESULT CGirderGroupData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
 
 
       // Slab Offset
-      if (m_pBridge->GetSlabOffsetType() != pgsTypes::sotBridge )
+      if (m_pBridgeDesc->GetSlabOffsetType() != pgsTypes::sotBridge )
       {
          hr = pStrLoad->BeginUnit(_T("SlabOffset"));
-         if ( m_pBridge->GetSlabOffsetType() == pgsTypes::sotPier )
+         if ( m_pBridgeDesc->GetSlabOffsetType() == pgsTypes::sotPier )
          {
             // Slab offset per pier (one value for all girders)
             PierIndexType startPierIdx = GetPierIndex(pgsTypes::metStart);
@@ -1361,7 +1714,7 @@ HRESULT CGirderGroupData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
          }
          else
          {
-            ATLASSERT(m_pBridge->GetSlabOffsetType() == pgsTypes::sotGirder);
+            ATLASSERT(m_pBridgeDesc->GetSlabOffsetType() == pgsTypes::sotGirder);
             PierIndexType startPierIdx = GetPierIndex(pgsTypes::metStart);
             PierIndexType endPierIdx   = GetPierIndex(pgsTypes::metEnd);
             IndexType index = 0;
@@ -1408,7 +1761,7 @@ HRESULT CGirderGroupData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
 
 HRESULT CGirderGroupData::Save(IStructuredSave* pStrSave,IProgress* pProgress)
 {
-   pStrSave->BeginUnit(_T("GirderGroup"),1.0);
+   pStrSave->BeginUnit(_T("GirderGroup"),2.0);
 
    pStrSave->put_Property(_T("ID"), CComVariant(m_GroupID) );
 
@@ -1429,11 +1782,11 @@ HRESULT CGirderGroupData::Save(IStructuredSave* pStrSave,IProgress* pProgress)
 
    pStrSave->BeginUnit(_T("GirderTypeGroups"),1.0);
    pStrSave->put_Property(_T("Count"),CComVariant(m_GirderTypeGroups.size()));
-   std::vector<GirderTypeGroup>::iterator grpIter(m_GirderTypeGroups.begin());
-   std::vector<GirderTypeGroup>::iterator grpIterEnd(m_GirderTypeGroups.end());
+   std::vector<GirderGroup>::iterator grpIter(m_GirderTypeGroups.begin());
+   std::vector<GirderGroup>::iterator grpIterEnd(m_GirderTypeGroups.end());
    for ( ; grpIter != grpIterEnd; grpIter++ )
    {
-      GirderTypeGroup group = *grpIter;
+      GirderGroup group = *grpIter;
       pStrSave->BeginUnit(_T("GirderTypeGroup"),1.0);
       pStrSave->put_Property(_T("FirstGirderIndex"),CComVariant(group.first));
       pStrSave->put_Property(_T("LastGirderIndex"),CComVariant(group.second));
@@ -1441,11 +1794,29 @@ HRESULT CGirderGroupData::Save(IStructuredSave* pStrSave,IProgress* pProgress)
    }
    pStrSave->EndUnit(); // GirderTypeGroups
 
+   // added in version 2.0
+   if ( !IsBridgeSpacing(m_pBridgeDesc->GetGirderSpacingType()) && IsTopWidthSpacing(m_pBridgeDesc->GetGirderSpacingType()))
+   {
+      pStrSave->BeginUnit(_T("GirderTopWidthGroups"), 1.0);
+      pStrSave->put_Property(_T("Count"), CComVariant(m_GirderTopWidthGroups.size()));
+      std::vector<GirderGroup>::iterator grpIter(m_GirderTopWidthGroups.begin());
+      std::vector<GirderGroup>::iterator grpIterEnd(m_GirderTopWidthGroups.end());
+      for (; grpIter != grpIterEnd; grpIter++)
+      {
+         GirderGroup group = *grpIter;
+         pStrSave->BeginUnit(_T("GirderTopWidthGroup"), 1.0);
+         pStrSave->put_Property(_T("FirstGirderIndex"), CComVariant(group.first));
+         pStrSave->put_Property(_T("LastGirderIndex"), CComVariant(group.second));
+         pStrSave->EndUnit(); // GirderTopWidthGroup
+      }
+      pStrSave->EndUnit(); // GirderTopWidthGroups
+   }
+
    // Slab Offset
-   if (m_pBridge->GetSlabOffsetType() != pgsTypes::sotBridge )
+   if (m_pBridgeDesc->GetSlabOffsetType() != pgsTypes::sotBridge )
    {
       pStrSave->BeginUnit(_T("SlabOffset"),1.0);
-      if ( m_pBridge->GetSlabOffsetType() == pgsTypes::sotPier )
+      if ( m_pBridgeDesc->GetSlabOffsetType() == pgsTypes::sotPier )
       {
          // Slab offset per pier (one value for all girders)
          PierIndexType startPierIdx = GetPierIndex(pgsTypes::metStart);
@@ -1459,7 +1830,7 @@ HRESULT CGirderGroupData::Save(IStructuredSave* pStrSave,IProgress* pProgress)
       }
       else
       {
-         ATLASSERT(m_pBridge->GetSlabOffsetType() == pgsTypes::sotGirder);
+         ATLASSERT(m_pBridgeDesc->GetSlabOffsetType() == pgsTypes::sotGirder);
          PierIndexType startPierIdx = GetPierIndex(pgsTypes::metStart);
          PierIndexType endPierIdx   = GetPierIndex(pgsTypes::metEnd);
          IndexType index = 0;
@@ -1548,14 +1919,17 @@ void CGirderGroupData::MakeCopy(const CGirderGroupData& rOther,bool bCopyDataOnl
       *myGirderIter = pNewGirder;
    }
 
-   m_GirderTypeGroups.clear();
-   std::vector<GirderTypeGroup>::const_iterator grpIter(rOther.m_GirderTypeGroups.begin());
-   std::vector<GirderTypeGroup>::const_iterator grpIterEnd(rOther.m_GirderTypeGroups.end());
-   for ( ; grpIter != grpIterEnd; grpIter++ )
-   {
-      const GirderTypeGroup& grp = *grpIter;
-      m_GirderTypeGroups.push_back(grp);
-   }
+   m_GirderTypeGroups = rOther.m_GirderTypeGroups;
+   //m_GirderTypeGroups.clear();
+   //std::vector<GirderGroup>::const_iterator grpIter(rOther.m_GirderTypeGroups.begin());
+   //std::vector<GirderGroup>::const_iterator grpIterEnd(rOther.m_GirderTypeGroups.end());
+   //for ( ; grpIter != grpIterEnd; grpIter++ )
+   //{
+   //   const GirderGroup& grp = *grpIter;
+   //   m_GirderTypeGroups.push_back(grp);
+   //}
+
+   m_GirderTopWidthGroups = rOther.m_GirderTopWidthGroups;
 
    // delete the old girders
    std::vector<CSplicedGirderData*>::iterator oldGirderIter(vOldGirders.begin());
@@ -1591,19 +1965,20 @@ void CGirderGroupData::Clear()
    }
 
    m_GirderTypeGroups.clear();
+   m_GirderTopWidthGroups.clear();
 
    m_SlabOffsets.clear();
 }
 
 void CGirderGroupData::UpdatePiers()
 {
-   if ( m_pBridge != nullptr && (m_pPier[pgsTypes::metStart] == nullptr || m_pPier[pgsTypes::metEnd] == nullptr) )
+   if ( m_pBridgeDesc != nullptr && (m_pPier[pgsTypes::metStart] == nullptr || m_pPier[pgsTypes::metEnd] == nullptr) )
    {
       ATLASSERT(m_PierIndex[pgsTypes::metStart] != INVALID_INDEX);
       ATLASSERT(m_PierIndex[pgsTypes::metEnd]   != INVALID_INDEX);
 
-      m_pPier[pgsTypes::metStart] = m_pBridge->GetPier(m_PierIndex[pgsTypes::metStart]);
-      m_pPier[pgsTypes::metEnd]   = m_pBridge->GetPier(m_PierIndex[pgsTypes::metEnd]);
+      m_pPier[pgsTypes::metStart] = m_pBridgeDesc->GetPier(m_PierIndex[pgsTypes::metStart]);
+      m_pPier[pgsTypes::metEnd]   = m_pBridgeDesc->GetPier(m_PierIndex[pgsTypes::metEnd]);
 
       m_PierIndex[pgsTypes::metStart] = INVALID_INDEX;
       m_PierIndex[pgsTypes::metEnd]   = INVALID_INDEX;
@@ -1656,9 +2031,11 @@ void CGirderGroupData::AssertValid()
    if ( 0 < m_Girders.size() )
    {
       ATLASSERT(m_GirderTypeGroups.size() != 0);
-      ATLASSERT(m_GirderTypeGroups.back().second - m_GirderTypeGroups.front().first == m_Girders.size()-1);
-
-      if ( m_pBridge && m_pBridge->GetSlabOffsetType() == pgsTypes::sotGirder )
+      ATLASSERT(m_GirderTypeGroups.back().second - m_GirderTypeGroups.front().first == m_Girders.size() - 1);
+      ATLASSERT(m_GirderTopWidthGroups.size() != 0);
+      ATLASSERT(m_GirderTopWidthGroups.back().second - m_GirderTopWidthGroups.front().first == m_Girders.size() - 1);
+      
+      if ( m_pBridgeDesc && m_pBridgeDesc->GetSlabOffsetType() == pgsTypes::sotGirder )
       {
          std::vector<std::vector<Float64>>::iterator iter(m_SlabOffsets.begin());
          std::vector<std::vector<Float64>>::iterator end(m_SlabOffsets.end());
@@ -1670,15 +2047,15 @@ void CGirderGroupData::AssertValid()
       }
    }
 
-   if ( m_pBridge && m_pPier[pgsTypes::metStart] )
+   if ( m_pBridgeDesc && m_pPier[pgsTypes::metStart] )
    {
-      ATLASSERT( m_pBridge == m_pPier[pgsTypes::metStart]->GetBridgeDescription() );
+      ATLASSERT( m_pBridgeDesc == m_pPier[pgsTypes::metStart]->GetBridgeDescription() );
       ATLASSERT( m_pPier[pgsTypes::metStart]->IsBoundaryPier() );
    }
 
-   if ( m_pBridge && m_pPier[pgsTypes::metEnd] )
+   if ( m_pBridgeDesc && m_pPier[pgsTypes::metEnd] )
    {
-      ATLASSERT( m_pBridge == m_pPier[pgsTypes::metEnd]->GetBridgeDescription() );
+      ATLASSERT( m_pBridgeDesc == m_pPier[pgsTypes::metEnd]->GetBridgeDescription() );
       ATLASSERT( m_pPier[pgsTypes::metEnd]->IsBoundaryPier() );
    }
 

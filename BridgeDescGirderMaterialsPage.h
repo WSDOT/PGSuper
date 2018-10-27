@@ -54,7 +54,8 @@ public:
 	CButton	m_ctrlEciCheck;
 	CEdit	   m_ctrlFc;
 	CEdit  	m_ctrlFci;
-	//}}AFX_DATA
+   CCacheEdit m_ctrlTopFlangeThickening;
+   //}}AFX_DATA
    
    bool m_bUseSameGirderType;
 
@@ -70,6 +71,9 @@ public:
    Float64 m_AssExcessCamber;
    CString m_strAssExcessCamberCache;
    bool m_bCanAssExcessCamberInputBeEnabled;
+
+   Float64 m_MinTopWidth;
+   Float64 m_MaxTopWidth;
 
 // Overrides
 	// ClassWizard generate virtual function overrides
@@ -105,7 +109,9 @@ protected:
    afx_msg void OnChangeSameGirderType();
    afx_msg void OnChangeSlabOffsetType();
    afx_msg void OnChangeAssExcessCamberType();
-	DECLARE_MESSAGE_MAP()
+   afx_msg void OnTopFlangeThickeningTypeChanged();
+   afx_msg void OnTopWidthTypeChanged();
+   DECLARE_MESSAGE_MAP()
 
    void FillEventList();
    EventIDType CreateEvent();

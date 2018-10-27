@@ -56,39 +56,39 @@ public:
       m_Outcomes.set(outcome);
    }
 
-   bool GetOutcome(OutcomeType outcome)
+   bool GetOutcome(OutcomeType outcome) const
    {
       return m_Outcomes[outcome];
    }
 
-   bool DidGirderChange()
+   bool DidGirderChange() const
    {
       return DidConcreteChange() || DidStrandsChange();
    }
 
-   bool DidConcreteChange()
+   bool DidConcreteChange() const
    {
       return m_Outcomes[FcChanged] || m_Outcomes[FciChanged];
    }
 
-   bool DidFinalConcreteStrengthChange()
+   bool DidFinalConcreteStrengthChange() const
    {
       return m_Outcomes[FcChanged];
    }
 
-   bool DidStrandsChange()
+   bool DidStrandsChange() const
    {
       return m_Outcomes[PermanentStrandsChanged] || 
              m_Outcomes[TemporaryStrandsChanged] ||
              m_Outcomes[RaisedStraightStrands];
    }
 
-   bool DidRetainStrandProportioning()
+   bool DidRetainStrandProportioning() const
    {
       return m_Outcomes[RetainStrandProportioning];
    }
 
-   bool DidRaiseStraightStrands()
+   bool DidRaiseStraightStrands() const
    {
       return m_Outcomes[RaisedStraightStrands];
    }
@@ -99,7 +99,7 @@ public:
       m_Abort=true;
    }
 
-   bool WasDesignAborted()
+   bool WasDesignAborted() const
    {
       return m_Abort;
    }

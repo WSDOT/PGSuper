@@ -22,7 +22,6 @@
 
 // PGSpliceGraphReporterImp.cpp : Implementation of CPGSpliceGrapherImp
 #include "stdafx.h"
-#include "GraphingAgent_i.h"
 #include "PGSpliceGrapherImp.h"
 
 #ifdef _DEBUG

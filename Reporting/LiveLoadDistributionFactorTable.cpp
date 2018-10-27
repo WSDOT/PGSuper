@@ -128,7 +128,7 @@ void CLiveLoadDistributionFactorTable::Build(rptChapter* pChapter,
       (*pTable)(0,1) << _T("Strength/Service");
 
       pTable->SetColumnSpan(0,2,3);
-      (*pTable)(0,2) << _T("Fatigue/Special Permit Rating");
+      (*pTable)(0,2) << _T("Fatigue/One Lane");
 
       pTable->SetColumnSpan(0,3,SKIP_CELL);
       pTable->SetColumnSpan(0,4,SKIP_CELL);
@@ -145,19 +145,16 @@ void CLiveLoadDistributionFactorTable::Build(rptChapter* pChapter,
 
    GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
 
-   std::vector<pgsPointOfInterest> vPoi( pIPoi->GetPointsOfInterest(CSegmentKey(girderKey,ALL_SEGMENTS),POI_SPAN) );
+   PoiList vPoi;
+   pIPoi->GetPointsOfInterest(CSegmentKey(girderKey, ALL_SEGMENTS), POI_SPAN, &vPoi);
 
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
    location.IncludeSpanAndGirder(girderKey.groupIndex == ALL_GROUPS);
 
    RowIndexType row = pTable->GetNumberOfHeaderRows();
 
-   std::vector<pgsPointOfInterest>::iterator iter(vPoi.begin());
-   std::vector<pgsPointOfInterest>::iterator end(vPoi.end());
-   for ( ; iter != end; iter++ )
+   for (const pgsPointOfInterest& poi : vPoi)
    {
-      pgsPointOfInterest& poi( *iter );
-
       (*pTable)(row,0) << location.SetValue( POI_SPAN, poi );
 
       Float64 pM, nM, V;
@@ -207,7 +204,7 @@ void CLiveLoadDistributionFactorTable::Build(rptChapter* pChapter,
 
    if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
    {
-      (*pTable2)(0,2) << _T("Fatigue/Special Permit Rating");
+      (*pTable2)(0,2) << _T("Fatigue/One Lane");
    }
 
    row = pTable2->GetNumberOfHeaderRows();

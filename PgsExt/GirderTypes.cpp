@@ -656,7 +656,7 @@ void CGirderTypes::ExpandAll()
    GirderIndexType nGirders = m_GirderData.size();
    for ( GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++ )
    {
-      m_GirderGroups.push_back(std::make_pair(gdrIdx,gdrIdx));
+      m_GirderGroups.emplace_back(gdrIdx,gdrIdx);
    }
    PGS_ASSERT_VALID;
 }

@@ -255,7 +255,7 @@ eafTypes::StatusSeverityType pgsInformationalStatusCallback::GetSeverity()
 void pgsInformationalStatusCallback::Execute(CEAFStatusItem* pStatusItem)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
-   EAFShowStatusMessage(pStatusItem,m_Severity,FALSE,AfxGetAppName(),m_HelpID);
+   EAFShowStatusMessage(pStatusItem,m_Severity,FALSE,FALSE,AfxGetAppName(),m_HelpID);
 }
 
 
@@ -522,6 +522,27 @@ void pgsBridgeDescriptionStatusCallback::Execute(CEAFStatusItem* pStatusItem)
 
             GET_IFACE(IEAFTransactions,pTransactions);
             pTransactions->Execute(pTxn);
+         }
+      }
+      else if (pItem->m_IssueType == pgsBridgeDescriptionStatusItem::Bearings)
+      {
+         // Show status item in larger area so we can see it.
+         AFX_MANAGE_STATE(AfxGetStaticModuleState());
+         eafTypes::StatusItemDisplayReturn retval = EAFShowStatusMessage(pItem,m_Severity,FALSE,TRUE,AfxGetAppName(),NULL);
+
+         bool didEdit(false);
+         if (retval == eafTypes::eafsiEdit)
+         {
+            GET_IFACE(IEditByUI, pEdit);
+            didEdit = pEdit->EditBearings();
+         }
+
+         if (retval == eafTypes::eafsiRemove || didEdit)
+         {
+            // assume that edit took care of status
+            StatusItemIDType id = pItem->GetID();
+            GET_IFACE(IEAFStatusCenter,pStatusCenter);
+            pStatusCenter->RemoveByID(id);
          }
       }
    }

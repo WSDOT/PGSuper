@@ -1,6 +1,6 @@
 Splitting Zone Checks {#tg_splitting_zone_checks}
 ======================================
-The reinforcement in the splitting/bursting zone is checked in accordance with LRFD 5.10.10.1. The area of shear reinforcement in the splitting zone is computed as
+The reinforcement in the splitting/bursting zone is checked in accordance with LRFD 5.9.4.4.1 (*pre-2017: 5.10.10.1*). The area of shear reinforcement in the splitting zone is computed as
 
 Av = SUMMATION(Number of Legs)(Bar Size)(Length)/(Spacing)
 
@@ -16,7 +16,7 @@ Zone |  Start (ft) | End (ft) | Bar | # Legs | Spacing (in)
 
 Zone Length = 2.00 ft
 
-Av = 2(0.31 5.10.10.1)(1.00 ft)/(0.5 ft) + 2(0.31 in2)(1.00 ft)/(0.75 ft) = 2.066 in<sup>2</sup>
+Av = 2(0.31 in2)(1.00 ft)/(0.5 ft) + 2(0.31 in2)(1.00 ft)/(0.75 ft) = 2.066 in<sup>2</sup>
 
 > NOTE: WSDOT standard practice deviates from the LRFD specifications as outlined a [June 2001 Design Memorandum](http://www.wsdot.wa.gov/eesc/bridge/designmemos/08-2001.htm)
 

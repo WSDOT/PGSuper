@@ -32,8 +32,7 @@
 #include "initguid.h"
 #include "ProjectAgent.h"
 
-#include "ProjectAgent_i.h"
-#include "ProjectAgent_i.c"
+#include "CLSID.h"
 
 #include <WBFLCore_i.c>
 #include <WBFLGenericBridge_i.c>

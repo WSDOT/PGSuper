@@ -70,6 +70,8 @@ protected:
    // GROUP: OPERATIONS
    // GROUP: ACCESS
    // GROUP: INQUIRY
+   rptChapter* BuildDeckOnGirder(CReportSpecification* pRptSpec, Uint16 level) const;
+   rptChapter* BuildNoDeck(CReportSpecification* pRptSpec, Uint16 level) const;
 
 private:
    // GROUP: DATA MEMBERS

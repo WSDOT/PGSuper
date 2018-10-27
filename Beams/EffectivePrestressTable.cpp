@@ -118,9 +118,9 @@ CEffectivePrestressTable* CEffectivePrestressTable::PrepareTable(rptChapter* pCh
 
 
    GET_IFACE2(pBroker,ILoadFactors,pLoadFactors);
-   table->m_gLL_ServiceI   = pLoadFactors->GetLoadFactors()->LLIMmax[pgsTypes::ServiceI];
-   table->m_gLL_ServiceIII = pLoadFactors->GetLoadFactors()->LLIMmax[pgsTypes::ServiceIII];
-   table->m_gLL_Fatigue = pLoadFactors->GetLoadFactors()->LLIMmax[lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims ? pgsTypes::ServiceIA : pgsTypes::FatigueI];
+   table->m_gLL_Fatigue = pLoadFactors->GetLoadFactors()->GetLLIMMax(lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims ? pgsTypes::ServiceIA : pgsTypes::FatigueI);
+   table->m_gLL_ServiceI   = pLoadFactors->GetLoadFactors()->GetLLIMMax(pgsTypes::ServiceI);
+   table->m_gLL_ServiceIII = pLoadFactors->GetLoadFactors()->GetLLIMMax(pgsTypes::ServiceIII);
 
    std::_tostringstream os1;
    os1 << table->m_gLL_ServiceI;
@@ -260,7 +260,7 @@ void CEffectivePrestressTable::AddRow(rptChapter* pChapter,IBroker* pBroker,cons
    Float64 fpLT = pDetails->pLosses->TimeDependentLosses();   // LT = SR + CR + R1 + SD + CD + R2
 
    // Total Time Dependent Losses
-   // Later, we will added elastic effects to this to get the total loss (delta_fpT from LRFD 5.9.5.1)
+   // Later, we will add elastic effects to this to get the total loss (delta_fpT from LRFD 5.9.3.1-1 (pre2017: 5.9.5.1))
    Float64 fpT  = pDetails->pLosses->PermanentStrand_Final(); // R0 + SR + CR + R1 + SD + CD + R2 = LT + R0
 
    Float64 fpR0   = pDetails->pLosses->PermanentStrand_RelaxationLossesBeforeTransfer(); // R0
@@ -310,7 +310,7 @@ void CEffectivePrestressTable::AddRow(rptChapter* pChapter,IBroker* pBroker,cons
    }
 
 
-   // Add in elastic effects - this is now delta_fpT from LRFD 5.9.5.1
+   // Add in elastic effects - this is now delta_fpT from LRFD 5.9.3.1-1 (pre2017: 5.9.5.1-1)
    fpT += fpES + fptr + fpp - fpED - fpSIDL;
 
    // Effective prestress is jacking minus total loss (which is total change in prestress)

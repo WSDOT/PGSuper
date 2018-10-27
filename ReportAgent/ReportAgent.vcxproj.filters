@@ -33,9 +33,9 @@
     <ClInclude Include="PGSpliceReporterImp.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <Midl Include="ReportAgent.idl" />
+    <ClInclude Include="CLSID.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="ReportAgent.def" />

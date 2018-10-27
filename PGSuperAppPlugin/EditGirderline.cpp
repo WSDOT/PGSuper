@@ -72,7 +72,7 @@ bool txnEditGirderline::Execute()
          SegmentIDType segmentID = pSegment->GetID();
          EventIndexType constructEventIdx, erectEventIdx;
          pTimelineMgr->GetSegmentEvents(segmentID,&constructEventIdx,&erectEventIdx);
-         vSegmentEvents.push_back(std::make_pair(constructEventIdx,erectEventIdx));
+         vSegmentEvents.emplace_back(constructEventIdx,erectEventIdx);
 
          if ( segIdx < nSegments-1 )
          {

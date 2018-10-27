@@ -54,6 +54,8 @@ m_bIsSlabOffsetApplicable(false)
    m_ProvidedAtBearingCLs  = 0;
    m_RequiredAtBearingCLs  = 0;
    m_HaunchAtBearingCLsApplicable = sobappNA;
+
+   m_bIsPrecamberApplicable = false;
   
    m_bIsBottomFlangeClearanceApplicable = false;
    m_C = 0;
@@ -149,7 +151,7 @@ bool pgsSpanConstructabilityArtifact::MinimumFilletPassed() const
    // min fillet uses same applicability as slab offset check
    if (m_bIsSlabOffsetApplicable)
    {
-      return m_ProvidedFillet + TOLERANCE > m_MinimumRequiredFillet;
+   return m_ProvidedFillet + TOLERANCE > m_MinimumRequiredFillet;
    }
    else
    {
@@ -272,6 +274,61 @@ bool pgsSpanConstructabilityArtifact::HaunchAtBearingCLsPassed() const
 {
    return m_HaunchAtBearingCLsApplicable!=pgsSpanConstructabilityArtifact::sobappYes ||
           m_ProvidedAtBearingCLs+TOLERANCE >= m_RequiredAtBearingCLs;
+}
+
+void pgsSpanConstructabilityArtifact::SetPrecamberApplicability(bool bSet)
+{
+   m_bIsPrecamberApplicable = bSet;
+}
+
+bool pgsSpanConstructabilityArtifact::IsPrecamberApplicable() const
+{
+   return m_bIsPrecamberApplicable;
+}
+
+void pgsSpanConstructabilityArtifact::SetPrecamber(const CSegmentKey& segmentKey, Float64 limit, Float64 value)
+{
+   m_Precamber.insert(std::make_pair(segmentKey, std::make_pair(limit, value)));
+}
+
+void pgsSpanConstructabilityArtifact::GetPrecamber(const CSegmentKey& segmentKey, Float64* pLimit, Float64* pValue) const
+{
+   const auto& found = m_Precamber.find(segmentKey);
+   ATLASSERT(found != m_Precamber.end()); // asking for a segment whose precamber record hasn't been recorded
+   *pLimit = found->second.first;
+   *pValue = found->second.second;;
+}
+
+bool pgsSpanConstructabilityArtifact::PrecamberPassed(const CSegmentKey& segmentKey) const
+{
+   if (m_bIsPrecamberApplicable)
+   {
+      const auto& found = m_Precamber.find(segmentKey);
+      ATLASSERT(found != m_Precamber.end()); // asking for a segment whose precamber record hasn't been recorded
+      Float64 limit = found->second.first;
+      Float64 value = found->second.second;
+      return IsLE(value,limit);
+   }
+
+   return true;
+}
+
+bool pgsSpanConstructabilityArtifact::PrecamberPassed() const
+{
+   if (m_bIsPrecamberApplicable)
+   {
+      for (const auto& entry : m_Precamber)
+      {
+         Float64 limit = entry.second.first;
+         Float64 value = entry.second.second;
+         if ( IsGT(limit,fabs(value)) )
+         {
+            return false;
+         }
+      }
+   }
+
+   return true;
 }
 
 void pgsSpanConstructabilityArtifact::SetBottomFlangeClearanceApplicability(bool bSet)
@@ -416,7 +473,12 @@ bool pgsSpanConstructabilityArtifact::Passed() const
       return false;
    }
 
-   if ( !BottomFlangeClearancePassed() )
+   if (!PrecamberPassed())
+   {
+      return false;
+   }
+
+   if (!BottomFlangeClearancePassed())
    {
       return false;
    }
@@ -455,6 +517,9 @@ void pgsSpanConstructabilityArtifact::MakeCopy(const pgsSpanConstructabilityArti
    m_ProvidedAtBearingCLs  = rOther.m_ProvidedAtBearingCLs;
    m_RequiredAtBearingCLs  = rOther.m_RequiredAtBearingCLs;
    m_HaunchAtBearingCLsApplicable  = rOther.m_HaunchAtBearingCLsApplicable;
+
+   m_bIsPrecamberApplicable = rOther.m_bIsPrecamberApplicable;
+   m_Precamber = rOther.m_Precamber;
 
    m_bIsBottomFlangeClearanceApplicable = rOther.m_bIsBottomFlangeClearanceApplicable;
    m_C = rOther.m_C;
@@ -608,8 +673,10 @@ bool pgsConstructabilityArtifact::IsHaunchAtBearingCLsApplicable() const
    ATLASSERT(!m_SpanArtifacts.empty());
    for (const auto& artf : m_SpanArtifacts)
    {
-      if (artf.GetHaunchAtBearingCLsApplicability()==pgsSpanConstructabilityArtifact::sobappYes)
+      if (artf.GetHaunchAtBearingCLsApplicability() == pgsSpanConstructabilityArtifact::sobappYes)
+      {
          return true;
+      }
    }
 
    return false;
@@ -621,6 +688,30 @@ bool pgsConstructabilityArtifact::HaunchAtBearingCLsPassed() const
    for (const auto& artf : m_SpanArtifacts)
    {
       if (!artf.HaunchAtBearingCLsPassed())
+         return false;
+   }
+
+   return true;
+}
+
+bool pgsConstructabilityArtifact::IsPrecamberApplicable() const
+{
+   ATLASSERT(!m_SpanArtifacts.empty());
+   for (const auto& artf : m_SpanArtifacts)
+   {
+      if (!artf.IsPrecamberApplicable())
+         return false;
+   }
+
+   return true;
+}
+
+bool pgsConstructabilityArtifact::PrecamberPassed() const
+{
+   ATLASSERT(!m_SpanArtifacts.empty());
+   for (const auto& artf : m_SpanArtifacts)
+   {
+      if (!artf.PrecamberPassed())
          return false;
    }
 

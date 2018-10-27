@@ -87,7 +87,7 @@ rptChapter* CTimeStepParametersChapterBuilder::Build(CReportSpecification* pRptS
 
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    GET_IFACE2(pBroker,ITendonGeometry,pTendonGeom);
-   GET_IFACE2(pBroker,IPointOfInterest,pPOI);
+   GET_IFACE2(pBroker,IPointOfInterest,pPoi);
    GET_IFACE2(pBroker,ILosses,pLosses);
    GET_IFACE2(pBroker,IIntervals,pIntervals);
    GET_IFACE2(pBroker,IMaterials,pMaterials);
@@ -356,13 +356,11 @@ rptChapter* CTimeStepParametersChapterBuilder::Build(CReportSpecification* pRptS
    // Time Step Parameters that are dependent on POI
    ///////////////////////////////////////////////////////////////////////////////////
 
-   std::vector<pgsPointOfInterest> vPOI(pPOI->GetPointsOfInterest(CSegmentKey(girderKey,ALL_SEGMENTS)));
+   PoiList vPoi;
+   pPoi->GetPointsOfInterest(CSegmentKey(girderKey, ALL_SEGMENTS), &vPoi);
 
-   std::vector<pgsPointOfInterest>::iterator iter(vPOI.begin());
-   std::vector<pgsPointOfInterest>::iterator end(vPOI.end());
-   for ( ; iter != end; iter++ )
+   for (const pgsPointOfInterest& poi : vPoi)
    {
-      pgsPointOfInterest& poi = *iter;
       const CSegmentKey& segmentKey(poi.GetSegmentKey());
 
       *pPara << location.SetValue(POI_SPAN,poi) << _T(" (ID = " ) << poi.GetID() << _T(")") << rptNewLine;
@@ -1202,13 +1200,11 @@ rptChapter* CTimeStepParametersChapterBuilder::Build(CReportSpecification* pRptS
       (*pTable3)(1,col3++) << COLHDR(Sub2(_T("M"),_T("re")), rptMomentUnitTag, pDisplayUnits->GetMomentUnit());
    }
 
-   iter = vPOI.begin();
    RowIndexType row3 = pTable3->GetNumberOfHeaderRows();
-   for ( ; iter != end; iter++ )
+   for(const pgsPointOfInterest& poi : vPoi)
    {
       col3 = 0;
 
-      pgsPointOfInterest& poi = *iter;
       const LOSSDETAILS* pDetails = pLosses->GetLossDetails(poi,INVALID_INDEX);
 
       (*pTable3)(row3,col3++) << location.SetValue(POI_SPAN,poi);

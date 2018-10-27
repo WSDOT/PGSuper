@@ -125,7 +125,7 @@ public:
    void SetTheta(Float64 theta);
 
    Uint16 GetEquation() const;
-   void SetEquation(Uint16 eqn); // 1 = 5.8.3.5-1, 2 = 5.8.3.5-2
+   void SetEquation(Uint16 eqn); // 1 = 5.7.3.5-1, 2 = 5.7.3.5-2 (pre2017: 5.8.3.5)
 
    // is long shear check at poi applicable (not applicable outside of face of support)
    bool IsApplicable() const;
@@ -253,7 +253,7 @@ public:
    bool IsStrutAndTieRequired() const;
    void IsStrutAndTieRequired(bool bRequired);
 
-   // 5.8.2.4
+   // 5.7.2.3 (pre2017: 5.8.2.4)
    void SetAreStirrupsReqd(bool reqd);
    bool GetAreStirrupsReqd() const;
 
@@ -335,7 +335,7 @@ private:
    bool m_bIsStrutAndTieRequired;
    bool m_bEndSpacingApplicable;
 
-   // 5.8.2.4
+   // 5.7.2.3 (pre2017: 5.8.2.4)
    bool m_AreStirrupsReqd;
    bool m_AreStirrupsProvided;
 
@@ -434,7 +434,7 @@ public:
    void SetK2(Float64 k2);
    Float64 GetPhi() const {return m_Phi;}
    void SetPhi(Float64 phi) {m_Phi = phi;}
-   // capacities from eqn's 5.8.4.1-1,2,3
+   // capacities from eqn's 5.7.4.3-1,2,3 (pre2017: 5.8.4.1)
    void GetVn(Float64* pVn1, Float64* pVn2, Float64* pVn3) const;
    void SetVn(Float64 Vn1, Float64 Vn2, Float64 Vn3);
    Float64 GetFc() const;
@@ -444,7 +444,7 @@ public:
    void SetDemand(Float64 shear) {m_UltimateHorizontalShear = shear;}
    Float64 GetCapacity() const;
 
-   // additional data for 5.8.4.1-4
+   // additional data for 5.7.4.3-1-4 (pre2017: 5.8.4.1)
    Float64 GetBv() const;
    void SetBv(Float64 bv);
    Float64 GetSmax() const;
@@ -453,12 +453,12 @@ public:
    void SetFy(Float64 fy);
    bool WasFyLimited() const;
    void WasFyLimited(bool bWasLimited);
-   bool Is5_8_4_1_4Applicable() const;
+   bool Is5_7_4_1_4Applicable() const;
    
-   Float64 GetAvOverSMin_5_8_4_4_1() const;
-   void SetAvOverSMin_5_8_4_4_1(Float64 fmin);
-   Float64 GetAvOverSMin_5_8_4_1_3() const;
-   void SetAvOverSMin_5_8_4_1_3(Float64 fmin);
+   Float64 GetAvOverSMin_5_7_4_2_1() const;
+   void SetAvOverSMin_5_7_4_2_1(Float64 fmin);
+   Float64 GetAvOverSMin_5_7_4_1_3() const;
+   void SetAvOverSMin_5_7_4_1_3(Float64 fmin);
    Float64 GetAvOverSMin() const;
    void SetAvOverSMin(Float64 fmin);
    Float64 GetNumLegs() const;
@@ -467,7 +467,7 @@ public:
    void SetNumLegsReqd(Float64 legs);
    Float64 GetVsAvg() const;      // Average shear stress. Note: This value is vni prior to 2007 and
    void SetVsAvg(Float64 vsavg);  // vui afterwards 
-   Float64 GetVsLimit() const; // max shear strength at which 5.8.4.1-4 is not applicable
+   Float64 GetVsLimit() const; // max shear strength at which 5.7.4.3-4 (pre2017: 5.8.4.1-4) is not applicable
    void SetVsLimit(Float64 vs);
    bool DoAllPrimaryStirrupsEngageDeck() const;
    void SetDoAllPrimaryStirrupsEngageDeck(bool doEngage);
@@ -548,21 +548,21 @@ private:
    Float64 m_Vn1;
    Float64 m_Vn2;
    Float64 m_Vn3;
-   Float64 m_Fc; // F'c used to compute in Eqn 5.8.4.1-2
+   Float64 m_Fc; // F'c used to compute in Eqn 5.7.4.3-2 (pre2017: 5.8.4.1-2)
    bool m_bDoAllPrimaryStirrupsEngageDeck;
    bool m_bIsTopFlangeRoughened;
 
    Float64 m_Bv;
-   Float64 m_Smax; // maximum allowable spacing (5.8.4.2)
+   Float64 m_Smax; // maximum allowable spacing [5.7.4.5 (pre2017: 5.8.4.2)]
    Float64 m_Fy;
-   bool    m_bWasFyLimited; // true if fy is limited to 60 ksi per LRFD2013 5.8.4.1
-   Float64 m_AvOverSMin_5_8_4_4_1;
-   Float64 m_AvOverSMin_5_8_4_1_3;
+   bool    m_bWasFyLimited; // true if fy is limited to 60 ksi per LRFD2013 5.7.4.3 (pre2017: 5.8.4.1)
+   Float64 m_AvOverSMin_5_7_4_2_1;
+   Float64 m_AvOverSMin_5_7_4_1_3;
    Float64 m_AvOverSMin;
    Float64 m_NumLegs;
    Float64 m_NumLegsReqd;
    Float64 m_VsAvg;   // average shear strength
-   Float64 m_VsLimit; // max shear strength at which 5.8.4.1-4 is not applicable
+   Float64 m_VsLimit; // max shear strength at which 5.7.4.3-4 (pre2017: 5.8.4.1-4) is not applicable
 
    // parameters for checking end zone locations
    bool m_bEndSpacingApplicable;
@@ -715,7 +715,7 @@ private:
    Float64 m_Dv;
    Float64 m_Vu; // 1999 and earlier used shear force for comparison
    Float64 m_VuLimit;
-   Float64 m_vu; // post 1999 we use shear stress per 5.8.9.2
+   Float64 m_vu; // post 1999 we use shear stress per 5.7.2.8 (pre2017: 5.8.2.9)
    Float64 m_vuLimit;
    bool m_IsApplicable;
    bool m_IsInCritialSectionZone;

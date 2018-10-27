@@ -67,6 +67,7 @@ protected:
    virtual int GetColWidth(ROWCOL nCol);
    virtual BOOL OnLButtonClickedRowCol(ROWCOL nRow, ROWCOL nCol, UINT nFlags, CPoint pt);
    virtual BOOL OnValidateCell(ROWCOL nRow, ROWCOL nCol);
+   virtual BOOL OnEndEditing(ROWCOL nRow, ROWCOL nCol);
 
 public:
    // custom stuff for grid
@@ -84,13 +85,17 @@ public:
 
    void Enable(BOOL bEnable);
 
+   bool GetTruckDimensions(Float64* pWeight, Float64* pMinLength, Float64* pMaxLength);
+
 private:
    // set up styles for interior rows
    void SetRowStyle(ROWCOL nRow);
 
    enum SpacingType {stNone, stFixed, stVariable} ;
    SpacingType ParseAxleRow(ROWCOL nRow, CDataExchange* pDX, Float64* pWeight, 
-                            Float64* pSpacingMin, Float64* pSpacingMax);
+                            Float64* pSpacingMin, Float64* pSpacingMax,BOOL bEmitErrorMsg = TRUE);
+
+   bool m_bAppendingRow;
 
 };
 

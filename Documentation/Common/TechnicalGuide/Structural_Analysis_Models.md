@@ -128,6 +128,10 @@ The top of the girder is assumed to be straight (zero excess camber) for purpose
 
 > NOTE: Modern girders have wide top flanges and as such the slab haunch load can be significant. This method of estimating the slab haunch load is conservative (unless the girder has negative excess camber) and it makes an allowance for the actual girder camber being less than predicted. With this approach, girders will not be under-designed if camber is less than predicted.
 
+> NOTE: If the girder has precamber, the top of the girder is assumed to follow the precambered shape. The loading will be as described in Option 2.
+
+> NOTE: If the girder has longitudinal top flange thickening, the top shape of the girder will be used for determining the haunch load. The loading will be as described in Option 2.
+
 ##### Option 2: Haunch Depth when Top of Girder is assumed to be a Parabola #####
 The top of the girder is assumed to follow a parabolic curve defined by the slab offsets at the ends of the girder, and the user-input assumed excess camber dimension. The schematic below illustrates the depth of the haunch for this case.
 

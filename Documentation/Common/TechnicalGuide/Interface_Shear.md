@@ -1,6 +1,6 @@
 Interface Shear {#tg_interface_shear}
 ======================================
-PGSuper calculates interface shear transfer resistance using the methods outlined in LRFD 5.8.4.
+PGSuper calculates interface shear transfer resistance using the methods outlined in LRFD 5.7.4 (*pre-2017: 5.8.4*).
 
 ## Definitions
 The term A<sub>vf</sub> is used inconsistently in the LRFD specifications. In some cases A<sub>vf</sub> is treated as the area of shear reinforcement crossing the shear plane, and in other cases it is treated as reinforcement area/length along the member. To avoid this confusion we make the following definition:
@@ -9,7 +9,7 @@ A<sub>vf</sub> = Total area of shear reinforcement crossing the shear plane.
 
 a<sub>vf</sub> = Area of shear reinforcement per unit length along the girder.  
 
-Hence, LRFD Equation 5.8.4.4-1 would be written as:
+Hence, LRFD Equation 5.7.4.2-1 (*pre-2017: 5.8.4.4-1*) would be written as:
 
 a<sub>vf</sub> >= 0.35 b<sub>v</sub> / f<sub>y</sub> (SI)
 

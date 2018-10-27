@@ -23,6 +23,7 @@
 
 // SYSTEM INCLUDES
 //
+#include <array>
 
 // PROJECT INCLUDES
 //

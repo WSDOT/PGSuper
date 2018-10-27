@@ -278,6 +278,10 @@ std::vector< std::pair<std::_tstring,IDType> > CAnalysisResultsGraphDefinitions:
             bApplicableAction = def.m_ApplicableActions & ACTIONS_DEFLECTION_ONLY ? true : false;
             break;
 
+         case actionXDeflection:
+            bApplicableAction = def.m_ApplicableActions & ACTIONS_X_DEFLECTION_ONLY ? true : false;
+            break;
+
          case actionStress:
             bApplicableAction = def.m_ApplicableActions & ACTIONS_STRESS_ONLY ? true : false;
             break;

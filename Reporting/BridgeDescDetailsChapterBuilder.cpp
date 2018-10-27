@@ -277,7 +277,7 @@ void write_girder_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptCh
       const unitLength* pUnit = *unit_iter;
       if ( pUnit )
       {
-         unitmgtLengthData length_unit(pDisplayUnits->GetComponentDimUnit());
+         const unitmgtLengthData& length_unit(pDisplayUnits->GetComponentDimUnit());
          rptFormattedLengthUnitValue cmpdim(pUnit,length_unit.Tol, true, !bUnitsSI, 8, false);
          cmpdim.SetFormat(length_unit.Format);
          cmpdim.SetWidth(length_unit.Width);
@@ -291,6 +291,44 @@ void write_girder_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptCh
       }
    }
 
+   if (IsTopWidthSpacing(pBridgeDesc->GetGirderSpacingType()))
+   {
+      const unitmgtLengthData& length_unit(pDisplayUnits->GetComponentDimUnit());
+      rptFormattedLengthUnitValue cmpdim(&length_unit.UnitOfMeasure, length_unit.Tol, true, !bUnitsSI, 8, false);
+      cmpdim.SetFormat(length_unit.Format);
+      cmpdim.SetWidth(length_unit.Width);
+      cmpdim.SetPrecision(length_unit.Precision);
+
+#pragma Reminder("WORKING HERE - reporting top width values (is start and end supported or start only?")
+      pgsTypes::TopWidthType type;
+      Float64 leftStart, rightStart, leftEnd, rightEnd;
+      pGirder->GetTopWidth(&type, &leftStart, &rightStart, &leftEnd, &rightEnd);
+      if (type == pgsTypes::twtSymmetric)
+      {
+         (*pTable)(0, 1) << _T("Top Width = ") << cmpdim.SetValue(leftStart) << rptNewLine;
+      }
+      else if (type == pgsTypes::twtAsymmetric)
+      {
+         (*pTable)(0, 1) << _T("Left Overhang = ") << cmpdim.SetValue(leftStart) << rptNewLine;
+         (*pTable)(0, 1) << _T("Right Overhang = ") << cmpdim.SetValue(rightStart) << rptNewLine;
+      }
+      else
+      {
+         ATLASSERT(type == pgsTypes::twtCenteredCG);
+         
+         GET_IFACE2(pBroker, IPointOfInterest, pPoi);
+         PoiList vPoi;
+         pPoi->GetPointsOfInterest(segmentKey, POI_0L | POI_RELEASED_SEGMENT,&vPoi);
+         ATLASSERT(vPoi.size() == 1);
+         pgsPointOfInterest poi(vPoi.front());
+
+         GET_IFACE2(pBroker, IGirder, pIGirder);
+         Float64 left, right;
+         pIGirder->GetTopWidth(poi, &left, &right);
+         (*pTable)(0, 1) << _T("Left Overhang = ") << cmpdim.SetValue(left) << rptNewLine;
+         (*pTable)(0, 1) << _T("Right Overhang = ") << cmpdim.SetValue(right) << rptNewLine;
+      }
+   }
 
       // Write out strand pattern data and all other data in the girder library entry
 #pragma Reminder("Implement")
@@ -336,7 +374,7 @@ void write_debonding(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pD
 
       if (useSpanFraction || useHardDistance)
       {
-         *pPara << _T("Maximum debonded length is the lesser of: The half-girder length minus maximum development length (5.11.4.3)");
+         *pPara << _T("Maximum debonded length is the lesser of: The half-girder length minus maximum development length (") << LrfdCw8th(_T("5.11.4.3)"),_T("5.9.4.3.3")) << _T(")");
 
          if (useSpanFraction)
          {
@@ -364,8 +402,8 @@ void write_camber_factors(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnit
    CamberMultipliers cm = pGdrEntry->GetCamberMultipliers();
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
-   IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval();
-   IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval();
+   IntervalIndexType noncompositeUserLoadIntervalIdx = pIntervals->GetNoncompositeUserLoadInterval();
+   IntervalIndexType compositeUserLoadIntervalIdx = pIntervals->GetCompositeUserLoadInterval();
 
    rptParagraph* pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pPara;
@@ -398,14 +436,14 @@ void write_camber_factors(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnit
    (*pTable)(row++,1) << scalar.SetValue(cm.DeckPanelFactor);
 
    CString strLabel;
-   strLabel.Format(_T("Slab, User Defined Loads at %s"),pIntervals->GetDescription(castDeckIntervalIdx));
+   strLabel.Format(_T("Slab, User Defined Loads at %s"),pIntervals->GetDescription(noncompositeUserLoadIntervalIdx));
    (*pTable)(row,0) << strLabel;
    (*pTable)(row++,1) << scalar.SetValue(cm.CreepFactor);
 
    (*pTable)(row,0) << _T("Haunch");
    (*pTable)(row++,1) << scalar.SetValue(cm.SlabPadLoadFactor);
 
-   strLabel.Format(_T("Railing System (Traffic Barrier, Sidewalks), Overlay, User Defined Loads at %s"),pIntervals->GetDescription(railingSystemIntervalIdx));
+   strLabel.Format(_T("Railing System (Traffic Barrier, Sidewalks), Overlay, User Defined Loads at %s"),pIntervals->GetDescription(compositeUserLoadIntervalIdx));
    (*pTable)(row,0) << strLabel;
    (*pTable)(row++,1) << scalar.SetValue(cm.BarrierSwOverlayUser2Factor);
 }
@@ -454,14 +492,12 @@ void write_deck_width_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,r
       (*pTable1)(0,col++) << COLHDR(_T("Overlay")<<rptNewLine<<_T("Toe-Toe")<<rptNewLine<<_T("Width"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
    }
 
-   std::vector<pgsPointOfInterest> vPoi( pPoi->GetPointsOfInterest(segmentKey,POI_SPAN) );
-   std::vector<pgsPointOfInterest>::iterator iter( vPoi.begin() );
-   std::vector<pgsPointOfInterest>::iterator iterEnd( vPoi.end() );
+   PoiList vPoi;
+   pPoi->GetPointsOfInterest(segmentKey, POI_SPAN, &vPoi);
    RowIndexType row(1);
-   for ( ; iter != iterEnd; iter++ )
+   for (const pgsPointOfInterest& poi : vPoi)
    {
       col = 0;
-      pgsPointOfInterest& poi = *iter;
       Float64 station, offset;
       pBridge->GetStationAndOffset(poi,&station,&offset);
       Float64 Xb = pPoi->ConvertRouteToBridgeLineCoordinate(station);

@@ -62,6 +62,8 @@
 #define IDC_ELEV_ADJUSTMENT             3065
 #define IDC_CREEP                       3065
 #define IDC_SHRINKAGE                   3066
+#define IDC_PRECAMBER                   3066
+#define IDC_ELEV_ADJUSTMENT2            3066
 #define IDC_RELAXATION                  3067
 #define IDC_NET_GIRDER                  3069
 #define IDC_NET_DECK                    3070
@@ -72,7 +74,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        205
+#define _APS_NEXT_RESOURCE_VALUE        208
 #define _APS_NEXT_COMMAND_VALUE         32774
 #define _APS_NEXT_CONTROL_VALUE         3072
 #define _APS_NEXT_SYMED_VALUE           3000

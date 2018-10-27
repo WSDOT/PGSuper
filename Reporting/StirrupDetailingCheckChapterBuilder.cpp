@@ -128,7 +128,7 @@ void build_min_avs_paragraph(IBroker* pBroker,rptChapter* pChapter,const CGirder
       pgsTypes::ConcreteType concType = pMaterial->GetSegmentConcreteType(segmentKey);
       bool bHasAggSplittingStrength = pMaterial->DoesSegmentConcreteHaveAggSplittingStrength(segmentKey);
 
-      // Av/S check 5.8.2.5
+      // Av/S check 5.7.2.5 (pre2017: 5.8.2.5)
       // picture depends on units
       std::_tstring strImage;
       if ( bLambda )
@@ -200,7 +200,7 @@ void build_min_avs_paragraph(IBroker* pBroker,rptChapter* pChapter,const CGirder
          pParagraph = new rptParagraph;
          *pChapter << pParagraph;
 
-         // Av/S check 5.8.2.5
+         // Av/S check 5.7.2.5 (pre2017: 5.8.2.5)
          // picture depends on units
          std::_tstring strImage;
          switch( concType )
@@ -256,7 +256,7 @@ void build_min_avs_paragraph(IBroker* pBroker,rptChapter* pChapter,const CGirder
 
    pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pParagraph;
-   *pParagraph << _T("Details for Minimum Transverse Reinforcement Check - 5.8.2.5-1");
+   *pParagraph << _T("Details for Minimum Transverse Reinforcement Check - ") << LrfdCw8th(_T("5.8.2.5-1"),_T("5.7.2.5-1"));
 
    pParagraph = new rptParagraph;
    *pChapter << pParagraph;
@@ -322,7 +322,7 @@ void build_max_spacing_paragraph(IBroker* pBroker,rptChapter* pChapter,const CGi
                                     IntervalIndexType intervalIdx, pgsTypes::LimitState ls,
                                     IEAFDisplayUnits* pDisplayUnits)
 {
-   // Spacing check 5.8.2.7
+   // Spacing check 5.7.2.6 (pre2017: 5.8.2.7)
    rptParagraph* pParagraph;
    pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pParagraph;
@@ -336,7 +336,7 @@ void build_max_spacing_paragraph(IBroker* pBroker,rptChapter* pChapter,const CGi
       *pParagraph << _T("Strength II");
    }
 
-   *pParagraph <<_T(" - Details for Maximum Transverse Reinforcement Spacing Check - 5.8.2.7")<<rptNewLine;
+   *pParagraph <<_T(" - Details for Maximum Transverse Reinforcement Spacing Check - ") << LrfdCw8th(_T("5.8.2.7"),_T("5.7.2.6"))<<rptNewLine;
 
    INIT_UV_PROTOTYPE( rptPointOfInterest,    location, pDisplayUnits->GetSpanLengthUnit(),   false );
    INIT_UV_PROTOTYPE( rptStressUnitValue,    stress,   pDisplayUnits->GetStressUnit(),          false );

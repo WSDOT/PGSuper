@@ -32,7 +32,14 @@ public:
 
    GroupIndexType GetGirderGroup();
    GirderIndexType GetGirder();
-   CGirderKey GetGirderKey();
+   const CGirderKey& GetGirderKey() const;
+   void SelectGirder(const CGirderKey& girderKey);
+
+   void ShowGrid(bool bShow);
+   bool ShowGrid() const;
+
+   void ShowBeam(bool bShow);
+   bool ShowBeam() const;
 
    // called by the framework when the view's OnUpdate method is called
    virtual void OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint) override;
@@ -65,8 +72,7 @@ protected:
    bool m_bAllGroups;
 
    // control variables
-   GroupIndexType         m_GroupIdx;
-   GirderIndexType        m_GirderIdx;
+   CGirderKey m_GirderKey;
  
 #ifdef _DEBUG
 public:
@@ -81,10 +87,15 @@ public:
    CIntervalGirderGraphControllerBase(bool bAllGroups=true);
    DECLARE_DYNCREATE(CIntervalGirderGraphControllerBase);
 
-   IntervalIndexType GetInterval();
+   void SetInterval(IntervalIndexType intervalIdx);
+   IntervalIndexType GetInterval() const;
 
    // called by the framework when the view's OnUpdate method is called
    virtual void OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint) override;
+
+   // returns the first and last interval in the valid range of intervals for the graph
+   virtual IntervalIndexType GetFirstInterval();
+   virtual IntervalIndexType GetLastInterval();
 
 protected:
 
@@ -117,12 +128,15 @@ public:
    CMultiIntervalGirderGraphControllerBase(bool bAllGroups=true);
    DECLARE_DYNCREATE(CMultiIntervalGirderGraphControllerBase);
 
-   std::vector<IntervalIndexType> GetSelectedIntervals();
-   IndexType GetGraphCount();
+   void SelectInterval(IntervalIndexType intervalIdx);
+   void SelectIntervals(const std::vector<IntervalIndexType>& vIntervals);
+   std::vector<IntervalIndexType> GetSelectedIntervals() const;
+   IndexType GetGraphCount() const;
 
    // called by the framework when the view's OnUpdate method is called
    virtual void OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint) override;
 
+   // returns the first and last interval in the valid range of intervals for the graph
    virtual IntervalIndexType GetFirstInterval();
    virtual IntervalIndexType GetLastInterval();
 

@@ -32,6 +32,7 @@
 #include <PgsExt\PointLoadData.h>
 #include <PgsExt\DistributedLoadData.h>
 #include <PgsExt\MomentLoadData.h>
+#include <PgsExt\ConcreteMaterial.h>
 
 
 #define LOADED_OLD_BRIDGE_TYPE MAKE_HRESULT(SEVERITY_SUCCESS,FACILITY_ITF,512)
@@ -283,16 +284,36 @@ public:
    // =================================================================================
    // Girder Spacing
    // =================================================================================
+
+   // NOTE: for adjacent girders with fixed or user defined top widths and joints, the "spacing"
+   // parameters are actually the joint widths
+
+   // get/set type of girder spacing used
    void SetGirderSpacingType(pgsTypes::SupportedBeamSpacing sbs);
    pgsTypes::SupportedBeamSpacing GetGirderSpacingType() const;
+
+   // get/set the girder spacing (or joint width) if the spacing is constant
+   // for the entire bridge
    Float64 GetGirderSpacing() const;
    void SetGirderSpacing(Float64 spacing);
 
+   // Defines how girder spacing (or joint width) is measured
    void SetMeasurementType(pgsTypes::MeasurementType mt);
    pgsTypes::MeasurementType GetMeasurementType() const;
 
+   // Defines where girder spacing (or joint width) is measured
    void SetMeasurementLocation(pgsTypes::MeasurementLocation ml);
    pgsTypes::MeasurementLocation GetMeasurementLocation() const;
+
+   // Set/Get the girder top width if top width is the same
+   // for the entire bridge. This parameter is invalid if the girder spacing type 
+   // does not support top width (e.g. top width is only used for certain types of
+   // adjacent girders where the bridge layout is defined by girder top width and
+   // joint width). Top width is always measured normal to the CL of the girder.
+   // Only valid if GetGirderSpacingType() returns pgsTypes::sbsUniformAdjacentWithTopWidth
+   void SetGirderTopWidth(pgsTypes::TopWidthType type,Float64 left,Float64 right);
+   void GetGirderTopWidth(pgsTypes::TopWidthType* pType,Float64* pLeft,Float64* pRight) const;
+   Float64 GetGirderTopWidth() const;
 
    // set/get the reference girder index. if index is INVALID_INDEX then
    // the geometric center of the girder group is the reference point
@@ -347,7 +368,7 @@ public:
    CClosureJointData* FindClosureJoint(ClosureIDType closureID);
    const CClosureJointData* FindClosureJoint(ClosureIDType closureID) const;
 
-   void CopyDown(bool bGirderCount,bool bGirderType,bool bSpacing,bool bSlabOffset,bool bAssExCamber); 
+   void CopyDown(bool bGirderCount,bool bGirderType,bool bSpacing,bool bSlabOffset,bool bAssExcessCamber, bool bBearingData); 
                     // takes all the data defined at the bridge level and copies
                     // it down to the spans and girders (only for this parameters set to true)
 
@@ -380,6 +401,23 @@ public:
    // for bridges with decks - the maximum sum of the left right deck overhangs
    // for bridges without decks - the maximum spacing width (this width is based on the raw input and is not adjusted for skews)
    Float64 GetBridgeWidth() const;
+
+   // set/get the Bearing type. This parameter indicates where the Bearing is measured
+   void SetBearingType(pgsTypes::BearingType BearingType);
+   pgsTypes::BearingType GetBearingType() const;
+
+   // Set/get the Bearing. Has no net effect if Bearing type is not sotBridge
+   // Get method returns invalid data if Bearing type is not sotBridge
+   void SetBearingData(const CBearingData2& Bearing);
+   const CBearingData2* GetBearingData(bool bGetRawValue = false) const;
+   CBearingData2* GetBearingData(bool bGetRawValue = false);
+
+
+   // Longitudinal joints (note, joint spacing is in the GirderSpacing data above)
+   bool HasLongitudinalJoints() const; // has a joint with a shape
+   bool HasStructuralLongitudinalJoints() const; // the joint is also structural
+   const CConcreteMaterial& GetLongitudinalJointMaterial() const;
+   void SetLongitudinalJointMaterial(const CConcreteMaterial& material);
 
 protected:
    void MakeCopy(const CBridgeDescription2& rOther);
@@ -418,6 +456,11 @@ private:
 
    pgsTypes::SupportedBeamSpacing m_GirderSpacingType;
    Float64 m_GirderSpacing;
+   
+   pgsTypes::TopWidthType m_TopWidthType; // defines how top width is defined
+   Float64 m_LeftTopWidth; // full or left top flange width
+   Float64 m_RightTopWidth; // right top flange width (not used for full or balanced types)
+
    GirderIndexType m_RefGirderIdx;
    Float64 m_RefGirderOffset;
    pgsTypes::OffsetMeasurementType m_RefGirderOffsetType;
@@ -434,6 +477,9 @@ private:
    Float64 m_AssExcessCamber; // assummed excess camber for entire bridge
    pgsTypes::AssExcessCamberType m_AssExcessCamberType;
 
+   CBearingData2 m_BearingData;
+   pgsTypes::BearingType m_BearingType;
+
    CTimelineManager m_TimelineManager;
 
    CDeckDescription2 m_Deck;
@@ -448,6 +494,8 @@ private:
    Float64 m_AlignmentOffset; // offset from Alignment to CL Bridge (< 0 = right of alignment)
 
    pgsTypes::DistributionFactorMethod m_LLDFMethod;
+
+   CConcreteMaterial m_LongitudinalJointConcrete;
 
    bool MoveBridge(PierIndexType pierIdx,Float64 newStation);
    bool MoveBridgeAdjustPrevSpan(PierIndexType pierIdx,Float64 newStation);

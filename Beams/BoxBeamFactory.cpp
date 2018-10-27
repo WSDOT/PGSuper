@@ -22,6 +22,8 @@
 
 // BoxBeamFactory.cpp : Implementation of CBoxBeamFactory
 #include "stdafx.h"
+#include <WBFLGenericBridgeTools.h>
+
 #include <Plugins\Beams.h>
 
 #include <Plugins\BeamFamilyCLSID.h>
@@ -54,84 +56,84 @@ static char THIS_FILE[] = __FILE__;
 HRESULT CBoxBeamFactory::FinalConstruct()
 {
    // Initialize with default values... This are not necessarily valid dimensions
-   m_DimNames.push_back(_T("H1"));
-   m_DimNames.push_back(_T("H2"));
-   m_DimNames.push_back(_T("H3"));
-   m_DimNames.push_back(_T("H4"));
-   m_DimNames.push_back(_T("H5"));
-   m_DimNames.push_back(_T("H6"));
-   m_DimNames.push_back(_T("H7"));
-   m_DimNames.push_back(_T("W1"));
-   m_DimNames.push_back(_T("W2"));
-   m_DimNames.push_back(_T("W3"));
-   m_DimNames.push_back(_T("W4"));
-   m_DimNames.push_back(_T("F1"));
-   m_DimNames.push_back(_T("F2"));
-   m_DimNames.push_back(_T("C1"));
-   m_DimNames.push_back(_T("Jmax"));
-   m_DimNames.push_back(_T("ShearKeyDepth"));
-   m_DimNames.push_back(_T("EndBlockLength"));
+   m_DimNames.emplace_back(_T("H1"));
+   m_DimNames.emplace_back(_T("H2"));
+   m_DimNames.emplace_back(_T("H3"));
+   m_DimNames.emplace_back(_T("H4"));
+   m_DimNames.emplace_back(_T("H5"));
+   m_DimNames.emplace_back(_T("H6"));
+   m_DimNames.emplace_back(_T("H7"));
+   m_DimNames.emplace_back(_T("W1"));
+   m_DimNames.emplace_back(_T("W2"));
+   m_DimNames.emplace_back(_T("W3"));
+   m_DimNames.emplace_back(_T("W4"));
+   m_DimNames.emplace_back(_T("F1"));
+   m_DimNames.emplace_back(_T("F2"));
+   m_DimNames.emplace_back(_T("C1"));
+   m_DimNames.emplace_back(_T("Jmax"));
+   m_DimNames.emplace_back(_T("ShearKeyDepth"));
+   m_DimNames.emplace_back(_T("EndBlockLength"));
 
-   m_DefaultDims.push_back(::ConvertToSysUnits( 5.0,unitMeasure::Inch)); // H1
-   m_DefaultDims.push_back(::ConvertToSysUnits(29.5,unitMeasure::Inch)); // H2
-   m_DefaultDims.push_back(::ConvertToSysUnits( 5.0,unitMeasure::Inch)); // H3
-   m_DefaultDims.push_back(::ConvertToSysUnits( 4.0,unitMeasure::Inch)); // H4
-   m_DefaultDims.push_back(::ConvertToSysUnits( 3.0,unitMeasure::Inch)); // H5
-   m_DefaultDims.push_back(::ConvertToSysUnits( 5.0,unitMeasure::Inch)); // H6
-   m_DefaultDims.push_back(::ConvertToSysUnits(17.0,unitMeasure::Inch)); // H7
-   m_DefaultDims.push_back(::ConvertToSysUnits( 3.0,unitMeasure::Inch)); // W1
-   m_DefaultDims.push_back(::ConvertToSysUnits( 5.0,unitMeasure::Inch)); // W2
-   m_DefaultDims.push_back(::ConvertToSysUnits(27.75,unitMeasure::Inch));// W3
-   m_DefaultDims.push_back(::ConvertToSysUnits( 5.0,unitMeasure::Inch)); // W4
-   m_DefaultDims.push_back(::ConvertToSysUnits( 5.0,unitMeasure::Inch)); // F1
-   m_DefaultDims.push_back(::ConvertToSysUnits( 5.0,unitMeasure::Inch)); // F2
-   m_DefaultDims.push_back(::ConvertToSysUnits( 0.75,unitMeasure::Inch)); // C1
-   m_DefaultDims.push_back(::ConvertToSysUnits( 1.0,unitMeasure::Inch)); // Jmax
-   m_DefaultDims.push_back(::ConvertToSysUnits( 0.0,unitMeasure::Inch)); // shear key
-   m_DefaultDims.push_back(::ConvertToSysUnits( 12.0,unitMeasure::Inch)); // end block
+   m_DefaultDims.emplace_back(::ConvertToSysUnits( 5.0,unitMeasure::Inch)); // H1
+   m_DefaultDims.emplace_back(::ConvertToSysUnits(29.5,unitMeasure::Inch)); // H2
+   m_DefaultDims.emplace_back(::ConvertToSysUnits( 5.0,unitMeasure::Inch)); // H3
+   m_DefaultDims.emplace_back(::ConvertToSysUnits( 4.0,unitMeasure::Inch)); // H4
+   m_DefaultDims.emplace_back(::ConvertToSysUnits( 3.0,unitMeasure::Inch)); // H5
+   m_DefaultDims.emplace_back(::ConvertToSysUnits( 5.0,unitMeasure::Inch)); // H6
+   m_DefaultDims.emplace_back(::ConvertToSysUnits(17.0,unitMeasure::Inch)); // H7
+   m_DefaultDims.emplace_back(::ConvertToSysUnits( 3.0,unitMeasure::Inch)); // W1
+   m_DefaultDims.emplace_back(::ConvertToSysUnits( 5.0,unitMeasure::Inch)); // W2
+   m_DefaultDims.emplace_back(::ConvertToSysUnits(27.75,unitMeasure::Inch));// W3
+   m_DefaultDims.emplace_back(::ConvertToSysUnits( 5.0,unitMeasure::Inch)); // W4
+   m_DefaultDims.emplace_back(::ConvertToSysUnits( 5.0,unitMeasure::Inch)); // F1
+   m_DefaultDims.emplace_back(::ConvertToSysUnits( 5.0,unitMeasure::Inch)); // F2
+   m_DefaultDims.emplace_back(::ConvertToSysUnits( 0.75,unitMeasure::Inch)); // C1
+   m_DefaultDims.emplace_back(::ConvertToSysUnits( 1.0,unitMeasure::Inch)); // Jmax
+   m_DefaultDims.emplace_back(::ConvertToSysUnits( 0.0,unitMeasure::Inch)); // shear key
+   m_DefaultDims.emplace_back(::ConvertToSysUnits( 12.0,unitMeasure::Inch)); // end block
 
    // SI Units
-   m_DimUnits[0].push_back(&unitMeasure::Millimeter); // H1
-   m_DimUnits[0].push_back(&unitMeasure::Millimeter); // H2
-   m_DimUnits[0].push_back(&unitMeasure::Millimeter); // H3
-   m_DimUnits[0].push_back(&unitMeasure::Millimeter); // H4
-   m_DimUnits[0].push_back(&unitMeasure::Millimeter); // H5
-   m_DimUnits[0].push_back(&unitMeasure::Millimeter); // H6
-   m_DimUnits[0].push_back(&unitMeasure::Millimeter); // H7
-   m_DimUnits[0].push_back(&unitMeasure::Millimeter); // W1
-   m_DimUnits[0].push_back(&unitMeasure::Millimeter); // W2
-   m_DimUnits[0].push_back(&unitMeasure::Millimeter); // W3
-   m_DimUnits[0].push_back(&unitMeasure::Millimeter); // W4
-   m_DimUnits[0].push_back(&unitMeasure::Millimeter); // F1
-   m_DimUnits[0].push_back(&unitMeasure::Millimeter); // F2
-   m_DimUnits[0].push_back(&unitMeasure::Millimeter); // C1
-   m_DimUnits[0].push_back(&unitMeasure::Millimeter); // Jmax
-   m_DimUnits[0].push_back(&unitMeasure::Millimeter); // shear key
-   m_DimUnits[0].push_back(&unitMeasure::Millimeter); // end block
+   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // H1
+   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // H2
+   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // H3
+   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // H4
+   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // H5
+   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // H6
+   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // H7
+   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // W1
+   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // W2
+   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // W3
+   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // W4
+   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // F1
+   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // F2
+   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // C1
+   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // Jmax
+   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // shear key
+   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // end block
 
    // US Units
-   m_DimUnits[1].push_back(&unitMeasure::Inch); // H1
-   m_DimUnits[1].push_back(&unitMeasure::Inch); // H2
-   m_DimUnits[1].push_back(&unitMeasure::Inch); // H3
-   m_DimUnits[1].push_back(&unitMeasure::Inch); // H4
-   m_DimUnits[1].push_back(&unitMeasure::Inch); // H5
-   m_DimUnits[1].push_back(&unitMeasure::Inch); // H6
-   m_DimUnits[1].push_back(&unitMeasure::Inch); // H7
-   m_DimUnits[1].push_back(&unitMeasure::Inch); // W1
-   m_DimUnits[1].push_back(&unitMeasure::Inch); // W2
-   m_DimUnits[1].push_back(&unitMeasure::Inch); // W3
-   m_DimUnits[1].push_back(&unitMeasure::Inch); // W4
-   m_DimUnits[1].push_back(&unitMeasure::Inch); // F1
-   m_DimUnits[1].push_back(&unitMeasure::Inch); // F2
-   m_DimUnits[1].push_back(&unitMeasure::Inch); // C1
-   m_DimUnits[1].push_back(&unitMeasure::Inch); // Jmax
-   m_DimUnits[1].push_back(&unitMeasure::Inch); // shear key
-   m_DimUnits[1].push_back(&unitMeasure::Inch); // end block
+   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // H1
+   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // H2
+   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // H3
+   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // H4
+   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // H5
+   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // H6
+   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // H7
+   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // W1
+   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // W2
+   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // W3
+   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // W4
+   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // F1
+   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // F2
+   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // C1
+   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // Jmax
+   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // shear key
+   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // end block
 
    return S_OK;
 }
 
-void CBoxBeamFactory::CreateGirderSection(IBroker* pBroker,StatusGroupIDType statusGroupID,const IBeamFactory::Dimensions& dimensions,Float64 overallHeight,Float64 bottomFlangeHeight,IGirderSection** ppSection)
+void CBoxBeamFactory::CreateGirderSection(IBroker* pBroker,StatusGroupIDType statusGroupID,const IBeamFactory::Dimensions& dimensions,Float64 overallHeight,Float64 bottomFlangeHeight,IGirderSection** ppSection) const
 {
    CComPtr<IBoxBeamSection> gdrSection;
    gdrSection.CoCreateInstance(CLSID_BoxBeamSection);
@@ -159,10 +161,7 @@ void CBoxBeamFactory::CreateGirderSection(IBroker* pBroker,StatusGroupIDType sta
    gdrSection.QueryInterface(ppSection);
 }
 
-
-
-
-bool CBoxBeamFactory::ValidateDimensions(const IBeamFactory::Dimensions& dimensions,bool bSI,std::_tstring* strErrMsg)
+bool CBoxBeamFactory::ValidateDimensions(const IBeamFactory::Dimensions& dimensions,bool bSI,std::_tstring* strErrMsg) const
 {
    Float64 H1, H2, H3, H4, H5, H6, H7, W1, W2, W3, W4, F1, F2, C1, J, shearKeyDepth, endBlockLength;
    GetDimensions(dimensions,H1, H2, H3, H4, H5, H6, H7, W1, W2, W3, W4, F1, F2, C1, J, shearKeyDepth, endBlockLength);
@@ -346,26 +345,28 @@ bool CBoxBeamFactory::ValidateDimensions(const IBeamFactory::Dimensions& dimensi
    return true;
 }
 
-void CBoxBeamFactory::SaveSectionDimensions(sysIStructuredSave* pSave,const IBeamFactory::Dimensions& dimensions)
+void CBoxBeamFactory::SaveSectionDimensions(sysIStructuredSave* pSave,const IBeamFactory::Dimensions& dimensions) const
 {
-   std::vector<std::_tstring>::iterator iter;
    pSave->BeginUnit(_T("BoxBeamDimensions"),4.0);
-   for ( iter = m_DimNames.begin(); iter != m_DimNames.end(); iter++ )
+   for( const auto& name : m_DimNames)
    {
-      std::_tstring name = *iter;
       Float64 value = GetDimension(dimensions,name);
       pSave->Property(name.c_str(),value);
    }
    pSave->EndUnit();
 }
 
-IBeamFactory::Dimensions CBoxBeamFactory::LoadSectionDimensions(sysIStructuredLoad* pLoad)
+IBeamFactory::Dimensions CBoxBeamFactory::LoadSectionDimensions(sysIStructuredLoad* pLoad) const
 {
    Float64 parent_version;
-   if ( pLoad->GetParentUnit() == _T("GirderLibraryEntry") )
+   if (pLoad->GetParentUnit() == _T("GirderLibraryEntry"))
+   {
       parent_version = pLoad->GetParentVersion();
+   }
    else
+   {
       parent_version = pLoad->GetVersion();
+   }
 
 
    IBeamFactory::Dimensions dimensions;
@@ -451,40 +452,42 @@ IBeamFactory::Dimensions CBoxBeamFactory::LoadSectionDimensions(sysIStructuredLo
        J = dim_vals[16];
 
       // now we can set our local dimensions
-      dimensions.push_back(Dimension(_T("H1"),H1));
-      dimensions.push_back(Dimension(_T("H2"),H2));
-      dimensions.push_back(Dimension(_T("H3"),H3));
-      dimensions.push_back(Dimension(_T("H4"),H4));
-      dimensions.push_back(Dimension(_T("H5"),H5));
-      dimensions.push_back(Dimension(_T("H6"),H6));
-      dimensions.push_back(Dimension(_T("H7"),H7));
-      dimensions.push_back(Dimension(_T("W1"),W1));
-      dimensions.push_back(Dimension(_T("W2"),W2));
-      dimensions.push_back(Dimension(_T("W3"),W3));
-      dimensions.push_back(Dimension(_T("W4"),W4));
-      dimensions.push_back(Dimension(_T("F1"),F1));
-      dimensions.push_back(Dimension(_T("F2"),F2));
-      dimensions.push_back(Dimension(_T("C1"),C1));
-      dimensions.push_back(Dimension(_T("Jmax"),J));
+      dimensions.emplace_back(_T("H1"),H1);
+      dimensions.emplace_back(_T("H2"),H2);
+      dimensions.emplace_back(_T("H3"),H3);
+      dimensions.emplace_back(_T("H4"),H4);
+      dimensions.emplace_back(_T("H5"),H5);
+      dimensions.emplace_back(_T("H6"),H6);
+      dimensions.emplace_back(_T("H7"),H7);
+      dimensions.emplace_back(_T("W1"),W1);
+      dimensions.emplace_back(_T("W2"),W2);
+      dimensions.emplace_back(_T("W3"),W3);
+      dimensions.emplace_back(_T("W4"),W4);
+      dimensions.emplace_back(_T("F1"),F1);
+      dimensions.emplace_back(_T("F2"),F2);
+      dimensions.emplace_back(_T("C1"),C1);
+      dimensions.emplace_back(_T("Jmax"),J);
 
-      dimensions.push_back(Dimension(_T("ShearKeyDepth"),0.0));
-      dimensions.push_back(Dimension(_T("EndBlockLength"),0.0));
+      dimensions.emplace_back(_T("ShearKeyDepth"),0.0);
+      dimensions.emplace_back(_T("EndBlockLength"),0.0);
    }
    else
    {
       Float64 dimVersion = 1.0;
       if ( 14 <= parent_version )
       {
-         if ( pLoad->BeginUnit(_T("BoxBeamDimensions")) )
+         if (pLoad->BeginUnit(_T("BoxBeamDimensions")))
+         {
             dimVersion = pLoad->GetVersion();
+         }
          else
-            THROW_LOAD(InvalidFileFormat,pLoad);
+         {
+            THROW_LOAD(InvalidFileFormat, pLoad);
+         }
       }
 
-      std::vector<std::_tstring>::iterator iter;
-      for ( iter = m_DimNames.begin(); iter != m_DimNames.end(); iter++ )
+      for( const auto& name : m_DimNames)
       {
-         std::_tstring name = *iter;
          Float64 value;
          if ( !pLoad->Property(name.c_str(),&value) )
          {
@@ -515,18 +518,18 @@ IBeamFactory::Dimensions CBoxBeamFactory::LoadSectionDimensions(sysIStructuredLo
             }
          }
 
-         dimensions.push_back( Dimension(name,value) );
+         dimensions.emplace_back( name,value );
       }
 
       if( dimVersion < 4 )
       {
          // A bug in the WBFL had F1 and F2 swapped. Version 4 fixes this
-         IBeamFactory::Dimensions::iterator itdF1(dimensions.end()), itdF2(dimensions.end());
-         IBeamFactory::Dimensions::iterator itd(dimensions.begin());
-         IBeamFactory::Dimensions::iterator itdend(dimensions.end());
+         auto itdF1(dimensions.end()), itdF2(dimensions.end());
+         auto itd(dimensions.begin());
+         auto itdend(dimensions.end());
          while(itd!=itdend)
          {
-            IBeamFactory::Dimension& dims = *itd;
+            const auto& dims = *itd;
             std::_tstring name = dims.first;
 
             if( name == _T("F1") )
@@ -556,13 +559,15 @@ IBeamFactory::Dimensions CBoxBeamFactory::LoadSectionDimensions(sysIStructuredLo
          }
       }
 
-      if ( 14 <= parent_version && !pLoad->EndUnit() )
-         THROW_LOAD(InvalidFileFormat,pLoad);
+      if (14 <= parent_version && !pLoad->EndUnit())
+      {
+         THROW_LOAD(InvalidFileFormat, pLoad);
+      }
    }
    return dimensions;
 }
 
-Float64 CBoxBeamFactory::GetInternalSurfaceAreaOfVoids(IBroker* pBroker,const CSegmentKey& segmentKey)
+Float64 CBoxBeamFactory::GetInternalSurfaceAreaOfVoids(IBroker* pBroker,const CSegmentKey& segmentKey) const
 {
    GET_IFACE2(pBroker,IBridge,pBridge);
    Float64 Lg = pBridge->GetSegmentLength(segmentKey);
@@ -585,7 +590,7 @@ Float64 CBoxBeamFactory::GetInternalSurfaceAreaOfVoids(IBroker* pBroker,const CS
 void CBoxBeamFactory::CreateStrandMover(const IBeamFactory::Dimensions& dimensions,  Float64 Hg,
                                   IBeamFactory::BeamFace endTopFace, Float64 endTopLimit, IBeamFactory::BeamFace endBottomFace, Float64 endBottomLimit, 
                                   IBeamFactory::BeamFace hpTopFace, Float64 hpTopLimit, IBeamFactory::BeamFace hpBottomFace, Float64 hpBottomLimit, 
-                                  Float64 endIncrement, Float64 hpIncrement, IStrandMover** strandMover)
+                                  Float64 endIncrement, Float64 hpIncrement, IStrandMover** strandMover) const
 {
    HRESULT hr = S_OK;
 
@@ -650,23 +655,23 @@ void CBoxBeamFactory::CreateStrandMover(const IBeamFactory::Dimensions& dimensio
    ATLASSERT (SUCCEEDED(hr));
 }
 
-std::_tstring CBoxBeamFactory::GetImage()
+std::_tstring CBoxBeamFactory::GetImage() const
 {
    return std::_tstring(_T("BoxBeam.gif"));
 }
 
 
-CLSID CBoxBeamFactory::GetCLSID()
+CLSID CBoxBeamFactory::GetCLSID() const
 {
    return CLSID_BoxBeamFactory;
 }
 
-LPCTSTR CBoxBeamFactory::GetImageResourceName()
+LPCTSTR CBoxBeamFactory::GetImageResourceName() const
 {
    return _T("BoxBeam");
 }
 
-HICON  CBoxBeamFactory::GetIcon() 
+HICON  CBoxBeamFactory::GetIcon()  const
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
@@ -690,7 +695,7 @@ void CBoxBeamFactory::GetDimensions(const IBeamFactory::Dimensions& dimensions,
                                     Float64& C1,
                                     Float64& J,
                                     Float64& shearKeyDepth,
-                                    Float64& endBlockLength)
+                                    Float64& endBlockLength) const
 {
    H1 = GetDimension(dimensions,_T("H1"));
    H2 = GetDimension(dimensions,_T("H2"));
@@ -713,8 +718,7 @@ void CBoxBeamFactory::GetDimensions(const IBeamFactory::Dimensions& dimensions,
 
 
 
-void CBoxBeamFactory::GetAllowableSpacingRange(const IBeamFactory::Dimensions& dimensions,pgsTypes::SupportedDeckType sdt, 
-                                               pgsTypes::SupportedBeamSpacing sbs, Float64* minSpacing, Float64* maxSpacing)
+void CBoxBeamFactory::GetAllowableSpacingRange(const IBeamFactory::Dimensions& dimensions,pgsTypes::SupportedDeckType sdt,  pgsTypes::SupportedBeamSpacing sbs, Float64* minSpacing, Float64* maxSpacing) const
 {
    *minSpacing = 0.0;
    *maxSpacing = 0.0;
@@ -747,8 +751,9 @@ void CBoxBeamFactory::GetAllowableSpacingRange(const IBeamFactory::Dimensions& d
    {
       if (sbs == pgsTypes::sbsUniformAdjacent || sbs == pgsTypes::sbsGeneralAdjacent)
       {
-         *minSpacing = gw;
-         *maxSpacing = gw+J;
+         // for this spacing type, we have joint spacing... spacing range is the range of joint width
+         *minSpacing = 0;
+         *maxSpacing = J;
       }
       else
       {
@@ -757,7 +762,7 @@ void CBoxBeamFactory::GetAllowableSpacingRange(const IBeamFactory::Dimensions& d
    }
 }
 
-bool CBoxBeamFactory::IsShearKey(const IBeamFactory::Dimensions& dimensions, pgsTypes::SupportedBeamSpacing spacingType)
+bool CBoxBeamFactory::IsShearKey(const IBeamFactory::Dimensions& dimensions, pgsTypes::SupportedBeamSpacing spacingType) const
 {
    bool is_key;
 
@@ -792,7 +797,7 @@ bool CBoxBeamFactory::IsShearKey(const IBeamFactory::Dimensions& dimensions, pgs
 //    V
 //
 //   Triangle above of Height (H) and Width (W). Want area chopped at depth (h)
-static Float64 AreaChoppedTriangle(Float64 W, Float64 H, Float64 h)
+Float64 AreaChoppedTriangle(Float64 W, Float64 H, Float64 h)
 {
    ATLASSERT(h>=0.0 && h<=H);
    ATLASSERT(H>0.0);
@@ -802,8 +807,7 @@ static Float64 AreaChoppedTriangle(Float64 W, Float64 H, Float64 h)
    return w*h + (W-w)*h/2.0;
 }
 
-
-void CBoxBeamFactory::GetShearKeyAreas(const IBeamFactory::Dimensions& dimensions, pgsTypes::SupportedBeamSpacing spacingType,Float64* uniformArea, Float64* areaPerJoint)
+void CBoxBeamFactory::GetShearKeyAreas(const IBeamFactory::Dimensions& dimensions, pgsTypes::SupportedBeamSpacing spacingType,Float64* uniformArea, Float64* areaPerJoint) const
 {
    *uniformArea = 0.0;
    *areaPerJoint = 0.0;
@@ -948,7 +952,17 @@ void CBoxBeamFactory::GetShearKeyAreas(const IBeamFactory::Dimensions& dimension
    *areaPerJoint = shearKeyDepth;
 }
 
-Float64 CBoxBeamFactory::GetBeamWidth(const IBeamFactory::Dimensions& dimensions,pgsTypes::MemberEndType endType)
+bool CBoxBeamFactory::HasLongitudinalJoints() const
+{
+   return false;
+}
+
+bool CBoxBeamFactory::IsLongitudinalJointStructural(pgsTypes::SupportedDeckType deckType,pgsTypes::AdjacentTransverseConnectivity connectivity) const
+{
+   return false;
+}
+
+Float64 CBoxBeamFactory::GetBeamWidth(const IBeamFactory::Dimensions& dimensions,pgsTypes::MemberEndType endType) const
 {
    Float64 W1 = GetDimension(dimensions,_T("W1"));
    Float64 W2 = GetDimension(dimensions,_T("W2"));

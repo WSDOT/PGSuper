@@ -166,7 +166,7 @@ rptChapter* CInternalForceChapterBuilder::Build(CReportSpecification* pRptSpec,U
       (*pTable)(2,colIdx++) << COLHDR(Sub2(symbol(DELTA) << _T("P"),_T("d")),rptForceUnitTag,pDisplayUnits->GetGeneralForceUnit());
       (*pTable)(2,colIdx++) << COLHDR(Sub2(symbol(DELTA) << _T("M"),_T("d")),rptMomentUnitTag,pDisplayUnits->GetMomentUnit());
 
-      std::vector<pgsPointOfInterest> vPoi;
+      PoiList vPoi;
       PoiAttributeType refAttribute;
       GetCombinedResultsPoi(pBroker,girderKey,intervalIdx,&vPoi,&refAttribute);
 

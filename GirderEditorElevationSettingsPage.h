@@ -53,6 +53,7 @@ public:
 	BOOL	m_ShowLongReinf;
 	BOOL	m_ShowLoads;
 	BOOL	m_ShowLegend;
+   BOOL  m_ShowSectionCG;
 	//}}AFX_DATA
 
 

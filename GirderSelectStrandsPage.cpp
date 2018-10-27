@@ -415,7 +415,7 @@ void CGirderSelectStrandsPage::OnPaint()
    GirderLibraryEntry::Dimensions dimensions = m_pGdrEntry->GetDimensions();
 
    CComPtr<IGirderSection> gdrSection;
-   factory->CreateGirderSection(pBroker,INVALID_ID,dimensions,-1,-1,&gdrSection);
+   factory->CreateGirderSection(nullptr,INVALID_ID,dimensions,-1,-1,&gdrSection);
 
    CComQIPtr<IShape> shape(gdrSection);
 
@@ -1001,7 +1001,7 @@ void CGirderSelectStrandsPage::AddClickRect(CRect rect, ROWCOL gridRow)
    CSize size = rect.Size();
    int downinf = int(size.cy/1.5);
    rect.InflateRect(3,downinf,3,3); 
-   m_StrandLocations.push_back( std::make_pair(rect, gridRow) );
+   m_StrandLocations.emplace_back(rect, gridRow);
 }
 
 BOOL CGirderSelectStrandsPage::PreTranslateMessage(MSG* pMsg)

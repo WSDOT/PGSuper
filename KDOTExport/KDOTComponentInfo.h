@@ -49,11 +49,9 @@ END_COM_MAP()
 public:
    virtual BOOL Init(CPGSuperDoc* pDoc) override;
    virtual void Terminate() override;
-   virtual CString GetName() override;
-   virtual CString GetDescription() override;
-   virtual HICON GetIcon() override;
-   virtual bool HasMoreInfo() override;
-   virtual void OnMoreInfo() override;
+   virtual CString GetName() const override;
+   virtual CString GetDescription() const override;
+   virtual HICON GetIcon() const override;
+   virtual bool HasMoreInfo() const override;
+   virtual void OnMoreInfo() const override;
 };
-
-OBJECT_ENTRY_AUTO(__uuidof(KDOTComponentInfo), CKDOTComponentInfo)

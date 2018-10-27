@@ -86,6 +86,7 @@ void CPierDetailsDlg::CommonInitPages()
    m_PierLayoutPage.m_psp.dwFlags           |= PSP_HASHELP;
    m_PierConnectionsPage.m_psp.dwFlags      |= PSP_HASHELP;
    m_PierGirderSpacingPage.m_psp.dwFlags    |= PSP_HASHELP;
+   m_PierDetailsBearingsPage.m_psp.dwFlags  |= PSP_HASHELP;
 
    m_ClosureJointGeometryPage.m_psp.dwFlags |= PSP_HASHELP;
    m_GirderSegmentSpacingPage.m_psp.dwFlags |= PSP_HASHELP;
@@ -95,6 +96,8 @@ void CPierDetailsDlg::CommonInitPages()
 
    if ( m_pPier->IsBoundaryPier() )
    {
+      AddPage(&m_PierGirderSpacingPage);
+
       if ( m_pPier->IsAbutment() )
       {
          AddPage(&m_AbutmentConnectionsPage);
@@ -103,13 +106,14 @@ void CPierDetailsDlg::CommonInitPages()
       {
          AddPage(&m_PierConnectionsPage);
       }
-      AddPage(&m_PierGirderSpacingPage);
    }
    else
    {
       AddPage(&m_ClosureJointGeometryPage);
       AddPage(&m_GirderSegmentSpacingPage);
    }
+
+   AddPage(&m_PierDetailsBearingsPage);
 }
 
 void CPierDetailsDlg::InitPages()
@@ -146,6 +150,8 @@ void CPierDetailsDlg::Init(const CBridgeDescription2* pBridge,PierIndexType pier
       m_ClosureJointGeometryPage.Init(m_pPier);
       m_GirderSegmentSpacingPage.Init(m_pPier);
    }
+
+   m_PierDetailsBearingsPage.Initialize(&m_BridgeDesc, m_pPier);
 
    // Set dialog title
    CString strTitle;
@@ -204,7 +210,7 @@ void CPierDetailsDlg::CreateExtensionPages()
    {
       IEditPierCallback* pEditPierCallback = callbackIter->second;
       CPropertyPage* pPage = pEditPierCallback->CreatePropertyPage(this);
-      m_ExtensionPages.push_back( std::make_pair(pEditPierCallback,pPage) );
+      m_ExtensionPages.emplace_back(pEditPierCallback,pPage);
       if ( pPage )
       {
          AddPage(pPage);
@@ -246,7 +252,7 @@ void CPierDetailsDlg::CreateExtensionPages(const std::vector<EditBridgeExtension
          }
       }
 
-      m_ExtensionPages.push_back( std::make_pair(pEditPierCallback,pPage) );
+      m_ExtensionPages.emplace_back(pEditPierCallback,pPage);
 
       if ( pPage )
       {

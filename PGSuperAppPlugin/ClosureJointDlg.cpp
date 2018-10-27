@@ -138,7 +138,7 @@ void CClosureJointDlg::CreateExtensionPages()
       CPropertyPage* pPage = pCallback->CreatePropertyPage(this);
       if ( pPage )
       {
-         m_ExtensionPages.push_back( std::make_pair(pCallback,pPage) );
+         m_ExtensionPages.emplace_back(pCallback,pPage);
          AddPage(pPage);
       }
    }
@@ -180,7 +180,7 @@ void CClosureJointDlg::CreateExtensionPages(const std::vector<EditSplicedGirderE
 
       if ( pPage )
       {
-         m_ExtensionPages.push_back( std::make_pair(pEditClosureJointCallback,pPage) );
+         m_ExtensionPages.emplace_back(pEditClosureJointCallback,pPage);
          AddPage(pPage);
       }
    }

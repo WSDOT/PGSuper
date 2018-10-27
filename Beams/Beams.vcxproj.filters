@@ -459,6 +459,12 @@
     <ClInclude Include="TxDOT2013TimeDependentLossesTable.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\Include\Plugins\Beams.h">
+      <Filter>IFace</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Plugins\ConfigureStrandMover.h">
+      <Filter>IFace</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Image Include="Res\boxbeam.ico">

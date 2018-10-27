@@ -247,7 +247,7 @@ public:
 
    //------------------------------------------------------------------------
    // Sets the location of this poi, measured from the start of the segment.
-   void SetDistFromStart(Float64 distFromStart);
+   void SetDistFromStart(Float64 distFromStart,bool bRetainAttributes = false);
 
    //------------------------------------------------------------------------
    // Returns the location of this poi, measured from the start of the segment.
@@ -428,19 +428,6 @@ public:
 #endif
 };
 
-
-// Remove a poi from a sequence if it contains the specified attribute
-// usage example
-// vPoi.erase(std::remove_if(vPoi.begin(),vPoi.end(),RemoveIfPoiHasAttribute(POI_CLOSURE)),vPoi.end());
-class RemoveIfPoiHasAttribute
-{
-public:
-   RemoveIfPoiHasAttribute(PoiAttributeType attribute) { m_Attribute = attribute; }
-   bool operator()(const pgsPointOfInterest& poi) { return poi.HasAttribute(m_Attribute); }
-private:
-   PoiAttributeType m_Attribute;
-};
-
 // Used to compare POI without using the < operator
 class ComparePoi
 {
@@ -449,12 +436,6 @@ public:
    {
       if ( poi1.AtSamePlace(poi2) )
       {
-         //if ( poi1.GetID() == INVALID_ID || poi2.GetID() == INVALID_ID )
-         //{
-         //   // never match an invalid ID
-         //   return false;
-         //}
-
          return poi1.GetID() < poi2.GetID();
       }
       else
@@ -463,3 +444,23 @@ public:
       }
    }
 };
+
+// We use POIs more than anything else and they are really just keys. We don't
+// want to construct, copy, destory the all the time. This typedef defines a
+// container that holds references to POIs. This reduces overhead. The caveat
+// is that the lifetime of the POI must be greater than the lifetime of the container.
+// You are required to ensure property lifetime symantics.
+//
+// This list is easily used in iteration as follows
+// for ( const pgsPointOfInterest& poi : myPoiList)
+// {...}
+// using pgsPointOfInterest instead of auto casesu the reference_wrapper's type conversion
+// operator to be invoked and thus we can treat the elements of the container as pois
+typedef std::vector<std::reference_wrapper<const pgsPointOfInterest>> PoiList;
+
+// Coverts a vector of POIs into a PoiList. You are required to ensure the POIs in the
+// vector outlive the PoiList object.
+void PGSEXTFUNC MakePoiList(const std::vector<pgsPointOfInterest>& vPoi,PoiList* pPoiList);
+
+// Makes a vector of POIs that are copied from the POI list.
+void PGSEXTFUNC MakePoiVector(const PoiList& vPoiList, std::vector<pgsPointOfInterest>* pvPoi);

@@ -1,6 +1,6 @@
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend   Ndb Elev    Nsr   Ndb   1   2   3   4   5  Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 40.00    6   7.25    K3 Template      1     1     New           28  1/2  270  11.59  10.52  10.25  10.25    4    2.0    8     2    0   0   0   0   0   2  42.0 42.0  4.700  5.300   2.259    -2.857     3350   0.683  0.683   1.862 -0.791  0.000 -0.037 -0.828  61.74  168.20    3.75    9.50    9.50 
+ 40.00    6   7.25    K3 Template      1     1     New           28  1/2  270  11.59  10.52  10.25  10.25    4    2.0    8     2    0   0   0   0   0   2  42.0 42.0  4.700  5.300   2.259    -2.857     3350   0.683  0.683   1.861 -0.791  0.000 -0.037 -0.828  61.74  168.20    3.75    9.50    9.50 
                                                                                                                   4.0    8     2    0   0   0   0   0 
 
 
@@ -12,7 +12,7 @@ Minimum fillet value exceeded for bridge check failed
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend   Ndb Elev    Nsr   Ndb   1   2   3   4   5  Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 40.00    6   7.25    K3 Template      1     2     New           26  1/2  270  13.95  13.20  10.50  10.50    4    2.0    8     2    0   0   0   0   0   2  42.0 42.0  4.500  5.100   2.279    -2.839     3231   0.630  0.761   2.321 -0.885  0.000 -0.037 -0.921  61.24  154.52    3.75    5.00    5.00 
+ 40.00    6   7.25    K3 Template      1     2     New           26  1/2  270  13.95  13.20  10.50  10.50    4    2.0    8     2    0   0   0   0   0   2  42.0 42.0  4.500  5.100   2.279    -2.839     3231   0.630  0.761   2.320 -0.885  0.000 -0.037 -0.921  61.24  154.52    3.75    5.00    5.00 
                                                                                                                   4.0    8     2    0   0   0   0   0 
 
 
@@ -24,7 +24,7 @@ Minimum fillet value exceeded for bridge check failed
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend   Ndb Elev    Nsr   Ndb   1   2   3   4   5  Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 40.00    6   7.25    K3 Template      1     4     New           26  1/2  270  13.95  13.20  10.50  10.50    4    2.0    8     2    0   0   0   0   0   2  42.0 42.0  4.500  5.100   2.279    -2.839     3231   0.630  0.761   2.321 -0.885  0.000 -0.037 -0.921  61.24  154.52    3.75    5.00    5.00 
+ 40.00    6   7.25    K3 Template      1     4     New           26  1/2  270  13.95  13.20  10.50  10.50    4    2.0    8     2    0   0   0   0   0   2  42.0 42.0  4.500  5.100   2.279    -2.839     3231   0.630  0.761   2.320 -0.885  0.000 -0.037 -0.921  61.24  154.52    3.75    5.00    5.00 
                                                                                                                   4.0    8     2    0   0   0   0   0 
 
 
@@ -44,8 +44,8 @@ Minimum fillet value exceeded for bridge check failed
 
 Girder design was Not Successful
 The Specification Check was Not Successful
-Compression stress check failed for Service I Limit State in Interval 2 Prestress Release (Casting Yard)
-Tensile stress check failed for Service III Limit State in Interval 14 Open to Traffic (Bridge Site 3)
+Compression stress check failed for Service I Limit State in Interval 2 Prestress Release
+Tensile stress check failed for Service III Limit State in Interval 14 Open to Traffic
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Ultimate moment capacity (positive moment) check failed for Strength II Limit State
 Splitting zone check failed.
@@ -60,8 +60,8 @@ Minimum fillet value exceeded for bridge check failed
 
 Girder design was Not Successful
 The Specification Check was Not Successful
-Compression stress check failed for Service I Limit State in Interval 2 Prestress Release (Casting Yard)
-Tensile stress check failed for Service III Limit State in Interval 14 Open to Traffic (Bridge Site 3)
+Compression stress check failed for Service I Limit State in Interval 2 Prestress Release
+Tensile stress check failed for Service III Limit State in Interval 14 Open to Traffic
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Ultimate moment capacity (positive moment) check failed for Strength II Limit State
 Splitting zone check failed.
@@ -76,8 +76,8 @@ Minimum fillet value exceeded for bridge check failed
 
 Girder design was Not Successful
 The Specification Check was Not Successful
-Compression stress check failed for Service I Limit State in Interval 2 Prestress Release (Casting Yard)
-Tensile stress check failed for Service III Limit State in Interval 14 Open to Traffic (Bridge Site 3)
+Compression stress check failed for Service I Limit State in Interval 2 Prestress Release
+Tensile stress check failed for Service III Limit State in Interval 14 Open to Traffic
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Ultimate moment capacity (positive moment) check failed for Strength II Limit State
 Splitting zone check failed.
@@ -87,7 +87,7 @@ Minimum fillet value exceeded for bridge check failed
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend   Ndb Elev    Nsr   Ndb   1   2   3   4   5  Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 40.00    6   7.25    K3 Template      3     1     New           28  1/2  270  11.59  10.52  10.25  10.25    4    2.0    8     2    0   0   0   0   0   2  42.0 42.0  4.700  5.300   2.259    -2.857     3350   0.683  0.683   1.862 -0.791  0.000 -0.037 -0.828  61.74  168.20    3.75    9.50    9.50 
+ 40.00    6   7.25    K3 Template      3     1     New           28  1/2  270  11.59  10.52  10.25  10.25    4    2.0    8     2    0   0   0   0   0   2  42.0 42.0  4.700  5.300   2.259    -2.857     3350   0.683  0.683   1.861 -0.791  0.000 -0.037 -0.828  61.74  168.20    3.75    9.50    9.50 
                                                                                                                   4.0    8     2    0   0   0   0   0 
 
 
@@ -102,7 +102,7 @@ Minimum fillet value exceeded for bridge check failed
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend   Ndb Elev    Nsr   Ndb   1   2   3   4   5  Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 40.00    6   7.25    K3 Template      3     2     New           26  1/2  270  13.95  13.20  10.50  10.50    4    2.0    8     2    0   0   0   0   0   2  42.0 42.0  4.500  5.100   2.279    -2.839     3231   0.630  0.761   2.321 -0.885  0.000 -0.037 -0.921  61.24  154.52    3.75    5.00    5.00 
+ 40.00    6   7.25    K3 Template      3     2     New           26  1/2  270  13.95  13.20  10.50  10.50    4    2.0    8     2    0   0   0   0   0   2  42.0 42.0  4.500  5.100   2.279    -2.839     3231   0.630  0.761   2.320 -0.885  0.000 -0.037 -0.921  61.24  154.52    3.75    5.00    5.00 
                                                                                                                   4.0    8     2    0   0   0   0   0 
 
 
@@ -114,7 +114,7 @@ Minimum fillet value exceeded for bridge check failed
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend   Ndb Elev    Nsr   Ndb   1   2   3   4   5  Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 40.00    6   7.25    K3 Template      3     4     New           26  1/2  270  13.95  13.20  10.50  10.50    4    2.0    8     2    0   0   0   0   0   2  42.0 42.0  4.500  5.100   2.279    -2.839     3231   0.630  0.761   2.321 -0.885  0.000 -0.037 -0.921  61.24  154.52    3.75    5.00    5.00 
+ 40.00    6   7.25    K3 Template      3     4     New           26  1/2  270  13.95  13.20  10.50  10.50    4    2.0    8     2    0   0   0   0   0   2  42.0 42.0  4.500  5.100   2.279    -2.839     3231   0.630  0.761   2.320 -0.885  0.000 -0.037 -0.921  61.24  154.52    3.75    5.00    5.00 
                                                                                                                   4.0    8     2    0   0   0   0   0 
 
 

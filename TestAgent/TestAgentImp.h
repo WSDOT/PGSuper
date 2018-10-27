@@ -26,6 +26,7 @@
 #define __TESTAGENT_H_
 
 #include "resource.h"       // main symbols
+#include "CLSID.h"
 
 #include <IFace\Project.h>
 #include <IFace\DistributionFactors.h>
@@ -106,7 +107,6 @@ private:
    bool RunCamberTest(std::_tofstream& resultsFile, std::_tofstream& poiFile, const CSegmentKey& segmentKey);
    bool RunFabOptimizationTest(std::_tofstream& resultsFile,std::_tofstream& poiFile,const CSegmentKey& segmentKey);
    bool RunLoadRatingTest(std::_tofstream& resultsFile, std::_tofstream& poiFile, const CGirderKey& girderKey);
-   bool RunAlignmentTest(std::_tofstream& resultsFile);
 };
 
 #endif //__TESTAGENT_H_

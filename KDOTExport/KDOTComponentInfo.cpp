@@ -21,7 +21,7 @@
 ///////////////////////////////////////////////////////////////////////
 
 #include "stdafx.h"
-#include "KDOTExport_i.h"
+#include "KDOTExport.h"
 #include "KDOTComponentInfo.h"
 #include "resource.h"
 #include <MFCTools\VersionInfo.h>
@@ -44,29 +44,29 @@ void CKDOTComponentInfo::Terminate()
 {
 }
 
-CString CKDOTComponentInfo::GetName()
+CString CKDOTComponentInfo::GetName() const
 {
    return _T("KDOT PGSuper Exporter");
 }
 
-CString CKDOTComponentInfo::GetDescription()
+CString CKDOTComponentInfo::GetDescription() const
 {
    CString strDesc;
    strDesc.Format(_T("KDOT-specific features for PGSuper"));
    return strDesc;
 }
 
-HICON CKDOTComponentInfo::GetIcon()
+HICON CKDOTComponentInfo::GetIcon() const
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
    return AfxGetApp()->LoadIcon(IDI_KDOT);
 }
 
-bool CKDOTComponentInfo::HasMoreInfo()
+bool CKDOTComponentInfo::HasMoreInfo() const
 {
    return false;
 }
 
-void CKDOTComponentInfo::OnMoreInfo()
+void CKDOTComponentInfo::OnMoreInfo() const
 {
 }

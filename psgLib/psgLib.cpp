@@ -26,9 +26,9 @@
 #include "stdafx.h"
 #include "resource.h"
 
-#include <Plugins\Beams.h>
-
 #include <initguid.h>
+
+#include "CLSID.h"
 
 #include <psgLib\psgLib.h>
 #include <psgLib\StructuredLoad.h>
@@ -37,14 +37,13 @@
 
 #include <WBFLGeometry_i.c>
 #include <WBFLCore_i.c>
-#include <Plugins\Beams_i.c>
+#include <Plugins\Beams.h>
 
 #include <IFace\BeamFamily.h>
 #include <IFace\BeamFactory.h>
 #include <IFace\Project.h>
 #include <IFace\DocumentType.h>
 #include <Plugins\BeamFamilyCLSID.h>
-#include "PGSuperLibrary_i.h"
 #include "LibraryAppPlugin.h"
 
 #include <BridgeLinkCATID.h>

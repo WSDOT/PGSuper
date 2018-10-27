@@ -158,6 +158,11 @@ public:
          return S_OK;
       }
 
+      if (pT->m_pSpecEntry->GetLossMethod() != LOSSES_TIME_STEP)
+      {
+         pT->CreatePrecastGirderBridgeTimelineEvents();
+      }
+
       pT->ValidateBridgeModel();
 
       pT->Lock();

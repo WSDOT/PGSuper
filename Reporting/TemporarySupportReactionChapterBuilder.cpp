@@ -97,7 +97,7 @@ rptChapter* CTemporarySupportReactionChapterBuilder::Build(CReportSpecification*
       {
          IntervalIndexType tsRemovalIntervalIdx = pIntervals->GetTemporarySupportRemovalInterval(tsIdx);
          intervalIdx = Min(tsRemovalIntervalIdx,intervalIdx);
-         vSupports.push_back(std::make_pair(tsIdx,pgsTypes::stTemporary));
+         vSupports.emplace_back(tsIdx,pgsTypes::stTemporary);
       }
    }
 
@@ -126,9 +126,9 @@ rptChapter* CTemporarySupportReactionChapterBuilder::Build(CReportSpecification*
 
    bool bDesign = false;
    bool bRating = false;
-   bool bSegments, bConstruction, bDeckPanels, bSidewalk, bShearKey, bPedLoading, bPermit, bContinuousBeforeDeckCasting;
+   bool bSegments, bConstruction, bDeck, bDeckPanels, bSidewalk, bShearKey, bLongitudinalJoint, bPedLoading, bPermit, bContinuousBeforeDeckCasting;
    GroupIndexType startGroup, endGroup;
-   ColumnIndexType nCols = GetProductLoadTableColumnCount(pBroker,girderKey,analysisType,bDesign,bRating,false,&bSegments,&bConstruction,&bDeckPanels,&bSidewalk,&bShearKey,&bPedLoading,&bPermit,&bContinuousBeforeDeckCasting,&startGroup,&endGroup);
+   ColumnIndexType nCols = GetProductLoadTableColumnCount(pBroker,girderKey,analysisType,bDesign,bRating,false,&bSegments,&bConstruction,&bDeck,&bDeckPanels,&bSidewalk,&bShearKey,&bLongitudinalJoint,&bPedLoading,&bPermit,&bContinuousBeforeDeckCasting,&startGroup,&endGroup);
    nCols++; // add one for Type column
    nCols++; // add one for Reaction column
 
@@ -183,11 +183,18 @@ rptChapter* CTemporarySupportReactionChapterBuilder::Build(CReportSpecification*
    p_table->SetRowSpan(1,col,SKIP_CELL);
    (*p_table)(0,col++) << pProductLoads->GetProductLoadName(pgsTypes::pftDiaphragm);
 
-   if ( bShearKey )
+   if (bShearKey)
    {
-      p_table->SetRowSpan(0,col,2);
-      p_table->SetRowSpan(1,col,SKIP_CELL);
-      (*p_table)(0,col++) << pProductLoads->GetProductLoadName(pgsTypes::pftShearKey);
+      p_table->SetRowSpan(0, col, 2);
+      p_table->SetRowSpan(1, col, SKIP_CELL);
+      (*p_table)(0, col++) << pProductLoads->GetProductLoadName(pgsTypes::pftShearKey);
+   }
+
+   if (bLongitudinalJoint)
+   {
+      p_table->SetRowSpan(0, col, 2);
+      p_table->SetRowSpan(1, col, SKIP_CELL);
+      (*p_table)(0, col++) << pProductLoads->GetProductLoadName(pgsTypes::pftLongitudinalJoint);
    }
 
    if ( bConstruction )
@@ -197,13 +204,16 @@ rptChapter* CTemporarySupportReactionChapterBuilder::Build(CReportSpecification*
       (*p_table)(0,col++) << pProductLoads->GetProductLoadName(pgsTypes::pftConstruction);
    }
 
-   p_table->SetRowSpan(0,col,2);
-   p_table->SetRowSpan(1,col,SKIP_CELL);
-   (*p_table)(0,col++) << pProductLoads->GetProductLoadName(pgsTypes::pftSlab);
+   if (bDeck)
+   {
+      p_table->SetRowSpan(0, col, 2);
+      p_table->SetRowSpan(1, col, SKIP_CELL);
+      (*p_table)(0, col++) << pProductLoads->GetProductLoadName(pgsTypes::pftSlab);
 
-   p_table->SetRowSpan(0,col,2);
-   p_table->SetRowSpan(1,col,SKIP_CELL);
-   (*p_table)(0,col++) << pProductLoads->GetProductLoadName(pgsTypes::pftSlabPad);
+      p_table->SetRowSpan(0, col, 2);
+      p_table->SetRowSpan(1, col, SKIP_CELL);
+      (*p_table)(0, col++) << pProductLoads->GetProductLoadName(pgsTypes::pftSlabPad);
+   }
 
    if ( bDeckPanels )
    {
@@ -239,7 +249,7 @@ rptChapter* CTemporarySupportReactionChapterBuilder::Build(CReportSpecification*
 
    *pPara << p_table << rptNewLine;
    
-   std::vector<REACTION> vGirderReactions, vDiaphragmReactions, vShearKeyReactions, vConstructionReactions, vSlabReactions, vSlabPadReactions, vDeckPanelReactions, vSidewalkReactions, vTrafficBarrierReactions, vOverlayReactions;
+   std::vector<REACTION> vGirderReactions, vDiaphragmReactions, vShearKeyReactions, vLongitudinalJointReactions, vConstructionReactions, vSlabReactions, vSlabPadReactions, vDeckPanelReactions, vSidewalkReactions, vTrafficBarrierReactions, vOverlayReactions;
    
    vGirderReactions = pReactions->GetReaction(girderKey,vSupports,intervalIdx,pgsTypes::pftGirder,bat,rtCumulative);
    vDiaphragmReactions = pReactions->GetReaction(girderKey,vSupports,intervalIdx,pgsTypes::pftDiaphragm,bat,rtCumulative);
@@ -247,12 +257,23 @@ rptChapter* CTemporarySupportReactionChapterBuilder::Build(CReportSpecification*
    {
       vShearKeyReactions = pReactions->GetReaction(girderKey,vSupports,intervalIdx,pgsTypes::pftShearKey,bat,rtCumulative);
    }
+
+   if (bLongitudinalJoint)
+   {
+      vLongitudinalJointReactions = pReactions->GetReaction(girderKey, vSupports, intervalIdx, pgsTypes::pftLongitudinalJoint, bat, rtCumulative);
+   }
+
    if ( bConstruction )
    {
       vConstructionReactions = pReactions->GetReaction(girderKey,vSupports,intervalIdx,pgsTypes::pftConstruction,bat,rtCumulative);
    }
-   vSlabReactions = pReactions->GetReaction(girderKey,vSupports,intervalIdx,pgsTypes::pftSlab,bat,rtCumulative);
-   vSlabPadReactions = pReactions->GetReaction(girderKey,vSupports,intervalIdx,pgsTypes::pftSlabPad,bat,rtCumulative);
+
+   if (bDeck)
+   {
+      vSlabReactions = pReactions->GetReaction(girderKey, vSupports, intervalIdx, pgsTypes::pftSlab, bat, rtCumulative);
+      vSlabPadReactions = pReactions->GetReaction(girderKey, vSupports, intervalIdx, pgsTypes::pftSlabPad, bat, rtCumulative);
+   }
+
    if ( bDeckPanels )
    {
       vDeckPanelReactions = pReactions->GetReaction(girderKey,vSupports,intervalIdx,pgsTypes::pftSlabPanel,bat,rtCumulative);
@@ -261,7 +282,9 @@ rptChapter* CTemporarySupportReactionChapterBuilder::Build(CReportSpecification*
    {
       vSidewalkReactions = pReactions->GetReaction(girderKey,vSupports,intervalIdx,pgsTypes::pftSidewalk,bat,rtCumulative);
    }
+   
    vTrafficBarrierReactions = pReactions->GetReaction(girderKey,vSupports,intervalIdx,pgsTypes::pftTrafficBarrier,bat,rtCumulative);
+   
    if ( bOverlay )
    {
       vOverlayReactions = pReactions->GetReaction(girderKey,vSupports,intervalIdx,pgsTypes::pftOverlay,bat,rtCumulative);
@@ -298,12 +321,21 @@ rptChapter* CTemporarySupportReactionChapterBuilder::Build(CReportSpecification*
       (*p_table)(row+2,col) << moment.SetValue(reaction.Mz);
       col++;
 
-      if ( bShearKey )
+      if (bShearKey)
       {
          reaction = vShearKeyReactions[tsIdx];
-         (*p_table)(row,col)   << force.SetValue(reaction.Fx);
-         (*p_table)(row+1,col) << force.SetValue(reaction.Fy);
-         (*p_table)(row+2,col) << moment.SetValue(reaction.Mz);
+         (*p_table)(row, col) << force.SetValue(reaction.Fx);
+         (*p_table)(row + 1, col) << force.SetValue(reaction.Fy);
+         (*p_table)(row + 2, col) << moment.SetValue(reaction.Mz);
+         col++;
+      }
+
+      if (bLongitudinalJoint)
+      {
+         reaction = vLongitudinalJointReactions[tsIdx];
+         (*p_table)(row, col) << force.SetValue(reaction.Fx);
+         (*p_table)(row + 1, col) << force.SetValue(reaction.Fy);
+         (*p_table)(row + 2, col) << moment.SetValue(reaction.Mz);
          col++;
       }
 
@@ -316,17 +348,20 @@ rptChapter* CTemporarySupportReactionChapterBuilder::Build(CReportSpecification*
          col++;
       }
 
-      reaction = vSlabReactions[tsIdx];
-      (*p_table)(row,col)   << force.SetValue(reaction.Fx);
-      (*p_table)(row+1,col) << force.SetValue(reaction.Fy);
-      (*p_table)(row+2,col) << moment.SetValue(reaction.Mz);
-      col++;
+      if (bDeck)
+      {
+         reaction = vSlabReactions[tsIdx];
+         (*p_table)(row, col) << force.SetValue(reaction.Fx);
+         (*p_table)(row + 1, col) << force.SetValue(reaction.Fy);
+         (*p_table)(row + 2, col) << moment.SetValue(reaction.Mz);
+         col++;
 
-      reaction = vSlabPadReactions[tsIdx];
-      (*p_table)(row,col)   << force.SetValue(reaction.Fx);
-      (*p_table)(row+1,col) << force.SetValue(reaction.Fy);
-      (*p_table)(row+2,col) << moment.SetValue(reaction.Mz);
-      col++;
+         reaction = vSlabPadReactions[tsIdx];
+         (*p_table)(row, col) << force.SetValue(reaction.Fx);
+         (*p_table)(row + 1, col) << force.SetValue(reaction.Fy);
+         (*p_table)(row + 2, col) << moment.SetValue(reaction.Mz);
+         col++;
+      }
 
       if ( bDeckPanels )
       {

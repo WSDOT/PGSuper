@@ -45,6 +45,9 @@ public:
 public:
    virtual void DoPrint(CDC* pDC, CPrintInfo* pInfo,CRect rcDraw);
 
+
+   CBridgeModelViewChildFrame* GetFrame();
+
 // Overrides
 	// ClassWizard generated virtual function overrides
 	//{{AFX_VIRTUAL(CBridgeViewPane)
@@ -83,6 +86,4 @@ protected:
    virtual void UpdateDisplayObjects() = 0;
 
    virtual void UpdateDrawingArea();
-
-   CBridgeModelViewChildFrame* GetFrame();
 };

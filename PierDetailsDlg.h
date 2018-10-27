@@ -36,6 +36,7 @@
 #include "PierGirderSpacingPage.h"
 #include "PGSuperAppPlugin\ClosureJointGeometryPage.h"
 #include "PGSuperAppPlugin\GirderSegmentSpacingPage.h"
+#include "PGSuperAppPlugin\PierDetailsBearingsPage.h"
 #include <PgsExt\BridgeDescription2.h>
 #include "EditPier.h"
 #include <IFace\ExtendUI.h>
@@ -107,6 +108,7 @@ private:
    friend CPierGirderSpacingPage;
    friend CGirderSegmentSpacingPage;
    friend CClosureJointGeometryPage;
+   friend CPierDetailsBearingsPage;
 
    // General layout page
    CPierLocationPage          m_PierLocationPage;
@@ -116,6 +118,7 @@ private:
    CPierLayoutPage            m_PierLayoutPage;          // used at piers (boundary condition and bent geometry)
    CPierConnectionsPage       m_PierConnectionsPage;     // used at piers (boundary condition and connection geometry)
    CPierGirderSpacingPage     m_PierGirderSpacingPage;   // used at piers and abutments (girder spacing)
+   CPierDetailsBearingsPage   m_PierDetailsBearingsPage;
 
    // These two pages are used when the pier is interior to a girder group
    CClosureJointGeometryPage  m_ClosureJointGeometryPage; // Boundary condition and bent geometry

@@ -91,7 +91,8 @@ static char THIS_FILE[] = __FILE__;
 // from 24   to 25   Added Publisher Contact Information
 // from 25   to 26   Added haunch checking and camber multiplication factors
 // from 26   to 27   Added drag coefficient
-#define CURRENT_VERSION 27.0
+// from 27 to 28, added precamber limit
+#define CURRENT_VERSION 28.0
 
 // predicate function for comparing doubles
 inline bool EqualDoublePred(Float64 i, Float64 j) 
@@ -166,7 +167,9 @@ m_MinFilletValue(::ConvertToSysUnits(0.75,unitMeasure::Inch)),
 m_DoCheckMinHaunchAtBearingLines(false),
 m_MinHaunchAtBearingLines(0.0),
 m_ExcessiveSlabOffsetWarningTolerance(::ConvertToSysUnits(0.25,unitMeasure::Inch)),
-m_DragCoefficient(2.2)
+m_DragCoefficient(2.2),
+m_PrecamberLimit(80),
+m_pCompatibilityData(nullptr)
 {
 	CWaitCursor cursor;
 
@@ -264,12 +267,22 @@ m_DragCoefficient(2.2)
 GirderLibraryEntry::GirderLibraryEntry(const GirderLibraryEntry& rOther) :
 libLibraryEntry(rOther)
 {
+   m_pCompatibilityData = nullptr;
+   if (rOther.m_pCompatibilityData != nullptr)
+   {
+      m_pCompatibilityData = new pgsCompatibilityData(rOther.m_pCompatibilityData);
+   }
    InitCLSIDMap();
    MakeCopy(rOther);
 }
 
 GirderLibraryEntry::~GirderLibraryEntry()
 {
+   if (m_pCompatibilityData)
+   {
+      delete m_pCompatibilityData;
+      m_pCompatibilityData = nullptr;
+   }
 }
 
 void GirderLibraryEntry::InitCLSIDMap()
@@ -676,6 +689,7 @@ bool GirderLibraryEntry::SaveMe(sysIStructuredSave* pSave)
    pSave->EndUnit(); // CamberMultipliers
 
    pSave->Property(_T("DragCoefficient"),m_DragCoefficient); // added version 27
+   pSave->Property(_T("PrecamberLimit"), m_PrecamberLimit); // added version 28
 
    pSave->EndUnit();
 
@@ -734,7 +748,7 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
          LoadIBeamDimensions(pLoad);
 
 #if defined _DEBUG
-         std::vector<std::_tstring> vDimNames = m_pBeamFactory->GetDimensionNames();
+         const std::vector<std::_tstring>& vDimNames = m_pBeamFactory->GetDimensionNames();
          ATLASSERT( vDimNames.size() == m_Dimensions.size() );
          // if this assert fires, new beam dimensions have been added and not accounted for
 #endif
@@ -2753,6 +2767,14 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
          }
       }
 
+      if (27 < version)
+      {
+         if (!pLoad->Property(_T("PrecamberLimit"), &m_PrecamberLimit))
+         {
+            THROW_LOAD(InvalidFileFormat, pLoad);
+         }
+      }
+
 
       if(!pLoad->EndUnit())
       {
@@ -2762,6 +2784,16 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
    else
    {
       return false; // not a GirderLibraryEntry
+   }
+
+   ATLASSERT(m_pBeamFactory != nullptr);
+   CComQIPtr<IBeamFactoryCompatibility> compatibility(m_pBeamFactory);
+   if (compatibility)
+   {
+      // Beam Factories are singletons, so we must capture the compatibility data here, otherwise the current
+      // value will be changed when the a girder library entry using this type of beam factory is loaded
+      ATLASSERT(m_pCompatibilityData == nullptr); // did we get this data already???
+      m_pCompatibilityData = compatibility->GetCompatibilityData();
    }
 
    return true;
@@ -3137,6 +3169,12 @@ bool GirderLibraryEntry::Compare(const GirderLibraryEntry& rOther, std::vector<p
    {
       RETURN_ON_DIFFERENCE;
       vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Drag Coefficients are different"),_T(""),_T("")));
+   }
+
+   if (!::IsEqual(m_PrecamberLimit, rOther.m_PrecamberLimit))
+   {
+      RETURN_ON_DIFFERENCE;
+      vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Precamber limits are different"), _T(""), _T("")));
    }
 
    //
@@ -3644,7 +3682,7 @@ void GirderLibraryEntry::ValidateData(GirderLibraryEntry::GirderEntryDataErrorVe
    // Design Algorithm strategies
    bool cant_straight = pgsTypes::asHarped   ==  GetAdjustableStrandType() && IsDifferentHarpedGridAtEndsUsed();
    bool cant_harp     = pgsTypes::asStraight ==  GetAdjustableStrandType();
-   bool cant_debond   = !CanDebondStraightStrands();
+   bool cant_debond   = pgsTypes::asHarped   ==  GetAdjustableStrandType() || !CanDebondStraightStrands();
 
    // NOTE: It is ok to have a harped adjustable strategy without harped strands. This would be the case of straight only with no adjustable straight strands
    // or a straight/harped girder that doesn't have any harped strands defined.
@@ -3723,19 +3761,21 @@ void GirderLibraryEntry::SetBeamFactory(IBeamFactory* pFactory)
    m_Dimensions.clear();
 
    // Seed the dimension container
-   std::vector<std::_tstring> names = m_pBeamFactory->GetDimensionNames();
-   std::vector<std::_tstring>::iterator name_iter = names.begin();
+   const auto& names = m_pBeamFactory->GetDimensionNames();
+   auto name_iter = names.begin();
+   auto name_end = names.end();
 
-   std::vector<Float64> dims = m_pBeamFactory->GetDefaultDimensions();
-   std::vector<Float64>::iterator dim_iter = dims.begin();
+   const auto& dims = m_pBeamFactory->GetDefaultDimensions();
+   auto dim_iter = dims.begin();
+   auto dim_end = dims.end();
 
    ATLASSERT( dims.size() == names.size() );
 
-   for ( ; name_iter != names.end() && dim_iter != dims.end(); name_iter++, dim_iter++ )
+   for ( ; name_iter != name_end && dim_iter != dim_end; name_iter++, dim_iter++ )
    {
-      std::_tstring& rname = *name_iter;
+      const auto& name = *name_iter;
       Float64 value = *dim_iter;
-      AddDimension(rname,value);
+      AddDimension(name,value);
    }
 
    CComQIPtr<ISplicedBeamFactory,&IID_ISplicedBeamFactory> splicedBeamFactory(m_pBeamFactory);
@@ -4647,7 +4687,7 @@ void GirderLibraryEntry::MakeCopy(const GirderLibraryEntry& rOther)
    m_CamberMultipliers                    = rOther.m_CamberMultipliers;
 
    m_DragCoefficient = rOther.m_DragCoefficient;
-
+   m_PrecamberLimit = rOther.m_PrecamberLimit;
 }
 
 void GirderLibraryEntry::MakeAssignment(const GirderLibraryEntry& rOther)
@@ -5233,6 +5273,26 @@ void GirderLibraryEntry::SetDragCoefficient(Float64 Cd)
 Float64 GirderLibraryEntry::GetDragCoefficient() const
 {
    return m_DragCoefficient;
+}
+
+void GirderLibraryEntry::SetPrecamberLimit(Float64 limit)
+{
+   m_PrecamberLimit = limit;
+}
+
+Float64 GirderLibraryEntry::GetPrecamberLimit() const
+{
+   return m_PrecamberLimit;
+}
+
+bool GirderLibraryEntry::CanPrecamber() const
+{
+   return m_pBeamFactory->CanPrecamber();
+}
+
+pgsCompatibilityData* GirderLibraryEntry::GetCompatibilityData() const
+{
+   return m_pCompatibilityData;
 }
 
 //======================== ACCESS     =======================================

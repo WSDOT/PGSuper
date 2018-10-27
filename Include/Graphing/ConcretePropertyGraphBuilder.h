@@ -45,7 +45,7 @@
 #define X_AXIS_TIME_LOG     1
 #define X_AXIS_AGE_LINEAR   2
 #define X_AXIS_AGE_LOG      3
-#define X_AXIS_INTERVAL      4
+#define X_AXIS_INTERVAL     4
 
 
 class CConcretePropertyGraphController;
@@ -65,11 +65,13 @@ public:
 
    virtual CEAFGraphControlWindow* GetGraphControlWindow() override;
 
+   virtual void CreateViewController(IEAFViewController** ppController) override;
+
+   void ShowGrid(bool bShow);
+
 protected:
    void Init();
    CConcretePropertyGraphController* m_pGraphController;
-
-   afx_msg void OnShowGrid();
 
    DECLARE_MESSAGE_MAP()
 

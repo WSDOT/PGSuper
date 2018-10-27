@@ -85,38 +85,26 @@
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC60.props" />
-    <Import Project="..\..\BridgeLink\BridgeLink.props" />
-    <Import Project="..\..\WBFL\WBFL.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC60.props" />
-    <Import Project="..\..\BridgeLink\BridgeLink.props" />
-    <Import Project="..\..\WBFL\WBFL.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC60.props" />
-    <Import Project="..\..\BridgeLink\BridgeLink.props" />
-    <Import Project="..\..\WBFL\WBFL.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Profile|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC60.props" />
-    <Import Project="..\..\BridgeLink\BridgeLink.props" />
-    <Import Project="..\..\WBFL\WBFL.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC60.props" />
-    <Import Project="..\..\BridgeLink\BridgeLink.props" />
-    <Import Project="..\..\WBFL\WBFL.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC60.props" />
-    <Import Project="..\..\BridgeLink\BridgeLink.props" />
-    <Import Project="..\..\WBFL\WBFL.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
@@ -556,28 +544,6 @@
     <None Include="BridgeAgent.rgs" />
   </ItemGroup>
   <ItemGroup>
-    <Midl Include="BridgeAgent.idl">
-      <MkTypLibCompatible Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</MkTypLibCompatible>
-      <TargetEnvironment Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Win32</TargetEnvironment>
-      <GenerateTypeLibrary Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</GenerateTypeLibrary>
-      <MkTypLibCompatible Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</MkTypLibCompatible>
-      <TargetEnvironment Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Win32</TargetEnvironment>
-      <GenerateTypeLibrary Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</GenerateTypeLibrary>
-      <MkTypLibCompatible Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'">false</MkTypLibCompatible>
-      <TargetEnvironment Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'">Win32</TargetEnvironment>
-      <GenerateTypeLibrary Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'">true</GenerateTypeLibrary>
-      <MkTypLibCompatible Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">false</MkTypLibCompatible>
-      <TargetEnvironment Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">Win32</TargetEnvironment>
-      <GenerateTypeLibrary Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">true</GenerateTypeLibrary>
-      <MkTypLibCompatible Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</MkTypLibCompatible>
-      <TargetEnvironment Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Win32</TargetEnvironment>
-      <GenerateTypeLibrary Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</GenerateTypeLibrary>
-      <MkTypLibCompatible Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</MkTypLibCompatible>
-      <TargetEnvironment Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Win32</TargetEnvironment>
-      <GenerateTypeLibrary Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</GenerateTypeLibrary>
-    </Midl>
-  </ItemGroup>
-  <ItemGroup>
     <ResourceCompile Include="BridgeAgent.rc" />
   </ItemGroup>
   <ItemGroup>
@@ -590,6 +556,7 @@
     <ClInclude Include="BridgeAgentImp.h" />
     <ClInclude Include="BridgeGeometryModelBuilder.h" />
     <ClInclude Include="BridgeHelpers.h" />
+    <ClInclude Include="CLSID.h" />
     <ClInclude Include="ConcreteManager.h" />
     <ClInclude Include="ContinuousStandFiller.h" />
     <ClInclude Include="DealWithLoadDlg.h" />

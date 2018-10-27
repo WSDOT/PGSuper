@@ -67,9 +67,11 @@ BOOL CSpecClosurePage::OnInitDialog()
 {
    CPropertyPage::OnInitDialog();
 
+
    return TRUE;  // return TRUE unless you set the focus to a control
    // EXCEPTION: OCX Property Pages should return FALSE
 }
+
 
 BOOL CSpecClosurePage::OnSetActive()
 {
@@ -83,9 +85,15 @@ BOOL CSpecClosurePage::OnSetActive()
    }
    else
    {
-      pGrp->SetWindowText(_T("Stress limit at Fatigue Limit State (LRFD 5.5.3.1)"));
+      pGrp->SetWindowText(_T("Stress limit for Fatigue (LRFD 5.5.3.1)"));
       pWnd->SetWindowText(_T("Fatigue I plus one-half the sum of effective prestress and permanent loads"));
    }
+
+
+   // 2017 crosswalk chapter 5 reorg
+   GetDlgItem(IDC_GTEMP)->SetWindowText(CString(_T("Stress Limits for Temporary Stresses before Losses (LRFD ")) + pDad->LrfdCw8th(_T("5.9.4.1"), _T("5.9.2.3.1")) + _T(", ") + pDad->LrfdCw8th(_T("5.14.1.3.2d"),_T("5.12.3.4.2d")) + _T(")"));
+   GetDlgItem(IDC_GPERM)->SetWindowText(CString(_T("Stress Limits at Service Limit State after Losses (LRFD ")) + pDad->LrfdCw8th(_T("5.9.4.2"), _T("5.9.2.3.2")) + _T(", ") + pDad->LrfdCw8th(_T("5.14.1.3.2d"),_T("5.12.3.4.2d")) + _T(")"));
+
 
    return CPropertyPage::OnSetActive();
 }

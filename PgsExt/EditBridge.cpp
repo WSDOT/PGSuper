@@ -89,10 +89,6 @@ void txnEditBridge::Execute(int i)
    pBridgeDesc->SetBridgeDescription( *m_pBridgeDesc[i] );
 
    pEvents->FirePendingEvents();
-
-#if defined _DEBUG
-   ATLASSERT( *pBridgeDesc->GetBridgeDescription() == *m_pBridgeDesc[i] );
-#endif // _DEBUG
 }
 
 txnTransaction* txnEditBridge::CreateClone() const

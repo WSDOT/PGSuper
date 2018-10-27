@@ -140,6 +140,7 @@
 #include "PGSuperAppPlugin\LossParametersDlg.h"
 #include "PGSuperAppPlugin\EditTimelineDlg.h"
 #include "PGSuperAppPlugin\EditHaunchDlg.h"
+#include "PGSuperAppPlugin\EditBearingDlg.h"
 
 #include <Reporting\SpanGirderReportSpecificationBuilder.h>
 #include <Reporting\SpanGirderReportSpecification.h>
@@ -265,6 +266,8 @@ BEGIN_MESSAGE_MAP(CPGSDocBase, CEAFBrokerDocument)
 	ON_COMMAND(ID_EDIT_USERLOADS, OnEditUserLoads)
 	ON_COMMAND(ID_EDIT_HAUNCH, OnEditHaunch)
    ON_UPDATE_COMMAND_UI(ID_EDIT_HAUNCH,OnUpdateEditHaunch)
+	ON_COMMAND(ID_EDIT_BEARING, OnEditBearing)
+   ON_UPDATE_COMMAND_UI(ID_EDIT_BEARING,OnUpdateEditBearing)
    //}}AFX_MSG_MAP
 
    // autocalc command implementations
@@ -587,6 +590,52 @@ void CPGSDocBase::OnUpdateEditHaunch(CCmdUI* pCmdUI)
    pCmdUI->Enable( pBridge->GetDeckType()==pgsTypes::sdtNone ? FALSE : TRUE );
 }
 
+void CPGSDocBase::OnEditBearing()
+{
+   DoEditBearing();
+}
+
+bool CPGSDocBase::DoEditBearing() 
+{
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
+   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+
+   const CBridgeDescription2* pOldBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+
+   CEditBearingDlg dlg(pOldBridgeDesc);
+   if ( dlg.DoModal() == IDOK )
+   {
+      GET_IFACE(IEnvironment, pEnvironment );
+      enumExposureCondition oldExposureCondition = pEnvironment->GetExposureCondition();
+      Float64 oldRelHumidity = pEnvironment->GetRelHumidity();
+      CBridgeDescription2 newBridgeDesc = *pOldBridgeDesc;
+
+      // dialog modifies descr
+      dlg.ModifyBridgeDescr(&newBridgeDesc);
+
+      txnTransaction* pTxn = new txnEditBridge(*pOldBridgeDesc,     newBridgeDesc,
+                                              oldExposureCondition, oldExposureCondition, 
+                                              oldRelHumidity,       oldRelHumidity);
+
+
+      GET_IFACE(IEAFTransactions,pTransactions);
+      pTransactions->Execute(pTxn);
+
+      return true;
+   }
+   else
+   {
+      return false;
+   }
+}
+
+void CPGSDocBase::OnUpdateEditBearing(CCmdUI* pCmdUI)
+{
+   pCmdUI->Enable(TRUE);
+}
+
+
 bool CPGSDocBase::EditDirectSelectionPrestressing(const CSegmentKey& segmentKey)
 {
    // this method doesn't apply to PGSplice, however it must be accessable to the PGSuperDocProxyAgent
@@ -645,37 +694,29 @@ bool CPGSDocBase::EditDirectSelectionPrestressing(const CSegmentKey& segmentKey)
    Float64 hpOffsetAtHp2   = pSegment->Strands.GetHarpStrandOffsetAtHarpPoint(pgsTypes::metEnd);
    Float64 hpOffsetAtEnd   = pSegment->Strands.GetHarpStrandOffsetAtEnd(pgsTypes::metEnd);
 
-   GET_IFACE(IPointOfInterest,pPOI);
-   std::vector<pgsPointOfInterest> vPoi = pPOI->GetPointsOfInterest(segmentKey,POI_START_FACE | POI_END_FACE);
+   GET_IFACE(IPointOfInterest,pPoi);
+   PoiList vPoi;
+   pPoi->GetPointsOfInterest(segmentKey, POI_START_FACE | POI_END_FACE, &vPoi);
    ATLASSERT(vPoi.size() == 2);
-   pgsPointOfInterest startPoi(vPoi.front());
-   pgsPointOfInterest endPoi(vPoi.back());
+   const pgsPointOfInterest& startPoi(vPoi.front());
+   const pgsPointOfInterest& endPoi(vPoi.back());
 
    GET_IFACE(IGirder,pGdr);
    Float64 HgStart = pGdr->GetHeight(startPoi);
    Float64 HgEnd   = pGdr->GetHeight(endPoi);
 
-   vPoi = pPOI->GetPointsOfInterest(segmentKey,POI_HARPINGPOINT);
+   vPoi.clear();
+   pPoi->GetPointsOfInterest(segmentKey, POI_HARPINGPOINT, &vPoi);
    ATLASSERT( 0 <= vPoi.size() && vPoi.size() <= 2 );
-   pgsPointOfInterest hp1_poi;
-   pgsPointOfInterest hp2_poi;
 
+   Float64 HgHp1(HgStart), HgHp2(HgEnd);
    if ( 0 < vPoi.size() )
    {
-      hp1_poi = vPoi.front();
-      hp2_poi = vPoi.back();
-   }
+      const pgsPointOfInterest& hp1_poi(vPoi.front());
+      const pgsPointOfInterest& hp2_poi(vPoi.back());
 
-   Float64 HgHp1, HgHp2;
-   if ( 0 < vPoi.size() )
-   {
       HgHp1 = pGdr->GetHeight(hp1_poi);
       HgHp2 = pGdr->GetHeight(hp2_poi);
-   }
-   else
-   {
-      HgHp1 = HgStart;
-      HgHp2 = HgEnd;
    }
 
 
@@ -1069,10 +1110,6 @@ void CPGSDocBase::EditGirderViewSettings(int nPage)
    {
       settings = dlg.GetSettings();
       SetGirderEditorSettings(settings);
-
-      // tell the world we've changed settings
-      AFX_MANAGE_STATE(AfxGetAppModuleState());
-      UpdateAllViews( 0, HINT_GIRDERVIEWSETTINGSCHANGED, 0 );
    }
 }
 
@@ -1093,11 +1130,11 @@ void CPGSDocBase::EditBridgeViewSettings(int nPage)
    {
       bridgeViewSettings = dlg.GetBridgeEditorSettings();
       bridgeViewSettings |= IDB_PV_DRAW_ISOTROPIC;
-      SetBridgeEditorSettings(bridgeViewSettings);
+      SetBridgeEditorSettings(bridgeViewSettings,FALSE/* don't notify*/);
 
       alignmentViewSettings = dlg.GetAlignmentEditorSettings();
       alignmentViewSettings |= IDB_PV_DRAW_ISOTROPIC;
-      SetAlignmentEditorSettings(alignmentViewSettings);
+      SetAlignmentEditorSettings(alignmentViewSettings, FALSE/* don't notify*/);
    }
 
    // tell the world we've changed settings
@@ -1107,6 +1144,7 @@ void CPGSDocBase::EditBridgeViewSettings(int nPage)
    }
 }
 
+//#include <psglib\librarymanager.h> // remove unused project library entries
 void CPGSDocBase::ModifyTemplate(LPCTSTR strTemplate)
 {
    // called during UpdateTemplates
@@ -1115,10 +1153,13 @@ void CPGSDocBase::ModifyTemplate(LPCTSTR strTemplate)
    // For example, if you want to ensure that overlay depth in all templates
    // is a specific value, you can code that here.
 
+   // Set future wearing surace to 35 psf per Design Memo 06-2017 (9/12/2017)
    //GET_IFACE(IBridgeDescription, pIBridgeDesc);
    //CDeckDescription2 deck = *(pIBridgeDesc->GetDeckDescription());
-   //deck.bInputAsDepthAndDensity = true;
+   //deck.bInputAsDepthAndDensity = false;
    //deck.OverlayDepth = ::ConvertToSysUnits(3.0, unitMeasure::Inch);
+   //deck.OverlayWeight = ::ConvertToSysUnits(35.0, unitMeasure::PSF);
+   //deck.OverlayDensity = ::ConvertToSysUnits(140.0,unitMeasure::PCF);
    //pIBridgeDesc->SetDeckDescription(deck);
 
    //// Update seed values to match library
@@ -1141,12 +1182,49 @@ void CPGSDocBase::ModifyTemplate(LPCTSTR strTemplate)
    //         for (SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++)
    //         {
    //            CPrecastSegmentData* pSegment = pGirder->GetSegment(segIdx);
-   //            pSegment->LongitudinalRebarData.CopyGirderEntryData(*(pGirder->GetGirderLibraryEntry()));
-   //            pSegment->ShearData.CopyGirderEntryData(*(pGirder->GetGirderLibraryEntry()));
+   //            pSegment->LongitudinalRebarData.CopyGirderEntryData(pGirder->GetGirderLibraryEntry());
+   //            pSegment->ShearData.CopyGirderEntryData(pGirder->GetGirderLibraryEntry());
    //         }
    //      }
    //   }
    //   pIBridgeDesc->SetBridgeDescription(bridgeDesc);
+   //}
+
+   //// WF-DG girders should have a 3" future overlay
+   //GET_IFACE(IDocumentType, pDocType);
+   //if (pDocType->IsPGSuperDocument())
+   //{
+   //   GET_IFACE(IBridgeDescription, pIBridgeDesc);
+   //   CBridgeDescription2 bridgeDesc = *(pIBridgeDesc->GetBridgeDescription());
+   //   CString strGirder = bridgeDesc.GetGirderName();
+   //   if (strGirder.Left(2) == _T("WF") && strGirder.Right(2) == _T("DG"))
+   //   {
+   //      CDeckDescription2 deck = *bridgeDesc.GetDeckDescription();
+   //      deck.bInputAsDepthAndDensity = true;
+   //      deck.OverlayDepth = ::ConvertToSysUnits(3.0, unitMeasure::Inch);
+   //      deck.WearingSurface = pgsTypes::wstFutureOverlay;
+   //      pIBridgeDesc->SetDeckDescription(deck);
+   //   }
+   //}
+
+   //// Remove all unused, project library entries
+   //GET_IFACE(ILibrary, pLibrary);
+   //psgLibraryManager* pLibMgr = pLibrary->GetLibraryManager();
+   //IndexType nLibraries = pLibMgr->GetLibraryCount();
+   //for (IndexType i = 0; i < nLibraries; i++)
+   //{
+   //   libILibrary* pLibrary = pLibMgr->GetLibrary(i);
+   //   libKeyListType keyList;
+   //   pLibrary->KeyList(keyList);
+   //   for (const auto& key : keyList)
+   //   {
+   //      const libLibraryEntry* pEntry = pLibrary->GetEntry(key.c_str());
+   //      if (pEntry->IsEditingEnabled() && pEntry->GetRefCount() == 0)
+   //      {
+   //         // this is a local entry and it isn't referenced... remove it
+   //         pLibrary->RemoveEntry(key.c_str());
+   //      }
+   //   }
    //}
 }
 
@@ -1167,7 +1245,7 @@ BOOL CPGSDocBase::UpdateTemplates(IProgress* pProgress,LPCTSTR lpszDir)
       }
    }
 
-   // done with the directories below this leave. Process the templates at this level
+   // done with the directories below this level. Process the templates at this level
    CString strMessage;
    strMessage.Format(_T("Updating templates in %s"),lpszDir);
    pProgress->UpdateMessage(strMessage);
@@ -1187,7 +1265,7 @@ BOOL CPGSDocBase::UpdateTemplates(IProgress* pProgress,LPCTSTR lpszDir)
          return FALSE;
       }
 
-      ModifyTemplate(strTemplate);
+      ModifyTemplate(strTemplate); // allow for programatic changes to the bridge data before saving
 
       CEAFBrokerDocument::SaveTheDocument(strTemplate);
 
@@ -4017,8 +4095,73 @@ void CPGSDocBase::LoadDocumentSettings()
    // the default north up setting for the alignment is whatever the user has for the bridge plan view
    UINT def_ap = IDA_AP_DRAW_BRIDGE | IDP_AP_DRAW_BRIDGE;
    m_AlignmentEditorSettings   = pApp->GetProfileInt(_T("Settings"),_T("AlignmentEditor"), def_ap | ((m_BridgeModelEditorSettings&IDB_PV_NORTH_UP)!=0 ? IDA_AP_NORTH_UP : 0));
+   if (sysFlags<UINT>::IsSet(m_AlignmentEditorSettings, IDA_AP_DRAW_BRIDGE))
+   {
+      sysFlags<UINT>::Set(&m_AlignmentEditorSettings, IDP_AP_DRAW_BRIDGE);
+   }
+   else
+   {
+      sysFlags<UINT>::Clear(&m_AlignmentEditorSettings, IDP_AP_DRAW_BRIDGE);
+   }
 
-   m_GirderModelEditorSettings = pApp->GetProfileInt(_T("Settings"),_T("GirderEditor"),def_bm);
+   UINT def_gm = IDG_SV_SHOW_STRANDS | 
+                 IDG_SV_SHOW_PS_CG | IDG_SV_SHOW_DIMENSIONS | IDG_SV_SHOW_LONG_REINF | IDG_SV_GIRDER_CG | IDG_SV_PROPERTIES |
+      IDG_EV_SHOW_STRANDS | IDG_EV_SHOW_PS_CG | IDG_EV_SHOW_DIMENSIONS | IDG_EV_SHOW_STIRRUPS | IDG_EV_SHOW_LONG_REINF | IDG_EV_SHOW_LOADS | IDG_EV_SHOW_LEGEND | IDG_EV_GIRDER_CG;
+
+   m_GirderModelEditorSettings = pApp->GetProfileInt(_T("Settings"),_T("GirderEditor"),def_gm);
+   if (sysFlags<UINT>::IsSet(m_GirderModelEditorSettings, IDG_SV_SHOW_STRANDS))
+   {
+      sysFlags<UINT>::Set(&m_GirderModelEditorSettings, IDG_EV_SHOW_STRANDS);
+   }
+   else
+   {
+      sysFlags<UINT>::Clear(&m_GirderModelEditorSettings, IDG_EV_SHOW_STRANDS);
+   }
+
+   if (sysFlags<UINT>::IsSet(m_GirderModelEditorSettings, IDG_SV_SHOW_PS_CG))
+   {
+      sysFlags<UINT>::Set(&m_GirderModelEditorSettings, IDG_EV_SHOW_PS_CG);
+   }
+   else
+   {
+      sysFlags<UINT>::Clear(&m_GirderModelEditorSettings, IDG_SV_SHOW_LONG_REINF);
+   }
+
+   if (sysFlags<UINT>::IsSet(m_GirderModelEditorSettings, IDG_EV_SHOW_LONG_REINF))
+   {
+      sysFlags<UINT>::Set(&m_GirderModelEditorSettings, IDG_EV_SHOW_LONG_REINF);
+   }
+   else
+   {
+      sysFlags<UINT>::Clear(&m_GirderModelEditorSettings, IDG_EV_SHOW_PS_CG);
+   }
+
+   if (sysFlags<UINT>::IsSet(m_GirderModelEditorSettings, IDG_SV_SHOW_DIMENSIONS))
+   {
+      sysFlags<UINT>::Set(&m_GirderModelEditorSettings, IDG_EV_SHOW_DIMENSIONS);
+   }
+   else
+   {
+      sysFlags<UINT>::Clear(&m_GirderModelEditorSettings, IDG_EV_SHOW_DIMENSIONS);
+   }
+
+   if (sysFlags<UINT>::IsSet(m_GirderModelEditorSettings, IDG_SV_GIRDER_CG))
+   {
+      sysFlags<UINT>::Set(&m_GirderModelEditorSettings, IDG_EV_GIRDER_CG);
+   }
+   else
+   {
+      sysFlags<UINT>::Clear(&m_GirderModelEditorSettings, IDG_EV_GIRDER_CG);
+   }
+
+   if (sysFlags<UINT>::IsSet(m_GirderModelEditorSettings, IDG_SV_SHOW_DIMENSIONS))
+   {
+      sysFlags<UINT>::Set(&m_GirderModelEditorSettings, IDG_EV_SHOW_DIMENSIONS);
+   }
+   else
+   {
+      sysFlags<UINT>::Clear(&m_GirderModelEditorSettings, IDG_EV_SHOW_DIMENSIONS);
+   }
 
    CString strDefaultGirderLabelFormat = pApp->GetLocalMachineString(_T("Settings"),_T("GirderLabelFormat"),     _T("Alpha"));
    CString strGirderLabelFormat = pApp->GetProfileString(_T("Settings"),_T("GirderLabelFormat"),strDefaultGirderLabelFormat);
@@ -4404,9 +4547,17 @@ UINT CPGSDocBase::GetBridgeEditorSettings() const
    return m_BridgeModelEditorSettings;
 }
 
-void CPGSDocBase::SetBridgeEditorSettings(UINT settings)
+void CPGSDocBase::SetBridgeEditorSettings(UINT settings, BOOL bNotify)
 {
-   m_BridgeModelEditorSettings = settings;
+   if (m_BridgeModelEditorSettings != settings)
+   {
+      m_BridgeModelEditorSettings = settings;
+      if (bNotify)
+      {
+         AFX_MANAGE_STATE(AfxGetAppModuleState());
+         UpdateAllViews(0, HINT_BRIDGEVIEWSETTINGSCHANGED, 0);
+      }
+   }
 }
 
 UINT CPGSDocBase::GetAlignmentEditorSettings() const
@@ -4414,9 +4565,17 @@ UINT CPGSDocBase::GetAlignmentEditorSettings() const
    return m_AlignmentEditorSettings;
 }
 
-void CPGSDocBase::SetAlignmentEditorSettings(UINT settings)
+void CPGSDocBase::SetAlignmentEditorSettings(UINT settings, BOOL bNotify)
 {
-   m_AlignmentEditorSettings = settings;
+   if (m_AlignmentEditorSettings != settings)
+   {
+      m_AlignmentEditorSettings = settings;
+      if (bNotify)
+      {
+         AFX_MANAGE_STATE(AfxGetAppModuleState());
+         UpdateAllViews(0, HINT_BRIDGEVIEWSETTINGSCHANGED, 0);
+      }
+   }
 }
 
 UINT CPGSDocBase::GetGirderEditorSettings() const
@@ -4424,9 +4583,17 @@ UINT CPGSDocBase::GetGirderEditorSettings() const
    return m_GirderModelEditorSettings;
 }
 
-void CPGSDocBase::SetGirderEditorSettings(UINT settings)
+void CPGSDocBase::SetGirderEditorSettings(UINT settings,BOOL bNotify)
 {
-   m_GirderModelEditorSettings = settings;
+   if (m_GirderModelEditorSettings != settings)
+   {
+      m_GirderModelEditorSettings = settings;
+      if (bNotify)
+      {
+         AFX_MANAGE_STATE(AfxGetAppModuleState());
+         UpdateAllViews(0, HINT_GIRDERVIEWSETTINGSCHANGED, 0);
+      }
+   }
 }
 
 void CPGSDocBase::ResetUIHints()

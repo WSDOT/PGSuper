@@ -416,7 +416,9 @@ void CClosureJointData::MakeAssignment(const CClosureJointData& rOther)
 
 HRESULT CClosureJointData::Save(IStructuredSave* pStrSave,IProgress* pProgress)
 {
-   pStrSave->BeginUnit(_T("ClosurePour"),1.0);
+   pStrSave->BeginUnit(_T("ClosurePour"),2.0);
+   // the assumption that longitudinal rebar in the closure joint is well anchored and fully
+   // developed was removed in version 2.0 of this data block... see Load method
 
    if ( m_pPier )
    {
@@ -446,6 +448,9 @@ HRESULT CClosureJointData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
    try
    {
       hr = pStrLoad->BeginUnit(_T("ClosurePour"));
+
+      Float64 version;
+      pStrLoad->get_Version(&version);
 
       CComVariant var;
 
@@ -495,6 +500,31 @@ HRESULT CClosureJointData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
       hr = m_Stirrups.Load(&load);
 
       hr = m_Rebar.Load(pStrLoad,pProgress);
+
+      if (version < 2)
+      {
+         // in version 1 of this data block, we assumed that all longitudinal rebar in the closure joint were well anchored
+         // and fully developed... this is no longer true in version 2. For compatiblity, set the "Extended" attribute
+         // on the longitudinal bars
+         for (auto& rebar_row : m_Rebar.RebarRows)
+         {
+            if (rebar_row.BarLayout == pgsTypes::blFullLength)
+            {
+               rebar_row.bExtendedLeft = true;
+               rebar_row.bExtendedRight = true;
+            }
+            else if (rebar_row.BarLayout == pgsTypes::blFromLeft && IsZero(rebar_row.DistFromEnd))
+            {
+               rebar_row.bExtendedLeft = true;
+               rebar_row.bExtendedRight = false;
+            }
+            else if (rebar_row.BarLayout == pgsTypes::blFromRight && IsZero(rebar_row.DistFromEnd))
+            {
+               rebar_row.bExtendedLeft = false;
+               rebar_row.bExtendedRight = true;
+            }
+         }
+      }
       hr = pStrLoad->EndUnit(); // ClosureJoint
    }
    catch (HRESULT)

@@ -65,8 +65,10 @@ std::shared_ptr<CReportSpecification> CEquilibriumCheckReportSpecificationBuilde
    }
 
    GET_IFACE(IPointOfInterest,pPOI);
-   std::vector<pgsPointOfInterest> vPoi( pPOI->GetPointsOfInterest(CSegmentKey(girderKey,ALL_SEGMENTS),POI_SPAN | POI_5L) );
-   pgsPointOfInterest initial_poi = vPoi.front();
+   PoiList vPoi;
+   pPOI->GetPointsOfInterest(CSegmentKey(girderKey, ALL_SEGMENTS), POI_5L | POI_SPAN, &vPoi);
+   ATLASSERT(vPoi.size() == 1);
+   const pgsPointOfInterest& initial_poi = vPoi.front();
 
    // If possible, copy information from old spec. Otherwise header/footer and other info will be lost
    std::shared_ptr<CEquilibriumCheckReportSpecification> pOldGRptSpec = std::dynamic_pointer_cast<CEquilibriumCheckReportSpecification>(pOldRptSpec);

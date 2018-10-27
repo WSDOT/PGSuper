@@ -63,7 +63,7 @@ void CTemplateManager::GetTemplates(const CString& strRootSourcePath,const CStri
          CString strDestinationPath;
          strDestinationPath.Format(_T("%s\\%s"),strRootDestinationPath,strFileTitle);
 
-         folders.push_back(std::make_pair(strSourcePath,strDestinationPath));
+         folders.emplace_back(strSourcePath,strDestinationPath);
       }
    }
    pFinder->Close();

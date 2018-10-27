@@ -187,6 +187,17 @@ HRESULT CLongitudinalRebarData::Load(IStructuredLoad* pStrLoad,IProgress* pProgr
       pStrLoad->get_Property(_T("BarSpacing"), &var);
       rebar_row.BarSpacing = var.dblVal;
 
+      if (3 < bar_version)
+      {
+         // added in version 4
+         var.vt = VT_BOOL;
+         pStrLoad->get_Property(_T("ExtendedLeft"), &var);
+         rebar_row.bExtendedLeft = (var.boolVal == VARIANT_TRUE);
+
+         pStrLoad->get_Property(_T("ExtendedRight"), &var);
+         rebar_row.bExtendedRight = (var.boolVal == VARIANT_TRUE);
+      }
+
       RebarRows.push_back(rebar_row);
 
       pStrLoad->EndUnit();
@@ -212,7 +223,7 @@ HRESULT CLongitudinalRebarData::Save(IStructuredSave* pStrSave,IProgress* pProgr
    std::vector<RebarRow>::iterator iter;
    for ( iter = RebarRows.begin(); iter != RebarRows.end(); iter++ )
    {
-      pStrSave->BeginUnit(_T("RebarRow"),3.0);
+      pStrSave->BeginUnit(_T("RebarRow"),4.0);
       const RebarRow& rebar_row = *iter;
 
       pStrSave->put_Property(_T("BarLayout"),     CComVariant(rebar_row.BarLayout));
@@ -224,6 +235,10 @@ HRESULT CLongitudinalRebarData::Save(IStructuredSave* pStrSave,IProgress* pProgr
       pStrSave->put_Property(_T("NumberOfBars"), CComVariant(rebar_row.NumberOfBars));
       pStrSave->put_Property(_T("BarSize"),      CComVariant(rebar_row.BarSize));
       pStrSave->put_Property(_T("BarSpacing"),   CComVariant(rebar_row.BarSpacing));
+
+      // added in version 4
+      pStrSave->put_Property(_T("ExtendedLeft"), CComVariant(rebar_row.bExtendedLeft));
+      pStrSave->put_Property(_T("ExtendedRight"), CComVariant(rebar_row.bExtendedRight));
       pStrSave->EndUnit();
    }
 
@@ -233,12 +248,12 @@ HRESULT CLongitudinalRebarData::Save(IStructuredSave* pStrSave,IProgress* pProgr
    return hr;
 }
 
-void CLongitudinalRebarData::CopyGirderEntryData(const GirderLibraryEntry& rGird)
+void CLongitudinalRebarData::CopyGirderEntryData(const GirderLibraryEntry* pGirderEntry)
 {
-   GirderLibraryEntry::LongSteelInfoVec lsiv = rGird.GetLongSteelInfo();
+   GirderLibraryEntry::LongSteelInfoVec lsiv = pGirderEntry->GetLongSteelInfo();
    GirderLibraryEntry::LongSteelInfoVec::iterator iter;
 
-   rGird.GetLongSteelMaterial(BarType,BarGrade);
+   pGirderEntry->GetLongSteelMaterial(BarType,BarGrade);
 
    RebarRows.clear();
    for ( iter = lsiv.begin(); iter != lsiv.end(); iter++ )
@@ -260,6 +275,78 @@ void CLongitudinalRebarData::CopyGirderEntryData(const GirderLibraryEntry& rGird
    }
 
    //strRebarMaterial = rGird.GetLongSteelMaterial();
+}
+
+bool CLongitudinalRebarData::RebarRow::operator==(const RebarRow& other) const
+{
+   if (BarLayout != other.BarLayout)
+   {
+      return false;
+   }
+
+   if (BarLayout != pgsTypes::blFullLength)
+   {
+      if (BarLayout != pgsTypes::blMidGirderEnds)
+      {
+         if (!IsEqual(BarLength, other.BarLength)) return false;
+      }
+
+      if (BarLayout != pgsTypes::blMidGirderLength)
+      {
+         if (!IsEqual(DistFromEnd, other.DistFromEnd)) return false;
+      }
+   }
+
+   if (Face != other.Face) return false;
+   if (BarSize != other.BarSize) return false;
+   if (!IsEqual(Cover, other.Cover)) return false;
+   if (!IsEqual(BarSpacing, other.BarSpacing)) return false;
+   if (NumberOfBars != other.NumberOfBars) return false;
+
+   if (
+      BarLayout == pgsTypes::blFullLength ||
+      ((BarLayout == pgsTypes::blFromLeft || BarLayout == pgsTypes::blFromRight) && IsZero(DistFromEnd))
+      )
+   {
+      if (bExtendedLeft != other.bExtendedLeft || bExtendedRight != other.bExtendedRight)
+      {
+         return false;
+      }
+   }
+
+   return true;
+};
+
+bool CLongitudinalRebarData::RebarRow::IsLeftEndExtended() const
+{
+   if (bExtendedLeft)
+   {
+      if (
+         BarLayout == pgsTypes::blFullLength ||
+         (BarLayout == pgsTypes::blFromLeft && IsZero(DistFromEnd))
+         )
+      {
+         return true;
+      }
+   }
+
+   return false;
+}
+
+bool CLongitudinalRebarData::RebarRow::IsRightEndExtended() const
+{
+   if (bExtendedRight)
+   {
+      if (
+         BarLayout == pgsTypes::blFullLength ||
+         (BarLayout == pgsTypes::blFromRight && IsZero(DistFromEnd))
+         )
+      {
+         return true;
+      }
+   }
+
+   return false;
 }
 
 bool CLongitudinalRebarData::RebarRow::GetRebarStartEnd(Float64 segmentLength, Float64* pBarStart, Float64* pBarEnd) const

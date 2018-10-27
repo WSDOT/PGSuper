@@ -246,16 +246,15 @@ void CGirderDescDebondPage::OnPaint()
 
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,ILibrary,pLib);
-   const GirderLibraryEntry* pGdrEntry = pLib->GetGirderEntry(pParent->m_strGirderName.c_str());
+   GET_IFACE2(pBroker, IShapes, pShapes);
+   GET_IFACE2(pBroker, IPointOfInterest, pPoi);
+   pgsPointOfInterest poi = pPoi->GetPointOfInterest(pParent->m_SegmentKey, 0.0);
 
-   CComPtr<IBeamFactory> factory;
-   pGdrEntry->GetBeamFactory(&factory);
+   GET_IFACE2(pBroker, IIntervals, pIntervals);
+   IntervalIndexType intervalIdx = pIntervals->GetPrestressReleaseInterval(pParent->m_SegmentKey);
 
-   CComPtr<IGirderSection> gdrSection;
-   factory->CreateGirderSection(pBroker,INVALID_ID,pGdrEntry->GetDimensions(),-1,-1,&gdrSection);
-
-   CComQIPtr<IShape> shape(gdrSection);
+   CComPtr<IShape> shape;
+   pShapes->GetSegmentShape(intervalIdx, poi, false, pgsTypes::scGirder, &shape);
 
    CComQIPtr<IXYPosition> position(shape);
    CComPtr<IPoint2d> lp;
@@ -263,16 +262,30 @@ void CGirderDescDebondPage::OnPaint()
    lp->Move(0,0);
    position->put_LocatorPoint(lpBottomCenter,lp);
 
-   gpSize2d size;
-   
-   Float64 bottom_width;
-   gdrSection->get_BottomWidth(&bottom_width);
+
+   GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
+   GET_IFACE2(pBroker, IGirder, pGirder);
    Float64 top_width;
-   gdrSection->get_TopWidth(&top_width);
+   if (IsTopWidthSpacing(pIBridgeDesc->GetGirderSpacingType()) )
+   {
+      Float64 wLeft, wRight;
+      top_width = Max(pParent->m_Girder.GetTopWidth(pgsTypes::metStart, &wLeft, &wRight), pParent->m_Girder.GetTopWidth(pgsTypes::metEnd, &wLeft, &wRight));
+   }
+   else
+   {
+      top_width = pGirder->GetTopWidth(poi);
+   }
+   Float64 bottom_width = pGirder->GetBottomWidth(poi);
+
+   gpSize2d size;
    size.Dx() = Max(top_width,bottom_width);
 
+   CComPtr<IRect2d> box;
+   shape->get_BoundingBox(&box);
+
    Float64 height;
-   gdrSection->get_GirderHeight(&height);
+   box->get_Height(&height);
+
    size.Dy() = height;
    if ( IsZero(size.Dy()) )
    {
@@ -280,9 +293,6 @@ void CGirderDescDebondPage::OnPaint()
    }
 
    CSize csize = redit.Size();
-
-   CComPtr<IRect2d> box;
-   shape->get_BoundingBox(&box);
 
    CComPtr<IPoint2d> objOrg;
    box->get_BottomCenter(&objOrg);

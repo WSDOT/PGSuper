@@ -127,6 +127,14 @@ public:
    // this method returns the index of the first interval when the intermediate diaphragms can take load
    IntervalIndexType GetCompositeIntermediateDiaphragmsInterval() const;
 
+   // returns the index of the interval when longitudinal joints are cast
+   IntervalIndexType GetCastLongitudinalJointInterval() const;
+
+   // returns the index of the interval when longitudinal joints have finished curing
+   // curing takes place of the duration of an interval and cannot take load.
+   // this method returns the index of the first interval when the longitudinal joints can take load
+   IntervalIndexType GetCompositeLongitudinalJointInterval() const;
+
    // returns the index of the interval when the deck and diaphragms are cast
    IntervalIndexType GetCastDeckInterval() const;
 
@@ -214,6 +222,8 @@ protected:
    
    // keeps track of the intervals for other key activities
    IntervalIndexType m_CastIntermediateDiaphragmsIntervalIdx;
+   IntervalIndexType m_CastLongitudinalJointsIntervalIdx;
+   IntervalIndexType m_CompositeLongitudinalJointsIntervalIdx;
    IntervalIndexType m_CastDeckIntervalIdx;
    IntervalIndexType m_CompositeDeckIntervalIdx;
    IntervalIndexType m_LiveLoadIntervalIdx;

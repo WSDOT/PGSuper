@@ -509,16 +509,16 @@ lrfdLiveLoadDistributionFactorBase* CMultiWebDistFactorEngineer::GetLLDFParamete
    Float64 Ix, Iy, A;
    if (0 < fcgdr)
    {
-      plldf->I = pSectProp->GetIx(pgsTypes::sptGross,llIntervalIdx,poi,fcgdr);
-      Ix = pSectProp->GetIx(pgsTypes::sptGross,llIntervalIdx,poi,fcgdr);
-      Iy = pSectProp->GetIy(pgsTypes::sptGross,llIntervalIdx,poi,fcgdr);
+      plldf->I = pSectProp->GetIxx(pgsTypes::sptGross,llIntervalIdx,poi,fcgdr);
+      Ix = pSectProp->GetIxx(pgsTypes::sptGross,llIntervalIdx,poi,fcgdr);
+      Iy = pSectProp->GetIyy(pgsTypes::sptGross,llIntervalIdx,poi,fcgdr);
       A  = pSectProp->GetAg(pgsTypes::sptGross,llIntervalIdx,poi,fcgdr);
    }
    else
    {
-      plldf->I = pSectProp->GetIx(pgsTypes::sptGross,llIntervalIdx,poi);
-      Ix = pSectProp->GetIx(pgsTypes::sptGross,llIntervalIdx,poi);
-      Iy = pSectProp->GetIy(pgsTypes::sptGross,llIntervalIdx,poi);
+      plldf->I = pSectProp->GetIxx(pgsTypes::sptGross,llIntervalIdx,poi);
+      Ix = pSectProp->GetIxx(pgsTypes::sptGross,llIntervalIdx,poi);
+      Iy = pSectProp->GetIyy(pgsTypes::sptGross,llIntervalIdx,poi);
       A  = pSectProp->GetAg(pgsTypes::sptGross,llIntervalIdx,poi);
    }
    
@@ -574,7 +574,7 @@ lrfdLiveLoadDistributionFactorBase* CMultiWebDistFactorEngineer::GetLLDFParamete
    plldf->J = A*A*A*A/(40.0*Ip);
 
    plldf->Ag = pSectProp->GetAg(pgsTypes::sptGross,releaseIntervalIdx,poi);
-   plldf->Ig = pSectProp->GetIx(pgsTypes::sptGross,releaseIntervalIdx,poi);
+   plldf->Ig = pSectProp->GetIxx(pgsTypes::sptGross,releaseIntervalIdx,poi);
 
    // Assume slab thickness includes top flange
    if ( pBridge->GetDeckType() == pgsTypes::sdtNone )

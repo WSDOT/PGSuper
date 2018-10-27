@@ -65,7 +65,7 @@ public:
    {
    }
 
-   void Initialize(ILoadCombinationResponse* pLCResponse,ILoadGroupResponse* pLGResponse,ILiveLoadModelResponse* pLLResponse,ILBAMModel* pModel,CGirderModelManager* pModelManager);
+   void Initialize(ILoadCombinationResponse* pLCResponse,ILoadGroupResponse* pLGResponse,ILiveLoadModelResponse* pLLResponse,ILBAMModel* pModel,const CGirderModelManager* pModelManager);
 
    HRESULT FinalConstruct();
    void FinalRelease();
@@ -110,7 +110,7 @@ private:
    CComPtr<ILoadGroupResponse> m_LoadGroupResponse;
    CComPtr<ILBAMModel> m_Model;
    CComPtr<IPOIs> m_POIs;
-   CGirderModelManager* m_pGirderModelManager;
+   const CGirderModelManager* m_pGirderModelManager;
    CComPtr<ILibrary> m_pLibrary;
    CComPtr<IRatingSpecification> m_pRatingSpec;
 

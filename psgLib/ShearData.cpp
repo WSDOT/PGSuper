@@ -447,9 +447,9 @@ HRESULT CShearData2::Save(sysIStructuredSave* pStrSave)
    return S_OK;
 }
 
-void CShearData2::CopyGirderEntryData(const GirderLibraryEntry& rGird)
+void CShearData2::CopyGirderEntryData(const GirderLibraryEntry* pGirderEntry)
 {
-   *this = rGird.GetShearData();
+   *this = pGirderEntry->GetShearData();
 }
 
 #if defined _DEBUG

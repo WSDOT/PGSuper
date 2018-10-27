@@ -81,7 +81,7 @@ void CInterfaceShearTable::Build( IBroker* pBroker, rptChapter* pChapter,
    pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pPara;
 
-   *pPara << _T("Horizontal Interface Shears/Length for ") << GetLimitStateString(ls) << _T(" Limit State [5.8.4]") << rptNewLine;
+   *pPara << _T("Horizontal Interface Shears/Length for ") << GetLimitStateString(ls) << _T(" Limit State [") << LrfdCw8th(_T("5.8.4"),_T("5.7.4")) << _T("]") << rptNewLine;
 
    pPara = new rptParagraph();
    *pChapter << pPara;
@@ -102,19 +102,19 @@ void CInterfaceShearTable::Build( IBroker* pBroker, rptChapter* pChapter,
    (*table)(0,0)  << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
 
    table->SetColumnSpan(0,1,3);
-   (*table)(0,1) << _T("5.8.4.2");
+   (*table)(0,1)  << LrfdCw8th(_T("5.8.4.2"),_T("5.7.4.5"));
    (*table)(1,1)  << COLHDR(_T("s"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
    (*table)(1,2)  << COLHDR(_T("s")<<Sub(_T("max")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
    (*table)(1,3) << _T("Status");
 
    table->SetColumnSpan(0,2,3);
-   (*table)(0,2) << _T("5.8.4.4");
+   (*table)(0, 2) << LrfdCw8th(_T("5.8.4.4"), _T("5.7.4.2"));
    (*table)(1,4)  << COLHDR(_T("a")<<Sub(_T("vf")), rptAreaPerLengthUnitTag, pDisplayUnits->GetAvOverSUnit() );
    (*table)(1,5)  << COLHDR(_T("a")<<Sub(_T("vf min")), rptAreaPerLengthUnitTag, pDisplayUnits->GetAvOverSUnit() );
    (*table)(1,6) << _T("Status");
 
    table->SetColumnSpan(0,3,3);
-   (*table)(0,3) << _T("5.8.4.1");
+   (*table)(0,3) << LrfdCw8th(_T("5.8.4.1"),_T("5.7.4.1"));
    (*table)(1,7)  << COLHDR(_T("|v") << Sub(_T("ui")) << _T("|"), rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
    (*table)(1,8)  << COLHDR(symbol(phi) << _T("v") << Sub(_T("ni")), rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
    (*table)(1,9) << _T("Status") << rptNewLine << _T("(") << symbol(phi) << Sub2(_T("v"),_T("ni")) << _T("/") << _T("|") << Sub2(_T("v"),_T("ui")) << _T("|)");
@@ -191,7 +191,7 @@ void CInterfaceShearTable::Build( IBroker* pBroker, rptChapter* pChapter,
          
          (*table)(row,col++) << AvS.SetValue( pArtifact->GetAvOverS());
 
-         if (pArtifact->Is5_8_4_1_4Applicable())
+         if (pArtifact->Is5_7_4_1_4Applicable())
          {
             (*table)(row,col++) << AvS.SetValue( pArtifact->GetAvOverSMin());
             if ( 0 < pArtifact->MinReinforcementPassed() )

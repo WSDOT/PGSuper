@@ -31,11 +31,24 @@ public:
    CStressHistoryGraphController();
    DECLARE_DYNCREATE(CStressHistoryGraphController);
 
+   void Stresses(pgsTypes::StressLocation stressLocation, bool bEnable);
+   bool Stresses(pgsTypes::StressLocation stressLocation) const;
+
+   bool ShowGrid() const;
+   void ShowGrid(bool bShowGrid);
+
 protected:
    virtual BOOL OnInitDialog() override;
    void UpdateGraph();
 
+   UINT GetControlID(pgsTypes::StressLocation stressLocation) const;
+
 	//{{AFX_MSG(CStressHistoryGraphController)
+   afx_msg void OnTopDeck();
+   afx_msg void OnBottomDeck();
+   afx_msg void OnTopGirder();
+   afx_msg void OnBottomGirder();
+   afx_msg void OnShowGrid();
    //}}AFX_MSG
 
 	DECLARE_MESSAGE_MAP()

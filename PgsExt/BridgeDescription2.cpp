@@ -39,10 +39,12 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-#define FILE_VERSION 10
-// Version 10 - added assumed excess camber data. Had to skip over versions to match with head branch
+#define FILE_VERSION 11
+// Version 11 - Added BearingData, and Top Width Spacing for adjacent deck beams
+// Version 10 - added assumed excess camber data
 // No new data was added in version 9.0. The version number was changed so we can tell the difference between files
 // that have an explicity construction event (9.0 <= version) for diaphragms and those that do not (version <= 8.0)
+
 bool CompareTempSupportLocation(const CTemporarySupportData* a,const CTemporarySupportData* b)
 {
    return *a < *b;
@@ -69,6 +71,8 @@ CBridgeDescription2::CBridgeDescription2()
    m_AssExcessCamber = 0.0;
    m_AssExcessCamberType = pgsTypes::aecBridge;
 
+   m_BearingType = pgsTypes::brtPier;
+
    m_pGirderLibraryEntry = nullptr;
 
    // Set some reasonable defaults
@@ -91,6 +95,12 @@ CBridgeDescription2::CBridgeDescription2()
    m_RefGirderOffset = 0;
    m_RefGirderOffsetType = pgsTypes::omtBridge;
 
+   m_LongitudinalJointConcrete.bHasInitial = false;
+
+   m_TopWidthType = pgsTypes::twtSymmetric;
+   m_LeftTopWidth = 0;
+   m_RightTopWidth = 0;
+   
    m_bWasVersion3_1FilletRead = false;
 }
 
@@ -140,6 +150,7 @@ CBridgeDescription2& CBridgeDescription2::operator= (const CBridgeDescription2& 
       MakeAssignment(rOther);
    }
 
+   ATLASSERT(*this == rOther); // should be equal after assignment
    return *this;
 }
 
@@ -207,7 +218,7 @@ bool CBridgeDescription2::operator==(const CBridgeDescription2& rOther) const
    {
       return false;
    }
-
+   
    if ( m_AssExcessCamberType != rOther.m_AssExcessCamberType )
    {
       return false;
@@ -220,12 +231,33 @@ bool CBridgeDescription2::operator==(const CBridgeDescription2& rOther) const
          return false;
       }
    }
+      
+   if ( m_BearingType != rOther.m_BearingType )
+   {
+      return false;
+   }
+
+   if ( m_BearingType == pgsTypes::brtBridge )
+   {
+      if ( m_BearingData != rOther.m_BearingData )
+      {
+         return false;
+      }
+   }
+
+   if (HasStructuralLongitudinalJoints() != rOther.HasStructuralLongitudinalJoints())
+   {
+      return false;
+   }
+
+   if (HasStructuralLongitudinalJoints() && m_LongitudinalJointConcrete != rOther.m_LongitudinalJointConcrete)
+   {
+      return false;
+   }
 
    // the bridge-wide value of girder spacing only applies
    // if spacing is _T("sbsUniform")
-   if ( m_GirderSpacingType == pgsTypes::sbsUniform || 
-        m_GirderSpacingType == pgsTypes::sbsUniformAdjacent ||
-        m_GirderSpacingType == pgsTypes::sbsConstantAdjacent )
+   if ( IsBridgeSpacing(m_GirderSpacingType) )
    {
       if ( !IsEqual(m_GirderSpacing,rOther.m_GirderSpacing) )
       {
@@ -255,6 +287,19 @@ bool CBridgeDescription2::operator==(const CBridgeDescription2& rOther) const
       if ( m_RefGirderOffsetType != rOther.m_RefGirderOffsetType )
       {
          return false;
+      }
+
+      if (IsTopWidthSpacing(m_GirderSpacingType))
+      {
+         if (m_TopWidthType != rOther.m_TopWidthType || !IsEqual(m_LeftTopWidth, rOther.m_LeftTopWidth))
+         {
+            return false;
+         }
+
+         if (m_TopWidthType == pgsTypes::twtAsymmetric && !IsEqual(m_RightTopWidth, rOther.m_RightTopWidth))
+         {
+            return false;
+         }
       }
    }
 
@@ -407,6 +452,31 @@ HRESULT CBridgeDescription2::Load(IStructuredLoad* pStrLoad,IProgress* pProgress
          hr = pStrLoad->get_Property(_T("GirderSpacing"),&var);
          m_GirderSpacing = var.dblVal;
 
+         if (9 < version && IsTopWidthSpacing(m_GirderSpacingType))
+         {
+            // added in version 10
+            //var.vt = VT_R8;
+            //hr = pStrLoad->get_Property(_T("GirderTopWidth"), &var);
+            //m_LeftTopWidth = var.dblVal;
+
+            // NOTE: if your file balks when trying to open, and the property is "GirderTopWidth"
+            // comment out the code below and uncomment the code above, load, and save your file
+            // and then put the code back the way it was.
+            // Files with "GirderTopWidth" are from development versions that were never released.
+            // We aren't providing compatibility for these files.
+            var.vt = VT_I8;
+            hr = pStrLoad->get_Property(_T("TopWidthType"), &var);
+            m_TopWidthType = (pgsTypes::TopWidthType)(var.lVal);
+
+            var.vt = VT_R8;
+            hr = pStrLoad->get_Property(_T("LeftTopWidth"), &var);
+            m_LeftTopWidth = var.dblVal;
+
+            var.vt = VT_R8;
+            hr = pStrLoad->get_Property(_T("RightTopWidth"), &var);
+            m_RightTopWidth = var.dblVal;
+         }
+
          var.vt = VT_I4;
          hr = pStrLoad->get_Property(_T("MeasurementLocation"),&var);
          m_MeasurementLocation = (pgsTypes::MeasurementLocation)(var.lVal);
@@ -454,12 +524,12 @@ HRESULT CBridgeDescription2::Load(IStructuredLoad* pStrLoad,IProgress* pProgress
          {
             // In version 8, we made a mistake and allowed fillets to be all over the bridge. This was fixed
             // in vers 10, when we went back to a single fillet for the entire bridge. See mantis 209 and 752
-            var.vt = VT_UI4;
+         var.vt = VT_UI4;
             hr = pStrLoad->get_Property(_T("FilletType"), &var);
             LONG ft = (var.lVal); // if value was for entire bridge, we can just store
             if (ft == 0 /* pgsTypes::sotBridge */)
-            {
-               var.vt = VT_R8;
+         {
+            var.vt = VT_R8;
                hr = pStrLoad->get_Property(_T("Fillet"), &var);
                m_Fillet = var.dblVal;
             }
@@ -478,7 +548,7 @@ HRESULT CBridgeDescription2::Load(IStructuredLoad* pStrLoad,IProgress* pProgress
             m_Fillet = var.dblVal;
          }
       }
-
+      
       if (version > 9)
       {
          var.vt = VT_UI4;
@@ -491,6 +561,17 @@ HRESULT CBridgeDescription2::Load(IStructuredLoad* pStrLoad,IProgress* pProgress
             var.vt = VT_R8;
             hr = pStrLoad->get_Property(_T("AssExcessCamber"), &var);
             m_AssExcessCamber = var.dblVal;
+         }
+      }
+
+      if ( version > 10 )
+      {
+         var.vt = VT_UI4;
+         hr = pStrLoad->get_Property(_T("BearingType"),&var);
+         m_BearingType = (pgsTypes::BearingType)(var.lVal);
+         if ( m_BearingType == pgsTypes::brtBridge )
+         {
+            hr = m_BearingData.Load(pStrLoad,pProgress);
          }
       }
 
@@ -562,6 +643,12 @@ HRESULT CBridgeDescription2::Load(IStructuredLoad* pStrLoad,IProgress* pProgress
          m_Fillet = m_Deck.m_LegacyFillet;
       }
 
+      if (version < 10)
+      {
+         // prior versions had bearing data (support width) in connection data
+         m_BearingType = pgsTypes::brtPier;
+      }
+
       Float64 railing_version;
       hr = pStrLoad->BeginUnit(_T("LeftRailingSystem"));
       pStrLoad->get_Version(&railing_version);
@@ -589,7 +676,23 @@ HRESULT CBridgeDescription2::Load(IStructuredLoad* pStrLoad,IProgress* pProgress
       }
       hr = pStrLoad->EndUnit(); // GirderGroups
 
+      // added in version 11
+      if (10 < version)
+      {
+         var.vt = VT_BOOL;
+         hr = pStrLoad->get_Property(_T("StructuralLongitudinalJoints"), &var);
+         if (var.boolVal == VARIANT_TRUE)
+         {
+            hr = m_LongitudinalJointConcrete.Load(pStrLoad,pProgress);
+         }
+      }
+
+
       hr = pStrLoad->EndUnit(); // BridgeDescription
+
+      /////////////////////////////////////////////////////////////
+      // END OF LOADING BRIDGE DESCRIPTION
+      /////////////////////////////////////////////////////////////
 
       // Sometime in the past, the bearing offset and end distance measurement types were inadvertantly allowed to be
       // unequal values between the back and ahead faces of the pier. The UI forces them to be the same.
@@ -649,7 +752,9 @@ HRESULT CBridgeDescription2::Load(IStructuredLoad* pStrLoad,IProgress* pProgress
       CopyDown(m_bSameNumberOfGirders, 
                m_bSameGirderName, 
                IsBridgeSpacing(m_GirderSpacingType),
-               m_SlabOffsetType == pgsTypes::sotBridge, m_AssExcessCamberType==pgsTypes::aecBridge);
+               m_SlabOffsetType == pgsTypes::sotBridge, 
+               m_AssExcessCamberType==pgsTypes::aecBridge,
+               m_BearingType==pgsTypes::brtBridge);
    }
    catch (HRESULT)
    {
@@ -665,8 +770,6 @@ HRESULT CBridgeDescription2::Save(IStructuredSave* pStrSave,IProgress* pProgress
 {
    HRESULT hr = S_OK;
    pStrSave->BeginUnit(_T("BridgeDescription"),FILE_VERSION);
-   // No new data was added in version 9.0. The version number was changed so we can tell the difference between files
-   // that have an explicity construction event (9.0 <= version) for diaphragms and those that do not (version <= 8.0)
 
    pStrSave->put_Property(_T("GirderFamilyName"),CComVariant(CComBSTR(m_strGirderFamilyName.c_str())));
    pStrSave->put_Property(_T("GirderOrientation"),CComVariant(m_GirderOrientation));
@@ -686,6 +789,15 @@ HRESULT CBridgeDescription2::Save(IStructuredSave* pStrSave,IProgress* pProgress
    if ( IsBridgeSpacing(m_GirderSpacingType) )
    {
       pStrSave->put_Property(_T("GirderSpacing"),       CComVariant(m_GirderSpacing));
+
+      // added in version 11
+      if (IsTopWidthSpacing(m_GirderSpacingType))
+      {
+         pStrSave->put_Property(_T("TopWidthType"), CComVariant(m_TopWidthType));
+         pStrSave->put_Property(_T("LeftTopWidth"), CComVariant(m_LeftTopWidth));
+         pStrSave->put_Property(_T("RightTopWidth"), CComVariant(m_RightTopWidth));
+      }
+
       pStrSave->put_Property(_T("MeasurementLocation"), CComVariant(m_MeasurementLocation));
       pStrSave->put_Property(_T("MeasurementType"),     CComVariant(m_MeasurementType));
       pStrSave->put_Property(_T("RefGirder"),CComVariant(m_RefGirderIdx));
@@ -704,11 +816,17 @@ HRESULT CBridgeDescription2::Save(IStructuredSave* pStrSave,IProgress* pProgress
    }
 
    hr = pStrSave->put_Property(_T("Fillet"),CComVariant(m_Fillet));
-
+   
    hr = pStrSave->put_Property(_T("AssExcessCamberType"),CComVariant(m_AssExcessCamberType)); // Added in version 8
    if ( m_AssExcessCamberType == pgsTypes::aecBridge )
    {
       hr = pStrSave->put_Property(_T("AssExcessCamber"),CComVariant(m_AssExcessCamber));
+   }
+
+   hr = pStrSave->put_Property(_T("BearingType"),CComVariant(m_BearingType)); // Added in version 9
+   if ( m_BearingType == pgsTypes::brtBridge )
+   {
+      hr = m_BearingData.Save(pStrSave, pProgress);
    }
    
    m_TimelineManager.Save(pStrSave,pProgress);
@@ -769,6 +887,13 @@ HRESULT CBridgeDescription2::Save(IStructuredSave* pStrSave,IProgress* pProgress
       pGroup->Save(pStrSave,pProgress);
    }
    pStrSave->EndUnit();
+
+   // added in version 11
+   pStrSave->put_Property(_T("StructuralLongitudinalJoints"), CComVariant(HasStructuralLongitudinalJoints()));
+   if (HasStructuralLongitudinalJoints())
+   {
+      m_LongitudinalJointConcrete.Save(pStrSave,pProgress);
+   }
    
    pStrSave->EndUnit(); // BridgeDescription
    return hr;
@@ -1212,7 +1337,7 @@ void CBridgeDescription2::InsertSpan(PierIndexType refPierIdx,pgsTypes::PierFace
             pRefPier->SetBearingOffset(pgsTypes::Ahead,brgOffset,brgOffsetMeasure);
          }
 
-         pRefPier->SetSupportWidth(pgsTypes::Ahead,pRefPier->GetSupportWidth(pgsTypes::Back));
+         pRefPier->MirrorBearingData(pgsTypes::Back); // make ahead bearings same as back
 
          pRefPier->SetDiaphragmHeight(pgsTypes::Ahead,pRefPier->GetDiaphragmHeight(pgsTypes::Back));
          pRefPier->SetDiaphragmWidth(pgsTypes::Ahead,pRefPier->GetDiaphragmWidth(pgsTypes::Back));
@@ -1252,7 +1377,7 @@ void CBridgeDescription2::InsertSpan(PierIndexType refPierIdx,pgsTypes::PierFace
             pRefPier->SetBearingOffset(pgsTypes::Back,brgOffset,brgOffsetMeasure);
          }
 
-         pRefPier->SetSupportWidth(pgsTypes::Back,pRefPier->GetSupportWidth(pgsTypes::Ahead));
+         pRefPier->MirrorBearingData(pgsTypes::Ahead); // make back bearings same as ahead
 
          pRefPier->SetDiaphragmHeight(pgsTypes::Back,pRefPier->GetDiaphragmHeight(pgsTypes::Ahead));
          pRefPier->SetDiaphragmWidth(pgsTypes::Back,pRefPier->GetDiaphragmWidth(pgsTypes::Ahead));
@@ -1423,17 +1548,12 @@ void CBridgeDescription2::InsertSpan(PierIndexType refPierIdx,pgsTypes::PierFace
       pNewGroup->Initialize(nGirders); // creates girders and initializes the slab offsets
 
       // Copy the girder type grouping information
-      GroupIndexType nTypeGroups = pRefGroup->GetGirderTypeGroupCount();
-      for ( GroupIndexType girderTypeGroupIdx = 0; girderTypeGroupIdx < nTypeGroups; girderTypeGroupIdx++ )
-      {
-         GirderIndexType firstGdrIdx, lastGdrIdx;
-         std::_tstring strName;
-         pRefGroup->GetGirderTypeGroup(girderTypeGroupIdx,&firstGdrIdx,&lastGdrIdx,&strName);
-         GroupIndexType idx = pNewGroup->CreateGirderTypeGroup(firstGdrIdx,lastGdrIdx);
-         ATLASSERT(idx == girderTypeGroupIdx);
-         pNewGroup->SetGirderName(girderTypeGroupIdx,strName.c_str());
-      }
+      std::vector<CGirderTypeGroup> vTypeGroups = pRefGroup->GetGirderTypeGroups();
+      pNewGroup->SetGirderTypeGroups(vTypeGroups);
 
+      // Copy the girder top width grouping information
+      std::vector<CGirderTopWidthGroup> vTopWidthGroups = pRefGroup->GetGirderTopWidthGroups();
+      pNewGroup->SetGirderTopWidthGroups(vTopWidthGroups);
 
       // Make the staging match the reference group
       for ( GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++ )
@@ -2712,7 +2832,7 @@ void CBridgeDescription2::SetGirderName(LPCTSTR strName)
                if ( m_pGirderLibraryEntry )
                {
                   pSegment->ShearData = m_pGirderLibraryEntry->GetShearData();
-                  pSegment->LongitudinalRebarData.CopyGirderEntryData(*m_pGirderLibraryEntry);
+                  pSegment->LongitudinalRebarData.CopyGirderEntryData(m_pGirderLibraryEntry);
                }
             }
          }
@@ -2802,6 +2922,40 @@ Float64 CBridgeDescription2::GetGirderSpacing() const
    return m_GirderSpacing;
 }
 
+void CBridgeDescription2::SetGirderTopWidth(pgsTypes::TopWidthType type,Float64 left,Float64 right)
+{
+   m_TopWidthType = type;
+   m_LeftTopWidth = left;
+   m_RightTopWidth = right;
+}
+
+void CBridgeDescription2::GetGirderTopWidth(pgsTypes::TopWidthType* pType, Float64* pLeft, Float64* pRight) const
+{
+   *pType = m_TopWidthType;
+   *pLeft = m_LeftTopWidth;
+   *pRight = m_RightTopWidth;
+}
+
+Float64 CBridgeDescription2::GetGirderTopWidth() const
+{
+   pgsTypes::TopWidthType type;
+   Float64 left, right;
+   GetGirderTopWidth(&type, &left, &right);
+   switch (type)
+   {
+   case pgsTypes::twtSymmetric:
+   case pgsTypes::twtCenteredCG:
+      return left;
+
+   case pgsTypes::twtAsymmetric:
+      return left + right;
+
+   default:
+      ATLASSERT(false); // should never get here... assume full
+      return left;
+   }
+}
+
 void CBridgeDescription2::SetMeasurementType(pgsTypes::MeasurementType mt)
 {
    m_MeasurementType = mt;
@@ -2876,10 +3030,13 @@ void CBridgeDescription2::MakeCopy(const CBridgeDescription2& rOther)
    m_SlabOffset               = rOther.m_SlabOffset;
    m_SlabOffsetType           = rOther.m_SlabOffsetType;
 
-   m_Fillet                   = rOther.m_Fillet;
+   m_Fillet               = rOther.m_Fillet;
 
    m_AssExcessCamber          = rOther.m_AssExcessCamber;
    m_AssExcessCamberType      = rOther.m_AssExcessCamberType;
+
+   m_BearingData          = rOther.m_BearingData;
+   m_BearingType          = rOther.m_BearingType;
 
    m_bSameGirderName          = rOther.m_bSameGirderName;
    m_strGirderName            = rOther.m_strGirderName;
@@ -2888,6 +3045,9 @@ void CBridgeDescription2::MakeCopy(const CBridgeDescription2& rOther)
 
    m_GirderSpacingType        = rOther.m_GirderSpacingType;
    m_GirderSpacing            = rOther.m_GirderSpacing;
+   m_TopWidthType             = rOther.m_TopWidthType;
+   m_LeftTopWidth             = rOther.m_LeftTopWidth;
+   m_RightTopWidth            = rOther.m_RightTopWidth;
    m_MeasurementType          = rOther.m_MeasurementType;
    m_MeasurementLocation      = rOther.m_MeasurementLocation;
    m_RefGirderIdx             = rOther.m_RefGirderIdx;
@@ -2905,6 +3065,8 @@ void CBridgeDescription2::MakeCopy(const CBridgeDescription2& rOther)
    m_Deck.SetBridgeDescription(this);
 
    m_LLDFMethod               = rOther.m_LLDFMethod;
+
+   m_LongitudinalJointConcrete = rOther.m_LongitudinalJointConcrete;
 
    // Copy Piers
    std::vector<CPierData2*>::const_iterator pierIter( rOther.m_Piers.begin() );
@@ -2968,7 +3130,8 @@ void CBridgeDescription2::MakeCopy(const CBridgeDescription2& rOther)
    }
 
    CopyDown(m_bSameNumberOfGirders,m_bSameGirderName,::IsBridgeSpacing(m_GirderSpacingType),
-            m_SlabOffsetType==pgsTypes::sotBridge,m_AssExcessCamberType==pgsTypes::aecBridge); 
+            m_SlabOffsetType==pgsTypes::sotBridge,m_AssExcessCamberType==pgsTypes::aecBridge,
+            m_BearingType==pgsTypes::brtBridge); 
 
    PGS_ASSERT_VALID;
 }
@@ -3180,7 +3343,7 @@ const CClosureJointData* CBridgeDescription2::FindClosureJoint(ClosureIDType clo
    return nullptr;
 }
 
-void CBridgeDescription2::CopyDown(bool bGirderCount,bool bGirderType,bool bSpacing,bool bSlabOffset,bool bAssExcessCamber)
+void CBridgeDescription2::CopyDown(bool bGirderCount,bool bGirderType,bool bSpacing,bool bSlabOffset,bool bAssExcessCamber, bool bBearingData)
 {
    std::vector<CGirderGroupData*>::iterator grpIter(m_GirderGroups.begin());
    std::vector<CGirderGroupData*>::iterator grpIterEnd(m_GirderGroups.end());
@@ -3210,6 +3373,18 @@ void CBridgeDescription2::CopyDown(bool bGirderCount,bool bGirderType,bool bSpac
             {
                pGroup->SetSlabOffset(pierIdx,gdrIdx,m_SlabOffset);
             }
+         }
+      }
+
+      if (bSpacing)
+      {
+         pGroup->JoinAllGirderTopWidthGroups(0);
+
+         GirderIndexType nGirders = pGroup->GetGirderCount();
+         for (GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++)
+         {
+            CSplicedGirderData* pGirder = pGroup->GetGirder(gdrIdx);
+            pGirder->SetTopWidth(m_TopWidthType, m_LeftTopWidth, m_RightTopWidth, m_LeftTopWidth, m_RightTopWidth);
          }
       }
    }// group loop
@@ -3304,6 +3479,31 @@ void CBridgeDescription2::CopyDown(bool bGirderCount,bool bGirderType,bool bSpac
       }
    }
 
+   if (bBearingData)
+   {
+      if (this->m_BearingType == pgsTypes::brtBridge)
+      {
+         std::vector<CPierData2*>::iterator pierIter(m_Piers.begin());
+         std::vector<CPierData2*>::iterator pierIterEnd(m_Piers.end());
+         for (; pierIter != pierIterEnd; pierIter++)
+         {
+            CPierData2* pPier = *pierIter;
+
+            for (Uint32 i = 0; i < 2; i++)
+            {
+               pgsTypes::PierFaceType face = (pgsTypes::PierFaceType)i;
+
+               const CSpanData2* pSpan = pPier->GetSpan(face);
+               if (pSpan)
+               {
+                  pPier->SetBearingData(face, m_BearingData);
+               }
+            }
+         }
+      }
+   }
+
+
    PGS_ASSERT_VALID;
 }
 
@@ -3316,7 +3516,7 @@ std::vector<pgsTypes::BoundaryConditionType> CBridgeDescription2::GetBoundaryCon
    ATLASSERT(pPier->IsBoundaryPier());
 
    // "before deck" connections are only applicable if the bridge has a deck
-   bool bHasDeck = m_Deck.DeckType != pgsTypes::sdtNone ? true : false;
+   bool bHasDeck = IsStructuralDeck(m_Deck.DeckType) ? true : false;
 
    if ( pPier->HasCantilever() )
    {
@@ -3658,7 +3858,7 @@ Float64 CBridgeDescription2::GetBridgeWidth() const
 {
    const CDeckDescription2* pDeck = GetDeckDescription();
 
-   if ( pDeck->GetDeckType() == pgsTypes::sdtNone || pDeck->GetDeckType() == pgsTypes::sdtCompositeOverlay ) 
+   if ( IsConstantWidthDeck(pDeck->GetDeckType()) )
    {
       // there isn't a deck, estimate bridge width by adding the girder spacings
       Float64 max_spacing_width = -DBL_MAX;
@@ -3851,6 +4051,31 @@ Float64 CBridgeDescription2::GetBridgeWidth() const
       Float64 max_deck_width = pDeck->GetMaxWidth();
       return max_deck_width;
    }
+}
+
+void CBridgeDescription2::SetBearingType(pgsTypes::BearingType type)
+{
+   m_BearingType = type;
+}
+
+pgsTypes::BearingType CBridgeDescription2::GetBearingType() const
+{
+   return m_BearingType;
+}
+
+void CBridgeDescription2::SetBearingData(const CBearingData2 & Bearing)
+{
+   m_BearingData = Bearing;
+}
+
+const CBearingData2* CBridgeDescription2::GetBearingData(bool bGetRawValue) const
+{
+   return &m_BearingData;
+}
+
+CBearingData2* CBridgeDescription2::GetBearingData(bool bGetRawValue)
+{
+   return &m_BearingData;
 }
 
 bool CBridgeDescription2::MoveBridge(PierIndexType pierIdx,Float64 newStation)
@@ -4240,6 +4465,84 @@ GroupIDType CBridgeDescription2::GetNextGirderGroupID(bool bIncrement)
    }
 
    return grpID;
+}
+
+bool CBridgeDescription2::HasLongitudinalJoints() const
+{
+   if (IsJointSpacing(m_GirderSpacingType))
+   {
+      // bridge has a joint spacing type... ask the factory
+      const GirderLibraryEntry* pGirderLibraryEntry = nullptr;
+      if (UseSameGirderForEntireBridge())
+      {
+         pGirderLibraryEntry = m_pGirderLibraryEntry;
+      }
+      else
+      {
+         const CGirderGroupData* pGroup = GetGirderGroup((GroupIndexType)0);
+         const CSplicedGirderData* pGirder = pGroup->GetGirder(0);
+         pGirderLibraryEntry = pGirder->GetGirderLibraryEntry();
+      }
+
+      CComPtr<IBeamFactory> beamFactory;
+      pGirderLibraryEntry->GetBeamFactory(&beamFactory);
+      return beamFactory->HasLongitudinalJoints();
+   }
+   else
+   {
+      // if bridge doesn't have a joint spacing type, there isn't a joint
+      return false;
+   }
+}
+
+bool CBridgeDescription2::HasStructuralLongitudinalJoints() const
+{
+   if (IsJointSpacing(m_GirderSpacingType))
+   {
+      // bridge has a joint spacing type... ask the factory
+      const GirderLibraryEntry* pGirderLibraryEntry = nullptr;
+      if (UseSameGirderForEntireBridge())
+      {
+         pGirderLibraryEntry = m_pGirderLibraryEntry;
+      }
+      else
+      {
+         const CGirderGroupData* pGroup = GetGirderGroup((GroupIndexType)0);
+         const CSplicedGirderData* pGirder = pGroup->GetGirder(0);
+         pGirderLibraryEntry = pGirder->GetGirderLibraryEntry();
+      }
+      
+      CComPtr<IBeamFactory> beamFactory;
+      pGirderLibraryEntry->GetBeamFactory(&beamFactory);
+      if (beamFactory->HasLongitudinalJoints())
+      {
+         // the bridge has longitudinal joints
+         return beamFactory->IsLongitudinalJointStructural(m_Deck.GetDeckType(),m_Deck.TransverseConnectivity);
+      }
+      else
+      {
+         // longitudinal joints are not supported by the beam
+         return false;
+      }
+
+      // NOTE: the logical is a little weired here, but a bridge can have joint spacing, but no longitudinal joint.
+      // Examples would be box beams and voided slabs.
+   }
+   else
+   {
+      // if bridge doesn't have a joint spacing type, there isn't a joint
+      return false;
+   }
+}
+
+const CConcreteMaterial& CBridgeDescription2::GetLongitudinalJointMaterial() const
+{
+   return m_LongitudinalJointConcrete;
+}
+
+void CBridgeDescription2::SetLongitudinalJointMaterial(const CConcreteMaterial& material)
+{
+   m_LongitudinalJointConcrete = material;
 }
 
 #if defined _DEBUG

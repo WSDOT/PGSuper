@@ -142,6 +142,11 @@ bool CTimelineEvent::operator==(const CTimelineEvent& rOther) const
       return false;
    }
 
+   if (m_CastLongitudinalJoints != rOther.m_CastLongitudinalJoints)
+   {
+      return false;
+   }
+
    if ( m_ApplyLoads != rOther.m_ApplyLoads )
    {
       return false;
@@ -231,6 +236,11 @@ Float64 CTimelineEvent::GetDuration() const
    if ( m_CastDeck.IsEnabled() )
    {
       duration = Max(duration,m_CastDeck.GetCuringDuration());
+   }
+
+   if (m_CastLongitudinalJoints.IsEnabled())
+   {
+      duration = Max(duration, m_CastLongitudinalJoints.GetCuringDuration());
    }
 
    // Apply Loads ( zero duration )
@@ -329,6 +339,21 @@ CCastDeckActivity& CTimelineEvent::GetCastDeckActivity()
    return m_CastDeck;
 }
 
+void CTimelineEvent::SetCastLongitudinalJointActivity(const CCastLongitudinalJointActivity& activity)
+{
+   m_CastLongitudinalJoints = activity;
+}
+
+const CCastLongitudinalJointActivity& CTimelineEvent::GetCastLongitudinalJointActivity() const
+{
+   return m_CastLongitudinalJoints;
+}
+
+CCastLongitudinalJointActivity& CTimelineEvent::GetCastLongitudinalJointActivity()
+{
+   return m_CastLongitudinalJoints;
+}
+
 void CTimelineEvent::SetStressTendonActivity(const CStressTendonActivity& activity)
 {
    m_StressTendons = activity;
@@ -365,10 +390,10 @@ Float64 CTimelineEvent::GetMinElapsedTime() const
    // the greatest of the elapsed time of all the activities in this event
    Float64 elapsedTime = 0;
 
-   if ( m_ConstructSegments.IsEnabled() )
+   if (m_ConstructSegments.IsEnabled())
    {
       // the duration of this activity is the time from strand stressing to release
-      elapsedTime = Max(elapsedTime,m_ConstructSegments.GetRelaxationTime());
+      elapsedTime = Max(elapsedTime, m_ConstructSegments.GetRelaxationTime());
    }
 
    // Commented out code below are the zero duration activities... no need to explicitly check them
@@ -391,15 +416,20 @@ Float64 CTimelineEvent::GetMinElapsedTime() const
    //   elapsedTime += 0;
    //}
 
-   if ( m_CastClosureJoints.IsEnabled() )
+   if (m_CastClosureJoints.IsEnabled())
    {
-      elapsedTime = Max(elapsedTime,m_CastClosureJoints.GetConcreteAgeAtContinuity());
+      elapsedTime = Max(elapsedTime, m_CastClosureJoints.GetConcreteAgeAtContinuity());
    }
 
 
-   if ( m_CastDeck.IsEnabled() )
+   if (m_CastDeck.IsEnabled())
    {
-      elapsedTime = Max(elapsedTime,m_CastDeck.GetConcreteAgeAtContinuity());
+      elapsedTime = Max(elapsedTime, m_CastDeck.GetConcreteAgeAtContinuity());
+   }
+
+   if (m_CastLongitudinalJoints.IsEnabled())
+   {
+      elapsedTime = Max(elapsedTime, m_CastLongitudinalJoints.GetConcreteAgeAtContinuity());
    }
 
    //if ( m_ApplyLoads.IsEnabled() )
@@ -452,6 +482,12 @@ HRESULT CTimelineEvent::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
       hr = m_RemoveTempSupports.Load(pStrLoad,pProgress);
       hr = m_CastDeck.Load(pStrLoad,pProgress);
       hr = m_ApplyLoads.Load(pStrLoad,pProgress);
+      
+      if (1 < version)
+      {
+         // added in version 2
+         hr = m_CastLongitudinalJoints.Load(pStrLoad, pProgress);
+      }
 
       hr = pStrLoad->EndUnit();
    }
@@ -466,7 +502,7 @@ HRESULT CTimelineEvent::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
 
 HRESULT CTimelineEvent::Save(IStructuredSave* pStrSave,IProgress* pProgress)
 {
-   pStrSave->BeginUnit(_T("TimelineEvent"),1.0);
+   pStrSave->BeginUnit(_T("TimelineEvent"),2.0);
    pStrSave->put_Property(_T("ID"),CComVariant(m_ID));
    pStrSave->put_Property(_T("Description"),CComVariant(m_Description.c_str()));
    pStrSave->put_Property(_T("Day"),CComVariant(m_Day));
@@ -479,6 +515,8 @@ HRESULT CTimelineEvent::Save(IStructuredSave* pStrSave,IProgress* pProgress)
    m_RemoveTempSupports.Save(pStrSave,pProgress);
    m_CastDeck.Save(pStrSave,pProgress);
    m_ApplyLoads.Save(pStrSave,pProgress);
+
+   m_CastLongitudinalJoints.Save(pStrSave, pProgress); // added in version 2
 
    pStrSave->EndUnit();
 
@@ -498,6 +536,7 @@ void CTimelineEvent::MakeCopy(const CTimelineEvent& rOther)
    m_CastDeck           = rOther.m_CastDeck;
    m_ApplyLoads         = rOther.m_ApplyLoads;
    m_StressTendons      = rOther.m_StressTendons;
+   m_CastLongitudinalJoints = rOther.m_CastLongitudinalJoints;
 
    if ( m_pTimelineMgr )
    {
@@ -516,14 +555,16 @@ void CTimelineEvent::MakeAssignment(const CTimelineEvent& rOther)
 // cast closure joints and the other event has cast closure joints and cast deck
 // the event with cast closure joints only will come first in the timeline
 // because deck casting must come after closure joint casting.
-#define AS_APPLY_LOADS          0x0000
-#define AS_ERECT_PIERS          0x0001
-#define AS_CONSTRUCT_SEGMENTS   0x0002
-#define AS_ERECT_SEGMENTS       0x0004
-#define AS_CAST_CLOSURE_JOINTS  0x0008
-#define AS_CAST_DECK            0x0010
-#define AS_STRESS_TENDONS       0x0020
-#define AS_REMOVE_TEMP_SUPPORTS 0x0040
+#define AS_APPLY_LOADS                  0x0000
+#define AS_ERECT_PIERS                  0x0001
+#define AS_CONSTRUCT_SEGMENTS           0x0002
+#define AS_ERECT_SEGMENTS               0x0004
+#define AS_CAST_CLOSURE_JOINTS          0x0005
+#define AS_CAST_LONGIUTIDINAL_JOINTS    0x0010
+#define AS_CAST_DIAPHRAGMS              0x0020
+#define AS_CAST_DECK                    0x0040
+#define AS_STRESS_TENDONS               0x0080
+#define AS_REMOVE_TEMP_SUPPORTS         0x0100
 
 Uint16 CTimelineEvent::GetActivityScore() const
 {
@@ -531,7 +572,14 @@ Uint16 CTimelineEvent::GetActivityScore() const
 
    if ( m_ApplyLoads.IsEnabled() )
    {
-      activityScore |= AS_APPLY_LOADS;
+      if (m_ApplyLoads.IsIntermediateDiaphragmLoadApplied())
+      {
+         activityScore |= AS_CAST_DIAPHRAGMS;
+      }
+      else
+      {
+         activityScore |= AS_APPLY_LOADS;
+      }
    }
 
    if ( m_ErectPiers.IsEnabled() )
@@ -552,6 +600,11 @@ Uint16 CTimelineEvent::GetActivityScore() const
    if ( m_CastClosureJoints.IsEnabled() )
    {
       activityScore |= AS_CAST_CLOSURE_JOINTS;
+   }
+
+   if (m_CastLongitudinalJoints.IsEnabled())
+   {
+      activityScore |= AS_CAST_LONGIUTIDINAL_JOINTS;
    }
 
    if ( m_CastDeck.IsEnabled() )

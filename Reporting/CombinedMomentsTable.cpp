@@ -171,7 +171,7 @@ void CCombinedMomentsTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter*
       CGirderKey thisGirderKey(grpIdx,gdrIdx);
 
       PoiAttributeType poiRefAttribute;
-      std::vector<pgsPointOfInterest> vPoi;
+      PoiList vPoi;
       GetCombinedResultsPoi(pBroker,thisGirderKey,intervalIdx,&vPoi,&poiRefAttribute);
       poiRefAttribute = (girderKey.groupIndex == ALL_GROUPS ? POI_SPAN : poiRefAttribute);
 
@@ -236,11 +236,8 @@ void CCombinedMomentsTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter*
       }
 
       IndexType index = 0;
-      std::vector<pgsPointOfInterest>::const_iterator i(vPoi.begin());
-      std::vector<pgsPointOfInterest>::const_iterator end(vPoi.end());
-      for ( ; i != end; i++, index++ )
+      for (const pgsPointOfInterest& poi : vPoi)
       {
-         const pgsPointOfInterest& poi = *i;
          const CSegmentKey& thisSegmentKey = poi.GetSegmentKey();
 
          IntervalIndexType releaseIntervalIdx       = pIntervals->GetPrestressReleaseInterval(thisSegmentKey);
@@ -346,6 +343,7 @@ void CCombinedMomentsTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter*
          }
 
          row++;
+         index++;
       }
    }
 }
@@ -424,7 +422,7 @@ void CCombinedMomentsTable::BuildCombinedLiveTable(IBroker* pBroker, rptChapter*
       IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
 
       PoiAttributeType poiRefAttribute;
-      std::vector<pgsPointOfInterest> vPoi;
+      PoiList vPoi;
       GetCombinedResultsPoi(pBroker,thisGirderKey,liveLoadIntervalIdx,&vPoi,&poiRefAttribute);
       poiRefAttribute = (girderKey.groupIndex == ALL_GROUPS ? POI_SPAN : poiRefAttribute);
 
@@ -510,14 +508,11 @@ void CCombinedMomentsTable::BuildCombinedLiveTable(IBroker* pBroker, rptChapter*
       }
 
       // fill table (first half if design/ped load)
-      std::vector<pgsPointOfInterest>::const_iterator i(vPoi.begin());
-      std::vector<pgsPointOfInterest>::const_iterator end(vPoi.end());
       IndexType index = 0;
       ColumnIndexType col = 0;
       RowIndexType row2 = row;
-      for ( ; i != end; i++, index++ )
+      for (const pgsPointOfInterest& poi : vPoi)
       {
-         const pgsPointOfInterest& poi = *i;
          col = 0;
 
          (*p_table)(row,col++) << location.SetValue( poiRefAttribute, poi );
@@ -592,6 +587,7 @@ void CCombinedMomentsTable::BuildCombinedLiveTable(IBroker* pBroker, rptChapter*
          }
 
          row++;
+         index++;
       }
 
 
@@ -729,7 +725,7 @@ void CCombinedMomentsTable::BuildLimitStateTable(IBroker* pBroker, rptChapter* p
       CGirderKey thisGirderKey(grpIdx,gdrIdx);
 
       PoiAttributeType poiRefAttribute;
-      std::vector<pgsPointOfInterest> vPoi;
+      PoiList vPoi;
       GetCombinedResultsPoi(pBroker,thisGirderKey,intervalIdx,&vPoi,&poiRefAttribute);
       poiRefAttribute = (girderKey.groupIndex == ALL_GROUPS ? POI_SPAN : poiRefAttribute);
 
@@ -939,13 +935,9 @@ void CCombinedMomentsTable::BuildLimitStateTable(IBroker* pBroker, rptChapter* p
       }
 
       IndexType index = 0;
-      std::vector<pgsPointOfInterest>::const_iterator i(vPoi.begin());
-      std::vector<pgsPointOfInterest>::const_iterator end(vPoi.end());
-      for ( ; i != end; i++, index++ )
+      for (const pgsPointOfInterest& poi : vPoi)
       {
          ColumnIndexType col = 0;
-
-         const pgsPointOfInterest& poi = *i;
 
          IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(poi.GetSegmentKey());
 
@@ -1125,6 +1117,7 @@ void CCombinedMomentsTable::BuildLimitStateTable(IBroker* pBroker, rptChapter* p
          }
 
          row2++;
+         index++;
       }
    }
 
@@ -1195,7 +1188,7 @@ bool CCombinedMomentsTable::TestMe(dbgLog& rlog)
 #endif // _UNITTEST
 
 
-void GetCombinedResultsPoi(IBroker* pBroker,const CGirderKey& girderKey,IntervalIndexType intervalIdx,std::vector<pgsPointOfInterest>* pPoi,PoiAttributeType* pRefAttribute)
+void GetCombinedResultsPoi(IBroker* pBroker,const CGirderKey& girderKey,IntervalIndexType intervalIdx,PoiList* pPoi,PoiAttributeType* pRefAttribute)
 {
    GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType releaseIntervalIdx = pIntervals->GetFirstPrestressReleaseInterval(girderKey);
@@ -1230,9 +1223,8 @@ void GetCombinedResultsPoi(IBroker* pBroker,const CGirderKey& girderKey,Interval
    *pRefAttribute = poiRefAttribute;
 
    GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
-   *pPoi = pIPoi->GetPointsOfInterest(CSegmentKey(girderKey,ALL_SEGMENTS),poiRefAttribute);
-   std::vector<pgsPointOfInterest> vPoi2( pIPoi->GetPointsOfInterest(CSegmentKey(girderKey,ALL_SEGMENTS), POI_SPECIAL | POI_SECTCHANGE, POIFIND_OR) );
-   pPoi->insert(pPoi->end(),vPoi2.begin(),vPoi2.end());
-   std::sort(pPoi->begin(),pPoi->end());
-   pPoi->erase(std::unique(pPoi->begin(),pPoi->end()),pPoi->end());
+   pIPoi->GetPointsOfInterest(CSegmentKey(girderKey,ALL_SEGMENTS),poiRefAttribute,pPoi);
+   PoiList vPoi2;
+   pIPoi->GetPointsOfInterest(CSegmentKey(girderKey, ALL_SEGMENTS), POI_SPECIAL | POI_SECTCHANGE, &vPoi2, POIFIND_OR);
+   pIPoi->MergePoiLists(*pPoi, vPoi2, pPoi);
 }

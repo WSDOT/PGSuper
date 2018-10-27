@@ -22,7 +22,6 @@
 
 // PGSuperGrapherImp.cpp : Implementation of CPGSuperGrapherImp
 #include "stdafx.h"
-#include "GraphingAgent_i.h"
 #include "PGSuperGrapherImp.h"
 
 #ifdef _DEBUG

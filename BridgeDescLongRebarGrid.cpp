@@ -32,6 +32,8 @@
 
 #include <LRFD\RebarPool.h>
 
+#include <IFace\Bridge.h>
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
@@ -64,21 +66,6 @@ END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
 // CGirderDescLongRebarGrid message handlers
-
-int CGirderDescLongRebarGrid::GetColWidth(ROWCOL nCol)
-{
-	CRect rect = GetGridRect( );
-
-   switch (nCol)
-   {
-   case 0:
-      return rect.Width( )/19;
-   case 1:
-      return rect.Width( )*3/18;
-   default:
-      return rect.Width( )*2/18;
-   }
-}
 
 BOOL CGirderDescLongRebarGrid::OnRButtonClickedRowCol(ROWCOL nRow, ROWCOL nCol, UINT nFlags, CPoint pt)
 {
@@ -114,7 +101,7 @@ BOOL CGirderDescLongRebarGrid::OnLButtonClickedRowCol(ROWCOL nRow, ROWCOL nCol, 
       pdlg->OnEnableDelete(false);
    }
 
-   return TRUE;
+   return FALSE;
 }
 
 void CGirderDescLongRebarGrid::OnEditInsertrow()
@@ -196,27 +183,30 @@ void CGirderDescLongRebarGrid::CustomInit()
 // Initialize the grid. For CWnd based grids this call is // 
 // essential. For view based grids this initialization is done 
 // in OnInitialUpdate.
-	this->Initialize( );
+	Initialize( );
 
-	this->GetParam( )->EnableUndo(FALSE);
+	GetParam( )->EnableUndo(FALSE);
 
    const int num_rows=0;
-   const int num_cols=8;
+   const int num_cols=10;
 
-	this->SetRowCount(num_rows);
-	this->SetColCount(num_cols);
+	SetRowCount(num_rows);
+	SetColCount(num_cols);
 
 		// Turn off selecting whole columns when clicking on a column header
-	this->GetParam()->EnableSelection((WORD) (GX_SELFULL & ~GX_SELCOL & ~GX_SELTABLE));
+	GetParam()->EnableSelection((WORD) (GX_SELFULL & ~GX_SELCOL & ~GX_SELTABLE));
 
    // disable left side
-	this->SetStyleRange(CGXRange(0,0,num_rows,0), CGXStyle()
+	SetStyleRange(CGXRange(0,0,num_rows,0), CGXStyle()
 			.SetControl(GX_IDS_CTRL_HEADER)
 			.SetEnabled(FALSE)          // disables usage as current cell
 		);
 
+   ROWCOL row = 0;
+   ROWCOL col = 0;
+
 // set text along top row
-	this->SetStyleRange(CGXRange(0,0), CGXStyle()
+	SetStyleRange(CGXRange(row,col++), CGXStyle()
          .SetWrapText(TRUE)
          .SetHorizontalAlignment(DT_CENTER)
          .SetVerticalAlignment(DT_VCENTER)
@@ -224,7 +214,7 @@ void CGirderDescLongRebarGrid::CustomInit()
 			.SetValue(_T("Row\n#"))
 		);
 
-	this->SetStyleRange(CGXRange(0,1), CGXStyle()
+	SetStyleRange(CGXRange(row, col++), CGXStyle()
          .SetWrapText(TRUE)
 			.SetEnabled(FALSE)          // disables usage as current cell
          .SetHorizontalAlignment(DT_CENTER)
@@ -234,7 +224,7 @@ void CGirderDescLongRebarGrid::CustomInit()
 
    CString cv;
    cv.Format(_T("Distance\nFrom End\n(%s)"),pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure.UnitTag().c_str());
-	this->SetStyleRange(CGXRange(0,2), CGXStyle()
+	SetStyleRange(CGXRange(row, col++), CGXStyle()
          .SetWrapText(TRUE)
 			.SetEnabled(FALSE)          // disables usage as current cell
          .SetHorizontalAlignment(DT_CENTER)
@@ -243,7 +233,7 @@ void CGirderDescLongRebarGrid::CustomInit()
 		);
 
    cv.Format(_T("Bar\nLength\n(%s)"),pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure.UnitTag().c_str());
-	this->SetStyleRange(CGXRange(0,3), CGXStyle()
+	SetStyleRange(CGXRange(row, col++), CGXStyle()
          .SetWrapText(TRUE)
 			.SetEnabled(FALSE)          // disables usage as current cell
          .SetHorizontalAlignment(DT_CENTER)
@@ -251,7 +241,7 @@ void CGirderDescLongRebarGrid::CustomInit()
 			.SetValue(cv)
 		);
 
-	this->SetStyleRange(CGXRange(0,4), CGXStyle()
+	SetStyleRange(CGXRange(row, col++), CGXStyle()
          .SetWrapText(TRUE)
 			.SetEnabled(FALSE)          // disables usage as current cell
          .SetHorizontalAlignment(DT_CENTER)
@@ -260,7 +250,7 @@ void CGirderDescLongRebarGrid::CustomInit()
 		);
 
    cv.Format(_T("Cover\n(%s)"),pDisplayUnits->GetComponentDimUnit().UnitOfMeasure.UnitTag().c_str());
-	this->SetStyleRange(CGXRange(0,5), CGXStyle()
+	SetStyleRange(CGXRange(row, col++), CGXStyle()
          .SetWrapText(TRUE)
 			.SetEnabled(FALSE)          // disables usage as current cell
          .SetHorizontalAlignment(DT_CENTER)
@@ -268,7 +258,7 @@ void CGirderDescLongRebarGrid::CustomInit()
 			.SetValue(cv)
 		);
 
-	this->SetStyleRange(CGXRange(0,6), CGXStyle()
+	SetStyleRange(CGXRange(row, col++), CGXStyle()
          .SetWrapText(TRUE)
 			.SetEnabled(FALSE)          // disables usage as current cell
          .SetHorizontalAlignment(DT_CENTER)
@@ -276,7 +266,7 @@ void CGirderDescLongRebarGrid::CustomInit()
 			.SetValue(_T("Bar\nSize"))
 		);
 
-	this->SetStyleRange(CGXRange(0,7), CGXStyle()
+	SetStyleRange(CGXRange(row, col++), CGXStyle()
          .SetWrapText(TRUE)
 			.SetEnabled(FALSE)          // disables usage as current cell
          .SetHorizontalAlignment(DT_CENTER)
@@ -285,7 +275,7 @@ void CGirderDescLongRebarGrid::CustomInit()
 		);
 
    cv.Format(_T("Spacing\n(%s)"),pDisplayUnits->GetComponentDimUnit().UnitOfMeasure.UnitTag().c_str());
-	this->SetStyleRange(CGXRange(0,8), CGXStyle()
+	SetStyleRange(CGXRange(row, col++), CGXStyle()
          .SetWrapText(TRUE)
 			.SetEnabled(FALSE)          // disables usage as current cell
          .SetHorizontalAlignment(DT_CENTER)
@@ -293,46 +283,70 @@ void CGirderDescLongRebarGrid::CustomInit()
 			.SetValue(cv)
 		);
 
+   SetStyleRange(CGXRange(row, col++), CGXStyle()
+      .SetWrapText(TRUE)
+      .SetEnabled(FALSE)          // disables usage as current cell
+      .SetHorizontalAlignment(DT_CENTER)
+      .SetVerticalAlignment(DT_VCENTER)
+      .SetValue(_T("Anchored\nLeft"))
+   );
+   SetStyleRange(CGXRange(row, col++), CGXStyle()
+      .SetWrapText(TRUE)
+      .SetEnabled(FALSE)          // disables usage as current cell
+      .SetHorizontalAlignment(DT_CENTER)
+      .SetVerticalAlignment(DT_VCENTER)
+      .SetValue(_T("Anchored\nRight"))
+   );
 
    // make it so that text fits correctly in header row
-	this->ResizeRowHeightsToFit(CGXRange(0,0,0,num_cols));
+   ResizeColWidthsToFit(CGXRange(0, 0, 0, num_cols));
+   ResizeRowHeightsToFit(CGXRange(0,0,0,num_cols));
 
    // don't allow users to resize grids
-   this->GetParam( )->EnableTrackColWidth(0); 
-   this->GetParam( )->EnableTrackRowHeight(0); 
+   GetParam( )->EnableTrackColWidth(0); 
+   GetParam( )->EnableTrackRowHeight(0); 
 
-	this->EnableIntelliMouse();
-	this->SetFocus();
+	EnableIntelliMouse();
+	SetFocus();
 
-	this->GetParam( )->EnableUndo(TRUE);
+	GetParam( )->EnableUndo(TRUE);
 }
 
 void CGirderDescLongRebarGrid::SetRowStyle(ROWCOL nRow)
 {
 	GetParam()->EnableUndo(FALSE);
 
-	this->SetStyleRange(CGXRange(nRow,1), CGXStyle()
+   ROWCOL nCol = 1;
+
+	SetStyleRange(CGXRange(nRow,nCol++), CGXStyle()
 			.SetControl(GX_IDS_CTRL_CBS_DROPDOWNLIST)
 			.SetChoiceList(_T("Full-Length\nLeft End\nRight End\nMid-Girder-Length\nMid-Girder-Ends"))
 			.SetValue(_T("Full-Length"))
          .SetHorizontalAlignment(DT_RIGHT)
          );
 
-	this->SetStyleRange(CGXRange(nRow,2,nRow,3), CGXStyle()
-			.SetUserAttribute(GX_IDS_UA_VALID_MIN, _T("0"))
-			.SetUserAttribute(GX_IDS_UA_VALID_MAX, _T("1.0e99"))
-			.SetUserAttribute(GX_IDS_UA_VALID_MSG, _T("Please enter zero or greater"))
-         .SetHorizontalAlignment(DT_RIGHT)
-		);
+   SetStyleRange(CGXRange(nRow, nCol++), CGXStyle()
+      .SetUserAttribute(GX_IDS_UA_VALID_MIN, _T("0"))
+      .SetUserAttribute(GX_IDS_UA_VALID_MAX, _T("1.0e99"))
+      .SetUserAttribute(GX_IDS_UA_VALID_MSG, _T("Please enter zero or greater"))
+      .SetHorizontalAlignment(DT_RIGHT)
+   );
 
-	this->SetStyleRange(CGXRange(nRow,4), CGXStyle()
+   SetStyleRange(CGXRange(nRow, nCol++), CGXStyle()
+      .SetUserAttribute(GX_IDS_UA_VALID_MIN, _T("0"))
+      .SetUserAttribute(GX_IDS_UA_VALID_MAX, _T("1.0e99"))
+      .SetUserAttribute(GX_IDS_UA_VALID_MSG, _T("Please enter zero or greater"))
+      .SetHorizontalAlignment(DT_RIGHT)
+   );
+
+	SetStyleRange(CGXRange(nRow,nCol++), CGXStyle()
 			.SetControl(GX_IDS_CTRL_CBS_DROPDOWNLIST)
 			.SetChoiceList(_T("Top\nBottom"))
 			.SetValue(_T("Top"))
          .SetHorizontalAlignment(DT_RIGHT)
          );
 
-	this->SetStyleRange(CGXRange(nRow,5), CGXStyle()
+	SetStyleRange(CGXRange(nRow, nCol++), CGXStyle()
 			.SetUserAttribute(GX_IDS_UA_VALID_MIN, _T("0"))
 			.SetUserAttribute(GX_IDS_UA_VALID_MAX, _T("1.0e99"))
 			.SetUserAttribute(GX_IDS_UA_VALID_MSG, _T("Cover must be zero or greater"))
@@ -352,7 +366,7 @@ void CGirderDescLongRebarGrid::SetRowStyle(ROWCOL nRow)
       strBarSizeChoiceList += _T("\n");
    }
 
-   SetStyleRange(CGXRange(nRow,6), CGXStyle()
+   SetStyleRange(CGXRange(nRow, nCol++), CGXStyle()
       .SetEnabled(TRUE)
       .SetReadOnly(FALSE)
       .SetControl(GX_IDS_CTRL_CBS_DROPDOWNLIST)
@@ -361,21 +375,35 @@ void CGirderDescLongRebarGrid::SetRowStyle(ROWCOL nRow)
       .SetValue(lrfdRebarPool::GetBarSize(matRebar::bs4).c_str())
       );
 
-	this->SetStyleRange(CGXRange(nRow,7), CGXStyle()
+	SetStyleRange(CGXRange(nRow, nCol++), CGXStyle()
 			.SetUserAttribute(GX_IDS_UA_VALID_MIN, _T("1"))
 			.SetUserAttribute(GX_IDS_UA_VALID_MAX, _T("1.0e99"))
 			.SetUserAttribute(GX_IDS_UA_VALID_MSG, _T("You must have at least one bar in a row"))
          .SetHorizontalAlignment(DT_RIGHT)
 		);
 
-	this->SetStyleRange(CGXRange(nRow,8), CGXStyle()
+	SetStyleRange(CGXRange(nRow, nCol++), CGXStyle()
 			.SetUserAttribute(GX_IDS_UA_VALID_MIN, _T("0"))
 			.SetUserAttribute(GX_IDS_UA_VALID_MAX, _T("1.0e99"))
 			.SetUserAttribute(GX_IDS_UA_VALID_MSG, _T("Please enter zero or greater"))
          .SetHorizontalAlignment(DT_RIGHT)
 		);
 
-	GetParam()->EnableUndo(TRUE);
+   SetStyleRange(CGXRange(nRow, nCol++), CGXStyle()
+      .SetEnabled(TRUE)
+      .SetReadOnly(FALSE)
+      .SetHorizontalAlignment(DT_CENTER)
+      .SetControl(GX_IDS_CTRL_CHECKBOX3D)
+   );
+
+   SetStyleRange(CGXRange(nRow, nCol++), CGXStyle()
+      .SetEnabled(TRUE)
+      .SetReadOnly(FALSE)
+      .SetHorizontalAlignment(DT_CENTER)
+      .SetControl(GX_IDS_CTRL_CHECKBOX3D)
+   );
+
+   GetParam()->EnableUndo(TRUE);
 }
 
 CString CGirderDescLongRebarGrid::GetCellValue(ROWCOL nRow, ROWCOL nCol)
@@ -399,6 +427,16 @@ void CGirderDescLongRebarGrid::OnModifyCell(ROWCOL nRow,ROWCOL nCol)
 	{
       OnLayoutTypeChanged(nRow);
    }
+}
+
+Float64 CGirderDescLongRebarGrid::GetDistFromStart(ROWCOL row)
+{
+   CString s = GetCellValue(row, 2);
+   s.TrimLeft();
+   int l = s.GetLength();
+   CString s2 = s.Right(l - 1);
+   Float64 d = _tstof(s2);
+   return d;
 }
 
 matRebar::Size CGirderDescLongRebarGrid::GetBarSize(ROWCOL row)
@@ -571,6 +609,24 @@ bool CGirderDescLongRebarGrid::GetRowData(ROWCOL nRow, CLongitudinalRebarData::R
 
    plsi->BarSpacing = d;
 
+   plsi->bExtendedLeft = GetCellValue(nRow, 9) == _T("1") ? true : false;
+   plsi->bExtendedRight = GetCellValue(nRow, 10) == _T("1") ? true : false;
+
+   if (plsi->BarLayout != pgsTypes::blFullLength && plsi->BarLayout != pgsTypes::blFromLeft && plsi->BarLayout != pgsTypes::blFromRight)
+   {
+      // the bar layout is not one of the extendable types
+      plsi->bExtendedLeft = false;
+      plsi->bExtendedRight = false;
+   }
+
+   if (( (plsi->BarLayout == pgsTypes::blFromLeft && plsi->bExtendedLeft) || (plsi->BarLayout == pgsTypes::blFromRight && plsi->bExtendedRight) ) && !IsZero(plsi->DistFromEnd))
+   {
+      CString msg;
+      msg.Format(_T("Distance from end must be zero when the bar is extended: Row %d"), nRow);
+      ::AfxMessageBox(msg, MB_OK | MB_ICONWARNING);
+      return false;
+   }
+
 #pragma Reminder("UPDATE: Need to do all validation here")
    // This grid is used by PGSuper Girders, PGSplice Segments and Closure Joints
    // CGirderDescLongitudinalRebar::DoDataExchange does some additional validation
@@ -610,6 +666,7 @@ void CGirderDescLongRebarGrid::FillGrid(const CLongitudinalRebarData& rebarData)
       std::vector<CLongitudinalRebarData::RebarRow>::const_iterator end(rebarData.RebarRows.end());
       for ( ; iter != end; iter++ )
       {
+         ROWCOL col = 1;
          const CLongitudinalRebarData::RebarRow& rebar = (*iter);
 
          CString tmp;
@@ -640,32 +697,37 @@ void CGirderDescLongRebarGrid::FillGrid(const CLongitudinalRebarData& rebarData)
             tmp = _T("Full-Length");
          }
 
-         VERIFY(SetValueRange(CGXRange(nRow, 1), tmp));
+         VERIFY(SetValueRange(CGXRange(nRow, col++), tmp));
 
          Float64 distFromEnd = ::ConvertFromSysUnits(rebar.DistFromEnd,pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure);
-         VERIFY(SetValueRange(CGXRange(nRow, 2), distFromEnd));
+         VERIFY(SetValueRange(CGXRange(nRow, col++), distFromEnd));
 
          Float64 barLength = ::ConvertFromSysUnits(rebar.BarLength,pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure);
-         VERIFY(SetValueRange(CGXRange(nRow, 3), barLength));
+         VERIFY(SetValueRange(CGXRange(nRow, col++), barLength));
 
-         VERIFY(SetValueRange(CGXRange(nRow, 4), rebar.Face == pgsTypes::BottomFace ? _T("Bottom") : _T("Top")));
+         VERIFY(SetValueRange(CGXRange(nRow, col++), rebar.Face == pgsTypes::BottomFace ? _T("Bottom") : _T("Top")));
 
          Float64 cover = ::ConvertFromSysUnits(rebar.Cover, pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
-         VERIFY(SetValueRange(CGXRange(nRow, 5), cover));
+         VERIFY(SetValueRange(CGXRange(nRow, col++), cover));
 
          tmp.Format(_T("%s"), lrfdRebarPool::GetBarSize(rebar.BarSize).c_str());
-         VERIFY(SetValueRange(CGXRange(nRow, 6), tmp));
+         VERIFY(SetValueRange(CGXRange(nRow, col++), tmp));
 
-         VERIFY(SetValueRange(CGXRange(nRow, 7), (LONG)rebar.NumberOfBars));
+         VERIFY(SetValueRange(CGXRange(nRow, col++), (LONG)rebar.NumberOfBars));
 
          Float64 barSpacing = ::ConvertFromSysUnits(rebar.BarSpacing, pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
-         VERIFY(SetValueRange(CGXRange(nRow, 8), barSpacing));
+         VERIFY(SetValueRange(CGXRange(nRow, col++), barSpacing));
+
+         SetStyleRange(CGXRange(nRow, col++), CGXStyle().SetValue(rebar.bExtendedLeft ? 1L : 0L).SetEnabled(TRUE).SetReadOnly(FALSE));
+         SetStyleRange(CGXRange(nRow, col++), CGXStyle().SetValue(rebar.bExtendedRight ? 1L : 0L).SetEnabled(TRUE).SetReadOnly(FALSE));
 
          OnLayoutTypeChanged(nRow);
 
          nRow++;
       }
    }
+
+   ResizeColWidthsToFit(CGXRange(0, 0, GetRowCount(), GetColCount()));
 
    GetParam()->SetLockReadOnly(TRUE);
 }
@@ -788,29 +850,61 @@ void CGirderDescLongRebarGrid::OnLayoutTypeChanged(ROWCOL nRow)
 {
    pgsTypes::RebarLayoutType layout = GetLayout(nRow);
 
-   // Disable and enable dist from end and bar length depending on layout
-   BOOL bDistEndCol, bBarLengthCol;
-   if (layout==pgsTypes::blFullLength)
+   BOOL bDistEndCol(FALSE), bBarLengthCol(FALSE), bExtendLeft(FALSE), bExtendRight(FALSE);
+   switch (layout)
    {
-      bDistEndCol = FALSE;
-      bBarLengthCol = FALSE;
-   }
-   else if (layout==pgsTypes::blMidGirderLength)
-   {
-      bDistEndCol = FALSE;
-      bBarLengthCol = TRUE;
-   }
-   else if (layout==pgsTypes::blMidGirderEnds)
-   {
+   case pgsTypes::blFullLength:
+         bDistEndCol = FALSE;
+         bBarLengthCol = FALSE;
+         bExtendLeft = TRUE;
+         bExtendRight = TRUE;
+         break;
+
+   case pgsTypes::blMidGirderLength:
+         bDistEndCol = FALSE;
+         bBarLengthCol = TRUE;
+         bExtendLeft = FALSE;
+         bExtendRight = FALSE;
+         break;
+
+   case pgsTypes::blMidGirderEnds:
+         bDistEndCol = TRUE;
+         bBarLengthCol = FALSE;
+         bExtendLeft = FALSE;
+         bExtendRight = FALSE;
+         break;
+
+   case pgsTypes::blFromLeft:
+         bDistEndCol = TRUE;
+         bBarLengthCol = TRUE;
+         bExtendLeft = (IsZero(GetDistFromStart(nRow)) ? TRUE : FALSE);
+         bExtendRight = FALSE;
+         break;
+
+   case pgsTypes::blFromRight:
       bDistEndCol = TRUE;
-      bBarLengthCol = FALSE;
-   }
-   else
-   {
-      bDistEndCol = TRUE;
       bBarLengthCol = TRUE;
+      bExtendLeft = FALSE;
+      bExtendRight = (IsZero(GetDistFromStart(nRow)) ? TRUE : FALSE);
+      break;
+
+   default:
+      ATLASSERT(false); // should never get here
    }
 
    EnableCell(nRow, 2, bDistEndCol);
    EnableCell(nRow, 3, bBarLengthCol);
+   EnableCell(nRow, 9, bExtendLeft);
+   EnableCell(nRow, 10, bExtendRight);
+
+   // if the setting is disable... then make sure it is unchecked
+   if (bExtendLeft == FALSE)
+   {
+      SetStyleRange(CGXRange(nRow, 9),CGXStyle().SetValue(_T("0")));
+   }
+
+   if (bExtendRight == FALSE)
+   {
+      SetStyleRange(CGXRange(nRow, 10), CGXStyle().SetValue(_T("0")));
+   }
 }

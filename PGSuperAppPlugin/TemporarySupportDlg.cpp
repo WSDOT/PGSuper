@@ -130,7 +130,7 @@ void CTemporarySupportDlg::CreateExtensionPages()
       CPropertyPage* pPage = pEditTemporarySupportCallback->CreatePropertyPage(this);
       if ( pPage )
       {
-         m_ExtensionPages.push_back( std::make_pair(pEditTemporarySupportCallback,pPage) );
+         m_ExtensionPages.emplace_back(pEditTemporarySupportCallback,pPage);
          AddPage(pPage);
       }
    }
@@ -172,7 +172,7 @@ void CTemporarySupportDlg::CreateExtensionPages(const std::vector<EditBridgeExte
 
       if ( pPage )
       {
-         m_ExtensionPages.push_back( std::make_pair(pEditTemporarySupportCallback,pPage) );
+         m_ExtensionPages.emplace_back(pEditTemporarySupportCallback,pPage);
          AddPage(pPage);
       }
    }

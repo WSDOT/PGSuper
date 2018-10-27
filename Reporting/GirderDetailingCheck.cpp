@@ -103,7 +103,7 @@ void CGirderDetailingCheck::Build(rptChapter* pChapter,
    if (write_note)
    {
       *p << _T("* - Transverse reinforcement not required if ") << Sub2(_T("V"),_T("u")) << _T(" < 0.5") << symbol(phi) << _T("(") << Sub2(_T("V"),_T("c"));
-      *p  << _T(" + ") << Sub2(_T("V"),_T("p")) << _T(") [Eqn 5.8.2.4-1]")<< rptNewLine;
+      *p  << _T(" + ") << Sub2(_T("V"),_T("p")) << _T(") [Eqn ") << LrfdCw8th(_T("5.8.2.4-1"),_T("5.7.2.3-1")) << _T("]")<< rptNewLine;
    }
 
    GET_IFACE2(pBroker,ILimitStateForces,pLimitStateForces);
@@ -117,7 +117,7 @@ void CGirderDetailingCheck::Build(rptChapter* pChapter,
       if (write_note)
       {
          *p << _T("* - Transverse reinforcement not required if ") << Sub2(_T("V"),_T("u")) << _T(" < 0.5") << symbol(phi) << _T("(") << Sub2(_T("V"),_T("c"));
-         *p  << _T(" + ") << Sub2(_T("V"),_T("p")) << _T(") [Eqn 5.8.2.4-1]")<< rptNewLine;
+         *p  << _T(" + ") << Sub2(_T("V"),_T("p")) << _T(") [Eqn ") << LrfdCw8th(_T("5.8.2.4-1"),_T("5.7.2.3-1")) << _T("]")<< rptNewLine;
       }
    }
 
@@ -171,7 +171,7 @@ void CGirderDetailingCheck::BuildDimensionCheck(rptChapter* pChapter,
 {
    rptParagraph* pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pPara;
-   *pPara << _T("Girder Dimensions Detailing Check [5.14.1.2.2]") << rptNewLine;
+   *pPara << _T("Girder Dimensions Detailing Check [") << LrfdCw8th(_T("5.14.1.2.2"),_T("5.12.3.2.2")) << _T("]") << rptNewLine;
 
    GET_IFACE2(pBroker,IBridge,pBridge);
    SegmentIndexType nSegments = pBridge->GetSegmentCount(pGirderArtifact->GetGirderKey());
@@ -212,7 +212,7 @@ void CGirderDetailingCheck::BuildDimensionCheck(rptChapter* pChapter,
          // There is no top flange... Assume this is not a bulb-T or I type section
          (*pTable)(1,1) << _T("-");
          (*pTable)(1,2) << _T("-");
-         (*pTable)(1,3) << RPT_NA << rptNewLine << _T("See LRFD C5.14.1.2.2");
+         (*pTable)(1, 3) << RPT_NA << rptNewLine << _T("See LRFD C") << LrfdCw8th(_T("5.14.1.2.2"), _T("5.12.3.2.2"));
       }
       else
       {

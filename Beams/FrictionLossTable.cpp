@@ -61,7 +61,7 @@ CFrictionLossTable* CFrictionLossTable::PrepareTable(rptChapter* pChapter,IBroke
    
    rptParagraph* pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pParagraph;
-   *pParagraph << _T("Friction and Anchor Set loss in post-tensioned temporary strands [5.9.5.2.1, 5.9.5.2.2b]") << rptNewLine;
+   *pParagraph << _T("Friction and Anchor Set loss in post-tensioned temporary strands [") << LrfdCw8th(_T("5.9.5.2.1, "), _T("5.9.3.2.1, ")) << LrfdCw8th(_T("5.9.5.2.2b"), _T("5.9.3.2.2b")) <<_T("]") << rptNewLine;
 
    pParagraph = new rptParagraph;
    *pChapter << pParagraph;

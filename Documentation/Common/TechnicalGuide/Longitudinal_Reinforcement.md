@@ -9,7 +9,7 @@ Each of these conditions is described in more detail in the sections below.
 
 Ultimate Moment Capacity
 ------------------------
-@ref tg_moment_capacity is computing using the strain compatibility method. If longitudinal rebar exists in a section, and the option to use girder longitudinal rebar for moment capacity is enabled, this reinforcement will be utilized when computing the ultimate positive moment capacity only. The effectiveness of partially developed reinforcement will be reduced according to LRFD 5.11.2.1.
+@ref tg_moment_capacity is computing using the strain compatibility method. If longitudinal rebar exists in a section, and the option to use girder longitudinal rebar for moment capacity is enabled, this reinforcement will be utilized when computing the ultimate positive moment capacity only. The effectiveness of partially developed reinforcement will be reduced according to LRFD 5.10.8.2.1 (*pre-2017: 5.11.2.1*).
 
 > NOTE: The value of shear depth, d<sub>v</sub>, which is used extensively in shear capacity computations, is computed as part of the ultimate moment capacity analysis. Hence, shear capacity can be affected indirectly by the existence of longitudinal reinforcement. We have noted several cases where longitudinal steel reduces d<sub>v</sub>, which will result in a reduction of vertical shear capacity and may reduce longitudinal reinforcement for shear capacity. This behavior can be quite unexpected.
 
@@ -17,7 +17,7 @@ Ultimate Moment Capacity
 
 Longitudinal Reinforcement for Shear
 --------------------------------------
-Provision 5.8.3.5 of the AASHTO LRFD Specifications states that, for sections not subject to torsion, longitudinal reinforcement shall be proportioned so that at each section the following equation (5.8.3.5-1) is satisfied:
+Provision 5.7.3.5 (*pre-2017: 5.8.3.5*) of the AASHTO LRFD Specifications states that, for sections not subject to torsion, longitudinal reinforcement shall be proportioned so that at each section the following equation (5.7.3.5-1) is satisfied:
 
 ![](LongitudinalReinforcementForShear.png)
 
@@ -42,7 +42,7 @@ V<sub>p</sub> = Shear resistance provided by vertical component of prestressing<
 
 Allowable Tensile Stress for Temporary Conditions
 ----------------------------------------------------
-LRFD 5.9.4.1.2-1, "Temporary Tensile Stress Limits in Prestressed Concrete before Losses, Fully Prestressed Components", allows tensile stress limits for temporary conditions to be increased if sufficient bonded reinforcing bars and/or prestressing steel are provided to resist the tensile force in the concrete computed assuming an uncracked section. The higher allowable limits may be specified for the following cases: 
+LRFD 5.9.2.3.1b (*pre-2017: 5.9.4.1.2-1*), "Temporary Tensile Stress Limits in Prestressed Concrete before Losses, Fully Prestressed Components", allows tensile stress limits for temporary conditions to be increased if sufficient bonded reinforcing bars and/or prestressing steel are provided to resist the tensile force in the concrete computed assuming an uncracked section. The higher allowable limits may be specified for the following cases: 
 * release in the casting yard (See Project Criteria - @ref ug_library_dialogs_project_criteria_design_and_spec_checking tab).
 * during lifting (See Project Criterial - @ref ug_library_dialogs_project_criteria_lifting tab);
 * during hauling (See Project Criterial - @ref ug_library_dialogs_project_criteria_hauling tab);
@@ -52,7 +52,7 @@ AASHTO suggests that the required tensile steel can be computed per the figure b
 ![](IncreasedAllowableTension.gif)
 
 
-In addition to the basic approach descrbed in LRFD 5.9.4.1.2, the following assumptions are made:
+In addition to the basic approach descrbed in LRFD 5.9.2.3.1b (*pre-2017: 5.9.4.1.2*), the following assumptions are made:
 1. The actual area of the tension zone is computed based on the location of the neutral (bending) axis and the geometry of the girder cross section.
 2. Longitudinal reinforcement will only be utilized if it lies on the tension side of the neutral axis. 
 3. Reinforcement is only considered at sections where it is fully developed.

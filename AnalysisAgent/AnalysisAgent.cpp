@@ -31,8 +31,7 @@
 #include "resource.h"
 #include "initguid.h"
 #include "AnalysisAgent.h"
-#include "AnalysisAgent_i.h"
-#include "AnalysisAgent_i.c"
+#include "CLSID.h"
 
 #include <WBFLFem2d_i.c>
 #include <WBFLGeometry_i.c>

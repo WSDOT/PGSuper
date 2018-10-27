@@ -119,7 +119,7 @@ void CInterfaceShearDetails::Build( IBroker* pBroker, rptChapter* pChapter,
    pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pPara;
 
-   (*pPara) << _T("Details for Horizontal Interface Shear Capacity (") << GetLimitStateString(ls) << _T(") [5.8.4.1]") << rptNewLine;
+   (*pPara) << _T("Details for Horizontal Interface Shear Capacity (") << GetLimitStateString(ls) << _T(") [") << LrfdCw8th(_T("5.8.4.1"),_T("5.7.4.1")) << _T("]") << rptNewLine;
 
    pPara = new rptParagraph();
    *pChapter << pPara;
@@ -192,7 +192,7 @@ void CInterfaceShearDetails::Build( IBroker* pBroker, rptChapter* pChapter,
 
 
    bool spec2007OrOlder = lrfdVersionMgr::FourthEdition2007 <= pSpecEntry->GetSpecificationType();
-   Float64 fy_max = ::ConvertToSysUnits(60.0,unitMeasure::KSI); // LRFD 2013 5.8.4.1
+   Float64 fy_max = ::ConvertToSysUnits(60.0,unitMeasure::KSI); // LRFD 5.7.4.2 (pre2017: 2013 5.8.4.1)
 
    // general quantities
    for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
@@ -219,7 +219,7 @@ void CInterfaceShearDetails::Build( IBroker* pBroker, rptChapter* pChapter,
 
       if ( p_first_artifact[segIdx]->WasFyLimited() )
       {
-         *pPara << _T(", ") << RPT_FY << _T(" is limited to ") << stress_with_tag.SetValue(fy_max) << _T(" (LRFD 5.8.4.1)");
+         *pPara << _T(", ") << RPT_FY << _T(" is limited to ") << stress_with_tag.SetValue(fy_max) << _T(" (LRFD ") << LrfdCw8th(_T("5.8.4.1"),_T("5.7.4.2")) << _T(")");
       }
       *pPara << rptNewLine;
 
@@ -250,7 +250,7 @@ void CInterfaceShearDetails::Build( IBroker* pBroker, rptChapter* pChapter,
 
          if ( pHorizShearArtifact->WasFyLimited() )
          {
-            *pPara << _T(", ") << RPT_FY << _T(" is limited to ") << stress_with_tag.SetValue(fy_max) << _T(" (LRFD 5.8.4.1)");
+            *pPara << _T(", ") << RPT_FY << _T(" is limited to ") << stress_with_tag.SetValue(fy_max) << _T(" (LRFD ") << LrfdCw8th(_T("5.8.4.1"),_T("5.7.4.2")) << _T(")");
          }
          *pPara << rptNewLine;
          *pPara << rptNewLine;
@@ -421,7 +421,7 @@ void CInterfaceShearDetails::Build( IBroker* pBroker, rptChapter* pChapter,
    // Next, fill table for min Avf
    pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pPara;
-   *pPara << _T("Details for Minimum Horizontal Interface Shear Reinforcement [5.8.4.4]")<<rptNewLine;
+   *pPara << _T("Details for Minimum Horizontal Interface Shear Reinforcement [") << LrfdCw8th(_T("5.8.4.4"),_T("5.7.4.2")) << _T("]")<<rptNewLine;
 
    rptParagraph* pParaEqn = new rptParagraph(); // for equation
    *pChapter << pParaEqn;
@@ -469,8 +469,8 @@ void CInterfaceShearDetails::Build( IBroker* pBroker, rptChapter* pChapter,
    {
       (*table)(0,col++)  << COLHDR(Sub2(_T("v"),_T("ui")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
 
-      (*table)(0,col++)<<COLHDR(Sub2(_T("a"),_T("vf min")) << rptNewLine << _T("(5.8.4.4-1)"), rptAreaPerLengthUnitTag, pDisplayUnits->GetAvOverSUnit() );
-      (*table)(0,col++)<<COLHDR(Sub2(_T("a"),_T("vf min")) << rptNewLine << _T("(5.8.4.1-3)"), rptAreaPerLengthUnitTag, pDisplayUnits->GetAvOverSUnit() );
+      (*table)(0,col++)<<COLHDR(Sub2(_T("a"),_T("vf min")) << rptNewLine << _T("(") << LrfdCw8th(_T("5.8.4.4-1"),_T("5.7.4.2-1")) << _T(")"), rptAreaPerLengthUnitTag, pDisplayUnits->GetAvOverSUnit() );
+      (*table)(0,col++)<<COLHDR(Sub2(_T("a"),_T("vf min")) << rptNewLine << _T("(") << LrfdCw8th(_T("5.8.4.1-3"),_T("5.7.4.3-3")) << _T(")"), rptAreaPerLengthUnitTag, pDisplayUnits->GetAvOverSUnit() );
       (*table)(0,col++)<<COLHDR(Sub2(_T("a"),_T("vf min")), rptAreaPerLengthUnitTag, pDisplayUnits->GetAvOverSUnit() );
 
       if ( IS_SI_UNITS(pDisplayUnits) )
@@ -479,7 +479,15 @@ void CInterfaceShearDetails::Build( IBroker* pBroker, rptChapter* pChapter,
       }
       else
       {
-         *pParaEqn << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("AvfMin_US.png")) << rptNewLine;
+   
+         if (lrfdVersionMgr::GetVersion() < lrfdVersionMgr::EighthEdition2017)
+         {
+            *pParaEqn << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("AvfMin_US.png")) << rptNewLine;
+         }
+         else
+         {
+            *pParaEqn << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("AvfMin_US_2017.png")) << rptNewLine;
+         }
       }
    }
    else
@@ -534,8 +542,8 @@ void CInterfaceShearDetails::Build( IBroker* pBroker, rptChapter* pChapter,
 
          if ( spec2007OrOlder )
          {
-            (*table)(row,col++) << AvS.SetValue(pArtifact->GetAvOverSMin_5_8_4_4_1());
-            (*table)(row,col++) << AvS.SetValue(pArtifact->GetAvOverSMin_5_8_4_1_3());
+            (*table)(row,col++) << AvS.SetValue(pArtifact->GetAvOverSMin_5_7_4_2_1());
+            (*table)(row,col++) << AvS.SetValue(pArtifact->GetAvOverSMin_5_7_4_1_3());
          }
 
          (*table)(row,col++) << AvS.SetValue(pArtifact->GetAvOverSMin());

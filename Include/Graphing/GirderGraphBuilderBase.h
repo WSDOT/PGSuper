@@ -49,10 +49,7 @@ public:
    virtual void UpdateYAxis();
 
    void ShowGrid(bool bShow);
-   bool ShowGrid() const;
-
    void ShowBeam(bool bShow);
-   bool ShowBeam() const;
 
    void Shift(bool bShift);
    bool Shift() const;
@@ -78,7 +75,7 @@ protected:
    Float64 m_ZeroToleranceY;
 
    Float64 ComputeShift(const CGirderKey& girderKey);
-   void GetXValues(const std::vector<pgsPointOfInterest>& vPoi,std::vector<Float64>* pXVals);
+   void GetXValues(const PoiList& vPoi,std::vector<Float64>* pXVals);
    void AddGraphPoints(IndexType series, const std::vector<Float64>& xvals,const std::vector<Float64>& yvals);
    void AddGraphPoints(IndexType series, const std::vector<Float64>& xvals,const std::vector<sysSectionValue>& yvals);
    void AddGraphPoint(IndexType series, Float64 xval, Float64 yval);
@@ -88,6 +85,5 @@ protected:
    virtual IntervalIndexType GetBeamDrawInterval() = 0;
 
 private:
-   bool m_bShowBeam;
    bool m_bShift;
 };

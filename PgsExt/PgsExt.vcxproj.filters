@@ -379,6 +379,15 @@
     <ClCompile Include="TxnManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="BearingData2.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CastLongitudinalJointActivity.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TxnManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Include\PgsExt\AASHTOConcretePage.h">
@@ -760,6 +769,15 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\MakePgz\zip.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\PgsExt\TxnManager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\PgsExt\BearingData2.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\PgsExt\CastLongitudinalJointActivity.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\Include\PgsExt\TxnManager.h">

@@ -50,6 +50,7 @@ CGirderEditorElevationSettingsPage::CGirderEditorElevationSettingsPage() : CProp
 	m_ShowLongReinf = FALSE;
 	m_ShowLoads = FALSE;
 	m_ShowLegend = FALSE;
+   m_ShowSectionCG = FALSE;
 	//}}AFX_DATA_INIT
 }
 
@@ -69,6 +70,7 @@ void CGirderEditorElevationSettingsPage::DoDataExchange(CDataExchange* pDX)
 	DDX_Check(pDX, IDC_SHOW_LONG_REINF, m_ShowLongReinf);
 	DDX_Check(pDX, IDC_LOADS, m_ShowLoads);
 	DDX_Check(pDX, IDC_SHOW_LEGEND, m_ShowLegend);
+   DDX_Check(pDX, IDC_SHOW_SECTION_CG, m_ShowSectionCG);
 	//}}AFX_DATA_MAP
 }
 

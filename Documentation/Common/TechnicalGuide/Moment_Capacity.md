@@ -1,8 +1,8 @@
 Moment Capacity {#tg_moment_capacity}
 ======================================
-Moment capacity is computed using a non-linear strain-compatibility methodology. Non-linear material models are used for concrete materials and reinforcing strands.
+Moment capacity is computed using a non-linear strain-compatibility methodology. Non-linear material models are used for concrete materials, prestressing strands, and mild reinforcement.
 
-A non linear approach is used in lieu of the AASHTO or PCI approaches because the research done in Reference 1 (below) has shown that for T-beams with different concrete strengths in the flange and web, the traditional equivalent rectangular concrete compressive stress distribution does not provide a reliable estimate of flexural strength.
+A non linear approach is used in lieu of the AASHTO and PCI approaches because the research done in Reference 1 (below) has shown that for T-beams with different concrete strengths in the flange and web, the traditional equivalent rectangular concrete compressive stress distribution does not provide a reliable estimate of flexural strength.
 
 Theory
 ----------
@@ -45,11 +45,18 @@ Strain in the Prestressing Steel
 --------------------------------
 The initial strain in the prestressing steel, <span style="font-family:Symbol">e</span><sub>2</sub>, is computed as <i>f<sub>pe</sub>/E<sub>ps</sub></i>.
 
-Stress in the Prestressing Steel
+Stress in the Prestressing Strand
 --------------------------------
 As mentioned above, the stress/strain material model for the prestressing steel is computed using the "power method" where  <span style="font-family:Symbol">e</span><sub>ps</sub> =  <span style="font-family:Symbol">e</span><sub>1</sub> + <span style="font-family:Symbol">e</span><sub>2</sub>. The equation, and a graph, for grade 270 steel are given below.
 
 ![](PowerFormula.gif)
+
+Stress in the Mild Reinforcement
+----------------------------------
+The stress/strain material model for mild reinforcement is the traditional elastic-perfectly plastic model.
+
+> NOTE: mild reinforcement is only used in the capacity analysis if permitted by the Project Criteria.
+> NOTE: for bridge systems without a cast in place deck or overlay, the mild reinforcement in the girder is used in the negative moment capacity analysis, regardless of the settings in the Project Criteria.
 
 Stress in the Concrete
 -------------------------------
@@ -69,7 +76,7 @@ If the design criteria in this program is set to use the WSDOT BDM method of com
 
 Concrete Strength at Continuity Diaphragms
 ------------------------------------------
-LRFD 5.14.1.4.10 allows the moment capacity of continuity diaphragms to be based on the strength of the concrete in the precast girders. The reason for this is explained in C5.14.1.4.10. The use of the increased concrete strength is permitted because the continuity diaphragm concrete between girder ends is confined by the girder and the continuity diaphragm extends beyond the girders. 
+LRFD 5.12.3.3.10 (*pre-2017: 5.14.1.4.10*) allows the moment capacity of continuity diaphragms to be based on the strength of the concrete in the precast girders. The reason for this is explained in C5.12.3.3.10. The use of the increased concrete strength is permitted because the continuity diaphragm concrete between girder ends is confined by the girder and the continuity diaphragm extends beyond the girders. 
 
 The girder concrete strength is used in the computation of moment capacity at continity diaphragms when the width of the diaphragm exceeds the distance between the ends of girders on either side of the pier by 5% and when the girder spacing and layout on the back and ahead sides of the pier are exactly the same.
 

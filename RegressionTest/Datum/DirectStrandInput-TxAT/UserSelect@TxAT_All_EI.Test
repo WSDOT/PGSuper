@@ -1,6 +1,6 @@
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 40.00    6   7.25    K4 Template      1     1    Strai    *     21  1/2  270  16.39  16.39  10.00  10.00                                               0   0.0  0.0  4.000  5.000   1.334    -1.832     3295   0.683  0.683   1.179 -0.302  0.000 -0.018 -0.320  28.57  100.02    5.00    7.00    6.00 
+ 40.00    6   7.25    K4 Template      1     1    Strai    *     21  1/2  270  16.39  16.39  10.00  10.00                                               0   0.0  0.0  4.000  5.000   1.334    -1.832     3295   0.683  0.683   1.178 -0.302  0.000 -0.018 -0.320  28.57  100.02    5.00    7.00    6.00 
 
 
 The Specification Check was Not Successful
@@ -14,7 +14,7 @@ Minimum fillet value exceeded for bridge check failed
 
 
 The Specification Check was Not Successful
-Tensile stress check failed for Service I Limit State in Interval 2 Prestress Release (Casting Yard)
+Tensile stress check failed for Service I Limit State in Interval 2 Prestress Release
 Lifting checks failed
 Hauling checks failed
 Slab Offset ("A" Dimension) check failed

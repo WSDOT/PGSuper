@@ -26,7 +26,7 @@
 #include <EAF\EAFUIIntegration.h>
 #include <EAF\EAFAppPluginDocumentationImpl.h>
 #include <PgsExt\CatalogServerAppMixin.h>
-#include "TxDOTAgent_i.h"
+#include "CLSID.h"
 #include "resource.h"
 
 class CTxDOTAppPlugin;

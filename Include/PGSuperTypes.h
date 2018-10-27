@@ -234,6 +234,20 @@ typedef struct pgsTypes
       pmtPhysical   // pier is modeled with a physical description
    } PierModelType;
 
+   typedef enum TopFlangeThickeningType
+   {
+      tftNone, // top flange is not thickened
+      tftEnds, // top flange is thickened at ends
+      tftMiddle // top flange is thickened at the middle
+   } TopFlangeThickeningType;
+
+   typedef enum TopWidthType
+   {
+      twtSymmetric, // input defines the full top flange width. the top flange is centered on the web
+      twtCenteredCG, // input defines the full top flange width. the left and right overhangs are automatically adjusted so the center of gravity aligns with the center of the web
+      twtAsymmetric // input defines the left and right overhangs explicitly
+   } TopWidthType;
+
    typedef enum StressType { Tension, Compression } StressType;
    
    typedef enum LimitState { 
@@ -359,11 +373,11 @@ typedef struct pgsTypes
       Ahead = pgsTypes::metStart  // ahead side of pier is at the start of a span
    } PierFaceType;
 
-   typedef enum PierSideType
+   typedef enum SideType
    {
-      pstLeft,
-      pstRight
-   } PierSideType;
+      stLeft,
+      stRight
+   } SideType;
 
    typedef enum GirderOrientationType
    {
@@ -426,8 +440,9 @@ typedef struct pgsTypes
       //       used prior to adding non-composite sections to PGSuper
       sdtCompositeCIP = 0,       // Composite cast-in-place deck
       sdtCompositeSIP = 1,       // Composite stay-in-place deck panels
-      sdtCompositeOverlay,       // Composite structural overlay (for adjacent beams)
-      sdtNone                    // No deck is used... but an asphalt wearing surface can be
+      sdtCompositeOverlay = 2,       // Composite structural overlay (for adjacent beams)
+      sdtNonstructuralOverlay = 4, // Composite overlay for adjacent beams, but does not contribute to the structural section
+      sdtNone = 3                   // No deck is used... but an asphalt wearing surface can be
    } SupportedDeckType;
 
 
@@ -435,9 +450,11 @@ typedef struct pgsTypes
    {
       sbsUniform,                // Spacing is a constant value everywhere in the bridge
       sbsGeneral,                // Spacing is defined pier by pier (or span by span). Spacing between each girder can be different
-      sbsUniformAdjacent,        // Beams are adjacent and joint width is the same in all spans.
-      sbsGeneralAdjacent,        // Beams are adjacent and joint width can vary by span
-      sbsConstantAdjacent        // Beams are adjacent and vary in width based on girder spacing. The same girder spacing is used in all spans
+      sbsUniformAdjacent,        // Beams are adjacent and joint width is the same in all spans. Top width is defined by girder.
+      sbsGeneralAdjacent,        // Beams are adjacent and joint width can vary by span. Top width is defined by girder.
+      sbsConstantAdjacent,       // Beams are adjacent and vary in top width is computed from girder spacing. The same girder spacing is used in all spans. No joints
+      sbsUniformAdjacentWithTopWidth, // Beams are adjacent and top width and joint width is the same in all spans. Top width is input by user.
+      sbsGeneralAdjacentWithTopWidth // Beams are adjacent and top width and joint width can vary by span. Top width is input by user.
    } SupportedBeamSpacing;
 
 
@@ -447,6 +464,14 @@ typedef struct pgsTypes
       sotPier,    // the slab offset is at each abutment, pier, and temporary support and applies to all segments supported by that element
       sotGirder,  // the slab offset is defined at each permanent pier supporting the girder
    } SlabOffsetType;
+
+
+   typedef enum BearingType
+   {
+      brtBridge,  // same bearing data is used for the entire bridge
+      brtPier,    // unique bearing is defined at each abutment, pier, and temporary support and applies to all segments supported by that element
+      brtGirder,  // unique bearing at each pier for each girder
+   } BearingType;
 
    // Assummed excess camber input
    typedef enum AssExcessCamberType 
@@ -675,6 +700,7 @@ typedef struct pgsTypes
       pftUserDW, 
       pftUserLLIM,
       pftShearKey,
+      pftLongitudinalJoint,
 
       // pseudo externally applied loads (really internal loads)
       pftPretension,       // P*e for pretension
@@ -1232,9 +1258,6 @@ struct GDRCONFIG
 
    bool operator==(const GDRCONFIG& other) const
    {
-      if (this->SegmentKey != other.SegmentKey)
-         return false;
-
        if(!IsFlexuralDataEqual(other))
            return false;
 
@@ -1355,8 +1378,8 @@ enum ShearCapacityMethod
 {
    // NOTE: enum values are in a weird order... the constants are set so that they
    //       are consistent with previous versions of PGSuper. DO NOT CHANGE CONSTANTS
-   scmBTEquations = 0, // LRFD 5.8.3.5
-   scmVciVcw      = 2, // LRFD 5.8.3.6 (Vci, Vcw - added in 2007)
+   scmBTEquations = 0, // LRFD 5.7.3.5 (pre2017: 5.8.3.5)
+   scmVciVcw      = 2, // LRFD 5.8.3.6 (Vci, Vcw - added in 2007, removed in 2017)
    scmWSDOT2001   = 1, // WSDOT BDM Method (June 2001 Design Memo)
    scmBTTables    = 3, // LRFD B5.1
    scmWSDOT2007   = 4  // WSDOT BDM Method (August 2007 Design Memo - Use new BT equations from to be published 2008 interims)
@@ -1377,13 +1400,17 @@ inline void UnhashGirderSpacing(DWORD_PTR girderSpacingHash,pgsTypes::Measuremen
 inline bool IsGirderSpacing(pgsTypes::SupportedBeamSpacing sbs)
 {
    // spacing type is a girder spacing and not a joint spacing
-   if ( sbs == pgsTypes::sbsUniform || 
-        sbs == pgsTypes::sbsGeneral || 
-        sbs == pgsTypes::sbsConstantAdjacent
+   if (sbs == pgsTypes::sbsUniform ||
+      sbs == pgsTypes::sbsGeneral ||
+      sbs == pgsTypes::sbsConstantAdjacent
       )
+   {
       return true;
+   }
    else
+   {
       return false;
+   }
 }
 
 inline bool IsJointSpacing(pgsTypes::SupportedBeamSpacing sbs)
@@ -1391,26 +1418,97 @@ inline bool IsJointSpacing(pgsTypes::SupportedBeamSpacing sbs)
    return !IsGirderSpacing(sbs);
 }
 
+inline bool IsTopWidthSpacing(pgsTypes::SupportedBeamSpacing sbs)
+{
+   return (sbs == pgsTypes::sbsUniformAdjacentWithTopWidth || sbs == pgsTypes::sbsGeneralAdjacentWithTopWidth) ? true : false;
+}
+
 inline bool IsBridgeSpacing(pgsTypes::SupportedBeamSpacing sbs)
 {
    // spacing type is for the whole bridge and not span-by-span
-   if ( sbs == pgsTypes::sbsUniform || 
-        sbs == pgsTypes::sbsUniformAdjacent || 
-        sbs == pgsTypes::sbsConstantAdjacent 
+   if (sbs == pgsTypes::sbsUniform ||
+      sbs == pgsTypes::sbsUniformAdjacent ||
+      sbs == pgsTypes::sbsConstantAdjacent ||
+      sbs == pgsTypes::sbsUniformAdjacentWithTopWidth
       )
+   {
       return true;
+   }
    else
+   {
       return false;
+   }
+}
+
+inline bool IsNonstructuralDeck(pgsTypes::SupportedDeckType deckType)
+{
+   return (deckType == pgsTypes::sdtNone || deckType == pgsTypes::sdtNonstructuralOverlay);
+}
+
+inline bool IsStructuralDeck(pgsTypes::SupportedDeckType deckType)
+{
+   return !IsNonstructuralDeck(deckType);
+}
+
+inline bool IsOverlayDeck(pgsTypes::SupportedDeckType deckType)
+{
+   return (deckType == pgsTypes::sdtCompositeOverlay || deckType == pgsTypes::sdtNonstructuralOverlay);
 }
 
 inline bool IsConstantWidthDeck(pgsTypes::SupportedDeckType deckType)
 {
-   return (deckType == pgsTypes::sdtNone || deckType == pgsTypes::sdtCompositeOverlay);
+   return (deckType == pgsTypes::sdtNone || IsOverlayDeck(deckType));
 }
 
 inline bool IsAdjustableWidthDeck(pgsTypes::SupportedDeckType deckType)
 {
    return !IsConstantWidthDeck(deckType);
+}
+
+inline LPCTSTR GetDeckTypeName(pgsTypes::SupportedDeckType deckType)
+{
+   switch (deckType)
+   {
+   case pgsTypes::sdtCompositeCIP:
+      return _T("Composite cast-in-place deck");
+
+   case pgsTypes::sdtCompositeSIP:
+      return _T("Composite stay-in-place deck panels");
+
+   case pgsTypes::sdtCompositeOverlay:
+      return _T("Composite structural overlay");
+
+   case pgsTypes::sdtNonstructuralOverlay:
+      return _T("Nonstructural overlay");
+
+   case pgsTypes::sdtNone:
+      return _T("None");
+
+   default:
+      ATLASSERT(false); // is there a new deck type?
+   }
+
+   return _T("Unknown deck type");
+}
+
+inline LPCTSTR GetCastDeckEventName(pgsTypes::SupportedDeckType deckType)
+{
+   switch (deckType)
+   {
+   case pgsTypes::sdtCompositeCIP:
+   case pgsTypes::sdtCompositeSIP:
+      return _T("Cast Deck");
+
+   case pgsTypes::sdtCompositeOverlay:
+      return _T("Install composite overlay");
+
+   case pgsTypes::sdtNonstructuralOverlay:
+      return _T("Install non-structural overlay");
+
+   default:
+      ATLASSERT(false); // shouldn't get here... deck type sdtNone is never cast
+   }
+   return _T("Bad deck type");
 }
 
 inline bool IsSpanSpacing(pgsTypes::SupportedBeamSpacing sbs)
@@ -1421,12 +1519,14 @@ inline bool IsSpanSpacing(pgsTypes::SupportedBeamSpacing sbs)
 inline bool IsSpreadSpacing(pgsTypes::SupportedBeamSpacing sbs)
 {
    // spacing type is for spread beams
-   if ( sbs == pgsTypes::sbsUniform || 
-        sbs == pgsTypes::sbsGeneral
-      )
+   if (sbs == pgsTypes::sbsUniform || sbs == pgsTypes::sbsGeneral )
+   {
       return true;
+   }
    else
+   {
       return false;
+   }
 }
 
 inline bool IsAdjacentSpacing(pgsTypes::SupportedBeamSpacing sbs)
@@ -1617,6 +1717,42 @@ inline bool IsServiceIIILimitState(pgsTypes::LimitState ls)
            ls == pgsTypes::ServiceIII_LegalEmergency ||
            ls == pgsTypes::ServiceIII_PermitRoutine ||
            ls == pgsTypes::ServiceIII_PermitSpecial) ? true : false;
+}
+
+#include <LRFD\LrfdTypes.h>
+inline lrfdTypes::LimitState PGSLimitStateToLRFDLimitState(pgsTypes::LimitState ls)
+{
+   lrfdTypes::LimitState lrfdLimitState;
+   if (IsStrengthILimitState(ls))
+   {
+      lrfdLimitState = lrfdTypes::StrengthI;
+   }
+   else if (IsStrengthIILimitState(ls))
+   {
+      lrfdLimitState = lrfdTypes::StrengthII;
+   }
+   else if (IsServiceILimitState(ls))
+   {
+      lrfdLimitState = lrfdTypes::ServiceI;
+   }
+   else if (IsServiceIIILimitState(ls))
+   {
+      lrfdLimitState = lrfdTypes::ServiceIII;
+   }
+   else if (ls == pgsTypes::ServiceIA)
+   {
+      lrfdLimitState = lrfdTypes::ServiceIA;
+   }
+   else if (ls == pgsTypes::FatigueI)
+   {
+      lrfdLimitState = lrfdTypes::FatigueI;
+   }
+   else
+   {
+      ATLASSERT(false);
+   }
+
+   return lrfdLimitState;
 }
 
 inline bool IsRatingLiveLoad(pgsTypes::LiveLoadType llType)
@@ -2041,6 +2177,25 @@ inline bool IsContinuousBoundaryCondition(pgsTypes::BoundaryConditionType bc)
    else
    {
       return false;
+   }
+}
+
+inline CString GetTopWidthType(pgsTypes::TopWidthType type)
+{
+   switch (type)
+   {
+   case pgsTypes::twtSymmetric:
+      return CString(_T("Symmetric"));
+
+   case pgsTypes::twtCenteredCG:
+      return CString(_T("Centered CG"));
+
+   case pgsTypes::twtAsymmetric:
+      return CString(_T("Asymmetric"));
+   
+   default:
+      ATLASSERT(false);
+      return CString(_T("Unknown"));
    }
 }
 #endif // INCLUDED_PGSUPERTYPES_H_

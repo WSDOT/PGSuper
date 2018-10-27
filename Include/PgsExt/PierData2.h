@@ -30,6 +30,7 @@
 #include <PgsExt\GirderSpacing2.h>
 #include <PgsExt\ColumnData.h>
 #include <PgsExt\ConcreteMaterial.h>
+#include <PgsExt\BearingData2.h>
 
 class CSpanData2;
 class CBridgeDescription2;
@@ -175,9 +176,19 @@ public:
    void SetBearingOffset(pgsTypes::PierFaceType face,Float64 offset,ConnectionLibraryEntry::BearingOffsetMeasurementType measure);
    void GetBearingOffset(pgsTypes::PierFaceType face,Float64* pOffset,ConnectionLibraryEntry::BearingOffsetMeasurementType* pMeasure) const;
 
-   // Set/Get the support width at this pier
-   void SetSupportWidth(pgsTypes::PierFaceType face,Float64 w);
-   Float64 GetSupportWidth(pgsTypes::PierFaceType face) const;
+   // Set/Get the bearing data - uniform at this girder line (pier face), or per girder
+   void SetBearingData(pgsTypes::PierFaceType face, const CBearingData2& bd);
+   void SetBearingData(GirderIndexType gdrIdx, pgsTypes::PierFaceType face, const CBearingData2& bd);
+
+   // Copy bearing data from one face to the other. This is done when a new span is added
+   void MirrorBearingData(pgsTypes::PierFaceType source);
+
+   CBearingData2* GetBearingData(GirderIndexType gdrIdx, pgsTypes::PierFaceType face);
+   const CBearingData2* GetBearingData(GirderIndexType gdrIdx, pgsTypes::PierFaceType face) const;
+
+   // get support width and net bearing height without having to get all bearing data
+   Float64 GetSupportWidth(GirderIndexType gdrIdx, pgsTypes::PierFaceType face) const;
+   Float64 GetNetBearingHeight(GirderIndexType gdrIdx, pgsTypes::PierFaceType face) const;
 
    // Set/Get the girder spacing at this pier.
    // If there is a closure pour associated with this pier then only the pgsTypes::Back spacing is valid
@@ -214,13 +225,13 @@ public:
    // taperLength = X1/X3
    // endSlopeOffset = X2/X4
    // XBeamOverhangs = X5/X6
-   void SetXBeamDimensions(pgsTypes::PierSideType side,Float64 height,Float64 taperHeight,Float64 taperLength,Float64 endSlopeOffset);
-   void GetXBeamDimensions(pgsTypes::PierSideType side,Float64* pHeight,Float64* pTaperHeight,Float64* pTaperLength,Float64* pEndSlopeOffset) const;
+   void SetXBeamDimensions(pgsTypes::SideType side,Float64 height,Float64 taperHeight,Float64 taperLength,Float64 endSlopeOffset);
+   void GetXBeamDimensions(pgsTypes::SideType side,Float64* pHeight,Float64* pTaperHeight,Float64* pTaperLength,Float64* pEndSlopeOffset) const;
    void SetXBeamWidth(Float64 width);
    Float64 GetXBeamWidth() const;
-   void SetXBeamOverhang(pgsTypes::PierSideType side,Float64 overhang);
+   void SetXBeamOverhang(pgsTypes::SideType side,Float64 overhang);
    void SetXBeamOverhangs(Float64 leftOverhang,Float64 rightOverhang);
-   Float64 GetXBeamOverhang(pgsTypes::PierSideType side) const;
+   Float64 GetXBeamOverhang(pgsTypes::SideType side) const;
    void GetXBeamOverhangs(Float64* pLeftOverhang,Float64* pRightOverhang) const;
    Float64 GetXBeamLength() const;
 
@@ -319,7 +330,14 @@ private:
    ConnectionLibraryEntry::EndDistanceMeasurementType m_EndDistanceMeasurementType[2];
    Float64 m_GirderBearingOffset[2];
    ConnectionLibraryEntry::BearingOffsetMeasurementType m_BearingOffsetMeasurementType[2];
-   Float64 m_SupportWidth[2];
+
+   // Bearing data
+   mutable std::vector<CBearingData2> m_BearingData[2]; // bearing data (ahead/back) for each girder framing into pier bearing line. If single bearing line, data is in [0]
+
+   // make sure bearing data stays intact from girder count changes
+   void ProtectBearingData() const;
+
+   GirderIndexType GetGirderCount(pgsTypes::PierFaceType face) const;
 
    CGirderSpacing2 m_GirderSpacing[2]; // index is pgsTypes::PierFaceType
 
@@ -333,7 +351,7 @@ private:
    Float64 m_TransverseOffset;
    pgsTypes::OffsetMeasurementType m_TransverseOffsetMeasurement;
 
-   // Cross Beam Dimensions (array index is PierSideType enum)
+   // Cross Beam Dimensions (array index is SideType enum)
    Float64 m_XBeamHeight[2];
    Float64 m_XBeamTaperHeight[2];
    Float64 m_XBeamTaperLength[2];

@@ -24,7 +24,7 @@
 #include "GirderModelData.h"
 #include "PGSuperLoadCombinationResponse.h"
 
-CGirderModelData::CGirderModelData(CGirderModelManager *pParent,GirderIndexType gdrLineIdx)
+CGirderModelData::CGirderModelData(const CGirderModelManager *pParent,GirderIndexType gdrLineIdx)
 {
    m_pParent = pParent;
    m_GirderLineIndex = gdrLineIdx;

@@ -46,6 +46,7 @@ CConcreteManager::CConcreteManager()
    m_bIsSegmentValidated       = false;
    m_bIsRailingSystemValidated = false;
    m_bIsDeckValidated          = false;
+   m_bIsLongitudinalJointValidated = false;
 }
 
 CConcreteManager::~CConcreteManager()
@@ -67,19 +68,21 @@ void CConcreteManager::Init(IBroker* pBroker,StatusGroupIDType statusGroupID)
 
 void CConcreteManager::Reset()
 {
-   m_pDeckConc = std::unique_ptr<matConcreteBase>(nullptr);
+   m_pLongitudinalJointConcrete = std::unique_ptr<matConcreteBase>(nullptr);
+   m_pDeckConcrete = std::unique_ptr<matConcreteBase>(nullptr);
    m_pClosureConcrete.clear();
    m_pSegmentConcrete.clear();
-   m_pRailingConc[pgsTypes::tboLeft]  = std::unique_ptr<matConcreteBase>(nullptr);
-   m_pRailingConc[pgsTypes::tboRight] = std::unique_ptr<matConcreteBase>(nullptr);
+   m_pRailingConcrete[pgsTypes::tboLeft]  = std::unique_ptr<matConcreteBase>(nullptr);
+   m_pRailingConcrete[pgsTypes::tboRight] = std::unique_ptr<matConcreteBase>(nullptr);
 
    m_bIsValidated              = false;
    m_bIsSegmentValidated       = false;
    m_bIsRailingSystemValidated = false;
    m_bIsDeckValidated          = false;
+   m_bIsLongitudinalJointValidated = false;
 }
 
-void CConcreteManager::ValidateConcrete()
+void CConcreteManager::ValidateConcrete() const
 {
    if ( m_bIsValidated )
    {
@@ -129,7 +132,7 @@ void CConcreteManager::ValidateConcrete()
 
       // modulus of rupture coefficients
       Float64 time_step = time_at_casting + cure_time;
-      m_pDeckConc.reset( CreateConcreteModel(_T("Deck Concrete"),pDeck->Concrete,time_at_casting,cure_time,age_at_initial_loading,time_step) );
+      m_pDeckConcrete.reset( CreateConcreteModel(_T("Deck Concrete"),pDeck->Concrete,time_at_casting,cure_time,age_at_initial_loading,time_step) );
    }
 
    //////////////////////////////////////////////////////////////////////////////
@@ -161,7 +164,7 @@ void CConcreteManager::ValidateConcrete()
    }
 
    Float64 time_step = time_at_casting + cure_time;
-   m_pRailingConc[pgsTypes::tboLeft].reset( CreateConcreteModel(_T("Left Railing Concrete"), pLeftRailingSystem->Concrete,time_at_casting,cure_time,age_at_initial_loading,time_step) );
+   m_pRailingConcrete[pgsTypes::tboLeft].reset( CreateConcreteModel(_T("Left Railing Concrete"), pLeftRailingSystem->Concrete,time_at_casting,cure_time,age_at_initial_loading,time_step) );
 
    const CRailingSystem* pRightRailingSystem = m_pBridgeDesc->GetRightRailingSystem();
    if ( pRightRailingSystem->Concrete.bUserEc )
@@ -180,7 +183,7 @@ void CConcreteManager::ValidateConcrete()
       }
    }
 
-   m_pRailingConc[pgsTypes::tboRight].reset( CreateConcreteModel(_T("Right Railing Concrete"), pRightRailingSystem->Concrete,time_at_casting,cure_time,age_at_initial_loading,time_step) );
+   m_pRailingConcrete[pgsTypes::tboRight].reset( CreateConcreteModel(_T("Right Railing Concrete"), pRightRailingSystem->Concrete,time_at_casting,cure_time,age_at_initial_loading,time_step) );
    
    //////////////////////////////////////////////////////////////////////////////
    //
@@ -238,11 +241,55 @@ void CConcreteManager::ValidateConcrete()
 
                matConcreteBase* pClosureConcrete = CreateConcreteModel(_T("Closure Concrete"),pClosure->GetConcrete(),closure_casting_time,closure_cure_time,closure_age_at_continuity,closure_step_time);
                m_pClosureConcrete.insert( std::make_pair(segmentKey,std::shared_ptr<matConcreteBase>(pClosureConcrete)) );
+
             }
          }
       }
    }
-   
+
+   //////////////////////////////////////////////////////////////////////////////
+   //
+   // Create Longitudinal Joint concrete
+   //
+   //////////////////////////////////////////////////////////////////////////////
+   if (m_pBridgeDesc->HasStructuralLongitudinalJoints())
+   {
+      const CConcreteMaterial& LJConcrete = m_pBridgeDesc->GetLongitudinalJointMaterial();
+      if (LJConcrete.bUserEc)
+      {
+         modE = LJConcrete.Ec;
+      }
+      else
+      {
+         modE = lrfdConcreteUtil::ModE(LJConcrete.Fc,
+            LJConcrete.StrengthDensity,
+            false /* ignore LRFD range checks */);
+
+         if (lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion())
+         {
+            modE *= (LJConcrete.EcK1*LJConcrete.EcK2);
+         }
+      }
+
+      // save these parameters for later so we don't have to look them up every time they are needed
+      m_LongitudinalJointEcK1 = LJConcrete.EcK1;
+      m_LongitudinalJointEcK2 = LJConcrete.EcK2;
+      m_LongitudinalJointCreepK1 = LJConcrete.CreepK1;
+      m_LongitudinalJointCreepK2 = LJConcrete.CreepK2;
+      m_LongitudinalJointShrinkageK1 = LJConcrete.ShrinkageK1;
+      m_LongitudinalJointShrinkageK2 = LJConcrete.ShrinkageK2;
+
+      // Time dependent model
+      EventIndexType castLongitudinalJointEventIdx = pTimelineMgr->GetCastLongitudinalJointEventIndex();
+      time_at_casting = pTimelineMgr->GetStart(castLongitudinalJointEventIdx);
+      age_at_initial_loading = pTimelineMgr->GetEventByIndex(castLongitudinalJointEventIdx)->GetCastLongitudinalJointActivity().GetConcreteAgeAtContinuity();
+      cure_time = pTimelineMgr->GetEventByIndex(castLongitudinalJointEventIdx)->GetCastLongitudinalJointActivity().GetCuringDuration();
+
+      // modulus of rupture coefficients
+      time_step = time_at_casting + cure_time;
+      m_pLongitudinalJointConcrete.reset(CreateConcreteModel(_T("Longitudinal Joint Concrete"), LJConcrete, time_at_casting, cure_time, age_at_initial_loading, time_step));
+   }
+
    //////////////////////////////////////////////////////////////////////////////
    //
    // Pier Concrete
@@ -292,10 +339,10 @@ void CConcreteManager::ValidateConcrete()
    Float64 fcMin = bSI ? ::ConvertToSysUnits(28, unitMeasure::MPa) : ::ConvertToSysUnits(4, unitMeasure::KSI);
 
    // check railing system
-   if ( !IsConcreteDensityInRange(m_pRailingConc[pgsTypes::tboLeft]->GetStrengthDensity(),(pgsTypes::ConcreteType)m_pRailingConc[pgsTypes::tboLeft]->GetType()) )
+   if ( !IsConcreteDensityInRange(m_pRailingConcrete[pgsTypes::tboLeft]->GetStrengthDensity(),(pgsTypes::ConcreteType)m_pRailingConcrete[pgsTypes::tboLeft]->GetType()) )
    {
       std::_tostringstream os;
-      if ( m_pRailingConc[pgsTypes::tboLeft]->GetType() == pgsTypes::Normal )
+      if ( m_pRailingConcrete[pgsTypes::tboLeft]->GetType() == pgsTypes::Normal )
       {
          os << _T("Left railing system concrete density is out of range for Normal Weight Concrete per LRFD 5.2.");
       }
@@ -311,10 +358,10 @@ void CConcreteManager::ValidateConcrete()
       pStatusCenter->Add(pStatusItem);
    }
 
-   if ( !IsConcreteDensityInRange(m_pRailingConc[pgsTypes::tboRight]->GetStrengthDensity(),(pgsTypes::ConcreteType)m_pRailingConc[pgsTypes::tboRight]->GetType()) )
+   if ( !IsConcreteDensityInRange(m_pRailingConcrete[pgsTypes::tboRight]->GetStrengthDensity(),(pgsTypes::ConcreteType)m_pRailingConcrete[pgsTypes::tboRight]->GetType()) )
    {
       std::_tostringstream os;
-      if ( m_pRailingConc[pgsTypes::tboRight]->GetType() == pgsTypes::Normal )
+      if ( m_pRailingConcrete[pgsTypes::tboRight]->GetType() == pgsTypes::Normal )
       {
          os << _T("Right railing system concrete density is out of range for Normal Weight Concrete per LRFD 5.2.");
       }
@@ -336,8 +383,8 @@ void CConcreteManager::ValidateConcrete()
       GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
       GET_IFACE(ILimits,pLimits);
 
-      Float64 time = m_pDeckConc->GetTimeAtCasting() + m_pDeckConc->GetCureTime() + 28.0;
-      Float64 fc28 = m_pDeckConc->GetFc(time);
+      Float64 time = m_pDeckConcrete->GetTimeAtCasting() + m_pDeckConcrete->GetCureTime() + 28.0;
+      Float64 fc28 = m_pDeckConcrete->GetFc(time);
       if ( fc28 < fcMin && !IsEqual(fc28,fcMin) )
       {
          std::_tstring strMsg;
@@ -350,7 +397,7 @@ void CConcreteManager::ValidateConcrete()
          //THROW_UNWIND(strMsg.c_str(),-1);
       }
 
-      pgsTypes::ConcreteType slabConcreteType = (pgsTypes::ConcreteType)m_pDeckConc->GetType();
+      pgsTypes::ConcreteType slabConcreteType = (pgsTypes::ConcreteType)m_pDeckConcrete->GetType();
       Float64 max_slab_fc = pLimits->GetMaxSlabFc(slabConcreteType);
       if (  max_slab_fc < fc28 && !IsEqual(max_slab_fc,fc28) )
       {
@@ -367,7 +414,7 @@ void CConcreteManager::ValidateConcrete()
       Float64 max_wc = pLimits->GetMaxConcreteUnitWeight(slabConcreteType);
       Float64 MaxWc = ::ConvertFromSysUnits(max_wc,pDisplayUnits->GetDensityUnit().UnitOfMeasure);
 
-      Float64 strength_density = m_pDeckConc->GetStrengthDensity();
+      Float64 strength_density = m_pDeckConcrete->GetStrengthDensity();
       if ( max_wc < strength_density && !IsEqual(max_wc,strength_density,0.0001) )
       {
          std::_tostringstream os;
@@ -380,7 +427,7 @@ void CConcreteManager::ValidateConcrete()
          pStatusCenter->Add(pStatusItem);
       }
 
-      Float64 weight_density = m_pDeckConc->GetWeightDensity();
+      Float64 weight_density = m_pDeckConcrete->GetWeightDensity();
       if ( max_wc < weight_density && !IsEqual(max_wc,weight_density,0.0001) )
       {
          std::_tostringstream os;
@@ -393,10 +440,10 @@ void CConcreteManager::ValidateConcrete()
          pStatusCenter->Add(pStatusItem);
       }
 
-      if ( !IsConcreteDensityInRange(strength_density, (pgsTypes::ConcreteType)m_pDeckConc->GetType()) )
+      if ( !IsConcreteDensityInRange(strength_density, (pgsTypes::ConcreteType)m_pDeckConcrete->GetType()) )
       {
          std::_tostringstream os;
-         if ( m_pDeckConc->GetType() == pgsTypes::Normal )
+         if ( m_pDeckConcrete->GetType() == pgsTypes::Normal )
          {
             os << _T("Deck concrete density is out of range for Normal Weight Concrete per LRFD 5.2.");
          }
@@ -415,7 +462,7 @@ void CConcreteManager::ValidateConcrete()
       Float64 max_agg_size = pLimits->GetMaxConcreteAggSize(slabConcreteType);
       Float64 MaxAggSize = ::ConvertFromSysUnits(max_agg_size,pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
 
-      Float64 agg_size = m_pDeckConc->GetMaxAggregateSize();
+      Float64 agg_size = m_pDeckConcrete->GetMaxAggregateSize();
       if ( max_agg_size < agg_size && !IsEqual(max_agg_size,agg_size))
       {
          std::_tostringstream os;
@@ -429,6 +476,104 @@ void CConcreteManager::ValidateConcrete()
       }
    }
 
+   // Check longitudinal joint concrete
+   if (m_pBridgeDesc->HasStructuralLongitudinalJoints())
+   {
+      GET_IFACE(IEAFDisplayUnits, pDisplayUnits);
+      GET_IFACE(ILimits, pLimits);
+
+      Float64 time = m_pLongitudinalJointConcrete->GetTimeAtCasting() + m_pLongitudinalJointConcrete->GetCureTime() + 28.0;
+      Float64 fc28 = m_pLongitudinalJointConcrete->GetFc(time);
+      if (fc28 < fcMin && !IsEqual(fc28, fcMin))
+      {
+         std::_tstring strMsg;
+         strMsg = bSI ? _T("Longitudinal joint concrete cannot be less than 28 MPa per LRFD 5.4.2.1")
+            : _T("Longitudinal joint concrete cannot be less than 4 KSI per LRFD 5.4.2.1");
+         CSegmentKey dummyKey;
+         pgsConcreteStrengthStatusItem* pStatusItem = new pgsConcreteStrengthStatusItem(pgsConcreteStrengthStatusItem::LongitudinalJoint, pgsConcreteStrengthStatusItem::FinalStrength, dummyKey, m_StatusGroupID, m_scidConcreteStrengthWarning, strMsg.c_str());
+         pStatusCenter->Add(pStatusItem);
+         //strMsg += std::_tstring(_T("\nSee Status Center for Details"));
+         //THROW_UNWIND(strMsg.c_str(),-1);
+      }
+
+      pgsTypes::ConcreteType jointConcreteType = (pgsTypes::ConcreteType)m_pLongitudinalJointConcrete->GetType();
+      //Float64 max_slab_fc = pLimits->GetMaxSlabFc(slabConcreteType);
+      //if (max_slab_fc < fc28 && !IsEqual(max_slab_fc, fc28))
+      //{
+      //   std::_tostringstream os;
+      //   os << _T("LongitudinalJoint concrete strength (" << (LPCTSTR)::FormatDimension(fc28, pDisplayUnits->GetStressUnit()) << ") exceeds the normal value of ") << (LPCTSTR)::FormatDimension(max_slab_fc, pDisplayUnits->GetStressUnit());
+
+      //   std::_tstring strMsg = os.str();
+
+      //   CSegmentKey dummyKey;
+      //   pgsConcreteStrengthStatusItem* pStatusItem = new pgsConcreteStrengthStatusItem(pgsConcreteStrengthStatusItem::Slab, pgsConcreteStrengthStatusItem::FinalStrength, dummyKey, m_StatusGroupID, m_scidConcreteStrengthWarning, strMsg.c_str());
+      //   pStatusCenter->Add(pStatusItem);
+      //}
+
+      Float64 max_wc = pLimits->GetMaxConcreteUnitWeight(jointConcreteType);
+      Float64 MaxWc = ::ConvertFromSysUnits(max_wc, pDisplayUnits->GetDensityUnit().UnitOfMeasure);
+
+      Float64 strength_density = m_pLongitudinalJointConcrete->GetStrengthDensity();
+      if (max_wc < strength_density && !IsEqual(max_wc, strength_density, 0.0001))
+      {
+         std::_tostringstream os;
+         os << _T("Longitudinal joint concrete density for strength calculations exceeds the normal value of ") << MaxWc << _T(" ") << pDisplayUnits->GetDensityUnit().UnitOfMeasure.UnitTag();
+
+         std::_tstring strMsg = os.str();
+
+         CSegmentKey dummyKey;
+         pgsConcreteStrengthStatusItem* pStatusItem = new pgsConcreteStrengthStatusItem(pgsConcreteStrengthStatusItem::LongitudinalJoint, pgsConcreteStrengthStatusItem::Density, dummyKey, m_StatusGroupID, m_scidConcreteStrengthWarning, strMsg.c_str());
+         pStatusCenter->Add(pStatusItem);
+      }
+
+      Float64 weight_density = m_pLongitudinalJointConcrete->GetWeightDensity();
+      if (max_wc < weight_density && !IsEqual(max_wc, weight_density, 0.0001))
+      {
+         std::_tostringstream os;
+         os << _T("Longitudinal joint concrete density for weight calculations exceeds the normal value of ") << MaxWc << _T(" ") << pDisplayUnits->GetDensityUnit().UnitOfMeasure.UnitTag();
+
+         std::_tstring strMsg = os.str();
+
+         CSegmentKey dummyKey;
+         pgsConcreteStrengthStatusItem* pStatusItem = new pgsConcreteStrengthStatusItem(pgsConcreteStrengthStatusItem::LongitudinalJoint, pgsConcreteStrengthStatusItem::DensityForWeight, dummyKey, m_StatusGroupID, m_scidConcreteStrengthWarning, strMsg.c_str());
+         pStatusCenter->Add(pStatusItem);
+      }
+
+      if (!IsConcreteDensityInRange(strength_density, (pgsTypes::ConcreteType)m_pLongitudinalJointConcrete->GetType()))
+      {
+         std::_tostringstream os;
+         if (m_pLongitudinalJointConcrete->GetType() == pgsTypes::Normal)
+         {
+            os << _T("Longitudinal joint concrete density is out of range for Normal Weight Concrete per LRFD 5.2.");
+         }
+         else
+         {
+            os << _T("Longitudinal joint concrete density is out of range for Lightweight Concrete per LRFD 5.2.");
+         }
+
+         std::_tstring strMsg = os.str();
+
+         CSegmentKey dummyKey;
+         pgsConcreteStrengthStatusItem* pStatusItem = new pgsConcreteStrengthStatusItem(pgsConcreteStrengthStatusItem::LongitudinalJoint, pgsConcreteStrengthStatusItem::Density, dummyKey, m_StatusGroupID, m_scidConcreteStrengthWarning, strMsg.c_str());
+         pStatusCenter->Add(pStatusItem);
+      }
+
+      Float64 max_agg_size = pLimits->GetMaxConcreteAggSize(jointConcreteType);
+      Float64 MaxAggSize = ::ConvertFromSysUnits(max_agg_size, pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
+
+      Float64 agg_size = m_pLongitudinalJointConcrete->GetMaxAggregateSize();
+      if (max_agg_size < agg_size && !IsEqual(max_agg_size, agg_size))
+      {
+         std::_tostringstream os;
+         os << _T("Longitudinal joint concrete aggregate size exceeds the normal value of ") << MaxAggSize << _T(" ") << pDisplayUnits->GetComponentDimUnit().UnitOfMeasure.UnitTag();
+
+         std::_tstring strMsg = os.str();
+
+         CSegmentKey dummyKey;
+         pgsConcreteStrengthStatusItem* pStatusItem = new pgsConcreteStrengthStatusItem(pgsConcreteStrengthStatusItem::LongitudinalJoint, pgsConcreteStrengthStatusItem::AggSize, dummyKey, m_StatusGroupID, m_scidConcreteStrengthWarning, strMsg.c_str());
+         pStatusCenter->Add(pStatusItem);
+      }
+   }
 
    // Check girder concrete
    std::_tstring strMsg;
@@ -458,7 +603,7 @@ void CConcreteManager::ValidateConcrete()
    m_bIsValidated = true;
 }
 
-void CConcreteManager::ValidateSegmentConcrete()
+void CConcreteManager::ValidateSegmentConcrete() const
 {
    if ( m_bIsSegmentValidated )
    {
@@ -509,7 +654,7 @@ void CConcreteManager::ValidateSegmentConcrete()
    m_bIsSegmentValidated = true;
 }
 
-void CConcreteManager::ValidateRailingSystemConcrete()
+void CConcreteManager::ValidateRailingSystemConcrete() const
 {
    if ( m_bIsRailingSystemValidated )
    {
@@ -522,20 +667,20 @@ void CConcreteManager::ValidateRailingSystemConcrete()
    //
    //////////////////////////////////////////////////////////////////////////////
    // Railing system creep/shrinkage not considered to V/S of zero is fine
-   m_pRailingConc[pgsTypes::tboLeft]->SetVSRatio(0.0);
-   m_pRailingConc[pgsTypes::tboRight]->SetVSRatio(0.0);
+   m_pRailingConcrete[pgsTypes::tboLeft]->SetVSRatio(0.0);
+   m_pRailingConcrete[pgsTypes::tboRight]->SetVSRatio(0.0);
    
    m_bIsRailingSystemValidated = true;
 }
 
-void CConcreteManager::ValidateDeckConcrete()
+void CConcreteManager::ValidateDeckConcrete() const
 {
    if ( m_bIsDeckValidated )
    {
       return;
    }
 
-   if ( m_pDeckConc.get() != nullptr )
+   if ( m_pDeckConcrete.get() != nullptr )
    {
       GET_IFACE(ISectionProperties,pSectProp);
       Float64 S = pSectProp->GetDeckSurfaceArea();
@@ -544,13 +689,36 @@ void CConcreteManager::ValidateDeckConcrete()
 
       vsDeck = ::RoundOff(vsDeck,::ConvertToSysUnits(0.5,unitMeasure::Millimeter));
 
-      m_pDeckConc->SetVSRatio(vsDeck);
+      m_pDeckConcrete->SetVSRatio(vsDeck);
    }
 
    m_bIsDeckValidated = true;
 }
 
-void CConcreteManager::ValidateConcreteParameters(std::shared_ptr<matConcreteBase> pConcrete,pgsConcreteStrengthStatusItem::ConcreteType elementType,LPCTSTR strLabel,const CSegmentKey& segmentKey)
+void CConcreteManager::ValidateLongitudinalJointConcrete() const
+{
+   if (m_bIsLongitudinalJointValidated)
+   {
+      return;
+   }
+
+   if (m_pLongitudinalJointConcrete.get() != nullptr)
+   {
+#pragma Reminder("WORKING HERE - validate longitudinal joint concrete") // how do we get V/S for a joint?
+      //GET_IFACE(ISectionProperties, pSectProp);
+      //Float64 S = pSectProp->GetDeckSurfaceArea();
+      //Float64 V = pSectProp->GetDeckVolume();
+      //Float64 vsJoint = IsZero(S) ? DBL_MAX : V / S;
+
+      //vsDeck = ::RoundOff(vsJoint, ::ConvertToSysUnits(0.5, unitMeasure::Millimeter));
+
+      //m_pLongitudinalJointConcrete->SetVSRatio(vsJoint);
+   }
+
+   m_bIsLongitudinalJointValidated = true;
+}
+
+void CConcreteManager::ValidateConcreteParameters(std::shared_ptr<matConcreteBase> pConcrete,pgsConcreteStrengthStatusItem::ConcreteType elementType,LPCTSTR strLabel,const CSegmentKey& segmentKey) const
 {
    ATLASSERT(elementType == pgsConcreteStrengthStatusItem::GirderSegment || elementType == pgsConcreteStrengthStatusItem::ClosureJoint);
    GET_IFACE(ILimits,pLimits);
@@ -690,7 +858,7 @@ void CConcreteManager::ValidateConcreteParameters(std::shared_ptr<matConcreteBas
    }
 }
 
-bool CConcreteManager::IsConcreteDensityInRange(Float64 density,pgsTypes::ConcreteType type)
+bool CConcreteManager::IsConcreteDensityInRange(Float64 density,pgsTypes::ConcreteType type) const
 {
    if ( type == pgsTypes::Normal )
    {
@@ -702,7 +870,7 @@ bool CConcreteManager::IsConcreteDensityInRange(Float64 density,pgsTypes::Concre
    }
 }
 
-matConcreteBase* CConcreteManager::CreateConcreteModel(LPCTSTR strName,const CConcreteMaterial& concrete,Float64 timeAtCasting,Float64 cureTime,Float64 ageAtInitialLoading,Float64 stepTime)
+matConcreteBase* CConcreteManager::CreateConcreteModel(LPCTSTR strName,const CConcreteMaterial& concrete,Float64 timeAtCasting,Float64 cureTime,Float64 ageAtInitialLoading,Float64 stepTime) const
 {
    GET_IFACE(ILossParameters,pLossParameters);
    pgsTypes::LossMethod loss_method = pLossParameters->GetLossMethod();
@@ -759,7 +927,7 @@ matConcreteBase* CConcreteManager::CreateConcreteModel(LPCTSTR strName,const CCo
    return pConcrete;
 }
 
-void CConcreteManager::CreateConcrete(const CConcreteMaterial& concrete,LPCTSTR strName,matConcreteEx* pReleaseConc,matConcreteEx* pConcrete)
+void CConcreteManager::CreateConcrete(const CConcreteMaterial& concrete,LPCTSTR strName,matConcreteEx* pReleaseConc,matConcreteEx* pConcrete) const
 {
    Float64 modE;
    if ( concrete.bUserEci )
@@ -829,43 +997,43 @@ void CConcreteManager::CreateConcrete(const CConcreteMaterial& concrete,LPCTSTR 
    pConcrete->SetFlexureFr(lambda*frFlexure);
 }
 
-pgsTypes::ConcreteType CConcreteManager::GetSegmentConcreteType(const CSegmentKey& segmentKey)
+pgsTypes::ConcreteType CConcreteManager::GetSegmentConcreteType(const CSegmentKey& segmentKey) const
 {
    ValidateConcrete();
    return (pgsTypes::ConcreteType)m_pSegmentConcrete[segmentKey]->GetType();
 }
 
-bool CConcreteManager::DoesSegmentConcreteHaveAggSplittingStrength(const CSegmentKey& segmentKey)
+bool CConcreteManager::DoesSegmentConcreteHaveAggSplittingStrength(const CSegmentKey& segmentKey) const
 {
    ValidateConcrete();
    return m_pSegmentConcrete[segmentKey]->HasAggSplittingStrength();
 }
 
-Float64 CConcreteManager::GetSegmentConcreteAggSplittingStrength(const CSegmentKey& segmentKey)
+Float64 CConcreteManager::GetSegmentConcreteAggSplittingStrength(const CSegmentKey& segmentKey) const
 {
    ValidateConcrete();
    return m_pSegmentConcrete[segmentKey]->GetAggSplittingStrength();
 }
 
-Float64 CConcreteManager::GetSegmentMaxAggrSize(const CSegmentKey& segmentKey)
+Float64 CConcreteManager::GetSegmentMaxAggrSize(const CSegmentKey& segmentKey) const
 {
    ValidateConcrete();
    return m_pSegmentConcrete[segmentKey]->GetMaxAggregateSize();
 }
 
-Float64 CConcreteManager::GetSegmentStrengthDensity(const CSegmentKey& segmentKey)
+Float64 CConcreteManager::GetSegmentStrengthDensity(const CSegmentKey& segmentKey) const
 {
    ValidateConcrete();
    return m_pSegmentConcrete[segmentKey]->GetStrengthDensity();
 }
 
-Float64 CConcreteManager::GetSegmentWeightDensity(const CSegmentKey& segmentKey)
+Float64 CConcreteManager::GetSegmentWeightDensity(const CSegmentKey& segmentKey) const
 {
    ValidateConcrete();
    return m_pSegmentConcrete[segmentKey]->GetWeightDensity();
 }
 
-Float64 CConcreteManager::GetSegmentEccK1(const CSegmentKey& segmentKey)
+Float64 CConcreteManager::GetSegmentEccK1(const CSegmentKey& segmentKey) const
 {
    Float64 K1 = 1.0;
    if ( lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion() )
@@ -878,7 +1046,7 @@ Float64 CConcreteManager::GetSegmentEccK1(const CSegmentKey& segmentKey)
    return K1;
 }
 
-Float64 CConcreteManager::GetSegmentEccK2(const CSegmentKey& segmentKey)
+Float64 CConcreteManager::GetSegmentEccK2(const CSegmentKey& segmentKey) const
 {
    Float64 K2 = 1.0;
    if ( lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion() )
@@ -891,7 +1059,7 @@ Float64 CConcreteManager::GetSegmentEccK2(const CSegmentKey& segmentKey)
    return K2;
 }
 
-Float64 CConcreteManager::GetSegmentCreepK1(const CSegmentKey& segmentKey)
+Float64 CConcreteManager::GetSegmentCreepK1(const CSegmentKey& segmentKey) const
 {
    Float64 K1 = 1.0;
    if ( lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion() )
@@ -904,7 +1072,7 @@ Float64 CConcreteManager::GetSegmentCreepK1(const CSegmentKey& segmentKey)
    return K1;
 }
 
-Float64 CConcreteManager::GetSegmentCreepK2(const CSegmentKey& segmentKey)
+Float64 CConcreteManager::GetSegmentCreepK2(const CSegmentKey& segmentKey) const
 {
    Float64 K2 = 1.0;
    if ( lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion() )
@@ -917,7 +1085,7 @@ Float64 CConcreteManager::GetSegmentCreepK2(const CSegmentKey& segmentKey)
    return K2;
 }
 
-Float64 CConcreteManager::GetSegmentShrinkageK1(const CSegmentKey& segmentKey)
+Float64 CConcreteManager::GetSegmentShrinkageK1(const CSegmentKey& segmentKey) const
 {
    Float64 K1 = 1.0;
    if ( lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion() )
@@ -930,7 +1098,7 @@ Float64 CConcreteManager::GetSegmentShrinkageK1(const CSegmentKey& segmentKey)
    return K1;
 }
 
-Float64 CConcreteManager::GetSegmentShrinkageK2(const CSegmentKey& segmentKey)
+Float64 CConcreteManager::GetSegmentShrinkageK2(const CSegmentKey& segmentKey) const
 {
    Float64 K2 = 1.0;
    if ( lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion() )
@@ -943,43 +1111,43 @@ Float64 CConcreteManager::GetSegmentShrinkageK2(const CSegmentKey& segmentKey)
    return K2;
 }
 
-pgsTypes::ConcreteType CConcreteManager::GetClosureJointConcreteType(const CSegmentKey& closureKey)
+pgsTypes::ConcreteType CConcreteManager::GetClosureJointConcreteType(const CSegmentKey& closureKey) const
 {
    ValidateConcrete();
    return (pgsTypes::ConcreteType)m_pClosureConcrete[closureKey]->GetType();
 }
 
-bool CConcreteManager::DoesClosureJointConcreteHaveAggSplittingStrength(const CSegmentKey& closureKey)
+bool CConcreteManager::DoesClosureJointConcreteHaveAggSplittingStrength(const CSegmentKey& closureKey) const
 {
    ValidateConcrete();
    return m_pClosureConcrete[closureKey]->HasAggSplittingStrength();
 }
 
-Float64 CConcreteManager::GetClosureJointConcreteAggSplittingStrength(const CSegmentKey& closureKey)
+Float64 CConcreteManager::GetClosureJointConcreteAggSplittingStrength(const CSegmentKey& closureKey) const
 {
    ValidateConcrete();
    return m_pClosureConcrete[closureKey]->GetAggSplittingStrength();
 }
 
-Float64 CConcreteManager::GetClosureJointMaxAggrSize(const CSegmentKey& closureKey)
+Float64 CConcreteManager::GetClosureJointMaxAggrSize(const CSegmentKey& closureKey) const
 {
    ValidateConcrete();
    return m_pClosureConcrete[closureKey]->GetMaxAggregateSize();
 }
 
-Float64 CConcreteManager::GetClosureJointStrengthDensity(const CSegmentKey& closureKey)
+Float64 CConcreteManager::GetClosureJointStrengthDensity(const CSegmentKey& closureKey) const
 {
    ValidateConcrete();
    return m_pClosureConcrete[closureKey]->GetStrengthDensity();
 }
 
-Float64 CConcreteManager::GetClosureJointWeightDensity(const CSegmentKey& closureKey)
+Float64 CConcreteManager::GetClosureJointWeightDensity(const CSegmentKey& closureKey) const
 {
    ValidateConcrete();
    return m_pClosureConcrete[closureKey]->GetWeightDensity();
 }
 
-Float64 CConcreteManager::GetClosureJointEccK1(const CSegmentKey& closureKey)
+Float64 CConcreteManager::GetClosureJointEccK1(const CSegmentKey& closureKey) const
 {
    Float64 K1 = 1.0;
    if ( lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion() )
@@ -991,7 +1159,7 @@ Float64 CConcreteManager::GetClosureJointEccK1(const CSegmentKey& closureKey)
    return K1;
 }
 
-Float64 CConcreteManager::GetClosureJointEccK2(const CSegmentKey& closureKey)
+Float64 CConcreteManager::GetClosureJointEccK2(const CSegmentKey& closureKey) const
 {
    Float64 K2 = 1.0;
    if ( lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion() )
@@ -1003,7 +1171,7 @@ Float64 CConcreteManager::GetClosureJointEccK2(const CSegmentKey& closureKey)
    return K2;
 }
 
-Float64 CConcreteManager::GetClosureJointCreepK1(const CSegmentKey& closureKey)
+Float64 CConcreteManager::GetClosureJointCreepK1(const CSegmentKey& closureKey) const
 {
    Float64 K1 = 1.0;
    if ( lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion() )
@@ -1015,7 +1183,7 @@ Float64 CConcreteManager::GetClosureJointCreepK1(const CSegmentKey& closureKey)
    return K1;
 }
 
-Float64 CConcreteManager::GetClosureJointCreepK2(const CSegmentKey& closureKey)
+Float64 CConcreteManager::GetClosureJointCreepK2(const CSegmentKey& closureKey) const
 {
    Float64 K2 = 1.0;
    if ( lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion() )
@@ -1027,7 +1195,7 @@ Float64 CConcreteManager::GetClosureJointCreepK2(const CSegmentKey& closureKey)
    return K2;
 }
 
-Float64 CConcreteManager::GetClosureJointShrinkageK1(const CSegmentKey& closureKey)
+Float64 CConcreteManager::GetClosureJointShrinkageK1(const CSegmentKey& closureKey) const
 {
    Float64 K1 = 1.0;
    if ( lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion() )
@@ -1039,7 +1207,7 @@ Float64 CConcreteManager::GetClosureJointShrinkageK1(const CSegmentKey& closureK
    return K1;
 }
 
-Float64 CConcreteManager::GetClosureJointShrinkageK2(const CSegmentKey& closureKey)
+Float64 CConcreteManager::GetClosureJointShrinkageK2(const CSegmentKey& closureKey) const
 {
    Float64 K2 = 1.0;
    if ( lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion() )
@@ -1051,12 +1219,12 @@ Float64 CConcreteManager::GetClosureJointShrinkageK2(const CSegmentKey& closureK
    return K2;
 }
 
-pgsTypes::ConcreteType CConcreteManager::GetDeckConcreteType()
+pgsTypes::ConcreteType CConcreteManager::GetDeckConcreteType() const
 {
    ValidateConcrete();
-   if ( m_pDeckConc.get() != nullptr )
+   if ( m_pDeckConcrete.get() != nullptr )
    {
-      return (pgsTypes::ConcreteType)m_pDeckConc->GetType();
+      return (pgsTypes::ConcreteType)m_pDeckConcrete->GetType();
    }
    else
    {
@@ -1064,12 +1232,12 @@ pgsTypes::ConcreteType CConcreteManager::GetDeckConcreteType()
    }
 }
 
-bool CConcreteManager::DoesDeckConcreteHaveAggSplittingStrength()
+bool CConcreteManager::DoesDeckConcreteHaveAggSplittingStrength() const
 {
    ValidateConcrete();
-   if ( m_pDeckConc.get() != nullptr )
+   if ( m_pDeckConcrete.get() != nullptr )
    {
-      return m_pDeckConc->HasAggSplittingStrength();
+      return m_pDeckConcrete->HasAggSplittingStrength();
    }
    else
    {
@@ -1077,12 +1245,12 @@ bool CConcreteManager::DoesDeckConcreteHaveAggSplittingStrength()
    }
 }
 
-Float64 CConcreteManager::GetDeckConcreteAggSplittingStrength()
+Float64 CConcreteManager::GetDeckConcreteAggSplittingStrength() const
 {
    ValidateConcrete();
-   if ( m_pDeckConc.get() != nullptr )
+   if ( m_pDeckConcrete.get() != nullptr )
    {
-      return m_pDeckConc->GetAggSplittingStrength();
+      return m_pDeckConcrete->GetAggSplittingStrength();
    }
    else
    {
@@ -1090,12 +1258,12 @@ Float64 CConcreteManager::GetDeckConcreteAggSplittingStrength()
    }
 }
 
-Float64 CConcreteManager::GetDeckStrengthDensity()
+Float64 CConcreteManager::GetDeckStrengthDensity() const
 {
    ValidateConcrete();
-   if ( m_pDeckConc.get() != nullptr )
+   if ( m_pDeckConcrete.get() != nullptr )
    {
-      return m_pDeckConc->GetStrengthDensity();
+      return m_pDeckConcrete->GetStrengthDensity();
    }
    else
    {
@@ -1103,12 +1271,12 @@ Float64 CConcreteManager::GetDeckStrengthDensity()
    }
 }
 
-Float64 CConcreteManager::GetDeckWeightDensity()
+Float64 CConcreteManager::GetDeckWeightDensity() const
 {
    ValidateConcrete();
-   if ( m_pDeckConc.get() != nullptr )
+   if ( m_pDeckConcrete.get() != nullptr )
    {
-      return m_pDeckConc->GetWeightDensity();
+      return m_pDeckConcrete->GetWeightDensity();
    }
    else
    {
@@ -1116,12 +1284,12 @@ Float64 CConcreteManager::GetDeckWeightDensity()
    }
 }
 
-Float64 CConcreteManager::GetDeckMaxAggrSize()
+Float64 CConcreteManager::GetDeckMaxAggrSize() const
 {
    ValidateConcrete();
-   if ( m_pDeckConc.get() != nullptr )
+   if ( m_pDeckConcrete.get() != nullptr )
    {
-      return m_pDeckConc->GetMaxAggregateSize();
+      return m_pDeckConcrete->GetMaxAggregateSize();
    }
    else
    {
@@ -1129,7 +1297,7 @@ Float64 CConcreteManager::GetDeckMaxAggrSize()
    }
 }
 
-Float64 CConcreteManager::GetDeckEccK1()
+Float64 CConcreteManager::GetDeckEccK1() const
 {
    ValidateConcrete();
    Float64 K1 = 1.0;
@@ -1140,7 +1308,7 @@ Float64 CConcreteManager::GetDeckEccK1()
    return K1;
 }
 
-Float64 CConcreteManager::GetDeckEccK2()
+Float64 CConcreteManager::GetDeckEccK2() const
 {
    ValidateConcrete();
    Float64 K2 = 1.0;
@@ -1151,7 +1319,7 @@ Float64 CConcreteManager::GetDeckEccK2()
    return K2;
 }
 
-Float64 CConcreteManager::GetDeckCreepK1()
+Float64 CConcreteManager::GetDeckCreepK1() const
 {
    ValidateConcrete();
    Float64 K1 = 1.0;
@@ -1162,7 +1330,7 @@ Float64 CConcreteManager::GetDeckCreepK1()
    return K1;
 }
 
-Float64 CConcreteManager::GetDeckCreepK2()
+Float64 CConcreteManager::GetDeckCreepK2() const
 {
    ValidateConcrete();
    Float64 K2 = 1.0;
@@ -1173,7 +1341,7 @@ Float64 CConcreteManager::GetDeckCreepK2()
    return K2;
 };
 
-Float64 CConcreteManager::GetDeckShrinkageK1()
+Float64 CConcreteManager::GetDeckShrinkageK1() const
 {
    ValidateConcrete();
    Float64 K1 = 1.0;
@@ -1184,7 +1352,7 @@ Float64 CConcreteManager::GetDeckShrinkageK1()
    return K1;
 }
 
-Float64 CConcreteManager::GetDeckShrinkageK2()
+Float64 CConcreteManager::GetDeckShrinkageK2() const
 {
    ValidateConcrete();
    Float64 K2 = 1.0;
@@ -1195,72 +1363,216 @@ Float64 CConcreteManager::GetDeckShrinkageK2()
    return K2;
 };
 
-Float64 CConcreteManager::GetRailingSystemDensity(pgsTypes::TrafficBarrierOrientation orientation)
+Float64 CConcreteManager::GetRailingSystemDensity(pgsTypes::TrafficBarrierOrientation orientation) const
 {
    ValidateConcrete();
-   return m_pRailingConc[orientation]->GetWeightDensity();
+   return m_pRailingConcrete[orientation]->GetWeightDensity();
 }
 
-Float64 CConcreteManager::GetRailingSystemCastingTime(pgsTypes::TrafficBarrierOrientation orientation)
+Float64 CConcreteManager::GetRailingSystemCastingTime(pgsTypes::TrafficBarrierOrientation orientation) const
 {
    ValidateConcrete();
-   return m_pRailingConc[orientation]->GetTimeAtCasting();
+   return m_pRailingConcrete[orientation]->GetTimeAtCasting();
 }
 
-Float64 CConcreteManager::GetRailingSystemFc(pgsTypes::TrafficBarrierOrientation orientation,Float64 t)
+Float64 CConcreteManager::GetRailingSystemFc(pgsTypes::TrafficBarrierOrientation orientation,Float64 t) const
 {
    ValidateConcrete();
-   return m_pRailingConc[orientation]->GetFc(t);
+   return m_pRailingConcrete[orientation]->GetFc(t);
 }
 
-Float64 CConcreteManager::GetRailingSystemEc(pgsTypes::TrafficBarrierOrientation orientation,Float64 t)
+Float64 CConcreteManager::GetRailingSystemEc(pgsTypes::TrafficBarrierOrientation orientation,Float64 t) const
 {
    ValidateConcrete();
-   return m_pRailingConc[orientation]->GetEc(t);
+   return m_pRailingConcrete[orientation]->GetEc(t);
 }
 
-Float64 CConcreteManager::GetRailingSystemFreeShrinkageStrain(pgsTypes::TrafficBarrierOrientation orientation,Float64 t)
+Float64 CConcreteManager::GetRailingSystemFreeShrinkageStrain(pgsTypes::TrafficBarrierOrientation orientation,Float64 t) const
 {
    std::shared_ptr<matConcreteBaseShrinkageDetails> pDetails = GetRailingSystemFreeShrinkageStrainDetails(orientation,t);
    return pDetails->esh;
 }
 
-std::shared_ptr<matConcreteBaseShrinkageDetails> CConcreteManager::GetRailingSystemFreeShrinkageStrainDetails(pgsTypes::TrafficBarrierOrientation orientation,Float64 t)
+std::shared_ptr<matConcreteBaseShrinkageDetails> CConcreteManager::GetRailingSystemFreeShrinkageStrainDetails(pgsTypes::TrafficBarrierOrientation orientation,Float64 t) const
 {
    ValidateConcrete();
    ValidateRailingSystemConcrete();
-   return m_pRailingConc[orientation]->GetFreeShrinkageStrainDetails(t);
+   return m_pRailingConcrete[orientation]->GetFreeShrinkageStrainDetails(t);
 }
 
-Float64 CConcreteManager::GetRailingSystemCreepCoefficient(pgsTypes::TrafficBarrierOrientation orientation,Float64 t,Float64 tla)
+Float64 CConcreteManager::GetRailingSystemCreepCoefficient(pgsTypes::TrafficBarrierOrientation orientation,Float64 t,Float64 tla) const
 {
    ValidateConcrete();
    ValidateRailingSystemConcrete();
-   return m_pRailingConc[orientation]->GetCreepCoefficient(t,tla);
+   return m_pRailingConcrete[orientation]->GetCreepCoefficient(t,tla);
 }
 
-std::shared_ptr<matConcreteBaseCreepDetails> CConcreteManager::GetRailingSystemCreepCoefficientDetails(pgsTypes::TrafficBarrierOrientation orientation,Float64 t,Float64 tla)
+std::shared_ptr<matConcreteBaseCreepDetails> CConcreteManager::GetRailingSystemCreepCoefficientDetails(pgsTypes::TrafficBarrierOrientation orientation,Float64 t,Float64 tla) const
 {
    ValidateConcrete();
    ValidateRailingSystemConcrete();
-   return m_pRailingConc[orientation]->GetCreepCoefficientDetails(t,tla);
+   return m_pRailingConcrete[orientation]->GetCreepCoefficientDetails(t,tla);
 }
 
-Float64 CConcreteManager::GetRailingSystemAgingCoefficient(pgsTypes::TrafficBarrierOrientation orientation,Float64 timeOfLoading)
+Float64 CConcreteManager::GetRailingSystemAgingCoefficient(pgsTypes::TrafficBarrierOrientation orientation,Float64 timeOfLoading) const
 {
    ValidateConcrete();
    ValidateRailingSystemConcrete();
-   return GetConcreteAgingCoefficient(m_pRailingConc[orientation].get(),timeOfLoading);
+   return GetConcreteAgingCoefficient(m_pRailingConcrete[orientation].get(),timeOfLoading);
 }
 
-matConcreteBase* CConcreteManager::GetRailingSystemConcrete(pgsTypes::TrafficBarrierOrientation orientation)
+const matConcreteBase* CConcreteManager::GetRailingSystemConcrete(pgsTypes::TrafficBarrierOrientation orientation) const
 {
    ValidateConcrete();
    ValidateRailingSystemConcrete();
-   return m_pRailingConc[orientation].get();
+   return m_pRailingConcrete[orientation].get();
 }
 
-matConcrete* CConcreteManager::GetPierConcrete(PierIndexType pierIdx)
+pgsTypes::ConcreteType CConcreteManager::GetLongitudinalJointConcreteType() const
+{
+   ValidateConcrete();
+   if (m_pLongitudinalJointConcrete.get() != nullptr)
+   {
+      return (pgsTypes::ConcreteType)m_pLongitudinalJointConcrete->GetType();
+   }
+   else
+   {
+      return pgsTypes::Normal;
+   }
+}
+
+bool CConcreteManager::DoesLongitudinalJointConcreteHaveAggSplittingStrength() const
+{
+   ValidateConcrete();
+   if (m_pLongitudinalJointConcrete.get() != nullptr)
+   {
+      return m_pLongitudinalJointConcrete->HasAggSplittingStrength();
+   }
+   else
+   {
+      return false;
+   }
+}
+
+Float64 CConcreteManager::GetLongitudinalJointConcreteAggSplittingStrength() const
+{
+   ValidateConcrete();
+   if (m_pLongitudinalJointConcrete.get() != nullptr)
+   {
+      return m_pLongitudinalJointConcrete->GetAggSplittingStrength();
+   }
+   else
+   {
+      return 0;
+   }
+}
+
+Float64 CConcreteManager::GetLongitudinalJointStrengthDensity() const
+{
+   ValidateConcrete();
+   if (m_pLongitudinalJointConcrete.get() != nullptr)
+   {
+      return m_pLongitudinalJointConcrete->GetStrengthDensity();
+   }
+   else
+   {
+      return 0;
+   }
+}
+
+Float64 CConcreteManager::GetLongitudinalJointWeightDensity() const
+{
+   ValidateConcrete();
+   if (m_pLongitudinalJointConcrete.get() != nullptr)
+   {
+      return m_pLongitudinalJointConcrete->GetWeightDensity();
+   }
+   else
+   {
+      return 0;
+   }
+}
+
+Float64 CConcreteManager::GetLongitudinalJointMaxAggrSize() const
+{
+   ValidateConcrete();
+   if (m_pLongitudinalJointConcrete.get() != nullptr)
+   {
+      return m_pLongitudinalJointConcrete->GetMaxAggregateSize();
+   }
+   else
+   {
+      return 0;
+   }
+}
+
+Float64 CConcreteManager::GetLongitudinalJointEccK1() const
+{
+   ValidateConcrete();
+   Float64 K1 = 1.0;
+   if (lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion())
+   {
+      K1 = m_LongitudinalJointEcK1;
+   }
+   return K1;
+}
+
+Float64 CConcreteManager::GetLongitudinalJointEccK2() const
+{
+   ValidateConcrete();
+   Float64 K2 = 1.0;
+   if (lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion())
+   {
+      K2 = m_LongitudinalJointEcK2;
+   }
+   return K2;
+}
+
+Float64 CConcreteManager::GetLongitudinalJointCreepK1() const
+{
+   ValidateConcrete();
+   Float64 K1 = 1.0;
+   if (lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion())
+   {
+      K1 = m_LongitudinalJointCreepK1;
+   }
+   return K1;
+}
+
+Float64 CConcreteManager::GetLongitudinalJointCreepK2() const
+{
+   ValidateConcrete();
+   Float64 K2 = 1.0;
+   if (lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion())
+   {
+      K2 = m_LongitudinalJointCreepK2;
+   }
+   return K2;
+};
+
+Float64 CConcreteManager::GetLongitudinalJointShrinkageK1() const
+{
+   ValidateConcrete();
+   Float64 K1 = 1.0;
+   if (lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion())
+   {
+      K1 = m_LongitudinalJointShrinkageK1;
+   }
+   return K1;
+}
+
+Float64 CConcreteManager::GetLongitudinalJointShrinkageK2() const
+{
+   ValidateConcrete();
+   Float64 K2 = 1.0;
+   if (lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion())
+   {
+      K2 = m_LongitudinalJointShrinkageK2;
+   }
+   return K2;
+};
+
+const matConcrete* CConcreteManager::GetPierConcrete(PierIndexType pierIdx) const
 {
    ValidateConcrete();
    std::map<PierIndexType,std::shared_ptr<matConcrete>>::iterator found(m_pPierConcrete.find(pierIdx));
@@ -1274,7 +1586,7 @@ matConcrete* CConcreteManager::GetPierConcrete(PierIndexType pierIdx)
    return found->second.get();
 }
 
-Float64 CConcreteManager::GetSegmentLambda(const CSegmentKey& segmentKey)
+Float64 CConcreteManager::GetSegmentLambda(const CSegmentKey& segmentKey) const
 {
    ValidateConcrete();
    const lrfdLRFDConcrete* pConcrete1 = dynamic_cast<const lrfdLRFDConcrete*>(m_pSegmentConcrete[segmentKey].get());
@@ -1293,7 +1605,7 @@ Float64 CConcreteManager::GetSegmentLambda(const CSegmentKey& segmentKey)
    }
 }
 
-Float64 CConcreteManager::GetClosureJointLambda(const CClosureKey& closureKey)
+Float64 CConcreteManager::GetClosureJointLambda(const CClosureKey& closureKey) const
 {
    ValidateConcrete();
    const lrfdLRFDConcrete* pConcrete1 = dynamic_cast<const lrfdLRFDConcrete*>(m_pClosureConcrete[closureKey].get());
@@ -1312,12 +1624,12 @@ Float64 CConcreteManager::GetClosureJointLambda(const CClosureKey& closureKey)
    }
 }
 
-Float64 CConcreteManager::GetDeckLambda()
+Float64 CConcreteManager::GetDeckLambda() const
 {
-   if ( m_pDeckConc.get() != nullptr )
+   if ( m_pDeckConcrete.get() != nullptr )
    {
-      const lrfdLRFDConcrete* pConcrete1 = dynamic_cast<const lrfdLRFDConcrete*>(m_pDeckConc.get());
-      const lrfdLRFDTimeDependentConcrete* pConcrete2 = dynamic_cast<const lrfdLRFDTimeDependentConcrete*>(m_pDeckConc.get());
+      const lrfdLRFDConcrete* pConcrete1 = dynamic_cast<const lrfdLRFDConcrete*>(m_pDeckConcrete.get());
+      const lrfdLRFDTimeDependentConcrete* pConcrete2 = dynamic_cast<const lrfdLRFDTimeDependentConcrete*>(m_pDeckConcrete.get());
       if ( pConcrete1 )
       {
          return pConcrete1->GetLambda();
@@ -1337,13 +1649,13 @@ Float64 CConcreteManager::GetDeckLambda()
    }
 }
 
-Float64 CConcreteManager::GetRailingSystemLambda(pgsTypes::TrafficBarrierOrientation orientation)
+Float64 CConcreteManager::GetRailingSystemLambda(pgsTypes::TrafficBarrierOrientation orientation) const
 {
    ValidateConcrete();
    ValidateRailingSystemConcrete();
 
-   const lrfdLRFDConcrete* pConcrete1 = dynamic_cast<const lrfdLRFDConcrete*>(m_pRailingConc[orientation].get());
-   const lrfdLRFDTimeDependentConcrete* pConcrete2 = dynamic_cast<const lrfdLRFDTimeDependentConcrete*>(m_pRailingConc[orientation].get());
+   const lrfdLRFDConcrete* pConcrete1 = dynamic_cast<const lrfdLRFDConcrete*>(m_pRailingConcrete[orientation].get());
+   const lrfdLRFDTimeDependentConcrete* pConcrete2 = dynamic_cast<const lrfdLRFDTimeDependentConcrete*>(m_pRailingConcrete[orientation].get());
    if ( pConcrete1 )
    {
       return pConcrete1->GetLambda();
@@ -1358,22 +1670,47 @@ Float64 CConcreteManager::GetRailingSystemLambda(pgsTypes::TrafficBarrierOrienta
    }
 }
 
-Float64 CConcreteManager::GetNWCDensityLimit()
+Float64 CConcreteManager::GetLongitudinalJointLambda() const
+{
+   if (m_pLongitudinalJointConcrete.get() != nullptr)
+   {
+      const lrfdLRFDConcrete* pConcrete1 = dynamic_cast<const lrfdLRFDConcrete*>(m_pLongitudinalJointConcrete.get());
+      const lrfdLRFDTimeDependentConcrete* pConcrete2 = dynamic_cast<const lrfdLRFDTimeDependentConcrete*>(m_pLongitudinalJointConcrete.get());
+      if (pConcrete1)
+      {
+         return pConcrete1->GetLambda();
+      }
+      else if (pConcrete2)
+      {
+         return pConcrete2->GetLambda();
+      }
+      else
+      {
+         return 1.0;
+      }
+   }
+   else
+   {
+      return 1.0;
+   }
+}
+
+Float64 CConcreteManager::GetNWCDensityLimit() const
 {
    return lrfdConcreteUtil::GetNWCDensityLimit();
 }
 
-Float64 CConcreteManager::GetLWCDensityLimit()
+Float64 CConcreteManager::GetLWCDensityLimit() const
 {
    return lrfdConcreteUtil::GetLWCDensityLimit();
 }
 
-Float64 CConcreteManager::GetFlexureModRupture(Float64 fc,pgsTypes::ConcreteType type)
+Float64 CConcreteManager::GetFlexureModRupture(Float64 fc,pgsTypes::ConcreteType type) const
 {
    return lrfdConcreteUtil::ModRupture( fc, GetFlexureFrCoefficient(type) );
 }
 
-Float64 CConcreteManager::GetFlexureFrCoefficient(pgsTypes::ConcreteType type)
+Float64 CConcreteManager::GetFlexureFrCoefficient(pgsTypes::ConcreteType type) const
 {
    GET_IFACE(ILibrary,pLib);
    GET_IFACE(ISpecification,pSpec);
@@ -1382,23 +1719,23 @@ Float64 CConcreteManager::GetFlexureFrCoefficient(pgsTypes::ConcreteType type)
    return pSpecEntry->GetFlexureModulusOfRuptureCoefficient(type);
 }
 
-Float64 CConcreteManager::GetFlexureFrCoefficient(const CSegmentKey& segmentKey)
+Float64 CConcreteManager::GetFlexureFrCoefficient(const CSegmentKey& segmentKey) const
 {
    pgsTypes::ConcreteType type = GetSegmentConcreteType(segmentKey);
    return GetFlexureFrCoefficient(type);
 }
 
-Float64 CConcreteManager::GetShearModRupture(Float64 fc,pgsTypes::ConcreteType type)
+Float64 CConcreteManager::GetShearModRupture(Float64 fc,pgsTypes::ConcreteType type) const
 {
    return lrfdConcreteUtil::ModRupture( fc, GetShearFrCoefficient(type) );
 }
 
-Float64 CConcreteManager::GetEconc(Float64 fc,Float64 density,Float64 K1,Float64 K2)
+Float64 CConcreteManager::GetEconc(Float64 fc,Float64 density,Float64 K1,Float64 K2) const
 {
    return K1*K2*lrfdConcreteUtil::ModE(fc,density, false ); // ignore LRFD limits
 }
 
-Float64 CConcreteManager::GetShearFrCoefficient(pgsTypes::ConcreteType type)
+Float64 CConcreteManager::GetShearFrCoefficient(pgsTypes::ConcreteType type) const
 {
    GET_IFACE(ILibrary,pLib);
    GET_IFACE(ISpecification,pSpec);
@@ -1407,18 +1744,18 @@ Float64 CConcreteManager::GetShearFrCoefficient(pgsTypes::ConcreteType type)
    return pSpecEntry->GetShearModulusOfRuptureCoefficient(type);
 }
 
-Float64 CConcreteManager::GetShearFrCoefficient(const CSegmentKey& segmentKey)
+Float64 CConcreteManager::GetShearFrCoefficient(const CSegmentKey& segmentKey) const
 {
    pgsTypes::ConcreteType type = GetSegmentConcreteType(segmentKey);
    return GetShearFrCoefficient(type);
 }
 
-Float64 CConcreteManager::GetDeckCastingTime()
+Float64 CConcreteManager::GetDeckCastingTime() const
 {
    ValidateConcrete();
-   if ( m_pDeckConc.get() != nullptr )
+   if ( m_pDeckConcrete.get() != nullptr )
    {
-      return m_pDeckConc->GetTimeAtCasting();
+      return m_pDeckConcrete->GetTimeAtCasting();
    }
    else
    {
@@ -1426,12 +1763,12 @@ Float64 CConcreteManager::GetDeckCastingTime()
    }
 }
 
-Float64 CConcreteManager::GetDeckFc(Float64 t)
+Float64 CConcreteManager::GetDeckFc(Float64 t) const
 {
    ValidateConcrete();
-   if ( m_pDeckConc.get() != nullptr )
+   if ( m_pDeckConcrete.get() != nullptr )
    {
-      return m_pDeckConc->GetFc(t);
+      return m_pDeckConcrete->GetFc(t);
    }
    else
    {
@@ -1439,12 +1776,12 @@ Float64 CConcreteManager::GetDeckFc(Float64 t)
    }
 }
 
-Float64 CConcreteManager::GetDeckEc(Float64 t)
+Float64 CConcreteManager::GetDeckEc(Float64 t) const
 {
    ValidateConcrete();
-   if ( m_pDeckConc.get() != nullptr )
+   if ( m_pDeckConcrete.get() != nullptr )
    {
-      return m_pDeckConc->GetEc(t);
+      return m_pDeckConcrete->GetEc(t);
    }
    else
    {
@@ -1452,12 +1789,12 @@ Float64 CConcreteManager::GetDeckEc(Float64 t)
    }
 }
 
-Float64 CConcreteManager::GetDeckFlexureFr(Float64 t)
+Float64 CConcreteManager::GetDeckFlexureFr(Float64 t) const
 {
    ValidateConcrete();
-   if ( m_pDeckConc.get() != nullptr )
+   if ( m_pDeckConcrete.get() != nullptr )
    {
-      return m_pDeckConc->GetFlexureFr(t);
+      return m_pDeckConcrete->GetFlexureFr(t);
    }
    else
    {
@@ -1465,12 +1802,12 @@ Float64 CConcreteManager::GetDeckFlexureFr(Float64 t)
    }
 }
 
-Float64 CConcreteManager::GetDeckShearFr(Float64 t)
+Float64 CConcreteManager::GetDeckShearFr(Float64 t) const
 {
    ValidateConcrete();
-   if ( m_pDeckConc.get() != nullptr )
+   if ( m_pDeckConcrete.get() != nullptr )
    {
-      return m_pDeckConc->GetShearFr(t);
+      return m_pDeckConcrete->GetShearFr(t);
    }
    else
    {
@@ -1478,7 +1815,7 @@ Float64 CConcreteManager::GetDeckShearFr(Float64 t)
    }
 }
 
-Float64 CConcreteManager::GetDeckFreeShrinkageStrain(Float64 t)
+Float64 CConcreteManager::GetDeckFreeShrinkageStrain(Float64 t) const
 {
    std::shared_ptr<matConcreteBaseShrinkageDetails> pDetails = GetDeckFreeShrinkageStrainDetails(t);
    if ( pDetails )
@@ -1491,13 +1828,13 @@ Float64 CConcreteManager::GetDeckFreeShrinkageStrain(Float64 t)
    }
 }
 
-std::shared_ptr<matConcreteBaseShrinkageDetails> CConcreteManager::GetDeckFreeShrinkageStrainDetails(Float64 t)
+std::shared_ptr<matConcreteBaseShrinkageDetails> CConcreteManager::GetDeckFreeShrinkageStrainDetails(Float64 t) const
 {
    ValidateConcrete();
    ValidateDeckConcrete();
-   if ( m_pDeckConc.get() != nullptr )
+   if ( m_pDeckConcrete.get() != nullptr )
    {
-      return m_pDeckConc->GetFreeShrinkageStrainDetails(t);
+      return m_pDeckConcrete->GetFreeShrinkageStrainDetails(t);
    }
    else
    {
@@ -1505,13 +1842,13 @@ std::shared_ptr<matConcreteBaseShrinkageDetails> CConcreteManager::GetDeckFreeSh
    }
 }
 
-Float64 CConcreteManager::GetDeckCreepCoefficient(Float64 t,Float64 tla)
+Float64 CConcreteManager::GetDeckCreepCoefficient(Float64 t,Float64 tla) const
 {
    ValidateConcrete();
    ValidateDeckConcrete();
-   if ( m_pDeckConc.get() != nullptr )
+   if ( m_pDeckConcrete.get() != nullptr )
    {
-      return m_pDeckConc->GetCreepCoefficient(t,tla);
+      return m_pDeckConcrete->GetCreepCoefficient(t,tla);
    }
    else
    {
@@ -1519,13 +1856,13 @@ Float64 CConcreteManager::GetDeckCreepCoefficient(Float64 t,Float64 tla)
    }
 }
 
-std::shared_ptr<matConcreteBaseCreepDetails> CConcreteManager::GetDeckCreepCoefficientDetails(Float64 t,Float64 tla)
+std::shared_ptr<matConcreteBaseCreepDetails> CConcreteManager::GetDeckCreepCoefficientDetails(Float64 t,Float64 tla) const
 {
    ValidateConcrete();
    ValidateDeckConcrete();
-   if ( m_pDeckConc.get() != nullptr )
+   if ( m_pDeckConcrete.get() != nullptr )
    {
-      return m_pDeckConc->GetCreepCoefficientDetails(t,tla);
+      return m_pDeckConcrete->GetCreepCoefficientDetails(t,tla);
    }
    else
    {
@@ -1533,13 +1870,13 @@ std::shared_ptr<matConcreteBaseCreepDetails> CConcreteManager::GetDeckCreepCoeff
    }
 }
 
-Float64 CConcreteManager::GetDeckAgingCoefficient(Float64 timeOfLoading)
+Float64 CConcreteManager::GetDeckAgingCoefficient(Float64 timeOfLoading) const
 {
    ValidateConcrete();
    ValidateDeckConcrete();
-   if ( m_pDeckConc.get() != nullptr )
+   if ( m_pDeckConcrete.get() != nullptr )
    {
-      return GetConcreteAgingCoefficient(m_pDeckConc.get(),timeOfLoading);
+      return GetConcreteAgingCoefficient(m_pDeckConcrete.get(),timeOfLoading);
    }
    else
    {
@@ -1547,156 +1884,297 @@ Float64 CConcreteManager::GetDeckAgingCoefficient(Float64 timeOfLoading)
    }
 }
 
-matConcreteBase* CConcreteManager::GetDeckConcrete()
+const matConcreteBase* CConcreteManager::GetDeckConcrete() const
 {
    ValidateConcrete();
    ValidateDeckConcrete();
-   return m_pDeckConc.get();
+   return m_pDeckConcrete.get();
 }
 
-Float64 CConcreteManager::GetSegmentCastingTime(const CSegmentKey& segmentKey)
+Float64 CConcreteManager::GetSegmentCastingTime(const CSegmentKey& segmentKey) const
 {
    ValidateConcrete();
    return m_pSegmentConcrete[segmentKey]->GetTimeAtCasting();
 }
 
-Float64 CConcreteManager::GetSegmentFc(const CSegmentKey& segmentKey,Float64 t)
+Float64 CConcreteManager::GetSegmentFc(const CSegmentKey& segmentKey,Float64 t) const
 {
    ValidateConcrete();
    return m_pSegmentConcrete[segmentKey]->GetFc(t);
 }
 
-Float64 CConcreteManager::GetSegmentEc(const CSegmentKey& segmentKey,Float64 t)
+Float64 CConcreteManager::GetSegmentEc(const CSegmentKey& segmentKey,Float64 t) const
 {
    ValidateConcrete();
    return m_pSegmentConcrete[segmentKey]->GetEc(t);
 }
 
-Float64 CConcreteManager::GetSegmentFlexureFr(const CSegmentKey& segmentKey,Float64 t)
+Float64 CConcreteManager::GetSegmentFlexureFr(const CSegmentKey& segmentKey,Float64 t) const
 {
    ValidateConcrete();
    return m_pSegmentConcrete[segmentKey]->GetFlexureFr(t);
 }
 
-Float64 CConcreteManager::GetSegmentShearFr(const CSegmentKey& segmentKey,Float64 t)
+Float64 CConcreteManager::GetSegmentShearFr(const CSegmentKey& segmentKey,Float64 t) const
 {
    ValidateConcrete();
    return m_pSegmentConcrete[segmentKey]->GetShearFr(t);
 }
 
-Float64 CConcreteManager::GetSegmentFreeShrinkageStrain(const CSegmentKey& segmentKey,Float64 t)
+Float64 CConcreteManager::GetSegmentFreeShrinkageStrain(const CSegmentKey& segmentKey,Float64 t) const
 {
    std::shared_ptr<matConcreteBaseShrinkageDetails> pDetails = GetSegmentFreeShrinkageStrainDetails(segmentKey,t);
    return pDetails->esh;
 }
 
-std::shared_ptr<matConcreteBaseShrinkageDetails> CConcreteManager::GetSegmentFreeShrinkageStrainDetails(const CSegmentKey& segmentKey,Float64 t)
+std::shared_ptr<matConcreteBaseShrinkageDetails> CConcreteManager::GetSegmentFreeShrinkageStrainDetails(const CSegmentKey& segmentKey,Float64 t) const
 {
    ValidateConcrete();
    ValidateSegmentConcrete();
    return m_pSegmentConcrete[segmentKey]->GetFreeShrinkageStrainDetails(t);
 }
 
-Float64 CConcreteManager::GetSegmentCreepCoefficient(const CSegmentKey& segmentKey,Float64 t,Float64 tla)
+Float64 CConcreteManager::GetSegmentCreepCoefficient(const CSegmentKey& segmentKey,Float64 t,Float64 tla) const
 {
    ValidateConcrete();
    ValidateSegmentConcrete();
    return m_pSegmentConcrete[segmentKey]->GetCreepCoefficient(t,tla);
 }
 
-std::shared_ptr<matConcreteBaseCreepDetails> CConcreteManager::GetSegmentCreepCoefficientDetails(const CSegmentKey& segmentKey,Float64 t,Float64 tla)
+std::shared_ptr<matConcreteBaseCreepDetails> CConcreteManager::GetSegmentCreepCoefficientDetails(const CSegmentKey& segmentKey,Float64 t,Float64 tla) const
 {
    ValidateConcrete();
    ValidateSegmentConcrete();
    return m_pSegmentConcrete[segmentKey]->GetCreepCoefficientDetails(t,tla);
 }
 
-Float64 CConcreteManager::GetSegmentAgingCoefficient(const CSegmentKey& segmentKey,Float64 timeOfLoading)
+Float64 CConcreteManager::GetSegmentAgingCoefficient(const CSegmentKey& segmentKey,Float64 timeOfLoading) const
 {
    ValidateConcrete();
    ValidateSegmentConcrete();
    return GetConcreteAgingCoefficient(m_pSegmentConcrete[segmentKey].get(),timeOfLoading);
 }
 
-matConcreteBase* CConcreteManager::GetSegmentConcrete(const CSegmentKey& segmentKey)
+const matConcreteBase* CConcreteManager::GetSegmentConcrete(const CSegmentKey& segmentKey) const
 {
    ValidateConcrete();
    ValidateSegmentConcrete();
    return m_pSegmentConcrete[segmentKey].get();
 }
 
-Float64 CConcreteManager::GetClosureJointCastingTime(const CClosureKey& closureKey)
+Float64 CConcreteManager::GetClosureJointCastingTime(const CClosureKey& closureKey) const
 {
    ValidateConcrete();
    return m_pClosureConcrete[closureKey]->GetTimeAtCasting();
 }
 
-Float64 CConcreteManager::GetClosureJointFc(const CClosureKey& closureKey,Float64 t)
+Float64 CConcreteManager::GetClosureJointFc(const CClosureKey& closureKey,Float64 t) const
 {
    ValidateConcrete();
    return m_pClosureConcrete[closureKey]->GetFc(t);
 }
 
-Float64 CConcreteManager::GetClosureJointFlexureFr(const CClosureKey& closureKey,Float64 t)
+Float64 CConcreteManager::GetClosureJointFlexureFr(const CClosureKey& closureKey,Float64 t) const
 {
    ValidateConcrete();
    return m_pClosureConcrete[closureKey]->GetFlexureFr(t);
 }
 
-Float64 CConcreteManager::GetClosureJointShearFr(const CClosureKey& closureKey,Float64 t)
+Float64 CConcreteManager::GetClosureJointShearFr(const CClosureKey& closureKey,Float64 t) const
 {
    ValidateConcrete();
    return m_pClosureConcrete[closureKey]->GetShearFr(t);
 }
 
-Float64 CConcreteManager::GetClosureJointEc(const CClosureKey& closureKey,Float64 t)
+Float64 CConcreteManager::GetClosureJointEc(const CClosureKey& closureKey,Float64 t) const
 {
    ValidateConcrete();
    return m_pClosureConcrete[closureKey]->GetEc(t);
 }
 
-Float64 CConcreteManager::GetClosureJointFreeShrinkageStrain(const CClosureKey& closureKey,Float64 t)
+Float64 CConcreteManager::GetClosureJointFreeShrinkageStrain(const CClosureKey& closureKey,Float64 t) const
 {
    std::shared_ptr<matConcreteBaseShrinkageDetails> pDetails = GetClosureJointFreeShrinkageStrainDetails(closureKey,t);
    return pDetails->esh;
 }
 
-std::shared_ptr<matConcreteBaseShrinkageDetails> CConcreteManager::GetClosureJointFreeShrinkageStrainDetails(const CClosureKey& closureKey,Float64 t)
+std::shared_ptr<matConcreteBaseShrinkageDetails> CConcreteManager::GetClosureJointFreeShrinkageStrainDetails(const CClosureKey& closureKey,Float64 t) const
 {
    ValidateConcrete();
    ValidateSegmentConcrete();
    return m_pClosureConcrete[closureKey]->GetFreeShrinkageStrainDetails(t);
 }
 
-Float64 CConcreteManager::GetClosureJointCreepCoefficient(const CClosureKey& closureKey,Float64 t,Float64 tla)
+Float64 CConcreteManager::GetClosureJointCreepCoefficient(const CClosureKey& closureKey,Float64 t,Float64 tla) const
 {
    ValidateConcrete();
    ValidateSegmentConcrete();
    return m_pClosureConcrete[closureKey]->GetCreepCoefficient(t,tla);
 }
 
-std::shared_ptr<matConcreteBaseCreepDetails> CConcreteManager::GetClosureJointCreepCoefficientDetails(const CClosureKey& closureKey,Float64 t,Float64 tla)
+std::shared_ptr<matConcreteBaseCreepDetails> CConcreteManager::GetClosureJointCreepCoefficientDetails(const CClosureKey& closureKey,Float64 t,Float64 tla) const
 {
    ValidateConcrete();
    ValidateSegmentConcrete();
    return m_pClosureConcrete[closureKey]->GetCreepCoefficientDetails(t,tla);
 }
 
-Float64 CConcreteManager::GetClosureJointAgingCoefficient(const CClosureKey& closureKey,Float64 timeOfLoading)
+Float64 CConcreteManager::GetClosureJointAgingCoefficient(const CClosureKey& closureKey,Float64 timeOfLoading) const
 {
    ValidateConcrete();
    ValidateSegmentConcrete();
    return GetConcreteAgingCoefficient(m_pClosureConcrete[closureKey].get(),timeOfLoading);
 }
 
-matConcreteBase* CConcreteManager::GetClosureJointConcrete(const CClosureKey& closureKey)
+const matConcreteBase* CConcreteManager::GetClosureJointConcrete(const CClosureKey& closureKey) const
 {
    ValidateConcrete();
    ValidateSegmentConcrete();
    return m_pClosureConcrete[closureKey].get();
 }
 
-lrfdLRFDConcrete* CConcreteManager::CreateLRFDConcreteModel(const CConcreteMaterial& concrete,Float64 startTime,Float64 stepTime)
+Float64 CConcreteManager::GetLongitudinalJointCastingTime() const
+{
+   ValidateConcrete();
+   if (m_pLongitudinalJointConcrete.get() != nullptr)
+   {
+      return m_pLongitudinalJointConcrete->GetTimeAtCasting();
+   }
+   else
+   {
+      return 0;
+   }
+}
+
+Float64 CConcreteManager::GetLongitudinalJointFc(Float64 t) const
+{
+   ValidateConcrete();
+   if (m_pLongitudinalJointConcrete.get() != nullptr)
+   {
+      return m_pLongitudinalJointConcrete->GetFc(t);
+   }
+   else
+   {
+      return 0;
+   }
+}
+
+Float64 CConcreteManager::GetLongitudinalJointEc(Float64 t) const
+{
+   ValidateConcrete();
+   if (m_pLongitudinalJointConcrete.get() != nullptr)
+   {
+      return m_pLongitudinalJointConcrete->GetEc(t);
+   }
+   else
+   {
+      return 0;
+   }
+}
+
+Float64 CConcreteManager::GetLongitudinalJointFlexureFr(Float64 t) const
+{
+   ValidateConcrete();
+   if (m_pLongitudinalJointConcrete.get() != nullptr)
+   {
+      return m_pLongitudinalJointConcrete->GetFlexureFr(t);
+   }
+   else
+   {
+      return 0;
+   }
+}
+
+Float64 CConcreteManager::GetLongitudinalJointShearFr(Float64 t) const
+{
+   ValidateConcrete();
+   if (m_pLongitudinalJointConcrete.get() != nullptr)
+   {
+      return m_pLongitudinalJointConcrete->GetShearFr(t);
+   }
+   else
+   {
+      return 0;
+   }
+}
+
+Float64 CConcreteManager::GetLongitudinalJointFreeShrinkageStrain(Float64 t) const
+{
+   std::shared_ptr<matConcreteBaseShrinkageDetails> pDetails = GetLongitudinalJointFreeShrinkageStrainDetails(t);
+   if (pDetails)
+   {
+      return pDetails->esh;
+   }
+   else
+   {
+      return 0;
+   }
+}
+
+std::shared_ptr<matConcreteBaseShrinkageDetails> CConcreteManager::GetLongitudinalJointFreeShrinkageStrainDetails(Float64 t) const
+{
+   ValidateConcrete();
+   ValidateLongitudinalJointConcrete();
+   if (m_pLongitudinalJointConcrete.get() != nullptr)
+   {
+      return m_pLongitudinalJointConcrete->GetFreeShrinkageStrainDetails(t);
+   }
+   else
+   {
+      return nullptr;
+   }
+}
+
+Float64 CConcreteManager::GetLongitudinalJointCreepCoefficient(Float64 t, Float64 tla) const
+{
+   ValidateConcrete();
+   ValidateLongitudinalJointConcrete();
+   if (m_pLongitudinalJointConcrete.get() != nullptr)
+   {
+      return m_pLongitudinalJointConcrete->GetCreepCoefficient(t, tla);
+   }
+   else
+   {
+      return 0;
+   }
+}
+
+std::shared_ptr<matConcreteBaseCreepDetails> CConcreteManager::GetLongitudinalJointCreepCoefficientDetails(Float64 t, Float64 tla) const
+{
+   ValidateConcrete();
+   ValidateLongitudinalJointConcrete();
+   if (m_pLongitudinalJointConcrete.get() != nullptr)
+   {
+      return m_pLongitudinalJointConcrete->GetCreepCoefficientDetails(t, tla);
+   }
+   else
+   {
+      return nullptr;
+   }
+}
+
+Float64 CConcreteManager::GetLongitudinalJointAgingCoefficient(Float64 timeOfLoading) const
+{
+   ValidateConcrete();
+   ValidateLongitudinalJointConcrete();
+   if (m_pLongitudinalJointConcrete.get() != nullptr)
+   {
+      return GetConcreteAgingCoefficient(m_pLongitudinalJointConcrete.get(), timeOfLoading);
+   }
+   else
+   {
+      return 0;
+   }
+}
+
+const matConcreteBase* CConcreteManager::GetLongitudinalJointConcrete() const
+{
+   ValidateConcrete();
+   ValidateLongitudinalJointConcrete();
+   return m_pLongitudinalJointConcrete.get();
+}
+
+lrfdLRFDConcrete* CConcreteManager::CreateLRFDConcreteModel(const CConcreteMaterial& concrete,Float64 startTime,Float64 stepTime) const
 {
    // this concrete model is simple step function. fc and E are constant at f'ci and Eci from t = 0 to
    // just before t = stepTime. From t = stepTime and beyond fc and E are f'c and Ec.
@@ -1733,7 +2211,7 @@ lrfdLRFDConcrete* CConcreteManager::CreateLRFDConcreteModel(const CConcreteMater
    return pLRFDConcrete;
 }
 
-lrfdLRFDTimeDependentConcrete* CConcreteManager::CreateTimeDependentLRFDConcreteModel(const CConcreteMaterial& concrete,Float64 ageAtInitialLoading)
+lrfdLRFDTimeDependentConcrete* CConcreteManager::CreateTimeDependentLRFDConcreteModel(const CConcreteMaterial& concrete,Float64 ageAtInitialLoading) const
 {
    lrfdLRFDTimeDependentConcrete* pConcrete = new lrfdLRFDTimeDependentConcrete();
 
@@ -1780,7 +2258,7 @@ lrfdLRFDTimeDependentConcrete* CConcreteManager::CreateTimeDependentLRFDConcrete
    return pConcrete;
 }
 
-matACI209Concrete* CConcreteManager::CreateACI209Model(const CConcreteMaterial& concrete,Float64 ageAtInitialLoading)
+matACI209Concrete* CConcreteManager::CreateACI209Model(const CConcreteMaterial& concrete,Float64 ageAtInitialLoading) const
 {
    matACI209Concrete* pConcrete = new matACI209Concrete();
 
@@ -1817,7 +2295,7 @@ matACI209Concrete* CConcreteManager::CreateACI209Model(const CConcreteMaterial& 
    return pConcrete;
 }
 
-matCEBFIPConcrete* CConcreteManager::CreateCEBFIPModel(const CConcreteMaterial& concrete,Float64 ageAtInitialLoading)
+matCEBFIPConcrete* CConcreteManager::CreateCEBFIPModel(const CConcreteMaterial& concrete,Float64 ageAtInitialLoading) const
 {
    matCEBFIPConcrete* pConcrete = new matCEBFIPConcrete;
 
@@ -1852,7 +2330,7 @@ matCEBFIPConcrete* CConcreteManager::CreateCEBFIPModel(const CConcreteMaterial& 
    return pConcrete;
 }
 
-Float64 CConcreteManager::GetConcreteAgingCoefficient(const matConcreteBase* pConcrete,Float64 timeOfLoading)
+Float64 CConcreteManager::GetConcreteAgingCoefficient(const matConcreteBase* pConcrete,Float64 timeOfLoading) const
 {
    return 1.0;
    //// based on "Approximate expressions for the Aging coefficient and the relaxation function in the viscoelastic

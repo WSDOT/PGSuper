@@ -135,7 +135,7 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
    GET_IFACE2(pBroker,IAllowableConcreteStress,pAllowableConcreteStress);
 
    pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
-   *pPara << _T("Stress Limitations on Prestressing Tendons [5.9.3]");
+   *pPara << _T("Stress Limitations on Prestressing Tendons [") << LrfdCw8th(_T("5.9.3"),_T("5.9.2.2")) << _T("]");
    *pChapter << pPara;
 
    // Stresses in prestressing strands
@@ -513,6 +513,9 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
    // Camber Check
    CConstructabilityCheckTable().BuildCamberCheck(pChapter,pBroker,girderKey,pDisplayUnits);
 
+   // Precamber Check
+   CConstructabilityCheckTable().BuildPrecamberCheck(pChapter, pBroker, girderList, pDisplayUnits);
+
    // Load rating
    GET_IFACE2(pBroker,IRatingSpecification,pRatingSpec);
    if ( !pRatingSpec->AlwaysLoadRate() )
@@ -681,7 +684,7 @@ void write_splitting_zone_check(IBroker* pBroker,
 
    rptParagraph* pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pPara;
-   (*pPara) << strName << _T(" Zone Stirrup Check [5.10.10.1]") << rptNewLine;
+   (*pPara) << strName << _T(" Zone Stirrup Check [") << LrfdCw8th(_T("5.10.10.1"),_T("5.9.4.4.1")) << _T("]") << rptNewLine;
 
    SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
    for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
@@ -744,7 +747,7 @@ void write_confinement_check(IBroker* pBroker,
 
    rptParagraph* pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pPara;
-   (*pPara) << _T("Confinement Stirrup Check [5.10.10.2]") << rptNewLine;
+   (*pPara) << _T("Confinement Stirrup Check [") << LrfdCw8th(_T("5.10.10.2"),_T("5.9.4.4.2")) << _T("]") << rptNewLine;
 
    SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
    for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )

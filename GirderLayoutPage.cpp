@@ -90,6 +90,11 @@ void CSpanGirderLayoutPage::DoDataExchange(CDataExchange* pDX)
    DDV_SpacingGrid(pDX,IDC_PREV_PIER_SPACING_GRID,&m_SpacingGrid[pgsTypes::metStart]);
    DDV_SpacingGrid(pDX,IDC_NEXT_PIER_SPACING_GRID,&m_SpacingGrid[pgsTypes::metEnd]);
 
+   if (IsTopWidthSpacing(pParent->m_BridgeDesc.GetGirderSpacingType()))
+   {
+      DDV_TopWidthGrid(pDX, IDC_TOP_WIDTH_GRID, &m_TopWidthGrid);
+   }
+
    DDX_CBItemData(pDX, IDC_PREV_REF_GIRDER, m_RefGirderIdx[pgsTypes::metStart]);
    DDX_CBItemData(pDX, IDC_NEXT_REF_GIRDER, m_RefGirderIdx[pgsTypes::metEnd]);
 
@@ -247,8 +252,7 @@ BOOL CSpanGirderLayoutPage::OnInitDialog()
    // set up the girder name grid
 	m_GirderNameGrid.SubclassDlgItem(IDC_GIRDERGRID, this);
    m_GirderNameGrid.CustomInit(pParent->m_pGirderGroup);
-   m_GirderGroupCache.SetPiers(pParent->m_pGirderGroup->GetPier(pgsTypes::metStart),pParent->m_pGirderGroup->GetPier(pgsTypes::metEnd));
-   m_GirderGroupCache = *(pParent->m_pGirderGroup);
+   m_GirderTypeCache = pParent->m_pGirderGroup->GetGirderTypeGroups();
 
 
    // set up the previous pier girder spacing input
@@ -261,6 +265,13 @@ BOOL CSpanGirderLayoutPage::OnInitDialog()
    m_SpacingGrid[pgsTypes::metEnd].SubclassDlgItem(IDC_NEXT_PIER_SPACING_GRID,this);
    m_SpacingGrid[pgsTypes::metEnd].CustomInit();
    m_SpacingGrid[pgsTypes::metEnd].SetPierSkewAngle(skew_angle_2);
+
+   if (IsTopWidthSpacing(pParent->m_BridgeDesc.GetGirderSpacingType()))
+   {
+      m_TopWidthGrid.SubclassDlgItem(IDC_TOP_WIDTH_GRID, this);
+      m_TopWidthGrid.CustomInit(pParent->m_pGirderGroup);
+      m_TopWidthCache = pParent->m_pGirderGroup->GetGirderTopWidthGroups();
+   }
 
    // Fill up the combo boxes for how girder spacing is measured
    Float64 offset;
@@ -334,6 +345,12 @@ BOOL CSpanGirderLayoutPage::OnInitDialog()
       m_cbGirderSpacingType.AddString(_T("The same joint spacing is used for the entire bridge"));
       m_cbGirderSpacingType.AddString(_T("Joint spacing is defined span by span"));
       m_cbGirderSpacingType.SetCurSel(1);
+   }
+   else if (spacingType == pgsTypes::sbsUniformAdjacentWithTopWidth || spacingType == pgsTypes::sbsGeneralAdjacentWithTopWidth)
+   {
+      m_cbGirderSpacingType.AddString(_T("The same top flange width and joint spacing is used for the entire bridge"));
+      m_cbGirderSpacingType.AddString(_T("Top flange width and joint spacing is defined span by span"));
+      m_cbGirderSpacingType.SetCurSel(spacingType == pgsTypes::sbsUniformAdjacentWithTopWidth ? 0 : 1);
    }
    else
    {
@@ -411,8 +428,10 @@ void CSpanGirderLayoutPage::AddGirders(GirderIndexType nGirders)
    m_GirderNameGrid.UpdateGrid();
    m_SpacingGrid[pgsTypes::metStart].UpdateGrid();
    m_SpacingGrid[pgsTypes::metEnd].UpdateGrid();
+   m_TopWidthGrid.UpdateGrid();
 
    UpdateGirderSpacingState();
+   UpdateGirderTopWidthState();
 }
 
 void CSpanGirderLayoutPage::RemoveGirders(GirderIndexType nGirders)
@@ -425,8 +444,10 @@ void CSpanGirderLayoutPage::RemoveGirders(GirderIndexType nGirders)
    m_GirderNameGrid.UpdateGrid();
    m_SpacingGrid[pgsTypes::metStart].UpdateGrid();
    m_SpacingGrid[pgsTypes::metEnd].UpdateGrid();
+   m_TopWidthGrid.UpdateGrid();
 
    UpdateGirderSpacingState();
+   UpdateGirderTopWidthState();
 }
 
 void CSpanGirderLayoutPage::FillGirderSpacingMeasurementComboBox(int nIDC, pgsTypes::MemberEndType end,ConnectionLibraryEntry::BearingOffsetMeasurementType bearingMeasure)
@@ -523,73 +544,9 @@ void CSpanGirderLayoutPage::OnNextPierGirderSpacingMeasureChanged()
 
 GirderIndexType CSpanGirderLayoutPage::GetMinGirderCount()
 {
-   CSpanDetailsDlg* pParent = (CSpanDetailsDlg*)GetParent();
-   const CGirderGroupData* pGroup = pParent->m_pGirderGroup;
-
-   // It is ok to use girder 0 here because all the girders within the span
-   // are of the same family. All the girders in the span will have the
-   // same factory
-   const GirderLibraryEntry* pGdrEntry = pGroup->GetGirderLibraryEntry(0);
-
    CComPtr<IBeamFactory> factory;
-   pGdrEntry->GetBeamFactory(&factory);
-
+   GetBeamFactory(&factory);
    return factory->GetMinimumBeamCount();
-}
-
-void CSpanGirderLayoutPage::UpdateGirderSpacingState()
-{
-   CSpanDetailsDlg* pParent = (CSpanDetailsDlg*)GetParent();
-   BOOL bPrevEnable = m_SpacingGrid[pgsTypes::metStart].InputSpacing();
-   BOOL bNextEnable = m_SpacingGrid[pgsTypes::metEnd].InputSpacing();
-
-   if ( m_nGirders == 1 || IsBridgeSpacing(pParent->m_BridgeDesc.GetGirderSpacingType()) )
-   {
-      // if there is only 1 girder or we are inputting spacing for the whole bridge
-      // (not span by span) then disable the input controls
-      bPrevEnable = FALSE;
-      bNextEnable = FALSE;
-   }
-
-   // Prev Pier
-   GetDlgItem(IDC_PREV_PIER_LABEL)->EnableWindow(bPrevEnable);
-   GetDlgItem(IDC_PREV_PIER_GIRDER_SPACING_LABEL)->EnableWindow(bPrevEnable);
-   GetDlgItem(IDC_PREV_PIER_GIRDER_SPACING_MEASURE)->EnableWindow(bPrevEnable);
-   m_SpacingGrid[pgsTypes::metStart].Enable(bPrevEnable);
-
-   // Next Pier
-   GetDlgItem(IDC_NEXT_PIER_LABEL)->EnableWindow(bNextEnable);
-   GetDlgItem(IDC_NEXT_PIER_GIRDER_SPACING_LABEL)->EnableWindow(bNextEnable);
-   GetDlgItem(IDC_NEXT_PIER_GIRDER_SPACING_MEASURE)->EnableWindow(bNextEnable);
-   m_SpacingGrid[pgsTypes::metEnd].Enable(bNextEnable);
-
-   if ( pParent->m_BridgeDesc.GetGirderSpacingType() == pgsTypes::sbsConstantAdjacent )
-      GetDlgItem(IDC_GDR_SPC_TYPE_COMBO)->EnableWindow(FALSE);
-   else
-      GetDlgItem(IDC_GDR_SPC_TYPE_COMBO)->EnableWindow(m_nGirders == 1 ? FALSE : TRUE);
-
-
-   BOOL bEnable;
-   if ( ::IsBridgeSpacing(pParent->m_BridgeDesc.GetGirderSpacingType()) )
-      bEnable = FALSE;
-   else
-      bEnable = TRUE;
-
-   GetDlgItem(IDC_COPY_TO_END)->EnableWindow(bEnable);
-   GetDlgItem(IDC_PREV_REF_GIRDER_LABEL)->EnableWindow(bEnable);
-   GetDlgItem(IDC_PREV_REF_GIRDER)->EnableWindow(bEnable);
-   GetDlgItem(IDC_PREV_REF_GIRDER_OFFSET)->EnableWindow(bEnable);
-   GetDlgItem(IDC_PREV_REF_GIRDER_OFFSET_UNIT)->EnableWindow(bEnable);
-   GetDlgItem(IDC_PREV_REF_GIRDER_FROM)->EnableWindow(bEnable);
-   GetDlgItem(IDC_PREV_REF_GIRDER_OFFSET_TYPE)->EnableWindow(bEnable);
-
-   GetDlgItem(IDC_COPY_TO_START)->EnableWindow(bEnable);
-   GetDlgItem(IDC_NEXT_REF_GIRDER_LABEL)->EnableWindow(bEnable);
-   GetDlgItem(IDC_NEXT_REF_GIRDER)->EnableWindow(bEnable);
-   GetDlgItem(IDC_NEXT_REF_GIRDER_OFFSET)->EnableWindow(bEnable);
-   GetDlgItem(IDC_NEXT_REF_GIRDER_OFFSET_UNIT)->EnableWindow(bEnable);
-   GetDlgItem(IDC_NEXT_REF_GIRDER_FROM)->EnableWindow(bEnable);
-   GetDlgItem(IDC_NEXT_REF_GIRDER_OFFSET_TYPE)->EnableWindow(bEnable);
 }
 
 void CSpanGirderLayoutPage::OnChangeSameGirderSpacing()
@@ -605,7 +562,7 @@ void CSpanGirderLayoutPage::OnChangeSameGirderSpacing()
    pgsTypes::SupportedBeamSpacing oldSpacingType = pParent->m_BridgeDesc.GetGirderSpacingType();
    pgsTypes::SupportedBeamSpacing spacingType = ToggleGirderSpacingType(oldSpacingType);
 
-   if ( spacingType == pgsTypes::sbsUniform || spacingType == pgsTypes::sbsUniformAdjacent )
+   if ( IsBridgeSpacing(spacingType) && spacingType != pgsTypes::sbsConstantAdjacent )
    {
       // we are going from general to uniform spacing
       // if the grid has more than one spacing, we need to ask the user which one is to be
@@ -616,7 +573,7 @@ void CSpanGirderLayoutPage::OnChangeSameGirderSpacing()
       m_CacheGirderSpacingMeasure[pgsTypes::metStart] = (DWORD)pcbStartOfSpanSpacingDatum->GetItemData( pcbStartOfSpanSpacingDatum->GetCurSel() );
       m_CacheGirderSpacingMeasure[pgsTypes::metEnd]   = (DWORD)pcbEndOfSpanSpacingDatum->GetItemData( pcbEndOfSpanSpacingDatum->GetCurSel() );
 
-      // determine if there is more than one spacing group
+      // determine if there is more than one unique spacing value
       std::set<Float64> spacings;
       Float64 bridgeSpacing = 0;
       long datum = 0;
@@ -658,13 +615,19 @@ void CSpanGirderLayoutPage::OnChangeSameGirderSpacing()
             Float64 spacing = *iter;
 
             CString strItem;
-            if ( IsGirderSpacing(oldSpacingType) )
-               strItem.Format(_T("%s"),FormatDimension(spacing,pDisplayUnits->GetXSectionDimUnit(),true));
+            if (IsGirderSpacing(oldSpacingType))
+            {
+               strItem.Format(_T("%s"), FormatDimension(spacing, pDisplayUnits->GetXSectionDimUnit(), true));
+            }
             else
-               strItem.Format(_T("%s"),FormatDimension(spacing,pDisplayUnits->GetComponentDimUnit(),true));
+            {
+               strItem.Format(_T("%s"), FormatDimension(spacing, pDisplayUnits->GetComponentDimUnit(), true));
+            }
 
-            if ( iter != begin )
+            if (iter != begin)
+            {
                strItems += _T("\n");
+            }
 
             strItems += strItem;
          }
@@ -682,8 +645,10 @@ void CSpanGirderLayoutPage::OnChangeSameGirderSpacing()
          if ( dlg.DoModal() == IDOK )
          {
             iter = begin;
-            for ( int i = 0; i < dlg.m_ItemIdx; i++ )
+            for (int i = 0; i < dlg.m_ItemIdx; i++)
+            {
                iter++;
+            }
 
             bridgeSpacing = *iter;
 
@@ -709,6 +674,99 @@ void CSpanGirderLayoutPage::OnChangeSameGirderSpacing()
       CDataExchange dx(this,FALSE);
       DDX_CBItemData(&dx, IDC_PREV_PIER_GIRDER_SPACING_MEASURE, datum);
       DDX_CBItemData(&dx, IDC_NEXT_PIER_GIRDER_SPACING_MEASURE, datum);
+
+
+      ////////////
+      std::vector<CGirderTopWidthGroup> topWidths;
+      CGirderTopWidthGroup bridgeTopWidth;
+      m_TopWidthCache = pParent->m_pGirderGroup->GetGirderTopWidthGroups();
+      GroupIndexType nTopWidthGroups = pParent->m_pGirderGroup->GetGirderTopWidthGroupCount();
+      for (GroupIndexType grpIdx = 0; grpIdx < nTopWidthGroups; grpIdx++)
+      {
+         topWidths.push_back(pParent->m_pGirderGroup->GetGirderTopWidthGroup(grpIdx));
+      }
+      auto iter = std::unique(std::begin(topWidths), std::end(topWidths), [](const auto& a, const auto& b) 
+      { 
+         bool bSameType = a.type == b.type;
+         bool bSameLeft = IsEqual(a.left[pgsTypes::metStart], b.left[pgsTypes::metStart]) && IsEqual(a.left[pgsTypes::metEnd], b.left[pgsTypes::metEnd]);
+         bool bSameRight(a.type != pgsTypes::twtAsymmetric ? true : IsEqual(a.right[pgsTypes::metStart], b.right[pgsTypes::metStart]) && IsEqual(a.right[pgsTypes::metEnd], b.right[pgsTypes::metEnd]));
+         return bSameType && bSameLeft && bSameRight;
+      }
+      );
+      topWidths.erase(iter, std::end(topWidths));
+
+      if (1 < topWidths.size())
+      {
+         // there is more than one top widths... which one do we want to use for the entire bridge?
+         CComPtr<IBroker> broker;
+         EAFGetBroker(&broker);
+         GET_IFACE2(broker, IEAFDisplayUnits, pDisplayUnits);
+
+         CComPtr<IBeamFactory> factory;
+         GetBeamFactory(&factory);
+
+         CResolveGirderSpacingDlg dlg;
+         CString strItems;
+         auto begin(topWidths.begin());
+         auto iter(begin);
+         auto end(topWidths.end());
+         for (; iter != end; iter++)
+         {
+            const auto& topWidth(*iter);
+
+            CString strItem;
+            if (topWidth.type == pgsTypes::twtAsymmetric)
+            {
+               if (factory->CanTopWidthVary())
+               {
+                  strItem.Format(_T("Left %s//Right %s\nLeft %s//Right %s"), FormatDimension(topWidth.left[pgsTypes::metStart], pDisplayUnits->GetXSectionDimUnit(), true), FormatDimension(topWidth.right[pgsTypes::metStart], pDisplayUnits->GetXSectionDimUnit(), true), FormatDimension(topWidth.left[pgsTypes::metEnd], pDisplayUnits->GetXSectionDimUnit(), true), FormatDimension(topWidth.right[pgsTypes::metEnd], pDisplayUnits->GetXSectionDimUnit(), true));
+               }
+               else
+               {
+                  strItem.Format(_T("Left %s//Right %s"), FormatDimension(topWidth.left[pgsTypes::metStart], pDisplayUnits->GetXSectionDimUnit(), true), FormatDimension(topWidth.right[pgsTypes::metStart], pDisplayUnits->GetXSectionDimUnit(), true));
+               }
+            }
+            else
+            {
+               if (factory->CanTopWidthVary())
+               {
+                  strItem.Format(_T("%s\n%s"), FormatDimension(topWidth.left[pgsTypes::metStart], pDisplayUnits->GetXSectionDimUnit(), true), FormatDimension(topWidth.left[pgsTypes::metEnd], pDisplayUnits->GetXSectionDimUnit(), true));
+               }
+               else
+               {
+                  strItem.Format(_T("%s"), FormatDimension(topWidth.left[pgsTypes::metStart], pDisplayUnits->GetXSectionDimUnit(), true));
+               }
+            }
+
+            if (iter != begin)
+            {
+               strItems += _T("\n");
+            }
+
+            strItems += strItem;
+         }
+
+         int result = AfxChoose(_T("Multiple Top Flange Widths"), _T("There are multiple top widths. Select one to use for all girders in the bridge."), strItems, 0, TRUE);
+         if ( result != -1)
+         {
+            iter = begin;
+            iter += result;
+            bridgeTopWidth = *iter;
+         }
+         else
+         {
+            // use pressed Cancel button... cancel the entire operation
+            UpdateChildWindowState();
+            return;
+         }
+      }
+      else
+      {
+         // there is only one unique top width value.. get it
+         pParent->m_pGirderGroup->GetGirder(0)->GetTopWidth(&bridgeTopWidth.type, &bridgeTopWidth.left[pgsTypes::metStart], &bridgeTopWidth.right[pgsTypes::metStart], &bridgeTopWidth.left[pgsTypes::metEnd], &bridgeTopWidth.right[pgsTypes::metEnd]);
+      }
+
+      pParent->m_BridgeDesc.SetGirderTopWidth(bridgeTopWidth.type, bridgeTopWidth.left[pgsTypes::metStart], bridgeTopWidth.right[pgsTypes::metStart]);
    }
    else
    {
@@ -724,11 +782,18 @@ void CSpanGirderLayoutPage::OnChangeSameGirderSpacing()
       CDataExchange dx(this,FALSE);
       DDX_CBItemData(&dx, IDC_PREV_PIER_GIRDER_SPACING_MEASURE, m_CacheGirderSpacingMeasure[pgsTypes::metStart]);
       DDX_CBItemData(&dx, IDC_NEXT_PIER_GIRDER_SPACING_MEASURE, m_CacheGirderSpacingMeasure[pgsTypes::metEnd]);
+
+      pParent->m_pGirderGroup->SetGirderTopWidthGroups(m_TopWidthCache);
    }
 
    pParent->m_BridgeDesc.SetGirderSpacingType(spacingType);
    m_SpacingGrid[pgsTypes::metStart].UpdateGrid();
    m_SpacingGrid[pgsTypes::metEnd].UpdateGrid();
+
+   if (IsTopWidthSpacing(spacingType))
+   {
+      m_TopWidthGrid.UpdateGrid();
+   }
 
    UpdateChildWindowState();
 }
@@ -744,7 +809,7 @@ void CSpanGirderLayoutPage::OnChangeSameGirderType()
    if ( bUseSameGirderType )
    {
       // cache the current grid data
-      m_GirderGroupCache = *(pParent->m_pGirderGroup);
+      m_GirderTypeCache = pParent->m_pGirderGroup->GetGirderTypeGroups();
 
       // if the grid has more than one girder type, we need to ask the user which one is to be
       // used for the entire bridge
@@ -821,7 +886,7 @@ void CSpanGirderLayoutPage::OnChangeSameGirderType()
    else
    {
       // restore the cached values
-      *pParent->m_pGirderGroup = m_GirderGroupCache;
+      pParent->m_pGirderGroup->SetGirderTypeGroups(m_GirderTypeCache);
    }
 
    pParent->m_BridgeDesc.UseSameGirderForEntireBridge(bUseSameGirderType);
@@ -843,6 +908,7 @@ void CSpanGirderLayoutPage::UpdateChildWindowState()
    UpdateGirderNumState();
    UpdateGirderTypeState();
    UpdateGirderSpacingState();
+   UpdateGirderTopWidthState();
 }
 
 void CSpanGirderLayoutPage::UpdateGirderTypeState()
@@ -861,6 +927,81 @@ void CSpanGirderLayoutPage::UpdateGirderNumState()
    GetDlgItem(IDC_NUMGDR_LABEL)->EnableWindow(bEnable);
    GetDlgItem(IDC_NUMGDR_SPIN)->EnableWindow(bEnable);
    GetDlgItem(IDC_NUMGDR)->EnableWindow(bEnable);
+}
+
+void CSpanGirderLayoutPage::UpdateGirderSpacingState()
+{
+   CSpanDetailsDlg* pParent = (CSpanDetailsDlg*)GetParent();
+   BOOL bPrevEnable = m_SpacingGrid[pgsTypes::metStart].InputSpacing();
+   BOOL bNextEnable = m_SpacingGrid[pgsTypes::metEnd].InputSpacing();
+
+   if (m_nGirders == 1 || IsBridgeSpacing(pParent->m_BridgeDesc.GetGirderSpacingType()))
+   {
+      // if there is only 1 girder or we are inputting spacing for the whole bridge
+      // (not span by span) then disable the input controls
+      bPrevEnable = FALSE;
+      bNextEnable = FALSE;
+   }
+
+   // Prev Pier
+   GetDlgItem(IDC_PREV_PIER_LABEL)->EnableWindow(bPrevEnable);
+   GetDlgItem(IDC_PREV_PIER_GIRDER_SPACING_LABEL)->EnableWindow(bPrevEnable);
+   GetDlgItem(IDC_PREV_PIER_GIRDER_SPACING_MEASURE)->EnableWindow(bPrevEnable);
+   m_SpacingGrid[pgsTypes::metStart].Enable(bPrevEnable);
+
+   // Next Pier
+   GetDlgItem(IDC_NEXT_PIER_LABEL)->EnableWindow(bNextEnable);
+   GetDlgItem(IDC_NEXT_PIER_GIRDER_SPACING_LABEL)->EnableWindow(bNextEnable);
+   GetDlgItem(IDC_NEXT_PIER_GIRDER_SPACING_MEASURE)->EnableWindow(bNextEnable);
+   m_SpacingGrid[pgsTypes::metEnd].Enable(bNextEnable);
+
+   if (pParent->m_BridgeDesc.GetGirderSpacingType() == pgsTypes::sbsConstantAdjacent)
+   {
+      GetDlgItem(IDC_GDR_SPC_TYPE_COMBO)->EnableWindow(FALSE);
+   }
+   else
+   {
+      GetDlgItem(IDC_GDR_SPC_TYPE_COMBO)->EnableWindow(m_nGirders == 1 ? FALSE : TRUE);
+   }
+
+
+   BOOL bEnable = IsSpanSpacing(pParent->m_BridgeDesc.GetGirderSpacingType()) ? TRUE : FALSE;
+
+   GetDlgItem(IDC_COPY_TO_END)->EnableWindow(bEnable);
+   GetDlgItem(IDC_PREV_REF_GIRDER_LABEL)->EnableWindow(bEnable);
+   GetDlgItem(IDC_PREV_REF_GIRDER)->EnableWindow(bEnable);
+   GetDlgItem(IDC_PREV_REF_GIRDER_OFFSET)->EnableWindow(bEnable);
+   GetDlgItem(IDC_PREV_REF_GIRDER_OFFSET_UNIT)->EnableWindow(bEnable);
+   GetDlgItem(IDC_PREV_REF_GIRDER_FROM)->EnableWindow(bEnable);
+   GetDlgItem(IDC_PREV_REF_GIRDER_OFFSET_TYPE)->EnableWindow(bEnable);
+
+   GetDlgItem(IDC_COPY_TO_START)->EnableWindow(bEnable);
+   GetDlgItem(IDC_NEXT_REF_GIRDER_LABEL)->EnableWindow(bEnable);
+   GetDlgItem(IDC_NEXT_REF_GIRDER)->EnableWindow(bEnable);
+   GetDlgItem(IDC_NEXT_REF_GIRDER_OFFSET)->EnableWindow(bEnable);
+   GetDlgItem(IDC_NEXT_REF_GIRDER_OFFSET_UNIT)->EnableWindow(bEnable);
+   GetDlgItem(IDC_NEXT_REF_GIRDER_FROM)->EnableWindow(bEnable);
+   GetDlgItem(IDC_NEXT_REF_GIRDER_OFFSET_TYPE)->EnableWindow(bEnable);
+}
+
+void CSpanGirderLayoutPage::UpdateGirderTopWidthState()
+{
+   CSpanDetailsDlg* pParent = (CSpanDetailsDlg*)GetParent();
+   if (IsTopWidthSpacing(pParent->m_BridgeDesc.GetGirderSpacingType()))
+   {
+      BOOL bEnable = IsSpanSpacing(pParent->m_BridgeDesc.GetGirderSpacingType()) ? TRUE : FALSE;
+      GetDlgItem(IDC_TOP_WIDTH_GRID_LABEL)->EnableWindow(bEnable);
+      GetDlgItem(IDC_TOP_WIDTH_GRID_LABEL)->ShowWindow(SW_SHOW);
+      m_TopWidthGrid.ShowWindow(SW_SHOW);
+      m_TopWidthGrid.Enable(bEnable);
+   }
+   else
+   {
+      GetDlgItem(IDC_TOP_WIDTH_GRID_LABEL)->ShowWindow(SW_HIDE);
+      GetDlgItem(IDC_TOP_WIDTH_GRID)->ShowWindow(SW_HIDE);
+      //m_TopWidthGrid.ShowWindow(SW_HIDE);
+   }
+   
 }
 
 void CSpanGirderLayoutPage::OnHelp() 
@@ -954,4 +1095,17 @@ void CSpanGirderLayoutPage::OnCbnSelchangeNgdrsCombo()
    pParent->m_BridgeDesc.SetGirderCount(m_nGirders);
 
    UpdateChildWindowState();
+}
+
+void CSpanGirderLayoutPage::GetBeamFactory(IBeamFactory** ppFactory)
+{
+   CSpanDetailsDlg* pParent = (CSpanDetailsDlg*)GetParent();
+   const CGirderGroupData* pGroup = pParent->m_pGirderGroup;
+
+   // It is ok to use girder 0 here because all the girders within the group
+   // are of the same family. All the girders in the span will have the
+   // same factory
+   const GirderLibraryEntry* pGdrEntry = pGroup->GetGirderLibraryEntry(0);
+
+   pGdrEntry->GetBeamFactory(ppFactory);
 }

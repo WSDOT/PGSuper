@@ -47,17 +47,16 @@ public:
    virtual CGraphBuilder* Clone() const override;
 
    virtual CEAFGraphControlWindow* GetGraphControlWindow() override;
+   virtual void CreateViewController(IEAFViewController** ppController) override;
+
+   void Stresses(pgsTypes::StressLocation stressLocation, bool bShow);
+
+   void ShowGrid(bool bShowGrid);
 
 protected:
    void Init();
 
    CStressHistoryGraphController* m_pGraphController;
-
-   afx_msg void OnShowGrid();
-   afx_msg void OnTopDeck();
-   afx_msg void OnBottomDeck();
-   afx_msg void OnTopGirder();
-   afx_msg void OnBottomGirder();
 
    DECLARE_MESSAGE_MAP()
 

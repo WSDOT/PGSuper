@@ -47,7 +47,7 @@
 /////////////////////////////////////////////////////////////////////////////
 // CGirderMainSheet
 
-class CGirderMainSheet : public CPropertySheet
+class CGirderMainSheet : public CPropertySheet, public CShearSteelPageParent
 {
 	DECLARE_DYNAMIC(CGirderMainSheet)
 
@@ -60,6 +60,9 @@ public:
    void SetBeamFactory(IBeamFactory* pBeamFactory);
 
    bool IsSplicedGirder();
+
+   // CShearSteelPageParent
+   virtual bool HasDeck() const override;
 
 // Attributes
 public:

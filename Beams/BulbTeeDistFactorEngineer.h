@@ -43,7 +43,7 @@ public:
 	{
 	}
 
-   void Init(bool treatAsWsDotI);
+   void Init(/*bool treatAsWsDotI*/);
 
 DECLARE_REGISTRY_RESOURCEID(IDR_BULBTEEDISTFACTORENGINEER)
 

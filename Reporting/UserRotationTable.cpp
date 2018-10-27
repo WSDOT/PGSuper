@@ -99,7 +99,7 @@ rptRcTable* CUserRotationTable::Build(IBroker* pBroker,const CGirderKey& girderK
    pgsTypes::BridgeAnalysisType minBAT = pProdForces->GetBridgeAnalysisType(analysisType,pgsTypes::Minimize);
 
    // get poi at start and end of each segment in the girder
-   std::vector<pgsPointOfInterest> vPoi;
+   PoiList vPoi;
    for ( GroupIndexType grpIdx = startGroupIdx; grpIdx <= endGroupIdx; grpIdx++ )
    {
       GirderIndexType gdrIdx = min( girderKey.girderIndex, pBridge->GetGirderCount(grpIdx)-1 );
@@ -109,12 +109,10 @@ rptRcTable* CUserRotationTable::Build(IBroker* pBroker,const CGirderKey& girderK
       for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
       {
          CSegmentKey segmentKey(grpIdx,gdrIdx,segIdx);
-         std::vector<pgsPointOfInterest> segPoi1(pPOI->GetPointsOfInterest(segmentKey,POI_ERECTED_SEGMENT | POI_0L, POIFIND_AND));
-         std::vector<pgsPointOfInterest> segPoi2(pPOI->GetPointsOfInterest(segmentKey,POI_ERECTED_SEGMENT | POI_10L,POIFIND_AND));
-         ATLASSERT(segPoi1.size() == 1);
-         ATLASSERT(segPoi2.size() == 1);
-         vPoi.push_back(segPoi1.front());
-         vPoi.push_back(segPoi2.front());
+         PoiList vSegPoi;
+         pPOI->GetPointsOfInterest(segmentKey, POI_0L | POI_10L | POI_ERECTED_SEGMENT, &vSegPoi);
+         ATLASSERT(vSegPoi.size() == 2);
+         vPoi.insert(vPoi.end(), vSegPoi.begin(), vSegPoi.end());
       }
    }
 
@@ -141,7 +139,7 @@ rptRcTable* CUserRotationTable::Build(IBroker* pBroker,const CGirderKey& girderK
       IntervalIndexType loadRatingIntervalIdx    = pIntervals->GetLoadRatingInterval();
       IntervalIndexType overlayIntervalIdx       = pIntervals->GetOverlayInterval();
 
-      pgsPointOfInterest& poi = vPoi[reactionLocation.PierIdx-startPierIdx];
+      const pgsPointOfInterest& poi = vPoi[reactionLocation.PierIdx-startPierIdx];
       IntervalIndexType erectSegmentIntervalIdx = pIntervals->GetErectSegmentInterval(poi.GetSegmentKey());
 
       // Use reaction decider tool to determine when to report stages

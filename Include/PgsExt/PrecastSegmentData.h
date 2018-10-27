@@ -68,6 +68,11 @@ public:
    CLongitudinalRebarData LongitudinalRebarData;  // mild reinforcing
    CHandlingData HandlingData; // lifting, hauling, etc
 
+   pgsTypes::TopFlangeThickeningType TopFlangeThickeningType;
+   Float64 TopFlangeThickening;
+
+   Float64 Precamber;
+
    // section transition
    void SetVariationType(pgsTypes::SegmentVariationType variationType);
    pgsTypes::SegmentVariationType GetVariationType() const;

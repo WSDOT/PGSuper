@@ -85,38 +85,26 @@
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC60.props" />
-    <Import Project="..\..\BridgeLink\BridgeLink.props" />
-    <Import Project="..\..\WBFL\WBFL.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC60.props" />
-    <Import Project="..\..\BridgeLink\BridgeLink.props" />
-    <Import Project="..\..\WBFL\WBFL.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC60.props" />
-    <Import Project="..\..\BridgeLink\BridgeLink.props" />
-    <Import Project="..\..\WBFL\WBFL.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Profile|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC60.props" />
-    <Import Project="..\..\BridgeLink\BridgeLink.props" />
-    <Import Project="..\..\WBFL\WBFL.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC60.props" />
-    <Import Project="..\..\BridgeLink\BridgeLink.props" />
-    <Import Project="..\..\WBFL\WBFL.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC60.props" />
-    <Import Project="..\..\BridgeLink\BridgeLink.props" />
-    <Import Project="..\..\WBFL\WBFL.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
@@ -506,7 +494,6 @@
     <ClCompile Include="GirderModelData.cpp" />
     <ClCompile Include="GirderModelManager.cpp" />
     <ClCompile Include="PGSuperLoadCombinationResponse.cpp" />
-    <ClCompile Include="PrestressTool.cpp" />
     <ClCompile Include="ProductLoadMap.cpp" />
     <ClCompile Include="SegmentModelData.cpp" />
     <ClCompile Include="SegmentModelManager.cpp" />
@@ -525,40 +512,6 @@
     <None Include="AnalysisAgent.rgs" />
   </ItemGroup>
   <ItemGroup>
-    <Midl Include="AnalysisAgent.idl">
-      <MkTypLibCompatible Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</MkTypLibCompatible>
-      <SuppressStartupBanner Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</SuppressStartupBanner>
-      <TargetEnvironment Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Win32</TargetEnvironment>
-      <HeaderFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">AnalysisAgent_i.h</HeaderFileName>
-      <InterfaceIdentifierFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">AnalysisAgent_i.c</InterfaceIdentifierFileName>
-      <MkTypLibCompatible Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</MkTypLibCompatible>
-      <SuppressStartupBanner Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</SuppressStartupBanner>
-      <TargetEnvironment Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Win32</TargetEnvironment>
-      <HeaderFileName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">AnalysisAgent_i.h</HeaderFileName>
-      <InterfaceIdentifierFileName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">AnalysisAgent_i.c</InterfaceIdentifierFileName>
-      <MkTypLibCompatible Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'">false</MkTypLibCompatible>
-      <SuppressStartupBanner Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'">false</SuppressStartupBanner>
-      <TargetEnvironment Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'">Win32</TargetEnvironment>
-      <HeaderFileName Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'">AnalysisAgent_i.h</HeaderFileName>
-      <InterfaceIdentifierFileName Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'">AnalysisAgent_i.c</InterfaceIdentifierFileName>
-      <MkTypLibCompatible Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">false</MkTypLibCompatible>
-      <SuppressStartupBanner Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">false</SuppressStartupBanner>
-      <TargetEnvironment Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">Win32</TargetEnvironment>
-      <HeaderFileName Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">AnalysisAgent_i.h</HeaderFileName>
-      <InterfaceIdentifierFileName Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">AnalysisAgent_i.c</InterfaceIdentifierFileName>
-      <MkTypLibCompatible Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</MkTypLibCompatible>
-      <SuppressStartupBanner Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</SuppressStartupBanner>
-      <TargetEnvironment Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Win32</TargetEnvironment>
-      <HeaderFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">AnalysisAgent_i.h</HeaderFileName>
-      <InterfaceIdentifierFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">AnalysisAgent_i.c</InterfaceIdentifierFileName>
-      <MkTypLibCompatible Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</MkTypLibCompatible>
-      <SuppressStartupBanner Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</SuppressStartupBanner>
-      <TargetEnvironment Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Win32</TargetEnvironment>
-      <HeaderFileName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">AnalysisAgent_i.h</HeaderFileName>
-      <InterfaceIdentifierFileName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">AnalysisAgent_i.c</InterfaceIdentifierFileName>
-    </Midl>
-  </ItemGroup>
-  <ItemGroup>
     <ResourceCompile Include="AnalysisAgent.rc" />
   </ItemGroup>
   <ItemGroup>
@@ -567,10 +520,10 @@
     <ClInclude Include="AnalysisAgentImp.h" />
     <ClInclude Include="AnalysisResult.h" />
     <ClInclude Include="BarrierSidewalkLoadDistributionTool.h" />
+    <ClInclude Include="CLSID.h" />
     <ClInclude Include="GirderModelData.h" />
     <ClInclude Include="GirderModelManager.h" />
     <ClInclude Include="PGSuperLoadCombinationResponse.h" />
-    <ClInclude Include="PrestressTool.h" />
     <ClInclude Include="ProductLoadMap.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="SegmentModelData.h" />

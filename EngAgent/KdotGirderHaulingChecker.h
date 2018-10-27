@@ -109,12 +109,12 @@ private:
 
    void ComputeHaulingMoments(const CSegmentKey& segmentKey,
                               const pgsKdotHaulingAnalysisArtifact& rArtifact, 
-                              const std::vector<pgsPointOfInterest>& vPoi,
+                              const PoiList& vPoi,
                               std::vector<Float64>* pvMoment, Float64* pMidSpanDeflection);
 
    void ComputeHaulingStresses(const CSegmentKey& segmentKey,bool bUseConfig,
                                const HANDLINGCONFIG& haulConfig,
-                               const std::vector<pgsPointOfInterest>& vPoi,
+                               const PoiList& vPoi,
                                const std::vector<Float64>& vMoment,
                                pgsKdotHaulingAnalysisArtifact* pArtifact);
    // GROUP: ACCESS

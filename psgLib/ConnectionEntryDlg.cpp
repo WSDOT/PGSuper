@@ -71,9 +71,6 @@ void CConnectionEntryDlg::DoDataExchange(CDataExchange* pDX)
 
    DDX_UnitValueAndTag(pDX, IDC_BEARING_OFFSET, IDC_BEARING_OFFSET_T, m_GirderBearingOffset, pDisplayUnits->ComponentDim );
 
-   DDX_UnitValueAndTag(pDX, IDC_SUPPORT_WIDTH, IDC_SUPPORT_WIDTH_T, m_SupportWidth, pDisplayUnits->ComponentDim );
-   DDV_UnitValueZeroOrMore(pDX, IDC_SUPPORT_WIDTH, m_SupportWidth, pDisplayUnits->ComponentDim );
-
    DDX_KeywordUnitValueAndTag(pDX, IDC_DIAPHRAGM_HEIGHT, IDC_DIAPHRAGM_HEIGHT_T, _T("Compute"), m_DiaphragmHeight, pDisplayUnits->ComponentDim );
    DDX_KeywordUnitValueAndTag(pDX, IDC_DIAPHRAGM_WIDTH, IDC_DIAPHRAGM_WIDTH_T, _T("Compute"), m_DiaphragmWidth, pDisplayUnits->ComponentDim );
    DDX_UnitValueAndTag( pDX, IDC_DIAPHRAGM_OFFSET, IDC_DIAPHRAGM_OFFSET_UNITS, m_DiaphragmLoadLocation, pDisplayUnits->ComponentDim );

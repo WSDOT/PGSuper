@@ -229,7 +229,7 @@ public:
    void GetHoldDownForce(bool* doCheck, bool* doDesign, Float64* force) const;
    void SetHoldDownForce(bool doCheck, bool doDesign, Float64 force=0.0);
 
-   // Splitting zone length h/n (h/4 or h/5) per LRFD 5.10.10.1
+   // Splitting zone length h/n (h/4 or h/5) per LRFD 5.9.4.4.1 (pre2017: 5.10.10.1)
    void SetSplittingZoneLengthFactor(Float64 n);
    Float64 GetSplittingZoneLengthFactor() const;
 
@@ -259,19 +259,19 @@ public:
    void EnableHaulingDesign(bool enable);
    bool IsHaulingDesignEnabled() const;
 
-   // Enable check for splitting resistance 5.10.10.1
+   // Enable check for splitting resistance 5.9.4.4.1 (pre2017: 5.10.10.1)
    void EnableSplittingCheck(bool enable);
    bool IsSplittingCheckEnabled() const;
 
-   // Enable design for splitting resistance 5.10.10.1
+   // Enable design for splitting resistance 5.9.4.4.1 (pre2017: 5.10.10.1)
    void EnableSplittingDesign(bool enable);
    bool IsSplittingDesignEnabled() const;
 
-   // Enable check for adequate confinement reinforcement 5.10.10.2
+   // Enable check for adequate confinement reinforcement 5.9.4.4.2 (pre2017: 5.10.10.2)
    void EnableConfinementCheck(bool enable);
    bool IsConfinementCheckEnabled() const;
 
-   // Enable design for adequate confinement reinforcement 5.10.10.2
+   // Enable design for adequate confinement reinforcement 5.9.4.4.2 (pre2017: 5.10.10.2)
    void EnableConfinementDesign(bool enable);
    bool IsConfinementDesignEnabled() const;
 
@@ -829,6 +829,10 @@ public:
    void SetLLDFGirderSpacingLocation(Float64 fra);
    Float64 GetLLDFGirderSpacingLocation() const;
 
+   // Set/Get inclusion of HL93 low boy, tandem vehicle
+   void IncludeDualTandem(bool bInclude);
+   bool IncludeDualTandem() const;
+
    //////////////////////////////////////
    //
    // Moment Capacity Parameters
@@ -836,7 +840,7 @@ public:
    //////////////////////////////////////
 
    // Set/Get the method for computing over reinforced section moment capacity.
-   // If true, over reinforced moment capacity computed per LRFD C5.7.3.3.1
+   // If true, over reinforced moment capacity computed per LRFD C5.7.3.3.1 (method removed in 2005)
    // otherwise computed by WSDOT method
    bool GetLRFDOverreinforcedMomentCapacity() const;
    void SetLRFDOverreinforcedMomentCapacity(bool bSet);
@@ -892,10 +896,10 @@ public:
    bool IncludeRebarForShear() const;
 
    // Set/Get Max allowable stirrup spacing for girder.
-   // Stirrup spacing limitations are given in LRFD 5.8.2.7 in the form of
+   // Stirrup spacing limitations are given in LRFD 5.7.2.6 (pre2017: 5.8.2.7) in the form of
    // Smax = k*dv <= s (5.8.2.7-1 Smax = 0.8dv <= 48")
-   // K1 and S1 are for equation 5.8.2.7-1
-   // K2 and S2 are for equation 5.8.2.7-2
+   // K1 and S1 are for equation 5.7.2.6-1
+   // K2 and S2 are for equation 5.7.2.6-2
    void SetMaxStirrupSpacing(Float64 K1,Float64 S1,Float64 K2,Float64 S2);
    void GetMaxStirrupSpacing(Float64* pK1,Float64* pS1,Float64* pK2,Float64* pS2) const;
 
@@ -1176,6 +1180,9 @@ public:
    void SetDoCheckStirrupSpacingCompatibility(bool doCheck);
    bool GetDoCheckStirrupSpacingCompatibility() const;
 
+   void SetFinishedElevationTolerance(Float64 tol);
+   Float64 GetFinishedElevationTolerance() const;
+
 
    ////////////////////////////////////////
    //
@@ -1228,10 +1235,11 @@ private:
    bool    m_DoDesignHoldDown;
    Float64 m_HoldDownForce;
 
-   bool    m_DoCheckSplitting; // 5.10.10
-   bool    m_DoCheckConfinement; // 5.10.10
-   bool    m_DoDesignSplitting; // 5.10.10
-   bool    m_DoDesignConfinement; // 5.10.10
+   bool    m_DoCheckSplitting;    // 5.9.4.4 (pre2017: 5.10.10)
+   bool    m_DoCheckConfinement;  // 5.9.4.4
+   bool    m_DoDesignSplitting;   // 5.9.4.4
+   bool    m_DoDesignConfinement; // 5.9.4.4
+
 
    Float64 m_CyLiftingCrackFs;
    Float64 m_CyLiftingFailFs;
@@ -1495,6 +1503,8 @@ private:
    Float64 m_LLDFGirderSpacingLocation; // fractional location in the girder span where the girder spacing is measured
                                        // for purposes of computing live load distribution factors
 
+   bool m_bIncludeDualTandem; // if true, the dual tandem loading from LRFD C3.6.1.3.1 is included in the HL93 model
+
    bool m_LimitDistributionFactorsToLanesBeams; 
 
    pgsTypes::PrestressTransferComputationType m_PrestressTransferComputationType;
@@ -1523,6 +1533,8 @@ private:
 
 
    pgsTypes::LimitStateConcreteStrength m_LimitStateConcreteStrength;
+
+   Float64 m_FinishedElevationTolerance; // tolerance between finished and design roadway surface elevation for no-deck bridges
 };
 
 #endif // INCLUDED_PSGLIB_SPECLIBRARYENTRY_H_

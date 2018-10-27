@@ -30,9 +30,8 @@
 #include "stdafx.h"
 #include "initguid.h"
 #include "resource.h"
-#include "GraphingAgent_i.h"
+#include "CLSID.h"
 
-#include "GraphingAgent_i.c"
 #include <WBFLCore_i.c>
 #include <WBFLCogo_i.c>
 

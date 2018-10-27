@@ -31,8 +31,7 @@
 #include "resource.h"
 #include <initguid.h>
 
-#include "TestAgent_i.h"
-#include "TestAgent_i.c"
+#include "CLSID.h"
 #include <WBFLCore_i.c>
 
 #include "TestAgent.h"
@@ -42,7 +41,6 @@
 #include "PGSpliceCatCom.h"
 #include <System\ComCatMgr.h>
 
-#include <IFace\Alignment.h>
 #include <IFace\StatusCenter.h>
 #include <IFace\RatingSpecification.h>
 #include <EAF\EAFUIIntegration.h>

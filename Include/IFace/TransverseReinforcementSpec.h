@@ -61,33 +61,33 @@ DEFINE_GUID(IID_ITransverseReinforcementSpec,
 interface ITransverseReinforcementSpec : IUnknown
 {
    //------------------------------------------------------------------------
-   // Calculates the maximum stress in the Splitting zone per 5.10.10.1
+   // Calculates the maximum stress in the Splitting zone per 5.9.4.4 (pre2017: 5.10.10.1)
    virtual Float64 GetMaxSplittingStress(Float64 fyRebar)=0;
 
    //------------------------------------------------------------------------
    // Returns the distance from the ends of the girder within which the Splitting
-   // stress requirements must be checked. 5.10.10.1
+   // stress requirements must be checked. 5.9.4.4 (pre2017: 5.10.10.1)
    virtual Float64 GetSplittingZoneLength( Float64 girderHeight )=0;
 
    //--------------------------------------------------------------
    // Returns N in h/N where the Splitting zone length is computed as h/N
-   // See LRFD 5.10.10.1
+   // See LRFD 5.9.4.4 (pre2017: 5.10.10.1)
    virtual Float64 GetSplittingZoneLengthFactor() = 0;
 
    //------------------------------------------------------------------------
-   // Returns the minimum bar size in the confinment zone per 5.10.10.2
+   // Returns the minimum bar size in the confinment zone per 5.9.4.4.2 (pre2017: 5.10.10.2)
    virtual matRebar::Size GetMinConfinmentBarSize()=0;
 
    //------------------------------------------------------------------------
-   // Returns the minimum bar area in the confinment zone per 5.10.10.2
+   // Returns the minimum bar area in the confinment zone per 5.9.4.4.2 (pre2017: 5.10.10.2)
    virtual Float64 GetMaxConfinmentBarSpacing()=0;
 
    //------------------------------------------------------------------------
-   // Returns the minimum Av/S in the confinment zone per 5.10.10.2
+   // Returns the minimum Av/S in the confinment zone per 5.9.4.4.2 (pre2017: 5.10.10.2)
    virtual Float64 GetMinConfinmentAvS()=0;
 
    //------------------------------------------------------------------------
-   // Returns max bar spacing for vu over and under limits per 5.8.2.7
+   // Returns max bar spacing for vu over and under limits per 5.7.2.6 (pre2017: 5.8.2.7)
    virtual void GetMaxStirrupSpacing(Float64 dv,Float64* sUnderLimit, Float64* sOverLimit)=0;
 
    //------------------------------------------------------------------------

@@ -35,7 +35,6 @@ static char THIS_FILE[] = __FILE__;
 
 Float64 gs_DefaultGirderEndDistance2   = ::ConvertToSysUnits(6.0,unitMeasure::Inch);
 Float64 gs_DefaultGirderBearingOffset2 = ::ConvertToSysUnits(1.0,unitMeasure::Feet);
-Float64 gs_DefaultSupportWidth2        = ::ConvertToSysUnits(1.0,unitMeasure::Feet);
 
 /****************************************************************************
 CLASS
@@ -58,8 +57,6 @@ CTemporarySupportData::CTemporarySupportData()
 
    m_GirderBearingOffset          = gs_DefaultGirderBearingOffset2;
    m_BearingOffsetMeasurementType = ConnectionLibraryEntry::NormalToPier;
-
-   m_SupportWidth                 = gs_DefaultSupportWidth2;
 
    m_ElevationAdjustment = 0.0;
 
@@ -156,11 +153,6 @@ bool CTemporarySupportData::operator==(const CTemporarySupportData& rOther) cons
    }
    
    if ( m_BearingOffsetMeasurementType != rOther.m_BearingOffsetMeasurementType )
-   {
-      return false;
-   }
-
-   if ( !IsEqual(m_SupportWidth,rOther.m_SupportWidth) )
    {
       return false;
    }
@@ -273,9 +265,12 @@ HRESULT CTemporarySupportData::Load(IStructuredLoad* pStrLoad,IProgress* pProgre
       hr = pStrLoad->get_Property(_T("BearingOffsetMeasurementType"),&var);
       m_BearingOffsetMeasurementType = ConnectionLibraryEntry::BearingOffsetMeasurementTypeFromString(OLE2T(var.bstrVal));
 
-      var.vt = VT_R8;
-      hr = pStrLoad->get_Property(_T("SupportWidth"),&var);
-      m_SupportWidth = var.dblVal;
+      if (4 > version)
+      {
+         // support width removed in version 4
+         var.vt = VT_R8;
+         hr = pStrLoad->get_Property(_T("SupportWidth"), &var);
+      }
 
       if ( 2 < version )
       {
@@ -316,10 +311,10 @@ HRESULT CTemporarySupportData::Save(IStructuredSave* pStrSave,IProgress* pProgre
 {
    HRESULT hr = S_OK;
 
-   pStrSave->BeginUnit(_T("TemporarySupportData"),3.0);
+   pStrSave->BeginUnit(_T("TemporarySupportData"),4.0);
    pStrSave->put_Property(_T("ID"),CComVariant(m_ID));
-
    switch( m_SupportType )
+
    {
    case pgsTypes::ErectionTower:
       pStrSave->put_Property(_T("Type"),CComVariant(_T("ErectionTower")));
@@ -353,7 +348,6 @@ HRESULT CTemporarySupportData::Save(IStructuredSave* pStrSave,IProgress* pProgre
    pStrSave->put_Property(_T("EndDistanceMeasurementType"),  CComVariant(ConnectionLibraryEntry::StringForEndDistanceMeasurementType(m_EndDistanceMeasurementType).c_str()) );
    pStrSave->put_Property(_T("GirderBearingOffset"),         CComVariant(m_GirderBearingOffset));
    pStrSave->put_Property(_T("BearingOffsetMeasurementType"),CComVariant(ConnectionLibraryEntry::StringForBearingOffsetMeasurementType(m_BearingOffsetMeasurementType).c_str()) );
-   pStrSave->put_Property(_T("SupportWidth"),                CComVariant(m_SupportWidth));
 
    // added in version 3
    if ( m_SupportType == pgsTypes::ErectionTower )
@@ -389,7 +383,6 @@ void CTemporarySupportData::MakeCopy(const CTemporarySupportData& rOther,bool bC
 
    m_GirderEndDistance            = rOther.m_GirderEndDistance;
    m_GirderBearingOffset          = rOther.m_GirderBearingOffset;
-   m_SupportWidth                 = rOther.m_SupportWidth;
    m_ElevationAdjustment          = rOther.m_ElevationAdjustment;
    m_EndDistanceMeasurementType   = rOther.m_EndDistanceMeasurementType;
    m_BearingOffsetMeasurementType = rOther.m_BearingOffsetMeasurementType;
@@ -603,16 +596,6 @@ void CTemporarySupportData::GetBearingOffset(Float64* pOffset,ConnectionLibraryE
 {
    *pOffset  = m_GirderBearingOffset;
    *pMeasure = m_BearingOffsetMeasurementType;
-}
-
-void CTemporarySupportData::SetSupportWidth(Float64 w)
-{
-   m_SupportWidth = w;
-}
-
-Float64 CTemporarySupportData::GetSupportWidth() const
-{
-   return m_SupportWidth;
 }
 
 void CTemporarySupportData::SetElevationAdjustment(Float64 elevAdj)

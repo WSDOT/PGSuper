@@ -56,6 +56,7 @@
 //
 
 class pgsLibraryEntryDifferenceItem;
+class pgsCompatibilityData;
 class CGirderMainSheet;
 class GirderLibraryEntry;
 class GirderLibraryEntryObserver;
@@ -705,6 +706,14 @@ public:
    void SetDragCoefficient(Float64 Cd);
    Float64 GetDragCoefficient() const;
 
+   // Set/Get the precamber limit in the form L/n
+   // where the limit is given as n. Example: L/80
+   void SetPrecamberLimit(Float64 limit);
+   Float64 GetPrecamberLimit() const;
+   bool CanPrecamber() const; // returns true if the girder can be precambered
+
+   pgsCompatibilityData* GetCompatibilityData() const;
+
 protected:
    void MakeCopy(const GirderLibraryEntry& rOther);
 
@@ -713,6 +722,7 @@ protected:
 
 private:
    // GROUP: DATA MEMBERS
+   pgsCompatibilityData* m_pCompatibilityData;
    CComPtr<IBeamFactory> m_pBeamFactory;
    Dimensions m_Dimensions;
    bool m_bSupportsVariableDepthSection;
@@ -1010,6 +1020,8 @@ private:
    CamberMultipliers m_CamberMultipliers;
 
    Float64 m_DragCoefficient;
+
+   Float64 m_PrecamberLimit;
 
    // GROUP: LIFECYCLE
    // GROUP: OPERATORS

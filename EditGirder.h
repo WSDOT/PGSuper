@@ -51,6 +51,9 @@ struct txnEditGirderData
 
    pgsTypes::AssExcessCamberType m_AssExcessCamberType;
    Float64 m_AssExcessCamber;
+
+   pgsTypes::BearingType m_BearingType; // 
+   CBearingData2 m_BearingData[2];  // index is pgsTypes::MemberEndType
 };
 
 class txnEditGirder : public txnTransaction

@@ -1,6 +1,6 @@
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 44.00    6   7.60                     1     1    4XB20          14  1/2  270   7.03   7.03   8.00   8.00                                              4.000  5.000   1.323    -1.811     1165   0.637  0.747   0.987 -0.251 -0.013 -0.011 -0.275  19.31   61.31    1.00    1.00    1.00 
+ 44.00    6   7.60                     1     1    4XB20          14  1/2  270   7.03   7.03   8.00   8.00                                              4.000  5.000   1.329    -1.817     1165   0.637  0.747   0.986 -0.251 -0.013 -0.011 -0.275  19.31   61.31    1.00    1.00    1.00 
 
 
 The Specification Check was Not Successful
@@ -9,7 +9,7 @@ Ultimate vertical shear capacity check failed for Strength I Limit State
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 44.00    6   7.60                     1     2    4XB20          14  1/2  270   7.03   7.03   8.00   8.00                                              4.000  5.000   1.312    -1.792     1148   0.619  0.747   0.987 -0.245 -0.016 -0.011 -0.272  19.31   61.33    1.00    1.00    1.00 
+ 44.00    6   7.60                     1     2    4XB20          14  1/2  270   7.03   7.03   8.00   8.00                                              4.000  5.000   1.317    -1.798     1148   0.619  0.747   0.986 -0.245 -0.016 -0.011 -0.272  19.31   61.33    1.00    1.00    1.00 
 
 
 The Specification Check was Not Successful
@@ -18,7 +18,7 @@ Ultimate vertical shear capacity check failed for Strength I Limit State
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 44.00    6   7.60                     1     4    4XB20          14  1/2  270   7.03   7.03   8.00   8.00                                              4.000  5.000   1.312    -1.792     1148   0.619  0.747   0.987 -0.245 -0.016 -0.011 -0.272  19.31   61.33    1.00    1.00    1.00 
+ 44.00    6   7.60                     1     4    4XB20          14  1/2  270   7.03   7.03   8.00   8.00                                              4.000  5.000   1.317    -1.798     1148   0.619  0.747   0.986 -0.245 -0.016 -0.011 -0.272  19.31   61.33    1.00    1.00    1.00 
 
 
 The Specification Check was Not Successful
@@ -27,7 +27,7 @@ Ultimate vertical shear capacity check failed for Strength I Limit State
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 44.00    6   7.60                     2     1    4XB20          44  1/2  270   6.03   5.65   8.00   8.00  12    2.5   22    12    8   2   2   0   0   5.500  5.500   2.994    -3.806     2236   0.573  0.716   4.214 -1.364 -0.070 -0.060 -1.494 127.67  354.53    1.00    1.00    1.00 
+ 44.00    6   7.60                     2     1    4XB20          44  1/2  270   6.03   5.65   8.00   8.00  12    2.5   22    12    8   2   2   0   0   5.500  5.500   3.006    -3.819     2236   0.573  0.716   4.213 -1.364 -0.070 -0.060 -1.494 127.67  354.53    1.00    1.00    1.00 
 
 
 The Specification Check was Not Successful
@@ -36,7 +36,7 @@ Ultimate vertical shear capacity check failed for Strength I Limit State
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 44.00    6   7.60                     2     2    4XB20          42  1/2  270   6.08   5.69   8.00   8.00  12    2.5   22    12    8   2   2   0   0   5.200  5.200   2.967    -3.770     2208   0.557  0.716   4.145 -1.329 -0.084 -0.060 -1.474 119.35  326.75    1.00    1.00    1.00 
+ 44.00    6   7.60                     2     2    4XB20          42  1/2  270   6.08   5.69   8.00   8.00  12    2.5   22    12    8   2   2   0   0   5.200  5.200   2.979    -3.783     2208   0.557  0.716   4.144 -1.329 -0.084 -0.060 -1.474 119.35  326.75    1.00    1.00    1.00 
 
 
 The Specification Check was Not Successful
@@ -45,7 +45,7 @@ Ultimate vertical shear capacity check failed for Strength I Limit State
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 44.00    6   7.60                     2     4    4XB20          42  1/2  270   6.08   5.69   8.00   8.00  12    2.5   22    12    8   2   2   0   0   5.200  5.200   2.967    -3.770     2208   0.557  0.716   4.145 -1.329 -0.084 -0.060 -1.474 119.35  326.75    1.00    1.00    1.00 
+ 44.00    6   7.60                     2     4    4XB20          42  1/2  270   6.08   5.69   8.00   8.00  12    2.5   22    12    8   2   2   0   0   5.200  5.200   2.979    -3.783     2208   0.557  0.716   4.144 -1.329 -0.084 -0.060 -1.474 119.35  326.75    1.00    1.00    1.00 
 
 
 The Specification Check was Not Successful

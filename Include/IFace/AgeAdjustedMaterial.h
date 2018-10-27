@@ -56,5 +56,6 @@ interface IAgeAdjustedMaterial : IMaterial
    STDMETHOD(InitSegment)(const CSegmentKey& segmentKey,IMaterials* pMaterials) = 0;
    STDMETHOD(InitClosureJoint)(const CClosureKey& closureKey,IMaterials* pMaterials) = 0;
    STDMETHOD(InitDeck)(const CGirderKey& girderKey,IMaterials* pMaterials) = 0;
+   STDMETHOD(InitLongitudinalJoint)(const CSegmentKey& segmentKey, IMaterials* pMaterials) = 0;
 };
 

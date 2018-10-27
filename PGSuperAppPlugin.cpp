@@ -340,7 +340,7 @@ void CPGSuperAppPlugin::UpdateTemplates()
          ::StringFromCLSID(clsid[i],&pszCLSID);
          
          CString strState = pApp->GetProfileString(strSection,OLE2T(pszCLSID),_T("Enabled"));
-         extension_states.push_back(std::make_pair(OLE2T(pszCLSID),strState));
+         extension_states.emplace_back(OLE2T(pszCLSID),strState);
 
          // Disable the extension
          pApp->WriteProfileString(strSection,OLE2T(pszCLSID),_T("Disabled"));
@@ -421,15 +421,15 @@ CString CPGSuperAppPlugin::GetCacheFolder()
    CWinApp* pMyApp     = AfxGetApp();
    CEAFApp* pParentApp = EAFGetApp();
 
-   TCHAR buffer[MAX_PATH];
-   BOOL bResult = ::SHGetSpecialFolderPath(nullptr,buffer,CSIDL_APPDATA,FALSE);
+   LPWSTR path;
+   HRESULT hr = ::SHGetKnownFolderPath(FOLDERID_RoamingAppData, KF_FLAG_DEFAULT, NULL, &path);
 
-   if ( !bResult )
+   if ( SUCCEEDED(hr) )
    {
-      return pParentApp->GetAppLocation() + CString(_T("PGSuperV3\\"));
+      return CString(path) + CString(_T("\\PGSuperV3\\"));
    }
    else
    {
-      return CString(buffer) + CString(_T("\\PGSuperV3\\"));
+      return pParentApp->GetAppLocation() + CString(_T("PGSuperV3\\"));
    }
 }

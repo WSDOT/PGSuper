@@ -30,9 +30,8 @@
 #include "stdafx.h"
 #include "initguid.h"
 #include "resource.h"
-#include "ReportAgent_i.h"
+#include "CLSID.h"
 
-#include "ReportAgent_i.c"
 #include <WBFLCore_i.c>
 #include <WBFLCogo_i.c>
 

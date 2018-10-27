@@ -311,17 +311,17 @@ STDMETHODIMP CStrandMoverImpl::AddRegion(IShape* shape, Float64 arcSlope)
    return S_OK;
 }
 
-STDMETHODIMP CStrandMoverImpl::get_NumRegions(ZoneIndexType* pNum)
+STDMETHODIMP CStrandMoverImpl::GetRegionCount(ZoneIndexType* pNum) const
 {
    *pNum = m_Regions.size();
    return S_OK;
 }
 
-STDMETHODIMP CStrandMoverImpl::GetRegion(ZoneIndexType index, IShape** shape, Float64* arcSlope)
+STDMETHODIMP CStrandMoverImpl::GetRegion(ZoneIndexType index, IShape** shape, Float64* arcSlope) const
 {
-   HarpRegion& region = m_Regions[index];
+   const HarpRegion& region = m_Regions[index];
    
    *arcSlope = region.dArcSlope;
-   return region.pShape.CopyTo(shape);
+   return region.pShape->Clone(shape);
 }
 

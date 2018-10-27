@@ -1,15 +1,15 @@
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  Ndb Debnd                                                          Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 34.25    4   8.00                     1     1    (Debo          72  0.6  270  15.56  15.10  12.63  12.63  18   0.00    0     0                                               6.400 14.600   7.441    -4.747    13274   1.016  1.016   5.114 -1.635 -0.100 -0.118 -1.853 328.10  604.38    1.75   15.00   15.00 
+ 34.25    4   8.00                     1     1    (Debo          72  0.6  270  15.56  15.10  12.63  12.63  18   0.00    0     0                                               6.400 14.600   7.457    -4.755    13272   1.016  1.016   5.112 -1.635 -0.100 -0.118 -1.853 328.10  604.81    1.75   15.00   15.00 
                                                                                                                 4.00   25     8    0   0   0   0   0 
 Warning: The number of debonded sections exceeds ten for beam 1 in span  1. Cannot write debonding information to TxDOT CAD format.
 
 
 Girder design was Not Successful
 The Specification Check was Not Successful
-Compression stress check failed for Service I Limit State in Interval 2 Prestress Release (Casting Yard)
-Tensile stress check failed for Service I Limit State in Interval 2 Prestress Release (Casting Yard)
-Tensile stress check failed for Service III Limit State in Interval 15 Open to Traffic (Bridge Site 3)
+Compression stress check failed for Service I Limit State in Interval 2 Prestress Release
+Tensile stress check failed for Service I Limit State in Interval 2 Prestress Release
+Tensile stress check failed for Service III Limit State in Interval 15 Open to Traffic
 Debond arrangement checks failed.
 Lifting checks failed
 Hauling checks failed
@@ -17,16 +17,16 @@ Hauling checks failed
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  Ndb Debnd                                                          Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 34.25    4   8.00                     1     2    (Debo          62  0.6  270  16.22  15.93  14.13  14.13  14   0.00    0     0                                               4.000 14.900   6.545    -3.926    11033   0.557  0.773   6.341 -1.291 -0.110 -0.129 -1.529 298.52  668.05    1.75   15.00   15.00 
+ 34.25    4   8.00                     1     2    (Debo          62  0.6  270  16.22  15.93  14.13  14.13  14   0.00    0     0                                               4.000 14.900   6.560    -3.936    11033   0.557  0.773   6.338 -1.291 -0.110 -0.129 -1.529 298.52  668.35    1.75   15.00   15.00 
                                                                                                                 4.00   25     4    0   0   0   0   0 
 Warning: The number of debonded sections exceeds ten for beam 2 in span  1. Cannot write debonding information to TxDOT CAD format.
 
 
 Girder design was Not Successful
 The Specification Check was Not Successful
-Compression stress check failed for Service I Limit State in Interval 2 Prestress Release (Casting Yard)
-Tensile stress check failed for Service I Limit State in Interval 2 Prestress Release (Casting Yard)
-Tensile stress check failed for Service III Limit State in Interval 15 Open to Traffic (Bridge Site 3)
+Compression stress check failed for Service I Limit State in Interval 2 Prestress Release
+Tensile stress check failed for Service I Limit State in Interval 2 Prestress Release
+Tensile stress check failed for Service III Limit State in Interval 15 Open to Traffic
 Debond arrangement checks failed.
 Lifting checks failed
 Hauling checks failed

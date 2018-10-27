@@ -45,7 +45,7 @@ static char THIS_FILE[] = __FILE__;
 // 2.9 and 3.0 branches. It is ok for loads to fail for 44.0 <= version <= MAX_OVERLAP_VERSION.
 #define MAX_OVERLAP_VERSION 53.0 // overlap of data blocks between PGS 2.9 and 3.0 end with this version
 
-#define CURRENT_VERSION 60.0 
+#define CURRENT_VERSION 62.0 
 
 /****************************************************************************
 CLASS
@@ -212,6 +212,7 @@ m_MinSidewalkWidth(::ConvertToSysUnits(2.0,unitMeasure::Feet)),
 m_MaxAngularDeviationBetweenGirders(::ConvertToSysUnits(5.0,unitMeasure::Degree)),
 m_MinGirderStiffnessRatio(0.90),
 m_LLDFGirderSpacingLocation(0.75),
+m_bIncludeDualTandem(true),
 m_LimitDistributionFactorsToLanesBeams(false),
 m_PrestressTransferComputationType(pgsTypes::ptUsingSpecification),
 m_bIncludeForNegMoment(true),
@@ -252,7 +253,8 @@ m_bCheckGirderInclination(true),
 m_InclinedGirder_BrgPadDeduction(::ConvertToSysUnits(1.0,unitMeasure::Inch)),
 m_InclinedGirder_FSmax(1.2),
 m_LiftingCamberMultiplier(1.0),
-m_HaulingCamberMultiplier(1.0)
+m_HaulingCamberMultiplier(1.0),
+m_FinishedElevationTolerance(::ConvertToSysUnits(0.25,unitMeasure::Inch))
 {
    m_bCheckStrandStress[CSS_AT_JACKING]       = false;
    m_bCheckStrandStress[CSS_BEFORE_TRANSFER]  = true;
@@ -613,7 +615,7 @@ bool SpecLibraryEntry::SaveMe(sysIStructuredSave* pSave)
    pSave->Property(_T("OverlayLoadDistribution"), (Int32)m_OverlayLoadDistribution); // added in version 34
    pSave->Property(_T("HaunchLoadComputationType"), (Int32)m_HaunchLoadComputationType); // added in version 54
    pSave->Property(_T("HaunchLoadCamberTolerance"), m_HaunchLoadCamberTolerance);        // ""
-   pSave->Property(_T("HaunchLoadCamberFactor"), m_HaunchLoadCamberFactor);  // added in version 60
+   pSave->Property(_T("HaunchLoadCamberFactor"), m_HaunchLoadCamberFactor);  // added in version 61
    pSave->Property(_T("Bs3CompStressServ"), m_Bs3CompStressServ);
    pSave->Property(_T("Bs3CompStressService1A"), m_Bs3CompStressService1A);
    pSave->Property(_T("Bs3TensStressServNc"), m_Bs3TensStressServNc);
@@ -701,6 +703,8 @@ bool SpecLibraryEntry::SaveMe(sysIStructuredSave* pSave)
    pSave->Property(_T("MaxAngularDeviationBetweenGirders"),m_MaxAngularDeviationBetweenGirders);
    pSave->Property(_T("MinGirderStiffnessRatio"),m_MinGirderStiffnessRatio);
    pSave->Property(_T("LLDFGirderSpacingLocation"),m_LLDFGirderSpacingLocation);
+
+   pSave->Property(_T("IncludeDualTandem"), m_bIncludeDualTandem); // added in version 61
 
    // added in version 31
    pSave->Property(_T("LimitDistributionFactorsToLanesBeams"),m_LimitDistributionFactorsToLanesBeams);
@@ -940,6 +944,9 @@ bool SpecLibraryEntry::SaveMe(sysIStructuredSave* pSave)
    pSave->Property(_T("CheckGirderInclination"), m_bCheckGirderInclination);
    pSave->Property(_T("InclindedGirder_BrgPadDeduction"), m_InclinedGirder_BrgPadDeduction);
    pSave->Property(_T("InclindedGirder_FSmax"), m_InclinedGirder_FSmax);
+
+   // added in version 62
+   pSave->Property(_T("FinishedElevationTolerance"), m_FinishedElevationTolerance);
 
    pSave->EndUnit();
 
@@ -2613,6 +2620,15 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
          }
       }
 
+      if (60 < version)
+      {
+         // added in version 61
+         if (!pLoad->Property(_T("IncludeDualTandem"), &m_bIncludeDualTandem))
+         {
+            THROW_LOAD(InvalidFileFormat, pLoad);
+         }
+      }
+
       if ( 30 < version )
       {
          if ( !pLoad->Property(_T("LimitDistributionFactorsToLanesBeams"),&m_LimitDistributionFactorsToLanesBeams) )
@@ -3927,8 +3943,10 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
          bool bSucceeded = pLoad->Property(_T("CheckBottomFlangeClearance"),&m_bCheckBottomFlangeClearance);
          if ( bSucceeded )
          {
-            if ( !pLoad->Property(_T("MinBottomFlangeClearance"),&m_Cmin) )
-               THROW_LOAD(InvalidFileFormat,pLoad);
+            if (!pLoad->Property(_T("MinBottomFlangeClearance"), &m_Cmin))
+            {
+               THROW_LOAD(InvalidFileFormat, pLoad);
+            }
          }
          else
          {
@@ -3944,15 +3962,30 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
       if (56 < version)
       {
          if (!pLoad->Property(_T("CheckGirderInclination"), &m_bCheckGirderInclination))
+         {
             THROW_LOAD(InvalidFileFormat, pLoad);
+         }
 
          if (!pLoad->Property(_T("InclindedGirder_BrgPadDeduction"), &m_InclinedGirder_BrgPadDeduction))
+         {
             THROW_LOAD(InvalidFileFormat, pLoad);
+         }
 
          if (!pLoad->Property(_T("InclindedGirder_FSmax"), &m_InclinedGirder_FSmax))
+         {
             THROW_LOAD(InvalidFileFormat, pLoad);
+         }
       }
 
+
+      // added in version 62
+      if (61 < version)
+      {
+         if (!pLoad->Property(_T("FinishedElevationTolerance"), &m_FinishedElevationTolerance))
+         {
+            THROW_LOAD(InvalidFileFormat, pLoad);
+         }
+      }
 
       if(!pLoad->EndUnit())
       {
@@ -4461,13 +4494,19 @@ bool SpecLibraryEntry::Compare(const SpecLibraryEntry& rOther, std::vector<pgsLi
       vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Live Load Distribution Factors are different"),_T(""),_T("")));
    }
 
+   if (m_bIncludeDualTandem != rOther.m_bIncludeDualTandem)
+   {
+      RETURN_ON_DIFFERENCE;
+      vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("HL93 Dual Tandem setting is different"), _T(""), _T("")));
+   }
+
    if ( m_HaunchLoadComputationType != rOther.m_HaunchLoadComputationType ||
       (m_HaunchLoadComputationType == pgsTypes::hlcAccountForCamber && !::IsEqual(m_HaunchLoadCamberTolerance, rOther.m_HaunchLoadCamberTolerance)) )
    {
       RETURN_ON_DIFFERENCE;
       vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Haunch Loads are different"),_T(""),_T("")));
    }
-
+   
    if ( m_HaunchLoadComputationType == pgsTypes::hlcAccountForCamber && !::IsEqual(m_HaunchLoadCamberFactor, rOther.m_HaunchLoadCamberFactor) )
    {
       RETURN_ON_DIFFERENCE;
@@ -4763,6 +4802,12 @@ bool SpecLibraryEntry::Compare(const SpecLibraryEntry& rOther, std::vector<pgsLi
    {
       RETURN_ON_DIFFERENCE;
       vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Concrete Limits are different"),_T(""),_T("")));
+   }
+
+   if (!::IsEqual(m_FinishedElevationTolerance, rOther.m_FinishedElevationTolerance))
+   {
+      RETURN_ON_DIFFERENCE;
+      vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Finished/Design Elevation Tolerances are different"), _T(""), _T("")));
    }
 
    if (considerName &&  GetName() != rOther.GetName() )
@@ -6709,6 +6754,16 @@ Float64 SpecLibraryEntry::GetLLDFGirderSpacingLocation() const
    return m_LLDFGirderSpacingLocation;
 }
 
+void SpecLibraryEntry::IncludeDualTandem(bool bInclude)
+{
+   m_bIncludeDualTandem = bInclude;
+}
+
+bool SpecLibraryEntry::IncludeDualTandem() const
+{
+   return m_bIncludeDualTandem;
+}
+
 void SpecLibraryEntry::LimitDistributionFactorsToLanesBeams(bool bLimit)
 {
    m_LimitDistributionFactorsToLanesBeams = bLimit;
@@ -6987,6 +7042,16 @@ Float64 SpecLibraryEntry::GetGirderInclinationFactorOfSafety() const
    return m_InclinedGirder_FSmax;
 }
 
+void SpecLibraryEntry::SetFinishedElevationTolerance(Float64 tol)
+{
+   m_FinishedElevationTolerance = tol;
+}
+
+Float64 SpecLibraryEntry::GetFinishedElevationTolerance() const
+{
+   return m_FinishedElevationTolerance;
+}
+
 //======================== INQUIRY    =======================================
 
 ////////////////////////// PROTECTED  ///////////////////////////////////////
@@ -7261,6 +7326,8 @@ void SpecLibraryEntry::MakeCopy(const SpecLibraryEntry& rOther)
    m_MinGirderStiffnessRatio           = rOther.m_MinGirderStiffnessRatio;
    m_LLDFGirderSpacingLocation         = rOther.m_LLDFGirderSpacingLocation;
 
+   m_bIncludeDualTandem = rOther.m_bIncludeDualTandem;
+
    m_LimitDistributionFactorsToLanesBeams = rOther.m_LimitDistributionFactorsToLanesBeams;
 
    m_PrestressTransferComputationType = rOther.m_PrestressTransferComputationType;
@@ -7309,6 +7376,8 @@ void SpecLibraryEntry::MakeCopy(const SpecLibraryEntry& rOther)
    m_bCheckGirderInclination = rOther.m_bCheckGirderInclination;
    m_InclinedGirder_BrgPadDeduction = rOther.m_InclinedGirder_BrgPadDeduction;
    m_InclinedGirder_FSmax = rOther.m_InclinedGirder_FSmax;
+
+   m_FinishedElevationTolerance = rOther.m_FinishedElevationTolerance;
 }
 
 void SpecLibraryEntry::MakeAssignment(const SpecLibraryEntry& rOther)

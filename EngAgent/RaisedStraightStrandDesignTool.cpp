@@ -387,9 +387,10 @@ void pgsRaisedStraightStrandDesignTool::Initialize(IBroker* pBroker, StatusGroup
 
    // Get kern elevations
    GET_IFACE(IPointOfInterest, pPoi);
-   std::vector<pgsPointOfInterest> vPoi(pPoi->GetPointsOfInterest(m_SegmentKey,POI_RELEASED_SEGMENT | POI_5L));
+   PoiList vPoi;
+   pPoi->GetPointsOfInterest(m_SegmentKey, POI_5L | POI_RELEASED_SEGMENT, &vPoi);
    ATLASSERT(vPoi.size() == 1);
-   pgsPointOfInterest poi = vPoi.front();
+   const pgsPointOfInterest& poi = vPoi.front();
 
    GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(m_SegmentKey);

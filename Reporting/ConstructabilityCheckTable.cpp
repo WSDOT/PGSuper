@@ -206,25 +206,25 @@ void CConstructabilityCheckTable::BuildMonoSlabOffsetTable(rptChapter* pChapter,
       {
          const pgsSpanConstructabilityArtifact* pArtifact = pConstrArtifact->GetSpanArtifact(spanIdx);
 
-         row++;
-         col = 0;
-         bool wasExcessive(false);
+            row++;
+            col = 0;
+            bool wasExcessive(false);
 
-         if (needSpanCols)
-         {
-            GirderIndexType girder = girderKey.girderIndex;
-            (*pTable)(row, col++) << LABEL_SPAN(spanIdx);
-            (*pTable)(row, col++) << LABEL_GIRDER(girder);
-         }
+            if (needSpanCols)
+            {
+               GirderIndexType girder = girderKey.girderIndex;
+               (*pTable)(row, col++) << LABEL_SPAN(spanIdx);
+               (*pTable)(row, col++) << LABEL_GIRDER(girder);
+            }
 
-         Float64 endA, startA;
-         pArtifact->GetProvidedSlabOffset(&startA, &endA); // both values are same because of what function we are in
+            Float64 endA, startA;
+            pArtifact->GetProvidedSlabOffset(&startA, &endA); // both values are same because of what function we are in
 
-         (*pTable)(row, col++) << dim.SetValue(startA);
-         (*pTable)(row, col++) << dim.SetValue(pArtifact->GetRequiredSlabOffset());
+            (*pTable)(row, col++) << dim.SetValue(startA);
+            (*pTable)(row, col++) << dim.SetValue(pArtifact->GetRequiredSlabOffset());
 
-         switch( pArtifact->SlabOffsetStatus() )
-         {
+            switch( pArtifact->SlabOffsetStatus() )
+            {
             case pgsSpanConstructabilityArtifact::Pass:
                (*pTable)(row, col++) << RPT_PASS;
                break;
@@ -242,42 +242,42 @@ void CConstructabilityCheckTable::BuildMonoSlabOffsetTable(rptChapter* pChapter,
                (*pTable)(row, col++) << RPT_NA;
                break;
 
-            default:
-               ATLASSERT(false);
-               break;
-         }
-
-         bool didNote(false);
-         // NOTE: Don't increment the column counter in the (*pTable)(row,col) below. All notes go into the same column. If we do (*pTable)(row,col++)
-         // and there are multiple notes, the column index advances and we are then writing beyond the end of the table for each subsequent note.
-         if ( pArtifact->CheckStirrupLength() )
-         {
-            didNote = true;
-            CSpanKey spanKey(spanIdx, girderKey.girderIndex);
-            HAUNCHDETAILS haunch_details = pGdrHaunch->GetHaunchDetails(spanKey);
-            (*pTable)(row, col) << color(Red) << _T("The difference betwen the minimum and maximum CL haunch depths along the girder is ") << dim2.SetValue(haunch_details.HaunchDiff) 
-                                                << _T(". This exceeds one half of the slab depth. Check stirrup lengths to ensure they engage the deck in all locations.");
-                                                 
-            if(pBridge->GetDeckType() == pgsTypes::sdtCompositeSIP)
-            {
-               (*pTable)(row, col) << _T(" Also carefully check deck panel leveling.");
+               default:
+                  ATLASSERT(false);
+                  break;
             }
 
-            (*pTable)(row, col) << _T(" Refer to the Haunch Details chapter in the Details report for more information.") << color(Black) << rptNewLine;
-         }
+            bool didNote(false);
+            // NOTE: Don't increment the column counter in the (*pTable)(row,col) below. All notes go into the same column. If we do (*pTable)(row,col++)
+            // and there are multiple notes, the column index advances and we are then writing beyond the end of the table for each subsequent note.
+            if ( pArtifact->CheckStirrupLength() )
+            {
+               didNote = true;
+               CSpanKey spanKey(spanIdx, girderKey.girderIndex);
+               HAUNCHDETAILS haunch_details = pGdrHaunch->GetHaunchDetails(spanKey);
+               (*pTable)(row, col) << color(Red) << _T("The difference betwen the minimum and maximum CL haunch depths along the girder is ") << dim2.SetValue(haunch_details.HaunchDiff) 
+                                                 << _T(". This exceeds one half of the slab depth. Check stirrup lengths to ensure they engage the deck in all locations.");
+                                                 
+               if(pBridge->GetDeckType() == pgsTypes::sdtCompositeSIP)
+               {
+                  (*pTable)(row, col) << _T(" Also carefully check deck panel leveling.");
+               }
 
-         if (wasExcessive)
-         {
-            didNote = true;
-            (*pTable)(row, col) << _T("Provided Slab Offset exceeded Required by allowable tolerance of ") << dim2.SetValue(pArtifact->GetExcessSlabOffsetWarningTolerance()) << rptNewLine;
-         }
+               (*pTable)(row, col) << _T(" Refer to the Haunch Details chapter in the Details report for more information.") << color(Black) << rptNewLine;
+            }
 
-         if (!didNote)
-         {
-            (*pTable)(row, col) << _T(""); // otherwise table will be rendered funkily
-         }
+            if (wasExcessive)
+            {
+               didNote = true;
+               (*pTable)(row, col) << _T("Provided Slab Offset exceeded Required by allowable tolerance of ") << dim2.SetValue(pArtifact->GetExcessSlabOffsetWarningTolerance()) << rptNewLine;
+            }
 
-         col++; // done with notes column.... advance the index
+            if (!didNote)
+            {
+               (*pTable)(row, col) << _T(""); // otherwise table will be rendered funkily
+            }
+
+            col++; // done with notes column.... advance the index
       } // next girder
    } // span
 
@@ -375,59 +375,59 @@ void CConstructabilityCheckTable::BuildMultiSlabOffsetTable(rptChapter* pChapter
 
          switch (pArtifact->SlabOffsetStatus())
          {
-         case pgsSpanConstructabilityArtifact::Pass:
-            (*pTable)(row, col++) << RPT_PASS;
-            break;
+            case pgsSpanConstructabilityArtifact::Pass:
+               (*pTable)(row, col++) << RPT_PASS;
+               break;
 
-         case pgsSpanConstructabilityArtifact::Fail:
-            (*pTable)(row, col++) << RPT_FAIL;
-            break;
+            case pgsSpanConstructabilityArtifact::Fail:
+               (*pTable)(row, col++) << RPT_FAIL;
+               break;
 
-         case pgsSpanConstructabilityArtifact::Excessive:
-            (*pTable)(row, col++) << color(Blue) << _T("Excessive") << color(Black);
-            wasExcessive = true;
-            break;
+            case pgsSpanConstructabilityArtifact::Excessive:
+               (*pTable)(row, col++) << color(Blue) << _T("Excessive") << color(Black);
+               wasExcessive = true;
+               break;
 
          case pgsSpanConstructabilityArtifact::NA:
             (*pTable)(row, col++) << RPT_NA;
             break;
 
-         default:
-            ATLASSERT(false);
-            break;
-         }
-
-         bool didNote(false);
-         // NOTE: Don't increment the column counter in the (*pTable)(row,col) below. All notes go into the same column. If we do (*pTable)(row,col++)
-         // and there are multiple notes, the column index advances and we are then writing beyond the end of the table for each subsequent note.
-         if ( pArtifact->CheckStirrupLength() )
-         {
-            didNote = true;
-            CSpanKey spanKey(spanIdx, girderKey.girderIndex);
-            HAUNCHDETAILS haunch_details = pGdrHaunch->GetHaunchDetails(spanKey);
-            (*pTable)(row, col) << color(Red) << _T("The difference betwen the minimum and maximum CL haunch depths along the girder is ") << dim2.SetValue(haunch_details.HaunchDiff) 
-                                                << _T(". This exceeds one half of the slab depth. Check stirrup lengths to ensure they engage the deck in all locations.");
-                                                 
-            if(pBridge->GetDeckType() == pgsTypes::sdtCompositeSIP)
-            {
-               (*pTable)(row, col)  << _T(" Also carefully check deck panel leveling.");
+               default:
+                  ATLASSERT(false);
+                  break;
             }
 
-            (*pTable)(row, col) << _T(" Refer to the Haunch Details chapter in the Details report for more information.") << color(Black) << rptNewLine;
-         }
+            bool didNote(false);
+            // NOTE: Don't increment the column counter in the (*pTable)(row,col) below. All notes go into the same column. If we do (*pTable)(row,col++)
+            // and there are multiple notes, the column index advances and we are then writing beyond the end of the table for each subsequent note.
+            if ( pArtifact->CheckStirrupLength() )
+            {
+               didNote = true;
+               CSpanKey spanKey(spanIdx, girderKey.girderIndex);
+               HAUNCHDETAILS haunch_details = pGdrHaunch->GetHaunchDetails(spanKey);
+               (*pTable)(row, col) << color(Red) << _T("The difference betwen the minimum and maximum CL haunch depths along the girder is ") << dim2.SetValue(haunch_details.HaunchDiff) 
+                                                 << _T(". This exceeds one half of the slab depth. Check stirrup lengths to ensure they engage the deck in all locations.");
+                                                 
+               if(pBridge->GetDeckType() == pgsTypes::sdtCompositeSIP)
+               {
+                  (*pTable)(row, col)  << _T(" Also carefully check deck panel leveling.");
+               }
 
-         if (wasExcessive)
-         {
-            didNote = true;
-            (*pTable)(row, col) << _T("Provided least haunch depth exceeded required by allowable tolerance of ") << dim2.SetValue(pArtifact->GetExcessSlabOffsetWarningTolerance()) << rptNewLine;
-         }
+               (*pTable)(row, col) << _T(" Refer to the Haunch Details chapter in the Details report for more information.") << color(Black) << rptNewLine;
+            }
 
-         if (!didNote)
-         {
-            (*pTable)(row, col) << _T(""); // otherwise table will be rendered funkily
-         }
+            if (wasExcessive)
+            {
+               didNote = true;
+               (*pTable)(row, col) << _T("Provided least haunch depth exceeded required by allowable tolerance of ") << dim2.SetValue(pArtifact->GetExcessSlabOffsetWarningTolerance()) << rptNewLine;
+            }
 
-         col++; // done with notes column.... advance the index
+            if (!didNote)
+            {
+               (*pTable)(row, col) << _T(""); // otherwise table will be rendered funkily
+            }
+
+            col++; // done with notes column.... advance the index
       } // next girder
    } // span
 
@@ -596,31 +596,31 @@ void CConstructabilityCheckTable::BuildMinimumFilletCheck(rptChapter* pChapter,I
       {
          const pgsSpanConstructabilityArtifact* pArtifact = pConstrArtifact->GetSpanArtifact(spanIdx);
 
-            row++;
-            col = 0;
+         row++;
+         col = 0;
 
-            if (needSpanCols)
-            {
-               GirderIndexType girder = girderKey.girderIndex;
-               (*pTable)(row, col++) << LABEL_SPAN(spanIdx);
-               (*pTable)(row, col++) << LABEL_GIRDER(girder);
-            }
+         if (needSpanCols)
+         {
+            GirderIndexType girder = girderKey.girderIndex;
+            (*pTable)(row, col++) << LABEL_SPAN(spanIdx);
+            (*pTable)(row, col++) << LABEL_GIRDER(girder);
+         }
 
-            (*pTable)(row, col++) << dim.SetValue(pArtifact->GetProvidedFillet());
-            (*pTable)(row, col++) << dim.SetValue(pArtifact->GetRequiredMinimumFillet());
+         (*pTable)(row, col++) << dim.SetValue(pArtifact->GetProvidedFillet());
+         (*pTable)(row, col++) << dim.SetValue(pArtifact->GetRequiredMinimumFillet());
 
             if (!pArtifact->IsSlabOffsetApplicable())
             {
                (*pTable)(row, col++) << RPT_NA;
             }
             else if( pArtifact->MinimumFilletPassed() )
-            {
-               (*pTable)(row, col++) << RPT_PASS;
-            }
-            else
-            {
-               (*pTable)(row, col++) << RPT_FAIL;
-            }
+         {
+            (*pTable)(row, col++) << RPT_PASS;
+         }
+         else
+         {
+            (*pTable)(row, col++) << RPT_FAIL;
+         }
       }
    }
 }
@@ -861,6 +861,96 @@ void CConstructabilityCheckTable::BuildGlobalGirderStabilityCheck(rptChapter* pC
    } // next segment
 }
 
+void CConstructabilityCheckTable::BuildPrecamberCheck(rptChapter* pChapter, IBroker* pBroker, const std::vector<CGirderKey>& girderList, IEAFDisplayUnits* pDisplayUnits) const
+{
+   GET_IFACE2(pBroker, IArtifact, pIArtifact);
+   GET_IFACE2_NOCHECK(pBroker, IBridge, pBridge);
+
+   // if there is only one span/girder, don't need to print span info
+   bool needSpanCols = true; // ConstrNeedSpanCols(girderList, pBridge);
+
+                             // Create table - delete it later if we don't need it
+   ColumnIndexType nCols = needSpanCols ? 5 : 3; // put span/girder in table if multi girder
+   rptRcTable* pTable = rptStyleManager::CreateDefaultTable(nCols, _T(""));
+
+   INIT_UV_PROTOTYPE(rptLengthUnitValue, dim, pDisplayUnits->GetComponentDimUnit(), false);
+
+   pTable->SetColumnStyle(nCols - 1, rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+   pTable->SetStripeRowColumnStyle(nCols - 1, rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+
+   ColumnIndexType col = 0;
+   if (needSpanCols)
+   {
+      (*pTable)(0, col++) << _T("Span");
+      (*pTable)(0, col++) << _T("Girder");
+   }
+
+   (*pTable)(0, col++) << COLHDR(_T("Precamber"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+   (*pTable)(0, col++) << COLHDR(_T("Precamber Limit"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+   (*pTable)(0, col++) << _T("Status");
+
+   RowIndexType row = 0;
+   for (const auto& girderKey : girderList)
+   {
+      const pgsGirderArtifact* pGdrArtifact = pIArtifact->GetGirderArtifact(girderKey);
+      const pgsConstructabilityArtifact* pConstrArtifact = pGdrArtifact->GetConstructabilityArtifact();
+
+      SpanIndexType startSpanIdx, endSpanIdx;
+      pConstrArtifact->GetSpans(&startSpanIdx, &endSpanIdx);
+
+      for (SpanIndexType spanIdx = startSpanIdx; spanIdx <= endSpanIdx; spanIdx++)
+      {
+         const pgsSpanConstructabilityArtifact* pArtifact = pConstrArtifact->GetSpanArtifact(spanIdx);
+
+         if (pArtifact->IsPrecamberApplicable())
+         {
+            row++;
+            col = 0;
+
+            if (needSpanCols)
+            {
+               GirderIndexType girder = girderKey.girderIndex;
+               (*pTable)(row, col++) << LABEL_SPAN(spanIdx);
+               (*pTable)(row, col++) << LABEL_GIRDER(girder);
+            }
+
+            Float64 PrecamberLimit, Precamber;
+            CSegmentKey segmentKey(girderKey, 0);
+            pArtifact->GetPrecamber(segmentKey,&PrecamberLimit, &Precamber);
+
+            (*pTable)(row, col++) << dim.SetValue(Precamber);
+            (*pTable)(row, col++) << symbol(PLUS_MINUS) << dim.SetValue(PrecamberLimit);
+
+            if (pArtifact->PrecamberPassed())
+            {
+               (*pTable)(row, col++) << RPT_PASS;
+            }
+            else
+            {
+               (*pTable)(row, col++) << RPT_FAIL;
+            }
+         }
+      }
+   }
+
+   // Only add table if it has content
+   if (0 < row)
+   {
+      rptParagraph* pTitle = new rptParagraph(rptStyleManager::GetHeadingStyle());
+      *pChapter << pTitle;
+      *pTitle << _T("Precamber Limits");
+
+      rptParagraph* pBody = new rptParagraph;
+      *pChapter << pBody;
+
+      *pBody << pTable;
+   }
+   else
+   {
+      delete pTable;
+   }
+}
+
 void CConstructabilityCheckTable::BuildBottomFlangeClearanceCheck(rptChapter* pChapter,IBroker* pBroker, const std::vector<CGirderKey>& girderList, IEAFDisplayUnits* pDisplayUnits) const
 {
    GET_IFACE2(pBroker,IArtifact,pIArtifact);
@@ -983,7 +1073,7 @@ void CConstructabilityCheckTable::BuildRegularCamberCheck(rptChapter* pChapter,I
 
    RowIndexType row = pTable->GetNumberOfHeaderRows();
 
-   GET_IFACE2(pBroker, IPointOfInterest, pPointOfInterest );
+   GET_IFACE2(pBroker, IPointOfInterest, pPoi );
 
    GET_IFACE2(pBroker, IBridge, pBridge);
    pgsTypes::SupportedDeckType deckType = pBridge->GetDeckType();
@@ -993,9 +1083,10 @@ void CConstructabilityCheckTable::BuildRegularCamberCheck(rptChapter* pChapter,I
    for ( SpanIndexType spanIdx = startSpanIdx; spanIdx <= endSpanIdx; spanIdx++ )
    {
       CSpanKey spanKey(spanIdx,girderKey.girderIndex);
-      std::vector<pgsPointOfInterest> vPoi = pPointOfInterest->GetPointsOfInterest(spanKey,POI_SPAN | POI_5L);
+      PoiList vPoi;
+      pPoi->GetPointsOfInterest(spanKey, POI_5L | POI_SPAN, &vPoi);
       ATLASSERT(vPoi.size()==1);
-      pgsPointOfInterest poiMidSpan(vPoi.front());
+      const pgsPointOfInterest& poiMidSpan(vPoi.front());
 
       Float64 C = 0;
       if ( deckType != pgsTypes::sdtNone )
@@ -1211,7 +1302,6 @@ void CConstructabilityCheckTable::BuildRegularCamberCheck(rptChapter* pChapter,I
 
 void CConstructabilityCheckTable::BuildTimeStepCamberCheck(rptChapter* pChapter,IBroker* pBroker,const CGirderKey& girderKey, IEAFDisplayUnits* pDisplayUnits) const
 {
-   GET_IFACE2(pBroker,ICamber,pCamber);
    GET_IFACE2(pBroker,IProductForces, pProductForces);
    GET_IFACE2(pBroker,ILimitStateForces,pLSForces);
    GET_IFACE2(pBroker,IIntervals,pIntervals);
@@ -1223,6 +1313,9 @@ void CConstructabilityCheckTable::BuildTimeStepCamberCheck(rptChapter* pChapter,
 
    IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval();
    Float64 deckCastingTime = pIntervals->GetTime(castDeckIntervalIdx,pgsTypes::Start);
+
+   IntervalIndexType lastIntervalIdx = pIntervals->GetIntervalCount() - 1;
+   Float64 lastIntervalTime = pIntervals->GetTime(lastIntervalIdx, pgsTypes::End);
 
    pgsTypes::BridgeAnalysisType bat = pProductForces->GetBridgeAnalysisType(pgsTypes::Minimize);
 
@@ -1252,36 +1345,48 @@ void CConstructabilityCheckTable::BuildTimeStepCamberCheck(rptChapter* pChapter,
 
    RowIndexType row = pTable->GetNumberOfHeaderRows();
 
-   GET_IFACE2(pBroker, IPointOfInterest, pPointOfInterest );
+   GET_IFACE2(pBroker, IPointOfInterest, pPoi );
 
    GET_IFACE2(pBroker, IBridge, pBridge);
    pgsTypes::SupportedDeckType deckType = pBridge->GetDeckType();
 
    SpanIndexType startSpanIdx, endSpanIdx;
    pBridge->GetGirderGroupSpans(girderKey.groupIndex,&startSpanIdx,&endSpanIdx);
-   for ( SpanIndexType spanIdx = startSpanIdx; spanIdx <= endSpanIdx; spanIdx++ )
+   for (SpanIndexType spanIdx = startSpanIdx; spanIdx <= endSpanIdx; spanIdx++)
    {
-      CSpanKey spanKey(spanIdx,girderKey.girderIndex);
-      std::vector<pgsPointOfInterest> vPoi = pPointOfInterest->GetPointsOfInterest(spanKey,POI_SPAN | POI_5L);
-      ATLASSERT(vPoi.size()==1);
-      pgsPointOfInterest poiMidSpan(vPoi.front());
+      CSpanKey spanKey(spanIdx, girderKey.girderIndex);
+      PoiList vPoi;
+      pPoi->GetPointsOfInterest(spanKey, POI_5L | POI_SPAN, &vPoi);
+      ATLASSERT(vPoi.size() == 1);
+      const pgsPointOfInterest& poiMidSpan(vPoi.front());
 
-      pTable->SetRowSpan(row,0,2);
-      pTable->SetRowSpan(row+1,0,SKIP_CELL);
-      (*pTable)(row,0) << LABEL_SPAN(spanIdx);
+      pTable->SetRowSpan(row, 0, 2);
+      pTable->SetRowSpan(row + 1, 0, SKIP_CELL);
+      (*pTable)(row, 0) << LABEL_SPAN(spanIdx);
 
       Float64 C = 0;
-      if ( deckType != pgsTypes::sdtNone )
+      if (deckType != pgsTypes::sdtNone)
       {
-         C = pCamber->GetScreedCamber( poiMidSpan ) ;
-         (*pTable)(row,  1) << _T("Screed Camber, C");
-         (*pTable)(row++,2) << dim.SetValue(C);
+         GET_IFACE2(pBroker, ICamber, pCamber);
+         C = pCamber->GetScreedCamber(poiMidSpan);
+         (*pTable)(row, 1) << _T("Screed Camber, C");
+         (*pTable)(row++, 2) << dim.SetValue(C);
       }
 
-      Float64 Dmin,Dmax;
-      pLSForces->GetDeflection(castDeckIntervalIdx-1,pgsTypes::ServiceI,poiMidSpan,bat,true/*include prestress*/,false/*no liveload*/,true /*include elevation adjustment*/,&Dmin,&Dmax);
-      ATLASSERT(IsEqual(Dmin,Dmax));
-      (*pTable)(row,1) << _T("Camber at time of deck casting, at ") << deckCastingTime << _T(" days, D");
+      Float64 Dmin, Dmax;
+      if (deckType == pgsTypes::sdtNone)
+      {
+         pLSForces->GetDeflection(lastIntervalIdx, pgsTypes::ServiceI, poiMidSpan, bat, true/*include prestress*/, false/*no liveload*/, true /*include elevation adjustment*/, true /*include precamber*/, &Dmin, &Dmax);
+         ATLASSERT(IsEqual(Dmin, Dmax));
+         (*pTable)(row, 1) << _T("Camber at ") << lastIntervalTime << _T(" days, D");
+      }
+      else
+      {
+         pLSForces->GetDeflection(castDeckIntervalIdx - 1, pgsTypes::ServiceI, poiMidSpan, bat, true/*include prestress*/, false/*no liveload*/, true /*include elevation adjustment*/, true /*include precamber*/, &Dmin, &Dmax);
+         ATLASSERT(IsEqual(Dmin, Dmax));
+         (*pTable)(row, 1) << _T("Camber at time of deck casting, at ") << deckCastingTime << _T(" days, D");
+      }
+
       if ( Dmin < 0 )
       {
          (*pTable)(row++,2) << color(Red) << dim.SetValue(Dmin) << color(Black);

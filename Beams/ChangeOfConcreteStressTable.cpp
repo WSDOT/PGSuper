@@ -58,6 +58,7 @@ CChangeOfConcreteStressTable* CChangeOfConcreteStressTable::PrepareTable(rptChap
 
    rptParagraph* pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pParagraph;
+   ATLASSERT(lrfdVersionMgr::GetVersion() < lrfdVersionMgr::EighthEdition2017); // code reference below is invalid
    *pParagraph << _T("Change in Concrete Stress at Level of Prestressing [5.9.5.4.3]") << rptNewLine;
 
    pParagraph = new rptParagraph;

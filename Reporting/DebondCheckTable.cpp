@@ -184,7 +184,7 @@ rptRcTable* CDebondCheckTable::Build1(const pgsDebondArtifact* pDebondArtifact,I
 {
    rptRcTable* table = rptStyleManager::CreateDefaultTable(7,_T(" "));
    table->TableCaption().SetStyleName(rptStyleManager::GetHeadingStyle());
-   table->TableCaption() << _T("Requirements for Partially Debonded Strands [5.11.4.3]");
+   table->TableCaption() << _T("Requirements for Partially Debonded Strands [") << LrfdCw8th(_T("5.11.4.3"),_T("5.9.4.3.3")) << _T("]");
 
    (*table)(0,0) << _T("Row");
    (*table)(0,1) << _T("Number") << rptNewLine << _T("Strands");

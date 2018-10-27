@@ -66,7 +66,7 @@ CElasticShorteningTable* CElasticShorteningTable::PrepareTable(rptChapter* pChap
    *pChapter << pParagraph;
    if (fcgpMethod == lrfdElasticShortening::fcgpIterative)
    {
-      *pParagraph << _T("Prestress loss due to Elastic Shortening - LRFD 5.9.5.2.3a") << rptNewLine;
+      *pParagraph << _T("Prestress loss due to Elastic Shortening - LRFD ") << LrfdCw8th(_T("5.9.5.2.3a"), _T("5.9.3.2.3a")) << rptNewLine;
    }
    else if (fcgpMethod == lrfdElasticShortening::fcgp07Fpu)
    {
@@ -159,7 +159,7 @@ CElasticShorteningTable* CElasticShorteningTable::PrepareTable(rptChapter* pChap
       {
          Float64 Ag, Ig;
          Ag = pSectProp->GetAg(releaseIntervalIdx,pgsPointOfInterest(segmentKey,0.0));
-         Ig = pSectProp->GetIx(releaseIntervalIdx,pgsPointOfInterest(segmentKey,0.0));
+         Ig = pSectProp->GetIxx(releaseIntervalIdx,pgsPointOfInterest(segmentKey,0.0));
    
          if ( spMode == pgsTypes::spmGross )
          {

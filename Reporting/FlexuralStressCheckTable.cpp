@@ -199,22 +199,22 @@ void CFlexuralStressCheckTable::BuildSectionHeading(rptChapter* pChapter,
 
    if ( bIsStressingInterval )
    {
-      *pPara << _T("For Temporary Stresses before Losses [5.9.4.1]") << rptNewLine;
+      *pPara << _T("For Temporary Stresses before Losses [") << LrfdCw8th(_T("5.9.4.1"),_T("5.9.2.3.1")) << _T("]") << rptNewLine;
    }
    else
    {
-      *pPara << _T("Stresses at Service Limit State after Losses [5.9.4.2]") << rptNewLine;
+      *pPara << _T("Stresses at Service Limit State after Losses [") << LrfdCw8th(_T("5.9.4.2"),_T("5.9.2.3.2")) << _T("]") << rptNewLine;
    }
 
    if ( bCompression )
    {
       if ( bIsStressingInterval )
       {
-         *pPara << _T("Compression Stresses [5.9.4.1.1]") << rptNewLine;
+         *pPara << _T("Compression Stresses [") << LrfdCw8th(_T("5.9.4.1.1"),_T("5.9.2.3.1a")) << _T("]") << rptNewLine;
       }
       else
       {
-         *pPara << _T("Compression Stresses [5.9.4.2.1]") << rptNewLine;
+         *pPara << _T("Compression Stresses [") << LrfdCw8th(_T("5.9.4.2.1"),_T("5.9.2.3.2a")) << _T("]") << rptNewLine;
       }
    }
    
@@ -222,11 +222,11 @@ void CFlexuralStressCheckTable::BuildSectionHeading(rptChapter* pChapter,
    {
       if ( bIsStressingInterval )
       {
-         *pPara << _T("Tension Stresses [5.9.4.1.2]") << rptNewLine;
+         *pPara << _T("Tension Stresses [") << LrfdCw8th(_T("5.9.4.1.2"),_T("5.9.2.3.1b")) << _T("]") << rptNewLine;
       }
       else
       {
-         *pPara << _T("Tension Stresses [5.9.4.2.2]") << rptNewLine;
+         *pPara << _T("Tension Stresses [") << LrfdCw8th(_T("5.9.4.2.2"),_T("5.9.2.3.2b")) << _T("]") << rptNewLine;
       }
    }
 }

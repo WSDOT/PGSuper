@@ -9,7 +9,9 @@ Girder Family | Select a general type of girder from the drop down list
 Girder Type | Select a specific type of girder. Check the box below the list if this girder type is to be used for the entire bridge.
 Number of Girders |  Use the up/down arrows to select the number of girders. Check the box below if this number of girders is to be used in all spans.
 Spacing Type | Select the spacing type to be used
-Girder Spacing |  Enter the girder spacing, located the girders transversely, and select the measurement datum. See @ref ug_bridge_modeling in the @ref user_guide and @ref tg_girder_spacing in the @ref technical_guide for additional details.
+Girder Spacing |  Enter the girder spacing, locate the girders transversely, and select the measurement datum. See @ref ug_bridge_modeling in the @ref user_guide and @ref tg_girder_spacing in the @ref technical_guide for additional details.
+Joint Spacing | Enter the joint width between adjacent girders, locate the girders transversly, and select the measurement datum. See @ref ug_bridge_modeling in the @ref user_guide and @ref tg_girder_spacing in the @ref technical_guide for additional details.
+Top Width | Select the top width type and enter top width dimensions. Top width types are Symmetric (the top flange of the girder is symmetric about the centerline of the girder), Centered CG (the length of the top flange on the left and right side of the girder centerline are automatically computed such that the center of gravity of the girder is coincident with the centerline of the girder), and Asymmetric (the top flange is asymmetric and defined by a left and right dimension)
 Girder Connectivity | For adjacent girders, select the transverse connectivity. The girder connectivity influences the live load distribution factor calculations.
 Girder Orientation | Select the girder orientation. Some girders are not aligned with their webs plumb. Girders can be oriented such that their top flanges parallel the roadway surface
 Deck Type | Select the type of deck to be used
@@ -29,6 +31,7 @@ Deck Type | Description
 Composite Cast-In-Place Deck | The deck is a composite, cast in place concrete deck. The plan view deck geometry is defined by a sequence of station and offset parameters on the @ref ug_dialogs_bridge_description_deck_geometry tab.
 Composite Stay-In-Place Deck Panels | The deck is constructed of partial depth stay in place concrete deck panels and a cast in place topping. This deck system is composite with the girder. The plan view deck geometry is defined by a sequence of station and offset parameters on the @ref ug_dialogs_bridge_description_deck_geometry tab.
 Composite Cast-In-Place Overlay | This deck type is a composite, cast in place concrete deck used with adjacent girders. The plan view deck geometry is defined by the overall perimeter of the girders.
+Nonstructural Overlay | This deck type is a cast in place concrete overlay used with adjacent girders. The plan view deck geometry is defined by the overall perimeter of the girders. This deck type serves as a wearing surface and contributes dead load to the structure, however it is nonstructural so it does not contribute to the capacity of the structure.
 No Deck | Use this option when roadway surface is integral with the girder elements. Examples of this include adjacent voided slabs, box beams, and deck bulb tee girders.
 
 More Information

@@ -21,9 +21,7 @@
 ///////////////////////////////////////////////////////////////////////
 
 #include "stdafx.h"
-#include "TxDOTAgent_i.h"
 #include "TxDOTComponentInfo.h"
-#include "resource.h"
 #include <MFCTools\VersionInfo.h>
 
 HRESULT CTxDOTComponentInfo::FinalConstruct()
@@ -44,29 +42,29 @@ void CTxDOTComponentInfo::Terminate()
 {
 }
 
-CString CTxDOTComponentInfo::GetName()
+CString CTxDOTComponentInfo::GetName() const
 {
    return _T("TxDOT PGSuper Extensions");
 }
 
-CString CTxDOTComponentInfo::GetDescription()
+CString CTxDOTComponentInfo::GetDescription() const
 {
    CString strDesc;
    strDesc.Format(_T("TxDOT-specific features for PGSuper"));
    return strDesc;
 }
 
-HICON CTxDOTComponentInfo::GetIcon()
+HICON CTxDOTComponentInfo::GetIcon() const
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
    return AfxGetApp()->LoadIcon(IDR_TXDOTOPTIONALDESIGN);
 }
 
-bool CTxDOTComponentInfo::HasMoreInfo()
+bool CTxDOTComponentInfo::HasMoreInfo() const
 {
    return false;
 }
 
-void CTxDOTComponentInfo::OnMoreInfo()
+void CTxDOTComponentInfo::OnMoreInfo() const
 {
 }

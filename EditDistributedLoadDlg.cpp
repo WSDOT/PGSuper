@@ -387,7 +387,26 @@ void CEditDistributedLoadDlg::UpdateEventLoadCase(bool isInitial)
    CComboBox* pcbLoadCase = (CComboBox*)GetDlgItem(IDC_LOADCASE);
    CComboBox* pcbEvent    = (CComboBox*)GetDlgItem(IDC_EVENT);
 
+   EventIndexType castDiaphragmEventIdx = m_TimelineMgr.GetIntermediateDiaphragmsLoadEventIndex();
+   EventIndexType castLongitudinalJointEventIdx = m_TimelineMgr.GetCastLongitudinalJointEventIndex();
    EventIndexType castDeckEventIdx      = m_TimelineMgr.GetCastDeckEventIndex();
+   EventIndexType noncompositeLoadEventIdx;
+   if (castDeckEventIdx == INVALID_INDEX)
+   {
+      if (castLongitudinalJointEventIdx == INVALID_INDEX)
+      {
+         noncompositeLoadEventIdx = castDiaphragmEventIdx;
+      }
+      else
+      {
+         noncompositeLoadEventIdx = castLongitudinalJointEventIdx;
+      }
+   }
+   else
+   {
+      noncompositeLoadEventIdx = castDeckEventIdx;
+   }
+
    EventIndexType railingSystemEventIdx = m_TimelineMgr.GetRailingSystemLoadEventIndex();
    EventIndexType liveLoadEventIdx      = m_TimelineMgr.GetLiveLoadEventIndex();
 
@@ -409,9 +428,9 @@ void CEditDistributedLoadDlg::UpdateEventLoadCase(bool isInitial)
       if (isInitial || m_WasLiveLoad)
       {
          pcbEvent->ResetContent();
-         const CTimelineEvent* pTimelineEvent = m_TimelineMgr.GetEventByIndex(castDeckEventIdx);
+         const CTimelineEvent* pTimelineEvent = m_TimelineMgr.GetEventByIndex(noncompositeLoadEventIdx);
          CString strEvent;
-         strEvent.Format(_T("Event %d: %s"),LABEL_EVENT(castDeckEventIdx),pTimelineEvent->GetDescription());
+         strEvent.Format(_T("Event %d: %s"),LABEL_EVENT(noncompositeLoadEventIdx),pTimelineEvent->GetDescription());
          int idx = pcbEvent->AddString(strEvent);
          pcbEvent->SetItemData(idx,DWORD_PTR(pTimelineEvent->GetID()));
 
@@ -424,10 +443,10 @@ void CEditDistributedLoadDlg::UpdateEventLoadCase(bool isInitial)
 
          if (isInitial)
          {
-            EventIDType castDeckEventID      = m_TimelineMgr.GetCastDeckEventID();
+            EventIDType noncompositeLoadEventID      = m_TimelineMgr.GetEventByIndex(noncompositeLoadEventIdx)->GetID();
             EventIDType railingSystemEventID = m_TimelineMgr.GetRailingSystemLoadEventID();
             EventIDType liveLoadEventID      = m_TimelineMgr.GetLiveLoadEventID();
-            if ( m_EventID == castDeckEventID )
+            if ( m_EventID == noncompositeLoadEventID)
             {
                pcbEvent->SetCurSel(0);
             }
@@ -438,7 +457,7 @@ void CEditDistributedLoadDlg::UpdateEventLoadCase(bool isInitial)
             else
             {
                pcbEvent->SetCurSel(0);
-               m_EventID = castDeckEventID;
+               m_EventID = noncompositeLoadEventID;
             }
          }
          else

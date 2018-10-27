@@ -317,7 +317,7 @@ void CPGSpliceAppPlugin::UpdateTemplates()
          ::StringFromCLSID(clsid[i],&pszCLSID);
          
          CString strState = pApp->GetProfileString(strSection,OLE2T(pszCLSID),_T("Enabled"));
-         extension_states.push_back(std::make_pair(OLE2T(pszCLSID),strState));
+         extension_states.emplace_back(OLE2T(pszCLSID),strState);
 
          // Disable the extension
          pApp->WriteProfileString(strSection,OLE2T(pszCLSID),_T("Disabled"));

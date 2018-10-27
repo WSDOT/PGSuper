@@ -38,6 +38,8 @@
 
 #include <EAF\EAFMainFrame.h>
 
+#include <PgsExt\ConcreteDetailsDlg.h>
+
 #include <algorithm>
 
 #ifdef _DEBUG
@@ -56,6 +58,10 @@ CBridgeDescGeneralPage::CBridgeDescGeneralPage() : CPropertyPage(CBridgeDescGene
 	//{{AFX_DATA_INIT(CBridgeDescGeneralPage)
 		// NOTE: the ClassWizard will add member initialization here
 	//}}AFX_DATA_INIT
+
+   m_TopWidthType = pgsTypes::twtSymmetric;
+   m_LeftTopWidth = 0;
+   m_RightTopWidth = 0;
 
    m_MinGirderCount = 2;
    m_CacheGirderConnectivityIdx = CB_ERR;
@@ -80,20 +86,43 @@ void CBridgeDescGeneralPage::DoDataExchange(CDataExchange* pDX)
    CBridgeDescDlg* pParent = (CBridgeDescDlg*)GetParent();
    ASSERT( pParent->IsKindOf(RUNTIME_CLASS(CBridgeDescDlg)) );
 
+   DDX_Control(pDX, IDC_EC, m_ctrlEc);
+   DDX_Control(pDX, IDC_EC_LABEL, m_ctrlEcCheck);
+   DDX_Control(pDX, IDC_FC, m_ctrlFc);
+
 	//{{AFX_DATA_MAP(CBridgeDescGeneralPage)
 		// NOTE: the ClassWizard will add DDX and DDV calls here
 	DDX_Control(pDX, IDC_NUMGDR_SPIN, m_NumGdrSpinner);
    DDX_Control(pDX, IDC_ALIGNMENTOFFSET_FMT, m_AlignmentOffsetFormat);
 	//}}AFX_DATA_MAP
 
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+   GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
+
+
    ////////////////////////////////////////////////
-   // Girders
+   // BridgeLink/Alignment offset
    ////////////////////////////////////////////////
    if (!pDX->m_bSaveAndValidate)
    {
-      FillGirderSpacingMeasurementComboBox();
+      m_AlignmentOffset = pParent->m_BridgeDesc.GetAlignmentOffset();
    }
 
+   DDX_OffsetAndTag(pDX, IDC_ALIGNMENTOFFSET, IDC_ALIGNMENTOFFSET_UNIT, m_AlignmentOffset, pDisplayUnits->GetAlignmentLengthUnit());
+
+   if (pDX->m_bSaveAndValidate)
+   {
+      pParent->m_BridgeDesc.SetAlignmentOffset(m_AlignmentOffset);
+   }
+
+   ////////////////////////////////////////////////
+   // Girders
+   ////////////////////////////////////////////////
+   //if (!pDX->m_bSaveAndValidate)
+   //{
+   //   FillGirderSpacingMeasurementComboBox();
+   //}
 
    DDX_Check_Bool(pDX, IDC_SAME_NUM_GIRDERLINES, m_bSameNumberOfGirders);
    DDX_Check_Bool(pDX, IDC_SAME_GIRDERNAME,      m_bSameGirderName);
@@ -110,10 +139,9 @@ void CBridgeDescGeneralPage::DoDataExchange(CDataExchange* pDX)
       DDV_MinMaxLongLong(pDX, m_nGirders, m_MinGirderCount, MAX_GIRDERS_PER_SPAN );
    }
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
-
+   ////////////////////////////////////////////////
+   // Girder/Joint Spacing
+   ////////////////////////////////////////////////
    if ( IsGirderSpacing(m_GirderSpacingType) )
    {
       // girder spacing
@@ -127,7 +155,7 @@ void CBridgeDescGeneralPage::DoDataExchange(CDataExchange* pDX)
    {
       // joint spacing
       DDX_Tag(pDX,IDC_SPACING_UNIT,pDisplayUnits->GetComponentDimUnit());
-      if ( !pDX->m_bSaveAndValidate || (pDX->m_bSaveAndValidate && m_GirderSpacingType == pgsTypes::sbsUniformAdjacent) )
+      if ( !pDX->m_bSaveAndValidate || (pDX->m_bSaveAndValidate && IsBridgeSpacing(m_GirderSpacingType) && IsAdjacentSpacing(m_GirderSpacingType)) )
       {
          DDX_UnitValueAndTag(pDX,IDC_SPACING,IDC_SPACING_UNIT,m_GirderSpacing,pDisplayUnits->GetComponentDimUnit());
       }
@@ -155,6 +183,9 @@ void CBridgeDescGeneralPage::DoDataExchange(CDataExchange* pDX)
       DDV_UnitValueLimitOrLess(pDX, IDC_SPACING, m_GirderSpacing, m_MaxGirderSpacing-m_MinGirderSpacing, pDisplayUnits->GetComponentDimUnit() );
    }
 
+   ////////////////////////////////////////////////
+   // Girder/Joint measurement type, location, and datum
+   ////////////////////////////////////////////////
    if ( pDX->m_bSaveAndValidate )
    {
       DWORD dw;
@@ -172,7 +203,46 @@ void CBridgeDescGeneralPage::DoDataExchange(CDataExchange* pDX)
    DDX_CBItemData(pDX,IDC_REF_GIRDER_OFFSET_TYPE,m_RefGirderOffsetType);
 
    ////////////////////////////////////////////////
-   // Deck and Railing System
+   // Top Width
+   ////////////////////////////////////////////////
+   if (!pDX->m_bSaveAndValidate || (pDX->m_bSaveAndValidate && IsBridgeSpacing(m_GirderSpacingType) && IsTopWidthSpacing(m_GirderSpacingType)))
+   {
+      DDX_CBEnum(pDX, IDC_TOP_WIDTH_TYPE, m_TopWidthType);
+      DDX_UnitValueAndTag(pDX, IDC_LEFT_TOP_WIDTH, IDC_LEFT_TOP_WIDTH_UNIT, m_LeftTopWidth, pDisplayUnits->GetXSectionDimUnit());
+      DDX_UnitValueAndTag(pDX, IDC_RIGHT_TOP_WIDTH, IDC_RIGHT_TOP_WIDTH_UNIT, m_RightTopWidth, pDisplayUnits->GetXSectionDimUnit());
+   }
+
+   if (IsBridgeSpacing(m_GirderSpacingType) && IsTopWidthSpacing(m_GirderSpacingType))
+   {
+      if (m_TopWidthType == pgsTypes::twtAsymmetric)
+      {
+         Float64 topWidth = m_LeftTopWidth + m_RightTopWidth;
+         DDV_UnitValueLimitOrMore(pDX, IDC_LEFT_TOP_WIDTH, topWidth, m_MinGirderTopWidth, pDisplayUnits->GetXSectionDimUnit());
+         DDV_UnitValueLimitOrLess(pDX, IDC_LEFT_TOP_WIDTH, topWidth, m_MaxGirderTopWidth, pDisplayUnits->GetXSectionDimUnit());
+      }
+      else
+      {
+         DDV_UnitValueLimitOrMore(pDX, IDC_LEFT_TOP_WIDTH, m_LeftTopWidth, m_MinGirderTopWidth, pDisplayUnits->GetXSectionDimUnit());
+         DDV_UnitValueLimitOrLess(pDX, IDC_LEFT_TOP_WIDTH, m_LeftTopWidth, m_MaxGirderTopWidth, pDisplayUnits->GetXSectionDimUnit());
+      }
+   }
+
+   ////////////////////////////////////////////////
+   // Longitudinal Joint Material
+   ////////////////////////////////////////////////
+   DDX_UnitValueAndTag(pDX, IDC_FC, IDC_FC_UNIT, m_JointConcrete.Fc, pDisplayUnits->GetStressUnit());
+   DDX_UnitValueAndTag(pDX, IDC_EC, IDC_EC_UNIT, m_JointConcrete.Ec, pDisplayUnits->GetModEUnit());
+   DDX_Check_Bool(pDX, IDC_EC_LABEL, m_JointConcrete.bUserEc);
+   if (pDX->m_bSaveAndValidate)
+   {
+      pParent->m_BridgeDesc.SetLongitudinalJointMaterial(m_JointConcrete);
+   }
+
+
+
+
+   ////////////////////////////////////////////////
+   // Deck 
    ////////////////////////////////////////////////
    pgsTypes::SupportedDeckType deckType = pParent->m_BridgeDesc.GetDeckDescription()->GetDeckType();
 	DDX_CBItemData(pDX, IDC_DECK_TYPE, deckType);
@@ -181,23 +251,9 @@ void CBridgeDescGeneralPage::DoDataExchange(CDataExchange* pDX)
       pParent->m_BridgeDesc.GetDeckDescription()->SetDeckType(deckType);
    }
 
- 	DDX_CBItemData(pDX, IDC_GIRDER_CONNECTIVITY, pParent->m_BridgeDesc.GetDeckDescription()->TransverseConnectivity);
-
    if ( pDX->m_bSaveAndValidate )
    {
       UpdateBridgeDescription();
-   }
-
-   if ( !pDX->m_bSaveAndValidate )
-   {
-      m_AlignmentOffset = pParent->m_BridgeDesc.GetAlignmentOffset();
-   }
-
-   DDX_OffsetAndTag(pDX, IDC_ALIGNMENTOFFSET, IDC_ALIGNMENTOFFSET_UNIT, m_AlignmentOffset, pDisplayUnits->GetAlignmentLengthUnit() );
-   
-   if ( pDX->m_bSaveAndValidate )
-   {
-      pParent->m_BridgeDesc.SetAlignmentOffset(m_AlignmentOffset);
    }
 }
 
@@ -214,6 +270,10 @@ BEGIN_MESSAGE_MAP(CBridgeDescGeneralPage, CPropertyPage)
 	ON_CBN_SELCHANGE(IDC_GIRDER_CONNECTIVITY, OnGirderConnectivityChanged)
    ON_CBN_SELCHANGE(IDC_GIRDER_SPACING_MEASURE,OnSpacingDatumChanged)
    ON_CBN_SELCHANGE(IDC_GIRDER_SPACING_TYPE,OnGirderSpacingTypeChanged)
+   ON_CBN_SELCHANGE(IDC_TOP_WIDTH_TYPE, OnTopWidthTypeChanged)
+   ON_BN_CLICKED(IDC_MORE_PROPERTIES, OnMoreProperties)
+   ON_BN_CLICKED(IDC_EC_LABEL, OnBnClickedEc)
+   ON_EN_CHANGE(IDC_FC, OnChangeFc)
    ON_NOTIFY_EX(TTN_NEEDTEXT,0,OnToolTipNotify)
 	ON_COMMAND(ID_HELP, OnHelp)
 	//}}AFX_MSG_MAP
@@ -244,12 +304,20 @@ BOOL CBridgeDescGeneralPage::OnInitDialog()
    
    FillRefGirderComboBox();
 
+   FillGirderSpacingMeasurementComboBox();
+
    UpdateGirderSpacingLimits();
 
    if ( IsGirderSpacing(m_GirderSpacingType) )
    {
       EnableGirderSpacing(FALSE,FALSE);
    }
+
+   FillTopWidthComboBox();
+   EnableTopWidth(IsTopWidthSpacing(m_GirderSpacingType));
+   UpdateGirderTopWidthSpacingLimits();
+
+   EnableLongitudinalJointMaterial();
 
 	CPropertyPage::OnInitDialog();
    
@@ -265,17 +333,16 @@ BOOL CBridgeDescGeneralPage::OnInitDialog()
    CEAFDocument* pDoc = EAFGetDocument();
    if ( pDoc->IsKindOf(RUNTIME_CLASS(CPGSpliceDoc)) )
    {
-      //// hide the edit controls not used for spliced girder structures
-      //GetDlgItem(IDC_GDR_TYPE_LABEL)->ShowWindow(SW_HIDE);
-      //GetDlgItem(IDC_GDR_TYPE)->ShowWindow(SW_HIDE);
-      //GetDlgItem(IDC_SAME_GIRDERNAME)->ShowWindow(SW_HIDE);
-
       GetDlgItem(IDC_SAME_NUM_GIRDERLINES)->SetWindowText(_T("Use same number of girders in all groups"));
    }
 
    CString fmt;
    fmt.LoadString( IDS_ALIGNMENTOFFSET_FMT);
    m_AlignmentOffsetFormat.SetWindowText(fmt);
+
+   UpdateConcreteTypeLabel();
+   OnBnClickedEc();
+   OnTopWidthTypeChanged();
 
 	return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE
@@ -322,6 +389,7 @@ void CBridgeDescGeneralPage::Init()
       m_RefGirderOffset     = pParent->m_BridgeDesc.GetRefGirderOffset();
       m_RefGirderOffsetType = pParent->m_BridgeDesc.GetRefGirderOffsetType();
 
+      pParent->m_BridgeDesc.GetGirderTopWidth(&m_TopWidthType, &m_LeftTopWidth, &m_RightTopWidth);
    }
    else
    {
@@ -335,6 +403,9 @@ void CBridgeDescGeneralPage::Init()
       m_RefGirderIdx        = pSpacing->GetRefGirder();
       m_RefGirderOffset     = pSpacing->GetRefGirderOffset();
       m_RefGirderOffsetType = pSpacing->GetRefGirderOffsetType();
+
+      Float64 leftEnd, rightEnd;
+      pGroup->GetGirder(0)->GetTopWidth(&m_TopWidthType, &m_LeftTopWidth, &m_RightTopWidth, &leftEnd, &rightEnd);
    }
 
    if ( IsGirderSpacing(m_GirderSpacingType) )
@@ -348,11 +419,20 @@ void CBridgeDescGeneralPage::Init()
       m_strCacheJointSpacing.Format( _T("%s"),FormatDimension(m_GirderSpacing,   pDisplayUnits->GetComponentDimUnit(),false));
    }
 
+   if (IsTopWidthSpacing(m_GirderSpacingType))
+   {
+      m_strCacheLeftTopWidth.Format(_T("%s"), FormatDimension(m_LeftTopWidth, pDisplayUnits->GetXSectionDimUnit(), false));
+      m_strCacheRightTopWidth.Format(_T("%s"), FormatDimension(m_RightTopWidth, pDisplayUnits->GetXSectionDimUnit(), false));
+   }
+
    int sign = ::Sign(m_RefGirderOffset);
    LPTSTR strOffset = (sign == 0 ? _T("") : sign < 0 ? _T("L") : _T("R"));
    m_strCacheRefGirderOffset.Format(_T("%s %s"),FormatDimension(fabs(m_RefGirderOffset),pDisplayUnits->GetXSectionDimUnit(),false),strOffset);
 
    m_CacheDeckEdgePoints = pParent->m_BridgeDesc.GetDeckDescription()->DeckEdgePoints;
+
+   m_TransverseConnectivity = pParent->m_BridgeDesc.GetDeckDescription()->TransverseConnectivity;
+   m_JointConcrete = pParent->m_BridgeDesc.GetLongitudinalJointMaterial();
 
    UpdateMinimumGirderCount();
 }
@@ -360,6 +440,9 @@ void CBridgeDescGeneralPage::Init()
 void CBridgeDescGeneralPage::UpdateBridgeDescription()
 {
    // put the page data values into the bridge model
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+
    CBridgeDescDlg* pParent = (CBridgeDescDlg*)GetParent();
 
    pParent->m_BridgeDesc.UseSameNumberOfGirdersInAllGroups( m_bSameNumberOfGirders );
@@ -374,8 +457,6 @@ void CBridgeDescGeneralPage::UpdateBridgeDescription()
 
    if ( m_bSameGirderName || bNewGirderFamily )
    {
-      CComPtr<IBroker> pBroker;
-      EAFGetBroker(&pBroker);
       GET_IFACE2( pBroker, ILibrary, pLib );
    
       const GirderLibraryEntry* pGdrEntry = pLib->GetGirderEntry(m_GirderName);
@@ -386,10 +467,41 @@ void CBridgeDescGeneralPage::UpdateBridgeDescription()
    if ( bNewGirderFamily )
    {
       UpdateGirderSpacingLimits();
+      UpdateGirderTopWidthSpacingLimits();
    }
 
+   if (!m_Factory->IsSupportedBeamSpacing(m_GirderSpacingType))
+   {
+      const IBeamFactory::Dimensions& dimensions = pParent->m_BridgeDesc.GetGirderLibraryEntry()->GetDimensions();
+      pgsTypes::SupportedBeamSpacing newSpacingType;
+      Float64 newSpacing, topWidth;
+      VERIFY(m_Factory->ConvertBeamSpacing(dimensions, m_GirderSpacingType, m_GirderSpacing, &newSpacingType, &newSpacing, &topWidth));
+      m_GirderSpacingType = newSpacingType;
+      m_GirderSpacing = newSpacing;
+      m_LeftTopWidth = topWidth;
+      m_RightTopWidth = 0.0;
+
+      GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
+      if (IsGirderSpacing(m_GirderSpacingType))
+      {
+         m_strCacheGirderSpacing.Format(_T("%s"), FormatDimension(m_GirderSpacing, pDisplayUnits->GetXSectionDimUnit(), false));
+         m_strCacheJointSpacing.Format(_T("%s"), FormatDimension(0, pDisplayUnits->GetComponentDimUnit(), false));
+      }
+      else
+      {
+         m_strCacheGirderSpacing.Format(_T("%s"), FormatDimension(m_MinGirderSpacing, pDisplayUnits->GetXSectionDimUnit(), false));
+         m_strCacheJointSpacing.Format(_T("%s"), FormatDimension(m_GirderSpacing, pDisplayUnits->GetComponentDimUnit(), false));
+      }
+
+      if (IsTopWidthSpacing(m_GirderSpacingType))
+      {
+         m_strCacheLeftTopWidth.Format(_T("%s"), FormatDimension(m_LeftTopWidth, pDisplayUnits->GetXSectionDimUnit(), false));
+         m_strCacheRightTopWidth.Format(_T("%s"), FormatDimension(m_RightTopWidth, pDisplayUnits->GetXSectionDimUnit(), false));
+      }
+   }
    pParent->m_BridgeDesc.SetGirderSpacingType(m_GirderSpacingType);
    pParent->m_BridgeDesc.SetGirderSpacing(m_GirderSpacing);
+   pParent->m_BridgeDesc.SetGirderTopWidth(m_TopWidthType, m_LeftTopWidth, m_RightTopWidth);
 
    pParent->m_BridgeDesc.SetMeasurementLocation(m_GirderSpacingMeasurementLocation);
    pParent->m_BridgeDesc.SetMeasurementType(m_GirderSpacingMeasurementType);
@@ -398,9 +510,11 @@ void CBridgeDescGeneralPage::UpdateBridgeDescription()
    pParent->m_BridgeDesc.SetRefGirderOffset(m_RefGirderOffset);
    pParent->m_BridgeDesc.SetRefGirderOffsetType(m_RefGirderOffsetType);
 
+   pParent->m_BridgeDesc.GetDeckDescription()->TransverseConnectivity = m_TransverseConnectivity;
+
    if ( bNewGirderFamily )
    {
-      pParent->m_BridgeDesc.CopyDown(true,true,true,true,true);
+      pParent->m_BridgeDesc.CopyDown(true,true,true,true,true,true);
    }
 }
 
@@ -432,7 +546,6 @@ void CBridgeDescGeneralPage::OnSameNumGirders()
    {
       // box was just unchecked so cache the number of girders
       CEAFDocument* pDoc = EAFGetDocument();
-#pragma Reminder("UPDATE: confirm this instructional message is accurate")
       if ( pDoc->IsKindOf(RUNTIME_CLASS(CPGSpliceDoc)) )
       {
          strText = CString(_T("By unchecking this box, each girder group can have a different number of girders. To define the number of girders in a girder group, edit the Group Details for each group.\n\nGroup Details can be edited by selecting the Layout tab and then pressing the edit button for a group."));
@@ -489,7 +602,6 @@ void CBridgeDescGeneralPage::OnSameGirderName()
       // was was just unchecked
       m_CacheGirderNameIdx = pcbGirderName->GetCurSel();
       CEAFDocument* pDoc = EAFGetDocument();
-#pragma Reminder("UPDATE: confirm this instructional message is accurate")
       if ( pDoc->IsKindOf(RUNTIME_CLASS(CPGSpliceDoc)) )
       {
          strText = CString(_T("By unchecking this box, a different girder type can be assigned to each girder. To do this, edit the Group Details for each group.\n\nGroup Details can be edited by selecting the Layout tab and then pressing the edit button for a group."));
@@ -502,6 +614,7 @@ void CBridgeDescGeneralPage::OnSameGirderName()
 
    EnableGirderName(m_bSameGirderName);
    UpdateGirderSpacingLimits();
+   UpdateGirderTopWidthSpacingLimits();
 
    UpdateBridgeDescription();
 
@@ -542,6 +655,56 @@ void CBridgeDescGeneralPage::EnableGirderSpacing(BOOL bEnable,BOOL bClearControl
       pEdit->SetSel(0,-1);
       pEdit->Clear();
    }
+}
+
+void CBridgeDescGeneralPage::EnableTopWidth(BOOL bEnable)
+{
+   CWnd* pLabel = GetDlgItem(IDC_TOP_WIDTH_LABEL);
+   CWnd* pType = GetDlgItem(IDC_TOP_WIDTH_TYPE);
+   CWnd* pLeftLabel = GetDlgItem(IDC_LEFT_TOP_WIDTH_LABEL);
+   CWnd* pLeftEdit = GetDlgItem(IDC_LEFT_TOP_WIDTH);
+   CWnd* pLeftUnit = GetDlgItem(IDC_LEFT_TOP_WIDTH_UNIT);
+   CWnd* pRightLabel = GetDlgItem(IDC_RIGHT_TOP_WIDTH_LABEL);
+   CWnd* pRightEdit = GetDlgItem(IDC_RIGHT_TOP_WIDTH);
+   CWnd* pRightUnit = GetDlgItem(IDC_RIGHT_TOP_WIDTH_UNIT);
+   CWnd* pAllowable = GetDlgItem(IDC_ALLOWABLE_TOP_WIDTH);
+   int nShowCommand = (bEnable ? SW_SHOW : SW_HIDE);
+   pLabel->ShowWindow(nShowCommand);
+   pType->ShowWindow(nShowCommand);
+   pLeftLabel->ShowWindow(nShowCommand);
+   pLeftEdit->ShowWindow(nShowCommand);
+   pLeftUnit->ShowWindow(nShowCommand);
+   pRightLabel->ShowWindow(nShowCommand);
+   pRightEdit->ShowWindow(nShowCommand);
+   pRightUnit->ShowWindow(nShowCommand);
+   pAllowable->ShowWindow(nShowCommand);
+}
+
+void CBridgeDescGeneralPage::EnableLongitudinalJointMaterial()
+{
+   CWnd* pGroupBox = GetDlgItem(IDC_LONGITUDINAL_JOINT_MATERIAL_GROUP);
+   CWnd* pConcreteTypeLabel = GetDlgItem(IDC_CONCRETE_TYPE_LABEL);
+   CWnd* pfcLabel = GetDlgItem(IDC_FC_LABEL);
+   CWnd* pfc = GetDlgItem(IDC_FC);
+   CWnd* pfcUnit = GetDlgItem(IDC_FC_UNIT);
+   CWnd* pEcLabel = GetDlgItem(IDC_EC_LABEL);
+   CWnd* pEc = GetDlgItem(IDC_EC);
+   CWnd* pEcUnit = GetDlgItem(IDC_EC_UNIT);
+   CWnd* pMoreProperties = GetDlgItem(IDC_MORE_PROPERTIES);
+
+   CBridgeDescDlg* pParent = (CBridgeDescDlg*)GetParent();
+
+   int nShowCommand = (pParent->m_BridgeDesc.HasStructuralLongitudinalJoints() ? SW_SHOW : SW_HIDE);
+
+   pGroupBox->ShowWindow(nShowCommand);
+   pConcreteTypeLabel->ShowWindow(nShowCommand);
+   pfcLabel->ShowWindow(nShowCommand);
+   pfc->ShowWindow(nShowCommand);
+   pfcUnit->ShowWindow(nShowCommand);
+   pEcLabel->ShowWindow(nShowCommand);
+   pEc->ShowWindow(nShowCommand);
+   pEcUnit->ShowWindow(nShowCommand);
+   pMoreProperties->ShowWindow(nShowCommand);
 }
 
 void CBridgeDescGeneralPage::OnNumGirdersChanged(NMHDR* pNMHDR, LRESULT* pResult) 
@@ -638,46 +801,31 @@ void CBridgeDescGeneralPage::FillGirderNameComboBox()
    pcbGirders->SetCurSel(m_CacheGirderNameIdx);
 }
 
+static LPCTSTR lpszOrientation[] = { _T("Plumb"), _T("Normal to roadway at Start of Bridge"),_T("Normal to roadway at Mid-span of Bridge"),_T("Normal to roadway at End of Bridge") };
 void CBridgeDescGeneralPage::FillGirderOrientationComboBox()
 {
    // Girder Orientation
    CComboBox* pOrientation = (CComboBox*)GetDlgItem(IDC_GIRDER_ORIENTATION);
-   int idx = pOrientation->AddString(_T("Plumb")); 
-   pOrientation->SetItemData(idx,pgsTypes::Plumb);
+   int curSel = pOrientation->GetCurSel();
 
-   idx = pOrientation->AddString(_T("Normal to roadway at Start of Bridge"));
-   pOrientation->SetItemData(idx,pgsTypes::StartNormal);
-
-   idx = pOrientation->AddString(_T("Normal to roadway at Mid-span of Bridge"));
-   pOrientation->SetItemData(idx,pgsTypes::MidspanNormal);
-
-   idx = pOrientation->AddString(_T("Normal to roadway at End of Bridge"));
-   pOrientation->SetItemData(idx,pgsTypes::EndNormal);
-
-   int curSel;
-   switch( m_GirderOrientation )
+   std::vector<pgsTypes::GirderOrientationType> vTypes = m_Factory->GetSupportedGirderOrientation();
+   for (auto type : vTypes)
    {
-   case pgsTypes::Plumb:
-      curSel = 0;
-      break;
-
-   case pgsTypes::StartNormal:
-      curSel = 1;
-      break;
-
-   case pgsTypes::MidspanNormal:
-      curSel = 2;
-      break;
-
-   case pgsTypes::EndNormal:
-      curSel = 3;
-      break;
-
-   default:
-      ASSERT(FALSE); // shouldn't get here
+      int idx = pOrientation->AddString(lpszOrientation[type]);
+      pOrientation->SetItemData(idx, (DWORD_PTR)type);
    }
 
-   pOrientation->SetCurSel(curSel);
+   if (curSel == CB_ERR)
+   {
+      pOrientation->SetCurSel(0);
+   }
+   else
+   {
+      if (pOrientation->SetCurSel(curSel) == CB_ERR)
+      {
+         pOrientation->SetCurSel(0);
+      }
+   }
 }
 
 void CBridgeDescGeneralPage::FillGirderSpacingTypeComboBox()
@@ -743,6 +891,30 @@ void CBridgeDescGeneralPage::FillGirderSpacingTypeComboBox()
       case pgsTypes::sbsConstantAdjacent:
          idx = pSpacingType->AddString(_T("Adjacent girders with the same width for all girders"));
          pSpacingType->SetItemData(idx,(DWORD)spacingType);
+         break;
+
+      case pgsTypes::sbsUniformAdjacentWithTopWidth:
+         if (pDoc->IsKindOf(RUNTIME_CLASS(CPGSpliceDoc)))
+         {
+            idx = pSpacingType->AddString(_T("Adjacent girders with same joint spacing and top flange width in all groups"));
+         }
+         else
+         {
+            idx = pSpacingType->AddString(_T("Adjacent girders with same joint spacing and top flange width in all spans"));
+         }
+         pSpacingType->SetItemData(idx, (DWORD)spacingType);
+         break;
+
+      case pgsTypes::sbsGeneralAdjacentWithTopWidth:
+         if (pDoc->IsKindOf(RUNTIME_CLASS(CPGSpliceDoc)))
+         {
+            idx = pSpacingType->AddString(_T("Adjacent girders with unique joint spacing and top flange width for each group"));
+         }
+         else
+         {
+            idx = pSpacingType->AddString(_T("Adjacent girders with unique joint spacing and top flange width for each span"));
+         }
+         pSpacingType->SetItemData(idx, (DWORD)spacingType);
          break;
 
       default:
@@ -817,6 +989,29 @@ void CBridgeDescGeneralPage::FillGirderSpacingMeasurementComboBox()
    }
 }
 
+void CBridgeDescGeneralPage::FillTopWidthComboBox()
+{
+   CComboBox* pCB = (CComboBox*)GetDlgItem(IDC_TOP_WIDTH_TYPE);
+   pCB->ResetContent();
+   std::vector<pgsTypes::TopWidthType> vTopWidthTypes = m_Factory->GetSupportedTopWidthTypes();
+#if defined _DEBUG
+   if (IsTopWidthSpacing(m_GirderSpacingType))
+   {
+      ATLASSERT(1 <= vTopWidthTypes.size()); // there must be at least on supported type
+   }
+   else
+   {
+      ATLASSERT(vTopWidthTypes.size() == 0);
+   }
+#endif
+
+   for (auto type : vTopWidthTypes)
+   {
+      int idx = pCB->AddString(GetTopWidthType(type));
+      pCB->SetItemData(idx, (DWORD_PTR)type);
+   }
+}
+
 bool CBridgeDescGeneralPage::AreAnyBearingsMeasuredAlongGirder()
 {
    bool test=false;
@@ -866,16 +1061,15 @@ void CBridgeDescGeneralPage::FillDeckTypeComboBox()
 
    cursel = CB_ERR;
    int selidx = 0;
-   pgsTypes::SupportedDeckTypes::iterator iter;
-   for ( iter = deckTypes.begin(); iter != deckTypes.end(); iter++ )
+   for ( const auto& thisDeckType : deckTypes)
    {
-      CString typestr = GetDeckString(*iter);
+      CString strDeckType = GetDeckTypeName(thisDeckType);
 
-      selidx = pcbDeck->AddString(typestr);
+      selidx = pcbDeck->AddString(strDeckType );
 
-      pcbDeck->SetItemData(selidx,(DWORD)*iter);
+      pcbDeck->SetItemData(selidx,(DWORD)thisDeckType);
 
-      if ( *iter == deckType )
+      if (thisDeckType == deckType )
       {
          cursel = selidx;
       }
@@ -929,7 +1123,7 @@ void CBridgeDescGeneralPage::FillGirderConnectivityComboBox()
    int cursel = pcbConnectivity->GetCurSel();
    pcbConnectivity->ResetContent();
 
-   bool bConnectivity = (m_GirderSpacingType == pgsTypes::sbsUniformAdjacent || m_GirderSpacingType == pgsTypes::sbsGeneralAdjacent || m_GirderSpacingType == pgsTypes::sbsConstantAdjacent);
+   bool bConnectivity = IsAdjacentSpacing(m_GirderSpacingType) ? true : false;
    if ( bConnectivity )
    {
       int idx = pcbConnectivity->AddString(_T("Sufficient to make girders act as a unit"));
@@ -944,7 +1138,8 @@ void CBridgeDescGeneralPage::FillGirderConnectivityComboBox()
       }
       else
       {
-         pcbConnectivity->SetCurSel(0); /// just select index 0
+         cursel = (m_TransverseConnectivity == pgsTypes::atcConnectedAsUnit ? 0 : 1);
+         pcbConnectivity->SetCurSel(cursel);
       }
    }
 }
@@ -957,27 +1152,6 @@ void CBridgeDescGeneralPage::UpdateGirderFactory()
    GET_IFACE2( pBroker, ILibraryNames, pLibNames );
    m_Factory.Release();
    pLibNames->GetBeamFactory(std::_tstring(m_GirderFamilyName),std::_tstring(m_GirderName),&m_Factory);
-}
-
-CString CBridgeDescGeneralPage::GetDeckString(pgsTypes::SupportedDeckType deckType)
-{
-   switch ( deckType )
-   {
-      case pgsTypes::sdtCompositeCIP:
-         return CString(_T("Composite Cast-In-Place Deck"));
-
-      case pgsTypes::sdtCompositeSIP:
-         return CString(_T("Composite Stay-In-Place Deck Panels"));
-
-      case pgsTypes::sdtCompositeOverlay:
-         return CString(_T("Composite Cast-In-Place Overlay"));
-
-      case pgsTypes::sdtNone:
-         return CString(_T("No deck"));
-   }
-
-   ATLASSERT(false);
-   return CString(_T("Unknown Deck Type"));
 }
 
 void CBridgeDescGeneralPage::OnGirderFamilyChanged() 
@@ -995,6 +1169,7 @@ void CBridgeDescGeneralPage::OnGirderFamilyChanged()
 
    InitGirderName();          // sets the current girder name to the first girder of the family
    UpdateGirderFactory();     // gets the new factory for this girder family
+   FillGirderOrientationComboBox(); // filles the girder orientation combo box
    FillGirderNameComboBox();  // fills the girder name combo box with girders from this family
    FillGirderSpacingTypeComboBox(); // get new spacing options for this girder family
    FillDeckTypeComboBox();          // set deck type options to match this girder family
@@ -1010,6 +1185,11 @@ void CBridgeDescGeneralPage::OnGirderFamilyChanged()
    {
       EnableGirderSpacing(TRUE,FALSE);
    }
+
+   EnableTopWidth(IsTopWidthSpacing(m_GirderSpacingType));
+   UpdateGirderTopWidthSpacingLimits();
+
+   EnableLongitudinalJointMaterial();
 }
 
 void CBridgeDescGeneralPage::UpdateMinimumGirderCount()
@@ -1046,6 +1226,7 @@ void CBridgeDescGeneralPage::OnGirderNameChanged()
 
    UpdateMinimumGirderCount();
 
+   pgsTypes::SupportedBeamSpacing oldSpacingType = m_GirderSpacingType;
 
    UpdateBridgeDescription();
 
@@ -1058,16 +1239,35 @@ void CBridgeDescGeneralPage::OnGirderNameChanged()
       EnableGirderSpacing(TRUE,FALSE);
    }
 
-
    UpdateSuperstructureDescription();
    FillDeckTypeComboBox();
+   FillGirderSpacingTypeComboBox();
+   FillTopWidthComboBox();
+
+   UpdateData(FALSE);
+
+
+   if (oldSpacingType != m_GirderSpacingType)
+   {
+      OnGirderSpacingTypeChanged();
+   }
+
+   EnableTopWidth(IsTopWidthSpacing(m_GirderSpacingType));
+   UpdateGirderTopWidthSpacingLimits();
+   OnTopWidthTypeChanged();
+
+   EnableLongitudinalJointMaterial();
 }
 
 void CBridgeDescGeneralPage::OnGirderConnectivityChanged() 
 {
-   UpdateSuperstructureDescription();
+   CComboBox* pcbConnectivity = (CComboBox*)GetDlgItem(IDC_GIRDER_CONNECTIVITY);
+   int curSel = pcbConnectivity->GetCurSel();
+   m_TransverseConnectivity = (pgsTypes::AdjacentTransverseConnectivity)(pcbConnectivity->GetItemData(curSel));
 
    UpdateBridgeDescription();
+
+   EnableLongitudinalJointMaterial();
 
    UpdateSuperstructureDescription();
 }
@@ -1099,19 +1299,23 @@ void CBridgeDescGeneralPage::OnGirderSpacingTypeChanged()
    BOOL specify_spacing = UpdateGirderSpacingLimits();
    // spacing only needs to be specified if it can take on multiple values
 
+   UpdateGirderTopWidthSpacingLimits();
+
    CComboBox* pcbMeasure = (CComboBox*)GetDlgItem(IDC_GIRDER_SPACING_MEASURE);
 
    CString strWndTxt;
-   BOOL bEnable = FALSE;
+   BOOL bEnableSpacing = FALSE;
+   BOOL bEnableTopWidth = FALSE;
    switch ( m_GirderSpacingType )
    {
       case pgsTypes::sbsUniform:
       case pgsTypes::sbsUniformAdjacent:
       case pgsTypes::sbsConstantAdjacent:
+      case pgsTypes::sbsUniformAdjacentWithTopWidth:
 
          // girder spacing is uniform for the entire bridge
          // enable the controls, unless there is only one girder then spacing doesn't apply
-         bEnable = (m_NumGdrSpinner.GetPos() == 1 ? FALSE : specify_spacing);
+         bEnableSpacing = (m_NumGdrSpinner.GetPos() == 1 ? FALSE : specify_spacing);
 
          // restore the cached values for girder spacing and measurement type
          if ( IsGirderSpacing(m_GirderSpacingType) )
@@ -1122,6 +1326,14 @@ void CBridgeDescGeneralPage::OnGirderSpacingTypeChanged()
          {
             GetDlgItem(IDC_SPACING)->SetWindowText(m_strCacheJointSpacing);
          }
+
+         if (IsTopWidthSpacing(m_GirderSpacingType))
+         {
+            GetDlgItem(IDC_LEFT_TOP_WIDTH)->SetWindowText(m_strCacheLeftTopWidth);
+            GetDlgItem(IDC_RIGHT_TOP_WIDTH)->SetWindowText(m_strCacheRightTopWidth);
+            bEnableTopWidth = TRUE;
+         }
+
          pcbMeasure->SetCurSel(m_CacheGirderSpacingMeasureIdx);
 
          GetDlgItem(IDC_REF_GIRDER_OFFSET)->SetWindowText(m_strCacheRefGirderOffset);
@@ -1130,10 +1342,11 @@ void CBridgeDescGeneralPage::OnGirderSpacingTypeChanged()
 
       case pgsTypes::sbsGeneral:
       case pgsTypes::sbsGeneralAdjacent:
+      case pgsTypes::sbsGeneralAdjacentWithTopWidth:
 
          // girder spacing is general (aka, defined span by span)
          // disable the controls
-         bEnable = FALSE;
+         bEnableSpacing = FALSE;
 
          // cache the current value of girder spacing and measurement type
          if ( IsGirderSpacing(m_GirderSpacingType) )
@@ -1158,6 +1371,24 @@ void CBridgeDescGeneralPage::OnGirderSpacingTypeChanged()
             }
          }
 
+         if (IsTopWidthSpacing(m_GirderSpacingType))
+         {
+            GetDlgItem(IDC_LEFT_TOP_WIDTH)->GetWindowText(strWndTxt);
+            GetDlgItem(IDC_LEFT_TOP_WIDTH)->SetWindowText(_T(""));
+            if (strWndTxt != _T(""))
+            {
+               m_strCacheLeftTopWidth = strWndTxt;
+            }
+
+            GetDlgItem(IDC_RIGHT_TOP_WIDTH)->GetWindowText(strWndTxt);
+            GetDlgItem(IDC_RIGHT_TOP_WIDTH)->SetWindowText(_T(""));
+            if (strWndTxt != _T(""))
+            {
+               m_strCacheRightTopWidth = strWndTxt;
+            }
+            bEnableTopWidth = FALSE;
+         }
+
          GetDlgItem(IDC_REF_GIRDER_OFFSET)->GetWindowText(strWndTxt);
          GetDlgItem(IDC_REF_GIRDER_OFFSET)->SetWindowText(_T(""));
          if ( strWndTxt != _T("") )
@@ -1173,13 +1404,13 @@ void CBridgeDescGeneralPage::OnGirderSpacingTypeChanged()
             m_CacheGirderSpacingMeasureIdx = curSel;
          }
 
-         if (m_GirderSpacingType==pgsTypes::sbsGeneralAdjacent && old_spacing_type==pgsTypes::sbsGeneral)
+         if (m_GirderSpacingType == pgsTypes::sbsGeneralAdjacent && old_spacing_type == pgsTypes::sbsGeneral)
          {
             // oddball case changing from general spread to general adjacent. Need to change spacing values to 
             // something reasonable
             m_GirderSpacing = m_MaxGirderSpacing; // get some spread since we a coming from that world
             pParent->m_BridgeDesc.SetGirderSpacing(m_GirderSpacing);
-            pParent->m_BridgeDesc.CopyDown(false,false,true,false,false);
+            pParent->m_BridgeDesc.CopyDown(false,false,true,false,false,false);
          }
          else
          {
@@ -1192,28 +1423,35 @@ void CBridgeDescGeneralPage::OnGirderSpacingTypeChanged()
          ATLASSERT(false); // is there a new spacing type????
    }
 
-   GetDlgItem(IDC_GIRDER_SPACING_LABEL)->EnableWindow(bEnable);
-   GetDlgItem(IDC_SPACING)->EnableWindow(bEnable);
-   GetDlgItem(IDC_SPACING_UNIT)->EnableWindow(bEnable);
-   GetDlgItem(IDC_ALLOWABLE_SPACING)->EnableWindow(bEnable);
+   GetDlgItem(IDC_GIRDER_SPACING_LABEL)->EnableWindow(bEnableSpacing);
+   GetDlgItem(IDC_SPACING)->EnableWindow(bEnableSpacing);
+   GetDlgItem(IDC_SPACING_UNIT)->EnableWindow(bEnableSpacing);
+   GetDlgItem(IDC_ALLOWABLE_SPACING)->EnableWindow(bEnableSpacing);
+
+   GetDlgItem(IDC_TOP_WIDTH_LABEL)->EnableWindow(bEnableTopWidth);
+   GetDlgItem(IDC_TOP_WIDTH_TYPE)->EnableWindow(bEnableTopWidth);
+   GetDlgItem(IDC_LEFT_TOP_WIDTH_LABEL)->EnableWindow(bEnableTopWidth);
+   GetDlgItem(IDC_LEFT_TOP_WIDTH)->EnableWindow(bEnableTopWidth);
+   GetDlgItem(IDC_LEFT_TOP_WIDTH_UNIT)->EnableWindow(bEnableTopWidth);
+   GetDlgItem(IDC_RIGHT_TOP_WIDTH_LABEL)->EnableWindow(bEnableTopWidth);
+   GetDlgItem(IDC_RIGHT_TOP_WIDTH)->EnableWindow(bEnableTopWidth);
+   GetDlgItem(IDC_RIGHT_TOP_WIDTH_UNIT)->EnableWindow(bEnableTopWidth);
+   GetDlgItem(IDC_ALLOWABLE_TOP_WIDTH)->EnableWindow(bEnableTopWidth);
 
 
+   BOOL bEnableRefGirder = FALSE;
    if ( ::IsBridgeSpacing(m_GirderSpacingType) )
    {
-      bEnable = TRUE;
-   }
-   else
-   {
-      bEnable = FALSE;
+      bEnableRefGirder = TRUE;
    }
 
-   GetDlgItem(IDC_REF_GIRDER_LABEL)->EnableWindow(bEnable);
-   GetDlgItem(IDC_REF_GIRDER)->EnableWindow(bEnable);
-   GetDlgItem(IDC_REF_GIRDER_OFFSET)->EnableWindow(bEnable);
-   GetDlgItem(IDC_REF_GIRDER_OFFSET_UNIT)->EnableWindow(bEnable);
-   GetDlgItem(IDC_REF_GIRDER_OFFSET_TYPE_LABEL)->EnableWindow(bEnable);
-   GetDlgItem(IDC_REF_GIRDER_OFFSET_TYPE)->EnableWindow(bEnable);
-   GetDlgItem(IDC_GIRDER_SPACING_MEASURE)->EnableWindow(bEnable);
+   GetDlgItem(IDC_REF_GIRDER_LABEL)->EnableWindow(bEnableRefGirder);
+   GetDlgItem(IDC_REF_GIRDER)->EnableWindow(bEnableRefGirder);
+   GetDlgItem(IDC_REF_GIRDER_OFFSET)->EnableWindow(bEnableRefGirder);
+   GetDlgItem(IDC_REF_GIRDER_OFFSET_UNIT)->EnableWindow(bEnableRefGirder);
+   GetDlgItem(IDC_REF_GIRDER_OFFSET_TYPE_LABEL)->EnableWindow(bEnableRefGirder);
+   GetDlgItem(IDC_REF_GIRDER_OFFSET_TYPE)->EnableWindow(bEnableRefGirder);
+   GetDlgItem(IDC_GIRDER_SPACING_MEASURE)->EnableWindow(bEnableRefGirder); // should this be bEnableSpacing?
 
    // update the the unit of measure
    CComPtr<IBroker> pBroker;
@@ -1253,13 +1491,29 @@ void CBridgeDescGeneralPage::OnGirderSpacingTypeChanged()
 
    OnDeckTypeChanged();
 
-   // UpdateBridgeDescription(); // called by OnDeckTypeChanged()
+   EnableLongitudinalJointMaterial();
+}
+
+void CBridgeDescGeneralPage::OnTopWidthTypeChanged()
+{
+   CComboBox* pCB = (CComboBox*)GetDlgItem(IDC_TOP_WIDTH_TYPE);
+   int curSel = pCB->GetCurSel();
+   pgsTypes::TopWidthType type = (pgsTypes::TopWidthType)pCB->GetItemData(curSel);
+   int nShowCommand = (type == pgsTypes::twtAsymmetric ? SW_SHOW : SW_HIDE);
+   CWnd* pLeftLabel = GetDlgItem(IDC_LEFT_TOP_WIDTH_LABEL);
+   CWnd* pRightLabel = GetDlgItem(IDC_RIGHT_TOP_WIDTH_LABEL);
+   CWnd* pEdit = GetDlgItem(IDC_RIGHT_TOP_WIDTH);
+   CWnd* pUnit = GetDlgItem(IDC_RIGHT_TOP_WIDTH_UNIT);
+   pLeftLabel->ShowWindow(nShowCommand);
+   pRightLabel->ShowWindow(nShowCommand);
+   pEdit->ShowWindow(nShowCommand);
+   pUnit->ShowWindow(nShowCommand);
 }
 
 void CBridgeDescGeneralPage::UpdateGirderConnectivity()
 {
    // connectivity is only applicable for adjacent spacing
-   bool bConnectivity = (m_GirderSpacingType == pgsTypes::sbsUniformAdjacent || m_GirderSpacingType == pgsTypes::sbsGeneralAdjacent || m_GirderSpacingType == pgsTypes::sbsConstantAdjacent);
+   bool bConnectivity = IsAdjacentSpacing(m_GirderSpacingType);
    GetDlgItem(IDC_GIRDER_CONNECTIVITY)->EnableWindow(bConnectivity);
    GetDlgItem(IDC_GIRDER_CONNECTIVITY_S)->EnableWindow(bConnectivity);
    FillGirderConnectivityComboBox();
@@ -1309,10 +1563,40 @@ void CBridgeDescGeneralPage::OnDeckTypeChanged()
       m_CacheDeckEdgePoints = pParent->m_BridgeDesc.GetDeckDescription()->DeckEdgePoints;
       pParent->m_BridgeDesc.GetDeckDescription()->DeckEdgePoints.clear();
    }
+
+   CTimelineManager* pTimelineMgr = pParent->m_BridgeDesc.GetTimelineManager();
    
    pParent->m_BridgeDesc.GetDeckDescription()->SetDeckType(newDeckType);
 
-   if (newDeckType == pgsTypes::sdtCompositeCIP || newDeckType == pgsTypes::sdtCompositeOverlay )
+   if (pTimelineMgr->GetCastDeckEventIndex() == INVALID_INDEX && newDeckType != pgsTypes::sdtNone)
+   {
+      // we are changing to a "deck" option and there isn't a deck contruction activity in the timeline
+      // create one now
+      const CTimelineEvent* pEventBeforeDeckCasting;
+      EventIndexType castDiaphragmEventIdx = pTimelineMgr->GetIntermediateDiaphragmsLoadEventIndex();
+      EventIndexType castLongitudinalJointEventIdx = pTimelineMgr->GetCastLongitudinalJointEventIndex();
+      if (castLongitudinalJointEventIdx == INVALID_INDEX)
+      {
+         pEventBeforeDeckCasting = pTimelineMgr->GetEventByIndex(castDiaphragmEventIdx);
+      }
+      else
+      {
+         pEventBeforeDeckCasting = pTimelineMgr->GetEventByIndex(castLongitudinalJointEventIdx);
+      }
+
+      CTimelineEvent castDeckEvent;
+      castDeckEvent.SetDay(pEventBeforeDeckCasting->GetDay() + pEventBeforeDeckCasting->GetDuration());
+      castDeckEvent.GetCastDeckActivity().Enable();
+      castDeckEvent.SetDescription(GetCastDeckEventName(newDeckType));
+      castDeckEvent.GetCastDeckActivity().Enable();
+      castDeckEvent.GetCastDeckActivity().SetConcreteAgeAtContinuity(28.0); // day
+      castDeckEvent.GetCastDeckActivity().SetCuringDuration(28.0); // day
+      
+      EventIndexType castDeckEventIdx;
+      pTimelineMgr->AddTimelineEvent(castDeckEvent, true, &castDeckEventIdx);
+   }
+
+   if (newDeckType == pgsTypes::sdtCompositeCIP || IsOverlayDeck(newDeckType))
    {
       Float64 minSlabOffset = pParent->m_BridgeDesc.GetMinSlabOffset();
       if ( minSlabOffset < pParent->m_BridgeDesc.GetDeckDescription()->GrossDepth )
@@ -1348,6 +1632,31 @@ void CBridgeDescGeneralPage::OnDeckTypeChanged()
    UpdateBridgeDescription();
 
    UpdateSuperstructureDescription();
+}
+
+void CBridgeDescGeneralPage::UpdateGirderTopWidthSpacingLimits()
+{
+   if (IsSpanSpacing(m_GirderSpacingType))
+   {
+      GetDlgItem(IDC_ALLOWABLE_TOP_WIDTH)->SetWindowText(_T(""));
+      return;
+   }
+
+#pragma Reminder("WORKING HERE - need to look at all girders, see UpdateGirderSpacing for example")
+   CBridgeDescDlg* pParent = (CBridgeDescDlg*)GetParent();
+   const IBeamFactory::Dimensions& dimensions = pParent->m_BridgeDesc.GetGirderLibraryEntry()->GetDimensions();
+   m_Factory->GetAllowableTopWidthRange(dimensions, &m_MinGirderTopWidth, &m_MaxGirderTopWidth);
+
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+   GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
+
+   CString strLabel;
+   strLabel.Format(_T("(%s to %s)"),
+      FormatDimension(m_MinGirderTopWidth, pDisplayUnits->GetXSectionDimUnit()),
+      FormatDimension(m_MaxGirderTopWidth, pDisplayUnits->GetXSectionDimUnit()));
+
+   GetDlgItem(IDC_ALLOWABLE_TOP_WIDTH)->SetWindowText(strLabel);
 }
 
 BOOL CBridgeDescGeneralPage::UpdateGirderSpacingLimits()
@@ -1423,8 +1732,8 @@ BOOL CBridgeDescGeneralPage::UpdateGirderSpacingLimits()
          else
          {
             // joint spacing
-            m_MinGirderSpacing = 0;
-            m_MaxGirderSpacing = Min(Min(max1-min1,max2-min2),m_MaxGirderSpacing);
+            m_MinGirderSpacing = Max(min1, min2, m_MinGirderSpacing);
+            m_MaxGirderSpacing = Min(max1, max2, m_MaxGirderSpacing);
          }
       }
    } // group loop
@@ -1458,21 +1767,28 @@ BOOL CBridgeDescGeneralPage::UpdateGirderSpacingLimits()
       {
          if ( IsGirderSpacing(m_GirderSpacingType) )
          {
-            label.Format(_T("( %s to %s )"), 
+            label.Format(_T("(%s to %s)"), 
                FormatDimension(m_MinGirderSpacing,pDisplayUnits->GetXSectionDimUnit()),
                FormatDimension(m_MaxGirderSpacing,pDisplayUnits->GetXSectionDimUnit()));
          }
          else
          {
             // this is actually joint spacing
-            label.Format(_T("( 0 to %s )"), 
-               FormatDimension(m_MaxGirderSpacing - m_MinGirderSpacing,pDisplayUnits->GetComponentDimUnit()));
+            label.Format(_T("(%s to %s)"),
+               FormatDimension(m_MinGirderSpacing, pDisplayUnits->GetComponentDimUnit()),
+               FormatDimension(m_MaxGirderSpacing, pDisplayUnits->GetComponentDimUnit()));
          }
       }
       else
       {
-         label.Format(_T("( %s or more )"), 
-            FormatDimension(m_MinGirderSpacing,pDisplayUnits->GetXSectionDimUnit()));
+         if (IsGirderSpacing(m_GirderSpacingType))
+         {
+            label.Format(_T("( %s or more )"), FormatDimension(m_MinGirderSpacing, pDisplayUnits->GetXSectionDimUnit()));
+         }
+         else
+         {
+            label.Format(_T("( %s or more )"), FormatDimension(m_MinGirderSpacing, pDisplayUnits->GetComponentDimUnit()));
+         }
       }
    }
 
@@ -1539,14 +1855,13 @@ void CBridgeDescGeneralPage::UpdateSuperstructureDescription()
    int cursel = box->GetCurSel();
    pgsTypes::SupportedDeckType deckType = (pgsTypes::SupportedDeckType)box->GetItemData(cursel);
 
-   description += _T(", ") + GetDeckString(deckType);
+   description += _T(", ") + CString(GetDeckTypeName(deckType));
 
    pgsTypes::AdjacentTransverseConnectivity connect = pgsTypes::atcConnectedAsUnit;
 
    // connectivity if adjacent
-   if (deckType == pgsTypes::sdtCompositeOverlay || deckType == pgsTypes::sdtNone)
+   if (IsAdjacentSpacing(m_GirderSpacingType))
    {
-
       CComboBox* box = (CComboBox*)GetDlgItem(IDC_GIRDER_CONNECTIVITY);
       // good a place as any to cache connectivity
       m_CacheGirderConnectivityIdx = box->GetCurSel();
@@ -1567,7 +1882,7 @@ void CBridgeDescGeneralPage::UpdateSuperstructureDescription()
    }
    else
    {
-      if (pgsTypes::sbsConstantAdjacent==m_GirderSpacingType || pgsTypes::sbsGeneralAdjacent==m_GirderSpacingType || pgsTypes::sbsUniformAdjacent==m_GirderSpacingType)
+      if ( IsAdjacentSpacing(m_GirderSpacingType) )
       {
          description += _T(", Girders at adjacent spacing.");
       }
@@ -1590,9 +1905,10 @@ void CBridgeDescGeneralPage::UpdateSuperstructureDescription()
    }
    else
    {
-#pragma Reminder("UPDATE: Assuming same section used for all spans/girders")
+      // only a single girder family is used for the bridge. therefore, the same distribution factor engineering object
+      // is used for all spans and girders. Getting the factory for any girder in the family will give us the
+      // correct distribution factor engineer.
       std::_tstring entry_name = pGdrEntry->GetName();
-
 
       CComPtr<IDistFactorEngineer> dfEngineer;
       m_Factory->CreateDistFactorEngineer(pBroker, -1, &m_GirderSpacingType, &deckType, &connect, &dfEngineer);
@@ -1602,11 +1918,9 @@ void CBridgeDescGeneralPage::UpdateSuperstructureDescription()
       description += dfmethod.c_str();
    }
 
-   CEdit* pedit = (CEdit*)GetDlgItem(IDC_SUPERSTRUCTURE_DESCRIPTION);
-   pedit->SetWindowText(description);
+   CEdit* pEdit = (CEdit*)GetDlgItem(IDC_SUPERSTRUCTURE_DESCRIPTION);
+   pEdit->SetWindowText(description);
 }
-
-
 
 BOOL CBridgeDescGeneralPage::OnToolTipNotify(UINT id,NMHDR* pNMHDR, LRESULT* pResult)
 {
@@ -1698,13 +2012,10 @@ void CBridgeDescGeneralPage::UIHint(const CString& strText,UINT mask)
    CPGSDocBase* pDoc = (CPGSDocBase*)EAFGetDocument();
 
    Uint32 hintSettings = pDoc->GetUIHintSettings();
-   if ( sysFlags<Uint32>::IsClear(hintSettings,mask) )
+   if ( sysFlags<Uint32>::IsClear(hintSettings,mask) && EAFShowUIHints(strText))
    {
-      if ( EAFShowUIHints(strText) )
-      {
-         sysFlags<Uint32>::Set(&hintSettings,mask);
-         pDoc->SetUIHintSettings(hintSettings);
-      }
+      sysFlags<Uint32>::Set(&hintSettings,mask);
+      pDoc->SetUIHintSettings(hintSettings);
    }
 }
 
@@ -1751,3 +2062,115 @@ void CBridgeDescGeneralPage::InitGirderName()
    m_GirderName = names.front().c_str();
 }
 
+
+void CBridgeDescGeneralPage::UpdateConcreteTypeLabel()
+{
+   CString strLabel;
+   strLabel.Format(_T("%s"), lrfdConcreteUtil::GetTypeName((matConcrete::Type)m_JointConcrete.Type, true).c_str());
+   GetDlgItem(IDC_CONCRETE_TYPE_LABEL)->SetWindowText(strLabel);
+}
+
+void CBridgeDescGeneralPage::OnBnClickedEc()
+{
+   BOOL bEnable = m_ctrlEcCheck.GetCheck();
+
+   GetDlgItem(IDC_EC_LABEL)->EnableWindow(TRUE);
+
+   if (bEnable == FALSE)
+   {
+      m_ctrlEc.GetWindowText(m_strUserEc);
+      UpdateEc();
+   }
+   else
+   {
+      m_ctrlEc.SetWindowText(m_strUserEc);
+   }
+
+   GetDlgItem(IDC_EC)->EnableWindow(bEnable);
+   GetDlgItem(IDC_EC_UNIT)->EnableWindow(bEnable);
+}
+
+void CBridgeDescGeneralPage::OnMoreProperties()
+{
+   UpdateData(TRUE);
+   CConcreteDetailsDlg dlg(true  /*properties are based on f'c*/,
+      false /*don't enable Compute Time Parameters option*/,
+      false /*hide the CopyFromLibrary buton*/);
+
+   dlg.m_fc28 = m_JointConcrete.Fc;
+   dlg.m_Ec28 = m_JointConcrete.Ec;
+   dlg.m_bUserEc28 = m_JointConcrete.bUserEc;
+
+   dlg.m_General.m_Type = m_JointConcrete.Type;
+   dlg.m_General.m_AggSize = m_JointConcrete.MaxAggregateSize;
+   dlg.m_General.m_Ds = m_JointConcrete.StrengthDensity;
+   dlg.m_General.m_Dw = m_JointConcrete.WeightDensity;
+   dlg.m_General.m_strUserEc = m_strUserEc;
+
+   dlg.m_AASHTO.m_EccK1 = m_JointConcrete.EcK1;
+   dlg.m_AASHTO.m_EccK2 = m_JointConcrete.EcK2;
+   dlg.m_AASHTO.m_CreepK1 = m_JointConcrete.CreepK1;
+   dlg.m_AASHTO.m_CreepK2 = m_JointConcrete.CreepK2;
+   dlg.m_AASHTO.m_ShrinkageK1 = m_JointConcrete.ShrinkageK1;
+   dlg.m_AASHTO.m_ShrinkageK2 = m_JointConcrete.ShrinkageK2;
+   dlg.m_AASHTO.m_bHasFct = m_JointConcrete.bHasFct;
+   dlg.m_AASHTO.m_Fct = m_JointConcrete.Fct;
+
+   if (dlg.DoModal() == IDOK)
+   {
+      m_JointConcrete.Fc = dlg.m_fc28;
+      m_JointConcrete.Ec = dlg.m_Ec28;
+      m_JointConcrete.bUserEc = dlg.m_bUserEc28;
+
+      m_JointConcrete.Type = dlg.m_General.m_Type;
+      m_JointConcrete.MaxAggregateSize = dlg.m_General.m_AggSize;
+      m_JointConcrete.StrengthDensity = dlg.m_General.m_Ds;
+      m_JointConcrete.WeightDensity = dlg.m_General.m_Dw;
+      m_JointConcrete.EcK1 = dlg.m_AASHTO.m_EccK1;
+      m_JointConcrete.EcK2 = dlg.m_AASHTO.m_EccK2;
+      m_JointConcrete.CreepK1 = dlg.m_AASHTO.m_CreepK1;
+      m_JointConcrete.CreepK2 = dlg.m_AASHTO.m_CreepK2;
+      m_JointConcrete.ShrinkageK1 = dlg.m_AASHTO.m_ShrinkageK1;
+      m_JointConcrete.ShrinkageK2 = dlg.m_AASHTO.m_ShrinkageK2;
+      m_JointConcrete.bHasFct = dlg.m_AASHTO.m_bHasFct;
+      m_JointConcrete.Fct = dlg.m_AASHTO.m_Fct;
+
+      m_strUserEc = dlg.m_General.m_strUserEc;
+      m_ctrlEc.SetWindowText(m_strUserEc);
+
+      UpdateData(FALSE);
+      OnBnClickedEc();
+      UpdateConcreteTypeLabel();
+   }
+}
+
+void CBridgeDescGeneralPage::OnChangeFc()
+{
+   UpdateEc();
+}
+
+void CBridgeDescGeneralPage::UpdateEc()
+{
+   // update modulus
+   if (m_ctrlEcCheck.GetCheck() == 0)
+   {
+      // blank out ec
+      CString strEc;
+      m_ctrlEc.SetWindowText(strEc);
+
+      // need to manually parse strength and density values
+      CString strFc, strDensity, strK1, strK2;
+      m_ctrlFc.GetWindowText(strFc);
+
+      CComPtr<IBroker> pBroker;
+      EAFGetBroker(&pBroker);
+      GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
+
+      strDensity.Format(_T("%s"), FormatDimension(m_JointConcrete.StrengthDensity, pDisplayUnits->GetDensityUnit(), false));
+      strK1.Format(_T("%f"), m_JointConcrete.EcK1);
+      strK2.Format(_T("%f"), m_JointConcrete.EcK2);
+
+      strEc = CConcreteDetailsDlg::UpdateEc(strFc, strDensity, strK1, strK2);
+      m_ctrlEc.SetWindowText(strEc);
+   }
+}

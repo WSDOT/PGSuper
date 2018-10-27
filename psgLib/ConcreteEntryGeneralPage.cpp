@@ -33,6 +33,8 @@
 #include <EAF\EAFApp.h>
 #include <EAF\EAFDocument.h>
 
+#include <Lrfd\Concreteutil.h>
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
@@ -49,9 +51,8 @@ CConcreteEntryGeneralPage::CConcreteEntryGeneralPage(): CPropertyPage(IDD_CONCRE
 	//}}AFX_DATA_INIT
    m_EntryName = _T("");
 
-#pragma Reminder("UPDATE: need a better place for LWC concrete density limits")
-   m_MinNWCDensity = ::ConvertToSysUnits(135.0,unitMeasure::LbfPerFeet3);
-   m_MaxLWCDensity = ::ConvertToSysUnits(120.0,unitMeasure::LbfPerFeet3);
+   m_MinNWCDensity = lrfdConcreteUtil::GetNWCDensityLimit();
+   m_MaxLWCDensity = lrfdConcreteUtil::GetLWCDensityLimit();
 }
 
 

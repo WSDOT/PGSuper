@@ -111,6 +111,12 @@ BOOL CSpecShearPage::OnSetActive()
       GetDlgItem(IDC_ALWC_FR_UNIT)->ShowWindow(SW_SHOW);
    }
 
+   // 2017 crosswalk chapter 5 reorg
+   GetDlgItem(IDC_SCLOSURE)->SetWindowText(CString(_T("Closure Joint (LRFD 5.5.4.2.2, ")) +  pDad->LrfdCw8th(_T("5.14.1.3.2d"),_T("5.12.3.4.2d")) + _T(")"));
+   GetDlgItem(IDC_SLTSPACING)->SetWindowText(CString(_T("LRFD Eq ")) +  pDad->LrfdCw8th(_T("5.8.2.7-1"),_T("5.7.2.6-1")));
+   GetDlgItem(IDC_SGTSPACING)->SetWindowText(CString(_T("LRFD Eq ")) +  pDad->LrfdCw8th(_T("5.8.2.7-2"),_T("5.7.2.6-2")));
+   GetDlgItem(IDC_SHIS)->SetWindowText(CString(_T("LRFD ")) + pDad->LrfdCw8th(_T("5.8.4.2"),_T("5.7.4.5")) + _T(" Spacing of interface shear connectors shall not exceed"));
+
    return CPropertyPage::OnSetActive();
 }
 
@@ -132,13 +138,13 @@ void CSpecShearPage::FillShearMethodList()
 
    int idxGeneral, idxVciVcw, idxAppendixB, idxWSDOT2001, idxWSDOT2007;
 
-   idxGeneral = pCB->AddString(_T("Compute in accordance with LRFD 5.8.3.4.2 (General method)"));
+   idxGeneral = pCB->AddString(CString(_T("Compute in accordance with LRFD ")) +  CString(pDad->LrfdCw8th(_T("5.8.3.4.2"),_T("5.7.3.4.2"))) + CString(_T(" (General method)")));
    if ( version <= lrfdVersionMgr::FourthEdition2007 )
       pCB->SetItemData(idxGeneral,(DWORD)scmBTTables); // 4th Edition and earlier, general method is Beta-Theta tables
    else
       pCB->SetItemData(idxGeneral,(DWORD)scmBTEquations); // After 4th Edition, general method is Beta-Theta equations
 
-   if ( lrfdVersionMgr::FourthEdition2007 <= version )
+   if ( lrfdVersionMgr::FourthEdition2007 <= version  && lrfdVersionMgr::EighthEdition2017 > version)
    {
       idxVciVcw = pCB->AddString(_T("Compute in accordance with LRFD 5.8.3.4.3 (Vci and Vcw method)"));
       pCB->SetItemData(idxVciVcw,(DWORD)scmVciVcw);

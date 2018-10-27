@@ -53,7 +53,9 @@
 
 // Girder Model Editor
 // ======================================
-// all possible settings for girder model editor;
+// all possible settings for girder model editor. don't change these values... they are stored
+// in the registry. each time the view is opened, the settings are restored from the registry.
+// changing their values would change the settings themselves
 //       section view
 #define IDG_SV_SHOW_STRANDS     ((DWORD)0x00000001)
 #define IDG_SV_SHOW_PS_CG       ((DWORD)0x00000002)
@@ -73,5 +75,9 @@
 #define IDG_EV_SHOW_LONG_REINF  ((DWORD)0x00004000)
 #define IDG_EV_SHOW_LOADS       ((DWORD)0x00008000)
 #define IDG_EV_SHOW_LEGEND      ((DWORD)0x00010000)
+
+#define IDG_SV_GIRDER_CG        ((DWORD)0x00020000)
+#define IDG_EV_GIRDER_CG        ((DWORD)0x00040000)
+#define IDG_SV_PROPERTIES       ((DWORD)0x00080000)
 
 #endif

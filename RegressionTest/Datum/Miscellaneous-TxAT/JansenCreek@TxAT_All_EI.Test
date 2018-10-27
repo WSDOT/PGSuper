@@ -1,6 +1,15 @@
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 26.00    5   0.00   Jansen Creek      1     1    (4'-8          52  0.6  270   4.16   4.16   7.00   7.00                                              5.500  6.500   1.885    -1.881     2067   0.447  0.771   1.097 -0.142 -0.033 -0.050 -0.224 153.92  417.41    3.00    2.17    2.17 
+ 26.00    5   0.00   Jansen Creek      1     1    (4'-8          52  0.6  270   4.16   4.16   7.00   7.00                                              5.500  6.500   3.093    -3.212     3163   1.311  1.470   0.891 -0.189 -0.033 -0.050 -0.272 149.83  406.04    3.00    2.17    2.17 
+
+
+The Specification Check was Not Successful
+Tensile stress check failed for Service III Limit State in Interval 15 Open to Traffic
+
+
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 26.00    5   0.00   Jansen Creek      1     2    (4'-8          52  0.6  270   4.16   4.16   7.00   7.00                                              5.500  6.500   1.985    -1.973     2074   0.407  0.681   0.891 -0.101 -0.033 -0.050 -0.183 149.83  411.92    3.00    2.17    2.17 
 
 
 The Specification Check was Successful
@@ -8,15 +17,7 @@ The Specification Check was Successful
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 26.00    5   0.00   Jansen Creek      1     2    (4'-8          52  0.6  270   4.16   4.16   7.00   7.00                                              5.500  6.500   1.761    -1.751     1910   0.407  0.681   1.097 -0.101 -0.033 -0.050 -0.183 153.92  420.09    3.00    2.17    2.17 
-
-
-The Specification Check was Successful
-
-
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 26.00    5   0.00   Jansen Creek      1     3    (4'-8          52  0.6  270   4.16   4.16   7.00   7.00                                              5.500  6.500   1.762    -1.752     1910   0.407  0.607   1.097 -0.101 -0.033 -0.050 -0.184 153.92  420.07    3.00    2.17    2.17 
+ 26.00    5   0.00   Jansen Creek      1     3    (4'-8          52  0.6  270   4.16   4.16   7.00   7.00                                              5.500  6.500   1.986    -1.974     2074   0.407  0.607   0.891 -0.101 -0.033 -0.050 -0.184 149.83  411.90    3.00    2.17    2.17 
 
 
 The Specification Check was Successful

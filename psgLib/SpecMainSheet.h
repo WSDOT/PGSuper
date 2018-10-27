@@ -39,7 +39,8 @@
 #include "SpecDesignPage.h"
 #include "SpecShearPage.h"
 #include "SpecMomentPage.h"
-#include "SpecLoadsPage.h"
+#include "SpecDeadLoadsPage.h"
+#include "SpecLiveLoadsPage.h"
 #include "SpecGirderStressPage.h"
 #include "SpecClosurePage.h"
 
@@ -76,7 +77,8 @@ public:
 
    CSpecClosurePage         m_SpecClosurePage;
 
-   CSpecLoadsPage          m_SpecLoadsPage;
+   CSpecDeadLoadsPage          m_SpecDeadLoadsPage;
+   CSpecLiveLoadsPage          m_SpecLiveLoadsPage;
    CSpecGirderStressPage m_SpecGirderStressPage;
 
    bool                m_bAllowEditing;
@@ -87,6 +89,13 @@ public:
    CString m_Description;
 
    lrfdVersionMgr::Version GetSpecVersion();
+
+   // our own function for mapping code reference changes from 2017 LRFD Crosswalk
+   LPCTSTR LrfdCw8th(LPCTSTR oldStr, LPCTSTR newStr)
+   {
+      return (GetSpecVersion() < lrfdVersionMgr::EighthEdition2017) ? oldStr : newStr;
+   }
+
 
 // Operations
 public:
@@ -110,7 +119,8 @@ public:
 // implementation stuff
 
    void ExchangeDescriptionData(CDataExchange* pDX);
-   void ExchangeLoadsData(CDataExchange* pDX);
+   void ExchangeDeadLoadsData(CDataExchange* pDX);
+   void ExchangeLiveLoadsData(CDataExchange* pDX);
    void ExchangeGirderData(CDataExchange* pDX);
    void ExchangeLiftingData(CDataExchange* pDX);
    bool IsHaulingEnabled() const;

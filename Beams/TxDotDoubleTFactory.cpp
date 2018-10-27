@@ -58,65 +58,65 @@ static char THIS_FILE[] = __FILE__;
 HRESULT CTxDotDoubleTFactory::FinalConstruct()
 {
    // Initialize with default values... This are not necessarily valid dimensions
-   m_DimNames.push_back(_T("C1"));
-   m_DimNames.push_back(_T("C2"));
-   m_DimNames.push_back(_T("H1"));
-   m_DimNames.push_back(_T("H2"));
-   m_DimNames.push_back(_T("H3"));
-   m_DimNames.push_back(_T("T1"));
-   m_DimNames.push_back(_T("T2"));
-   m_DimNames.push_back(_T("T3"));
-   m_DimNames.push_back(_T("F1"));
-   m_DimNames.push_back(_T("W1"));
-   m_DimNames.push_back(_T("W2"));
-   m_DimNames.push_back(_T("J"));
+   m_DimNames.emplace_back(_T("C1"));
+   m_DimNames.emplace_back(_T("C2"));
+   m_DimNames.emplace_back(_T("H1"));
+   m_DimNames.emplace_back(_T("H2"));
+   m_DimNames.emplace_back(_T("H3"));
+   m_DimNames.emplace_back(_T("T1"));
+   m_DimNames.emplace_back(_T("T2"));
+   m_DimNames.emplace_back(_T("T3"));
+   m_DimNames.emplace_back(_T("F1"));
+   m_DimNames.emplace_back(_T("W1"));
+   m_DimNames.emplace_back(_T("W2"));
+   m_DimNames.emplace_back(_T("J"));
 
-   m_DefaultDims.push_back(::ConvertToSysUnits( 0.0,unitMeasure::Inch)); // C1
-   m_DefaultDims.push_back(::ConvertToSysUnits( 0.0,unitMeasure::Inch)); // C2
-   m_DefaultDims.push_back(::ConvertToSysUnits(27.0,unitMeasure::Inch)); // H1
-   m_DefaultDims.push_back(::ConvertToSysUnits( 3.0,unitMeasure::Inch)); // H2
-   m_DefaultDims.push_back(::ConvertToSysUnits( 6.0,unitMeasure::Inch)); // H3
-   m_DefaultDims.push_back(::ConvertToSysUnits( 0.0,unitMeasure::Inch)); // T1
-   m_DefaultDims.push_back(::ConvertToSysUnits( 6.5,unitMeasure::Inch)); // T2
-   m_DefaultDims.push_back(::ConvertToSysUnits( 1.5,unitMeasure::Inch)); // T3
-   m_DefaultDims.push_back(::ConvertToSysUnits( 3.0,unitMeasure::Inch)); // F1
-   m_DefaultDims.push_back(::ConvertToSysUnits(24.0,unitMeasure::Inch)); // W1
-   m_DefaultDims.push_back(::ConvertToSysUnits(48.0,unitMeasure::Inch)); // W2
-   m_DefaultDims.push_back(::ConvertToSysUnits( 1.0,unitMeasure::Inch)); // J
+   m_DefaultDims.emplace_back(::ConvertToSysUnits( 0.0,unitMeasure::Inch)); // C1
+   m_DefaultDims.emplace_back(::ConvertToSysUnits( 0.0,unitMeasure::Inch)); // C2
+   m_DefaultDims.emplace_back(::ConvertToSysUnits(27.0,unitMeasure::Inch)); // H1
+   m_DefaultDims.emplace_back(::ConvertToSysUnits( 3.0,unitMeasure::Inch)); // H2
+   m_DefaultDims.emplace_back(::ConvertToSysUnits( 6.0,unitMeasure::Inch)); // H3
+   m_DefaultDims.emplace_back(::ConvertToSysUnits( 0.0,unitMeasure::Inch)); // T1
+   m_DefaultDims.emplace_back(::ConvertToSysUnits( 6.5,unitMeasure::Inch)); // T2
+   m_DefaultDims.emplace_back(::ConvertToSysUnits( 1.5,unitMeasure::Inch)); // T3
+   m_DefaultDims.emplace_back(::ConvertToSysUnits( 3.0,unitMeasure::Inch)); // F1
+   m_DefaultDims.emplace_back(::ConvertToSysUnits(24.0,unitMeasure::Inch)); // W1
+   m_DefaultDims.emplace_back(::ConvertToSysUnits(48.0,unitMeasure::Inch)); // W2
+   m_DefaultDims.emplace_back(::ConvertToSysUnits( 1.0,unitMeasure::Inch)); // J
 
    // SI Units
-   m_DimUnits[0].push_back(&unitMeasure::Millimeter); // C1
-   m_DimUnits[0].push_back(&unitMeasure::Millimeter); // C2
-   m_DimUnits[0].push_back(&unitMeasure::Millimeter); // H1
-   m_DimUnits[0].push_back(&unitMeasure::Millimeter); // H2
-   m_DimUnits[0].push_back(&unitMeasure::Millimeter); // H3
-   m_DimUnits[0].push_back(&unitMeasure::Millimeter); // T1
-   m_DimUnits[0].push_back(&unitMeasure::Millimeter); // T2
-   m_DimUnits[0].push_back(&unitMeasure::Millimeter); // T3
-   m_DimUnits[0].push_back(&unitMeasure::Millimeter); // F1
-   m_DimUnits[0].push_back(&unitMeasure::Millimeter); // W1
-   m_DimUnits[0].push_back(&unitMeasure::Millimeter); // W2
-   m_DimUnits[0].push_back(&unitMeasure::Millimeter); // J
+   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // C1
+   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // C2
+   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // H1
+   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // H2
+   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // H3
+   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // T1
+   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // T2
+   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // T3
+   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // F1
+   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // W1
+   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // W2
+   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // J
 
    // US Units
-   m_DimUnits[1].push_back(&unitMeasure::Inch); // C1
-   m_DimUnits[1].push_back(&unitMeasure::Inch); // C2
-   m_DimUnits[1].push_back(&unitMeasure::Inch); // H1
-   m_DimUnits[1].push_back(&unitMeasure::Inch); // H2
-   m_DimUnits[1].push_back(&unitMeasure::Inch); // H3
-   m_DimUnits[1].push_back(&unitMeasure::Inch); // T1
-   m_DimUnits[1].push_back(&unitMeasure::Inch); // T2
-   m_DimUnits[1].push_back(&unitMeasure::Inch); // T3
-   m_DimUnits[1].push_back(&unitMeasure::Inch); // F1
-   m_DimUnits[1].push_back(&unitMeasure::Inch); // W1
-   m_DimUnits[1].push_back(&unitMeasure::Inch); // W2
-   m_DimUnits[1].push_back(&unitMeasure::Inch); // J
+   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // C1
+   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // C2
+   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // H1
+   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // H2
+   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // H3
+   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // T1
+   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // T2
+   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // T3
+   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // F1
+   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // W1
+   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // W2
+   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // J
    
 
    return S_OK;
 }
 
-void CTxDotDoubleTFactory::CreateGirderSection(IBroker* pBroker,StatusGroupIDType statusGroupID,const IBeamFactory::Dimensions& dimensions,Float64 overallHeight,Float64 bottomFlangeHeight,IGirderSection** ppSection)
+void CTxDotDoubleTFactory::CreateGirderSection(IBroker* pBroker,StatusGroupIDType statusGroupID,const IBeamFactory::Dimensions& dimensions,Float64 overallHeight,Float64 bottomFlangeHeight,IGirderSection** ppSection) const
 {
    CComPtr<IMultiWebSection2> gdrSection;
    gdrSection.CoCreateInstance(CLSID_MultiWebSection2);
@@ -149,7 +149,7 @@ void CTxDotDoubleTFactory::CreateGirderSection(IBroker* pBroker,StatusGroupIDTyp
    gdrSection.QueryInterface(ppSection);
 }
 
-void CTxDotDoubleTFactory::CreateGirderProfile(IBroker* pBroker,StatusGroupIDType statusGroupID,const CSegmentKey& segmentKey,const IBeamFactory::Dimensions& dimensions,IShape** ppShape)
+void CTxDotDoubleTFactory::CreateGirderProfile(IBroker* pBroker,StatusGroupIDType statusGroupID,const CSegmentKey& segmentKey,const IBeamFactory::Dimensions& dimensions,IShape** ppShape) const
 {
    GET_IFACE2(pBroker,IBridge,pBridge);
    Float64 length = pBridge->GetSegmentLength(segmentKey);
@@ -177,7 +177,7 @@ void CTxDotDoubleTFactory::CreateGirderProfile(IBroker* pBroker,StatusGroupIDTyp
    rect->QueryInterface(ppShape);
 }
 
-void CTxDotDoubleTFactory::CreateSegment(IBroker* pBroker,StatusGroupIDType statusGroupID,const CSegmentKey& segmentKey,ISuperstructureMember* ssmbr)
+void CTxDotDoubleTFactory::CreateSegment(IBroker* pBroker,StatusGroupIDType statusGroupID,const CSegmentKey& segmentKey,ISuperstructureMemberSegment** ppSegment) const
 {
    CComPtr<IPrismaticSuperstructureMemberSegment> segment;
    segment.CoCreateInstance(CLSID_PrismaticSuperstructureMemberSegment);
@@ -239,10 +239,16 @@ void CTxDotDoubleTFactory::CreateSegment(IBroker* pBroker,StatusGroupIDType stat
    ATLASSERT(shape);
    segment->AddShape(shape,material,nullptr);
 
-   ssmbr->AddSegment(segment);
+   CComQIPtr<ISuperstructureMemberSegment> ssmbrSegment(segment);
+   ssmbrSegment.CopyTo(ppSegment);
 }
 
-void CTxDotDoubleTFactory::LayoutSectionChangePointsOfInterest(IBroker* pBroker,const CSegmentKey& segmentKey,pgsPoiMgr* pPoiMgr)
+void CTxDotDoubleTFactory::ConfigureSegment(IBroker* pBroker, StatusItemIDType statusID, const CSegmentKey& segmentKey, ISuperstructureMemberSegment* pSSMbrSegment) const
+{
+   // do nothing... all the configuration was done in CreateSegment
+}
+
+void CTxDotDoubleTFactory::LayoutSectionChangePointsOfInterest(IBroker* pBroker,const CSegmentKey& segmentKey,pgsPoiMgr* pPoiMgr) const
 {
    // This is a prismatic beam so only add section change POI at the start and end of the beam
    GET_IFACE2(pBroker,IBridge,pBridge);
@@ -255,7 +261,7 @@ void CTxDotDoubleTFactory::LayoutSectionChangePointsOfInterest(IBroker* pBroker,
    pPoiMgr->AddPointOfInterest(poiEnd);
 }
 
-void CTxDotDoubleTFactory::CreateDistFactorEngineer(IBroker* pBroker,StatusGroupIDType statusGroupID,const pgsTypes::SupportedBeamSpacing* pSpacingType,const pgsTypes::SupportedDeckType* pDeckType, const pgsTypes::AdjacentTransverseConnectivity* pConnect,IDistFactorEngineer** ppEng)
+void CTxDotDoubleTFactory::CreateDistFactorEngineer(IBroker* pBroker,StatusGroupIDType statusGroupID,const pgsTypes::SupportedBeamSpacing* pSpacingType,const pgsTypes::SupportedDeckType* pDeckType, const pgsTypes::AdjacentTransverseConnectivity* pConnect,IDistFactorEngineer** ppEng) const
 {
    CComObject<CMultiWebDistFactorEngineer>* pEngineer;
    CComObject<CMultiWebDistFactorEngineer>::CreateInstance(&pEngineer);
@@ -267,7 +273,7 @@ void CTxDotDoubleTFactory::CreateDistFactorEngineer(IBroker* pBroker,StatusGroup
    (*ppEng)->AddRef();
 }
 
-void CTxDotDoubleTFactory::CreatePsLossEngineer(IBroker* pBroker,StatusGroupIDType statusGroupID,const CGirderKey& girderKey,IPsLossEngineer** ppEng)
+void CTxDotDoubleTFactory::CreatePsLossEngineer(IBroker* pBroker,StatusGroupIDType statusGroupID,const CGirderKey& girderKey,IPsLossEngineer** ppEng) const
 {
    GET_IFACE2(pBroker, ILossParameters, pLossParams);
    if ( pLossParams->GetLossMethod() == pgsTypes::TIME_STEP )
@@ -292,7 +298,7 @@ void CTxDotDoubleTFactory::CreatePsLossEngineer(IBroker* pBroker,StatusGroupIDTy
 void CTxDotDoubleTFactory::CreateStrandMover(const IBeamFactory::Dimensions& dimensions,  Float64 Hg,
                                   IBeamFactory::BeamFace endTopFace, Float64 endTopLimit, IBeamFactory::BeamFace endBottomFace, Float64 endBottomLimit, 
                                   IBeamFactory::BeamFace hpTopFace, Float64 hpTopLimit, IBeamFactory::BeamFace hpBottomFace, Float64 hpBottomLimit, 
-                                  Float64 endIncrement, Float64 hpIncrement, IStrandMover** strandMover)
+                                  Float64 endIncrement, Float64 hpIncrement, IStrandMover** strandMover) const
 {
    Float64 h1,h2,h3;
    Float64 c1,c2;
@@ -357,22 +363,22 @@ void CTxDotDoubleTFactory::CreateStrandMover(const IBeamFactory::Dimensions& dim
    ATLASSERT (SUCCEEDED(hr));
 }
 
-std::vector<std::_tstring> CTxDotDoubleTFactory::GetDimensionNames()
+const std::vector<std::_tstring>& CTxDotDoubleTFactory::GetDimensionNames() const
 {
    return m_DimNames;
 }
 
-std::vector<Float64> CTxDotDoubleTFactory::GetDefaultDimensions()
+const std::vector<Float64>& CTxDotDoubleTFactory::GetDefaultDimensions() const
 {
    return m_DefaultDims;
 }
 
-std::vector<const unitLength*> CTxDotDoubleTFactory::GetDimensionUnits(bool bSIUnits)
+const std::vector<const unitLength*>& CTxDotDoubleTFactory::GetDimensionUnits(bool bSIUnits) const
 {
    return m_DimUnits[ bSIUnits ? 0 : 1 ];
 }
 
-bool CTxDotDoubleTFactory::ValidateDimensions(const IBeamFactory::Dimensions& dimensions,bool bSIUnits,std::_tstring* strErrMsg)
+bool CTxDotDoubleTFactory::ValidateDimensions(const IBeamFactory::Dimensions& dimensions,bool bSIUnits,std::_tstring* strErrMsg) const
 {
    Float64 h1,h2,h3;
    Float64 c1,c2;
@@ -520,43 +526,47 @@ bool CTxDotDoubleTFactory::ValidateDimensions(const IBeamFactory::Dimensions& di
    return true;
 }
 
-void CTxDotDoubleTFactory::SaveSectionDimensions(sysIStructuredSave* pSave,const IBeamFactory::Dimensions& dimensions)
+void CTxDotDoubleTFactory::SaveSectionDimensions(sysIStructuredSave* pSave,const IBeamFactory::Dimensions& dimensions) const
 {
-   std::vector<std::_tstring>::iterator iter;
    pSave->BeginUnit(_T("TxDOTDoubleTeeDimensions"),1.0);
-   for ( iter = m_DimNames.begin(); iter != m_DimNames.end(); iter++ )
+   for(const auto& name : m_DimNames)
    {
-      std::_tstring name = *iter;
       Float64 value = GetDimension(dimensions,name);
       pSave->Property(name.c_str(),value);
    }
    pSave->EndUnit();
 }
 
-IBeamFactory::Dimensions CTxDotDoubleTFactory::LoadSectionDimensions(sysIStructuredLoad* pLoad)
+IBeamFactory::Dimensions CTxDotDoubleTFactory::LoadSectionDimensions(sysIStructuredLoad* pLoad) const
 {
    Float64 parent_version;
-   if ( pLoad->GetParentUnit() == _T("GirderLibraryEntry") )
+   if (pLoad->GetParentUnit() == _T("GirderLibraryEntry"))
+   {
       parent_version = pLoad->GetParentVersion();
+   }
    else
+   {
       parent_version = pLoad->GetVersion();
+   }
 
 
    IBeamFactory::Dimensions dimensions;
-   std::vector<std::_tstring>::iterator iter;
 
    Float64 dimVersion = 1.0;
    if ( 14 <= parent_version )
    {
-      if ( pLoad->BeginUnit(_T("TxDOTDoubleTeeDimensions")) )
+      if (pLoad->BeginUnit(_T("TxDOTDoubleTeeDimensions")))
+      {
          dimVersion = pLoad->GetVersion();
+      }
       else
-         THROW_LOAD(InvalidFileFormat,pLoad);
+      {
+         THROW_LOAD(InvalidFileFormat, pLoad);
+      }
    }
 
-   for ( iter = m_DimNames.begin(); iter != m_DimNames.end(); iter++ )
+   for(const auto& name : m_DimNames)
    {
-      std::_tstring name = *iter;
       Float64 value;
       if ( !pLoad->Property(name.c_str(),&value) )
       {
@@ -571,36 +581,43 @@ IBeamFactory::Dimensions CTxDotDoubleTFactory::LoadSectionDimensions(sysIStructu
             THROW_LOAD(InvalidFileFormat,pLoad);
          }
       }
-      dimensions.push_back( std::make_pair(name,value) );
+      dimensions.emplace_back(name,value);
    }
 
-   if ( 14 <= parent_version && !pLoad->EndUnit() )
-      THROW_LOAD(InvalidFileFormat,pLoad);
+   if (14 <= parent_version && !pLoad->EndUnit())
+   {
+      THROW_LOAD(InvalidFileFormat, pLoad);
+   }
 
    return dimensions;
 }
 
-bool CTxDotDoubleTFactory::IsPrismatic(const IBeamFactory::Dimensions& dimensions)
+bool CTxDotDoubleTFactory::IsPrismatic(const IBeamFactory::Dimensions& dimensions) const
 {
    return true;
 }
 
-bool CTxDotDoubleTFactory::IsSymmetric(const IBeamFactory::Dimensions& dimensions)
+bool CTxDotDoubleTFactory::IsPrismatic(const CSegmentKey& segmentKey) const
 {
    return true;
 }
 
-Float64 CTxDotDoubleTFactory::GetInternalSurfaceAreaOfVoids(IBroker* pBroker,const CSegmentKey& segmentKey)
+bool CTxDotDoubleTFactory::IsSymmetric(const CSegmentKey& segmentKey) const
+{
+   return true;
+}
+
+Float64 CTxDotDoubleTFactory::GetInternalSurfaceAreaOfVoids(IBroker* pBroker,const CSegmentKey& segmentKey) const
 {
    return 0;
 }
 
-std::_tstring CTxDotDoubleTFactory::GetImage()
+std::_tstring CTxDotDoubleTFactory::GetImage() const
 {
    return std::_tstring(_T("TxDotDoubleT.gif"));
 }
 
-std::_tstring CTxDotDoubleTFactory::GetSlabDimensionsImage(pgsTypes::SupportedDeckType deckType)
+std::_tstring CTxDotDoubleTFactory::GetSlabDimensionsImage(pgsTypes::SupportedDeckType deckType) const
 {
    std::_tstring strImage;
 
@@ -622,7 +639,7 @@ std::_tstring CTxDotDoubleTFactory::GetSlabDimensionsImage(pgsTypes::SupportedDe
    return strImage;
 }
 
-std::_tstring CTxDotDoubleTFactory::GetPositiveMomentCapacitySchematicImage(pgsTypes::SupportedDeckType deckType)
+std::_tstring CTxDotDoubleTFactory::GetPositiveMomentCapacitySchematicImage(pgsTypes::SupportedDeckType deckType) const
 {
    std::_tstring strImage;
 
@@ -644,7 +661,7 @@ std::_tstring CTxDotDoubleTFactory::GetPositiveMomentCapacitySchematicImage(pgsT
    return strImage;
 }
 
-std::_tstring CTxDotDoubleTFactory::GetNegativeMomentCapacitySchematicImage(pgsTypes::SupportedDeckType deckType)
+std::_tstring CTxDotDoubleTFactory::GetNegativeMomentCapacitySchematicImage(pgsTypes::SupportedDeckType deckType) const
 {
    std::_tstring strImage;
 
@@ -666,7 +683,7 @@ std::_tstring CTxDotDoubleTFactory::GetNegativeMomentCapacitySchematicImage(pgsT
    return strImage;
 }
 
-std::_tstring CTxDotDoubleTFactory::GetShearDimensionsSchematicImage(pgsTypes::SupportedDeckType deckType)
+std::_tstring CTxDotDoubleTFactory::GetShearDimensionsSchematicImage(pgsTypes::SupportedDeckType deckType) const
 {
    std::_tstring strImage;
 
@@ -688,7 +705,7 @@ std::_tstring CTxDotDoubleTFactory::GetShearDimensionsSchematicImage(pgsTypes::S
    return strImage;
 }
 
-std::_tstring CTxDotDoubleTFactory::GetInteriorGirderEffectiveFlangeWidthImage(IBroker* pBroker,pgsTypes::SupportedDeckType deckType)
+std::_tstring CTxDotDoubleTFactory::GetInteriorGirderEffectiveFlangeWidthImage(IBroker* pBroker,pgsTypes::SupportedDeckType deckType) const
 {
    GET_IFACE2(pBroker, ILibrary,       pLib);
    GET_IFACE2(pBroker, ISpecification, pSpec);
@@ -703,7 +720,7 @@ std::_tstring CTxDotDoubleTFactory::GetInteriorGirderEffectiveFlangeWidthImage(I
    }
 }
 
-std::_tstring CTxDotDoubleTFactory::GetExteriorGirderEffectiveFlangeWidthImage(IBroker* pBroker,pgsTypes::SupportedDeckType deckType)
+std::_tstring CTxDotDoubleTFactory::GetExteriorGirderEffectiveFlangeWidthImage(IBroker* pBroker,pgsTypes::SupportedDeckType deckType) const
 {
    GET_IFACE2(pBroker, ILibrary,       pLib);
    GET_IFACE2(pBroker, ISpecification, pSpec);
@@ -718,12 +735,12 @@ std::_tstring CTxDotDoubleTFactory::GetExteriorGirderEffectiveFlangeWidthImage(I
    }
 }
 
-CLSID CTxDotDoubleTFactory::GetCLSID()
+CLSID CTxDotDoubleTFactory::GetCLSID() const
 {
    return CLSID_TxDotDoubleTFactory;
 }
 
-std::_tstring CTxDotDoubleTFactory::GetName()
+std::_tstring CTxDotDoubleTFactory::GetName() const
 {
    USES_CONVERSION;
    LPOLESTR pszUserType;
@@ -731,12 +748,12 @@ std::_tstring CTxDotDoubleTFactory::GetName()
    return std::_tstring( OLE2T(pszUserType) );
 }
 
-CLSID CTxDotDoubleTFactory::GetFamilyCLSID()
+CLSID CTxDotDoubleTFactory::GetFamilyCLSID() const
 {
    return CLSID_DoubleTeeBeamFamily;
 }
 
-std::_tstring CTxDotDoubleTFactory::GetGirderFamilyName()
+std::_tstring CTxDotDoubleTFactory::GetGirderFamilyName() const
 {
    USES_CONVERSION;
    LPOLESTR pszUserType;
@@ -744,27 +761,27 @@ std::_tstring CTxDotDoubleTFactory::GetGirderFamilyName()
    return std::_tstring( OLE2T(pszUserType) );
 }
 
-std::_tstring CTxDotDoubleTFactory::GetPublisher()
+std::_tstring CTxDotDoubleTFactory::GetPublisher() const
 {
    return std::_tstring(_T("WSDOT"));
 }
 
-std::_tstring CTxDotDoubleTFactory::GetPublisherContactInformation()
+std::_tstring CTxDotDoubleTFactory::GetPublisherContactInformation() const
 {
    return std::_tstring(_T("http://www.wsdot.wa.gov/eesc/bridge"));
 }
 
-HINSTANCE CTxDotDoubleTFactory::GetResourceInstance()
+HINSTANCE CTxDotDoubleTFactory::GetResourceInstance() const
 {
    return _Module.GetResourceInstance();
 }
 
-LPCTSTR CTxDotDoubleTFactory::GetImageResourceName()
+LPCTSTR CTxDotDoubleTFactory::GetImageResourceName() const
 {
    return _T("TxDotDoubleT");
 }
 
-HICON  CTxDotDoubleTFactory::GetIcon() 
+HICON  CTxDotDoubleTFactory::GetIcon() const
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
@@ -776,7 +793,7 @@ void CTxDotDoubleTFactory::GetDimensions(const IBeamFactory::Dimensions& dimensi
                                       Float64& t1,Float64& t2,Float64& t3,
                                       Float64& f1,
                                       Float64& c1,Float64& c2,
-                                      Float64& w1,Float64& w2,Float64& j)
+                                      Float64& w1,Float64& w2,Float64& j) const
 {
    c1 = GetDimension(dimensions,_T("C1"));
    c2 = GetDimension(dimensions,_T("C2"));
@@ -792,21 +809,21 @@ void CTxDotDoubleTFactory::GetDimensions(const IBeamFactory::Dimensions& dimensi
    j = GetDimension(dimensions,_T("J"));
 }
 
-Float64 CTxDotDoubleTFactory::GetDimension(const IBeamFactory::Dimensions& dimensions,const std::_tstring& name)
+Float64 CTxDotDoubleTFactory::GetDimension(const IBeamFactory::Dimensions& dimensions,const std::_tstring& name) const
 {
-   Dimensions::const_iterator iter;
-   for ( iter = dimensions.begin(); iter != dimensions.end(); iter++ )
+   for (auto const& dim : dimensions)
    {
-      const Dimension& dim = *iter;
-      if ( name == dim.first )
+      if (name == dim.first)
+      {
          return dim.second;
+      }
    }
 
    ATLASSERT(false); // should never get here
    return -99999;
 }
 
-pgsTypes::SupportedDeckTypes CTxDotDoubleTFactory::GetSupportedDeckTypes(pgsTypes::SupportedBeamSpacing sbs)
+pgsTypes::SupportedDeckTypes CTxDotDoubleTFactory::GetSupportedDeckTypes(pgsTypes::SupportedBeamSpacing sbs) const
 {
    pgsTypes::SupportedDeckTypes sdt;
    switch(sbs)
@@ -823,7 +840,7 @@ pgsTypes::SupportedDeckTypes CTxDotDoubleTFactory::GetSupportedDeckTypes(pgsType
    return sdt;
 }
 
-pgsTypes::SupportedBeamSpacings CTxDotDoubleTFactory::GetSupportedBeamSpacings()
+pgsTypes::SupportedBeamSpacings CTxDotDoubleTFactory::GetSupportedBeamSpacings() const
 {
    pgsTypes::SupportedBeamSpacings sbs;
    sbs.push_back(pgsTypes::sbsUniformAdjacent);
@@ -832,7 +849,42 @@ pgsTypes::SupportedBeamSpacings CTxDotDoubleTFactory::GetSupportedBeamSpacings()
    return sbs;
 }
 
-pgsTypes::SupportedDiaphragmTypes CTxDotDoubleTFactory::GetSupportedDiaphragms()
+bool CTxDotDoubleTFactory::IsSupportedBeamSpacing(pgsTypes::SupportedBeamSpacing spacingType) const
+{
+   pgsTypes::SupportedBeamSpacings sbs = GetSupportedBeamSpacings();
+   auto found = std::find(sbs.cbegin(), sbs.cend(), spacingType);
+   return found == sbs.end() ? false : true;
+}
+
+bool CTxDotDoubleTFactory::ConvertBeamSpacing(const IBeamFactory::Dimensions& dimensions,pgsTypes::SupportedBeamSpacing spacingType, Float64 spacing, pgsTypes::SupportedBeamSpacing* pNewSpacingType, Float64* pNewSpacing, Float64* pNewTopWidth) const
+{
+   if (spacingType == pgsTypes::sbsUniform || spacingType == pgsTypes::sbsConstantAdjacent)
+   {
+      *pNewSpacingType = pgsTypes::sbsUniformAdjacent;
+      *pNewSpacing = spacing;
+      *pNewTopWidth = 0.0;
+      return true;
+   }
+   return false;
+}
+
+std::vector<pgsTypes::GirderOrientationType> CTxDotDoubleTFactory::GetSupportedGirderOrientation() const
+{
+   std::vector<pgsTypes::GirderOrientationType> types{ pgsTypes::Plumb, pgsTypes::StartNormal,pgsTypes::MidspanNormal,pgsTypes::EndNormal };
+   return types;
+}
+
+bool CTxDotDoubleTFactory::IsSupportedGirderOrientation(pgsTypes::GirderOrientationType orientation) const
+{
+   return true;
+}
+
+pgsTypes::GirderOrientationType CTxDotDoubleTFactory::ConvertGirderOrientation(pgsTypes::GirderOrientationType orientation) const
+{
+   return orientation;
+}
+
+pgsTypes::SupportedDiaphragmTypes CTxDotDoubleTFactory::GetSupportedDiaphragms() const
 {
    pgsTypes::SupportedDiaphragmTypes diaphragmTypes;
    diaphragmTypes.push_back(pgsTypes::dtPrecast);
@@ -840,7 +892,7 @@ pgsTypes::SupportedDiaphragmTypes CTxDotDoubleTFactory::GetSupportedDiaphragms()
    return diaphragmTypes;
 }
 
-pgsTypes::SupportedDiaphragmLocationTypes CTxDotDoubleTFactory::GetSupportedDiaphragmLocations(pgsTypes::DiaphragmType type)
+pgsTypes::SupportedDiaphragmLocationTypes CTxDotDoubleTFactory::GetSupportedDiaphragmLocations(pgsTypes::DiaphragmType type) const
 {
    pgsTypes::SupportedDiaphragmLocationTypes locations;
    switch(type)
@@ -860,29 +912,20 @@ pgsTypes::SupportedDiaphragmLocationTypes CTxDotDoubleTFactory::GetSupportedDiap
    return locations;
 }
 
-void CTxDotDoubleTFactory::GetAllowableSpacingRange(const IBeamFactory::Dimensions& dimensions,pgsTypes::SupportedDeckType sdt, 
-                                               pgsTypes::SupportedBeamSpacing sbs, Float64* minSpacing, Float64* maxSpacing)
+void CTxDotDoubleTFactory::GetAllowableSpacingRange(const IBeamFactory::Dimensions& dimensions,pgsTypes::SupportedDeckType sdt, pgsTypes::SupportedBeamSpacing sbs, Float64* minSpacing, Float64* maxSpacing) const
 {
+   // we only allow adjacent spacing for this girder type so allowable spacing range is the joint spacing
    *minSpacing = 0.0;
    *maxSpacing = 0.0;
 
-   Float64 T1 = GetDimension(dimensions,_T("T1"));
-   Float64 T2 = GetDimension(dimensions,_T("T2"));
-   Float64 T3 = GetDimension(dimensions,_T("T3"));
-   Float64 W1 = GetDimension(dimensions,_T("W1"));
-   Float64 W2 = GetDimension(dimensions,_T("W2"));
    Float64  J = GetDimension(dimensions,_T("J"));
-
-   Float64 gw_min = W2 + 2.0*(W1 + T1 + T2 + T3);
-
-   Float64 gw_max = gw_min + J;
 
    if ( sdt == pgsTypes::sdtCompositeOverlay ||  sdt == pgsTypes::sdtNone )
    {
       if(sbs == pgsTypes::sbsUniformAdjacent || sbs == pgsTypes::sbsGeneralAdjacent )
       {
-         *minSpacing = gw_min;
-         *maxSpacing = gw_max;
+         *minSpacing = 0.0;
+         *maxSpacing = J;
       }
       else
       {
@@ -895,12 +938,12 @@ void CTxDotDoubleTFactory::GetAllowableSpacingRange(const IBeamFactory::Dimensio
    }
 }
 
-WebIndexType CTxDotDoubleTFactory::GetWebCount(const IBeamFactory::Dimensions& dimensions)
+WebIndexType CTxDotDoubleTFactory::GetWebCount(const IBeamFactory::Dimensions& dimensions) const
 {
    return 2;
 }
 
-Float64 CTxDotDoubleTFactory::GetBeamHeight(const IBeamFactory::Dimensions& dimensions,pgsTypes::MemberEndType endType)
+Float64 CTxDotDoubleTFactory::GetBeamHeight(const IBeamFactory::Dimensions& dimensions,pgsTypes::MemberEndType endType) const
 {
    Float64 H1 = GetDimension(dimensions,_T("H1"));
    Float64 H2 = GetDimension(dimensions,_T("H2"));
@@ -909,7 +952,7 @@ Float64 CTxDotDoubleTFactory::GetBeamHeight(const IBeamFactory::Dimensions& dime
    return H1 + H2 + H3;
 }
 
-Float64 CTxDotDoubleTFactory::GetBeamWidth(const IBeamFactory::Dimensions& dimensions,pgsTypes::MemberEndType endType)
+Float64 CTxDotDoubleTFactory::GetBeamWidth(const IBeamFactory::Dimensions& dimensions,pgsTypes::MemberEndType endType) const
 {
    Float64 T1 = GetDimension(dimensions,_T("T1"));
    Float64 T2 = GetDimension(dimensions,_T("T2"));
@@ -921,18 +964,38 @@ Float64 CTxDotDoubleTFactory::GetBeamWidth(const IBeamFactory::Dimensions& dimen
    return 2*(T1+T2+T3+W1) + W2;
 }
 
-bool CTxDotDoubleTFactory::IsShearKey(const IBeamFactory::Dimensions& dimensions, pgsTypes::SupportedBeamSpacing spacingType)
+bool CTxDotDoubleTFactory::IsShearKey(const IBeamFactory::Dimensions& dimensions, pgsTypes::SupportedBeamSpacing spacingType) const
 {
    return false;
 }
 
-void CTxDotDoubleTFactory::GetShearKeyAreas(const IBeamFactory::Dimensions& dimensions, pgsTypes::SupportedBeamSpacing spacingType,Float64* uniformArea, Float64* areaPerJoint)
+void CTxDotDoubleTFactory::GetShearKeyAreas(const IBeamFactory::Dimensions& dimensions, pgsTypes::SupportedBeamSpacing spacingType,Float64* uniformArea, Float64* areaPerJoint) const
 {
    *uniformArea = 0.0;
    *areaPerJoint = 0.0;
 }
 
-GirderIndexType CTxDotDoubleTFactory::GetMinimumBeamCount()
+bool CTxDotDoubleTFactory::HasLongitudinalJoints() const
+{
+   return false;
+}
+
+bool CTxDotDoubleTFactory::IsLongitudinalJointStructural(pgsTypes::SupportedDeckType deckType,pgsTypes::AdjacentTransverseConnectivity connectivity) const
+{
+   return false;
+}
+
+bool CTxDotDoubleTFactory::HasTopFlangeThickening() const
+{
+   return false;
+}
+
+bool CTxDotDoubleTFactory::CanPrecamber() const
+{
+   return false;
+}
+
+GirderIndexType CTxDotDoubleTFactory::GetMinimumBeamCount() const
 {
    return 1;
 }

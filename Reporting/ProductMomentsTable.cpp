@@ -204,20 +204,29 @@ void LiveLoadTableFooter(IBroker* pBroker,rptParagraph* pPara,const CGirderKey& 
 }
 
 ColumnIndexType GetProductLoadTableColumnCount(IBroker* pBroker,const CGirderKey& girderKey,pgsTypes::AnalysisType analysisType,bool bDesign,bool bRating,bool bSlabShrinkage,
-                                               bool* pbSegments,bool *pbConstruction,bool* pbDeckPanels,bool* pbSidewalk,bool* pbShearKey,bool* pbPedLoading,bool* pbPermit,bool* pbContinuousBeforeDeckCasting,GroupIndexType* pStartGroup,GroupIndexType* pEndGroup)
+                                               bool* pbSegments,bool *pbConstruction,bool* pbDeck,bool* pbDeckPanels,bool* pbSidewalk,bool* pbShearKey,bool* pbLongitudinalJoint,bool* pbPedLoading,bool* pbPermit,bool* pbContinuousBeforeDeckCasting,GroupIndexType* pStartGroup,GroupIndexType* pEndGroup)
 {
-   ColumnIndexType nCols = 6; // location, girder, diaphragm, slab, slab pad, and traffic barrier
-   if ( bSlabShrinkage )
-   {
-      nCols++;
-   }
+   ColumnIndexType nCols = 4; // location, girder, diaphragm, and traffic barrier
 
    GET_IFACE2(pBroker,IProductLoads,pLoads);
    GET_IFACE2(pBroker,IBridge,pBridge);
    GET_IFACE2(pBroker,ILiveLoads,pLiveLoads);
    GET_IFACE2(pBroker,IUserDefinedLoadData,pUserLoads);
 
-   *pbDeckPanels = (pBridge->GetDeckType() == pgsTypes::sdtCompositeSIP ? true : false);
+   pgsTypes::SupportedDeckType deckType = pBridge->GetDeckType();
+
+   *pbDeck = false;
+   if (deckType != pgsTypes::sdtNone)
+   {
+      *pbDeck = true;
+      nCols += 2; // slab + slab pad
+      if (bSlabShrinkage)
+      {
+         nCols++;
+      }
+   }
+
+   *pbDeckPanels = (deckType == pgsTypes::sdtCompositeSIP ? true : false);
    *pbPermit     = pLiveLoads->IsLiveLoadDefined(pgsTypes::lltPermit);
 
    *pStartGroup = (girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex);
@@ -228,6 +237,7 @@ ColumnIndexType GetProductLoadTableColumnCount(IBroker* pBroker,const CGirderKey
    *pbPedLoading = pLoads->HasPedestrianLoad(key);
    *pbSidewalk   = pLoads->HasSidewalkLoad(key);
    *pbShearKey   = pLoads->HasShearKeyLoad(key);
+   *pbLongitudinalJoint = pLoads->HasLongitudinalJointLoad();
    *pbConstruction = !IsZero(pUserLoads->GetConstructionLoad());
 
    if ( *pbSegments )
@@ -261,12 +271,18 @@ ColumnIndexType GetProductLoadTableColumnCount(IBroker* pBroker,const CGirderKey
    }
 
    IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval();
-
-   *pbContinuousBeforeDeckCasting = (continuityIntervalIdx <= castDeckIntervalIdx) ? true : false;
+   if (*pbDeck)
+   {
+      *pbContinuousBeforeDeckCasting = (continuityIntervalIdx <= castDeckIntervalIdx) ? true : false;
+   }
+   else
+   {
+      *pbContinuousBeforeDeckCasting = false;
+   }
 
    if ( *pbConstruction )
    {
-      if ( analysisType == pgsTypes::Envelope && continuityIntervalIdx == castDeckIntervalIdx)
+      if ( analysisType == pgsTypes::Envelope && *pbContinuousBeforeDeckCasting == true)
       {
          nCols += 2;
       }
@@ -278,7 +294,7 @@ ColumnIndexType GetProductLoadTableColumnCount(IBroker* pBroker,const CGirderKey
 
    if ( *pbDeckPanels )
    {
-      if ( analysisType == pgsTypes::Envelope && continuityIntervalIdx == castDeckIntervalIdx)
+      if ( analysisType == pgsTypes::Envelope && *pbContinuousBeforeDeckCasting == true)
       {
          nCols += 2;
       }
@@ -288,7 +304,7 @@ ColumnIndexType GetProductLoadTableColumnCount(IBroker* pBroker,const CGirderKey
       }
    }
 
-   if ( analysisType == pgsTypes::Envelope && continuityIntervalIdx == castDeckIntervalIdx )
+   if ( *pbDeck && analysisType == pgsTypes::Envelope && *pbContinuousBeforeDeckCasting == true)
    {
       nCols += 2; // add one more each for min/max slab and min/max slab pad
    }
@@ -332,6 +348,18 @@ ColumnIndexType GetProductLoadTableColumnCount(IBroker* pBroker,const CGirderKey
    if ( *pbShearKey )
    {
       if (analysisType == pgsTypes::Envelope )
+      {
+         nCols += 2;
+      }
+      else
+      {
+         nCols++;
+      }
+   }
+
+   if (*pbLongitudinalJoint)
+   {
+      if (analysisType == pgsTypes::Envelope && *pbContinuousBeforeDeckCasting == true)
       {
          nCols += 2;
       }
@@ -425,16 +453,17 @@ rptRcTable* CProductMomentsTable::Build(IBroker* pBroker,const CGirderKey& girde
    bool bHasOverlay = pBridge->HasOverlay();
    bool bFutureOverlay = pBridge->IsFutureOverlay();
 
-   bool bSegments, bConstruction, bDeckPanels, bPedLoading, bSidewalk, bShearKey, bPermit;
+   bool bSegments, bConstruction, bDeck, bDeckPanels, bPedLoading, bSidewalk, bShearKey, bLongitudinalJoint, bPermit;
    bool bContinuousBeforeDeckCasting;
    GroupIndexType startGroup, endGroup;
 
    GET_IFACE2(pBroker, IRatingSpecification, pRatingSpec);
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
+   IntervalIndexType overlayIntervalIdx = pIntervals->GetOverlayInterval();
    IntervalIndexType lastIntervalIdx = pIntervals->GetIntervalCount()-1;
 
-   ColumnIndexType nCols = GetProductLoadTableColumnCount(pBroker,girderKey,analysisType,bDesign,bRating,false,&bSegments,&bConstruction,&bDeckPanels,&bSidewalk,&bShearKey,&bPedLoading,&bPermit,&bContinuousBeforeDeckCasting,&startGroup,&endGroup);
+   ColumnIndexType nCols = GetProductLoadTableColumnCount(pBroker,girderKey,analysisType,bDesign,bRating,false,&bSegments,&bConstruction,&bDeck,&bDeckPanels,&bSidewalk,&bShearKey,&bLongitudinalJoint,&bPedLoading,&bPermit,&bContinuousBeforeDeckCasting,&startGroup,&endGroup);
 
    rptRcTable* p_table = rptStyleManager::CreateDefaultTable(nCols,_T("Moments"));
 
@@ -447,7 +476,7 @@ rptRcTable* CProductMomentsTable::Build(IBroker* pBroker,const CGirderKey& girde
    location.IncludeSpanAndGirder(girderKey.groupIndex == ALL_GROUPS);
    PoiAttributeType poiRefAttribute(girderKey.groupIndex == ALL_GROUPS ? POI_SPAN : POI_ERECTED_SEGMENT);
 
-   RowIndexType row = ConfigureProductLoadTableHeading<rptMomentUnitTag,unitmgtMomentData>(pBroker,p_table,false,false,bSegments,bConstruction,bDeckPanels,bSidewalk,bShearKey,bHasOverlay,bFutureOverlay,bDesign,bPedLoading,
+   RowIndexType row = ConfigureProductLoadTableHeading<rptMomentUnitTag,unitmgtMomentData>(pBroker,p_table,false,false,bSegments,bConstruction,bDeck,bDeckPanels,bSidewalk,bShearKey,bLongitudinalJoint,bHasOverlay,bFutureOverlay,bDesign,bPedLoading,
                                                                                            bPermit,bRating,analysisType,bContinuousBeforeDeckCasting,
                                                                                            pRatingSpec,pDisplayUnits,pDisplayUnits->GetMomentUnit());
    // Get the results
@@ -466,11 +495,10 @@ rptRcTable* CProductMomentsTable::Build(IBroker* pBroker,const CGirderKey& girde
       CGirderKey thisGirderKey(grpIdx,gdrIdx);
 
       IntervalIndexType erectSegmentIntervalIdx  = pIntervals->GetLastSegmentErectionInterval(thisGirderKey);
-      IntervalIndexType overlayIntervalIdx       = pIntervals->GetOverlayInterval();
-      IntervalIndexType loadRatingIntervalIdx    = pIntervals->GetLoadRatingInterval();
 
       CSegmentKey allSegmentsKey(grpIdx,gdrIdx,ALL_SEGMENTS);
-      std::vector<pgsPointOfInterest> vPoi( pIPoi->GetPointsOfInterest(allSegmentsKey,poiRefAttribute) );
+      PoiList vPoi;
+      pIPoi->GetPointsOfInterest(allSegmentsKey, poiRefAttribute, &vPoi);
 
       std::vector<Float64> segment;
       std::vector<Float64> girder;
@@ -487,11 +515,14 @@ rptRcTable* CProductMomentsTable::Build(IBroker* pBroker,const CGirderKey& girde
 
       std::vector<Float64> minSlab, maxSlab;
       std::vector<Float64> minSlabPad, maxSlabPad;
-      maxSlab = pForces2->GetMoment( lastIntervalIdx, pgsTypes::pftSlab, vPoi, maxBAT, rtCumulative );
-      minSlab = pForces2->GetMoment( lastIntervalIdx, pgsTypes::pftSlab, vPoi, minBAT, rtCumulative );
+      if (bDeck)
+      {
+         maxSlab = pForces2->GetMoment(lastIntervalIdx, pgsTypes::pftSlab, vPoi, maxBAT, rtCumulative);
+         minSlab = pForces2->GetMoment(lastIntervalIdx, pgsTypes::pftSlab, vPoi, minBAT, rtCumulative);
 
-      maxSlabPad = pForces2->GetMoment( lastIntervalIdx, pgsTypes::pftSlabPad, vPoi, maxBAT, rtCumulative );
-      minSlabPad = pForces2->GetMoment( lastIntervalIdx, pgsTypes::pftSlabPad, vPoi, minBAT, rtCumulative );
+         maxSlabPad = pForces2->GetMoment(lastIntervalIdx, pgsTypes::pftSlabPad, vPoi, maxBAT, rtCumulative);
+         minSlabPad = pForces2->GetMoment(lastIntervalIdx, pgsTypes::pftSlabPad, vPoi, minBAT, rtCumulative);
+      }
 
       std::vector<Float64> minDeckPanel, maxDeckPanel;
       if ( bDeckPanels )
@@ -512,6 +543,7 @@ rptRcTable* CProductMomentsTable::Build(IBroker* pBroker,const CGirderKey& girde
       std::vector<Float64> minTrafficBarrier, maxTrafficBarrier;
       std::vector<Float64> minSidewalk, maxSidewalk;
       std::vector<Float64> minShearKey, maxShearKey;
+      std::vector<Float64> minLongitudinalJoint, maxLongitudinalJoint;
       std::vector<Float64> minPedestrian, maxPedestrian;
       std::vector<Float64> minDesignLL, maxDesignLL;
       std::vector<Float64> minFatigueLL, maxFatigueLL;
@@ -546,10 +578,16 @@ rptRcTable* CProductMomentsTable::Build(IBroker* pBroker,const CGirderKey& girde
          minSidewalk = pForces2->GetMoment( lastIntervalIdx, pgsTypes::pftSidewalk, vPoi, minBAT, rtCumulative );
       }
 
-      if ( bShearKey )
+      if (bShearKey)
       {
-         maxShearKey = pForces2->GetMoment( lastIntervalIdx, pgsTypes::pftShearKey, vPoi, maxBAT, rtCumulative );
-         minShearKey = pForces2->GetMoment( lastIntervalIdx, pgsTypes::pftShearKey, vPoi, minBAT, rtCumulative );
+         maxShearKey = pForces2->GetMoment(lastIntervalIdx, pgsTypes::pftShearKey, vPoi, maxBAT, rtCumulative);
+         minShearKey = pForces2->GetMoment(lastIntervalIdx, pgsTypes::pftShearKey, vPoi, minBAT, rtCumulative);
+      }
+
+      if (bLongitudinalJoint)
+      {
+         maxLongitudinalJoint = pForces2->GetMoment(lastIntervalIdx, pgsTypes::pftLongitudinalJoint, vPoi, maxBAT, rtCumulative);
+         minLongitudinalJoint = pForces2->GetMoment(lastIntervalIdx, pgsTypes::pftLongitudinalJoint, vPoi, minBAT, rtCumulative);
       }
 
       maxTrafficBarrier = pForces2->GetMoment( lastIntervalIdx, pgsTypes::pftTrafficBarrier, vPoi, maxBAT, rtCumulative );
@@ -625,63 +663,75 @@ rptRcTable* CProductMomentsTable::Build(IBroker* pBroker,const CGirderKey& girde
 
 
       // write out the results
-      std::vector<pgsPointOfInterest>::const_iterator i(vPoi.begin());
-      std::vector<pgsPointOfInterest>::const_iterator end(vPoi.end());
-      long index = 0;
-      for ( ; i != end; i++, index++ )
+      IndexType index = 0;
+      for (const pgsPointOfInterest& poi : vPoi)
       {
-         const pgsPointOfInterest& poi = *i;
-
          ColumnIndexType col = 0;
 
-         (*p_table)(row,col++) << location.SetValue( poiRefAttribute, poi );
-         if ( bSegments )
+         (*p_table)(row, col++) << location.SetValue(poiRefAttribute, poi);
+         if (bSegments)
          {
-            (*p_table)(row,col++) << moment.SetValue( segment[index] );
+            (*p_table)(row, col++) << moment.SetValue(segment[index]);
          }
 
-         (*p_table)(row,col++) << moment.SetValue( girder[index] );
+         (*p_table)(row, col++) << moment.SetValue(girder[index]);
 
-         (*p_table)(row,col++) << moment.SetValue( diaphragm[index] );
+         (*p_table)(row, col++) << moment.SetValue(diaphragm[index]);
 
-         if ( bShearKey )
+         if (bShearKey)
          {
-            if ( analysisType == pgsTypes::Envelope )
+            if (analysisType == pgsTypes::Envelope)
             {
-               (*p_table)(row,col++) << moment.SetValue( maxShearKey[index] );
-               (*p_table)(row,col++) << moment.SetValue( minShearKey[index] );
+               (*p_table)(row, col++) << moment.SetValue(maxShearKey[index]);
+               (*p_table)(row, col++) << moment.SetValue(minShearKey[index]);
             }
             else
             {
-               (*p_table)(row,col++) << moment.SetValue( maxShearKey[index] );
+               (*p_table)(row, col++) << moment.SetValue(maxShearKey[index]);
             }
          }
 
-         if ( bConstruction )
+         if (bLongitudinalJoint)
          {
-            if ( analysisType == pgsTypes::Envelope && bContinuousBeforeDeckCasting )
+            if (analysisType == pgsTypes::Envelope && bContinuousBeforeDeckCasting)
             {
-               (*p_table)(row,col++) << moment.SetValue( maxConstruction[index] );
-               (*p_table)(row,col++) << moment.SetValue( minConstruction[index] );
+               (*p_table)(row, col++) << moment.SetValue(maxLongitudinalJoint[index]);
+               (*p_table)(row, col++) << moment.SetValue(minLongitudinalJoint[index]);
             }
             else
             {
-               (*p_table)(row,col++) << moment.SetValue( maxConstruction[index] );
+               (*p_table)(row, col++) << moment.SetValue(maxLongitudinalJoint[index]);
             }
          }
 
-         if ( analysisType == pgsTypes::Envelope && bContinuousBeforeDeckCasting )
+         if (bConstruction)
          {
-            (*p_table)(row,col++) << moment.SetValue( maxSlab[index] );
-            (*p_table)(row,col++) << moment.SetValue( minSlab[index] );
-
-            (*p_table)(row,col++) << moment.SetValue( maxSlabPad[index] );
-            (*p_table)(row,col++) << moment.SetValue( minSlabPad[index] );
+            if (analysisType == pgsTypes::Envelope && bContinuousBeforeDeckCasting)
+            {
+               (*p_table)(row, col++) << moment.SetValue(maxConstruction[index]);
+               (*p_table)(row, col++) << moment.SetValue(minConstruction[index]);
+            }
+            else
+            {
+               (*p_table)(row, col++) << moment.SetValue(maxConstruction[index]);
+            }
          }
-         else
+
+         if (bDeck)
          {
-            (*p_table)(row,col++) << moment.SetValue( maxSlab[index] );
-            (*p_table)(row,col++) << moment.SetValue( maxSlabPad[index] );
+            if (analysisType == pgsTypes::Envelope && bContinuousBeforeDeckCasting)
+            {
+               (*p_table)(row, col++) << moment.SetValue(maxSlab[index]);
+               (*p_table)(row, col++) << moment.SetValue(minSlab[index]);
+
+               (*p_table)(row, col++) << moment.SetValue(maxSlabPad[index]);
+               (*p_table)(row, col++) << moment.SetValue(minSlabPad[index]);
+            }
+            else
+            {
+               (*p_table)(row, col++) << moment.SetValue(maxSlab[index]);
+               (*p_table)(row, col++) << moment.SetValue(maxSlabPad[index]);
+            }
          }
 
          if ( bDeckPanels )
@@ -921,6 +971,7 @@ rptRcTable* CProductMomentsTable::Build(IBroker* pBroker,const CGirderKey& girde
          }
 
          row++;
+         index++;
       } // next poi
    } // next group
 

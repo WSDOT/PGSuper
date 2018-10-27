@@ -85,13 +85,15 @@ void CBridgeDescDlg::Init()
    m_DeckDetailsPage.m_psp.dwFlags    |= PSP_HASHELP;
    m_DeckRebarPage.m_psp.dwFlags      |= PSP_HASHELP;
    m_EnvironmentalPage.m_psp.dwFlags  |= PSP_HASHELP;
+   m_BridgeDescrBearings.m_psp.dwFlags      |= PSP_HASHELP;
 
-   AddPage( &m_GeneralPage );
-   AddPage( &m_FramingPage );
-   AddPage( &m_RailingSystemPage );
-   AddPage( &m_DeckDetailsPage );
-   AddPage( &m_DeckRebarPage );
-   AddPage( &m_EnvironmentalPage );
+   AddPage(&m_GeneralPage );
+   AddPage(&m_FramingPage );
+   AddPage(&m_RailingSystemPage );
+   AddPage(&m_DeckDetailsPage );
+   AddPage(&m_DeckRebarPage );
+   AddPage(&m_BridgeDescrBearings );
+   AddPage(&m_EnvironmentalPage );
 
    CreateExtensionPages();
 }

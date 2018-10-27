@@ -58,7 +58,7 @@ LPCTSTR CPierReactionChapterBuilder::GetName() const
    return TEXT("Pier Reactions");
 }
 
-rptChapter* CPierReactionChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
+rptChapter* CPierReactionChapterBuilder::Build(CReportSpecification* pRptSpec, Uint16 level) const
 {
    CGirderLineReportSpecification* pGdrLineRptSpec = dynamic_cast<CGirderLineReportSpecification*>(pRptSpec);
 
@@ -68,15 +68,15 @@ rptChapter* CPierReactionChapterBuilder::Build(CReportSpecification* pRptSpec,Ui
    pGdrLineRptSpec->GetBroker(&pBroker);
    girderKey = pGdrLineRptSpec->GetGirderKey();
 
-   rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
+   rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec, level);
 
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
-   GET_IFACE2(pBroker,IIntervals,pIntervals);
-   GET_IFACE2(pBroker,IBridge,pBridge);
-   GET_IFACE2(pBroker,IReactions,pReactions);
-   GET_IFACE2(pBroker,IProductLoads,pProductLoads);
+   GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
+   GET_IFACE2(pBroker, IIntervals, pIntervals);
+   GET_IFACE2(pBroker, IBridge, pBridge);
+   GET_IFACE2(pBroker, IReactions, pReactions);
+   GET_IFACE2(pBroker, IProductLoads, pProductLoads);
 
-   GET_IFACE2(pBroker,ISpecification,pSpec);
+   GET_IFACE2(pBroker, ISpecification, pSpec);
    pgsTypes::AnalysisType analysisType = pSpec->GetAnalysisType();
 
    GET_IFACE2(pBroker, IProductForces, pProdForces);
@@ -88,66 +88,66 @@ rptChapter* CPierReactionChapterBuilder::Build(CReportSpecification* pRptSpec,Ui
 
    IntervalIndexType intervalIdx = pIntervals->GetIntervalCount() - 1;
 
-   bool bOverlay    = pBridge->HasOverlay();
+   bool bOverlay = pBridge->HasOverlay();
    bool bFutureOverlay = pBridge->IsFutureOverlay();
 
    // Setup some unit-value prototypes
-   INIT_UV_PROTOTYPE( rptForceUnitValue,  force,  pDisplayUnits->GetGeneralForceUnit(), false);
-   INIT_UV_PROTOTYPE( rptMomentUnitValue, moment, pDisplayUnits->GetMomentUnit(), false);
+   INIT_UV_PROTOTYPE(rptForceUnitValue, force, pDisplayUnits->GetGeneralForceUnit(), false);
+   INIT_UV_PROTOTYPE(rptMomentUnitValue, moment, pDisplayUnits->GetMomentUnit(), false);
 
    rptParagraph* pPara = new rptParagraph;
    *pChapter << pPara;
 
    bool bDesign = true;
    bool bRating = false;
-   bool bSegments, bConstruction, bDeckPanels, bSidewalk, bShearKey, bPedLoading, bPermit, bContinuousBeforeDeckCasting;
+   bool bSegments, bConstruction, bDeck, bDeckPanels, bSidewalk, bShearKey, bLongitudinalJoint, bPedLoading, bPermit, bContinuousBeforeDeckCasting;
    GroupIndexType startGroup, endGroup;
-   ColumnIndexType nCols = GetProductLoadTableColumnCount(pBroker,girderKey,analysisType,bDesign,bRating,false,&bSegments,&bConstruction,&bDeckPanels,&bSidewalk,&bShearKey,&bPedLoading,&bPermit,&bContinuousBeforeDeckCasting,&startGroup,&endGroup);
+   ColumnIndexType nCols = GetProductLoadTableColumnCount(pBroker, girderKey, analysisType, bDesign, bRating, false, &bSegments, &bConstruction, &bDeck, &bDeckPanels, &bSidewalk, &bShearKey, &bLongitudinalJoint, &bPedLoading, &bPermit, &bContinuousBeforeDeckCasting, &startGroup, &endGroup);
    nCols++; // add one for Type column
    nCols++; // add one for Reaction column
    nCols += 4; // min/max for design live load reactions
-   if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
+   if (lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion())
    {
       nCols += 4; // min/max for fatigue live load reactions
    }
 
-   if ( bPedLoading )
+   if (bPedLoading)
    {
       nCols += 4; // min/max for pedestrian live load reactions
    }
 
-   rptRcTable* p_table = rptStyleManager::CreateDefaultTable(nCols,_T(""));
+   rptRcTable* p_table = rptStyleManager::CreateDefaultTable(nCols, _T(""));
 
-   p_table->SetColumnStyle(0,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
-   p_table->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+   p_table->SetColumnStyle(0, rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+   p_table->SetStripeRowColumnStyle(0, rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
 
-   p_table->SetColumnStyle(1,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
-   p_table->SetStripeRowColumnStyle(1,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+   p_table->SetColumnStyle(1, rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+   p_table->SetStripeRowColumnStyle(1, rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
 
-   p_table->SetColumnStyle(2,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
-   p_table->SetStripeRowColumnStyle(2,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+   p_table->SetColumnStyle(2, rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+   p_table->SetStripeRowColumnStyle(2, rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
 
    ColumnIndexType col = 0;
    p_table->SetNumberOfHeaderRows(2);
-   p_table->SetRowSpan(0,col,2);
-   p_table->SetRowSpan(1,col,SKIP_CELL);
-   (*p_table)(0,col++) << _T("Pier");
+   p_table->SetRowSpan(0, col, 2);
+   p_table->SetRowSpan(1, col, SKIP_CELL);
+   (*p_table)(0, col++) << _T("Pier");
 
-   p_table->SetRowSpan(0,col,2);
-   p_table->SetRowSpan(1,col,SKIP_CELL);
-   (*p_table)(0,col++) << _T("Type");
+   p_table->SetRowSpan(0, col, 2);
+   p_table->SetRowSpan(1, col, SKIP_CELL);
+   (*p_table)(0, col++) << _T("Type");
 
-   p_table->SetRowSpan(0,col,2);
-   p_table->SetRowSpan(1,col,SKIP_CELL);
-   (*p_table)(0,col++) << _T("Reaction");
+   p_table->SetRowSpan(0, col, 2);
+   p_table->SetRowSpan(1, col, SKIP_CELL);
+   (*p_table)(0, col++) << _T("Reaction");
 
-   p_table->SetRowSpan(0,col,2);
-   p_table->SetRowSpan(1,col,SKIP_CELL);
-   (*p_table)(0,col++) << pProductLoads->GetProductLoadName(pgsTypes::pftGirder);
+   p_table->SetRowSpan(0, col, 2);
+   p_table->SetRowSpan(1, col, SKIP_CELL);
+   (*p_table)(0, col++) << pProductLoads->GetProductLoadName(pgsTypes::pftGirder);
 
-   p_table->SetRowSpan(0,col,2);
-   p_table->SetRowSpan(1,col,SKIP_CELL);
-   (*p_table)(0,col++) << pProductLoads->GetProductLoadName(pgsTypes::pftDiaphragm);
+   p_table->SetRowSpan(0, col, 2);
+   p_table->SetRowSpan(1, col, SKIP_CELL);
+   (*p_table)(0, col++) << pProductLoads->GetProductLoadName(pgsTypes::pftDiaphragm);
 
    if (bShearKey)
    {
@@ -164,6 +164,24 @@ rptChapter* CPierReactionChapterBuilder::Build(CReportSpecification* pRptSpec,Ui
          p_table->SetRowSpan(0, col, 2);
          p_table->SetRowSpan(1, col, SKIP_CELL);
          (*p_table)(0, col++) << pProductLoads->GetProductLoadName(pgsTypes::pftShearKey);
+      }
+   }
+
+   if (bLongitudinalJoint)
+   {
+      if (analysisType == pgsTypes::Envelope && bContinuousBeforeDeckCasting)
+      {
+         p_table->SetColumnSpan(0, col, 2);
+         (*p_table)(0, col) << pProductLoads->GetProductLoadName(pgsTypes::pftLongitudinalJoint);
+         p_table->SetColumnSpan(0, col + 1, SKIP_CELL);
+         (*p_table)(1, col++) << _T("Max");
+         (*p_table)(1, col++) << _T("Min");
+      }
+      else
+      {
+         p_table->SetRowSpan(0, col, 2);
+         p_table->SetRowSpan(1, col, SKIP_CELL);
+         (*p_table)(0, col++) << pProductLoads->GetProductLoadName(pgsTypes::pftLongitudinalJoint);
       }
    }
 
@@ -185,29 +203,32 @@ rptChapter* CPierReactionChapterBuilder::Build(CReportSpecification* pRptSpec,Ui
       }
    }
 
-   if (analysisType == pgsTypes::Envelope && bContinuousBeforeDeckCasting)
+   if (bDeck)
    {
-      p_table->SetColumnSpan(0, col, 2);
-      (*p_table)(0, col) << pProductLoads->GetProductLoadName(pgsTypes::pftSlab);
-      p_table->SetColumnSpan(0, col + 1, SKIP_CELL);
-      (*p_table)(1, col++) << _T("Max");
-      (*p_table)(1, col++) << _T("Min");
+      if (analysisType == pgsTypes::Envelope && bContinuousBeforeDeckCasting)
+      {
+         p_table->SetColumnSpan(0, col, 2);
+         (*p_table)(0, col) << pProductLoads->GetProductLoadName(pgsTypes::pftSlab);
+         p_table->SetColumnSpan(0, col + 1, SKIP_CELL);
+         (*p_table)(1, col++) << _T("Max");
+         (*p_table)(1, col++) << _T("Min");
 
-      p_table->SetColumnSpan(0, col, 2);
-      (*p_table)(0, col) << pProductLoads->GetProductLoadName(pgsTypes::pftSlabPad);
-      p_table->SetColumnSpan(0, col + 1, SKIP_CELL);
-      (*p_table)(1, col++) << _T("Max");
-      (*p_table)(1, col++) << _T("Min");
-   }
-   else
-   {
-      p_table->SetRowSpan(0, col, 2);
-      p_table->SetRowSpan(1, col, SKIP_CELL);
-      (*p_table)(0, col++) << pProductLoads->GetProductLoadName(pgsTypes::pftSlab);
+         p_table->SetColumnSpan(0, col, 2);
+         (*p_table)(0, col) << pProductLoads->GetProductLoadName(pgsTypes::pftSlabPad);
+         p_table->SetColumnSpan(0, col + 1, SKIP_CELL);
+         (*p_table)(1, col++) << _T("Max");
+         (*p_table)(1, col++) << _T("Min");
+      }
+      else
+      {
+         p_table->SetRowSpan(0, col, 2);
+         p_table->SetRowSpan(1, col, SKIP_CELL);
+         (*p_table)(0, col++) << pProductLoads->GetProductLoadName(pgsTypes::pftSlab);
 
-      p_table->SetRowSpan(0, col, 2);
-      p_table->SetRowSpan(1, col, SKIP_CELL);
-      (*p_table)(0, col++) << pProductLoads->GetProductLoadName(pgsTypes::pftSlabPad);
+         p_table->SetRowSpan(0, col, 2);
+         p_table->SetRowSpan(1, col, SKIP_CELL);
+         (*p_table)(0, col++) << pProductLoads->GetProductLoadName(pgsTypes::pftSlabPad);
+      }
    }
 
    if (bDeckPanels)
@@ -228,7 +249,7 @@ rptChapter* CPierReactionChapterBuilder::Build(CReportSpecification* pRptSpec,Ui
       }
    }
 
-   if ( bSidewalk )
+   if (bSidewalk)
    {
       if (analysisType == pgsTypes::Envelope)
       {
@@ -293,92 +314,92 @@ rptChapter* CPierReactionChapterBuilder::Build(CReportSpecification* pRptSpec,Ui
       }
    }
 
-   if ( bPedLoading )
+   if (bPedLoading)
    {
-      p_table->SetColumnSpan(0,col,2);
-      p_table->SetColumnSpan(0,col+1,SKIP_CELL);
-      (*p_table)(0,col) << _T("$ Pedestrian") << rptNewLine << _T("Optimize Fx");
-      (*p_table)(1,col) << _T("Max");
-      (*p_table)(1,col+1) << _T("Min");
+      p_table->SetColumnSpan(0, col, 2);
+      p_table->SetColumnSpan(0, col + 1, SKIP_CELL);
+      (*p_table)(0, col) << _T("$ Pedestrian") << rptNewLine << _T("Optimize Fx");
+      (*p_table)(1, col) << _T("Max");
+      (*p_table)(1, col + 1) << _T("Min");
       col += 2;
 
-      p_table->SetColumnSpan(0,col,2);
-      p_table->SetColumnSpan(0,col+1,SKIP_CELL);
-      (*p_table)(0,col) << _T("$ Pedestrian") << rptNewLine << _T("Optimize Fy");
-      (*p_table)(1,col) << _T("Max");
-      (*p_table)(1,col+1) << _T("Min");
+      p_table->SetColumnSpan(0, col, 2);
+      p_table->SetColumnSpan(0, col + 1, SKIP_CELL);
+      (*p_table)(0, col) << _T("$ Pedestrian") << rptNewLine << _T("Optimize Fy");
+      (*p_table)(1, col) << _T("Max");
+      (*p_table)(1, col + 1) << _T("Min");
       col += 2;
 
-      p_table->SetColumnSpan(0,col,2);
-      p_table->SetColumnSpan(0,col+1,SKIP_CELL);
-      (*p_table)(0,col) << _T("$ Pedestrian") << rptNewLine << _T("Optimize Mz");
-      (*p_table)(1,col) << _T("Max");
-      (*p_table)(1,col+1) << _T("Min");
+      p_table->SetColumnSpan(0, col, 2);
+      p_table->SetColumnSpan(0, col + 1, SKIP_CELL);
+      (*p_table)(0, col) << _T("$ Pedestrian") << rptNewLine << _T("Optimize Mz");
+      (*p_table)(1, col) << _T("Max");
+      (*p_table)(1, col + 1) << _T("Min");
       col += 2;
    }
 
-   p_table->SetColumnSpan(0,col,2);
-   p_table->SetColumnSpan(0,col+1,SKIP_CELL);
-   (*p_table)(0,col) << _T("* Design Live Load") << rptNewLine << _T("Optimize Fx");
-   (*p_table)(1,col) << _T("Max");
-   (*p_table)(1,col+1) << _T("Min");
+   p_table->SetColumnSpan(0, col, 2);
+   p_table->SetColumnSpan(0, col + 1, SKIP_CELL);
+   (*p_table)(0, col) << _T("* Design Live Load") << rptNewLine << _T("Optimize Fx");
+   (*p_table)(1, col) << _T("Max");
+   (*p_table)(1, col + 1) << _T("Min");
    col += 2;
 
-   p_table->SetColumnSpan(0,col,2);
-   p_table->SetColumnSpan(0,col+1,SKIP_CELL);
-   (*p_table)(0,col) << _T("* Design Live Load") << rptNewLine << _T("Optimize Fy");
-   (*p_table)(1,col) << _T("Max");
-   (*p_table)(1,col+1) << _T("Min");
+   p_table->SetColumnSpan(0, col, 2);
+   p_table->SetColumnSpan(0, col + 1, SKIP_CELL);
+   (*p_table)(0, col) << _T("* Design Live Load") << rptNewLine << _T("Optimize Fy");
+   (*p_table)(1, col) << _T("Max");
+   (*p_table)(1, col + 1) << _T("Min");
    col += 2;
 
-   p_table->SetColumnSpan(0,col,2);
-   p_table->SetColumnSpan(0,col+1,SKIP_CELL);
-   (*p_table)(0,col) << _T("* Design Live Load") << rptNewLine << _T("Optimize Mz");
-   (*p_table)(1,col) << _T("Max");
-   (*p_table)(1,col+1) << _T("Min");
+   p_table->SetColumnSpan(0, col, 2);
+   p_table->SetColumnSpan(0, col + 1, SKIP_CELL);
+   (*p_table)(0, col) << _T("* Design Live Load") << rptNewLine << _T("Optimize Mz");
+   (*p_table)(1, col) << _T("Max");
+   (*p_table)(1, col + 1) << _T("Min");
    col += 2;
 
-   if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
+   if (lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion())
    {
-      p_table->SetColumnSpan(0,col,2);
-      p_table->SetColumnSpan(0,col+1,SKIP_CELL);
-      (*p_table)(0,col) << _T("* Fatigue Live Load") << rptNewLine << _T("Optimize Fx");
-      (*p_table)(1,col) << _T("Max");
-      (*p_table)(1,col+1) << _T("Min");
+      p_table->SetColumnSpan(0, col, 2);
+      p_table->SetColumnSpan(0, col + 1, SKIP_CELL);
+      (*p_table)(0, col) << _T("* Fatigue Live Load") << rptNewLine << _T("Optimize Fx");
+      (*p_table)(1, col) << _T("Max");
+      (*p_table)(1, col + 1) << _T("Min");
       col += 2;
 
-      p_table->SetColumnSpan(0,col,2);
-      p_table->SetColumnSpan(0,col+1,SKIP_CELL);
-      (*p_table)(0,col) << _T("* Fatigue Live Load") << rptNewLine << _T("Optimize Fy");
-      (*p_table)(1,col) << _T("Max");
-      (*p_table)(1,col+1) << _T("Min");
+      p_table->SetColumnSpan(0, col, 2);
+      p_table->SetColumnSpan(0, col + 1, SKIP_CELL);
+      (*p_table)(0, col) << _T("* Fatigue Live Load") << rptNewLine << _T("Optimize Fy");
+      (*p_table)(1, col) << _T("Max");
+      (*p_table)(1, col + 1) << _T("Min");
       col += 2;
 
-      p_table->SetColumnSpan(0,col,2);
-      p_table->SetColumnSpan(0,col+1,SKIP_CELL);
-      (*p_table)(0,col) << _T("* Fatigue Live Load") << rptNewLine << _T("Optimize Mz");
-      (*p_table)(1,col) << _T("Max");
-      (*p_table)(1,col+1) << _T("Min");
+      p_table->SetColumnSpan(0, col, 2);
+      p_table->SetColumnSpan(0, col + 1, SKIP_CELL);
+      (*p_table)(0, col) << _T("* Fatigue Live Load") << rptNewLine << _T("Optimize Mz");
+      (*p_table)(1, col) << _T("Max");
+      (*p_table)(1, col + 1) << _T("Min");
       col += 2;
    }
 
    *pPara << p_table << rptNewLine;
    *pPara << LIVELOAD_PER_LANE << rptNewLine;
-   LiveLoadTableFooter(pBroker,pPara,girderKey,true,false);
+   LiveLoadTableFooter(pBroker, pPara, girderKey, true, false);
 
    PierIndexType nPiers = pBridge->GetPierCount();
    std::vector<PierIndexType> vPiers;
-   std::vector<std::pair<SupportIndexType,pgsTypes::SupportType>> vSupports;
-   for ( PierIndexType pierIdx = 0; pierIdx < nPiers; pierIdx++ )
+   std::vector<std::pair<SupportIndexType, pgsTypes::SupportType>> vSupports;
+   for (PierIndexType pierIdx = 0; pierIdx < nPiers; pierIdx++)
    {
       vPiers.push_back(pierIdx);
-      vSupports.push_back(std::make_pair(pierIdx,pgsTypes::stPier));
+      vSupports.emplace_back(pierIdx, pgsTypes::stPier);
    }
-   
+
    std::vector<REACTION> vGirderReactions, vDiaphragmReactions, vShearKeyMaxReactions, vShearKeyMinReactions, vLongitudinalJointMaxReactions, vLongitudinalJointMinReactions, vConstructionMaxReactions, vConstructionMinReactions, vSlabMaxReactions, vSlabMinReactions, vSlabPadMaxReactions, vSlabPadMinReactions, vDeckPanelMaxReactions, vDeckPanelMinReactions, vSidewalkMaxReactions, vSidewalkMinReactions, vTrafficBarrierMaxReactions, vTrafficBarrierMinReactions, vOverlayMaxReactions, vOverlayMinReactions;
-   
-   vGirderReactions = pReactions->GetReaction(girderKey,vSupports,intervalIdx,pgsTypes::pftGirder, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan,rtCumulative);
-   vDiaphragmReactions = pReactions->GetReaction(girderKey,vSupports,intervalIdx,pgsTypes::pftDiaphragm, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan,rtCumulative);
+
+   vGirderReactions = pReactions->GetReaction(girderKey, vSupports, intervalIdx, pgsTypes::pftGirder, pgsTypes::SimpleSpan, rtCumulative);
+   vDiaphragmReactions = pReactions->GetReaction(girderKey, vSupports, intervalIdx, pgsTypes::pftDiaphragm, pgsTypes::SimpleSpan, rtCumulative);
 
    if (bShearKey)
    {
@@ -390,6 +411,19 @@ rptChapter* CPierReactionChapterBuilder::Build(CReportSpecification* pRptSpec,Ui
       else
       {
          vShearKeyMaxReactions = pReactions->GetReaction(girderKey, vSupports, intervalIdx, pgsTypes::pftShearKey, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan, rtCumulative);
+      }
+   }
+
+   if (bLongitudinalJoint)
+   {
+      if (analysisType == pgsTypes::Envelope && bContinuousBeforeDeckCasting)
+      {
+         vLongitudinalJointMaxReactions = pReactions->GetReaction(girderKey, vSupports, intervalIdx, pgsTypes::pftLongitudinalJoint, batMax, rtCumulative);
+         vLongitudinalJointMinReactions = pReactions->GetReaction(girderKey, vSupports, intervalIdx, pgsTypes::pftLongitudinalJoint, batMin, rtCumulative);
+      }
+      else
+      {
+         vLongitudinalJointMaxReactions = pReactions->GetReaction(girderKey, vSupports, intervalIdx, pgsTypes::pftLongitudinalJoint, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan, rtCumulative);
       }
    }
 
@@ -406,17 +440,20 @@ rptChapter* CPierReactionChapterBuilder::Build(CReportSpecification* pRptSpec,Ui
       }
    }
 
-   if (analysisType == pgsTypes::Envelope && bContinuousBeforeDeckCasting)
+   if (bDeck)
    {
-      vSlabMaxReactions = pReactions->GetReaction(girderKey, vSupports, intervalIdx, pgsTypes::pftSlab, batMax, rtCumulative);
-      vSlabMinReactions = pReactions->GetReaction(girderKey, vSupports, intervalIdx, pgsTypes::pftSlab, batMin, rtCumulative);
-      vSlabPadMaxReactions = pReactions->GetReaction(girderKey, vSupports, intervalIdx, pgsTypes::pftSlabPad, batMax, rtCumulative);
-      vSlabPadMinReactions = pReactions->GetReaction(girderKey, vSupports, intervalIdx, pgsTypes::pftSlabPad, batMin, rtCumulative);
-   }
-   else
-   {
-      vSlabMaxReactions = pReactions->GetReaction(girderKey, vSupports, intervalIdx, pgsTypes::pftSlab, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan, rtCumulative);
-      vSlabPadMaxReactions = pReactions->GetReaction(girderKey, vSupports, intervalIdx, pgsTypes::pftSlabPad, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan, rtCumulative);
+      if (analysisType == pgsTypes::Envelope && bContinuousBeforeDeckCasting)
+      {
+         vSlabMaxReactions = pReactions->GetReaction(girderKey, vSupports, intervalIdx, pgsTypes::pftSlab, batMax, rtCumulative);
+         vSlabMinReactions = pReactions->GetReaction(girderKey, vSupports, intervalIdx, pgsTypes::pftSlab, batMin, rtCumulative);
+         vSlabPadMaxReactions = pReactions->GetReaction(girderKey, vSupports, intervalIdx, pgsTypes::pftSlabPad, batMax, rtCumulative);
+         vSlabPadMinReactions = pReactions->GetReaction(girderKey, vSupports, intervalIdx, pgsTypes::pftSlabPad, batMin, rtCumulative);
+      }
+      else
+      {
+         vSlabMaxReactions = pReactions->GetReaction(girderKey, vSupports, intervalIdx, pgsTypes::pftSlab, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan, rtCumulative);
+         vSlabPadMaxReactions = pReactions->GetReaction(girderKey, vSupports, intervalIdx, pgsTypes::pftSlabPad, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan, rtCumulative);
+      }
    }
 
    if (bDeckPanels)
@@ -579,6 +616,32 @@ rptChapter* CPierReactionChapterBuilder::Build(CReportSpecification* pRptSpec,Ui
          }
       }
 
+      if (bLongitudinalJoint)
+      {
+         if (analysisType == pgsTypes::Envelope && bContinuousBeforeDeckCasting)
+         {
+            reaction = vLongitudinalJointMaxReactions[pierIdx];
+            (*p_table)(row, col) << force.SetValue(reaction.Fx);
+            (*p_table)(row + 1, col) << force.SetValue(reaction.Fy);
+            (*p_table)(row + 2, col) << moment.SetValue(reaction.Mz);
+            col++;
+
+            reaction = vLongitudinalJointMinReactions[pierIdx];
+            (*p_table)(row, col) << force.SetValue(reaction.Fx);
+            (*p_table)(row + 1, col) << force.SetValue(reaction.Fy);
+            (*p_table)(row + 2, col) << moment.SetValue(reaction.Mz);
+            col++;
+         }
+         else
+         {
+            reaction = vLongitudinalJointMaxReactions[pierIdx];
+            (*p_table)(row, col) << force.SetValue(reaction.Fx);
+            (*p_table)(row + 1, col) << force.SetValue(reaction.Fy);
+            (*p_table)(row + 2, col) << moment.SetValue(reaction.Mz);
+            col++;
+         }
+      }
+
       if ( bConstruction )
       {
          if (analysisType == pgsTypes::Envelope && bContinuousBeforeDeckCasting)
@@ -605,47 +668,49 @@ rptChapter* CPierReactionChapterBuilder::Build(CReportSpecification* pRptSpec,Ui
          }
       }
 
-     if (analysisType == pgsTypes::Envelope && bContinuousBeforeDeckCasting)
-     {
-        reaction = vSlabMaxReactions[pierIdx];
-        (*p_table)(row, col) << force.SetValue(reaction.Fx);
-        (*p_table)(row + 1, col) << force.SetValue(reaction.Fy);
-        (*p_table)(row + 2, col) << moment.SetValue(reaction.Mz);
-        col++;
+      if (bDeck)
+      {
+         if (analysisType == pgsTypes::Envelope && bContinuousBeforeDeckCasting)
+         {
+            reaction = vSlabMaxReactions[pierIdx];
+            (*p_table)(row, col) << force.SetValue(reaction.Fx);
+            (*p_table)(row + 1, col) << force.SetValue(reaction.Fy);
+            (*p_table)(row + 2, col) << moment.SetValue(reaction.Mz);
+            col++;
 
-        reaction = vSlabMinReactions[pierIdx];
-        (*p_table)(row, col) << force.SetValue(reaction.Fx);
-        (*p_table)(row + 1, col) << force.SetValue(reaction.Fy);
-        (*p_table)(row + 2, col) << moment.SetValue(reaction.Mz);
-        col++;
+            reaction = vSlabMinReactions[pierIdx];
+            (*p_table)(row, col) << force.SetValue(reaction.Fx);
+            (*p_table)(row + 1, col) << force.SetValue(reaction.Fy);
+            (*p_table)(row + 2, col) << moment.SetValue(reaction.Mz);
+            col++;
 
-        reaction = vSlabPadMaxReactions[pierIdx];
-        (*p_table)(row, col) << force.SetValue(reaction.Fx);
-        (*p_table)(row + 1, col) << force.SetValue(reaction.Fy);
-        (*p_table)(row + 2, col) << moment.SetValue(reaction.Mz);
-        col++;
+            reaction = vSlabPadMaxReactions[pierIdx];
+            (*p_table)(row, col) << force.SetValue(reaction.Fx);
+            (*p_table)(row + 1, col) << force.SetValue(reaction.Fy);
+            (*p_table)(row + 2, col) << moment.SetValue(reaction.Mz);
+            col++;
 
-        reaction = vSlabPadMinReactions[pierIdx];
-        (*p_table)(row, col) << force.SetValue(reaction.Fx);
-        (*p_table)(row + 1, col) << force.SetValue(reaction.Fy);
-        (*p_table)(row + 2, col) << moment.SetValue(reaction.Mz);
-        col++;
-     }
-     else
-     {
-        reaction = vSlabMaxReactions[pierIdx];
-        (*p_table)(row, col) << force.SetValue(reaction.Fx);
-        (*p_table)(row + 1, col) << force.SetValue(reaction.Fy);
-        (*p_table)(row + 2, col) << moment.SetValue(reaction.Mz);
-        col++;
+            reaction = vSlabPadMinReactions[pierIdx];
+            (*p_table)(row, col) << force.SetValue(reaction.Fx);
+            (*p_table)(row + 1, col) << force.SetValue(reaction.Fy);
+            (*p_table)(row + 2, col) << moment.SetValue(reaction.Mz);
+            col++;
+         }
+         else
+         {
+            reaction = vSlabMaxReactions[pierIdx];
+            (*p_table)(row, col) << force.SetValue(reaction.Fx);
+            (*p_table)(row + 1, col) << force.SetValue(reaction.Fy);
+            (*p_table)(row + 2, col) << moment.SetValue(reaction.Mz);
+            col++;
 
-        reaction = vSlabPadMaxReactions[pierIdx];
-        (*p_table)(row, col) << force.SetValue(reaction.Fx);
-        (*p_table)(row + 1, col) << force.SetValue(reaction.Fy);
-        (*p_table)(row + 2, col) << moment.SetValue(reaction.Mz);
-        col++;
-     }
-
+            reaction = vSlabPadMaxReactions[pierIdx];
+            (*p_table)(row, col) << force.SetValue(reaction.Fx);
+            (*p_table)(row + 1, col) << force.SetValue(reaction.Fy);
+            (*p_table)(row + 2, col) << moment.SetValue(reaction.Mz);
+            col++;
+         }
+      }
 
       if ( bDeckPanels )
       {

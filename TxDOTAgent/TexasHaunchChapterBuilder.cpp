@@ -198,7 +198,6 @@ void haunch_summary(rptChapter* pChapter,IBroker* pBroker, const std::vector<CGi
    GET_IFACE2(pBroker,IBridge,pBridge);
    GET_IFACE2(pBroker,IGirder,pGirder);
    GET_IFACE2(pBroker,IPointOfInterest,pIPOI);
-   GET_IFACE2(pBroker,IProductForces, pProductForces);
    GET_IFACE2(pBroker, ILibrary, pLib );
    GET_IFACE2(pBroker, ISpecification, pSpec );
    GET_IFACE2(pBroker,IGirderHaunch,pGdrHaunch);
@@ -212,6 +211,7 @@ void haunch_summary(rptChapter* pChapter,IBroker* pBroker, const std::vector<CGi
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval();
+   IntervalIndexType shearKeyIntervalIdx = pIntervals->GetCastShearKeyInterval();
 
    // PINTA here, but we need to predetermine if A's and deflections are non symmetrical so we can add extra rows to our table
    bool areAsSymm = true;
@@ -229,17 +229,23 @@ void haunch_summary(rptChapter* pChapter,IBroker* pBroker, const std::vector<CGi
       }
 
       // Get Midspan poi and take averages at 0.2, 0.3 points to compute quarter point reactions
-      std::vector<pgsPointOfInterest> vPoi = pIPOI->GetPointsOfInterest(CSegmentKey(girderKey,0),POI_2L |POI_3L |POI_7L |POI_8L | POI_ERECTED_SEGMENT);
+      PoiList vPoi;
+      pIPOI->GetPointsOfInterest(CSegmentKey(girderKey, 0), POI_2L | POI_3L | POI_7L | POI_8L | POI_ERECTED_SEGMENT, &vPoi);
       ATLASSERT(vPoi.size()==4);
       const pgsPointOfInterest& poi_2 = vPoi[0];
       const pgsPointOfInterest& poi_3 = vPoi[1];
       const pgsPointOfInterest& poi_7 = vPoi[2];
       const pgsPointOfInterest& poi_8 = vPoi[3];
 
-      Float64 delta_slab2 = pProductForces->GetDeflection(castDeckIntervalIdx, pgsTypes::pftSlab, poi_2, bat, rtCumulative, false );
-      Float64 delta_slab3 = pProductForces->GetDeflection(castDeckIntervalIdx, pgsTypes::pftSlab, poi_3, bat, rtCumulative, false );
-      Float64 delta_slab7 = pProductForces->GetDeflection(castDeckIntervalIdx, pgsTypes::pftSlab, poi_7, bat, rtCumulative, false );
-      Float64 delta_slab8 = pProductForces->GetDeflection(castDeckIntervalIdx, pgsTypes::pftSlab, poi_8, bat, rtCumulative, false );
+      Float64 delta_slab2(0), delta_slab3(0), delta_slab7(0), delta_slab8(0);
+      if (castDeckIntervalIdx != INVALID_INDEX)
+      {
+         GET_IFACE2(pBroker, IProductForces, pProductForces);
+         delta_slab2 = pProductForces->GetDeflection(castDeckIntervalIdx, pgsTypes::pftSlab, poi_2, bat, rtCumulative, false);
+         delta_slab3 = pProductForces->GetDeflection(castDeckIntervalIdx, pgsTypes::pftSlab, poi_3, bat, rtCumulative, false);
+         delta_slab7 = pProductForces->GetDeflection(castDeckIntervalIdx, pgsTypes::pftSlab, poi_7, bat, rtCumulative, false);
+         delta_slab8 = pProductForces->GetDeflection(castDeckIntervalIdx, pgsTypes::pftSlab, poi_8, bat, rtCumulative, false);
+      }
 
       if (!IsEqual(delta_slab2+delta_slab3, delta_slab7+delta_slab8, 1.0e-3))
       {
@@ -263,7 +269,8 @@ void haunch_summary(rptChapter* pChapter,IBroker* pBroker, const std::vector<CGi
       CGirderKey girderKey(girderList[gdr_idx]);
 
       // Get Midspan poi and take averages at 0.2, 0.3 points to compute quarter point reactions
-      std::vector<pgsPointOfInterest> vPoi = pIPOI->GetPointsOfInterest(CSegmentKey(girderKey,0),POI_TENTH_POINTS | POI_SPAN);
+      PoiList vPoi;
+      pIPOI->GetPointsOfInterest(CSegmentKey(girderKey, 0), POI_TENTH_POINTS | POI_SPAN, &vPoi);
       ATLASSERT(vPoi.size()==11);
       const pgsPointOfInterest& poi_0 = vPoi[0];
       const pgsPointOfInterest& poi_2 = vPoi[2];
@@ -282,11 +289,16 @@ void haunch_summary(rptChapter* pChapter,IBroker* pBroker, const std::vector<CGi
       Float64 height = pGirder->GetHeight(poi_0); // assume prismatic girders
 
       // deflections from slab loading
-      Float64 delta_slab2 = pProductForces->GetDeflection(castDeckIntervalIdx, pgsTypes::pftSlab, poi_2, bat, rtCumulative, false );
-      Float64 delta_slab3 = pProductForces->GetDeflection(castDeckIntervalIdx, pgsTypes::pftSlab, poi_3, bat, rtCumulative, false );
-      Float64 delta_slab5 = pProductForces->GetDeflection(castDeckIntervalIdx, pgsTypes::pftSlab, poi_5, bat, rtCumulative, false );
-      Float64 delta_slab7 = pProductForces->GetDeflection(castDeckIntervalIdx, pgsTypes::pftSlab, poi_7, bat, rtCumulative, false );
-      Float64 delta_slab8 = pProductForces->GetDeflection(castDeckIntervalIdx, pgsTypes::pftSlab, poi_8, bat, rtCumulative, false );
+      Float64 delta_slab2(0), delta_slab3(0), delta_slab5(0), delta_slab7(0), delta_slab8(0);
+      if (castDeckIntervalIdx != INVALID_INDEX)
+      {
+         GET_IFACE2(pBroker, IProductForces, pProductForces);
+         delta_slab2 = pProductForces->GetDeflection(castDeckIntervalIdx, pgsTypes::pftSlab, poi_2, bat, rtCumulative, false);
+         delta_slab3 = pProductForces->GetDeflection(castDeckIntervalIdx, pgsTypes::pftSlab, poi_3, bat, rtCumulative, false);
+         delta_slab5 = pProductForces->GetDeflection(castDeckIntervalIdx, pgsTypes::pftSlab, poi_5, bat, rtCumulative, false);
+         delta_slab7 = pProductForces->GetDeflection(castDeckIntervalIdx, pgsTypes::pftSlab, poi_7, bat, rtCumulative, false);
+         delta_slab8 = pProductForces->GetDeflection(castDeckIntervalIdx, pgsTypes::pftSlab, poi_8, bat, rtCumulative, false);
+      }
 
       // Haunch depth at mid-span
       CSpanKey spanKey(girderKey.groupIndex, girderKey.girderIndex);  // precast girder bridge assumption here
@@ -295,9 +307,9 @@ void haunch_summary(rptChapter* pChapter,IBroker* pBroker, const std::vector<CGi
       HAUNCHDETAILS haunch_details = pGdrHaunch->GetHaunchDetails(spanKey);
 
       // find Z value at mid-span
-      Float64 Z(Float64_Max);
-      Float64 Wtop(Float64_Max);
-      Float64 tslab(Float64_Max);
+      Float64 Z(0);
+      Float64 Wtop(0);
+      Float64 tslab(0);
       Float64 midloc = poi_5.GetDistFromStart();
       for (std::vector<SECTIONHAUNCH>::const_iterator ith=haunch_details.Haunch.begin(); ith!=haunch_details.Haunch.end(); ith++)
       {
@@ -310,8 +322,6 @@ void haunch_summary(rptChapter* pChapter,IBroker* pBroker, const std::vector<CGi
             break;
          }
       }
-
-      ATLASSERT(Z!=Float64_Max); // not found?
 
       // haunch volume. use simplified txdot method
       Float64 L = pBridge->GetGirderLayoutLength(girderKey); // CL Pier to CL Pier
@@ -424,11 +434,12 @@ void haunch_summary(rptChapter* pChapter,IBroker* pBroker, const std::vector<CGi
       if (reportShearKey)
       {
          // deflections from shear key loading, if it exists
-         Float64 delta_shearkey2 = pProductForces->GetDeflection(castDeckIntervalIdx, pgsTypes::pftShearKey, poi_2, bat, rtCumulative, false );
-         Float64 delta_shearkey3 = pProductForces->GetDeflection(castDeckIntervalIdx, pgsTypes::pftShearKey, poi_3, bat, rtCumulative, false );
-         Float64 delta_shearkey5 = pProductForces->GetDeflection(castDeckIntervalIdx, pgsTypes::pftShearKey, poi_5, bat, rtCumulative, false );
-         Float64 delta_shearkey7 = pProductForces->GetDeflection(castDeckIntervalIdx, pgsTypes::pftShearKey, poi_7, bat, rtCumulative, false );
-         Float64 delta_shearkey8 = pProductForces->GetDeflection(castDeckIntervalIdx, pgsTypes::pftShearKey, poi_8, bat, rtCumulative, false );
+         GET_IFACE2(pBroker, IProductForces, pProductForces);
+         Float64 delta_shearkey2 = pProductForces->GetDeflection(shearKeyIntervalIdx, pgsTypes::pftShearKey, poi_2, bat, rtCumulative, false );
+         Float64 delta_shearkey3 = pProductForces->GetDeflection(shearKeyIntervalIdx, pgsTypes::pftShearKey, poi_3, bat, rtCumulative, false );
+         Float64 delta_shearkey5 = pProductForces->GetDeflection(shearKeyIntervalIdx, pgsTypes::pftShearKey, poi_5, bat, rtCumulative, false );
+         Float64 delta_shearkey7 = pProductForces->GetDeflection(shearKeyIntervalIdx, pgsTypes::pftShearKey, poi_7, bat, rtCumulative, false );
+         Float64 delta_shearkey8 = pProductForces->GetDeflection(shearKeyIntervalIdx, pgsTypes::pftShearKey, poi_8, bat, rtCumulative, false );
 
          if (bFirst)
             (*pTable)(row,0) << _T("DL Defl Shear Key @ Pt A {1/4 pt} (") << dispft.GetUnitTag() << _T(") ");

@@ -1,6 +1,6 @@
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 32.00    4   8.67                     1     1    5XB28          14  1/2  270  10.63  10.63   8.00   8.00                                              4.000  5.000   0.804    -1.045     1477   0.719  0.858   0.527 -0.086 -0.006 -0.007 -0.099  16.02   56.74    1.00    1.00    1.00 
+ 32.00    4   8.67                     1     1    5XB28          14  1/2  270  10.63  10.63   8.00   8.00                                              4.000  5.000   0.808    -1.050     1477   0.719  0.858   0.526 -0.086 -0.006 -0.007 -0.099  16.02   56.74    1.00    1.00    1.00 
 
 
 The Specification Check was Successful
@@ -8,7 +8,7 @@ The Specification Check was Successful
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 32.00    4   8.67                     1     2    5XB28          14  1/2  270  10.63  10.63   8.00   8.00                                              4.000  5.000   0.809    -1.056     1479   0.710  0.858   0.527 -0.090 -0.008 -0.007 -0.104  16.02   56.52    1.00    1.00    1.00 
+ 32.00    4   8.67                     1     2    5XB28          14  1/2  270  10.63  10.63   8.00   8.00                                              4.000  5.000   0.813    -1.060     1479   0.710  0.858   0.526 -0.090 -0.008 -0.007 -0.104  16.02   56.52    1.00    1.00    1.00 
 
 
 The Specification Check was Successful
@@ -16,7 +16,7 @@ The Specification Check was Successful
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 32.00    4   8.67                     2     1    5XB28          58  1/2  270   9.53   9.18   8.00   8.00  14    2.5   28    14    6   2   2   2   2   4.900  5.000   3.128    -3.668     4162   0.600  0.799   5.116 -1.529 -0.108 -0.128 -1.765 168.84  451.74    1.00    1.00    1.00 
+ 32.00    4   8.67                     2     1    5XB28          58  1/2  270   9.53   9.18   8.00   8.00  14    2.5   28    14    6   2   2   2   2   4.900  5.000   3.144    -3.686     4162   0.600  0.799   5.115 -1.529 -0.108 -0.128 -1.765 168.84  451.74    1.00    1.00    1.00 
 
 
 The Specification Check was Successful
@@ -24,9 +24,10 @@ The Specification Check was Successful
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 32.00    4   8.67                     2     2    5XB28          58  1/2  270   9.53   9.18   8.00   8.00  14    2.5   28    14    6   2   4   0   2   5.000  5.000   3.164    -3.726     4216   0.593  0.799   5.045 -1.590 -0.134 -0.126 -1.850 167.49  447.42    1.00    1.00    1.00 
+ 32.00    4   8.67                     2     2    5XB28          60  1/2  270   9.43   9.07   8.00   8.00  14    2.5   28    14    6   2   2   2   2   5.000  5.000   3.180    -3.744     4216   0.593  0.799   5.223 -1.590 -0.134 -0.126 -1.850 178.50  476.50    1.00    1.00    1.00 
 
 
-The Specification Check was Successful
+The Specification Check was Not Successful
+Compression stress check failed for Service I Limit State in Interval 14 Install Overlay
 
 

@@ -70,13 +70,7 @@
 #include "AgeAdjustedMaterial.h"
 
 #include <Plugins\Beams.h>
-#include <Plugins\Beams_i.c>
 #include <Beams\Interfaces.h>
-
-#include <WBFLCore_i.c>
-#include <WBFLGeometry_i.c>
-#include <WBFLGenericBridge_i.c>
-#include <WBFLGenericBridgeTools_i.c>
 
 #include "PGSuperCatCom.h"
 #include "PGSpliceCatCom.h"
@@ -94,10 +88,16 @@
 #include <EAF\EAFDisplayUnits.h>
 #include <IFace\EditByUI.h>
 #include <IFace\Intervals.h>
+#include <IFace\Alignment.h>
 
 #include "StrandMoverImpl.h"
 
 #include <Beams\Helper.h>
+
+#include <WBFLCore_i.c>
+#include <WBFLGeometry_i.c>
+#include <WBFLGenericBridge_i.c>
+#include <WBFLGenericBridgeTools_i.c>
 
 #if defined _BETA_VERSION
 #include <EAF\EAFUIIntegration.h>

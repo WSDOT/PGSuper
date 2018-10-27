@@ -49,6 +49,8 @@ public:
 	BOOL	m_ShowPsCg;
 	BOOL	m_ShowStrands;
 	BOOL	m_ShowLongReinf;
+   BOOL  m_ShowSectionCG;
+   BOOL m_ShowGirderProperties;
 	//}}AFX_DATA
 
 

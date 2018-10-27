@@ -49,7 +49,7 @@ CLASS
 void write_moment_data_table(IBroker* pBroker,
                              IEAFDisplayUnits* pDisplayUnits,
                              const CGirderKey& girderKey,
-                             const std::vector<pgsPointOfInterest>& vPoi,
+                             const PoiList& vPoi,
                              rptChapter* pChapter,
                              IntervalIndexType intervalIdx,
                              const std::_tstring& strStageName,
@@ -58,7 +58,7 @@ void write_moment_data_table(IBroker* pBroker,
 void write_crack_moment_data_table(IBroker* pBroker,
                                    IEAFDisplayUnits* pDisplayUnits,
                              const CGirderKey& girderKey,
-                                   const std::vector<pgsPointOfInterest>& vPoi,
+                                   const PoiList& vPoi,
                                    rptChapter* pChapter,
                                    IntervalIndexType intervalIdx,
                                    const std::_tstring& strStageName,
@@ -67,7 +67,7 @@ void write_crack_moment_data_table(IBroker* pBroker,
 void write_min_moment_data_table(IBroker* pBroker,
                                  IEAFDisplayUnits* pDisplayUnits,
                              const CGirderKey& girderKey,
-                                 const std::vector<pgsPointOfInterest>& vPoi,
+                                 const PoiList& vPoi,
                                  rptChapter* pChapter,
                                  IntervalIndexType intervalIdx,
                                  const std::_tstring& strStageName,
@@ -76,7 +76,7 @@ void write_min_moment_data_table(IBroker* pBroker,
 void write_over_reinforced_moment_data_table(IBroker* pBroker,
                                  IEAFDisplayUnits* pDisplayUnits,
                              const CGirderKey& girderKey,
-                                 const std::vector<pgsPointOfInterest>& vPoi,
+                                 const PoiList& vPoi,
                                  rptChapter* pChapter,
                                  IntervalIndexType intervalIdx,
                                  const std::_tstring& strStageName,
@@ -169,7 +169,8 @@ rptChapter* CMomentCapacityDetailsChapterBuilder::Build(CReportSpecification* pR
 
          *pPara << _T("Positive Moment Capacity Details") << rptNewLine;
 
-         std::vector<pgsPointOfInterest> vPoi( pIPOI->GetPointsOfInterest(CSegmentKey(thisGirderKey,ALL_SEGMENTS)) );
+         PoiList vPoi;
+         pIPOI->GetPointsOfInterest(CSegmentKey(thisGirderKey, ALL_SEGMENTS), &vPoi);
 
          write_moment_data_table(pBroker,pDisplayUnits,thisGirderKey, vPoi, pChapter, lastIntervalIdx, strLabel, true);
          if ( !m_bCapacityOnly )
@@ -239,7 +240,7 @@ CChapterBuilder* CMomentCapacityDetailsChapterBuilder::Clone() const
 void write_moment_data_table(IBroker* pBroker,
                              IEAFDisplayUnits* pDisplayUnits,
                              const CGirderKey& girderKey,
-                             const std::vector<pgsPointOfInterest>& vPoi,
+                             const PoiList& vPoi,
                              rptChapter* pChapter,
                              IntervalIndexType intervalIdx,
                              const std::_tstring& strStageName,
@@ -280,7 +281,7 @@ void write_moment_data_table(IBroker* pBroker,
    *pChapter << pPara;
 
    std::_tostringstream os;
-   os << _T("Moment Capacity [5.7.3.2.4] - ") << strStageName << std::endl;
+   os << _T("Moment Capacity [") << LrfdCw8th(_T("5.7.3.2.4"),_T("5.6.3.2.4")) << _T("] - ") << strStageName << std::endl;
 
    ColumnIndexType nColumns;
    if( bPositiveMoment || 0 < nTendons )
@@ -440,11 +441,8 @@ void write_moment_data_table(IBroker* pBroker,
    RowIndexType row = table->GetNumberOfHeaderRows();
 
    GET_IFACE2(pBroker,IMomentCapacity,pMomentCap);
-   std::vector<pgsPointOfInterest>::const_iterator i(vPoi.begin());
-   std::vector<pgsPointOfInterest>::const_iterator end(vPoi.end());
-   for ( ; i != end; i++ )
+   for (const pgsPointOfInterest& poi : vPoi)
    {
-      const pgsPointOfInterest& poi = *i;
       const MOMENTCAPACITYDETAILS* pmcd = pMomentCap->GetMomentCapacityDetails(intervalIdx,poi,bPositiveMoment);
 
       col = 0;
@@ -558,7 +556,7 @@ void write_moment_data_table(IBroker* pBroker,
 void write_crack_moment_data_table(IBroker* pBroker,
                                    IEAFDisplayUnits* pDisplayUnits,
                              const CGirderKey& girderKey,
-                                   const std::vector<pgsPointOfInterest>& vPoi,
+                                   const PoiList& vPoi,
                                    rptChapter* pChapter,
                                    IntervalIndexType intervalIdx,
                                    const std::_tstring& strStageName,
@@ -573,7 +571,7 @@ void write_crack_moment_data_table(IBroker* pBroker,
    pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pParagraph;
 
-   *pParagraph << (bPositiveMoment ? _T("Positive") : _T("Negative")) << _T(" Cracking Moment Details [5.7.3.3.2] - ") << strStageName << rptNewLine;
+   *pParagraph << (bPositiveMoment ? _T("Positive") : _T("Negative")) << _T(" Cracking Moment Details [") << LrfdCw8th(_T("5.7.3.3.2"),_T("5.6.3.3")) << _T("] - ") << strStageName << rptNewLine;
   
    rptParagraph* pPara = new rptParagraph;
    *pChapter << pPara;
@@ -636,16 +634,15 @@ void write_crack_moment_data_table(IBroker* pBroker,
    RowIndexType row = table->GetNumberOfHeaderRows();
    GET_IFACE2(pBroker,IMomentCapacity,pMomentCapacity);
 
-   std::vector<pgsPointOfInterest>::const_iterator i(vPoi.begin());
-   std::vector<pgsPointOfInterest>::const_iterator end(vPoi.end());
-   for ( ; i != end; i++ )
+   bool bFirstPoi = true;
+   for (const pgsPointOfInterest& poi : vPoi)
    {
-      const pgsPointOfInterest &poi = *i;
       CRACKINGMOMENTDETAILS cmd;
       pMomentCapacity->GetCrackingMomentDetails(intervalIdx,poi,bPositiveMoment,&cmd);
 
-      if ( i == vPoi.begin() )
+      if ( bFirstPoi )
       {
+         bFirstPoi = false;
          if ( lrfdVersionMgr::SixthEdition2012 <= lrfdVersionMgr::GetVersion() )
          {
             *pPara << rptNewLine;
@@ -732,7 +729,7 @@ void write_crack_moment_data_table(IBroker* pBroker,
 void write_min_moment_data_table(IBroker* pBroker,
                                  IEAFDisplayUnits* pDisplayUnits,
                              const CGirderKey& girderKey,
-                                 const std::vector<pgsPointOfInterest>& vPoi,
+                                 const PoiList& vPoi,
                                  rptChapter* pChapter,
                                  IntervalIndexType intervalIdx,
                                  const std::_tstring& strStageName,
@@ -746,7 +743,7 @@ void write_min_moment_data_table(IBroker* pBroker,
    pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pParagraph;
 
-   *pParagraph << _T("Minimum Reinforcement [5.7.3.3.2] - ") << strStageName << rptNewLine;
+   *pParagraph << _T("Minimum Reinforcement [") << LrfdCw8th(_T("5.7.3.3.2"),_T("5.6.3.3")) << _T("] - ") << strStageName << rptNewLine;
 
    pParagraph = new rptParagraph;
    *pChapter << pParagraph;
@@ -800,12 +797,9 @@ void write_min_moment_data_table(IBroker* pBroker,
 
    GET_IFACE2(pBroker,IMomentCapacity,pMomentCapacity);
 
-   std::vector<pgsPointOfInterest>::const_iterator i(vPoi.begin());
-   std::vector<pgsPointOfInterest>::const_iterator end(vPoi.end());
-   for ( ; i != end; i++ )
+   for (const pgsPointOfInterest& poi : vPoi)
    {
       col = 0;
-      const pgsPointOfInterest& poi = *i;
       MINMOMENTCAPDETAILS mmcd;
       pMomentCapacity->GetMinMomentCapacityDetails(intervalIdx,poi,bPositiveMoment,&mmcd);
 
@@ -838,7 +832,7 @@ void write_min_moment_data_table(IBroker* pBroker,
 void write_over_reinforced_moment_data_table(IBroker* pBroker,
                                  IEAFDisplayUnits* pDisplayUnits,
                              const CGirderKey& girderKey,
-                                 const std::vector<pgsPointOfInterest>& vPoi,
+                                 const PoiList& vPoi,
                                  rptChapter* pChapter,
                                  IntervalIndexType intervalIdx,
                                  const std::_tstring& strStageName,
@@ -848,11 +842,8 @@ void write_over_reinforced_moment_data_table(IBroker* pBroker,
    // It isn't needed if there aren't any over reinforced sections
    bool bTableNeeded = false;
    GET_IFACE2(pBroker,IMomentCapacity,pMomentCap);
-   std::vector<pgsPointOfInterest>::const_iterator i(vPoi.begin());
-   std::vector<pgsPointOfInterest>::const_iterator end(vPoi.end());
-   for ( ; i != end; i++ )
+   for (const pgsPointOfInterest& poi : vPoi)
    {
-      const pgsPointOfInterest& poi = *i;
       const MOMENTCAPACITYDETAILS* pmcd = pMomentCap->GetMomentCapacityDetails(intervalIdx,poi,bPositiveMoment);
       if ( pmcd->bOverReinforced )
       {
@@ -884,7 +875,7 @@ void write_over_reinforced_moment_data_table(IBroker* pBroker,
 
    pParagraph = new rptParagraph;
    *pChapter << pParagraph;
-   *pParagraph << _T("Over reinforced sections may be considered adequate if the flexural demand does not exceed the flexural resistance suggested by LRFD C5.7.3.3.1.") << rptNewLine;
+   *pParagraph << _T("Over reinforced sections may be considered adequate if the flexural demand does not exceed the flexural resistance suggested by LRFD C5.7.3.3.1. (removed from spec 2005)") << rptNewLine;
    *pParagraph << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("LimitingCapacityOfOverReinforcedSections.jpg")) << rptNewLine;
 
    rptRcTable* table = rptStyleManager::CreateDefaultTable(10,_T("Nominal Resistance of Over Reinforced Sections [C5.7.3.3.1]"));
@@ -937,11 +928,8 @@ void write_over_reinforced_moment_data_table(IBroker* pBroker,
 
    RowIndexType row = table->GetNumberOfHeaderRows();
 
-   i = vPoi.begin();
-   end = vPoi.end();
-   for ( ; i != end; i++ )
+   for( const pgsPointOfInterest& poi : vPoi)
    {
-      const pgsPointOfInterest& poi = *i;
       const MOMENTCAPACITYDETAILS* pmcd = pMomentCap->GetMomentCapacityDetails(intervalIdx,poi,bPositiveMoment);
 
       if ( pmcd->bOverReinforced )

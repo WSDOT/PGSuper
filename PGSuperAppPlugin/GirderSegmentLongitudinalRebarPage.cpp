@@ -172,11 +172,11 @@ END_MESSAGE_MAP()
 void CGirderSegmentLongitudinalRebarPage::RestoreToLibraryDefaults()
 {
    CGirderSegmentDlg* pParent = (CGirderSegmentDlg*)GetParent();
-   const GirderLibraryEntry* pGird = pParent->m_Girder.GetGirderLibraryEntry();
+   const GirderLibraryEntry* pGirderEntry = pParent->m_Girder.GetGirderLibraryEntry();
    CPrecastSegmentData* pSegment = pParent->m_Girder.GetSegment(pParent->m_SegmentKey.segmentIndex);
 
    // update data member
-   pSegment->LongitudinalRebarData.CopyGirderEntryData(*pGird);
+   pSegment->LongitudinalRebarData.CopyGirderEntryData(pGirderEntry);
 }
 
 void CGirderSegmentLongitudinalRebarPage::OnRestoreDefaults() 

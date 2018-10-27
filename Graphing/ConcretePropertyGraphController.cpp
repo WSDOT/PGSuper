@@ -48,7 +48,9 @@ SupportIndexType DecodeTSIndex(SupportIndexType tsIdx) { return MAX_INDEX-tsIdx;
 
 IMPLEMENT_DYNCREATE(CConcretePropertyGraphController,CEAFGraphControlWindow)
 
-CConcretePropertyGraphController::CConcretePropertyGraphController()
+CConcretePropertyGraphController::CConcretePropertyGraphController() :
+   m_SegmentKey(0,0,0),
+   m_ClosureKey(0,0,0)
 {
 }
 
@@ -70,6 +72,7 @@ BEGIN_MESSAGE_MAP(CConcretePropertyGraphController, CEAFGraphControlWindow)
    ON_BN_CLICKED(IDC_AGE_LOG,OnXAxis)
    ON_BN_CLICKED(IDC_AGE_LINEAR,OnXAxis)
    ON_BN_CLICKED(IDC_INTERVALS,OnXAxis)
+   ON_BN_CLICKED(IDC_GRID, OnShowGrid)
    //}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -109,14 +112,34 @@ BOOL CConcretePropertyGraphController::OnInitDialog()
       GetDlgItem(IDC_CR)->ShowWindow(SW_HIDE);
    }
 
+   GET_IFACE(IBridgeDescription, pIBridgeDesc);
+   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+   if ( IsNonstructuralDeck(pBridgeDesc->GetDeckDescription()->GetDeckType()) )
+   {
+      GetDlgItem(IDC_DECK)->EnableWindow(FALSE);
+   }
 
    return TRUE;
 }
 
-int CConcretePropertyGraphController::GetGraphElement()
+void CConcretePropertyGraphController::SetGraphElement(int element)
 {
-   int id = GetCheckedRadioButton(IDC_PRECAST_SEGMENT,IDC_DECK);
-   switch(id)
+   UINT nIDC;
+   switch (element)
+   {
+   case GRAPH_ELEMENT_SEGMENT: nIDC = IDC_PRECAST_SEGMENT; break;
+   case GRAPH_ELEMENT_CLOSURE: nIDC = IDC_CLOSURE_JOINT; break;
+   case GRAPH_ELEMENT_DECK: nIDC = IDC_DECK; break;
+   }
+   CheckRadioButton(IDC_PRECAST_SEGMENT, IDC_DECK, nIDC);
+   UpdateGraph();
+}
+
+int CConcretePropertyGraphController::GetGraphElement() const
+{
+   int nIDC = GetCheckedRadioButton(IDC_PRECAST_SEGMENT,IDC_DECK);
+   ATLASSERT(nIDC != 0); // 0 means nothing is selected
+   switch(nIDC)
    {
    case IDC_PRECAST_SEGMENT:
       return GRAPH_ELEMENT_SEGMENT;
@@ -133,10 +156,25 @@ int CConcretePropertyGraphController::GetGraphElement()
    }
 }
 
-int CConcretePropertyGraphController::GetGraphType()
+void CConcretePropertyGraphController::SetGraphType(int graphType)
 {
-   int id = GetCheckedRadioButton(IDC_FC,IDC_CR);
-   switch(id)
+   UINT nIDC;
+   switch (graphType)
+   {
+   case GRAPH_TYPE_FC: nIDC = IDC_FC; break;
+   case GRAPH_TYPE_EC: nIDC = IDC_EC; break;
+   case GRAPH_TYPE_SH: nIDC = IDC_SH; break;
+   case GRAPH_TYPE_CR: nIDC = IDC_CR; break;
+   }
+   CheckRadioButton(IDC_FC, IDC_CR, nIDC);
+   UpdateGraph();
+}
+
+int CConcretePropertyGraphController::GetGraphType() const
+{
+   int nIDC = GetCheckedRadioButton(IDC_FC,IDC_CR);
+   ATLASSERT(nIDC != 0); // 0 means nothing is selected
+   switch(nIDC)
    {
    case IDC_FC:
       return GRAPH_TYPE_FC;
@@ -153,6 +191,64 @@ int CConcretePropertyGraphController::GetGraphType()
    default:
       ATLASSERT(false);
       return GRAPH_TYPE_FC;
+   }
+}
+
+void CConcretePropertyGraphController::SetSegment(const CSegmentKey& segmentKey)
+{
+   m_SegmentKey = segmentKey;
+   SetGraphElement(GRAPH_ELEMENT_SEGMENT);
+   FillGroupControl();
+   FillGirderControl();
+   FillSegmentControl();
+
+   CComboBox* pcbGroup = (CComboBox*)GetDlgItem(IDC_GROUP);
+   CComboBox* pcbGirder = (CComboBox*)GetDlgItem(IDC_GIRDER);
+   CComboBox* pcbSegment = (CComboBox*)GetDlgItem(IDC_SEGMENT);
+
+   pcbGroup->SetCurSel((int)m_SegmentKey.groupIndex);
+   pcbGirder->SetCurSel((int)m_SegmentKey.girderIndex);
+   pcbSegment->SetCurSel((int)m_SegmentKey.segmentIndex);
+
+   UpdateGraph();
+}
+
+const CSegmentKey& CConcretePropertyGraphController::GetSegment() const
+{
+   return m_SegmentKey;
+}
+
+void CConcretePropertyGraphController::SetClosureJoint(const CClosureKey& closureKey)
+{
+   m_ClosureKey = closureKey;
+   SetGraphElement(GRAPH_ELEMENT_CLOSURE);
+   UpdateGraph();
+}
+
+const CClosureKey& CConcretePropertyGraphController::GetClosureJoint() const
+{
+   return m_ClosureKey;
+}
+
+void CConcretePropertyGraphController::OnShowGrid()
+{
+   // toggle the grid setting
+   ((CConcretePropertyGraphBuilder*)GetGraphBuilder())->ShowGrid(ShowGrid());
+}
+
+bool CConcretePropertyGraphController::ShowGrid() const
+{
+   CButton* pBtn = (CButton*)GetDlgItem(IDC_GRID);
+   return (pBtn->GetCheck() == BST_CHECKED ? true : false);
+}
+
+void CConcretePropertyGraphController::ShowGrid(bool bShowGrid)
+{
+   if (bShowGrid != ShowGrid())
+   {
+      CButton* pBtn = (CButton*)GetDlgItem(IDC_GRID);
+      pBtn->SetCheck(bShowGrid ? BST_CHECKED : BST_UNCHECKED);
+      ((CConcretePropertyGraphBuilder*)GetGraphBuilder())->ShowGrid(bShowGrid);
    }
 }
 
@@ -175,10 +271,11 @@ void CConcretePropertyGraphController::OnGraphType()
 
 void CConcretePropertyGraphController::UpdateElementControls()
 {
-   int id = GetCheckedRadioButton(IDC_PRECAST_SEGMENT,IDC_DECK);
+   int nIDC = GetCheckedRadioButton(IDC_PRECAST_SEGMENT,IDC_DECK);
+   ATLASSERT(nIDC != 0); // 0 means nothing is selected
    BOOL bEnableSegment(TRUE);
    BOOL bEnableClosure(TRUE);
-   switch(id)
+   switch(nIDC)
    {
    case IDC_PRECAST_SEGMENT:
       bEnableSegment = TRUE;
@@ -237,10 +334,8 @@ void CConcretePropertyGraphController::FillGirderControl()
    int curSel = pcbGirder->GetCurSel();
    pcbGirder->ResetContent();
 
-   GroupIndexType grpIdx = GetGroupIndex();
-
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
-   const CGirderGroupData* pGroup = pIBridgeDesc->GetGirderGroup(grpIdx);
+   const CGirderGroupData* pGroup = pIBridgeDesc->GetGirderGroup(m_SegmentKey.groupIndex);
    GirderIndexType nGirders = pGroup->GetGirderCount();
    for ( GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++ )
    {
@@ -266,12 +361,9 @@ void CConcretePropertyGraphController::FillSegmentControl()
    int curSel = pcbSegment->GetCurSel();
    pcbSegment->ResetContent();
 
-   GroupIndexType grpIdx = GetGroupIndex();
-   GirderIndexType gdrIdx = GetGirderIndex();
-
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
-   const CGirderGroupData* pGroup = pIBridgeDesc->GetGirderGroup(grpIdx);
-   const CSplicedGirderData* pGirder = pGroup->GetGirder(gdrIdx);
+   const CGirderGroupData* pGroup = pIBridgeDesc->GetGirderGroup(m_SegmentKey.groupIndex);
+   const CSplicedGirderData* pGirder = pGroup->GetGirder(m_SegmentKey.girderIndex);
    SegmentIndexType nSegments = pGirder->GetSegmentCount();
    for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
    {
@@ -351,6 +443,9 @@ void CConcretePropertyGraphController::FillClosureControl()
 
 void CConcretePropertyGraphController::OnGroupChanged()
 {
+   CComboBox* pcbGroup = (CComboBox*)GetDlgItem(IDC_GROUP);
+   m_SegmentKey.groupIndex = (GroupIndexType)pcbGroup->GetCurSel();
+
    FillGirderControl();
    FillSegmentControl();
    UpdateGraph();
@@ -358,57 +453,26 @@ void CConcretePropertyGraphController::OnGroupChanged()
 
 void CConcretePropertyGraphController::OnGirderChanged()
 {
+   CComboBox* pcbGirder = (CComboBox*)GetDlgItem(IDC_GIRDER);
+   m_SegmentKey.girderIndex = (GirderIndexType)pcbGirder->GetCurSel();
+
    FillSegmentControl();
    UpdateGraph();
 }
 
 void CConcretePropertyGraphController::OnSegmentChanged()
 {
+   CComboBox* pcbSegment = (CComboBox*)GetDlgItem(IDC_SEGMENT);
+   m_SegmentKey.segmentIndex = (GirderIndexType)pcbSegment->GetCurSel();
+
    UpdateGraph();
 }
 
 void CConcretePropertyGraphController::OnClosureChanged()
 {
-   UpdateGraph();
-}
-
-void CConcretePropertyGraphController::OnXAxis()
-{
-   UpdateGraph();
-}
-
-GroupIndexType CConcretePropertyGraphController::GetGroupIndex()
-{
-   CComboBox* pcbGroup = (CComboBox*)GetDlgItem(IDC_GROUP);
-   return (GroupIndexType)pcbGroup->GetCurSel();
-}
-
-GirderIndexType CConcretePropertyGraphController::GetGirderIndex()
-{
-   CComboBox* pcbGirder = (CComboBox*)GetDlgItem(IDC_GIRDER);
-   return (GirderIndexType)pcbGirder->GetCurSel();
-}
-
-SegmentIndexType CConcretePropertyGraphController::GetSegmentIndex()
-{
-   CComboBox* pcbSegment = (CComboBox*)GetDlgItem(IDC_SEGMENT);
-   return (SegmentIndexType)pcbSegment->GetCurSel();
-}
-
-CSegmentKey CConcretePropertyGraphController::GetSegmentKey()
-{
-   return CSegmentKey(GetGroupIndex(),GetGirderIndex(),GetSegmentIndex());
-}
-
-CClosureKey CConcretePropertyGraphController::GetClosureKey()
-{
    CComboBox* pCB = (CComboBox*)GetDlgItem(IDC_CLOSURE);
    int curSel = pCB->GetCurSel();
-   if ( curSel == CB_ERR )
-   {
-      return CClosureKey(GetGroupIndex(),GetGirderIndex(),INVALID_INDEX);
-   }
-
+   
    IndexType idx = (IndexType)pCB->GetItemData(curSel);
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
@@ -417,22 +481,49 @@ CClosureKey CConcretePropertyGraphController::GetClosureKey()
       SupportIndexType tsIdx = DecodeTSIndex(idx);
       const CTemporarySupportData* pTS = pBridgeDesc->GetTemporarySupport(tsIdx);
       const CClosureJointData* pClosure = pTS->GetClosureJoint(0);
-      return pClosure->GetClosureKey();
+      m_ClosureKey = pClosure->GetClosureKey();
    }
    else
    {
       PierIndexType pierIdx = (PierIndexType)idx;
       const CPierData2* pPier = pBridgeDesc->GetPier(pierIdx);
       const CClosureJointData* pClosure = pPier->GetClosureJoint(0);
-      return pClosure->GetClosureKey();
+      m_ClosureKey = pClosure->GetClosureKey();
    }
+
+   UpdateGraph();
 }
 
-int CConcretePropertyGraphController::GetXAxisType()
+void CConcretePropertyGraphController::OnXAxis()
 {
-   int id = GetCheckedRadioButton(IDC_TIME_LINEAR,IDC_INTERVALS);
+   UpdateGraph();
+}
+
+void CConcretePropertyGraphController::SetXAxisType(int type)
+{
+   UINT nIDC;
+   switch (type)
+   {
+   case X_AXIS_TIME_LINEAR: nIDC = IDC_TIME_LINEAR; break;
+   case X_AXIS_TIME_LOG:    nIDC = IDC_TIME_LOG;    break;
+   case X_AXIS_AGE_LINEAR:  nIDC = IDC_AGE_LINEAR;  break;
+   case X_AXIS_AGE_LOG:     nIDC = IDC_AGE_LOG;     break;
+   case X_AXIS_INTERVAL:    nIDC = IDC_INTERVALS;   break;
+   default:
+      ATLASSERT(false);
+      nIDC = IDC_TIME_LOG;
+   }
+
+   CheckRadioButton(IDC_TIME_LINEAR, IDC_INTERVALS, nIDC);
+   UpdateGraph();
+}
+
+int CConcretePropertyGraphController::GetXAxisType() const
+{
+   int nIDC = GetCheckedRadioButton(IDC_TIME_LINEAR,IDC_INTERVALS);
+   ATLASSERT(nIDC != 0); // 0 means nothing is selected
    int axisType;
-   switch(id)
+   switch(nIDC)
    {
    case IDC_TIME_LINEAR:
       axisType = X_AXIS_TIME_LINEAR;

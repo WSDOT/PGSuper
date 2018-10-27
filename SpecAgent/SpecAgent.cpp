@@ -32,8 +32,7 @@
 #include <initguid.h>
 #include "SpecAgent.h"
 
-#include "SpecAgent_i.h"
-#include "SpecAgent_i.c"
+#include "CLSID.h"
 
 #include <WBFLCore_i.c>
 

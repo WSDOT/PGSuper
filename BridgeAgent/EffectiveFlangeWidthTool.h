@@ -126,19 +126,19 @@ private:
 
    VARIANT_BOOL m_bUseTribWidth;
 
-   HRESULT EffectiveFlangeWidthBySegmentDetails(IGenericBridge* bridge,GirderIDType gdrID,SegmentIndexType segIdx,Float64 Xs,GirderIDType leftSSMbrID,GirderIDType rightSSMbrID, EffFlangeWidth* effFlangeWidth);
+   HRESULT EffectiveFlangeWidthBySegmentDetails(IGenericBridge* bridge,GirderIDType gdrID,SegmentIndexType segIdx,Float64 Xs,EffFlangeWidth* effFlangeWidth);
 
-   void ReportEffectiveFlangeWidth_InteriorGirder(IBroker* pBroker,IGenericBridge* bridge,const CSegmentKey& segmentKey,GirderIDType leftSSMbrID,GirderIDType gdrID,GirderIDType rightSSMbrID,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits);
-   void ReportEffectiveFlangeWidth_InteriorGirder_Prismatic(IBroker* pBroker,IGenericBridge* bridge,const CSegmentKey& segmentKey,GirderIDType leftSSMbrID,GirderIDType gdrID,GirderIDType rightSSMbrID,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits);
-   void ReportEffectiveFlangeWidth_InteriorGirder_Nonprismatic(IBroker* pBroker,IGenericBridge* bridge,const CSegmentKey& segmentKey,GirderIDType leftSSMbrID,GirderIDType gdrID,GirderIDType rightSSMbrID,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits);
+   void ReportEffectiveFlangeWidth_InteriorGirder(IBroker* pBroker,IGenericBridge* bridge,const CSegmentKey& segmentKey,GirderIDType gdrID,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits);
+   void ReportEffectiveFlangeWidth_InteriorGirder_Prismatic(IBroker* pBroker,IGenericBridge* bridge,const CSegmentKey& segmentKey,GirderIDType gdrID,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits);
+   void ReportEffectiveFlangeWidth_InteriorGirder_Nonprismatic(IBroker* pBroker,IGenericBridge* bridge,const CSegmentKey& segmentKey,GirderIDType gdrID,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits);
    void ReportEffectiveFlangeWidth_InteriorGirderRow(IEffectiveFlangeWidthDetails* details,RowIndexType row,rptRcTable* table,IEAFDisplayUnits* pDisplayUnits);
-   void ReportEffectiveFlangeWidth_ExteriorGirder(IBroker* pBroker,IGenericBridge* bridge,const CSegmentKey& segmentKey,GirderIDType leftSSMbrID,GirderIDType gdrID,GirderIDType rightSSMbrID,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits);
-   void ReportEffectiveFlangeWidth_ExteriorGirder_SingleTopFlange(IBroker* pBroker,IGenericBridge* bridge,const CSegmentKey& segmentKey,GirderIDType leftSSMbrID,GirderIDType gdrID,GirderIDType rightSSMbrID,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits);
-   void ReportEffectiveFlangeWidth_ExteriorGirder_SingleTopFlange_Prismatic(IBroker* pBroker,IGenericBridge* bridge,const CSegmentKey& segmentKey,GirderIDType leftSSMbrID,GirderIDType gdrID,GirderIDType rightSSMbrID,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits);
-   void ReportEffectiveFlangeWidth_ExteriorGirder_SingleTopFlange_Nonprismatic(IBroker* pBroker,IGenericBridge* bridge,const CSegmentKey& segmentKey,GirderIDType leftSSMbrID,GirderIDType gdrID,GirderIDType rightSSMbrID,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits);
-   void ReportEffectiveFlangeWidth_ExteriorGirder_MultiTopFlange(IBroker* pBroker,IGenericBridge* bridge,const CSegmentKey& segmentKey,GirderIDType leftSSMbrID,GirderIDType gdrID,GirderIDType rightSSMbrID,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits);
-   void ReportEffectiveFlangeWidth_ExteriorGirder_MultiTopFlange_Prismatic(IBroker* pBroker,IGenericBridge* bridge,const CSegmentKey& segmentKey,GirderIDType leftSSMbrID,GirderIDType gdrID,GirderIDType rightSSMbrID,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits);
-   void ReportEffectiveFlangeWidth_ExteriorGirder_MultiTopFlange_Nonprismatic(IBroker* pBroker,IGenericBridge* bridge,const CSegmentKey& segmentKey,GirderIDType leftSSMbrID,GirderIDType gdrID,GirderIDType rightSSMbrID,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits);
+   void ReportEffectiveFlangeWidth_ExteriorGirder(IBroker* pBroker,IGenericBridge* bridge,const CSegmentKey& segmentKey,GirderIDType gdrID,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits);
+   void ReportEffectiveFlangeWidth_ExteriorGirder_SingleTopFlange(IBroker* pBroker,IGenericBridge* bridge,const CSegmentKey& segmentKey,GirderIDType gdrID,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits);
+   void ReportEffectiveFlangeWidth_ExteriorGirder_SingleTopFlange_Prismatic(IBroker* pBroker,IGenericBridge* bridge,const CSegmentKey& segmentKey,GirderIDType gdrID,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits);
+   void ReportEffectiveFlangeWidth_ExteriorGirder_SingleTopFlange_Nonprismatic(IBroker* pBroker,IGenericBridge* bridge,const CSegmentKey& segmentKey,GirderIDType gdrID,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits);
+   void ReportEffectiveFlangeWidth_ExteriorGirder_MultiTopFlange(IBroker* pBroker,IGenericBridge* bridge,const CSegmentKey& segmentKey,GirderIDType gdrID,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits);
+   void ReportEffectiveFlangeWidth_ExteriorGirder_MultiTopFlange_Prismatic(IBroker* pBroker,IGenericBridge* bridge,const CSegmentKey& segmentKey,GirderIDType gdrID,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits);
+   void ReportEffectiveFlangeWidth_ExteriorGirder_MultiTopFlange_Nonprismatic(IBroker* pBroker,IGenericBridge* bridge,const CSegmentKey& segmentKey,GirderIDType gdrID,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits);
 
    void GetBeamFactory(IBroker* pBroker,const CSegmentKey& segmentKey,IBeamFactory** factory);
    bool DoUseTributaryWidth(const CBridgeDescription2* pBridgeDesc);
@@ -154,15 +154,15 @@ public:
 
 // IEffectiveFlangeWidthTool
 public:
-   STDMETHOD(TributaryFlangeWidthBySSMbr)(IGenericBridge* bridge,GirderIDType gdrID,Float64 Xg, GirderIDType leftSSMbrID, GirderIDType rightSSMbrID, Float64 *tribFlangeWidth) override;
-   STDMETHOD(TributaryFlangeWidthBySSMbrEx)(IGenericBridge* bridge,GirderIDType gdrID,Float64 Xg, GirderIDType leftSSMbrID, GirderIDType rightSSMbrID, Float64* twLeft,Float64* twRight,Float64 *tribFlangeWidth) override;
-   STDMETHOD(TributaryFlangeWidthBySegment)(IGenericBridge* bridge,GirderIDType gdrID,SegmentIndexType segIdx,Float64 Xs, GirderIDType leftSSMbrID, GirderIDType rightSSMbrID, Float64 *tribFlangeWidth) override;
-   STDMETHOD(TributaryFlangeWidthBySegmentEx)(IGenericBridge* bridge,GirderIDType gdrID,SegmentIndexType segIdx,Float64 Xs, GirderIDType leftSSMbrID, GirderIDType rightSSMbrID, Float64* twLeft, Float64* twRight, Float64 *tribFlangeWidth) override;
+   STDMETHOD(TributaryFlangeWidthBySSMbr)(IGenericBridge* bridge,GirderIDType gdrID,Float64 Xg, Float64 *tribFlangeWidth) override;
+   STDMETHOD(TributaryFlangeWidthBySSMbrEx)(IGenericBridge* bridge,GirderIDType gdrID,Float64 Xg, Float64* twLeft,Float64* twRight,Float64 *tribFlangeWidth) override;
+   STDMETHOD(TributaryFlangeWidthBySegment)(IGenericBridge* bridge,GirderIDType gdrID,SegmentIndexType segIdx,Float64 Xs, Float64 *tribFlangeWidth) override;
+   STDMETHOD(TributaryFlangeWidthBySegmentEx)(IGenericBridge* bridge,GirderIDType gdrID,SegmentIndexType segIdx,Float64 Xs, Float64* twLeft, Float64* twRight, Float64 *tribFlangeWidth) override;
 
-   STDMETHOD(EffectiveFlangeWidthBySSMbr)(IGenericBridge* bridge,GirderIDType gdrID,Float64 Xg, GirderIDType leftSSMbrID, GirderIDType rightSSMbrID, Float64 *effFlangeWidth) override;
-	STDMETHOD(EffectiveFlangeWidthBySSMbrEx)(IGenericBridge* bridge,GirderIDType gdrID,Float64 Xg, GirderIDType leftSSMbrID, GirderIDType rightSSMbrID, IEffectiveFlangeWidthDetails** details) override;
-	STDMETHOD(EffectiveFlangeWidthBySegment)(IGenericBridge* bridge,GirderIDType gdrID,SegmentIndexType segIdx,Float64 Xs, GirderIDType leftSSMbrID, GirderIDType rightSSMbrID, Float64 *effFlangeWidth) override;
-	STDMETHOD(EffectiveFlangeWidthBySegmentEx)(IGenericBridge* bridge,GirderIDType gdrID,SegmentIndexType segIdx,Float64 Xs, GirderIDType leftSSMbrID, GirderIDType rightSSMbrID, IEffectiveFlangeWidthDetails** details) override;
+   STDMETHOD(EffectiveFlangeWidthBySSMbr)(IGenericBridge* bridge,GirderIDType gdrID,Float64 Xg, Float64 *effFlangeWidth) override;
+	STDMETHOD(EffectiveFlangeWidthBySSMbrEx)(IGenericBridge* bridge,GirderIDType gdrID,Float64 Xg, IEffectiveFlangeWidthDetails** details) override;
+	STDMETHOD(EffectiveFlangeWidthBySegment)(IGenericBridge* bridge,GirderIDType gdrID,SegmentIndexType segIdx,Float64 Xs, Float64 *effFlangeWidth) override;
+	STDMETHOD(EffectiveFlangeWidthBySegmentEx)(IGenericBridge* bridge,GirderIDType gdrID,SegmentIndexType segIdx,Float64 Xs, IEffectiveFlangeWidthDetails** details) override;
 
 // IReportEffectiveFlangeWidth
 public:

@@ -66,33 +66,33 @@ void pgsRatingArtifact::AddArtifact(const pgsPointOfInterest& poi,const pgsMomen
 {
    if ( bPositiveMoment )
    {
-      m_PositiveMomentRatings.push_back( std::make_pair(poi,artifact) );
+      m_PositiveMomentRatings.emplace_back(poi,artifact);
    }
    else
    {
-      m_NegativeMomentRatings.push_back( std::make_pair(poi,artifact) );
+      m_NegativeMomentRatings.emplace_back(poi,artifact);
    }
 }
 
 void pgsRatingArtifact::AddArtifact(const pgsPointOfInterest& poi,const pgsShearRatingArtifact& artifact)
 {
-   m_ShearRatings.push_back( std::make_pair(poi,artifact) );
+   m_ShearRatings.emplace_back(poi,artifact);
 }
 
 void pgsRatingArtifact::AddArtifact(const pgsPointOfInterest& poi,const pgsStressRatingArtifact& artifact)
 {
-   m_StressRatings.push_back( std::make_pair(poi,artifact) );
+   m_StressRatings.emplace_back(poi,artifact);
 }
 
 void pgsRatingArtifact::AddArtifact(const pgsPointOfInterest& poi,const pgsYieldStressRatioArtifact& artifact,bool bPositiveMoment)
 {
    if ( bPositiveMoment )
    {
-      m_PositiveMomentYieldStressRatios.push_back( std::make_pair(poi,artifact) );
+      m_PositiveMomentYieldStressRatios.emplace_back(poi,artifact);
    }
    else
    {
-      m_NegativeMomentYieldStressRatios.push_back( std::make_pair(poi,artifact) );
+      m_NegativeMomentYieldStressRatios.emplace_back(poi,artifact);
    }
 }
 

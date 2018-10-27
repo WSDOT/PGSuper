@@ -145,7 +145,7 @@ void CGirderSegmentDlg::CreateExtensionPages()
       CPropertyPage* pPage = pCallback->CreatePropertyPage(this);
       if ( pPage )
       {
-         m_ExtensionPages.push_back( std::make_pair(pCallback,pPage) );
+         m_ExtensionPages.emplace_back(pCallback,pPage);
          AddPage(pPage);
       }
    }
@@ -187,7 +187,7 @@ void CGirderSegmentDlg::CreateExtensionPages(const std::vector<EditSplicedGirder
 
       if ( pPage )
       {
-         m_ExtensionPages.push_back( std::make_pair(pEditSegmentCallback,pPage) );
+         m_ExtensionPages.emplace_back(pEditSegmentCallback,pPage);
          AddPage(pPage);
       }
    }

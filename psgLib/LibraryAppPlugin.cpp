@@ -21,7 +21,6 @@
 ///////////////////////////////////////////////////////////////////////
 
 #include "stdafx.h"
-#include "PGSuperLibrary_i.h"
 #include "LibraryAppPlugin.h"
 
 #include "resource.h"

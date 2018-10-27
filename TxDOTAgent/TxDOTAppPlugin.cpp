@@ -21,7 +21,6 @@
 ///////////////////////////////////////////////////////////////////////
 
 #include "stdafx.h"
-#include "TxDOTAgent_i.h"
 #include "TxDOTAppPlugin.h"
 #include "TxDOTOptionalDesignDocTemplate.h"
 #include "TxDOTOptionalDesignDoc.h"

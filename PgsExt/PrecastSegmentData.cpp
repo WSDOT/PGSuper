@@ -110,6 +110,11 @@ void CPrecastSegmentData::Init()
 
    m_pStartClosure = nullptr;
    m_pEndClosure = nullptr;
+
+   TopFlangeThickeningType = pgsTypes::tftNone;
+   TopFlangeThickening = 0.0;
+
+   Precamber = 0.0;
 }
 
 void CPrecastSegmentData::SetGirder(CSplicedGirderData* pGirder)
@@ -785,6 +790,22 @@ bool CPrecastSegmentData::operator==(const CPrecastSegmentData& rOther) const
    {
       return false;
    }
+
+   if (TopFlangeThickeningType != rOther.TopFlangeThickeningType)
+   {
+      return false;
+   }
+
+   if (TopFlangeThickeningType != pgsTypes::tftNone && !IsEqual(TopFlangeThickening,rOther.TopFlangeThickening))
+   {
+      return false;
+   }
+
+   if (!IsEqual(Precamber, rOther.Precamber))
+   {
+      return false;
+   }
+
    
    return true;
 }
@@ -803,6 +824,8 @@ HRESULT CPrecastSegmentData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress
    try
    {
       hr = pStrLoad->BeginUnit(_T("PrecastSegment"));
+      Float64 parent_version;
+      pStrLoad->get_Version(&parent_version);
 
       var.vt = VT_ID;
       hr = pStrLoad->get_Property(_T("ID"),&var);
@@ -954,6 +977,26 @@ HRESULT CPrecastSegmentData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress
       hr = LongitudinalRebarData.Load(pStrLoad,pProgress);
       hr = HandlingData.Load(pStrLoad,pProgress);
 
+      if (1 < parent_version)
+      {
+         // added in version 2
+         var.vt = VT_R8;
+         hr = pStrLoad->get_Property(_T("Precamber"), &var);
+         Precamber = var.dblVal;
+
+         hr = pStrLoad->BeginUnit(_T("TopFlangeThickening"));
+
+         var.vt = VT_I4;
+         hr = pStrLoad->get_Property(_T("Type"), &var);
+         TopFlangeThickeningType = (pgsTypes::TopFlangeThickeningType)var.lVal;
+
+         var.vt = VT_R8;
+         hr = pStrLoad->get_Property(_T("Value"), &var);
+         TopFlangeThickening = var.dblVal;
+
+         hr = pStrLoad->EndUnit(); // TopFlangeThickening
+      }
+
       hr = pStrLoad->EndUnit(); // PrecastSegment
    }
    catch (HRESULT)
@@ -968,7 +1011,7 @@ HRESULT CPrecastSegmentData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress
 
 HRESULT CPrecastSegmentData::Save(IStructuredSave* pStrSave,IProgress* pProgress)
 {
-   pStrSave->BeginUnit(_T("PrecastSegment"),1.0);
+   pStrSave->BeginUnit(_T("PrecastSegment"),2.0);
 
    pStrSave->put_Property(_T("ID"),CComVariant(m_SegmentID));
 
@@ -1071,6 +1114,15 @@ HRESULT CPrecastSegmentData::Save(IStructuredSave* pStrSave,IProgress* pProgress
    LongitudinalRebarData.Save(pStrSave,pProgress);
    HandlingData.Save(pStrSave,pProgress);
 
+   // added in version 2
+   pStrSave->put_Property(_T("Precamber"), CComVariant(Precamber));
+
+   // added in version 2
+   pStrSave->BeginUnit(_T("TopFlangeThickening"),1.0);
+      pStrSave->put_Property(_T("Type"), CComVariant(TopFlangeThickeningType));
+      pStrSave->put_Property(_T("Value"), CComVariant(TopFlangeThickening));
+   pStrSave->EndUnit(); // TopFlangeThickening
+
    pStrSave->EndUnit(); // PrecastSegment
 
    return S_OK;
@@ -1110,6 +1162,11 @@ void CPrecastSegmentData::MakeCopy(const CPrecastSegmentData& rOther,bool bCopyI
       CopyTransverseReinforcementFrom(rOther);
       CopyHandlingFrom(rOther);
       CopyVariationFrom(rOther);
+
+      TopFlangeThickeningType = rOther.TopFlangeThickeningType;
+      TopFlangeThickening = rOther.TopFlangeThickening;
+
+      Precamber = rOther.Precamber;
    }
 
    ResolveReferences();

@@ -27,7 +27,7 @@
 #include "resource.h"
 #include <initguid.h>
 
-#include "WSDOTAgent_i.h"
+#include "CLSID.h"
 #include "dllmain.h"
 
 #include "BridgeLinkCATID.h"

@@ -772,7 +772,8 @@ void CTogaGirderModelElevationView::BuildStrandDisplayObjects(CTxDOTOptionalDesi
    from_point->put_X(0.0);
    to_point->put_X(gdr_length);
 
-   std::vector<pgsPointOfInterest> vPOI( pPOI->GetPointsOfInterest(segmentKey,POI_HARPINGPOINT) );
+   PoiList vPOI;
+   pPOI->GetPointsOfInterest(segmentKey, POI_HARPINGPOINT, &vPOI);
    ATLASSERT( 0 <= vPOI.size() && vPOI.size() <= 2 );
    pgsPointOfInterest hp1_poi;
    pgsPointOfInterest hp2_poi;
@@ -944,11 +945,12 @@ void CTogaGirderModelElevationView::BuildStrandCGDisplayObjects(CTxDOTOptionalDe
       bool red = false;
 
       GET_IFACE2(pBroker,IPointOfInterest,pPOI);
-      std::vector<pgsPointOfInterest> vPOI( pPOI->GetPointsOfInterest(segmentKey) );
+      PoiList vPOI;
+      pPOI->GetPointsOfInterest(segmentKey, &vPOI);
 
       Float64 from_y;
       Float64 to_y;
-      std::vector<pgsPointOfInterest>::iterator iter( vPOI.begin() );
+      auto iter( vPOI.begin() );
       pgsPointOfInterest prev_poi = *iter;
 
       IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(prev_poi.GetSegmentKey());
@@ -961,7 +963,7 @@ void CTogaGirderModelElevationView::BuildStrandCGDisplayObjects(CTxDOTOptionalDe
 
       for ( ; iter!= vPOI.end(); iter++ )
       {
-         pgsPointOfInterest& poi = *iter;
+         const pgsPointOfInterest& poi = *iter;
       
          releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(poi.GetSegmentKey());
 
@@ -1205,10 +1207,14 @@ void CTogaGirderModelElevationView::BuildStirrupDisplayObjects(CTxDOTOptionalDes
             Float64 bottom = bot_cover - Hg;
 
             Float64 top;
-            if ( deckType == pgsTypes::sdtNone || !bDoStirrupsEngageDeck )
+            if (deckType == pgsTypes::sdtNone || !bDoStirrupsEngageDeck)
+            {
                top = -top_cover;
+            }
             else
+            {
                top = slab_offset;
+            }
 
             CComPtr<IPoint2d> p1, p2;
             p1.CoCreateInstance(CLSID_Point2d);

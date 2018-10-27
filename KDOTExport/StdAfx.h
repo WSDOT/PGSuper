@@ -17,9 +17,6 @@ extern CComModule _Module;
 #include <afxdlgs.h>
 #include <grid\gxall.h>
 
-#include "KDOTExport.h"
-//#include "KDOTExporter.h"
-
 #include "Documentation\KDOT.hh"
 
 #include <EAF\EAFHelp.h>

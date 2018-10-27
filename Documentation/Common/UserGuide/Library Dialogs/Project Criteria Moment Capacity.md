@@ -8,8 +8,8 @@ Moment Capacity
 
 Item | Description
 -----|-------------
-Include girder longitudinal mild reinforcement in capacity calculations | When checked, the mild steel longitudinal reinforcement in the girder will be included in the capacity analysis. Prestressing strand is always included the capacity analysis.
-Modulus of rupture for cracking moment (LRFD 5.4.2.6, 5.7.3.3.2) | Enter the coefficient for the modulus of rupture for computing cracking moment.
+Include girder longitudinal mild reinforcement in capacity calculations | When checked, the mild steel longitudinal reinforcement in the girder will be included in the capacity analysis. Prestressing strand is always included the capacity analysis. For bridges without a cast-in-place deck or overlay, this setting is ignored and mild steel longitudinal reinforcement in the girder will always be included in the negative moment capacity analysis. Without a deck structure, the girder is the only source of reinforcement for negative moment capacity.
+Modulus of rupture for cracking moment (LRFD 5.4.2.6, 5.6.3.3 (*pre-2017: 5.7.3.3.2*)) | Enter the coefficient for the modulus of rupture for computing cracking moment.
 
 Resistance Factors (LRFD 5.5.4.2)
 ---------------------
@@ -18,7 +18,7 @@ Define the resistance factors
 ### Conventional Construction (LRFD 5.5.4.2.1) ###
 Define the resistance factors for conventional construction for normal weight and lightweight concrete.
 
-### Closure Joint (LRFD 5.5.4.2.2 and 5.14.1.3.2d) ###
+### Closure Joint (LRFD 5.5.4.2.2 and 5.12.3.4.2d (*pre-2017: 5.14.1.3.2d*)) ###
 Define the resistance factors for cast-in-place closure joints for normal weight and lightweight concrete.
 
 Negative Moment Capacity

@@ -13,11 +13,20 @@ Erection | Select the event when this girder is erected
 
 Girder Type
 -----------
-Define the girder type.
+There are two drop down lists in this group. The first defines how girders are defined in the bridge.
+If unique girders are used throughout the bridge, select the name of this girder from the second drop down list. 
+
+Girder Modifiers
+-----------------
+These parameters modify the girder. Some of the items listed below may not be supported by your girder and will not be shown in the window.
 
 Item | Description
 -----|-----------
-Girder Name | If unique girders are used throughout the bridge, select the name of this girder from the drop down list. Click on the combo box control to change how girders are defined in the bridge.
+Precamber | Enter the amount of precamber to build into the girder during fabrication. 
+Top Width | Enter the top width of the girder.
+Top Flange Thickening | Select the method of top flange thickening and enter the amount of thickening.
+
+Top flange thickening increases the thickness of the top flange at either the girder ends or middle of the girder, by the specified amount. The thickness of the top flange is then changed parabolically to its nominal value at the girder center or ends, respectively.
 
 Girder Concrete Properties
 --------------------------

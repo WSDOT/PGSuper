@@ -77,6 +77,7 @@ public:
    virtual void GetSpacingGroup(GroupIndexType groupIdx,GirderIndexType* pFirstGdrIdx,GirderIndexType* pLastGdrIdx,Float64* pSpacing) const;
    virtual SpacingIndexType GetSpacingCount() const;
    virtual Float64 GetGirderSpacing(SpacingIndexType spacingIdx) const;
+   virtual GroupIndexType GetSpacingGroupIndex(GirderIndexType gdrIdx) const;
 
    void ExpandAll();
    void Expand(GroupIndexType grpIdx);
@@ -170,7 +171,7 @@ protected:
    void MakeAssignment(const CGirderSpacing2& rOther);
 
    GirderIndexType GetGirderCount() const;
-   Float64 GetGirderWidth(const CSplicedGirderData* pGirder) const;
+   void GetGirderWidth(const CSplicedGirderData* pGirder,Float64* pLeft,Float64* pRight) const;
 
 #if defined _DEBUG
    virtual void AssertValid() const override;

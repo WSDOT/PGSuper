@@ -110,17 +110,17 @@ void CEditHaunchDlg::DoDataExchange(CDataExchange* pDX)
          {
          case pgsTypes::aecBridge:
             m_AssExcessCamberSame4BridgeDlg.DownloadData(&m_HaunchInputData, pDX);
-            break;
+         break;
          case pgsTypes::aecSpan:
             m_AssExcessCamberSpanBySpanDlg.DownloadData(&m_HaunchInputData, pDX);
-            break;
+         break;
          case pgsTypes::aecGirder:
             m_AssExcessCamberByGirderDlg.DownloadData(&m_HaunchInputData, pDX);
-            break;
-         default:
-            ATLASSERT(0);
-            break;
-         };
+         break;
+      default:
+         ATLASSERT(0);
+         break;
+      };
       }
    }
    else
@@ -528,41 +528,41 @@ void CEditHaunchDlg::ModifyBridgeDescr(CBridgeDescription2* pBridgeDesc)
    if (m_bCanAssExcessCamberInputBeEnabled)
    {
       if (m_HaunchInputData.m_AssExcessCamberType == pgsTypes::aecBridge)
-      {
+   {
          pBridgeDesc->SetAssExcessCamberType(pgsTypes::aecBridge);
          pBridgeDesc->SetAssExcessCamber(m_HaunchInputData.m_SingleAssExcessCamber);
-      }
+   }
       else if (m_HaunchInputData.m_AssExcessCamberType == pgsTypes::aecSpan)
-      {
+   {
          pBridgeDesc->SetAssExcessCamberType(pgsTypes::aecSpan);
 
-         // loop over each bearing line and set A
+      // loop over each bearing line and set A
          for (AssExcessCamberSpanDataConstIter hdit = m_HaunchInputData.m_AssExcessCamberSpans.begin(); hdit != m_HaunchInputData.m_AssExcessCamberSpans.end(); hdit++)
-         {
+      {
             const AssExcessCamberSpanData& hbd = *hdit;
-
-            CSpanData2* pSpan = pBridgeDesc->GetSpan(hbd.m_SpanIndex);
+         
+         CSpanData2* pSpan = pBridgeDesc->GetSpan(hbd.m_SpanIndex);
 
             // use AssExcessCamber from slot[0] for all girders
             Float64 AssExcessCamber = hbd.m_AssExcessCambersForGirders[0];
 
             pSpan->SetAssExcessCamber(AssExcessCamber);
-         }
       }
+   }
       else if (m_HaunchInputData.m_AssExcessCamberType == pgsTypes::aecGirder)
-      {
+   {
          pBridgeDesc->SetAssExcessCamberType(pgsTypes::aecGirder);
 
-         // loop over each bearing line / girder and set A
+      // loop over each bearing line / girder and set A
          for (AssExcessCamberSpanDataConstIter hdit = m_HaunchInputData.m_AssExcessCamberSpans.begin(); hdit != m_HaunchInputData.m_AssExcessCamberSpans.end(); hdit++)
-         {
+      {
             const AssExcessCamberSpanData& hbd = *hdit;
-
-            CSpanData2* pSpan = pBridgeDesc->GetSpan(hbd.m_SpanIndex);
+         
+         CSpanData2* pSpan = pBridgeDesc->GetSpan(hbd.m_SpanIndex);
 
             GirderIndexType ng = hbd.m_AssExcessCambersForGirders.size();
             for (GirderIndexType ig = 0; ig < ng; ig++)
-            {
+         {
                pSpan->SetAssExcessCamber(ig, hbd.m_AssExcessCambersForGirders[ig]);
             }
          }

@@ -45,7 +45,8 @@ CProductLoadMap::CProductLoadMap()
    AddLoadItem(pgsTypes::pftUserDC,                  _T("UserDC"),          m_LoadCaseID++);
    AddLoadItem(pgsTypes::pftUserDW,                  _T("UserDW"),          m_LoadCaseID++);
    AddLoadItem(pgsTypes::pftUserLLIM,                _T("UserLLIM"),        m_LoadCaseID++);
-   AddLoadItem(pgsTypes::pftShearKey,                _T("Shear Key"),       m_LoadCaseID++);
+   AddLoadItem(pgsTypes::pftShearKey,                _T("Shear Key"), m_LoadCaseID++);
+   AddLoadItem(pgsTypes::pftLongitudinalJoint,       _T("Longitudinal Joint"), m_LoadCaseID++);
    //AddLoadItem(pgsTypes::pftPretension,              _T("Pretensioning"),   m_LoadCaseID++); // not modeled in the LBAM
    //AddLoadItem(pgsTypes::pftPostTensioning, _T("Post Tensioning"), m_LoadCaseID++); // not modeled in the LBAM
    AddLoadItem(pgsTypes::pftSecondaryEffects,       _T("Secondary Effects"), m_LoadCaseID++); // not modeled in the LBAM
@@ -54,10 +55,10 @@ CProductLoadMap::CProductLoadMap()
    AddLoadItem(pgsTypes::pftRelaxation,              _T("Relaxation"),    m_LoadCaseID++);
 }
 
-pgsTypes::ProductForceType CProductLoadMap::GetProductForceType(CComBSTR bstrName)
+pgsTypes::ProductForceType CProductLoadMap::GetProductForceType(CComBSTR bstrName) const
 {
-   std::map<CComBSTR,pgsTypes::ProductForceType>::iterator found( m_LoadNameToProductForceType.find(bstrName) );
-   if ( found == m_LoadNameToProductForceType.end() )
+   auto found( m_LoadNameToProductForceType.find(bstrName) );
+   if ( found == m_LoadNameToProductForceType.cend() )
    {
       ATLASSERT(false);
       return pgsTypes::pftGirder;
@@ -68,10 +69,10 @@ pgsTypes::ProductForceType CProductLoadMap::GetProductForceType(CComBSTR bstrNam
    }
 }
 
-CComBSTR CProductLoadMap::GetGroupLoadName(pgsTypes::ProductForceType pfType)
+CComBSTR CProductLoadMap::GetGroupLoadName(pgsTypes::ProductForceType pfType) const
 {
-   std::map<pgsTypes::ProductForceType,CComBSTR>::iterator found( m_ProductForceTypeToLoadName.find(pfType) );
-   if ( found == m_ProductForceTypeToLoadName.end() )
+   auto found( m_ProductForceTypeToLoadName.find(pfType) );
+   if ( found == m_ProductForceTypeToLoadName.cend() )
    {
       ATLASSERT(false);
       return CComBSTR();
@@ -82,10 +83,10 @@ CComBSTR CProductLoadMap::GetGroupLoadName(pgsTypes::ProductForceType pfType)
    }
 }
 
-LoadCaseIDType CProductLoadMap::GetLoadCaseID(pgsTypes::ProductForceType pfType)
+LoadCaseIDType CProductLoadMap::GetLoadCaseID(pgsTypes::ProductForceType pfType) const
 {
-   std::map<pgsTypes::ProductForceType,LoadCaseIDType>::iterator found( m_ProductForceTypeToLoadCaseID.find(pfType) );
-   if ( found == m_ProductForceTypeToLoadCaseID.end() )
+   auto found( m_ProductForceTypeToLoadCaseID.find(pfType) );
+   if ( found == m_ProductForceTypeToLoadCaseID.cend() )
    {
       ATLASSERT(false);
       return INVALID_ID;
@@ -96,7 +97,7 @@ LoadCaseIDType CProductLoadMap::GetLoadCaseID(pgsTypes::ProductForceType pfType)
    }
 }
 
-LoadCaseIDType CProductLoadMap::GetMaxLoadCaseID()
+LoadCaseIDType CProductLoadMap::GetMaxLoadCaseID() const
 {
    return m_LoadCaseID;
 }
@@ -131,6 +132,7 @@ std::vector<pgsTypes::ProductForceType> CProductLoadMap::GetProductForces(IBroke
       pfTypes.push_back(pgsTypes::pftTrafficBarrier);
       pfTypes.push_back(pgsTypes::pftUserDC);
       pfTypes.push_back(pgsTypes::pftShearKey);
+      pfTypes.push_back(pgsTypes::pftLongitudinalJoint);
       break;
 
    case lcDW:

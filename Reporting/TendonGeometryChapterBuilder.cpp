@@ -89,7 +89,8 @@ rptChapter* CTendonGeometryChapterBuilder::Build(CReportSpecification* pRptSpec,
 
    location.IncludeSpanAndGirder(true);
 
-   std::vector<pgsPointOfInterest> vPoi(pPoi->GetPointsOfInterest(CSegmentKey(girderKey,ALL_SEGMENTS)));
+   PoiList vPoi;
+   pPoi->GetPointsOfInterest(CSegmentKey(girderKey, ALL_SEGMENTS), &vPoi);
 
    DuctIndexType nDucts = pTendonGeom->GetDuctCount(girderKey);
    for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
@@ -114,13 +115,10 @@ rptChapter* CTendonGeometryChapterBuilder::Build(CReportSpecification* pRptSpec,
       (*pTable)(0,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pA")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
 
       RowIndexType row = 1;
-      std::vector<pgsPointOfInterest>::iterator iter(vPoi.begin());
-      std::vector<pgsPointOfInterest>::iterator end(vPoi.end());
-      for ( ; iter != end; iter++, row++ )
+      for (const pgsPointOfInterest& poi : vPoi)
       {
          col = 0;
 
-         pgsPointOfInterest& poi = *iter;
          if ( pPoi->IsOnGirder(poi) )
          {
             (*pTable)(row,col++) << location.SetValue(POI_SPAN,poi);
@@ -145,6 +143,7 @@ rptChapter* CTendonGeometryChapterBuilder::Build(CReportSpecification* pRptSpec,
             (*pTable)(row,col++) << stress.SetValue( frDetails.dfpF ); // friction
             (*pTable)(row,col++) << stress.SetValue( frDetails.dfpA ); // anchor set
          }
+         row++;
       } // next poi
 
       dist.ShowUnitTag(true);

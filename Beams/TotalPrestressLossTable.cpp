@@ -172,18 +172,18 @@ void CTotalPrestressLossTable::AddRow(rptChapter* pChapter,IBroker* pBroker,cons
 
    (*this)(row,col++) << scalar.SetValue( 100*(fpj - adj*(fpj - (dfpR0+dfpES)))/fpj );
    
-   Float64 fpp = 0;
+   Float64 dfpp = 0;
    if ( 0 < m_NtMax && m_pStrands->GetTemporaryStrandUsage() != pgsTypes::ttsPretensioned ) 
    {
-      fpp = pDetails->pLosses->GetDeltaFpp();
-      (*this)(row,col++) << stress.SetValue(fpp);
+      dfpp = pDetails->pLosses->GetDeltaFpp();
+      (*this)(row,col++) << stress.SetValue(dfpp);
    }
 
-   Float64 fptr = 0;
+   Float64 dfptr = 0;
    if ( 0 < m_NtMax )
    {
-      fptr = pDetails->pLosses->GetDeltaFptr();
-      (*this)(row,col++) << stress.SetValue(fptr);
+      dfptr = pDetails->pLosses->GetDeltaFptr();
+      (*this)(row,col++) << stress.SetValue(dfptr);
    }
 
 
@@ -191,15 +191,15 @@ void CTotalPrestressLossTable::AddRow(rptChapter* pChapter,IBroker* pBroker,cons
    (*this)(row,col++) << stress.SetValue(dfpLT);
    (*this)(row,col++) << scalar.SetValue( 100*(fpj - adj*(fpj - (dfpR0+dfpLT)))/fpj );
 
-   Float64 fpT = pDetails->pLosses->PermanentStrand_Final(); 
+   Float64 dfpT = pDetails->pLosses->PermanentStrand_Final(); 
 
    Float64 dfpED   = pDetails->pLosses->ElasticGainDueToDeckPlacement();
    Float64 dfpSIDL = pDetails->pLosses->ElasticGainDueToSIDL();
 
-   fpT += dfpES + fpp + fptr - dfpED - dfpSIDL;
-   (*this)(row,col++) << stress.SetValue(fpT);
+   dfpT += dfpES + dfpp + dfptr - dfpED - dfpSIDL;
+   (*this)(row,col++) << stress.SetValue(dfpT);
 
-   Float64 fpe = fpj - fpT;
+   Float64 fpe = fpj - dfpT;
    fpe *= adj;
 
 #if defined _DEBUG

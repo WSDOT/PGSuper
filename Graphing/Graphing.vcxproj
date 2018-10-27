@@ -82,33 +82,21 @@
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="..\..\BridgeLink\BridgeLink.props" />
-    <Import Project="..\..\WBFL\WBFL.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="..\..\BridgeLink\BridgeLink.props" />
-    <Import Project="..\..\WBFL\WBFL.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="..\..\BridgeLink\BridgeLink.props" />
-    <Import Project="..\..\WBFL\WBFL.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Profile|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="..\..\BridgeLink\BridgeLink.props" />
-    <Import Project="..\..\WBFL\WBFL.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="..\..\BridgeLink\BridgeLink.props" />
-    <Import Project="..\..\WBFL\WBFL.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="..\..\BridgeLink\BridgeLink.props" />
-    <Import Project="..\..\WBFL\WBFL.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
@@ -392,21 +380,27 @@
     <ClCompile Include="AnalysisResultsGraphBuilder.cpp" />
     <ClCompile Include="AnalysisResultsGraphController.cpp" />
     <ClCompile Include="AnalysisResultsGraphDefinition.cpp" />
+    <ClCompile Include="AnalysisResultsGraphViewControllerImp.cpp" />
+    <ClCompile Include="ConcretePropertiesGraphViewControllerImp.cpp" />
     <ClCompile Include="ConcretePropertyGraphBuilder.cpp" />
     <ClCompile Include="ConcretePropertyGraphController.cpp" />
     <ClCompile Include="DeflectionHistoryGraphBuilder.cpp" />
     <ClCompile Include="DeflectionHistoryGraphController.cpp" />
+    <ClCompile Include="DeflectionHistoryGraphViewControllerImp.cpp" />
     <ClCompile Include="DrawBeamTool.cpp" />
     <ClCompile Include="EffectivePrestressGraphBuilder.cpp" />
     <ClCompile Include="EffectivePrestressGraphController.cpp" />
+    <ClCompile Include="EffectivePrestressGraphViewControllerImp.cpp" />
     <ClCompile Include="GirderGraphBuilderBase.cpp" />
     <ClCompile Include="GirderGraphControllerBase.cpp" />
     <ClCompile Include="GirderPropertiesGraphBuilder.cpp" />
     <ClCompile Include="GirderPropertiesGraphController.cpp" />
+    <ClCompile Include="GirderPropertiesGraphViewControllerImp.cpp" />
     <ClCompile Include="Graphing.cpp" />
     <ClCompile Include="LocationGraphController.cpp" />
     <ClCompile Include="StabilityGraphBuilder.cpp" />
     <ClCompile Include="StabilityGraphController.cpp" />
+    <ClCompile Include="StabilityGraphViewControllerImp.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
@@ -417,6 +411,7 @@
     </ClCompile>
     <ClCompile Include="StressHistoryGraphBuilder.cpp" />
     <ClCompile Include="StressHistoryGraphController.cpp" />
+    <ClCompile Include="StressHistoryGraphViewControllerImp.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Graphing.def" />
@@ -424,31 +419,45 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Include\Graphing\AnalysisResultsGraphBuilder.h" />
+    <ClInclude Include="..\Include\Graphing\AnalysisResultsGraphViewController.h" />
     <ClInclude Include="..\Include\Graphing\AutoLib.h" />
+    <ClInclude Include="..\Include\Graphing\ConcretePropertiesGraphViewController.h" />
     <ClInclude Include="..\Include\Graphing\ConcretePropertyGraphBuilder.h" />
     <ClInclude Include="..\Include\Graphing\DeflectionHistoryGraphBuilder.h" />
+    <ClInclude Include="..\Include\Graphing\DeflectionHistoryGraphViewController.h" />
     <ClInclude Include="..\Include\Graphing\DrawBeamTool.h" />
     <ClInclude Include="..\Include\Graphing\EffectivePrestressGraphBuilder.h" />
+    <ClInclude Include="..\Include\Graphing\EffectivePrestressGraphViewController.h" />
     <ClInclude Include="..\Include\Graphing\GirderGraphBuilderBase.h" />
     <ClInclude Include="..\Include\Graphing\GirderPropertiesGraphBuilder.h" />
+    <ClInclude Include="..\Include\Graphing\GirderPropertiesGraphViewController.h" />
     <ClInclude Include="..\Include\Graphing\GraphingExp.h" />
     <ClInclude Include="..\Include\Graphing\GraphingTypes.h" />
     <ClInclude Include="..\Include\Graphing\StabilityGraphBuilder.h" />
+    <ClInclude Include="..\Include\Graphing\StabilityGraphViewController.h" />
     <ClInclude Include="..\Include\Graphing\StressHistoryGraphBuilder.h" />
+    <ClInclude Include="..\Include\Graphing\StressHistoryGraphViewController.h" />
     <ClInclude Include="AnalysisResultsGraphController.h" />
     <ClInclude Include="AnalysisResultsGraphDefinition.h" />
+    <ClInclude Include="AnalysisResultsGraphViewControllerImp.h" />
+    <ClInclude Include="ConcretePropertiesGraphViewControllerImp.h" />
     <ClInclude Include="ConcretePropertyGraphController.h" />
     <ClInclude Include="DeflectionHistoryGraphController.h" />
+    <ClInclude Include="DeflectionHistoryGraphViewControllerImp.h" />
     <ClInclude Include="EffectivePrestressGraphController.h" />
+    <ClInclude Include="EffectivePrestressGraphViewControllerImp.h" />
     <ClInclude Include="GirderGraphControllerBase.h" />
     <ClInclude Include="GirderPropertiesGraphController.h" />
+    <ClInclude Include="GirderPropertiesGraphViewControllerImp.h" />
     <ClInclude Include="GraphColor.h" />
     <ClInclude Include="Graphing.h" />
     <ClInclude Include="LocationGraphController.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="StabilityGraphController.h" />
+    <ClInclude Include="StabilityGraphViewControllerImp.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="StressHistoryGraphController.h" />
+    <ClInclude Include="StressHistoryGraphViewControllerImp.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Graphing.rc" />

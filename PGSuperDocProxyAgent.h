@@ -43,6 +43,7 @@
 #include "CPPGSuperDocProxyAgent.h"
 
 class CPGSDocBase;
+class CBridgeModelViewChildFrame;
 struct IBroker;
 
 // {71D5ABEE-23D6-4593-BB8D-20B092CB2E9A}
@@ -265,6 +266,7 @@ public:
    virtual void DeleteMomentLoad(CollectionIndexType loadIdx) override;
    virtual bool EditEffectiveFlangeWidth() override;
    virtual bool SelectProjectCriteria() override;
+   virtual bool EditBearings() override;
 
 // IDesign
 public:
@@ -272,13 +274,14 @@ public:
 
 // IViews
 public:
-   virtual void CreateGirderView(const CGirderKey& girderKey) override;
-   virtual void CreateBridgeModelView() override;
-   virtual void CreateLoadsView() override;
+   virtual void CreateBridgeModelView(IBridgeModelViewController** ppViewController=nullptr) override;
+   virtual void CreateGirderView(const CGirderKey& girderKey, IGirderModelViewController** ppViewController = nullptr) override;
+   virtual void CreateLoadsView(ILoadsViewController** ppViewController = nullptr) override;
    virtual void CreateLibraryEditorView() override;
    virtual void CreateReportView(CollectionIndexType rptIdx,BOOL bPromptForSpec=TRUE) override;
-   virtual void BuildReportMenu(CEAFMenu* pMenu,bool bQuickReport) override;
-   virtual void CreateGraphView(CollectionIndexType graphIdx) override;
+   virtual void CreateGraphView(CollectionIndexType graphIdx, IEAFViewController** ppViewController = nullptr) override;
+   virtual void CreateGraphView(LPCTSTR lpszGraph, IEAFViewController** ppViewController = nullptr) override;
+   virtual void BuildReportMenu(CEAFMenu* pMenu, bool bQuickReport) override;
    virtual void BuildGraphMenu(CEAFMenu* pMenu) override;
    virtual long GetBridgeModelEditorViewKey() override;
    virtual long GetGirderModelEditorViewKey() override;
@@ -286,11 +289,6 @@ public:
    virtual long GetReportViewKey() override;
    virtual long GetGraphingViewKey() override;
    virtual long GetLoadsViewKey() override;
-
-   virtual void GetBridgeViewSpanRange(SpanIndexType* pStartSpanIdx,SpanIndexType* pEndSpanIdx) override;
-   virtual void SetBridgeViewSpanRange(SpanIndexType startSpanIdx,SpanIndexType endSpanIdx) override;
-   virtual Float64 GetBridgeViewCutStation() override;
-   virtual void SetBridgeViewCutStation(Float64 station) override;
 
 // IRegisterViewEvents
 public:
@@ -394,5 +392,7 @@ private:
 
    void CreateStatusBar();
    void ResetStatusBar();
+
+   CBridgeModelViewChildFrame* GetBridgeModelViewFrame();
 };
 

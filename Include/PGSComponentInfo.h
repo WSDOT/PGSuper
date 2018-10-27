@@ -39,20 +39,20 @@ interface IPGSuperComponentInfo : IUnknown
    virtual void Terminate() = 0;
 
    /// Return the name of your component
-   virtual CString GetName() = 0;
+   virtual CString GetName() const = 0;
 
    /// Return a description of the component
-   virtual CString GetDescription() = 0;
+   virtual CString GetDescription() const = 0;
 
    /// The icon returned goes in the About dialog
-   virtual HICON GetIcon() = 0;
+   virtual HICON GetIcon() const = 0;
 
    /// Return true if there is additional information to be displayed about the componenet
-   virtual bool HasMoreInfo() = 0;
+   virtual bool HasMoreInfo() const = 0;
 
    /// When this function is called, display more detailed information
    /// about your component
-   virtual void OnMoreInfo() = 0;
+   virtual void OnMoreInfo() const = 0;
 };
 
 // {4D566A4F-289C-4e73-B47C-6A4CC7905BA9}
@@ -72,18 +72,18 @@ interface IPGSpliceComponentInfo : IUnknown
    virtual void Terminate() = 0;
 
    /// Return the name of your component
-   virtual CString GetName() = 0;
+   virtual CString GetName() const = 0;
 
    /// Return a description of the component
-   virtual CString GetDescription() = 0;
+   virtual CString GetDescription() const = 0;
 
    /// The icon returned goes in the About dialog
-   virtual HICON GetIcon() = 0;
+   virtual HICON GetIcon() const = 0;
 
    /// Return true if there is additional information to be displayed about the componenet
-   virtual bool HasMoreInfo() = 0;
+   virtual bool HasMoreInfo() const = 0;
 
    /// When this function is called, display more detailed information
    /// about your component
-   virtual void OnMoreInfo() = 0;
+   virtual void OnMoreInfo() const = 0;
 };

@@ -81,21 +81,21 @@ void CPointOfInterestChapterBuilder::ReportPoi(LPCTSTR strName,PoiAttributeType 
    rptParagraph* pPara = new rptParagraph;
    (*pChapter) << pPara;
 
-   std::vector<pgsPointOfInterest> vPoi;
+   PoiList vPoi;
    if ( attribute == POI_SPAN ) 
    {
-      vPoi = pPoi->GetPointsOfInterest(CSpanKey(ALL_SPANS,gdrIdx),attribute);
+       pPoi->GetPointsOfInterest(CSpanKey(ALL_SPANS,gdrIdx),attribute,&vPoi);
    }
    else
    {
-      vPoi = pPoi->GetPointsOfInterest(CSegmentKey(ALL_GROUPS,gdrIdx,ALL_SEGMENTS),attribute);
+      pPoi->GetPointsOfInterest(CSegmentKey(ALL_GROUPS,gdrIdx,ALL_SEGMENTS),attribute,&vPoi);
    }
 
    (*pPara) << _T("Number of POI = ") << (CollectionIndexType)vPoi.size() << rptNewLine;
 
    ColumnIndexType col = 0;
 
-   rptRcTable* pTable = rptStyleManager::CreateDefaultTable(14,strName);
+   rptRcTable* pTable = rptStyleManager::CreateDefaultTable(15,strName);
    (*pPara) << pTable << rptNewLine;
    (*pTable)(0,col++) << _T("POI ID");
    (*pTable)(0,col++) << _T("Group");
@@ -110,26 +110,24 @@ void CPointOfInterestChapterBuilder::ReportPoi(LPCTSTR strName,PoiAttributeType 
    (*pTable)(0,col++) << _T("On Girder");
    (*pTable)(0,col++) << _T("On Segment");
    (*pTable)(0,col++) << _T("On Closure");
-   (*pTable)(0,col++) << _T("Attribute");
+   (*pTable)(0, col++) << _T("Can Merge");
+   (*pTable)(0, col++) << _T("Attribute");
 
    RowIndexType row = 1;
-   std::vector<pgsPointOfInterest>::iterator iter(vPoi.begin());
-   std::vector<pgsPointOfInterest>::iterator end(vPoi.end());
-   for ( ; iter != end; iter++, row++ )
+   for (const pgsPointOfInterest& poi : vPoi)
    {
       col = 0;
 
-      pgsPointOfInterest& poi = *iter;
       const CSegmentKey& segmentKey = poi.GetSegmentKey();
 
-      (*pTable)(row,col++) << poi.GetID();
-      (*pTable)(row,col++) << LABEL_GROUP(segmentKey.groupIndex);
-      (*pTable)(row,col++) << LABEL_GIRDER(segmentKey.girderIndex);
-      (*pTable)(row,col++) << LABEL_SEGMENT(segmentKey.segmentIndex);
-      (*pTable)(row,col++) << coordinate.SetValue( poi.GetDistFromStart() );
-      (*pTable)(row,col++) << coordinate.SetValue( pPoi->ConvertPoiToSegmentPathCoordinate(poi) );
-      (*pTable)(row,col++) << coordinate.SetValue( pPoi->ConvertPoiToGirderCoordinate(poi) );
-      (*pTable)(row,col++) << coordinate.SetValue( pPoi->ConvertPoiToGirderPathCoordinate(poi) );
+      (*pTable)(row, col++) << poi.GetID();
+      (*pTable)(row, col++) << LABEL_GROUP(segmentKey.groupIndex);
+      (*pTable)(row, col++) << LABEL_GIRDER(segmentKey.girderIndex);
+      (*pTable)(row, col++) << LABEL_SEGMENT(segmentKey.segmentIndex);
+      (*pTable)(row, col++) << coordinate.SetValue( poi.GetDistFromStart() );
+      (*pTable)(row, col++) << coordinate.SetValue( pPoi->ConvertPoiToSegmentPathCoordinate(poi) );
+      (*pTable)(row, col++) << coordinate.SetValue( pPoi->ConvertPoiToGirderCoordinate(poi) );
+      (*pTable)(row, col++) << coordinate.SetValue( pPoi->ConvertPoiToGirderPathCoordinate(poi) );
 
       CSpanKey spanKey;
       Float64 Xspan;
@@ -141,11 +139,15 @@ void CPointOfInterestChapterBuilder::ReportPoi(LPCTSTR strName,PoiAttributeType 
       bool bIsOnSegment = pPoi->IsOnSegment(poi);
       CClosureKey closureKey;
       bool bIsOnClosure = pPoi->IsInClosureJoint(poi,&closureKey);
+      bool bCanMerge = poi.CanMerge();
       std::_tstring strBoolean[2] = { _T("true"), _T("false") };
-      (*pTable)(row,col++) << strBoolean[bIsOnGirder ? 0 : 1].c_str();
-      (*pTable)(row,col++) << strBoolean[bIsOnSegment ? 0 : 1].c_str();
-      (*pTable)(row,col++) << strBoolean[bIsOnClosure ? 0 : 1].c_str();
+      (*pTable)(row, col++) << strBoolean[bIsOnGirder ? 0 : 1].c_str();
+      (*pTable)(row, col++) << strBoolean[bIsOnSegment ? 0 : 1].c_str();
+      (*pTable)(row, col++) << strBoolean[bIsOnClosure ? 0 : 1].c_str();
+      (*pTable)(row, col++) << strBoolean[bCanMerge ? 0 : 1].c_str();
 
-      (*pTable)(row,col++) << poi.GetAttributes(attribute,false);
+      (*pTable)(row, col++) << poi.GetAttributes(attribute,false);
+
+      row++;
    }
 }

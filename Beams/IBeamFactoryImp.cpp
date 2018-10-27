@@ -63,87 +63,87 @@ static char THIS_FILE[] = __FILE__;
 HRESULT CIBeamFactory::FinalConstruct()
 {
    // Initialize with default values... This are not necessarily valid dimensions
-   m_DimNames.push_back(_T("C1"));
-   m_DimNames.push_back(_T("D1"));
-   m_DimNames.push_back(_T("D2"));
-   m_DimNames.push_back(_T("D3"));
-   m_DimNames.push_back(_T("D4"));
-   m_DimNames.push_back(_T("D5"));
-   m_DimNames.push_back(_T("D6"));
-   m_DimNames.push_back(_T("D7"));
-   m_DimNames.push_back(_T("T1"));
-   m_DimNames.push_back(_T("T2"));
-   m_DimNames.push_back(_T("W1"));
-   m_DimNames.push_back(_T("W2"));
-   m_DimNames.push_back(_T("W3"));
-   m_DimNames.push_back(_T("W4"));
-   m_DimNames.push_back(_T("EndBlockWidth"));
-   m_DimNames.push_back(_T("EndBlockLength"));
-   m_DimNames.push_back(_T("EndBlockTransition"));
+   m_DimNames.emplace_back(_T("C1")); // use emplace_back instead of push_back to construct the string inside the container instead of creating an unnamed temporary that is copied into the container
+   m_DimNames.emplace_back(_T("D1"));
+   m_DimNames.emplace_back(_T("D2"));
+   m_DimNames.emplace_back(_T("D3"));
+   m_DimNames.emplace_back(_T("D4"));
+   m_DimNames.emplace_back(_T("D5"));
+   m_DimNames.emplace_back(_T("D6"));
+   m_DimNames.emplace_back(_T("D7"));
+   m_DimNames.emplace_back(_T("T1"));
+   m_DimNames.emplace_back(_T("T2"));
+   m_DimNames.emplace_back(_T("W1"));
+   m_DimNames.emplace_back(_T("W2"));
+   m_DimNames.emplace_back(_T("W3"));
+   m_DimNames.emplace_back(_T("W4"));
+   m_DimNames.emplace_back(_T("EndBlockWidth"));
+   m_DimNames.emplace_back(_T("EndBlockLength"));
+   m_DimNames.emplace_back(_T("EndBlockTransition"));
 
 //   std::sort(m_DimNames.begin(),m_DimNames.end());
 
    // Default beam is a W74G
-   m_DefaultDims.push_back(::ConvertToSysUnits(0.000,unitMeasure::Inch)); // C1
-   m_DefaultDims.push_back(::ConvertToSysUnits(2.875,unitMeasure::Inch)); // D1
-   m_DefaultDims.push_back(::ConvertToSysUnits(2.625,unitMeasure::Inch)); // D2
-   m_DefaultDims.push_back(::ConvertToSysUnits(2.000,unitMeasure::Inch)); // D3
-   m_DefaultDims.push_back(::ConvertToSysUnits(6.000,unitMeasure::Inch)); // D4
-   m_DefaultDims.push_back(::ConvertToSysUnits(3.000,unitMeasure::Inch)); // D5
-   m_DefaultDims.push_back(::ConvertToSysUnits(0.000,unitMeasure::Inch)); // D6
-   m_DefaultDims.push_back(::ConvertToSysUnits(57.00,unitMeasure::Inch)); // D7
-   m_DefaultDims.push_back(::ConvertToSysUnits(6.000,unitMeasure::Inch)); // T1
-   m_DefaultDims.push_back(::ConvertToSysUnits(6.000,unitMeasure::Inch)); // T2
-   m_DefaultDims.push_back(::ConvertToSysUnits(16.50,unitMeasure::Inch)); // W1
-   m_DefaultDims.push_back(::ConvertToSysUnits(2.000,unitMeasure::Inch)); // W2
-   m_DefaultDims.push_back(::ConvertToSysUnits(9.500,unitMeasure::Inch)); // W3
-   m_DefaultDims.push_back(::ConvertToSysUnits(0.000,unitMeasure::Inch)); // W4
-   m_DefaultDims.push_back(::ConvertToSysUnits(0.000,unitMeasure::Inch)); // EndBlockWidth
-   m_DefaultDims.push_back(::ConvertToSysUnits(0.000,unitMeasure::Feet)); // EndBlockLength
-   m_DefaultDims.push_back(::ConvertToSysUnits(0.000,unitMeasure::Feet)); // EndBlockTransition
+   m_DefaultDims.emplace_back(::ConvertToSysUnits(0.000,unitMeasure::Inch)); // C1
+   m_DefaultDims.emplace_back(::ConvertToSysUnits(2.875,unitMeasure::Inch)); // D1
+   m_DefaultDims.emplace_back(::ConvertToSysUnits(2.625,unitMeasure::Inch)); // D2
+   m_DefaultDims.emplace_back(::ConvertToSysUnits(2.000,unitMeasure::Inch)); // D3
+   m_DefaultDims.emplace_back(::ConvertToSysUnits(6.000,unitMeasure::Inch)); // D4
+   m_DefaultDims.emplace_back(::ConvertToSysUnits(3.000,unitMeasure::Inch)); // D5
+   m_DefaultDims.emplace_back(::ConvertToSysUnits(0.000,unitMeasure::Inch)); // D6
+   m_DefaultDims.emplace_back(::ConvertToSysUnits(57.00,unitMeasure::Inch)); // D7
+   m_DefaultDims.emplace_back(::ConvertToSysUnits(6.000,unitMeasure::Inch)); // T1
+   m_DefaultDims.emplace_back(::ConvertToSysUnits(6.000,unitMeasure::Inch)); // T2
+   m_DefaultDims.emplace_back(::ConvertToSysUnits(16.50,unitMeasure::Inch)); // W1
+   m_DefaultDims.emplace_back(::ConvertToSysUnits(2.000,unitMeasure::Inch)); // W2
+   m_DefaultDims.emplace_back(::ConvertToSysUnits(9.500,unitMeasure::Inch)); // W3
+   m_DefaultDims.emplace_back(::ConvertToSysUnits(0.000,unitMeasure::Inch)); // W4
+   m_DefaultDims.emplace_back(::ConvertToSysUnits(0.000,unitMeasure::Inch)); // EndBlockWidth
+   m_DefaultDims.emplace_back(::ConvertToSysUnits(0.000,unitMeasure::Feet)); // EndBlockLength
+   m_DefaultDims.emplace_back(::ConvertToSysUnits(0.000,unitMeasure::Feet)); // EndBlockTransition
 
    // SI Units
-   m_DimUnits[0].push_back(&unitMeasure::Millimeter); // C1
-   m_DimUnits[0].push_back(&unitMeasure::Millimeter); // D1
-   m_DimUnits[0].push_back(&unitMeasure::Millimeter); // D2
-   m_DimUnits[0].push_back(&unitMeasure::Millimeter); // D3
-   m_DimUnits[0].push_back(&unitMeasure::Millimeter); // D4
-   m_DimUnits[0].push_back(&unitMeasure::Millimeter); // D5
-   m_DimUnits[0].push_back(&unitMeasure::Millimeter); // D6
-   m_DimUnits[0].push_back(&unitMeasure::Millimeter); // D7
-   m_DimUnits[0].push_back(&unitMeasure::Millimeter); // T1
-   m_DimUnits[0].push_back(&unitMeasure::Millimeter); // T2
-   m_DimUnits[0].push_back(&unitMeasure::Millimeter); // W1
-   m_DimUnits[0].push_back(&unitMeasure::Millimeter); // W2
-   m_DimUnits[0].push_back(&unitMeasure::Millimeter); // W3
-   m_DimUnits[0].push_back(&unitMeasure::Millimeter); // W4
-   m_DimUnits[0].push_back(&unitMeasure::Millimeter); // EndBlockWidth
-   m_DimUnits[0].push_back(&unitMeasure::Millimeter); // EndBlockLength
-   m_DimUnits[0].push_back(&unitMeasure::Millimeter); // EndBlockTransition
+   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // C1
+   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // D1
+   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // D2
+   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // D3
+   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // D4
+   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // D5
+   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // D6
+   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // D7
+   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // T1
+   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // T2
+   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // W1
+   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // W2
+   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // W3
+   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // W4
+   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // EndBlockWidth
+   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // EndBlockLength
+   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // EndBlockTransition
 
    // US Units
-   m_DimUnits[1].push_back(&unitMeasure::Inch); // C1
-   m_DimUnits[1].push_back(&unitMeasure::Inch); // D1
-   m_DimUnits[1].push_back(&unitMeasure::Inch); // D2
-   m_DimUnits[1].push_back(&unitMeasure::Inch); // D3
-   m_DimUnits[1].push_back(&unitMeasure::Inch); // D4
-   m_DimUnits[1].push_back(&unitMeasure::Inch); // D5
-   m_DimUnits[1].push_back(&unitMeasure::Inch); // D6
-   m_DimUnits[1].push_back(&unitMeasure::Inch); // D7
-   m_DimUnits[1].push_back(&unitMeasure::Inch); // T1
-   m_DimUnits[1].push_back(&unitMeasure::Inch); // T2
-   m_DimUnits[1].push_back(&unitMeasure::Inch); // W1
-   m_DimUnits[1].push_back(&unitMeasure::Inch); // W2
-   m_DimUnits[1].push_back(&unitMeasure::Inch); // W3
-   m_DimUnits[1].push_back(&unitMeasure::Inch); // W4
-   m_DimUnits[1].push_back(&unitMeasure::Inch); // EndBlockWidth
-   m_DimUnits[1].push_back(&unitMeasure::Feet); // EndBlockLength
-   m_DimUnits[1].push_back(&unitMeasure::Feet); // EndBlockTransition
+   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // C1
+   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // D1
+   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // D2
+   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // D3
+   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // D4
+   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // D5
+   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // D6
+   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // D7
+   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // T1
+   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // T2
+   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // W1
+   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // W2
+   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // W3
+   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // W4
+   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // EndBlockWidth
+   m_DimUnits[1].emplace_back(&unitMeasure::Feet); // EndBlockLength
+   m_DimUnits[1].emplace_back(&unitMeasure::Feet); // EndBlockTransition
 
    return S_OK;
 }
 
-void CIBeamFactory::CreateGirderSection(IBroker* pBroker,StatusGroupIDType statusGroupID,const IBeamFactory::Dimensions& dimensions,Float64 overallHeight,Float64 bottomFlangeHeight,IGirderSection** ppSection)
+void CIBeamFactory::CreateGirderSection(IBroker* pBroker,StatusGroupIDType statusGroupID,const IBeamFactory::Dimensions& dimensions,Float64 overallHeight,Float64 bottomFlangeHeight,IGirderSection** ppSection) const
 {
    CComPtr<IFlangedGirderSection> gdrSection;
    gdrSection.CoCreateInstance(CLSID_FlangedGirderSection);
@@ -175,7 +175,7 @@ void CIBeamFactory::CreateGirderSection(IBroker* pBroker,StatusGroupIDType statu
    gdrSection.QueryInterface(ppSection);
 }
 
-void CIBeamFactory::CreateGirderProfile(IBroker* pBroker,StatusGroupIDType statusGroupID,const CSegmentKey& segmentKey,const IBeamFactory::Dimensions& dimensions,IShape** ppShape)
+void CIBeamFactory::CreateGirderProfile(IBroker* pBroker,StatusGroupIDType statusGroupID,const CSegmentKey& segmentKey,const IBeamFactory::Dimensions& dimensions,IShape** ppShape) const
 {
    GET_IFACE2(pBroker,IBridge,pBridge);
    Float64 length = pBridge->GetSegmentLength(segmentKey);
@@ -203,7 +203,7 @@ void CIBeamFactory::CreateGirderProfile(IBroker* pBroker,StatusGroupIDType statu
    rect->QueryInterface(ppShape);
 }
 
-void CIBeamFactory::CreateSegment(IBroker* pBroker,StatusGroupIDType statusGroupID,const CSegmentKey& segmentKey,ISuperstructureMember* ssmbr)
+void CIBeamFactory::CreateSegment(IBroker* pBroker,StatusGroupIDType statusGroupID,const CSegmentKey& segmentKey,ISuperstructureMemberSegment** ppSegment) const
 {
    CComPtr<ISuperstructureMemberSegment> segment;
 
@@ -216,7 +216,7 @@ void CIBeamFactory::CreateSegment(IBroker* pBroker,StatusGroupIDType statusGroup
    const GirderLibraryEntry* pGdrEntry = pGirder->GetGirderLibraryEntry();
    const GirderLibraryEntry::Dimensions& dimensions = pGdrEntry->GetDimensions();
 
-   bool bPrismatic = IsPrismatic(dimensions);
+   bool bPrismatic = IsPrismatic(segmentKey);
    if ( bPrismatic )
    {
       // prismatic
@@ -295,10 +295,15 @@ void CIBeamFactory::CreateSegment(IBroker* pBroker,StatusGroupIDType statusGroup
       ebSegment->AddShape(shape,material,nullptr);
    }
 
-   ssmbr->AddSegment(segment);
+   segment.CopyTo(ppSegment);
 }
 
-void CIBeamFactory::LayoutSectionChangePointsOfInterest(IBroker* pBroker,const CSegmentKey& segmentKey,pgsPoiMgr* pPoiMgr)
+void CIBeamFactory::ConfigureSegment(IBroker* pBroker, StatusItemIDType statusID, const CSegmentKey& segmentKey, ISuperstructureMemberSegment* pSSMbrSegment) const
+{
+   // do nothing... all the configuration was done in CreateSegment
+}
+
+void CIBeamFactory::LayoutSectionChangePointsOfInterest(IBroker* pBroker,const CSegmentKey& segmentKey,pgsPoiMgr* pPoiMgr) const
 {
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
@@ -335,7 +340,7 @@ void CIBeamFactory::LayoutSectionChangePointsOfInterest(IBroker* pBroker,const C
    pPoiMgr->AddPointOfInterest(poiEndEndBlock1);
 }
 
-void CIBeamFactory::CreateDistFactorEngineer(IBroker* pBroker,StatusGroupIDType statusGroupID,const pgsTypes::SupportedBeamSpacing* pSpacingType,const pgsTypes::SupportedDeckType* pDeckType, const pgsTypes::AdjacentTransverseConnectivity* pConnect,IDistFactorEngineer** ppEng)
+void CIBeamFactory::CreateDistFactorEngineer(IBroker* pBroker,StatusGroupIDType statusGroupID,const pgsTypes::SupportedBeamSpacing* pSpacingType,const pgsTypes::SupportedDeckType* pDeckType, const pgsTypes::AdjacentTransverseConnectivity* pConnect,IDistFactorEngineer** ppEng) const
 {
    CComObject<CIBeamDistFactorEngineer>* pEngineer;
    CComObject<CIBeamDistFactorEngineer>::CreateInstance(&pEngineer);
@@ -344,7 +349,7 @@ void CIBeamFactory::CreateDistFactorEngineer(IBroker* pBroker,StatusGroupIDType 
    (*ppEng)->AddRef();
 }
 
-void CIBeamFactory::CreatePsLossEngineer(IBroker* pBroker,StatusGroupIDType statusGroupID,const CGirderKey& girderKey,IPsLossEngineer** ppEng)
+void CIBeamFactory::CreatePsLossEngineer(IBroker* pBroker,StatusGroupIDType statusGroupID,const CGirderKey& girderKey,IPsLossEngineer** ppEng) const
 {
    GET_IFACE2(pBroker, ILossParameters, pLossParams);
    if ( pLossParams->GetLossMethod() == pgsTypes::TIME_STEP )
@@ -369,7 +374,7 @@ void CIBeamFactory::CreatePsLossEngineer(IBroker* pBroker,StatusGroupIDType stat
 void CIBeamFactory::CreateStrandMover(const IBeamFactory::Dimensions& dimensions,  Float64 Hg,
                                   IBeamFactory::BeamFace endTopFace, Float64 endTopLimit, IBeamFactory::BeamFace endBottomFace, Float64 endBottomLimit, 
                                   IBeamFactory::BeamFace hpTopFace, Float64 hpTopLimit, IBeamFactory::BeamFace hpBottomFace, Float64 hpBottomLimit, 
-                                  Float64 endIncrement, Float64 hpIncrement, IStrandMover** strandMover)
+                                  Float64 endIncrement, Float64 hpIncrement, IStrandMover** strandMover) const
 {
    HRESULT hr = S_OK;
 
@@ -424,22 +429,22 @@ void CIBeamFactory::CreateStrandMover(const IBeamFactory::Dimensions& dimensions
 }
 
 
-std::vector<std::_tstring> CIBeamFactory::GetDimensionNames()
+const std::vector<std::_tstring>& CIBeamFactory::GetDimensionNames() const
 {
    return m_DimNames;
 }
 
-std::vector<Float64> CIBeamFactory::GetDefaultDimensions()
+const std::vector<Float64>& CIBeamFactory::GetDefaultDimensions() const
 {
    return m_DefaultDims;
 }
 
-std::vector<const unitLength*> CIBeamFactory::GetDimensionUnits(bool bSIUnits)
+const std::vector<const unitLength*>& CIBeamFactory::GetDimensionUnits(bool bSIUnits) const
 {
    return m_DimUnits[ bSIUnits ? 0 : 1 ];
 }
 
-bool CIBeamFactory::ValidateDimensions(const IBeamFactory::Dimensions& dimensions,bool bSIUnits,std::_tstring* strErrMsg)
+bool CIBeamFactory::ValidateDimensions(const IBeamFactory::Dimensions& dimensions,bool bSIUnits,std::_tstring* strErrMsg) const
 {
    Float64 c1;
    Float64 d1,d2,d3,d4,d5,d6,d7;
@@ -593,43 +598,46 @@ bool CIBeamFactory::ValidateDimensions(const IBeamFactory::Dimensions& dimension
    return true;
 }
 
-void CIBeamFactory::SaveSectionDimensions(sysIStructuredSave* pSave,const IBeamFactory::Dimensions& dimensions)
+void CIBeamFactory::SaveSectionDimensions(sysIStructuredSave* pSave,const IBeamFactory::Dimensions& dimensions) const
 {
-   std::vector<std::_tstring>::iterator iter;
    pSave->BeginUnit(_T("IBeamDimensions"),2.0);
-   for ( iter = m_DimNames.begin(); iter != m_DimNames.end(); iter++ )
+   for(const auto& name : m_DimNames)
    {
-      std::_tstring name = *iter;
       Float64 value = GetDimension(dimensions,name);
       pSave->Property(name.c_str(),value);
    }
    pSave->EndUnit();
 }
 
-IBeamFactory::Dimensions CIBeamFactory::LoadSectionDimensions(sysIStructuredLoad* pLoad)
+IBeamFactory::Dimensions CIBeamFactory::LoadSectionDimensions(sysIStructuredLoad* pLoad) const
 {
    Float64 parent_version;
-   if ( pLoad->GetParentUnit() == _T("GirderLibraryEntry") )
+   if (pLoad->GetParentUnit() == _T("GirderLibraryEntry"))
+   {
       parent_version = pLoad->GetParentVersion();
+   }
    else
+   {
       parent_version = pLoad->GetVersion();
-
+   }
 
    IBeamFactory::Dimensions dimensions;
-   std::vector<std::_tstring>::iterator iter;
 
    Float64 dimVersion = 1.0;
    if ( 14 <= parent_version )
    {
-      if ( pLoad->BeginUnit(_T("IBeamDimensions")) )
+      if (pLoad->BeginUnit(_T("IBeamDimensions")))
+      {
          dimVersion = pLoad->GetVersion();
+      }
       else
-         THROW_LOAD(InvalidFileFormat,pLoad);
+      {
+         THROW_LOAD(InvalidFileFormat, pLoad);
+      }
    }
 
-   for ( iter = m_DimNames.begin(); iter != m_DimNames.end(); iter++ )
+   for (const auto& name : m_DimNames)
    {
-      std::_tstring name = *iter;
       Float64 value;
       if ( !pLoad->Property(name.c_str(),&value) )
       {
@@ -648,16 +656,18 @@ IBeamFactory::Dimensions CIBeamFactory::LoadSectionDimensions(sysIStructuredLoad
             THROW_LOAD(InvalidFileFormat,pLoad);
          }
       }
-      dimensions.push_back( std::make_pair(name,value) );
+      dimensions.emplace_back(name,value);
    }
 
-   if ( 14 <= parent_version && !pLoad->EndUnit() )
-      THROW_LOAD(InvalidFileFormat,pLoad);
+   if (14 <= parent_version && !pLoad->EndUnit())
+   {
+      THROW_LOAD(InvalidFileFormat, pLoad);
+   }
 
    return dimensions;
 }
 
-bool CIBeamFactory::IsPrismatic(const IBeamFactory::Dimensions& dimensions)
+bool CIBeamFactory::IsPrismatic(const IBeamFactory::Dimensions& dimensions) const
 {
    Float64 ebWidth, ebLength, ebTransition;
    ebWidth      = GetDimension(dimensions,_T("EndBlockWidth"));
@@ -679,22 +689,35 @@ bool CIBeamFactory::IsPrismatic(const IBeamFactory::Dimensions& dimensions)
    return bPrismatic;
 }
 
-bool CIBeamFactory::IsSymmetric(const IBeamFactory::Dimensions& dimensions)
+bool CIBeamFactory::IsPrismatic(const CSegmentKey& segmentKey) const
+{
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+   GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
+   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+   const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(segmentKey.groupIndex);
+   const CSplicedGirderData*  pGirder = pGroup->GetGirder(segmentKey.girderIndex);
+   const GirderLibraryEntry* pGirderEntry = pGirder->GetGirderLibraryEntry();
+   const auto& dimensions = pGirderEntry->GetDimensions();
+   return IsPrismatic(dimensions);
+}
+
+bool CIBeamFactory::IsSymmetric(const CSegmentKey& segmentKey) const
 {
    return true;
 }
 
-Float64 CIBeamFactory::GetInternalSurfaceAreaOfVoids(IBroker* pBroker,const CSegmentKey& segmentKey)
+Float64 CIBeamFactory::GetInternalSurfaceAreaOfVoids(IBroker* pBroker,const CSegmentKey& segmentKey) const
 {
    return 0;
 }
 
-std::_tstring CIBeamFactory::GetImage()
+std::_tstring CIBeamFactory::GetImage() const
 {
    return std::_tstring(_T("IBeam.jpg"));
 }
 
-std::_tstring CIBeamFactory::GetSlabDimensionsImage(pgsTypes::SupportedDeckType deckType)
+std::_tstring CIBeamFactory::GetSlabDimensionsImage(pgsTypes::SupportedDeckType deckType) const
 {
    std::_tstring strImage;
 
@@ -705,7 +728,7 @@ std::_tstring CIBeamFactory::GetSlabDimensionsImage(pgsTypes::SupportedDeckType 
       break;
 
    case pgsTypes::sdtCompositeSIP:
-      strImage =  _T("IBeam_Slab_SIP.gif");
+      strImage = _T("IBeam_Slab_SIP.gif");
       break;
 
    default:
@@ -716,7 +739,7 @@ std::_tstring CIBeamFactory::GetSlabDimensionsImage(pgsTypes::SupportedDeckType 
    return strImage;
 }
 
-std::_tstring CIBeamFactory::GetPositiveMomentCapacitySchematicImage(pgsTypes::SupportedDeckType deckType)
+std::_tstring CIBeamFactory::GetPositiveMomentCapacitySchematicImage(pgsTypes::SupportedDeckType deckType) const
 {
    std::_tstring strImage;
 
@@ -735,7 +758,7 @@ std::_tstring CIBeamFactory::GetPositiveMomentCapacitySchematicImage(pgsTypes::S
    return strImage;
 }
 
-std::_tstring CIBeamFactory::GetNegativeMomentCapacitySchematicImage(pgsTypes::SupportedDeckType deckType)
+std::_tstring CIBeamFactory::GetNegativeMomentCapacitySchematicImage(pgsTypes::SupportedDeckType deckType) const
 {
    std::_tstring strImage;
 
@@ -754,7 +777,7 @@ std::_tstring CIBeamFactory::GetNegativeMomentCapacitySchematicImage(pgsTypes::S
    return strImage;
 }
 
-std::_tstring CIBeamFactory::GetShearDimensionsSchematicImage(pgsTypes::SupportedDeckType deckType)
+std::_tstring CIBeamFactory::GetShearDimensionsSchematicImage(pgsTypes::SupportedDeckType deckType) const
 {
    std::_tstring strImage;
 
@@ -773,7 +796,7 @@ std::_tstring CIBeamFactory::GetShearDimensionsSchematicImage(pgsTypes::Supporte
    return strImage;
 }
 
-std::_tstring CIBeamFactory::GetInteriorGirderEffectiveFlangeWidthImage(IBroker* pBroker,pgsTypes::SupportedDeckType deckType)
+std::_tstring CIBeamFactory::GetInteriorGirderEffectiveFlangeWidthImage(IBroker* pBroker,pgsTypes::SupportedDeckType deckType) const
 {
    GET_IFACE2(pBroker, ILibrary,       pLib);
    GET_IFACE2(pBroker, ISpecification, pSpec);
@@ -788,7 +811,7 @@ std::_tstring CIBeamFactory::GetInteriorGirderEffectiveFlangeWidthImage(IBroker*
    }
 }
 
-std::_tstring CIBeamFactory::GetExteriorGirderEffectiveFlangeWidthImage(IBroker* pBroker,pgsTypes::SupportedDeckType deckType)
+std::_tstring CIBeamFactory::GetExteriorGirderEffectiveFlangeWidthImage(IBroker* pBroker,pgsTypes::SupportedDeckType deckType) const
 {
    GET_IFACE2(pBroker, ILibrary,       pLib);
    GET_IFACE2(pBroker, ISpecification, pSpec);
@@ -803,12 +826,12 @@ std::_tstring CIBeamFactory::GetExteriorGirderEffectiveFlangeWidthImage(IBroker*
    }
 }
 
-CLSID CIBeamFactory::GetCLSID()
+CLSID CIBeamFactory::GetCLSID() const
 {
    return CLSID_WFBeamFactory;
 }
 
-std::_tstring CIBeamFactory::GetName()
+std::_tstring CIBeamFactory::GetName() const
 {
    USES_CONVERSION;
    LPOLESTR pszUserType;
@@ -816,12 +839,12 @@ std::_tstring CIBeamFactory::GetName()
    return std::_tstring( OLE2T(pszUserType) );
 }
 
-CLSID CIBeamFactory::GetFamilyCLSID()
+CLSID CIBeamFactory::GetFamilyCLSID() const
 {
    return CLSID_WFBeamFamily;
 }
 
-std::_tstring CIBeamFactory::GetGirderFamilyName()
+std::_tstring CIBeamFactory::GetGirderFamilyName() const
 {
    USES_CONVERSION;
    LPOLESTR pszUserType;
@@ -829,27 +852,27 @@ std::_tstring CIBeamFactory::GetGirderFamilyName()
    return std::_tstring( OLE2T(pszUserType) );
 }
 
-std::_tstring CIBeamFactory::GetPublisher()
+std::_tstring CIBeamFactory::GetPublisher() const
 {
    return std::_tstring(_T("WSDOT"));
 }
 
-std::_tstring CIBeamFactory::GetPublisherContactInformation()
+std::_tstring CIBeamFactory::GetPublisherContactInformation() const
 {
    return std::_tstring(_T("http://www.wsdot.wa.gov/eesc/bridge"));
 }
 
-HINSTANCE CIBeamFactory::GetResourceInstance()
+HINSTANCE CIBeamFactory::GetResourceInstance() const
 {
    return _Module.GetResourceInstance();
 }
 
-LPCTSTR CIBeamFactory::GetImageResourceName()
+LPCTSTR CIBeamFactory::GetImageResourceName() const
 {
    return _T("IBEAM");
 }
 
-HICON  CIBeamFactory::GetIcon() 
+HICON  CIBeamFactory::GetIcon() const
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
@@ -860,7 +883,7 @@ void CIBeamFactory::GetDimensions(const IBeamFactory::Dimensions& dimensions,
                                   Float64& d1,Float64& d2,Float64& d3,Float64& d4,Float64& d5,Float64& d6,Float64& d7,
                                   Float64& w1,Float64& w2,Float64& w3,Float64& w4,
                                   Float64& t1,Float64& t2, Float64& c1,
-                                  Float64& ebWidth,Float64& ebLength,Float64& ebTransition)
+                                  Float64& ebWidth,Float64& ebLength,Float64& ebTransition) const
 {
    d1 = GetDimension(dimensions,_T("D1"));
    d2 = GetDimension(dimensions,_T("D2"));
@@ -881,21 +904,21 @@ void CIBeamFactory::GetDimensions(const IBeamFactory::Dimensions& dimensions,
    ebTransition = GetDimension(dimensions,_T("EndBlockTransition"));
 }
 
-Float64 CIBeamFactory::GetDimension(const IBeamFactory::Dimensions& dimensions,const std::_tstring& name)
+Float64 CIBeamFactory::GetDimension(const IBeamFactory::Dimensions& dimensions,const std::_tstring& name) const
 {
-   Dimensions::const_iterator iter;
-   for ( iter = dimensions.begin(); iter != dimensions.end(); iter++ )
+   for (const auto& dim : dimensions)
    {
-      const Dimension& dim = *iter;
-      if ( name == dim.first )
+      if (name == dim.first)
+      {
          return dim.second;
+      }
    }
 
    ATLASSERT(false); // should never get here
    return -99999;
 }
 
-pgsTypes::SupportedDeckTypes CIBeamFactory::GetSupportedDeckTypes(pgsTypes::SupportedBeamSpacing sbs)
+pgsTypes::SupportedDeckTypes CIBeamFactory::GetSupportedDeckTypes(pgsTypes::SupportedBeamSpacing sbs) const
 {
    pgsTypes::SupportedDeckTypes sdt;
    switch(sbs)
@@ -912,7 +935,7 @@ pgsTypes::SupportedDeckTypes CIBeamFactory::GetSupportedDeckTypes(pgsTypes::Supp
    return sdt;
 }
 
-pgsTypes::SupportedBeamSpacings CIBeamFactory::GetSupportedBeamSpacings()
+pgsTypes::SupportedBeamSpacings CIBeamFactory::GetSupportedBeamSpacings() const
 {
    pgsTypes::SupportedBeamSpacings sbs;
    sbs.push_back(pgsTypes::sbsUniform);
@@ -921,14 +944,43 @@ pgsTypes::SupportedBeamSpacings CIBeamFactory::GetSupportedBeamSpacings()
    return sbs;
 }
 
-pgsTypes::SupportedDiaphragmTypes CIBeamFactory::GetSupportedDiaphragms()
+bool CIBeamFactory::IsSupportedBeamSpacing(pgsTypes::SupportedBeamSpacing spacingType) const
+{
+   pgsTypes::SupportedBeamSpacings sbs = GetSupportedBeamSpacings();
+   auto found = std::find(sbs.cbegin(), sbs.cend(), spacingType);
+   return found == sbs.end() ? false : true;
+}
+
+bool CIBeamFactory::ConvertBeamSpacing(const IBeamFactory::Dimensions& dimensions,pgsTypes::SupportedBeamSpacing spacingType, Float64 spacing, pgsTypes::SupportedBeamSpacing* pNewSpacingType, Float64* pNewSpacing, Float64* pNewTopWidth) const
+{
+   // nothing to convert
+   return false;
+}
+
+std::vector<pgsTypes::GirderOrientationType> CIBeamFactory::GetSupportedGirderOrientation() const
+{
+   std::vector<pgsTypes::GirderOrientationType> types{ pgsTypes::Plumb/*, pgsTypes::StartNormal,pgsTypes::MidspanNormal,pgsTypes::EndNormal*/ };
+   return types;
+}
+
+bool CIBeamFactory::IsSupportedGirderOrientation(pgsTypes::GirderOrientationType orientation) const
+{
+   return orientation == pgsTypes::Plumb ? true : false;
+}
+
+pgsTypes::GirderOrientationType CIBeamFactory::ConvertGirderOrientation(pgsTypes::GirderOrientationType orientation) const
+{
+   return pgsTypes::Plumb;
+}
+
+pgsTypes::SupportedDiaphragmTypes CIBeamFactory::GetSupportedDiaphragms() const
 {
    pgsTypes::SupportedDiaphragmTypes diaphragmTypes;
    diaphragmTypes.push_back(pgsTypes::dtCastInPlace);
    return diaphragmTypes;
 }
 
-pgsTypes::SupportedDiaphragmLocationTypes CIBeamFactory::GetSupportedDiaphragmLocations(pgsTypes::DiaphragmType type)
+pgsTypes::SupportedDiaphragmLocationTypes CIBeamFactory::GetSupportedDiaphragmLocations(pgsTypes::DiaphragmType type) const
 {
    pgsTypes::SupportedDiaphragmLocationTypes locations;
    switch(type)
@@ -944,8 +996,7 @@ pgsTypes::SupportedDiaphragmLocationTypes CIBeamFactory::GetSupportedDiaphragmLo
    return locations;
 }
 
-void CIBeamFactory::GetAllowableSpacingRange(const IBeamFactory::Dimensions& dimensions,pgsTypes::SupportedDeckType sdt, 
-                                               pgsTypes::SupportedBeamSpacing sbs, Float64* minSpacing, Float64* maxSpacing)
+void CIBeamFactory::GetAllowableSpacingRange(const IBeamFactory::Dimensions& dimensions,pgsTypes::SupportedDeckType sdt, pgsTypes::SupportedBeamSpacing sbs, Float64* minSpacing, Float64* maxSpacing) const
 {
    *minSpacing = 0.0;
    *maxSpacing = 0.0;
@@ -981,12 +1032,12 @@ void CIBeamFactory::GetAllowableSpacingRange(const IBeamFactory::Dimensions& dim
    }
 }
 
-WebIndexType CIBeamFactory::GetWebCount(const IBeamFactory::Dimensions& dimensions)
+WebIndexType CIBeamFactory::GetWebCount(const IBeamFactory::Dimensions& dimensions) const
 {
    return 1;
 }
 
-Float64 CIBeamFactory::GetBeamHeight(const IBeamFactory::Dimensions& dimensions,pgsTypes::MemberEndType endType)
+Float64 CIBeamFactory::GetBeamHeight(const IBeamFactory::Dimensions& dimensions,pgsTypes::MemberEndType endType) const
 {
    Float64 D1 = GetDimension(dimensions,_T("D1"));
    Float64 D2 = GetDimension(dimensions,_T("D2"));
@@ -999,7 +1050,7 @@ Float64 CIBeamFactory::GetBeamHeight(const IBeamFactory::Dimensions& dimensions,
    return D1 + D2 + D3 + D4 + D5 + D6 + D7;
 }
 
-Float64 CIBeamFactory::GetBeamWidth(const IBeamFactory::Dimensions& dimensions,pgsTypes::MemberEndType endType)
+Float64 CIBeamFactory::GetBeamWidth(const IBeamFactory::Dimensions& dimensions,pgsTypes::MemberEndType endType) const
 {
    Float64 W1 = GetDimension(dimensions,_T("W1"));
    Float64 W2 = GetDimension(dimensions,_T("W2"));
@@ -1014,18 +1065,38 @@ Float64 CIBeamFactory::GetBeamWidth(const IBeamFactory::Dimensions& dimensions,p
    return Max(top,bot);
 }
 
-bool CIBeamFactory::IsShearKey(const IBeamFactory::Dimensions& dimensions, pgsTypes::SupportedBeamSpacing spacingType)
+bool CIBeamFactory::IsShearKey(const IBeamFactory::Dimensions& dimensions, pgsTypes::SupportedBeamSpacing spacingType) const
 {
    return false;
 }
 
-void CIBeamFactory::GetShearKeyAreas(const IBeamFactory::Dimensions& dimensions, pgsTypes::SupportedBeamSpacing spacingType,Float64* uniformArea, Float64* areaPerJoint)
+void CIBeamFactory::GetShearKeyAreas(const IBeamFactory::Dimensions& dimensions, pgsTypes::SupportedBeamSpacing spacingType,Float64* uniformArea, Float64* areaPerJoint) const
 {
    *uniformArea = 0.0;
    *areaPerJoint = 0.0;
 }
 
-GirderIndexType CIBeamFactory::GetMinimumBeamCount()
+bool CIBeamFactory::HasLongitudinalJoints() const
+{
+   return false;
+}
+
+bool CIBeamFactory::IsLongitudinalJointStructural(pgsTypes::SupportedDeckType deckType,pgsTypes::AdjacentTransverseConnectivity connectivity) const
+{
+   return false;
+}
+
+bool CIBeamFactory::HasTopFlangeThickening() const
+{
+   return false;
+}
+
+bool CIBeamFactory::CanPrecamber() const
+{
+   return true;
+}
+
+GirderIndexType CIBeamFactory::GetMinimumBeamCount() const
 {
    return 2;
 }

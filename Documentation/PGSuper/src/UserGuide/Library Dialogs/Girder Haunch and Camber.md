@@ -29,3 +29,13 @@ Deck Panel | Multiplier on deflections caused by deck panel dead loads
 Slab + User1 | Multiplier on deflections caused by the cast slab and user defined loads applied to the noncomposite girder section
 Haunch | Multiplier on the slab haunch dead load
 Barrier + Sidewalk + Overlay + User2 | Multiplier on deflections caused by the traffic barrier, sidewalk, overlay, and user defined loads applied to the composite girder section
+
+Precamber
+------------
+The precamber limit identifies the maximum precamber that can be built into this type of girder. The input precamber is evaluated against this criteria. Input precamber that is not within +/- of the precamber limit will be flagged as a specification check failure.
+
+Item | Description
+-----|-------------
+Precamber Limit | Enter the precamber limit in the form L/n. Example L/80.
+
+> NOTE: Work with your local fabricators to estabilish reasonable precamber limits. Set this value to 0 if girders cannot be precambered.

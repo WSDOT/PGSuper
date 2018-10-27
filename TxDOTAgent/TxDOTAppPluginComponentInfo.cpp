@@ -21,7 +21,6 @@
 ///////////////////////////////////////////////////////////////////////
 
 #include "stdafx.h"
-#include "TxDOTAgent_i.h"
 #include "TxDOTAgentApp.h"
 #include "dllmain.h"
 

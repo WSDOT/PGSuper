@@ -28,6 +28,7 @@
 #include "PGSuperAppPlugin\resource.h"
 
 #include "EditLoadsChildFrm.h"
+#include "LoadsViewControllerImp.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -52,8 +53,7 @@ END_MESSAGE_MAP()
 
 CEditLoadsChildFrame::CEditLoadsChildFrame()
 {
-	// TODO: add member initialization code here
-	
+   CEAFViewControllerFactory::Init(this);
 }
 
 CEditLoadsChildFrame::~CEditLoadsChildFrame()
@@ -65,7 +65,7 @@ BOOL CEditLoadsChildFrame::PreCreateWindow(CREATESTRUCT& cs)
 	// TODO: Modify the Window class or styles here by modifying
 	//  the CREATESTRUCT cs
 
-	if( !CMDIChildWnd::PreCreateWindow(cs) )
+	if( !CEAFChildFrame::PreCreateWindow(cs) )
 		return FALSE;
 
 	return TRUE;
@@ -88,6 +88,19 @@ BOOL CEditLoadsChildFrame::Create(LPCTSTR lpszClassName,
    }
 
    return bResult;
+}
+
+void CEditLoadsChildFrame::CreateViewController(IEAFViewController** ppController)
+{
+   CComPtr<IEAFViewController> stdController;
+   CEAFViewControllerFactory::CreateViewController(&stdController);
+
+   CComObject<CLoadsViewController>* pController;
+   CComObject<CLoadsViewController>::CreateInstance(&pController);
+   pController->Init(this, stdController);
+
+   (*ppController) = pController;
+   (*ppController)->AddRef();
 }
 
 

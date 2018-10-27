@@ -88,33 +88,38 @@ rptRcTable* CSectionPropertiesTable2::Build(IBroker* pBroker,
    }
 
    bool bIsCompositeDeck = pBridge->IsCompositeDeck();
+   bool bAsymmetricGirders = pBridge->HasAsymmetricGirders();
 
    ColumnIndexType nCol;
-   if ( intervalIdx < compositeDeckIntervalIdx )
+   if ( intervalIdx < erectionIntervalIdx)
    {
-      nCol = 12;
+      nCol = 14;
+      if (bAsymmetricGirders)
+      {
+         nCol++;
+      }
    }
    else if ( pBridge->GetDeckType() != pgsTypes::sdtNone && bIsCompositeDeck && compositeDeckIntervalIdx <= intervalIdx)
    {
       if (spType == pgsTypes::sptGrossNoncomposite || spType == pgsTypes::sptTransformedNoncomposite)
       {
-         nCol = (compositeDeckIntervalIdx == intervalIdx ? 12 : 11);
+         nCol = (compositeDeckIntervalIdx == intervalIdx ? 13 : 12);
       }
       else
       {
          if (lastTendonStressingIntervalIdx != INVALID_INDEX && compositeDeckIntervalIdx <= lastTendonStressingIntervalIdx)
          {
-            nCol = 17;
+            nCol = 18;
          }
          else
          {
-            nCol = 15;
+            nCol = 16;
          }
       }
    }
    else
    {
-      nCol = 10;
+      nCol = 13;
    }
 
    rptRcTable* xs_table = rptStyleManager::CreateDefaultTable(nCol,os.str().c_str());
@@ -138,7 +143,20 @@ rptRcTable* CSectionPropertiesTable2::Build(IBroker* pBroker,
    (*xs_table)(0,col++) << COLHDR(_T("Area"),           rptAreaUnitTag,    pDisplayUnits->GetAreaUnit() );
    (*xs_table)(0,col++) << COLHDR(_T("Depth"),          rptLengthUnitTag,  pDisplayUnits->GetComponentDimUnit() );
    (*xs_table)(0,col++) << COLHDR(RPT_IX,               rptLength4UnitTag, pDisplayUnits->GetMomentOfInertiaUnit() );
-   (*xs_table)(0,col++) << COLHDR(RPT_IY,               rptLength4UnitTag, pDisplayUnits->GetMomentOfInertiaUnit() );
+
+   if (intervalIdx < erectionIntervalIdx)
+   {
+      (*xs_table)(0, col++) << COLHDR(RPT_IY, rptLength4UnitTag, pDisplayUnits->GetMomentOfInertiaUnit());
+
+      if (bAsymmetricGirders)
+      {
+         (*xs_table)(0, col++) << COLHDR(RPT_IXY, rptLength4UnitTag, pDisplayUnits->GetMomentOfInertiaUnit());
+      }
+   }
+
+
+   (*xs_table)(0, col++) << COLHDR(RPT_XLEFT_GIRDER, rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+   (*xs_table)(0, col++) << COLHDR(RPT_XRIGHT_GIRDER, rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
 
    if ( intervalIdx < compositeDeckIntervalIdx  || (spType == pgsTypes::sptGrossNoncomposite || spType == pgsTypes::sptTransformedNoncomposite) )
    {
@@ -201,24 +219,32 @@ rptRcTable* CSectionPropertiesTable2::Build(IBroker* pBroker,
    // Get all the tabular poi's for flexure and shear
    // Merge the two vectors to form one vector to report on.
    PoiAttributeType poiRefAttribute = (intervalIdx < erectionIntervalIdx ? POI_RELEASED_SEGMENT : POI_ERECTED_SEGMENT);
-   std::vector<pgsPointOfInterest> vPoi( pIPoi->GetPointsOfInterest(segmentKey,poiRefAttribute) );
+   PoiList vPoi;
+   pIPoi->GetPointsOfInterest(segmentKey, poiRefAttribute, &vPoi);
 
    RowIndexType row = xs_table->GetNumberOfHeaderRows();
 
-   std::vector<pgsPointOfInterest>::const_iterator i(vPoi.begin());
-   std::vector<pgsPointOfInterest>::const_iterator end(vPoi.end());
-   for ( ; i != end; i++, row++ )
+   for (const pgsPointOfInterest& poi : vPoi)
    {
       col = 0;
-      const pgsPointOfInterest& poi = *i;
 
       Float64 depth = pSectProp->GetHg(spType,intervalIdx,poi);
 
       (*xs_table)(row,col++) << location.SetValue( poiRefAttribute, poi );
       (*xs_table)(row,col++) << l2.SetValue(pSectProp->GetAg(spType,intervalIdx,poi));
       (*xs_table)(row,col++) << l1.SetValue(depth);
-      (*xs_table)(row,col++) << l4.SetValue(pSectProp->GetIx(spType,intervalIdx,poi));
-      (*xs_table)(row,col++) << l4.SetValue(pSectProp->GetIy(spType,intervalIdx,poi));
+      (*xs_table)(row,col++) << l4.SetValue(pSectProp->GetIxx(spType,intervalIdx,poi));
+      if (intervalIdx < erectionIntervalIdx)
+      {
+         (*xs_table)(row, col++) << l4.SetValue(pSectProp->GetIyy(spType, intervalIdx, poi));
+         if (bAsymmetricGirders)
+         {
+            (*xs_table)(row, col++) << l4.SetValue(pSectProp->GetIxy(spType, intervalIdx, poi));
+         }
+      }
+
+      (*xs_table)(row, col++) << l1.SetValue(pSectProp->GetXleft(spType, intervalIdx, poi));
+      (*xs_table)(row, col++) << l1.SetValue(pSectProp->GetXright(spType, intervalIdx, poi));
 
       if ( intervalIdx < compositeDeckIntervalIdx  || (spType == pgsTypes::sptGrossNoncomposite || spType == pgsTypes::sptTransformedNoncomposite) )
       {
@@ -264,6 +290,7 @@ rptRcTable* CSectionPropertiesTable2::Build(IBroker* pBroker,
       {
          (*xs_table)(row,col++) << l1.SetValue(pSectProp->GetPerimeter(poi));
       }
+      row++;
    }
 
    return xs_table;

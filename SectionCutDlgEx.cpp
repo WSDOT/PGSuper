@@ -86,17 +86,17 @@ BOOL CSectionCutDlgEx::OnInitDialog()
    m_Slider.SetRange(0,(int)(m_vPOI.size()-1)); // the range is number of spaces along slider... 
 
    // initial the slider position to the current poi location
-   CollectionIndexType pos = m_vPOI.size()/2; // default is mid-span
-   std::vector<pgsPointOfInterest>::iterator iter;
-   for ( iter = m_vPOI.begin(); iter != m_vPOI.end(); iter++ )
+   int pos = (int)m_vPOI.size()/2; // default is mid-span
+   int cur_pos = 0;
+   for( const pgsPointOfInterest& poi : m_vPOI)
    {
-      pgsPointOfInterest& poi = *iter;
       if ( poi.GetID() == m_InitialPOI.GetID() )
       {
-         pos = (iter - m_vPOI.begin());
+         pos = cur_pos;
       }
+      cur_pos++;
    }
-   m_Slider.SetPos((int)pos);
+   m_Slider.SetPos(pos);
 
    UpdateSliderLabel();
 
@@ -118,8 +118,9 @@ pgsPointOfInterest CSectionCutDlgEx::GetPOI()
 
 void CSectionCutDlgEx::UpdatePOI()
 {
-   GET_IFACE(IPointOfInterest,pPOI);
-   m_vPOI = pPOI->GetPointsOfInterest(CSegmentKey(m_GirderKey,ALL_SEGMENTS));
+   GET_IFACE(IPointOfInterest,pPoi);
+   m_vPOI.clear();
+   pPoi->GetPointsOfInterest(CSegmentKey(m_GirderKey, ALL_SEGMENTS), &m_vPOI);
    if (m_Slider.GetSafeHwnd() != nullptr )
    {
       m_Slider.SetRange(0,(int)(m_vPOI.size()-1)); // the range is number of spaces along slider... 

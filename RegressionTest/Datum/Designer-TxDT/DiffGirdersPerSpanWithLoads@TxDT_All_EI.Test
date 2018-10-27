@@ -1,14 +1,14 @@
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 27.83    4   8.00                     1     1    WF66G    *     70  0.6  270  27.23  11.63  11.25  11.25                                              24  62.0  7.0  9.000  9.000   7.288    -7.434    16471   0.682  0.814   3.144 -1.516 -0.120 -0.478 -2.114 420.65  605.41    3.00    5.50    5.50 
+ 27.83    4   8.00                     1     1    WF66G    *     70  0.6  270  27.23  11.63  11.25  11.25                                              24  62.0  7.0  9.000  9.000   7.287    -7.431    16471   0.682  0.814   3.157 -1.516 -0.120 -0.478 -2.114 420.65  605.58    3.00    5.50    5.50 
 
 
 Girder design was Not Successful
 The Specification Check was Not Successful
-Compression stress check failed for Service I Limit State in Interval 10 Cast Deck, Apply User Defined Loads (Bridge Site 1)
-Compression stress check failed for Service I Limit State in Interval 12 Install Overlay (Bridge Site 2)
-Compression stress check failed for Service I Limit State in Interval 15 Open to Traffic (Bridge Site 3)
-Tensile stress check failed for Service III Limit State in Interval 15 Open to Traffic (Bridge Site 3)
+Compression stress check failed for Service I Limit State in Interval 10 Cast Deck, Apply User Defined Loads
+Compression stress check failed for Service I Limit State in Interval 14 Install Overlay
+Compression stress check failed for Service I Limit State in Interval 15 Open to Traffic
+Tensile stress check failed for Service III Limit State in Interval 15 Open to Traffic
 Ultimate moment capacity (negative moment) check failed for Strength I Limit State
 Ultimate vertical shear capacity check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
@@ -20,15 +20,15 @@ Hauling checks failed
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 27.83    4   8.00                     1     2    WF66G    *     70  0.6  270  27.23  11.63  11.25  11.25                                              24  62.0  7.0  9.000  9.000   7.795    -7.959    17462   0.682  0.814   2.588 -1.691 -0.116 -0.460 -2.267 420.65  592.94    3.00    5.50    5.50 
+ 27.83    4   8.00                     1     2    WF66G    *     70  0.6  270  27.23  11.63  11.25  11.25                                              24  62.0  7.0  9.000  9.000   7.793    -7.956    17462   0.682  0.814   2.616 -1.691 -0.116 -0.460 -2.267 420.65  593.14    3.00    5.50    5.50 
 
 
 Girder design was Not Successful
 The Specification Check was Not Successful
-Compression stress check failed for Service I Limit State in Interval 10 Cast Deck, Apply User Defined Loads (Bridge Site 1)
-Compression stress check failed for Service I Limit State in Interval 12 Install Overlay (Bridge Site 2)
-Compression stress check failed for Service I Limit State in Interval 15 Open to Traffic (Bridge Site 3)
-Tensile stress check failed for Service III Limit State in Interval 15 Open to Traffic (Bridge Site 3)
+Compression stress check failed for Service I Limit State in Interval 10 Cast Deck, Apply User Defined Loads
+Compression stress check failed for Service I Limit State in Interval 14 Install Overlay
+Compression stress check failed for Service I Limit State in Interval 15 Open to Traffic
+Tensile stress check failed for Service III Limit State in Interval 15 Open to Traffic
 Ultimate moment capacity (negative moment) check failed for Strength I Limit State
 Ultimate vertical shear capacity check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
@@ -40,7 +40,7 @@ Hauling checks failed
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 27.83    5   6.00                     2     1    WF66G    *     68  0.6  270  27.30  12.22  10.50  10.50                                              22  62.0  7.0  9.400 10.400   6.646    -6.614    15293   0.556  0.671   3.218 -1.213 -0.097 -0.416 -1.726 392.28  598.69    3.00    5.50    5.50 
+ 27.83    5   6.00                     2     1    WF66G    *     68  0.6  270  27.30  12.22  10.50  10.50                                              22  62.0  7.0  9.400 10.400   6.645    -6.611    15292   0.556  0.671   3.222 -1.213 -0.097 -0.416 -1.726 392.28  598.83    3.00    5.50    5.50 
 
 
 The Specification Check was Not Successful
@@ -51,7 +51,7 @@ Splitting zone check failed.
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 27.83    5   6.00                     2     2    WF66G    *     68  0.6  270  27.30  12.22  10.25  10.25                                              22  62.0  7.0  9.400 10.400   6.639    -6.607    15292   0.556  0.671   3.174 -1.203 -0.097 -0.416 -1.716 392.28  599.26    3.00    5.50    5.50 
+ 27.83    5   6.00                     2     2    WF66G    *     68  0.6  270  27.30  12.22  10.25  10.25                                              22  62.0  7.0  9.400 10.400   6.637    -6.604    15292   0.556  0.671   3.178 -1.203 -0.097 -0.416 -1.716 392.28  599.40    3.00    5.50    5.50 
 
 
 The Specification Check was Not Successful
@@ -62,7 +62,7 @@ Splitting zone check failed.
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 27.83    5   6.00                     2     3    WF66G    *     68  0.6  270  27.30  12.22  10.25  10.25                                              22  62.0  7.0  9.400 10.400   6.639    -6.607    15292   0.556  0.671   3.174 -1.203 -0.097 -0.416 -1.716 392.28  599.26    3.00    5.50    5.50 
+ 27.83    5   6.00                     2     3    WF66G    *     68  0.6  270  27.30  12.22  10.25  10.25                                              22  62.0  7.0  9.400 10.400   6.637    -6.604    15292   0.556  0.671   3.178 -1.203 -0.097 -0.416 -1.716 392.28  599.40    3.00    5.50    5.50 
 
 
 The Specification Check was Not Successful
@@ -73,15 +73,15 @@ Splitting zone check failed.
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 27.83    4   8.00                     3     1    WF66G    *     70  0.6  270  27.23  11.63  11.25  11.25                                              24  62.0  7.0  9.000  9.000   7.288    -7.434    16471   0.682  0.814   3.144 -1.516 -0.120 -0.478 -2.114 420.65  605.41    3.00    5.50    5.50 
+ 27.83    4   8.00                     3     1    WF66G    *     70  0.6  270  27.23  11.63  11.25  11.25                                              24  62.0  7.0  9.000  9.000   7.287    -7.431    16471   0.682  0.814   3.157 -1.516 -0.120 -0.478 -2.114 420.65  605.58    3.00    5.50    5.50 
 
 
 Girder design was Not Successful
 The Specification Check was Not Successful
-Compression stress check failed for Service I Limit State in Interval 11 Cast Deck, Apply User Defined Loads (Bridge Site 1)
-Compression stress check failed for Service I Limit State in Interval 13 Install Overlay (Bridge Site 2)
-Compression stress check failed for Service I Limit State in Interval 16 Open to Traffic (Bridge Site 3)
-Tensile stress check failed for Service III Limit State in Interval 16 Open to Traffic (Bridge Site 3)
+Compression stress check failed for Service I Limit State in Interval 11 Cast Deck, Apply User Defined Loads
+Compression stress check failed for Service I Limit State in Interval 15 Install Overlay
+Compression stress check failed for Service I Limit State in Interval 16 Open to Traffic
+Tensile stress check failed for Service III Limit State in Interval 16 Open to Traffic
 Ultimate moment capacity (negative moment) check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 Ultimate vertical shear capacity check failed for Strength I Limit State
@@ -93,15 +93,15 @@ Hauling checks failed
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 27.83    4   8.00                     3     2    WF66G    *     70  0.6  270  27.23  11.63  11.25  11.25                                              24  62.0  7.0  9.000  9.000   7.795    -7.959    17462   0.682  0.814   2.588 -1.691 -0.116 -0.460 -2.267 420.65  592.94    3.00    5.50    5.50 
+ 27.83    4   8.00                     3     2    WF66G    *     70  0.6  270  27.23  11.63  11.25  11.25                                              24  62.0  7.0  9.000  9.000   7.793    -7.956    17462   0.682  0.814   2.616 -1.691 -0.116 -0.460 -2.267 420.65  593.14    3.00    5.50    5.50 
 
 
 Girder design was Not Successful
 The Specification Check was Not Successful
-Compression stress check failed for Service I Limit State in Interval 11 Cast Deck, Apply User Defined Loads (Bridge Site 1)
-Compression stress check failed for Service I Limit State in Interval 13 Install Overlay (Bridge Site 2)
-Compression stress check failed for Service I Limit State in Interval 16 Open to Traffic (Bridge Site 3)
-Tensile stress check failed for Service III Limit State in Interval 16 Open to Traffic (Bridge Site 3)
+Compression stress check failed for Service I Limit State in Interval 11 Cast Deck, Apply User Defined Loads
+Compression stress check failed for Service I Limit State in Interval 15 Install Overlay
+Compression stress check failed for Service I Limit State in Interval 16 Open to Traffic
+Tensile stress check failed for Service III Limit State in Interval 16 Open to Traffic
 Ultimate moment capacity (negative moment) check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 Ultimate vertical shear capacity check failed for Strength I Limit State

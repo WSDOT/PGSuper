@@ -69,6 +69,7 @@ public:
 public:
    void InitData(LiveLoadLibraryEntry* entry);
    void OnEnableDelete(bool canDelete);
+   void UpdateTruckDimensions();
 protected:
 
 	// Generated message map functions

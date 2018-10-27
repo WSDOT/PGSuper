@@ -758,16 +758,16 @@ CString CCatalogServerAppMixin::GetCacheFolder()
 {
    CEAFApp* pParentApp = EAFGetApp();
 
-   TCHAR buffer[MAX_PATH];
-   BOOL bResult = ::SHGetSpecialFolderPath(nullptr,buffer,CSIDL_APPDATA,FALSE);
+   LPWSTR path;
+   HRESULT hr = ::SHGetKnownFolderPath(FOLDERID_RoamingAppData, KF_FLAG_DEFAULT, NULL, &path);
 
-   if ( !bResult )
+   if ( SUCCEEDED(hr) )
    {
-      return pParentApp->GetAppLocation() + CString(_T("Cache\\"));
+      return CString(path) + CString(_T("\\")) + GetAppName() + CString(_T("\\"));
    }
    else
    {
-      return CString(buffer) + CString(_T("\\")) + GetAppName() + CString(_T("\\"));
+      return pParentApp->GetAppLocation() + CString(_T("Cache\\"));
    }
 }
 
@@ -778,16 +778,16 @@ CString CCatalogServerAppMixin::GetSaveCacheFolder()
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
    CWinApp* pMyApp     = AfxGetApp();
 
-   TCHAR buffer[MAX_PATH];
-   BOOL bResult = ::SHGetSpecialFolderPath(nullptr,buffer,CSIDL_APPDATA,FALSE);
+   LPWSTR path;
+   HRESULT hr = ::SHGetKnownFolderPath(FOLDERID_RoamingAppData, KF_FLAG_DEFAULT, NULL, &path);
 
-   if ( !bResult )
+   if ( SUCCEEDED(hr) )
    {
-      return pApp->GetAppLocation() + CString(_T("SaveCache\\"));
+      return CString(path) + GetAppName() + CString(_T("_Save\\"));
    }
    else
    {
-      return CString(buffer) + GetAppName() + CString(_T("_Save\\"));
+      return pApp->GetAppLocation() + CString(_T("SaveCache\\"));
    }
 }
 

@@ -528,6 +528,23 @@ Float64 CGirderSpacingData2::GetGirderSpacing(SpacingIndexType spacingIdx) const
    }
 }
 
+GroupIndexType CGirderSpacingData2::GetSpacingGroupIndex(GirderIndexType gdrIdx) const
+{
+   // returns the spacing group that a girder belongs to
+   GroupIndexType spacingGroupIdx = 0;
+   for (const auto& group : m_SpacingGroups)
+   {
+      if (group.first <= gdrIdx && gdrIdx <= group.second)
+      {
+         return spacingGroupIdx;
+      }
+      spacingGroupIdx++;
+   }
+
+   ATLASSERT(false); // girder was not found
+   return INVALID_INDEX;
+}
+
 void CGirderSpacingData2::InitGirderCount(GirderIndexType nGirders)
 {
    m_SpacingGroups.clear();
@@ -573,8 +590,10 @@ void CGirderSpacingData2::RemoveGirders(GirderIndexType nGirdersToRemove)
    Float64 default_spacing = m_GirderSpacing.front(); // hang onto this spacing before we change the size of the vector
 
    SpacingIndexType nSpacesToRemove = nGirdersToRemove;
-   for ( SpacingIndexType i = 0; i < nSpacesToRemove; i++ )
+   for (SpacingIndexType i = 0; i < nSpacesToRemove; i++)
+   {
       m_GirderSpacing.pop_back();
+   }
 
    GirderIndexType nGirders = m_GirderSpacing.size() + 1;
 
@@ -958,10 +977,28 @@ Float64 CGirderSpacing2::GetSpacingWidth() const
       for ( GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++ )
       {
          const CSplicedGirderData* pGirder = pGroup->GetGirder(gdrIdx);
-         Float64 width = GetGirderWidth(pGirder);
-         if ( gdrIdx == 0 || gdrIdx == nGirders-1 )
+
+         // we want the width of the girder on the left and right side of the
+         // girder line. for asymmetric girders, these may not be the same.
+         // think of a left exterior decked girders defined by its top width with 
+         // the flange on the left side of the web begin longer than the flange on
+         // the right side of the web. the web line is the girder "centerline".
+         // (girder width)/2 doesn't guarentee we have the centerline location
+         // relative to the left edge of the girder top flange
+         Float64 wLeft, wRight;
+         GetGirderWidth(pGirder,&wLeft,&wRight);
+         Float64 width;
+         if (gdrIdx == 0)
          {
-            width /= 2;
+            width = wRight;
+         }
+         else if ( gdrIdx == nGirders - 1 )
+         {
+            width = wLeft;
+         }
+         else
+         {
+            width = wLeft + wRight;
          }
 
          Float64 joint_width = 0;
@@ -992,7 +1029,21 @@ Float64 CGirderSpacing2::GetSpacingWidthToGirder(GirderIndexType nGirders) const
       for ( GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++ )
       {
          const CSplicedGirderData* pGirder = pGroup->GetGirder(gdrIdx);
-         Float64 width = GetGirderWidth(pGirder);
+         Float64 wLeft, wRight;
+         GetGirderWidth(pGirder,&wLeft,&wRight);
+         Float64 width;
+         if (gdrIdx == 0)
+         {
+            width = wRight;
+         }
+         else if (gdrIdx == nGirders - 1)
+         {
+            width = wLeft;
+         }
+         else
+         {
+            width = wLeft + wRight;
+         }
          Float64 joint_width = 0;
          if ( gdrIdx != nGirders-1 )
          {
@@ -1038,10 +1089,28 @@ const CGirderGroupData* CGirderSpacing2::GetGirderGroup() const
    return pGroup;
 }
 
-Float64 CGirderSpacing2::GetGirderWidth(const CSplicedGirderData* pGirder) const
+void CGirderSpacing2::GetGirderWidth(const CSplicedGirderData* pGirder, Float64* pLeft, Float64* pRight) const
 {
-   const GirderLibraryEntry* pLibEntry = pGirder->GetGirderLibraryEntry();
-   return pLibEntry->GetBeamWidth(pgsTypes::metStart);
+   if (IsTopWidthSpacing(pGirder->GetGirderGroup()->GetBridgeDescription()->GetGirderSpacingType()))
+   {
+      pgsTypes::MemberEndType endType;
+      if (m_pPier && m_pPier->HasSpacing())
+      {
+         endType = (m_pPier->GetGirderSpacing(pgsTypes::Ahead) == this) ? pgsTypes::metStart : pgsTypes::metEnd;
+      }
+      else
+      {
+         endType = pgsTypes::metStart;
+      }
+      pGirder->GetTopWidth(endType,pLeft,pRight);
+   }
+   else
+   {
+      const GirderLibraryEntry* pLibEntry = pGirder->GetGirderLibraryEntry();
+      Float64 w = pLibEntry->GetBeamWidth(pgsTypes::metStart);
+      *pLeft = w / 2;
+      *pRight = *pLeft;
+   }
 }
 
 #if defined _DEBUG

@@ -26,6 +26,7 @@
 
 #include <IFace\Bridge.h>
 #include <IFace\Views.h>
+#include <BridgeModelViewController.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -170,7 +171,9 @@ bool txnDeleteSpan::Execute()
    pEvents->HoldEvents();
 
    GET_IFACE2(pBroker,IViews,pViews);
-   pViews->GetBridgeViewSpanRange(&m_StartSpanIdx,&m_EndSpanIdx);
+   CComPtr<IBridgeModelViewController> pViewController;
+   pViews->CreateBridgeModelView(&pViewController);
+   pViewController->GetSpanRange(&m_StartSpanIdx,&m_EndSpanIdx);
 
    // save the span/pier that are going to be deleted for undo
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
@@ -244,8 +247,10 @@ void txnDeleteSpan::Undo()
    }
 
 
-   GET_IFACE2(pBroker,IViews,pViews);
-   pViews->SetBridgeViewSpanRange(m_StartSpanIdx,m_EndSpanIdx);
+   GET_IFACE2(pBroker, IViews, pViews);
+   CComPtr<IBridgeModelViewController> pViewController;
+   pViews->CreateBridgeModelView(&pViewController);
+   pViewController->SetSpanRange(m_StartSpanIdx,m_EndSpanIdx);
 
    pEvents->FirePendingEvents();
 }

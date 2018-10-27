@@ -61,6 +61,11 @@ CGirderDescDlg::~CGirderDescDlg()
    DestroyExtensionPages();
 }
 
+bool CGirderDescDlg::HasDeck() const
+{
+   return IsStructuralDeck(m_DeckType);
+}
+
 INT_PTR CGirderDescDlg::DoModal()
 {
    INT_PTR result = CPropertySheet::DoModal();
@@ -95,9 +100,14 @@ void CGirderDescDlg::Init(const CBridgeDescription2* pBridgeDesc,const CSegmentK
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
 
+   m_GirderSpacingType = pBridgeDesc->GetGirderSpacingType();
+
+   m_DeckType = pBridgeDesc->GetDeckDescription()->GetDeckType();
+
    const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(segmentKey.groupIndex);
    const CSplicedGirderData* pGirder = pGroup->GetGirder(segmentKey.girderIndex);
    const CPrecastSegmentData* pSegment = pGirder->GetSegment(segmentKey.segmentIndex);
+   
    m_Girder = *pGirder;
    m_pSegment = m_Girder.GetSegment(segmentKey.segmentIndex);
    m_SegmentKey = segmentKey;
@@ -118,6 +128,9 @@ void CGirderDescDlg::Init(const CBridgeDescription2* pBridgeDesc,const CSegmentK
       AddAdditionalPropertyPages( pSpecEntry->AllowStraightStrandExtensions(), pStrandGeom->CanDebondStrands(m_SegmentKey,pgsTypes::Straight) );
    }
 
+   m_SpanGdrDetailsBearingsPage.m_psp.dwFlags |= PSP_HASHELP;
+   AddPage(&m_SpanGdrDetailsBearingsPage);
+
    CreateExtensionPages();
 }
 
@@ -135,7 +148,7 @@ void CGirderDescDlg::CreateExtensionPages()
       CPropertyPage* pPage = pCallback->CreatePropertyPage(this);
       if ( pPage )
       {
-         m_ExtensionPages.push_back( std::make_pair(pCallback,pPage) );
+         m_ExtensionPages.emplace_back(pCallback,pPage);
          AddPage(pPage);
       }
    }
@@ -254,6 +267,10 @@ void CGirderDescDlg::DoUpdate()
    // longitudinal rebar page
    m_LongRebar.m_CurGrdName = m_Shear.m_CurGrdName;
 
+   // Bearings
+   const CPierData2* pStartPier = pGroup->GetPier(pgsTypes::metStart);
+   const CPierData2* pEndPier = pGroup->GetPier(pgsTypes::metEnd);
+   m_SpanGdrDetailsBearingsPage.Initialize(pBridgeDesc, pStartPier, pEndPier, m_SegmentKey.girderIndex);
 }
 
 BOOL CGirderDescDlg::OnOK()

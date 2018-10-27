@@ -1,6 +1,6 @@
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 28.25    5   6.00                     1     1    WF66G    *     35  0.6  270  28.72  14.72  11.25  11.25                                               9  62.0  4.0  4.500  5.600   3.543    -3.621     8738   0.511  0.757   4.098 -1.579 -0.146 -0.209 -1.934 136.42  271.56    3.00    5.50    5.50 
+ 28.25    5   6.00                     1     1    WF66G    *     35  0.6  270  28.72  14.72  11.25  11.25                                               9  62.0  4.0  4.500  5.600   3.542    -3.619     8738   0.511  0.757   4.102 -1.579 -0.146 -0.209 -1.934 136.42  271.63    3.00    5.50    5.50 
 
 
 The Specification Check was Not Successful
@@ -12,11 +12,11 @@ Stirrup detailing checks failed for the Strength I Limit State.
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 28.25    5   6.00                     1     2    WF66G    *     35  0.6  270  28.72  14.72  11.25  11.25                                               9  62.0  4.0  4.500  5.600   3.560    -3.636     8739   0.509  0.757   4.014 -1.602 -0.146 -0.209 -1.957 136.42  270.30    3.00    5.50    5.50 
+ 28.25    5   6.00                     1     2    WF66G    *     35  0.6  270  28.72  14.72  11.25  11.25                                               9  62.0  4.0  4.500  5.600   3.559    -3.633     8738   0.509  0.757   4.016 -1.602 -0.146 -0.209 -1.957 136.42  270.37    3.00    5.50    5.50 
 
 
 The Specification Check was Not Successful
-Tensile stress check failed for Service III Limit State in Interval 16 Open to Traffic (Bridge Site 3)
+Tensile stress check failed for Service III Limit State in Interval 16 Open to Traffic
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Ultimate moment capacity (negative moment) check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
@@ -25,11 +25,11 @@ Stirrup detailing checks failed for the Strength I Limit State.
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 28.25    5   6.00                     1     3    WF66G    *     35  0.6  270  28.72  14.72  11.25  11.25                                               9  62.0  4.0  4.500  5.600   3.560    -3.636     8739   0.509  0.671   4.014 -1.602 -0.146 -0.209 -1.957 136.42  270.30    3.00    5.50    5.50 
+ 28.25    5   6.00                     1     3    WF66G    *     35  0.6  270  28.72  14.72  11.25  11.25                                               9  62.0  4.0  4.500  5.600   3.559    -3.633     8738   0.509  0.671   4.016 -1.602 -0.146 -0.209 -1.957 136.42  270.37    3.00    5.50    5.50 
 
 
 The Specification Check was Not Successful
-Tensile stress check failed for Service III Limit State in Interval 16 Open to Traffic (Bridge Site 3)
+Tensile stress check failed for Service III Limit State in Interval 16 Open to Traffic
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Ultimate moment capacity (negative moment) check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
@@ -37,42 +37,7 @@ Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 28.25    5   6.00                     2     1    WF66G    *     35  0.6  270  28.72  14.72  11.25  11.25                                               9  62.0  4.0  4.500  5.600   3.542    -3.618     8738   0.508  0.758   4.103 -1.580 -0.147 -0.209 -1.935 136.37  271.40    3.00    5.50    5.50 
-
-
-The Specification Check was Not Successful
-Ultimate moment capacity (positive moment) check failed for Strength I Limit State
-Ultimate moment capacity (negative moment) check failed for Strength I Limit State
-Longitudinal Reinforcement for Shear check failed for Strength I Limit State
-
-
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 28.25    5   6.00                     2     2    WF66G    *     35  0.6  270  28.72  14.72  11.25  11.25                                               9  62.0  4.0  4.500  5.600   3.558    -3.632     8739   0.506  0.758   4.021 -1.602 -0.147 -0.209 -1.957 136.37  270.18    3.00    5.50    5.50 
-
-
-The Specification Check was Not Successful
-Tensile stress check failed for Service III Limit State in Interval 16 Open to Traffic (Bridge Site 3)
-Ultimate moment capacity (positive moment) check failed for Strength I Limit State
-Ultimate moment capacity (negative moment) check failed for Strength I Limit State
-Longitudinal Reinforcement for Shear check failed for Strength I Limit State
-
-
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 28.25    5   6.00                     2     3    WF66G    *     35  0.6  270  28.72  14.72  11.25  11.25                                               9  62.0  4.0  4.500  5.600   3.558    -3.632     8739   0.506  0.671   4.021 -1.602 -0.147 -0.209 -1.957 136.37  270.18    3.00    5.50    5.50 
-
-
-The Specification Check was Not Successful
-Tensile stress check failed for Service III Limit State in Interval 16 Open to Traffic (Bridge Site 3)
-Ultimate moment capacity (positive moment) check failed for Strength I Limit State
-Ultimate moment capacity (negative moment) check failed for Strength I Limit State
-Longitudinal Reinforcement for Shear check failed for Strength I Limit State
-
-
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 28.25    5   6.00                     3     1    WF66G    *     35  0.6  270  28.72  14.72  11.25  11.25                                               9  62.0  4.0  4.500  5.600   3.543    -3.621     8738   0.511  0.757   4.098 -1.579 -0.146 -0.209 -1.934 136.42  271.56    3.00    5.50    5.50 
+ 28.25    5   6.00                     2     1    WF66G    *     35  0.6  270  28.72  14.72  11.25  11.25                                               9  62.0  4.0  4.500  5.600   3.540    -3.615     8738   0.508  0.758   4.108 -1.580 -0.147 -0.209 -1.935 136.37  271.47    3.00    5.50    5.50 
 
 
 The Specification Check was Not Successful
@@ -83,11 +48,10 @@ Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 28.25    5   6.00                     3     2    WF66G    *     35  0.6  270  28.72  14.72  11.25  11.25                                               9  62.0  4.0  4.500  5.600   3.560    -3.636     8739   0.509  0.757   4.014 -1.602 -0.146 -0.209 -1.957 136.42  270.30    3.00    5.50    5.50 
+ 28.25    5   6.00                     2     2    WF66G    *     35  0.6  270  28.72  14.72  11.25  11.25                                               9  62.0  4.0  4.500  5.600   3.557    -3.629     8739   0.506  0.758   4.022 -1.602 -0.147 -0.209 -1.957 136.37  270.25    3.00    5.50    5.50 
 
 
 The Specification Check was Not Successful
-Tensile stress check failed for Service III Limit State in Interval 16 Open to Traffic (Bridge Site 3)
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Ultimate moment capacity (negative moment) check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
@@ -95,11 +59,45 @@ Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 28.25    5   6.00                     3     3    WF66G    *     35  0.6  270  28.72  14.72  11.25  11.25                                               9  62.0  4.0  4.500  5.600   3.560    -3.636     8739   0.509  0.671   4.014 -1.602 -0.146 -0.209 -1.957 136.42  270.30    3.00    5.50    5.50 
+ 28.25    5   6.00                     2     3    WF66G    *     35  0.6  270  28.72  14.72  11.25  11.25                                               9  62.0  4.0  4.500  5.600   3.557    -3.629     8739   0.506  0.671   4.022 -1.602 -0.147 -0.209 -1.957 136.37  270.25    3.00    5.50    5.50 
 
 
 The Specification Check was Not Successful
-Tensile stress check failed for Service III Limit State in Interval 16 Open to Traffic (Bridge Site 3)
+Ultimate moment capacity (positive moment) check failed for Strength I Limit State
+Ultimate moment capacity (negative moment) check failed for Strength I Limit State
+Longitudinal Reinforcement for Shear check failed for Strength I Limit State
+
+
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 28.25    5   6.00                     3     1    WF66G    *     35  0.6  270  28.72  14.72  11.25  11.25                                               9  62.0  4.0  4.500  5.600   3.542    -3.619     8738   0.511  0.757   4.102 -1.579 -0.146 -0.209 -1.934 136.42  271.63    3.00    5.50    5.50 
+
+
+The Specification Check was Not Successful
+Ultimate moment capacity (positive moment) check failed for Strength I Limit State
+Ultimate moment capacity (negative moment) check failed for Strength I Limit State
+Longitudinal Reinforcement for Shear check failed for Strength I Limit State
+
+
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 28.25    5   6.00                     3     2    WF66G    *     35  0.6  270  28.72  14.72  11.25  11.25                                               9  62.0  4.0  4.500  5.600   3.559    -3.633     8738   0.509  0.757   4.016 -1.602 -0.146 -0.209 -1.957 136.42  270.37    3.00    5.50    5.50 
+
+
+The Specification Check was Not Successful
+Tensile stress check failed for Service III Limit State in Interval 16 Open to Traffic
+Ultimate moment capacity (positive moment) check failed for Strength I Limit State
+Ultimate moment capacity (negative moment) check failed for Strength I Limit State
+Longitudinal Reinforcement for Shear check failed for Strength I Limit State
+
+
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 28.25    5   6.00                     3     3    WF66G    *     35  0.6  270  28.72  14.72  11.25  11.25                                               9  62.0  4.0  4.500  5.600   3.559    -3.633     8738   0.509  0.671   4.016 -1.602 -0.146 -0.209 -1.957 136.42  270.37    3.00    5.50    5.50 
+
+
+The Specification Check was Not Successful
+Tensile stress check failed for Service III Limit State in Interval 16 Open to Traffic
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Ultimate moment capacity (negative moment) check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State

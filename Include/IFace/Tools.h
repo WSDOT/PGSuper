@@ -63,7 +63,7 @@ if ( level >= lvl && m_Level < lvl ) \
 #endif
 
 #define DECLARE_LOGFILE \
-dbgLogDumpContext m_Log;
+mutable dbgLogDumpContext m_Log;
 
 #else
 
@@ -124,7 +124,7 @@ dbgLogDumpContext m_Log;
 
 
 #if defined ENABLE_LOGGING
-#define LOGGER m_Log
+#define LOGGER *(const_cast<dbgLogDumpContext*>(&m_Log))
 #else
 #define LOGGER nullptr
 #endif

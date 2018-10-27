@@ -1,11 +1,11 @@
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 53.25    5  11.00                     1     1     Tee           30  0.6  270  17.59   1.59   7.50   7.50                                              4.000  5.000   2.090    -8.237     6369   1.159  1.159   2.885 -1.264 -0.253 -0.117 -1.633 105.12  176.17    1.00    1.00    1.00 
+ 53.25    5  11.00                     1     1     Tee           30  0.6  270  17.59   1.59   7.50   7.50                                              4.000  5.000   2.090    -8.237     6369   1.159  1.159   2.883 -1.264 -0.253 -0.117 -1.633 105.12  176.17    1.00    1.00    1.00 
 
 
 The Specification Check was Not Successful
-Compression stress check failed for Service I Limit State in Interval 2 Prestress Release (Casting Yard)
-Tensile stress check failed for Service III Limit State in Interval 14 Open to Traffic (Bridge Site 3)
+Compression stress check failed for Service I Limit State in Interval 2 Prestress Release
+Tensile stress check failed for Service III Limit State in Interval 14 Open to Traffic
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 Ultimate vertical shear capacity check failed for Strength I Limit State
@@ -19,12 +19,12 @@ Slab Offset ("A" Dimension) check failed
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 53.25    5  11.00                     1     2     Tee           30  0.6  270  17.59   1.59   7.50   7.50                                              4.000  5.000   1.911    -7.080     4903   0.685  1.091   2.885 -1.264 -0.253 -0.117 -1.633 105.12  176.17    1.00    1.00    1.00 
+ 53.25    5  11.00                     1     2     Tee           30  0.6  270  17.59   1.59   7.50   7.50                                              4.000  5.000   1.911    -7.080     4903   0.685  1.091   2.883 -1.264 -0.253 -0.117 -1.633 105.12  176.17    1.00    1.00    1.00 
 
 
 The Specification Check was Not Successful
-Compression stress check failed for Service I Limit State in Interval 2 Prestress Release (Casting Yard)
-Tensile stress check failed for Service III Limit State in Interval 14 Open to Traffic (Bridge Site 3)
+Compression stress check failed for Service I Limit State in Interval 2 Prestress Release
+Tensile stress check failed for Service III Limit State in Interval 14 Open to Traffic
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 Ultimate vertical shear capacity check failed for Strength I Limit State

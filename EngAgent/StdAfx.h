@@ -31,12 +31,7 @@
 #pragma once
 #endif // _MSC_VER >= 1000
 
-
 #include <PGSuperAll.h>
-
-#if defined _DEBUG
-#define ENABLE_LOGGING
-#endif
 
 
 #include <atlbase.h>

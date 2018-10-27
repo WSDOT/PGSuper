@@ -48,6 +48,6 @@ interface IInterfaceShearRequirements : IUnknown
 
    //------------------------------------------------------------------------
    // returns the maximum longitudinal center-to-center spacing of
-   // nonwelded interface shear connectors (LRFD 5.8.4.2)
+   // nonwelded interface shear connectors (LRFD 5.7.4.5 (pre2017: 5.8.4.2))
    virtual Float64 GetMaxShearConnectorSpacing(const pgsPointOfInterest& poi) = 0;
 };

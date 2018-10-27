@@ -136,4 +136,19 @@ void CSpecDescrPage::OnSpecificationChanged()
 
    CButton* pSi = (CButton*)GetDlgItem(IDC_SPEC_UNITS_SI);
    pSi->EnableWindow(enable_si);
+
+   // Vci/Vcw method was removed from spec in 2017
+   CSpecMainSheet* pParent = (CSpecMainSheet*)GetParent();
+   lrfdVersionMgr::Version version = pParent->GetSpecVersion();
+
+   if (version >= lrfdVersionMgr::EighthEdition2017)
+   {
+      ShearCapacityMethod method = pParent->m_Entry.GetShearCapacityMethod();
+      if (method==scmVciVcw)
+      {
+         ::AfxMessageBox(_T("The Vci/Vcw method is currently selected for computing shear capacity, and this method was removed from the LRFD Bridge Design Specifications in the 8th Edition, 2017. The shear capacity method will be changed to compute in accordance with the General Method per LRFD 5.7.3.5.\nVisit the Shear Capacity tab for more options."), MB_OK|MB_ICONWARNING);
+         pParent->m_Entry.SetShearCapacityMethod(scmBTEquations);
+      }
+   }
+
 }

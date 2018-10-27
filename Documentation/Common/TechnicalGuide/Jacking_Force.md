@@ -10,7 +10,7 @@ where <i>f<sub>pj</sub></i> is the jacking stress and <i>A<sub>ps</sub></i> is t
 
 Jacking Stress - 1st Edition
 ------------------------------
-The jacking stress is prescribed in Article 5.9.3 of the 1st Edition of the LRFD specification. The jacking stresses are 
+The jacking stress is prescribed in Article 5.9.2.2 (*pre-2017: 5.9.3*) of the 1st Edition of the LRFD specification. The jacking stresses are 
 
 ![](fpj_SR_1994.png)
 
@@ -42,7 +42,7 @@ Substituting, we get
 
 > NOTE: From now on, we will only deal with the stress relieved strands. The formulation for low relaxation strands is similar.
 
-From LRFD Equation 5.9.5.4.4b-1, 
+From LRFD 5.9.3.4.2c (*pre-2017:5.9.5.4.2c*),
 
 ![](deltaFpR1.png)
 

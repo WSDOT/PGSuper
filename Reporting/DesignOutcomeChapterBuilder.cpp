@@ -283,10 +283,11 @@ void write_artifact_data(IBroker* pBroker,rptChapter* pChapter,IEAFDisplayUnits*
    INIT_UV_PROTOTYPE( rptLengthUnitValue, distance, pDisplayUnits->GetXSectionDimUnit(), true );
    INIT_UV_PROTOTYPE( rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(),       true );
 
-   GET_IFACE2(pBroker,IPointOfInterest,pIPOI);
-   std::vector<pgsPointOfInterest> vPoi = pIPOI->GetPointsOfInterest(segmentKey,POI_SPAN | POI_5L);
+   GET_IFACE2(pBroker,IPointOfInterest,pPoi);
+   PoiList vPoi;
+   pPoi->GetPointsOfInterest(segmentKey, POI_5L | POI_SPAN, &vPoi);
    ATLASSERT(vPoi.size()==1);
-   pgsPointOfInterest poiMS = vPoi.front();
+   const pgsPointOfInterest& poiMS = vPoi.front();
    arDesignOptions options = pArtifact->GetDesignOptions();
 
    // Start report with design notes. Notes will be written at end of this function
@@ -1037,7 +1038,7 @@ std::_tstring GetDesignNoteString(pgsSegmentDesignArtifact::DesignNote note)
    switch (note)
    {
    case pgsSegmentDesignArtifact::dnShearRequiresStrutAndTie:
-      return std::_tstring(_T("WARNING: A strut and tie analysis is required in the girder end zones per LRFD 5.8.3.2. This design will fail a spec check."));
+      return std::_tstring(_T("WARNING: A strut and tie analysis is required in the girder end zones per LRFD ") + std::_tstring(LrfdCw8th(_T("5.8.3.2"),_T("5.7.3.2"))) + _T(". This design will fail a spec check."));
       break;
 
    case pgsSegmentDesignArtifact::dnExistingShearDesignPassedSpecCheck:
@@ -1107,7 +1108,7 @@ void multiple_girder_table(ColumnIndexType startIdx, ColumnIndexType endIdx,
    INIT_UV_PROTOTYPE( rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(),       true );
 
    GET_IFACE2(pBroker,IStrandGeometry, pStrandGeometry );
-   GET_IFACE2(pBroker,IPointOfInterest,pIPOI);
+   GET_IFACE2(pBroker,IPointOfInterest,pPoi);
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
 
    // Since girder types, design info, etc can be different for each girder, process information for all
@@ -1158,15 +1159,21 @@ void multiple_girder_table(ColumnIndexType startIdx, ColumnIndexType endIdx,
       }
 
       if (is_temporary)
-         (*pTable)(row++,0) << _T("Number of Temporary Strands");
+      {
+         (*pTable)(row++, 0) << _T("Number of Temporary Strands");
+      }
 
       (*pTable)(row++,0) << _T("Straight Strand Jacking Force");
 
       if (is_harped)
-         (*pTable)(row++,0) << _T("Harped Strand Jacking Force");
+      {
+         (*pTable)(row++, 0) << _T("Harped Strand Jacking Force");
+      }
 
       if (is_temporary)
-         (*pTable)(row++,0) << _T("Temporary Strand Jacking Force");
+      {
+         (*pTable)(row++, 0) << _T("Temporary Strand Jacking Force");
+      }
 
       (*pTable)(row++,0) << _T("Eccentricity of Permanent Strands at Midspan");
 
@@ -1215,9 +1222,10 @@ void multiple_girder_table(ColumnIndexType startIdx, ColumnIndexType endIdx,
 
       const CGirderKey& girderKey = girderKeys[gdr_idx];
       
-      std::vector<pgsPointOfInterest> vPoi = pIPOI->GetPointsOfInterest(CSegmentKey(girderKey,segIdx),POI_SPAN | POI_5L);
+      PoiList vPoi;
+      pPoi->GetPointsOfInterest(CSegmentKey(girderKey, segIdx), POI_5L | POI_SPAN, &vPoi);
       ATLASSERT(vPoi.size()==1);
-      pgsPointOfInterest poiMS = vPoi.front();
+      const pgsPointOfInterest& poiMS = vPoi.front();
 
       row = 0;
 

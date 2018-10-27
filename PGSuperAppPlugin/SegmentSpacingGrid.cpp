@@ -361,7 +361,7 @@ BOOL CSegmentSpacingGrid::OnRButtonHitRowCol(ROWCOL nHitRow,ROWCOL nHitCol,ROWCO
    if ( nHitState & GX_HITSTART )
       return TRUE;
 
-   if ( nHitCol != 0 && m_bEnabled)
+   if ( nHitCol != 0 )
    {
       CRowColArray selCols;
       ROWCOL nSelected = GetSelectedCols(selCols);

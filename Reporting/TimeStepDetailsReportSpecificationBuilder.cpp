@@ -73,9 +73,11 @@ std::shared_ptr<CReportSpecification> CTimeStepDetailsReportSpecificationBuilder
          girderKey.girderIndex  = 0;
       }
 
-      GET_IFACE(IPointOfInterest,pPOI);
-      std::vector<pgsPointOfInterest> vPoi( pPOI->GetPointsOfInterest(CSegmentKey(girderKey,ALL_SEGMENTS),POI_SPAN | POI_5L) );
-      initial_poi = vPoi.front();
+      GET_IFACE(IPointOfInterest,pPoi);
+      PoiList vPoi;
+      pPoi->GetPointsOfInterest(CSegmentKey(girderKey, ALL_SEGMENTS), POI_5L | POI_SPAN, &vPoi);
+      ATLASSERT(vPoi.size() == 1);
+      initial_poi = vPoi.front().get();
    }
 
    CTimeStepDetailsDlg dlg(m_pBroker,pInitRptSpec,initial_poi,INVALID_INDEX);

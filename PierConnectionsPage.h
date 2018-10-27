@@ -89,7 +89,6 @@ protected:
    CMetaFileStatic m_ConnectionPicture;
    CCacheEdit m_BearingOffsetEdit[2];
    CCacheEdit m_EndDistanceEdit[2];
-   CCacheEdit m_SupportWidthEdit[2];
    CCacheComboBox m_cbEndDistanceMeasurementType;
    CCacheComboBox m_cbBearingOffsetMeasurementType;
    CCacheEdit m_DiaphragmHeightEdit[2];
@@ -107,7 +106,6 @@ protected:
 
    Float64 m_BearingOffset[2];
    Float64 m_EndDistance[2];
-   Float64 m_SupportWidth[2];
    ConnectionLibraryEntry::EndDistanceMeasurementType m_EndDistanceMeasurementType;
    ConnectionLibraryEntry::BearingOffsetMeasurementType m_BearingOffsetMeasurementType;
 

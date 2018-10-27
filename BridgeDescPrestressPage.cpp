@@ -271,6 +271,13 @@ void CGirderDescPrestressPage::DoDataExchange(CDataExchange* pDX)
    DDX_CBItemData(pDX, IDC_TTS_USE, ttsUsage );
    if ( pDX->m_bSaveAndValidate )
    {
+      Float64 precamber = pParent->m_pSegment->Precamber;
+      if (!IsZero(precamber) && ttsUsage == pgsTypes::ttsPretensioned && pParent->m_pSegment->Strands.GetStrandCount(pgsTypes::Temporary) != 0)
+      {
+         AfxMessageBox(_T("Temporary top strands must be post-tensioned when girders are precambered"));
+         pDX->PrepareCtrl(IDC_TTS_USE);
+         pDX->Fail();
+      }
       pParent->m_pSegment->Strands.SetTemporaryStrandUsage(ttsUsage);
    }
 
@@ -628,30 +635,28 @@ BOOL CGirderDescPrestressPage::OnInitDialog()
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IIntervals,pIntervals);
-   GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
+   GET_IFACE2(pBroker,IPointOfInterest,pPoi);
    GET_IFACE2(pBroker,ISectionProperties,pSectProp);
 
    // Get key segment dimensions
    IntervalIndexType intervalIdx = pIntervals->GetPrestressReleaseInterval(pParent->m_SegmentKey);
 
-   std::vector<pgsPointOfInterest> vPoi;
-   vPoi = pIPoi->GetPointsOfInterest(pParent->m_SegmentKey,POI_START_FACE);
-   ATLASSERT(vPoi.size() == 1);
-   pgsPointOfInterest poiStart(vPoi.front());
-
-   vPoi = pIPoi->GetPointsOfInterest(pParent->m_SegmentKey,POI_END_FACE);
-   ATLASSERT(vPoi.size() == 1);
-   pgsPointOfInterest poiEnd(vPoi.front());
+   PoiList vPoi;
+   pPoi->GetPointsOfInterest(pParent->m_SegmentKey, POI_START_FACE | POI_END_FACE, &vPoi);
+   ATLASSERT(vPoi.size() == 2);
+   const pgsPointOfInterest& poiStart = vPoi.front();
+   const pgsPointOfInterest& poiEnd = vPoi.back();
 
    m_HgStart = pSectProp->GetHg(intervalIdx,poiStart);
    m_HgEnd   = pSectProp->GetHg(intervalIdx,poiEnd);
 
-   vPoi = pIPoi->GetPointsOfInterest(pParent->m_SegmentKey,POI_HARPINGPOINT);
+   vPoi.clear();
+   pPoi->GetPointsOfInterest(pParent->m_SegmentKey, POI_HARPINGPOINT, &vPoi);
    if ( 0 < vPoi.size() )
    {
       ATLASSERT(vPoi.size() == 1 || vPoi.size() == 2);
-      pgsPointOfInterest poiHp1(vPoi.front());
-      pgsPointOfInterest poiHp2(vPoi.back());
+      const pgsPointOfInterest& poiHp1(vPoi.front());
+      const pgsPointOfInterest& poiHp2(vPoi.back());
 
       m_HgHp1 = pSectProp->GetHg(intervalIdx,poiHp1);
       m_HgHp2 = pSectProp->GetHg(intervalIdx,poiHp2);
@@ -772,22 +777,30 @@ void CGirderDescPrestressPage::InitHarpStrandOffsetMeasureComboBox(CComboBox* pC
    pCB->Clear();
    int idx;
 
-   idx = pCB->AddString(_T("Distance between CG of Adjustable Group and Girder Top")); 
+   CString strItem;
+
+   strItem.Format(_T("Distance between CG of %s Group and Girder Top"), m_LibraryAdjustableStrandType == pgsTypes::asHarped ? _T("Harped") : _T("Adjustable"));
+   idx = pCB->AddString(strItem); 
    pCB->SetItemData(idx,hsoCGFROMTOP);
 
-   idx = pCB->AddString(_T("Distance between CG of Adjustable Group and Girder Bottom"));
+   strItem.Format(_T("Distance between CG of %s Group and Girder Bottom"), m_LibraryAdjustableStrandType == pgsTypes::asHarped ? _T("Harped") : _T("Adjustable"));
+   idx = pCB->AddString(strItem);
    pCB->SetItemData(idx,hsoCGFROMBOTTOM);
 
-   idx = pCB->AddString(_T("Distance between Top-Most Adjustable Strand and Girder Top"));
+   strItem.Format(_T("Distance between Top-Most %s Strand and Girder Top"), m_LibraryAdjustableStrandType == pgsTypes::asHarped ? _T("Harped") : _T("Adjustable"));
+   idx = pCB->AddString(strItem);
    pCB->SetItemData(idx,hsoTOP2TOP);
 
-   idx = pCB->AddString(_T("Distance between Top-Most Adjustable Strand and Girder Bottom"));
+   strItem.Format(_T("Distance between Top-Most %s Strand and Girder Bottom"), m_LibraryAdjustableStrandType == pgsTypes::asHarped ? _T("Harped") : _T("Adjustable"));
+   idx = pCB->AddString(strItem);
    pCB->SetItemData(idx,hsoTOP2BOTTOM);
 
-   idx = pCB->AddString(_T("Distance between Bottom-Most Adjustable Strand and Girder Bottom"));
+   strItem.Format(_T("Distance between Bottom-Most %s Strand and Girder Bottom"), m_LibraryAdjustableStrandType == pgsTypes::asHarped ? _T("Harped") : _T("Adjustable"));
+   idx = pCB->AddString(strItem);
    pCB->SetItemData(idx,hsoBOTTOM2BOTTOM);
 
-   idx = pCB->AddString(_T("Eccentricity of Adjustable Strand Group (Non-Composite Section)"));
+   strItem.Format(_T("Eccentricity of %s Strand Group (Non-Composite Section)"), m_LibraryAdjustableStrandType == pgsTypes::asHarped ? _T("Harped") : _T("Adjustable"));
+   idx = pCB->AddString(strItem);
    pCB->SetItemData(idx,hsoECCENTRICITY);
 }
 
@@ -2411,10 +2424,11 @@ void CGirderDescPrestressPage::OnSelchangeStrandInputType()
       else if (newStrandDefinitionType == CStrandData::sdtDirectInput)
       {
          GET_IFACE2(pBroker,IPointOfInterest,pPoi);
-         std::vector<pgsPointOfInterest> vPoi = pPoi->GetPointsOfInterest(pParent->m_SegmentKey,POI_START_FACE | POI_END_FACE);
+         PoiList vPoi;
+         pPoi->GetPointsOfInterest(pParent->m_SegmentKey, POI_START_FACE | POI_END_FACE, &vPoi);
          ATLASSERT(vPoi.size() == 2);
-         pgsPointOfInterest startPoi = vPoi.front();
-         pgsPointOfInterest endPoi   = vPoi.back();
+         const pgsPointOfInterest& startPoi = vPoi.front();
+         const pgsPointOfInterest& endPoi   = vPoi.back();
 
          GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
 
@@ -2474,14 +2488,14 @@ void CGirderDescPrestressPage::OnSelchangeStrandInputType()
                pntStart2->Location(&sx2,&sy2);
                ATLASSERT(::IsEqual(-sx1,sx2));
                ATLASSERT(::IsEqual(sy1,sy2));
-               Float64 innerSpacing = sx1 - sx2;
+               Float64 innerSpacing = sx2 - sx1;
 
                Float64 ex1,ey1, ex2,ey2;
                pntEnd1->Location(&ex1,&ey1);
                pntEnd2->Location(&ex2,&ey2);
                ATLASSERT(::IsEqual(-ex1,ex2));
-               ATLASSERT(::IsEqual(innerSpacing,(ex1-ex2)));
-               ATLASSERT(::IsEqual(ey1,ey2));
+               ATLASSERT(::IsEqual(innerSpacing,(ex2-ex1)));
+               ATLASSERT(::IsEqual(ey2,ey1));
 
                strandRow.m_InnerSpacing = innerSpacing;
                strandRow.m_nStrands = (::IsZero(innerSpacing) ? 1 : 2);
@@ -2491,11 +2505,11 @@ void CGirderDescPrestressPage::OnSelchangeStrandInputType()
                ATLASSERT(::IsEqual(sy1,ey1));
                ATLASSERT(::IsEqual(sy2,ey2));
 
-               strandRow.m_X[LOCATION_START] = 0.0;
+               strandRow.m_X[LOCATION_START] = 0.0; // 0%
                strandRow.m_Y[LOCATION_START] = -sy1;
                strandRow.m_Face[LOCATION_START] = pgsTypes::TopFace;
 
-               strandRow.m_X[LOCATION_END] = -1.0;
+               strandRow.m_X[LOCATION_END] = -1.0; // 100%
                strandRow.m_Y[LOCATION_END] = -ey1;
                strandRow.m_Face[LOCATION_END] = pgsTypes::TopFace;
 
@@ -2514,9 +2528,10 @@ void CGirderDescPrestressPage::OnSelchangeStrandInputType()
 
                if ( strandType == pgsTypes::Harped )
                {
-                  vPoi = pPoi->GetPointsOfInterest(pParent->m_SegmentKey,POI_HARPINGPOINT);
-                  pgsPointOfInterest leftHPPoi(vPoi.front());
-                  pgsPointOfInterest rightHPPoi(vPoi.back());
+                  vPoi.clear(); // recycle the list
+                  pPoi->GetPointsOfInterest(pParent->m_SegmentKey,POI_HARPINGPOINT,&vPoi);
+                  const pgsPointOfInterest& leftHPPoi(vPoi.front());
+                  const pgsPointOfInterest& rightHPPoi(vPoi.back());
 
                   CComPtr<IPoint2d> pntLeftHP1;
                   pStrandGeometry->GetStrandPositionEx(leftHPPoi,strIdx1,strandType,config,&pntLeftHP1);

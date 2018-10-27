@@ -28,6 +28,7 @@
 #include "ActivityGrid.h"
 
 #include <IFace\DocumentType.h>
+#include <IFace\Project.h>
 
 #include <PgsExt\TimelineEvent.h>
 #include "TimelineEventDlg.h"
@@ -39,6 +40,7 @@
 #include "ApplyLoadsDlg.h"
 #include "StressTendonDlg.h"
 #include "CastDeckDlg.h"
+#include "CastLongitudinalJointsDlg.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -48,12 +50,13 @@ static char THIS_FILE[] = __FILE__;
 
 #define CONSTRUCT_SEGMENTS    0
 #define ERECT_PIERS           1
-#define CAST_CLOSURE_JOINTS   2
+#define CAST_CLOSURE_JOINTS    2
 #define ERECT_SEGMENTS        3
 #define STRESS_TENDONS        4
 #define REMOVE_TS             5
 #define CAST_DECK             6
-#define APPLY_LOADS           7
+#define CAST_LONGITUDINAL_JOINTS 7
+#define APPLY_LOADS           8
 
 GRID_IMPLEMENT_REGISTER(CActivityGrid, CS_DBLCLKS, 0, 0, 0);
 
@@ -202,9 +205,17 @@ void CActivityGrid::Refresh()
       AddActivity(_T("Remove Temporary Supports"),REMOVE_TS);
    }
 
-   if ( pParent->m_pTimelineEvent->GetCastDeckActivity().IsEnabled() )
+   if (pParent->m_pTimelineEvent->GetCastDeckActivity().IsEnabled())
    {
-      AddActivity(_T("Cast Deck"),CAST_DECK);
+      GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
+      pgsTypes::SupportedDeckType deckType = pIBridgeDesc->GetDeckDescription()->GetDeckType();
+      CString strName(GetCastDeckEventName(deckType));
+      AddActivity(strName, CAST_DECK);
+   }
+
+   if (pParent->m_pTimelineEvent->GetCastLongitudinalJointActivity().IsEnabled())
+   {
+      AddActivity(_T("Cast Longitudinal Joints"), CAST_LONGITUDINAL_JOINTS);
    }
 
    if ( pParent->m_pTimelineEvent->GetApplyLoadActivity().IsEnabled() )
@@ -309,8 +320,30 @@ void CActivityGrid::OnClickedButtonRowCol(ROWCOL nRow,ROWCOL nCol)
    }
    else if ( (ActivityKeyType)style.GetItemDataPtr() == CAST_DECK )
    {
-      CCastDeckDlg dlg(pParent->m_TimelineManager,pParent->m_EventIndex,m_bReadOnly);
-      if ( dlg.DoModal() == IDOK )
+      CComPtr<IBroker> pBroker;
+      EAFGetBroker(&pBroker);
+      GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
+      pgsTypes::SupportedDeckType deckType = pIBridgeDesc->GetDeckDescription()->GetDeckType();
+
+      if (deckType == pgsTypes::sdtNonstructuralOverlay)
+      {
+         AfxMessageBox(_T("No event activity details for installation of nonstructural overlay"));
+      }
+      else
+      {
+         CString strName(GetCastDeckEventName(deckType));
+
+         CCastDeckDlg dlg(strName, pParent->m_TimelineManager, pParent->m_EventIndex, m_bReadOnly);
+         if (dlg.DoModal() == IDOK)
+         {
+            pParent->UpdateTimelineManager(dlg.m_TimelineMgr);
+         }
+      }
+   }
+   else if ((ActivityKeyType)style.GetItemDataPtr() == CAST_LONGITUDINAL_JOINTS)
+   {
+      CCastLongitudinalJointsDlg dlg(pParent->m_TimelineManager, pParent->m_EventIndex, m_bReadOnly);
+      if (dlg.DoModal() == IDOK)
       {
          pParent->UpdateTimelineManager(dlg.m_TimelineMgr);
       }
@@ -385,7 +418,7 @@ void CActivityGrid::RemoveActivity()
          pParent->m_pTimelineEvent->GetRemoveTempSupportsActivity().Clear();
       }
 
-      if ( activityType == CAST_DECK )
+      if (activityType == CAST_DECK)
       {
          pParent->m_pTimelineEvent->GetCastDeckActivity().Enable(false);
       }

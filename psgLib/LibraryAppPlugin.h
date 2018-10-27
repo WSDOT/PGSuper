@@ -21,6 +21,7 @@
 ///////////////////////////////////////////////////////////////////////
 
 #pragma once
+#include "CLSID.h"
 #include "resource.h"
 #include <EAF\EAFAppPlugin.h>
 #include <EAF\EAFUIIntegration.h>

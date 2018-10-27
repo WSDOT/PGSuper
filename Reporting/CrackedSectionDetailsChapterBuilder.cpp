@@ -47,7 +47,7 @@ CLASS
 void write_cracked_section_table(IBroker* pBroker,
                              IEAFDisplayUnits* pDisplayUnits,
                              const CGirderKey& girderKey,
-                             const std::vector<pgsPointOfInterest>& vPoi,
+                             const PoiList& vPoi,
                              rptChapter* pChapter,
                              bool bIncludeNegMoment);
 
@@ -112,7 +112,7 @@ rptChapter* CCrackedSectionDetailsChapterBuilder::Build(CReportSpecification* pR
 
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    GET_IFACE2(pBroker,IBridge,pBridge);
-   GET_IFACE2(pBroker,IPointOfInterest,pIPOI);
+   GET_IFACE2(pBroker,IPointOfInterest,pPoi);
 
    GroupIndexType nGroups = pBridge->GetGirderGroupCount();
    GroupIndexType firstGroupIdx = (girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex);
@@ -137,7 +137,8 @@ rptChapter* CCrackedSectionDetailsChapterBuilder::Build(CReportSpecification* pR
       for ( GirderIndexType gdrIdx = firstGirderIdx; gdrIdx <= lastGirderIdx; gdrIdx++ )
       {
          CGirderKey thisGirderKey(grpIdx,gdrIdx);
-         std::vector<pgsPointOfInterest> vPoi(pIPOI->GetPointsOfInterest(CSegmentKey(thisGirderKey,ALL_SEGMENTS),POI_ERECTED_SEGMENT));
+         PoiList vPoi;
+         pPoi->GetPointsOfInterest(CSegmentKey(thisGirderKey, ALL_SEGMENTS), POI_ERECTED_SEGMENT, &vPoi);
          write_cracked_section_table(pBroker,pDisplayUnits, thisGirderKey, vPoi, pChapter, bProcessNegativeMoments);
       }
    }
@@ -153,7 +154,7 @@ CChapterBuilder* CCrackedSectionDetailsChapterBuilder::Clone() const
 void write_cracked_section_table(IBroker* pBroker,
                              IEAFDisplayUnits* pDisplayUnits,
                              const CGirderKey& girderKey,
-                             const std::vector<pgsPointOfInterest>& vPoi,
+                             const PoiList& vPoi,
                              rptChapter* pChapter,
                              bool bIncludeNegMoment)
 {
@@ -214,11 +215,8 @@ void write_cracked_section_table(IBroker* pBroker,
 
    GET_IFACE2(pBroker,ICrackedSection,pCrackedSection);
    GET_IFACE2(pBroker,ISectionProperties,pSectProp);
-   std::vector<pgsPointOfInterest>::const_iterator i(vPoi.begin());
-   std::vector<pgsPointOfInterest>::const_iterator end(vPoi.end());
-   for ( ; i != end; i++ )
+   for (const pgsPointOfInterest& poi : vPoi)
    {
-      const pgsPointOfInterest& poi = *i;
       CRACKEDSECTIONDETAILS csd;
       pCrackedSection->GetCrackedSectionDetails(poi,true,&csd);
 

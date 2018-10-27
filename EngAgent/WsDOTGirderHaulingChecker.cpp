@@ -21,6 +21,7 @@
 ///////////////////////////////////////////////////////////////////////
 
 #include "StdAfx.h"
+#include <PgsExt\PgsExtLib.h>
 
 #include <IFace\Artifact.h>
 
@@ -214,7 +215,6 @@ pgsHaulingAnalysisArtifact* pgsWsdotGirderHaulingChecker::DesignHauling(const CS
       strMsg += _T("\nSee Status Center for details");
       THROW_UNWIND(strMsg, -1);
    }
-
    std::vector<const HaulTruckLibraryEntry*> vHaulTrucks;
    GET_IFACE(ILibrary,pLib);
    const HaulTruckLibraryEntry* pMaxCapacityTruck = pLib->GetHaulTruckEntry(names.front().c_str()); // keep track of the truck with the max capacity
@@ -479,7 +479,7 @@ void pgsWsdotGirderHaulingChecker::AnalyzeHauling(const CSegmentKey& segmentKey,
 #endif
 {
    GET_IFACE(IGirder,pGirder);
-   const stbGirder* pStabilityModel = (bUseConfig ? pGirder->GetSegmentStabilityModel(segmentKey,config) : pGirder->GetSegmentStabilityModel(segmentKey));
+   const stbGirder* pStabilityModel = pGirder->GetSegmentHaulingStabilityModel(segmentKey);
    const stbHaulingStabilityProblem* pStabilityProblem = (bUseConfig ? pGirder->GetSegmentHaulingStabilityProblem(segmentKey,config,pPOId) : pGirder->GetSegmentHaulingStabilityProblem(segmentKey));
 
 #if defined _DEBUG
@@ -489,13 +489,6 @@ void pgsWsdotGirderHaulingChecker::AnalyzeHauling(const CSegmentKey& segmentKey,
    GET_IFACE(ISegmentHaulingSpecCriteria,pSegmentHaulingSpecCriteria);
    stbHaulingCriteria criteria = (bUseConfig ? pSegmentHaulingSpecCriteria->GetHaulingStabilityCriteria(segmentKey,config) : pSegmentHaulingSpecCriteria->GetHaulingStabilityCriteria(segmentKey));
 
-   GET_IFACE(IDocumentUnitSystem,pDocUnitSystem);
-   CComPtr<IUnitServer> unitServer;
-   pDocUnitSystem->GetUnitServer(&unitServer);
-
-   CComPtr<IUnitConvert> unitConvert;
-   unitServer->get_UnitConvert(&unitConvert);
-
-   stbStabilityEngineer engineer(unitConvert);
+   stbStabilityEngineer engineer;
    *pArtifact = engineer.CheckHauling(pStabilityModel,pStabilityProblem,criteria);
 }

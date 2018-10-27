@@ -63,6 +63,10 @@
 #include "GraphViewChildFrame.h"
 #include "GraphView.h"
 
+#include <BridgeModelViewController.h>
+#include <GirderModelViewController.h>
+#include <LoadsViewController.h>
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
@@ -325,22 +329,73 @@ void CPGSuperDocProxyAgent::UnadviseEventSinks()
    pCP.Release(); // Recycle the IConnectionPoint smart pointer so we can use it again.
 }
 
-void CPGSuperDocProxyAgent::CreateBridgeModelView()
+void CPGSuperDocProxyAgent::CreateBridgeModelView(IBridgeModelViewController** ppViewController)
 {
    GET_IFACE(IEAFViewRegistrar,pViewReg);
-   pViewReg->CreateView(m_BridgeModelEditorViewKey);
+   CView* pView = pViewReg->CreateView(m_BridgeModelEditorViewKey);
+
+   if (ppViewController && pView->IsKindOf(RUNTIME_CLASS(CBridgeViewPane)) )
+   {
+      CBridgeViewPane* pPane = (CBridgeViewPane*)pView;
+      CBridgeModelViewChildFrame* pFrame = pPane->GetFrame();
+      CEAFViewControllerFactory* pFactory = dynamic_cast<CEAFViewControllerFactory*>(pFrame);
+      if (pFactory)
+      {
+         CComPtr<IEAFViewController> controller;
+         pFactory->GetViewController(&controller);
+         controller.QueryInterface(ppViewController);
+      }
+      else
+      {
+         *ppViewController = nullptr;
+      }
+   }
 }
 
-void CPGSuperDocProxyAgent::CreateGirderView(const CGirderKey& girderKey)
+void CPGSuperDocProxyAgent::CreateGirderView(const CGirderKey& girderKey, IGirderModelViewController** ppViewController)
 {
    GET_IFACE(IEAFViewRegistrar,pViewReg);
    CView* pView = pViewReg->CreateView(m_GirderModelEditorViewKey,(void*)&girderKey);
+
+   if (ppViewController && pView->IsKindOf(RUNTIME_CLASS(CGirderModelElevationView)))
+   {
+      CGirderModelElevationView* pGirderElevationView = (CGirderModelElevationView*)pView;
+      CGirderModelChildFrame* pFrame = pGirderElevationView->GetFrame();
+      CEAFViewControllerFactory* pFactory = dynamic_cast<CEAFViewControllerFactory*>(pFrame);
+      if (pFactory)
+      {
+         CComPtr<IEAFViewController> controller;
+         pFactory->GetViewController(&controller);
+         controller.QueryInterface(ppViewController);
+      }
+      else
+      {
+         *ppViewController = nullptr;
+      }
+   }
 }
 
-void CPGSuperDocProxyAgent::CreateLoadsView()
+void CPGSuperDocProxyAgent::CreateLoadsView(ILoadsViewController** ppViewController)
 {
-   GET_IFACE(IEAFViewRegistrar,pViewReg);
-   pViewReg->CreateView(m_LoadsViewKey);
+   GET_IFACE(IEAFViewRegistrar, pViewReg);
+   CView* pView = pViewReg->CreateView(m_LoadsViewKey);
+
+   if (ppViewController && pView->IsKindOf(RUNTIME_CLASS(CEditLoadsView)))
+   {
+      CEditLoadsView* pLoadsView = (CEditLoadsView*)pView;
+      CEditLoadsChildFrame* pFrame = (CEditLoadsChildFrame*)pLoadsView->GetParentFrame();
+      CEAFViewControllerFactory* pFactory = dynamic_cast<CEAFViewControllerFactory*>(pFrame);
+      if (pFactory)
+      {
+         CComPtr<IEAFViewController> controller;
+         pFactory->GetViewController(&controller);
+         controller.QueryInterface(ppViewController);
+      }
+      else
+      {
+         *ppViewController = nullptr;
+      }
+   }
 }
 
 void CPGSuperDocProxyAgent::CreateLibraryEditorView()
@@ -367,7 +422,7 @@ void CPGSuperDocProxyAgent::BuildReportMenu(CEAFMenu* pMenu,bool bQuickReport)
    m_pMyDocument->BuildReportMenu(pMenu,bQuickReport);
 }
 
-void CPGSuperDocProxyAgent::CreateGraphView(CollectionIndexType graphIdx)
+void CPGSuperDocProxyAgent::CreateGraphView(CollectionIndexType graphIdx, IEAFViewController** ppViewController)
 {
    CEAFGraphViewCreationData data;
    GET_IFACE(IGraphManager,pGraphMgr);
@@ -375,7 +430,41 @@ void CPGSuperDocProxyAgent::CreateGraphView(CollectionIndexType graphIdx)
    data.m_GraphIndex = graphIdx;
 
    GET_IFACE(IEAFViewRegistrar,pViewReg);
-   pViewReg->CreateView(m_GraphingViewKey,(LPVOID)&data);
+   CView* pView = pViewReg->CreateView(m_GraphingViewKey,(LPVOID)&data);
+
+   if (ppViewController && pView->IsKindOf(RUNTIME_CLASS(CGraphView)))
+   {
+      CGraphView* pGraphView = (CGraphView*)pView;
+      CEAFGraphChildFrame* pFrame = (CEAFGraphChildFrame*)pGraphView->GetFrame();
+      
+      CEAFViewControllerFactory* pFactory = dynamic_cast<CEAFViewControllerFactory*>(pFrame);
+      ATLASSERT(pFactory != nullptr);
+      if (pFactory)
+      {
+         pFactory->GetViewController(ppViewController);
+      }
+      else
+      {
+         *ppViewController = nullptr;
+      }
+   }
+}
+
+void CPGSuperDocProxyAgent::CreateGraphView(LPCTSTR lpszGraph, IEAFViewController** ppViewController)
+{
+   GET_IFACE(IGraphManager, pGraphMgr);
+   IndexType nGraphs = pGraphMgr->GetGraphBuilderCount();
+   for (IndexType graphIdx = 0; graphIdx < nGraphs; graphIdx++)
+   {
+      auto pGraphBuilder = pGraphMgr->GetGraphBuilder(graphIdx);
+      if (CString(lpszGraph).Compare(pGraphBuilder->GetName()) == 0)
+      {
+         CreateGraphView(graphIdx, ppViewController);
+         return;
+      }
+   }
+
+   ATLASSERT(false); // graph name not found
 }
 
 void CPGSuperDocProxyAgent::BuildGraphMenu(CEAFMenu* pMenu)
@@ -413,74 +502,8 @@ long CPGSuperDocProxyAgent::GetLoadsViewKey()
    return m_LoadsViewKey;
 }
 
-void CPGSuperDocProxyAgent::GetBridgeViewSpanRange(SpanIndexType* pStartSpanIdx,SpanIndexType* pEndSpanIdx)
-{
-   GET_IFACE(IEAFViewRegistrar,pViewReg);
-   std::vector<CView*> vViews = pViewReg->GetRegisteredView(m_BridgeModelEditorViewKey);
-   if ( vViews.size() == 0 )
-   {
-      vViews.push_back(pViewReg->CreateView(m_BridgeModelEditorViewKey));
-   }
 
-   CView* pView = vViews.front();
-   ASSERT_KINDOF(CBridgePlanView,vViews.front());
-   CBridgePlanView* pPlanView = (CBridgePlanView*)vViews.front();
-   pPlanView->GetSpanRange(pStartSpanIdx,pEndSpanIdx);
-}
-
-void CPGSuperDocProxyAgent::SetBridgeViewSpanRange(SpanIndexType startSpanIdx,SpanIndexType endSpanIdx)
-{
-   AFX_MANAGE_STATE(AfxGetAppModuleState());
-   GET_IFACE(IEAFViewRegistrar,pViewReg);
-   std::vector<CView*> vViews = pViewReg->GetRegisteredView(m_BridgeModelEditorViewKey);
-   if ( vViews.size() == 0 )
-   {
-      vViews.push_back(pViewReg->CreateView(m_BridgeModelEditorViewKey));
-   }
-
-   CView* pView = vViews.front();
-   CFrameWnd* pParentFrame = pView->GetParentFrame();
-   ASSERT_KINDOF(CBridgeModelViewChildFrame,pParentFrame);
-   CBridgeModelViewChildFrame* pFrame = (CBridgeModelViewChildFrame*)pParentFrame;
-   CBridgePlanView* pPlanView = pFrame->GetBridgePlanView();
-
-   pPlanView->SetSpanRange(startSpanIdx,endSpanIdx,false);
-}
-
-Float64 CPGSuperDocProxyAgent::GetBridgeViewCutStation()
-{
-   AFX_MANAGE_STATE(AfxGetAppModuleState());
-   GET_IFACE(IEAFViewRegistrar,pViewReg);
-   std::vector<CView*> vViews = pViewReg->GetRegisteredView(m_BridgeModelEditorViewKey);
-   if ( vViews.size() == 0 )
-   {
-      vViews.push_back(pViewReg->CreateView(m_BridgeModelEditorViewKey));
-   }
-
-   CView* pView = vViews.front();
-   CFrameWnd* pParentFrame = pView->GetParentFrame();
-   ASSERT_KINDOF(CBridgeModelViewChildFrame,pParentFrame);
-   CBridgeModelViewChildFrame* pFrame = (CBridgeModelViewChildFrame*)pParentFrame;
-   return pFrame->GetCurrentCutLocation();
-}
-
-void CPGSuperDocProxyAgent::SetBridgeViewCutStation(Float64 station)
-{
-   AFX_MANAGE_STATE(AfxGetAppModuleState());
-   GET_IFACE(IEAFViewRegistrar,pViewReg);
-   std::vector<CView*> vViews = pViewReg->GetRegisteredView(m_BridgeModelEditorViewKey);
-   if ( vViews.size() == 0 )
-   {
-      vViews.push_back(pViewReg->CreateView(m_BridgeModelEditorViewKey));
-   }
-
-   CView* pView = vViews.front();
-   CFrameWnd* pParentFrame = pView->GetParentFrame();
-   ASSERT_KINDOF(CBridgeModelViewChildFrame,pParentFrame);
-   CBridgeModelViewChildFrame* pFrame = (CBridgeModelViewChildFrame*)pParentFrame;
-   pFrame->CutAt(station);
-}
-
+///////////////////////////////////////////////////
 void CPGSuperDocProxyAgent::OnStatusChanged()
 {
    if ( m_pBroker )
@@ -1250,6 +1273,11 @@ bool CPGSuperDocProxyAgent::SelectProjectCriteria()
    return m_pMyDocument->SelectProjectCriteria();
 }
 
+bool CPGSuperDocProxyAgent::EditBearings()
+{
+   return m_pMyDocument->DoEditBearing();
+}
+
 ///////////////////////////////////////////////////////////////////////////////////
 // IDesign
 void CPGSuperDocProxyAgent::DesignGirder(bool bPrompt,bool bDesignSlabOffset,const CGirderKey& girderKey)
@@ -1475,4 +1503,21 @@ void CPGSuperDocProxyAgent::GetUnitServer(IUnitServer** ppUnitServer)
    pPGSuper->GetAppUnitSystem(&appUnitSystem);
 
    appUnitSystem->get_UnitServer(ppUnitServer);
+}
+
+
+CBridgeModelViewChildFrame* CPGSuperDocProxyAgent::GetBridgeModelViewFrame()
+{
+   GET_IFACE(IEAFViewRegistrar, pViewReg);
+   std::vector<CView*> vViews = pViewReg->GetRegisteredView(m_BridgeModelEditorViewKey);
+   if (vViews.size() == 0)
+   {
+      vViews.push_back(pViewReg->CreateView(m_BridgeModelEditorViewKey));
+   }
+
+   CView* pView = vViews.front();
+   CFrameWnd* pParentFrame = pView->GetParentFrame();
+   ASSERT_KINDOF(CBridgeModelViewChildFrame, pParentFrame);
+   CBridgeModelViewChildFrame* pFrame = (CBridgeModelViewChildFrame*)pParentFrame;
+   return pFrame;
 }

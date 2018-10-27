@@ -203,6 +203,31 @@ void CEditLoadsView::OnInitialUpdate()
    }
 }
 
+void CEditLoadsView::SortBy(CEditLoadsView::Field field, CEditLoadsView::Direction direction)
+{
+   int columnIdx = GetColumnIndex(field);
+   bool bReverse = ((m_bSortAscending && direction == Descending) || (!m_bSortAscending && direction == Ascending)) ? true : false;
+   Sort(columnIdx, bReverse);
+}
+
+IndexType CEditLoadsView::GetLoadCount() const
+{
+   return m_LoadsListCtrl.GetItemCount();
+}
+
+std::_tstring CEditLoadsView::GetFieldValue(IndexType idx, CEditLoadsView::Field field) const
+{
+   CString strFieldValue = m_LoadsListCtrl.GetItemText((int)idx, GetColumnIndex(field));
+   return std::_tstring(strFieldValue);
+}
+
+void CEditLoadsView::DeleteLoad(IndexType idx)
+{
+   m_LoadsListCtrl.SetItemState(-1, ~LVIS_SELECTED, LVIS_SELECTED);
+   m_LoadsListCtrl.SetItemState((int)idx, LVIS_SELECTED, LVIS_SELECTED);
+   OnDeleteLoad();
+}
+
 void CEditLoadsView::OnAddPointload() 
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
@@ -1023,4 +1048,21 @@ void CEditLoadsView::Sort(int columnIdx,bool bReverse)
    m_bSortAscending = SortObject::m_bSortAscending;
 
    m_SortColIdx = columnIdx;
+}
+
+
+int CEditLoadsView::GetColumnIndex(CEditLoadsView::Field field) const
+{
+   int idx;
+   switch (field)
+   {
+   case Type:  idx = 0;  break;
+   case Event: idx = 1; break;
+   case LoadCase: idx = 2; break;
+   case Location: idx = 5; break;
+   case Magnitude: idx = 6; break;
+   case Description: idx = 7; break;
+   default: ATLASSERT(false); idx = 0; break;
+   }
+   return idx;
 }

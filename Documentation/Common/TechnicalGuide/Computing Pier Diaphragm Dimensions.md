@@ -22,13 +22,13 @@ W<sub>dia</sub> = Width of support.
 
 ### Continuous Pier ###
 
-W<sub>dia</sub> = Back Side Bearing Offset - Back Side Support Width/2 + Ahead Side Bearing Offset - Ahead Side Support Width/2
+W<sub>dia</sub> = Back Side Bearing Offset - Back Side Bearing Length/2 + Ahead Side Bearing Offset - Ahead Side Bearing Length/2
 
 ![](ContinuousPierDiaphragmWidth.png)
 
 ### Integral Pier ###
 
-W<sub>dia</sub> = Back Side Bearing Offset + Back Side Support Width/2 + Ahead Side Bearing Offset + Ahead Side Support Width/2
+W<sub>dia</sub> = Back Side Bearing Offset + Back Side Bearing Length/2 + Ahead Side Bearing Offset + Ahead Side Bearing Length/2
 
 If a physical pier model is used, W<sub>dia</sub> is the greater of the value computed with the above equation and W<sub>lower</sub>.
 

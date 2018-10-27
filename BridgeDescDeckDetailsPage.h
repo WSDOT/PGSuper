@@ -56,7 +56,11 @@ public:
 	CEdit	m_ctrlEc;
 	CButton m_ctrlEcCheck;
 	CEdit	m_ctrlFc;
-	//}}AFX_DATA
+   CCacheEdit m_ctrlOverhangEdgeDepth;
+   CCacheComboBox m_ctrlOverhangTaper;
+   CCacheEdit m_ctrlPanelDepth;
+   CCacheEdit m_ctrlPanelSupportWidth;
+   //}}AFX_DATA
 
    void EnableRemove(BOOL bEnable);
 

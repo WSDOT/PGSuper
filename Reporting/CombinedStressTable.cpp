@@ -239,7 +239,7 @@ void CCombinedStressTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter* 
       IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval();
 
       PoiAttributeType poiRefAttribute;
-      std::vector<pgsPointOfInterest> vPoi;
+      PoiList vPoi;
       GetCombinedResultsPoi(pBroker,thisGirderKey,intervalIdx,&vPoi,&poiRefAttribute);
       poiRefAttribute = (girderKey.groupIndex == ALL_GROUPS ? POI_SPAN : poiRefAttribute);
 
@@ -272,11 +272,8 @@ void CCombinedStressTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter* 
       RowIndexType row = pTable->GetNumberOfHeaderRows();
 
       IndexType index = 0;
-      std::vector<pgsPointOfInterest>::const_iterator i(vPoi.begin());
-      std::vector<pgsPointOfInterest>::const_iterator end(vPoi.end());
-      for ( ; i != end; i++, index++ )
+      for (const pgsPointOfInterest& poi : vPoi)
       {
-         const pgsPointOfInterest& poi = *i;
          const CSegmentKey& thisSegmentKey = poi.GetSegmentKey();
 
          IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(thisSegmentKey);
@@ -339,6 +336,7 @@ void CCombinedStressTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter* 
          }
 
          row++;
+         index++;
       }
    } // next group
 }
@@ -383,7 +381,7 @@ void CCombinedStressTable::BuildCombinedLiveTable(IBroker* pBroker, rptChapter* 
       strBasicTitle = (bDesign ? _T("Deck Stresses - Design Vehicles") : _T("Deck Stresses - Rating Vehicles"));
    }
 
-   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
+   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetIntervalCount()-1; // Spec checks that include live load happen in the last interval. Since this information is used to verify spec checks, use the last interval
    IntervalIndexType ratingIntervalIdx = pIntervals->GetLoadRatingInterval();
    CString strTitle;
    strTitle.Format(_T("%s - Interval %d %s"),strBasicTitle.c_str(),LABEL_INTERVAL(bDesign ? liveLoadIntervalIdx : ratingIntervalIdx),pIntervals->GetDescription(bDesign ? liveLoadIntervalIdx : ratingIntervalIdx));
@@ -417,7 +415,7 @@ void CCombinedStressTable::BuildCombinedLiveTable(IBroker* pBroker, rptChapter* 
       CGirderKey thisGirderKey(grpIdx,girderKey.girderIndex);
 
       PoiAttributeType poiRefAttribute;
-      std::vector<pgsPointOfInterest> vPoi;
+      PoiList vPoi;
       GetCombinedResultsPoi(pBroker,thisGirderKey,liveLoadIntervalIdx,&vPoi,&poiRefAttribute);
       poiRefAttribute = (girderKey.groupIndex == ALL_GROUPS ? POI_SPAN : poiRefAttribute);
 
@@ -477,11 +475,8 @@ void CCombinedStressTable::BuildCombinedLiveTable(IBroker* pBroker, rptChapter* 
       RowIndexType row = Nhrows;
       ColumnIndexType col = 0;
       IndexType index = 0;
-      std::vector<pgsPointOfInterest>::const_iterator i(vPoi.begin());
-      std::vector<pgsPointOfInterest>::const_iterator end(vPoi.end());
-      for ( ; i != end; i++, index++ )
+      for (const pgsPointOfInterest& poi : vPoi)
       {
-         const pgsPointOfInterest& poi = *i;
          const CSegmentKey& thisSegmentKey(poi.GetSegmentKey());
 
          IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(thisSegmentKey);
@@ -603,6 +598,7 @@ void CCombinedStressTable::BuildCombinedLiveTable(IBroker* pBroker, rptChapter* 
             }
 
             row++;
+            index++;
          }
 
          // footnotes for pedestrian loads
@@ -852,7 +848,7 @@ void CCombinedStressTable::BuildLimitStateTable(IBroker* pBroker, rptChapter* pC
       CGirderKey thisGirderKey(grpIdx,girderKey.girderIndex);
 
       PoiAttributeType poiRefAttribute;
-      std::vector<pgsPointOfInterest> vPoi;
+      PoiList vPoi;
       GetCombinedResultsPoi(pBroker,thisGirderKey,intervalIdx,&vPoi,&poiRefAttribute);
       poiRefAttribute = (girderKey.groupIndex == ALL_GROUPS ? POI_SPAN : poiRefAttribute);
 
@@ -905,13 +901,10 @@ void CCombinedStressTable::BuildLimitStateTable(IBroker* pBroker, rptChapter* pC
 
       RowIndexType row = p_table->GetNumberOfHeaderRows();
 
-      std::vector<pgsPointOfInterest>::const_iterator i(vPoi.begin());
-      std::vector<pgsPointOfInterest>::const_iterator end(vPoi.end());
       IndexType index = 0;
-      for ( ; i != end; i++, index++ )
+      for (const pgsPointOfInterest& poi : vPoi)
       {
          ColumnIndexType col = 0;
-         const pgsPointOfInterest& poi = *i;
          const CSegmentKey& thisSegmentKey(poi.GetSegmentKey());
          
          IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(thisSegmentKey);
@@ -991,6 +984,7 @@ void CCombinedStressTable::BuildLimitStateTable(IBroker* pBroker, rptChapter* pC
          }
 
          row++;
+         index++;
       }
    } // next group
 }

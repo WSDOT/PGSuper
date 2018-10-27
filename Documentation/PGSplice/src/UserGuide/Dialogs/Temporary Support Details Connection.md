@@ -8,5 +8,4 @@ Segment Connection | Select how segments are connected at this temporary support
 Installation Event | Select the closure joint installation event
 Bearing Offset | Enter the distance from the temporary support line to the centerline bearing. Use the drop down list to define how this distance is measured.
 End Distance | Enter the distance that defines the location of the end of the segment. Use the drop down list to define how this disance is measured
-Support Width | Enter the support width. The support is assumed to be centered on the centerline bearing.
 

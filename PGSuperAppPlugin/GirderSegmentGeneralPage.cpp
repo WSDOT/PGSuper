@@ -128,6 +128,8 @@ void CGirderSegmentGeneralPage::DoDataExchange(CDataExchange* pDX)
       }
    }
 
+   DDX_UnitValueAndTag(pDX, IDC_PRECAMBER, IDC_PRECAMBER_UNIT, pSegment->Precamber, pDisplayUnits->GetComponentDimUnit());
+
    // concrete material
    ExchangeConcreteData(pDX);
 

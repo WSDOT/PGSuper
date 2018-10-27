@@ -71,8 +71,191 @@ CStrandEccTable& CStrandEccTable::operator= (const CStrandEccTable& rOther)
 }
 
 //======================== OPERATIONS =======================================
-rptRcTable* CStrandEccTable::Build(IBroker* pBroker,const CSegmentKey& segmentKey,IntervalIndexType intervalIdx,
-                                   IEAFDisplayUnits* pDisplayUnits) const
+rptRcTable* CStrandEccTable::Build(IBroker* pBroker, const CSegmentKey& segmentKey, IntervalIndexType intervalIdx,
+   IEAFDisplayUnits* pDisplayUnits) const
+{
+   GET_IFACE2(pBroker, IBridge, pBridge);
+   if (pBridge->HasAsymmetricGirders())
+   {
+      return Build_XY(pBroker, segmentKey, intervalIdx, pDisplayUnits);
+   }
+   else
+   {
+      return Build_Y(pBroker, segmentKey, intervalIdx, pDisplayUnits);
+   }
+}
+
+rptRcTable* CStrandEccTable::Build_Y(IBroker* pBroker, const CSegmentKey& segmentKey, IntervalIndexType intervalIdx,
+   IEAFDisplayUnits* pDisplayUnits) const
+{
+   GET_IFACE2(pBroker, ISectionProperties, pSectProp);
+   pgsTypes::SectionPropertyType spType = (pSectProp->GetSectionPropertiesMode() == pgsTypes::spmGross ? pgsTypes::sptGrossNoncomposite : pgsTypes::sptNetGirder);
+
+   GET_IFACE2(pBroker, ILossParameters, pLossParams);
+   if (pLossParams->GetLossMethod() == pgsTypes::TIME_STEP)
+   {
+      // need eccentricity based on complete transformed section for time-step analysis
+      spType = pgsTypes::sptTransformed;
+   }
+
+   GET_IFACE2(pBroker, IStrandGeometry, pStrandGeom);
+   bool bTempStrands = (0 < pStrandGeom->GetStrandCount(segmentKey, pgsTypes::Temporary) ? true : false);
+
+   // Setup table
+   GET_IFACE2(pBroker, IIntervals, pIntervals);
+   std::_tostringstream os;
+   os << _T("Strand Eccentricity: Interval ") << LABEL_INTERVAL(intervalIdx) << _T(" ") << pIntervals->GetDescription(intervalIdx);
+
+   rptRcTable* p_table = rptStyleManager::CreateDefaultTable(bTempStrands ? 9 : 7, os.str().c_str());
+
+   p_table->SetNumberOfHeaderRows(2);
+
+   ColumnIndexType col = 0;
+
+   // build first heading row
+   p_table->SetRowSpan(0, col, 2);
+   (*p_table)(0, col++) << COLHDR(RPT_GDR_END_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
+
+   p_table->SetRowSpan(0, col, 2);
+   (*p_table)(0, col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
+
+   // straight/harped/temporary
+   p_table->SetColumnSpan(0, col, (bTempStrands ? 5 : 3));
+   (*p_table)(0, col++) << _T("Eccentricity");
+
+   // strand slope
+   p_table->SetColumnSpan(0, col, 2);
+   (*p_table)(0, col++) << _T("Strand Slope");
+
+   ColumnIndexType i;
+   for (i = col; i < p_table->GetNumberOfColumns(); i++)
+   {
+      p_table->SetColumnSpan(0, i, SKIP_CELL);
+   }
+
+   // build second hearing row
+   col = 0;
+   p_table->SetRowSpan(1, col++, SKIP_CELL);
+   p_table->SetRowSpan(1, col++, SKIP_CELL);
+
+   (*p_table)(1, col++) << COLHDR(_T("Straight"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+   (*p_table)(1, col++) << COLHDR(LABEL_HARP_TYPE(pStrandGeom->GetAreHarpedStrandsForcedStraight(segmentKey)), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+
+   if (bTempStrands)
+   {
+      (*p_table)(1, col++) << COLHDR(_T("Temporary"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+      (*p_table)(1, col++) << COLHDR(_T("All") << rptNewLine << _T("(w/ Temp)"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+      (*p_table)(1, col++) << COLHDR(_T("Permanent") << rptNewLine << _T("(w/o Temp)"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+   }
+   else
+   {
+      (*p_table)(1, col++) << COLHDR(_T("All") << rptNewLine << _T("Strands"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+   }
+
+   (*p_table)(1, col++) << _T("Average") << rptNewLine << _T("(1:n)");
+   (*p_table)(1, col++) << _T("Maximum") << rptNewLine << _T("(1:n)");
+
+   INIT_UV_PROTOTYPE(rptPointOfInterest, rptReleasePoi, pDisplayUnits->GetSpanLengthUnit(), false);
+   INIT_UV_PROTOTYPE(rptPointOfInterest, rptErectedPoi, pDisplayUnits->GetSpanLengthUnit(), false);
+   INIT_UV_PROTOTYPE(rptLengthSectionValue, ecc, pDisplayUnits->GetComponentDimUnit(), false);
+
+   GET_IFACE2(pBroker, IPointOfInterest, pPoi);
+
+   StrandIndexType Ns, Nh, Nt;
+   Ns = pStrandGeom->GetStrandCount(segmentKey, pgsTypes::Straight);
+   Nh = pStrandGeom->GetStrandCount(segmentKey, pgsTypes::Harped);
+   Nt = pStrandGeom->GetStrandCount(segmentKey, pgsTypes::Temporary);
+
+   PoiList vPoi;
+   pPoi->GetPointsOfInterest(segmentKey, POI_RELEASED_SEGMENT, &vPoi);
+   pPoi->GetPointsOfInterest(segmentKey, POI_ERECTED_SEGMENT, &vPoi);
+   pPoi->GetPointsOfInterest(segmentKey, POI_SPECIAL | POI_START_FACE | POI_END_FACE, &vPoi);
+   pPoi->SortPoiList(&vPoi);
+   pPoi->RemovePointsOfInterest(vPoi, POI_CLOSURE);
+   pPoi->RemovePointsOfInterest(vPoi, POI_BOUNDARY_PIER);
+
+   RowIndexType row = p_table->GetNumberOfHeaderRows();
+   for (const pgsPointOfInterest& poi : vPoi)
+   {
+      col = 0;
+
+      (*p_table)(row, col++) << rptReleasePoi.SetValue(POI_RELEASED_SEGMENT, poi);
+      (*p_table)(row, col++) << rptErectedPoi.SetValue(POI_ERECTED_SEGMENT, poi);
+
+      Float64 nEff;
+      if (0 < Ns)
+      {
+         (*p_table)(row, col++) << ecc.SetValue(pStrandGeom->GetEccentricity(spType, intervalIdx, poi, pgsTypes::Straight, &nEff));
+      }
+      else
+      {
+         (*p_table)(row, col++) << _T("-");
+      }
+
+      if (0 < Nh)
+      {
+         (*p_table)(row, col++) << ecc.SetValue(pStrandGeom->GetEccentricity(spType, intervalIdx, poi, pgsTypes::Harped, &nEff));
+      }
+      else
+      {
+         (*p_table)(row, col++) << _T("-");
+      }
+
+      if (bTempStrands)
+      {
+         if (0 < Nt)
+         {
+            (*p_table)(row, col++) << ecc.SetValue(pStrandGeom->GetEccentricity(spType, intervalIdx, poi, pgsTypes::Temporary, &nEff));
+         }
+         else
+         {
+            (*p_table)(row, col++) << _T("-");
+         }
+
+         (*p_table)(row, col++) << ecc.SetValue(pStrandGeom->GetEccentricity(spType, intervalIdx, poi, true /*include temporary strands*/, &nEff));
+      }
+
+      (*p_table)(row, col++) << ecc.SetValue(pStrandGeom->GetEccentricity(spType, intervalIdx, poi, false/*exclude temporary strands*/, &nEff));
+
+      if (0 < Nh)
+      {
+         Float64 avg_slope = pStrandGeom->GetAvgStrandSlope(poi);
+         avg_slope = fabs(avg_slope);
+
+         if (IsZero(1. / avg_slope))
+         {
+            (*p_table)(row, col++) << symbol(infinity);
+         }
+         else
+         {
+            (*p_table)(row, col++) << avg_slope;
+         }
+
+         Float64 max_slope = pStrandGeom->GetMaxStrandSlope(poi);
+         max_slope = fabs(max_slope);
+         if (IsZero(1. / max_slope))
+         {
+            (*p_table)(row, col++) << symbol(infinity);
+         }
+         else
+         {
+            (*p_table)(row, col++) << max_slope;
+         }
+      }
+      else
+      {
+         (*p_table)(row, col++) << _T("-");
+         (*p_table)(row, col++) << _T("-");
+      }
+
+      row++;
+   }
+
+   return p_table;
+}
+
+rptRcTable* CStrandEccTable::Build_XY(IBroker* pBroker, const CSegmentKey& segmentKey, IntervalIndexType intervalIdx,
+      IEAFDisplayUnits* pDisplayUnits) const
 {
    GET_IFACE2(pBroker,ISectionProperties,pSectProp);
    pgsTypes::SectionPropertyType spType = (pSectProp->GetSectionPropertiesMode() == pgsTypes::spmGross ? pgsTypes::sptGrossNoncomposite : pgsTypes::sptNetGirder );
@@ -92,21 +275,21 @@ rptRcTable* CStrandEccTable::Build(IBroker* pBroker,const CSegmentKey& segmentKe
    std::_tostringstream os;
    os << _T("Strand Eccentricity: Interval ") << LABEL_INTERVAL(intervalIdx) << _T(" ") << pIntervals->GetDescription(intervalIdx);
 
-   rptRcTable* p_table = rptStyleManager::CreateDefaultTable(bTempStrands ? 9 : 7, os.str().c_str() );
+   rptRcTable* p_table = rptStyleManager::CreateDefaultTable(bTempStrands ? 14 : 10, os.str().c_str() );
 
-   p_table->SetNumberOfHeaderRows(2);
+   p_table->SetNumberOfHeaderRows(3);
 
    ColumnIndexType col = 0;
 
    // build first heading row
-   p_table->SetRowSpan(0,col,2);
+   p_table->SetRowSpan(0,col,3);
    (*p_table)(0,col++) << COLHDR(RPT_GDR_END_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
 
-   p_table->SetRowSpan(0,col,2);
+   p_table->SetRowSpan(0,col,3);
    (*p_table)(0,col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
 
    // straight/harped/temporary
-   p_table->SetColumnSpan(0,col, (bTempStrands ? 5 : 3));
+   p_table->SetColumnSpan(0,col, (bTempStrands ? 10 : 6));
    (*p_table)(0,col++) << _T("Eccentricity");
 
    // strand slope
@@ -119,27 +302,77 @@ rptRcTable* CStrandEccTable::Build(IBroker* pBroker,const CSegmentKey& segmentKe
       p_table->SetColumnSpan(0,i,SKIP_CELL);
    }
 
-   // build second hearing row
+   // build second heading row
    col = 0;
    p_table->SetRowSpan(1,col++,SKIP_CELL);
    p_table->SetRowSpan(1,col++,SKIP_CELL);
 
+   p_table->SetColumnSpan(1, col, 2);
    (*p_table)(1,col++) << COLHDR(_T("Straight"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+   p_table->SetColumnSpan(1, col++, SKIP_CELL);
+
+   p_table->SetColumnSpan(1, col, 2);
    (*p_table)(1,col++) << COLHDR(LABEL_HARP_TYPE(pStrandGeom->GetAreHarpedStrandsForcedStraight(segmentKey)),   rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+   p_table->SetColumnSpan(1, col++, SKIP_CELL);
 
    if ( bTempStrands )
    {
+      p_table->SetColumnSpan(1, col, 2);
       (*p_table)(1,col++) << COLHDR(_T("Temporary"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+      p_table->SetColumnSpan(1, col++, SKIP_CELL);
+
+      p_table->SetColumnSpan(1, col, 2);
       (*p_table)(1,col++) << COLHDR(_T("All") << rptNewLine << _T("(w/ Temp)"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+      p_table->SetColumnSpan(1, col++, SKIP_CELL);
+
+      p_table->SetColumnSpan(1, col, 2);
       (*p_table)(1,col++) << COLHDR(_T("Permanent") << rptNewLine << _T("(w/o Temp)"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+      p_table->SetColumnSpan(1, col++, SKIP_CELL);
    }
    else
    {
+      p_table->SetColumnSpan(1, col, 2);
       (*p_table)(1,col++) << COLHDR(_T("All") << rptNewLine << _T("Strands"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+      p_table->SetColumnSpan(1, col++, SKIP_CELL);
    }
 
+   p_table->SetRowSpan(1, col, 2);
    (*p_table)(1,col++) << _T("Average") << rptNewLine << _T("(1:n)");
+
+   p_table->SetRowSpan(1, col, 2);
    (*p_table)(1,col++) << _T("Maximum") << rptNewLine << _T("(1:n)");
+
+
+   // build third heading row
+   col = 0;
+   p_table->SetRowSpan(2, col++, SKIP_CELL);
+   p_table->SetRowSpan(2, col++, SKIP_CELL);
+
+   (*p_table)(2, col++) << COLHDR(Sub2(_T("e"),_T("x")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit()); // straight
+   (*p_table)(2, col++) << COLHDR(Sub2(_T("e"),_T("y")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+
+   (*p_table)(2, col++) << COLHDR(Sub2(_T("e"), _T("x")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit()); // harped
+   (*p_table)(2, col++) << COLHDR(Sub2(_T("e"),_T("y")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+
+   if (bTempStrands)
+   {
+      (*p_table)(2, col++) << COLHDR(Sub2(_T("e"),_T("x")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit()); // temp
+      (*p_table)(2, col++) << COLHDR(Sub2(_T("e"),_T("y")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+
+      (*p_table)(2, col++) << COLHDR(Sub2(_T("e"),_T("x")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit()); // all strands with temp
+      (*p_table)(2, col++) << COLHDR(Sub2(_T("e"),_T("y")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+
+      (*p_table)(2, col++) << COLHDR(Sub2(_T("e"),_T("x")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit()); // permanent strands only (no temp)
+      (*p_table)(2, col++) << COLHDR(Sub2(_T("e"),_T("y")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+   }
+   else
+   {
+      (*p_table)(2, col++) << COLHDR(Sub2(_T("e"),_T("x")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit()); // permanent strands only (no temp)
+      (*p_table)(2, col++) << COLHDR(Sub2(_T("e"),_T("y")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+   }
+
+   p_table->SetRowSpan(2, col++, SKIP_CELL); // strand slope avg
+   p_table->SetRowSpan(2, col++, SKIP_CELL); // strand slope max
 
    INIT_UV_PROTOTYPE( rptPointOfInterest, rptReleasePoi, pDisplayUnits->GetSpanLengthUnit(), false );
    INIT_UV_PROTOTYPE( rptPointOfInterest, rptErectedPoi, pDisplayUnits->GetSpanLengthUnit(), false );
@@ -152,23 +385,21 @@ rptRcTable* CStrandEccTable::Build(IBroker* pBroker,const CSegmentKey& segmentKe
    Nh = pStrandGeom->GetStrandCount(segmentKey,pgsTypes::Harped);
    Nt = pStrandGeom->GetStrandCount(segmentKey,pgsTypes::Temporary);
 
-   std::vector<pgsPointOfInterest> vPoi(pPoi->GetPointsOfInterest(segmentKey,POI_RELEASED_SEGMENT));
-   std::vector<pgsPointOfInterest> vPoi2(pPoi->GetPointsOfInterest(segmentKey,POI_ERECTED_SEGMENT));
+   PoiList vPoi;
+   pPoi->GetPointsOfInterest(segmentKey, POI_RELEASED_SEGMENT, &vPoi);
+   PoiList vPoi2;
+   pPoi->GetPointsOfInterest(segmentKey, POI_ERECTED_SEGMENT, &vPoi2);
    vPoi.insert(vPoi.end(),vPoi2.begin(),vPoi2.end());
-   std::vector<pgsPointOfInterest> vPoi3(pPoi->GetPointsOfInterest(segmentKey,POI_SPECIAL | POI_START_FACE | POI_END_FACE));
+   PoiList vPoi3;
+   pPoi->GetPointsOfInterest(segmentKey, POI_SPECIAL | POI_START_FACE | POI_END_FACE, &vPoi3);
    vPoi.insert(vPoi.end(),vPoi3.begin(),vPoi3.end());
-   std::sort(vPoi.begin(),vPoi.end());
    pPoi->RemovePointsOfInterest(vPoi,POI_CLOSURE);
    pPoi->RemovePointsOfInterest(vPoi,POI_BOUNDARY_PIER);
-   vPoi.erase(std::unique(vPoi.begin(),vPoi.end()),vPoi.end());
+   pPoi->SortPoiList(&vPoi);
 
    RowIndexType row = p_table->GetNumberOfHeaderRows();
-   std::vector<pgsPointOfInterest>::iterator iter(vPoi.begin());
-   std::vector<pgsPointOfInterest>::iterator end(vPoi.end());
-   for ( ; iter != end; iter++ )
+   for (const pgsPointOfInterest& poi : vPoi)
    {
-      const pgsPointOfInterest& poi = *iter;
-
       col = 0;
 
       (*p_table)(row,col++) << rptReleasePoi.SetValue(POI_RELEASED_SEGMENT,poi);
@@ -177,37 +408,55 @@ rptRcTable* CStrandEccTable::Build(IBroker* pBroker,const CSegmentKey& segmentKe
       Float64 nEff;
       if ( 0 < Ns )
       {
-         (*p_table)(row,col++) << ecc.SetValue( pStrandGeom->GetEccentricity( spType, intervalIdx, poi, pgsTypes::Straight, &nEff ) );
+         Float64 eccx, eccy;
+         pStrandGeom->GetEccentricity(spType, intervalIdx, poi, pgsTypes::Straight, &nEff, &eccx, &eccy);
+         (*p_table)(row, col++) << ecc.SetValue(eccx);
+         (*p_table)(row, col++) << ecc.SetValue(eccy);
       }
       else
       {
-         (*p_table)(row,col++) << _T("-");
+         (*p_table)(row, col++) << _T("-");
+         (*p_table)(row, col++) << _T("-");
       }
 
       if ( 0 < Nh )
       {
-         (*p_table)(row,col++) << ecc.SetValue( pStrandGeom->GetEccentricity( spType, intervalIdx, poi, pgsTypes::Harped, &nEff ) );
+         Float64 eccx, eccy;
+         pStrandGeom->GetEccentricity(spType, intervalIdx, poi, pgsTypes::Harped, &nEff, &eccx, &eccy);
+         (*p_table)(row, col++) << ecc.SetValue(eccx);
+         (*p_table)(row, col++) << ecc.SetValue(eccy);
       }
       else
       {
-         (*p_table)(row,col++) << _T("-");
+         (*p_table)(row, col++) << _T("-");
+         (*p_table)(row, col++) << _T("-");
       }
 
       if ( bTempStrands )
       {
          if ( 0 < Nt )
          {
-            (*p_table)(row,col++) << ecc.SetValue( pStrandGeom->GetEccentricity( spType, intervalIdx, poi, pgsTypes::Temporary, &nEff ) );
+            Float64 eccx, eccy;
+            pStrandGeom->GetEccentricity(spType, intervalIdx, poi, pgsTypes::Temporary, &nEff, &eccx, &eccy);
+            (*p_table)(row, col++) << ecc.SetValue(eccx);
+            (*p_table)(row, col++) << ecc.SetValue(eccy);
          }
          else
          {
-            (*p_table)(row,col++) << _T("-");
+            (*p_table)(row, col++) << _T("-");
+            (*p_table)(row, col++) << _T("-");
          }
 
-         (*p_table)(row,col++) << ecc.SetValue( pStrandGeom->GetEccentricity( spType, intervalIdx, poi, true /*include temporary strands*/, &nEff ) );
+         Float64 eccx, eccy;
+         pStrandGeom->GetEccentricity(spType, intervalIdx, poi, true /*include temporary strands*/, &nEff, &eccx, &eccy);
+         (*p_table)(row, col++) << ecc.SetValue(eccx);
+         (*p_table)(row, col++) << ecc.SetValue(eccy);
       }
 
-      (*p_table)(row,col++) << ecc.SetValue( pStrandGeom->GetEccentricity( spType, intervalIdx, poi, false/*exclude temporary strands*/, &nEff ) );
+      Float64 eccx, eccy;
+      pStrandGeom->GetEccentricity(spType, intervalIdx, poi, false/*exclude temporary strands*/, &nEff, &eccx, &eccy);
+      (*p_table)(row, col++) << ecc.SetValue(eccx);
+      (*p_table)(row, col++) << ecc.SetValue(eccy);
 
       if ( 0 < Nh )
       {

@@ -33,6 +33,10 @@ pgsTypes::SupportedBeamSpacing ToggleGirderSpacingType(pgsTypes::SupportedBeamSp
       spacing = pgsTypes::sbsGeneralAdjacent;
    else if ( spacing == pgsTypes::sbsGeneralAdjacent ) // general adjacent to uniform adjacent
       spacing = pgsTypes::sbsUniformAdjacent;
+   else if (spacing == pgsTypes::sbsUniformAdjacentWithTopWidth) // uniform adjacent to general adjacent with top width
+      spacing = pgsTypes::sbsGeneralAdjacentWithTopWidth;
+   else if (spacing == pgsTypes::sbsGeneralAdjacentWithTopWidth) // general adjacent to uniform adjacent with top width
+      spacing = pgsTypes::sbsUniformAdjacentWithTopWidth;
    else
       ATLASSERT(false); // is there a new spacing type???
 

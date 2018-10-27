@@ -33,7 +33,7 @@
 
 IMPLEMENT_DYNCREATE(CStabilityGraphController,CEAFGraphControlWindow)
 
-CStabilityGraphController::CStabilityGraphController()
+CStabilityGraphController::CStabilityGraphController() : m_SegmentKey(0,0,0), m_GraphType(GT_LIFTING)
 {
    EAFGetBroker(&m_pBroker);
 }
@@ -44,6 +44,7 @@ BEGIN_MESSAGE_MAP(CStabilityGraphController, CEAFGraphControlWindow)
    ON_CBN_SELCHANGE( IDC_GIRDER, OnGirderChanged )
    ON_CBN_SELCHANGE( IDC_SEGMENT, OnSegmentChanged )
    ON_CBN_SELCHANGE( IDC_EVENT, OnGraphTypeChanged )
+   ON_BN_CLICKED(IDC_GRID, OnShowGrid)
    //}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -70,7 +71,6 @@ BOOL CStabilityGraphController::OnInitDialog()
    pcbStage->AddString(_T("Lifting"));
    pcbStage->AddString(_T("Hauling"));
    pcbStage->SetCurSel(0);
-   m_GraphType = GT_LIFTING;
 
    GET_IFACE(ISegmentHaulingSpecCriteria,pSpec);
    if ( pSpec->GetHaulingAnalysisMethod() == pgsTypes::hmKDOT )
@@ -225,25 +225,89 @@ void CStabilityGraphController::OnSegmentChanged()
 
 void CStabilityGraphController::OnGraphTypeChanged()
 {
-   CComboBox* pcbStage = (CComboBox*)GetDlgItem(IDC_EVENT);
-   m_GraphType = pcbStage->GetCurSel();
+   CComboBox* pcbGraphType = (CComboBox*)GetDlgItem(IDC_EVENT);
+   m_GraphType = pcbGraphType->GetCurSel();
    UpdateGraph();
 }
 
-int CStabilityGraphController::GetGraphType()
+void CStabilityGraphController::OnShowGrid()
+{
+   // toggle the grid setting
+   ((CStabilityGraphBuilder*)GetGraphBuilder())->ShowGrid(ShowGrid());
+}
+
+int CStabilityGraphController::GetGraphType() const
 {
    return m_GraphType;
 }
 
-const CSegmentKey& CStabilityGraphController::GetSegmentKey()
+void CStabilityGraphController::SetGraphType(int graphType)
+{
+   if (m_GraphType != graphType)
+   {
+      CComboBox* pcbGraphType = (CComboBox*)GetDlgItem(IDC_EVENT);
+      pcbGraphType->SetCurSel(graphType);
+      m_GraphType = graphType;
+      UpdateGraph();
+   }
+}
+
+const CSegmentKey& CStabilityGraphController::GetSegment() const
 {
    return m_SegmentKey;
+}
+
+void CStabilityGraphController::SelectSegment(const CSegmentKey& segmentKey)
+{
+   if (m_SegmentKey != segmentKey)
+   {
+      m_SegmentKey = segmentKey;
+      
+      CComboBox* pcbGroup = (CComboBox*)GetDlgItem(IDC_GROUP);
+      pcbGroup->SetCurSel((int)segmentKey.groupIndex);
+
+      CComboBox* pcbGirder = (CComboBox*)GetDlgItem(IDC_GIRDER);
+      pcbGirder->SetCurSel((int)segmentKey.girderIndex);
+
+      CComboBox* pcbSegment = (CComboBox*)GetDlgItem(IDC_SEGMENT);
+      if (pcbSegment)
+      {
+         pcbSegment->SetCurSel((int)segmentKey.segmentIndex);
+      }
+#if defined _DEBUG
+      else
+      {
+         // there is no IDC_SEGMENT combo box for PGSuper (only PGSplice)
+         // if we get here, pcbSegment is null so we have a PGSuper project
+         // so the segment key must be zero
+         ATLASSERT(segmentKey.segmentIndex == 0);
+      }
+#endif
+
+      UpdateGraph();
+   }
 }
 
 void CStabilityGraphController::UpdateGraph()
 {
    ((CStabilityGraphBuilder*)GetGraphBuilder())->InvalidateGraph();
    ((CStabilityGraphBuilder*)GetGraphBuilder())->Update();
+}
+
+bool CStabilityGraphController::ShowGrid() const
+{
+   CButton* pBtn = (CButton*)GetDlgItem(IDC_GRID);
+   return (pBtn->GetCheck() == BST_CHECKED ? true : false);
+}
+
+void CStabilityGraphController::ShowGrid(bool bShowGrid)
+{
+   if (bShowGrid != ShowGrid() )
+   {
+      CButton* pBtn = (CButton*)GetDlgItem(IDC_GRID);
+      pBtn->SetCheck(bShowGrid ? BST_CHECKED : BST_UNCHECKED);
+      ((CStabilityGraphBuilder*)GetGraphBuilder())->ShowGrid(bShowGrid);
+   }
 }
 
 #ifdef _DEBUG

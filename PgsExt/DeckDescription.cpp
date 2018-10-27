@@ -401,8 +401,10 @@ HRESULT CDeckDescription::Load(IStructuredLoad* pStrLoad,IProgress* pProgress,pg
       // there was a bug in the PGSuper interface that allowed the sacrifical depth to
       // be greater than the gross/cast depth of the slab. Obviously this is incorrect.
       // If this is encountered in the input, fix it.
-      if ( DeckType != pgsTypes::sdtNone && GrossDepth <= SacrificialDepth )
-         SacrificialDepth = GrossDepth/2;
+      if (DeckType != pgsTypes::sdtNone && GrossDepth <= SacrificialDepth)
+      {
+         SacrificialDepth = GrossDepth / 2;
+      }
 
       if ( version < 6 )
       {

@@ -28,6 +28,7 @@
 #include "GirderHaunchAndCamberPage.h"
 #include "GirderMainSheet.h"
 #include <EAF\EAFDocument.h>
+#include <IFace\BeamFactory.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -65,6 +66,19 @@ BOOL CGirderHaunchAndCamberPage::OnInitDialog()
       ASSERT(pwnd);
       pwnd->ShowWindow(sw); 
       ic++;
+   }
+
+   CComPtr<IBeamFactory> factory;
+   pDad->m_Entry.GetBeamFactory(&factory);
+   if (factory->CanPrecamber())
+   {
+      GetDlgItem(IDC_PRECAMBER_LIMIT_NOTE)->SetWindowText(_T("Precamber limit"));
+   }
+   else
+   {
+      GetDlgItem(IDC_PRECAMBER_LIMIT_NOTE)->SetWindowText(_T("Precamber not supported for this girder type"));
+      GetDlgItem(IDC_PRECAMBER_LIMIT_LABEL)->ShowWindow(SW_HIDE);
+      GetDlgItem(IDC_PRECAMBER_LIMIT)->ShowWindow(SW_HIDE);
    }
 
    return TRUE;  // return TRUE unless you set the focus to a control

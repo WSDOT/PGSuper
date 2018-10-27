@@ -28,7 +28,6 @@
 #include <libraryFw\LibraryEntry.h>
 #include <System\SubjectT.h>
 #include <Lrfd\LRFRVersionMgr.h>
-
 #include <array>
 
 class pgsLibraryEntryDifferenceItem;
@@ -86,8 +85,8 @@ public:
 
 private:
    Float64 m_Wlower, m_Wupper; // vehicle weight boundaries
-   std::array<Int16,4> m_ADTT; // index, 0=lower,1=middle,2=upper,3=unknown
-   std::array<Float64,4> m_gLL_Lower;
+   std::array<Int16, 4> m_ADTT; // index, 0=lower,1=middle,2=upper,3=unknown
+   std::array<Float64, 4> m_gLL_Lower;
    std::array<Float64, 4> m_gLL_Upper;
    std::array<Float64, 4> m_gLL_Service;
    pgsTypes::LiveLoadFactorType m_LiveLoadFactorType;
@@ -286,11 +285,11 @@ private:
    bool m_bAlwaysRate;
 
    // for use with LRFR before 2013
-   std::array<CLiveLoadFactorModel,pgsTypes::lrLoadRatingTypeCount> m_LiveLoadFactorModels; // index is pgsTypes::LoadRatingType excluding lrPermit_Special
-   std::array<CLiveLoadFactorModel,3> m_SpecialPermitLiveLoadFactorModels; // index is pgsTypes::SpecialPermitType
+   std::array<CLiveLoadFactorModel, pgsTypes::lrLoadRatingTypeCount> m_LiveLoadFactorModels; // index is pgsTypes::LoadRatingType excluding lrPermit_Special
+   std::array<CLiveLoadFactorModel, 3> m_SpecialPermitLiveLoadFactorModels; // index is pgsTypes::SpecialPermitType
 
 
-   // for use with LRFR2013 and later
+                                                                            // for use with LRFR2013 and later
    std::array<CLiveLoadFactorModel2, pgsTypes::lrLoadRatingTypeCount> m_LiveLoadFactorModels2; // index is pgsTypes::LoadRatingType excluding lrPermit_Special
-   std::array<CLiveLoadFactorModel2,3> m_SpecialPermitLiveLoadFactorModels2; // index is pgsTypes::SpecialPermitType
+   std::array<CLiveLoadFactorModel2, 3> m_SpecialPermitLiveLoadFactorModels2; // index is pgsTypes::SpecialPermitType
 };

@@ -615,8 +615,9 @@ std::shared_ptr<CReportSpecification> CPointOfInterestReportSpecificationBuilder
    }
 
    GET_IFACE(IPointOfInterest,pPOI);
-   std::vector<pgsPointOfInterest> vPoi( pPOI->GetPointsOfInterest(CSegmentKey(segmentKey.groupIndex,segmentKey.girderIndex,ALL_SEGMENTS),POI_SPAN | POI_5L) );
-   pgsPointOfInterest initial_poi = vPoi.front();
+   PoiList vPoi;
+   pPOI->GetPointsOfInterest(CSegmentKey(segmentKey.groupIndex, segmentKey.girderIndex, ALL_SEGMENTS), POI_5L | POI_SPAN, &vPoi);
+   const pgsPointOfInterest& initial_poi = vPoi.front();
 
    std::shared_ptr<CPointOfInterestReportSpecification> pOldGRptSpec( std::dynamic_pointer_cast<CPointOfInterestReportSpecification>(pOldRptSpec) );
 

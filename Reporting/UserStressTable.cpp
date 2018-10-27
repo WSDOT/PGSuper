@@ -112,7 +112,8 @@ rptRcTable* CUserStressTable::Build(IBroker* pBroker,const CGirderKey& girderKey
       GirderIndexType nGirders = pBridge->GetGirderCount(grpIdx);
       GirderIndexType gdrIdx = (nGirders <= girderKey.girderIndex ? nGirders-1 : girderKey.girderIndex);
 
-      std::vector<pgsPointOfInterest> vPoi( pIPoi->GetPointsOfInterest(CSegmentKey(grpIdx,gdrIdx,ALL_SEGMENTS),POI_ERECTED_SEGMENT) );
+      PoiList vPoi;
+      pIPoi->GetPointsOfInterest(CSegmentKey(grpIdx, gdrIdx, ALL_SEGMENTS), POI_ERECTED_SEGMENT, &vPoi);
 
       std::vector<Float64> dummy;
       std::vector<Float64> fTopMaxDC, fBotMaxDC;
@@ -131,14 +132,10 @@ rptRcTable* CUserStressTable::Build(IBroker* pBroker,const CGirderKey& girderKey
       pForces2->GetStress(intervalIdx, pgsTypes::pftUserLLIM, vPoi, maxBAT, rtIncremental, topLocation, botLocation, &fTopMaxLLIM, &fBotMaxLLIM);
       pForces2->GetStress(intervalIdx, pgsTypes::pftUserLLIM, vPoi, minBAT, rtIncremental, topLocation, botLocation, &fTopMinLLIM, &fBotMinLLIM);
 
-      std::vector<pgsPointOfInterest>::const_iterator i(vPoi.begin());
-      std::vector<pgsPointOfInterest>::const_iterator end(vPoi.end());
       IndexType index = 0;
-      for ( ; i != end; i++, index++ )
+      for(const pgsPointOfInterest& poi : vPoi)
       {
          ColumnIndexType col = 0;
-
-         const pgsPointOfInterest& poi = *i;
 
          (*p_table)(row,col++) << location.SetValue( POI_SPAN, poi );
 
@@ -175,6 +172,7 @@ rptRcTable* CUserStressTable::Build(IBroker* pBroker,const CGirderKey& girderKey
          }
 
          row++;
+         index++;
       }
    }
 

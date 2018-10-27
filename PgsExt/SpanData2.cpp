@@ -343,17 +343,17 @@ HRESULT CSpanData2::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
                Float64 AssExcessCamber_version;
                pStrLoad->get_Version(&AssExcessCamber_version);
 
-               var.vt = VT_INDEX;
+            var.vt = VT_INDEX;
                hr = pStrLoad->get_Property(_T("nFGirders"), &var);
-               IndexType ng = VARIANT2INDEX(var);
+            IndexType ng = VARIANT2INDEX(var);
 
-               var.vt = VT_R8;
+            var.vt = VT_R8;
                m_AssExcessCambers.clear();
                for (IndexType ig = 0; ig < ng; ig++)
-               {
+            {
                   hr = pStrLoad->get_Property(_T("AssExcessCamber"), &var);
                   m_AssExcessCambers.push_back(var.dblVal);
-               }
+            }
 
                pStrLoad->EndUnit(); // AssExcessCambers
             }
@@ -378,7 +378,7 @@ HRESULT CSpanData2::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
                   hr = pStrLoad->get_Property(_T("Fillet"), &var);
                   max_fillet = max(max_fillet, var.dblVal);
                }
-               pStrLoad->EndUnit(); // Fillets
+            pStrLoad->EndUnit(); // Fillets
 
                m_pBridgeDesc->m_Fillet = max(m_pBridgeDesc->m_Fillet, max_fillet);
             }

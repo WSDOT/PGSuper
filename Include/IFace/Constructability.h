@@ -65,9 +65,9 @@ DEFINE_GUID(IID_IGirderHaunch,
 0x4f3feb86, 0x88b1, 0x11d2, 0x88, 0x82, 0x0, 0x60, 0x97, 0xc6, 0x8a, 0x9c);
 interface IGirderHaunch : IUnknown
 {
-   virtual Float64 GetRequiredSlabOffset(const CSpanKey& spanKey) = 0;
-   virtual HAUNCHDETAILS GetHaunchDetails(const CSpanKey& spanKey) = 0;
-   virtual Float64 GetSectionGirderOrientationEffect(const pgsPointOfInterest& poi) = 0;
+   virtual Float64 GetRequiredSlabOffset(const CSpanKey& spanKey) const = 0;
+   virtual HAUNCHDETAILS GetHaunchDetails(const CSpanKey& spanKey) const = 0;
+   virtual Float64 GetSectionGirderOrientationEffect(const pgsPointOfInterest& poi) const = 0;
 };
 
 
@@ -83,7 +83,7 @@ DEFINE_GUID(IID_IFabricationOptimization,
 0x459f156f, 0xa371, 0x4cfa, 0xb3, 0x25, 0x9e, 0xea, 0x2f, 0xa9, 0xf, 0x61);
 interface IFabricationOptimization : IUnknown
 {
-   virtual void GetFabricationOptimizationDetails(const CSegmentKey& segmentKey,FABRICATIONOPTIMIZATIONDETAILS* pDetails) = 0;
+   virtual void GetFabricationOptimizationDetails(const CSegmentKey& segmentKey,FABRICATIONOPTIMIZATIONDETAILS* pDetails) const = 0;
 };
 
 #endif // INCLUDED_IFACE_CONSTRUCTABILITY_H_

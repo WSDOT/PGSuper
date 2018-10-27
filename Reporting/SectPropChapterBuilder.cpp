@@ -109,6 +109,10 @@ rptChapter* CSectPropChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16
    *pPara << rptNewLine;
 
    bool bComposite = pBridge->IsCompositeDeck();
+   if (pGirder->HasStructuralLongitudinalJoints())
+   {
+      bComposite = true;
+   }
 
    if (!m_SimplifiedVersion)
    {
@@ -218,11 +222,18 @@ rptChapter* CSectPropChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16
 
       *pPara << rptNewLine;
 
-      if ( bComposite )
+      if ( IsStructuralDeck(pBridge->GetDeckType()) )
       {
          GET_IFACE2(pBroker, IMaterials,         pMaterial);
         (*pPara) << _T("Deck   ") << RPT_EC << _T(" = ") << modE.SetValue( pMaterial->GetDeckEc28() ) << rptNewLine;
         (*pPara) << rptNewLine;
+      }
+
+      if (pGirder->HasStructuralLongitudinalJoints())
+      {
+         GET_IFACE2(pBroker, IMaterials, pMaterial);
+         (*pPara) << _T("Longitudinal Joint ") << RPT_EC << _T(" = ") << modE.SetValue(pMaterial->GetLongitudinalJointEc28()) << rptNewLine;
+         (*pPara) << rptNewLine;
       }
    }
 
@@ -256,9 +267,12 @@ rptChapter* CSectPropChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16
             Float64 XbEnd   = pPoi->ConvertRouteToBridgeLineCoordinate(endStation);
             Float64 Xb = 0.5*(XbStart + XbEnd);
 
+            Float64 EIxx, EIyy, EIxy;
+            pSectProp->GetBridgeStiffness(Xb, &EIxx, &EIyy, &EIxy);
             (*pPara) << _T("Bending Stiffness of Entire Bridge Section at center of Span ") << LABEL_SPAN(spanIdx) << rptNewLine;
-            (*pPara) << Sub2(_T("EI"),_T("xx")) << _T(" = ") << uei.SetValue( pSectProp->GetBridgeEIxx(Xb) ) << _T(" (used to compute Live Load Deflections per LRFD 3.6.1.3.2)") << rptNewLine;
-            (*pPara) << Sub2(_T("EI"),_T("yy")) << _T(" = ") << uei.SetValue( pSectProp->GetBridgeEIyy(Xb) ) << rptNewLine;
+            (*pPara) << Sub2(_T("EI"),_T("xx")) << _T(" = ") << uei.SetValue( EIxx ) << _T(" (used to compute Live Load Deflections per LRFD 3.6.1.3.2)") << rptNewLine;
+            (*pPara) << Sub2(_T("EI"),_T("yy")) << _T(" = ") << uei.SetValue( EIyy ) << rptNewLine;
+            (*pPara) << Sub2(_T("EI"),_T("xy")) << _T(" = ") << uei.SetValue( EIxy ) << rptNewLine;
             *pPara << rptNewLine;
          }
       }

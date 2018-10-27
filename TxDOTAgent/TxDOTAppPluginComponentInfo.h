@@ -22,6 +22,7 @@
 
 #pragma once
 #include <EAF\EAFComponentInfo.h>
+#include "CLSID.h"
 #include "resource.h"
 
 class ATL_NO_VTABLE CTxDOTAppPluginComponentInfo : 

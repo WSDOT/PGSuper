@@ -96,6 +96,7 @@ rptChapter* CBasicCamberChapterBuilder::Build(CReportSpecification* pRptSpec,Uin
       case pgsTypes::sdtCompositeCIP:
       case pgsTypes::sdtCompositeOverlay:
       case pgsTypes::sdtCompositeSIP:
+      case pgsTypes::sdtNonstructuralOverlay:
          Build_Deck(pChapter,pRptSpec,pBroker,segmentKey,bTempStrands,pDisplayUnits,level);
          break;
 
@@ -254,7 +255,12 @@ void CBasicCamberChapterBuilder::Build_Deck(rptChapter* pChapter,CReportSpecific
       *pChapter << pPara;
 
       // build table 3 footnotes
-      *pPara << DEFL(_T("1")) << _T(" = ") << SCL(cm.ErectionFactor) << _T(" * (") << DEFL(_T("girder Erected")) << _T(" + ") << DEFL(_T("ps Erected")) << _T(")") << rptNewLine;
+      *pPara << DEFL(_T("1")) << _T(" = ") << SCL(cm.ErectionFactor) << _T(" * (") << DEFL(_T("girder Erected")) << _T(" + ") << DEFL(_T("ps Erected")) << _T(")");
+      if (!IsZero(pCamber->GetPrecamber(segmentKey)))
+      {
+         *pPara << _T(" + ") << DEFL(_T("precamber Erected"));
+      }
+      *pPara << rptNewLine;
       *pPara << DEFL(_T("2")) << _T(" = ") << DEFL(_T("1")) << _T(" + ") << SCL(cm.CreepFactor) << _T(" * ") << DEFL(_T("creep1")) << rptNewLine;
 
       *pPara << DEFL(_T("3")) << _T(" = ") << DEFL(_T("2")) << _T(" + ") << SCL(cm.DiaphragmFactor) << _T(" * (") << DEFL(_T("diaphragm"));
@@ -304,7 +310,7 @@ void CBasicCamberChapterBuilder::Build_Deck(rptChapter* pChapter,CReportSpecific
       *pPara << _T(" + ") << DEFL(_T("user2")) << _T(")");
       *pPara << _T(" = ") << Sub2(symbol(DELTA),_T("excess")) << _T(" = Computed Excess Camber");
 
-      *pPara << rptNewLine << rptNewLine;
+      *pPara << rptNewLine;
    }
 }
 
@@ -376,9 +382,7 @@ void CBasicCamberChapterBuilder::Build_NoDeck(rptChapter* pChapter,CReportSpecif
       tbl.Build_NoDeck(pBroker,segmentKey,bTempStrands,bSidewalk,bShearKey,bConstruction,bOverlay,pDisplayUnits,i,cm,&pTable1,&pTable2,&pTable3);
       *pPara << pTable1 << rptNewLine;
 
-      (*pTable1)(0,0) << DEFL(_T("i")) << _T(" = ") << DEFL(_T("girder")) << _T(" + ") << DEFL(_T("ps")) << _T(" + ") << DEFL(_T("precamber")) << _T(" = Camber immediately after prestress release") << rptNewLine;
       (*pTable1)(0,1) << DEFL(_T("creep1")) << _T(" = ") << YCR(details[0]) << _T("(") << DEFL(_T("girder Storage")) << _T(" + ") << DEFL(_T("ps Storage")) << _T(")") << rptNewLine;
-      (*pTable1)(0,1) << DEFL(_T("es")) << _T(" = ") << DEFL(_T("girder")) << _T(" + ") << DEFL(_T("ps")) << _T(" + ") << DEFL(_T("precamber")) << _T(" + ") << DEFL(_T("creep1")) << _T(" = Camber at end of storage = Camber at shipping") << rptNewLine;
       (*pTable1)(0,1) << _T("Rows with ") << Bold(_T("bold text")) << _T(" are at the support locations after erection") << rptNewLine;
 
       pPara = new rptParagraph;
@@ -438,7 +442,12 @@ void CBasicCamberChapterBuilder::Build_NoDeck(rptChapter* pChapter,CReportSpecif
       *pChapter << pPara;
 
       // build table 3 footnotes
-      *pPara << DEFL(_T("1")) << _T(" = ") << SCL(cm.ErectionFactor) << _T(" * (") << DEFL(_T("girder Erected")) << _T(" + ") << DEFL(_T("ps Erected")) << _T(")") << rptNewLine;
+      *pPara << DEFL(_T("1")) << _T(" = ") << SCL(cm.ErectionFactor) << _T(" * (") << DEFL(_T("girder Erected")) << _T(" + ") << DEFL(_T("ps Erected")) << _T(")");
+      if (!IsZero(pCamber->GetPrecamber(segmentKey)))
+      {
+         *pPara << _T(" + ") << DEFL(_T("precamber Erected"));
+      }
+      *pPara << rptNewLine;
       *pPara << DEFL(_T("2")) << _T(" = ") << DEFL(_T("1")) << _T(" + ") << SCL(cm.CreepFactor) << _T(" * ") << DEFL(_T("creep1")) << rptNewLine;
 
       *pPara << DEFL(_T("3")) << _T(" = ") << DEFL(_T("2")) << _T(" + ") << SCL(cm.DiaphragmFactor) << _T(" * (") << DEFL(_T("diaphragm"));

@@ -76,7 +76,6 @@ protected:
 
    Float64 m_EndDistance;
    Float64 m_BearingOffset;
-   Float64 m_SupportWidth;
    Float64 m_DiaphragmWidth;
    Float64 m_DiaphragmHeight;
    ConnectionLibraryEntry::EndDistanceMeasurementType m_EndDistanceMeasurementType;

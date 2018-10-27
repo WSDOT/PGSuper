@@ -72,7 +72,7 @@ rptRcTable* CStirrupDetailingCheckTable::Build(IBroker* pBroker,const pgsGirderA
    *pWriteNote = false;
 
    rptRcTable* table = rptStyleManager::CreateDefaultTable(8,_T(" "));
-   table->TableLabel() << _T("Stirrup Detailing Check: ") << GetLimitStateString(ls) << _T(" [5.8.2.5, 5.8.2.7, 5.10.3.1.2]");
+   table->TableLabel() << _T("Stirrup Detailing Check: ") << GetLimitStateString(ls) << _T(" [") << LrfdCw8th(_T("5.8.2.5, 5.8.2.7, 5.10.3.1.2"),_T("5.7.2.5, 5.7.2.6, 5.10.3.1.2")) << _T("]");
 
    if ( girderKey.groupIndex == ALL_GROUPS )
    {

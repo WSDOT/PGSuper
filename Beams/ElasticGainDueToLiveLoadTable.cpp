@@ -78,7 +78,7 @@ CElasticGainDueToLiveLoadTable* CElasticGainDueToLiveLoadTable::PrepareTable(rpt
 
    rptParagraph* pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pParagraph;
-   *pParagraph << _T("Elastic Gain Due to Live Load [5.9.5.2.3a]") << rptNewLine;
+   *pParagraph << _T("Elastic Gain Due to Live Load [") << LrfdCw8th(_T("5.9.5.2.3a"), _T("5.9.3.2.3a")) << _T("]") << rptNewLine;
 
    pParagraph = new rptParagraph;
    *pChapter << pParagraph;

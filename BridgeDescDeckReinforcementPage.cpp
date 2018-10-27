@@ -204,17 +204,22 @@ BOOL CBridgeDescDeckReinforcementPage::OnSetActive()
 
    m_RebarData = pParent->m_BridgeDesc.GetDeckDescription()->DeckRebarData;
 
-   if ( pParent->m_BridgeDesc.GetDeckDescription()->GetDeckType() == pgsTypes::sdtNone )
+   pgsTypes::SupportedDeckType deckType = pParent->m_BridgeDesc.GetDeckDescription()->GetDeckType();
+   if ( IsNonstructuralDeck(deckType) )
    {
       bEnableTop    = FALSE;
       bEnableBottom = FALSE;
-      GetDlgItem(IDC_DECK)->SetWindowText(_T("Deck reinforcement cannot be described because deck type is None."));
+      CString strText;
+      strText.Format(_T("The deck reinforcement cannot be described because the deck type is \"%s\""), GetDeckTypeName(deckType));
+      GetDlgItem(IDC_DECK)->SetWindowText(strText);
    }
-   else if ( pParent->m_BridgeDesc.GetDeckDescription()->GetDeckType() == pgsTypes::sdtCompositeSIP )
+   else if ( deckType == pgsTypes::sdtCompositeSIP )
    {
       bEnableTop    = TRUE;
       bEnableBottom = FALSE;
-      GetDlgItem(IDC_DECK)->SetWindowText(_T("Bottom mat reinforcement cannot be described because deck type is Stay in Place deck panels."));
+      CString strText;
+      strText.Format(_T("Bottom mat reinforcement cannot be described because deck type is \"%s\""), GetDeckTypeName(deckType));
+      GetDlgItem(IDC_DECK)->SetWindowText(strText);
    }
    else
    {

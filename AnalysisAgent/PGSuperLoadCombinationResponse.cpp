@@ -36,7 +36,7 @@ static char THIS_FILE[] = __FILE__;
 
 /////////////////////////////////////////////////////////////////////////////
 // CPGSuperLoadCombinationResponse
-void CPGSuperLoadCombinationResponse::Initialize(ILoadCombinationResponse* pLCResponse,ILoadGroupResponse* pLGResponse,ILiveLoadModelResponse* pLLResponse,ILBAMModel* pModel,CGirderModelManager* pModelManager)
+void CPGSuperLoadCombinationResponse::Initialize(ILoadCombinationResponse* pLCResponse,ILoadGroupResponse* pLGResponse,ILiveLoadModelResponse* pLLResponse,ILBAMModel* pModel,const CGirderModelManager* pModelManager)
 {
    m_LCResponseDelegate = pLCResponse;
    m_LiveLoadResponse = pLLResponse;

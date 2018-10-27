@@ -38,8 +38,6 @@
 #include "OutputSummaryChapter.h"
 #include "LoadRatingSummaryChapterBuilder.h"
 
-DECLARE_LOGFILE;
-
 // CWSDOTAgentImp
 
 /////////////////////////////////////////////////////////////////////////////

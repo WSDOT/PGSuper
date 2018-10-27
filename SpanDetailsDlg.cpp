@@ -98,15 +98,18 @@ void CSpanDetailsDlg::CommonInitPages()
    CEAFDocument* pDoc = EAFGetDocument();
    if ( pDoc->IsKindOf(RUNTIME_CLASS(CPGSuperDoc)) )
    {
+      m_GirderLayoutPage.m_psp.dwFlags |= PSP_HASHELP;
+      AddPage(&m_GirderLayoutPage);
+
       m_StartPierPage.m_psp.dwFlags |= PSP_HASHELP;
       AddPage(&m_StartPierPage);
 
       m_EndPierPage.m_psp.dwFlags |= PSP_HASHELP;
       AddPage(&m_EndPierPage);
-
-      m_GirderLayoutPage.m_psp.dwFlags |= PSP_HASHELP;
-      AddPage(&m_GirderLayoutPage);
    }
+
+   m_SpanGdrDetailsBearingsPage.m_psp.dwFlags |= PSP_HASHELP;
+   AddPage(&m_SpanGdrDetailsBearingsPage);
 }
 
 void CSpanDetailsDlg::InitPages()
@@ -147,6 +150,8 @@ void CSpanDetailsDlg::Init(const CBridgeDescription2* pBridgeDesc,SpanIndexType 
       m_EndPierPage.Init(m_pNextPier);
       m_GirderLayoutPage.Init(this);
    }
+
+   m_SpanGdrDetailsBearingsPage.Initialize(&m_BridgeDesc, m_pPrevPier, m_pNextPier, INVALID_INDEX);
 
    // Set dialog title
    CString strTitle;
@@ -213,7 +218,7 @@ void CSpanDetailsDlg::CreateExtensionPages()
       CPropertyPage* pPage = pCallback->CreatePropertyPage(this);
       if ( pPage )
       {
-         m_ExtensionPages.push_back( std::make_pair(pCallback,pPage) );
+         m_ExtensionPages.emplace_back(pCallback,pPage);
          AddPage(pPage);
       }
    }
@@ -254,7 +259,7 @@ void CSpanDetailsDlg::CreateExtensionPages(const std::vector<EditBridgeExtension
 
       if ( pPage )
       {
-         m_ExtensionPages.push_back( std::make_pair(pEditSpanCallback,pPage) );
+         m_ExtensionPages.emplace_back(pEditSpanCallback,pPage);
          AddPage(pPage);
       }
    }

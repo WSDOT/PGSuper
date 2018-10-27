@@ -4,7 +4,7 @@ The construction sequence is an important element of the time step analysis. For
 
 The timeline models the lifespan of a bridge with the sequence, timing, and duration of events that occur during the life of the bridge. At design time you typically will not know the exact construction schedule the bridge builder will use. Assumptions about the timing and sequence of construction activities will have to be made at design time.
 
-> NOTE: LRFD 5.14.1.3.1 "The method of construction assumed for the design shall be shown in the contract documents."
+> NOTE: LRFD 5.12.3.4.1 (*pre-2017: 5.14.1.3.1*) "The method of construction assumed for the design shall be shown in the contract documents."
 
 Timeline Events
 ----------------

@@ -27,9 +27,9 @@
     <ClInclude Include="..\Include\IFace\Test1250.h">
       <Filter>IFace</Filter>
     </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <Midl Include="TestAgent.idl" />
+    <ClInclude Include="CLSID.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="TestAgent.def" />

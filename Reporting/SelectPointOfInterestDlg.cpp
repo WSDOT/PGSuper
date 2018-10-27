@@ -78,14 +78,14 @@ BOOL CSelectPointOfInterestDlg::OnInitDialog()
 
    // initial the slider position to the current poi location
    CollectionIndexType pos = m_vPOI.size()/2; // default is mid-span
-   std::vector<pgsPointOfInterest>::iterator iter;
-   for ( iter = m_vPOI.begin(); iter != m_vPOI.end(); iter++ )
+   CollectionIndexType cur_pos = 0;
+   for (const pgsPointOfInterest& poi : m_vPOI)
    {
-      pgsPointOfInterest& poi = *iter;
       if ( poi.GetID() == m_InitialPOI.GetID() )
       {
-         pos = (iter - m_vPOI.begin());
+         pos = cur_pos;
       }
+      cur_pos++;
    }
    m_Slider.SetPos((int)pos);
 
@@ -108,7 +108,8 @@ pgsPointOfInterest CSelectPointOfInterestDlg::GetPointOfInterest()
 void CSelectPointOfInterestDlg::UpdatePOI()
 {
    GET_IFACE(IPointOfInterest,pPOI);
-   m_vPOI = pPOI->GetPointsOfInterest(CSegmentKey(ALL_GROUPS,m_GirderKey.girderIndex,ALL_SEGMENTS));
+   m_vPOI.clear();
+   pPOI->GetPointsOfInterest(CSegmentKey(ALL_GROUPS, m_GirderKey.girderIndex, ALL_SEGMENTS),&m_vPOI);
    if (m_Slider.GetSafeHwnd() != nullptr )
    {
       m_Slider.SetRange(0,(int)(m_vPOI.size()-1)); // the range is number of spaces along slider... 
@@ -122,15 +123,14 @@ void CSelectPointOfInterestDlg::InitFromRptSpec()
 
    m_GirderKey = poi.GetSegmentKey();
 
-   std::vector<pgsPointOfInterest>::iterator iter(m_vPOI.begin());
-   std::vector<pgsPointOfInterest>::iterator end(m_vPOI.end());
-   for ( ; iter != end; iter++ )
+   int cur_pos = 0;
+   for (const pgsPointOfInterest& p : m_vPOI)
    {
-      pgsPointOfInterest& p = *iter;
       if ( p.GetID() == poi.GetID() )
       {
-         m_SliderPos = (int)(iter - m_vPOI.begin());
+         m_SliderPos = cur_pos;
       }
+      cur_pos++;
    }
 
    UpdateData(FALSE);

@@ -94,14 +94,62 @@ void CLocationGraphController::OnUpdate(CView* pSender, LPARAM lHint, CObject* p
    FillLocationCtrl();
 }
 
-CGirderKey CLocationGraphController::GetGirderKey()
+const CGirderKey& CLocationGraphController::GetGirderKey() const
 {
    return m_GirderKey;
 }
 
-pgsPointOfInterest CLocationGraphController::GetLocation()
+void CLocationGraphController::SelectGirder(const CGirderKey& girderKey)
+{
+   if (!m_GirderKey.IsEqual(girderKey))
+   {
+      m_GirderKey = girderKey;
+      CComboBox* pcbGroup = (CComboBox*)GetDlgItem(IDC_GROUP);
+      pcbGroup->SetCurSel((int)m_GirderKey.groupIndex);
+
+      FillGirderCtrl();
+      FillLocationCtrl();
+
+      UpdateGraph();
+   }
+}
+
+const pgsPointOfInterest& CLocationGraphController::GetLocation() const
 {
    return m_Poi;
+}
+
+void CLocationGraphController::SelectLocation(const pgsPointOfInterest& poi)
+{
+   IDType newID = poi.GetID();
+   ATLASSERT(newID != INVALID_ID);
+
+   const CSegmentKey& currSegmentKey = m_Poi.GetSegmentKey();
+   const CSegmentKey& newSegmentKey = poi.GetSegmentKey();
+   if (currSegmentKey.groupIndex != newSegmentKey.groupIndex || currSegmentKey.girderIndex != newSegmentKey.girderIndex)
+   {
+      // the group or the girder is changing... update the combo boxes
+      // so they match the poi
+      m_GirderKey = newSegmentKey;
+      FillGroupCtrl(true);
+      FillGirderCtrl(true);
+      FillLocationCtrl();
+   }
+
+   CComboBox* pcbLocation = (CComboBox*)GetDlgItem(IDC_POI);
+   int count = pcbLocation->GetCount();
+   for (int idx = 0; idx < count; idx++)
+   {
+      IDType id = (IDType)pcbLocation->GetItemData(idx);
+      if (id == newID)
+      {
+         m_Poi = poi;
+         pcbLocation->SetCurSel(idx);
+
+         UpdateGraph();
+         break;
+      }
+   }
 }
 
 void CLocationGraphController::OnGroupChanged()
@@ -236,21 +284,18 @@ void CLocationGraphController::FillLocationCtrl()
 
    
    GET_IFACE(IPointOfInterest,pPoi);
-   std::vector<pgsPointOfInterest> vPoi;
+   PoiList vPoi;
    for ( SpanIndexType spanIdx = startSpanIdx; spanIdx <= endSpanIdx; spanIdx++ )
    {
-      std::vector<pgsPointOfInterest> vSpanPoi(pPoi->GetPointsOfInterest(CSpanKey(spanIdx,m_GirderKey.girderIndex)));
+      PoiList vSpanPoi;
+      pPoi->GetPointsOfInterest(CSpanKey(spanIdx, m_GirderKey.girderIndex), &vSpanPoi);
       vPoi.insert(vPoi.end(),vSpanPoi.begin(),vSpanPoi.end());
    }
 
    GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
 
-   std::vector<pgsPointOfInterest>::iterator iter(vPoi.begin());
-   std::vector<pgsPointOfInterest>::iterator end(vPoi.end());
-   for ( ; iter != end; iter++ )
+   for (const pgsPointOfInterest& poi : vPoi)
    {
-      pgsPointOfInterest& poi(*iter);
-
       CSpanKey spanKey;
       Float64 Xspan;
       pPoi->ConvertPoiToSpanPoint(poi,&spanKey,&Xspan);
@@ -297,11 +342,29 @@ void CLocationGraphController::FillLocationCtrl()
    }
 }
 
-int CLocationGraphController::GetXAxisType()
+void CLocationGraphController::SetXAxisType(int type)
 {
-   int id = GetCheckedRadioButton(IDC_TIME_LINEAR,IDC_INTERVALS);
+   int nIDC = IDC_TIME_LOG;
+   switch(type)
+   {
+   case X_AXIS_TIME_LINEAR: nIDC = IDC_TIME_LINEAR; break;
+   case X_AXIS_TIME_LOG: nIDC = IDC_TIME_LOG; break;
+   case X_AXIS_INTERVAL: nIDC = IDC_INTERVALS; break;
+   default:
+      ATLASSERT(false);
+      nIDC = IDC_TIME_LOG;
+   }
+
+   CheckRadioButton(IDC_TIME_LINEAR, IDC_INTERVALS, nIDC);
+   UpdateGraph();
+}
+
+int CLocationGraphController::GetXAxisType() const
+{
+   int nIDC = GetCheckedRadioButton(IDC_TIME_LINEAR,IDC_INTERVALS);
+   ATLASSERT(nIDC != 0); // 0 means nothing is selected
    int axisType;
-   switch(id)
+   switch(nIDC)
    {
    case IDC_TIME_LINEAR:
       axisType = X_AXIS_TIME_LINEAR;

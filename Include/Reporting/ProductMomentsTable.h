@@ -35,7 +35,7 @@ std::_tstring REPORTINGFUNC LiveLoadPrefix(pgsTypes::LiveLoadType llType);
 void REPORTINGFUNC LiveLoadTableFooter(IBroker* pBroker,rptParagraph* pPara,const CGirderKey& girderKey,bool bDesign,bool bRating);
 
 ColumnIndexType REPORTINGFUNC GetProductLoadTableColumnCount(IBroker* pBroker,const CGirderKey& girderkKey,pgsTypes::AnalysisType analysisType,bool bDesign,bool bRating,bool bSlabShrinkage,
-                                                             bool* pbSegments,bool* pbConstruction,bool* pbDeckPanels,bool* pbSidewalk,bool* pbShearKey,bool* pbPedLoading,bool* pbPermit,bool* pbContinuousBeforeDeckCasting,GroupIndexType* pStartGroup,GroupIndexType* pEndGroup);
+                                                             bool* pbSegments,bool* pbConstruction,bool* pbDeck,bool* pbDeckPanels,bool* pbSidewalk,bool* pbShearKey,bool* pbLongitudinalJoint,bool* pbPedLoading,bool* pbPermit,bool* pbContinuousBeforeDeckCasting,GroupIndexType* pStartGroup,GroupIndexType* pEndGroup);
 
 /*****************************************************************************
 CLASS 
@@ -91,7 +91,7 @@ protected:
 };
 
 template <class M,class T>
-RowIndexType ConfigureProductLoadTableHeading(IBroker* pBroker,rptRcTable* p_table,bool bPierTable,bool bSlabShrinkage,bool bSegments,bool bConstruction,bool bDeckPanels,bool bSidewalk,bool bShearKey,bool bOverlay,bool bIsFutureOverlay,
+RowIndexType ConfigureProductLoadTableHeading(IBroker* pBroker,rptRcTable* p_table,bool bPierTable,bool bSlabShrinkage,bool bSegments,bool bConstruction,bool bDeck, bool bDeckPanels,bool bSidewalk,bool bShearKey,bool bLongitudinalJoints,bool bOverlay,bool bIsFutureOverlay,
                                      bool bDesign,bool bPedLoading,bool bPermit,bool bRating,pgsTypes::AnalysisType analysisType,bool bContinuousBeforeDeckCasting,IRatingSpecification* pRatingSpec,IEAFDisplayUnits* pDisplayUnits,const T& unitT)
 {
    p_table->SetNumberOfHeaderRows(2);
@@ -147,6 +147,23 @@ RowIndexType ConfigureProductLoadTableHeading(IBroker* pBroker,rptRcTable* p_tab
       }
    }
 
+   if (bLongitudinalJoints)
+   {
+      if (analysisType == pgsTypes::Envelope && bContinuousBeforeDeckCasting)
+      {
+         p_table->SetColumnSpan(0, row1col, 2);
+         (*p_table)(0, row1col++) << pProductLoads->GetProductLoadName(pgsTypes::pftLongitudinalJoint);
+         (*p_table)(1, row2col++) << COLHDR(_T("Max"), M, unitT);
+         (*p_table)(1, row2col++) << COLHDR(_T("Min"), M, unitT);
+      }
+      else
+      {
+         p_table->SetRowSpan(0, row1col, 2);
+         p_table->SetRowSpan(1, row2col++, SKIP_CELL);
+         (*p_table)(0, row1col++) << COLHDR(pProductLoads->GetProductLoadName(pgsTypes::pftLongitudinalJoint), M, unitT);
+      }
+   }
+
    if ( bConstruction )
    {
       if ( analysisType == pgsTypes::Envelope && bContinuousBeforeDeckCasting )
@@ -164,34 +181,37 @@ RowIndexType ConfigureProductLoadTableHeading(IBroker* pBroker,rptRcTable* p_tab
       }
    }
 
-   if ( analysisType == pgsTypes::Envelope && bContinuousBeforeDeckCasting )
+   if (bDeck)
    {
-      p_table->SetColumnSpan(0,row1col,2);
-      (*p_table)(0,row1col++) << pProductLoads->GetProductLoadName(pgsTypes::pftSlab);
-      (*p_table)(1,row2col++) << COLHDR(_T("Max"), M, unitT );
-      (*p_table)(1,row2col++) << COLHDR(_T("Min"), M, unitT );
+      if (analysisType == pgsTypes::Envelope && bContinuousBeforeDeckCasting)
+      {
+         p_table->SetColumnSpan(0, row1col, 2);
+         (*p_table)(0, row1col++) << pProductLoads->GetProductLoadName(pgsTypes::pftSlab);
+         (*p_table)(1, row2col++) << COLHDR(_T("Max"), M, unitT);
+         (*p_table)(1, row2col++) << COLHDR(_T("Min"), M, unitT);
 
-      p_table->SetColumnSpan(0,row1col,2);
-      (*p_table)(0,row1col++) << pProductLoads->GetProductLoadName(pgsTypes::pftSlabPad);
-      (*p_table)(1,row2col++) << COLHDR(_T("Max"), M, unitT );
-      (*p_table)(1,row2col++) << COLHDR(_T("Min"), M, unitT );
-   }
-   else
-   {
-      p_table->SetRowSpan(0,row1col,2);
-      p_table->SetRowSpan(1,row2col++,SKIP_CELL);
-      (*p_table)(0,row1col++) << COLHDR(pProductLoads->GetProductLoadName(pgsTypes::pftSlab), M, unitT );
+         p_table->SetColumnSpan(0, row1col, 2);
+         (*p_table)(0, row1col++) << pProductLoads->GetProductLoadName(pgsTypes::pftSlabPad);
+         (*p_table)(1, row2col++) << COLHDR(_T("Max"), M, unitT);
+         (*p_table)(1, row2col++) << COLHDR(_T("Min"), M, unitT);
+      }
+      else
+      {
+         p_table->SetRowSpan(0, row1col, 2);
+         p_table->SetRowSpan(1, row2col++, SKIP_CELL);
+         (*p_table)(0, row1col++) << COLHDR(pProductLoads->GetProductLoadName(pgsTypes::pftSlab), M, unitT);
 
-      p_table->SetRowSpan(0,row1col,2);
-      p_table->SetRowSpan(1,row2col++,SKIP_CELL);
-      (*p_table)(0,row1col++) << COLHDR(pProductLoads->GetProductLoadName(pgsTypes::pftSlabPad), M, unitT );
-   }
+         p_table->SetRowSpan(0, row1col, 2);
+         p_table->SetRowSpan(1, row2col++, SKIP_CELL);
+         (*p_table)(0, row1col++) << COLHDR(pProductLoads->GetProductLoadName(pgsTypes::pftSlabPad), M, unitT);
+      }
 
-   if ( bSlabShrinkage )
-   {
-      p_table->SetRowSpan(0,row1col,2);
-      p_table->SetRowSpan(1,row2col++,SKIP_CELL);
-      (*p_table)(0,row1col++) << COLHDR(_T("Deck") << rptNewLine << _T("Shrinkage"), M, unitT );
+      if (bSlabShrinkage)
+      {
+         p_table->SetRowSpan(0, row1col, 2);
+         p_table->SetRowSpan(1, row2col++, SKIP_CELL);
+         (*p_table)(0, row1col++) << COLHDR(_T("Deck") << rptNewLine << _T("Shrinkage"), M, unitT);
+      }
    }
 
    if ( bDeckPanels )

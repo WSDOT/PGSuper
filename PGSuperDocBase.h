@@ -181,15 +181,15 @@ public:
 
    // set/get view settings for bridge model editor
    UINT GetBridgeEditorSettings() const;
-   void SetBridgeEditorSettings(UINT settings);
+   void SetBridgeEditorSettings(UINT settings,BOOL bNotify=TRUE);
 
    // set/get view settings for alignment/profile editor
    UINT GetAlignmentEditorSettings() const;
-   void SetAlignmentEditorSettings(UINT settings);
+   void SetAlignmentEditorSettings(UINT settings, BOOL bNotify = TRUE);
 
    // set/get view settings for Girder model editor
    UINT GetGirderEditorSettings() const;
-   void SetGirderEditorSettings(UINT settings);
+   void SetGirderEditorSettings(UINT settings, BOOL bNotify = TRUE);
 
    // called when the UI Hints have been reset
    virtual void ResetUIHints() override;
@@ -439,9 +439,13 @@ public:
 	afx_msg void OnProjectSpec();
    afx_msg void OnEditHaunch();
    afx_msg void OnUpdateEditHaunch(CCmdUI* pCmdUI);
+   afx_msg void OnEditBearing();
+   afx_msg void OnUpdateEditBearing(CCmdUI* pCmdUI);
 
    bool LoadMasterLibrary();
    bool DoLoadMasterLibrary(const CString& rPath);
+
+   bool DoEditBearing();
 
    void InitProjectProperties();
 

@@ -37,6 +37,12 @@
 #include <psgLib\ShearSteelGrid.h>
 #include <psgLib\HorizShearGrid.h>
 
+class PSGLIBCLASS CShearSteelPageParent
+{
+public:
+   virtual bool HasDeck() const = 0;
+};
+
 /////////////////////////////////////////////////////////////////////////////
 // CShearSteelPage dialog
 

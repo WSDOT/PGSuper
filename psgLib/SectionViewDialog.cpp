@@ -43,8 +43,10 @@
 
 #include <IFace\BeamFactory.h>
 
+
 #ifdef _DEBUG
-#include <Plugins\Beams.h> // including here is a bit of a hack, but drawing the strand mover is debug only
+#include <Plugins\ConfigureStrandMover.h> // including here is a bit of a hack, but drawing the strand mover is debug only
+#include <WBFLGenericBridgeTools.h>
 #endif
 
 
@@ -99,7 +101,7 @@ CSectionViewDialog::CSectionViewDialog(const GirderLibraryEntry* pEntry,bool isE
    CComQIPtr<IConfigureStrandMover> config(strand_mover);
 
    IndexType num_shapes;
-   config->get_NumRegions(&num_shapes);
+   config->GetRegionCount(&num_shapes);
    for (IndexType is=0; is<num_shapes; is++)
    {
       CComPtr<IShape> rshape;

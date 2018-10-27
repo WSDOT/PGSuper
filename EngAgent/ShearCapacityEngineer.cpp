@@ -96,31 +96,14 @@ void pgsShearCapacityEngineer::SetStatusGroupID(StatusGroupIDType statusGroupID)
 
 }
 
-void pgsShearCapacityEngineer::ComputeShearCapacity(IntervalIndexType intervalIdx,
-                                                    pgsTypes::LimitState limitState, 
-                                                    const pgsPointOfInterest& poi,
-                                                    const GDRCONFIG& config,
-                                                    SHEARCAPACITYDETAILS* pscd)
+void pgsShearCapacityEngineer::ComputeShearCapacity(IntervalIndexType intervalIdx, pgsTypes::LimitState limitState, const pgsPointOfInterest& poi, const GDRCONFIG* pConfig, SHEARCAPACITYDETAILS* pscd) const
 {
    // get known information
-   VERIFY(GetInformation(intervalIdx, limitState, poi, &config, pscd));
+   VERIFY(GetInformation(intervalIdx, limitState, poi, pConfig, pscd));
    ComputeShearCapacityDetails(intervalIdx,limitState,poi,pscd);
 }
 
-void pgsShearCapacityEngineer::ComputeShearCapacity(IntervalIndexType intervalIdx,
-                                                    pgsTypes::LimitState limitState, 
-                                                    const pgsPointOfInterest& poi,
-                                                    SHEARCAPACITYDETAILS* pscd)
-{
-   // get known information
-   VERIFY(GetInformation(intervalIdx, limitState, poi, nullptr, pscd));
-   ComputeShearCapacityDetails(intervalIdx,limitState,poi,pscd);
-}
-
-void pgsShearCapacityEngineer::ComputeShearCapacityDetails(IntervalIndexType intervalIdx,
-                                                           pgsTypes::LimitState limitState, 
-                                                           const pgsPointOfInterest& poi,
-                                                           SHEARCAPACITYDETAILS* pscd)
+void pgsShearCapacityEngineer::ComputeShearCapacityDetails(IntervalIndexType intervalIdx,pgsTypes::LimitState limitState, const pgsPointOfInterest& poi, SHEARCAPACITYDETAILS* pscd) const
 {
    const CSegmentKey& segmentKey = poi.GetSegmentKey();
    CGirderKey girderKey(segmentKey);
@@ -173,7 +156,7 @@ void pgsShearCapacityEngineer::ComputeShearCapacityDetails(IntervalIndexType int
    }
    else
    {
-      // C5.8.3.4.2-1
+      // C5.7.3.4.2-1 (pre2017: C5.8.3.4.2-1)
       pscd->fpops = pscd->fpeps + pscd->fpc*pscd->Eps/pscd->Ec;
    }
 
@@ -202,7 +185,7 @@ void pgsShearCapacityEngineer::ComputeShearCapacityDetails(IntervalIndexType int
    }
    else
    {
-      // C5.8.3.4.2-1
+      // C5.7.3.4.2-1 (pre2017: C5.8.3.4.2-1)
       pscd->fpopt = pscd->fpept + pscd->fpc*pscd->Ept/pscd->Ec;
    }
 
@@ -227,7 +210,7 @@ void pgsShearCapacityEngineer::ComputeShearCapacityDetails(IntervalIndexType int
       VERIFY(ComputeVs(poi,pscd));
 
       // final capacity
-      // 5.8.3.3-1
+      // 5.7.3.3-1 (pre2017: 5.8.3.3-1)
       pscd->Vn1 = pscd->Vc + pscd->Vs + (shear_capacity_method == scmVciVcw ? 0 : pscd->Vp);
    }
    else
@@ -236,7 +219,7 @@ void pgsShearCapacityEngineer::ComputeShearCapacityDetails(IntervalIndexType int
       pscd->Vn1=0.0;
    }
 
-   // Max crushing capacity - 5.8.3.3-2
+   // Max crushing capacity - 5.7.3.3-2 (pre2017: 5.8.3.3-2)
    pscd->Vn2 = 0.25* pscd->fc * pscd->dv * pscd->bv + (shear_capacity_method == scmVciVcw ? 0 : pscd->Vp);
 
    if (pscd->ShearInRange)
@@ -256,20 +239,20 @@ void pgsShearCapacityEngineer::ComputeShearCapacityDetails(IntervalIndexType int
    ComputeVsReqd(poi,pscd);
 }
 
-void pgsShearCapacityEngineer::EvaluateStirrupRequirements(SHEARCAPACITYDETAILS* pscd)
+void pgsShearCapacityEngineer::EvaluateStirrupRequirements(SHEARCAPACITYDETAILS* pscd) const
 {
    GET_IFACE(ILibrary,pLib);
    GET_IFACE(ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
    ShearCapacityMethod shear_capacity_method = pSpecEntry->GetShearCapacityMethod();
 
-   // 5.8.2.4-1
+   // 5.7.2.3-1 (pre2017: 5.8.2.4-1)
    // transverse reinforcement required?
    pscd->VuLimit = 0.5 * pscd->Phi * ( pscd->Vc + (shear_capacity_method == scmVciVcw ? 0 : pscd->Vp) );
    pscd->bStirrupsReqd = pscd->Vu > pscd->VuLimit;
 }
 
-void pgsShearCapacityEngineer::TweakShearCapacityOutboardOfCriticalSection(const pgsPointOfInterest& poiCS,SHEARCAPACITYDETAILS* pscd,const SHEARCAPACITYDETAILS* pscd_at_cs)
+void pgsShearCapacityEngineer::TweakShearCapacityOutboardOfCriticalSection(const pgsPointOfInterest& poiCS,SHEARCAPACITYDETAILS* pscd,const SHEARCAPACITYDETAILS* pscd_at_cs) const
 {
    // assign Vs, Vc, and shear capacity details data from CS to the critical section that is outboard
    // of the CS
@@ -292,7 +275,7 @@ void pgsShearCapacityEngineer::TweakShearCapacityOutboardOfCriticalSection(const
    ComputeVsReqd(poiCS,pscd);
 }
 
-void pgsShearCapacityEngineer::ComputeFpc(const pgsPointOfInterest& poi, const GDRCONFIG* pConfig,FPCDETAILS* pd)
+void pgsShearCapacityEngineer::ComputeFpc(const pgsPointOfInterest& poi, const GDRCONFIG* pConfig,FPCDETAILS* pd) const
 {
    GET_IFACE(IPretensionForce,pPsForce);
    GET_IFACE(ISectionProperties,pSectProp);
@@ -310,9 +293,9 @@ void pgsShearCapacityEngineer::ComputeFpc(const pgsPointOfInterest& poi, const G
 
    GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(poi.GetSegmentKey());
-   IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval();
+   IntervalIndexType noncompsiteIntervalIdx = pIntervals->GetLastNoncompositeInterval();
    IntervalIndexType finalIntervalIdx = pIntervals->GetIntervalCount() - 1;
-   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
+   IntervalIndexType compositeIntervalIdx = pIntervals->GetLastCompositeInterval();
 
    Float64 neff;
    Float64 eps, Pps;
@@ -330,7 +313,7 @@ void pgsShearCapacityEngineer::ComputeFpc(const pgsPointOfInterest& poi, const G
    {
       // only include tendons that are stress prior to the section becoming composite
       IntervalIndexType stressTendonIntervalIdx = pIntervals->GetStressTendonInterval(girderKey,ductIdx);
-      if ( stressTendonIntervalIdx < compositeDeckIntervalIdx )
+      if ( stressTendonIntervalIdx < compositeIntervalIdx )
       {
          Float64 e = pTendonGeometry->GetEccentricity(finalIntervalIdx,poi,ductIdx);
          Float64 F = pPTForce->GetTendonForce(poi,finalIntervalIdx,pgsTypes::End,ductIdx,true,true);
@@ -341,19 +324,19 @@ void pgsShearCapacityEngineer::ComputeFpc(const pgsPointOfInterest& poi, const G
    Float64 ept = (IsZero(Ppt) ? 0 : Pe/Ppt);
 
    // girder only props
-   Float64 Ybg = pSectProp->GetY(castDeckIntervalIdx,poi,pgsTypes::BottomGirder);
-   Float64 I   = pSectProp->GetIx(castDeckIntervalIdx,poi);
-   Float64 A   = pSectProp->GetAg(castDeckIntervalIdx,poi);
+   Float64 Ybg = pSectProp->GetY(noncompsiteIntervalIdx,poi,pgsTypes::BottomGirder);
+   Float64 I   = pSectProp->GetIxx(noncompsiteIntervalIdx,poi);
+   Float64 A   = pSectProp->GetAg(noncompsiteIntervalIdx,poi);
 
-   Float64 Hg  = pSectProp->GetHg(castDeckIntervalIdx,poi);
+   Float64 Hg  = pSectProp->GetHg(noncompsiteIntervalIdx,poi);
    Float64 Ybc = pSectProp->GetY(finalIntervalIdx,poi,pgsTypes::BottomGirder);
 
    Float64 c   = Ybg - Min(Hg,Ybc);
 
 
    GET_IFACE(ICombinedForces,pCombinedForces);
-   Float64 Mg = pCombinedForces->GetMoment(castDeckIntervalIdx, lcDC, poi, bat, rtCumulative);
-   Mg        += pCombinedForces->GetMoment(castDeckIntervalIdx, lcDW, poi, bat, rtCumulative);
+   Float64 Mg = pCombinedForces->GetMoment(noncompsiteIntervalIdx, lcDC, poi, bat, rtCumulative);
+   Mg        += pCombinedForces->GetMoment(noncompsiteIntervalIdx, lcDW, poi, bat, rtCumulative);
 
    Float64 fpc = -(Pps+Ppt)/A - (Pps*eps+Ppt*ept)*c/I + Mg*c/I;
    fpc *= -1.0; // Need to make the compressive stress a positive value
@@ -426,11 +409,7 @@ bool pgsShearCapacityEngineer::TestMe(dbgLog& rlog)
 }
 #endif // _UNITTEST
 
-bool pgsShearCapacityEngineer::GetGeneralInformation(IntervalIndexType intervalIdx, 
-                                                     pgsTypes::LimitState limitState, 
-						                                   const pgsPointOfInterest& poi, 
-                                                     const GDRCONFIG* pConfig,
-                                                     SHEARCAPACITYDETAILS* pscd)
+bool pgsShearCapacityEngineer::GetGeneralInformation(IntervalIndexType intervalIdx, pgsTypes::LimitState limitState, const pgsPointOfInterest& poi, const GDRCONFIG* pConfig, SHEARCAPACITYDETAILS* pscd) const
 {
    // The first thing we are going to do is fill in the SHEARCAPACITYDETAILS struct
    // with everything we know
@@ -601,7 +580,7 @@ bool pgsShearCapacityEngineer::GetGeneralInformation(IntervalIndexType intervalI
 
    // added with LRFD 7th Edition 2014
    // fy <= 100 ksi
-   // See LRFD 5.8.2.5
+   // See LRFD 5.7.2.5 (pre2017: 5.8.2.5)
    if ( lrfdVersionMgr::SeventhEdition2014 <= lrfdVersionMgr::GetVersion() )
    {
       fy = min(fy,::ConvertToSysUnits(100.0,unitMeasure::KSI));
@@ -668,11 +647,7 @@ bool pgsShearCapacityEngineer::GetGeneralInformation(IntervalIndexType intervalI
    return true;
 }
 
-bool pgsShearCapacityEngineer::GetInformation(IntervalIndexType intervalIdx,
-						                            pgsTypes::LimitState limitState, 
-                                              const pgsPointOfInterest& poi, 
-                                              const GDRCONFIG* pConfig, 
-                                              SHEARCAPACITYDETAILS* pscd)
+bool pgsShearCapacityEngineer::GetInformation(IntervalIndexType intervalIdx,pgsTypes::LimitState limitState, const pgsPointOfInterest& poi, const GDRCONFIG* pConfig, SHEARCAPACITYDETAILS* pscd) const
 {
    GetGeneralInformation(intervalIdx,limitState,poi,pConfig,pscd);
 
@@ -720,7 +695,7 @@ bool pgsShearCapacityEngineer::GetInformation(IntervalIndexType intervalIdx,
 
    pscd->h = pGdr->GetHeight(poi) + struct_slab_h;
 
-   // lrfd 5.8.2.7
+   // lrfd 5.7.2.6 (pre2017: 5.8.2.7)
    pscd->dv = Max( pscd->MomentArm, 0.9*pscd->de, 0.72*pscd->h );
    
 
@@ -749,16 +724,8 @@ bool pgsShearCapacityEngineer::GetInformation(IntervalIndexType intervalIdx,
    }
 
    GET_IFACE(IShearCapacity,pShearCapacity);
-   if (pConfig == nullptr)
-   {
-      pscd->fpc = pShearCapacity->GetFpc(poi);
-      pscd->fpeps = pPsForce->GetEffectivePrestress(poi,pgsTypes::Permanent,intervalIdx,pgsTypes::End);
-   }
-   else
-   {
-      pscd->fpc = pShearCapacity->GetFpc(poi, *pConfig);
-      pscd->fpeps = pPsForce->GetEffectivePrestress(poi,pgsTypes::Permanent,intervalIdx,pgsTypes::End,pConfig);
-   }
+   pscd->fpc = pShearCapacity->GetFpc(poi, pConfig);
+   pscd->fpeps = pPsForce->GetEffectivePrestress(poi, pgsTypes::Permanent, intervalIdx, pgsTypes::End, pConfig);
 
    if ( bAfter1999 )
    {
@@ -941,7 +908,7 @@ bool pgsShearCapacityEngineer::GetInformation(IntervalIndexType intervalIdx,
    return true;
 }
 
-bool pgsShearCapacityEngineer::ComputeVc(const pgsPointOfInterest& poi, SHEARCAPACITYDETAILS* pscd)
+bool pgsShearCapacityEngineer::ComputeVc(const pgsPointOfInterest& poi, SHEARCAPACITYDETAILS* pscd) const
 {
    const CSegmentKey& segmentKey = poi.GetSegmentKey();
 
@@ -1005,10 +972,11 @@ bool pgsShearCapacityEngineer::ComputeVc(const pgsPointOfInterest& poi, SHEARCAP
          ATLASSERT(shear_capacity_method == scmWSDOT2001);
 
          GET_IFACE(IPointOfInterest,pPOI);
-         std::vector<pgsPointOfInterest> vPOI( pPOI->GetPointsOfInterest(segmentKey,POI_15H) );
+         PoiList vPOI;
+         pPOI->GetPointsOfInterest(segmentKey, POI_15H, &vPOI);
          ATLASSERT(vPOI.size() == 2);
-         Float64 l1 = vPOI[0].GetDistFromStart();
-         Float64 l2 = vPOI[1].GetDistFromStart();
+         Float64 l1 = vPOI.front().get().GetDistFromStart();
+         Float64 l2 = vPOI.back().get().GetDistFromStart();
 
          bool bEndRegion = InRange(l1,poi.GetDistFromStart(),l2) ? false : true;
 
@@ -1077,7 +1045,7 @@ bool pgsShearCapacityEngineer::ComputeVc(const pgsPointOfInterest& poi, SHEARCAP
          const unitLength* pLengthUnit = nullptr;
          const unitStress* pStressUnit = nullptr;
          const unitForce*  pForceUnit  = nullptr;
-         Float64 K; // main coefficient in equaion 5.8.3.3-3
+         Float64 K; // main coefficient in equaion 5.7.3.3-3 (pre2017: 5.8.3.3-3)
          Float64 Kfct; // coefficient for fct if LWC
          if ( lrfdVersionMgr::GetUnits() == lrfdVersionMgr::US )
          {
@@ -1102,7 +1070,7 @@ bool pgsShearCapacityEngineer::ComputeVc(const pgsPointOfInterest& poi, SHEARCAP
          Float64 fc =  ::ConvertFromSysUnits( pscd->fc,  *pStressUnit );
          Float64 fct = ::ConvertFromSysUnits( pscd->fct, *pStressUnit );
 
-         // 5.8.3.3-3
+         // 5.7.3.3-3 (pre2017: 5.8.3.3-3)
          Float64 Vc = K * data.lambda * Beta * bv * dv;
 
          if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::SeventhEditionWith2016Interims )
@@ -1180,7 +1148,7 @@ bool pgsShearCapacityEngineer::ComputeVc(const pgsPointOfInterest& poi, SHEARCAP
    return true;
 }
 
-bool pgsShearCapacityEngineer::ComputeVs(const pgsPointOfInterest& poi, SHEARCAPACITYDETAILS* pscd)
+bool pgsShearCapacityEngineer::ComputeVs(const pgsPointOfInterest& poi, SHEARCAPACITYDETAILS* pscd) const
 {
    GET_IFACE(ISpecification, pSpec);
    GET_IFACE(ILibrary, pLib);
@@ -1269,7 +1237,7 @@ bool pgsShearCapacityEngineer::ComputeVs(const pgsPointOfInterest& poi, SHEARCAP
    return true;
 }
 
-void pgsShearCapacityEngineer::ComputeVsReqd(const pgsPointOfInterest& poi, SHEARCAPACITYDETAILS* pscd)
+void pgsShearCapacityEngineer::ComputeVsReqd(const pgsPointOfInterest& poi, SHEARCAPACITYDETAILS* pscd) const
 {
    Float64 Vs = 0;
    Float64 AvOverS = 0;

@@ -13,12 +13,12 @@ Resistance Factors (LRFD 5.5.4.2)
 ### Conventional Construction (LRFD 5.5.4.2.1) ###
 Enter the normal and lightweight concrete resistance factors.
 
-### Closure Joints (LRFD 5.5.4.2.2 and 5.14.1.3.2d) ###
+### Closure Joints (LRFD 5.5.4.2.2 and 5.12.3.4.2d (*pre-2017: 5.14.1.3.2d*)) ###
 Enter the normal and lightweight concrete resistance factors.
 
-Maximum Spacing of Transverse Reinforcement (LRFD 5.8.2.7)
+Maximum Spacing of Transverse Reinforcement (LRFD 5.7.2.6 (*pre-2017: 5.8.2.7*))
 ----------------------------------------------------------
-Enter parameters for LRFD equations 5.8.2.7-1 and 5.8.2.7-2. These parameters define the maximum stirrup spacing as a fraction of the shear depth, dv, and a maximum value.
+Enter parameters for LRFD equations 5.7.2.6-1 and 5.7.2.6-2. These parameters define the maximum stirrup spacing as a fraction of the shear depth, dv, and a maximum value.
 
 Longitudinal Reinforcement for Shear
 -------------------------------------
@@ -28,4 +28,4 @@ Horizontal Interface Shear
 --------------------------
 Select a method for computing horizontal interface shear.
 
-Define the maximum spacing of interface shear connectors for LRFD 5.8.4.2.
+Define the maximum spacing of interface shear connectors for LRFD 5.7.4.5 (*pre-2017: 5.8.4.2*).

@@ -25,6 +25,7 @@
 #include <IFace\Bridge.h>
 #include <IFace\PointOfInterest.h>
 #include <IFace\AnalysisResults.h>
+#include <iterator>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -42,40 +43,38 @@ pgsGirderModelFactory::~pgsGirderModelFactory(void)
 {
 }
 
-void pgsGirderModelFactory::CreateGirderModel(IBroker* pBroker,                            // broker to access PGSuper data
-                                 IntervalIndexType intervalIdx,               // used for looking up section properties and section transition POIs
-                                 const CSegmentKey& segmentKey,               // this is the segment that the modeling is build for
-                                 Float64 leftSupportLoc,                      // distance from the left end of the model to the left support location
-                                 Float64 rightSupportLoc,                     // distance from the right end of the model to the right support location
-                                 Float64 E,                                   // modulus of elasticity
-                                 LoadCaseIDType lcidGirder,                   // load case ID that is to be used to define the girder dead load
-                                 bool bModelLeftCantilever,                   // if true, the cantilever defined by leftSupportLoc is modeled
-                                 bool bModelRightCantilever,                  // if true, the cantilever defined by rightSupportLoc is modeled
-                                 const std::vector<pgsPointOfInterest>& vPOI, // vector of PGSuper POIs that are to be modeld in the Fem2d Model
-                                 IFem2dModel** ppModel,                       // the Fem2d Model
-                                 pgsPoiPairMap* pPoiMap                           // a mapping of PGSuper POIs to Fem2d POIs
+void pgsGirderModelFactory::CreateGirderModel(IBroker* pBroker, // broker to access PGSuper data
+                                 IntervalIndexType intervalIdx, // used for looking up section properties and section transition POIs
+                                 const CSegmentKey& segmentKey, // this is the segment that the modeling is build for
+                                 Float64 leftSupportLoc,        // distance from the left end of the model to the left support location
+                                 Float64 rightSupportLoc,       // distance from the right end of the model to the right support location
+                                 Float64 segmentLength,         // length of the segment
+                                 Float64 E,                     // modulus of elasticity
+                                 LoadCaseIDType lcidGirder,     // load case ID that is to be used to define the girder dead load
+                                 bool bModelLeftCantilever,     // if true, the cantilever defined by leftSupportLoc is modeled
+                                 bool bModelRightCantilever,    // if true, the cantilever defined by rightSupportLoc is modeled
+                                 const PoiList& vPoi,           // vector of PGSuper POIs that are to be modeld in the Fem2d Model
+                                 IFem2dModel** ppModel,         // the Fem2d Model
+                                 pgsPoiPairMap* pPoiMap         // a mapping of PGSuper POIs to Fem2d POIs
                                  )
 {
+#if defined _DEBUG
    GET_IFACE2(pBroker,IBridge,pBridge);
-   Float64 segmentLength = pBridge->GetSegmentLength(segmentKey);
+   Float64 _SegmentLength = pBridge->GetSegmentLength(segmentKey);
+   ATLASSERT(IsEqual(segmentLength, _SegmentLength));
+#endif
 
    // Build the model... always model the cantilevers in the geometry of the FEM model
-   BuildModel(pBroker, intervalIdx, segmentKey, segmentLength, leftSupportLoc, rightSupportLoc, E, lcidGirder, vPOI, ppModel);
+   BuildModel(pBroker, intervalIdx, segmentKey, segmentLength, leftSupportLoc, rightSupportLoc, E, lcidGirder, vPoi, ppModel);
 
-   ApplyLoads(pBroker, segmentKey, segmentLength, leftSupportLoc, rightSupportLoc, E, lcidGirder, bModelLeftCantilever, bModelRightCantilever, vPOI, ppModel);
+   ApplyLoads(pBroker, segmentKey, segmentLength, leftSupportLoc, rightSupportLoc, E, lcidGirder, bModelLeftCantilever, bModelRightCantilever, vPoi, ppModel);
 
-   ApplyPointsOfInterest(pBroker, segmentKey, leftSupportLoc, rightSupportLoc, E, lcidGirder, bModelLeftCantilever, bModelRightCantilever, vPOI, ppModel, pPoiMap);
-}
-
-Float64 g_L;
-bool RemovePOI(const pgsPointOfInterest& poi)
-{
-   return !::InRange(0.0,poi.GetDistFromStart(),g_L);
+   ApplyPointsOfInterest(pBroker, segmentKey, leftSupportLoc, rightSupportLoc, E, lcidGirder, bModelLeftCantilever, bModelRightCantilever, vPoi, ppModel, pPoiMap);
 }
 
 void pgsGirderModelFactory::BuildModel(IBroker* pBroker, IntervalIndexType intervalIdx, const CSegmentKey& segmentKey,
    Float64 segmentLength, Float64 leftSupportLoc, Float64 rightSupportLoc, Float64 E,
-   LoadCaseIDType lcidGirder, const std::vector<pgsPointOfInterest>& vPOI, IFem2dModel** ppModel)
+   LoadCaseIDType lcidGirder, const PoiList& vPOI, IFem2dModel** ppModel)
 {
    if (*ppModel)
    {
@@ -91,73 +90,79 @@ void pgsGirderModelFactory::BuildModel(IBroker* pBroker, IntervalIndexType inter
 
    // get all the cross section changes
    GET_IFACE2(pBroker,IPointOfInterest,pPoi);
-   std::vector<pgsPointOfInterest> xsPOI = pPoi->GetPointsOfInterest(segmentKey,POI_SECTCHANGE);
+   PoiList xsPOI;
+   pPoi->GetPointsOfInterest(segmentKey, POI_SECTCHANGE,&xsPOI);
    pPoi->RemovePointsOfInterest(xsPOI,POI_ERECTED_SEGMENT,POI_CANTILEVER);
 
-   g_L = segmentLength;
-   xsPOI.erase(std::remove_if(xsPOI.begin(),xsPOI.end(),RemovePOI),xsPOI.end());// make sure no out of bound poi's sneak in
+   xsPOI.erase(std::remove_if(xsPOI.begin(), xsPOI.end(), [Ls = segmentLength](const pgsPointOfInterest& poi) {return !InRange(0.0, poi.GetDistFromStart(), Ls); }), xsPOI.end());// make sure no out of bound poi's sneak in
 
    // sometimes we loose the released segment POI at 0L and 1.0L in the call to RemovePointsOfInterest above
    // these are key POI so include them here so we are guarenteed to have them.
-   std::vector<pgsPointOfInterest> vPoi = pPoi->GetPointsOfInterest(segmentKey, POI_START_FACE);
+   PoiList vPoi;
+   pPoi->GetPointsOfInterest(segmentKey, POI_START_FACE,&vPoi);
    ATLASSERT(vPoi.size() == 1);
-   if ( xsPOI.empty() || !vPoi.front().AtExactSamePlace(xsPOI.front()) ) // don't add duplicates
+   if ( xsPOI.empty() || !vPoi.front().get().AtExactSamePlace(xsPOI.front()) ) // don't add duplicates
    {
       xsPOI.insert(xsPOI.begin(),vPoi.front());
    }
 
-   vPoi = pPoi->GetPointsOfInterest(segmentKey, POI_END_FACE);
+   vPoi.clear();
+   pPoi->GetPointsOfInterest(segmentKey, POI_END_FACE,&vPoi);
    ATLASSERT(vPoi.size() == 1);
-   if ( !vPoi.front().AtExactSamePlace(xsPOI.back()) ) // don't add duplicates
+   if ( !vPoi.front().get().AtExactSamePlace(xsPOI.back()) ) // don't add duplicates
    {
       xsPOI.push_back(vPoi.front());
    }
 
    // add support locations if there aren't already POIs at those locations
+   std::vector<pgsPointOfInterest> vXSPoi;
+   MakePoiVector(xsPOI,&vXSPoi);
+
    bool bLeftSupportLoc = true;
    bool bRightSupportLoc = true;
-   std::vector<pgsPointOfInterest>::iterator xsIter(xsPOI.begin());
-   std::vector<pgsPointOfInterest>::iterator xsIterEnd(xsPOI.end());
+   std::vector<pgsPointOfInterest>::iterator xsIter(vXSPoi.begin());
+   std::vector<pgsPointOfInterest>::iterator xsIterEnd(vXSPoi.end());
    for (; xsIter != xsIterEnd && (bLeftSupportLoc == true || bRightSupportLoc == true); xsIter++)
    {
       pgsPointOfInterest& poi(*xsIter);
       if (IsEqual(leftSupportLoc, poi.GetDistFromStart()))
       {
          bLeftSupportLoc = false;
-         PoiAttributeType atr = poi.GetNonReferencedAttributes();
-         atr |= POI_INTERMEDIATE_PIER;
-         poi.SetNonReferencedAttributes(atr);
+         PoiAttributeType attribute = poi.GetNonReferencedAttributes();
+         attribute |= POI_INTERMEDIATE_PIER;
+         poi.SetNonReferencedAttributes(attribute);
       }
 
       if (IsEqual(rightSupportLoc, poi.GetDistFromStart()))
       {
          bRightSupportLoc = false;
-         PoiAttributeType atr = poi.GetNonReferencedAttributes();
-         atr |= POI_INTERMEDIATE_PIER;
-         poi.SetNonReferencedAttributes(atr);
+         PoiAttributeType attribute = poi.GetNonReferencedAttributes();
+         attribute |= POI_INTERMEDIATE_PIER;
+         poi.SetNonReferencedAttributes(attribute);
       }
    }
 
    if (bLeftSupportLoc)
    {
-      xsPOI.push_back(pgsPointOfInterest(segmentKey, leftSupportLoc,POI_INTERMEDIATE_PIER));
+      vXSPoi.push_back(pgsPointOfInterest(segmentKey, leftSupportLoc,POI_INTERMEDIATE_PIER));
    }
 
    if (bRightSupportLoc)
    {
-      xsPOI.push_back(pgsPointOfInterest(segmentKey, rightSupportLoc,POI_INTERMEDIATE_PIER));
+      vXSPoi.push_back(pgsPointOfInterest(segmentKey, rightSupportLoc,POI_INTERMEDIATE_PIER));
    }
 
    // sort the POI
-   std::sort(xsPOI.begin(), xsPOI.end());
+   std::sort(vXSPoi.begin(), vXSPoi.end());
 
    // This is the same tolerance as used in the LBAM's use of LAYOUT_TOLERANCE
-   Float64 otol = xsPOI.back().GetDistFromStart() / 10000.00;
+   Float64 otol = vXSPoi.back().GetDistFromStart() / 10000.00;
 
    // eliminate any very close duplicates, but not support members
-   std::vector<pgsPointOfInterest>::iterator rightIter(xsPOI.begin());
-   std::vector<pgsPointOfInterest>::iterator leftIter(rightIter++);
-   while(rightIter != xsPOI.end())
+   auto rightIter(std::begin(vXSPoi));
+   auto leftIter(rightIter++);
+   auto end(std::end(vXSPoi));
+   while(rightIter != end)
    {
       bool didErase = false;
       PoiIDType lid = leftIter->GetID();
@@ -169,34 +174,35 @@ void pgsGirderModelFactory::BuildModel(IBroker* pBroker, IntervalIndexType inter
          {
             // Weed duplicates out. Should be blocked from code above
             ATLASSERT(false);
-            xsPOI.erase(leftIter);
+            vXSPoi.erase(leftIter);
             didErase = true;
          }
          else if (!leftIter->HasAttribute(POI_INTERMEDIATE_PIER) &&  !leftIter->HasAttribute(POI_BOUNDARY_PIER) && !leftIter->HasAttribute(POI_INTERMEDIATE_TEMPSUPPORT) )
          {
             rightIter->MergeAttributes(*leftIter);
-            xsPOI.erase(leftIter);
+            vXSPoi.erase(leftIter);
             didErase = true;
          }
          else if (!rightIter->HasAttribute(POI_INTERMEDIATE_PIER) &&  !rightIter->HasAttribute(POI_BOUNDARY_PIER) && !rightIter->HasAttribute(POI_INTERMEDIATE_TEMPSUPPORT) )
          {
             leftIter->MergeAttributes(*rightIter);
-            xsPOI.erase(rightIter);
+            vXSPoi.erase(rightIter);
             didErase = true;
          }
          else if (leftIter->HasAttribute(POI_SECTCHANGE_LEFTFACE) && rightIter->HasAttribute(POI_SECTCHANGE_RIGHTFACE))
          {
             leftIter->MergeAttributes(*rightIter);
-            xsPOI.erase(rightIter);
+            vXSPoi.erase(rightIter);
             didErase = true;
          }
       }
 
       if (didErase)
       {
-         leftIter = xsPOI.begin(); // inefficient, but have to restart to recoup left iterator in proper order
+         leftIter = std::begin(vXSPoi); // inefficient, but have to restart to recoup left iterator in proper order
          rightIter = leftIter;
          rightIter++;
+         end = std::end(vXSPoi);
       }
       else
       {
@@ -211,15 +217,13 @@ void pgsGirderModelFactory::BuildModel(IBroker* pBroker, IntervalIndexType inter
 
 
    // layout the joints
+   CComPtr<IFem2dJoint> jnt;
    bool bFoundLeftSupport(false), bFoundRightSupport(false);
    JointIDType jntID = 0;
    CComPtr<IFem2dJointCollection> joints;
    (*ppModel)->get_Joints(&joints);
-   std::vector<pgsPointOfInterest>::iterator jointIter(xsPOI.begin());
-   std::vector<pgsPointOfInterest>::iterator jointIterEnd(xsPOI.end());
-   for ( ; jointIter < jointIterEnd; jointIter++ )
+   for( const auto& poi : vXSPoi)
    {
-      pgsPointOfInterest& poi( *jointIter );
       Float64 Xpoi = poi.GetDistFromStart();
       if ( (!bDoModelLeftCantilever && (Xpoi < leftSupportLoc)) || 
            (!bDoModelRightCantilever && (rightSupportLoc < Xpoi)) )
@@ -229,7 +233,7 @@ void pgsGirderModelFactory::BuildModel(IBroker* pBroker, IntervalIndexType inter
          continue;
       }
 
-      CComPtr<IFem2dJoint> jnt;
+      jnt.Release();
       joints->Create(jntID++,Xpoi,0,&jnt);
 
       // set boundary conditions if this is a support joint
@@ -254,26 +258,30 @@ void pgsGirderModelFactory::BuildModel(IBroker* pBroker, IntervalIndexType inter
    GET_IFACE2(pBroker,ISectionProperties,pSectProp);
 
    // for consistancy with all structural analysis models, sections properties are based on the mid-span location of segments
-   std::vector<pgsPointOfInterest> vMyPoi( pPoi->GetPointsOfInterest(segmentKey,POI_RELEASED_SEGMENT | POI_5L) );
+   PoiList vMyPoi;
+   pPoi->GetPointsOfInterest(segmentKey, POI_5L | POI_RELEASED_SEGMENT, &vMyPoi);
    ATLASSERT( vMyPoi.size() == 1 );
-   pgsPointOfInterest spPoi = vMyPoi.front();
+   const pgsPointOfInterest& spPoi = vMyPoi.front();
    ATLASSERT(spPoi.IsMidSpan(POI_RELEASED_SEGMENT));
 
-   Float64 Ix = pSectProp->GetIx(intervalIdx,spPoi);
+   Float64 Ixx = pSectProp->GetIxx(intervalIdx, spPoi);
+   Float64 Iyy = pSectProp->GetIyy(intervalIdx, spPoi);
+   Float64 Ixy = pSectProp->GetIxy(intervalIdx, spPoi);
    Float64 Ag = pSectProp->GetAg(intervalIdx,spPoi);
-   Float64 EI = E*Ix;
+   Float64 EI = E*(Ixx*Iyy - Ixy*Ixy) / Iyy;
    Float64 EA = E*Ag;
 
    CComPtr<IFem2dMemberCollection> members;
    (*ppModel)->get_Members(&members);
 
+   CComPtr<IFem2dMember> member;
    MemberIDType mbrID = 0;
    JointIDType prevJntID = 0;
    jntID = prevJntID + 1;
-   std::vector<pgsPointOfInterest>::iterator prevJointIter( xsPOI.begin() );
-   jointIter = prevJointIter;
+   auto prevJointIter( vXSPoi.begin() );
+   auto jointIter = prevJointIter;
    jointIter++;
-   jointIterEnd = xsPOI.end();
+   auto jointIterEnd = vXSPoi.end();
    for ( ; jointIter < jointIterEnd; jointIter++, prevJointIter++ )
    {
       pgsPointOfInterest& prevPoi( *prevJointIter );
@@ -287,7 +295,7 @@ void pgsGirderModelFactory::BuildModel(IBroker* pBroker, IntervalIndexType inter
          continue;
       }
 
-      CComPtr<IFem2dMember> member;
+      member.Release();
       members->Create(mbrID++,prevJntID,jntID,EA,EI,&member);
 
       prevJntID++;
@@ -297,7 +305,7 @@ void pgsGirderModelFactory::BuildModel(IBroker* pBroker, IntervalIndexType inter
 
 void pgsGirderModelFactory::ApplyLoads(IBroker* pBroker,const CSegmentKey& segmentKey,Float64 segmentLength,
                                        Float64 leftSupportLoc,Float64 rightSupportLoc,Float64 E,LoadCaseIDType lcidGirder,
-                                       bool bModelLeftCantilever, bool bModelRightCantilever,const std::vector<pgsPointOfInterest>& vPOI,
+                                       bool bModelLeftCantilever, bool bModelRightCantilever,const PoiList& vPOI,
                                        IFem2dModel** ppModel)
 {
    // apply loads
@@ -324,16 +332,12 @@ void pgsGirderModelFactory::ApplyLoads(IBroker* pBroker,const CSegmentKey& segme
    
    MemberIDType mbrID = 0;
    LoadIDType loadID = 0;
-   std::vector<SegmentLoad>::iterator segLoadIter(segLoads.begin());
-   std::vector<SegmentLoad>::iterator segLoadIterEnd(segLoads.end());
-   for ( ; segLoadIter != segLoadIterEnd; segLoadIter++ )
+   for (const auto& segLoad : segLoads)
    {
-      SegmentLoad& segLoad = *segLoadIter;
-
-      Float64 wStart = segLoad.wStart;
-      Float64 wEnd   = segLoad.wEnd;
-      Float64 start  = segLoad.StartLoc;
-      Float64 end    = segLoad.EndLoc;
+      Float64 wStart = segLoad.Wstart;
+      Float64 wEnd   = segLoad.Wend;
+      Float64 start  = segLoad.Xstart;
+      Float64 end    = segLoad.Xend;
 
       if ( !bModelLeftCantilever && ::IsLT(start,leftSupportLoc) )
       {
@@ -361,22 +365,25 @@ void pgsGirderModelFactory::ApplyLoads(IBroker* pBroker,const CSegmentKey& segme
       FindMember(*ppModel,start,&mbrIDStart,&xStart);
       FindMember(*ppModel,end,  &mbrIDEnd,  &xEnd);
 
+      CComPtr<IFem2dDistributedLoad> distLoad;
       if ( mbrIDStart == mbrIDEnd )
       {
          // load is contained on a single member
-         CComPtr<IFem2dDistributedLoad> distLoad;
+         distLoad.Release();
          distributedLoads->Create(loadID++,mbrIDStart,loadDirFy,xStart,xEnd,wStart,wEnd,lotMember,&distLoad);
       }
       else
       {
          // load straddles two or more members
+         CComPtr<IFem2dMember> mbr;
+         CComPtr<IFem2dJoint> jntStart, jntEnd;
          for ( MemberIDType mbrID = mbrIDStart; mbrID <= mbrIDEnd; mbrID++ )
          {
             Float64 w1,w2; // start and end load intensity on this member
             Float64 x1,x2; // start and end load location from the start of this member
 
             Float64 Lmbr;
-            CComPtr<IFem2dMember> mbr;
+            mbr.Release();
             members->Find(mbrID,&mbr);
             mbr->get_Length(&Lmbr); 
 
@@ -384,7 +391,8 @@ void pgsGirderModelFactory::ApplyLoads(IBroker* pBroker,const CSegmentKey& segme
             mbr->get_StartJoint(&jntIDStart);
             mbr->get_EndJoint(&jntIDEnd);
 
-            CComPtr<IFem2dJoint> jntStart, jntEnd;
+            jntStart.Release();
+            jntEnd.Release();
             joints->Find(jntIDStart,&jntStart);
             joints->Find(jntIDEnd,  &jntEnd);
 
@@ -417,7 +425,7 @@ void pgsGirderModelFactory::ApplyLoads(IBroker* pBroker,const CSegmentKey& segme
             if ( !IsEqual(x1,x2) )
             {
                // no need to add the laod if its length is 0
-               CComPtr<IFem2dDistributedLoad> distLoad;
+               distLoad.Release();
                distributedLoads->Create(loadID++,mbrID,loadDirFy,x1,x2,w1,w2,lotMember,&distLoad);
             }
          }
@@ -429,12 +437,11 @@ void pgsGirderModelFactory::ApplyLoads(IBroker* pBroker,const CSegmentKey& segme
    loading->get_PointLoads(&pointLoads);
 
 
-   std::vector<DiaphragmLoad>::iterator diaLoadIter(diaphLoads.begin());
-   std::vector<DiaphragmLoad>::iterator diaLoadIterEnd(diaphLoads.end());
-   for ( ; diaLoadIter != diaLoadIterEnd; diaLoadIter++ )
+   CComPtr<IFem2dJoint> prevJoint, nextJoint;
+   CComPtr<IFem2dPointLoad> pointLoad;
+   for(const auto& diaphragmLoad : diaphLoads)
    {
-      Float64 x;
-      DiaphragmLoad& diaphragmLoad = *diaLoadIter;
+      Float64 x = 0;
 
       mbrID = 0;
       bool bApplyLoad = false;
@@ -443,7 +450,8 @@ void pgsGirderModelFactory::ApplyLoads(IBroker* pBroker,const CSegmentKey& segme
       joints->get_Count(&nJoints);
       for ( CollectionIndexType jntIdx = 1; jntIdx < nJoints; jntIdx++, mbrID++ )
       {
-         CComPtr<IFem2dJoint> prevJoint, nextJoint;
+         prevJoint.Release();
+         nextJoint.Release();
          joints->get_Item(jntIdx-1,&prevJoint);
          joints->get_Item(jntIdx,&nextJoint);
 
@@ -469,7 +477,7 @@ void pgsGirderModelFactory::ApplyLoads(IBroker* pBroker,const CSegmentKey& segme
 
       if ( bApplyLoad )
       {
-         CComPtr<IFem2dPointLoad> pointLoad;
+         pointLoad.Release();
          pointLoads->Create(loadID++,mbrID,x,0,diaphragmLoad.Load,0,lotMember,&pointLoad);
       }
    }
@@ -477,16 +485,16 @@ void pgsGirderModelFactory::ApplyLoads(IBroker* pBroker,const CSegmentKey& segme
 
 void pgsGirderModelFactory::ApplyPointsOfInterest(IBroker* pBroker,const CSegmentKey& segmentKey,
                                                   Float64 leftSupportLoc,Float64 rightSupportLoc,Float64 E,LoadCaseIDType lcidGirder,
-                                                  bool bModelLeftCantilever, bool bModelRightCantilever,const std::vector<pgsPointOfInterest>& vPOI,
+                                                  bool bModelLeftCantilever, bool bModelRightCantilever,const PoiList& vPOI,
                                                   IFem2dModel** ppModel,pgsPoiPairMap* pPoiMap)
 {
    // layout poi on fem model
    pPoiMap->Clear();
-   std::vector<PoiIDPairType> poiIDs = pgsGirderModelFactory::AddPointsOfInterest(*ppModel,vPOI);
-   std::vector<PoiIDPairType>::iterator poiIDiter(poiIDs.begin());
-   std::vector<PoiIDPairType>::iterator poiIDiterEnd(poiIDs.end());
-   std::vector<pgsPointOfInterest>::const_iterator poiIter(vPOI.begin());
-   std::vector<pgsPointOfInterest>::const_iterator poiIterEnd(vPOI.end());
+   auto poiIDs = pgsGirderModelFactory::AddPointsOfInterest(*ppModel,vPOI);
+   auto poiIDiter(poiIDs.cbegin());
+   auto poiIDiterEnd(poiIDs.cend());
+   auto poiIter(vPOI.cbegin());
+   auto poiIterEnd(vPOI.cend());
    for ( ; poiIDiter != poiIDiterEnd && poiIter != poiIterEnd; poiIDiter++, poiIter++ )
    {
       pPoiMap->AddMap(*poiIter,*poiIDiter);
@@ -508,14 +516,16 @@ void pgsGirderModelFactory::FindMember(IFem2dModel* pModel,Float64 distFromStart
    members->get__EnumElements(&enumMembers);
 
    CollectionIndexType idx = 0;
+   CComPtr<IFem2dJoint> j1, j2;
    CComPtr<IFem2dMember> mbr;
    while ( enumMembers->Next(1,&mbr,nullptr) != S_FALSE )
    {
-      CComPtr<IFem2dJoint> j1, j2;
       JointIDType jntID1, jntID2;
       mbr->get_StartJoint(&jntID1);
       mbr->get_EndJoint(&jntID2);
 
+      j1.Release();
+      j2.Release();
       joints->Find(jntID1,&j1);
       joints->Find(jntID2,&j2);
 
@@ -573,9 +583,10 @@ PoiIDPairType pgsGirderModelFactory::AddPointOfInterest(IFem2dModel* pModel,cons
    Float64 poi_dist_from_start = poi.GetDistFromStart();
 
    bool is_dual_pois = false; // if poi straddles a support location, add fem pois at either side
+   CComPtr<IFem2dJoint> jnt;
    for ( ; jntIdx < nJoints; jntIdx++, mbrID++ )
    {
-      CComPtr<IFem2dJoint> jnt;
+      jnt.Release();
       joints->get_Item(jntIdx,&jnt);
       Float64 location;
       jnt->get_X(&location);
@@ -640,7 +651,7 @@ PoiIDPairType pgsGirderModelFactory::AddPointOfInterest(IFem2dModel* pModel,cons
    joints->get_Item(nJoints-1,&rgtjnt);
    rgtjnt->get_X(&location);
 
-   if (poi_dist_from_start > location)
+   if (location < poi_dist_from_start)
    {
       VARIANT_BOOL is_support;
       rgtjnt->IsSupport(&is_support);
@@ -659,15 +670,12 @@ PoiIDPairType pgsGirderModelFactory::AddPointOfInterest(IFem2dModel* pModel,cons
    return PoiIDPairType(INVALID_ID,INVALID_ID);
 }
 
-std::vector<PoiIDPairType> pgsGirderModelFactory::AddPointsOfInterest(IFem2dModel* pModel,const std::vector<pgsPointOfInterest>& vPOI)
+std::vector<PoiIDPairType> pgsGirderModelFactory::AddPointsOfInterest(IFem2dModel* pModel,const PoiList& vPoi)
 {
    std::vector<PoiIDPairType> femIDs;
 
-   std::vector<pgsPointOfInterest>::const_iterator i(vPOI.begin());
-   std::vector<pgsPointOfInterest>::const_iterator end(vPOI.end());
-   for ( ; i != end; i++)
+   for(const pgsPointOfInterest& poi : vPoi)
    {
-      const pgsPointOfInterest& poi = *i;
       femIDs.push_back(pgsGirderModelFactory::AddPointOfInterest(pModel,poi));
    }
 
@@ -689,7 +697,7 @@ pgsKdotHaulingGirderModelFactory::~pgsKdotHaulingGirderModelFactory(void)
 void pgsKdotHaulingGirderModelFactory::ApplyLoads(IBroker* pBroker,const CSegmentKey& segmentKey,Float64 segmentLength,
                                                   Float64 leftSupportLoc,Float64 rightSupportLoc,Float64 E,
                                                   LoadCaseIDType lcidGirder,bool bModelLeftCantilever, bool bModelRightCantilever,
-                                                  const std::vector<pgsPointOfInterest>& vPOI,IFem2dModel** ppModel)
+                                                  const PoiList& vPOI,IFem2dModel** ppModel)
 {
    ATLASSERT(bModelLeftCantilever && bModelRightCantilever); // kdot method should always include cantilevers
 
@@ -723,10 +731,10 @@ void pgsKdotHaulingGirderModelFactory::ApplyLoads(IBroker* pBroker,const CSegmen
    {
       SegmentLoad& segLoad = *segLoadIter;
 
-      Float64 wStart = segLoad.wStart;
-      Float64 wEnd   = segLoad.wEnd;
-      Float64 start  = segLoad.StartLoc;
-      Float64 end    = segLoad.EndLoc;
+      Float64 wStart = segLoad.Wstart;
+      Float64 wEnd   = segLoad.Wend;
+      Float64 start  = segLoad.Xstart;
+      Float64 end    = segLoad.Xend;
 
       // apply the loading
       MemberIDType mbrIDStart; // member ID at the start of the load
@@ -828,7 +836,7 @@ pgsDesignHaunchLoadGirderModelFactory::~pgsDesignHaunchLoadGirderModelFactory(vo
 void pgsDesignHaunchLoadGirderModelFactory::ApplyLoads(IBroker* pBroker,const CSegmentKey& segmentKey,Float64 segmentLength,
                                                   Float64 leftSupportLoc,Float64 rightSupportLoc,Float64 E,
                                                   LoadCaseIDType lcidGirder,bool bModelLeftCantilever, bool bModelRightCantilever,
-                                                  const std::vector<pgsPointOfInterest>& vPOI,IFem2dModel** ppModel)
+                                                  const PoiList& vPOI,IFem2dModel** ppModel)
 {
    // apply  loads
    // We dont need girder self weight, so don't use it
@@ -863,6 +871,7 @@ void pgsDesignHaunchLoadGirderModelFactory::ApplyLoads(IBroker* pBroker,const CS
    Float64 wslabPadStart = startSlabLoad.PadLoad;
    slabLoadIter++;
 
+   CComPtr<IFem2dDistributedLoad> slabDistLoad, slabPadDistLoad;
    for ( ; slabLoadIter != slabLoadIterEnd; slabLoadIter++ )
    {
       SlabLoad& slabLoad = *slabLoadIter;
@@ -903,20 +912,23 @@ void pgsDesignHaunchLoadGirderModelFactory::ApplyLoads(IBroker* pBroker,const CS
       if ( mbrIDStart == mbrIDEnd )
       {
          // load is contained on a single member and is all interior
-         CComPtr<IFem2dDistributedLoad> slabDistLoad, slabPadDistLoad;
+         slabDistLoad.Release();
+         slabPadDistLoad.Release();
          slabDistributedLoads->Create(   loadID++,mbrIDStart,loadDirFy,xStart,xEnd,wslabStart,   wslabEnd,   lotMember,&slabDistLoad);
          slabPadDistributedLoads->Create(loadID++,mbrIDStart,loadDirFy,xStart,xEnd,wslabPadStart,wslabPadEnd,lotMember,&slabPadDistLoad);
       }
       else
       {
          // load straddles two or more members
+         CComPtr<IFem2dMember> mbr;
+         CComPtr<IFem2dJoint> jntStart, jntEnd;
          for ( MemberIDType mbrID = mbrIDStart; mbrID <= mbrIDEnd; mbrID++ )
          {
             Float64 wsl1, wsl2, wsp1, wsp2; // start and end load intensity of slab and slab pad on this member
             Float64 x1,x2; // start and end load location from the start of this member
 
             Float64 Lmbr;
-            CComPtr<IFem2dMember> mbr;
+            mbr.Release();
             members->Find(mbrID,&mbr);
             mbr->get_Length(&Lmbr); 
 
@@ -924,7 +936,8 @@ void pgsDesignHaunchLoadGirderModelFactory::ApplyLoads(IBroker* pBroker,const CS
             mbr->get_StartJoint(&jntIDStart);
             mbr->get_EndJoint(&jntIDEnd);
 
-            CComPtr<IFem2dJoint> jntStart, jntEnd;
+            jntStart.Release();
+            jntEnd.Release();
             joints->Find(jntIDStart,&jntStart);
             joints->Find(jntIDEnd,  &jntEnd);
 
@@ -959,7 +972,8 @@ void pgsDesignHaunchLoadGirderModelFactory::ApplyLoads(IBroker* pBroker,const CS
             }
 
 
-            CComPtr<IFem2dDistributedLoad> slabDistLoad, slabPadDistLoad;
+            slabDistLoad.Release();
+            slabPadDistLoad.Release();
             slabDistributedLoads->Create(   loadID++,mbrID,loadDirFy,x1,x2,wsl1,wsl2,lotMember,&slabDistLoad);
             slabPadDistributedLoads->Create(loadID++,mbrID,loadDirFy,x1,x2,wsp1,wsp2,lotMember,&slabPadDistLoad);
          }

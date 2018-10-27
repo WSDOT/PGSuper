@@ -76,6 +76,7 @@ void CStrandEccentricities::Build(rptChapter* pChapter,IBroker* pBroker,const CS
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
    GET_IFACE2(pBroker,IBridge,pBridge);
+
    GroupIndexType nGroups = pBridge->GetGirderGroupCount();
    GroupIndexType firstGroupIdx = (segmentKey.groupIndex == ALL_GROUPS ? 0 : segmentKey.groupIndex);
    GroupIndexType lastGroupIdx  = (segmentKey.groupIndex == ALL_GROUPS ? nGroups-1 : firstGroupIdx);
@@ -123,17 +124,13 @@ void CStrandEccentricities::Build(rptChapter* pChapter,IBroker* pBroker,const CS
                *p << _T("Eccentricities are based on the net non-composite girder section") << rptNewLine;
             }
             *p << _T("Eccentricities measured from neutral axis of non-composite section based on material properties at time of prestress release") << rptNewLine;
-            *p << _T("Positive values indicate strands are below the neutral axis") << rptNewLine;
+
+            if (pBridge->HasAsymmetricGirders())
+            {
+               *p << _T("Positive ") << Sub2(_T("e"), _T("x")) << _T(" values indicate strands are to the left of the centroid") << rptNewLine;
+            }
+            *p << _T("Positive ") << Sub2(_T("e"), _T("y")) << _T(" values indicate strands are below the centroid") << rptNewLine;
             *p << rptNewLine;
-
-            //p = new rptParagraph;
-            //*pChapter << p;
-
-            //*p << _T("Overall Length = ") << length.SetValue( pBridge->GetSegmentLength(thisSegmentKey) ) << rptNewLine;
-            //*p << _T("Span Length = ") << length.SetValue( pBridge->GetSegmentSpanLength(thisSegmentKey) )<<_T(" (CL Bearing to CL Bearing)") << rptNewLine;
-            //*p << _T("Left End Distance = ") << length.SetValue( pBridge->GetSegmentStartEndDistance(thisSegmentKey) )<<_T(" (Overhang, CL Bearing to End of Girder, Measured Along Girder)") << rptNewLine;
-            //*p << _T("Right End Distance = ") << length.SetValue( pBridge->GetSegmentEndEndDistance(thisSegmentKey) )<<_T(" (Overhang, CL Bearing to End of Girder, Measured Along Girder)") << rptNewLine;
-            //*p << rptNewLine;
          }
       }
    }

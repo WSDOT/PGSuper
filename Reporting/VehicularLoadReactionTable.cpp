@@ -169,7 +169,7 @@ rptRcTable* CVehicularLoadReactionTable::Build(IBroker* pBroker,const CGirderKey
 
    // Get POI at start and end of the span
    GET_IFACE2(pBroker,IPointOfInterest,pPOI);
-   std::vector<pgsPointOfInterest> vPoi;
+   PoiList vPoi;
    for ( GroupIndexType grpIdx = startGroupIdx; grpIdx <= endGroupIdx; grpIdx++ )
    {
       GirderIndexType nGirders = pBridge->GetGirderCount(grpIdx);
@@ -178,12 +178,10 @@ rptRcTable* CVehicularLoadReactionTable::Build(IBroker* pBroker,const CGirderKey
       for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
       {
          CSegmentKey segmentKey(grpIdx,gdrIdx,segIdx);
-         std::vector<pgsPointOfInterest> segPoi1(pPOI->GetPointsOfInterest(segmentKey,POI_ERECTED_SEGMENT | POI_0L, POIFIND_AND));
-         std::vector<pgsPointOfInterest> segPoi2(pPOI->GetPointsOfInterest(segmentKey,POI_ERECTED_SEGMENT | POI_10L,POIFIND_AND));
-         ATLASSERT(segPoi1.size() == 1);
-         ATLASSERT(segPoi2.size() == 1);
-         vPoi.push_back(segPoi1.front());
-         vPoi.push_back(segPoi2.front());
+         PoiList vSegPoi;
+         pPOI->GetPointsOfInterest(segmentKey, POI_0L | POI_10L | POI_ERECTED_SEGMENT, &vSegPoi);
+         ATLASSERT(vSegPoi.size() == 2);
+         vPoi.insert(vPoi.end(), vSegPoi.begin(), vSegPoi.end());
       }
    }
 
@@ -210,7 +208,7 @@ rptRcTable* CVehicularLoadReactionTable::Build(IBroker* pBroker,const CGirderKey
       IntervalIndexType intervalIdx = (IsRatingLiveLoad(llType) ? pIntervals->GetLoadRatingInterval() : pIntervals->GetLiveLoadInterval() );
 
       col = 0;
-      pgsPointOfInterest& poi = vPoi[pier-startPierIdx];
+      const pgsPointOfInterest& poi = vPoi[pier-startPierIdx];
 
       if ( pPier->IsAbutment() )
       {

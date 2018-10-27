@@ -272,6 +272,7 @@ public:
    void SetUserEc(Float64 Ec);
    void SetUserEci(Float64 Eci);
 
+   void SetTemporaryStrandUsage(pgsTypes::TTSUsage usage);
    pgsTypes::TTSUsage GetTemporaryStrandUsage() const;
 
    // Functions to create primary segment data structures
@@ -316,6 +317,8 @@ private:
    CSegmentKey m_SegmentKey;
 
    arDesignOptions m_DesignOptions;
+
+   pgsTypes::TTSUsage m_TTSUsage;
 
    StrandIndexType   m_Ns;
    StrandIndexType   m_Nh;

@@ -46,10 +46,12 @@ struct IPsLossEngineer;
 struct IBroker;
 
 interface IShape;
+interface ISuperstructureMemberSegment;
+interface IGirderSection;
+interface IStrandMover;
 
-struct ISuperstructureMember;
-struct IGirderSection;
-struct IStrandMover;
+class CBridgeDescription2;
+class GirderLibraryEntry;
 
 // In order for PGSuper 2.x to work on the same computer as PGSuper 3.x we
 // had to change all the Class IDs of the beam factories. Files saved with
@@ -94,17 +96,21 @@ interface IBeamFactory : IUnknown
    // Creates a new girder section using the supplied dimensions.
    // The overall height and top flange height parameters alter the dimensions of the section
    // Use -1 to use the actual dimensions. These parameters are typically used for spliced girders
-   virtual void CreateGirderSection(IBroker* pBroker,StatusGroupIDType statusGroupID,const IBeamFactory::Dimensions& dimensions,Float64 overallHeight,Float64 bottomFlangeHeight,IGirderSection** ppSection) = 0;
+   virtual void CreateGirderSection(IBroker* pBroker,StatusGroupIDType statusGroupID,const IBeamFactory::Dimensions& dimensions,Float64 overallHeight,Float64 bottomFlangeHeight,IGirderSection** ppSection) const = 0;
 
    //---------------------------------------------------------------------------------
    // Creates a new girder profile shape using the supplied dimensions
    // This shape is used to draw the girder in profile (elevation)
-   virtual void CreateGirderProfile(IBroker* pBroker,StatusGroupIDType statusGroupID,const CSegmentKey& segmentKey,const IBeamFactory::Dimensions& dimensions,IShape** ppShape) = 0;
+   virtual void CreateGirderProfile(IBroker* pBroker,StatusGroupIDType statusGroupID,const CSegmentKey& segmentKey,const IBeamFactory::Dimensions& dimensions,IShape** ppShape) const = 0;
 
    //---------------------------------------------------------------------------------
    // Lays out the girder along the given superstructure member. This function must
-   // create the segments that describe the girder line
-   virtual void CreateSegment(IBroker* pBroker,StatusGroupIDType statusGroupID,const CSegmentKey& segmentKey,ISuperstructureMember* ssmbr) = 0;
+   // create the segments that describe the girder line... ConfigureSegment will then be called to do the actual configuration
+   virtual void CreateSegment(IBroker* pBroker, StatusGroupIDType statusGroupID, const CSegmentKey& segmentKey, ISuperstructureMemberSegment** ppSSMbrSegment) const = 0;
+
+   //---------------------------------------------------------------------------------
+   // Configures the segment including cross section and material models... called after CreateSegment is called
+   virtual void ConfigureSegment(IBroker* pBroker, StatusGroupIDType statusGroupID, const CSegmentKey& segmentKey, ISuperstructureMemberSegment* pSSMbrSegment) const = 0;
 
    //---------------------------------------------------------------------------------
    // Adds Points of interest at all cross section changes.
@@ -115,7 +121,7 @@ interface IBeamFactory : IUnknown
    // For the casting yard POIs, put at least one poi at the start and end of the girder. 
    // For the bridge site POIs, put at least one poi at the stand and end bearings. DO NOT put bridge site POIs
    // before or after the girder bearings
-   virtual void LayoutSectionChangePointsOfInterest(IBroker* pBroker,const CSegmentKey& segmentKey,pgsPoiMgr* pPoiMgr) = 0;
+   virtual void LayoutSectionChangePointsOfInterest(IBroker* pBroker,const CSegmentKey& segmentKey,pgsPoiMgr* pPoiMgr) const = 0;
 
    //---------------------------------------------------------------------------------
    // Creates an object that implements the IDistFactorEngineer interface. The returned
@@ -124,7 +130,7 @@ interface IBeamFactory : IUnknown
    // Implementation Note: You must call SetBroker on the newly create object and supply
    // it with the pointer to the broker object provided by the caller.
    // const pointers have valid values to be used if non-nullptr
-   virtual void CreateDistFactorEngineer(IBroker* pBroker,StatusGroupIDType statusGroupID,const pgsTypes::SupportedBeamSpacing* pSpacingType, const pgsTypes::SupportedDeckType* pDeckType, const pgsTypes::AdjacentTransverseConnectivity* pConnect,IDistFactorEngineer** ppEng) = 0;
+   virtual void CreateDistFactorEngineer(IBroker* pBroker,StatusGroupIDType statusGroupID,const pgsTypes::SupportedBeamSpacing* pSpacingType, const pgsTypes::SupportedDeckType* pDeckType, const pgsTypes::AdjacentTransverseConnectivity* pConnect,IDistFactorEngineer** ppEng) const = 0;
 
    //---------------------------------------------------------------------------------
    // Creates an object that implements the IPsLossEngineer interface. The returned
@@ -132,7 +138,7 @@ interface IBeamFactory : IUnknown
    //
    // Implementation Note: You must call SetBroker on the newly create object and supply
    // it with the pointer to the broker object provided by the caller.
-   virtual void CreatePsLossEngineer(IBroker* pBroker,StatusGroupIDType statusGroupID,const CGirderKey& girderKey,IPsLossEngineer** ppEng) = 0;
+   virtual void CreatePsLossEngineer(IBroker* pBroker,StatusGroupIDType statusGroupID,const CGirderKey& girderKey,IPsLossEngineer** ppEng) const = 0;
 
    //---------------------------------------------------------------------------------
    // The StrandMover object knows how to move harped strands within the section when
@@ -143,153 +149,201 @@ interface IBeamFactory : IUnknown
    virtual void CreateStrandMover(const IBeamFactory::Dimensions& dimensions, Float64 Hg,
                                   IBeamFactory::BeamFace endTopFace, Float64 endTopLimit, IBeamFactory::BeamFace endBottomFace, Float64 endBottomLimit, 
                                   IBeamFactory::BeamFace hpTopFace, Float64 hpTopLimit, IBeamFactory::BeamFace hpBottomFace, Float64 hpBottomLimit, 
-                                  Float64 endIncrement, Float64 hpIncrement, IStrandMover** strandMover) = 0;
+                                  Float64 endIncrement, Float64 hpIncrement, IStrandMover** strandMover) const = 0;
 
    //---------------------------------------------------------------------------------
    // Returns a vector of strings representing the names of the dimensions that are used
    // to describe the cross section.
-   virtual std::vector<std::_tstring> GetDimensionNames() = 0;
+   virtual const std::vector<std::_tstring>& GetDimensionNames() const = 0;
 
    //---------------------------------------------------------------------------------
    // Returns a vector of length unit objects representing the units of measure of each
    // dimenions. If an item in the vector is nullptr, the dimension is a scalar.
-   virtual std::vector<const unitLength*> GetDimensionUnits(bool bSIUnits) = 0;
+   virtual const std::vector<const unitLength*>& GetDimensionUnits(bool bSIUnits) const = 0;
 
    //---------------------------------------------------------------------------------
    // Returns a defaults for the dimensions. Values are order to match the vector returned by
    // GetDimensionNames
-   virtual std::vector<Float64> GetDefaultDimensions() = 0;
+   virtual const std::vector<Float64>& GetDefaultDimensions() const = 0;
 
    //---------------------------------------------------------------------------------
    // Validates the dimensions. Return true if the dimensions are OK, otherwise false.
    // Return an error message through the strErrMsg pointer. If the error message
    // contains values, use the unit object to convert the value to display units and
    // append the appropreate unit tag
-   virtual bool ValidateDimensions(const IBeamFactory::Dimensions& dimensions,bool bSIUnits,std::_tstring* strErrMsg) = 0;
+   virtual bool ValidateDimensions(const IBeamFactory::Dimensions& dimensions,bool bSIUnits,std::_tstring* strErrMsg) const = 0;
 
    //---------------------------------------------------------------------------------
    // Saves the section dimensions to the storage unit
-   virtual void SaveSectionDimensions(sysIStructuredSave* pSave,const IBeamFactory::Dimensions& dimensions) = 0;
+   virtual void SaveSectionDimensions(sysIStructuredSave* pSave,const IBeamFactory::Dimensions& dimensions) const = 0;
 
    //---------------------------------------------------------------------------------
    // Load the section dimensions from the storage unit
-   virtual IBeamFactory::Dimensions LoadSectionDimensions(sysIStructuredLoad* pLoad) = 0;
+   virtual IBeamFactory::Dimensions LoadSectionDimensions(sysIStructuredLoad* pLoad) const = 0;
 
    //---------------------------------------------------------------------------------
    // Returns true if the non-composite beam section is prismatic
-   virtual bool IsPrismatic(const IBeamFactory::Dimensions& dimensions) = 0;
+   virtual bool IsPrismatic(const IBeamFactory::Dimensions& dimensions) const = 0;
+
+   //---------------------------------------------------------------------------------
+   // Returns true if the non-composite beam section is prismatic
+   virtual bool IsPrismatic(const CSegmentKey& segmentKey) const = 0;
 
    //---------------------------------------------------------------------------------
    // Returns true of the non-composite beam is longitudinally symmetric about its mid-point
-   virtual bool IsSymmetric(const IBeamFactory::Dimensions& dimensions) = 0;
+   virtual bool IsSymmetric(const CSegmentKey& segmentKey) const = 0;
 
    //---------------------------------------------------------------------------------
    // Returns the interal surface area of voids within the member
-   virtual Float64 GetInternalSurfaceAreaOfVoids(IBroker* pBroker,const CSegmentKey& segmentKey) = 0;
+   virtual Float64 GetInternalSurfaceAreaOfVoids(IBroker* pBroker,const CSegmentKey& segmentKey) const = 0;
 
    //---------------------------------------------------------------------------------
    // Returns the name of an image file that will be used in reports when the
    // cross section dimensions are reported. The image file must be in the same
    // directory as PGSuper.exe
-   virtual std::_tstring GetImage() = 0;
+   virtual std::_tstring GetImage() const = 0;
 
-   virtual std::_tstring GetSlabDimensionsImage(pgsTypes::SupportedDeckType deckType) = 0;
-   virtual std::_tstring GetPositiveMomentCapacitySchematicImage(pgsTypes::SupportedDeckType deckType) = 0;
-   virtual std::_tstring GetNegativeMomentCapacitySchematicImage(pgsTypes::SupportedDeckType deckType) = 0;
-   virtual std::_tstring GetShearDimensionsSchematicImage(pgsTypes::SupportedDeckType deckType) = 0;
-   virtual std::_tstring GetInteriorGirderEffectiveFlangeWidthImage(IBroker* pBroker,pgsTypes::SupportedDeckType deckType) = 0;
-   virtual std::_tstring GetExteriorGirderEffectiveFlangeWidthImage(IBroker* pBroker,pgsTypes::SupportedDeckType deckType) = 0;
+   virtual std::_tstring GetSlabDimensionsImage(pgsTypes::SupportedDeckType deckType) const = 0;
+   virtual std::_tstring GetPositiveMomentCapacitySchematicImage(pgsTypes::SupportedDeckType deckType) const = 0;
+   virtual std::_tstring GetNegativeMomentCapacitySchematicImage(pgsTypes::SupportedDeckType deckType) const = 0;
+   virtual std::_tstring GetShearDimensionsSchematicImage(pgsTypes::SupportedDeckType deckType) const = 0;
+   virtual std::_tstring GetInteriorGirderEffectiveFlangeWidthImage(IBroker* pBroker,pgsTypes::SupportedDeckType deckType) const = 0;
+   virtual std::_tstring GetExteriorGirderEffectiveFlangeWidthImage(IBroker* pBroker,pgsTypes::SupportedDeckType deckType) const = 0;
 
    //---------------------------------------------------------------------------------
    // Returns the class identifier for the beam factory
-   virtual CLSID GetCLSID() = 0;
+   virtual CLSID GetCLSID() const = 0;
 
    //---------------------------------------------------------------------------------
    // Returns a name string that identifies this beam factory
    // this is not guarenteed to be unique
-   virtual std::_tstring GetName() = 0;
+   virtual std::_tstring GetName() const = 0;
 
    //---------------------------------------------------------------------------------
    // Returns the class identifier for the beam family
-   virtual CLSID GetFamilyCLSID() = 0;
+   virtual CLSID GetFamilyCLSID() const = 0;
 
    //---------------------------------------------------------------------------------
    // Returns a name string that identifies the general type of beam
    // this is not guarenteed to be unique
-   virtual std::_tstring GetGirderFamilyName() = 0;
+   virtual std::_tstring GetGirderFamilyName() const = 0;
 
    //---------------------------------------------------------------------------------
    // Returns the name of the company, organization, and/or person that published the
    // beam factory
-   virtual std::_tstring GetPublisher() = 0;
+   virtual std::_tstring GetPublisher() const = 0;
 
    // Returns contact information for the beam factory publisher. This
    // information is prented to the user if there is an error creating the factory
-   virtual std::_tstring GetPublisherContactInformation() = 0;
+   virtual std::_tstring GetPublisherContactInformation() const = 0;
 
    //---------------------------------------------------------------------------------
    // Returns the instance handle for resources
-   virtual HINSTANCE GetResourceInstance() = 0;
+   virtual HINSTANCE GetResourceInstance() const = 0;
 
    //---------------------------------------------------------------------------------
    // Returns the string name of the image resource that is used in the girder
    // library entry dialog. This resource must be an enhanced meta file.
    // Height and Width of the image must be equal
-   virtual LPCTSTR GetImageResourceName() = 0;
+   virtual LPCTSTR GetImageResourceName() const = 0;
 
    //---------------------------------------------------------------------------------
    // Returns the icon associated with the beam type
    // Icon should support both 16x16 and 32x32 formates
-   virtual HICON GetIcon() = 0;
+   virtual HICON GetIcon() const = 0;
 
    //---------------------------------------------------------------------------------
    // Returns the deck types that may be used with a giving spacing type
-   virtual pgsTypes::SupportedDeckTypes GetSupportedDeckTypes(pgsTypes::SupportedBeamSpacing sbs) = 0;
+   virtual pgsTypes::SupportedDeckTypes GetSupportedDeckTypes(pgsTypes::SupportedBeamSpacing sbs) const = 0;
    
    //---------------------------------------------------------------------------------
    // Returns all of methods of beam spacing measurement, supported by this beam
-   virtual pgsTypes::SupportedBeamSpacings GetSupportedBeamSpacings() = 0;
-   
+   virtual pgsTypes::SupportedBeamSpacings GetSupportedBeamSpacings() const = 0;
+
+   //---------------------------------------------------------------------------------
+   // Returns true if spacingType is supported by this beam
+   virtual bool IsSupportedBeamSpacing(pgsTypes::SupportedBeamSpacing spacingType) const = 0;
+
+   //---------------------------------------------------------------------------------
+   // Converts an unsupported spacing type and spacing to a supported type. Returns true if successful.
+   // This method is generally used to convert spacing type and spacing when a beam type is updated (this happened with Bulb Tee girders)
+   virtual bool ConvertBeamSpacing(const IBeamFactory::Dimensions& dimensions,pgsTypes::SupportedBeamSpacing spacingType, Float64 spacing, pgsTypes::SupportedBeamSpacing* pNewSpacingType, Float64* pNewSpacing, Float64* pNewTopWidth) const = 0;
+
+   //---------------------------------------------------------------------------------
+   // Returns all of the girder orientations types supported by this girder
+   virtual std::vector<pgsTypes::GirderOrientationType> GetSupportedGirderOrientation() const = 0;
+   virtual bool IsSupportedGirderOrientation(pgsTypes::GirderOrientationType orientation) const = 0;
+   virtual pgsTypes::GirderOrientationType ConvertGirderOrientation(pgsTypes::GirderOrientationType orientation) const = 0;
+
    //---------------------------------------------------------------------------------
    // Returns all of methods of intermediate diaphragms, supported by this beam
    // if the vector is empty, the beam doesn't support diaphragms
-   virtual pgsTypes::SupportedDiaphragmTypes GetSupportedDiaphragms() = 0;
+   virtual pgsTypes::SupportedDiaphragmTypes GetSupportedDiaphragms() const = 0;
 
    //---------------------------------------------------------------------------------
    // Returns all the types of intermediate diaphragm locations for a specified diaphragm type
    // supported by this beam
-   virtual pgsTypes::SupportedDiaphragmLocationTypes GetSupportedDiaphragmLocations(pgsTypes::DiaphragmType type) = 0;
+   virtual pgsTypes::SupportedDiaphragmLocationTypes GetSupportedDiaphragmLocations(pgsTypes::DiaphragmType type) const = 0;
 
    //---------------------------------------------------------------------------------
    // Returns allowable spacing distances for the given deck and spacing type.
    // Max spacing will be MAX_GIRDER_SPACING of no range is specified
    // Spacing is measured normal to the centerline of a typical girder
-   virtual void GetAllowableSpacingRange(const IBeamFactory::Dimensions& dimensions, pgsTypes::SupportedDeckType sdt, pgsTypes::SupportedBeamSpacing sbs, Float64* minSpacing, Float64* maxSpacing) = 0;
+   virtual void GetAllowableSpacingRange(const IBeamFactory::Dimensions& dimensions, pgsTypes::SupportedDeckType sdt, pgsTypes::SupportedBeamSpacing sbs, Float64* minSpacing, Float64* maxSpacing) const = 0;
+
+   //---------------------------------------------------------------------------------
+   // Returns the top width types that are supported.Only applicable
+   // when the girder spacing type requires top width as input (pgsTypes::sbsUniformAdjacentWithTopWidth or pgsTypes::sbsGeneralAdjacentWithTopWidth)
+   virtual std::vector<pgsTypes::TopWidthType> GetSupportedTopWidthTypes() const = 0;
+
+   //---------------------------------------------------------------------------------
+   // Returns the allowable range for the top width of this girder. Only applicable
+   // when the girder spacing type requires top width as input (pgsTypes::sbsUniformAdjacentWithTopWidth or pgsTypes::sbsGeneralAdjacentWithTopWidth)
+   virtual void GetAllowableTopWidthRange(const IBeamFactory::Dimensions& dimensions, Float64* pWmin, Float64* pWmax) const = 0;
+
+   //---------------------------------------------------------------------------------
+   // Returns true if the top width can vary. Only applicable if girder supports a top width type
+   virtual bool CanTopWidthVary() const = 0;
 
    //---------------------------------------------------------------------------------
    // Returns the number of webs that the section has
-   virtual WebIndexType GetWebCount(const IBeamFactory::Dimensions& dimensions) = 0;
+   virtual WebIndexType GetWebCount(const IBeamFactory::Dimensions& dimensions) const = 0;
 
    //---------------------------------------------------------------------------------
    // Returns the height of the beam at the specified end
-   virtual Float64 GetBeamHeight(const IBeamFactory::Dimensions& dimensions,pgsTypes::MemberEndType endType) = 0;
+   virtual Float64 GetBeamHeight(const IBeamFactory::Dimensions& dimensions,pgsTypes::MemberEndType endType) const = 0;
 
    //---------------------------------------------------------------------------------
    // Returns the width of the beam at the specified end
-   virtual Float64 GetBeamWidth(const IBeamFactory::Dimensions& dimensions,pgsTypes::MemberEndType endType) = 0;
+   virtual Float64 GetBeamWidth(const IBeamFactory::Dimensions& dimensions,pgsTypes::MemberEndType endType) const = 0;
 
    //---------------------------------------------------------------------------------
    // Shear key.
    // Area comes in two parts: first is contant for any spacing, second is factor to multiply by spacing
-   virtual bool IsShearKey(const IBeamFactory::Dimensions& dimensions, pgsTypes::SupportedBeamSpacing spacingType)=0;
-   virtual void GetShearKeyAreas(const IBeamFactory::Dimensions& dimensions, pgsTypes::SupportedBeamSpacing spacingType,Float64* uniformArea, Float64* areaPerJoint)=0;
+   virtual bool IsShearKey(const IBeamFactory::Dimensions& dimensions, pgsTypes::SupportedBeamSpacing spacingType) const = 0;
+   virtual void GetShearKeyAreas(const IBeamFactory::Dimensions& dimensions, pgsTypes::SupportedBeamSpacing spacingType,Float64* uniformArea, Float64* areaPerJoint) const = 0;
+
+   //---------------------------------------------------------------------------------
+   // Longitudinal Joint information
+   // returns true if the beam supports longitudinal joints
+   virtual bool HasLongitudinalJoints() const = 0;
+   // returns true if the longitudinal joint is structural
+   virtual bool IsLongitudinalJointStructural(pgsTypes::SupportedDeckType deckType,pgsTypes::AdjacentTransverseConnectivity connectivity) const = 0;
+
+   //---------------------------------------------------------------------------------
+   // Return true if beam supports top flange thickening
+   virtual bool HasTopFlangeThickening() const = 0;
+
+   //---------------------------------------------------------------------------------
+   // Return true if beam supports precamber
+   virtual bool CanPrecamber() const = 0;
 
    //---------------------------------------------------------------------------------
    // Returns the minimum number of girders that can be in a cross section.
    // Two girders is the typical minimum for single-stem sections. One girder can
    // be used in a section for multi-step sections like double-tees and U-beams. One
    // girder can also be used for "wide" girders such as box beams and voided slabs
-   virtual GirderIndexType GetMinimumBeamCount() = 0;
+   virtual GirderIndexType GetMinimumBeamCount() const = 0;
 };
 
 // {E97F7992-BE87-43cf-8657-A477EFC32B47}
@@ -299,20 +353,54 @@ struct __declspec(uuid("{E97F7992-BE87-43cf-8657-A477EFC32B47}")) ISplicedBeamFa
 interface ISplicedBeamFactory : IBeamFactory
 {
    // returns true if the section depth can be variable
-   virtual bool SupportsVariableDepthSection() = 0;
+   virtual bool SupportsVariableDepthSection() const = 0;
    
    // returns the dimension label for the depth of the section
-   virtual LPCTSTR GetVariableDepthDimension() = 0;
+   virtual LPCTSTR GetVariableDepthDimension() const = 0;
 
    // returns the supported segment depth variations based on the varible depth section mode
-   virtual std::vector<pgsTypes::SegmentVariationType> GetSupportedSegmentVariations(bool bIsVariableDepthSection) = 0;
+   virtual std::vector<pgsTypes::SegmentVariationType> GetSupportedSegmentVariations(bool bIsVariableDepthSection) const = 0;
 
    // returns true if variable depth bottom flange is support.
-   virtual bool CanBottomFlangeDepthVary() = 0;
+   virtual bool CanBottomFlangeDepthVary() const = 0;
 
    // returns the dimension label for the bottom flange depth
-   virtual LPCTSTR GetBottomFlangeDepthDimension() = 0;
+   virtual LPCTSTR GetBottomFlangeDepthDimension() const = 0;
 
    // returns true if the section supports end blocks
-   virtual bool SupportsEndBlocks() = 0;
+   virtual bool SupportsEndBlocks() const = 0;
+};
+
+// From time to time, we move data out of a girder library entry, and thus out of the beam factory.
+// To keep bridge models unchanged, that data has to be moved into bridge model
+// Beam factories that implement this interface are given the opportity to
+// modify the bridge model with any data that they may have loaded and need to
+// set in the bridge model.
+// For example, the top flange thickening, "D8", parameter was removed from deck bulb tees
+// and was made a parameter in the bridge model. The BulbTeeFactory loads the old D8 value
+// and then sets it to the appropate bridge model parameter when the method on this interface
+// is called.
+
+class pgsCompatibilityData
+{
+public:
+   pgsCompatibilityData() {};
+   pgsCompatibilityData(const pgsCompatibilityData* pOther) { m_Values = pOther->m_Values; }
+   virtual ~pgsCompatibilityData() {};
+
+   void AddValue(LPCTSTR strKey, Float64 value) { m_Values.insert(std::make_pair(strKey, value)); }
+   Float64 GetValue(LPCTSTR strKey) const { return m_Values.find(strKey)->second; }
+
+protected:
+   std::map<std::_tstring, Float64> m_Values;
+};
+
+// {A49B0E40-8228-423F-9C36-A4D264AD374B}
+DEFINE_GUID(IID_IBeamFactoryCompatibility ,
+   0xa49b0e40, 0x8228, 0x423f, 0x9c, 0x36, 0xa4, 0xd2, 0x64, 0xad, 0x37, 0x4b);
+struct __declspec(uuid("{A49B0E40-8228-423F-9C36-A4D264AD374B}")) IBeamFactoryCompatibility;
+interface IBeamFactoryCompatibility : IUnknown
+{
+   virtual pgsCompatibilityData* GetCompatibilityData() const = 0;
+   virtual void UpdateBridgeModel(CBridgeDescription2* pBridgeDesc, const GirderLibraryEntry* pGirderEntry) const = 0;
 };

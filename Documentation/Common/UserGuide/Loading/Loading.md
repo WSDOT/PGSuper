@@ -46,7 +46,7 @@ User defined loads can also be created and edited in the Girder View.
 * Loads that are assigned to the LL+IM load case are not included in the live load deflection analysis.
 * Positive load are applied in the direction of gravity. Positive moments are counter clockwise, following the right hand rule.
 * If any part of the load is placed outside of the flexible span length of the girder, the entire load will be ignored. A message will be posted to the Status Center to inform you of this.
-* Moment loads can only be applied at the start and end of the span. These loads are usefully for modeling restraint moments as defined by LRFD 5.14.1.4.2.
+* Moment loads can only be applied at the start and end of the span. These loads are usefully for modeling restraint moments as defined by LRFD 5.12.3.3.2 (*pre-2017: 5.14.1.4.2*).
 
 Live Loads for Design
 ----------------------

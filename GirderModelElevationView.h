@@ -55,6 +55,8 @@ public:
 
    pgsPointOfInterest GetCutLocation();
 
+   CGirderModelChildFrame* GetFrame();
+
 // Operations
 public:
    void DoPrint(CDC* pDC, CPrintInfo* pInfo);
@@ -110,6 +112,7 @@ private:
    void BuildDropTargetDisplayObjects(      CPGSDocBase* pDoc, IBroker* pBroker, const CGirderKey& girderKey, EventIndexType eventIdx, iDisplayMgr* dispMgr);
    void BuildStrandDisplayObjects(          CPGSDocBase* pDoc, IBroker* pBroker, const CGirderKey& girderKey, EventIndexType eventIdx, iDisplayMgr* dispMgr);
    void BuildStrandCGDisplayObjects(        CPGSDocBase* pDoc, IBroker* pBroker, const CGirderKey& girderKey, EventIndexType eventIdx, iDisplayMgr* dispMgr);
+   void BuildSegmentCGDisplayObjects(       CPGSDocBase* pDoc, IBroker* pBroker, const CGirderKey& girderKey, EventIndexType eventIdx, iDisplayMgr* dispMgr);
    void BuildSegmentDisplayObjects(         CPGSDocBase* pDoc, IBroker* pBroker, const CGirderKey& girderKey, EventIndexType eventIdx, iDisplayMgr* dispMgr);
    void BuildClosureJointDisplayObjects(    CPGSDocBase* pDoc, IBroker* pBroker, const CGirderKey& girderKey, EventIndexType eventIdx, iDisplayMgr* dispMgr);
    void BuildTendonDisplayObjects(          CPGSDocBase* pDoc, IBroker* pBroker, const CGirderKey& girderKey, EventIndexType eventIdx, iDisplayMgr* dispMgr);

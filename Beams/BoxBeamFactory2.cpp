@@ -54,72 +54,72 @@ static char THIS_FILE[] = __FILE__;
 HRESULT CBoxBeamFactory2::FinalConstruct()
 {
    // Initialize with default values... This are not necessarily valid dimensions
-   m_DimNames.push_back(_T("H1"));
-   m_DimNames.push_back(_T("H2"));
-   m_DimNames.push_back(_T("H3"));
-   m_DimNames.push_back(_T("H4"));
-   m_DimNames.push_back(_T("H5"));
-   m_DimNames.push_back(_T("W1"));
-   m_DimNames.push_back(_T("W2"));
-   m_DimNames.push_back(_T("W3"));
-   m_DimNames.push_back(_T("W4"));
-   m_DimNames.push_back(_T("F1"));
-   m_DimNames.push_back(_T("F2"));
-   m_DimNames.push_back(_T("C1"));
-   m_DimNames.push_back(_T("Jmax"));
-   m_DimNames.push_back(_T("EndBlockLength"));
+   m_DimNames.emplace_back(_T("H1"));
+   m_DimNames.emplace_back(_T("H2"));
+   m_DimNames.emplace_back(_T("H3"));
+   m_DimNames.emplace_back(_T("H4"));
+   m_DimNames.emplace_back(_T("H5"));
+   m_DimNames.emplace_back(_T("W1"));
+   m_DimNames.emplace_back(_T("W2"));
+   m_DimNames.emplace_back(_T("W3"));
+   m_DimNames.emplace_back(_T("W4"));
+   m_DimNames.emplace_back(_T("F1"));
+   m_DimNames.emplace_back(_T("F2"));
+   m_DimNames.emplace_back(_T("C1"));
+   m_DimNames.emplace_back(_T("Jmax"));
+   m_DimNames.emplace_back(_T("EndBlockLength"));
 
-   m_DefaultDims.push_back(::ConvertToSysUnits( 5.5,unitMeasure::Inch)); // H1
-   m_DefaultDims.push_back(::ConvertToSysUnits(16.0,unitMeasure::Inch)); // H2
-   m_DefaultDims.push_back(::ConvertToSysUnits( 5.5,unitMeasure::Inch)); // H3
-   m_DefaultDims.push_back(::ConvertToSysUnits( 6.0,unitMeasure::Inch)); // H4
-   m_DefaultDims.push_back(::ConvertToSysUnits( 6.0,unitMeasure::Inch)); // H5
-   m_DefaultDims.push_back(::ConvertToSysUnits( 5.0,unitMeasure::Inch)); // W1
-   m_DefaultDims.push_back(::ConvertToSysUnits(26.0,unitMeasure::Inch)); // W2
-   m_DefaultDims.push_back(::ConvertToSysUnits( 0.375,unitMeasure::Inch));// W3
-   m_DefaultDims.push_back(::ConvertToSysUnits( 0.75,unitMeasure::Inch)); // W4
-   m_DefaultDims.push_back(::ConvertToSysUnits( 3.0,unitMeasure::Inch)); // F1
-   m_DefaultDims.push_back(::ConvertToSysUnits( 3.0,unitMeasure::Inch)); // F2
-   m_DefaultDims.push_back(::ConvertToSysUnits( 0.0,unitMeasure::Inch)); // C1
-   m_DefaultDims.push_back(::ConvertToSysUnits( 1.0,unitMeasure::Inch)); // Jmax
-   m_DefaultDims.push_back(::ConvertToSysUnits( 18.0,unitMeasure::Inch)); // end block
+   m_DefaultDims.emplace_back(::ConvertToSysUnits( 5.5,unitMeasure::Inch)); // H1
+   m_DefaultDims.emplace_back(::ConvertToSysUnits(16.0,unitMeasure::Inch)); // H2
+   m_DefaultDims.emplace_back(::ConvertToSysUnits( 5.5,unitMeasure::Inch)); // H3
+   m_DefaultDims.emplace_back(::ConvertToSysUnits( 6.0,unitMeasure::Inch)); // H4
+   m_DefaultDims.emplace_back(::ConvertToSysUnits( 6.0,unitMeasure::Inch)); // H5
+   m_DefaultDims.emplace_back(::ConvertToSysUnits( 5.0,unitMeasure::Inch)); // W1
+   m_DefaultDims.emplace_back(::ConvertToSysUnits(26.0,unitMeasure::Inch)); // W2
+   m_DefaultDims.emplace_back(::ConvertToSysUnits( 0.375,unitMeasure::Inch));// W3
+   m_DefaultDims.emplace_back(::ConvertToSysUnits( 0.75,unitMeasure::Inch)); // W4
+   m_DefaultDims.emplace_back(::ConvertToSysUnits( 3.0,unitMeasure::Inch)); // F1
+   m_DefaultDims.emplace_back(::ConvertToSysUnits( 3.0,unitMeasure::Inch)); // F2
+   m_DefaultDims.emplace_back(::ConvertToSysUnits( 0.0,unitMeasure::Inch)); // C1
+   m_DefaultDims.emplace_back(::ConvertToSysUnits( 1.0,unitMeasure::Inch)); // Jmax
+   m_DefaultDims.emplace_back(::ConvertToSysUnits( 18.0,unitMeasure::Inch)); // end block
 
    // SI Units
-   m_DimUnits[0].push_back(&unitMeasure::Millimeter); // H1
-   m_DimUnits[0].push_back(&unitMeasure::Millimeter); // H2
-   m_DimUnits[0].push_back(&unitMeasure::Millimeter); // H3
-   m_DimUnits[0].push_back(&unitMeasure::Millimeter); // H4
-   m_DimUnits[0].push_back(&unitMeasure::Millimeter); // H5
-   m_DimUnits[0].push_back(&unitMeasure::Millimeter); // W1
-   m_DimUnits[0].push_back(&unitMeasure::Millimeter); // W2
-   m_DimUnits[0].push_back(&unitMeasure::Millimeter); // W3
-   m_DimUnits[0].push_back(&unitMeasure::Millimeter); // W4
-   m_DimUnits[0].push_back(&unitMeasure::Millimeter); // F1
-   m_DimUnits[0].push_back(&unitMeasure::Millimeter); // F2
-   m_DimUnits[0].push_back(&unitMeasure::Millimeter); // C1
-   m_DimUnits[0].push_back(&unitMeasure::Millimeter); // Jmax
-   m_DimUnits[0].push_back(&unitMeasure::Millimeter); // end block
+   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // H1
+   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // H2
+   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // H3
+   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // H4
+   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // H5
+   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // W1
+   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // W2
+   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // W3
+   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // W4
+   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // F1
+   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // F2
+   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // C1
+   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // Jmax
+   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // end block
 
    // US Units
-   m_DimUnits[1].push_back(&unitMeasure::Inch); // H1
-   m_DimUnits[1].push_back(&unitMeasure::Inch); // H2
-   m_DimUnits[1].push_back(&unitMeasure::Inch); // H3
-   m_DimUnits[1].push_back(&unitMeasure::Inch); // H4
-   m_DimUnits[1].push_back(&unitMeasure::Inch); // H5
-   m_DimUnits[1].push_back(&unitMeasure::Inch); // W1
-   m_DimUnits[1].push_back(&unitMeasure::Inch); // W2
-   m_DimUnits[1].push_back(&unitMeasure::Inch); // W3
-   m_DimUnits[1].push_back(&unitMeasure::Inch); // W4
-   m_DimUnits[1].push_back(&unitMeasure::Inch); // F1
-   m_DimUnits[1].push_back(&unitMeasure::Inch); // F2
-   m_DimUnits[1].push_back(&unitMeasure::Inch); // C1
-   m_DimUnits[1].push_back(&unitMeasure::Inch); // Jmax
-   m_DimUnits[1].push_back(&unitMeasure::Inch); // end block
+   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // H1
+   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // H2
+   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // H3
+   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // H4
+   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // H5
+   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // W1
+   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // W2
+   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // W3
+   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // W4
+   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // F1
+   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // F2
+   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // C1
+   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // Jmax
+   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // end block
 
    return S_OK;
 }
 
-void CBoxBeamFactory2::CreateGirderSection(IBroker* pBroker,StatusItemIDType statusID,const IBeamFactory::Dimensions& dimensions,Float64 overallHeight,Float64 bottomFlangeHeight,IGirderSection** ppSection)
+void CBoxBeamFactory2::CreateGirderSection(IBroker* pBroker,StatusItemIDType statusID,const IBeamFactory::Dimensions& dimensions,Float64 overallHeight,Float64 bottomFlangeHeight,IGirderSection** ppSection) const
 {
    CComPtr<IBoxBeamSection> gdrSection;
    gdrSection.CoCreateInstance(CLSID_BoxBeamSection);
@@ -154,10 +154,7 @@ void CBoxBeamFactory2::CreateGirderSection(IBroker* pBroker,StatusItemIDType sta
    gdrSection.QueryInterface(ppSection);
 }
 
-
-
-
-bool CBoxBeamFactory2::ValidateDimensions(const IBeamFactory::Dimensions& dimensions,bool bSI,std::_tstring* strErrMsg)
+bool CBoxBeamFactory2::ValidateDimensions(const IBeamFactory::Dimensions& dimensions,bool bSI,std::_tstring* strErrMsg) const
 {
    Float64 H1, H2, H3, H4, H5, W1, W2, W3, W4, F1, F2, C1, J, endBlockLength;
    GetDimensions(dimensions,H1, H2, H3, H4, H5, W1, W2, W3, W4, F1, F2, C1, J, endBlockLength);
@@ -325,26 +322,28 @@ bool CBoxBeamFactory2::ValidateDimensions(const IBeamFactory::Dimensions& dimens
    return true;
 }
 
-void CBoxBeamFactory2::SaveSectionDimensions(sysIStructuredSave* pSave,const IBeamFactory::Dimensions& dimensions)
+void CBoxBeamFactory2::SaveSectionDimensions(sysIStructuredSave* pSave,const IBeamFactory::Dimensions& dimensions) const
 {
-   std::vector<std::_tstring>::iterator iter;
    pSave->BeginUnit(_T("AASHTOBoxBeamDimensions"),2.0);
-   for ( iter = m_DimNames.begin(); iter != m_DimNames.end(); iter++ )
+   for ( const auto& name : m_DimNames)
    {
-      std::_tstring name = *iter;
       Float64 value = GetDimension(dimensions,name);
       pSave->Property(name.c_str(),value);
    }
    pSave->EndUnit();
 }
 
-IBeamFactory::Dimensions CBoxBeamFactory2::LoadSectionDimensions(sysIStructuredLoad* pLoad)
+IBeamFactory::Dimensions CBoxBeamFactory2::LoadSectionDimensions(sysIStructuredLoad* pLoad) const
 {
    Float64 parent_version;
-   if ( pLoad->GetParentUnit() == _T("GirderLibraryEntry") )
+   if (pLoad->GetParentUnit() == _T("GirderLibraryEntry"))
+   {
       parent_version = pLoad->GetParentVersion();
+   }
    else
+   {
       parent_version = pLoad->GetVersion();
+   }
 
 
    IBeamFactory::Dimensions dimensions;
@@ -353,31 +352,36 @@ IBeamFactory::Dimensions CBoxBeamFactory2::LoadSectionDimensions(sysIStructuredL
    Float64 dimVersion = 1.0;
    if ( 14 <= parent_version )
    {
-      if ( pLoad->BeginUnit(_T("AASHTOBoxBeamDimensions")) )
+      if (pLoad->BeginUnit(_T("AASHTOBoxBeamDimensions")))
+      {
          dimVersion = pLoad->GetVersion();
+      }
       else
-         THROW_LOAD(InvalidFileFormat,pLoad);
+      {
+         THROW_LOAD(InvalidFileFormat, pLoad);
+      }
    }
 
-   for ( iter = m_DimNames.begin(); iter != m_DimNames.end(); iter++ )
+   for ( const auto& name : m_DimNames)
    {
-      std::_tstring name = *iter;
       Float64 value;
-      if ( !pLoad->Property(name.c_str(),&value) )
-         THROW_LOAD(InvalidFileFormat,pLoad);
+      if (!pLoad->Property(name.c_str(), &value))
+      {
+         THROW_LOAD(InvalidFileFormat, pLoad);
+      }
 
-      dimensions.push_back( std::make_pair(name,value) );
+      dimensions.emplace_back(name,value);
    }
 
    if( dimVersion < 2 )
    {
       // A bug in the WBFL had F1 and F2 swapped. Version 2 fixes this
-      IBeamFactory::Dimensions::iterator itdF1(dimensions.end()), itdF2(dimensions.end());
-      IBeamFactory::Dimensions::iterator itd(dimensions.begin());
-      IBeamFactory::Dimensions::iterator itdend(dimensions.end());
+      auto itdF1(dimensions.end()), itdF2(dimensions.end());
+      auto itd(dimensions.begin());
+      auto itdend(dimensions.end());
       while(itd!=itdend)
       {
-         IBeamFactory::Dimension& dims = *itd;
+         const auto& dims = *itd;
          std::_tstring name = dims.first;
 
          if( name == _T("F1") )
@@ -408,13 +412,15 @@ IBeamFactory::Dimensions CBoxBeamFactory2::LoadSectionDimensions(sysIStructuredL
    }
 
 
-   if ( 14 <= parent_version && !pLoad->EndUnit() )
-      THROW_LOAD(InvalidFileFormat,pLoad);
+   if (14 <= parent_version && !pLoad->EndUnit())
+   {
+      THROW_LOAD(InvalidFileFormat, pLoad);
+   }
 
    return dimensions;
 }
 
-Float64 CBoxBeamFactory2::GetInternalSurfaceAreaOfVoids(IBroker* pBroker,const CSegmentKey& segmentKey)
+Float64 CBoxBeamFactory2::GetInternalSurfaceAreaOfVoids(IBroker* pBroker,const CSegmentKey& segmentKey) const
 {
    GET_IFACE2(pBroker,IBridge,pBridge);
    Float64 Lg = pBridge->GetSegmentLength(segmentKey);
@@ -437,7 +443,7 @@ Float64 CBoxBeamFactory2::GetInternalSurfaceAreaOfVoids(IBroker* pBroker,const C
 void CBoxBeamFactory2::CreateStrandMover(const IBeamFactory::Dimensions& dimensions,  Float64 Hg,
                                   IBeamFactory::BeamFace endTopFace, Float64 endTopLimit, IBeamFactory::BeamFace endBottomFace, Float64 endBottomLimit, 
                                   IBeamFactory::BeamFace hpTopFace, Float64 hpTopLimit, IBeamFactory::BeamFace hpBottomFace, Float64 hpBottomLimit, 
-                                  Float64 endIncrement, Float64 hpIncrement, IStrandMover** strandMover)
+                                  Float64 endIncrement, Float64 hpIncrement, IStrandMover** strandMover) const
 {
    HRESULT hr = S_OK;
 
@@ -503,23 +509,23 @@ void CBoxBeamFactory2::CreateStrandMover(const IBeamFactory::Dimensions& dimensi
    ATLASSERT (SUCCEEDED(hr));
 }
 
-std::_tstring CBoxBeamFactory2::GetImage()
+std::_tstring CBoxBeamFactory2::GetImage() const
 {
    return std::_tstring(_T("BoxBeam2.gif"));
 }
 
 
-CLSID CBoxBeamFactory2::GetCLSID()
+CLSID CBoxBeamFactory2::GetCLSID() const
 {
    return CLSID_BoxBeam2Factory;
 }
 
-LPCTSTR CBoxBeamFactory2::GetImageResourceName()
+LPCTSTR CBoxBeamFactory2::GetImageResourceName() const
 {
    return _T("BOXBEAM2");
 }
 
-HICON  CBoxBeamFactory2::GetIcon() 
+HICON  CBoxBeamFactory2::GetIcon()  const
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
@@ -540,7 +546,7 @@ void CBoxBeamFactory2::GetDimensions(const IBeamFactory::Dimensions& dimensions,
                                     Float64& F2, 
                                     Float64& C1,
                                     Float64& J,
-                                    Float64& endBlockLength)
+                                    Float64& endBlockLength) const
 {
    H1 = GetDimension(dimensions,_T("H1"));
    H2 = GetDimension(dimensions,_T("H2"));
@@ -558,10 +564,7 @@ void CBoxBeamFactory2::GetDimensions(const IBeamFactory::Dimensions& dimensions,
    endBlockLength  = GetDimension(dimensions,_T("EndBlockLength"));
 }
 
-
-
-void CBoxBeamFactory2::GetAllowableSpacingRange(const IBeamFactory::Dimensions& dimensions,pgsTypes::SupportedDeckType sdt, 
-                                               pgsTypes::SupportedBeamSpacing sbs, Float64* minSpacing, Float64* maxSpacing)
+void CBoxBeamFactory2::GetAllowableSpacingRange(const IBeamFactory::Dimensions& dimensions,pgsTypes::SupportedDeckType sdt, pgsTypes::SupportedBeamSpacing sbs, Float64* minSpacing, Float64* maxSpacing) const
 {
    *minSpacing = 0.0;
    *maxSpacing = 0.0;
@@ -584,10 +587,11 @@ void CBoxBeamFactory2::GetAllowableSpacingRange(const IBeamFactory::Dimensions& 
    {
       if (sbs == pgsTypes::sbsUniformAdjacent || sbs == pgsTypes::sbsGeneralAdjacent)
       {
+         // for this spacing type, we have joint spacing... spacing range is the range of joint width
          Float64 J  = GetDimension(dimensions,_T("Jmax"));
 
-         *minSpacing = gw;
-         *maxSpacing = gw+J;
+         *minSpacing = 0;
+         *maxSpacing = J;
       }
       else
       {
@@ -596,18 +600,28 @@ void CBoxBeamFactory2::GetAllowableSpacingRange(const IBeamFactory::Dimensions& 
    }
 }
 
-bool CBoxBeamFactory2::IsShearKey(const IBeamFactory::Dimensions& dimensions, pgsTypes::SupportedBeamSpacing spacingType)
+bool CBoxBeamFactory2::IsShearKey(const IBeamFactory::Dimensions& dimensions, pgsTypes::SupportedBeamSpacing spacingType) const
 {
    return false;
 }
 
-void CBoxBeamFactory2::GetShearKeyAreas(const IBeamFactory::Dimensions& dimensions, pgsTypes::SupportedBeamSpacing spacingType,Float64* uniformArea, Float64* areaPerJoint)
+void CBoxBeamFactory2::GetShearKeyAreas(const IBeamFactory::Dimensions& dimensions, pgsTypes::SupportedBeamSpacing spacingType,Float64* uniformArea, Float64* areaPerJoint) const
 {
    *uniformArea = 0.0;
    *areaPerJoint = 0.0;
 }
 
-Float64 CBoxBeamFactory2::GetBeamWidth(const IBeamFactory::Dimensions& dimensions,pgsTypes::MemberEndType endType)
+bool CBoxBeamFactory2::HasLongitudinalJoints() const
+{
+   return false;
+}
+
+bool CBoxBeamFactory2::IsLongitudinalJointStructural(pgsTypes::SupportedDeckType deckType,pgsTypes::AdjacentTransverseConnectivity connectivity) const
+{
+   return false;
+}
+
+Float64 CBoxBeamFactory2::GetBeamWidth(const IBeamFactory::Dimensions& dimensions,pgsTypes::MemberEndType endType) const
 {
    Float64 W1 = GetDimension(dimensions,_T("W1"));
    Float64 W2 = GetDimension(dimensions,_T("W2"));

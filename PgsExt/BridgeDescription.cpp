@@ -299,10 +299,14 @@ HRESULT CBridgeDescription::Load(Float64 version,IStructuredLoad* pStrLoad,IProg
          // looking at the deck type gives us that extra information
          if ( m_Deck.DeckType == pgsTypes::sdtCompositeOverlay || m_Deck.DeckType == pgsTypes::sdtNone )
          {
-            if ( m_GirderSpacingType == pgsTypes::sbsUniform )
+            if (m_GirderSpacingType == pgsTypes::sbsUniform)
+            {
                m_GirderSpacingType = pgsTypes::sbsUniformAdjacent;
-            else if ( m_GirderSpacing == pgsTypes::sbsGeneral )
+            }
+            else if (m_GirderSpacing == pgsTypes::sbsGeneral)
+            {
                m_GirderSpacingType = pgsTypes::sbsGeneralAdjacent;
+            }
          }
       }
 
@@ -1549,16 +1553,16 @@ void CBridgeDescription::ReconcileEdits(IBroker* pBroker, const CBridgeDescripti
          if (copyGirderType || thisGirderName != origGirderName)
          {
             // Enough evidence here that the girder type was changed - refill with seed data
-            const GirderLibraryEntry* pGird = pLib->GetGirderEntry( thisGirderName.c_str());
-            ASSERT(pGird!=0);
+            const GirderLibraryEntry* pGirderEntry = pLib->GetGirderEntry( thisGirderName.c_str());
+            ASSERT(pGirderEntry != nullptr);
 
             for (GirderIndexType igdr=nthisGstart; igdr<=nthisGend; igdr++)
             {
                CGirderData& thisGdrData = pthisSpan->GetGirderTypes()->GetGirderData(igdr);
 
-               thisGdrData.ShearData.CopyGirderEntryData( *pGird );
+               thisGdrData.ShearData.CopyGirderEntryData(*pGirderEntry);
 
-               thisGdrData.LongitudinalRebarData.CopyGirderEntryData( *pGird );
+               thisGdrData.LongitudinalRebarData.CopyGirderEntryData(pGirderEntry);
             }
          }
       }

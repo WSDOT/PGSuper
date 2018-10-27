@@ -74,7 +74,7 @@ rptChapter* CCastingYardRebarRequirementChapterBuilder::Build(CReportSpecificati
 
    rptParagraph* pPara = new rptParagraph;
    *pChapter << pPara;
-   *pPara << _T("Minimum amount of bonded reinforcement sufficent to resist the tensile force in the concrete [5.9.4][C5.9.4.1.2]") << rptNewLine;
+   *pPara << _T("Minimum amount of bonded reinforcement sufficent to resist the tensile force in the concrete ") << LrfdCw8th(_T("[5.9.4][C5.9.4.1.2]"),_T("[5.9.2.3][C5.9.2.3.1b]")) << _T(")") << rptNewLine;
 
    GET_IFACE2(pBroker,IBridge,pBridge);
 
@@ -121,7 +121,8 @@ rptChapter* CCastingYardRebarRequirementChapterBuilder::Build(CReportSpecificati
       CClosureKey closureKey(girderKey,segIdx);
       IntervalIndexType compositeClosureJointIntervalIdx = pIntervals->GetCompositeClosureJointInterval(closureKey);
 
-      std::vector<pgsPointOfInterest> vPoi(pIPoi->GetPointsOfInterest(closureKey,POI_CLOSURE));
+      PoiList vPoi;
+      pIPoi->GetPointsOfInterest(closureKey, POI_CLOSURE, &vPoi);
       ATLASSERT(vPoi.size() == 1);
       pgsPointOfInterest poi(vPoi.front());
       ATLASSERT(poi.GetID() != INVALID_ID);
@@ -262,7 +263,7 @@ void CCastingYardRebarRequirementChapterBuilder::BuildTable(IBroker* pBroker,rpt
 
 rptRcTable* CCastingYardRebarRequirementChapterBuilder::CreateTable(const CGirderKey& girderKey,pgsTypes::StressLocation topLocation,pgsTypes::StressLocation botLocation,IEAFDisplayUnits* pDisplayUnits) const
 {
-   rptRcTable* pTable = rptStyleManager::CreateDefaultTable(12,_T("Reinforcement requirements for Tension stress limit [C5.9.4.1.2]"));
+   rptRcTable* pTable = rptStyleManager::CreateDefaultTable(12, _T("Reinforcement requirements for Tension stress limit ") + std::_tstring(LrfdCw8th(_T("[C5.9.4.1.2]"), _T("[C5.9.2.3.1b]"))));
 
    pTable->SetNumberOfHeaderRows(2);
 

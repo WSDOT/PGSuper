@@ -37,6 +37,8 @@ public:
    virtual BOOL CreateGraphController(CWnd* pParent,UINT nID) override;
    virtual CGraphBuilder* Clone() const override;
 
+   virtual void CreateViewController(IEAFViewController** ppController) override;
+
    virtual void UpdateXAxis() override;
    virtual void UpdateYAxis() override;
 

@@ -36,8 +36,14 @@ public:
 
    int CreateControls(CWnd* pParent,UINT nID);
 
-   int GetGraphType();
-   const CSegmentKey& GetSegmentKey();
+   int GetGraphType() const;
+   void SetGraphType(int type);
+   
+   const CSegmentKey& GetSegment() const;
+   void SelectSegment(const CSegmentKey& segmentKey);
+
+   bool ShowGrid() const;
+   void ShowGrid(bool bShowGrid);
 
 protected:
 
@@ -52,6 +58,7 @@ protected:
    afx_msg void OnGirderChanged();
    afx_msg void OnSegmentChanged();
    afx_msg void OnGraphTypeChanged();
+   afx_msg void OnShowGrid();
    //}}AFX_MSG
 
 	DECLARE_MESSAGE_MAP()

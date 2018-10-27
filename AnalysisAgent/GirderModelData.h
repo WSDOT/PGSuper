@@ -28,7 +28,7 @@ class CGirderModelManager;
 class CGirderModelData
 {
 public:
-   CGirderModelData(CGirderModelManager *pParent,GirderIndexType gdrLineIdx);
+   CGirderModelData(const CGirderModelManager *pParent,GirderIndexType gdrLineIdx);
    CGirderModelData(const CGirderModelData& other);
    ~CGirderModelData();
    void CreateAnalysisEngine(ILBAMModel* theModel,pgsTypes::BridgeAnalysisType bat,ILBAMAnalysisEngine** ppEngine);
@@ -36,7 +36,7 @@ public:
    void AddContinuousModel(ILBAMModel* pContModel);
    void operator=(const CGirderModelData& other);
 
-   CGirderModelManager* m_pParent;
+   const CGirderModelManager* m_pParent;
    GirderIndexType m_GirderLineIndex;
    bool m_bSimpleModelHasPretensionLoad;
    bool m_bContinuousModelHasPretensionLoad;

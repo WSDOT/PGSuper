@@ -129,14 +129,14 @@ BOOL CSelectPOIDlg::OnInitDialog()
 
    // initial the slider position to the current poi location
    CollectionIndexType pos = m_vPOI.size()/2; // default is mid-span
-   std::vector<pgsPointOfInterest>::iterator iter;
-   for ( iter = m_vPOI.begin(); iter != m_vPOI.end(); iter++ )
+   CollectionIndexType i = 0;
+   for(const pgsPointOfInterest& poi : m_vPOI)
    {
-      pgsPointOfInterest& poi = *iter;
       if ( poi.GetID() == m_InitialPOI.GetID() )
       {
-         pos = (iter - m_vPOI.begin());
+         pos = i;
       }
+      i++;
    }
    m_Slider.SetPos((int)pos);
 
@@ -250,8 +250,9 @@ void CSelectPOIDlg::UpdatePOI()
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
 
-   GET_IFACE2(pBroker,IPointOfInterest,pPOI);
-   m_vPOI = pPOI->GetPointsOfInterest(CSegmentKey(m_GirderKey,ALL_SEGMENTS));
+   GET_IFACE2(pBroker,IPointOfInterest,pPoi);
+   m_vPOI.clear();
+   pPoi->GetPointsOfInterest(CSegmentKey(m_GirderKey, ALL_SEGMENTS),&m_vPOI);
 
    if (m_Slider.GetSafeHwnd() != nullptr )
    {

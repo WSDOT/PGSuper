@@ -59,45 +59,46 @@ DEFINE_GUID(IID_ILiveLoadDistributionFactors,
 0x61dc0cfa, 0x7b2f, 0x11d2, 0x88, 0x54, 0x0, 0x60, 0x97, 0xc6, 0x8a, 0x9c);
 interface ILiveLoadDistributionFactors : IUnknown
 {
-   // Checks the horizontal curvature requirements and places a message
-   // in the status center if they are not satisified
-   virtual void VerifyDistributionFactorRequirements(const pgsPointOfInterest& poi) = 0;
-   virtual Float64 GetMomentDistFactor(const CSpanKey& spanKey,pgsTypes::LimitState ls) = 0;
-   virtual Float64 GetNegMomentDistFactor(const CSpanKey& spanKey,pgsTypes::LimitState ls) = 0;
-   virtual Float64 GetNegMomentDistFactorAtPier(PierIndexType pierIdx,GirderIndexType gdrIdx,pgsTypes::LimitState ls,pgsTypes::PierFaceType pierFace) = 0;
-   virtual Float64 GetShearDistFactor(const CSpanKey& spanKey,pgsTypes::LimitState ls) = 0;
-   virtual Float64 GetReactionDistFactor(PierIndexType pierIdx,GirderIndexType gdrIdx,pgsTypes::LimitState ls) = 0;
+   // verifies that certain curvature, stiffness, and parallelnes requires are statisfied
+   // must be called before computing LLDF. An unwind exception is thrown if requires are not satisfied
+   virtual void VerifyDistributionFactorRequirements(const pgsPointOfInterest& poi) const = 0;
 
-   virtual Float64 GetMomentDistFactor(const CSpanKey& spanKey,pgsTypes::LimitState ls,Float64 fcgdr) = 0;
-   virtual Float64 GetNegMomentDistFactor(const CSpanKey& spanKey,pgsTypes::LimitState ls,Float64 fcgdr) = 0;
-   virtual Float64 GetNegMomentDistFactorAtPier(PierIndexType pierIdx,GirderIndexType gdrIdx,pgsTypes::LimitState ls,pgsTypes::PierFaceType pierFace,Float64 fcgdr) = 0;
-   virtual Float64 GetShearDistFactor(const CSpanKey& spanKey,pgsTypes::LimitState ls,Float64 fcgdr) = 0;
-   virtual Float64 GetReactionDistFactor(PierIndexType pierIdx,GirderIndexType gdrIdx,pgsTypes::LimitState ls,Float64 fcgdr) = 0;
+   // Test if ROA is exceeded. A CXUnwind* will be thrown through this interface if not. 
+   virtual void TestRangeOfApplicability(const CSpanKey& spanKey) const = 0;
 
-   virtual Float64 GetSkewCorrectionFactorForMoment(const CSpanKey& spanKey,pgsTypes::LimitState ls) = 0;
-   virtual Float64 GetSkewCorrectionFactorForShear(const CSpanKey& spanKey,pgsTypes::LimitState ls) = 0;
+   virtual Float64 GetMomentDistFactor(const CSpanKey& spanKey,pgsTypes::LimitState ls) const = 0;
+   virtual Float64 GetNegMomentDistFactor(const CSpanKey& spanKey,pgsTypes::LimitState ls) const = 0;
+   virtual Float64 GetNegMomentDistFactorAtPier(PierIndexType pierIdx,GirderIndexType gdrIdx,pgsTypes::LimitState ls,pgsTypes::PierFaceType pierFace) const = 0;
+   virtual Float64 GetShearDistFactor(const CSpanKey& spanKey,pgsTypes::LimitState ls) const = 0;
+   virtual Float64 GetReactionDistFactor(PierIndexType pierIdx,GirderIndexType gdrIdx,pgsTypes::LimitState ls) const = 0;
 
-   virtual void GetDistributionFactors(const pgsPointOfInterest& poi,pgsTypes::LimitState ls,Float64* pM,Float64* nM,Float64* V) = 0;
-   virtual void GetDistributionFactors(const pgsPointOfInterest& poi,pgsTypes::LimitState ls,Float64 fcgdr,Float64* pM,Float64* nM,Float64* V) = 0;
-   virtual void GetNegMomentDistFactorPoints(const CSpanKey& spanKey,Float64* dfPoints,IndexType* nPoints) = 0;
+   virtual Float64 GetMomentDistFactor(const CSpanKey& spanKey,pgsTypes::LimitState ls,Float64 fcgdr) const = 0;
+   virtual Float64 GetNegMomentDistFactor(const CSpanKey& spanKey,pgsTypes::LimitState ls,Float64 fcgdr) const = 0;
+   virtual Float64 GetNegMomentDistFactorAtPier(PierIndexType pierIdx,GirderIndexType gdrIdx,pgsTypes::LimitState ls,pgsTypes::PierFaceType pierFace,Float64 fcgdr) const = 0;
+   virtual Float64 GetShearDistFactor(const CSpanKey& spanKey,pgsTypes::LimitState ls,Float64 fcgdr) const = 0;
+   virtual Float64 GetReactionDistFactor(PierIndexType pierIdx,GirderIndexType gdrIdx,pgsTypes::LimitState ls,Float64 fcgdr) const = 0;
 
-   virtual void ReportDistributionFactors(const CGirderKey& girderKey,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits) = 0;
-   virtual bool Run1250Tests(const CSpanKey& spanKey,pgsTypes::LimitState ls,LPCTSTR pid,LPCTSTR bridgeId,std::_tofstream& resultsFile, std::_tofstream& poiFile) = 0;
-   virtual Uint32 GetNumberOfDesignLanes(SpanIndexType spanIdx) = 0;
-   virtual Uint32 GetNumberOfDesignLanesEx(SpanIndexType spanIdx,Float64* pDistToSection,Float64* pCurbToCurb) = 0;
+   virtual Float64 GetSkewCorrectionFactorForMoment(const CSpanKey& spanKey,pgsTypes::LimitState ls) const = 0;
+   virtual Float64 GetSkewCorrectionFactorForShear(const CSpanKey& spanKey,pgsTypes::LimitState ls) const = 0;
+
+   virtual void GetDistributionFactors(const pgsPointOfInterest& poi,pgsTypes::LimitState ls,Float64* pM,Float64* nM,Float64* V) const = 0;
+   virtual void GetDistributionFactors(const pgsPointOfInterest& poi,pgsTypes::LimitState ls,Float64 fcgdr,Float64* pM,Float64* nM,Float64* V) const = 0;
+   virtual void GetNegMomentDistFactorPoints(const CSpanKey& spanKey,Float64* dfPoints,IndexType* nPoints) const = 0;
+
+   virtual void ReportDistributionFactors(const CGirderKey& girderKey,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits) const = 0;
+   virtual bool Run1250Tests(const CSpanKey& spanKey,pgsTypes::LimitState ls,LPCTSTR pid,LPCTSTR bridgeId,std::_tofstream& resultsFile, std::_tofstream& poiFile) const = 0;
+   virtual Uint32 GetNumberOfDesignLanes(SpanIndexType spanIdx) const = 0;
+   virtual Uint32 GetNumberOfDesignLanesEx(SpanIndexType spanIdx,Float64* pDistToSection,Float64* pCurbToCurb) const = 0;
    //---------------------------------------------------------------------
    // Get all types of factors
    virtual bool GetDFResultsEx(const CSpanKey& spanKey,pgsTypes::LimitState ls,
                                Float64* gpM, Float64* gpM1, Float64* gpM2,     // pos moment
                                Float64* gnM, Float64* gnM1, Float64* gnM2,     // neg moment
                                Float64* gV,  Float64* gV1,  Float64* gV2,      // shear 
-                               Float64* gR,  Float64* gR1,  Float64* gR2 ) = 0;// reaction
+                               Float64* gR,  Float64* gR1,  Float64* gR2 ) const = 0;// reaction
 
    // returns mpf(#lanes/#beams)
-   virtual Float64 GetDeflectionDistFactor(const CSpanKey& spanKey) = 0;
-
-   // Test if ROA is exceeded. A CXUnwind* will be thrown through this interface if not. 
-   virtual void TestRangeOfApplicability(const CSpanKey& spanKey) = 0;
+   virtual Float64 GetDeflectionDistFactor(const CSpanKey& spanKey) const = 0;
 };
 
 #endif // INCLUDED_IFACE_DISTRIBUTIONFACTORS_H_

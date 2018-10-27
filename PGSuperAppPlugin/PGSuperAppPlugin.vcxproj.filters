@@ -743,16 +743,61 @@
     <ClCompile Include="..\TrafficBarrierDisplayObjectEvents.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="AssExcessCamberByGirderDlg.cpp">
+    <ClCompile Include="EditBearingDlg.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="AssExcessCamberGirderGrid.cpp">
+    <ClCompile Include="BearingSame4BridgeDlg.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="BearingPierByPierDlg.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="BearingPierGrid.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="BearingGdrByGdrDlg.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="BearingGdrGrid.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\GirderTopWidthGrid.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CastLongitudinalJointsDlg.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\TrafficBarrierDisplayObjectEvents.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="BridgeDescrBearings.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="PierDetailsBearingsPage.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SpanGdrDetailsBearingsPage.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\BridgeModelViewControllerImp.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\GirderModelViewControllerImp.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\LoadsViewControllerImp.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="AssExcessCamberSame4BridgeDlg.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="AssExcessCamberGrid.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="AssExcessCamberSame4BridgeDlg.cpp">
+    <ClCompile Include="AssExcessCamberGirderGrid.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="AssExcessCamberByGirderDlg.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="AssExcessCamberSpanBySpanDlg.cpp">
@@ -1596,16 +1641,70 @@
     <ClInclude Include="..\TrafficBarrierDisplayObjectEvents.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="AssExcessCamberByGirderDlg.h">
+    <ClInclude Include="EditBearingDlg.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="AssExcessCamberGirderGrid.h">
+    <ClInclude Include="BearingSame4BridgeDlg.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="BearingPierByPierDlg.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="BearingPierGrid.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="BearingGdrByGdrDlg.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="BearingGdrGrid.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\GirderTopWidthGrid.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CastLongitudinalJointsDlg.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\TrafficBarrierDisplayObjectEvents.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="BridgeDescrBearings.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="PierDetailsBearingsPage.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SpanGdrDetailsBearingsPage.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\BridgeModelViewController.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\BridgeModelViewControllerImp.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\GirderModelViewController.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\GirderModelViewControllerImp.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\LoadsViewControllerImp.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\LoadsViewController.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="AssExcessCamberSame4BridgeDlg.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="AssExcessCamberGrid.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="AssExcessCamberSame4BridgeDlg.h">
+    <ClInclude Include="AssExcessCamberGirderGrid.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="AssExcessCamberByGirderDlg.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="AssExcessCamberSpanBySpanDlg.h">
@@ -1764,6 +1863,51 @@
       <Filter>Resource Files</Filter>
     </Image>
     <Image Include="res\Wsdot.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\res\bitmap1.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\res\Strands.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\res\Strands.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\res\StrandsCG.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\res\Dimensions.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\res\LongitudinalReinforcement.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\res\Stirrups.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\res\UserLoads.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\res\Schematic.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\res\SectionCG.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\res\North.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\res\Labels.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\res\ViewBridge.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\res\SchematicProfile.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\res\Properties.ico">
       <Filter>Resource Files</Filter>
     </Image>
   </ItemGroup>

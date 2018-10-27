@@ -65,31 +65,31 @@ DEFINE_GUID(IID_IArtifact,
 interface IArtifact : IUnknown
 {
    // Returns a GirderArtifact which captures the full specification check for a girder.
-   virtual const pgsGirderArtifact* GetGirderArtifact(const CGirderKey& girderKey) = 0;
+   virtual const pgsGirderArtifact* GetGirderArtifact(const CGirderKey& girderKey) const = 0;
 
    // Returns a SegmentArtifact which captures the full specification check for an individual segment.
-   virtual const pgsSegmentArtifact* GetSegmentArtifact(const CSegmentKey& segmentKey) = 0;
+   virtual const pgsSegmentArtifact* GetSegmentArtifact(const CSegmentKey& segmentKey) const = 0;
 
    // Returns a LiftingAnalysisArtifact which captures the specification checks related to lifting for an individual segment.
-   virtual const stbLiftingCheckArtifact* GetLiftingCheckArtifact(const CSegmentKey& segmentKey) = 0;
+   virtual const stbLiftingCheckArtifact* GetLiftingCheckArtifact(const CSegmentKey& segmentKey) const = 0;
 
    // Returns a HaulingAnalysisArtifact which captures the specification checks related to hauling for an individual segment.
-   virtual const pgsHaulingAnalysisArtifact* GetHaulingAnalysisArtifact(const CSegmentKey& segmentKey) = 0;
+   virtual const pgsHaulingAnalysisArtifact* GetHaulingAnalysisArtifact(const CSegmentKey& segmentKey) const = 0;
 
    // Creates a DesignArtifact for the specified girder
-   virtual const pgsGirderDesignArtifact* CreateDesignArtifact(const CGirderKey& girderKey,const std::vector<arDesignOptions>& options) = 0;
+   virtual const pgsGirderDesignArtifact* CreateDesignArtifact(const CGirderKey& girderKey,const std::vector<arDesignOptions>& options) const = 0;
 
    // If the specified girder was previously designed, its DesignArtifact is returned, otherwise nullptr
-   virtual const pgsGirderDesignArtifact* GetDesignArtifact(const CGirderKey& girderKey) = 0;
+   virtual const pgsGirderDesignArtifact* GetDesignArtifact(const CGirderKey& girderKey) const = 0;
 
    // Creates a LiftingAnalysisArtifact for the specified segment based on the specified lifting configuration
-   virtual void CreateLiftingCheckArtifact(const CSegmentKey& segmentKey,Float64 supportLoc,stbLiftingCheckArtifact* pArtifact) = 0;
+   virtual void CreateLiftingCheckArtifact(const CSegmentKey& segmentKey,Float64 supportLoc,stbLiftingCheckArtifact* pArtifact) const = 0;
 
    // Creates a HaulingAnalysisArtifact for the specified segment based on the specified hauling configuration
-   virtual const pgsHaulingAnalysisArtifact* CreateHaulingAnalysisArtifact(const CSegmentKey& segmentKey,Float64 leftSupportLoc,Float64 rightSupportLoc) = 0;
+   virtual const pgsHaulingAnalysisArtifact* CreateHaulingAnalysisArtifact(const CSegmentKey& segmentKey,Float64 leftSupportLoc,Float64 rightSupportLoc) const = 0;
 
    // Returns the RatingArtifact for the specified girder
-   virtual const pgsRatingArtifact* GetRatingArtifact(const CGirderKey& girderKey,pgsTypes::LoadRatingType ratingType,VehicleIndexType vehicleIdx) = 0;
+   virtual const pgsRatingArtifact* GetRatingArtifact(const CGirderKey& girderKey,pgsTypes::LoadRatingType ratingType,VehicleIndexType vehicleIdx) const = 0;
 };
 
 #endif // INCLUDED_IFACE_ARTIFACT_H_

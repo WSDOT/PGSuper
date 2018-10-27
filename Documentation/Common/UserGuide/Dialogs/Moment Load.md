@@ -1,6 +1,6 @@
 Moment Load {#ug_dialogs_moment_load}
 ==============================================
-Define a concentrated moment load. Moment loads can only be applied at the ends of girders. This is a useful load case for modeling restraint moments when required by LRFD 5.14.1.4.2.
+Define a concentrated moment load. Moment loads can only be applied at the ends of girders. This is a useful load case for modeling restraint moments when required by LRFD 5.12.3.3.2 (*pre-2017: 5.14.1.4.2*).
 
 Item | Description
 ----|-----

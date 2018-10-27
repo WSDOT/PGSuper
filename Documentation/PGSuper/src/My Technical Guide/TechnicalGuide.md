@@ -4,6 +4,7 @@ Technical Guide {#technical_guide}
 The purpose of this Technical Guide is to detail the algorithms and computational methods used by this software.
 
 Topics
+* @subpage tg_biaxial_stresses
 * @subpage tg_camber
 * @subpage tg_capacity_demand_ratios
 * @subpage tg_computing_pier_diaphragm_dimensions
@@ -17,6 +18,7 @@ Topics
 * @subpage tg_girder_spacing
 * @subpage tg_interface_shear
 * @subpage tg_pjack
+* @subpage tg_lateral_deflections
 * @subpage tg_lightweight_concrete
 * @subpage tg_lldf
 * @subpage tg_live_load

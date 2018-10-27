@@ -149,9 +149,15 @@ int TxDOT_WriteCADDataToFile (FILE *fp, IBroker* pBroker, const CGirderKey& gird
    CadWriterWorkerBee workerB(is_test_output);//
 
 	/* Create pois at the start of girder and mid-span */
-   pgsPointOfInterest pois(segmentKey, 0.0);
-	std::vector<pgsPointOfInterest> pmid( pPointOfInterest->GetPointsOfInterest(segmentKey, POI_5L | POI_SPAN) );
-	ATLASSERT(pmid.size() == 1);
+   PoiList vPoi;
+   pPointOfInterest->GetPointsOfInterest(segmentKey, POI_0L | POI_RELEASED_SEGMENT, &vPoi);
+   ATLASSERT(vPoi.size() == 1);
+   const pgsPointOfInterest& pois(vPoi.front());
+	
+   vPoi.clear();// recycle list
+   pPointOfInterest->GetPointsOfInterest(segmentKey, POI_5L | POI_SPAN, &vPoi);
+	ATLASSERT(vPoi.size() == 1);
+   const pgsPointOfInterest& pmid(vPoi.back());
 
    // IGirders are treated differently than others
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
@@ -278,7 +284,7 @@ int TxDOT_WriteCADDataToFile (FILE *fp, IBroker* pBroker, const CGirderKey& gird
 
 	/* 8. STRAND ECCENTRICITY AT CENTER LINE */
    Float64 nEff;
-   value = pStrandGeometry->GetEccentricity( releaseIntervalIdx, pmid[0], pgsTypes::Permanent, &nEff );
+   value = pStrandGeometry->GetEccentricity( releaseIntervalIdx, pmid, pgsTypes::Permanent, &nEff );
 
 	Float64 strandEccCL = ::ConvertFromSysUnits( value, unitMeasure::Inch );
 
@@ -301,14 +307,14 @@ int TxDOT_WriteCADDataToFile (FILE *fp, IBroker* pBroker, const CGirderKey& gird
    const pgsFlexuralStressArtifact* pArtifact;
    Float64 fcTop = 0.0, fcBot = 0.0, ftTop = 0.0, ftBot = 0.0;
 
-   pArtifact = pGdrArtifact->GetFlexuralStressArtifactAtPoi( lastIntervalIdx, pgsTypes::ServiceI,pgsTypes::Compression,pmid[0].GetID() );
+   pArtifact = pGdrArtifact->GetFlexuralStressArtifactAtPoi( lastIntervalIdx, pgsTypes::ServiceI,pgsTypes::Compression,pmid.GetID() );
    fcTop = pArtifact->GetExternalEffects(pgsTypes::TopGirder);
 	value = -fcTop;
 
 	Float64 designLoadCompStress = ::ConvertFromSysUnits( value, unitMeasure::KSI );
 
 	/* 15. DESIGN LOAD TENSILE STRESS (BOT CL) */
-   pArtifact = pGdrArtifact->GetFlexuralStressArtifactAtPoi( lastIntervalIdx,pgsTypes::ServiceIII,pgsTypes::Tension,pmid[0].GetID() );
+   pArtifact = pGdrArtifact->GetFlexuralStressArtifactAtPoi( lastIntervalIdx,pgsTypes::ServiceIII,pgsTypes::Tension,pmid.GetID() );
    ftBot = pArtifact->GetExternalEffects(pgsTypes::BottomGirder);
 	value = -ftBot;
 
@@ -316,7 +322,7 @@ int TxDOT_WriteCADDataToFile (FILE *fp, IBroker* pBroker, const CGirderKey& gird
 
    /* 16. REQUIRED MINIMUM ULTIMATE MOMENT CAPACITY */
    MINMOMENTCAPDETAILS mmcd;
-   pMomentCapacity->GetMinMomentCapacityDetails(lastIntervalIdx,pmid[0],true,&mmcd);
+   pMomentCapacity->GetMinMomentCapacityDetails(lastIntervalIdx,pmid,true,&mmcd);
    value = Max(mmcd.Mu,mmcd.MrMin);
 
 	int reqMinUltimateMomentCapacity = (int)Round(::ConvertFromSysUnits( value, unitMeasure::KipFeet ));
@@ -331,7 +337,7 @@ int TxDOT_WriteCADDataToFile (FILE *fp, IBroker* pBroker, const CGirderKey& gird
    std::_tstring ns_strand_str;
    if (do_write_ns_data && !isExtendedVersion)
    {
-      ns_strand_str = MakeNonStandardStrandString(pBroker,pmid[0]);
+      ns_strand_str = MakeNonStandardStrandString(pBroker,pmid);
    }
 
    // WRITE DATA TO OUTPUT FILE
@@ -417,7 +423,7 @@ int TxDOT_WriteCADDataToFile (FILE *fp, IBroker* pBroker, const CGirderKey& gird
       {
          Float64 nEff;
          Float64 hs_ecc_end = pStrandGeometry->GetEccentricity(releaseIntervalIdx,pois,pgsTypes::Harped,&nEff);
-         Float64 hs_ecc_mid = pStrandGeometry->GetEccentricity(releaseIntervalIdx,pmid[0],pgsTypes::Harped,&nEff);
+         Float64 hs_ecc_mid = pStrandGeometry->GetEccentricity(releaseIntervalIdx,pmid,pgsTypes::Harped,&nEff);
          are_harped_straight = IsEqual(hs_ecc_end, hs_ecc_mid);
       }
 
@@ -474,8 +480,8 @@ int TxDOT_WriteCADDataToFile (FILE *fp, IBroker* pBroker, const CGirderKey& gird
          Float64 dstrandToEnd(0);
          Float64 dstrandToCL(0);
 
-         RowIndexType nrs = pStrandGeometry->GetNumRowsWithStrand(pmid[0],pgsTypes::Harped);
-         std::vector<StrandIndexType> strs = pStrandGeometry->GetStrandsInRow(pmid[0], nrs-1, pgsTypes::Harped);
+         RowIndexType nrs = pStrandGeometry->GetNumRowsWithStrand(pmid,pgsTypes::Harped);
+         std::vector<StrandIndexType> strs = pStrandGeometry->GetStrandsInRow(pmid, nrs-1, pgsTypes::Harped);
          numRaised = (Int16)strs.size();
 
          pStrandGeometry->GetHighestHarpedStrandLocationEnds(segmentKey, &value);
@@ -531,16 +537,16 @@ int TxDOT_WriteCADDataToFile (FILE *fp, IBroker* pBroker, const CGirderKey& gird
       pgsTypes::BridgeAnalysisType bat = pProductForces->GetBridgeAnalysisType(pgsTypes::Minimize);
 
    	/* 18. ESTIMATED CAMBER IMMEDIATELY BEFORE SLAB CASTING (MAX) */
-      value = pCamber->GetDCamberForGirderSchedule( pmid[0],CREEP_MAXTIME);
+      value = pCamber->GetDCamberForGirderSchedule( pmid,CREEP_MAXTIME);
       value = IsZero(value) ? 0 : value;
 
       Float64 initialCamber = ::ConvertFromSysUnits( value, unitMeasure::Inch );
 
    	/* 19. DEFLECTION (SLAB AND DIAPHRAGMS)  */
-      value = pProductForces->GetDeflection(lastIntervalIdx, pgsTypes::pftSlab,      pmid[0], bat, rtCumulative, false )
-            + pProductForces->GetDeflection(lastIntervalIdx, pgsTypes::pftSlabPad,   pmid[0], bat, rtCumulative, false )
-            + pProductForces->GetDeflection(lastIntervalIdx, pgsTypes::pftDiaphragm, pmid[0], bat, rtCumulative, false )
-            + pProductForces->GetDeflection(lastIntervalIdx, pgsTypes::pftShearKey,  pmid[0], bat, rtCumulative, false );
+      value = pProductForces->GetDeflection(lastIntervalIdx, pgsTypes::pftSlab,      pmid, bat, rtCumulative, false )
+            + pProductForces->GetDeflection(lastIntervalIdx, pgsTypes::pftSlabPad,   pmid, bat, rtCumulative, false )
+            + pProductForces->GetDeflection(lastIntervalIdx, pgsTypes::pftDiaphragm, pmid, bat, rtCumulative, false )
+            + pProductForces->GetDeflection(lastIntervalIdx, pgsTypes::pftShearKey,  pmid, bat, rtCumulative, false );
       value = IsZero(value) ? 0 : value;
 
       Float64 slabDiaphDeflection = ::ConvertFromSysUnits( value, unitMeasure::Inch );
@@ -548,7 +554,7 @@ int TxDOT_WriteCADDataToFile (FILE *fp, IBroker* pBroker, const CGirderKey& gird
    	/* 20. DEFLECTION (OVERLAY)  */
       if ( pBridge->HasOverlay() )
       {
-         value = pProductForces->GetDeflection(lastIntervalIdx, pgsTypes::pftOverlay, pmid[0], bat, rtCumulative, false );
+         value = pProductForces->GetDeflection(lastIntervalIdx, pgsTypes::pftOverlay, pmid, bat, rtCumulative, false );
          value = IsZero(value) ? 0 : value;
       }
       else
@@ -559,8 +565,8 @@ int TxDOT_WriteCADDataToFile (FILE *fp, IBroker* pBroker, const CGirderKey& gird
       Float64 overlayDeflection = ::ConvertFromSysUnits( value, unitMeasure::Inch );
 
    	/* 21. DEFLECTION (OTHER)  */
-      value =  pProductForces->GetDeflection(lastIntervalIdx, pgsTypes::pftTrafficBarrier, pmid[0], bat, rtCumulative, false );
-      value += pProductForces->GetDeflection(lastIntervalIdx, pgsTypes::pftSidewalk,       pmid[0], bat, rtCumulative, false );
+      value =  pProductForces->GetDeflection(lastIntervalIdx, pgsTypes::pftTrafficBarrier, pmid, bat, rtCumulative, false );
+      value += pProductForces->GetDeflection(lastIntervalIdx, pgsTypes::pftSidewalk,       pmid, bat, rtCumulative, false );
       value = IsZero(value) ? 0 : value;
 
       Float64 otherDeflection = ::ConvertFromSysUnits( value, unitMeasure::Inch );
@@ -570,12 +576,12 @@ int TxDOT_WriteCADDataToFile (FILE *fp, IBroker* pBroker, const CGirderKey& gird
 
    	/* 23. LOSSES (INITIAL)  */
       Float64 aps = pStrandGeometry->GetAreaPrestressStrands(segmentKey,releaseIntervalIdx,false);
-      value = pLosses->GetEffectivePrestressLoss(pmid[0],pgsTypes::Permanent,releaseIntervalIdx,pgsTypes::End) * aps;
+      value = pLosses->GetEffectivePrestressLoss(pmid,pgsTypes::Permanent,releaseIntervalIdx,pgsTypes::End) * aps;
 
       Float64 initialLoss = ::ConvertFromSysUnits( value, unitMeasure::Kip );
 
    	/* 24. LOSSES (FINAL)  */
-      value = pLosses->GetEffectivePrestressLoss(pmid[0],pgsTypes::Permanent,lastIntervalIdx,pgsTypes::End) * aps;
+      value = pLosses->GetEffectivePrestressLoss(pmid,pgsTypes::Permanent,lastIntervalIdx,pgsTypes::End) * aps;
 
       Float64 finalLoss = ::ConvertFromSysUnits( value, unitMeasure::Kip );
 

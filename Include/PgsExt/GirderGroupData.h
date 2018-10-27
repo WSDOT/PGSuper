@@ -27,6 +27,20 @@
 class CBridgeDescription2;
 class CPierData2;
 
+typedef struct CGirderTypeGroup
+{
+   GirderIndexType firstGdrIdx, lastGdrIdx;
+   std::_tstring strName;
+   const GirderLibraryEntry* pGdrEntry;
+} CGirderTypeGroup;
+
+typedef struct CGirderTopWidthGroup
+{
+   GirderIndexType firstGdrIdx, lastGdrIdx;
+   pgsTypes::TopWidthType type;
+   Float64 left[2], right[2]; // array index is pgsTypes::MemberEndType
+} CGirderTopWidthGroup;
+
 /*****************************************************************************
 CLASS 
    CGirderGroupData
@@ -146,6 +160,10 @@ public:
 
    // Gets the first/last girder index for the girders in a group
    void GetGirderTypeGroup(GroupIndexType girderTypeGroupIdx,GirderIndexType* pFirstGdrIdx,GirderIndexType* pLastGdrIdx,std::_tstring* strName) const;
+   CGirderTypeGroup GetGirderTypeGroup(GroupIndexType girderTypeGroupIdx) const;
+
+   std::vector<CGirderTypeGroup> GetGirderTypeGroups() const;
+   void SetGirderTypeGroups(const std::vector<CGirderTypeGroup>& girderTypeGroups);
 
    // returns the group index that the girder belongs to
    GroupIndexType FindGroup(GirderIndexType gdrIdx) const;
@@ -167,6 +185,45 @@ public:
    // returns the name of a girder
    LPCTSTR GetGirderName(GirderIndexType gdrIdx) const;
 
+   // =================================================================================
+   // Grouping of Girder Top Widths (3@6' 1@7'-3" 3@6'-6")
+   // Top width groups are only valid if IsTopWidthSpacing() returns true
+   // =================================================================================
+
+   // creates a group that spans the range of girder indices provided
+   // the other groups are re-factored
+   // returns the index of the new group
+   GroupIndexType CreateGirderTopWidthGroup(GirderIndexType firstGdrIdx, GirderIndexType lastGdrIdx);
+
+   // returns the number of girder top flange groups
+   GroupIndexType GetGirderTopWidthGroupCount() const;
+
+   // Gets the first/last girder index for the girders in a group
+   void GetGirderTopWidthGroup(GroupIndexType groupIdx, GirderIndexType* pFirstGdrIdx, GirderIndexType* pLastGdrIdx, pgsTypes::TopWidthType* pType,Float64* pLeftStart,Float64* pRightStart,Float64* pLeftEnd,Float64* pRightEnd) const;
+   CGirderTopWidthGroup GetGirderTopWidthGroup(GroupIndexType groupIdx) const;
+
+   std::vector<CGirderTopWidthGroup> GetGirderTopWidthGroups() const;
+   void SetGirderTopWidthGroups(const std::vector<CGirderTopWidthGroup>& girderTopWidthGroups);
+
+   // returns the group index that the girder belongs to
+   GroupIndexType FindGirderTopWidthGroup(GirderIndexType gdrIdx) const;
+
+   // expands girder top flange group so every girder is treated independently
+   // (un-joins girder groups)
+   void ExpandAllGirderTopWidthGroups();
+   void ExpandGirderTopWidthGroup(GroupIndexType girderTopWidthGroupIdx);
+
+   // joins girders together into a group. the last parameter is the index
+   // of the girder who's top flange width will be used for the group
+   void JoinAllGirderTopWidthGroups(GirderIndexType gdrIdx);
+   void JoinGirderTopWidthGroup(GirderIndexType firstGdrIdx, GirderIndexType lastGdrIdx, GirderIndexType gdrIdx);
+
+   // sets the top flange width of the girder used in the specified girder type group
+   void SetGirderTopWidth(GroupIndexType girderTypeGroupIdx,pgsTypes::TopWidthType type,Float64 leftStart,Float64 rightStart,Float64 leftEnd,Float64 rightEnd);
+   void GetGirderTopWidth(GirderIndexType gdrIdx, pgsTypes::TopWidthType* pType, Float64* pLeftStart, Float64* pRightStart,Float64* pLeftEnd,Float64* pRightEnd) const;
+
+
+   // =================================================================================
    void SetGirderLibraryEntry(GirderIndexType gdrIdx,const GirderLibraryEntry* pEntry);
    const GirderLibraryEntry* GetGirderLibraryEntry(GirderIndexType gdrIdx) const;
 
@@ -198,7 +255,7 @@ private:
    GroupIndexType m_GroupIdx;
    GroupIDType m_GroupID;
 
-   CBridgeDescription2* m_pBridge;
+   CBridgeDescription2* m_pBridgeDesc;
    CPierData2* m_pPier[2]; // pier at the start of the group
    PierIndexType m_PierIndex[2]; // pier index at the start of the group (INVALID_INDEX if m_pPier points to an actual pier)
 
@@ -206,8 +263,16 @@ private:
 
    std::vector<CSplicedGirderData*> m_Girders;
 
-   typedef std::pair<GirderIndexType,GirderIndexType> GirderTypeGroup; // index of first and last girder in the group
-   std::vector<GirderTypeGroup> m_GirderTypeGroups; // defines how girder lines are grouped
+   typedef std::pair<GirderIndexType,GirderIndexType> GirderGroup; // index of first and last girder in the group
+   std::vector<GirderGroup> m_GirderTypeGroups; // defines how girder types are grouped
+   std::vector<GirderGroup> m_GirderTopWidthGroups; // defines how top flange widths are grouped
+
+   void CreateGirderGroup(GirderIndexType firstGdrIdx, GirderIndexType lastGdrIdx, std::vector<GirderGroup>* pGroups, GroupIndexType* pNewGroupIdx);
+   void ExpandAll(std::vector<GirderGroup>* pGroups);
+   void Expand(GroupIndexType groupIdx, std::vector<GirderGroup>* pGroups);
+   void Join(GirderIndexType firstGdrIdx, GirderIndexType lastGdrIdx, GirderIndexType gdrIdx, std::vector<GirderGroup>* pGroups);
+   GroupIndexType FindGroup(GirderIndexType gdrIdx, const std::vector<GirderGroup>& groups) const;
+
 
    void RemoveGirder(GirderIndexType gdrIdx);
 

@@ -24,7 +24,6 @@
 
 #include "stdafx.h"
 #include "resource.h"
-#include "TxDOTAgent_i.h"
 #include "dllmain.h"
 
 

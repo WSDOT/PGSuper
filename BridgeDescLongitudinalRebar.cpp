@@ -98,27 +98,6 @@ void CGirderDescLongitudinalRebar::DoDataExchange(CDataExchange* pDX)
       int rowIdx = 1;
       for (const auto& row : rebarData.RebarRows)
       {
-         if (row.Cover < 0)
-         {
-            strMsg.Format(_T("The cover for row %d must be greater than zero."),rowIdx);
-            AfxMessageBox(strMsg);
-            pDX->Fail();
-         }
-
-         if (row.NumberOfBars == INVALID_INDEX)
-         {
-            strMsg.Format(_T("The number of bars in row %d must be greater than zero."),rowIdx);
-            AfxMessageBox(strMsg);
-            pDX->Fail();
-         }
-
-         if ( 1 < row.NumberOfBars && row.BarSpacing < 0)
-         {
-            strMsg.Format(_T("The bar spacing in row %d must be greater than zero."),rowIdx);
-            AfxMessageBox(strMsg);
-            pDX->Fail();
-         }
-
          // make sure bars are inside of girder - use shape symmetry
          gpPoint2d testpnt;
          testpnt.X() = row.BarSpacing * (row.NumberOfBars-1)/2.;
@@ -180,7 +159,7 @@ void CGirderDescLongitudinalRebar::RestoreToLibraryDefaults(CLongitudinalRebarDa
    ASSERT(pGirderEntry != 0);
 
    // update data 
-   pLongData->CopyGirderEntryData(*pGirderEntry);
+   pLongData->CopyGirderEntryData(pGirderEntry);
 }
 
 void CGirderDescLongitudinalRebar::GetRebarMaterial(matRebar::Type* pType,matRebar::Grade* pGrade)

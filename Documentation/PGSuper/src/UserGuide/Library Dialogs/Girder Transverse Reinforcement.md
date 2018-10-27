@@ -26,9 +26,9 @@ Zone Length | Length of the zone
 Bar Size | Size of the stirrup bar
 Spacing | Spacing of the stirrup bars within the zone
 \# of Vertical Legs | Number of vertical legs of stirrups in this zone
-\# of Legs Extended into Deck | Number of stirrup legs extended into the deck.
+\# of Legs Extended into Deck | Number of stirrup legs extended into the deck to be considered for horizontal interface shear capacity. If the bridge does not have a structural deck, this parameter is ignored.
 Confinement Base Size | Size of confinement bars
-Use Primary Bars for Splitting Resistance | Check the box to indicate that stirrups in the primary transverse reinforcement zones are to be utilized when evaluating splitting resistance at the girder ends (LRFD 5.10.10.1).
+Use Primary Bars for Splitting Resistance | Check the box to indicate that stirrups in the primary transverse reinforcement zones are to be utilized when evaluating splitting resistance at the girder ends (LRFD 5.9.4.4.1 (*pre-2017: 5.10.10.1*)).
 [Insert Row] | Inserts a row into the grid
 [Delete Row] | Removes a row from the grid
 

@@ -157,13 +157,11 @@ rptRcTable* CPretensionStressTable::Build(IBroker* pBroker,const CSegmentKey& se
    }
 
    GET_IFACE2(pBroker,IPointOfInterest,pPoi);
-   std::vector<pgsPointOfInterest> vPoi( pPoi->GetPointsOfInterest(segmentKey,POI_RELEASED_SEGMENT) );
-   std::vector<pgsPointOfInterest> vPoi2( pPoi->GetPointsOfInterest(segmentKey,POI_ERECTED_SEGMENT) );
-   std::vector<pgsPointOfInterest> vPoi3( pPoi->GetPointsOfInterest(segmentKey,POI_START_FACE | POI_END_FACE | POI_HARPINGPOINT | POI_PSXFER | POI_DEBOND,POIFIND_OR) );
-   vPoi.insert(vPoi.end(),vPoi2.begin(),vPoi2.end());
-   vPoi.insert(vPoi.end(),vPoi3.begin(),vPoi3.end());
-   std::sort(vPoi.begin(),vPoi.end());
-   vPoi.erase(std::unique(vPoi.begin(),vPoi.end()),vPoi.end());
+   PoiList vPoi;
+   pPoi->GetPointsOfInterest(segmentKey, POI_RELEASED_SEGMENT, &vPoi);
+   pPoi->GetPointsOfInterest(segmentKey, POI_ERECTED_SEGMENT, &vPoi);
+   pPoi->GetPointsOfInterest(segmentKey, POI_START_FACE | POI_END_FACE | POI_HARPINGPOINT | POI_PSXFER | POI_DEBOND, &vPoi, POIFIND_OR);
+   pPoi->SortPoiList(&vPoi);
    pPoi->RemovePointsOfInterest(vPoi,POI_CLOSURE);
    pPoi->RemovePointsOfInterest(vPoi,POI_BOUNDARY_PIER);
 
@@ -214,8 +212,8 @@ rptRcTable* CPretensionStressTable::Build(IBroker* pBroker,const CSegmentKey& se
                   (*p_table)(row, col) << Sub2(_T("P"), _T("e")) << _T(" (temporary) = ") << force.SetValue(Ft) << _T(" ") << Sub2(_T("e"), _T("t")) << _T(" = ") << ecc.SetValue(et) << rptNewLine;
                }
 
-               Float64 fTop = pPrestress->GetStress(intervalIdx, poi, pgsTypes::TopGirder, true/*include live load if applicable*/, pgsTypes::ServiceI);
-               Float64 fBot = pPrestress->GetStress(intervalIdx, poi, pgsTypes::BottomGirder, true/*include live load if applicable*/, pgsTypes::ServiceI);
+               Float64 fTop, fBot;
+               pPrestress->GetStress(intervalIdx, poi, pgsTypes::TopGirder, pgsTypes::BottomGirder,true/*include live load if applicable*/, pgsTypes::ServiceI, INVALID_INDEX/*controlling vehicle*/,&fTop,&fBot);
                (*p_table)(row, col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTop) << rptNewLine;
                (*p_table)(row, col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBot);
             }
@@ -230,8 +228,8 @@ rptRcTable* CPretensionStressTable::Build(IBroker* pBroker,const CSegmentKey& se
                   (*p_table)(row, col) << Sub2(_T("P"), _T("e")) << _T(" (temporary) = ") << force.SetValue(Ft) << _T(" ") << Sub2(_T("e"), _T("t")) << _T(" = ") << ecc.SetValue(et) << rptNewLine;
                }
 
-               Float64 fTop = pPrestress->GetStress(intervalIdx, poi, pgsTypes::TopGirder, true/*include live load if applicable*/, pgsTypes::ServiceI);
-               Float64 fBot = pPrestress->GetStress(intervalIdx, poi, pgsTypes::BottomGirder, true/*include live load if applicable*/, pgsTypes::ServiceI);
+               Float64 fTop, fBot;
+               pPrestress->GetStress(intervalIdx, poi, pgsTypes::TopGirder, pgsTypes::BottomGirder, true/*include live load if applicable*/, pgsTypes::ServiceI, INVALID_INDEX/*controlling vehicle*/, &fTop, &fBot);
                (*p_table)(row, col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTop) << rptNewLine;
                (*p_table)(row, col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBot) << rptNewLine;
 
@@ -246,8 +244,7 @@ rptRcTable* CPretensionStressTable::Build(IBroker* pBroker,const CSegmentKey& se
                   (*p_table)(row, col) << Sub2(_T("P"), _T("e")) << _T(" (temporary) = ") << force.SetValue(Ft) << _T(" ") << Sub2(_T("e"), _T("t")) << _T(" = ") << ecc.SetValue(et) << rptNewLine;
                }
 
-               fTop = pPrestress->GetStress(intervalIdx, poi, pgsTypes::TopGirder, true/*include live load if applicable*/, pgsTypes::ServiceIII);
-               fBot = pPrestress->GetStress(intervalIdx, poi, pgsTypes::BottomGirder, true/*include live load if applicable*/, pgsTypes::ServiceIII);
+               pPrestress->GetStress(intervalIdx, poi, pgsTypes::TopGirder, pgsTypes::BottomGirder, true/*include live load if applicable*/, pgsTypes::ServiceIII, INVALID_INDEX/*controlling vehicle*/, &fTop, &fBot);
                (*p_table)(row, col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTop) << rptNewLine;
                (*p_table)(row, col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBot) << rptNewLine;
 
@@ -265,8 +262,7 @@ rptRcTable* CPretensionStressTable::Build(IBroker* pBroker,const CSegmentKey& se
                   (*p_table)(row, col) << Sub2(_T("P"), _T("e")) << _T(" (temporary) = ") << force.SetValue(Ft) << _T(" ") << Sub2(_T("e"), _T("t")) << _T(" = ") << ecc.SetValue(et) << rptNewLine;
                }
 
-               fTop = pPrestress->GetStress(intervalIdx, poi, pgsTypes::TopGirder, true/*include live load if applicable*/, ls);
-               fBot = pPrestress->GetStress(intervalIdx, poi, pgsTypes::BottomGirder, true/*include live load if applicable*/, ls);
+               pPrestress->GetStress(intervalIdx, poi, pgsTypes::TopGirder, pgsTypes::BottomGirder, true/*include live load if applicable*/, ls, INVALID_INDEX/*controlling vehicle*/, &fTop, &fBot);
                (*p_table)(row, col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTop) << rptNewLine;
                (*p_table)(row, col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBot) << rptNewLine;
             }
@@ -295,8 +291,8 @@ rptRcTable* CPretensionStressTable::Build(IBroker* pBroker,const CSegmentKey& se
                   (*p_table)(row, col) << GetLimitStateString(limitState) << rptNewLine;
                   (*p_table)(row, col) << Sub2(_T("P"),_T("e")) << _T(" (permanent) = ") << force.SetValue(Fp) << _T(" ") << Sub2(_T("e"), _T("p")) << _T(" = ") << ecc.SetValue(ep) << rptNewLine;
 
-                  Float64 fTop = pPrestress->GetStress(loadRatingIntervalIdx, poi, pgsTypes::TopGirder, true/*include live load if applicable*/, limitState);
-                  Float64 fBot = pPrestress->GetStress(loadRatingIntervalIdx, poi, pgsTypes::BottomGirder, true/*include live load if applicable*/, limitState);
+                  Float64 fTop, fBot;
+                  pPrestress->GetStress(loadRatingIntervalIdx, poi, pgsTypes::TopGirder, pgsTypes::BottomGirder, true/*include live load if applicable*/, limitState,INVALID_INDEX/*controlling truck*/,&fTop,&fBot);
                   (*p_table)(row, col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTop) << rptNewLine;
                   (*p_table)(row, col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBot) << rptNewLine;
                }

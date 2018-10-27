@@ -54,7 +54,7 @@ private:
    pgsPointOfInterest m_InitialPOI;
    CGirderKey m_GirderKey;
 
-   std::vector<pgsPointOfInterest> m_vPOI;
+   PoiList m_vPOI;
    IntervalIndexType m_IntervalIdx;
    bool m_bUseAllLocations;
 

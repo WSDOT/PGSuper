@@ -31,7 +31,7 @@ class CCastDeckDlg : public CDialog
 	DECLARE_DYNAMIC(CCastDeckDlg)
 
 public:
-	CCastDeckDlg(const CTimelineManager& timelineMgr,EventIndexType eventIdx,BOOL bReadOnly,CWnd* pParent = nullptr);   // standard constructor
+	CCastDeckDlg(LPCTSTR lpszTitle,const CTimelineManager& timelineMgr,EventIndexType eventIdx,BOOL bReadOnly,CWnd* pParent = nullptr);   // standard constructor
 	virtual ~CCastDeckDlg();
 
 // Dialog Data
@@ -42,6 +42,7 @@ public:
 
 protected:
    BOOL m_bReadOnly;
+   CString m_strTitle;
 
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
 

@@ -83,44 +83,26 @@
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC60.props" />
-    <Import Project="..\..\BridgeLink\BridgeLink.props" />
-    <Import Project="..\..\WBFL\WBFL.props" />
-    <Import Project="..\..\BridgeLink\ObjectiveGrid.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC60.props" />
-    <Import Project="..\..\BridgeLink\BridgeLink.props" />
-    <Import Project="..\..\WBFL\WBFL.props" />
-    <Import Project="..\..\BridgeLink\ObjectiveGrid.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC60.props" />
-    <Import Project="..\..\BridgeLink\BridgeLink.props" />
-    <Import Project="..\..\WBFL\WBFL.props" />
-    <Import Project="..\..\BridgeLink\ObjectiveGrid.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Profile|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC60.props" />
-    <Import Project="..\..\BridgeLink\BridgeLink.props" />
-    <Import Project="..\..\WBFL\WBFL.props" />
-    <Import Project="..\..\BridgeLink\ObjectiveGrid.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC60.props" />
-    <Import Project="..\..\BridgeLink\BridgeLink.props" />
-    <Import Project="..\..\WBFL\WBFL.props" />
-    <Import Project="..\..\BridgeLink\ObjectiveGrid.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC60.props" />
-    <Import Project="..\..\BridgeLink\BridgeLink.props" />
-    <Import Project="..\..\WBFL\WBFL.props" />
-    <Import Project="..\..\BridgeLink\ObjectiveGrid.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
@@ -535,6 +517,7 @@
     <ClCompile Include="ShearZoneData.cpp" />
     <ClCompile Include="SpecClosurePage.cpp" />
     <ClCompile Include="SpecCreepPage.cpp" />
+    <ClCompile Include="SpecDeadLoadsPage.cpp" />
     <ClCompile Include="SpecDescrPage.cpp" />
     <ClCompile Include="SpecDesignPage.cpp" />
     <ClCompile Include="SpecGirderStressPage.cpp" />
@@ -542,7 +525,7 @@
     <ClCompile Include="SpecLibraryEntry.cpp" />
     <ClCompile Include="SpecLiftingPage.cpp" />
     <ClCompile Include="SpecLimitsPage.cpp" />
-    <ClCompile Include="SpecLoadsPage.cpp" />
+    <ClCompile Include="SpecLiveLoadsPage.cpp" />
     <ClCompile Include="SpecLossPage.cpp" />
     <ClCompile Include="SpecMainSheet.cpp" />
     <ClCompile Include="SpecMomentPage.cpp" />
@@ -566,16 +549,6 @@
     <ClCompile Include="TrafficBarrierViewDialog.cpp" />
     <ClCompile Include="UnitServer.cpp" />
     <ClCompile Include="WsdotHaulingDlg.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <Midl Include="PGSuperLibrary.idl">
-      <HeaderFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(RootDir)%(Directory)PGSuperLibrary_i.h</HeaderFileName>
-      <HeaderFileName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RootDir)%(Directory)PGSuperLibrary_i.h</HeaderFileName>
-      <HeaderFileName Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'">%(RootDir)%(Directory)PGSuperLibrary_i.h</HeaderFileName>
-      <HeaderFileName Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">%(RootDir)%(Directory)PGSuperLibrary_i.h</HeaderFileName>
-      <HeaderFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(RootDir)%(Directory)PGSuperLibrary_i.h</HeaderFileName>
-      <HeaderFileName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">%(RootDir)%(Directory)PGSuperLibrary_i.h</HeaderFileName>
-    </Midl>
   </ItemGroup>
   <ItemGroup>
     <None Include="LibraryAppPlugin.rgs" />
@@ -645,6 +618,7 @@
     <ClInclude Include="ACIConcretePage.h" />
     <ClInclude Include="BeamDimensionGrid.h" />
     <ClInclude Include="CEBFIPConcretePage.h" />
+    <ClInclude Include="CLSID.h" />
     <ClInclude Include="ConcreteEntryDlg.h" />
     <ClInclude Include="ConcreteEntryGeneralPage.h" />
     <ClInclude Include="ConnectionEntryDlg.h" />
@@ -672,7 +646,6 @@
     <ClInclude Include="LiveLoadFactorsPage.h" />
     <ClInclude Include="LongSteelGrid.h" />
     <ClInclude Include="LongSteelPage.h" />
-    <ClInclude Include="PGSuperLibrary_i.h" />
     <ClInclude Include="RatingDescriptionPage.h" />
     <ClInclude Include="RatingDialog.h" />
     <ClInclude Include="RenameLibraryEntry.h" />
@@ -682,6 +655,7 @@
     <ClInclude Include="ShearDesignPage.h" />
     <ClInclude Include="SpecClosurePage.h" />
     <ClInclude Include="SpecCreepPage.h" />
+    <ClInclude Include="SpecDeadLoadsPage.h" />
     <ClInclude Include="SpecDebondingPage.h" />
     <ClInclude Include="SpecDescrPage.h" />
     <ClInclude Include="SpecDesignPage.h" />
@@ -689,7 +663,7 @@
     <ClInclude Include="SpecHaulingErectionPage.h" />
     <ClInclude Include="SpecLiftingPage.h" />
     <ClInclude Include="SpecLimitsPage.h" />
-    <ClInclude Include="SpecLoadsPage.h" />
+    <ClInclude Include="SpecLiveLoadsPage.h" />
     <ClInclude Include="SpecLossPage.h" />
     <ClInclude Include="SpecMainSheet.h" />
     <ClInclude Include="SpecMomentPage.h" />
@@ -738,12 +712,6 @@
     <Image Include="res\Rating.ico" />
     <Image Include="res\specification.ico" />
     <Image Include="res\trafficbarrier.ico" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\PGSuperIDL\PGSuperIDL.vcxproj">
-      <Project>{8042f343-0709-45cc-90a6-97be1a70fc37}</Project>
-      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

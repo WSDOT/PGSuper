@@ -52,6 +52,11 @@ bool CAgeAdjustedMaterial::IsSegment()
    return m_bIsSegment;
 }
 
+bool CAgeAdjustedMaterial::IsLongitudinalJoint()
+{
+   return m_bIsLongitudinalJoint;
+}
+
 HRESULT CAgeAdjustedMaterial::FinalConstruct()
 {
    return S_OK;
@@ -84,6 +89,14 @@ STDMETHODIMP CAgeAdjustedMaterial::InitDeck(const CGirderKey& girderKey,IMateria
    return S_OK;
 }
 
+STDMETHODIMP CAgeAdjustedMaterial::InitLongitudinalJoint(const CSegmentKey& segmentKey, IMaterials* pMaterials)
+{
+   m_bIsLongitudinalJoint = true;
+   m_SegmentKey = segmentKey;
+   m_pMaterials = pMaterials;
+   return S_OK;
+}
+
 // IMaterial
 STDMETHODIMP CAgeAdjustedMaterial::get_E(StageIndexType stageIdx,Float64* E)
 {
@@ -99,6 +112,10 @@ STDMETHODIMP CAgeAdjustedMaterial::get_E(StageIndexType stageIdx,Float64* E)
    else if ( IsClosureJoint() )
    {
       *E = m_pMaterials->GetClosureJointAgeAdjustedEc(m_ClosureKey,intervalIdx);
+   }
+   else if (IsLongitudinalJoint())
+   {
+      *E = m_pMaterials->GetLongitudinalJointAgeAdjustedEc(intervalIdx);
    }
    else
    {
@@ -128,6 +145,10 @@ STDMETHODIMP CAgeAdjustedMaterial::get_Density(StageIndexType stageIdx,Float64* 
    else if ( IsClosureJoint() )
    {
       *w = m_pMaterials->GetClosureJointWeightDensity(m_ClosureKey,intervalIdx);
+   }
+   else if (IsLongitudinalJoint())
+   {
+      *w = m_pMaterials->GetLongitudinalJointWeightDensity(intervalIdx);
    }
    else
    {

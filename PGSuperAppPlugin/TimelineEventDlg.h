@@ -65,6 +65,7 @@ protected:
    afx_msg void OnRemoveActivities();
    afx_msg void OnCastClosureJoints();
    afx_msg void OnCastDeck();
+   afx_msg void OnCastLongitudinalJoints();
    afx_msg void OnApplyLoads();
    afx_msg void OnStressTendons();
 

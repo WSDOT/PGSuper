@@ -434,11 +434,13 @@ bool CBridgeGeometryModelBuilder::LayoutGirderLines(const CBridgeDescription2* p
    case pgsTypes::sbsUniform:
    case pgsTypes::sbsUniformAdjacent:
    case pgsTypes::sbsConstantAdjacent:
+   case pgsTypes::sbsUniformAdjacentWithTopWidth:
       bRetVal = LayoutUniformGirderLines(pBridgeDesc,pBridgeGeometry);
       break;
 
    case pgsTypes::sbsGeneral:
    case pgsTypes::sbsGeneralAdjacent:
+   case pgsTypes::sbsGeneralAdjacentWithTopWidth:
       bRetVal = LayoutGeneralGirderLines(pBridgeDesc,pBridgeGeometry);
       break;
 
@@ -455,7 +457,7 @@ bool CBridgeGeometryModelBuilder::LayoutUniformGirderLines(const CBridgeDescript
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IRoadwayData, pIAlignment);
    bool bAnglePointInAlignment = false;
-   const AlignmentData2& alignment_data = pIAlignment->GetAlignmentData2();
+   AlignmentData2 alignment_data = pIAlignment->GetAlignmentData2();
    for (const auto& hc : alignment_data.HorzCurves)
    {
       if (IsZero(hc.Radius))
@@ -500,11 +502,20 @@ bool CBridgeGeometryModelBuilder::LayoutUniformGirderLines(const CBridgeDescript
 #pragma Reminder("UPDATE: adjust girder spacing for spacing measurement type and location")
 
    pgsTypes::SupportedBeamSpacing spacingType = pBridgeDesc->GetGirderSpacingType();
-   Float64 spacing = pBridgeDesc->GetGirderSpacing();
-
-   if ( ::IsJointSpacing(spacingType) )
+   Float64 spacing;
+   if (IsTopWidthSpacing(spacingType))
    {
-      // the spacing is a joint spacing, need to add beam width
+      spacing = pBridgeDesc->GetGirderTopWidth() + pBridgeDesc->GetGirderSpacing();
+   }
+   else
+   {
+      spacing = pBridgeDesc->GetGirderSpacing();
+   }
+
+   if ( !IsTopWidthSpacing(spacingType) && IsJointSpacing(spacingType) )
+   {
+      // the spacing is a joint spacing and beam has a fixed top width (top width is not input)
+      // need to add beam width
 
       ATLASSERT(pBridgeDesc->UseSameGirderForEntireBridge() == true);
       const CSplicedGirderData* pGirder = pBridgeDesc->GetGirderGroup(GroupIndexType(0))->GetGirder(0);
@@ -1046,7 +1057,7 @@ Float64 CBridgeGeometryModelBuilder::GetLeftGirderOffset(IAlignment* pAlignment,
    // if the ref girder is measured from the bridge, convert it to being measured from the alignment
    if ( refGirderOffsetType == pgsTypes::omtBridge )
    {
-      refGirderOffset -= alignmentOffset;
+      refGirderOffset += alignmentOffset;
    }
 
    return refGirderOffset;
@@ -1126,12 +1137,20 @@ void CBridgeGeometryModelBuilder::ResolveSegmentSpacing(IBridgeGeometry* pBridge
    CComPtr<IPoint2d> pntOnStartMeasurementLine;
    locate->ByDistDir(startAlignmentPnt,-startRefGirderOffset,CComVariant(pStartMeasureDirection),0.0,&pntOnStartMeasurementLine);
 
+   //CComPtr<IDirection> normalToStartMeasurementLine;
+   //pStartMeasureDirection->Clone(&normalToStartMeasurementLine);
+   //normalToStartMeasurementLine->IncrementBy(CComVariant(-PI_OVER_2));
+
 
    CComPtr<IPoint2d> endAlignmentPnt;
    alignment->LocatePoint(CComVariant(endMeasureStation),omtNormal,0.0,CComVariant(0),&endAlignmentPnt);
 
    CComPtr<IPoint2d> pntOnEndMeasurementLine;
    locate->ByDistDir(endAlignmentPnt,-endRefGirderOffset,CComVariant(pEndMeasureDirection),0.0,&pntOnEndMeasurementLine);
+
+   //CComPtr<IDirection> normalToEndMeasurementLine;
+   //pEndMeasureDirection->Clone(&normalToEndMeasurementLine);
+   //normalToEndMeasurementLine->IncrementBy(CComVariant(-PI_OVER_2));
 
    CComPtr<IMeasure2> measure;
    cogoEngine->get_Measure(&measure);
@@ -1174,8 +1193,8 @@ void CBridgeGeometryModelBuilder::ResolveSegmentSpacing(IBridgeGeometry* pBridge
       if ( ::IsJointSpacing(spacingType) )
       {
          // spacing is a joint spacing
-         // need to add the left girder right width and the right girder left width on each side of the joint
-         // (can't assume layout is based on width/2 because of asymmetric girders)
+         // need to add half of the left girder right width and the right girder left width on each side of the joint
+         // can't assume layout is based on width/2 because of asymmetric girders)
          GirderIndexType leftGdrIdx  = spaceIdx;
          GirderIndexType rightGdrIdx = leftGdrIdx + 1;
 
@@ -1184,10 +1203,16 @@ void CBridgeGeometryModelBuilder::ResolveSegmentSpacing(IBridgeGeometry* pBridge
          const CSplicedGirderData* pLeftGirder  = pGroup->GetGirder(leftGdrIdx);
          const CSplicedGirderData* pRightGirder = pGroup->GetGirder(rightGdrIdx);
 
-         Float64 left_width  = GetGirderWidth(pLeftGirder);
-         Float64 right_width = GetGirderWidth(pRightGirder);
+         Float64 left_girder_left_width[2], left_girder_right_width[2];
+         Float64 right_girder_left_width[2], right_girder_right_width[2];
+         GetGirderWidth(pLeftGirder,  pgsTypes::metStart, &left_girder_left_width[pgsTypes::metStart],  &left_girder_right_width[pgsTypes::metStart]);
+         GetGirderWidth(pRightGirder, pgsTypes::metStart, &right_girder_left_width[pgsTypes::metStart], &right_girder_right_width[pgsTypes::metStart]);
 
-         Float64 width = (left_width + right_width)/2;
+         GetGirderWidth(pLeftGirder, pgsTypes::metEnd, &left_girder_left_width[pgsTypes::metEnd], &left_girder_right_width[pgsTypes::metEnd]);
+         GetGirderWidth(pRightGirder, pgsTypes::metEnd, &right_girder_left_width[pgsTypes::metEnd], &right_girder_right_width[pgsTypes::metEnd]);
+
+         Float64 start_width = left_girder_right_width[pgsTypes::metStart] + right_girder_left_width[pgsTypes::metStart];
+         Float64 end_width   = left_girder_right_width[pgsTypes::metEnd] + right_girder_left_width[pgsTypes::metEnd];
 
 
          // this is not the skew angle we want... width is measured normal to the CL segment
@@ -1219,26 +1244,15 @@ void CBridgeGeometryModelBuilder::ResolveSegmentSpacing(IBridgeGeometry* pBridge
          Float64 end_girder_skew;
          endAngle->get_Value(&end_girder_skew);
 
-         start_offset += width/cos(start_girder_skew);
-         end_offset   += width/cos(end_girder_skew);
+         start_offset += start_width/cos(start_girder_skew);
+         end_offset   += end_width/cos(end_girder_skew);
       }
 
       pntOnStartMeasurementLine.Release();
       locate->ByDistDir(startAlignmentPnt,-start_offset,CComVariant(pStartMeasureDirection),0.0,&pntOnStartMeasurementLine);
 
-      //startPnt.Release();
-      //intersect->Bearings(pntOnStartMeasurementLine,CComVariant(normalToStartMeasurementLine),0.0,startAlignmentPnt,CComVariant(pStartSupportDirection),0.0,&startPnt);
-
-      //(*ppStartPoints)->Add(startPnt);
-
-
       pntOnEndMeasurementLine.Release();
       locate->ByDistDir(endAlignmentPnt,-end_offset,CComVariant(pEndMeasureDirection),0.0,&pntOnEndMeasurementLine);
-
-      //endPnt.Release();
-      //intersect->Bearings(pntOnEndMeasurementLine,CComVariant(normalToEndMeasurementLine),0.0,endAlignmentPnt,CComVariant(pEndSupportDirection),0.0,&endPnt);
-
-      //(*ppEndPoints)->Add(endPnt);
 
       dirGirder.Release();
       measure->Direction(pntOnStartMeasurementLine,pntOnEndMeasurementLine,&dirGirder);
@@ -1284,10 +1298,19 @@ const CGirderGroupData* CBridgeGeometryModelBuilder::GetGirderGroup(const CGirde
    return pGroup;
 }
 
-Float64 CBridgeGeometryModelBuilder::GetGirderWidth(const CSplicedGirderData* pGirder)
+void CBridgeGeometryModelBuilder::GetGirderWidth(const CSplicedGirderData* pGirder,pgsTypes::MemberEndType endType,Float64* pLeft,Float64* pRight)
 {
-   const GirderLibraryEntry* pLibEntry = pGirder->GetGirderLibraryEntry();
-   return pLibEntry->GetBeamWidth(pgsTypes::metStart);
+   if (IsTopWidthSpacing(pGirder->GetGirderGroup()->GetBridgeDescription()->GetGirderSpacingType()))
+   {
+      pGirder->GetTopWidth(endType, pLeft, pRight);
+   }
+   else
+   {
+      const GirderLibraryEntry* pLibEntry = pGirder->GetGirderLibraryEntry();
+      Float64 w = pLibEntry->GetBeamWidth(endType);
+      *pLeft = w / 2;
+      *pRight = *pLeft;
+   }
 }
 
 void CBridgeGeometryModelBuilder::GetPierLineProperties(const CBridgeDescription2* pBridgeDesc,const CGirderSpacing2* pSpacing,Float64 skewAngle,Float64* pWidth,Float64* pOffset)

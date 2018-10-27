@@ -25,6 +25,7 @@
 #include <Graphing\EffectivePrestressGraphBuilder.h>
 #include <Graphing\DrawBeamTool.h>
 #include "EffectivePrestressGraphController.h"
+#include "EffectivePrestressGraphViewControllerImp.h"
 
 #include <EAF\EAFUtilities.h>
 #include <EAF\EAFDisplayUnits.h>
@@ -76,6 +77,19 @@ BOOL CEffectivePrestressGraphBuilder::CreateGraphController(CWnd* pParent,UINT n
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
    ATLASSERT(m_pGraphController != nullptr);
    return m_pGraphController->Create(pParent,IDD_EFFECTIVEPRESTRESS_GRAPH_CONTROLLER, CBRS_LEFT, nID);
+}
+
+void CEffectivePrestressGraphBuilder::CreateViewController(IEAFViewController** ppController)
+{
+   CComPtr<IEAFViewController> stdController;
+   __super::CreateViewController(&stdController);
+
+   CComObject<CEffectivePrestressGraphViewController>* pController;
+   CComObject<CEffectivePrestressGraphViewController>::CreateInstance(&pController);
+   pController->Init((CEffectivePrestressGraphController*)m_pGraphController, stdController);
+
+   (*ppController) = pController;
+   (*ppController)->AddRef();
 }
 
 CGraphBuilder* CEffectivePrestressGraphBuilder::Clone() const
@@ -170,7 +184,7 @@ void CEffectivePrestressGraphBuilder::UpdateGraphTitle(GroupIndexType grpIdx,Gir
       strGraphSubTitle.Format(_T("Group %d Girder %s Tendon %d"),LABEL_GROUP(grpIdx),LABEL_GIRDER(gdrIdx),LABEL_DUCT(ductIdx));
    }
    
-   m_Graph.SetTitle(_T("Effective Prestress"));
+   m_Graph.SetTitle(_T("Effective Prestress (without live load)"));
    m_Graph.SetSubtitle(strGraphSubTitle);
 }
 
@@ -194,7 +208,8 @@ void CEffectivePrestressGraphBuilder::UpdatePosttensionGraphData(GroupIndexType 
    // Get the points of interest we need.
    GET_IFACE(IPointOfInterest,pIPoi);
    CSegmentKey segmentKey(grpIdx,gdrIdx,ALL_SEGMENTS);
-   std::vector<pgsPointOfInterest> vPoi( pIPoi->GetPointsOfInterest( segmentKey ) );
+   PoiList vPoi;
+   pIPoi->GetPointsOfInterest(segmentKey, &vPoi);
 
    // Map POI coordinates to X-values for the graph
    std::vector<Float64> xVals;
@@ -247,12 +262,12 @@ void CEffectivePrestressGraphBuilder::UpdatePosttensionGraphData(GroupIndexType 
          dataSeries1 = m_Graph.CreateDataSeries(strLabel,PS_SOLID,penWeight,color);
       }
 
-      std::vector<pgsPointOfInterest>::iterator iter(vPoi.begin());
-      std::vector<pgsPointOfInterest>::iterator end(vPoi.end());
-      std::vector<Float64>::iterator xIter(xVals.begin());
+      auto iter(vPoi.begin());
+      auto end(vPoi.end());
+      auto xIter(xVals.begin());
       for ( ; iter != end; iter++, xIter++ )
       {
-         pgsPointOfInterest& poi = *iter;
+         const pgsPointOfInterest& poi = *iter;
 
          Float64 X = *xIter;
 
@@ -310,7 +325,8 @@ void CEffectivePrestressGraphBuilder::UpdatePretensionGraphData(GroupIndexType g
    // Get the points of interest we need.
    GET_IFACE(IPointOfInterest,pIPoi);
    CSegmentKey segmentKey(grpIdx,gdrIdx,ALL_SEGMENTS);
-   std::vector<pgsPointOfInterest> vPoi( pIPoi->GetPointsOfInterest( segmentKey ) );
+   PoiList vPoi;
+   pIPoi->GetPointsOfInterest(segmentKey, &vPoi);
 
    // Map POI coordinates to X-values for the graph
    std::vector<Float64> xVals;
@@ -343,12 +359,12 @@ void CEffectivePrestressGraphBuilder::UpdatePretensionGraphData(GroupIndexType g
       IndexType dataSeries = m_Graph.CreateDataSeries(strLabel,PS_SOLID,GRAPH_PEN_WEIGHT,color);
       IndexType dataSeries2 = m_Graph.CreateDataSeries(_T(""),PS_SOLID,GRAPH_PEN_WEIGHT,color);
 
-      std::vector<pgsPointOfInterest>::iterator iter(vPoi.begin());
-      std::vector<pgsPointOfInterest>::iterator end(vPoi.end());
-      std::vector<Float64>::iterator xIter(xVals.begin());
+      auto iter(vPoi.begin());
+      auto end(vPoi.end());
+      auto xIter(xVals.begin());
       for ( ; iter != end; iter++, xIter++ )
       {
-         pgsPointOfInterest& poi = *iter;
+         const pgsPointOfInterest& poi = *iter;
          const CSegmentKey& thisSegmentKey(poi.GetSegmentKey());
 
          IntervalIndexType stressStrandIntervalIdx = pIntervals->GetStressStrandInterval(thisSegmentKey);

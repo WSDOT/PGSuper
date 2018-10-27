@@ -33,6 +33,7 @@
 
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
+#include <IFace\BeamFactory.h>
 #include <EAF\EAFDisplayUnits.h>
 
 #include "SelectItemDlg.h"
@@ -76,7 +77,8 @@ void CGirderDescGeneralPage::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_MOD_ECI, m_ctrlEciCheck);
    DDX_Control(pDX, IDC_GIRDER_FC, m_ctrlFc);
 	DDX_Control(pDX, IDC_FCI, m_ctrlFci);
-	//}}AFX_DATA_MAP
+   DDX_Control(pDX, IDC_TOP_FLANGE_THICKENING, m_ctrlTopFlangeThickening);
+   //}}AFX_DATA_MAP
 
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
@@ -134,6 +136,72 @@ void CGirderDescGeneralPage::DoDataExchange(CDataExchange* pDX)
             CString msg;
             msg.Format(_T("The slab offset at the end of the girder must be at equal to the slab depth of %s"),FormatDimension(grossDeckThicknessEnd,pDisplayUnits->GetComponentDimUnit()));
             AfxMessageBox(msg,MB_ICONEXCLAMATION);
+            pDX->Fail();
+         }
+      }
+   }
+
+   pgsTypes::TopWidthType type;
+   Float64 leftStart, rightStart, leftEnd, rightEnd;
+   pParent->m_Girder.GetTopWidth(&type, &leftStart, &rightStart, &leftEnd, &rightEnd);
+   DDX_CBItemData(pDX, IDC_TOP_WIDTH_TYPE, type);
+   DDX_UnitValueAndTag(pDX, IDC_LEFT_TOP_WIDTH_START, IDC_LEFT_TOP_WIDTH_START_UNIT, leftStart, pDisplayUnits->GetXSectionDimUnit());
+   DDX_UnitValueAndTag(pDX, IDC_RIGHT_TOP_WIDTH_START, IDC_RIGHT_TOP_WIDTH_START_UNIT, rightStart, pDisplayUnits->GetXSectionDimUnit());
+   DDX_UnitValueAndTag(pDX, IDC_LEFT_TOP_WIDTH_END, IDC_LEFT_TOP_WIDTH_END_UNIT, leftEnd, pDisplayUnits->GetXSectionDimUnit());
+   DDX_UnitValueAndTag(pDX, IDC_RIGHT_TOP_WIDTH_END, IDC_RIGHT_TOP_WIDTH_END_UNIT, rightEnd, pDisplayUnits->GetXSectionDimUnit());
+
+   CComPtr<IBeamFactory> factory;
+   pParent->m_Girder.GetGirderLibraryEntry()->GetBeamFactory(&factory);
+
+   if (pDX->m_bSaveAndValidate && IsTopWidthSpacing(pParent->m_GirderSpacingType))
+   {
+      if (type == pgsTypes::twtAsymmetric)
+      {
+         Float64 topWidth = leftStart + rightStart;
+         DDV_UnitValueLimitOrMore(pDX, IDC_LEFT_TOP_WIDTH_START, topWidth, m_MinTopWidth, pDisplayUnits->GetXSectionDimUnit());
+         DDV_UnitValueLimitOrLess(pDX, IDC_LEFT_TOP_WIDTH_START, topWidth, m_MaxTopWidth, pDisplayUnits->GetXSectionDimUnit());
+
+         if (factory->CanTopWidthVary())
+         {
+            topWidth = leftEnd + rightEnd;
+            DDV_UnitValueLimitOrMore(pDX, IDC_LEFT_TOP_WIDTH_END, topWidth, m_MinTopWidth, pDisplayUnits->GetXSectionDimUnit());
+            DDV_UnitValueLimitOrLess(pDX, IDC_LEFT_TOP_WIDTH_END, topWidth, m_MaxTopWidth, pDisplayUnits->GetXSectionDimUnit());
+         }
+      }
+      else
+      {
+         DDV_UnitValueLimitOrMore(pDX, IDC_LEFT_TOP_WIDTH_START, leftStart, m_MinTopWidth, pDisplayUnits->GetXSectionDimUnit());
+         DDV_UnitValueLimitOrLess(pDX, IDC_LEFT_TOP_WIDTH_START, leftStart, m_MaxTopWidth, pDisplayUnits->GetXSectionDimUnit());
+
+         if (factory->CanTopWidthVary())
+         {
+            DDV_UnitValueLimitOrMore(pDX, IDC_LEFT_TOP_WIDTH_END, leftEnd, m_MinTopWidth, pDisplayUnits->GetXSectionDimUnit());
+            DDV_UnitValueLimitOrLess(pDX, IDC_LEFT_TOP_WIDTH_END, leftEnd, m_MaxTopWidth, pDisplayUnits->GetXSectionDimUnit());
+         }
+      }
+      pParent->m_Girder.SetTopWidth(type,leftStart,rightStart,leftEnd,rightEnd);
+   }
+
+   if (factory->HasTopFlangeThickening())
+   {
+      DDX_CBItemData(pDX, IDC_TOP_FLANGE_THICKENING_TYPE, pParent->m_pSegment->TopFlangeThickeningType);
+      DDX_UnitValueAndTag(pDX, IDC_TOP_FLANGE_THICKENING, IDC_TOP_FLANGE_THICKENING_UNIT, pParent->m_pSegment->TopFlangeThickening, pDisplayUnits->GetComponentDimUnit());
+   }
+
+   DDX_UnitValueAndTag(pDX, IDC_PRECAMBER, IDC_PRECAMBER_UNIT, pParent->m_pSegment->Precamber, pDisplayUnits->GetComponentDimUnit());
+   if (pDX->m_bSaveAndValidate)
+   {
+      // precamber and tts are defined on different tabs.
+      // we can change precamber without changing TTS and this will result in incompatible input
+      if (!IsZero(pParent->m_pSegment->Precamber) && pParent->m_pSegment->Strands.GetTemporaryStrandUsage() == pgsTypes::ttsPretensioned && pParent->m_pSegment->Strands.GetStrandCount(pgsTypes::Temporary) != 0)
+      {
+         if (AfxMessageBox(_T("Temporary strands must be post-tensioned when girders are precambered.\nWould you like to post-tension temporary strands immediately before lifting?"), MB_YESNO) == IDYES)
+         {
+            pParent->m_pSegment->Strands.SetTemporaryStrandUsage(pgsTypes::ttsPTBeforeLifting);
+         }
+         else
+         {
+            pDX->PrepareCtrl(IDC_PRECAMBER);
             pDX->Fail();
          }
       }
@@ -230,7 +298,9 @@ BEGIN_MESSAGE_MAP(CGirderDescGeneralPage, CPropertyPage)
    ON_CBN_DROPDOWN(IDC_CONSTRUCTION_EVENT, OnConstructionEventChanging)
    ON_CBN_SELCHANGE(IDC_ERECTION_EVENT, OnErectionEventChanged)
    ON_CBN_DROPDOWN(IDC_ERECTION_EVENT, OnErectionEventChanging)
+   ON_CBN_SELCHANGE(IDC_TOP_WIDTH_TYPE, OnTopWidthTypeChanged)
 	//}}AFX_MSG_MAP
+   ON_CBN_SELCHANGE(IDC_TOP_FLANGE_THICKENING_TYPE, &CGirderDescGeneralPage::OnTopFlangeThickeningTypeChanged)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -263,6 +333,115 @@ BOOL CGirderDescGeneralPage::OnInitDialog()
    pcbConditionFactor->AddString(_T("Other"));
    pcbConditionFactor->SetCurSel(0);
 
+   // fill top flange thickening type combo box
+   CComboBox* pcbTopFlangeThickening = (CComboBox*)GetDlgItem(IDC_TOP_FLANGE_THICKENING_TYPE);
+   int idx = pcbTopFlangeThickening->AddString(_T("none"));
+   pcbTopFlangeThickening->SetItemData(idx, (DWORD_PTR)pgsTypes::tftNone);
+
+   idx = pcbTopFlangeThickening->AddString(_T("at ends"));
+   pcbTopFlangeThickening->SetItemData(idx, (DWORD_PTR)pgsTypes::tftEnds);
+
+   idx = pcbTopFlangeThickening->AddString(_T("at middle"));
+   pcbTopFlangeThickening->SetItemData(idx, (DWORD_PTR)pgsTypes::tftMiddle);
+
+   CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
+   CComPtr<IBeamFactory> factory;
+   pParent->m_Girder.GetGirderLibraryEntry()->GetBeamFactory(&factory);
+
+   // fill top width combo box
+   CComboBox* pcbTopWidthTypes = (CComboBox*)GetDlgItem(IDC_TOP_WIDTH_TYPE);
+   std::vector<pgsTypes::TopWidthType> vTopWidthTypes = factory->GetSupportedTopWidthTypes();
+   for (auto type : vTopWidthTypes)
+   {
+      int idx = pcbTopWidthTypes->AddString(GetTopWidthType(type));
+      pcbTopWidthTypes->SetItemData(idx,(DWORD_PTR)type);
+   }
+
+   if (IsTopWidthSpacing(pParent->m_GirderSpacingType))
+   {
+      BOOL bEnable = IsBridgeSpacing(pParent->m_GirderSpacingType) ? FALSE : TRUE;
+      GetDlgItem(IDC_TOP_WIDTH_LABEL)->EnableWindow(bEnable);
+      GetDlgItem(IDC_TOP_WIDTH_TYPE)->EnableWindow(bEnable);
+      GetDlgItem(IDC_LEFT_TOP_WIDTH_LABEL)->EnableWindow(bEnable);
+      GetDlgItem(IDC_LEFT_TOP_WIDTH_START)->EnableWindow(bEnable);
+      GetDlgItem(IDC_LEFT_TOP_WIDTH_START_UNIT)->EnableWindow(bEnable);
+      GetDlgItem(IDC_LEFT_TOP_WIDTH_END)->EnableWindow(bEnable);
+      GetDlgItem(IDC_LEFT_TOP_WIDTH_END_UNIT)->EnableWindow(bEnable);
+      GetDlgItem(IDC_RIGHT_TOP_WIDTH_LABEL)->EnableWindow(bEnable);
+      GetDlgItem(IDC_RIGHT_TOP_WIDTH_START)->EnableWindow(bEnable);
+      GetDlgItem(IDC_RIGHT_TOP_WIDTH_START_UNIT)->EnableWindow(bEnable);
+      GetDlgItem(IDC_RIGHT_TOP_WIDTH_END)->EnableWindow(bEnable);
+      GetDlgItem(IDC_RIGHT_TOP_WIDTH_END_UNIT)->EnableWindow(bEnable);
+      GetDlgItem(IDC_ALLOWABLE_TOP_WIDTH)->EnableWindow(bEnable);
+      GetDlgItem(IDC_TOP_WIDTH_START_LABEL)->EnableWindow(bEnable);
+      GetDlgItem(IDC_TOP_WIDTH_END_LABEL)->EnableWindow(bEnable);
+
+      if (!factory->CanTopWidthVary())
+      {
+         GetDlgItem(IDC_TOP_WIDTH_START_LABEL)->ShowWindow(SW_HIDE);
+         GetDlgItem(IDC_TOP_WIDTH_END_LABEL)->ShowWindow(SW_HIDE);
+
+         GetDlgItem(IDC_LEFT_TOP_WIDTH_END)->ShowWindow(SW_HIDE);
+         GetDlgItem(IDC_LEFT_TOP_WIDTH_END_UNIT)->ShowWindow(SW_HIDE);
+
+         GetDlgItem(IDC_RIGHT_TOP_WIDTH_END)->ShowWindow(SW_HIDE);
+         GetDlgItem(IDC_RIGHT_TOP_WIDTH_END_UNIT)->ShowWindow(SW_HIDE);
+      }
+
+      const GirderLibraryEntry::Dimensions& dimensions = pParent->m_Girder.GetGirderLibraryEntry()->GetDimensions();
+      factory->GetAllowableTopWidthRange(dimensions, &m_MinTopWidth, &m_MaxTopWidth);
+
+      CString strLabel;
+      strLabel.Format(_T("(%s to %s)"),
+         FormatDimension(m_MinTopWidth, pDisplayUnits->GetXSectionDimUnit()),
+         FormatDimension(m_MaxTopWidth, pDisplayUnits->GetXSectionDimUnit()));
+
+      GetDlgItem(IDC_ALLOWABLE_TOP_WIDTH)->SetWindowText(strLabel);
+   }
+   else
+   {
+      GetDlgItem(IDC_TOP_WIDTH_LABEL)->ShowWindow(SW_HIDE);
+      GetDlgItem(IDC_TOP_WIDTH_TYPE)->ShowWindow(SW_HIDE);
+      GetDlgItem(IDC_LEFT_TOP_WIDTH_LABEL)->ShowWindow(SW_HIDE);
+      GetDlgItem(IDC_LEFT_TOP_WIDTH_START)->ShowWindow(SW_HIDE);
+      GetDlgItem(IDC_LEFT_TOP_WIDTH_START_UNIT)->ShowWindow(SW_HIDE);
+      GetDlgItem(IDC_RIGHT_TOP_WIDTH_LABEL)->ShowWindow(SW_HIDE);
+      GetDlgItem(IDC_RIGHT_TOP_WIDTH_START)->ShowWindow(SW_HIDE);
+      GetDlgItem(IDC_RIGHT_TOP_WIDTH_START_UNIT)->ShowWindow(SW_HIDE);
+      GetDlgItem(IDC_RIGHT_TOP_WIDTH_END)->ShowWindow(SW_HIDE);
+      GetDlgItem(IDC_RIGHT_TOP_WIDTH_END_UNIT)->ShowWindow(SW_HIDE);
+      GetDlgItem(IDC_ALLOWABLE_TOP_WIDTH)->ShowWindow(SW_HIDE);
+      GetDlgItem(IDC_TOP_WIDTH_START_LABEL)->ShowWindow(SW_HIDE);
+      GetDlgItem(IDC_TOP_WIDTH_END_LABEL)->ShowWindow(SW_HIDE);
+   }
+
+   if (factory->HasTopFlangeThickening())
+   {
+      GetDlgItem(IDC_TOP_FLANGE_THICKENING_LABEL)->EnableWindow(TRUE);
+      GetDlgItem(IDC_TOP_FLANGE_THICKENING_TYPE)->EnableWindow(TRUE);
+      GetDlgItem(IDC_TOP_FLANGE_THICKENING)->EnableWindow(TRUE);
+      GetDlgItem(IDC_TOP_FLANGE_THICKENING_UNIT)->EnableWindow(TRUE);
+   }
+   else
+   {
+      GetDlgItem(IDC_TOP_FLANGE_THICKENING_LABEL)->ShowWindow(SW_HIDE);
+      GetDlgItem(IDC_TOP_FLANGE_THICKENING_TYPE)->ShowWindow(SW_HIDE);
+      GetDlgItem(IDC_TOP_FLANGE_THICKENING)->ShowWindow(SW_HIDE);
+      GetDlgItem(IDC_TOP_FLANGE_THICKENING_UNIT)->ShowWindow(SW_HIDE);
+   }
+
+   if (!factory->CanPrecamber())
+   {
+      GetDlgItem(IDC_PRECAMBER_LABEL)->ShowWindow(SW_HIDE);
+      GetDlgItem(IDC_PRECAMBER)->ShowWindow(SW_HIDE);
+      GetDlgItem(IDC_PRECAMBER_UNIT)->ShowWindow(SW_HIDE);
+   }
+
+   if (!IsTopWidthSpacing(pParent->m_GirderSpacingType) && !factory->HasTopFlangeThickening() && !factory->CanPrecamber())
+   {
+      GetDlgItem(IDC_GIRDER_MODIFIERS_NOTE)->SetWindowText(_T("This girder does not have modifiers"));
+   }
+
    GET_IFACE2(pBroker,ISpecification, pSpec );
    m_bCanAssExcessCamberInputBeEnabled = pSpec->IsAssExcessCamberInputEnabled();
 
@@ -277,8 +456,12 @@ BOOL CGirderDescGeneralPage::OnInitDialog()
 
    CPropertyPage::OnInitDialog();
 
+   m_ctrlTopFlangeThickening.ShowDefaultWhenDisabled(FALSE);
+   OnTopFlangeThickeningTypeChanged();
+
+   OnTopWidthTypeChanged();
+
    // initialize the event combo boxes
-   CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
    EventIDType constructionEventID = pParent->m_TimelineMgr.GetSegmentConstructionEventID(pParent->m_SegmentID);
    EventIDType erectionEventID = pParent->m_TimelineMgr.GetSegmentErectionEventID(pParent->m_SegmentID);
    CDataExchange dx(this,FALSE);
@@ -502,8 +685,9 @@ void CGirderDescGeneralPage::UpdateEci()
    int method = 0;
    if ( m_LossMethod == pgsTypes::TIME_STEP )
    {
-      int i = GetCheckedRadioButton(IDC_FC1,IDC_FC2);
-      if ( i == IDC_FC2 )
+      int nIDC = GetCheckedRadioButton(IDC_FC1,IDC_FC2);
+      ATLASSERT(nIDC != 0); // 0 means nothing is selected
+      if ( nIDC == IDC_FC2 )
       {
          // concrete model is based on f'c
          if ( m_ctrlEcCheck.GetCheck() == TRUE )
@@ -626,9 +810,10 @@ void CGirderDescGeneralPage::UpdateEc()
    int method = 0;
    if ( m_LossMethod == pgsTypes::TIME_STEP )
    {
-      int i = GetCheckedRadioButton(IDC_FC1,IDC_FC2);
+      int nIDC = GetCheckedRadioButton(IDC_FC1,IDC_FC2);
+      ATLASSERT(nIDC != 0); // 0 means nothing is selected
 
-      if ( i == IDC_FC1 )
+      if ( nIDC == IDC_FC1 )
       {
          // concrete model is based on f'ci
          if ( m_ctrlEciCheck.GetCheck() == TRUE )
@@ -726,8 +911,9 @@ void CGirderDescGeneralPage::UpdateFc()
 {
    if ( m_LossMethod == pgsTypes::TIME_STEP )
    {
-      int i = GetCheckedRadioButton(IDC_FC1,IDC_FC2);
-      if ( i == IDC_FC1 )
+      int nIDC = GetCheckedRadioButton(IDC_FC1,IDC_FC2);
+      ATLASSERT(nIDC != 0); // 0 means nothing is selected
+      if ( nIDC == IDC_FC1 )
       {
          // concrete model is based on f'ci... compute f'c
          // Get f'ci from edit control
@@ -770,8 +956,9 @@ void CGirderDescGeneralPage::UpdateFci()
 {
    if ( m_LossMethod == pgsTypes::TIME_STEP )
    {
-      int i = GetCheckedRadioButton(IDC_FC1,IDC_FC2);
-      if ( i == IDC_FC2 )
+      int nIDC = GetCheckedRadioButton(IDC_FC1,IDC_FC2);
+      ATLASSERT(nIDC != 0); // 0 means nothing is selected
+      if ( nIDC == IDC_FC2 )
       {
          // concrete model is based on f'ci... compute f'c
          // Get f'c from edit control
@@ -927,11 +1114,12 @@ void CGirderDescGeneralPage::UpdateConcreteControls(bool bSkipEcCheckBoxes)
 {
    if ( m_LossMethod == pgsTypes::TIME_STEP )
    {
-      int i = GetCheckedRadioButton(IDC_FC1,IDC_FC2);
+      int nIDC = GetCheckedRadioButton(IDC_FC1,IDC_FC2);
+      ATLASSERT(nIDC != 0); // 0 means nothing is selected
       INT idFci[5] = {IDC_FCI,       IDC_FCI_UNIT,       IDC_MOD_ECI, IDC_ECI, IDC_ECI_UNIT};
       INT idFc[5]  = {IDC_GIRDER_FC, IDC_GIRDER_FC_UNIT, IDC_MOD_EC,  IDC_EC,  IDC_EC_UNIT };
 
-      BOOL bEnableFci = (i == IDC_FC1);
+      BOOL bEnableFci = (nIDC == IDC_FC1);
 
       for ( int j = 0; j < 5; j++ )
       {
@@ -941,13 +1129,13 @@ void CGirderDescGeneralPage::UpdateConcreteControls(bool bSkipEcCheckBoxes)
 
       if ( !bSkipEcCheckBoxes )
       {
-         if ( i == IDC_FC1 ) // input based on f'ci
+         if ( nIDC == IDC_FC1 ) // input based on f'ci
          {
             m_ctrlEciCheck.SetCheck(m_ctrlEcCheck.GetCheck());
             m_ctrlEcCheck.SetCheck(FALSE); // can't check Ec
          }
 
-         if ( i == IDC_FC2 ) // input is based on f'ci
+         if ( nIDC == IDC_FC2 ) // input is based on f'ci
          {
             m_ctrlEcCheck.SetCheck(m_ctrlEciCheck.GetCheck());
             m_ctrlEciCheck.SetCheck(FALSE); // can't check Eci
@@ -1431,4 +1619,33 @@ EventIDType CGirderDescGeneralPage::CreateEvent()
   }
 
    return INVALID_ID;
+}
+
+void CGirderDescGeneralPage::OnTopFlangeThickeningTypeChanged()
+{
+   CComboBox* pcbTopFlangeThickeningType = (CComboBox*)GetDlgItem(IDC_TOP_FLANGE_THICKENING_TYPE);
+   int sel = pcbTopFlangeThickeningType->GetCurSel();
+   pgsTypes::TopFlangeThickeningType thickeningType = (pgsTypes::TopFlangeThickeningType)(pcbTopFlangeThickeningType->GetItemData(sel));
+   m_ctrlTopFlangeThickening.EnableWindow(thickeningType == pgsTypes::tftNone ? FALSE : TRUE);
+}
+
+void CGirderDescGeneralPage::OnTopWidthTypeChanged()
+{
+   CComboBox* pCB = (CComboBox*)GetDlgItem(IDC_TOP_WIDTH_TYPE);
+   int curSel = pCB->GetCurSel();
+   pgsTypes::TopWidthType type = (pgsTypes::TopWidthType)(pCB->GetItemData(curSel));
+   int nShowCommand = (type == pgsTypes::twtAsymmetric ? SW_SHOW : SW_HIDE);
+   GetDlgItem(IDC_LEFT_TOP_WIDTH_LABEL)->ShowWindow(nShowCommand);
+   GetDlgItem(IDC_RIGHT_TOP_WIDTH_LABEL)->ShowWindow(nShowCommand);
+   GetDlgItem(IDC_RIGHT_TOP_WIDTH_START)->ShowWindow(nShowCommand);
+   GetDlgItem(IDC_RIGHT_TOP_WIDTH_START_UNIT)->ShowWindow(nShowCommand);
+
+   CComPtr<IBeamFactory> factory;
+   CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
+   pParent->m_Girder.GetGirderLibraryEntry()->GetBeamFactory(&factory);
+   if (factory->CanTopWidthVary())
+   {
+      GetDlgItem(IDC_RIGHT_TOP_WIDTH_END)->ShowWindow(nShowCommand);
+      GetDlgItem(IDC_RIGHT_TOP_WIDTH_END_UNIT)->ShowWindow(nShowCommand);
+   }
 }

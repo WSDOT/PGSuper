@@ -78,7 +78,9 @@ BEGIN_MESSAGE_MAP(CPGSuperDoc, CPGSDocBase)
 	ON_COMMAND(ID_PROJECT_ANALYSIS, OnProjectAnalysis)
 	ON_COMMAND(ID_EDIT_HAUNCH, OnEditHaunch)
    ON_UPDATE_COMMAND_UI(ID_EDIT_HAUNCH,OnUpdateEditHaunch)
-   ON_COMMAND(ID_EDIT_TIMELINE,OnEditTimeline)
+	ON_COMMAND(ID_EDIT_HAUNCH, OnEditHaunch)
+	ON_COMMAND(ID_EDIT_BEARING, OnEditBearing)
+   ON_UPDATE_COMMAND_UI(ID_EDIT_BEARING,OnUpdateEditBearing)
    //}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -209,8 +211,12 @@ bool CPGSuperDoc::EditGirderSegmentDescription(const CSegmentKey& segmentKey,int
       newGirderData.m_bUseSameGirder = dlg.m_General.m_bUseSameGirderType;
       newGirderData.m_TimelineMgr = dlg.m_TimelineMgr;
 
-      // copy original girder and then modify the segment that changed
+      // copy original girder and then modify the data that changed
       newGirderData.m_Girder = *pGirder;
+      pgsTypes::TopWidthType type;
+      Float64 leftStart, rightStart, leftEnd, rightEnd;
+      dlg.m_Girder.GetTopWidth(&type, &leftStart, &rightStart, &leftEnd, &rightEnd);
+      newGirderData.m_Girder.SetTopWidth(type,leftStart,rightStart,leftEnd,rightEnd);
       *newGirderData.m_Girder.GetSegment(segmentKey.segmentIndex) = *dlg.GetSegment();
 
       newGirderData.m_SlabOffsetType = dlg.m_General.m_SlabOffsetType;
@@ -224,6 +230,10 @@ bool CPGSuperDoc::EditGirderSegmentDescription(const CSegmentKey& segmentKey,int
 
       newGirderData.m_Girder.SetConditionFactorType(dlg.GetConditionFactorType());
       newGirderData.m_Girder.SetConditionFactor(dlg.GetConditionFactor());
+
+      newGirderData.m_BearingType = dlg.m_SpanGdrDetailsBearingsPage.m_BearingInputData.m_BearingType;
+      newGirderData.m_BearingData[pgsTypes::metStart] = dlg.m_SpanGdrDetailsBearingsPage.m_Bearings[0];
+      newGirderData.m_BearingData[pgsTypes::metEnd] = dlg.m_SpanGdrDetailsBearingsPage.m_Bearings[1];
 
       txnTransaction* pTxn = new txnEditGirder(girderKey,newGirderData);
 

@@ -28,6 +28,8 @@
 #include "BridgeViewPane.h"
 #include <map>
 
+class CSelection;
+
 /////////////////////////////////////////////////////////////////////////////
 // CBridgePlanView view
 
@@ -154,6 +156,7 @@ protected:
    void BuildTemporarySupportDisplayObjects();
    void BuildClosureJointDisplayObjects();
    void BuildSegmentDisplayObjects();
+   void BuildLongitudinalJointDisplayObject();
    void BuildGirderDisplayObjects();
    void BuildSpanDisplayObjects();
    void BuildSlabDisplayObjects();

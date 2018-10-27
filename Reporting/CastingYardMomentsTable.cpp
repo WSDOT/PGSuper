@@ -83,7 +83,16 @@ rptRcTable* CCastingYardMomentsTable::Build(IBroker* pBroker,const CSegmentKey& 
 
    location.IncludeSpanAndGirder(segmentKey.groupIndex == ALL_GROUPS ? true : false);
 
-   rptRcTable* p_table = rptStyleManager::CreateDefaultTable(4,strTableTitle);
+   GET_IFACE2(pBroker, IBridge, pBridge);
+   bool bReportXDeflection = pBridge->HasAsymmetricGirders();
+
+   ColumnIndexType nColumns = 4;
+   if (bReportXDeflection)
+   {
+      nColumns++;
+   }
+
+   rptRcTable* p_table = rptStyleManager::CreateDefaultTable(nColumns,strTableTitle);
 
    if (segmentKey.groupIndex == ALL_GROUPS)
    {
@@ -93,18 +102,26 @@ rptRcTable* CCastingYardMomentsTable::Build(IBroker* pBroker,const CSegmentKey& 
 
    // Set up table headings
    ColumnIndexType col = 0;
-   (*p_table)(0,col++) << COLHDR(RPT_GDR_END_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
-   (*p_table)(0,col++) << COLHDR(_T("Moment"), rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
-   (*p_table)(0,col++) << COLHDR(_T("Shear"),  rptForceUnitTag,  pDisplayUnits->GetShearUnit() );
-   (*p_table)(0,col++) << COLHDR(_T("Deflection"),  rptLengthUnitTag,  pDisplayUnits->GetDeflectionUnit() );
+   (*p_table)(0, col++) << COLHDR(RPT_GDR_END_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+   (*p_table)(0, col++) << COLHDR(_T("Moment"), rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
+   (*p_table)(0, col++) << COLHDR(_T("Shear"),  rptForceUnitTag,  pDisplayUnits->GetShearUnit() );
+   if (bReportXDeflection)
+   {
+      (*p_table)(0, col++) << COLHDR(_T("Deflection X"), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
+      (*p_table)(0, col++) << COLHDR(_T("Deflection Y"), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
+   }
+   else
+   {
+      (*p_table)(0, col++) << COLHDR(_T("Deflection"), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
+   }
 
    // Get the interface pointers we need
    GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
-   std::vector<pgsPointOfInterest> vPoi( pIPoi->GetPointsOfInterest(segmentKey,poiRefAttribute) );
-   std::vector<pgsPointOfInterest> vPoi2( pIPoi->GetPointsOfInterest(segmentKey,POI_START_FACE | POI_END_FACE | POI_HARPINGPOINT | POI_PSXFER | POI_DEBOND,POIFIND_OR) );
-   vPoi.insert(vPoi.end(),vPoi2.begin(),vPoi2.end());
-   std::sort(vPoi.begin(),vPoi.end());
-   vPoi.erase(std::unique(vPoi.begin(),vPoi.end()),vPoi.end());
+   PoiList vPoi;
+   pIPoi->GetPointsOfInterest(segmentKey, poiRefAttribute, &vPoi);
+   PoiList vPoi2;
+   pIPoi->GetPointsOfInterest(segmentKey, POI_START_FACE | POI_END_FACE | POI_HARPINGPOINT | POI_PSXFER | POI_DEBOND, &vPoi2, POIFIND_OR);
+   pIPoi->MergePoiLists(vPoi, vPoi2, &vPoi);
    pIPoi->RemovePointsOfInterest(vPoi,POI_CLOSURE);
    pIPoi->RemovePointsOfInterest(vPoi,POI_BOUNDARY_PIER);
 
@@ -118,10 +135,16 @@ rptRcTable* CCastingYardMomentsTable::Build(IBroker* pBroker,const CSegmentKey& 
    {
       col = 0;
 
-      (*p_table)(row,col++) << location.SetValue( poiRefAttribute, poi );
-      (*p_table)(row,col++) << moment.SetValue( pProductForces->GetMoment( intervalIdx, pgsTypes::pftGirder, poi, bat, rtCumulative ) );
-      (*p_table)(row,col++) << shear.SetValue(  pProductForces->GetShear(  intervalIdx, pgsTypes::pftGirder, poi, bat, rtCumulative ) );
-      (*p_table)(row,col++) << deflection.SetValue(  pProductForces->GetDeflection(  intervalIdx, pgsTypes::pftGirder, poi, bat, rtCumulative, false ) );
+      (*p_table)(row, col++) << location.SetValue( poiRefAttribute, poi );
+      (*p_table)(row, col++) << moment.SetValue( pProductForces->GetMoment( intervalIdx, pgsTypes::pftGirder, poi, bat, rtCumulative ) );
+      (*p_table)(row, col++) << shear.SetValue(  pProductForces->GetShear(  intervalIdx, pgsTypes::pftGirder, poi, bat, rtCumulative ) );
+      
+      if (bReportXDeflection)
+      {
+         (*p_table)(row, col++) << deflection.SetValue(pProductForces->GetXDeflection(intervalIdx, pgsTypes::pftGirder, poi, bat, rtCumulative));
+      }
+      
+      (*p_table)(row, col++) << deflection.SetValue(pProductForces->GetDeflection(intervalIdx, pgsTypes::pftGirder, poi, bat, rtCumulative, false));
 
       row++;
    }

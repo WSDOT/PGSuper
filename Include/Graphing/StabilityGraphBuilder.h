@@ -43,11 +43,16 @@ public:
 
    virtual CEAFGraphControlWindow* GetGraphControlWindow() override;
 
+   virtual void CreateViewController(IEAFViewController** ppController) override;
+
+   // sets the grid state and redraws the graph. This is more efficient
+   // than updating the entire graph
+   void ShowGrid(bool bShowGrid);
+
 protected:
 
    CStabilityGraphController* m_pGraphController;
 
-   afx_msg void OnShowGrid();
    DECLARE_MESSAGE_MAP()
 
    CComPtr<IBroker> m_pBroker;

@@ -551,10 +551,12 @@ void prestressing(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& segme
    const CStrandData* pStrands = pSegmentData->GetStrandData(segmentKey);
 
    GET_IFACE2(pBroker,IPointOfInterest, pIPOI);
-   std::vector<pgsPointOfInterest> vEndPoi( pIPOI->GetPointsOfInterest(segmentKey,POI_START_FACE | POI_END_FACE) );
+   PoiList vEndPoi;
+   pIPOI->GetPointsOfInterest(segmentKey, POI_START_FACE | POI_END_FACE, &vEndPoi);
    ATLASSERT(vEndPoi.size() == 2);
 
-   std::vector<pgsPointOfInterest> vHpPoi( pIPOI->GetPointsOfInterest(segmentKey,POI_HARPINGPOINT) );
+   PoiList vHpPoi;
+   pIPOI->GetPointsOfInterest(segmentKey, POI_HARPINGPOINT, &vHpPoi);
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);

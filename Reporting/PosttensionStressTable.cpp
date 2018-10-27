@@ -155,7 +155,8 @@ rptRcTable* CPosttensionStressTable::Build(IBroker* pBroker,const CGirderKey& gi
 
    // Get the interface pointers we need
    GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
-   std::vector<pgsPointOfInterest> vPoi( pIPoi->GetPointsOfInterest( CSegmentKey(girderKey,ALL_SEGMENTS), POI_SPAN ) );
+   PoiList vPoi;
+   pIPoi->GetPointsOfInterest(CSegmentKey(girderKey, ALL_SEGMENTS), POI_SPAN, &vPoi);
 
    GET_IFACE2(pBroker,IProductForces,pProductForces);
    pgsTypes::BridgeAnalysisType bat = pProductForces->GetBridgeAnalysisType(pgsTypes::Maximize);
@@ -163,25 +164,17 @@ rptRcTable* CPosttensionStressTable::Build(IBroker* pBroker,const CGirderKey& gi
    // Fill up the table
    RowIndexType row = p_table->GetNumberOfHeaderRows();
 
-   std::vector<pgsPointOfInterest>::const_iterator iter(vPoi.begin());
-   std::vector<pgsPointOfInterest>::const_iterator end(vPoi.end());
-   for ( ; iter != end; iter++ )
+   for (const pgsPointOfInterest& poi : vPoi)
    {
       col = 0;
-
-      const pgsPointOfInterest& poi = *iter;
 
       (*p_table)(row,col++) << location.SetValue( POI_SPAN, poi );
 
       Float64 fTop, fBot;
       if ( bDesign )
       {
-         std::vector<IntervalIndexType>::iterator iter(vIntervals.begin());
-         std::vector<IntervalIndexType>::iterator end(vIntervals.end());
-         for ( ; iter != end; iter++ )
+         for ( const auto& intervalIdx : vIntervals)
          {
-            IntervalIndexType intervalIdx = *iter;
-
             pProductForces->GetStress(intervalIdx,pgsTypes::pftPostTensioning,poi,bat,rtCumulative,topLocation,botLocation,&fTop,&fBot);
 
             (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue( fTop ) << rptNewLine;

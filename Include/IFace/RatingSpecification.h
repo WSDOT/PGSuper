@@ -43,97 +43,97 @@ DEFINE_GUID(IID_IRatingSpecification,
 interface IRatingSpecification : IUnknown
 {
    // returns true if a load rating is to be performed along with the analysis
-   virtual bool AlwaysLoadRate() = 0;
+   virtual bool AlwaysLoadRate() const = 0;
 
    // returns true if any one of the rating types is enabled
-   virtual bool IsRatingEnabled() = 0;
+   virtual bool IsRatingEnabled() const = 0;
 
    // returns true if a specific rating type is enabled
-   virtual bool IsRatingEnabled(pgsTypes::LoadRatingType ratingType) = 0;
+   virtual bool IsRatingEnabled(pgsTypes::LoadRatingType ratingType) const = 0;
    virtual void EnableRating(pgsTypes::LoadRatingType ratingType,bool bEnable) = 0;
 
-   virtual std::_tstring GetRatingSpecification() = 0;
+   virtual std::_tstring GetRatingSpecification() const = 0;
    virtual void SetRatingSpecification(const std::_tstring& spec) = 0;
 
    virtual void SetADTT(Int16 adtt) = 0;
-   virtual Int16 GetADTT() = 0; // < 0 = Unknown
+   virtual Int16 GetADTT() const = 0; // < 0 = Unknown
 
    virtual void IncludePedestrianLiveLoad(bool bInclude) = 0;
-   virtual bool IncludePedestrianLiveLoad() = 0;
+   virtual bool IncludePedestrianLiveLoad() const = 0;
 
    virtual void SetGirderConditionFactor(const CSegmentKey& segmentKey,pgsTypes::ConditionFactorType conditionFactorType,Float64 conditionFactor) = 0;
-   virtual void GetGirderConditionFactor(const CSegmentKey& segmentKey,pgsTypes::ConditionFactorType* pConditionFactorType,Float64 *pConditionFactor) = 0;
-   virtual Float64 GetGirderConditionFactor(const CSegmentKey& segmentKey) = 0;
+   virtual void GetGirderConditionFactor(const CSegmentKey& segmentKey,pgsTypes::ConditionFactorType* pConditionFactorType,Float64 *pConditionFactor) const = 0;
+   virtual Float64 GetGirderConditionFactor(const CSegmentKey& segmentKey) const = 0;
    virtual void SetDeckConditionFactor(pgsTypes::ConditionFactorType conditionFactorType,Float64 conditionFactor) = 0;
-   virtual void GetDeckConditionFactor(pgsTypes::ConditionFactorType* pConditionFactorType,Float64 *pConditionFactor) = 0;
-   virtual Float64 GetDeckConditionFactor() = 0;
+   virtual void GetDeckConditionFactor(pgsTypes::ConditionFactorType* pConditionFactorType,Float64 *pConditionFactor) const = 0;
+   virtual Float64 GetDeckConditionFactor() const = 0;
    
    virtual void SetSystemFactorFlexure(Float64 sysFactor) = 0;
-   virtual Float64 GetSystemFactorFlexure() = 0;
+   virtual Float64 GetSystemFactorFlexure() const = 0;
    
    virtual void SetSystemFactorShear(Float64 sysFactor) = 0;
-   virtual Float64 GetSystemFactorShear() = 0;
+   virtual Float64 GetSystemFactorShear() const = 0;
 
    virtual void SetDeadLoadFactor(pgsTypes::LimitState ls,Float64 gDC) = 0;
-   virtual Float64 GetDeadLoadFactor(pgsTypes::LimitState ls) = 0;
+   virtual Float64 GetDeadLoadFactor(pgsTypes::LimitState ls) const = 0;
 
    virtual void SetWearingSurfaceFactor(pgsTypes::LimitState ls,Float64 gDW) = 0;
-   virtual Float64 GetWearingSurfaceFactor(pgsTypes::LimitState ls) = 0;
+   virtual Float64 GetWearingSurfaceFactor(pgsTypes::LimitState ls) const = 0;
 
    virtual void SetCreepFactor(pgsTypes::LimitState ls,Float64 gCR) = 0;
-   virtual Float64 GetCreepFactor(pgsTypes::LimitState ls) = 0;
+   virtual Float64 GetCreepFactor(pgsTypes::LimitState ls) const = 0;
 
    virtual void SetShrinkageFactor(pgsTypes::LimitState ls,Float64 gSH) = 0;
-   virtual Float64 GetShrinkageFactor(pgsTypes::LimitState ls) = 0;
+   virtual Float64 GetShrinkageFactor(pgsTypes::LimitState ls) const = 0;
 
    virtual void SetRelaxationFactor(pgsTypes::LimitState ls,Float64 gRE) = 0;
-   virtual Float64 GetRelaxationFactor(pgsTypes::LimitState ls) = 0;
+   virtual Float64 GetRelaxationFactor(pgsTypes::LimitState ls) const = 0;
 
    virtual void SetSecondaryEffectsFactor(pgsTypes::LimitState ls,Float64 gPS) = 0;
-   virtual Float64 GetSecondaryEffectsFactor(pgsTypes::LimitState ls) = 0;
+   virtual Float64 GetSecondaryEffectsFactor(pgsTypes::LimitState ls) const = 0;
 
    virtual void SetLiveLoadFactor(pgsTypes::LimitState ls,Float64 gLL) = 0;
-   virtual Float64 GetLiveLoadFactor(pgsTypes::LimitState ls,bool bResolveIfDefault=false) = 0;
-   virtual Float64 GetLiveLoadFactor(pgsTypes::LimitState ls,pgsTypes::SpecialPermitType specialPermitType,Int16 adtt,const RatingLibraryEntry* pRatingEntry,bool bResolveIfDefault=false) = 0;
+   virtual Float64 GetLiveLoadFactor(pgsTypes::LimitState ls,bool bResolveIfDefault=false) const = 0;
+   virtual Float64 GetLiveLoadFactor(pgsTypes::LimitState ls,pgsTypes::SpecialPermitType specialPermitType,Int16 adtt,const RatingLibraryEntry* pRatingEntry,bool bResolveIfDefault=false) const = 0;
 
    virtual void SetAllowableTensionCoefficient(pgsTypes::LoadRatingType ratingType,Float64 t) = 0;
-   virtual Float64 GetAllowableTensionCoefficient(pgsTypes::LoadRatingType ratingType) = 0;
+   virtual Float64 GetAllowableTensionCoefficient(pgsTypes::LoadRatingType ratingType) const = 0;
 
    virtual void RateForStress(pgsTypes::LoadRatingType ratingType,bool bRateForStress) = 0;
-   virtual bool RateForStress(pgsTypes::LoadRatingType ratingType) = 0;
+   virtual bool RateForStress(pgsTypes::LoadRatingType ratingType) const = 0;
 
    virtual void RateForShear(pgsTypes::LoadRatingType ratingType,bool bRateForShear) = 0;
-   virtual bool RateForShear(pgsTypes::LoadRatingType ratingType) = 0;
+   virtual bool RateForShear(pgsTypes::LoadRatingType ratingType) const = 0;
 
    // Per last paragraph in MBE 6A.4.4.2.1a, the lane load may be excluded and the 0.75 truck factor taken as 1.0
    // for ADTT < 500 and in the Engineer's judgement it is warranted
    virtual void ExcludeLegalLoadLaneLoading(bool bExclude) = 0;
-   virtual bool ExcludeLegalLoadLaneLoading() = 0;
+   virtual bool ExcludeLegalLoadLaneLoading() const = 0;
 
    virtual void CheckYieldStress(pgsTypes::LoadRatingType ratingType,bool bCheckYieldStress) = 0;
-   virtual bool CheckYieldStress(pgsTypes::LoadRatingType ratingType) = 0;
+   virtual bool CheckYieldStress(pgsTypes::LoadRatingType ratingType) const = 0;
 
    // returns fraction of yield stress that reinforcement can be stressed to during
    // a permit load rating evaluation MBE 6A.5.4.2.2b
    virtual void SetYieldStressLimitCoefficient(Float64 x) = 0;
-   virtual Float64 GetYieldStressLimitCoefficient() = 0;
+   virtual Float64 GetYieldStressLimitCoefficient() const = 0;
 
    // Permit type for rating for special/limited crossing permit vehicle
    virtual void SetSpecialPermitType(pgsTypes::SpecialPermitType type) = 0;
-   virtual pgsTypes::SpecialPermitType GetSpecialPermitType() = 0;
+   virtual pgsTypes::SpecialPermitType GetSpecialPermitType() const = 0;
 
    // Gets the Strength/Service Live Load factor for a permit rating type when the load factor is based on 
    // the weight of the vehicle on the bridge (MBE 6A.4.5.4.2a-1)
    // Use these methods if GetLiveLoadFactor(ls,true) returns a value that is less than zero. This means
    // the load factor is computed based on the weight of the vehicle on the bridge.
-   virtual Float64 GetStrengthLiveLoadFactor(pgsTypes::LoadRatingType ratingType,AxleConfiguration& axleConfig) = 0;
-   virtual Float64 GetServiceLiveLoadFactor(pgsTypes::LoadRatingType ratingType) = 0;
+   virtual Float64 GetStrengthLiveLoadFactor(pgsTypes::LoadRatingType ratingType,AxleConfiguration& axleConfig) const = 0;
+   virtual Float64 GetServiceLiveLoadFactor(pgsTypes::LoadRatingType ratingType) const = 0;
 
    // Returns the Strength/Service load factor for reactions at the specified pier.
    // The vehicle index can be INVALID_INDEX which means the live load factor is that for the
    // controlling live load reaction case
-   virtual Float64 GetReactionStrengthLiveLoadFactor(PierIndexType pierIdx,GirderIndexType gdrIdx,pgsTypes::LoadRatingType ratingType,VehicleIndexType vehicleIdx) = 0;
-   virtual Float64 GetReactionServiceLiveLoadFactor(PierIndexType pierIdx,GirderIndexType gdrIdx,pgsTypes::LoadRatingType ratingType,VehicleIndexType vehicleIdx) = 0;
+   virtual Float64 GetReactionStrengthLiveLoadFactor(PierIndexType pierIdx,GirderIndexType gdrIdx,pgsTypes::LoadRatingType ratingType,VehicleIndexType vehicleIdx) const = 0;
+   virtual Float64 GetReactionServiceLiveLoadFactor(PierIndexType pierIdx,GirderIndexType gdrIdx,pgsTypes::LoadRatingType ratingType,VehicleIndexType vehicleIdx) const = 0;
 };
 
 /*****************************************************************************

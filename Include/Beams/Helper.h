@@ -45,3 +45,6 @@ CLSID BEAMSFUNC GetBeamCLSID(IndexType idx);
 CATID BEAMSFUNC GetBeamCATID(IndexType idx);
 
 void BEAMSFUNC BuildAgeAdjustedGirderMaterialModel(IBroker* pBroker,const CPrecastSegmentData* pSegment,ISuperstructureMemberSegment* segment,IAgeAdjustedMaterial** ppMaterial);
+void BEAMSFUNC BuildAgeAdjustedJointMaterialModel(IBroker* pBroker, const CPrecastSegmentData* pSegment, ISuperstructureMemberSegment* segment, IAgeAdjustedMaterial** ppMaterial);
+
+void BEAMSFUNC MakeRectangle(Float64 width, Float64 depth, Float64 xOffset, Float64 yOffset,IShape** ppShape);

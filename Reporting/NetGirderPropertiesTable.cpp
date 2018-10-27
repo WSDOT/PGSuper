@@ -116,16 +116,14 @@ rptRcTable* CNetGirderPropertiesTable::Build(IBroker* pBroker,
    GET_IFACE2(pBroker,ISectionProperties,pSectProp);
 
    PoiAttributeType poiRefAttribute = (intervalIdx < erectionIntervalIdx ? POI_RELEASED_SEGMENT : POI_ERECTED_SEGMENT);
-   std::vector<pgsPointOfInterest> vPoi( pIPoi->GetPointsOfInterest(segmentKey,poiRefAttribute) );
+   PoiList vPoi;
+   pIPoi->GetPointsOfInterest(segmentKey, poiRefAttribute, &vPoi);
 
    RowIndexType row = xs_table->GetNumberOfHeaderRows();
 
-   std::vector<pgsPointOfInterest>::const_iterator i(vPoi.begin());
-   std::vector<pgsPointOfInterest>::const_iterator end(vPoi.end());
-   for ( ; i != end; i++, row++ )
+   for (const pgsPointOfInterest& poi : vPoi)
    {
       col = 0;
-      const pgsPointOfInterest& poi = *i;
 
       (*xs_table)(row,col++) << location.SetValue( poiRefAttribute, poi );
 
@@ -138,6 +136,8 @@ rptRcTable* CNetGirderPropertiesTable::Build(IBroker* pBroker,
       (*xs_table)(row,col++) << l4.SetValue(pSectProp->GetNetId(intervalIdx,poi));
       (*xs_table)(row,col++) << l1.SetValue(pSectProp->GetNetYtd(intervalIdx,poi));
       (*xs_table)(row,col++) << l1.SetValue(pSectProp->GetNetYbd(intervalIdx,poi));
+
+      row++;
    }
 
    return xs_table;

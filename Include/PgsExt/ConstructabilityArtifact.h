@@ -142,6 +142,14 @@ public:
    SlabOffsetBearingCLApplicabilityType GetHaunchAtBearingCLsApplicability() const;
    bool HaunchAtBearingCLsPassed() const;
 
+   // Precamber check
+   void SetPrecamberApplicability(bool bSet);
+   bool IsPrecamberApplicable() const;
+   void SetPrecamber(const CSegmentKey& segmentKey, Float64 limit, Float64 value);
+   void GetPrecamber(const CSegmentKey& segmentKey, Float64* pLimit, Float64* pValue) const;
+   bool PrecamberPassed(const CSegmentKey& segmentKey) const;
+   bool PrecamberPassed() const;
+
    // Bottom flange clearance
    void SetBottomFlangeClearanceApplicability(bool bSet);
    bool IsBottomFlangeClearanceApplicable() const;
@@ -200,6 +208,9 @@ private:
    Float64 m_RequiredAtBearingCLs; // The required required slab offset
    SlabOffsetBearingCLApplicabilityType m_HaunchAtBearingCLsApplicable;
 
+   bool m_bIsPrecamberApplicable;
+   std::map<CSegmentKey, std::pair<Float64, Float64>> m_Precamber; // first is precamber limit, second is precamber value
+
    bool m_bIsBottomFlangeClearanceApplicable;
    Float64 m_C;
    Float64 m_Cmin;
@@ -257,6 +268,9 @@ public:
 
    bool IsHaunchAtBearingCLsApplicable() const;
    bool HaunchAtBearingCLsPassed() const;
+
+   bool IsPrecamberApplicable() const;
+   bool PrecamberPassed() const;
 
    bool IsBottomFlangeClearanceApplicable() const;
    bool BottomFlangeClearancePassed() const;

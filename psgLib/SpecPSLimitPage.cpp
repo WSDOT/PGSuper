@@ -116,3 +116,17 @@ void CSpecStrandPage::OnCheckPsAfterTransfer()
 {
 	EnableControls(IsDlgButtonChecked(IDC_CHECK_PS_AFTER_TRANSFER),IDC_PS_AFTER_TRANSFER_SR,IDC_PS_AFTER_TRANSFER_LR);
 }
+
+BOOL CSpecStrandPage::OnSetActive()
+{
+   CSpecMainSheet* pDad = (CSpecMainSheet*)GetParent();
+
+   // deal with 2017 crosswalk
+   CWnd* pWnd = GetDlgItem(IDC_GPRES);
+   pWnd->SetWindowText(CString(_T("Stress Limits for Prestressing (")) + pDad->LrfdCw8th(_T("5.9.3"),_T("5.9.2.2")) + _T(")"));
+
+   pWnd = GetDlgItem(IDC_GPOST);
+   pWnd->SetWindowText(CString(_T("Stress Limits for Post-tensioning (")) + pDad->LrfdCw8th(_T("5.9.3"),_T("5.9.2.2")) + _T(")"));
+
+   return CPropertyPage::OnSetActive();
+}

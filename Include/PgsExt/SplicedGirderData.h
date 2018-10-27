@@ -99,6 +99,14 @@ public:
    const GirderLibraryEntry* GetGirderLibraryEntry() const;
    void SetGirderLibraryEntry(const GirderLibraryEntry* pEntry);
 
+   // Set/Get the top width of the girder
+   // Bridge framing for some girder types are defined by their top width and joint width
+   // For these types of girders, when the top width can be different for each girder,
+   // this parameter applies, otherwise it is invalid.
+   void SetTopWidth(pgsTypes::TopWidthType type, Float64 leftStart, Float64 rightStart,Float64 leftEnd,Float64 rightEnd);
+   void GetTopWidth(pgsTypes::TopWidthType* pType,Float64* pLeftStart,Float64* pRightStart,Float64* pLeftEnd,Float64* pRightEnd) const;
+   Float64 GetTopWidth(pgsTypes::MemberEndType endType,Float64* pLeft,Float64* pRight) const; // using the top width type, returns the actual top width
+
    // =================================================================================
    // Precast Segments
    // =================================================================================
@@ -143,6 +151,7 @@ public:
 #endif
 
 protected:
+   void Init();
    void MakeCopy(const CSplicedGirderData& rOther,bool bCopyDataOnly);
    void MakeAssignment(const CSplicedGirderData& rOther);
 
@@ -185,6 +194,8 @@ protected:
    void Initialize();
 
    CTimelineManager* GetTimelineManager();
+   CBridgeDescription2* GetBridgeDescription();
+   const CBridgeDescription2* GetBridgeDescription() const;
 
    // Girder Group Reference
 
@@ -193,6 +204,11 @@ protected:
    // weak reference to parent group
    CGirderGroupData* m_pGirderGroup;
 
+   // Girder top width (array index is pgsTypes::MemberEndType)
+   pgsTypes::TopWidthType m_TopWidthType;
+   Float64 m_LeftTopWidth[2];
+   Float64 m_RightTopWidth[2];
+   
    std::vector<CPrecastSegmentData*> m_Segments; // owned by this object
    std::vector<CClosureJointData*> m_Closures;    // owned by this object
 

@@ -4,7 +4,7 @@ Critical Section for Shear {#tg_critical_section_for_shear}
 
 The LRFD Specification has made the determination of the critical section for shear a daunting calculation. This Section provides a discussion of the requirements, and assumptions for the algorithm to determine this location.
 
-Article 5.8.3.2 states that the critical section for shear may be taken as the larger of d<sub>v</sub> or 0.5d<sub>v</sub>cot(<span style="font-family:symbol">q</span>). The LRFD Specification does not provide any information as to where d<sub>v</sub> and <span style="font-family:symbol">q</span> are to be taken. Common practice is to take it  at the location of the critical section. This makes the determination of the critical section for shear an iterative process since d<sub>v</sub> and <span style="font-family:symbol">q</span> vary based on location and limit state.
+Article 5.7.3.2 (*pre-2017: 5.8.3.2*) states that the critical section for shear may be taken as the larger of d<sub>v</sub> or 0.5d<sub>v</sub>cot(<span style="font-family:symbol">q</span>). The LRFD Specification does not provide any information as to where d<sub>v</sub> and <span style="font-family:symbol">q</span> are to be taken. Common practice is to take it  at the location of the critical section. This makes the determination of the critical section for shear an iterative process since d<sub>v</sub> and <span style="font-family:symbol">q</span> vary based on location and limit state.
 
 The algorithm used to locate the critical section is as follows:
 

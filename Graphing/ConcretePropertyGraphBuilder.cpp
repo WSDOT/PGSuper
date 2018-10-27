@@ -24,6 +24,7 @@
 #include "resource.h"
 #include <Graphing\ConcretePropertyGraphBuilder.h>
 #include "ConcretePropertyGraphController.h"
+#include "ConcretePropertiesGraphViewControllerImp.h"
 
 #include <EAF\EAFUtilities.h>
 #include <EAF\EAFDisplayUnits.h>
@@ -62,7 +63,6 @@ static unitmgtLengthData DUMMY(unitMeasure::Meter);
 static LengthTool    DUMMY_TOOL(DUMMY);
 
 BEGIN_MESSAGE_MAP(CConcretePropertyGraphBuilder, CEAFGraphBuilderBase)
-   ON_BN_CLICKED(IDC_GRID, OnShowGrid)
 END_MESSAGE_MAP()
 
 
@@ -146,6 +146,19 @@ CEAFGraphControlWindow* CConcretePropertyGraphBuilder::GetGraphControlWindow()
    return m_pGraphController;
 }
 
+void CConcretePropertyGraphBuilder::CreateViewController(IEAFViewController** ppController)
+{
+   CComPtr<IEAFViewController> stdController;
+   __super::CreateViewController(&stdController);
+
+   CComObject<CConcretePropertiesGraphViewController>* pController;
+   CComObject<CConcretePropertiesGraphViewController>::CreateInstance(&pController);
+   pController->Init(m_pGraphController, stdController);
+
+   (*ppController) = pController;
+   (*ppController)->AddRef();
+}
+
 CGraphBuilder* CConcretePropertyGraphBuilder::Clone() const
 {
    // set the module state or the commands wont route to the
@@ -219,9 +232,9 @@ BOOL CConcretePropertyGraphBuilder::CreateGraphController(CWnd* pParent,UINT nID
    return TRUE;
 }
 
-void CConcretePropertyGraphBuilder::OnShowGrid()
+void CConcretePropertyGraphBuilder::ShowGrid(bool bShowGrid)
 {
-   m_Graph.SetDoDrawGrid( !m_Graph.GetDoDrawGrid() );
+   m_Graph.SetDoDrawGrid(bShowGrid);
    GetView()->Invalidate();
 }
 
@@ -237,8 +250,8 @@ bool CConcretePropertyGraphBuilder::UpdateNow()
    // Update the graph control data
    m_GraphElement = m_pGraphController->GetGraphElement();
    m_GraphType    = m_pGraphController->GetGraphType();
-   m_SegmentKey   = m_pGraphController->GetSegmentKey();
-   m_ClosureKey   = m_pGraphController->GetClosureKey();
+   m_SegmentKey   = m_pGraphController->GetSegment();
+   m_ClosureKey   = m_pGraphController->GetClosureJoint();
    m_XAxisType    = m_pGraphController->GetXAxisType();
 
    // Update graph properties

@@ -361,45 +361,44 @@ public:
    void SetStatusGroupID(StatusGroupIDType statusGroupID);
 
    // Creates a girder check artifact.
-   const pgsGirderArtifact* Check(const CGirderKey& girderKey);
+   const pgsGirderArtifact* Check(const CGirderKey& girderKey) const;
 
    // Creates a lifting analysis artifact
-   const stbLiftingCheckArtifact* CheckLifting(const CSegmentKey& segmentKey);
+   const stbLiftingCheckArtifact* CheckLifting(const CSegmentKey& segmentKey) const;
 
    // Creates a hauling analysis artifact
-   const pgsHaulingAnalysisArtifact* pgsDesigner2::CheckHauling(const CSegmentKey& segmentKey);
+   const pgsHaulingAnalysisArtifact* pgsDesigner2::CheckHauling(const CSegmentKey& segmentKey) const;
 
-   pgsGirderDesignArtifact Design(const CGirderKey& girderKey,const std::vector<arDesignOptions>& DesOptionsColl);
+   pgsGirderDesignArtifact Design(const CGirderKey& girderKey,const std::vector<arDesignOptions>& DesOptionsColl) const;
 
-   void GetHaunchDetails(const CSpanKey& spanKey,HAUNCHDETAILS* pHaunchDetails);
-   void GetHaunchDetails(const CSpanKey& spanKey,const GDRCONFIG& config,HAUNCHDETAILS* pHaunchDetails);
-   Float64 GetSectionGirderOrientationEffect(const pgsPointOfInterest& poi);
+   void GetHaunchDetails(const CSpanKey& spanKey,const GDRCONFIG* pConfig,HAUNCHDETAILS* pHaunchDetails) const;
+   Float64 GetSectionGirderOrientationEffect(const pgsPointOfInterest& poi) const;
 
-   pgsEccEnvelope GetEccentricityEnvelope(const pgsPointOfInterest& rpoi,const GDRCONFIG& config);
+   pgsEccEnvelope GetEccentricityEnvelope(const pgsPointOfInterest& rpoi,const GDRCONFIG& config) const;
 
    // Returns a girder check artifact if the girder was already checked, otherwise returns nullptr
-   const pgsGirderArtifact* GetGirderArtifact(const CGirderKey& girderKey);
+   const pgsGirderArtifact* GetGirderArtifact(const CGirderKey& girderKey) const;
 
    // Returns a lifting analysis artifact if the segment was already checked, otherwise returns nullptr
-   const stbLiftingCheckArtifact* GetLiftingCheckArtifact(const CSegmentKey& segmentKey);
+   const stbLiftingCheckArtifact* GetLiftingCheckArtifact(const CSegmentKey& segmentKey) const;
 
    // Returns a nauling analysis artifact if the segment was already checked, otherwise returns nullptr
-   const pgsHaulingAnalysisArtifact* GetHaulingAnalysisArtifact(const CSegmentKey& segmentKey);
+   const pgsHaulingAnalysisArtifact* GetHaulingAnalysisArtifact(const CSegmentKey& segmentKey) const;
 
    // Clears all cached artifacts
    void ClearArtifacts();
 
 protected:
-   void DoDesign(const CGirderKey& girderKey, const arDesignOptions& options, pgsGirderDesignArtifact& artifact);
+   void DoDesign(const CGirderKey& girderKey, const arDesignOptions& options, pgsGirderDesignArtifact& artifact) const;
    void MakeCopy(const pgsDesigner2& rOther);
    void MakeAssignment(const pgsDesigner2& rOther);
 
 private:
-   std::map<CGirderKey,std::shared_ptr<pgsGirderArtifact>> m_CheckArtifacts;
-   std::map<CSegmentKey,stbLiftingCheckArtifact> m_LiftingCheckArtifacts;
-   std::map<CSegmentKey,const pgsHaulingAnalysisArtifact*> m_HaulingAnalysisArtifacts;
+   mutable std::map<CGirderKey,std::shared_ptr<pgsGirderArtifact>> m_CheckArtifacts;
+   mutable std::map<CSegmentKey,stbLiftingCheckArtifact> m_LiftingCheckArtifacts;
+   mutable std::map<CSegmentKey,const pgsHaulingAnalysisArtifact*> m_HaulingAnalysisArtifacts;
 
-   const pgsHaulingAnalysisArtifact* CheckHauling(const CSegmentKey& segmentKey, SHARED_LOGFILE LOGFILE);
+   const pgsHaulingAnalysisArtifact* CheckHauling(const CSegmentKey& segmentKey, SHARED_LOGFILE LOGFILE) const;
 
    struct StressCheckTask
    {
@@ -408,8 +407,8 @@ private:
       pgsTypes::StressType stressType;
       bool bIncludeLiveLoad; // if intervalIdx is a live load interval, live load is include in the prestressing if this parameter is tru
    };
-   std::vector<StressCheckTask> m_StressCheckTasks;
-   void ConfigureStressCheckTasks(const CSegmentKey& segmentKey);
+   mutable std::vector<StressCheckTask> m_StressCheckTasks;
+   void ConfigureStressCheckTasks(const CSegmentKey& segmentKey) const;
 
 
    // GROUP: DATA MEMBERS
@@ -420,17 +419,17 @@ private:
    StatusCallbackIDType m_scidLiveLoad;
    StatusCallbackIDType m_scidBridgeDescriptionError;
 
-   pgsStrandDesignTool m_StrandDesignTool;
-   pgsShearDesignTool  m_ShearDesignTool;
-   pgsDesignCodes      m_DesignerOutcome;
+   mutable pgsStrandDesignTool m_StrandDesignTool;
+   mutable pgsShearDesignTool  m_ShearDesignTool;
+   mutable pgsDesignCodes      m_DesignerOutcome;
 
    // This vector holds the critical section location for the
    // segment currently being designed or analyzed. The value in
    // the vector is a pair. The first element is the critical section details
-   // the second element is a boolean value indicating if 0.18f'c < vu (LRFD 5.8.3.2)
+   // the second element is a boolean value indicating if 0.18f'c < vu (LRFD 5.7.3.2 (pre2017: 5.8.3.2))
    // and therefore a strut-and-tie analysis is required between the Face of Support
    // and the critical section
-   std::vector<std::pair<CRITSECTDETAILS,bool>> m_CriticalSections;
+   mutable std::vector<std::pair<CRITSECTDETAILS,bool>> m_CriticalSections;
 
    // defines the start and end of support zones
    // support zones are located between the CLBrg and the face of support
@@ -442,106 +441,104 @@ private:
       PierIndexType PierIdx;
       pgsTypes::PierFaceType PierFace;
    };
-   std::vector<SUPPORTZONE> m_SupportZones;
-   void InitSupportZones(const CSegmentKey& segmentKey);
-   ZoneIndexType GetSupportZoneIndex(const pgsPointOfInterest& poi);
+   mutable std::vector<SUPPORTZONE> m_SupportZones;
+   void InitSupportZones(const CSegmentKey& segmentKey) const;
+   ZoneIndexType GetSupportZoneIndex(const pgsPointOfInterest& poi) const;
 
-   bool m_bShippingDesignWithEqualCantilevers;
-   bool m_bShippingDesignIgnoreConfigurationLimits;
+   mutable bool m_bShippingDesignWithEqualCantilevers;
+   mutable bool m_bShippingDesignIgnoreConfigurationLimits;
 
    // GROUP: LIFECYCLE
    // GROUP: OPERATORS
    // GROUP: OPERATIONS
 
-   void CheckTendonDetailing(const CGirderKey& girderKey,pgsGirderArtifact* pGirderArtifact);
-   void CheckTendonStresses(const CGirderKey& girderKey,pgsGirderArtifact* pGirderArtifact);
-   void CheckStrandStresses(const CSegmentKey& segmentKey,pgsStrandStressArtifact* pArtifact);
-   void CheckSegmentStressesAtRelease(const CSegmentKey& segmentKey, const GDRCONFIG* pConfig,pgsTypes::StressType type, pgsSegmentArtifact* pSegmentArtifact);
-   void CheckSegmentStresses(const CSegmentKey& segmentKey,const std::vector<pgsPointOfInterest>& vPoi,const StressCheckTask& task,pgsSegmentArtifact* pSegmentArtifact);
-   void CheckMomentCapacity(IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,pgsGirderArtifact* pGirderArtifact);
-   void CheckShear(IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,pgsGirderArtifact* pGirderArtifact);
-   void CheckShear(bool bDesign,const CSegmentKey&,IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,const GDRCONFIG* pConfig,pgsStirrupCheckArtifact* pStirrupArtifact);
-   void CheckSplittingZone(const CSegmentKey& segmentKey,const GDRCONFIG* pConfig,pgsStirrupCheckArtifact* pStirrupArtifact);
-   void CheckSegmentDetailing(const CSegmentKey& segmentKey,pgsSegmentArtifact* pGdrArtifact);
-   void CheckStrandSlope(const CSegmentKey& segmentKey,pgsStrandSlopeArtifact* pArtifact);
-   void CheckHoldDownForce(const CSegmentKey& segmentKey,pgsHoldDownForceArtifact* pArtifact);
-   void CheckSegmentStability(const CSegmentKey& segmentKey,pgsSegmentStabilityArtifact* pArtifact);
-   void CheckDebonding(const CSegmentKey& segmentKey,pgsTypes::StrandType strandType,pgsDebondArtifact* pArtifact);
+   void CheckTendonDetailing(const CGirderKey& girderKey,pgsGirderArtifact* pGirderArtifact) const;
+   void CheckTendonStresses(const CGirderKey& girderKey,pgsGirderArtifact* pGirderArtifact) const;
+   void CheckStrandStresses(const CSegmentKey& segmentKey,pgsStrandStressArtifact* pArtifact) const;
+   void CheckSegmentStressesAtRelease(const CSegmentKey& segmentKey, const GDRCONFIG* pConfig,pgsTypes::StressType type, pgsSegmentArtifact* pSegmentArtifact) const;
+   void CheckSegmentStresses(const CSegmentKey& segmentKey,const PoiList& vPoi,const StressCheckTask& task,pgsSegmentArtifact* pSegmentArtifact) const;
+   void CheckMomentCapacity(IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,pgsGirderArtifact* pGirderArtifact) const;
+   void CheckShear(IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,pgsGirderArtifact* pGirderArtifact) const;
+   void CheckShear(bool bDesign,const CSegmentKey&,IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,const GDRCONFIG* pConfig,pgsStirrupCheckArtifact* pStirrupArtifact) const;
+   void CheckSplittingZone(const CSegmentKey& segmentKey,const GDRCONFIG* pConfig,pgsStirrupCheckArtifact* pStirrupArtifact) const;
+   void CheckSegmentDetailing(const CSegmentKey& segmentKey,pgsSegmentArtifact* pGdrArtifact) const;
+   void CheckStrandSlope(const CSegmentKey& segmentKey,pgsStrandSlopeArtifact* pArtifact) const;
+   void CheckHoldDownForce(const CSegmentKey& segmentKey,pgsHoldDownForceArtifact* pArtifact) const;
+   void CheckSegmentStability(const CSegmentKey& segmentKey,pgsSegmentStabilityArtifact* pArtifact) const;
+   void CheckDebonding(const CSegmentKey& segmentKey,pgsTypes::StrandType strandType,pgsDebondArtifact* pArtifact) const;
 
-   void CheckConstructability(const CGirderKey& girderKey,pgsConstructabilityArtifact* pArtifact);
+   void CheckConstructability(const CGirderKey& girderKey,pgsConstructabilityArtifact* pArtifact) const;
 
-   void UpdateSlabOffsetAdjustmentModel(pgsSegmentDesignArtifact* pArtifact);
+   void UpdateSlabOffsetAdjustmentModel(pgsSegmentDesignArtifact* pArtifact) const;
 
-   void CheckLiveLoadDeflection(const CGirderKey& girderKey,pgsGirderArtifact* pGdrArtifact);
+   void CheckLiveLoadDeflection(const CGirderKey& girderKey,pgsGirderArtifact* pGdrArtifact) const;
 
-   void GetHaunchDetails(const CSpanKey& spanKey,bool bUseConfig,const GDRCONFIG& config,HAUNCHDETAILS* pHaunchDetails);
-
-   // Initialize the design artifact with a first guess of the design
+      // Initialize the design artifact with a first guess of the design
    // variables
-   void DesignMidZone(bool bUseCurrentStrands, const arDesignOptions& options,IProgress* pProgress);
-   void DesignMidZoneInitialStrands(bool bUseCurrentStrands,IProgress* pProgress);
-   void DesignSlabOffset(IProgress* pProgress);
-   void DesignMidZoneFinalConcrete(IProgress* pProgress);
-   void DesignMidZoneAtRelease(const arDesignOptions& options, IProgress* pProgress);
-   void DesignEndZone(bool firstTime, arDesignOptions options, pgsSegmentDesignArtifact& artifact,IProgress* pProgress);
-   void DesignForShipping(IProgress* pProgress);
-   bool CheckShippingStressDesign(const CSegmentKey& segmentKey,const GDRCONFIG& config);
+   void DesignMidZone(bool bUseCurrentStrands, const arDesignOptions& options,IProgress* pProgress) const;
+   void DesignMidZoneInitialStrands(bool bUseCurrentStrands,IProgress* pProgress) const;
+   void DesignSlabOffset(IProgress* pProgress) const;
+   void DesignMidZoneFinalConcrete(IProgress* pProgress) const;
+   void DesignMidZoneAtRelease(const arDesignOptions& options, IProgress* pProgress) const;
+   void DesignEndZone(bool firstTime, arDesignOptions options, pgsSegmentDesignArtifact& artifact,IProgress* pProgress) const;
+   void DesignForShipping(IProgress* pProgress) const;
+   bool CheckShippingStressDesign(const CSegmentKey& segmentKey,const GDRCONFIG& config) const;
 
-   void DesignEndZoneHarping(arDesignOptions options, pgsSegmentDesignArtifact& artifact,IProgress* pProgress);
-   void DesignForLiftingHarping(const arDesignOptions& options, bool bAdjustingAfterShipping,IProgress* pProgress);
-   void DesignEndZoneReleaseHarping(const arDesignOptions& options, IProgress* pProgress);
-   bool CheckLiftingStressDesign(const CSegmentKey& segmentKey,const GDRCONFIG& config);
+   void DesignEndZoneHarping(arDesignOptions options, pgsSegmentDesignArtifact& artifact,IProgress* pProgress) const;
+   void DesignForLiftingHarping(const arDesignOptions& options, bool bAdjustingAfterShipping,IProgress* pProgress) const;
+   void DesignEndZoneReleaseHarping(const arDesignOptions& options, IProgress* pProgress) const;
+   bool CheckLiftingStressDesign(const CSegmentKey& segmentKey,const GDRCONFIG& config) const;
 
-   void DesignEndZoneDebonding(bool firstPass, arDesignOptions options, pgsSegmentDesignArtifact& artifact, IProgress* pProgress);
-   std::vector<DebondLevelType> DesignForLiftingDebonding(bool designConcrete, IProgress* pProgress);
-   std::vector<DebondLevelType> DesignDebondingForLifting(HANDLINGCONFIG& liftConfig, IProgress* pProgress);
-   std::vector<DebondLevelType> DesignEndZoneReleaseDebonding(IProgress* pProgress,bool bAbortOnFail = true);
+   void DesignEndZoneDebonding(bool firstPass, arDesignOptions options, pgsSegmentDesignArtifact& artifact, IProgress* pProgress) const;
+   std::vector<DebondLevelType> DesignForLiftingDebonding(bool designConcrete, IProgress* pProgress) const;
+   std::vector<DebondLevelType> DesignDebondingForLifting(HANDLINGCONFIG& liftConfig, IProgress* pProgress) const;
+   std::vector<DebondLevelType> DesignEndZoneReleaseDebonding(IProgress* pProgress,bool bAbortOnFail = true) const;
 
-   void DesignEndZoneReleaseStrength(IProgress* pProgress);
-   void DesignConcreteRelease(Float64 topStress, Float64 botStress);
+   void DesignEndZoneReleaseStrength(IProgress* pProgress) const;
+   void DesignConcreteRelease(Float64 topStress, Float64 botStress) const;
 
-   void RefineDesignForAllowableStress(IProgress* pProgress);
-   void RefineDesignForAllowableStress(const StressCheckTask& task,IProgress* pProgress);
-   void RefineDesignForUltimateMoment(IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,IProgress* pProgress);
-   pgsPointOfInterest GetControllingFinalMidZonePoi(const CSegmentKey& segmentKey);
+   void RefineDesignForAllowableStress(IProgress* pProgress) const;
+   void RefineDesignForAllowableStress(const StressCheckTask& task,IProgress* pProgress) const;
+   void RefineDesignForUltimateMoment(IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,IProgress* pProgress) const;
+   pgsPointOfInterest GetControllingFinalMidZonePoi(const CSegmentKey& segmentKey) const;
 
    // Shear design
-   void DesignShear(pgsSegmentDesignArtifact* pArtifact, bool bDoStartFromScratch, bool bDoDesignFlexure);
+   void DesignShear(pgsSegmentDesignArtifact* pArtifact, bool bDoStartFromScratch, bool bDoDesignFlexure) const;
 
-   Float64 GetAvsOverMin(const pgsPointOfInterest& poi,const SHEARCAPACITYDETAILS& scd);
+   Float64 GetAvsOverMin(const pgsPointOfInterest& poi,const SHEARCAPACITYDETAILS& scd) const;
 
-   Float64 GetNormalFrictionForce(const pgsPointOfInterest& poi);
+   Float64 GetNormalFrictionForce(const pgsPointOfInterest& poi) const;
 
-   void CreateFlexuralCapacityArtifact(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,const GDRCONFIG& config,bool bPositiveMoment,pgsFlexuralCapacityArtifact* pArtifact);
-   void CreateFlexuralCapacityArtifact(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,bool bPositiveMoment,pgsFlexuralCapacityArtifact* pArtifact);
-   void CreateFlexuralCapacityArtifact(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,bool bPositiveMoment,const MOMENTCAPACITYDETAILS* pmcd,const MINMOMENTCAPDETAILS& mmcd,bool bDesign,pgsFlexuralCapacityArtifact* pArtifact);
+   void CreateFlexuralCapacityArtifact(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,const GDRCONFIG& config,bool bPositiveMoment,pgsFlexuralCapacityArtifact* pArtifact) const;
+   void CreateFlexuralCapacityArtifact(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,bool bPositiveMoment,pgsFlexuralCapacityArtifact* pArtifact) const;
+   void CreateFlexuralCapacityArtifact(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,bool bPositiveMoment,const MOMENTCAPACITYDETAILS* pmcd,const MINMOMENTCAPDETAILS& mmcd,bool bDesign,pgsFlexuralCapacityArtifact* pArtifact) const;
 
    // poi based shear checks
    void CreateStirrupCheckAtPoisArtifact(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx, pgsTypes::LimitState limitState, Float64 vu,
                                          Float64 fcSlab,Float64 fcGdr, Float64 fy, bool checkConfinement,const GDRCONFIG* pConfig,
-                                         pgsStirrupCheckAtPoisArtifact* pArtifact);
+                                         pgsStirrupCheckAtPoisArtifact* pArtifact) const;
 
-   void InitShearCheck(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,const GDRCONFIG* pConfig);
-   bool IsDeepSection( const pgsPointOfInterest& poi);
-   ZoneIndexType GetCriticalSectionZone(const pgsPointOfInterest& poi,bool bIncludeCS=false);
-   void CheckStirrupRequirement( const pgsPointOfInterest& poi, const SHEARCAPACITYDETAILS& scd, pgsVerticalShearArtifact* pArtifact );
-   void CheckUltimateShearCapacity( const pgsPointOfInterest& poi, const SHEARCAPACITYDETAILS& scd, Float64 vu, const GDRCONFIG* pConfig, pgsVerticalShearArtifact* pArtifact );
+   void InitShearCheck(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,const GDRCONFIG* pConfig) const;
+   bool IsDeepSection( const pgsPointOfInterest& poi) const;
+   ZoneIndexType GetCriticalSectionZone(const pgsPointOfInterest& poi,bool bIncludeCS=false) const;
+   void CheckStirrupRequirement( const pgsPointOfInterest& poi, const SHEARCAPACITYDETAILS& scd, pgsVerticalShearArtifact* pArtifact ) const;
+   void CheckUltimateShearCapacity( const pgsPointOfInterest& poi, const SHEARCAPACITYDETAILS& scd, Float64 vu, const GDRCONFIG* pConfig, pgsVerticalShearArtifact* pArtifact ) const;
    void CheckHorizontalShear( const pgsPointOfInterest& poi, Float64 vu,
                               Float64 fcSlab,Float64 fcGdr, Float64 fy,
                               const GDRCONFIG* pConfig,
-                              pgsHorizontalShearArtifact* pArtifact );
+                              pgsHorizontalShearArtifact* pArtifact ) const;
    void CheckHorizontalShearMidZone( const pgsPointOfInterest& poi, Float64 vu,
                                      Float64 fcSlab,Float64 fcGdr, Float64 fy,
                                      const GDRCONFIG* pConfig,
-                                     pgsHorizontalShearArtifact* pArtifact );
+                                     pgsHorizontalShearArtifact* pArtifact ) const;
 
-   void ComputeHorizAvs(const pgsPointOfInterest& poi, bool* pIsRoughened, bool* pDoAllStirrupsEngageDeck, const GDRCONFIG* pConfig, pgsHorizontalShearArtifact* pArtifact );
+   void ComputeHorizAvs(const pgsPointOfInterest& poi, bool* pIsRoughened, bool* pDoAllStirrupsEngageDeck, const GDRCONFIG* pConfig, pgsHorizontalShearArtifact* pArtifact ) const;
 
    void CheckFullStirrupDetailing( const pgsPointOfInterest& poi, const pgsVerticalShearArtifact& vertArtifact, 
                                    const SHEARCAPACITYDETAILS& scd, Float64 vu, 
                                    Float64 fcGdr, Float64 fy,
                                    const STIRRUPCONFIG* pConfig,
-                                   pgsStirrupDetailArtifact* pArtifact );
+                                   pgsStirrupDetailArtifact* pArtifact ) const;
 public:
    // This function is needed by shear design tool
    void CheckLongReinfShear(const pgsPointOfInterest& poi, 
@@ -549,27 +546,27 @@ public:
                             pgsTypes::LimitState limitState,
                             const SHEARCAPACITYDETAILS& scd,
                             const GDRCONFIG* pConfig,
-                            pgsLongReinfShearArtifact* pArtifact );
+                            pgsLongReinfShearArtifact* pArtifact ) const;
 private:
 
 
-   void CheckConfinement(const CSegmentKey& segmentKey, const GDRCONFIG* pConfig, pgsConfinementArtifact* pArtifact);
+   void CheckConfinement(const CSegmentKey& segmentKey, const GDRCONFIG* pConfig, pgsConfinementArtifact* pArtifact) const;
 
    // GROUP: ACCESS
    // GROUP: INQUIRY
 
    DECLARE_LOGFILE;
 
-   bool CollapseZoneData(CShearZoneData zoneData[MAX_ZONES], ZoneIndexType numZones);
+   bool CollapseZoneData(CShearZoneData zoneData[MAX_ZONES], ZoneIndexType numZones) const;
 
 
    // round slab offset to acceptable value
-   Float64 RoundSlabOffset(Float64 offset);
+   Float64 RoundSlabOffset(Float64 offset) const;
 
-   void GetBridgeAnalysisType(GirderIndexType gdr,const StressCheckTask& task,pgsTypes::BridgeAnalysisType& batTop,pgsTypes::BridgeAnalysisType& batBottom);
-   void ComputeConcreteStrength(pgsFlexuralStressArtifact& artifact,pgsTypes::StressLocation stressLocation,const pgsPointOfInterest& poi,const StressCheckTask& task);
+   void GetBridgeAnalysisType(GirderIndexType gdr,const StressCheckTask& task,pgsTypes::BridgeAnalysisType& batTop,pgsTypes::BridgeAnalysisType& batBottom) const;
+   void ComputeConcreteStrength(pgsFlexuralStressArtifact& artifact,pgsTypes::StressLocation stressLocation,const pgsPointOfInterest& poi,const StressCheckTask& task) const;
 
-   void GetEndZoneMinMaxRawStresses(const CSegmentKey& segmentKey,const stbLiftingResults& liftingResults,const HANDLINGCONFIG& liftConfig,Float64* pftop, Float64* pfbot, Float64* ptop_loc,Float64* pbot_loc);
+   void GetEndZoneMinMaxRawStresses(const CSegmentKey& segmentKey,const stbLiftingResults& liftingResults,const HANDLINGCONFIG& liftConfig,Float64* pftop, Float64* pfbot, Float64* ptop_loc,Float64* pbot_loc) const;
 
    friend pgsLoadRater;
 
@@ -592,7 +589,7 @@ public:
    static bool TestMe(dbgLog& rlog);
    #endif // _UNITTEST
 
-   void DumpLiftingArtifact(const stbLiftingStabilityProblem* pStabilityProblem,const stbLiftingCheckArtifact& artifact,dbgDumpContext& os);
+   void DumpLiftingArtifact(const stbLiftingStabilityProblem* pStabilityProblem,const stbLiftingCheckArtifact& artifact,dbgDumpContext& os) const;
 };
 
 // INLINE METHODS

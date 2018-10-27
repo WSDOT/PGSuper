@@ -105,13 +105,17 @@ BOOL CLiveLoadAxleGrid::OnLButtonClickedRowCol(ROWCOL nRow, ROWCOL nCol, UINT nF
 
 void CLiveLoadAxleGrid::Appendrow()
 {
-	ROWCOL nRow = 0;
+   m_bAppendingRow = true;
+
+   ROWCOL nRow = 0;
    nRow = GetRowCount()+1;
 
 	InsertRows(nRow, 1);
    SetRowStyle(nRow);
    SetCurrentCell(nRow, GetLeftCol(), GX_SCROLLINVIEW|GX_DISPLAYEDITWND);
 	Invalidate();
+
+   m_bAppendingRow = false;
 }
 
 void CLiveLoadAxleGrid::Removerows()
@@ -386,9 +390,6 @@ void CLiveLoadAxleGrid::UploadData(CDataExchange* pDX, CLiveLoadDlg* dlg)
 
 void CLiveLoadAxleGrid::DownloadData(CDataExchange* pDX, CLiveLoadDlg* dlg)
 {
-   CEAFApp* pApp = EAFGetApp();
-   const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
-
    ROWCOL naxles = GetRowCount();
 
    dlg->m_Axles.clear();
@@ -401,10 +402,6 @@ void CLiveLoadAxleGrid::DownloadData(CDataExchange* pDX, CLiveLoadDlg* dlg)
    {
       Float64 weight(0), min_spacing(0), max_spacing(0);
       SpacingType stype = ParseAxleRow(nRow, pDX, &weight, &min_spacing, &max_spacing);
-
-      weight = ::ConvertToSysUnits(weight, pDisplayUnits->GeneralForce.UnitOfMeasure);
-      min_spacing = ::ConvertToSysUnits(min_spacing, pDisplayUnits->SpanLength.UnitOfMeasure);
-      max_spacing = ::ConvertToSysUnits(max_spacing, pDisplayUnits->SpanLength.UnitOfMeasure);
 
       LiveLoadLibraryEntry::Axle axle;
       if (stype==stNone)
@@ -443,8 +440,14 @@ void CLiveLoadAxleGrid::DownloadData(CDataExchange* pDX, CLiveLoadDlg* dlg)
 
 
 CLiveLoadAxleGrid::SpacingType CLiveLoadAxleGrid::ParseAxleRow(ROWCOL nRow, CDataExchange* pDX, Float64* pWeight, 
-                                                               Float64* pSpacingMin, Float64* pSpacingMax)
+                                                               Float64* pSpacingMin, Float64* pSpacingMax, BOOL bEmitErrorMsg)
 {
+   ATLASSERT(pDX->m_bSaveAndValidate == TRUE);
+
+   *pWeight = 0;
+   *pSpacingMin = 0;
+   *pSpacingMax = 0;
+
    Uint32 axlno = nRow;
 
    SpacingType spctype = stNone;
@@ -455,17 +458,23 @@ CLiveLoadAxleGrid::SpacingType CLiveLoadAxleGrid::ParseAxleRow(ROWCOL nRow, CDat
    Float64 d;
    if (!sysTokenizer::ParseDouble(s, &d))
 	{
-      CString msg; 
-      msg.Format(_T("Error - Weight for axle %d must be a positive number"), axlno);
-      ::AfxMessageBox(msg, MB_ICONEXCLAMATION|MB_OK);
+      if (bEmitErrorMsg)
+      {
+         CString msg; 
+         msg.Format(_T("Error - Weight for axle %d must be a positive number"), axlno);
+         ::AfxMessageBox(msg, MB_ICONEXCLAMATION|MB_OK);
+      }
       pDX->Fail();
 	}
 
    if (d<=0.0)
    {
-      CString msg; 
-      msg.Format(_T("Error - Weight for axle %d must be a positive number"), axlno);
-      ::AfxMessageBox(msg, MB_ICONEXCLAMATION|MB_OK);
+      if (bEmitErrorMsg)
+      {
+         CString msg;
+         msg.Format(_T("Error - Weight for axle %d must be a positive number"), axlno);
+         ::AfxMessageBox(msg, MB_ICONEXCLAMATION | MB_OK);
+      }
       pDX->Fail();
    }
 
@@ -487,17 +496,23 @@ CLiveLoadAxleGrid::SpacingType CLiveLoadAxleGrid::ParseAxleRow(ROWCOL nRow, CDat
          Float64 d;
          if (!sysTokenizer::ParseDouble(tokizerd[0].c_str(), &d))
 		   {
-            CString msg; 
-            msg.Format(_T("Spacing value(s) for axle %d must be a single number or two numbers separated by a dash"), axlno);
-            ::AfxMessageBox(msg, MB_ICONEXCLAMATION|MB_OK);
+            if (bEmitErrorMsg)
+            {
+               CString msg;
+               msg.Format(_T("Spacing value(s) for axle %d must be a single number or two numbers separated by a dash"), axlno);
+               ::AfxMessageBox(msg, MB_ICONEXCLAMATION | MB_OK);
+            }
             pDX->Fail();
 		   }
 
          if (d<=0.0)
          {
-            CString msg; 
-            msg.Format(_T("Spacing value for axle %d must be greater than zero"), axlno);
-            ::AfxMessageBox(msg, MB_ICONEXCLAMATION|MB_OK);
+            if (bEmitErrorMsg)
+            {
+               CString msg;
+               msg.Format(_T("Spacing value for axle %d must be greater than zero"), axlno);
+               ::AfxMessageBox(msg, MB_ICONEXCLAMATION | MB_OK);
+            }
             pDX->Fail();
          }
 
@@ -509,25 +524,34 @@ CLiveLoadAxleGrid::SpacingType CLiveLoadAxleGrid::ParseAxleRow(ROWCOL nRow, CDat
             Float64 dmax;
             if (!sysTokenizer::ParseDouble(tokizerd[1].c_str(), &dmax))
 		      {
-               CString msg; 
-               msg.Format(_T("Spacing value(s) for axle %d must be a single number or two numbers separated by a dash"), axlno);
-               ::AfxMessageBox(msg, MB_ICONEXCLAMATION|MB_OK);
+               if (bEmitErrorMsg)
+               {
+                  CString msg;
+                  msg.Format(_T("Spacing value(s) for axle %d must be a single number or two numbers separated by a dash"), axlno);
+                  ::AfxMessageBox(msg, MB_ICONEXCLAMATION | MB_OK);
+               }
                pDX->Fail();
 		      }
 
             if (dmax<=0.0)
             {
-               CString msg; 
-               msg.Format(_T("Max Spacing value for axle %d must be greater than zero"), axlno);
-               ::AfxMessageBox(msg, MB_ICONEXCLAMATION|MB_OK);
+               if (bEmitErrorMsg)
+               {
+                  CString msg;
+                  msg.Format(_T("Max Spacing value for axle %d must be greater than zero"), axlno);
+                  ::AfxMessageBox(msg, MB_ICONEXCLAMATION | MB_OK);
+               }
                pDX->Fail();
             }
 
             if (dmax<=d)
             {
-               CString msg; 
-               msg.Format(_T("Max axle spacing must greater than Min axle spacing for axle %d"), axlno);
-               ::AfxMessageBox(msg, MB_ICONEXCLAMATION|MB_OK);
+               if (bEmitErrorMsg)
+               {
+                  CString msg;
+                  msg.Format(_T("Max axle spacing must greater than Min axle spacing for axle %d"), axlno);
+                  ::AfxMessageBox(msg, MB_ICONEXCLAMATION | MB_OK);
+               }
                pDX->Fail();
             }
 
@@ -537,16 +561,29 @@ CLiveLoadAxleGrid::SpacingType CLiveLoadAxleGrid::ParseAxleRow(ROWCOL nRow, CDat
       }
       else
       {
-         CString msg; 
-         msg.Format(_T("Spacing value(s) for axle %d must be a single number or two numbers separated by a dash"), axlno);
-         ::AfxMessageBox(msg, MB_ICONEXCLAMATION|MB_OK);
+         if (bEmitErrorMsg)
+         {
+            CString msg;
+            msg.Format(_T("Spacing value(s) for axle %d must be a single number or two numbers separated by a dash"), axlno);
+            ::AfxMessageBox(msg, MB_ICONEXCLAMATION | MB_OK);
+         }
          pDX->Fail();
       }
    }
    else
    {
+      // this is the first axle... there is no spacing
+      *pSpacingMin = 0;
+      *pSpacingMax = 0;
       spctype = stNone;
    }
+
+   CEAFApp* pApp = EAFGetApp();
+   const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
+   *pWeight = ::ConvertToSysUnits(*pWeight, pDisplayUnits->GeneralForce.UnitOfMeasure);
+   *pSpacingMin = ::ConvertToSysUnits(*pSpacingMin, pDisplayUnits->SpanLength.UnitOfMeasure);
+   *pSpacingMax = ::ConvertToSysUnits(*pSpacingMax, pDisplayUnits->SpanLength.UnitOfMeasure);
+
 
    return spctype;
 }
@@ -619,4 +656,48 @@ void CLiveLoadAxleGrid::Enable(BOOL bEnable)
 
    GetParam()->SetLockReadOnly(TRUE);
    GetParam()->EnableUndo(FALSE);
+}
+
+BOOL CLiveLoadAxleGrid::OnEndEditing(ROWCOL nRow, ROWCOL nCol)
+{
+   if (!m_bAppendingRow)
+   {
+      CLiveLoadDlg* pdlg = (CLiveLoadDlg*)GetParent();
+      pdlg->UpdateTruckDimensions();
+   }
+   return CGXGridWnd::OnEndEditing(nRow, nCol);
+}
+
+bool CLiveLoadAxleGrid::GetTruckDimensions(Float64* pWeight, Float64* pMinLength, Float64* pMaxLength)
+{
+   ROWCOL nRows = GetRowCount();
+   CDataExchange dx(this,TRUE);
+   *pWeight = 0.0;
+   *pMinLength = 0.0;
+   *pMaxLength = 0.0;
+   for (ROWCOL row = 1; row <= nRows; row++)
+   {
+      Float64 w, sMin, sMax;
+      try
+      {
+         ParseAxleRow(row, &dx, &w, &sMin, &sMax,FALSE/*don't emit error messages*/);
+      }
+      catch (...)
+      {
+         return false;
+      }
+
+      *pWeight += w;
+      *pMinLength += sMin;
+
+      if (IsZero(sMax))
+      {
+         *pMaxLength += sMin;
+      }
+      else
+      {
+         *pMaxLength += sMax;
+      }
+   }
+   return true;
 }

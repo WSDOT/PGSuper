@@ -76,7 +76,7 @@ rptParagraph* CGirderSeedDataComparisonParagraph::Build(IBroker* pBroker, const 
 
          // compare shear data from library
          CShearData2 shearData;
-         shearData.CopyGirderEntryData(*pGirderLib);
+         shearData.CopyGirderEntryData(pGirderLib);
          if (currentShearData != shearData)
          {
             *pParagraph<<color(Red)<<_T("Trans. Reinforcement data for Girder ") << LABEL_GIRDER(gdrIdx) << _T(" does not match Girder Library entry ")<<pGirderLib->GetName()<<color(Black)<<rptNewLine;
@@ -87,7 +87,7 @@ rptParagraph* CGirderSeedDataComparisonParagraph::Build(IBroker* pBroker, const 
          const CLongitudinalRebarData& currentLRD = pGirder->GetSegment(segIdx)->LongitudinalRebarData;
 
          CLongitudinalRebarData longData;
-         longData.CopyGirderEntryData(*pGirderLib);
+         longData.CopyGirderEntryData(pGirderLib);
          if (currentLRD != longData)
          {
             *pParagraph<<color(Red)<<_T("Long. Reinforcement data for Girder ") << LABEL_GIRDER(gdrIdx) << _T(" does not match Girder Library entry ")<<pGirderLib->GetName()<<color(Black)<<rptNewLine;

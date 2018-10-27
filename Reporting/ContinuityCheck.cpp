@@ -87,7 +87,7 @@ void CContinuityCheck::Build(rptChapter* pChapter,
 
    rptParagraph* pTitle = new rptParagraph( rptStyleManager::GetHeadingStyle() );
    *pChapter << pTitle;
-   *pTitle << _T("Continuity [5.14.1.4.5]");
+   *pTitle << _T("Continuity [") << LrfdCw8th(_T("5.14.1.4.5"),_T("5.12.3.3.5")) << _T("]");
 
    rptParagraph* pPara = new rptParagraph;
    *pChapter << pPara;

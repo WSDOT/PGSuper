@@ -8,7 +8,7 @@ Define where the girder is supported during temporary condition.
 
 Item | Description
 -----|-------------
-Release | Enter the distance from the ends of the girder to where it is assumed to be supported at release. Use the keyword END if the girder is supported at its ends.
+Release | Enter the distance from the ends of the girder to where it is assumed to be supported at release. Use the keyword END if the girder is supported at its ends. Use the keyword BRG if the girder is supported at its permanent bearing locations at release.
 Lifting | Enter the distance from the ends of the girder to where it is assumed to be supported during lifting from the casting bed.
 Storage | Enter the distance from the ends of the girder to where it is assumed to be supported during storage. Use the keyword BRG if the girder is supported at its permanent bearing locations during storage.
 

@@ -105,6 +105,8 @@ void CGirderSpacingGrid::SetPierSkewAngle(Float64 skewAngle)
 
 bool CGirderSpacingGrid::InputSpacing() const
 {
+   // returns true if spacing should be input.
+   // there is no need for input if min/max values are the same
    ATLASSERT(m_MinGirderSpacing.size() == m_MaxGirderSpacing.size());
    std::vector<Float64>::const_iterator minIter, maxIter;
    for ( minIter  = m_MinGirderSpacing.begin(), maxIter  = m_MaxGirderSpacing.begin();
@@ -188,8 +190,8 @@ void CGirderSpacingGrid::UpdateGrid()
    bool bUseSameNumGirdersInAllGroups = m_pGirderGroup->GetBridgeDescription()->UseSameNumberOfGirdersInAllGroups();
 
    const unitmgtLengthData& spacingUnit = IsGirderSpacing(spacingType) // if
-                                        ? pDisplayUnits->GetXSectionDimUnit()     // then
-                                        : pDisplayUnits->GetComponentDimUnit();   // else
+                                        ? pDisplayUnits->GetXSectionDimUnit()     // then (girder spacing)
+                                        : pDisplayUnits->GetComponentDimUnit();   // else (joint spacing)
 
    GroupIndexType nSpacingGroups = m_pGirderSpacing->GetSpacingGroupCount();
    GirderIndexType nGirders      = m_pGirderSpacing->GetSpacingCount() + 1;
@@ -270,18 +272,8 @@ void CGirderSpacingGrid::UpdateGrid()
          minGS *= skewCorrection;
          maxGS *= skewCorrection;
 
-         if ( IsGirderSpacing(spacingType) )
-         {
-            // girder spacing
-            minGirderSpacing = Max(minGirderSpacing,minGS);
-            maxGirderSpacing = Min(maxGirderSpacing,maxGS);
-         }
-         else
-         {
-            // joint spacing
-            minGirderSpacing = 0;
-            maxGirderSpacing = Min(maxGirderSpacing-minGirderSpacing,maxGS-minGS);
-         }
+         minGirderSpacing = Max(minGirderSpacing,minGS);
+         maxGirderSpacing = Min(maxGirderSpacing,maxGS);
       } // girder loop
 
       m_MinGirderSpacing.push_back(minGirderSpacing);
@@ -306,20 +298,9 @@ void CGirderSpacingGrid::UpdateGrid()
 
       if (maxGirderSpacing < MAX_GIRDER_SPACING)
       {
-         if ( IsGirderSpacing(spacingType) )
-         {
-            // girder spacing
-            strSpacing.Format(_T("%s - %s"), 
-               FormatDimension(minGirderSpacing,spacingUnit,false),
-               FormatDimension(maxGirderSpacing,spacingUnit,false));
-         }
-         else
-         {
-            // joint spacing
-            strSpacing.Format(_T("%s - %s"), 
-               FormatDimension(0.0,spacingUnit,false),
-               FormatDimension(maxGirderSpacing-minGirderSpacing,spacingUnit,false));
-         }
+         strSpacing.Format(_T("%s - %s"), 
+            FormatDimension(minGirderSpacing,spacingUnit,false),
+            FormatDimension(maxGirderSpacing,spacingUnit,false));
       }
       else
       {
@@ -373,7 +354,7 @@ BOOL CGirderSpacingGrid::OnRButtonHitRowCol(ROWCOL nHitRow,ROWCOL nHitCol,ROWCOL
    if ( nHitState & GX_HITSTART )
       return TRUE;
 
-   if ( nHitCol != 0 && m_bEnabled )
+   if ( nHitCol != 0 && m_bEnabled)
    {
       CRowColArray selCols;
       ROWCOL nSelected = GetSelectedCols(selCols);
@@ -572,27 +553,27 @@ BOOL CGirderSpacingGrid::OnValidateCell(ROWCOL nRow, ROWCOL nCol)
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
-   if ( IsGirderSpacing(spacingType) )
+   if (IsJointSpacing(spacingType))
    {
-      spacing = ::ConvertToSysUnits(spacing,pDisplayUnits->GetXSectionDimUnit().UnitOfMeasure);
-      Float64 minGirderSpacing = m_MinGirderSpacing[nCol-1];
-      Float64 maxGirderSpacing = m_MaxGirderSpacing[nCol-1];
-      if ( IsLT(spacing,minGirderSpacing,0.001) || IsLT(maxGirderSpacing,spacing,0.001) )
-      {
-         SetWarningText(_T("Girder spacing is out of range"));
-         return FALSE;
-      }
+      spacing = ::ConvertToSysUnits(spacing, pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
    }
    else
    {
-      spacing = ::ConvertToSysUnits(spacing,pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
-      Float64 minGirderSpacing = m_MinGirderSpacing[nCol-1];
-      Float64 maxGirderSpacing = m_MaxGirderSpacing[nCol-1];
-      if ( spacing < 0 || IsGT(maxGirderSpacing-minGirderSpacing,spacing) )
+      spacing = ::ConvertToSysUnits(spacing, pDisplayUnits->GetXSectionDimUnit().UnitOfMeasure);
+   }
+   Float64 minGirderSpacing = m_MinGirderSpacing[nCol - 1];
+   Float64 maxGirderSpacing = m_MaxGirderSpacing[nCol - 1];
+   if (IsLT(spacing, minGirderSpacing,0.001) || IsLT(maxGirderSpacing, spacing,0.001))
+   {
+      if (IsGirderSpacing(spacingType))
+      {
+         SetWarningText(_T("Girder spacing is out of range"));
+      }
+      else
       {
          SetWarningText(_T("Joint spacing is out of range"));
-         return FALSE;
       }
+      return FALSE;
    }
 
 	return CGXGridWnd::OnValidateCell(nRow, nCol);

@@ -38,6 +38,10 @@
 #include <Plugins\PGSuperIEPlugin.h>
 #include <IFace\BeamFactory.h>
 
+#include <BridgeModelViewController.h>
+#include <GirderModelViewController.h>
+#include <LoadsViewController.h>
+
 #include <EAF\EAFApp.h>
 #include <EAF\EAFUtilities.h>
 

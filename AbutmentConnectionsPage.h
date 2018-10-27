@@ -100,7 +100,6 @@ protected:
 
    Float64 m_BearingOffset;
    Float64 m_EndDistance;
-   Float64 m_SupportWidth;
    ConnectionLibraryEntry::EndDistanceMeasurementType m_EndDistanceMeasurementType;
    ConnectionLibraryEntry::BearingOffsetMeasurementType m_BearingOffsetMeasurementType;
 

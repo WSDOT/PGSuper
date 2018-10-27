@@ -24,8 +24,7 @@
 
 #include <PGSuperTypes.h>
 #include <PgsExt\Keys.h>
-
-class pgsPointOfInterest;
+#include <PgsExt\PointOfInterest.h>
 
 /*****************************************************************************
 INTERFACE
@@ -38,7 +37,7 @@ DESCRIPTION
    Different versions of the LRFD have different requirements for when
    strand stresses must be checked. Use the CheckStresXXX methods
    to determine when the strand stresses must be checked.
-   Based on LRFD Table 5.9.3-1
+   Based on LRFD Table 5.9.2.2-1 (pre2017: 5.9.3-1)
 *****************************************************************************/
 // {82EA97B0-6EB2-11d2-8EEB-006097DF3C68}
 DEFINE_GUID(IID_IAllowableStrandStress, 
@@ -78,7 +77,7 @@ INTERFACE
    Interface to get the allowable tendon stresses.
 
 DESCRIPTION
-   Interface to get the allowable tendon stresses. Based on LRFD Table 5.9.3-1
+   Interface to get the allowable tendon stresses. Based on LRFD Table 5.9.2.2-1 (pre2017: 5.9.3-1)
 *****************************************************************************/
 // {FC5C901A-C65B-4d10-98A8-3B01EEA86044}
 DEFINE_GUID(IID_IAllowableTendonStress, 
@@ -129,17 +128,17 @@ interface IAllowableConcreteStress : IUnknown
    virtual void GetAllowableTensionStressCoefficient(const pgsPointOfInterest& poi,pgsTypes::StressLocation stressLocation,IntervalIndexType intervalIdx,pgsTypes::LimitState ls,bool bWithBondedReinforcement,bool bInPrecompressedTensileZone,Float64* pCoeff,bool* pbMax,Float64* pMaxValue) = 0;
 
    // Returns the allowable Compression stress at the specified locations along the girder
-   virtual std::vector<Float64> GetGirderAllowableCompressionStress(const std::vector<pgsPointOfInterest>& vPoi,IntervalIndexType intervalIdx,pgsTypes::LimitState ls) = 0;
+   virtual std::vector<Float64> GetGirderAllowableCompressionStress(const PoiList& vPoi,IntervalIndexType intervalIdx,pgsTypes::LimitState ls) = 0;
 
    // Returns the allowable Compression stress at the specified locations along the deck
-   virtual std::vector<Float64> GetDeckAllowableCompressionStress(const std::vector<pgsPointOfInterest>& vPoi,IntervalIndexType intervalIdx,pgsTypes::LimitState ls) = 0;
+   virtual std::vector<Float64> GetDeckAllowableCompressionStress(const PoiList& vPoi,IntervalIndexType intervalIdx,pgsTypes::LimitState ls) = 0;
 
    // Returns the allowable tensile stress at the specified locations along the girder. If bWithBondedReinforcement is true, the high allowable tension is returned if it is applicable.
    // If bInPrecompressedTensileZone is true, the allowable tensile stress for the precompressed tensile zone in closure joints is returned
-   virtual std::vector<Float64> GetGirderAllowableTensionStress(const std::vector<pgsPointOfInterest>& vPoi,IntervalIndexType intervalIdx,pgsTypes::LimitState ls,bool bWithBondededReinforcement,bool bInPrecompressedTensileZone) = 0;
+   virtual std::vector<Float64> GetGirderAllowableTensionStress(const PoiList& vPoi,IntervalIndexType intervalIdx,pgsTypes::LimitState ls,bool bWithBondededReinforcement,bool bInPrecompressedTensileZone) = 0;
 
    // Returns the allowable tensile stress at the specified locations along the girder. If bWithBondedReinforcement is true, the high allowable tension is returned if it is applicable.
-   virtual std::vector<Float64> GetDeckAllowableTensionStress(const std::vector<pgsPointOfInterest>& vPoi,IntervalIndexType intervalIdx,pgsTypes::LimitState ls,bool bWithBondededReinforcement) = 0;
+   virtual std::vector<Float64> GetDeckAllowableTensionStress(const PoiList& vPoi,IntervalIndexType intervalIdx,pgsTypes::LimitState ls,bool bWithBondededReinforcement) = 0;
 
 
    // Returns the allowable Compression stress in a girder segment at the specified location

@@ -138,12 +138,15 @@ void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnit
    CSegmentKey fabrSegmentKey(TOGA_SPAN,TOGA_FABR_GDR,0);
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
-   IntervalIndexType castDiaphragmIntervalIdx = pIntervals->GetCastIntermediateDiaphragmsInterval();
-   IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval();
-   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
+   IntervalIndexType castDiaphragmIntervalIdx = pIntervals->GetLastNoncompositeInterval();
+   IntervalIndexType castDeckIntervalIdx      = pIntervals->GetLastNoncompositeInterval();
+   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetLastCompositeInterval();
    IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval();
    IntervalIndexType overlayIntervalIdx       = pIntervals->GetOverlayInterval();
    IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval();
+   IntervalIndexType noncompositeUserLoadIntervalIdx = pIntervals->GetNoncompositeUserLoadInterval();
+   IntervalIndexType compositeUserLoadIntervalIdx = pIntervals->GetCompositeUserLoadInterval();
+
    std::_tstring spec_name = pSpec->GetSpecification();
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( spec_name.c_str() );
 
@@ -151,13 +154,15 @@ void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnit
    pgsTypes::AnalysisType analysisType = pSpec->GetAnalysisType();
 
    // Get Midspan poi's
-   std::vector<pgsPointOfInterest> vPoi_orig( pIPOI->GetPointsOfInterest(origSegmentKey,POI_5L | POI_ERECTED_SEGMENT) );
+   PoiList vPoi_orig;
+   pIPOI->GetPointsOfInterest(origSegmentKey, POI_5L | POI_ERECTED_SEGMENT, &vPoi_orig);
    ATLASSERT(vPoi_orig.size()==1);
-   pgsPointOfInterest poi_orig( *vPoi_orig.begin() );
+   const pgsPointOfInterest& poi_orig( vPoi_orig.front() );
 
-   std::vector<pgsPointOfInterest> vPoi_fabr( pIPOI->GetPointsOfInterest(fabrSegmentKey,POI_5L | POI_ERECTED_SEGMENT) );
+   PoiList vPoi_fabr;
+   pIPOI->GetPointsOfInterest(fabrSegmentKey, POI_5L | POI_ERECTED_SEGMENT, &vPoi_fabr);
    ATLASSERT(vPoi_fabr.size()==1);
-   pgsPointOfInterest poi_fabr( *vPoi_fabr.begin() );
+   const pgsPointOfInterest& poi_fabr( vPoi_fabr.front() );
 
    // Compute mid span deflections
    Float64 delta_gdr_orig, delta_gdr_fabr; // due to girder self weight
@@ -195,11 +200,11 @@ void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnit
    delta_tb_orig = pProductForces->GetDeflection(railingSystemIntervalIdx, pgsTypes::pftTrafficBarrier, poi_orig, bat, rtCumulative, false );
    delta_tb_fabr = pProductForces->GetDeflection(railingSystemIntervalIdx, pgsTypes::pftTrafficBarrier, poi_fabr, bat, rtCumulative, false );
 
-   Float64 delta_dcu_orig = pProductForces->GetDeflection(railingSystemIntervalIdx,pgsTypes::pftUserDC, poi_orig, bat, rtCumulative, false);
-   Float64 delta_dcu_fabr = pProductForces->GetDeflection(railingSystemIntervalIdx,pgsTypes::pftUserDC, poi_fabr, bat, rtCumulative, false);
+   Float64 delta_dcu_orig = pProductForces->GetDeflection(compositeUserLoadIntervalIdx,pgsTypes::pftUserDC, poi_orig, bat, rtCumulative, false);
+   Float64 delta_dcu_fabr = pProductForces->GetDeflection(compositeUserLoadIntervalIdx,pgsTypes::pftUserDC, poi_fabr, bat, rtCumulative, false);
 
-   Float64 delta_dwu_orig = pProductForces->GetDeflection(railingSystemIntervalIdx,pgsTypes::pftUserDW, poi_orig, bat, rtCumulative, false);
-   Float64 delta_dwu_fabr = pProductForces->GetDeflection(railingSystemIntervalIdx,pgsTypes::pftUserDW, poi_fabr, bat, rtCumulative, false);
+   Float64 delta_dwu_orig = pProductForces->GetDeflection(compositeUserLoadIntervalIdx,pgsTypes::pftUserDW, poi_orig, bat, rtCumulative, false);
+   Float64 delta_dwu_fabr = pProductForces->GetDeflection(compositeUserLoadIntervalIdx,pgsTypes::pftUserDW, poi_fabr, bat, rtCumulative, false);
 
    pProductForces->GetLiveLoadDeflection(liveLoadIntervalIdx, pgsTypes::lltDesign, poi_orig, bat, true, false, &delta_ll_orig, &temp );
    pProductForces->GetLiveLoadDeflection(liveLoadIntervalIdx, pgsTypes::lltDesign, poi_fabr, bat, true, false, &delta_ll_fabr, &temp );

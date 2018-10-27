@@ -87,7 +87,8 @@ public:
 
    void SetSymmetry(bool isSymmetrical);
 
-   int GetConfinementBarColumn() { return 6; }
+   ROWCOL GetLegsExtendedIntoDeckColumn() { return 5;  }
+   ROWCOL GetConfinementBarColumn() { return 6; }
 
 private:
    // set up styles for interior rows

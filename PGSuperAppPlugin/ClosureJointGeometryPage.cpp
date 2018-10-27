@@ -62,7 +62,6 @@ void CClosureJointGeometryPage::Init(const CTemporarySupportData* pTS)
 
    pTS->GetGirderEndDistance(&m_EndDistance,&m_EndDistanceMeasurementType);
    pTS->GetBearingOffset(&m_BearingOffset,&m_BearingOffsetMeasurementType);
-   m_SupportWidth = pTS->GetSupportWidth();
 
    const CClosureJointData* pClosureJoint = pTS->GetClosureJoint(0);
    if ( pClosureJoint )
@@ -80,7 +79,6 @@ void CClosureJointGeometryPage::Init(const CPierData2* pPierData)
    // we are forcing both sides of the pier to be the same so just use Ahead face
    pPierData->GetGirderEndDistance(pgsTypes::Ahead,&m_EndDistance,&m_EndDistanceMeasurementType);
    pPierData->GetBearingOffset(pgsTypes::Ahead,&m_BearingOffset,&m_BearingOffsetMeasurementType);
-   m_SupportWidth = pPierData->GetSupportWidth(pgsTypes::Ahead) + pPierData->GetSupportWidth(pgsTypes::Back);
 
    m_DiaphragmWidth = pPierData->GetDiaphragmWidth(pgsTypes::Back) + pPierData->GetDiaphragmWidth(pgsTypes::Ahead);
    m_DiaphragmHeight = pPierData->GetDiaphragmHeight(pgsTypes::Back);
@@ -123,9 +121,6 @@ void CClosureJointGeometryPage::DoDataExchange(CDataExchange* pDX)
    DDX_UnitValueAndTag(pDX, IDC_BEARING_OFFSET, IDC_BEARING_OFFSET_T, m_BearingOffset, pDisplayUnits->GetComponentDimUnit() );
    DDV_UnitValueZeroOrMore(pDX, IDC_BEARING_OFFSET, m_BearingOffset, pDisplayUnits->GetComponentDimUnit() );
 
-   DDX_UnitValueAndTag(pDX, IDC_SUPPORT_WIDTH, IDC_SUPPORT_WIDTH_T, m_SupportWidth, pDisplayUnits->GetComponentDimUnit() );
-   DDV_UnitValueZeroOrMore(pDX, IDC_SUPPORT_WIDTH, m_SupportWidth, pDisplayUnits->GetComponentDimUnit() );
-
    DDX_CBItemData(pDX,IDC_BEARING_OFFSET_MEASURE,m_BearingOffsetMeasurementType);
    DDX_CBItemData(pDX,IDC_END_DISTANCE_MEASURE,m_EndDistanceMeasurementType);
 
@@ -145,8 +140,6 @@ void CClosureJointGeometryPage::DoDataExchange(CDataExchange* pDX)
          pParent->m_pPier->SetBearingOffset(pgsTypes::Ahead,m_BearingOffset,m_BearingOffsetMeasurementType);
          pParent->m_pPier->SetGirderEndDistance(pgsTypes::Back,m_EndDistance,m_EndDistanceMeasurementType);
          pParent->m_pPier->SetBearingOffset(pgsTypes::Back,m_BearingOffset,m_BearingOffsetMeasurementType);
-         pParent->m_pPier->SetSupportWidth(pgsTypes::Ahead,m_SupportWidth/2);
-         pParent->m_pPier->SetSupportWidth(pgsTypes::Back,m_SupportWidth/2);
 
          pParent->m_pPier->SetDiaphragmHeight(pgsTypes::Back,m_DiaphragmHeight);
          pParent->m_pPier->SetDiaphragmHeight(pgsTypes::Ahead,m_DiaphragmHeight);
@@ -161,7 +154,6 @@ void CClosureJointGeometryPage::DoDataExchange(CDataExchange* pDX)
 
          pParent->m_pTS->SetGirderEndDistance(m_EndDistance,m_EndDistanceMeasurementType);
          pParent->m_pTS->SetBearingOffset(m_BearingOffset,m_BearingOffsetMeasurementType);
-         pParent->m_pTS->SetSupportWidth(m_SupportWidth);
       }
 
       CTimelineManager* pTimelineMgr = GetTimelineManager();

@@ -4,9 +4,9 @@ Define project criteria for specification compliance checking of prestressed ele
 
 The parameters on this tab are allowable stress limits. They can be set to match or deviate from AASHTO.
 
-Stress Limits for Temporary Stresses before Losses (LRFD 5.9.4.1)
+Stress Limits for Temporary Stresses before Losses (LRFD 5.9.2.3.1 (*pre-2017: 5.9.4.1*) )
 -----------------------------------------------------------------
-The information in this section allows you to deviate from LRFD 5.9.4.1.
+The information in this section allows you to deviate from LRFD 5.9.2.3.1.
 
 Item | Description
 -----|--------------
@@ -16,9 +16,9 @@ Tensile Stress - In areas with sufficient bonded reinforcement | Enter the coeff
 
 > NOTE: See @ref tg_longitudinal_reinforcement in the @ref technical_guide for discussion describing how longitudinal reinforcement in the girder factors into the determination of the allowable tensile stress.
 
-Stress Limits at Service Limit States after Losses (LRFD 5.9.4.2)
+Stress Limits at Service Limit States after Losses (LRFD 5.9.2.3.2 (*pre-2017: 5.9.4.2*))
 -----------------------------------------------------------------
-The information in this section allows you to deviate from LRFD 5.9.4.2.
+The information in this section allows you to deviate from LRFD 5.9.2.3.2
 
 Item | Description
 -----|--------------
@@ -43,7 +43,7 @@ Stress Limits for Temporary Loading Conditions (PGSuper Only)
 -------------------------------------------------------------
 Some bridge owners limit the girder stresses during intermediate, temporary loading conditions. These parameters are only used for PGSuper projects. 
 
-> NOTE: The LRFD specifications require evaluation of stresses during temporary loading conditions for spliced girder bridges. The stress limitations are based on LRFD 5.9.4.1 and 5.9.4.2. Therefore, PGSplice does not use these limitations.
+> NOTE: The LRFD specifications require evaluation of stresses during temporary loading conditions for spliced girder bridges. The stress limitations are based on LRFD 5.9.2.3.1 and 5.9.2.3.2 (*pre-2017: 5.9.4.1 and 5.9.4.2*). Therefore, PGSplice does not use these limitations.
 
 Check the "Evaluate stress limits for temporary loading conditions" to cause stress to be evaluated immediately after temporary strand removal and immediately after deck placement.
 

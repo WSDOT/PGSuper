@@ -349,7 +349,7 @@ void CLongReinfShearCheckChapterBuilder::BuildForRating(rptChapter* pChapter,CRe
 
          pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
          *pChapter << pParagraph;
-         *pParagraph << _T("5.8.3.5") << rptNewLine;
+         *pParagraph << LrfdCw8th(_T("5.8.3.5"),_T("5.7.3.5")) << rptNewLine;
          if ( 0 < nDucts )
          {
             if ( lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion() )
@@ -694,7 +694,7 @@ rptParagraph* create_table3_design(IBroker* pBroker,
             (*table)(row,col++) << location.SetValue( POI_SPAN, poi );
             (*table)(row,col++) << shear.SetValue( pArtifact->GetDemandForce());
             (*table)(row,col++) << shear.SetValue( pArtifact->GetCapacityForce());
-            (*table)(row,col++) << (pArtifact->GetEquation() == 1 ? _T("5.8.3.5-1") : _T("5.8.3.5-2"));
+            (*table)(row,col++) << (pArtifact->GetEquation() == 1 ? LrfdCw8th(_T("5.8.3.5-1"),_T("5.7.3.5-1")) : LrfdCw8th(_T("5.8.3.5-2"),_T("5.7.3.5-2")));
 
             row++;
          }
@@ -980,7 +980,7 @@ rptParagraph* create_table3_rating(IBroker* pBroker,
          (*table)(row,0) << location.SetValue( POI_SPAN, poi );
          (*table)(row,1) << shear.SetValue( artifact.GetDemandForce());
          (*table)(row,2) << shear.SetValue( artifact.GetCapacityForce());
-         (*table)(row,3) << (artifact.GetEquation() == 1 ? _T("5.8.3.5-1") : _T("5.8.3.5-2"));
+         (*table)(row,3) << (artifact.GetEquation() == 1 ? LrfdCw8th(_T("5.8.3.5-1"),_T("5.7.3.5-1")) : LrfdCw8th(_T("5.8.3.5-2"),_T("5.7.3.5-2")));
 
          row++;
       }

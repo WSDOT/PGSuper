@@ -1,31 +1,33 @@
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 48.25    6   8.00                     1     1    U48G4          48  0.6  270  15.34  11.09  12.50  12.50                                              5.000  6.000   5.497    -4.146     7761   0.779  1.154   2.658 -2.485  0.000 -0.112 -2.597 202.68  421.42    0.00    0.00    0.00 
+ 48.25    6   8.00                     1     1    U48G4          48  0.6  270  15.34  11.09  12.50  12.50                                              5.000  6.000   5.497    -4.146     7761   0.779  1.154   4.927 -2.485  0.000 -0.112 -2.597 202.68  421.42    0.00    0.00    0.00 
 
 
 The Specification Check was Not Successful
-Compression stress check failed for Service I Limit State in Interval 2 Prestress Release (Casting Yard)
-Tensile stress check failed for Service I Limit State in Interval 2 Prestress Release (Casting Yard)
-Compression stress check failed for Service I Limit State in Interval 10 Cast Deck (Bridge Site 1)
-Compression stress check failed for Service I Limit State in Interval 12 Composite Deck, Install Railing System (Bridge Site 2)
-Tensile stress check failed for Service III Limit State in Interval 14 Open to Traffic (Bridge Site 3)
+Compression stress check failed for Service I Limit State in Interval 2 Prestress Release
+Tensile stress check failed for Service I Limit State in Interval 2 Prestress Release
+Compression stress check failed for Service I Limit State in Interval 10 Cast Deck
+Compression stress check failed for Service I Limit State in Interval 12 Composite deck, Install Railing System
+Tensile stress check failed for Service III Limit State in Interval 14 Open to Traffic
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
 Lifting checks failed
 Hauling checks failed
+Slab Offset ("A" Dimension) check failed
 
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 48.25    6   8.00                     1     2    U48G4          48  0.6  270  15.34  11.09  12.50  12.50                                              5.000  6.000   4.917    -3.528     7708   0.489  0.997   2.658 -2.107  0.000 -0.115 -2.222 202.68  421.42    0.00    0.00    0.00 
+ 48.25    6   8.00                     1     2    U48G4          48  0.6  270  15.34  11.09  12.50  12.50                                              5.000  6.000   4.917    -3.528     7708   0.489  0.997   4.927 -2.107  0.000 -0.115 -2.222 202.68  421.42    0.00    0.00    0.00 
 
 
 The Specification Check was Not Successful
-Compression stress check failed for Service I Limit State in Interval 2 Prestress Release (Casting Yard)
-Tensile stress check failed for Service I Limit State in Interval 2 Prestress Release (Casting Yard)
-Compression stress check failed for Service I Limit State in Interval 10 Cast Deck (Bridge Site 1)
-Compression stress check failed for Service I Limit State in Interval 12 Composite Deck, Install Railing System (Bridge Site 2)
+Compression stress check failed for Service I Limit State in Interval 2 Prestress Release
+Tensile stress check failed for Service I Limit State in Interval 2 Prestress Release
+Compression stress check failed for Service I Limit State in Interval 10 Cast Deck
+Compression stress check failed for Service I Limit State in Interval 12 Composite deck, Install Railing System
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
 Lifting checks failed
 Hauling checks failed
+Slab Offset ("A" Dimension) check failed
 
 

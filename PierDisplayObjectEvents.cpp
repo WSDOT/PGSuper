@@ -80,10 +80,14 @@ void CPierDisplayObjectEvents::SelectPrev(iDisplayObject* pDO)
    if ( m_PierIdx == 0 )
    {
       // this is the first pier
-      if ( m_pBridgeDesc->GetDeckDescription()->GetDeckType() == pgsTypes::sdtNone )
-         m_pFrame->SelectPier(m_pBridgeDesc->GetPierCount()-1); // no deck, select last pier
+      if (m_pBridgeDesc->GetDeckDescription()->GetDeckType() == pgsTypes::sdtNone)
+      {
+         m_pFrame->SelectPier(m_pBridgeDesc->GetPierCount() - 1); // no deck, select last pier
+      }
       else
+      {
          m_pFrame->SelectDeck();  // select deck if there is one
+      }
    }
    else
    {
@@ -96,10 +100,14 @@ void CPierDisplayObjectEvents::SelectNext(iDisplayObject* pDO)
    if ( m_PierIdx == m_pBridgeDesc->GetPierCount()-1 )
    {
       // this is the last pier
-      if ( m_pBridgeDesc->GetDeckDescription()->GetDeckType() == pgsTypes::sdtNone )
+      if (m_pBridgeDesc->GetDeckDescription()->GetDeckType() == pgsTypes::sdtNone)
+      {
          m_pFrame->SelectPier(0); // no deck, select first pier
+      }
       else
+      {
          m_pFrame->SelectDeck(); // select deck if there is one 
+      }
    }
    else
    {
@@ -232,7 +240,7 @@ STDMETHODIMP_(bool) CPierDisplayObjectEvents::XEvents::OnContextMenu(iDisplayObj
       const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
       const CPierData2* pPier = pBridgeDesc->GetPier(pThis->m_PierIdx);
 
-      bool bNoDeck = pBridgeDesc->GetDeckDescription()->GetDeckType() == pgsTypes::sdtNone;
+      bool bNoDeck = IsNonstructuralDeck(pBridgeDesc->GetDeckDescription()->GetDeckType());
 
       if ( pPier->IsBoundaryPier() )
       {

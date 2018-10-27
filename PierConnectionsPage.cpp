@@ -80,8 +80,6 @@ void CPierConnectionsPage::DoDataExchange(CDataExchange* pDX)
    DDX_Control(pDX,IDC_RIGHT_BEARING_OFFSET,m_BearingOffsetEdit[pgsTypes::Ahead]);
    DDX_Control(pDX,IDC_LEFT_END_DISTANCE,m_EndDistanceEdit[pgsTypes::Back]);
    DDX_Control(pDX,IDC_RIGHT_END_DISTANCE,m_EndDistanceEdit[pgsTypes::Ahead]);
-   DDX_Control(pDX,IDC_LEFT_SUPPORT_WIDTH,m_SupportWidthEdit[pgsTypes::Back]);
-   DDX_Control(pDX,IDC_RIGHT_SUPPORT_WIDTH,m_SupportWidthEdit[pgsTypes::Ahead]);
    DDX_Control(pDX,IDC_BEARING_OFFSET_MEASURE,m_cbBearingOffsetMeasurementType);
    DDX_Control(pDX,IDC_END_DISTANCE_MEASURE,m_cbEndDistanceMeasurementType);
    DDX_Control(pDX,IDC_BACK_DIAPHRAGM_OFFSET,m_DiaphragmLoadLocationEdit[pgsTypes::Back]);
@@ -101,11 +99,9 @@ void CPierConnectionsPage::DoDataExchange(CDataExchange* pDX)
    // Connection Dimensions
    DDX_UnitValueAndTag(pDX,IDC_LEFT_BEARING_OFFSET, IDC_LEFT_BEARING_OFFSET_T,  m_BearingOffset[pgsTypes::Back],  pDisplayUnits->GetComponentDimUnit());
    DDX_UnitValueAndTag(pDX,IDC_LEFT_END_DISTANCE,   IDC_LEFT_END_DISTANCE_T,    m_EndDistance[pgsTypes::Back],    pDisplayUnits->GetComponentDimUnit());
-   DDX_UnitValueAndTag(pDX,IDC_LEFT_SUPPORT_WIDTH,  IDC_LEFT_SUPPORT_WIDTH_T,   m_SupportWidth[pgsTypes::Back],   pDisplayUnits->GetComponentDimUnit());
 
    DDX_UnitValueAndTag(pDX,IDC_RIGHT_BEARING_OFFSET,IDC_RIGHT_BEARING_OFFSET_T, m_BearingOffset[pgsTypes::Ahead], pDisplayUnits->GetComponentDimUnit());
    DDX_UnitValueAndTag(pDX,IDC_RIGHT_END_DISTANCE,  IDC_RIGHT_END_DISTANCE_T,   m_EndDistance[pgsTypes::Ahead],   pDisplayUnits->GetComponentDimUnit());
-   DDX_UnitValueAndTag(pDX,IDC_RIGHT_SUPPORT_WIDTH, IDC_RIGHT_SUPPORT_WIDTH_T,  m_SupportWidth[pgsTypes::Ahead],  pDisplayUnits->GetComponentDimUnit());
 
    DDX_CBItemData(pDX,IDC_BEARING_OFFSET_MEASURE,m_BearingOffsetMeasurementType);
    DDX_CBItemData(pDX,IDC_END_DISTANCE_MEASURE,m_EndDistanceMeasurementType);
@@ -198,7 +194,6 @@ void CPierConnectionsPage::DoDataExchange(CDataExchange* pDX)
       {
          m_pPier->SetBearingOffset(pgsTypes::PierFaceType(i),m_BearingOffset[i],m_BearingOffsetMeasurementType);
          m_pPier->SetGirderEndDistance(pgsTypes::PierFaceType(i),m_EndDistance[i],m_EndDistanceMeasurementType);
-         m_pPier->SetSupportWidth(pgsTypes::PierFaceType(i),m_SupportWidth[i]);
 
          m_pPier->SetDiaphragmHeight(pgsTypes::PierFaceType(i),m_DiaphragmHeight[i]);
          m_pPier->SetDiaphragmWidth(pgsTypes::PierFaceType(i),m_DiaphragmWidth[i]);
@@ -232,7 +227,6 @@ BOOL CPierConnectionsPage::OnInitDialog()
    {
       m_pPier->GetBearingOffset(pgsTypes::PierFaceType(i),&m_BearingOffset[i],&m_BearingOffsetMeasurementType);
       m_pPier->GetGirderEndDistance(pgsTypes::PierFaceType(i),&m_EndDistance[i],&m_EndDistanceMeasurementType);
-      m_SupportWidth[i] = m_pPier->GetSupportWidth(pgsTypes::PierFaceType(i));
 
       m_DiaphragmHeight[i]       = m_pPier->GetDiaphragmHeight(pgsTypes::PierFaceType(i));
       m_DiaphragmWidth[i]        = m_pPier->GetDiaphragmWidth(pgsTypes::PierFaceType(i));
@@ -283,7 +277,7 @@ void CPierConnectionsPage::InitializeComboBoxes()
 void CPierConnectionsPage::FillBoundaryConditionComboBox()
 {
    std::vector<pgsTypes::BoundaryConditionType> connections( m_pPier->GetBridgeDescription()->GetBoundaryConditionTypes(m_PierIdx) );
-   m_cbBoundaryCondition.Initialize(m_pPier->IsBoundaryPier(),connections,m_pPier->GetBridgeDescription()->GetDeckDescription()->GetDeckType() == pgsTypes::sdtNone);
+   m_cbBoundaryCondition.Initialize(m_pPier->IsBoundaryPier(),connections,IsNonstructuralDeck(m_pPier->GetBridgeDescription()->GetDeckDescription()->GetDeckType()));
 
    CDataExchange dx(this,FALSE);
    DDX_CBItemData(&dx,IDC_BOUNDARY_CONDITIONS,m_BoundaryConditionType);
@@ -335,8 +329,6 @@ void CPierConnectionsPage::OnBoundaryConditionChanged()
    GetDlgItem(IDC_LEFT_BEARING_OFFSET_T)->EnableWindow(bEnable);
    m_EndDistanceEdit[pgsTypes::Back].EnableWindow(bEnable);
    GetDlgItem(IDC_LEFT_END_DISTANCE_T)->EnableWindow(bEnable);
-   m_SupportWidthEdit[pgsTypes::Back].EnableWindow(bEnable);
-   GetDlgItem(IDC_LEFT_SUPPORT_WIDTH_T)->EnableWindow(bEnable);
    GetDlgItem(IDC_BACK_DIAPHRAGM_LABEL)->EnableWindow(bEnable);
    GetDlgItem(IDC_BACK_DIAPHRAGM_HEIGHT_LABEL)->EnableWindow(bEnable);
    m_DiaphragmHeightEdit[pgsTypes::Back].EnableWindow(bEnable);
@@ -353,8 +345,6 @@ void CPierConnectionsPage::OnBoundaryConditionChanged()
    GetDlgItem(IDC_RIGHT_BEARING_OFFSET_T)->EnableWindow(bEnable);
    m_EndDistanceEdit[pgsTypes::Ahead].EnableWindow(bEnable);
    GetDlgItem(IDC_RIGHT_END_DISTANCE_T)->EnableWindow(bEnable);
-   m_SupportWidthEdit[pgsTypes::Ahead].EnableWindow(bEnable);
-   GetDlgItem(IDC_RIGHT_SUPPORT_WIDTH_T)->EnableWindow(bEnable);
    GetDlgItem(IDC_AHEAD_DIAPHRAGM_LABEL)->EnableWindow(bEnable);
    GetDlgItem(IDC_AHEAD_DIAPHRAGM_HEIGHT_LABEL)->EnableWindow(bEnable);
    m_DiaphragmHeightEdit[pgsTypes::Ahead].EnableWindow(bEnable);
@@ -676,7 +666,6 @@ void CPierConnectionsPage::OnCopyFromLibrary()
 	      {
 	         m_BearingOffset[i] = pEntry->GetGirderBearingOffset();
 	         m_EndDistance[i]   = pEntry->GetGirderEndDistance();
-	         m_SupportWidth[i]  = pEntry->GetSupportWidth();
 	   
 	         m_DiaphragmHeight[i]       = pEntry->GetDiaphragmHeight();
 	         m_DiaphragmWidth[i]        = pEntry->GetDiaphragmWidth();

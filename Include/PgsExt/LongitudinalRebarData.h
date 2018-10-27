@@ -73,7 +73,10 @@ public:
    public:
       pgsTypes::RebarLayoutType BarLayout;
       Float64 DistFromEnd; // Only applicable to blFromLeft, blFromRight
-      Float64 BarLength; //   Applicable to blFromLeft, blFromRight, blMidGirder
+      Float64 BarLength; //   Applicable to blFromLeft, blFromRight, blMidGirderLength, and blMidGirderEnds
+
+      bool bExtendedLeft, bExtendedRight; // indicates the bars are extended out of the face of the girder. extended bars are assumed to be fully developed
+      // only applicable for BarLayout = blFullLength and blFromLeft and blFromRight when DistFromEnd is 0.
 
       pgsTypes::FaceType  Face;
       matRebar::Size BarSize;
@@ -83,39 +86,17 @@ public:
 
       RebarRow():
          Face(pgsTypes::TopFace), BarSize(matRebar::bsNone), NumberOfBars(0), Cover(0), BarSpacing(0),
-         BarLayout(pgsTypes::blFullLength), DistFromEnd(0), BarLength(0)
+         BarLayout(pgsTypes::blFullLength), DistFromEnd(0), BarLength(0), bExtendedLeft(false), bExtendedRight(false)
       {;}
 
-      bool operator==(const RebarRow& other) const
-      {
-         if(BarLayout != other.BarLayout) return false;
-
-         if(BarLayout != pgsTypes::blFullLength)
-         {
-            if(BarLayout != pgsTypes::blMidGirderEnds)
-            {
-               if ( !IsEqual(BarLength,  other.BarLength) ) return false;
-            }
-
-            if(BarLayout != pgsTypes::blMidGirderLength)
-            {
-               if ( !IsEqual(DistFromEnd,  other.DistFromEnd) ) return false;
-            }
-         }
-
-         if(Face != other.Face) return false;
-         if(BarSize != other.BarSize) return false;
-         if ( !IsEqual(Cover,  other.Cover) ) return false;
-         if ( !IsEqual(BarSpacing,  other.BarSpacing) ) return false;
-         if ( NumberOfBars != other.NumberOfBars ) return false;
-
-         return true;
-      };
+      bool operator==(const RebarRow& other) const;
 
       // Get locations of rebar start and end measured from left end of segment
       // given a segment length. Return false if entire bar is outside of segment.
       bool GetRebarStartEnd(Float64 segmentLength, Float64* pBarStart, Float64* pBarEnd) const;
 
+      bool IsLeftEndExtended() const;
+      bool IsRightEndExtended() const;
    };
 
    matRebar::Type BarType;
@@ -150,7 +131,7 @@ public:
 	HRESULT Save(IStructuredSave* pStrSave,IProgress* pProgress);
 
    // copy shear data from a girder entry
-   void CopyGirderEntryData(const GirderLibraryEntry& rGird);
+   void CopyGirderEntryData(const GirderLibraryEntry* pGirderEntry);
 
    // GROUP: ACCESS
    // GROUP: INQUIRY
