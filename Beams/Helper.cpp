@@ -23,6 +23,7 @@
 #include "stdafx.h"
 #include <Beams\Helper.h>
 #include <IFace\Bridge.h>
+#include <IFace\BeamFactory.h>
 #include "AgeAdjustedMaterial.h"
 
 
@@ -344,4 +345,11 @@ bool IsInEndBlock(Float64 Xs, pgsTypes::SectionBias sectionBias, Float64 leftEnd
 bool IsInEndBlock(Float64 Xs, pgsTypes::SectionBias sectionBias, Float64 endBlockLength, Float64 Lg)
 {
    return IsInEndBlock(Xs, sectionBias, endBlockLength, endBlockLength, Lg);
+}
+
+bool IsSupportedDeckType(pgsTypes::SupportedDeckType deckType, const IBeamFactory* pFactory, pgsTypes::SupportedBeamSpacing spacingType)
+{
+   pgsTypes::SupportedDeckTypes deckTypes = pFactory->GetSupportedDeckTypes(spacingType);
+   auto found = std::find(deckTypes.cbegin(), deckTypes.cend(), deckType);
+   return found == deckTypes.end() ? false : true;
 }

@@ -393,6 +393,8 @@ protected:
 
    virtual BOOL LoadAgents() override;
 
+   void UIHint(const CString& strText, UINT hint);
+
 // Generated message map functions
 protected:
 	//{{AFX_MSG(CPGSDocBase)

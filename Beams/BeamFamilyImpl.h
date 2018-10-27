@@ -23,38 +23,13 @@
 
 #pragma once
 
-#include <IFace\BeamFamily.h>
+#include <Beams\Helper.h>
 #include <Plugins\BeamFamilyCLSID.h>
 #include <Plugins\BeamFactoryCATID.h>
-
 #include "resource.h"
 
 // forward declaration
 interface IBeamFactory;
-
-/////////////////////////////////////////////////////////////////////////////
-// CBeamFamilyImplBase
-class IBeamFamilyImpl :
-   public IBeamFamily
-{
-public:
-   // IBeamFactory
-   virtual CString GetName() override;
-   virtual void RefreshFactoryList() override;
-   virtual const std::vector<CString>& GetFactoryNames() override;
-   virtual CLSID GetFactoryCLSID(LPCTSTR strName) override;
-   virtual HRESULT CreateFactory(LPCTSTR strName,IBeamFactory** ppFactory) override;
-
-protected:
-   HRESULT Init();
-
-   virtual const CLSID& GetCLSID() = 0;
-   virtual const CATID& GetCATID() = 0;
-
-   typedef std::map<CString,CLSID> FactoryContainer;
-   FactoryContainer m_Factories;
-   std::vector<CString> m_Names;
-};
 
 /////////////////////////////////////////////////////////////////////////////
 // CIBeamFamily - beam family for I-beams

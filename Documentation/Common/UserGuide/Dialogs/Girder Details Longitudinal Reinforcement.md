@@ -27,6 +27,8 @@ Cover | Enter the distance between the specified (top or bottom) girder face to 
 Bar Size | Select from the available standard bar sizes that may be used for longitudinal rebar.
 \# of Bars | Specify the number of bars to be placed in the row.
 Spacing | Enter the center-to-center rebar spacing.
-Anchored Left/Right | Bars measured as Full Length or from the Left and Right Ends with a Distance From End of 0.0 can be designated as Anchored into adjacent structural elements such as a pier or abutment diaphragm or a closure joint for spliced girder segments. Anchored bars are considered to be fully developed at the extended end.
+Anchored Left/Right | Bars measured as Full Length or from the Left and Right Ends with a Distance From End of 0.0 can be designated as Anchored. Anchored bars are assumed to be anchored into adjacent structural elements such as a pier or abutment diaphragm or a closure joint for spliced girder segments. Anchored bars are assumed to be fully developed at the face of the member as well as at the centerline of adjacent diaphragms.
 
 All cells in the grid must be filled in. Blank cells are considered incomplete data.  
+
+> NOTE: The assumption of anchorage is not verified by the software. The engineer has the responsibility to ensure anchorage can be achieved.

@@ -1434,6 +1434,9 @@ void CGirderDescGeneralPage::OnChangeGirderName()
    GET_IFACE2(pBroker, ILibrary, pLib);
    const GirderLibraryEntry* pGdrEntry = pLib->GetGirderEntry(newName);
 
+   GET_IFACE2(pBroker, IBridge, pBridge);
+   pgsTypes::SupportedDeckType deckType = pBridge->GetDeckType();
+
    CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
 
    CComPtr<IBeamFactory> factory;
@@ -1443,6 +1446,15 @@ void CGirderDescGeneralPage::OnChangeGirderName()
    {
       CString strMsg;
       strMsg.Format(_T("The current spacing type is \"%s\".\r\n%s is not compatible with this spacing type."), GetGirderSpacingType(pParent->m_GirderSpacingType, false/*not a spliced girder*/), newName);
+      AfxMessageBox(strMsg, MB_ICONINFORMATION | MB_OK);
+      pCB->SetCurSel(m_GirderNameIdx);
+      return;
+   }
+
+   if (!factory->IsSupportedDeckType(deckType, pParent->m_GirderSpacingType))
+   {
+      CString strMsg;
+      strMsg.Format(_T("The current deck type is \"%s\".\r\n%s is not compatible with this deck type."), GetDeckTypeName(deckType), newName);
       AfxMessageBox(strMsg, MB_ICONINFORMATION | MB_OK);
       pCB->SetCurSel(m_GirderNameIdx);
       return;

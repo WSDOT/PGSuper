@@ -275,8 +275,8 @@ bool pgsFlexuralStressArtifact::IsWithRebarAllowableStressApplicable(pgsTypes::S
 
 bool pgsFlexuralStressArtifact::WasWithRebarAllowableStressUsed(pgsTypes::StressLocation stressLocation) const
 {
-   // If na<0.0, then section was in compression
-   bool bWasUsed = (0.0 < m_AltTensileStressRequirements[stressLocation].Yna) && (m_AltTensileStressRequirements[stressLocation].AsRequired <= m_AltTensileStressRequirements[stressLocation].AsProvided) ? true : false;
+   // If 0.0 < na, then section was in compression (0 is at top of section with positive going up - girder section coordinates)
+   bool bWasUsed = (m_AltTensileStressRequirements[stressLocation].Yna < 0.0) && (m_AltTensileStressRequirements[stressLocation].AsRequired <= m_AltTensileStressRequirements[stressLocation].AsProvided) ? true : false;
 #if defined _DEBUG
    if ( bWasUsed )
    {

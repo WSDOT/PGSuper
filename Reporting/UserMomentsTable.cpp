@@ -164,6 +164,7 @@ rptRcTable* CUserMomentsTable::Build(IBroker* pBroker,const CGirderKey& girderKe
          }
 
          row++;
+         index++;
       }
    }
 

@@ -653,7 +653,8 @@ void CBridgePlanView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
         (lHint == HINT_GIRDERFAMILYCHANGED)        ||
         (lHint == HINT_UNITSCHANGED)               ||  
         (lHint == HINT_BRIDGEVIEWSETTINGSCHANGED)  ||
-        (lHint == HINT_GIRDERLABELFORMATCHANGED)  
+        (lHint == HINT_GIRDERLABELFORMATCHANGED)   ||
+        (lHint == HINT_GIRDERCHANGED)
       )
    {
       CComPtr<IBroker> pBroker;
@@ -711,10 +712,6 @@ void CBridgePlanView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 
       UpdateDisplayObjects();
       UpdateDrawingScale();
-   }
-   else if ( lHint == HINT_GIRDERCHANGED )
-   {
-      UpdateSegmentTooltips();
    }
    else if ( lHint == HINT_BRIDGEVIEWSECTIONCUTCHANGED )
    {

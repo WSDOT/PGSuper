@@ -117,8 +117,8 @@ HRESULT PSGLIBFUNC pgslibReadProjectDocHeader(LPCTSTR lpszRootNodeName,IStructur
 
 HRESULT PSGLIBFUNC pgslibReadLibraryDocHeader(IStructuredLoad* pStrLoad,eafTypes::UnitMode* pUnitsMode);
 
-HRESULT PSGLIBFUNC pgslibLoadLibrary(LPCTSTR strFileName,psgLibraryManager* pLibMgr,eafTypes::UnitMode* pUnitMode);
-HRESULT PSGLIBFUNC pgslibLoadLibrary(IStructuredLoad* pStrLoad,psgLibraryManager* pLibMgr,eafTypes::UnitMode* pUnitMode);
+HRESULT PSGLIBFUNC pgslibLoadLibrary(LPCTSTR strFileName,psgLibraryManager* pLibMgr,eafTypes::UnitMode* pUnitMode, bool bIsMasterLibrary=true);
+HRESULT PSGLIBFUNC pgslibLoadLibrary(IStructuredLoad* pStrLoad,psgLibraryManager* pLibMgr,eafTypes::UnitMode* pUnitMode, bool bIsMasterLibrary=true);
 
 /////////////////////////////////////////////////////////////////////////////
 

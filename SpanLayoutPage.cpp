@@ -207,15 +207,15 @@ void CSpanLayoutPage::DoDataExchange(CDataExchange* pDX)
                }
             }
          }
+      }
 
-         if (m_bHasCantilevers)
+      if (m_bHasCantilevers)
+      {
+         for (int i = 0; i < 2; i++)
          {
-            for (int i = 0; i < 2; i++)
-            {
-               pgsTypes::MemberEndType end = (pgsTypes::MemberEndType)i;
-               pParent->m_pSpanData->GetPier(end)->HasCantilever(bHasCantilever[end]);
-               pParent->m_pSpanData->GetPier(end)->SetCantileverLength(cantileverLength[end]);
-            }
+            pgsTypes::MemberEndType end = (pgsTypes::MemberEndType)i;
+            pParent->m_pSpanData->GetPier(end)->HasCantilever(bHasCantilever[end]);
+            pParent->m_pSpanData->GetPier(end)->SetCantileverLength(cantileverLength[end]);
          }
       }
    }

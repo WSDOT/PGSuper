@@ -2086,7 +2086,9 @@
     <None Include="res\HarpPointLocations.emf">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="res\BearingDimensions.emf" />
+    <None Include="res\BearingDimensions.emf">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Text Include="ReadMe.txt" />

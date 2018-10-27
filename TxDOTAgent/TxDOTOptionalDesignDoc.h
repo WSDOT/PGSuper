@@ -99,6 +99,9 @@ public:
    virtual BOOL LoadSpecialAgents(IBrokerInitEx2* pBrokerInit) override; 
    virtual CString GetToolbarSectionName() override;
 
+   virtual void LoadToolbarState() override;
+   virtual void SaveToolbarState() override;
+
    virtual void DoIntegrateWithUI(BOOL bIntegrate) override;
 
    virtual void LoadDocumentSettings() override;

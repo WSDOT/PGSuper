@@ -190,7 +190,7 @@ void CMultiWebDistFactorEngineer::BuildReport(const CGirderKey& girderKey,rptCha
                (*pPara) << _T("Gross, non-composite section properties") << rptNewLine;
             }
 
-            if (IsNonstructuralDeck(pBridge->GetDeckType()) && m_BeamType == IMultiWebDistFactorEngineer::btDeckBulbTee)
+            if (IsNonstructuralDeck(pBridge->GetDeckType()) && (m_BeamType == IMultiWebDistFactorEngineer::btDeckBulbTee || m_BeamType == IMultiWebDistFactorEngineer::btMultiWebTee))
             {
                (*pPara) << _T("Girder Stem Properties") << rptNewLine;
             }
@@ -617,51 +617,52 @@ lrfdLiveLoadDistributionFactorBase* CMultiWebDistFactorEngineer::GetLLDFParamete
       plldf->ts = pGirder->GetMinTopFlangeThickness(spPoi);
       plldf->eg = plldf->Yt - plldf->ts/2;
 
-      if (m_BeamType == IMultiWebDistFactorEngineer::btDeckBulbTee)
+      if (m_BeamType == IMultiWebDistFactorEngineer::btDeckBulbTee || m_BeamType == IMultiWebDistFactorEngineer::btMultiWebTee)
       {
          // Ag and Ig is just the stem
          // Get the top flange shape and subtract it from the total girder shape to get the stem by itself
          GET_IFACE(IShapes, pShapes);
          CComPtr<IShape> segment_shape;
          pShapes->GetSegmentShape(releaseIntervalIdx, spPoi, false, pgsTypes::scGirder, pSectProp->GetHaunchAnalysisSectionPropertiesType(), &segment_shape);
-         CComQIPtr<IBulbTeeSection> btSection(segment_shape);
-         CComPtr<IBulbTee2> btShape;
-         btSection->get_Beam(&btShape);
 
-         CComPtr<IPoint2d> leftTop, leftBottom, topCentral, rightTop, rightBottom;
-         btShape->GetTopFlangePoints(&leftTop, &leftBottom, &topCentral, &rightTop, &rightBottom);
+         CComQIPtr<IFlangePoints> flangePoints(segment_shape);
+         if (flangePoints)
+         {
+            CComPtr<IPoint2d> leftTop, leftBottom, topCentral, rightTop, rightBottom;
+            flangePoints->GetTopFlangePoints(&leftTop, &leftBottom, &topCentral, &rightTop, &rightBottom);
 
-         CComPtr<IPolyShape> flangeShape;
-         flangeShape.CoCreateInstance(CLSID_PolyShape);
-         flangeShape->AddPointEx(rightBottom);
-         flangeShape->AddPointEx(rightTop);
-         flangeShape->AddPointEx(topCentral);
-         flangeShape->AddPointEx(leftTop);
-         flangeShape->AddPointEx(leftBottom);
+            CComPtr<IPolyShape> flangeShape;
+            flangeShape.CoCreateInstance(CLSID_PolyShape);
+            flangeShape->AddPointEx(rightBottom);
+            flangeShape->AddPointEx(rightTop);
+            flangeShape->AddPointEx(topCentral);
+            flangeShape->AddPointEx(leftTop);
+            flangeShape->AddPointEx(leftBottom);
 
-         CComQIPtr<IShape> shape(flangeShape);
-         CComPtr<IShapeProperties> shape_props;
-         shape->get_ShapeProperties(&shape_props);
+            CComQIPtr<IShape> shape(flangeShape);
+            CComPtr<IShapeProperties> shape_props;
+            shape->get_ShapeProperties(&shape_props);
 
-         Float64 Aflange, Iflange, Ytflange, Ybflange;
-         shape_props->get_Area(&Aflange);
-         shape_props->get_Ixx(&Iflange);
-         shape_props->get_Ytop(&Ytflange);
-         shape_props->get_Ybottom(&Ybflange);
-         Float64 Hflange = Ytflange + Ybflange;
+            Float64 Aflange, Iflange, Ytflange, Ybflange;
+            shape_props->get_Area(&Aflange);
+            shape_props->get_Ixx(&Iflange);
+            shape_props->get_Ytop(&Ytflange);
+            shape_props->get_Ybottom(&Ybflange);
+            Float64 Hflange = Ytflange + Ybflange;
 
-         // Stem = Girder - Flange
-         Float64 Astem = plldf->Ag - Aflange;
-         Float64 Ystem = (plldf->Ag*plldf->Yt - Aflange*Ytflange) / Astem; // Treat Aflange as a "hole"... hence the subtraction.... Ystem is measured from top of original section
+            // Stem = Girder - Flange
+            Float64 Astem = plldf->Ag - Aflange;
+            Float64 Ystem = (plldf->Ag*plldf->Yt - Aflange*Ytflange) / Astem; // Treat Aflange as a "hole"... hence the subtraction.... Ystem is measured from top of original section
 
-         // Use parallel axis theorem to get Istem about stem CGx axis
-         Float64 Istem = plldf->Ig + plldf->Ag*(plldf->Yt - Ystem)*(plldf->Yt - Ystem) - (Iflange + Aflange*(Ytflange - Ystem)*(Ytflange - Ystem));
+            // Use parallel axis theorem to get Istem about stem CGx axis
+            Float64 Istem = plldf->Ig + plldf->Ag*(plldf->Yt - Ystem)*(plldf->Yt - Ystem) - (Iflange + Aflange*(Ytflange - Ystem)*(Ytflange - Ystem));
 
-         plldf->Ag = Astem;
-         plldf->Ig = Istem;
-         plldf->Yt = Ystem - Hflange; // measured from the top of the stem
-         plldf->ts = (plldf->ts + Hflange) / 2; // average top flange thickness
-         plldf->eg = plldf->Yt + plldf->ts / 2;
+            plldf->Ag = Astem;
+            plldf->Ig = Istem;
+            plldf->Yt = Ystem - Hflange; // measured from the top of the stem
+            plldf->ts = (plldf->ts + Hflange) / 2; // average top flange thickness
+            plldf->eg = plldf->Yt + plldf->ts / 2;
+         }
       }
    }
    else

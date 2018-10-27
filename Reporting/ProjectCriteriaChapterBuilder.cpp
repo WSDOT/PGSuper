@@ -1100,7 +1100,7 @@ void write_haunch_dead_load(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUn
    pgsTypes::HaunchAnalysisSectionPropertiesType hpctype = pSpecEntry->GetHaunchAnalysisSectionPropertiesType();
    if (pgsTypes::hspZeroHaunch == hpctype)
    {
-      *pPara << _T("Composite section properties and capacities are computed assuming Zero Haunch Depth)") << rptNewLine;
+      *pPara << _T("Composite section properties and capacities are computed ignore the haunch depth)") << rptNewLine;
    }
    else if (pgsTypes::hspConstFilletDepth == hpctype)
    {

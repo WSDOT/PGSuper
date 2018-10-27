@@ -299,7 +299,7 @@ void CTogaStressChecksChapterBuilder::BuildTable(rptChapter* pChapter, IBroker* 
    {
       pFactoredStressArtifact = pFactoredGdrArtifact->GetFlexuralStressArtifact( intervalIdx,limitState,pgsTypes::Tension,0 );
       allowable_tension = pFactoredStressArtifact->GetCapacity(pgsTypes::TopGirder);
-      allowable_tension_with_rebar = pFactoredGdrArtifact->GetCapacityWithRebar(intervalIdx,limitState,pgsTypes::TopGirder);
+      allowable_tension_with_rebar = pFactoredStressArtifact->GetAlternativeAllowableTensileStress(pgsTypes::TopGirder);
    }
 
    if (stressType==pgsTypes::Compression || intervalIdx != liveLoadIntervalIdx)

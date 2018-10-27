@@ -3547,15 +3547,12 @@ std::vector<pgsTypes::BoundaryConditionType> CBridgeDescription2::GetBoundaryCon
 
    if ( pPier->HasCantilever() )
    {
+      connectionTypes.push_back(pgsTypes::bctHinge);
+      connectionTypes.push_back(pgsTypes::bctRoller);
       if (bHasDeck)
       {
          connectionTypes.push_back(pgsTypes::bctContinuousBeforeDeck);
-      }
-
-      connectionTypes.push_back(pgsTypes::bctIntegralAfterDeck);
-
-      if (bHasDeck)
-      {
+         connectionTypes.push_back(pgsTypes::bctIntegralAfterDeck);
          connectionTypes.push_back(pgsTypes::bctIntegralBeforeDeck);
       }
    }

@@ -440,7 +440,7 @@ ConfigStrandFillVector CGirderDescDlg::ComputeStrandFillVector(pgsTypes::StrandT
       // Continuous fill
       StrandIndexType Ns = m_pSegment->Strands.GetStrandCount(type);
 
-      return pStrandGeometry->ComputeStrandFill(m_SegmentKey, type, Ns);
+      return pStrandGeometry->ComputeStrandFill(m_strGirderName.c_str(), type, Ns);
    }
 }
 

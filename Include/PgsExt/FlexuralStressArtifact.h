@@ -127,8 +127,6 @@ public:
    void SetAlternativeTensileStressRequirements(pgsTypes::StressLocation stressLocation, const gbtAlternativeTensileStressRequirements& requirements,Float64 fHigherAllowable,bool bBiaxialStresses);
    const gbtAlternativeTensileStressRequirements& GetAlternativeTensileStressRequirements(pgsTypes::StressLocation stressLocation) const;
    bool BiaxialStresses(pgsTypes::StressLocation stressLocation) const;
-   //void SetAlternativeTensileStressParameters(pgsTypes::StressLocation stressLocation,Float64 Yna,Float64 At,Float64 T,Float64 AsProvided,Float64 AsRequired,Float64 fAllowableWithRebar);
-   //void GetAlternativeTensileStressParameters(pgsTypes::StressLocation stressLocation,Float64* Yna,Float64* At,Float64* T,Float64* AsProvided,Float64* AsRequired) const;
    Float64 GetAlternativeAllowableTensileStress(pgsTypes::StressLocation stressLocation) const;
    bool IsWithRebarAllowableStressApplicable(pgsTypes::StressLocation stressLocation) const;
    bool WasWithRebarAllowableStressUsed(pgsTypes::StressLocation stressLocation) const;

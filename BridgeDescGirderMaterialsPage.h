@@ -89,7 +89,6 @@ protected:
 	virtual BOOL OnInitDialog();
    afx_msg void OnUserEci();
    afx_msg void OnUserEc();
-	afx_msg void OnStrandTypeChanged();
 	afx_msg void OnHelp();
 	afx_msg void OnChangeFci();
 	afx_msg void OnChangeGirderFc();

@@ -1080,9 +1080,26 @@ void CPGSDocBase::DeleteMomentLoadByID(LoadIDType loadID)
    pTransactions->Execute(pTxn);
 }
 
+void CPGSDocBase::UIHint(const CString& strText, UINT hint)
+{
+   Uint32 hintSettings = GetUIHintSettings();
+   if (sysFlags<Uint32>::IsClear(hintSettings, hint) && EAFShowUIHints(strText))
+   {
+      sysFlags<Uint32>::Set(&hintSettings, hint);
+      SetUIHintSettings(hintSettings);
+   }
+}
+
 bool CPGSDocBase::EditTimeline()
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
+   GET_IFACE(ILossParameters, pLossParams);
+   if (pLossParams->GetLossMethod() != pgsTypes::TIME_STEP)
+   {
+      CString strText(_T("The construction sequence timeline is automatically generated using the parameters in the Project Criteria found in the Creep and Camber tab."));
+      UIHint(strText, UIHINT_TIMELINE_IS_READONLY);
+   }
 
    GET_IFACE(IBridgeDescription, pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
@@ -2978,7 +2995,17 @@ bool CPGSDocBase::DoLoadMasterLibrary(const CString& strMasterLibraryFile)
             CComPtr<IEAFAppPlugin> pAppPlugin;
             pTemplate->GetPlugin(&pAppPlugin);
             CPGSAppPluginBase* pPGSuper = dynamic_cast<CPGSAppPluginBase*>(pAppPlugin.p);
-            strFile = pPGSuper->GetCachedMasterLibraryFile();
+            if (pPGSuper->UpdateProgramSettings())
+            {
+               // the configuration was updated... need to start over
+               // so leave this method with false
+               return false;
+            }
+            else
+            {
+               // configuration was not updated... try again
+               strFile = pPGSuper->GetCachedMasterLibraryFile();
+            }
          }
          else
          {

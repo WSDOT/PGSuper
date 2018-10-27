@@ -298,6 +298,16 @@ void CGirderNameGrid::OnModifyCell(ROWCOL nRow,ROWCOL nCol)
       return;
    }
 
+   pgsTypes::SupportedDeckType deckType = m_pGirderGroup->GetBridgeDescription()->GetDeckDescription()->GetDeckType();
+   if (!factory->IsSupportedDeckType(deckType, spacingType))
+   {
+      CString strMsg;
+      strMsg.Format(_T("The current deck type is \"%s\".\r\n%s is not compatible with this deck type."), GetDeckTypeName(deckType), strNewName);
+      AfxMessageBox(strMsg, MB_ICONINFORMATION | MB_OK);
+      SetStyleRange(CGXRange(nRow, nCol), CGXStyle().SetValue(m_strTempGirderName));
+      return;
+   }
+
    int result = AfxMessageBox(_T("Changing the girder type will reset the strands, stirrups, and longitudinal rebar to default values.\n\nIs that OK?"),MB_YESNO);
    if ( result == IDNO )
    {

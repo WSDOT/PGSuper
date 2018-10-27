@@ -5207,45 +5207,12 @@ STDMETHODIMP CProjectAgentImp::Load(IStructuredLoad* pStrLoad)
    // Load the library data first into a temporary library. Then deal with entry
    // conflict resolution.
    // This library manager contains data that has been removed from some library entries
+   eafTypes::UnitMode unitMode;
    psgLibraryManager temp_manager;
-   try
+   hr = pgslibLoadLibrary(pStrLoad, &temp_manager, &unitMode, false/*not loading master library*/);
+   if (FAILED(hr))
    {
-//      pProgress->UpdateMessage( _T(_T("Loading the Project Libraries")) );
-      CStructuredLoad load( pStrLoad );
-      if ( !temp_manager.LoadMe( &load ) )
-      {
-         return E_FAIL;
-      }
-   }
-   catch( sysXStructuredLoad& e )
-   {
-      if ( e.GetExplicitReason() == sysXStructuredLoad::BadVersion )
-      {
-         WATCH(_T("Project library is new version"));
-         return STRLOAD_E_BADVERSION;
-      }
-      else if ( e.GetExplicitReason() == sysXStructuredLoad::InvalidFileFormat )
-      {
-         WATCH(_T("Project library has bad format"));
-         return STRLOAD_E_INVALIDFORMAT;
-      }
-      else if ( e.GetExplicitReason() == sysXStructuredLoad::UserDefined )
-      {
-         WATCH(_T("User defined error"));
-         GET_IFACE(IEAFProjectLog,pLog);
-         std::_tstring strMsg;
-         e.GetErrorMessage(&strMsg);
-         pLog->LogMessage(strMsg.c_str());
-         return STRLOAD_E_USERDEFINED;
-      }
-      else
-      {
-         return E_FAIL;
-      }
-   }
-   catch(...)
-   {
-      return E_FAIL;
+      return hr;
    }
 
    // merge project library into master library and deal with conflicts
@@ -5286,6 +5253,7 @@ STDMETHODIMP CProjectAgentImp::Load(IStructuredLoad* pStrLoad)
    const COldHaulTruck* pOldHaulTruck = pTempSpecEntry->GetOldHaulTruck();
 
    pTempSpecEntry->Release();
+   pTempSpecEntry = nullptr;
 
    // resolve library name conflicts and update references
    if (!ResolveLibraryConflicts(the_conflict_list))
@@ -5308,8 +5276,6 @@ STDMETHODIMP CProjectAgentImp::Load(IStructuredLoad* pStrLoad)
    pgsTypes::SupportedBeamSpacings sbs = beamFactory->GetSupportedBeamSpacings();
 
    pgsTypes::SupportedBeamSpacing spacingType = m_BridgeDescription.GetGirderSpacingType();
-   pgsTypes::SupportedBeamSpacings::iterator found = std::find(sbs.begin(), sbs.end(), spacingType);
-
    if (!beamFactory->IsSupportedBeamSpacing(spacingType))
    {
       if (spacingType == pgsTypes::sbsConstantAdjacent && !m_BridgeDescription.UseSameGirderForEntireBridge())
@@ -5328,9 +5294,8 @@ STDMETHODIMP CProjectAgentImp::Load(IStructuredLoad* pStrLoad)
          UseGirderLibraryEntries();
       
          GET_IFACE(IEAFStatusCenter, pStatusCenter);
-         AfxMessageBox(_T("Your bridge model contains incompatible girder types. The model will be changed to use the same girder for the entire bridge."));
-
          CString strMsg(_T("Your bridge model contained incompatible girder types. The model has been changed to use the same girder for the entire bridge."));
+         AfxMessageBox(strMsg);
          pgsBridgeDescriptionStatusItem* pStatusItem = new pgsBridgeDescriptionStatusItem(m_StatusGroupID, m_scidBridgeDescriptionWarning, pgsBridgeDescriptionStatusItem::General,strMsg);
          pStatusCenter->Add(pStatusItem);
       }
@@ -5741,10 +5706,10 @@ STDMETHODIMP CProjectAgentImp::Load(IStructuredLoad* pStrLoad)
    // Check if version 3.1 fillet data was read and corrected
    if (m_BridgeDescription.WasVersion3_1FilletRead() && m_BridgeDescription.GetDeckDescription()->GetDeckType() != pgsTypes::sdtNone)
    {
-      Float64 fillval = ::ConvertFromSysUnits(m_BridgeDescription.GetFillet(), unitMeasure::Inch);
+      Float64 fillet = m_BridgeDescription.GetFillet();
+      GET_IFACE(IEAFDisplayUnits, pDisplayUnits);
       CString strMsg;
-      strMsg.Format(_T("Multiple fillet values were input in this file and are no longer supported in this version of PGSuper. The max value will be used. A single fillet value of %.3fin will be set for the entire bridge.\r\n\r\nSee Status Center for Details"), fillval);
-//      AfxMessageBox(strMsg, MB_OK | MB_ICONEXCLAMATION);
+      strMsg.Format(_T("Multiple fillet values were input in this file and are no longer supported in this version of PGSuper. The max value will be used. A single fillet value of %s will be set for the entire bridge.\r\n\r\nSee Status Center for Details"), ::FormatDimension(fillet,pDisplayUnits->GetComponentDimUnit()));
       GET_IFACE(IEAFStatusCenter, pStatusCenter);
       pgsInformationalStatusItem* pStatusItem = new pgsInformationalStatusItem(m_StatusGroupID, m_scidBridgeDescriptionInfo, strMsg);
       pStatusCenter->Add(pStatusItem);

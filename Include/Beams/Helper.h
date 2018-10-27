@@ -26,6 +26,8 @@
 
 #include <Beams\BeamsExp.h>
 
+#include <IFace\BeamFamily.h>
+
 #include <EAF\EAFDisplayUnits.h>
 #include <LRFD\LiveLoadDistributionFactorBase.h>
 
@@ -35,6 +37,7 @@
 #include <IFace\AgeAdjustedMaterial.h>
 
 class rptParagraph;
+interface IBeamFactory;
 
 void BEAMSFUNC ReportLeverRule(rptParagraph* pPara,bool isMoment, Float64 specialFactor, lrfdILiveLoadDistributionFactor::LeverRuleMethod& lrd,IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits);
 void BEAMSFUNC ReportRigidMethod(rptParagraph* pPara,lrfdILiveLoadDistributionFactor::RigidMethod& rd,IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits);
@@ -51,3 +54,30 @@ void BEAMSFUNC MakeRectangle(Float64 width, Float64 depth, Float64 xOffset, Floa
 
 bool BEAMSFUNC IsInEndBlock(Float64 Xs, pgsTypes::SectionBias sectionBias, Float64 leftEndBlockLength, Float64 rightEndBlockLength, Float64 Lg);
 bool BEAMSFUNC IsInEndBlock(Float64 Xs, pgsTypes::SectionBias sectionBias, Float64 endBlockLength, Float64 Lg);
+
+bool BEAMSFUNC IsSupportedDeckType(pgsTypes::SupportedDeckType deckType, const IBeamFactory* pFactory, pgsTypes::SupportedBeamSpacing spacingType);
+
+
+/////////////////////////////////////////////////////////////////////////////
+// IBeamFamilyImpl
+class BEAMSCLASS IBeamFamilyImpl :
+   public IBeamFamily
+{
+public:
+   // IBeamFamily
+   virtual CString GetName() override;
+   virtual void RefreshFactoryList() override;
+   virtual const std::vector<CString>& GetFactoryNames() override;
+   virtual CLSID GetFactoryCLSID(LPCTSTR strName) override;
+   virtual HRESULT CreateFactory(LPCTSTR strName, IBeamFactory** ppFactory) override;
+
+protected:
+   HRESULT Init();
+
+   virtual const CLSID& GetCLSID() = 0;
+   virtual const CATID& GetCATID() = 0;
+
+   typedef std::map<CString, CLSID> FactoryContainer;
+   FactoryContainer m_Factories;
+   std::vector<CString> m_Names;
+};

@@ -767,12 +767,15 @@ void CDistFactorEngineerImpl<T>::GetGirderSpacingAndOverhang(const CSpanKey& spa
    pDetails->wLane = lrfdUtility::GetDesignLaneWidth( pDetails->wCurbToCurb );
 
    // overhangs
-   if(IsNonstructuralDeck(pBridge->GetDeckType()))
+   if(IsOverlayDeck(pBridge->GetDeckType()))
    {
       // Use top width of beam as deck, for lack of better ideas
       GET_IFACE(IGirder,pGirder);
-      pDetails->leftSlabOverhang  = pGirder->GetTopWidth(pgsPointOfInterest(segmentKey,Xs))/2.0;
-      pDetails->rightSlabOverhang = pGirder->GetTopWidth(pgsPointOfInterest(CSegmentKey(pGroup->GetIndex(),pDetails->Nb-1,segmentKey.segmentIndex),Xs))/2.0;
+      Float64 wLeft, wRight;
+      pGirder->GetTopWidth(pgsPointOfInterest(CSegmentKey(pGroup->GetIndex(), 0, segmentKey.segmentIndex),Xs),&wLeft,&wRight);
+      pDetails->leftSlabOverhang = wLeft;
+      pGirder->GetTopWidth(pgsPointOfInterest(CSegmentKey(pGroup->GetIndex(),pDetails->Nb-1,segmentKey.segmentIndex),Xs),&wLeft,&wRight);
+      pDetails->rightSlabOverhang = wRight;
    }
    else
    {

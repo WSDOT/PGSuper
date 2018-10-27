@@ -32,7 +32,7 @@ Stirrup detailing checks failed for the Strength I Limit State.
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 39.97    5   8.25 I-5 & I-205 SCIP    2     1    WF74G    *     56  0.6  270  31.59  20.51  11.75  11.75                                              10  70.0  4.0  7.100  8.900   5.273    -5.546    16019   0.930  0.930   6.345 -2.832  0.000 -0.249 -3.081 271.19  409.40    3.00    6.17    6.17 
+ 39.97    5   8.25 I-5 & I-205 SCIP    2     1    WF74G    *     56  0.6  270  31.59  20.51  11.75  11.75                                              10  70.0  4.0  7.100  8.900   5.273    -5.546    16019   0.930  0.930   6.345 -2.832  0.000 -0.249 -3.081 271.19  409.40    3.00    8.67    8.67 
 
 
 The Specification Check was Not Successful
@@ -52,7 +52,7 @@ Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 39.97    5   8.25 I-5 & I-205 SCIP    2     3    WF74G    *     48  0.6  270  32.16  16.91  10.75  10.75                                              12  70.0  4.0  5.800  6.900   4.691    -4.828    13359   0.676  0.832   5.398 -2.773  0.000 -0.286 -3.058 214.36  347.25    3.00   13.67   13.67 
+ 39.97    5   8.25 I-5 & I-205 SCIP    2     3    WF74G    *     48  0.6  270  32.16  16.91  10.75  10.75                                              12  70.0  4.0  5.800  6.900   4.691    -4.828    13359   0.676  0.832   5.398 -2.773  0.000 -0.286 -3.058 214.36  347.25    3.00   11.17   11.17 
 
 
 Girder design was Not Successful

@@ -30,7 +30,7 @@
 #define UIHINT_SAME_NUMBER_OF_GIRDERS     0x0002
 #define UIHINT_SAME_GIRDER_SPACING        0x0004
 #define UIHINT_SAME_GIRDER_NAME           0x0008
-//#define UIHINT_???                     0x0001 // this hint value is unused
+#define UIHINT_TIMELINE_IS_READONLY       0x0010
 #define UIHINT_FAVORITES_MENU             0x0020
 
 // This file contains all the hints sets to the views

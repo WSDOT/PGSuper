@@ -386,7 +386,35 @@ BOOL CTxDOTOptionalDesignDoc::Init()
 CString CTxDOTOptionalDesignDoc::GetToolbarSectionName()
 {
    // Registery key for saving toolbar settings for this document type
-   return _T("TxDOT Alternative Doc Toolbars");
+   return _T("TOGA");
+}
+
+void CTxDOTOptionalDesignDoc::LoadToolbarState()
+{
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
+   // the profile name is set to "PGSuper" because we generally want
+   // all of PGSuper's settings for TOGA. However, the toolbar state
+   // should be stored in the registry hive for TOGA
+   CWinApp* pApp = AfxGetApp();
+   auto profile = pApp->m_pszProfileName;
+   pApp->m_pszProfileName = _T("TOGA");
+
+   __super::LoadToolbarState();
+
+   pApp->m_pszProfileName = profile;
+}
+
+void CTxDOTOptionalDesignDoc::SaveToolbarState()
+{
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+   CWinApp* pApp = AfxGetApp();
+   auto profile = pApp->m_pszProfileName;
+   pApp->m_pszProfileName = _T("TOGA");
+
+   __super::SaveToolbarState();
+
+   pApp->m_pszProfileName = profile;
 }
 
 void CTxDOTOptionalDesignDoc::DoIntegrateWithUI(BOOL bIntegrate)

@@ -792,15 +792,21 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
          std::_tstring strNewCLSID = TranslateCLSID(strCLSID);
 
          HRESULT hr = CreateBeamFactory(strNewCLSID);
-         if ( FAILED(hr) )
+         if ( FAILED(hr))
          {
+            LPTSTR errorMsgBuffer = nullptr;
+            size_t size = FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+                                          NULL, hr, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPTSTR)&errorMsgBuffer, 0, NULL);
+
             CString strMsg;
-            strMsg.Format(_T("Unable to create the \"%s\" section, published by %s\n\nThe \"%s\" section is not available on this computer.\n\nPlease contact the publisher for assistance.\n%s"),strSectionName.c_str(),strPublisher.c_str(),strSectionName.c_str(),strPublisherContactInfo.c_str());
+            strMsg.Format(_T("Unable to create the \"%s\" section, published by %s.\n\nError code %#x\n%s\nContact the publisher for assistance.\n%s"), strSectionName.c_str(), strPublisher.c_str(), hr, errorMsgBuffer, strPublisherContactInfo.c_str());
 
-            AFX_MANAGE_STATE(AfxGetAppModuleState());
-            AfxMessageBox(strMsg);
+            sysXStructuredLoad ex(sysXStructuredLoad::UserDefined,_T(__FILE__),__LINE__);
+            ex.SetExtendedMessage(strMsg);
 
-            throw 0; // just a dummy exception... will be caught in pgslibLoadLibrary
+            LocalFree(errorMsgBuffer);
+
+            ex.Throw();
          }
 
          ATLASSERT(m_pBeamFactory != nullptr);
@@ -4249,6 +4255,8 @@ bool GirderLibraryEntry::GetPermStrandDistribution(StrandIndexType totalNumStran
          }
          else
          {
+            *numStraight = INVALID_INDEX;
+            *numHarped = INVALID_INDEX;
             return false;
          }
       }

@@ -292,23 +292,14 @@ HRESULT CStrandFiller::ComputeStraightStrandFill(IStrandGridFiller* pGridFiller,
       
          if (nStrands <= cnt)
          {
-            if (cnt == nStrands)
-            {
-               // only safe way out
-               return m_TempArray.CopyTo(strandFill);
-            }
-            else
-            {
-               // nStrands does not fit into this array
-//               ATLASSERT(false);
-               return E_INVALIDARG;
-            }
+            m_TempArray.CopyTo(strandFill);
+            return (cnt == nStrands ? S_OK : S_FALSE); // S_FALSE means that it was filled as much as possible
          }
       }
 
       // not enough strand locations available in girder to fit
-//      ATLASSERT(false);
-      return E_INVALIDARG;
+      m_TempArray.CopyTo(strandFill);
+      return S_FALSE;
    }
    else
    {

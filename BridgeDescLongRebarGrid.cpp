@@ -66,6 +66,20 @@ END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
 // CGirderDescLongRebarGrid message handlers
+int CGirderDescLongRebarGrid::GetColWidth(ROWCOL nCol)
+{
+	CRect rect = GetGridRect( );
+
+   switch (nCol)
+   {
+   case 0:
+      return rect.Width( )/22;
+   case 1:
+      return rect.Width( )*3/22;
+   default:
+      return rect.Width( )*2/22;
+   }
+}
 
 BOOL CGirderDescLongRebarGrid::OnRButtonClickedRowCol(ROWCOL nRow, ROWCOL nCol, UINT nFlags, CPoint pt)
 {

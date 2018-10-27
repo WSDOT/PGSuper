@@ -66,8 +66,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 4,0,8,0
- PRODUCTVERSION 4,0,8,0
+ FILEVERSION 4,0,9,0
+ PRODUCTVERSION 4,0,9,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -85,11 +85,11 @@ BEGIN
             VALUE "Comments", "A member of the Alternate Route Project"
             VALUE "CompanyName", "Washington State Department of Transportation"
             VALUE "FileDescription", "psgLib DLL"
-            VALUE "FileVersion", "4.0.8.0"
+            VALUE "FileVersion", "4.0.9.0"
             VALUE "InternalName", "psgLib"
             VALUE "OriginalFilename", "psgLib.DLL"
             VALUE "ProductName", "PGSuper"
-            VALUE "ProductVersion", "4.0.8.0"
+            VALUE "ProductVersion", "4.0.9.0"
         END
     END
     BLOCK "VarFileInfo"
@@ -2390,9 +2390,9 @@ BEGIN
 0x2062, 0x664f, 0x7366, 0x7465, 0x6120, 0x646e, 0x6120, 0x7373, 0x6d75, 
 0x6465, 0x6520, 0x6378, 0x7365, 0x2073, 0x6163, 0x626d, 0x7265, 0x6420, 
 0x6d69, 0x6e65, 0x6973, 0x6e6f, 0x0073, 
-    IDC_HAUNCH_COMP_PROPS_CB, 0x403, 31, 0
-0x655a, 0x6f72, 0x6820, 0x7561, 0x636e, 0x2068, 0x6564, 0x7470, 0x2068, 
-0x6c61, 0x6e6f, 0x2067, 0x6967, 0x6472, 0x7265, "\000" 
+    IDC_HAUNCH_COMP_PROPS_CB, 0x403, 20, 0
+0x6749, 0x6f6e, 0x6572, 0x6820, 0x7561, 0x636e, 0x2068, 0x6564, 0x7470, 
+0x0068, 
     IDC_HAUNCH_COMP_PROPS_CB, 0x403, 57, 0
 0x6f43, 0x736e, 0x6174, 0x746e, 0x6820, 0x7561, 0x636e, 0x2068, 0x6564, 
 0x7470, 0x2068, 0x6c61, 0x6e6f, 0x2067, 0x6967, 0x6472, 0x7265, 0x6520, 

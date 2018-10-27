@@ -142,11 +142,6 @@ public:
    // anywhere along this segment for the deck
    bool IsDeckWithRebarAllowableStressApplicable(IntervalIndexType intervalIdx,pgsTypes::LimitState ls) const;
 
-
-
-   void SetCapacityWithRebar(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::StressLocation stressLocation,Float64 fAllow);
-   Float64 GetCapacityWithRebar(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::StressLocation stressLocation) const;
-
    pgsDebondArtifact* GetDebondArtifact();
    const pgsDebondArtifact* GetDebondArtifact() const;
    
@@ -231,7 +226,4 @@ private:
    const pgsHaulingAnalysisArtifact* m_pHaulingAnalysisArtifact; // pointer is not owned by this object
 
    pgsDebondArtifact m_DebondArtifact;
-   
-   mutable std::map<StressKey,Float64> m_AllowableWithRebar[4]; // allowable tensile stress with required mild rebar (access array with pgsTypes::StressLocation)
-   Float64& GetAllowableWithRebar(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::StressLocation stressLocation) const;
 };

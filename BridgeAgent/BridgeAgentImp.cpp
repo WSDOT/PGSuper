@@ -4615,13 +4615,13 @@ void CBridgeAgentImp::UpdatePrestressing(GroupIndexType groupIdx,GirderIndexType
             strandModel->put_StraightStrandProfileType(FollowGirder); // straight strands always follow the bottom of the girder
             strandModel->put_TemporaryStrandProfileType(pSegment->Strands.GetTemporaryStrandUsage() == pgsTypes::ttsPretensioned ? Linear : FollowGirder); // PT TTS follow girder (shielding can be curved)
 
+            // Inititalize a strand filler for each girder
+            const GirderLibraryEntry* pGirderEntry = GetGirderLibraryEntry(segmentKey);
+            InitializeStrandFiller(pGirderEntry, segmentKey);
+
             if (strandGridModel)
             {
-               // Inititalize a strand filler for each girder
-               const GirderLibraryEntry* pGirderEntry = GetGirderLibraryEntry(segmentKey);
-               InitializeStrandFiller(pGirderEntry, segmentKey);
-
-               strandGridModel->ClearStraightStrandDebonding();
+                strandGridModel->ClearStraightStrandDebonding();
 
                // Fill strands
                CStrandData::StrandDefinitionType strandDefinitionType = pSegment->Strands.GetStrandDefinitionType();
@@ -17245,17 +17245,26 @@ Float64 CBridgeAgentImp::GetHarpedEndOffsetIncrement(const CSegmentKey& segmentK
 {
    VALIDATE( GIRDER );
 
+   Float64 increment = 0;
    CComPtr<IPrecastGirder> girder;
    GetGirder(segmentKey,&girder);
 
    CComPtr<IStrandModel> strandModel;
    girder->get_StrandModel(&strandModel);
    CComQIPtr<IStrandGridModel> strandGridModel(strandModel);
-
-   Float64 increment;
-
-   HRESULT hr = strandGridModel->get_HarpedEndAdjustmentIncrement(&increment);
-   ATLASSERT(SUCCEEDED(hr));
+   if (strandGridModel)
+   {
+      HRESULT hr = strandGridModel->get_HarpedEndAdjustmentIncrement(&increment);
+      ATLASSERT(SUCCEEDED(hr));
+   }
+#if defined _DEBUG
+   else
+   {
+      CComQIPtr<IStrandPointModel> strandPointModel(strandModel);
+      ATLASSERT(strandPointModel);
+      ATLASSERT(false); // using a strand point model... probably shouldn't be calling this method in the first place
+   }
+#endif
 
    return increment;
 }
@@ -17281,6 +17290,8 @@ Float64 CBridgeAgentImp::GetHarpedHpOffsetIncrement(const CSegmentKey& segmentKe
 {
    VALIDATE( GIRDER );
 
+   Float64 increment = 0;
+
    CComPtr<IPrecastGirder> girder;
    GetGirder(segmentKey,&girder);
 
@@ -17288,10 +17299,19 @@ Float64 CBridgeAgentImp::GetHarpedHpOffsetIncrement(const CSegmentKey& segmentKe
    girder->get_StrandModel(&strandModel);
    CComQIPtr<IStrandGridModel> strandGridModel(strandModel);
 
-   Float64 increment;
-
-   HRESULT hr = strandGridModel->get_HarpedHpAdjustmentIncrement(&increment);
-   ATLASSERT(SUCCEEDED(hr));
+   if (strandGridModel)
+   {
+      HRESULT hr = strandGridModel->get_HarpedHpAdjustmentIncrement(&increment);
+      ATLASSERT(SUCCEEDED(hr));
+   }
+#if defined _DEBUG
+   else
+   {
+      CComQIPtr<IStrandPointModel> strandPointModel(strandModel);
+      ATLASSERT(strandPointModel);
+      ATLASSERT(false); // using a strand point model... probably shouldn't be calling this method in the first place
+   }
+#endif
 
    return increment;
 }
@@ -18646,19 +18666,19 @@ void CBridgeAgentImp::GetStrandPositionsEx(LPCTSTR strGirderName,Float64 HgStart
    ATLASSERT(SUCCEEDED(hr));
 }
 
-Float64 CBridgeAgentImp::ComputeAbsoluteHarpedOffsetEnd(const CSegmentKey& segmentKey, pgsTypes::MemberEndType endType,const ConfigStrandFillVector& rHarpedFillArray, HarpedStrandOffsetType measurementType, Float64 offset) const
+Float64 CBridgeAgentImp::ComputeAbsoluteHarpedOffsetEnd(const CSegmentKey& segmentKey, pgsTypes::MemberEndType endType, const ConfigStrandFillVector& rHarpedFillArray, HarpedStrandOffsetType measurementType, Float64 offset) const
 {
    // returns the offset value measured from the original strand locations defined in the girder library
    // Up is positive
    Float64 HgStart, HgHp1, HgHp2, HgEnd;
-   GetHarpedStrandControlHeights(segmentKey,&HgStart,&HgHp1,&HgHp2,&HgEnd);
+   GetHarpedStrandControlHeights(segmentKey, &HgStart, &HgHp1, &HgHp2, &HgEnd);
 
-   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   GET_IFACE(IBridgeDescription, pIBridgeDesc);
    const CSplicedGirderData* pGirder = pIBridgeDesc->GetGirder(segmentKey);
    const CPrecastSegmentData* pSegment = pGirder->GetSegment(segmentKey.segmentIndex);
 
-   pgsTypes::AdjustableStrandType adjType = pSegment->Strands.GetAdjustableStrandType(); 
-   Float64 absOffset = ComputeAbsoluteHarpedOffsetEnd(pGirder->GetGirderName(),endType,adjType,HgStart,HgHp1,HgHp2,HgEnd,rHarpedFillArray,measurementType,offset);
+   pgsTypes::AdjustableStrandType adjType = pSegment->Strands.GetAdjustableStrandType();
+   Float64 absOffset = ComputeAbsoluteHarpedOffsetEnd(pGirder->GetGirderName(), endType, adjType, HgStart, HgHp1, HgHp2, HgEnd, rHarpedFillArray, measurementType, offset);
 
 #if defined _DEBUG
    CComPtr<IPrecastGirder> girder;
@@ -18667,151 +18687,153 @@ Float64 CBridgeAgentImp::ComputeAbsoluteHarpedOffsetEnd(const CSegmentKey& segme
    CComPtr<IStrandModel> strandModel;
    girder->get_StrandModel(&strandModel);
    CComQIPtr<IStrandGridModel> strandGridModel(strandModel);
-
-   Float64 increment; // if less than zero, strands cannot be adjusted
-   strandGridModel->get_HarpedEndAdjustmentIncrement(&increment);
-
-   Float64 Hg = (endType == pgsTypes::metStart ? HgStart : HgEnd);
-
-   Float64 result = 0;
-   if (AreStrandsInConfigFillVec(rHarpedFillArray))
+   if (strandGridModel)
    {
-      if (measurementType==hsoLEGACY)
+      Float64 increment; // if less than zero, strands cannot be adjusted
+      strandGridModel->get_HarpedEndAdjustmentIncrement(&increment);
+
+      Float64 Hg = (endType == pgsTypes::metStart ? HgStart : HgEnd);
+
+      Float64 result = 0;
+      if (AreStrandsInConfigFillVec(rHarpedFillArray))
       {
-         // legacy end offset moved top strand to highest location in strand grid and then measured down
-         CComPtr<IStrandGrid> grid;
-         strandGridModel->get_HarpedStrandGridEnd((EndType)endType,&grid);
-
-         CComPtr<IRect2d> grid_box;
-         grid->GridBoundingBox(&grid_box);
-
-         Float64 grid_bottom, grid_top;
-         grid_box->get_Bottom(&grid_bottom);
-         grid_box->get_Top(&grid_top);
-
-         CIndexArrayWrapper fill(rHarpedFillArray);
-
-         Float64 fill_top, fill_bottom;
-         strandGridModel->GetHarpedEndFilledGridBoundsEx((EndType)endType,&fill, &fill_bottom, &fill_top);
-
-         Float64 vert_adjust;
-         strandGridModel->get_HarpedStrandAdjustmentEnd((EndType)endType,&vert_adjust);
-
-         result = grid_top - (fill_top-vert_adjust) - offset;
-      }
-      else if (measurementType==hsoCGFROMTOP || measurementType==hsoCGFROMBOTTOM || measurementType==hsoECCENTRICITY)
-      {
-         // compute adjusted cg location
-         CIndexArrayWrapper fill(rHarpedFillArray);
-
-         Float64 Lsegment = GetSegmentLength(segmentKey);
-         Float64 Xg = (endType == pgsTypes::metStart ? 0.0 : Lsegment);
-
-         CComPtr<IPoint2dCollection> points;
-         strandGridModel->GetStrandPositionsEx(Harped, Xg, &fill, &points);
-
-         Float64 cg = 0.0;
-
-         CollectionIndexType nStrands;
-         points->get_Count(&nStrands);
-         ATLASSERT(CountStrandsInConfigFillVec(rHarpedFillArray) == nStrands);
-         for (CollectionIndexType strandIdx = 0; strandIdx < nStrands; strandIdx++)
+         if (measurementType == hsoLEGACY)
          {
-            CComPtr<IPoint2d> point;
-            points->get_Item(strandIdx,&point);
-            Float64 y;
-            point->get_Y(&y);
+            // legacy end offset moved top strand to highest location in strand grid and then measured down
+            CComPtr<IStrandGrid> grid;
+            strandGridModel->get_HarpedStrandGridEnd((EndType)endType, &grid);
 
-            cg += y;
+            CComPtr<IRect2d> grid_box;
+            grid->GridBoundingBox(&grid_box);
+
+            Float64 grid_bottom, grid_top;
+            grid_box->get_Bottom(&grid_bottom);
+            grid_box->get_Top(&grid_top);
+
+            CIndexArrayWrapper fill(rHarpedFillArray);
+
+            Float64 fill_top, fill_bottom;
+            strandGridModel->GetHarpedEndFilledGridBoundsEx((EndType)endType, &fill, &fill_bottom, &fill_top);
+
+            Float64 vert_adjust;
+            strandGridModel->get_HarpedStrandAdjustmentEnd((EndType)endType, &vert_adjust);
+
+            result = grid_top - (fill_top - vert_adjust) - offset;
          }
-
-         cg = cg / (Float64)nStrands;
-
-         // compute unadjusted location of cg
-         Float64 vert_adjust;
-         strandGridModel->get_HarpedStrandAdjustmentEnd((EndType)endType,&vert_adjust);
-
-         cg -= vert_adjust;
-
-         if (measurementType==hsoCGFROMTOP)
+         else if (measurementType == hsoCGFROMTOP || measurementType == hsoCGFROMBOTTOM || measurementType == hsoECCENTRICITY)
          {
-            Float64 dist = -cg;
-            result  = dist - offset;
+            // compute adjusted cg location
+            CIndexArrayWrapper fill(rHarpedFillArray);
 
+            Float64 Lsegment = GetSegmentLength(segmentKey);
+            Float64 Xg = (endType == pgsTypes::metStart ? 0.0 : Lsegment);
+
+            CComPtr<IPoint2dCollection> points;
+            strandGridModel->GetStrandPositionsEx(Harped, Xg, &fill, &points);
+
+            Float64 cg = 0.0;
+
+            CollectionIndexType nStrands;
+            points->get_Count(&nStrands);
+            ATLASSERT(CountStrandsInConfigFillVec(rHarpedFillArray) == nStrands);
+            for (CollectionIndexType strandIdx = 0; strandIdx < nStrands; strandIdx++)
+            {
+               CComPtr<IPoint2d> point;
+               points->get_Item(strandIdx, &point);
+               Float64 y;
+               point->get_Y(&y);
+
+               cg += y;
+            }
+
+            cg = cg / (Float64)nStrands;
+
+            // compute unadjusted location of cg
+            Float64 vert_adjust;
+            strandGridModel->get_HarpedStrandAdjustmentEnd((EndType)endType, &vert_adjust);
+
+            cg -= vert_adjust;
+
+            if (measurementType == hsoCGFROMTOP)
+            {
+               Float64 dist = -cg;
+               result = dist - offset;
+
+            }
+            else if (measurementType == hsoCGFROMBOTTOM)
+            {
+               // top is a Y=0.0
+               result = offset - (Hg + cg);
+            }
+            else if (measurementType == hsoECCENTRICITY)
+            {
+               IntervalIndexType releaseIntervalIdx = GetPrestressReleaseInterval(segmentKey);
+               Float64 Yb = GetY(releaseIntervalIdx, pgsPointOfInterest(segmentKey, 0.0), pgsTypes::BottomGirder);
+               Float64 ecc = Yb - (Hg + cg);
+
+               result = ecc - offset;
+            }
+            else
+            {
+               ATLASSERT(false);
+            }
          }
-         else if ( measurementType==hsoCGFROMBOTTOM)
+         else if (measurementType == hsoTOP2TOP || measurementType == hsoTOP2BOTTOM)
          {
-            // top is a Y=0.0
-            result =  offset - (Hg+cg);
-         }
-         else if (measurementType==hsoECCENTRICITY)
-         {
-            IntervalIndexType releaseIntervalIdx = GetPrestressReleaseInterval(segmentKey);
-            Float64 Yb = GetY(releaseIntervalIdx,pgsPointOfInterest(segmentKey,0.0),pgsTypes::BottomGirder);
-            Float64 ecc = Yb - (Hg+cg);
+            // get strand grid positions that are filled by Nh strands
+            CIndexArrayWrapper fill(rHarpedFillArray);
 
-            result = ecc - offset;
+            // fill_top is the top of the strand positions that are actually filled
+            // adjusted by the harped strand adjustment
+            Float64 fill_top, fill_bottom;
+            strandGridModel->GetHarpedEndFilledGridBoundsEx((EndType)endType, &fill, &fill_bottom, &fill_top);
+
+            // get the harped strand adjustment so its effect can be removed
+            Float64 vert_adjust;
+            strandGridModel->get_HarpedStrandAdjustmentEnd((EndType)endType, &vert_adjust);
+
+            // elevation of the top of the strand grid without an offset
+            Float64 toploc = fill_top - vert_adjust;
+
+            if (measurementType == hsoTOP2TOP)
+            {
+               Float64 height;
+               strandGridModel->get_TopElevation(&height);
+
+               // distance from the top of the girder to the top of the strands before offset
+               Float64 dist = height - toploc;
+
+               // distance from the top of the girder to the top of the strands after offset
+               result = dist - offset;
+            }
+            else  // measurementType==hsoTOP2BOTTOM
+            {
+               ATLASSERT(measurementType == hsoTOP2BOTTOM);
+               result = offset - (Hg + toploc);
+            }
+         }
+         else if (measurementType == hsoBOTTOM2BOTTOM)
+         {
+            CIndexArrayWrapper fill(rHarpedFillArray);
+
+            Float64 fill_top, fill_bottom;
+            strandGridModel->GetHarpedEndFilledGridBoundsEx((EndType)endType, &fill, &fill_bottom, &fill_top);
+
+            Float64 vert_adjust;
+            strandGridModel->get_HarpedStrandAdjustmentEnd((EndType)endType, &vert_adjust);
+
+            Float64 botloc = fill_bottom - vert_adjust;
+
+            result = offset - (Hg + botloc);
          }
          else
          {
             ATLASSERT(false);
          }
       }
-      else if (measurementType==hsoTOP2TOP || measurementType==hsoTOP2BOTTOM)
-      {
-         // get strand grid positions that are filled by Nh strands
-         CIndexArrayWrapper fill(rHarpedFillArray);
 
-         // fill_top is the top of the strand positions that are actually filled
-         // adjusted by the harped strand adjustment
-         Float64 fill_top, fill_bottom;
-         strandGridModel->GetHarpedEndFilledGridBoundsEx((EndType)endType,&fill, &fill_bottom, &fill_top);
-
-         // get the harped strand adjustment so its effect can be removed
-         Float64 vert_adjust;
-         strandGridModel->get_HarpedStrandAdjustmentEnd((EndType)endType,&vert_adjust);
-
-         // elevation of the top of the strand grid without an offset
-         Float64 toploc = fill_top-vert_adjust;
-
-         if (measurementType==hsoTOP2TOP)
-         {
-            Float64 height;
-            strandGridModel->get_TopElevation(&height);
-
-            // distance from the top of the girder to the top of the strands before offset
-            Float64 dist = height - toploc;
-
-            // distance from the top of the girder to the top of the strands after offset
-            result  = dist - offset;
-         }
-         else  // measurementType==hsoTOP2BOTTOM
-         {
-            ATLASSERT(measurementType == hsoTOP2BOTTOM);
-            result =  offset - (Hg+toploc);
-         }
-      }
-      else if (measurementType==hsoBOTTOM2BOTTOM)
-      {
-         CIndexArrayWrapper fill(rHarpedFillArray);
-
-         Float64 fill_top, fill_bottom;
-         strandGridModel->GetHarpedEndFilledGridBoundsEx((EndType)endType,&fill, &fill_bottom, &fill_top);
-
-         Float64 vert_adjust;
-         strandGridModel->get_HarpedStrandAdjustmentEnd((EndType)endType,&vert_adjust);
-
-         Float64 botloc = fill_bottom-vert_adjust;
-
-         result =  offset - (Hg+botloc);
-      }
-      else
-      {
-         ATLASSERT(false);
-      }
-    }
-
-   ATLASSERT(IsEqual(result,absOffset));
+      ATLASSERT(IsEqual(result, absOffset));
+   }
 #endif // _DEBUG
    return absOffset;
 }
@@ -18993,147 +19015,149 @@ Float64 CBridgeAgentImp::ComputeAbsoluteHarpedOffsetHp(const CSegmentKey& segmen
    // returns the offset value measured from the original strand locations defined in the girder library
    // Up is positive
    Float64 HgStart, HgHp1, HgHp2, HgEnd;
-   GetHarpedStrandControlHeights(segmentKey,&HgStart,&HgHp1,&HgHp2,&HgEnd);
+   GetHarpedStrandControlHeights(segmentKey, &HgStart, &HgHp1, &HgHp2, &HgEnd);
 
-   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   GET_IFACE(IBridgeDescription, pIBridgeDesc);
    const CSplicedGirderData* pGirder = pIBridgeDesc->GetGirder(segmentKey);
    const CPrecastSegmentData* pSegment = pGirder->GetSegment(segmentKey.segmentIndex);
 
    pgsTypes::AdjustableStrandType adjType = pSegment->Strands.GetAdjustableStrandType();
-   Float64 absOffset = ComputeAbsoluteHarpedOffsetHp(pGirder->GetGirderName(), endType, adjType, HgStart, HgHp1, HgHp2, HgEnd, rHarpedFillArray,measurementType,offset);
+   Float64 absOffset = ComputeAbsoluteHarpedOffsetHp(pGirder->GetGirderName(), endType, adjType, HgStart, HgHp1, HgHp2, HgEnd, rHarpedFillArray, measurementType, offset);
 
 #if defined _DEBUG
 
-//   VALIDATE( GIRDER );
+   //   VALIDATE( GIRDER );
    CComPtr<IPrecastGirder> girder;
    GetGirder(segmentKey, &girder);
 
    CComPtr<IStrandModel> strandModel;
    girder->get_StrandModel(&strandModel);
    CComQIPtr<IStrandGridModel> strandGridModel(strandModel);
-
-   Float64 increment; // if less than zero, strands cannot be adjusted
-   strandGridModel->get_HarpedHpAdjustmentIncrement(&increment);
-
-   Float64 Hg = (endType == pgsTypes::metStart ? HgHp1 : HgHp2);
-
-   Float64 result = 0;
-   if (AreStrandsInConfigFillVec(rHarpedFillArray) )
+   if (strandGridModel)
    {
-      if (measurementType==hsoLEGACY)
+      Float64 increment; // if less than zero, strands cannot be adjusted
+      strandGridModel->get_HarpedHpAdjustmentIncrement(&increment);
+
+      Float64 Hg = (endType == pgsTypes::metStart ? HgHp1 : HgHp2);
+
+      Float64 result = 0;
+      if (AreStrandsInConfigFillVec(rHarpedFillArray))
       {
-         result = offset;
-      }
-      else if (measurementType==hsoCGFROMTOP || measurementType==hsoCGFROMBOTTOM || measurementType==hsoECCENTRICITY)
-      {
-         // compute adjusted cg location
-         CIndexArrayWrapper fill(rHarpedFillArray);
-
-         Float64 HP1,HP2;
-         GetHarpingPointLocations(segmentKey,&HP1,&HP2);
-
-         CComPtr<IPoint2dCollection> points;
-         strandGridModel->GetStrandPositionsEx(Harped,(endType == pgsTypes::metStart ? HP1 : HP2), &fill, &points);
-
-         Float64 cg = 0.0;
-
-         CollectionIndexType nStrands;
-         points->get_Count(&nStrands);
-         ATLASSERT(CountStrandsInConfigFillVec(rHarpedFillArray) == nStrands);
-         for (CollectionIndexType strandIdx = 0; strandIdx < nStrands; strandIdx++)
+         if (measurementType == hsoLEGACY)
          {
-            CComPtr<IPoint2d> point;
-            points->get_Item(strandIdx,&point);
-            Float64 y;
-            point->get_Y(&y);
-
-            cg += y;
+            result = offset;
          }
-
-         cg = cg / (Float64)nStrands;
-
-         // compute unadjusted location of cg
-         Float64 vert_adjust;
-         strandGridModel->get_HarpedStrandAdjustmentHP((EndType)endType,&vert_adjust);
-
-         cg -= vert_adjust;
-
-         if (measurementType==hsoCGFROMTOP)
+         else if (measurementType == hsoCGFROMTOP || measurementType == hsoCGFROMBOTTOM || measurementType == hsoECCENTRICITY)
          {
-            Float64 height;
-            strandGridModel->get_TopElevation(&height);
+            // compute adjusted cg location
+            CIndexArrayWrapper fill(rHarpedFillArray);
 
-            Float64 dist = height - cg;
-            result  = dist - offset;
+            Float64 HP1, HP2;
+            GetHarpingPointLocations(segmentKey, &HP1, &HP2);
 
+            CComPtr<IPoint2dCollection> points;
+            strandGridModel->GetStrandPositionsEx(Harped, (endType == pgsTypes::metStart ? HP1 : HP2), &fill, &points);
+
+            Float64 cg = 0.0;
+
+            CollectionIndexType nStrands;
+            points->get_Count(&nStrands);
+            ATLASSERT(CountStrandsInConfigFillVec(rHarpedFillArray) == nStrands);
+            for (CollectionIndexType strandIdx = 0; strandIdx < nStrands; strandIdx++)
+            {
+               CComPtr<IPoint2d> point;
+               points->get_Item(strandIdx, &point);
+               Float64 y;
+               point->get_Y(&y);
+
+               cg += y;
+            }
+
+            cg = cg / (Float64)nStrands;
+
+            // compute unadjusted location of cg
+            Float64 vert_adjust;
+            strandGridModel->get_HarpedStrandAdjustmentHP((EndType)endType, &vert_adjust);
+
+            cg -= vert_adjust;
+
+            if (measurementType == hsoCGFROMTOP)
+            {
+               Float64 height;
+               strandGridModel->get_TopElevation(&height);
+
+               Float64 dist = height - cg;
+               result = dist - offset;
+
+            }
+            else if (measurementType == hsoCGFROMBOTTOM)
+            {
+               // top is a Y=0.0
+               result = offset - (Hg + cg);
+            }
+            else if (measurementType == hsoECCENTRICITY)
+            {
+               IntervalIndexType releaseIntervalIdx = GetPrestressReleaseInterval(segmentKey);
+               Float64 Yb = GetY(releaseIntervalIdx, pgsPointOfInterest(segmentKey, 0.0), pgsTypes::BottomGirder);
+               Float64 ecc = Yb - (Hg + cg);
+
+               result = ecc - offset;
+            }
+            else
+            {
+               ATLASSERT(false);
+            }
          }
-         else if ( measurementType==hsoCGFROMBOTTOM)
+         else if (measurementType == hsoTOP2TOP || measurementType == hsoTOP2BOTTOM)
          {
-            // top is a Y=0.0
-            result =  offset - (Hg+cg);
-         }
-         else if (measurementType==hsoECCENTRICITY)
-         {
-            IntervalIndexType releaseIntervalIdx = GetPrestressReleaseInterval(segmentKey);
-            Float64 Yb = GetY(releaseIntervalIdx,pgsPointOfInterest(segmentKey,0.0),pgsTypes::BottomGirder);
-            Float64 ecc = Yb - (Hg+cg);
+            // get location of highest strand at zero offset
+            CIndexArrayWrapper fill(rHarpedFillArray);
 
-            result = ecc - offset;
+            Float64 fill_top, fill_bottom;
+            strandGridModel->GetHarpedHpFilledGridBoundsEx((EndType)endType, &fill, &fill_bottom, &fill_top);
+
+            Float64 vert_adjust;
+            strandGridModel->get_HarpedStrandAdjustmentHP((EndType)endType, &vert_adjust);
+
+            Float64 toploc = fill_top - vert_adjust;
+
+            if (measurementType == hsoTOP2TOP)
+            {
+               Float64 height;
+               strandGridModel->get_TopElevation(&height);
+
+               Float64 dist = height - toploc;
+               result = dist - offset;
+            }
+            else  // measurementType==hsoTOP2BOTTOM
+            {
+               ATLASSERT(measurementType == hsoTOP2BOTTOM);
+               result = offset - (Hg + toploc);
+            }
+         }
+         else if (measurementType == hsoBOTTOM2BOTTOM)
+         {
+            CIndexArrayWrapper fill(rHarpedFillArray);
+
+            Float64 fill_top, fill_bottom;
+            strandGridModel->GetHarpedHpFilledGridBoundsEx((EndType)endType, &fill, &fill_bottom, &fill_top);
+
+            Float64 vert_adjust;
+            strandGridModel->get_HarpedStrandAdjustmentHP((EndType)endType, &vert_adjust);
+
+            Float64 botloc = fill_bottom - vert_adjust;
+
+            result = offset - (Hg + botloc);
          }
          else
          {
             ATLASSERT(false);
          }
       }
-      else if (measurementType==hsoTOP2TOP || measurementType==hsoTOP2BOTTOM)
-      {
-         // get location of highest strand at zero offset
-         CIndexArrayWrapper fill(rHarpedFillArray);
 
-         Float64 fill_top, fill_bottom;
-         strandGridModel->GetHarpedHpFilledGridBoundsEx((EndType)endType,&fill, &fill_bottom, &fill_top);
-
-         Float64 vert_adjust;
-         strandGridModel->get_HarpedStrandAdjustmentHP((EndType)endType,&vert_adjust);
-
-         Float64 toploc = fill_top-vert_adjust;
-
-         if (measurementType==hsoTOP2TOP)
-         {
-            Float64 height;
-            strandGridModel->get_TopElevation(&height);
-
-            Float64 dist = height - toploc;
-            result  = dist - offset;
-         }
-         else  // measurementType==hsoTOP2BOTTOM
-         {
-            ATLASSERT(measurementType == hsoTOP2BOTTOM);
-            result =  offset - (Hg+toploc);
-         }
-      }
-      else if (measurementType==hsoBOTTOM2BOTTOM)
-      {
-         CIndexArrayWrapper fill(rHarpedFillArray);
-
-         Float64 fill_top, fill_bottom;
-         strandGridModel->GetHarpedHpFilledGridBoundsEx((EndType)endType,&fill, &fill_bottom, &fill_top);
-
-         Float64 vert_adjust;
-         strandGridModel->get_HarpedStrandAdjustmentHP((EndType)endType,&vert_adjust);
-
-         Float64 botloc = fill_bottom-vert_adjust;
-
-         result =  offset - (Hg+botloc);
-      }
-      else
-      {
-         ATLASSERT(false);
-      }
+      result = IsZero(result) ? 0.0 : result;
+      ATLASSERT(IsEqual(result, absOffset));
    }
-
-   result = IsZero(result) ? 0.0 : result;
-   ATLASSERT(IsEqual(result,absOffset));
 #endif // __DEBUG
 
    return absOffset;

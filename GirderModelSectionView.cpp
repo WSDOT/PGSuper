@@ -544,7 +544,7 @@ void CGirderModelSectionView::BuildSectionDisplayObjects(CPGSDocBase* pDoc,IBrok
       CComPtr<IPoint2d> pntBL;
       pntBL.CoCreateInstance(CLSID_Point2d);
       pntBL->MoveEx(pntBC);
-      pntBL->Offset(x - wx / 2, 0);
+      pntBL->Offset(x - 0.5*(wLeft - wRight + wx), 0);
       connectable->AddSocket(SOCKET_BL, pntBL, &socketBL);
 
       section->get_BottomFlangeLocation(nBottomFlanges - 1, &x);
@@ -552,7 +552,7 @@ void CGirderModelSectionView::BuildSectionDisplayObjects(CPGSDocBase* pDoc,IBrok
       CComPtr<IPoint2d> pntBR;
       pntBR.CoCreateInstance(CLSID_Point2d);
       pntBR->MoveEx(pntBC);
-      pntBR->Offset(x + wx / 2, 0);
+      pntBR->Offset(x - 0.5*(wLeft - wRight - wx), 0);
       connectable->AddSocket(SOCKET_BR, pntBR, &socketBR);
    }
    else if (0 < nWebs)
@@ -564,7 +564,7 @@ void CGirderModelSectionView::BuildSectionDisplayObjects(CPGSDocBase* pDoc,IBrok
       CComPtr<IPoint2d> pntBL;
       pntBL.CoCreateInstance(CLSID_Point2d);
       pntBL->MoveEx(pntBC);
-      pntBL->Offset(x - wx / 2, 0);
+      pntBL->Offset(x - 0.5*(wLeft - wRight + wx), 0);
       connectable->AddSocket(SOCKET_BL, pntBL, &socketBL);
 
       section->get_WebLocation(nWebs-1, &x);
@@ -572,7 +572,7 @@ void CGirderModelSectionView::BuildSectionDisplayObjects(CPGSDocBase* pDoc,IBrok
       CComPtr<IPoint2d> pntBR;
       pntBR.CoCreateInstance(CLSID_Point2d);
       pntBR->MoveEx(pntBC);
-      pntBR->Offset(x + wx / 2, 0);
+      pntBR->Offset(x - 0.5*(wLeft - wRight - wx), 0);
       connectable->AddSocket(SOCKET_BR, pntBR, &socketBR);
    }
    else

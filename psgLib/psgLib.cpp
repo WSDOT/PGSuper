@@ -581,7 +581,7 @@ HRESULT pgslibReadLibraryDocHeader(IStructuredLoad* pStrLoad,eafTypes::UnitMode*
    return S_OK;
 }
 
-HRESULT pgslibLoadLibrary(LPCTSTR strFileName,psgLibraryManager* pLibMgr,eafTypes::UnitMode* pUnitMode)
+HRESULT pgslibLoadLibrary(LPCTSTR strFileName,psgLibraryManager* pLibMgr,eafTypes::UnitMode* pUnitMode, bool bIsMasterLibrary)
 {
    CComPtr<IStructuredLoad> pStrLoad;
    pStrLoad.CoCreateInstance(CLSID_StructuredLoad);
@@ -591,7 +591,7 @@ HRESULT pgslibLoadLibrary(LPCTSTR strFileName,psgLibraryManager* pLibMgr,eafType
       return hr;
    }
 
-   hr =  pgslibLoadLibrary(pStrLoad,pLibMgr,pUnitMode);
+   hr =  pgslibLoadLibrary(pStrLoad,pLibMgr,pUnitMode, bIsMasterLibrary);
    if ( FAILED(hr) )
    {
       return hr;
@@ -606,7 +606,7 @@ HRESULT pgslibLoadLibrary(LPCTSTR strFileName,psgLibraryManager* pLibMgr,eafType
    return S_OK;
 }
 
-HRESULT pgslibLoadLibrary(IStructuredLoad* pStrLoad,psgLibraryManager* pLibMgr,eafTypes::UnitMode* pUnitMode)
+HRESULT pgslibLoadLibrary(IStructuredLoad* pStrLoad,psgLibraryManager* pLibMgr,eafTypes::UnitMode* pUnitMode, bool bIsMasterLibrary)
 {
    try
    {
@@ -615,41 +615,52 @@ HRESULT pgslibLoadLibrary(IStructuredLoad* pStrLoad,psgLibraryManager* pLibMgr,e
       // clear out library and load up new
       pLibMgr->ClearAllEntries();
 
-      if ( FAILED(pgslibReadLibraryDocHeader(pStrLoad,pUnitMode)) )
+      if (bIsMasterLibrary)
       {
-         THROW_LOAD(InvalidFileFormat,(&load));
+         if (FAILED(pgslibReadLibraryDocHeader(pStrLoad, pUnitMode)))
+         {
+            THROW_LOAD(InvalidFileFormat, (&load));
+         }
       }
 
       // load the library 
       pLibMgr->LoadMe(&load);
 
-      pStrLoad->EndUnit(); // _T("LIBRARY_EDITOR")
+      if (bIsMasterLibrary)
+      {
+         pStrLoad->EndUnit(); // _T("LIBRARY_EDITOR")
+      }
    }
    catch (const sysXStructuredLoad& rLoad)
    {
       sysXStructuredLoad::Reason reason = rLoad.GetExplicitReason();
-      std::_tstring msg;
       CString cmsg;
-      rLoad.GetErrorMessage(&msg);
-      if (reason==sysXStructuredLoad::InvalidFileFormat)
+      if (bIsMasterLibrary)
       {
-         cmsg = _T("Invalid file data format. The file may have been corrupted. Extended error information is as follows: ");
+         cmsg = _T("Error loading Master Library\n\n");
       }
-      else if (reason==sysXStructuredLoad::BadVersion)
+      if (reason == sysXStructuredLoad::InvalidFileFormat)
       {
-         cmsg = _T("Data file was written by a newer program version. Please upgrade this software. Extended error information is as follows: ");
+         cmsg += _T("Invalid file format. The file may have been corrupted. Extended error information is as follows: ");
       }
-      else if ( reason == sysXStructuredLoad::UserDefined )
+      else if (reason == sysXStructuredLoad::BadVersion)
       {
-         cmsg = _T("Error reading file. Extended error information is as follows:");
+         cmsg += _T("Data file was written by a newer program version. Please upgrade this software. Extended error information is as follows: ");
+      }
+      else if (reason == sysXStructuredLoad::UserDefined)
+      {
+         //cmsg = _T("Error reading file. Extended error information is as follows:");
       }
       else
       {
-         cmsg = _T("Undetermined error reading data file.  Extended error information is as follows: ");
+         cmsg += _T("Undetermined error reading data file.  Extended error information is as follows: ");
       }
 
+      std::_tstring msg;
+      rLoad.GetErrorMessage(&msg);
       cmsg += msg.c_str();
-      AfxMessageBox(cmsg,MB_OK | MB_ICONEXCLAMATION);
+
+      AfxMessageBox(cmsg, MB_OK | MB_ICONEXCLAMATION);
       return E_FAIL;
    }
    catch (...)

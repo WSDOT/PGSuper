@@ -598,7 +598,6 @@ void CCombinedStressTable::BuildCombinedLiveTable(IBroker* pBroker, rptChapter* 
             }
 
             row++;
-            index++;
          }
 
          // footnotes for pedestrian loads

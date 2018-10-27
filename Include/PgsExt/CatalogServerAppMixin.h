@@ -44,7 +44,7 @@ public:
 
    virtual BOOL UseConfigurationCallback() { return TRUE; }
 
-//   virtual BOOL UpdateProgramSettings(BOOL bFirstRun) override;
+   virtual bool UpdateProgramSettings();
 
    virtual CPropertyPage* CreatePropertyPage() override;
    virtual void OnOK(CPropertyPage* pPage) override;
@@ -116,7 +116,6 @@ protected:
    bool DoCacheUpdate(); // always does the update
    sysDate GetLastCacheUpdateDate();
    void SetLastCacheUpdateDate(const sysDate& date);
-   bool UpdateCatalogCache(IProgressMonitor* pProgress);
    void RestoreLibraryAndTemplatesToDefault();
    void DeleteCache(LPCTSTR pstrCache);
    void RecursiveDelete(LPCTSTR pstr);

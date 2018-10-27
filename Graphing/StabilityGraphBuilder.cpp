@@ -227,6 +227,9 @@ bool CStabilityGraphBuilder::UpdateNow()
    IndexType seriesFS2 = m_Graph.CreateDataSeries();
    m_Graph.SetPenStyle(seriesFS2, CURVE_STYLE, CURVE_PEN_WEIGHT, CURVE2_COLOR);
 
+   IndexType seriesFS3 = m_Graph.CreateDataSeries();
+   m_Graph.SetPenStyle(seriesFS3, CURVE_STYLE, CURVE_PEN_WEIGHT, CURVE3_COLOR);
+
    IndexType limitFS1 = m_Graph.CreateDataSeries();
    m_Graph.SetPenStyle(limitFS1, LIMIT_STYLE, CURVE_PEN_WEIGHT, CURVE1_COLOR);
 
@@ -315,10 +318,12 @@ bool CStabilityGraphBuilder::UpdateNow()
             if ( pArtifact )
             {
                Float64 FScr = Min(pArtifact->GetMinFsForCracking(pgsTypes::CrownSlope),pArtifact->GetMinFsForCracking(pgsTypes::Superelevation));
+               Float64 FSf  = Min(pArtifact->GetFsFailure(pgsTypes::CrownSlope),pArtifact->GetFsFailure(pgsTypes::Superelevation));
                Float64 FSro = Min(pArtifact->GetFsRollover(pgsTypes::CrownSlope), pArtifact->GetFsRollover(pgsTypes::Superelevation));
 
                AddGraphPoint(seriesFS1,loc,FScr);
-               AddGraphPoint(seriesFS2,loc,FSro);
+               AddGraphPoint(seriesFS2,loc,FSf );
+               AddGraphPoint(seriesFS3,loc,FSro);
 
                AddGraphPoint(limitFS1,loc,FS1);
                AddGraphPoint(limitFS2,loc,FS2);
@@ -478,7 +483,7 @@ void CStabilityGraphBuilder::DrawLegend(CDC* pDC)
    {
       legend1 = _T("F.S. Against Cracking (FScr)");
       legend2 = _T("F.S. Against Failure (FSf)");
-      legend3 = _T("F.S. Against Rollover (FSr)");
+      legend3 = _T("F.S. Against Rollover (FSro)");
    }
    
    size1 = pDC->GetTextExtent(legend1);

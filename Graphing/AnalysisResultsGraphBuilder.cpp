@@ -3328,8 +3328,23 @@ void CAnalysisResultsGraphBuilder::CyStressCapacityGraph(IndexType graphIdx,cons
 
          // Tension - we must catch jumps
          // Use a simple rule: Jumps happen at starts/ends of high points
-         fTop = pMaxArtifact->GetCapacity(pgsTypes::TopGirder);
-         fBot = pMaxArtifact->GetCapacity(pgsTypes::BottomGirder);
+         if (pMaxArtifact->WasWithRebarAllowableStressUsed(pgsTypes::TopGirder))
+         {
+            fTop = pMaxArtifact->GetAlternativeAllowableTensileStress(pgsTypes::TopGirder);
+         }
+         else
+         {
+            fTop = pMaxArtifact->GetCapacity(pgsTypes::TopGirder);
+         }
+
+         if (pMaxArtifact->WasWithRebarAllowableStressUsed(pgsTypes::BottomGirder))
+         {
+            fBot = pMaxArtifact->GetAlternativeAllowableTensileStress(pgsTypes::BottomGirder);
+         }
+         else
+         {
+            fBot = pMaxArtifact->GetCapacity(pgsTypes::BottomGirder);
+         }
          maxcap = Max(fTop,fBot);
          if (!first && !IsEqual(maxcap,cap_prev))
          {

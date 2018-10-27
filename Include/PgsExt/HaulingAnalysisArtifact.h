@@ -125,6 +125,7 @@ public:
 
    Float64 GetMinFsForCracking(pgsTypes::HaulingSlope slope) const;
    Float64 GetFsRollover(pgsTypes::HaulingSlope slope) const;
+   Float64 GetFsFailure(pgsTypes::HaulingSlope slope) const;
 
    void SetHaulingCheckArtifact(const stbHaulingCheckArtifact& haulingArtifact);
    const stbHaulingCheckArtifact& GetHaulingCheckArtifact() const;

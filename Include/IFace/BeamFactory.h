@@ -260,7 +260,11 @@ interface IBeamFactory : IUnknown
    //---------------------------------------------------------------------------------
    // Returns the deck types that may be used with a giving spacing type
    virtual pgsTypes::SupportedDeckTypes GetSupportedDeckTypes(pgsTypes::SupportedBeamSpacing sbs) const = 0;
-   
+
+   //---------------------------------------------------------------------------------
+   // Returns true if the deck type is supported by this beam
+   virtual bool IsSupportedDeckType(pgsTypes::SupportedDeckType deckType, pgsTypes::SupportedBeamSpacing sbs) const = 0;
+
    //---------------------------------------------------------------------------------
    // Returns all of methods of beam spacing measurement, supported by this beam
    virtual pgsTypes::SupportedBeamSpacings GetSupportedBeamSpacings() const = 0;
@@ -398,7 +402,19 @@ public:
    virtual ~pgsCompatibilityData() {};
 
    void AddValue(LPCTSTR strKey, Float64 value) { m_Values.insert(std::make_pair(strKey, value)); }
-   Float64 GetValue(LPCTSTR strKey) const { return m_Values.find(strKey)->second; }
+   bool GetValue(LPCTSTR strKey, Float64* pValue) const
+   {
+      auto found = m_Values.find(strKey);
+      if (found == m_Values.end())
+      {
+         return false;
+      }
+      else
+      {
+         *pValue = found->second;
+         return true;
+      }
+   }
 
 protected:
    std::map<std::_tstring, Float64> m_Values;

@@ -23,7 +23,7 @@
 
 // BeamFamilyImpl.cpp : Implementation of IBeamFamilyImpl
 #include "stdafx.h"
-#include "BeamFamilyImpl.h"
+#include <Beams\Helper.h>
 #include <IFace\BeamFactory.h>
 
 #ifdef _DEBUG

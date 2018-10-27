@@ -1227,13 +1227,6 @@ bool CVoidedSlab2Factory::CanPrecamber() const
    return false;
 }
 
-bool CVoidedSlab2Factory::IsSupportedDeckType(pgsTypes::SupportedDeckType sdt,pgsTypes::SupportedBeamSpacing sbs) const
-{
-   pgsTypes::SupportedDeckTypes deckTypes = GetSupportedDeckTypes(sbs);
-   pgsTypes::SupportedDeckTypes::iterator found = std::find(deckTypes.begin(),deckTypes.end(),sdt);
-   return (found == deckTypes.end() ? false : true);
-}
-
 void CVoidedSlab2Factory::DimensionAndPositionBeam(const IBeamFactory::Dimensions& dimensions, IVoidedSlab2* pBeam) const
 {
    Float64 H, W, D1, D2, H1, H2, S1, S2, C1, C2, C3, J, EndBlockLength;

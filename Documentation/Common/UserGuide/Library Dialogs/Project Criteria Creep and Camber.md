@@ -46,7 +46,7 @@ Select the method used to determine the effects of haunch on composite section p
 
 Method | Description
 -------|------------
-Zero haunch depth | The slab lies directly on the top of the girder.
+Ignore haunch depth | The haunch is ignored and the slab lies directly on the top of the girder.
 Constant haunch depth equal to the Fillet value | The haunch depth is constant along the girder and equal to the Fillet dimension.
 Variable haunch depth... | Haunch depth varies along the girder, and is defined by a parabola fitting the Slab Offset and Assumed Excess Camber dimensions The top of the girder is assumed to follow a parabolic curve defined by the roadway geometry, slab offsets at the ends of the girder, and the user-input Assumed Excess Camber value. A specification check is performed to insure that the assumed excess camber is within tolerance of the computed excess camber.
 

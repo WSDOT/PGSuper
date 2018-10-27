@@ -428,16 +428,6 @@ bool pgsSegmentArtifact::IsDeckWithRebarAllowableStressApplicable(IntervalIndexT
    return false;
 }
 
-void pgsSegmentArtifact::SetCapacityWithRebar(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::StressLocation stressLocation,Float64 fAllow)
-{
-   GetAllowableWithRebar(intervalIdx,ls,stressLocation) = fAllow;
-}
-
-Float64 pgsSegmentArtifact::GetCapacityWithRebar(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::StressLocation stressLocation) const
-{
-   return GetAllowableWithRebar(intervalIdx,ls,stressLocation);
-}
-
 pgsDebondArtifact* pgsSegmentArtifact::GetDebondArtifact()
 {
    return &m_DebondArtifact;
@@ -924,11 +914,6 @@ void pgsSegmentArtifact::MakeCopy(const pgsSegmentArtifact& rOther)
    m_pLiftingCheckArtifact    = rOther.m_pLiftingCheckArtifact;
    m_pHaulingAnalysisArtifact = rOther.m_pHaulingAnalysisArtifact;
 
-   for ( int i = 0; i < 4; i++ )
-   {
-      m_AllowableWithRebar[i] = rOther.m_AllowableWithRebar[i];
-   }
-
    m_DebondArtifact = rOther.m_DebondArtifact;
 }
 
@@ -948,22 +933,6 @@ std::vector<pgsFlexuralStressArtifact>& pgsSegmentArtifact::GetFlexuralStressArt
    if ( found == m_FlexuralStressArtifacts.end() )
    {
       auto result(m_FlexuralStressArtifacts.insert(std::make_pair(key,std::vector<pgsFlexuralStressArtifact>())));
-      found = result.first;
-   }
-
-   return found->second;
-}
-
-Float64& pgsSegmentArtifact::GetAllowableWithRebar(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::StressLocation stressLocation) const
-{
-   StressKey key;
-   key.intervalIdx = intervalIdx;
-   key.ls = ls;
-   key.stress = pgsTypes::Tension;
-   auto found(m_AllowableWithRebar[stressLocation].find(key));
-   if ( found == m_AllowableWithRebar[stressLocation].end() )
-   {
-      auto result(m_AllowableWithRebar[stressLocation].insert(std::make_pair(key,-1.0)));
       found = result.first;
    }
 

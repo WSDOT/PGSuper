@@ -293,6 +293,38 @@ CString CCatalogServerAppMixin::GetMasterLibraryPublisher() const
    return strPublisher;
 }
 
+class CConfigureDlg : public CPropertySheet
+{
+public:
+   CConfigureDlg();
+   virtual BOOL OnInitDialog();
+};
+
+CConfigureDlg::CConfigureDlg() : CPropertySheet(_T("Configure"))
+{
+   SetWizardMode();
+}
+
+BOOL CConfigureDlg::OnInitDialog()
+{
+   SetWizardButtons(PSWIZB_FINISH);
+   return CPropertySheet::OnInitDialog();
+}
+
+bool CCatalogServerAppMixin::UpdateProgramSettings()
+{
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+   CConfigureDlg dlg;
+   std::unique_ptr<CPropertyPage> pPage(CreatePropertyPage());
+   dlg.AddPage(pPage.get());
+   if (dlg.DoModal() == ID_WIZFINISH)
+   {
+      OnOK(pPage.get());
+      return true; // configuration updated
+   }
+   return false; // configuration not updated
+}
+
 CPropertyPage* CCatalogServerAppMixin::CreatePropertyPage()
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());

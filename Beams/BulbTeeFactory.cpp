@@ -260,7 +260,7 @@ Float64 CBulbTeeFactory::GetSegmentHeight(IBroker* pBroker, const CPrecastSegmen
    Float64 H = GetBeamHeight(dimensions, pgsTypes::metStart); // this is the basic beam height
 
    // Compute the increase in height due to cross slope in the top flange
-   // compute measuring from each flange tip to get max value
+   // compute by measuring from each flange tip to get max value
    Float64 c, n1, n2, left, right;
    GetTopFlangeParameters(pBroker, pSegment, &c, &n1, &n2, &left, &right);
    Float64 t_slope = Max(c*n1, (left + right - c)*n2);
@@ -1236,10 +1236,11 @@ void CBulbTeeFactory::UpdateBridgeModel(CBridgeDescription2* pBridgeDesc, const 
       return;
    }
 
-   Float64 D8 = pData->GetValue(_T("D8"));
+   Float64 D8;
+   VERIFY(pData->GetValue(_T("D8"),&D8));
    if (IsZero(D8))
    {
-      // the top flanges where really thickened
+      // the top flanges were really thickened
       return;
    }
 

@@ -66,6 +66,7 @@ protected:
 	DECLARE_MESSAGE_MAP()
 
    // virtual overrides for grid
+   virtual int GetColWidth(ROWCOL nCol);
    BOOL OnRButtonClickedRowCol(ROWCOL nRow, ROWCOL nCol, UINT nFlags, CPoint pt);
    BOOL OnLButtonClickedRowCol(ROWCOL nRow, ROWCOL nCol, UINT nFlags, CPoint pt);
    BOOL OnValidateCell(ROWCOL nRow, ROWCOL nCol);

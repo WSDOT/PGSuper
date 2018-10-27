@@ -13,7 +13,7 @@ Bearing Data
 Item | Description
 -----|----------
 Bearing Shape | Select the shape of the bearing. Bearings can be rectangular or round. At this time, this setting is for graphical presentation purposes only
-Number of Bearings | Enter the number of bearings at each girder
+Number of Bearings per Girder | Enter the number of bearings at each end of a girder. Some girder types, such as U-Beams might have two bearings at one end and one bearing at the other. Enter 2 for one end of the girder and 1 for the other. Don't enter 3 bearings for the girder.
 Spacing | If the number of bearings is more than one, enter the distance between bearings. Note that a Status Center Warning will be issued if the bearing layout is wider than the bottom width of the section.
 Length or Diameter | For rectangular bearings, enter the length of the bearing measured along the girder CL. For round bearings, enter the diameter.
 Width | Enter the width (measured transversly to girder) of the rectangular bearing.
