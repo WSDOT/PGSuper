@@ -235,6 +235,7 @@ RowIndexType CreateLimitStateTableHeading(rptRcTable** ppTable,LPCTSTR strLabel,
 
    if ( analysisType == pgsTypes::Envelope )
    {
+      min_max_col = 1;
       if ( bDesign )
       {
          pTable->SetColumnSpan(ll_title_row,ll_title_col,nCols-1);
@@ -467,6 +468,8 @@ RowIndexType CreateLimitStateTableHeading(rptRcTable** ppTable,LPCTSTR strLabel,
             pTable->SetRowSpan(ls_title_row,ls_title_col,2);
             (*pTable)(ls_title_row,ls_title_col++) << COLHDR(GetLimitStateString(pgsTypes::FatigueI), M, unitT );
          }
+
+         min_max_col = ls_title_col;
 
          pTable->SetColumnSpan(ls_title_row,ls_title_col,bMoment ? 3: 2);
          (*pTable)(ls_title_row,ls_title_col++) << GetLimitStateString(pgsTypes::StrengthI);

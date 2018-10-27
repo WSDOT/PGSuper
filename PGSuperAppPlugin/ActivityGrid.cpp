@@ -31,6 +31,8 @@
 #include <IFace\Project.h>
 
 #include <PgsExt\TimelineEvent.h>
+#include <PgsExt\Helpers.h>
+
 #include "TimelineEventDlg.h"
 #include "ConstructSegmentsDlg.h"
 #include "ErectPiersDlg.h"

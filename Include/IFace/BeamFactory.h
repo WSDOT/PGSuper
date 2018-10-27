@@ -304,7 +304,9 @@ interface IBeamFactory : IUnknown
    //---------------------------------------------------------------------------------
    // Returns the allowable range for the top width of this girder. Only applicable
    // when the girder spacing type requires top width as input (pgsTypes::sbsUniformAdjacentWithTopWidth or pgsTypes::sbsGeneralAdjacentWithTopWidth)
-   virtual void GetAllowableTopWidthRange(const IBeamFactory::Dimensions& dimensions, Float64* pWmin, Float64* pWmax) const = 0;
+   // The min/max range values are provided for the left/right "halves" of the top width. If topWidthType is twtSymmetric or twtCenteredCG, there is only
+   // one min/max range as the top width is defined as a single value. In this case only the left min/max parameters are valid
+   virtual void GetAllowableTopWidthRange(pgsTypes::TopWidthType topWidthType, const IBeamFactory::Dimensions& dimensions, Float64* pWleftMin, Float64* pWleftMax, Float64* pWrightMin, Float64* pWrightMax) const = 0;
 
    //---------------------------------------------------------------------------------
    // Returns true if the top width can vary. Only applicable if girder supports a top width type

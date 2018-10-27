@@ -1121,10 +1121,25 @@ std::vector<pgsTypes::TopWidthType> CBulbTeeFactory::GetSupportedTopWidthTypes()
    return types;
 }
 
-void CBulbTeeFactory::GetAllowableTopWidthRange(const IBeamFactory::Dimensions& dimensions, Float64* pWmin, Float64* pWmax) const
+void CBulbTeeFactory::GetAllowableTopWidthRange(pgsTypes::TopWidthType topWidthType, const IBeamFactory::Dimensions& dimensions, Float64* pWleftMin, Float64* pWleftMax, Float64* pWrightMin, Float64* pWrightMax) const
 {
-   *pWmin = GetDimension(dimensions, _T("Wmin"));
-   *pWmax = GetDimension(dimensions, _T("Wmax"));
+   Float64 Wmin = GetDimension(dimensions, _T("Wmin"));
+   Float64 Wmax = GetDimension(dimensions, _T("Wmax"));
+   if (topWidthType == pgsTypes::twtAsymmetric)
+   {
+      *pWleftMin = Wmin / 2;
+      *pWleftMax = Wmax / 2;
+      *pWrightMin = Wmin / 2;
+      *pWrightMax = Wmax / 2;
+   }
+   else
+   {
+      // no left/right for these cases so left holds the values...
+      *pWleftMin = Wmin;
+      *pWleftMax = Wmax;
+      *pWrightMin = 0;
+      *pWrightMax = 0;
+   }
 }
 
 WebIndexType CBulbTeeFactory::GetWebCount(const IBeamFactory::Dimensions& dimensions) const

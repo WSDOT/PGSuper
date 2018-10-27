@@ -55,6 +55,7 @@
 #include <PgsExt\RatingArtifact.h>
 #include <EAF\EAFAutoProgress.h>
 #include <PgsExt\GirderLabel.h>
+#include <PgsExt\Helpers.h>
 
 #include <Units\Units.h>
 

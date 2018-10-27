@@ -33,6 +33,7 @@
 
 #include <PgsExt\RatingArtifact.h>
 #include <PgsExt\CapacityToDemand.h>
+#include <PgsExt\Helpers.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

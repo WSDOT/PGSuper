@@ -31,6 +31,8 @@
 
 #include <EAF\EAFDisplayUnits.h>
 
+#include <PgsExt\Helpers.h>
+
 #include <Lrfd\RebarPool.h>
 
 #ifdef _DEBUG

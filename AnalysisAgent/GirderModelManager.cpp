@@ -7694,10 +7694,18 @@ void CGirderModelManager::CreateLBAMSuperstructureMembers(GirderIndexType gdr,bo
             data.ea = Ec*Ag;
             if (intervalIdx < compositeIntervalIdx)
             {
+               // assume biaxial bending before the girder is composite
+               // with other girders (composite happens when the deck becomes
+               // composite with the girders)
+               //
+               // if this is a uniaxial bending case, Ixy will be zero
+               // and we will get Ec(IxxIyy - 0)/Iyy = EcIxx
                data.ei = Ec*(Ixx*Iyy - Ixy*Ixy) / Iyy;
             }
             else
             {
+               // after composite assume entire bridge cross section
+               // behaves as a unaxial bending member
                data.ei = Ec*Ixx;
             }
 
@@ -8392,6 +8400,8 @@ void CGirderModelManager::ApplySelfWeightLoad(ILBAMModel* pModel,pgsTypes::Analy
    GET_IFACE(IProductForces,pProductForces);
    pgsTypes::BridgeAnalysisType bat = pProductForces->GetBridgeAnalysisType(analysisType,pgsTypes::Maximize);
 
+   // create a load group for incremental girder loads
+   // incremental loading happens when boundary conditions change (like between storage and erection)
    CComBSTR bstrLoadGroup( GetLoadGroupName(pgsTypes::pftGirder) );
    CComBSTR bstrLoadGroupIncremental( bstrLoadGroup );
    bstrLoadGroupIncremental += CComBSTR(_T("_Incremental"));
@@ -8435,7 +8445,7 @@ void CGirderModelManager::ApplySelfWeightLoad(ILBAMModel* pModel,pgsTypes::Analy
 
          // Because there is a change in modulus of elasticity between putting the girder segment into storage
          // and when it is erected, and because the storage and erected support locations can be different,
-         // we need to compute the increment deflection due to the change of support locations. To do this,
+         // we need to compute the incremental deflection due to the change of support locations. To do this,
          // we apply a set of loads that produce the incremental moment caused by the support location change.
          // This set of loads is simply applying the storage reactions to the girder segment in the erected
          // configuration.
@@ -8453,7 +8463,7 @@ void CGirderModelManager::ApplySelfWeightLoad(ILBAMModel* pModel,pgsTypes::Analy
          //
          // NOTE: Technically, the incremental force is that which occurs between hauling and erection. However,
          // since the elapsed time during hauling is assumed to be zero, and the principle of superposition applies
-         // to linear elastic analysis, it is adequate to use the increment from storage instead of the increment
+         // to linear elastic analysis, it is correct to use the increment from storage instead of the increment
          // from hauling. Hauling models are handled a little differently then storage, so using storage is easier.
          IntervalIndexType storageIntervalIdx = pIntervals->GetStorageInterval(segmentKey);
          Float64 Rleft, Rright;

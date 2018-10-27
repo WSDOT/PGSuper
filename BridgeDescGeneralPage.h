@@ -156,8 +156,8 @@ protected:
    Float64 m_RefGirderOffset;
    pgsTypes::OffsetMeasurementType m_RefGirderOffsetType;
 
-   Float64 m_MinGirderTopWidth;
-   Float64 m_MaxGirderTopWidth;
+   Float64 m_MinGirderTopWidth[2]; // left and right
+   Float64 m_MaxGirderTopWidth[2];
 
    Float64 m_MinGirderSpacing;
    Float64 m_MaxGirderSpacing;

@@ -41,6 +41,7 @@
 #include <PgsExt\PierData2.h>
 #include <PgsExt\ClosureJointData.h>
 #include <PgsExt\GirderLabel.h>
+#include <PgsExt\Helpers.h>
 
 #include <Material\Material.h>
 #include <LRFD\LRFD.h>

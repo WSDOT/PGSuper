@@ -25,7 +25,7 @@
 
 #include <PgsExt\RatingArtifact.h>
 #include <PgsExt\CapacityToDemand.h>
-
+#include <PgsExt\Helpers.h>
 
 #include <IFace\Bridge.h>
 #include <IFace\Artifact.h>

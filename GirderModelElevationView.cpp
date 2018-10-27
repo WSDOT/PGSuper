@@ -1558,9 +1558,7 @@ void CGirderModelElevationView::BuildSegmentCGDisplayObjects(CPGSDocBase* pDoc, 
    GET_IFACE2_NOCHECK(pBroker, ICamber, pCamber);
    GET_IFACE2_NOCHECK(pBroker, IGirder, pGirder);
 
-   SpanIndexType displayStartSpanIdx, displayEndSpanIdx;
-   GetSpanRange(pBroker, girderKey, &displayStartSpanIdx, &displayEndSpanIdx);
-   Float64 start_offset = GetSpanStartLocation(CSpanKey(displayStartSpanIdx, girderKey.girderIndex));
+   Float64 group_offset = 0;
 
 
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
@@ -1576,11 +1574,21 @@ void CGirderModelElevationView::BuildSegmentCGDisplayObjects(CPGSDocBase* pDoc, 
       GirderIndexType gdrIdx = Min(girderKey.girderIndex, nGirders - 1);
       CGirderKey thisGirderKey(grpIdx, gdrIdx);
 
+      Float64 running_segment_length = 0; // sum of the segment lengths from segIdx = 0 to current segment
+
       const CSplicedGirderData* pThisGirder = pGroup->GetGirder(thisGirderKey.girderIndex);
       SegmentIndexType nSegments = pThisGirder->GetSegmentCount();
       for (SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++)
       {
          CSegmentKey segmentKey(thisGirderKey, segIdx);
+
+         Float64 start_brg_offset = pBridge->GetSegmentStartBearingOffset(segmentKey);
+         Float64 start_end_distance = pBridge->GetSegmentStartEndDistance(segmentKey);
+         Float64 start_offset = start_brg_offset - start_end_distance;
+         Float64 segment_layout_length = pBridge->GetSegmentLayoutLength(segmentKey);
+         // running_segment_length goes to the CL of the closure... adjust the distance
+         // so that it goes to the left face of the current segment
+         running_segment_length += start_offset;
 
          const CPrecastSegmentData* pSegment = pThisGirder->GetSegment(segIdx);
          SegmentIDType segID = pSegment->GetID();
@@ -1604,37 +1612,42 @@ void CGirderModelElevationView::BuildSegmentCGDisplayObjects(CPGSDocBase* pDoc, 
 
             const pgsPointOfInterest& poi = *iter;
             iter++;
-            Float64 Xgl = pPoi->ConvertPoiToGirderPathCoordinate(poi);
+            Float64 Xs = poi.GetDistFromStart();
+            Float64 X = Xs + group_offset + running_segment_length;
+
             Float64 Yt = pSectProp->GetY(intervalIdx, poi, pgsTypes::TopGirder);
-
             Float64 precamber = pCamber->GetPrecamber(poi, pgsTypes::pddErected);
-
             Float64 tft = pGirder->GetTopFlangeThickening(poi);
 
             CComPtr<IPoint2d> prevPoint;
             prevPoint.CoCreateInstance(CLSID_Point2d);
-            prevPoint->Move(Xgl - start_offset, -Yt + precamber + tft);
+            prevPoint->Move(X, -Yt + precamber + tft);
 
             for (; iter != end; iter++)
             {
                const pgsPointOfInterest& poi(*iter);
 
-               Xgl = pPoi->ConvertPoiToGirderPathCoordinate(poi);
-               Yt = pSectProp->GetY(intervalIdx, poi, pgsTypes::TopGirder);
+               Xs = poi.GetDistFromStart();
+               X = Xs + group_offset + running_segment_length;
 
+               Yt = pSectProp->GetY(intervalIdx, poi, pgsTypes::TopGirder);
                precamber = pCamber->GetPrecamber(poi, pgsTypes::pddErected);
                tft = pGirder->GetTopFlangeThickening(poi);
 
                CComPtr<IPoint2d> thisPoint;
                thisPoint.CoCreateInstance(CLSID_Point2d);
-               thisPoint->Move(Xgl - start_offset, -Yt + precamber + tft);
+               thisPoint->Move(X, -Yt + precamber + tft);
 
                BuildDashLine(pDL, prevPoint, thisPoint, SECTION_CG_COLOR_1, SECTION_CG_COLOR_2);
 
                prevPoint = thisPoint;
             } // next poi
          } // if segment erected
+
+         running_segment_length += segment_layout_length - start_offset;
       } // next segment
+
+      group_offset += running_segment_length;
    } // next group
 }
 

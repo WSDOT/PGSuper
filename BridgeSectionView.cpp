@@ -36,6 +36,7 @@
 
 #include <PgsExt\PierData.h>
 #include <PgsExt\BridgeDescription2.h>
+#include <PgsExt\Helpers.h>
 
 #include <IFace\DrawBridgeSettings.h>
 #include <IFace\Project.h>

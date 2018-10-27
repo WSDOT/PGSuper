@@ -63,7 +63,7 @@
 #include <PgsExt\StatusItem.h>
 #include <PgsExt\GirderLabel.h>
 #include <PgsExt\StatusItem.h>
-
+#include <PgsExt\Helpers.h>
 #include <PgsExt\GirderData.h>
 
 #include <checks.h>
@@ -4523,6 +4523,7 @@ STDMETHODIMP CProjectAgentImp::Init()
 
    m_scidBridgeDescriptionInfo    = pStatusCenter->RegisterCallback(new pgsInformationalStatusCallback(eafTypes::statusInformation));
    m_scidBridgeDescriptionWarning = pStatusCenter->RegisterCallback(new pgsBridgeDescriptionStatusCallback(m_pBroker, eafTypes::statusWarning));
+   m_scidBridgeDescriptionError   = pStatusCenter->RegisterCallback(new pgsBridgeDescriptionStatusCallback(m_pBroker, eafTypes::statusError));
    m_scidGirderDescriptionWarning = pStatusCenter->RegisterCallback(new pgsGirderDescriptionStatusCallback(m_pBroker,eafTypes::statusWarning));
    m_scidRebarStrengthWarning     = pStatusCenter->RegisterCallback(new pgsRebarStrengthStatusCallback());
    m_scidLoadDescriptionWarning   = pStatusCenter->RegisterCallback(new pgsInformationalStatusCallback(eafTypes::statusWarning));
@@ -5188,7 +5189,7 @@ void CProjectAgentImp::ValidateBridgeModel()
 
    if ( !m_BridgeDescription.IsStable() )
    {
-      pgsBridgeDescriptionStatusItem* pStatusItem = new pgsBridgeDescriptionStatusItem(m_StatusGroupID,m_scidBridgeDescriptionWarning,pgsBridgeDescriptionStatusItem::General,_T("Bridge model has geometric instabilities. Modify the boundary conditions."));
+      pgsBridgeDescriptionStatusItem* pStatusItem = new pgsBridgeDescriptionStatusItem(m_StatusGroupID,m_scidBridgeDescriptionError,pgsBridgeDescriptionStatusItem::General,_T("Bridge model is unstable. Modify the boundary conditions."));
       m_BridgeStabilityStatusItemID = pStatusCenter->Add(pStatusItem);
    }
 }

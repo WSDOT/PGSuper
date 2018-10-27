@@ -39,6 +39,7 @@
 #include <EAF\EAFMainFrame.h>
 
 #include <PgsExt\ConcreteDetailsDlg.h>
+#include <PgsExt\Helpers.h>
 
 #include <algorithm>
 
@@ -47,6 +48,9 @@
 #undef THIS_FILE
 static char THIS_FILE[] = __FILE__;
 #endif
+
+#define LEFT 0
+#define RIGHT 1
 
 /////////////////////////////////////////////////////////////////////////////
 // CBridgeDescGeneralPage property page
@@ -62,6 +66,13 @@ CBridgeDescGeneralPage::CBridgeDescGeneralPage() : CPropertyPage(CBridgeDescGene
    m_TopWidthType = pgsTypes::twtSymmetric;
    m_LeftTopWidth = 0;
    m_RightTopWidth = 0;
+   m_MinGirderTopWidth[LEFT] = 0;
+   m_MaxGirderTopWidth[LEFT] = 0;
+   m_MinGirderTopWidth[RIGHT] = 0;
+   m_MaxGirderTopWidth[RIGHT] = 0;
+
+   m_MinGirderSpacing = 0;
+   m_MaxGirderSpacing = 0;
 
    m_MinGirderCount = 2;
    m_CacheGirderConnectivityIdx = CB_ERR;
@@ -217,13 +228,16 @@ void CBridgeDescGeneralPage::DoDataExchange(CDataExchange* pDX)
       if (m_TopWidthType == pgsTypes::twtAsymmetric)
       {
          Float64 topWidth = m_LeftTopWidth + m_RightTopWidth;
-         DDV_UnitValueLimitOrMore(pDX, IDC_LEFT_TOP_WIDTH, topWidth, m_MinGirderTopWidth, pDisplayUnits->GetXSectionDimUnit());
-         DDV_UnitValueLimitOrLess(pDX, IDC_LEFT_TOP_WIDTH, topWidth, m_MaxGirderTopWidth, pDisplayUnits->GetXSectionDimUnit());
+         DDV_UnitValueLimitOrMore(pDX, IDC_LEFT_TOP_WIDTH, m_LeftTopWidth, m_MinGirderTopWidth[LEFT], pDisplayUnits->GetXSectionDimUnit());
+         DDV_UnitValueLimitOrLess(pDX, IDC_LEFT_TOP_WIDTH, m_LeftTopWidth, m_MaxGirderTopWidth[LEFT], pDisplayUnits->GetXSectionDimUnit());
+
+         DDV_UnitValueLimitOrMore(pDX, IDC_RIGHT_TOP_WIDTH, m_RightTopWidth, m_MinGirderTopWidth[RIGHT], pDisplayUnits->GetXSectionDimUnit());
+         DDV_UnitValueLimitOrLess(pDX, IDC_RIGHT_TOP_WIDTH, m_RightTopWidth, m_MaxGirderTopWidth[RIGHT], pDisplayUnits->GetXSectionDimUnit());
       }
       else
       {
-         DDV_UnitValueLimitOrMore(pDX, IDC_LEFT_TOP_WIDTH, m_LeftTopWidth, m_MinGirderTopWidth, pDisplayUnits->GetXSectionDimUnit());
-         DDV_UnitValueLimitOrLess(pDX, IDC_LEFT_TOP_WIDTH, m_LeftTopWidth, m_MaxGirderTopWidth, pDisplayUnits->GetXSectionDimUnit());
+         DDV_UnitValueLimitOrMore(pDX, IDC_LEFT_TOP_WIDTH, m_LeftTopWidth, m_MinGirderTopWidth[LEFT], pDisplayUnits->GetXSectionDimUnit());
+         DDV_UnitValueLimitOrLess(pDX, IDC_LEFT_TOP_WIDTH, m_LeftTopWidth, m_MaxGirderTopWidth[LEFT], pDisplayUnits->GetXSectionDimUnit());
       }
    }
 
@@ -837,6 +851,7 @@ void CBridgeDescGeneralPage::FillGirderSpacingTypeComboBox()
    CBridgeDescDlg* pParent = (CBridgeDescDlg*)GetParent();
 
    CEAFDocument* pDoc = EAFGetDocument();
+   bool bSplicedGirder = pDoc->IsKindOf(RUNTIME_CLASS(CPGSpliceDoc)) == TRUE ? true : false;
 
    pgsTypes::SupportedBeamSpacings sbs = m_Factory->GetSupportedBeamSpacings();
    pgsTypes::SupportedBeamSpacings::iterator iter;
@@ -849,72 +864,37 @@ void CBridgeDescGeneralPage::FillGirderSpacingTypeComboBox()
       switch( spacingType )
       {
       case pgsTypes::sbsUniform:
-         idx = pSpacingType->AddString(_T("Same spacing for all girders"));
+         idx = pSpacingType->AddString(GetGirderSpacingType(spacingType,bSplicedGirder));
          pSpacingType->SetItemData(idx,(DWORD)spacingType);
          break;
 
       case pgsTypes::sbsGeneral:
-         if ( pDoc->IsKindOf(RUNTIME_CLASS(CPGSpliceDoc)) )
-         {
-            idx = pSpacingType->AddString(_T("Unique spacing for each precast segment"));
-         }
-         else
-         {
-            idx = pSpacingType->AddString(_T("Unique spacing for each girder"));
-         }
+         idx = pSpacingType->AddString(GetGirderSpacingType(spacingType, bSplicedGirder));
          pSpacingType->SetItemData(idx,(DWORD)spacingType);
          break;
 
       case pgsTypes::sbsUniformAdjacent:
-         if ( pDoc->IsKindOf(RUNTIME_CLASS(CPGSpliceDoc)) )
-         {
-            idx = pSpacingType->AddString(_T("Adjacent girders with same joint spacing in all groups"));
-         }
-         else
-         {
-            idx = pSpacingType->AddString(_T("Adjacent girders with same joint spacing in all spans"));
-         }
+         idx = pSpacingType->AddString(GetGirderSpacingType(spacingType, bSplicedGirder));
          pSpacingType->SetItemData(idx,(DWORD)spacingType);
          break;
 
       case pgsTypes::sbsGeneralAdjacent:
-         if ( pDoc->IsKindOf(RUNTIME_CLASS(CPGSpliceDoc)) )
-         {
-            idx = pSpacingType->AddString(_T("Adjacent girders with unique joint spacing for each group"));
-         }
-         else
-         {
-            idx = pSpacingType->AddString(_T("Adjacent girders with unique joint spacing for each span"));
-         }
+         idx = pSpacingType->AddString(GetGirderSpacingType(spacingType, bSplicedGirder));
          pSpacingType->SetItemData(idx,(DWORD)spacingType);
          break;
 
       case pgsTypes::sbsConstantAdjacent:
-         idx = pSpacingType->AddString(_T("Adjacent girders with the same width for all girders"));
+         idx = pSpacingType->AddString(GetGirderSpacingType(spacingType, bSplicedGirder));
          pSpacingType->SetItemData(idx,(DWORD)spacingType);
          break;
 
       case pgsTypes::sbsUniformAdjacentWithTopWidth:
-         if (pDoc->IsKindOf(RUNTIME_CLASS(CPGSpliceDoc)))
-         {
-            idx = pSpacingType->AddString(_T("Adjacent girders with same joint spacing and top flange width in all groups"));
-         }
-         else
-         {
-            idx = pSpacingType->AddString(_T("Adjacent girders with same joint spacing and top flange width in all spans"));
-         }
+         idx = pSpacingType->AddString(GetGirderSpacingType(spacingType, bSplicedGirder));
          pSpacingType->SetItemData(idx, (DWORD)spacingType);
          break;
 
       case pgsTypes::sbsGeneralAdjacentWithTopWidth:
-         if (pDoc->IsKindOf(RUNTIME_CLASS(CPGSpliceDoc)))
-         {
-            idx = pSpacingType->AddString(_T("Adjacent girders with unique joint spacing and top flange width for each group"));
-         }
-         else
-         {
-            idx = pSpacingType->AddString(_T("Adjacent girders with unique joint spacing and top flange width for each span"));
-         }
+         idx = pSpacingType->AddString(GetGirderSpacingType(spacingType, bSplicedGirder));
          pSpacingType->SetItemData(idx, (DWORD)spacingType);
          break;
 
@@ -1261,7 +1241,6 @@ void CBridgeDescGeneralPage::OnGirderNameChanged()
    }
 
    EnableTopWidth(IsTopWidthSpacing(m_GirderSpacingType));
-   UpdateGirderTopWidthSpacingLimits();
    OnTopWidthTypeChanged();
 
    EnableLongitudinalJointMaterial();
@@ -1516,6 +1495,8 @@ void CBridgeDescGeneralPage::OnTopWidthTypeChanged()
    pRightLabel->ShowWindow(nShowCommand);
    pEdit->ShowWindow(nShowCommand);
    pUnit->ShowWindow(nShowCommand);
+
+   UpdateGirderTopWidthSpacingLimits();
 }
 
 void CBridgeDescGeneralPage::UpdateGirderConnectivity()
@@ -1644,25 +1625,92 @@ void CBridgeDescGeneralPage::OnDeckTypeChanged()
 
 void CBridgeDescGeneralPage::UpdateGirderTopWidthSpacingLimits()
 {
-   if (IsSpanSpacing(m_GirderSpacingType))
+   if (IsSpanSpacing(m_GirderSpacingType) )
    {
       GetDlgItem(IDC_ALLOWABLE_TOP_WIDTH)->SetWindowText(_T(""));
       return;
    }
 
-#pragma Reminder("need to look at all girders, see UpdateGirderSpacing for example")
    CBridgeDescDlg* pParent = (CBridgeDescDlg*)GetParent();
-   const IBeamFactory::Dimensions& dimensions = pParent->m_BridgeDesc.GetGirderLibraryEntry()->GetDimensions();
-   m_Factory->GetAllowableTopWidthRange(dimensions, &m_MinGirderTopWidth, &m_MaxGirderTopWidth);
+
+   CComboBox* pCB = (CComboBox*)GetDlgItem(IDC_TOP_WIDTH_TYPE);
+   int curSel = pCB->GetCurSel();
+   pgsTypes::TopWidthType topWidthType = (pgsTypes::TopWidthType)pCB->GetItemData(curSel);
+
+   // need a top width range that works for every girder in every span
+   Float64 minGirderTopWidth[2] = { m_MinGirderTopWidth[LEFT], m_MinGirderTopWidth[RIGHT] };
+   Float64 maxGirderTopWidth[2] = { m_MaxGirderTopWidth[LEFT], m_MaxGirderTopWidth[RIGHT] };
+
+   GroupIndexType nGroups = pParent->m_BridgeDesc.GetGirderGroupCount();
+   for (GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++)
+   {
+      // check top width limits for each girder group... grab the controlling values
+      const CGirderGroupData* pGroup = pParent->m_BridgeDesc.GetGirderGroup(grpIdx);
+      GroupIndexType nGirderTypeGroups = pGroup->GetGirderTypeGroupCount();
+      for (GroupIndexType gdrTypeGrpIdx = 0; gdrTypeGrpIdx < nGirderTypeGroups; gdrTypeGrpIdx++)
+      {
+         GirderIndexType firstGdrIdx, lastGdrIdx;
+         std::_tstring strGdrName;
+         pGroup->GetGirderTypeGroup(gdrTypeGrpIdx, &firstGdrIdx, &lastGdrIdx, &strGdrName);
+
+         const GirderLibraryEntry* pGdrEntry = pGroup->GetGirderLibraryEntry(firstGdrIdx);
+         const IBeamFactory::Dimensions& dimensions = pGdrEntry->GetDimensions();
+
+         // don't use m_Factory because if we have a cross section with mixed beam types
+         // (ie, I-beams and NU beams) the dimensions list and the factory wont match up
+         // and GetAllowableTopWidthRange will be all messed up.
+         CComPtr<IBeamFactory> factory;
+         pGdrEntry->GetBeamFactory(&factory);
+
+         Float64 Wmin[2], Wmax[2];
+         factory->GetAllowableTopWidthRange(topWidthType, dimensions, &Wmin[LEFT], &Wmax[LEFT], &Wmin[RIGHT], &Wmax[RIGHT]);
+         if (gdrTypeGrpIdx == 0)
+         {
+            minGirderTopWidth[LEFT] = Wmin[LEFT];
+            maxGirderTopWidth[LEFT] = Wmax[LEFT];
+
+            minGirderTopWidth[RIGHT] = Wmin[RIGHT];
+            maxGirderTopWidth[RIGHT] = Wmax[RIGHT];
+         }
+         else
+         {
+            // note, the use of Max and Min for the min and max values is correct
+            // even though it looks backwards.
+            // Consider two girder types... one with top width range 4.5' - 9' and one with
+            // top width range 6.5' - 14'. The valid range is 6.5'-9'. 
+            // We want the max of the min values and the min of the max values
+            minGirderTopWidth[LEFT] = Max(minGirderTopWidth[LEFT], Wmin[LEFT]);
+            maxGirderTopWidth[LEFT] = Min(maxGirderTopWidth[LEFT], Wmax[LEFT]);
+            minGirderTopWidth[RIGHT] = Max(minGirderTopWidth[RIGHT], Wmin[RIGHT]);
+            maxGirderTopWidth[RIGHT] = Min(maxGirderTopWidth[RIGHT], Wmax[RIGHT]);
+         }
+      }
+   }
+
+   m_MinGirderTopWidth[LEFT] = minGirderTopWidth[LEFT];
+   m_MaxGirderTopWidth[LEFT] = maxGirderTopWidth[LEFT];
+   m_MinGirderTopWidth[RIGHT] = minGirderTopWidth[RIGHT];
+   m_MaxGirderTopWidth[RIGHT] = maxGirderTopWidth[RIGHT];
 
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
 
    CString strLabel;
-   strLabel.Format(_T("(%s to %s)"),
-      FormatDimension(m_MinGirderTopWidth, pDisplayUnits->GetXSectionDimUnit()),
-      FormatDimension(m_MaxGirderTopWidth, pDisplayUnits->GetXSectionDimUnit()));
+   if (topWidthType == pgsTypes::twtAsymmetric)
+   {
+      strLabel.Format(_T("Left (%s to %s), Right (%s to %s)"),
+         FormatDimension(m_MinGirderTopWidth[LEFT], pDisplayUnits->GetXSectionDimUnit()),
+         FormatDimension(m_MaxGirderTopWidth[LEFT], pDisplayUnits->GetXSectionDimUnit()),
+         FormatDimension(m_MinGirderTopWidth[RIGHT], pDisplayUnits->GetXSectionDimUnit()),
+         FormatDimension(m_MaxGirderTopWidth[RIGHT], pDisplayUnits->GetXSectionDimUnit()));
+   }
+   else
+   {
+      strLabel.Format(_T("(%s to %s)"),
+         FormatDimension(m_MinGirderTopWidth[LEFT], pDisplayUnits->GetXSectionDimUnit()),
+         FormatDimension(m_MaxGirderTopWidth[LEFT], pDisplayUnits->GetXSectionDimUnit()));
+   }
 
    GetDlgItem(IDC_ALLOWABLE_TOP_WIDTH)->SetWindowText(strLabel);
 }
@@ -1674,6 +1722,9 @@ BOOL CBridgeDescGeneralPage::UpdateGirderSpacingLimits()
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker, IBridge,       pBridge);
+
+   pgsTypes::SupportedDeckType deckType = pParent->m_BridgeDesc.GetDeckDescription()->GetDeckType();
+
 
    // need a spacing range that works for every girder in every span
    m_MinGirderSpacing = -MAX_GIRDER_SPACING;
@@ -1724,7 +1775,7 @@ BOOL CBridgeDescGeneralPage::UpdateGirderSpacingLimits()
          pGdrEntry->GetBeamFactory(&factory);
 
          Float64 min, max;
-         factory->GetAllowableSpacingRange(dimensions,pParent->m_BridgeDesc.GetDeckDescription()->GetDeckType(),m_GirderSpacingType,&min,&max);
+         factory->GetAllowableSpacingRange(dimensions, deckType,m_GirderSpacingType,&min,&max);
 
          Float64 min1 = min*startSkewCorrection;
          Float64 max1 = max*startSkewCorrection;

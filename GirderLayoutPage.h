@@ -114,8 +114,6 @@ protected:
    void FillRefGirderOffsetTypeComboBox(pgsTypes::MemberEndType end);
    void FillRefGirderComboBox(pgsTypes::MemberEndType end);
 
-   void FillTopWidthTypeComboBox();
-
    GirderIndexType GetMinGirderCount();
    void UpdateGirderSpacingState();
    void UpdateGirderNumState();

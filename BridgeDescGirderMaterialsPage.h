@@ -72,8 +72,8 @@ public:
    CString m_strAssExcessCamberCache;
    bool m_bCanAssExcessCamberInputBeEnabled;
 
-   Float64 m_MinTopWidth;
-   Float64 m_MaxTopWidth;
+   Float64 m_MinTopWidth[2];
+   Float64 m_MaxTopWidth[2];
 
 // Overrides
 	// ClassWizard generate virtual function overrides

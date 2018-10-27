@@ -2257,8 +2257,9 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalI
       }
 
       // Get slab shape in girder coord's
+      GET_IFACE(IGirder, pGirder);
       CComPtr<IShape> shapeDeck;
-      pShapes->GetSlabAnalysisShape(intervalIdx, poi, *pHaunch, &shapeDeck);
+      pShapes->GetSlabAnalysisShape(intervalIdx, poi, *pHaunch, pBridge->IsAsymmetricGirder(segmentKey) && IsZero(pGirder->GetOrientation(segmentKey)), &shapeDeck);
 
       CComQIPtr<IXYPosition> posDeck(shapeDeck);
       posDeck->Offset(-dx, -dy);

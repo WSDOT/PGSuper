@@ -225,6 +225,7 @@ public:
 
 // IBridge
 public:
+   virtual bool IsAsymmetricGirder(const CGirderKey& girderKey) const override;
    virtual bool HasAsymmetricGirders() const override;
    virtual bool HasAsymmetricPrestressing() const override;
    virtual bool HasTiltedGirders() const override;
@@ -972,11 +973,11 @@ public:
    virtual void GetSegmentShape(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,bool bOrient,pgsTypes::SectionCoordinateType coordinateType,pgsTypes::HaunchAnalysisSectionPropertiesType haunchAType,IShape** ppShape) const override;
    virtual void GetSegmentShape(const CPrecastSegmentData* pSegment, Float64 Xs, pgsTypes::SectionBias sectionBias,IShape** ppShape) const override;
    virtual void GetSegmentSectionShape(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi, bool bOrient,pgsTypes::SectionCoordinateType csType, IShape** ppShape) const override;
-   virtual void GetSlabShape(Float64 station,IDirection* pDirection,bool bIncludeHaunch,IShape** ppShape) const override;
+   virtual void GetSlabShape(Float64 station,IDirection* pDirection,bool bIncludeHaunchbool,IShape** ppShape) const override;
    virtual void GetLeftTrafficBarrierShape(Float64 station,IDirection* pDirection,IShape** ppShape) const override;
    virtual void GetRightTrafficBarrierShape(Float64 station,IDirection* pDirection,IShape** ppShape) const override;
    virtual void GetJointShapes(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, bool bOrient, pgsTypes::SectionCoordinateType coordinateType, IShape** ppLeftJointShape, IShape** ppRightJointShape) const override;
-   virtual void GetSlabAnalysisShape(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,Float64 haunchDepth,IShape** ppShape) const override;
+   virtual void GetSlabAnalysisShape(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,Float64 haunchDepth, bool bFollowMatingSurfaceProfile,IShape** ppShape) const override;
 
 // IBarriers
 public:

@@ -74,8 +74,8 @@ private:
 
    CGirderGroupData* m_pGirderGroup;
 
-   std::vector<Float64> m_MinGirderTopWidth;
-   std::vector<Float64> m_MaxGirderTopWidth;
+   std::vector<Float64> m_MinGirderTopWidth[2];
+   std::vector<Float64> m_MaxGirderTopWidth[2];
 
    pgsTypes::TopWidthType GetTopWidthTypeFromCell(ROWCOL col);
 

@@ -27,6 +27,7 @@
 #include <IFace\PrestressForce.h>
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
+#include <IFace\DocumentType.h>
 #include <WBFLGenericBridgeTools.h>
 
 #include <PgsExt\BridgeDescription2.h>
@@ -139,7 +140,7 @@ rptChapter* CDevLengthDetailsChapterBuilder::Build(CReportSpecification* pRptSpe
 
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    INIT_UV_PROTOTYPE( rptLengthUnitValue, length,  pDisplayUnits->GetComponentDimUnit(), true );
-   INIT_UV_PROTOTYPE( rptLength2UnitValue, area,   pDisplayUnits->GetAreaUnit(), true );
+   INIT_UV_PROTOTYPE( rptLength2UnitValue, area,   pDisplayUnits->GetAreaUnit(), false);
    INIT_UV_PROTOTYPE( rptStressUnitValue, stress,  pDisplayUnits->GetStressUnit(), true );
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
    location.IncludeSpanAndGirder(girderKey.groupIndex == ALL_GROUPS);
@@ -156,6 +157,9 @@ rptChapter* CDevLengthDetailsChapterBuilder::Build(CReportSpecification* pRptSpe
    GET_IFACE2(pBroker,ILongRebarGeometry,pLongRebarGeometry);
 
    GET_IFACE2_NOCHECK(pBroker,IMaterials,pMaterials); // only used if there are rebar in the girder
+
+   GET_IFACE2(pBroker, IDocumentType, pDocType);
+   bool bIsPGSplice = pDocType->IsPGSpliceDocument();
 
    GroupIndexType nGroups = pBridge->GetGirderGroupCount();
    GroupIndexType firstGroupIdx = (girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex);
@@ -341,9 +345,11 @@ rptChapter* CDevLengthDetailsChapterBuilder::Build(CReportSpecification* pRptSpe
             pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
             *pChapter << pParagraph;
 
-#pragma Reminder("UPDATE: update heading so that it works for both PGSuper and PGSplice")
             (*pParagraph) << _T("Development Length of Longitudinal Rebar [") << LrfdCw8th(_T("5.11.2.1"),_T("5.10.8.2.1")) << _T("]") << rptNewLine;
-            (*pParagraph) << _T("Segment ") << LABEL_SEGMENT(segIdx) << rptNewLine;
+            if (bIsPGSplice)
+            {
+               (*pParagraph) << _T("Segment ") << LABEL_SEGMENT(segIdx) << rptNewLine;
+            }
 
             pParagraph = new rptParagraph;
             *pChapter << pParagraph;

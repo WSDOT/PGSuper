@@ -53,7 +53,7 @@ rptRcTable(NumColumns,0)
    scalar.SetPrecision(3);
 }
 
-CCreepAtDeckPlacementTable* CCreepAtDeckPlacementTable::PrepareTable(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& segmentKey,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
+CCreepAtDeckPlacementTable* CCreepAtDeckPlacementTable::PrepareTable(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& segmentKey, const LOSSDETAILS* pDetails, IEAFDisplayUnits* pDisplayUnits,Uint16 level)
 {
    GET_IFACE2(pBroker,ISegmentData,pSegmentData);
    const CStrandData* pStrands = pSegmentData->GetStrandData(segmentKey);
@@ -61,7 +61,7 @@ CCreepAtDeckPlacementTable* CCreepAtDeckPlacementTable::PrepareTable(rptChapter*
    std::_tstring strImagePath(rptStyleManager::GetImagePath());
 
    // Create and configure the table
-   ColumnIndexType numColumns = 8;
+   ColumnIndexType numColumns = 4;
 
    if (pStrands->GetTemporaryStrandUsage() != pgsTypes::ttsPretensioned)
    {
@@ -87,6 +87,20 @@ CCreepAtDeckPlacementTable* CCreepAtDeckPlacementTable::PrepareTable(rptChapter*
       *pParagraph << rptRcImage(strImagePath + _T("Delta_FpCR.png")) << rptNewLine;
    }
 
+   pParagraph = new rptParagraph;
+   *pChapter << pParagraph;
+
+   std::shared_ptr<const lrfdRefinedLosses2005> ptl = std::dynamic_pointer_cast<const lrfdRefinedLosses2005>(pDetails->pLosses);
+
+   table->time.ShowUnitTag(true);
+   *pParagraph << Sub2(_T("k"), _T("td")) << _T(" = ") << table->scalar.SetValue(ptl->GetCreepInitialToDeck().GetKtd()) << rptNewLine;
+   *pParagraph << Sub2(_T("t"), _T("i")) << _T(" = ") << table->time.SetValue(ptl->GetInitialAge()) << rptNewLine;
+   *pParagraph << Sub2(_T("t"), _T("d")) << _T(" = ") << table->time.SetValue(ptl->GetAgeAtDeckPlacement()) << rptNewLine;
+   *pParagraph << Sub2(_T("K"), _T("1")) << _T(" = ") << ptl->GetGdrK1Creep() << rptNewLine;
+   *pParagraph << Sub2(_T("K"), _T("2")) << _T(" = ") << ptl->GetGdrK2Creep() << rptNewLine;
+   *pParagraph << Sub2(symbol(psi), _T("b")) << _T("(") << Sub2(_T("t"), _T("d")) << _T(",") << Sub2(_T("t"), _T("i")) << _T(")") << _T(" = ") << table->scalar.SetValue(ptl->GetCreepInitialToDeck().GetCreepCoefficient()) << rptNewLine;
+   table->time.ShowUnitTag(false);
+
    // creep loss 
    ColumnIndexType col = 0;
    *pParagraph << table << rptNewLine;
@@ -103,10 +117,6 @@ CCreepAtDeckPlacementTable* CCreepAtDeckPlacementTable::PrepareTable(rptChapter*
       (*table)(0, col++) << COLHDR(RPT_STRESS(_T("cgp")) << _T(" + ") << symbol(DELTA) << RPT_STRESS(_T("pp")), rptStressUnitTag, pDisplayUnits->GetStressUnit());
    }
 
-   (*table)(0, col++) << Sub2(_T("k"),_T("td"));
-   (*table)(0, col++) << COLHDR(Sub2(_T("t"),_T("i")),rptTimeUnitTag,pDisplayUnits->GetWholeDaysUnit());
-   (*table)(0, col++) << COLHDR(Sub2(_T("t"),_T("d")),rptTimeUnitTag,pDisplayUnits->GetWholeDaysUnit());
-   (*table)(0, col++) << Sub2(symbol(psi),_T("b")) << _T("(") << Sub2(_T("t"),_T("d")) << _T(",") << Sub2(_T("t"),_T("i")) << _T(")");
    (*table)(0, col++) << Sub2(_T("K"),_T("id"));
    (*table)(0, col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pCR")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
 
@@ -137,10 +147,6 @@ void CCreepAtDeckPlacementTable::AddRow(rptChapter* pChapter,IBroker* pBroker,co
       (*this)(row+rowOffset, col++) << stress.SetValue(pDetails->pLosses->ElasticShortening().PermanentStrand_Fcgp() + ptl->GetDeltaFpp());
    }
 
-   (*this)(row+rowOffset, col++) << scalar.SetValue(ptl->GetCreepInitialToDeck().GetKtd());
-   (*this)(row+rowOffset, col++) << time.SetValue(ptl->GetInitialAge());
-   (*this)(row+rowOffset, col++) << time.SetValue(ptl->GetAgeAtDeckPlacement());
-   (*this)(row+rowOffset, col++) << scalar.SetValue(ptl->GetCreepInitialToDeck().GetCreepCoefficient());
    (*this)(row+rowOffset, col++) << scalar.SetValue(ptl->GetKid());
    (*this)(row+rowOffset, col++) << stress.SetValue(ptl->CreepLossBeforeDeckPlacement() );
 }

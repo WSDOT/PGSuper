@@ -63,6 +63,7 @@
 #include <EAF\EAFMenu.h>
 
 #include <PgsExt\ClosureJointData.h>
+#include <PgsExt\Helpers.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

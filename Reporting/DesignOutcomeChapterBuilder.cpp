@@ -36,9 +36,9 @@
 #include <Lrfd\RebarPool.h>
 
 #include <PgsExt\GirderDesignArtifact.h>
-
 #include <PgsExt\BridgeDescription2.h>
 #include <PgsExt\GirderLabel.h>
+#include <PgsExt\Helpers.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

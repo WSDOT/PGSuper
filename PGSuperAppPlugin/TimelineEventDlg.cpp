@@ -39,6 +39,8 @@
 #include <IFace\DocumentType.h>
 #include <IFace\Project.h>
 
+#include <PgsExt\Helpers.h>
+
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

@@ -569,6 +569,7 @@
     <ClCompile Include="HandlingData.cpp" />
     <ClCompile Include="HaulingAnalysisArtifact.cpp" />
     <ClCompile Include="HaunchShapeComboBox.cpp" />
+    <ClCompile Include="Helpers.cpp" />
     <ClCompile Include="HoldDownForceArtifact.cpp" />
     <ClCompile Include="InsertDeleteLoad.cpp" />
     <ClCompile Include="IntervalTool.cpp" />
@@ -695,6 +696,7 @@
     <ClInclude Include="..\Include\PgsExt\HandlingData.h" />
     <ClInclude Include="..\Include\PgsExt\HaulingAnalysisArtifact.h" />
     <ClInclude Include="..\Include\PgsExt\HaunchShapeComboBox.h" />
+    <ClInclude Include="..\Include\PgsExt\Helpers.h" />
     <ClInclude Include="..\Include\PgsExt\HoldDownForceArtifact.h" />
     <ClInclude Include="..\Include\PgsExt\InsertDeleteLoad.h" />
     <ClInclude Include="..\Include\PgsExt\IntervalTool.h" />

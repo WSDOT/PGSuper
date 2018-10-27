@@ -41,6 +41,7 @@
 #include "PGSuperAppPlugin\TimelineEventDlg.h"
 
 #include <PgsExt\ConcreteDetailsDlg.h>
+#include <PgsExt\Helpers.h>
 
 #include <Atlddx.h>
 #include <system\tokenizer.h>
@@ -53,6 +54,9 @@
 #undef THIS_FILE
 static char THIS_FILE[] = __FILE__;
 #endif
+
+#define LEFT 0
+#define RIGHT 1
 
 /////////////////////////////////////////////////////////////////////////////
 // CGirderDescGeneralPage property page
@@ -141,10 +145,10 @@ void CGirderDescGeneralPage::DoDataExchange(CDataExchange* pDX)
       }
    }
 
-   pgsTypes::TopWidthType type;
+   pgsTypes::TopWidthType topWidthType;
    Float64 leftStart, rightStart, leftEnd, rightEnd;
-   pParent->m_Girder.GetTopWidth(&type, &leftStart, &rightStart, &leftEnd, &rightEnd);
-   DDX_CBItemData(pDX, IDC_TOP_WIDTH_TYPE, type);
+   pParent->m_Girder.GetTopWidth(&topWidthType, &leftStart, &rightStart, &leftEnd, &rightEnd);
+   DDX_CBItemData(pDX, IDC_TOP_WIDTH_TYPE, topWidthType);
    DDX_UnitValueAndTag(pDX, IDC_LEFT_TOP_WIDTH_START, IDC_LEFT_TOP_WIDTH_START_UNIT, leftStart, pDisplayUnits->GetXSectionDimUnit());
    DDX_UnitValueAndTag(pDX, IDC_RIGHT_TOP_WIDTH_START, IDC_RIGHT_TOP_WIDTH_START_UNIT, rightStart, pDisplayUnits->GetXSectionDimUnit());
    DDX_UnitValueAndTag(pDX, IDC_LEFT_TOP_WIDTH_END, IDC_LEFT_TOP_WIDTH_END_UNIT, leftEnd, pDisplayUnits->GetXSectionDimUnit());
@@ -155,31 +159,35 @@ void CGirderDescGeneralPage::DoDataExchange(CDataExchange* pDX)
 
    if (pDX->m_bSaveAndValidate && IsTopWidthSpacing(pParent->m_GirderSpacingType))
    {
-      if (type == pgsTypes::twtAsymmetric)
+      if (topWidthType == pgsTypes::twtAsymmetric)
       {
-         Float64 topWidth = leftStart + rightStart;
-         DDV_UnitValueLimitOrMore(pDX, IDC_LEFT_TOP_WIDTH_START, topWidth, m_MinTopWidth, pDisplayUnits->GetXSectionDimUnit());
-         DDV_UnitValueLimitOrLess(pDX, IDC_LEFT_TOP_WIDTH_START, topWidth, m_MaxTopWidth, pDisplayUnits->GetXSectionDimUnit());
+         DDV_UnitValueLimitOrMore(pDX, IDC_LEFT_TOP_WIDTH_START, leftStart, m_MinTopWidth[LEFT], pDisplayUnits->GetXSectionDimUnit());
+         DDV_UnitValueLimitOrLess(pDX, IDC_LEFT_TOP_WIDTH_START, leftStart, m_MaxTopWidth[LEFT], pDisplayUnits->GetXSectionDimUnit());
+
+         DDV_UnitValueLimitOrMore(pDX, IDC_RIGHT_TOP_WIDTH_START, rightStart, m_MinTopWidth[RIGHT], pDisplayUnits->GetXSectionDimUnit());
+         DDV_UnitValueLimitOrLess(pDX, IDC_RIGHT_TOP_WIDTH_START, rightStart, m_MaxTopWidth[RIGHT], pDisplayUnits->GetXSectionDimUnit());
 
          if (factory->CanTopWidthVary())
          {
-            topWidth = leftEnd + rightEnd;
-            DDV_UnitValueLimitOrMore(pDX, IDC_LEFT_TOP_WIDTH_END, topWidth, m_MinTopWidth, pDisplayUnits->GetXSectionDimUnit());
-            DDV_UnitValueLimitOrLess(pDX, IDC_LEFT_TOP_WIDTH_END, topWidth, m_MaxTopWidth, pDisplayUnits->GetXSectionDimUnit());
+            DDV_UnitValueLimitOrMore(pDX, IDC_LEFT_TOP_WIDTH_END, leftStart, m_MinTopWidth[LEFT], pDisplayUnits->GetXSectionDimUnit());
+            DDV_UnitValueLimitOrLess(pDX, IDC_LEFT_TOP_WIDTH_END, leftStart, m_MaxTopWidth[LEFT], pDisplayUnits->GetXSectionDimUnit());
+
+            DDV_UnitValueLimitOrMore(pDX, IDC_RIGHT_TOP_WIDTH_END, rightStart, m_MinTopWidth[RIGHT], pDisplayUnits->GetXSectionDimUnit());
+            DDV_UnitValueLimitOrLess(pDX, IDC_RIGHT_TOP_WIDTH_END, rightStart, m_MaxTopWidth[RIGHT], pDisplayUnits->GetXSectionDimUnit());
          }
       }
       else
       {
-         DDV_UnitValueLimitOrMore(pDX, IDC_LEFT_TOP_WIDTH_START, leftStart, m_MinTopWidth, pDisplayUnits->GetXSectionDimUnit());
-         DDV_UnitValueLimitOrLess(pDX, IDC_LEFT_TOP_WIDTH_START, leftStart, m_MaxTopWidth, pDisplayUnits->GetXSectionDimUnit());
+         DDV_UnitValueLimitOrMore(pDX, IDC_LEFT_TOP_WIDTH_START, leftStart, m_MinTopWidth[LEFT], pDisplayUnits->GetXSectionDimUnit());
+         DDV_UnitValueLimitOrLess(pDX, IDC_LEFT_TOP_WIDTH_START, leftStart, m_MaxTopWidth[LEFT], pDisplayUnits->GetXSectionDimUnit());
 
          if (factory->CanTopWidthVary())
          {
-            DDV_UnitValueLimitOrMore(pDX, IDC_LEFT_TOP_WIDTH_END, leftEnd, m_MinTopWidth, pDisplayUnits->GetXSectionDimUnit());
-            DDV_UnitValueLimitOrLess(pDX, IDC_LEFT_TOP_WIDTH_END, leftEnd, m_MaxTopWidth, pDisplayUnits->GetXSectionDimUnit());
+            DDV_UnitValueLimitOrMore(pDX, IDC_LEFT_TOP_WIDTH_END, leftEnd, m_MinTopWidth[LEFT], pDisplayUnits->GetXSectionDimUnit());
+            DDV_UnitValueLimitOrLess(pDX, IDC_LEFT_TOP_WIDTH_END, leftEnd, m_MaxTopWidth[LEFT], pDisplayUnits->GetXSectionDimUnit());
          }
       }
-      pParent->m_Girder.SetTopWidth(type,leftStart,rightStart,leftEnd,rightEnd);
+      pParent->m_Girder.SetTopWidth(topWidthType,leftStart,rightStart,leftEnd,rightEnd);
    }
 
    if (factory->HasTopFlangeThickening())
@@ -363,6 +371,7 @@ BOOL CGirderDescGeneralPage::OnInitDialog()
 
    if (IsTopWidthSpacing(pParent->m_GirderSpacingType))
    {
+      // if spacing is for the entire bridge, disable the top width controls
       BOOL bEnable = IsBridgeSpacing(pParent->m_GirderSpacingType) ? FALSE : TRUE;
       GetDlgItem(IDC_TOP_WIDTH_LABEL)->EnableWindow(bEnable);
       GetDlgItem(IDC_TOP_WIDTH_TYPE)->EnableWindow(bEnable);
@@ -382,11 +391,10 @@ BOOL CGirderDescGeneralPage::OnInitDialog()
 
       if (!factory->CanTopWidthVary())
       {
+         // if not a variable top width beam type
+         // hide all the end width controls
          GetDlgItem(IDC_TOP_WIDTH_START_LABEL)->ShowWindow(SW_HIDE);
          GetDlgItem(IDC_TOP_WIDTH_END_LABEL)->ShowWindow(SW_HIDE);
-
-         GetDlgItem(IDC_LEFT_TOP_WIDTH_START)->ShowWindow(SW_HIDE);
-         GetDlgItem(IDC_LEFT_TOP_WIDTH_START_UNIT)->ShowWindow(SW_HIDE);
 
          GetDlgItem(IDC_LEFT_TOP_WIDTH_END)->ShowWindow(SW_HIDE);
          GetDlgItem(IDC_LEFT_TOP_WIDTH_END_UNIT)->ShowWindow(SW_HIDE);
@@ -397,21 +405,13 @@ BOOL CGirderDescGeneralPage::OnInitDialog()
          GetDlgItem(IDC_RIGHT_TOP_WIDTH_END)->ShowWindow(SW_HIDE);
          GetDlgItem(IDC_RIGHT_TOP_WIDTH_END_UNIT)->ShowWindow(SW_HIDE);
       }
-
-      const GirderLibraryEntry::Dimensions& dimensions = pParent->m_Girder.GetGirderLibraryEntry()->GetDimensions();
-      factory->GetAllowableTopWidthRange(dimensions, &m_MinTopWidth, &m_MaxTopWidth);
-
-      CString strLabel;
-      strLabel.Format(_T("(%s to %s)"),
-         FormatDimension(m_MinTopWidth, pDisplayUnits->GetXSectionDimUnit()),
-         FormatDimension(m_MaxTopWidth, pDisplayUnits->GetXSectionDimUnit()));
-
-      GetDlgItem(IDC_ALLOWABLE_TOP_WIDTH)->SetWindowText(strLabel);
    }
    else
    {
+      // not a top width spacing type so hide all top width controls
       GetDlgItem(IDC_TOP_WIDTH_LABEL)->ShowWindow(SW_HIDE);
       GetDlgItem(IDC_TOP_WIDTH_TYPE)->ShowWindow(SW_HIDE);
+
       GetDlgItem(IDC_LEFT_TOP_WIDTH_LABEL)->ShowWindow(SW_HIDE);
       GetDlgItem(IDC_LEFT_TOP_WIDTH_START)->ShowWindow(SW_HIDE);
       GetDlgItem(IDC_LEFT_TOP_WIDTH_START_UNIT)->ShowWindow(SW_HIDE);
@@ -1418,23 +1418,45 @@ void CGirderDescGeneralPage::OnBeforeChangeGirderName()
 void CGirderDescGeneralPage::OnChangeGirderName()
 {
    CComboBox* pCB = (CComboBox*)GetDlgItem(IDC_GIRDER_NAME);
-   int result = AfxMessageBox(_T("Changing the girder type will reset the strands, stirrups, and longitudinal rebar to default values.\n\nIs that OK?"),MB_YESNO);
-   if ( result == IDNO )
+
+   CString newName;
+   pCB->GetWindowText(newName);
+
+   // From the girder editing dialog, we don't have a way to change the overall spacing/layout type for the entire
+   // bridge. Because of that, we have to make sure the new girder has a compatible spacing type with the other
+   // girders. If it doesn't, balk and reset to the previous girder type.
+   //
+   // An alterative would be to not put girders in the drop down if they don't have compatible spacing. However
+   // users will not like it if they can't see their girders. This approach shows the girders to the users and
+   // provides and explaination as to why a particular girder can't be used.
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+   GET_IFACE2(pBroker, ILibrary, pLib);
+   const GirderLibraryEntry* pGdrEntry = pLib->GetGirderEntry(newName);
+
+   CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
+
+   CComPtr<IBeamFactory> factory;
+   pGdrEntry->GetBeamFactory(&factory);
+
+   if (!factory->IsSupportedBeamSpacing(pParent->m_GirderSpacingType))
+   {
+      CString strMsg;
+      strMsg.Format(_T("The current spacing type is \"%s\".\r\n%s is not compatible with this spacing type."), GetGirderSpacingType(pParent->m_GirderSpacingType, false/*not a spliced girder*/), newName);
+      AfxMessageBox(strMsg, MB_ICONINFORMATION | MB_OK);
+      pCB->SetCurSel(m_GirderNameIdx);
+      return;
+   }
+
+   int result = AfxMessageBox(_T("Changing the girder type will reset the strands, stirrups, and longitudinal rebar to default values.\n\nIs that OK?"), MB_YESNO);
+   if (result == IDNO)
    {
       pCB->SetCurSel(m_GirderNameIdx);
       return;
    }
 
-   CString newName;
-   pCB->GetWindowText(newName);
-
-   CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
    pParent->m_strGirderName = newName;
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2( pBroker, ILibrary, pLib );
-   const GirderLibraryEntry* pGdrEntry = pLib->GetGirderEntry(newName);
 
    // reset prestress data
    pParent->m_pSegment->Strands.ResetPrestressData();
@@ -1645,16 +1667,43 @@ void CGirderDescGeneralPage::OnTopWidthTypeChanged()
 {
    CComboBox* pCB = (CComboBox*)GetDlgItem(IDC_TOP_WIDTH_TYPE);
    int curSel = pCB->GetCurSel();
-   pgsTypes::TopWidthType type = (pgsTypes::TopWidthType)(pCB->GetItemData(curSel));
-   int nShowCommand = (type == pgsTypes::twtAsymmetric ? SW_SHOW : SW_HIDE);
+   pgsTypes::TopWidthType topWidthType = (pgsTypes::TopWidthType)(pCB->GetItemData(curSel));
+ 
+   
+   CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
+   const auto* pGirderLibraryEntry = pParent->m_Girder.GetGirderLibraryEntry();
+   const GirderLibraryEntry::Dimensions& dimensions = pGirderLibraryEntry->GetDimensions();
+   CComPtr<IBeamFactory> factory;
+   pGirderLibraryEntry->GetBeamFactory(&factory);
+   factory->GetAllowableTopWidthRange(topWidthType, dimensions, &m_MinTopWidth[LEFT], &m_MaxTopWidth[LEFT], &m_MinTopWidth[RIGHT], &m_MaxTopWidth[RIGHT]);
+
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+   GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
+
+   CString strLabel;
+   if (topWidthType == pgsTypes::twtAsymmetric)
+   {
+      strLabel.Format(_T("Allowable\nLeft (%s to %s)\nRight (%s to %s)"),
+         FormatDimension(m_MinTopWidth[LEFT], pDisplayUnits->GetXSectionDimUnit()),
+         FormatDimension(m_MaxTopWidth[LEFT], pDisplayUnits->GetXSectionDimUnit()),
+         FormatDimension(m_MinTopWidth[RIGHT], pDisplayUnits->GetXSectionDimUnit()),
+         FormatDimension(m_MaxTopWidth[RIGHT], pDisplayUnits->GetXSectionDimUnit()));
+   }
+   else
+   {
+      strLabel.Format(_T("Allowable\n(%s to %s)"),
+         FormatDimension(m_MinTopWidth[LEFT], pDisplayUnits->GetXSectionDimUnit()),
+         FormatDimension(m_MaxTopWidth[LEFT], pDisplayUnits->GetXSectionDimUnit()));
+   }
+
+   GetDlgItem(IDC_ALLOWABLE_TOP_WIDTH)->SetWindowText(strLabel);
+   int nShowCommand = (topWidthType == pgsTypes::twtAsymmetric ? SW_SHOW : SW_HIDE);
    GetDlgItem(IDC_LEFT_TOP_WIDTH_LABEL)->ShowWindow(nShowCommand);
    GetDlgItem(IDC_RIGHT_TOP_WIDTH_LABEL)->ShowWindow(nShowCommand);
    GetDlgItem(IDC_RIGHT_TOP_WIDTH_START)->ShowWindow(nShowCommand);
    GetDlgItem(IDC_RIGHT_TOP_WIDTH_START_UNIT)->ShowWindow(nShowCommand);
 
-   CComPtr<IBeamFactory> factory;
-   CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
-   pParent->m_Girder.GetGirderLibraryEntry()->GetBeamFactory(&factory);
    if (factory->CanTopWidthVary())
    {
       GetDlgItem(IDC_RIGHT_TOP_WIDTH_END)->ShowWindow(nShowCommand);

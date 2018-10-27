@@ -7322,6 +7322,26 @@ HRESULT CBridgeAgentImp::Point(IPoint2d* center, Float64 radius,IPoint2d* point,
 //
 #include <MFCTools\AutoRegistry.h>
 #include <EAF\EAFApp.h>
+bool CBridgeAgentImp::IsAsymmetricGirder(const CGirderKey& girderKey) const
+{
+   CSegmentKey segmentKey(girderKey, 0);
+   PoiList vPoi;
+   GetPointsOfInterest(segmentKey, POI_5L | POI_RELEASED_SEGMENT, &vPoi);
+   ATLASSERT(vPoi.size() == 1);
+   pgsPointOfInterest poi(vPoi.front());
+
+   CComPtr<IGirderSection> girder_section;
+   HRESULT hr = GetGirderSection(poi, pgsTypes::scBridge, &girder_section);
+   ATLASSERT(SUCCEEDED(hr));
+
+   CComQIPtr<IAsymmetricSection> asymmetricSection(girder_section);
+   if (asymmetricSection == nullptr)
+   {
+      return false;
+   }
+   return true;
+}
+
 bool CBridgeAgentImp::HasAsymmetricGirders() const
 {
    // Asymmetric effects are only taken into account for girders that implement the IAsymmetricSection interface
@@ -22562,7 +22582,7 @@ void CBridgeAgentImp::GetSegmentShape(IntervalIndexType intervalIdx,const pgsPoi
       IntervalIndexType compositeDeckIntervalIdx = GetCompositeDeckInterval();
       VARIANT_BOOL bIncludeDeck = (compositeDeckIntervalIdx <= intervalIdx ? VARIANT_TRUE : VARIANT_FALSE);
       SectionBias sectionBias = (poi.HasAttribute(POI_SECTCHANGE_LEFTFACE) ? sbLeft : sbRight);
-      HRESULT hr = m_SectCutTool->CreateGirderShapeBySegment(m_Bridge,gdrID,segmentKey.segmentIndex,Xs,sectionBias,bIncludeDeck,(HaunchDepthMethod)haunchAType,&pShape);
+      HRESULT hr = m_SectCutTool->CreateGirderShapeBySegment(m_Bridge,gdrID,segmentKey.segmentIndex,Xs,sectionBias,bIncludeDeck,(HaunchDepthMethod)haunchAType,IsAsymmetricGirder(segmentKey) && IsZero(GetOrientation(segmentKey)),&pShape);
       ATLASSERT(SUCCEEDED(hr));
 
       if ( poi.GetID() != INVALID_ID )
@@ -22751,7 +22771,7 @@ void CBridgeAgentImp::GetSegmentSectionShape(IntervalIndexType intervalIdx, cons
    }
 }
 
-void CBridgeAgentImp::GetSlabAnalysisShape(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, Float64 haunchDepth, IShape** ppShape) const
+void CBridgeAgentImp::GetSlabAnalysisShape(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, Float64 haunchDepth, bool bFollowMatingSurfaceProfile, IShape** ppShape) const
 {
    VALIDATE(BRIDGE);
 
@@ -22767,7 +22787,7 @@ void CBridgeAgentImp::GetSlabAnalysisShape(IntervalIndexType intervalIdx, const 
 
    // use tool to cut shape
    CComPtr<IShape> shape;
-   hr = m_SectCutTool->CreateDeckAnalysisShape(m_Bridge,gdrsection,gdrID,segmentKey.segmentIndex,Xs,haunchDepth,intervalIdx,&shape);
+   hr = m_SectCutTool->CreateDeckAnalysisShape(m_Bridge,gdrsection,gdrID,segmentKey.segmentIndex,Xs,haunchDepth,bFollowMatingSurfaceProfile, intervalIdx,&shape);
    ATLASSERT(SUCCEEDED(hr));
 
    // move deck to match up with girder coordinates
@@ -27072,7 +27092,7 @@ std::shared_ptr<mathFunction2d> CBridgeAgentImp::CreateGirderProfile(const CSpli
    bool bParabola = false;
    Float64 xParabolaStart,xParabolaEnd;
    Float64 yParabolaStart,yParabolaEnd;
-   Float64 slopeParabola;
+   Float64 slopeParabola = 0;
 
    // go down each segment and create piece-wise functions for each part of the spliced girder profile
    SegmentIndexType nSegments = pGirder->GetSegmentCount();
@@ -29657,7 +29677,7 @@ HRESULT CBridgeAgentImp::GetSection(IntervalIndexType intervalIdx,const pgsPoint
       // use tool to create section
       CComPtr<ISection> section;
       SectionBias sectionBias = (poi.HasAttribute(POI_SECTCHANGE_LEFTFACE) ? sbLeft : sbRight);
-      HRESULT hr = m_SectCutTool->CreateGirderSectionBySegment(m_Bridge,gdrID,segmentKey.segmentIndex,Xs,sectionBias,intervalIdx,(SectionPropertyMethod)sectPropType,(HaunchDepthMethod)haunchAnalysisType,pGdrIdx,pSlabIdx,&section);
+      HRESULT hr = m_SectCutTool->CreateGirderSectionBySegment(m_Bridge,gdrID,segmentKey.segmentIndex,Xs,sectionBias,intervalIdx,(SectionPropertyMethod)sectPropType,(HaunchDepthMethod)haunchAnalysisType,IsAsymmetricGirder(segmentKey) && IsZero(GetOrientation(segmentKey)),pGdrIdx,pSlabIdx,&section);
       ATLASSERT(SUCCEEDED(hr));
 
       return section.CopyTo(ppSection);
@@ -29665,7 +29685,7 @@ HRESULT CBridgeAgentImp::GetSection(IntervalIndexType intervalIdx,const pgsPoint
    else if ( sectPropType == pgsTypes::sptNetDeck )
    {
       CComPtr<ISection> deckSection;
-      HRESULT hr = m_SectCutTool->CreateNetDeckSection(m_Bridge,gdrID,segmentKey.segmentIndex,Xs,intervalIdx,(HaunchDepthMethod)haunchAnalysisType,&deckSection);
+      HRESULT hr = m_SectCutTool->CreateNetDeckSection(m_Bridge,gdrID,segmentKey.segmentIndex,Xs,intervalIdx,(HaunchDepthMethod)haunchAnalysisType, IsAsymmetricGirder(segmentKey), &deckSection);
       ATLASSERT(SUCCEEDED(hr));
 
       *pGdrIdx = INVALID_INDEX;
@@ -34001,6 +34021,15 @@ std::map<CSegmentKey, mathLinFunc2d> CBridgeAgentImp::CreateGirderTopChordFuncti
                   }
                   break;
                }
+            }
+
+            if ((pStartTS && pStartTS->GetSupportType() == pgsTypes::StrongBack) && (pEndTS && pEndTS->GetSupportType() == pgsTypes::StrongBack))
+            {
+               // the bridge model is unstable
+               // instability is detected in ProjectAgent
+               // some dummy values so we don't crash
+               dy = 0;
+               dx = 1;
             }
          }
       }

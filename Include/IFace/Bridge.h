@@ -145,6 +145,9 @@ interface IBridge : IUnknown
    // General Bridge Information
    ///////////////////////////////////////////////////
 
+   // Returns true if the specifed girder implements the IAsymmetric interface
+   virtual bool IsAsymmetricGirder(const CGirderKey& girderKey) const = 0;
+
    // Returns true if bridge contains any girders with an asymmetric cross section
    virtual bool HasAsymmetricGirders() const = 0;
 
@@ -1405,7 +1408,9 @@ interface IShapes : public IUnknown
    virtual void GetJointShapes(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, bool bOrient, pgsTypes::SectionCoordinateType coordinateType, IShape** ppLeftJointShape,IShape** ppRightJointShape) const = 0;
 
    // get the slab shape at the given location including haunch parts
-   virtual void GetSlabAnalysisShape(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,Float64 haunchDepth,IShape** ppShape) const = 0;
+   // if bFollowMatingSurfaceProfile is true, the bottom of the haunch will follow the mating surface profile
+   // regardless of hauchDepth
+   virtual void GetSlabAnalysisShape(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,Float64 haunchDepth,bool bFollowMatingSurfaceProfile,IShape** ppShape) const = 0;
 };
 
 /*****************************************************************************

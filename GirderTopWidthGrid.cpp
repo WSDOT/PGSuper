@@ -33,12 +33,16 @@
 //
 #include <PgsExt\GirderGroupData.h>
 #include <PsgLib\GirderLibraryEntry.h>
+#include <PgsExt\Helpers.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
 static char THIS_FILE[] = __FILE__;
 #endif
+
+#define LEFT 0
+#define RIGHT 1
 
 GRID_IMPLEMENT_REGISTER(CGirderTopWidthGrid, CS_DBLCLKS, 0, 0, 0);
 
@@ -169,8 +173,10 @@ void CGirderTopWidthGrid::UpdateGrid()
 		);
 
    // This loop fills the grid "group" column headings and with the top width data
-   m_MinGirderTopWidth.clear();
-   m_MaxGirderTopWidth.clear();
+   m_MinGirderTopWidth[LEFT].clear();
+   m_MaxGirderTopWidth[LEFT].clear();
+   m_MinGirderTopWidth[RIGHT].clear();
+   m_MaxGirderTopWidth[RIGHT].clear();
    for (GroupIndexType groupIdx = 0; groupIdx < nTopWidthGroups; groupIdx++)
    {
       ROWCOL col = (ROWCOL)(groupIdx + 2);
@@ -179,11 +185,11 @@ void CGirderTopWidthGrid::UpdateGrid()
          InsertCols(col, 1);
       }
 
-      pgsTypes::TopWidthType type;
+      pgsTypes::TopWidthType topWidthType;
       Float64 leftStart, rightStart, leftEnd, rightEnd;
       GirderIndexType firstGdrIdx, lastGdrIdx;
 
-      m_pGirderGroup->GetGirderTopWidthGroup(groupIdx, &firstGdrIdx, &lastGdrIdx, &type, &leftStart, &rightStart, &leftEnd, &rightEnd);
+      m_pGirderGroup->GetGirderTopWidthGroup(groupIdx, &firstGdrIdx, &lastGdrIdx, &topWidthType, &leftStart, &rightStart, &leftEnd, &rightEnd);
 
       const CSplicedGirderData* pGirder = m_pGirderGroup->GetGirder(firstGdrIdx);
       const GirderLibraryEntry* pGdrEntry = pGirder->GetGirderLibraryEntry();
@@ -198,10 +204,12 @@ void CGirderTopWidthGrid::UpdateGrid()
       }
       const GirderLibraryEntry::Dimensions& dimensions = pGdrEntry->GetDimensions();
 
-      Float64 Wmin, Wmax;
-      factory->GetAllowableTopWidthRange(dimensions,&Wmin, &Wmax);
-      m_MinGirderTopWidth.push_back(Wmin);
-      m_MaxGirderTopWidth.push_back(Wmax);
+      Float64 Wmin[2], Wmax[2];
+      factory->GetAllowableTopWidthRange(topWidthType,dimensions,&Wmin[LEFT], &Wmax[LEFT],&Wmin[RIGHT],&Wmax[RIGHT]);
+      m_MinGirderTopWidth[LEFT].push_back(Wmin[LEFT]);
+      m_MaxGirderTopWidth[LEFT].push_back(Wmax[LEFT]);
+      m_MinGirderTopWidth[RIGHT].push_back(Wmin[RIGHT]);
+      m_MaxGirderTopWidth[RIGHT].push_back(Wmax[RIGHT]);
 
       CString strHeading;
       if (firstGdrIdx == lastGdrIdx)
@@ -227,7 +235,7 @@ void CGirderTopWidthGrid::UpdateGrid()
          .SetReadOnly(FALSE)
          .SetControl(GX_IDS_CTRL_CBS_DROPDOWNLIST)
          .SetChoiceList(strTopWidthTypes)
-         .SetValue(GetTopWidthType(type))
+         .SetValue(GetTopWidthType(topWidthType))
       );
 
       CString strTopWidth;
@@ -241,7 +249,7 @@ void CGirderTopWidthGrid::UpdateGrid()
          .SetValue(strTopWidth)
          );
 
-      if (type == pgsTypes::twtAsymmetric)
+      if (topWidthType == pgsTypes::twtAsymmetric)
       {
          strTopWidth.Format(_T("%s"), FormatDimension(rightStart, pDisplayUnits->GetXSectionDimUnit(), false));
          SetStyleRange(CGXRange(3, col), CGXStyle()
@@ -274,7 +282,7 @@ void CGirderTopWidthGrid::UpdateGrid()
          .SetValue(strTopWidth)
       );
 
-      if (type == pgsTypes::twtAsymmetric)
+      if (topWidthType == pgsTypes::twtAsymmetric)
       {
          strTopWidth.Format(_T("%s"), FormatDimension(rightEnd, pDisplayUnits->GetXSectionDimUnit(), false));
          SetStyleRange(CGXRange(5, col), CGXStyle()
@@ -298,16 +306,28 @@ void CGirderTopWidthGrid::UpdateGrid()
       }
 
       CString strAllowable;
-      strAllowable.Format(_T("%s - %s"),
-            FormatDimension(Wmin, pDisplayUnits->GetXSectionDimUnit(),false),
-            FormatDimension(Wmax, pDisplayUnits->GetXSectionDimUnit(),false));
+      if (topWidthType == pgsTypes::twtAsymmetric)
+      {
+         strAllowable.Format(_T("Left %s - %s\nRight %s - %s"),
+            FormatDimension(Wmin[LEFT], pDisplayUnits->GetXSectionDimUnit(), false),
+            FormatDimension(Wmax[LEFT], pDisplayUnits->GetXSectionDimUnit(), false),
+            FormatDimension(Wmin[RIGHT], pDisplayUnits->GetXSectionDimUnit(), false),
+            FormatDimension(Wmax[RIGHT], pDisplayUnits->GetXSectionDimUnit(), false));
+      }
+      else
+      {
+         strAllowable.Format(_T("%s - %s"),
+            FormatDimension(Wmin[LEFT], pDisplayUnits->GetXSectionDimUnit(), false),
+            FormatDimension(Wmax[LEFT], pDisplayUnits->GetXSectionDimUnit(), false));
+      }
 
       SetStyleRange(CGXRange(6, col), CGXStyle()
-         .SetHorizontalAlignment(DT_RIGHT)
+         .SetHorizontalAlignment(DT_LEFT)
          .SetEnabled(FALSE)
          .SetReadOnly(TRUE)
          .SetInterior(::GetSysColor(COLOR_BTNFACE))
          .SetTextColor(::GetSysColor(COLOR_WINDOWTEXT))
+         .SetWrapText(TRUE) // enables multiline text... also see ResizeRowHeightsToFit below
          .SetValue( strAllowable )
          );
    } // girder group loop
@@ -424,6 +444,7 @@ void CGirderTopWidthGrid::UpdateGrid()
 
    // make it so that text fits correctly in header row
    ResizeColWidthsToFit(CGXRange(0, 0, GetRowCount(), GetColCount()), FALSE);
+   ResizeRowHeightsToFit(CGXRange(0, 0, GetRowCount(), GetColCount()));
 
    // this will get the styles of all the cells to be correct if the size of the grid changed
    Enable(m_bEnabled);
@@ -683,32 +704,55 @@ BOOL CGirderTopWidthGrid::ValidateGirderTopWidth()
          left = ::ConvertToSysUnits(left, pDisplayUnits->GetXSectionDimUnit().UnitOfMeasure);
          right = ::ConvertToSysUnits(right, pDisplayUnits->GetXSectionDimUnit().UnitOfMeasure);
 
-         pgsTypes::TopWidthType type = GetTopWidthTypeFromCell(col);
+         pgsTypes::TopWidthType topWidthType = GetTopWidthTypeFromCell(col);
 
-         Float64 topWidth;
-         if (type == pgsTypes::twtAsymmetric)
+         Float64 minGirderTopWidth[2] = { m_MinGirderTopWidth[LEFT][col - 2], m_MinGirderTopWidth[RIGHT][col - 2] };
+         Float64 maxGirderTopWidth[2] = { m_MaxGirderTopWidth[LEFT][col - 2], m_MaxGirderTopWidth[RIGHT][col - 2] };
+         if (topWidthType == pgsTypes::twtAsymmetric)
          {
-            topWidth = left + right;
+            if (left < 0 || IsLT(left, minGirderTopWidth[LEFT]) || IsLT(maxGirderTopWidth[LEFT], left))
+            {
+               if (i == 0)
+               {
+                  SetWarningText(_T("Start left top width is out of range"));
+               }
+               else
+               {
+                  SetWarningText(_T("End left top width is out of range"));
+               }
+               DisplayWarningText();
+               return FALSE;
+            }
+
+            if (right < 0 || IsLT(left, minGirderTopWidth[RIGHT]) || IsLT(maxGirderTopWidth[RIGHT], right))
+            {
+               if (i == 0)
+               {
+                  SetWarningText(_T("Start right top width is out of range"));
+               }
+               else
+               {
+                  SetWarningText(_T("End right top width is out of range"));
+               }
+               DisplayWarningText();
+               return FALSE;
+            }
          }
          else
          {
-            topWidth = left;
-         }
-
-         Float64 minGirderTopWidth = m_MinGirderTopWidth[col - 2];
-         Float64 maxGirderTopWidth = m_MaxGirderTopWidth[col - 2];
-         if (left < 0 || right < 0 || IsLT(topWidth, minGirderTopWidth) || IsLT(maxGirderTopWidth, topWidth))
-         {
-            if (i == 0)
+            if (left < 0 || IsLT(left, minGirderTopWidth[LEFT]) || IsLT(maxGirderTopWidth[LEFT], left))
             {
-               SetWarningText(_T("Start top width is out of range"));
+               if (i == 0)
+               {
+                  SetWarningText(_T("Start top width is out of range"));
+               }
+               else
+               {
+                  SetWarningText(_T("End top width is out of range"));
+               }
+               DisplayWarningText();
+               return FALSE;
             }
-            else
-            {
-               SetWarningText(_T("End top width is out of range"));
-            }
-            DisplayWarningText();
-            return FALSE;
          }
       }
    }

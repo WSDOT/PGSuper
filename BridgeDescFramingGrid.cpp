@@ -955,20 +955,27 @@ void CBridgeDescFramingGrid::FillSegmentColumn()
             if ( pSegment->GetStartClosure()->GetTemporarySupport() )
             {
                startRow = GetTemporarySupportRow(pSegment->GetStartClosure()->GetTemporarySupport()->GetIndex());
-               strStartSupportLabel.Format(_T("TS %d"),LABEL_TEMPORARY_SUPPORT(pSegment->GetStartClosure()->GetTemporarySupport()->GetIndex()));
+               if (pSegment->GetStartClosure()->GetTemporarySupport()->GetSupportType() == pgsTypes::ErectionTower)
+               {
+                  strStartSupportLabel = _T("Erection Tower");
+               }
+               else
+               {
+                  strStartSupportLabel = _T("Strongback");
+               }
                startStation = pSegment->GetStartClosure()->GetTemporarySupport()->GetStation();
             }
             else
             {
                startRow = GetPierRow(pSegment->GetStartClosure()->GetPier()->GetIndex());
-               strStartSupportLabel.Format(_T("Pier %d"),LABEL_PIER(pSegment->GetStartClosure()->GetPier()->GetIndex()));
+               strStartSupportLabel.Format(_T("%s %d"), pSegment->GetStartClosure()->GetPier()->IsAbutment() ? _T("Abut") : _T("Pier"), LABEL_PIER(pSegment->GetStartClosure()->GetPier()->GetIndex()));
                startStation = pSegment->GetStartClosure()->GetPier()->GetStation();
             }
          }
          else
          {
             startRow = GetPierRow(pGirder->GetPier(pgsTypes::metStart)->GetIndex());
-            strStartSupportLabel.Format(_T("Pier %d"),LABEL_PIER(pGirder->GetPier(pgsTypes::metStart)->GetIndex()));
+            strStartSupportLabel.Format(_T("%s %d"), pGirder->GetPier(pgsTypes::metStart)->IsAbutment() ? _T("Abut") : _T("Pier"), LABEL_PIER(pGirder->GetPier(pgsTypes::metStart)->GetIndex()));
             startStation = pGirder->GetPier(pgsTypes::metStart)->GetStation();
          }
 
@@ -980,20 +987,27 @@ void CBridgeDescFramingGrid::FillSegmentColumn()
             if ( pSegment->GetEndClosure()->GetTemporarySupport() )
             {
                endRow = GetTemporarySupportRow(pSegment->GetEndClosure()->GetTemporarySupport()->GetIndex());
-               strEndSupportLabel.Format(_T("TS %d"),LABEL_TEMPORARY_SUPPORT(pSegment->GetEndClosure()->GetTemporarySupport()->GetIndex()));
+               if (pSegment->GetEndClosure()->GetTemporarySupport()->GetSupportType() == pgsTypes::ErectionTower)
+               {
+                  strEndSupportLabel = _T("Erection Tower");
+               }
+               else
+               {
+                  strEndSupportLabel = _T("Strongback");
+               }
                endStation = pSegment->GetEndClosure()->GetTemporarySupport()->GetStation();
             }
             else
             {
                endRow = GetPierRow(pSegment->GetEndClosure()->GetPier()->GetIndex());
-               strEndSupportLabel.Format(_T("Pier %d"),LABEL_PIER(pSegment->GetEndClosure()->GetPier()->GetIndex()));
+               strEndSupportLabel.Format(_T("%s %d"), pSegment->GetEndClosure()->GetPier()->IsAbutment() ? _T("Abut") : _T("Pier"), LABEL_PIER(pSegment->GetEndClosure()->GetPier()->GetIndex()));
                endStation = pSegment->GetEndClosure()->GetPier()->GetStation();
             }
          }
          else
          {
             endRow = GetPierRow(pGirder->GetPier(pgsTypes::metEnd)->GetIndex());
-            strEndSupportLabel.Format(_T("Pier %d"),LABEL_PIER(pGirder->GetPier(pgsTypes::metEnd)->GetIndex()));
+            strEndSupportLabel.Format(_T("%s %d"), pGirder->GetPier(pgsTypes::metEnd)->IsAbutment() ? _T("Abut") : _T("Pier"), LABEL_PIER(pGirder->GetPier(pgsTypes::metEnd)->GetIndex()));
             endStation = pGirder->GetPier(pgsTypes::metEnd)->GetStation();
          }
 
@@ -1064,10 +1078,10 @@ void CBridgeDescFramingGrid::FillSpanColumn()
 
       // create prev and next pier labels
       CString strPrevPierLabel;
-      strPrevPierLabel.Format(_T("Pier %d"),LABEL_PIER(pPrevPier->GetIndex()));
+      strPrevPierLabel.Format(_T("%s %d"), pPrevPier->IsAbutment() ? _T("Abut") : _T("Pier"), LABEL_PIER(pPrevPier->GetIndex()));
 
       CString strNextPierLabel;
-      strNextPierLabel.Format(_T("Pier %d"),LABEL_PIER(pNextPier->GetIndex()));
+      strNextPierLabel.Format(_T("%s %d"), pNextPier->IsAbutment() ? _T("Abut") : _T("Pier"), LABEL_PIER(pNextPier->GetIndex()));
 
       // label prev pier
       SetStyleRange(CGXRange(prevPierRow,col), CGXStyle()

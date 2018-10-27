@@ -27,9 +27,12 @@
 #include "PGSuperDoc.h"
 #include "PGSuperAppPlugin\resource.h"
 #include "GirderNameGrid.h"
+#include "GirderLayoutPage.h"
 
 #include <PgsExt\BridgeDescription2.h>
+#include <PgsExt\Helpers.h>
 #include <IFace\Project.h>
+#include <IFace\BeamFactory.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -269,6 +272,32 @@ BOOL CGirderNameGrid::OnStartEditing(ROWCOL nRow,ROWCOL nCol)
 
 void CGirderNameGrid::OnModifyCell(ROWCOL nRow,ROWCOL nCol)
 {
+   CString strNewName;
+   GetCurrentCellControl()->GetCurrentText(strNewName);
+
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+   GET_IFACE2(pBroker, ILibrary, pLib);
+   const GirderLibraryEntry* pGdrEntry = pLib->GetGirderEntry(strNewName);
+
+   CComPtr<IBeamFactory> factory;
+   pGdrEntry->GetBeamFactory(&factory);
+
+   pgsTypes::SupportedBeamSpacing spacingType = m_pGirderGroup->GetBridgeDescription()->GetGirderSpacingType();
+
+   if (!factory->IsSupportedBeamSpacing(spacingType))
+   {
+      CSpanGirderLayoutPage* pParent = (CSpanGirderLayoutPage*)GetParent();
+      int curSel = pParent->m_cbGirderSpacingType.GetCurSel();
+      CString strSpacingType;
+      pParent->m_cbGirderSpacingType.GetLBText(curSel, strSpacingType);
+      CString strMsg;
+      strMsg.Format(_T("The current spacing type is \"%s\".\r\n%s is not compatible with this spacing type."), strSpacingType, strNewName);
+      AfxMessageBox(strMsg, MB_ICONINFORMATION | MB_OK);
+      SetStyleRange(CGXRange(nRow, nCol), CGXStyle().SetValue(m_strTempGirderName));
+      return;
+   }
+
    int result = AfxMessageBox(_T("Changing the girder type will reset the strands, stirrups, and longitudinal rebar to default values.\n\nIs that OK?"),MB_YESNO);
    if ( result == IDNO )
    {
@@ -277,6 +306,41 @@ void CGirderNameGrid::OnModifyCell(ROWCOL nRow,ROWCOL nCol)
    }
 
    CGXGridWnd::OnModifyCell(nRow,nCol);
+}
+
+BOOL CGirderNameGrid::OnEndEditing(ROWCOL nRow, ROWCOL nCol)
+{
+   if (nRow != 1 || nCol == 0)
+      return CGXGridWnd::OnEndEditing(nRow, nCol);
+
+   GroupIndexType gdrTypeGroupIdx = GroupIndexType(nCol - 1);
+
+   CString strNewName;
+   GetCurrentCellControl()->GetCurrentText(strNewName);
+
+   //   ASSERT( !m_bSameGirderName );
+
+   GirderIndexType firstGdrIdx, lastGdrIdx;
+   std::_tstring strName;
+   m_pGirderGroup->GetGirderTypeGroup(gdrTypeGroupIdx, &firstGdrIdx, &lastGdrIdx, &strName);
+
+   if (strNewName != CString(strName.c_str()))
+   {
+      m_pGirderGroup->SetGirderName(gdrTypeGroupIdx, strNewName);
+
+      CComPtr<IBroker> pBroker;
+      EAFGetBroker(&pBroker);
+      GET_IFACE2(pBroker, ILibrary, pLib);
+      const GirderLibraryEntry* pGdrEntry = pLib->GetGirderEntry(strNewName);
+
+      m_pGirderGroup->SetGirderLibraryEntry(gdrTypeGroupIdx, pGdrEntry);
+   }
+
+#if defined _DEBUG
+   m_pGirderGroup->AssertValid();
+#endif
+
+   return CGXGridWnd::OnEndEditing(nRow, nCol);
 }
 
 void CGirderNameGrid::OnExpand()
@@ -340,41 +404,6 @@ void CGirderNameGrid::OnJoin()
 #endif
 
    UpdateGrid();
-}
-
-BOOL CGirderNameGrid::OnEndEditing(ROWCOL nRow,ROWCOL nCol)
-{
-   if ( nRow != 1 || nCol == 0)
-      return CGXGridWnd::OnEndEditing(nRow,nCol);
-
-   GroupIndexType gdrTypeGroupIdx = GroupIndexType(nCol - 1);
-
-   CString strNewName;
-   GetCurrentCellControl()->GetCurrentText(strNewName);
-
-//   ASSERT( !m_bSameGirderName );
-
-   GirderIndexType firstGdrIdx,lastGdrIdx;
-   std::_tstring strName;
-   m_pGirderGroup->GetGirderTypeGroup(gdrTypeGroupIdx,&firstGdrIdx,&lastGdrIdx,&strName);
-
-   if ( strNewName != CString(strName.c_str()) )
-   {
-      m_pGirderGroup->SetGirderName(gdrTypeGroupIdx,strNewName);
-
-      CComPtr<IBroker> pBroker;
-      EAFGetBroker(&pBroker);
-      GET_IFACE2(pBroker,ILibrary,pLib);
-      const GirderLibraryEntry* pGdrEntry = pLib->GetGirderEntry( strNewName );
-      
-      m_pGirderGroup->SetGirderLibraryEntry(gdrTypeGroupIdx,pGdrEntry);
-   }
-
-#if defined _DEBUG
-   m_pGirderGroup->AssertValid();
-#endif
-
-   return CGXGridWnd::OnEndEditing(nRow,nCol);
 }
 
 void CGirderNameGrid::UpdateGirderFamilyList(LPCTSTR strGirderFamily)

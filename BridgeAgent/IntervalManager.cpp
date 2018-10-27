@@ -30,6 +30,7 @@
 #include <IFace\DocumentType.h>
 #include <PgsExt\BridgeDescription2.h>
 #include <PgsExt\GirderLabel.h>
+#include <PgsExt\Helpers.h>
 
 #include <PgsExt\DistributedLoadData.h>
 #include <PgsExt\MomentLoadData.h>

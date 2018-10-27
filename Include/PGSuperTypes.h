@@ -1478,52 +1478,6 @@ inline bool IsAdjustableWidthDeck(pgsTypes::SupportedDeckType deckType)
    return !IsConstantWidthDeck(deckType);
 }
 
-inline LPCTSTR GetDeckTypeName(pgsTypes::SupportedDeckType deckType)
-{
-   switch (deckType)
-   {
-   case pgsTypes::sdtCompositeCIP:
-      return _T("Composite cast-in-place deck");
-
-   case pgsTypes::sdtCompositeSIP:
-      return _T("Composite stay-in-place deck panels");
-
-   case pgsTypes::sdtCompositeOverlay:
-      return _T("Composite structural overlay");
-
-   case pgsTypes::sdtNonstructuralOverlay:
-      return _T("Nonstructural overlay");
-
-   case pgsTypes::sdtNone:
-      return _T("None");
-
-   default:
-      ATLASSERT(false); // is there a new deck type?
-   }
-
-   return _T("Unknown deck type");
-}
-
-inline LPCTSTR GetCastDeckEventName(pgsTypes::SupportedDeckType deckType)
-{
-   switch (deckType)
-   {
-   case pgsTypes::sdtCompositeCIP:
-   case pgsTypes::sdtCompositeSIP:
-      return _T("Cast Deck");
-
-   case pgsTypes::sdtCompositeOverlay:
-      return _T("Install composite overlay");
-
-   case pgsTypes::sdtNonstructuralOverlay:
-      return _T("Install non-structural overlay");
-
-   default:
-      ATLASSERT(false); // shouldn't get here... deck type sdtNone is never cast
-   }
-   return _T("Bad deck type");
-}
-
 inline bool IsSpanSpacing(pgsTypes::SupportedBeamSpacing sbs)
 {
    return !IsBridgeSpacing(sbs);
@@ -2002,72 +1956,6 @@ inline pgsTypes::LiveLoadType GetLiveLoadType(pgsTypes::LoadRatingType ratingTyp
    return llType;
 }
 
-inline CString GetLiveLoadTypeName(pgsTypes::LiveLoadType llType)
-{
-   CString strName;
-   switch(llType)
-   {
-   case pgsTypes::lltDesign:
-      strName = "Design";
-      break;
-
-   case pgsTypes::lltFatigue:
-      strName = "Fatigue";
-      break;
-
-   case pgsTypes::lltLegalRating_Routine:
-      strName = "Legal Load - Routine Commercial Traffic";
-      break;
-
-   case pgsTypes::lltLegalRating_Special:
-      strName = "Legal Load - Specialized Hauling Vehicles";
-      break;
-
-   case pgsTypes::lltLegalRating_Emergency:
-      strName = "Legal Load - Emergency Vehicles";
-      break;
-
-   case pgsTypes::lltPedestrian:
-      strName = "Pedestrian";
-      break;
-
-   case pgsTypes::lltPermit:
-      strName = "Design Permit";
-      break;
-
-   case pgsTypes::lltPermitRating_Routine:
-      strName = "Rating Permit - Routine/Annual Permit";
-      break;
-
-   case pgsTypes::lltPermitRating_Special:
-      strName = "Rating Permit - Special/Limited Crossing Permit";
-      break;
-
-   default:
-      ATLASSERT(false); // SHOULD NEVER GET HERE
-   }
-
-   return strName;
-}
-
-inline CString GetLiveLoadTypeName(pgsTypes::LoadRatingType ratingType)
-{
-   pgsTypes::LiveLoadType llType = ::GetLiveLoadType(ratingType);
-   CString strName = GetLiveLoadTypeName(llType);
-
-   if ( ratingType == pgsTypes::lrDesign_Inventory )
-   {
-      strName += CString(" - Inventory");
-   }
-
-   if ( ratingType == pgsTypes::lrDesign_Operating )
-   {
-      strName += CString(" - Operating");
-   }
-
-   return strName;
-}
-
 inline bool IsDesignRatingType(pgsTypes::LoadRatingType ratingType)
 {
    return (ratingType == pgsTypes::lrDesign_Inventory || ratingType == pgsTypes::lrDesign_Operating) ? true : false;
@@ -2107,42 +1995,6 @@ inline bool IsDeckStressLocation(pgsTypes::StressLocation stressLocation)
 {
    return !IsGirderStressLocation(stressLocation);
 }
-
-inline std::_tstring GetDesignTypeName(arFlexuralDesignType type)
-{
-   switch (type)
-   {
-   case dtDesignForHarping:
-      return std::_tstring(_T("Harped Strand"));
-      break;
-
-   case dtDesignForDebonding:
-      return std::_tstring(_T("Debonded Straight Strand"));
-      break;
-
-   case dtDesignFullyBonded:
-      return std::_tstring(_T("Straight Strand"));
-      break;
-
-   case dtDesignFullyBondedRaised:
-      return std::_tstring(_T("Raised Straight Strand"));
-      break;
-
-   case dtDesignForDebondingRaised:
-      return std::_tstring(_T("Debonded and Raised Straight Strand"));
-      break;
-
-   case dtNoDesign:
-      return std::_tstring(_T("Flexure Design Not Attempted"));
-      break;
-
-   default:
-      ATLASSERT(0);
-   }
-
-   return std::_tstring(_T("Unknown Design Type"));
-}
-
 
 inline bool IsNoDeckBoundaryCondition(pgsTypes::BoundaryConditionType bc)
 {
@@ -2190,25 +2042,6 @@ inline bool IsContinuousBoundaryCondition(pgsTypes::BoundaryConditionType bc)
    else
    {
       return false;
-   }
-}
-
-inline CString GetTopWidthType(pgsTypes::TopWidthType type)
-{
-   switch (type)
-   {
-   case pgsTypes::twtSymmetric:
-      return CString(_T("Symmetric"));
-
-   case pgsTypes::twtCenteredCG:
-      return CString(_T("Centered CG"));
-
-   case pgsTypes::twtAsymmetric:
-      return CString(_T("Asymmetric"));
-   
-   default:
-      ATLASSERT(false);
-      return CString(_T("Unknown"));
    }
 }
 

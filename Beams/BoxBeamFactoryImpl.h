@@ -82,7 +82,7 @@ public:
    virtual bool HasTopFlangeThickening() const override;
    virtual bool CanPrecamber() const override;
    virtual GirderIndexType GetMinimumBeamCount() const override;
-   virtual void GetAllowableTopWidthRange(const IBeamFactory::Dimensions& dimensions, Float64* pWmin, Float64* pWmax) const override { *pWmin = 0; *pWmax = 0; }
+   virtual void GetAllowableTopWidthRange(pgsTypes::TopWidthType topWidthType, const IBeamFactory::Dimensions& dimensions, Float64* pWleftMin, Float64* pWleftMax, Float64* pWrightMin, Float64* pWrightMax) const override { *pWleftMin = 0; *pWleftMax = 0; *pWrightMin = 0; *pWrightMax = 0; }
    virtual std::vector<pgsTypes::TopWidthType> GetSupportedTopWidthTypes() const override { return std::vector<pgsTypes::TopWidthType>(); }
    virtual bool CanTopWidthVary() const override { return false; }
 
