@@ -242,12 +242,13 @@ public:
    struct StressDemand
    {
       pgsPointOfInterest m_Poi;
+      Float64 m_PrestressForcePerStrand; // this value changes along section
       Float64 m_TopStress;
       Float64 m_BottomStress;
    };
 
-   std::vector<DebondLevelType> ComputeDebondsForDemand(const std::vector<StressDemand>& demands, StrandIndexType nss, Float64 psForcePerStrand, Float64 allowTens, Float64 allowComp) const;
-
+   std::vector<DebondLevelType> ComputeDebondsForDemand(const std::vector<StressDemand>& demands, const GDRCONFIG& fullyBondedConfig, Float64 cgFullyBonded, 
+                                                        IntervalIndexType interval, Float64 allowTens, Float64 allowComp) const;
 
    // section zero is at GetDebondSectionLength from end of girder
    Float64 GetDebondSectionLocation(SectionIndexType sectionIdx, DebondEndType end) const;
@@ -256,11 +257,11 @@ public:
    void GetDebondSectionForLocation(Float64 location, SectionIndexType* pOutBoardSectionIdx, SectionIndexType* pInBoardSectionIdx, Float64* pOutToInDistance) const;
 
    // Given an amount of stress demand, return the minimum debond level to relieve the stress
-   void GetDebondLevelForTopTension(Float64 psForcePerStrand, StrandIndexType nss, Float64 tensDemand, Float64 outboardDistance,
+   void GetDebondLevelForTopTension(const StressDemand& demand, const GDRCONFIG& fullyBondedConfig, Float64 cgFullyBonded, IntervalIndexType interval, Float64 tensDemand, Float64 outboardDistance,
                                     Float64 Hg, Float64 Yb, Float64 Ag, Float64 St,
                                     DebondLevelType* pOutboardLevel, DebondLevelType* pInboardLevel) const;
 
-   void GetDebondLevelForBottomCompression(Float64 psForcePerStrand, StrandIndexType nss, Float64 tensDemand, Float64 outboardDistance,
+   void GetDebondLevelForBottomCompression(const StressDemand& demand, const GDRCONFIG& fullyBondedConfig, Float64 cgFullyBonded, IntervalIndexType interval, Float64 tensDemand, Float64 outboardDistance,
                                            Float64 Hg, Float64 Yb, Float64 Ag, Float64 Sb,
                                            DebondLevelType* pOutboardLevel, DebondLevelType* pInboardLevel) const;
 
@@ -747,7 +748,7 @@ private:
 
       void Init(Float64 Hg,IPoint2dCollection* strandLocations);
       // Stress relief from debonding at this level
-      Float64 ComputeReliefStress(Float64 psForcePerStrand,Float64 Hg,Float64 Yb, Float64 Ag, Float64 S) const;
+      Float64 ComputeReliefStress(Float64 pePerStrandFullyBonded, Float64 pePerStrandDebonded, StrandIndexType nperm, StrandIndexType ntemp, Float64 cgtot,Float64 Hg,Float64 Yb, Float64 Ag, Float64 S, SHARED_LOGFILE LOGFILE) const;
    };
 
    typedef std::vector<DebondLevel>                DebondLevelCollection;
@@ -767,6 +768,7 @@ private:
    std::vector<DebondLevelType> m_MaxPhysicalDebondLevels;
 
 
+   Float64 pgsStrandDesignTool::ComputePrestressForcePerStrand(const GDRCONFIG& fullyBondedConfig, const StressDemand& demand, const DebondLevel& lvl, IntervalIndexType interval, IPretensionForce* pPrestressForce) const;
    void GetHandlingDesignPointsOfInterest(const CSegmentKey& segmentKey,Float64 leftOverhang,Float64 rightOverhang,PoiAttributeType poiReference,PoiAttributeType supportAttribute, std::vector<pgsPointOfInterest>* pvPoi, Uint32 mode) const;
 
 

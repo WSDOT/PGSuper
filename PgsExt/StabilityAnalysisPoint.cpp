@@ -73,7 +73,21 @@ PoiAttributeType pgsStabilityAnalysisPoint::GetReferenceAttribute() const
 
 Float64 pgsStabilityAnalysisPoint::GetLocation() const
 {
-   return m_Poi.GetDistFromStart();
+   // WBFL Stability doesn't have the concept of Left/Right faces for abrupt
+   // section changes. When we have an abrupt section change, like at end block
+   // boundaries, move the POI just a little to the left/right.
+   if (m_Poi.HasAttribute(POI_SECTCHANGE_LEFTFACE) && !m_Poi.HasAttribute(POI_END_FACE))
+   {
+      return m_Poi.GetDistFromStart() - 0.0001;
+   }
+   else if (m_Poi.HasAttribute(POI_SECTCHANGE_RIGHTFACE) && !m_Poi.HasAttribute(POI_START_FACE))
+   {
+      return m_Poi.GetDistFromStart() + 0.0001;
+   }
+   else
+   {
+      return m_Poi.GetDistFromStart();
+   }
 }
 
 std::_tstring pgsStabilityAnalysisPoint::AsString(const unitmgtLengthData& lengthUnit,Float64 offset,bool bShowUnit) const

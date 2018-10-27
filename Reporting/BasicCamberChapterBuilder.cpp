@@ -193,6 +193,8 @@ void CBasicCamberChapterBuilder::Build_Deck(rptChapter* pChapter,CReportSpecific
    // Camber multipliers for table 3
    CamberMultipliers cm = pCamber->GetCamberMultipliers(segmentKey);
 
+   Float64 precamber = pCamber->GetPrecamber(segmentKey);
+
    for ( Int16 i = CREEP_MINTIME; i <= CREEP_MAXTIME; i++ )
    {
       pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
@@ -214,7 +216,7 @@ void CBasicCamberChapterBuilder::Build_Deck(rptChapter* pChapter,CReportSpecific
       *pPara << pTable1 << rptNewLine;
 
       // footnotes to release and storage tables
-      if (IsZero(pCamber->GetPrecamber(segmentKey)))
+      if (IsZero(precamber))
       {
          (*pTable1)(0, 0) << DEFL(_T("i")) << _T(" = ") << DEFL(_T("girder")) << _T(" + ") << DEFL(_T("ps")) << _T(" = Camber immediately after prestress release") << rptNewLine;
       }
@@ -223,13 +225,13 @@ void CBasicCamberChapterBuilder::Build_Deck(rptChapter* pChapter,CReportSpecific
          (*pTable1)(0, 0) << DEFL(_T("i")) << _T(" = ") << DEFL(_T("girder")) << _T(" + ") << DEFL(_T("ps")) << _T(" + ") << DEFL(_T("precamber")) << _T(" = Camber immediately after prestress release") << rptNewLine;
       }
       (*pTable1)(0,1) << DEFL(_T("creep1")) << _T(" = ") << YCR(details[0]) << _T("(") << DEFL(_T("girder Storage")) << _T(" + ") << DEFL(_T("ps Storage")) << _T(")") << rptNewLine;
-      if (IsZero(pCamber->GetPrecamber(segmentKey)))
+      if (IsZero(precamber))
       {
-         (*pTable1)(0, 1) << DEFL(_T("es")) << _T(" = ") << DEFL(_T("girder")) << _T(" + ") << DEFL(_T("ps")) << _T(" + ") << DEFL(_T("precamber")) << _T(" + ") << DEFL(_T("creep1")) << _T(" = Camber at end of storage = Camber at shipping") << rptNewLine;
+         (*pTable1)(0, 1) << DEFL(_T("es")) << _T(" = ") << DEFL(_T("girder")) << _T(" + ") << DEFL(_T("ps"))<< _T(" + ") << DEFL(_T("creep1")) << _T(" = Camber at end of storage = Camber at shipping") << rptNewLine;
       }
       else
       {
-         (*pTable1)(0, 1) << DEFL(_T("es")) << _T(" = ") << DEFL(_T("girder")) << _T(" + ") << DEFL(_T("ps")) << _T(" + ") << DEFL(_T("creep1")) << _T(" = Camber at end of storage = Camber at shipping") << rptNewLine;
+         (*pTable1)(0, 1) << DEFL(_T("es")) << _T(" = ") << DEFL(_T("girder")) << _T(" + ") << DEFL(_T("ps")) << _T(" + ") << DEFL(_T("precamber"))  << _T(" + ") << DEFL(_T("creep1")) << _T(" = Camber at end of storage = Camber at shipping") << rptNewLine;
       }
       (*pTable1)(0,1) << _T("Rows with ") << Bold(_T("bold text")) << _T(" are at the support locations after erection") << rptNewLine;
 
@@ -270,7 +272,7 @@ void CBasicCamberChapterBuilder::Build_Deck(rptChapter* pChapter,CReportSpecific
 
       // build table 3 footnotes
       *pPara << DEFL(_T("1")) << _T(" = ") << SCL(cm.ErectionFactor) << _T(" * (") << DEFL(_T("girder Erected")) << _T(" + ") << DEFL(_T("ps Erected")) << _T(")");
-      if (!IsZero(pCamber->GetPrecamber(segmentKey)))
+      if (!IsZero(precamber))
       {
          *pPara << _T(" + ") << DEFL(_T("precamber Erected"));
       }
@@ -372,6 +374,8 @@ void CBasicCamberChapterBuilder::Build_NoDeck(rptChapter* pChapter,CReportSpecif
 
    // Camber multipliers for table 3
    CamberMultipliers cm = pCamber->GetCamberMultipliers(segmentKey);
+   
+   Float64 precamber = pCamber->GetPrecamber(segmentKey);
 
    for ( Int16 i = CREEP_MINTIME; i <= CREEP_MAXTIME; i++ )
    {
@@ -397,7 +401,7 @@ void CBasicCamberChapterBuilder::Build_NoDeck(rptChapter* pChapter,CReportSpecif
       *pPara << pTable1 << rptNewLine;
 
       // footnotes to release and storage tables
-      if (IsZero(pCamber->GetPrecamber(segmentKey)))
+      if (IsZero(precamber))
       {
          (*pTable1)(0, 0) << DEFL(_T("i")) << _T(" = ") << DEFL(_T("girder")) << _T(" + ") << DEFL(_T("ps")) << _T(" = Camber immediately after prestress release") << rptNewLine;
       }
@@ -406,7 +410,7 @@ void CBasicCamberChapterBuilder::Build_NoDeck(rptChapter* pChapter,CReportSpecif
          (*pTable1)(0, 0) << DEFL(_T("i")) << _T(" = ") << DEFL(_T("girder")) << _T(" + ") << DEFL(_T("ps")) << _T(" + ") << DEFL(_T("precamber")) << _T(" = Camber immediately after prestress release") << rptNewLine;
       }
       (*pTable1)(0, 1) << DEFL(_T("creep1")) << _T(" = ") << YCR(details[0]) << _T("(") << DEFL(_T("girder Storage")) << _T(" + ") << DEFL(_T("ps Storage")) << _T(")") << rptNewLine;
-      if (IsZero(pCamber->GetPrecamber(segmentKey)))
+      if (IsZero(precamber))
       {
          (*pTable1)(0, 1) << DEFL(_T("es")) << _T(" = ") << DEFL(_T("girder")) << _T(" + ") << DEFL(_T("ps")) << _T(" + ") << DEFL(_T("creep1")) << _T(" = Camber at end of storage = Camber at shipping") << rptNewLine;
       }
@@ -474,7 +478,7 @@ void CBasicCamberChapterBuilder::Build_NoDeck(rptChapter* pChapter,CReportSpecif
 
       // build table 3 footnotes
       *pPara << DEFL(_T("1")) << _T(" = ") << SCL(cm.ErectionFactor) << _T(" * (") << DEFL(_T("girder Erected")) << _T(" + ") << DEFL(_T("ps Erected")) << _T(")");
-      if (!IsZero(pCamber->GetPrecamber(segmentKey)))
+      if (!IsZero(precamber))
       {
          *pPara << _T(" + ") << DEFL(_T("precamber Erected"));
       }

@@ -36,28 +36,15 @@ static char THIS_FILE[] = __FILE__;
 
 /////////////////////////////////////////////////////////////////////////////
 // 
-void CBulbTeeDistFactorEngineer::Init(/*bool treatAsWsDotI*/)
+void CBulbTeeDistFactorEngineer::Init()
 {
    ATLASSERT(!m_pImpl);
+   CComObject<CMultiWebDistFactorEngineer>* pEngineer;
+   CComObject<CMultiWebDistFactorEngineer>::CreateInstance(&pEngineer);
 
-   //if ( treatAsWsDotI)
-   //{
-   //   // WSDOT treats connected bulb tees as I beams
-   //   CComObject<CIBeamDistFactorEngineer>* pEngineer;
-   //   CComObject<CIBeamDistFactorEngineer>::CreateInstance(&pEngineer);
+   pEngineer->SetBeamType(CMultiWebDistFactorEngineer::btDeckBulbTee);
 
-   //   m_pImpl = pEngineer;
-   //}
-   //else
-   //{
-      // Otherwise bulb tees are same as other multi-web sections
-      CComObject<CMultiWebDistFactorEngineer>* pEngineer;
-      CComObject<CMultiWebDistFactorEngineer>::CreateInstance(&pEngineer);
-
-      pEngineer->SetBeamType(CMultiWebDistFactorEngineer::btDeckBulbTee);
-
-      m_pImpl = pEngineer;
-   //}
+   m_pImpl = pEngineer;
 
    ATLASSERT(m_pImpl);
 }
@@ -143,37 +130,5 @@ Float64 CBulbTeeDistFactorEngineer::GetSkewCorrectionFactorForShear(const CSpanK
 
 std::_tstring CBulbTeeDistFactorEngineer::GetComputationDescription(const CGirderKey& girderKey,const std::_tstring& libraryEntryName,pgsTypes::SupportedDeckType decktype, pgsTypes::AdjacentTransverseConnectivity connect)
 {
-   GET_IFACE(ISpecification,    pSpec);
-   GET_IFACE(ILibrary,pLib);
-
-   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
-   Int16 method = pSpecEntry->GetLiveLoadDistributionMethod();
-
-   // Things are only weird for WSDOT method
-   std::_tstring descr;
-   if (method==LLDF_WSDOT)
-   {
-      if (connect == pgsTypes::atcConnectedAsUnit)
-      {
-         descr = _T("AASHTO LRFD Method per Article 4.6.2.2. Using type (i,j) cross section connected transversely sufficiently to act as a unit.");
-      }
-      else
-      {
-         descr = _T("AASHTO LRFD Method per Article 4.6.2.2. Using type (i,j) cross section connected transversely only enough to prevent relative vertical displacement along interface.");
-      }
-
-      // special string if roa is ignored
-      GET_IFACE(ILiveLoads,pLiveLoads);
-      std::_tstring strAction( pLiveLoads->GetLLDFSpecialActionText() );
-      if ( !strAction.empty() )
-      {
-         descr += strAction;
-      }
-   }
-   else
-   {
-      return m_pImpl->GetComputationDescription(girderKey,libraryEntryName,decktype,connect);
-   }
-
-   return descr;
+   return m_pImpl->GetComputationDescription(girderKey, libraryEntryName, decktype, connect);
 }

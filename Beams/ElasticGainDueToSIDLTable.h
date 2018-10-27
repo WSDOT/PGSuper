@@ -44,6 +44,7 @@ private:
    CElasticGainDueToSIDLTable(ColumnIndexType NumColumns, IEAFDisplayUnits* pDisplayUnits);
 
    pgsTypes::BridgeAnalysisType m_BAT;
+   bool m_bHasDeckLoads;
    bool m_bHasUserLoads;
    bool m_bHasSidewalk;
    bool m_bHasOverlay;

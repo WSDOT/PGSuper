@@ -9,21 +9,19 @@ Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 44.00    6   8.00                     1     2     K4            18  0.6  270  23.01  15.67  10.75  10.75                                               4  37.0  4.0  4.000  5.000   2.186    -2.822     4354   0.710  0.814   3.247 -0.796 -0.071 -0.038 -0.906  64.54  137.92    1.75    5.00    5.00 
+ 44.00    6   8.00                     1     2     K4            18  0.6  270  23.01  15.67  11.00  11.00                                               4  37.0  4.0  4.000  5.000   2.193    -2.828     4361   0.710  0.814   3.247 -0.802 -0.071 -0.038 -0.912  64.54  137.76    1.75    5.00    5.00 
 
 
 The Specification Check was Not Successful
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
-Slab Offset ("A" Dimension) check failed
 
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 44.00    6   8.00                     1     4     K4            18  0.6  270  23.01  15.67  10.75  10.75                                               4  37.0  4.0  4.000  5.000   2.186    -2.822     4354   0.710  0.814   3.247 -0.796 -0.071 -0.038 -0.906  64.54  137.92    1.75    5.00    5.00 
+ 44.00    6   8.00                     1     4     K4            18  0.6  270  23.01  15.67  11.00  11.00                                               4  37.0  4.0  4.000  5.000   2.193    -2.828     4361   0.710  0.814   3.247 -0.802 -0.071 -0.038 -0.912  64.54  137.76    1.75    5.00    5.00 
 
 
 The Specification Check was Not Successful
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
-Slab Offset ("A" Dimension) check failed
 
 

@@ -258,10 +258,13 @@ void CTemporarySupportDlg::Init(const CBridgeDescription2* pBridgeDesc,SupportIn
 {
    m_BridgeDesc = *pBridgeDesc;
 
+   bool bNewTempSupport = false;
    if ( tsIdx == INVALID_INDEX )
    {
       // create a new temporary support at the mid-point of the first span
       // (is there a better location?)
+
+      bNewTempSupport = true;
       CTemporarySupportData* pTS = new CTemporarySupportData();
       Float64 spanLength = m_BridgeDesc.GetSpan(0)->GetSpanLength();
       Float64 station = m_BridgeDesc.GetPier(0)->GetStation() + spanLength/2; // try at center of first span
@@ -327,6 +330,18 @@ void CTemporarySupportDlg::Init(const CBridgeDescription2* pBridgeDesc,SupportIn
       }
 
       tsIdx = m_BridgeDesc.AddTemporarySupport(pTS,erectionEventIdx,removalEventIdx,castClosureJointEventIdx);
+   }
+
+   // Set dialog title
+   if (bNewTempSupport)
+   {
+      SetTitle(_T("New Temporary Support Details"));
+   }
+   else
+   {
+      CString strTitle;
+      strTitle.Format(_T("Temporary Support %d Details"), LABEL_TEMPORARY_SUPPORT(tsIdx));
+      SetTitle(strTitle);
    }
 
    m_pTS = m_BridgeDesc.GetTemporarySupport(tsIdx);

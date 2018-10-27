@@ -10652,6 +10652,16 @@ void CProjectAgentImp::DealWithGirderLibraryChanges(bool fromLibrary)
 
          const GirderLibraryEntry* pGdrEntry = pGirder->GetGirderLibraryEntry();
 
+         CComPtr<IBeamFactory> beamFactory;
+         pGdrEntry->GetBeamFactory(&beamFactory);
+         CComQIPtr<ISplicedBeamFactory> splicedBeamFactory(beamFactory);
+
+         std::vector<pgsTypes::SegmentVariationType> variations;
+         if (splicedBeamFactory)
+         {
+            variations = splicedBeamFactory->GetSupportedSegmentVariations(pGdrEntry->IsVariableDepthSectionEnabled());
+         }
+
          SegmentIndexType nSegments = pGirder->GetSegmentCount();
          for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
          {
@@ -10687,7 +10697,7 @@ void CProjectAgentImp::DealWithGirderLibraryChanges(bool fromLibrary)
             Float64 xfer_length = pPrestress->GetXferLength(segmentKey,pgsTypes::Permanent);
             Float64 min_xfer = pGdrEntry->GetMinDebondSectionLength(); 
 
-            if (min_xfer < xfer_length)
+            if (::IsLT(min_xfer,xfer_length,0.001))
             {
                std::_tostringstream os;
                SegmentIndexType nSegments = pGirder->GetSegmentCount();
@@ -10700,6 +10710,17 @@ void CProjectAgentImp::DealWithGirderLibraryChanges(bool fromLibrary)
                   os << _T("Span ") << LABEL_SPAN(segmentKey.groupIndex) << _T(" Girder ") << LABEL_GIRDER(segmentKey.girderIndex) << _T(": The minimum debond section length in the girder library is shorter than the transfer length (e.g., 60*Db). This may cause the debonding design algorithm to generate designs that do not pass a specification check.") << std::endl;
                }
                AddSegmentStatusItem(segmentKey, os.str() );
+            }
+
+            if (splicedBeamFactory)
+            {
+               auto found = std::find(std::begin(variations), std::end(variations), pSegment->GetVariationType());
+               if (found == std::end(variations))
+               {
+                  // the current setting for segment variation is no longer a valid
+                  // value, so change it to the first available value
+                  pSegment->SetVariationType(variations.front());
+               }
             }
          } // segment loop
       } // girder loop

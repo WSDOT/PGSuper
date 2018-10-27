@@ -251,15 +251,19 @@ void CUBeam2Factory::LayoutSectionChangePointsOfInterest(IBroker* pBroker,const 
       pgsPointOfInterest poiRightFace1(segmentKey, endBlockLength, POI_SECTCHANGE_RIGHTFACE);
       poiLeftFace1.CanMerge(false);
       poiRightFace1.CanMerge(false);
-      pPoiMgr->AddPointOfInterest(poiLeftFace1);
+      PoiIDType poiID = pPoiMgr->AddPointOfInterest(poiLeftFace1);
+      poiLeftFace1 = pPoiMgr->GetPointOfInterest(poiID);
+      poiRightFace1.SetDistFromStart(poiLeftFace1.GetDistFromStart(),true);
       pPoiMgr->AddPointOfInterest(poiRightFace1);
 
-      pgsPointOfInterest poiLeftFace2(segmentKey, gdrLength - endBlockLength, POI_SECTCHANGE_LEFTFACE);
       pgsPointOfInterest poiRightFace2(segmentKey, gdrLength - endBlockLength, POI_SECTCHANGE_RIGHTFACE);
-      poiLeftFace2.CanMerge(false);
+      pgsPointOfInterest poiLeftFace2(segmentKey, gdrLength - endBlockLength, POI_SECTCHANGE_LEFTFACE);
       poiRightFace2.CanMerge(false);
+      poiLeftFace2.CanMerge(false);
+      poiID = pPoiMgr->AddPointOfInterest(poiRightFace2);
+      poiRightFace2 = pPoiMgr->GetPointOfInterest(poiID);
+      poiLeftFace2.SetDistFromStart(poiRightFace2.GetDistFromStart(),true);
       pPoiMgr->AddPointOfInterest(poiLeftFace2);
-      pPoiMgr->AddPointOfInterest(poiRightFace2);
    }
 }
 

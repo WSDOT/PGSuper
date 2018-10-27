@@ -1,6 +1,6 @@
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 46.25    4  12.00                     1     1    U54G5          82  0.6  270  16.63   3.85  11.88  11.88                                              7.600 14.600   9.250    -5.844    15153   0.724  1.056   5.912 -3.162 -0.209 -0.182 -3.552 393.23  588.28    1.75    5.00    5.00 
+ 46.25    4  12.00                     1     1    U54G5          82  0.6  270  16.63   3.85  11.75  11.75                                              7.600 14.600   9.238    -5.838    15157   0.724  1.056   5.912 -3.152 -0.209 -0.182 -3.543 393.23  588.80    1.75    5.00    5.00 
 
 
 Girder design was Not Successful
@@ -11,13 +11,12 @@ Hauling checks failed
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 46.25    4  12.00                     1     2    U54G5          82  0.6  270  16.63   3.85  11.88  11.88                                              7.600 14.900   9.178    -5.797    15202   0.724  1.056   5.912 -3.053 -0.207 -0.181 -3.441 393.23  594.63    1.75    5.00    5.00 
+ 46.25    4  12.00                     1     2    U54G5          82  0.6  270  16.63   3.85  12.00  12.00                                              7.600 14.900   9.182    -5.799    15200   0.724  1.056   5.912 -3.057 -0.207 -0.181 -3.445 393.23  594.42    1.75    5.00    5.00 
 
 
 Girder design was Not Successful
 The Specification Check was Not Successful
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
 Hauling checks failed
-Slab Offset ("A" Dimension) check failed
 
 

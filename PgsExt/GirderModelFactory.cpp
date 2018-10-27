@@ -365,6 +365,11 @@ void pgsGirderModelFactory::ApplyLoads(IBroker* pBroker,const CSegmentKey& segme
       FindMember(*ppModel,start,&mbrIDStart,&xStart);
       FindMember(*ppModel,end,  &mbrIDEnd,  &xEnd);
 
+      if (mbrIDStart == mbrIDEnd && IsEqual(xStart, xEnd))
+      {
+         continue;
+      }
+
       CComPtr<IFem2dDistributedLoad> distLoad;
       if ( mbrIDStart == mbrIDEnd )
       {

@@ -62,11 +62,11 @@ DIAG_DEFINE_GROUP(MomCap,DIAG_GROUP_DISABLE,0);
 static const Float64 ANGLE_TOL=1.0e-6;
 static const Float64 D_TOL=1.0e-10;
 
-void AddShape2Section(IGeneralSection *pSection, IShape *pShape, IStressStrain *pfgMaterial, IStressStrain *pbgMaterial, Float64 ei)
+void AddShape2Section(IGeneralSection *pSection, IShape *pShape, IStressStrain *pfgMaterial, IStressStrain *pbgMaterial, Float64 ei,Float64 Le)
 {
 #if defined USE_ORIGINAL_SHAPE
    // Just add shape as is
-   pSection->AddShape(pShape, pfgMaterial, pbgMaterial, ei);
+   pSection->AddShape(pShape, pfgMaterial, pbgMaterial, ei, Le);
 #else
    // Convert shape to a fast polygon
    // get points from shape and create a faster poly
@@ -80,7 +80,7 @@ void AddShape2Section(IGeneralSection *pSection, IShape *pShape, IStressStrain *
 
    CComQIPtr<IShape> shape(poly);
 
-   pSection->AddShape(shape, pfgMaterial, pbgMaterial, ei);
+   pSection->AddShape(shape, pfgMaterial, pbgMaterial, ei, Le);
 #endif
 }
 
@@ -2032,7 +2032,8 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalI
                   dt = Max(dt,fabs(Yc-cy));
 
                   CComQIPtr<IShape> shape(bar_shape);
-                  AddShape2Section(section,shape,ssStrand,ssGirder,eps_initial);
+                  Float64 Le = 1.0; // elongation length (unity)
+                  AddShape2Section(section,shape,ssStrand,ssGirder,eps_initial,Le);
 
 #if defined _DEBUG
                   CComPtr<IShapeProperties> props;
@@ -2076,9 +2077,10 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalI
          dt = Max(dt,fabs(Yc-cy));
 
          Float64 epti = ept_initial[ductIdx];
+         Float64 Le = 1.0; // elongation length (unity)
 
          CComQIPtr<IShape> shape(tendon_shape);
-         AddShape2Section(section,shape,ssTendon,ssGirder,epti);
+         AddShape2Section(section,shape,ssTendon,ssGirder,epti,Le);
       }
    }
 
@@ -2161,7 +2163,7 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalI
          dt = Max(dt,fabs(Yc-cy));
 
          CComQIPtr<IShape> shape(square);
-         AddShape2Section(section,shape,ssGirderRebar,ssGirder,0);
+         AddShape2Section(section,shape,ssGirderRebar,ssGirder,0,1.0);
 
          item.Release();
       }
@@ -2178,14 +2180,14 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalI
       {
          CComQIPtr<IXYPosition> position(leftJointShape);
          position->Offset(-dx, -dy);
-         AddShape2Section(section, leftJointShape, ssLongitudinalJoints, nullptr, 0);
+         AddShape2Section(section, leftJointShape, ssLongitudinalJoints, nullptr, 0, 1.0);
       }
 
       if (rightJointShape)
       {
          CComQIPtr<IXYPosition> position(rightJointShape);
          position->Offset(-dx, -dy);
-         AddShape2Section(section, rightJointShape, ssLongitudinalJoints, nullptr, 0);
+         AddShape2Section(section, rightJointShape, ssLongitudinalJoints, nullptr, 0, 1.0);
       }
    }
 
@@ -2273,7 +2275,7 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalI
          posDeck->get_LocatorPoint(lpTopCenter,&pntTension);
       }
 
-      AddShape2Section(section,shapeDeck,ssSlab,nullptr,0.00);
+      AddShape2Section(section,shapeDeck,ssSlab,nullptr,0.00,1.0);
 
       // deck rebar if this is for negative moment
       if ( !bPositiveMoment )
@@ -2323,7 +2325,7 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalI
             dt = Max(dt,fabs(Yc-cy));
 
             CComQIPtr<IShape> shapeTop(posTop);
-            AddShape2Section(section,shapeTop,ssSlabRebar,ssSlab,0.00);
+            AddShape2Section(section,shapeTop,ssSlabRebar,ssSlab,0.00,1.0);
          }
 
 
@@ -2357,7 +2359,7 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalI
             dt = Max(dt,fabs(Yc-cy));
 
             CComQIPtr<IShape> shapeBottom(posBottom);
-            AddShape2Section(section,shapeBottom,ssSlabRebar,ssSlab,0.00);
+            AddShape2Section(section,shapeBottom,ssSlabRebar,ssSlab,0.00,1.0);
          }
       }
    }
@@ -2929,11 +2931,11 @@ void pgsMomentCapacityEngineer::ModelShape(IGeneralSection* pSection, IShape* pS
       if (bIsVoid == VARIANT_TRUE)
       {
          // void shape... use only a background material (backgrounds are subtracted)
-         AddShape2Section(pSection, pShape, nullptr, pMaterial, 0.00);
+         AddShape2Section(pSection, pShape, nullptr, pMaterial, 0.00, 1.0);
       }
       else
       {
-         AddShape2Section(pSection, pShape, pMaterial, nullptr, 0.00);
+         AddShape2Section(pSection, pShape, pMaterial, nullptr, 0.00, 1.0);
       }
    }
 }

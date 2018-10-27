@@ -637,11 +637,11 @@ bool pgsShearCapacityEngineer::GetGeneralInformation(IntervalIndexType intervalI
    // areas on tension side of axis
    if ( bTensionOnBottom )
    {
-      pscd->Ac = pSectProp->GetAcBottomHalf(poi); 
+      pscd->Ac = pSectProp->GetAcBottomHalf(intervalIdx,poi); 
    }
    else
    {
-      pscd->Ac = pSectProp->GetAcTopHalf(poi); 
+      pscd->Ac = pSectProp->GetAcTopHalf(intervalIdx,poi); 
    }
 
    return true;

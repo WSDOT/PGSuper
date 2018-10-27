@@ -189,6 +189,12 @@ void CMultiWebDistFactorEngineer::BuildReport(const CGirderKey& girderKey,rptCha
             {
                (*pPara) << _T("Gross, non-composite section properties") << rptNewLine;
             }
+
+            if (IsNonstructuralDeck(pBridge->GetDeckType()) && m_BeamType == IMultiWebDistFactorEngineer::btDeckBulbTee)
+            {
+               (*pPara) << _T("Girder Stem Properties") << rptNewLine;
+            }
+
             (*pPara) << _T("Area: A")<<Sub(_T("g"))<<_T(" = ")<< area.SetValue(span_lldf.Ag) << rptNewLine;
             (*pPara) << _T("Moment of Inertia: I")<<Sub(_T("g"))<<_T(" = ")<< inertia.SetValue(span_lldf.Ig) << rptNewLine;
             (*pPara) << _T("Top centroidal distance: Y") << Sub(_T("tg")) << _T(" = ") << xdim2.SetValue(span_lldf.Yt) << rptNewLine;
@@ -255,10 +261,14 @@ void CMultiWebDistFactorEngineer::BuildReport(const CGirderKey& girderKey,rptCha
       // Positive moment DF
       pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
       (*pChapter) << pPara;
-      if ( bContinuousAtStart || bContinuousAtEnd || bIntegralAtStart || bIntegralAtEnd )
+      if (bContinuousAtStart || bContinuousAtEnd || bIntegralAtStart || bIntegralAtEnd)
+      {
          (*pPara) << _T("Distribution Factor for Positive and Negative Moment in Span ") << LABEL_SPAN(spanIdx) << rptNewLine;
+      }
       else
+      {
          (*pPara) << _T("Distribution Factor for Positive Moment in Span ") << LABEL_SPAN(spanIdx) << rptNewLine;
+      }
       pPara = new rptParagraph;
       (*pChapter) << pPara;
 
@@ -500,37 +510,62 @@ lrfdLiveLoadDistributionFactorBase* CMultiWebDistFactorEngineer::GetLLDFParamete
    GET_IFACE(ILiveLoadDistributionFactors, pDistFactors);
    pDistFactors->VerifyDistributionFactorRequirements(poi);
 
-   plldf->b = pGirder->GetTopFlangeWidth(poi);
+   pgsPointOfInterest spPoi(poi); // section properties poi
+
+   if (pGirder->CanTopFlangeBeLongitudinallyThickened(segmentKey))
+   {
+      // for thickened top flanges, we want to use the properties for the nominal (non-thickened) section
+      pgsTypes::TopFlangeThickeningType topFlangeThickeningType = pGirder->GetTopFlangeThickeningType(segmentKey);
+      Float64 tft = pGirder->GetTopFlangeThickening(segmentKey);
+      if (topFlangeThickeningType == pgsTypes::tftEnds && !IsZero(tft))
+      {
+         GET_IFACE(IPointOfInterest, pPoi);
+         PoiList vPoi;
+         pPoi->GetPointsOfInterest(segmentKey, POI_ERECTED_SEGMENT | POI_5L, &vPoi);
+         ATLASSERT(vPoi.size() == 1);
+         spPoi = vPoi.front();
+      }
+      else if (topFlangeThickeningType == pgsTypes::tftMiddle && !IsZero(tft))
+      {
+         GET_IFACE(IPointOfInterest, pPoi);
+         PoiList vPoi;
+         pPoi->GetPointsOfInterest(segmentKey, POI_ERECTED_SEGMENT | POI_0L, &vPoi);
+         ATLASSERT(vPoi.size() == 1);
+         spPoi = vPoi.front();
+      }
+   }
+
+   plldf->b = pGirder->GetTopFlangeWidth(spPoi); // for LRFD C4.6.2.2.1-1
 
    GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
    IntervalIndexType llIntervalIdx      = pIntervals->GetLiveLoadInterval();
 
+   // properties for computing J (see below)
    Float64 Ix, Iy, A;
    if (0 < fcgdr)
    {
-      plldf->I = pSectProp->GetIxx(pgsTypes::sptGross,llIntervalIdx,poi,fcgdr);
-      Ix = pSectProp->GetIxx(pgsTypes::sptGross,llIntervalIdx,poi,fcgdr);
-      Iy = pSectProp->GetIyy(pgsTypes::sptGross,llIntervalIdx,poi,fcgdr);
-      A  = pSectProp->GetAg(pgsTypes::sptGross,llIntervalIdx,poi,fcgdr);
+      Ix = pSectProp->GetIxx(pgsTypes::sptGross,llIntervalIdx, spPoi,fcgdr);
+      Iy = pSectProp->GetIyy(pgsTypes::sptGross,llIntervalIdx, spPoi,fcgdr);
+      A  = pSectProp->GetAg(pgsTypes::sptGross,llIntervalIdx, spPoi,fcgdr);
+      plldf->I = Ix;
    }
    else
    {
-      plldf->I = pSectProp->GetIxx(pgsTypes::sptGross,llIntervalIdx,poi);
-      Ix = pSectProp->GetIxx(pgsTypes::sptGross,llIntervalIdx,poi);
-      Iy = pSectProp->GetIyy(pgsTypes::sptGross,llIntervalIdx,poi);
-      A  = pSectProp->GetAg(pgsTypes::sptGross,llIntervalIdx,poi);
+      Ix = pSectProp->GetIxx(pgsTypes::sptGross,llIntervalIdx, spPoi);
+      Iy = pSectProp->GetIyy(pgsTypes::sptGross,llIntervalIdx, spPoi);
+      A  = pSectProp->GetAg(pgsTypes::sptGross,llIntervalIdx, spPoi);
+      plldf->I = Ix;
    }
    
-   Float64 Yt;
-   Yt = pSectProp->GetY(pgsTypes::sptGross,releaseIntervalIdx,poi,pgsTypes::TopGirder);
+   Float64 Yt = pSectProp->GetY(pgsTypes::sptGross,releaseIntervalIdx, spPoi,pgsTypes::TopGirder);
 
    plldf->PossionRatio = 0.2;
 
    pgsTypes::TrafficBarrierOrientation side = pBarriers->GetNearestBarrier(segmentKey);
    plldf->CurbOffset = pBarriers->GetInterfaceWidth(side);
 
-   if ( pBridge->GetDeckType() == pgsTypes::sdtNone )
+   if ( IsNonstructuralDeck(pBridge->GetDeckType()) )
    {
       plldf->n = 1.0;
    }
@@ -573,28 +608,74 @@ lrfdLiveLoadDistributionFactorBase* CMultiWebDistFactorEngineer::GetLLDFParamete
    plldf->Ip = Ip;
    plldf->J = A*A*A*A/(40.0*Ip);
 
-   plldf->Ag = pSectProp->GetAg(pgsTypes::sptGross,releaseIntervalIdx,poi);
-   plldf->Ig = pSectProp->GetIxx(pgsTypes::sptGross,releaseIntervalIdx,poi);
+   // Non-composite girder properties
+   plldf->Ag = pSectProp->GetAg(pgsTypes::sptGross,releaseIntervalIdx, spPoi);
+   plldf->Ig = pSectProp->GetIxx(pgsTypes::sptGross,releaseIntervalIdx, spPoi);
 
-   // Assume slab thickness includes top flange
-   if ( !IsStructuralDeck(pBridge->GetDeckType()) )
+   if (IsNonstructuralDeck(pBridge->GetDeckType()) )
    {
-      plldf->ts = pGirder->GetMinTopFlangeThickness(poi);
+      plldf->ts = pGirder->GetMinTopFlangeThickness(spPoi);
       plldf->eg = plldf->Yt - plldf->ts/2;
+
+      if (m_BeamType == IMultiWebDistFactorEngineer::btDeckBulbTee)
+      {
+         // Ag and Ig is just the stem
+         // Get the top flange shape and subtract it from the total girder shape to get the stem by itself
+         GET_IFACE(IShapes, pShapes);
+         CComPtr<IShape> segment_shape;
+         pShapes->GetSegmentShape(releaseIntervalIdx, spPoi, false, pgsTypes::scGirder, pSectProp->GetHaunchAnalysisSectionPropertiesType(), &segment_shape);
+         CComQIPtr<IBulbTeeSection> btSection(segment_shape);
+         CComPtr<IBulbTee2> btShape;
+         btSection->get_Beam(&btShape);
+
+         CComPtr<IPoint2d> leftTop, leftBottom, topCentral, rightTop, rightBottom;
+         btShape->GetTopFlangePoints(&leftTop, &leftBottom, &topCentral, &rightTop, &rightBottom);
+
+         CComPtr<IPolyShape> flangeShape;
+         flangeShape.CoCreateInstance(CLSID_PolyShape);
+         flangeShape->AddPointEx(rightBottom);
+         flangeShape->AddPointEx(rightTop);
+         flangeShape->AddPointEx(topCentral);
+         flangeShape->AddPointEx(leftTop);
+         flangeShape->AddPointEx(leftBottom);
+
+         CComQIPtr<IShape> shape(flangeShape);
+         CComPtr<IShapeProperties> shape_props;
+         shape->get_ShapeProperties(&shape_props);
+
+         Float64 Aflange, Iflange, Ytflange, Ybflange;
+         shape_props->get_Area(&Aflange);
+         shape_props->get_Ixx(&Iflange);
+         shape_props->get_Ytop(&Ytflange);
+         shape_props->get_Ybottom(&Ybflange);
+         Float64 Hflange = Ytflange + Ybflange;
+
+         // Stem = Girder - Flange
+         Float64 Astem = plldf->Ag - Aflange;
+         Float64 Ystem = (plldf->Ag*plldf->Yt - Aflange*Ytflange) / Astem; // Treat Aflange as a "hole"... hence the subtraction.... Ystem is measured from top of original section
+
+         // Use parallel axis theorem to get Istem about stem CGx axis
+         Float64 Istem = plldf->Ig + plldf->Ag*(plldf->Yt - Ystem)*(plldf->Yt - Ystem) - (Iflange + Aflange*(Ytflange - Ystem)*(Ytflange - Ystem));
+
+         plldf->Ag = Astem;
+         plldf->Ig = Istem;
+         plldf->Yt = Ystem - Hflange; // measured from the top of the stem
+         plldf->ts = (plldf->ts + Hflange) / 2; // average top flange thickness
+         plldf->eg = plldf->Yt + plldf->ts / 2;
+      }
    }
    else
    {
-
-      Float64 ts = pBridge->GetStructuralSlabDepth(poi);
+      Float64 ts = pBridge->GetStructuralSlabDepth(spPoi);
 
       // Fillet adds to ts, if applicable, since beams are adjacent so the slab width is the same as the top flange width
-      if (!pSectProp->GetHaunchAnalysisSectionPropertiesType() == pgsTypes::hspZeroHaunch)
+      if (pSectProp->GetHaunchAnalysisSectionPropertiesType() != pgsTypes::hspZeroHaunch)
       {
          Float64 fillet = pBridge->GetFillet();
          ts += fillet;
       }
 
-      Float64 tf =  pGirder->GetMinTopFlangeThickness(poi);
+      Float64 tf =  pGirder->GetMinTopFlangeThickness(spPoi);
       plldf->ts = ts + tf;
 
       // location of cg of combined slab wrt top of girder
@@ -794,11 +875,11 @@ void CMultiWebDistFactorEngineer::ReportMoment(rptParagraph* pPara,MULTIWEB_LLDF
 
          (*pPara) << Bold(_T("Skew Correction Ignored for TxDOT Method")) << rptNewLine;
          (*pPara) << _T("Corrected Factor: mg") << Super(_T("ME")) << Sub(_T("1")) << _T(" = ") << scalar.SetValue(gM1.mg);
-         (lldf.Nl == 1 || gM1.mg >= gM2.mg) ? (*pPara) << Bold(_T(" < Controls")) << rptNewLine : (*pPara) << rptNewLine;
-         if ( lldf.Nl >= 2 )
+         (lldf.Nl == 1 || gM2.mg <= gM1.mg) ? (*pPara) << Bold(_T(" < Controls")) << rptNewLine : (*pPara) << rptNewLine;
+         if ( 2 <= lldf.Nl )
          {
             (*pPara) << _T("Corrected Factor: mg") << Super(_T("ME")) << Sub(_T("2+")) << _T(" = ") << scalar.SetValue(gM2.mg);
-            (gM2.mg > gM1.mg) ? (*pPara) << Bold(_T(" < Controls")) << rptNewLine : (*pPara) << rptNewLine;
+            (gM1.mg < gM2.mg) ? (*pPara) << Bold(_T(" < Controls")) << rptNewLine : (*pPara) << rptNewLine;
          }
       }
       else
@@ -867,17 +948,19 @@ void CMultiWebDistFactorEngineer::ReportMoment(rptParagraph* pPara,MULTIWEB_LLDF
             {
                (*pPara) << Bold(_T("Skew Correction")) << rptNewLine;
                Float64 skew_delta_max = ::ConvertToSysUnits( 10.0, unitMeasure::Degree );
-               if ( fabs(lldf.skew1 - lldf.skew2) < skew_delta_max )
+               if (fabs(lldf.skew1 - lldf.skew2) < skew_delta_max)
+               {
                   (*pPara) << rptRcImage(strImagePath + (bSIUnits ? _T("SkewCorrection_Moment_SI.png") : _T("SkewCorrection_Moment_US.png"))) << rptNewLine;
+               }
    
                (*pPara) << _T("Skew Correction Factor: = ") << scalar.SetValue(gM1.SkewCorrectionFactor) << rptNewLine;
                (*pPara) << rptNewLine;
                (*pPara) << _T("Skew Corrected Factor: mg") << Super(_T("ME")) << Sub(_T("1")) << _T(" = ") << scalar.SetValue(gM1.mg);
-               (lldf.Nl == 1 || gM1.mg >= gM2.mg) ? (*pPara) << Bold(_T(" < Controls")) << rptNewLine : (*pPara) << rptNewLine;
-               if ( lldf.Nl >= 2 )
+               (lldf.Nl == 1 || gM2.mg <= gM1.mg) ? (*pPara) << Bold(_T(" < Controls")) << rptNewLine : (*pPara) << rptNewLine;
+               if ( 2 <= lldf.Nl )
                {
                   (*pPara) << _T("Skew Corrected Factor: mg") << Super(_T("ME")) << Sub(_T("2+")) << _T(" = ") << scalar.SetValue(gM2.mg);
-                  (gM2.mg > gM1.mg) ? (*pPara) << Bold(_T(" < Controls")) << rptNewLine : (*pPara) << rptNewLine;   
+                  (gM1.mg < gM2.mg) ? (*pPara) << Bold(_T(" < Controls")) << rptNewLine : (*pPara) << rptNewLine;
                }
             }
          }
@@ -916,11 +999,11 @@ void CMultiWebDistFactorEngineer::ReportMoment(rptParagraph* pPara,MULTIWEB_LLDF
 
          (*pPara) << Bold(_T("Skew Correction Ignored for TxDOT Method")) << rptNewLine;
          (*pPara) << _T("Corrected Factor: mg") << Super(_T("ME")) << Sub(_T("1")) << _T(" = ") << scalar.SetValue(gM1.mg);
-         (lldf.Nl == 1 || gM1.mg >= gM2.mg) ? (*pPara) << Bold(_T(" < Controls")) << rptNewLine : (*pPara) << rptNewLine;
-         if ( lldf.Nl >= 2 )
+         (lldf.Nl == 1 || gM2.mg <= gM1.mg) ? (*pPara) << Bold(_T(" < Controls")) << rptNewLine : (*pPara) << rptNewLine;
+         if ( 2 <= lldf.Nl )
          {
             (*pPara) << _T("Corrected Factor: mg") << Super(_T("ME")) << Sub(_T("2+")) << _T(" = ") << scalar.SetValue(gM2.mg);
-            (gM2.mg > gM1.mg) ? (*pPara) << Bold(_T(" < Controls")) << rptNewLine : (*pPara) << rptNewLine;
+            (gM1.mg < gM2.mg) ? (*pPara) << Bold(_T(" < Controls")) << rptNewLine : (*pPara) << rptNewLine;
          }
       }
       else
@@ -956,7 +1039,7 @@ void CMultiWebDistFactorEngineer::ReportMoment(rptParagraph* pPara,MULTIWEB_LLDF
 
             (*pPara) << rptNewLine;
 
-            if ( lldf.Nl >= 2 )
+            if ( 2 <= lldf.Nl )
             {
                if (gM2.EqnData.bWasUsed )
                {
@@ -1024,7 +1107,7 @@ void CMultiWebDistFactorEngineer::ReportMoment(rptParagraph* pPara,MULTIWEB_LLDF
                ReportLanesBeamsMethod(pPara,gM1.LanesBeamsData,m_pBroker,pDisplayUnits);
             }
 
-            if ( lldf.Nl>=2 && gM2.LanesBeamsData.bWasUsed )
+            if ( 2 <= lldf.Nl && gM2.LanesBeamsData.bWasUsed )
             {
                (*pPara) << Bold(_T("2+ Loaded Lane: Number of Lanes over Number of Beams - Factor cannot be less than this")) << rptNewLine;
                (*pPara) << _T("Skew correction is not applied to Lanes/Beams method")<< rptNewLine;
@@ -1040,17 +1123,19 @@ void CMultiWebDistFactorEngineer::ReportMoment(rptParagraph* pPara,MULTIWEB_LLDF
             {
                (*pPara) << Bold(_T("Skew Correction")) << rptNewLine;
                Float64 skew_delta_max = ::ConvertToSysUnits( 10.0, unitMeasure::Degree );
-               if ( fabs(lldf.skew1 - lldf.skew2) < skew_delta_max )
+               if (fabs(lldf.skew1 - lldf.skew2) < skew_delta_max)
+               {
                   (*pPara) << rptRcImage(strImagePath + (bSIUnits ? _T("SkewCorrection_Moment_SI.png") : _T("SkewCorrection_Moment_US.png"))) << rptNewLine;
+               }
 
                (*pPara) << _T("Skew Correction Factor: = ") << scalar.SetValue(gM1.SkewCorrectionFactor) << rptNewLine;
                (*pPara) << rptNewLine;
                (*pPara) << _T("Skew Corrected Factor: mg") << Super(_T("ME")) << Sub(_T("1")) << _T(" = ") << scalar.SetValue(gM1.mg);
-               (lldf.Nl == 1 || gM1.mg >= gM2.mg) ? (*pPara) << Bold(_T(" < Controls")) << rptNewLine : (*pPara) << rptNewLine;
-               if ( lldf.Nl >= 2 )
+               (lldf.Nl == 1 || gM2.mg <= gM1.mg) ? (*pPara) << Bold(_T(" < Controls")) << rptNewLine : (*pPara) << rptNewLine;
+               if ( 2 <= lldf.Nl )
                {
                   (*pPara) << _T("Skew Corrected Factor: mg") << Super(_T("ME")) << Sub(_T("2+")) << _T(" = ") << scalar.SetValue(gM2.mg);
-                  (gM2.mg > gM1.mg) ? (*pPara) << Bold(_T(" < Controls")) << rptNewLine : (*pPara) << rptNewLine; 
+                  (gM1.mg < gM2.mg) ? (*pPara) << Bold(_T(" < Controls")) << rptNewLine : (*pPara) << rptNewLine;
                }
             }
          }
@@ -1094,11 +1179,11 @@ void CMultiWebDistFactorEngineer::ReportShear(rptParagraph* pPara,MULTIWEB_LLDFD
 
          (*pPara) << Bold(_T("Skew Correction Ignored for TxDOT Method")) << rptNewLine;
          (*pPara) << _T("Corrected Factor: mg") << Super(_T("VE")) << Sub(_T("1")) << _T(" = ") << scalar.SetValue(gV1.mg);
-         (lldf.Nl == 1 || gV1.mg >= gV2.mg) ? (*pPara) << Bold(_T(" < Controls")) << rptNewLine : (*pPara) << rptNewLine;
-         if ( lldf.Nl >= 2 )
+         (lldf.Nl == 1 || gV2.mg <= gV1.mg) ? (*pPara) << Bold(_T(" < Controls")) << rptNewLine : (*pPara) << rptNewLine;
+         if ( 2 <= lldf.Nl )
          {
             (*pPara) << _T("Corrected Factor: mg") << Super(_T("VE")) << Sub(_T("2+")) << _T(" = ") << scalar.SetValue(gV2.mg);
-            (gV2.mg > gV1.mg) ? (*pPara) << Bold(_T(" < Controls")) << rptNewLine : (*pPara) << rptNewLine;
+            (gV1.mg < gV2.mg) ? (*pPara) << Bold(_T(" < Controls")) << rptNewLine : (*pPara) << rptNewLine;
          }
 
       }
@@ -1126,7 +1211,7 @@ void CMultiWebDistFactorEngineer::ReportShear(rptParagraph* pPara,MULTIWEB_LLDFD
 
          (*pPara) << rptNewLine;
 
-         if ( lldf.Nl >= 2 )
+         if ( 2 <= lldf.Nl )
          {
             if ( gV2.EqnData.bWasUsed )
             {
@@ -1170,11 +1255,11 @@ void CMultiWebDistFactorEngineer::ReportShear(rptParagraph* pPara,MULTIWEB_LLDFD
                (*pPara) << _T("Skew Correction Factor: = ") << scalar.SetValue(gV1.SkewCorrectionFactor) << rptNewLine;
                (*pPara) << rptNewLine;
                (*pPara) << _T("Skew Corrected Factor: mg") << Super(_T("VE")) << Sub(_T("1")) << _T(" = ") << scalar.SetValue(gV1.mg);
-               (lldf.Nl == 1 || gV1.mg >= gV2.mg) ? (*pPara) << Bold(_T(" < Controls")) << rptNewLine : (*pPara) << rptNewLine;
-               if ( lldf.Nl >= 2 )
+               (lldf.Nl == 1 || gV2.mg <= gV1.mg) ? (*pPara) << Bold(_T(" < Controls")) << rptNewLine : (*pPara) << rptNewLine;
+               if ( 2 <= lldf.Nl )
                {
                   (*pPara) << _T("Skew Corrected Factor: mg") << Super(_T("VE")) << Sub(_T("2+")) << _T(" = ") << scalar.SetValue(gV2.mg);
-                  (gV2.mg > gV1.mg) ? (*pPara) << Bold(_T(" < Controls")) << rptNewLine : (*pPara)  << rptNewLine;
+                  (gV1.mg < gV2.mg) ? (*pPara) << Bold(_T(" < Controls")) << rptNewLine : (*pPara)  << rptNewLine;
                }
             }
          }
@@ -1204,11 +1289,11 @@ void CMultiWebDistFactorEngineer::ReportShear(rptParagraph* pPara,MULTIWEB_LLDFD
 
          (*pPara) << Bold(_T("Skew Correction Ignored for TxDOT Method")) << rptNewLine;
          (*pPara) << _T("Corrected Factor: mg") << Super(_T("VE")) << Sub(_T("1")) << _T(" = ") << scalar.SetValue(gV1.mg);
-         (lldf.Nl == 1 || gV1.mg >= gV2.mg) ? (*pPara) << Bold(_T(" < Controls")) << rptNewLine : (*pPara) << rptNewLine;
-         if ( lldf.Nl >= 2 )
+         (lldf.Nl == 1 || gV2.mg <= gV1.mg) ? (*pPara) << Bold(_T(" < Controls")) << rptNewLine : (*pPara) << rptNewLine;
+         if ( 2 <= lldf.Nl )
          {
             (*pPara) << _T("Corrected Factor: mg") << Super(_T("VE")) << Sub(_T("2+")) << _T(" = ") << scalar.SetValue(gV2.mg);
-            (gV2.mg > gV1.mg) ? (*pPara) << Bold(_T(" < Controls")) << rptNewLine : (*pPara) << rptNewLine;
+            (gV1.mg < gV2.mg) ? (*pPara) << Bold(_T(" < Controls")) << rptNewLine : (*pPara) << rptNewLine;
          }
 
       }
@@ -1237,7 +1322,7 @@ void CMultiWebDistFactorEngineer::ReportShear(rptParagraph* pPara,MULTIWEB_LLDFD
 
          (*pPara) << rptNewLine;
 
-         if ( lldf.Nl >= 2 )
+         if ( 2 <= lldf.Nl )
          {
             if ( gV2.EqnData.bWasUsed )
             {
@@ -1270,11 +1355,11 @@ void CMultiWebDistFactorEngineer::ReportShear(rptParagraph* pPara,MULTIWEB_LLDFD
                (*pPara) << _T("Skew Correction Factor: = ") << scalar.SetValue(gV1.SkewCorrectionFactor) << rptNewLine;
                (*pPara) << rptNewLine;
                (*pPara) << _T("Skew Corrected Factor: mg") << Super(_T("VI")) << Sub(_T("1")) << _T(" = ") << scalar.SetValue(gV1.mg);
-               (lldf.Nl == 1 || gV1.mg >= gV2.mg) ? (*pPara) << Bold(_T(" < Controls")) << rptNewLine : (*pPara) << rptNewLine;
-               if ( lldf.Nl >= 2 )
+               (lldf.Nl == 1 || gV2.mg <= gV1.mg) ? (*pPara) << Bold(_T(" < Controls")) << rptNewLine : (*pPara) << rptNewLine;
+               if ( 2 <= lldf.Nl )
                {
                   (*pPara) << _T("Skew Corrected Factor: mg") << Super(_T("VI")) << Sub(_T("2+")) << _T(" = ") << scalar.SetValue(gV2.mg);
-                  (gV2.mg > gV1.mg) ? (*pPara) << Bold(_T(" < Controls")) << rptNewLine : (*pPara) << rptNewLine;
+                  (gV1.mg < gV2.mg) ? (*pPara) << Bold(_T(" < Controls")) << rptNewLine : (*pPara) << rptNewLine;
                }
             }
          }
@@ -1303,12 +1388,23 @@ std::_tstring CMultiWebDistFactorEngineer::GetComputationDescription(const CGird
    }
    else if ( lldfMethod == LLDF_WSDOT || lldfMethod == LLDF_LRFD )
    {
-      osdescr << _T("AASHTO LRFD Method per Article 4.6.2.2. Using type (i,j) cross section ");
+      if (lldfMethod == LLDF_WSDOT)
+      {
+         osdescr << _T("WSDOT Method per Bridge Design Manual Section 3.9.3A. Using type (i,j) cross section ");
+      }
+      else
+      {
+         osdescr << _T("AASHTO LRFD Method per Article 4.6.2.2. Using type (i,j) cross section ");
+      }
 
       if (connect == pgsTypes::atcConnectedAsUnit)
+      {
          osdescr << _T("connected transversely sufficiently to act as a unit.");
+      }
       else
+      {
          osdescr << _T("connected transversely only enough to prevent relative vertical displacement along interface.");
+      }
    }
    else
    {

@@ -26,6 +26,7 @@
 #include "resource.h"
 
 #include <BridgeLink.h>
+#include "..\PGSuperDocBase.h" // for PGSUPER_DOCUMENT_ROOT_NODE_VERSION
 
 #include "TxDOTOptionalDesignUtilities.h"
 #include "TxDOTOptionalDesignDoc.h"
@@ -545,25 +546,7 @@ Float64 CTxDOTOptionalDesignDoc::GetRootNodeVersion()
       return 2.0;
    else
    {
-      // Big assumption here that TOGA uses the same dll versioning as PGSuper
-      AFX_MANAGE_STATE(AfxGetStaticModuleState());
-      CTxDOTAgentApp* pApp = (CTxDOTAgentApp*)AfxGetApp();
-      CString strVersion = pApp->GetVersion();
-
-      // Get left-most number
-      Float64 vers = -1.0;
-      int loc = strVersion.Find(_T("."));
-      if (loc != -1)
-      {
-         CString strV = strVersion.Left(loc);
-         long verl;
-         if (sysTokenizer::ParseLong(strV, &verl))
-         {
-            vers = verl;
-         }
-      }
-
-      return vers;
+      return PGSUPER_DOCUMENT_ROOT_NODE_VERSION;
    }
 }
 

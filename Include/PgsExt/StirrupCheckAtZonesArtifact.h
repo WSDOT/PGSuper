@@ -32,6 +32,8 @@
 #include <PgsExt\PgsExtExp.h>
 #endif
 
+#include <array>
+
 // LOCAL INCLUDES
 //
 
@@ -187,45 +189,25 @@ public:
    void SetSplittingZoneLengthFactor(Float64 bzlf);
    bool   Passed() const;
 
-   // Start of girder
-   Float64 GetStartH() const;
-   void SetStartH(Float64 h);
-   Float64 GetStartSplittingZoneLength() const;
-   void SetStartSplittingZoneLength(Float64 bzl);
-   Float64 GetStartFs() const;
-   void SetStartFs(Float64 fs);
-   Float64 GetStartAvs() const;
-   void SetStartAvs(Float64 avs);
-   Float64 GetStartAps() const;
-   void SetStartAps(Float64 aps);
-   Float64 GetStartFpj() const;
-   void SetStartFpj(Float64 fpj);
-   Float64 GetStartLossesAfterTransfer() const;
-   void SetStartLossesAfterTransfer(Float64 dFpT);
-   Float64 GetStartSplittingForce() const;
-   Float64 GetStartSplittingResistance() const;
-   void SetStartSplittingResistance(Float64 p);
-   bool   StartPassed() const;
-
-   // End of girder
-   Float64 GetEndH() const;
-   void SetEndH(Float64 h);
-   Float64 GetEndSplittingZoneLength() const;
-   void SetEndSplittingZoneLength(Float64 bzl);
-   Float64 GetEndFs() const;
-   void SetEndFs(Float64 fs);
-   Float64 GetEndAvs() const;
-   void SetEndAvs(Float64 avs);
-   Float64 GetEndAps() const;
-   void SetEndAps(Float64 aps);
-   Float64 GetEndFpj() const;
-   void SetEndFpj(Float64 fpj);
-   Float64 GetEndLossesAfterTransfer() const;
-   void SetEndLossesAfterTransfer(Float64 dFpT);
-   Float64 GetEndSplittingForce() const;
-   Float64 GetEndSplittingResistance() const;
-   void SetEndSplittingResistance(Float64 p);
-   bool   EndPassed() const;
+   Float64 GetH(pgsTypes::MemberEndType end) const;
+   void SetH(pgsTypes::MemberEndType end,Float64 h);
+   Float64 GetSplittingZoneLength(pgsTypes::MemberEndType end) const;
+   void SetSplittingZoneLength(pgsTypes::MemberEndType end,Float64 bzl);
+   Float64 GetFs(pgsTypes::MemberEndType end) const;
+   void SetFs(pgsTypes::MemberEndType end,Float64 fs);
+   Float64 GetAvs(pgsTypes::MemberEndType end) const;
+   void SetAvs(pgsTypes::MemberEndType end,Float64 avs);
+   Float64 GetAps(pgsTypes::MemberEndType end,pgsTypes::StrandType strandType) const;
+   void SetAps(pgsTypes::MemberEndType end,pgsTypes::StrandType strandType, Float64 aps);
+   Float64 GetFpj(pgsTypes::MemberEndType end,pgsTypes::StrandType strandType) const;
+   void SetFpj(pgsTypes::MemberEndType end,pgsTypes::StrandType strandType, Float64 fpj);
+   Float64 GetLossesAfterTransfer(pgsTypes::MemberEndType end,pgsTypes::StrandType strandType) const;
+   void SetLossesAfterTransfer(pgsTypes::MemberEndType end,pgsTypes::StrandType strandType, Float64 dFpT);
+   Float64 GetSplittingForce(pgsTypes::MemberEndType end,pgsTypes::StrandType strandType) const;
+   Float64 GetTotalSplittingForce(pgsTypes::MemberEndType end) const;
+   Float64 GetSplittingResistance(pgsTypes::MemberEndType end) const;
+   void SetSplittingResistance(pgsTypes::MemberEndType end,Float64 p);
+   bool Passed(pgsTypes::MemberEndType end) const;
 
    // GROUP: ACCESS
    // GROUP: INQUIRY
@@ -250,23 +232,15 @@ private:
    pgsTypes::SplittingDirection m_SplittingDirection;
    Float64 m_SplittingZoneLengthFactor;
 
-   Float64 m_StartSplittingZoneLength;
-   Float64 m_StartH;
-   Float64 m_StartAvs;
-   Float64 m_StartAps;
-   Float64 m_StartFpj;
-   Float64 m_StartdFpT;
-   Float64 m_StartFs;
-   Float64 m_StartPr; // resistance
-
-   Float64 m_EndSplittingZoneLength;
-   Float64 m_EndH;
-   Float64 m_EndAvs;
-   Float64 m_EndAps;
-   Float64 m_EndFpj;
-   Float64 m_EnddFpT;
-   Float64 m_EndFs;
-   Float64 m_EndPr; // resistance
+   // array index is pgsTypes::MemberEndType
+   std::array<Float64,2> m_SplittingZoneLength;
+   std::array<Float64, 2> m_H;
+   std::array<Float64, 2> m_Avs;
+   std::array<std::array<Float64, 3>, 2> m_Aps;  //[endType][strandType]
+   std::array<std::array<Float64, 3>, 2> m_Fpj; //[endType][strandType]
+   std::array<std::array<Float64, 3>, 2> m_dFpT; //[endType][strandType]
+   std::array<Float64, 2> m_Fs;
+   std::array<Float64, 2> m_Pr; // resistance
 
    // GROUP: LIFECYCLE
    // GROUP: OPERATORS

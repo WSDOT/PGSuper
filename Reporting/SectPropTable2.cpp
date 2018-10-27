@@ -234,6 +234,9 @@ rptRcTable* CSectionPropertiesTable2::Build(IBroker* pBroker,
    PoiAttributeType poiRefAttribute = (intervalIdx < erectionIntervalIdx ? POI_RELEASED_SEGMENT : POI_ERECTED_SEGMENT);
    PoiList vPoi;
    pIPoi->GetPointsOfInterest(segmentKey, poiRefAttribute, &vPoi);
+   PoiList vPoiSpecial;
+   pIPoi->GetPointsOfInterest(segmentKey, POI_SPECIAL, &vPoiSpecial);
+   pIPoi->MergePoiLists(vPoi, vPoiSpecial, &vPoi);
 
    RowIndexType row = xs_table->GetNumberOfHeaderRows();
 
@@ -296,7 +299,7 @@ rptRcTable* CSectionPropertiesTable2::Build(IBroker* pBroker,
 
       if ( compositeDeckIntervalIdx <= intervalIdx && bIsCompositeDeck  && (spType == pgsTypes::sptGross || spType == pgsTypes::sptTransformed) )
       {
-         (*xs_table)(row,col++) << l3.SetValue(pSectProp->GetQSlab(poi));
+         (*xs_table)(row,col++) << l3.SetValue(pSectProp->GetQSlab(intervalIdx,poi));
          (*xs_table)(row,col++) << l1.SetValue(pSectProp->GetEffectiveFlangeWidth(poi));
       }
       else if ( intervalIdx <= compositeDeckIntervalIdx )

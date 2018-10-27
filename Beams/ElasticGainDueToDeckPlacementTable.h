@@ -45,8 +45,10 @@ private:
    CElasticGainDueToDeckPlacementTable(ColumnIndexType NumColumns, IEAFDisplayUnits* pDisplayUnits);
 
    pgsTypes::BridgeAnalysisType m_BAT;
+   bool m_bHasDeckLoads;
    bool m_bHasDeckPanel;
    bool m_bHasUserLoads;
+   bool m_bHasLongitudinalJoints;
 
    DECLARE_UV_PROTOTYPE( rptPointOfInterest,  spanloc );
    DECLARE_UV_PROTOTYPE( rptPointOfInterest,  gdrloc );

@@ -604,55 +604,38 @@ void CUBeamDistFactorEngineer::ReportMoment(IndexType spanOrPierIdx, rptParagrap
       }
       else
       {
-         GET_IFACE(IBridge,pBridge);
-
-         // if roadway width is > 20ft and TxDOT, and nb>=3, use multiple lane method
-         GirderIndexType nb = pBridge->GetGirderCountBySpan(spanOrPierIdx);
-         Float64 w20 = ::ConvertToSysUnits(20.0, unitMeasure::Feet);
-         if (pSpecEntry->GetLiveLoadDistributionMethod()==LLDF_TXDOT && lldf.wCurbToCurb>=w20 && nb>=3 
-             && !(gM1.ControllingMethod == LEVER_RULE) && !(gM1.ControllingMethod & LANES_DIV_BEAMS))
+         if (gM1.EqnData.bWasUsed )
          {
-            // Using TxDOT spec and w >= 20.0
-            (*pPara) << Bold(_T("1 Loaded Lane: TxDOT method and roadway width is >= 20.0 ft, use multiple lane method")) << rptNewLine;
-            (*pPara) << _T("mg") << Super(_T("ME")) << Sub(_T("1")) << _T(" = ") << _T("mg") << Super(_T("ME")) << Sub(_T("2")) << _T(" = ") << scalar.SetValue(gM1.mg) << rptNewLine;
+            // Using WSDOT spec's, and the slab overhang is <= half the girder spacing
+            (*pPara) << Bold(_T("1 Loaded Lane: Spec Equations")) << rptNewLine;
+            (*pPara) << rptRcImage(strImagePath + (bSIUnits ? _T("mg_1_MI_Type_C_SI.png") : _T("mg_1_MI_Type_C_US.png"))) << rptNewLine;
+            (*pPara) << _T("mg") << Super(_T("ME")) << Sub(_T("1")) << _T(" = ") << _T("mg") << Super(_T("MI")) << Sub(_T("1")) << _T(" = ") << scalar.SetValue(gM1.EqnData.mg) << rptNewLine;
          }
-         else
+
+         if ( gM1.LeverRuleData.bWasUsed )
          {
-
-            if (gM1.EqnData.bWasUsed )
+            (*pPara) << Bold(_T("1 Loaded Lane: Lever Rule")) << rptNewLine;
+            Float64 factor = 1.0;
+            if (pSpecEntry->GetLiveLoadDistributionMethod() == LLDF_TXDOT)
             {
-               // Using WSDOT spec's, and the slab overhang is <= half the girder spacing
-               (*pPara) << Bold(_T("1 Loaded Lane: Spec Equations")) << rptNewLine;
-               (*pPara) << rptRcImage(strImagePath + (bSIUnits ? _T("mg_1_MI_Type_C_SI.png") : _T("mg_1_MI_Type_C_US.png"))) << rptNewLine;
-               (*pPara) << _T("mg") << Super(_T("ME")) << Sub(_T("1")) << _T(" = ") << _T("mg") << Super(_T("MI")) << Sub(_T("1")) << _T(" = ") << scalar.SetValue(gM1.EqnData.mg) << rptNewLine;
+               (*pPara) <<_T("  For TxDOT method, do not apply multiple presence factor and multiply lever rule result by 0.9")<< rptNewLine;
+               factor = 0.9;
             }
 
-            if ( gM1.LeverRuleData.bWasUsed )
-            {
-               (*pPara) << Bold(_T("1 Loaded Lane: Lever Rule")) << rptNewLine;
-               Float64 factor = 1.0;
-               if (pSpecEntry->GetLiveLoadDistributionMethod() == LLDF_TXDOT)
-               {
-                  (*pPara) <<_T("  For TxDOT method, do not apply multiple presence factor and multiply lever rule result by 0.9")<< rptNewLine;
-                  factor = 0.9;
-               }
+            ReportLeverRule(pPara,true,factor,gM1.LeverRuleData,m_pBroker,pDisplayUnits);
+         }
 
-               ReportLeverRule(pPara,true,factor,gM1.LeverRuleData,m_pBroker,pDisplayUnits);
-            }
+         if ( gM1.RigidData.bWasUsed )
+         {
+            (*pPara) << Bold(_T("1 Loaded Lane: Rigid Method")) << rptNewLine;
+            ReportRigidMethod(pPara,gM1.RigidData,m_pBroker,pDisplayUnits);
+         }
 
-            if ( gM1.RigidData.bWasUsed )
-            {
-               (*pPara) << Bold(_T("1 Loaded Lane: Rigid Method")) << rptNewLine;
-               ReportRigidMethod(pPara,gM1.RigidData,m_pBroker,pDisplayUnits);
-            }
-
-            if ( gM1.LanesBeamsData.bWasUsed )
-            {
-               (*pPara) << Bold(_T("1 Loaded Lane: Number of Lanes over Number of Beams - Factor cannot be less than this")) << rptNewLine;
-               (*pPara) << _T("Skew correction is not applied to Lanes/Beams method")<< rptNewLine;
-               ReportLanesBeamsMethod(pPara,gM1.LanesBeamsData,m_pBroker,pDisplayUnits);
-            }
-
+         if ( gM1.LanesBeamsData.bWasUsed )
+         {
+            (*pPara) << Bold(_T("1 Loaded Lane: Number of Lanes over Number of Beams")) << rptNewLine;
+            (*pPara) << _T("Skew correction is not applied to Lanes/Beams method")<< rptNewLine;
+            ReportLanesBeamsMethod(pPara,gM1.LanesBeamsData,m_pBroker,pDisplayUnits);
          }
       }
 
@@ -716,7 +699,7 @@ void CUBeamDistFactorEngineer::ReportMoment(IndexType spanOrPierIdx, rptParagrap
          (*pPara) << rptNewLine;
       }
 
-      if ( gM2.LanesBeamsData.bWasUsed && gM1.LanesBeamsData.bWasUsed )
+      if (gM1.ControllingMethod & LANES_DIV_BEAMS &&  gM2.ControllingMethod & LANES_DIV_BEAMS ) 
       {
          (*pPara) << _T("Skew Correction not applied to N")<<Sub(_T("l"))<<_T("/N")<<Sub(_T("b"))<<_T(" method")<< rptNewLine;
          if ( lldf.Nl >= 2 )
@@ -740,12 +723,21 @@ void CUBeamDistFactorEngineer::ReportMoment(IndexType spanOrPierIdx, rptParagrap
             (*pPara) << _T("Skew Correction Factor: = ") << scalar.SetValue(gM1.SkewCorrectionFactor) << rptNewLine;
             (*pPara) << rptNewLine;
             (*pPara) << _T("Skew Corrected Factor: mg") << Super(_T("ME")) << Sub(_T("1")) << _T(" = ") << scalar.SetValue(gM1.mg);
-            (lldf.Nl == 1 || gM1.mg >= gM2.mg) ? (*pPara) << Bold(_T(" < Controls")) << rptNewLine : (*pPara) << rptNewLine;
+
+            bool singleControlled = !(gM1.ControllingMethod & OVERRIDE_USING_MULTILANE_FACTOR) && (lldf.Nl == 1 || gM1.mg >= gM2.mg);
+
+            (singleControlled) ? (*pPara) << Bold(_T(" < Controls")) << rptNewLine: (*pPara) << rptNewLine;
+
             if ( lldf.Nl >= 2 )
             {
                (*pPara) << _T("Skew Corrected Factor: mg") << Super(_T("ME")) << Sub(_T("2+")) << _T(" = ") << scalar.SetValue(gM2.mg);
-               (gM2.mg > gM1.mg) ? (*pPara) << Bold(_T(" < Controls")) << rptNewLine : (*pPara) << rptNewLine;
+               (!singleControlled) ? (*pPara) << Bold(_T(" < Controls")) << rptNewLine : (*pPara) << rptNewLine;
             }
+         }
+
+         if (lldf.Method==LLDF_TXDOT && gM1.ControllingMethod & OVERRIDE_USING_MULTILANE_FACTOR)
+         {
+            (*pPara) << Italic(_T("TxDOT method, and roadway width is >= 20.0 ft: ")<<Bold(_T("multi-lane factor controls."))) << rptNewLine << rptNewLine;
          }
       }
    }
@@ -767,7 +759,7 @@ void CUBeamDistFactorEngineer::ReportMoment(IndexType spanOrPierIdx, rptParagrap
 
       if ( gM1.LanesBeamsData.bWasUsed )
       {
-         (*pPara) << Bold(_T("1 Loaded Lane: Number of Lanes over Number of Beams - Factor cannot be less than this")) << rptNewLine;
+         (*pPara) << Bold(_T("1 Loaded Lane: Number of Lanes over Number of Beams")) << rptNewLine;
          (*pPara) << _T("Skew correction is not applied to Lanes/Beams method")<< rptNewLine;
          ReportLanesBeamsMethod(pPara,gM1.LanesBeamsData,m_pBroker,pDisplayUnits);
       }
@@ -800,7 +792,7 @@ void CUBeamDistFactorEngineer::ReportMoment(IndexType spanOrPierIdx, rptParagrap
          (*pPara) << rptNewLine;
       }
 
-      if ( gM2.LanesBeamsData.bWasUsed && gM1.LanesBeamsData.bWasUsed )
+      if (gM1.ControllingMethod & LANES_DIV_BEAMS &&  gM2.ControllingMethod & LANES_DIV_BEAMS ) 
       {
          (*pPara) << _T("Skew Correction not applied to N")<<Sub(_T("l"))<<_T("/N")<<Sub(_T("b"))<<_T(" method")<< rptNewLine;
          if ( lldf.Nl >= 2 )
@@ -854,54 +846,38 @@ void CUBeamDistFactorEngineer::ReportShear(IndexType spanOrPierIdx,rptParagraph*
       }
       else
       {
-         GET_IFACE(IBridge,pBridge);
-
-         // if roadway width is > 20ft and TxDOT, and nb>=3, use multiple lane method
-         GirderIndexType nb = pBridge->GetGirderCountBySpan(spanOrPierIdx);
-         Float64 roadwayWidth = pBridge->GetCurbToCurbWidth(0.00);
-         Float64 w20 = ::ConvertToSysUnits(20.0, unitMeasure::Feet);
-         if (pSpecEntry->GetLiveLoadDistributionMethod()==LLDF_TXDOT && roadwayWidth>=w20 && nb>=3 
-             && !(gV1.ControllingMethod == LEVER_RULE) && !(gV1.ControllingMethod & LANES_DIV_BEAMS))
+         if ( gV1.EqnData.bWasUsed )
          {
-            // Using TxDOT spec and w >= 20.0
-            (*pPara) << Bold(_T("1 Loaded Lane: TxDOT method and roadway width is >= 20.0 ft, use multiple lane method")) << rptNewLine;
-            (*pPara) << _T("mg") << Super(_T("VE")) << Sub(_T("1")) << _T(" = ") << _T("mg") << Super(_T("VE")) << Sub(_T("2")) << _T(" = ") << scalar.SetValue(gV1.mg) << rptNewLine;
+            (*pPara) << Bold(_T("1 Loaded Lane: Spec Equations")) << rptNewLine;
+            (*pPara) << rptRcImage(strImagePath + (bSIUnits ? _T("mg_1_VI_Type_C_SI.png") : _T("mg_1_VI_Type_C_US.png"))) << rptNewLine;
+            (*pPara) << _T("mg") << Super(_T("VE")) << Sub(_T("1")) << _T(" = ") << _T("mg") << Super(_T("VI")) << Sub(_T("1")) << _T(" = ") << scalar.SetValue(gV1.EqnData.mg) << rptNewLine;
          }
-         else
+
+         if ( gV1.LeverRuleData.bWasUsed )
          {
-            if ( gV1.EqnData.bWasUsed )
+            (*pPara) << Bold(_T("1 Loaded Lane: Lever Rule")) << rptNewLine;
+            Float64 factor = 1.0;
+            if (pSpecEntry->GetLiveLoadDistributionMethod() == LLDF_TXDOT)
             {
-               (*pPara) << Bold(_T("1 Loaded Lane: Spec Equations")) << rptNewLine;
-               (*pPara) << rptRcImage(strImagePath + (bSIUnits ? _T("mg_1_VI_Type_C_SI.png") : _T("mg_1_VI_Type_C_US.png"))) << rptNewLine;
-               (*pPara) << _T("mg") << Super(_T("VE")) << Sub(_T("1")) << _T(" = ") << _T("mg") << Super(_T("VI")) << Sub(_T("1")) << _T(" = ") << scalar.SetValue(gV1.EqnData.mg) << rptNewLine;
+               (*pPara) << _T("  For TxDOT method, do not apply multiple presence factor and multiply lever rule result by 0.9") << rptNewLine;
+               factor = 0.9;
             }
 
-            if ( gV1.LeverRuleData.bWasUsed )
-            {
-               (*pPara) << Bold(_T("1 Loaded Lane: Lever Rule")) << rptNewLine;
-               Float64 factor = 1.0;
-               if (pSpecEntry->GetLiveLoadDistributionMethod() == LLDF_TXDOT)
-               {
-                  (*pPara) << _T("  For TxDOT method, do not apply multiple presence factor and multiply lever rule result by 0.9") << rptNewLine;
-                  factor = 0.9;
-               }
+            ReportLeverRule(pPara,false,factor,gV1.LeverRuleData,m_pBroker,pDisplayUnits);
+         }
 
-               ReportLeverRule(pPara,false,factor,gV1.LeverRuleData,m_pBroker,pDisplayUnits);
-            }
+         if ( gV1.RigidData.bWasUsed )
+         {
+            (*pPara) << Bold(_T("1 Loaded Lane: Rigid Method")) << rptNewLine;
+            (*pPara) << _T("mg") << Super(_T("VE")) << Sub(_T("1")) << _T(" = ") << scalar.SetValue(gV1.RigidData.mg) << rptNewLine;
+            (*pPara) << _T("See Moment for details") << rptNewLine;
+         }
 
-            if ( gV1.RigidData.bWasUsed )
-            {
-               (*pPara) << Bold(_T("1 Loaded Lane: Rigid Method")) << rptNewLine;
-               (*pPara) << _T("mg") << Super(_T("VE")) << Sub(_T("1")) << _T(" = ") << scalar.SetValue(gV1.RigidData.mg) << rptNewLine;
-               (*pPara) << _T("See Moment for details") << rptNewLine;
-            }
-
-            if ( gV1.LanesBeamsData.bWasUsed )
-            {
-               (*pPara) << Bold(_T("1 Loaded Lane: Number of Lanes over Number of Beams - Factor cannot be less than this")) << rptNewLine;
-               (*pPara) << _T("Skew correction is not applied to Lanes/Beams method")<< rptNewLine;
-               ReportLanesBeamsMethod(pPara,gV1.LanesBeamsData,m_pBroker,pDisplayUnits);
-            }
+         if ( gV1.LanesBeamsData.bWasUsed )
+         {
+            (*pPara) << Bold(_T("1 Loaded Lane: Number of Lanes over Number of Beams")) << rptNewLine;
+            (*pPara) << _T("Skew correction is not applied to Lanes/Beams method")<< rptNewLine;
+            ReportLanesBeamsMethod(pPara,gV1.LanesBeamsData,m_pBroker,pDisplayUnits);
          }
       }
 
@@ -965,7 +941,7 @@ void CUBeamDistFactorEngineer::ReportShear(IndexType spanOrPierIdx,rptParagraph*
       }
       (*pPara) << rptNewLine;
 
-      if ( gV2.LanesBeamsData.bWasUsed && gV1.LanesBeamsData.bWasUsed )
+      if ( gV1.ControllingMethod & LANES_DIV_BEAMS &&  gV2.ControllingMethod & LANES_DIV_BEAMS )
       {
          (*pPara) << _T("Skew Correction not applied to N")<<Sub(_T("l"))<<_T("/N")<<Sub(_T("b"))<<_T(" method")<< rptNewLine;
          if ( lldf.Nl >= 2 )
@@ -985,13 +961,21 @@ void CUBeamDistFactorEngineer::ReportShear(IndexType spanOrPierIdx,rptParagraph*
             (*pPara) << rptRcImage(strImagePath + (bSIUnits ? _T("SkewCorrection_Shear_TypeC_SI.png") : _T("SkewCorrection_Shear_TypeC_US.png"))) << rptNewLine;
             (*pPara) << _T("Skew Correction Factor: = ") << scalar.SetValue(gV1.SkewCorrectionFactor) << rptNewLine;
             (*pPara) << rptNewLine;
+
+            bool singleControlled = !(gV1.ControllingMethod & OVERRIDE_USING_MULTILANE_FACTOR) && (lldf.Nl == 1 || gV1.mg >= gV2.mg);
+
             (*pPara) << _T("Skew Corrected Factor: mg") << Super(_T("VE")) << Sub(_T("1")) << _T(" = ") << scalar.SetValue(gV1.mg);
-            (lldf.Nl == 1 || gV1.mg >= gV2.mg) ? (*pPara) << Bold(_T(" < Controls")) << rptNewLine : (*pPara) << rptNewLine;
+            (singleControlled) ? (*pPara) << Bold(_T(" < Controls")) << rptNewLine: (*pPara) << rptNewLine;
             if ( lldf.Nl >= 2 )
             {
                (*pPara) << _T("Skew Corrected Factor: mg") << Super(_T("VE")) << Sub(_T("2+")) << _T(" = ") << scalar.SetValue(gV2.mg);
-               (gV2.mg > gV1.mg) ? (*pPara) << Bold(_T(" < Controls")) << rptNewLine : (*pPara)  << rptNewLine;
+               (!singleControlled) ? (*pPara) << Bold(_T(" < Controls")) << rptNewLine : (*pPara)  << rptNewLine;
             }
+         }
+
+         if (lldf.Method==LLDF_TXDOT && gV1.ControllingMethod & OVERRIDE_USING_MULTILANE_FACTOR)
+         {
+            (*pPara) << Italic(_T("TxDOT method, and roadway width is >= 20.0 ft: ")<<Bold(_T("multi-lane factor controls."))) << rptNewLine << rptNewLine;
          }
       }
    }
@@ -1013,7 +997,7 @@ void CUBeamDistFactorEngineer::ReportShear(IndexType spanOrPierIdx,rptParagraph*
 
       if ( gV1.LanesBeamsData.bWasUsed )
       {
-         (*pPara) << Bold(_T("1 Loaded Lane: Number of Lanes over Number of Beams - Factor cannot be less than this")) << rptNewLine;
+         (*pPara) << Bold(_T("1 Loaded Lane: Number of Lanes over Number of Beams")) << rptNewLine;
          (*pPara) << _T("Skew correction is not applied to Lanes/Beams method")<< rptNewLine;
          ReportLanesBeamsMethod(pPara,gV1.LanesBeamsData,m_pBroker,pDisplayUnits);
       }

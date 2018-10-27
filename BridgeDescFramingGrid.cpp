@@ -1152,36 +1152,34 @@ void CBridgeDescFramingGrid::OnClickedButtonRowCol(ROWCOL nRow,ROWCOL nCol)
 
    CGXStyle style1, style2;
    GetStyleRowCol(nRow, 0, style1); // piers and temp support info is in column 0
-   GetStyleRowCol(nRow, 5, style2); // span info is in column 5 (if we put span in col 0, it would override temp support info)
-   if ( style1.GetIncludeUserAttribute(0) && !style2.GetIncludeUserAttribute(0) )
-   {
-      const CRowType& rowType = dynamic_cast<const CRowType&>(style1.GetUserAttribute(0));
+   GetStyleRowCol(nRow, 5, style2); // span info is in column 5 (if we put span info  in col 0, it would override temp support info)
 
-      if ( rowType.m_Type == CRowType::Pier )
-      {
-         EditPier(rowType.m_Index);
-      }
-      else if ( rowType.m_Type == CRowType::TempSupport )
-      {
-         EditTemporarySupport(rowType.m_Index);
-      }
-      else
-      {
-         ATLASSERT(false); // is there a new row type?
-      }
-   }
-   else if (style2.GetIncludeUserAttribute(0))
+   BOOL bPierOrTS = style1.GetIncludeUserAttribute(0);
+   BOOL bSpan = style2.GetIncludeUserAttribute(0);
+   if (bSpan && nCol == 5)
    {
       const CRowType& rowType = dynamic_cast<const CRowType&>(style2.GetUserAttribute(0));
-
-      if (rowType.m_Type == CRowType::Span)
+      ATLASSERT(rowType.m_Type == CRowType::Span);
+      EditSpan(rowType.m_Index);
+   }
+   else if (bPierOrTS)
+   {
+      const CRowType& rowType = dynamic_cast<const CRowType&>(style1.GetUserAttribute(0));
+      if (nCol == 5)
       {
-         EditSpan(rowType.m_Index);
+         ATLASSERT(rowType.m_Type == CRowType::Pier);
+         EditPier(rowType.m_Index);
       }
       else
       {
-         ATLASSERT(false); // is there a new row type?
+         ATLASSERT(nCol == 6);
+         ATLASSERT(rowType.m_Type == CRowType::TempSupport);
+         EditTemporarySupport(rowType.m_Index);
       }
+   }
+   else
+   {
+      ATLASSERT(false);
    }
 }
 

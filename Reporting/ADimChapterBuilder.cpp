@@ -101,15 +101,21 @@ rptChapter* CADimChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 lev
    GET_IFACE2(pBroker,IGirderHaunch,pGdrHaunch);
    GET_IFACE2(pBroker, IProductLoads, pProductLoads);
 
-   // Loop over spans in girder
-   SpanIndexType startSpanIdx, endSpanIdx;
-   pBridge->GetGirderGroupSpans(girderKey.groupIndex, &startSpanIdx, &endSpanIdx);
+   Float64 haunch_tolerance = ::ConvertToSysUnits(0.25, unitMeasure::Inch);
 
-   for (SpanIndexType spanIdx = startSpanIdx; spanIdx <= endSpanIdx; spanIdx++)
+   SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
+   for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++)
    {
-      CSpanKey spanKey(spanIdx, girderKey.girderIndex);
+      CSegmentKey segmentKey(girderKey, segIdx);
 
-      const auto& haunch_details = pGdrHaunch->GetHaunchDetails(spanKey);
+      if (1 < nSegments)
+      {
+         rptParagraph* pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
+         *pChapter << pPara;
+         (*pPara) << _T("Segment ") << LABEL_SEGMENT(segmentKey.segmentIndex) << rptNewLine;
+      }
+
+      const auto& haunch_details = pGdrHaunch->GetHaunchDetails(segmentKey);
 
       rptParagraph* pPara = new rptParagraph;
       *pChapter << pPara;
@@ -165,7 +171,7 @@ rptChapter* CADimChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 lev
       {
          col = 0;
 
-         (*pTable1)(row1,col++) << location.SetValue( POI_SPAN, haunch.PointOfInterest );
+         (*pTable1)(row1,col++) << location.SetValue(POI_ERECTED_SEGMENT, haunch.PointOfInterest );
          (*pTable1)(row1,col++) << rptRcStation(haunch.Station, &pDisplayUnits->GetStationFormat() );
          (*pTable1)(row2,col++) << RPT_OFFSET(haunch.Offset,dim);
 
@@ -181,7 +187,7 @@ rptChapter* CADimChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 lev
          row1++;
 
          col = 0;
-         (*pTable2)(row2,col++) << location.SetValue(POI_SPAN, haunch.PointOfInterest );
+         (*pTable2)(row2,col++) << location.SetValue(POI_ERECTED_SEGMENT, haunch.PointOfInterest );
          (*pTable2)(row2,col++) << haunch.CrownSlope;
          (*pTable2)(row2,col++) << haunch.GirderOrientation;
          (*pTable2)(row2,col++) << comp.SetValue( haunch.Wtop );
@@ -190,7 +196,7 @@ rptChapter* CADimChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 lev
          (*pTable2)(row2,col++) << dim.SetValue( haunch.ElevTopGirder);
          (*pTable2)(row2,col++) << comp.SetValue( haunch.TopSlabToTopGirder );
          Float64 dHaunch = haunch.TopSlabToTopGirder - haunch.tSlab;
-         if ( dHaunch < 0 )
+         if ( dHaunch < -haunch_tolerance )
          {
             (*pTable2)(row2,col++) << color(Red) << comp.SetValue( dHaunch ) << color(Black);
          }
@@ -209,7 +215,7 @@ rptChapter* CADimChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 lev
             dHaunchMin = haunch.TopSlabToTopGirder - haunch.tSlab - haunch.GirderOrientationEffect;
          }
 
-         if ( dHaunchMin < 0 )
+         if ( dHaunchMin < -haunch_tolerance )
          {
             (*pTable2)(row2,col++) << color(Red) << comp.SetValue( dHaunchMin ) << color(Black);
          }
@@ -243,10 +249,8 @@ rptChapter* CADimChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 lev
       }
       else
       {
-         PierIndexType startPierIdx = spanIdx;
-         PierIndexType endPierIdx   = spanIdx+1;
-         Float64 Astart = pIBridgeDesc->GetSlabOffset(girderKey.groupIndex, startPierIdx, girderKey.girderIndex);
-         Float64 Aend   = pIBridgeDesc->GetSlabOffset(girderKey.groupIndex, endPierIdx, girderKey.girderIndex);
+         Float64 Astart, Aend;
+         pBridge->GetSlabOffset(segmentKey, &Astart, &Aend);
          *pPara << Super(_T("**")) << _T(" includes the effects of camber and based on Slab Offset at the start of the girder of ") << comp.SetValue(Astart);
          *pPara << _T(" and a Slab Offset at the end of the girder of ") << comp.SetValue(Aend) << _T(".") << rptNewLine;
 

@@ -495,6 +495,9 @@ private:
    // These are the "hard" supports which would be first, permanent piers, second erection towers, third strongbacks
    std::vector<std::pair<pgsPointOfInterest,IntervalIndexType>>  GetSegmentErectionSupportLocations(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx) const;
 
+   // a method to get a consistent list of POIs for linear load applications
+   void GetLinearPointPointsOfInterest(const CSegmentKey& segmentKey, PoiList* pvPoi) const;
+
 #if defined _DEBUG
    void VerifyAnalysisType() const;
 #endif

@@ -116,6 +116,11 @@ public:
    void WriteInitialData(CadWriterWorkerBee& workerBee);
    void WriteFinalData(FILE *fp, bool isExtended, bool isIBeam, Int16 extraSpacesForSlabOffset);
 
+   StrandIndexType GetTotalNumDebonds() const
+   {
+      return this->m_NumDebonded;
+   }
+
 private:
    void WriteRowData(CadWriterWorkerBee& workerBee, const RowData& row,Float64 Hg) const;
    bool m_isUBeam;

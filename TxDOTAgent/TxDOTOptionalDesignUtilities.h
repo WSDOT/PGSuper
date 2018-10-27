@@ -206,6 +206,36 @@ static const int MAX_TBL_COLS=8; // Maximum columns in multi-girder table
 
 std::list<ColumnIndexType> ComputeTableCols(const std::vector<CGirderKey>& girderKeys);
 
+// Function to return number of raised straight strands as defined by top kern point
+inline StrandIndexType GetNumRaisedStraightStrands(IStrandGeometry * pStrandGeometry, const CSegmentKey& segmentKey,  const pgsPointOfInterest& pois, Float64 kt )
+{
+   StrandIndexType numRaisedStraightStrands = 0;
+   if (pStrandGeometry->GetAreHarpedStrandsForcedStraight(segmentKey) && 0 < pStrandGeometry->GetStrandCount(segmentKey, pgsTypes::Harped))
+   {
+
+      CComPtr<IPoint2dCollection> pPoints;
+      pStrandGeometry->GetStrandPositions(pois, pgsTypes::Harped, &pPoints);
+      StrandIndexType Ns;
+      pPoints->get_Count(&Ns);
+      StrandIndexType strandIdx;
+      for (strandIdx = 0; strandIdx < Ns; strandIdx++)
+      {
+         CComPtr<IPoint2d> strand_point;
+         pPoints->get_Item(strandIdx, &strand_point);
+
+         Float64 y;
+         strand_point->get_Y(&y); // measured in Girder Section Coordinates
+         y *= -1.0;
+         if (y < kt)
+         {
+            numRaisedStraightStrands++; // above the kern
+         }
+      }
+   }
+
+   return numRaisedStraightStrands;
+}
+
 
 #endif // INCLUDED_PGSEXT_TXDOTOPTIONALDESIGNUTILILITIES_H_
 

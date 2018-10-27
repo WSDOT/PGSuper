@@ -247,18 +247,16 @@ void CDistFactorEngineerImpl<T>::GetPierReactionDF(PierIndexType pierIdx,GirderI
 
    try
    {
+      lrfdTypes::LimitState lrfdls = PGSLimitStateToLRFDLimitState(ls);
+
       if (df_method == pgsTypes::Calculated)
       {
          // Reaction distribution factor
-         plldf->gR1 = pLLDF->ReactionDFEx(loc,
-                              lrfdILiveLoadDistributionFactor::OneLoadedLane,
-                              PGSLimitStateToLRFDLimitState(ls));
+         plldf->gR1 = pLLDF->ReactionDFEx(loc, lrfdILiveLoadDistributionFactor::OneLoadedLane, lrfdls);
 
          if ( 2 <= plldf->Nl  && ls != pgsTypes::FatigueI  )
          {
-            plldf->gR2 = pLLDF->ReactionDFEx(loc,
-                                 lrfdILiveLoadDistributionFactor::TwoOrMoreLoadedLanes,
-                                 PGSLimitStateToLRFDLimitState(ls));
+            plldf->gR2 = pLLDF->ReactionDFEx(loc, lrfdILiveLoadDistributionFactor::TwoOrMoreLoadedLanes, lrfdls);
          }
          else
          {
@@ -317,7 +315,15 @@ void CDistFactorEngineerImpl<T>::GetPierReactionDF(PierIndexType pierIdx,GirderI
       // controlling
       if ( 2 <= plldf->Nl  && ls != pgsTypes::FatigueI )
       {
-         plldf->gR  = Max(plldf->gR1.mg,plldf->gR2.mg);
+         if ( plldf->gR1.ControllingMethod & OVERRIDE_USING_MULTILANE_FACTOR)
+         {
+            // Case where multi-lane factor is always used (e.g., TxDOT U Beams)
+            plldf->gR = plldf->gR2.mg;
+         }
+         else
+         {
+            plldf->gR = Max(plldf->gR1.mg, plldf->gR2.mg);
+         }
       }
       else
       {
@@ -356,18 +362,16 @@ void CDistFactorEngineerImpl<T>::GetPierDF(PierIndexType pierIdx,GirderIndexType
 
    try
    {
+      lrfdTypes::LimitState lrfdls = PGSLimitStateToLRFDLimitState(ls);
+
       // Negative moment distribution factor
       if (df_method == pgsTypes::Calculated)
       {
-         plldf->gM1 = pLLDF->MomentDFEx(loc,
-                      lrfdILiveLoadDistributionFactor::OneLoadedLane,
-                      PGSLimitStateToLRFDLimitState(ls));
+         plldf->gM1 = pLLDF->MomentDFEx(loc, lrfdILiveLoadDistributionFactor::OneLoadedLane, lrfdls);
 
          if ( 2 <= plldf->Nl  && ls != pgsTypes::FatigueI )
          {
-            plldf->gM2 = pLLDF->MomentDFEx(loc,
-                         lrfdILiveLoadDistributionFactor::TwoOrMoreLoadedLanes,
-                         PGSLimitStateToLRFDLimitState(ls));
+            plldf->gM2 = pLLDF->MomentDFEx(loc, lrfdILiveLoadDistributionFactor::TwoOrMoreLoadedLanes,  lrfdls);
          }
          else
          {
@@ -425,7 +429,15 @@ void CDistFactorEngineerImpl<T>::GetPierDF(PierIndexType pierIdx,GirderIndexType
       // controlling
       if ( 2 <= plldf->Nl  && ls != pgsTypes::FatigueI )
       {
-         plldf->gM  = Max(plldf->gM1.mg,plldf->gM2.mg);
+         if ( plldf->gM1.ControllingMethod & OVERRIDE_USING_MULTILANE_FACTOR)
+         {
+            // Case where multi-lane factor is always used (e.g., TxDOT U Beams)
+            plldf->gM = plldf->gM2.mg;
+         }
+         else
+         {
+            plldf->gM = Max(plldf->gM1.mg, plldf->gM2.mg);
+         }
       }
       else
       {
@@ -463,17 +475,15 @@ void CDistFactorEngineerImpl<T>::GetSpanDF(const CSpanKey& spanKey,pgsTypes::Lim
 
    try
    {
+      lrfdTypes::LimitState lrfdls = PGSLimitStateToLRFDLimitState(ls);
+
       if (df_method == pgsTypes::Calculated)
       {
-         plldf->gM1 = pLLDF->MomentDFEx(loc,
-                            lrfdILiveLoadDistributionFactor::OneLoadedLane,
-                            PGSLimitStateToLRFDLimitState(ls));
+         plldf->gM1 = pLLDF->MomentDFEx(loc, lrfdILiveLoadDistributionFactor::OneLoadedLane, lrfdls);
 
          if ( 2 <= plldf->Nl  && ls != pgsTypes::FatigueI)
          {
-            plldf->gM2 = pLLDF->MomentDFEx(loc,
-                               lrfdILiveLoadDistributionFactor::TwoOrMoreLoadedLanes,
-                               PGSLimitStateToLRFDLimitState(ls));
+            plldf->gM2 = pLLDF->MomentDFEx(loc, lrfdILiveLoadDistributionFactor::TwoOrMoreLoadedLanes, lrfdls);
          }
          else
          {
@@ -481,15 +491,11 @@ void CDistFactorEngineerImpl<T>::GetSpanDF(const CSpanKey& spanKey,pgsTypes::Lim
          }
 
 
-         plldf->gV1 = pLLDF->ShearDFEx(loc,
-                           lrfdILiveLoadDistributionFactor::OneLoadedLane,
-                           PGSLimitStateToLRFDLimitState(ls));
+         plldf->gV1 = pLLDF->ShearDFEx(loc, lrfdILiveLoadDistributionFactor::OneLoadedLane, lrfdls);
 
          if ( 2 <= plldf->Nl && ls != pgsTypes::FatigueI)
          {
-            plldf->gV2 = pLLDF->ShearDFEx(loc,
-                              lrfdILiveLoadDistributionFactor::TwoOrMoreLoadedLanes,
-                              PGSLimitStateToLRFDLimitState(ls));
+            plldf->gV2 = pLLDF->ShearDFEx(loc, lrfdILiveLoadDistributionFactor::TwoOrMoreLoadedLanes, lrfdls);
          }
          else
          {
@@ -576,8 +582,17 @@ void CDistFactorEngineerImpl<T>::GetSpanDF(const CSpanKey& spanKey,pgsTypes::Lim
       // controlling
       if ( 2 <= plldf->Nl  && ls != pgsTypes::FatigueI )
       {
-         plldf->gM  = Max(plldf->gM1.mg,plldf->gM2.mg);
-         plldf->gV  = Max(plldf->gV1.mg,plldf->gV2.mg);
+         if ( plldf->gM1.ControllingMethod & OVERRIDE_USING_MULTILANE_FACTOR)
+         {
+            // Case where multi-lane factor is always used (e.g., TxDOT U Beams)
+            plldf->gM = plldf->gM2.mg;
+            plldf->gV = plldf->gV2.mg;
+         }
+         else
+         {
+            plldf->gM = Max(plldf->gM1.mg, plldf->gM2.mg);
+            plldf->gV = Max(plldf->gV1.mg, plldf->gV2.mg);
+         }
       }
       else
       {

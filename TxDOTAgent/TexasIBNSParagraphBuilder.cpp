@@ -301,6 +301,7 @@ rptParagraph* CTexasIBNSParagraphBuilder::Build(IBroker*	pBroker, const std::vec
    GET_IFACE2(pBroker,ILiveLoadDistributionFactors,pDistFact);
    GET_IFACE2(pBroker,IArtifact,pIArtifact);
    GET_IFACE2(pBroker,IIntervals,pIntervals);
+   GET_IFACE2_NOCHECK(pBroker,ISectionProperties,pSectProp);
 
    GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
@@ -309,6 +310,7 @@ rptParagraph* CTexasIBNSParagraphBuilder::Build(IBroker*	pBroker, const std::vec
    // Round up data common to all tables
    bool areAnyHarpedStrandsInTable(false), areAnyBentHarpedStrandsInTable(false);
    bool areAnyTempStrandsInTable(false), areAnyDebondingInTable(false);
+   bool areAnyRaisedStraightStrandsInTable(false);
    std::vector<CSegmentKey>::const_iterator itsg(segmentKeys.begin());
    std::vector<CSegmentKey>::const_iterator itsg_end(segmentKeys.end());
    for (; itsg != itsg_end; itsg++ )
@@ -336,6 +338,13 @@ rptParagraph* CTexasIBNSParagraphBuilder::Build(IBroker*	pBroker, const std::vec
          {
             areAnyBentHarpedStrandsInTable = true;
          }
+
+         Float64 kt = pSectProp->GetKt(releaseIntervalIdx, pois);
+         StrandIndexType numRaisedStraightStrands = GetNumRaisedStraightStrands(pStrandGeometry, segmentKey, pois, kt);
+         if (numRaisedStraightStrands > 0)
+         {
+            areAnyRaisedStraightStrandsInTable = true;
+         }
       }
 
       areAnyTempStrandsInTable   |= 0 < pStrandGeometry->GetMaxStrands(segmentKey,pgsTypes::Temporary);
@@ -345,10 +354,15 @@ rptParagraph* CTexasIBNSParagraphBuilder::Build(IBroker*	pBroker, const std::vec
    bool areAllHarpedStrandsStraightInTable = areAnyHarpedStrandsInTable && !areAnyBentHarpedStrandsInTable;
 
    // Cannot have Harped and Debonded strands in same report
-   if (areAnyHarpedStrandsInTable && areAnyBentHarpedStrandsInTable && areAnyDebondingInTable)
+   if (areAnyBentHarpedStrandsInTable && areAnyDebondingInTable)
    {
       *p << color(Red) << bold(ON) <<_T("Note: The TxDOT Girder Schedule report cannot be generated with mixed harped and debonded designs.")
-         << _T("Please select other (similar) girders and try again.") << bold(OFF) << color(Black) << rptNewLine;
+         << _T("  Please select other (similar) girders and try again.") << bold(OFF) << color(Black) << rptNewLine;
+   }
+   else if (areAnyBentHarpedStrandsInTable && areAnyRaisedStraightStrandsInTable)
+   {
+      *p << color(Red) << bold(ON) <<_T("Note: The TxDOT Girder Schedule report cannot be generated with mixed harped and raised straight strand designs.")
+         << _T("  Please select other (similar) girders and try again.") << bold(OFF) << color(Black) << rptNewLine;
    }
    else
    {
@@ -556,11 +570,15 @@ void WriteGirderScheduleTable(rptParagraph* p, IBroker* pBroker, IEAFDisplayUnit
       const matPsStrand* pstrand = pStrands->GetStrandMaterial(pgsTypes::Straight);
 
       // create pois at the start of girder and mid-span
-      PoiList vPoi;
-      pPointOfInterest->GetPointsOfInterest(segmentKey, POI_0L | POI_5L | POI_RELEASED_SEGMENT, &vPoi);
-      ATLASSERT(vPoi.size()==2);
-      const pgsPointOfInterest& pois(vPoi.front());
-      const pgsPointOfInterest& pmid(vPoi.back());
+      PoiList vPoiRel, vPoiEre;
+      pPointOfInterest->GetPointsOfInterest(segmentKey, POI_0L | POI_5L | POI_RELEASED_SEGMENT, &vPoiRel);
+      ATLASSERT(vPoiRel.size()==2);
+      const pgsPointOfInterest& pois(vPoiRel.front());
+      const pgsPointOfInterest& pmidrel(vPoiRel.back());
+
+      pPointOfInterest->GetPointsOfInterest(segmentKey, POI_5L | POI_ERECTED_SEGMENT, &vPoiEre);
+      ATLASSERT(vPoiEre.size()==1);
+      const pgsPointOfInterest& pmidere(vPoiEre.back());
 
       SpanIndexType spanIdx = segmentKey.groupIndex;
       GirderIndexType gdrIdx = segmentKey.girderIndex;
@@ -604,7 +622,7 @@ void WriteGirderScheduleTable(rptParagraph* p, IBroker* pBroker, IEAFDisplayUnit
       {
          Float64 nEff;
          Float64 hs_ecc_end = pStrandGeometry->GetEccentricity(releaseIntervalIdx, pois, pgsTypes::Harped, &nEff);
-         Float64 hs_ecc_mid = pStrandGeometry->GetEccentricity(releaseIntervalIdx, pmid, pgsTypes::Harped, &nEff);
+         Float64 hs_ecc_mid = pStrandGeometry->GetEccentricity(releaseIntervalIdx, pmidrel, pgsTypes::Harped, &nEff);
          are_harped_straight = IsEqual(hs_ecc_end, hs_ecc_mid);
       }
 
@@ -649,7 +667,7 @@ void WriteGirderScheduleTable(rptParagraph* p, IBroker* pBroker, IEAFDisplayUnit
       }
 
       Float64 nEff;
-      (*p_table)(row++,col) << ecc.SetValue( pStrandGeometry->GetEccentricity( releaseIntervalIdx, pmid, false, &nEff ) );
+      (*p_table)(row++,col) << ecc.SetValue( pStrandGeometry->GetEccentricity( releaseIntervalIdx, pmidrel, false, &nEff ) );
 
       if(bFirst)
       {
@@ -678,10 +696,14 @@ void WriteGirderScheduleTable(rptParagraph* p, IBroker* pBroker, IEAFDisplayUnit
             if (bFirst)
                (*p_table)(row,0) << _T("NO. (# of Adj. Straight Strands)");
 
-            (*p_table)(row++,col) << nh;
+            Float64 kt = pSectProp->GetKt(releaseIntervalIdx, pois);
+
+            StrandIndexType nts = GetNumRaisedStraightStrands(pStrandGeometry, segmentKey, pmidrel, kt);
+            ATLASSERT(nts > 0);
+            (*p_table)(row++,col) << nts;
 
             if (bFirst)
-               (*p_table)(row,0) << _T("Y")<<Sub(_T("b"))<<_T(" of Topmost Adj. Straight Strand(s)");
+               (*p_table)(row,0) << _T("Y")<<Sub(_T("b"))<<_T(" of Topmost Adj. Straight Strand(s)(CL)");
          }
          else
          {
@@ -747,7 +769,7 @@ void WriteGirderScheduleTable(rptParagraph* p, IBroker* pBroker, IEAFDisplayUnit
       Float64 fcTop = 0.0, fcBot = 0.0, ftTop = 0.0, ftBot = 0.0;
 
       const pgsSegmentArtifact* pSegmentArtifact = pIArtifact->GetSegmentArtifact(segmentKey);
-      pArtifact = pSegmentArtifact->GetFlexuralStressArtifactAtPoi( lastIntervalIdx,pgsTypes::ServiceI,pgsTypes::Compression,pmid.GetID() );
+      pArtifact = pSegmentArtifact->GetFlexuralStressArtifactAtPoi( lastIntervalIdx,pgsTypes::ServiceI,pgsTypes::Compression,pmidere.GetID() );
       fcTop = pArtifact->GetExternalEffects(pgsTypes::TopGirder);
       fcBot = pArtifact->GetExternalEffects(pgsTypes::BottomGirder);
 
@@ -756,7 +778,7 @@ void WriteGirderScheduleTable(rptParagraph* p, IBroker* pBroker, IEAFDisplayUnit
 
       (*p_table)(row++,col) << stress.SetValue(-fcTop);
 
-      pArtifact = pSegmentArtifact->GetFlexuralStressArtifactAtPoi( lastIntervalIdx,pgsTypes::ServiceIII,pgsTypes::Tension,pmid.GetID() );
+      pArtifact = pSegmentArtifact->GetFlexuralStressArtifactAtPoi( lastIntervalIdx,pgsTypes::ServiceIII,pgsTypes::Tension,pmidere.GetID() );
       ftTop = pArtifact->GetExternalEffects(pgsTypes::TopGirder);
       ftBot = pArtifact->GetExternalEffects(pgsTypes::BottomGirder);
 
@@ -767,7 +789,7 @@ void WriteGirderScheduleTable(rptParagraph* p, IBroker* pBroker, IEAFDisplayUnit
 
       //const pgsFlexuralCapacityArtifact* pFlexureArtifact = pGdrArtifact->GetFlexuralCapacityArtifact( pgsFlexuralCapacityArtifactKey(pgsTypes::BridgeSite3,pgsTypes::StrengthI,pmid[0].GetDistFromStart()) );
       MINMOMENTCAPDETAILS mmcd;
-      pMomentCapacity->GetMinMomentCapacityDetails(lastIntervalIdx,pmid,true,&mmcd);
+      pMomentCapacity->GetMinMomentCapacityDetails(lastIntervalIdx,pmidere,true,&mmcd);
 
       if (bFirst)
          (*p_table)(row,0) << _T("Required minimum ultimate moment capacity ");

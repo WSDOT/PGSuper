@@ -126,12 +126,11 @@ Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 44.00    6   8.00                     5     1     K4+2          24  0.6  270  24.41  16.66  11.00  11.00                                               6  37.0  6.0  5.200  5.700   2.773    -3.665     5913   0.750  0.750   4.174 -1.171 -0.125 -0.067 -1.363  93.26  174.55    1.75    5.00    5.00 
+ 44.00    6   8.00                     5     1     K4+2          24  0.6  270  24.41  16.66  11.25  11.25                                               6  37.0  6.0  5.200  5.700   2.786    -3.678     5926   0.750  0.750   4.174 -1.185 -0.125 -0.067 -1.377  93.26  174.17    1.75    5.00    5.00 
 
 
 The Specification Check was Not Successful
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
-Slab Offset ("A" Dimension) check failed
 
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
@@ -154,7 +153,7 @@ Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 44.00    6   8.00                     6     1     K4+2          26  0.6  270  24.22  15.22  11.75  11.75                                               6  45.0  6.0  5.200  6.500   2.893    -3.769     6033   0.750  0.750   4.544 -1.173 -0.123 -0.066 -1.362 109.91  204.64    1.75    5.00    5.00 
+ 44.00    6   8.00                     6     1     K4+2          26  0.6  270  24.22  15.22  11.50  11.50                                               6  45.0  6.0  5.200  6.500   2.880    -3.757     6020   0.750  0.750   4.544 -1.159 -0.123 -0.066 -1.349 109.91  205.03    1.75    5.00    5.00 
 
 
 The Specification Check was Not Successful
@@ -187,7 +186,7 @@ Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 44.00    6   8.00                     7     1     K4+2          26  0.6  270  24.22  15.22  11.75  11.75                                               6  45.0  6.0  5.200  6.500   2.893    -3.769     6032   0.750  0.750   4.545 -1.173 -0.123 -0.066 -1.362 109.91  204.64    1.75    5.00    5.00 
+ 44.00    6   8.00                     7     1     K4+2          26  0.6  270  24.22  15.22  11.50  11.50                                               6  45.0  6.0  5.200  6.500   2.880    -3.756     6018   0.750  0.750   4.545 -1.159 -0.123 -0.066 -1.349 109.91  205.03    1.75    5.00    5.00 
 
 
 The Specification Check was Not Successful
@@ -220,7 +219,7 @@ Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 44.00    6   8.00                     8     1     K4+2          26  0.6  270  24.22  15.22  11.75  11.75                                               6  45.0  6.0  5.200  6.500   2.864    -3.734     5980   0.750  0.750   4.528 -1.148 -0.121 -0.065 -1.334 109.91  205.09    1.75    5.00    5.00 
+ 44.00    6   8.00                     8     1     K4+2          26  0.6  270  24.22  15.22  11.50  11.50                                               6  45.0  6.0  5.200  6.500   2.852    -3.721     5967   0.750  0.750   4.528 -1.135 -0.121 -0.065 -1.320 109.91  205.47    1.75    5.00    5.00 
 
 
 The Specification Check was Not Successful

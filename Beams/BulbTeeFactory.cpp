@@ -351,6 +351,13 @@ void CBulbTeeFactory::ConfigureSegment(IBroker* pBroker, StatusItemIDType status
 
    CComQIPtr<ILongitudinalJoints> lj(thickenedFlangeSegment);
    lj->putref_JointMaterial(jointMaterial);
+
+   lj->put_CrossSection(jstFromAdjacentBeams);
+
+   //Float64 tj;
+   //beam->get_D1(&tj);
+   //lj->put_CrossSection(jstConstantDepth);
+   //lj->put_JointThickness(tj);
 }
 
 void CBulbTeeFactory::LayoutSectionChangePointsOfInterest(IBroker* pBroker,const CSegmentKey& segmentKey,pgsPoiMgr* pPoiMgr) const
@@ -366,40 +373,24 @@ void CBulbTeeFactory::LayoutSectionChangePointsOfInterest(IBroker* pBroker,const
 
    if ( !IsPrismatic(segmentKey) )
    {
-      pPoiMgr->AddPointOfInterest( pgsPointOfInterest(segmentKey,1*gdrLength/8,POI_SECTCHANGE_TRANSITION ) );
-      pPoiMgr->AddPointOfInterest( pgsPointOfInterest(segmentKey,2*gdrLength/8,POI_SECTCHANGE_TRANSITION ) );
-      pPoiMgr->AddPointOfInterest( pgsPointOfInterest(segmentKey,3*gdrLength/8,POI_SECTCHANGE_TRANSITION ) );
-      pPoiMgr->AddPointOfInterest( pgsPointOfInterest(segmentKey,4*gdrLength/8,POI_SECTCHANGE_TRANSITION ) );
-      pPoiMgr->AddPointOfInterest( pgsPointOfInterest(segmentKey,5*gdrLength/8,POI_SECTCHANGE_TRANSITION ) );
-      pPoiMgr->AddPointOfInterest( pgsPointOfInterest(segmentKey,6*gdrLength/8,POI_SECTCHANGE_TRANSITION ) );
-      pPoiMgr->AddPointOfInterest( pgsPointOfInterest(segmentKey,7*gdrLength/8,POI_SECTCHANGE_TRANSITION ) );
+      pPoiMgr->AddPointOfInterest( pgsPointOfInterest(segmentKey,1*gdrLength/10, POI_SECTCHANGE_TRANSITION ) );
+      pPoiMgr->AddPointOfInterest( pgsPointOfInterest(segmentKey,2*gdrLength/10, POI_SECTCHANGE_TRANSITION ) );
+      pPoiMgr->AddPointOfInterest( pgsPointOfInterest(segmentKey,3*gdrLength/10, POI_SECTCHANGE_TRANSITION ) );
+      pPoiMgr->AddPointOfInterest( pgsPointOfInterest(segmentKey,4*gdrLength/10, POI_SECTCHANGE_TRANSITION ) );
+      pPoiMgr->AddPointOfInterest( pgsPointOfInterest(segmentKey,5*gdrLength/10, POI_SECTCHANGE_TRANSITION ) );
+      pPoiMgr->AddPointOfInterest( pgsPointOfInterest(segmentKey,6*gdrLength/10, POI_SECTCHANGE_TRANSITION ) );
+      pPoiMgr->AddPointOfInterest( pgsPointOfInterest(segmentKey,7*gdrLength/10, POI_SECTCHANGE_TRANSITION ) );
+      pPoiMgr->AddPointOfInterest( pgsPointOfInterest(segmentKey,8*gdrLength/10, POI_SECTCHANGE_TRANSITION ) );
+      pPoiMgr->AddPointOfInterest( pgsPointOfInterest(segmentKey,9*gdrLength/10, POI_SECTCHANGE_TRANSITION ) );
    }
 }
 
 void CBulbTeeFactory::CreateDistFactorEngineer(IBroker* pBroker,StatusItemIDType statusID,const pgsTypes::SupportedBeamSpacing* pSpacingType,const pgsTypes::SupportedDeckType* pDeckType, const pgsTypes::AdjacentTransverseConnectivity* pConnect,IDistFactorEngineer** ppEng) const
 {
-   GET_IFACE2(pBroker, ISpecification,    pSpec);
-   GET_IFACE2(pBroker, ILibrary,          pLib);
-   GET_IFACE2(pBroker, IBridgeDescription,pIBridgeDesc);
-   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
-   const CDeckDescription2* pDeck = pBridgeDesc->GetDeckDescription();
-
-   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
-
-   Int16 method = pSpecEntry->GetLiveLoadDistributionMethod();
-
-   // use passed values if not null
-   pgsTypes::SupportedDeckType deckType = (pDeckType == nullptr) ? pDeck->GetDeckType() : *pDeckType;
-
-   pgsTypes::AdjacentTransverseConnectivity connect = (pConnect == nullptr) ? pDeck->TransverseConnectivity : *pConnect;
-
-   //// for composite attached beams, we want to use WSDOT type k
-   //bool useIBeam = ( method==LLDF_WSDOT && connect == pgsTypes::atcConnectedAsUnit && (deckType == pgsTypes::sdtCompositeOverlay || deckType == pgsTypes::sdtCompositeCIP) );
-
    CComObject<CBulbTeeDistFactorEngineer>* pEngineer;
    CComObject<CBulbTeeDistFactorEngineer>::CreateInstance(&pEngineer);
 
-   pEngineer->Init(/*useIBeam*/);
+   pEngineer->Init();
    pEngineer->SetBroker(pBroker,statusID);
    (*ppEng) = pEngineer;
    (*ppEng)->AddRef();

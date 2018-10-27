@@ -52,7 +52,7 @@ void write_moment_data_table(IBroker* pBroker,
                              const PoiList& vPoi,
                              rptChapter* pChapter,
                              IntervalIndexType intervalIdx,
-                             const std::_tstring& strStageName,
+                             const CString& strStageName,
                                  bool bPositiveMoment);
 
 void write_crack_moment_data_table(IBroker* pBroker,
@@ -61,7 +61,7 @@ void write_crack_moment_data_table(IBroker* pBroker,
                                    const PoiList& vPoi,
                                    rptChapter* pChapter,
                                    IntervalIndexType intervalIdx,
-                                   const std::_tstring& strStageName,
+                                   const CString& strStageName,
                                  bool bPositiveMoment);
 
 void write_min_moment_data_table(IBroker* pBroker,
@@ -70,7 +70,7 @@ void write_min_moment_data_table(IBroker* pBroker,
                                  const PoiList& vPoi,
                                  rptChapter* pChapter,
                                  IntervalIndexType intervalIdx,
-                                 const std::_tstring& strStageName,
+                                 const CString& strStageName,
                                  bool bPositiveMoment);
 
 void write_over_reinforced_moment_data_table(IBroker* pBroker,
@@ -79,7 +79,7 @@ void write_over_reinforced_moment_data_table(IBroker* pBroker,
                                  const PoiList& vPoi,
                                  rptChapter* pChapter,
                                  IntervalIndexType intervalIdx,
-                                 const std::_tstring& strStageName,
+                                 const CString& strStageName,
                                  bool bPositiveMoment);
 
 ////////////////////////// PUBLIC     ///////////////////////////////////////
@@ -147,7 +147,8 @@ rptChapter* CMomentCapacityDetailsChapterBuilder::Build(CReportSpecification* pR
          CGirderKey thisGirderKey(grpIdx,gdrIdx);
 
          IntervalIndexType lastIntervalIdx = pIntervals->GetIntervalCount()-1;
-         std::_tstring strLabel(pIntervals->GetDescription(lastIntervalIdx));
+         CString strLabel;
+         strLabel.Format(_T("Interval %d - %s"),LABEL_INTERVAL(lastIntervalIdx),pIntervals->GetDescription(lastIntervalIdx));
 
          rptParagraph* pPara;
 
@@ -243,8 +244,8 @@ void write_moment_data_table(IBroker* pBroker,
                              const PoiList& vPoi,
                              rptChapter* pChapter,
                              IntervalIndexType intervalIdx,
-                             const std::_tstring& strStageName,
-                                 bool bPositiveMoment)
+                             const CString& strStageName,
+                             bool bPositiveMoment)
 {
    rptParagraph* pPara = new rptParagraph();
    *pChapter << pPara;
@@ -280,8 +281,8 @@ void write_moment_data_table(IBroker* pBroker,
    pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pPara;
 
-   std::_tostringstream os;
-   os << _T("Moment Capacity [") << LrfdCw8th(_T("5.7.3.2.4"),_T("5.6.3.2.4")) << _T("] - ") << strStageName << std::endl;
+   CString strLabel;
+   strLabel.Format(_T("Moment Capacity [%s] - %s"), LrfdCw8th(_T("5.7.3.2.4"),_T("5.6.3.2.4")),strStageName);
 
    ColumnIndexType nColumns;
    if( bPositiveMoment || 0 < nTendons )
@@ -322,7 +323,7 @@ void write_moment_data_table(IBroker* pBroker,
       nColumns += 1; // for fpt_avg
    }
 
-   rptRcTable* table = rptStyleManager::CreateDefaultTable(nColumns,os.str().c_str());
+   rptRcTable* table = rptStyleManager::CreateDefaultTable(nColumns,strLabel);
 
    *pPara << table << rptNewLine;
 
@@ -559,7 +560,7 @@ void write_crack_moment_data_table(IBroker* pBroker,
                                    const PoiList& vPoi,
                                    rptChapter* pChapter,
                                    IntervalIndexType intervalIdx,
-                                   const std::_tstring& strStageName,
+                                   const CString& strStageName,
                                  bool bPositiveMoment)
 {
    bool bAfter2002  = ( lrfdVersionMgr::SecondEditionWith2002Interims < lrfdVersionMgr::GetVersion()     ? true : false );
@@ -732,7 +733,7 @@ void write_min_moment_data_table(IBroker* pBroker,
                                  const PoiList& vPoi,
                                  rptChapter* pChapter,
                                  IntervalIndexType intervalIdx,
-                                 const std::_tstring& strStageName,
+                                 const CString& strStageName,
                                  bool bPositiveMoment)
 {
    bool bBefore2012 = ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::SixthEdition2012 ? true : false );
@@ -835,7 +836,7 @@ void write_over_reinforced_moment_data_table(IBroker* pBroker,
                                  const PoiList& vPoi,
                                  rptChapter* pChapter,
                                  IntervalIndexType intervalIdx,
-                                 const std::_tstring& strStageName,
+                                 const CString& strStageName,
                                  bool bPositiveMoment)
 {
    // Determine if this table is even needed...

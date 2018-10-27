@@ -35,7 +35,8 @@ m_SegmentKey(segmentKey),
 m_pStrandGeometry(pStrandGeometry ), 
 m_GirderLength(girderLength),
 m_OutCome(AllStandard), 
-m_SectionSpacing(0.0)
+m_SectionSpacing(0.0),
+m_NumDebonded(0)
 {
 }
 

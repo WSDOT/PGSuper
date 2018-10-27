@@ -178,15 +178,26 @@ int TxDOT_WriteCADDataToFile (FILE *fp, IBroker* pBroker, const CGirderKey& gird
                         0 < pStrandGeometry->GetMaxStrands(segmentKey, pgsTypes::Harped) &&
                         isIBeam;
 
+   StrandIndexType harpedCount   = pStrandGeometry->GetStrandCount(segmentKey,pgsTypes::Harped);
+   StrandIndexType straightCount = pStrandGeometry->GetStrandCount(segmentKey,pgsTypes::Straight);
+
+   // Determine if harped strands are straight by comparing harped eccentricity at end/mid
+   bool are_harped_bent(false);
+   if (0 < harpedCount)
+   {
+      Float64 nEff;
+      Float64 hs_ecc_end = pStrandGeometry->GetEccentricity(releaseIntervalIdx,pois,pgsTypes::Harped,&nEff);
+      Float64 hs_ecc_mid = pStrandGeometry->GetEccentricity(releaseIntervalIdx,pmid,pgsTypes::Harped,&nEff);
+      are_harped_bent = !IsEqual(hs_ecc_end, hs_ecc_mid);
+   }
+
    bool isExtendedVersion = (format==tcxExtended || format==tcxTest);
 
-
    // Determine if a straight-raised design
-   const CStrandData* pStrands = pSegmentData->GetStrandData(segmentKey);
-   bool isRaisedStraightDesign = pStrandGeometry->GetAreHarpedStrandsForcedStraight(segmentKey) &&
-                                 0 < pStrandGeometry->GetStrandCount(segmentKey, pgsTypes::Harped) &&
-                                 (pStrands->GetStrandDefinitionType() == CStrandData::sdtDirectSelection) && 
-                                 isIBeam;
+   GET_IFACE2(pBroker,ISectionProperties,pSectProp);
+   Float64 kt = pSectProp->GetKt(releaseIntervalIdx, pois);
+
+   StrandIndexType numRaisedStraightStrands = GetNumRaisedStraightStrands(pStrandGeometry, segmentKey, pois, kt);
 
    std::_tstring bridgeName = pProjectProperties->GetBridgeName();
    // Max length of name is 16 chars
@@ -257,8 +268,7 @@ int TxDOT_WriteCADDataToFile (FILE *fp, IBroker* pBroker, const CGirderKey& gird
    _tcsncpy_s(cnxt, count, str.c_str(), cnt);
 
 	/* 4. STRAND PATTERN */
-   StrandIndexType harpedCount   = pStrandGeometry->GetStrandCount(segmentKey,pgsTypes::Harped);
-   StrandIndexType straightCount = pStrandGeometry->GetStrandCount(segmentKey,pgsTypes::Straight);
+   const CStrandData* pStrands = pSegmentData->GetStrandData(segmentKey);
 
    TCHAR  strandPat[5+1]; 
    bool do_write_ns_data = IsNonStandardStrands( harpedCount + straightCount, isHarpedDesign, pStrands->GetStrandDefinitionType() );
@@ -404,7 +414,6 @@ int TxDOT_WriteCADDataToFile (FILE *fp, IBroker* pBroker, const CGirderKey& gird
 
    Float64 girder_length = pBridge->GetSegmentLength(segmentKey);
 
-   GET_IFACE2(pBroker,ISectionProperties,pSectProp);
    Float64 Hg = pSectProp->GetHg(releaseIntervalIdx, pois);
 
    // create debond writer in case we need it
@@ -424,17 +433,7 @@ int TxDOT_WriteCADDataToFile (FILE *fp, IBroker* pBroker, const CGirderKey& gird
       Float64 dstrandToEnd;
       Float64 dstrandToCL;
 
-      // Determine if harped strands are straight by comparing harped eccentricity at end/mid
-      bool are_harped_straight(true);
-      if (0 < harpedCount)
-      {
-         Float64 nEff;
-         Float64 hs_ecc_end = pStrandGeometry->GetEccentricity(releaseIntervalIdx,pois,pgsTypes::Harped,&nEff);
-         Float64 hs_ecc_mid = pStrandGeometry->GetEccentricity(releaseIntervalIdx,pmid,pgsTypes::Harped,&nEff);
-         are_harped_straight = IsEqual(hs_ecc_end, hs_ecc_mid);
-      }
-
-      if(are_harped_straight)
+      if(!are_harped_bent)
       {
          // Report harped strands as straight
          dstrandNum = 0;
@@ -475,21 +474,16 @@ int TxDOT_WriteCADDataToFile (FILE *fp, IBroker* pBroker, const CGirderKey& gird
       // debond or straight design
       writer.WriteInitialData(workerB);
 
-      if (isIBeam && !isRaisedStraightDesign)
+      if (isIBeam && numRaisedStraightStrands==0)
       {
          // Empty spaces in IGND
          workerB.WriteBlankSpaces(isExtendedVersion ? 14:15);
       }
-      else if (isRaisedStraightDesign)
+      else if (numRaisedStraightStrands>0)
       {
-         // Raised strand design data. accuracy is very weak here
-         Int16 numRaised(0);
+         // Raised strand design data. 
          Float64 dstrandToEnd(0);
          Float64 dstrandToCL(0);
-
-         RowIndexType nrs = pStrandGeometry->GetNumRowsWithStrand(pmid,pgsTypes::Harped);
-         std::vector<StrandIndexType> strs = pStrandGeometry->GetStrandsInRow(pmid, nrs-1, pgsTypes::Harped);
-         numRaised = (Int16)strs.size();
 
          pStrandGeometry->GetHighestHarpedStrandLocationEnds(segmentKey, &value);
          dstrandToEnd = ::ConvertFromSysUnits( value+Hg, unitMeasure::Inch );
@@ -498,7 +492,7 @@ int TxDOT_WriteCADDataToFile (FILE *fp, IBroker* pBroker, const CGirderKey& gird
          dstrandToCL = ::ConvertFromSysUnits( value+Hg, unitMeasure::Inch );
 
          // output
-         workerB.WriteInt16(numRaised,_T("Nh"),(isExtendedVersion? 4:5),2,_T("%2d"));
+         workerB.WriteInt16((Int16)numRaisedStraightStrands,_T("Nh"),(isExtendedVersion? 4:5),2,_T("%2d"));
          workerB.WriteFloat64(dstrandToEnd,_T("ToEnd"),5,4,_T("%4.1f"));
          workerB.WriteFloat64(dstrandToCL,_T("ToCL"),5,4,_T("%4.1f"));
       }
@@ -634,6 +628,11 @@ int TxDOT_WriteCADDataToFile (FILE *fp, IBroker* pBroker, const CGirderKey& gird
    if (!isHarpedDesign)
    {
       writer.WriteFinalData(fp,isExtendedVersion,isIBeam, extraSpacesForSlabOffset);
+   }
+
+   if (writer.GetTotalNumDebonds() > 0 && are_harped_bent)
+   {
+      _ftprintf(fp, _T("Warning: Beam %s in span %2d has mixed harped and debonded strands. This is an invalid strand configuration for TxDOT, and is not supported by the TxDOT CAD Data Export feature. Strand data may not be reported correctly.\n"), LABEL_GIRDER(gdrIdx), (int)LABEL_SPAN(spanIdx));
    }
 
    // Write spec check results data for Test version

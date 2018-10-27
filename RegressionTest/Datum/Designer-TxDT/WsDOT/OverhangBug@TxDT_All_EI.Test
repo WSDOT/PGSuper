@@ -1,6 +1,6 @@
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 45.29    8   6.00                     1     1     III           22  0.6  270  18.81  11.72  11.50  11.50                                               6  32.0  6.0  5.100 14.600   3.876    -4.154     4287   0.674  0.674   3.202 -0.393  0.000 -0.164 -0.558  76.82  171.08    1.00    5.00    5.00 
+ 45.29    8   6.00                     1     1     III           22  0.6  270  18.81  11.72  11.50  11.50                                               6  32.0  6.0  5.100 14.600   3.875    -4.154     4287   0.674  0.674   3.202 -0.393  0.000 -0.164 -0.558  76.82  171.08    1.00    5.00    5.00 
 
 
 Girder design was Not Successful
@@ -22,13 +22,12 @@ Hauling checks failed
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 45.29    8   6.00                     1     5     III           16  0.6  270  19.33  10.33  11.12  11.12                                               4  40.0  4.0  4.000 14.600   3.210    -3.201     3456   0.579  0.671   2.628 -0.325 -0.031 -0.048 -0.404  42.83  121.53    1.00    5.00    5.00 
+ 45.29    8   6.00                     1     5     III           16  0.6  270  19.33  10.33  11.25  11.25                                               4  40.0  4.0  4.000 14.600   3.213    -3.204     3455   0.579  0.671   2.628 -0.327 -0.031 -0.048 -0.406  42.83  121.47    1.00    5.00    5.00 
 
 
 Girder design was Not Successful
 The Specification Check was Not Successful
 Confinement zone check failed.
 Hauling checks failed
-Slab Offset ("A" Dimension) check failed
 
 

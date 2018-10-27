@@ -139,70 +139,114 @@ rptChapter* CSplittingZoneDetailsChapterBuilder::Build(CReportSpecification* pRp
          strName = _T("Bursting");
       }
 
-      if (!pArtifact->GetIsApplicable())
+      if (pArtifact->GetIsApplicable())
       {
-         (*pPara) << _T("Check for ")<<strName<<_T(" resistance (LRFD ") << LrfdCw8th(_T("5.10.10.1"),_T("5.9.4.4.1")) << _T(") is disabled in Project Criteria library.") << rptNewLine;
+         (*pPara) << _T("LRFD ") << LrfdCw8th(_T("5.10.10.1"),_T("5.9.4.4.1")) << rptNewLine;
+
+         for (int i = 0; i < 2; i++)
+         {
+            pgsTypes::MemberEndType endType = (pgsTypes::MemberEndType)i;
+
+            bool bTempStrands = IsZero(pArtifact->GetAps(endType, pgsTypes::Temporary)) ? false : true;
+
+            if (endType == pgsTypes::metStart)
+            {
+               (*pPara) << Bold(_T("Left End:")) << rptNewLine;
+            }
+            else
+            {
+               (*pPara) << Bold(_T("Right End:")) << rptNewLine;
+            }
+            (*pPara) << strName << _T(" Dimension: h = ") << length.SetValue(pArtifact->GetH(endType)) << rptNewLine;
+            (*pPara) << strName << _T(" Length: h/") << scalar.SetValue(pArtifact->GetSplittingZoneLengthFactor()) << _T(" = ") << length.SetValue(pArtifact->GetSplittingZoneLength(endType)) << rptNewLine;
+            (*pPara) << strName << _T(" Direction: ") << (pArtifact->GetSplittingDirection() == pgsTypes::sdVertical ? _T("Vertical") : _T("Horizontal")) << rptNewLine;
+            
+            if (bTempStrands)
+            {
+               (*pPara) << strName << _T(" Force at PSXFR: P = ") << Sub2(_T("P"), _T("perm")) << _T(" + ") << Sub2(_T("P"), _T("temp")) << rptNewLine;
+               (*pPara) << Sub2(_T("P"), _T("perm")) << _T(" = 0.04(A") << Sub(_T("ps")) << _T(")(") << RPT_FPJ << _T(" - ");
+
+               if (bInitialRelaxation)
+               {
+                  if (pSpecEntry->GetSpecificationType() <= lrfdVersionMgr::ThirdEdition2004)
+                  {
+                     (*pPara) << symbol(DELTA) << RPT_STRESS(_T("pR1")) << _T(" - ");
+                  }
+                  else
+                  {
+                     (*pPara) << symbol(DELTA) << RPT_STRESS(_T("pR0")) << _T(" - ");
+                  }
+               }
+
+               (*pPara) << symbol(DELTA) << RPT_STRESS(_T("pES")) << _T(") = ");
+               if (bInitialRelaxation)
+               {
+                  (*pPara) << _T(" 0.04(A") << Sub(_T("ps")) << _T(")(") << RPT_FPJ << _T(" - ") << symbol(DELTA) << RPT_STRESS(_T("pT")) << _T(") = ");
+               }
+
+               (*pPara) << _T("0.04(") << area.SetValue(pArtifact->GetAps(endType, pgsTypes::Permanent)) << _T(")(") << stress.SetValue(pArtifact->GetFpj(endType, pgsTypes::Permanent)) << _T(" - ");
+               (*pPara) << stress.SetValue(pArtifact->GetLossesAfterTransfer(endType, pgsTypes::Permanent)) << _T(" ) = ") << force.SetValue(pArtifact->GetSplittingForce(endType, pgsTypes::Permanent)) << rptNewLine;
+
+               (*pPara) << Sub2(_T("P"), _T("temp")) << _T(" = 0.04(A") << Sub(_T("ps")) << _T(")(") << RPT_FPJ << _T(" - ");
+
+               if (bInitialRelaxation)
+               {
+                  if (pSpecEntry->GetSpecificationType() <= lrfdVersionMgr::ThirdEdition2004)
+                  {
+                     (*pPara) << symbol(DELTA) << RPT_STRESS(_T("pR1")) << _T(" - ");
+                  }
+                  else
+                  {
+                     (*pPara) << symbol(DELTA) << RPT_STRESS(_T("pR0")) << _T(" - ");
+                  }
+               }
+
+               (*pPara) << symbol(DELTA) << RPT_STRESS(_T("pES")) << _T(") = ");
+               if (bInitialRelaxation)
+               {
+                  (*pPara) << _T(" 0.04(A") << Sub(_T("ps")) << _T(")(") << RPT_FPJ << _T(" - ") << symbol(DELTA) << RPT_STRESS(_T("pT")) << _T(") = ");
+               }
+
+               (*pPara) << _T("0.04(") << area.SetValue(pArtifact->GetAps(endType, pgsTypes::Temporary)) << _T(")(") << stress.SetValue(pArtifact->GetFpj(endType, pgsTypes::Temporary)) << _T(" - ");
+               (*pPara) << stress.SetValue(pArtifact->GetLossesAfterTransfer(endType, pgsTypes::Temporary)) << _T(" ) = ") << force.SetValue(pArtifact->GetSplittingForce(endType,pgsTypes::Temporary)) << rptNewLine;
+
+               (*pPara) << _T("P = ") << force.SetValue(pArtifact->GetTotalSplittingForce(endType)) << rptNewLine;
+            }
+            else
+            {
+               (*pPara) << strName << _T(" Force at PSXFR: P = 0.04(A") << Sub(_T("ps")) << _T(")(") << RPT_FPJ << _T(" - ");
+
+               if (bInitialRelaxation)
+               {
+                  if (pSpecEntry->GetSpecificationType() <= lrfdVersionMgr::ThirdEdition2004)
+                  {
+                     (*pPara) << symbol(DELTA) << RPT_STRESS(_T("pR1")) << _T(" - ");
+                  }
+                  else
+                  {
+                     (*pPara) << symbol(DELTA) << RPT_STRESS(_T("pR0")) << _T(" - ");
+                  }
+               }
+
+               (*pPara) << symbol(DELTA) << RPT_STRESS(_T("pES")) << _T(") = ");
+               if (bInitialRelaxation)
+               {
+                  (*pPara) << _T(" 0.04(A") << Sub(_T("ps")) << _T(")(") << RPT_FPJ << _T(" - ") << symbol(DELTA) << RPT_STRESS(_T("pT")) << _T(") = ");
+               }
+
+               (*pPara) << _T("0.04(") << area.SetValue(pArtifact->GetAps(endType, pgsTypes::Permanent)) << _T(")(") << stress.SetValue(pArtifact->GetFpj(endType, pgsTypes::Permanent)) << _T(" - ");
+               (*pPara) << stress.SetValue(pArtifact->GetLossesAfterTransfer(endType, pgsTypes::Permanent)) << _T(" ) = ") << force.SetValue(pArtifact->GetTotalSplittingForce(endType)) << rptNewLine;
+            }
+
+            (*pPara) << strName << _T(" Resistance: P") << Sub(_T("r")) << _T(" = ")
+               << RPT_STRESS(_T("s")) << Sub2(_T("A"), _T("s")) << _T(" = ")
+               << _T("(") << stress.SetValue(pArtifact->GetFs(endType)) << _T(")(") << area.SetValue(pArtifact->GetAvs(endType)) << _T(") = ")
+               << force.SetValue(pArtifact->GetSplittingResistance(endType)) << rptNewLine << rptNewLine;
+         }
       }
       else
       {
-         (*pPara) << _T("LRFD ") << LrfdCw8th(_T("5.10.10.1"),_T("5.9.4.4.1")) << rptNewLine;
-         (*pPara) << Bold(_T("Left End:")) << rptNewLine;
-         (*pPara) << strName << _T(" Dimension: h = ") << length.SetValue(pArtifact->GetStartH()) << rptNewLine;
-         (*pPara) << strName << _T(" Length: h/") << scalar.SetValue(pArtifact->GetSplittingZoneLengthFactor()) << _T(" = ") << length.SetValue(pArtifact->GetStartSplittingZoneLength()) << rptNewLine;
-         (*pPara) << strName << _T(" Direction: ") << (pArtifact->GetSplittingDirection() == pgsTypes::sdVertical ? _T("Vertical") : _T("Horizontal")) << rptNewLine;
-         (*pPara) << strName << _T(" Force: P = 0.04(A") << Sub(_T("ps")) << _T(")(") << RPT_FPJ << _T(" - ") ;
-         
-         if ( bInitialRelaxation )
-         {
-            if ( pSpecEntry->GetSpecificationType() <= lrfdVersionMgr::ThirdEdition2004 )
-            {
-               (*pPara) << symbol(DELTA) << RPT_STRESS(_T("pR1")) << _T(" - ");
-            }
-            else
-            {
-               (*pPara) << symbol(DELTA) << RPT_STRESS(_T("pR0")) << _T(" - ");
-            }
-         }
-         
-         (*pPara) << symbol(DELTA) << RPT_STRESS(_T("pES"))  << _T(") = ");
-         (*pPara) << _T("0.04(") << area.SetValue(pArtifact->GetStartAps()) << _T(")(") << stress.SetValue(pArtifact->GetStartFpj()) << _T(" - ");
-         (*pPara) << stress.SetValue(pArtifact->GetStartLossesAfterTransfer()) << _T(" ) ");
-
-         (*pPara) << _T(" = ") << force.SetValue(pArtifact->GetStartSplittingForce()) << rptNewLine;
-         (*pPara) << strName << _T(" Resistance: P") << Sub(_T("r")) << _T(" = ")
-                  << RPT_STRESS(_T("s")) << Sub2(_T("A"),_T("s")) << _T(" = ")
-                  << _T("(") << stress.SetValue(pArtifact->GetStartFs()) << _T(")(") << area.SetValue(pArtifact->GetStartAvs()) << _T(") = ")
-                  << force.SetValue(pArtifact->GetStartSplittingResistance()) << rptNewLine << rptNewLine;
-
-
-         (*pPara) << Bold(_T("Right End:")) << rptNewLine;
-         (*pPara) << strName << _T(" Dimension: h = ") << length.SetValue(pArtifact->GetEndH()) << rptNewLine;
-         (*pPara) << strName << _T(" Length: h/") << scalar.SetValue(pArtifact->GetSplittingZoneLengthFactor()) << _T(" = ") << length.SetValue(pArtifact->GetEndSplittingZoneLength()) << rptNewLine;
-         (*pPara) << strName << _T(" Direction: ") << (pArtifact->GetSplittingDirection() == pgsTypes::sdVertical ? _T("Vertical") : _T("Horizontal")) << rptNewLine;
-         (*pPara) << strName << _T(" Force: P = 0.04(A") << Sub(_T("ps")) << _T(")(") << RPT_FPJ << _T(" - ") ;
-         
-         if ( bInitialRelaxation )
-         {
-            if ( pSpecEntry->GetSpecificationType() <= lrfdVersionMgr::ThirdEdition2004 )
-            {
-               (*pPara) << symbol(DELTA) << RPT_STRESS(_T("pR1")) << _T(" - ");
-            }
-            else
-            {
-               (*pPara) << symbol(DELTA) << RPT_STRESS(_T("pR0")) << _T(" - ");
-            }
-         }
-         
-         (*pPara) << symbol(DELTA) << RPT_STRESS(_T("pES"))  << _T(") = ");
-         (*pPara) << _T("0.04(") << area.SetValue(pArtifact->GetEndAps()) << _T(")(") << stress.SetValue(pArtifact->GetEndFpj()) << _T(" - ");
-         (*pPara) << stress.SetValue(pArtifact->GetEndLossesAfterTransfer()) << _T(" ) ");
-
-         (*pPara) << _T(" = ") << force.SetValue(pArtifact->GetEndSplittingForce()) << rptNewLine;
-         (*pPara) << strName << _T(" Resistance: P") << Sub(_T("r")) << _T(" = ")
-                  << RPT_STRESS(_T("s")) << Sub2(_T("A"),_T("s")) << _T(" = ")
-                  << _T("(") << stress.SetValue(pArtifact->GetEndFs()) << _T(")(") << area.SetValue(pArtifact->GetEndAvs()) << _T(") = ")
-                  << force.SetValue(pArtifact->GetEndSplittingResistance()) << rptNewLine;
-
+         (*pPara) << _T("Check for ") << strName << _T(" resistance (LRFD ") << LrfdCw8th(_T("5.10.10.1"), _T("5.9.4.4.1")) << _T(") is disabled in Project Criteria library.") << rptNewLine;
       }
    } // next segment
 

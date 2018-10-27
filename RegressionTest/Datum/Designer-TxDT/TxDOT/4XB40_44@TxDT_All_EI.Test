@@ -27,8 +27,8 @@ Ultimate vertical shear capacity check failed for Strength I Limit State
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 44.00    6   7.60                     2     1    4XB40          62  1/2  270  13.23  12.25   8.00   8.00  20    2.5   22    16    6   4   2   2   2   4.800  5.600   3.628    -3.705     5914   0.549  0.729   4.384 -1.696 -0.127 -0.109 -1.932 163.78  442.90    1.00    1.00    1.00 
-                                                                                                                 4.5   22     4    4   0   0   0   0 
+ 44.00    6   7.60                     2     1    4XB40          62  1/2  270  13.23  12.18   8.00   8.00  22    2.5   22    16    6   4   2   2   2   4.700  5.600   3.628    -3.705     5914   0.549  0.729   5.254 -1.696 -0.127 -0.109 -1.932 165.14  443.82    1.00    1.00    1.00 
+                                                                                                                 4.5   22     6    6   0   0   0   0 
 
 
 The Specification Check was Not Successful
@@ -37,8 +37,8 @@ Ultimate vertical shear capacity check failed for Strength I Limit State
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 44.00    6   7.60                     2     2    4XB40          62  1/2  270  13.23  12.25   8.00   8.00  20    2.5   22    16    6   4   2   2   2   4.800  5.300   3.605    -3.681     5859   0.533  0.729   4.384 -1.653 -0.153 -0.110 -1.915 163.78  442.85    1.00    1.00    1.00 
-                                                                                                                 4.5   22     4    4   0   0   0   0 
+ 44.00    6   7.60                     2     2    4XB40          62  1/2  270  13.23  12.18   8.00   8.00  22    2.5   22    16    6   4   2   2   2   4.700  5.300   3.605    -3.681     5859   0.533  0.729   5.254 -1.653 -0.153 -0.110 -1.915 165.14  443.78    1.00    1.00    1.00 
+                                                                                                                 4.5   22     6    6   0   0   0   0 
 
 
 The Specification Check was Not Successful
@@ -47,8 +47,8 @@ Ultimate vertical shear capacity check failed for Strength I Limit State
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 44.00    6   7.60                     2     4    4XB40          62  1/2  270  13.23  12.25   8.00   8.00  20    2.5   22    16    6   4   2   2   2   4.800  5.300   3.605    -3.681     5859   0.533  0.729   4.384 -1.653 -0.153 -0.110 -1.915 163.78  442.85    1.00    1.00    1.00 
-                                                                                                                 4.5   22     4    4   0   0   0   0 
+ 44.00    6   7.60                     2     4    4XB40          62  1/2  270  13.23  12.18   8.00   8.00  22    2.5   22    16    6   4   2   2   2   4.700  5.300   3.605    -3.681     5859   0.533  0.729   5.254 -1.653 -0.153 -0.110 -1.915 165.14  443.78    1.00    1.00    1.00 
+                                                                                                                 4.5   22     6    6   0   0   0   0 
 
 
 The Specification Check was Not Successful

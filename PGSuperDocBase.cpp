@@ -199,7 +199,7 @@ static char THIS_FILE[] = __FILE__;
 
 #define PGSUPER_PLUGIN_COMMAND_COUNT 256
 
-static const Float64 FILE_VERSION = 3.0;
+static const Float64 FILE_VERSION = PGSUPER_DOCUMENT_ROOT_NODE_VERSION;
 
 static bool DoesFolderExist(const CString& dirname);
 static bool DoesFileExist(const CString& filname);

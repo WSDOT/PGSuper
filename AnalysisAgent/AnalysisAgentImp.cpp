@@ -34,7 +34,6 @@
 #include <MathEx.h>
 
 #include <PgsExt\LoadFactors.h>
-#include <PgsExt\DebondUtil.h>
 #include <PgsExt\GirderModelFactory.h>
 #include <PgsExt\BridgeDescription2.h>
 #include <PgsExt\GirderMaterial.h>
@@ -430,6 +429,9 @@ std::vector<EquivPretensionLoad> CAnalysisAgentImp::GetEquivPretensionLoads(cons
       Nl = IsZero(hp1)    ? 0 : Ph*e_prime_start/hp1;
       Nr = IsZero(Ls-hp2) ? 0 : Ph*e_prime_end/(Ls-hp2);
 
+      // NOTE: Harped strands are truly straight between harp points. They do not follow the curvature of a precambered girder
+      // For this reason, wy = 0
+
       EquivPretensionLoad startMoment;
       startMoment.Xs = 0;
       startMoment.P  = Ph;
@@ -450,7 +452,7 @@ std::vector<EquivPretensionLoad> CAnalysisAgentImp::GetEquivPretensionLoads(cons
       leftHpLoad.eye = ecc_y_harped_start;
       leftHpLoad.eyh = ecc_y_harped_hp1;
       leftHpLoad.eprime = e_prime_start;
-      leftHpLoad.PrecamberAtHarpPoint = pc1;
+      leftHpLoad.PrecamberAtLoadPoint = pc1;
       leftHpLoad.Precamber = precamber;
       leftHpLoad.N  = Nl;
 
@@ -463,7 +465,7 @@ std::vector<EquivPretensionLoad> CAnalysisAgentImp::GetEquivPretensionLoads(cons
       rightHpLoad.eye = ecc_y_harped_end;
       rightHpLoad.eyh = ecc_y_harped_hp2;
       rightHpLoad.eprime = e_prime_end;
-      rightHpLoad.PrecamberAtHarpPoint = pc2;
+      rightHpLoad.PrecamberAtLoadPoint = pc2;
       rightHpLoad.Precamber = precamber;
       rightHpLoad.N = Nr;
 
@@ -485,6 +487,7 @@ std::vector<EquivPretensionLoad> CAnalysisAgentImp::GetEquivPretensionLoads(cons
    }
    else if ( strandType == pgsTypes::Straight && 0 < Ns )
    {
+      GET_IFACE_NOCHECK(ISectionProperties, pSectProp);
       GET_IFACE(IPretensionForce,pPrestressForce);
 
       Float64 nSsEffective;
@@ -519,7 +522,7 @@ std::vector<EquivPretensionLoad> CAnalysisAgentImp::GetEquivPretensionLoads(cons
       startMoment.Ybm = Ybm;
       startMoment.ex = ecc_x_straight_start;
       startMoment.eye = ecc_y_straight_start;
-      startMoment.PrecamberAtHarpPoint = 0;
+      startMoment.PrecamberAtLoadPoint = 0;
       startMoment.Precamber = precamber;
       startMoment.Ls = Ls;
       startMoment.N = 0;
@@ -536,7 +539,7 @@ std::vector<EquivPretensionLoad> CAnalysisAgentImp::GetEquivPretensionLoads(cons
       endMoment.Ybm = Ybm;
       endMoment.ex = ecc_x_straight_end;
       endMoment.eye = ecc_y_straight_end;
-      endMoment.PrecamberAtHarpPoint = 0;
+      endMoment.PrecamberAtLoadPoint = 0;
       endMoment.Precamber = precamber;
       endMoment.Ls = Ls;
       endMoment.N = 0;
@@ -552,9 +555,11 @@ std::vector<EquivPretensionLoad> CAnalysisAgentImp::GetEquivPretensionLoads(cons
          IndexType nDebondConfigsInThisRow = pStrandGeom->GetDebondConfigurationCountByRow(segmentKey, pgsTypes::Straight, rowIdx, pConfig);
          for (IndexType configIdx = 0; configIdx < nDebondConfigsInThisRow; configIdx++)
          {
+            // Load is to be computed using eccentricity of only those strands that are debonded at the location
             Float64 Xstart, Lstrand;
+            Float64 CgX, CgY;
             StrandIndexType nStrands;
-            pStrandGeom->GetDebondConfigurationByRow(segmentKey, pgsTypes::Straight, rowIdx, configIdx, pConfig, &Xstart, &Lstrand, &nStrands);
+            pStrandGeom->GetDebondConfigurationByRow(segmentKey, pgsTypes::Straight, rowIdx, configIdx, pConfig, &Xstart, &Lstrand, &CgX, &CgY, &nStrands);
             Float64 Xend = Xstart + Lstrand;
 
             Float64 PsDebond = nStrands*Ps / Ns;
@@ -566,17 +571,37 @@ std::vector<EquivPretensionLoad> CAnalysisAgentImp::GetEquivPretensionLoads(cons
             ATLASSERT(pConfig == nullptr ? endPoi.GetID() != INVALID_ID : true);
             ATLASSERT(pConfig == nullptr ? endPoi.HasAttribute(POI_DEBOND) : true);
 
-            Float64 nSsEffective;
-            Float64 ecc_x_start, ecc_y_start;
-            pStrandGeom->GetEccentricity(releaseIntervalIdx, startPoi, pgsTypes::Straight, pConfig, &nSsEffective, &ecc_x_start, &ecc_y_start);
+            Float64 delta_pc_start = pGirder->GetPrecamber(startPoi);
+            Float64 delta_pc_end = pGirder->GetPrecamber(endPoi);
 
-            Float64 ecc_x_end, ecc_y_end;
-            pStrandGeom->GetEccentricity(releaseIntervalIdx, endPoi, pgsTypes::Straight, pConfig, &nSsEffective, &ecc_x_end, &ecc_y_end);
+            Float64 ytop_start = pSectProp->GetY(releaseIntervalIdx, startPoi, pgsTypes::TopGirder);
+            Float64 xl_start = pSectProp->GetXleft(releaseIntervalIdx, startPoi);
+            Float64 xr_start = pSectProp->GetXright(releaseIntervalIdx, startPoi);
 
-            Float64 Msx = PsDebond*ecc_y_start;
+            Float64 ecc_x_start = -((xl_start + xr_start)/2 - xl_start + CgX); // greater than 0 means cg of strands is to the left of the cg of the section
+            ecc_x_start = IsZero(ecc_x_start) ? 0.0 : ecc_x_start; // usually is zero - let's just make it that way
+            Float64 ecc_y_start = -CgY - ytop_start;
+
+            Float64 ytop_end = pSectProp->GetY(releaseIntervalIdx, endPoi, pgsTypes::TopGirder);
+            Float64 xl_end = pSectProp->GetXleft(releaseIntervalIdx, endPoi);
+            Float64 xr_end = pSectProp->GetXright(releaseIntervalIdx, endPoi);
+
+            Float64 ecc_x_end = -((xl_end + xr_end)/2 - xl_end + CgX);
+            ecc_x_end = IsZero(ecc_x_end) ? 0.0 : ecc_x_end; // usually is zero - let's just make it that way
+            Float64 ecc_y_end = -CgY - ytop_end;
+
+            Float64 Msx, Mex;
+            if (pSegment->TopFlangeThickeningType == pgsTypes::tftNone)
+            {
+               Msx = PsDebond*(ecc_y_start + 2 * precamber / 3 - delta_pc_start);
+               Mex = PsDebond*(ecc_y_end + 2 * precamber / 3 - delta_pc_end);
+            }
+            else
+            {
+               Msx = PsDebond*(ecc_y_start + 2 * (Ybm - Ybl + precamber) / 3 - delta_pc_start);
+               Mex = PsDebond*(ecc_y_end + 2 * (Ybm - Ybr + precamber) / 3 - delta_pc_end);
+            }
             Float64 Msy = PsDebond*ecc_x_start;
-
-            Float64 Mex = PsDebond*ecc_y_end;
             Float64 Mey = PsDebond*ecc_x_end;
 
             wy = -8 * PsDebond*precamber / (Ls*Ls);
@@ -587,6 +612,7 @@ std::vector<EquivPretensionLoad> CAnalysisAgentImp::GetEquivPretensionLoads(cons
             startLoad.P = PsDebond;
             startLoad.ex = ecc_x_start;
             startLoad.eye = ecc_y_start;
+            startLoad.PrecamberAtLoadPoint = delta_pc_start;
             startLoad.Precamber = precamber;
             startLoad.Ls = Ls;
             startLoad.N = 0;
@@ -601,6 +627,7 @@ std::vector<EquivPretensionLoad> CAnalysisAgentImp::GetEquivPretensionLoads(cons
             endLoad.P = -PsDebond;
             endLoad.ex = ecc_x_end;
             endLoad.eye = ecc_y_end;
+            endLoad.PrecamberAtLoadPoint = delta_pc_end;
             endLoad.Precamber = precamber;
             endLoad.Ls = Ls;
             endLoad.N = 0;
@@ -667,7 +694,7 @@ std::vector<EquivPretensionLoad> CAnalysisAgentImp::GetEquivPretensionLoads(cons
       startMoment.Ybm = Ybm;
       startMoment.ex = ecc_x_temporary_start;
       startMoment.eye = ecc_y_temporary_start;
-      startMoment.PrecamberAtHarpPoint = 0;
+      startMoment.PrecamberAtLoadPoint = 0;
       startMoment.Precamber = precamber;
       startMoment.Ls = Ls;
       startMoment.Mx = Mtlx;
@@ -681,7 +708,7 @@ std::vector<EquivPretensionLoad> CAnalysisAgentImp::GetEquivPretensionLoads(cons
       endMoment.Ybm = Ybm;
       endMoment.ex = ecc_x_temporary_end;
       endMoment.eye = ecc_y_temporary_end;
-      endMoment.PrecamberAtHarpPoint = 0;
+      endMoment.PrecamberAtLoadPoint = 0;
       endMoment.Precamber = precamber;
       endMoment.Ls = Ls;
       endMoment.N  = 0;
@@ -2125,11 +2152,6 @@ std::vector<Float64> CAnalysisAgentImp::GetTimeStepPrestressMoment(IntervalIndex
 void CAnalysisAgentImp::ApplyPrecamberElevationAdjustment(IntervalIndexType intervalIdx, const PoiList& vPoi, std::vector<Float64>* pDeflection1, std::vector<Float64>* pDeflection2) const
 {
 #if defined _DEBUG
-   std::vector<CSegmentKey> vSegments;
-   GET_IFACE(IPointOfInterest, pPoi);
-   pPoi->GetSegmentKeys(vPoi, &vSegments);
-   ATLASSERT(vSegments.size() == 1); // assuming vPoi are all for the same segment
-
    if (pDeflection1)
    {
       ATLASSERT(vPoi.size() == pDeflection1->size());
@@ -2142,10 +2164,23 @@ void CAnalysisAgentImp::ApplyPrecamberElevationAdjustment(IntervalIndexType inte
 #endif
 
    GET_IFACE(IGirder, pGirder);
-   CSegmentKey segmentKey = vPoi.front().get().GetSegmentKey();
-   if (!pGirder->CanPrecamber(segmentKey) || IsZero(pGirder->GetPrecamber(segmentKey)))
+
+   std::vector<CSegmentKey> vSegments;
+   GET_IFACE(IPointOfInterest, pPoi);
+   pPoi->GetSegmentKeys(vPoi, &vSegments);
+
+   bool bPrecamber = false;
+   for (const auto& segmentKey : vSegments)
    {
-      // there is no precamber so don't waste time adding 0.0 to everything
+      if (pGirder->CanPrecamber(segmentKey) && !IsZero(pGirder->GetPrecamber(segmentKey)))
+      {
+         bPrecamber = true;
+      }
+   }
+
+   // there is no precamber so don't waste time adding 0.0 to everything
+   if (bPrecamber == false)
+   {
       return;
    }
 
@@ -2174,11 +2209,6 @@ void CAnalysisAgentImp::ApplyPrecamberElevationAdjustment(IntervalIndexType inte
 void CAnalysisAgentImp::ApplyPrecamberRotationAdjustment(IntervalIndexType intervalIdx, const PoiList& vPoi, std::vector<Float64>* pRotation1, std::vector<Float64>* pRotation2) const
 {
 #if defined _DEBUG
-   std::vector<CSegmentKey> vSegments;
-   GET_IFACE(IPointOfInterest, pPoi);
-   pPoi->GetSegmentKeys(vPoi, &vSegments);
-   ATLASSERT(vSegments.size() == 1); // assuming vPoi are all for the same segment
-
    if (pRotation1)
    {
       ATLASSERT(vPoi.size() == pRotation1->size());
@@ -2191,10 +2221,23 @@ void CAnalysisAgentImp::ApplyPrecamberRotationAdjustment(IntervalIndexType inter
 #endif
 
    GET_IFACE(IGirder, pGirder);
-   CSegmentKey segmentKey = vPoi.front().get().GetSegmentKey();
-   if (!pGirder->CanPrecamber(segmentKey) || IsZero(pGirder->GetPrecamber(segmentKey)))
+
+   std::vector<CSegmentKey> vSegments;
+   GET_IFACE(IPointOfInterest, pPoi);
+   pPoi->GetSegmentKeys(vPoi, &vSegments);
+
+   bool bPrecamber = false;
+   for (const auto& segmentKey : vSegments)
    {
-      // there is no precamber so don't waste time adding 0.0 to everything
+      if (pGirder->CanPrecamber(segmentKey) && !IsZero(pGirder->GetPrecamber(segmentKey)))
+      {
+         bPrecamber = true;
+      }
+   }
+
+   // there is no precamber so don't waste time adding 0.0 to everything
+   if (bPrecamber == false)
+   {
       return;
    }
 
@@ -4756,6 +4799,8 @@ void CAnalysisAgentImp::GetDeflection(IntervalIndexType intervalIdx,pgsTypes::Li
    }
    else
    {
+      // TRICKY: Creep deflection will always include the effect of pretensioned strands - even if bIncludePrestress is false
+      //         This will result is slightly incorrect responses for the bIncludePrestress==false case.
       GET_IFACE(IIntervals,pIntervals);
       const CSegmentKey& segmentKey(vPoi.front().get().GetSegmentKey());
       IntervalIndexType storageIntervalIdx = pIntervals->GetStorageInterval(segmentKey);

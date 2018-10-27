@@ -48,6 +48,8 @@
 
 #include "CopyGirderPropertiesCallbacks.h"
 
+#define PGSUPER_DOCUMENT_ROOT_NODE_VERSION 3.0
+
 #define EPD_GENERAL        0
 #define EPD_CONNECTION     1
 #define EPD_SPACING        2

@@ -46,15 +46,17 @@ xcopy /Y /d Configurations\PGSuper\WSDOT\Legacy\Slabs\*.ico		%BINTARGET%\Configu
 xcopy /Y /d Configurations\PGSuper\WSDOT\Legacy\Slabs\*.pgt		%BINTARGET%\Configurations\PGSuper\Legacy\Slabs\
 xcopy /Y /d Configurations\PGSuper\WSDOT\Legacy\W-Girders\*.ico		%BINTARGET%\Configurations\PGSuper\Legacy\W-Girders\
 xcopy /Y /d Configurations\PGSuper\WSDOT\Legacy\W-Girders\*.pgt		%BINTARGET%\Configurations\PGSuper\Legacy\W-Girders\
+xcopy /Y /d Configurations\PGSuper\WSDOT\Legacy\WBT-Girders\*.ico	%BINTARGET%\Configurations\PGSuper\Legacy\WBT-Girders\
+xcopy /Y /d Configurations\PGSuper\WSDOT\Legacy\WBT-Girders\*.pgt	%BINTARGET%\Configurations\PGSuper\Legacy\WBT-Girders\
 
 xcopy /Y /d Configurations\PGSuper\WSDOT\Slabs\*.ico		%BINTARGET%\Configurations\PGSuper\Slabs\
 xcopy /Y /d Configurations\PGSuper\WSDOT\Slabs\*.pgt		%BINTARGET%\Configurations\PGSuper\Slabs\
 xcopy /Y /d Configurations\PGSuper\WSDOT\U-Girders\*.ico		%BINTARGET%\Configurations\PGSuper\U-Girders\
 xcopy /Y /d Configurations\PGSuper\WSDOT\U-Girders\*.pgt		%BINTARGET%\Configurations\PGSuper\U-Girders\
-xcopy /Y /d Configurations\PGSuper\WSDOT\WBT-Girders\*.ico	%BINTARGET%\Configurations\PGSuper\WBT-Girders\
-xcopy /Y /d Configurations\PGSuper\WSDOT\WBT-Girders\*.pgt	%BINTARGET%\Configurations\PGSuper\WBT-Girders\
-xcopy /Y /d Configurations\PGSuper\WSDOT\WF_DG-Girders\*.ico	%BINTARGET%\Configurations\PGSuper\WF_DG-Girders\
-xcopy /Y /d Configurations\PGSuper\WSDOT\WF_DG-Girders\*.pgt	%BINTARGET%\Configurations\PGSuper\WF_DG-Girders\
+xcopy /Y /d "Configurations\PGSuper\WSDOT\WF_DG-Girders (Shear Key)\*.ico"	"%BINTARGET%\Configurations\PGSuper\WF_DG-Girders (Shear Key)\"
+xcopy /Y /d "Configurations\PGSuper\WSDOT\WF_DG-Girders (Shear Key)\*.pgt"	"%BINTARGET%\Configurations\PGSuper\WF_DG-Girders (Shear Key)\"
+xcopy /Y /d "Configurations\PGSuper\WSDOT\WF_DG-Girders (UHPC Joint)\*.ico"	"%BINTARGET%\Configurations\PGSuper\WF_DG-Girders (UHPC Joint)\"
+xcopy /Y /d "Configurations\PGSuper\WSDOT\WF_DG-Girders (UHPC Joint)\*.pgt"	"%BINTARGET%\Configurations\PGSuper\WF_DG-Girders (UHPC Joint)\"
 xcopy /Y /d Configurations\PGSuper\WSDOT\WF_TDG-Girders\*.ico	%BINTARGET%\Configurations\PGSuper\WF_TDG-Girders\
 xcopy /Y /d Configurations\PGSuper\WSDOT\WF_TDG-Girders\*.pgt	%BINTARGET%\Configurations\PGSuper\WF_TDG-Girders\
 xcopy /Y /d Configurations\PGSuper\WSDOT\WF-Girders\*.ico	%BINTARGET%\Configurations\PGSuper\WF-Girders\

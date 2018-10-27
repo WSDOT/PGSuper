@@ -45,7 +45,7 @@
 
 /*****************************************************************************
 CLASS 
-   pgsSpanConstructabilityArtifact
+   pgsSegmentConstructabilityArtifact
 
    Artifact for constructability checks
 
@@ -62,7 +62,7 @@ LOG
 class pgsConstructabilityArtifact;
 
 // Artifact for an individual span along a girderline
-class PGSEXTCLASS pgsSpanConstructabilityArtifact
+class PGSEXTCLASS pgsSegmentConstructabilityArtifact
 {
 public:
    friend pgsConstructabilityArtifact;
@@ -81,27 +81,27 @@ public:
 
    //------------------------------------------------------------------------
    // Default constructor
-   pgsSpanConstructabilityArtifact();
+   pgsSegmentConstructabilityArtifact(const CSegmentKey& segmentKey);
 
    //------------------------------------------------------------------------
    // Copy constructor
-   pgsSpanConstructabilityArtifact(const pgsSpanConstructabilityArtifact& rOther);
+   pgsSegmentConstructabilityArtifact(const pgsSegmentConstructabilityArtifact& rOther);
 
    //------------------------------------------------------------------------
    // Destructor
-   virtual ~pgsSpanConstructabilityArtifact();
+   virtual ~pgsSegmentConstructabilityArtifact();
 
    // GROUP: OPERATORS
    //------------------------------------------------------------------------
    // Assignment operator
-   pgsSpanConstructabilityArtifact& operator = (const pgsSpanConstructabilityArtifact& rOther);
+   pgsSegmentConstructabilityArtifact& operator = (const pgsSegmentConstructabilityArtifact& rOther);
 
    // GROUP: OPERATIONS
 
    // GROUP: ACCESS
-   SpanIndexType GetSpan() const
+   SegmentIndexType GetSegment() const
    {
-      return m_Span;
+      return m_SegmentKey.segmentIndex;
    }
 
    //------------------------------------------------------------------------
@@ -193,18 +193,17 @@ protected:
    // GROUP: OPERATORS
    // GROUP: OPERATIONS
    //------------------------------------------------------------------------
-   void MakeCopy(const pgsSpanConstructabilityArtifact& rOther);
+   void MakeCopy(const pgsSegmentConstructabilityArtifact& rOther);
 
    //------------------------------------------------------------------------
-   void MakeAssignment(const pgsSpanConstructabilityArtifact& rOther);
+   void MakeAssignment(const pgsSegmentConstructabilityArtifact& rOther);
 
    // GROUP: ACCESS
    // GROUP: INQUIRY
 
 private:
    // GROUP: DATA MEMBERS
-   SpanIndexType m_Span; // accessible only to our friend pgsConstructabilityArtifact
-
+   CSegmentKey m_SegmentKey;
    Float64 m_ProvidedStart; // The actual slab offsets
    Float64 m_ProvidedEnd;
    Float64 m_Required; // The required required slab offset
@@ -273,15 +272,11 @@ public:
    // Assignment operator
    pgsConstructabilityArtifact& operator = (const pgsConstructabilityArtifact& rOther);
 
-   // List of spans. returns number of spans owned
-   SpanIndexType GetSpans(SpanIndexType* pStartSpanIdx, SpanIndexType* pEndSpanIdx) const;
-
-   // 
-   // Span artifacts we own
+   // Segment artifacts we own
    void ClearArtifacts();
-   void AddSpanArtifact(SpanIndexType span, const pgsSpanConstructabilityArtifact& artifact);
+   void AddSegmentArtifact(const pgsSegmentConstructabilityArtifact& artifact);
    // Get artifact - Pointer invalid if collection is changed. Do not hold onto pointer
-   const pgsSpanConstructabilityArtifact* GetSpanArtifact(SpanIndexType span) const;
+   const pgsSegmentConstructabilityArtifact& GetSegmentArtifact(SegmentIndexType segIdx) const;
 
    // Calls down into spans for global checks
    bool IsSlabOffsetApplicable() const;
@@ -325,7 +320,7 @@ protected:
 
 private:
    // GROUP: DATA MEMBERS
-   std::vector<pgsSpanConstructabilityArtifact> m_SpanArtifacts;
+   std::vector<pgsSegmentConstructabilityArtifact> m_SegmentArtifacts;
 };
 
 // INLINE METHODS

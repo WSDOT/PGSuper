@@ -1393,6 +1393,55 @@ void CGirderModelElevationView::BuildStrandDisplayObjects(CPGSDocBase* pDoc, IBr
                      profilePoints->get_Item(pntIdx, &to_point);
                      BuildLine(pDL, from_point, to_point, STRAND_FILL_COLOR);
                      from_point = to_point;
+                  } // next pntIdx
+               } // next strandIdx
+            } // next i
+
+            // draw debonded strands... this must happen after other other strands
+            // so the debonded lines are drawn on top
+            // Also... the strand profile is the actual profile of the bonded strands we want to draw the unbonded
+            // portion
+            StrandIndexType nStrands = pStrandGeometry->GetStrandCount(segmentKey, pgsTypes::Straight);
+            for (StrandIndexType strandIdx = 0; strandIdx < nStrands; strandIdx++)
+            {
+               Float64 start, end;
+               if (pStrandGeometry->IsStrandDebonded(segmentKey, strandIdx, pgsTypes::Straight, nullptr, &start, &end))
+               {
+                  CComPtr<IPoint2dCollection> profilePoints;
+                  pStrandGeometry->GetStrandProfile(segmentKey, pgsTypes::Straight, strandIdx, &profilePoints);
+
+                  IndexType nPoints;
+                  profilePoints->get_Count(&nPoints);
+
+                  profilePoints->Offset(group_offset + running_segment_length - start_offset, 0);
+
+                  if (!IsZero(start))
+                  {
+                     // Left debond point
+                     CComPtr<IPoint2d> left_debond;
+                     profilePoints->get_Item(0, &left_debond);
+
+                     CComPtr<IPoint2d> from_point;
+                     from_point.CoCreateInstance(CLSID_Point2d);
+                     from_point->MoveEx(left_debond);
+                     from_point->put_X(group_offset + running_segment_length);
+
+                     BuildLine(pDebondDL, from_point, left_debond, DEBOND_FILL_COLOR);
+                     BuildDebondTick(pDebondDL, left_debond, DEBOND_FILL_COLOR);
+                  }
+
+                  if (!IsEqual(end, segment_length))
+                  {
+                     CComPtr<IPoint2d> right_debond;
+                     profilePoints->get_Item(nPoints - 1, &right_debond);
+
+                     CComPtr<IPoint2d> to_point;
+                     to_point.CoCreateInstance(CLSID_Point2d);
+                     to_point->MoveEx(right_debond);
+                     to_point->put_X(group_offset + running_segment_length + segment_length);
+
+                     BuildLine(pDebondDL, right_debond, to_point, DEBOND_FILL_COLOR);
+                     BuildDebondTick(pDebondDL, right_debond, DEBOND_FILL_COLOR);
                   }
                }
             }

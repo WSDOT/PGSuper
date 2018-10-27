@@ -2621,8 +2621,8 @@ Float64 pgsShearDesignTool::GetAvsReqdForSplitting() const
    ATLASSERT(DoDesignForSplitting());
 
    const pgsSplittingZoneArtifact* pSplittingArtifact = m_StirrupCheckArtifact.GetSplittingZoneArtifact();
-   Float64 avs_req_start = pSplittingArtifact->GetStartSplittingForce() / (pSplittingArtifact->GetStartFs() * m_StartSplittingZl);
-   Float64 avs_req_end   = pSplittingArtifact->GetEndSplittingForce()   / (pSplittingArtifact->GetEndFs()   * m_EndSplittingZl);
+   Float64 avs_req_start = pSplittingArtifact->GetTotalSplittingForce(pgsTypes::metStart) / (pSplittingArtifact->GetFs(pgsTypes::metStart) * m_StartSplittingZl);
+   Float64 avs_req_end   = pSplittingArtifact->GetTotalSplittingForce(pgsTypes::metEnd)   / (pSplittingArtifact->GetFs(pgsTypes::metEnd)   * m_EndSplittingZl);
 
    Float64 avs_req = Max(avs_req_start, avs_req_end);
    return avs_req;

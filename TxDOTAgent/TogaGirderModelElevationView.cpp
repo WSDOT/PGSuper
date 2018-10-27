@@ -759,172 +759,90 @@ void CTogaGirderModelElevationView::BuildStrandDisplayObjects(CTxDOTOptionalDesi
    ATLASSERT(pDebondDL);
    pDebondDL->Clear();
 
-   GET_IFACE2(pBroker,IBridge,pBridge);
-   GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
-   GET_IFACE2(pBroker,IGirder,pGirder);
-   GET_IFACE2(pBroker,IPointOfInterest,pPOI);
+   GET_IFACE2(pBroker, IBridge, pBridge);
+   GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
+   GET_IFACE2(pBroker, IStrandGeometry, pStrandGeometry);
 
-   Float64 gdr_length = pBridge->GetSegmentLength(segmentKey);
+   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+   const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(segmentKey.groupIndex);
+   const CSplicedGirderData* pGirder = pGroup->GetGirder(segmentKey.girderIndex);
+   const CPrecastSegmentData* pSegment = pGirder->GetSegment(segmentKey.segmentIndex);
 
+   Float64 segment_length = pBridge->GetSegmentLength(segmentKey);
    Float64 start_brg_offset = pBridge->GetSegmentStartBearingOffset(segmentKey);
    Float64 start_end_distance = pBridge->GetSegmentStartEndDistance(segmentKey);
    Float64 start_offset = start_brg_offset - start_end_distance;
 
-   Float64 lft_harp, rgt_harp;
-   pStrandGeometry->GetHarpingPointLocations(segmentKey, &lft_harp, &rgt_harp);
-
-   CComPtr<IPoint2d> from_point, to_point;
-   from_point.CoCreateInstance(__uuidof(Point2d));
-   to_point.CoCreateInstance(__uuidof(Point2d));
-   from_point->put_X(0.0);
-   to_point->put_X(gdr_length);
-
-   PoiList vPOI;
-   pPOI->GetPointsOfInterest(segmentKey, POI_HARPINGPOINT, &vPOI);
-   ATLASSERT( 0 <= vPOI.size() && vPOI.size() <= 2 );
-   pgsPointOfInterest hp1_poi;
-   pgsPointOfInterest hp2_poi;
-
-   if ( 0 < vPOI.size() )
+   for (int i = 0; i < 3; i++)
    {
-      hp1_poi = vPOI.front();
-      hp2_poi = vPOI.back();
-   }
-
-   pgsPointOfInterest start_poi(segmentKey, 0.0);
-   pgsPointOfInterest end_poi(segmentKey, gdr_length);
-
-   // Need to use POI and Hg at harp points
-   Float64 HgStart = pGirder->GetHeight(start_poi);
-   Float64 HgEnd   = pGirder->GetHeight(end_poi);
-   Float64 HgHP1, HgHP2;
-   if ( 0 < vPOI.size() )
-   {
-      HgHP1 = pGirder->GetHeight(hp1_poi);
-      HgHP2 = pGirder->GetHeight(hp2_poi);
-   }
-
-   // straight strands
-   CComPtr<IPoint2dCollection> spoints, epoints;
-   pStrandGeometry->GetStrandPositions(start_poi, pgsTypes::Straight,&spoints);
-   pStrandGeometry->GetStrandPositions(end_poi,   pgsTypes::Straight,&epoints);
-   CollectionIndexType nStrandPoints;
-   spoints->get_Count(&nStrandPoints);
-   CollectionIndexType strandPointIdx;
-   for (strandPointIdx = 0; strandPointIdx < nStrandPoints; strandPointIdx++)
-   {
-      // strand points measured from bottom of girder
-      CComPtr<IPoint2d> pntStart, pntEnd;
-      spoints->get_Item(strandPointIdx,&pntStart);
-      epoints->get_Item(strandPointIdx,&pntEnd);
-
-      Float64 yStart, yEnd;
-      pntStart->get_Y(&yStart);
-      pntEnd->get_Y(&yEnd);
-
-      from_point->put_Y(yStart);
-      to_point->put_Y(yEnd);
-      
-      BuildLine(pDL, start_offset, from_point, to_point, STRAND_FILL_COLOR);
-
-      Float64 start,end;
-      if ( pStrandGeometry->IsStrandDebonded(segmentKey,strandPointIdx,pgsTypes::Straight,nullptr,&start,&end) )
+      pgsTypes::StrandType strandType = (pgsTypes::StrandType)i;
+      StrandIndexType nStrands = pStrandGeometry->GetStrandCount(segmentKey, strandType);
+      for (StrandIndexType strandIdx = 0; strandIdx < nStrands; strandIdx++)
       {
-         // Left debond point
-         CComPtr<IPoint2d> left_debond;
-         left_debond.CoCreateInstance(CLSID_Point2d);
-         left_debond->Move(start,yStart);
+         CComPtr<IPoint2dCollection> profilePoints;
+         pStrandGeometry->GetStrandProfile(segmentKey, strandType, strandIdx, &profilePoints);
 
-         BuildLine(pDebondDL, start_offset, from_point, left_debond, DEBOND_FILL_COLOR );
-         BuildDebondTick(pDebondDL, start_offset, left_debond, DEBOND_FILL_COLOR );
+         IndexType nPoints;
+         profilePoints->get_Count(&nPoints);
+         ATLASSERT(2 <= nPoints);
 
-         CComPtr<IPoint2d> right_debond;
-         right_debond.CoCreateInstance(CLSID_Point2d);
-         right_debond->Move(end,yEnd);
+         CComPtr<IPoint2d> from_point, to_point;
+         profilePoints->get_Item(0, &from_point);
+         for (IndexType pntIdx = 1; pntIdx < nPoints; pntIdx++)
+         {
+            to_point.Release();
+            profilePoints->get_Item(pntIdx, &to_point);
+            BuildLine(pDL, 0.0, from_point, to_point, STRAND_FILL_COLOR);
+            from_point = to_point;
+         } // next pntIdx
+      } // next strandIdx
+   } // next i
 
-         BuildLine(pDebondDL, start_offset, right_debond, to_point, DEBOND_FILL_COLOR);
-         BuildDebondTick(pDebondDL, start_offset, right_debond, DEBOND_FILL_COLOR );
-      }
-   }
-
-   // harped strands
-   if ( 0 < vPOI.size() )
+   // draw debonded strands... this must happen after other other strands
+   // so the debonded lines are drawn on top
+   // Also... the strand profile is the actual profile of the bonded strands we want to draw the unbonded
+   // portion
+   StrandIndexType nStrands = pStrandGeometry->GetStrandCount(segmentKey, pgsTypes::Straight);
+   for (StrandIndexType strandIdx = 0; strandIdx < nStrands; strandIdx++)
    {
-      CComPtr<IPoint2dCollection> spoints, hp1points, hp2points, epoints;
-      pStrandGeometry->GetStrandPositions(start_poi, pgsTypes::Harped,&spoints);
-      pStrandGeometry->GetStrandPositions(hp1_poi,   pgsTypes::Harped,&hp1points);
-      pStrandGeometry->GetStrandPositions(hp2_poi,   pgsTypes::Harped,&hp2points);
-      pStrandGeometry->GetStrandPositions(end_poi,   pgsTypes::Harped,&epoints);
-      spoints->get_Count(&nStrandPoints);
-      for (strandPointIdx = 0; strandPointIdx < nStrandPoints; strandPointIdx++)
+      Float64 start, end;
+      if (pStrandGeometry->IsStrandDebonded(segmentKey, strandIdx, pgsTypes::Straight, nullptr, &start, &end))
       {
-         CComPtr<IPoint2d> start_pos, hp1_pos, hp2_pos, end_pos;
-         spoints->get_Item(strandPointIdx,&start_pos);
-         hp1points->get_Item(strandPointIdx,&hp1_pos);
-         hp2points->get_Item(strandPointIdx,&hp2_pos);
-         epoints->get_Item(strandPointIdx,&end_pos);
+         CComPtr<IPoint2dCollection> profilePoints;
+         pStrandGeometry->GetStrandProfile(segmentKey, pgsTypes::Straight, strandIdx, &profilePoints);
 
-         Float64 start_x, start_y;
-         start_pos->get_X(&start_x);
-         start_pos->get_Y(&start_y);
+         IndexType nPoints;
+         profilePoints->get_Count(&nPoints);
 
-         Float64 hp1_x, hp1_y;
-         hp1_pos->get_X(&hp1_x);
-         hp1_pos->get_Y(&hp1_y);
+         if (!IsZero(start))
+         {
+            // Left debond point
+            CComPtr<IPoint2d> left_debond;
+            profilePoints->get_Item(0, &left_debond);
 
-         Float64 hp2_x, hp2_y;
-         hp2_pos->get_X(&hp2_x);
-         hp2_pos->get_Y(&hp2_y);
+            CComPtr<IPoint2d> from_point;
+            from_point.CoCreateInstance(CLSID_Point2d);
+            from_point->MoveEx(left_debond);
+            from_point->put_X(start_offset);
 
-         Float64 end_x, end_y;
-         end_pos->get_X(&end_x);
-         end_pos->get_Y(&end_y);
+            BuildLine(pDebondDL, 0.0, from_point, left_debond, DEBOND_FILL_COLOR);
+            BuildDebondTick(pDebondDL, 0.0, left_debond, DEBOND_FILL_COLOR);
+         }
 
-         from_point->put_X(0.0);
-         from_point->put_Y(start_y);
-         to_point->put_X(lft_harp);
-         to_point->put_Y(hp1_y);
-         
-         BuildLine(pDL, start_offset, from_point, to_point, STRAND_FILL_COLOR);
+         if (!IsEqual(end, segment_length))
+         {
+            CComPtr<IPoint2d> right_debond;
+            profilePoints->get_Item(nPoints - 1, &right_debond);
 
-         from_point->put_X(lft_harp);
-         from_point->put_Y(hp1_y);
-         to_point->put_X(rgt_harp);
-         to_point->put_Y(hp2_y);
-         
-         BuildLine(pDL, start_offset, from_point, to_point, STRAND_FILL_COLOR);
+            CComPtr<IPoint2d> to_point;
+            to_point.CoCreateInstance(CLSID_Point2d);
+            to_point->MoveEx(right_debond);
+            to_point->put_X(start_offset + segment_length);
 
-         from_point->put_X(rgt_harp);
-         from_point->put_Y(hp2_y);
-         to_point->put_X(gdr_length);
-         to_point->put_Y(end_y);
-
-         BuildLine(pDL, start_offset, from_point, to_point, STRAND_FILL_COLOR);
+            BuildLine(pDebondDL, 0.0, right_debond, to_point, DEBOND_FILL_COLOR);
+            BuildDebondTick(pDebondDL, 0.0, right_debond, DEBOND_FILL_COLOR);
+         }
       }
-   }
-
-   // Temporary strands
-   spoints.Release();
-   epoints.Release();
-   pStrandGeometry->GetStrandPositions(start_poi, pgsTypes::Temporary,&spoints);
-   pStrandGeometry->GetStrandPositions(end_poi,   pgsTypes::Temporary,&epoints);
-   spoints->get_Count(&nStrandPoints);
-   for (strandPointIdx = 0; strandPointIdx < nStrandPoints; strandPointIdx++)
-   {
-      CComPtr<IPoint2d> pntStart, pntEnd;
-      spoints->get_Item(strandPointIdx, &pntStart);
-      epoints->get_Item(strandPointIdx, &pntEnd);
-
-      Float64 y;
-      from_point->put_X(0.0);
-      pntStart->get_Y(&y);
-      from_point->put_Y(y);
-
-      to_point->put_X(gdr_length);
-      pntEnd->get_Y(&y);
-      to_point->put_Y(y);
-      
-      BuildLine(pDL, start_offset, from_point, to_point, STRAND_FILL_COLOR);
    }
 }
 

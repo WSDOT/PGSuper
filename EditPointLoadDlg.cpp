@@ -545,7 +545,8 @@ void CEditPointLoadDlg::UpdateGirderList()
    int idx = pcbSpans->GetCurSel();
    if ( idx == CB_ERR )
    {
-      idx = 0;
+      // the combo box isn't set yet (this happens during InitDialog)
+      idx = int(m_Load.m_SpanKey.spanIndex == ALL_SPANS ? m_Spans.size() - 1 : m_Load.m_SpanKey.spanIndex);
    }
    SpanIndexType spanIdx = m_Spans[idx].spanIdx;
    SpanIndexType nSpans = pBridgeDesc->GetSpanCount();
@@ -591,7 +592,7 @@ void CEditPointLoadDlg::UpdateGirderList()
     {
        if ( bAllSelected )
        {
-         pcbGirders->SetCurSel( m_GirderCB.GetCount()-1 );
+         pcbGirders->SetCurSel(pcbGirders->GetCount()-1 );
        }
        else
        {

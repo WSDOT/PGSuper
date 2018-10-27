@@ -150,7 +150,7 @@ STDMETHODIMP CTxDOTAgentImp::Init2()
    pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CUserDefinedLoadsChapterBuilder) );
    pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CTexasCamberAndDeflectionChapterBuilder) );
    pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CTexasHaunchChapterBuilder) );
-   pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CBearingDeductChapterBuilder) );
+//   pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CBearingDeductChapterBuilder) );
    pRptMgr->AddReportBuilder( pRptBuilder.release() );
 
    // Texas Summary report - long form
@@ -167,7 +167,7 @@ STDMETHODIMP CTxDOTAgentImp::Init2()
    pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CUserDefinedLoadsChapterBuilder) );
    pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CTexasCamberAndDeflectionChapterBuilder) );
    pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CTexasHaunchChapterBuilder) );
-   pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CBearingDeductChapterBuilder) );
+//   pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CBearingDeductChapterBuilder) );
    pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CTexasPrestressSummaryChapterBuilder) );
    pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CTexasStressChecksChapterBuilder) );
    pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CTexasMomentCapacityChapterBuilder) );
@@ -636,7 +636,7 @@ void CTxDOTAgentImp::SaveFlexureDesign(const CSegmentKey& segmentKey,const pgsSe
    // Artifact does hard work of converting to girder data
    CPrecastSegmentData segmentData = pArtifact->GetSegmentData();
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
-   GET_IFACE(ISpecification,pSpec);
+   GET_IFACE_NOCHECK(ISpecification,pSpec);
    pIBridgeDesc->SetPrecastSegmentData(segmentKey,segmentData);
 
    const arDesignOptions& design_options = pArtifact->GetDesignOptions();

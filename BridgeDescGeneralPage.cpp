@@ -1167,6 +1167,10 @@ void CBridgeDescGeneralPage::OnGirderFamilyChanged()
 
    pBeamFamilies->GetLBText(curSel,m_GirderFamilyName);
 
+   // when the girder family changes, we must change the girder layout so that all girders are the same
+   m_bSameGirderName = true;
+   CheckDlgButton(IDC_SAME_GIRDERNAME, BST_CHECKED);
+
    InitGirderName();          // sets the current girder name to the first girder of the family
    UpdateGirderFactory();     // gets the new factory for this girder family
    FillGirderOrientationComboBox(); // filles the girder orientation combo box

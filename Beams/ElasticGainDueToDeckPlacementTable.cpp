@@ -55,32 +55,47 @@ CElasticGainDueToDeckPlacementTable* CElasticGainDueToDeckPlacementTable::Prepar
    // Create and configure the table
    GET_IFACE2(pBroker, IBridge, pBridge);
    pgsTypes::SupportedDeckType deckType = pBridge->GetDeckType();
-   if (IsNonstructuralDeck(deckType))
-   {
-      return nullptr;
-   }
 
+   GET_IFACE2(pBroker, IProductLoads, pProductLoads);
    GET_IFACE2(pBroker,IUserDefinedLoads,pUDL);
+   GET_IFACE2(pBroker, IGirder, pGirder);
    bool bHasUserLoads = pUDL->DoUserLoadsExist(segmentKey);
-
    bool bHasDeckPanel = (deckType == pgsTypes::sdtCompositeSIP ? true : false);
+   bool bHasLongitudinalJoints = pProductLoads->HasLongitudinalJointLoad();
+   bool bHasDeckLoads = pGirder->HasStructuralLongitudinalJoints() ? false : true; // if longitudinal joints are structural the deck dead loads go on the composite section
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval();
 
-   ColumnIndexType numColumns = 9;
+   ColumnIndexType numColumns = 7;
 
-   if ( bHasUserLoads )
+   if (bHasDeckLoads)
+   {
       numColumns += 2;
+   }
 
-   if ( bHasDeckPanel )
+   if (bHasUserLoads)
+   {
+      numColumns += 2;
+   }
+
+   if (bHasDeckPanel)
+   {
       numColumns++;
+   }
+
+   if (bHasLongitudinalJoints)
+   {
+      numColumns++;
+   }
 
    CElasticGainDueToDeckPlacementTable* table = new CElasticGainDueToDeckPlacementTable( numColumns, pDisplayUnits);
    rptStyleManager::ConfigureTable(table);
 
+   table->m_bHasDeckLoads = bHasDeckLoads;
    table->m_bHasDeckPanel = bHasDeckPanel;
    table->m_bHasUserLoads = bHasUserLoads;
+   table->m_bHasLongitudinalJoints = bHasLongitudinalJoints;
    table->scalar.SetFormat(sysNumericFormatTool::Fixed);
    table->scalar.SetWidth(5);
    table->scalar.SetPrecision(2);
@@ -91,14 +106,12 @@ CElasticGainDueToDeckPlacementTable* CElasticGainDueToDeckPlacementTable::Prepar
    Float64 Ec = pMaterials->GetSegmentEc(segmentKey,castDeckIntervalIdx);
    Float64 Ep = pMaterials->GetStrandMaterial(segmentKey,pgsTypes::Permanent)->GetE();
 
-   GET_IFACE2(pBroker, IProductLoads, pProductLoads);
-
    GET_IFACE2(pBroker,ISectionProperties,pSectProp);
    pgsTypes::SectionPropertyMode spMode = pSectProp->GetSectionPropertiesMode();
 
    rptParagraph* pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pParagraph;
-   *pParagraph << _T("Elastic Gain Due to Deck Placement [")<< LrfdCw8th(_T("5.9.5.2.3a"),_T("5.9.3.2.3a")) <<_T("]") << rptNewLine;
+   *pParagraph << _T("Elastic Gain Due to Additional Dead Load") << rptNewLine;
 
    pParagraph = new rptParagraph;
    *pChapter << pParagraph;
@@ -173,15 +186,28 @@ CElasticGainDueToDeckPlacementTable* CElasticGainDueToDeckPlacementTable::Prepar
 
    ColumnIndexType col = 0;
    (*table)(0,col++) << COLHDR(_T("Location from")<<rptNewLine<<_T("Left Support"),rptLengthUnitTag,  pDisplayUnits->GetSpanLengthUnit() );
-   (*table)(0,col++) << COLHDR(Sub2(_T("M"),pProductLoads->GetProductLoadName(pgsTypes::pftSlab)), rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
+
+   if (bHasDeckLoads)
+   {
+      (*table)(0, col++) << COLHDR(Sub2(_T("M"), pProductLoads->GetProductLoadName(pgsTypes::pftSlab)), rptMomentUnitTag, pDisplayUnits->GetMomentUnit());
+   }
    
    if ( bHasDeckPanel )
    {
       (*table)(0,col++) << COLHDR(Sub2(_T("M"), pProductLoads->GetProductLoadName(pgsTypes::pftSlabPanel)), rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
    }
 
-   (*table)(0,col++) << COLHDR(Sub2(_T("M"), pProductLoads->GetProductLoadName(pgsTypes::pftSlabPad)), rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
+   if (bHasDeckLoads)
+   {
+      (*table)(0, col++) << COLHDR(Sub2(_T("M"), pProductLoads->GetProductLoadName(pgsTypes::pftSlabPad)), rptMomentUnitTag, pDisplayUnits->GetMomentUnit());
+   }
+
    (*table)(0,col++) << COLHDR(Sub2(_T("M"), pProductLoads->GetProductLoadName(pgsTypes::pftDiaphragm)), rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
+
+   if (bHasLongitudinalJoints)
+   {
+      (*table)(0, col++) << COLHDR(Sub2(_T("M"), pProductLoads->GetProductLoadName(pgsTypes::pftLongitudinalJoint)), rptMomentUnitTag, pDisplayUnits->GetMomentUnit());
+   }
    
    if ( bHasUserLoads )
    {
@@ -216,26 +242,38 @@ void CElasticGainDueToDeckPlacementTable::AddRow(rptChapter* pChapter,IBroker* p
    IntervalIndexType castDiaphragmIntervalIdx = pIntervals->GetCastIntermediateDiaphragmsInterval();
    IntervalIndexType castShearKeyIntervalIdx = pIntervals->GetCastShearKeyInterval();
    IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval();
+   IntervalIndexType castLongitudinalJointIntervalIdx = pIntervals->GetCastLongitudinalJointInterval();
    IntervalIndexType noncompositeUserLoadIntervalIdx = pIntervals->GetNoncompositeUserLoadInterval();
 
    GET_IFACE2(pBroker,IProductForces,pProdForces);
    ColumnIndexType col = 1;
-   (*this)(row,col++) << moment.SetValue( pProdForces->GetMoment( castDeckIntervalIdx, pgsTypes::pftSlab,      poi, m_BAT, rtIncremental ) );
+
+   if (m_bHasDeckLoads)
+   {
+      (*this)(row, col++) << moment.SetValue(pProdForces->GetMoment(castDeckIntervalIdx, pgsTypes::pftSlab, poi, m_BAT, rtIncremental));
+   }
    
    if ( m_bHasDeckPanel )
    {
       (*this)(row,col++) << moment.SetValue( pProdForces->GetMoment( castDeckIntervalIdx, pgsTypes::pftSlabPanel,      poi, m_BAT, rtIncremental ) );
    }
    
-   (*this)(row,col++) << moment.SetValue( pProdForces->GetMoment( castDeckIntervalIdx, pgsTypes::pftSlabPad,   poi, m_BAT, rtIncremental ) );
+   if (m_bHasDeckLoads)
+   {
+      (*this)(row, col++) << moment.SetValue(pProdForces->GetMoment(castDeckIntervalIdx, pgsTypes::pftSlabPad, poi, m_BAT, rtIncremental));
+   }
 
    Float64 M = pProdForces->GetMoment(castDiaphragmIntervalIdx, pgsTypes::pftDiaphragm, poi, m_BAT, rtIncremental);
    if (castShearKeyIntervalIdx != INVALID_INDEX)
    {
       M += pProdForces->GetMoment(castShearKeyIntervalIdx, pgsTypes::pftShearKey, poi, m_BAT, rtIncremental);
    }
-   
    (*this)(row,col++) << moment.SetValue( M );
+
+   if (m_bHasLongitudinalJoints)
+   {
+      (*this)(row, col++) << moment.SetValue(pProdForces->GetMoment(castLongitudinalJointIntervalIdx, pgsTypes::pftLongitudinalJoint, poi, m_BAT, rtIncremental));
+   }
    
    if ( m_bHasUserLoads )
    {

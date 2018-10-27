@@ -97,7 +97,7 @@ CTimeDependentLossesAtShippingTable* CTimeDependentLossesAtShippingTable::Prepar
 
    rptParagraph* pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pParagraph;
-   *pParagraph << _T("Losses at Shipping") << rptNewLine;
+   *pParagraph << _T("Losses at Hauling") << rptNewLine;
 
    if ( pStrands->GetTemporaryStrandUsage() != pgsTypes::ttsPretensioned ) 
    {
@@ -107,20 +107,7 @@ CTimeDependentLossesAtShippingTable* CTimeDependentLossesAtShippingTable::Prepar
    pParagraph = new rptParagraph;
    *pChapter << pParagraph;
 
-
-   *pParagraph << symbol(DELTA) << RPT_STRESS(_T("pH")) << _T(" = ");
-
-   if ( !bIgnoreInitialRelaxation )
-      *pParagraph << symbol(DELTA) << RPT_STRESS(_T("pR0")) << _T(" + ");
-
-   *pParagraph << symbol(DELTA) << RPT_STRESS(_T("pES")) << _T(" + ");
-
-   if ( pStrands->GetTemporaryStrandUsage() != pgsTypes::ttsPretensioned )
-      *pParagraph << symbol(DELTA) << RPT_STRESS(_T("pp")) << _T(" + ");
-
-   *pParagraph << symbol(DELTA) << RPT_STRESS(_T("pLTH")) << rptNewLine;
-
-
+   // first equation
    if ( bTemporaryStrands )
    {
       if ( loss_method == pgsTypes::WSDOT_REFINED || loss_method == pgsTypes::AASHTO_REFINED || loss_method == pgsTypes::TXDOT_REFINED_2004 )
@@ -135,6 +122,23 @@ CTimeDependentLossesAtShippingTable* CTimeDependentLossesAtShippingTable::Prepar
          *pParagraph << symbol(DELTA) << RPT_STRESS(_T("pLTH")) << _T(" = ") << symbol(DELTA) << RPT_STRESS(_T("pSRH")) << _T(" + ") << symbol(DELTA) << RPT_STRESS(_T("pCRH")) << _T(" + ") << symbol(DELTA) << RPT_STRESS(_T("pR1H")) << rptNewLine;
       }
    }
+
+   // second equation
+   *pParagraph << symbol(DELTA) << RPT_STRESS(_T("pH")) << _T(" = ");
+
+   if (!bIgnoreInitialRelaxation)
+   {
+      *pParagraph << symbol(DELTA) << RPT_STRESS(_T("pR0")) << _T(" + ");
+   }
+
+   *pParagraph << symbol(DELTA) << RPT_STRESS(_T("pES")) << _T(" + ");
+
+   if (pStrands->GetTemporaryStrandUsage() != pgsTypes::ttsPretensioned)
+   {
+      *pParagraph << symbol(DELTA) << RPT_STRESS(_T("pp")) << _T(" + ");
+   }
+
+   *pParagraph << symbol(DELTA) << RPT_STRESS(_T("pLTH")) << rptNewLine;
 
    *pParagraph << table << rptNewLine;
 
@@ -152,8 +156,10 @@ CTimeDependentLossesAtShippingTable* CTimeDependentLossesAtShippingTable::Prepar
       table->SetRowSpan(1,1,SKIP_CELL);
 
       int colspan = 4;
-      if ( bIgnoreInitialRelaxation )
+      if (bIgnoreInitialRelaxation)
+      {
          colspan--;
+      }
 
       table->SetColumnSpan(0,2,colspan + (pStrands->GetTemporaryStrandUsage() != pgsTypes::ttsPretensioned ? 1 : 0));
       (*table)(0,2) << _T("Permanent Strands");
@@ -161,8 +167,10 @@ CTimeDependentLossesAtShippingTable* CTimeDependentLossesAtShippingTable::Prepar
       table->SetColumnSpan(0,3,colspan);
       (*table)(0,3) << _T("Temporary Strands");
 
-      for ( ColumnIndexType i = 4; i < numColumns; i++ )
-         table->SetColumnSpan(0,i,SKIP_CELL);
+      for (ColumnIndexType i = 4; i < numColumns; i++)
+      {
+         table->SetColumnSpan(0, i, SKIP_CELL);
+      }
 
       // permanent
       col = 2;
@@ -183,8 +191,10 @@ CTimeDependentLossesAtShippingTable* CTimeDependentLossesAtShippingTable::Prepar
 
 
       // temporary
-      if ( !bIgnoreInitialRelaxation )
-         (*table)(1,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pR0")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      if (!bIgnoreInitialRelaxation)
+      {
+         (*table)(1, col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pR0")), rptStressUnitTag, pDisplayUnits->GetStressUnit());
+      }
 
       (*table)(1,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pES")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
       (*table)(1,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pLTH")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
@@ -192,8 +202,10 @@ CTimeDependentLossesAtShippingTable* CTimeDependentLossesAtShippingTable::Prepar
    }
    else
    {
-      if ( !bIgnoreInitialRelaxation )
-         (*table)(0,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pR0")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      if (!bIgnoreInitialRelaxation)
+      {
+         (*table)(0, col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pR0")), rptStressUnitTag, pDisplayUnits->GetStressUnit());
+      }
 
       (*table)(0,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pES")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
       (*table)(0,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pLTH")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
@@ -217,7 +229,7 @@ void CTimeDependentLossesAtShippingTable::AddRow(rptChapter* pChapter,IBroker* p
 
    if ( !pDetails->pLosses->IgnoreInitialRelaxation() )
    {
-         (*this)(row+rowOffset,col++) << stress.SetValue(pDetails->pLosses->PermanentStrand_RelaxationLossesBeforeTransfer());
+      (*this)(row+rowOffset,col++) << stress.SetValue(pDetails->pLosses->PermanentStrand_RelaxationLossesBeforeTransfer());
    }
 
    Float64 fpES = pDetails->pLosses->PermanentStrand_ElasticShorteningLosses();
@@ -246,8 +258,12 @@ void CTimeDependentLossesAtShippingTable::AddRow(rptChapter* pChapter,IBroker* p
          (*this)(row+rowOffset,col++) << stress.SetValue(pDetails->pLosses->TemporaryStrand_RelaxationLossesBeforeTransfer());
       }
 
-      (*this)(row+rowOffset,col++) << stress.SetValue(pDetails->pLosses->TemporaryStrand_ElasticShorteningLosses());
-      (*this)(row+rowOffset,col++) << stress.SetValue(pDetails->pLosses->TemporaryStrand_TimeDependentLossesAtShipping());
-      (*this)(row+rowOffset,col++) << stress.SetValue(pDetails->pLosses->TemporaryStrand_AtShipping());
+      fpES = pDetails->pLosses->TemporaryStrand_ElasticShorteningLosses();
+      fpLTH = pDetails->pLosses->TemporaryStrand_TimeDependentLossesAtShipping();
+      fpH = pDetails->pLosses->TemporaryStrand_AtShipping();
+      fpH += fpES; // need to add elastic effects to get total change in effective prestress at hauling
+      (*this)(row+rowOffset,col++) << stress.SetValue(fpES);
+      (*this)(row+rowOffset,col++) << stress.SetValue(fpLTH);
+      (*this)(row+rowOffset,col++) << stress.SetValue(fpH);
    }
 }

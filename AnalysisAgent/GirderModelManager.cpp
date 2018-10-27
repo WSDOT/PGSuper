@@ -7723,7 +7723,7 @@ void CGirderModelManager::CreateLBAMSuperstructureMembers(GirderIndexType gdr,bo
                   Ixx = pSectProp->GetIxx(intervalIdx, closurePoi);
                   Iyy = pSectProp->GetIyy(intervalIdx, closurePoi);
                   Ixy = pSectProp->GetIxy(intervalIdx, closurePoi);
-                  ATLASSERT(compositeClosureIntervalIdx <= compositeIntervalIdx);
+
                   data.ea = Ec*Ag;
                   data.ei = Ec*(Ixx*Iyy - Ixy*Ixy) / Iyy;
 
@@ -14981,6 +14981,21 @@ void CGirderModelManager::GetSlabLoad(const CSegmentKey& segmentKey, std::vector
    } // next load
 }
 
+void CGirderModelManager::GetLinearPointPointsOfInterest(const CSegmentKey& segmentKey, PoiList* pvPoi) const
+{
+   // a consistent way to get POI's for linear loading situations
+   GET_IFACE(IPointOfInterest, pPoi);
+   pPoi->GetPointsOfInterest(segmentKey, POI_ERECTED_SEGMENT, pvPoi);
+   
+   // We need to include section transition for things like U-Beams with end blocks
+   // The slab pad will be wider over the end block then in the middle of the girder
+   PoiList vPoi2;
+   pPoi->GetPointsOfInterest(segmentKey, POI_SECTCHANGE, &vPoi2, POIFIND_OR);
+
+   pPoi->MergePoiLists(*pvPoi, vPoi2, pvPoi);
+   ATLASSERT(pvPoi->size() != 0);
+}
+
 void CGirderModelManager::GetMainSpanSlabLoad(const CSegmentKey& segmentKey, std::vector<SlabLoad>* pSlabLoads) const
 {
    // not design version - gets A's and fillet from model and condenses duplicate values
@@ -15026,13 +15041,8 @@ void CGirderModelManager::GetMainSpanSlabLoadEx(const CSegmentKey& segmentKey, b
    }
 
    // Get the POIs for getting the deck load.
-   // We need to include section transition for things like U-Beams with end blocks
-   // The slab pad will be wider over the end block then in the middle of the girder
    PoiList vPoi;
-   pPoi->GetPointsOfInterest(segmentKey, POI_ERECTED_SEGMENT, &vPoi);
-   PoiList vPoi2;
-   pPoi->GetPointsOfInterest(segmentKey, POI_SECTCHANGE, &vPoi2, POIFIND_OR);
-   pPoi->MergePoiLists(vPoi, vPoi2, &vPoi);
+   GetLinearPointPointsOfInterest(segmentKey, &vPoi);
    ATLASSERT(vPoi.size()!=0);
 
    bool bIsInteriorGirder = pBridge->IsInteriorGirder( segmentKey );
@@ -15323,7 +15333,15 @@ void CGirderModelManager::GetMainSpanSlabLoadEx(const CSegmentKey& segmentKey, b
       }
 
       // calculate load, neglecting effect of fillet
-      Float64 wpad = (pad_hgt*mating_surface_width + (pad_hgt - panel_depth)*(bIsInteriorGirder ? 2 : 1)*nMatingSurfaces*panel_support_width)*  pMaterial->GetDeckWeightDensity(castDeckIntervalIdx) * unitSysUnitsMgr::GetGravitationalAcceleration();
+      Float64 wpad = 0;
+      if (IsNonstructuralDeck(deckType))
+      {
+         wpad = trib_slab_width * pad_hgt *  pMaterial->GetDeckWeightDensity(castDeckIntervalIdx) * unitSysUnitsMgr::GetGravitationalAcceleration();
+      }
+      else
+      {
+         wpad = (pad_hgt*mating_surface_width + (pad_hgt - panel_depth)*(bIsInteriorGirder ? 2 : 1)*nMatingSurfaces*panel_support_width)*  pMaterial->GetDeckWeightDensity(castDeckIntervalIdx) * unitSysUnitsMgr::GetGravitationalAcceleration();
+      }
       ASSERT( 0 <= wpad );
 
       LOG("Poi Loc at           = " << poi.GetDistFromStart());
@@ -15341,6 +15359,8 @@ void CGirderModelManager::GetMainSpanSlabLoadEx(const CSegmentKey& segmentKey, b
       sload.GirderChordElevation = girder_chord_elevation;
       sload.TopSlabElevation = rdwy_elevation;
       sload.TopGirderElevation = girder_chord_elevation + camber;
+      sload.Station = station;
+      sload.Offset = offset;
 
 
       if ( !doCondense || pSlabLoads->size() < 2 )
@@ -15940,8 +15960,6 @@ void CGirderModelManager::GetMainSpanShearKeyLoad(const CSegmentKey& segmentKey,
 
 void CGirderModelManager::GetMainSpanLongitudinalJointLoad(const CSegmentKey& segmentKey, std::vector<LongitudinalJointLoad>* pLoads) const
 {
-   GirderIndexType gdr = segmentKey.girderIndex;
-
    ATLASSERT(pLoads != nullptr);
    pLoads->clear();
 
@@ -15958,65 +15976,76 @@ void CGirderModelManager::GetMainSpanLongitudinalJointLoad(const CSegmentKey& se
       return; // leave now
    }
 
-   GirderIndexType gdrIdx = Min(gdr, nGirders - 1);
-
    GET_IFACE(IIntervals, pIntervals);
    IntervalIndexType castLongitudinalJointIntervalIdx = pIntervals->GetCastLongitudinalJointInterval();
    IntervalIndexType compositeLongitudinalJointIntervalIdx = pIntervals->GetCompositeLongitudinalJointInterval();
 
-   GET_IFACE(IPointOfInterest, pPoi);
+   // unit weight of joint material
+   GET_IFACE(IMaterials, pMaterial);
+   Float64 density = pMaterial->GetLongitudinalJointWeightDensity(castLongitudinalJointIntervalIdx);
+   Float64 unit_weight = density * unitSysUnitsMgr::GetGravitationalAcceleration();
+
    PoiList vPoi;
-   pPoi->GetPointsOfInterest(segmentKey, POI_START_FACE | POI_END_FACE, &vPoi, POIFIND_OR);
-   ATLASSERT(vPoi.size() == 2);
-   const pgsPointOfInterest& startPoi(vPoi.front());
-   const pgsPointOfInterest& endPoi(vPoi.back());
+   GetLinearPointPointsOfInterest(segmentKey, &vPoi);
 
-   Float64 startArea = 0;
-   Float64 endArea = 0;
+   auto iter = vPoi.begin();
 
+   // get area of joints at first POI
+   pgsPointOfInterest prevPoi(*iter);
    GET_IFACE(IShapes, pShapes);
-   for (int i = 0; i < 2; i++)
+   Float64 prevLeftJointArea(0), prevRightJointArea(0);
+   CComPtr<IShape> leftShape, rightShape;
+   pShapes->GetJointShapes(compositeLongitudinalJointIntervalIdx, prevPoi, false, pgsTypes::scBridge, &leftShape, &rightShape);
+   if (leftShape)
    {
-      CComPtr<IShape> leftShape, rightShape;
-      const pgsPointOfInterest& poi(i == 0 ? startPoi : endPoi);
+      CComPtr<IShapeProperties> properties;
+      leftShape->get_ShapeProperties(&properties);
+      properties->get_Area(&prevLeftJointArea);
+   }
 
+   if (rightShape)
+   {
+      CComPtr<IShapeProperties> properties;
+      rightShape->get_ShapeProperties(&properties);
+      properties->get_Area(&prevRightJointArea);
+   }
+
+   // work through the rest of the POI, creating linear load segments
+   iter++;
+   auto end = vPoi.end();
+   for (; iter != end; iter++)
+   {
+      leftShape.Release();
+      rightShape.Release();
+
+      pgsPointOfInterest poi(*iter);
       pShapes->GetJointShapes(compositeLongitudinalJointIntervalIdx, poi, false, pgsTypes::scBridge, &leftShape, &rightShape);
 
-      Float64 leftArea(0.0), rightArea(0.0);
+      Float64 leftJointArea(0.0), rightJointArea(0.0);
       if (leftShape)
       {
          CComPtr<IShapeProperties> properties;
          leftShape->get_ShapeProperties(&properties);
-         properties->get_Area(&leftArea);
+         properties->get_Area(&leftJointArea);
       }
 
       if (rightShape)
       {
          CComPtr<IShapeProperties> properties;
          rightShape->get_ShapeProperties(&properties);
-         properties->get_Area(&rightArea);
+         properties->get_Area(&rightJointArea);
       }
 
-      if (i == 0)
-      {
-         startArea += leftArea + rightArea;
-      }
-      else
-      {
-         endArea += leftArea + rightArea;
-      }
-   }
+      Float64 Xstart = prevPoi.GetDistFromStart();
+      Float64 Xend = poi.GetDistFromStart();
+      Float64 Wstart = -unit_weight * (prevLeftJointArea + prevRightJointArea);
+      Float64 Wend = -unit_weight * (leftJointArea + rightJointArea);
+      pLoads->emplace_back(Xstart, Xend, Wstart, Wend);
 
-
-   GET_IFACE(IMaterials, pMaterial);
-   Float64 density = pMaterial->GetLongitudinalJointWeightDensity(castLongitudinalJointIntervalIdx);
-   Float64 unit_weight = density * unitSysUnitsMgr::GetGravitationalAcceleration();
-
-   Float64 Xstart = startPoi.GetDistFromStart();
-   Float64 Xend   = endPoi.GetDistFromStart();
-   Float64 Wstart = -unit_weight * startArea;
-   Float64 Wend   = -unit_weight * endArea;
-   pLoads->emplace_back(Xstart,Xend,Wstart,Wend);
+      prevPoi = poi;
+      prevLeftJointArea = leftJointArea;
+      prevRightJointArea = rightJointArea;
+   }  
 }
 
 CComBSTR CGirderModelManager::GetLoadGroupNameForUserLoad(IUserDefinedLoads::UserDefinedLoadCase lc) const

@@ -119,6 +119,8 @@ typedef struct SlabLoad
    Float64 PadLoad;      // Haunch load. Zero if negative depth
    Float64 HaunchDepth;  // Assumed haunch depth. Will be negative if geometry makes it so
    Float64 SlabDepth;
+   Float64 Station;
+   Float64 Offset;
    Float64 GirderChordElevation;
    Float64 TopSlabElevation;
    Float64 TopGirderElevation; // includes factored camber
@@ -149,7 +151,7 @@ typedef struct EquivPretensionLoad
    Float64 Ybe; // Ybottom at end of girder
    Float64 Ybh; // Ybottom at harp point
    Float64 Ybm; // Ybottom at middle of girder
-   Float64 PrecamberAtHarpPoint; // precamber at the location this load is applied
+   Float64 PrecamberAtLoadPoint; // precamber at the location this load is applied
    Float64 Precamber; // total precamber
    Float64 b; // distance between end of girder and harp point
    Float64 Ls; // length of segment

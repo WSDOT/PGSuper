@@ -2834,14 +2834,13 @@ void CTimeStepLossEngineer::FinalizeTimeStepAnalysis(IntervalIndexType intervalI
    //
    // Equilibrium Checks
    //
+#if defined _BETA_VERSION
    Float64 incrementalAxialTolerance  = ::ConvertToSysUnits(0.1,unitMeasure::Newton);
    Float64 incrementalMomentTolerance = ::ConvertToSysUnits(0.1,unitMeasure::KilonewtonMeter);
 
-   Float64 axialTolerance  = ::ConvertToSysUnits(0.1*intervalIdx,unitMeasure::Newton);
-   Float64 momentTolerance = ::ConvertToSysUnits(0.1*intervalIdx,unitMeasure::KilonewtonMeter);
-
-#pragma Reminder("UPDATE: make the equilibrium checks for debug builds only")
-   // this will require updating the Time Step Parameters Chapter Builder
+   Float64 axialTolerance  = ::ConvertToSysUnits(0.1*intervalIdx,unitMeasure::Newton) + 0.0001;
+   Float64 momentTolerance = ::ConvertToSysUnits(0.1*intervalIdx,unitMeasure::KilonewtonMeter) + 0.0001;
+#endif
 
    // Check : Change in External Forces = Change in Internal Forces
 

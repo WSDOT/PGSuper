@@ -586,11 +586,11 @@ void CFlexuralStressCheckTable::BuildTable(rptChapter* pChapter,
          p_table->SetRowSpan(1,col2++,SKIP_CELL);
          if ( bIsWithRebarAllowableApplicableTop )
          {
-            (*p_table)(0,col1++) << COLHDR(_T("Tension") << rptNewLine << _T("Capacity") << rptNewLine << _T("Top"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+            (*p_table)(0,col1++) << COLHDR(_T("Tension") << rptNewLine << _T("Limit") << rptNewLine << _T("Top"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
          }
          else
          {
-            (*p_table)(0,col1++) << COLHDR(_T("Tension") << rptNewLine << _T("Capacity") << rptNewLine << _T("Bottom"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+            (*p_table)(0,col1++) << COLHDR(_T("Tension") << rptNewLine << _T("Limit") << rptNewLine << _T("Bottom"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
          }
       }
    }

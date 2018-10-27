@@ -141,10 +141,27 @@ CLASS
 //======================== LIFECYCLE  =======================================
 pgsSplittingZoneArtifact::pgsSplittingZoneArtifact()
 {
-   m_IsApplicable=false;
-   m_StartAvs = 0;
-   m_EndAvs = 0;
+   m_IsApplicable = false;
    m_SplittingDirection = pgsTypes::sdVertical;
+   m_SplittingZoneLengthFactor = 0;
+
+   for (int i = 0; i < 2; i++)
+   {
+      pgsTypes::MemberEndType endType = (pgsTypes::MemberEndType)i;
+      m_SplittingZoneLength[endType] = 0;
+      m_H[endType] = 0;
+      m_Avs[endType] = 0;
+      m_Fs[endType] = 0;
+      m_Pr[endType] = 0;
+
+      for (int j = 0; j < 3; j++)
+      {
+         pgsTypes::StrandType strandType = (pgsTypes::StrandType)j;
+         m_Aps[endType][strandType] = 0;
+         m_Fpj[endType][strandType] = 0;
+         m_dFpT[endType][strandType] = 0;
+      }
+   }
 }
 
 pgsSplittingZoneArtifact::pgsSplittingZoneArtifact(const pgsSplittingZoneArtifact& rOther)
@@ -201,243 +218,175 @@ void pgsSplittingZoneArtifact::SetSplittingZoneLengthFactor(Float64 bzlf)
 
 bool pgsSplittingZoneArtifact::Passed() const
 {
-   return StartPassed() && EndPassed();
+   return Passed(pgsTypes::metStart) && Passed(pgsTypes::metEnd);
 }
 
-// Start
-Float64 pgsSplittingZoneArtifact::GetStartH() const
+Float64 pgsSplittingZoneArtifact::GetH(pgsTypes::MemberEndType endType) const
 {
    ATLASSERT(m_IsApplicable);
-   return m_StartH;
+   return m_H[endType];
 }
 
-void pgsSplittingZoneArtifact::SetStartH(Float64 h)
+void pgsSplittingZoneArtifact::SetH(pgsTypes::MemberEndType endType,Float64 h)
 {
    ATLASSERT(m_IsApplicable);
-   m_StartH = h;
+   m_H[endType] = h;
 }
 
-Float64 pgsSplittingZoneArtifact::GetStartSplittingZoneLength() const
+Float64 pgsSplittingZoneArtifact::GetSplittingZoneLength(pgsTypes::MemberEndType endType) const
 {
    ATLASSERT(m_IsApplicable);
-   return m_StartSplittingZoneLength;
+   return m_SplittingZoneLength[endType];
 }
 
-void pgsSplittingZoneArtifact::SetStartSplittingZoneLength(Float64 bzl)
+void pgsSplittingZoneArtifact::SetSplittingZoneLength(pgsTypes::MemberEndType endType,Float64 bzl)
 {
    ATLASSERT(m_IsApplicable);
-   m_StartSplittingZoneLength = bzl;
+   m_SplittingZoneLength[endType] = bzl;
 }
 
-Float64 pgsSplittingZoneArtifact::GetStartFs() const
+Float64 pgsSplittingZoneArtifact::GetFs(pgsTypes::MemberEndType endType) const
 {
    ATLASSERT(m_IsApplicable);
-   return m_StartFs;
+   return m_Fs[endType];
 }
 
-void pgsSplittingZoneArtifact::SetStartFs(Float64 fs)
+void pgsSplittingZoneArtifact::SetFs(pgsTypes::MemberEndType endType,Float64 fs)
 {
    ATLASSERT(m_IsApplicable);
-   m_StartFs = fs;
+   m_Fs[endType] = fs;
 }
 
-void pgsSplittingZoneArtifact::SetStartAvs(Float64 avs)
+void pgsSplittingZoneArtifact::SetAvs(pgsTypes::MemberEndType endType,Float64 avs)
 {
    ATLASSERT(m_IsApplicable);
-   m_StartAvs = avs;
+   m_Avs[endType] = avs;
 }
 
-Float64 pgsSplittingZoneArtifact::GetStartAvs() const
+Float64 pgsSplittingZoneArtifact::GetAvs(pgsTypes::MemberEndType endType) const
 {
    ATLASSERT(m_IsApplicable);
-   return m_StartAvs;
+   return m_Avs[endType];
 }
 
-Float64 pgsSplittingZoneArtifact::GetStartAps() const
+Float64 pgsSplittingZoneArtifact::GetAps(pgsTypes::MemberEndType endType,pgsTypes::StrandType strandType) const
 {
    ATLASSERT(m_IsApplicable);
-   return m_StartAps;
+   if (strandType == pgsTypes::Permanent)
+   {
+      return m_Aps[endType][pgsTypes::Straight] + m_Aps[endType][pgsTypes::Harped];
+   }
+   else
+   {
+      return m_Aps[endType][strandType];
+   }
 }
 
-void pgsSplittingZoneArtifact::SetStartAps(Float64 aps)
+void pgsSplittingZoneArtifact::SetAps(pgsTypes::MemberEndType endType,pgsTypes::StrandType strandType,Float64 aps)
 {
    ATLASSERT(m_IsApplicable);
-   m_StartAps = aps;
+   m_Aps[endType][strandType] = aps;
 }
 
-Float64 pgsSplittingZoneArtifact::GetStartFpj() const
+Float64 pgsSplittingZoneArtifact::GetFpj(pgsTypes::MemberEndType endType,pgsTypes::StrandType strandType) const
 {
    ATLASSERT(m_IsApplicable);
-   return m_StartFpj;
+   if (strandType == pgsTypes::Permanent)
+   {
+      if (IsZero(m_Aps[endType][pgsTypes::Straight] + m_Aps[endType][pgsTypes::Harped]))
+      {
+         return 0;
+      }
+      else
+      {
+         return (m_Fpj[endType][pgsTypes::Straight] * m_Aps[endType][pgsTypes::Straight] + m_Fpj[endType][pgsTypes::Harped] * m_Aps[endType][pgsTypes::Harped]) / (m_Aps[endType][pgsTypes::Straight] + m_Aps[endType][pgsTypes::Harped]);
+      }
+   }
+   else
+   {
+      return m_Fpj[endType][strandType];
+   }
 }
 
-void pgsSplittingZoneArtifact::SetStartFpj(Float64 fpj)
+void pgsSplittingZoneArtifact::SetFpj(pgsTypes::MemberEndType endType,pgsTypes::StrandType strandType,Float64 fpj)
 {
    ATLASSERT(m_IsApplicable);
-   m_StartFpj = fpj;
+   m_Fpj[endType][strandType] = fpj;
 }
 
-Float64 pgsSplittingZoneArtifact::GetStartLossesAfterTransfer() const
+Float64 pgsSplittingZoneArtifact::GetLossesAfterTransfer(pgsTypes::MemberEndType endType,pgsTypes::StrandType strandType) const
 {
    ATLASSERT(m_IsApplicable);
-   return m_StartdFpT;
+   if (strandType == pgsTypes::Permanent)
+   {
+      if (IsZero(m_Aps[endType][pgsTypes::Straight] + m_Aps[endType][pgsTypes::Harped]))
+      {
+         return 0;
+      }
+      else
+      {
+         return (m_dFpT[endType][pgsTypes::Straight] * m_Aps[endType][pgsTypes::Straight] + m_dFpT[endType][pgsTypes::Harped] * m_Aps[endType][pgsTypes::Harped]) / (m_Aps[endType][pgsTypes::Straight] + m_Aps[endType][pgsTypes::Harped]);
+      }
+   }
+   else
+   {
+      return m_dFpT[endType][strandType];
+   }
 }
 
-void pgsSplittingZoneArtifact::SetStartLossesAfterTransfer(Float64 dFpT)
+void pgsSplittingZoneArtifact::SetLossesAfterTransfer(pgsTypes::MemberEndType endType,pgsTypes::StrandType strandType,Float64 dFpT)
 {
-   m_StartdFpT = dFpT;
+   m_dFpT[endType][strandType] = dFpT;
 }
 
-Float64 pgsSplittingZoneArtifact::GetStartSplittingForce() const
+Float64 pgsSplittingZoneArtifact::GetSplittingForce(pgsTypes::MemberEndType endType, pgsTypes::StrandType strandType) const
 {
    ATLASSERT(m_IsApplicable);
-   Float64 P = 0.04*m_StartAps*(m_StartFpj - m_StartdFpT);
-   return P;
+   if (strandType == pgsTypes::Permanent)
+   {
+      Float64 Ps = GetSplittingForce(endType, pgsTypes::Straight);
+      Float64 Ph = GetSplittingForce(endType, pgsTypes::Harped);
+      return Ps + Ph;
+   }
+   else
+   {
+      Float64 P = 0.04*m_Aps[endType][strandType]*(m_Fpj[endType][strandType] - m_dFpT[endType][strandType]);
+      return P;
+   }
 }
 
+Float64 pgsSplittingZoneArtifact::GetTotalSplittingForce(pgsTypes::MemberEndType endType) const
+{
+   Float64 Ps = GetSplittingForce(endType, pgsTypes::Straight);
+   Float64 Ph = GetSplittingForce(endType, pgsTypes::Harped);
+   Float64 Pt = GetSplittingForce(endType, pgsTypes::Temporary);
+   return Ps + Ph + Pt;
+}
 
-Float64 pgsSplittingZoneArtifact::GetStartSplittingResistance() const
+Float64 pgsSplittingZoneArtifact::GetSplittingResistance(pgsTypes::MemberEndType endType) const
 {
    ATLASSERT(m_IsApplicable);
-   return m_StartPr;
+   return m_Pr[endType];
 }
 
-void pgsSplittingZoneArtifact::SetStartSplittingResistance(Float64 p)
+void pgsSplittingZoneArtifact::SetSplittingResistance(pgsTypes::MemberEndType endType,Float64 p)
 {
    ATLASSERT(m_IsApplicable);
-   m_StartPr = p;
+   m_Pr[endType] = p;
 }
 
 
-bool pgsSplittingZoneArtifact::StartPassed() const
+bool pgsSplittingZoneArtifact::Passed(pgsTypes::MemberEndType endType) const
 {
    if (m_IsApplicable)
    {
-      return GetStartSplittingForce() <= m_StartPr;
+      return GetTotalSplittingForce(endType) <= m_Pr[endType];
    }
    else
    {
       return true;
    }
 }
-
-// End
-Float64 pgsSplittingZoneArtifact::GetEndH() const
-{
-   ATLASSERT(m_IsApplicable);
-   return m_EndH;
-}
-
-void pgsSplittingZoneArtifact::SetEndH(Float64 h)
-{
-   ATLASSERT(m_IsApplicable);
-   m_EndH = h;
-}
-
-Float64 pgsSplittingZoneArtifact::GetEndSplittingZoneLength() const
-{
-   ATLASSERT(m_IsApplicable);
-   return m_EndSplittingZoneLength;
-}
-
-void pgsSplittingZoneArtifact::SetEndSplittingZoneLength(Float64 bzl)
-{
-   ATLASSERT(m_IsApplicable);
-   m_EndSplittingZoneLength = bzl;
-}
-
-Float64 pgsSplittingZoneArtifact::GetEndFs() const
-{
-   ATLASSERT(m_IsApplicable);
-   return m_EndFs;
-}
-
-void pgsSplittingZoneArtifact::SetEndFs(Float64 fs)
-{
-   ATLASSERT(m_IsApplicable);
-   m_EndFs = fs;
-}
-
-void pgsSplittingZoneArtifact::SetEndAvs(Float64 avs)
-{
-   ATLASSERT(m_IsApplicable);
-   m_EndAvs = avs;
-}
-
-Float64 pgsSplittingZoneArtifact::GetEndAvs() const
-{
-   ATLASSERT(m_IsApplicable);
-   return m_EndAvs;
-}
-
-Float64 pgsSplittingZoneArtifact::GetEndAps() const
-{
-   ATLASSERT(m_IsApplicable);
-   return m_EndAps;
-}
-
-void pgsSplittingZoneArtifact::SetEndAps(Float64 aps)
-{
-   ATLASSERT(m_IsApplicable);
-   m_EndAps = aps;
-}
-
-Float64 pgsSplittingZoneArtifact::GetEndFpj() const
-{
-   ATLASSERT(m_IsApplicable);
-   return m_EndFpj;
-}
-
-void pgsSplittingZoneArtifact::SetEndFpj(Float64 fpj)
-{
-   ATLASSERT(m_IsApplicable);
-   m_EndFpj = fpj;
-}
-
-Float64 pgsSplittingZoneArtifact::GetEndLossesAfterTransfer() const
-{
-   ATLASSERT(m_IsApplicable);
-   return m_EnddFpT;
-}
-
-void pgsSplittingZoneArtifact::SetEndLossesAfterTransfer(Float64 dFpT)
-{
-   m_EnddFpT = dFpT;
-}
-
-Float64 pgsSplittingZoneArtifact::GetEndSplittingForce() const
-{
-   ATLASSERT(m_IsApplicable);
-   Float64 P = 0.04*m_EndAps*(m_EndFpj - m_EnddFpT);
-   return P;
-}
-
-
-Float64 pgsSplittingZoneArtifact::GetEndSplittingResistance() const
-{
-   ATLASSERT(m_IsApplicable);
-   return m_EndPr;
-}
-
-void pgsSplittingZoneArtifact::SetEndSplittingResistance(Float64 p)
-{
-   ATLASSERT(m_IsApplicable);
-   m_EndPr = p;
-}
-
-
-bool pgsSplittingZoneArtifact::EndPassed() const
-{
-   if (m_IsApplicable)
-   {
-      return m_EndPr >= GetEndSplittingForce();
-   }
-   else
-   {
-      return true;
-   }
-}
-
 
 //======================== ACCESS     =======================================
 
@@ -452,23 +401,23 @@ void pgsSplittingZoneArtifact::MakeCopy(const pgsSplittingZoneArtifact& rOther)
    m_SplittingZoneLengthFactor = rOther.m_SplittingZoneLengthFactor;
    m_SplittingDirection = rOther.m_SplittingDirection;
 
-   m_StartSplittingZoneLength = rOther.m_StartSplittingZoneLength;
-   m_StartH                  = rOther.m_StartH;
-   m_StartAps                = rOther.m_StartAps;
-   m_StartFpj                = rOther.m_StartFpj;
-   m_StartdFpT               = rOther.m_StartdFpT;
-   m_StartAvs                = rOther.m_StartAvs;
-   m_StartFs                 = rOther.m_StartFs;
-   m_StartPr                 = rOther.m_StartPr;
+   for (int i = 0; i < 2; i++)
+   {
+      pgsTypes::MemberEndType endType = (pgsTypes::MemberEndType)i;
+      m_SplittingZoneLength[endType] = rOther.m_SplittingZoneLength[endType];
+      m_H[endType] = rOther.m_H[endType];
+      m_Avs[endType] = rOther.m_Avs[endType];
+      m_Fs[endType] = rOther.m_Fs[endType];
+      m_Pr[endType] = rOther.m_Pr[endType];
 
-   m_EndSplittingZoneLength = rOther.m_EndSplittingZoneLength;
-   m_EndH                  = rOther.m_EndH;
-   m_EndAps                = rOther.m_EndAps;
-   m_EndFpj                = rOther.m_EndFpj;
-   m_EnddFpT               = rOther.m_EnddFpT;
-   m_EndAvs                = rOther.m_EndAvs;
-   m_EndFs                 = rOther.m_EndFs;
-   m_EndPr                 = rOther.m_EndPr;
+      for (int j = 0; j < 3; j++)
+      {
+         pgsTypes::StrandType strandType = (pgsTypes::StrandType)j;
+         m_Aps[endType][strandType] = rOther.m_Aps[endType][strandType];
+         m_Fpj[endType][strandType] = rOther.m_Fpj[endType][strandType];
+         m_dFpT[endType][strandType] = rOther.m_dFpT[endType][strandType];
+      }
+   }
 }
 
 void pgsSplittingZoneArtifact::MakeAssignment(const pgsSplittingZoneArtifact& rOther)

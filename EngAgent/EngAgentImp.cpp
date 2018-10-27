@@ -1427,12 +1427,29 @@ Float64 CEngAgentImp::GetPrestressForcePerStrand(const pgsPointOfInterest& poi,p
       pTheConfig = &config;
    }
 
-   for ( const auto& debond_info : pTheConfig->PrestressConfig.Debond[strandType] )
+   // permanent option must cycle through for both straight and harped strands
+   IndexType ntypes = 1;
+   pgsTypes::StrandType strandTypeList[2];
+   if (strandType == pgsTypes::Permanent)
    {
-      if ( InRange(0.0,poi.GetDistFromStart(),debond_info.DebondLength[pgsTypes::metStart]) ||
-           InRange(gdr_length - debond_info.DebondLength[pgsTypes::metEnd], poi.GetDistFromStart(), gdr_length) )
+      ntypes = 2;
+      strandTypeList[0] = pgsTypes::Straight;
+      strandTypeList[1] = pgsTypes::Harped;
+   }
+   else
+   {
+      strandTypeList[0] = strandType;
+   }
+
+   for (IndexType in = 0; in < ntypes; in++)
+   {
+      for (const auto& debond_info : pTheConfig->PrestressConfig.Debond[strandTypeList[in]])
       {
-         nStrands--;
+         if (InRange(0.0, poi.GetDistFromStart(), debond_info.DebondLength[pgsTypes::metStart]) ||
+            InRange(gdr_length - debond_info.DebondLength[pgsTypes::metEnd], poi.GetDistFromStart(), gdr_length))
+         {
+            nStrands--;
+         }
       }
    }
 
@@ -3185,9 +3202,9 @@ void CEngAgentImp::ClearDesignCriticalSections() const
 
 /////////////////////////////////////////////////////////////////////////////
 // IGirderHaunch
-Float64 CEngAgentImp::GetRequiredSlabOffset(const CSpanKey& spanKey) const
+Float64 CEngAgentImp::GetRequiredSlabOffset(const CSegmentKey& segmentKey) const
 {
-   const auto& details = GetHaunchDetails(spanKey);
+   const auto& details = GetHaunchDetails(segmentKey);
 
    Float64 slab_offset = details.RequiredSlabOffset;
 
@@ -3206,17 +3223,17 @@ Float64 CEngAgentImp::GetRequiredSlabOffset(const CSpanKey& spanKey) const
    return slab_offset;
 }
 
-const HAUNCHDETAILS& CEngAgentImp::GetHaunchDetails(const CSpanKey& spanKey) const
+const HAUNCHDETAILS& CEngAgentImp::GetHaunchDetails(const CSegmentKey& segmentKey) const
 {
-   auto found = m_HaunchDetails.find(spanKey);
+   auto found = m_HaunchDetails.find(segmentKey);
 
    if ( found == m_HaunchDetails.end() )
    {
       // not found
       HAUNCHDETAILS details;
-      m_Designer.GetHaunchDetails(spanKey,nullptr,&details);
+      m_Designer.GetHaunchDetails(segmentKey,nullptr,&details);
 
-      auto result = m_HaunchDetails.insert( std::make_pair(spanKey,details) );
+      auto result = m_HaunchDetails.insert( std::make_pair(segmentKey,details) );
       ATLASSERT(result.second == true);
       found = result.first;
    }

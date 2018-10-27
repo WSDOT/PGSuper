@@ -89,6 +89,9 @@ rptRcTable* CUserMomentsTable::Build(IBroker* pBroker,const CGirderKey& girderKe
       p_table->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
    }
 
+   location.IncludeSpanAndGirder(girderKey.groupIndex == ALL_GROUPS);
+   PoiAttributeType poiRefAttribute(girderKey.groupIndex == ALL_GROUPS ? POI_SPAN : POI_ERECTED_SEGMENT);
+
    // Get the interface pointers we need
    GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
    GET_IFACE2(pBroker,IProductForces2,pForces2);
@@ -108,8 +111,19 @@ rptRcTable* CUserMomentsTable::Build(IBroker* pBroker,const CGirderKey& girderKe
       GirderIndexType nGirders = pBridge->GetGirderCount(grpIdx);
       GirderIndexType gdrIdx = (nGirders <= girderKey.girderIndex ? nGirders-1 : girderKey.girderIndex);
 
+      CSegmentKey allSegmentsKey(grpIdx, gdrIdx, ALL_SEGMENTS);
       PoiList vPoi;
-      pIPoi->GetPointsOfInterest(CSegmentKey(grpIdx, gdrIdx, ALL_SEGMENTS), POI_ERECTED_SEGMENT, &vPoi);
+      pIPoi->GetPointsOfInterest(allSegmentsKey, poiRefAttribute, &vPoi);
+
+      // Add PSXFER poi's (but only at the ends... don't need them all from debonding)
+      PoiList vPoi2;
+      pIPoi->GetPointsOfInterest(allSegmentsKey, POI_PSXFER, &vPoi2);
+      if (0 < vPoi2.size())
+      {
+         vPoi.push_back(vPoi2.front());
+         vPoi.push_back(vPoi2.back());
+         pIPoi->SortPoiList(&vPoi);
+      }
 
       std::vector<Float64> minDC, maxDC;
       std::vector<Float64> minDW, maxDW;

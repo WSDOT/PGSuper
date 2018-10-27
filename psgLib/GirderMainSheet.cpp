@@ -698,16 +698,20 @@ void CGirderMainSheet::ExchangeDebondCriteriaData(CDataExchange* pDX)
  	DDX_Text(pDX, IDC_MAX_NUM_PER_SECTION, m_Entry.m_MaxNumDebondedStrandsPerSection);
    DDX_Percentage(pDX,IDC_MAX_FRACTION_PER_SECTION, m_Entry.m_MaxDebondedStrandsPerSection);
 
-   DDX_UnitValueAndTag(pDX, IDC_MIN_DISTANCE, IDC_MIN_DISTANCE_UNIT, m_Entry.m_MinDebondLength, pDisplayUnits->ComponentDim);
-   DDV_UnitValueGreaterThanZero( pDX, IDC_MIN_DISTANCE,m_Entry.m_MinDebondLength, pDisplayUnits->ComponentDim);
+   DDX_UnitValueAndTag(pDX, IDC_MIN_DISTANCE, IDC_MIN_DISTANCE_UNIT, m_Entry.m_MinDebondLength, pDisplayUnits->SpanLength);
+   DDV_UnitValueGreaterThanZero( pDX, IDC_MIN_DISTANCE,m_Entry.m_MinDebondLength, pDisplayUnits->SpanLength);
 
-   DDX_UnitValueAndTag(pDX, IDC_DEFAULT_DISTANCE, IDC_DEFAULT_DISTANCE_UNIT, m_Entry.m_DefaultDebondLength, pDisplayUnits->ComponentDim);
-   DDV_UnitValueGreaterThanZero( pDX, IDC_DEFAULT_DISTANCE,m_Entry.m_DefaultDebondLength, pDisplayUnits->ComponentDim);
+   DDX_UnitValueAndTag(pDX, IDC_DEFAULT_DISTANCE, IDC_DEFAULT_DISTANCE_UNIT, m_Entry.m_DefaultDebondLength, pDisplayUnits->SpanLength);
+   DDV_UnitValueGreaterThanZero( pDX, IDC_DEFAULT_DISTANCE,m_Entry.m_DefaultDebondLength, pDisplayUnits->SpanLength);
 
-   if (m_Entry.m_DefaultDebondLength < m_Entry.m_MinDebondLength)
+   if (!IsSplicedGirder())
    {
-      ::AfxMessageBox(_T("Error - The default debond length cannot be less than the minimum debond length"));
-      pDX->Fail();
+      // only applicable to regular pretensioned girders... we don't do design for spliced girders
+      if (m_Entry.m_DefaultDebondLength < m_Entry.m_MinDebondLength)
+      {
+         ::AfxMessageBox(_T("Error - The default debond length cannot be less than the minimum debond length"));
+         pDX->Fail();
+      }
    }
 
    // items with check enable boxes are tricky
@@ -1102,7 +1106,7 @@ bool CGirderMainSheet::CanHarpStrands() const
 
 bool CGirderMainSheet::CanDebondStrands() const
 {
-   if (m_Entry.CanDebondStraightStrands() && !CanHarpStrands())
+   if (m_Entry.CanDebondStraightStrands() && !(pgsTypes::asHarped == m_Entry.GetAdjustableStrandType() && m_Entry.GetNumHarpedStrandCoordinates() > 0) )
    {
       return true;
    }

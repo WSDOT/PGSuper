@@ -267,10 +267,11 @@ void haunch_summary(rptChapter* pChapter,IBroker* pBroker, const std::vector<CGi
    for (ColumnIndexType gdr_idx=startIdx; gdr_idx<=endIdx; gdr_idx++)
    {
       CGirderKey girderKey(girderList[gdr_idx]);
+      CSegmentKey segmentKey(girderKey, 0);
 
       // Get Midspan poi and take averages at 0.2, 0.3 points to compute quarter point reactions
       PoiList vPoi;
-      pIPOI->GetPointsOfInterest(CSegmentKey(girderKey, 0), POI_TENTH_POINTS | POI_SPAN, &vPoi);
+      pIPOI->GetPointsOfInterest(segmentKey, POI_TENTH_POINTS | POI_SPAN, &vPoi);
       ATLASSERT(vPoi.size()==11);
       const pgsPointOfInterest& poi_0 = vPoi[0];
       const pgsPointOfInterest& poi_2 = vPoi[2];
@@ -300,11 +301,8 @@ void haunch_summary(rptChapter* pChapter,IBroker* pBroker, const std::vector<CGi
          delta_slab8 = pProductForces->GetDeflection(castDeckIntervalIdx, pgsTypes::pftSlab, poi_8, bat, rtCumulative, false);
       }
 
-      // Haunch depth at mid-span
-      CSpanKey spanKey(girderKey.groupIndex, girderKey.girderIndex);  // precast girder bridge assumption here
-
       // haunch all along the girder
-      const auto& haunch_details = pGdrHaunch->GetHaunchDetails(spanKey);
+      const auto& haunch_details = pGdrHaunch->GetHaunchDetails(segmentKey);
 
       // find Z value at mid-span
       Float64 Z(0);

@@ -50,7 +50,7 @@ rptRcTable(NumColumns,0)
 
    scalar.SetFormat( sysNumericFormatTool::Automatic );
    scalar.SetWidth(6);
-   scalar.SetPrecision(2);
+   scalar.SetPrecision(3);
 }
 
 CRelaxationAtFinalTable* CRelaxationAtFinalTable::PrepareTable(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& segmentKey,IEAFDisplayUnits* pDisplayUnits,Uint16 level)

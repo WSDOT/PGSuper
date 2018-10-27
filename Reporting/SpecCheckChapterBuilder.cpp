@@ -706,34 +706,33 @@ void write_splitting_zone_check(IBroker* pBroker,
 
       pPara = new rptParagraph;
       *pChapter << pPara;
-      (*pPara) << Bold(_T("Left End of Girder:")) << rptNewLine;
-      (*pPara) << strName << _T(" Zone Length = ") << length.SetValue(pArtifact->GetStartSplittingZoneLength()) << rptNewLine;
-      (*pPara) << strName << _T(" Force = ") << force.SetValue(pArtifact->GetStartSplittingForce()) << rptNewLine;
-      (*pPara) << strName << _T(" Resistance = ") << force.SetValue(pArtifact->GetStartSplittingResistance()) << rptNewLine;
-      (*pPara) << _T("Status = ");
-      if ( pArtifact->StartPassed() )
+      for (int i = 0; i < 2; i++)
       {
-         (*pPara) << RPT_PASS;
-      }
-      else
-      {
-         (*pPara) << RPT_FAIL;
-      }
+         pgsTypes::MemberEndType endType = (pgsTypes::MemberEndType)i;
+         if (endType == pgsTypes::metStart)
+         {
+            (*pPara) << Bold(_T("Left End of Girder:")) << rptNewLine;
+         }
+         else
+         {
+            (*pPara) << Bold(_T("Right End of Girder:")) << rptNewLine;
+         }
 
-      (*pPara) <<rptNewLine<<rptNewLine;
+         (*pPara) << strName << _T(" Zone Length = ") << length.SetValue(pArtifact->GetSplittingZoneLength(endType)) << rptNewLine;
+         (*pPara) << strName << _T(" Force = ") << force.SetValue(pArtifact->GetTotalSplittingForce(endType)) << rptNewLine;
+         (*pPara) << strName << _T(" Resistance = ") << force.SetValue(pArtifact->GetSplittingResistance(endType)) << rptNewLine;
+         
+         (*pPara) << _T("Status = ");
+         if ( pArtifact->Passed(endType) )
+         {
+            (*pPara) << RPT_PASS;
+         }
+         else
+         {
+            (*pPara) << RPT_FAIL;
+         }
 
-      (*pPara) << Bold(_T("Right End of Girder:")) << rptNewLine;
-      (*pPara) << strName << _T(" Zone Length = ") << length.SetValue(pArtifact->GetEndSplittingZoneLength()) << rptNewLine;
-      (*pPara) << strName << _T(" Force = ") << force.SetValue(pArtifact->GetEndSplittingForce()) << rptNewLine;
-      (*pPara) << strName << _T(" Resistance = ") << force.SetValue(pArtifact->GetEndSplittingResistance()) << rptNewLine;
-      (*pPara) << _T("Status = ");
-      if ( pArtifact->EndPassed() )
-      {
-         (*pPara) << RPT_PASS;
-      }
-      else
-      {
-         (*pPara) << RPT_FAIL;
+         (*pPara) <<rptNewLine<<rptNewLine;
       }
    } // next segment
 }

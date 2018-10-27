@@ -76,6 +76,9 @@ inline rptRcTable* MakeTable(const CString& strLabel, IEAFDisplayUnits* pDisplay
    return pTable;
 }
 
+// Macro we can use to write a newline before our table txt value
+#define WRITE_NEWLINE_BEFORE(doWriteNewLineRow, row, col, txt) if (doWriteNewLineRow) { (*pTable)(row, col) << rptNewLine << txt;} else { (*pTable)(row, col) << txt;}
+
 inline void FillTable(rptRcTable* pTable, IEAFDisplayUnits* pDisplayUnits, 
                       rptLengthSectionValue& elev, rptLengthSectionValue& dim, rptLengthSectionValue& dist, 
                       bool bHasOverlay, const std::vector<BearingElevationDetails>& vElevDetails)
@@ -84,30 +87,49 @@ inline void FillTable(rptRcTable* pTable, IEAFDisplayUnits* pDisplayUnits,
 
    std::vector<BearingElevationDetails>::const_iterator Iter(vElevDetails.begin());
    std::vector<BearingElevationDetails>::const_iterator End(vElevDetails.end());
-   for (; Iter != End; Iter++, Row++)
+   GirderIndexType lastGdrIdx = INVALID_INDEX;
+   for (; Iter != End; Iter++)
    {
       const BearingElevationDetails& ElevDetails = *Iter;
 
+      // put multiple bearings for same girder in same row
+      bool newRow = (lastGdrIdx == INVALID_INDEX) || (lastGdrIdx != ElevDetails.GdrIdx);
+      if (newRow)
+      {
+         Row++;
+      }
+
+      lastGdrIdx = ElevDetails.GdrIdx;
+
       ColumnIndexType Col = 0;
 
-      (*pTable)(Row, Col++) << LABEL_GIRDER(ElevDetails.GdrIdx);
-      (*pTable)(Row, Col++) << ElevDetails.BearingIdx + 1;
-      (*pTable)(Row, Col++) << rptRcStation(ElevDetails.Station, &pDisplayUnits->GetStationFormat());
-      (*pTable)(Row, Col++) << RPT_OFFSET(ElevDetails.Offset, dist);
-      (*pTable)(Row, Col++) << elev.SetValue(ElevDetails.FinishedGradeElevation);
-      (*pTable)(Row, Col++) << ElevDetails.ProfileGrade;
-      (*pTable)(Row, Col++) << ElevDetails.GirderGrade;
-      (*pTable)(Row, Col++) << ElevDetails.GirderOrientation;
+      if (newRow)
+      {
+         (*pTable)(Row, Col++) << LABEL_GIRDER(ElevDetails.GdrIdx);
+      }
+      else
+      {
+         Col++;
+      }
+
+      WRITE_NEWLINE_BEFORE(!newRow, Row, Col++, ElevDetails.BearingIdx + 1);
+      WRITE_NEWLINE_BEFORE(!newRow, Row, Col++, rptRcStation(ElevDetails.Station, &pDisplayUnits->GetStationFormat()));
+
+      WRITE_NEWLINE_BEFORE(!newRow, Row, Col++, RPT_OFFSET(ElevDetails.Offset, dist));
+      WRITE_NEWLINE_BEFORE(!newRow, Row, Col++, elev.SetValue(ElevDetails.FinishedGradeElevation));
+      WRITE_NEWLINE_BEFORE(!newRow, Row, Col++, ElevDetails.ProfileGrade);
+      WRITE_NEWLINE_BEFORE(!newRow, Row, Col++, ElevDetails.GirderGrade);
+      WRITE_NEWLINE_BEFORE(!newRow, Row, Col++, ElevDetails.GirderOrientation);
 
       if (bHasOverlay)
-         (*pTable)(Row, Col++) << dim.SetValue(ElevDetails.OverlayDepth);
+         WRITE_NEWLINE_BEFORE(!newRow, Row, Col++, dim.SetValue(ElevDetails.OverlayDepth));
 
-      (*pTable)(Row, Col++) << dim.SetValue(ElevDetails.SlabOffset);
-      (*pTable)(Row, Col++) << dim.SetValue(ElevDetails.Hg);
-      (*pTable)(Row, Col++) << elev.SetValue(ElevDetails.TopBrgElevation);
-      (*pTable)(Row, Col++) << dim.SetValue(GetNetBearingHeight(ElevDetails));
-      (*pTable)(Row, Col++) << dim.SetValue(ElevDetails.BearingDeduct);
-      (*pTable)(Row, Col++) << elev.SetValue(ElevDetails.BrgSeatElevation);
+      WRITE_NEWLINE_BEFORE(!newRow, Row, Col++, dim.SetValue(ElevDetails.SlabOffset));
+      WRITE_NEWLINE_BEFORE(!newRow, Row, Col++, dim.SetValue(ElevDetails.Hg));
+      WRITE_NEWLINE_BEFORE(!newRow, Row, Col++, elev.SetValue(ElevDetails.TopBrgElevation));
+      WRITE_NEWLINE_BEFORE(!newRow, Row, Col++, dim.SetValue(GetNetBearingHeight(ElevDetails)));
+      WRITE_NEWLINE_BEFORE(!newRow, Row, Col++, dim.SetValue(ElevDetails.BearingDeduct));
+      WRITE_NEWLINE_BEFORE(!newRow, Row, Col++, elev.SetValue(ElevDetails.BrgSeatElevation));
    }
 }
 
@@ -163,27 +185,26 @@ rptChapter* CBearingSeatElevationsDetailsChapterBuilder2::Build(CReportSpecifica
    {
       if (pBridge->IsBoundaryPier(pierIdx))
       {
-         CString strBackLabel;
-         strBackLabel.Format(_T("%s %d Back"), pierIdx == 0 || pierIdx == nPiers - 1 ? _T("Abutment") : _T("Pier"), LABEL_PIER(pierIdx));
          rptRcTable* pBackTable = nullptr;
          if (pierIdx != 0)
          {
+            CString strBackLabel;
+            strBackLabel.Format(_T("%s %d Back"), pierIdx == 0 || pierIdx == nPiers - 1 ? _T("Abutment") : _T("Pier"), LABEL_PIER(pierIdx));
             pBackTable = MakeTable(strBackLabel,pDisplayUnits,bHasOverlay);
             (*pPara) << pBackTable << rptNewLine;
          }
 
-         CString strAheadLabel;
-         strAheadLabel.Format(_T("%s %d Ahead"), pierIdx == 0 || pierIdx == nPiers - 1 ? _T("Abutment") : _T("Pier"), LABEL_PIER(pierIdx));
          rptRcTable* pAheadTable = nullptr;
          if (pierIdx != nPiers - 1)
          {
-            pAheadTable = MakeTable(strBackLabel,pDisplayUnits,bHasOverlay);
+            CString strAheadLabel;
+            strAheadLabel.Format(_T("%s %d Ahead"), pierIdx == 0 || pierIdx == nPiers - 1 ? _T("Abutment") : _T("Pier"), LABEL_PIER(pierIdx));
+            pAheadTable = MakeTable(strAheadLabel,pDisplayUnits,bHasOverlay);
             (*pPara) << pAheadTable << rptNewLine;
          }
 
          if (pBackTable)
          {
-
             std::vector<BearingElevationDetails> vBackElevDetails = pBridge->GetBearingElevationDetails(pierIdx, pgsTypes::Back);
 
             FillTable(pBackTable, pDisplayUnits, elev, dim, dist, bHasOverlay, vBackElevDetails);

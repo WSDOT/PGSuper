@@ -263,7 +263,7 @@ rptRcTable* CSectionPropertiesTable::Build(IBroker* pBroker,const CSegmentKey& s
       {
          (*xs_table)(row++, 2) << l3.SetValue(-pSectProp->GetS(lastIntervalIdx, poi, pgsTypes::TopDeck));
          (*xs_table)(row++, 2) << l3.SetValue(-pSectProp->GetS(lastIntervalIdx, poi, pgsTypes::BottomDeck));
-         (*xs_table)(row++, 2) << l3.SetValue(pSectProp->GetQSlab(poi));
+         (*xs_table)(row++, 2) << l3.SetValue(pSectProp->GetQSlab(lastIntervalIdx,poi));
          (*xs_table)(row++, 2) << l1.SetValue(pSectProp->GetEffectiveFlangeWidth(poi));
       }
 

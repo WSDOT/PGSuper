@@ -37,6 +37,8 @@ public:
    virtual rptChapter* Build(CReportSpecification* pRptSpec,Uint16 level) const override;
 
 private:
+   rptRcTable* CBearingSeatElevationsChapterBuilderBase::BuildTable(const CString& strLabel, PierIndexType pierIdx, pgsTypes::PierFaceType face) const;
+
    CBearingSeatElevationsChapterBuilderBase();
    TableType m_TableType;
 };

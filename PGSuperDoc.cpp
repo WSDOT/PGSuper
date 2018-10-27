@@ -268,7 +268,7 @@ void CPGSuperDoc::DesignGirder(bool bPrompt,arSlabOffsetDesignType designSlabOff
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
-   GET_IFACE(IBridge, pBridge);
+   GET_IFACE_NOCHECK(IBridge, pBridge);
    GET_IFACE(ISectionProperties, pSectProp);
    GET_IFACE( ILossParameters, pLossParams);
    if ( pLossParams->GetLossMethod() == pgsTypes::TIME_STEP )

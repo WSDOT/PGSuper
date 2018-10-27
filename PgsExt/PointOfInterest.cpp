@@ -401,35 +401,32 @@ void pgsPointOfInterest::Offset(Float64 delta)
 
 void pgsPointOfInterest::SetDistFromStart(Float64 Xpoi,bool bRetainAttributes)
 {
-   if ( !IsEqual(m_Xpoi,Xpoi) )
+   // once the POI is moved, the other points are no longer
+   // valid
+   m_Xpoi = Xpoi;
+      
+   m_bHasSegmentPathCoordinate = false;
+   m_Xsp = -1;
+      
+   m_bHasGirderCoordinate = false;
+   m_Xg = -1;
+      
+   m_bHasGirderPathCoordinate = false;
+   m_Xgp = -1;
+
+   if (!bRetainAttributes)
    {
-      // once the POI is moved, the other points are no longer
-      // valid
-      m_Xpoi = Xpoi;
-      
-      m_bHasSegmentPathCoordinate = false;
-      m_Xsp = -1;
-      
-      m_bHasGirderCoordinate = false;
-      m_Xg = -1;
-      
-      m_bHasGirderPathCoordinate = false;
-      m_Xgp = -1;
+      m_ID = INVALID_ID;
 
-      if (!bRetainAttributes)
+      for (int i = 0; i < 6; i++)
       {
-         m_ID = INVALID_ID;
-
-         for (int i = 0; i < 6; i++)
-         {
-            m_RefAttributes[i] = 0;
-         }
-         m_Attributes = 0;
+         m_RefAttributes[i] = 0;
+      }
+      m_Attributes = 0;
 
 #if defined _DEBUG 
-         m_strAttributes = _T("");
+      m_strAttributes = _T("");
 #endif // _DEBUG
-      }
    }
 }
 

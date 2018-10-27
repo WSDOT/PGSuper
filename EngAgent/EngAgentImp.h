@@ -329,8 +329,8 @@ public:
 
 // IGirderHaunch
 public:
-   virtual Float64 GetRequiredSlabOffset(const CSpanKey& spanKey) const override;
-   virtual const HAUNCHDETAILS& GetHaunchDetails(const CSpanKey& spanKey) const override;
+   virtual Float64 GetRequiredSlabOffset(const CSegmentKey& segmentKey) const override;
+   virtual const HAUNCHDETAILS& GetHaunchDetails(const CSegmentKey& segmentKey) const override;
    virtual Float64 GetSectionGirderOrientationEffect(const pgsPointOfInterest& poi) const override;
 
 // IFabricationOptimization
@@ -450,7 +450,7 @@ private:
    std::vector<CRITSECTDETAILS> CalculateShearCritSection(pgsTypes::LimitState limitState,const CGirderKey& girderKey, const GDRCONFIG* pConfig = nullptr) const;
    void InvalidateShearCritSection();
 
-   mutable std::map<CSpanKey,HAUNCHDETAILS> m_HaunchDetails;
+   mutable std::map<CSegmentKey,HAUNCHDETAILS> m_HaunchDetails;
 
    // Lifting and hauling analysis artifact cache for ad-hoc analysis (typically during design)
    mutable std::map<CSegmentKey, std::map<Float64,stbLiftingCheckArtifact,Float64_less> > m_LiftingArtifacts;

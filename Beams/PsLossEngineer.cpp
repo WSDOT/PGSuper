@@ -1461,7 +1461,7 @@ void CPsLossEngineer::ReportRefinedMethodBefore2005(rptChapter* pChapter,CPsLoss
    {
       bSkipToNextRow = false;
 
-      if ( row1 != 1 && IsEqual(prev_poi.GetDistFromStart(),poi.GetDistFromStart()) )
+      if (row1 != 1 && prev_poi.AtExactSamePlace(poi))
       {
          row1--;
          bSkipToNextRow = true;
@@ -1576,7 +1576,8 @@ void CPsLossEngineer::ReportRefinedMethod2005(rptChapter* pChapter,BeamType beam
    // temporary strand removal effects depend on losses at end of hauling stage
 	pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
 	*pChapter << pParagraph;
-	*pParagraph << _T("Time dependent losses between transfer and hauling [") << LrfdCw8th(_T("5.9.5.4.2"),_T("5.9.3.4.2")) << _T("]") << rptNewLine << rptNewLine;
+   pParagraph->SetName(_T("Time dependent losses between transfer and hauling"));
+	*pParagraph << pParagraph->GetName() << _T(" [") << LrfdCw8th(_T("5.9.5.4.2"),_T("5.9.3.4.2")) << _T("]") << rptNewLine << rptNewLine;
 	
 	pSRH = CShrinkageAtHaulingTable::PrepareTable(pChapter,m_pBroker,segmentKey,bTemporaryStrands,pDetails,pDisplayUnits,level);
 	pCRH = CCreepAtHaulingTable::PrepareTable(pChapter,m_pBroker,segmentKey,bTemporaryStrands,pDetails,pDisplayUnits,level);
@@ -1593,11 +1594,13 @@ void CPsLossEngineer::ReportRefinedMethod2005(rptChapter* pChapter,BeamType beam
    *pChapter << pParagraph;
    if ( pBridge->IsCompositeDeck() )
    {
-      *pParagraph << _T("Time dependent losses between transfer and deck placement [") << LrfdCw8th(_T("5.9.5.4.2"), _T("5.9.3.4.2")) << _T("]") << rptNewLine;
+      pParagraph->SetName(_T("Time dependent losses between transfer and deck placement"));
+      *pParagraph << pParagraph->GetName() << _T(" [") << LrfdCw8th(_T("5.9.5.4.2"), _T("5.9.3.4.2")) << _T("]") << rptNewLine;
    }
    else
    {
-      *pParagraph << _T("Time dependent losses between transfer and installation of precast members [") << LrfdCw8th(_T("5.9.5.4.2, "), _T("5.9.3.4.2, ")) << LrfdCw8th(_T("5.9.5.4.4"), _T("5.9.3.4.4")) << _T("]") << rptNewLine;
+      pParagraph->SetName(_T("Time dependent losses between transfer and installation of precast members"));
+      *pParagraph << pParagraph->GetName() << _T(" [") << LrfdCw8th(_T("5.9.5.4.2, "), _T("5.9.3.4.2, ")) << LrfdCw8th(_T("5.9.5.4.4"), _T("5.9.3.4.4")) << _T("]") << rptNewLine;
    }
 
    CShrinkageAtDeckPlacementTable*      pSR = CShrinkageAtDeckPlacementTable::PrepareTable(pChapter,m_pBroker,segmentKey,pDetails,pDisplayUnits,level);
@@ -1619,11 +1622,13 @@ void CPsLossEngineer::ReportRefinedMethod2005(rptChapter* pChapter,BeamType beam
    *pChapter << pParagraph;
    if ( pBridge->IsCompositeDeck() )
    {
-      *pParagraph << _T("Losses: Time of Deck Placement to Final Time [") << LrfdCw8th(_T("5.9.5.4.3"),_T("5.9.3.4.3")) << _T("]") << rptNewLine;
+      pParagraph->SetName(_T("Time dependent losses from deck placement to final time"));
+      *pParagraph << pParagraph->GetName() << _T(" [") << LrfdCw8th(_T("5.9.5.4.3"),_T("5.9.3.4.3")) << _T("]") << rptNewLine;
    }
    else
    {
-      *pParagraph << _T("Losses: Time of Installation of Precast Members to Final Time [") << LrfdCw8th(_T("5.9.5.4.3, "),_T("5.9.3.4.3, ")) << LrfdCw8th(_T("5.9.5.4.4"),_T("5.9.3.4.4")) << _T("]") << rptNewLine;
+      pParagraph->SetName(_T("Time dependent losses from installation of precast member to final time"));
+      *pParagraph << pParagraph->GetName() << _T(" [") << LrfdCw8th(_T("5.9.5.4.3, "),_T("5.9.3.4.3, ")) << LrfdCw8th(_T("5.9.5.4.4"),_T("5.9.3.4.4")) << _T("]") << rptNewLine;
    }
    
    CShrinkageAtFinalTable*      pSD = CShrinkageAtFinalTable::PrepareTable(pChapter,m_pBroker,segmentKey,pDetails,pDisplayUnits,level);
@@ -1655,7 +1660,7 @@ void CPsLossEngineer::ReportRefinedMethod2005(rptChapter* pChapter,BeamType beam
    {
       bSkipToNextRow = false;
 
-      if ( row1 != 1 && IsEqual(prev_poi.GetDistFromStart(),poi.GetDistFromStart()) )
+      if ( row1 != 1 && prev_poi.AtExactSamePlace(poi))
       {
          row1--;
          bSkipToNextRow = true;
@@ -1834,7 +1839,7 @@ void CPsLossEngineer::ReportRefinedMethodTxDOT2013(rptChapter* pChapter,CPsLossE
    {
       bSkipToNextRow = false;
 
-      if ( row1 != 1 && IsEqual(prev_poi.GetDistFromStart(),poi.GetDistFromStart()) )
+      if (row1 != 1 && prev_poi.AtExactSamePlace(poi))
       {
          row1--;
          bSkipToNextRow = true;
@@ -1967,7 +1972,7 @@ void CPsLossEngineer::ReportApproxMethod(rptChapter* pChapter,CPsLossEngineer::B
    {
       bSkipToNextRow = false;
 
-      if ( row1 != 1 && IsEqual(prev_poi.GetDistFromStart(),poi.GetDistFromStart()) )
+      if (row1 != 1 && prev_poi.AtExactSamePlace(poi))
       {
          row1--;
          bSkipToNextRow = true;
@@ -2090,7 +2095,7 @@ void CPsLossEngineer::ReportApproxMethod2005(rptChapter* pChapter,CPsLossEnginee
    {
       bSkipToNextRow = false;
 
-      if ( row1 != 1 && IsEqual(prev_poi.GetDistFromStart(),poi.GetDistFromStart()) )
+      if (row1 != 1 && prev_poi.AtExactSamePlace(poi))
       {
          row1--;
          bSkipToNextRow = true;
@@ -2226,7 +2231,8 @@ void CPsLossEngineer::ReportInitialRelaxation(rptChapter* pChapter,bool bTempora
    // Relaxation At Prestress Transfer
    rptParagraph* pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pParagraph;
-   *pParagraph << _T("Prestress loss due to relaxation before transfer") << rptNewLine;
+   pParagraph->SetName(_T("Relaxation before transfer"));
+   *pParagraph <<  pParagraph->GetName() << rptNewLine;
 
    rptRcTable* table;
 
@@ -2336,7 +2342,7 @@ void CPsLossEngineer::ReportLumpSumTimeDependentLossesAtShipping(rptChapter* pCh
    // Lump Sum Loss at time of shipping
    rptParagraph* pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pParagraph;
-   *pParagraph << _T("Approximate Lump Sum Estimate of Time Dependent Losses at Shipping") << rptNewLine;
+   *pParagraph << _T("Approximate Lump Sum Estimate of Time Dependent Losses at Hauling") << rptNewLine;
 
    if ( pDetails->LossMethod == pgsTypes::AASHTO_LUMPSUM || pDetails->LossMethod == pgsTypes::WSDOT_LUMPSUM )
    {
@@ -2946,7 +2952,6 @@ void CPsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi, const GDR
       if (castDiaphragmIntervalIdx != INVALID_INDEX)
       {
          *pMadlg +=  K_dia*(pProdForces->GetMoment(castDiaphragmIntervalIdx, pgsTypes::pftDiaphragm, poi, bat, rtCumulative));
-
       }
 
       if (castShearKeyIntervalIdx != INVALID_INDEX)
@@ -2958,11 +2963,16 @@ void CPsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi, const GDR
       {
          *pMadlg += K_slab*(pProdForces->GetMoment(castLongitudinalJointIntervalIdx, pgsTypes::pftLongitudinalJoint, poi, bat, rtCumulative));
       }
-
-      if (castDeckIntervalIdx != INVALID_INDEX)
+      
+      if ( !pGirder->HasStructuralLongitudinalJoints() )
       {
-         *pMadlg += K_slab    * pProdForces->GetMoment(castDeckIntervalIdx, pgsTypes::pftSlab, poi, bat, rtCumulative) +
-                    K_slabpad * pProdForces->GetMoment(castDeckIntervalIdx, pgsTypes::pftSlabPad, poi, bat, rtCumulative);
+         // if the bridge doesn't have structural longitudinal joints the deck is applied to the non-composite girder section as added dead load
+         // (see below for the case when the bridge has structural longitudinal joints)
+         if (castDeckIntervalIdx != INVALID_INDEX)
+         {
+            *pMadlg += K_slab * pProdForces->GetMoment(castDeckIntervalIdx, pgsTypes::pftSlab, poi, bat, rtCumulative) 
+                    +  K_slabpad * pProdForces->GetMoment(castDeckIntervalIdx, pgsTypes::pftSlabPad, poi, bat, rtCumulative);
+         }
       }
 
       GET_IFACE(IPointOfInterest,pPoi);
@@ -2990,19 +3000,19 @@ void CPsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi, const GDR
       }
    }
 
-   if ( m_bComputingLossesForDesign )
-   {
-      // get the additional moment caused by the difference in input and design "A" dimension
-      ATLASSERT(pConfig != nullptr); // if we are designing, we must be using a config object
-      Float64 Mslab = pProdForces->GetDesignSlabMomentAdjustment(poi,pConfig);
-      *pMadlg += K_slab*Mslab;
-
-      Float64 Mslabpad = pProdForces->GetDesignSlabPadMomentAdjustment(poi,pConfig);
-      *pMadlg += K_slabpad*Mslabpad;
-   }
-
    *pMsidl = K_railing * (pProdForces->GetMoment( railingSystemIntervalIdx, pgsTypes::pftTrafficBarrier, poi, bat, rtCumulative ) +
                           pProdForces->GetMoment( railingSystemIntervalIdx, pgsTypes::pftSidewalk,       poi, bat, rtCumulative ));
+
+   if (pGirder->HasStructuralLongitudinalJoints())
+   {
+      // if the bridge has structural longitudinal joints, the deck is applied to the section that is composite
+      // of the bare girder and the joints
+      if (castDeckIntervalIdx != INVALID_INDEX)
+      {
+         *pMsidl += K_slab * pProdForces->GetMoment(castDeckIntervalIdx, pgsTypes::pftSlab, poi, bat, rtCumulative) 
+                 +  K_slabpad * pProdForces->GetMoment(castDeckIntervalIdx, pgsTypes::pftSlabPad, poi, bat, rtCumulative);
+      }
+   }
 
    GET_IFACE(IPointOfInterest,pPoi);
    CSpanKey spanKey;
@@ -3030,7 +3040,29 @@ void CPsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi, const GDR
    {
       *pMsidl += K_overlay*pProdForces->GetMoment( overlayIntervalIdx, pgsTypes::pftOverlay, poi, bat, rtCumulative );
    }
-   
+
+
+
+   if (m_bComputingLossesForDesign)
+   {
+      // get the additional moment caused by the difference in input and design "A" dimension
+      ATLASSERT(pConfig != nullptr); // if we are designing, we must be using a config object
+      Float64 Mslab = pProdForces->GetDesignSlabMomentAdjustment(poi, pConfig);
+      Float64 Mslabpad = pProdForces->GetDesignSlabPadMomentAdjustment(poi, pConfig);
+
+      if (pGirder->HasStructuralLongitudinalJoints())
+      {
+         *pMsidl += K_slab*Mslab;
+         *pMsidl += K_slabpad*Mslabpad;
+      }
+      else
+      {
+         *pMadlg += K_slab*Mslab;
+         *pMadlg += K_slabpad*Mslabpad;
+      }
+   }
+
+  
    *prh = pEnv->GetRelHumidity();
 
    // get time to prestress transfer
@@ -3225,7 +3257,7 @@ void CPsLossEngineer::GetPointsOfInterest(const CGirderKey& girderKey,PoiList* p
    pPoi->GetPointsOfInterest(segmentKey,POI_RELEASED_SEGMENT, &vPoi2);
    pPoiList->insert(std::end(*pPoiList), std::cbegin(vPoi2), std::cend(vPoi2));
    pPoi->GetPointsOfInterest(segmentKey,POI_SPAN, pPoiList);
-   pPoi->GetPointsOfInterest(segmentKey,POI_PSXFER | POI_STIRRUP_ZONE | POI_H | POI_15H | POI_DEBOND | POI_FACEOFSUPPORT | POI_START_FACE | POI_END_FACE, pPoiList, POIFIND_OR);
+   pPoi->GetPointsOfInterest(segmentKey,(POI_SPECIAL | POI_SECTCHANGE_LEFTFACE | POI_SECTCHANGE_RIGHTFACE | POI_START_FACE | POI_END_FACE) & ~POI_CLOSURE, pPoiList, POIFIND_OR);
    pPoi->SortPoiList(pPoiList); // sorts and removes duplicates
 
    // remove all POI that are not between the ends of the actual segment

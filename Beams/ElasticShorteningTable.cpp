@@ -64,13 +64,14 @@ CElasticShorteningTable* CElasticShorteningTable::PrepareTable(rptChapter* pChap
 
    rptParagraph* pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pParagraph;
+   pParagraph->SetName(_T("Elastic Shortening"));
    if (fcgpMethod == lrfdElasticShortening::fcgpIterative)
    {
-      *pParagraph << _T("Prestress loss due to Elastic Shortening - LRFD ") << LrfdCw8th(_T("5.9.5.2.3a"), _T("5.9.3.2.3a")) << rptNewLine;
+      *pParagraph << pParagraph->GetName() << _T(" - LRFD ") << LrfdCw8th(_T("5.9.5.2.3a"), _T("5.9.3.2.3a")) << rptNewLine;
    }
    else if (fcgpMethod == lrfdElasticShortening::fcgp07Fpu)
    {
-      *pParagraph << _T("Prestress loss due to Elastic Shortening [TxDOT Research Report 0-6374-2]") << rptNewLine;
+      *pParagraph << pParagraph->GetName() << _T(" [TxDOT Research Report 0-6374-2]") << rptNewLine;
    }
    else
    {

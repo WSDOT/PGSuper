@@ -1,6 +1,6 @@
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 61.00    8   8.25                     1     1    Sellw    *     44  0.6  270  25.34   6.77  13.25  13.25                                              18  59.0  8.8  4.000 14.600   4.683    -4.697     8449   0.717  0.709   6.572 -0.787  0.000 -0.160 -0.947 230.07  496.38    4.50   15.00   15.00 
+ 61.00    8   8.25                     1     1    Sellw    *     44  0.6  270  25.34   6.77  13.25  13.25                                              18  59.0  8.8  4.000 14.600   4.682    -4.697     8449   0.717  0.709   6.572 -0.787  0.000 -0.160 -0.947 230.07  496.39    4.50   15.00   15.00 
 
 
 Girder design was Not Successful
@@ -27,7 +27,7 @@ Minimum fillet value exceeded for bridge check failed
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 61.00    8   8.25                     1     2    Sellw    *     45  0.6  270  25.27   6.40  13.00  13.00                                              19  59.0  9.4  4.000  9.400   4.605    -4.796     8531   0.741  0.832   6.672 -1.124  0.000 -0.173 -1.297 240.87  474.91    4.50   15.00   15.00 
+ 61.00    8   8.25                     1     2    Sellw    *     45  0.6  270  25.27   6.40  13.00  13.00                                              19  59.0  9.4  4.000  9.400   4.604    -4.796     8531   0.741  0.832   6.672 -1.124  0.000 -0.173 -1.297 240.87  474.92    4.50   15.00   15.00 
 
 
 Girder design was Not Successful
@@ -51,7 +51,7 @@ Minimum fillet value exceeded for bridge check failed
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 61.00    8   8.25                     1     5    Sellw    *     45  0.6  270  25.27   6.40  10.00  10.00                                              19  59.0  9.4  6.000  6.500   5.107    -5.409     9041   0.728  0.832   4.806 -1.270  0.000 -0.192 -1.462 202.80  265.50    3.00   15.00   15.00 
+ 61.00    8   8.25                     1     5    Sellw    *     45  0.6  270  25.27   6.40  10.00  10.00                                              19  59.0  9.4  6.000  6.500   5.107    -5.409     9041   0.728  0.832   4.806 -1.270  0.000 -0.192 -1.462 202.80  265.51    3.00   15.00   15.00 
 
 
 Girder design was Not Successful
@@ -61,88 +61,6 @@ Compression stress check failed for Service I Limit State in Interval 2 Prestres
 Tensile stress check failed for Service I Limit State in Interval 2 Prestress Release
 Tensile stress check failed for Service III Limit State in Interval 15 Open to Traffic
 Ultimate moment capacity (negative moment) check failed for Strength I Limit State
-Ultimate moment capacity (negative moment) check failed for Strength II Limit State
-Longitudinal Reinforcement for Shear check failed for Strength I Limit State
-Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
-Horizontal Interface Shears/Length check failed for Strength II Limit State [5.8.4].
-Stirrup detailing checks failed for the Strength I Limit State.
-Stirrup detailing checks failed for the Strength II Limit State.
-Splitting zone check failed.
-Confinement zone check failed.
-Girder Dimension Detailing check failed
-Lifting checks failed
-Hauling checks failed
-Slab Offset ("A" Dimension) check failed
-Minimum fillet value exceeded for bridge check failed
-
-
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 61.00    8   8.25                     2     1    Sellw    *     40  0.6  270  25.57   8.69  12.75  12.75                                              14  59.0  7.6  4.000 14.600   4.534    -4.461     7999   0.800  0.800   5.950 -0.816  0.000 -0.031 -0.847 188.11  420.80    4.50   10.00   10.00 
-
-
-Girder design was Not Successful
-The Specification Check was Not Successful
-Hold down force exceeds maximum
-Compression stress check failed for Service I Limit State in Interval 2 Prestress Release
-Tensile stress check failed for Service I Limit State in Interval 2 Prestress Release
-Tensile stress check failed for Service III Limit State in Interval 15 Open to Traffic
-Ultimate moment capacity (positive moment) check failed for Strength I Limit State
-Ultimate moment capacity (negative moment) check failed for Strength I Limit State
-Ultimate moment capacity (positive moment) check failed for Strength II Limit State
-Ultimate moment capacity (negative moment) check failed for Strength II Limit State
-Longitudinal Reinforcement for Shear check failed for Strength I Limit State
-Longitudinal Reinforcement for Shear check failed for Strength II Limit State
-Stirrup detailing checks failed for the Strength I Limit State.
-Stirrup detailing checks failed for the Strength II Limit State.
-Splitting zone check failed.
-Confinement zone check failed.
-Girder Dimension Detailing check failed
-Lifting checks failed
-Hauling checks failed
-Minimum fillet value exceeded for bridge check failed
-
-
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 61.00    8   8.25                     2     2    Sellw    *     42  0.6  270  25.47   7.64  13.00  13.00                                              16  59.0  8.2  4.000 14.600   4.642    -4.579     8265   0.752  0.832   6.227 -0.902  0.000 -0.030 -0.932 208.78  453.56    4.50   15.00   15.00 
-
-
-Girder design was Not Successful
-The Specification Check was Not Successful
-Hold down force exceeds maximum
-Compression stress check failed for Service I Limit State in Interval 2 Prestress Release
-Tensile stress check failed for Service I Limit State in Interval 2 Prestress Release
-Tensile stress check failed for Service III Limit State in Interval 15 Open to Traffic
-Ultimate moment capacity (positive moment) check failed for Strength I Limit State
-Ultimate moment capacity (negative moment) check failed for Strength I Limit State
-Ultimate moment capacity (negative moment) check failed for Strength II Limit State
-Longitudinal Reinforcement for Shear check failed for Strength I Limit State
-Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
-Stirrup detailing checks failed for the Strength I Limit State.
-Stirrup detailing checks failed for the Strength II Limit State.
-Splitting zone check failed.
-Confinement zone check failed.
-Girder Dimension Detailing check failed
-Lifting checks failed
-Hauling checks failed
-Minimum fillet value exceeded for bridge check failed
-
-
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 61.00    8   8.25                     2     5    Sellw    *     45  0.6  270  25.27   6.40  11.63  11.63                                              19  59.0  9.4  4.000  5.600   4.892    -5.054     8278   0.720  0.832   6.642 -1.417  0.000 -0.050 -1.467 240.83  378.41    4.50   15.00   15.00 
-
-
-Girder design was Not Successful
-The Specification Check was Not Successful
-Hold down force exceeds maximum
-Compression stress check failed for Service I Limit State in Interval 2 Prestress Release
-Tensile stress check failed for Service I Limit State in Interval 2 Prestress Release
-Tensile stress check failed for Service III Limit State in Interval 15 Open to Traffic
-Ultimate moment capacity (positive moment) check failed for Strength I Limit State
-Ultimate moment capacity (negative moment) check failed for Strength I Limit State
-Ultimate moment capacity (positive moment) check failed for Strength II Limit State
 Ultimate moment capacity (negative moment) check failed for Strength II Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
@@ -160,7 +78,7 @@ Minimum fillet value exceeded for bridge check failed
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 61.00    9   6.17                     3     1    Sellw    *     45  0.6  270  25.27   6.40  13.13  13.13                                              19  59.0  9.4  4.000 10.400   4.854    -4.871     8328   0.671  0.672   6.994 -1.305  0.000 -0.139 -1.443 223.44  454.10    8.00   15.00   15.00 
+ 61.00    8   8.25                     2     1    Sellw    *     40  0.6  270  25.57   8.69  12.75  12.75                                              14  59.0  7.6  4.000 14.600   4.533    -4.461     7999   0.800  0.800   5.950 -0.816  0.000 -0.031 -0.847 188.11  420.80    4.50   10.00   10.00 
 
 
 Girder design was Not Successful
@@ -168,13 +86,70 @@ The Specification Check was Not Successful
 Hold down force exceeds maximum
 Compression stress check failed for Service I Limit State in Interval 2 Prestress Release
 Tensile stress check failed for Service I Limit State in Interval 2 Prestress Release
+Tensile stress check failed for Service III Limit State in Interval 15 Open to Traffic
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Ultimate moment capacity (negative moment) check failed for Strength I Limit State
 Ultimate moment capacity (positive moment) check failed for Strength II Limit State
 Ultimate moment capacity (negative moment) check failed for Strength II Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
+Longitudinal Reinforcement for Shear check failed for Strength II Limit State
 Stirrup detailing checks failed for the Strength I Limit State.
 Stirrup detailing checks failed for the Strength II Limit State.
+Splitting zone check failed.
+Confinement zone check failed.
+Girder Dimension Detailing check failed
+Lifting checks failed
+Hauling checks failed
+Minimum fillet value exceeded for bridge check failed
+
+
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 61.00    8   8.25                     2     2    Sellw    *     42  0.6  270  25.47   7.64  13.00  13.00                                              16  59.0  8.2  4.000 14.600   4.641    -4.579     8265   0.752  0.832   6.227 -0.902  0.000 -0.030 -0.932 208.78  453.57    4.50   15.00   15.00 
+
+
+Girder design was Not Successful
+The Specification Check was Not Successful
+Hold down force exceeds maximum
+Compression stress check failed for Service I Limit State in Interval 2 Prestress Release
+Tensile stress check failed for Service I Limit State in Interval 2 Prestress Release
+Tensile stress check failed for Service III Limit State in Interval 15 Open to Traffic
+Ultimate moment capacity (positive moment) check failed for Strength I Limit State
+Ultimate moment capacity (negative moment) check failed for Strength I Limit State
+Ultimate moment capacity (negative moment) check failed for Strength II Limit State
+Longitudinal Reinforcement for Shear check failed for Strength I Limit State
+Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
+Stirrup detailing checks failed for the Strength I Limit State.
+Stirrup detailing checks failed for the Strength II Limit State.
+Splitting zone check failed.
+Confinement zone check failed.
+Girder Dimension Detailing check failed
+Lifting checks failed
+Hauling checks failed
+Minimum fillet value exceeded for bridge check failed
+
+
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 61.00    8   8.25                     2     5    Sellw    *     45  0.6  270  25.27   6.40  11.75  11.75                                              19  59.0  9.4  4.000  5.600   4.895    -5.057     8277   0.720  0.832   6.642 -1.420  0.000 -0.050 -1.470 240.83  378.14    4.50   15.00   15.00 
+
+
+Girder design was Not Successful
+The Specification Check was Not Successful
+Hold down force exceeds maximum
+Compression stress check failed for Service I Limit State in Interval 2 Prestress Release
+Tensile stress check failed for Service I Limit State in Interval 2 Prestress Release
+Tensile stress check failed for Service III Limit State in Interval 15 Open to Traffic
+Ultimate moment capacity (positive moment) check failed for Strength I Limit State
+Ultimate moment capacity (negative moment) check failed for Strength I Limit State
+Ultimate moment capacity (positive moment) check failed for Strength II Limit State
+Ultimate moment capacity (negative moment) check failed for Strength II Limit State
+Longitudinal Reinforcement for Shear check failed for Strength I Limit State
+Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
+Horizontal Interface Shears/Length check failed for Strength II Limit State [5.8.4].
+Stirrup detailing checks failed for the Strength I Limit State.
+Stirrup detailing checks failed for the Strength II Limit State.
+Splitting zone check failed.
 Confinement zone check failed.
 Girder Dimension Detailing check failed
 Lifting checks failed
@@ -185,7 +160,31 @@ Minimum fillet value exceeded for bridge check failed
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 61.00    9   6.17                     3     2    Sellw    *     45  0.6  270  25.27   6.40  13.13  13.13                                              19  59.0  9.4  4.000  9.900   4.861    -4.895     8307   0.657  0.762   6.945 -1.352  0.000 -0.137 -1.489 223.55  447.11    8.00   15.00   15.00 
+ 61.00    9   6.17                     3     1    Sellw    *     45  0.6  270  25.27   6.40  13.25  13.25                                              19  59.0  9.4  4.000 10.400   4.858    -4.874     8327   0.671  0.672   6.994 -1.309  0.000 -0.139 -1.447 223.44  453.86    8.00   15.00   15.00 
+
+
+Girder design was Not Successful
+The Specification Check was Not Successful
+Hold down force exceeds maximum
+Compression stress check failed for Service I Limit State in Interval 2 Prestress Release
+Tensile stress check failed for Service I Limit State in Interval 2 Prestress Release
+Ultimate moment capacity (positive moment) check failed for Strength I Limit State
+Ultimate moment capacity (negative moment) check failed for Strength I Limit State
+Ultimate moment capacity (positive moment) check failed for Strength II Limit State
+Ultimate moment capacity (negative moment) check failed for Strength II Limit State
+Longitudinal Reinforcement for Shear check failed for Strength I Limit State
+Stirrup detailing checks failed for the Strength I Limit State.
+Stirrup detailing checks failed for the Strength II Limit State.
+Confinement zone check failed.
+Girder Dimension Detailing check failed
+Lifting checks failed
+Hauling checks failed
+Minimum fillet value exceeded for bridge check failed
+
+
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 61.00    9   6.17                     3     2    Sellw    *     45  0.6  270  25.27   6.40  13.00  13.00                                              19  59.0  9.4  4.000  9.900   4.856    -4.891     8308   0.657  0.762   6.945 -1.348  0.000 -0.137 -1.485 223.55  447.37    8.00   15.00   15.00 
 
 
 Girder design was Not Successful
@@ -212,7 +211,7 @@ Minimum fillet value exceeded for bridge check failed
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 61.00    9   8.25                     3     5    Sellw    *     46  0.6  270  25.20   6.06   8.88   8.88                                              20  59.0  9.4 14.000 15.000   6.023    -6.003     9955   0.702  0.797   2.835 -1.081  0.000 -0.110 -1.191 135.89  152.75    1.00    1.00    1.00 
+ 61.00    9   8.25                     3     5    Sellw    *     46  0.6  270  25.20   6.06   9.00   9.00                                              20  59.0  9.4 14.000 15.000   6.027    -6.006     9954   0.702  0.797   2.835 -1.085  0.000 -0.110 -1.194 135.89  152.59    1.00    1.00    1.00 
 
 
 Girder design was Not Successful
@@ -240,7 +239,7 @@ Minimum fillet value exceeded for bridge check failed
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 61.00    9   7.60                     4     1    Sellw    *     29  0.6  270  26.55  11.71  11.00  11.00                                               9  55.0  4.9  4.000 14.600   3.557    -3.453     6875   0.905  0.919   3.557 -0.378  0.000 -0.002 -0.380 111.04  280.45    3.00   10.00   10.00 
+ 61.00    9   7.60                     4     1    Sellw    *     29  0.6  270  26.55  11.71  11.00  11.00                                               9  55.0  4.9  4.000 14.600   3.557    -3.453     6875   0.905  0.919   3.557 -0.378  0.000 -0.002 -0.380 111.04  280.46    3.00   10.00   10.00 
 
 
 Girder design was Not Successful
@@ -265,7 +264,7 @@ Minimum fillet value exceeded for bridge check failed
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 61.00    9   7.60                     4     2    Sellw    *     31  0.6  270  26.32  11.85  11.25  11.25                                               9  57.0  4.9  4.000 14.600   3.747    -3.644     7094   0.800  0.863   3.981 -0.466  0.000 -0.010 -0.476 124.00  302.20    3.00   10.00   10.00 
+ 61.00    9   7.60                     4     2    Sellw    *     31  0.6  270  26.32  11.85  11.25  11.25                                               9  57.0  4.9  4.000 14.600   3.746    -3.644     7094   0.800  0.863   3.981 -0.466  0.000 -0.010 -0.476 124.00  302.21    3.00   10.00   10.00 
 
 
 Girder design was Not Successful
@@ -290,7 +289,7 @@ Minimum fillet value exceeded for bridge check failed
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 61.00    9   8.25                     4     5    Sellw    *     45  0.6  270  25.27   6.40  12.38  12.38                                              19  59.0  9.4  4.000  7.700   4.766    -4.879     8298   0.746  0.854   6.430 -1.008  0.000 -0.052 -1.060 248.61  442.20    3.00   15.00   15.00 
+ 61.00    9   8.25                     4     5    Sellw    *     45  0.6  270  25.27   6.40  12.25  12.25                                              19  59.0  9.4  4.000  7.700   4.762    -4.876     8298   0.746  0.854   6.430 -1.005  0.000 -0.052 -1.057 248.61  442.43    3.00   15.00   15.00 
 
 
 Girder design was Not Successful
@@ -318,7 +317,7 @@ Minimum fillet value exceeded for bridge check failed
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 61.00    9   9.31                     5     1    Sellw    *     26  0.6  270  12.42   3.84   8.75   8.75                                              10  30.0  4.9 14.000 15.000   5.686    -6.525     3806   1.014  1.068   2.497 -1.314  0.000 -0.111 -1.425  80.71   94.67    1.00    1.00    1.00 
+ 61.00    9   9.31                     5     1    Sellw    *     26  0.6  270  12.42   3.84   8.75   8.75                                              10  30.0  4.9 14.000 15.000   5.685    -6.524     3806   1.014  1.068   2.497 -1.314  0.000 -0.111 -1.425  80.71   94.67    1.00    1.00    1.00 
 
 
 Girder design was Not Successful
@@ -344,7 +343,7 @@ Minimum fillet value exceeded for bridge check failed
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 61.00    9   9.31                     5     2    Sellw    *     26  0.6  270  12.42   3.84   8.75   8.75                                              10  30.0  4.9 14.000 15.000   5.574    -6.223     3407   0.786  0.962   2.457 -1.306  0.000 -0.112 -1.418  80.52   93.03    1.00    1.00    1.00 
+ 61.00    9   9.31                     5     2    Sellw    *     26  0.6  270  12.42   3.84   8.75   8.75                                              10  30.0  4.9 14.000 15.000   5.573    -6.222     3407   0.786  0.962   2.457 -1.306  0.000 -0.112 -1.418  80.52   93.04    1.00    1.00    1.00 
 
 
 Girder design was Not Successful
@@ -368,7 +367,7 @@ Minimum fillet value exceeded for bridge check failed
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 61.00    9   8.83                     5     5    Sellw    *     26  0.6  270  12.42   3.84   8.25   8.25                                              10  30.0  4.9 14.000 15.000   6.716    -7.351     3815   0.745  0.917   2.491 -1.284  0.000 -0.109 -1.393  79.89   68.86    1.00    1.00    1.00 
+ 61.00    9   8.83                     5     5    Sellw    *     26  0.6  270  12.42   3.84   8.25   8.25                                              10  30.0  4.9 14.000 15.000   6.715    -7.350     3815   0.745  0.917   2.491 -1.284  0.000 -0.109 -1.393  79.89   68.87    1.00    1.00    1.00 
 
 
 Girder design was Not Successful

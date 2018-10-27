@@ -64,9 +64,12 @@ static char THIS_FILE[] = __FILE__;
 #define SOCKET_CGPS_BC 8 // bottom center for CG of prestress force dimension line
 #define SOCKET_TLJ  9 // top left joint
 #define SOCKET_TRJ  10 // top right joint
-#define SOCKET_CG_TC 11 // top center for CG of section dimension line
+#define SOCKET_CG_TOP 11 // top center for CG of section dimension line
 #define SOCKET_CG    12 // CG of section
-#define SOCKET_CG_BC 13 // bottom center for CG of section dimension line
+#define SOCKET_CG_BOTTOM 13 // bottom center for CG of section dimension line
+#define SOCKET_CGX_LEFT 14 
+#define SOCKET_CGX     15
+#define SOCKET_CGX_RIGHT 16
 
 #define SECTION_LIST             1
 #define JOINT_LIST               2
@@ -360,12 +363,10 @@ void CGirderModelSectionView::BuildPropertiesDisplayObjects(CPGSDocBase* pDoc, I
       CString strProps;
       if (erectionIntervalIdx < intervalIdx)
       {
-         strProps.Format(_T("%s Properties\nA = %s\nIx = %s\nXleft = %s\nXright = %s\nYtop = %s\nYbottom = %s"),
+         strProps.Format(_T("%s Properties\nA = %s\nIx = %s\nYtop = %s\nYbottom = %s"),
             strSectPropMode,
             FormatDimension(A, pDisplayUnits->GetAreaUnit()),
             FormatDimension(Ix, pDisplayUnits->GetMomentOfInertiaUnit()),
-            FormatDimension(Xl, pDisplayUnits->GetComponentDimUnit()),
-            FormatDimension(Xr, pDisplayUnits->GetComponentDimUnit()),
             FormatDimension(Yt, pDisplayUnits->GetComponentDimUnit()),
             FormatDimension(Yb, pDisplayUnits->GetComponentDimUnit())
          );
@@ -1019,13 +1020,23 @@ void CGirderModelSectionView::BuildCGDisplayObjects(CPGSDocBase* pDoc, IBroker* 
    socketCGPoint->MoveEx(point);
    CComPtr<iSocket> socketCG;
    connectable->AddSocket(SOCKET_CG, socketCGPoint, &socketCG);
-   
+
+   CComPtr<IPoint2d> socketCGXPoint;
+   socketCGXPoint.CoCreateInstance(CLSID_Point2d);
+   CComPtr<IPoint2d> pnt;
+   pnt.CoCreateInstance(CLSID_Point2d);
+   pnt->Move(0.5*(Xleft - Xright), 0);
+   CComPtr<iSocket> socketCGX;
+   connectable->AddSocket(SOCKET_CGX, socketCGPoint, &socketCGX);
+
    // we don't know where the top/bottom of the dimensions are going to be
    // but we will create the sockets for them now. We will move these sockets
    // when we make the dimensions lines
-   CComPtr<iSocket> socketCG_TC, socketCG_BC;
-   connectable->AddSocket(SOCKET_CG_TC, point, &socketCG_TC);
-   connectable->AddSocket(SOCKET_CG_BC, point, &socketCG_BC);
+   CComPtr<iSocket> socketCG_Top, socketCG_Bottom, socketCGX_Left, socketCGX_Right;
+   connectable->AddSocket(SOCKET_CG_TOP, point, &socketCG_Top);
+   connectable->AddSocket(SOCKET_CG_BOTTOM, point, &socketCG_Bottom);
+   connectable->AddSocket(SOCKET_CGX_LEFT, point, &socketCGX_Left);
+   connectable->AddSocket(SOCKET_CGX_RIGHT, point, &socketCGX_Right);
 
 
    pDL->AddDisplayObject(doPnt);
@@ -1072,6 +1083,8 @@ void CGirderModelSectionView::BuildDimensionDisplayObjects(CPGSDocBase* pDoc, IB
    CComPtr<iDimensionLine> doDimLineBottomCGPS;
    CComPtr<iDimensionLine> doDimLineTopCG;
    CComPtr<iDimensionLine> doDimLineBottomCG;
+   CComPtr<iDimensionLine> doDimLineLeftCG;
+   CComPtr<iDimensionLine> doDimLineRightCG;
 
    ::CoCreateInstance(CLSID_DimensionLineDisplayObject, nullptr, CLSCTX_ALL, IID_iDimensionLine, (void**)&doDimLineTopFlangeWidth);
    ::CoCreateInstance(CLSID_DimensionLineDisplayObject, nullptr, CLSCTX_ALL, IID_iDimensionLine, (void**)&doDimLineBottomFlangeWidth);
@@ -1080,6 +1093,8 @@ void CGirderModelSectionView::BuildDimensionDisplayObjects(CPGSDocBase* pDoc, IB
    ::CoCreateInstance(CLSID_DimensionLineDisplayObject, nullptr, CLSCTX_ALL, IID_iDimensionLine, (void**)&doDimLineBottomCGPS);
    ::CoCreateInstance(CLSID_DimensionLineDisplayObject, nullptr, CLSCTX_ALL, IID_iDimensionLine, (void**)&doDimLineTopCG);
    ::CoCreateInstance(CLSID_DimensionLineDisplayObject, nullptr, CLSCTX_ALL, IID_iDimensionLine, (void**)&doDimLineBottomCG);
+   ::CoCreateInstance(CLSID_DimensionLineDisplayObject, nullptr, CLSCTX_ALL, IID_iDimensionLine, (void**)&doDimLineLeftCG);
+   ::CoCreateInstance(CLSID_DimensionLineDisplayObject, nullptr, CLSCTX_ALL, IID_iDimensionLine, (void**)&doDimLineRightCG);
 
    IDType id = 0;
    doDimLineTopFlangeWidth->SetID(id++);
@@ -1089,6 +1104,8 @@ void CGirderModelSectionView::BuildDimensionDisplayObjects(CPGSDocBase* pDoc, IB
    doDimLineBottomCGPS->SetID(id++);
    doDimLineTopCG->SetID(id++);
    doDimLineBottomCG->SetID(id++);
+   doDimLineLeftCG->SetID(id++);
+   doDimLineRightCG->SetID(id++);
 
    // Connect the dimension lines to the sockets in the section display object
    CComPtr<iDisplayList> pSectionDL;
@@ -1128,7 +1145,7 @@ void CGirderModelSectionView::BuildDimensionDisplayObjects(CPGSDocBase* pDoc, IB
 
    UINT settings = pDoc->GetGirderEditorSettings();
 
-   CComPtr<iSocket> socketCG, socketCG_TC, socketCG_BC;
+   CComPtr<iSocket> socketCG, socketCG_Top, socketCG_Bottom, socketCGX, socketCGX_Left, socketCGX_Right;
    if (settings & IDG_SV_GIRDER_CG)
    {
       CComPtr<iDisplayList> pCGList;
@@ -1140,8 +1157,11 @@ void CGirderModelSectionView::BuildDimensionDisplayObjects(CPGSDocBase* pDoc, IB
       {
          CComQIPtr<iConnectable> connectableCG(doCG);
          connectableCG->GetSocket(SOCKET_CG, atByID, &socketCG);
-         connectableCG->GetSocket(SOCKET_CG_TC, atByID, &socketCG_TC);
-         connectableCG->GetSocket(SOCKET_CG_BC, atByID, &socketCG_BC);
+         connectableCG->GetSocket(SOCKET_CG_TOP, atByID, &socketCG_Top);
+         connectableCG->GetSocket(SOCKET_CG_BOTTOM, atByID, &socketCG_Bottom);
+         connectableCG->GetSocket(SOCKET_CGX, atByID, &socketCGX);
+         connectableCG->GetSocket(SOCKET_CGX_LEFT, atByID, &socketCGX_Left);
+         connectableCG->GetSocket(SOCKET_CGX_RIGHT, atByID, &socketCGX_Right);
       }
    }
 
@@ -1170,6 +1190,8 @@ void CGirderModelSectionView::BuildDimensionDisplayObjects(CPGSDocBase* pDoc, IB
    CComQIPtr<iConnector> connectorBottomCGPS(doDimLineBottomCGPS);
    CComQIPtr<iConnector> connectorTopCG(doDimLineTopCG);
    CComQIPtr<iConnector> connectorBottomCG(doDimLineBottomCG);
+   CComQIPtr<iConnector> connectorLeftCG(doDimLineLeftCG);
+   CComQIPtr<iConnector> connectorRightCG(doDimLineRightCG);
 
    // connect the top flange width dimension line (across the top)
    CComPtr<iPlug> startPlug, endPlug;
@@ -1235,10 +1257,10 @@ void CGirderModelSectionView::BuildDimensionDisplayObjects(CPGSDocBase* pDoc, IB
       CComPtr<IPoint2d> pntTC;
       pntTC.CoCreateInstance(CLSID_Point2d);
       pntTC->Move(x, y);
-      socketCG_TC->SetPosition(pntTC);
+      socketCG_Top->SetPosition(pntTC);
 
       socketCG->Connect(startPlug, &dwCookie);
-      socketCG_TC->Connect(endPlug, &dwCookie);
+      socketCG_Top->Connect(endPlug, &dwCookie);
 
       startPlug.Release();
       endPlug.Release();
@@ -1253,10 +1275,55 @@ void CGirderModelSectionView::BuildDimensionDisplayObjects(CPGSDocBase* pDoc, IB
       CComPtr<IPoint2d> pntBC;
       pntBC.CoCreateInstance(CLSID_Point2d);
       pntBC->Move(x, y);
-      socketCG_BC->SetPosition(pntBC);
+      socketCG_Bottom->SetPosition(pntBC);
 
-      socketCG_BC->Connect(startPlug, &dwCookie);
+      socketCG_Bottom->Connect(startPlug, &dwCookie);
       socketCG->Connect(endPlug, &dwCookie);
+
+      // Xcg
+      CComPtr<IPoint2d> pntTL;
+      socketTL->GetPosition(&pntTL);
+      Float64 tlX, tlY;
+      pntTL->Location(&tlX, &tlY);
+
+      CComPtr<IPoint2d> pntTR;
+      socketTR->GetPosition(&pntTR);
+      Float64 trX, trY;
+      pntTR->Location(&trX, &trY);
+
+      y = Max(tlY, trY);
+
+      CComPtr<IPoint2d> pntCGX;
+      socketCGX->GetPosition(&pntCGX);
+      pntCGX->put_Y(y);
+      socketCGX->SetPosition(pntCGX);
+
+      CComPtr<IPoint2d> pntLeft;
+      pntLeft.CoCreateInstance(CLSID_Point2d);
+      pntLeft->Move(tlX,y);
+      socketCGX_Left->SetPosition(pntLeft);
+
+      CComPtr<IPoint2d> pntRight;
+      pntRight.CoCreateInstance(CLSID_Point2d);
+      pntRight->Move(trX, y);
+      socketCGX_Right->SetPosition(pntRight);
+
+      // Xleft dimension line
+      startPlug.Release();
+      endPlug.Release();
+      connectorLeftCG->GetStartPlug(&startPlug);
+      connectorLeftCG->GetEndPlug(&endPlug);
+
+      socketCGX_Left->Connect(startPlug, &dwCookie);
+      socketCGX->Connect(endPlug, &dwCookie);
+
+      // Xright dimension line
+      startPlug.Release();
+      endPlug.Release();
+      connectorRightCG->GetStartPlug(&startPlug);
+      connectorRightCG->GetEndPlug(&endPlug);
+      socketCGX->Connect(startPlug, &dwCookie);
+      socketCGX_Right->Connect(endPlug, &dwCookie);
    }
 
 
@@ -1331,6 +1398,8 @@ void CGirderModelSectionView::BuildDimensionDisplayObjects(CPGSDocBase* pDoc, IB
    Float64 height = pSectProp->GetHg(intervalIdx, poi);
    Float64 Yt = pSectProp->GetY(intervalIdx, poi, intervalIdx < compositeIntervalIdx ? pgsTypes::TopGirder : pgsTypes::TopDeck);
    Float64 Yb = pSectProp->GetY(intervalIdx, poi, pgsTypes::BottomGirder);
+   Float64 Xl = pSectProp->GetXleft(intervalIdx, poi);
+   Float64 Xr = pSectProp->GetXright(intervalIdx, poi);
 
    CString strDim;
    CComPtr<iTextBlock> textBlock;
@@ -1384,6 +1453,20 @@ void CGirderModelSectionView::BuildDimensionDisplayObjects(CPGSDocBase* pDoc, IB
       strDim = FormatDimension(Yb, length_unit);
       textBlock->SetText(strDim);
       doDimLineBottomCG->SetTextBlock(textBlock);
+
+      textBlock.Release();
+      textBlock.CoCreateInstance(CLSID_TextBlock);
+      textBlock->SetPointSize(FONT_POINT_SIZE);
+      strDim = FormatDimension(Xl, length_unit);
+      textBlock->SetText(strDim);
+      doDimLineLeftCG->SetTextBlock(textBlock);
+
+      textBlock.Release();
+      textBlock.CoCreateInstance(CLSID_TextBlock);
+      textBlock->SetPointSize(FONT_POINT_SIZE);
+      strDim = FormatDimension(Xr, length_unit);
+      textBlock->SetText(strDim);
+      doDimLineRightCG->SetTextBlock(textBlock);
 
       CComPtr<IPoint2d> cg;
       socketCG->GetPosition(&cg);
@@ -1449,6 +1532,11 @@ void CGirderModelSectionView::BuildDimensionDisplayObjects(CPGSDocBase* pDoc, IB
    {
       pDL->AddDisplayObject(doDimLineTopCG);
       pDL->AddDisplayObject(doDimLineBottomCG);
+      if (intervalIdx < compositeIntervalIdx)
+      {
+         pDL->AddDisplayObject(doDimLineLeftCG);
+         pDL->AddDisplayObject(doDimLineRightCG);
+      }
    }
 
    if ( (settings & IDG_SV_SHOW_PS_CG) && socketCGPS )

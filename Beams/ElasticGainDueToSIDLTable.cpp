@@ -61,7 +61,15 @@ CElasticGainDueToSIDLTable* CElasticGainDueToSIDLTable::PrepareTable(rptChapter*
    GET_IFACE2(pBroker,IProductLoads,pLoad);
    bool bHasSidewalk = pLoad->HasSidewalkLoad(segmentKey);
 
+   GET_IFACE2(pBroker, IGirder, pGirder);
+   bool bHasDeckLoads = pGirder->HasStructuralLongitudinalJoints() ? true: false; // if longitudinal joints are structural the deck dead loads go on the composite section
+
    ColumnIndexType numColumns = 9;
+
+   if (bHasDeckLoads)
+   {
+      numColumns += 2;
+   }
 
    if ( bHasUserLoads )
    {
@@ -81,6 +89,7 @@ CElasticGainDueToSIDLTable* CElasticGainDueToSIDLTable::PrepareTable(rptChapter*
    CElasticGainDueToSIDLTable* table = new CElasticGainDueToSIDLTable( numColumns, pDisplayUnits);
    rptStyleManager::ConfigureTable(table);
 
+   table->m_bHasDeckLoads = bHasDeckLoads;
    table->m_bHasUserLoads = bHasUserLoads;
    table->m_bHasSidewalk  = bHasSidewalk;
    table->m_bHasOverlay   = bHasOverlay;
@@ -90,6 +99,8 @@ CElasticGainDueToSIDLTable* CElasticGainDueToSIDLTable::PrepareTable(rptChapter*
    table->scalar.SetPrecision(2);
 
    std::_tstring strImagePath(rptStyleManager::GetImagePath());
+
+   GET_IFACE2(pBroker, IProductLoads, pProductLoads);
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval();
@@ -103,7 +114,7 @@ CElasticGainDueToSIDLTable* CElasticGainDueToSIDLTable::PrepareTable(rptChapter*
 
    rptParagraph* pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pParagraph;
-   *pParagraph << _T("Elastic Gain Due to Superimposed Dead Load [") << LrfdCw8th(_T("5.9.5.2.3a"), _T("5.9.3.2.3a")) << _T("]") << rptNewLine;
+   *pParagraph << _T("Elastic Gain Due to Superimposed Dead Load") << rptNewLine;
 
    pParagraph = new rptParagraph;
    *pChapter << pParagraph;
@@ -169,19 +180,26 @@ CElasticGainDueToSIDLTable* CElasticGainDueToSIDLTable::PrepareTable(rptChapter*
 
    ColumnIndexType col = 0;
    (*table)(0,col++) << COLHDR(_T("Location from")<<rptNewLine<<_T("Left Support"),rptLengthUnitTag,  pDisplayUnits->GetSpanLengthUnit() );
-   (*table)(0,col++) << COLHDR(Sub2(_T("M"),_T("Barrer")), rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
+
+   if (bHasDeckLoads)
+   {
+      (*table)(0, col++) << COLHDR(Sub2(_T("M"), pProductLoads->GetProductLoadName(pgsTypes::pftSlab)), rptMomentUnitTag, pDisplayUnits->GetMomentUnit());
+      (*table)(0, col++) << COLHDR(Sub2(_T("M"), pProductLoads->GetProductLoadName(pgsTypes::pftSlabPad)), rptMomentUnitTag, pDisplayUnits->GetMomentUnit());
+   }
+
+   (*table)(0,col++) << COLHDR(Sub2(_T("M"), pProductLoads->GetProductLoadName(pgsTypes::pftTrafficBarrier)), rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
    if ( bHasSidewalk )
    {
-      (*table)(0,col++) << COLHDR(Sub2(_T("M"),_T("Sidewalk")), rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
+      (*table)(0,col++) << COLHDR(Sub2(_T("M"), pProductLoads->GetProductLoadName(pgsTypes::pftSidewalk)), rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
    }
    if ( bHasOverlay )
    {
-      (*table)(0,col++) << COLHDR(Sub2(_T("M"),_T("Overlay")), rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
+      (*table)(0,col++) << COLHDR(Sub2(_T("M"), pProductLoads->GetProductLoadName(pgsTypes::pftOverlay)), rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
    }
    if ( bHasUserLoads )
    {
-      (*table)(0,col++) << COLHDR(Sub2(_T("M"),_T("UserDC")), rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
-      (*table)(0,col++) << COLHDR(Sub2(_T("M"),_T("UserDW")), rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
+      (*table)(0,col++) << COLHDR(Sub2(_T("M"), pProductLoads->GetProductLoadName(pgsTypes::pftUserDC)), rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
+      (*table)(0,col++) << COLHDR(Sub2(_T("M"), pProductLoads->GetProductLoadName(pgsTypes::pftUserDW)), rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
    }
    (*table)(0,col++) << COLHDR(Sub2(_T("M"),_T("sidl")), rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
    if ( spMode == pgsTypes::spmGross )
@@ -212,9 +230,16 @@ void CElasticGainDueToSIDLTable::AddRow(rptChapter* pChapter,IBroker* pBroker,co
    const CSegmentKey& segmentKey(poi.GetSegmentKey());
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
+   IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval();
    IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval();
    IntervalIndexType overlayIntervalIdx       = pIntervals->GetOverlayInterval();
    IntervalIndexType compositeUserLoadIntervalIdx = pIntervals->GetCompositeUserLoadInterval();
+
+   if (m_bHasDeckLoads)
+   {
+      (*this)(row, col++) << moment.SetValue(pProdForces->GetMoment(castDeckIntervalIdx, pgsTypes::pftSlab, poi, m_BAT, rtIncremental));
+      (*this)(row, col++) << moment.SetValue(pProdForces->GetMoment(castDeckIntervalIdx, pgsTypes::pftSlabPad, poi, m_BAT, rtIncremental));
+   }
 
    if ( m_bHasSidewalk )
    {

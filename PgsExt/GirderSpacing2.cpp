@@ -1018,7 +1018,7 @@ Float64 CGirderSpacing2::GetSpacingWidth() const
    }
 }
 
-Float64 CGirderSpacing2::GetSpacingWidthToGirder(GirderIndexType nGirders) const
+Float64 CGirderSpacing2::GetSpacingWidthToGirder(GirderIndexType targetGirderIdx) const
 {
    const CBridgeDescription2* pBridgeDesc = GetBridgeDescription();
    if ( ::IsJointSpacing(pBridgeDesc->GetGirderSpacingType()) )
@@ -1026,7 +1026,7 @@ Float64 CGirderSpacing2::GetSpacingWidthToGirder(GirderIndexType nGirders) const
       Float64 total_width = 0;
       const CGirderGroupData* pGroup = GetGirderGroup();
 
-      for ( GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++ )
+      for ( GirderIndexType gdrIdx = 0; gdrIdx <= targetGirderIdx; gdrIdx++ )
       {
          const CSplicedGirderData* pGirder = pGroup->GetGirder(gdrIdx);
          Float64 wLeft, wRight;
@@ -1036,7 +1036,7 @@ Float64 CGirderSpacing2::GetSpacingWidthToGirder(GirderIndexType nGirders) const
          {
             width = wRight;
          }
-         else if (gdrIdx == nGirders - 1)
+         else if (gdrIdx == targetGirderIdx)
          {
             width = wLeft;
          }
@@ -1045,7 +1045,7 @@ Float64 CGirderSpacing2::GetSpacingWidthToGirder(GirderIndexType nGirders) const
             width = wLeft + wRight;
          }
          Float64 joint_width = 0;
-         if ( gdrIdx != nGirders-1 )
+         if ( gdrIdx != targetGirderIdx)
          {
             joint_width = m_GirderSpacing[gdrIdx];
          }
@@ -1057,7 +1057,7 @@ Float64 CGirderSpacing2::GetSpacingWidthToGirder(GirderIndexType nGirders) const
    }
    else
    {
-      return std::accumulate(m_GirderSpacing.begin(),m_GirderSpacing.begin()+nGirders,0.0);
+      return std::accumulate(m_GirderSpacing.begin(),m_GirderSpacing.begin()+ targetGirderIdx,0.0);
    }
 }
 

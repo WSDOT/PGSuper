@@ -31,16 +31,18 @@ static char THIS_FILE[] = __FILE__;
 
 /****************************************************************************
 CLASS
-   pgsSpanConstructabilityArtifact
+   pgsSegmentConstructabilityArtifact
 ****************************************************************************/
 
 
 ////////////////////////// PUBLIC     ///////////////////////////////////////
 
 //======================== LIFECYCLE  =======================================
-pgsSpanConstructabilityArtifact::pgsSpanConstructabilityArtifact():
+pgsSegmentConstructabilityArtifact::pgsSegmentConstructabilityArtifact(const CSegmentKey& segmentKey):
 m_bIsSlabOffsetApplicable(false)
 {
+   m_SegmentKey = segmentKey;
+
    m_ProvidedStart = 0;
    m_ProvidedEnd = 0;
    m_Required = 0;
@@ -76,17 +78,17 @@ m_bIsSlabOffsetApplicable(false)
    m_FinishedElevation = 0;
 }
 
-pgsSpanConstructabilityArtifact::pgsSpanConstructabilityArtifact(const pgsSpanConstructabilityArtifact& rOther)
+pgsSegmentConstructabilityArtifact::pgsSegmentConstructabilityArtifact(const pgsSegmentConstructabilityArtifact& rOther)
 {
    MakeCopy(rOther);
 }
 
-pgsSpanConstructabilityArtifact::~pgsSpanConstructabilityArtifact()
+pgsSegmentConstructabilityArtifact::~pgsSegmentConstructabilityArtifact()
 {
 }
 
 //======================== OPERATORS  =======================================
-pgsSpanConstructabilityArtifact& pgsSpanConstructabilityArtifact::operator=(const pgsSpanConstructabilityArtifact& rOther)
+pgsSegmentConstructabilityArtifact& pgsSegmentConstructabilityArtifact::operator=(const pgsSegmentConstructabilityArtifact& rOther)
 {
    if ( this != &rOther )
    {
@@ -97,64 +99,64 @@ pgsSpanConstructabilityArtifact& pgsSpanConstructabilityArtifact::operator=(cons
 }
 
 //======================== OPERATIONS =======================================
-void pgsSpanConstructabilityArtifact::SetProvidedSlabOffset(Float64 startA, Float64 endA)
+void pgsSegmentConstructabilityArtifact::SetProvidedSlabOffset(Float64 startA, Float64 endA)
 {
    m_ProvidedStart = startA;
    m_ProvidedEnd   = endA;
 }
 
-void pgsSpanConstructabilityArtifact::GetProvidedSlabOffset(Float64* pStartA, Float64* pEndA) const
+void pgsSegmentConstructabilityArtifact::GetProvidedSlabOffset(Float64* pStartA, Float64* pEndA) const
 {
    *pStartA = m_ProvidedStart;
    *pEndA   = m_ProvidedEnd;
 }
 
-bool pgsSpanConstructabilityArtifact::AreSlabOffsetsSameAtEnds() const
+bool pgsSegmentConstructabilityArtifact::AreSlabOffsetsSameAtEnds() const
 {
    return IsEqual(m_ProvidedStart,m_ProvidedEnd);
 }
 
-void pgsSpanConstructabilityArtifact::SetRequiredSlabOffset(Float64 reqd)
+void pgsSegmentConstructabilityArtifact::SetRequiredSlabOffset(Float64 reqd)
 {
    m_Required = reqd;
 }
 
-Float64 pgsSpanConstructabilityArtifact::GetRequiredSlabOffset() const
+Float64 pgsSegmentConstructabilityArtifact::GetRequiredSlabOffset() const
 {
    return m_Required;
 }
 
-void pgsSpanConstructabilityArtifact::SetExcessSlabOffsetWarningTolerance(Float64 val)
+void pgsSegmentConstructabilityArtifact::SetExcessSlabOffsetWarningTolerance(Float64 val)
 {
    m_SlabOffsetWarningTolerance = val;
 }
 
-Float64 pgsSpanConstructabilityArtifact::GetExcessSlabOffsetWarningTolerance() const
+Float64 pgsSegmentConstructabilityArtifact::GetExcessSlabOffsetWarningTolerance() const
 {
    return m_SlabOffsetWarningTolerance;
 }
 
-void pgsSpanConstructabilityArtifact::SetRequiredMinimumFillet(Float64 reqd)
+void pgsSegmentConstructabilityArtifact::SetRequiredMinimumFillet(Float64 reqd)
 {
    m_MinimumRequiredFillet = reqd;
 }
 
-Float64 pgsSpanConstructabilityArtifact::GetRequiredMinimumFillet() const
+Float64 pgsSegmentConstructabilityArtifact::GetRequiredMinimumFillet() const
 {
    return m_MinimumRequiredFillet;
 }
 
-void pgsSpanConstructabilityArtifact::SetProvidedFillet(Float64 provided)
+void pgsSegmentConstructabilityArtifact::SetProvidedFillet(Float64 provided)
 {
    m_ProvidedFillet = provided;
 }
 
-Float64 pgsSpanConstructabilityArtifact::GetProvidedFillet() const
+Float64 pgsSegmentConstructabilityArtifact::GetProvidedFillet() const
 {
    return m_ProvidedFillet;
 }
 
-bool pgsSpanConstructabilityArtifact::MinimumFilletPassed() const
+bool pgsSegmentConstructabilityArtifact::MinimumFilletPassed() const
 {
    // min fillet uses same applicability as slab offset check
    if (m_bIsSlabOffsetApplicable)
@@ -167,29 +169,29 @@ bool pgsSpanConstructabilityArtifact::MinimumFilletPassed() const
    }
 }
 
-void pgsSpanConstructabilityArtifact::SetSlabOffsetApplicability(bool bSet)
+void pgsSegmentConstructabilityArtifact::SetSlabOffsetApplicability(bool bSet)
 {
    m_bIsSlabOffsetApplicable = bSet;
 }
 
-bool pgsSpanConstructabilityArtifact::IsSlabOffsetApplicable() const
+bool pgsSegmentConstructabilityArtifact::IsSlabOffsetApplicable() const
 {
    return m_bIsSlabOffsetApplicable;
 }
 
-void pgsSpanConstructabilityArtifact::SetLeastHaunchDepth(Float64 location, Float64 leastA)
+void pgsSegmentConstructabilityArtifact::SetLeastHaunchDepth(Float64 location, Float64 leastA)
 {
    m_LeastHaunchLocation = location;
    m_LeastHaunch = leastA;
 }
 
-void pgsSpanConstructabilityArtifact::GetLeastHaunchDepth(Float64* pLocation, Float64* pLeastA) const
+void pgsSegmentConstructabilityArtifact::GetLeastHaunchDepth(Float64* pLocation, Float64* pLeastA) const
 {
    *pLocation = m_LeastHaunchLocation;
    *pLeastA = m_LeastHaunch;
 }
 
-pgsSpanConstructabilityArtifact::SlabOffsetStatusType pgsSpanConstructabilityArtifact::SlabOffsetStatus() const
+pgsSegmentConstructabilityArtifact::SlabOffsetStatusType pgsSegmentConstructabilityArtifact::SlabOffsetStatus() const
 {
    if (!m_bIsSlabOffsetApplicable)
    {
@@ -218,7 +220,7 @@ pgsSpanConstructabilityArtifact::SlabOffsetStatusType pgsSpanConstructabilityArt
    else
    {
       // slab offsets different at ends. Use Least haunch vs fillet dimension as test
-      if (m_LeastHaunch > m_ProvidedFillet + m_SlabOffsetWarningTolerance)
+      if ( (m_ProvidedFillet + m_SlabOffsetWarningTolerance) < m_LeastHaunch)
       {
          return Excessive;
       }
@@ -233,73 +235,73 @@ pgsSpanConstructabilityArtifact::SlabOffsetStatusType pgsSpanConstructabilityArt
    }
 }
 
-bool pgsSpanConstructabilityArtifact::SlabOffsetPassed() const
+bool pgsSegmentConstructabilityArtifact::SlabOffsetPassed() const
 {
    return ( SlabOffsetStatus()==Fail ) ? false : true;
 }
 
-void pgsSpanConstructabilityArtifact::CheckStirrupLength(bool bCheck)
+void pgsSegmentConstructabilityArtifact::CheckStirrupLength(bool bCheck)
 {
    m_bCheckStirrupLength = bCheck;
 }
 
-bool pgsSpanConstructabilityArtifact::CheckStirrupLength() const
+bool pgsSegmentConstructabilityArtifact::CheckStirrupLength() const
 {
    return m_bIsSlabOffsetApplicable && m_bCheckStirrupLength;
 }
 
-void pgsSpanConstructabilityArtifact::SetProvidedHaunchAtBearingCLs(Float64 provided)
+void pgsSegmentConstructabilityArtifact::SetProvidedHaunchAtBearingCLs(Float64 provided)
 {
    m_ProvidedAtBearingCLs = provided;
 }
 
-Float64 pgsSpanConstructabilityArtifact::GetProvidedHaunchAtBearingCLs() const
+Float64 pgsSegmentConstructabilityArtifact::GetProvidedHaunchAtBearingCLs() const
 {
    return m_ProvidedAtBearingCLs;
 }
 
-void pgsSpanConstructabilityArtifact::SetRequiredHaunchAtBearingCLs(Float64 reqd)
+void pgsSegmentConstructabilityArtifact::SetRequiredHaunchAtBearingCLs(Float64 reqd)
 {
    m_RequiredAtBearingCLs = reqd;
 }
 
-Float64 pgsSpanConstructabilityArtifact::GetRequiredHaunchAtBearingCLs() const
+Float64 pgsSegmentConstructabilityArtifact::GetRequiredHaunchAtBearingCLs() const
 {
    return m_RequiredAtBearingCLs;
 }
 
-void pgsSpanConstructabilityArtifact::SetHaunchAtBearingCLsApplicability(SlabOffsetBearingCLApplicabilityType bSet)
+void pgsSegmentConstructabilityArtifact::SetHaunchAtBearingCLsApplicability(SlabOffsetBearingCLApplicabilityType bSet)
 {
    m_HaunchAtBearingCLsApplicable = bSet;
 }
 
-pgsSpanConstructabilityArtifact::SlabOffsetBearingCLApplicabilityType pgsSpanConstructabilityArtifact::GetHaunchAtBearingCLsApplicability() const
+pgsSegmentConstructabilityArtifact::SlabOffsetBearingCLApplicabilityType pgsSegmentConstructabilityArtifact::GetHaunchAtBearingCLsApplicability() const
 {
    return m_HaunchAtBearingCLsApplicable;
 }
 
-bool pgsSpanConstructabilityArtifact::HaunchAtBearingCLsPassed() const
+bool pgsSegmentConstructabilityArtifact::HaunchAtBearingCLsPassed() const
 {
-   return m_HaunchAtBearingCLsApplicable!=pgsSpanConstructabilityArtifact::sobappYes ||
+   return m_HaunchAtBearingCLsApplicable!=pgsSegmentConstructabilityArtifact::sobappYes ||
           m_ProvidedAtBearingCLs+TOLERANCE >= m_RequiredAtBearingCLs;
 }
 
-void pgsSpanConstructabilityArtifact::SetPrecamberApplicability(bool bSet)
+void pgsSegmentConstructabilityArtifact::SetPrecamberApplicability(bool bSet)
 {
    m_bIsPrecamberApplicable = bSet;
 }
 
-bool pgsSpanConstructabilityArtifact::IsPrecamberApplicable() const
+bool pgsSegmentConstructabilityArtifact::IsPrecamberApplicable() const
 {
    return m_bIsPrecamberApplicable;
 }
 
-void pgsSpanConstructabilityArtifact::SetPrecamber(const CSegmentKey& segmentKey, Float64 limit, Float64 value)
+void pgsSegmentConstructabilityArtifact::SetPrecamber(const CSegmentKey& segmentKey, Float64 limit, Float64 value)
 {
    m_Precamber.insert(std::make_pair(segmentKey, std::make_pair(limit, value)));
 }
 
-void pgsSpanConstructabilityArtifact::GetPrecamber(const CSegmentKey& segmentKey, Float64* pLimit, Float64* pValue) const
+void pgsSegmentConstructabilityArtifact::GetPrecamber(const CSegmentKey& segmentKey, Float64* pLimit, Float64* pValue) const
 {
    const auto& found = m_Precamber.find(segmentKey);
    ATLASSERT(found != m_Precamber.end()); // asking for a segment whose precamber record hasn't been recorded
@@ -307,7 +309,7 @@ void pgsSpanConstructabilityArtifact::GetPrecamber(const CSegmentKey& segmentKey
    *pValue = found->second.second;;
 }
 
-bool pgsSpanConstructabilityArtifact::PrecamberPassed(const CSegmentKey& segmentKey) const
+bool pgsSegmentConstructabilityArtifact::PrecamberPassed(const CSegmentKey& segmentKey) const
 {
    if (m_bIsPrecamberApplicable)
    {
@@ -321,7 +323,7 @@ bool pgsSpanConstructabilityArtifact::PrecamberPassed(const CSegmentKey& segment
    return true;
 }
 
-bool pgsSpanConstructabilityArtifact::PrecamberPassed() const
+bool pgsSegmentConstructabilityArtifact::PrecamberPassed() const
 {
    if (m_bIsPrecamberApplicable)
    {
@@ -339,29 +341,29 @@ bool pgsSpanConstructabilityArtifact::PrecamberPassed() const
    return true;
 }
 
-void pgsSpanConstructabilityArtifact::SetBottomFlangeClearanceApplicability(bool bSet)
+void pgsSegmentConstructabilityArtifact::SetBottomFlangeClearanceApplicability(bool bSet)
 {
    m_bIsBottomFlangeClearanceApplicable = bSet;
 }
 
-bool pgsSpanConstructabilityArtifact::IsBottomFlangeClearanceApplicable() const
+bool pgsSegmentConstructabilityArtifact::IsBottomFlangeClearanceApplicable() const
 {
    return m_bIsBottomFlangeClearanceApplicable;
 }
 
-void pgsSpanConstructabilityArtifact::SetBottomFlangeClearanceParameters(Float64 C,Float64 Cmin)
+void pgsSegmentConstructabilityArtifact::SetBottomFlangeClearanceParameters(Float64 C,Float64 Cmin)
 {
    m_C = C;
    m_Cmin = Cmin;
 }
 
-void pgsSpanConstructabilityArtifact::GetBottomFlangeClearanceParameters(Float64* pC,Float64* pCmin) const
+void pgsSegmentConstructabilityArtifact::GetBottomFlangeClearanceParameters(Float64* pC,Float64* pCmin) const
 {
    *pC = m_C;
    *pCmin = m_Cmin;
 }
 
-bool pgsSpanConstructabilityArtifact::BottomFlangeClearancePassed() const
+bool pgsSegmentConstructabilityArtifact::BottomFlangeClearancePassed() const
 {
    if ( !m_bIsBottomFlangeClearanceApplicable )
    {
@@ -371,57 +373,57 @@ bool pgsSpanConstructabilityArtifact::BottomFlangeClearancePassed() const
    return ::IsGE(m_Cmin,m_C) ? true : false;
 }
 
-void pgsSpanConstructabilityArtifact::SetComputedExcessCamber(Float64 value)
+void pgsSegmentConstructabilityArtifact::SetComputedExcessCamber(Float64 value)
 {
    m_ComputedExcessCamber = value;
 }
 
-Float64 pgsSpanConstructabilityArtifact::GetComputedExcessCamber() const
+Float64 pgsSegmentConstructabilityArtifact::GetComputedExcessCamber() const
 {
    return m_ComputedExcessCamber;
 }
 
-void pgsSpanConstructabilityArtifact::SetAssumedExcessCamber(Float64 value)
+void pgsSegmentConstructabilityArtifact::SetAssumedExcessCamber(Float64 value)
 {
    m_AssumedExcessCamber = value;
 }
 
-Float64 pgsSpanConstructabilityArtifact::GetAssumedExcessCamber() const
+Float64 pgsSegmentConstructabilityArtifact::GetAssumedExcessCamber() const
 {
    return m_AssumedExcessCamber;
 }
 
-void pgsSpanConstructabilityArtifact::SetAssumedMinimumHaunchDepth(Float64 value)
+void pgsSegmentConstructabilityArtifact::SetAssumedMinimumHaunchDepth(Float64 value)
 {
    m_AssumedMinimumHaunchDepth = value;
 }
 
-Float64 pgsSpanConstructabilityArtifact::GetAssumedMinimumHaunchDepth() const
+Float64 pgsSegmentConstructabilityArtifact::GetAssumedMinimumHaunchDepth() const
 {
    return m_AssumedMinimumHaunchDepth;
 }
 
-void pgsSpanConstructabilityArtifact::SetHaunchGeometryCheckApplicability(bool bSet)
+void pgsSegmentConstructabilityArtifact::SetHaunchGeometryCheckApplicability(bool bSet)
 {
    m_bIsHaunchGeometryCheckApplicable = bSet;
 }
 
-bool pgsSpanConstructabilityArtifact::IsHaunchGeometryCheckApplicable() const
+bool pgsSegmentConstructabilityArtifact::IsHaunchGeometryCheckApplicable() const
 {
    return m_bIsHaunchGeometryCheckApplicable;
 }
 
-void pgsSpanConstructabilityArtifact::SetHaunchGeometryTolerance(Float64 value)
+void pgsSegmentConstructabilityArtifact::SetHaunchGeometryTolerance(Float64 value)
 {
    m_HaunchGeometryTolerance = value;
 }
 
-Float64 pgsSpanConstructabilityArtifact::GetHaunchGeometryTolerance() const
+Float64 pgsSegmentConstructabilityArtifact::GetHaunchGeometryTolerance() const
 {
    return m_HaunchGeometryTolerance;
 }
 
-pgsSpanConstructabilityArtifact::HaunchGeometryStatusType pgsSpanConstructabilityArtifact::HaunchGeometryStatus() const
+pgsSegmentConstructabilityArtifact::HaunchGeometryStatusType pgsSegmentConstructabilityArtifact::HaunchGeometryStatus() const
 {
    if (IsHaunchGeometryCheckApplicable())
    {
@@ -452,7 +454,7 @@ pgsSpanConstructabilityArtifact::HaunchGeometryStatusType pgsSpanConstructabilit
    }
 }
 
-bool pgsSpanConstructabilityArtifact::HaunchGeometryPassed() const
+bool pgsSegmentConstructabilityArtifact::HaunchGeometryPassed() const
 {
    if (!IsHaunchGeometryCheckApplicable())
    {
@@ -464,7 +466,7 @@ bool pgsSpanConstructabilityArtifact::HaunchGeometryPassed() const
    }
 }
 
-bool pgsSpanConstructabilityArtifact::Passed() const
+bool pgsSegmentConstructabilityArtifact::Passed() const
 {
    if ( !SlabOffsetPassed() )
    {
@@ -506,28 +508,30 @@ bool pgsSpanConstructabilityArtifact::Passed() const
 
  //======================== ACCESS     =======================================
 
-void pgsSpanConstructabilityArtifact::SetFinishedElevationApplicability(bool bSet)
+void pgsSegmentConstructabilityArtifact::SetFinishedElevationApplicability(bool bSet)
 {
    m_bIsFinishedElevationApplicable = bSet;
 }
 
-bool pgsSpanConstructabilityArtifact::GetFinishedElevationApplicability() const
+bool pgsSegmentConstructabilityArtifact::GetFinishedElevationApplicability() const
 {
    return m_bIsFinishedElevationApplicable;
 }
 
-void pgsSpanConstructabilityArtifact::SetFinishedElevationTolerance(Float64 tol)
+void pgsSegmentConstructabilityArtifact::SetFinishedElevationTolerance(Float64 tol)
 {
    m_FinishedElevationTolerance = tol;
 }
 
-Float64 pgsSpanConstructabilityArtifact::GetFinishedElevationTolerance() const
+Float64 pgsSegmentConstructabilityArtifact::GetFinishedElevationTolerance() const
 {
    return m_FinishedElevationTolerance;
 }
 
-void pgsSpanConstructabilityArtifact::SetMaxFinishedElevation(Float64 station, Float64 offset, const pgsPointOfInterest& poi, Float64 designElevation, Float64 finishedElevation)
+void pgsSegmentConstructabilityArtifact::SetMaxFinishedElevation(Float64 station, Float64 offset, const pgsPointOfInterest& poi, Float64 designElevation, Float64 finishedElevation)
 {
+   ATLASSERT(m_SegmentKey == poi.GetSegmentKey());
+
    m_Station = station;
    m_Offset = offset;
    m_Poi = poi;
@@ -535,7 +539,7 @@ void pgsSpanConstructabilityArtifact::SetMaxFinishedElevation(Float64 station, F
    m_FinishedElevation = finishedElevation;
 }
 
-void pgsSpanConstructabilityArtifact::GetMaxFinishedElevation(Float64* pStation, Float64* pOffset, pgsPointOfInterest* pPoi, Float64* pDesignElevation, Float64* pFinishedElevation) const
+void pgsSegmentConstructabilityArtifact::GetMaxFinishedElevation(Float64* pStation, Float64* pOffset, pgsPointOfInterest* pPoi, Float64* pDesignElevation, Float64* pFinishedElevation) const
 {
    *pStation = m_Station;
    *pOffset = m_Offset;
@@ -544,7 +548,7 @@ void pgsSpanConstructabilityArtifact::GetMaxFinishedElevation(Float64* pStation,
    *pFinishedElevation = m_FinishedElevation;
 }
 
-bool pgsSpanConstructabilityArtifact::FinishedElevationPassed() const
+bool pgsSegmentConstructabilityArtifact::FinishedElevationPassed() const
 {
    return IsEqual(m_DesignElevation, m_FinishedElevation, m_FinishedElevationTolerance) ? true : false;
 }
@@ -554,9 +558,9 @@ bool pgsSpanConstructabilityArtifact::FinishedElevationPassed() const
 //======================== LIFECYCLE  =======================================
 //======================== OPERATORS  =======================================
 //======================== OPERATIONS =======================================
-void pgsSpanConstructabilityArtifact::MakeCopy(const pgsSpanConstructabilityArtifact& rOther)
+void pgsSegmentConstructabilityArtifact::MakeCopy(const pgsSegmentConstructabilityArtifact& rOther)
 {
-   m_Span     = rOther.m_Span;
+   m_SegmentKey = rOther.m_SegmentKey;
 
    m_ProvidedStart = rOther.m_ProvidedStart;
    m_ProvidedEnd = rOther.m_ProvidedEnd;
@@ -596,7 +600,7 @@ void pgsSpanConstructabilityArtifact::MakeCopy(const pgsSpanConstructabilityArti
    m_FinishedElevation = rOther.m_FinishedElevation;
 }
 
-void pgsSpanConstructabilityArtifact::MakeAssignment(const pgsSpanConstructabilityArtifact& rOther)
+void pgsSegmentConstructabilityArtifact::MakeAssignment(const pgsSegmentConstructabilityArtifact& rOther)
 {
    MakeCopy( rOther );
 }
@@ -648,58 +652,35 @@ pgsConstructabilityArtifact& pgsConstructabilityArtifact::operator=(const pgsCon
  //======================== ACCESS     =======================================
 void pgsConstructabilityArtifact::ClearArtifacts()
 {
-   m_SpanArtifacts.clear();
+   m_SegmentArtifacts.clear();
 }
 
-void pgsConstructabilityArtifact::AddSpanArtifact(SpanIndexType span, const pgsSpanConstructabilityArtifact& artifact)
+void pgsConstructabilityArtifact::AddSegmentArtifact(const pgsSegmentConstructabilityArtifact& artifact)
 {
-   m_SpanArtifacts.push_back(artifact);
-
-   pgsSpanConstructabilityArtifact& art = m_SpanArtifacts.back();
-   art.m_Span = span;
+   m_SegmentArtifacts.push_back(artifact);
 }
 
-const pgsSpanConstructabilityArtifact*  pgsConstructabilityArtifact::GetSpanArtifact(SpanIndexType span) const
+const pgsSegmentConstructabilityArtifact& pgsConstructabilityArtifact::GetSegmentArtifact(SegmentIndexType segmentIdx) const
 {
-   for (const auto& artifact : m_SpanArtifacts)
-   {
-      if (artifact.m_Span == span)
-      {
-         return &artifact;
-      }
-   }
+   const auto& artifact = m_SegmentArtifacts[segmentIdx];
+   ATLASSERT(artifact.GetSegment() == segmentIdx);
+   return artifact;
 
-   return nullptr;
-}
+   //for (const auto& artifact : m_SegmentArtifacts)
+   //{
+   //   if (artifact.GetSegment() == segmentIdx)
+   //   {
+   //      return &artifact;
+   //   }
+   //}
 
-SpanIndexType pgsConstructabilityArtifact::GetSpans(SpanIndexType* pStartSpanIdx, SpanIndexType* pEndSpanIdx) const
-{
-   SpanIndexType ns = m_SpanArtifacts.size();
-   if (ns==0)
-   {
-      *pStartSpanIdx = INVALID_INDEX;
-      *pEndSpanIdx   = INVALID_INDEX;
-   }
-   else
-   {
-      SpanIndexType minSpan(MAX_INDEX), maxSpan(0);
-      for (const auto& artifact : m_SpanArtifacts)
-      {
-         minSpan = min(minSpan, artifact.m_Span);
-         maxSpan = max(maxSpan, artifact.m_Span);
-      }
-
-      *pStartSpanIdx = minSpan;
-      *pEndSpanIdx   = maxSpan;
-   }
-
-   return ns;
+   //return nullptr;
 }
 
 bool pgsConstructabilityArtifact::Passed() const
 {
-   ATLASSERT(!m_SpanArtifacts.empty());
-   for (const auto& artf : m_SpanArtifacts)
+   ATLASSERT(!m_SegmentArtifacts.empty());
+   for (const auto& artf : m_SegmentArtifacts)
    {
       if (!artf.Passed())
          return false;
@@ -710,8 +691,8 @@ bool pgsConstructabilityArtifact::Passed() const
 
 bool pgsConstructabilityArtifact::IsSlabOffsetApplicable() const
 {
-   ATLASSERT(!m_SpanArtifacts.empty());
-   for (const auto& artf : m_SpanArtifacts)
+   ATLASSERT(!m_SegmentArtifacts.empty());
+   for (const auto& artf : m_SegmentArtifacts)
    {
       if (!artf.IsSlabOffsetApplicable())
          return false;
@@ -722,8 +703,8 @@ bool pgsConstructabilityArtifact::IsSlabOffsetApplicable() const
 
 bool pgsConstructabilityArtifact::SlabOffsetPassed() const
 {
-   ATLASSERT(!m_SpanArtifacts.empty());
-   for (const auto& artf : m_SpanArtifacts)
+   ATLASSERT(!m_SegmentArtifacts.empty());
+   for (const auto& artf : m_SegmentArtifacts)
    {
       if (!artf.SlabOffsetPassed())
          return false;
@@ -734,10 +715,10 @@ bool pgsConstructabilityArtifact::SlabOffsetPassed() const
 
 bool pgsConstructabilityArtifact::IsHaunchAtBearingCLsApplicable() const
 {
-   ATLASSERT(!m_SpanArtifacts.empty());
-   for (const auto& artf : m_SpanArtifacts)
+   ATLASSERT(!m_SegmentArtifacts.empty());
+   for (const auto& artf : m_SegmentArtifacts)
    {
-      if (artf.GetHaunchAtBearingCLsApplicability() == pgsSpanConstructabilityArtifact::sobappYes)
+      if (artf.GetHaunchAtBearingCLsApplicability() == pgsSegmentConstructabilityArtifact::sobappYes)
       {
          return true;
       }
@@ -748,8 +729,8 @@ bool pgsConstructabilityArtifact::IsHaunchAtBearingCLsApplicable() const
 
 bool pgsConstructabilityArtifact::HaunchAtBearingCLsPassed() const
 {
-   ATLASSERT(!m_SpanArtifacts.empty());
-   for (const auto& artf : m_SpanArtifacts)
+   ATLASSERT(!m_SegmentArtifacts.empty());
+   for (const auto& artf : m_SegmentArtifacts)
    {
       if (!artf.HaunchAtBearingCLsPassed())
          return false;
@@ -760,8 +741,8 @@ bool pgsConstructabilityArtifact::HaunchAtBearingCLsPassed() const
 
 bool pgsConstructabilityArtifact::IsPrecamberApplicable() const
 {
-   ATLASSERT(!m_SpanArtifacts.empty());
-   for (const auto& artf : m_SpanArtifacts)
+   ATLASSERT(!m_SegmentArtifacts.empty());
+   for (const auto& artf : m_SegmentArtifacts)
    {
       if (!artf.IsPrecamberApplicable())
          return false;
@@ -772,8 +753,8 @@ bool pgsConstructabilityArtifact::IsPrecamberApplicable() const
 
 bool pgsConstructabilityArtifact::PrecamberPassed() const
 {
-   ATLASSERT(!m_SpanArtifacts.empty());
-   for (const auto& artf : m_SpanArtifacts)
+   ATLASSERT(!m_SegmentArtifacts.empty());
+   for (const auto& artf : m_SegmentArtifacts)
    {
       if (!artf.PrecamberPassed())
          return false;
@@ -784,8 +765,8 @@ bool pgsConstructabilityArtifact::PrecamberPassed() const
 
 bool pgsConstructabilityArtifact::IsBottomFlangeClearanceApplicable() const
 {
-   ATLASSERT(!m_SpanArtifacts.empty());
-   for (const auto& artf : m_SpanArtifacts)
+   ATLASSERT(!m_SegmentArtifacts.empty());
+   for (const auto& artf : m_SegmentArtifacts)
    {
       if (!artf.IsBottomFlangeClearanceApplicable())
          return false;
@@ -796,8 +777,8 @@ bool pgsConstructabilityArtifact::IsBottomFlangeClearanceApplicable() const
 
 bool pgsConstructabilityArtifact::BottomFlangeClearancePassed() const
 {
-   ATLASSERT(!m_SpanArtifacts.empty());
-   for (const auto& artf : m_SpanArtifacts)
+   ATLASSERT(!m_SegmentArtifacts.empty());
+   for (const auto& artf : m_SegmentArtifacts)
    {
       if (!artf.BottomFlangeClearancePassed())
          return false;
@@ -808,8 +789,8 @@ bool pgsConstructabilityArtifact::BottomFlangeClearancePassed() const
 
 bool pgsConstructabilityArtifact::MinimumFilletPassed() const
 {
-   ATLASSERT(!m_SpanArtifacts.empty());
-   for (const auto& artf : m_SpanArtifacts)
+   ATLASSERT(!m_SegmentArtifacts.empty());
+   for (const auto& artf : m_SegmentArtifacts)
    {
       if (!artf.MinimumFilletPassed())
          return false;
@@ -820,8 +801,8 @@ bool pgsConstructabilityArtifact::MinimumFilletPassed() const
 
 bool pgsConstructabilityArtifact::HaunchGeometryPassed() const
 {
-   ATLASSERT(!m_SpanArtifacts.empty());
-   for (const auto& artf : m_SpanArtifacts)
+   ATLASSERT(!m_SegmentArtifacts.empty());
+   for (const auto& artf : m_SegmentArtifacts)
    {
       if (!artf.HaunchGeometryPassed())
          return false;
@@ -832,8 +813,8 @@ bool pgsConstructabilityArtifact::HaunchGeometryPassed() const
 
 bool pgsConstructabilityArtifact::IsFinishedElevationApplicable() const
 {
-   ATLASSERT(!m_SpanArtifacts.empty());
-   for (const auto& artf : m_SpanArtifacts)
+   ATLASSERT(!m_SegmentArtifacts.empty());
+   for (const auto& artf : m_SegmentArtifacts)
    {
       if (!artf.GetFinishedElevationApplicability())
          return false;
@@ -844,8 +825,8 @@ bool pgsConstructabilityArtifact::IsFinishedElevationApplicable() const
 
 bool pgsConstructabilityArtifact::FinishedElevationPassed() const
 {
-   ATLASSERT(!m_SpanArtifacts.empty());
-   for (const auto& artf : m_SpanArtifacts)
+   ATLASSERT(!m_SegmentArtifacts.empty());
+   for (const auto& artf : m_SegmentArtifacts)
    {
       if (!artf.FinishedElevationPassed())
          return false;
@@ -856,8 +837,8 @@ bool pgsConstructabilityArtifact::FinishedElevationPassed() const
 
 bool pgsConstructabilityArtifact::CheckStirrupLength() const
 {
-   ATLASSERT(!m_SpanArtifacts.empty());
-   for (const auto& artf : m_SpanArtifacts)
+   ATLASSERT(!m_SegmentArtifacts.empty());
+   for (const auto& artf : m_SegmentArtifacts)
    {
       if (!artf.CheckStirrupLength())
          return false;
@@ -873,7 +854,7 @@ bool pgsConstructabilityArtifact::CheckStirrupLength() const
 //======================== OPERATIONS =======================================
 void pgsConstructabilityArtifact::MakeCopy(const pgsConstructabilityArtifact& rOther)
 {
-   m_SpanArtifacts = rOther.m_SpanArtifacts;
+   m_SegmentArtifacts = rOther.m_SegmentArtifacts;
 }
 
 void pgsConstructabilityArtifact::MakeAssignment(const pgsConstructabilityArtifact& rOther)

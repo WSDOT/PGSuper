@@ -1195,7 +1195,7 @@ interface IStrandGeometry : IUnknown
    // Returns the debond strand configuration. Xstart is location from left end of girder where the strand gets bonded
    // Lstrand is the length of the bonded strands, and nStrands is the number of debonded strands for
    // this configuration
-   virtual void GetDebondConfigurationByRow(const CSegmentKey& segmentKey, pgsTypes::StrandType strandType, RowIndexType rowIdx, IndexType configIdx, const GDRCONFIG* pConfig, Float64* pXstart, Float64* pLstrand, StrandIndexType* pnStrands) const = 0;
+   virtual void GetDebondConfigurationByRow(const CSegmentKey& segmentKey, pgsTypes::StrandType strandType, RowIndexType rowIdx, IndexType configIdx, const GDRCONFIG* pConfig, Float64* pXstart, Float64* pLstrand, Float64* pCgX, Float64* pCgY, StrandIndexType* pnStrands) const = 0;
 
    // Functions to compute harped strand offsets based on available measurement types
    // Absolute offset is distance that raw strand grid locations are to be moved.
@@ -1317,9 +1317,10 @@ interface ISectionProperties : IUnknown
    virtual Float64 GetNetYtd(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi) const = 0;
 
 
-   virtual Float64 GetQSlab(const pgsPointOfInterest& poi) const = 0;
-   virtual Float64 GetAcBottomHalf(const pgsPointOfInterest& poi) const = 0; // for Fig. 5.7.3.4.2-3
-   virtual Float64 GetAcTopHalf(const pgsPointOfInterest& poi) const = 0; // for Fig. 5.7.3.4.2-3
+   virtual Float64 GetQSlab(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi) const = 0;
+   virtual Float64 GetQSlab(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi,Float64 fc) const = 0;
+   virtual Float64 GetAcBottomHalf(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi) const = 0; // for Fig. 5.7.3.4.2-3
+   virtual Float64 GetAcTopHalf(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi) const = 0; // for Fig. 5.7.3.4.2-3
 
    virtual Float64 GetEffectiveFlangeWidth(const pgsPointOfInterest& poi) const = 0;
    virtual Float64 GetTributaryFlangeWidth(const pgsPointOfInterest& poi) const = 0;

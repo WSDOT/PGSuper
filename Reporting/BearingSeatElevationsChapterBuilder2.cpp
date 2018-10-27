@@ -62,15 +62,7 @@ rptChapter* CBearingSeatElevationsChapterBuilderBase::Build(CReportSpecification
    rptParagraph* pPara = new rptParagraph;
    *pChapter << pPara;
 
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
-
    GET_IFACE2(pBroker,IBridge,pBridge);
-   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
-   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
-   const CDeckDescription2* pDeck = pBridgeDesc->GetDeckDescription();
-
-   INIT_UV_PROTOTYPE( rptLengthSectionValue, dist, pDisplayUnits->GetSpanLengthUnit(), false );
-   INIT_UV_PROTOTYPE( rptLengthSectionValue, dim,  pDisplayUnits->GetComponentDimUnit(), false );
 
    PierIndexType nPiers = pBridge->GetPierCount();
    for ( PierIndexType pierIdx = 0; pierIdx < nPiers; pierIdx++ )
@@ -97,115 +89,122 @@ rptChapter* CBearingSeatElevationsChapterBuilderBase::Build(CReportSpecification
       }
 
       CString strLabel;
-      strLabel.Format(_T("%s %d"), (leftAbut==prtype || rightAbut==prtype) ? _T("Abutment") : _T("Pier"),LABEL_PIER(pierIdx));
+      strLabel.Format(_T("%s %d, "), (leftAbut==prtype || rightAbut==prtype) ? _T("Abutment") : _T("Pier"),LABEL_PIER(pierIdx));
 
-      ColumnIndexType ncols = interBoundaryPier==prtype ? 5 : 3;
-      rptRcTable* pTable = rptStyleManager::CreateDefaultTable(ncols,strLabel);
-      (*pPara) << pTable << rptNewLine;
-
-      pTable->SetNumberOfHeaderRows(2);
-
-      pTable->SetRowSpan(0,0,2);
-      pTable->SetRowSpan(1,0,SKIP_CELL);
-      (*pTable)(0,0) << _T("Girder");
-
-      // first bearing line always printed
+      // Create table(s) for pier
       if (interPier==prtype)
       {
-         strLabel = _T("C.L.");
+         strLabel += _T("C.L.");
+         (*pPara) << BuildTable(strLabel, pierIdx,  pgsTypes::Back) << rptNewLine;
+
+      }
+      else if (leftAbut==prtype)
+      {
+         strLabel += _T("Ahead");
+         (*pPara) << BuildTable(strLabel, pierIdx,  pgsTypes::Ahead) << rptNewLine;
       }
       else if (rightAbut==prtype)
       {
-         strLabel = _T("Back");
+         strLabel += _T("Back");
+         (*pPara) << BuildTable(strLabel, pierIdx,  pgsTypes::Back) << rptNewLine;
       }
       else
       {
-         strLabel = _T("Ahead");// left abut or boundary pier
-      }
+         // boundary piers have two faces - put into an invisible layout table
+         rptRcTable* pLayoutTable = rptStyleManager::CreateLayoutTable(3);
 
-      pTable->SetColumnSpan(0,1,2);
-      (*pTable)(0, 1) << strLabel;
-      pTable->SetColumnSpan(0,2,SKIP_CELL);
-      if (m_TableType == ttBearingDeduct)
-      {
-         (*pTable)(1, 1) << COLHDR(_T("Bearing Deduct"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
-      }
-      else
-      {
-         (*pTable)(1, 1) << COLHDR(_T("Top Brg Elev"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
-      }
+         CString strNewLabel = strLabel + _T("Back");
+         (*pLayoutTable)(0,0) << BuildTable(strNewLabel, pierIdx,  pgsTypes::Back);
 
-      (*pTable)(1,2) << COLHDR(_T("Brg Seat Elev"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
+         (*pLayoutTable)(0, 1) << _T("&nbsp;") << _T("&nbsp;");
 
-      // first columns
-      RowIndexType row = pTable->GetNumberOfHeaderRows();
+         strLabel += _T("Ahead");
+         (*pLayoutTable)(0, 2) << BuildTable(strLabel, pierIdx, pgsTypes::Ahead);
 
-      pgsTypes::PierFaceType face = (rightAbut == prtype) ? pgsTypes::Back : pgsTypes::Ahead;
-      std::vector<BearingElevationDetails> vElevDetails = pBridge->GetBearingElevationDetails(pierIdx, face);
-      std::vector<BearingElevationDetails>::iterator iter(vElevDetails.begin());
-      std::vector<BearingElevationDetails>::iterator iend(vElevDetails.end());
-      for ( ; iter != iend;  iter++, row++ )
-      {
-         BearingElevationDetails& elevDetails = *iter;
-         (*pTable)(row, 0) << LABEL_GIRDER(elevDetails.GdrIdx);
-
-         if (m_TableType == ttBearingDeduct)
-         {
-            (*pTable)(row, 1) << dim.SetValue(elevDetails.BearingDeduct);
-         }
-         else
-         {
-            (*pTable)(row, 1) << dist.SetValue(elevDetails.TopBrgElevation);
-         }
-
-         (*pTable)(row,2) << dist.SetValue(elevDetails.BrgSeatElevation);
-      }
-
-      if (interBoundaryPier == prtype) // boundary piers are only type with two bearing lines
-      {
-         pTable->SetColumnSpan(0, 3, 2);
-         (*pTable)(0, 3) << _T("Back");
-         pTable->SetColumnSpan(0, 4, SKIP_CELL);
-
-         if (m_TableType == ttBearingDeduct)
-         {
-            (*pTable)(1, 3) << COLHDR(_T("Bearing Deduct"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
-         }
-         else
-         {
-            (*pTable)(1, 3) << COLHDR(_T("Top Brg Elev"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
-         }
-
-         (*pTable)(1, 4) << COLHDR(_T("Brg Seat Elev"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
-
-         row = pTable->GetNumberOfHeaderRows();
-
-         vElevDetails = pBridge->GetBearingElevationDetails(pierIdx, pgsTypes::Back);
-         iter= vElevDetails.begin();
-         iend = vElevDetails.end();
-         for ( ; iter != iend;  iter++, row++ )
-         {
-            BearingElevationDetails& elevDetails = *iter;
-            if ((*pTable)(row, 0).IsEmpty())
-            {
-               (*pTable)(row, 0) << LABEL_GIRDER(elevDetails.GdrIdx);
-            }
-
-            if (m_TableType == ttBearingDeduct)
-            {
-               (*pTable)(row, 3) << dim.SetValue(elevDetails.BearingDeduct);
-            }
-            else
-            {
-               (*pTable)(row, 3) << dist.SetValue(elevDetails.TopBrgElevation);
-            }
-
-            (*pTable)(row,4) << dist.SetValue(elevDetails.BrgSeatElevation);
-         }
+         (*pPara) << pLayoutTable << rptNewLine;
       }
    }
 
    return pChapter;
+}
+
+// Macro we can use to write a newline before our table txt value
+#define WRITE_NEWLINE_BEFORE(doWriteNewLineRow, row, col, txt) if (doWriteNewLineRow) { (*pTable)(row, col) << rptNewLine << txt;} else { (*pTable)(row, col) << txt;}
+
+
+rptRcTable* CBearingSeatElevationsChapterBuilderBase::BuildTable(const CString& strLabel,PierIndexType pierIdx,  pgsTypes::PierFaceType face) const
+{
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+
+   GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+   const CDeckDescription2* pDeck = pBridgeDesc->GetDeckDescription();
+
+   INIT_UV_PROTOTYPE( rptLengthSectionValue, dist, pDisplayUnits->GetSpanLengthUnit(), false );
+   INIT_UV_PROTOTYPE( rptLengthSectionValue, dim,  pDisplayUnits->GetComponentDimUnit(), false );
+
+   ColumnIndexType ncols = 4;
+   rptRcTable* pTable = rptStyleManager::CreateDefaultTable(ncols,strLabel);
+
+   (*pTable)(0,0) << _T("Girder");
+   (*pTable)(0,1) << _T("Bearing");
+
+   if (m_TableType == ttBearingDeduct)
+   {
+      (*pTable)(0, 2) << COLHDR(_T("Bearing Deduct"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+   }
+   else
+   {
+      (*pTable)(0, 2) << COLHDR(_T("Top Brg Elev"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
+   }
+
+   (*pTable)(0,3) << COLHDR(_T("Brg Seat Elev"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
+
+   // first columns
+   RowIndexType row = pTable->GetNumberOfHeaderRows();
+
+   std::vector<BearingElevationDetails> vElevDetails = pBridge->GetBearingElevationDetails(pierIdx, face);
+   std::vector<BearingElevationDetails>::iterator iter(vElevDetails.begin());
+   std::vector<BearingElevationDetails>::iterator iend(vElevDetails.end());
+   GirderIndexType lastGdrIdx = INVALID_INDEX;
+   for (; iter != iend; iter++)
+   {
+      BearingElevationDetails& elevDetails = *iter;
+
+      // put multiple bearings for same girder in same row
+      bool newRow = (lastGdrIdx == INVALID_INDEX) || (lastGdrIdx != elevDetails.GdrIdx);
+      if (newRow)
+      {
+         row++;
+      }
+
+      bool writeNewLineBefore = !newRow;
+
+      lastGdrIdx = elevDetails.GdrIdx;
+
+      if (newRow)
+      {
+         WRITE_NEWLINE_BEFORE(writeNewLineBefore, row, 0, LABEL_GIRDER(elevDetails.GdrIdx))
+      }
+
+      WRITE_NEWLINE_BEFORE(writeNewLineBefore, row, 1, elevDetails.BearingIdx+1)
+
+      if (m_TableType == ttBearingDeduct)
+      {
+         WRITE_NEWLINE_BEFORE(writeNewLineBefore, row, 2, elevDetails.BearingDeduct)
+      }
+      else
+      {
+         WRITE_NEWLINE_BEFORE(writeNewLineBefore, row, 2, elevDetails.TopBrgElevation)
+      }
+
+      WRITE_NEWLINE_BEFORE(writeNewLineBefore, row, 3, dist.SetValue(elevDetails.BrgSeatElevation))
+   }
+
+   return pTable;
 }
 
 ////////////////////////////////////////////////////////////////////
