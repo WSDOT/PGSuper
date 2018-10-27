@@ -2240,7 +2240,7 @@ BEGIN
     LTEXT           "SH + ",IDC_SERVICE_III_SH_LABEL,131,96,17,8
     EDITTEXT        IDC_SERVICE_III_PS,155,93,26,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "PS",IDC_SERVICE_III_PS_LABEL,183,96,9,8
-    LTEXT           "Allowable Tension",IDC_STATIC,18,153,58,8
+    LTEXT           "Tension Limit",IDC_STATIC,18,153,58,8
     EDITTEXT        IDC_ALLOWABLE_TENSION,82,150,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "sqrt(f'c)",IDC_ALLOWABLE_TENSION_UNIT,126,153,85,8
     CONTROL         "Rate for Shear",IDC_RATE_FOR_SHEAR,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,215,153,63,10
@@ -2324,7 +2324,7 @@ BEGIN
     GROUPBOX        "Analysis Controls",IDC_STATIC,7,294,481,47
     CONTROL         "Rate for Service III Stresses",IDC_RATE_FOR_STRESS,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,17,309,107,10
-    LTEXT           "Allowable Tension",IDC_STATIC,133,310,58,8
+    LTEXT           "Tension Limit",IDC_STATIC,133,310,58,8
     EDITTEXT        IDC_ALLOWABLE_TENSION,197,307,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "sqrt(f'c)",IDC_ALLOWABLE_TENSION_UNIT,241,310,85,8
     CONTROL         "Rate for Shear",IDC_RATE_FOR_SHEAR,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,17,325,63,10
@@ -2408,12 +2408,12 @@ BEGIN
     GROUPBOX        "Analysis Controls",IDC_STATIC,7,340,326,60
     CONTROL         "Rate for Service III Stresses",IDC_RATE_FOR_STRESS,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,16,355,107,10
-    LTEXT           "Allowable Tension",IDC_ALLOWABLE_TENSION_LABEL,141,356,58,8
-    EDITTEXT        IDC_ALLOWABLE_TENSION,202,353,30,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "sqrt(f'c)",IDC_ALLOWABLE_TENSION_UNIT,234,355,88,8
+    LTEXT           "Tension Limit",IDC_ALLOWABLE_TENSION_LABEL,183,356,43,8
+    EDITTEXT        IDC_ALLOWABLE_TENSION,231,353,30,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "sqrt(f'c)",IDC_ALLOWABLE_TENSION_UNIT,263,355,47,8
     CONTROL         "Check reinforcement yielding (6A.5.4.2.2b)",IDC_CHECK_YIELDING,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,16,371,153,10
-    LTEXT           "Allowable Stress",IDC_FY_LABEL,176,372,53,8
+    LTEXT           "Stress Limit",IDC_FY_LABEL,188,372,37,8
     EDITTEXT        IDC_FY_COEFFICIENT,231,369,30,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "fy",IDC_FY,264,371,8,8
     CONTROL         "Rate for Shear",IDC_RATE_FOR_SHEAR,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,16,387,63,10
@@ -3449,8 +3449,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 3,1,4,2
- PRODUCTVERSION 3,1,4,2
+ FILEVERSION 3,1,4,3
+ PRODUCTVERSION 3,1,4,3
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -3467,12 +3467,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "Washington State Department of Transportation"
             VALUE "FileDescription", "PGSuper"
-            VALUE "FileVersion", "3.1.4.2"
+            VALUE "FileVersion", "3.1.4.3"
             VALUE "InternalName", "PGSuper"
             VALUE "LegalCopyright", "Copyright © 1999-2018, Washington State Department of Transportation, All Rights Reserved"
             VALUE "OriginalFilename", "PGSuperAppPlugin.DLL"
             VALUE "ProductName", "PGSuper"
-            VALUE "ProductVersion", "3.1.4.2"
+            VALUE "ProductVersion", "3.1.4.3"
         END
     END
     BLOCK "VarFileInfo"
@@ -4546,6 +4546,11 @@ BEGIN
 END
 
 IDD_DESIGN_RATING AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_PERMIT_RATING AFX_DIALOG_LAYOUT
 BEGIN
     0
 END

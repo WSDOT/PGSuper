@@ -1819,9 +1819,8 @@ bool CBridgeAgentImp::BuildCogoModel()
                                     // to confirm the next curve doesn't start before the previous one ends
 
 
-      // The station at this first point is the PI station of the first curve less 2 radii
-      // and 2 entry spiral lengths. This is completely arbitrary but will ensure that 
-      // we are starting on the back tangent
+      // The station at this first point is the PI station of the first curve less 1.5*Tangent.
+      // This is somewhat arbitrary but will ensure that we are starting on the back tangent
       HorzCurveData& first_curve_data = *(alignment_data.HorzCurves.begin());
 
       if ( IsZero(first_curve_data.Radius) )
@@ -1830,7 +1829,17 @@ bool CBridgeAgentImp::BuildCogoModel()
       }
       else
       {
-         prev_curve_ST_station = first_curve_data.PIStation - 2*(first_curve_data.Radius + first_curve_data.EntrySpiral);
+         Float64 delta;
+         if (first_curve_data.bFwdTangent)
+         {
+            delta = first_curve_data.FwdTangent - back_tangent;
+         }
+         else
+         {
+            delta = first_curve_data.FwdTangent;
+         }
+         Float64 T = first_curve_data.Radius*tan(delta/ 2);
+         prev_curve_ST_station = first_curve_data.PIStation - 1.5*T;
       }
 
       CogoObjectID curveID = 1;
@@ -3838,8 +3847,18 @@ bool CBridgeAgentImp::LayoutGirdersPass2()
             if (0 > midHaunch)
             {
                GET_IFACE(IEAFStatusCenter, pStatusCenter);
+               GET_IFACE(ISpecification, pSpec );
+               bool is_parabolic = pSpec->IsAssExcessCamberInputEnabled();
+
                CString msg;
-               msg.Format( _T("The input assumed excess camber for span %d, girder %s is larger than the haunch depth at mid span. The girder will intrude into the bottom of the slab."),LABEL_SPAN(segmentKey.groupIndex), LABEL_GIRDER(segmentKey.girderIndex));
+               if (is_parabolic)
+               {
+                  msg.Format(_T("The assumed excess camber for span %d, girder %s is larger than the haunch depth at mid span. The girder will intrude into the bottom of the slab."), LABEL_SPAN(segmentKey.groupIndex), LABEL_GIRDER(segmentKey.girderIndex));
+               }
+               else
+               {
+                  msg.Format(_T("The girder top chord for span %d, girder %s intrudes into the bottom of the slab at mid-span."), LABEL_SPAN(segmentKey.groupIndex), LABEL_GIRDER(segmentKey.girderIndex));
+               }
                pgsBridgeDescriptionStatusItem* pStatusItem = new pgsBridgeDescriptionStatusItem(m_StatusGroupID, m_scidBridgeDescriptionWarning, pgsBridgeDescriptionStatusItem::Deck, msg);
                pStatusCenter->Add(pStatusItem);
             }
@@ -6706,7 +6725,6 @@ void CBridgeAgentImp::GetRoadwaySurface(Float64 station,IDirection* pDirection,I
 }
 
 void CBridgeAgentImp::GetPoint(Float64 station,Float64 offset,IDirection* pBearing,pgsTypes::PlanCoordinateType pcType,IPoint2d** ppPoint)
-
 {
    VALIDATE( COGO_MODEL );
 

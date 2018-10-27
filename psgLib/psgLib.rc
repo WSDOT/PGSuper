@@ -67,8 +67,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 3,1,4,2
- PRODUCTVERSION 3,1,4,2
+ FILEVERSION 3,1,4,3
+ PRODUCTVERSION 3,1,4,3
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -86,11 +86,11 @@ BEGIN
             VALUE "Comments", "A member of the Alternate Route Project"
             VALUE "CompanyName", "Washington State Department of Transportation"
             VALUE "FileDescription", "psgLib DLL"
-            VALUE "FileVersion", "3.1.4.2"
+            VALUE "FileVersion", "3.1.4.3"
             VALUE "InternalName", "psgLib"
             VALUE "OriginalFilename", "psgLib.DLL"
             VALUE "ProductName", "PGSuper"
-            VALUE "ProductVersion", "3.1.4.2"
+            VALUE "ProductVersion", "3.1.4.3"
         END
     END
     BLOCK "VarFileInfo"
@@ -477,7 +477,7 @@ BEGIN
     LTEXT           "Support Placement Tolerance",IDC_STATIC_GH20,15,230,99,8,NOT WS_GROUP
     EDITTEXT        IDC_SUPPORT_PLACEMENT_TOLERANCE,117,228,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "Inches",IDC_SUPPORT_PLACEMENT_TOLERANCE_UNITS,160,230,25,8,NOT WS_GROUP
-    GROUPBOX        "Allowable Concrete Stress",IDC_STATIC_GH8,7,258,466,128
+    GROUPBOX        "Concrete Stress Limits",IDC_STATIC_GH8,7,258,466,128
     LTEXT           "Compressive Stress",IDC_STATIC_GH9,13,271,67,8,NOT WS_GROUP
     EDITTEXT        IDC_HAULING_COMPRESSION,81,268,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "f'c",IDC_STATIC_GH25,123,271,14,8,NOT WS_GROUP
@@ -739,7 +739,7 @@ BEGIN
     COMBOBOX        IDC_WIND_TYPE,267,144,69,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     EDITTEXT        IDC_WIND_LOAD,338,143,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "Static",IDC_WIND_LOAD_UNIT,381,146,19,8
-    GROUPBOX        "Allowable Concrete Stress",IDC_STATIC_ACS,7,198,478,80
+    GROUPBOX        "Concrete Stress Limits",IDC_STATIC_ACS,7,198,478,80
     LTEXT           "Compression",IDC_STATIC_ACSCS,13,219,41,8
     EDITTEXT        IDC_LIFTING_COMPRESSION,77,216,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "f'ci",IDC_LIFTING_TENSION_UNITS2,119,218,10,8
@@ -1556,7 +1556,7 @@ BEGIN
     LTEXT           "Along girder overhangs",IDC_STATIC_GH13,32,42,86,8,NOT WS_GROUP
     LTEXT           "Between support locations",IDC_STATIC_GH14,32,61,86,8,NOT WS_GROUP
     GROUPBOX        "Dynamic Load Factors",IDC_STATIC_GH15,7,7,189,72
-    GROUPBOX        "Allowable Concrete Stress",IDC_STATIC_GH8,7,84,475,95
+    GROUPBOX        "Concrete Stress Limits",IDC_STATIC_GH8,7,84,475,95
     LTEXT           "Compressive Stress",IDC_STATIC_GH9,13,100,67,8,NOT WS_GROUP
     EDITTEXT        IDC_HAULING_COMPRESSION,81,97,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "f'c",IDC_STATIC_GH25,123,100,14,8,NOT WS_GROUP

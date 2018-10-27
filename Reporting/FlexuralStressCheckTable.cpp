@@ -576,7 +576,7 @@ void CFlexuralStressCheckTable::BuildTable(rptChapter* pChapter,
       if ( bIsWithRebarAllowableApplicableTop && bIsWithRebarAllowableApplicableBot )
       {
          p_table->SetColumnSpan(0,col1,2);
-         (*p_table)(0,col1++) << _T("Tensile Capacity");
+         (*p_table)(0,col1++) << _T("Tension Limit");
          (*p_table)(1,col2++) << COLHDR(_T("Top"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
          (*p_table)(1,col2++) << COLHDR(_T("Bottom"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
       }
@@ -1157,7 +1157,7 @@ void CFlexuralStressCheckTable::BuildAllowDeckStressInformation(rptChapter* pCha
       Float64 c = pAllowable->GetDeckAllowableCompressionStressCoefficient(poi,intervalIdx,limitState);
       Float64 fAllowable = pAllowable->GetDeckAllowableCompressionStress(poi,intervalIdx,limitState);
 
-      *pPara << _T("Allowable compressive stress = -") << c << RPT_FC << _T(" = ") << stress_u.SetValue(fAllowable) << rptNewLine;
+      *pPara << _T("Compression stress limit = -") << c << RPT_FC << _T(" = ") << stress_u.SetValue(fAllowable) << rptNewLine;
    }
 
    //
@@ -1179,7 +1179,7 @@ void CFlexuralStressCheckTable::BuildAllowDeckStressInformation(rptChapter* pCha
 
       if ( bIsTendonStressingInterval )
       {
-         (*pPara) << _T("Allowable tensile stress in areas other than the precompressed tensile zone = ") << tension_coeff.SetValue(t);
+         (*pPara) << _T("Tension stress limit in areas other than the precompressed tensile zone = ") << tension_coeff.SetValue(t);
          if ( lrfdVersionMgr::SeventhEditionWith2016Interims <= lrfdVersionMgr::GetVersion() )
          {
             (*pPara) << symbol(lambda);
@@ -1200,12 +1200,12 @@ void CFlexuralStressCheckTable::BuildAllowDeckStressInformation(rptChapter* pCha
             pAllowable->GetDeckAllowableTensionStressCoefficient(poi,intervalIdx,limitState,true/*with rebar*/,&t_with_rebar,&b_t_max,&t_max);
             fAllowable = pAllowable->GetDeckAllowableTensionStress(poi,intervalIdx,limitState,true/*with rebar*/);
 
-            (*pPara) << _T("Allowable tensile stress in areas with sufficient bonded reinforcement in the precompressed tensile zone = ") << tension_coeff.SetValue(t_with_rebar);
+            (*pPara) << _T("Tension stress limit in areas with sufficient bonded reinforcement = ") << tension_coeff.SetValue(t_with_rebar);
             if ( lrfdVersionMgr::SeventhEditionWith2016Interims <= lrfdVersionMgr::GetVersion() )
             {
                (*pPara) << symbol(lambda);
             }
-            (*pPara) << symbol(ROOT) << RPT_FC << _T(" = ") << stress_u.SetValue(fAllowable)<< _T(" if bonded reinforcement sufficient to resist the tensile force in the concrete is provided.") << rptNewLine;
+            (*pPara) << symbol(ROOT) << RPT_FC << _T(" = ") << stress_u.SetValue(fAllowable) << rptNewLine;
 
          }
       }
@@ -1289,7 +1289,7 @@ void CFlexuralStressCheckTable::BuildAllowSegmentStressInformation(rptParagraph*
       Float64 c = pAllowable->GetSegmentAllowableCompressionStressCoefficient(poi,intervalIdx,limitState);
       Float64 fAllowable = pAllowable->GetSegmentAllowableCompressionStress(poi,intervalIdx,limitState);
 
-      *pPara << _T("Allowable compressive stress = -") << c;
+      *pPara << _T("Compression stress limit = -") << c;
 
       if ( bFci )
       {
@@ -1327,7 +1327,7 @@ void CFlexuralStressCheckTable::BuildAllowSegmentStressInformation(rptParagraph*
 
       if ( bIsStressingInterval )
       {
-         (*pPara) << _T("Allowable tensile stress in areas other than the precompressed tensile zone = ") << tension_coeff.SetValue(t);
+         (*pPara) << _T("Tension stress limit in areas other than the precompressed tensile zone = ") << tension_coeff.SetValue(t);
          if ( lrfdVersionMgr::SeventhEditionWith2016Interims <= lrfdVersionMgr::GetVersion() )
          {
             (*pPara) << symbol(lambda);
@@ -1357,7 +1357,7 @@ void CFlexuralStressCheckTable::BuildAllowSegmentStressInformation(rptParagraph*
             pAllowable->GetSegmentAllowableTensionStressCoefficient(poi,intervalIdx,limitState,true/*with rebar*/,&t_with_rebar,&b_t_max,&t_max);
             fAllowable = pAllowable->GetSegmentAllowableTensionStress(poi,intervalIdx,limitState,true/*with rebar*/);
 
-            (*pPara) << _T("Allowable tensile stress in areas with sufficient bonded reinforcement in the precompressed tensile zone = ") << tension_coeff.SetValue(t_with_rebar);
+            (*pPara) << _T("Tension stress limit in areas with sufficient bonded reinforcement = ") << tension_coeff.SetValue(t_with_rebar);
             if ( lrfdVersionMgr::SeventhEditionWith2016Interims <= lrfdVersionMgr::GetVersion() )
             {
                (*pPara) << symbol(lambda);
@@ -1373,14 +1373,13 @@ void CFlexuralStressCheckTable::BuildAllowSegmentStressInformation(rptParagraph*
                (*pPara) << RPT_FC;
             }
 
-            (*pPara) << _T(" = ") << stress_u.SetValue(fAllowable)
-                     << _T(" if bonded reinforcement sufficient to resist the tensile force in the concrete is provided.") << rptNewLine;
+            (*pPara) << _T(" = ") << stress_u.SetValue(fAllowable) << rptNewLine;
 
          }
       }
       else
       {
-         (*pPara) << _T("Allowable tensile stress in the precompressed tensile zone = ") << tension_coeff.SetValue(t);
+         (*pPara) << _T("Tension stress limit in the precompressed tensile zone = ") << tension_coeff.SetValue(t);
          if ( lrfdVersionMgr::SeventhEditionWith2016Interims <= lrfdVersionMgr::GetVersion() )
          {
             (*pPara) << symbol(lambda);
@@ -1463,7 +1462,7 @@ void CFlexuralStressCheckTable::BuildAllowClosureJointStressInformation(rptParag
 
       Float64 c = pAllowable->GetClosureJointAllowableCompressionStressCoefficient(poi,intervalIdx,limitState);
       Float64 fAllowable = pAllowable->GetClosureJointAllowableCompressionStress(poi,intervalIdx,limitState);
-      *pPara << _T("Allowable compressive stress = -") << c;
+      *pPara << _T("Compression stress limit = -") << c;
 
       if (bFci)
       {
@@ -1500,7 +1499,7 @@ void CFlexuralStressCheckTable::BuildAllowClosureJointStressInformation(rptParag
       // Precompressed tensile zone
       pAllowable->GetClosureJointAllowableTensionStressCoefficient(poi,intervalIdx,limitState,false/*without rebar*/,true/*in PTZ*/,&t,&b_t_max,&t_max);
 
-      (*pPara) << _T("Allowable tensile stress in the precompressed tensile zone = ") << tension_coeff.SetValue(t);
+      (*pPara) << _T("Tension stress limit in the precompressed tensile zone = ") << tension_coeff.SetValue(t);
       if ( lrfdVersionMgr::SeventhEditionWith2016Interims <= lrfdVersionMgr::GetVersion() )
       {
          (*pPara) << symbol(lambda);
@@ -1530,21 +1529,19 @@ void CFlexuralStressCheckTable::BuildAllowClosureJointStressInformation(rptParag
          pAllowable->GetClosureJointAllowableTensionStressCoefficient(poi,intervalIdx,limitState,true/*with rebar*/,true/*in PTZ*/,&t_with_rebar,&b_t_max,&t_max);
          fAllowable = pAllowable->GetClosureJointAllowableTensionStress(poi,intervalIdx,limitState,true/*with rebar*/,true/*in PTZ*/);
 
-         (*pPara) << _T("Allowable tensile stress in joints with minimum bonded auxiliary reinforcement in the precompressed tensile zone = ") << tension_coeff.SetValue(t_with_rebar);
+         (*pPara) << _T("Tension stress limit in joints with minimum bonded auxiliary reinforcement in the precompressed tensile zone = ") << tension_coeff.SetValue(t_with_rebar);
          if ( lrfdVersionMgr::SeventhEditionWith2016Interims <= lrfdVersionMgr::GetVersion() )
          {
             (*pPara) << symbol(lambda);
          }
-         (*pPara) << symbol(ROOT) << RPT_FC << _T(" = ") << stress_u.SetValue(fAllowable)
-                  << _T(" if bonded reinforcement sufficient to resist the tensile force in the concrete is provided.") << rptNewLine;
-
+         (*pPara) << symbol(ROOT) << RPT_FC << _T(" = ") << stress_u.SetValue(fAllowable) << rptNewLine;
       }
 
 
       // Other than Precompressed tensile zone
       pAllowable->GetClosureJointAllowableTensionStressCoefficient(poi,intervalIdx,limitState,false/*without rebar*/,false/*not in PTZ*/,&t,&b_t_max,&t_max);
 
-      (*pPara) << _T("Allowable tensile stress in areas other than the precompressed tensile zone = ") << tension_coeff.SetValue(t);
+      (*pPara) << _T("Tension stress limit in areas other than the precompressed tensile zone = ") << tension_coeff.SetValue(t);
       if ( lrfdVersionMgr::SeventhEditionWith2016Interims <= lrfdVersionMgr::GetVersion() )
       {
          (*pPara) << symbol(lambda);
@@ -1574,14 +1571,12 @@ void CFlexuralStressCheckTable::BuildAllowClosureJointStressInformation(rptParag
          pAllowable->GetClosureJointAllowableTensionStressCoefficient(poi,intervalIdx,limitState,true/*with rebar*/,false/*not in PTZ*/,&t_with_rebar,&b_t_max,&t_max);
          fAllowable = pAllowable->GetClosureJointAllowableTensionStress(poi,intervalIdx,limitState,true/*with rebar*/,false/*not in PTZ*/);
 
-         (*pPara) << _T("Allowable tensile stress in joints with minimum bonded auxiliary reinforcement in areas other than the precompressed tensile zone = ") << tension_coeff.SetValue(t_with_rebar);
+         (*pPara) << _T("Tension stress limit in joints with minimum bonded auxiliary reinforcement in areas other than the precompressed tensile zone = ") << tension_coeff.SetValue(t_with_rebar);
          if ( lrfdVersionMgr::SeventhEditionWith2016Interims <= lrfdVersionMgr::GetVersion() )
          {
             (*pPara) << symbol(lambda);
          }
-         (*pPara) << symbol(ROOT) << RPT_FC << _T(" = ") << stress_u.SetValue(fAllowable)
-                  << _T(" if bonded reinforcement sufficient to resist the tensile force in the concrete is provided.") << rptNewLine;
-
+         (*pPara) << symbol(ROOT) << RPT_FC << _T(" = ") << stress_u.SetValue(fAllowable) << rptNewLine;
       }
    }
 

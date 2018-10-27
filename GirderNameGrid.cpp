@@ -241,7 +241,7 @@ BOOL CGirderNameGrid::OnRButtonHitRowCol(ROWCOL nHitRow,ROWCOL nHitCol,ROWCOL nD
    if ( nHitState & GX_HITSTART )
       return TRUE;
 
-   if ( nHitCol != 0 )
+   if ( nHitCol != 0 && m_bEnabled )
    {
       CRowColArray selCols;
       ROWCOL nSelected = GetSelectedCols(selCols);

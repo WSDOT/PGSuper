@@ -997,9 +997,11 @@ void CTimeStepLossEngineer::InitializeTimeStepAnalysis(IntervalIndexType interva
    tsDetails.Deck.E   = EaDeck;
 
    // deck rebar
-   if ( compositeDeckIntervalIdx <= intervalIdx  )
+   if ((bIsInClosure && compositeClosureIntervalIdx <= intervalIdx && compositeDeckIntervalIdx <= intervalIdx) || (!bIsInClosure && compositeDeckIntervalIdx <= intervalIdx) )
    {
-      // deck is composite so the rebar is in play
+      // poi is at a closure joint and both the deck and the closure joint are coomposite
+      // or the poi is at any other location and the deck is composite 
+      // so the deck rebar is in play
       for ( int i = 0; i < 2; i++ )
       {
          pgsTypes::DeckRebarMatType matType = pgsTypes::DeckRebarMatType(i);

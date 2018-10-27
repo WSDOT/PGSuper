@@ -67,20 +67,25 @@ BOOL CSpecClosurePage::OnInitDialog()
 {
    CPropertyPage::OnInitDialog();
 
+   return TRUE;  // return TRUE unless you set the focus to a control
+   // EXCEPTION: OCX Property Pages should return FALSE
+}
+
+BOOL CSpecClosurePage::OnSetActive()
+{
    CWnd* pWnd = GetDlgItem(IDC_FATIGUE_LABEL);
    CWnd* pGrp = GetDlgItem(IDC_FATIGUE_GROUP);
    CSpecMainSheet* pDad = (CSpecMainSheet*)GetParent();
-   if ( pDad->m_Entry.GetSpecificationType() < lrfdVersionMgr::FourthEditionWith2009Interims )
+   if (pDad->m_Entry.GetSpecificationType() < lrfdVersionMgr::FourthEditionWith2009Interims)
    {
-      pGrp->SetWindowText(_T("Allowable Concrete Stress for Fatigue (LRFD 5.9.4.2.1)"));
+      pGrp->SetWindowText(_T("Stress limit at Fatigue Limit State (LRFD 5.9.4.2.1)"));
       pWnd->SetWindowText(_T("Service IA (Live Load Plus One-Half of Permanent Loads)"));
    }
    else
    {
-      pGrp->SetWindowText(_T("Allowable Concrete Stress at Fatigue Limit State (LRFD 5.5.3.1)"));
+      pGrp->SetWindowText(_T("Stress limit at Fatigue Limit State (LRFD 5.5.3.1)"));
       pWnd->SetWindowText(_T("Fatigue I plus one-half the sum of effective prestress and permanent loads"));
    }
 
-   return TRUE;  // return TRUE unless you set the focus to a control
-   // EXCEPTION: OCX Property Pages should return FALSE
+   return CPropertyPage::OnSetActive();
 }

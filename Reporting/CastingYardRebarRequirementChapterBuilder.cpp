@@ -262,7 +262,7 @@ void CCastingYardRebarRequirementChapterBuilder::BuildTable(IBroker* pBroker,rpt
 
 rptRcTable* CCastingYardRebarRequirementChapterBuilder::CreateTable(const CGirderKey& girderKey,pgsTypes::StressLocation topLocation,pgsTypes::StressLocation botLocation,IEAFDisplayUnits* pDisplayUnits) const
 {
-   rptRcTable* pTable = rptStyleManager::CreateDefaultTable(12,_T("Reinforcement requirements for Tensile Stress Limit [C5.9.4.1.2]"));
+   rptRcTable* pTable = rptStyleManager::CreateDefaultTable(12,_T("Reinforcement requirements for Tension stress limit [C5.9.4.1.2]"));
 
    pTable->SetNumberOfHeaderRows(2);
 

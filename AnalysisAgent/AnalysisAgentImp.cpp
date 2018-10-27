@@ -6702,7 +6702,7 @@ void CAnalysisAgentImp::GetPrestressDeflection(const pgsPointOfInterest& poi, pg
       if (tsRemovalIntervalIdx <= intervalIdx)
       {
          CamberModelData temp_strand_model_data = GetPrestressDeflectionModel(poi.GetSegmentKey(), m_ReleaseTempPrestressDeflectionModels);
-         GetPrestressDeflectionFromModel(poi, temp_strand_model_data, g_lcidTemporaryStrand, datum, &Dtsi, &Rtsr);
+         GetPrestressDeflectionFromModel(poi, temp_strand_model_data, g_lcidTemporaryStrand, datum, &Dtsr, &Rtsr);
       }
 
       // these deflections include temporary strands
@@ -6783,9 +6783,7 @@ void CAnalysisAgentImp::GetPrestressDeflectionFromModel(const pgsPointOfInterest
    const CSegmentKey& segmentKey = poi.GetSegmentKey();
 
    // We need to compute the deflection relative to the bearings even though the prestress
-   // deflection occurs over the length of the entire girder.  To accomplish this, simply
-   // deduct the deflection at the bearing (when the girder is supported on its ends) from
-   // the deflection at the specified location.
+   // deflection occurs over the length of the entire girder.
    CComQIPtr<IFem2dModelResults> results(modelData.Model);
    Float64 Dx, Dy, Rz;
 
@@ -6803,9 +6801,6 @@ void CAnalysisAgentImp::GetPrestressDeflectionFromModel(const pgsPointOfInterest
          thePOI = poi;
       }
 
-// This assert is not necessary. New pois are created by the FEM engine to deal with temporary POI's.
-//      ATLASSERT( thePOI.GetID() != INVALID_ID );
-
       femPoiID = AddPointOfInterest(modelData,thePOI);
       ATLASSERT( 0 <= femPoiID.first );
    }
@@ -6815,70 +6810,58 @@ void CAnalysisAgentImp::GetPrestressDeflectionFromModel(const pgsPointOfInterest
 
    Float64 delta = Dy;
 
-   // we have the deflection relative to the release support locations
-   if ( datum != pgsTypes::pddRelease )
+   // we have the deflection relative to the ends of the girder (that's how the FEM model was built)
+   // we want the deflection relative to a different datum
+   PoiAttributeType poiDatum;
+   switch(datum)
    {
-      // we want the deflection relative to a different datum
-      GET_IFACE(IBridge,pBridge);
-      GET_IFACE(IPointOfInterest,pPoi);
-      GET_IFACE_NOCHECK(IGirder,pGirder);
-      GET_IFACE_NOCHECK(ISegmentLifting,pSegmentLifting);
-      GET_IFACE_NOCHECK(ISegmentHauling,pSegmentHauling);
+   case pgsTypes::pddRelease:
+      poiDatum = POI_RELEASED_SEGMENT;
+      break;
 
-      Float64 left_support, right_support;
-      switch(datum)
-      {
-      case pgsTypes::pddRelease:
-         pGirder->GetSegmentReleaseSupportLocations(segmentKey,&left_support,&right_support);
-         break;
+   case pgsTypes::pddLifting:
+      poiDatum = POI_LIFT_SEGMENT;
+      break;
 
-      case pgsTypes::pddLifting:
-         left_support = pSegmentLifting->GetLeftLiftingLoopLocation(segmentKey);
-         right_support = pSegmentLifting->GetRightLiftingLoopLocation(segmentKey);
-         break;
+   case pgsTypes::pddStorage:
+      poiDatum = POI_STORAGE_SEGMENT;
+      break;
 
-      case pgsTypes::pddStorage:
-         pGirder->GetSegmentStorageSupportLocations(segmentKey,&left_support,&right_support);
-         break;
+   case pgsTypes::pddHauling:
+      poiDatum = POI_HAUL_SEGMENT;
+      break;
 
-      case pgsTypes::pddHauling:
-         left_support = pSegmentHauling->GetTrailingOverhang(segmentKey);
-         right_support = pSegmentHauling->GetLeadingOverhang(segmentKey);
-         break;
+   case pgsTypes::pddErected:
+      poiDatum = POI_ERECTED_SEGMENT;
+      break;
 
-      case pgsTypes::pddErected:
-         left_support = pBridge->GetSegmentStartEndDistance(segmentKey);
-         right_support = pBridge->GetSegmentEndEndDistance(segmentKey);
-         break;
-
-      default:
-         ATLASSERT(false); // should never get here
-      }
-
-      std::vector<pgsPointOfInterest> vPoi(pPoi->GetPointsOfInterest(segmentKey, POI_ERECTED_SEGMENT | POI_0L | POI_10L));
-      ATLASSERT(vPoi.size() == 2);
-
-      pgsPointOfInterest poiAtStart( vPoi.front() );
-      ATLASSERT(poiAtStart.IsTenthPoint(POI_ERECTED_SEGMENT) == 1);
-      ATLASSERT( 0 <= poiAtStart.GetID() );
-   
-      femPoiID = modelData.PoiMap.GetModelPoi(poiAtStart);
-      results->ComputePOIDeflections(lcid,femPoiID.first,lotGlobal,&Dx,&Dy,&Rz);
-      Float64 start_delta_brg = Dy;
-
-      Float64 Lg = pBridge->GetSegmentLength(segmentKey);
-      pgsPointOfInterest poiAtEnd( vPoi.back() );
-      ATLASSERT(poiAtEnd.IsTenthPoint(POI_ERECTED_SEGMENT) == 11);
-      ATLASSERT( 0 <= poiAtEnd.GetID() );
-      femPoiID = modelData.PoiMap.GetModelPoi(poiAtEnd);
-      results->ComputePOIDeflections(lcid,femPoiID.first,lotGlobal,&Dx,&Dy,&Rz);
-      Float64 end_delta_brg = Dy;
-
-      Float64 delta_brg = LinInterp(poi.GetDistFromStart()-left_support,
-                                    start_delta_brg,end_delta_brg,Lg);
-
-      delta -= delta_brg;
+   default:
+      poiDatum = POI_RELEASED_SEGMENT;
+      ATLASSERT(false); // should never get here
    }
+
+   std::vector<pgsPointOfInterest> vPoi(pPoi->GetPointsOfInterest(segmentKey, poiDatum | POI_0L | POI_10L));
+   ATLASSERT(vPoi.size() == 2);
+
+   pgsPointOfInterest poiAtStart( vPoi.front() );
+   ATLASSERT(poiAtStart.IsTenthPoint(poiDatum) == 1);
+   ATLASSERT( 0 <= poiAtStart.GetID() );
+   femPoiID = modelData.PoiMap.GetModelPoi(poiAtStart);
+   results->ComputePOIDeflections(lcid,femPoiID.first,lotGlobal,&Dx,&Dy,&Rz);
+   Float64 start_delta_brg = Dy;
+
+   pgsPointOfInterest poiAtEnd( vPoi.back() );
+   ATLASSERT(poiAtEnd.IsTenthPoint(poiDatum) == 11);
+   ATLASSERT( 0 <= poiAtEnd.GetID() );
+   femPoiID = modelData.PoiMap.GetModelPoi(poiAtEnd);
+   results->ComputePOIDeflections(lcid,femPoiID.first,lotGlobal,&Dx,&Dy,&Rz);
+   Float64 end_delta_brg = Dy;
+
+   Float64 x = poi.GetDistFromStart() - poiAtStart.GetDistFromStart();
+   Float64 delta_x = poiAtEnd.GetDistFromStart() - poiAtStart.GetDistFromStart();
+
+   Float64 delta_brg = LinInterp(x,start_delta_brg,end_delta_brg,delta_x);
+   delta -= delta_brg;
 
    *pDy = delta;
 }
@@ -6912,7 +6895,7 @@ void CAnalysisAgentImp::GetReleaseTempPrestressDeflection(const pgsPointOfIntere
       ATLASSERT(femPoiID.first != INVALID_ID);
    }
    results->ComputePOIDeflections(g_lcidTemporaryStrand, femPoiID.first, lotGlobal, &Dx, &Dy, pRz);
-   Float64 delta_poi = Dy;
+   Float64 delta_poi = Dy; // deflection relative to end of segemnt (this is how the FEM model was built)
 
    std::vector<pgsPointOfInterest> vPoi(pPoi->GetPointsOfInterest(segmentKey, POI_ERECTED_SEGMENT | POI_0L | POI_10L));
    ATLASSERT(vPoi.size() == 2);
@@ -6931,7 +6914,7 @@ void CAnalysisAgentImp::GetReleaseTempPrestressDeflection(const pgsPointOfIntere
       ATLASSERT(femPoiID.first != INVALID_ID);
    }
    results->ComputePOIDeflections(g_lcidTemporaryStrand, femPoiID.first, lotGlobal, &Dx, &Dy, &Rz);
-   Float64 start_delta_end_size = Dy;
+   Float64 start_delta_brg = Dy;
 
    // Get deflection at end bearing
    femPoiID = modelData.PoiMap.GetModelPoi(poiEnd);
@@ -6943,12 +6926,11 @@ void CAnalysisAgentImp::GetReleaseTempPrestressDeflection(const pgsPointOfIntere
       ATLASSERT(femPoiID.first != INVALID_ID);
    }
    results->ComputePOIDeflections(g_lcidTemporaryStrand, femPoiID.first, lotGlobal, &Dx, &Dy, &Rz);
-   Float64 end_delta_end_size = Dy;
+   Float64 end_delta_brg = Dy;
 
-   GET_IFACE(IBridge, pBridge);
-   Float64 L = pBridge->GetSegmentLength(segmentKey);
-   Float64 start_end_size = pBridge->GetSegmentStartEndDistance(segmentKey);
-   Float64 delta_brg = LinInterp(poi.GetDistFromStart() - start_end_size, start_delta_end_size, end_delta_end_size, L);
+   Float64 x = poi.GetDistFromStart() - poiStart.GetDistFromStart();
+   Float64 delta_x = poiEnd.GetDistFromStart() - poiStart.GetDistFromStart();
+   Float64 delta_brg = LinInterp(x, start_delta_brg, end_delta_brg, delta_x);
 
    Float64 delta = delta_poi - delta_brg;
    *pDy = delta;

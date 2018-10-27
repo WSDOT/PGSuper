@@ -176,9 +176,6 @@ void CTxDOTOptionalDesignView::OnInitialUpdate()
 
    GetClientRect(rcView);
 
-   m_szMin.cx = rcView.Width();
-   m_szMin.cy = rcView.Height();
-
    // Don't shrink window, only grow
    cxMin = Max(cxMin, rcMainFrame.Width());
    cyMin = Max(cyMin, rcMainFrame.Height());

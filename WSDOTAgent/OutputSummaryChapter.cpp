@@ -563,7 +563,7 @@ void castingyard_stresses(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
    (*pTable)(0,0) << _T("Location");
    (*pTable)(0,1) << _T("Limit State");
    (*pTable)(0,2) << COLHDR(_T("Demand"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   (*pTable)(0,3) << COLHDR(_T("Allowable"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*pTable)(0,3) << COLHDR(_T("Limit"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    (*pTable)(0,4) << _T("Status");
 
    // Setup up some unit value prototypes
@@ -875,7 +875,7 @@ void bridgesite1_stresses(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
    (*pTable)(0,0) << _T("Location");
    (*pTable)(0,1) << _T("Limit State");
    (*pTable)(0,2) << COLHDR(_T("Demand"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   (*pTable)(0,3) << COLHDR(_T("Allowable"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*pTable)(0,3) << COLHDR(_T("Limit"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    (*pTable)(0,4) << _T("Status");
 
    // Setup up some unit value prototypes
@@ -1046,11 +1046,14 @@ void bridgesite2_stresses(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
 {
    GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval();
+   IntervalIndexType overlayIntervalIdx = pIntervals->GetOverlayInterval();
+
+   IntervalIndexType intervalIdx = (overlayIntervalIdx == INVALID_INDEX ? railingSystemIntervalIdx : Max(railingSystemIntervalIdx, overlayIntervalIdx));
 
    rptParagraph* p = new rptParagraph;
    *pChapter << p;
 
-   rptRcTable* pTable = rptStyleManager::CreateDefaultTable(5,pIntervals->GetDescription(railingSystemIntervalIdx));
+   rptRcTable* pTable = rptStyleManager::CreateDefaultTable(5,pIntervals->GetDescription(intervalIdx));
    *p << pTable << rptNewLine;
 
    // Setup the table
@@ -1065,7 +1068,7 @@ void bridgesite2_stresses(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
    (*pTable)(0,0) << _T("Location");
    (*pTable)(0,1) << _T("Limit State");
    (*pTable)(0,2) << COLHDR(_T("Demand"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   (*pTable)(0,3) << COLHDR(_T("Allowable"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*pTable)(0,3) << COLHDR(_T("Limit"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    (*pTable)(0,4) << _T("Status");
 
    // Setup up some unit value prototypes
@@ -1122,7 +1125,7 @@ void bridgesite2_stresses(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
 
    if ( h_left.GetID() != INVALID_ID )
    {
-      pArtifact = pSegmentArtifact->GetFlexuralStressArtifactAtPoi(railingSystemIntervalIdx,pgsTypes::ServiceI,pgsTypes::Compression,h_left.GetID());
+      pArtifact = pSegmentArtifact->GetFlexuralStressArtifactAtPoi(intervalIdx,pgsTypes::ServiceI,pgsTypes::Compression,h_left.GetID());
       fBot      = pArtifact->GetDemand(pgsTypes::BottomGirder);
       fAllowBot = pArtifact->GetCapacity(pgsTypes::BottomGirder);
       (*pTable)(row,0) << _T("Bottom of girder at PSXFR from left end");
@@ -1140,7 +1143,7 @@ void bridgesite2_stresses(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
       row++;
    }
 
-   pArtifact = pSegmentArtifact->GetFlexuralStressArtifactAtPoi(railingSystemIntervalIdx,pgsTypes::ServiceI,pgsTypes::Compression,cl.GetID());
+   pArtifact = pSegmentArtifact->GetFlexuralStressArtifactAtPoi(intervalIdx,pgsTypes::ServiceI,pgsTypes::Compression,cl.GetID());
    fTop      = pArtifact->GetDemand(pgsTypes::TopGirder);
    fAllowTop = pArtifact->GetCapacity(pgsTypes::TopGirder);
    (*pTable)(row,0) << _T("Top of girder at mid-span");
@@ -1160,7 +1163,7 @@ void bridgesite2_stresses(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
    GET_IFACE2(pBroker,IAllowableConcreteStress,pAllowable);
    if ( pAllowable->CheckFinalDeadLoadTensionStress() )
    {
-      pArtifact = pSegmentArtifact->GetFlexuralStressArtifactAtPoi(railingSystemIntervalIdx,pgsTypes::ServiceI,pgsTypes::Tension,cl.GetID());
+      pArtifact = pSegmentArtifact->GetFlexuralStressArtifactAtPoi(intervalIdx,pgsTypes::ServiceI,pgsTypes::Tension,cl.GetID());
       fBot      = pArtifact->GetDemand(pgsTypes::BottomGirder);
       fAllowBot = pArtifact->GetCapacity(pgsTypes::BottomGirder);
       (*pTable)(row,0) << _T("Bottom of girder at mid-span");
@@ -1180,7 +1183,7 @@ void bridgesite2_stresses(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
 
    if ( h_right.GetID() != INVALID_ID )
    {
-      pArtifact = pSegmentArtifact->GetFlexuralStressArtifactAtPoi(railingSystemIntervalIdx,pgsTypes::ServiceI,pgsTypes::Compression,h_right.GetID());
+      pArtifact = pSegmentArtifact->GetFlexuralStressArtifactAtPoi(intervalIdx,pgsTypes::ServiceI,pgsTypes::Compression,h_right.GetID());
       fBot      = pArtifact->GetDemand(pgsTypes::BottomGirder);
       fAllowBot = pArtifact->GetCapacity(pgsTypes::BottomGirder);
       (*pTable)(row,0) << _T("Bottom of girder at PSXFR from right end");
@@ -1222,7 +1225,7 @@ void bridgesite3_stresses(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
    (*pTable)(0,0) << _T("Location");
    (*pTable)(0,1) << _T("Limit State");
    (*pTable)(0,2) << COLHDR(_T("Demand"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   (*pTable)(0,3) << COLHDR(_T("Allowable"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*pTable)(0,3) << COLHDR(_T("Limit"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    (*pTable)(0,4) << _T("Status");
 
    // Setup up some unit value prototypes
@@ -1734,7 +1737,7 @@ void lifting(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& segmentKey
 
       (*pTable)(0,0) << _T("");
       (*pTable)(0,1) << _T("Demand");
-      (*pTable)(0,2) << _T("Allowable");
+      (*pTable)(0,2) << _T("Limit");
       (*pTable)(0,3) << _T("Status");
 
       GET_IFACE2(pBroker,ISegmentLiftingSpecCriteria,pSegmentLiftingSpecCriteria);
@@ -1883,7 +1886,7 @@ void hauling(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& segmentKey
 
       (*pTable)(0,0) << _T("");
       (*pTable)(0,1) << _T("Demand");
-      (*pTable)(0,2) << _T("Allowable");
+      (*pTable)(0,2) << _T("Limit");
       (*pTable)(0,3) << _T("Status");
 
       Float64 min_stress, max_stress;

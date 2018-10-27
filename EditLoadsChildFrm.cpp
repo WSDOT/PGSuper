@@ -38,9 +38,9 @@ static char THIS_FILE[] = __FILE__;
 /////////////////////////////////////////////////////////////////////////////
 // CEditLoadsChildFrame
 
-IMPLEMENT_DYNCREATE(CEditLoadsChildFrame, CMDIChildWnd)
+IMPLEMENT_DYNCREATE(CEditLoadsChildFrame, CEAFChildFrame)
 
-BEGIN_MESSAGE_MAP(CEditLoadsChildFrame, CMDIChildWnd)
+BEGIN_MESSAGE_MAP(CEditLoadsChildFrame, CEAFChildFrame)
 	//{{AFX_MSG_MAP(CEditLoadsChildFrame)
 	ON_WM_CREATE()
 	ON_WM_SHOWWINDOW()
@@ -79,7 +79,7 @@ BOOL CEditLoadsChildFrame::Create(LPCTSTR lpszClassName,
 				CMDIFrameWnd* pParentWnd,
 				CCreateContext* pContext)
 {
-   BOOL bResult = CMDIChildWnd::Create(lpszClassName,lpszWindowName,dwStyle,rect,pParentWnd,pContext);
+   BOOL bResult = CEAFChildFrame::Create(lpszClassName,lpszWindowName,dwStyle,rect,pParentWnd,pContext);
    if ( bResult )
    {
       AFX_MANAGE_STATE(AfxGetStaticModuleState());
@@ -98,12 +98,12 @@ BOOL CEditLoadsChildFrame::Create(LPCTSTR lpszClassName,
 void CEditLoadsChildFrame::AssertValid() const
 {
    AFX_MANAGE_STATE(AfxGetAppModuleState());
-	CMDIChildWnd::AssertValid();
+   CEAFChildFrame::AssertValid();
 }
 
 void CEditLoadsChildFrame::Dump(CDumpContext& dc) const
 {
-	CMDIChildWnd::Dump(dc);
+   CEAFChildFrame::Dump(dc);
 }
 
 #endif //_DEBUG

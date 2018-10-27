@@ -167,7 +167,9 @@ void txnDesignGirder::Init()
             m_DesignSlabOffset[pgsTypes::metStart] = pSegmentDesignArtifact->GetSlabOffset(pgsTypes::metStart);
             m_DesignSlabOffset[pgsTypes::metEnd]   = pSegmentDesignArtifact->GetSlabOffset(pgsTypes::metEnd);
 
-            if ( pSegmentDesignArtifact->GetDesignOptions().doDesignSlabOffset == sodAandAssExcessCamber )
+            GET_IFACE2(pBroker,ISpecification,pSpec);
+            if ( pSegmentDesignArtifact->GetDesignOptions().doDesignSlabOffset == sodAandAssExcessCamber &&
+                 pSpec->IsAssExcessCamberInputEnabled())
             {
                // AssExcessCamber was done too - store it
                m_DidAssExcessCamberDesign = true;

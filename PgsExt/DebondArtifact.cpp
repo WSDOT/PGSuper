@@ -249,9 +249,12 @@ bool pgsDebondArtifact::Passed() const
       bPassed &= SectionPassed(section);
    }
 
-   const Float64 toler=1.0e-05;
-   bPassed &= (m_MaxDebondLength <= m_DebondLengthLimit + toler);
-   bPassed &= (m_MinDebondSectionSpacing >= m_DebondSectionSpacingLimit - toler);
+   if (0 < m_nDebondedStrands)
+   {
+      const Float64 toler = 1.0e-05;
+      bPassed &= (m_MaxDebondLength <= m_DebondLengthLimit + toler);
+      bPassed &= (m_MinDebondSectionSpacing >= m_DebondSectionSpacingLimit - toler);
+   }
 
    return bPassed;
 }

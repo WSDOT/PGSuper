@@ -55,7 +55,7 @@ void write_artifact_data(IBroker* pBroker,rptChapter* pChapter,IEAFDisplayUnits*
 void failed_design(IBroker* pBroker,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits,const pgsSegmentDesignArtifact* pArtifact);
 void successful_design(IBroker* pBroker,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits,const pgsSegmentDesignArtifact* pArtifact);
 void multiple_girder_table(ColumnIndexType startIdx, ColumnIndexType endIdx,IBroker* pBroker,const std::vector<CGirderKey>& girderKeys,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits,IArtifact* pIArtifact);
-void process_artifacts(ColumnIndexType startIdx, ColumnIndexType endIdx, const std::vector<CGirderKey>& girderKeys, IArtifact* pIArtifact,
+void process_artifacts(IBroker* pBroker,ColumnIndexType startIdx, ColumnIndexType endIdx, const std::vector<CGirderKey>& girderKeys, IArtifact* pIArtifact,
                        const pgsGirderDesignArtifact** pArtifacts, bool& didFlexure, bool& didShear, bool& didLifting, bool& didHauling, bool& didSlabOffset, bool& didAssExcessCamber, bool& isHarped, bool& isTemporary);
 void write_primary_shear_data(rptParagraph* pParagraph, IEAFDisplayUnits* pDisplayUnits,Float64 girderLength, ZoneIndexType nz,const CShearData2* pShearData);
 void write_horiz_shear_data(rptParagraph* pParagraph, IEAFDisplayUnits* pDisplayUnits, Float64 girderLength, const CShearData2* pShearData);
@@ -864,7 +864,7 @@ void successful_design(IBroker* pBroker,rptChapter* pChapter,IEAFDisplayUnits* p
       rptParagraph* pParagraph = new rptParagraph( );
       *pChapter << pParagraph;
       *pParagraph << color(OrangeRed) 
-                  << _T("You may be able to create a successful design by adding longitudinal reinforcement to increase temporary tensile stress limits");
+                  << _T("You may be able to create a successful design by adding longitudinal reinforcement to increase temporary tension stress limits");
 
       if (outcome == pgsSegmentDesignArtifact::SuccessButLongitudinalBarsNeeded4FlexuralTensionCy)
       {
@@ -1122,7 +1122,7 @@ void multiple_girder_table(ColumnIndexType startIdx, ColumnIndexType endIdx,
    bool is_harped;
    bool is_temporary;
 
-   process_artifacts(startIdx, endIdx, girderKeys, pIArtifact,
+   process_artifacts(pBroker,startIdx, endIdx, girderKeys, pIArtifact,
                      pArtifacts, did_flexure, did_shear, did_lifting, did_hauling, did_slaboffset, did_assexcesscamber, is_harped, is_temporary);
 
    if (!did_flexure && !did_shear)
@@ -1342,7 +1342,7 @@ void multiple_girder_table(ColumnIndexType startIdx, ColumnIndexType endIdx,
    }
 }
 
-void process_artifacts(ColumnIndexType startIdx, ColumnIndexType endIdx, const std::vector<CGirderKey>& girderKeys, IArtifact* pIArtifact,
+void process_artifacts(IBroker* pBroker,ColumnIndexType startIdx, ColumnIndexType endIdx, const std::vector<CGirderKey>& girderKeys, IArtifact* pIArtifact,
                        const pgsGirderDesignArtifact** pArtifacts, bool& didFlexure, bool& didShear, bool& didLifting, bool& didHauling, 
                        bool& didSlabOffset, bool& didAssExcessCamber, bool& isHarped, bool& isTemporary)
 {
@@ -1393,7 +1393,9 @@ void process_artifacts(ColumnIndexType startIdx, ColumnIndexType endIdx, const s
       {
          didSlabOffset = true;
 
-         if (options.doDesignSlabOffset == sodAandAssExcessCamber)
+         GET_IFACE2(pBroker,ISpecification,pSpec);
+
+         if (options.doDesignSlabOffset == sodAandAssExcessCamber && pSpec->IsAssExcessCamberInputEnabled())
          {
             didAssExcessCamber = true;
          }

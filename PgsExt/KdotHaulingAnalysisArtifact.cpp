@@ -892,7 +892,7 @@ void pgsKdotHaulingAnalysisArtifact::BuildRebarTable(IBroker* pBroker,rptChapter
    rptParagraph* p = new rptParagraph;
    *pChapter << p;
 
-   std::_tstring tablename(_T("Rebar Requirements for Tensile Stress Limit [C5.9.4.1.2] - Hauling"));
+   std::_tstring tablename(_T("Rebar Requirements for Tension stress limit [C5.9.4.1.2] - Hauling"));
 
    rptRcTable* pTable = rptStyleManager::CreateDefaultTable(10,tablename);
    *p << pTable << rptNewLine;

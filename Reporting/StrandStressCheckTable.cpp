@@ -146,7 +146,7 @@ void CStrandStressCheckTable::Build(rptChapter* pChapter,IBroker* pBroker,const 
       p_table->SetRowSpan(1,col2++,SKIP_CELL);
 
       p_table->SetRowSpan(0,col1,2);
-      (*p_table)(0,col1++) << COLHDR(_T("Allowable") << rptNewLine << _T("Stress"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      (*p_table)(0,col1++) << COLHDR(_T("Stress") << rptNewLine << _T("Limit"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
       p_table->SetRowSpan(1,col2++,SKIP_CELL);
 
       std::vector<pgsTypes::StrandType>::iterator iter;

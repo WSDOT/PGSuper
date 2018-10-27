@@ -107,6 +107,13 @@ void CDebondCheckTable::Build(rptChapter* pChapter, IBroker* pBroker,const pgsGi
       p = new rptParagraph;
       *pChapter << p;
 
+      if (pDebondArtifact->GetNumDebondedStrands() == 0)
+      {
+         *p << _T("This segment does not have debonded strands") << rptNewLine;
+         continue;
+      }
+
+
       Float64 total_fra = 100.0*pDebondArtifact->GetFraDebondedStrands();
       Float64 limit_fra = 100.0*pDebondArtifact->GetMaxFraDebondedStrands();
 
@@ -139,10 +146,14 @@ void CDebondCheckTable::Build(rptChapter* pChapter, IBroker* pBroker,const pgsGi
          *p << _T("user-input length  ");
       }
 
-      if (dbl_limit < maxdbl-1.0e-5)
+      if (dbl_limit < maxdbl - 1.0e-5)
+      {
          *p << RPT_FAIL << rptNewLine;
+      }
       else
+      {
          *p << RPT_PASS << rptNewLine;
+      }
 
       // debond section length
       Float64 mndbs  = pDebondArtifact->GetMinDebondSectionSpacing();
@@ -150,9 +161,13 @@ void CDebondCheckTable::Build(rptChapter* pChapter, IBroker* pBroker,const pgsGi
       *p << _T("The shortest distance between debond sections  = ") << loc.SetValue(mndbs) << _T(", and the minimum allowable = ") << loc2.SetValue(mndbsl);
       // need a tolerance here
       if (mndbs + 1.0e-5 < mndbsl)
+      {
          *p << _T("  ") << RPT_FAIL << rptNewLine;
+      }
       else
+      {
          *p << _T("  ") << RPT_PASS << rptNewLine;
+      }
 
       // tables
       Float64 Ls = pBridge->GetSegmentLength(segmentKey);
@@ -202,10 +217,14 @@ rptRcTable* CDebondCheckTable::Build1(const pgsDebondArtifact* pDebondArtifact,I
       (*table)(table_row,4) << vMaxFra[index]*100. << _T("%");
       (*table)(table_row,5) << (bExteriorDebonded[index] == true ? _T("Yes") : _T("No"));
 
-      if ( pDebondArtifact->RowPassed(index) )
-         (*table)(table_row,6) << RPT_PASS;
+      if (pDebondArtifact->RowPassed(index))
+      {
+         (*table)(table_row, 6) << RPT_PASS;
+      }
       else
-         (*table)(table_row,6) << RPT_FAIL;
+      {
+         (*table)(table_row, 6) << RPT_FAIL;
+      }
 
       row++;
       table_row++;
@@ -254,18 +273,24 @@ rptRcTable* CDebondCheckTable::Build2(const pgsDebondArtifact* pDebondArtifact,F
 
       pDebondArtifact->GetDebondSection(sectionIdx,&loc,&nStrands,&fraStrands);
 
-      if ( loc < 0 || segmentLength < loc )
+      if (loc < 0 || segmentLength < loc)
+      {
          continue; // skip of debond point is off of girder
+      }
 
       (*table)(sectionIdx+1,0) << location.SetValue(loc);
       (*table)(sectionIdx+1,1) << nStrands;
 
       (*table)(sectionIdx+1,2) << nMaxStrands;
 
-      if ( pDebondArtifact->SectionPassed(sectionIdx) )
-         (*table)(sectionIdx+1,3) << RPT_PASS;
+      if (pDebondArtifact->SectionPassed(sectionIdx))
+      {
+         (*table)(sectionIdx + 1, 3) << RPT_PASS;
+      }
       else
-         (*table)(sectionIdx+1,3) << RPT_FAIL;
+      {
+         (*table)(sectionIdx + 1, 3) << RPT_FAIL;
+      }
   }
    
    return table;

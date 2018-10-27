@@ -969,22 +969,6 @@ void CIntervalManager::ProcessStep2(EventIndexType eventIdx,const CTimelineEvent
       } // next segment ID
    } // erect segments activity
 
-   const CRemoveTemporarySupportsActivity& removeTemporarySupportActivity = pTimelineEvent->GetRemoveTempSupportsActivity();
-   if ( removeTemporarySupportActivity.IsEnabled() )
-   {
-      strDescriptions.push_back(CString(_T("Remove Temporary Support")));
-      IntervalIndexType removeTempSupportIntervalIdx = intervalIdx;
-
-      const CRemoveTemporarySupportsActivity& removeTS = pTimelineEvent->GetRemoveTempSupportsActivity();
-      const std::vector<SupportIDType>& tsIDs(removeTS.GetTempSupports());
-      for( const auto& tsID : tsIDs)
-      {
-         const CTemporarySupportData* pTS = pBridgeDesc->FindTemporarySupport(tsID);
-         SupportIndexType tsIdx = pTS->GetIndex();
-         m_RemoveTemporarySupportIntervals.insert(std::make_pair(tsIdx,removeTempSupportIntervalIdx));
-      }
-   }
-
    const CStressTendonActivity& stressTendonActivity = pTimelineEvent->GetStressTendonActivity();
    if ( stressTendonActivity.IsEnabled() )
    {
@@ -1025,6 +1009,22 @@ void CIntervalManager::ProcessStep2(EventIndexType eventIdx,const CTimelineEvent
             CTendonKey thisTendonKey(tendonKey.girderKey,thisDuctIdx);
             m_StressTendonIntervals.insert(std::make_pair(thisTendonKey,stressTendonIntervalIdx));
          }
+      }
+   }
+
+   const CRemoveTemporarySupportsActivity& removeTemporarySupportActivity = pTimelineEvent->GetRemoveTempSupportsActivity();
+   if (removeTemporarySupportActivity.IsEnabled())
+   {
+      strDescriptions.push_back(CString(_T("Remove Temporary Support")));
+      IntervalIndexType removeTempSupportIntervalIdx = intervalIdx;
+
+      const CRemoveTemporarySupportsActivity& removeTS = pTimelineEvent->GetRemoveTempSupportsActivity();
+      const std::vector<SupportIDType>& tsIDs(removeTS.GetTempSupports());
+      for (const auto& tsID : tsIDs)
+      {
+         const CTemporarySupportData* pTS = pBridgeDesc->FindTemporarySupport(tsID);
+         SupportIndexType tsIdx = pTS->GetIndex();
+         m_RemoveTemporarySupportIntervals.insert(std::make_pair(tsIdx, removeTempSupportIntervalIdx));
       }
    }
 
