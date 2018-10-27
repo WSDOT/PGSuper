@@ -46,7 +46,7 @@ HaulTruckLibraryEntry::HaulTruckLibraryEntry()
    m_Hrc       = ::ConvertToSysUnits(24,unitMeasure::Inch);
    m_Wcc       = ::ConvertToSysUnits(72,unitMeasure::Inch);
    m_Ktheta    = ::ConvertToSysUnits(40000,unitMeasure::KipInchPerRadian);
-   m_Lmax      = ::ConvertToSysUnits(230,unitMeasure::Feet);
+   m_Lmax      = ::ConvertToSysUnits(130,unitMeasure::Feet);
    m_MaxOH     = ::ConvertToSysUnits(15,unitMeasure::Feet);
    m_MaxWeight = ::ConvertToSysUnits(200,unitMeasure::Kip);
 }

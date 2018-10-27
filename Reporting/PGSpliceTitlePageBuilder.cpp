@@ -294,8 +294,14 @@ rptChapter* CPGSpliceTitlePageBuilder::Build(std::shared_ptr<CReportSpecificatio
       (*pTable)(row,0) << _T("FoS");
       (*pTable)(row++,1) << _T("Face of Support");
 
-      (*pTable)(row,0) << _T("ST");
-      (*pTable)(row++,1) << _T("Section Transition Point");
+      (*pTable)(row, 0) << _T("ST");
+      (*pTable)(row++, 1) << _T("Section Transitions");
+
+      (*pTable)(row, 0) << _T("STLF");
+      (*pTable)(row++, 1) << _T("Section Transitions, Left Face");
+
+      (*pTable)(row, 0) << _T("STRF");
+      (*pTable)(row++, 1) << _T("Section Transitions, Right Face");
 
       (*pTable)(row,0) << _T("IP");
       (*pTable)(row++,1) << _T("Interior Pier");

@@ -885,8 +885,8 @@ public:
    Float64 GetShearModulusOfRuptureCoefficient(pgsTypes::ConcreteType type) const;
 
    // Set/Get the shear capacity resistance factors
-   void SetShearResistanceFactor(pgsTypes::ConcreteType type,Float64 phi);
-   Float64 GetShearResistanceFactor(pgsTypes::ConcreteType type) const;
+   void SetShearResistanceFactor(bool isDebonded, pgsTypes::ConcreteType type,Float64 phi);
+   Float64 GetShearResistanceFactor(bool isDebonded, pgsTypes::ConcreteType type) const;
 
    void SetClosureJointShearResistanceFactor(pgsTypes::ConcreteType type,Float64 phi);
    Float64 GetClosureJointShearResistanceFactor(pgsTypes::ConcreteType type) const;
@@ -1519,6 +1519,7 @@ private:
    Float64 m_PhiFlexureTensionSpliced[3]; // tension controlled, spliced girders
    Float64 m_PhiFlexureCompression[3];
    Float64 m_PhiShear[3];
+   Float64 m_PhiShearDebonded[3];
 
    Float64 m_PhiClosureJointFlexure[3];
    Float64 m_PhiClosureJointShear[3];

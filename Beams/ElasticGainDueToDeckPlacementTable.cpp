@@ -62,12 +62,17 @@ CElasticGainDueToDeckPlacementTable* CElasticGainDueToDeckPlacementTable::Prepar
    bool bHasUserLoads = pUDL->DoUserLoadsExist(segmentKey);
    bool bHasDeckPanel = (deckType == pgsTypes::sdtCompositeSIP ? true : false);
    bool bHasLongitudinalJoints = pProductLoads->HasLongitudinalJointLoad();
-   bool bHasDeckLoads = pGirder->HasStructuralLongitudinalJoints() ? false : true; // if longitudinal joints are structural the deck dead loads go on the composite section
+   bool bHasDeckLoads = pGirder->HasStructuralLongitudinalJoints() || deckType == pgsTypes::sdtNone ? false : true; // if longitudinal joints are structural the deck dead loads go on the composite section
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval();
+   IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
 
-   ColumnIndexType numColumns = 7;
+   bool bIsPrismatic = pGirder->IsPrismatic(releaseIntervalIdx, segmentKey);
+
+   bool bIsAsymmetric = pBridge->HasAsymmetricGirders() || pBridge->HasAsymmetricPrestressing() ? true : false;
+
+   ColumnIndexType numColumns = 5; // Location, Diaphragm, Madl, delta_f'cd, dfpED
 
    if (bHasDeckLoads)
    {
@@ -89,9 +94,35 @@ CElasticGainDueToDeckPlacementTable* CElasticGainDueToDeckPlacementTable::Prepar
       numColumns++;
    }
 
+   if (bIsPrismatic)
+   {
+      if (bIsAsymmetric)
+      {
+         numColumns += 2; // epsx, epsy
+      }
+      else
+      {
+         numColumns++; // eps
+      }
+   }
+   else
+   {
+      if (bIsAsymmetric)
+      {
+         numColumns += 5; // Ixx, Ixy, Ixy, epsx, epsy
+      }
+      else
+      {
+         numColumns += 2; // Ig, eps
+      }
+   }
+
+
    CElasticGainDueToDeckPlacementTable* table = new CElasticGainDueToDeckPlacementTable( numColumns, pDisplayUnits);
    rptStyleManager::ConfigureTable(table);
 
+   table->m_bIsPrismatic = bIsPrismatic;
+   table->m_bIsAsymmetric = bIsAsymmetric;
    table->m_bHasDeckLoads = bHasDeckLoads;
    table->m_bHasDeckPanel = bHasDeckPanel;
    table->m_bHasUserLoads = bHasUserLoads;
@@ -111,47 +142,103 @@ CElasticGainDueToDeckPlacementTable* CElasticGainDueToDeckPlacementTable::Prepar
 
    rptParagraph* pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pParagraph;
-   *pParagraph << _T("Elastic Gain Due to Additional Dead Load") << rptNewLine;
+   pParagraph->SetName(_T("Elastic Gain Due to Additional Dead Load"));
+   *pParagraph << pParagraph->GetName() << rptNewLine;
 
    pParagraph = new rptParagraph;
    *pChapter << pParagraph;
 
    *pParagraph << _T("Change in strand stress due to loads applied to the non-composite girder") << rptNewLine;
    *pParagraph << rptNewLine;
-   if ( bHasDeckPanel && bHasUserLoads )
+   if (bHasDeckLoads)
    {
-      *pParagraph << rptRcImage(strImagePath + _T("Madl4.png"))        << rptNewLine;
-   }
-   else if ( bHasDeckPanel && !bHasUserLoads )
-   {
-      *pParagraph << rptRcImage(strImagePath + _T("Madl3.png"))        << rptNewLine;
-   }
-   else if ( !bHasDeckPanel && bHasUserLoads )
-   {
-      *pParagraph << rptRcImage(strImagePath + _T("Madl2.png"))        << rptNewLine;
+      *pParagraph << rptRcImage(strImagePath + _T("Madl1.png"));
    }
    else
    {
-      *pParagraph << rptRcImage(strImagePath + _T("Madl.png"))        << rptNewLine;
+      *pParagraph << rptRcImage(strImagePath + _T("Madl2.png"));
    }
+
+   if (bHasDeckPanel)
+   {
+      *pParagraph << rptRcImage(strImagePath + _T("Mpanel.png"));
+   }
+
+   if (bHasDeckLoads)
+   {
+      *pParagraph << rptRcImage(strImagePath + _T("Mhaunch.png"));
+      *pParagraph << rptRcImage(strImagePath + _T("Mdiaphragm.png"));
+   }
+
+   if (bHasLongitudinalJoints)
+   {
+      *pParagraph << rptRcImage(strImagePath + _T("Mlj.png"));
+   }
+
+   if (bHasUserLoads)
+   {
+      *pParagraph << rptRcImage(strImagePath + _T("Muser.png"));
+   }
+
+   *pParagraph << rptNewLine;
+
 
    *pParagraph << Sub2(_T("M"),_T("Diaphragm")) << _T(" includes shear key dead load if applicable") << rptNewLine;
 
-   if (spMode == pgsTypes::spmGross)
+   if (bIsAsymmetric)
    {
-      *pParagraph << rptRcImage(strImagePath + _T("DeltaFcd_Gross.png")) << rptNewLine;
+      if (spMode == pgsTypes::spmGross)
+      {
+         *pParagraph << rptRcImage(strImagePath + _T("DeltaFcd_Gross_Asymmetric.png")) << rptNewLine;
+      }
+      else
+      {
+         *pParagraph << rptRcImage(strImagePath + _T("DeltaFcd_Transformed_Asymmetric.png")) << rptNewLine;
+      }
    }
    else
    {
-      *pParagraph << rptRcImage(strImagePath + _T("DeltaFcd_Transformed.png")) << rptNewLine;
+      if (spMode == pgsTypes::spmGross)
+      {
+         *pParagraph << rptRcImage(strImagePath + _T("DeltaFcd_Gross.png")) << rptNewLine;
+      }
+      else
+      {
+         *pParagraph << rptRcImage(strImagePath + _T("DeltaFcd_Transformed.png")) << rptNewLine;
+      }
    }
 
    *pParagraph << rptRcImage(strImagePath + _T("ElasticGain.png")) << rptNewLine;
 
    table->mod_e.ShowUnitTag(true);
+   table->mom_inertia.ShowUnitTag(true);
    *pParagraph << Sub2(_T("E"),_T("p")) << _T(" = ") << table->mod_e.SetValue( Ep ) << rptNewLine;
    *pParagraph << Sub2(_T("E"),_T("c")) << _T(" = ") << table->mod_e.SetValue( Ec ) << rptNewLine;
+
+   if (bIsPrismatic)
+   {
+      GET_IFACE2(pBroker, IPointOfInterest, pPoi);
+      PoiList vPoi;
+      pPoi->GetPointsOfInterest(segmentKey, POI_5L | POI_RELEASED_SEGMENT, &vPoi);
+      ATLASSERT(vPoi.size() == 1);
+      const pgsPointOfInterest& poi(vPoi.front());
+      Float64 Ixx = pSectProp->GetIxx(releaseIntervalIdx, poi);
+      if (bIsAsymmetric)
+      {
+         Float64 Iyy = pSectProp->GetIyy(releaseIntervalIdx, poi);
+         Float64 Ixy = pSectProp->GetIxy(releaseIntervalIdx, poi);
+
+         *pParagraph << Sub2(_T("I"), _T("xx")) << _T(" = ") << table->mom_inertia.SetValue(Ixx) << rptNewLine;
+         *pParagraph << Sub2(_T("I"), _T("yy")) << _T(" = ") << table->mom_inertia.SetValue(Iyy) << rptNewLine;
+         *pParagraph << Sub2(_T("I"), _T("xy")) << _T(" = ") << table->mom_inertia.SetValue(Ixy) << rptNewLine;
+      }
+      else
+      {
+         *pParagraph << Sub2(_T("I"), _T("g")) << _T(" = ") << table->mom_inertia.SetValue(Ixx) << rptNewLine;
+      }
+   }
    table->mod_e.ShowUnitTag(false);
+   table->mom_inertia.ShowUnitTag(false);
 
    GET_IFACE2(pBroker,ISpecification,pSpec);
    GET_IFACE2(pBroker,ILibrary,pLibrary);
@@ -164,16 +251,19 @@ CElasticGainDueToDeckPlacementTable* CElasticGainDueToDeckPlacementTable::Prepar
 
 
    *pParagraph << rptNewLine;
-   if (bHasDeckPanel)
+   if (bHasDeckLoads)
    {
-      *pParagraph << _T("Slab+Panel: ") << Sub2(_T("K"), _T("s")) << _T(" = ") << table->scalar.SetValue(pSpecEntry->GetSlabElasticGain()) << rptNewLine;
-   }
-   else
-   {
-      *pParagraph << _T("Slab: ") << Sub2(_T("K"), _T("s")) << _T(" = ") << table->scalar.SetValue(pSpecEntry->GetSlabElasticGain()) << rptNewLine;
-   }
+      if (bHasDeckPanel)
+      {
+         *pParagraph << _T("Slab+Panel: ") << Sub2(_T("K"), _T("s")) << _T(" = ") << table->scalar.SetValue(pSpecEntry->GetSlabElasticGain()) << rptNewLine;
+      }
+      else
+      {
+         *pParagraph << _T("Slab: ") << Sub2(_T("K"), _T("s")) << _T(" = ") << table->scalar.SetValue(pSpecEntry->GetSlabElasticGain()) << rptNewLine;
+      }
 
-   *pParagraph << _T("Haunch: " )    << Sub2(_T("K"),_T("h")) << _T(" = ") << table->scalar.SetValue(pSpecEntry->GetSlabPadElasticGain())   << rptNewLine;
+      *pParagraph << _T("Haunch: ") << Sub2(_T("K"), _T("h")) << _T(" = ") << table->scalar.SetValue(pSpecEntry->GetSlabPadElasticGain()) << rptNewLine;
+   }
    *pParagraph << _T("Diaphragms: ") << Sub2(_T("K"),_T("d")) << _T(" = ") << table->scalar.SetValue(pSpecEntry->GetDiaphragmElasticGain()) << rptNewLine;
 
    if ( bHasUserLoads )
@@ -217,15 +307,67 @@ CElasticGainDueToDeckPlacementTable* CElasticGainDueToDeckPlacementTable::Prepar
    
    (*table)(0,col++) << COLHDR(Sub2(_T("M"),_T("adl")), rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
    
-   if ( spMode == pgsTypes::spmGross )
+   if (bIsPrismatic)
    {
-      (*table)(0,col++) << COLHDR(Sub2(_T("e"),_T("p")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-      (*table)(0,col++) << COLHDR(Sub2(_T("I"),_T("g")), rptLength4UnitTag, pDisplayUnits->GetMomentOfInertiaUnit() );
+      if (bIsAsymmetric)
+      {
+         if (spMode == pgsTypes::spmGross)
+         {
+            (*table)(0, col++) << COLHDR(Sub2(_T("e"), _T("px")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+            (*table)(0, col++) << COLHDR(Sub2(_T("e"), _T("py")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+         }
+         else
+         {
+            (*table)(0, col++) << COLHDR(Sub2(_T("e"), _T("pxt")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+            (*table)(0, col++) << COLHDR(Sub2(_T("e"), _T("pyt")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+         }
+      }
+      else
+      {
+         if (spMode == pgsTypes::spmGross)
+         {
+            (*table)(0, col++) << COLHDR(Sub2(_T("e"), _T("p")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+         }
+         else
+         {
+            (*table)(0, col++) << COLHDR(Sub2(_T("e"), _T("pt")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+         }
+      }
    }
    else
    {
-      (*table)(0,col++) << COLHDR(Sub2(_T("e"),_T("pt")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-      (*table)(0,col++) << COLHDR(Sub2(_T("I"),_T("gt")), rptLength4UnitTag, pDisplayUnits->GetMomentOfInertiaUnit() );
+      if (bIsAsymmetric)
+      {
+         if (spMode == pgsTypes::spmGross)
+         {
+            (*table)(0, col++) << COLHDR(Sub2(_T("e"), _T("px")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+            (*table)(0, col++) << COLHDR(Sub2(_T("e"), _T("py")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+            (*table)(0, col++) << COLHDR(Sub2(_T("I"), _T("xx")), rptLength4UnitTag, pDisplayUnits->GetMomentOfInertiaUnit());
+            (*table)(0, col++) << COLHDR(Sub2(_T("I"), _T("yy")), rptLength4UnitTag, pDisplayUnits->GetMomentOfInertiaUnit());
+            (*table)(0, col++) << COLHDR(Sub2(_T("I"), _T("xy")), rptLength4UnitTag, pDisplayUnits->GetMomentOfInertiaUnit());
+         }
+         else
+         {
+            (*table)(0, col++) << COLHDR(Sub2(_T("e"), _T("pxt")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+            (*table)(0, col++) << COLHDR(Sub2(_T("e"), _T("pyt")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+            (*table)(0, col++) << COLHDR(Sub2(_T("I"), _T("xxt")), rptLength4UnitTag, pDisplayUnits->GetMomentOfInertiaUnit());
+            (*table)(0, col++) << COLHDR(Sub2(_T("I"), _T("yyt")), rptLength4UnitTag, pDisplayUnits->GetMomentOfInertiaUnit());
+            (*table)(0, col++) << COLHDR(Sub2(_T("I"), _T("xyt")), rptLength4UnitTag, pDisplayUnits->GetMomentOfInertiaUnit());
+         }
+      }
+      else
+      {
+         if (spMode == pgsTypes::spmGross)
+         {
+            (*table)(0, col++) << COLHDR(Sub2(_T("e"), _T("p")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+            (*table)(0, col++) << COLHDR(Sub2(_T("I"), _T("g")), rptLength4UnitTag, pDisplayUnits->GetMomentOfInertiaUnit());
+         }
+         else
+         {
+            (*table)(0, col++) << COLHDR(Sub2(_T("e"), _T("pt")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+            (*table)(0, col++) << COLHDR(Sub2(_T("I"), _T("gt")), rptLength4UnitTag, pDisplayUnits->GetMomentOfInertiaUnit());
+         }
+      }
    }
    
    (*table)(0,col++) << COLHDR(symbol(DELTA) << italic(ON) << Sub2(_T("f'"),_T("cd")) << italic(OFF), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
@@ -247,20 +389,18 @@ void CElasticGainDueToDeckPlacementTable::AddRow(rptChapter* pChapter,IBroker* p
 
    GET_IFACE2(pBroker,IProductForces,pProdForces);
    ColumnIndexType col = 1;
+   RowIndexType rowOffset = GetNumberOfHeaderRows() - 1;
 
    if (m_bHasDeckLoads)
    {
-      (*this)(row, col++) << moment.SetValue(pProdForces->GetMoment(castDeckIntervalIdx, pgsTypes::pftSlab, poi, m_BAT, rtIncremental));
-   }
+      (*this)(row+rowOffset, col++) << moment.SetValue(pProdForces->GetMoment(castDeckIntervalIdx, pgsTypes::pftSlab, poi, m_BAT, rtIncremental));
    
-   if ( m_bHasDeckPanel )
-   {
-      (*this)(row,col++) << moment.SetValue( pProdForces->GetMoment( castDeckIntervalIdx, pgsTypes::pftSlabPanel,      poi, m_BAT, rtIncremental ) );
-   }
+      if ( m_bHasDeckPanel )
+      {
+         (*this)(row+rowOffset,col++) << moment.SetValue( pProdForces->GetMoment( castDeckIntervalIdx, pgsTypes::pftSlabPanel,      poi, m_BAT, rtIncremental ) );
+      }
    
-   if (m_bHasDeckLoads)
-   {
-      (*this)(row, col++) << moment.SetValue(pProdForces->GetMoment(castDeckIntervalIdx, pgsTypes::pftSlabPad, poi, m_BAT, rtIncremental));
+      (*this)(row+rowOffset, col++) << moment.SetValue(pProdForces->GetMoment(castDeckIntervalIdx, pgsTypes::pftSlabPad, poi, m_BAT, rtIncremental));
    }
 
    Float64 M = pProdForces->GetMoment(castDiaphragmIntervalIdx, pgsTypes::pftDiaphragm, poi, m_BAT, rtIncremental);
@@ -268,22 +408,53 @@ void CElasticGainDueToDeckPlacementTable::AddRow(rptChapter* pChapter,IBroker* p
    {
       M += pProdForces->GetMoment(castShearKeyIntervalIdx, pgsTypes::pftShearKey, poi, m_BAT, rtIncremental);
    }
-   (*this)(row,col++) << moment.SetValue( M );
+   (*this)(row+rowOffset,col++) << moment.SetValue( M );
 
    if (m_bHasLongitudinalJoints)
    {
-      (*this)(row, col++) << moment.SetValue(pProdForces->GetMoment(castLongitudinalJointIntervalIdx, pgsTypes::pftLongitudinalJoint, poi, m_BAT, rtIncremental));
+      (*this)(row+rowOffset, col++) << moment.SetValue(pProdForces->GetMoment(castLongitudinalJointIntervalIdx, pgsTypes::pftLongitudinalJoint, poi, m_BAT, rtIncremental));
    }
    
    if ( m_bHasUserLoads )
    {
-      (*this)(row,col++) << moment.SetValue( pProdForces->GetMoment(noncompositeUserLoadIntervalIdx, pgsTypes::pftUserDC, poi, m_BAT, rtIncremental ) );
-      (*this)(row,col++) << moment.SetValue( pProdForces->GetMoment(noncompositeUserLoadIntervalIdx, pgsTypes::pftUserDW, poi, m_BAT, rtIncremental ) );
+      (*this)(row+rowOffset,col++) << moment.SetValue( pProdForces->GetMoment(noncompositeUserLoadIntervalIdx, pgsTypes::pftUserDC, poi, m_BAT, rtIncremental ) );
+      (*this)(row+rowOffset,col++) << moment.SetValue( pProdForces->GetMoment(noncompositeUserLoadIntervalIdx, pgsTypes::pftUserDW, poi, m_BAT, rtIncremental ) );
    }
 
-   (*this)(row,col++) << moment.SetValue( pDetails->pLosses->GetAddlGdrMoment() );
-   (*this)(row,col++) << ecc.SetValue( pDetails->pLosses->GetEccPermanentFinal() );
-   (*this)(row,col++) << mom_inertia.SetValue( pDetails->pLosses->GetIg() );
-   (*this)(row,col++) << stress.SetValue( pDetails->pLosses->GetDeltaFcd1() );
-   (*this)(row,col++) << stress.SetValue( pDetails->pLosses->ElasticGainDueToDeckPlacement() );
+   (*this)(row+rowOffset, col++) << moment.SetValue(pDetails->pLosses->GetAddlGdrMoment());
+
+   Float64 Ag, Ybg, Ixx, Iyy, Ixy;
+   pDetails->pLosses->GetNoncompositeProperties(&Ag, &Ybg, &Ixx, &Iyy, &Ixy);
+
+   if (m_bIsPrismatic)
+   {
+      if (m_bIsAsymmetric)
+      {
+         (*this)(row+rowOffset, col++) << ecc.SetValue(pDetails->pLosses->GetEccPermanentFinal().X());
+         (*this)(row+rowOffset, col++) << ecc.SetValue(pDetails->pLosses->GetEccPermanentFinal().Y());
+      }
+      else
+      {
+         (*this)(row+rowOffset, col++) << ecc.SetValue(pDetails->pLosses->GetEccPermanentFinal().Y());
+      }
+   }
+   else
+   {
+      if (m_bIsAsymmetric)
+      {
+         (*this)(row+rowOffset, col++) << ecc.SetValue(pDetails->pLosses->GetEccPermanentFinal().X());
+         (*this)(row+rowOffset, col++) << ecc.SetValue(pDetails->pLosses->GetEccPermanentFinal().Y());
+         (*this)(row+rowOffset, col++) << mom_inertia.SetValue(Ixx);
+         (*this)(row+rowOffset, col++) << mom_inertia.SetValue(Iyy);
+         (*this)(row+rowOffset, col++) << mom_inertia.SetValue(Ixy);
+      }
+      else
+      {
+         (*this)(row+rowOffset, col++) << ecc.SetValue(pDetails->pLosses->GetEccPermanentFinal().Y());
+         (*this)(row+rowOffset, col++) << mom_inertia.SetValue(Ixx);
+      }
+   }
+
+   (*this)(row+rowOffset,col++) << stress.SetValue( pDetails->pLosses->GetDeltaFcd1() );
+   (*this)(row+rowOffset,col++) << stress.SetValue( pDetails->pLosses->ElasticGainDueToDeckPlacement() );
 }

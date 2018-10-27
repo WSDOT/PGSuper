@@ -528,7 +528,7 @@ bool pgsShearCapacityEngineer::GetGeneralInformation(IntervalIndexType intervalI
    }
    else
    {
-      pscd->Phi = pResistanceFactors->GetShearResistanceFactor( pMaterial->GetSegmentConcreteType(segmentKey) );
+      pscd->Phi = pResistanceFactors->GetShearResistanceFactor( poi, pMaterial->GetSegmentConcreteType(segmentKey) );
    }
 
    // shear area (bv and dv)

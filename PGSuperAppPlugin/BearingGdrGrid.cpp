@@ -236,7 +236,7 @@ void CBearingGdrGrid::CustomInit(SpanIndexType ispan)
 
    col++;
    m_DGetter.m_BearingSolePlateCol = col;
-   strLabel.Format(_T("Sole\nPlate\n(%s)"), pDisplayUnits->GetComponentDimUnit().UnitOfMeasure.UnitTag().c_str());
+   strLabel.Format(_T("Sole\nPlate\nHeight (%s)"), pDisplayUnits->GetComponentDimUnit().UnitOfMeasure.UnitTag().c_str());
 	SetStyleRange(CGXRange(0,col), CGXStyle()
       .SetWrapText(TRUE)
       .SetHorizontalAlignment(DT_CENTER)
@@ -246,7 +246,7 @@ void CBearingGdrGrid::CustomInit(SpanIndexType ispan)
 		);
 
    // make it so that text fits correctly in header row
-	this->ResizeRowHeightsToFit(CGXRange(0,0,0,num_cols-1));
+	this->ResizeRowHeightsToFit(CGXRange(0,0,0, GetColCount()));
 
    // Hide the row header column
    HideCols(0, 0);

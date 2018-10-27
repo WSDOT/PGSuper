@@ -111,8 +111,22 @@ BOOL CSpecShearPage::OnSetActive()
       GetDlgItem(IDC_ALWC_FR_UNIT)->ShowWindow(SW_SHOW);
    }
 
+   // phi factors for deboned sections
+   if ( lrfdVersionMgr::EighthEdition2017 <= pDad->m_Entry.GetSpecificationType() )
+   {
+      GetDlgItem(IDC_STATIC_PHI_DEBOND)->ShowWindow(SW_SHOW);
+      GetDlgItem(IDC_NWC_PHI_DEBOND)->ShowWindow(SW_SHOW);
+      GetDlgItem(IDC_LWC_PHI_DEBOND)->ShowWindow(SW_SHOW);
+   }
+   else
+   {
+      GetDlgItem(IDC_STATIC_PHIDEBOND)->ShowWindow(SW_HIDE);
+      GetDlgItem(IDC_NWC_PHI_DEBOND)->ShowWindow(SW_HIDE);
+      GetDlgItem(IDC_LWC_PHI_DEBOND)->ShowWindow(SW_HIDE);
+   }
+
    // 2017 crosswalk chapter 5 reorg
-   GetDlgItem(IDC_SCLOSURE)->SetWindowText(CString(_T("Closure Joint (LRFD 5.5.4.2.2, ")) +  pDad->LrfdCw8th(_T("5.14.1.3.2d"),_T("5.12.3.4.2d")) + _T(")"));
+   GetDlgItem(IDC_SCLOSURE)->SetWindowText(CString(_T("Closure Joint (LRFD 5.5.4.2, ")) +  pDad->LrfdCw8th(_T("5.14.1.3.2d"),_T("5.12.3.4.2d")) + _T(")"));
    GetDlgItem(IDC_SLTSPACING)->SetWindowText(CString(_T("LRFD Eq ")) +  pDad->LrfdCw8th(_T("5.8.2.7-1"),_T("5.7.2.6-1")));
    GetDlgItem(IDC_SGTSPACING)->SetWindowText(CString(_T("LRFD Eq ")) +  pDad->LrfdCw8th(_T("5.8.2.7-2"),_T("5.7.2.6-2")));
    GetDlgItem(IDC_SHIS)->SetWindowText(CString(_T("LRFD ")) + pDad->LrfdCw8th(_T("5.8.4.2"),_T("5.7.4.5")) + _T(" Spacing of interface shear connectors shall not exceed"));

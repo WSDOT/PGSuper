@@ -172,6 +172,7 @@
 #define IDC_X5                          1011
 #define IDC_HPY                         1011
 #define IDC_CONFINE_SPACING             1011
+#define IDC_LWC_PHI_DEBOND              1011
 #define IDC_T2                          1012
 #define IDC_UP_ADJUST                   1012
 #define IDC_PICK_POINT_HEIGHT           1012
@@ -966,6 +967,7 @@
 #define IDC_NWC_PHI                     1510
 #define IDC_NWC_PHI_COMPRESSION_LABEL   1511
 #define IDC_EC_K1_LABEL                 1511
+#define IDC_NWC_PHI_DEBOND              1511
 #define IDC_PHI_LWC_HEADER              1512
 #define IDC_EC_K2_LABEL                 1512
 #define IDC_NWC_AGG_SIZE                1512
@@ -1303,6 +1305,8 @@
 #define IDC_GDEBOND_LIMITS              1699
 #define IDC_GTEMP                       1700
 #define IDC_GPERM                       1701
+#define IDC_STATIC_PHIDEBOND            1702
+#define IDC_STATIC_PHI_DEBOND           1702
 #define IDS_E_INVALIDVERSION            1750
 #define IDS_E_USERDEFINED               1752
 #define IDC_DIAPHRAGM_NOTE              1858
@@ -1334,7 +1338,7 @@
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        323
 #define _APS_NEXT_COMMAND_VALUE         36881
-#define _APS_NEXT_CONTROL_VALUE         1702
+#define _APS_NEXT_CONTROL_VALUE         1703
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

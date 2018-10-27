@@ -77,11 +77,11 @@ rptRcTable* CShearCheckTable::Build(IBroker* pBroker,const pgsGirderArtifact* pG
 
    if (ls == pgsTypes::StrengthI)
    {
-      table->TableLabel() << _T("Ultimate Shears for Strength I Limit State ") << LrfdCw8th(_T("[5.8]"),_T("[5.7]"));
+      table->TableLabel() << _T("Ultimate Shears for Strength I Limit State ") << LrfdCw8th(_T("[5.7]"),_T("[5.8]"));
    }
    else
    {
-      table->TableLabel() << _T("Ultimate Shears for Strength II Limit State ") << LrfdCw8th(_T("[5.8]"),_T("[5.7]"));
+      table->TableLabel() << _T("Ultimate Shears for Strength II Limit State ") << LrfdCw8th(_T("[5.7]"),_T("[5.8]"));
    }
   
    (*table)(0,0)  << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());

@@ -601,7 +601,7 @@ void ListDebondingFailures(IBroker* pBroker,FailureList& rFailures,const pgsGird
    {
       CSegmentKey segmentKey(girderKey,segIdx);
       const pgsSegmentArtifact* pArtifact = pGirderArtifact->GetSegmentArtifact(segIdx);
-      const pgsDebondArtifact* pDebond = pArtifact->GetDebondArtifact(pgsTypes::Straight);
+      const pgsDebondArtifact* pDebond = pArtifact->GetDebondArtifact();
 
       if ( !pDebond->Passed() )
       {

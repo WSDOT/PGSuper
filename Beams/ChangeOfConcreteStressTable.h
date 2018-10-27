@@ -48,6 +48,9 @@ private:
    DECLARE_UV_PROTOTYPE( rptLengthUnitValue,  dim );
    DECLARE_UV_PROTOTYPE( rptMomentUnitValue,  moment );
    DECLARE_UV_PROTOTYPE( rptStressUnitValue,  stress );
+
+   bool m_bHasDeckLoads;
+   bool m_bIs2StageComposite;
 };
 
 #endif //__CHANGEOFCONCRETESTRESSTABLE_H_

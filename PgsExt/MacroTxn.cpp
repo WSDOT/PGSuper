@@ -47,11 +47,10 @@ bool pgsMacroTxn::Execute()
 
    GET_IFACE2(pBroker,IEvents, pEvents);
 
-   pEvents->HoldEvents();
+   // Exception-safe holder for events
+   CIEventsHolder event_holder(pEvents);
 
    bool bResult = txnMacroTxn::Execute();
-
-   pEvents->FirePendingEvents();
 
    return bResult;
 }
@@ -63,11 +62,10 @@ void pgsMacroTxn::Undo()
 
    GET_IFACE2(pBroker,IEvents, pEvents);
 
-   pEvents->HoldEvents();
+   // Exception-safe holder for events
+   CIEventsHolder event_holder(pEvents);
 
    txnMacroTxn::Undo();
-
-   pEvents->FirePendingEvents();
 }
 
 txnTransaction* pgsMacroTxn::CreateClone() const

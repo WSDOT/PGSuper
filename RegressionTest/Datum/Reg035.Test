@@ -6,7 +6,7 @@
 The Specification Check was Not Successful
 Compression stress check failed for Service I Limit State in Interval 2 Prestress Release
 Compression stress check failed for Service I Limit State in Interval 10 Install composite overlay
-Compression stress check failed for Service I Limit State in Interval 12 Composite deck, Install Railing System and Overlay
+Compression stress check failed for Service I Limit State in Interval 12 Composite overlay, Install Railing System and Overlay
 Ultimate vertical shear capacity check failed for Strength I Limit State
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
 Stirrup detailing checks failed for the Strength I Limit State.
@@ -26,7 +26,7 @@ Minimum fillet value exceeded for bridge check failed
 The Specification Check was Not Successful
 Compression stress check failed for Service I Limit State in Interval 2 Prestress Release
 Compression stress check failed for Service I Limit State in Interval 10 Install composite overlay
-Compression stress check failed for Service I Limit State in Interval 12 Composite deck, Install Railing System and Overlay
+Compression stress check failed for Service I Limit State in Interval 12 Composite overlay, Install Railing System and Overlay
 Ultimate vertical shear capacity check failed for Strength I Limit State
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
 Stirrup detailing checks failed for the Strength I Limit State.

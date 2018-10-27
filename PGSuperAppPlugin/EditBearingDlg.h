@@ -88,6 +88,7 @@ public:
    CBearingSame4BridgeDlg m_BearingSame4BridgeDlg;
    CBearingPierByPierDlg  m_BearingPierByPierDlg;
    CBearingGdrByGdrDlg    m_BearingGdrByGdrDlg;
+   CMetaFileStatic m_Bearing;
 
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support

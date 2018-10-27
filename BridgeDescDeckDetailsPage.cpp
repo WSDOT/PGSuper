@@ -159,6 +159,11 @@ void CBridgeDescDeckDetailsPage::DoDataExchange(CDataExchange* pDX)
       DDX_UnitValueAndTag( pDX, IDC_FILLET, IDC_FILLET_UNIT, m_Fillet, pDisplayUnits->GetComponentDimUnit() );
       DDV_UnitValueZeroOrMore( pDX, IDC_FILLET, m_Fillet, pDisplayUnits->GetComponentDimUnit() );
 
+      if (pDX->m_bSaveAndValidate)
+      {
+         pParent->m_BridgeDesc.SetFillet(m_Fillet);
+      }
+
       // AssExcessCamber
       if (!pDX->m_bSaveAndValidate)
       {
@@ -380,9 +385,6 @@ void CBridgeDescDeckDetailsPage::DoDataExchange(CDataExchange* pDX)
          }
       }
 
-      // Set fillet
-      pParent->m_BridgeDesc.SetFillet(m_Fillet);
-      
       // Set AssExcessCamber
       if ( doAssExcessCamber && m_AssExcessCamberType==pgsTypes::aecBridge)
       {

@@ -54,8 +54,8 @@ private:
    DECLARE_UV_PROTOTYPE( rptMomentUnitValue,  moment );
    DECLARE_UV_PROTOTYPE( rptStressUnitValue,  stress );
 
-   bool m_bIgnoreInitialRelaxation;
-   bool m_bUseGrossProperties;
+   bool m_bIsPrismatic;
+   bool m_bIsAsymmetric;
 };
 
 #endif //__TEMPORARYSTRANDREMOVALTABLE_H_

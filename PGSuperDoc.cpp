@@ -304,7 +304,7 @@ void CPGSuperDoc::DesignGirder(bool bPrompt,arSlabOffsetDesignType designSlabOff
    if (!noDesignMsg.IsEmpty())
    {
       CString msg;
-      msg.Format(_T("Warning: %s \n\nThese options are accurately accounted for by the automated design algorithm. Therefore, the subsequent girder designs are be performed using gross section properties and a constant haunch depth.\n\nThe resulting design may not be optimal. Be sure to verify design results using a Spec Check.\n\nWould you like to proceed?"),noDesignMsg);
+      msg.Format(_T("Warning: %s \n\nThese options are not accurately accounted for by the automated design algorithm. For this reason, girder designs are performed using gross section properties and a constant haunch depth.\n\nThe resulting design may not be optimal. Be sure to verify design results using a Spec Check.\n\nWould you like to proceed?"),noDesignMsg);
       if (AfxMessageBox(msg, MB_YESNO | MB_ICONWARNING) != IDYES)
       {
          return;
@@ -420,6 +420,10 @@ void CPGSuperDoc::DoDesignGirder(const std::vector<CGirderKey>& girderKeys, arSl
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
    GET_IFACE(ISpecification,pSpecification);
    GET_IFACE(IArtifact,pIArtifact);
+
+   // Make sure we don't fire up any report or view redraws while we are designing
+   GET_IFACE(IUIEvents,pIUIEvents);
+   CUIEventsHolder eventholder(pIUIEvents);
 
    std::vector<const pgsGirderDesignArtifact*> pArtifacts;
 

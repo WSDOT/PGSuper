@@ -62,6 +62,8 @@ private:
    DECLARE_UV_PROTOTYPE( rptStressUnitValue,  stress );
 
    rptRcScalar scalar;
+   bool m_bIsPrismatic;
+   bool m_bIsAsymmetric;
 };
 
 #endif //__ELASTICGAINDUETODECKPLACEMENTTABLE_H_

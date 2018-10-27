@@ -65,15 +65,14 @@ void txnEditProjectCriteria::Execute(int i)
 
    GET_IFACE2(pBroker,IEvents, pEvents);
    GET_IFACE2(pBroker, ISpecification, pSpec );
+   // Exception-safe holder to keep from fireing events until we are done
+   CIEventsHolder event_holder(pEvents);
 
-   pEvents->HoldEvents(); // don't fire any changed events until all changes are done
    pSpec->SetAnalysisType(m_AnalysisType[i]);
    pSpec->SetSpecification( m_strProjectCriteria[i] );
 
    GET_IFACE2(pBroker,IBridgeDescription,pBridgeDesc);
    pBridgeDesc->SetWearingSurfaceType(m_WearingSurfaceType[i]);
-
-   pEvents->FirePendingEvents();
 }
 
 txnTransaction* txnEditProjectCriteria::CreateClone() const

@@ -25,6 +25,7 @@
 #include "CreepAtFinalTable.h"
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
+#include <IFace\Intervals.h>
 #include <PsgLib\SpecLibraryEntry.h>
 
 #ifdef _DEBUG
@@ -70,18 +71,50 @@ CCreepAtFinalTable* CCreepAtFinalTable::PrepareTable(rptChapter* pChapter,IBroke
    GET_IFACE2(pBroker,ISectionProperties,pSectProp);
    pgsTypes::SectionPropertyMode spMode = pSectProp->GetSectionPropertiesMode();
 
+   GET_IFACE2(pBroker, IIntervals, pIntervals);
+   IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
+
+   GET_IFACE2(pBroker, IGirder, pGirder);
+   bool bIsPrismatic = pGirder->IsPrismatic(releaseIntervalIdx, segmentKey);
+
+   GET_IFACE2(pBroker, IBridge, pBridge);
+   bool bIsAsymmetric = pBridge->HasAsymmetricGirders() || pBridge->HasAsymmetricPrestressing() ? true : false;
+
    // Create and configure the table
-   ColumnIndexType numColumns = 5;
+   ColumnIndexType numColumns = 8; // Location, Kdf, fcgp, dfpSR, dfpCR, dfpR1, dfcd, dfpCD
 
    if ( 0 < NtMax )
    {
       if ( pStrands->GetTemporaryStrandUsage() == pgsTypes::ttsPretensioned )
       {
-         numColumns++;
+         numColumns++; // dfptr
       }
       else
       {
-         numColumns+=2;
+         numColumns+=2; // dfpp, dfptr
+      }
+   }
+
+   if (bIsPrismatic)
+   {
+      if (bIsAsymmetric)
+      {
+         numColumns += 2; // epsx, epsy
+      }
+      else
+      {
+         numColumns++; // eps
+      }
+   }
+   else
+   {
+      if (bIsAsymmetric)
+      {
+         numColumns += 6; // Ag, Ixx, Iyy, Ixy, epsx, epsy
+      }
+      else
+      {
+         numColumns += 3; // Ag, Ig, eps
       }
    }
 
@@ -91,6 +124,8 @@ CCreepAtFinalTable* CCreepAtFinalTable::PrepareTable(rptChapter* pChapter,IBroke
    
    table->m_pStrands = pStrands;
    table->m_NtMax = NtMax;
+   table->m_bIsPrismatic = bIsPrismatic;
+   table->m_bIsAsymmetric = bIsAsymmetric;
 
    std::_tstring strImagePath(rptStyleManager::GetImagePath());
    
@@ -105,82 +140,65 @@ CCreepAtFinalTable* CCreepAtFinalTable::PrepareTable(rptChapter* pChapter,IBroke
 
    if ( spMode == pgsTypes::spmGross )
    {
-      if ( 0 < NtMax )
+      if (bIsAsymmetric)
       {
-         if ( pStrands->GetTemporaryStrandUsage() != pgsTypes::ttsPretensioned )
+         *pParagraph << rptRcImage(strImagePath + _T("Delta_fpcd_Gross_Asymmetric.png")) << rptNewLine;
+      }
+      else
+      {
+         *pParagraph << rptRcImage(strImagePath + _T("Delta_fpcd_Gross.png")) << rptNewLine;
+      }
+   }
+   else
+   {
+      if (bIsAsymmetric)
+      {
+         *pParagraph << rptRcImage(strImagePath + _T("Delta_fpcd_Transformed_Asymmetric.png")) << rptNewLine;
+      }
+      else
+      {
+         *pParagraph << rptRcImage(strImagePath + _T("Delta_fpcd_Transformed.png")) << rptNewLine;
+      }
+   }
+
+   
+   if (0 < NtMax)
+   {
+      if (pStrands->GetTemporaryStrandUsage() != pgsTypes::ttsPretensioned)
+      {
+         if (pSpecEntry->GetSpecificationType() < lrfdVersionMgr::FourthEdition2007)
          {
-            if ( pSpecEntry->GetSpecificationType() < lrfdVersionMgr::FourthEdition2007 )
-            {
-               *pParagraph << rptRcImage(strImagePath + _T("Delta_FpCD_PT_Gross.png")) << rptNewLine;
-            }
-            else
-            {
-               *pParagraph << rptRcImage(strImagePath + _T("Delta_FpCD_2007_PT_Gross.png")) << rptNewLine;
-            }
+            *pParagraph << rptRcImage(strImagePath + _T("Delta_FpCD_PT.png")) << rptNewLine;
          }
          else
          {
-            if ( pSpecEntry->GetSpecificationType() < lrfdVersionMgr::FourthEdition2007 )
-            {
-               *pParagraph << rptRcImage(strImagePath + _T("Delta_FpCD_PS_Gross.png")) << rptNewLine;
-            }
-            else
-            {
-               *pParagraph << rptRcImage(strImagePath + _T("Delta_FpCD_2007_PS_Gross.png")) << rptNewLine;
-            }
+            *pParagraph << rptRcImage(strImagePath + _T("Delta_FpCD_PT_2007.png")) << rptNewLine;
          }
       }
       else
       {
-         if ( pSpecEntry->GetSpecificationType() < lrfdVersionMgr::FourthEdition2007 )
+         if (pSpecEntry->GetSpecificationType() < lrfdVersionMgr::FourthEdition2007)
          {
-            *pParagraph << rptRcImage(strImagePath + _T("Delta_FpCD_Gross.png")) << rptNewLine;
+            *pParagraph << rptRcImage(strImagePath + _T("Delta_FpCD_PS.png")) << rptNewLine;
          }
          else
          {
-            *pParagraph << rptRcImage(strImagePath + _T("Delta_FpCD_2007_Gross.png")) << rptNewLine;
+            *pParagraph << rptRcImage(strImagePath + _T("Delta_FpCD_PS_2007.png")) << rptNewLine;
          }
       }
    }
    else
    {
-      if ( 0 < NtMax )
+      if (pSpecEntry->GetSpecificationType() < lrfdVersionMgr::FourthEdition2007)
       {
-         if ( pStrands->GetTemporaryStrandUsage() != pgsTypes::ttsPretensioned )
-         {
-            if ( pSpecEntry->GetSpecificationType() < lrfdVersionMgr::FourthEdition2007 )
-            {
-               *pParagraph << rptRcImage(strImagePath + _T("Delta_FpCD_PT_Transformed.png")) << rptNewLine;
-            }
-            else
-            {
-               *pParagraph << rptRcImage(strImagePath + _T("Delta_FpCD_2007_PT_Transformed.png")) << rptNewLine;
-            }
-         }
-         else
-         {
-            if ( pSpecEntry->GetSpecificationType() < lrfdVersionMgr::FourthEdition2007 )
-            {
-               *pParagraph << rptRcImage(strImagePath + _T("Delta_FpCD_PS_Transformed.png")) << rptNewLine;
-            }
-            else
-            {
-               *pParagraph << rptRcImage(strImagePath + _T("Delta_FpCD_2007_PS_Transformed.png")) << rptNewLine;
-            }
-         }
+         *pParagraph << rptRcImage(strImagePath + _T("Delta_FpCD.png")) << rptNewLine;
       }
       else
       {
-         if ( pSpecEntry->GetSpecificationType() < lrfdVersionMgr::FourthEdition2007 )
-         {
-            *pParagraph << rptRcImage(strImagePath + _T("Delta_FpCD_Transformed.png")) << rptNewLine;
-         }
-         else
-         {
-            *pParagraph << rptRcImage(strImagePath + _T("Delta_FpCD_2007_Transformed.png")) << rptNewLine;
-         }
+         *pParagraph << rptRcImage(strImagePath + _T("Delta_FpCD_2007.png")) << rptNewLine;
       }
    }
+
 
    // DELTA Fcd Table
    pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
@@ -238,6 +256,60 @@ CCreepAtFinalTable* CCreepAtFinalTable::PrepareTable(rptChapter* pChapter,IBroke
    (*pParamTable)(1,1) << table->scalar.SetValue(ptl->GetCreepInitialToDeck().GetCreepCoefficient());
    (*pParamTable)(1,2) << table->scalar.SetValue(ptl->GetCreepDeckToFinal().GetCreepCoefficient());
 
+   if (bIsPrismatic)
+   {
+      rptRcTable* sectPropTable = rptStyleManager::CreateDefaultTable(bIsAsymmetric ? 4 : 2, _T(""));
+      *pParagraph << sectPropTable << rptNewLine;
+
+      GET_IFACE2(pBroker, IPointOfInterest, pPoi);
+      PoiList vPoi;
+      pPoi->GetPointsOfInterest(segmentKey, POI_5L | POI_RELEASED_SEGMENT, &vPoi);
+      ATLASSERT(vPoi.size() == 1);
+      const pgsPointOfInterest& poi(vPoi.front());
+      Float64 Ag = pSectProp->GetAg(releaseIntervalIdx, poi);
+      Float64 Ixx = pSectProp->GetIxx(releaseIntervalIdx, poi);
+
+      if (bIsAsymmetric)
+      {
+         Float64 Iyy = pSectProp->GetIyy(releaseIntervalIdx, poi);
+         Float64 Ixy = pSectProp->GetIxy(releaseIntervalIdx, poi);
+         if (spMode == pgsTypes::spmGross)
+         {
+            (*sectPropTable)(0, 0) << COLHDR(Sub2(_T("A"), _T("g")), rptAreaUnitTag, pDisplayUnits->GetAreaUnit());
+            (*sectPropTable)(0, 1) << COLHDR(Sub2(_T("I"), _T("xx")), rptLength4UnitTag, pDisplayUnits->GetMomentOfInertiaUnit());
+            (*sectPropTable)(0, 2) << COLHDR(Sub2(_T("I"), _T("yy")), rptLength4UnitTag, pDisplayUnits->GetMomentOfInertiaUnit());
+            (*sectPropTable)(0, 3) << COLHDR(Sub2(_T("I"), _T("xy")), rptLength4UnitTag, pDisplayUnits->GetMomentOfInertiaUnit());
+         }
+         else
+         {
+            (*sectPropTable)(0, 0) << COLHDR(Sub2(_T("A"), _T("gt")), rptAreaUnitTag, pDisplayUnits->GetAreaUnit());
+            (*sectPropTable)(0, 1) << COLHDR(Sub2(_T("I"), _T("xxt")), rptLength4UnitTag, pDisplayUnits->GetMomentOfInertiaUnit());
+            (*sectPropTable)(0, 2) << COLHDR(Sub2(_T("I"), _T("yyt")), rptLength4UnitTag, pDisplayUnits->GetMomentOfInertiaUnit());
+            (*sectPropTable)(0, 3) << COLHDR(Sub2(_T("I"), _T("xyt")), rptLength4UnitTag, pDisplayUnits->GetMomentOfInertiaUnit());
+         }
+
+         (*sectPropTable)(1, 0) << table->area.SetValue(Ag);
+         (*sectPropTable)(1, 1) << table->mom_inertia.SetValue(Ixx);
+         (*sectPropTable)(1, 2) << table->mom_inertia.SetValue(Iyy);
+         (*sectPropTable)(1, 3) << table->mom_inertia.SetValue(Ixy);
+      }
+      else
+      {
+         if (spMode == pgsTypes::spmGross)
+         {
+            (*sectPropTable)(0, 0) << COLHDR(Sub2(_T("A"), _T("g")), rptAreaUnitTag, pDisplayUnits->GetAreaUnit());
+            (*sectPropTable)(0, 1) << COLHDR(Sub2(_T("I"), _T("g")), rptLength4UnitTag, pDisplayUnits->GetMomentOfInertiaUnit());
+         }
+         else
+         {
+            (*sectPropTable)(0, 0) << COLHDR(Sub2(_T("A"), _T("gt")), rptAreaUnitTag, pDisplayUnits->GetAreaUnit());
+            (*sectPropTable)(0, 1) << COLHDR(Sub2(_T("I"), _T("gt")), rptLength4UnitTag, pDisplayUnits->GetMomentOfInertiaUnit());
+         }
+
+         (*sectPropTable)(1, 0) << table->area.SetValue(Ag);
+         (*sectPropTable)(1, 1) << table->mom_inertia.SetValue(Ixx);
+      }
+   }
 
    
    *pParagraph << table << rptNewLine;
@@ -245,9 +317,78 @@ CCreepAtFinalTable* CCreepAtFinalTable::PrepareTable(rptChapter* pChapter,IBroke
    ColumnIndexType col = 0;
 
    (*table)(0,col++) << COLHDR(_T("Location from")<<rptNewLine<<_T("Left Support"),rptLengthUnitTag,  pDisplayUnits->GetSpanLengthUnit() );
-   (*table)(0,col++) << Sub2(_T("K"),_T("df"));
 
-  (*table)(0,col++) << COLHDR(RPT_STRESS(_T("cgp")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+  if (spMode == pgsTypes::spmGross)
+  {
+     if (bIsPrismatic)
+     {
+        if (bIsAsymmetric)
+        {
+           (*table)(0, col++) << COLHDR(Sub2(_T("e"), _T("psx")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+           (*table)(0, col++) << COLHDR(Sub2(_T("e"), _T("psy")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+        }
+        else
+        {
+           (*table)(0, col++) << COLHDR(Sub2(_T("e"), _T("ps")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+        }
+     }
+     else
+     {
+        if (bIsAsymmetric)
+        {
+           (*table)(0, col++) << COLHDR(Sub2(_T("A"), _T("g")), rptAreaUnitTag, pDisplayUnits->GetAreaUnit());
+           (*table)(0, col++) << COLHDR(Sub2(_T("I"), _T("xx")), rptLength4UnitTag, pDisplayUnits->GetMomentOfInertiaUnit());
+           (*table)(0, col++) << COLHDR(Sub2(_T("I"), _T("yy")), rptLength4UnitTag, pDisplayUnits->GetMomentOfInertiaUnit());
+           (*table)(0, col++) << COLHDR(Sub2(_T("I"), _T("xy")), rptLength4UnitTag, pDisplayUnits->GetMomentOfInertiaUnit());
+           (*table)(0, col++) << COLHDR(Sub2(_T("e"), _T("psx")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+           (*table)(0, col++) << COLHDR(Sub2(_T("e"), _T("psy")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+        }
+        else
+        {
+           (*table)(0, col++) << COLHDR(Sub2(_T("A"), _T("g")), rptAreaUnitTag, pDisplayUnits->GetAreaUnit());
+           (*table)(0, col++) << COLHDR(Sub2(_T("I"), _T("g")), rptLength4UnitTag, pDisplayUnits->GetMomentOfInertiaUnit());
+           (*table)(0, col++) << COLHDR(Sub2(_T("e"), _T("ps")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+        }
+     }
+  }
+  else
+  {
+     if (bIsPrismatic)
+     {
+        if (bIsAsymmetric)
+        {
+           (*table)(0, col++) << COLHDR(Sub2(_T("e"), _T("psxt")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+           (*table)(0, col++) << COLHDR(Sub2(_T("e"), _T("psyt")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+        }
+        else
+        {
+           (*table)(0, col++) << COLHDR(Sub2(_T("e"), _T("pst")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+        }
+     }
+     else
+     {
+        if (bIsAsymmetric)
+        {
+           (*table)(0, col++) << COLHDR(Sub2(_T("A"), _T("gt")), rptAreaUnitTag, pDisplayUnits->GetAreaUnit());
+           (*table)(0, col++) << COLHDR(Sub2(_T("I"), _T("xxt")), rptLength4UnitTag, pDisplayUnits->GetMomentOfInertiaUnit());
+           (*table)(0, col++) << COLHDR(Sub2(_T("I"), _T("yyt")), rptLength4UnitTag, pDisplayUnits->GetMomentOfInertiaUnit());
+           (*table)(0, col++) << COLHDR(Sub2(_T("I"), _T("xyt")), rptLength4UnitTag, pDisplayUnits->GetMomentOfInertiaUnit());
+           (*table)(0, col++) << COLHDR(Sub2(_T("e"), _T("psxt")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+           (*table)(0, col++) << COLHDR(Sub2(_T("e"), _T("psyt")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+        }
+        else
+        {
+           (*table)(0, col++) << COLHDR(Sub2(_T("A"), _T("gt")), rptAreaUnitTag, pDisplayUnits->GetAreaUnit());
+           (*table)(0, col++) << COLHDR(Sub2(_T("I"), _T("gt")), rptLength4UnitTag, pDisplayUnits->GetMomentOfInertiaUnit());
+           (*table)(0, col++) << COLHDR(Sub2(_T("e"), _T("pst")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+        }
+     }
+  }
+
+  (*table)(0, col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pSR")), rptStressUnitTag, pDisplayUnits->GetStressUnit());
+  (*table)(0, col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pCR")), rptStressUnitTag, pDisplayUnits->GetStressUnit());
+  (*table)(0, col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pR1")), rptStressUnitTag, pDisplayUnits->GetStressUnit());
+  (*table)(0, col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("cd")), rptStressUnitTag, pDisplayUnits->GetStressUnit());
    if ( 0 < NtMax &&  pStrands->GetTemporaryStrandUsage() != pgsTypes::ttsPretensioned )
    {
       (*table)(0,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pp")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
@@ -258,7 +399,8 @@ CCreepAtFinalTable* CCreepAtFinalTable::PrepareTable(rptChapter* pChapter,IBroke
       (*table)(0,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("ptr")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    }
 
-   (*table)(0,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("cd")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*table)(0, col++) << Sub2(_T("K"), _T("df"));
+   (*table)(0, col++) << COLHDR(RPT_STRESS(_T("cgp")), rptStressUnitTag, pDisplayUnits->GetStressUnit());
    (*table)(0,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pCD")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
 
    return table;
@@ -275,19 +417,59 @@ void CCreepAtFinalTable::AddRow(rptChapter* pChapter,IBroker* pBroker,const pgsP
    }
 
    ColumnIndexType col = 1;
-   (*this)(row,col++) << scalar.SetValue(ptl->GetKdf());
-   (*this)(row,col++) << stress.SetValue( pDetails->pLosses->ElasticShortening().PermanentStrand_Fcgp() );
+   RowIndexType rowOffset = GetNumberOfHeaderRows() - 1;
+
+   if (m_bIsPrismatic)
+   {
+      if (m_bIsAsymmetric)
+      {
+         (*this)(row+rowOffset, col++) << ecc.SetValue(pDetails->pLosses->GetEccPermanentFinal().X());
+         (*this)(row+rowOffset, col++) << ecc.SetValue(pDetails->pLosses->GetEccPermanentFinal().Y());
+      }
+      else
+      {
+         (*this)(row+rowOffset, col++) << ecc.SetValue(pDetails->pLosses->GetEccPermanentFinal().Y());
+      }
+   }
+   else
+   {
+      Float64 Ag, Ybg, Ixx, Iyy, Ixy;
+      pDetails->pLosses->GetNetNoncompositeProperties(&Ag, &Ybg, &Ixx, &Iyy, &Ixy);
+      if (m_bIsAsymmetric)
+      {
+         (*this)(row+rowOffset, col++) << area.SetValue(Ag);
+         (*this)(row+rowOffset, col++) << mom_inertia.SetValue(Ixx);
+         (*this)(row+rowOffset, col++) << mom_inertia.SetValue(Iyy);
+         (*this)(row+rowOffset, col++) << mom_inertia.SetValue(Ixy);
+         (*this)(row+rowOffset, col++) << ecc.SetValue(pDetails->pLosses->GetEccPermanentFinal().X());
+         (*this)(row+rowOffset, col++) << ecc.SetValue(pDetails->pLosses->GetEccPermanentFinal().Y());
+      }
+      else
+      {
+         (*this)(row+rowOffset, col++) << area.SetValue(Ag);
+         (*this)(row+rowOffset, col++) << mom_inertia.SetValue(Ixx);
+         (*this)(row+rowOffset, col++) << ecc.SetValue(pDetails->pLosses->GetEccPermanentFinal().Y());
+      }
+   }
+
+   (*this)(row+rowOffset, col++) << stress.SetValue(ptl->ShrinkageLossBeforeDeckPlacement());
+   (*this)(row+rowOffset, col++) << stress.SetValue(ptl->CreepLossBeforeDeckPlacement());
+   (*this)(row+rowOffset, col++) << stress.SetValue(ptl->RelaxationLossBeforeDeckPlacement());
+
+   (*this)(row+rowOffset, col++) << stress.SetValue(ptl->GetDeltaFcd());
 
    if ( 0 < m_NtMax && m_pStrands->GetTemporaryStrandUsage() != pgsTypes::ttsPretensioned )
    {
-      (*this)(row,col++) << stress.SetValue( ptl->GetDeltaFpp() );
+      (*this)(row+rowOffset,col++) << stress.SetValue( ptl->GetDeltaFpp() );
    }
 
    if ( 0 < m_NtMax )
    {
-      (*this)(row,col++) << stress.SetValue( ptl->GetDeltaFptr() );
+      (*this)(row+rowOffset,col++) << stress.SetValue( ptl->GetDeltaFptr() );
    }
 
-   (*this)(row,col++) << stress.SetValue( ptl->GetDeltaFcd() );
-   (*this)(row,col++) << stress.SetValue( ptl->CreepLossAfterDeckPlacement() );
+   (*this)(row+rowOffset, col++) << scalar.SetValue(ptl->GetKdf());
+   (*this)(row+rowOffset, col++) << stress.SetValue(pDetails->pLosses->ElasticShortening().PermanentStrand_Fcgp());
+
+   (*this)(row+rowOffset,col++) << stress.SetValue( ptl->CreepLossAfterDeckPlacement() );
 }

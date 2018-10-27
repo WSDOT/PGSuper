@@ -18,7 +18,7 @@ Define the geometry of the post-tensioning ducts and the tendons
 Item | Description
 -----|-------------
 Duct Grid | Grid listing the general parameters of the ducts and tendons. See Duct Grid below for details.
-Duct Material | Select the duct material. Used for evaluation the provisions of LRFD 5.4.6.1
+Duct Material | Select the duct material. Used for evaluation the provisions of LRFD 5.4.6.1. This setting does not effect the duct friction factor or wobble coefficient. Select Project > Losses to edit duct friction factors.
 Strand Size | Select the tendon strand size
 Installation Method | Select the strand installation method. Used to evaluate the provisions of LRFD 5.4.6.2
 

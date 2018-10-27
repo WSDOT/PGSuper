@@ -1356,6 +1356,7 @@
 #define IDC_TOP_WIDTH_END_LABEL         1997
 #define IDC_HG_X1                       1997
 #define IDC_HG_X2                       1998
+#define IDC_BEARING                     1998
 #define IDC_HG_X3                       1999
 #define IDC_HG_X4                       2000
 #define IDC_APPLIST                     3333
@@ -1511,7 +1512,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        391
 #define _APS_NEXT_COMMAND_VALUE         37001
-#define _APS_NEXT_CONTROL_VALUE         1998
+#define _APS_NEXT_CONTROL_VALUE         1999
 #define _APS_NEXT_SYMED_VALUE           113
 #endif
 #endif

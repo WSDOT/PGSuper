@@ -50,7 +50,8 @@ bool txnEditClosureJoint::Execute()
    EAFGetBroker(&pBroker);
 
    GET_IFACE2(pBroker,IEvents, pEvents);
-   pEvents->HoldEvents(); // don't fire any changed events until all changes are done
+   // Exception-safe holder to keep from fireing events until we are done
+   CIEventsHolder event_holder(pEvents);
 
    m_OldData.clear();
 
@@ -78,8 +79,6 @@ bool txnEditClosureJoint::Execute()
       SetClosureJointData(oldData.m_ClosureKey,m_NewData);
    }
 
-   pEvents->FirePendingEvents();
-
    return true;
 }
 
@@ -89,7 +88,8 @@ void txnEditClosureJoint::Undo()
    EAFGetBroker(&pBroker);
 
    GET_IFACE2(pBroker,IEvents, pEvents);
-   pEvents->HoldEvents(); // don't fire any changed events until all changes are done
+   // Exception-safe holder to keep from fireing events until we are done
+   CIEventsHolder event_holder(pEvents);
 
    std::set<txnEditClosureJointData>::iterator iter(m_OldData.begin());
    std::set<txnEditClosureJointData>::iterator end(m_OldData.end());
@@ -98,8 +98,6 @@ void txnEditClosureJoint::Undo()
       const txnEditClosureJointData& oldData = *iter;
       SetClosureJointData(oldData.m_ClosureKey,oldData);
    }
-
-   pEvents->FirePendingEvents();
 }
 
 txnTransaction* txnEditClosureJoint::CreateClone() const
@@ -138,11 +136,10 @@ void txnEditClosureJoint::SetClosureJointData(const CSegmentKey& closureKey,cons
    EAFGetBroker(&pBroker);
 
    GET_IFACE2(pBroker, IEvents, pEvents);
-   pEvents->HoldEvents();
+   // Exception-safe holder to keep from fireing events until we are done
+   CIEventsHolder event_holder(pEvents);
 
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    pIBridgeDesc->SetClosureJointData(closureKey,data.m_ClosureJoint);
    pIBridgeDesc->SetTimelineManager(data.m_TimelineMgr);
-
-   pEvents->FirePendingEvents();
 }

@@ -87,7 +87,8 @@ rptRcTable* CStrandEccTable::Build(IBroker* pBroker, const CSegmentKey& segmentK
 rptRcTable* CStrandEccTable::Build_Y(IBroker* pBroker, const CSegmentKey& segmentKey, IntervalIndexType intervalIdx, IEAFDisplayUnits* pDisplayUnits) const
 {
    GET_IFACE2(pBroker, ISectionProperties, pSectProp);
-   pgsTypes::SectionPropertyType spType = (pSectProp->GetSectionPropertiesMode() == pgsTypes::spmGross ? pgsTypes::sptGrossNoncomposite : pgsTypes::sptNetGirder);
+   pgsTypes::SectionPropertyMode spMode = pSectProp->GetSectionPropertiesMode();
+   pgsTypes::SectionPropertyType spType = (spMode ? pgsTypes::sptGrossNoncomposite : pgsTypes::sptNetGirder);
 
    GET_IFACE2(pBroker, ILossParameters, pLossParams);
    if (pLossParams->GetLossMethod() == pgsTypes::TIME_STEP)
@@ -136,18 +137,37 @@ rptRcTable* CStrandEccTable::Build_Y(IBroker* pBroker, const CSegmentKey& segmen
    p_table->SetRowSpan(1, col++, SKIP_CELL);
    p_table->SetRowSpan(1, col++, SKIP_CELL);
 
-   (*p_table)(1, col++) << COLHDR(_T("Straight"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
-   (*p_table)(1, col++) << COLHDR(LABEL_HARP_TYPE(pStrandGeom->GetAreHarpedStrandsForcedStraight(segmentKey)), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
-
-   if (bTempStrands)
+   if (spMode == pgsTypes::spmGross)
    {
-      (*p_table)(1, col++) << COLHDR(_T("Temporary"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
-      (*p_table)(1, col++) << COLHDR(_T("All") << rptNewLine << _T("(w/ Temp)"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
-      (*p_table)(1, col++) << COLHDR(_T("Permanent") << rptNewLine << _T("(w/o Temp)"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+      (*p_table)(1, col++) << COLHDR(_T("Straight") << rptNewLine << Sub2(_T("e"), _T("s")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+      (*p_table)(1, col++) << COLHDR(LABEL_HARP_TYPE(pStrandGeom->GetAreHarpedStrandsForcedStraight(segmentKey)) << rptNewLine << Sub2(_T("e"), _T("h")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+
+      if (bTempStrands)
+      {
+         (*p_table)(1, col++) << COLHDR(_T("Temporary") << rptNewLine << Sub2(_T("e"), _T("t")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+         (*p_table)(1, col++) << COLHDR(_T("All") << rptNewLine << _T("(w/ Temp), ") << Sub2(_T("e"),_T("ps")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+         (*p_table)(1, col++) << COLHDR(_T("Permanent") << rptNewLine << _T("(w/o Temp), ") << Sub2(_T("e"), _T("p")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+      }
+      else
+      {
+         (*p_table)(1, col++) << COLHDR(_T("All") << rptNewLine << _T("Strands, ") << Sub2(_T("e"), _T("p")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+      }
    }
    else
    {
-      (*p_table)(1, col++) << COLHDR(_T("All") << rptNewLine << _T("Strands"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+      (*p_table)(1, col++) << COLHDR(_T("Straight") << rptNewLine << Sub2(_T("e"), _T("st")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+      (*p_table)(1, col++) << COLHDR(LABEL_HARP_TYPE(pStrandGeom->GetAreHarpedStrandsForcedStraight(segmentKey)) << rptNewLine << Sub2(_T("e"), _T("ht")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+
+      if (bTempStrands)
+      {
+         (*p_table)(1, col++) << COLHDR(_T("Temporary") << rptNewLine << Sub2(_T("e"), _T("tt")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+         (*p_table)(1, col++) << COLHDR(_T("All") << rptNewLine << _T("(w/ Temp), ") << Sub2(_T("e"), _T("pst")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+         (*p_table)(1, col++) << COLHDR(_T("Permanent") << rptNewLine << _T("(w/o Temp), ") << Sub2(_T("e"), _T("pt")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+      }
+      else
+      {
+         (*p_table)(1, col++) << COLHDR(_T("All") << rptNewLine << _T("Strands, ") << Sub2(_T("e"), _T("pt")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+      }
    }
 
    (*p_table)(1, col++) << _T("Average") << rptNewLine << _T("(1:n)");
@@ -256,7 +276,8 @@ rptRcTable* CStrandEccTable::Build_XY(IBroker* pBroker, const CSegmentKey& segme
       IEAFDisplayUnits* pDisplayUnits) const
 {
    GET_IFACE2(pBroker,ISectionProperties,pSectProp);
-   pgsTypes::SectionPropertyType spType = (pSectProp->GetSectionPropertiesMode() == pgsTypes::spmGross ? pgsTypes::sptGrossNoncomposite : pgsTypes::sptNetGirder );
+   pgsTypes::SectionPropertyMode spMode = pSectProp->GetSectionPropertiesMode();
+   pgsTypes::SectionPropertyType spType = (spMode == pgsTypes::spmGross ? pgsTypes::sptGrossNoncomposite : pgsTypes::sptNetGirder );
 
    GET_IFACE2(pBroker,ILossParameters,pLossParams);
    if ( pLossParams->GetLossMethod() == pgsTypes::TIME_STEP )
@@ -346,27 +367,55 @@ rptRcTable* CStrandEccTable::Build_XY(IBroker* pBroker, const CSegmentKey& segme
    p_table->SetRowSpan(2, col++, SKIP_CELL);
    p_table->SetRowSpan(2, col++, SKIP_CELL);
 
-   (*p_table)(2, col++) << COLHDR(Sub2(_T("e"),_T("x")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit()); // straight
-   (*p_table)(2, col++) << COLHDR(Sub2(_T("e"),_T("y")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
-
-   (*p_table)(2, col++) << COLHDR(Sub2(_T("e"), _T("x")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit()); // harped
-   (*p_table)(2, col++) << COLHDR(Sub2(_T("e"),_T("y")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
-
-   if (bTempStrands)
+   if (spMode == pgsTypes::spmGross)
    {
-      (*p_table)(2, col++) << COLHDR(Sub2(_T("e"),_T("x")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit()); // temp
-      (*p_table)(2, col++) << COLHDR(Sub2(_T("e"),_T("y")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+      (*p_table)(2, col++) << COLHDR(Sub2(_T("e"), _T("sx")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit()); // straight
+      (*p_table)(2, col++) << COLHDR(Sub2(_T("e"), _T("sy")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
 
-      (*p_table)(2, col++) << COLHDR(Sub2(_T("e"),_T("x")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit()); // all strands with temp
-      (*p_table)(2, col++) << COLHDR(Sub2(_T("e"),_T("y")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+      (*p_table)(2, col++) << COLHDR(Sub2(_T("e"), _T("hx")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit()); // harped
+      (*p_table)(2, col++) << COLHDR(Sub2(_T("e"), _T("hy")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
 
-      (*p_table)(2, col++) << COLHDR(Sub2(_T("e"),_T("x")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit()); // permanent strands only (no temp)
-      (*p_table)(2, col++) << COLHDR(Sub2(_T("e"),_T("y")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+      if (bTempStrands)
+      {
+         (*p_table)(2, col++) << COLHDR(Sub2(_T("e"), _T("tx")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit()); // temp
+         (*p_table)(2, col++) << COLHDR(Sub2(_T("e"), _T("ty")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+
+         (*p_table)(2, col++) << COLHDR(Sub2(_T("e"), _T("psx")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit()); // all strands with temp
+         (*p_table)(2, col++) << COLHDR(Sub2(_T("e"), _T("psy")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+
+         (*p_table)(2, col++) << COLHDR(Sub2(_T("e"), _T("px")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit()); // permanent strands only (no temp)
+         (*p_table)(2, col++) << COLHDR(Sub2(_T("e"), _T("py")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+      }
+      else
+      {
+         (*p_table)(2, col++) << COLHDR(Sub2(_T("e"), _T("px")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit()); // permanent strands only (no temp)
+         (*p_table)(2, col++) << COLHDR(Sub2(_T("e"), _T("py")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+      }
    }
    else
    {
-      (*p_table)(2, col++) << COLHDR(Sub2(_T("e"),_T("x")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit()); // permanent strands only (no temp)
-      (*p_table)(2, col++) << COLHDR(Sub2(_T("e"),_T("y")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+      (*p_table)(2, col++) << COLHDR(Sub2(_T("e"), _T("sxt")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit()); // straight
+      (*p_table)(2, col++) << COLHDR(Sub2(_T("e"), _T("syt")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+
+      (*p_table)(2, col++) << COLHDR(Sub2(_T("e"), _T("hxt")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit()); // harped
+      (*p_table)(2, col++) << COLHDR(Sub2(_T("e"), _T("hyt")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+
+      if (bTempStrands)
+      {
+         (*p_table)(2, col++) << COLHDR(Sub2(_T("e"), _T("txt")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit()); // temp
+         (*p_table)(2, col++) << COLHDR(Sub2(_T("e"), _T("tyt")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+
+         (*p_table)(2, col++) << COLHDR(Sub2(_T("e"), _T("psxt")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit()); // all strands with temp
+         (*p_table)(2, col++) << COLHDR(Sub2(_T("e"), _T("psyt")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+
+         (*p_table)(2, col++) << COLHDR(Sub2(_T("e"), _T("pxt")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit()); // permanent strands only (no temp)
+         (*p_table)(2, col++) << COLHDR(Sub2(_T("e"), _T("pyt")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+      }
+      else
+      {
+         (*p_table)(2, col++) << COLHDR(Sub2(_T("e"), _T("pxt")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit()); // permanent strands only (no temp)
+         (*p_table)(2, col++) << COLHDR(Sub2(_T("e"), _T("pyt")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+      }
    }
 
    p_table->SetRowSpan(2, col++, SKIP_CELL); // strand slope avg

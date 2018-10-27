@@ -74,7 +74,7 @@ rptChapter* CCastingYardRebarRequirementChapterBuilder::Build(CReportSpecificati
 
    rptParagraph* pPara = new rptParagraph;
    *pChapter << pPara;
-   *pPara << _T("Minimum amount of bonded reinforcement sufficent to resist the tensile force in the concrete ") << LrfdCw8th(_T("[5.9.4][C5.9.4.1.2]"),_T("[5.9.2.3][C5.9.2.3.1b]")) << _T(")") << rptNewLine;
+   *pPara << _T("Minimum amount of bonded reinforcement sufficent to resist the tensile force in the concrete ") << LrfdCw8th(_T("[5.9.4][C5.9.4.1.2]"),_T("[5.9.2.3][C5.9.2.3.1b]")) << rptNewLine;
 
    GET_IFACE2(pBroker,IBridge,pBridge);
 
@@ -214,14 +214,14 @@ void CCastingYardRebarRequirementChapterBuilder::BuildTable(IBroker* pBroker,rpt
 
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
-   rptRcTable* pTable = CreateTable(segmentKey,topLocation,botLocation,pDisplayUnits);
+   rptRcTable* pTable = CreateTable(pBroker,segmentKey,topLocation,botLocation,intervalIdx,pDisplayUnits);
    *pPara << pTable << rptNewLine;
 
    pgsPointOfInterest poi;
    poi.SetSegmentKey(segmentKey);
    FillTable(pBroker,pTable,topLocation,botLocation,intervalIdx,poi);
 
-   *pPara << _T("* Bar areas are ajusted for development, and bars must lie within tension portion of section before they are considered.");
+   *pPara << _T("* Bar areas are adjusted for development, and bars must lie within tension portion of section before they are considered.");
    *pPara << Sub2(_T("Y"),_T("na")) << _T(" is measured from the top of the girder") << rptNewLine;
 }
 
@@ -232,12 +232,12 @@ void CCastingYardRebarRequirementChapterBuilder::BuildTable(IBroker* pBroker,rpt
 
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
-   rptRcTable* pTable = CreateTable(poi.GetSegmentKey(),topLocation,botLocation,pDisplayUnits);
+   rptRcTable* pTable = CreateTable(pBroker, poi.GetSegmentKey(),topLocation,botLocation,intervalIdx,pDisplayUnits);
    *pPara << pTable << rptNewLine;
 
    FillTable(pBroker,pTable,topLocation,botLocation,intervalIdx,poi);
 
-   *pPara << _T("* Bar areas are ajusted for development, and bars must lie within tension portion of section before they are considered.");
+   *pPara << _T("* Bar areas are adjusted for development, and bars must lie within tension portion of section before they are considered.");
    *pPara << Sub2(_T("Y"),_T("na")) << _T(" is measured from the top of the closure joint") << rptNewLine;
 }
 
@@ -248,7 +248,7 @@ void CCastingYardRebarRequirementChapterBuilder::BuildTable(IBroker* pBroker,rpt
 
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
-   rptRcTable* pTable = CreateTable(girderKey,topLocation,botLocation,pDisplayUnits);
+   rptRcTable* pTable = CreateTable(pBroker, girderKey,topLocation,botLocation,intervalIdx,pDisplayUnits);
    *pPara << pTable << rptNewLine;
 
    CSegmentKey segmentKey(girderKey.groupIndex,girderKey.girderIndex,ALL_SEGMENTS);
@@ -261,9 +261,12 @@ void CCastingYardRebarRequirementChapterBuilder::BuildTable(IBroker* pBroker,rpt
    *pPara << Sub2(_T("Y"),_T("na")) << _T(" is measured from the top of the non-composite girder") << rptNewLine;
 }
 
-rptRcTable* CCastingYardRebarRequirementChapterBuilder::CreateTable(const CGirderKey& girderKey,pgsTypes::StressLocation topLocation,pgsTypes::StressLocation botLocation,IEAFDisplayUnits* pDisplayUnits) const
+rptRcTable* CCastingYardRebarRequirementChapterBuilder::CreateTable(IBroker* pBroker,const CGirderKey& girderKey,pgsTypes::StressLocation topLocation,pgsTypes::StressLocation botLocation,IntervalIndexType intervalIdx,IEAFDisplayUnits* pDisplayUnits) const
 {
-   rptRcTable* pTable = rptStyleManager::CreateDefaultTable(12, _T("Reinforcement requirements for Tension stress limit ") + std::_tstring(LrfdCw8th(_T("[C5.9.4.1.2]"), _T("[C5.9.2.3.1b]"))));
+   GET_IFACE2(pBroker, IIntervals, pIntervals);
+   CString strTitle;
+   strTitle.Format(_T("Reinforcement required for tension stress limit, Interval %d - %s, [%s]"), LABEL_INTERVAL(intervalIdx), pIntervals->GetDescription(intervalIdx), LrfdCw8th(_T("C5.9.4.1.2"), _T("C5.9.2.3.1b")));
+   rptRcTable* pTable = rptStyleManager::CreateDefaultTable(12, strTitle);
 
    pTable->SetNumberOfHeaderRows(2);
 

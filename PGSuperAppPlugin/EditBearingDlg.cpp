@@ -64,6 +64,8 @@ void CEditBearingDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialog::DoDataExchange(pDX);
 
+   DDX_MetaFileStatic(pDX, IDC_BEARING, m_Bearing, _T("BEARINGDIMENSIONS"),_T("Metafile"), EMF_FIT);
+
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);

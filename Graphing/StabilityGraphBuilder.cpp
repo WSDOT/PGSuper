@@ -478,8 +478,8 @@ void CStabilityGraphBuilder::DrawLegend(CDC* pDC)
    else
    {
       legend1 = _T("F.S. Against Cracking (FScr)");
-      legend2 = _T("F.S. Against Rollover (FSr)");
-      legend3 = _T("F.S. Against Failure (FSf)");
+      legend2 = _T("F.S. Against Failure (FSf)");
+      legend3 = _T("F.S. Against Rollover (FSr)");
    }
    
    size1 = pDC->GetTextExtent(legend1);

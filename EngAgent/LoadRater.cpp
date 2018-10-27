@@ -1391,8 +1391,10 @@ void pgsLoadRater::CheckReinforcementYielding(const CGirderKey& girderKey,const 
             }
             else
             {
-               llGain = pDetails->TimeStepDetails[loadRatingIntervalIdx].Strands[pgsTypes::Straight].dFllMax;
-               llGain += pDetails->TimeStepDetails[loadRatingIntervalIdx].Strands[pgsTypes::Harped].dFllMax;
+               Float64 neff;
+               Float64 ep = pStrandGeom->GetEccentricity(loadRatingIntervalIdx, poi, pgsTypes::Permanent, &neff);
+               Float64 Ixx = pSectProp->GetIxx(loadRatingIntervalIdx, poi);
+               llGain = LLIM*ep / Ixx;
             }
             llGain *= K_liveload;
 

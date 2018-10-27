@@ -53,6 +53,9 @@ private:
    DECLARE_UV_PROTOTYPE( rptLengthUnitValue,  ecc );
    DECLARE_UV_PROTOTYPE( rptMomentUnitValue,  moment );
    DECLARE_UV_PROTOTYPE( rptStressUnitValue,  stress );
+
+   bool m_bIsPrismatic;
+   bool m_bIsAsymmetric;
 };
 
 #endif //__EFFECTOFPTSTRANDSTABLE_H_

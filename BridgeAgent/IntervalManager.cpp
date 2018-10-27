@@ -1286,7 +1286,14 @@ void CIntervalManager::ProcessStep3(EventIndexType eventIdx,const CTimelineEvent
             cureDeckInterval.Duration = remaining_duration;
             cureDeckInterval.End = cureDeckInterval.Start + cureDeckInterval.Duration;
             cureDeckInterval.Middle = 0.5*(cureDeckInterval.Start + cureDeckInterval.End);
-            cureDeckInterval.Description = _T("Deck curing");
+            if (pBridgeDesc->GetDeckDescription()->GetDeckType() == pgsTypes::sdtCompositeOverlay)
+            {
+               cureDeckInterval.Description = _T("Composite overlay curing");
+            }
+            else
+            {
+               cureDeckInterval.Description = _T("Deck curing");
+            }
             StoreInterval(cureDeckInterval);
 
             if (IsStructuralDeck(pBridgeDesc->GetDeckDescription()->GetDeckType()))
@@ -1298,7 +1305,14 @@ void CIntervalManager::ProcessStep3(EventIndexType eventIdx,const CTimelineEvent
                compositeDeckInterval.Duration = 0;
                compositeDeckInterval.End = compositeDeckInterval.Start + compositeDeckInterval.Duration;
                compositeDeckInterval.Middle = 0.5*(compositeDeckInterval.Start + compositeDeckInterval.End);
-               compositeDeckInterval.Description = _T("Composite deck");
+               if (pBridgeDesc->GetDeckDescription()->GetDeckType() == pgsTypes::sdtCompositeOverlay)
+               {
+                  compositeDeckInterval.Description = _T("Composite overlay");
+               }
+               else
+               {
+                  compositeDeckInterval.Description = _T("Composite deck");
+               }
                m_CompositeDeckIntervalIdx = StoreInterval(compositeDeckInterval);
             }
          }

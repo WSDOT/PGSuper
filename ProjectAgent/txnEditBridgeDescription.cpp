@@ -57,12 +57,11 @@ void txnEditBridgeDescription::Undo()
 void txnEditBridgeDescription::Execute(int i)
 {
    GET_IFACE(IEvents, pEvents);
-   pEvents->HoldEvents(); // don't fire any changed events until all changes are done
+   // Exception-safe holder to keep from fireing events until we are done
+   CIEventsHolder event_holder(pEvents);
 
    GET_IFACE(IBridgeDescription,pBridgeDesc);
    pBridgeDesc->SetBridgeDescription( m_BridgeDesc[i] );
-
-   pEvents->FirePendingEvents();
 }
 
 txnTransaction* txnEditBridgeDescription::CreateClone() const

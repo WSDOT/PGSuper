@@ -93,6 +93,18 @@ void CEditLoadsView::DoDataExchange(CDataExchange* pDX)
 	//}}AFX_DATA_MAP
 }
 
+BOOL CEditLoadsView::PreTranslateMessage(MSG* pMsg)
+{
+   if (WM_KEYFIRST <= pMsg->message && pMsg->message <= WM_KEYLAST)
+   {
+      if (pMsg->wParam == VK_RETURN && pMsg->hwnd == m_LoadsListCtrl.GetSafeHwnd())
+      {
+         return CWnd::PreTranslateMessage(pMsg);
+      }
+   }
+   return __super::PreTranslateMessage(pMsg);
+}
+
 
 BEGIN_MESSAGE_MAP(CEditLoadsView, CFormView)
 	//{{AFX_MSG_MAP(CEditLoadsView)
@@ -101,6 +113,7 @@ BEGIN_MESSAGE_MAP(CEditLoadsView, CFormView)
 	ON_BN_CLICKED(IDC_DELETE_LOAD, OnDeleteLoad)
 	ON_BN_CLICKED(IDC_EDIT_LOAD, OnEditLoad)
 	ON_NOTIFY(NM_DBLCLK, IDC_LOADS_LIST, OnDblclkLoadsList)
+   ON_NOTIFY(NM_RETURN, IDC_LOADS_LIST, OnDblclkLoadsList)
 	ON_BN_CLICKED(IDC_ADD_NEW_DISTRIBUTED, OnAddDistributedLoad)
 	ON_NOTIFY(NM_CLICK, IDC_LOADS_LIST, OnClickLoadsList)
 	ON_NOTIFY(NM_RCLICK, IDC_LOADS_LIST, OnClickLoadsList)
@@ -570,33 +583,17 @@ void CEditLoadsView::EditLoad(POSITION pos)
    WORD load_idx = HIWORD(data);
 
    GET_IFACE(IEditByUI,pEditByUI);
-
    if (load_type == W_POINT_LOAD)
    {
-      if (pEditByUI->EditPointLoad(load_idx))
-      {
-         GET_IFACE(IUserDefinedLoadData, pUDL);
-         auto load = pUDL->GetPointLoad(load_idx);
-         UpdatePointLoadItem(nItem, *load);
-      }
+      pEditByUI->EditPointLoad(load_idx);
    }
    else if (load_type == W_MOMENT_LOAD)
    {
-      if (pEditByUI->EditMomentLoad(load_idx))
-      {
-         GET_IFACE(IUserDefinedLoadData, pUDL);
-         auto load = pUDL->GetMomentLoad(load_idx);
-         UpdateMomentLoadItem(nItem, *load);
-      }
+      pEditByUI->EditMomentLoad(load_idx);
    }
    else if (load_type == W_DISTRIBUTED_LOAD)
    {
-      if (pEditByUI->EditDistributedLoad(load_idx))
-      {
-         GET_IFACE(IUserDefinedLoadData, pUDL);
-         auto load = pUDL->GetDistributedLoad(load_idx);
-         UpdateDistributedLoadItem(nItem, *load);
-      }
+      pEditByUI->EditDistributedLoad(load_idx);
    }
    else
    {

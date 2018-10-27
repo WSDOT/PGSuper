@@ -302,6 +302,10 @@ void CGirderNameGrid::OnExpand()
       }
    }
 
+#if defined _DEBUG
+   m_pGirderGroup->AssertValid();
+#endif
+
    UpdateGrid();
 }
 
@@ -330,6 +334,10 @@ void CGirderNameGrid::OnJoin()
 
       m_pGirderGroup->Join(firstGdrIdx,lastGdrIdx,firstGdrIdx);
   }
+
+#if defined _DEBUG
+   m_pGirderGroup->AssertValid();
+#endif
 
    UpdateGrid();
 }
@@ -361,6 +369,10 @@ BOOL CGirderNameGrid::OnEndEditing(ROWCOL nRow,ROWCOL nCol)
       
       m_pGirderGroup->SetGirderLibraryEntry(gdrTypeGroupIdx,pGdrEntry);
    }
+
+#if defined _DEBUG
+   m_pGirderGroup->AssertValid();
+#endif
 
    return CGXGridWnd::OnEndEditing(nRow,nCol);
 }

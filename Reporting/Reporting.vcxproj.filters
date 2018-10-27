@@ -493,6 +493,12 @@
     <ClCompile Include="BearingSeatElevationsDetailsChapterBuilder2.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="LoadRatingReportDlg.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="PrestressRotationTable.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Include\Reporting\ACI209CreepCoefficientChapterBuilder.h">
@@ -997,6 +1003,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\Include\Reporting\BearingSeatElevationsChapterBuilder2.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Reporting\LoadRatingReportDlg.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Reporting\PrestressRotationTable.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

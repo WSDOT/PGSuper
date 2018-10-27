@@ -92,6 +92,8 @@ void CBridgeDescrBearings::DoDataExchange(CDataExchange* pDX)
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
+   DDX_MetaFileStatic(pDX, IDC_BEARING, m_Bearing, _T("BEARINGDIMENSIONS"), _T("Metafile"), EMF_FIT);
+
    DDX_CBItemData(pDX, IDC_BRG_TYPE, m_BearingInputData.m_BearingType);
 
    DDX_CBIndex(pDX, IDC_BRG_SHAPE, (int&)m_BearingInputData.m_SingleBearing.Shape);
@@ -176,7 +178,7 @@ void CBridgeDescrBearings::OnCbnSelchangeBrgType()
    const int ctls[] = { IDC_BRG_SHAPE, IDC_STATIC_B1, IDC_STATIC_B2, IDC_BRG_SPACING, IDC_BRG_SPACING_STATIC, IDC_BRG_SPACING_UNIT, IDC_BRG_LENGTH,
                 IDC_BRG_LENGTH_STATIC, IDC_BRG_LENGTH_UNIT, IDC_BRG_WIDTH, IDC_BRG_WIDTH_STATIC, IDC_BRG_WIDTH_UNIT, IDC_BRG_HEIGHT,
                 IDC_STATIC_B3, IDC_BRG_HEIGHT_UNIT, IDC_BRG_RECESS, IDC_STATIC_B4, IDC_BRG_RECESS_UNIT, IDC_BRG_SOLEPLATE,
-                IDC_STATIC_B6, IDC_BRG_SOLEPLATE_UNIT, IDC_BRG_COUNT, IDC_BRG_RECESS_LENGTH, IDC_STATIC_B5, IDC_BRG_RECESS_LENGTH_UNIT, -1 };
+                IDC_STATIC_B6, IDC_BRG_SOLEPLATE_UNIT, IDC_BRG_COUNT, IDC_BRG_RECESS_LENGTH, IDC_STATIC_B5, IDC_BRG_RECESS_LENGTH_UNIT, IDC_BEARING, -1 };
    int i = 0;
    while (ctls[i] != -1)
    {

@@ -343,8 +343,20 @@ rptChapter* CPGSuperTitlePageBuilder::Build(std::shared_ptr<CReportSpecification
       (*pTable)(row,0) << _T("Debond");
       (*pTable)(row++,1) << _T("Point where bond begins for a debonded strand");
 
-      (*pTable)(row,0) << _T("PSXFR");
-      (*pTable)(row++,1) << _T("Point of prestress transfer");
+      (*pTable)(row, 0) << _T("PSXFR");
+      (*pTable)(row++, 1) << _T("Point of prestress transfer");
+
+      (*pTable)(row, 0) << _T("FoS");
+      (*pTable)(row++, 1) << _T("Face of Support");
+
+      (*pTable)(row, 0) << _T("ST");
+      (*pTable)(row++, 1) << _T("Section Transitions");
+
+      (*pTable)(row, 0) << _T("STLF");
+      (*pTable)(row++, 1) << _T("Section Transitions, Left Face");
+
+      (*pTable)(row, 0) << _T("STRF");
+      (*pTable)(row++, 1) << _T("Section Transitions, Right Face");
 
       (*pTable)(row,0) << _T("Diaphragm");
       (*pTable)(row++,1) << _T("Location of a precast or cast in place diaphragm");

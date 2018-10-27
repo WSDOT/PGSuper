@@ -103,12 +103,15 @@ public:
 
    void GetRebarMaterial(matRebar::Type* pType,matRebar::Grade* pGrade);
 
+   virtual void GetLastZoneName(CString& strSymmetric, CString& strEnd);
+
     virtual void DoRestoreDefaults(); // Allow children to implement
 protected:
     bool m_bAllowRestoreDefaults;
     CRebarMaterialComboBox m_cbRebar;
 
     virtual UINT GetHelpID();
+
 };
 
 //{{AFX_INSERT_LOCATION}}

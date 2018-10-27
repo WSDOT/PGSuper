@@ -1701,39 +1701,31 @@ Float64 pgsPsForceEng::GetElasticGainDueToLiveLoad(const pgsPointOfInterest& poi
    }
    pgsTypes::IntervalTimeType intervalTime = pgsTypes::End;
 
+   GET_IFACE(IProductForces, pProductForces);
+   pgsTypes::BridgeAnalysisType bat = pProductForces->GetBridgeAnalysisType(pgsTypes::Maximize);
+   pgsTypes::LiveLoadType llType = LiveLoadTypeFromLimitState(limitState);
+   Float64 Mmin, Mmax;
+
+   if (vehicleIndex == INVALID_INDEX)
+   {
+      pProductForces->GetLiveLoadMoment(liveLoadIntervalIdx, llType, poi, bat, true/*include impact*/, true/*include LLDF*/, &Mmin, &Mmax);
+   }
+   else
+   {
+      pProductForces->GetVehicularLiveLoadMoment(liveLoadIntervalIdx, llType, vehicleIndex, poi, bat, true/*include impact*/, true/*include LLDF*/, &Mmin, &Mmax);
+   }
+
+
    Float64 gain = 0;
    if (pDetails->LossMethod == pgsTypes::TIME_STEP)
    {
 #if defined LUMP_STRANDS
-      if (strandType == pgsTypes::Permanent)
-      {
-         StrandIndexType Ns, Nh;
-         if (pConfig)
-         {
-            Ns = pConfig->PrestressConfig.GetStrandCount(pgsTypes::Straight);
-            Nh = pConfig->PrestressConfig.GetStrandCount(pgsTypes::Harped);
-         }
-         else
-         {
-            const CSegmentKey& segmentKey(poi.GetSegmentKey());
-            GET_IFACE(IStrandGeometry, pStrandGeom);
-            Ns = pStrandGeom->GetStrandCount(segmentKey, pgsTypes::Straight);
-            Nh = pStrandGeom->GetStrandCount(segmentKey, pgsTypes::Harped);
-         }
-
-         if (Ns + Nh == 0)
-         {
-            return 0;
-         }
-
-         Float64 fllStraight = pDetails->TimeStepDetails[liveLoadIntervalIdx].Strands[pgsTypes::Straight].dFllMax;
-         Float64 fllHarped = pDetails->TimeStepDetails[liveLoadIntervalIdx].Strands[pgsTypes::Harped].dFllMax;
-         gain += gLL*(Ns*fllStraight + Nh*fllHarped) / (Ns + Nh);
-      }
-      else
-      {
-         gain += gLL*pDetails->TimeStepDetails[liveLoadIntervalIdx].Strands[strandType].dFllMax;
-      }
+      GET_IFACE(IStrandGeometry, pStrandGeom);
+      GET_IFACE(ISectionProperties, pSectProps);
+      Float64 neff;
+      Float64 e = pStrandGeom->GetEccentricity(liveLoadIntervalIdx, poi, strandType, &neff);
+      Float64 Ixx = pSectProps->GetIxx(liveLoadIntervalIdx, poi);
+      gain = gLL * Mmax * e / Ixx;
 #else
       GET_IFACE(IStrandGeometry, pStrandGeom);
       for (int i = 0; i < 2; i++) // straight and harped only, temp strands have been removed
@@ -1742,12 +1734,12 @@ Float64 pgsPsForceEng::GetElasticGainDueToLiveLoad(const pgsPointOfInterest& poi
          StrandIndexType nStrands = pStrandGeom->GetStrandCount(segmentKey, strandType);
          for (StrandIndexType strandIdx = 0; strandIdx < nStrands; strandIdx++)
          {
+            THIS IS NOT CORRECT FOR INDIVIDUAL STRANDS
             const TIME_STEP_STRAND& strand(pDetails->TimeStepDetails[liveLoadIntervalIdx].Strands[strandType][strandIdx]);
             gain += gLL*strand.dFllMax;
          }
       }
 #endif // LUMP_STRANDS
-      return gain;
    }
    else
    {
@@ -1763,23 +1755,10 @@ Float64 pgsPsForceEng::GetElasticGainDueToLiveLoad(const pgsPointOfInterest& poi
          const SpecLibraryEntry* pSpecEntry = pLibrary->GetSpecEntry(pSpec->GetSpecification().c_str());
          Float64 K_liveload = pSpecEntry->GetLiveLoadElasticGain();
 
-         GET_IFACE(IProductForces, pProductForces);
-         pgsTypes::BridgeAnalysisType bat = pProductForces->GetBridgeAnalysisType(pgsTypes::Maximize);
-         pgsTypes::LiveLoadType llType = LiveLoadTypeFromLimitState(limitState);
-         Float64 Mmin, Mmax;
-
-         if (vehicleIndex == INVALID_INDEX)
-         {
-            pProductForces->GetLiveLoadMoment(liveLoadIntervalIdx, llType, poi, bat, true/*include impact*/, true/*include LLDF*/, &Mmin, &Mmax);
-         }
-         else
-         {
-            pProductForces->GetVehicularLiveLoadMoment(liveLoadIntervalIdx, llType, vehicleIndex, poi, bat, true/*include impact*/, true/*include LLDF*/, &Mmin, &Mmax);
-         }
          llGain = pDetails->pLosses->ElasticGainDueToLiveLoad(Mmax);
          llGain *= K_liveload;
       }
       gain += gLL*llGain;
-      return gain;
    }
+   return gain;
 }

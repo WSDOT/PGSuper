@@ -154,15 +154,16 @@ void CInterfaceShearTable::Build( IBroker* pBroker, rptChapter* pChapter,
 
          const pgsHorizontalShearArtifact* pArtifact = psArtifact->GetHorizontalShearArtifact();
 
-         if (!pArtifact->IsApplicable())
-         {
-            continue;
-         }
-
-         if ( pArtifact->DidAvsDecreaseAtEnd() )
+         // this check is always applicable and must come before IsApplicable() below
+         if (pArtifact->DidAvsDecreaseAtEnd())
          {
             bDidAvsDecreaseAtEnd = true;
             poiAtEnd = poi;
+         }
+
+         if (!pArtifact->IsApplicable())
+         {
+            continue;
          }
 
          ColumnIndexType col = 0;

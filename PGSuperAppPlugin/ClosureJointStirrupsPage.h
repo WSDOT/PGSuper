@@ -18,6 +18,8 @@ protected:
 
 public:
    virtual BOOL OnInitDialog();
+   virtual void GetLastZoneName(CString& strSymmetric, CString& strEnd) override;
+
 protected:
    virtual void DoDataExchange(CDataExchange* pDX);
 };

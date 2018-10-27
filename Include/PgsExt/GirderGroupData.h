@@ -276,6 +276,8 @@ private:
 
    void RemoveGirder(GirderIndexType gdrIdx);
 
+   void RepairGirderTypeGroups();
+
    void UpdatePiers();
    void UpdateSlabOffsets(PierIndexType newPierIdx);
 

@@ -56,6 +56,9 @@ private:
    DECLARE_UV_PROTOTYPE( rptTimeUnitValue,    time);
    rptRcScalar scalar;
    rptRcScalar strain;
+
+   bool m_bIsPrismatic;
+   bool m_bIsAsymmetric;
 };
 
 #endif //__SHRINKAGEATDECKPLACEMENTTABLE_H_

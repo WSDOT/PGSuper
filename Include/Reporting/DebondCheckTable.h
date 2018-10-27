@@ -61,7 +61,7 @@ public:
 
    // GROUP: OPERATIONS
 
-   void Build(rptChapter* pChapter, IBroker* pBroker,const pgsGirderArtifact* pGirderArtifact,pgsTypes::StrandType strandType,IEAFDisplayUnits* pDisplayUnits) const;
+   void Build(rptChapter* pChapter, IBroker* pBroker,const pgsGirderArtifact* pGirderArtifact,IEAFDisplayUnits* pDisplayUnits) const;
 
 private:
    //------------------------------------------------------------------------

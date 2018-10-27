@@ -273,10 +273,16 @@ void CShrinkageAtFinalTable::AddRow(rptChapter* pChapter,IBroker* pBroker,const 
       return;
    }
 
-   (*this)(row,1) << area.SetValue(pDetails->pLosses->GetApsPermanent());
-   (*this)(row,2) << area.SetValue(pDetails->pLosses->GetAcn());
-   (*this)(row,3) << mom_inertia.SetValue(pDetails->pLosses->GetIcn());
-   (*this)(row,4) << ecc.SetValue(pDetails->pLosses->GetEccpc());
-   (*this)(row,5) << scalar.SetValue(ptl->GetKdf());
-   (*this)(row,6) << stress.SetValue(ptl->ShrinkageLossAfterDeckPlacement());
+   Float64 Acn, Ybcn, Icn;
+   pDetails->pLosses->GetNetCompositeProperties(&Acn, &Ybcn, &Icn);
+
+   ColumnIndexType col = 1;
+   RowIndexType rowOffset = GetNumberOfHeaderRows() - 1;
+
+   (*this)(row+rowOffset,col++) << area.SetValue(pDetails->pLosses->GetApsPermanent());
+   (*this)(row+rowOffset,col++) << area.SetValue(Acn);
+   (*this)(row+rowOffset,col++) << mom_inertia.SetValue(Icn);
+   (*this)(row+rowOffset,col++) << ecc.SetValue(pDetails->pLosses->GetEccpc());
+   (*this)(row+rowOffset,col++) << scalar.SetValue(ptl->GetKdf());
+   (*this)(row+rowOffset,col++) << stress.SetValue(ptl->ShrinkageLossAfterDeckPlacement());
 }

@@ -45,6 +45,7 @@ private:
 
    bool m_bTemporaryStrands;
    bool m_bIsPrismatic;
+   bool m_bIsAsymmetric;
 
    DECLARE_UV_PROTOTYPE( rptPointOfInterest,  spanloc );
    DECLARE_UV_PROTOTYPE( rptPointOfInterest,  gdrloc );

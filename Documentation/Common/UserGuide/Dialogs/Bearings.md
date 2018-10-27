@@ -22,4 +22,6 @@ Recess Height | Enter the vertical distance that the bearing is cut into the gir
 Recess Length | Enter the length of the recess cut into the girder as measured along the girder C.L.
 Sole Plate | Enter the vertical height of the sole plate attached to the bottom of the girder. The sole plate will be recessed into the girder if a recess is specified.
 
-> TIP: The bearing length is used to compute the critical section for shear, which is located at one-half of the bearing length from the C.L. bearing.
+> NOTE: The bearing length is used to compute the critical section for shear, which is located at one-half of the bearing length from the C.L. bearing.
+
+> TIP: Use the bearing dimensions to define the temporary supports (often oak blocks) during construction for continuous and integral piers. The girder setting elevation will be computed and reported as the bearing seat elevation.

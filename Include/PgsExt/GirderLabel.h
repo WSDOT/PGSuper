@@ -34,7 +34,7 @@ interface IEAFDisplayUnits;
 #include <PgsExt\Keys.h>
 
 #define LABEL_GIRDER(_g_) pgsGirderLabel::GetGirderLabel(_g_).c_str()
-#define LABEL_INDEX(_i_) (IndexType)(_i_+1)
+#define LABEL_INDEX(_i_) (IndexType)((_i_)+1)
 #define LABEL_GROUP(_g_) (GroupIndexType)LABEL_INDEX(_g_)
 #define LABEL_SPAN(_s_) (SpanIndexType)LABEL_INDEX(_s_)
 #define LABEL_PIER(_p_) (PierIndexType)LABEL_INDEX(_p_)

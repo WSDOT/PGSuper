@@ -22,6 +22,7 @@
 
 #include "StdAfx.h"
 #include <Reporting\LoadRatingChapterBuilder.h>
+#include <Reporting\LoadRatingReportSpecificationBuilder.h>
 #include <Reporting\RatingSummaryTable.h>
 
 #include <IFace\Artifact.h>
@@ -59,13 +60,13 @@ LPCTSTR CLoadRatingChapterBuilder::GetName() const
 
 rptChapter* CLoadRatingChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
 {
-   CGirderLineReportSpecification* pGdrLineRptSpec = dynamic_cast<CGirderLineReportSpecification*>(pRptSpec);
+   CLoadRatingReportSpecification* pLoadRatingRptSpec = dynamic_cast<CLoadRatingReportSpecification*>(pRptSpec);
    CComPtr<IBroker> pBroker;
    CGirderKey girderKey;
 
-   ATLASSERT(pGdrLineRptSpec);
-   pGdrLineRptSpec->GetBroker(&pBroker);
-   girderKey = pGdrLineRptSpec->GetGirderKey();
+   ATLASSERT(pLoadRatingRptSpec);
+   pLoadRatingRptSpec->GetBroker(&pBroker);
+   girderKey = pLoadRatingRptSpec->GetGirderKey();
 
    GET_IFACE2(pBroker,IRatingSpecification,pRatingSpec);
 

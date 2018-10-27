@@ -114,7 +114,8 @@ CEffectivePrestressTable* CEffectivePrestressTable::PrepareTable(rptChapter* pCh
    rptParagraph* pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pParagraph;
 
-   *pParagraph << _T("Effective Prestress") << rptNewLine;
+   pParagraph->SetName(_T("Effective Prestress"));
+   *pParagraph << pParagraph->GetName() << rptNewLine;
 
 
    GET_IFACE2(pBroker,ILoadFactors,pLoadFactors);
@@ -254,6 +255,8 @@ CEffectivePrestressTable* CEffectivePrestressTable::PrepareTable(rptChapter* pCh
 void CEffectivePrestressTable::AddRow(rptChapter* pChapter,IBroker* pBroker,const pgsPointOfInterest& poi,RowIndexType row,const LOSSDETAILS* pDetails,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
 {
    ColumnIndexType col = 1;
+   RowIndexType rowOffset = GetNumberOfHeaderRows() - 1;
+
    Float64 fpj = pDetails->pLosses->GetFpjPermanent();
 
    // Long Term Time Dependent Losses
@@ -326,44 +329,44 @@ void CEffectivePrestressTable::AddRow(rptChapter* pChapter,IBroker* pBroker,cons
    ATLASSERT(IsEqual(fpe,_fpe_));
 #endif
 
-   // Fill up the table row
-   (*this)(row,col++) << stress.SetValue(fpj);
+   // Fill up the table row+rowOffset
+   (*this)(row+rowOffset,col++) << stress.SetValue(fpj);
    if ( !m_bIgnoreInitialRelaxation )
    {
-      (*this)(row,col++) << stress.SetValue(fpR0);
+      (*this)(row+rowOffset,col++) << stress.SetValue(fpR0);
    }
    
-   (*this)(row,col++) << stress.SetValue(fpES);
+   (*this)(row+rowOffset,col++) << stress.SetValue(fpES);
    
    if ( m_bPTTempStrand )
    {
-      (*this)(row,col++) << stress.SetValue(fpp);
+      (*this)(row+rowOffset,col++) << stress.SetValue(fpp);
    }
    
    if ( m_bTempStrands )
    {
-      (*this)(row,col++) << stress.SetValue(fptr);
+      (*this)(row+rowOffset,col++) << stress.SetValue(fptr);
    }
 
-   (*this)(row,col++) << stress.SetValue(fpLT);
-   (*this)(row,col++) << stress.SetValue(fpED);
-   (*this)(row,col++) << stress.SetValue(fpSIDL);
+   (*this)(row+rowOffset,col++) << stress.SetValue(fpLT);
+   (*this)(row+rowOffset,col++) << stress.SetValue(fpED);
+   (*this)(row+rowOffset,col++) << stress.SetValue(fpSIDL);
 
-   (*this)(row,col++) << stress.SetValue(fpT);
-   (*this)(row,col++) << scalar.SetValue(adj);
-   (*this)(row,col++) << stress.SetValue(fpe);
+   (*this)(row+rowOffset,col++) << stress.SetValue(fpT);
+   (*this)(row+rowOffset,col++) << scalar.SetValue(adj);
+   (*this)(row+rowOffset,col++) << stress.SetValue(fpe);
 
 
    if (lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims)
    {
-      (*this)(row, col++) << stress.SetValue(fpLL_Design);
+      (*this)(row+rowOffset, col++) << stress.SetValue(fpLL_Design);
    }
    else
    {
-      (*this)(row, col++) << stress.SetValue(fpLL_Design);
-      (*this)(row, col++) << stress.SetValue(fpLL_Fatigue);
+      (*this)(row+rowOffset, col++) << stress.SetValue(fpLL_Design);
+      (*this)(row+rowOffset, col++) << stress.SetValue(fpLL_Fatigue);
    }
-   (*this)(row, col++) << stress.SetValue(fpe + m_gLL_ServiceI*fpLL_Design);
-   (*this)(row, col++) << stress.SetValue(fpe + m_gLL_ServiceIII*fpLL_Design);
-   (*this)(row, col++) << stress.SetValue(fpe + m_gLL_Fatigue*fpLL_Fatigue);
+   (*this)(row+rowOffset, col++) << stress.SetValue(fpe + m_gLL_ServiceI*fpLL_Design);
+   (*this)(row+rowOffset, col++) << stress.SetValue(fpe + m_gLL_ServiceIII*fpLL_Design);
+   (*this)(row+rowOffset, col++) << stress.SetValue(fpe + m_gLL_Fatigue*fpLL_Fatigue);
 }

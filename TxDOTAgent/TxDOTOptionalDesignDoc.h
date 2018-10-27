@@ -192,7 +192,7 @@ private:
    void UpdatePgsuperModelWithData();
    void VerifyPgsuperTemplateData(CBridgeDescription2& bridgeDesc);
    void SetGirderData(CTxDOTOptionalDesignGirderData* pOdGirderData, GirderIndexType gdr,
-                      LPCTSTR gdrName, const GirderLibraryEntry* pGdrEntry, Float64 EcBeam,
+                      LPCTSTR gdrName, const GirderLibraryEntry* pGdrEntry, Float64 EcBeam, Float64 weightDensity,
                       CGirderGroupData* pGroup);
 
    void RecreateBroker();

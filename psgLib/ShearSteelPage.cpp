@@ -364,6 +364,13 @@ BOOL CShearSteelPage::OnInitDialog()
    GetDlgItem(IDC_RESTORE_DEFAULTS)->ShowWindow(m_bAllowRestoreDefaults ? SW_SHOW : SW_HIDE);
    GetDlgItem(IDC_SEED_VALUE_NOTE)->ShowWindow(m_bAllowRestoreDefaults ? SW_HIDE : SW_SHOW);
 
+   CString strSymmetric, strEnd;
+   GetLastZoneName(strSymmetric, strEnd);
+   CString strLabel;
+   strLabel.Format(_T("Make zones symmetric about %s"), strSymmetric);
+   GetDlgItem(IDC_SYMMETRICAL)->SetWindowText(strLabel);
+
+
 	CPropertyPage::OnInitDialog();
 
    CWnd* pWnd = GetParent();
@@ -491,4 +498,10 @@ void CShearSteelPage::OnRestoreDefaults()
 void CShearSteelPage::DoRestoreDefaults()
 {
     ATLASSERT(false); // library should never want to do this
+}
+
+void CShearSteelPage::GetLastZoneName(CString& strSymmetric, CString& strEnd)
+{
+   strSymmetric = _T("mid-span");
+   strEnd = _T("girder end");
 }

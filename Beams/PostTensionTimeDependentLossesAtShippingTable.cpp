@@ -78,13 +78,14 @@ CPostTensionTimeDependentLossesAtShippingTable* CPostTensionTimeDependentLossesA
 
       *pParagraph << table << rptNewLine;
 
-      (*table)(0,0) << COLHDR(_T("Location from")<<rptNewLine<<_T("End of Girder"),rptLengthUnitTag,  pDisplayUnits->GetSpanLengthUnit() );
-      (*table)(0,1) << COLHDR(_T("Location from")<<rptNewLine<<_T("Left Support"),rptLengthUnitTag,  pDisplayUnits->GetSpanLengthUnit() );
-      (*table)(0,2) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pF")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-      (*table)(0,3) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pA")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-      (*table)(0,4) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pt avg")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-      (*table)(0,5) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pLTH")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-      (*table)(0,6) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("ptH")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      ColumnIndexType col = 0;
+      (*table)(0,col++) << COLHDR(_T("Location from")<<rptNewLine<<_T("End of Girder"),rptLengthUnitTag,  pDisplayUnits->GetSpanLengthUnit() );
+      (*table)(0,col++) << COLHDR(_T("Location from")<<rptNewLine<<_T("Left Support"),rptLengthUnitTag,  pDisplayUnits->GetSpanLengthUnit() );
+      (*table)(0,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pF")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      (*table)(0,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pA")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      (*table)(0,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pt avg")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      (*table)(0,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pLTH")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      (*table)(0,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("ptH")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    }
 
    return table;
@@ -92,9 +93,12 @@ CPostTensionTimeDependentLossesAtShippingTable* CPostTensionTimeDependentLossesA
 
 void CPostTensionTimeDependentLossesAtShippingTable::AddRow(rptChapter* pChapter,IBroker* pBroker,const pgsPointOfInterest& poi,RowIndexType row,const LOSSDETAILS* pDetails,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
 {
-   (*this)(row,2) << stress.SetValue(pDetails->pLosses->FrictionLoss());
-   (*this)(row,3) << stress.SetValue(pDetails->pLosses->AnchorSetLoss());
-   (*this)(row,4) << stress.SetValue(pDetails->pLosses->GetDeltaFptAvg());
-   (*this)(row,5) << stress.SetValue(pDetails->pLosses->TemporaryStrand_TimeDependentLossesAtShipping() );
-   (*this)(row,6) << stress.SetValue(pDetails->pLosses->TemporaryStrand_AtShipping());
+   ColumnIndexType col = 2;
+   RowIndexType rowOffset = GetNumberOfHeaderRows() - 1;
+
+   (*this)(row+rowOffset,col++) << stress.SetValue(pDetails->pLosses->FrictionLoss());
+   (*this)(row+rowOffset,col++) << stress.SetValue(pDetails->pLosses->AnchorSetLoss());
+   (*this)(row+rowOffset,col++) << stress.SetValue(pDetails->pLosses->GetDeltaFptAvg());
+   (*this)(row+rowOffset,col++) << stress.SetValue(pDetails->pLosses->TemporaryStrand_TimeDependentLossesAtShipping() );
+   (*this)(row+rowOffset,col++) << stress.SetValue(pDetails->pLosses->TemporaryStrand_AtShipping());
 }

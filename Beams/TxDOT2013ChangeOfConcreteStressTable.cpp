@@ -75,9 +75,12 @@ CTxDOT2013ChangeOfConcreteStressTable* CTxDOT2013ChangeOfConcreteStressTable::Pr
       INIT_UV_PROTOTYPE( rptLength4UnitValue,mom_inertia,  pDisplayUnits->GetMomentOfInertiaUnit(), true );
       INIT_UV_PROTOTYPE( rptLengthUnitValue,  ecc,         pDisplayUnits->GetComponentDimUnit(),    true );
 
+      Float64 Ag, Ybg, Ixx, Iyy, Ixy;
+      pDetails->pLosses->GetNoncompositeProperties(&Ag, &Ybg, &Ixx, &Iyy, &Ixy);
+
       *pParagraph << Sub2(_T("M"),_T("sd")) << _T(" = ") << moment.SetValue( ptl->GetSdMoment())<< _T(" = Moment at mid-girder due to deck weight and other superimposed dead loads")  << rptNewLine;
-      *pParagraph << Sub2(_T("e"),_T("m")) << _T(" = ") <<ecc.SetValue( pDetails->pLosses->GetEccPermanentFinal()) << rptNewLine;
-      *pParagraph << Sub2(_T("I"),_T("g")) << _T(" = ") << mom_inertia.SetValue(pDetails->pLosses->GetIg()) << rptNewLine << rptNewLine;
+      *pParagraph << Sub2(_T("e"),_T("m")) << _T(" = ") <<ecc.SetValue( pDetails->pLosses->GetEccPermanentFinal().Y()) << rptNewLine;
+      *pParagraph << Sub2(_T("I"),_T("g")) << _T(" = ") << mom_inertia.SetValue(Ixx) << rptNewLine << rptNewLine;
       *pParagraph << Sub2(_T("f"),_T("cdp")) << _T(" = ") << stress.SetValue( pDetails->pLosses->GetDeltaFcd1() ) << rptNewLine << rptNewLine;
 
       return nullptr; // no table needed for 0.7fpu case
@@ -122,8 +125,13 @@ void CTxDOT2013ChangeOfConcreteStressTable::AddRow(rptChapter* pChapter,IBroker*
       return;
    }
 
-   (*this)(row,1) << moment.SetValue( ptl->GetSdMoment() );
-   (*this)(row,2) << dim.SetValue( pDetails->pLosses->GetEccPermanentFinal() );
-   (*this)(row,3) << mom_inertia.SetValue( pDetails->pLosses->GetIg() );
-   (*this)(row,4) << stress.SetValue( pDetails->pLosses->GetDeltaFcd1() );
+   Float64 Ag, Ybg, Ixx, Iyy, Ixy;
+   pDetails->pLosses->GetNoncompositeProperties(&Ag, &Ybg, &Ixx, &Iyy, &Ixy);
+
+   RowIndexType rowOffset = GetNumberOfHeaderRows() - 1;
+
+   (*this)(row+rowOffset,1) << moment.SetValue( ptl->GetSdMoment() );
+   (*this)(row+rowOffset,2) << dim.SetValue( pDetails->pLosses->GetEccPermanentFinal().Y() );
+   (*this)(row+rowOffset,3) << mom_inertia.SetValue( Ixx );
+   (*this)(row+rowOffset,4) << stress.SetValue( pDetails->pLosses->GetDeltaFcd1() );
 }

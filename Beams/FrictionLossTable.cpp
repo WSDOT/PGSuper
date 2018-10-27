@@ -61,7 +61,8 @@ CFrictionLossTable* CFrictionLossTable::PrepareTable(rptChapter* pChapter,IBroke
    
    rptParagraph* pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pParagraph;
-   *pParagraph << _T("Friction and Anchor Set loss in post-tensioned temporary strands [") << LrfdCw8th(_T("5.9.5.2.1, "), _T("5.9.3.2.1, ")) << LrfdCw8th(_T("5.9.5.2.2b"), _T("5.9.3.2.2b")) <<_T("]") << rptNewLine;
+   pParagraph->SetName(_T("Friction and Anchor Set loss in post-tensioned temporary strands"));
+   *pParagraph << pParagraph->GetName() << _T(" [") << LrfdCw8th(_T("5.9.5.2.1, "), _T("5.9.3.2.1, ")) << LrfdCw8th(_T("5.9.5.2.2b"), _T("5.9.3.2.2b")) <<_T("]") << rptNewLine;
 
    pParagraph = new rptParagraph;
    *pChapter << pParagraph;
@@ -91,19 +92,21 @@ CFrictionLossTable* CFrictionLossTable::PrepareTable(rptChapter* pChapter,IBroke
 
    *pParagraph << table << rptNewLine;
 
-
-   (*table)(0,0) << COLHDR(_T("Location from")<<rptNewLine<<_T("End of Girder"),rptLengthUnitTag,  pDisplayUnits->GetSpanLengthUnit() );
-   (*table)(0,1) << COLHDR(_T("Location from")<<rptNewLine<<_T("Left Support"),rptLengthUnitTag,  pDisplayUnits->GetSpanLengthUnit() );
-   (*table)(0,2) << COLHDR(_T("x"),rptLengthUnitTag,pDisplayUnits->GetSpanLengthUnit());
-   (*table)(0,3) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pF")) << _T(" @ x") , rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   (*table)(0,4) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pA")) << _T(" @ x") , rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   ColumnIndexType col = 0;
+   (*table)(0,col++) << COLHDR(_T("Location from")<<rptNewLine<<_T("End of Girder"),rptLengthUnitTag,  pDisplayUnits->GetSpanLengthUnit() );
+   (*table)(0,col++) << COLHDR(_T("Location from")<<rptNewLine<<_T("Left Support"),rptLengthUnitTag,  pDisplayUnits->GetSpanLengthUnit() );
+   (*table)(0,col++) << COLHDR(_T("x"),rptLengthUnitTag,pDisplayUnits->GetSpanLengthUnit());
+   (*table)(0,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pF")) << _T(" @ x") , rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*table)(0,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pA")) << _T(" @ x") , rptStressUnitTag, pDisplayUnits->GetStressUnit() );
 
    return table;
 }
 
 void CFrictionLossTable::AddRow(rptChapter* pChapter,IBroker* pBroker,const pgsPointOfInterest& poi,RowIndexType row,const LOSSDETAILS* pDetails,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
 {
-   (*this)(row,2) << offset.SetValue(pDetails->pLosses->GetLocation()   );
-   (*this)(row,3) << stress.SetValue(pDetails->pLosses->FrictionLoss()  );
-   (*this)(row,4) << stress.SetValue(pDetails->pLosses->AnchorSetLoss() );
+   ColumnIndexType col = 2;
+   RowIndexType rowOffset = GetNumberOfHeaderRows() - 1;
+   (*this)(row+rowOffset,col++) << offset.SetValue(pDetails->pLosses->GetLocation()   );
+   (*this)(row+rowOffset,col++) << stress.SetValue(pDetails->pLosses->FrictionLoss()  );
+   (*this)(row+rowOffset,col++) << stress.SetValue(pDetails->pLosses->AnchorSetLoss() );
 }

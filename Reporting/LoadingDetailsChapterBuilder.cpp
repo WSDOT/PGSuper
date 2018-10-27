@@ -618,11 +618,11 @@ void CLoadingDetailsChapterBuilder::ReportSlabLoad(rptChapter* pChapter,IBridge*
          GET_IFACE2( pBroker, ISpecification, pSpec );
          if (pgsTypes::hlcAccountForCamber == pSpec->GetHaunchLoadComputationType())
          {
-            *pNotePara <<rptNewLine<< _T("Haunch weight includes effects of roadway geometry. Haunch depth used when computing haunch load is reduced for camber assuming that excess camber is a linear-piecewise parabola defined by the user-input assumed excess camber at mid-span.");
+            *pNotePara <<rptNewLine<< _T("Haunch weight includes effects of roadway geometry and is measured along the centerline of the girder. Haunch depth used when computing haunch load is reduced for camber assuming that excess camber is a linear-piecewise parabola defined by the user-input assumed excess camber at mid-span.");
          }
          else
          {
-            *pNotePara <<rptNewLine<< _T("Haunch weight includes effects of roadway geometry but does not include a reduction for camber.");
+            *pNotePara <<rptNewLine<< _T("Haunch weight includes effects of roadway geometry,  and is measured along the centerline of the girder, but does not include a reduction for camber.");
          }
       }
 
@@ -1007,7 +1007,7 @@ void CLoadingDetailsChapterBuilder::ReportLongitudinalJointLoad(rptChapter* pCha
          for( const auto& load : loads)
          {
             Float64 x1 = load.Xstart - end_size;
-            Float64 x2 = load.Xstart - end_size;
+            Float64 x2 = load.Xend - end_size;
             Float64 w1 = load.Wstart;
             Float64 w2 = load.Wend;
 

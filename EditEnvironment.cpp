@@ -62,13 +62,11 @@ void txnEditEnvironment::Execute(int i)
 
    GET_IFACE2(pBroker,IEnvironment, pEnvironment );
    GET_IFACE2(pBroker,IEvents, pEvents);
-
-   pEvents->HoldEvents(); // don't fire any changed events until all changes are done
+   // Exception-safe holder to keep from fireing events until we are done
+   CIEventsHolder event_holder(pEvents);
 
    pEnvironment->SetExposureCondition( m_ExposureCondition[i] );
    pEnvironment->SetRelHumidity( m_RelHumidity[i] );
-
-   pEvents->FirePendingEvents();
 }
 
 txnTransaction* txnEditEnvironment::CreateClone() const

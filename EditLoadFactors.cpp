@@ -78,11 +78,10 @@ void txnEditLoadFactors::DoExecute(int i)
    EAFGetBroker(&pBroker);
 
    GET_IFACE2(pBroker,IEvents, pEvents);
-   pEvents->HoldEvents(); // don't fire any changed events until all changes are done
+   // Exception-safe holder to keep from fireing events until we are done
+   CIEventsHolder event_holder(pEvents);
 
    GET_IFACE2(pBroker,ILoadFactors,pLoadFactors);
 
    pLoadFactors->SetLoadFactors(m_LoadFactors[i]);
-
-   pEvents->FirePendingEvents();
 }

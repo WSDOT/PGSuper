@@ -88,7 +88,8 @@ bool txnEditBoundaryConditions::DoExecute(int i)
    EAFGetBroker(&pBroker);
 
    GET_IFACE2(pBroker,IEvents,pEvents);
-   pEvents->HoldEvents();
+   // Exception-safe holder to keep from fireing events until we are done
+   CIEventsHolder event_holder(pEvents);
 
    GET_IFACE2(pBroker,IBridgeDescription,pBridgeDesc);
    if ( m_bIsBoundaryPier )
@@ -101,8 +102,6 @@ bool txnEditBoundaryConditions::DoExecute(int i)
       ATLASSERT( pBridgeDesc->GetPier(m_PierIdx)->IsInteriorPier() );
       pBridgeDesc->SetBoundaryCondition( m_PierIdx, m_SegmentConnectionType[i], m_CastClosureJointEventIdx[i] );
    }
-
-   pEvents->FirePendingEvents();
 
    return true;
 }

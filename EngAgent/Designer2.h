@@ -465,11 +465,9 @@ private:
    void CheckStrandSlope(const CSegmentKey& segmentKey,pgsStrandSlopeArtifact* pArtifact) const;
    void CheckHoldDownForce(const CSegmentKey& segmentKey,pgsHoldDownForceArtifact* pArtifact) const;
    void CheckSegmentStability(const CSegmentKey& segmentKey,pgsSegmentStabilityArtifact* pArtifact) const;
-   void CheckDebonding(const CSegmentKey& segmentKey,pgsTypes::StrandType strandType,pgsDebondArtifact* pArtifact) const;
+   void CheckDebonding(const CSegmentKey& segmentKey,pgsDebondArtifact* pArtifact) const;
 
    void CheckConstructability(const CGirderKey& girderKey,pgsConstructabilityArtifact* pArtifact) const;
-
-   void UpdateSlabOffsetAdjustmentModel(pgsSegmentDesignArtifact* pArtifact) const;
 
    void CheckLiveLoadDeflection(const CGirderKey& girderKey,pgsGirderArtifact* pGdrArtifact) const;
 

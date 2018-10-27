@@ -801,6 +801,27 @@ interface IEvents : IUnknown
    virtual void CancelPendingEvents() = 0;
 };
 
+//////////////////////////////////////////////////////////////
+// Simple exception-safe class for holding and releasing I events
+//
+class CIEventsHolder
+{
+public:
+   CIEventsHolder(IEvents* pIEvents):
+   m_pIEvents(pIEvents)
+   {
+      m_pIEvents->HoldEvents();
+   }
+
+   ~CIEventsHolder()
+   {
+      m_pIEvents->FirePendingEvents();
+   }
+
+private:
+   CComPtr<IEvents> m_pIEvents;
+};
+
 /*****************************************************************************
 INTERFACE
    IEventsSink
@@ -837,6 +858,27 @@ interface IUIEvents : IUnknown
    virtual void FirePendingEvents() = 0;
    virtual void CancelPendingEvents() = 0;
    virtual void FireEvent(CView* pSender = nullptr,LPARAM lHint = 0,std::shared_ptr<CObject> pHint = nullptr) = 0;
+};
+
+//////////////////////////////////////////////////////////////
+// Simple exception-safe class for holding and releasing UI events
+//
+class CUIEventsHolder
+{
+public:
+   CUIEventsHolder(IUIEvents* pUIEvents):
+   m_pUIEvents(pUIEvents)
+   {
+      m_pUIEvents->HoldEvents();
+   }
+
+   ~CUIEventsHolder()
+   {
+      m_pUIEvents->FirePendingEvents();
+   }
+
+private:
+   CComPtr<IUIEvents> m_pUIEvents;
 };
 
 /*****************************************************************************

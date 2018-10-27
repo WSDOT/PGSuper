@@ -753,6 +753,7 @@ interface ICamber : IUnknown
 
    // Returns the deflection due to creep at the end of a creep period
    virtual Float64 GetCreepDeflection(const pgsPointOfInterest& poi, CreepPeriod creepPeriod, Int16 constructionRate,pgsTypes::PrestressDeflectionDatum datum, const GDRCONFIG* pConfig=nullptr) const = 0;
+   virtual void GetCreepDeflection(const pgsPointOfInterest& poi, CreepPeriod creepPeriod, Int16 constructionRate, pgsTypes::PrestressDeflectionDatum datum, const GDRCONFIG* pConfig,Float64* pDcreep,Float64* pRcreep) const = 0;
 
    // Returns the lateral deflection due to creep at the end of a creep period
    virtual Float64 GetXCreepDeflection(const pgsPointOfInterest& poi, CreepPeriod creepPeriod, Int16 constructionRate, pgsTypes::PrestressDeflectionDatum datum, const GDRCONFIG* pConfig = nullptr) const = 0;

@@ -6,6 +6,7 @@
 #define IDC_CLEAR_ALL                   256
 #define IDD_MULTI_GIRDER_SELECT         317
 #define IDC_SELECT_GRID                 1606
+#define IDD_LOADRATINGREPORT            2999
 #define IDD_SPANGIRDERREPORT            3000
 #define IDC_LIST                        3000
 #define IDC_SPAN                        3001

@@ -377,19 +377,39 @@ void CGirderModelSectionView::BuildPropertiesDisplayObjects(CPGSDocBase* pDoc, I
          Float64 nEffectiveStrands, ex, ey;
          pStrandGeom->GetEccentricity(intervalIdx, poi, true /*include temp strands*/, &nEffectiveStrands, &ex, &ey);
 
-         strProps.Format(_T("%s Properties\nA = %s\nIx = %s\nIy = %s\nIxy = %s\nXleft = %s\nXright = %s\nYtop = %s\nYbottom = %s\nex = %s\ney = %s"),
-            strSectPropMode,
-            FormatDimension(A, pDisplayUnits->GetAreaUnit()),
-            FormatDimension(Ix, pDisplayUnits->GetMomentOfInertiaUnit()),
-            FormatDimension(Iy, pDisplayUnits->GetMomentOfInertiaUnit()),
-            FormatDimension(Ixy, pDisplayUnits->GetMomentOfInertiaUnit()),
-            FormatDimension(Xl, pDisplayUnits->GetComponentDimUnit()),
-            FormatDimension(Xr, pDisplayUnits->GetComponentDimUnit()),
-            FormatDimension(Yt, pDisplayUnits->GetComponentDimUnit()),
-            FormatDimension(Yb, pDisplayUnits->GetComponentDimUnit()),
-            FormatDimension(ex, pDisplayUnits->GetComponentDimUnit()),
-            FormatDimension(ey, pDisplayUnits->GetComponentDimUnit())
-         );
+         GET_IFACE2(pBroker, IBridge, pBridge);
+         if (pBridge->HasAsymmetricGirders())
+         {
+            strProps.Format(_T("%s Properties\nA = %s\nIx = %s\nIy = %s\nIxy = %s\nXleft = %s\nXright = %s\nYtop = %s\nYbottom = %s\nex = %s\ney = %s"),
+               strSectPropMode,
+               FormatDimension(A, pDisplayUnits->GetAreaUnit()),
+               FormatDimension(Ix, pDisplayUnits->GetMomentOfInertiaUnit()),
+               FormatDimension(Iy, pDisplayUnits->GetMomentOfInertiaUnit()),
+               FormatDimension(Ixy, pDisplayUnits->GetMomentOfInertiaUnit()),
+               FormatDimension(Xl, pDisplayUnits->GetComponentDimUnit()),
+               FormatDimension(Xr, pDisplayUnits->GetComponentDimUnit()),
+               FormatDimension(Yt, pDisplayUnits->GetComponentDimUnit()),
+               FormatDimension(Yb, pDisplayUnits->GetComponentDimUnit()),
+               FormatDimension(ex, pDisplayUnits->GetComponentDimUnit()),
+               FormatDimension(ey, pDisplayUnits->GetComponentDimUnit())
+            );
+         }
+         else
+         {
+            // ignoring Ixy for non-asymmetric girders
+            strProps.Format(_T("%s Properties\nA = %s\nIx = %s\nIy = %s\nXleft = %s\nXright = %s\nYtop = %s\nYbottom = %s\nex = %s\ney = %s"),
+               strSectPropMode,
+               FormatDimension(A, pDisplayUnits->GetAreaUnit()),
+               FormatDimension(Ix, pDisplayUnits->GetMomentOfInertiaUnit()),
+               FormatDimension(Iy, pDisplayUnits->GetMomentOfInertiaUnit()),
+               FormatDimension(Xl, pDisplayUnits->GetComponentDimUnit()),
+               FormatDimension(Xr, pDisplayUnits->GetComponentDimUnit()),
+               FormatDimension(Yt, pDisplayUnits->GetComponentDimUnit()),
+               FormatDimension(Yb, pDisplayUnits->GetComponentDimUnit()),
+               FormatDimension(ex, pDisplayUnits->GetComponentDimUnit()),
+               FormatDimension(ey, pDisplayUnits->GetComponentDimUnit())
+            );
+         }
       }
 
       CComPtr<iAnchoredTextBlock> textBlock;
@@ -508,36 +528,42 @@ void CGirderModelSectionView::BuildSectionDisplayObjects(CPGSDocBase* pDoc,IBrok
 
    if (0 < nBottomFlanges)
    {
+      Float64 x;
+      section->get_BottomFlangeLocation(0, &x);
       Float64 wx;
       section->get_BottomFlangeWidth(0, &wx);
       CComPtr<IPoint2d> pntBL;
       pntBL.CoCreateInstance(CLSID_Point2d);
       pntBL->MoveEx(pntBC);
-      pntBL->Offset(-wx / 2, 0);
+      pntBL->Offset(x - wx / 2, 0);
       connectable->AddSocket(SOCKET_BL, pntBL, &socketBL);
 
+      section->get_BottomFlangeLocation(nBottomFlanges - 1, &x);
       section->get_BottomFlangeWidth(nBottomFlanges - 1, &wx);
       CComPtr<IPoint2d> pntBR;
       pntBR.CoCreateInstance(CLSID_Point2d);
       pntBR->MoveEx(pntBC);
-      pntBR->Offset(wx / 2, 0);
+      pntBR->Offset(x + wx / 2, 0);
       connectable->AddSocket(SOCKET_BR, pntBR, &socketBR);
    }
    else if (0 < nWebs)
    {
+      Float64 x;
+      section->get_WebLocation(0, &x);
       Float64 wx;
       section->get_WebThickness(0, &wx);
       CComPtr<IPoint2d> pntBL;
       pntBL.CoCreateInstance(CLSID_Point2d);
       pntBL->MoveEx(pntBC);
-      pntBL->Offset(-wx / 2, 0);
+      pntBL->Offset(x - wx / 2, 0);
       connectable->AddSocket(SOCKET_BL, pntBL, &socketBL);
 
+      section->get_WebLocation(nWebs-1, &x);
       section->get_WebThickness(nWebs - 1, &wx);
       CComPtr<IPoint2d> pntBR;
       pntBR.CoCreateInstance(CLSID_Point2d);
       pntBR->MoveEx(pntBC);
-      pntBR->Offset(wx / 2, 0);
+      pntBR->Offset(x + wx / 2, 0);
       connectable->AddSocket(SOCKET_BR, pntBR, &socketBR);
    }
    else

@@ -1,4 +1,4 @@
-Slab Offset ("A" Dimension, AKA "X" Dimension) {#tg_slab_offset}
+﻿Slab Offset ("A" Dimension, AKA "X" Dimension) {#tg_slab_offset}
 ======================================
 The slab offset is the vertical distance from the top of slab to the top of girder measured at the intersection of the girder and bearing centerlines. The slab offset defines the depth of the haunch at those locations as shown in figure below for an I-Beam. 
 
@@ -97,7 +97,7 @@ Haunch depth demand is different depending on the type of vertical curve over th
 
 Girder Orientation Effect
 ----------------------------
-The girder orientation effect accounts for the difference in slope between the roadway surface and the top of the girder. Girders such as I-beams are typically oriented with their main axis plumb. Other girders such as U-beams, box beams, and slabs may be oriented with their main axis normal to the roadway surface. The orientation of the girder with respect to the roadway surface, and changes in the roadway surface along the length of the girder (superelevation transitions) define the Girder Orientation Effect.
+The girder orientation effect accounts for the difference in slope between the roadway surface and the top of the girder. Girders such as I-beams are typically oriented with their main axis plumb. Other girders such as U-beams, box beams, and slabs may be oriented with their main axis normal to the roadway surface. Some pre-decked girders, such as deck bulb tees, have the roadway cross slope cast into the top flange. The orientation of the girder with respect to the roadway surface, and changes in the roadway surface along the length of the girder (superelevation transitions) define the Girder Orientation Effect.
 
 ![](GirderOrientationEffect.png)
 

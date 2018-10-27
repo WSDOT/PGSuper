@@ -253,6 +253,8 @@ void pgsStrandResequencer::ComputeNumStrands(StrandIndexType numPermStrands, Str
          iter++;
       }
 
+      ATLASSERT(ns + nh == numPermStrands);
+
       *pNStraightStrands = ns;
       *pNHarpedStrands   = nh;
    }
@@ -487,9 +489,6 @@ bool pgsRaisedStraightStrandDesignTool::AddRaisedStraightStrands()
       {
          riter ++;
       }
-
-      // We have added another strand location to our available locations - increase max allowable.
-      m_MaxPermStrandCount += riter->m_FillCount;
 
       m_StrandResequencer.MovePermLibraryIndexToNewLocation(riter->m_PermLibraryFillIdx, m_UsedRaisedStrandLocations);
 

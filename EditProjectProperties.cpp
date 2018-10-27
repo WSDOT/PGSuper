@@ -79,8 +79,8 @@ void txnEditProjectProperties::Execute(int i)
 
    GET_IFACE2(pBroker,IProjectProperties,pProjProp);
    GET_IFACE2(pBroker,IEvents, pEvents);
-
-   pEvents->HoldEvents(); // don't fire any changed events until all changes are done
+   // Exception-safe holder to keep from fireing events until we are done
+   CIEventsHolder event_holder(pEvents);
 
    pProjProp->SetBridgeName( m_BridgeName[i].c_str() );
    pProjProp->SetBridgeID(   m_BridgeID[i].c_str()   );
@@ -88,8 +88,6 @@ void txnEditProjectProperties::Execute(int i)
    pProjProp->SetEngineer(   m_Engineer[i].c_str()   );
    pProjProp->SetCompany(    m_Company[i].c_str()    );
    pProjProp->SetComments(   m_Comment[i].c_str()    );
-
-   pEvents->FirePendingEvents();
 }
 
 txnTransaction* txnEditProjectProperties::CreateClone() const

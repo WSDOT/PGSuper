@@ -147,8 +147,8 @@ public:
    void SetCapacityWithRebar(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::StressLocation stressLocation,Float64 fAllow);
    Float64 GetCapacityWithRebar(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::StressLocation stressLocation) const;
 
-   pgsDebondArtifact* GetDebondArtifact(pgsTypes::StrandType strandType);
-   const pgsDebondArtifact* GetDebondArtifact(pgsTypes::StrandType strandType) const;
+   pgsDebondArtifact* GetDebondArtifact();
+   const pgsDebondArtifact* GetDebondArtifact() const;
    
    bool Passed() const;
 
@@ -230,7 +230,7 @@ private:
    const stbLiftingCheckArtifact* m_pLiftingCheckArtifact; // point is not owned by this object
    const pgsHaulingAnalysisArtifact* m_pHaulingAnalysisArtifact; // pointer is not owned by this object
 
-   pgsDebondArtifact m_DebondArtifact[3];
+   pgsDebondArtifact m_DebondArtifact;
    
    mutable std::map<StressKey,Float64> m_AllowableWithRebar[4]; // allowable tensile stress with required mild rebar (access array with pgsTypes::StressLocation)
    Float64& GetAllowableWithRebar(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::StressLocation stressLocation) const;

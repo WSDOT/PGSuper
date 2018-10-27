@@ -156,6 +156,11 @@ rptRcTable* CProductStressTable::Build(IBroker* pBroker,const CGirderKey& girder
       CSegmentKey allSegmentsKey(thisGirderKey,ALL_SEGMENTS);
       PoiList vPoi;
       pIPoi->GetPointsOfInterest(allSegmentsKey, POI_ERECTED_SEGMENT, &vPoi);
+      PoiList vPoi2;
+      pIPoi->GetPointsOfInterest(allSegmentsKey, POI_START_FACE | POI_END_FACE | POI_HARPINGPOINT | POI_PSXFER | POI_DEBOND, &vPoi2, POIFIND_OR);
+      pIPoi->MergePoiLists(vPoi, vPoi2, &vPoi);
+      pIPoi->RemovePointsOfInterest(vPoi, POI_CLOSURE);
+      pIPoi->RemovePointsOfInterest(vPoi, POI_BOUNDARY_PIER);
 
       IntervalIndexType erectSegmentIntervalIdx  = pIntervals->GetLastSegmentErectionInterval(thisGirderKey);
 

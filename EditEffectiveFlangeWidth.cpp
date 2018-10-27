@@ -59,11 +59,10 @@ void txnEditEffectiveFlangeWidth::Execute(int i)
    GET_IFACE2(pBroker,IEffectiveFlangeWidth, pEFW );
    GET_IFACE2(pBroker,IEvents, pEvents);
 
-   pEvents->HoldEvents(); // don't fire any changed events until all changes are done
+   // Exception-safe holder to keep from fireing events until we are done
+   CIEventsHolder event_holder(pEvents);
 
    pEFW->IgnoreEffectiveFlangeWidthLimits(m_bIgnore[i]);
-
-   pEvents->FirePendingEvents();
 }
 
 txnTransaction* txnEditEffectiveFlangeWidth::CreateClone() const

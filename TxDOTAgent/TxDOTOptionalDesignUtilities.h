@@ -140,7 +140,8 @@ inline bool IsNonStandardStrands(StrandIndexType nperm, bool isHarpedDesign, CSt
 BOOL DoParseTemplateFile(const LPCTSTR lpszPathName, CString& girderEntry, 
                               CString& leftConnEntry, CString& rightConnEntry,
                               CString& projectCriteriaEntry,
-                              CString& folderName);
+                              CString& folderName,
+                              Float64& girderUnitWeight);
 
 class OptionalDesignHarpedFillUtil
 {

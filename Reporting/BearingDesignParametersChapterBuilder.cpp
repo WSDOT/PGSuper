@@ -25,6 +25,7 @@
 #include <Reporting\ReportNotes.h>
 #include <Reporting\ProductReactionTable.h>
 #include <Reporting\ProductRotationTable.h>
+#include <Reporting\PrestressRotationTable.h>
 #include <Reporting\UserReactionTable.h>
 #include <Reporting\UserRotationTable.h>
 #include <Reporting\VehicularLoadResultsTable.h>
@@ -205,20 +206,12 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(CReportSpecification* 
       *p << CUserRotationTable().Build(pBroker,girderKey,pSpec->GetAnalysisType(),intervalIdx,pDisplayUnits) << rptNewLine;
    }
 
-   //p = new rptParagraph;
-   //*pChapter << p;
-
-   //rptRcTable* pTable = rptStyleManager::CreateDefaultTable(2,_T("Rotation due to Excess Camber"));
-   //*p << pTable << rptNewLine;
+   *p << rptNewLine;
+   *p << CPrestressRotationTable().Build(pBroker, girderKey, pSpec->GetAnalysisType(), intervalIdx, pDisplayUnits) << rptNewLine;
 
    INIT_SCALAR_PROTOTYPE(rptRcScalar, scalar, pDisplayUnits->GetScalarFormat());
 
    ColumnIndexType col = 0;
-
-   //(*pTable)(0,col++) << _T("");
-   //(*pTable)(0,col++) << _T("Rotation") << rptNewLine << _T("(rad)");
-
-   //RowIndexType row = pTable->GetNumberOfHeaderRows();
 
    GET_IFACE2(pBroker,IBridge,pBridge);
    PierIndexType nPiers = pBridge->GetPierCount();

@@ -112,12 +112,15 @@ void CConcreteGeneralPage::DoDataExchange(CDataExchange* pDX)
       DDV_UnitValueGreaterThanZero(pDX, IDC_DW, m_Dw, pDisplayUnits->GetDensityUnit() );
 
       // Ds <= Dw
-      DDV_UnitValueLimitOrMore(pDX, IDC_DW, m_Dw, m_Ds, pDisplayUnits->GetDensityUnit() );
+      if (m_ctrlEcCheck.GetCheck() == BST_UNCHECKED)
+      {
+         DDV_UnitValueLimitOrMore(pDX, IDC_DW, m_Dw, m_Ds, pDisplayUnits->GetDensityUnit());
+      }
 
       DDX_UnitValueAndTag(pDX, IDC_AGG_SIZE, IDC_AGG_SIZE_UNIT, m_AggSize, pDisplayUnits->GetComponentDimUnit() );
       DDV_UnitValueGreaterThanZero(pDX, IDC_AGG_SIZE, m_AggSize, pDisplayUnits->GetComponentDimUnit() );
       
-      if ( pDX->m_bSaveAndValidate && m_ctrlEcCheck.GetCheck() == 1 )
+      if ( pDX->m_bSaveAndValidate && m_ctrlEcCheck.GetCheck() == BST_CHECKED )
       {
          m_ctrlEc.GetWindowText(m_strUserEc);
       }
@@ -198,7 +201,7 @@ BOOL CConcreteGeneralPage::OnInitDialog()
 
 	CPropertyPage::OnInitDialog();
 	
-   BOOL bEnable = m_ctrlEcCheck.GetCheck();
+   BOOL bEnable = m_ctrlEcCheck.GetCheck() == BST_CHECKED ? TRUE : FALSE;
    GetDlgItem(IDC_EC)->EnableWindow(bEnable);
    GetDlgItem(IDC_EC_UNIT)->EnableWindow(bEnable);
 
@@ -221,7 +224,7 @@ void CConcreteGeneralPage::OnHelp()
 void CConcreteGeneralPage::OnUserEc()
 {
    // Ec check box was clicked
-   BOOL bIsChecked = m_ctrlEcCheck.GetCheck();
+   BOOL bIsChecked = m_ctrlEcCheck.GetCheck() == BST_CHECKED ? TRUE : FALSE;
 
    if (bIsChecked == FALSE)
    {
@@ -263,7 +266,7 @@ void CConcreteGeneralPage::OnChangeDs()
 void CConcreteGeneralPage::UpdateEc()
 {
    // update modulus
-   if (m_ctrlEcCheck.GetCheck() == 0)
+   if (m_ctrlEcCheck.GetCheck() == BST_UNCHECKED)
    {
       // need to manually parse strength and density values
       CString strFc, strDensity, strK1, strK2;

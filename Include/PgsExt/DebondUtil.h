@@ -129,8 +129,9 @@ protected:
 
    RowList m_Rows;
 
-   void Compute();
    Int16 CountDebondsInRow(const RowData& row) const;
+private:
+   void Compute();
 };
 
 inline void TxDOTDebondTool::Compute()

@@ -344,6 +344,7 @@ public:
    virtual Float64 GetReleaseTempPrestressDeflection(const pgsPointOfInterest& poi, const GDRCONFIG* pConfig = nullptr) const override;
    virtual void GetReleaseTempPrestressDeflection(const pgsPointOfInterest& poi, const GDRCONFIG* pConfig, Float64* pDx, Float64* pDy) const override;
    virtual Float64 GetCreepDeflection(const pgsPointOfInterest& poi, CreepPeriod creepPeriod, Int16 constructionRate,pgsTypes::PrestressDeflectionDatum datum, const GDRCONFIG* pConfig = nullptr) const override;
+   virtual void GetCreepDeflection(const pgsPointOfInterest& poi, CreepPeriod creepPeriod, Int16 constructionRate, pgsTypes::PrestressDeflectionDatum datum, const GDRCONFIG* pConfig, Float64* pDy, Float64* pRz) const override;
    virtual Float64 GetXCreepDeflection(const pgsPointOfInterest& poi, CreepPeriod creepPeriod, Int16 constructionRate, pgsTypes::PrestressDeflectionDatum datum, const GDRCONFIG* pConfig = nullptr) const override;
    virtual Float64 GetDeckDeflection(const pgsPointOfInterest& poi,const GDRCONFIG* pConfig=nullptr) const override;
    virtual Float64 GetDeckPanelDeflection(const pgsPointOfInterest& poi,const GDRCONFIG* pConfig=nullptr) const override;
@@ -562,7 +563,6 @@ private:
 
    CamberMultipliers GetCamberMultipliersEx(const CSegmentKey& segmentKey, bool applyFactors) const;
    void GetGirderDeflectionForCamber(const pgsPointOfInterest& poi,const GDRCONFIG* pConfig,Float64* pDyStorage,Float64* pRzStorage,Float64* pDyErected,Float64* pRzErected,Float64* pDyInc,Float64* pRzInc) const;
-   void GetCreepDeflection(const pgsPointOfInterest& poi, CreepPeriod creepPeriod, Int16 constructionRate,pgsTypes::PrestressDeflectionDatum datum, const GDRCONFIG* pConfig,Float64* pDy,Float64* pRz) const;
    void GetDeckDeflection(const pgsPointOfInterest& poi,const GDRCONFIG* pConfig,Float64* pSlabDy,Float64* pSlabRz,Float64* pSlabPadDy,Float64* pSlabPadRz) const;
    void GetDeckPanelDeflection(const pgsPointOfInterest& poi,const GDRCONFIG* pConfig,Float64* pDy,Float64* pRz) const;
    void GetShearKeyDeflection(const pgsPointOfInterest& poi,const GDRCONFIG* pConfig,Float64* pDy,Float64* pRz) const;

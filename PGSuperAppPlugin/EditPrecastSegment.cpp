@@ -49,7 +49,8 @@ bool txnEditPrecastSegment::Execute()
    EAFGetBroker(&pBroker);
 
    GET_IFACE2(pBroker,IEvents, pEvents);
-   pEvents->HoldEvents(); // don't fire any changed events until all changes are done
+   // Exception-safe holder to keep from fireing events until we are done
+   CIEventsHolder event_holder(pEvents);
 
    m_OldSegmentData.clear();
 
@@ -80,8 +81,6 @@ bool txnEditPrecastSegment::Execute()
       SetSegmentData(oldSegmentData.m_SegmentKey,m_NewSegmentData);
    }
 
-   pEvents->FirePendingEvents();
-
    return true;
 }
 
@@ -91,7 +90,8 @@ void txnEditPrecastSegment::Undo()
    EAFGetBroker(&pBroker);
 
    GET_IFACE2(pBroker,IEvents, pEvents);
-   pEvents->HoldEvents(); // don't fire any changed events until all changes are done
+   // Exception-safe holder to keep from fireing events until we are done
+   CIEventsHolder event_holder(pEvents);
 
    std::set<txnEditPrecastSegmentData>::iterator iter(m_OldSegmentData.begin());
    std::set<txnEditPrecastSegmentData>::iterator end(m_OldSegmentData.end());
@@ -100,8 +100,6 @@ void txnEditPrecastSegment::Undo()
       const txnEditPrecastSegmentData& oldSegmentData = *iter;
       SetSegmentData(oldSegmentData.m_SegmentKey,oldSegmentData);
    }
-
-   pEvents->FirePendingEvents();
 }
 
 txnTransaction* txnEditPrecastSegment::CreateClone() const

@@ -68,8 +68,11 @@ void CStrandEccentricities::Build(rptChapter* pChapter,IBroker* pBroker,const CS
    INIT_UV_PROTOTYPE( rptLengthUnitValue, length, pDisplayUnits->GetSpanLengthUnit(), true );
 
    // Strand Eccentricity Table
-   rptParagraph* p = new rptParagraph(rptStyleManager::GetSubheadingStyle());
+   rptParagraph* p = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << p;
+
+   p->SetName(_T("Strand Eccentricity"));
+   *p << p->GetName() << rptNewLine;
 
    //GET_IFACE2( pBroker, ILossParameters, pLossParams);
    //pgsTypes::LossMethod lossMethod = pLossParams->GetLossMethod();

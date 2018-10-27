@@ -94,5 +94,6 @@ void CRelaxationAtFinalTable::AddRow(rptChapter* pChapter,IBroker* pBroker,const
       return;
    }
 
-   (*this)(row,1) << stress.SetValue(ptl->RelaxationLossAfterDeckPlacement());
+   RowIndexType rowOffset = GetNumberOfHeaderRows() - 1;
+   (*this)(row+rowOffset,1) << stress.SetValue(ptl->RelaxationLossAfterDeckPlacement());
 }

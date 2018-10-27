@@ -816,6 +816,10 @@ void CSpecMainSheet::ExchangeShearCapacityData(CDataExchange* pDX)
    DDX_Text(pDX,IDC_LWC_PHI,m_Entry.m_PhiShear[pgsTypes::SandLightweight]);
    DDX_Text(pDX,IDC_LWC_PHI,m_Entry.m_PhiShear[pgsTypes::AllLightweight]);
 
+   DDX_Text(pDX,IDC_NWC_PHI_DEBOND,m_Entry.m_PhiShearDebonded[pgsTypes::Normal]);
+   DDX_Text(pDX,IDC_LWC_PHI_DEBOND,m_Entry.m_PhiShearDebonded[pgsTypes::SandLightweight]);
+   DDX_Text(pDX,IDC_LWC_PHI_DEBOND,m_Entry.m_PhiShearDebonded[pgsTypes::AllLightweight]);
+
    DDX_Text(pDX,IDC_NWC_JOINT_PHI,  m_Entry.m_PhiClosureJointShear[pgsTypes::Normal]);
    DDX_Text(pDX,IDC_LWC_JOINT_PHI,  m_Entry.m_PhiClosureJointShear[pgsTypes::AllLightweight]);
    DDX_Text(pDX,IDC_LWC_JOINT_PHI,  m_Entry.m_PhiClosureJointShear[pgsTypes::SandLightweight]);

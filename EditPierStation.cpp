@@ -82,10 +82,9 @@ void txnEditPierStation::DoExecute(int i)
    EAFGetBroker(&pBroker);
 
    GET_IFACE2(pBroker,IEvents,pEvents);
-   pEvents->HoldEvents();
+   // Exception-safe holder to keep from fireing events until we are done
+   CIEventsHolder event_holder(pEvents);
 
    GET_IFACE2(pBroker,IBridgeDescription,pBridgeDesc);
    pBridgeDesc->MovePier(m_PierIdx,m_Station[i],m_MoveOption);
-
-   pEvents->FirePendingEvents();
 }

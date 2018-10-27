@@ -118,18 +118,18 @@ interface IPosttensionForce : IUnknown
    virtual Float64 GetAverageInitialTendonStress(const CGirderKey& girderKey,DuctIndexType ductIdx) const = 0;
 
    // returns the force in a tendon in a particular interval. (use ALL_DUCTS for all tendons)
-   // if bIncludeMinLiveLoad is true, the force related to the elastic stress due to the minimum Service III live load is included in the tendon force.
-   // if bIncludeMaxLiveLoad is true, the force related to the elastic stress due to the maximum Service III live load is included in the tendon force.
+   // if bIncludeMinLiveLoad is true, the force related to the elastic stress due to the minimum limit state live load is included in the tendon force.
+   // if bIncludeMaxLiveLoad is true, the force related to the elastic stress due to the maximum limit state live load is included in the tendon force.
    // if both bIncludeMinLiveLoad and bIncludeMaxLiveLoad are true, the live load that maximizes the tendon force is used.
    // these values are based on the average friction and anchor set loss being applied to fpj.
-   virtual Float64 GetTendonForce(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType time,DuctIndexType ductIdx,bool bIncludeMinLiveLoad=false,bool bIncludeMaxLiveLoad=false) const = 0;
+   virtual Float64 GetTendonForce(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType time,DuctIndexType ductIdx,bool bIncludeMinLiveLoad=false,bool bIncludeMaxLiveLoad=false,pgsTypes::LimitState limitState=pgsTypes::ServiceIII,VehicleIndexType vehicleIdx=INVALID_INDEX) const = 0;
 
    // returns the effective stress in a tendon in a particular interval.
-   // if bIncludeMinLiveLoad is true, the elastic stress due to the minimum Service III live load is included in the tendon stress.
-   // if bIncludeMaxLiveLoad is true, the elastic stress due to the maximum Service III live load is included in the tendon stress.
+   // if bIncludeMinLiveLoad is true, the elastic stress due to the minimum limit state live load is included in the tendon stress.
+   // if bIncludeMaxLiveLoad is true, the elastic stress due to the maximum limit state live load is included in the tendon stress.
    // if both bIncludeMinLiveLoad and bIncludeMaxLiveLoad are true, the live load stress that maximizes the tendon stress is used.
    // these values are based on the average friction and anchor set loss being applied to fpj.
-   virtual Float64 GetTendonStress(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType time,DuctIndexType ductIdx,bool bIncludeMinLiveLoad=false,bool bIncludeMaxLiveLoad=false) const = 0;
+   virtual Float64 GetTendonStress(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType time,DuctIndexType ductIdx,bool bIncludeMinLiveLoad=false,bool bIncludeMaxLiveLoad=false, pgsTypes::LimitState limitState = pgsTypes::ServiceIII, VehicleIndexType vehicleIdx = INVALID_INDEX) const = 0;
 
    // returns the vertical component of the post-tension force
    virtual Float64 GetVerticalTendonForce(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime,DuctIndexType ductIdx) const = 0;

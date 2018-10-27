@@ -45,7 +45,7 @@ static char THIS_FILE[] = __FILE__;
 // 2.9 and 3.0 branches. It is ok for loads to fail for 44.0 <= version <= MAX_OVERLAP_VERSION.
 #define MAX_OVERLAP_VERSION 53.0 // overlap of data blocks between PGS 2.9 and 3.0 end with this version
 
-#define CURRENT_VERSION 63.0 
+#define CURRENT_VERSION 64.0 
 
 /****************************************************************************
 CLASS
@@ -344,6 +344,10 @@ m_FinishedElevationTolerance(::ConvertToSysUnits(1.00,unitMeasure::Inch))
    m_PhiShear[pgsTypes::Normal]          = 0.9;
    m_PhiShear[pgsTypes::SandLightweight] = 0.7;
    m_PhiShear[pgsTypes::AllLightweight]  = 0.7;
+
+   m_PhiShearDebonded[pgsTypes::Normal]          = 0.85; // set defaults to 8th edition
+   m_PhiShearDebonded[pgsTypes::SandLightweight] = 0.85;
+   m_PhiShearDebonded[pgsTypes::AllLightweight]  = 0.85;
 
    m_PhiClosureJointFlexure[pgsTypes::Normal]          = 0.95;
    m_PhiClosureJointFlexure[pgsTypes::SandLightweight] = 0.90;
@@ -895,6 +899,13 @@ bool SpecLibraryEntry::SaveMe(sysIStructuredSave* pSave)
          pSave->Property(_T("AllLightweight"),m_PhiShear[pgsTypes::AllLightweight]);
          pSave->Property(_T("SandLightweight"),m_PhiShear[pgsTypes::SandLightweight]);
       pSave->EndUnit(); // ResistanceFactor
+
+      // added in version 64
+      pSave->BeginUnit(_T("ResistanceFactorDebonded"),1.0);
+         pSave->Property(_T("Normal"),m_PhiShearDebonded[pgsTypes::Normal]);
+         pSave->Property(_T("AllLightweight"),m_PhiShearDebonded[pgsTypes::AllLightweight]);
+         pSave->Property(_T("SandLightweight"),m_PhiShearDebonded[pgsTypes::SandLightweight]);
+      pSave->EndUnit(); // ResistanceFactorDebonded
 
       // Added ClosureJointResistanceFactor in version 2 of Shear data block
       pSave->BeginUnit(_T("ClosureJointResistanceFactor"),1.0);
@@ -3735,24 +3746,52 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
             }
          }
 
-            if ( !pLoad->Property(_T("Normal"),&m_PhiShear[pgsTypes::Normal]) )
-            {
-               THROW_LOAD(InvalidFileFormat,pLoad);
-            }
+         if ( !pLoad->Property(_T("Normal"),&m_PhiShear[pgsTypes::Normal]) )
+         {
+            THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
-            if ( !pLoad->Property(_T("AllLightweight"),&m_PhiShear[pgsTypes::AllLightweight]) )
-            {
-               THROW_LOAD(InvalidFileFormat,pLoad);
-            }
+         if ( !pLoad->Property(_T("AllLightweight"),&m_PhiShear[pgsTypes::AllLightweight]) )
+         {
+            THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
-            if ( !pLoad->Property(_T("SandLightweight"),&m_PhiShear[pgsTypes::SandLightweight]) )
-            {
-               THROW_LOAD(InvalidFileFormat,pLoad);
-            }
+         if ( !pLoad->Property(_T("SandLightweight"),&m_PhiShear[pgsTypes::SandLightweight]) )
+         {
+            THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          if ( !pLoad->EndUnit() ) // ResistanceFactor
          {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
+
+         if (64 <= version)
+         {
+            if ( !pLoad->BeginUnit(_T("ResistanceFactorDebonded")) )
+            {
+               THROW_LOAD(InvalidFileFormat,pLoad);
+            }
+
+            if (!pLoad->Property(_T("Normal"), &m_PhiShearDebonded[pgsTypes::Normal]))
+            {
+               THROW_LOAD(InvalidFileFormat, pLoad);
+            }
+
+            if (!pLoad->Property(_T("AllLightweight"), &m_PhiShearDebonded[pgsTypes::AllLightweight]))
+            {
+               THROW_LOAD(InvalidFileFormat, pLoad);
+            }
+
+            if (!pLoad->Property(_T("SandLightweight"), &m_PhiShearDebonded[pgsTypes::SandLightweight]))
+            {
+               THROW_LOAD(InvalidFileFormat, pLoad);
+            }
+
+            if ( !pLoad->EndUnit() ) // ResistanceFactorDebonded
+            {
+               THROW_LOAD(InvalidFileFormat,pLoad);
+            }
          }
 
          // Added ClosureJointResistanceFactor in version 2 of the Shear data block
@@ -4561,6 +4600,7 @@ bool SpecLibraryEntry::Compare(const SpecLibraryEntry& rOther, std::vector<pgsLi
            !::IsEqual(m_PhiFlexureTensionSpliced[concreteType], rOther.m_PhiFlexureTensionSpliced[concreteType]) ||
            !::IsEqual(m_PhiFlexureCompression[concreteType],    rOther.m_PhiFlexureCompression[concreteType]) ||
            !::IsEqual(m_PhiShear[concreteType],                 rOther.m_PhiShear[concreteType]) ||
+           !::IsEqual(m_PhiShearDebonded[concreteType],         rOther.m_PhiShearDebonded[concreteType]) ||
            !::IsEqual(m_PhiClosureJointFlexure[concreteType],rOther.m_PhiClosureJointFlexure[concreteType]) ||
            !::IsEqual(m_PhiClosureJointShear[concreteType],  rOther.m_PhiClosureJointShear[concreteType]) )
       {
@@ -4603,6 +4643,11 @@ bool SpecLibraryEntry::Compare(const SpecLibraryEntry& rOther, std::vector<pgsLi
       }
 
       if ( !::IsEqual(m_PhiShear[concreteType], rOther.m_PhiShear[concreteType]) )
+      {
+         bPhiFactors = false;
+      }
+
+      if ( !::IsEqual(m_PhiShearDebonded[concreteType], rOther.m_PhiShearDebonded[concreteType]) )
       {
          bPhiFactors = false;
       }
@@ -6862,14 +6907,29 @@ Float64 SpecLibraryEntry::GetClosureJointFlexureResistanceFactor(pgsTypes::Concr
    return m_PhiClosureJointFlexure[type];
 }
 
-void SpecLibraryEntry::SetShearResistanceFactor(pgsTypes::ConcreteType type,Float64 phi)
+void SpecLibraryEntry::SetShearResistanceFactor(bool isDebonded, pgsTypes::ConcreteType type,Float64 phi)
 {
-   m_PhiShear[type] = phi;
+   if (isDebonded)
+   {
+      ATLASSERT(this->GetSpecificationType() >= lrfdVersionMgr::EighthEdition2017);
+      m_PhiShearDebonded[type] = phi;
+   }
+   else
+   {
+      m_PhiShear[type] = phi;
+   }
 }
 
-Float64 SpecLibraryEntry::GetShearResistanceFactor(pgsTypes::ConcreteType type) const
+Float64 SpecLibraryEntry::GetShearResistanceFactor(bool isDebonded, pgsTypes::ConcreteType type) const
 {
-   return m_PhiShear[type];
+   if (isDebonded && this->GetSpecificationType() >= lrfdVersionMgr::EighthEdition2017)
+   {
+      return m_PhiShearDebonded[type];
+   }
+   else
+   {
+      return m_PhiShear[type];
+   }
 }
 
 void SpecLibraryEntry::SetClosureJointShearResistanceFactor(pgsTypes::ConcreteType type,Float64 phi)
@@ -7374,7 +7434,7 @@ void SpecLibraryEntry::MakeCopy(const SpecLibraryEntry& rOther)
       m_PhiFlexureTensionSpliced[i] = rOther.m_PhiFlexureTensionSpliced[i];
       m_PhiFlexureCompression[i]    = rOther.m_PhiFlexureCompression[i];
       m_PhiShear[i]                 = rOther.m_PhiShear[i];
-
+      m_PhiShearDebonded[i]         = rOther.m_PhiShearDebonded[i];
 
       m_PhiClosureJointFlexure[i] = rOther.m_PhiClosureJointFlexure[i];
       m_PhiClosureJointShear[i]   = rOther.m_PhiClosureJointShear[i];

@@ -954,11 +954,13 @@ void CGirderGroupData::SetGirderTypeGroups(const std::vector<CGirderTypeGroup>& 
    GirderIndexType lastGdrIdx = girderTypeGroups.back().lastGdrIdx;
    GirderIndexType nGirders = lastGdrIdx - firstGdrIdx + 1;
    ATLASSERT(nGirders == m_Girders.size());
+   ATLASSERT(girderTypeGroups.size() <= m_Girders.size());
 #endif
 
    m_GirderTypeGroups.clear();
    for (const auto& typeGroup : girderTypeGroups)
    {
+      ATLASSERT(typeGroup.firstGdrIdx <= typeGroup.lastGdrIdx);
       GirderGroup group;
       group.first = typeGroup.firstGdrIdx;
       group.second = typeGroup.lastGdrIdx;
@@ -1758,6 +1760,8 @@ HRESULT CGirderGroupData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
       THROW_LOAD(InvalidFileFormat,pStrLoad);
    }
 
+   RepairGirderTypeGroups(); // some sequence in editing causes the girder group data to get messed up and the bad data is stored... this methods attempts to fix bad data
+
    return S_OK;
 }
 
@@ -1956,6 +1960,38 @@ void CGirderGroupData::RemoveGirder(GirderIndexType gdrIdx)
    delete pSplicedGirder;
 }
 
+void CGirderGroupData::RepairGirderTypeGroups()
+{
+   // There is something that causes girder type group data to get messed up
+   // this method repairs the problem
+   bool bNeedsRepair = false;
+
+   if (m_Girders.size() < m_GirderTypeGroups.size())
+   {
+      bNeedsRepair = true;
+   }
+
+   if (1 < m_GirderTypeGroups.size() && bNeedsRepair == false)
+   {
+      auto iter1 = m_GirderTypeGroups.begin();
+      auto iter2 = iter1 + 1;
+      auto end = m_GirderTypeGroups.end();
+      for (; iter2 != end; iter1++, iter2++)
+      {
+         if ((iter1->second < iter1->first) || (iter2->second < iter2->first) || (iter2->first <= iter1->second))
+         {
+            bNeedsRepair = true;
+            break;
+         }
+      }
+   }
+
+   if (bNeedsRepair)
+   {
+      ExpandAll();
+   }
+}
+
 void CGirderGroupData::Clear()
 {
    std::vector<CSplicedGirderData*>::iterator iter(m_Girders.begin());
@@ -2033,10 +2069,38 @@ void CGirderGroupData::AssertValid()
    if ( 0 < m_Girders.size() )
    {
       ATLASSERT(m_GirderTypeGroups.size() != 0);
+      ATLASSERT(m_GirderTypeGroups.size() <= m_Girders.size());
       ATLASSERT(m_GirderTypeGroups.back().second - m_GirderTypeGroups.front().first == m_Girders.size() - 1);
       ATLASSERT(m_GirderTopWidthGroups.size() != 0);
+      ATLASSERT(m_GirderTopWidthGroups.size() <= m_Girders.size());
       ATLASSERT(m_GirderTopWidthGroups.back().second - m_GirderTopWidthGroups.front().first == m_Girders.size() - 1);
-      
+
+      if (1 < m_GirderTypeGroups.size())
+      {
+         auto iter1 = m_GirderTypeGroups.begin();
+         auto iter2 = iter1 + 1;
+         auto end = m_GirderTypeGroups.end();
+         for (; iter2 != end; iter1++, iter2++)
+         {
+            ATLASSERT(iter1->first <= iter1->second);
+            ATLASSERT(iter2->first <= iter2->second);
+            ATLASSERT(iter1->second < iter2->first);
+         }
+      }
+
+      if (1 < m_GirderTopWidthGroups.size())
+      {
+         auto iter1 = m_GirderTopWidthGroups.begin();
+         auto iter2 = iter1 + 1;
+         auto end = m_GirderTopWidthGroups.end();
+         for (; iter2 != end; iter1++, iter2++)
+         {
+            ATLASSERT(iter1->first <= iter1->second);
+            ATLASSERT(iter2->first <= iter2->second);
+            ATLASSERT(iter1->second < iter2->first);
+         }
+      }
+
       if ( m_pBridgeDesc && m_pBridgeDesc->GetSlabOffsetType() == pgsTypes::sotGirder )
       {
          std::vector<std::vector<Float64>>::iterator iter(m_SlabOffsets.begin());

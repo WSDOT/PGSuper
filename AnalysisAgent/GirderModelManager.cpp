@@ -6963,6 +6963,7 @@ CGirderModelData* CGirderModelManager::GetGirderModel(GirderIndexType gdrLineIdx
 
 void CGirderModelManager::BuildModel(GirderIndexType gdrLineIdx,pgsTypes::BridgeAnalysisType bat) const
 {
+   USES_CONVERSION;
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    if ( !pBridgeDesc->IsStable() )
@@ -7010,7 +7011,9 @@ void CGirderModelManager::BuildModel(GirderIndexType gdrLineIdx,pgsTypes::Bridge
 
       CComPtr<ILBAMModel> model;
       model.CoCreateInstance(CLSID_LBAMModel);
-      model->put_Name(CComBSTR("Simple"));
+      CString strName;
+      strName.Format(_T("SimpleSpan_Girder_%s"), LABEL_GIRDER(gdrLineIdx));
+      model->put_Name(T2BSTR(strName));
       pModelData->AddSimpleModel(model);
       BuildLBAM(gdrLineIdx,false,pModelData->pContraflexureResponse[pgsTypes::SimpleSpan],pModelData->pDeflContraflexureResponse[pgsTypes::SimpleSpan],model);
       bBuildSimple = true;
@@ -7026,7 +7029,9 @@ void CGirderModelManager::BuildModel(GirderIndexType gdrLineIdx,pgsTypes::Bridge
 
       CComQIPtr<ILBAMModel> continuous_model;
       continuous_model.CoCreateInstance(CLSID_LBAMModel);
-      continuous_model->put_Name(CComBSTR("Continuous"));
+      CString strName;
+      strName.Format(_T("ContinuousSpan_Girder_%s"), LABEL_GIRDER(gdrLineIdx));
+      continuous_model->put_Name(T2BSTR(strName));
       pModelData->AddContinuousModel(continuous_model);
       BuildLBAM(gdrLineIdx,true,pModelData->pContraflexureResponse[pgsTypes::ContinuousSpan],pModelData->pDeflContraflexureResponse[pgsTypes::ContinuousSpan],continuous_model);
       bBuildContinuous = true;
@@ -7926,6 +7931,8 @@ void CGirderModelManager::CreateLBAMSuperstructureMembers(GirderIndexType gdr,bo
             // create superstructure member for pier diaphragm, left of CL Pier
             if ( !IsZero(left_end_offset) )
             {
+               // left end of the segment is not at the CL Pier
+               // build a superstructure member segment from the CLPier to the left end of the segment
                CComPtr<ISuperstructureMember> left_pier_diaphragm_ssm;
                CreateLBAMSuperstructureMember(left_end_offset,vSegmentData,&left_pier_diaphragm_ssm);
                if ( bContinuousModel && bContinuousConnection )
@@ -7956,6 +7963,8 @@ void CGirderModelManager::CreateLBAMSuperstructureMembers(GirderIndexType gdr,bo
             // create superstructure member for pier diaphragm, right of CL Pier
             if ( !IsZero(right_end_offset) )
             {
+               // right end of the segment is not at the CL pier
+               // build a superstructure member segment from the CL pier to the right end of the segment
                CComPtr<ISuperstructureMember> right_pier_diaphragm_ssm;
                CreateLBAMSuperstructureMember(right_end_offset,vSegmentData,&right_pier_diaphragm_ssm);
                if ( bContinuousModel && bContinuousConnection )
@@ -8024,6 +8033,7 @@ void CGirderModelManager::CreateLBAMSuperstructureMembers(GirderIndexType gdr,bo
             // Temporary support at CL bearing on left side of pier
             if ( !IsZero(left_end_dist+left_end_offset) )
             {
+               // CLBearing is not at the CL Pier... create a dummy temporary support
                CComPtr<ISpan> objSpan;
                spans->get_Item(spanIdx,&objSpan);
 
@@ -8092,6 +8102,8 @@ void CGirderModelManager::CreateLBAMSuperstructureMembers(GirderIndexType gdr,bo
 
                bool bExistingTS = false;
                Float64 location = right_brg_offset;
+
+
                CComPtr<IEnumTemporarySupport> enumTS;
                objTemporarySupports->get__EnumElements(&enumTS);
                CComPtr<ITemporarySupport> ts;
@@ -12284,7 +12296,7 @@ PoiIDType CGirderModelManager::AddPointOfInterest(CGirderModelData* pModelData,c
 
       mbrID++; // move to the next superstructure member (the overhang member for the right end of the segment)
 
-      if ( segment_length < location )
+      if ( ::IsLT(segment_length,location) )
       {
          mbrID++;
          location -= (segment_length);
@@ -15050,12 +15062,21 @@ void CGirderModelManager::GetMainSpanSlabLoadEx(const CSegmentKey& segmentKey, b
    // Account for girder camber
    std::unique_ptr<mathFunction2d> camberShape;
 
+   // estimated girder excess camber (user input excess camber) is measured using the bearings as the datum
    PoiList vSupPoi;
    pPoi->GetPointsOfInterest(segmentKey, POI_0L | POI_5L | POI_10L | POI_ERECTED_SEGMENT, &vSupPoi);
    ATLASSERT(vSupPoi.size() == 3); // this haunch shape only for pgsuper-type models
-   const pgsPointOfInterest& poi_left(vSupPoi.front());
+   const pgsPointOfInterest& poi_left_brg(vSupPoi.front());
    const pgsPointOfInterest& poi_mid(vSupPoi[1]);
-   const pgsPointOfInterest& poi_right(vSupPoi.back());
+   const pgsPointOfInterest& poi_right_brg(vSupPoi.back());
+
+   std::unique_ptr<mathFunction2d> imposedShape;
+   // precamber and top flange thickening is measured using the ends of the girder as the datum
+   PoiList vPoi2;
+   pPoi->GetPointsOfInterest(segmentKey, POI_0L | POI_10L | POI_RELEASED_SEGMENT, &vPoi2);
+   ATLASSERT(vPoi2.size() == 2);
+   const pgsPointOfInterest& poi_left(vPoi2.front());
+   const pgsPointOfInterest& poi_right(vPoi2.back());
 
    if (pSpec->IsAssExcessCamberForLoad())
    {
@@ -15066,16 +15087,6 @@ void CGirderModelManager::GetMainSpanSlabLoadEx(const CSegmentKey& segmentKey, b
       // apply optional factor to camber
       Float64 camberFactor = pSpec->GetHaunchLoadCamberFactor();
       
-
-      Float64 top_flange_thickening = 0;
-      const CPrecastSegmentData* pSegment = pBridgeDesc->GetSegment(segmentKey);
-      if (pSegment->TopFlangeThickeningType != pgsTypes::tftNone && !IsZero(pSegment->TopFlangeThickening))
-      {
-         // top flange thickening is imposed on the girder
-         Float64 sign = (pSegment->TopFlangeThickeningType == pgsTypes::tftEnds ? -1 : 1);
-         top_flange_thickening += sign*pSegment->TopFlangeThickening;
-      }
-
       // Shape of girder is parabola assumed to follow the input assummed excess camber
       Float64 assumed_excess_camber;
 
@@ -15094,19 +15105,41 @@ void CGirderModelManager::GetMainSpanSlabLoadEx(const CSegmentKey& segmentKey, b
          assumed_excess_camber *= camberFactor;
       }
 
-      if (!IsZero(assumed_excess_camber + top_flange_thickening))
+      if (!IsZero(assumed_excess_camber))
       {
          // Create function with parabolic shape
-         camberShape = std::make_unique<mathPolynomial2d>(GenerateParabola(poi_left.GetDistFromStart(),poi_right.GetDistFromStart(),assumed_excess_camber + top_flange_thickening));
+         camberShape = std::make_unique<mathPolynomial2d>(GenerateParabola(poi_left_brg.GetDistFromStart(), poi_right_brg.GetDistFromStart(), assumed_excess_camber));
       }
       else
       {
          camberShape = std::make_unique<ZeroFunction>();
-      }         
+      }
+
+
+      Float64 top_flange_thickening = 0;
+      const CPrecastSegmentData* pSegment = pBridgeDesc->GetSegment(segmentKey);
+      if (pSegment->TopFlangeThickeningType != pgsTypes::tftNone && !IsZero(pSegment->TopFlangeThickening))
+      {
+         // top flange thickening is imposed on the girder
+         Float64 sign = (pSegment->TopFlangeThickeningType == pgsTypes::tftEnds ? -1 : 1);
+         top_flange_thickening += sign*pSegment->TopFlangeThickening;
+      }
+
+      if (!IsZero(top_flange_thickening))
+      {
+         // Create function with parabolic shape
+         imposedShape = std::make_unique<mathPolynomial2d>(GenerateParabola(poi_left.GetDistFromStart(), poi_right.GetDistFromStart(), top_flange_thickening));
+      }
+      else
+      {
+         imposedShape = std::make_unique<ZeroFunction>();
+      }
    }
    else
    {
       // Slab pad load assumes no natural camber
+      camberShape = std::make_unique<ZeroFunction>();
+
       Float64 departure = 0; // departure from flat due to imposed curvature of the top of the girder
       const CPrecastSegmentData* pSegment = pBridgeDesc->GetSegment(segmentKey);
       if (pSegment->GetGirder()->GetGirderLibraryEntry()->CanPrecamber() && !IsZero(pSegment->Precamber))
@@ -15125,11 +15158,11 @@ void CGirderModelManager::GetMainSpanSlabLoadEx(const CSegmentKey& segmentKey, b
       if ( !IsZero(departure))
       {
          // there is an imposed camber and/or top flange thickening. use its shape, excluding natural camber, for the top of the girder
-         camberShape = std::make_unique<mathPolynomial2d>(GenerateParabola(poi_left.GetDistFromStart(), poi_right.GetDistFromStart(), departure));
+         imposedShape = std::make_unique<mathPolynomial2d>(GenerateParabola(poi_left.GetDistFromStart(), poi_right.GetDistFromStart(), departure));
       }
       else
       {
-         camberShape = std::make_unique<ZeroFunction>();
+         imposedShape = std::make_unique<ZeroFunction>();
       }
    }
 
@@ -15306,8 +15339,8 @@ void CGirderModelManager::GetMainSpanSlabLoadEx(const CSegmentKey& segmentKey, b
       ASSERT( 0 <= wslab );
       ASSERT( 0 <= wslab_panel );
 
-      // Excess camber of girder
-      Float64 camber = camberShape->Evaluate(poi.GetDistFromStart());
+      // Excess camber of girder + imposed girder shape
+      Float64 camber = camberShape->Evaluate(poi.GetDistFromStart()) + imposedShape->Evaluate(poi.GetDistFromStart());;
 
       // height of pad for slab pad load
       Float64 real_pad_hgt = top_girder_to_top_slab - cast_depth - camber;

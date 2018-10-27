@@ -372,16 +372,20 @@ void CElasticGainDueToDeckShrinkageTable::AddRow(rptChapter* pChapter,IBroker* p
    Float64 Sb = pProps->GetS(compositeIntervalIdx,poi,pgsTypes::BottomGirder);
 
    ColumnIndexType col = 1;
-   (*this)(row,col++) << area.SetValue( ptl->GetAd() );
-   (*this)(row, col++) << ecc.SetValue( ptl->GetEccpc() );
-   (*this)(row, col++) << ecc.SetValue( m_Sign*ptl->GetDeckEccentricity() );
-   (*this)(row, col++) << area.SetValue( pDetails->pLosses->GetAc() );
-   (*this)(row, col++) << mom_inertia.SetValue( pDetails->pLosses->GetIc() );
-   (*this)(row, col++) << section_modulus.SetValue(St);
-   (*this)(row, col++) << section_modulus.SetValue(Sb);
-   (*this)(row, col++) << stress.SetValue( ptl->GetDeltaFcdf() );
-   (*this)(row, col++) << scalar.SetValue(ptl->GetKdf());
-   (*this)(row, col++) << stress.SetValue( ptl->ElasticGainDueToDeckShrinkage() );
-   (*this)(row, col++) << stress.SetValue( fTop );
-   (*this)(row, col++) << stress.SetValue( fBot );
+   RowIndexType rowOffset = GetNumberOfHeaderRows() - 1;
+
+   Float64 Ac, Ybc, Ic;
+   pDetails->pLosses->GetCompositeProperties2(&Ac, &Ybc, &Ic);
+   (*this)(row+rowOffset, col++) << area.SetValue( ptl->GetAd() );
+   (*this)(row+rowOffset, col++) << ecc.SetValue( ptl->GetEccpc() );
+   (*this)(row+rowOffset, col++) << ecc.SetValue( m_Sign*ptl->GetDeckEccentricity() );
+   (*this)(row+rowOffset, col++) << area.SetValue( Ac );
+   (*this)(row+rowOffset, col++) << mom_inertia.SetValue( Ic );
+   (*this)(row+rowOffset, col++) << section_modulus.SetValue(St);
+   (*this)(row+rowOffset, col++) << section_modulus.SetValue(Sb);
+   (*this)(row+rowOffset, col++) << stress.SetValue( ptl->GetDeltaFcdf() );
+   (*this)(row+rowOffset, col++) << scalar.SetValue(ptl->GetKdf());
+   (*this)(row+rowOffset, col++) << stress.SetValue( ptl->ElasticGainDueToDeckShrinkage() );
+   (*this)(row+rowOffset, col++) << stress.SetValue( fTop );
+   (*this)(row+rowOffset, col++) << stress.SetValue( fBot );
 }

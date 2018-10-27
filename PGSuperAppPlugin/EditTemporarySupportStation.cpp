@@ -81,10 +81,9 @@ void txnEditTemporarySupportStation::DoExecute(int i)
    EAFGetBroker(&pBroker);
 
    GET_IFACE2(pBroker,IEvents,pEvents);
-   pEvents->HoldEvents();
+   // Exception-safe holder to keep from fireing events until we are done
+   CIEventsHolder event_holder(pEvents);
 
    GET_IFACE2(pBroker,IBridgeDescription,pBridgeDesc);
    m_TsIdx = pBridgeDesc->MoveTemporarySupport(m_TsIdx,m_Station[i]);
-
-   pEvents->FirePendingEvents();
 }

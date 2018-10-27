@@ -62,13 +62,19 @@ CElasticGainDueToSIDLTable* CElasticGainDueToSIDLTable::PrepareTable(rptChapter*
    bool bHasSidewalk = pLoad->HasSidewalkLoad(segmentKey);
 
    GET_IFACE2(pBroker, IGirder, pGirder);
-   bool bHasDeckLoads = pGirder->HasStructuralLongitudinalJoints() ? true: false; // if longitudinal joints are structural the deck dead loads go on the composite section
+   bool bHasDeckLoads = pGirder->HasStructuralLongitudinalJoints() && pBridge->GetDeckType() != pgsTypes::sdtNone ? true : false; // if longitudinal joints are structural and there is a deck, the deck dead loads go on the composite section
+   bool bIs2StageComposite = pGirder->HasStructuralLongitudinalJoints() && ::IsStructuralDeck(pBridge->GetDeckType()) ? true : false; 
 
    ColumnIndexType numColumns = 9;
 
    if (bHasDeckLoads)
    {
       numColumns += 2;
+   }
+
+   if (bIs2StageComposite)
+   {
+      numColumns += 3;
    }
 
    if ( bHasUserLoads )
@@ -90,6 +96,7 @@ CElasticGainDueToSIDLTable* CElasticGainDueToSIDLTable::PrepareTable(rptChapter*
    rptStyleManager::ConfigureTable(table);
 
    table->m_bHasDeckLoads = bHasDeckLoads;
+   table->m_bIs2StageComposite = bIs2StageComposite;
    table->m_bHasUserLoads = bHasUserLoads;
    table->m_bHasSidewalk  = bHasSidewalk;
    table->m_bHasOverlay   = bHasOverlay;
@@ -114,35 +121,66 @@ CElasticGainDueToSIDLTable* CElasticGainDueToSIDLTable::PrepareTable(rptChapter*
 
    rptParagraph* pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pParagraph;
-   *pParagraph << _T("Elastic Gain Due to Superimposed Dead Load") << rptNewLine;
+   pParagraph->SetName(_T("Elastic Gain Due to Superimposed Dead Load"));
+   *pParagraph << pParagraph->GetName() << rptNewLine;
 
    pParagraph = new rptParagraph;
    *pChapter << pParagraph;
 
    *pParagraph << _T("Change in strand stress due to loads applied to the composite girder") << rptNewLine;
    *pParagraph << rptNewLine;
-   *pParagraph << rptRcImage(strImagePath + _T("Msidl.png"));
-   if ( bHasSidewalk )
+
+   if (bIs2StageComposite)
+   {
+      *pParagraph << rptRcImage(strImagePath + _T("Msidl1.png")) << rptNewLine;
+      *pParagraph << rptRcImage(strImagePath + _T("Msidl2.png"));
+   }
+   else
+   {
+      if (bHasDeckLoads)
+      {
+         *pParagraph << rptRcImage(strImagePath + _T("Msidl_with_Deck.png"));
+      }
+      else
+      {
+         *pParagraph << rptRcImage(strImagePath + _T("Msidl.png"));
+      }
+   }
+   if (bHasSidewalk)
    {
       *pParagraph << rptRcImage(strImagePath + _T("Msw.png"));
    }
-   if ( bHasOverlay )
+   if (bHasOverlay)
    {
       *pParagraph << rptRcImage(strImagePath + _T("Mo.png"));
    }
-   if ( bHasUserLoads )
+   if (bHasUserLoads)
    {
       *pParagraph << rptRcImage(strImagePath + _T("Muser.png"));
    }
    *pParagraph << rptNewLine;
 
-   if ( spMode == pgsTypes::spmGross )
+   if (bIs2StageComposite)
    {
-      *pParagraph << rptRcImage(strImagePath + _T("DeltaFcd2_Gross.png")) << rptNewLine;
+      if (spMode == pgsTypes::spmGross)
+      {
+         *pParagraph << rptRcImage(strImagePath + _T("DeltaFcd2_with_Deck_Gross.png")) << rptNewLine;
+      }
+      else
+      {
+         *pParagraph << rptRcImage(strImagePath + _T("DeltaFcd2_with_Deck_Transformed.png")) << rptNewLine;
+      }
    }
    else
    {
-      *pParagraph << rptRcImage(strImagePath + _T("DeltaFcd2_Transformed.png")) << rptNewLine;
+      if (spMode == pgsTypes::spmGross)
+      {
+         *pParagraph << rptRcImage(strImagePath + _T("DeltaFcd2_Gross.png")) << rptNewLine;
+      }
+      else
+      {
+         *pParagraph << rptRcImage(strImagePath + _T("DeltaFcd2_Transformed.png")) << rptNewLine;
+      }
    }
 
    *pParagraph << rptRcImage(strImagePath + _T("ElasticGain2.png")) << rptNewLine;
@@ -163,6 +201,12 @@ CElasticGainDueToSIDLTable* CElasticGainDueToSIDLTable::PrepareTable(rptChapter*
 
 
    *pParagraph << rptNewLine;
+   if (bHasDeckLoads)
+   {
+      *pParagraph << _T("Slab: ") << Sub2(_T("K"), _T("s")) << _T(" = ") << table->scalar.SetValue(pSpecEntry->GetSlabElasticGain()) << rptNewLine;
+      *pParagraph << _T("Haunch: ") << Sub2(_T("K"), _T("h")) << _T(" = ") << table->scalar.SetValue(pSpecEntry->GetSlabPadElasticGain()) << rptNewLine;
+   }
+
    *pParagraph << _T("Railing System: ") << Sub2(_T("K"),_T("r")) << _T(" = ") << table->scalar.SetValue(pSpecEntry->GetRailingSystemElasticGain())      << rptNewLine;
 
    if ( bHasOverlay )
@@ -187,6 +231,11 @@ CElasticGainDueToSIDLTable* CElasticGainDueToSIDLTable::PrepareTable(rptChapter*
       (*table)(0, col++) << COLHDR(Sub2(_T("M"), pProductLoads->GetProductLoadName(pgsTypes::pftSlabPad)), rptMomentUnitTag, pDisplayUnits->GetMomentUnit());
    }
 
+   if (bIs2StageComposite)
+   {
+      (*table)(0, col++) << COLHDR(Sub2(_T("M"), _T("sidl1")), rptMomentUnitTag, pDisplayUnits->GetMomentUnit());
+   }
+
    (*table)(0,col++) << COLHDR(Sub2(_T("M"), pProductLoads->GetProductLoadName(pgsTypes::pftTrafficBarrier)), rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
    if ( bHasSidewalk )
    {
@@ -201,19 +250,48 @@ CElasticGainDueToSIDLTable* CElasticGainDueToSIDLTable::PrepareTable(rptChapter*
       (*table)(0,col++) << COLHDR(Sub2(_T("M"), pProductLoads->GetProductLoadName(pgsTypes::pftUserDC)), rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
       (*table)(0,col++) << COLHDR(Sub2(_T("M"), pProductLoads->GetProductLoadName(pgsTypes::pftUserDW)), rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
    }
-   (*table)(0,col++) << COLHDR(Sub2(_T("M"),_T("sidl")), rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
+
+   if (bIs2StageComposite)
+   {
+      (*table)(0, col++) << COLHDR(Sub2(_T("M"), _T("sidl2")), rptMomentUnitTag, pDisplayUnits->GetMomentUnit());
+   }
+   else
+   {
+      (*table)(0, col++) << COLHDR(Sub2(_T("M"), _T("sidl")), rptMomentUnitTag, pDisplayUnits->GetMomentUnit());
+   }
+
    if ( spMode == pgsTypes::spmGross )
    {
       (*table)(0,col++) << COLHDR(Sub2(_T("e"),_T("p")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-      (*table)(0,col++) << COLHDR(Sub2(_T("I"),_T("c")), rptLength4UnitTag, pDisplayUnits->GetMomentOfInertiaUnit() );
-      (*table)(0,col++) << COLHDR(Sub2(_T("Y"),_T("bc")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+      if (bIs2StageComposite)
+      {
+         (*table)(0, col++) << COLHDR(Sub2(_T("I"), _T("c1")), rptLength4UnitTag, pDisplayUnits->GetMomentOfInertiaUnit());
+         (*table)(0, col++) << COLHDR(Sub2(_T("Y"), _T("bc1")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+         (*table)(0, col++) << COLHDR(Sub2(_T("I"), _T("c2")), rptLength4UnitTag, pDisplayUnits->GetMomentOfInertiaUnit());
+         (*table)(0, col++) << COLHDR(Sub2(_T("Y"), _T("bc2")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+      }
+      else
+      {
+         (*table)(0, col++) << COLHDR(Sub2(_T("I"), _T("c")), rptLength4UnitTag, pDisplayUnits->GetMomentOfInertiaUnit());
+         (*table)(0, col++) << COLHDR(Sub2(_T("Y"), _T("bc")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+      }
       (*table)(0,col++) << COLHDR(Sub2(_T("Y"),_T("bg")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
    }
    else
    {
       (*table)(0,col++) << COLHDR(Sub2(_T("e"),_T("pt")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-      (*table)(0,col++) << COLHDR(Sub2(_T("I"),_T("ct")), rptLength4UnitTag, pDisplayUnits->GetMomentOfInertiaUnit() );
-      (*table)(0,col++) << COLHDR(Sub2(_T("Y"),_T("bct")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+      if (bIs2StageComposite)
+      {
+         (*table)(0, col++) << COLHDR(Sub2(_T("I"), _T("ct1")), rptLength4UnitTag, pDisplayUnits->GetMomentOfInertiaUnit());
+         (*table)(0, col++) << COLHDR(Sub2(_T("Y"), _T("bct1")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+         (*table)(0, col++) << COLHDR(Sub2(_T("I"), _T("ct2")), rptLength4UnitTag, pDisplayUnits->GetMomentOfInertiaUnit());
+         (*table)(0, col++) << COLHDR(Sub2(_T("Y"), _T("bct2")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+      }
+      else
+      {
+         (*table)(0, col++) << COLHDR(Sub2(_T("I"), _T("ct")), rptLength4UnitTag, pDisplayUnits->GetMomentOfInertiaUnit());
+         (*table)(0, col++) << COLHDR(Sub2(_T("Y"), _T("bct")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+      }
       (*table)(0,col++) << COLHDR(Sub2(_T("Y"),_T("bgt")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
    }
    (*table)(0,col++) << COLHDR(symbol(DELTA) << italic(ON) << Sub2(_T("f''"),_T("cd")) << italic(OFF), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
@@ -226,6 +304,7 @@ void CElasticGainDueToSIDLTable::AddRow(rptChapter* pChapter,IBroker* pBroker,co
 {
    GET_IFACE2(pBroker,IProductForces,pProdForces);
    ColumnIndexType col = 1;
+   RowIndexType rowOffset = GetNumberOfHeaderRows() - 1;
 
    const CSegmentKey& segmentKey(poi.GetSegmentKey());
 
@@ -237,33 +316,66 @@ void CElasticGainDueToSIDLTable::AddRow(rptChapter* pChapter,IBroker* pBroker,co
 
    if (m_bHasDeckLoads)
    {
-      (*this)(row, col++) << moment.SetValue(pProdForces->GetMoment(castDeckIntervalIdx, pgsTypes::pftSlab, poi, m_BAT, rtIncremental));
-      (*this)(row, col++) << moment.SetValue(pProdForces->GetMoment(castDeckIntervalIdx, pgsTypes::pftSlabPad, poi, m_BAT, rtIncremental));
+      (*this)(row+rowOffset, col++) << moment.SetValue(pProdForces->GetMoment(castDeckIntervalIdx, pgsTypes::pftSlab, poi, m_BAT, rtIncremental));
+      (*this)(row+rowOffset, col++) << moment.SetValue(pProdForces->GetMoment(castDeckIntervalIdx, pgsTypes::pftSlabPad, poi, m_BAT, rtIncremental));
+   }
+
+   if (m_bIs2StageComposite)
+   {
+      (*this)(row + rowOffset, col++) << moment.SetValue(pDetails->pLosses->GetSidlMoment1());
    }
 
    if ( m_bHasSidewalk )
    {
-      (*this)(row,col++) << moment.SetValue(pProdForces->GetMoment( railingSystemIntervalIdx, pgsTypes::pftSidewalk, poi, m_BAT, rtIncremental ));
+      (*this)(row+rowOffset,col++) << moment.SetValue(pProdForces->GetMoment( railingSystemIntervalIdx, pgsTypes::pftSidewalk, poi, m_BAT, rtIncremental ));
    }
 
-   (*this)(row,col++) << moment.SetValue(pProdForces->GetMoment( railingSystemIntervalIdx, pgsTypes::pftTrafficBarrier, poi, m_BAT, rtIncremental ));
+   (*this)(row+rowOffset,col++) << moment.SetValue(pProdForces->GetMoment( railingSystemIntervalIdx, pgsTypes::pftTrafficBarrier, poi, m_BAT, rtIncremental ));
 
    if ( m_bHasOverlay )
    {
-      (*this)(row,col++) << moment.SetValue(pProdForces->GetMoment( overlayIntervalIdx, pgsTypes::pftOverlay, poi, m_BAT, rtIncremental ));
+      (*this)(row+rowOffset,col++) << moment.SetValue(pProdForces->GetMoment( overlayIntervalIdx, pgsTypes::pftOverlay, poi, m_BAT, rtIncremental ));
    }
 
    if ( m_bHasUserLoads )
    {
-      (*this)(row,col++) << moment.SetValue( pProdForces->GetMoment(compositeUserLoadIntervalIdx, pgsTypes::pftUserDC,      poi, m_BAT, rtIncremental ) );
-      (*this)(row,col++) << moment.SetValue( pProdForces->GetMoment(compositeUserLoadIntervalIdx, pgsTypes::pftUserDW,      poi, m_BAT, rtIncremental ) );
+      (*this)(row+rowOffset,col++) << moment.SetValue( pProdForces->GetMoment(compositeUserLoadIntervalIdx, pgsTypes::pftUserDC,      poi, m_BAT, rtIncremental ) );
+      (*this)(row+rowOffset,col++) << moment.SetValue( pProdForces->GetMoment(compositeUserLoadIntervalIdx, pgsTypes::pftUserDW,      poi, m_BAT, rtIncremental ) );
    }
 
-   (*this)(row,col++) << moment.SetValue( pDetails->pLosses->GetSidlMoment() );
-   (*this)(row,col++) << ecc.SetValue( pDetails->pLosses->GetEccPermanentFinal() );
-   (*this)(row,col++) << mom_inertia.SetValue( pDetails->pLosses->GetIc() );
-   (*this)(row,col++) << cg.SetValue( pDetails->pLosses->GetYbc() );
-   (*this)(row,col++) << cg.SetValue( pDetails->pLosses->GetYbg() );
-   (*this)(row,col++) << stress.SetValue( pDetails->pLosses->GetDeltaFcd2() );
-   (*this)(row,col++) << stress.SetValue( pDetails->pLosses->ElasticGainDueToSIDL() );
+   Float64 Ag, Ybg, Ixx, Iyy, Ixy;
+   pDetails->pLosses->GetNoncompositeProperties(&Ag, &Ybg, &Ixx, &Iyy, &Ixy);
+   Float64 Ac2, Ybc2, Ic2;
+   pDetails->pLosses->GetCompositeProperties2(&Ac2, &Ybc2, &Ic2);
+
+   if (m_bIs2StageComposite)
+   {
+      (*this)(row + rowOffset, col++) << moment.SetValue(pDetails->pLosses->GetSidlMoment2());
+   }
+   else
+   {
+      (*this)(row + rowOffset, col++) << moment.SetValue(pDetails->pLosses->GetSidlMoment1() + pDetails->pLosses->GetSidlMoment2());
+   }
+   
+   (*this)(row+rowOffset,col++) << ecc.SetValue( pDetails->pLosses->GetEccPermanentFinal().Y() );
+
+   if (m_bIs2StageComposite)
+   {
+      Float64 Ac1, Ybc1, Ic1;
+      pDetails->pLosses->GetCompositeProperties1(&Ac1, &Ybc1, &Ic1);
+
+      (*this)(row + rowOffset, col++) << mom_inertia.SetValue(Ic1);
+      (*this)(row + rowOffset, col++) << cg.SetValue(Ybc1);
+      (*this)(row + rowOffset, col++) << mom_inertia.SetValue(Ic2);
+      (*this)(row + rowOffset, col++) << cg.SetValue(Ybc2);
+   }
+   else
+   {
+      (*this)(row + rowOffset, col++) << mom_inertia.SetValue(Ic2);
+      (*this)(row + rowOffset, col++) << cg.SetValue(Ybc2);
+   }
+
+   (*this)(row+rowOffset,col++) << cg.SetValue( Ybg );
+   (*this)(row+rowOffset,col++) << stress.SetValue( pDetails->pLosses->GetDeltaFcd2() );
+   (*this)(row+rowOffset,col++) << stress.SetValue( pDetails->pLosses->ElasticGainDueToSIDL() );
 }

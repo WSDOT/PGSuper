@@ -127,12 +127,12 @@ Float64 pgsAlternativeTensileStressCalculator::ComputeAlternativeStressRequireme
        allowable_bar_stress = m_fsMax;
    }
 
-   if ( fTop <= TOLERANCE && fBot <= TOLERANCE )
+   if ( ::IsLE(fTop,0.0) && ::IsLE(fBot,0.0) )
    {
       // compression over entire cross section
       stressLoc = slAllComp;
    }
-   else if ( 0.0 <= fTop && 0.0 <= fBot )
+   else if ( 0.0 < fTop && 0.0 < fBot )
    {
        // tension over entire cross section
       stressLoc = slAllTens;
@@ -141,7 +141,7 @@ Float64 pgsAlternativeTensileStressCalculator::ComputeAlternativeStressRequireme
    {
       ATLASSERT( BinarySign(fBot) != BinarySign(fTop) );
 
-      stressLoc = 0.0 <= fBot ? slBotTens : slTopTens;
+      stressLoc = 0.0 < fBot ? slBotTens : slTopTens;
 
       // Location of neutral axis from Bottom of Girder/Deck
       Yna = (IsZero(fBot) ? 0 : H - (fTop*H/(fTop-fBot)) );
@@ -389,7 +389,10 @@ Float64 pgsAlternativeTensileStressCalculator::ComputeAlternativeStressRequireme
    Float64 fAllowable;
    if (AsReqd <= AsProvd)
    {
-      fAllowable = fAllowableWithRebar;
+      // if the section is in compression, use the without rebar allowable... sometimes there are segments without
+      // mild reinforcement, in all compression, and the allowable is reported for the with rebar case. This causes
+      // confusion... for the all compression case, the tension allowable doesn't matter anyway
+      fAllowable = (stressLoc == slAllComp ? fAllowableWithoutRebar : fAllowableWithRebar);
       *pIsAdequateRebar = true;
    }
    else

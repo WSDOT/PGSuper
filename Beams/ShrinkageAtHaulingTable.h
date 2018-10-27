@@ -59,6 +59,7 @@ private:
 
    bool m_bTemporaryStrands;
    bool m_bIsPrismatic;
+   bool m_bIsAsymmetric;
 };
 
 #endif //__SHRINKAGEATHAULINGTABLE_H_

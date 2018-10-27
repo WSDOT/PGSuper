@@ -45,6 +45,7 @@ private:
 
    pgsTypes::BridgeAnalysisType m_BAT;
    bool m_bHasDeckLoads;
+   bool m_bIs2StageComposite;
    bool m_bHasUserLoads;
    bool m_bHasSidewalk;
    bool m_bHasOverlay;

@@ -120,7 +120,7 @@ BOOL CSpecMomentPage::OnSetActive()
 
    // 2017 crosswalk chapter 5 reorg
    GetDlgItem(IDC_FR_HEADING)->SetWindowText(CString(_T("Modulus of rupture for cracking moment (LRFD 5.4.2.6, ")) +  pDad->LrfdCw8th(_T("5.7.3.3.2"),_T("5.6.3.3")) + _T(")"));
-   GetDlgItem(IDC_SCLOSURE)->SetWindowText(CString(_T("Closure Joint (LRFD 5.5.4.2.2, ")) +  pDad->LrfdCw8th(_T("5.14.1.3.2d"),_T("5.12.3.4.2d")) + _T(")"));
+   GetDlgItem(IDC_SCLOSURE)->SetWindowText(CString(_T("Closure Joint (LRFD 5.5.4.2, ")) +  pDad->LrfdCw8th(_T("5.14.1.3.2d"),_T("5.12.3.4.2d")) + _T(")"));
 
    return CPropertyPage::OnSetActive();
 }

@@ -817,8 +817,6 @@ void CadWriterWorkerBee::WriteTitle(LPCTSTR title, Int16 colWidth)
 void TxDOTCadWriter::WriteInitialData(CadWriterWorkerBee& workerB)
 {
    const Int16 NDBSPCS=43; // width of this debond pattern region
-   // first build our data structure
-   Compute();
 
    if (m_NumDebonded > 0)
    {

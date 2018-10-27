@@ -510,7 +510,8 @@ BOOL CTxDOTOptionalDesignDoc::ParseTemplateFile(LPCTSTR lpszPathName, bool isNew
 {
    // Read girder type, connection types, and pgsuper template file name
    CString girderEntry, leftConnEntry, rightConnEntry, projectCriteriaEntry, folderName;
-   if(!::DoParseTemplateFile(lpszPathName, girderEntry, leftConnEntry, rightConnEntry, projectCriteriaEntry, folderName))
+   Float64 girderConcreteUnitWeight;
+   if(!::DoParseTemplateFile(lpszPathName, girderEntry, leftConnEntry, rightConnEntry, projectCriteriaEntry, folderName, girderConcreteUnitWeight))
    {
       ASSERT(0);
       return FALSE;
@@ -520,6 +521,7 @@ BOOL CTxDOTOptionalDesignDoc::ParseTemplateFile(LPCTSTR lpszPathName, bool isNew
    m_ProjectData.SetGirderEntryName( girderEntry );
    m_ProjectData.SetLeftConnectionEntryName( leftConnEntry );
    m_ProjectData.SetRightConnectionEntryName( rightConnEntry );
+   m_ProjectData.SetGirderConcreteUnitWeight(girderConcreteUnitWeight);
 
    if (isNewFileFromTemplate)
    {
@@ -1333,10 +1335,10 @@ void CTxDOTOptionalDesignDoc::UpdatePgsuperModelWithData()
 
    // Now set girders' data
    SetGirderData(m_ProjectData.GetOriginalDesignGirderData(), TOGA_ORIG_GDR, gdr_name, pGdrEntry,
-                 m_ProjectData.GetEcBeam(),pGroup);
+                 m_ProjectData.GetEcBeam(), m_ProjectData.GetGirderConcreteUnitWeight(), pGroup);
 
    SetGirderData(m_ProjectData.GetPrecasterDesignGirderData(), TOGA_FABR_GDR, gdr_name, pGdrEntry,
-                 m_ProjectData.GetEcBeam(),pGroup);
+                 m_ProjectData.GetEcBeam(), m_ProjectData.GetGirderConcreteUnitWeight(), pGroup);
 
    // Applied dead loads
    // Overlay load must be applied before setting the bridge description
@@ -1460,7 +1462,7 @@ void CTxDOTOptionalDesignDoc::UpdatePgsuperModelWithData()
 }
 
 void CTxDOTOptionalDesignDoc::SetGirderData(CTxDOTOptionalDesignGirderData* pOdGirderData, GirderIndexType gdr, 
-                                            LPCTSTR gdrName, const GirderLibraryEntry* pGdrEntry, Float64 EcBeam,
+                                            LPCTSTR gdrName, const GirderLibraryEntry* pGdrEntry, Float64 EcBeam, Float64 weightDensity,
                                             CGirderGroupData* pGroup)
 {
    CGirderMaterial& material = pGroup->GetGirder(gdr)->GetSegment(0)->Material;
@@ -1476,6 +1478,7 @@ void CTxDOTOptionalDesignDoc::SetGirderData(CTxDOTOptionalDesignGirderData* pOdG
    material.Concrete.Ec = EcBeam;
    material.Concrete.Fci = pOdGirderData->GetFci();
    material.Concrete.Fc  = pOdGirderData->GetFc();
+   material.Concrete.WeightDensity = weightDensity;
 
    // Prestress material
    matPsStrand::Grade grade;

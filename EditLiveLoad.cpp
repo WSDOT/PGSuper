@@ -89,8 +89,8 @@ void txnEditLiveLoad::DoExecute(int i)
 
    GET_IFACE2( pBroker, ILiveLoads, pLiveLoad );
    GET_IFACE2( pBroker, IEvents,    pEvents   );
-
-   pEvents->HoldEvents(); // don't fire any changed events until all changes are done
+   // Exception-safe holder to keep from fireing events until we are done
+   CIEventsHolder event_holder(pEvents);
 
    pLiveLoad->SetLiveLoadNames(            pgsTypes::lltDesign,m_Design[i].m_VehicleNames);
    pLiveLoad->SetTruckImpact(              pgsTypes::lltDesign,m_Design[i].m_TruckImpact);
@@ -109,6 +109,4 @@ void txnEditLiveLoad::DoExecute(int i)
 
    GET_IFACE2( pBroker, IBridgeDescription, pIBridgeDesc );
    pIBridgeDesc->SetLiveLoadEventByIndex(m_EventIndex[i]);
-
-   pEvents->FirePendingEvents();
 }

@@ -70,9 +70,6 @@ void TxDOTIBNSDebondWriter::WriteDebondData(rptParagraph* pPara,IBroker* pBroker
 {
    *pPara<<rptNewLine; // make some space
 
-   // build data structures
-   Compute();
-
    StrandIndexType nss = m_pStrandGeometry->GetStrandCount(m_SegmentKey,pgsTypes::Straight);
    bool is_optional = optionalName.size() > 0;
 

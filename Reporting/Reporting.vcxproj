@@ -495,6 +495,7 @@
     <ClCompile Include="LoadRatingChapterBuilder.cpp" />
     <ClCompile Include="LoadRatingDetailsChapterBuilder.cpp" />
     <ClCompile Include="LoadRatingReactionsChapterBuilder.cpp" />
+    <ClCompile Include="LoadRatingReportDlg.cpp" />
     <ClCompile Include="LoadRatingReportSpecificationBuilder.cpp" />
     <ClCompile Include="LongitudinalReinforcementForShearLoadRatingChapterBuilder.cpp" />
     <ClCompile Include="LongRebarLocations.cpp" />
@@ -522,6 +523,7 @@
     <ClCompile Include="PosttensionStressTable.cpp" />
     <ClCompile Include="PrestressForceChapterBuilder.cpp" />
     <ClCompile Include="PrestressLossTable.cpp" />
+    <ClCompile Include="PrestressRotationTable.cpp" />
     <ClCompile Include="PretensionStressTable.cpp" />
     <ClCompile Include="ProductAxialTable.cpp" />
     <ClCompile Include="ProductDisplacementsTable.cpp" />
@@ -671,6 +673,7 @@
     <ClInclude Include="..\Include\Reporting\LoadRatingChapterBuilder.h" />
     <ClInclude Include="..\Include\Reporting\LoadRatingDetailsChapterBuilder.h" />
     <ClInclude Include="..\Include\Reporting\LoadRatingReactionsChapterBuilder.h" />
+    <ClInclude Include="..\Include\Reporting\LoadRatingReportDlg.h" />
     <ClInclude Include="..\Include\Reporting\LoadRatingReportSpecificationBuilder.h" />
     <ClInclude Include="..\Include\Reporting\LongitudinalReinforcementForShearLoadRatingChapterBuilder.h" />
     <ClInclude Include="..\Include\Reporting\LongRebarLocations.h" />
@@ -697,6 +700,7 @@
     <ClInclude Include="..\Include\Reporting\PosttensionStressTable.h" />
     <ClInclude Include="..\Include\Reporting\PrestressForceChapterBuilder.h" />
     <ClInclude Include="..\Include\Reporting\PrestressLossTable.h" />
+    <ClInclude Include="..\Include\Reporting\PrestressRotationTable.h" />
     <ClInclude Include="..\Include\Reporting\PretensionStressTable.h" />
     <ClInclude Include="..\Include\Reporting\ProductAxialTable.h" />
     <ClInclude Include="..\Include\Reporting\ProductDisplacementsTable.h" />

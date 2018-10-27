@@ -479,7 +479,7 @@ std::vector<Float64> CSegmentModelManager::GetDeflection(IntervalIndexType inter
 
                if (pPoi->IsOnSegment(poi))
                {
-                  Float64 d = ::LinInterp(poi.GetDistFromStart(), Y1, Y2, X2 - X1);
+                  Float64 d = ::LinInterp(poi.GetDistFromStart() - X1, Y1, Y2, X2 - X1);
                   Dy -= d;
                }
                

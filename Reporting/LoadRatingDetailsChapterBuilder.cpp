@@ -22,6 +22,7 @@
 
 #include "StdAfx.h"
 #include <Reporting\LoadRatingDetailsChapterBuilder.h>
+#include <Reporting\LoadRatingReportSpecificationBuilder.h>
 
 #include <IFace\AnalysisResults.h>
 #include <IFace\Artifact.h>
@@ -59,25 +60,15 @@ LPCTSTR CLoadRatingDetailsChapterBuilder::GetName() const
 
 rptChapter* CLoadRatingDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
 {
-   CGirderReportSpecification* pGdrRptSpec = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
-   CGirderLineReportSpecification* pGdrLineRptSpec = dynamic_cast<CGirderLineReportSpecification*>(pRptSpec);
+   CLoadRatingReportSpecification* pLoadRatingRptSpec = dynamic_cast<CLoadRatingReportSpecification*>(pRptSpec);
+   ATLASSERT(pLoadRatingRptSpec);
+   
    CComPtr<IBroker> pBroker;
    CGirderKey girderKey;
 
-   if ( pGdrRptSpec )
-   {
-      pGdrRptSpec->GetBroker(&pBroker);
-      girderKey = pGdrRptSpec->GetGirderKey();
-   }
-   else if ( pGdrLineRptSpec)
-   {
-      pGdrLineRptSpec->GetBroker(&pBroker);
-      girderKey = pGdrLineRptSpec->GetGirderKey();
-   }
-   else
-   {
-      ATLASSERT(false); // not expecting a different kind of report spec
-   }
+   pLoadRatingRptSpec->GetBroker(&pBroker);
+   girderKey = pLoadRatingRptSpec->GetGirderKey();
+   m_bReportAtAllPoi = pLoadRatingRptSpec->ReportAtAllPointsOfInterest();
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
@@ -895,7 +886,8 @@ void CLoadRatingDetailsChapterBuilder::LoadPostingDetails(rptChapter* pChapter,I
 
 bool CLoadRatingDetailsChapterBuilder::ReportAtThisPoi(const pgsPointOfInterest& poi,const pgsPointOfInterest& controllingPoi) const
 {
-   if ( poi == controllingPoi || 
+   if (m_bReportAtAllPoi ||
+        poi == controllingPoi ||
         poi.IsTenthPoint(POI_SPAN) || 
         poi.HasAttribute(POI_CLOSURE) || 
         poi.HasAttribute(POI_CANTILEVER)

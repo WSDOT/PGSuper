@@ -25,6 +25,7 @@
 #include "ShrinkageAtDeckPlacementTable.h"
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
+#include <IFace\Intervals.h>
 #include <PsgLib\SpecLibraryEntry.h>
 
 #ifdef _DEBUG
@@ -68,10 +69,56 @@ CShrinkageAtDeckPlacementTable* CShrinkageAtDeckPlacementTable::PrepareTable(rpt
    GET_IFACE2(pBroker,ISectionProperties,pSectProp);
    pgsTypes::SectionPropertyMode spMode = pSectProp->GetSectionPropertiesMode();
 
+   GET_IFACE2(pBroker, IIntervals, pIntervals);
+   IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
+
+   GET_IFACE2(pBroker, IGirder, pGirder);
+   bool bIsPrismatic = pGirder->IsPrismatic(releaseIntervalIdx, segmentKey);
+
+   GET_IFACE2(pBroker, IBridge, pBridge);
+   bool bIsAsymmetric = pBridge->HasAsymmetricGirders() || pBridge->HasAsymmetricPrestressing() ? true : false;
+
    // Create and configure the table
-   ColumnIndexType numColumns = 8;
+   ColumnIndexType numColumns = 2; // location, Aps
+   if (bIsPrismatic)
+   {
+      if (bIsAsymmetric)
+      {
+         numColumns += 2; // epsx, epsy
+      }
+      else
+      {
+         numColumns++; // eps
+      }
+   }
+   else
+   {
+      if (bIsAsymmetric)
+      {
+         numColumns += 6; // Ag, Ixx, Ixy, Ixy, epsx, epsy
+      }
+      else
+      {
+         numColumns += 3; // Ag, Ig, eps
+      }
+   }
+
+   // permanent strands
+   if (bIsAsymmetric)
+   {
+      numColumns += 4; // epx, epy, Kih, dfpSR
+   }
+   else
+   {
+      numColumns += 3; // ep, Kih, dfpSR
+   }
+
+   // Create and configure the table
    CShrinkageAtDeckPlacementTable* table = new CShrinkageAtDeckPlacementTable( numColumns, pDisplayUnits );
    rptStyleManager::ConfigureTable(table);
+
+   table->m_bIsPrismatic = bIsPrismatic;
+   table->m_bIsAsymmetric = bIsAsymmetric;
 
 
    std::_tstring strImagePath(rptStyleManager::GetImagePath());
@@ -81,13 +128,27 @@ CShrinkageAtDeckPlacementTable* CShrinkageAtDeckPlacementTable::PrepareTable(rpt
 
    *pParagraph << _T("[") << LrfdCw8th(_T("5.9.5.4.2a"),_T("5.9.3.4.2a")) << _T("] Shrinkage of Girder Concrete : ") << symbol(DELTA) << RPT_STRESS(_T("pSR")) << rptNewLine;
 
-   if ( spMode == pgsTypes::spmGross )
+   if (bIsAsymmetric)
    {
-      *pParagraph << rptRcImage(strImagePath + _T("Delta_FpSR_Gross.png")) << rptNewLine;
+      if (spMode == pgsTypes::spmGross)
+      {
+         *pParagraph << rptRcImage(strImagePath + _T("Delta_FpSR_Gross_Asymmetric.png")) << rptNewLine;
+      }
+      else
+      {
+         *pParagraph << rptRcImage(strImagePath + _T("Delta_FpSR_Transformed_Asymmetric.png")) << rptNewLine;
+      }
    }
    else
    {
-      *pParagraph << rptRcImage(strImagePath + _T("Delta_FpSR_Transformed.png")) << rptNewLine;
+      if (spMode == pgsTypes::spmGross)
+      {
+         *pParagraph << rptRcImage(strImagePath + _T("Delta_FpSR_Gross.png")) << rptNewLine;
+      }
+      else
+      {
+         *pParagraph << rptRcImage(strImagePath + _T("Delta_FpSR_Transformed.png")) << rptNewLine;
+      }
    }
 
    if ( pSpecEntry->GetSpecificationType() <= lrfdVersionMgr::ThirdEditionWith2005Interims )
@@ -237,26 +298,161 @@ CShrinkageAtDeckPlacementTable* CShrinkageAtDeckPlacementTable::PrepareTable(rpt
    (*pParamTable)(2,6) << ptl->GetGdrK2Creep();
    (*pParamTable)(2,7) << table->scalar.SetValue(ptl->GetCreepInitialToFinal().GetCreepCoefficient());
 
+   if (bIsPrismatic)
+   {
+      rptRcTable* sectPropTable = rptStyleManager::CreateDefaultTable(bIsAsymmetric ? 4 : 2, _T(""));
+      *pParagraph << sectPropTable << rptNewLine;
+
+      GET_IFACE2(pBroker, IPointOfInterest, pPoi);
+      PoiList vPoi;
+      pPoi->GetPointsOfInterest(segmentKey, POI_5L | POI_RELEASED_SEGMENT, &vPoi);
+      ATLASSERT(vPoi.size() == 1);
+      const pgsPointOfInterest& poi(vPoi.front());
+      Float64 Ag = pSectProp->GetAg(releaseIntervalIdx, poi);
+      Float64 Ixx = pSectProp->GetIxx(releaseIntervalIdx, poi);
+
+      if (bIsAsymmetric)
+      {
+         Float64 Iyy = pSectProp->GetIyy(releaseIntervalIdx, poi);
+         Float64 Ixy = pSectProp->GetIxy(releaseIntervalIdx, poi);
+         if (spMode == pgsTypes::spmGross)
+         {
+            (*sectPropTable)(0, 0) << COLHDR(Sub2(_T("A"), _T("g")), rptAreaUnitTag, pDisplayUnits->GetAreaUnit());
+            (*sectPropTable)(0, 1) << COLHDR(Sub2(_T("I"), _T("xx")), rptLength4UnitTag, pDisplayUnits->GetMomentOfInertiaUnit());
+            (*sectPropTable)(0, 2) << COLHDR(Sub2(_T("I"), _T("yy")), rptLength4UnitTag, pDisplayUnits->GetMomentOfInertiaUnit());
+            (*sectPropTable)(0, 3) << COLHDR(Sub2(_T("I"), _T("xy")), rptLength4UnitTag, pDisplayUnits->GetMomentOfInertiaUnit());
+         }
+         else
+         {
+            (*sectPropTable)(0, 0) << COLHDR(Sub2(_T("A"), _T("gt")), rptAreaUnitTag, pDisplayUnits->GetAreaUnit());
+            (*sectPropTable)(0, 1) << COLHDR(Sub2(_T("I"), _T("xxt")), rptLength4UnitTag, pDisplayUnits->GetMomentOfInertiaUnit());
+            (*sectPropTable)(0, 2) << COLHDR(Sub2(_T("I"), _T("yyt")), rptLength4UnitTag, pDisplayUnits->GetMomentOfInertiaUnit());
+            (*sectPropTable)(0, 3) << COLHDR(Sub2(_T("I"), _T("xyt")), rptLength4UnitTag, pDisplayUnits->GetMomentOfInertiaUnit());
+         }
+
+         (*sectPropTable)(1, 0) << table->area.SetValue(Ag);
+         (*sectPropTable)(1, 1) << table->mom_inertia.SetValue(Ixx);
+         (*sectPropTable)(1, 2) << table->mom_inertia.SetValue(Iyy);
+         (*sectPropTable)(1, 3) << table->mom_inertia.SetValue(Ixy);
+      }
+      else
+      {
+         if (spMode == pgsTypes::spmGross)
+         {
+            (*sectPropTable)(0, 0) << COLHDR(Sub2(_T("A"), _T("g")), rptAreaUnitTag, pDisplayUnits->GetAreaUnit());
+            (*sectPropTable)(0, 1) << COLHDR(Sub2(_T("I"), _T("g")), rptLength4UnitTag, pDisplayUnits->GetMomentOfInertiaUnit());
+         }
+         else
+         {
+            (*sectPropTable)(0, 0) << COLHDR(Sub2(_T("A"), _T("gt")), rptAreaUnitTag, pDisplayUnits->GetAreaUnit());
+            (*sectPropTable)(0, 1) << COLHDR(Sub2(_T("I"), _T("gt")), rptLength4UnitTag, pDisplayUnits->GetMomentOfInertiaUnit());
+         }
+
+         (*sectPropTable)(1, 0) << table->area.SetValue(Ag);
+         (*sectPropTable)(1, 1) << table->mom_inertia.SetValue(Ixx);
+      }
+   }
+
    // shrinkage loss   
    *pParagraph << table << rptNewLine;
-   (*table)(0,0) << COLHDR(_T("Location from")<<rptNewLine<<_T("Left Support"),rptLengthUnitTag,  pDisplayUnits->GetSpanLengthUnit() );
-   (*table)(0,1) << COLHDR(Sub2(_T("A"),_T("ps")), rptAreaUnitTag, pDisplayUnits->GetAreaUnit());
-   if ( spMode == pgsTypes::spmGross )
+   ColumnIndexType col = 0;
+   (*table)(0,col++) << COLHDR(_T("Location from")<<rptNewLine<<_T("Left Support"),rptLengthUnitTag,  pDisplayUnits->GetSpanLengthUnit() );
+   (*table)(0,col++) << COLHDR(Sub2(_T("A"),_T("ps")), rptAreaUnitTag, pDisplayUnits->GetAreaUnit());
+   if (bIsPrismatic)
    {
-      (*table)(0,2) << COLHDR(Sub2(_T("A"),_T("g")), rptAreaUnitTag, pDisplayUnits->GetAreaUnit());
-      (*table)(0,3) << COLHDR(Sub2(_T("I"),_T("g")), rptLength4UnitTag, pDisplayUnits->GetMomentOfInertiaUnit());
-      (*table)(0,4) << COLHDR(Sub2(_T("e"),_T("ps")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
-      (*table)(0,5) << COLHDR(Sub2(_T("e"),_T("p")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+      if (bIsAsymmetric)
+      {
+         if (spMode == pgsTypes::spmGross)
+         {
+            (*table)(0, col++) << COLHDR(Sub2(_T("e"), _T("psx")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+            (*table)(0, col++) << COLHDR(Sub2(_T("e"), _T("psy")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+         }
+         else
+         {
+            (*table)(0, col++) << COLHDR(Sub2(_T("e"), _T("psxn")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+            (*table)(0, col++) << COLHDR(Sub2(_T("e"), _T("psyn")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+         }
+      }
+      else
+      {
+         if (spMode == pgsTypes::spmGross)
+         {
+            (*table)(0, col++) << COLHDR(Sub2(_T("e"), _T("ps")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+         }
+         else
+         {
+            (*table)(0, col++) << COLHDR(Sub2(_T("e"), _T("psn")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+         }
+      }
    }
    else
    {
-      (*table)(0,2) << COLHDR(Sub2(_T("A"),_T("n")), rptAreaUnitTag, pDisplayUnits->GetAreaUnit());
-      (*table)(0,3) << COLHDR(Sub2(_T("I"),_T("n")), rptLength4UnitTag, pDisplayUnits->GetMomentOfInertiaUnit());
-      (*table)(0,4) << COLHDR(Sub2(_T("e"),_T("psn")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
-      (*table)(0,5) << COLHDR(Sub2(_T("e"),_T("pn")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+      if (bIsAsymmetric)
+      {
+         if (spMode == pgsTypes::spmGross)
+         {
+            (*table)(0, col++) << COLHDR(Sub2(_T("A"), _T("g")), rptAreaUnitTag, pDisplayUnits->GetAreaUnit());
+            (*table)(0, col++) << COLHDR(Sub2(_T("I"), _T("xx")), rptLength4UnitTag, pDisplayUnits->GetMomentOfInertiaUnit());
+            (*table)(0, col++) << COLHDR(Sub2(_T("I"), _T("yy")), rptLength4UnitTag, pDisplayUnits->GetMomentOfInertiaUnit());
+            (*table)(0, col++) << COLHDR(Sub2(_T("I"), _T("xy")), rptLength4UnitTag, pDisplayUnits->GetMomentOfInertiaUnit());
+            (*table)(0, col++) << COLHDR(Sub2(_T("e"), _T("psx")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+            (*table)(0, col++) << COLHDR(Sub2(_T("e"), _T("psy")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+         }
+         else
+         {
+            (*table)(0, col++) << COLHDR(Sub2(_T("A"), _T("n")), rptAreaUnitTag, pDisplayUnits->GetAreaUnit());
+            (*table)(0, col++) << COLHDR(Sub2(_T("I"), _T("xxn")), rptLength4UnitTag, pDisplayUnits->GetMomentOfInertiaUnit());
+            (*table)(0, col++) << COLHDR(Sub2(_T("I"), _T("yyn")), rptLength4UnitTag, pDisplayUnits->GetMomentOfInertiaUnit());
+            (*table)(0, col++) << COLHDR(Sub2(_T("I"), _T("xyn")), rptLength4UnitTag, pDisplayUnits->GetMomentOfInertiaUnit());
+            (*table)(0, col++) << COLHDR(Sub2(_T("e"), _T("psxn")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+            (*table)(0, col++) << COLHDR(Sub2(_T("e"), _T("psyn")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+         }
+      }
+      else
+      {
+         if (spMode == pgsTypes::spmGross)
+         {
+            (*table)(0, col++) << COLHDR(Sub2(_T("A"), _T("g")), rptAreaUnitTag, pDisplayUnits->GetAreaUnit());
+            (*table)(0, col++) << COLHDR(Sub2(_T("I"), _T("g")), rptLength4UnitTag, pDisplayUnits->GetMomentOfInertiaUnit());
+            (*table)(0, col++) << COLHDR(Sub2(_T("e"), _T("ps")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+         }
+         else
+         {
+            (*table)(0, col++) << COLHDR(Sub2(_T("A"), _T("n")), rptAreaUnitTag, pDisplayUnits->GetAreaUnit());
+            (*table)(0, col++) << COLHDR(Sub2(_T("I"), _T("n")), rptLength4UnitTag, pDisplayUnits->GetMomentOfInertiaUnit());
+            (*table)(0, col++) << COLHDR(Sub2(_T("e"), _T("psn")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+         }
+      }
    }
-   (*table)(0,6) << Sub2(_T("K"),_T("id"));
-   (*table)(0,7) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pSR")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+
+   if (bIsAsymmetric)
+   {
+      if (spMode == pgsTypes::spmGross)
+      {
+         (*table)(0, col++) << COLHDR(Sub2(_T("e"), _T("px")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+         (*table)(0, col++) << COLHDR(Sub2(_T("e"), _T("py")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+      }
+      else
+      {
+         (*table)(0, col++) << COLHDR(Sub2(_T("e"), _T("pxn")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+         (*table)(0, col++) << COLHDR(Sub2(_T("e"), _T("pyn")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+      }
+   }
+   else
+   {
+      if (spMode == pgsTypes::spmGross)
+      {
+         (*table)(0, col++) << COLHDR(Sub2(_T("e"), _T("p")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+      }
+      else
+      {
+         (*table)(0, col++) << COLHDR(Sub2(_T("e"), _T("pn")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+      }
+   }
+
+   (*table)(0, col++) << Sub2(_T("K"), _T("id"));
+   (*table)(0, col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pSR")), rptStressUnitTag, pDisplayUnits->GetStressUnit());
+
 
    return table;
 }
@@ -278,18 +474,58 @@ void CShrinkageAtDeckPlacementTable::AddRow(rptChapter* pChapter,IBroker* pBroke
       Aps += pDetails->pLosses->GetApsTemporary();
    }
 
-   Float64 e  = pDetails->pLosses->GetEccPermanentFinal();
-   Float64 eps = e;
+   gpPoint2d e  = pDetails->pLosses->GetEccPermanentFinal();
+   gpPoint2d eps = e;
    if ( pDetails->pLosses->GetTempStrandUsage() == lrfdLosses::tsPretensioned )
    {
       eps = pDetails->pLosses->GetEccpgFinal();
    }
 
-   (*this)(row,1) << area.SetValue(Aps);
-   (*this)(row,2) << area.SetValue(pDetails->pLosses->GetAn());
-   (*this)(row,3) << mom_inertia.SetValue(pDetails->pLosses->GetIn());
-   (*this)(row,4) << ecc.SetValue(eps);
-   (*this)(row,5) << ecc.SetValue(e);
-   (*this)(row,6) << scalar.SetValue(ptl->GetKid());
-   (*this)(row,7) << stress.SetValue( ptl->ShrinkageLossBeforeDeckPlacement() );
+   Float64 An, Ybn, Ixxn, Iyyn, Ixyn;
+   pDetails->pLosses->GetNetNoncompositeProperties(&An, &Ybn, &Ixxn, &Iyyn, &Ixyn);
+
+   ColumnIndexType col = 1;
+   RowIndexType rowOffset = GetNumberOfHeaderRows() - 1;
+
+   (*this)(row+rowOffset, col++) << area.SetValue(Aps);
+
+
+   if (m_bIsPrismatic)
+   {
+      if (m_bIsAsymmetric)
+      {
+         (*this)(row+rowOffset, col++) << ecc.SetValue(eps.X());
+         (*this)(row+rowOffset, col++) << ecc.SetValue(eps.Y());
+      }
+      else
+      {
+         (*this)(row+rowOffset, col++) << ecc.SetValue(eps.Y());
+      }
+   }
+   else
+   {
+      if (m_bIsAsymmetric)
+      {
+         (*this)(row+rowOffset, col++) << area.SetValue(An);
+         (*this)(row+rowOffset, col++) << mom_inertia.SetValue(Ixxn);
+         (*this)(row+rowOffset, col++) << mom_inertia.SetValue(Iyyn);
+         (*this)(row+rowOffset, col++) << mom_inertia.SetValue(Ixyn);
+         (*this)(row+rowOffset, col++) << ecc.SetValue(eps.X());
+         (*this)(row+rowOffset, col++) << ecc.SetValue(eps.Y());
+      }
+      else
+      {
+         (*this)(row+rowOffset, col++) << area.SetValue(An);
+         (*this)(row+rowOffset, col++) << mom_inertia.SetValue(Ixxn);
+         (*this)(row+rowOffset, col++) << ecc.SetValue(eps.Y());
+      }
+   }
+
+   if (m_bIsAsymmetric)
+   {
+      (*this)(row+rowOffset, col++) << ecc.SetValue(e.X());
+   }
+   (*this)(row+rowOffset, col++) << ecc.SetValue(e.Y());
+   (*this)(row+rowOffset, col++) << scalar.SetValue(ptl->GetKid());
+   (*this)(row+rowOffset, col++) << stress.SetValue(ptl->ShrinkageLossBeforeDeckPlacement());
 }

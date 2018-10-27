@@ -73,7 +73,17 @@ CTimeDependentLossFinalTable* CTimeDependentLossFinalTable::PrepareTable(rptChap
    rptParagraph* pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pParagraph;
 
-   *pParagraph << _T("Time Dependent Losses After Deck Placement") << rptNewLine;
+   GET_IFACE2(pBroker, IBridge, pBridge);
+   CString strTitle;
+   if (pBridge->GetDeckType() == pgsTypes::sdtNonstructuralOverlay)
+   {
+      pParagraph->SetName(_T("Time Dependent Losses After Nonstructural Overlay Installation"));
+   }
+   else
+   {
+      pParagraph->SetName(_T("Time Dependent Losses After Deck Placement"));
+   }
+   *pParagraph << pParagraph->GetName() << rptNewLine;
 
    pParagraph = new rptParagraph;
    *pChapter << pParagraph;
@@ -105,9 +115,11 @@ void CTimeDependentLossFinalTable::AddRow(rptChapter* pChapter,IBroker* pBroker,
    }
 
    ColumnIndexType colIdx = 1;
-   (*this)(row,colIdx++) << stress.SetValue(ptl->ShrinkageLossAfterDeckPlacement());
-   (*this)(row,colIdx++) << stress.SetValue(ptl->CreepLossAfterDeckPlacement());
-   (*this)(row,colIdx++) << stress.SetValue(ptl->RelaxationLossAfterDeckPlacement());
-   (*this)(row,colIdx++) << stress.SetValue(ptl->ElasticGainDueToDeckShrinkage());
-   (*this)(row,colIdx++) << stress.SetValue(ptl->TimeDependentLossesAfterDeck());
+   RowIndexType rowOffset = GetNumberOfHeaderRows() - 1;
+
+   (*this)(row+rowOffset,colIdx++) << stress.SetValue(ptl->ShrinkageLossAfterDeckPlacement());
+   (*this)(row+rowOffset,colIdx++) << stress.SetValue(ptl->CreepLossAfterDeckPlacement());
+   (*this)(row+rowOffset,colIdx++) << stress.SetValue(ptl->RelaxationLossAfterDeckPlacement());
+   (*this)(row+rowOffset,colIdx++) << stress.SetValue(ptl->ElasticGainDueToDeckShrinkage());
+   (*this)(row+rowOffset,colIdx++) << stress.SetValue(ptl->TimeDependentLossesAfterDeck());
 }

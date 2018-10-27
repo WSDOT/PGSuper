@@ -879,6 +879,7 @@ xcopy /y/d/s \ARP\PGSuper\Configurations \ARP\BridgeLink\Configurations\
     <None Include="..\res\HaulingOverhangs.emf" />
     <None Include="PGSuperAppPlugin.def" />
     <None Include="PGSuperAppPlugin.rgs" />
+    <None Include="res\BearingDimensions.emf" />
     <None Include="res\Closure_BrgAlongGdr_EndAlongGdrFromBrg.emf" />
     <None Include="res\Closure_BrgAlongGdr_EndAlongGdrFromPier.emf" />
     <None Include="res\Closure_BrgAlongGdr_EndAlongNormalFromBrg.emf" />

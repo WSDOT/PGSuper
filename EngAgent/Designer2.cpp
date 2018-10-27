@@ -94,6 +94,7 @@ static char THIS_FILE[] = __FILE__;
 #define BOT           1
 
 static Float64 gs_60KSI = ::ConvertToSysUnits(60.0,unitMeasure::KSI);
+static Float64 gs_rowToler = ::ConvertToSysUnits(0.25,unitMeasure::Inch); // strands are in same row if this tolerance
 
 // Exception-safe utility class for reverting event holding and lldf roa during design
 class AutoDesign
@@ -256,7 +257,7 @@ void pgsDesigner2::SetStatusGroupID(StatusGroupIDType statusGroupID)
 
 // Function we need to reuse
 static Float64 GetSectionGirderOrientationEffect(const pgsPointOfInterest& poi, Float64 x, Float64 z, MatingSurfaceIndexType nMatingSurfaces,
-                                          Float64 topWidth, Float64 girderOrientation,
+                                          Float64 topWidth, Float64 girderTopSlope,
                                           IRoadway* pAlignment, IBridge* pBridge, IGirder* pGdr,
                                           Float64* pCrownSlope)
 {
@@ -313,7 +314,7 @@ static Float64 GetSectionGirderOrientationEffect(const pgsPointOfInterest& poi, 
       }
    }
 
-   Float64 section_girder_orientation_effect = pivot_crown + (topWidth/2)*(fabs(*pCrownSlope - girderOrientation)/(sqrt(1+girderOrientation*girderOrientation)));
+   Float64 section_girder_orientation_effect = pivot_crown + (topWidth/2)*(fabs(*pCrownSlope - girderTopSlope)/(sqrt(1+ girderTopSlope*girderTopSlope)));
 
    return section_girder_orientation_effect;
 }
@@ -341,15 +342,21 @@ void pgsDesigner2::GetHaunchDetails(const CSegmentKey& segmentKey,const GDRCONFI
    pPoi->GetPointsOfInterest(segmentKey, POI_ERECTED_SEGMENT | POI_TENTH_POINTS, &vPoi);
    ATLASSERT(11 == vPoi.size());
 
+   const pgsPointOfInterest& clBrgPoi = vPoi.front();
+
+   PoiList vEndPoi;
+   pPoi->GetPointsOfInterest(segmentKey, POI_RELEASED_SEGMENT | POI_0L | POI_10L, &vEndPoi);
+   ATLASSERT(vEndPoi.size() == 2);
+   const pgsPointOfInterest& poi_left(vEndPoi.front());
+   const pgsPointOfInterest& poi_right(vEndPoi.back());
+
    //
    // Profile Effects and Girder Orientation Effects
    //
 
-   const pgsPointOfInterest& firstPoi = vPoi.front();
-
-   // get station and offset of first poi
+   // get station and offset at CL Bearing poi
    Float64 station,offset;
-   pBridge->GetStationAndOffset(firstPoi,&station,&offset);
+   pBridge->GetStationAndOffset(clBrgPoi,&station,&offset);
    offset = IsZero(offset) ? 0 : offset;
 
    // the profile chord reference line passes through the deck at this station and offset
@@ -359,9 +366,28 @@ void pgsDesigner2::GetHaunchDetails(const CSegmentKey& segmentKey,const GDRCONFI
 
    MatingSurfaceIndexType nMatingSurfaces = pGdr->GetNumberOfMatingSurfaces(segmentKey);
 
-   Float64 girder_orientation = pGdr->GetOrientation(segmentKey);
+   Float64 girder_top_slope = pGdr->GetTransverseTopFlangeSlope(segmentKey);
 
    Float64 max_tslab_and_fillet = 0;
+
+   std::unique_ptr<mathFunction2d> topFlangeShape;
+   pgsTypes::TopFlangeThickeningType tftType = pGdr->GetTopFlangeThickeningType(segmentKey);
+   Float64 tft = pGdr->GetTopFlangeThickening(segmentKey);
+   if (tftType != pgsTypes::tftNone && !IsZero(tft))
+   {
+      // top flange thickening is imposed on the girder
+      Float64 sign = (tftType == pgsTypes::tftEnds ? -1 : 1);
+
+      // there is an imposed camber and/or top flange thickening. use its shape, excluding natural camber, for the top of the girder
+      topFlangeShape = std::make_unique<mathPolynomial2d>(GenerateParabola(poi_left.GetDistFromStart(), poi_right.GetDistFromStart(), sign*tft));
+   }
+   else
+   {
+      topFlangeShape = std::make_unique<ZeroFunction>();
+   }
+
+   Float64 tftCLBrg = topFlangeShape->Evaluate(clBrgPoi.GetDistFromStart());
+
 
    // determine the minumum and maximum difference in elevation between the
    // roadway surface and the top of the girder.... measured directly above 
@@ -374,12 +400,6 @@ void pgsDesigner2::GetHaunchDetails(const CSegmentKey& segmentKey,const GDRCONFI
    Float64 min_reqd_haunch_depth =  DBL_MAX;
    for( const pgsPointOfInterest& poi : vPoi)
    {
-#if defined _DEBUG
-      // assumes girder_orientation is constant for the entire girder... also assumes all segmetns have the same number of mating surfaces
-      ATLASSERT(IsEqual(girder_orientation,pGdr->GetOrientation(poi.GetSegmentKey())));
-      ATLASSERT(nMatingSurfaces == pGdr->GetNumberOfMatingSurfaces(poi.GetSegmentKey()));
-#endif
-
       Float64 slab_offset = pBridge->GetSlabOffset(poi,pConfig);
 
       Float64 tSlab = pBridge->GetGrossSlabDepth( poi );
@@ -394,6 +414,8 @@ void pgsDesigner2::GetHaunchDetails(const CSegmentKey& segmentKey,const GDRCONFI
       Float64 D = pCamber->GetDCamberForGirderSchedule(poi,CREEP_MAXTIME, pConfig);
 
       ATLASSERT(IsEqual(camber_effect,D-C));
+
+      Float64 top_flange_shape_effect = topFlangeShape->Evaluate(poi.GetDistFromStart()) - tftCLBrg;
 
 
       Float64 top_width = pGdr->GetTopWidth(poi);
@@ -419,7 +441,7 @@ void pgsDesigner2::GetHaunchDetails(const CSegmentKey& segmentKey,const GDRCONFI
 
       // girder orientation effect
       Float64 crown_slope;
-      Float64 section_girder_orientation_effect = ::GetSectionGirderOrientationEffect(poi, x, z, nMatingSurfaces, top_width, girder_orientation,
+      Float64 section_girder_orientation_effect = ::GetSectionGirderOrientationEffect(poi, x, z, nMatingSurfaces, top_width, girder_top_slope,
                                                                                       pAlignment, pBridge, pGdr, 
                                                                                       &crown_slope);
 
@@ -429,20 +451,21 @@ void pgsDesigner2::GetHaunchDetails(const CSegmentKey& segmentKey,const GDRCONFI
       haunch.D = D;
       haunch.CamberEffect = camber_effect;
       haunch.CrownSlope = crown_slope;
-      haunch.GirderOrientation = girder_orientation;
+      haunch.GirderTopSlope = girder_top_slope;
       haunch.ElevAlignment = ya;
       haunch.ElevGirder = yc;
       haunch.Fillet = fillet;
       haunch.GirderOrientationEffect = section_girder_orientation_effect;
       haunch.Offset = z;
       haunch.ProfileEffect = -section_profile_effect;
+      haunch.TopFlangeShapeEffect = top_flange_shape_effect;
       haunch.Station = x;
       haunch.tSlab = tSlab;
       haunch.Wtop = top_width;
       haunch.ElevTopGirder = elev_top_girder;
       haunch.TopSlabToTopGirder = haunch.ElevAlignment - haunch.ElevTopGirder;
 
-      haunch.RequiredHaunchDepth = -(ya - yc - tSlab - fillet - section_girder_orientation_effect - camber_effect);
+      haunch.RequiredHaunchDepth = -(ya - yc - tSlab - fillet - section_girder_orientation_effect - camber_effect - top_flange_shape_effect);
 
       max_reqd_haunch_depth = Max(max_reqd_haunch_depth,haunch.RequiredHaunchDepth);
       min_reqd_haunch_depth = Min(min_reqd_haunch_depth,haunch.RequiredHaunchDepth);
@@ -847,9 +870,7 @@ const pgsGirderArtifact* pgsDesigner2::Check(const CGirderKey& girderKey) const
       CheckSegmentStability(segmentKey,pSegmentArtifact->GetSegmentStabilityArtifact());
 
       pProgress->UpdateMessage(_T("Checking debonding"));
-      CheckDebonding(segmentKey, pgsTypes::Straight,  pSegmentArtifact->GetDebondArtifact(pgsTypes::Straight)  );
-      CheckDebonding(segmentKey, pgsTypes::Harped,    pSegmentArtifact->GetDebondArtifact(pgsTypes::Harped)    );
-      CheckDebonding(segmentKey, pgsTypes::Temporary, pSegmentArtifact->GetDebondArtifact(pgsTypes::Temporary) );
+      CheckDebonding(segmentKey, pSegmentArtifact->GetDebondArtifact());
    } // next segment
 
    pProgress->UpdateMessage(_T("Checking constructability"));
@@ -962,7 +983,7 @@ void pgsDesigner2::ConfigureStressCheckTasks(const CSegmentKey& segmentKey) cons
       m_StressCheckTasks.push_back(task);
 
       GET_IFACE(IGirder, pGirder);
-      GET_IFACE(IBridge, pBridge);
+      GET_IFACE_NOCHECK(IBridge, pBridge);
       if (pGirder->HasStructuralLongitudinalJoints() && pBridge->GetDeckType() != pgsTypes::sdtNone)
       {
          // interval when the deck is cast onto the girders, with composite closure joints, but before the deck adds to the composite section
@@ -3213,10 +3234,10 @@ void pgsDesigner2::CheckHorizontalShearMidZone(const pgsPointOfInterest& poi,
    }
    else
    {
-      phiGirder = pResistanceFactors->GetShearResistanceFactor(gdrConcType);
+      phiGirder = pResistanceFactors->GetShearResistanceFactor(poi, gdrConcType);
    }
 
-   Float64 phiSlab   = pResistanceFactors->GetShearResistanceFactor(slabConcType);
+   Float64 phiSlab   = pResistanceFactors->GetShearResistanceFactor(false, slabConcType);
    Float64 phi       = Min(phiGirder,phiSlab); // use minimum [see LRFD 5.7.4.1 (pre2017: 5.8.4.1)]
    pArtifact->SetPhi(phi);
 
@@ -5233,13 +5254,14 @@ void pgsDesigner2::CheckConstructability(const CGirderKey& girderKey,pgsConstruc
    }
 }
 
-void pgsDesigner2::CheckDebonding(const CSegmentKey& segmentKey,pgsTypes::StrandType strandType,pgsDebondArtifact* pArtifact) const
+void pgsDesigner2::CheckDebonding(const CSegmentKey& segmentKey,pgsDebondArtifact* pArtifact) const
 {
    GET_IFACE(IBridge,pBridge);
    GET_IFACE(IStrandGeometry,pStrandGeometry);
    GET_IFACE(IDebondLimits,pDebondLimits);
-
+   GET_IFACE(IBridgeDescription, pIBridgeDesc);
    GET_IFACE(IProgress,pProgress);
+
    CEAFAutoProgress ap(pProgress);
    pProgress->UpdateMessage( _T("Checking debonding requirements") );
 
@@ -5249,24 +5271,57 @@ void pgsDesigner2::CheckDebonding(const CSegmentKey& segmentKey,pgsTypes::Strand
 
    Float64 maxFraPerRow = pDebondLimits->GetMaxDebondedStrandsPerRow(segmentKey);
 
+   // Only straight strands can be debonded
    // Total number of debonded strands
-   StrandIndexType nStrands  = pStrandGeometry->GetStrandCount(segmentKey,strandType);
-   StrandIndexType nDebonded = pStrandGeometry->GetNumDebondedStrands(segmentKey,strandType,pgsTypes::dbetEither);
+   StrandIndexType nStrands  = pStrandGeometry->GetStrandCount(segmentKey,pgsTypes::Straight);
+   StrandIndexType nDebonded = pStrandGeometry->GetNumDebondedStrands(segmentKey,pgsTypes::Straight,pgsTypes::dbetEither);
    Float64 fra = (nStrands == 0 ? 0 : (Float64)nDebonded/(Float64)nStrands);
 
    pArtifact->SetMaxFraDebondedStrands(maxFra);
    pArtifact->SetFraDebondedStrands(fra);
    pArtifact->SetNumDebondedStrands(nDebonded);
 
+   // If adjustable strands are straight, we will need to match up rows in order to get a total for each row
+   bool doCheckAdj(false);
+   const CPrecastSegmentData* pSegment = pIBridgeDesc->GetPrecastSegmentData(segmentKey);
+   pgsTypes::AdjustableStrandType adj_type = pSegment->Strands.GetAdjustableStrandType();
+   if (pgsTypes::asHarped != adj_type)
+   {
+      if (pStrandGeometry->GetStrandCount(segmentKey, pgsTypes::Harped) > 0)
+      {
+         doCheckAdj = true;
+      }
+   }
+
    // Number of debonded strands in row
    pgsPointOfInterest poi(segmentKey,0); // we can use a dummy poi here because we are getting rows for straight strands
-   RowIndexType nRows = pStrandGeometry->GetNumRowsWithStrand(poi,strandType);
+   RowIndexType nRows = pStrandGeometry->GetNumRowsWithStrand(poi,pgsTypes::Straight);
    for ( RowIndexType row = 0; row < nRows; row++ )
    {
-      StrandIndexType nStrandsInRow = pStrandGeometry->GetNumStrandInRow(poi,row,strandType);
-      StrandIndexType nDebondStrandsInRow = pStrandGeometry->GetNumDebondedStrandsInRow(poi,row,strandType);
+      StrandIndexType nStrandsInRow = pStrandGeometry->GetNumStrandInRow(poi,row,pgsTypes::Straight);
+
+      if (doCheckAdj)
+      {
+         // In order to determine all strands in row - we need to add in any adjustable straight stands that might be in this row.
+         Float64 row_elev = pStrandGeometry->GetUnadjustedStrandRowElevation(poi, row, pgsTypes::Straight);
+
+         RowIndexType nAdjRows = pStrandGeometry->GetNumRowsWithStrand(poi,pgsTypes::Harped);
+         for (RowIndexType adjrow = 0; adjrow < nAdjRows; adjrow++)
+         {
+            Float64 adj_row_elev = pStrandGeometry->GetUnadjustedStrandRowElevation(poi, adjrow, pgsTypes::Harped);
+
+            if (IsEqual(adj_row_elev, row_elev, gs_rowToler))
+            {
+               StrandIndexType nAdjStrandsInRow = pStrandGeometry->GetNumStrandInRow(poi, adjrow, pgsTypes::Harped);
+               nStrandsInRow += nAdjStrandsInRow;
+               break;
+            }
+         }
+      }
+
+      StrandIndexType nDebondStrandsInRow = pStrandGeometry->GetNumDebondedStrandsInRow(poi,row,pgsTypes::Straight);
       fra = (nStrandsInRow == 0 ? 0 : (Float64)nDebondStrandsInRow/(Float64)nStrandsInRow);
-      bool bExteriorStrandDebonded = pStrandGeometry->IsExteriorStrandDebondedInRow(poi,row,strandType);
+      bool bExteriorStrandDebonded = pStrandGeometry->IsExteriorStrandDebondedInRow(poi,row,pgsTypes::Straight);
       pArtifact->AddNumStrandsInRow(nStrandsInRow);
       pArtifact->AddNumDebondedStrandsInRow(nDebondStrandsInRow);
       pArtifact->AddFraDebondedStrandsInRow(fra);
@@ -5283,12 +5338,12 @@ void pgsDesigner2::CheckDebonding(const CSegmentKey& segmentKey,pgsTypes::Strand
 
    // left end
    Float64 prev_location = 0.0;
-   SectionIndexType nSections = pStrandGeometry->GetNumDebondSections(segmentKey,pgsTypes::metStart,strandType);
+   SectionIndexType nSections = pStrandGeometry->GetNumDebondSections(segmentKey,pgsTypes::metStart,pgsTypes::Straight);
    for ( SectionIndexType sectionIdx = 0; sectionIdx < nSections; sectionIdx++ )
    {
-      StrandIndexType nDebondedStrands = pStrandGeometry->GetNumDebondedStrandsAtSection(segmentKey,pgsTypes::metStart,sectionIdx,strandType);
+      StrandIndexType nDebondedStrands = pStrandGeometry->GetNumDebondedStrandsAtSection(segmentKey,pgsTypes::metStart,sectionIdx,pgsTypes::Straight);
       Float64 fraDebondedStrands = (nStrands == 0 ? 0 : (Float64)nDebondedStrands/(Float64)nStrands);
-      Float64 location = pStrandGeometry->GetDebondSection(segmentKey,pgsTypes::metStart,sectionIdx,strandType);
+      Float64 location = pStrandGeometry->GetDebondSection(segmentKey,pgsTypes::metStart,sectionIdx,pgsTypes::Straight);
       pArtifact->AddDebondSection(location,nDebondedStrands,fraDebondedStrands);
 
       if ( location < 0 || L2 < location )
@@ -5306,12 +5361,12 @@ void pgsDesigner2::CheckDebonding(const CSegmentKey& segmentKey,pgsTypes::Strand
    }
 
    // right end
-   nSections = pStrandGeometry->GetNumDebondSections(segmentKey,pgsTypes::metEnd,strandType);
+   nSections = pStrandGeometry->GetNumDebondSections(segmentKey,pgsTypes::metEnd,pgsTypes::Straight);
    for ( SectionIndexType sectionIdx = 0; sectionIdx < nSections; sectionIdx++ )
    {
-      StrandIndexType nDebondedStrands = pStrandGeometry->GetNumDebondedStrandsAtSection(segmentKey,pgsTypes::metEnd,sectionIdx,strandType);
+      StrandIndexType nDebondedStrands = pStrandGeometry->GetNumDebondedStrandsAtSection(segmentKey,pgsTypes::metEnd,sectionIdx,pgsTypes::Straight);
       Float64 fraDebondedStrands = (nStrands == 0 ? 0 : (Float64)nDebondedStrands/(Float64)nStrands);
-      Float64 location = pStrandGeometry->GetDebondSection(segmentKey,pgsTypes::metEnd,sectionIdx,strandType);
+      Float64 location = pStrandGeometry->GetDebondSection(segmentKey,pgsTypes::metEnd,sectionIdx,pgsTypes::Straight);
       pArtifact->AddDebondSection(location,nDebondedStrands,fraDebondedStrands);
 
       if ( location < L2 || L < location )
@@ -8462,14 +8517,14 @@ std::vector<DebondLevelType> pgsDesigner2::DesignDebondingForLifting(HANDLINGCON
          if(poi_loc <= lft_end || rgt_end <= poi_loc)
          {
             // get strand force if we haven't yet
-            Float64 FpeStraight, YpsStraight;
-            pStabilityProblem->GetFpe(stbTypes::Straight, poi_loc ,&FpeStraight,&YpsStraight);
+            Float64 FpeStraight, XpsStraight, YpsStraight;
+            pStabilityProblem->GetFpe(stbTypes::Straight, poi_loc ,&FpeStraight,&XpsStraight,&YpsStraight);
             
-            Float64 FpeHarped, YpsHarped;
-            pStabilityProblem->GetFpe(stbTypes::Harped, poi_loc,&FpeHarped,&YpsHarped);
+            Float64 FpeHarped, XpsHarped, YpsHarped;
+            pStabilityProblem->GetFpe(stbTypes::Harped, poi_loc,&FpeHarped,&XpsHarped,&YpsHarped);
             
-            Float64 FpeTemporary, YpsTemporary;
-            pStabilityProblem->GetFpe(stbTypes::Temporary,poi_loc,&FpeTemporary,&YpsTemporary);
+            Float64 FpeTemporary, XpsTemporary, YpsTemporary;
+            pStabilityProblem->GetFpe(stbTypes::Temporary,poi_loc,&FpeTemporary,&XpsTemporary,&YpsTemporary);
             
             Float64 Fpe = FpeStraight + FpeHarped + FpeTemporary;
             force_per_strand = Fpe / (nperm+ntemp);
@@ -9596,11 +9651,11 @@ Float64 pgsDesigner2::RoundSlabOffset(Float64 offset) const
    GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
    if ( IS_SI_UNITS(pDisplayUnits) )
    {
-      newoff = RoundOff(offset, ::ConvertToSysUnits(5.0, unitMeasure::Millimeter));
+      newoff = RoundOff(offset, HAUNCH_TOLERANCE_SI);
    }
    else
    {
-      newoff = RoundOff(offset, ::ConvertToSysUnits(0.25, unitMeasure::Inch));
+      newoff = RoundOff(offset, HAUNCH_TOLERANCE_US);
    }
 
    return newoff;

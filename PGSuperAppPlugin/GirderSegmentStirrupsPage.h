@@ -24,7 +24,9 @@ public:
 	// ClassWizard generate virtual function overrides
 	//{{AFX_VIRTUAL(CGirderSegmentStirrupsPage)
 	public:
-	protected:
+      virtual void GetLastZoneName(CString& strSymmetric, CString& strEnd) override;
+
+protected:
 	//}}AFX_VIRTUAL
 
 // Implementation

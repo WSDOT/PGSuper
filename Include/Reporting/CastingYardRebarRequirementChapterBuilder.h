@@ -85,7 +85,7 @@ private:
    void BuildTable(IBroker* pBroker,rptParagraph* pPara,const CSegmentKey& segmentKey,IntervalIndexType intervalIdx) const;
    void BuildTable(IBroker* pBroker,rptParagraph* pPara,const pgsPointOfInterest& poi,IntervalIndexType intervalIdx) const;
    void BuildTable(IBroker* pBroker,rptParagraph* pPara,const CGirderKey& girderKey,IntervalIndexType intervalIdx) const;
-   rptRcTable* CreateTable(const CGirderKey& girderKey,pgsTypes::StressLocation topLocation,pgsTypes::StressLocation botLocation,IEAFDisplayUnits* pDisplayUnits) const;
+   rptRcTable* CreateTable(IBroker* pBroker,const CGirderKey& girderKey,pgsTypes::StressLocation topLocation,pgsTypes::StressLocation botLocation,IntervalIndexType intervalIdx,IEAFDisplayUnits* pDisplayUnits) const;
    void FillTable(IBroker* pBroker,rptRcTable* pTable,pgsTypes::StressLocation topLocation,pgsTypes::StressLocation botLocation,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi) const;
 
    // GROUP: OPERATORS

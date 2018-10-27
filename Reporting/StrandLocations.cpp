@@ -76,7 +76,8 @@ void CStrandLocations::Build(rptChapter* pChapter,IBroker* pBroker,const CSegmen
    rptParagraph* pHead;
    pHead = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pHead;
-   *pHead <<_T("Prestressing Strand Locations")<<rptNewLine;
+   pHead->SetName(_T("Strand Locations"));
+   *pHead << pHead->GetName() << rptNewLine;
 
    rptParagraph* pPara = new rptParagraph;
    *pChapter << pPara;

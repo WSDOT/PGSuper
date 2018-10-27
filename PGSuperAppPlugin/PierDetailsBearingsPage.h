@@ -56,6 +56,8 @@ private:
    void ShowCtrls();
    void SaveData();
 
+   CMetaFileStatic m_Bearing;
+
    // Data for Bearing input
    BearingInputData m_BearingInputData;
 

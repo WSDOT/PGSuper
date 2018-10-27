@@ -46,3 +46,9 @@ BOOL CGirderSegmentStirrupsPage::OnInitDialog()
 	return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE
 }
+
+void CGirderSegmentStirrupsPage::GetLastZoneName(CString& strSymmetric, CString& strEnd)
+{
+   strSymmetric = _T("mid-segment");
+   strEnd = _T("end segment");
+}

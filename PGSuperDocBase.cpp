@@ -1286,6 +1286,24 @@ void CPGSDocBase::ModifyTemplate(LPCTSTR strTemplate)
    //      }
    //   }
    //}
+
+
+   //// Update friction coefficient to match BDM 5.1.4.A3
+   //GET_IFACE(ILossParameters, pLossParameters);
+   //Float64 Dset, WobbleFriction, FrictionCoefficient;
+   //pLossParameters->GetTendonPostTensionParameters(&Dset, &WobbleFriction, &FrictionCoefficient);
+   //FrictionCoefficient = 0.2;
+   //pLossParameters->SetTendonPostTensionParameters(Dset, WobbleFriction, FrictionCoefficient);
+
+
+   //
+   // Copy the updated template into the source tree
+   //
+   //CString templateFileName(strTemplate);
+   //templateFileName.Replace(_T("C:\\Users\\bricer\\AppData\\Roaming\\PGSuperV3\\WorkgroupTemplates"), _T("F:\\ARP\\PGSuper\\Configurations\\PGSuper\\AASHTO"));
+   //templateFileName.Replace(_T("C:\\Users\\bricer\\AppData\\Roaming\\PGSuperV3\\WorkgroupTemplates"), _T("F:\\ARP\\PGSuper\\Configurations\\PGSuper\\WSDOT"));
+   //templateFileName.Replace(_T("C:\\Users\\bricer\\AppData\\Roaming\\PGSplice\\WorkgroupTemplates"), _T("F:\\ARP\\PGSuper\\Configurations\\PGSplice\\WSDOT"));
+   //CEAFBrokerDocument::SaveTheDocument(templateFileName);
 }
 
 BOOL CPGSDocBase::UpdateTemplates(IProgress* pProgress,LPCTSTR lpszDir)

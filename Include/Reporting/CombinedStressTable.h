@@ -91,7 +91,7 @@ protected:
    virtual void BuildCombinedLiveTable(IBroker* pBroker, rptChapter* pChapter,
                       const CGirderKey& girderKey,
                       IEAFDisplayUnits* pDisplayUnits,
-                      pgsTypes::AnalysisType analysisType,
+                      IntervalIndexType intervalIdx, pgsTypes::AnalysisType analysisType,
                       bool bDesign,bool bRating,bool bGirderStresses) const;
 
    //------------------------------------------------------------------------

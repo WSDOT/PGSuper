@@ -91,10 +91,10 @@ protected:
    afx_msg void OnTopWidthTypeChanged();
    afx_msg BOOL OnToolTipNotify(UINT id,NMHDR* pNMHDR, LRESULT* pResult);
    afx_msg void OnHelp();
-	afx_msg void OnPostTension();
    afx_msg void OnMoreProperties();
    afx_msg void OnBnClickedEc();
    afx_msg void OnChangeFc();
+   afx_msg void OnChangeSpacing();
    //}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 
@@ -111,7 +111,6 @@ protected:
    void FillRefGirderComboBox();
    void FillGirderConnectivityComboBox();
    void FillTopWidthComboBox();
-   void UpdatePTControls();
 
    void UpdateGirderFactory();
    void UpdateSuperstructureDescription();

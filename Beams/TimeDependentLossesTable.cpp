@@ -74,7 +74,8 @@ CTimeDependentLossesTable* CTimeDependentLossesTable::PrepareTable(rptChapter* p
    rptParagraph* pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pParagraph;
 
-   *pParagraph << _T("Time Dependent Losses") << rptNewLine;
+   pParagraph->SetName(_T("Time Dependent Losses"));
+   *pParagraph << pParagraph->GetName() << rptNewLine;
 
    pParagraph = new rptParagraph;
    *pChapter << pParagraph;
@@ -94,7 +95,8 @@ CTimeDependentLossesTable* CTimeDependentLossesTable::PrepareTable(rptChapter* p
 
 void CTimeDependentLossesTable::AddRow(rptChapter* pChapter,IBroker* pBroker,const pgsPointOfInterest& poi,RowIndexType row,const LOSSDETAILS* pDetails,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
 {
-   (*this)(row,1) << stress.SetValue(pDetails->pLosses->TimeDependentLossesBeforeDeck());
-   (*this)(row,2) << stress.SetValue(pDetails->pLosses->TimeDependentLossesAfterDeck());
-   (*this)(row,3) << stress.SetValue(pDetails->pLosses->TimeDependentLosses());
+   RowIndexType rowOffset = GetNumberOfHeaderRows() - 1;
+   (*this)(row+rowOffset,1) << stress.SetValue(pDetails->pLosses->TimeDependentLossesBeforeDeck());
+   (*this)(row+rowOffset,2) << stress.SetValue(pDetails->pLosses->TimeDependentLossesAfterDeck());
+   (*this)(row+rowOffset,3) << stress.SetValue(pDetails->pLosses->TimeDependentLosses());
 }

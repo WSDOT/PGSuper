@@ -165,11 +165,17 @@ BOOL CGirderDescDebondPage::OnSetActive()
    GetDlgItem(IDC_NUM_EXTENDED_LEFT)->ShowWindow(pSpecEntry->AllowStraightStrandExtensions() ? SW_SHOW : SW_HIDE);
    GetDlgItem(IDC_NUM_EXTENDED_RIGHT)->ShowWindow(pSpecEntry->AllowStraightStrandExtensions() ? SW_SHOW : SW_HIDE);
 
-   CString note(_T("- Only filled straight strands are shown in this view"));
+   CString note(_T("- Only filled straight strands are shown in this view."));
+
+   if (pParent->m_pSegment->Strands.GetAdjustableStrandType() != pgsTypes::asStraight)
+   {
+      note += _T(" Harped strands are not shown.");
+   }
+
    if (bCanDebond)
    {
       CString n;
-      n.Format(_T("\n- Strands shown in %s cannot be debonded"),NOT_DEBONDABLE_FILL_COLOR_NAME);
+      n.Format(_T("\n- Strands shown in %s or %s cannot be debonded"),NOT_DEBONDABLE_FILL_COLOR_NAME, HARPED_FILL_COLOR_NAME);
       note += n;
    }
    GetDlgItem(IDC_NOTE2)->SetWindowText(note);
@@ -415,12 +421,14 @@ void CGirderDescDebondPage::DrawStrands(CDC* pDC,grlibPointMapper& mapper)
    CPen no_debond_pen(PS_SOLID,1,NOT_DEBONDABLE_FILL_COLOR);
    CPen debond_pen(PS_SOLID,1,DEBOND_FILL_COLOR);
    CPen extended_pen(PS_SOLID,1,EXTENDED_FILL_COLOR);
+   CPen harped_pen(PS_SOLID,1,HARPED_FILL_COLOR);
    CPen* old_pen = (CPen*)pDC->SelectObject(&strand_pen);
 
    CBrush strand_brush(STRAND_FILL_COLOR);
    CBrush no_debond_brush(NOT_DEBONDABLE_FILL_COLOR);
    CBrush debond_brush(DEBOND_FILL_COLOR);
    CBrush extended_brush(EXTENDED_FILL_COLOR);
+   CBrush harped_brush(HARPED_FILL_COLOR);
    CBrush* old_brush = (CBrush*)pDC->SelectObject(&strand_brush);
 
    pDC->SetTextAlign(TA_CENTER);
@@ -582,6 +590,52 @@ void CGirderDescDebondPage::DrawStrands(CDC* pDC,grlibPointMapper& mapper)
       }
    }
 
+   // Draw adjustable strands only if they are straight
+   if (pParent->m_pSegment->Strands.GetAdjustableStrandType() == pgsTypes::asStraight)
+   {
+      StrandIndexType nhStrands = pParent->GetHarpedStrandCount();
+
+      CComPtr<IPoint2dCollection> harped_points;
+      pStrandGeometry->GetStrandPositionsEx(pParent->m_strGirderName.c_str(), 0, 0, 0, 0, config, pgsTypes::Harped, pgsTypes::metStart, &harped_points);
+
+      CComPtr<IIndexArray> harped_strandids;
+      pStrandGeometry->ComputePermanentStrandIndices(pParent->m_strGirderName.c_str(), config, pgsTypes::Harped, &harped_strandids);
+
+      for (StrandIndexType strIdx = 0; strIdx < nhStrands; strIdx++)
+      {
+         CComPtr<IPoint2d> point;
+         harped_points->get_Item(strIdx, &point);
+
+         Float64 x, y;
+         point->get_X(&x);
+         point->get_Y(&y);
+
+         CRect rect;
+         mapper.WPtoDP(x - m_Radius, y - m_Radius, &rect.left, &rect.top);
+         mapper.WPtoDP(x + m_Radius, y - m_Radius, &rect.right, &rect.top);
+         mapper.WPtoDP(x - m_Radius, y + m_Radius, &rect.left, &rect.bottom);
+         mapper.WPtoDP(x + m_Radius, y + m_Radius, &rect.right, &rect.bottom);
+
+         pDC->SelectObject(&harped_pen);
+         pDC->SelectObject(&harped_brush);
+
+         pDC->Ellipse(&rect);
+
+         StrandIndexType permIdx;
+         harped_strandids->get_Item(strIdx, &permIdx);
+
+         long lx, ly;
+         mapper.WPtoDP(x, y, &lx, &ly);
+
+         // move down slightly
+         ly += 4;
+
+         CString strLabel;
+         strLabel.Format(_T("%d"), permIdx + 1);
+         pDC->TextOut(lx, ly, strLabel);
+      }
+   }
+
    pDC->SelectObject(old_pen);
    pDC->SelectObject(old_brush);
    pDC->SelectObject(old_font);
@@ -634,8 +688,18 @@ void CGirderDescDebondPage::OnChange()
       percent = 100.0 * (Float64)ndbs/(Float64)ns;
    }
 
+   CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
+
    CString str;
-   str.Format(_T("Straight=%d  Harped=%d"), GetStrandCount(),ns-GetStrandCount());
+   if (pParent->m_pSegment->Strands.GetAdjustableStrandType() == pgsTypes::asStraight)
+   {
+      str.Format(_T("Straight=%d,  Adj. Straight=%d"), GetStrandCount(),ns-GetStrandCount());
+   }
+   else
+   {
+      str.Format(_T("Straight=%d,  Harped=%d"), GetStrandCount(),ns-GetStrandCount());
+   }
+
    CWnd* pNs = GetDlgItem(IDC_NUMSTRAIGHT);
    pNs->SetWindowText(str);
 

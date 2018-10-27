@@ -1753,6 +1753,15 @@ void CBridgeDescription2::RemoveSpan(SpanIndexType spanIdx,pgsTypes::RemovePierT
    std::vector<CDeckRebarData::NegMomentRebarData>::iterator last = std::remove_if(begin,end,RemoveNegMomentRebar(rebarRemovePierIdx));
    m_Deck.DeckRebarData.NegMomentRebar.erase(last,end);
 
+   // for all neg moment rebar data occuring after the removed pier, decrement the pier index by one
+   for (auto& nmRebar : m_Deck.DeckRebarData.NegMomentRebar)
+   {
+      if (rebarRemovePierIdx < nmRebar.PierIdx)
+      {
+         nmRebar.PierIdx--;
+      }
+   }
+
    // Fix up the span/pier pointer and update the span/pier index values
    RenumberSpans();
 
@@ -4532,10 +4541,17 @@ bool CBridgeDescription2::HasStructuralLongitudinalJoints() const
       
       CComPtr<IBeamFactory> beamFactory;
       pGirderLibraryEntry->GetBeamFactory(&beamFactory);
-      if (beamFactory->HasLongitudinalJoints())
+      if (beamFactory->HasLongitudinalJoints() && beamFactory->IsLongitudinalJointStructural(m_Deck.GetDeckType(), m_Deck.TransverseConnectivity))
       {
-         // the bridge has longitudinal joints
-         return beamFactory->IsLongitudinalJointStructural(m_Deck.GetDeckType(),m_Deck.TransverseConnectivity);
+         // the bridge has longitudinal joints and the joints are structural
+         if (IsBridgeSpacing(m_GirderSpacingType))
+         {
+            return IsZero(m_GirderSpacing) ? false : true; // if joint width is zero, then we don't have structural joints
+         }
+         else
+         {
+            return true; // if the spacing is defined girder by girder or span by span... we'll assume there is a non-zero joint spacing
+         }
       }
       else
       {

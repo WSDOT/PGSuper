@@ -163,8 +163,13 @@ void CHorizShearGrid::InsertRow(bool bAppend)
    ROWCOL nrows = GetRowCount();
    if (nrows==1)
    {
-      CString lastzlen = (m_IsSymmetrical) ? _T("to mid-span") : _T("to girder end");
-	   SetStyleRange(CGXRange(1,1), CGXStyle()
+      CString strSymmetric, strEnd;
+      CShearSteelPage* pParent = (CShearSteelPage*)GetParent();
+      pParent->GetLastZoneName(strSymmetric, strEnd);
+
+      CString lastzlen;
+      lastzlen.Format(_T("to %s"), m_IsSymmetrical ? strSymmetric : strEnd);
+      SetStyleRange(CGXRange(1,1), CGXStyle()
 		.SetControl(GX_IDS_CTRL_STATIC)
 		.SetValue(lastzlen)
       .SetReadOnly(TRUE)
@@ -225,7 +230,12 @@ void CHorizShearGrid::SetSymmetry(bool isSymmetrical)
    GetParam()->SetLockReadOnly(FALSE);
 
    // Set text in last row
-   CString lastzlen = (m_IsSymmetrical) ? _T("to mid-span") : _T("to girder end");
+   CString strSymmetric, strEnd;
+   CShearSteelPage* pParent = (CShearSteelPage*)GetParent();
+   pParent->GetLastZoneName(strSymmetric, strEnd);
+
+   CString lastzlen;
+   lastzlen.Format(_T("to %s"), m_IsSymmetrical ? strSymmetric : strEnd);
 
    ROWCOL nrows = GetRowCount();
    SetStyleRange(CGXRange(nrows,1), CGXStyle()

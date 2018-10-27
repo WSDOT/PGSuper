@@ -97,11 +97,12 @@ CRelaxationAfterTransferTable* CRelaxationAfterTransferTable::PrepareTable(rptCh
 
    *pParagraph << table << rptNewLine;
 
-   (*table)(0,0) << COLHDR(_T("Location from")<<rptNewLine<<_T("Left Support"),rptLengthUnitTag,  pDisplayUnits->GetSpanLengthUnit() );
-   (*table)(0,1) << COLHDR( symbol(DELTA) << _T("f") << Sub(_T("pES")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   (*table)(0,2) << COLHDR( symbol(DELTA) << _T("f") << Sub(_T("pSR")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   (*table)(0,3) << COLHDR( symbol(DELTA) << _T("f") << Sub(_T("pCR")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   (*table)(0,4) << COLHDR( symbol(DELTA) << _T("f") << Sub(_T("pR2")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   ColumnIndexType col = 0;
+   (*table)(0,col++) << COLHDR(_T("Location from")<<rptNewLine<<_T("Left Support"),rptLengthUnitTag,  pDisplayUnits->GetSpanLengthUnit() );
+   (*table)(0,col++) << COLHDR( symbol(DELTA) << _T("f") << Sub(_T("pES")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*table)(0,col++) << COLHDR( symbol(DELTA) << _T("f") << Sub(_T("pSR")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*table)(0,col++) << COLHDR( symbol(DELTA) << _T("f") << Sub(_T("pCR")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*table)(0,col++) << COLHDR( symbol(DELTA) << _T("f") << Sub(_T("pR2")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    
    return table;
 }
@@ -116,8 +117,11 @@ void CRelaxationAfterTransferTable::AddRow(rptChapter* pChapter,IBroker* pBroker
       return;
    }
 
-   (*this)(row,1) << stress.SetValue( pDetails->pLosses->PermanentStrand_ElasticShorteningLosses() );
-   (*this)(row,2) << stress.SetValue( ptl->ShrinkageLosses() );
-   (*this)(row,3) << stress.SetValue( ptl->CreepLosses() );
-   (*this)(row,4) << stress.SetValue( ptl->RelaxationLossesAfterXfer() );
+   ColumnIndexType col = 1;
+   RowIndexType rowOffset = GetNumberOfHeaderRows() - 1;
+
+   (*this)(row+rowOffset,col++) << stress.SetValue( pDetails->pLosses->PermanentStrand_ElasticShorteningLosses() );
+   (*this)(row+rowOffset,col++) << stress.SetValue( ptl->ShrinkageLosses() );
+   (*this)(row+rowOffset,col++) << stress.SetValue( ptl->CreepLosses() );
+   (*this)(row+rowOffset,col++) << stress.SetValue( ptl->RelaxationLossesAfterXfer() );
 }

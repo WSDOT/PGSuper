@@ -149,6 +149,7 @@ CFinalPrestressLossTable* CFinalPrestressLossTable::PrepareTable(rptChapter* pCh
 void CFinalPrestressLossTable::AddRow(rptChapter* pChapter,IBroker* pBroker,const pgsPointOfInterest& poi,RowIndexType row,const LOSSDETAILS* pDetails,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
 {
    ColumnIndexType col = 1;
+   RowIndexType rowOffset = GetNumberOfHeaderRows() - 1;
 
   // Typecast to our known type (eating own doggy food)
    std::shared_ptr<const lrfdRefinedLosses> ptl = std::dynamic_pointer_cast<const lrfdRefinedLosses>(pDetails->pLosses);
@@ -158,32 +159,32 @@ void CFinalPrestressLossTable::AddRow(rptChapter* pChapter,IBroker* pBroker,cons
       return;
    }
 
-   (*this)(row,col++) << stress.SetValue( ptl->PermanentStrand_RelaxationLossesAtXfer() );
-   (*this)(row,col++) << stress.SetValue( pDetails->pLosses->PermanentStrand_ElasticShorteningLosses() );
+   (*this)(row+rowOffset,col++) << stress.SetValue( ptl->PermanentStrand_RelaxationLossesAtXfer() );
+   (*this)(row+rowOffset,col++) << stress.SetValue( pDetails->pLosses->PermanentStrand_ElasticShorteningLosses() );
    
    if ( 0 < m_NtMax && m_pStrands->GetTemporaryStrandUsage() != pgsTypes::ttsPretensioned ) 
    {
-      (*this)(row,col++) << stress.SetValue(pDetails->pLosses->GetDeltaFpp());
+      (*this)(row+rowOffset,col++) << stress.SetValue(pDetails->pLosses->GetDeltaFpp());
    }
 
-   (*this)(row,col++) << stress.SetValue( ptl->ShrinkageLosses() );
-   (*this)(row,col++) << stress.SetValue( ptl->CreepLosses() );
-   (*this)(row,col++) << stress.SetValue( ptl->RelaxationLossesAfterXfer() );
+   (*this)(row+rowOffset,col++) << stress.SetValue( ptl->ShrinkageLosses() );
+   (*this)(row+rowOffset,col++) << stress.SetValue( ptl->CreepLosses() );
+   (*this)(row+rowOffset,col++) << stress.SetValue( ptl->RelaxationLossesAfterXfer() );
 
    if ( 0 < m_NtMax ) 
    {
-      (*this)(row,col++) << stress.SetValue( pDetails->pLosses->GetDeltaFptr() );
+      (*this)(row+rowOffset,col++) << stress.SetValue( pDetails->pLosses->GetDeltaFptr() );
    }
 
    if ( !m_bIgnoreElasticGain )
    {
-      (*this)(row,col++) << stress.SetValue( pDetails->pLosses->ElasticGainDueToDeckPlacement() );
-      (*this)(row,col++) << stress.SetValue( pDetails->pLosses->ElasticGainDueToSIDL() );
+      (*this)(row+rowOffset,col++) << stress.SetValue( pDetails->pLosses->ElasticGainDueToDeckPlacement() );
+      (*this)(row+rowOffset,col++) << stress.SetValue( pDetails->pLosses->ElasticGainDueToSIDL() );
    }
 
 
    Float64 dFpT = pDetails->pLosses->PermanentStrand_Final(); // this is the time-dependent loss only... it does not include elastic effects
    dFpT += pDetails->pLosses->PermanentStrand_ElasticShorteningLosses();
 
-   (*this)(row,col++) << stress.SetValue( dFpT );
+   (*this)(row+rowOffset,col++) << stress.SetValue( dFpT );
 }

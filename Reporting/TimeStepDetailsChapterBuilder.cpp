@@ -1863,7 +1863,7 @@ void CTimeStepDetailsChapterBuilder::ReportCreepDetails(rptChapter* pChapter,IBr
    GET_IFACE2(pBroker,ILossParameters,pLossParams);
    if ( pLossParams->IgnoreCreepEffects() )
    {
-      (*pPara) << _T("Creep effects where ignored") << rptNewLine;
+      (*pPara) << _T("Creep effects were ignored") << rptNewLine;
       return;
    }
 
@@ -2108,7 +2108,7 @@ void CTimeStepDetailsChapterBuilder::ReportCreepDetails(rptChapter* pChapter,IBr
          // when the deck becomes composite (values are just 0 before this)
          firstIntervalIdx = compositeDeckIntervalIdx;
       }
-
+      
       for ( IntervalIndexType intervalIdx = firstIntervalIdx; intervalIdx <= lastIntervalIdx; intervalIdx++ )
       {
          if ( firstIntervalIdx != lastIntervalIdx && (intervalIdx < releaseIntervalIdx || ::IsZero(pIntervals->GetDuration(intervalIdx))) )
@@ -2129,9 +2129,9 @@ void CTimeStepDetailsChapterBuilder::ReportCreepDetails(rptChapter* pChapter,IBr
          }
 
          colIdx = 0;
-         pTable->SetRowSpan(rowIdx,colIdx++,intervalIdx-firstIntervalIdx); // interval
-         pTable->SetRowSpan(rowIdx,colIdx++,intervalIdx-firstIntervalIdx); // t_ib
-         pTable->SetRowSpan(rowIdx,colIdx++,intervalIdx-firstIntervalIdx); // t_ie
+         pTable->SetRowSpan(rowIdx, colIdx++, intervalIdx - firstIntervalIdx); // interval
+         pTable->SetRowSpan(rowIdx, colIdx++, intervalIdx - firstIntervalIdx); // t_ib
+         pTable->SetRowSpan(rowIdx, colIdx++, intervalIdx - firstIntervalIdx); // t_ie
 
          Float64 startAge, endAge;
          if ( i == 0 )
@@ -2157,7 +2157,7 @@ void CTimeStepDetailsChapterBuilder::ReportCreepDetails(rptChapter* pChapter,IBr
          {
             colIdx = 0;
 
-            if ( prevIntervalIdx == firstIntervalIdx )
+            if ( prevIntervalIdx == firstIntervalIdx)
             {
                (*pTable)(rowIdx,colIdx++) << LABEL_INTERVAL(intervalIdx);
                (*pTable)(rowIdx,colIdx++) << startAge;
@@ -2620,7 +2620,7 @@ void CTimeStepDetailsChapterBuilder::ReportStrandRelaxationDetails(rptChapter* p
    GET_IFACE2(pBroker,ILossParameters,pLossParams);
    if ( pLossParams->IgnoreRelaxationEffects() )
    {
-      (*pPara) << _T("Relaxation effects where ignored") << rptNewLine;
+      (*pPara) << _T("Relaxation effects were ignored") << rptNewLine;
       return;
    }
 

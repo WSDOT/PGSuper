@@ -12,6 +12,7 @@ Resistance Factors (LRFD 5.5.4.2)
 ----------------------------------
 ### Conventional Construction (LRFD 5.5.4.2) ###
 Enter the normal and lightweight concrete resistance factors.
+Note the LRFD 8th Edition (2017) added separate resistance factors for dedonded and fully bonded sections.
 
 ### Closure Joints (LRFD 5.5.4.2 and 5.12.3.4.2d (*pre-2017: 5.14.1.3.2d*)) ###
 Enter the normal and lightweight concrete resistance factors.

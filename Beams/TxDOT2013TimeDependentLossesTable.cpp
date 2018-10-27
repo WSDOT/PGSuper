@@ -98,9 +98,11 @@ void CTxDOT2013TimeDependentLossesTable::AddRow(rptChapter* pChapter,IBroker* pB
       return;
    }
 
-   (*this)(row,1) << stress.SetValue(ptl->RelaxationLossBeforeDeckPlacement());
-   (*this)(row,2) << stress.SetValue(ptl->RelaxationLossAfterDeckPlacement());
-   (*this)(row,3) << stress.SetValue(ptl->CreepLosses());
-   (*this)(row,4) << stress.SetValue(ptl->ShrinkageLosses());
-   (*this)(row,5) << stress.SetValue(pDetails->pLosses->TimeDependentLosses());
+   RowIndexType rowOffset = GetNumberOfHeaderRows() - 1;
+
+   (*this)(row+rowOffset,1) << stress.SetValue(ptl->RelaxationLossBeforeDeckPlacement());
+   (*this)(row+rowOffset,2) << stress.SetValue(ptl->RelaxationLossAfterDeckPlacement());
+   (*this)(row+rowOffset,3) << stress.SetValue(ptl->CreepLosses());
+   (*this)(row+rowOffset,4) << stress.SetValue(ptl->ShrinkageLosses());
+   (*this)(row+rowOffset,5) << stress.SetValue(pDetails->pLosses->TimeDependentLosses());
 }

@@ -80,7 +80,8 @@ bool txnInsertPointLoad::Execute()
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IEvents,pEvents);
-   pEvents->HoldEvents();
+   // Exception-safe holder for events
+   CIEventsHolder event_holder(pEvents);
 
    if ( m_pTimelineMgr )
    {
@@ -96,8 +97,6 @@ bool txnInsertPointLoad::Execute()
    GET_IFACE2(pBroker,IUserDefinedLoadData, pUdl);
    m_LoadIdx = pUdl->AddPointLoad(m_LoadingEventID,m_LoadData);
 
-   pEvents->FirePendingEvents();
-
    return true;
 }
 
@@ -107,7 +106,8 @@ void txnInsertPointLoad::Undo()
    EAFGetBroker(&pBroker);
 
    GET_IFACE2(pBroker,IEvents,pEvents);
-   pEvents->HoldEvents();
+   // Exception-safe holder for events
+   CIEventsHolder event_holder(pEvents);
 
    GET_IFACE2(pBroker,IUserDefinedLoadData, pUdl);
    pUdl->DeletePointLoad(m_LoadIdx);
@@ -122,9 +122,6 @@ void txnInsertPointLoad::Undo()
       GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
       pIBridgeDesc->SetTimelineManager(m_OldTimelineMgr);
    }
-
-
-   pEvents->FirePendingEvents();
 }
 
 ///////////////////////////////////////////////
@@ -159,7 +156,8 @@ bool txnDeletePointLoad::Execute()
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IEvents,pEvents);
-   pEvents->HoldEvents();
+   // Exception-safe holder for events
+   CIEventsHolder event_holder(pEvents);
 
    // keep copies of the loading and the event when it is applied
    // for undo
@@ -172,8 +170,6 @@ bool txnDeletePointLoad::Execute()
 
    pUdl->DeletePointLoad(m_LoadIdx);
 
-   pEvents->FirePendingEvents();
-
    return true;
 }
 
@@ -183,12 +179,11 @@ void txnDeletePointLoad::Undo()
    EAFGetBroker(&pBroker);
 
    GET_IFACE2(pBroker,IEvents,pEvents);
-   pEvents->HoldEvents();
+   // Exception-safe holder for events
+   CIEventsHolder event_holder(pEvents);
 
    GET_IFACE2(pBroker,IUserDefinedLoadData, pUdl);
    m_LoadIdx = pUdl->AddPointLoad(m_LoadingEventID,m_LoadData);
-
-   pEvents->FirePendingEvents();
 }
 
 ///////////////////////////////////////////////
@@ -252,7 +247,8 @@ void txnEditPointLoad::DoExecute(int i)
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IEvents,pEvents);
-   pEvents->HoldEvents();
+   // Exception-safe holder for events
+   CIEventsHolder event_holder(pEvents);
 
    if ( m_pTimelineMgr )
    {
@@ -274,8 +270,6 @@ void txnEditPointLoad::DoExecute(int i)
 
    GET_IFACE2(pBroker,IUserDefinedLoadData, pUdl);
    pUdl->UpdatePointLoad(m_LoadIdx,m_LoadingEventID[i],m_LoadData[i]);
-
-   pEvents->FirePendingEvents();
 }
 
 //////////////////////////////////////////
@@ -328,7 +322,8 @@ bool txnInsertDistributedLoad::Execute()
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IEvents,pEvents);
-   pEvents->HoldEvents();
+   // Exception-safe holder for events
+   CIEventsHolder event_holder(pEvents);
 
    if ( m_pTimelineMgr )
    {
@@ -344,8 +339,6 @@ bool txnInsertDistributedLoad::Execute()
    GET_IFACE2(pBroker,IUserDefinedLoadData, pUdl);
    m_LoadIdx = pUdl->AddDistributedLoad(m_LoadingEventID,m_LoadData);
 
-   pEvents->FirePendingEvents();
-
    return true;
 }
 
@@ -355,7 +348,8 @@ void txnInsertDistributedLoad::Undo()
    EAFGetBroker(&pBroker);
 
    GET_IFACE2(pBroker,IEvents,pEvents);
-   pEvents->HoldEvents();
+   // Exception-safe holder for events
+   CIEventsHolder event_holder(pEvents);
 
    GET_IFACE2(pBroker,IUserDefinedLoadData, pUdl);
    pUdl->DeleteDistributedLoad(m_LoadIdx);
@@ -370,8 +364,6 @@ void txnInsertDistributedLoad::Undo()
       GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
       pIBridgeDesc->SetTimelineManager(m_OldTimelineMgr);
    }
-
-   pEvents->FirePendingEvents();
 }
 
 ///////////////////////////////////////////////
@@ -407,7 +399,8 @@ bool txnDeleteDistributedLoad::Execute()
    EAFGetBroker(&pBroker);
 
    GET_IFACE2(pBroker,IEvents,pEvents);
-   pEvents->HoldEvents();
+   // Exception-safe holder for events
+   CIEventsHolder event_holder(pEvents);
 
    GET_IFACE2(pBroker,IUserDefinedLoadData, pUdl);
    m_LoadData = *(pUdl->GetDistributedLoad(m_LoadIdx));
@@ -418,8 +411,6 @@ bool txnDeleteDistributedLoad::Execute()
 
    pUdl->DeleteDistributedLoad(m_LoadIdx);
 
-   pEvents->FirePendingEvents();
-
    return true;
 }
 
@@ -429,12 +420,11 @@ void txnDeleteDistributedLoad::Undo()
    EAFGetBroker(&pBroker);
 
    GET_IFACE2(pBroker,IEvents,pEvents);
-   pEvents->HoldEvents();
+   // Exception-safe holder for events
+   CIEventsHolder event_holder(pEvents);
 
    GET_IFACE2(pBroker,IUserDefinedLoadData, pUdl);
    m_LoadIdx = pUdl->AddDistributedLoad(m_LoadingEventID,m_LoadData);
-
-   pEvents->FirePendingEvents();
 }
 
 ///////////////////////////////////////////////
@@ -498,7 +488,8 @@ void txnEditDistributedLoad::DoExecute(int i)
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IEvents,pEvents);
-   pEvents->HoldEvents();
+   // Exception-safe holder for events
+   CIEventsHolder event_holder(pEvents);
 
    if ( m_pTimelineMgr )
    {
@@ -520,8 +511,6 @@ void txnEditDistributedLoad::DoExecute(int i)
 
    GET_IFACE2(pBroker,IUserDefinedLoadData, pUdl);
    pUdl->UpdateDistributedLoad(m_LoadIdx,m_LoadingEventID[i],m_LoadData[i]);
-
-   pEvents->FirePendingEvents();
 }
 
 //////////////////////////////////////////
@@ -573,7 +562,8 @@ bool txnInsertMomentLoad::Execute()
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IEvents,pEvents);
-   pEvents->HoldEvents();
+   // Exception-safe holder for events
+   CIEventsHolder event_holder(pEvents);
 
    if ( m_pTimelineMgr )
    {
@@ -589,8 +579,6 @@ bool txnInsertMomentLoad::Execute()
    GET_IFACE2(pBroker,IUserDefinedLoadData, pUdl);
    m_LoadIdx = pUdl->AddMomentLoad(m_LoadingEventID,m_LoadData);
 
-   pEvents->FirePendingEvents();
-
    return true;
 }
 
@@ -600,7 +588,8 @@ void txnInsertMomentLoad::Undo()
    EAFGetBroker(&pBroker);
 
    GET_IFACE2(pBroker,IEvents,pEvents);
-   pEvents->HoldEvents();
+   // Exception-safe holder for events
+   CIEventsHolder event_holder(pEvents);
 
    GET_IFACE2(pBroker,IUserDefinedLoadData, pUdl);
    pUdl->DeleteMomentLoad(m_LoadIdx);
@@ -615,8 +604,6 @@ void txnInsertMomentLoad::Undo()
       GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
       pIBridgeDesc->SetTimelineManager(m_OldTimelineMgr);
    }
-
-   pEvents->FirePendingEvents();
 }
 
 ///////////////////////////////////////////////
@@ -651,7 +638,8 @@ bool txnDeleteMomentLoad::Execute()
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IEvents,pEvents);
-   pEvents->HoldEvents();
+   // Exception-safe holder for events
+   CIEventsHolder event_holder(pEvents);
 
    GET_IFACE2(pBroker,IUserDefinedLoadData, pUdl);
    m_LoadData = *(pUdl->GetMomentLoad(m_LoadIdx));
@@ -662,8 +650,6 @@ bool txnDeleteMomentLoad::Execute()
 
    pUdl->DeleteMomentLoad(m_LoadIdx);
 
-   pEvents->FirePendingEvents();
-
    return true;
 }
 
@@ -673,12 +659,11 @@ void txnDeleteMomentLoad::Undo()
    EAFGetBroker(&pBroker);
 
    GET_IFACE2(pBroker,IEvents,pEvents);
-   pEvents->HoldEvents();
+   // Exception-safe holder for events
+   CIEventsHolder event_holder(pEvents);
 
    GET_IFACE2(pBroker,IUserDefinedLoadData, pUdl);
    m_LoadIdx = pUdl->AddMomentLoad(m_LoadingEventID,m_LoadData);
-
-   pEvents->FirePendingEvents();
 }
 
 ///////////////////////////////////////////////
@@ -742,7 +727,8 @@ void txnEditMomentLoad::DoExecute(int i)
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IEvents,pEvents);
-   pEvents->HoldEvents();
+   // Exception-safe holder for events
+   CIEventsHolder event_holder(pEvents);
 
    if ( m_pTimelineMgr )
    {
@@ -764,7 +750,5 @@ void txnEditMomentLoad::DoExecute(int i)
 
    GET_IFACE2(pBroker,IUserDefinedLoadData, pUdl);
    pUdl->UpdateMomentLoad(m_LoadIdx,m_LoadingEventID[i],m_LoadData[i]);
-
-   pEvents->FirePendingEvents();
 }
 

@@ -66,3 +66,9 @@ void CClosureJointStirrupsPage::DoDataExchange(CDataExchange* pDX)
       pParent->m_ClosureJoint.SetStirrups(m_ShearData);
    }
 }
+
+void CClosureJointStirrupsPage::GetLastZoneName(CString& strSymmetric, CString& strEnd)
+{
+   strSymmetric = _T("CL closure");
+   strEnd = _T("end closure");
+}

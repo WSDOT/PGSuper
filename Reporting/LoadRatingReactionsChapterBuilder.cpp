@@ -22,7 +22,7 @@
 
 #include "StdAfx.h"
 #include <Reporting\LoadRatingReactionsChapterBuilder.h>
-#include <Reporting\BridgeAnalysisReportSpecification.h>
+#include <Reporting\LoadRatingReportSpecificationBuilder.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <IFace\RatingSpecification.h>
 #include <IFace\AnalysisResults.h>
@@ -52,7 +52,7 @@ LPCTSTR CLoadRatingReactionsChapterBuilder::GetName() const
 
 rptChapter* CLoadRatingReactionsChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
 {
-   CGirderLineReportSpecification* pGirderRptSpec = dynamic_cast<CGirderLineReportSpecification*>(pRptSpec);
+   CLoadRatingReportSpecification* pGirderRptSpec = dynamic_cast<CLoadRatingReportSpecification*>(pRptSpec);
    CComPtr<IBroker> pBroker;
    pGirderRptSpec->GetBroker(&pBroker);
    CGirderKey girderKey = pGirderRptSpec->GetGirderKey();

@@ -164,6 +164,7 @@ void design_information(rptChapter* pChapter,IBroker* pBroker,const CTxDOTOption
    INIT_UV_PROTOTYPE( rptLengthUnitValue,   component, pDisplayUnits->GetComponentDimUnit(), true );
    INIT_UV_PROTOTYPE( rptPressureUnitValue, stress,    pDisplayUnits->GetStressUnit(),       true );
    INIT_UV_PROTOTYPE( rptStressUnitValue,   modE,      pDisplayUnits->GetModEUnit(),         true );
+   INIT_UV_PROTOTYPE( rptDensityUnitValue, density, pDisplayUnits->GetDensityUnit(),         true );
 
    rptParagraph* p = new rptParagraph;
    *pChapter << p;
@@ -226,6 +227,9 @@ void design_information(rptChapter* pChapter,IBroker* pBroker,const CTxDOTOption
 
    (*p_table)(row,0) << RPT_FC <<_T(" Deck");
    (*p_table)(row++,1) << stress.SetValue( pMaterial->GetDeckDesignFc(liveLoadIntervalIdx) );
+
+   (*p_table)(row,0) <<_T("Unit Weight, Beam");
+   (*p_table)(row++,1) << density.SetValue( pMaterial->GetSegmentWeightDensity(fabrSegmentKey,liveLoadIntervalIdx) );
 
    (*p_table)(row,0) << _T("Project Criteria");
    (*p_table)(row++,1) << pProjectData->GetSelectedProjectCriteriaLibrary();

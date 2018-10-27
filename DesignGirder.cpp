@@ -287,7 +287,9 @@ void txnDesignGirder::DoExecute(int i)
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
 
    GET_IFACE2(pBroker,IEvents, pEvents);
-   pEvents->HoldEvents(); // don't fire any changed events until all changes are done
+   // don't fire any changed events until all changes are done
+   // Exception-safe holder for events
+   CIEventsHolder event_holder(pEvents);
 
    // Loop over all girder designs
    for (const auto& rdata : m_DesignDataColl)
@@ -449,6 +451,4 @@ void txnDesignGirder::DoExecute(int i)
          }
       }
    }
-
-  pEvents->FirePendingEvents();
 }

@@ -39,6 +39,5 @@
 #include <IFace\PointOfInterest.h>
 #include <IFace\GirderHandling.h>
 #include <IFace\GirderHandlingSpecCriteria.h>
-#include <IFace\DesignOverrides.h>
 
 #endif // INCLUDED_ENGAGENT_H_

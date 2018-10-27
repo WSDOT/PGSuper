@@ -59,6 +59,8 @@ private:
 
    const CStrandData* m_pStrands;
    StrandIndexType m_NtMax;
+   bool m_bIsPrismatic;
+   bool m_bIsAsymmetric;
 };
 
 #endif //__CREEPATFINALTABLE_H_

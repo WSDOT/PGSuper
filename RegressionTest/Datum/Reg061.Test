@@ -1,10 +1,10 @@
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 28.25    5   0.00                     1     1    MyGir          40  0.6  270  39.41  28.74   9.75   9.75                                              6.800  8.200   3.758    -6.456    11244   0.625  0.625   5.886 -1.854 -0.246 -0.234 -2.334 182.98  233.82    1.75    5.50    5.50 
+ 28.25    5   0.00                     1     1    MyGir          40  0.6  270  39.41  28.74   9.75   9.75                                              6.800  8.200   3.761    -6.462    11252   0.625  0.625   5.886 -1.859 -0.246 -0.234 -2.340 182.98  233.51    1.75    5.50    5.50 
 
 
 The Specification Check was Not Successful
-Tensile stress check failed for Service III Limit State in Interval 18 Open to Traffic
+Tensile stress check failed for Service III Limit State in Interval 14 Open to Traffic
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
 Splitting zone check failed.
 Confinement zone check failed.
@@ -14,11 +14,11 @@ Hauling checks failed
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 28.25    5   0.00                     1     2    MyGir          40  0.6  270  39.41  28.74   9.75   9.75                                              6.800  8.200   3.683    -6.289    10683   0.528  0.667   5.807 -1.914 -0.246 -0.234 -2.395 182.98  229.85    1.75    5.50    5.50 
+ 28.25    5   0.00                     1     2    MyGir          40  0.6  270  39.41  28.74   9.75   9.75                                              6.800  8.200   3.686    -6.294    10691   0.528  0.667   5.807 -1.920 -0.246 -0.234 -2.400 182.98  229.54    1.75    5.50    5.50 
 
 
 The Specification Check was Not Successful
-Tensile stress check failed for Service III Limit State in Interval 18 Open to Traffic
+Tensile stress check failed for Service III Limit State in Interval 14 Open to Traffic
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
 Splitting zone check failed.
 Confinement zone check failed.

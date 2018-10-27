@@ -29,6 +29,9 @@
 #include <Lrfd\Lrfd.h>
 #include <WBFLRCCapacity.h>
 
+#define HAUNCH_TOLERANCE_US ::ConvertToSysUnits(0.25,unitMeasure::Inch)
+#define HAUNCH_TOLERANCE_SI ::ConvertToSysUnits(5.0,unitMeasure::Millimeter)
+
 struct SECTIONHAUNCH
 {
    pgsPointOfInterest PointOfInterest;
@@ -39,13 +42,14 @@ struct SECTIONHAUNCH
    Float64 ElevAlignment;
    Float64 ElevGirder;
    Float64 CrownSlope;
-   Float64 GirderOrientation;
+   Float64 GirderTopSlope;
    Float64 Wtop;
    Float64 C;
    Float64 D;
    Float64 CamberEffect;
    Float64 GirderOrientationEffect;
    Float64 ProfileEffect;
+   Float64 TopFlangeShapeEffect;
    Float64 RequiredHaunchDepth;
    Float64 ElevTopGirder;
    Float64 TopSlabToTopGirder;
@@ -513,9 +517,9 @@ struct TIME_STEP_CONCRETE
    Float64 f[2][pftTimeStepSize][2]; // first index is one of the pgsTypes::FaceType enums, second index is one of the pgsTypes::ProductForceType enum values
                         // third index is one of the ResultsType enum values
 
-   // Stress in this due to live load
-   Float64 fLLMin[2]; // index is pgsTypes::FaceType
-   Float64 fLLMax[2];
+   //// Stress in this due to live load
+   //Float64 fLLMin[2]; // index is pgsTypes::FaceType
+   //Float64 fLLMax[2];
 
    TIME_STEP_CONCRETE()
    {
@@ -566,10 +570,10 @@ struct TIME_STEP_CONCRETE
          f[pgsTypes::BottomFace][i][1] = 0;
       }
 
-      fLLMin[pgsTypes::TopFace]    = 0;
-      fLLMin[pgsTypes::BottomFace] = 0;
-      fLLMax[pgsTypes::TopFace]    = 0;
-      fLLMax[pgsTypes::BottomFace] = 0;
+      //fLLMin[pgsTypes::TopFace]    = 0;
+      //fLLMin[pgsTypes::BottomFace] = 0;
+      //fLLMax[pgsTypes::TopFace]    = 0;
+      //fLLMax[pgsTypes::BottomFace] = 0;
    }
 };
 
@@ -626,14 +630,14 @@ struct TIME_STEP_STRAND
    Float64 loss; // = Sum(dfpe for all intervals up to and including this interval)
    // also loss = loss (previous interval) + dfpe (this interval)
 
-   // Elastic effect of live load on effective prestress
-   Float64 dFllMin;
-   Float64 fpeLLMin; // fpe + dFll;
-   Float64 lossLLMin; // loss - dFll;
+   //// Elastic effect of live load on effective prestress
+   //Float64 dFllMin;
+   //Float64 fpeLLMin; // fpe + dFll;
+   //Float64 lossLLMin; // loss - dFll;
 
-   Float64 dFllMax;
-   Float64 fpeLLMax; // fpe + dFll;
-   Float64 lossLLMax; // loss - dFll;
+   //Float64 dFllMax;
+   //Float64 fpeLLMax; // fpe + dFll;
+   //Float64 lossLLMax; // loss - dFll;
 
    // This value can be checked by (-Pj+P) = fpe*Aps
    TIME_STEP_STRAND()
@@ -670,13 +674,13 @@ struct TIME_STEP_STRAND
       fpe  = 0;
       loss = 0;
 
-      dFllMin   = 0;
-      fpeLLMin  = 0;
-      lossLLMin = 0;
+      //dFllMin   = 0;
+      //fpeLLMin  = 0;
+      //lossLLMin = 0;
 
-      dFllMax   = 0;
-      fpeLLMax  = 0;
-      lossLLMax = 0;
+      //dFllMax   = 0;
+      //fpeLLMax  = 0;
+      //lossLLMax = 0;
    }
 };
 

@@ -985,7 +985,7 @@ void CTimeStepLossEngineer::InitializeTimeStepAnalysis(IntervalIndexType interva
 
    // net section properties of segment
    tsDetails.Girder.An  = m_pSectProp->GetNetAg(intervalIdx,poi);
-   tsDetails.Girder.In  = m_pSectProp->GetNetIg(intervalIdx,poi);
+   tsDetails.Girder.In  = m_pSectProp->GetNetIxx(intervalIdx,poi);
    tsDetails.Girder.Yn  = -m_pSectProp->GetNetYtg(intervalIdx,poi); // Negative because this is measured down from Y=0 at the top of the girder
    tsDetails.Girder.H   = gdrHeight;
    tsDetails.Girder.E   = EaGirder;
@@ -2655,171 +2655,173 @@ void CTimeStepLossEngineer::FinalizeTimeStepAnalysis(IntervalIndexType intervalI
          tsDetails.M = prevTimeStepDetails.M + tsDetails.dM;
       }
 
-      //
-      // Compute stress in the parts of the cross section due to live load
-      //
-
-      // Get Live Load this interval
-      Float64 PllMin, PllMax;
-      m_pCombinedForces->GetCombinedLiveLoadAxial(intervalIdx,pgsTypes::lltDesign,poi,m_Bat,&PllMin,&PllMax);
-      if ( bIsInClosure && intervalIdx < compositeClosureIntervalIdx )
-      {
-         PllMin = 0;
-         PllMax = 0;
-      }
-
-      // Eaxial strain due to live load moment
-      Float64 eLLMin = IsZero(EaGirder_Atr) ? 0 : PllMin/EaGirder_Atr;
-      Float64 eLLMax = IsZero(EaGirder_Atr) ? 0 : PllMax/EaGirder_Atr;
-
-      Float64 MllMin, MllMax;
-      m_pCombinedForces->GetCombinedLiveLoadMoment(intervalIdx,pgsTypes::lltDesign,poi,m_Bat,&MllMin,&MllMax);
-      if ( bIsInClosure && intervalIdx < compositeClosureIntervalIdx )
-      {
-         MllMin = 0;
-         MllMax = 0;
-      }
-
-      // Curvature due to live load moment
-      Float64 rLLMin = IsZero(EaGirder_Itr) ? 0 : MllMin/EaGirder_Itr;
-      Float64 rLLMax = IsZero(EaGirder_Itr) ? 0 : MllMax/EaGirder_Itr;
-
-      // Axial force and moment in girder
-      Float64 Pmin = EaGirder_An*(eLLMin + rLLMin*(tsDetails.Ytr - tsDetails.Girder.Yn));
-      Float64 Pmax = EaGirder_An*(eLLMax + rLLMax*(tsDetails.Ytr - tsDetails.Girder.Yn));
-      Float64 Mmin = EaGirder_In*rLLMin;
-      Float64 Mmax = EaGirder_In*rLLMax;
-
-      if ( !IsZero(tsDetails.Girder.An) && !IsZero(tsDetails.Girder.In) )
-      {
-         tsDetails.Girder.fLLMin[pgsTypes::TopFace] = Pmin/tsDetails.Girder.An + Mmin*tsDetails.Girder.Yn/tsDetails.Girder.In;
-         tsDetails.Girder.fLLMax[pgsTypes::TopFace] = Pmax/tsDetails.Girder.An + Mmax*tsDetails.Girder.Yn/tsDetails.Girder.In;
-         if (tsDetails.Girder.fLLMax[pgsTypes::TopFace] < tsDetails.Girder.fLLMin[pgsTypes::TopFace])
-         {
-            std::swap(tsDetails.Girder.fLLMin[pgsTypes::TopFace],tsDetails.Girder.fLLMax[pgsTypes::TopFace]);
-         }
-
-         tsDetails.Girder.fLLMin[pgsTypes::BottomFace] = Pmin/tsDetails.Girder.An + Mmin*(tsDetails.Girder.H + tsDetails.Girder.Yn)/tsDetails.Girder.In;
-         tsDetails.Girder.fLLMax[pgsTypes::BottomFace] = Pmax/tsDetails.Girder.An + Mmax*(tsDetails.Girder.H + tsDetails.Girder.Yn)/tsDetails.Girder.In;
-         if (tsDetails.Girder.fLLMax[pgsTypes::BottomFace] < tsDetails.Girder.fLLMin[pgsTypes::BottomFace])
-         {
-            std::swap(tsDetails.Girder.fLLMin[pgsTypes::BottomFace],tsDetails.Girder.fLLMax[pgsTypes::BottomFace]);
-         }
-      }
-
-      // Compute stresses in deck due to live load
-      // Axial force and moment in deck
-      Pmin = EaDeck_An*(eLLMin + rLLMin*(tsDetails.Ytr - tsDetails.Deck.Yn));
-      Pmax = EaDeck_An*(eLLMax + rLLMax*(tsDetails.Ytr - tsDetails.Deck.Yn));
-      Mmin = EaDeck_In*rLLMin;
-      Mmax = EaDeck_In*rLLMax;
-
-      if ( compositeDeckIntervalIdx <= intervalIdx && !IsZero(tsDetails.Deck.An) && !IsZero(tsDetails.Deck.In) )
-      {
-         tsDetails.Deck.fLLMin[pgsTypes::TopFace] = Pmin/tsDetails.Deck.An + Mmin*(tsDetails.Deck.Yn - tsDetails.Deck.H)/tsDetails.Deck.In;
-         tsDetails.Deck.fLLMax[pgsTypes::TopFace] = Pmax/tsDetails.Deck.An + Mmax*(tsDetails.Deck.Yn - tsDetails.Deck.H)/tsDetails.Deck.In;
-         if (tsDetails.Deck.fLLMax[pgsTypes::TopFace] < tsDetails.Deck.fLLMin[pgsTypes::TopFace])
-         {
-            std::swap(tsDetails.Deck.fLLMin[pgsTypes::TopFace],tsDetails.Deck.fLLMax[pgsTypes::TopFace]);
-         }
-
-         tsDetails.Deck.fLLMin[pgsTypes::BottomFace] = Pmin/tsDetails.Deck.An + Mmin*tsDetails.Deck.Yn/tsDetails.Deck.In;
-         tsDetails.Deck.fLLMax[pgsTypes::BottomFace] = Pmax/tsDetails.Deck.An + Mmax*tsDetails.Deck.Yn/tsDetails.Deck.In;
-         if (tsDetails.Deck.fLLMax[pgsTypes::BottomFace] < tsDetails.Deck.fLLMin[pgsTypes::BottomFace])
-         {
-            std::swap(tsDetails.Deck.fLLMin[pgsTypes::BottomFace],tsDetails.Deck.fLLMax[pgsTypes::BottomFace]);
-         }
-      }
-
-      // Deck Rebar (not captured, isn't of any value)
-
-      // Girder Rebar (not captured, isn't of any value)
-
-      // Strands
-      if ( bIsOnSegment )
-      {
-         const std::vector<pgsTypes::StrandType>& strandTypes = GetStrandTypes(segmentKey);
-         std::vector<pgsTypes::StrandType>::const_iterator strandTypeIter(strandTypes.begin());
-         std::vector<pgsTypes::StrandType>::const_iterator strandTypeIterEnd(strandTypes.end());
-         for ( ; strandTypeIter != strandTypeIterEnd; strandTypeIter++ )
-         {
-            pgsTypes::StrandType strandType = *strandTypeIter;
-#if defined LUMP_STRANDS
-            if ( intervalIdx < liveLoadIntervalIdx // before live load is applied
-               || // OR
-               IsZero(tsDetails.Strands[strandType].As) // there aren't any strands of this type
-               )
-            {
-               tsDetails.Strands[strandType].dFllMin = 0;
-               tsDetails.Strands[strandType].dFllMax = 0;
-            }
-            else
-            {
-               tsDetails.Strands[strandType].dFllMin = EStrand[strandType]*(eLLMin + rLLMin*(tsDetails.Ytr - tsDetails.Strands[strandType].Ys));
-               tsDetails.Strands[strandType].dFllMax = EStrand[strandType]*(eLLMax + rLLMax*(tsDetails.Ytr - tsDetails.Strands[strandType].Ys));
-            }
-            tsDetails.Strands[strandType].fpeLLMin  = tsDetails.Strands[strandType].fpe  + tsDetails.Strands[strandType].dFllMin;
-            tsDetails.Strands[strandType].lossLLMin = tsDetails.Strands[strandType].loss - tsDetails.Strands[strandType].dFllMin;
-
-            tsDetails.Strands[strandType].fpeLLMax  = tsDetails.Strands[strandType].fpe  + tsDetails.Strands[strandType].dFllMax;
-            tsDetails.Strands[strandType].lossLLMax = tsDetails.Strands[strandType].loss - tsDetails.Strands[strandType].dFllMax;
-#else
-            StrandIndexType nStrands = m_pStrandGeom->GetStrandCount(segmentKey,strandType);
-            for ( StrandIndexType strandIdx = 0; strandIdx < nStrands; strandIdx++ )
-            {
-               TIME_STEP_STRAND& strand = tsDetails.Strands[strandType][strandIdx];
-               if ( intervalIdx < liveLoadIntervalIdx // before live load is applied
-                  || // OR
-                  IsZero(strand.As) // there aren't any strands of this type
-                  )
-               {
-                  strand.dFllMin = 0;
-                  strand.dFllMax = 0;
-               }
-               else
-               {
-                  // live load is on the structure... add elastic effect
-                  strand.dFllMin = EStrand[strandType]*(eLLMin + rLLMin*(tsDetails.Ytr - strand.Ys));
-                  strand.dFllMax = EStrand[strandType]*(eLLMax + rLLMax*(tsDetails.Ytr - strand.Ys));
-               }
-               strand.fpeLLMin  = strand.fpe  + strand.dFllMin;  // increasing stress in strand...
-               strand.lossLLMin = strand.loss - strand.dFllMin;  // ...is the same as decreasing its loss
-
-               strand.fpeLLMax  = strand.fpe  + strand.dFllMax;
-               strand.lossLLMax = strand.loss - strand.dFllMax;
-            } // next strand
-#endif // LUMP_STRANDS
-         } // next strand type
-      }
-
-
-      // Tendons
-      if ( bIsOnGirder )
-      {
-         for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
-         {
-            TIME_STEP_STRAND& tendon = tsDetails.Tendons[ductIdx];
-
-            if ( intervalIdx < liveLoadIntervalIdx // before live load
-                 || // OR
-                 IsZero(tendon.As) // aren't any strands in the duct
-               )
-            {
-               tendon.dFllMin = 0;
-               tendon.dFllMax = 0;
-            }
-            else
-            {
-               tendon.dFllMin = ETendon*(eLLMin + rLLMin*(tsDetails.Ytr - tendon.Ys));
-               tendon.dFllMax = ETendon*(eLLMax + rLLMax*(tsDetails.Ytr - tendon.Ys));
-            }
-            tendon.fpeLLMin  = tendon.fpe  + tendon.dFllMin;
-            tendon.lossLLMin = tendon.loss - tendon.dFllMin;
-
-            tendon.fpeLLMax  = tendon.fpe  + tendon.dFllMax; // increasing stress in tendon due to external load...
-            tendon.lossLLMax = tendon.loss - tendon.dFllMax; // ... is the same as reducing the loss
-         } // next tendon
-      }
+// We need elastic gains due to live load for different live load types and vehicles (e.g. Service III, Emergency Vehicle Rating, EV2 truck)
+// Elastic gains are computed elsewhere as needed
+//      //
+//      // Compute stress in the parts of the cross section due to live load
+//      //
+//
+//      // Get Live Load this interval
+//      Float64 PllMin, PllMax;
+//      m_pCombinedForces->GetCombinedLiveLoadAxial(intervalIdx,pgsTypes::lltDesign,poi,m_Bat,&PllMin,&PllMax);
+//      if ( bIsInClosure && intervalIdx < compositeClosureIntervalIdx )
+//      {
+//         PllMin = 0;
+//         PllMax = 0;
+//      }
+//
+//      // Eaxial strain due to live load moment
+//      Float64 eLLMin = IsZero(EaGirder_Atr) ? 0 : PllMin/EaGirder_Atr;
+//      Float64 eLLMax = IsZero(EaGirder_Atr) ? 0 : PllMax/EaGirder_Atr;
+//
+//      Float64 MllMin, MllMax;
+//      m_pCombinedForces->GetCombinedLiveLoadMoment(intervalIdx,pgsTypes::lltDesign,poi,m_Bat,&MllMin,&MllMax);
+//      if ( bIsInClosure && intervalIdx < compositeClosureIntervalIdx )
+//      {
+//         MllMin = 0;
+//         MllMax = 0;
+//      }
+//
+//      // Curvature due to live load moment
+//      Float64 rLLMin = IsZero(EaGirder_Itr) ? 0 : MllMin/EaGirder_Itr;
+//      Float64 rLLMax = IsZero(EaGirder_Itr) ? 0 : MllMax/EaGirder_Itr;
+//
+//      // Axial force and moment in girder
+//      Float64 Pmin = EaGirder_An*(eLLMin + rLLMin*(tsDetails.Ytr - tsDetails.Girder.Yn));
+//      Float64 Pmax = EaGirder_An*(eLLMax + rLLMax*(tsDetails.Ytr - tsDetails.Girder.Yn));
+//      Float64 Mmin = EaGirder_In*rLLMin;
+//      Float64 Mmax = EaGirder_In*rLLMax;
+//
+//      if ( !IsZero(tsDetails.Girder.An) && !IsZero(tsDetails.Girder.In) )
+//      {
+//         tsDetails.Girder.fLLMin[pgsTypes::TopFace] = Pmin/tsDetails.Girder.An + Mmin*tsDetails.Girder.Yn/tsDetails.Girder.In;
+//         tsDetails.Girder.fLLMax[pgsTypes::TopFace] = Pmax/tsDetails.Girder.An + Mmax*tsDetails.Girder.Yn/tsDetails.Girder.In;
+//         if (tsDetails.Girder.fLLMax[pgsTypes::TopFace] < tsDetails.Girder.fLLMin[pgsTypes::TopFace])
+//         {
+//            std::swap(tsDetails.Girder.fLLMin[pgsTypes::TopFace],tsDetails.Girder.fLLMax[pgsTypes::TopFace]);
+//         }
+//
+//         tsDetails.Girder.fLLMin[pgsTypes::BottomFace] = Pmin/tsDetails.Girder.An + Mmin*(tsDetails.Girder.H + tsDetails.Girder.Yn)/tsDetails.Girder.In;
+//         tsDetails.Girder.fLLMax[pgsTypes::BottomFace] = Pmax/tsDetails.Girder.An + Mmax*(tsDetails.Girder.H + tsDetails.Girder.Yn)/tsDetails.Girder.In;
+//         if (tsDetails.Girder.fLLMax[pgsTypes::BottomFace] < tsDetails.Girder.fLLMin[pgsTypes::BottomFace])
+//         {
+//            std::swap(tsDetails.Girder.fLLMin[pgsTypes::BottomFace],tsDetails.Girder.fLLMax[pgsTypes::BottomFace]);
+//         }
+//      }
+//
+//      // Compute stresses in deck due to live load
+//      // Axial force and moment in deck
+//      Pmin = EaDeck_An*(eLLMin + rLLMin*(tsDetails.Ytr - tsDetails.Deck.Yn));
+//      Pmax = EaDeck_An*(eLLMax + rLLMax*(tsDetails.Ytr - tsDetails.Deck.Yn));
+//      Mmin = EaDeck_In*rLLMin;
+//      Mmax = EaDeck_In*rLLMax;
+//
+//      if ( compositeDeckIntervalIdx <= intervalIdx && !IsZero(tsDetails.Deck.An) && !IsZero(tsDetails.Deck.In) )
+//      {
+//         tsDetails.Deck.fLLMin[pgsTypes::TopFace] = Pmin/tsDetails.Deck.An + Mmin*(tsDetails.Deck.Yn - tsDetails.Deck.H)/tsDetails.Deck.In;
+//         tsDetails.Deck.fLLMax[pgsTypes::TopFace] = Pmax/tsDetails.Deck.An + Mmax*(tsDetails.Deck.Yn - tsDetails.Deck.H)/tsDetails.Deck.In;
+//         if (tsDetails.Deck.fLLMax[pgsTypes::TopFace] < tsDetails.Deck.fLLMin[pgsTypes::TopFace])
+//         {
+//            std::swap(tsDetails.Deck.fLLMin[pgsTypes::TopFace],tsDetails.Deck.fLLMax[pgsTypes::TopFace]);
+//         }
+//
+//         tsDetails.Deck.fLLMin[pgsTypes::BottomFace] = Pmin/tsDetails.Deck.An + Mmin*tsDetails.Deck.Yn/tsDetails.Deck.In;
+//         tsDetails.Deck.fLLMax[pgsTypes::BottomFace] = Pmax/tsDetails.Deck.An + Mmax*tsDetails.Deck.Yn/tsDetails.Deck.In;
+//         if (tsDetails.Deck.fLLMax[pgsTypes::BottomFace] < tsDetails.Deck.fLLMin[pgsTypes::BottomFace])
+//         {
+//            std::swap(tsDetails.Deck.fLLMin[pgsTypes::BottomFace],tsDetails.Deck.fLLMax[pgsTypes::BottomFace]);
+//         }
+//      }
+//
+//      // Deck Rebar (not captured, isn't of any value)
+//
+//      // Girder Rebar (not captured, isn't of any value)
+//
+//      // Strands
+//      if ( bIsOnSegment )
+//      {
+//         const std::vector<pgsTypes::StrandType>& strandTypes = GetStrandTypes(segmentKey);
+//         std::vector<pgsTypes::StrandType>::const_iterator strandTypeIter(strandTypes.begin());
+//         std::vector<pgsTypes::StrandType>::const_iterator strandTypeIterEnd(strandTypes.end());
+//         for ( ; strandTypeIter != strandTypeIterEnd; strandTypeIter++ )
+//         {
+//            pgsTypes::StrandType strandType = *strandTypeIter;
+//#if defined LUMP_STRANDS
+//            if ( intervalIdx < liveLoadIntervalIdx // before live load is applied
+//               || // OR
+//               IsZero(tsDetails.Strands[strandType].As) // there aren't any strands of this type
+//               )
+//            {
+//               tsDetails.Strands[strandType].dFllMin = 0;
+//               tsDetails.Strands[strandType].dFllMax = 0;
+//            }
+//            else
+//            {
+//               tsDetails.Strands[strandType].dFllMin = EStrand[strandType]*(eLLMin + rLLMin*(tsDetails.Ytr - tsDetails.Strands[strandType].Ys));
+//               tsDetails.Strands[strandType].dFllMax = EStrand[strandType]*(eLLMax + rLLMax*(tsDetails.Ytr - tsDetails.Strands[strandType].Ys));
+//            }
+//            tsDetails.Strands[strandType].fpeLLMin  = tsDetails.Strands[strandType].fpe  + tsDetails.Strands[strandType].dFllMin;
+//            tsDetails.Strands[strandType].lossLLMin = tsDetails.Strands[strandType].loss - tsDetails.Strands[strandType].dFllMin;
+//
+//            tsDetails.Strands[strandType].fpeLLMax  = tsDetails.Strands[strandType].fpe  + tsDetails.Strands[strandType].dFllMax;
+//            tsDetails.Strands[strandType].lossLLMax = tsDetails.Strands[strandType].loss - tsDetails.Strands[strandType].dFllMax;
+//#else
+//            StrandIndexType nStrands = m_pStrandGeom->GetStrandCount(segmentKey,strandType);
+//            for ( StrandIndexType strandIdx = 0; strandIdx < nStrands; strandIdx++ )
+//            {
+//               TIME_STEP_STRAND& strand = tsDetails.Strands[strandType][strandIdx];
+//               if ( intervalIdx < liveLoadIntervalIdx // before live load is applied
+//                  || // OR
+//                  IsZero(strand.As) // there aren't any strands of this type
+//                  )
+//               {
+//                  strand.dFllMin = 0;
+//                  strand.dFllMax = 0;
+//               }
+//               else
+//               {
+//                  // live load is on the structure... add elastic effect
+//                  strand.dFllMin = EStrand[strandType]*(eLLMin + rLLMin*(tsDetails.Ytr - strand.Ys));
+//                  strand.dFllMax = EStrand[strandType]*(eLLMax + rLLMax*(tsDetails.Ytr - strand.Ys));
+//               }
+//               strand.fpeLLMin  = strand.fpe  + strand.dFllMin;  // increasing stress in strand...
+//               strand.lossLLMin = strand.loss - strand.dFllMin;  // ...is the same as decreasing its loss
+//
+//               strand.fpeLLMax  = strand.fpe  + strand.dFllMax;
+//               strand.lossLLMax = strand.loss - strand.dFllMax;
+//            } // next strand
+//#endif // LUMP_STRANDS
+//         } // next strand type
+//      }
+//
+//
+//      // Tendons
+//      if ( bIsOnGirder )
+//      {
+//         for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
+//         {
+//            TIME_STEP_STRAND& tendon = tsDetails.Tendons[ductIdx];
+//
+//            if ( intervalIdx < liveLoadIntervalIdx // before live load
+//                 || // OR
+//                 IsZero(tendon.As) // aren't any strands in the duct
+//               )
+//            {
+//               tendon.dFllMin = 0;
+//               tendon.dFllMax = 0;
+//            }
+//            else
+//            {
+//               tendon.dFllMin = ETendon*(eLLMin + rLLMin*(tsDetails.Ytr - tendon.Ys));
+//               tendon.dFllMax = ETendon*(eLLMax + rLLMax*(tsDetails.Ytr - tendon.Ys));
+//            }
+//            tendon.fpeLLMin  = tendon.fpe  + tendon.dFllMin;
+//            tendon.lossLLMin = tendon.loss - tendon.dFllMin;
+//
+//            tendon.fpeLLMax  = tendon.fpe  + tendon.dFllMax; // increasing stress in tendon due to external load...
+//            tendon.lossLLMax = tendon.loss - tendon.dFllMax; // ... is the same as reducing the loss
+//         } // next tendon
+//      }
 
 
       // total due to primary pt at the end of this interval

@@ -93,8 +93,10 @@ void CTimeDependentLossesAtDeckPlacementTable::AddRow(rptChapter* pChapter,IBrok
       return;
    }
 
-   (*this)(row,1) << stress.SetValue(ptl->ShrinkageLossBeforeDeckPlacement());
-   (*this)(row,2) << stress.SetValue(ptl->CreepLossBeforeDeckPlacement());
-   (*this)(row,3) << stress.SetValue(ptl->RelaxationLossBeforeDeckPlacement());
-   (*this)(row,4) << stress.SetValue(ptl->TimeDependentLossesBeforeDeck());
+   RowIndexType rowOffset = GetNumberOfHeaderRows() - 1;
+
+   (*this)(row+rowOffset,1) << stress.SetValue(ptl->ShrinkageLossBeforeDeckPlacement());
+   (*this)(row+rowOffset,2) << stress.SetValue(ptl->CreepLossBeforeDeckPlacement());
+   (*this)(row+rowOffset,3) << stress.SetValue(ptl->RelaxationLossBeforeDeckPlacement());
+   (*this)(row+rowOffset,4) << stress.SetValue(ptl->TimeDependentLossesBeforeDeck());
 }

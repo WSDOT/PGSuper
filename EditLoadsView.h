@@ -79,9 +79,10 @@ public:
 // Overrides
 	// ClassWizard generated virtual function overrides
 	//{{AFX_VIRTUAL(CEditLoadsView)
-	public:
+public:
 	virtual void OnInitialUpdate();
-	protected:
+protected:
+   virtual BOOL PreTranslateMessage(MSG* pMsg) override;
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
 	virtual void OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint);
    virtual BOOL Create(LPCTSTR lpszClassName, LPCTSTR lpszWindowName, DWORD dwStyle, const RECT& rect, CWnd* pParentWnd, UINT nID, CCreateContext* pContext = nullptr);

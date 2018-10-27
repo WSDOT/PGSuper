@@ -1,21 +1,22 @@
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 44.33    7   0.75                     1     1    WF69D          53  0.6  270  37.81  20.48   6.13   6.13                                              6.000 14.900   3.760    -5.191    13583   0.652  0.652   5.168 -0.869 -0.358 -0.372 -1.600 223.31  424.67    3.00   30.87   30.87 
+ 44.33    7   0.75                     1     1    WF69D          53  0.6  270  37.81  20.48   6.13   6.13                                              6.000 14.900   3.760    -5.191    13583   0.652  0.652   5.167 -0.869 -0.358 -0.372 -1.600 223.42  424.85    3.00   30.87   30.87 
 
 
 The Specification Check was Not Successful
 Splitting zone check failed.
+Lifting checks failed
 Hauling checks failed
-Slab Offset ("A" Dimension) check failed
 
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 44.33    7   0.75                     1     2    WF69D          53  0.6  270  37.81  20.48   6.13   6.13                                              6.000 14.900   3.608    -5.106    13118   0.565  0.725   5.134 -0.930 -0.352 -0.365 -1.647 223.31  417.01    3.00   30.87   30.87 
+ 44.33    7   0.75                     1     2    WF69D          53  0.6  270  37.81  20.48   6.13   6.13                                              6.000 14.900   3.608    -5.106    13118   0.565  0.725   5.133 -0.930 -0.352 -0.365 -1.647 223.42  417.19    3.00   30.87   30.87 
 
 
 The Specification Check was Not Successful
 Splitting zone check failed.
+Lifting checks failed
 Hauling checks failed
 
 
@@ -32,22 +33,23 @@ Slab Offset ("A" Dimension) check failed
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 44.33    7   0.75                     2     1    WF69D          53  0.6  270  37.81  20.48   6.13   6.13                                              6.000 14.900   3.760    -5.191    13583   0.652  0.652   5.168 -0.869 -0.358 -0.372 -1.600 223.31  424.67    3.00   30.87   30.87 
+ 44.33    7   0.75                     2     1    WF69D          53  0.6  270  37.81  20.48   6.13   6.13                                              6.000 14.900   3.760    -5.191    13583   0.652  0.652   5.167 -0.869 -0.358 -0.372 -1.600 223.42  424.85    3.00   30.87   30.87 
 
 
 The Specification Check was Not Successful
 Splitting zone check failed.
+Lifting checks failed
 Hauling checks failed
-Slab Offset ("A" Dimension) check failed
 
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 44.33    7   0.75                     2     2    WF69D          53  0.6  270  37.81  20.48   6.13   6.13                                              6.000 14.900   3.608    -5.107    13118   0.565  0.725   5.134 -0.930 -0.352 -0.365 -1.647 223.31  417.01    3.00   30.87   30.87 
+ 44.33    7   0.75                     2     2    WF69D          53  0.6  270  37.81  20.48   6.13   6.13                                              6.000 14.900   3.608    -5.107    13118   0.565  0.725   5.133 -0.930 -0.352 -0.365 -1.647 223.42  417.19    3.00   30.87   30.87 
 
 
 The Specification Check was Not Successful
 Splitting zone check failed.
+Lifting checks failed
 Hauling checks failed
 
 

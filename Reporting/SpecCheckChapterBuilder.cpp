@@ -460,9 +460,7 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
    CGirderDetailingCheck().Build(pChapter,pBroker,pGirderArtifact,pDisplayUnits);
 
    // Debonding Checks
-   CDebondCheckTable().Build(pChapter, pBroker, pGirderArtifact, pgsTypes::Straight,  pDisplayUnits);
-   CDebondCheckTable().Build(pChapter, pBroker, pGirderArtifact, pgsTypes::Harped,    pDisplayUnits);
-   CDebondCheckTable().Build(pChapter, pBroker, pGirderArtifact, pgsTypes::Temporary, pDisplayUnits);
+   CDebondCheckTable().Build(pChapter, pBroker, pGirderArtifact,  pDisplayUnits);
 
    // Strand Slope
    CStrandSlopeCheck().Build(pChapter,pBroker,pGirderArtifact,pDisplayUnits);
@@ -774,8 +772,8 @@ void write_confinement_check(IBroker* pBroker,
       (*pPara) << _T("  Maximum Required Bar Spacing in Confinement Zone = ")<< dim.SetValue(rConfine.GetSMax()) << rptNewLine << rptNewLine;
 
       (*pPara) << Bold(_T("Left End of Girder:")) << rptNewLine;
-      (*pPara) << _T("  Required Confinement Zone Length: ")<<rConfine.GetZoneLengthFactor()<<_T("d = ")
-               <<rConfine.GetZoneLengthFactor()<<_T(" *")<<length.SetValue(rConfine.GetStartd())<<_T(" = ")
+      (*pPara) << _T("  Required Confinement Zone Length: ")<<rConfine.GetZoneLengthFactor()<<_T("d = (")
+               <<rConfine.GetZoneLengthFactor()<<_T(")(")<<length.SetValue(rConfine.GetStartd())<<_T(") = ")
                << length.SetValue(rConfine.GetStartRequiredZoneLength()) << rptNewLine;
       (*pPara) << _T("  Provided Confinement Zone Length within Required Zone Length = ") << length.SetValue(rConfine.GetStartProvidedZoneLength()) << rptNewLine;
       matRebar::Size size = rConfine.GetStartBar()==nullptr ? matRebar::bsNone : rConfine.GetStartBar()->GetSize();
@@ -794,8 +792,8 @@ void write_confinement_check(IBroker* pBroker,
       (*pPara) <<rptNewLine<<rptNewLine;
 
       (*pPara) << Bold(_T("Right End of Girder:")) << rptNewLine;
-      (*pPara) << _T("  Required Confinement Zone Length: ")<<rConfine.GetZoneLengthFactor()<<_T("d = ")
-               <<rConfine.GetZoneLengthFactor()<<_T(" *")<<length.SetValue(rConfine.GetEndd())<<_T(" = ")
+      (*pPara) << _T("  Required Confinement Zone Length: ")<<rConfine.GetZoneLengthFactor()<<_T("d = (")
+               <<rConfine.GetZoneLengthFactor()<<_T(")(")<<length.SetValue(rConfine.GetEndd())<<_T(") = ")
                << length.SetValue(rConfine.GetEndRequiredZoneLength()) << rptNewLine;
       (*pPara) << _T("  Provided Confinement Zone Length within Required Zone Length = ") << length.SetValue(rConfine.GetEndProvidedZoneLength()) << rptNewLine;
       size = rConfine.GetEndBar()==nullptr ? matRebar::bsNone : rConfine.GetEndBar()->GetSize();

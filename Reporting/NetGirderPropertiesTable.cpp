@@ -128,7 +128,7 @@ rptRcTable* CNetGirderPropertiesTable::Build(IBroker* pBroker,
       (*xs_table)(row,col++) << location.SetValue( poiRefAttribute, poi );
 
       (*xs_table)(row,col++) << l2.SetValue(pSectProp->GetNetAg(intervalIdx,poi));
-      (*xs_table)(row,col++) << l4.SetValue(pSectProp->GetNetIg(intervalIdx,poi));
+      (*xs_table)(row,col++) << l4.SetValue(pSectProp->GetNetIxx(intervalIdx,poi));
       (*xs_table)(row,col++) << l1.SetValue(pSectProp->GetNetYtg(intervalIdx,poi));
       (*xs_table)(row,col++) << l1.SetValue(pSectProp->GetNetYbg(intervalIdx,poi));
 

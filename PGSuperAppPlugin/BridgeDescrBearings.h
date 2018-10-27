@@ -40,6 +40,7 @@ public:
 
    // Data for Bearing input
    BearingInputData m_BearingInputData;
+   CMetaFileStatic m_Bearing;
 
    bool m_IsMsgFromMe;
 

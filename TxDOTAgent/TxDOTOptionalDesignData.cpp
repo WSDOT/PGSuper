@@ -67,6 +67,7 @@ void CTxDOTOptionalDesignData::ResetData()
    m_LeftConnectionEntryName.Empty();
    m_RightConnectionEntryName.Empty();
    m_PGSuperFileName.Empty();
+   m_GirderConcreteUnitWeight = ::ConvertToSysUnits(150.0, unitMeasure::LbfPerFeet3);
 
    m_Bridge.Empty();
    m_BridgeID.Empty();
@@ -140,14 +141,15 @@ HRESULT CTxDOTOptionalDesignData::Save(IStructuredSave* pStrSave,IProgress* pPro
 {
    HRESULT hr = S_OK;
 
-   pStrSave->BeginUnit(_T("TxDOTOptionalGirderData"),1.0);
+   pStrSave->BeginUnit(_T("TxDOTOptionalGirderData"),2.0);
 
    // Template Data
-   pStrSave->BeginUnit(_T("TemplateData"),1.0);
+   pStrSave->BeginUnit(_T("TemplateData"),2.0);
    pStrSave->put_Property(_T("GirderEntryName"),         CComVariant(m_GirderEntryName));
    pStrSave->put_Property(_T("LeftConnectionEntryName"), CComVariant(m_LeftConnectionEntryName));
    pStrSave->put_Property(_T("RightConnectionEntryName"),CComVariant(m_RightConnectionEntryName));
    pStrSave->put_Property(_T("PGSuperFileName"), CComVariant(m_PGSuperFileName));
+   pStrSave->put_Property(_T("GirderConcreteUnitWeight"), CComVariant(m_GirderConcreteUnitWeight));
    pStrSave->EndUnit();
 
    // Version: 2.0 - Added UseHigherCompressionAllowable
@@ -213,6 +215,9 @@ HRESULT CTxDOTOptionalDesignData::Load(IStructuredLoad* pStrLoad,IProgress* pPro
       // Template Data
       hr = pStrLoad->BeginUnit(_T("TemplateData"));
 
+      Float64 lvers;
+      pStrLoad->get_Version(&lvers);
+
       CComVariant var;
 
       var.Clear();
@@ -234,6 +239,14 @@ HRESULT CTxDOTOptionalDesignData::Load(IStructuredLoad* pStrLoad,IProgress* pPro
       var.vt = VT_BSTR;
       hr = pStrLoad->get_Property(_T("PGSuperFileName"), &var );
       m_PGSuperFileName = var.bstrVal;
+
+      if (1.0 < lvers)
+      {
+         var.Clear();
+         var.vt = VT_R8;
+         hr = pStrLoad->get_Property(_T("GirderConcreteUnitWeight"), &var );
+         m_GirderConcreteUnitWeight = var.dblVal;
+      }
 
       hr = pStrLoad->EndUnit(); // end TemplateData
 
@@ -471,6 +484,20 @@ void CTxDOTOptionalDesignData::SetPGSuperFileName(const CString& value)
 CString CTxDOTOptionalDesignData::GetPGSuperFileName()
 {
    return m_PGSuperFileName;
+}
+
+void CTxDOTOptionalDesignData::SetGirderConcreteUnitWeight(Float64 uw)
+{
+   if (uw != m_GirderConcreteUnitWeight)
+   {
+      m_GirderConcreteUnitWeight = uw;
+      FireChanged(ITxDataObserver::ctPGSuper);
+   }
+}
+
+Float64 CTxDOTOptionalDesignData::GetGirderConcreteUnitWeight()
+{
+   return m_GirderConcreteUnitWeight;
 }
 
 // Bridge Input Data
@@ -871,6 +898,7 @@ void CTxDOTOptionalDesignData::MakeCopy(const CTxDOTOptionalDesignData& rOther)
    m_LeftConnectionEntryName = rOther.m_LeftConnectionEntryName;
    m_RightConnectionEntryName = rOther.m_RightConnectionEntryName;
    m_PGSuperFileName = rOther.m_PGSuperFileName;
+   m_GirderConcreteUnitWeight = rOther.m_GirderConcreteUnitWeight;
 
    m_Bridge = rOther.m_Bridge;
    m_BridgeID = rOther.m_BridgeID;

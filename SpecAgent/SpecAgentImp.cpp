@@ -2691,10 +2691,56 @@ void CSpecAgentImp::GetFlexuralStrainLimits(matRebar::Grade rebarGrade,Float64* 
 #endif
 }
 
-Float64 CSpecAgentImp::GetShearResistanceFactor(pgsTypes::ConcreteType type)
+Float64 CSpecAgentImp::GetShearResistanceFactor(bool isDebonded, pgsTypes::ConcreteType type)
 {
    const SpecLibraryEntry* pSpec = GetSpec();
-   return pSpec->GetShearResistanceFactor(type);
+   return pSpec->GetShearResistanceFactor(isDebonded, type);
+}
+
+Float64 CSpecAgentImp::GetShearResistanceFactor(const pgsPointOfInterest& poi, pgsTypes::ConcreteType type)
+{
+   // Test to see if poi is in a debonded region
+   bool is_debond = false;
+
+   const SpecLibraryEntry* pSpec = GetSpec();
+
+   // different phi factor for debonding only applies to 8th edition and later
+   if (pSpec->GetSpecificationType() >= lrfdVersionMgr::EighthEdition2017)
+   {
+      const CSegmentKey& segkey(poi.GetSegmentKey());
+      GET_IFACE(IStrandGeometry, pStrandGeom);
+      if (pStrandGeom->HasDebonding(segkey))
+      {
+         Float64 poi_loc = poi.GetDistFromStart();
+
+         // first check left end
+         SectionIndexType numsecs = pStrandGeom->GetNumDebondSections(segkey, pgsTypes::metStart, pgsTypes::Straight);
+         if (numsecs > 0)
+         {
+            Float64 secloc = pStrandGeom->GetDebondSection(segkey, pgsTypes::metStart, numsecs - 1, pgsTypes::Straight);
+            if (poi_loc <= secloc)
+            {
+               is_debond = true;
+            }
+         }
+
+         if (!is_debond)
+         {
+            // Now right end
+            SectionIndexType numsecs = pStrandGeom->GetNumDebondSections(segkey, pgsTypes::metEnd, pgsTypes::Straight);
+            if (numsecs > 0)
+            {
+               Float64 secloc = pStrandGeom->GetDebondSection(segkey, pgsTypes::metEnd, 0, pgsTypes::Straight);
+               if (poi_loc >= secloc)
+               {
+                  is_debond = true;
+               }
+            }
+         }
+      }
+   }
+
+   return pSpec->GetShearResistanceFactor(is_debond, type);
 }
 
 Float64 CSpecAgentImp::GetClosureJointFlexureResistanceFactor(pgsTypes::ConcreteType type)
@@ -2737,6 +2783,11 @@ Float64 CSpecAgentImp::GetMaxShearConnectorSpacing(const pgsPointOfInterest& poi
 Float64 CSpecAgentImp::GetRadiusOfCurvatureLimit(const CGirderKey& girderKey)
 {
    // LRFD 5.4.6.1
+   // NOTE: This requirement changed from the 30 ft for plastic and 20 ft for metal in the 7th Edition and earlier to
+   // "The minimum radius of curvature of tendon ducts shall take into account the tendon size, duct type and shape,
+   // and the location relative to the stress anchorage; subject to the manufacturer's recommendations"...
+   // This is not an enforceable requirement... we will retain the 30 ft and 20 ft limitations but could
+   // expend the Project Criteria to make this user defined input
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CPTData* pPTData = pIBridgeDesc->GetPostTensioning(girderKey);
    return ::ConvertToSysUnits(pPTData->DuctType == pgsTypes::dtPlastic ? 30.0 : 20.0,unitMeasure::Feet);

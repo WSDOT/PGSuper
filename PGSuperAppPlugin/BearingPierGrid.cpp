@@ -320,7 +320,7 @@ void CBearingPierGrid::CustomInit()
       .SetHorizontalAlignment(DT_CENTER)
       .SetVerticalAlignment(DT_TOP)
 		.SetEnabled(FALSE)          // disables usage as current cell
-      .SetValue(_T("# of\nBearings"))
+      .SetValue(_T("# of\nBearings\nper Girder"))
 		);
 
    col++;
@@ -393,7 +393,7 @@ void CBearingPierGrid::CustomInit()
 
    col++;
    m_DGetter.m_BearingSolePlateCol = col;
-   strLabel.Format(_T("Sole\nPlate\n(%s)"), pDisplayUnits->GetComponentDimUnit().UnitOfMeasure.UnitTag().c_str());
+   strLabel.Format(_T("Sole\nPlate\nHeight (%s)"), pDisplayUnits->GetComponentDimUnit().UnitOfMeasure.UnitTag().c_str());
 	SetStyleRange(CGXRange(0,col), CGXStyle()
       .SetWrapText(TRUE)
       .SetHorizontalAlignment(DT_CENTER)
@@ -403,7 +403,7 @@ void CBearingPierGrid::CustomInit()
 		);
 
    // make it so that text fits correctly in header row
-	this->ResizeRowHeightsToFit(CGXRange(0,0,0,num_cols-1));
+	this->ResizeRowHeightsToFit(CGXRange(0,0,0,GetColCount()));
 
    // Hide the row header column
    HideCols(0, 0);

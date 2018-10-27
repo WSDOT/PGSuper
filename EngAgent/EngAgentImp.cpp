@@ -39,6 +39,7 @@
 #include <PgsExt\StatusItem.h>
 #include <PgsExt\BridgeDescription2.h>
 #include <PgsExt\GirderLabel.h>
+#include <PgsExt\LoadFactors.h>
 
 #include <PsgLib\TrafficBarrierEntry.h>
 #include <PsgLib\SpecLibraryEntry.h>
@@ -134,41 +135,71 @@ CollectionIndexType LimitStateToShearIndex(pgsTypes::LimitState limitState)
 class DesignOverrider
 {
 public:
-   DesignOverrider(CComPtr<IDesignOverrides>& pDesignOverrides, bool overTransf, bool overHaunch) :
-      m_pDesignOverrides(pDesignOverrides),
+   DesignOverrider(bool overTransf, bool overHaunch, IBroker* pBroker) :
       m_bOverTransf(overTransf),
-      m_bOverHaunch(overHaunch)
+      m_bOverHaunch(overHaunch),
+      m_pBroker(pBroker)
    {
-      if (m_bOverTransf)
+      if (m_bOverTransf || m_bOverHaunch)
       {
-         m_pDesignOverrides->ApplyTransFormedSectionOverride();
-      }
+         GET_IFACE(ILibrary, pLib );
+         GET_IFACE(ISpecification,pSpec);
+         const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
 
-      if (m_bOverHaunch)
-      {
-         m_pDesignOverrides->ApplyParabolicCompositeSectionOverride();
+         SpecLibraryEntry clone(*pSpecEntry);
+
+         // Designer does not handle transformed section properties well - set to gross
+         if (m_bOverTransf)
+         {
+            clone.SetSectionPropertyMode(pgsTypes::spmGross);
+         }
+
+         if (m_bOverHaunch)
+         {
+            clone.SetHaunchAnalysisSectionPropertiesType(pgsTypes::hspConstFilletDepth);
+         }
+
+         // We've made changes to clone, now add it to library
+         SpecLibrary* pLibrary = pLib->GetSpecLibrary();
+
+         m_OriginalSpecEntryName = pSpecEntry->GetName();
+         m_CloneSpecEntryName = pSpecEntry->GetName() + std::_tstring(_T("_clone"));
+ 
+         while(!pLibrary->AddEntry(clone, m_CloneSpecEntryName.c_str()))
+         {
+            // Name not accepted - create a new one (not pretty)
+            m_CloneSpecEntryName += _T("x");
+         }
+
+         // Set to new specification until we go out of scope
+         pSpec->SetSpecification(m_CloneSpecEntryName);
       }
    }
 
-
    ~DesignOverrider()
    {
-      if (m_bOverTransf)
+      if (m_bOverTransf || m_bOverHaunch)
       {
-         m_pDesignOverrides->RemoveTransFormedSectionOverride();
-      }
+         GET_IFACE(ILibrary, pLib );
+         GET_IFACE(ISpecification,pSpec);
 
-      if (m_bOverHaunch)
-      {
-         m_pDesignOverrides->RemoveParabolicCompositeSectionOverride();
+         // Set things back to where we started
+         pSpec->SetSpecification(m_OriginalSpecEntryName);
+
+         SpecLibrary* pLibrary = pLib->GetSpecLibrary();
+         libILibrary::EntryRemoveOutcome outcome = pLibrary->RemoveEntry(m_CloneSpecEntryName.c_str());
+         ATLASSERT(libILibrary::RemOk == outcome);
       }
    }
 
 private:
    DesignOverrider();
-   CComPtr<IDesignOverrides> m_pDesignOverrides;
+
+   CComPtr<IBroker> m_pBroker;
    bool m_bOverTransf;
    bool m_bOverHaunch;
+   std::_tstring m_OriginalSpecEntryName;
+   std::_tstring m_CloneSpecEntryName;
 };
 
 
@@ -1526,7 +1557,7 @@ Float64 CEngAgentImp::GetPjackMax(const CGirderKey& girderKey,const matPsStrand&
    return Fpj;
 }
 
-Float64 CEngAgentImp::GetTendonForce(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType time,DuctIndexType ductIdx,bool bIncludeMinLiveLoad,bool bIncludeMaxLiveLoad) const
+Float64 CEngAgentImp::GetTendonForce(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType time,DuctIndexType ductIdx,bool bIncludeMinLiveLoad,bool bIncludeMaxLiveLoad, pgsTypes::LimitState limitState, VehicleIndexType vehicleIdx) const
 {
    GET_IFACE(IPointOfInterest,pPoi);
    if ( !pPoi->IsOnGirder(poi) )
@@ -1545,7 +1576,7 @@ Float64 CEngAgentImp::GetTendonForce(const pgsPointOfInterest& poi,IntervalIndex
    DuctIndexType lastTendonIdx  = (ductIdx == ALL_DUCTS ? nDucts-1 : firstTendonIdx);
    for ( DuctIndexType tendonIdx = firstTendonIdx; tendonIdx <= lastTendonIdx; tendonIdx++ )
    {
-      Float64 fpe = GetTendonStress(poi,intervalIdx,time,tendonIdx,bIncludeMinLiveLoad,bIncludeMaxLiveLoad);
+      Float64 fpe = GetTendonStress(poi,intervalIdx,time,tendonIdx,bIncludeMinLiveLoad,bIncludeMaxLiveLoad,limitState,vehicleIdx);
       Float64 Apt = pTendonGeom->GetTendonArea(girderKey,intervalIdx,tendonIdx);
 
       Fpe += fpe*Apt;
@@ -1639,7 +1670,7 @@ Float64 CEngAgentImp::GetInitialTendonForce(const pgsPointOfInterest& poi,DuctIn
    return Fpe;
 }
 
-Float64 CEngAgentImp::GetTendonStress(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType time,DuctIndexType ductIdx,bool bIncludeMinLiveLoad,bool bIncludeMaxLiveLoad) const
+Float64 CEngAgentImp::GetTendonStress(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType time,DuctIndexType ductIdx,bool bIncludeMinLiveLoad,bool bIncludeMaxLiveLoad, pgsTypes::LimitState limitState, VehicleIndexType vehicleIdx) const
 {
    GET_IFACE(IPointOfInterest,pPoi);
    if ( !pPoi->IsOnGirder(poi) )
@@ -1697,21 +1728,59 @@ Float64 CEngAgentImp::GetTendonStress(const pgsPointOfInterest& poi,IntervalInde
    }
    else
    {
-      if ( bIncludeMinLiveLoad && bIncludeMaxLiveLoad )
+      fpe = pDetails->TimeStepDetails[intervalIdx].Tendons[ductIdx].fpe;
+
+      if (bIncludeMinLiveLoad || bIncludeMaxLiveLoad)
       {
-         fpe = Max(pDetails->TimeStepDetails[intervalIdx].Tendons[ductIdx].fpeLLMin,pDetails->TimeStepDetails[intervalIdx].Tendons[ductIdx].fpeLLMax);
-      }
-      else if ( bIncludeMinLiveLoad )
-      {
-         fpe = pDetails->TimeStepDetails[intervalIdx].Tendons[ductIdx].fpeLLMin;
-      }
-      else if ( bIncludeMaxLiveLoad )
-      {
-         fpe = pDetails->TimeStepDetails[intervalIdx].Tendons[ductIdx].fpeLLMax;
-      }
-      else
-      {
-         fpe = pDetails->TimeStepDetails[intervalIdx].Tendons[ductIdx].fpe;
+         GET_IFACE(IProductForces, pProductForces);
+         pgsTypes::BridgeAnalysisType bat = pProductForces->GetBridgeAnalysisType(pgsTypes::Maximize);
+         pgsTypes::LiveLoadType llType = LiveLoadTypeFromLimitState(limitState);
+         Float64 Mmin, Mmax;
+
+         if (vehicleIdx == INVALID_INDEX)
+         {
+            pProductForces->GetLiveLoadMoment(intervalIdx, llType, poi, bat, true/*include impact*/, true/*include LLDF*/, &Mmin, &Mmax);
+         }
+         else
+         {
+            pProductForces->GetVehicularLiveLoadMoment(intervalIdx, llType, vehicleIdx, poi, bat, true/*include impact*/, true/*include LLDF*/, &Mmin, &Mmax);
+         }
+
+         Float64 gLL;
+         if (IsRatingLimitState(limitState))
+         {
+            GET_IFACE(IRatingSpecification, pRatingSpec);
+            gLL = pRatingSpec->GetLiveLoadFactor(limitState, true);
+         }
+         else
+         {
+            GET_IFACE(ILoadFactors, pLoadFactors);
+            const CLoadFactors* pLF = pLoadFactors->GetLoadFactors();
+            gLL = pLF->GetLLIMMax(limitState);
+         }
+
+         GET_IFACE(ITendonGeometry, pTendonGeom);
+         Float64 e = pTendonGeom->GetEccentricity(intervalIdx, poi, ductIdx);
+
+         GET_IFACE(ISectionProperties, pSectProps);
+         Float64 Ixx = pSectProps->GetIxx(intervalIdx, poi);
+         
+         Float64 M;
+         if (bIncludeMinLiveLoad && bIncludeMaxLiveLoad)
+         {
+            M = Max(Mmin, Mmax);
+         }
+         else if (bIncludeMinLiveLoad)
+         {
+            M = Mmin;
+         }
+         else if (bIncludeMaxLiveLoad)
+         {
+            M = Mmax;
+         }
+
+         Float64 dfLL = gLL * M * e / Ixx;
+         fpe += dfLL;
       }
    }
 
@@ -1766,7 +1835,7 @@ Float64 CEngAgentImp::GetVerticalTendonForce(const pgsPointOfInterest& poi,Inter
    Float64 Vp = 0;
    for ( DuctIndexType tendonIdx = firstTendonIdx; tendonIdx <= lastTendonIdx; tendonIdx++ )
    {
-      Float64 Fpt = GetTendonForce(poi,intervalIdx,intervalTime,tendonIdx,true,true);
+      Float64 Fpt = GetTendonForce(poi,intervalIdx,intervalTime,tendonIdx,true,true,pgsTypes::StrengthI,INVALID_INDEX);
 
       CComPtr<IVector3d> slope;
       pTendonGeom->GetTendonSlope(poi,tendonIdx,&slope);
@@ -3685,13 +3754,14 @@ const pgsGirderDesignArtifact* CEngAgentImp::CreateDesignArtifact(const CGirderK
    ATLASSERT( cRemove == 0 || cRemove == 1 );
 
    // Tricky: Set to gross sections and prismatic haunch if needed
-   // Use the class below to temporarly set transformed and prismatic haunch properties and then reset them back
    GET_IFACE_NOCHECK(IBridge,pBridge);
    GET_IFACE(ISectionProperties,pSectProp);
-   GET_IFACE_NOCHECK(IDesignOverrides,pDesignOverrides);
+
    bool doTrans  = pSectProp->GetSectionPropertiesMode() == pgsTypes::spmTransformed;
    bool doHaunch = pSectProp->GetHaunchAnalysisSectionPropertiesType() == pgsTypes::hspVariableParabolic && IsStructuralDeck(pBridge->GetDeckType());
-   DesignOverrider overrider(pDesignOverrides, doTrans, doHaunch);
+
+   // Use the class below to temporarly set transformed and prismatic haunch properties in library and then reset them back
+   DesignOverrider overrider(doTrans, doHaunch, m_pBroker);
 
    pgsGirderDesignArtifact gdrDesignArtifact = m_Designer.Design(girderKey,designOptions);
 

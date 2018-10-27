@@ -55,12 +55,15 @@ Minimum fillet value exceeded for bridge check failed
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 66.67    9   7.92 KAPOLEI BRIDGE (    2     5     IV      *     46  0.6  270  25.01  18.22  10.50  10.50                                               6  56.0  4.0  7.700  8.800   4.676    -5.206     9599   0.585  1.000   4.205 -1.971 -0.137  0.000 -2.107 183.83  273.58    1.75    5.00    5.00 
+ 66.67    9   7.92 KAPOLEI BRIDGE (    2     5     IV      *     46  0.6  270  25.01  18.22  10.50  10.50                                               6  56.0  4.0  7.500  7.500   4.594    -5.177     9526   0.585  1.000   4.250 -2.135 -0.145  0.000 -2.280 185.98  268.00    1.75    5.00    5.00 
 
 
 Girder design was Not Successful
 The Specification Check was Not Successful
 Tensile stress check failed for Service I Limit State in Interval 8 Remove temporary strands
+Compression stress check failed for Service I Limit State in Interval 11 Cast Deck
+Compression stress check failed for Service I Limit State in Interval 13 Composite deck, Apply User Defined Loads, Install Railing System
+Compression stress check failed for Service I Limit State in Interval 15 Install Overlay
 Compression stress check failed for Service I Limit State in Interval 16 Open to Traffic
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Minimum fillet value exceeded for bridge check failed
@@ -68,27 +71,33 @@ Minimum fillet value exceeded for bridge check failed
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 66.67    9   7.92 KAPOLEI BRIDGE (    3     1     IV      *     45  0.6  270  24.98  19.16  10.75  10.75                                               5  56.0  4.0  7.500  8.800   4.379    -5.032     9489   0.660  1.000   4.427 -1.479 -0.118 -0.191 -1.788 181.64  281.90    1.75    5.00    5.00 
+ 66.67    9   7.92 KAPOLEI BRIDGE (    3     1     IV      *     44  0.6  270  25.23  18.14  10.50  10.50                                               6  56.0  4.0  7.200  7.200   4.248    -4.972     9279   0.660  1.000   4.390 -1.613 -0.126 -0.205 -1.944 177.95  267.17    1.75    5.00    5.00 
 
 
 Girder design was Not Successful
 The Specification Check was Not Successful
 Tensile stress check failed for Service I Limit State in Interval 8 Remove temporary strands
+Compression stress check failed for Service I Limit State in Interval 11 Cast Deck
+Compression stress check failed for Service I Limit State in Interval 13 Composite deck, Apply User Defined Loads, Install Railing System
 Compression stress check failed for Service I Limit State in Interval 15 Install Overlay
 Compression stress check failed for Service I Limit State in Interval 16 Open to Traffic
+Slab Offset ("A" Dimension) check failed
 Minimum fillet value exceeded for bridge check failed
 
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 66.67    9   7.92 KAPOLEI BRIDGE (    3     2     IV      *     47  0.6  270  24.78  19.20  10.00  10.00                                               5  56.0  4.0  7.200  9.000   4.516    -5.136     9595   0.600  1.000   3.577 -1.647 -0.116 -0.188 -1.950 192.48  332.01    1.75    5.00    5.00 
+ 66.67    9   7.92 KAPOLEI BRIDGE (    3     2     IV      *     47  0.6  270  24.78  19.20  10.00  10.00                                               5  56.0  4.0  7.200  7.200   4.395    -5.093     9508   0.600  1.000   3.713 -1.841 -0.125 -0.203 -2.169 192.48  322.20    1.75    5.00    5.00 
 
 
 Girder design was Not Successful
 The Specification Check was Not Successful
+Compression stress check failed for Service I Limit State in Interval 8 Remove temporary strands
 Tensile stress check failed for Service I Limit State in Interval 8 Remove temporary strands
+Compression stress check failed for Service I Limit State in Interval 11 Cast Deck
+Compression stress check failed for Service I Limit State in Interval 13 Composite deck, Apply User Defined Loads, Install Railing System
+Compression stress check failed for Service I Limit State in Interval 15 Install Overlay
 Compression stress check failed for Service I Limit State in Interval 16 Open to Traffic
-Tensile stress check failed for Service III Limit State in Interval 16 Open to Traffic
 Minimum fillet value exceeded for bridge check failed
 
 

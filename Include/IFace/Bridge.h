@@ -1164,6 +1164,8 @@ interface IStrandGeometry : IUnknown
    virtual std::vector<StrandIndexType> GetStrandsInRow(const pgsPointOfInterest& poi, RowIndexType rowIdx, pgsTypes::StrandType strandType ) const = 0;
    virtual StrandIndexType GetNumDebondedStrandsInRow(const pgsPointOfInterest& poi,RowIndexType rowIdx,pgsTypes::StrandType strandType ) const = 0;
    virtual bool IsExteriorStrandDebondedInRow(const pgsPointOfInterest& poi,RowIndexType rowIdx,pgsTypes::StrandType strandType ) const = 0;
+   virtual Float64 GetUnadjustedStrandRowElevation(const pgsPointOfInterest& poi,RowIndexType rowIdx,pgsTypes::StrandType strandType ) const = 0;
+
    virtual bool HasDebonding(const CSegmentKey& segmentKey) const = 0;
    virtual bool IsDebondingSymmetric(const CSegmentKey& segmentKey) const = 0;
 
@@ -1172,7 +1174,7 @@ interface IStrandGeometry : IUnknown
    virtual StrandIndexType GetNumStrandInRow(const pgsPointOfInterest& poi,StrandIndexType nStrands,RowIndexType rowIdx,pgsTypes::StrandType strandType ) const = 0;
    virtual std::vector<StrandIndexType> GetStrandsInRow(const pgsPointOfInterest& poi,StrandIndexType nStrands,RowIndexType rowIdx, pgsTypes::StrandType strandType ) const = 0;
 
-   // Section locations measured from left end to right
+   // Section locations measured from left->right end of girder, and are sorted from left end to right
    virtual Float64 GetDebondSection(const CSegmentKey& segmentKey,pgsTypes::MemberEndType endType,SectionIndexType sectionIdx,pgsTypes::StrandType strandType) const = 0;
    virtual SectionIndexType GetNumDebondSections(const CSegmentKey& segmentKey,pgsTypes::MemberEndType endType,pgsTypes::StrandType strandType) const = 0;
    virtual StrandIndexType GetNumDebondedStrandsAtSection(const CSegmentKey& segmentKey,pgsTypes::MemberEndType endType,SectionIndexType sectionIdx,pgsTypes::StrandType strandType) const = 0;
@@ -1306,7 +1308,9 @@ interface ISectionProperties : IUnknown
 
    // Net girder properties
    virtual Float64 GetNetAg(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi) const = 0;
-   virtual Float64 GetNetIg(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi) const = 0;
+   virtual Float64 GetNetIxx(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi) const = 0;
+   virtual Float64 GetNetIyy(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi) const = 0;
+   virtual Float64 GetNetIxy(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi) const = 0;
    virtual Float64 GetNetYbg(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi) const = 0;
    virtual Float64 GetNetYtg(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi) const = 0;
 
@@ -1665,6 +1669,9 @@ interface IGirder : public IUnknown
    // An orientation of 0 means the girder is plumb
    // Positive values means the Y axis of the girder is rotated CW
    virtual Float64 GetOrientation(const CSegmentKey& segmentKey) const = 0;
+
+   // Returns the transverse slope of the girder top flange
+   virtual Float64 GetTransverseTopFlangeSlope(const CSegmentKey& segmentKey) const = 0;
 
    // Top Girder Reference Chord is a straight line that intersections the top of deck at the CL Brg at start and end of girder
    virtual Float64 GetProfileChordElevation(const pgsPointOfInterest& poi) const = 0;

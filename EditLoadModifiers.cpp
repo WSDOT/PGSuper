@@ -78,13 +78,12 @@ void txnEditLoadModifiers::DoExecute(int i)
    EAFGetBroker(&pBroker);
 
    GET_IFACE2(pBroker,IEvents, pEvents);
-   pEvents->HoldEvents(); // don't fire any changed events until all changes are done
+   // Exception-safe holder to keep from fireing events until we are done
+   CIEventsHolder event_holder(pEvents);
 
    GET_IFACE2(pBroker,ILoadModifiers,pLoadModifiers);
 
    pLoadModifiers->SetDuctilityFactor(  m_LoadModifiers[i].DuctilityLevel,  m_LoadModifiers[i].DuctilityFactor );
    pLoadModifiers->SetRedundancyFactor( m_LoadModifiers[i].RedundancyLevel, m_LoadModifiers[i].RedundancyFactor );
    pLoadModifiers->SetImportanceFactor( m_LoadModifiers[i].ImportanceLevel, m_LoadModifiers[i].ImportanceFactor );
-
-   pEvents->FirePendingEvents();
 }

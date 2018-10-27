@@ -11191,7 +11191,7 @@ void CProjectAgentImp::CreatePrecastGirderBridgeTimelineEvents()
    pgsTypes::SupportedDeckType deckType = m_BridgeDescription.GetDeckDescription()->GetDeckType();
 
    Float64 deck_diaphragm_curing_duration = Min(::ConvertFromSysUnits(pSpecEntry->GetTotalCreepDuration() - pSpecEntry->GetCreepDuration2Max(),unitMeasure::Day),28.0);
-   if ( IsJointSpacing(m_BridgeDescription.GetGirderSpacingType()) && m_BridgeDescription.HasLongitudinalJoints() )
+   if ( IsJointSpacing(m_BridgeDescription.GetGirderSpacingType()) && m_BridgeDescription.HasStructuralLongitudinalJoints() )
    {
       // No deck
       // 1) Diaphragms

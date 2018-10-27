@@ -61,6 +61,9 @@ CLASS
 static void haunch_summary(rptChapter* pChapter,IBroker* pBroker, const std::vector<CGirderKey>& girderList,
                                   ColumnIndexType startIdx, ColumnIndexType endIdx, IEAFDisplayUnits* pDisplayUnits);
 
+static void haunch_minimum_note(rptChapter* pChapter,IBroker* pBroker, const std::vector<CGirderKey>& girderList, IEAFDisplayUnits* pDisplayUnits);
+
+
 ////////////////////////// PUBLIC     ///////////////////////////////////////
 
 //======================== LIFECYCLE  =======================================
@@ -137,9 +140,11 @@ rptChapter* CTexasHaunchChapterBuilder::Build(CReportSpecification* pRptSpec,Uin
    // Fillet Check
    CConstructabilityCheckTable().BuildMinimumFilletCheck(pChapter,pBroker,girder_list,pDisplayUnits);
 
+   // Note for minimum least haunch along girder
+   haunch_minimum_note(pChapter, pBroker, girder_list, pDisplayUnits);
+
    // Haunch Geometry Check
    CConstructabilityCheckTable().BuildHaunchGeometryComplianceCheck(pChapter,pBroker,girder_list,pDisplayUnits);
-
 
    return pChapter;
 }
@@ -161,6 +166,55 @@ CChapterBuilder* CTexasHaunchChapterBuilder::Clone() const
 //======================== INQUIRY    =======================================
 
 ////////////////////////// PRIVATE    ///////////////////////////////////////
+void haunch_minimum_note(rptChapter* pChapter, IBroker* pBroker, const std::vector<CGirderKey>& girderList, IEAFDisplayUnits* pDisplayUnits)
+{
+   GET_IFACE2(pBroker,IGirderHaunch,pGdrHaunch);
+
+   INIT_UV_PROTOTYPE( rptLengthUnitValue, disp,   pDisplayUnits->GetDeflectionUnit(), true );
+
+   rptParagraph* p = new rptParagraph;
+   *pChapter << p;
+
+   bool is_multiple = girderList.size() > 1;
+
+   for (const auto& girderKey : girderList)
+   {
+      CSegmentKey segKey(girderKey, 0); // no spliced girders here
+
+      const auto& haunch_details = pGdrHaunch->GetHaunchDetails(segKey);
+
+      // Get min haunch along girder
+      Float64 minHaunch(Float64_Max);
+      for (const auto& haunchdet : haunch_details.Haunch)
+      {
+
+         Float64 dHaunch;
+         if (haunchdet.GirderOrientationEffect < 0.0)
+         {
+            dHaunch = haunchdet.TopSlabToTopGirder; // cl girder in a valley
+         }
+         else
+         {
+            dHaunch = haunchdet.TopSlabToTopGirder - haunchdet.tSlab - haunchdet.GirderOrientationEffect;
+         }
+
+         minHaunch = min(minHaunch, dHaunch);
+      }
+
+      if (is_multiple)
+      {
+         *p << _T("Computed minimum haunch depth at edges of top flange along girder for Span ") << LABEL_SPAN(girderKey.groupIndex) << _T(" Girder ") << LABEL_GIRDER(girderKey.girderIndex) << _T(" = ") << Bold(disp.SetValue(minHaunch)) << rptNewLine;
+      }
+      else
+      {
+         *p << Bold(_T("Computed minimum haunch depth at edges of top flange along girder = ") << disp.SetValue(minHaunch)) << _T(". ");
+      }
+
+   }
+
+   *p << _T("Refer to the Least Haunch Depth column in the Haunch Details chapter in the Details report for the location of the minimum haunch value.");
+}
+
 void haunch_summary(rptChapter* pChapter,IBroker* pBroker, const std::vector<CGirderKey>& girderList,
                            ColumnIndexType startIdx, ColumnIndexType endIdx,
                            IEAFDisplayUnits* pDisplayUnits)

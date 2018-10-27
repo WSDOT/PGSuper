@@ -130,6 +130,9 @@ public:
    void SetPGSuperFileName(const CString& value);
    CString GetPGSuperFileName();
 
+   void SetGirderConcreteUnitWeight(Float64 uw);
+   Float64 GetGirderConcreteUnitWeight();
+
    // Bridge Input Data
    void SetBridge(const CString& text);
    CString GetBridge() const;
@@ -279,6 +282,7 @@ private:
    CString m_LeftConnectionEntryName;
    CString m_RightConnectionEntryName;
    CString m_PGSuperFileName;
+   Float64 m_GirderConcreteUnitWeight;
 
    CString m_Bridge;
    CString m_BridgeID;

@@ -100,8 +100,17 @@ rptChapter* CADimChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 lev
 
    GET_IFACE2(pBroker,IGirderHaunch,pGdrHaunch);
    GET_IFACE2(pBroker, IProductLoads, pProductLoads);
+   GET_IFACE2(pBroker, IGirder, pGdr);
 
-   Float64 haunch_tolerance = ::ConvertToSysUnits(0.25, unitMeasure::Inch);
+   Float64 haunch_tolerance;
+   if (IS_SI_UNITS(pDisplayUnits))
+   {
+      haunch_tolerance = HAUNCH_TOLERANCE_SI;
+   }
+   else
+   {
+      haunch_tolerance = HAUNCH_TOLERANCE_US;
+   }
 
    SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
    for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++)
@@ -117,10 +126,18 @@ rptChapter* CADimChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 lev
 
       const auto& haunch_details = pGdrHaunch->GetHaunchDetails(segmentKey);
 
+      bool bTopFlangeShapeEffect = false;
+      pgsTypes::TopFlangeThickeningType tftType = pGdr->GetTopFlangeThickeningType(segmentKey);
+      Float64 tft = pGdr->GetTopFlangeThickening(segmentKey);
+      if (tftType != pgsTypes::tftNone && !IsZero(tft))
+      {
+         bTopFlangeShapeEffect = true;
+      }
+
       rptParagraph* pPara = new rptParagraph;
       *pChapter << pPara;
       
-      rptRcTable* pTable1 = rptStyleManager::CreateDefaultTable(11,_T("Haunch Details - Part 1"));
+      rptRcTable* pTable1 = rptStyleManager::CreateDefaultTable(bTopFlangeShapeEffect ? 12 : 11,_T("Haunch Details - Part 1"));
       *pPara << pTable1;
 
       pPara = new rptParagraph(rptStyleManager::GetFootnoteStyle());
@@ -142,7 +159,11 @@ rptChapter* CADimChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 lev
       (*pTable1)(0, col++) << COLHDR(_T("Profile") << rptNewLine << _T("Chord") << rptNewLine << _T("Elevation"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
       (*pTable1)(0, col++) << COLHDR(_T("Profile") << rptNewLine << _T("Effect"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
       (*pTable1)(0, col++) << COLHDR(pProductLoads->GetProductLoadName(pgsTypes::pftSlab) << rptNewLine << _T("Thickness"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
-      (*pTable1)(0, col++) << COLHDR(_T("Fillet"),rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+      (*pTable1)(0, col++) << COLHDR(_T("Fillet"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+      if (bTopFlangeShapeEffect)
+      {
+         (*pTable1)(0, col++) << COLHDR(_T("Top Flange") << rptNewLine << _T("Shape Effect"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+      }
 
       Float64 days = pSpecEntry->GetCreepDuration2Max(); // haunch is always computined using max time for construction
       days = ::ConvertFromSysUnits(days, unitMeasure::Day);
@@ -156,7 +177,7 @@ rptChapter* CADimChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 lev
       col = 0;
       (*pTable2)(0, col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
       (*pTable2)(0, col++) << _T("Deck") << rptNewLine << _T("Slope") << rptNewLine << _T("(") << Sub2(_T("m"),_T("d")) << _T(")") << rptNewLine << _T("(") << strSlopeTag << _T("/") << strSlopeTag << _T(")");
-      (*pTable2)(0, col++) << _T("Girder") << rptNewLine << _T("Orientation") << rptNewLine << _T("(") << Sub2(_T("m"),_T("g")) << _T(")") << rptNewLine << _T("(") << strSlopeTag << _T("/") << strSlopeTag << _T(")");
+      (*pTable2)(0, col++) << _T("Girder Top") << rptNewLine << _T("Slope") << rptNewLine << _T("(") << Sub2(_T("m"),_T("g")) << _T(")") << rptNewLine << _T("(") << strSlopeTag << _T("/") << strSlopeTag << _T(")");
       (*pTable2)(0, col++)<< COLHDR(_T("Top") << rptNewLine << _T("Width"),rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
       (*pTable2)(0, col++)<< COLHDR(_T("Girder") << rptNewLine << _T("Orientation") << rptNewLine << _T("Effect"),rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
       (*pTable2)(0, col++)<< COLHDR(_T("Required") << rptNewLine << _T("Slab") << rptNewLine << _T("Offset") << (_T("*")),rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
@@ -180,16 +201,22 @@ rptChapter* CADimChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 lev
          (*pTable1)(row1,col++) << comp.SetValue(haunch.ProfileEffect);
          (*pTable1)(row1,col++) << comp.SetValue( haunch.tSlab );
          (*pTable1)(row1,col++) << comp.SetValue( haunch.Fillet );
+
+         if (bTopFlangeShapeEffect)
+         {
+            (*pTable1)(row1, col++) << defl.SetValue(haunch.TopFlangeShapeEffect);
+         }
+
          (*pTable1)(row1,col++) << defl.SetValue( haunch.D );
          (*pTable1)(row1,col++) << defl.SetValue( haunch.C );
-         (*pTable1)(row1,col++) << defl.SetValue( haunch.CamberEffect);
+         (*pTable1)(row1, col++) << defl.SetValue(haunch.CamberEffect);
 
          row1++;
 
          col = 0;
          (*pTable2)(row2,col++) << location.SetValue(POI_ERECTED_SEGMENT, haunch.PointOfInterest );
          (*pTable2)(row2,col++) << haunch.CrownSlope;
-         (*pTable2)(row2,col++) << haunch.GirderOrientation;
+         (*pTable2)(row2,col++) << haunch.GirderTopSlope;
          (*pTable2)(row2,col++) << comp.SetValue( haunch.Wtop );
          (*pTable2)(row2,col++) << comp.SetValue( haunch.GirderOrientationEffect );
          (*pTable2)(row2,col++) << comp.SetValue( haunch.RequiredHaunchDepth );
@@ -237,8 +264,13 @@ rptChapter* CADimChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 lev
       pPara = new rptParagraph(rptStyleManager::GetFootnoteStyle());
       *pChapter << pPara;
 
-      *pPara << _T("Deck Slope (") << Sub2(_T("m"),_T("d")) << _T(") and Girder Orientation (") << Sub2(_T("m"),_T("g")) << _T(") are positive when the slope is upwards towards the right") << rptNewLine;
-      *pPara << Super(_T("*")) << _T(" required slab offset (equal at both ends) from top of girder to top of deck at centerline bearing for geometric effects at this point. (Slab Thickness + Fillet + Excess Camber + Profile Effect + Girder Orientation Effect)") << rptNewLine;
+      *pPara << _T("Deck Slope (") << Sub2(_T("m"),_T("d")) << _T(") and Girder Top Slope (") << Sub2(_T("m"),_T("g")) << _T(") are positive when the slope is upwards towards the right") << rptNewLine;
+      *pPara << Super(_T("*")) << _T(" required slab offset (equal at both ends) from top of girder to top of deck at centerline bearing for geometric effects at this point. (Slab Thickness + Fillet");
+      if (bTopFlangeShapeEffect)
+      {
+         *pPara << _T(" + Top Flange Shape Effect");
+      }
+      *pPara << _T(" + Excess Camber + Profile Effect + Girder Orientation Effect)") << rptNewLine;
 
       if ( slabOffsetType == pgsTypes::sotBridge )
       {
@@ -267,7 +299,8 @@ rptChapter* CADimChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 lev
       *pPara << rptNewLine;
 
       comp.ShowUnitTag(true);
-      *pPara << _T("Required Slab Offset at intersection of centerline bearing and centerline girder: ") << comp.SetValue(haunch_details.RequiredSlabOffset) << rptNewLine;
+      *pPara << _T("Required Slab Offset at intersection of centerline bearing and centerline girder: ") << comp.SetValue(haunch_details.RequiredSlabOffset);
+      *pPara << _T(" (") << comp.SetValue(RoundOff(haunch_details.RequiredSlabOffset, haunch_tolerance)) << _T(", rounded)") << rptNewLine;
       *pPara << _T("Maximum Change in CL Haunch Depth along girder: ") << comp.SetValue(haunch_details.HaunchDiff) << rptNewLine;
    } // next span
 
@@ -276,7 +309,7 @@ rptChapter* CADimChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 lev
    *pPara << rptNewLine;
 
    *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("ProfileEffect.gif")) << rptNewLine;
-   *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("GirderOrientationEffect.gif"));
+   *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("GirderOrientationEffect.png"));
    *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("GirderOrientationEffectEquation.png"))  << rptNewLine;
 
    return pChapter;

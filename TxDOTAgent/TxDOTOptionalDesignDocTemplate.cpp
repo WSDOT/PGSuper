@@ -165,7 +165,8 @@ void CTxDOTOptionalDesignDocTemplate::FindTemplateFiles(LPCTSTR strPath,CEAFTemp
       CString templateFile = finder.GetFilePath();
 
       CString girderEntry, leftConnEntry, rightConnEntry, projectCriteriaEntry, folderName;
-      if(::DoParseTemplateFile(templateFile, girderEntry, leftConnEntry, rightConnEntry, projectCriteriaEntry, folderName))
+      Float64 concUW;
+      if(::DoParseTemplateFile(templateFile, girderEntry, leftConnEntry, rightConnEntry, projectCriteriaEntry, folderName, concUW))
       {
          // Attempt to insert folder. Doesn't matter if insterted or not, we want an iterator to build our folder from
          TemplateFolder tfolder;

@@ -59,10 +59,12 @@ CDebondCheckTable::~CDebondCheckTable()
 //======================== OPERATORS  =======================================
 
 //======================== OPERATIONS =======================================
-void CDebondCheckTable::Build(rptChapter* pChapter, IBroker* pBroker,const pgsGirderArtifact* pGirderArtifact,pgsTypes::StrandType strandType,IEAFDisplayUnits* pDisplayUnits) const
+void CDebondCheckTable::Build(rptChapter* pChapter, IBroker* pBroker,const pgsGirderArtifact* pGirderArtifact,IEAFDisplayUnits* pDisplayUnits) const
 {
    GET_IFACE2(pBroker,IBridge,pBridge);
    GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
+
+   pgsTypes::StrandType strandType(pgsTypes::Straight); // we only debond straight strands
 
    const CGirderKey& girderKey(pGirderArtifact->GetGirderKey());
    SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
@@ -95,7 +97,7 @@ void CDebondCheckTable::Build(rptChapter* pChapter, IBroker* pBroker,const pgsGi
    {
       const pgsSegmentArtifact* pSegmentArtifact = pGirderArtifact->GetSegmentArtifact(segIdx);
       const CSegmentKey& segmentKey(pSegmentArtifact->GetSegmentKey());
-      const pgsDebondArtifact* pDebondArtifact = pSegmentArtifact->GetDebondArtifact(strandType);
+      const pgsDebondArtifact* pDebondArtifact = pSegmentArtifact->GetDebondArtifact();
 
       if ( 1 < nSegments )
       {

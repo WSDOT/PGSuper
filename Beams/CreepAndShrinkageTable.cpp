@@ -69,21 +69,26 @@ CCreepAndShrinkageTable* CCreepAndShrinkageTable::PrepareTable(rptChapter* pChap
    *pChapter << pParagraph;
 
    *pParagraph << rptRcImage(strImagePath + _T("Delta_FpCR_2004.png")) << rptNewLine;
-   if ( IS_SI_UNITS(pDisplayUnits) )
+   if (IS_SI_UNITS(pDisplayUnits))
+   {
       *pParagraph << rptRcImage(strImagePath + _T("Delta_FpSR_2004_SI.png")) << rptNewLine;
+   }
    else
+   {
       *pParagraph << rptRcImage(strImagePath + _T("Delta_FpSR_2004_US.png")) << rptNewLine;
+   }
 
    GET_IFACE2(pBroker,IEnvironment,pEnv);
    *pParagraph << _T("H = ") << pEnv->GetRelHumidity() << _T("%") << rptNewLine;
 
    *pParagraph << table << rptNewLine;
 
-   (*table)(0,0) << COLHDR(_T("Location from")<<rptNewLine<<_T("Left Support"),rptLengthUnitTag,  pDisplayUnits->GetSpanLengthUnit() );
-   (*table)(0,1) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pSR")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   (*table)(0,2) << COLHDR(RPT_STRESS(_T("cgp")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   (*table)(0,3) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("cdp")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   (*table)(0,4) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pCR")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   ColumnIndexType col = 0;
+   (*table)(0,col++) << COLHDR(_T("Location from")<<rptNewLine<<_T("Left Support"),rptLengthUnitTag,  pDisplayUnits->GetSpanLengthUnit() );
+   (*table)(0,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pSR")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*table)(0,col++) << COLHDR(RPT_STRESS(_T("cgp")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*table)(0,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("cdp")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*table)(0,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pCR")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    
    return table;
 }
@@ -98,8 +103,11 @@ void CCreepAndShrinkageTable::AddRow(rptChapter* pChapter,IBroker* pBroker,const
       return;
    }
 
-   (*this)(row,1) << stress.SetValue( ptl->ShrinkageLosses() );
-   (*this)(row,2) << stress.SetValue( pDetails->pLosses->ElasticShortening().PermanentStrand_Fcgp() );
-   (*this)(row,3) << stress.SetValue( -pDetails->pLosses->GetDeltaFcd1() );
-   (*this)(row,4) << stress.SetValue( ptl->CreepLosses() );
+   RowIndexType rowOffset = GetNumberOfHeaderRows() - 1;
+   ColumnIndexType col = 1;
+
+   (*this)(row+rowOffset,col++) << stress.SetValue( ptl->ShrinkageLosses() );
+   (*this)(row+rowOffset,col++) << stress.SetValue( pDetails->pLosses->ElasticShortening().PermanentStrand_Fcgp() );
+   (*this)(row+rowOffset,col++) << stress.SetValue( -pDetails->pLosses->GetDeltaFcd1() );
+   (*this)(row+rowOffset,col++) << stress.SetValue( ptl->CreepLosses() );
 }

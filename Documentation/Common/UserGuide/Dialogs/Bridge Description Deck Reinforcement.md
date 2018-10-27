@@ -21,7 +21,7 @@ Bottom Mat Cover | Enter the nominal cover for the bottom mat of reinforcing. Th
 
 Primary Reinforcement
 ---------------------
-The primary longitudinal reinforcement runs the full length of the bridge. The reinforcement can be described with a bar size and spacing AND a lump sum area per unit length. If both bar spacing and lump sum input is provided, they are added together for the total amount of reinforcement. For example, if the top mat is defined with #6 bars at 18" and 0.18 in<sup>2</sup>/ft, the total reinforcement will be 0.44in<sup>2</sup>/1.5ft + 0.18in<sup>2</sup>/ft = 0.473in<sup>2</sup>/ft.
+The primary longitudinal reinforcement runs the full length of the bridge. The reinforcement can be described with a bar size and spacing plus a lump sum area per unit length transversely. If both bar spacing and lump sum inputs are provided, they are added together for the total amount of reinforcement. For example, if the top mat is defined with #6 bars at 18" and 0.18 in<sup>2</sup>/ft, the total reinforcement will be 0.44in<sup>2</sup>/1.5ft + 0.18in<sup>2</sup>/ft = 0.473in<sup>2</sup>/ft.
 
 Item | Description
 -----|----------------

@@ -309,7 +309,8 @@ public:
    virtual void GetFlexureResistanceFactors(pgsTypes::ConcreteType type,Float64* phiTensionPS,Float64* phiTensionRC,Float64* phiTensionSpliced,Float64* phiCompression) override;
    virtual void GetFlexuralStrainLimits(matPsStrand::Grade grade,matPsStrand::Type type,Float64* pecl,Float64* petl) override;
    virtual void GetFlexuralStrainLimits(matRebar::Grade rebarGrade,Float64* pecl,Float64* petl) override;
-   virtual Float64 GetShearResistanceFactor(pgsTypes::ConcreteType type) override;
+   virtual Float64 GetShearResistanceFactor(const pgsPointOfInterest& poi, pgsTypes::ConcreteType type) override;
+   virtual Float64 GetShearResistanceFactor(bool isDebonded, pgsTypes::ConcreteType type) override;
    virtual Float64 GetClosureJointFlexureResistanceFactor(pgsTypes::ConcreteType type) override;
    virtual Float64 GetClosureJointShearResistanceFactor(pgsTypes::ConcreteType type) override;
 

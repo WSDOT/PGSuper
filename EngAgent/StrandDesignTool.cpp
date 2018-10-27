@@ -326,6 +326,15 @@ void pgsStrandDesignTool::RestoreDefaults(bool retainProportioning, bool justAdd
 
          StrandIndexType npnew = max(np, this->GetMinimumPermanentStrands());
 
+         // this is tricky - we just resequenced the strand order to account for raised strands, and we can't count on the 
+         // current number of strands to fit into the new fill order - make sure:
+         StrandIndexType npras = m_pRaisedStraightStrandDesignTool->GetNextNumPermanentStrands(npnew);
+         npras = m_pRaisedStraightStrandDesignTool->GetPreviousNumPermanentStrands(npras);
+         if (npras != npnew)
+         {
+            npnew = npras; // old nsrands did not fit into new ordering
+         }
+
          SetNumPermanentStrands(npnew);
 
          // Also, conscrete strength may be out of wack. Init back to min
@@ -3863,6 +3872,44 @@ void pgsStrandDesignTool::ComputeDebondLevels(IPretensionForce* pPrestressForce)
 
       // back to top
       currnum = nextnum;
+   }
+
+   // Straight adjustable strands can live in the same rows as debondable strands. We need to take this into consideration
+
+   const GDRCONFIG& config = pgsStrandDesignTool::GetSegmentConfiguration();
+   if (pgsTypes::asStraight == config.PrestressConfig.AdjustableStrandType)
+   {
+      // coordinates of all adj straight strands
+      StrandIndexType max_adjss = pStrandGeom->GetMaxStrands(m_SegmentKey, pgsTypes::Harped);
+
+      ConfigStrandFillVector adjsfillvec = pStrandGeom->ComputeStrandFill(m_SegmentKey, pgsTypes::Harped, max_adjss);
+      sconfig.SetStrandFill(pgsTypes::Harped, adjsfillvec);
+
+      CComPtr<IPoint2dCollection> adjss_locations;
+      pStrandGeom->GetStrandPositionsEx(poi_ms, sconfig, pgsTypes::Harped, &adjss_locations);
+
+      currnum = 0;
+      while (currnum < max_adjss)
+      {
+         StrandIndexType nextnum = pStrandGeom->GetNextNumStrands(m_SegmentKey, pgsTypes::Harped, currnum);
+
+         StrandIndexType strands_in_lift = nextnum - currnum; // number of strands in current increment
+
+         // add to max number of strands in each row
+         Float64 curr_y = GetPointY(nextnum - 1, adjss_locations);
+
+         // fill row with current strands. if debond row exists
+         Row fill_test_row(curr_y);
+         RowIter curr_row_it = rows.find(fill_test_row);
+         if (curr_row_it != rows.end())
+         {
+            Row& curr_row = const_cast<Row&>(*curr_row_it);
+            curr_row.MaxInRow += strands_in_lift;
+         }
+
+         // back to top
+         currnum = nextnum;
+      }
    }
 
    // strands are located from the top down, in girder section coordinates.

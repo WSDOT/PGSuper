@@ -143,6 +143,7 @@ CRelaxationAtDeckPlacementTable* CRelaxationAtDeckPlacementTable::PrepareTable(r
 void CRelaxationAtDeckPlacementTable::AddRow(rptChapter* pChapter,IBroker* pBroker,const pgsPointOfInterest& poi,RowIndexType row,const LOSSDETAILS* pDetails,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
 {
    ColumnIndexType col = 1;
+   RowIndexType rowOffset = GetNumberOfHeaderRows() - 1;
 
   // Typecast to our known type (eating own doggy food)
    std::shared_ptr<const lrfdRefinedLosses2005> ptl = std::dynamic_pointer_cast<const lrfdRefinedLosses2005>(pDetails->pLosses);
@@ -154,14 +155,14 @@ void CRelaxationAtDeckPlacementTable::AddRow(rptChapter* pChapter,IBroker* pBrok
 
    if (ptl->GetRelaxationLossMethod() == lrfdRefinedLosses2005::Simplified )
    {
-      (*this)(row,col++) << stress.SetValue(ptl->GetPermanentStrandFpt());
+      (*this)(row+rowOffset,col++) << stress.SetValue(ptl->GetPermanentStrandFpt());
    }
    else if (ptl->GetRelaxationLossMethod() == lrfdRefinedLosses2005::Refined )
    {
-      (*this)(row,col++) << stress.SetValue(ptl->GetPermanentStrandFpt());
-      (*this)(row,col++) << stress.SetValue(ptl->ShrinkageLossBeforeDeckPlacement());
-      (*this)(row,col++) << stress.SetValue(ptl->CreepLossBeforeDeckPlacement());
-      (*this)(row,col++) << scalar.SetValue(ptl->GetKid());
+      (*this)(row+rowOffset,col++) << stress.SetValue(ptl->GetPermanentStrandFpt());
+      (*this)(row+rowOffset,col++) << stress.SetValue(ptl->ShrinkageLossBeforeDeckPlacement());
+      (*this)(row+rowOffset,col++) << stress.SetValue(ptl->CreepLossBeforeDeckPlacement());
+      (*this)(row+rowOffset,col++) << scalar.SetValue(ptl->GetKid());
    }
-   (*this)(row,col++) << stress.SetValue(ptl->RelaxationLossBeforeDeckPlacement());
+   (*this)(row+rowOffset,col++) << stress.SetValue(ptl->RelaxationLossBeforeDeckPlacement());
 }

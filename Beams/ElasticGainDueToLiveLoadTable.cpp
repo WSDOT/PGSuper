@@ -78,7 +78,8 @@ CElasticGainDueToLiveLoadTable* CElasticGainDueToLiveLoadTable::PrepareTable(rpt
 
    rptParagraph* pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pParagraph;
-   *pParagraph << _T("Elastic Gain Due to Live Load") << rptNewLine;
+   pParagraph->SetName(_T("Elastic Gain Due to Live Load"));
+   *pParagraph << pParagraph->GetName() << rptNewLine;
 
    pParagraph = new rptParagraph;
    *pChapter << pParagraph;
@@ -163,6 +164,7 @@ CElasticGainDueToLiveLoadTable* CElasticGainDueToLiveLoadTable::PrepareTable(rpt
 void CElasticGainDueToLiveLoadTable::AddRow(rptChapter* pChapter, IBroker* pBroker, const pgsPointOfInterest& poi, RowIndexType row, const LOSSDETAILS* pDetails, IEAFDisplayUnits* pDisplayUnits, Uint16 level)
 {
    ColumnIndexType col = 1;
+   RowIndexType rowOffset = GetNumberOfHeaderRows() - 1;
 
    Float64 MmaxDesign(0), MmaxFatigue(0);
    if (!IsZero(m_Kliveload))
@@ -187,30 +189,35 @@ void CElasticGainDueToLiveLoadTable::AddRow(rptChapter* pChapter, IBroker* pBrok
 
    if (lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims)
    {
-      (*this)(row, col++) << moment.SetValue(M_Design);
+      (*this)(row+rowOffset, col++) << moment.SetValue(M_Design);
    }
    else
    {
-      (*this)(row, col++) << moment.SetValue(M_Design);
-      (*this)(row, col++) << moment.SetValue(M_Fatigue);
+      (*this)(row+rowOffset, col++) << moment.SetValue(M_Design);
+      (*this)(row+rowOffset, col++) << moment.SetValue(M_Fatigue);
    }
 
-   (*this)(row,col++) << ecc.SetValue( pDetails->pLosses->GetEccPermanentFinal() );
-   (*this)(row,col++) << mom_inertia.SetValue( pDetails->pLosses->GetIc() );
-   (*this)(row,col++) << cg.SetValue( pDetails->pLosses->GetYbc() );
-   (*this)(row,col++) << cg.SetValue( pDetails->pLosses->GetYbg() );
+   Float64 Ag, Ybg, Ixx, Iyy, Ixy;
+   pDetails->pLosses->GetNoncompositeProperties(&Ag, &Ybg, &Ixx, &Iyy, &Ixy);
+   Float64 Ac, Ybc, Ic;
+   pDetails->pLosses->GetCompositeProperties2(&Ac, &Ybc, &Ic);
+
+   (*this)(row+rowOffset,col++) << ecc.SetValue( pDetails->pLosses->GetEccPermanentFinal().Y() );
+   (*this)(row+rowOffset,col++) << mom_inertia.SetValue( Ic );
+   (*this)(row+rowOffset,col++) << cg.SetValue( Ybc );
+   (*this)(row+rowOffset,col++) << cg.SetValue( Ybg );
 
    if (lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims)
    {
-      (*this)(row, col++) << stress.SetValue(pDetails->pLosses->GetDeltaFcdLL(M_Design));
-      (*this)(row, col++) << stress.SetValue(pDetails->pLosses->ElasticGainDueToLiveLoad(M_Design));
+      (*this)(row+rowOffset, col++) << stress.SetValue(pDetails->pLosses->GetDeltaFcdLL(M_Design));
+      (*this)(row+rowOffset, col++) << stress.SetValue(pDetails->pLosses->ElasticGainDueToLiveLoad(M_Design));
    }
    else
    {
-      (*this)(row, col++) << stress.SetValue(pDetails->pLosses->GetDeltaFcdLL(M_Design));
-      (*this)(row, col++) << stress.SetValue(pDetails->pLosses->ElasticGainDueToLiveLoad(M_Design));
+      (*this)(row+rowOffset, col++) << stress.SetValue(pDetails->pLosses->GetDeltaFcdLL(M_Design));
+      (*this)(row+rowOffset, col++) << stress.SetValue(pDetails->pLosses->ElasticGainDueToLiveLoad(M_Design));
 
-      (*this)(row, col++) << stress.SetValue(pDetails->pLosses->GetDeltaFcdLL(M_Fatigue));
-      (*this)(row, col++) << stress.SetValue(pDetails->pLosses->ElasticGainDueToLiveLoad(M_Fatigue));
+      (*this)(row+rowOffset, col++) << stress.SetValue(pDetails->pLosses->GetDeltaFcdLL(M_Fatigue));
+      (*this)(row+rowOffset, col++) << stress.SetValue(pDetails->pLosses->ElasticGainDueToLiveLoad(M_Fatigue));
    }
 }

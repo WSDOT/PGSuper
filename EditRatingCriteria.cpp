@@ -470,7 +470,8 @@ void txnEditRatingCriteria::Execute(int i)
    GET_IFACE2(pBroker, IRatingSpecification, pRatingSpec );
    GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
 
-   pEvents->HoldEvents(); // don't fire any changed events until all changes are done
+   // Exception-safe holder to keep from fireing events until we are done
+   CIEventsHolder event_holder(pEvents);
 
    pIBridgeDesc->SetTimelineManager(m_Data[i].m_General.TimelineMgr);
    pRatingSpec->SetRatingSpecification( m_Data[i].m_General.CriteriaName );
@@ -722,8 +723,6 @@ void txnEditRatingCriteria::Execute(int i)
    pRatingSpec->RateForShear(pgsTypes::lrPermit_Special,m_Data[i].m_Permit.bRateForShear);
 
    pRatingSpec->SetSpecialPermitType(m_Data[i].m_Permit.SpecialPermitType);
-
-   pEvents->FirePendingEvents();
 }
 
 txnTransaction* txnEditRatingCriteria::CreateClone() const

@@ -30,6 +30,18 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
+#define AS_APPLY_LOADS                  0x0000
+#define AS_ERECT_PIERS                  0x0001
+#define AS_CONSTRUCT_SEGMENTS           0x0002
+#define AS_ERECT_SEGMENTS               0x0004
+#define AS_CAST_CLOSURE_JOINTS          0x0005
+#define AS_CAST_LONGIUTIDINAL_JOINTS    0x0010
+#define AS_CAST_DIAPHRAGMS              0x0020
+#define AS_CAST_DECK                    0x0040
+#define AS_STRESS_TENDONS_AND_REMOVE_TEMP_SUPPORTS 0x0080
+#define AS_STRESS_TENDONS               0x0100
+#define AS_REMOVE_TEMP_SUPPORTS         0x0200
+
 CTimelineEvent::CTimelineEvent()
 {
    m_ID = INVALID_ID;
@@ -80,6 +92,33 @@ bool CTimelineEvent::operator<(const CTimelineEvent& rOther) const
       }
 
       ATLASSERT(GetActivityScore() == rOther.GetActivityScore());
+
+      // tendons are being stressed... lower index tendons come first
+      if (GetActivityScore() == AS_STRESS_TENDONS)
+      {
+         DuctIndexType myDuctIdx = INVALID_INDEX;
+         const auto& myTendons = GetStressTendonActivity().GetTendons();
+         for (const auto& tendon : myTendons)
+         {
+            myDuctIdx = Min(myDuctIdx, tendon.ductIdx);
+         }
+
+         const auto& yourTendons = rOther.GetStressTendonActivity().GetTendons();
+         DuctIndexType yourDuctIdx = INVALID_INDEX;
+         for (const auto& tendon : yourTendons)
+         {
+            yourDuctIdx = Min(yourDuctIdx, tendon.ductIdx);
+         }
+
+         if (myDuctIdx < yourDuctIdx)
+         {
+            return true;
+         }
+         else if (yourDuctIdx < myDuctIdx)
+         {
+            return false;
+         }
+      }
 
       // occur on the same day... the one with the shorter duration comes first
       if ( GetMinElapsedTime() < rOther.GetMinElapsedTime() )
@@ -555,17 +594,6 @@ void CTimelineEvent::MakeAssignment(const CTimelineEvent& rOther)
 // cast closure joints and the other event has cast closure joints and cast deck
 // the event with cast closure joints only will come first in the timeline
 // because deck casting must come after closure joint casting.
-#define AS_APPLY_LOADS                  0x0000
-#define AS_ERECT_PIERS                  0x0001
-#define AS_CONSTRUCT_SEGMENTS           0x0002
-#define AS_ERECT_SEGMENTS               0x0004
-#define AS_CAST_CLOSURE_JOINTS          0x0005
-#define AS_CAST_LONGIUTIDINAL_JOINTS    0x0010
-#define AS_CAST_DIAPHRAGMS              0x0020
-#define AS_CAST_DECK                    0x0040
-#define AS_STRESS_TENDONS               0x0080
-#define AS_REMOVE_TEMP_SUPPORTS         0x0100
-
 Uint16 CTimelineEvent::GetActivityScore() const
 {
    Uint16 activityScore = 0;
@@ -612,14 +640,21 @@ Uint16 CTimelineEvent::GetActivityScore() const
       activityScore |= AS_CAST_DECK;
    }
 
-   if ( m_StressTendons.IsEnabled() )
+   if (m_StressTendons.IsEnabled() && m_RemoveTempSupports.IsEnabled())
    {
-      activityScore |= AS_STRESS_TENDONS;
+      activityScore |= AS_STRESS_TENDONS_AND_REMOVE_TEMP_SUPPORTS;
    }
-
-   if ( m_RemoveTempSupports.IsEnabled() )
+   else
    {
-      activityScore |= AS_REMOVE_TEMP_SUPPORTS;
+      if (m_StressTendons.IsEnabled())
+      {
+         activityScore |= AS_STRESS_TENDONS;
+      }
+
+      if (m_RemoveTempSupports.IsEnabled())
+      {
+         activityScore |= AS_REMOVE_TEMP_SUPPORTS;
+      }
    }
 
    return activityScore;

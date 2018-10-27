@@ -109,7 +109,9 @@ void CTxDOT2013RelaxationAfterTransferTable::AddRow(rptChapter* pChapter,IBroker
 {
    const lrfdRefinedLossesTxDOT2013* pLosses = dynamic_cast<const lrfdRefinedLossesTxDOT2013*>(pDetails->pLosses.get());
 
-   (*this)(row,1) << stress.SetValue( pLosses->Getfpt() );
-   (*this)(row,2) << stress.SetValue( pLosses->RelaxationLossBeforeDeckPlacement() );
-   (*this)(row,3) << stress.SetValue( pLosses->RelaxationLossAfterDeckPlacement() );
+   RowIndexType rowOffset = GetNumberOfHeaderRows() - 1;
+
+   (*this)(row+rowOffset,1) << stress.SetValue( pLosses->Getfpt() );
+   (*this)(row+rowOffset,2) << stress.SetValue( pLosses->RelaxationLossBeforeDeckPlacement() );
+   (*this)(row+rowOffset,3) << stress.SetValue( pLosses->RelaxationLossAfterDeckPlacement() );
 }

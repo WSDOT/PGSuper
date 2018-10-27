@@ -181,6 +181,8 @@ void CPierDetailsBearingsPage::DoDataExchange(CDataExchange* pDX)
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
+   DDX_MetaFileStatic(pDX, IDC_BEARING, m_Bearing, _T("BEARINGDIMENSIONS"), _T("Metafile"), EMF_FIT);
+
    DDX_CBItemData(pDX, IDC_BRG_TYPE, m_BearingInputData.m_BearingType);
 
    // First line of data
@@ -348,6 +350,8 @@ void  CPierDetailsBearingsPage::ShowCtrls()
       OnCbnSelchangeBrgShape2();
       OnCbnSelchangeBrgCount2();
    }
+
+   GetDlgItem(IDC_BEARING)->ShowWindow(swh);
 
    // Edit button is opposite
    int sb = swh == SW_SHOW ? SW_HIDE : SW_SHOW;

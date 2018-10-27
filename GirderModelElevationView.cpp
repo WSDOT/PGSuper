@@ -1556,6 +1556,7 @@ void CGirderModelElevationView::BuildSegmentCGDisplayObjects(CPGSDocBase* pDoc, 
    GET_IFACE2_NOCHECK(pBroker, ISectionProperties, pSectProp);
    GET_IFACE2_NOCHECK(pBroker, IPointOfInterest, pPoi);
    GET_IFACE2_NOCHECK(pBroker, ICamber, pCamber);
+   GET_IFACE2_NOCHECK(pBroker, IGirder, pGirder);
 
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    GroupIndexType startGroupIdx = (girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex);
@@ -1572,9 +1573,9 @@ void CGirderModelElevationView::BuildSegmentCGDisplayObjects(CPGSDocBase* pDoc, 
       GirderIndexType gdrIdx = Min(girderKey.girderIndex, nGirders - 1);
       CGirderKey thisGirderKey(grpIdx, gdrIdx);
 
-      const CSplicedGirderData* pGirder = pGroup->GetGirder(thisGirderKey.girderIndex);
+      const CSplicedGirderData* pThisGirder = pGroup->GetGirder(thisGirderKey.girderIndex);
       Float64 running_segment_length = 0; // sum of the segment lengths from segIdx = 0 to current segment
-      SegmentIndexType nSegments = pGirder->GetSegmentCount();
+      SegmentIndexType nSegments = pThisGirder->GetSegmentCount();
       for (SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++)
       {
          CSegmentKey segmentKey(thisGirderKey, segIdx);
@@ -1609,9 +1610,11 @@ void CGirderModelElevationView::BuildSegmentCGDisplayObjects(CPGSDocBase* pDoc, 
 
          Float64 precamber = pCamber->GetPrecamber(poi, pgsTypes::pddErected);
 
+         Float64 tft = pGirder->GetTopFlangeThickening(poi);
+
          CComPtr<IPoint2d> prevPoint;
          prevPoint.CoCreateInstance(CLSID_Point2d);
-         prevPoint->Move(group_offset + X, -Yt + precamber);
+         prevPoint->Move(group_offset + X, -Yt + precamber + tft);
 
          for ( ; iter != end; iter++)
          {
@@ -1621,10 +1624,11 @@ void CGirderModelElevationView::BuildSegmentCGDisplayObjects(CPGSDocBase* pDoc, 
             Yt = pSectProp->GetY(intervalIdx, poi, pgsTypes::TopGirder);
 
             precamber = pCamber->GetPrecamber(poi, pgsTypes::pddErected);
+            tft = pGirder->GetTopFlangeThickening(poi);
 
             CComPtr<IPoint2d> thisPoint;
             thisPoint.CoCreateInstance(CLSID_Point2d);
-            thisPoint->Move(group_offset + X, -Yt + precamber);
+            thisPoint->Move(group_offset + X, -Yt + precamber + tft);
 
             BuildDashLine(pDL, prevPoint, thisPoint, SECTION_CG_COLOR_1, SECTION_CG_COLOR_2);
 

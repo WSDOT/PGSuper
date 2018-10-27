@@ -38,9 +38,8 @@ m_OutCome(AllStandard),
 m_SectionSpacing(0.0),
 m_NumDebonded(0)
 {
+   Compute();
 }
-
-
 
 CDebondSectionCalculator::CDebondSectionCalculator(const std::vector<DEBONDCONFIG>& rDebondInfo, Float64 girderLength)
 {

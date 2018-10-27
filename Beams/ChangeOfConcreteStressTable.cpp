@@ -46,11 +46,29 @@ rptRcTable(NumColumns,0)
 
 CChangeOfConcreteStressTable* CChangeOfConcreteStressTable::PrepareTable(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& segmentKey,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
 {
+   GET_IFACE2(pBroker, IBridge, pBridge);
+   GET_IFACE2(pBroker, IGirder, pGirder);
+   bool bHasDeckLoads = pGirder->HasStructuralLongitudinalJoints() && pBridge->GetDeckType() != pgsTypes::sdtNone ? true : false; // if longitudinal joints are structural and there is a deck, the deck dead loads go on the composite section
+   bool bIs2StageComposite = pGirder->HasStructuralLongitudinalJoints() && IsStructuralDeck(pBridge->GetDeckType()) ? true : false;
+
    // Create and configure the table
    ColumnIndexType numColumns = 9;
 
+   if (bHasDeckLoads)
+   {
+      numColumns += 1;
+   }
+
+   if (bIs2StageComposite)
+   {
+      numColumns += 2;
+   }
+
    CChangeOfConcreteStressTable* table = new CChangeOfConcreteStressTable( numColumns, pDisplayUnits );
    rptStyleManager::ConfigureTable(table);
+
+   table->m_bHasDeckLoads = bHasDeckLoads;
+   table->m_bIs2StageComposite = bIs2StageComposite;
 
 
    std::_tstring strImagePath(rptStyleManager::GetImagePath());
@@ -59,41 +77,105 @@ CChangeOfConcreteStressTable* CChangeOfConcreteStressTable::PrepareTable(rptChap
    rptParagraph* pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pParagraph;
    ATLASSERT(lrfdVersionMgr::GetVersion() < lrfdVersionMgr::EighthEdition2017); // code reference below is invalid
-   *pParagraph << _T("Change in Concrete Stress at Level of Prestressing [5.9.5.4.3]") << rptNewLine;
+   pParagraph->SetName(_T("Change in Concrete Stress at Level of Prestressing"));
+   *pParagraph << pParagraph->GetName() << _T(" [5.9.5.4.3]") << rptNewLine;
 
    pParagraph = new rptParagraph;
    *pChapter << pParagraph;
 
-   *pParagraph << rptRcImage(strImagePath + _T("Delta_Fcdp.png")) << rptNewLine;
+   if (bIs2StageComposite)
+   {
+      *pParagraph << rptRcImage(strImagePath + _T("Delta_Fcdp_with_Deck.png")) << rptNewLine;
+   }
+   else
+   {
+      *pParagraph << rptRcImage(strImagePath + _T("Delta_Fcdp.png")) << rptNewLine;
+   }
 
    *pParagraph << table << rptNewLine;
 
-   (*table)(0,0) << COLHDR(_T("Location from")<<rptNewLine<<_T("Left Support"),rptLengthUnitTag,  pDisplayUnits->GetSpanLengthUnit() );
-   (*table)(0,1) << COLHDR(Sub2(_T("M"),_T("adl")),  rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
-   (*table)(0,2) << COLHDR(Sub2(_T("M"),_T("sidl")), rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
-   (*table)(0,3) << COLHDR(Sub2(_T("e"),_T("ps")),   rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-   (*table)(0,4) << COLHDR(Sub2(_T("Y"),_T("bg")),   rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-   (*table)(0,5) << COLHDR(Sub2(_T("Y"),_T("bc")),   rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-   (*table)(0,6) << COLHDR(Sub2(_T("I"),_T("g")),    rptLength4UnitTag,pDisplayUnits->GetMomentOfInertiaUnit() );
-   (*table)(0,7) << COLHDR(Sub2(_T("I"),_T("c")),    rptLength4UnitTag,pDisplayUnits->GetMomentOfInertiaUnit() );
-   (*table)(0,8) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("cdp")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   ColumnIndexType col = 0;
+   (*table)(0, col++) << COLHDR(_T("Location from")<<rptNewLine<<_T("Left Support"),rptLengthUnitTag,  pDisplayUnits->GetSpanLengthUnit() );
+   (*table)(0, col++) << COLHDR(Sub2(_T("M"),_T("adl")),  rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
+   if (bIs2StageComposite)
+   {
+      (*table)(0, col++) << COLHDR(Sub2(_T("M"), _T("sidl1")), rptMomentUnitTag, pDisplayUnits->GetMomentUnit());
+      (*table)(0, col++) << COLHDR(Sub2(_T("M"), _T("sidl2")), rptMomentUnitTag, pDisplayUnits->GetMomentUnit());
+   }
+   else
+   {
+      (*table)(0, col++) << COLHDR(Sub2(_T("M"), _T("sidl")), rptMomentUnitTag, pDisplayUnits->GetMomentUnit());
+   }
+   (*table)(0, col++) << COLHDR(Sub2(_T("e"),_T("ps")),   rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+   (*table)(0, col++) << COLHDR(Sub2(_T("Y"),_T("bg")),   rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+   (*table)(0, col++) << COLHDR(Sub2(_T("I"), _T("g")), rptLength4UnitTag, pDisplayUnits->GetMomentOfInertiaUnit());
+   if (bIs2StageComposite)
+   {
+      (*table)(0, col++) << COLHDR(Sub2(_T("Y"), _T("bc1")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+      (*table)(0, col++) << COLHDR(Sub2(_T("I"), _T("c1")), rptLength4UnitTag, pDisplayUnits->GetMomentOfInertiaUnit());
+      (*table)(0, col++) << COLHDR(Sub2(_T("Y"), _T("bc2")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+      (*table)(0, col++) << COLHDR(Sub2(_T("I"), _T("c2")), rptLength4UnitTag, pDisplayUnits->GetMomentOfInertiaUnit());
+   }
+   else
+   {
+      (*table)(0, col++) << COLHDR(Sub2(_T("Y"), _T("bc")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+      (*table)(0, col++) << COLHDR(Sub2(_T("I"), _T("c")), rptLength4UnitTag, pDisplayUnits->GetMomentOfInertiaUnit());
+   }
+   (*table)(0, col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("cdp")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
 
    pParagraph = new rptParagraph(rptStyleManager::GetFootnoteStyle());
    *pChapter << pParagraph;
    *pParagraph << Sub2(_T("M"),_T("adl")) << _T(" = Moment due to permanent loads applied to the noncomposite girder section after the prestressing force is applied") << rptNewLine;
-   *pParagraph << Sub2(_T("M"),_T("sidl")) << _T(" = Moment due to permanent loads applied to the composite girder section after the prestressing force is applied") << rptNewLine;
+   if (bIs2StageComposite)
+   {
+      *pParagraph << Sub2(_T("M"), _T("sidl1")) << _T(" = Moment due to permanent loads applied after the longitudinal joints become composite after the prestressing force is applied") << rptNewLine;
+      *pParagraph << Sub2(_T("M"), _T("sidl2")) << _T(" = Moment due to permanent loads applied to the final composite girder section after the prestressing force is applied") << rptNewLine;
+   }
+   else
+   {
+      *pParagraph << Sub2(_T("M"), _T("sidl")) << _T(" = Moment due to permanent loads applied to the composite girder section after the prestressing force is applied") << rptNewLine;
+   }
    
    return table;
 }
 
 void CChangeOfConcreteStressTable::AddRow(rptChapter* pChapter,IBroker* pBroker,const pgsPointOfInterest& poi,RowIndexType row,const LOSSDETAILS* pDetails,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
 {
-   (*this)(row,1) << moment.SetValue( pDetails->pLosses->GetAddlGdrMoment() );
-   (*this)(row,2) << moment.SetValue( pDetails->pLosses->GetSidlMoment() );
-   (*this)(row,3) << dim.SetValue( pDetails->pLosses->GetEccPermanentFinal() );
-   (*this)(row,4) << dim.SetValue( pDetails->pLosses->GetYbg() );
-   (*this)(row,5) << dim.SetValue( pDetails->pLosses->GetYbc() );
-   (*this)(row,6) << mom_inertia.SetValue( pDetails->pLosses->GetIg() );
-   (*this)(row,7) << mom_inertia.SetValue( pDetails->pLosses->GetIc() );
-   (*this)(row,8) << stress.SetValue( -pDetails->pLosses->GetDeltaFcd1() );
+   ColumnIndexType col = 1;
+   RowIndexType rowOffset = GetNumberOfHeaderRows() - 1;
+
+   Float64 Ag, Ybg, Ixx, Iyy, Ixy;
+   pDetails->pLosses->GetNoncompositeProperties(&Ag, &Ybg, &Ixx, &Iyy, &Ixy);
+   Float64 Ac1, Ybc1, Ic1;
+   pDetails->pLosses->GetCompositeProperties1(&Ac1, &Ybc1, &Ic1);
+   Float64 Ac2, Ybc2, Ic2;
+   pDetails->pLosses->GetCompositeProperties2(&Ac2, &Ybc2, &Ic2);
+
+   (*this)(row+rowOffset, col++) << moment.SetValue( pDetails->pLosses->GetAddlGdrMoment() );
+   if (m_bIs2StageComposite)
+   {
+      (*this)(row + rowOffset, col++) << moment.SetValue(pDetails->pLosses->GetSidlMoment1());
+      (*this)(row + rowOffset, col++) << moment.SetValue(pDetails->pLosses->GetSidlMoment2());
+   }
+   else
+   {
+      (*this)(row + rowOffset, col++) << moment.SetValue(pDetails->pLosses->GetSidlMoment1() + pDetails->pLosses->GetSidlMoment2());
+   }
+   (*this)(row+rowOffset, col++) << dim.SetValue( pDetails->pLosses->GetEccPermanentFinal().Y() );
+   (*this)(row+rowOffset, col++) << dim.SetValue( Ybg );
+   (*this)(row + rowOffset, col++) << mom_inertia.SetValue(Ixx);
+
+   if (m_bIs2StageComposite)
+   {
+      (*this)(row + rowOffset, col++) << dim.SetValue(Ybc1);
+      (*this)(row + rowOffset, col++) << mom_inertia.SetValue(Ic1);
+      (*this)(row + rowOffset, col++) << dim.SetValue(Ybc2);
+      (*this)(row + rowOffset, col++) << mom_inertia.SetValue(Ic2);
+   }
+   else
+   {
+      (*this)(row + rowOffset, col++) << dim.SetValue(Ybc2);
+      (*this)(row + rowOffset, col++) << mom_inertia.SetValue(Ic2);
+   }
+   (*this)(row+rowOffset, col++) << stress.SetValue( -pDetails->pLosses->GetDeltaFcd1() );
 }

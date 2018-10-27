@@ -38,7 +38,8 @@ static char THIS_FILE[] = __FILE__;
 
 BOOL DoParseTemplateFile(const LPCTSTR lpszPathName, CString& girderEntry, 
                               CString& leftConnEntry, CString& rightConnEntry,
-                              CString& projectCriteriaEntry, CString& folderName)
+                              CString& projectCriteriaEntry, CString& folderName,
+                              Float64& girderUnitWeight)
 {
    // Read girder type, connection types, and pgsuper template file name
    std::_tifstream ifile(lpszPathName);
@@ -74,7 +75,7 @@ BOOL DoParseTemplateFile(const LPCTSTR lpszPathName, CString& girderEntry,
    rightConnEntry = tokenizer[2].c_str();
    projectCriteriaEntry = tokenizer[3].c_str();
 
-   if (nitems==5)
+   if (nitems>4)
    {
       folderName= tokenizer[4].c_str();
    }
@@ -82,6 +83,22 @@ BOOL DoParseTemplateFile(const LPCTSTR lpszPathName, CString& girderEntry,
    {
       // Folder name not spec'd in template file. Give it a default
       folderName = _T("Unnamed");
+   }
+
+   // concrete unit weight
+   bool did_parse(false);
+   if (nitems>5)
+   {
+      std::_tstring str = tokenizer[5].c_str();
+      did_parse = sysTokenizer::ParseDouble(str.c_str(), &girderUnitWeight);
+      // value stored in file is pcf
+      girderUnitWeight = ::ConvertToSysUnits(girderUnitWeight, unitMeasure::LbfPerFeet3);
+      ATLASSERT(did_parse);
+   }
+
+   if (!did_parse)
+   {
+      girderUnitWeight = ::ConvertToSysUnits(150.0, unitMeasure::LbfPerFeet3);
    }
 
    return TRUE;

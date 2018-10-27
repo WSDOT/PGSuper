@@ -72,7 +72,8 @@ bool txnEditGirder::Execute()
    EAFGetBroker(&pBroker);
 
    GET_IFACE2(pBroker,IEvents, pEvents);
-   pEvents->HoldEvents(); // don't fire any changed events until all changes are done
+   // Exception-safe holder to keep from fireing events until we are done
+   CIEventsHolder event_holder(pEvents);
 
    m_OldGirderData.clear();
 
@@ -120,8 +121,6 @@ bool txnEditGirder::Execute()
       SetGirderData(oldGirderData.m_GirderKey,m_NewGirderData,false);
    }
 
-   pEvents->FirePendingEvents();
-
    return true;
 }
 
@@ -131,7 +130,8 @@ void txnEditGirder::Undo()
    EAFGetBroker(&pBroker);
 
    GET_IFACE2(pBroker,IEvents, pEvents);
-   pEvents->HoldEvents(); // don't fire any changed events until all changes are done
+   // Exception-safe holder to keep from fireing events until we are done
+   CIEventsHolder event_holder(pEvents);
 
    std::set<txnEditGirderData>::iterator iter(m_OldGirderData.begin());
    std::set<txnEditGirderData>::iterator end(m_OldGirderData.end());
@@ -140,8 +140,6 @@ void txnEditGirder::Undo()
       const txnEditGirderData& oldGirderData = *iter;
       SetGirderData(oldGirderData.m_GirderKey,oldGirderData,true);
    }
-
-   pEvents->FirePendingEvents();
 }
 
 txnTransaction* txnEditGirder::CreateClone() const

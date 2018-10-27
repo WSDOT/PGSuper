@@ -66,11 +66,33 @@ rptChapter* CTimeStepCamberChapterBuilder::Build(CReportSpecification* pRptSpec,
    if (pBridge->GetDeckType() != pgsTypes::sdtNone)
    {
       *pPara << CreateBeforeSlabCastingDeflectionTable(pBroker, girderKey) << rptNewLine;
+
+      pPara = new rptParagraph(rptStyleManager::GetFootnoteStyle());
+      *pChapter << pPara;
+      *pPara << Sub2(symbol(DELTA), _T("D")) << _T(" = sum of the individual deflections given in this table") << rptNewLine;
+
+      pPara = new rptParagraph;
+      *pChapter << pPara;
    }
 
    *pPara << CreateScreedCamberDeflectionTable(pBroker,girderKey)      << rptNewLine;
+   pPara = new rptParagraph(rptStyleManager::GetFootnoteStyle());
+   *pChapter << pPara;
+   *pPara << Sub2(symbol(DELTA), _T("C")) << _T(" = sum of the individual deflections given in this table") << rptNewLine;
+
+   pPara = new rptParagraph;
+   *pChapter << pPara;
    *pPara << CreateExcessCamberTable(pBroker,girderKey)                << rptNewLine;
+   pPara = new rptParagraph(rptStyleManager::GetFootnoteStyle());
+   *pChapter << pPara;
+   *pPara << Sub2(symbol(DELTA), _T("Excess")) << _T(" = ") << Sub2(symbol(DELTA), _T("D")) << _T(" - ") << Sub2(symbol(DELTA), _T("C")) << rptNewLine;
+
+   pPara = new rptParagraph;
+   *pChapter << pPara;
    *pPara << CreateFinalDeflectionTable(pBroker,girderKey)             << rptNewLine;
+   pPara = new rptParagraph(rptStyleManager::GetFootnoteStyle());
+   *pChapter << pPara;
+   *pPara << symbol(DELTA) << _T(" = sum of the individual deflections given in this table") << rptNewLine;
 
    return pChapter;
 }

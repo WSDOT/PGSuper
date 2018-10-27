@@ -1052,7 +1052,7 @@ std::_tstring GetDesignNoteString(pgsSegmentDesignArtifact::DesignNote note)
    switch (note)
    {
    case pgsSegmentDesignArtifact::dnShearRequiresStrutAndTie:
-      return std::_tstring(_T("WARNING: A strut and tie analysis is required in the girder end zones per LRFD ") + std::_tstring(LrfdCw8th(_T("5.8.3.2"),_T("5.7.3.2"))) + _T(". This design will fail a spec check."));
+      return std::_tstring(_T("WARNING: A strut and tie analysis is required in the girder end zones per LRFD ") + std::_tstring(LrfdCw8th(_T("5.7.3.2"),_T("5.8.3.2"))) + _T(". This design will fail a spec check."));
       break;
 
    case pgsSegmentDesignArtifact::dnExistingShearDesignPassedSpecCheck:

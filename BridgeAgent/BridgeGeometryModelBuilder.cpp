@@ -1045,19 +1045,19 @@ Float64 CBridgeGeometryModelBuilder::GetLeftGirderOffset(IAlignment* pAlignment,
    }
 
    // convert offset so that it is measured along the centerline of the support
+   Float64 skew = GetSkewAngle(pAlignment, measureStation, pMeasureDirection);
    pgsTypes::MeasurementType measureType = pSpacing->GetMeasurementType();
    if ( measureType == pgsTypes::NormalToItem )
    {
       // spacing is normal to alignment
       // get skew angle and adjust the ref girder offset
-      Float64 skew = GetSkewAngle(pAlignment,measureStation,pMeasureDirection);
       refGirderOffset /= cos(skew);
    }
 
    // if the ref girder is measured from the bridge, convert it to being measured from the alignment
    if ( refGirderOffsetType == pgsTypes::omtBridge )
    {
-      refGirderOffset -= alignmentOffset;
+      refGirderOffset += alignmentOffset/cos(skew);
    }
 
    return refGirderOffset;

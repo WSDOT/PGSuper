@@ -56,6 +56,7 @@ private:
    void SaveData();
    void UpdateLocalData();
 
+   CMetaFileStatic m_Bearing;
 
    PierIndexType m_StartPierIdx;
    PierIndexType m_EndPierIdx;

@@ -67,14 +67,13 @@ void txnEditAlignment::Execute(int i)
 
    GET_IFACE2(pBroker,IRoadwayData,pAlignment);
    GET_IFACE2(pBroker,IEvents, pEvents);
-
-   pEvents->HoldEvents(); // don't fire any changed events until all changes are done
+   // don't fire any changed events until all changes are done
+   // Exception-safe holder for events
+   CIEventsHolder event_holder(pEvents);
 
    pAlignment->SetAlignmentData2(m_AlignmentData[i]);
    pAlignment->SetProfileData2(m_ProfileData[i]);
    pAlignment->SetRoadwaySectionData(m_SectionData[i]);
-
-   pEvents->FirePendingEvents();
 }
 
 txnTransaction* txnEditAlignment::CreateClone() const

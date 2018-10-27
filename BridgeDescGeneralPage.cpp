@@ -274,6 +274,7 @@ BEGIN_MESSAGE_MAP(CBridgeDescGeneralPage, CPropertyPage)
    ON_BN_CLICKED(IDC_MORE_PROPERTIES, OnMoreProperties)
    ON_BN_CLICKED(IDC_EC_LABEL, OnBnClickedEc)
    ON_EN_CHANGE(IDC_FC, OnChangeFc)
+   ON_EN_CHANGE(IDC_SPACING,OnChangeSpacing)
    ON_NOTIFY_EX(TTN_NEEDTEXT,0,OnToolTipNotify)
 	ON_COMMAND(ID_HELP, OnHelp)
 	//}}AFX_MSG_MAP
@@ -2147,6 +2148,20 @@ void CBridgeDescGeneralPage::OnMoreProperties()
       UpdateData(FALSE);
       OnBnClickedEc();
       UpdateConcreteTypeLabel();
+   }
+}
+
+void CBridgeDescGeneralPage::OnChangeSpacing()
+{
+   if (IsJointSpacing(m_GirderSpacingType))
+   {
+      CComPtr<IBroker> pBroker;
+      EAFGetBroker(&pBroker);
+      GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
+      CDataExchange dx(this, TRUE);
+      DDX_UnitValueAndTag(&dx, IDC_SPACING, IDC_SPACING_UNIT, m_GirderSpacing, pDisplayUnits->GetComponentDimUnit());
+      UpdateBridgeDescription();
+      EnableLongitudinalJointMaterial();
    }
 }
 

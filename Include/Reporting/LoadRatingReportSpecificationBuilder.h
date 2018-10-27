@@ -24,6 +24,7 @@
 
 #include <Reporting\ReportingExp.h>
 #include <Reporting\SpanGirderReportSpecificationBuilder.h>
+#include <Reporting\SpanGirderReportSpecification.h>
 #include <ReportManager\ReportManager.h>
 #include <WBFLCore.h>
 
@@ -36,4 +37,20 @@ public:
 
    virtual std::shared_ptr<CReportSpecification> CreateReportSpec(const CReportDescription& rptDesc,std::shared_ptr<CReportSpecification>& pRptSpec);
    virtual std::shared_ptr<CReportSpecification> CreateDefaultReportSpec(const CReportDescription& rptDesc);
+};
+
+
+class REPORTINGCLASS CLoadRatingReportSpecification :
+   public CGirderLineReportSpecification
+{
+public:
+   CLoadRatingReportSpecification(LPCTSTR strReportName, IBroker* pBroker, GirderIndexType gdrIdx,bool bReportForAllPoi);
+   CLoadRatingReportSpecification(const CLoadRatingReportSpecification& other);
+   ~CLoadRatingReportSpecification(void);
+
+   void ReportAtAllPointsOfInterest(bool bReportAtAllPoi);
+   bool ReportAtAllPointsOfInterest() const;
+
+protected:
+   bool m_bReportAtAllPoi;
 };

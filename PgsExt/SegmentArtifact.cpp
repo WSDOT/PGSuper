@@ -438,14 +438,14 @@ Float64 pgsSegmentArtifact::GetCapacityWithRebar(IntervalIndexType intervalIdx,p
    return GetAllowableWithRebar(intervalIdx,ls,stressLocation);
 }
 
-pgsDebondArtifact* pgsSegmentArtifact::GetDebondArtifact(pgsTypes::StrandType strandType)
+pgsDebondArtifact* pgsSegmentArtifact::GetDebondArtifact()
 {
-   return &m_DebondArtifact[strandType];
+   return &m_DebondArtifact;
 }
 
-const pgsDebondArtifact* pgsSegmentArtifact::GetDebondArtifact(pgsTypes::StrandType strandType) const
+const pgsDebondArtifact* pgsSegmentArtifact::GetDebondArtifact() const
 {
-   return &m_DebondArtifact[strandType];
+   return &m_DebondArtifact;
 }
 
 bool pgsSegmentArtifact::Passed() const
@@ -504,12 +504,9 @@ bool pgsSegmentArtifact::Passed() const
       }
    }
 
-   for ( Uint16 i = 0; i < 3; i++ )
+   if (!m_DebondArtifact.Passed())
    {
-      if (!m_DebondArtifact[i].Passed())
-      {
-         return false;
-      }
+      return false;
    }
 
    return true;
@@ -932,10 +929,7 @@ void pgsSegmentArtifact::MakeCopy(const pgsSegmentArtifact& rOther)
       m_AllowableWithRebar[i] = rOther.m_AllowableWithRebar[i];
    }
 
-   for (Uint16 i = 0; i < 3; i++)
-   {
-      m_DebondArtifact[i] = rOther.m_DebondArtifact[i];
-   }
+   m_DebondArtifact = rOther.m_DebondArtifact;
 }
 
 void pgsSegmentArtifact::MakeAssignment(const pgsSegmentArtifact& rOther)

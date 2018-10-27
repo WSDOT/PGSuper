@@ -83,13 +83,12 @@ void txnEditLLDF::DoExecute(int i)
    EAFGetBroker(&pBroker);
 
    GET_IFACE2(pBroker,IEvents, pEvents);
-   pEvents->HoldEvents(); // don't fire any changed events until all changes are done
+   // Exception-safe holder to keep from fireing events until we are done
+   CIEventsHolder event_holder(pEvents);
 
    GET_IFACE2(pBroker,IBridgeDescription,pBridgeDesc);
    pBridgeDesc->SetBridgeDescription( *m_pBridgeDesc[i] );
 
    GET_IFACE2(pBroker,ILiveLoads,pLiveLoads);
    pLiveLoads->SetLldfRangeOfApplicabilityAction(m_ROA[i]);
-
-   pEvents->FirePendingEvents();
 }

@@ -31,7 +31,6 @@
 #include <IFace\Project.h> // For EventSink
 #include <IFace\Alignment.h>
 #include <IFace\Intervals.h>
-#include <IFace\DesignOverrides.h>
 
 #include <EAF\EAFInterfaceCache.h>
 
@@ -90,8 +89,7 @@ class ATL_NO_VTABLE CBridgeAgentImp :
    public ITempSupport,
    public IGirder,
    public ITendonGeometry,
-   public IIntervals,
-   public IDesignOverrides
+   public IIntervals
 {
    friend class CStrandMoverSwapper;
 public:
@@ -106,9 +104,6 @@ public:
 
       m_DeltaX = 0;
       m_DeltaY = 0;
-
-      m_bIsTransFormedSectionOverriden = false;
-      m_bIsParabolicCompositeSectionOverriden = false;
 	}
 
    HRESULT FinalConstruct();
@@ -140,7 +135,6 @@ BEGIN_COM_MAP(CBridgeAgentImp)
    COM_INTERFACE_ENTRY(IGirder)
    COM_INTERFACE_ENTRY(ITendonGeometry)
    COM_INTERFACE_ENTRY(IIntervals)
-   COM_INTERFACE_ENTRY(IDesignOverrides)
    COM_INTERFACE_ENTRY_IMPL(IConnectionPointContainer)
 END_COM_MAP()
 
@@ -777,6 +771,7 @@ public:
    virtual std::vector<StrandIndexType> GetStrandsInRow(const pgsPointOfInterest& poi, RowIndexType rowIdx, pgsTypes::StrandType strandType ) const override;
    virtual StrandIndexType GetNumDebondedStrandsInRow(const pgsPointOfInterest& poi,RowIndexType rowIdx,pgsTypes::StrandType strandType ) const override;
    virtual bool IsExteriorStrandDebondedInRow(const pgsPointOfInterest& poi,RowIndexType rowIdx,pgsTypes::StrandType strandType) const override;
+   virtual Float64 GetUnadjustedStrandRowElevation(const pgsPointOfInterest& poi,RowIndexType rowIdx,pgsTypes::StrandType strandType ) const override;
    virtual bool HasDebonding(const CSegmentKey& segmentKey) const override;
    virtual bool IsDebondingSymmetric(const CSegmentKey& segmentKey) const override;
 
@@ -934,7 +929,9 @@ public:
    virtual Float64 GetS(pgsTypes::SectionPropertyType spType,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::StressLocation location,Float64 fc) const override;
 
    virtual Float64 GetNetAg(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi) const override;
-   virtual Float64 GetNetIg(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi) const override;
+   virtual Float64 GetNetIxx(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi) const override;
+   virtual Float64 GetNetIyy(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi) const override;
+   virtual Float64 GetNetIxy(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi) const override;
    virtual Float64 GetNetYbg(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi) const override;
    virtual Float64 GetNetYtg(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi) const override;
    virtual Float64 GetNetAd(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi) const override;
@@ -1096,6 +1093,7 @@ public:
    virtual void GetSegmentEndPoints(const CSegmentKey& segmentKey,pgsTypes::PlanCoordinateType pcType,IPoint2d** pntPier1,IPoint2d** pntEnd1,IPoint2d** pntBrg1,IPoint2d** pntBrg2,IPoint2d** pntEnd2,IPoint2d** pntPier2) const override;
    virtual void GetSegmentPlanPoints(const CSegmentKey& segmentKey, pgsTypes::PlanCoordinateType pcType, IPoint2d** ppEnd1Left, IPoint2d** ppEnd1, IPoint2d** ppEnd1Right, IPoint2d** ppEnd2Right, IPoint2d** ppEnd2, IPoint2d** ppEnd2Left) const override;
    virtual Float64 GetOrientation(const CSegmentKey& segmentKey) const override;
+   virtual Float64 GetTransverseTopFlangeSlope(const CSegmentKey& segmentKey) const override;
    virtual Float64 GetProfileChordElevation(const pgsPointOfInterest& poi) const override;
    virtual Float64 GetTopGirderChordElevation(const pgsPointOfInterest& poi) const override;
    virtual Float64 GetTopGirderChordElevation(const pgsPointOfInterest& poi, Float64 Astart, Float64 Aend) const override;
@@ -1224,15 +1222,6 @@ public:
    virtual IntervalIndexType GetLastNoncompositeInterval() const override;
    virtual IntervalIndexType GetLastCompositeInterval() const override;
 
-// IDesignOverrides
-   virtual void ApplyTransFormedSectionOverride() override;
-   virtual void RemoveTransFormedSectionOverride() override;
-   virtual bool IsTransFormedSectionOverriden() override;
-
-   virtual void ApplyParabolicCompositeSectionOverride() override;
-   virtual void RemoveParabolicCompositeSectionOverride() override;
-   virtual bool IsParabolicCompositeSectionOverriden() override;
-
 private:
    DECLARE_EAF_AGENT_DATA;
    DECLARE_LOGFILE;
@@ -1264,8 +1253,6 @@ private:
    // to temporary support elevation adjustments and pier "A" dimensions
    std::map<CSegmentKey,mathLinFunc2d> m_ElevationAdjustmentEquations;
 
-   bool m_bIsTransFormedSectionOverriden;
-   bool m_bIsParabolicCompositeSectionOverriden;
 
    struct PoiLocation
    {
@@ -1551,6 +1538,7 @@ private:
    // Generally called during validation so as not to cause re-entry into the validation loop
    SpanIndexType GetSpanCount_Private() const;
    PierIndexType GetPierCount_Private() const;
+   Float64 GetIxy_Private(pgsTypes::SectionPropertyType spType, IntervalIndexType intervalIdx, const pgsPointOfInterest& poi) const;
 
    StrandIndexType GetNextNumStraightStrands(const CSegmentKey& segmentKey,StrandIndexType curNum) const;
    StrandIndexType GetNextNumStraightStrands(LPCTSTR strGirderName,StrandIndexType curNum) const;

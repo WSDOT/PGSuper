@@ -59,11 +59,10 @@ void txnEditConstructionLoad::DoExecute(int i)
    GET_IFACE2(pBroker,IUserDefinedLoadData, pLoads );
    GET_IFACE2(pBroker,IEvents, pEvents);
 
-   pEvents->HoldEvents(); // don't fire any changed events until all changes are done
+   // Exception-safe holder to keep from fireing events until we are done
+   CIEventsHolder event_holder(pEvents);
 
    pLoads->SetConstructionLoad(m_Load[i]);
-
-   pEvents->FirePendingEvents();
 }
 
 txnTransaction* txnEditConstructionLoad::CreateClone() const

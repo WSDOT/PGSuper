@@ -1116,6 +1116,7 @@ void CBulbTeeFactory::GetAllowableSpacingRange(const IBeamFactory::Dimensions& d
 std::vector<pgsTypes::TopWidthType> CBulbTeeFactory::GetSupportedTopWidthTypes() const
 {
    std::vector<pgsTypes::TopWidthType> types{ pgsTypes::twtSymmetric,pgsTypes::twtCenteredCG,pgsTypes::twtAsymmetric };
+   ATLASSERT(CanTopWidthVary() == false); // the equations for CenteredCG have not been derived for variable top width
    return types;
 }
 

@@ -69,7 +69,8 @@ bool txnInsertSpan::Execute()
    EAFGetBroker(&pBroker);
 
    GET_IFACE2(pBroker,IEvents,pEvents);
-   pEvents->HoldEvents();
+   // Exception-safe holder to keep from fireing events until we are done
+   CIEventsHolder event_holder(pEvents);
 
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
 
@@ -85,8 +86,6 @@ bool txnInsertSpan::Execute()
 
    pIBridgeDesc->InsertSpan(m_RefPierIdx,m_PierFace,m_SpanLength,nullptr,nullptr,m_bCreateNewGroup,m_PierErectionEventIndex);
 
-   pEvents->FirePendingEvents();
-
    return true;
 }
 
@@ -96,7 +95,8 @@ void txnInsertSpan::Undo()
    EAFGetBroker(&pBroker);
 
    GET_IFACE2(pBroker,IEvents,pEvents);
-   pEvents->HoldEvents();
+   // Exception-safe holder to keep from fireing events until we are done
+   CIEventsHolder event_holder(pEvents);
 
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
 
@@ -114,8 +114,6 @@ void txnInsertSpan::Undo()
       pPier->SetGirderEndDistance(face,m_EndDist[face],m_EndDistMeasure[face]);
    }
    pIBridgeDesc->SetPierByIndex(m_RefPierIdx,*pPier);
-
-   pEvents->FirePendingEvents();
 }
 
 ///////////////////////////////////////////////
@@ -168,7 +166,8 @@ bool txnDeleteSpan::Execute()
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    GET_IFACE2(pBroker,IEvents,pEvents);
-   pEvents->HoldEvents();
+   // Exception-safe holder to keep from fireing events until we are done
+   CIEventsHolder event_holder(pEvents);
 
    GET_IFACE2(pBroker,IViews,pViews);
    CComPtr<IBridgeModelViewController> pViewController;
@@ -219,8 +218,6 @@ bool txnDeleteSpan::Execute()
 
    pIBridgeDesc->DeletePier(m_RefPierIdx,m_PierFace);
 
-   pEvents->FirePendingEvents();
-
    return true;
 }
 
@@ -230,7 +227,8 @@ void txnDeleteSpan::Undo()
    EAFGetBroker(&pBroker);
 
    GET_IFACE2(pBroker,IEvents,pEvents);
-   pEvents->HoldEvents();
+   // Exception-safe holder to keep from fireing events until we are done
+   CIEventsHolder event_holder(pEvents);
 
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    pIBridgeDesc->SetBridgeDescription(m_BridgeDescription);
@@ -251,6 +249,4 @@ void txnDeleteSpan::Undo()
    CComPtr<IBridgeModelViewController> pViewController;
    pViews->CreateBridgeModelView(&pViewController);
    pViewController->SetSpanRange(m_StartSpanIdx,m_EndSpanIdx);
-
-   pEvents->FirePendingEvents();
 }
