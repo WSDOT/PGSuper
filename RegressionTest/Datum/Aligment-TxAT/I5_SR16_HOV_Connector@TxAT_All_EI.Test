@@ -1,0 +1,58 @@
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 88.03   14   6.00                     1     1    WF83G           0  0.6  270   0.00   0.00  10.50  10.50                                               0   0.0  0.0  5.000  6.000   5.921    -6.173    21207   1.190  1.425  -6.189 -3.219 -0.304 -0.318 -3.840   0.00    0.00    1.75    5.00    5.00 
+
+
+The Specification Check was Not Successful
+Compression stress check failed for Service I Limit State in Interval 10 Cast Deck (Bridge Site 1)
+Tensile stress check failed for Service I Limit State in Interval 10 Cast Deck (Bridge Site 1)
+Compression stress check failed for Service I Limit State in Interval 12 Install Overlay (Bridge Site 2)
+Compression stress check failed for Service I Limit State in Interval 15 Open to Traffic (Bridge Site 3)
+Tensile stress check failed for Service III Limit State in Interval 15 Open to Traffic (Bridge Site 3)
+Compression stress check failed for Fatigue I Limit State in Interval 15 Open to Traffic (Bridge Site 3)
+Ultimate moment capacity (positive moment) check failed for Strength I Limit State
+Longitudinal Reinforcement for Shear check failed for Strength I Limit State
+Ultimate vertical shear capacity check failed for Strength I Limit State
+Stirrup detailing checks failed for the Strength I Limit State.
+Lifting checks failed
+Hauling checks failed
+
+
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 88.03   14   6.00                     1     2    WF83G           0  0.6  270   0.00   0.00  10.50  10.50                                               0   0.0  0.0  5.000  6.000   4.408    -4.552    14591   0.621  0.744  -6.235 -2.205 -0.301 -0.314 -2.820   0.00    0.00    1.75    5.00    5.00 
+
+
+The Specification Check was Not Successful
+Compression stress check failed for Service I Limit State in Interval 10 Cast Deck (Bridge Site 1)
+Tensile stress check failed for Service I Limit State in Interval 10 Cast Deck (Bridge Site 1)
+Compression stress check failed for Service I Limit State in Interval 12 Install Overlay (Bridge Site 2)
+Compression stress check failed for Service I Limit State in Interval 15 Open to Traffic (Bridge Site 3)
+Tensile stress check failed for Service III Limit State in Interval 15 Open to Traffic (Bridge Site 3)
+Ultimate moment capacity (positive moment) check failed for Strength I Limit State
+Longitudinal Reinforcement for Shear check failed for Strength I Limit State
+Ultimate vertical shear capacity check failed for Strength I Limit State
+Stirrup detailing checks failed for the Strength I Limit State.
+Lifting checks failed
+Hauling checks failed
+
+
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 88.03   14   6.00                     1     8    WF83G           0  0.6  270   0.00   0.00  10.50  10.50                                               0   0.0  0.0  5.000  6.000   4.106    -4.122    13275   0.621  0.666  -5.839 -2.003 -0.281  0.000 -2.284   0.00    0.00    1.75    5.00    5.00 
+
+
+The Specification Check was Not Successful
+Compression stress check failed for Service I Limit State in Interval 10 Cast Deck (Bridge Site 1)
+Tensile stress check failed for Service I Limit State in Interval 10 Cast Deck (Bridge Site 1)
+Compression stress check failed for Service I Limit State in Interval 12 Install Overlay (Bridge Site 2)
+Compression stress check failed for Service I Limit State in Interval 15 Open to Traffic (Bridge Site 3)
+Tensile stress check failed for Service III Limit State in Interval 15 Open to Traffic (Bridge Site 3)
+Ultimate moment capacity (positive moment) check failed for Strength I Limit State
+Longitudinal Reinforcement for Shear check failed for Strength I Limit State
+Ultimate vertical shear capacity check failed for Strength I Limit State
+Stirrup detailing checks failed for the Strength I Limit State.
+Lifting checks failed
+Hauling checks failed
+
+

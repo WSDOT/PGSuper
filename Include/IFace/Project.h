@@ -370,13 +370,13 @@ DEFINE_GUID(IID_IRoadwayData,
 interface IRoadwayData : IUnknown
 {
    virtual void SetAlignmentData2(const AlignmentData2& data) = 0;
-   virtual AlignmentData2 GetAlignmentData2() const = 0;
+   virtual const AlignmentData2& GetAlignmentData2() const = 0;
 
    virtual void SetProfileData2(const ProfileData2& data) = 0;
-   virtual ProfileData2 GetProfileData2() const = 0;
+   virtual const ProfileData2& GetProfileData2() const = 0;
 
    virtual void SetRoadwaySectionData(const RoadwaySectionData& data) = 0;
-   virtual RoadwaySectionData GetRoadwaySectionData() const = 0;
+   virtual const RoadwaySectionData& GetRoadwaySectionData() const = 0;
 };
 
 /*****************************************************************************

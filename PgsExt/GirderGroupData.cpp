@@ -856,6 +856,8 @@ GroupIndexType CGirderGroupData::CreateGirderTypeGroup(GirderIndexType firstGdrI
             newGrp.second = gdrGroup.second;
             gdrGroups.push_back(newGrp);
          }
+         iter++;
+         break;
       }
       else
       {

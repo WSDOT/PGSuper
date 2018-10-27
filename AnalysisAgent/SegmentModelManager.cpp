@@ -380,10 +380,18 @@ std::vector<Float64> CSegmentModelManager::GetDeflection(IntervalIndexType inter
          vDyThisSegment.resize(vPoiThisSegment.size(),0.0);
 
          IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
+         IntervalIndexType tsInstallationIntervalIdx = pIntervals->GetTemporaryStrandInstallationInterval(segmentKey);
+         IntervalIndexType tsRemovalIntervalIdx = pIntervals->GetTemporaryStrandRemovalInterval(segmentKey);
 
          if ( resultsType == rtCumulative || intervalIdx == releaseIntervalIdx )
          {
-            for ( int i = 0; i < 3; i++ )
+            int nStrandTypes = 2;
+            if (tsInstallationIntervalIdx != INVALID_INDEX && (tsInstallationIntervalIdx <= intervalIdx && intervalIdx < tsRemovalIntervalIdx))
+            {
+               nStrandTypes++;
+            }
+
+            for (int i = 0; i < nStrandTypes; i++)
             {
                pgsTypes::StrandType strandType = (pgsTypes::StrandType)i;
                LoadCaseIDType lcid = GetLoadCaseID(strandType);
@@ -2149,14 +2157,6 @@ void CSegmentModelManager::ApplyPretensionLoad(CSegmentModelData* pModelData,con
       }
 
       pModelData->Loads.insert(lcid);
-
-      if (strandType == pgsTypes::Temporary && intervalIdx < tsInstallationIntervalIdx)
-      {
-         // temporary strands are not yet installed so don't go any further
-         // however, the code above is required because we have to create the loading in the FEM model
-         // so that we can get results
-         continue;
-      }
 
       std::vector<EquivPretensionLoad> vLoads = pProductLoads->GetEquivPretensionLoads(segmentKey,strandType);
 

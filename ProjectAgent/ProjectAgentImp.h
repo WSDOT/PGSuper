@@ -198,11 +198,11 @@ public:
 // IRoadwayData
 public:
    virtual void SetAlignmentData2(const AlignmentData2& data) override;
-   virtual AlignmentData2 GetAlignmentData2() const override;
+   virtual const AlignmentData2& GetAlignmentData2() const override;
    virtual void SetProfileData2(const ProfileData2& data) override;
-   virtual ProfileData2 GetProfileData2() const override;
+   virtual const ProfileData2& GetProfileData2() const override;
    virtual void SetRoadwaySectionData(const RoadwaySectionData& data) override;
-   virtual RoadwaySectionData GetRoadwaySectionData() const override;
+   virtual const RoadwaySectionData& GetRoadwaySectionData() const override;
 
 // IBridgeDescription
 public:

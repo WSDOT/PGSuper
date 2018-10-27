@@ -618,37 +618,45 @@ void CGirderModelSectionView::BuildCGDisplayObjects(CPGSDocBase* pDoc,IBroker* p
    }
 
    GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
-   Float64 nEff;
-   Float64 ecc = pStrandGeom->GetEccentricity(intervalIdx, poi,true, &nEff);
 
-   GET_IFACE2(pBroker,ISectionProperties,pSectProp);
-   Float64 Yb = pSectProp->GetY(intervalIdx,poi,pgsTypes::BottomGirder);
-   Float64 Hg = pSectProp->GetHg(intervalIdx,poi);
+   StrandIndexType nPermanent = pStrandGeom->GetStrandCount(segmentKey, pgsTypes::Permanent);
+   StrandIndexType nTemporary = pStrandGeom->GetStrandCount(segmentKey, pgsTypes::Temporary);
+   StrandIndexType nStrands = nPermanent + nTemporary;
 
-   CComPtr<IPoint2d> point;
-   point.CoCreateInstance(__uuidof(Point2d));
-   point->Move(0,Yb - (Hg+ecc));
+   if (0 < nStrands)
+   {
+      Float64 nEff;
+      Float64 ecc = pStrandGeom->GetEccentricity(intervalIdx, poi, true, &nEff);
 
-   CComPtr<iPointDisplayObject> doPnt;
-   ::CoCreateInstance(CLSID_PointDisplayObject,nullptr,CLSCTX_ALL,IID_iPointDisplayObject,(void**)&doPnt);
-   doPnt->SetID(1);
-   doPnt->SetPosition(point,FALSE,FALSE);
+      GET_IFACE2(pBroker, ISectionProperties, pSectProp);
+      Float64 Yb = pSectProp->GetY(intervalIdx, poi, pgsTypes::BottomGirder);
+      Float64 Hg = pSectProp->GetHg(intervalIdx, poi);
 
-   CComPtr<iTargetDrawStrategy> strategy;
-   ::CoCreateInstance(CLSID_TargetDrawStrategy,nullptr,CLSCTX_ALL,IID_iTargetDrawStrategy,(void**)&strategy);
-   CRect rc;
-   GetClientRect(&rc);
-   strategy->SetRadius(rc.Width()/80);
+      CComPtr<IPoint2d> point;
+      point.CoCreateInstance(__uuidof(Point2d));
+      point->Move(0, Yb - (Hg + ecc));
 
-   doPnt->SetDrawingStrategy(strategy);
+      CComPtr<iPointDisplayObject> doPnt;
+      ::CoCreateInstance(CLSID_PointDisplayObject, nullptr, CLSCTX_ALL, IID_iPointDisplayObject, (void**)&doPnt);
+      doPnt->SetID(1);
+      doPnt->SetPosition(point, FALSE, FALSE);
 
-   // setup socket for dimension line
-   CComQIPtr<iConnectable> connectable(doPnt);
+      CComPtr<iTargetDrawStrategy> strategy;
+      ::CoCreateInstance(CLSID_TargetDrawStrategy, nullptr, CLSCTX_ALL, IID_iTargetDrawStrategy, (void**)&strategy);
+      CRect rc;
+      GetClientRect(&rc);
+      strategy->SetRadius(rc.Width() / 80);
 
-   CComPtr<iSocket> socketCGPS;
-   connectable->AddSocket(SOCKET_CGPS,point,&socketCGPS);
+      doPnt->SetDrawingStrategy(strategy);
 
-   pDL->AddDisplayObject(doPnt);
+      // setup socket for dimension line
+      CComQIPtr<iConnectable> connectable(doPnt);
+
+      CComPtr<iSocket> socketCGPS;
+      connectable->AddSocket(SOCKET_CGPS, point, &socketCGPS);
+
+      pDL->AddDisplayObject(doPnt);
+   }
 }
 
 void CGirderModelSectionView::BuildDimensionDisplayObjects(CPGSDocBase* pDoc,IBroker* pBroker,const pgsPointOfInterest& poi,iDisplayMgr* pDispMgr)
@@ -802,7 +810,8 @@ void CGirderModelSectionView::BuildDimensionDisplayObjects(CPGSDocBase* pDoc,IBr
    }
 
    // set the text labels on the dimension lines
-   IntervalIndexType intervalIdx = Max(pIntervals->GetInterval(eventIdx), pIntervals->GetPrestressReleaseInterval(segmentKey) );
+   IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
+   IntervalIndexType intervalIdx = Max(pIntervals->GetInterval(eventIdx), releaseIntervalIdx );
 
    Float64 twLeft, twRight;
    Float64 top_width = (eventIdx <= castDeckEventIdx ? pGirder->GetTopWidth(poi) : pSectProp->GetTributaryFlangeWidthEx(poi,&twLeft,&twRight));
@@ -863,8 +872,8 @@ void CGirderModelSectionView::BuildDimensionDisplayObjects(CPGSDocBase* pDoc,IBr
       GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
 
       Float64 nEff;
-      Float64 ecc = pStrandGeometry->GetEccentricity(intervalIdx, poi,true,&nEff);
-      Float64 yps = pSectProp->GetY(intervalIdx,poi,pgsTypes::BottomGirder) - ecc;
+      Float64 ecc = pStrandGeometry->GetEccentricity(releaseIntervalIdx, poi,true,&nEff);
+      Float64 yps = pSectProp->GetY(releaseIntervalIdx,poi,pgsTypes::BottomGirder) - ecc;
 
       textBlock.Release();
       textBlock.CoCreateInstance(CLSID_TextBlock);

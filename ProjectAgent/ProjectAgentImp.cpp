@@ -1879,21 +1879,24 @@ HRESULT CProjectAgentImp::AlignmentProc(IStructuredSave* pSave,IStructuredLoad* 
             // 1.1 and later... 0.0 is due east and increases counter-clockwise
 
             Direction  = PI_OVER_2 - Direction;
+            Direction = IsZero(Direction) ? 0 : Direction;
             if ( Direction < 0 )
             {
-               Direction += 2*M_PI;
+               Direction += TWO_PI;
             }
 
             FwdTangent = PI_OVER_2 - FwdTangent;
+            FwdTangent = IsZero(FwdTangent) ? 0 : FwdTangent;
             if (FwdTangent < 0)
             {
-               FwdTangent += 2*M_PI;
+               FwdTangent += TWO_PI;
             }
 
             BkTangent  = PI_OVER_2 - BkTangent;
+            BkTangent = IsZero(BkTangent) ? 0 : BkTangent;
             if ( BkTangent < 0 )
             {
-               BkTangent += 2*M_PI;
+               BkTangent += TWO_PI;
             }
          }
 
@@ -1953,6 +1956,7 @@ HRESULT CProjectAgentImp::AlignmentProc(IStructuredSave* pSave,IStructuredLoad* 
             return hr;
          }
          pObj->m_AlignmentData2.Direction = var.dblVal;
+         pObj->m_AlignmentData2.Direction = IsZero(pObj->m_AlignmentData2.Direction) ? 0 : pObj->m_AlignmentData2.Direction;
 
          var.vt = VT_I4;
          hr = pLoad->get_Property(_T("HorzCurveCount"),&var);
@@ -6042,7 +6046,7 @@ void CProjectAgentImp::SetAlignmentData2(const AlignmentData2& data)
    }
 }
 
-AlignmentData2 CProjectAgentImp::GetAlignmentData2() const
+const AlignmentData2& CProjectAgentImp::GetAlignmentData2() const
 {
    return m_AlignmentData2;
 }
@@ -6056,7 +6060,7 @@ void CProjectAgentImp::SetProfileData2(const ProfileData2& data)
    }
 }
 
-ProfileData2 CProjectAgentImp::GetProfileData2() const
+const ProfileData2& CProjectAgentImp::GetProfileData2() const
 {
    return m_ProfileData2;
 }
@@ -6070,7 +6074,7 @@ void CProjectAgentImp::SetRoadwaySectionData(const RoadwaySectionData& data)
    }
 }
 
-RoadwaySectionData CProjectAgentImp::GetRoadwaySectionData() const
+const RoadwaySectionData& CProjectAgentImp::GetRoadwaySectionData() const
 {
    return m_RoadwaySectionData;
 }

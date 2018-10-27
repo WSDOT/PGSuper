@@ -53,6 +53,7 @@
 
 #include <iterator>
 #include <algorithm>
+#include <numeric>
 
 
 #if defined _DEBUG
@@ -17660,36 +17661,54 @@ void CGirderModelManager::GetStress(IntervalIndexType intervalIdx,const pgsPoint
    pgsTypes::IntervalTimeType timeType (spMode == pgsTypes::spmGross ? pgsTypes::End : pgsTypes::Start);
 
    bool bIncTempStrands = (intervalIdx < tsRemovalIntervalIdx) ? true : false;
-   Float64 P;
-   if ( intervalIdx < liveLoadIntervalIdx )
+
+   // NOTE: We can't use the eccentricity of the total strands. The eccentricity given is the geometric
+   // centroid of the strands. We need the location of the resultant prestress force.
+   // This is why we are computing the eccentricty below, rather than just getting it.
+
+   std::array<Float64, 3> P{ 0,0,0 };
+   if (intervalIdx < liveLoadIntervalIdx)
    {
-      P = pPsForce->GetPrestressForce(poi,pgsTypes::Permanent,intervalIdx,timeType);
-      if ( bIncTempStrands )
+      P[pgsTypes::Straight] = pPsForce->GetPrestressForce(poi, pgsTypes::Straight, intervalIdx, timeType);
+      P[pgsTypes::Harped] = pPsForce->GetPrestressForce(poi, pgsTypes::Harped, intervalIdx, timeType);
+
+      if (bIncTempStrands)
       {
-        P += pPsForce->GetPrestressForce(poi,pgsTypes::Temporary,intervalIdx,timeType);
+         P[pgsTypes::Temporary] = pPsForce->GetPrestressForce(poi, pgsTypes::Temporary, intervalIdx, timeType);
       }
    }
    else
    {
-      if ( bIncludeLiveLoad )
+      if (bIncludeLiveLoad)
       {
-         P = pPsForce->GetPrestressForceWithLiveLoad(poi,pgsTypes::Permanent, myLimitState, vehicleIdx);
+         P[pgsTypes::Straight] = pPsForce->GetPrestressForceWithLiveLoad(poi, pgsTypes::Straight, myLimitState, vehicleIdx);
+         P[pgsTypes::Harped] = pPsForce->GetPrestressForceWithLiveLoad(poi, pgsTypes::Harped, myLimitState, vehicleIdx);
       }
       else
       {
-         P = pPsForce->GetPrestressForce(poi,pgsTypes::Permanent,intervalIdx,timeType);
+         P[pgsTypes::Straight] = pPsForce->GetPrestressForce(poi, pgsTypes::Straight, intervalIdx, timeType);
+         P[pgsTypes::Harped] = pPsForce->GetPrestressForce(poi, pgsTypes::Harped, intervalIdx, timeType);
       }
 
-      if ( bIncTempStrands )
+      if (bIncTempStrands)
       {
-         P += pPsForce->GetPrestressForceWithLiveLoad(poi,pgsTypes::Temporary, myLimitState);
+         P[pgsTypes::Temporary] += pPsForce->GetPrestressForceWithLiveLoad(poi, pgsTypes::Temporary, myLimitState);
       }
    }
 
+   std::array<Float64, 3> ey{ 0,0,0 };
    Float64 nSEffective;
-   Float64 e = pStrandGeom->GetEccentricity( releaseIntervalIdx, poi, bIncTempStrands, &nSEffective );
-   *pfTop = GetStress(releaseIntervalIdx,poi,topLoc,P,e);
-   *pfBot = GetStress(releaseIntervalIdx,poi,botLoc,P,e);
+   ey[pgsTypes::Straight] = pStrandGeom->GetEccentricity(releaseIntervalIdx, poi, pgsTypes::Straight, &nSEffective);
+   ey[pgsTypes::Harped] = pStrandGeom->GetEccentricity(releaseIntervalIdx, poi, pgsTypes::Harped, &nSEffective);
+   ey[pgsTypes::Temporary] = pStrandGeom->GetEccentricity(releaseIntervalIdx, poi, pgsTypes::Temporary, &nSEffective);
+
+   Float64 Pps = std::accumulate(std::cbegin(P), std::cend(P), 0.0);
+   Float64 PpsEy = std::inner_product(std::cbegin(P), std::cend(P), std::cbegin(ey), 0.0);
+
+   Float64 Ey = IsZero(Pps) ? 0 : PpsEy / Pps;
+
+   *pfTop = GetStress(releaseIntervalIdx, poi, topLoc, Pps, Ey);
+   *pfBot = GetStress(releaseIntervalIdx, poi, botLoc, Pps, Ey);
 }
 
 Float64 CGirderModelManager::GetStress(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::StressLocation stressLocation,Float64 P,Float64 e)

@@ -106,6 +106,7 @@ private:
    bool RunCamberTest(std::_tofstream& resultsFile, std::_tofstream& poiFile, const CSegmentKey& segmentKey);
    bool RunFabOptimizationTest(std::_tofstream& resultsFile,std::_tofstream& poiFile,const CSegmentKey& segmentKey);
    bool RunLoadRatingTest(std::_tofstream& resultsFile, std::_tofstream& poiFile, const CGirderKey& girderKey);
+   bool RunAlignmentTest(std::_tofstream& resultsFile);
 };
 
 #endif //__TESTAGENT_H_

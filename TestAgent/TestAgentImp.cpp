@@ -26,6 +26,7 @@
 #include "TestAgent.h"
 #include "TestAgentImp.h"
 
+#include <IFace\Alignment.h>
 #include <IFace\VersionInfo.h>
 #include <IFace\AnalysisResults.h>
 #include <IFace\Bridge.h>
@@ -170,6 +171,11 @@ bool CTestAgentImp::RunTest(long type,
    // create progress window
    GET_IFACE(IProgress,pProgress);
    CEAFAutoProgress ap(pProgress);
+
+   if (type == RUN_REGRESSION)
+   {
+      RunAlignmentTest(resf);
+   }
 
    GET_IFACE(IBridge,pBridge);
    GroupIndexType nGroups = pBridge->GetGirderGroupCount();
@@ -378,6 +384,11 @@ bool CTestAgentImp::RunTestEx(long type, const std::vector<SpanGirderHashType>& 
    // create progress window
    GET_IFACE(IProgress,pProgress);
    CEAFAutoProgress ap(pProgress);
+
+   if (type == RUN_REGRESSION || type == RUN_CADTEST)
+   {
+      RunAlignmentTest(resf);
+   }
 
    GET_IFACE(IBridge,pBridge);
    SpanIndexType nspans = pBridge->GetSpanCount();
@@ -2591,6 +2602,225 @@ bool CTestAgentImp::RunLoadRatingTest(std::_tofstream& resultsFile, std::_tofstr
 
          RF = pArtifact->GetRatingFactor();
          resultsFile << bridgeId << _T(", ") << pid << _T(", 881007, ") << QUITE(RF) << _T(", ") << gdr << std::endl;
+      }
+   }
+
+   return true;
+}
+
+bool CTestAgentImp::RunAlignmentTest(std::_tofstream& resultsFile)
+{
+   GET_IFACE(IRoadwayData, pAlignment);
+   GET_IFACE(IRoadway, pRoadway);
+
+   resultsFile << _T("Alignment Data") << std::endl;
+   const AlignmentData2& alignment = pAlignment->GetAlignmentData2();
+   resultsFile << _T("Direction : ") << alignment.Direction << std::endl;
+   resultsFile << _T("Ref Point, X : ") << alignment.xRefPoint << _T(", Y : ") << alignment.yRefPoint << std::endl;
+   resultsFile << _T("HCurveCount : ") << alignment.HorzCurves.size() << std::endl;
+
+   IndexType hcIdx = 0; // keeps track of actual curves in the model (curves with zero radious are not curves in the alignment model)
+   for (const auto& hcData : alignment.HorzCurves)
+   {
+      if (!IsZero(hcData.Radius))
+      {
+         resultsFile << _T("Curve ") << hcIdx << std::endl;
+         CComPtr<IHorzCurve> hc;
+         pRoadway->GetCurve(hcIdx, &hc);
+         HCURVESTATIONS stations = pRoadway->GetCurveStations(hcIdx);
+         resultsFile << _T("TS : ") << stations.TSStation << std::endl;
+         resultsFile << _T("SPI1 : ") << stations.SPI1Station << std::endl;
+         resultsFile << _T("SC : ") << stations.SCStation << std::endl;
+         resultsFile << _T("PI : ") << stations.PIStation << std::endl;
+         resultsFile << _T("CS : ") << stations.CSStation << std::endl;
+         resultsFile << _T("SPI2 : ") << stations.SPI2Station << std::endl;
+         resultsFile << _T("ST : ") << stations.STStation << std::endl;
+
+         CComPtr<IDirection> dirTangent;
+         hc->get_BkTangentBrg(&dirTangent);
+         Float64 value;
+         dirTangent->get_Value(&value);
+         resultsFile << _T("Back Tangent Direction : ") << value << std::endl;
+
+         hc->get_BkTangentLength(&value);
+         resultsFile << _T("Back Tangent Length : ") << value << std::endl;
+
+         dirTangent.Release();
+         hc->get_FwdTangentBrg(&dirTangent);
+         dirTangent->get_Value(&value);
+         resultsFile << _T("Forward Tangent Direction : ") << value << std::endl;
+
+         hc->get_FwdTangentLength(&value);
+         resultsFile << _T("Foward Tangent Length : ") << value << std::endl;
+
+         CComPtr<IAngle> angle;
+         SpiralType spiralType = spEntry;
+         resultsFile << _T("Entry Spiral") << std::endl;
+         hc->get_SpiralLength(spiralType, &value);
+         resultsFile << _T("Length : ") << value << std::endl;
+         angle.Release();
+         hc->get_SpiralAngle(spiralType, &angle);
+         angle->get_Value(&value);
+         resultsFile << _T("Angle : ") << value << std::endl;
+         angle.Release();
+         hc->get_DE(spiralType, &angle);
+         angle->get_Value(&value);
+         resultsFile << _T("DE : ") << value << std::endl;
+         angle.Release();
+         hc->get_DF(spiralType, &angle);
+         angle->get_Value(&value);
+         resultsFile << _T("DF : ") << value << std::endl;
+         angle.Release();
+         hc->get_DH(spiralType, &angle);
+         angle->get_Value(&value);
+         resultsFile << _T("DH : ") << value << std::endl;
+         hc->get_LongTangent(spiralType, &value);
+         resultsFile << _T("LT : ") << value << std::endl;
+         hc->get_ShortTangent(spiralType, &value);
+         resultsFile << _T("ST : ") << value << std::endl;
+         hc->get_SpiralChord(spiralType, &value);
+         resultsFile << _T("Chord : ") << value << std::endl;
+         hc->get_X(spiralType, &value);
+         resultsFile << _T("X : ") << value << std::endl;
+         hc->get_Y(spiralType, &value);
+         resultsFile << _T("Y : ") << value << std::endl;
+         hc->get_Q(spiralType, &value);
+         resultsFile << _T("Q : ") << value << std::endl;
+         hc->get_T(spiralType, &value);
+         resultsFile << _T("T : ") << value << std::endl;
+
+         resultsFile << _T("Circular Curve") << std::endl;
+         angle.Release();
+         hc->get_CircularCurveAngle(&angle);
+         angle->get_Value(&value);
+         CurveDirectionType direction;
+         hc->get_Direction(&direction);
+         value *= (direction == cdRight ? -1 : 1);
+         resultsFile << _T("Delta : ") << value << std::endl;
+         hc->get_Tangent(&value);
+         resultsFile << _T("T : ") << value << std::endl;
+         hc->get_CurveLength(&value);
+         resultsFile << _T("L : ") << value << std::endl;
+         hc->get_External(&value);
+         resultsFile << _T("E : ") << value << std::endl;
+         hc->get_Chord(&value);
+         resultsFile << _T("LC : ") << value << std::endl;
+         hc->get_MidOrdinate(&value);
+         resultsFile << _T("MO : ") << value << std::endl;
+
+
+         spiralType = spExit;
+         resultsFile << _T("Exit Spiral") << std::endl;
+         hc->get_SpiralLength(spiralType, &value);
+         resultsFile << _T("Length : ") << value << std::endl;
+         angle.Release();
+         hc->get_SpiralAngle(spiralType, &angle);
+         angle->get_Value(&value);
+         resultsFile << _T("Angle : ") << value << std::endl;
+         angle.Release();
+         hc->get_DE(spiralType, &angle);
+         angle->get_Value(&value);
+         resultsFile << _T("DE : ") << value << std::endl;
+         angle.Release();
+         hc->get_DF(spiralType, &angle);
+         angle->get_Value(&value);
+         resultsFile << _T("DF : ") << value << std::endl;
+         angle.Release();
+         hc->get_DH(spiralType, &angle);
+         angle->get_Value(&value);
+         resultsFile << _T("DH : ") << value << std::endl;
+         hc->get_LongTangent(spiralType, &value);
+         resultsFile << _T("LT : ") << value << std::endl;
+         hc->get_ShortTangent(spiralType, &value);
+         resultsFile << _T("ST : ") << value << std::endl;
+         hc->get_SpiralChord(spiralType, &value);
+         resultsFile << _T("Chord : ") << value << std::endl;
+         hc->get_X(spiralType, &value);
+         resultsFile << _T("X : ") << value << std::endl;
+         hc->get_Y(spiralType, &value);
+         resultsFile << _T("Y : ") << value << std::endl;
+         hc->get_Q(spiralType, &value);
+         resultsFile << _T("Q : ") << value << std::endl;
+         hc->get_T(spiralType, &value);
+         resultsFile << _T("T : ") << value << std::endl;
+
+         hcIdx++;
+      }
+   }
+
+   resultsFile << _T("Profile Data") << std::endl;
+   const ProfileData2& profile = pAlignment->GetProfileData2();
+   resultsFile << _T("Station : ") << profile.Station << std::endl;
+   resultsFile << _T("Elevation : ") << profile.Elevation << std::endl;
+   resultsFile << _T("Grade : ") << profile.Grade << std::endl;
+   resultsFile << _T("VCurveCount : ") << profile.VertCurves.size() << std::endl;
+
+   IndexType vcIdx = 0;
+   for (const auto& vcd : profile.VertCurves)
+   {
+      if (!IsZero(vcd.L1))
+      {
+         resultsFile << _T("Vert Curve ") << vcIdx << std::endl;
+         CComPtr<IVertCurve> vc;
+         pRoadway->GetVertCurve(vcIdx, &vc);
+
+         Float64 sta, elev;
+         CComPtr<IStation> station;
+         CComPtr<IProfilePoint> point;
+
+         station.Release();
+         point.Release();
+         vc->get_BVC(&point);
+         point->get_Station(&station);
+         station->get_Value(&sta);
+         point->get_Elevation(&elev);
+         resultsFile << _T("BVC Sta: ") << sta << _T(", Elev : ") << elev << std::endl;
+
+         station.Release();
+         point.Release();
+         vc->get_PVI(&point);
+         point->get_Station(&station);
+         station->get_Value(&sta);
+         point->get_Elevation(&elev);
+         resultsFile << _T("PVI Sta: ") << sta << _T(", Elev : ") << elev << std::endl;
+
+         station.Release();
+         point.Release();
+         vc->get_EVC(&point);
+         point->get_Station(&station);
+         station->get_Value(&sta);
+         point->get_Elevation(&elev);
+         resultsFile << _T("EVC Sta: ") << sta << _T(", Elev : ") << elev << std::endl;
+
+         station.Release();
+         point.Release();
+         vc->get_HighPoint(&point);
+         point->get_Station(&station);
+         station->get_Value(&sta);
+         point->get_Elevation(&elev);
+         resultsFile << _T("High Point Sta: ") << sta << _T(", Elev : ") << elev << std::endl;
+
+         station.Release();
+         point.Release();
+         vc->get_LowPoint(&point);
+         point->get_Station(&station);
+         station->get_Value(&sta);
+         point->get_Elevation(&elev);
+         resultsFile << _T("Low Point Sta: ") << sta << _T(", Elev : ") << elev << std::endl;
+
+         Float64 g1, g2;
+         vc->get_EntryGrade(&g1);
+         vc->get_ExitGrade(&g2);
+         resultsFile << _T("Grades g1 : ") << g1 << _T(", g2 : ") << g2 << std::endl;
+
+         Float64 L1, L2, Length;
+         vc->get_L1(&L1);
+         vc->get_L2(&L2);
+         vc->get_Length(&Length);
+         resultsFile << _T("Lengths L1 : ") << L1 << _T(", L2 : ") << L2 << _T(", L: ") << Length << std::endl;
+
+
+         vcIdx++;
       }
    }
 

@@ -3644,7 +3644,7 @@ void GirderLibraryEntry::ValidateData(GirderLibraryEntry::GirderEntryDataErrorVe
    // Design Algorithm strategies
    bool cant_straight = pgsTypes::asHarped   ==  GetAdjustableStrandType() && IsDifferentHarpedGridAtEndsUsed();
    bool cant_harp     = pgsTypes::asStraight ==  GetAdjustableStrandType();
-   bool cant_debond   = pgsTypes::asHarped   ==  GetAdjustableStrandType() || !CanDebondStraightStrands();
+   bool cant_debond   = !CanDebondStraightStrands();
 
    // NOTE: It is ok to have a harped adjustable strategy without harped strands. This would be the case of straight only with no adjustable straight strands
    // or a straight/harped girder that doesn't have any harped strands defined.

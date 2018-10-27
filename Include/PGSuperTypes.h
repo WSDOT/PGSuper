@@ -1232,6 +1232,9 @@ struct GDRCONFIG
 
    bool operator==(const GDRCONFIG& other) const
    {
+      if (this->SegmentKey != other.SegmentKey)
+         return false;
+
        if(!IsFlexuralDataEqual(other))
            return false;
 

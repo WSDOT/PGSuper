@@ -404,6 +404,17 @@ void pgsDesigner2::GetHaunchDetails(const CSpanKey& spanKey,bool bUseConfig,cons
    std::vector<pgsPointOfInterest> vPoi( pPoi->GetPointsOfInterest(spanKey,POI_SPAN | POI_TENTH_POINTS) );
    ATLASSERT(11 == vPoi.size());
 
+   // temporary supports are control points for the slab haunch... include them too
+   // use POI_CLOSURE because we want the temp supports at the ends of segments, not temporary supports
+   // that are in the middle of segments (we dont want POI_INTERMEDIATE_TEMPSUPPORT)
+   std::vector<pgsPointOfInterest> vTSPoi(pPoi->GetPointsOfInterest(spanKey, POI_CLOSURE));
+   if (0 < vTSPoi.size())
+   {
+      vPoi.insert(std::end(vPoi), std::begin(vTSPoi), std::end(vTSPoi));
+      std::sort(std::begin(vPoi), std::end(vPoi));
+      vPoi.erase(std::unique(std::begin(vPoi), std::end(vPoi)), std::end(vPoi));
+   }
+
    //
    // Profile Effects and Girder Orientation Effects
    //

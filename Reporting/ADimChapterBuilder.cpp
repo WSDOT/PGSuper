@@ -165,7 +165,7 @@ rptChapter* CADimChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 lev
 
          ColumnIndexType col = 0;
 
-         (*pTable1)(row1,col++) << location.SetValue( POI_ERECTED_SEGMENT, haunch.PointOfInterest );
+         (*pTable1)(row1,col++) << location.SetValue( POI_SPAN, haunch.PointOfInterest );
          (*pTable1)(row1,col++) << rptRcStation(haunch.Station, &pDisplayUnits->GetStationFormat() );
          (*pTable1)(row2,col++) << RPT_OFFSET(haunch.Offset,dim);
 
@@ -180,7 +180,7 @@ rptChapter* CADimChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 lev
          row1++;
 
          col = 0;
-         (*pTable2)(row2,col++) << location.SetValue( POI_ERECTED_SEGMENT, haunch.PointOfInterest );
+         (*pTable2)(row2,col++) << location.SetValue(POI_SPAN, haunch.PointOfInterest );
          (*pTable2)(row2,col++) << haunch.CrownSlope;
          (*pTable2)(row2,col++) << haunch.GirderOrientation;
          (*pTable2)(row2,col++) << comp.SetValue( haunch.Wtop );

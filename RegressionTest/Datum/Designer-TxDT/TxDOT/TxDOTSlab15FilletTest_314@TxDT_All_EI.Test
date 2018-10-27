@@ -1,17 +1,6 @@
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  AECmbr Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 24.50    6   0.12                     1     1    5SB15          30  0.6  270   4.87   4.75   7.00   7.00   1.75  14    2.5   28    14    0   4  10   0   0   4.400  5.000   3.386    -3.879     1479   0.384  0.384   2.724 -0.882  0.000 -0.134 -1.016  82.76  269.06    1.00    1.00    1.00 
-
-
-Girder design was Not Successful
-The Specification Check was Not Successful
-Tensile stress check failed for Service III Limit State in Interval 15 Open to Traffic (Bridge Site 3)
-Live Load Deflection check failed
-
-
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  AECmbr Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 24.50    6   0.12                     1     2    4SB15          24  0.6  270   4.83   4.75   7.00   7.00   2.13   8    2.5   22     8    2   4   2   0   0   4.300  5.000   3.156    -3.703     1193   0.364  0.364   3.014 -0.688  0.000 -0.134 -0.822  70.47  228.29    1.00    1.00    1.00 
+ 24.50    6   0.12                     1     1    5SB15          32  0.6  270   4.75   4.64   7.00   7.00   2.13  10    2.5   28    10    4   2   4   0   0   4.400  5.000   3.396    -3.894     1488   0.384  0.384   3.139 -0.863  0.000 -0.138 -1.001  94.01  301.98    1.00    1.00    1.00 
 
 
 The Specification Check was Not Successful
@@ -21,7 +10,17 @@ Live Load Deflection check failed
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  AECmbr Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 24.50    6   0.12                     1     4    4SB15          18  0.6  270   5.00   5.00   6.50   6.50   1.50   4    2.5   18     4    2   2   0   0   0   4.000  5.000   2.554    -2.994      962   0.344  0.344   2.046 -0.451  0.000 -0.088 -0.539  41.19  148.20    1.00    1.00    1.00 
+ 24.50    6   0.12                     1     2    4SB15          24  0.6  270   4.83   4.75   7.00   7.00   2.13   8    2.5   22     8    2   4   2   0   0   4.300  5.000   3.181    -3.731     1201   0.364  0.364   3.011 -0.699  0.000 -0.136 -0.836  70.16  227.38    1.00    1.00    1.00 
+
+
+The Specification Check was Not Successful
+Slab Offset ("A" Dimension) check failed
+Live Load Deflection check failed
+
+
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  AECmbr Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 24.50    6   0.12                     1     4    4SB15          18  0.6  270   5.00   5.00   6.50   6.50   1.50   4    2.5   18     4    2   2   0   0   0   4.000  5.000   2.545    -2.984      959   0.344  0.344   2.047 -0.448  0.000 -0.088 -0.535  41.27  148.45    1.00    1.00    1.00 
 
 
 The Specification Check was Successful

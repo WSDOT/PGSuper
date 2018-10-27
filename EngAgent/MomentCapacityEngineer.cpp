@@ -1265,7 +1265,9 @@ void pgsMomentCapacityEngineer::ComputeCrackingMoment(IntervalIndexType interval
                      // (after allowance for all prestress losses) at extreme fiber of 
                      // section where tensile stress is caused by externally applied loads
 
-   pgsTypes::StressLocation stressLocation = (bPositiveMoment ? pgsTypes::BottomGirder : pgsTypes::TopDeck);
+   GET_IFACE(IBridge, pBridge);
+   pgsTypes::SupportedDeckType deckType = pBridge->GetDeckType();
+   pgsTypes::StressLocation stressLocation = (bPositiveMoment ? pgsTypes::BottomGirder : (deckType == pgsTypes::sdtNone ? pgsTypes::TopGirder : pgsTypes::TopDeck));
 
    // Compute stress due to prestressing
    Float64 Pps = pPrestressForce->GetPrestressForce(poi,pgsTypes::Permanent,intervalIdx,pgsTypes::End);
@@ -1550,7 +1552,10 @@ void pgsMomentCapacityEngineer::GetSectionProperties(IntervalIndexType intervalI
    }
    else
    {
-      Sbc = pSectProp->GetS(intervalIdx,poi,pgsTypes::TopDeck);
+      GET_IFACE(IBridge, pBridge);
+      pgsTypes::SupportedDeckType deckType = pBridge->GetDeckType();
+      pgsTypes::StressLocation stressLocation = (bPositiveMoment ? pgsTypes::BottomGirder : (deckType == pgsTypes::sdtNone ? pgsTypes::TopGirder : pgsTypes::TopDeck));
+      Sbc = pSectProp->GetS(intervalIdx,poi,stressLocation);
       Sb  = Sbc;
    }
 
@@ -1575,7 +1580,10 @@ void pgsMomentCapacityEngineer::GetSectionProperties(IntervalIndexType intervalI
    }
    else
    {
-      Sbc = pSectProp->GetS(intervalIdx,poi,pgsTypes::TopDeck,config.Fc);
+      GET_IFACE(IBridge, pBridge);
+      pgsTypes::SupportedDeckType deckType = pBridge->GetDeckType();
+      pgsTypes::StressLocation stressLocation = (bPositiveMoment ? pgsTypes::BottomGirder : (deckType == pgsTypes::sdtNone ? pgsTypes::TopGirder : pgsTypes::TopDeck));
+      Sbc = pSectProp->GetS(intervalIdx,poi,stressLocation,config.Fc);
       Sb  = Sbc;
    }
 
@@ -2679,7 +2687,25 @@ bool pgsMomentCapacityEngineer::IsDiaphragmConfined(const pgsPointOfInterest& po
    std::vector<Float64> vAheadSpacing = pBridge->GetGirderSpacing(pierIdx, pgsTypes::Ahead, pgsTypes::AtPierLine, pgsTypes::AlongItem);
 
    // if spacing is equal, the girders confine the diaphragm
-   return (vBackSpacing == vAheadSpacing);
+   if (vBackSpacing.size() != vAheadSpacing.size())
+   {
+      return false;
+   }
+
+   auto iBack = vBackSpacing.begin();
+   auto eBack = vBackSpacing.end();
+   auto iAhead = vAheadSpacing.begin();
+   auto eAhead = vAheadSpacing.end();
+   for (; iBack != eBack && iAhead != eAhead; iBack++, iAhead++)
+   {
+      const auto& back(*iBack);
+      const auto& ahead(*iAhead);
+      if (!IsEqual(back, ahead))
+      {
+         return false;
+      }
+   }
+   return true;
 }
 
 //======================== ACCESS     =======================================

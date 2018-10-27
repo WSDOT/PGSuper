@@ -1067,18 +1067,25 @@ void CGirderMainSheet::MiscOnAbsolute()
 
 bool CGirderMainSheet::CanHarpStrands() const
 {
-   return pgsTypes::asStraight == m_Entry.GetAdjustableStrandType() ? false : true;
+   if (pgsTypes::asStraight != m_Entry.GetAdjustableStrandType() && m_Entry.GetNumHarpedStrandCoordinates() > 0)
+   {
+      return true;
+   }
+   else
+   {
+      return false;
+   }
 }
 
 bool CGirderMainSheet::CanDebondStrands() const
 {
-   if (pgsTypes::asHarped == m_Entry.GetAdjustableStrandType())
+   if (m_Entry.CanDebondStraightStrands() && !CanHarpStrands())
    {
-      return false;
+      return true;
    }
    else
    {
-      return m_Entry.CanDebondStraightStrands();
+      return false;
    }
 }
 

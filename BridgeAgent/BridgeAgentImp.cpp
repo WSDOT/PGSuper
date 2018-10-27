@@ -1757,9 +1757,9 @@ bool CBridgeAgentImp::BuildCogoModel()
       return false;
    }
 
-   AlignmentData2 alignment_data   = pIAlignment->GetAlignmentData2();
-   ProfileData2   profile_data     = pIAlignment->GetProfileData2();
-   RoadwaySectionData section_data = pIAlignment->GetRoadwaySectionData();
+   const AlignmentData2& alignment_data   = pIAlignment->GetAlignmentData2();
+   const ProfileData2&   profile_data     = pIAlignment->GetProfileData2();
+   const RoadwaySectionData& section_data = pIAlignment->GetRoadwaySectionData();
 
    CComPtr<IAlignmentCollection> alignments;
    m_CogoModel->get_Alignments(&alignments);
@@ -1821,7 +1821,7 @@ bool CBridgeAgentImp::BuildCogoModel()
 
       // The station at this first point is the PI station of the first curve less 1.5*Tangent.
       // This is somewhat arbitrary but will ensure that we are starting on the back tangent
-      HorzCurveData& first_curve_data = *(alignment_data.HorzCurves.begin());
+      const auto& first_curve_data = *(alignment_data.HorzCurves.begin());
 
       if ( IsZero(first_curve_data.Radius) )
       {
@@ -1833,12 +1833,24 @@ bool CBridgeAgentImp::BuildCogoModel()
          if (first_curve_data.bFwdTangent)
          {
             delta = first_curve_data.FwdTangent - back_tangent;
+            while (delta < 0)
+            {
+               delta += PI_OVER_2;
+            }
+
+            while (M_PI <= delta)
+            {
+               delta -= M_PI;
+            }
+
+            ATLASSERT(0 <= delta && delta < M_PI);
          }
          else
          {
             delta = first_curve_data.FwdTangent;
          }
-         Float64 T = first_curve_data.Radius*tan(delta/ 2);
+         Float64 T = first_curve_data.Radius*tan(fabs(delta)/ 2);
+         ATLASSERT(0 <= T);
          prev_curve_ST_station = first_curve_data.PIStation - 1.5*T;
       }
 
@@ -1846,10 +1858,12 @@ bool CBridgeAgentImp::BuildCogoModel()
       IndexType curveIdx = 0;
       IndexType realCurveIdx = 0;
 
-      std::vector<HorzCurveData>::iterator iter;
-      for ( iter = alignment_data.HorzCurves.begin(); iter != alignment_data.HorzCurves.end(); iter++, curveID++, curveIdx++ )
+      auto begin = std::cbegin(alignment_data.HorzCurves);
+      auto iter = begin;
+      auto end = std::cend(alignment_data.HorzCurves);
+      for ( ; iter != end; iter++, curveID++, curveIdx++ )
       {
-         HorzCurveData& curve_data = *iter;
+         const auto& curve_data = *iter;
 
          Float64 pi_station = curve_data.PIStation;
 
@@ -1858,7 +1872,7 @@ bool CBridgeAgentImp::BuildCogoModel()
          {
             // this is just a PI point (no curve)
             // create a line
-            if ( iter == alignment_data.HorzCurves.begin() )
+            if ( iter == begin )
             {
                // if first curve, add a point on the back tangent
                points->AddEx(curveID++,pbt);
@@ -1886,7 +1900,7 @@ bool CBridgeAgentImp::BuildCogoModel()
                fwd_tangent += back_tangent;
             }
 
-            if ( iter == alignment_data.HorzCurves.end()-1 )
+            if ( iter == end-1 )
             {
                // this is the last point so add one more to model the last line segment
                CComQIPtr<ILocate2> locate(m_CogoEngine);
@@ -2133,11 +2147,11 @@ bool CBridgeAgentImp::BuildCogoModel()
       IndexType curveIdx = 0;
       IndexType realCurveIdx = 0;
 
-      std::vector<VertCurveData>::iterator iter( profile_data.VertCurves.begin() );
-      std::vector<VertCurveData>::iterator iterEnd( profile_data.VertCurves.end() );
-      for ( ; iter != iterEnd; iter++, curveIdx++ )
+      auto iter = std::cbegin(profile_data.VertCurves);
+      auto end = std::cend(profile_data.VertCurves);
+      for ( ; iter != end; iter++, curveIdx++ )
       {
-         VertCurveData& curve_data = *iter;
+         const auto& curve_data = *iter;
 
          Float64 L1 = curve_data.L1;
          Float64 L2 = curve_data.L2;
@@ -2194,8 +2208,8 @@ bool CBridgeAgentImp::BuildCogoModel()
          }
 
          // add a vertical curve
-         Float64 pfg_station = pvi_station + (iter == iterEnd-1 ? 100 : L2);
-         Float64 pfg_elevation = pvi_elevation + curve_data.ExitGrade*(iter == iterEnd-1 ? 100 : L2);
+         Float64 pfg_station = pvi_station + (iter == end-1 ? 100 : L2);
+         Float64 pfg_elevation = pvi_elevation + curve_data.ExitGrade*(iter == end-1 ? 100 : L2);
 
          CComPtr<IProfilePoint> pfg; // point on forward grade
          pfg.CoCreateInstance(CLSID_ProfilePoint);
@@ -2312,7 +2326,7 @@ bool CBridgeAgentImp::BuildCogoModel()
    // Create a template section well before the start of the bridge
    Float64 bridge_length = pBridgeDesc->GetLength();
 
-   CrownData2& startCrown = section_data.Superelevations.front();
+   const auto& startCrown = section_data.Superelevations.front();
    const CPierData2* pPier = pBridgeDesc->GetPier(0);
    Float64 startStation = pPier->GetStation();
    startStation -= bridge_length;
@@ -2331,7 +2345,7 @@ bool CBridgeAgentImp::BuildCogoModel()
 
    if ( 0 < alignment_data.HorzCurves.size() )
    {
-      HorzCurveData& curve_data = alignment_data.HorzCurves.front();
+      const auto& curve_data = alignment_data.HorzCurves.front();
       CComPtr<IHorzCurveCollection> curves;
       m_CogoModel->get_HorzCurves(&curves);
       IndexType nHCurves;
@@ -2395,12 +2409,8 @@ bool CBridgeAgentImp::BuildCogoModel()
 
    // NOTE: Should be using the Cogo Model Superelevation objects, but
    // this is easier....
-   std::vector<CrownData2>::iterator iter(section_data.Superelevations.begin());
-   std::vector<CrownData2>::iterator iterEnd(section_data.Superelevations.end());
-   for ( ; iter != iterEnd; iter++ )
+   for( const auto& super : section_data.Superelevations)
    {
-      CrownData2& super = *iter;
-
       CComPtr<ISurfaceTemplate> surfaceTemplate;
       surfaceTemplate.CoCreateInstance(CLSID_SurfaceTemplate);
       surfaceTemplate->put_Station(CComVariant(super.Station));
@@ -2413,7 +2423,7 @@ bool CBridgeAgentImp::BuildCogoModel()
    }
 
    // Create a template section well after the end of the bridge
-   CrownData2& endCrown = section_data.Superelevations.back();
+   const auto& endCrown = section_data.Superelevations.back();
    pPier = pBridgeDesc->GetPier(pBridgeDesc->GetPierCount()-1);
    Float64 endStation = pPier->GetStation();
    endStation += bridge_length;
@@ -2421,7 +2431,7 @@ bool CBridgeAgentImp::BuildCogoModel()
 
    if ( 0 < alignment_data.HorzCurves.size() )
    {
-      HorzCurveData& curve_data = alignment_data.HorzCurves.back();
+      const auto& curve_data = alignment_data.HorzCurves.back();
       CComPtr<IHorzCurveCollection> curves;
       m_CogoModel->get_HorzCurves(&curves);
       IndexType nHCurves;
@@ -6332,7 +6342,7 @@ void CBridgeAgentImp::GetStartPoint(Float64 n,Float64* pStartStation,Float64* pS
    }
 
    GET_IFACE(IRoadwayData, pIAlignment);
-   AlignmentData2 alignment_data = pIAlignment->GetAlignmentData2();
+   const AlignmentData2& alignment_data = pIAlignment->GetAlignmentData2();
 
    Float64 refStation = alignment_data.RefStation;
    CComPtr<IPoint2d> refPoint;
@@ -6587,7 +6597,7 @@ HCURVESTATIONS CBridgeAgentImp::GetCurveStations(IndexType hcIdx)
 
    IndexType inputHcIdx = found->second.first;
    GET_IFACE(IRoadwayData, pAlignment);
-   AlignmentData2 alignment = pAlignment->GetAlignmentData2();
+   const AlignmentData2& alignment = pAlignment->GetAlignmentData2();
    const HorzCurveData& hc_data = alignment.HorzCurves[inputHcIdx];
 
    ATLASSERT(!IsZero(hc_data.Radius));
@@ -20543,6 +20553,8 @@ Float64 CBridgeAgentImp::GetDistTopSlabToTopGirder(const pgsPointOfInterest& poi
 
 void CBridgeAgentImp::ReportEffectiveFlangeWidth(const CGirderKey& girderKey,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits)
 {
+   VALIDATE(BRIDGE);
+
    GET_IFACE(ILibrary,       pLib);
    GET_IFACE(ISpecification, pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );

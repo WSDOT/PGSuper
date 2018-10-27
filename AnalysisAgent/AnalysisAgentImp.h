@@ -577,8 +577,7 @@ private:
    void GetDesignSlabPadDeflectionAdjustment(const pgsPointOfInterest& poi, const GDRCONFIG* pConfig,Float64* pDy,Float64* pRz);
    void GetDesignSlabPadStressAdjustment(const pgsPointOfInterest& poi, const GDRCONFIG* pConfig,Float64* pfTop,Float64* pfBot);
 
-   Float64 GetConcreteStrengthAtTimeOfLoading(const CSegmentKey& segmentKey, LoadingEvent le);
-   Float64 GetConcreteStrengthAtTimeOfLoading(const GDRCONFIG& config, LoadingEvent le);
+   Float64 GetConcreteStrengthAtTimeOfLoading(const CSegmentKey& segmentKey, LoadingEvent le,const GDRCONFIG* pConfig=nullptr);
    LoadingEvent GetLoadingEvent(CreepPeriod creepPeriod);
 
    Float64 GetDeflectionAdjustmentFactor(const pgsPointOfInterest& poi,const GDRCONFIG* pConfig,IntervalIndexType intervalIdx);

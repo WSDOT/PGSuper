@@ -5380,20 +5380,7 @@ CREEPCOEFFICIENTDETAILS CAnalysisAgentImp::GetCreepCoefficientDetails(const CSeg
 
    // if fc < 0 use current fc girder
    LoadingEvent le = GetLoadingEvent(creepPeriod);
-#pragma Reminder("WORKING HERE - make this a generic call to GetConcreteStrengthAtTimeOfLoading")
-   // fc = GetConcreteStrengthAtTimeOfLoading(segmentKey,le,pConfig); // problem is, this will change results from previous versions... be careful and do this in isoluation of all other changes
-   Float64 fc;
-   if (pConfig)
-   {
-      fc = GetConcreteStrengthAtTimeOfLoading(*pConfig, le);
-   }
-   else
-   {
-      // this looks totally wrong, but it how things worked before making
-      // this method work with pConfig as an actual config or null pointer
-      GDRCONFIG config = pBridge->GetSegmentConfiguration(segmentKey);
-      fc = GetConcreteStrengthAtTimeOfLoading(config, le);
-   }
+   Float64 fc = GetConcreteStrengthAtTimeOfLoading(segmentKey,le,pConfig);
 
    GET_IFACE(ILibrary,pLib);
    GET_IFACE(ISpecification,pSpec);
@@ -7900,47 +7887,47 @@ void CAnalysisAgentImp::GetDesignSlabPadDeflectionAdjustment(const pgsPointOfInt
 }
 
 
-Float64 CAnalysisAgentImp::GetConcreteStrengthAtTimeOfLoading(const CSegmentKey& segmentKey, LoadingEvent le)
+Float64 CAnalysisAgentImp::GetConcreteStrengthAtTimeOfLoading(const CSegmentKey& segmentKey, LoadingEvent le, const GDRCONFIG* pConfig)
 {
-   GET_IFACE(IMaterials, pMaterial);
-   GET_IFACE(IIntervals, pIntervals);
-   IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
-   IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval();
-
    Float64 Fc;
-
-   switch (le)
+   if (pConfig)
    {
-   case ICamber::leRelease:
-      Fc = pMaterial->GetSegmentFc(segmentKey, releaseIntervalIdx);
-      break;
+      switch (le)
+      {
+      case ICamber::leRelease:
+         Fc = pConfig->Fci;
+         break;
 
-   case ICamber::leDiaphragm:
-   case ICamber::leDeck:
-      Fc = pMaterial->GetSegmentFc(segmentKey, castDeckIntervalIdx);
-      break;
+      case ICamber::leDiaphragm:
+      case ICamber::leDeck:
+         Fc = pConfig->Fc;
+         break;
 
-   default:
-      ATLASSERT(false); // should never get here
+      default:
+         ATLASSERT(false); // should never get here
+      }
    }
-
-   return Fc;
-}
-
-Float64 CAnalysisAgentImp::GetConcreteStrengthAtTimeOfLoading(const GDRCONFIG& config, LoadingEvent le)
-{
-   Float64 Fc;
-
-   switch (le)
+   else
    {
-   case ICamber::leRelease:
-   case ICamber::leDiaphragm:
-   case ICamber::leDeck:
-      Fc = config.Fci;
-      break;
+      GET_IFACE(IMaterials, pMaterial);
+      GET_IFACE(IIntervals, pIntervals);
+      IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
+      IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval();
 
-   default:
-      ATLASSERT(false); // should never get here
+      switch (le)
+      {
+      case ICamber::leRelease:
+         Fc = pMaterial->GetSegmentFc(segmentKey, releaseIntervalIdx);
+         break;
+
+      case ICamber::leDiaphragm:
+      case ICamber::leDeck:
+         Fc = pMaterial->GetSegmentFc(segmentKey, castDeckIntervalIdx);
+         break;
+
+      default:
+         ATLASSERT(false); // should never get here
+      }
    }
 
    return Fc;

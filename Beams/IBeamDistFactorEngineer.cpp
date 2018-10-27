@@ -714,6 +714,10 @@ void CIBeamDistFactorEngineer::ReportMoment(rptParagraph* pPara,IBEAM_LLDFDETAIL
                (*pPara) << rptRcImage(strImagePath + (bSIUnits ? _T("mg_2_MI_Type_K_SI.png") : _T("mg_2_MI_Type_K_US.png"))) << rptNewLine;
                (*pPara) << _T("mg") << Super(_T("MI")) << Sub(_T("2+")) << _T(" = ") << scalar.SetValue(gM2.EqnData.mg) << rptNewLine;
 
+               if (df_method == LLDF_WSDOT || df_method == LLDF_TXDOT)
+               {
+                  (*pPara) << _T("e ") << symbol(GTE) << _T(" 1.0") << rptNewLine;
+               }
                (*pPara) << _T("e = ") << scalar.SetValue(gM2.EqnData.e) << rptNewLine;
 
                (*pPara) << _T("mg") << Super(_T("ME")) << Sub(_T("2+")) << _T(" = ") << scalar.SetValue(gM2.EqnData.mg * gM2.EqnData.e) << _T(" for equation") << rptNewLine;
@@ -913,6 +917,10 @@ void CIBeamDistFactorEngineer::ReportShear(rptParagraph* pPara,IBEAM_LLDFDETAILS
             (*pPara) << rptRcImage(strImagePath + (bSIUnits ? _T("mg_2_VI_Type_K_SI.png") : _T("mg_2_VI_Type_K_US.png"))) << rptNewLine;
             (*pPara) << _T("mg") << Super(_T("VI")) << Sub(_T("2+")) << _T(" = ") << scalar.SetValue(gV2.EqnData.mg) << rptNewLine;
 
+            if (df_method == LLDF_WSDOT || df_method == LLDF_TXDOT)
+            {
+               (*pPara) << _T("e ") << symbol(GTE) << _T(" 1.0") << rptNewLine;
+            }
             (*pPara) << _T("e = ") << scalar.SetValue(gV2.EqnData.e) << rptNewLine;
 
             (*pPara) << _T("mg") << Super(_T("VE")) << Sub(_T("2+")) << _T(" = ") << scalar.SetValue(gV2.EqnData.mg * gV2.EqnData.e) << rptNewLine;
@@ -931,6 +939,11 @@ void CIBeamDistFactorEngineer::ReportShear(rptParagraph* pPara,IBEAM_LLDFDETAILS
                (*pPara) << rptRcImage(strImagePath + (bSIUnits ? _T("mg_2_VE_Type_K_SI.png") : _T("mg_2_VE_Type_K_US.png"))) << rptNewLine;
                (*pPara) << rptRcImage(strImagePath + (bSIUnits ? _T("mg_2_VI_Type_K_SI.png") : _T("mg_2_VI_Type_K_US.png"))) << rptNewLine;
                (*pPara) << _T("mg") << Super(_T("VI")) << Sub(_T("2+")) << _T(" = ") << scalar.SetValue(gV2.EqnData.mg) << rptNewLine;
+               
+               if (df_method == LLDF_WSDOT || df_method == LLDF_TXDOT)
+               {
+                  (*pPara) << _T("e ") << symbol(GTE) << _T(" 1.0") << rptNewLine;
+               }
                (*pPara) << _T("e = ") << scalar.SetValue(gV2.EqnData.e) << rptNewLine;
                (*pPara) << _T("mg") << Super(_T("VE")) << Sub(_T("2+")) << _T(" = ") << scalar.SetValue(gV2.EqnData.e*gV2.EqnData.mg) << rptNewLine;
             }

@@ -176,7 +176,7 @@ void write_alignment_data(IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, rpt
    pPara = new rptParagraph;
    *pChapter << pPara;
 
-   AlignmentData2 alignment = pAlignment->GetAlignmentData2();
+   const AlignmentData2& alignment = pAlignment->GetAlignmentData2();
 
    CComBSTR bstrBearing;
    direction_formatter->Format(alignment.Direction, CComBSTR("°,\',\""), &bstrBearing);
@@ -386,10 +386,11 @@ void write_alignment_data(IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, rpt
 
    ColumnIndexType col = 1;
    IndexType hcIdx = 0; // keeps tracks of the actual curves in the model (curves with zero radius input are not curves in the alignment model)
-   std::vector<HorzCurveData>::iterator iter;
-   for (iter = alignment.HorzCurves.begin(); iter != alignment.HorzCurves.end(); iter++, col++)
+   auto iter = std::cbegin(alignment.HorzCurves);
+   auto end = std::cend(alignment.HorzCurves);
+   for ( ; iter != end; iter++, col++)
    {
-      HorzCurveData& hc_data = *iter;
+      const auto& hc_data = *iter;
       row = 0;
 
       (*pTable)(row++, col) << _T("Curve ") << col;
@@ -953,7 +954,7 @@ void write_profile_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChap
    *pChapter << pPara;
    *pPara << _T("Profile Details") << rptNewLine;
 
-   ProfileData2 profile = pAlignment->GetProfileData2();
+   const ProfileData2& profile = pAlignment->GetProfileData2();
 
    pPara = new rptParagraph;
    *pChapter << pPara;
@@ -997,19 +998,21 @@ void write_profile_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChap
 
    col++;
 
-   std::vector<VertCurveData>::iterator iter;
-   for ( iter = profile.VertCurves.begin(); iter != profile.VertCurves.end(); iter++ )
+   auto begin = std::cbegin(profile.VertCurves);
+   auto iter = begin;
+   auto end = std::cend(profile.VertCurves);
+   for ( ; iter != end; iter++)
    {
       row = 0;
 
-      VertCurveData& vcd = *iter;
+      const auto& vcd(*iter);
 
       (*pTable)(row++,col) << _T("Curve ") << col;
       if ( IsZero(vcd.L1) && IsZero(vcd.L2) )
       {
          Float64 pvi_elevation = pRoadway->GetElevation(vcd.PVIStation,0.0);
          Float64 g1;
-         if ( iter == profile.VertCurves.begin() )
+         if ( iter == begin )
          {
             g1 = profile.Grade;
          }
@@ -1154,13 +1157,11 @@ void write_crown_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapte
 
    INIT_UV_PROTOTYPE( rptLengthUnitValue, length, pDisplayUnits->GetAlignmentLengthUnit(), false );
 
-   RoadwaySectionData section = pAlignment->GetRoadwaySectionData();
+   const RoadwaySectionData& section = pAlignment->GetRoadwaySectionData();
 
    RowIndexType row = pTable->GetNumberOfHeaderRows();
-   std::vector<CrownData2>::iterator iter;
-   for ( iter = section.Superelevations.begin(); iter != section.Superelevations.end(); iter++ )
+   for ( const auto& crown : section.Superelevations )
    {
-      CrownData2& crown = *iter;
       (*pTable)(row,0) << row;
       (*pTable)(row,1) << rptRcStation(crown.Station,&pDisplayUnits->GetStationFormat());
       (*pTable)(row,2) << crown.Left;
