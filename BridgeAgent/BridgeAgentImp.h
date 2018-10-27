@@ -267,8 +267,6 @@ public:
    virtual Float64 GetSegmentPlanLength(const CSegmentKey& segmentKey) const override;
    virtual Float64 GetSegmentSlope(const CSegmentKey& segmentKey) const override;
    virtual Float64 GetSlabOffset(GroupIndexType grpIdx,PierIndexType pierIdx,GirderIndexType gdrIdx) const override;
-   virtual Float64 GetSlabOffset(const pgsPointOfInterest& poi,const GDRCONFIG* pConfig = nullptr) const override;
-   virtual Float64 GetSlabOffset(const pgsPointOfInterest& poi, Float64 Astart, Float64 Aend) const override;
    virtual Float64 GetElevationAdjustment(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi) const override;
    virtual Float64 GetRotationAdjustment(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi) const override;
    virtual Float64 GetSpanLength(SpanIndexType spanIdx,GirderIndexType gdrIdx) const override;
@@ -291,6 +289,7 @@ public:
    virtual void GetSegmentBearing(const CSegmentKey& segmentKey,IDirection** ppBearing) const override;
    virtual void GetSegmentNormal(const CSegmentKey& segmentKey, IDirection** ppNormal) const override;
    virtual CSegmentKey GetSegmentAtPier(PierIndexType pierIdx,const CGirderKey& girderKey) const override;
+   virtual void GetSegmentsAtPier(PierIndexType pierIdx, GirderIndexType gdrIdx, CSegmentKey* pBackSegmentKey, CSegmentKey* pAheadSegmentKey) const override;
    virtual void GetSpansForSegment(const CSegmentKey& segmentKey,SpanIndexType* pStartSpanIdx,SpanIndexType* pEndSpanIdx) const override;
    virtual void ResolveSegmentVariation(const CPrecastSegmentData* pSegment, std::array<Float64, 4>& Xhp) const override;
    virtual GDRCONFIG GetSegmentConfiguration(const CSegmentKey& segmentKey) const override;
@@ -815,8 +814,8 @@ public:
 
    virtual pgsTypes::TTSUsage GetTemporaryStrandUsage(const CSegmentKey& segmentKey, const GDRCONFIG* pConfig = nullptr) const override;
 
-   virtual void ResolveHarpPointLocations(const CPrecastSegmentData* pSegment, std::array<Float64, 4>& Xhp) const override;
-   virtual void ResolveStrandRowElevations(const CPrecastSegmentData* pSegment, const CStrandRow& strandRow, std::array<Float64, 4>& Xhp, std::array<Float64, 4>& Y) const override;
+   virtual void ResolveHarpPointLocations(const CPrecastSegmentData* pSegment, const CStrandData* pStrands, std::array<Float64, 4>& Xhp) const override;
+   virtual void ResolveStrandRowElevations(const CPrecastSegmentData* pSegment, const CStrandData* pStrands, const CStrandRow& strandRow, std::array<Float64, 4>& Xhp, std::array<Float64, 4>& Y) const override;
 
 // IPointOfInterest
 public:
@@ -1057,8 +1056,9 @@ public:
    virtual bool    IsSymmetricSegment(const CSegmentKey& segmentKey) const override;
    virtual bool    IsSymmetric(IntervalIndexType intervalIdx,const CGirderKey& girderKey) const override; 
    virtual MatingSurfaceIndexType  GetNumberOfMatingSurfaces(const CGirderKey& girderKey) const override;
-   virtual Float64 GetMatingSurfaceLocation(const pgsPointOfInterest& poi,MatingSurfaceIndexType idx) const override;
-   virtual Float64 GetMatingSurfaceWidth(const pgsPointOfInterest& poi,MatingSurfaceIndexType idx) const override;
+   virtual Float64 GetMatingSurfaceLocation(const pgsPointOfInterest& poi,MatingSurfaceIndexType msIdx, bool bGirderOnly = false) const override;
+   virtual Float64 GetMatingSurfaceWidth(const pgsPointOfInterest& poi,MatingSurfaceIndexType msIdx, bool bGirderOnly = false) const override;
+   virtual bool GetMatingSurfaceProfile(const pgsPointOfInterest& poi, MatingSurfaceIndexType msIdx, pgsTypes::SectionCoordinateType scType, bool bGirderOnly, IPoint2dCollection** ppPoints) const override;
    virtual FlangeIndexType GetNumberOfTopFlanges(const CGirderKey& girderKey) const override;
    virtual Float64 GetTopFlangeLocation(const pgsPointOfInterest& poi,FlangeIndexType flangeIdx) const override;
    virtual Float64 GetTopFlangeWidth(const pgsPointOfInterest& poi,FlangeIndexType flangeIdx) const override;

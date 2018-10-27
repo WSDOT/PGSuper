@@ -11,6 +11,7 @@ Topics
 * @subpage tg_concrete_properties
 * @subpage tg_critical_section_for_shear
 * @subpage tg_epoxy_coated_strands
+* @subpage tg_example_calculations
 * @subpage tg_fabrication_optimization
 * @subpage tg_limit_states
 * @subpage tg_fatigue

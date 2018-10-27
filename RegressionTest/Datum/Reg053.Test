@@ -1,11 +1,10 @@
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 40.00    6   7.00 SCHLOMAN ROAD -     1     1    WF83G    *     59  0.6  270  36.03  16.66  10.00  10.00                                              17  78.6  6.0  7.200  8.900   6.034    -5.716    21167   0.643  0.743   5.657 -3.612  0.000 -0.350 -3.962 261.95  399.34   10.50   23.00   23.00 
+ 40.00    6   7.00 SCHLOMAN ROAD -     1     1    WF83G    *     59  0.6  270  36.03  16.66  10.00  10.00                                              17  78.6  6.0  7.200  8.900   6.071    -5.750    21253   0.643  0.743   5.657 -3.676  0.000 -0.350 -4.026 261.95  396.50   10.50   23.00   23.00 
 
 
 The Specification Check was Not Successful
 Tensile stress check failed for Service III Limit State in Interval 15 Open to Traffic
-Hauling checks failed
 
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
@@ -15,6 +14,5 @@ Hauling checks failed
 
 The Specification Check was Not Successful
 Tensile stress check failed for Service III Limit State in Interval 15 Open to Traffic
-Hauling checks failed
 
 

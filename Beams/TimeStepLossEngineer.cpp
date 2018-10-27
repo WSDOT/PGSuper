@@ -3761,7 +3761,7 @@ std::vector<pgsTypes::ProductForceType> CTimeStepLossEngineer::GetApplicableProd
          vProductForces.push_back(pgsTypes::pftShearKey);
       }
 
-#pragma Reminder("WORKING HERE - longitudinal joint - need longitudinal joint in time-step analysis")
+#pragma Reminder("longitudinal joint - need longitudinal joint in time-step analysis")
       // also need to look at code above regarding deck and diaphragms.
       //vProductForces.push_back(pgsTypes::pftLongitudinalJoint);
    }

@@ -17,3 +17,8 @@ This tutorial describes the techniques required to model sidewalks and pedestria
 This tutorial describes the advanced geometric modeling capabilities of PGSuper including modeling a bridge with different number of girders in each span, flared girder spacing, and tapered bridge decks..
 
 While these tutorials provide you with a great deal of information, they barely scratch the surface of PGSuper. Additional information can be found in the @ref user_guide and the @ref technical_guide.
+
+Example Calculations
+--------------------
+@subpage tg_example_calculations are provided in the Technical Guide.
+

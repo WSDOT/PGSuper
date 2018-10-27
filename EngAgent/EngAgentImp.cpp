@@ -462,11 +462,6 @@ const FPCDETAILS* CEngAgentImp::ValidateFpc(const pgsPointOfInterest& poi) const
       }
    }
 
-   const CSegmentKey& segmentKey = poi.GetSegmentKey();
-
-   GET_IFACE(IBridge,pBridge);
-   Float64 slabOffset = pBridge->GetSlabOffset(poi);
-
    FPCDETAILS mcd;
    m_ShearCapEngineer.ComputeFpc(poi,nullptr,&mcd);
 

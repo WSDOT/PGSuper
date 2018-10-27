@@ -105,21 +105,24 @@ struct SpaceBetweenGirder
 
 struct BearingElevationDetails
 {
-   GirderIndexType GdrIdx; // index of girder
+   CGirderKey GirderKey;
+   pgsTypes::PierFaceType PierFace;
    IndexType BearingIdx; // Can be more than one bearing for girder
    Float64 Station; // station where the elevations are computed
    Float64 Offset; // offset where the elevations are computed
    Float64 FinishedGradeElevation; // final design surface elevation at Station and Offset (top of overlay if overlay built with bridge, top of deck for no overlay or future overlay)
    Float64 OverlayDepth; // depth of overlay (future overlays not considered)
    Float64 SlabOffset;
-   Float64 Hg;
+   Float64 Hg; // adjusted for girder orientation
    Float64 BrgRecess;
    Float64 BrgHeight;
    Float64 SolePlateHeight;
    Float64 TopBrgElevation;  // elevation at top of bearing
    Float64 BrgSeatElevation; // elevation at bottom of bearing
    Float64 ProfileGrade; // profile grade at CL Bearing
-   Float64 GirderGrade; // slope of the girder
+   Float64 BasicGirderGrade; // basic slope of girder (straight line between supports, includes temporary support elevation adjustments)
+   Float64 PrecamberSlope; // rotation due to precamber
+   Float64 GirderGrade; // slope of the girder with precamber rotation applied
    Float64 GirderOrientation; // lateral tilt angle if superelevation and girder follows
    Float64 BearingDeduct; // TxDOT Specific value
 };
@@ -292,8 +295,8 @@ interface IBridge : IUnknown
 
    // Slab Offset
    virtual Float64 GetSlabOffset(GroupIndexType grpIdx,PierIndexType pierIdx,GirderIndexType gdrIdx) const = 0;
-   virtual Float64 GetSlabOffset(const pgsPointOfInterest& poi,const GDRCONFIG* pConfig=nullptr) const = 0;
-   virtual Float64 GetSlabOffset(const pgsPointOfInterest& poi, Float64 Astart, Float64 Aend) const = 0;
+
+   // Adjustments from temporary support elevation adjustments
    virtual Float64 GetElevationAdjustment(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi) const = 0;
    virtual Float64 GetRotationAdjustment(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi) const = 0;
 
@@ -315,6 +318,9 @@ interface IBridge : IUnknown
 
    // Returns the key for the segment that crosses the pier
    virtual CSegmentKey GetSegmentAtPier(PierIndexType pierIdx,const CGirderKey& girderKey) const = 0;
+
+   // Gets the segments on either side of the specified pier. If there isn't a segment, the segment index part of the segment key will be INVALID_INDEX
+   virtual void GetSegmentsAtPier(PierIndexType pierIdx, GirderIndexType gdrIdx, CSegmentKey* pBackSegmentKey, CSegmentKey* pAheadSegmentKey) const = 0;
 
    // Gets the span indices for the spans the segment starts and ends in
    virtual void GetSpansForSegment(const CSegmentKey& segmentKey,SpanIndexType* pStartSpanIdx,SpanIndexType* pEndSpanIdx) const = 0;
@@ -1223,10 +1229,12 @@ interface IStrandGeometry : IUnknown
    virtual pgsTypes::TTSUsage GetTemporaryStrandUsage(const CSegmentKey& segmentKey,const GDRCONFIG* pConfig = nullptr) const = 0;
 
    // Resolves the harp point location provided in pSegment to harp point locations in Segment Coordinates
-   virtual void ResolveHarpPointLocations(const CPrecastSegmentData* pSegment, std::array<Float64, 4>& Xhp) const = 0;
+   // if pStrands is nullptr, strand data is taken from pSegment, otherwise from pStrand
+   virtual void ResolveHarpPointLocations(const CPrecastSegmentData* pSegment, const CStrandData* pStrands, std::array<Float64, 4>& Xhp) const = 0;
 
    // For row or individual strand based input, resolves the strand elevation values to Girder Section Coordinates
-   virtual void ResolveStrandRowElevations(const CPrecastSegmentData* pSegment, const CStrandRow& strandRow, std::array<Float64, 4>& Xhp, std::array<Float64, 4>& Y) const = 0;
+   // if pStrands is nullptr, strand data is taken from pSegment, otherwise from pStrand
+   virtual void ResolveStrandRowElevations(const CPrecastSegmentData* pSegment, const CStrandData* pStrands, const CStrandRow& strandRow, std::array<Float64, 4>& Xhp, std::array<Float64, 4>& Y) const = 0;
 };
 
 /*****************************************************************************
@@ -1551,10 +1559,16 @@ interface IGirder : public IUnknown
    virtual MatingSurfaceIndexType  GetNumberOfMatingSurfaces(const CGirderKey& girderKey) const = 0;
 
    // Location of mating surface, measured from the CL girder. < 0 if left of CL.
-   virtual Float64 GetMatingSurfaceLocation(const pgsPointOfInterest& poi,MatingSurfaceIndexType idx) const = 0;
+   // if bGirderOnly is false, structural longitinal joints are considered as part of the mating surface
+   virtual Float64 GetMatingSurfaceLocation(const pgsPointOfInterest& poi,MatingSurfaceIndexType msIdx, bool bGirderOnly=false) const = 0;
 
    // Returns the width of a mating surface
-   virtual Float64 GetMatingSurfaceWidth(const pgsPointOfInterest& poi,MatingSurfaceIndexType idx) const = 0;
+   // if bGirderOnly is false, structural longitinal joints are considered as part of the mating surface
+   virtual Float64 GetMatingSurfaceWidth(const pgsPointOfInterest& poi,MatingSurfaceIndexType msIdx, bool bGirderOnly = false) const = 0;
+
+   // Gets the mating surface profile. Returns true if sucessful. Can return false or a nullptr container if a mating surface profile is not available
+   // if bGirderOnly is false, structural longitinal joints are considered as part of the mating surface
+   virtual bool GetMatingSurfaceProfile(const pgsPointOfInterest& poi, MatingSurfaceIndexType msIdx, pgsTypes::SectionCoordinateType scType, bool bGirderOnly, IPoint2dCollection** ppPoints) const = 0;
 
    // Returns the number of top flanges
    virtual FlangeIndexType GetNumberOfTopFlanges(const CGirderKey& girderKey) const = 0;

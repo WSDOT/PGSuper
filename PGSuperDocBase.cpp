@@ -2941,9 +2941,6 @@ bool CPGSDocBase::DoLoadMasterLibrary(const CString& strMasterLibraryFile)
             CComPtr<IEAFAppPlugin> pAppPlugin;
             pTemplate->GetPlugin(&pAppPlugin);
             CPGSAppPluginBase* pPGSuper = dynamic_cast<CPGSAppPluginBase*>(pAppPlugin.p);
-
-#pragma Reminder("WORKING HERE - start up") // need a replacement for the call below
-            //pPGSuper->UpdateProgramSettings(TRUE);
             strFile = pPGSuper->GetCachedMasterLibraryFile();
          }
          else

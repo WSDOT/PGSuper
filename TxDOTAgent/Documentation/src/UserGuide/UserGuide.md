@@ -7,4 +7,4 @@ Contents:
 * @subpage getting_started
 * @subpage installation
 * @subpage ui
-* @subpage ug_dialogs
+* @subpage ug_dialogs_configure

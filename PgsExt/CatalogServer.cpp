@@ -554,10 +554,34 @@ void CFtpCatalogServer::FetchCatalog(IProgressMonitor* pProgress, bool toTempfol
       }
       catch (CInternetException* pException)
       {
-         pException->Delete();
+         // the call to inetSession.GetFtpConnection is one tha throws.
+         // the result of GetLastError is stored in m_dwError
+         TCHAR sz[1024];
+         pException->GetErrorMessage(sz, 1024);
 
          CString msg;
-         msg.Format(_T("An unknown ftp error occurred while trying to access the configuration server: %s"),catURL);
+         msg.Format(_T("An error occurred while trying to access the configuration server: (%d) %s\n%s"),pException->m_dwError,sz,catURL);
+
+         if (pException->m_dwError == ERROR_INTERNET_EXTENDED_ERROR)
+         {
+            // there is extended error information
+            // https://docs.microsoft.com/en-us/windows/desktop/api/wininet/nf-wininet-internetconnecta
+            // https://docs.microsoft.com/en-us/windows/desktop/api/wininet/nf-wininet-internetgetlastresponseinfoa
+            // https://docs.microsoft.com/en-us/windows/desktop/WinInet/wininet-errors - error codes are here
+
+            DWORD dwExtError;
+            TCHAR extError[1024];
+            DWORD len = 1024;
+            if (InternetGetLastResponseInfo(&dwExtError, extError, &len))
+            {
+               CString msg2;
+               msg2.Format(_T("\nExtended error info: %d - %s"), dwExtError, extError);
+               msg += msg2;
+            }
+         }
+
+         pException->Delete();
+
          throw CCatalogServerException(CCatalogServerException::ceGettingCatalogFile,msg);
       }
 

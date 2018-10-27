@@ -1650,7 +1650,7 @@ void CBridgeDescGeneralPage::UpdateGirderTopWidthSpacingLimits()
       return;
    }
 
-#pragma Reminder("WORKING HERE - need to look at all girders, see UpdateGirderSpacing for example")
+#pragma Reminder("need to look at all girders, see UpdateGirderSpacing for example")
    CBridgeDescDlg* pParent = (CBridgeDescDlg*)GetParent();
    const IBeamFactory::Dimensions& dimensions = pParent->m_BridgeDesc.GetGirderLibraryEntry()->GetDimensions();
    m_Factory->GetAllowableTopWidthRange(dimensions, &m_MinGirderTopWidth, &m_MaxGirderTopWidth);

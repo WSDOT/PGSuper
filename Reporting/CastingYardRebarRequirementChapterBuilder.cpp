@@ -407,7 +407,7 @@ void CCastingYardRebarRequirementChapterBuilder::FillTable(IBroker* pBroker,rptR
             // Entire section is in compression
             for ( ColumnIndexType ic = 1; ic < pTable->GetNumberOfColumns(); ic++ )
             {
-               (*pTable)(row,ic) << RPT_NA;
+               (*pTable)(row,ic) << _T("-");
             }
          }
          else
@@ -416,7 +416,7 @@ void CCastingYardRebarRequirementChapterBuilder::FillTable(IBroker* pBroker,rptR
             // and top rebar is usually measured from the top downwards
             GET_IFACE2(pBroker,ISectionProperties,pSectProp);
             Float64 Hg = pSectProp->GetHg(releaseIntervalIdx,thisPoi);
-            Float64 Y = Hg - Yna;
+            Float64 Y = Yna - Hg;
 
             (*pTable)(row,1) << dim.SetValue(Y);
 
@@ -450,7 +450,7 @@ void CCastingYardRebarRequirementChapterBuilder::FillTable(IBroker* pBroker,rptR
             ColumnIndexType col;
             for (col = blankStart; col < blankEnd; col++)
             {
-               (*pTable)(row,col) << RPT_NA;
+               (*pTable)(row,col) << _T("-");
             }
 
             // Now fill in tension side with data

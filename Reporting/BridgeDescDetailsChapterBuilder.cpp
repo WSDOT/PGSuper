@@ -167,7 +167,7 @@ rptChapter* CBridgeDescDetailsChapterBuilder::Build(CReportSpecification* pRptSp
             pHead = new rptParagraph(rptStyleManager::GetHeadingStyle());
             *pChapter << pHead;
             *pHead << _T("Materials") << rptNewLine;
-#pragma Reminder("WORKING HERE: write out concrete details")
+#pragma Reminder("write out concrete details")
             //write_segment_concrete_details(pBroker,pDisplayUnits,pChapter,level,segmentKey);
             if ( segIdx != nSegments-1 )
             {
@@ -182,7 +182,7 @@ rptChapter* CBridgeDescDetailsChapterBuilder::Build(CReportSpecification* pRptSp
 
    //write_deck_concrete_details(pBroker,pDisplayUnits,pChapter,level);
 
-#pragma Reminder("WORKING HERE: write out tendon information : geometry and material")
+#pragma Reminder("write out tendon information : geometry and material")
 
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
@@ -299,7 +299,7 @@ void write_girder_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptCh
       cmpdim.SetWidth(length_unit.Width);
       cmpdim.SetPrecision(length_unit.Precision);
 
-#pragma Reminder("WORKING HERE - reporting top width values (is start and end supported or start only?")
+#pragma Reminder("reporting top width values (is start and end supported or start only?")
       pgsTypes::TopWidthType type;
       Float64 leftStart, rightStart, leftEnd, rightEnd;
       pGirder->GetTopWidth(&type, &leftStart, &rightStart, &leftEnd, &rightEnd);

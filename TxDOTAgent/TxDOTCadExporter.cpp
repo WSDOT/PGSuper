@@ -52,7 +52,7 @@ bool DoesFileExist(const CString& filename)
    }
 }
 
-void raised_strand_research(IBroker* pBroker,const std::vector<CGirderKey>& girderKeys);
+// void raised_strand_research(IBroker* pBroker,const std::vector<CGirderKey>& girderKeys);
 
 // CTxDOTCadExporter
 
@@ -214,8 +214,8 @@ STDMETHODIMP CTxDOTCadExporter::Export(IBroker* pBroker)
 		   /* Close the open text file */
 		   fclose (fp);
 
-         pProgress->UpdateMessage(_T("Writing Top Strand Research Data"));
-         raised_strand_research(pBroker, girderKeys);
+//         pProgress->UpdateMessage(_T("Writing Top Strand Research Data"));
+//         raised_strand_research(pBroker, girderKeys);
 
 
       } // autoprogress scope
@@ -240,6 +240,7 @@ STDMETHODIMP CTxDOTCadExporter::Export(IBroker* pBroker)
 #include <IFace\Artifact.h>
 #include <PgsExt\GirderArtifact.h>
 
+/*
 void raised_strand_research(IBroker* pBroker, const std::vector<CGirderKey>& girderKeys)
 {
    GET_IFACE2(pBroker, IStrandGeometry, pStrandGeometry);
@@ -363,3 +364,4 @@ void raised_strand_research(IBroker* pBroker, const std::vector<CGirderKey>& gir
       m_Log << endl;
    }
 }
+*/

@@ -465,7 +465,7 @@ void CDrawStrandControl::DrawStrands(CDC* pDC, grlibPointMapper& leftMapper,grli
       // grid points are in Girder Section Coordinates (Y = 0 is at the top of the girder)
       // Y is measured positive up and negative down
       std::array<Float64, 4> Xhp, Y;
-      pStrandGeom->ResolveStrandRowElevations(m_pSegment, strandRow, Xhp, Y);
+      pStrandGeom->ResolveStrandRowElevations(m_pSegment, m_pStrands, strandRow, Xhp, Y);
 
       LONG diameter = 2;
       LONG radius = diameter / 2;

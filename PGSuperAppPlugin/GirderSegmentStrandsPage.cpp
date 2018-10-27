@@ -235,7 +235,7 @@ void CGirderSegmentStrandsPage::DoDataExchange(CDataExchange* pDX)
       UpdateStrandControls();
    }
 
-#pragma Reminder("WORKING HERE - strand point model - need to verify strands are in the girder")
+#pragma Reminder("strand point model - need to verify strands are in the girder")
    // this may not be the best place since we use UpdateData from several locations
    // before this dialog is closed with [OK] need to validate
    // one "gotcha" is harped strands that are not over the web...

@@ -26,6 +26,7 @@
 #include <EAF\EAFDisplayUnits.h>
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
+#include <IFace\AnalysisResults.h>
 
 
 #include <PgsExt\GirderLabel.h>
@@ -45,9 +46,9 @@ inline Float64 GetNetBearingHeight(const BearingElevationDetails& det)
    return det.BrgHeight + det.SolePlateHeight - det.BrgRecess;
 }
 
-inline rptRcTable* MakeTable(const CString& strLabel, IEAFDisplayUnits* pDisplayUnits, bool bHasOverlay)
+inline rptRcTable* MakeTable(const CString& strLabel, IEAFDisplayUnits* pDisplayUnits, bool bHasOverlay, bool bHasPrecamber)
 {
-   ColumnIndexType nCols = 14 + (bHasOverlay ? 1 : 0);
+   ColumnIndexType nCols = 14 + (bHasOverlay ? 1 : 0) + (bHasPrecamber ? 2 : 0);
 
    rptRcTable* pTable = rptStyleManager::CreateDefaultTable(nCols, strLabel);
 
@@ -60,11 +61,18 @@ inline rptRcTable* MakeTable(const CString& strLabel, IEAFDisplayUnits* pDisplay
    (*pTable)(0, col++) << COLHDR(_T("Offset"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
    (*pTable)(0, col++) << COLHDR(_T("Finish") << rptNewLine << _T("Grade") << rptNewLine << _T("Elev"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
    (*pTable)(0, col++) << _T("Profile") << rptNewLine << _T("Grade") << rptNewLine << _T("(") << strSlopeTag << _T("/") << strSlopeTag << _T(")");
+   if (bHasPrecamber)
+   {
+      (*pTable)(0, col++) << _T("Basic Girder") << rptNewLine << _T("Grade") << rptNewLine << _T("(") << strSlopeTag << _T("/") << strSlopeTag << _T(")");
+      (*pTable)(0, col++) << _T("Precamber") << rptNewLine << _T("Slope") << rptNewLine << _T("(") << strSlopeTag << _T("/") << strSlopeTag << _T(")");
+   }
    (*pTable)(0, col++) << _T("Girder") << rptNewLine << _T("Grade") << rptNewLine << _T("(") << strSlopeTag << _T("/") << strSlopeTag << _T(")");
    (*pTable)(0, col++) << _T("Girder") << rptNewLine << _T("Orientation") << rptNewLine << _T("(") << strSlopeTag << _T("/") << strSlopeTag << _T(")");
 
    if (bHasOverlay)
+   {
       (*pTable)(0, col++) << COLHDR(_T("Overlay Depth"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+   }
 
    (*pTable)(0, col++) << COLHDR(_T("Slab") << rptNewLine << _T("Offset"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
    (*pTable)(0, col++) << COLHDR(_T("Height") << rptNewLine << _T("of") << rptNewLine << _T("Girder"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
@@ -81,7 +89,7 @@ inline rptRcTable* MakeTable(const CString& strLabel, IEAFDisplayUnits* pDisplay
 
 inline void FillTable(rptRcTable* pTable, IEAFDisplayUnits* pDisplayUnits, 
                       rptLengthSectionValue& elev, rptLengthSectionValue& dim, rptLengthSectionValue& dist, 
-                      bool bHasOverlay, const std::vector<BearingElevationDetails>& vElevDetails)
+                      bool bHasOverlay, bool bHasPrecamber, const std::vector<BearingElevationDetails>& vElevDetails)
 {
    RowIndexType Row = pTable->GetNumberOfHeaderRows();
 
@@ -93,19 +101,19 @@ inline void FillTable(rptRcTable* pTable, IEAFDisplayUnits* pDisplayUnits,
       const BearingElevationDetails& ElevDetails = *Iter;
 
       // put multiple bearings for same girder in same row
-      bool newRow = (lastGdrIdx == INVALID_INDEX) || (lastGdrIdx != ElevDetails.GdrIdx);
+      bool newRow = (lastGdrIdx == INVALID_INDEX) || (lastGdrIdx != ElevDetails.GirderKey.girderIndex);
       if (newRow)
       {
          Row++;
       }
 
-      lastGdrIdx = ElevDetails.GdrIdx;
+      lastGdrIdx = ElevDetails.GirderKey.girderIndex;
 
       ColumnIndexType Col = 0;
 
       if (newRow)
       {
-         (*pTable)(Row, Col++) << LABEL_GIRDER(ElevDetails.GdrIdx);
+         (*pTable)(Row, Col++) << LABEL_GIRDER(ElevDetails.GirderKey.girderIndex);
       }
       else
       {
@@ -118,11 +126,18 @@ inline void FillTable(rptRcTable* pTable, IEAFDisplayUnits* pDisplayUnits,
       WRITE_NEWLINE_BEFORE(!newRow, Row, Col++, RPT_OFFSET(ElevDetails.Offset, dist));
       WRITE_NEWLINE_BEFORE(!newRow, Row, Col++, elev.SetValue(ElevDetails.FinishedGradeElevation));
       WRITE_NEWLINE_BEFORE(!newRow, Row, Col++, ElevDetails.ProfileGrade);
+      if (bHasPrecamber)
+      {
+         WRITE_NEWLINE_BEFORE(!newRow, Row, Col++, ElevDetails.BasicGirderGrade);
+         WRITE_NEWLINE_BEFORE(!newRow, Row, Col++, ElevDetails.PrecamberSlope);
+      }
       WRITE_NEWLINE_BEFORE(!newRow, Row, Col++, ElevDetails.GirderGrade);
       WRITE_NEWLINE_BEFORE(!newRow, Row, Col++, ElevDetails.GirderOrientation);
 
       if (bHasOverlay)
+      {
          WRITE_NEWLINE_BEFORE(!newRow, Row, Col++, dim.SetValue(ElevDetails.OverlayDepth));
+      }
 
       WRITE_NEWLINE_BEFORE(!newRow, Row, Col++, dim.SetValue(ElevDetails.SlabOffset));
       WRITE_NEWLINE_BEFORE(!newRow, Row, Col++, dim.SetValue(ElevDetails.Hg));
@@ -180,26 +195,51 @@ rptChapter* CBearingSeatElevationsDetailsChapterBuilder2::Build(CReportSpecifica
 
    bool bHasOverlay = ( pBridge->HasOverlay() && !pBridge->IsFutureOverlay() ? true : false );
 
+   GET_IFACE2(pBroker, ICamber, pCamber);
+
    PierIndexType nPiers = pBridge->GetPierCount();
    for (PierIndexType pierIdx = 0; pierIdx < nPiers; pierIdx++)
    {
+      GroupIndexType backGroupIdx, aheadGroupIdx;
+      pBridge->GetGirderGroupIndex(pierIdx, &backGroupIdx, &aheadGroupIdx);
+
+      bool bHasPrecamberBack = false;
+      bool bHasPrecamberAhead = false;
       if (pBridge->IsBoundaryPier(pierIdx))
       {
          rptRcTable* pBackTable = nullptr;
          if (pierIdx != 0)
          {
+            // check if we have to report precamber slope
+            GirderIndexType nGirders = pBridge->GetGirderCount(backGroupIdx);
+            for (GirderIndexType gdrIdx = 0; gdrIdx < nGirders && bHasPrecamberBack == false; gdrIdx++)
+            {
+               CSegmentKey backSegmentKey, aheadSegmentKey;
+               pBridge->GetSegmentsAtPier(pierIdx, gdrIdx, &backSegmentKey, &aheadSegmentKey);
+               bHasPrecamberBack = (IsZero(pCamber->GetPrecamber(backSegmentKey)) ? false : true);
+            }
+
             CString strBackLabel;
             strBackLabel.Format(_T("%s %d Back"), pierIdx == 0 || pierIdx == nPiers - 1 ? _T("Abutment") : _T("Pier"), LABEL_PIER(pierIdx));
-            pBackTable = MakeTable(strBackLabel,pDisplayUnits,bHasOverlay);
+            pBackTable = MakeTable(strBackLabel,pDisplayUnits,bHasOverlay,bHasPrecamberBack);
             (*pPara) << pBackTable << rptNewLine;
          }
 
          rptRcTable* pAheadTable = nullptr;
          if (pierIdx != nPiers - 1)
          {
+            // check if we have to report precamber slope
+            GirderIndexType nGirders = pBridge->GetGirderCount(aheadGroupIdx);
+            for (GirderIndexType gdrIdx = 0; gdrIdx < nGirders && bHasPrecamberAhead == false; gdrIdx++)
+            {
+               CSegmentKey backSegmentKey, aheadSegmentKey;
+               pBridge->GetSegmentsAtPier(pierIdx, gdrIdx, &backSegmentKey, &aheadSegmentKey);
+               bHasPrecamberAhead = (IsZero(pCamber->GetPrecamber(aheadSegmentKey)) ? false : true);
+            }
+
             CString strAheadLabel;
             strAheadLabel.Format(_T("%s %d Ahead"), pierIdx == 0 || pierIdx == nPiers - 1 ? _T("Abutment") : _T("Pier"), LABEL_PIER(pierIdx));
-            pAheadTable = MakeTable(strAheadLabel,pDisplayUnits,bHasOverlay);
+            pAheadTable = MakeTable(strAheadLabel,pDisplayUnits,bHasOverlay,bHasPrecamberAhead);
             (*pPara) << pAheadTable << rptNewLine;
          }
 
@@ -207,28 +247,38 @@ rptChapter* CBearingSeatElevationsDetailsChapterBuilder2::Build(CReportSpecifica
          {
             std::vector<BearingElevationDetails> vBackElevDetails = pBridge->GetBearingElevationDetails(pierIdx, pgsTypes::Back);
 
-            FillTable(pBackTable, pDisplayUnits, elev, dim, dist, bHasOverlay, vBackElevDetails);
+            FillTable(pBackTable, pDisplayUnits, elev, dim, dist, bHasOverlay, bHasPrecamberBack, vBackElevDetails);
          }
 
          if (pAheadTable)
          {
             std::vector<BearingElevationDetails> vAheadElevDetails = pBridge->GetBearingElevationDetails(pierIdx, pgsTypes::Ahead);
 
-            FillTable(pAheadTable, pDisplayUnits, elev, dim, dist, bHasOverlay, vAheadElevDetails);
+            FillTable(pAheadTable, pDisplayUnits, elev, dim, dist, bHasOverlay, bHasPrecamberAhead, vAheadElevDetails);
          }
       }
       else
       {
          // Interior Pier
+
+         // check if we have to report precamber slope
+         GirderIndexType nGirders = pBridge->GetGirderCount(backGroupIdx);
+         for (GirderIndexType gdrIdx = 0; gdrIdx < nGirders && bHasPrecamberBack == false; gdrIdx++)
+         {
+            CSegmentKey backSegmentKey, aheadSegmentKey;
+            pBridge->GetSegmentsAtPier(pierIdx, gdrIdx, &backSegmentKey, &aheadSegmentKey);
+            bHasPrecamberBack = (IsZero(pCamber->GetPrecamber(backSegmentKey)) ? false : true);
+         }
+
          CString strLabel;
          strLabel.Format(_T("Pier %d"), LABEL_PIER(pierIdx));
          rptRcTable* pTable = nullptr;
-         pTable = MakeTable(strLabel,pDisplayUnits,bHasOverlay);
+         pTable = MakeTable(strLabel,pDisplayUnits,bHasOverlay,bHasPrecamberBack);
          (*pPara) << pTable << rptNewLine;
 
          std::vector<BearingElevationDetails> vBackElevDetails = pBridge->GetBearingElevationDetails(pierIdx, pgsTypes::Back);
 
-         FillTable(pTable, pDisplayUnits, elev, dim, dist, bHasOverlay, vBackElevDetails);
+         FillTable(pTable, pDisplayUnits, elev, dim, dist, bHasOverlay, bHasPrecamberBack, vBackElevDetails);
       }
    }
 

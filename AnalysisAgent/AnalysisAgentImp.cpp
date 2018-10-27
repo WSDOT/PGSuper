@@ -5094,7 +5094,69 @@ void CAnalysisAgentImp::GetRotation(IntervalIndexType intervalIdx,pgsTypes::Limi
    }
    else
    {
-#pragma Reminder("UPDATE: need to add in creep rotations")
+      // TRICKY: Creep deflection will always include the effect of pretensioned strands - even if bIncludePrestress is false
+      //         This will result is slightly incorrect responses for the bIncludePrestress==false case.
+      GET_IFACE(IIntervals, pIntervals);
+      const CSegmentKey& segmentKey(vPoi.front().get().GetSegmentKey());
+      IntervalIndexType storageIntervalIdx = pIntervals->GetStorageInterval(segmentKey);
+      IntervalIndexType haulingIntervalIdx = pIntervals->GetHaulSegmentInterval(segmentKey);
+      IntervalIndexType erectionIntervalIdx = pIntervals->GetErectSegmentInterval(segmentKey);
+      IntervalIndexType compositeIntervalIdx = pIntervals->GetLastCompositeInterval();
+
+      GET_IFACE(IBridge, pBridge);
+      pgsTypes::SupportedDeckType deckType = pBridge->GetDeckType();
+
+      pgsTypes::PrestressDeflectionDatum supportDatum;
+      std::vector<ICamber::CreepPeriod> vCreepPeriods;
+      if (intervalIdx < storageIntervalIdx)
+      {
+         // creep has not yet occured
+      }
+      else if (storageIntervalIdx < intervalIdx && intervalIdx < erectionIntervalIdx)
+      {
+         vCreepPeriods.push_back(ICamber::cpReleaseToDiaphragm);
+         supportDatum = (intervalIdx == haulingIntervalIdx ? pgsTypes::pddHauling : pgsTypes::pddStorage);
+      }
+      else if (erectionIntervalIdx <= intervalIdx && intervalIdx < compositeIntervalIdx - 1)
+      {
+         if (deckType == pgsTypes::sdtNone)
+         {
+            vCreepPeriods.push_back(ICamber::cpReleaseToFinal);
+         }
+         else
+         {
+            vCreepPeriods.push_back(ICamber::cpReleaseToDiaphragm);
+         }
+         supportDatum = pgsTypes::pddErected;
+      }
+      else if (compositeIntervalIdx - 1 <= intervalIdx)
+      {
+         if (deckType == pgsTypes::sdtNone)
+         {
+            vCreepPeriods.push_back(ICamber::cpReleaseToFinal);
+            vCreepPeriods.push_back(ICamber::cpDiaphragmToFinal);
+            vCreepPeriods.push_back(ICamber::cpDeckToFinal);
+         }
+         else
+         {
+            vCreepPeriods.push_back(ICamber::cpReleaseToDiaphragm);
+            vCreepPeriods.push_back(ICamber::cpDiaphragmToDeck);
+         }
+         supportDatum = pgsTypes::pddErected;
+      }
+
+      for (const auto& creepPeriod : vCreepPeriods)
+      {
+         int i = 0;
+         for (const pgsPointOfInterest& poi : vPoi)
+         {
+            Float64 Dcr, Rcr;
+            GetCreepDeflection(poi, creepPeriod, CREEP_MAXTIME, supportDatum, nullptr, &Dcr, &Rcr);
+            (*pMin)[i] += Rcr;
+            (*pMax)[i] += Rcr;
+            i++;
+         }
+      }
    }
 
    if (bIncludePrecamber)

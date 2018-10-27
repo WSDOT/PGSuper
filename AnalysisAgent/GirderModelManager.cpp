@@ -15187,20 +15187,19 @@ void CGirderModelManager::GetMainSpanSlabLoadEx(const CSegmentKey& segmentKey, b
       Float64 rdwy_elevation = pAlignment->GetElevation(station,offset);
 
       Float64 top_girder_to_top_slab;
-      Float64 slab_offset;
       Float64 girder_chord_elevation;
       if (useDesignValues)
       {
          top_girder_to_top_slab = pBridge->GetTopSlabToTopGirderChordDistance(poi,dsnAstart,dsnAend);
-         slab_offset            = pBridge->GetSlabOffset(poi,dsnAstart,dsnAend);
          girder_chord_elevation = pGirder->GetTopGirderChordElevation(poi,dsnAstart,dsnAend);
       }
       else
       {
          top_girder_to_top_slab = pBridge->GetTopSlabToTopGirderChordDistance(poi);
-         slab_offset            = pBridge->GetSlabOffset(poi);
          girder_chord_elevation = pGirder->GetTopGirderChordElevation(poi);
       }
+
+      Float64 slab_offset = rdwy_elevation - girder_chord_elevation;
 
       Float64 cast_depth             = pBridge->GetCastSlabDepth(poi);
       Float64 panel_depth            = pBridge->GetPanelDepth(poi);

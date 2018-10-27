@@ -1,10 +1,11 @@
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 66.67    9  10.50 KAPOLEI BRIDGE (    1     1     IV      *     50  0.6  270  24.82  16.66   9.00   9.00                                               8  56.0  5.0  7.900  9.500   4.918    -5.518    10366   0.660  1.000   4.872 -1.753 -0.123 -0.199 -2.075 219.06  316.54    1.75    5.00    5.00 
+ 66.67    9  10.50 KAPOLEI BRIDGE (    1     1     IV      *     50  0.6  270  25.14  10.10   8.00   8.00                                              16  56.0  9.0  7.700  8.400   4.797    -5.444    10185   0.660  1.000   3.525 -1.815 -0.128 -0.208 -2.152 211.20  355.06    1.75    5.00    5.00 
 
 
 The Specification Check was Not Successful
 Ultimate moment capacity (negative moment) check failed for Strength I Limit State
+Splitting zone check failed.
 Minimum fillet value exceeded for bridge check failed
 
 
@@ -33,7 +34,7 @@ Minimum fillet value exceeded for bridge check failed
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 66.67    9   7.92 KAPOLEI BRIDGE (    2     1     IV      *     48  0.6  270  25.26   9.60   9.50   9.50                                              16  56.0  9.0  7.400  8.100   4.485    -5.240     9801   0.660  1.000   3.322 -1.657 -0.142 -0.231 -2.030 193.70  348.08    1.75    5.00    5.00 
+ 66.67    9   7.92 KAPOLEI BRIDGE (    2     1     IV      *     48  0.6  270  25.26   9.60   9.50   9.50                                              16  56.0  9.0  7.400  8.100   4.484    -5.240     9801   0.660  1.000   3.322 -1.657 -0.142 -0.231 -2.030 193.70  348.10    1.75    5.00    5.00 
 
 
 The Specification Check was Not Successful

@@ -261,6 +261,10 @@ static Float64 GetSectionGirderOrientationEffect(const pgsPointOfInterest& poi, 
                                           IRoadway* pAlignment, IBridge* pBridge, IGirder* pGdr,
                                           Float64* pCrownSlope)
 {
+   // for complex girder/roadway configurations, the actual girder orientation effect is the vertical distance between the
+   // roadway surface and the mating surface profile at the CL web where the "A" dimension is measured.
+   // this calculation isn't that sophisticated
+
    // girder orientation effect
    *pCrownSlope = 0;
    Float64 pivot_crown = 0; // accounts for the pivot point being over a girder
@@ -269,17 +273,64 @@ static Float64 GetSectionGirderOrientationEffect(const pgsPointOfInterest& poi, 
       // single top flange situation
       // to account for the case when the pivot point is over the girder, compute an
       // average crown slope based on the elevation at the flange tips
-      Float64 Wtf = pGdr->GetTopFlangeWidth(poi);
+      Float64 Wtf = pGdr->GetTopWidth(poi);
 
-      Float64 ya_left  = pAlignment->GetElevation(x,z-Wtf/2);
-      Float64 ya_right = pAlignment->GetElevation(x,z+Wtf/2);
+      Float64 ya_left  = pAlignment->GetElevation(x,z - Wtf /2);
+      Float64 ya_right = pAlignment->GetElevation(x,z + Wtf /2);
 
-      *pCrownSlope = (ya_left - ya_right)/Wtf;
+      *pCrownSlope = (ya_left - ya_right)/ Wtf;
 
       Float64 ya = pAlignment->GetElevation(x,z);
       if ( (ya_left < ya && ya_right < ya) || (ya < ya_left && ya < ya_right) )
       {
          pivot_crown = ya - (ya_left+ya_right)/2;
+      }
+
+      CComPtr<IPoint2dCollection> matingSurfaceProfile;
+      bool bHasMSProfile = (pGdr->GetMatingSurfaceProfile(poi, 0, pgsTypes::scBridge, true, &matingSurfaceProfile) == false || matingSurfaceProfile == nullptr) ? false : true;
+      if (bHasMSProfile)
+      {
+         CollectionIndexType nPoints;
+         matingSurfaceProfile->get_Count(&nPoints);
+         if (nPoints == 3)
+         {
+            // the top surface has a crown point in it (this is probably a deck bulb tee girder)
+            CComPtr<IPoint2d> pnt1, pnt2, pnt3;
+            matingSurfaceProfile->get_Item(0, &pnt1);
+            matingSurfaceProfile->get_Item(1, &pnt2);
+            matingSurfaceProfile->get_Item(2, &pnt3);
+
+            // this is kind of a hack and doesn't work perfectly, but will cover the common case of the
+            // roadway cross section crown point on the CL of the girder
+
+            // if the change horizontal distance between the roadway surface points is equal to the
+            // horizontal distance between the mating surface points, and the vertical elevation changes
+            // are also the same, the mating surface has a profile that is parallel to the roadway surface
+            // so pivot_crown should be zero
+            Float64 x1, y1;
+            pnt1->Location(&x1, &y1);
+
+            Float64 x2, y2;
+            pnt2->Location(&x2, &y2);
+
+            Float64 x3, y3;
+            pnt3->Location(&x3, &y3);
+
+            Float64 dxl1 = x2 - x1;
+            Float64 dyl1 = y2 - y1;
+            Float64 dxl2 = Wtf / 2;
+            Float64 dyl2 = ya - ya_left;
+
+            Float64 dxr1 = x3 - x2;
+            Float64 dyr1 = y3 - y2;
+            Float64 dxr2 = Wtf / 2;
+            Float64 dyr2 = ya_right - ya;
+
+            if (IsEqual(dxl1, dxl2) && IsEqual(dyl1, dyl2) && IsEqual(dxr1, dxr2) && IsEqual(dyr1, dyr2))
+            {
+               pivot_crown = 0;
+            }
+         }
       }
    }
    else
@@ -403,8 +454,6 @@ void pgsDesigner2::GetHaunchDetails(const CSegmentKey& segmentKey,const GDRCONFI
    Float64 min_reqd_haunch_depth =  DBL_MAX;
    for( const pgsPointOfInterest& poi : vPoi)
    {
-      Float64 slab_offset = pBridge->GetSlabOffset(poi,pConfig);
-
       Float64 tSlab = pBridge->GetGrossSlabDepth( poi );
 
       CSpanKey spanKey;

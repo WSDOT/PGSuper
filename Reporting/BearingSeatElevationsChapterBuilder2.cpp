@@ -175,7 +175,7 @@ rptRcTable* CBearingSeatElevationsChapterBuilderBase::BuildTable(const CString& 
       BearingElevationDetails& elevDetails = *iter;
 
       // put multiple bearings for same girder in same row
-      bool newRow = (lastGdrIdx == INVALID_INDEX) || (lastGdrIdx != elevDetails.GdrIdx);
+      bool newRow = (lastGdrIdx == INVALID_INDEX) || (lastGdrIdx != elevDetails.GirderKey.girderIndex);
       if (newRow)
       {
          row++;
@@ -183,11 +183,11 @@ rptRcTable* CBearingSeatElevationsChapterBuilderBase::BuildTable(const CString& 
 
       bool writeNewLineBefore = !newRow;
 
-      lastGdrIdx = elevDetails.GdrIdx;
+      lastGdrIdx = elevDetails.GirderKey.girderIndex;
 
       if (newRow)
       {
-         WRITE_NEWLINE_BEFORE(writeNewLineBefore, row, 0, LABEL_GIRDER(elevDetails.GdrIdx))
+         WRITE_NEWLINE_BEFORE(writeNewLineBefore, row, 0, LABEL_GIRDER(elevDetails.GirderKey.girderIndex))
       }
 
       WRITE_NEWLINE_BEFORE(writeNewLineBefore, row, 1, elevDetails.BearingIdx+1)

@@ -734,19 +734,25 @@ void ListVariousFailures(IBroker* pBroker,FailureList& rFailures,const pgsGirder
       }
 
       // Hauling
+      // not doing a full check... see pgsSegmentArtifact::Passed()
+      // don't want to hard ding users for not passing overhangs or haul weight
+      // fails will show up in the details.
       const pgsHaulingAnalysisArtifact* pHauling = pArtifact->GetHaulingAnalysisArtifact();
-      if ( pHauling != nullptr && !pHauling->Passed() )
+      if (pHauling != nullptr)
       {
-         CString strMsg;
-         if ( 1 < nSegments )
+         if (!pHauling->Passed(pgsTypes::CrownSlope) || !pHauling->Passed(pgsTypes::Superelevation))
          {
-            strMsg.Format(_T("Hauling checks failed for Segment %d."),LABEL_SEGMENT(segIdx));
+            CString strMsg;
+            if (1 < nSegments)
+            {
+               strMsg.Format(_T("Hauling checks failed for Segment %d."), LABEL_SEGMENT(segIdx));
+            }
+            else
+            {
+               strMsg.Format(_T("Hauling checks failed"));
+            }
+            rFailures.push_back(strMsg.GetBuffer());
          }
-         else
-         {
-            strMsg.Format(_T("Hauling checks failed"));
-         }
-         rFailures.push_back(strMsg.GetBuffer());
       }
    } // next segment
 

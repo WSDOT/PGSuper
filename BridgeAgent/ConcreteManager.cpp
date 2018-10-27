@@ -704,7 +704,7 @@ void CConcreteManager::ValidateLongitudinalJointConcrete() const
 
    if (m_pLongitudinalJointConcrete.get() != nullptr)
    {
-#pragma Reminder("WORKING HERE - validate longitudinal joint concrete") // how do we get V/S for a joint?
+#pragma Reminder("validate longitudinal joint concrete") // how do we get V/S for a joint?
       //GET_IFACE(ISectionProperties, pSectProp);
       //Float64 S = pSectProp->GetDeckSurfaceArea();
       //Float64 V = pSectProp->GetDeckVolume();

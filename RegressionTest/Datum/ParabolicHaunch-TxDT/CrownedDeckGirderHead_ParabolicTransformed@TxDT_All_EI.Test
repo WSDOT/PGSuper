@@ -1,6 +1,6 @@
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  AECmbr                                             Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 44.33    7   0.75                     1     1    WF69D          37  0.6  270  37.96  29.88   8.00   8.00   2.50                                              5.400  5.400   2.515    -3.541    10499   0.652  0.652   3.340 -0.605 -0.181 -0.188 -0.974 122.08  244.97    3.00   14.00   14.00 
+ 44.33    7   0.75                     1     1    WF69D          37  0.6  270  37.96  29.88   8.00   8.00   2.50                                              5.400  5.400   2.518    -3.546    10510   0.652  0.652   3.340 -0.611 -0.181 -0.188 -0.980 122.08  244.63    3.00   14.00   14.00 
 
 
 Girder design was Not Successful
@@ -14,7 +14,7 @@ Hauling checks failed
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  AECmbr                                             Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 44.33    7   0.75                     1     2    WF69D          35  0.6  270  38.29  20.28   6.50   6.50   1.00                                              9.600 13.300   2.615    -3.591    10525   0.546  0.725   1.886 -0.470 -0.144 -0.149 -0.762  92.77  164.33    3.00   14.00   14.00 
+ 44.33    7   0.75                     1     2    WF69D          35  0.6  270  38.29  20.28   6.50   6.50   1.00                                              9.600 13.300   2.618    -3.595    10526   0.546  0.725   1.886 -0.473 -0.143 -0.149 -0.765  92.77  164.17    3.00   14.00   14.00 
 
 
 The Specification Check was Not Successful
@@ -24,9 +24,10 @@ Hauling checks failed
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  AECmbr                                             Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 44.33    7   0.75                     1     4    WF69D          35  0.6  270  37.02  19.52   9.00   9.00   2.50                                              4.000  5.000   2.443    -3.265     9402   0.531  0.725   3.296 -0.780 -0.185  0.000 -0.966 117.57  263.95    3.00   14.00   14.00 
+ 44.33    7   0.75                     1     4    WF69D          35  0.6  270  37.02  19.52   8.00   8.00   3.00                                              4.000  5.000   2.388    -3.175     9113   0.531  0.725   3.296 -0.642 -0.204  0.000 -0.846 117.57  273.09    3.00   14.00   14.00 
 
 
+Girder design was Not Successful
 The Specification Check was Not Successful
 Compression stress check failed for Service I Limit State in Interval 11 Cast Longitudinal Joints
 Tensile stress check failed for Service III Limit State in Interval 19 Open to Traffic
