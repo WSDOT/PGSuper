@@ -104,7 +104,7 @@ CCreepAtHaulingTable* CCreepAtHaulingTable::PrepareTable(rptChapter* pChapter,IB
 
    table->time.ShowUnitTag(true);
    *pParagraph << Sub2(_T("k"),_T("td")) << _T(" = ") << table->scalar.SetValue(ptl->GetCreepInitialToShipping().GetKtd()) << rptNewLine;
-   *pParagraph << Sub2(_T("t"),_T("i"))  << _T(" = ") << table->time.SetValue(ptl->GetAdjustedInitialAge())   << rptNewLine;
+   *pParagraph << Sub2(_T("t"),_T("i"))  << _T(" = ") << table->time.SetValue(ptl->GetInitialAge())   << rptNewLine;
    *pParagraph << Sub2(_T("t"),_T("h"))  << _T(" = ") << table->time.SetValue(ptl->GetAgeAtHauling()) << rptNewLine;
    *pParagraph << Sub2(_T("K"),_T("1"))  << _T(" = ") << ptl->GetGdrK1Creep() << rptNewLine;
    *pParagraph << Sub2(_T("K"),_T("2"))  << _T(" = ") << ptl->GetGdrK2Creep() << rptNewLine;

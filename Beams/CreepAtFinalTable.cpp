@@ -222,7 +222,7 @@ CCreepAtFinalTable* CCreepAtFinalTable::PrepareTable(rptChapter* pChapter,IBroke
    (*pParamTable)(0,4) << Sub2(_T("k"),_T("td")) << rptNewLine << _T("Deck Placement to Final") << rptNewLine << _T("t = ") << table->time.SetValue(ptl->GetCreepDeckToFinal().GetMaturity());
    table->time.ShowUnitTag(false);
 
-   (*pParamTable)(1,0) << table->time.SetValue( ptl->GetAdjustedInitialAge() );
+   (*pParamTable)(1,0) << table->time.SetValue( ptl->GetInitialAge() );
    (*pParamTable)(1,1) << table->time.SetValue( ptl->GetAgeAtDeckPlacement() );
    (*pParamTable)(1,2) << table->time.SetValue( ptl->GetFinalAge() );
    (*pParamTable)(1,3) << table->scalar.SetValue(ptl->GetCreepInitialToFinal().GetKtd());

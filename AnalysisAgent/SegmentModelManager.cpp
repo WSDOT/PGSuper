@@ -1457,7 +1457,7 @@ std::vector<Float64> CSegmentModelManager::GetMoment(IntervalIndexType intervalI
    GetSectionResults(intervalIdx,lcid,vPoi,&vFx,&vFy,&vMz,&vDx,&vDy,&vRz);
 
    std::vector<Float64> results;
-   results.resize(vPoi.size());
+   results.reserve(vPoi.size());
    std::transform(std::cbegin(vPoi), std::cend(vPoi), std::cbegin(vMz), std::back_inserter(results), [](const pgsPointOfInterest& poi, const sysSectionValue& Mz) {return IsZero(poi.GetDistFromStart()) ? -Mz.Right() : Mz.Left();});
    return results;
 }
@@ -2228,30 +2228,6 @@ CSegmentModelData CSegmentModelManager::BuildSegmentModel(const CSegmentKey& seg
 
    bool bModelLeftCantilever  = true;
    bool bModelRightCantilever = true;
-   if ( refAttribute == POI_STORAGE_SEGMENT )
-   {
-      // Overhangs are modeled as cantilevers if they are longer than the height of the segment at the CL Bearing
-      PoiList vPoiBrg;
-      pPoi->GetPointsOfInterest(segmentKey, POI_0L | POI_10L | POI_STORAGE_SEGMENT, &vPoiBrg);
-      ATLASSERT(vPoiBrg.size() == 2);
-      const pgsPointOfInterest& poiStartBrg = vPoiBrg.front();
-      const pgsPointOfInterest& poiEndBrg = vPoiBrg.back();
-      ATLASSERT(IsEqual(poiStartBrg.GetDistFromStart(), leftSupportDistance));
-      ATLASSERT(IsEqual(poiEndBrg.GetDistFromStart(), Ls - rightSupportDistance));
-
-      ATLASSERT(poiStartBrg.GetID() != INVALID_ID);
-      ATLASSERT(poiEndBrg.GetID()   != INVALID_ID);
-
-      GET_IFACE(IGirder,pGdr);
-      Float64 segment_height_start = pGdr->GetHeight(poiStartBrg);
-      Float64 segment_height_end   = pGdr->GetHeight(poiEndBrg);
-
-      // the cantilevers at the ends of the segment are modeled as flexural members
-      // if the cantilever length exceeds 110% of the height of the girder
-      bModelLeftCantilever  = (::IsLT(1.1*segment_height_start,leftSupportDistance)  ? true : false);
-      bModelRightCantilever = (::IsLT(1.1*segment_height_end,  rightSupportDistance) ? true : false);
-   }
-
    pgsGirderModelFactory().CreateGirderModel(m_pBroker,intervalIdx,segmentKey,leftSupportDistance,Ls-rightSupportDistance,Ls,Ec,lcid,bModelLeftCantilever,bModelRightCantilever,vPoi,&model_data.Model,&model_data.PoiMap);
 
    // create loadings for all product load types

@@ -290,7 +290,14 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_CIP_TempStrands(CReport
                *pPara << Bold(_T("Prestress release until girder erection")) <<rptNewLine;
             }
             *pPara << RPT_FCI << _T(" = ") << fc.SetValue( details.Fc ) << _T(", ");
-            *pPara << _T("t") << Sub(_T("i")) << _T(" (Adjusted) = ") << time.SetValue(details.ti) << _T(", ");
+            if (pSpecEntry->GetSpecificationType() < lrfdVersionMgr::FourthEdition2007)
+            {
+               *pPara << _T("t") << Sub(_T("i")) << _T(" (Adjusted) = ") << time.SetValue(details.ti) << _T(", ");
+            }
+            else
+            {
+               *pPara << _T("t") << Sub(_T("i")) << _T(" = ") << time.SetValue(details.ti) << _T(", ");
+            }
             *pPara << _T("t = ")<< time.SetValue(details.t) << _T(", ");
 
             if ( lrfdVersionMgr::FourthEdition2007 <= pSpecEntry->GetSpecificationType() )
@@ -480,7 +487,14 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_CIP(CReportSpecificatio
             }
 
             *pPara << RPT_FCI << _T(" = ") << fc.SetValue( details.Fc ) << _T(", ");
-            *pPara << _T("t") << Sub(_T("i")) << _T(" (Adjusted) = ") << time.SetValue(details.ti) << _T(", ");
+            if (pSpecEntry->GetSpecificationType() < lrfdVersionMgr::FourthEdition2007)
+            {
+               *pPara << _T("t") << Sub(_T("i")) << _T(" (Adjusted) = ") << time.SetValue(details.ti) << _T(", ");
+            }
+            else
+            {
+               *pPara << _T("t") << Sub(_T("i")) << _T(" = ") << time.SetValue(details.ti) << _T(", ");
+            }
             *pPara << _T("t = ")<< time.SetValue(details.t) << _T(", ");
 
             if ( lrfdVersionMgr::FourthEdition2007 <= pSpecEntry->GetSpecificationType() )
@@ -689,7 +703,14 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_NoDeck_TempStrands(CRep
          *pPara << rptNewLine;
          *pPara << Bold(_T("Prestress release until temporary strand removal and diaphragm casting")) <<rptNewLine;
          *pPara << RPT_FCI << _T(" = ") << fc.SetValue( details.Fc ) << _T(", ");
-         *pPara << _T("t") << Sub(_T("i")) << _T(" (Adjusted) = ") << time.SetValue(details.ti) << _T(", ");
+         if (pSpecEntry->GetSpecificationType() < lrfdVersionMgr::FourthEdition2007)
+         {
+            *pPara << _T("t") << Sub(_T("i")) << _T(" (Adjusted) = ") << time.SetValue(details.ti) << _T(", ");
+         }
+         else
+         {
+            *pPara << _T("t") << Sub(_T("i")) << _T(" = ") << time.SetValue(details.ti) << _T(", ");
+         }
          *pPara << _T("t = ")<< time.SetValue(details.t) << _T(", ");
 
          if ( lrfdVersionMgr::FourthEdition2007 <= pSpecEntry->GetSpecificationType() )

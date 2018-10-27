@@ -1299,7 +1299,7 @@ void CGirderModelManager::GetDeckShrinkageStresses(const pgsPointOfInterest& poi
    // Tricky: Eccentricity of deck changes with fc, so we need to recompute M
    GET_IFACE(ISectionProperties,pProps);
    Float64 ed  = pProps->GetY( compositeIntervalIdx, poi, pgsTypes::TopGirder, fcGdr ) 
-               + pBridge->GetStructuralSlabDepth(poi)/2;
+               + pBridge->GetGrossSlabDepth(poi) / 2; // use gross depth because shrinkage occurs at early age before sacrafical wearing surface is worn off
    ed *= -1;
 
    M = P * ed;

@@ -617,7 +617,7 @@ void CPsLossEngineer::LossesByRefinedEstimate2005(BeamType beamType,const pgsPoi
                                 td,
                                 tf,
                                 pSpecEntry->GetCuringMethod() == CURING_ACCELERATED ? lrfdCreepCoefficient2005::Accelerated : lrfdCreepCoefficient2005::Normal,
-                                pSpecEntry->GetCuringMethodTimeAdjustmentFactor(),
+                                ::ConvertToSysUnits(pSpecEntry->GetCuringMethodTimeAdjustmentFactor(), unitMeasure::Day),
                                 lossAgency!=laWSDOT, // ignore initial relaxation if not WSDOT
                                 false,
                                 relaxationMethod));
@@ -1619,7 +1619,7 @@ void CPsLossEngineer::ReportRefinedMethod2005(rptChapter* pChapter,BeamType beam
    *pChapter << pParagraph;
    if ( pBridge->IsCompositeDeck() )
    {
-      *pParagraph << _T("Losses: Time of Deck Placement to Final Time [[") << LrfdCw8th(_T("5.9.5.4.3, "),_T("5.9.3.4.3, ")) << _T("]") << rptNewLine;
+      *pParagraph << _T("Losses: Time of Deck Placement to Final Time [") << LrfdCw8th(_T("5.9.5.4.3"),_T("5.9.3.4.3")) << _T("]") << rptNewLine;
    }
    else
    {
@@ -2853,6 +2853,7 @@ void CPsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi, const GDR
    {
       if ( spType == pgsTypes::sptTransformed )
       {
+#pragma Reminder("REVIEW: Should this be net gross deck area?") 
          *pAd  = pSectProp->GetNetAd( compositeDeckIntervalIdx, poi );
       }
       else
@@ -2860,14 +2861,14 @@ void CPsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi, const GDR
          *pAd  = pSectProp->GetGrossDeckArea( poi );
       }
 
-      // eccentricity of deck
+      // eccentricity of deck... use gross slab depth because sacrifical wearing surface hasn't worn off while early age shrinkage is occuring
       if (pConfig)
       {
-         *ped = pSectProp->GetY(compositeDeckIntervalIdx, poi, pgsTypes::TopGirder, pConfig->Fc) + pBridge->GetStructuralSlabDepth(poi) / 2;
+         *ped = pSectProp->GetY(compositeDeckIntervalIdx, poi, pgsTypes::TopGirder, pConfig->Fc) + pBridge->GetGrossSlabDepth(poi) / 2;
       }
       else
       {
-         *ped = pSectProp->GetY(compositeDeckIntervalIdx, poi, pgsTypes::TopGirder) + pBridge->GetStructuralSlabDepth(poi) / 2;
+         *ped = pSectProp->GetY(compositeDeckIntervalIdx, poi, pgsTypes::TopGirder) + pBridge->GetGrossSlabDepth(poi) / 2;
       }
       *ped *= -1;
    }
@@ -3039,7 +3040,7 @@ void CPsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi, const GDR
    *ptd = pSpecEntry->GetCreepDuration2Max();
    *ptf = pSpecEntry->GetTotalCreepDuration();
 
-   *pAslab = pSectProp->GetTributaryDeckArea(poi);
+   *pAslab = pSectProp->GetGrossDeckArea(poi);
 
    Float64 wTop = 0;
    FlangeIndexType nFlanges = pGirder->GetNumberOfTopFlanges(segmentKey);

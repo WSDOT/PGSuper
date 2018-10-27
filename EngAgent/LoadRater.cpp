@@ -1369,8 +1369,35 @@ void pgsLoadRater::CheckReinforcementYielding(const CGirderKey& girderKey,const 
       Float64 fps = 0;
       if ( bStrands )
       {
-         GET_IFACE(IPretensionForce,pPrestressForce);
-         fps = pPrestressForce->GetEffectivePrestressWithLiveLoad(poi,pgsTypes::Permanent,ls,vehicleIdx);
+         // because we have to play games with the live load distribution factors (as described above)
+         // we can't get the effective prestress force with live load directly.
+         GET_IFACE(ISpecification, pSpec);
+         GET_IFACE(ILibrary, pLibrary);
+         const SpecLibraryEntry* pSpecEntry = pLibrary->GetSpecEntry(pSpec->GetSpecification().c_str());
+         Float64 K_liveload = pSpecEntry->GetLiveLoadElasticGain();
+
+         if (!IsZero(K_liveload))
+         {
+            GET_IFACE(IPretensionForce, pPrestressForce);
+            fps = pPrestressForce->GetEffectivePrestress(poi, pgsTypes::Permanent, loadRatingIntervalIdx, pgsTypes::End);
+
+            GET_IFACE(ILosses, pLosses);
+            const LOSSDETAILS* pDetails = pLosses->GetLossDetails(poi, loadRatingIntervalIdx);
+
+            Float64 llGain = 0;
+            if ( pDetails->pLosses )
+            {
+               llGain = pDetails->pLosses->ElasticGainDueToLiveLoad(LLIM);
+            }
+            else
+            {
+               llGain = pDetails->TimeStepDetails[loadRatingIntervalIdx].Strands[pgsTypes::Straight].dFllMax;
+               llGain += pDetails->TimeStepDetails[loadRatingIntervalIdx].Strands[pgsTypes::Harped].dFllMax;
+            }
+            llGain *= K_liveload;
+
+            fps += llGain;
+         }
       }
 
       Float64 fpt = 0;

@@ -8570,6 +8570,9 @@ void pgsDesigner2::DesignForShipping(IProgress* pProgress) const
             {
                LOG(_T("Concrete strength was increased for shipping - Restart") );
                m_DesignerOutcome.SetOutcome(pgsDesignCodes::FcChanged);
+               m_StrandDesignTool.SetNumTempStrands(0);
+               m_bShippingDesignWithEqualCantilevers = false;
+               m_bShippingDesignIgnoreConfigurationLimits = false;
                return;
             }
             else

@@ -1,6 +1,6 @@
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 28.25    5   6.00                     1     1    W32BT    *     26  0.6  270  14.49  10.80  11.25  11.25                                               4  28.0  3.0  7.800  8.900   3.574    -4.949     3113   0.551  0.671   3.571 -0.981 -0.082 -0.117 -1.180 115.49  194.40    1.75    5.00    5.00 
+ 28.25    5   6.00                     1     1    W32BT    *     26  0.6  270  14.49  10.80  11.50  11.50                                               4  28.0  3.0  7.600  8.800   3.595    -4.994     3108   0.551  0.671   3.778 -1.005 -0.082 -0.117 -1.205 117.42  194.14    1.75    5.00    5.00 
 
 
 The Specification Check was Successful
@@ -8,19 +8,17 @@ The Specification Check was Successful
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 28.25    5   6.00                     1     2    W32BT    *     25  0.6  270  14.48  11.56  11.25  11.25                                               3  28.0  3.0  7.800  8.800   3.554    -4.926     3022   0.549  0.671   3.428 -0.975 -0.082 -0.117 -1.175 106.49  180.04    1.75    5.00    5.00 
+ 28.25    5   6.00                     1     2    W32BT    *     26  0.6  270  14.49  10.80  11.75  11.75                                               4  28.0  3.0  7.700  8.900   3.606    -5.000     3124   0.549  0.671   3.873 -1.001 -0.082 -0.117 -1.200 117.29  189.30    1.75    5.00    5.00 
 
 
-The Specification Check was Not Successful
-Tensile stress check failed for Service III Limit State in Interval 16 Open to Traffic
+The Specification Check was Successful
 
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 28.25    5   6.00                     1     3    W32BT    *     25  0.6  270  14.48  11.56  11.25  11.25                                               3  28.0  3.0  7.800  8.800   3.554    -4.926     3022   0.549  0.671   3.428 -0.975 -0.082 -0.117 -1.175 106.49  180.04    1.75    5.00    5.00 
+ 28.25    5   6.00                     1     3    W32BT    *     26  0.6  270  14.49  10.80  11.75  11.75                                               4  28.0  3.0  7.700  8.900   3.606    -5.000     3124   0.549  0.671   3.873 -1.001 -0.082 -0.117 -1.200 117.29  189.30    1.75    5.00    5.00 
 
 
-The Specification Check was Not Successful
-Tensile stress check failed for Service III Limit State in Interval 16 Open to Traffic
+The Specification Check was Successful
 
 

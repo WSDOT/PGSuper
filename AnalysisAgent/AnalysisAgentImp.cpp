@@ -6019,7 +6019,7 @@ CREEPCOEFFICIENTDETAILS CAnalysisAgentImp::GetCreepCoefficientDetails(const CSeg
          cc.SetSurfaceArea( pSectProp->GetSegmentSurfaceArea(segmentKey) );
          cc.SetVolume( pSectProp->GetSegmentVolume(segmentKey) );
          cc.SetFc(fc);
-         cc.SetCuringMethodTimeAdjustmentFactor(pSpecEntry->GetCuringMethodTimeAdjustmentFactor());
+         cc.SetCuringMethodTimeAdjustmentFactor(::ConvertToSysUnits(pSpecEntry->GetCuringMethodTimeAdjustmentFactor(),unitMeasure::Day));
 
          switch( creepPeriod )
          {
@@ -6103,7 +6103,7 @@ CREEPCOEFFICIENTDETAILS CAnalysisAgentImp::GetCreepCoefficientDetails(const CSeg
          cc.SetVolume( pSectProp->GetSegmentVolume(segmentKey) );
          cc.SetFc(fc);
 
-         cc.SetCuringMethodTimeAdjustmentFactor(pSpecEntry->GetCuringMethodTimeAdjustmentFactor());
+         cc.SetCuringMethodTimeAdjustmentFactor(::ConvertToSysUnits(pSpecEntry->GetCuringMethodTimeAdjustmentFactor(), unitMeasure::Day));
 
          GET_IFACE(IMaterials,pMaterial);
          cc.SetK1( pMaterial->GetSegmentCreepK1(segmentKey) );
@@ -7918,10 +7918,6 @@ void CAnalysisAgentImp::GetCreepDeflection_CIP_TempStrands(const pgsPointOfInter
 
    const CSegmentKey& segmentKey = poi.GetSegmentKey();
 
-   GET_IFACE(IIntervals,pIntervals);
-   IntervalIndexType castDiaphragmIntervalIdx = pIntervals->GetCastIntermediateDiaphragmsInterval();
-
-
    Float64 DXharped, Dharped, Rharped;
    GetPrestressDeflectionFromModel( poi, initModelData,     pgsTypes::Harped,    pgsTypes::pddStorage, &DXharped, &Dharped, &Rharped);
 
@@ -7945,6 +7941,9 @@ void CAnalysisAgentImp::GetCreepDeflection_CIP_TempStrands(const pgsPointOfInter
    Float64 DgErected, RgErected;
    Float64 DgInc,     RgInc;
    GetGirderDeflectionForCamber(poi, pConfig, &DgStorage, &RgStorage, &DgErected, &RgErected, &DgInc, &RgInc);
+
+   Float64 Ddiaphragm, Rdiaphragm;
+   GetDiaphragmDeflection(poi, pConfig, &Ddiaphragm, &Rdiaphragm);
 
    // To account for the fact that deflections are measured from different datums during storage
    // and after erection, we have to compute offsets that account for the translated coordinate systems.
@@ -8044,10 +8043,6 @@ void CAnalysisAgentImp::GetCreepDeflection_CIP_TempStrands(const pgsPointOfInter
       ATLASSERT(datum == pgsTypes::pddErected);
 
       // creep 2 - Immediately after diarphagm/temporary strands to deck
-      pgsTypes::BridgeAnalysisType bat = GetBridgeAnalysisType(pgsTypes::Minimize); // want the largest downward deflection
-      Float64 Ddiaphragm = GetDeflection(castDiaphragmIntervalIdx,pgsTypes::pftDiaphragm,poi,bat, rtIncremental);
-      Float64 Rdiaphragm = GetRotation(  castDiaphragmIntervalIdx,pgsTypes::pftDiaphragm,poi,bat, rtIncremental);
-
       Float64 DXtpsr, Dtpsr,Rtpsr;
       GetPrestressDeflectionFromModel( poi, releaseTempModelData, pgsTypes::Temporary, pgsTypes::pddErected, &DXtpsr, &Dtpsr, &Rtpsr);
 
@@ -8072,7 +8067,6 @@ void CAnalysisAgentImp::GetCreepDeflection_CIP(const pgsPointOfInterest& poi,con
    ATLASSERT( creepPeriod == cpReleaseToDeck || creepPeriod == cpReleaseToDiaphragm || creepPeriod == cpDiaphragmToDeck );
 
    const CSegmentKey& segmentKey = poi.GetSegmentKey();
-
 
    Float64 Dps, Rps; // measured relative to storage supports
    if ( pConfig == nullptr )
@@ -8106,6 +8100,9 @@ void CAnalysisAgentImp::GetCreepDeflection_CIP(const pgsPointOfInterest& poi,con
    Float64 DgErected, RgErected;
    Float64 DgInc,     RgInc;
    GetGirderDeflectionForCamber(poi, pConfig, &DgStorage, &RgStorage, &DgErected, &RgErected, &DgInc, &RgInc);
+
+   Float64 Ddiaphragm, Rdiaphragm;
+   GetDiaphragmDeflection(poi, pConfig, &Ddiaphragm, &Rdiaphragm);
 
    // To account for the fact that deflections are measured from different datums during storage
    // and after erection, we have to compute offsets that account for the translated coordinate systems.
@@ -8203,8 +8200,9 @@ void CAnalysisAgentImp::GetCreepDeflection_CIP(const pgsPointOfInterest& poi,con
       // |---------------------------------------------------------------------------------------------------------------------|
       //            |
       //            +- This is equal to the creep relative to the final bearing locations
-      *pDy = (Ct3 - Ct1)*(DgStorage + Dps) - (Ct3 - Ct1)*(DgirderSupport + DpsSupport) + Ct2*DgInc;
-      *pRz = (Ct3 - Ct1)*(RgStorage + Rps) - (Ct3 - Ct1)*(RgirderSupport + RpsSupport) + Ct2*RgInc;
+
+      *pDy = (Ct3 - Ct1)*(DgStorage + Dps) - (Ct3 - Ct1)*(DgirderSupport + DpsSupport) + Ct2*(Ddiaphragm + DgInc);
+      *pRz = (Ct3 - Ct1)*(RgStorage + Rps) - (Ct3 - Ct1)*(RgirderSupport + RpsSupport) + Ct2*(Rdiaphragm + RgInc);
    }
    else /*if ( creepPeriod == cpReleaseToDeck )*/
    {

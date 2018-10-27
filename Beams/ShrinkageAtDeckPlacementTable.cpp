@@ -171,7 +171,7 @@ CShrinkageAtDeckPlacementTable* CShrinkageAtDeckPlacementTable::PrepareTable(rpt
    (*pParamTable)(1,0) << ptl->GetRelHumidity();
    (*pParamTable)(1,1) << table->ecc.SetValue(ptl->GetVolume()/ptl->GetSurfaceArea());
    (*pParamTable)(1,2) << table->stress.SetValue(ptl->GetFci());
-   (*pParamTable)(1,3) << table->time.SetValue(ptl->GetAdjustedInitialAge());
+   (*pParamTable)(1,3) << table->time.SetValue(ptl->GetInitialAge());
    (*pParamTable)(1,4) << table->time.SetValue(ptl->GetAgeAtDeckPlacement());
    (*pParamTable)(1,5) << table->time.SetValue(ptl->GetFinalAge());
 

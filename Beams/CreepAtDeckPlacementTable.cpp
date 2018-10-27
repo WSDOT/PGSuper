@@ -112,7 +112,7 @@ void CCreepAtDeckPlacementTable::AddRow(rptChapter* pChapter,IBroker* pBroker,co
       (*this)(row,1) << stress.SetValue(pDetails->pLosses->ElasticShortening().PermanentStrand_Fcgp() + ptl->GetDeltaFpp());
 
    (*this)(row,2) << scalar.SetValue(ptl->GetCreepInitialToDeck().GetKtd());
-   (*this)(row,3) << time.SetValue(ptl->GetAdjustedInitialAge());
+   (*this)(row,3) << time.SetValue(ptl->GetInitialAge());
    (*this)(row,4) << time.SetValue(ptl->GetAgeAtDeckPlacement());
    (*this)(row,5) << scalar.SetValue(ptl->GetCreepInitialToDeck().GetCreepCoefficient());
    (*this)(row,6) << scalar.SetValue(ptl->GetKid());

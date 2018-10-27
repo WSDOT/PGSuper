@@ -182,7 +182,7 @@ CShrinkageAtHaulingTable* CShrinkageAtHaulingTable::PrepareTable(rptChapter* pCh
    (*paraTable)(1,0) << ptl->GetRelHumidity();
    (*paraTable)(1,1) << table->ecc.SetValue(ptl->GetVolume()/ptl->GetSurfaceArea());
    (*paraTable)(1,2) << table->stress.SetValue(ptl->GetFci());
-   (*paraTable)(1,3) << table->time.SetValue(ptl->GetAdjustedInitialAge());
+   (*paraTable)(1,3) << table->time.SetValue(ptl->GetInitialAge());
    (*paraTable)(1,4) << table->time.SetValue(ptl->GetAgeAtHauling());
    (*paraTable)(1,5) << table->time.SetValue(ptl->GetFinalAge());
 
