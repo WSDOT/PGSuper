@@ -208,42 +208,13 @@ void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnit
    pProductForces->GetDeflLiveLoadDeflection(IProductForces::DeflectionLiveLoadEnvelope, poi_fabr, bat, &delta_oll_fabr, &temp );
 
    // get # of days for creep
-   Float64 min_days = ::ConvertFromSysUnits(pSpecEntry->GetCreepDuration2Min(), unitMeasure::Day);
    Float64 max_days = ::ConvertFromSysUnits(pSpecEntry->GetCreepDuration2Max(), unitMeasure::Day);
 
    // Populate the table
    bool is_negative_camber = false;
    Uint16 row = 1;
-   (*pTable)(row,0) << _T("Estimated Unfactored Camber at ")<< min_days<<_T(" days, D");
-
-   Float64 D_uorig = pCamber->GetDCamberForGirderScheduleUnfactored( poi_orig,CREEP_MINTIME);
-   if ( D_uorig < 0 )
-   {
-      (*pTable)(row,1) << color(Red) << disp.SetValue( D_uorig ) << color(Black);
-      (*pTable)(row,2) << color(Red) << dispft.SetValue( D_uorig ) << color(Black);
-   }
-   else
-   {
-      (*pTable)(row,1) << disp.SetValue( D_uorig );
-      (*pTable)(row,2) << dispft.SetValue( D_uorig );
-   }
-
-   Float64 D_ufabr = pCamber->GetDCamberForGirderScheduleUnfactored( poi_fabr,CREEP_MINTIME);
-   if ( D_ufabr < 0 )
-   {
-      (*pTable)(row,3) << color(Red) << disp.SetValue( D_ufabr ) << color(Black);
-      (*pTable)(row,4) << color(Red) << dispft.SetValue( D_ufabr ) << color(Black);
-   }
-   else
-   {
-      (*pTable)(row,3) << disp.SetValue( D_ufabr );
-      (*pTable)(row,4) << dispft.SetValue( D_ufabr );
-   }
-
-   row++;
-
    (*pTable)(row, 0) << _T("Estimated Unfactored Camber at ") << max_days << _T(" days, D");;
-   D_uorig = pCamber->GetDCamberForGirderScheduleUnfactored( poi_orig,CREEP_MAXTIME);
+   Float64 D_uorig = pCamber->GetDCamberForGirderScheduleUnfactored( poi_orig,CREEP_MAXTIME);
    if ( D_uorig < 0 )
    {
       (*pTable)(row,1) << color(Red) << disp.SetValue( D_uorig ) << color(Black);
@@ -255,7 +226,7 @@ void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnit
       (*pTable)(row,2) << dispft.SetValue( D_uorig );
    }
 
-   D_ufabr = pCamber->GetDCamberForGirderScheduleUnfactored( poi_fabr,CREEP_MAXTIME);
+   Float64 D_ufabr = pCamber->GetDCamberForGirderScheduleUnfactored( poi_fabr,CREEP_MAXTIME);
    if ( D_ufabr < 0 )
    {
       (*pTable)(row,3) << color(Red) << disp.SetValue( D_ufabr ) << color(Black);
@@ -270,36 +241,8 @@ void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnit
    row++;
 
    // Factored D camber
-   (*pTable)(row,0) << _T("Estimated Factored Camber at ")<< min_days<<_T(" days, D");
-
-   Float64 D_orig = pCamber->GetDCamberForGirderSchedule( poi_orig,CREEP_MINTIME);
-   if ( D_orig < 0 )
-   {
-      (*pTable)(row,1) << color(Red) << disp.SetValue( D_orig ) << color(Black);
-      (*pTable)(row,2) << color(Red) << dispft.SetValue( D_orig ) << color(Black);
-   }
-   else
-   {
-      (*pTable)(row,1) << disp.SetValue( D_orig );
-      (*pTable)(row,2) << dispft.SetValue( D_orig );
-   }
-
-   Float64 D_fabr = pCamber->GetDCamberForGirderSchedule( poi_fabr,CREEP_MINTIME);
-   if ( D_fabr < 0 )
-   {
-      (*pTable)(row,3) << color(Red) << disp.SetValue( D_fabr ) << color(Black);
-      (*pTable)(row,4) << color(Red) << dispft.SetValue( D_fabr ) << color(Black);
-   }
-   else
-   {
-      (*pTable)(row,3) << disp.SetValue( D_fabr );
-      (*pTable)(row,4) << dispft.SetValue( D_fabr );
-   }
-
-   row++;
-
    (*pTable)(row,0) << _T("Estimated Factored Camber at ")<< max_days<<_T(" days, D") <<Super(_T("**"));
-   D_orig = pCamber->GetDCamberForGirderSchedule( poi_orig,CREEP_MAXTIME);
+   Float64 D_orig = pCamber->GetDCamberForGirderSchedule( poi_orig,CREEP_MAXTIME);
    if ( D_orig < 0 )
    {
       (*pTable)(row,1) << color(Red) << disp.SetValue( D_orig ) << color(Black);
@@ -311,7 +254,7 @@ void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnit
       (*pTable)(row,2) << dispft.SetValue( D_orig );
    }
 
-   D_fabr = pCamber->GetDCamberForGirderSchedule( poi_fabr,CREEP_MAXTIME);
+   Float64 D_fabr = pCamber->GetDCamberForGirderSchedule( poi_fabr,CREEP_MAXTIME);
    if ( D_fabr < 0 )
    {
       (*pTable)(row,3) << color(Red) << disp.SetValue( D_fabr ) << color(Black);
@@ -433,6 +376,12 @@ void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnit
    if (is_negative_camber)
    {
       *p<<color(Red) << _T("Warning:  Excess camber is negative indicating a potential sag in the beam.") << color(Black) << rptNewLine;
+   }
+
+   Float64 min_days = ::ConvertFromSysUnits(pSpecEntry->GetCreepDuration2Min(), unitMeasure::Day);
+   if (max_days != min_days)
+   {
+      *p<<color(Red) << _T("Warning: Camber min and max timings in project criteria are different. Values for max timing are shown only.") << color(Black) << rptNewLine;
    }
 }
 

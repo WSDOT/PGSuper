@@ -269,7 +269,6 @@ void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker, const std::vec
       pProductForces->GetDeflLiveLoadDeflection(IProductForces::DeflectionLiveLoadEnvelope, poi, bat, &delta_oll, &temp );
 
       // get # of days for creep
-      Float64 min_days = ::ConvertFromSysUnits(pSpecEntry->GetCreepDuration2Min(), unitMeasure::Day);
       Float64 max_days = ::ConvertFromSysUnits(pSpecEntry->GetCreepDuration2Max(), unitMeasure::Day);
 
       // Populate the table
@@ -293,140 +292,48 @@ void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker, const std::vec
       }
 
       // Unfactored Design camber
-      if (IsEqual(min_days, max_days))
+      if (bFirst)
+         (*pTable)(row,0) << _T("Unfactored Design Camber");
+
+      Float64 Du = pCamber->GetDCamberForGirderScheduleUnfactored( poi,CREEP_MAXTIME);
+      if ( Du < 0 )
       {
-         // The usual case for TxDOT
-         if (bFirst)
-            (*pTable)(row,0) << _T("Unfactored Design Camber");
+         if (isSingleGirder)
+            (*pTable)(row,1) << color(Red) << disp.SetValue( Du ) << color(Black);
 
-         Float64 D = pCamber->GetDCamberForGirderScheduleUnfactored( poi,CREEP_MINTIME);
-         if ( D < 0 )
-         {
-            if (isSingleGirder)
-               (*pTable)(row,1) << color(Red) << disp.SetValue( D ) << color(Black);
-
-            (*pTable)(row,col) << color(Red) << dispft.SetValue( D ) << color(Black);
-         }
-         else
-         {
-            if (isSingleGirder)
-               (*pTable)(row,1) << disp.SetValue( D );
-
-            (*pTable)(row,col) << dispft.SetValue( D );
-         }
-         row++;
+         (*pTable)(row,col) << color(Red) << dispft.SetValue( Du ) << color(Black);
       }
       else
       {
-         if (bFirst)
-            (*pTable)(row,0) << _T("Estimated unfactored camber at ")<< min_days<<_T(" days, D");
+         if (isSingleGirder)
+            (*pTable)(row,1) << disp.SetValue( Du );
 
-         Float64 D = pCamber->GetDCamberForGirderScheduleUnfactored( poi,CREEP_MINTIME);
-         if ( D < 0 )
-         {
-            if (isSingleGirder)
-               (*pTable)(row,1) << color(Red) << disp.SetValue( D ) << color(Black);
-
-            (*pTable)(row,col) << color(Red) << dispft.SetValue( D ) << color(Black);
-         }
-         else
-         {
-            if (isSingleGirder)
-               (*pTable)(row,1) << disp.SetValue( D );
-
-            (*pTable)(row,col) << dispft.SetValue( D );
-         }
-         row++;
-
-         if (bFirst)
-            (*pTable)(row,0) << _T("Estimated unfactored camber at ")<< max_days<<_T(" days, D");
-
-         D = pCamber->GetDCamberForGirderScheduleUnfactored( poi,CREEP_MAXTIME);
-         if ( D < 0 )
-         {
-            if (isSingleGirder)
-               (*pTable)(row,1) << color(Red) << disp.SetValue( D ) << color(Black);
-
-            (*pTable)(row,col) << color(Red) << dispft.SetValue( D ) << color(Black);
-         }
-         else
-         {
-            if (isSingleGirder)
-               (*pTable)(row,1) << disp.SetValue( D );
-
-            (*pTable)(row,col) << dispft.SetValue( D );
-         }
-
-         row++;
+         (*pTable)(row,col) << dispft.SetValue( Du );
       }
+
+      row++;
 
       // Factored design camber
-      if (IsEqual(min_days, max_days))
+      if (bFirst)
+         (*pTable)(row,0) << _T("Factored Design Camber, ")<<Sub2(symbol(DELTA),_T("4"))<<Super(_T("**"));
+
+      Float64 Df = pCamber->GetDCamberForGirderSchedule( poi,CREEP_MAXTIME);
+      if ( Df < 0 )
       {
-         // The usual case for TxDOT
-         if (bFirst)
-            (*pTable)(row,0) << _T("Factored Design Camber(")<<Sub2(symbol(DELTA),_T("4"))<<_T(")")<<Super(_T("**"));
+         if (isSingleGirder)
+            (*pTable)(row,1) << color(Red) << disp.SetValue( Df ) << color(Black);
 
-         Float64 D = pCamber->GetDCamberForGirderSchedule( poi,CREEP_MINTIME);
-         if ( D < 0 )
-         {
-            if (isSingleGirder)
-               (*pTable)(row,1) << color(Red) << disp.SetValue( D ) << color(Black);
-
-            (*pTable)(row,col) << color(Red) << dispft.SetValue( D ) << color(Black);
-         }
-         else
-         {
-            if (isSingleGirder)
-               (*pTable)(row,1) << disp.SetValue( D );
-
-            (*pTable)(row,col) << dispft.SetValue( D );
-         }
-         row++;
+         (*pTable)(row,col) << color(Red) << dispft.SetValue( Df ) << color(Black);
       }
       else
       {
-         if (bFirst)
-            (*pTable)(row,0) << _T("Estimated camber at ")<< min_days<<_T(" days, D");
+         if (isSingleGirder)
+            (*pTable)(row,1) << disp.SetValue( Df );
 
-         Float64 D = pCamber->GetDCamberForGirderSchedule( poi,CREEP_MINTIME);
-         if ( D < 0 )
-         {
-            if (isSingleGirder)
-               (*pTable)(row,1) << color(Red) << disp.SetValue( D ) << color(Black);
-
-            (*pTable)(row,col) << color(Red) << dispft.SetValue( D ) << color(Black);
-         }
-         else
-         {
-            if (isSingleGirder)
-               (*pTable)(row,1) << disp.SetValue( D );
-
-            (*pTable)(row,col) << dispft.SetValue( D );
-         }
-         row++;
-
-         if (bFirst)
-            (*pTable)(row,0) << _T("Estimated camber at ")<< max_days<<_T(" days, D");
-
-         D = pCamber->GetDCamberForGirderSchedule( poi,CREEP_MAXTIME);
-         if ( D < 0 )
-         {
-            if (isSingleGirder)
-               (*pTable)(row,1) << color(Red) << disp.SetValue( D ) << color(Black);
-
-            (*pTable)(row,col) << color(Red) << dispft.SetValue( D ) << color(Black);
-         }
-         else
-         {
-            if (isSingleGirder)
-               (*pTable)(row,1) << disp.SetValue( D );
-
-            (*pTable)(row,col) << dispft.SetValue( D );
-         }
-
-         row++;
+         (*pTable)(row,col) << dispft.SetValue( Df );
       }
+
+      row++;
 
       if ( 0 < pSegmentData->GetStrandData(segmentKey)->GetStrandCount(pgsTypes::Temporary) && pSegmentData->GetStrandData(segmentKey)->GetTemporaryStrandUsage() != pgsTypes::ttsPTBeforeShipping )
       {
@@ -541,7 +448,7 @@ void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker, const std::vec
       row++;
 
       if (bFirst)
-         (*pTable)(row, 0) << _T("Screed Camber, C (Based on ") << Sub2(symbol(DELTA), _T("4")) << _T(")");
+         (*pTable)(row, 0) << _T("Screed Camber, C") << Super(_T("**"));
 
       if (isSingleGirder)
          (*pTable)(row,1) << disp.SetValue( pCamber->GetScreedCamber(poi) );
@@ -550,7 +457,7 @@ void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker, const std::vec
       row++;
 
       if (bFirst)
-         (*pTable)(row,0) << _T("Computed Excess Camber (Based on ") << Sub2(symbol(DELTA), _T("4")) << _T(" - C)");
+         (*pTable)(row,0) << _T("Computed Excess Camber, ") << Sub2(symbol(DELTA), _T("4")) << _T(" - C");
 
       Float64 excess_camber = pCamber->GetExcessCamber(poi,CREEP_MAXTIME);
       if ( excess_camber < 0 )
@@ -598,6 +505,12 @@ void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker, const std::vec
    *p<<_T("* Deflection due to haunch weight is not included in this value") << rptNewLine;
    *p<<_T("** Refer to the Camber Details tables in the Details report for more information") << rptNewLine;
 
+   Float64 min_days = ::ConvertFromSysUnits(pSpecEntry->GetCreepDuration2Min(), unitMeasure::Day);
+   Float64 max_days = ::ConvertFromSysUnits(pSpecEntry->GetCreepDuration2Max(), unitMeasure::Day);
+   if (max_days != min_days)
+   {
+      *p<<color(Red) << _T("Warning: Camber min and max timings in project criteria are different. Values for max timing are shown only.") << color(Black) << rptNewLine;
+   }
 
    for (std::vector<CSegmentKey>::const_iterator ite=BeamsWithExcessCamber.begin(); ite!=BeamsWithExcessCamber.end(); ite++)
    {

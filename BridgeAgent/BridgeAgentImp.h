@@ -1127,8 +1127,8 @@ private:
 
    CComPtr<IBridgeGeometryTool> m_BridgeGeometryTool;
 
-   std::map<CollectionIndexType,CogoObjectID> m_HorzCurveKeys;
-   std::map<CollectionIndexType,CogoObjectID> m_VertCurveKeys;
+   std::map<IndexType,std::pair<IndexType,CogoObjectID>> m_HorzCurveKeys; // key is hc index in cogo model. value is (input hc index,cogomodel curve id)... if an input curve has zero radius it is not created in the curve collection in the cogo model
+   std::map<IndexType,std::pair<IndexType,CogoObjectID>> m_VertCurveKeys;
 
    CConcreteManager m_ConcreteManager;
    CIntervalManager m_IntervalManager;

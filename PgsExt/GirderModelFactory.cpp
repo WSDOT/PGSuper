@@ -164,11 +164,11 @@ void pgsGirderModelFactory::BuildModel(IBroker* pBroker, IntervalIndexType inter
       PoiIDType rid = rightIter->GetID();
       if (IsEqual(leftIter->GetDistFromStart(), rightIter->GetDistFromStart(), otol))
       {
-         // POI's are very close, blast one that's not a support or a duplicate
-         if (lid>=0 && lid==rid)
+         // POI's are very close, blast the one that's not a support or a duplicate
+         if (0 <= lid && lid == rid)
          {
             // Weed duplicates out. Should be blocked from code above
-            ATLASSERT(0);
+            ATLASSERT(false);
             xsPOI.erase(leftIter);
             didErase = true;
          }
@@ -179,6 +179,12 @@ void pgsGirderModelFactory::BuildModel(IBroker* pBroker, IntervalIndexType inter
             didErase = true;
          }
          else if (!rightIter->HasAttribute(POI_INTERMEDIATE_PIER) &&  !rightIter->HasAttribute(POI_BOUNDARY_PIER) && !rightIter->HasAttribute(POI_INTERMEDIATE_TEMPSUPPORT) )
+         {
+            leftIter->MergeAttributes(*rightIter);
+            xsPOI.erase(rightIter);
+            didErase = true;
+         }
+         else if (leftIter->HasAttribute(POI_SECTCHANGE_LEFTFACE) && rightIter->HasAttribute(POI_SECTCHANGE_RIGHTFACE))
          {
             leftIter->MergeAttributes(*rightIter);
             xsPOI.erase(rightIter);
@@ -200,8 +206,8 @@ void pgsGirderModelFactory::BuildModel(IBroker* pBroker, IntervalIndexType inter
    }
 
    // The decision to create fem members for cantilevers is based on numerical stability and not on whether loads are to be applied
-   bool bDoModelLeftCantilever  = leftSupportLoc > otol;
-   bool bDoModelRightCantilever = segmentLength - rightSupportLoc > otol;
+   bool bDoModelLeftCantilever  = otol < leftSupportLoc ? true : false;
+   bool bDoModelRightCantilever = otol < segmentLength - rightSupportLoc ? true : false;
 
 
    // layout the joints

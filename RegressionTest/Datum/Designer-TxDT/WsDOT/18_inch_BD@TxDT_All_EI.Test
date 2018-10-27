@@ -1,25 +1,6 @@
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 30.58    8   0.00    Lake Creek       1     1    Slab_          22  0.6  270   6.57   6.50   8.25   8.25   4    2.0   18     4    2   0   2   0   0   4.500 11.200   3.003    -3.076     1440   0.303  0.497   2.708 -0.375 -0.050 -0.094 -0.519  75.07  196.22    3.00    1.50    1.50 
-
-
-The Specification Check was Not Successful
-Debond arrangement checks failed.
-
-
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 30.58    8   0.00    Lake Creek       1     2    Slab_          20  0.6  270   6.65   6.63   8.00   8.00   4    2.0   18     4    2   0   2   0   0   4.100  8.200   2.918    -3.000     1309   0.299  0.424   2.602 -0.431 -0.055 -0.105 -0.591  64.60  177.31    3.00    1.50    1.50 
-
-
-The Specification Check was Not Successful
-Tensile stress check failed for Service III Limit State in Interval 15 Open to Traffic (Bridge Site 3)
-Debond arrangement checks failed.
-
-
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 30.58    8   0.00    Lake Creek       1     5    Slab_          18  0.6  270   6.85   6.88   8.38   8.38   2    2.0   18     2    0   2   0   0   0   4.000  5.000   2.696    -2.792     1160   0.301  0.637   2.483 -0.581 -0.065  0.000 -0.645  52.72  155.08    3.00    1.50    1.50 
+ 30.58    8   0.00    Lake Creek       1     1    Slab_          22  0.6  270   6.57   6.50   8.25   8.25   4    2.0   18     4    2   2   0   0   0   4.000  5.000   3.078    -3.293     1297   0.306  0.753   2.483 -0.561 -0.064 -0.122 -0.747  70.75  189.58    3.00    1.50    1.50 
 
 
 Girder design was Not Successful
@@ -27,5 +8,30 @@ The Specification Check was Not Successful
 Tensile stress check failed for Service I Limit State in Interval 8 Remove temporary strands
 Tensile stress check failed for Service III Limit State in Interval 15 Open to Traffic (Bridge Site 3)
 Debond arrangement checks failed.
+
+
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 30.58    8   0.00    Lake Creek       1     2    Slab_          22  0.6  270   6.48   6.44   8.25   8.25   4    2.0   18     4    2   2   0   0   0   4.000  5.000   3.124    -3.284     1293   0.301  0.637   2.485 -0.571 -0.065 -0.122 -0.758  70.87  190.27    3.00    1.50    1.50 
+
+
+Girder design was Not Successful
+The Specification Check was Not Successful
+Tensile stress check failed for Service I Limit State in Interval 8 Remove temporary strands
+Tensile stress check failed for Service III Limit State in Interval 15 Open to Traffic (Bridge Site 3)
+Debond arrangement checks failed.
+
+
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 30.58    8   0.00    Lake Creek       1     5    Slab_          20  0.6  270   6.65   6.63   8.00   8.00   4    2.0   18     4    4   0   0   0   0   4.000  5.000   3.010    -3.096     1218   0.301  0.637   2.119 -0.552 -0.065  0.000 -0.617  57.76  168.37    3.00    1.50    1.50 
+
+
+Girder design was Not Successful
+The Specification Check was Not Successful
+Tensile stress check failed for Service I Limit State in Interval 8 Remove temporary strands
+Tensile stress check failed for Service III Limit State in Interval 15 Open to Traffic (Bridge Site 3)
+Debond arrangement checks failed.
+Lifting checks failed
 
 

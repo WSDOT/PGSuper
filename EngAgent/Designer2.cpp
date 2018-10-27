@@ -105,7 +105,10 @@ public:
    {
       pEvents->HoldEvents();
       m_OldRoa = pLiveLoads->GetLldfRangeOfApplicabilityAction();
-      pLiveLoads->SetLldfRangeOfApplicabilityAction(roaIgnore);
+      if (m_OldRoa == roaEnforce)
+      {
+         pLiveLoads->SetLldfRangeOfApplicabilityAction(roaIgnore);
+      }
    }
 
    ~AutoDesign()
@@ -4993,7 +4996,7 @@ void pgsDesigner2::CheckConstructability(const CGirderKey& girderKey,pgsConstruc
    GET_IFACE(ILibrary, pLib );
    GET_IFACE(ISpecification, pSpec );
    GET_IFACE(IBridge,pBridge);
-   GET_IFACE(IProductLoads, pProdLoads);
+   GET_IFACE_NOCHECK(IProductLoads, pProdLoads);
 
    std::_tstring spec_name = pSpec->GetSpecification();
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( spec_name.c_str() );
@@ -6228,6 +6231,7 @@ void pgsDesigner2::DesignMidZoneAtRelease(const arDesignOptions& options, IProgr
    Float64 fetop, fptop;
    pgsPointOfInterest top_poi;
 
+   poiIter = vPOI.begin();
    for ( ; poiIter != poiIterEnd; poiIter++)
    {
       CHECK_PROGRESS;

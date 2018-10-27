@@ -263,7 +263,7 @@ bool MergeDuplicatePoi(pgsPointOfInterest& poi1,pgsPointOfInterest& poi2)
       {
          bool bCanMerge = poi1.CanMerge();
          poi1.CanMerge(true);
-         poi1.MergeAttributes(poi2);
+         VERIFY(poi1.MergeAttributes(poi2));
          poi1.CanMerge(bCanMerge);
          return true;
       }

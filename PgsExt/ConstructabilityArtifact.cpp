@@ -371,7 +371,7 @@ pgsSpanConstructabilityArtifact::HaunchLoadGeometryStatusType pgsSpanConstructab
          {
             return hlgInsufficient;
          }
-         if (m_AssumedExcessCamber < m_ComputedExcessCamber - m_HaunchLoadGeometryTolerance)
+         else if (m_AssumedExcessCamber < m_ComputedExcessCamber - m_HaunchLoadGeometryTolerance)
          {
             return hlgExcessive;
          }

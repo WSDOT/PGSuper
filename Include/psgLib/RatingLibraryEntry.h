@@ -29,6 +29,8 @@
 #include <System\SubjectT.h>
 #include <Lrfd\LRFRVersionMgr.h>
 
+#include <array>
+
 class pgsLibraryEntryDifferenceItem;
 class CRatingDialog;
 class RatingLibraryEntry;
@@ -84,10 +86,10 @@ public:
 
 private:
    Float64 m_Wlower, m_Wupper; // vehicle weight boundaries
-   Int16 m_ADTT[4]; // index, 0=lower,1=middle,2=upper,3=unknown
-   Float64 m_gLL_Lower[4];
-   Float64 m_gLL_Upper[4];
-   Float64 m_gLL_Service[4];
+   std::array<Int16,4> m_ADTT; // index, 0=lower,1=middle,2=upper,3=unknown
+   std::array<Float64,4> m_gLL_Lower;
+   std::array<Float64, 4> m_gLL_Upper;
+   std::array<Float64, 4> m_gLL_Service;
    pgsTypes::LiveLoadFactorType m_LiveLoadFactorType;
    pgsTypes::LiveLoadFactorModifier m_LiveLoadFactorModifier;
    bool m_bAllowUserOverride;
@@ -146,11 +148,11 @@ public:
 
 private:
    Float64 m_PWRlower, m_PWRupper; // permit weight ratiot boundaries
-   Int16 m_ADTT[4]; // index, 0=lower,1=middle,2=upper,3=unknown
-   Float64 m_gLL_Lower[4];  // associated with lower value of PWR
-   Float64 m_gLL_Middle[4]; // for PWR between lower and upper PWR, not used unless m_LoadFactorType is gllBilinearWithWeight
-   Float64 m_gLL_Upper[4];  // associated with uper value of PWR, not used unless m_LoadFactorType is gllBilinearWithWeight
-   Float64 m_gLL_Service[4];
+   std::array<Int16, 4> m_ADTT; // index, 0=lower,1=middle,2=upper,3=unknown
+   std::array<Float64, 4> m_gLL_Lower;  // associated with lower value of PWR
+   std::array<Float64, 4> m_gLL_Middle; // for PWR between lower and upper PWR, not used unless m_LoadFactorType is gllBilinearWithWeight
+   std::array<Float64, 4> m_gLL_Upper;  // associated with uper value of PWR, not used unless m_LoadFactorType is gllBilinearWithWeight
+   std::array<Float64, 4> m_gLL_Service;
    pgsTypes::LiveLoadFactorType m_LiveLoadFactorType;
    pgsTypes::LiveLoadFactorModifier m_LiveLoadFactorModifier;
    bool m_bAllowUserOverride;
@@ -284,11 +286,11 @@ private:
    bool m_bAlwaysRate;
 
    // for use with LRFR before 2013
-   CLiveLoadFactorModel m_LiveLoadFactorModels[6]; // index is pgsTypes::LoadRatingType excluding lrPermit_Special
-   CLiveLoadFactorModel m_SpecialPermitLiveLoadFactorModels[3]; // index is pgsTypes::SpecialPermitType
+   std::array<CLiveLoadFactorModel,pgsTypes::lrLoadRatingTypeCount> m_LiveLoadFactorModels; // index is pgsTypes::LoadRatingType excluding lrPermit_Special
+   std::array<CLiveLoadFactorModel,3> m_SpecialPermitLiveLoadFactorModels; // index is pgsTypes::SpecialPermitType
 
 
    // for use with LRFR2013 and later
-   CLiveLoadFactorModel2 m_LiveLoadFactorModels2[6]; // index is pgsTypes::LoadRatingType excluding lrPermit_Special
-   CLiveLoadFactorModel2 m_SpecialPermitLiveLoadFactorModels2[3]; // index is pgsTypes::SpecialPermitType
+   std::array<CLiveLoadFactorModel2, pgsTypes::lrLoadRatingTypeCount> m_LiveLoadFactorModels2; // index is pgsTypes::LoadRatingType excluding lrPermit_Special
+   std::array<CLiveLoadFactorModel2,3> m_SpecialPermitLiveLoadFactorModels2; // index is pgsTypes::SpecialPermitType
 };

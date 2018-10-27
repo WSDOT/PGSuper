@@ -1,54 +1,120 @@
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 23.96    6   0.08                     1     1    5B34_          46  1/2  270  12.22  11.62  16    2.5   28    16    8   2   2   2   2   4.100  6.000   3.781    -3.204     3678   0.358  0.615   2.519 -0.302 -0.238 -0.378 -0.918 100.48  293.76    1.00    1.00    1.00 
+ 23.96    6   0.08                     1     1    5B34_          58  1/2  270  10.61   9.82  38    2.5   28    20    0   0   0  10  10  14.000 15.000   5.541    -4.822     5149   0.358  0.615  -2.560 -0.302 -0.238 -0.378 -0.918  58.74  265.31    1.00    1.00    1.00 
+                                                                                                   4.5    6     4    0   0   0   4   0 
+                                                                                                   6.5    6     4    0   0   0   4   0 
+                                                                                                   8.5    6     4    0   0   0   4   0 
+                                                                                                  10.5    6     4    0   0   0   4   0 
+                                                                                                  12.5    4     2    0   0   0   2   0 
 
 
+Girder design was Not Successful
 The Specification Check was Not Successful
+Tensile stress check failed for Service III Limit State in Interval 14 Open to Traffic (Bridge Site 3)
+Ultimate moment capacity (positive moment) check failed for Strength I Limit State
+Ultimate vertical shear capacity check failed for Strength I Limit State
+Longitudinal Reinforcement for Shear check failed for Strength I Limit State
+Debond arrangement checks failed.
 Live Load Deflection check failed
 
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 23.96    6   0.08                     1     2    4B34_          52  1/2  270  10.04   9.50  10    2.5   22    10    8   2   0   0   0   6.000  7.400   4.541    -3.769     3542   0.333  0.446   1.840 -0.741 -0.346 -0.465 -1.552 121.87  376.06    1.00    1.00    1.00 
+ 23.96    6   0.08                     1     2    4B34_          52  1/2  270  10.04   9.22  34    2.5   22    16    0   0   0   6  10  14.000 15.000   6.068    -5.140     4569   0.333  0.446  -2.759 -0.741 -0.346 -0.465 -1.552  60.47  255.24    1.00    1.00    1.00 
+                                                                                                   4.5    6     4    0   0   0   4   0 
+                                                                                                   6.5    6     4    0   0   0   4   0 
+                                                                                                   8.5    6     4    0   0   0   4   0 
+                                                                                                  10.5    6     4    0   0   0   4   0 
+                                                                                                  12.5    4     2    0   0   0   2   0 
 
 
+Girder design was Not Successful
 The Specification Check was Not Successful
+Tensile stress check failed for Service III Limit State in Interval 14 Open to Traffic (Bridge Site 3)
+Ultimate moment capacity (positive moment) check failed for Strength I Limit State
+Ultimate vertical shear capacity check failed for Strength I Limit State
+Longitudinal Reinforcement for Shear check failed for Strength I Limit State
+Debond arrangement checks failed.
 Live Load Deflection check failed
 
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 23.96    6   0.08                     1     4    4B34_          52  1/2  270  10.04   9.50  10    2.5   22    10    8   2   0   0   0   6.000  7.400   4.541    -3.769     3542   0.333  0.446   1.840 -0.741 -0.346 -0.465 -1.552 121.87  376.06    1.00    1.00    1.00 
+ 23.96    6   0.08                     1     4    4B34_          52  1/2  270  10.04   9.22  34    2.5   22    16    0   0   0   6  10  14.000 15.000   6.068    -5.140     4569   0.333  0.446  -2.759 -0.741 -0.346 -0.465 -1.552  60.47  255.24    1.00    1.00    1.00 
+                                                                                                   4.5    6     4    0   0   0   4   0 
+                                                                                                   6.5    6     4    0   0   0   4   0 
+                                                                                                   8.5    6     4    0   0   0   4   0 
+                                                                                                  10.5    6     4    0   0   0   4   0 
+                                                                                                  12.5    4     2    0   0   0   2   0 
 
 
+Girder design was Not Successful
 The Specification Check was Not Successful
+Tensile stress check failed for Service III Limit State in Interval 14 Open to Traffic (Bridge Site 3)
+Ultimate moment capacity (positive moment) check failed for Strength I Limit State
+Ultimate vertical shear capacity check failed for Strength I Limit State
+Longitudinal Reinforcement for Shear check failed for Strength I Limit State
+Debond arrangement checks failed.
 Live Load Deflection check failed
 
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 23.96    6   0.08                     2     1    5B34_          46  1/2  270  12.22  11.62  16    2.5   28    16    8   2   2   2   2   4.100  6.000   3.793    -3.215     3688   0.358  0.615   2.493 -0.319 -0.240 -0.378 -0.937 100.48  293.39    1.00    1.00    1.00 
+ 23.96    6   0.08                     2     1    5B34_          58  1/2  270  10.61   9.82  38    2.5   28    20    0   0   0  10  10  14.000 15.000   5.553    -4.833     5159   0.358  0.615  -2.583 -0.319 -0.240 -0.378 -0.937  58.74  264.89    1.00    1.00    1.00 
+                                                                                                   4.5    6     4    0   0   0   4   0 
+                                                                                                   6.5    6     4    0   0   0   4   0 
+                                                                                                   8.5    6     4    0   0   0   4   0 
+                                                                                                  10.5    6     4    0   0   0   4   0 
+                                                                                                  12.5    4     2    0   0   0   2   0 
 
 
+Girder design was Not Successful
 The Specification Check was Not Successful
+Tensile stress check failed for Service III Limit State in Interval 14 Open to Traffic (Bridge Site 3)
+Ultimate moment capacity (positive moment) check failed for Strength I Limit State
+Ultimate vertical shear capacity check failed for Strength I Limit State
+Longitudinal Reinforcement for Shear check failed for Strength I Limit State
+Debond arrangement checks failed.
 Live Load Deflection check failed
 
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 23.96    6   0.08                     2     2    4B34_          52  1/2  270  10.04   9.50  10    2.5   22    10    8   2   0   0   0   6.000  7.600   4.570    -3.795     3562   0.333  0.446   1.780 -0.785 -0.350 -0.465 -1.600 121.87  375.21    1.00    1.00    1.00 
+ 23.96    6   0.08                     2     2    4B34_          52  1/2  270  10.04   9.22  34    2.5   22    16    0   0   0   6  10  14.000 15.000   6.098    -5.166     4589   0.333  0.446  -2.818 -0.785 -0.350 -0.465 -1.600  60.47  254.38    1.00    1.00    1.00 
+                                                                                                   4.5    6     4    0   0   0   4   0 
+                                                                                                   6.5    6     4    0   0   0   4   0 
+                                                                                                   8.5    6     4    0   0   0   4   0 
+                                                                                                  10.5    6     4    0   0   0   4   0 
+                                                                                                  12.5    4     2    0   0   0   2   0 
 
 
+Girder design was Not Successful
 The Specification Check was Not Successful
+Tensile stress check failed for Service III Limit State in Interval 14 Open to Traffic (Bridge Site 3)
+Ultimate moment capacity (positive moment) check failed for Strength I Limit State
+Ultimate vertical shear capacity check failed for Strength I Limit State
+Longitudinal Reinforcement for Shear check failed for Strength I Limit State
+Debond arrangement checks failed.
 Live Load Deflection check failed
 
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 23.96    6   0.08                     2     4    4B34_          52  1/2  270  10.04   9.50  10    2.5   22    10    8   2   0   0   0   6.000  7.600   4.570    -3.795     3562   0.333  0.446   1.780 -0.785 -0.350 -0.465 -1.600 121.87  375.21    1.00    1.00    1.00 
+ 23.96    6   0.08                     2     4    4B34_          52  1/2  270  10.04   9.22  34    2.5   22    16    0   0   0   6  10  14.000 15.000   6.098    -5.166     4589   0.333  0.446  -2.818 -0.785 -0.350 -0.465 -1.600  60.47  254.38    1.00    1.00    1.00 
+                                                                                                   4.5    6     4    0   0   0   4   0 
+                                                                                                   6.5    6     4    0   0   0   4   0 
+                                                                                                   8.5    6     4    0   0   0   4   0 
+                                                                                                  10.5    6     4    0   0   0   4   0 
+                                                                                                  12.5    4     2    0   0   0   2   0 
 
 
+Girder design was Not Successful
 The Specification Check was Not Successful
+Tensile stress check failed for Service III Limit State in Interval 14 Open to Traffic (Bridge Site 3)
+Ultimate moment capacity (positive moment) check failed for Strength I Limit State
+Ultimate vertical shear capacity check failed for Strength I Limit State
+Longitudinal Reinforcement for Shear check failed for Strength I Limit State
+Debond arrangement checks failed.
 Live Load Deflection check failed
 
 

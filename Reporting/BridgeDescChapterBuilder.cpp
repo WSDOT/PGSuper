@@ -385,7 +385,7 @@ void write_alignment_data(IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, rpt
    length.ShowUnitTag(true);
 
    ColumnIndexType col = 1;
-   IndexType curveIdx = 0;
+   IndexType hcIdx = 0; // keeps tracks of the actual curves in the model (curves with zero radius input are not curves in the alignment model)
    std::vector<HorzCurveData>::iterator iter;
    for (iter = alignment.HorzCurves.begin(); iter != alignment.HorzCurves.end(); iter++, col++)
    {
@@ -395,7 +395,6 @@ void write_alignment_data(IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, rpt
       (*pTable)(row++, col) << _T("Curve ") << col;
 
       CComPtr<IHorzCurve> hc;
-      IndexType hcIdx = curveIdx++;
 
       CComPtr<IDirection> bkTangent;
       CComPtr<IDirection> fwdTangent;
@@ -933,6 +932,12 @@ void write_alignment_data(IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, rpt
             pnt->Location(&x, &y);
             (*pTable)(row, col) << length.SetValue(y) << _T(", "); (*pTable)(row++, col) << length.SetValue(x);
          }
+      }
+
+      if (hc != nullptr)
+      {
+         // we reported a real curve
+         hcIdx++;
       }
    }
 }

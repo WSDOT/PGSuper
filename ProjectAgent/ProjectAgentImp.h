@@ -704,19 +704,19 @@ private:
    // This is because of a bug in earlier versions of PGSuper. In those version, data was
    // stored beyond the end of the array. The size of the array has been incresed so that
    // this error wont occur.
-   Float64 m_gDC[pgsTypes::LimitStateCount]; // use the IndexFromLimitState to access array
-   Float64 m_gDW[pgsTypes::LimitStateCount]; // use the IndexFromLimitState to access array
-   Float64 m_gCR[pgsTypes::LimitStateCount]; // use the IndexFromLimitState to access array
-   Float64 m_gSH[pgsTypes::LimitStateCount]; // use the IndexFromLimitState to access array
-   Float64 m_gRE[pgsTypes::LimitStateCount]; // use the IndexFromLimitState to access array
-   Float64 m_gPS[pgsTypes::LimitStateCount]; // use the IndexFromLimitState to access array
-   Float64 m_gLL[pgsTypes::LimitStateCount]; // use the IndexFromLimitState to access array
+   std::array<Float64, pgsTypes::LimitStateCount> m_gDC;
+   std::array<Float64, pgsTypes::LimitStateCount> m_gDW;
+   std::array<Float64, pgsTypes::LimitStateCount> m_gCR;
+   std::array<Float64, pgsTypes::LimitStateCount> m_gSH;
+   std::array<Float64, pgsTypes::LimitStateCount> m_gRE;
+   std::array<Float64, pgsTypes::LimitStateCount> m_gPS;
+   std::array<Float64, pgsTypes::LimitStateCount> m_gLL;
 
-   Float64 m_AllowableTensionCoefficient[pgsTypes::lrLoadRatingTypeCount]; // index is load rating type
-   bool    m_bCheckYieldStress[pgsTypes::lrLoadRatingTypeCount]; // index is load rating type
-   bool    m_bRateForStress[pgsTypes::lrLoadRatingTypeCount]; // index is load rating type
-   bool    m_bRateForShear[pgsTypes::lrLoadRatingTypeCount]; // index is load rating type
-   bool    m_bEnableRating[pgsTypes::lrLoadRatingTypeCount]; // index is load rating type
+   std::array<Float64, pgsTypes::lrLoadRatingTypeCount> m_AllowableTensionCoefficient; // index is load rating type
+   std::array<bool, pgsTypes::lrLoadRatingTypeCount>    m_bCheckYieldStress; // index is load rating type
+   std::array<bool, pgsTypes::lrLoadRatingTypeCount>    m_bRateForStress; // index is load rating type
+   std::array<bool, pgsTypes::lrLoadRatingTypeCount>    m_bRateForShear; // index is load rating type
+   std::array<bool, pgsTypes::lrLoadRatingTypeCount>    m_bEnableRating; // index is load rating type
    Int16 m_ADTT; // < 0 = Unknown
    Float64 m_AllowableYieldStressCoefficient; // fr <= xfy for Service I permit rating
 
@@ -766,10 +766,10 @@ private:
    typedef LiveLoadSelectionContainer::iterator LiveLoadSelectionIterator;
 
    // index is pgsTypes::LiveLoadTypes constant
-   LiveLoadSelectionContainer m_SelectedLiveLoads[pgsTypes::lltLiveLoadTypeCount];
-   Float64 m_TruckImpact[pgsTypes::lltLiveLoadTypeCount];
-   Float64 m_LaneImpact[pgsTypes::lltLiveLoadTypeCount];
-   PedestrianLoadApplicationType m_PedestrianLoadApplicationType[3]; // lltDesign, lltPermit, lltFatigue only
+   std::array<LiveLoadSelectionContainer, pgsTypes::lltLiveLoadTypeCount> m_SelectedLiveLoads;
+   std::array<Float64, pgsTypes::lltLiveLoadTypeCount> m_TruckImpact;
+   std::array<Float64, pgsTypes::lltLiveLoadTypeCount> m_LaneImpact;
+   std::array<PedestrianLoadApplicationType,3> m_PedestrianLoadApplicationType; // lltDesign, lltPermit, lltFatigue only
 
    std::vector<std::_tstring> m_ReservedLiveLoads; // reserved live load names (names not found in library)
    bool IsReservedLiveLoad(const std::_tstring& strName);

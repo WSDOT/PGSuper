@@ -660,7 +660,7 @@ BEGIN
         MENUITEM "Edit Sti&rrups...",           ID_EDIT_STIRRUPS
         MENUITEM SEPARATOR
         MENUITEM "Design Girder",               ID_GIRDERVIEW_DESIGNGIRDERDIRECT
-        MENUITEM "Design Girder (don't change Slab Offset)", ID_GIRDERVIEW_DESIGNGIRDERDIRECTHOLDSLABOFFSET
+        MENUITEM "Design Girder (don't change Haunch Geometry)", ID_GIRDERVIEW_DESIGNGIRDERDIRECTHOLDSLABOFFSET
         MENUITEM SEPARATOR
         MENUITEM "Add Poi&nt Load...",          ID_ADD_POINT_LOAD_CTX
         MENUITEM "Add &Distributed Load...",    ID_ADD_DISTRIBUTED_LOAD_CTX
@@ -689,7 +689,7 @@ BEGIN
         MENUITEM "Edit Girder...",              ID_EDIT_GIRDER
         MENUITEM SEPARATOR
         MENUITEM "Design Girder",               ID_PROJECT_DESIGNGIRDERDIRECT
-        MENUITEM "Design Girder (don't change Slab Offset)", ID_PROJECT_DESIGNGIRDERDIRECTHOLDSLABOFFSET
+        MENUITEM "Design Girder (don't change Haunch Geometry)", ID_PROJECT_DESIGNGIRDERDIRECTHOLDSLABOFFSET
         MENUITEM SEPARATOR
         MENUITEM "View Girder",                 ID_VIEW_GIRDER
         MENUITEM SEPARATOR
@@ -3449,8 +3449,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 3,1,4,1
- PRODUCTVERSION 3,1,4,1
+ FILEVERSION 3,1,4,2
+ PRODUCTVERSION 3,1,4,2
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -3467,12 +3467,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "Washington State Department of Transportation"
             VALUE "FileDescription", "PGSuper"
-            VALUE "FileVersion", "3.1.4.1"
+            VALUE "FileVersion", "3.1.4.2"
             VALUE "InternalName", "PGSuper"
             VALUE "LegalCopyright", "Copyright © 1999-2018, Washington State Department of Transportation, All Rights Reserved"
             VALUE "OriginalFilename", "PGSuperAppPlugin.DLL"
             VALUE "ProductName", "PGSuper"
-            VALUE "ProductVersion", "3.1.4.1"
+            VALUE "ProductVersion", "3.1.4.2"
         END
     END
     BLOCK "VarFileInfo"

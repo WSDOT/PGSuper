@@ -99,7 +99,8 @@ CLoadFactors& CLoadFactors::operator=(const CLoadFactors& rOther)
 
 bool CLoadFactors::operator==(const CLoadFactors& rOther) const
 {
-   for ( int i = 0; i < 6; i++ )
+   int count = (int)DCmin.size();
+   for ( int i = 0; i < count; i++ )
    {
       if ( DCmin[i] != rOther.DCmin[i] )
       {
@@ -182,7 +183,8 @@ bool CLoadFactors::operator!=(const CLoadFactors& rOther) const
 
 void CLoadFactors::MakeCopy(const CLoadFactors& rOther)
 {
-   for ( int i = 0; i < 6; i++ )
+   int count = (int)DCmin.size();
+   for (int i = 0; i < count; i++)
    {
       DCmin[i] = rOther.DCmin[i];
       DWmin[i] = rOther.DWmin[i];
@@ -208,10 +210,10 @@ void CLoadFactors::MakeAssignment(const CLoadFactors& rOther)
 
 HRESULT CLoadFactors::Save(IStructuredSave* pStrSave,IProgress* pProgress)
 {
-   std::_tstring strLimitState[] = {_T("ServiceI"),_T("ServiceIA"),_T("ServiceIII"),_T("StrengthI"),_T("StrengthII"),_T("FatigueI")};
+   std::array<std::_tstring,6> strLimitState = {_T("ServiceI"),_T("ServiceIA"),_T("ServiceIII"),_T("StrengthI"),_T("StrengthII"),_T("FatigueI")};
 
    pStrSave->BeginUnit(_T("LoadFactors"),3.0);
-   int nLimitStates = sizeof(strLimitState)/sizeof(std::_tstring);
+   int nLimitStates = (int)strLimitState.size();
    for ( int i = 0; i < nLimitStates; i++ )
    {
       pStrSave->BeginUnit(strLimitState[i].c_str(),1.0);
@@ -240,8 +242,8 @@ HRESULT CLoadFactors::Save(IStructuredSave* pStrSave,IProgress* pProgress)
 
 HRESULT CLoadFactors::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
 {
-   std::_tstring strLimitState[] = {_T("ServiceI"),_T("ServiceIA"),_T("ServiceIII"),_T("StrengthI"),_T("StrengthII"),_T("FatigueI")};
-   int nLimitStates = sizeof(strLimitState)/sizeof(std::_tstring);
+   std::array<std::_tstring, 6> strLimitState = { _T("ServiceI"),_T("ServiceIA"),_T("ServiceIII"),_T("StrengthI"),_T("StrengthII"),_T("FatigueI") };
+   int nLimitStates = (int)strLimitState.size();
 
    pStrLoad->BeginUnit(_T("LoadFactors"));
 

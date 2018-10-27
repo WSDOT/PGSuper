@@ -129,19 +129,19 @@ private:
    struct GlfData
    {
       // # of GMSWs (Girders, Mating Surfaces, or Webs) loaded by this load on this girder
-      IndexType GMSWs[BarrSwSize]; // each value in array is number of loadings for given sw/bar on this girder
+      std::array<IndexType,BarrSwSize> GMSWs; // each value in array is number of loadings for given sw/bar on this girder
 
       GlfData()
       {
          // zero loads to start with
-         memset(GMSWs, 0, BarrSwSize*sizeof(IndexType));
+         GMSWs.fill(0);
       }
    };
 
    struct SegmentLoadFractionData
    {
       IndexType m_TotalGMSWs;     // Total Girder, mating surface, or webs in this span
-      IndexType m_GMSWsAppliedTo[BarrSwSize]; // Girder, mating surface, or webs that load is disributed to for this sw/bar
+      std::array<IndexType,BarrSwSize> m_GMSWsAppliedTo; // Girder, mating surface, or webs that load is disributed to for this sw/bar
       std::vector<GlfData> m_GirderLoadFractions; // number of GMSW's loaded for indiv girders
 
       SegmentLoadFractionData()
@@ -152,7 +152,7 @@ private:
       void Init()
       {
          m_TotalGMSWs = 0;
-         memset(m_GMSWsAppliedTo, 0, BarrSwSize*sizeof(IndexType));
+         m_GMSWsAppliedTo.fill(0);
          m_GirderLoadFractions.clear();
       }
    };

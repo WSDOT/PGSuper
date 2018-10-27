@@ -117,7 +117,7 @@ m_bHasSpanPoint(false),
 m_bCanMerge(true),
 m_Attributes(0)
 {
-   memset(m_RefAttributes,0,sizeof(m_RefAttributes));
+   m_RefAttributes.fill(0);
    UPDATE_ATTRIBUTES;
 }
 
@@ -137,7 +137,7 @@ m_bHasSpanPoint(false),
 m_bCanMerge(true),
 m_Attributes(0)
 {
-   memset(m_RefAttributes,0,sizeof(m_RefAttributes));
+   m_RefAttributes.fill(0);
 
    IndexType index = GetIndex(GetReference(attrib));
    if ( index == INVALID_INDEX )
@@ -169,7 +169,7 @@ m_bHasSpanPoint(false),
 m_bCanMerge(true),
 m_Attributes(0)
 {
-   memset(m_RefAttributes,0,sizeof(m_RefAttributes));
+   m_RefAttributes.fill(0);
 
    IndexType index = GetIndex(GetReference(attrib));
    if ( index == INVALID_INDEX )
@@ -200,7 +200,7 @@ m_bHasSpanPoint(false),
 m_bCanMerge(true),
 m_Attributes(0)
 {
-   memset(m_RefAttributes,0,sizeof(m_RefAttributes));
+   m_RefAttributes.fill(0);
 
    MakeCopy(rOther);
 }
@@ -235,6 +235,14 @@ bool pgsPointOfInterest::operator<(const pgsPointOfInterest& rOther) const
 
    if ( m_SegmentKey.IsEqual(rOther.m_SegmentKey) && IsEqual(m_Xpoi, rOther.m_Xpoi)) // AtSamePlace(rOther))
    {
+      if (HasAttribute(POI_SECTCHANGE_LEFTFACE) && rOther.HasAttribute(POI_SECTCHANGE_RIGHTFACE))
+      {
+         // At abrupt section changes there will be 2 poi (if the factory modeled them correctly)
+         // this typically occurs at the terminus of end blocks
+         // The poi with POI_SECTCHANGE_LEFTFACE comes before the poi with POI_SECTCHANGE_RIGHTFACE
+         return true;
+      }
+
       // POIs are at exactly the same location and...
       // In span model
       Uint16 thisSpanTenth = IsTenthPoint(POI_SPAN);
@@ -601,9 +609,18 @@ bool pgsPointOfInterest::IsReferenceAttribute(PoiAttributeType attrib)
 
 bool pgsPointOfInterest::MergeAttributes(const pgsPointOfInterest& rOther)
 {
-   if ( (rOther.HasAttribute(POI_SECTCHANGE_LEFTFACE) || rOther.HasAttribute(POI_SECTCHANGE_RIGHTFACE)) && m_Xpoi != rOther.m_Xpoi )
+   if (!IsEqual(m_Xpoi, rOther.m_Xpoi, pgsPointOfInterest::ms_Tol))
    {
-      // can only merge a poi with section change attribute into this poi if they are at the exact same location
+      ATLASSERT(false); // attempting to merge POIs from different locations
+      return false;
+   }
+
+   if ( (HasAttribute(POI_SECTCHANGE_LEFTFACE) && rOther.HasAttribute(POI_SECTCHANGE_RIGHTFACE)) 
+        || 
+        (HasAttribute(POI_SECTCHANGE_RIGHTFACE) && rOther.HasAttribute(POI_SECTCHANGE_LEFTFACE))
+      )
+   {
+      // can't merge left and right faces together
       return false;
    }
 
@@ -1403,6 +1420,11 @@ void pgsPointOfInterest::UpdateAttributeString()
    os << std::endl;
 
    m_strAttributes = os.str();
+
+   if (HasAttribute(POI_SECTCHANGE_LEFTFACE) && HasAttribute(POI_SECTCHANGE_RIGHTFACE))
+   {
+      ATLASSERT(false); // poi can't be both left and right face of a section change
+   }
 }
 
 #endif // _DEBUG

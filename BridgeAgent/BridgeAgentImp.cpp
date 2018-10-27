@@ -1834,7 +1834,8 @@ bool CBridgeAgentImp::BuildCogoModel()
       }
 
       CogoObjectID curveID = 1;
-      CollectionIndexType curveIdx = 0;
+      IndexType curveIdx = 0;
+      IndexType realCurveIdx = 0;
 
       std::vector<HorzCurveData>::iterator iter;
       for ( iter = alignment_data.HorzCurves.begin(); iter != alignment_data.HorzCurves.end(); iter++, curveID++, curveIdx++ )
@@ -1857,11 +1858,16 @@ bool CBridgeAgentImp::BuildCogoModel()
 
             // locate the PI
             CComPtr<IPoint2d> pi;
-            locate->ByDistDir(pbt, pi_station - prev_curve_ST_station, CComVariant( back_tangent ),0.00,&pi);
-
-            // add the PI
-            points->AddEx(curveID,pi);
-            alignment->AddEx(pi);
+            Float64 distance = pi_station - prev_curve_ST_station; // if zero, then the pi is at the end of the previous curve... skip it
+            Float64 tolerance = ::ConvertToSysUnits(0.009, unitMeasure::Feet); // input accuracy is 0.01 ft
+            if (!IsZero(distance,tolerance))
+            {
+               locate->ByDistDir(pbt, pi_station - prev_curve_ST_station, CComVariant(back_tangent), 0.00, &pi);
+               ATLASSERT(pi->SameLocation(pbt) == VARIANT_FALSE);
+               // add the PI
+               points->AddEx(curveID, pi);
+               alignment->AddEx(pi);
+            }
 
             Float64 fwd_tangent = curve_data.FwdTangent;
             if ( !curve_data.bFwdTangent )
@@ -1935,7 +1941,7 @@ bool CBridgeAgentImp::BuildCogoModel()
             HRESULT hr = curves->Add(curveID,pbt,pi,pft,curve_data.Radius,curve_data.EntrySpiral,curve_data.ExitSpiral,&hc);
             ATLASSERT( SUCCEEDED(hr) );
 
-            m_HorzCurveKeys.insert(std::make_pair(curveIdx,curveID));
+            m_HorzCurveKeys.insert(std::make_pair(realCurveIdx++,std::make_pair(curveIdx,curveID)));
 
             // Make sure this curve and the previous curve don't overlap
             hc->get_BkTangentLength(&T);
@@ -2115,11 +2121,12 @@ bool CBridgeAgentImp::BuildCogoModel()
       m_CogoModel->get_ProfilePoints(&profilepoints);
 
       CogoObjectID curveID = 1;
-      CollectionIndexType curveIdx = 0;
+      IndexType curveIdx = 0;
+      IndexType realCurveIdx = 0;
 
       std::vector<VertCurveData>::iterator iter( profile_data.VertCurves.begin() );
       std::vector<VertCurveData>::iterator iterEnd( profile_data.VertCurves.end() );
-      for ( ; iter != iterEnd; iter++ )
+      for ( ; iter != iterEnd; iter++, curveIdx++ )
       {
          VertCurveData& curve_data = *iter;
 
@@ -2219,7 +2226,7 @@ bool CBridgeAgentImp::BuildCogoModel()
          HRESULT hr = vcurves->Add(curveID,pbg,pvi,pfg,L1,L2,&vc);
          ATLASSERT(SUCCEEDED(hr));
 
-         m_VertCurveKeys.insert(std::make_pair(curveIdx,curveID));
+         m_VertCurveKeys.insert(std::make_pair(realCurveIdx++,std::make_pair(curveIdx,curveID)));
         
          profile->AddEx(vc);
 
@@ -2246,7 +2253,6 @@ bool CBridgeAgentImp::BuildCogoModel()
          prev_EVC = EVC;
 
          curveID++;
-         curveIdx++;
       }
    }
 
@@ -6250,7 +6256,21 @@ void CBridgeAgentImp::GetStartPoint(Float64 n,Float64* pStartStation,Float64* pS
          pp->get_Station(&objStation);
          Float64 station;
          objStation->get_NormalizedValue(alignment,&station);
-         *pStartStation = Min(*pStartStation,station);
+
+         CComPtr<IProfileElement> profileElement;
+         profile->get_Item(1, &profileElement); // profiles must always have a minimum of 2 points
+         ProfileElementType type;
+         profileElement->get_Type(&type);
+         if (nElements == 2 && type == pePoint && IsZero(station))
+         {
+            // often, the roadway profile is defined by a single point at station 0+00
+            // if there are 2 profile elements, both points, and the profile starts at station 0+00
+            // skip it... the graphics come out bad
+         }
+         else
+         {
+            *pStartStation = Min(*pStartStation, station);
+         }
       }
       else 
       {
@@ -6470,82 +6490,64 @@ void CBridgeAgentImp::GetCurve(CollectionIndexType idx,IHorzCurve** ppCurve)
    CComPtr<IHorzCurveCollection> curves;
    m_CogoModel->get_HorzCurves(&curves);
 
-   IndexType i = 0;
-   auto& iter = m_HorzCurveKeys.cbegin();
-   const auto& end = m_HorzCurveKeys.cend();
-   for (; iter != end; iter++, i++)
-   {
-      if (i == idx)
-      {
-         CogoObjectID key = iter->second;
-         HRESULT hr = curves->get_Item(key, ppCurve);
-         ATLASSERT(SUCCEEDED(hr));
-         return;
-      }
-   }
+   auto found = m_HorzCurveKeys.find(idx);
+   ATLASSERT(found != std::end(m_HorzCurveKeys));
 
-   ATLASSERT(false); // should never get here
+   auto key = found->second.second;
+   HRESULT hr = curves->get_Item(key, ppCurve);
+   ATLASSERT(SUCCEEDED(hr));
 }
 
 void CBridgeAgentImp::GetCurvePoint(IndexType hcIdx,CurvePointTypes cpType,pgsTypes::PlanCoordinateType pcType,IPoint2d** ppPoint)
 {
-   GET_IFACE(IRoadwayData, pAlignment);
-   AlignmentData2 alignment = pAlignment->GetAlignmentData2();
-   const HorzCurveData& hc_data = alignment.HorzCurves[hcIdx];
-   if (IsZero(hc_data.Radius))
+   CComPtr<IHorzCurve> curve;
+   GetCurve(hcIdx, &curve);
+   ATLASSERT(curve != nullptr);
+
+   CComPtr<IPoint2d> pnt;
+   switch (cpType)
    {
-      GetPoint(hc_data.PIStation, 0.0, nullptr, pcType, ppPoint);
+   case cptTS:
+      curve->get_TS(&pnt);
+      break;
+
+   case cptSPI1:
+      curve->get_SPI(spEntry, &pnt);
+      break;
+
+   case cptSC:
+      curve->get_SC(&pnt);
+      break;
+
+   case cptPI:
+      curve->get_PI(&pnt);
+      break;
+
+   case cptCS:
+      curve->get_CS(&pnt);
+      break;
+
+   case cptSPI2:
+      curve->get_SPI(spExit, &pnt);
+      break;
+
+   case cptST:
+      curve->get_ST(&pnt);
+      break;
+
+   case cptCC:
+      curve->get_CC(&pnt);
+      break;
+
+   case cptCCC:
+      curve->get_CCC(&pnt);
+      break;
+
+   default:
+      ATLASSERT(false); // is there a new curve point type?
    }
-   else
-   {
-      CComPtr<IHorzCurve> curve;
-      GetCurve(hcIdx, &curve);
-      CComPtr<IPoint2d> pnt;
-      switch (cpType)
-      {
-      case cptTS:
-         curve->get_TS(&pnt);
-         break;
 
-      case cptSPI1:
-         curve->get_SPI(spEntry, &pnt);
-         break;
-
-      case cptSC:
-         curve->get_SC(&pnt);
-         break;
-
-      case cptPI:
-         curve->get_PI(&pnt);
-         break;
-
-      case cptCS:
-         curve->get_CS(&pnt);
-         break;
-
-      case cptSPI2:
-         curve->get_SPI(spExit, &pnt);
-         break;
-
-      case cptST:
-         curve->get_ST(&pnt);
-         break;
-
-      case cptCC:
-         curve->get_CC(&pnt);
-         break;
-
-      case cptCCC:
-         curve->get_CCC(&pnt);
-         break;
-
-      default:
-         ATLASSERT(false); // is there a new curve point type?
-      }
-
-
-      pnt->Clone(ppPoint);
-   }
+   pnt->Clone(ppPoint); // copy the point so external users can't change the actual curve
 
    if ( pcType == pgsTypes::pcGlobal )
    {
@@ -6557,44 +6559,38 @@ HCURVESTATIONS CBridgeAgentImp::GetCurveStations(IndexType hcIdx)
 {
    HCURVESTATIONS stations;
 
-   GET_IFACE(IRoadwayData, pAlignment ); 
+   CComPtr<IHorzCurve> hc;
+   GetCurve(hcIdx, &hc);
+   ATLASSERT(hc != nullptr);
+
+   auto found = m_HorzCurveKeys.find(hcIdx);
+   ATLASSERT(found != std::end(m_HorzCurveKeys));
+
+   IndexType inputHcIdx = found->second.first;
+   GET_IFACE(IRoadwayData, pAlignment);
    AlignmentData2 alignment = pAlignment->GetAlignmentData2();
-   const HorzCurveData& hc_data = alignment.HorzCurves[hcIdx];
+   const HorzCurveData& hc_data = alignment.HorzCurves[inputHcIdx];
 
-   if (IsZero(hc_data.Radius))
-   {
-      stations.TSStation = hc_data.PIStation;
-      stations.SCStation = hc_data.PIStation;
-      stations.PIStation = hc_data.PIStation;
-      stations.CSStation = hc_data.PIStation;
-      stations.STStation = hc_data.PIStation;
-      stations.SPI1Station = hc_data.PIStation;
-      stations.SPI2Station = hc_data.PIStation;
-   }
-   else
-   {
-      CComPtr<IHorzCurve> hc;
-      GetCurve(hcIdx, &hc);
+   ATLASSERT(!IsZero(hc_data.Radius));
 
-      Float64 bk_tangent_length;
-      hc->get_BkTangentLength(&bk_tangent_length);
+   Float64 bk_tangent_length;
+   hc->get_BkTangentLength(&bk_tangent_length);
 
-      Float64 total_length;
-      hc->get_TotalLength(&total_length);
+   Float64 total_length;
+   hc->get_TotalLength(&total_length);
 
-      stations.TSStation = hc_data.PIStation - bk_tangent_length;
-      stations.SCStation = hc_data.PIStation - bk_tangent_length + hc_data.EntrySpiral;
-      stations.PIStation = hc_data.PIStation;
-      stations.CSStation = hc_data.PIStation - bk_tangent_length + total_length - hc_data.ExitSpiral;
-      stations.STStation = hc_data.PIStation - bk_tangent_length + total_length;
+   stations.TSStation = hc_data.PIStation - bk_tangent_length;
+   stations.SCStation = hc_data.PIStation - bk_tangent_length + hc_data.EntrySpiral;
+   stations.PIStation = hc_data.PIStation;
+   stations.CSStation = hc_data.PIStation - bk_tangent_length + total_length - hc_data.ExitSpiral;
+   stations.STStation = hc_data.PIStation - bk_tangent_length + total_length;
 
-      Float64 u;
-      hc->get_LongTangent(spEntry, &u);
-      stations.SPI1Station = stations.TSStation + u;
+   Float64 u;
+   hc->get_LongTangent(spEntry, &u);
+   stations.SPI1Station = stations.TSStation + u;
 
-      hc->get_LongTangent(spExit, &u);
-      stations.SPI2Station = stations.STStation - u;
-   }
+   hc->get_LongTangent(spExit, &u);
+   stations.SPI2Station = stations.STStation - u;
 
 
    return stations;
@@ -6619,21 +6615,12 @@ void CBridgeAgentImp::GetVertCurve(CollectionIndexType idx,IVertCurve** ppCurve)
    CComPtr<IVertCurveCollection> curves;
    m_CogoModel->get_VertCurves(&curves);
 
-   IndexType i = 0;
-   auto& iter = m_VertCurveKeys.cbegin();
-   const auto& end = m_VertCurveKeys.cend();
-   for (; iter != end; iter++, i++)
-   {
-      if (i == idx)
-      {
-         CogoObjectID key = iter->second;
-         HRESULT hr = curves->get_Item(key, ppCurve);
-         ATLASSERT(SUCCEEDED(hr));
-         return;
-      }
-   }
+   auto found = m_VertCurveKeys.find(idx);
+   ATLASSERT(found != std::end(m_VertCurveKeys));
 
-   ATLASSERT(false); // should never get here
+   auto key = found->second.second;
+   HRESULT hr = curves->get_Item(key, ppCurve);
+   ATLASSERT(SUCCEEDED(hr));
 }
 
 void CBridgeAgentImp::GetRoadwaySurface(Float64 station,IDirection* pDirection,IPoint2dCollection** ppPoints)
@@ -12443,7 +12430,6 @@ INCREMENTALRELAXATIONDETAILS CBridgeAgentImp::GetIncrementalStrandRelaxationDeta
    {
       // no strands or strand not stressed yet, so no relaxation
       INCREMENTALRELAXATIONDETAILS details;
-      memset((void*)&details,0,sizeof(INCREMENTALRELAXATIONDETAILS));
       details.tStart = tStart - tStress;
       details.tEnd = tEnd - tStress;
       details.epoxyFactor = 1.0;
@@ -12480,7 +12466,6 @@ INCREMENTALRELAXATIONDETAILS CBridgeAgentImp::GetIncrementalTendonRelaxationDeta
    {
       // tendon not stressed yet, so no relaxation
       INCREMENTALRELAXATIONDETAILS details;
-      memset((void*)&details,0,sizeof(INCREMENTALRELAXATIONDETAILS));
       details.tStart = tStart - tStress;
       details.tEnd = tEnd = tStress;
       details.epoxyFactor = 1.0;

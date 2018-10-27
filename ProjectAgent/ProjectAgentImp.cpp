@@ -249,13 +249,13 @@ CProjectAgentImp::CProjectAgentImp()
 
    m_AllowableYieldStressCoefficient = 0.9;
 
-   memset(&m_gDC[0],0,sizeof(m_gDC));
-   memset(&m_gDW[0],0,sizeof(m_gDW));
-   memset(&m_gCR[0],0,sizeof(m_gCR));
-   memset(&m_gRE[0],0,sizeof(m_gRE));
-   memset(&m_gSH[0],0,sizeof(m_gSH));
-   memset(&m_gPS[0],0,sizeof(m_gPS));
-   memset(&m_gLL[0],0,sizeof(m_gLL));
+   m_gDC.fill(0);
+   m_gDW.fill(0);
+   m_gCR.fill(0);
+   m_gRE.fill(0);
+   m_gSH.fill(0);
+   m_gPS.fill(0);
+   m_gLL.fill(0);
 
    m_gDC[pgsTypes::StrengthI_Inventory] = 1.25;
    m_gDW[pgsTypes::StrengthI_Inventory] = 1.50;
@@ -10522,36 +10522,36 @@ void CProjectAgentImp::InitRatingSpecification(const std::_tstring& spec)
          const CLiveLoadFactorModel& design_inventory_model = m_pRatingEntry->GetLiveLoadFactorModel(pgsTypes::lrDesign_Inventory);
          if ( !design_inventory_model.AllowUserOverride() )
          {
-            m_gLL[pgsTypes::StrengthI_Inventory]  = -1;
-            m_gLL[pgsTypes::ServiceIII_Inventory] = -1;
+            m_gLL[pgsTypes::StrengthI_Inventory]  = COMPUTE_LLDF;
+            m_gLL[pgsTypes::ServiceIII_Inventory] = COMPUTE_LLDF;
          }
 
          const CLiveLoadFactorModel& design_operating_model = m_pRatingEntry->GetLiveLoadFactorModel(pgsTypes::lrDesign_Operating);
          if ( !design_operating_model.AllowUserOverride() )
          {
-            m_gLL[pgsTypes::StrengthI_Operating]  = -1;
-            m_gLL[pgsTypes::ServiceIII_Operating] = -1;
+            m_gLL[pgsTypes::StrengthI_Operating]  = COMPUTE_LLDF;
+            m_gLL[pgsTypes::ServiceIII_Operating] = COMPUTE_LLDF;
          }
 
          const CLiveLoadFactorModel& legal_routine_model = m_pRatingEntry->GetLiveLoadFactorModel(pgsTypes::lrLegal_Routine);
          if ( !legal_routine_model.AllowUserOverride() )
          {
-            m_gLL[pgsTypes::StrengthI_LegalRoutine]  = -1;
-            m_gLL[pgsTypes::ServiceIII_LegalRoutine] = -1;
+            m_gLL[pgsTypes::StrengthI_LegalRoutine]  = COMPUTE_LLDF;
+            m_gLL[pgsTypes::ServiceIII_LegalRoutine] = COMPUTE_LLDF;
          }
 
          const CLiveLoadFactorModel& legal_special_model = m_pRatingEntry->GetLiveLoadFactorModel(pgsTypes::lrLegal_Special);
          if ( !legal_special_model.AllowUserOverride() )
          {
-            m_gLL[pgsTypes::StrengthI_LegalSpecial]  = -1;
-            m_gLL[pgsTypes::ServiceIII_LegalSpecial] = -1;
+            m_gLL[pgsTypes::StrengthI_LegalSpecial]  = COMPUTE_LLDF;
+            m_gLL[pgsTypes::ServiceIII_LegalSpecial] = COMPUTE_LLDF;
          }
 
          const CLiveLoadFactorModel& permit_routine_model = m_pRatingEntry->GetLiveLoadFactorModel(pgsTypes::lrPermit_Routine);
          if ( !permit_routine_model.AllowUserOverride() )
          {
-            m_gLL[pgsTypes::StrengthII_PermitRoutine]  = -1;
-            m_gLL[pgsTypes::ServiceI_PermitRoutine]    = -1;
+            m_gLL[pgsTypes::StrengthII_PermitRoutine]  = COMPUTE_LLDF;
+            m_gLL[pgsTypes::ServiceI_PermitRoutine]    = COMPUTE_LLDF;
          }
 
          if ( m_SpecialPermitType == pgsTypes::ptSingleTripWithEscort )
@@ -10559,8 +10559,8 @@ void CProjectAgentImp::InitRatingSpecification(const std::_tstring& spec)
             const CLiveLoadFactorModel& permit_special_single_trip_escorted_model = m_pRatingEntry->GetLiveLoadFactorModel(pgsTypes::ptSingleTripWithEscort);
             if ( !permit_special_single_trip_escorted_model.AllowUserOverride() )
             {
-               m_gLL[pgsTypes::StrengthII_PermitSpecial]  = -1;
-               m_gLL[pgsTypes::ServiceI_PermitSpecial]    = -1;
+               m_gLL[pgsTypes::StrengthII_PermitSpecial]  = COMPUTE_LLDF;
+               m_gLL[pgsTypes::ServiceI_PermitSpecial]    = COMPUTE_LLDF;
             }
          }
          else if ( m_SpecialPermitType == pgsTypes::ptSingleTripWithTraffic )
@@ -10568,8 +10568,8 @@ void CProjectAgentImp::InitRatingSpecification(const std::_tstring& spec)
             const CLiveLoadFactorModel& permit_special_single_trip_traffic_model = m_pRatingEntry->GetLiveLoadFactorModel(pgsTypes::ptSingleTripWithTraffic);
             if ( !permit_special_single_trip_traffic_model.AllowUserOverride() )
             {
-               m_gLL[pgsTypes::StrengthII_PermitSpecial]  = -1;
-               m_gLL[pgsTypes::ServiceI_PermitSpecial]    = -1;
+               m_gLL[pgsTypes::StrengthII_PermitSpecial]  = COMPUTE_LLDF;
+               m_gLL[pgsTypes::ServiceI_PermitSpecial]    = COMPUTE_LLDF;
             }
          }
          else if ( m_SpecialPermitType == pgsTypes::ptMultipleTripWithTraffic )
@@ -10577,8 +10577,8 @@ void CProjectAgentImp::InitRatingSpecification(const std::_tstring& spec)
             const CLiveLoadFactorModel& permit_special_multiple_trip_traffic_model = m_pRatingEntry->GetLiveLoadFactorModel(pgsTypes::ptMultipleTripWithTraffic);
             if ( !permit_special_multiple_trip_traffic_model.AllowUserOverride() )
             {
-               m_gLL[pgsTypes::StrengthII_PermitSpecial]  = -1;
-               m_gLL[pgsTypes::ServiceI_PermitSpecial]    = -1;
+               m_gLL[pgsTypes::StrengthII_PermitSpecial]  = COMPUTE_LLDF;
+               m_gLL[pgsTypes::ServiceI_PermitSpecial]    = COMPUTE_LLDF;
             }
          }
          else
@@ -10591,43 +10591,43 @@ void CProjectAgentImp::InitRatingSpecification(const std::_tstring& spec)
          const CLiveLoadFactorModel2& design_inventory_model = m_pRatingEntry->GetLiveLoadFactorModel2(pgsTypes::lrDesign_Inventory);
          if ( !design_inventory_model.AllowUserOverride() )
          {
-            m_gLL[pgsTypes::StrengthI_Inventory]  = -1;
-            m_gLL[pgsTypes::ServiceIII_Inventory] = -1;
+            m_gLL[pgsTypes::StrengthI_Inventory]  = COMPUTE_LLDF;
+            m_gLL[pgsTypes::ServiceIII_Inventory] = COMPUTE_LLDF;
          }
 
          const CLiveLoadFactorModel2& design_operating_model = m_pRatingEntry->GetLiveLoadFactorModel2(pgsTypes::lrDesign_Operating);
          if ( !design_operating_model.AllowUserOverride() )
          {
-            m_gLL[pgsTypes::StrengthI_Operating]  = -1;
-            m_gLL[pgsTypes::ServiceIII_Operating] = -1;
+            m_gLL[pgsTypes::StrengthI_Operating]  = COMPUTE_LLDF;
+            m_gLL[pgsTypes::ServiceIII_Operating] = COMPUTE_LLDF;
          }
 
          const CLiveLoadFactorModel2& legal_routine_model = m_pRatingEntry->GetLiveLoadFactorModel2(pgsTypes::lrLegal_Routine);
          if ( !legal_routine_model.AllowUserOverride() )
          {
-            m_gLL[pgsTypes::StrengthI_LegalRoutine]  = -1;
-            m_gLL[pgsTypes::ServiceIII_LegalRoutine] = -1;
+            m_gLL[pgsTypes::StrengthI_LegalRoutine]  = COMPUTE_LLDF;
+            m_gLL[pgsTypes::ServiceIII_LegalRoutine] = COMPUTE_LLDF;
          }
 
          const CLiveLoadFactorModel2& legal_special_model = m_pRatingEntry->GetLiveLoadFactorModel2(pgsTypes::lrLegal_Special);
          if ( !legal_special_model.AllowUserOverride() )
          {
-            m_gLL[pgsTypes::StrengthI_LegalSpecial]  = -1;
-            m_gLL[pgsTypes::ServiceIII_LegalSpecial] = -1;
+            m_gLL[pgsTypes::StrengthI_LegalSpecial]  = COMPUTE_LLDF;
+            m_gLL[pgsTypes::ServiceIII_LegalSpecial] = COMPUTE_LLDF;
          }
 
          const CLiveLoadFactorModel2& emergency_model = m_pRatingEntry->GetLiveLoadFactorModel2(pgsTypes::lrLegal_Emergency);
          if (!emergency_model.AllowUserOverride())
          {
-            m_gLL[pgsTypes::StrengthI_LegalEmergency] = -1;
-            m_gLL[pgsTypes::ServiceIII_LegalEmergency] = -1;
+            m_gLL[pgsTypes::StrengthI_LegalEmergency] = COMPUTE_LLDF;
+            m_gLL[pgsTypes::ServiceIII_LegalEmergency] = COMPUTE_LLDF;
          }
 
          const CLiveLoadFactorModel2& permit_routine_model = m_pRatingEntry->GetLiveLoadFactorModel2(pgsTypes::lrPermit_Routine);
          if ( !permit_routine_model.AllowUserOverride() )
          {
-            m_gLL[pgsTypes::StrengthII_PermitRoutine]  = -1;
-            m_gLL[pgsTypes::ServiceI_PermitRoutine]    = -1;
+            m_gLL[pgsTypes::StrengthII_PermitRoutine]  = COMPUTE_LLDF;
+            m_gLL[pgsTypes::ServiceI_PermitRoutine]    = COMPUTE_LLDF;
          }
 
          if ( m_SpecialPermitType == pgsTypes::ptSingleTripWithEscort )
@@ -10635,8 +10635,8 @@ void CProjectAgentImp::InitRatingSpecification(const std::_tstring& spec)
             const CLiveLoadFactorModel2& permit_special_single_trip_escorted_model = m_pRatingEntry->GetLiveLoadFactorModel2(pgsTypes::ptSingleTripWithEscort);
             if ( !permit_special_single_trip_escorted_model.AllowUserOverride() )
             {
-               m_gLL[pgsTypes::StrengthII_PermitSpecial]  = -1;
-               m_gLL[pgsTypes::ServiceI_PermitSpecial]    = -1;
+               m_gLL[pgsTypes::StrengthII_PermitSpecial]  = COMPUTE_LLDF;
+               m_gLL[pgsTypes::ServiceI_PermitSpecial]    = COMPUTE_LLDF;
             }
          }
          else if ( m_SpecialPermitType == pgsTypes::ptSingleTripWithTraffic )
@@ -10644,8 +10644,8 @@ void CProjectAgentImp::InitRatingSpecification(const std::_tstring& spec)
             const CLiveLoadFactorModel2& permit_special_single_trip_traffic_model = m_pRatingEntry->GetLiveLoadFactorModel2(pgsTypes::ptSingleTripWithTraffic);
             if ( !permit_special_single_trip_traffic_model.AllowUserOverride() )
             {
-               m_gLL[pgsTypes::StrengthII_PermitSpecial]  = -1;
-               m_gLL[pgsTypes::ServiceI_PermitSpecial]    = -1;
+               m_gLL[pgsTypes::StrengthII_PermitSpecial]  = COMPUTE_LLDF;
+               m_gLL[pgsTypes::ServiceI_PermitSpecial]    = COMPUTE_LLDF;
             }
          }
          else if ( m_SpecialPermitType == pgsTypes::ptMultipleTripWithTraffic )
@@ -10653,8 +10653,8 @@ void CProjectAgentImp::InitRatingSpecification(const std::_tstring& spec)
             const CLiveLoadFactorModel2& permit_special_multiple_trip_traffic_model = m_pRatingEntry->GetLiveLoadFactorModel2(pgsTypes::ptMultipleTripWithTraffic);
             if ( !permit_special_multiple_trip_traffic_model.AllowUserOverride() )
             {
-               m_gLL[pgsTypes::StrengthII_PermitSpecial]  = -1;
-               m_gLL[pgsTypes::ServiceI_PermitSpecial]    = -1;
+               m_gLL[pgsTypes::StrengthII_PermitSpecial]  = COMPUTE_LLDF;
+               m_gLL[pgsTypes::ServiceI_PermitSpecial]    = COMPUTE_LLDF;
             }
          }
          else

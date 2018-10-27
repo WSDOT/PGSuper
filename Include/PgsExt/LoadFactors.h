@@ -33,6 +33,7 @@
 #include <PgsExt\PgsExtExp.h>
 #endif
 
+#include <array>
 // LOCAL INCLUDES
 //
 
@@ -45,20 +46,20 @@
 class PGSEXTCLASS CLoadFactors
 {
 public:
-   Float64 DCmin[6];   // index is one of pgsTypes::LimitState constants (except for CLLIM)
-   Float64 DWmin[6];
-   Float64 CRmin[6];
-   Float64 SHmin[6];
-   Float64 REmin[6];
-   Float64 PSmin[6];
-   Float64 LLIMmin[6];
-   Float64 DCmax[6];
-   Float64 DWmax[6];
-   Float64 CRmax[6];
-   Float64 SHmax[6];
-   Float64 REmax[6];
-   Float64 PSmax[6];
-   Float64 LLIMmax[6];
+   std::array<Float64, 6> DCmin;   // index is one of pgsTypes::LimitState constants (except for CLLIM)
+   std::array<Float64, 6> DWmin;
+   std::array<Float64, 6> CRmin;
+   std::array<Float64, 6> SHmin;
+   std::array<Float64, 6> REmin;
+   std::array<Float64, 6> PSmin;
+   std::array<Float64, 6> LLIMmin;
+   std::array<Float64, 6> DCmax;
+   std::array<Float64, 6> DWmax;
+   std::array<Float64, 6> CRmax;
+   std::array<Float64, 6> SHmax;
+   std::array<Float64, 6> REmax;
+   std::array<Float64, 6> PSmax;
+   std::array<Float64, 6> LLIMmax;
 
    CLoadFactors();
    CLoadFactors(const CLoadFactors& rOther);

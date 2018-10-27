@@ -79,17 +79,20 @@ void CSegmentModelManager::DumpAnalysisModels(GirderIndexType gdrIdx,SegmentMode
       CSegmentKey segmentKey(iter->first);
       CSegmentModelData& segmentModelData(iter->second);
 
-      CString strFilename;
-      strFilename.Format(_T("Segment_%d_%s_Fem2d.xml"),LABEL_SEGMENT(segmentKey.segmentIndex),name);
+      if (segmentKey.girderIndex == gdrIdx)
+      {
+         CString strFilename;
+         strFilename.Format(_T("Group_%d_Girder_%s_Segment_%d_%s_Fem2d.xml"), LABEL_GROUP(segmentKey.groupIndex),LABEL_GIRDER(segmentKey.girderIndex), LABEL_SEGMENT(segmentKey.segmentIndex), name);
 
-      CComPtr<IStructuredSave2> save;
-      save.CoCreateInstance(CLSID_StructuredSave2);
-      save->Open(T2BSTR(strFilename));
+         CComPtr<IStructuredSave2> save;
+         save.CoCreateInstance(CLSID_StructuredSave2);
+         save->Open(T2BSTR(strFilename));
 
-      CComQIPtr<IStructuredStorage2> storage(segmentModelData.Model);
-      storage->Save(save);
+         CComQIPtr<IStructuredStorage2> storage(segmentModelData.Model);
+         storage->Save(save);
 
-      save->Close();
+         save->Close();
+      }
    }
 }
 

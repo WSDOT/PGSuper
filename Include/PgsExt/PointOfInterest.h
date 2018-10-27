@@ -24,6 +24,7 @@
 #include <PgsExt\PgsExtExp.h>
 #include <PgsExt\Keys.h>
 #include <Reporter\Reporter.h>
+#include <array>
 
 class pgsPoiMgr;
 
@@ -412,7 +413,7 @@ protected:
    bool m_bCanMerge;
 
    static IndexType GetIndex(PoiAttributeType refAttribute);
-   PoiAttributeType m_RefAttributes[6]; // referenced attributes (10th points)
+   std::array<PoiAttributeType,6> m_RefAttributes; // referenced attributes (10th points)
    PoiAttributeType m_Attributes; // non-referenced attributes
 
    static Float64 ms_Tol;

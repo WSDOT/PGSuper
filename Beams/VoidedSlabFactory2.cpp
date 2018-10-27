@@ -269,13 +269,19 @@ void CVoidedSlab2Factory::LayoutSectionChangePointsOfInterest(IBroker* pBroker,c
 
    if ( 0 < nVoids && !IsZero(endBlockLength) )
    {
-      Float64 delta = 1.5*pPoiMgr->GetTolerance();
+      pgsPointOfInterest poiLeftFace1(segmentKey, endBlockLength, POI_SECTCHANGE_LEFTFACE);
+      pgsPointOfInterest poiRightFace1(segmentKey, endBlockLength, POI_SECTCHANGE_RIGHTFACE);
+      poiLeftFace1.CanMerge(false);
+      poiRightFace1.CanMerge(false);
+      pPoiMgr->AddPointOfInterest( poiLeftFace1 );
+      pPoiMgr->AddPointOfInterest( poiRightFace1 );
 
-      pPoiMgr->AddPointOfInterest( pgsPointOfInterest(segmentKey,endBlockLength,       POI_SECTCHANGE_LEFTFACE  ) );
-      pPoiMgr->AddPointOfInterest( pgsPointOfInterest(segmentKey,endBlockLength+delta, POI_SECTCHANGE_RIGHTFACE ) );
-
-      pPoiMgr->AddPointOfInterest( pgsPointOfInterest(segmentKey,gdrLength - (endBlockLength+delta), POI_SECTCHANGE_LEFTFACE  ) );
-      pPoiMgr->AddPointOfInterest( pgsPointOfInterest(segmentKey,gdrLength - endBlockLength,         POI_SECTCHANGE_RIGHTFACE ) );
+      pgsPointOfInterest poiLeftFace2(segmentKey, gdrLength - endBlockLength, POI_SECTCHANGE_LEFTFACE);
+      pgsPointOfInterest poiRightFace2(segmentKey, gdrLength - endBlockLength, POI_SECTCHANGE_RIGHTFACE);
+      poiLeftFace2.CanMerge(false);
+      poiRightFace2.CanMerge(false);
+      pPoiMgr->AddPointOfInterest(poiLeftFace2);
+      pPoiMgr->AddPointOfInterest(poiRightFace2);
    }
 }
 

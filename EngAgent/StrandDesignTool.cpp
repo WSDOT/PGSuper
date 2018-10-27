@@ -230,7 +230,7 @@ void pgsStrandDesignTool::Initialize(IBroker* pBroker, StatusGroupIDType statusG
    }
 
    // Set initial design for AssExcessCamber here
-   GET_IFACE(ISpecification,pSpec);
+   GET_IFACE_NOCHECK(ISpecification,pSpec);
    m_bIsDesignExcessCamber = sodAandAssExcessCamber == m_DesignOptions.doDesignSlabOffset &&
                                                        pSpec->IsAssExcessCamberInputEnabled();
    // don't let tolerance be impossible
