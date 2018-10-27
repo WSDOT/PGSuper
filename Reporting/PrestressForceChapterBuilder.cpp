@@ -29,6 +29,7 @@
 #include <IFace\Project.h>
 #include <IFace\AnalysisResults.h>
 #include <IFace\Intervals.h>
+#include <IFace\DocumentType.h>
 
 #include <Material\PsStrand.h>
 
@@ -49,8 +50,8 @@ CLASS
 ////////////////////////// PUBLIC     ///////////////////////////////////////
 
 //======================== LIFECYCLE  =======================================
-CPrestressForceChapterBuilder::CPrestressForceChapterBuilder(bool bSelect) :
-CPGSuperChapterBuilder(bSelect)
+CPrestressForceChapterBuilder::CPrestressForceChapterBuilder(bool bRating,bool bSelect) :
+CPGSuperChapterBuilder(bSelect), m_bRating(bRating)
 {
 }
 
@@ -91,6 +92,9 @@ rptChapter* CPrestressForceChapterBuilder::Build(CReportSpecification* pRptSpec,
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
 
+   GET_IFACE2(pBroker, IDocumentType, pDocType);
+   bool bIsSplicedGirder = (pDocType->IsPGSpliceDocument() ? true : false);
+
    // Setup some unit-value prototypes
    INIT_UV_PROTOTYPE( rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(),       true );
    INIT_UV_PROTOTYPE( rptAreaUnitValue,   area,   pDisplayUnits->GetAreaUnit(),         true );
@@ -117,11 +121,19 @@ rptChapter* CPrestressForceChapterBuilder::Build(CReportSpecification* pRptSpec,
             const CStrandData* pStrands = pSegmentData->GetStrandData(thisSegmentKey);
 
             // Write out what we have for prestressing in this girder
-            if ( 1 < nSegments )
+            if ( girderKey.groupIndex == ALL_GROUPS || 1 < nSegments)
             {
-               rptParagraph* pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
+               rptParagraph* pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
                *pChapter << pPara;
-               (*pPara) << _T("Segment ") << LABEL_SEGMENT(segIdx) << rptNewLine;
+
+               if (bIsSplicedGirder)
+               {
+                  (*pPara) << _T("Group ") << LABEL_GROUP(grpIdx) << _T( "Girder ") << LABEL_GIRDER(gdrIdx) << _T(" Segment ") << LABEL_SEGMENT(segIdx) << rptNewLine;
+               }
+               else
+               {
+                  (*pPara) << _T("Span ") << LABEL_SPAN(grpIdx) << _T(" Girder ") << LABEL_GIRDER(gdrIdx) << rptNewLine;
+               }
             }
 
             bool harpedAreStraight = pStrandGeom->GetAreHarpedStrandsForcedStraight(thisSegmentKey);
@@ -183,7 +195,7 @@ rptChapter* CPrestressForceChapterBuilder::Build(CReportSpecification* pRptSpec,
             // Write out strand forces and stresses at the various stages of prestress loss
             pPara = new rptParagraph;
             *pChapter << pPara;
-            *pPara << CPrestressLossTable().Build(pBroker,thisSegmentKey,pDisplayUnits) << rptNewLine;
+            *pPara << CPrestressLossTable().Build(pBroker,thisSegmentKey,m_bRating,pDisplayUnits) << rptNewLine;
 
             pPara = new rptParagraph(rptStyleManager::GetFootnoteStyle());
             *pChapter << pPara;
@@ -199,7 +211,7 @@ rptChapter* CPrestressForceChapterBuilder::Build(CReportSpecification* pRptSpec,
 
 CChapterBuilder* CPrestressForceChapterBuilder::Clone() const
 {
-   return new CPrestressForceChapterBuilder;
+   return new CPrestressForceChapterBuilder(m_bRating,m_bSelect);
 }
 
 //======================== ACCESS     =======================================

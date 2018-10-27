@@ -116,6 +116,17 @@ static CComBSTR gs_LiveLoadNames[] =
    _T("LL+IM Permit Rating (Special)")
 };
 
+inline LiveLoadApplicabilityType ConvertLiveLoadApplicabilityType(pgsTypes::LiveLoadApplicabilityType type)
+{
+   // LBAM enums have a value of 1 more than the pgsTypes enum
+   return (LiveLoadApplicabilityType)(((int)type) + 1);
+}
+
+inline pgsTypes::LiveLoadApplicabilityType ConvertLiveLoadApplicabilityType(LiveLoadApplicabilityType type)
+{
+   // LBAM enums have a value of 1 more than the pgsTypes enum
+   return (pgsTypes::LiveLoadApplicabilityType)(((int)type) - 1);
+}
 
 COverhangLoadData::COverhangLoadData(const CSegmentKey& segmentKey, const CComBSTR& bstrStage, const CComBSTR& bstrLoadGroup, Float64 PStart, Float64 PEnd):
    segmentKey(segmentKey), bstrStage(bstrStage), bstrLoadGroup(bstrLoadGroup), PStart(PStart), PEnd(PEnd)
@@ -4950,7 +4961,7 @@ void CGirderModelManager::GetStress(IntervalIndexType intervalIdx,pgsTypes::Limi
 
       if ( bIncludePrestress )
       {
-         Float64 ps = GetStress(intervalIdx,poi,stressLocation,bIncludeLiveLoad==VARIANT_TRUE,limitState);
+         Float64 ps = GetStress(intervalIdx,poi,stressLocation,bIncludeLiveLoad==VARIANT_TRUE,limitState, INVALID_INDEX/*controlling live load*/);
          fMin += k*ps;
          fMax += k*ps;
 
@@ -10092,7 +10103,7 @@ void CGirderModelManager::AddUserTruck(const std::_tstring& strLLName,ILibrary* 
    ATLASSERT( strLLName == ll_entry->GetName() );
 
    vehicular_load->put_Name(CComBSTR(strLLName.c_str()));
-   vehicular_load->put_Applicability((LiveLoadApplicabilityType)ll_entry->GetLiveLoadApplicabilityType());
+   vehicular_load->put_Applicability(ConvertLiveLoadApplicabilityType(ll_entry->GetLiveLoadApplicabilityType()));
 
    LiveLoadLibraryEntry::LiveLoadConfigurationType ll_config = ll_entry->GetLiveLoadConfigurationType();
    VehicularLoadConfigurationType lb_ll_config = vlcDefault;
@@ -17586,15 +17597,15 @@ bool CGirderModelManager::GetLoadCaseTypeFromName(const CComBSTR& name, LoadingC
    return false;
 }
 
-Float64 CGirderModelManager::GetStress(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::StressLocation stressLocation,bool bIncludeLiveLoad, pgsTypes::LimitState limitState)
+Float64 CGirderModelManager::GetStress(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::StressLocation stressLocation,bool bIncludeLiveLoad, pgsTypes::LimitState limitState, VehicleIndexType vehicleIdx)
 {
    Float64 fTop, fBot;
-   GetStress(intervalIdx,poi,stressLocation,stressLocation,bIncludeLiveLoad,limitState,&fTop,&fBot);
+   GetStress(intervalIdx,poi,stressLocation,stressLocation,bIncludeLiveLoad,limitState,vehicleIdx,&fTop,&fBot);
    ATLASSERT(IsEqual(fTop,fBot));
    return fTop;
 }
 
-void CGirderModelManager::GetStress(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::StressLocation topLoc,pgsTypes::StressLocation botLoc,bool bIncludeLiveLoad, pgsTypes::LimitState limitState,Float64* pfTop,Float64* pfBot)
+void CGirderModelManager::GetStress(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::StressLocation topLoc,pgsTypes::StressLocation botLoc,bool bIncludeLiveLoad, pgsTypes::LimitState limitState, VehicleIndexType vehicleIdx,Float64* pfTop,Float64* pfBot)
 {
    // Stress in the girder due to prestressing
    ATLASSERT(!IsStrengthLimitState(limitState));
@@ -17644,7 +17655,7 @@ void CGirderModelManager::GetStress(IntervalIndexType intervalIdx,const pgsPoint
    {
       if ( bIncludeLiveLoad )
       {
-         P = pPsForce->GetPrestressForceWithLiveLoad(poi,pgsTypes::Permanent, myLimitState);
+         P = pPsForce->GetPrestressForceWithLiveLoad(poi,pgsTypes::Permanent, myLimitState, vehicleIdx);
       }
       else
       {
@@ -17837,7 +17848,7 @@ pgsTypes::LiveLoadApplicabilityType CGirderModelManager::GetLiveLoadApplicabilit
 
    LiveLoadApplicabilityType applicability;
    vehicle->get_Applicability(&applicability);
-   return (pgsTypes::LiveLoadApplicabilityType)applicability;
+   return ConvertLiveLoadApplicabilityType(applicability);
 }
 
 bool RemoveStrongbacks(const CTemporarySupportData* pTS)

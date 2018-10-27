@@ -71,7 +71,7 @@ rptChapter* CTexasPrestressSummaryChapterBuilder::Build(CReportSpecification* pR
 
    rptParagraph* pPara = new rptParagraph;
    *pChapter << pPara;
-   *pPara << CPrestressLossTable().Build(pBroker,segmentKey,pDisplayUnits) << rptNewLine;
+   *pPara << CPrestressLossTable().Build(pBroker,segmentKey,false,pDisplayUnits) << rptNewLine;
 
    return pChapter;
 }

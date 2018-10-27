@@ -53,7 +53,7 @@ m_bIsSlabOffsetApplicable(false)
 
    m_ProvidedAtBearingCLs  = 0;
    m_RequiredAtBearingCLs  = 0;
-   m_bIsHaunchAtBearingCLsApplicable = false;
+   m_HaunchAtBearingCLsApplicable = sobappNA;
   
    m_bIsBottomFlangeClearanceApplicable = false;
    m_C = 0;
@@ -95,7 +95,6 @@ void pgsSpanConstructabilityArtifact::SetProvidedSlabOffset(Float64 startA, Floa
 
 void pgsSpanConstructabilityArtifact::GetProvidedSlabOffset(Float64* pStartA, Float64* pEndA) const
 {
-   ATLASSERT(m_bIsSlabOffsetApplicable);
    *pStartA = m_ProvidedStart;
    *pEndA   = m_ProvidedEnd;
 }
@@ -112,7 +111,6 @@ void pgsSpanConstructabilityArtifact::SetRequiredSlabOffset(Float64 reqd)
 
 Float64 pgsSpanConstructabilityArtifact::GetRequiredSlabOffset() const
 {
-   ATLASSERT(m_bIsSlabOffsetApplicable);
    return m_Required;
 }
 
@@ -148,7 +146,15 @@ Float64 pgsSpanConstructabilityArtifact::GetProvidedFillet() const
 
 bool pgsSpanConstructabilityArtifact::MinimumFilletPassed() const
 {
-   return m_ProvidedFillet + TOLERANCE > m_MinimumRequiredFillet;
+   // min fillet uses same applicability as slab offset check
+   if (m_bIsSlabOffsetApplicable)
+   {
+      return m_ProvidedFillet + TOLERANCE > m_MinimumRequiredFillet;
+   }
+   else
+   {
+      return true;
+   }
 }
 
 void pgsSpanConstructabilityArtifact::SetSlabOffsetApplicability(bool bSet)
@@ -239,7 +245,6 @@ void pgsSpanConstructabilityArtifact::SetProvidedHaunchAtBearingCLs(Float64 prov
 
 Float64 pgsSpanConstructabilityArtifact::GetProvidedHaunchAtBearingCLs() const
 {
-   ATLASSERT(m_bIsHaunchAtBearingCLsApplicable);
    return m_ProvidedAtBearingCLs;
 }
 
@@ -250,23 +255,23 @@ void pgsSpanConstructabilityArtifact::SetRequiredHaunchAtBearingCLs(Float64 reqd
 
 Float64 pgsSpanConstructabilityArtifact::GetRequiredHaunchAtBearingCLs() const
 {
-   ATLASSERT(m_bIsHaunchAtBearingCLsApplicable);
    return m_RequiredAtBearingCLs;
 }
 
-void pgsSpanConstructabilityArtifact::SetHaunchAtBearingCLsApplicability(bool bSet)
+void pgsSpanConstructabilityArtifact::SetHaunchAtBearingCLsApplicability(SlabOffsetBearingCLApplicabilityType bSet)
 {
-   m_bIsHaunchAtBearingCLsApplicable = bSet;
+   m_HaunchAtBearingCLsApplicable = bSet;
 }
 
-bool pgsSpanConstructabilityArtifact::IsHaunchAtBearingCLsApplicable() const
+pgsSpanConstructabilityArtifact::SlabOffsetBearingCLApplicabilityType pgsSpanConstructabilityArtifact::GetHaunchAtBearingCLsApplicability() const
 {
-   return m_bIsHaunchAtBearingCLsApplicable;
+   return m_HaunchAtBearingCLsApplicable;
 }
 
 bool pgsSpanConstructabilityArtifact::HaunchAtBearingCLsPassed() const
 {
-   return  m_ProvidedAtBearingCLs+TOLERANCE >= m_RequiredAtBearingCLs;
+   return m_HaunchAtBearingCLsApplicable!=pgsSpanConstructabilityArtifact::sobappYes ||
+          m_ProvidedAtBearingCLs+TOLERANCE >= m_RequiredAtBearingCLs;
 }
 
 void pgsSpanConstructabilityArtifact::SetBottomFlangeClearanceApplicability(bool bSet)
@@ -355,17 +360,25 @@ pgsSpanConstructabilityArtifact::HaunchLoadGeometryStatusType pgsSpanConstructab
 {
    if (IsHaunchLoadGeometryCheckApplicable())
    {
-      if (m_AssumedExcessCamber > m_ComputedExcessCamber + m_HaunchLoadGeometryTolerance)
+      // uses same applicability as slab offset check
+      if (!m_bIsSlabOffsetApplicable)
       {
-         return hlgInsufficient;
-      }
-      if (m_AssumedExcessCamber < m_ComputedExcessCamber - m_HaunchLoadGeometryTolerance)
-      {
-         return hlgExcessive ;
+         return hlgNAPrintOnly;
       }
       else
       {
-         return hlgPass;
+         if (m_AssumedExcessCamber > m_ComputedExcessCamber + m_HaunchLoadGeometryTolerance)
+         {
+            return hlgInsufficient;
+         }
+         if (m_AssumedExcessCamber < m_ComputedExcessCamber - m_HaunchLoadGeometryTolerance)
+         {
+            return hlgExcessive;
+         }
+         else
+         {
+            return hlgPass;
+         }
       }
    }
    else
@@ -393,7 +406,7 @@ bool pgsSpanConstructabilityArtifact::Passed() const
       return false;
    }
 
-   if (IsHaunchAtBearingCLsApplicable() && !HaunchAtBearingCLsPassed())
+   if (!HaunchAtBearingCLsPassed())
    {
       return false;
    }
@@ -441,7 +454,7 @@ void pgsSpanConstructabilityArtifact::MakeCopy(const pgsSpanConstructabilityArti
 
    m_ProvidedAtBearingCLs  = rOther.m_ProvidedAtBearingCLs;
    m_RequiredAtBearingCLs  = rOther.m_RequiredAtBearingCLs;
-   m_bIsHaunchAtBearingCLsApplicable  = rOther.m_bIsHaunchAtBearingCLsApplicable;
+   m_HaunchAtBearingCLsApplicable  = rOther.m_HaunchAtBearingCLsApplicable;
 
    m_bIsBottomFlangeClearanceApplicable = rOther.m_bIsBottomFlangeClearanceApplicable;
    m_C = rOther.m_C;
@@ -451,6 +464,7 @@ void pgsSpanConstructabilityArtifact::MakeCopy(const pgsSpanConstructabilityArti
    m_AssumedExcessCamber = rOther.m_AssumedExcessCamber;
    m_HaunchLoadGeometryTolerance = rOther.m_HaunchLoadGeometryTolerance;
    m_bIsHaunchLoadGeometryCheckApplicable = rOther.m_bIsHaunchLoadGeometryCheckApplicable;
+   m_AssumedMinimumHaunchDepth = rOther.m_AssumedMinimumHaunchDepth;
 }
 
 void pgsSpanConstructabilityArtifact::MakeAssignment(const pgsSpanConstructabilityArtifact& rOther)
@@ -594,11 +608,11 @@ bool pgsConstructabilityArtifact::IsHaunchAtBearingCLsApplicable() const
    ATLASSERT(!m_SpanArtifacts.empty());
    for (const auto& artf : m_SpanArtifacts)
    {
-      if (!artf.IsHaunchAtBearingCLsApplicable())
-         return false;
+      if (artf.GetHaunchAtBearingCLsApplicability()==pgsSpanConstructabilityArtifact::sobappYes)
+         return true;
    }
 
-   return true;
+   return false;
 }
 
 bool pgsConstructabilityArtifact::HaunchAtBearingCLsPassed() const

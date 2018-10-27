@@ -1,40 +1,25 @@
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 57.04    6  10.00                     1     1     WF84    *     78  0.6  270  29.28  11.59  11.75  11.75                                              24  82.0 24.5  6.700  8.000   5.588    -5.553    31421   1.022  1.022   5.712 -3.557 -0.434 -0.191 -4.183 320.11  507.45    4.00   14.00   14.00 
+ 57.04    6  10.00                     1     1     WF84    *     78  0.6  270  29.64  12.86  12.00  12.00                                              22  82.0 22.5  7.000  8.400   5.633    -5.580    31497   1.022  1.022   5.807 -3.546 -0.430 -0.189 -4.165 319.19  495.93    4.00   14.00   14.00 
 
 
-Girder design was Not Successful
 The Specification Check was Not Successful
-Compression stress check failed for Service I Limit State in Interval 2 Prestress Release (Casting Yard)
-Compression stress check failed for Service I Limit State in Interval 12 Composite Deck, Install Railing System
-Compression stress check failed for Service I Limit State in Interval 12 Install Overlay (Bridge Site 2)
-Longitudinal Reinforcement for Shear check failed for Strength I Limit State
-Ultimate vertical shear capacity check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength II Limit State
-Ultimate vertical shear capacity check failed for Strength II Limit State
-Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
-Horizontal Interface Shears/Length check failed for Strength II Limit State [5.8.4].
-Stirrup detailing checks failed for the Strength I Limit State.
-Stirrup detailing checks failed for the Strength II Limit State.
-Splitting zone check failed.
-Confinement zone check failed.
 
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 57.04    6  10.00                     1     2     WF84    *     66  0.6  270  30.33  11.69  11.00  11.00                                              20  82.0 20.5  5.800  7.700   5.145    -4.981    26052   0.745  0.952   4.748 -3.255 -0.438 -0.193 -3.887 236.37  404.96    4.00   14.00   14.00 
+ 57.04    6  10.00                     1     2     WF84    *     66  0.6  270  30.33  11.69  11.25  11.25                                              20  82.0 20.5  5.800  8.100   5.180    -5.002    26127   0.746  0.952   4.748 -3.235 -0.433 -0.191 -3.859 236.37  407.06    4.00   14.00   14.00 
 
 
-The Specification Check was Not Successful
-Compression stress check failed for Service I Limit State in Interval 12 Install Overlay (Bridge Site 2)
+The Specification Check was Successful
 
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 57.04    6  10.00                     1     4     WF84    *     66  0.6  270  30.33  11.69  11.25  11.25                                              20  82.0 20.5  5.800  7.700   5.168    -4.998    26108   0.745  0.952   4.748 -3.290 -0.438 -0.193 -3.921 236.37  403.36    4.00   14.00   14.00 
+ 57.04    6  10.00                     1     4     WF84    *     66  0.6  270  30.33  11.69  11.25  11.25                                              20  82.0 20.5  5.800  8.100   5.180    -5.002    26127   0.746  0.952   4.748 -3.235 -0.433 -0.191 -3.859 236.37  407.06    4.00   14.00   14.00 
 
 
-The Specification Check was Not Successful
-Compression stress check failed for Service I Limit State in Interval 12 Install Overlay (Bridge Site 2)
+The Specification Check was Successful
 
 

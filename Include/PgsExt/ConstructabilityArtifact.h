@@ -70,7 +70,10 @@ public:
    enum SlabOffsetStatusType { Pass, Fail, Excessive, NA };
 
    // Status for Haunch Load geometry check 
-   enum HaunchLoadGeometryStatusType { hlgNA, hlgPass, hlgInsufficient, hlgExcessive };
+   enum HaunchLoadGeometryStatusType { hlgNA, hlgNAPrintOnly, hlgPass, hlgInsufficient, hlgExcessive };
+
+   // Applicability for A dimension check at CL bearing
+   enum SlabOffsetBearingCLApplicabilityType { sobappYes, sobappNA, sobappNAPrintOnly };
 
    // GROUP: LIFECYCLE
 
@@ -135,8 +138,8 @@ public:
    Float64 GetRequiredHaunchAtBearingCLs() const;
    void SetProvidedHaunchAtBearingCLs(Float64 provided);
    Float64 GetProvidedHaunchAtBearingCLs() const;
-   void SetHaunchAtBearingCLsApplicability(bool bSet);
-   bool IsHaunchAtBearingCLsApplicable() const;
+   void SetHaunchAtBearingCLsApplicability(SlabOffsetBearingCLApplicabilityType bSet);
+   SlabOffsetBearingCLApplicabilityType GetHaunchAtBearingCLsApplicability() const;
    bool HaunchAtBearingCLsPassed() const;
 
    // Bottom flange clearance
@@ -195,7 +198,7 @@ private:
 
    Float64 m_ProvidedAtBearingCLs; // The actual slab offset
    Float64 m_RequiredAtBearingCLs; // The required required slab offset
-   bool m_bIsHaunchAtBearingCLsApplicable;
+   SlabOffsetBearingCLApplicabilityType m_HaunchAtBearingCLsApplicable;
 
    bool m_bIsBottomFlangeClearanceApplicable;
    Float64 m_C;

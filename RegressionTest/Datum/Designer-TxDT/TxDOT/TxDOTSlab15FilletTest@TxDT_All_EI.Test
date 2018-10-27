@@ -1,18 +1,20 @@
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  AECmbr Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 24.50    6   0.12                     1     1    5SB15          32  0.6  270   4.75   4.64   7.00   7.00   1.88  10    2.5   28    10    4   2   4   0   0   4.400  5.000   3.418    -3.916     1494   0.384  0.384   3.139 -0.890  0.000 -0.138 -1.028  94.01  301.39    1.00    1.00    1.00 
+ 24.50    6   0.12                     1     1    5SB15          32  0.6  270   4.75   4.64   7.00   7.00   2.13  10    2.5   28    10    4   2   4   0   0   4.400  5.000   3.396    -3.894     1488   0.384  0.384   3.139 -0.863  0.000 -0.138 -1.001  94.01  301.98    1.00    1.00    1.00 
 
 
 The Specification Check was Not Successful
+Slab Offset ("A" Dimension) check failed
 Live Load Deflection check failed
 
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  AECmbr Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 24.50    6   0.12                     1     2    4SB15          24  0.6  270   4.83   4.75   7.25   7.25   2.13   8    2.5   22     8    2   4   2   0   0   4.300  5.000   3.205    -3.755     1206   0.364  0.364   3.011 -0.727  0.000 -0.136 -0.864  70.16  226.86    1.00    1.00    1.00 
+ 24.50    6   0.12                     1     2    4SB15          24  0.6  270   4.83   4.75   7.00   7.00   2.13   8    2.5   22     8    2   4   2   0   0   4.300  5.000   3.181    -3.731     1201   0.364  0.364   3.011 -0.699  0.000 -0.136 -0.836  70.16  227.38    1.00    1.00    1.00 
 
 
 The Specification Check was Not Successful
+Slab Offset ("A" Dimension) check failed
 Live Load Deflection check failed
 
 

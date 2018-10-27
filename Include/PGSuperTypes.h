@@ -1642,6 +1642,47 @@ inline bool IsDesignLiveLoad(pgsTypes::LiveLoadType llType)
       return !IsRatingLiveLoad(llType);
 }
 
+inline std::vector<pgsTypes::LimitState> GetRatingLimitStates(pgsTypes::LoadRatingType ratingType)
+{
+   std::vector<pgsTypes::LimitState> vLimitStates;
+   switch (ratingType)
+   {
+   case pgsTypes::lrDesign_Inventory:
+      vLimitStates.push_back(pgsTypes::ServiceIII_Inventory);
+      vLimitStates.push_back(pgsTypes::StrengthI_Inventory);
+      break;
+   case pgsTypes::lrDesign_Operating:
+      vLimitStates.push_back(pgsTypes::ServiceIII_Operating);
+      vLimitStates.push_back(pgsTypes::StrengthI_Operating);
+      break;
+   case pgsTypes::lrLegal_Routine:
+      vLimitStates.push_back(pgsTypes::ServiceIII_LegalRoutine);
+      vLimitStates.push_back(pgsTypes::StrengthI_LegalRoutine);
+      break;
+   case pgsTypes::lrLegal_Special:
+      vLimitStates.push_back(pgsTypes::ServiceIII_LegalSpecial);
+      vLimitStates.push_back(pgsTypes::StrengthI_LegalSpecial);
+      break;
+   case pgsTypes::lrLegal_Emergency:
+      vLimitStates.push_back(pgsTypes::ServiceIII_LegalEmergency);
+      vLimitStates.push_back(pgsTypes::StrengthI_LegalEmergency);
+      break;
+   case pgsTypes::lrPermit_Routine:
+      vLimitStates.push_back(pgsTypes::ServiceI_PermitRoutine);
+      vLimitStates.push_back(pgsTypes::ServiceIII_PermitRoutine);
+      vLimitStates.push_back(pgsTypes::StrengthII_PermitRoutine);
+      break;
+   case pgsTypes::lrPermit_Special:
+      vLimitStates.push_back(pgsTypes::ServiceI_PermitSpecial);
+      vLimitStates.push_back(pgsTypes::ServiceIII_PermitSpecial);
+      vLimitStates.push_back(pgsTypes::StrengthII_PermitSpecial);
+      break;
+   default:
+      ATLASSERT(false); // is there a new rating type???
+   }
+   return vLimitStates;
+}
+
 inline pgsTypes::LoadRatingType RatingTypeFromLimitState(pgsTypes::LimitState ls)
 {
    pgsTypes::LoadRatingType ratingType;

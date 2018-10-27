@@ -122,7 +122,6 @@ The Specification Check was Successful
 Girder design was Not Successful
 The Specification Check was Not Successful
 Compression stress check failed for Service I Limit State in Interval 2 Prestress Release (Casting Yard)
-Compression stress check failed for Service I Limit State in Interval 13 Composite Deck, Install Railing System
 Compression stress check failed for Service I Limit State in Interval 13 Install Overlay (Bridge Site 2)
 Compression stress check failed for Service I Limit State in Interval 16 Open to Traffic (Bridge Site 3)
 Tensile stress check failed for Service III Limit State in Interval 16 Open to Traffic (Bridge Site 3)
@@ -136,7 +135,6 @@ Tensile stress check failed for Service III Limit State in Interval 16 Open to T
 Girder design was Not Successful
 The Specification Check was Not Successful
 Compression stress check failed for Service I Limit State in Interval 2 Prestress Release (Casting Yard)
-Compression stress check failed for Service I Limit State in Interval 13 Composite Deck, Install Railing System
 Compression stress check failed for Service I Limit State in Interval 13 Install Overlay (Bridge Site 2)
 Compression stress check failed for Service I Limit State in Interval 16 Open to Traffic (Bridge Site 3)
 Tensile stress check failed for Service III Limit State in Interval 16 Open to Traffic (Bridge Site 3)
@@ -150,7 +148,6 @@ Tensile stress check failed for Service III Limit State in Interval 16 Open to T
 Girder design was Not Successful
 The Specification Check was Not Successful
 Compression stress check failed for Service I Limit State in Interval 2 Prestress Release (Casting Yard)
-Compression stress check failed for Service I Limit State in Interval 13 Composite Deck, Install Railing System
 Compression stress check failed for Service I Limit State in Interval 13 Install Overlay (Bridge Site 2)
 Compression stress check failed for Service I Limit State in Interval 16 Open to Traffic (Bridge Site 3)
 Tensile stress check failed for Service III Limit State in Interval 16 Open to Traffic (Bridge Site 3)
@@ -165,7 +162,6 @@ Girder design was Not Successful
 The Specification Check was Not Successful
 Stresses in the prestressing strands are too high.
 Tensile stress check failed for Service I Limit State in Interval 11 Cast Deck (Bridge Site 1)
-Compression stress check failed for Service I Limit State in Interval 13 Composite Deck, Install Railing System
 Compression stress check failed for Service I Limit State in Interval 13 Install Overlay (Bridge Site 2)
 Tensile stress check failed for Service III Limit State in Interval 16 Open to Traffic (Bridge Site 3)
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
@@ -182,7 +178,6 @@ Girder design was Not Successful
 The Specification Check was Not Successful
 Stresses in the prestressing strands are too high.
 Tensile stress check failed for Service I Limit State in Interval 11 Cast Deck (Bridge Site 1)
-Compression stress check failed for Service I Limit State in Interval 13 Composite Deck, Install Railing System
 Compression stress check failed for Service I Limit State in Interval 13 Install Overlay (Bridge Site 2)
 Tensile stress check failed for Service III Limit State in Interval 16 Open to Traffic (Bridge Site 3)
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State

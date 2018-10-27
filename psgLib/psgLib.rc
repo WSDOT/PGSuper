@@ -10,6 +10,7 @@
 #include "afxres.h"
 #include "EAF\EAFResources.h"
 #include "grid\gxresrc.h"
+
 /////////////////////////////////////////////////////////////////////////////
 #undef APSTUDIO_READONLY_SYMBOLS
 
@@ -66,8 +67,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 3,1,4,0
- PRODUCTVERSION 3,1,4,0
+ FILEVERSION 3,1,4,1
+ PRODUCTVERSION 3,1,4,1
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -85,11 +86,11 @@ BEGIN
             VALUE "Comments", "A member of the Alternate Route Project"
             VALUE "CompanyName", "Washington State Department of Transportation"
             VALUE "FileDescription", "psgLib DLL"
-            VALUE "FileVersion", "3.1.4.0"
+            VALUE "FileVersion", "3.1.4.1"
             VALUE "InternalName", "psgLib"
             VALUE "OriginalFilename", "psgLib.DLL"
             VALUE "ProductName", "PGSuper"
-            VALUE "ProductVersion", "3.1.4.0"
+            VALUE "ProductVersion", "3.1.4.1"
         END
     END
     BLOCK "VarFileInfo"
@@ -1088,26 +1089,26 @@ BEGIN
     EDITTEXT        IDC_SUPPORT_LESS_THAN,101,217,25,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "* girder length",IDC_SUPPORT_LESS_THAN_UNIT,129,219,44,8
     LTEXT           "(For Kansas method only)",IDC_STATIC_K,184,219,80,8
-    GROUPBOX        "Final Check/Design Options",IDC_STATIC,12,244,462,84
-    LTEXT           "Slab Offset (""A"" Dimension)",IDC_STATIC,23,261,94,8
-    CONTROL         "Check",IDC_CHECK_A,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,145,261,37,8
-    CONTROL         "Design",IDC_DESIGN_A,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,201,261,37,8
-    LTEXT           "Live Load Deflection (2.5.2.6.2)",IDC_STATIC,23,279,100,8
-    CONTROL         "Check",IDC_LL_DEFLECTION,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,145,278,45,10
-    LTEXT           "Deflection Limit = Span / ",IDC_LL_DEF_STATIC,201,279,82,8
-    EDITTEXT        IDC_DEFLECTION_LIMIT,281,276,40,14,ES_AUTOHSCROLL
-    LTEXT           "Bottom Flange Clearance",IDC_STATIC,23,296,80,8
-    CONTROL         "Check",IDC_CHECK_BOTTOM_FLANGE_CLEARANCE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,145,296,37,10
-    LTEXT           "Min. Clearance",IDC_CLEARANCE_LABEL,201,296,48,8
-    EDITTEXT        IDC_CLEARANCE,253,293,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Static",IDC_CLEARANCE_UNIT,298,296,19,8
-    LTEXT           "Inclination of Tilted Girder",IDC_STATIC,23,311,81,8
-    CONTROL         "Check",IDC_CHECK_INCLINDED_GIRDER,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,145,311,37,10
-    LTEXT           "Factor of Safety",IDC_INCLINDED_GIRDER_FS_LABEL,200,311,51,8
-    EDITTEXT        IDC_INCLINDED_GIRDER_FS,260,308,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Bearing Pad Deduction",IDC_INCLINDED_GIRDER_BRGPADDEDUCT_LABEL,313,311,74,8
-    EDITTEXT        IDC_INCLINDED_GIRDER_BRGPADDEDUCT,395,307,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Static",IDC_INCLINDED_GIRDER_BRGPADDEDUCT_UNIT,437,311,19,8
+    GROUPBOX        "Final Check/Design Options",IDC_STATIC,12,244,462,87
+    LTEXT           "Haunch Geometry",IDC_STATIC,23,260,94,8
+    CONTROL         "Check",IDC_CHECK_A,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,124,260,37,8
+    CONTROL         "Design",IDC_DESIGN_A,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,180,260,37,8
+    LTEXT           "Live Load Deflection (2.5.2.6.2)",IDC_STATIC,23,277,100,8
+    CONTROL         "Check",IDC_LL_DEFLECTION,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,124,276,45,10
+    LTEXT           "Deflection Limit = Span / ",IDC_LL_DEF_STATIC,180,277,82,8
+    EDITTEXT        IDC_DEFLECTION_LIMIT,260,274,40,14,ES_AUTOHSCROLL
+    LTEXT           "Bottom Flange Clearance",IDC_STATIC,23,294,80,8
+    CONTROL         "Check",IDC_CHECK_BOTTOM_FLANGE_CLEARANCE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,124,294,37,10
+    LTEXT           "Min. Clearance",IDC_CLEARANCE_LABEL,180,294,48,8
+    EDITTEXT        IDC_CLEARANCE,232,291,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_CLEARANCE_UNIT,277,294,19,8
+    LTEXT           "Inclination of Tilted Girder",IDC_STATIC,23,312,81,8
+    CONTROL         "Check",IDC_CHECK_INCLINDED_GIRDER,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,124,312,37,10
+    LTEXT           "Factor of Safety",IDC_INCLINDED_GIRDER_FS_LABEL,179,312,51,8
+    EDITTEXT        IDC_INCLINDED_GIRDER_FS,239,309,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Bearing Pad Deduction",IDC_INCLINDED_GIRDER_BRGPADDEDUCT_LABEL,292,312,74,8
+    EDITTEXT        IDC_INCLINDED_GIRDER_BRGPADDEDUCT,374,309,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_INCLINDED_GIRDER_BRGPADDEDUCT_UNIT,416,312,19,8
     GROUPBOX        "Harped Strand Design",IDC_STATIC,12,336,462,44
     CONTROL         "Add Strands Using the Permanent Strand Fill Order",IDC_RADIO_FILL_PERMANENT,
                     "Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,23,352,193,10
@@ -2701,6 +2702,7 @@ LANGUAGE 9, 1
 #include "afxres.rc"         // Standard components
 #endif
 #include "grid\gxres.rc"               // Objective Grid resources
+
 /////////////////////////////////////////////////////////////////////////////
 #endif    // not APSTUDIO_INVOKED
 

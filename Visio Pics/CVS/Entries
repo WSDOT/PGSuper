@@ -1,0 +1,63 @@
+/BearingEndDistanceError.vsd/1.1/Thu Oct 16 14:45:33 2008/-kb/Tversion-3-1-0-patches
+/BearingRecessSlope.vsd/1.2/Tue Dec 16 22:20:29 2008/-kb/Tversion-3-1-0-patches
+/BearingSeatElevation.vsd/1.1.2.1/Thu Oct 19 17:42:36 2017//Tversion-3-1-0-patches
+/BoxBeam.vsd/1.8/Wed Feb 10 00:57:26 2010/-kb/Tversion-3-1-0-patches
+/CamberEqns.vsd/1.19/Thu Mar 17 00:46:36 2016/-kb/Tversion-3-1-0-patches
+/ChapterLibrary.vsd/1.2/Tue Sep 30 19:02:07 2008/-kb/Tversion-3-1-0-patches
+/Connection Type A.vsd/1.2/Tue Sep 30 19:02:07 2008/-kb/Tversion-3-1-0-patches
+/Connection.vsd/1.7/Thu Jan 31 22:47:42 2013/-kb/Tversion-3-1-0-patches
+/Critical Section Picture.vsd/1.2/Tue Sep 30 19:02:07 2008/-kb/Tversion-3-1-0-patches
+/DeckedSlabBeam.vsd/1.1/Thu Oct  8 15:49:03 2009/-kb/Tversion-3-1-0-patches
+/Diaphragm Pic.vsd/1.2/Tue Sep 30 19:02:08 2008/-kb/Tversion-3-1-0-patches
+/Distribution Factors.vsd/1.3/Tue Sep 30 19:02:08 2008/-kb/Tversion-3-1-0-patches
+/DoubleTTxDot.vsd/1.4/Tue Sep 30 19:02:08 2008/-kb/Tversion-3-1-0-patches
+/Effective Flange Width.vsd/1.10/Wed Oct 26 00:20:43 2016/-kb/Tversion-3-1-0-patches
+/Effective Shear Depth Pic.vsd/1.9/Fri Nov 12 00:02:11 2010/-kb/Tversion-3-1-0-patches
+/Flexure Check Flowcharts.vsd/1.2/Tue Sep 30 19:02:10 2008/-kb/Tversion-3-1-0-patches
+/Flowcharts.vsd/1.2/Tue Sep 30 19:02:10 2008/-kb/Tversion-3-1-0-patches
+/Fpc Pic.vsd/1.3/Tue Sep 30 19:02:10 2008/-kb/Tversion-3-1-0-patches
+/FrictionAndAnchorSetLosses.vsd/1.4/Tue Sep 30 19:02:11 2008/-kb/Tversion-3-1-0-patches
+/Girder.vsd/1.2/Tue Sep 30 19:02:11 2008/-kb/Tversion-3-1-0-patches
+/GirderOrientationEffect.vsd/1.5/Tue Sep 30 19:02:11 2008/-kb/Tversion-3-1-0-patches
+/GirderSchedule.vsd/1.3/Thu Jan 31 22:47:43 2013/-kb/Tversion-3-1-0-patches
+/GlobalGirderStability.vsd/1.3/Wed Apr 19 14:51:02 2017/-kb/Tversion-3-1-0-patches
+/HaulingOverhangs.vsd/1.2/Tue Sep 30 19:02:13 2008/-kb/Tversion-3-1-0-patches
+/IBeam.vsd/1.10/Wed Feb 10 00:57:26 2010/-kb/Tversion-3-1-0-patches
+/KcEqn-SI.vsd/1.2/Tue Sep 30 19:02:14 2008/-kb/Tversion-3-1-0-patches
+/KcEqn-US.vsd/1.2/Tue Sep 30 19:02:14 2008/-kb/Tversion-3-1-0-patches
+/KfEqn-SI.vsd/1.2/Tue Sep 30 19:02:14 2008/-kb/Tversion-3-1-0-patches
+/KfEqn-US.vsd/1.2/Tue Sep 30 19:02:15 2008/-kb/Tversion-3-1-0-patches
+/LRFDCreepEqn.vsd/1.2/Tue Sep 30 19:02:15 2008/-kb/Tversion-3-1-0-patches
+/LeverRuleExterior.vsd/1.3/Tue Sep 30 19:02:15 2008/-kb/Tversion-3-1-0-patches
+/LeverRuleInterior.vsd/1.3/Tue Sep 30 19:02:17 2008/-kb/Tversion-3-1-0-patches
+/LimitingCapacityOfOverReinforcedSections.vsd/1.4/Tue Feb 16 18:16:56 2010/-kb/Tversion-3-1-0-patches
+/MultiWeb.vsd/1.5/Mon Jun 13 14:23:51 2016/-kb/Tversion-3-1-0-patches
+/MultiWeb2.vsd/1.3/Tue Sep 30 19:02:17 2008/-kb/Tversion-3-1-0-patches
+/NUBeam.vsd/1.4/Mon Jun 13 14:23:51 2016/-kb/Tversion-3-1-0-patches
+/Offsets.vsd/1.3/Wed Dec 10 17:35:50 2008/-kb/Tversion-3-1-0-patches
+/PGSpliceSegmentGeometry.vsd/1.2/Tue May 12 14:47:26 2015/-kb/Tversion-3-1-0-patches
+/PGSuperNomenclature.vsd/1.2/Tue May 12 14:47:26 2015/-kb/Tversion-3-1-0-patches
+/ParabolicTendonLayout.vsd/1.3/Fri Jun 26 15:38:46 2015/-kb/Tversion-3-1-0-patches
+/PierLayout.vsd/1.3/Fri Jun 26 15:38:46 2015/-kb/Tversion-3-1-0-patches
+/ProfileEffect.vsd/1.6/Mon Jun  6 20:13:19 2016/-kb/Tversion-3-1-0-patches
+/RigidMethod.vsd/1.2/Tue Sep 30 19:02:18 2008/-kb/Tversion-3-1-0-patches
+/Shear Check Flowcharts.vsd/1.2/Tue Sep 30 19:02:18 2008/-kb/Tversion-3-1-0-patches
+/Shear Zone Pic.vsd/1.2/Tue Sep 30 19:02:18 2008/-kb/Tversion-3-1-0-patches
+/Slab Geometry Pic.vsd/1.11/Fri Nov 12 00:02:11 2010/-kb/Tversion-3-1-0-patches
+/Span Length Pic.vsd/1.2/Tue Sep 30 19:02:20 2008/-kb/Tversion-3-1-0-patches
+/Strand Slope.vsd/1.4/Tue Sep 30 19:02:20 2008/-kb/Tversion-3-1-0-patches
+/StrandCamberLoading.vsd/1.3/Tue Sep 30 19:02:20 2008/-kb/Tversion-3-1-0-patches
+/System Diagram.vsd/1.2/Tue Sep 30 19:02:20 2008/-kb/Tversion-3-1-0-patches
+/TaperedIBeam.vsd/1.1/Fri Jul 24 23:33:27 2009/-kb/Tversion-3-1-0-patches
+/Traffic Barrier Dimensions.vsd/1.2/Tue Sep 30 19:02:20 2008/-kb/Tversion-3-1-0-patches
+/UBeam.vsd/1.6/Tue Sep 30 19:02:21 2008/-kb/Tversion-3-1-0-patches
+/UBeam2.vsd/1.4/Tue Sep 30 19:02:21 2008/-kb/Tversion-3-1-0-patches
+/Ultimate Moment Capacity Pic.vsd/1.13/Fri Nov 12 00:02:11 2010/-kb/Tversion-3-1-0-patches
+/UserDefinedLoads.vsd/1.2/Tue Sep 30 19:02:21 2008/-kb/Tversion-3-1-0-patches
+/VoidedSlab.vsd/1.5/Tue Sep 30 19:02:22 2008/-kb/Tversion-3-1-0-patches
+/VoidedSlab2.vsd/1.2/Tue Mar 23 23:31:45 2010/-kb/Tversion-3-1-0-patches
+/WSDOTCreepEqn.vsd/1.2/Tue Sep 30 19:02:22 2008/-kb/Tversion-3-1-0-patches
+/WorkPoints.vsd/1.3/Tue Dec  9 00:17:12 2008/-kb/Tversion-3-1-0-patches
+/eg Pic.vsd/1.3/Tue Sep 30 19:02:23 2008/-kb/Tversion-3-1-0-patches
+/ex Equation 2000.vsd/1.3/Tue Sep 30 19:02:23 2008/-kb/Tversion-3-1-0-patches
+D

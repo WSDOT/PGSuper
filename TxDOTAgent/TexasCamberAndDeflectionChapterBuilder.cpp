@@ -292,11 +292,80 @@ void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker, const std::vec
          row++;
       }
 
+      // Unfactored Design camber
       if (IsEqual(min_days, max_days))
       {
          // The usual case for TxDOT
          if (bFirst)
-            (*pTable)(row,0) << _T("Design Camber");
+            (*pTable)(row,0) << _T("Unfactored Design Camber");
+
+         Float64 D = pCamber->GetDCamberForGirderScheduleUnfactored( poi,CREEP_MINTIME);
+         if ( D < 0 )
+         {
+            if (isSingleGirder)
+               (*pTable)(row,1) << color(Red) << disp.SetValue( D ) << color(Black);
+
+            (*pTable)(row,col) << color(Red) << dispft.SetValue( D ) << color(Black);
+         }
+         else
+         {
+            if (isSingleGirder)
+               (*pTable)(row,1) << disp.SetValue( D );
+
+            (*pTable)(row,col) << dispft.SetValue( D );
+         }
+         row++;
+      }
+      else
+      {
+         if (bFirst)
+            (*pTable)(row,0) << _T("Estimated unfactored camber at ")<< min_days<<_T(" days, D");
+
+         Float64 D = pCamber->GetDCamberForGirderScheduleUnfactored( poi,CREEP_MINTIME);
+         if ( D < 0 )
+         {
+            if (isSingleGirder)
+               (*pTable)(row,1) << color(Red) << disp.SetValue( D ) << color(Black);
+
+            (*pTable)(row,col) << color(Red) << dispft.SetValue( D ) << color(Black);
+         }
+         else
+         {
+            if (isSingleGirder)
+               (*pTable)(row,1) << disp.SetValue( D );
+
+            (*pTable)(row,col) << dispft.SetValue( D );
+         }
+         row++;
+
+         if (bFirst)
+            (*pTable)(row,0) << _T("Estimated unfactored camber at ")<< max_days<<_T(" days, D");
+
+         D = pCamber->GetDCamberForGirderScheduleUnfactored( poi,CREEP_MAXTIME);
+         if ( D < 0 )
+         {
+            if (isSingleGirder)
+               (*pTable)(row,1) << color(Red) << disp.SetValue( D ) << color(Black);
+
+            (*pTable)(row,col) << color(Red) << dispft.SetValue( D ) << color(Black);
+         }
+         else
+         {
+            if (isSingleGirder)
+               (*pTable)(row,1) << disp.SetValue( D );
+
+            (*pTable)(row,col) << dispft.SetValue( D );
+         }
+
+         row++;
+      }
+
+      // Factored design camber
+      if (IsEqual(min_days, max_days))
+      {
+         // The usual case for TxDOT
+         if (bFirst)
+            (*pTable)(row,0) << _T("Factored Design Camber(")<<Sub2(symbol(DELTA),_T("4"))<<_T(")")<<Super(_T("**"));
 
          Float64 D = pCamber->GetDCamberForGirderSchedule( poi,CREEP_MINTIME);
          if ( D < 0 )
@@ -403,7 +472,7 @@ void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker, const std::vec
       row++;
 
       if (bFirst)
-         (*pTable)(row,0) << _T("Deflection (Deck and Diaphragms)*");
+         (*pTable)(row,0) << _T("Deflection (Deck and Diaphragms)")<<Super(_T("*"));;
 
       if (isSingleGirder)
          (*pTable)(row,1) << disp.SetValue( delta_dl );
@@ -472,7 +541,7 @@ void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker, const std::vec
       row++;
 
       if (bFirst)
-         (*pTable)(row,0) << _T("Screed Camber, C");
+         (*pTable)(row, 0) << _T("Screed Camber, C (Based on ") << Sub2(symbol(DELTA), _T("4")) << _T(")");
 
       if (isSingleGirder)
          (*pTable)(row,1) << disp.SetValue( pCamber->GetScreedCamber(poi) );
@@ -481,7 +550,7 @@ void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker, const std::vec
       row++;
 
       if (bFirst)
-         (*pTable)(row,0) << _T("Excess Camber (Based on Design Camber)");
+         (*pTable)(row,0) << _T("Computed Excess Camber (Based on ") << Sub2(symbol(DELTA), _T("4")) << _T(" - C)");
 
       Float64 excess_camber = pCamber->GetExcessCamber(poi,CREEP_MAXTIME);
       if ( excess_camber < 0 )
@@ -527,6 +596,7 @@ void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker, const std::vec
    }
 
    *p<<_T("* Deflection due to haunch weight is not included in this value") << rptNewLine;
+   *p<<_T("** Refer to the Camber Details tables in the Details report for more information") << rptNewLine;
 
 
    for (std::vector<CSegmentKey>::const_iterator ite=BeamsWithExcessCamber.begin(); ite!=BeamsWithExcessCamber.end(); ite++)

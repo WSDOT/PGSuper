@@ -1,10 +1,9 @@
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 28.25    5   6.00                     1     1    WF74G    *     46  0.6  270  32.23  21.10  11.50  11.50                                               8  70.0  3.0  6.200  7.500   4.721    -4.483    12539   0.553  0.671   4.698 -2.008 -0.187 -0.267 -2.462 182.48  325.37    1.75   10.00   10.00 
+ 28.25    5   6.00                     1     1    WF74G    *     46  0.6  270  32.23  21.10  11.25  11.25                                               8  70.0  3.0  6.200  7.500   4.696    -4.460    12539   0.553  0.671   4.698 -1.973 -0.187 -0.267 -2.427 182.48  327.00    1.75   10.00   10.00 
 
 
-The Specification Check was Not Successful
-Tensile stress check failed for Service III Limit State in Interval 16 Open to Traffic (Bridge Site 3)
+The Specification Check was Successful
 
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 

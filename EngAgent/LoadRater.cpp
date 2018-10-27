@@ -826,7 +826,7 @@ void pgsLoadRater::StressRating(const CGirderKey& girderKey,const std::vector<pg
             fPL = 0;
          }
 
-         Float64 fps = pPrestress->GetStress(loadRatingIntervalIdx,poi,stressLocation,true/*include live load if applicable*/,limitState);
+         Float64 fps = pPrestress->GetStress(loadRatingIntervalIdx,poi,stressLocation,true/*include live load if applicable*/,limitState,vehicleIdx);
 
          Float64 fpt = 0;
          if ( bTimeStep )
@@ -1358,7 +1358,7 @@ void pgsLoadRater::CheckReinforcementYielding(const CGirderKey& girderKey,const 
       if ( bStrands )
       {
          GET_IFACE(IPretensionForce,pPrestressForce);
-         fps = pPrestressForce->GetEffectivePrestressWithLiveLoad(poi,pgsTypes::Permanent,ls);
+         fps = pPrestressForce->GetEffectivePrestressWithLiveLoad(poi,pgsTypes::Permanent,ls,vehicleIdx);
       }
 
       Float64 fpt = 0;

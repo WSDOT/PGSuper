@@ -24,29 +24,26 @@ The Specification Check was Successful
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 84.00   18   4.82 FM 1179 Overpass    2     1     Tx54          44  0.6  270  18.83  11.55   8.00   8.00                                               8  48.5  8.5  5.700  6.500   4.601    -4.232     7823   0.430  0.595   5.260 -2.402 -0.180 -0.328 -2.910 184.49  511.98    1.00    1.00    1.00 
+ 84.00   18   4.82 FM 1179 Overpass    2     1     Tx54          42  0.6  270  19.01  12.72   8.00   8.00                                               6  50.5  6.5  5.700  6.600   4.601    -4.232     7823   0.430  0.595   5.006 -2.402 -0.180 -0.328 -2.910 167.34  465.36    1.00    1.00    1.00 
 
 
-The Specification Check was Not Successful
-Compression stress check failed for Service I Limit State in Interval 12 Install Overlay (Bridge Site 2)
-
-
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 84.00   18   4.82 FM 1179 Overpass    2     2     Tx54          46  0.6  270  18.66  11.36   8.00   8.00                                               8  50.5  8.5  5.900  6.700   4.697    -4.376     8098   0.430  0.595   5.605 -2.626 -0.281 -0.318 -3.225 199.62  550.27    1.00    1.00    1.00 
-
-
-The Specification Check was Not Successful
-Compression stress check failed for Service I Limit State in Interval 12 Install Overlay (Bridge Site 2)
+The Specification Check was Successful
 
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 84.00   18   4.82 FM 1179 Overpass    2    10     Tx54          48  0.6  270  18.51  12.84   8.00   8.00                                               8  42.5  8.5  6.500  6.900   4.799    -4.580     8484   0.430  0.595   6.086 -2.626 -0.281  0.000 -2.907 209.79  583.12    1.00    1.00    1.00 
+ 84.00   18   4.82 FM 1179 Overpass    2     2     Tx54          46  0.6  270  18.66  11.36   8.00   8.00                                               8  50.5  8.5  5.900  6.900   4.697    -4.376     8098   0.430  0.595   5.605 -2.626 -0.281 -0.318 -3.225 199.62  550.27    1.00    1.00    1.00 
 
 
-The Specification Check was Not Successful
-Compression stress check failed for Service I Limit State in Interval 12 Install Overlay (Bridge Site 2)
+The Specification Check was Successful
+
+
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 84.00   18   4.82 FM 1179 Overpass    2    10     Tx54          48  0.6  270  18.51  11.51   8.00   8.00                                               8  50.5  8.5  6.200  7.100   4.799    -4.580     8484   0.430  0.595   5.948 -2.626 -0.281  0.000 -2.907 213.70  585.48    1.00    1.00    1.00 
+
+
+The Specification Check was Successful
 
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 

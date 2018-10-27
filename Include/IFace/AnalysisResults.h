@@ -640,9 +640,9 @@ DEFINE_GUID(IID_IPretensionStresses,
 0xfdcc4ed6, 0x7d9b, 0x11d2, 0x88, 0x57, 0x0, 0x60, 0x97, 0xc6, 0x8a, 0x9c);
 interface IPretensionStresses : IUnknown
 {
-   virtual Float64 GetStress(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::StressLocation loc,bool bIncludeLiveLoad,pgsTypes::LimitState limitState) = 0;
-   virtual void GetStress(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::StressLocation topLoc,pgsTypes::StressLocation botLocation,bool bIncludeLiveLoad, pgsTypes::LimitState limitState,Float64* pfTop,Float64* pfBot) = 0;
-   virtual std::vector<Float64> GetStress(IntervalIndexType intervalIdx,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::StressLocation loc,bool bIncludeLiveLoad, pgsTypes::LimitState limitState) = 0;
+   virtual Float64 GetStress(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::StressLocation loc,bool bIncludeLiveLoad,pgsTypes::LimitState limitState,VehicleIndexType vehicleIdx = INVALID_INDEX) = 0;
+   virtual void GetStress(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::StressLocation topLoc,pgsTypes::StressLocation botLocation,bool bIncludeLiveLoad, pgsTypes::LimitState limitState,VehicleIndexType vehicleIdx,Float64* pfTop,Float64* pfBot) = 0;
+   virtual std::vector<Float64> GetStress(IntervalIndexType intervalIdx,const std::vector<pgsPointOfInterest>& vPoi,pgsTypes::StressLocation loc,bool bIncludeLiveLoad, pgsTypes::LimitState limitState, VehicleIndexType vehicleIdx = INVALID_INDEX) = 0;
    virtual Float64 GetStress(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::StressLocation loc,Float64 P,Float64 e) = 0;
    virtual Float64 GetStressPerStrand(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,pgsTypes::StressLocation loc) = 0;
    virtual Float64 GetDesignStress(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::StressLocation loc,const GDRCONFIG& config,bool bIncludeLiveLoad,pgsTypes::LimitState limitState) = 0;
@@ -737,6 +737,7 @@ interface ICamber : IUnknown
    // Deflection due to slab, diaphragms and user-defined loads.
    // This is the amount the girder will deflect downwards as the slab is placed.
    virtual Float64 GetScreedCamber(const pgsPointOfInterest& poi,const GDRCONFIG* pConfig=nullptr) = 0;
+   virtual Float64 GetScreedCamberUnfactored(const pgsPointOfInterest& poi,const GDRCONFIG* pConfig=nullptr) = 0;
 
    // Deflection due to superimposed dead loads (dead loads applied after the deck is composite)
    virtual Float64 GetSidlDeflection(const pgsPointOfInterest& poi,const GDRCONFIG* pConfig=nullptr) = 0;
@@ -744,13 +745,16 @@ interface ICamber : IUnknown
    // This is the camber that remains in the girder after the slab pour
    // It is equal to the Total camber less the screed camber.
    virtual Float64 GetExcessCamber(const pgsPointOfInterest& poi,Int16 time, const GDRCONFIG* pConfig=nullptr) = 0;
+   virtual Float64 GetExcessCamberUnfactored(const pgsPointOfInterest& poi,Int16 time, const GDRCONFIG* pConfig=nullptr) = 0;
 
    // This is the rotation in the girder that renames after the slab pour
    // It is equal to the rotation due to total camber, less the rotation for screed camber
    virtual Float64 GetExcessCamberRotation(const pgsPointOfInterest& poi,Int16 time, const GDRCONFIG* pConfig=nullptr) = 0;
+   virtual Float64 GetExcessCamberRotationUnfactored(const pgsPointOfInterest& poi,Int16 time, const GDRCONFIG* pConfig=nullptr) = 0;
 
    // This is the camber in the girder, just prior to slab casting.
    virtual Float64 GetDCamberForGirderSchedule(const pgsPointOfInterest& poi,Int16 time, const GDRCONFIG* pConfig=nullptr) = 0;
+   virtual Float64 GetDCamberForGirderScheduleUnfactored(const pgsPointOfInterest& poi,Int16 time, const GDRCONFIG* pConfig=nullptr) = 0;
 
    // This is the factor that the min timing camber is multiplied by the compute the lower bound camber
    virtual Float64 GetLowerBoundCamberVariabilityFactor()const = 0;

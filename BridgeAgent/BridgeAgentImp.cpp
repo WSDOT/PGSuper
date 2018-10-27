@@ -25914,7 +25914,7 @@ std::vector<IntervalIndexType> CBridgeAgentImp::GetSpecCheckIntervals(const CGir
             }
 
             // Only check temporary strand interval if there are temporary strands
-            if ( 0 < GetStrandCount(thisSegmentKey,pgsTypes::Temporary) && pSpecEntry->CheckTemporaryStresses() )
+            if (pSpecEntry->CheckTemporaryStresses() && 0 < GetStrandCount(thisSegmentKey, pgsTypes::Temporary))
             {
                vIntervals.push_back(GetTemporaryStrandRemovalInterval(thisSegmentKey));
             }
@@ -25936,12 +25936,14 @@ std::vector<IntervalIndexType> CBridgeAgentImp::GetSpecCheckIntervals(const CGir
    }
 
    IntervalIndexType overlayIntervalIdx = GetOverlayInterval();
-   if (overlayIntervalIdx != INVALID_INDEX )
+   if (overlayIntervalIdx != INVALID_INDEX)
    {
       vIntervals.push_back(overlayIntervalIdx);
    }
-
-   vIntervals.push_back(GetInstallRailingSystemInterval());
+   else
+   {
+      vIntervals.push_back(GetInstallRailingSystemInterval());
+   }
 
    // Need to spec check whenever a user defined load is applied
    SpanIndexType startSpanIdx, endSpanIdx;

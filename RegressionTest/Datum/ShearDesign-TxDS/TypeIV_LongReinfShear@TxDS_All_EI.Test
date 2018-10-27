@@ -16,10 +16,9 @@ The Specification Check was Successful
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 44.00    6   8.00                     1     4    LongR          56  1/2  270  18.89  10.32   8.00   8.00                                              12  52.0 12.0  5.900  7.200   4.955    -4.832     7622   0.631  0.814   3.928 -2.353 -0.184 -0.119 -2.656 163.93  295.02    1.00    1.00    1.00 
+ 44.00    6   8.00                     1     4    LongR          56  1/2  270  18.89  10.32   8.00   8.00                                              12  52.0 12.0  5.900  7.300   4.964    -4.836     7624   0.631  0.814   3.928 -2.337 -0.183 -0.118 -2.638 163.93  295.96    1.00    1.00    1.00 
 
 
-The Specification Check was Not Successful
-Compression stress check failed for Service I Limit State in Interval 13 Install Overlay (Bridge Site 2)
+The Specification Check was Successful
 
 

@@ -95,6 +95,31 @@ static char THIS_FILE[] = __FILE__;
 
 static Float64 gs_60KSI = ::ConvertToSysUnits(60.0,unitMeasure::KSI);
 
+// Exception-safe utility class for reverting event holding and lldf roa during design
+class AutoDesign
+{
+public:
+   AutoDesign(IEvents* pEvents, ILiveLoads* pLiveLoads):
+      m_pEvents(pEvents),
+      m_pLiveLoads(pLiveLoads)
+   {
+      pEvents->HoldEvents();
+      m_OldRoa = pLiveLoads->GetLldfRangeOfApplicabilityAction();
+      pLiveLoads->SetLldfRangeOfApplicabilityAction(roaIgnore);
+   }
+
+   ~AutoDesign()
+   {
+      m_pLiveLoads->SetLldfRangeOfApplicabilityAction(m_OldRoa);
+      m_pEvents->CancelPendingEvents();
+   }
+
+private:
+   IEvents* m_pEvents;
+   ILiveLoads* m_pLiveLoads;
+   LldfRangeOfApplicabilityAction m_OldRoa;
+};
+
 /****************************************************************************
 CLASS
    pgsDesigner2
@@ -959,6 +984,7 @@ void pgsDesigner2::ConfigureStressCheckTasks(const CSegmentKey& segmentKey)
    IntervalIndexType tsRemovalIntervalIdx     = pIntervals->GetTemporaryStrandRemovalInterval(segmentKey);
    IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval();
    IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval();
+   IntervalIndexType overlayIntervalIdx       = pIntervals->GetOverlayInterval();
    IntervalIndexType lastIntervalIdx          = pIntervals->GetIntervalCount()-1;
 
    StressCheckTask task;
@@ -980,24 +1006,58 @@ void pgsDesigner2::ConfigureStressCheckTasks(const CSegmentKey& segmentKey)
    task.bIncludeLiveLoad = true; // include live load if applicable
    m_StressCheckTasks.push_back(task);
 
-   task.intervalIdx = castDeckIntervalIdx;
-   task.limitState  = pgsTypes::ServiceI;
-   task.stressType  = pgsTypes::Compression;
-   task.bIncludeLiveLoad = true; // include live load if applicable
-   m_StressCheckTasks.push_back(task);
+   GET_IFACE(ILibrary, pLib);
+   GET_IFACE(ISpecification, pSpec);
+   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
+   if (pSpecEntry->CheckTemporaryStresses())
+   {
+      task.intervalIdx = castDeckIntervalIdx;
+      task.limitState = pgsTypes::ServiceI;
+      task.stressType = pgsTypes::Compression;
+      task.bIncludeLiveLoad = false;
+      m_StressCheckTasks.push_back(task);
 
-   task.intervalIdx = castDeckIntervalIdx;
-   task.limitState  = pgsTypes::ServiceI;
-   task.stressType  = pgsTypes::Tension;
-   task.bIncludeLiveLoad = true; // include live load if applicable
-   m_StressCheckTasks.push_back(task);
+      task.intervalIdx = castDeckIntervalIdx;
+      task.limitState = pgsTypes::ServiceI;
+      task.stressType = pgsTypes::Tension;
+      task.bIncludeLiveLoad = false;
+      m_StressCheckTasks.push_back(task);
 
-   // final without live load
-   task.intervalIdx = railingSystemIntervalIdx;
-   task.limitState  = pgsTypes::ServiceI;
-   task.stressType  = pgsTypes::Compression;
-   task.bIncludeLiveLoad = false; // no live load!
-   m_StressCheckTasks.push_back(task);
+      if (tsRemovalIntervalIdx != INVALID_INDEX)
+      {
+         task.intervalIdx = tsRemovalIntervalIdx;
+         task.limitState = pgsTypes::ServiceI;
+         task.stressType = pgsTypes::Tension;
+         task.bIncludeLiveLoad = false;
+         m_StressCheckTasks.push_back(task);
+
+         task.intervalIdx = tsRemovalIntervalIdx;
+         task.limitState = pgsTypes::ServiceI;
+         task.stressType = pgsTypes::Compression;
+         task.bIncludeLiveLoad = false;
+         m_StressCheckTasks.push_back(task);
+      }
+   }
+
+
+   // final without live load (effective prestress + permanent loads)
+   if (overlayIntervalIdx != INVALID_INDEX)
+   {
+      task.intervalIdx = overlayIntervalIdx;
+      task.limitState = pgsTypes::ServiceI;
+      task.stressType = pgsTypes::Compression;
+      task.bIncludeLiveLoad = false;
+      m_StressCheckTasks.push_back(task);
+   }
+   else
+   {
+      task.intervalIdx = railingSystemIntervalIdx;
+      task.limitState = pgsTypes::ServiceI;
+      task.stressType = pgsTypes::Compression;
+      task.bIncludeLiveLoad = false; // no live load!
+      m_StressCheckTasks.push_back(task);
+   }
+
 
    // final with live load
    task.intervalIdx = lastIntervalIdx;
@@ -1017,21 +1077,6 @@ void pgsDesigner2::ConfigureStressCheckTasks(const CSegmentKey& segmentKey)
    task.stressType  = pgsTypes::Compression;
    task.bIncludeLiveLoad = true; // include live load if applicable
    m_StressCheckTasks.push_back(task);
-
-   if ( tsRemovalIntervalIdx != INVALID_INDEX )
-   {
-      task.intervalIdx = tsRemovalIntervalIdx;
-      task.limitState  = pgsTypes::ServiceI;
-      task.stressType  = pgsTypes::Tension;
-      task.bIncludeLiveLoad = true; // include live load if applicable
-      m_StressCheckTasks.push_back(task);
-
-      task.intervalIdx = tsRemovalIntervalIdx;
-      task.limitState  = pgsTypes::ServiceI;
-      task.stressType  = pgsTypes::Compression;
-      task.bIncludeLiveLoad = true; // include live load if applicable
-      m_StressCheckTasks.push_back(task);
-   }
 }
 
 #define CHECK_PROGRESS CheckProgress(pProgress)
@@ -1078,14 +1123,10 @@ pgsGirderDesignArtifact pgsDesigner2::Design(const CGirderKey& girderKey,const s
 
    // 
    // we don't want events to fire so we'll hold events and then cancel any pending events
-   // when design is done
+   // when design is done. Use auto class so we do it exeption safely.
    GET_IFACE(IEvents,pEvents);
-   pEvents->HoldEvents();
-
    GET_IFACE(ILiveLoads,pLiveLoads);
-   LldfRangeOfApplicabilityAction old_roa = pLiveLoads->GetLldfRangeOfApplicabilityAction();
-   pLiveLoads->SetLldfRangeOfApplicabilityAction(roaIgnore);
-
+   AutoDesign myAutoDes(pEvents, pLiveLoads);
 
    try 
    {
@@ -1134,9 +1175,6 @@ pgsGirderDesignArtifact pgsDesigner2::Design(const CGirderKey& girderKey,const s
          pSegmentDesignArtifact->SetOutcome(outcome);
       }
    }
-
-   pLiveLoads->SetLldfRangeOfApplicabilityAction(old_roa);
-   pEvents->CancelPendingEvents();
 
    return artifact;
 }
@@ -1424,7 +1462,7 @@ void pgsDesigner2::DoDesign(const CGirderKey& girderKey,const arDesignOptions& o
                   new_offset_start = RoundSlabOffset(new_offset_start);
                   new_offset_end   = RoundSlabOffset(new_offset_end);
 
-                  LOG(_T("Slab Offset changed in outer loop. Set a new minimum of (Start) ") << ::ConvertFromSysUnits(new_offset_start,unitMeasure::Inch)<< _T("in and (End) ") << ::ConvertFromSysUnits(new_offset_end,unitMeasure::Inch) << _T(" - restart design"));
+                  LOG(_T("Slab Offset changed in outer loop. Set a new minimum of (Start) ") << ::ConvertFromSysUnits(new_offset_start,unitMeasure::Inch)<< _T(" in and (End) ") << ::ConvertFromSysUnits(new_offset_end,unitMeasure::Inch) << _T(" in - restart design"));
                   LOG(_T("========================================================================="));
                   m_StrandDesignTool.SetMinimumSlabOffset( Min(new_offset_start,new_offset_end));
                   m_StrandDesignTool.SetSlabOffset(pgsTypes::metStart,new_offset_start);
@@ -1661,8 +1699,8 @@ pgsEccEnvelope pgsDesigner2::GetEccentricityEnvelope(const pgsPointOfInterest& p
       Float64 Pps;
       if ( liveLoadIntervalIdx <= task.intervalIdx )
       {
-         Float64 Pperm = pPrestressForce->GetPrestressForceWithLiveLoad(poi,pgsTypes::Permanent,task.limitState,&config);
-         Float64 Ptemp = pPrestressForce->GetPrestressForceWithLiveLoad(poi,pgsTypes::Temporary,task.limitState,&config);
+         Float64 Pperm = pPrestressForce->GetPrestressForceWithLiveLoad(poi,pgsTypes::Permanent,task.limitState,INVALID_INDEX/*controlling live load*/,&config);
+         Float64 Ptemp = pPrestressForce->GetPrestressForceWithLiveLoad(poi,pgsTypes::Temporary,task.limitState, INVALID_INDEX/*controlling live load*/,&config);
          Pps = Pperm + Ptemp;
       }
       else
@@ -2192,7 +2230,7 @@ void pgsDesigner2::CheckSegmentStresses(const CSegmentKey& segmentKey,const std:
 
          // get segment stress due to prestressing
          Float64 fPretension[2];
-         pPretensionStresses->GetStress(pretensionIntervalIdx,poi,topStressLocation,botStressLocation,task.bIncludeLiveLoad,task.limitState,&fPretension[TOP],&fPretension[BOT]);
+         pPretensionStresses->GetStress(pretensionIntervalIdx,poi,topStressLocation,botStressLocation,task.bIncludeLiveLoad,task.limitState, INVALID_INDEX/*controlling live load*/,&fPretension[TOP],&fPretension[BOT]);
 
          // get segment stress due to external loads
          Float64 fLimitStateMin[2], fLimitStateMax[2];
@@ -4984,7 +5022,7 @@ void pgsDesigner2::CheckConstructability(const CGirderKey& girderKey,pgsConstruc
       CSpanKey spanKey(spanIdx,girderKey.girderIndex);
 
       // if there is no deck, slab offset is not applicable
-      if (!pSpecEntry->IsSlabOffsetCheckEnabled() || pBridge->GetDeckType() == pgsTypes::sdtNone)
+      if (pBridge->GetDeckType() == pgsTypes::sdtNone)
       {
          artifact.SetSlabOffsetApplicability(false);
       }
@@ -4994,7 +5032,7 @@ void pgsDesigner2::CheckConstructability(const CGirderKey& girderKey,pgsConstruc
          CEAFAutoProgress ap(pProgress);
          pProgress->UpdateMessage( _T("Checking constructability requirements") );
 
-         artifact.SetSlabOffsetApplicability(true);
+         artifact.SetSlabOffsetApplicability(pSpecEntry->IsSlabOffsetCheckEnabled());
 
          GET_IFACE(IGirderHaunch,pGdrHaunch);
          GET_IFACE(IBridgeDescription,pIBridgeDesc);
@@ -5075,11 +5113,13 @@ void pgsDesigner2::CheckConstructability(const CGirderKey& girderKey,pgsConstruc
          Float64 min_haunch;
          if (!pGirderEntry->GetMinHaunchAtBearingLines(&min_haunch))
          {
-            artifact.SetHaunchAtBearingCLsApplicability(false);
+            artifact.SetHaunchAtBearingCLsApplicability(pgsSpanConstructabilityArtifact::sobappNA);
          }
          else
          {
-            artifact.SetHaunchAtBearingCLsApplicability(true);
+            artifact.SetHaunchAtBearingCLsApplicability((pSpecEntry->IsSlabOffsetCheckEnabled() ? 
+                                                         pgsSpanConstructabilityArtifact::sobappYes : 
+                                                         pgsSpanConstructabilityArtifact::sobappNAPrintOnly));
 
             artifact.SetRequiredHaunchAtBearingCLs(min_haunch);
 
@@ -5130,12 +5170,11 @@ void pgsDesigner2::CheckConstructability(const CGirderKey& girderKey,pgsConstruc
          std::vector<SlabLoad> slab_loads;
          CSegmentKey segKey(girderKey.groupIndex, girderKey.girderIndex, 0);
          pProdLoads->GetMainSpanSlabLoad(segKey, &slab_loads);
+
          Float64 minDepth = Float64_Max;
-         std::vector<SlabLoad>::const_iterator iter(slab_loads.begin());
-         std::vector<SlabLoad>::const_iterator end(slab_loads.end());
-         for (; iter != end; iter++)
+         for (const auto& sload : slab_loads)
          {
-            minDepth = min(minDepth, iter->HaunchDepth);
+            minDepth = min(minDepth, sload.HaunchDepth);
          }
 
          artifact.SetAssumedMinimumHaunchDepth(minDepth);
@@ -6428,6 +6467,11 @@ void pgsDesigner2::DesignSlabOffset(IProgress* pProgress)
       GetHaunchDetails(CSpanKey(segmentKey.groupIndex,segmentKey.girderIndex),config,&haunch_details); // design is by segment/span and only for PGSuper so it is ok to use the segmentKey here instead of a girderKey
 
       IndexType idx = haunch_details.Haunch.size()/2;
+      LOG(_T("Girder Orientation Effect = ") << ::ConvertFromSysUnits(haunch_details.Haunch[idx].GirderOrientationEffect, unitMeasure::Inch) << _T(" in"));
+      LOG(_T("Profile Effect = ") << ::ConvertFromSysUnits(haunch_details.Haunch[idx].ProfileEffect, unitMeasure::Inch) << _T(" in"));
+      LOG(_T("D = ") << ::ConvertFromSysUnits(haunch_details.Haunch[idx].D, unitMeasure::Inch) << _T(" in"));
+      LOG(_T("C = ") << ::ConvertFromSysUnits(haunch_details.Haunch[idx].C, unitMeasure::Inch) << _T(" in"));
+      LOG(_T("Camber Effect = ") << ::ConvertFromSysUnits(haunch_details.Haunch[idx].CamberEffect, unitMeasure::Inch) << _T(" in"));
       LOG(_T("A-dim Calculated         = ") << ::ConvertFromSysUnits(haunch_details.RequiredSlabOffset, unitMeasure::Inch) << _T(" in"));
 
       Float64 Anew = haunch_details.RequiredSlabOffset;
@@ -6442,7 +6486,7 @@ void pgsDesigner2::DesignSlabOffset(IProgress* pProgress)
       if ( IsZero( AoldStart - Anew, tolerance ) && IsZero( AoldEnd - Anew, tolerance ))
       {
          Float64 a;
-         a = CeilOff(Max(AoldStart,AoldEnd,Anew),tolerance );
+         a = RoundOff(Max(AoldStart,AoldEnd,Anew),tolerance );
          m_StrandDesignTool.SetSlabOffset( pgsTypes::metStart, a );
          m_StrandDesignTool.SetSlabOffset( pgsTypes::metEnd,   a );
          LOG(_T("A-dim camber converged."));
@@ -9063,7 +9107,7 @@ void pgsDesigner2::RefineDesignForUltimateMoment(IntervalIndexType intervalIdx,p
       LOG(_T("Moment Arm = ") << ::ConvertFromSysUnits( pmcd->MomentArm, unitMeasure::Inch) << _T(" inch"));
 
       GET_IFACE(ILosses,pILosses);
-      Float64 check_loss = pILosses->GetEffectivePrestressLossWithLiveLoad(poi,pgsTypes::Permanent,pgsTypes::ServiceIII,&config);
+      Float64 check_loss = pILosses->GetEffectivePrestressLossWithLiveLoad(poi,pgsTypes::Permanent,pgsTypes::ServiceIII, INVALID_INDEX/*controlling live load*/,&config);
       LOG(_T("Losses = ") << ::ConvertFromSysUnits( check_loss, unitMeasure::KSI) << _T(" KSI") );
 
       CRACKINGMOMENTDETAILS cmd;

@@ -48,7 +48,7 @@ class REPORTINGCLASS CPrestressForceChapterBuilder : public CPGSuperChapterBuild
 {
 public:
    // GROUP: LIFECYCLE
-   CPrestressForceChapterBuilder(bool bSelect = true);
+   CPrestressForceChapterBuilder(bool bRating = false,bool bSelect = true);
 
    // GROUP: OPERATORS
    // GROUP: OPERATIONS
@@ -77,6 +77,8 @@ protected:
 private:
    // GROUP: DATA MEMBERS
    // GROUP: LIFECYCLE
+
+   bool m_bRating;
 
    // Prevent accidental copying and assignment
    CPrestressForceChapterBuilder(const CPrestressForceChapterBuilder&) = delete;

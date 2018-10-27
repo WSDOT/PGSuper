@@ -768,7 +768,7 @@ void ListVariousFailures(IBroker* pBroker,FailureList& rFailures,const pgsGirder
 
    if ( !pConstruct->HaunchLoadGeometryPassed() )
    {
-      rFailures.push_back(_T("Haunch load geometry compliance check failed"));
+      rFailures.push_back(_T("Excess camber geometry check failed"));
    }
 
    // Live Load Deflection

@@ -702,7 +702,7 @@ void CLoadingDetailsChapterBuilder::ReportSlabLoad(rptChapter* pChapter,IBridge*
          {
             (*p_table)(0, col++) << COLHDR(_T("*Assumed") << rptNewLine << _T("Excess") << rptNewLine << _T("Camber"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
          }
-         (*p_table)(0,col++) << COLHDR(_T("Haunch")<<rptNewLine<<_T("Depth"),rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+         (*p_table)(0,col++) << COLHDR(_T("Assumed")<<rptNewLine<<_T("Haunch")<<rptNewLine<<_T("Depth"),rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
          (*p_table)(0,col++) << COLHDR(_T("Haunch")<<rptNewLine<<_T("Load"),rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
 
          RowIndexType row = p_table->GetNumberOfHeaderRows();

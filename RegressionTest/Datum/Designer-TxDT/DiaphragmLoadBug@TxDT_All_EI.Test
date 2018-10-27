@@ -1,6 +1,6 @@
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 38.33    5   8.50     Hanna Rd.       1     1     6             24  1/2  270  22.25   9.58  10.75  10.75                                               8  46.0  8.0  4.000 14.600   3.268    -2.991     4324   0.777  0.794   2.270 -0.268 -0.041 -0.013 -0.322  54.67  154.42    1.00    5.00    5.00 
+ 38.33    5   8.50     Hanna Rd.       1     1     6             24  1/2  270  22.25   9.58  10.63  10.63                                               8  46.0  8.0  4.000 14.600   3.265    -2.989     4325   0.777  0.794   2.270 -0.267 -0.041 -0.013 -0.320  54.67  154.48    1.00    5.00    5.00 
 
 
 Girder design was Not Successful
@@ -10,6 +10,7 @@ Ultimate vertical shear capacity check failed for Strength I Limit State
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
 Stirrup detailing checks failed for the Strength I Limit State.
 Hauling checks failed
+Slab Offset ("A" Dimension) check failed
 Minimum fillet value exceeded for bridge check failed
 
 
@@ -31,7 +32,7 @@ Minimum fillet value exceeded for bridge check failed
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 38.33    5   8.50     Hanna Rd.       1     3     6             26  1/2  270  22.07  10.38  10.88  10.88                                               8  46.0  8.0  4.100 14.600   3.418    -3.224     4599   0.785  0.868   2.476 -0.260 -0.039 -0.033 -0.332  63.55  169.94    1.00    5.00    5.00 
+ 38.33    5   8.50     Hanna Rd.       1     3     6             26  1/2  270  22.07  10.38  10.75  10.75                                               8  46.0  8.0  4.100 14.600   3.415    -3.221     4600   0.785  0.868   2.476 -0.259 -0.039 -0.033 -0.331  63.55  170.00    1.00    5.00    5.00 
 
 
 Girder design was Not Successful

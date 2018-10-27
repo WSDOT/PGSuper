@@ -67,7 +67,7 @@ public:
 
    //------------------------------------------------------------------------
    // Builds the strand eccentricity table.
-   virtual rptRcTable* Build(IBroker* pBroker,const CSegmentKey& segmentKey,
+   virtual rptRcTable* Build(IBroker* pBroker,const CSegmentKey& segmentKey, bool bRating,
                              IEAFDisplayUnits* pDisplayUnits) const;
    // GROUP: ACCESS
    // GROUP: INQUIRY

@@ -95,6 +95,9 @@ rptChapter* CStressChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 l
    GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType nIntervals = pIntervals->GetIntervalCount();
 
+   GET_IFACE2(pBroker, IDocumentType, pDocType);
+   bool bIsSplicedGirder = (pDocType->IsPGSpliceDocument() ? true : false);
+
    rptParagraph* p = 0;
 
    GET_IFACE2(pBroker,ISpecification,pSpec);
@@ -319,6 +322,7 @@ rptChapter* CStressChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 l
    *pChapter << p;
    p->SetName(_T("Stress due to Prestress"));
    *p << p->GetName() << rptNewLine;
+   GroupIndexType nGroups_Reported = lastGroupIdx - firstGroupIdx + 1;
    for (GroupIndexType grpIdx = firstGroupIdx; grpIdx <= lastGroupIdx; grpIdx++ )
    {
       GirderIndexType nGirders = pBridge->GetGirderCount(grpIdx);
@@ -329,11 +333,18 @@ rptChapter* CStressChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 l
       {
          CSegmentKey segmentKey(grpIdx,gdrIdx,segIdx);
 
-         if ( 1 < nSegments )
+         if ( 1 < nGroups_Reported )
          {
-            p = new rptParagraph(rptStyleManager::GetSubheadingStyle());
+            p = new rptParagraph(rptStyleManager::GetHeadingStyle());
             *pChapter << p;
-            *p << _T("Group ") << LABEL_GROUP(grpIdx) << _T(" Girder ") << LABEL_GIRDER(gdrIdx) << _T(" Segment ") << LABEL_SEGMENT(segIdx) << rptNewLine;
+            if (bIsSplicedGirder)
+            {
+               *p << _T("Group ") << LABEL_GROUP(grpIdx) << _T(" Girder ") << LABEL_GIRDER(gdrIdx) << _T(" Segment ") << LABEL_SEGMENT(segIdx) << rptNewLine;
+            }
+            else
+            {
+               *p << _T("Span ") << LABEL_SPAN(grpIdx) << _T(" Girder ") << LABEL_GIRDER(gdrIdx) << rptNewLine;
+            }
          }
 
          p = new rptParagraph;
@@ -343,8 +354,7 @@ rptChapter* CStressChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 l
    }
 
 
-   GET_IFACE2(pBroker,IDocumentType, pDocType);
-   if ( pDocType->IsPGSpliceDocument() )
+   if ( bIsSplicedGirder )
    {
       GET_IFACE2(pBroker,ITendonGeometry,pTendonGeom);
       p = new rptParagraph(rptStyleManager::GetHeadingStyle());

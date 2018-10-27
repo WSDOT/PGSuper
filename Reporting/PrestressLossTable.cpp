@@ -31,6 +31,8 @@
 #include <IFace\PrestressForce.h>
 #include <IFace\Bridge.h>
 #include <IFace\Intervals.h>
+#include <IFace\AnalysisResults.h>
+#include <IFace\RatingSpecification.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -72,8 +74,9 @@ CPrestressLossTable& CPrestressLossTable::operator= (const CPrestressLossTable& 
 }
 
 //======================== OPERATIONS =======================================
-rptRcTable* CPrestressLossTable::Build(IBroker* pBroker,const CSegmentKey& segmentKey,
-                                            IEAFDisplayUnits* pDisplayUnits) const
+rptRcTable* CPrestressLossTable::Build(IBroker* pBroker, const CSegmentKey& segmentKey,
+   bool bRating,
+   IEAFDisplayUnits* pDisplayUnits) const
 {
    GET_IFACE2(pBroker,IPretensionForce, pPrestressForce ); 
    GET_IFACE2(pBroker,IPointOfInterest,pIPOI);
@@ -174,16 +177,68 @@ rptRcTable* CPrestressLossTable::Build(IBroker* pBroker,const CSegmentKey& segme
    }
    (*p_table)(row++,0) << _T("After Deck Placement");
    (*p_table)(row++,0) << _T("After Superimposed Dead Loads");
-   (*p_table)(row++,0) << _T("Final");
-   (*p_table)(row++,0) << _T("Final with Live Load (Service I)");
-   (*p_table)(row++,0) << _T("Final with Live Load (Service III)");
-   if (lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims)
+   (*p_table)(row++,0) << _T("Final (permanent loads only)");
+
+   GET_IFACE2_NOCHECK(pBroker, IProductLoads, pProductLoads); // only used if we are load rating, but don't want to get them in every "if(bRating)" code block
+   GET_IFACE2_NOCHECK(pBroker, IRatingSpecification, pRatingSpec);
+   if (bRating)
    {
-      (*p_table)(row++, 0) << _T("Final with Live Load (Service IA)");
+      for (int i = 0; i < (int)(pgsTypes::lrLoadRatingTypeCount); i++)
+      {
+         pgsTypes::LoadRatingType ratingType = (pgsTypes::LoadRatingType)(i);
+
+         if (!pRatingSpec->IsRatingEnabled(ratingType))
+         {
+            continue;
+         }
+
+         std::vector<pgsTypes::LimitState> vLimitStates = GetRatingLimitStates(ratingType);
+         for (const auto& limitState : vLimitStates)
+         {
+            if (IsStrengthLimitState(limitState))
+            {
+               // we only care about service limit states here
+               continue;
+            }
+
+            pgsTypes::LiveLoadType llType = LiveLoadTypeFromLimitState(limitState);
+
+            if (IsDesignRatingType(ratingType))
+            {
+               (*p_table)(row++, 0) << _T("Final with Live Load (") << GetLimitStateString(limitState) << _T(")");
+            }
+            else
+            {
+               VehicleIndexType nVehicles = pProductLoads->GetVehicleCount(llType);
+               for ( VehicleIndexType vehicleIdx = 0; vehicleIdx < nVehicles; vehicleIdx++)
+               {
+                  pgsTypes::LiveLoadApplicabilityType applicability = pProductLoads->GetLiveLoadApplicability(llType, vehicleIdx);
+                  if (applicability == pgsTypes::llaNegMomentAndInteriorPierReaction)
+                  {
+                     continue;
+                  }
+
+                  std::_tstring name = pProductLoads->GetLiveLoadName(llType, vehicleIdx);
+
+                  // Final with Live Load (Service III, Legal Routine, Type 3S2)....
+                  (*p_table)(row++, 0) << _T("Final with Live Load (") << GetLimitStateString(limitState) << _T(", ") << name << _T(")");
+               }
+            }
+         }
+      }
    }
    else
    {
-      (*p_table)(row++, 0) << _T("Final with Live Load (Fatigue I)");
+      (*p_table)(row++, 0) << _T("Final with Live Load (Service I)");
+      (*p_table)(row++, 0) << _T("Final with Live Load (Service III)");
+      if (lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims)
+      {
+         (*p_table)(row++, 0) << _T("Final with Live Load (Service IA)");
+      }
+      else
+      {
+         (*p_table)(row++, 0) << _T("Final with Live Load (Fatigue I)");
+      }
    }
 
    // Fill up the table with data.
@@ -237,15 +292,58 @@ rptRcTable* CPrestressLossTable::Build(IBroker* pBroker,const CSegmentKey& segme
    (*p_table)(row++,col) << force.SetValue( pPrestressForce->GetPrestressForce(poi,pgsTypes::Permanent,castDeckIntervalIdx,pgsTypes::End/*pgsTypes::AfterDeckPlacement*/) );
    (*p_table)(row++,col) << force.SetValue( pPrestressForce->GetPrestressForce(poi,pgsTypes::Permanent,railingSystemIntervalIdx,pgsTypes::End/*pgsTypes::AfterSIDL*/) );
    (*p_table)(row++,col) << force.SetValue( pPrestressForce->GetPrestressForce(poi,pgsTypes::Permanent,lastIntervalIdx,pgsTypes::End/*pgsTypes::AfterLosses*/) );
-   (*p_table)(row++,col) << force.SetValue( pPrestressForce->GetPrestressForceWithLiveLoad(poi,pgsTypes::Permanent/*pgsTypes::AfterLossesWithLiveLoad*/,pgsTypes::ServiceI) );
-   (*p_table)(row++,col) << force.SetValue( pPrestressForce->GetPrestressForceWithLiveLoad(poi,pgsTypes::Permanent/*pgsTypes::AfterLossesWithLiveLoad*/,pgsTypes::ServiceIII) );
-   if (lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims)
+
+   if (bRating)
    {
-      (*p_table)(row++, col) << force.SetValue(pPrestressForce->GetPrestressForceWithLiveLoad(poi, pgsTypes::Permanent/*pgsTypes::AfterLossesWithLiveLoad*/, pgsTypes::ServiceIA));
+      for (int i = 0; i < (int)(pgsTypes::lrLoadRatingTypeCount); i++)
+      {
+         pgsTypes::LoadRatingType ratingType = (pgsTypes::LoadRatingType)(i);
+
+         if (pRatingSpec->IsRatingEnabled(ratingType) && pRatingSpec->RateForStress(ratingType))
+         {
+            std::vector<pgsTypes::LimitState> vLimitStates = GetRatingLimitStates(ratingType);
+            for (const auto& limitState : vLimitStates)
+            {
+               if (IsStrengthLimitState(limitState))
+               {
+                  // we only care about service limit states here
+                  continue;
+               }
+
+               pgsTypes::LiveLoadType llType = LiveLoadTypeFromLimitState(limitState);
+               if (IsDesignRatingType(ratingType))
+               {
+                  (*p_table)(row++, col) << force.SetValue(pPrestressForce->GetPrestressForceWithLiveLoad(poi,pgsTypes::Permanent, limitState));
+               }
+               else
+               {
+                  VehicleIndexType nVehicles = pProductLoads->GetVehicleCount(llType);
+                  for ( VehicleIndexType vehicleIdx = 0; vehicleIdx < nVehicles; vehicleIdx++)
+                  {
+                     pgsTypes::LiveLoadApplicabilityType applicability = pProductLoads->GetLiveLoadApplicability(llType, vehicleIdx);
+                     if (applicability == pgsTypes::llaNegMomentAndInteriorPierReaction)
+                     {
+                        continue;
+                     }
+                     (*p_table)(row++, col) << force.SetValue(pPrestressForce->GetPrestressForceWithLiveLoad(poi,pgsTypes::Permanent, limitState,vehicleIdx));
+                  }
+               }
+            }
+         }
+      }
    }
    else
    {
-      (*p_table)(row++, col) << force.SetValue(pPrestressForce->GetPrestressForceWithLiveLoad(poi, pgsTypes::Permanent/*pgsTypes::AfterLossesWithLiveLoad*/, pgsTypes::FatigueI));
+      (*p_table)(row++, col) << force.SetValue(pPrestressForce->GetPrestressForceWithLiveLoad(poi, pgsTypes::Permanent/*pgsTypes::AfterLossesWithLiveLoad*/, pgsTypes::ServiceI));
+      (*p_table)(row++, col) << force.SetValue(pPrestressForce->GetPrestressForceWithLiveLoad(poi, pgsTypes::Permanent/*pgsTypes::AfterLossesWithLiveLoad*/, pgsTypes::ServiceIII));
+      if (lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims)
+      {
+         (*p_table)(row++, col) << force.SetValue(pPrestressForce->GetPrestressForceWithLiveLoad(poi, pgsTypes::Permanent/*pgsTypes::AfterLossesWithLiveLoad*/, pgsTypes::ServiceIA));
+      }
+      else
+      {
+         (*p_table)(row++, col) << force.SetValue(pPrestressForce->GetPrestressForceWithLiveLoad(poi, pgsTypes::Permanent/*pgsTypes::AfterLossesWithLiveLoad*/, pgsTypes::FatigueI));
+      }
    }
 
    ///////////////////////////////////
@@ -279,10 +377,52 @@ rptRcTable* CPrestressLossTable::Build(IBroker* pBroker,const CSegmentKey& segme
    (*p_table)(row++,col) << stress.SetValue( pLosses->GetTimeDependentLosses(poi,pgsTypes::Permanent,castDeckIntervalIdx,pgsTypes::End)/*pLosses->GetDeckPlacementLosses(poi,pgsTypes::Permanent)*/ );
    (*p_table)(row++,col) << stress.SetValue( pLosses->GetTimeDependentLosses(poi,pgsTypes::Permanent,railingSystemIntervalIdx,pgsTypes::End)/*pLosses->GetSIDLLosses(poi,pgsTypes::Permanent)*/ );
    (*p_table)(row++,col) << stress.SetValue( pLosses->GetTimeDependentLosses(poi,pgsTypes::Permanent,lastIntervalIdx,pgsTypes::End)/*pLosses->GetFinal(poi,pgsTypes::Permanent)*/ ); //
-   (*p_table)(row++,col) << stress.SetValue( pLosses->GetTimeDependentLosses(poi,pgsTypes::Permanent,lastIntervalIdx,pgsTypes::End)/*pLosses->GetFinal(poi,pgsTypes::Permanent)*/ ); // Service I
-   (*p_table)(row++, col) << stress.SetValue(pLosses->GetTimeDependentLosses(poi, pgsTypes::Permanent, lastIntervalIdx, pgsTypes::End)/*pLosses->GetFinal(poi,pgsTypes::Permanent)*/); // Service III
-   (*p_table)(row++, col) << stress.SetValue(pLosses->GetTimeDependentLosses(poi, pgsTypes::Permanent, lastIntervalIdx, pgsTypes::End)/*pLosses->GetFinal(poi,pgsTypes::Permanent)*/); // Fatigue I/Service IA
 
+   if (bRating)
+   {
+      for (int i = 0; i < (int)(pgsTypes::lrLoadRatingTypeCount); i++)
+      {
+         pgsTypes::LoadRatingType ratingType = (pgsTypes::LoadRatingType)(i);
+
+         if (pRatingSpec->IsRatingEnabled(ratingType) && pRatingSpec->RateForStress(ratingType))
+         {
+            std::vector<pgsTypes::LimitState> vLimitStates = GetRatingLimitStates(ratingType);
+            for (const auto& limitState : vLimitStates)
+            {
+               if (IsStrengthLimitState(limitState))
+               {
+                  // we only care about service limit states here
+                  continue;
+               }
+
+               pgsTypes::LiveLoadType llType = LiveLoadTypeFromLimitState(limitState);
+               if (IsDesignRatingType(ratingType))
+               {
+                  (*p_table)(row++, col) << stress.SetValue(pLosses->GetTimeDependentLosses(poi, pgsTypes::Permanent, lastIntervalIdx, pgsTypes::End));
+               }
+               else
+               {
+                  VehicleIndexType nVehicles = pProductLoads->GetVehicleCount(llType);
+                  for (VehicleIndexType vehicleIdx = 0; vehicleIdx < nVehicles; vehicleIdx++)
+                  {
+                     pgsTypes::LiveLoadApplicabilityType applicability = pProductLoads->GetLiveLoadApplicability(llType, vehicleIdx);
+                     if (applicability == pgsTypes::llaNegMomentAndInteriorPierReaction)
+                     {
+                        continue;
+                     }
+                     (*p_table)(row++, col) << stress.SetValue(pLosses->GetTimeDependentLosses(poi, pgsTypes::Permanent, lastIntervalIdx, pgsTypes::End));
+                  }
+               }
+            }
+         }
+      }
+   }
+   else
+   {
+      (*p_table)(row++, col) << stress.SetValue(pLosses->GetTimeDependentLosses(poi, pgsTypes::Permanent, lastIntervalIdx, pgsTypes::End)/*pLosses->GetFinal(poi,pgsTypes::Permanent)*/); // Service I
+      (*p_table)(row++, col) << stress.SetValue(pLosses->GetTimeDependentLosses(poi, pgsTypes::Permanent, lastIntervalIdx, pgsTypes::End)/*pLosses->GetFinal(poi,pgsTypes::Permanent)*/); // Service III
+      (*p_table)(row++, col) << stress.SetValue(pLosses->GetTimeDependentLosses(poi, pgsTypes::Permanent, lastIntervalIdx, pgsTypes::End)/*pLosses->GetFinal(poi,pgsTypes::Permanent)*/); // Fatigue I/Service IA
+   }
 
    ///////////////////////////////////
    // Permanent Strand Gain Column
@@ -316,15 +456,58 @@ rptRcTable* CPrestressLossTable::Build(IBroker* pBroker,const CSegmentKey& segme
    (*p_table)(row++,col) << stress.SetValue( -pLosses->GetInstantaneousEffects(poi,pgsTypes::Permanent,castDeckIntervalIdx,pgsTypes::End)/*pLosses->GetDeckPlacementLosses(poi,pgsTypes::Permanent)*/ );
    (*p_table)(row++,col) << stress.SetValue( -pLosses->GetInstantaneousEffects(poi,pgsTypes::Permanent,railingSystemIntervalIdx,pgsTypes::End)/*pLosses->GetSIDLLosses(poi,pgsTypes::Permanent)*/ );
    (*p_table)(row++,col) << stress.SetValue( -pLosses->GetInstantaneousEffects(poi,pgsTypes::Permanent,lastIntervalIdx,pgsTypes::End)/*pLosses->GetFinal(poi,pgsTypes::Permanent)*/ );
-   (*p_table)(row++,col) << stress.SetValue( -pLosses->GetInstantaneousEffectsWithLiveLoad(poi,pgsTypes::Permanent,pgsTypes::ServiceI)/*pLosses->GetFinalWithLiveLoad(poi,pgsTypes::Permanent)*/ );
-   (*p_table)(row++,col) << stress.SetValue( -pLosses->GetInstantaneousEffectsWithLiveLoad(poi,pgsTypes::Permanent,pgsTypes::ServiceIII)/*pLosses->GetFinalWithLiveLoad(poi,pgsTypes::Permanent)*/ );
-   if (lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims)
+
+   if (bRating)
    {
-      (*p_table)(row++, col) << stress.SetValue(-pLosses->GetInstantaneousEffectsWithLiveLoad(poi, pgsTypes::Permanent, pgsTypes::ServiceIA)/*pLosses->GetFinalWithLiveLoad(poi,pgsTypes::Permanent)*/);
+      for (int i = 0; i < (int)(pgsTypes::lrLoadRatingTypeCount); i++)
+      {
+         pgsTypes::LoadRatingType ratingType = (pgsTypes::LoadRatingType)(i);
+
+         if (pRatingSpec->IsRatingEnabled(ratingType) && pRatingSpec->RateForStress(ratingType))
+         {
+            std::vector<pgsTypes::LimitState> vLimitStates = GetRatingLimitStates(ratingType);
+            for (const auto& limitState : vLimitStates)
+            {
+               if (IsStrengthLimitState(limitState))
+               {
+                  // we only care about service limit states here
+                  continue;
+               }
+
+               pgsTypes::LiveLoadType llType = LiveLoadTypeFromLimitState(limitState);
+               if (IsDesignRatingType(ratingType))
+               {
+                  (*p_table)(row++, col) << stress.SetValue(-pLosses->GetInstantaneousEffectsWithLiveLoad(poi, pgsTypes::Permanent, limitState));
+               }
+               else
+               {
+                  VehicleIndexType nVehicles = pProductLoads->GetVehicleCount(llType);
+                  for (VehicleIndexType vehicleIdx = 0; vehicleIdx < nVehicles; vehicleIdx++)
+                  {
+                     pgsTypes::LiveLoadApplicabilityType applicability = pProductLoads->GetLiveLoadApplicability(llType, vehicleIdx);
+                     if (applicability == pgsTypes::llaNegMomentAndInteriorPierReaction)
+                     {
+                        continue;
+                     }
+                     (*p_table)(row++, col) << stress.SetValue(-pLosses->GetInstantaneousEffectsWithLiveLoad(poi, pgsTypes::Permanent, limitState, vehicleIdx));
+                  }
+               }
+            }
+         }
+      }
    }
    else
    {
-      (*p_table)(row++, col) << stress.SetValue(-pLosses->GetInstantaneousEffectsWithLiveLoad(poi, pgsTypes::Permanent, pgsTypes::FatigueI)/*pLosses->GetFinalWithLiveLoad(poi,pgsTypes::Permanent)*/);
+      (*p_table)(row++, col) << stress.SetValue(-pLosses->GetInstantaneousEffectsWithLiveLoad(poi, pgsTypes::Permanent, pgsTypes::ServiceI)/*pLosses->GetFinalWithLiveLoad(poi,pgsTypes::Permanent)*/);
+      (*p_table)(row++, col) << stress.SetValue(-pLosses->GetInstantaneousEffectsWithLiveLoad(poi, pgsTypes::Permanent, pgsTypes::ServiceIII)/*pLosses->GetFinalWithLiveLoad(poi,pgsTypes::Permanent)*/);
+      if (lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims)
+      {
+         (*p_table)(row++, col) << stress.SetValue(-pLosses->GetInstantaneousEffectsWithLiveLoad(poi, pgsTypes::Permanent, pgsTypes::ServiceIA)/*pLosses->GetFinalWithLiveLoad(poi,pgsTypes::Permanent)*/);
+      }
+      else
+      {
+         (*p_table)(row++, col) << stress.SetValue(-pLosses->GetInstantaneousEffectsWithLiveLoad(poi, pgsTypes::Permanent, pgsTypes::FatigueI)/*pLosses->GetFinalWithLiveLoad(poi,pgsTypes::Permanent)*/);
+      }
    }
 
    ///////////////////////////////////
@@ -358,15 +541,58 @@ rptRcTable* CPrestressLossTable::Build(IBroker* pBroker,const CSegmentKey& segme
    (*p_table)(row++,col) << stress.SetValue( pPrestressForce->GetEffectivePrestress(poi,pgsTypes::Permanent,castDeckIntervalIdx,pgsTypes::End) );
    (*p_table)(row++,col) << stress.SetValue( pPrestressForce->GetEffectivePrestress(poi,pgsTypes::Permanent,railingSystemIntervalIdx,pgsTypes::End) );
    (*p_table)(row++,col) << stress.SetValue( pPrestressForce->GetEffectivePrestress(poi,pgsTypes::Permanent,lastIntervalIdx,pgsTypes::End/*pgsTypes::AfterLosses*/) );
-   (*p_table)(row++,col) << stress.SetValue( pPrestressForce->GetEffectivePrestressWithLiveLoad(poi,pgsTypes::Permanent/*pgsTypes::AfterLossesWithLiveLoad*/,pgsTypes::ServiceI) );
-   (*p_table)(row++,col) << stress.SetValue( pPrestressForce->GetEffectivePrestressWithLiveLoad(poi,pgsTypes::Permanent/*pgsTypes::AfterLossesWithLiveLoad*/,pgsTypes::ServiceIII) );
-   if (lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims)
+
+   if (bRating)
    {
-      (*p_table)(row++, col) << stress.SetValue(pPrestressForce->GetEffectivePrestressWithLiveLoad(poi, pgsTypes::Permanent/*pgsTypes::AfterLossesWithLiveLoad*/, pgsTypes::ServiceIA));
+      for (int i = 0; i < (int)(pgsTypes::lrLoadRatingTypeCount); i++)
+      {
+         pgsTypes::LoadRatingType ratingType = (pgsTypes::LoadRatingType)(i);
+
+         if (pRatingSpec->IsRatingEnabled(ratingType) && pRatingSpec->RateForStress(ratingType))
+         {
+            std::vector<pgsTypes::LimitState> vLimitStates = GetRatingLimitStates(ratingType);
+            for (const auto& limitState : vLimitStates)
+            {
+               if (IsStrengthLimitState(limitState))
+               {
+                  // we only care about service limit states here
+                  continue;
+               }
+
+               pgsTypes::LiveLoadType llType = LiveLoadTypeFromLimitState(limitState);
+               if (IsDesignRatingType(ratingType))
+               {
+                  (*p_table)(row++, col) << stress.SetValue(pPrestressForce->GetEffectivePrestressWithLiveLoad(poi, pgsTypes::Permanent, limitState));
+               }
+               else
+               {
+                  VehicleIndexType nVehicles = pProductLoads->GetVehicleCount(llType);
+                  for (VehicleIndexType vehicleIdx = 0; vehicleIdx < nVehicles; vehicleIdx++)
+                  {
+                     pgsTypes::LiveLoadApplicabilityType applicability = pProductLoads->GetLiveLoadApplicability(llType, vehicleIdx);
+                     if (applicability == pgsTypes::llaNegMomentAndInteriorPierReaction)
+                     {
+                        continue;
+                     }
+                     (*p_table)(row++, col) << stress.SetValue(pPrestressForce->GetEffectivePrestressWithLiveLoad(poi, pgsTypes::Permanent,limitState,vehicleIdx));
+                  }
+               }
+            }
+         }
+      }
    }
    else
    {
-      (*p_table)(row++, col) << stress.SetValue(pPrestressForce->GetEffectivePrestressWithLiveLoad(poi, pgsTypes::Permanent/*pgsTypes::AfterLossesWithLiveLoad*/, pgsTypes::FatigueI));
+      (*p_table)(row++, col) << stress.SetValue(pPrestressForce->GetEffectivePrestressWithLiveLoad(poi, pgsTypes::Permanent/*pgsTypes::AfterLossesWithLiveLoad*/, pgsTypes::ServiceI));
+      (*p_table)(row++, col) << stress.SetValue(pPrestressForce->GetEffectivePrestressWithLiveLoad(poi, pgsTypes::Permanent/*pgsTypes::AfterLossesWithLiveLoad*/, pgsTypes::ServiceIII));
+      if (lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims)
+      {
+         (*p_table)(row++, col) << stress.SetValue(pPrestressForce->GetEffectivePrestressWithLiveLoad(poi, pgsTypes::Permanent/*pgsTypes::AfterLossesWithLiveLoad*/, pgsTypes::ServiceIA));
+      }
+      else
+      {
+         (*p_table)(row++, col) << stress.SetValue(pPrestressForce->GetEffectivePrestressWithLiveLoad(poi, pgsTypes::Permanent/*pgsTypes::AfterLossesWithLiveLoad*/, pgsTypes::FatigueI));
+      }
    }
 
    if ( bTempStrands )
@@ -414,9 +640,52 @@ rptRcTable* CPrestressLossTable::Build(IBroker* pBroker,const CSegmentKey& segme
       (*p_table)(row++,col) << _T("");//force.SetValue( pPrestressForce->GetPrestressForce(poi,pgsTypes::Temporary,pgsTypes::AfterDeckPlacement) );
       (*p_table)(row++,col) << _T("");//force.SetValue( pPrestressForce->GetPrestressForce(poi,pgsTypes::Temporary,pgsTypes::AfterSIDL) );
       (*p_table)(row++,col) << _T("");//force.SetValue( pPrestressForce->GetPrestressForce(poi,pgsTypes::Temporary,pgsTypes::Final) );
-      (*p_table)(row++,col) << _T("");//force.SetValue( pPrestressForce->GetPrestressForce(poi,pgsTypes::Temporary,pgsTypes::AfterLossesWithLiveLoad) ); // Service I
-      (*p_table)(row++, col) << _T("");//force.SetValue( pPrestressForce->GetPrestressForce(poi,pgsTypes::Temporary,pgsTypes::AfterLossesWithLiveLoad) ); // Service III
-      (*p_table)(row++, col) << _T("");//force.SetValue( pPrestressForce->GetPrestressForce(poi,pgsTypes::Temporary,pgsTypes::AfterLossesWithLiveLoad) ); // Service IA/Fatigue I
+
+      if (bRating)
+      {
+         for (int i = 0; i < (int)(pgsTypes::lrLoadRatingTypeCount); i++)
+         {
+            pgsTypes::LoadRatingType ratingType = (pgsTypes::LoadRatingType)(i);
+
+            if (pRatingSpec->IsRatingEnabled(ratingType) && pRatingSpec->RateForStress(ratingType))
+            {
+               std::vector<pgsTypes::LimitState> vLimitStates = GetRatingLimitStates(ratingType);
+               for (const auto& limitState : vLimitStates)
+               {
+                  if (IsStrengthLimitState(limitState))
+                  {
+                     // we only care about service limit states here
+                     continue;
+                  }
+
+                  pgsTypes::LiveLoadType llType = LiveLoadTypeFromLimitState(limitState);
+                  if (IsDesignRatingType(ratingType))
+                  {
+                     (*p_table)(row++, col) << _T("");
+                  }
+                  else
+                  {
+                     VehicleIndexType nVehicles = pProductLoads->GetVehicleCount(llType);
+                     for (VehicleIndexType vehicleIdx = 0; vehicleIdx < nVehicles; vehicleIdx++)
+                     {
+                        pgsTypes::LiveLoadApplicabilityType applicability = pProductLoads->GetLiveLoadApplicability(llType, vehicleIdx);
+                        if (applicability == pgsTypes::llaNegMomentAndInteriorPierReaction)
+                        {
+                           continue;
+                        }
+                        (*p_table)(row++, col) << _T("");
+                     }
+                  }
+               }
+            }
+         }
+      }
+      else
+      {
+         (*p_table)(row++, col) << _T("");//force.SetValue( pPrestressForce->GetPrestressForce(poi,pgsTypes::Temporary,pgsTypes::AfterLossesWithLiveLoad) ); // Service I
+         (*p_table)(row++, col) << _T("");//force.SetValue( pPrestressForce->GetPrestressForce(poi,pgsTypes::Temporary,pgsTypes::AfterLossesWithLiveLoad) ); // Service III
+         (*p_table)(row++, col) << _T("");//force.SetValue( pPrestressForce->GetPrestressForce(poi,pgsTypes::Temporary,pgsTypes::AfterLossesWithLiveLoad) ); // Service IA/Fatigue I
+      }
 
       ///////////////////////////////////
       // Temporary Strand Loss Column
@@ -462,9 +731,52 @@ rptRcTable* CPrestressLossTable::Build(IBroker* pBroker,const CSegmentKey& segme
       (*p_table)(row++,col) << _T(""); //stress.SetValue( pLosses->GetDeckPlacementLosses(poi,pgsTypes::Temporary) );
       (*p_table)(row++,col) << _T(""); //stress.SetValue( pLosses->GetSIDLLosses(poi,pgsTypes::Temporary) );
       (*p_table)(row++,col) << _T(""); //stress.SetValue( pLosses->GetFinal(poi,pgsTypes::Temporary) );
-      (*p_table)(row++,col) << _T(""); //stress.SetValue( pLosses->GetFinalWithLiveLoad(poi,pgsTypes::Temporary) ); // Service I
-      (*p_table)(row++, col) << _T(""); //stress.SetValue( pLosses->GetFinalWithLiveLoad(poi,pgsTypes::Temporary) ); // Service III
-      (*p_table)(row++, col) << _T(""); //stress.SetValue( pLosses->GetFinalWithLiveLoad(poi,pgsTypes::Temporary) ); // Service IA/Fatigue I
+
+      if (bRating)
+      {
+         for (int i = 0; i < (int)(pgsTypes::lrLoadRatingTypeCount); i++)
+         {
+            pgsTypes::LoadRatingType ratingType = (pgsTypes::LoadRatingType)(i);
+
+            if (pRatingSpec->IsRatingEnabled(ratingType) && pRatingSpec->RateForStress(ratingType))
+            {
+               std::vector<pgsTypes::LimitState> vLimitStates = GetRatingLimitStates(ratingType);
+               for (const auto& limitState : vLimitStates)
+               {
+                  if (IsStrengthLimitState(limitState))
+                  {
+                     // we only care about service limit states here
+                     continue;
+                  }
+
+                  pgsTypes::LiveLoadType llType = LiveLoadTypeFromLimitState(limitState);
+                  if (IsDesignRatingType(ratingType))
+                  {
+                     (*p_table)(row++, col) << _T("");
+                  }
+                  else
+                  {
+                     VehicleIndexType nVehicles = pProductLoads->GetVehicleCount(llType);
+                     for (VehicleIndexType vehicleIdx = 0; vehicleIdx < nVehicles; vehicleIdx++)
+                     {
+                        pgsTypes::LiveLoadApplicabilityType applicability = pProductLoads->GetLiveLoadApplicability(llType, vehicleIdx);
+                        if (applicability == pgsTypes::llaNegMomentAndInteriorPierReaction)
+                        {
+                           continue;
+                        }
+                        (*p_table)(row++, col) << _T("");
+                     }
+                  }
+               }
+            }
+         }
+      }
+      else
+      {
+         (*p_table)(row++, col) << _T(""); //stress.SetValue( pLosses->GetFinalWithLiveLoad(poi,pgsTypes::Temporary) ); // Service I
+         (*p_table)(row++, col) << _T(""); //stress.SetValue( pLosses->GetFinalWithLiveLoad(poi,pgsTypes::Temporary) ); // Service III
+         (*p_table)(row++, col) << _T(""); //stress.SetValue( pLosses->GetFinalWithLiveLoad(poi,pgsTypes::Temporary) ); // Service IA/Fatigue I
+      }
 
       ///////////////////////////////////
       // Temporary Strand Gain Column
@@ -510,9 +822,52 @@ rptRcTable* CPrestressLossTable::Build(IBroker* pBroker,const CSegmentKey& segme
       (*p_table)(row++,col) << _T(""); //stress.SetValue( pLosses->GetDeckPlacementLosses(poi,pgsTypes::Temporary) );
       (*p_table)(row++,col) << _T(""); //stress.SetValue( pLosses->GetSIDLLosses(poi,pgsTypes::Temporary) );
       (*p_table)(row++,col) << _T(""); //stress.SetValue( pLosses->GetFinal(poi,pgsTypes::Temporary) );
-      (*p_table)(row++,col) << _T(""); //stress.SetValue( pLosses->GetFinalWithLiveLoad(poi,pgsTypes::Temporary) ); // Service I
-      (*p_table)(row++, col) << _T(""); //stress.SetValue( pLosses->GetFinalWithLiveLoad(poi,pgsTypes::Temporary) ); // Service III
-      (*p_table)(row++, col) << _T(""); //stress.SetValue( pLosses->GetFinalWithLiveLoad(poi,pgsTypes::Temporary) ); // Service IA/Fatigue I
+      
+      if (bRating)
+      {
+         for (int i = 0; i < (int)(pgsTypes::lrLoadRatingTypeCount); i++)
+         {
+            pgsTypes::LoadRatingType ratingType = (pgsTypes::LoadRatingType)(i);
+
+            if (pRatingSpec->IsRatingEnabled(ratingType) && pRatingSpec->RateForStress(ratingType))
+            {
+               std::vector<pgsTypes::LimitState> vLimitStates = GetRatingLimitStates(ratingType);
+               for (const auto& limitState : vLimitStates)
+               {
+                  if (IsStrengthLimitState(limitState))
+                  {
+                     // we only care about service limit states here
+                     continue;
+                  }
+
+                  pgsTypes::LiveLoadType llType = LiveLoadTypeFromLimitState(limitState);
+                  if (IsDesignRatingType(ratingType))
+                  {
+                     (*p_table)(row++, col) << _T("");
+                  }
+                  else
+                  {
+                     VehicleIndexType nVehicles = pProductLoads->GetVehicleCount(llType);
+                     for (VehicleIndexType vehicleIdx = 0; vehicleIdx < nVehicles; vehicleIdx++)
+                     {
+                        pgsTypes::LiveLoadApplicabilityType applicability = pProductLoads->GetLiveLoadApplicability(llType, vehicleIdx);
+                        if (applicability == pgsTypes::llaNegMomentAndInteriorPierReaction)
+                        {
+                           continue;
+                        }
+                        (*p_table)(row++, col) << _T("");
+                     }
+                  }
+               }
+            }
+         }
+      }
+      else
+      {
+         (*p_table)(row++, col) << _T(""); //stress.SetValue( pLosses->GetFinalWithLiveLoad(poi,pgsTypes::Temporary) ); // Service I
+         (*p_table)(row++, col) << _T(""); //stress.SetValue( pLosses->GetFinalWithLiveLoad(poi,pgsTypes::Temporary) ); // Service III
+         (*p_table)(row++, col) << _T(""); //stress.SetValue( pLosses->GetFinalWithLiveLoad(poi,pgsTypes::Temporary) ); // Service IA/Fatigue I
+      }
 
       ///////////////////////////////////
       // Temporary Strand Stress Column
@@ -557,9 +912,52 @@ rptRcTable* CPrestressLossTable::Build(IBroker* pBroker,const CSegmentKey& segme
       (*p_table)(row++,col) << _T(""); //stress.SetValue( pPrestressForce->GetStrandStress(poi,pgsTypes::Temporary,pgsTypes::AfterDeckPlacement) );
       (*p_table)(row++,col) << _T(""); //stress.SetValue( pPrestressForce->GetStrandStress(poi,pgsTypes::Temporary,pgsTypes::AfterSIDL) );
       (*p_table)(row++,col) << _T(""); //stress.SetValue( pPrestressForce->GetStrandStress(poi,pgsTypes::Temporary,pgsTypes::AfterLosses) );
-      (*p_table)(row++,col) << _T(""); //stress.SetValue( pPrestressForce->GetStrandStress(poi,pgsTypes::Temporary,pgsTypes::AfterLossesWithLiveLoad) ); // Service I
-      (*p_table)(row++, col) << _T(""); //stress.SetValue( pPrestressForce->GetStrandStress(poi,pgsTypes::Temporary,pgsTypes::AfterLossesWithLiveLoad) ); // Service III
-      (*p_table)(row++, col) << _T(""); //stress.SetValue( pPrestressForce->GetStrandStress(poi,pgsTypes::Temporary,pgsTypes::AfterLossesWithLiveLoad) ); // Service IA/Fatigue I
+
+      if (bRating)
+      {
+         for (int i = 0; i < (int)(pgsTypes::lrLoadRatingTypeCount); i++)
+         {
+            pgsTypes::LoadRatingType ratingType = (pgsTypes::LoadRatingType)(i);
+
+            if (!pRatingSpec->IsRatingEnabled(ratingType))
+            {
+               std::vector<pgsTypes::LimitState> vLimitStates = GetRatingLimitStates(ratingType);
+               for (const auto& limitState : vLimitStates)
+               {
+                  if (IsStrengthLimitState(limitState))
+                  {
+                     // we only care about service limit states here
+                     continue;
+                  }
+
+                  pgsTypes::LiveLoadType llType = LiveLoadTypeFromLimitState(limitState);
+                  if (IsDesignRatingType(ratingType))
+                  {
+                     (*p_table)(row++, col) << _T("");
+                  }
+                  else
+                  {
+                     VehicleIndexType nVehicles = pProductLoads->GetVehicleCount(llType);
+                     for (VehicleIndexType vehicleIdx = 0; vehicleIdx < nVehicles; vehicleIdx++)
+                     {
+                        pgsTypes::LiveLoadApplicabilityType applicability = pProductLoads->GetLiveLoadApplicability(llType, vehicleIdx);
+                        if (applicability == pgsTypes::llaNegMomentAndInteriorPierReaction)
+                        {
+                           continue;
+                        }
+                        (*p_table)(row++, col) << _T("");
+                     }
+                  }
+               }
+            }
+         }
+      }
+      else
+      {
+         (*p_table)(row++, col) << _T(""); //stress.SetValue( pPrestressForce->GetStrandStress(poi,pgsTypes::Temporary,pgsTypes::AfterLossesWithLiveLoad) ); // Service I
+         (*p_table)(row++, col) << _T(""); //stress.SetValue( pPrestressForce->GetStrandStress(poi,pgsTypes::Temporary,pgsTypes::AfterLossesWithLiveLoad) ); // Service III
+         (*p_table)(row++, col) << _T(""); //stress.SetValue( pPrestressForce->GetStrandStress(poi,pgsTypes::Temporary,pgsTypes::AfterLossesWithLiveLoad) ); // Service IA/Fatigue I
+      }
    }
 
    return p_table;

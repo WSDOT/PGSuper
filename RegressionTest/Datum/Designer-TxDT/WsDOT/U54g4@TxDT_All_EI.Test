@@ -1,11 +1,12 @@
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 38.25    5   8.00                     1     1    U54G4          66  0.6  270  17.52  -1.88  11.25  11.25                                              6.600 14.600   7.885    -5.248    11966   0.540  0.763   4.336 -2.255 -0.177 -0.186 -2.619 294.83  503.77    1.75    5.00    5.00 
+ 38.25    5   8.00                     1     1    U54G4          66  0.6  270  17.52  -1.88  11.12  11.12                                              6.600 14.600   7.877    -5.242    11969   0.540  0.763   4.336 -2.248 -0.177 -0.186 -2.612 294.83  504.11    1.75    5.00    5.00 
 
 
 Girder design was Not Successful
 The Specification Check was Not Successful
 Hauling checks failed
+Slab Offset ("A" Dimension) check failed
 
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
@@ -20,7 +21,7 @@ Hauling checks failed
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 38.25    5   8.00                     1     3    U54G4          66  0.6  270  17.52  -1.88  11.88  11.88                                              6.600 14.900   7.898    -5.250    11979   0.540  0.763   4.336 -2.229 -0.176 -0.185 -2.590 294.83  505.44    1.75    5.00    5.00 
+ 38.25    5   8.00                     1     3    U54G4          66  0.6  270  17.52  -1.88  11.75  11.75                                              6.600 14.900   7.892    -5.247    11981   0.540  0.763   4.336 -2.225 -0.176 -0.185 -2.586 294.83  505.65    1.75    5.00    5.00 
 
 
 Girder design was Not Successful

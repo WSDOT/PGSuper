@@ -1,6 +1,6 @@
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 44.00    6   8.00                     1     1     Tx82          82  1/2  270  28.32  11.25   8.00   8.00                                              28  78.5 28.5  4.700  6.100   4.091    -4.142    15276   0.636  0.814   4.366 -2.264 -0.210 -0.205 -2.679 252.07  663.35    1.00    1.00    1.00 
+ 44.00    6   8.00                     1     1     Tx82          82  1/2  270  28.32  11.25   8.00   8.00                                              28  78.5 28.5  4.700  6.200   4.091    -4.142    15276   0.636  0.814   4.366 -2.264 -0.210 -0.205 -2.679 252.07  663.35    1.00    1.00    1.00 
 
 
 The Specification Check was Not Successful
@@ -9,19 +9,17 @@ Compression stress check failed for Service I Limit State in Interval 12 Install
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 44.00    6   8.00                     1     2     Tx82          92  1/2  270  25.59   9.07   8.00   8.00                                              38  78.5 38.5  4.900  6.900   4.229    -4.339    15972   0.636  0.814   4.119 -2.587 -0.289 -0.197 -3.073 297.45  783.35    1.00    1.00    1.00 
+ 44.00    6   8.00                     1     2     Tx82          90  1/2  270  26.18   9.38   8.00   8.00                                              36  78.5 36.5  4.900  7.000   4.229    -4.339    15972   0.636  0.814   4.167 -2.587 -0.289 -0.197 -3.073 287.83  756.46    1.00    1.00    1.00 
 
 
-The Specification Check was Not Successful
-Compression stress check failed for Service I Limit State in Interval 12 Install Overlay (Bridge Site 2)
+The Specification Check was Successful
 
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 44.00    6   8.00                     1     4     Tx82          92  1/2  270  25.59   9.07   8.00   8.00                                              38  78.5 38.5  4.900  6.900   4.229    -4.339    15972   0.636  0.814   4.119 -2.587 -0.289 -0.197 -3.073 297.45  783.35    1.00    1.00    1.00 
+ 44.00    6   8.00                     1     4     Tx82          90  1/2  270  26.18   9.38   8.00   8.00                                              36  78.5 36.5  4.900  7.000   4.229    -4.339    15972   0.636  0.814   4.167 -2.587 -0.289 -0.197 -3.073 287.83  756.46    1.00    1.00    1.00 
 
 
-The Specification Check was Not Successful
-Compression stress check failed for Service I Limit State in Interval 12 Install Overlay (Bridge Site 2)
+The Specification Check was Successful
 
 

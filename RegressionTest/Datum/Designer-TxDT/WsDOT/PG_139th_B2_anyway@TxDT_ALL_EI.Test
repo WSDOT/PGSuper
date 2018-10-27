@@ -27,7 +27,6 @@ Splitting zone check failed.
 
 
 The Specification Check was Not Successful
-Compression stress check failed for Service I Limit State in Interval 13 Composite Deck, Apply User Defined Loads, Install Railing System
 Compression stress check failed for Service I Limit State in Interval 13 Install Overlay (Bridge Site 2)
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Ultimate moment capacity (negative moment) check failed for Strength I Limit State
@@ -66,7 +65,6 @@ Splitting zone check failed.
 
 
 The Specification Check was Not Successful
-Compression stress check failed for Service I Limit State in Interval 13 Composite Deck, Apply User Defined Loads, Install Railing System
 Compression stress check failed for Service I Limit State in Interval 13 Install Overlay (Bridge Site 2)
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Ultimate moment capacity (negative moment) check failed for Strength I Limit State
@@ -75,7 +73,7 @@ Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 93.29   12   8.00 SR 5/205 NE 139t    3     1    WF74G    *     54  0.6  270  31.73  20.25  13.00  13.00                                              10  70.0  4.0  6.900  8.600   5.324    -5.127    14474   0.733  0.820   5.569 -2.607  0.000 -0.184 -2.791 247.78  401.77    1.75   11.17   11.17 
+ 93.29   12   8.00 SR 5/205 NE 139t    3     1    WF74G    *     53  0.6  270  31.73  21.13  12.50  12.50                                               9  70.0  4.0  6.900  8.400   5.257    -5.073    14267   0.733  0.820   5.470 -2.567  0.000 -0.186 -2.752 238.12  388.54    1.75   11.17   11.17 
 
 
 The Specification Check was Not Successful
@@ -97,7 +95,7 @@ Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 93.29   12   8.00 SR 5/205 NE 139t    3     7    WF74G    *     49  0.6  270  31.98  20.51  11.75  11.75                                               9  70.0  4.0  6.300  7.600   5.005    -4.686    13187   0.645  0.820   4.965 -2.662  0.000  0.000 -2.662 210.03  365.86    1.75   11.17   11.17 
+ 93.29   12   8.00 SR 5/205 NE 139t    3     7    WF74G    *     49  0.6  270  31.98  20.51  12.00  12.00                                               9  70.0  4.0  6.300  7.700   5.034    -4.708    13195   0.646  0.820   4.960 -2.676  0.000  0.000 -2.676 210.03  365.07    1.75   11.17   11.17 
 
 
 The Specification Check was Not Successful
@@ -120,7 +118,7 @@ Stirrup detailing checks failed for the Strength I Limit State.
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 93.29   10   9.77 SR 5/205 NE 139t    4     2    WF74G    *     31  0.6  270  32.69  19.72  12.50  12.50                                               7  64.0  4.0  4.100  5.000   3.012    -2.899     9115   0.804  0.937   3.165 -0.902  0.000 -0.047 -0.949 122.97  259.81    1.75    6.17    6.17 
+ 93.29   10   9.77 SR 5/205 NE 139t    4     2    WF74G    *     31  0.6  270  32.69  19.72  12.25  12.25                                               7  64.0  4.0  4.100  5.000   3.001    -2.890     9117   0.804  0.937   3.165 -0.894  0.000 -0.047 -0.941 122.97  260.48    1.75    6.17    6.17 
 
 
 The Specification Check was Not Successful

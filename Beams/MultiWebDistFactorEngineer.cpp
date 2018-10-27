@@ -58,6 +58,9 @@ void CMultiWebDistFactorEngineer::BuildReport(const CGirderKey& girderKey,rptCha
    GET_IFACE(IBridge,pBridge);
    GET_IFACE(IPointOfInterest,pPoi);
 
+   GET_IFACE(ISectionProperties, pSectProps);
+   pgsTypes::SectionPropertyMode spMode = pSectProps->GetSectionPropertiesMode();
+
    bool bSIUnits = IS_SI_UNITS(pDisplayUnits);
    std::_tstring strImagePath(rptStyleManager::GetImagePath());
 
@@ -165,6 +168,10 @@ void CMultiWebDistFactorEngineer::BuildReport(const CGirderKey& girderKey,rptCha
       {
          if(span_lldf.Method==LLDF_TXDOT || !span_lldf.connectedAsUnit)
          {
+            if (spMode == pgsTypes::spmTransformed)
+            {
+               (*pPara) << _T("Gross, non-composite section properties") << rptNewLine;
+            }
             (*pPara) << _T("Area: A = ") << area.SetValue(span_lldf.A) << rptNewLine;
             (*pPara) << _T("Moment of Inertia: I = ") << inertia.SetValue(span_lldf.I) << rptNewLine;
             (*pPara) << _T("Possion Ratio: ") << symbol(mu) << _T(" = ") << span_lldf.PossionRatio << rptNewLine << rptNewLine;
@@ -178,6 +185,10 @@ void CMultiWebDistFactorEngineer::BuildReport(const CGirderKey& girderKey,rptCha
          else if (span_lldf.connectedAsUnit)
          {
             (*pPara) << _T("Modular ratio: n = ") << scalar.SetValue(span_lldf.n) << rptNewLine;
+            if (spMode == pgsTypes::spmTransformed)
+            {
+               (*pPara) << _T("Gross, non-composite section properties") << rptNewLine;
+            }
             (*pPara) << _T("Area: A")<<Sub(_T("g"))<<_T(" = ")<< area.SetValue(span_lldf.Ag) << rptNewLine;
             (*pPara) << _T("Moment of Inertia: I")<<Sub(_T("g"))<<_T(" = ")<< inertia.SetValue(span_lldf.Ig) << rptNewLine;
             (*pPara) << _T("Top centroidal distance: Y") << Sub(_T("tg")) << _T(" = ") << xdim2.SetValue(span_lldf.Yt) << rptNewLine;

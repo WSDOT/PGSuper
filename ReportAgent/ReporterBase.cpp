@@ -222,7 +222,7 @@ void CReporterBase::CreateLoadRatingReport()
    pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CUserDefinedLoadsChapterBuilder(false)) );
    pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CMVRChapterBuilder(false,true,false)) );
    pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CStressChapterBuilder(false,true,false)) );
-   pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CPrestressForceChapterBuilder(false)) );
+   pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CPrestressForceChapterBuilder(true,false)) );
    pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CBridgeDescDetailsChapterBuilder(true,false)) );
    pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CProjectCriteriaChapterBuilder(true,false)) );
    pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CLoadingDetailsChapterBuilder(false,true,true)) );

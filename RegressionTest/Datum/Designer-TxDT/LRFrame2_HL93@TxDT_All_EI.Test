@@ -1,6 +1,6 @@
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 102.1   11   9.83 SR520 West Appro    1     1     1)      *     63  0.6  270  31.44  15.82  11.75  11.75                                              17  70.0  6.0  7.700  9.600   5.642    -6.179    17606   0.884  0.940   5.774 -2.804  0.000 -0.322 -3.126 321.26  457.75    3.00   11.17   11.17 
+ 102.1   11   9.83 SR520 West Appro    1     1     1)      *     63  0.6  270  31.44  15.82  12.00  12.00                                              17  70.0  6.0  7.700  9.600   5.672    -6.206    17665   0.884  0.940   5.774 -2.840  0.000 -0.322 -3.162 321.26  455.62    3.00   11.17   11.17 
 
 
 The Specification Check was Not Successful
@@ -45,7 +45,7 @@ Splitting zone check failed.
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 102.1   11  10.67 SR520 West Appro    2     2     1)      *     63  0.6  270  31.44  15.82  11.00  11.00                                              17  70.0  6.0  7.700  9.600   5.712    -6.199    17247   0.788  0.968   5.656 -3.090  0.000 -0.325 -3.415 320.05  442.58    3.00   11.17   11.17 
+ 102.1   11  10.67 SR520 West Appro    2     2     1)      *     62  0.6  270  31.46  16.37  10.75  10.75                                              16  70.0  6.0  7.700  9.600   5.690    -6.178    17202   0.788  0.968   5.554 -3.061  0.000 -0.325 -3.386 309.73  429.19    3.00   11.17   11.17 
 
 
 The Specification Check was Not Successful
@@ -67,7 +67,7 @@ Confinement zone check failed.
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 102.1   11   9.83 SR520 West Appro    3     1     1)      *     60  0.6  270  31.52  17.59  12.75  12.75                                              14  70.0  6.0  7.300  9.200   5.463    -5.923    16714   0.832  0.940   6.224 -2.712  0.000 -0.323 -3.034 303.37  424.73    3.00   11.17   11.17 
+ 102.1   11   9.83 SR520 West Appro    3     1     1)      *     60  0.6  270  31.52  17.59  12.75  12.75                                              14  70.0  6.0  7.300  9.200   5.463    -5.923    16714   0.832  0.940   6.422 -2.712  0.000 -0.323 -3.034 304.64  419.22    3.00    6.17    6.17 
 
 
 The Specification Check was Not Successful
@@ -99,7 +99,7 @@ Confinement zone check failed.
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 102.1   11   9.83 SR520 West Appro    4     1     1)      *     60  0.6  270  31.52  17.59  13.75  13.75                                              14  70.0  6.0  7.500  9.300   5.510    -5.990    16909   0.832  0.940   5.738 -2.723  0.000 -0.321 -3.045 297.03  420.81    3.00   11.17   11.17 
+ 102.1   11   9.83 SR520 West Appro    4     1     1)      *     60  0.6  270  31.52  17.59  13.50  13.50                                              14  70.0  6.0  7.500  9.300   5.483    -5.965    16854   0.832  0.940   5.738 -2.689  0.000 -0.321 -3.011 297.03  422.73    3.00   11.17   11.17 
 
 
 The Specification Check was Not Successful
@@ -108,10 +108,16 @@ Splitting zone check failed.
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 102.1   11  10.67 SR520 West Appro    4     2     1)      *     61  0.6  270  31.49  16.97  13.00  13.00                                              15  70.0  6.0  7.500  9.300   5.559    -6.066    16936   0.791  0.968   5.513 -2.948  0.000 -0.308 -3.257 305.37  427.30    3.00   11.17   11.17 
+ 102.1   11  10.67 SR520 West Appro    4     2     1)      *     60  0.6  270  31.52  18.99  13.25  13.25                                              14  64.0  6.0  7.100  8.000   5.493    -6.055    16935   0.785  0.968   5.980 -3.209  0.000 -0.326 -3.534 303.57  410.14    3.00    6.17    6.17 
 
 
+Girder design was Not Successful
 The Specification Check was Not Successful
+Compression stress check failed for Service I Limit State in Interval 11 Cast Deck, Apply User Defined Loads (Bridge Site 1)
+Compression stress check failed for Service I Limit State in Interval 13 Composite Deck, Apply User Defined Loads, Install Railing System
+Compression stress check failed for Service I Limit State in Interval 13 Install Overlay (Bridge Site 2)
+Compression stress check failed for Service I Limit State in Interval 16 Apply User Defined Loads, Open to Traffic (Bridge Site 3)
+Tensile stress check failed for Service III Limit State in Interval 16 Apply User Defined Loads, Open to Traffic (Bridge Site 3)
 Splitting zone check failed.
 Confinement zone check failed.
 
@@ -163,7 +169,6 @@ Girder design was Not Successful
 The Specification Check was Not Successful
 Compression stress check failed for Service I Limit State in Interval 2 Prestress Release (Casting Yard)
 Compression stress check failed for Service I Limit State in Interval 11 Cast Deck, Apply User Defined Loads (Bridge Site 1)
-Compression stress check failed for Service I Limit State in Interval 13 Composite Deck, Apply User Defined Loads, Install Railing System
 Compression stress check failed for Service I Limit State in Interval 13 Install Overlay (Bridge Site 2)
 Compression stress check failed for Service I Limit State in Interval 16 Apply User Defined Loads, Open to Traffic (Bridge Site 3)
 Tensile stress check failed for Service III Limit State in Interval 16 Apply User Defined Loads, Open to Traffic (Bridge Site 3)
@@ -177,7 +182,7 @@ Slab Offset ("A" Dimension) check failed
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 102.1   10   9.85 SR520 West Appro    6     1     1)      *     61  0.6  270  31.49  16.97  14.00  14.00                                              15  70.0  6.0  7.600  9.300   5.573    -6.069    17159   0.846  0.942   5.621 -2.792  0.000 -0.324 -3.116 303.42  431.30    3.00   11.17   11.17 
+ 102.1   10   9.85 SR520 West Appro    6     1     1)      *     61  0.6  270  31.49  16.97  13.75  13.75                                              15  70.0  6.0  7.400  9.300   5.546    -6.044    17105   0.846  0.942   5.702 -2.758  0.000 -0.324 -3.081 306.68  442.90    3.00   11.17   11.17 
 
 
 The Specification Check was Not Successful
@@ -197,17 +202,15 @@ Confinement zone check failed.
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 102.1   10   9.00 SR520 West Appro    6     6     1)      *     70  0.6  270  31.26  12.74  12.00  12.00                                              24  70.0  6.0  6.400  7.500   4.829    -4.835    16632   0.713  0.884   7.237 -2.903  0.000  0.000 -2.903 429.35  733.33    3.00   11.17   11.17 
+ 102.1   10   9.00 SR520 West Appro    6     6     1)      *     70  0.6  270  31.26  12.74  12.38  12.38                                              24  70.0  6.0  6.200  7.800   4.879    -4.872    16564   0.714  0.884   7.343 -2.892  0.000  0.000 -2.892 434.78  749.85    3.00   11.17   11.17 
 
 
 Girder design was Not Successful
 The Specification Check was Not Successful
 Compression stress check failed for Service I Limit State in Interval 2 Prestress Release (Casting Yard)
-Compression stress check failed for Service I Limit State in Interval 8 Remove temporary strands
 Compression stress check failed for Service I Limit State in Interval 11 Cast Deck, Apply User Defined Loads (Bridge Site 1)
-Compression stress check failed for Service I Limit State in Interval 13 Composite Deck, Apply User Defined Loads, Install Railing System
 Compression stress check failed for Service I Limit State in Interval 13 Install Overlay (Bridge Site 2)
-Compression stress check failed for Service I Limit State in Interval 16 Apply User Defined Loads, Open to Traffic (Bridge Site 3)
+Tensile stress check failed for Service III Limit State in Interval 16 Apply User Defined Loads, Open to Traffic (Bridge Site 3)
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Splitting zone check failed.
 Confinement zone check failed.
@@ -218,7 +221,7 @@ Slab Offset ("A" Dimension) check failed
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 102.1    9   9.84 SR520 West Appro    7     1     1)      *     61  0.6  270  31.49  16.97  12.25  12.25                                              15  70.0  6.0  7.400  9.300   5.466    -5.964    16908   0.842  0.941   5.699 -2.658  0.000 -0.322 -2.981 306.83  448.41    3.00   11.17   11.17 
+ 102.1    9   9.84 SR520 West Appro    7     1     1)      *     60  0.6  270  31.52  17.59  12.00  12.00                                              14  70.0  6.0  7.300  9.300   5.439    -5.938    16853   0.842  0.941   5.642 -2.624  0.000 -0.322 -2.946 298.23  439.88    3.00   11.17   11.17 
 
 
 The Specification Check was Not Successful
@@ -244,7 +247,6 @@ Girder design was Not Successful
 The Specification Check was Not Successful
 Compression stress check failed for Service I Limit State in Interval 2 Prestress Release (Casting Yard)
 Compression stress check failed for Service I Limit State in Interval 11 Cast Deck, Apply User Defined Loads (Bridge Site 1)
-Compression stress check failed for Service I Limit State in Interval 13 Composite Deck, Apply User Defined Loads, Install Railing System
 Compression stress check failed for Service I Limit State in Interval 13 Install Overlay (Bridge Site 2)
 Compression stress check failed for Service I Limit State in Interval 16 Apply User Defined Loads, Open to Traffic (Bridge Site 3)
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
@@ -284,7 +286,6 @@ The Specification Check was Not Successful
 Compression stress check failed for Service I Limit State in Interval 2 Prestress Release (Casting Yard)
 Compression stress check failed for Service I Limit State in Interval 8 Remove temporary strands
 Compression stress check failed for Service I Limit State in Interval 11 Cast Deck, Apply User Defined Loads (Bridge Site 1)
-Compression stress check failed for Service I Limit State in Interval 13 Composite Deck, Apply User Defined Loads, Install Railing System
 Compression stress check failed for Service I Limit State in Interval 13 Install Overlay (Bridge Site 2)
 Compression stress check failed for Service I Limit State in Interval 16 Apply User Defined Loads, Open to Traffic (Bridge Site 3)
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State

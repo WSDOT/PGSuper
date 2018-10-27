@@ -451,9 +451,10 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
    }
 
    // Constructability Checks
-   p = new rptParagraph;
+   p = new rptParagraph(rptStyleManager::GetHeadingStyle());
    p->SetName(_T("Constructability"));
    *pChapter << p;
+   *p << rptNewLine << _T("Constructability Checks") << rptNewLine;
 
    // Girder Detailing
    CGirderDetailingCheck().Build(pChapter,pBroker,pGirderArtifact,pDisplayUnits);
@@ -473,28 +474,44 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
    CDuctGeometryCheckTable().Build(pChapter,pBroker,pGirderArtifact,pDisplayUnits);
    CDuctSizeCheckTable().Build(pChapter,pBroker,pGirderArtifact,pDisplayUnits);
 
-   // "A" Dimension check
-   std::vector<CGirderKey> girderList;
-   girderList.push_back(girderKey);
-   CConstructabilityCheckTable().BuildSlabOffsetTable(pChapter,pBroker,girderList,pDisplayUnits);
-
-   // Min Haunch at bearing centerlines check
-   CConstructabilityCheckTable().BuildMinimumHaunchCLCheck(pChapter,pBroker,girderList,pDisplayUnits);
-
-   // Fillet Check
-   CConstructabilityCheckTable().BuildMinimumFilletCheck(pChapter,pBroker,girderList,pDisplayUnits);
-
-   // Haunch Geometry Check
-   CConstructabilityCheckTable().BuildHaunchGeometryComplianceCheck(pChapter,pBroker,girderList,pDisplayUnits);
-
-   // Camber Check
-   CConstructabilityCheckTable().BuildCamberCheck(pChapter,pBroker,girderKey,pDisplayUnits);
-
    // Global Stability Check
    CConstructabilityCheckTable().BuildGlobalGirderStabilityCheck(pChapter,pBroker,pGirderArtifact,pDisplayUnits);
 
+   std::vector<CGirderKey> girderList;
+   girderList.push_back(girderKey);
+
    // Bottom Flange Clearance Check
    CConstructabilityCheckTable().BuildBottomFlangeClearanceCheck(pChapter,pBroker,girderList,pDisplayUnits);
+
+   if (pBridge->GetDeckType() != pgsTypes::sdtNone)
+   {
+      p = new rptParagraph(rptStyleManager::GetHeadingStyle());
+      p->SetName(_T("Haunch Geometry"));
+      *p << rptNewLine << _T("Haunch Geometry Checks") << rptNewLine;
+      *pChapter << p;
+
+      if (!pSpecEntry->IsSlabOffsetCheckEnabled())
+      {
+         p = new rptParagraph;
+         *p << color(Red) << Bold(_T("Note: Specification Checks for Haunch Geometry are Disabled in the Project Criteria. All Status values will be reported as N/A.")) << color(Black) << rptNewLine;
+         *pChapter << p;
+      }
+
+      // "A" Dimension check
+      CConstructabilityCheckTable().BuildSlabOffsetTable(pChapter,pBroker,girderList,pDisplayUnits);
+
+      // Min Haunch at bearing centerlines check
+      CConstructabilityCheckTable().BuildMinimumHaunchCLCheck(pChapter,pBroker,girderList,pDisplayUnits);
+
+      // Fillet Check
+      CConstructabilityCheckTable().BuildMinimumFilletCheck(pChapter,pBroker,girderList,pDisplayUnits);
+
+      // Haunch Geometry Check
+      CConstructabilityCheckTable().BuildHaunchGeometryComplianceCheck(pChapter,pBroker,girderList,pDisplayUnits);
+   }
+
+   // Camber Check
+   CConstructabilityCheckTable().BuildCamberCheck(pChapter,pBroker,girderKey,pDisplayUnits);
 
    // Load rating
    GET_IFACE2(pBroker,IRatingSpecification,pRatingSpec);

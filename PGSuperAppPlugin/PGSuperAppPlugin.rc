@@ -2205,7 +2205,7 @@ BEGIN
     COMBOBOX        IDC_LOAD_RATING_EVENT,190,17,119,117,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
 END
 
-IDD_DESIGN_RATING DIALOGEX 0, 0, 296, 184
+IDD_DESIGN_RATING DIALOGEX 0, 0, 349, 184
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Design"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
@@ -2232,7 +2232,7 @@ BEGIN
     EDITTEXT        IDC_SERVICE_III_DW,104,76,26,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "DW + ",IDC_STATIC,132,79,22,8
     EDITTEXT        IDC_SERVICE_III_LL,154,76,43,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "(LL+IM) - Inventory Level",IDC_STATIC,201,79,84,8
+    LTEXT           "(LL+IM) - Inventory && Operating Levels",IDC_STATIC,201,79,128,8
     LTEXT           "+",IDC_SERVICE_III_PLUS,47,96,8,8
     EDITTEXT        IDC_SERVICE_III_CR,57,93,26,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "CR + ",IDC_SERVICE_III_CR_LABEL,85,96,18,8
@@ -2244,8 +2244,8 @@ BEGIN
     EDITTEXT        IDC_ALLOWABLE_TENSION,82,150,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "sqrt(f'c)",IDC_ALLOWABLE_TENSION_UNIT,126,153,85,8
     CONTROL         "Rate for Shear",IDC_RATE_FOR_SHEAR,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,215,153,63,10
-    GROUPBOX        "Limit States",IDC_STATIC,7,7,282,117
-    GROUPBOX        "Analysis Controls",IDC_STATIC,7,136,282,39
+    GROUPBOX        "Limit States",IDC_STATIC,7,7,335,117
+    GROUPBOX        "Analysis Controls",IDC_STATIC,7,136,335,39
 END
 
 IDD_LEGAL_RATING DIALOGEX 0, 0, 495, 348
@@ -3449,8 +3449,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 3,1,4,0
- PRODUCTVERSION 3,1,4,0
+ FILEVERSION 3,1,4,1
+ PRODUCTVERSION 3,1,4,1
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -3467,12 +3467,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "Washington State Department of Transportation"
             VALUE "FileDescription", "PGSuper"
-            VALUE "FileVersion", "3.1.4.0"
+            VALUE "FileVersion", "3.1.4.1"
             VALUE "InternalName", "PGSuper"
             VALUE "LegalCopyright", "Copyright © 1999-2018, Washington State Department of Transportation, All Rights Reserved"
             VALUE "OriginalFilename", "PGSuperAppPlugin.DLL"
             VALUE "ProductName", "PGSuper"
-            VALUE "ProductVersion", "3.1.4.0"
+            VALUE "ProductVersion", "3.1.4.1"
         END
     END
     BLOCK "VarFileInfo"
@@ -3914,7 +3914,7 @@ BEGIN
     IDD_DESIGN_RATING, DIALOG
     BEGIN
         LEFTMARGIN, 7
-        RIGHTMARGIN, 289
+        RIGHTMARGIN, 342
         TOPMARGIN, 7
         BOTTOMMARGIN, 175
     END
@@ -4541,6 +4541,11 @@ BEGIN
 END
 
 IDD_DESIGN_OUTCOME AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_DESIGN_RATING AFX_DIALOG_LAYOUT
 BEGIN
     0
 END

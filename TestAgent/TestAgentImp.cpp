@@ -1598,7 +1598,11 @@ bool CTestAgentImp::RunPrestressedISectionTest(std::_tofstream& resultsFile, std
    IntervalIndexType tsRemovalIntervalIdx     = pIntervals->GetTemporaryStrandRemovalInterval(segmentKey);
    IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval();
    IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
-   IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval();
+   IntervalIndexType trafficBarrierIntervalIdx = pIntervals->GetInstallRailingSystemInterval();
+   IntervalIndexType overlayIntervalIdx = pIntervals->GetOverlayInterval();
+   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
+
+   IntervalIndexType finalDLIntervalIdx = (overlayIntervalIdx == INVALID_INDEX ? trafficBarrierIntervalIdx : overlayIntervalIdx);
 
    pgsTypes::BridgeAnalysisType bat = pProdForce->GetBridgeAnalysisType(pgsTypes::Maximize);
 
@@ -1971,7 +1975,7 @@ bool CTestAgentImp::RunPrestressedISectionTest(std::_tofstream& resultsFile, std
          resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 122024, ")<<loc<<_T(", ")<<(int)(pStressArtifact->BeamPassed()?1:0)<<_T(", 15, ")<<gdrIdx<<std::endl;
       }
 
-      pStressArtifact = pSegmentArtifact->GetFlexuralStressArtifactAtPoi(compositeDeckIntervalIdx,pgsTypes::ServiceI,pgsTypes::Compression,poi.GetID());
+      pStressArtifact = pSegmentArtifact->GetFlexuralStressArtifactAtPoi(finalDLIntervalIdx,pgsTypes::ServiceI,pgsTypes::Compression,poi.GetID());
       if ( pStressArtifact )
       {
          ATLASSERT(IsEqual(loc,::ConvertFromSysUnits(poi.GetDistFromStart(), unitMeasure::Millimeter)));
