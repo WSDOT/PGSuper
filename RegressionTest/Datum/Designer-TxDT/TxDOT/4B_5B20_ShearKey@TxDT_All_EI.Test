@@ -1,6 +1,6 @@
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 24.17    6   0.12                     1     1     5B20          40  1/2  270   6.38   6.22   5.00   5.00   4    2.5   28     4    4   0   0   0   0  12.000 12.500   3.387    -3.883     2087   0.387  0.638   0.731 -0.740 -0.083 -0.134 -0.957  58.98  230.14    1.00    1.00    1.00 
+ 24.17    6   0.12                     1     1     5B20          34  1/2  270   7.03   6.67   5.00   5.00  16    2.5   28    16   10   2   2   2   0   4.100  5.000   2.673    -3.185     1828   0.387  0.638   3.559 -0.740 -0.083 -0.134 -0.957  81.91  226.89    1.00    1.00    1.00 
 
 
 The Specification Check was Successful
@@ -8,37 +8,7 @@ The Specification Check was Successful
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 24.17    6   0.12                     1     2     4B20          34  1/2  270   6.13   5.29   5.00   5.00  22    2.5   22    16    0   0   6  10   0  14.000 15.000   3.614    -4.128     1809   0.333  0.463   0.029 -0.941 -0.123 -0.164 -1.228  49.42  196.22    1.00    1.00    1.00 
-                                                                                                                 4.5    6     4    0   0   4   0   0 
-                                                                                                                 6.5    4     2    0   0   2   0   0 
-
-
-Girder design was Not Successful
-The Specification Check was Not Successful
-Tensile stress check failed for Service III Limit State in Interval 15 Open to Traffic (Bridge Site 3)
-Ultimate vertical shear capacity check failed for Strength I Limit State
-Longitudinal Reinforcement for Shear check failed for Strength I Limit State
-Debond arrangement checks failed.
-
-
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 24.17    6   0.12                     1     4     4B20          34  1/2  270   6.13   5.29   5.00   5.00  22    2.5   22    16    0   0   6  10   0  14.000 15.000   3.614    -4.128     1809   0.333  0.463   0.029 -0.941 -0.123 -0.164 -1.228  49.42  196.22    1.00    1.00    1.00 
-                                                                                                                 4.5    6     4    0   0   4   0   0 
-                                                                                                                 6.5    4     2    0   0   2   0   0 
-
-
-Girder design was Not Successful
-The Specification Check was Not Successful
-Tensile stress check failed for Service III Limit State in Interval 15 Open to Traffic (Bridge Site 3)
-Ultimate vertical shear capacity check failed for Strength I Limit State
-Longitudinal Reinforcement for Shear check failed for Strength I Limit State
-Debond arrangement checks failed.
-
-
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 24.17    6   0.12                     2     1     5B20          40  1/2  270   6.38   6.22   5.00   5.00   4    2.5   28     4    4   0   0   0   0  12.000 12.100   3.377    -3.870     2081   0.387  0.638   0.743 -0.724 -0.083 -0.135 -0.941  58.98  230.51    1.00    1.00    1.00 
+ 24.17    6   0.12                     1     2     4B20          34  1/2  270   6.13   5.62   5.00   5.00  10    2.5   22    10    4   2   2   2   0   4.800  5.000   2.970    -3.508     1624   0.333  0.463   3.173 -0.941 -0.123 -0.164 -1.228  87.66  246.55    1.00    1.00    1.00 
 
 
 The Specification Check was Successful
@@ -46,31 +16,33 @@ The Specification Check was Successful
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 24.17    6   0.12                     2     2     4B20          34  1/2  270   6.13   5.29   5.00   5.00  22    2.5   22    16    0   0   6  10   0  14.000 15.000   3.588    -4.096     1798   0.333  0.463   0.059 -0.901 -0.122 -0.165 -1.187  49.42  196.96    1.00    1.00    1.00 
-                                                                                                                 4.5    6     4    0   0   4   0   0 
-                                                                                                                 6.5    4     2    0   0   2   0   0 
+ 24.17    6   0.12                     1     4     4B20          34  1/2  270   6.13   5.62   5.00   5.00  10    2.5   22    10    4   2   2   2   0   4.800  5.000   2.970    -3.508     1624   0.333  0.463   3.173 -0.941 -0.123 -0.164 -1.228  87.66  246.55    1.00    1.00    1.00 
 
 
-Girder design was Not Successful
-The Specification Check was Not Successful
-Tensile stress check failed for Service III Limit State in Interval 15 Open to Traffic (Bridge Site 3)
-Ultimate vertical shear capacity check failed for Strength I Limit State
-Longitudinal Reinforcement for Shear check failed for Strength I Limit State
-Debond arrangement checks failed.
+The Specification Check was Successful
 
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 24.17    6   0.12                     2     4     4B20          34  1/2  270   6.13   5.29   5.00   5.00  22    2.5   22    16    0   0   6  10   0  14.000 15.000   3.588    -4.096     1798   0.333  0.463   0.060 -0.901 -0.122 -0.165 -1.187  49.42  196.96    1.00    1.00    1.00 
-                                                                                                                 4.5    6     4    0   0   4   0   0 
-                                                                                                                 6.5    4     2    0   0   2   0   0 
+ 24.17    6   0.12                     2     1     5B20          34  1/2  270   7.03   6.67   5.00   5.00  16    2.5   28    16   10   2   2   2   0   4.100  5.000   2.663    -3.172     1822   0.387  0.638   3.571 -0.724 -0.083 -0.135 -0.941  81.91  227.23    1.00    1.00    1.00 
 
 
-Girder design was Not Successful
-The Specification Check was Not Successful
-Tensile stress check failed for Service III Limit State in Interval 15 Open to Traffic (Bridge Site 3)
-Ultimate vertical shear capacity check failed for Strength I Limit State
-Longitudinal Reinforcement for Shear check failed for Strength I Limit State
-Debond arrangement checks failed.
+The Specification Check was Successful
+
+
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 24.17    6   0.12                     2     2     4B20          34  1/2  270   6.13   5.62   5.00   5.00  10    2.5   22    10    4   2   2   2   0   4.800  5.000   2.944    -3.477     1613   0.333  0.463   3.203 -0.901 -0.122 -0.165 -1.187  87.66  247.30    1.00    1.00    1.00 
+
+
+The Specification Check was Successful
+
+
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 24.17    6   0.12                     2     4     4B20          34  1/2  270   6.13   5.62   5.00   5.00  10    2.5   22    10    4   2   2   2   0   4.800  5.000   2.944    -3.477     1613   0.333  0.463   3.203 -0.901 -0.122 -0.165 -1.187  87.66  247.30    1.00    1.00    1.00 
+
+
+The Specification Check was Successful
 
 

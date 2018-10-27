@@ -2803,10 +2803,10 @@ bool CBridgeAgentImp::LayoutGirders(const CBridgeDescription2* pBridgeDesc)
 
 
             CComPtr<IShape> startShape, hp1Shape, hp2Shape, endShape;
-            segment->get_PrimaryShape(XsStart,  &startShape);
-            segment->get_PrimaryShape(XsHp1Loc, &hp1Shape);
-            segment->get_PrimaryShape(XsHp2Loc, &hp2Shape);
-            segment->get_PrimaryShape(XsEnd,    &endShape);
+            segment->get_PrimaryShape(XsStart,  sbRight, &startShape);
+            segment->get_PrimaryShape(XsHp1Loc, sbLeft, &hp1Shape);
+            segment->get_PrimaryShape(XsHp2Loc, sbLeft, &hp2Shape);
+            segment->get_PrimaryShape(XsEnd,    sbLeft, &endShape);
 
             // bounding boxes of the section (height of section is height of bounding box)
             CComPtr<IRect2d> bbStart, bbHP1, bbHP2, bbEnd;
@@ -2930,7 +2930,7 @@ bool CBridgeAgentImp::LayoutGirders(const CBridgeDescription2* pBridgeDesc)
                      {
                         // adjust to be measured from top of girder
                         CComPtr<IShape> shape;
-                        segment->get_PrimaryShape(Z[i], &shape);
+                        segment->get_PrimaryShape(Z[i], sbLeft, &shape);
 
                         // bounding boxes of the section (height of section is height of bounding box)
                         CComPtr<IRect2d> box;
@@ -20863,7 +20863,8 @@ void CBridgeAgentImp::GetSegmentShape(IntervalIndexType intervalIdx,const pgsPoi
       
       CComPtr<IShape> pShape;
       // returns a copy of the shape so we can move it around without cloning it
-      HRESULT hr = m_SectCutTool->CreateGirderShapeBySegment(m_Bridge,gdrID,segmentKey.segmentIndex,Xs,leftGdrID,rightGdrID,intervalIdx,&pShape);
+      SectionBias sectionBias = (poi.HasAttribute(POI_SECTCHANGE_LEFTFACE) ? sbLeft : sbRight);
+      HRESULT hr = m_SectCutTool->CreateGirderShapeBySegment(m_Bridge,gdrID,segmentKey.segmentIndex,Xs,sectionBias,leftGdrID,rightGdrID,intervalIdx,&pShape);
       ATLASSERT(SUCCEEDED(hr));
 
       if ( poi.GetID() != INVALID_ID )
@@ -21045,6 +21046,8 @@ void CBridgeAgentImp::GetRightTrafficBarrierShape(Float64 station,IDirection* pD
 //
 Float64 CBridgeAgentImp::GetAtb(pgsTypes::TrafficBarrierOrientation orientation)
 {
+   VALIDATE(BRIDGE);
+
    CComPtr<IShapeProperties> props;
    GetBarrierProperties(orientation,&props);
 
@@ -21061,6 +21064,8 @@ Float64 CBridgeAgentImp::GetAtb(pgsTypes::TrafficBarrierOrientation orientation)
 
 Float64 CBridgeAgentImp::GetItb(pgsTypes::TrafficBarrierOrientation orientation)
 {
+   VALIDATE(BRIDGE);
+
    CComPtr<IShapeProperties> props;
    GetBarrierProperties(orientation,&props);
 
@@ -21077,6 +21082,8 @@ Float64 CBridgeAgentImp::GetItb(pgsTypes::TrafficBarrierOrientation orientation)
 
 Float64 CBridgeAgentImp::GetYbtb(pgsTypes::TrafficBarrierOrientation orientation)
 {
+   VALIDATE(BRIDGE);
+
    CComPtr<IShapeProperties> props;
    GetBarrierProperties(orientation,&props);
 
@@ -21094,6 +21101,7 @@ Float64 CBridgeAgentImp::GetYbtb(pgsTypes::TrafficBarrierOrientation orientation
 Float64 CBridgeAgentImp::GetSidewalkWeight(pgsTypes::TrafficBarrierOrientation orientation)
 {
    VALIDATE(BRIDGE);
+
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
@@ -21253,6 +21261,8 @@ bool CBridgeAgentImp::HasInteriorBarrier(pgsTypes::TrafficBarrierOrientation ori
 
 Float64 CBridgeAgentImp::GetExteriorBarrierCgToDeckEdge(pgsTypes::TrafficBarrierOrientation orientation)
 {
+   VALIDATE(BRIDGE);
+
    // Use generic bridge - barriers have been placed properly
    CComPtr<ISidewalkBarrier> pSwBarrier;
    Float64 sign;
@@ -21287,6 +21297,8 @@ Float64 CBridgeAgentImp::GetExteriorBarrierCgToDeckEdge(pgsTypes::TrafficBarrier
 
 Float64 CBridgeAgentImp::GetInteriorBarrierCgToDeckEdge(pgsTypes::TrafficBarrierOrientation orientation)
 {
+   VALIDATE(BRIDGE);
+
    // Use generic bridge - barriers have been placed properly
    CComPtr<ISidewalkBarrier> pSwBarrier;
    Float64 sign;
@@ -21330,6 +21342,8 @@ Float64 CBridgeAgentImp::GetInteriorBarrierCgToDeckEdge(pgsTypes::TrafficBarrier
 
 Float64 CBridgeAgentImp::GetInterfaceWidth(pgsTypes::TrafficBarrierOrientation orientation)
 {
+   VALIDATE(BRIDGE);
+
    // This is the offset from the edge of deck to the curb line (basically the connection 
    // width of the barrier)
    CComPtr<ISidewalkBarrier> barrier;
@@ -21347,7 +21361,6 @@ Float64 CBridgeAgentImp::GetInterfaceWidth(pgsTypes::TrafficBarrierOrientation o
    barrier->get_ExteriorCurbWidth(&offset);
    return offset;
 }
-
 
 void CBridgeAgentImp::GetSidewalkDeadLoadEdges(pgsTypes::TrafficBarrierOrientation orientation, Float64* pintEdge, Float64* pextEdge)
 {
@@ -26615,8 +26628,10 @@ HRESULT CBridgeAgentImp::GetSection(IntervalIndexType intervalIdx,const pgsPoint
         sectPropType == pgsTypes::sptNetGirder )
    {
       // use tool to create section
+      SectionBias sectionBias = (poi.HasAttribute(POI_SECTCHANGE_LEFTFACE) ? sbLeft : sbRight);
+
       CComPtr<ISection> section;
-      HRESULT hr = m_SectCutTool->CreateGirderSectionBySegment(m_Bridge,gdrID,segmentKey.segmentIndex,Xs,leftGdrID,rightGdrID,intervalIdx,(SectionPropertyMethod)sectPropType,&section);
+      HRESULT hr = m_SectCutTool->CreateGirderSectionBySegment(m_Bridge,gdrID,segmentKey.segmentIndex,Xs,sectionBias,leftGdrID,rightGdrID,intervalIdx,(SectionPropertyMethod)sectPropType,&section);
       ATLASSERT(SUCCEEDED(hr));
 
       return section.CopyTo(ppSection);
@@ -26641,7 +26656,7 @@ Float64 CBridgeAgentImp::ComputeY(IntervalIndexType intervalIdx,const pgsPointOf
    CComPtr<ISuperstructureMemberSegment> segment;
    GetSegment(segmentKey,&segment);
    CComPtr<IShape> shape;
-   segment->get_PrimaryShape(Xpoi,&shape);
+   segment->get_PrimaryShape(Xpoi,sbLeft,&shape);
    CComPtr<IShapeProperties> beamprops;
    shape->get_ShapeProperties(&beamprops);
 
@@ -26756,7 +26771,8 @@ HRESULT CBridgeAgentImp::GetGirderSection(const pgsPointOfInterest& poi,pgsTypes
    Float64 Xs = poi.GetDistFromStart();
    Float64 Ls = GetSegmentLength(segmentKey);
    Xs = ::ForceIntoRange(0.0,Xs,Ls);
-   segment->get_PrimaryShape(Xs,&girder_shape); // always returns primary shape in bridge section coordinates
+   SectionBias sectionBias = (poi.HasAttribute(POI_SECTCHANGE_LEFTFACE) ? sbLeft : sbRight);
+   segment->get_PrimaryShape(Xs,sectionBias,&girder_shape); // always returns primary shape in bridge section coordinates
 
    CComQIPtr<IGirderSection> global_girder_section(girder_shape); // this is the shape in bridge section coordinates
    ATLASSERT(global_girder_section != nullptr);
@@ -28396,7 +28412,8 @@ void CBridgeAgentImp::GetSegmentShapeDirect(const pgsPointOfInterest& poi,IShape
    GetSegment(segmentKey,&segment);
 
    Float64 Xs = poi.GetDistFromStart();
-   segment->get_PrimaryShape(Xs,ppShape);
+   SectionBias sectionBias = (poi.HasAttribute(POI_SECTCHANGE_LEFTFACE) ? sbLeft : sbRight);
+   segment->get_PrimaryShape(Xs,sectionBias,ppShape);
 }
 
 BarSize CBridgeAgentImp::GetBarSize(matRebar::Size size)
@@ -29457,7 +29474,7 @@ void CBridgeAgentImp::CreateParabolicTendon(const CGirderKey& girderKey,ISuperst
    pgsPointOfInterest poi = GetPointOfInterest(CSegmentKey(girderKey,0),0.0);
    Float64 Xs = poi.GetDistFromStart();
    CComPtr<IShape> shape;
-   segment->get_PrimaryShape(Xs,&shape);
+   segment->get_PrimaryShape(Xs,sbRight,&shape);
 
    CComQIPtr<IGirderSection> section(shape);
    WebIndexType nWebs;
@@ -29762,7 +29779,7 @@ void CBridgeAgentImp::CreateLinearTendon(const CGirderKey& girderKey,ISuperstruc
    pSSMbr->get_Segment(0,&segment);
 
    CComPtr<IShape> shape;
-   segment->get_PrimaryShape(0,&shape);
+   segment->get_PrimaryShape(0,sbRight,&shape);
 
    Float64 Lg = GetGirderLength(girderKey);
 
@@ -29874,7 +29891,7 @@ void CBridgeAgentImp::CreateOffsetTendon(const CGirderKey& girderKey,ISuperstruc
    pSSMbr->get_Segment(0,&segment);
 
    CComPtr<IShape> shape;
-   segment->get_PrimaryShape(0,&shape);
+   segment->get_PrimaryShape(0,sbRight,&shape);
 
    CComQIPtr<IGirderSection> section(shape);
    WebIndexType nWebs;

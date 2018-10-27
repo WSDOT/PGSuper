@@ -1,6 +1,6 @@
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 21.54    6   0.00                     1     1     Slab          18  1/2  270   5.50   5.51                                              4.000  5.000   1.459    -1.325     1049   0.351  0.575   0.028  0.000 -0.024 -0.021 -0.046  10.09   69.52    1.75    5.00    5.00 
+ 21.54    6   0.00                     1     1     Slab          18  1/2  270   5.50   5.51                                              4.000  5.000   1.237    -1.105     1020   0.351  0.575   0.240  0.000 -0.024 -0.021 -0.046  11.73   73.54    1.75    5.00    5.00 
 
 
 The Specification Check was Not Successful
@@ -9,7 +9,7 @@ Splitting zone check failed.
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 21.54    6   0.00                     1     2     Slab          18  1/2  270   5.46   5.49                                              4.000  5.000   1.469    -1.326     1046   0.350  0.481   0.027  0.000 -0.025 -0.021 -0.046  10.12   69.60    1.75    5.00    5.00 
+ 21.54    6   0.00                     1     2     Slab          18  1/2  270   5.46   5.49                                              4.000  5.000   1.245    -1.105     1019   0.350  0.481   0.240  0.000 -0.025 -0.021 -0.046  11.76   73.61    1.75    5.00    5.00 
 
 
 The Specification Check was Not Successful
@@ -18,34 +18,7 @@ Splitting zone check failed.
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 21.54    6   0.00                     1     4     Slab          18  1/2  270   5.46   5.49                                              4.000  5.000   1.469    -1.326     1046   0.350  0.481   0.027  0.000 -0.025 -0.021 -0.046  10.12   69.60    1.75    5.00    5.00 
-
-
-The Specification Check was Not Successful
-Splitting zone check failed.
-
-
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 21.54    6   0.00                     2     1     Slab          36  1/2  270   7.40   7.20   2    1.9   14     2    2   0   0   0   0   4.000  5.000   2.935    -2.702     1734   0.323  0.541   0.651  0.000 -0.123 -0.106 -0.228  42.83  173.41    1.75    5.00    5.00 
-
-
-The Specification Check was Not Successful
-Splitting zone check failed.
-
-
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 21.54    6   0.00                     2     2     Slab          36  1/2  270   7.36   7.17   2    1.9   14     2    2   0   0   0   0   4.000  5.000   2.955    -2.704     1731   0.323  0.462   0.648  0.000 -0.123 -0.106 -0.230  42.93  173.64    1.75    5.00    5.00 
-
-
-The Specification Check was Not Successful
-Splitting zone check failed.
-
-
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 21.54    6   0.00                     2     4     Slab          36  1/2  270   7.36   7.17   2    1.9   14     2    2   0   0   0   0   4.000  5.000   2.955    -2.704     1731   0.323  0.462   0.648  0.000 -0.123 -0.106 -0.230  42.93  173.64    1.75    5.00    5.00 
+ 21.54    6   0.00                     1     4     Slab          18  1/2  270   5.46   5.49                                              4.000  5.000   1.245    -1.105     1019   0.350  0.481   0.240  0.000 -0.025 -0.021 -0.046  11.76   73.61    1.75    5.00    5.00 
 
 
 The Specification Check was Not Successful
@@ -54,61 +27,61 @@ Splitting zone check failed.
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 21.54    6   0.00                     3     1     Slab          16  1/2  270   4.80   4.82                                             14.000 15.000   4.835    -4.498     2811   0.305  0.519  -3.692  0.000 -0.268 -0.232 -0.500  -3.04   18.05    1.75    5.00    5.00 
+ 21.54    6   0.00                     2     1     Slab          30  1/2  270   6.80   6.81                                              4.000  5.000   2.438    -2.208     1480   0.323  0.541   0.876  0.000 -0.123 -0.106 -0.228  31.91  140.54    1.75    5.00    5.00 
 
 
-Girder design was Not Successful
 The Specification Check was Not Successful
-Stresses in the prestressing strands are too high.
-Tensile stress check failed for Service III Limit State in Interval 14 Open to Traffic (Bridge Site 3)
-Ultimate moment capacity (positive moment) check failed for Strength I Limit State
-Ultimate moment capacity (positive moment) check failed for Strength II Limit State
-Longitudinal Reinforcement for Shear check failed for Strength I Limit State
-Ultimate vertical shear capacity check failed for Strength I Limit State
-Longitudinal Reinforcement for Shear check failed for Strength II Limit State
-Ultimate vertical shear capacity check failed for Strength II Limit State
+Splitting zone check failed.
+
+
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 21.54    6   0.00                     2     2     Slab          30  1/2  270   6.76   6.79                                              4.000  5.000   2.453    -2.208     1477   0.323  0.462   0.878  0.000 -0.123 -0.106 -0.230  32.00  140.74    1.75    5.00    5.00 
+
+
+The Specification Check was Not Successful
+Splitting zone check failed.
+
+
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 21.54    6   0.00                     2     4     Slab          30  1/2  270   6.76   6.79                                              4.000  5.000   2.453    -2.208     1477   0.323  0.462   0.878  0.000 -0.123 -0.106 -0.230  32.00  140.74    1.75    5.00    5.00 
+
+
+The Specification Check was Not Successful
+Splitting zone check failed.
+
+
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 21.54    6   0.00                     3     1     Slab          44  1/2  270   7.98   7.51   6    1.9   20     6    4   2   0   0   0   8.000  8.000   3.954    -3.623     2361   0.305  0.519   1.110  0.000 -0.330 -0.285 -0.615  54.35  154.40    1.75    5.00    5.00 
+
+
+The Specification Check was Not Successful
 Stirrup detailing checks failed for the Strength I Limit State.
 Stirrup detailing checks failed for the Strength II Limit State.
 Splitting zone check failed.
 Live Load Deflection check failed
 
 
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 21.54    6   0.00                     3     2     Slab          16  1/2  270   4.76   4.79                                             14.000 15.000   4.867    -4.500     2806   0.305  0.449  -3.704  0.000 -0.270 -0.233 -0.502  -2.97   18.15    1.75    5.00    5.00 
+ 21.54    6   0.00                     3     2     Slab          44  1/2  270   7.94   7.48   6    1.9   20     6    4   2   0   0   0   8.000  8.000   3.978    -3.622     2356   0.305  0.449   1.112  0.000 -0.332 -0.287 -0.618  54.51  154.67    1.75    5.00    5.00 
 
 
-Girder design was Not Successful
 The Specification Check was Not Successful
-Stresses in the prestressing strands are too high.
-Tensile stress check failed for Service III Limit State in Interval 14 Open to Traffic (Bridge Site 3)
-Ultimate moment capacity (positive moment) check failed for Strength I Limit State
-Ultimate moment capacity (positive moment) check failed for Strength II Limit State
-Longitudinal Reinforcement for Shear check failed for Strength I Limit State
-Ultimate vertical shear capacity check failed for Strength I Limit State
-Longitudinal Reinforcement for Shear check failed for Strength II Limit State
-Ultimate vertical shear capacity check failed for Strength II Limit State
 Stirrup detailing checks failed for the Strength I Limit State.
 Stirrup detailing checks failed for the Strength II Limit State.
 Splitting zone check failed.
 Live Load Deflection check failed
 
 
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 21.54    6   0.00                     3     4     Slab          16  1/2  270   4.76   4.79                                             14.000 15.000   4.867    -4.500     2806   0.305  0.449  -3.704  0.000 -0.270 -0.233 -0.502  -2.97   18.15    1.75    5.00    5.00 
+ 21.54    6   0.00                     3     4     Slab          44  1/2  270   7.94   7.48   6    1.9   20     6    4   2   0   0   0   8.000  8.000   3.978    -3.622     2356   0.305  0.449   1.112  0.000 -0.332 -0.287 -0.618  54.51  154.67    1.75    5.00    5.00 
 
 
-Girder design was Not Successful
 The Specification Check was Not Successful
-Stresses in the prestressing strands are too high.
-Tensile stress check failed for Service III Limit State in Interval 14 Open to Traffic (Bridge Site 3)
-Ultimate moment capacity (positive moment) check failed for Strength I Limit State
-Ultimate moment capacity (positive moment) check failed for Strength II Limit State
-Longitudinal Reinforcement for Shear check failed for Strength I Limit State
-Ultimate vertical shear capacity check failed for Strength I Limit State
-Longitudinal Reinforcement for Shear check failed for Strength II Limit State
-Ultimate vertical shear capacity check failed for Strength II Limit State
 Stirrup detailing checks failed for the Strength I Limit State.
 Stirrup detailing checks failed for the Strength II Limit State.
 Splitting zone check failed.

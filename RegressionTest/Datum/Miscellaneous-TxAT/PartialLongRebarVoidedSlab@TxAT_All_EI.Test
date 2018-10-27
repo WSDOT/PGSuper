@@ -1,33 +1,28 @@
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 32.17    7   0.00                     1     1     Slab          14  0.6  270  15.86  15.91   5.50   5.50   2    2.0   14     2    2   0   0   0   0   4.000  5.300   1.124    -1.148     2114   0.406  0.662   0.216 -0.042 -0.009 -0.014 -0.065  60.76  145.82    1.00    3.00    3.00 
+ 32.17    7   0.00                     1     1     Slab          14  0.6  270  15.86  15.91   5.50   5.50   2    2.0   14     2    2   0   0   0   0   4.000  5.300   0.870    -0.898     1935   0.406  0.662   0.487 -0.042 -0.009 -0.014 -0.065  60.76  145.82    1.00    3.00    3.00 
 
 
 The Specification Check was Not Successful
-Tensile stress check failed for Service III Limit State in Interval 15 Open to Traffic (Bridge Site 3)
 Stirrup detailing checks failed for the Strength I Limit State.
-Hauling checks failed
 
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 32.17    7   0.00                     1     2     Slab          14  0.6  270  15.70  15.81   5.50   5.50   6    2.0   14     6    4   2   0   0   0   4.000  5.500   1.147    -1.152     2122   0.406  0.679   0.208 -0.042 -0.009 -0.014 -0.065  60.76  145.82    1.00    1.00    1.00 
+ 32.17    7   0.00                     1     2     Slab          14  0.6  270  15.70  15.81   5.50   5.50   6    2.0   14     6    4   2   0   0   0   4.000  5.500   0.886    -0.899     1927   0.406  0.679   0.482 -0.042 -0.009 -0.014 -0.065  60.76  145.82    1.00    1.00    1.00 
 
 
 The Specification Check was Not Successful
-Tensile stress check failed for Service III Limit State in Interval 15 Open to Traffic (Bridge Site 3)
 Stirrup detailing checks failed for the Strength I Limit State.
 Debond arrangement checks failed.
 
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 32.17    7   0.00                     1     4     Slab          14  0.6  270  15.70  15.81   5.50   5.50   4    2.0   14     4    0   2   2   0   0  12.000 12.000   1.155    -1.123     2246   0.404  0.676   0.078 -0.028 -0.007  0.000 -0.035  60.76  145.82    3.00    3.00    3.00 
+ 32.17    7   0.00                     1     4     Slab          14  0.6  270  15.70  15.81   5.50   5.50   4    2.0   14     4    0   2   2   0   0  12.000 12.000   0.894    -0.871     1845   0.404  0.676   0.189 -0.028 -0.007  0.000 -0.035  60.76  145.82    3.00    3.00    3.00 
 
 
 The Specification Check was Not Successful
-Tensile stress check failed for Service III Limit State in Interval 15 Open to Traffic (Bridge Site 3)
-Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 Stirrup detailing checks failed for the Strength I Limit State.
 Debond arrangement checks failed.
 Lifting checks failed

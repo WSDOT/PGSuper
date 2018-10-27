@@ -1,11 +1,10 @@
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 32.17    7   0.00                     1     1     Slab          14  0.6  270  15.86  15.91   5.50   5.50                                              4.000  5.300   1.124    -1.148     2114   0.406  0.662   0.218 -0.042 -0.009 -0.014 -0.065  60.76  145.82    3.00    3.00    3.00 
+ 32.17    7   0.00                     1     1     Slab          14  0.6  270  15.86  15.91   5.50   5.50                                              4.000  5.300   0.870    -0.898     1935   0.406  0.662   0.489 -0.042 -0.009 -0.014 -0.065  60.76  145.82    3.00    3.00    3.00 
 
 
 The Specification Check was Not Successful
 Tensile stress check failed for Service I Limit State in Interval 2 Prestress Release (Casting Yard)
-Tensile stress check failed for Service III Limit State in Interval 15 Open to Traffic (Bridge Site 3)
 Stirrup detailing checks failed for the Strength I Limit State.
 Lifting checks failed
 Hauling checks failed
@@ -13,12 +12,11 @@ Hauling checks failed
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 32.17    7   0.00                     1     2     Slab          14  0.6  270  15.70  15.81   5.50   5.50                                              4.000  5.300   1.145    -1.151     2106   0.406  0.679   0.220 -0.043 -0.009 -0.014 -0.066  60.76  145.82    3.00    3.00    3.00 
+ 32.17    7   0.00                     1     2     Slab          14  0.6  270  15.70  15.81   5.50   5.50                                              4.000  5.300   0.884    -0.899     1927   0.406  0.679   0.496 -0.043 -0.009 -0.014 -0.066  60.76  145.82    3.00    3.00    3.00 
 
 
 The Specification Check was Not Successful
 Tensile stress check failed for Service I Limit State in Interval 2 Prestress Release (Casting Yard)
-Tensile stress check failed for Service III Limit State in Interval 15 Open to Traffic (Bridge Site 3)
 Stirrup detailing checks failed for the Strength I Limit State.
 Lifting checks failed
 Hauling checks failed
@@ -26,12 +24,11 @@ Hauling checks failed
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 32.17    7   0.00                     1     4     Slab          14  0.6  270  15.70  15.81   5.50   5.50                                              4.000  5.300   1.114    -1.110     2106   0.406  0.679   0.220 -0.043 -0.009  0.000 -0.052  60.76  145.82    3.00    3.00    3.00 
+ 32.17    7   0.00                     1     4     Slab          14  0.6  270  15.70  15.81   5.50   5.50                                              4.000  5.300   0.854    -0.858     1850   0.406  0.679   0.496 -0.043 -0.009  0.000 -0.052  60.76  145.82    3.00    3.00    3.00 
 
 
 The Specification Check was Not Successful
 Tensile stress check failed for Service I Limit State in Interval 2 Prestress Release (Casting Yard)
-Tensile stress check failed for Service III Limit State in Interval 15 Open to Traffic (Bridge Site 3)
 Stirrup detailing checks failed for the Strength I Limit State.
 Lifting checks failed
 Hauling checks failed

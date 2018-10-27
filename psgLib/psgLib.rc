@@ -10,7 +10,6 @@
 #include "afxres.h"
 #include "EAF\EAFResources.h"
 #include "grid\gxresrc.h"
-
 /////////////////////////////////////////////////////////////////////////////
 #undef APSTUDIO_READONLY_SYMBOLS
 
@@ -67,8 +66,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 3,1,5,0
- PRODUCTVERSION 3,1,5,0
+ FILEVERSION 3,1,6,0
+ PRODUCTVERSION 3,1,6,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -86,11 +85,11 @@ BEGIN
             VALUE "Comments", "A member of the Alternate Route Project"
             VALUE "CompanyName", "Washington State Department of Transportation"
             VALUE "FileDescription", "psgLib DLL"
-            VALUE "FileVersion", "3.1.5.0"
+            VALUE "FileVersion", "3.1.6.0"
             VALUE "InternalName", "psgLib"
             VALUE "OriginalFilename", "psgLib.DLL"
             VALUE "ProductName", "PGSuper"
-            VALUE "ProductVersion", "3.1.5.0"
+            VALUE "ProductVersion", "3.1.6.0"
         END
     END
     BLOCK "VarFileInfo"
@@ -877,7 +876,7 @@ CAPTION "Edit Strand Location"
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
     COMBOBOX        IDC_STRAND_TYPE,63,33,80,60,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    EDITTEXT        IDC_HPX,58,94,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    EDITTEXT        IDC_HPX,58,95,40,14,ES_RIGHT | ES_AUTOHSCROLL
     EDITTEXT        IDC_HPY,57,114,40,14,ES_RIGHT | ES_AUTOHSCROLL
     EDITTEXT        IDC_GEX,203,95,40,14,ES_RIGHT | ES_AUTOHSCROLL
     EDITTEXT        IDC_GEY,203,114,40,14,ES_RIGHT | ES_AUTOHSCROLL
@@ -888,16 +887,16 @@ BEGIN
     RTEXT           "Strand Type",IDC_STATIC,11,37,47,8
     GROUPBOX        "Location at Harping Points",IDC_HP_BOX,20,63,127,78
     LTEXT           "Measured from Bottom C.L. of Girder",IDC_STATIC,24,77,119,8
-    LTEXT           "Xb",IDC_STATIC,41,100,10,8
-    LTEXT           "Static",IDC_HPX_T,103,100,19,8
-    LTEXT           "Yb",IDC_STATIC,41,120,10,8
-    LTEXT           "Static",IDC_HPY_T,103,120,19,8
+    LTEXT           "Xb",IDC_STATIC,41,97,10,8
+    LTEXT           "Static",IDC_HPX_T,103,97,19,8
+    LTEXT           "Yb",IDC_STATIC,41,117,10,8
+    LTEXT           "Static",IDC_HPY_T,103,117,19,8
     GROUPBOX        "Harped Strand Locaton at Girder Ends",IDC_HS_BOX,165,63,138,78
-    LTEXT           "Measured from Top C.L. of Girder",IDC_HS_TXT,169,78,119,8
-    LTEXT           "Xt",IDC_HS_XT,187,101,8,8
-    LTEXT           "Static",IDC_GEX_T,249,101,19,8
-    LTEXT           "Yt",IDC_HS_YT,187,121,8,8
-    LTEXT           "Static",IDC_GEY_T,249,121,19,8
+    LTEXT           "Measured from Top C.L. of Girder",IDC_HS_TXT,169,77,119,8
+    LTEXT           "Xt",IDC_HS_XT,187,97,8,8
+    LTEXT           "Static",IDC_GEX_T,249,97,19,8
+    LTEXT           "Yt",IDC_HS_YT,187,117,8,8
+    LTEXT           "Static",IDC_GEY_T,249,117,19,8
     LTEXT           "NOTE: Input of a positive X coordinate will create a pair of strand locations at (X,Y) and (-X,Y).",IDC_STATIC,7,145,296,10
     CONTROL         "Allow straight strand(s) to be debonded",IDC_ALLOW_DEBONDING,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,153,34,150,10
@@ -2572,6 +2571,11 @@ BEGIN
     0
 END
 
+IDD_STRAND_DEFINITION AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -2702,7 +2706,6 @@ LANGUAGE 9, 1
 #include "afxres.rc"         // Standard components
 #endif
 #include "grid\gxres.rc"               // Objective Grid resources
-
 /////////////////////////////////////////////////////////////////////////////
 #endif    // not APSTUDIO_INVOKED
 

@@ -308,24 +308,6 @@
     <ClCompile Include="ErectSegmentsDlg.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="FilletByGirderDlg.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="FilletGirderGrid.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="FilletGrid.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="FilletSame4BridgeDlg.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="FilletSpanBySpanDlg.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="FilletSpanGrid.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\GeneralRatingOptionsPage.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -761,6 +743,24 @@
     <ClCompile Include="..\TrafficBarrierDisplayObjectEvents.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="AssExcessCamberByGirderDlg.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="AssExcessCamberGirderGrid.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="AssExcessCamberGrid.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="AssExcessCamberSame4BridgeDlg.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="AssExcessCamberSpanBySpanDlg.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="AssExcessCamberSpanGrid.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Documentation\PGSuper.hh" />
@@ -1096,24 +1096,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ErectSegmentsDlg.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="FilletByGirderDlg.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="FilletGirderGrid.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="FilletGrid.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="FilletSame4BridgeDlg.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="FilletSpanBySpanDlg.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="FilletSpanGrid.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\GeneralRatingOptionsPage.h">
@@ -1612,6 +1594,24 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\TrafficBarrierDisplayObjectEvents.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="AssExcessCamberByGirderDlg.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="AssExcessCamberGirderGrid.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="AssExcessCamberGrid.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="AssExcessCamberSame4BridgeDlg.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="AssExcessCamberSpanBySpanDlg.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="AssExcessCamberSpanGrid.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
