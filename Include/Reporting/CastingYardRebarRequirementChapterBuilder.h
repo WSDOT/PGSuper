@@ -82,11 +82,11 @@ private:
    CCastingYardRebarRequirementChapterBuilder(const CCastingYardRebarRequirementChapterBuilder&) = delete;
    CCastingYardRebarRequirementChapterBuilder& operator=(const CCastingYardRebarRequirementChapterBuilder&) = delete;
 
-   void BuildTable(IBroker* pBroker,rptParagraph* pPara,const CSegmentKey& segmentKey,IntervalIndexType intervalIdx) const;
-   void BuildTable(IBroker* pBroker,rptParagraph* pPara,const pgsPointOfInterest& poi,IntervalIndexType intervalIdx) const;
-   void BuildTable(IBroker* pBroker,rptParagraph* pPara,const CGirderKey& girderKey,IntervalIndexType intervalIdx) const;
-   rptRcTable* CreateTable(IBroker* pBroker,const CGirderKey& girderKey,pgsTypes::StressLocation topLocation,pgsTypes::StressLocation botLocation,IntervalIndexType intervalIdx,IEAFDisplayUnits* pDisplayUnits) const;
-   void FillTable(IBroker* pBroker,rptRcTable* pTable,pgsTypes::StressLocation topLocation,pgsTypes::StressLocation botLocation,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi) const;
+   void BuildTable(IBroker* pBroker,rptParagraph* pPara,const CSegmentKey& segmentKey,IntervalIndexType intervalIdx,bool bSimpleTable) const;
+   void BuildTable(IBroker* pBroker,rptParagraph* pPara,const pgsPointOfInterest& poi,IntervalIndexType intervalIdx, bool bSimpleTable) const;
+   void BuildTable(IBroker* pBroker,rptParagraph* pPara,const CGirderKey& girderKey,IntervalIndexType intervalIdx, bool bSimpleTable) const;
+   rptRcTable* CreateTable(IBroker* pBroker,const CGirderKey& girderKey,bool bSimpleTable,pgsTypes::StressLocation topLocation,pgsTypes::StressLocation botLocation,IntervalIndexType intervalIdx,IEAFDisplayUnits* pDisplayUnits) const;
+   void FillTable(IBroker* pBroker,rptRcTable* pTable,bool bSimpleTable,pgsTypes::StressLocation topLocation,pgsTypes::StressLocation botLocation,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi) const;
 
    // GROUP: OPERATORS
    // GROUP: OPERATIONS

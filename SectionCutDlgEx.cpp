@@ -136,6 +136,21 @@ void CSectionCutDlgEx::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar
 
 void CSectionCutDlgEx::UpdateSliderLabel()
 {
+/*
+rptPointOfInterest rptPoi(&pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure);
+rptPoi.SetValue(POI_SPAN,poi);
+rptPoi.PrefixAttributes(false); // put the attributes after the location
+rptPoi.IncludeSpanAndGirder(true);
+
+#if defined _DEBUG || defined _BETA_VERSION
+strLabel.Format(_T("Point Of Interest: ID = %d %s"),poi.GetID(),rptPoi.AsString().c_str());
+#else
+strLabel.Format(_T("%s"),rptPoi.AsString().c_str());
+#endif
+// remove the HTML tags
+strLabel.Replace(_T("<sub>"),_T(""));
+strLabel.Replace(_T("</sub>"),_T(""));
+*/
    GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
    GET_IFACE(IPointOfInterest,pPoi);
    GET_IFACE(IDocumentType,pDocType);
@@ -157,10 +172,11 @@ void CSectionCutDlgEx::UpdateSliderLabel()
          ::FormatDimension(poi.GetDistFromStart(),pDisplayUnits->GetSpanLengthUnit()));
    }
    
-   if ( poi.HasAttribute(POI_ERECTED_SEGMENT) || poi.HasAttribute(POI_HARPINGPOINT) )
+   std::_tstring strAttr = poi.GetAttributes(POI_ERECTED_SEGMENT, false);
+   if (!strAttr.empty())
    {
       CString strAttribute;
-      strAttribute.Format(_T(" (%s)"),poi.GetAttributes(POI_ERECTED_SEGMENT,false).c_str());
+      strAttribute.Format(_T(" (%s)"), strAttr.c_str());
       strLabel1 += strAttribute;
    }
 
@@ -175,10 +191,12 @@ void CSectionCutDlgEx::UpdateSliderLabel()
       Float64 Xspan;
       pPoi->ConvertPoiToSpanPoint(poi,&spanKey,&Xspan);
       strLabel3.Format(_T("Location from Start of Span %d, %s"),LABEL_SPAN(spanKey.spanIndex),::FormatDimension(Xspan,pDisplayUnits->GetSpanLengthUnit()));
-      if ( poi.HasAttribute(POI_SPAN) )
+
+      std::_tstring strAttr = poi.GetAttributes(POI_SPAN, false);
+      if (!strAttr.empty())
       {
          CString strAttribute;
-         strAttribute.Format(_T(" (%s)"),poi.GetAttributes(POI_SPAN,false).c_str());
+         strAttribute.Format(_T(" (%s)"), strAttr.c_str());
          strLabel3 += strAttribute;
       }
    }

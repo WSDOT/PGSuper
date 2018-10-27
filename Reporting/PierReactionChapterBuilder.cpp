@@ -130,23 +130,18 @@ rptChapter* CPierReactionChapterBuilder::Build(CReportSpecification* pRptSpec, U
    ColumnIndexType col = 0;
    p_table->SetNumberOfHeaderRows(2);
    p_table->SetRowSpan(0, col, 2);
-   p_table->SetRowSpan(1, col, SKIP_CELL);
    (*p_table)(0, col++) << _T("Pier");
 
    p_table->SetRowSpan(0, col, 2);
-   p_table->SetRowSpan(1, col, SKIP_CELL);
    (*p_table)(0, col++) << _T("Type");
 
    p_table->SetRowSpan(0, col, 2);
-   p_table->SetRowSpan(1, col, SKIP_CELL);
    (*p_table)(0, col++) << _T("Reaction");
 
    p_table->SetRowSpan(0, col, 2);
-   p_table->SetRowSpan(1, col, SKIP_CELL);
    (*p_table)(0, col++) << pProductLoads->GetProductLoadName(pgsTypes::pftGirder);
 
    p_table->SetRowSpan(0, col, 2);
-   p_table->SetRowSpan(1, col, SKIP_CELL);
    (*p_table)(0, col++) << pProductLoads->GetProductLoadName(pgsTypes::pftDiaphragm);
 
    if (bShearKey)
@@ -155,14 +150,12 @@ rptChapter* CPierReactionChapterBuilder::Build(CReportSpecification* pRptSpec, U
       {
          p_table->SetColumnSpan(0, col, 2);
          (*p_table)(0, col) << pProductLoads->GetProductLoadName(pgsTypes::pftShearKey);
-         p_table->SetColumnSpan(0, col + 1, SKIP_CELL);
          (*p_table)(1, col++) << _T("Max");
          (*p_table)(1, col++) << _T("Min");
       }
       else
       {
          p_table->SetRowSpan(0, col, 2);
-         p_table->SetRowSpan(1, col, SKIP_CELL);
          (*p_table)(0, col++) << pProductLoads->GetProductLoadName(pgsTypes::pftShearKey);
       }
    }
@@ -173,14 +166,12 @@ rptChapter* CPierReactionChapterBuilder::Build(CReportSpecification* pRptSpec, U
       {
          p_table->SetColumnSpan(0, col, 2);
          (*p_table)(0, col) << pProductLoads->GetProductLoadName(pgsTypes::pftLongitudinalJoint);
-         p_table->SetColumnSpan(0, col + 1, SKIP_CELL);
          (*p_table)(1, col++) << _T("Max");
          (*p_table)(1, col++) << _T("Min");
       }
       else
       {
          p_table->SetRowSpan(0, col, 2);
-         p_table->SetRowSpan(1, col, SKIP_CELL);
          (*p_table)(0, col++) << pProductLoads->GetProductLoadName(pgsTypes::pftLongitudinalJoint);
       }
    }
@@ -191,14 +182,12 @@ rptChapter* CPierReactionChapterBuilder::Build(CReportSpecification* pRptSpec, U
       {
          p_table->SetColumnSpan(0, col, 2);
          (*p_table)(0, col) << pProductLoads->GetProductLoadName(pgsTypes::pftConstruction);
-         p_table->SetColumnSpan(0, col + 1, SKIP_CELL);
          (*p_table)(1, col++) << _T("Max");
          (*p_table)(1, col++) << _T("Min");
       }
       else
       {
          p_table->SetRowSpan(0, col, 2);
-         p_table->SetRowSpan(1, col, SKIP_CELL);
          (*p_table)(0, col++) << pProductLoads->GetProductLoadName(pgsTypes::pftConstruction);
       }
    }
@@ -209,24 +198,20 @@ rptChapter* CPierReactionChapterBuilder::Build(CReportSpecification* pRptSpec, U
       {
          p_table->SetColumnSpan(0, col, 2);
          (*p_table)(0, col) << pProductLoads->GetProductLoadName(pgsTypes::pftSlab);
-         p_table->SetColumnSpan(0, col + 1, SKIP_CELL);
          (*p_table)(1, col++) << _T("Max");
          (*p_table)(1, col++) << _T("Min");
 
          p_table->SetColumnSpan(0, col, 2);
          (*p_table)(0, col) << pProductLoads->GetProductLoadName(pgsTypes::pftSlabPad);
-         p_table->SetColumnSpan(0, col + 1, SKIP_CELL);
          (*p_table)(1, col++) << _T("Max");
          (*p_table)(1, col++) << _T("Min");
       }
       else
       {
          p_table->SetRowSpan(0, col, 2);
-         p_table->SetRowSpan(1, col, SKIP_CELL);
          (*p_table)(0, col++) << pProductLoads->GetProductLoadName(pgsTypes::pftSlab);
 
          p_table->SetRowSpan(0, col, 2);
-         p_table->SetRowSpan(1, col, SKIP_CELL);
          (*p_table)(0, col++) << pProductLoads->GetProductLoadName(pgsTypes::pftSlabPad);
       }
    }
@@ -237,14 +222,12 @@ rptChapter* CPierReactionChapterBuilder::Build(CReportSpecification* pRptSpec, U
       {
          p_table->SetColumnSpan(0, col, 2);
          (*p_table)(0, col) << pProductLoads->GetProductLoadName(pgsTypes::pftSlabPanel);
-         p_table->SetColumnSpan(0, col + 1, SKIP_CELL);
          (*p_table)(1, col++) << _T("Max");
          (*p_table)(1, col++) << _T("Min");
       }
       else
       {
          p_table->SetRowSpan(0, col, 2);
-         p_table->SetRowSpan(1, col, SKIP_CELL);
          (*p_table)(0, col++) << pProductLoads->GetProductLoadName(pgsTypes::pftSlabPanel);
       }
    }
@@ -255,14 +238,12 @@ rptChapter* CPierReactionChapterBuilder::Build(CReportSpecification* pRptSpec, U
       {
          p_table->SetColumnSpan(0, col, 2);
          (*p_table)(0, col) << pProductLoads->GetProductLoadName(pgsTypes::pftSidewalk);
-         p_table->SetColumnSpan(0, col + 1, SKIP_CELL);
          (*p_table)(1, col++) << _T("Max");
          (*p_table)(1, col++) << _T("Min");
       }
       else
       {
          p_table->SetRowSpan(0, col, 2);
-         p_table->SetRowSpan(1, col, SKIP_CELL);
          (*p_table)(0, col++) << pProductLoads->GetProductLoadName(pgsTypes::pftSidewalk);
       }
    }
@@ -271,14 +252,12 @@ rptChapter* CPierReactionChapterBuilder::Build(CReportSpecification* pRptSpec, U
    {
       p_table->SetColumnSpan(0, col, 2);
       (*p_table)(0, col) << pProductLoads->GetProductLoadName(pgsTypes::pftTrafficBarrier);
-      p_table->SetColumnSpan(0, col + 1, SKIP_CELL);
       (*p_table)(1, col++) << _T("Max");
       (*p_table)(1, col++) << _T("Min");
    }
    else
    {
       p_table->SetRowSpan(0, col, 2);
-      p_table->SetRowSpan(1, col, SKIP_CELL);
       (*p_table)(0, col++) << pProductLoads->GetProductLoadName(pgsTypes::pftTrafficBarrier);
    }
 
@@ -295,14 +274,12 @@ rptChapter* CPierReactionChapterBuilder::Build(CReportSpecification* pRptSpec, U
          {
             (*p_table)(0, col) << pProductLoads->GetProductLoadName(pgsTypes::pftOverlay);
          }
-         p_table->SetColumnSpan(0, col + 1, SKIP_CELL);
          (*p_table)(1, col++) << _T("Max");
          (*p_table)(1, col++) << _T("Min");
       }
       else
       {
          p_table->SetRowSpan(0, col, 2);
-         p_table->SetRowSpan(1, col, SKIP_CELL);
          if (bFutureOverlay)
          {
             (*p_table)(0, col++) << _T("Future") << rptNewLine << pProductLoads->GetProductLoadName(pgsTypes::pftOverlay);
@@ -317,21 +294,18 @@ rptChapter* CPierReactionChapterBuilder::Build(CReportSpecification* pRptSpec, U
    if (bPedLoading)
    {
       p_table->SetColumnSpan(0, col, 2);
-      p_table->SetColumnSpan(0, col + 1, SKIP_CELL);
       (*p_table)(0, col) << _T("$ Pedestrian") << rptNewLine << _T("Optimize Fx");
       (*p_table)(1, col) << _T("Max");
       (*p_table)(1, col + 1) << _T("Min");
       col += 2;
 
       p_table->SetColumnSpan(0, col, 2);
-      p_table->SetColumnSpan(0, col + 1, SKIP_CELL);
       (*p_table)(0, col) << _T("$ Pedestrian") << rptNewLine << _T("Optimize Fy");
       (*p_table)(1, col) << _T("Max");
       (*p_table)(1, col + 1) << _T("Min");
       col += 2;
 
       p_table->SetColumnSpan(0, col, 2);
-      p_table->SetColumnSpan(0, col + 1, SKIP_CELL);
       (*p_table)(0, col) << _T("$ Pedestrian") << rptNewLine << _T("Optimize Mz");
       (*p_table)(1, col) << _T("Max");
       (*p_table)(1, col + 1) << _T("Min");
@@ -339,21 +313,18 @@ rptChapter* CPierReactionChapterBuilder::Build(CReportSpecification* pRptSpec, U
    }
 
    p_table->SetColumnSpan(0, col, 2);
-   p_table->SetColumnSpan(0, col + 1, SKIP_CELL);
    (*p_table)(0, col) << _T("* Design Live Load") << rptNewLine << _T("Optimize Fx");
    (*p_table)(1, col) << _T("Max");
    (*p_table)(1, col + 1) << _T("Min");
    col += 2;
 
    p_table->SetColumnSpan(0, col, 2);
-   p_table->SetColumnSpan(0, col + 1, SKIP_CELL);
    (*p_table)(0, col) << _T("* Design Live Load") << rptNewLine << _T("Optimize Fy");
    (*p_table)(1, col) << _T("Max");
    (*p_table)(1, col + 1) << _T("Min");
    col += 2;
 
    p_table->SetColumnSpan(0, col, 2);
-   p_table->SetColumnSpan(0, col + 1, SKIP_CELL);
    (*p_table)(0, col) << _T("* Design Live Load") << rptNewLine << _T("Optimize Mz");
    (*p_table)(1, col) << _T("Max");
    (*p_table)(1, col + 1) << _T("Min");
@@ -362,21 +333,18 @@ rptChapter* CPierReactionChapterBuilder::Build(CReportSpecification* pRptSpec, U
    if (lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion())
    {
       p_table->SetColumnSpan(0, col, 2);
-      p_table->SetColumnSpan(0, col + 1, SKIP_CELL);
       (*p_table)(0, col) << _T("* Fatigue Live Load") << rptNewLine << _T("Optimize Fx");
       (*p_table)(1, col) << _T("Max");
       (*p_table)(1, col + 1) << _T("Min");
       col += 2;
 
       p_table->SetColumnSpan(0, col, 2);
-      p_table->SetColumnSpan(0, col + 1, SKIP_CELL);
       (*p_table)(0, col) << _T("* Fatigue Live Load") << rptNewLine << _T("Optimize Fy");
       (*p_table)(1, col) << _T("Max");
       (*p_table)(1, col + 1) << _T("Min");
       col += 2;
 
       p_table->SetColumnSpan(0, col, 2);
-      p_table->SetColumnSpan(0, col + 1, SKIP_CELL);
       (*p_table)(0, col) << _T("* Fatigue Live Load") << rptNewLine << _T("Optimize Mz");
       (*p_table)(1, col) << _T("Max");
       (*p_table)(1, col + 1) << _T("Min");
@@ -557,13 +525,9 @@ rptChapter* CPierReactionChapterBuilder::Build(CReportSpecification* pRptSpec, U
    {
       ColumnIndexType col = 0;
       p_table->SetRowSpan(row,col,3);
-      p_table->SetRowSpan(row+1,col,SKIP_CELL);
-      p_table->SetRowSpan(row+2,col,SKIP_CELL);
       (*p_table)(row,col++) << LABEL_PIER(pierIdx);
 
       p_table->SetRowSpan(row,col,3);
-      p_table->SetRowSpan(row+1,col,SKIP_CELL);
-      p_table->SetRowSpan(row+2,col,SKIP_CELL);
       if ( pBridge->GetPierModelType(pierIdx) == pgsTypes::pmtIdealized )
       {
          (*p_table)(row,col++) << _T("Idealized");

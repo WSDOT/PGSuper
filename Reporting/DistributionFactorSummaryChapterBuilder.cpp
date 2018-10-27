@@ -132,8 +132,10 @@ void WriteSpanTable(rptChapter* pChapter,IBroker* pBroker,SpanIndexType spanIdx,
    *pChapter << pBody;
 
    ColumnIndexType nCols = 4;
-   if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
+   if (lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion())
+   {
       nCols += 3; // for fatigue limit state LLDF
+   }
 
    std::_tostringstream os;
    os << _T("Span ") << LABEL_SPAN(spanIdx) << _T(", Distribution Factors");
@@ -153,25 +155,18 @@ void WriteSpanTable(rptChapter* pChapter,IBroker* pBroker,SpanIndexType spanIdx,
    {
       pTable->SetNumberOfHeaderRows(2);
       pTable->SetRowSpan(0,0,2);
-      pTable->SetRowSpan(1,0,SKIP_CELL);
 
       pTable->SetColumnSpan(0,1,3);
-      (*pTable)(0,1) << _T("Strength/Service");
+      (*pTable)(0, 1) << _T("Strength/Service");
+      (*pTable)(1, 1) << _T("+M");
+      (*pTable)(1, 2) << _T("-M");
+      (*pTable)(1, 3) << _T("V");
 
-      pTable->SetColumnSpan(0,2,3);
-      (*pTable)(0,2) << _T("Fatigue/Special Permit Rating");
-
-      pTable->SetColumnSpan(0,3,SKIP_CELL);
-      pTable->SetColumnSpan(0,4,SKIP_CELL);
-      pTable->SetColumnSpan(0,5,SKIP_CELL);
-      pTable->SetColumnSpan(0,6,SKIP_CELL);
-
-      (*pTable)(1,1) << _T("+M");
-      (*pTable)(1,2) << _T("-M");
-      (*pTable)(1,3) << _T("V");
-      (*pTable)(1,4) << _T("+M");
-      (*pTable)(1,5) << _T("-M");
-      (*pTable)(1,6) << _T("V");
+      pTable->SetColumnSpan(0,4,3);
+      (*pTable)(0, 4) << _T("Fatigue/Special Permit Rating");
+      (*pTable)(1, 4) << _T("+M");
+      (*pTable)(1, 5) << _T("-M");
+      (*pTable)(1, 6) << _T("V");
    }
 
    GirderIndexType nGirders = pBridge->GetGirderCountBySpan(spanIdx);
@@ -301,19 +296,14 @@ void WritePierTable(rptChapter* pChapter,IBroker* pBroker,PierIndexType pierIdx,
    {
       pTable->SetNumberOfHeaderRows(2);
       pTable->SetRowSpan(0,0,2);
-      pTable->SetRowSpan(1,0,SKIP_CELL);
 
       pTable->SetColumnSpan(0,1,2);
-      (*pTable)(0,1) << _T("Strength/Service");
+      (*pTable)(0, 1) << _T("Strength/Service");
+      (*pTable)(1, 1) << _T("-M");
+      (*pTable)(1, 2) << _T("R");
 
-      pTable->SetColumnSpan(0,2,2);
-      (*pTable)(0,2) << _T("Fatigue/Special Permit Rating");
-
-      pTable->SetColumnSpan(0,3,SKIP_CELL);
-      pTable->SetColumnSpan(0,4,SKIP_CELL);
-
-      (*pTable)(1,1) << _T("-M");
-      (*pTable)(1,2) << _T("R");
+      pTable->SetColumnSpan(0,3,2);
+      (*pTable)(0,3) << _T("Fatigue/Special Permit Rating");
       (*pTable)(1,3) << _T("-M");
       (*pTable)(1,4) << _T("R");
    }

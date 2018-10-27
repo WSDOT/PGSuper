@@ -364,100 +364,15 @@ CElasticShorteningTable* CElasticShorteningTable::PrepareTable(rptChapter* pChap
          // we have temporary strands so we need two header rows
          table->SetNumberOfHeaderRows(2);
    
-         // location column spans two rows
-         col = 0;
-         table->SetRowSpan(0,col,2);
-         table->SetRowSpan(1,col++,SKIP_CELL);
-   
-         // 2nd location column spans two rows
-         table->SetRowSpan(0,col,2);
-         table->SetRowSpan(1,col++,SKIP_CELL);
-   
-         // P column spans two rows
-         table->SetRowSpan(0,col,2);
-         table->SetRowSpan(1,col++,SKIP_CELL);
-   
-            
-         if (bIsPrismatic)
+         // all preceding columns need to span 2 rows
+         for (ColumnIndexType c = 0; c < col; c++)
          {
-            if (bIsAsymmetric)
-            {
-               // epsx
-               table->SetRowSpan(0, col, 2);
-               table->SetRowSpan(1, col++, SKIP_CELL);
-
-               // epsy
-               table->SetRowSpan(0, col, 2);
-               table->SetRowSpan(1, col++, SKIP_CELL);
-            }
-            else
-            {
-               // eps
-               table->SetRowSpan(0, col, 2);
-               table->SetRowSpan(1, col++, SKIP_CELL);
-            }
-         }
-         else
-         {
-            if (bIsAsymmetric)
-            {
-               // Area
-               table->SetRowSpan(0, col, 2);
-               table->SetRowSpan(1, col++, SKIP_CELL);
-
-               // Ixx
-               table->SetRowSpan(0, col, 2);
-               table->SetRowSpan(1, col++, SKIP_CELL);
-
-               // Iyy
-               table->SetRowSpan(0, col, 2);
-               table->SetRowSpan(1, col++, SKIP_CELL);
-
-               // Ixy
-               table->SetRowSpan(0, col, 2);
-               table->SetRowSpan(1, col++, SKIP_CELL);
-
-               // epsx
-               table->SetRowSpan(0, col, 2);
-               table->SetRowSpan(1, col++, SKIP_CELL);
-
-               // epsy
-               table->SetRowSpan(0, col, 2);
-               table->SetRowSpan(1, col++, SKIP_CELL);
-            }
-            else
-            {
-               // Area
-               table->SetRowSpan(0, col, 2);
-               table->SetRowSpan(1, col++, SKIP_CELL);
-
-               // I
-               table->SetRowSpan(0, col, 2);
-               table->SetRowSpan(1, col++, SKIP_CELL);
-
-               // eps
-               table->SetRowSpan(0, col, 2);
-               table->SetRowSpan(1, col++, SKIP_CELL);
-            }
+            table->SetRowSpan(0, c, 2);
          }
    
-         // Mg
-         table->SetRowSpan(0,col,2);
-         table->SetRowSpan(1,col++,SKIP_CELL);
+         table->SetColumnSpan(0,col,bIsAsymmetric ? 4 : 3);
+         (*table)(0,col) << _T("Permanent Strands");
    
-         table->SetColumnSpan(0,col,bIsAsymmetric ? 5 : 3);
-         (*table)(0,col++) << _T("Permanent Strands");
-   
-         table->SetColumnSpan(0,col, bIsAsymmetric ? 5 : 3);
-         (*table)(0,col++) << _T("Temporary Strands");
-   
-         for (ColumnIndexType i = col; i < numColumns; i++)
-         {
-            table->SetColumnSpan(0, i, SKIP_CELL);
-         }
-   
-         // perm
-         col -= 2;
          if (bIsAsymmetric)
          {
             if (spMode == pgsTypes::spmGross)
@@ -487,6 +402,8 @@ CElasticShorteningTable* CElasticShorteningTable::PrepareTable(rptChapter* pChap
          (*table)(1,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pES")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    
          // temp
+         table->SetColumnSpan(0, col, bIsAsymmetric ? 4 : 3);
+         (*table)(0, col) << _T("Temporary Strands");
          if (bIsAsymmetric)
          {
             if (spMode == pgsTypes::spmGross)

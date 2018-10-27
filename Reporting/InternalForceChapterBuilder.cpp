@@ -109,48 +109,30 @@ rptChapter* CInternalForceChapterBuilder::Build(CReportSpecification* pRptSpec,U
       pTable->SetNumberOfHeaderRows(3);
       pTable->SetRowSpan(0,0,3);
       (*pTable)(0,0) << COLHDR(RPT_LFT_SUPPORT_LOCATION,   rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
-      pTable->SetRowSpan(1,0,SKIP_CELL);
-      pTable->SetRowSpan(2,0,SKIP_CELL);
 
       pTable->SetColumnSpan(0,1,6);
       (*pTable)(0,1) << _T("Girder");
-      pTable->SetColumnSpan(0,2,SKIP_CELL);
-      pTable->SetColumnSpan(0,3,SKIP_CELL);
-      pTable->SetColumnSpan(0,4,SKIP_CELL);
-      pTable->SetColumnSpan(0,5,SKIP_CELL);
-      pTable->SetColumnSpan(0,6,SKIP_CELL);
 
       pTable->SetColumnSpan(0,7,6);
       (*pTable)(0,7) << _T("Deck");
-      pTable->SetColumnSpan(0,8,SKIP_CELL);
-      pTable->SetColumnSpan(0,9,SKIP_CELL);
-      pTable->SetColumnSpan(0,10,SKIP_CELL);
-      pTable->SetColumnSpan(0,11,SKIP_CELL);
-      pTable->SetColumnSpan(0,12,SKIP_CELL);
 
       pTable->SetColumnSpan(1,1,2);
       (*pTable)(1,1) << _T("Creep");
-      pTable->SetColumnSpan(1,2,SKIP_CELL);
 
       pTable->SetColumnSpan(1,3,2);
       (*pTable)(1,3) << _T("Shrinkage");
-      pTable->SetColumnSpan(1,4,SKIP_CELL);
 
       pTable->SetColumnSpan(1,5,2);
       (*pTable)(1,5) << _T("Relaxation");
-      pTable->SetColumnSpan(1,6,SKIP_CELL);
 
       pTable->SetColumnSpan(1,7,2);
       (*pTable)(1,7) << _T("Creep");
-      pTable->SetColumnSpan(1,8,SKIP_CELL);
 
       pTable->SetColumnSpan(1,9,2);
       (*pTable)(1,9) << _T("Shrinkage");
-      pTable->SetColumnSpan(1,10,SKIP_CELL);
 
       pTable->SetColumnSpan(1,11,2);
       (*pTable)(1,11) << _T("Relaxation");
-      pTable->SetColumnSpan(1,12,SKIP_CELL);
 
       ColumnIndexType colIdx = 1;
       (*pTable)(2,colIdx++) << COLHDR(Sub2(symbol(DELTA) << _T("P"),_T("g")),rptForceUnitTag,pDisplayUnits->GetGeneralForceUnit());

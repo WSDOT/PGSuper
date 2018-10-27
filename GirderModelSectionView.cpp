@@ -355,6 +355,8 @@ void CGirderModelSectionView::BuildPropertiesDisplayObjects(CPGSDocBase* pDoc, I
       Float64 Xr = pSectProps->GetXright(intervalIdx, poi);
       Float64 Yt = pSectProps->GetY(intervalIdx, poi, intervalIdx < compositeIntervalIdx ? pgsTypes::TopGirder : pgsTypes::TopDeck);
       Float64 Yb = pSectProps->GetY(intervalIdx, poi, pgsTypes::BottomGirder);
+      Float64 St = -pSectProps->GetS(intervalIdx, poi, intervalIdx < compositeIntervalIdx ? pgsTypes::TopGirder : pgsTypes::TopDeck);
+      Float64 Sb = pSectProps->GetS(intervalIdx, poi, pgsTypes::BottomGirder);
 
       GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
 
@@ -363,12 +365,14 @@ void CGirderModelSectionView::BuildPropertiesDisplayObjects(CPGSDocBase* pDoc, I
       CString strProps;
       if (erectionIntervalIdx < intervalIdx)
       {
-         strProps.Format(_T("%s Properties\nA = %s\nIx = %s\nYtop = %s\nYbottom = %s"),
+         strProps.Format(_T("%s Properties\nA = %s\nIx = %s\nYtop = %s\nYbottom = %s\nStop = %s\nSbottom = %s"),
             strSectPropMode,
             FormatDimension(A, pDisplayUnits->GetAreaUnit()),
             FormatDimension(Ix, pDisplayUnits->GetMomentOfInertiaUnit()),
             FormatDimension(Yt, pDisplayUnits->GetComponentDimUnit()),
-            FormatDimension(Yb, pDisplayUnits->GetComponentDimUnit())
+            FormatDimension(Yb, pDisplayUnits->GetComponentDimUnit()),
+            FormatDimension(St, pDisplayUnits->GetSectModulusUnit()),
+            FormatDimension(Sb, pDisplayUnits->GetSectModulusUnit())
          );
       }
       else
@@ -397,7 +401,7 @@ void CGirderModelSectionView::BuildPropertiesDisplayObjects(CPGSDocBase* pDoc, I
          else
          {
             // ignoring Ixy for non-asymmetric girders
-            strProps.Format(_T("%s Properties\nA = %s\nIx = %s\nIy = %s\nXleft = %s\nXright = %s\nYtop = %s\nYbottom = %s\nex = %s\ney = %s"),
+            strProps.Format(_T("%s Properties\nA = %s\nIx = %s\nIy = %s\nXleft = %s\nXright = %s\nYtop = %s\nYbottom = %s\nStop = %s\nSbottom = %s\nex = %s\ney = %s"),
                strSectPropMode,
                FormatDimension(A, pDisplayUnits->GetAreaUnit()),
                FormatDimension(Ix, pDisplayUnits->GetMomentOfInertiaUnit()),
@@ -406,6 +410,8 @@ void CGirderModelSectionView::BuildPropertiesDisplayObjects(CPGSDocBase* pDoc, I
                FormatDimension(Xr, pDisplayUnits->GetComponentDimUnit()),
                FormatDimension(Yt, pDisplayUnits->GetComponentDimUnit()),
                FormatDimension(Yb, pDisplayUnits->GetComponentDimUnit()),
+               FormatDimension(St, pDisplayUnits->GetSectModulusUnit()),
+               FormatDimension(Sb, pDisplayUnits->GetSectModulusUnit()),
                FormatDimension(ex, pDisplayUnits->GetComponentDimUnit()),
                FormatDimension(ey, pDisplayUnits->GetComponentDimUnit())
             );

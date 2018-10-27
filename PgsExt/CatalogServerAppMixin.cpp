@@ -131,6 +131,7 @@ void CCatalogServerAppMixin::LoadRegistryOptions()
    CString strVersion = CCatalog::GetAppVersion(true);
 
    CString strFTPServer(_T("ftp://ftp.wsdot.wa.gov/public/Bridge/Software"));
+   //CString strFTPServer(_T("http://www.wsdot.wa.gov/eesc/bridge/software"));
    CString strDefaultMasterLibraryURL;
    strDefaultMasterLibraryURL.Format(_T("%s/Version_%s/WSDOT.lbr"),strFTPServer,strVersion);
    CString strDefaultWorkgroupTemplateFolderURL;

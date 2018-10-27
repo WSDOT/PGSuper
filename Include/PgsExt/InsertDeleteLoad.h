@@ -54,7 +54,7 @@ private:
 class PGSEXTCLASS txnDeletePointLoad : public txnTransaction
 {
 public:
-   txnDeletePointLoad(CollectionIndexType loadIdx);
+   txnDeletePointLoad(LoadIDType loadID);
    virtual std::_tstring Name() const override;
    virtual txnTransaction* CreateClone() const override;
    virtual bool Execute() override;
@@ -63,7 +63,7 @@ public:
    virtual bool IsRepeatable() override;
 
 private:
-   CollectionIndexType m_LoadIdx;
+   LoadIDType m_LoadID;
    CPointLoadData m_LoadData;
    EventIDType m_LoadingEventID;
 };
@@ -71,7 +71,7 @@ private:
 class PGSEXTCLASS txnEditPointLoad : public txnTransaction
 {
 public:
-   txnEditPointLoad(CollectionIndexType loadIdx,const CPointLoadData& oldLoadData,EventIDType oldLoadingEventID,const CPointLoadData& newLoadData,EventIDType newLoadingEventID,CTimelineManager* pTimelineMgr);
+   txnEditPointLoad(LoadIDType loadID,const CPointLoadData& oldLoadData,EventIDType oldLoadingEventID,const CPointLoadData& newLoadData,EventIDType newLoadingEventID,CTimelineManager* pTimelineMgr);
    virtual ~txnEditPointLoad();
    virtual std::_tstring Name() const override;
    virtual txnTransaction* CreateClone() const override;
@@ -82,7 +82,7 @@ public:
 
 private:
    void DoExecute(int i);
-   CollectionIndexType m_LoadIdx;
+   LoadIDType m_LoadID;
    CPointLoadData m_LoadData[2];
    EventIDType m_LoadingEventID[2];
    CTimelineManager* m_pTimelineMgr;
@@ -112,7 +112,7 @@ private:
 class PGSEXTCLASS txnDeleteDistributedLoad : public txnTransaction
 {
 public:
-   txnDeleteDistributedLoad(CollectionIndexType loadIdx);
+   txnDeleteDistributedLoad(LoadIDType loadID);
    virtual std::_tstring Name() const override;
    virtual txnTransaction* CreateClone() const override;
    virtual bool Execute() override;
@@ -121,7 +121,7 @@ public:
    virtual bool IsRepeatable() override;
 
 private:
-   CollectionIndexType m_LoadIdx;
+   LoadIDType m_LoadID;
    CDistributedLoadData m_LoadData;
    EventIDType m_LoadingEventID;
 };
@@ -129,7 +129,7 @@ private:
 class PGSEXTCLASS txnEditDistributedLoad : public txnTransaction
 {
 public:
-   txnEditDistributedLoad(CollectionIndexType loadIdx,const CDistributedLoadData& oldLoadData,EventIDType oldLoadingEventID,const CDistributedLoadData& newLoadData,EventIDType newLoadingEventID,CTimelineManager* pTimelineMgr);
+   txnEditDistributedLoad(LoadIDType loadID,const CDistributedLoadData& oldLoadData,EventIDType oldLoadingEventID,const CDistributedLoadData& newLoadData,EventIDType newLoadingEventID,CTimelineManager* pTimelineMgr);
    virtual ~txnEditDistributedLoad();
    virtual std::_tstring Name() const override;
    virtual txnTransaction* CreateClone() const override;
@@ -140,7 +140,7 @@ public:
 
 private:
    void DoExecute(int i);
-   CollectionIndexType m_LoadIdx;
+   LoadIDType m_LoadID;
    CDistributedLoadData m_LoadData[2];
    EventIDType m_LoadingEventID[2];
    CTimelineManager* m_pTimelineMgr;
@@ -170,7 +170,7 @@ private:
 class PGSEXTCLASS txnDeleteMomentLoad : public txnTransaction
 {
 public:
-   txnDeleteMomentLoad(CollectionIndexType loadIdx);
+   txnDeleteMomentLoad(LoadIDType loadID);
    virtual std::_tstring Name() const override;
    virtual txnTransaction* CreateClone() const override;
    virtual bool Execute() override;
@@ -179,7 +179,7 @@ public:
    virtual bool IsRepeatable() override;
 
 private:
-   CollectionIndexType m_LoadIdx;
+   LoadIDType m_LoadID;
    CMomentLoadData m_LoadData;
    EventIDType m_LoadingEventID;
 };
@@ -187,7 +187,7 @@ private:
 class PGSEXTCLASS txnEditMomentLoad : public txnTransaction
 {
 public:
-   txnEditMomentLoad(CollectionIndexType loadIdx,const CMomentLoadData& oldLoadData,EventIDType oldLoadingEventID,const CMomentLoadData& newLoadData,EventIDType newLoadingEventID,CTimelineManager* pTimelineMgr);
+   txnEditMomentLoad(LoadIDType loadID,const CMomentLoadData& oldLoadData,EventIDType oldLoadingEventID,const CMomentLoadData& newLoadData,EventIDType newLoadingEventID,CTimelineManager* pTimelineMgr);
    virtual ~txnEditMomentLoad();
    virtual std::_tstring Name() const override;
    virtual txnTransaction* CreateClone() const override;
@@ -198,7 +198,7 @@ public:
 
 private:
    void DoExecute(int i);
-   CollectionIndexType m_LoadIdx;
+   LoadIDType m_LoadID;
    CMomentLoadData m_LoadData[2];
    EventIDType m_LoadingEventID[2];
    CTimelineManager* m_pTimelineMgr;

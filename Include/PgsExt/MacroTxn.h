@@ -54,8 +54,6 @@ public:
    txnTransaction* CreateClone() const;
 
 private:
-   pgsMacroTxn(const pgsMacroTxn& /*rOther*/);               // Remove to enable copy
-
-   // GROUP: OPERATORS
-   pgsMacroTxn& operator = (const pgsMacroTxn& /*rOther*/);  // Remove to enable assignment
+   pgsMacroTxn(const pgsMacroTxn& /*rOther*/) = delete;               // Remove to enable copy
+   pgsMacroTxn& operator=(const pgsMacroTxn& /*rOther*/) = delete;  // Remove to enable assignment
 };

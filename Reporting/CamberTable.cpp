@@ -637,15 +637,10 @@ void CCamberTable::Build_Deck_XY(IBroker* pBroker, const CSegmentKey& segmentKey
    ColumnIndexType col = 0;
    table1a->SetNumberOfHeaderRows(2);
    table1a->SetRowSpan(0, col, 2);
-   (*table1a)(0, col) << COLHDR(RPT_GDR_END_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
-   table1a->SetRowSpan(1, col, SKIP_CELL);
-   col++;
+   (*table1a)(0, col++) << COLHDR(RPT_GDR_END_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
 
    table1a->SetColumnSpan(0, col, 3);
    (*table1a)(0, col) << _T("X");
-   table1a->SetColumnSpan(0, col + 1, SKIP_CELL);
-   table1a->SetColumnSpan(0, col + 2, SKIP_CELL);
-   table1a->SetColumnSpan(0, col + 3, SKIP_CELL);
 
    (*table1a)(1, col++) << COLHDR(Sub2(symbol(DELTA), _T("girder")), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
    (*table1a)(1, col++) << COLHDR(Sub2(symbol(DELTA), _T("ps")), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
@@ -653,12 +648,6 @@ void CCamberTable::Build_Deck_XY(IBroker* pBroker, const CSegmentKey& segmentKey
 
    table1a->SetColumnSpan(0, col, bHasPrecamber ? 4 : 3);
    (*table1a)(0, col) << _T("Y");
-   table1a->SetColumnSpan(0, col + 1, SKIP_CELL);
-   table1a->SetColumnSpan(0, col + 2, SKIP_CELL);
-   if (bHasPrecamber)
-   {
-      table1a->SetColumnSpan(0, col + 3, SKIP_CELL);
-   }
 
    (*table1a)(1, col++) << COLHDR(Sub2(symbol(DELTA), _T("girder")), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
    (*table1a)(1, col++) << COLHDR(Sub2(symbol(DELTA), _T("ps")), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
@@ -672,15 +661,10 @@ void CCamberTable::Build_Deck_XY(IBroker* pBroker, const CSegmentKey& segmentKey
    col = 0;
    table1b->SetNumberOfHeaderRows(2);
    table1b->SetRowSpan(0, col, 2);
-   (*table1b)(0, col) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
-   table1b->SetRowSpan(1, col, SKIP_CELL);
-   col++;
+   (*table1b)(0, col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
 
    table1b->SetColumnSpan(0, col, 4);
    (*table1b)(0, col) << _T("X");
-   table1b->SetColumnSpan(0, col + 1, SKIP_CELL);
-   table1b->SetColumnSpan(0, col + 2, SKIP_CELL);
-   table1b->SetColumnSpan(0, col + 3, SKIP_CELL);
 
    (*table1b)(1, col++) << COLHDR(Sub2(symbol(DELTA), _T("girder")), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
    (*table1b)(1, col++) << COLHDR(Sub2(symbol(DELTA), _T("ps")), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
@@ -689,13 +673,6 @@ void CCamberTable::Build_Deck_XY(IBroker* pBroker, const CSegmentKey& segmentKey
 
    table1b->SetColumnSpan(0, col, bHasPrecamber ? 5 : 4);
    (*table1b)(0, col) << _T("Y");
-   table1b->SetColumnSpan(0, col + 1, SKIP_CELL);
-   table1b->SetColumnSpan(0, col + 2, SKIP_CELL);
-   table1b->SetColumnSpan(0, col + 3, SKIP_CELL);
-   if (bHasPrecamber)
-   {
-      table1b->SetColumnSpan(0, col + 4, SKIP_CELL);
-   }
 
    (*table1b)(1, col++) << COLHDR(Sub2(symbol(DELTA), _T("girder")), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
    (*table1b)(1, col++) << COLHDR(Sub2(symbol(DELTA), _T("ps")), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
@@ -711,19 +688,10 @@ void CCamberTable::Build_Deck_XY(IBroker* pBroker, const CSegmentKey& segmentKey
    table2->SetNumberOfHeaderRows(2);
 
    table2->SetRowSpan(0, col, 2);
-   (*table2)(0, col) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
-   table2->SetRowSpan(1, col, SKIP_CELL);
-   col++;
+   (*table2)(0, col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
 
    table2->SetColumnSpan(0, col, bTempStrands ? 5 : 4);
    (*table2)(0, col) << _T("X");
-   table2->SetColumnSpan(0, col + 1, SKIP_CELL);
-   table2->SetColumnSpan(0, col + 2, SKIP_CELL);
-   table2->SetColumnSpan(0, col + 3, SKIP_CELL);
-   if (bTempStrands)
-   {
-      table2->SetColumnSpan(0, col + 4, SKIP_CELL);
-   }
    (*table2)(1, col++) << COLHDR(Sub2(symbol(DELTA), _T("girder")) << rptNewLine << _T("Erected"), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
    (*table2)(1, col++) << COLHDR(Sub2(symbol(DELTA), _T("ps")) << rptNewLine << _T("Erected"), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
    (*table2)(1, col++) << COLHDR(Sub2(symbol(delta), _T("girder")), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
@@ -736,12 +704,6 @@ void CCamberTable::Build_Deck_XY(IBroker* pBroker, const CSegmentKey& segmentKey
    ColumnIndexType colSpan = 11 + (bHasPrecamber ? 1 : 0) + (bTempStrands ? 1 : 0) + (bSidewalk ? 1 : 0) + (bOverlay ? 1 : 0) + (bShearKey ? 1 : 0) + (bConstruction ? 1 : 0) + (bDeckPanels ? 1 : 0);
    table2->SetColumnSpan(0, col, colSpan);
    (*table2)(0, col) << _T("Y");
-   ColumnIndexType nSkipCells = colSpan - 1;
-   for (ColumnIndexType c = 0; c < nSkipCells; c++)
-   {
-      table2->SetColumnSpan(0, col + c + 1, SKIP_CELL);
-   }
-
    (*table2)(1, col++) << COLHDR(Sub2(symbol(DELTA), _T("girder")) << rptNewLine << _T("Erected"), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
    (*table2)(1, col++) << COLHDR(Sub2(symbol(DELTA), _T("ps")) << rptNewLine << _T("Erected"), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
    (*table2)(1, col++) << COLHDR(Sub2(symbol(delta), _T("girder")), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
@@ -800,25 +762,16 @@ void CCamberTable::Build_Deck_XY(IBroker* pBroker, const CSegmentKey& segmentKey
    table3->SetNumberOfHeaderRows(2);
 
    table3->SetRowSpan(0, col, 2);
-   (*table3)(0, col) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
-   table3->SetRowSpan(1, col, SKIP_CELL);
-   col++;
+   (*table3)(0, col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
 
    table3->SetColumnSpan(0, col, 2);
    (*table3)(0, col) << _T("X");
-   table3->SetColumnSpan(0, col + 1, SKIP_CELL);
 
    (*table3)(1, col++) << COLHDR(Sub2(symbol(DELTA), _T("1")), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
    (*table3)(1, col++) << COLHDR(Sub2(symbol(DELTA), _T("2")), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
 
    table3->SetColumnSpan(0, col, 7);
    (*table3)(0, col) << _T("Y");
-   table3->SetColumnSpan(0, col + 1, SKIP_CELL);
-   table3->SetColumnSpan(0, col + 2, SKIP_CELL);
-   table3->SetColumnSpan(0, col + 3, SKIP_CELL);
-   table3->SetColumnSpan(0, col + 4, SKIP_CELL);
-   table3->SetColumnSpan(0, col + 5, SKIP_CELL);
-   table3->SetColumnSpan(0, col + 6, SKIP_CELL);
 
    (*table3)(1, col++) << COLHDR(Sub2(symbol(DELTA), _T("1")), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
    (*table3)(1, col++) << COLHDR(Sub2(symbol(DELTA), _T("2")), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
@@ -1588,15 +1541,10 @@ void CCamberTable::Build_NoDeck_XY(IBroker* pBroker,const CSegmentKey& segmentKe
    ColumnIndexType col = 0;
    table1a->SetNumberOfHeaderRows(2);
    table1a->SetRowSpan(0, col, 2);
-   (*table1a)(0,col) << COLHDR(RPT_GDR_END_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
-   table1a->SetRowSpan(1, col, SKIP_CELL);
-   col++;
+   (*table1a)(0,col++) << COLHDR(RPT_GDR_END_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
 
    table1a->SetColumnSpan(0, col, 3);
    (*table1a)(0, col) << _T("X");
-   table1a->SetColumnSpan(0, col + 1, SKIP_CELL);
-   table1a->SetColumnSpan(0, col + 2, SKIP_CELL);
-   table1a->SetColumnSpan(0, col + 3, SKIP_CELL);
    
    (*table1a)(1,col++) << COLHDR(Sub2(symbol(DELTA),_T("girder")),     rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit() );
    (*table1a)(1,col++) << COLHDR(Sub2(symbol(DELTA),_T("ps")),         rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit() );
@@ -1604,12 +1552,6 @@ void CCamberTable::Build_NoDeck_XY(IBroker* pBroker,const CSegmentKey& segmentKe
 
    table1a->SetColumnSpan(0, col, bHasPrecamber ? 4 : 3);
    (*table1a)(0, col) << _T("Y");
-   table1a->SetColumnSpan(0, col + 1, SKIP_CELL);
-   table1a->SetColumnSpan(0, col + 2, SKIP_CELL);
-   if (bHasPrecamber)
-   {
-      table1a->SetColumnSpan(0, col + 3, SKIP_CELL);
-   }
 
    (*table1a)(1, col++) << COLHDR(Sub2(symbol(DELTA), _T("girder")), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
    (*table1a)(1, col++) << COLHDR(Sub2(symbol(DELTA), _T("ps")), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
@@ -1623,15 +1565,10 @@ void CCamberTable::Build_NoDeck_XY(IBroker* pBroker,const CSegmentKey& segmentKe
    col = 0;
    table1b->SetNumberOfHeaderRows(2);
    table1b->SetRowSpan(0, col, 2);
-   (*table1b)(0,col) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
-   table1b->SetRowSpan(1, col, SKIP_CELL);
-   col++;
+   (*table1b)(0,col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
 
    table1b->SetColumnSpan(0, col, 4);
    (*table1b)(0, col) << _T("X");
-   table1b->SetColumnSpan(0, col + 1, SKIP_CELL);
-   table1b->SetColumnSpan(0, col + 2, SKIP_CELL);
-   table1b->SetColumnSpan(0, col + 3, SKIP_CELL);
 
    (*table1b)(1, col++) << COLHDR(Sub2(symbol(DELTA), _T("girder")), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
    (*table1b)(1, col++) << COLHDR(Sub2(symbol(DELTA), _T("ps")), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
@@ -1640,13 +1577,6 @@ void CCamberTable::Build_NoDeck_XY(IBroker* pBroker,const CSegmentKey& segmentKe
 
    table1b->SetColumnSpan(0, col, bHasPrecamber ? 5 : 4);
    (*table1b)(0, col) << _T("Y");
-   table1b->SetColumnSpan(0, col + 1, SKIP_CELL);
-   table1b->SetColumnSpan(0, col + 2, SKIP_CELL);
-   table1b->SetColumnSpan(0, col + 3, SKIP_CELL);
-   if (bHasPrecamber)
-   {
-      table1b->SetColumnSpan(0, col + 4, SKIP_CELL);
-   }
 
    (*table1b)(1,col++) << COLHDR(Sub2(symbol(DELTA),_T("girder")),     rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit() );
    (*table1b)(1,col++) << COLHDR(Sub2(symbol(DELTA),_T("ps")),         rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit() );
@@ -1662,19 +1592,10 @@ void CCamberTable::Build_NoDeck_XY(IBroker* pBroker,const CSegmentKey& segmentKe
    table2->SetNumberOfHeaderRows(2);
 
    table2->SetRowSpan(0, col, 2);
-   (*table2)(0,col) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
-   table2->SetRowSpan(1, col, SKIP_CELL);
-   col++;
+   (*table2)(0,col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
 
    table2->SetColumnSpan(0, col, bTempStrands ? 5 : 4);
    (*table2)(0, col) << _T("X");
-   table2->SetColumnSpan(0, col + 1, SKIP_CELL);
-   table2->SetColumnSpan(0, col + 2, SKIP_CELL);
-   table2->SetColumnSpan(0, col + 3, SKIP_CELL);
-   if (bTempStrands)
-   {
-      table2->SetColumnSpan(0, col + 4, SKIP_CELL);
-   }
    (*table2)(1, col++) << COLHDR(Sub2(symbol(DELTA), _T("girder")) << rptNewLine << _T("Erected"), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
    (*table2)(1, col++) << COLHDR(Sub2(symbol(DELTA), _T("ps")) << rptNewLine << _T("Erected"), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
    (*table2)(1, col++) << COLHDR(Sub2(symbol(delta), _T("girder")), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
@@ -1692,12 +1613,6 @@ void CCamberTable::Build_NoDeck_XY(IBroker* pBroker,const CSegmentKey& segmentKe
 
    table2->SetColumnSpan(0, col, colSpan);
    (*table2)(0, col) << _T("Y");
-   ColumnIndexType nSkipCells = colSpan - 1;
-   for (ColumnIndexType c = 0; c < nSkipCells; c++)
-   {
-      table2->SetColumnSpan(0, col + c + 1, SKIP_CELL);
-   }
-
    (*table2)(1,col++) << COLHDR(Sub2(symbol(DELTA),_T("girder")) << rptNewLine << _T("Erected"),     rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit() );
    (*table2)(1,col++) << COLHDR(Sub2(symbol(DELTA),_T("ps")) << rptNewLine << _T("Erected"),         rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit() );
    (*table2)(1,col++) << COLHDR(Sub2(symbol(delta),_T("girder")),     rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit() );
@@ -1755,25 +1670,16 @@ void CCamberTable::Build_NoDeck_XY(IBroker* pBroker,const CSegmentKey& segmentKe
    table3->SetNumberOfHeaderRows(2);
 
    table3->SetRowSpan(0, col, 2);
-   (*table3)(0,col) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
-   table3->SetRowSpan(1, col, SKIP_CELL);
-   col++;
+   (*table3)(0,col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
 
    table3->SetColumnSpan(0, col, 2);
    (*table3)(0, col) << _T("X");
-   table3->SetColumnSpan(0, col + 1, SKIP_CELL);
 
    (*table3)(1,col++) << COLHDR(Sub2(symbol(DELTA),_T("1")),  rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit() );
    (*table3)(1,col++) << COLHDR(Sub2(symbol(DELTA),_T("2")),  rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit() );
 
    table3->SetColumnSpan(0, col, 7);
    (*table3)(0, col) << _T("Y");
-   table3->SetColumnSpan(0, col + 1, SKIP_CELL);
-   table3->SetColumnSpan(0, col + 2, SKIP_CELL);
-   table3->SetColumnSpan(0, col + 3, SKIP_CELL);
-   table3->SetColumnSpan(0, col + 4, SKIP_CELL);
-   table3->SetColumnSpan(0, col + 5, SKIP_CELL);
-   table3->SetColumnSpan(0, col + 6, SKIP_CELL);
    
    (*table3)(1, col++) << COLHDR(Sub2(symbol(DELTA), _T("1")), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
    (*table3)(1, col++) << COLHDR(Sub2(symbol(DELTA), _T("2")), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());

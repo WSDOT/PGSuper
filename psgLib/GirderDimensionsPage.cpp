@@ -235,8 +235,8 @@ BOOL CGirderDimensionsPage::OnInitDialog()
    }
 
    // Disable the beam family combo box if the
-   // dialog is opened as read only
-   if ( !pDad->m_bAllowEditing )
+   // dialog is opened as read only or if the beam is in use
+   if ( !pDad->m_bAllowEditing || 0 < pDad->m_RefCount)
    {
       pComboBox->EnableWindow(FALSE);
    }

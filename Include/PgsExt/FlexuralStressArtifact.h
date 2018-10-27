@@ -34,6 +34,8 @@
 
 #include <PgsExt\PointOfInterest.h>
 
+#include <WBFLGenericBridgeTools\AlternativeTensileStressCalculator.h>
+
 // LOCAL INCLUDES
 //
 
@@ -122,8 +124,11 @@ public:
    Float64 GetRequiredBeamConcreteStrength() const;
    Float64 GetRequiredDeckConcreteStrength() const;
 
-   void SetAlternativeTensileStressParameters(pgsTypes::StressLocation stressLocation,Float64 Yna,Float64 At,Float64 T,Float64 AsProvided,Float64 AsRequired,Float64 fAllowableWithRebar);
-   void GetAlternativeTensileStressParameters(pgsTypes::StressLocation stressLocation,Float64* Yna,Float64* At,Float64* T,Float64* AsProvided,Float64* AsRequired) const;
+   void SetAlternativeTensileStressRequirements(pgsTypes::StressLocation stressLocation, const gbtAlternativeTensileStressRequirements& requirements,Float64 fHigherAllowable,bool bBiaxialStresses);
+   const gbtAlternativeTensileStressRequirements& GetAlternativeTensileStressRequirements(pgsTypes::StressLocation stressLocation) const;
+   bool BiaxialStresses(pgsTypes::StressLocation stressLocation) const;
+   //void SetAlternativeTensileStressParameters(pgsTypes::StressLocation stressLocation,Float64 Yna,Float64 At,Float64 T,Float64 AsProvided,Float64 AsRequired,Float64 fAllowableWithRebar);
+   //void GetAlternativeTensileStressParameters(pgsTypes::StressLocation stressLocation,Float64* Yna,Float64* At,Float64* T,Float64* AsProvided,Float64* AsRequired) const;
    Float64 GetAlternativeAllowableTensileStress(pgsTypes::StressLocation stressLocation) const;
    bool IsWithRebarAllowableStressApplicable(pgsTypes::StressLocation stressLocation) const;
    bool WasWithRebarAllowableStressUsed(pgsTypes::StressLocation stressLocation) const;
@@ -145,29 +150,26 @@ private:
    pgsPointOfInterest m_Poi;
 
    // In the following arrays, use the pgsTypes::StressLocation enum to access the values
-   bool    m_bIsApplicable[4]; // Applicability of the stress check
-   Float64 m_fPretension[4];   // Stresses caused by pre-tensioning
-   Float64 m_fPosttension[4];  // Stresses caused by post-tensioning
-   Float64 m_fExternal[4];     // Stresses caused by externally applied loads
-   bool    m_bIsInPTZ[4];      // Is the location in the Precompressed Tensile Zone
-   Float64 m_fDemand[4];       // Total stress demand
-   Float64 m_fAllowable[4];    // Allowable stresses
+   std::array<bool,4>    m_bIsApplicable; // Applicability of the stress check
+   std::array<Float64,4> m_fPretension;   // Stresses caused by pre-tensioning
+   std::array<Float64,4> m_fPosttension;  // Stresses caused by post-tensioning
+   std::array<Float64,4> m_fExternal;     // Stresses caused by externally applied loads
+   std::array<bool,4>    m_bIsInPTZ;      // Is the location in the Precompressed Tensile Zone
+   std::array<Float64,4> m_fDemand;       // Total stress demand
+   std::array<Float64,4> m_fAllowable;    // Allowable stresses
 
    pgsTypes::LimitState m_LimitState;
    pgsTypes::StressType m_StressType;
 
    // Alternative tensile stress parameters
    // access array with pgsTypes::StressLocation constant
-   bool   m_bIsAltTensileStressApplicable[4];
-   Float64 m_Yna[4];
-   Float64 m_At[4];
-   Float64 m_T[4];
-   Float64 m_AsProvided[4];
-   Float64 m_AsRequired[4];
-   Float64 m_fAltAllowableStress[4];
+   std::array<bool, 4> m_bIsAltTensileStressApplicable;
+   std::array<Float64, 4> m_fAltAllowableStress;
+   std::array<gbtAlternativeTensileStressRequirements, 4> m_AltTensileStressRequirements;
+   std::array<bool, 4> m_bBiaxialStresses; // if true, the alternative tensile stress requirements are reported for biaxial stresses
 
    // Other
-   Float64 m_FcReqd[4]; // concrete strenght required to satisfy allowable for this section
+   std::array<Float64,4> m_FcReqd; // concrete strenght required to satisfy allowable for this section
                         // No concrete strength work if < 0
 
    bool StressedPassed(pgsTypes::StressLocation stressLocation) const;

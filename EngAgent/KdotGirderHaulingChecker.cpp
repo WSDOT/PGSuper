@@ -108,7 +108,7 @@ pgsHaulingAnalysisArtifact* pgsKdotGirderHaulingChecker::CheckHauling(const CSeg
       bool success;
 
       // Design
-      std::unique_ptr<pgsHaulingAnalysisArtifact> dartifact( this->DesignHauling( segmentKey, config, true, false, pPOId,  &success, LOGFILE) );
+      std::unique_ptr<pgsHaulingAnalysisArtifact> dartifact( this->DesignHauling( segmentKey, config, true, pPOId,  &success, LOGFILE) );
 
       pgsKdotHaulingAnalysisArtifact* dkart = dynamic_cast<pgsKdotHaulingAnalysisArtifact*>(dartifact.get());
 
@@ -229,7 +229,7 @@ void pgsKdotGirderHaulingChecker::AnalyzeHauling(const CSegmentKey& segmentKey,b
    ComputeHaulingStresses(segmentKey, bUseConfig, haulConfig, vPoi, vMoment, pArtifact);
 }
 
-pgsHaulingAnalysisArtifact* pgsKdotGirderHaulingChecker::DesignHauling(const CSegmentKey& segmentKey,HANDLINGCONFIG& shipping_config,bool bDesignForEqualOverhangs,bool bIgnoreConfigurationLimits,ISegmentHaulingDesignPointsOfInterest* pPOId,bool* bSuccess, SHARED_LOGFILE LOGFILE)
+pgsHaulingAnalysisArtifact* pgsKdotGirderHaulingChecker::DesignHauling(const CSegmentKey& segmentKey,HANDLINGCONFIG& shipping_config,bool bIgnoreConfigurationLimits,ISegmentHaulingDesignPointsOfInterest* pPOId,bool* bSuccess, SHARED_LOGFILE LOGFILE)
 {
    LOG(_T("Entering pgsKdotGirderHaulingChecker::DesignHauling"));
 
@@ -545,11 +545,11 @@ void pgsKdotGirderHaulingChecker::ComputeHaulingStresses(const CSegmentKey& segm
    {
       const pgsPointOfInterest& poi(*poiIter);
 
-      Float64 Cat, Cbt;
-      pSectProps->GetStressCoefficients(haulSegmentIntervalIdx, poi, pgsTypes::TopGirder, pConfig, &Cat, &Cbt);
+      Float64 Cat, Cbtx, Cbty;
+      pSectProps->GetStressCoefficients(haulSegmentIntervalIdx, poi, pgsTypes::TopGirder, pConfig, &Cat, &Cbtx, &Cbty);
 
-      Float64 Cab, Cbb;
-      pSectProps->GetStressCoefficients(haulSegmentIntervalIdx, poi, pgsTypes::BottomGirder, pConfig, &Cab, &Cbb);
+      Float64 Cab, Cbbx, Cbby;
+      pSectProps->GetStressCoefficients(haulSegmentIntervalIdx, poi, pgsTypes::BottomGirder, pConfig, &Cab, &Cbbx, &Cbby);
 
       pgsKdotHaulingStressAnalysisArtifact haul_artifact;
 
@@ -579,7 +579,7 @@ void pgsKdotGirderHaulingChecker::ComputeHaulingStresses(const CSegmentKey& segm
       }
 
       Float64 total_ps_force = hps_force + sps_force + tps_force;
-      Float64 total_e=0.0;
+      Float64 total_e = 0.0;
       if (0 < total_ps_force)
       {
          total_e = (hps_force*he + sps_force*se + tps_force*te) / total_ps_force;
@@ -612,11 +612,11 @@ void pgsKdotGirderHaulingChecker::ComputeHaulingStresses(const CSegmentKey& segm
       // stresses for the lateral moment effects. That is, check
       // "impact and no tilt" and "no impact with tilt".
 
-      Float64 ft_ps  = -Cat*total_ps_force + Cbt*mom_ps;
-      Float64 ft_mo  = Cbt*vert_mom        + ft_ps;
+      Float64 ft_ps  = -Cat*total_ps_force + Cbtx*mom_ps;
+      Float64 ft_mo  = Cbtx*vert_mom        + ft_ps;
 
-      Float64 fb_ps = -Cab*total_ps_force + Cbb*mom_ps;
-      Float64 fb_mo = Cbb*vert_mom        + fb_ps;
+      Float64 fb_ps = -Cab*total_ps_force + Cbbx*mom_ps;
+      Float64 fb_mo = Cbbx*vert_mom        + fb_ps;
 
       haul_artifact.SetTopFiberStress(ft_ps,ft_mo);
       haul_artifact.SetBottomFiberStress(fb_ps,fb_mo);
@@ -646,6 +646,7 @@ void pgsKdotGirderHaulingChecker::ComputeHaulingStresses(const CSegmentKey& segm
       Float64 max_stress = haul_artifact.GetMaximumConcreteTensileStress();
 
       Float64 fc_tens_norebar, fc_tens_withrebar;
+
       pgsAlternativeTensileStressCalculator::ComputeReqdFcTens(segmentKey,max_stress, rcsT, rcsBfmax, rcsFmax, rcsTalt, &fc_tens_norebar, &fc_tens_withrebar);
 
       haul_artifact.SetRequiredConcreteStrength(fc_compression,fc_tens_norebar,fc_tens_withrebar);

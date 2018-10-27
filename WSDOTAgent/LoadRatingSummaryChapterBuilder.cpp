@@ -221,8 +221,6 @@ rptChapter* CLoadRatingSummaryChapterBuilder::Build(CReportSpecification* pRptSp
 
       // General Tab
       pTable->SetColumnSpan(row,0,3);
-      pTable->SetColumnSpan(row,1,SKIP_CELL);
-      pTable->SetColumnSpan(row,2,SKIP_CELL);
       (*pTable)(row,0) << Bold(_T("General"));
       row++;
 
@@ -248,8 +246,6 @@ rptChapter* CLoadRatingSummaryChapterBuilder::Build(CReportSpecification* pRptSp
 
       // Design Tab
       pTable->SetColumnSpan(row,0,3);
-      pTable->SetColumnSpan(row,1,SKIP_CELL);
-      pTable->SetColumnSpan(row,2,SKIP_CELL);
       (*pTable)(row,0) << Bold(_T("Design"));
       row++;
 
@@ -271,8 +267,6 @@ rptChapter* CLoadRatingSummaryChapterBuilder::Build(CReportSpecification* pRptSp
 
       // Legal Tab
       pTable->SetColumnSpan(row,0,3);
-      pTable->SetColumnSpan(row,1,SKIP_CELL);
-      pTable->SetColumnSpan(row,2,SKIP_CELL);
       (*pTable)(row,0) << Bold(_T("Legal"));
       row++;
 
@@ -321,8 +315,6 @@ rptChapter* CLoadRatingSummaryChapterBuilder::Build(CReportSpecification* pRptSp
 
       // Permit Tab
       pTable->SetColumnSpan(row,0,3);
-      pTable->SetColumnSpan(row,1,SKIP_CELL);
-      pTable->SetColumnSpan(row,2,SKIP_CELL);
       (*pTable)(row,0) << Bold(_T("Permit"));
       row++;
 

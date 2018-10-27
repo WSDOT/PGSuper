@@ -450,7 +450,6 @@ rptChapter* CGirderScheduleChapterBuilder::Build(CReportSpecification* pRptSpec,
    {
       // Debonding for slab beams
       pTable->SetColumnSpan(++row,0,2);
-      pTable->SetColumnSpan(row,1,SKIP_CELL);
       (*pTable)(row,0) << _T("Straight Strands to Debond");
 
       std::vector<DebondInformation> debondInfo;
@@ -461,7 +460,6 @@ rptChapter* CGirderScheduleChapterBuilder::Build(CReportSpecification* pRptSpec,
          for ( int i = 0; i < 3; i++ )
          {
             pTable->SetColumnSpan(++row,0,2);
-            pTable->SetColumnSpan(row,1,SKIP_CELL);
             (*pTable)(row,0) << _T("Group ") << (i+1);
 
             (*pTable)(++row,0) << _T("Strands to Debond");
@@ -480,7 +478,6 @@ rptChapter* CGirderScheduleChapterBuilder::Build(CReportSpecification* pRptSpec,
             DebondInformation& dbInfo = *iter;
 
             pTable->SetColumnSpan(++row,0,2);
-            pTable->SetColumnSpan(row,1,SKIP_CELL);
             (*pTable)(row,0) << _T("Group ") << (groupCount+1);
 
             (*pTable)(++row,0) << _T("Strands to Debond");
@@ -499,7 +496,6 @@ rptChapter* CGirderScheduleChapterBuilder::Build(CReportSpecification* pRptSpec,
          for ( int i = groupCount; i < 3; i++ )
          {
             pTable->SetColumnSpan(++row,0,2);
-            pTable->SetColumnSpan(row,1,SKIP_CELL);
             (*pTable)(row,0) << _T("Group ") << (i+1);
 
             (*pTable)(++row,0) << _T("Strands to Debond");

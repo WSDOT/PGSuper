@@ -52,10 +52,11 @@ inline bool B2b(BOOL val) { return val!=0; }
 IMPLEMENT_DYNAMIC(CGirderMainSheet, CPropertySheet)
 
 CGirderMainSheet::CGirderMainSheet( GirderLibraryEntry& rentry,
-                                   bool allowEditing,
+                                   bool allowEditing,int refCount,
                                    CWnd* pParentWnd, UINT iSelectPage)
 	:CPropertySheet(_T(""), pParentWnd, iSelectPage),
    m_Entry(rentry),
+   m_RefCount(refCount),
    m_bAllowEditing(allowEditing)
 {
    Init();

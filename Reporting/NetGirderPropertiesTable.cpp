@@ -81,13 +81,9 @@ rptRcTable* CNetGirderPropertiesTable::Build(IBroker* pBroker,
    // Setup column headers
    ColumnIndexType col = 0;
    xs_table->SetRowSpan(0,col,2);
-   xs_table->SetRowSpan(1,col,SKIP_CELL);
    (*xs_table)(0,col++) << COLHDR(RPT_GDR_END_LOCATION, rptLengthUnitTag,  pDisplayUnits->GetSpanLengthUnit() );
 
    xs_table->SetColumnSpan(0,col,4);
-   xs_table->SetColumnSpan(0,col+1,SKIP_CELL);
-   xs_table->SetColumnSpan(0,col+2,SKIP_CELL);
-   xs_table->SetColumnSpan(0,col+3,SKIP_CELL);
    (*xs_table)(0,col) << _T("Girder");
    (*xs_table)(1,col++) << COLHDR(_T("Area"),           rptAreaUnitTag,    pDisplayUnits->GetAreaUnit() );
    (*xs_table)(1,col++) << COLHDR(RPT_IX,               rptLength4UnitTag, pDisplayUnits->GetMomentOfInertiaUnit() );
@@ -95,9 +91,6 @@ rptRcTable* CNetGirderPropertiesTable::Build(IBroker* pBroker,
    (*xs_table)(1,col++) << COLHDR(RPT_YBOT_GIRDER, rptLengthUnitTag,  pDisplayUnits->GetComponentDimUnit() );
 
    xs_table->SetColumnSpan(0,col,4);
-   xs_table->SetColumnSpan(0,col+1,SKIP_CELL);
-   xs_table->SetColumnSpan(0,col+2,SKIP_CELL);
-   xs_table->SetColumnSpan(0,col+3,SKIP_CELL);
    (*xs_table)(0,col) << _T("Deck");
    (*xs_table)(1,col++) << COLHDR(_T("Area"),           rptAreaUnitTag,    pDisplayUnits->GetAreaUnit() );
    (*xs_table)(1,col++) << COLHDR(RPT_IX,               rptLength4UnitTag, pDisplayUnits->GetMomentOfInertiaUnit() );

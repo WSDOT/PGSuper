@@ -260,14 +260,17 @@ rptChapter* CBearingSeatElevationsDetailsChapterBuilder2::Build(CReportSpecifica
       else
       {
          // Interior Pier
-
-         // check if we have to report precamber slope
-         GirderIndexType nGirders = pBridge->GetGirderCount(backGroupIdx);
-         for (GirderIndexType gdrIdx = 0; gdrIdx < nGirders && bHasPrecamberBack == false; gdrIdx++)
+         pgsTypes::PierSegmentConnectionType connectionType = pBridge->GetPierSegmentConnectionType(pierIdx);
+         if (connectionType == pgsTypes::psctContinousClosureJoint || connectionType == pgsTypes::psctContinousClosureJoint)
          {
-            CSegmentKey backSegmentKey, aheadSegmentKey;
-            pBridge->GetSegmentsAtPier(pierIdx, gdrIdx, &backSegmentKey, &aheadSegmentKey);
-            bHasPrecamberBack = (IsZero(pCamber->GetPrecamber(backSegmentKey)) ? false : true);
+            // check if we have to report precamber slope
+            GirderIndexType nGirders = pBridge->GetGirderCount(backGroupIdx);
+            for (GirderIndexType gdrIdx = 0; gdrIdx < nGirders && bHasPrecamberBack == false; gdrIdx++)
+            {
+               CSegmentKey backSegmentKey, aheadSegmentKey;
+               pBridge->GetSegmentsAtPier(pierIdx, gdrIdx, &backSegmentKey, &aheadSegmentKey);
+               bHasPrecamberBack = (IsZero(pCamber->GetPrecamber(backSegmentKey)) ? false : true);
+            }
          }
 
          CString strLabel;

@@ -259,21 +259,15 @@ CShrinkageAtHaulingTable* CShrinkageAtHaulingTable::PrepareTable(rptChapter* pCh
    *pParagraph << paraTable << rptNewLine;
    paraTable->SetNumberOfHeaderRows(2);
    paraTable->SetRowSpan(0,0,2);
-   paraTable->SetRowSpan(1,0,SKIP_CELL);
    (*paraTable)(0,0) << COLHDR(Sub2(_T("E"),_T("p")), rptStressUnitTag, pDisplayUnits->GetStressUnit());
    paraTable->SetRowSpan(0,1,2);
-   paraTable->SetRowSpan(1,1,SKIP_CELL);
    (*paraTable)(0,1) << COLHDR(Sub2(_T("E"),_T("ci")), rptStressUnitTag, pDisplayUnits->GetStressUnit());
    paraTable->SetColumnSpan(0,2,3);
-   paraTable->SetColumnSpan(0,3,SKIP_CELL);
-   paraTable->SetColumnSpan(0,4,SKIP_CELL);
    (*paraTable)(0,2) << _T("Shrinkage");
    (*paraTable)(1,2) << Sub2(_T("K"),_T("1"));
    (*paraTable)(1,3) << Sub2(_T("K"),_T("2"));
    (*paraTable)(1,4) << Sub2(symbol(epsilon),_T("bih")) << _T("x 1000");
    paraTable->SetColumnSpan(0,5,3);
-   paraTable->SetColumnSpan(0,6,SKIP_CELL);
-   paraTable->SetColumnSpan(0,7,SKIP_CELL);
    (*paraTable)(0,5) << _T("Creep");
    (*paraTable)(1,5) << Sub2(_T("K"),_T("1"));
    (*paraTable)(1,6) << Sub2(_T("K"),_T("2"));
@@ -434,95 +428,14 @@ CShrinkageAtHaulingTable* CShrinkageAtHaulingTable::PrepareTable(rptChapter* pCh
    {
       table->SetNumberOfHeaderRows(2);
 
-      col = 0;
-
-      // Location
-      table->SetRowSpan(0, col, 2);
-      table->SetRowSpan(1, col++, SKIP_CELL);
-
-      // Location
-      table->SetRowSpan(0, col, 2);
-      table->SetRowSpan(1, col++, SKIP_CELL);
-
-      // Aps
-      table->SetRowSpan(0, col, 2);
-      table->SetRowSpan(1, col++, SKIP_CELL);
-
-      if (bIsPrismatic)
+      for (ColumnIndexType c = 0; c < col; c++)
       {
-         if (bIsAsymmetric)
-         {
-            // epsx
-            table->SetRowSpan(0, col, 2);
-            table->SetRowSpan(1, col++, SKIP_CELL);
-            // epsy
-            table->SetRowSpan(0, col, 2);
-            table->SetRowSpan(1, col++, SKIP_CELL);
-         }
-         else
-         {
-            // eps
-            table->SetRowSpan(0, col, 2);
-            table->SetRowSpan(1, col++, SKIP_CELL);
-         }
-      }
-      else
-      {
-         if (bIsAsymmetric)
-         {
-            // Ag
-            table->SetRowSpan(0, col, 2);
-            table->SetRowSpan(1, col++, SKIP_CELL);
-
-            // Ixx
-            table->SetRowSpan(0, col, 2);
-            table->SetRowSpan(1, col++, SKIP_CELL);
-
-            // Iyy
-            table->SetRowSpan(0, col, 2);
-            table->SetRowSpan(1, col++, SKIP_CELL);
-
-            // Ixy
-            table->SetRowSpan(0, col, 2);
-            table->SetRowSpan(1, col++, SKIP_CELL);
-
-            // epsx
-            table->SetRowSpan(0, col, 2);
-            table->SetRowSpan(1, col++, SKIP_CELL);
-
-            // epsy
-            table->SetRowSpan(0, col, 2);
-            table->SetRowSpan(1, col++, SKIP_CELL);
-         }
-         else
-         {
-            // Ag
-            table->SetRowSpan(0, col, 2);
-            table->SetRowSpan(1, col++, SKIP_CELL);
-
-            // Ig
-            table->SetRowSpan(0, col, 2);
-            table->SetRowSpan(1, col++, SKIP_CELL);
-
-            // eps
-            table->SetRowSpan(0, col, 2);
-            table->SetRowSpan(1, col++, SKIP_CELL);
-         }
+         table->SetRowSpan(0, c, 2);
       }
 
       table->SetColumnSpan(0, col, bIsAsymmetric ? 4 : 3);
-      (*table)(0, col++) << _T("Permanent Strands");
+      (*table)(0, col) << _T("Permanent Strands");
 
-      table->SetColumnSpan(0, col, bIsAsymmetric ? 4 : 3);
-      (*table)(0, col++) << _T("Temporary Strands");
-
-      for (ColumnIndexType i = col; i < numColumns; i++)
-      {
-         table->SetColumnSpan(0, i, SKIP_CELL);
-      }
-
-      // perm
-      col -= 2;
       if (bIsAsymmetric)
       {
          if (spMode == pgsTypes::spmGross)
@@ -551,7 +464,11 @@ CShrinkageAtHaulingTable* CShrinkageAtHaulingTable::PrepareTable(rptChapter* pCh
       (*table)(1, col++) << Sub2(_T("K"), _T("ih"));
       (*table)(1, col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pSRH")), rptStressUnitTag, pDisplayUnits->GetStressUnit());
 
-      // temp
+
+
+      table->SetColumnSpan(0, col, bIsAsymmetric ? 4 : 3);
+      (*table)(0, col) << _T("Temporary Strands");
+
       if (bIsAsymmetric)
       {
          if (spMode == pgsTypes::spmGross)

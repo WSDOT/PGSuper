@@ -179,9 +179,25 @@ void CCatalogServers::LoadFromRegistry(CWinApp* theApp)
    ::RegCloseKey(hAppKey);
 
    // Always have a WSDOT and TxDOT server
+
+   // This doesn't work... HTTP server wont allow configuration files.
+   //if (m_AppName == _T("PGSuper") || m_AppName == _T("PGSplice"))
+   //{
+   //   const CCatalogServer* pServer = GetServer(_T("WSDOT"));
+   //   if (pServer && pServer->GetServerType() == srtInternetFtp)
+   //   {
+   //      // the official WSDOT server has moved from FTP to HTTP...
+   //      // still referencing the old FTP server
+   //      // remove the server then it will be redefined below
+   //      RemoveServer(_T("WSDOT"));
+   //      pServer = nullptr;
+   //   }
+   //}
+
    if (!IsServerDefined(_T("WSDOT")) && m_AppName != _T("TOGA")) // don't need a wsdot toga server
    {
       m_Servers.insert( ServerPtr(new CFtpCatalogServer(m_AppName,m_strExt)) ); // wsdot
+      //m_Servers.insert( ServerPtr(new CHttpCatalogServer(m_AppName,m_strExt)) ); // wsdot
    }
 
    if (!IsServerDefined(_T("TxDOT")) && m_AppName != _T("PGSplice")) // TxDOT does not have a PGSplice server

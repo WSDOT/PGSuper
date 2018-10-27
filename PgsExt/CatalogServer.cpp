@@ -1243,7 +1243,6 @@ bool CFtpCatalogServer::TestServer(CString& errorMessage) const
 }
 
 /// CIniCatalogServer ///
-
 CIniCatalogServer::CIniCatalogServer(LPCTSTR strAppName,LPCTSTR name,SharedResourceType type, const CString& address,const CString& strExt):
 CCatalogServer(strAppName,name,type,strExt)
 {
@@ -1541,6 +1540,16 @@ bool CIniCatalogServer::TestServer(CString& errorMessage) const
 }
 
 /// CHttpCatalogServer ///
+CHttpCatalogServer::CHttpCatalogServer(LPCTSTR strAppName, const CString& strExt) :
+   CIniCatalogServer(strAppName, _T("WSDOT"), srtInternetHttp, _T("dummy"), strExt)
+{
+   AFX_MANAGE_STATE(AfxGetAppModuleState());
+   CWinApp* pApp = AfxGetApp();
+   m_ServerAddress.Format(_T("%s/%s/"), _T("http://www.wsdot.wa.gov/eesc/bridge/software"), pApp->m_pszProfileName);
+   Init();
+}
+
+
 CIniCatalogServer::gwResult CHttpCatalogServer::GetWebFile(const CString& strFileURL, const CString& strLocalTargetFile)const
 {
 	DWORD dwAccessType = PRE_CONFIG_INTERNET_ACCESS;

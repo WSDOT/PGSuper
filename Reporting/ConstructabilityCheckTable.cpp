@@ -1534,7 +1534,6 @@ void CConstructabilityCheckTable::BuildTimeStepCamberCheck(rptChapter* pChapter,
       const pgsPointOfInterest& poiMidSpan(vPoi.front());
 
       pTable->SetRowSpan(row, 0, 2);
-      pTable->SetRowSpan(row + 1, 0, SKIP_CELL);
       (*pTable)(row, 0) << LABEL_SPAN(spanIdx);
 
       GET_IFACE2(pBroker, ICamber, pCamber);

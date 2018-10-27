@@ -10,8 +10,8 @@ Compression stress check failed for Service I Limit State in Interval 15 Install
 Compression stress check failed for Service I Limit State in Interval 16 Open to Traffic
 Tensile stress check failed for Service III Limit State in Interval 16 Open to Traffic
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
-Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 Ultimate vertical shear capacity check failed for Strength I Limit State
+Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 Stirrup detailing checks failed for the Strength I Limit State.
 Lifting checks failed
 Hauling checks failed
@@ -29,8 +29,8 @@ Compression stress check failed for Service I Limit State in Interval 15 Install
 Compression stress check failed for Service I Limit State in Interval 16 Open to Traffic
 Tensile stress check failed for Service III Limit State in Interval 16 Open to Traffic
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
-Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 Ultimate vertical shear capacity check failed for Strength I Limit State
+Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 Stirrup detailing checks failed for the Strength I Limit State.
 Lifting checks failed
 Hauling checks failed
@@ -43,7 +43,6 @@ Hauling checks failed
 
 The Specification Check was Not Successful
 Tensile stress check failed for Service III Limit State in Interval 16 Open to Traffic
-Hauling checks failed
 Slab Offset ("A" Dimension) check failed
 
 

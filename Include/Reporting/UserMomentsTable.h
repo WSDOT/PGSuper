@@ -147,7 +147,6 @@ rptRcTable* CreateUserLoadHeading(LPCTSTR strTitle,bool bPierTable,pgsTypes::Ana
    {
       pTable->SetNumberOfHeaderRows(2);
       pTable->SetRowSpan(0,0,2);
-      pTable->SetRowSpan(1,0,SKIP_CELL);
 
       pTable->SetColumnSpan(0,1,2);
       (*pTable)(0,1) << _T("User DC");
@@ -157,10 +156,6 @@ rptRcTable* CreateUserLoadHeading(LPCTSTR strTitle,bool bPierTable,pgsTypes::Ana
 
       pTable->SetColumnSpan(0,3,2);
       (*pTable)(0,3) << _T("User LL+IM");
-
-       pTable->SetColumnSpan(0,4,SKIP_CELL);
-       pTable->SetColumnSpan(0,5,SKIP_CELL);
-       pTable->SetColumnSpan(0,6,SKIP_CELL);
 
       (*pTable)(1,1) << COLHDR(_T("Max"), M, unitT );
       (*pTable)(1,2) << COLHDR(_T("Min"), M, unitT );

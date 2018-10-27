@@ -701,7 +701,7 @@ BOOL CGirderTopWidthGrid::ValidateGirderTopWidth()
          {
             if (i == 0)
             {
-               SetWarningText(_T("Start wop width is out of range"));
+               SetWarningText(_T("Start top width is out of range"));
             }
             else
             {

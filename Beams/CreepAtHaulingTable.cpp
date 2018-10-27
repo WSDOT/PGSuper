@@ -134,22 +134,10 @@ CCreepAtHaulingTable* CCreepAtHaulingTable::PrepareTable(rptChapter* pChapter,IB
 
       table->SetRowSpan(0,0,2);
       table->SetRowSpan(0,1,2);
-      table->SetRowSpan(1,0,SKIP_CELL);
-      table->SetRowSpan(1,1,SKIP_CELL);
 
-      table->SetColumnSpan(0,2,3);
-      (*table)(0,col++) << _T("Permanent Strands");
+      table->SetColumnSpan(0,col,3);
+      (*table)(0,col) << _T("Permanent Strands");
 
-      table->SetColumnSpan(0,3,3);
-      (*table)(0,col++) << _T("Temporary Strands");
-
-      for (ColumnIndexType i = col; i < numColumns; i++)
-      {
-         table->SetColumnSpan(0, i, SKIP_CELL);
-      }
-
-
-      col = 2;
       if (pStrands->GetTemporaryStrandUsage() == pgsTypes::ttsPretensioned)
       {
          (*table)(1, col++) << COLHDR(RPT_STRESS(_T("cgp")), rptStressUnitTag, pDisplayUnits->GetStressUnit());
@@ -161,16 +149,15 @@ CCreepAtHaulingTable* CCreepAtHaulingTable::PrepareTable(rptChapter* pChapter,IB
          (*table)(1, col++) << COLHDR(RPT_STRESS(_T("cgp")) << _T(" + ") << symbol(DELTA) << RPT_STRESS(_T("pp")), rptStressUnitTag, pDisplayUnits->GetStressUnit());
       }
 
-
       (*table)(1,col++) << Sub2(_T("K"),_T("ih"));
       (*table)(1,col++) << COLHDR(symbol(DELTA) <<RPT_STRESS(_T("pCRH")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
 
-      if ( bTemporaryStrands )
-      {
-         (*table)(1,col++) << COLHDR(RPT_STRESS(_T("cgp")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-         (*table)(1,col++) << Sub2(_T("K"),_T("ih"));
-         (*table)(1,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pCRH")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-      }
+
+      table->SetColumnSpan(0, col, 3);
+      (*table)(0, col) << _T("Temporary Strands");
+      (*table)(1,col++) << COLHDR(RPT_STRESS(_T("cgp")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      (*table)(1,col++) << Sub2(_T("K"),_T("ih"));
+      (*table)(1,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pCRH")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    }
    else
    {

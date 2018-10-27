@@ -4601,7 +4601,7 @@ bool GirderLibraryEntry::Edit(bool allowEditing,int nPage)
    // make a temporary copy of this and have the dialog work on it.
    GirderLibraryEntry tmp(*this);
 
-   CGirderMainSheet dlg(tmp, allowEditing);
+   CGirderMainSheet dlg(tmp, allowEditing, GetRefCount());
    dlg.SetActivePage(nPage);
    INT_PTR i = dlg.DoModal();
    if (i==IDOK)

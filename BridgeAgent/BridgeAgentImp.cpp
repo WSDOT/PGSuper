@@ -7350,11 +7350,19 @@ bool CBridgeAgentImp::HasAsymmetricGirders() const
    // add the IgnoreBiaxialBending setting to the registry. Set a value of "Yes" to force uniaxial bending
    CEAFApp* pApp = EAFGetApp();
    CAutoRegistry autoReg(_T("PGSuper"));
-   CString strIgnoreBiaxialBending = pApp->GetProfileString(_T("Settings"), _T("IgnoreBiaxialBending"), _T("No"));
+   CString strIgnoreBiaxialBending = pApp->GetProfileString(_T("Settings"), _T("IgnoreBiaxialBending"), _T("Unknown"));
    strIgnoreBiaxialBending.MakeUpper();
    if (strIgnoreBiaxialBending == _T("YES"))
    {
       bIgnoreBiaxial = true;
+   }
+   else if (strIgnoreBiaxialBending == _T("NO"))
+   {
+      bIgnoreBiaxial = false;
+   }
+   else
+   {
+      ATLASSERT(strIgnoreBiaxialBending == _T("UNKNOWN"));
    }
 
    if (bIgnoreBiaxial)
@@ -21056,19 +21064,118 @@ pgsTypes::HaunchAnalysisSectionPropertiesType CBridgeAgentImp::GetHaunchAnalysis
    return pSpecEntry->GetHaunchAnalysisSectionPropertiesType();
 }
 
-
-void CBridgeAgentImp::GetStressCoefficients(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, pgsTypes::StressLocation location, const GDRCONFIG* pConfig, Float64* pCa, Float64 *pCbx) const
+std::vector<gpPoint2d> CBridgeAgentImp::GetStressPoints(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, pgsTypes::StressLocation location, const GDRCONFIG* pConfig) const
 {
-   Float64 Cby;
-   GetStressCoefficients(intervalIdx, poi, location, pConfig, pCa, pCbx, &Cby);
+   std::vector<gpPoint2d> vPoints;
+
+   IntervalIndexType compositeDeckIntervalIdx = GetCompositeDeckInterval();
+   bool bIsCompositeDeck = IsCompositeDeck();
+   if (IsDeckStressLocation(location))
+   {
+      if (!bIsCompositeDeck || intervalIdx < compositeDeckIntervalIdx)
+      {
+         return vPoints;
+      }
+   }
+
+   const CSegmentKey& segmentKey = poi.GetSegmentKey();
+
+   Float64 E;
+   if (pConfig)
+   {
+      bool bEcChanged;
+      E = GetSegmentEc(segmentKey, intervalIdx, pConfig->Fc, &bEcChanged);
+
+      // if the "trial" girder strength is the same as the real girder strength
+      // don't do a bunch of extra work. Return the properties for the real girder
+      if (!bEcChanged)
+      {
+         return GetStressPoints(intervalIdx,poi,location);
+      }
+   }
+
+   pgsTypes::SectionPropertyType sectPropType = GetSectionPropertiesType();
+
+   CComPtr<IShapeProperties> sprops;
+   CComPtr<ISection> section;
+
+   IndexType gdr_idx(0), slab_idx;
+   if (pConfig)
+   {
+      GetShapeProperties(sectPropType, intervalIdx, poi, E, &sprops);
+      HRESULT hr = GetSection(intervalIdx, poi, sectPropType, &gdr_idx, &slab_idx, &section);
+      ATLASSERT(SUCCEEDED(hr));
+   }
+   else
+   {
+      const SectProp& props = GetSectionProperties(intervalIdx, poi, sectPropType);
+      sprops = props.ShapeProps;
+      section = props.Section;
+   }
+
+   if (section == nullptr)
+   {
+      // this can happen if the POI is in a pier and there isn't continuity
+      return vPoints;
+   }
+
+   bool bHasAsymmetricGirders = HasAsymmetricGirders();
+
+   CComQIPtr<ICompositeSectionEx> compSection(section);
+   CComPtr<ICompositeSectionItemEx> item;
+   compSection->get_Item(gdr_idx, &item);
+   CComPtr<IShape> shape;
+   item->get_Shape(&shape);
+
+   IntervalIndexType erectionIntervalIdx = GetErectSegmentInterval(segmentKey);
+
+   if (bHasAsymmetricGirders && intervalIdx <= erectionIntervalIdx)
+   {
+      // at this point, the stress location must be for the girder
+      ATLASSERT(IsGirderStressLocation(location));
+
+      CComQIPtr<IAsymmetricSection> asymmetric(shape);
+
+      CComPtr<IPoint2d> pntCG;
+      sprops->get_Centroid(&pntCG);
+
+      Float64 xcg, ycg;
+      pntCG->Location(&xcg, &ycg);
+
+      CComPtr<IPoint2dCollection> points;
+      asymmetric->GetStressPoints(location == pgsTypes::TopGirder ? spTop : spBottom, &points);
+      CComPtr<IEnumPoint2d> enumPoints;
+      points->get__Enum(&enumPoints);
+      CComPtr<IPoint2d> pnt;
+      while (enumPoints->Next(1, &pnt, nullptr) != S_FALSE)
+      {
+         Float64 x, y;
+         pnt->Offset(-xcg, -ycg); // convert to centroidal/stress point coordinate system
+         pnt->Location(&x, &y);
+
+         vPoints.emplace_back(gpPoint2d(x, y));
+
+         pnt.Release();
+      }
+   }
+   else
+   {
+      Float64 x = 0;
+      Float64 y = (pConfig ? GetY(intervalIdx, poi, location, pConfig->Fc) : GetY(intervalIdx, poi, location));
+      if (location == pgsTypes::BottomGirder)
+      {
+         y *= -1;
+      }
+      vPoints.emplace_back(gpPoint2d(x, y));
+   }
+
+   return vPoints;
 }
 
-void CBridgeAgentImp::GetStressCoefficients(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, pgsTypes::StressLocation location, const GDRCONFIG* pConfig, Float64* pCa, Float64 *pCbx,Float64* pCby) const
+void CBridgeAgentImp::GetStressCoefficients(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, pgsTypes::StressLocation location, const GDRCONFIG* pConfig, Float64* pCa, Float64 *pCbx,Float64* pCby, IndexType* pControllingStressPointIndex) const
 {
    IntervalIndexType compositeDeckIntervalIdx = GetCompositeDeckInterval();
-
-   GET_IFACE(IBridge, pBridge);
-   bool bIsCompositeDeck = pBridge->IsCompositeDeck();
+   bool bIsCompositeDeck = IsCompositeDeck();
    if (IsDeckStressLocation(location))
    {
       if (!bIsCompositeDeck || intervalIdx < compositeDeckIntervalIdx)
@@ -21079,6 +21186,11 @@ void CBridgeAgentImp::GetStressCoefficients(IntervalIndexType intervalIdx, const
          *pCa = 0;
          *pCbx = 0;
          *pCby = 0;
+
+         if (pControllingStressPointIndex)
+         {
+            *pControllingStressPointIndex = INVALID_INDEX;
+         }
          return;
       }
    }
@@ -21095,7 +21207,7 @@ void CBridgeAgentImp::GetStressCoefficients(IntervalIndexType intervalIdx, const
       // don't do a bunch of extra work. Return the properties for the real girder
       if (!bEcChanged)
       {
-         GetStressCoefficients(intervalIdx, poi, location, nullptr, pCa, pCbx, pCby);
+         GetStressCoefficients(intervalIdx, poi, location, nullptr, pCa, pCbx, pCby, pControllingStressPointIndex);
          return;
       }
    }
@@ -21125,6 +21237,10 @@ void CBridgeAgentImp::GetStressCoefficients(IntervalIndexType intervalIdx, const
       *pCa = 0.0;
       *pCbx = 0.0;
       *pCby = 0.0;
+      if (pControllingStressPointIndex)
+      {
+         *pControllingStressPointIndex = INVALID_INDEX;
+      }
       return;
    }
 
@@ -21183,6 +21299,8 @@ void CBridgeAgentImp::GetStressCoefficients(IntervalIndexType intervalIdx, const
       CComPtr<IPoint2dCollection> points;
       asymmetric->GetStressPoints(location == pgsTypes::TopGirder ? spTop : spBottom, &points);
 
+      IndexType idx = 0;
+      IndexType minIdx, maxIdx;
       CComPtr<IEnumPoint2d> enumPoints;
       points->get__Enum(&enumPoints);
       CComPtr<IPoint2d> pnt;
@@ -21203,19 +21321,26 @@ void CBridgeAgentImp::GetStressCoefficients(IntervalIndexType intervalIdx, const
          {
             CbxMin = cbx;
             CbyMin = cby;
+            minIdx = idx;
          }
 
          if (CbxMax < cbx)
          {
             CbxMax = cbx;
             CbyMax = cby;
+            maxIdx = idx;
          }
 
          pnt.Release();
+         idx++;
       }
 
       *pCbx = location == pgsTypes::BottomGirder ? CbxMax : CbxMin;
       *pCby = location == pgsTypes::BottomGirder ? CbyMax : CbyMin;
+      if (pControllingStressPointIndex)
+      {
+         *pControllingStressPointIndex = (location == pgsTypes::BottomGirder ? maxIdx : minIdx);
+      }
    }
    else
    {
@@ -21228,6 +21353,10 @@ void CBridgeAgentImp::GetStressCoefficients(IntervalIndexType intervalIdx, const
 
       *pCbx = -y/Ixx;
       *pCby = 0;
+      if (pControllingStressPointIndex)
+      {
+         *pControllingStressPointIndex = 0;
+      }
    }
 
 
@@ -22455,7 +22584,7 @@ void CBridgeAgentImp::GetSegmentShape(IntervalIndexType intervalIdx,const pgsPoi
 
 
    // Right now, ppShape is in Bridge Section Coordinates
-   if ( coordinateType == pgsTypes::scGirder )
+   if ( coordinateType == pgsTypes::scGirder || coordinateType == pgsTypes::scCentroid)
    {
       // Convert to Girder Section Coordinates....
       // Move Top Center point of the bare girder to (0,0)
@@ -22474,23 +22603,42 @@ void CBridgeAgentImp::GetSegmentShape(IntervalIndexType intervalIdx,const pgsPoi
       {
          shape = *ppShape;
       }
-      CComQIPtr<IXYPosition> bare_girder_position(shape);
 
-      CComPtr<IPoint2d> point;
-      bare_girder_position->get_LocatorPoint(lpTopCenter,&point);
+      Float64 cgx(0), cgy(0);
+      if (coordinateType == pgsTypes::scCentroid)
+      {
+         CComPtr<IShapeProperties> shapeProps;
+         shape->get_ShapeProperties(&shapeProps);
+         CComPtr<IPoint2d> pntCG;
+         shapeProps->get_Centroid(&pntCG);
+         pntCG->Location(&cgx, &cgy);
+      }
 
-      Float64 dx,dy;
-      point->Location(&dx,&dy);
+      Float64 dx(0), dy(0);
+      if (coordinateType == pgsTypes::scGirder)
+      {
+         CComQIPtr<IXYPosition> bare_girder_position(shape);
+
+         CComPtr<IPoint2d> point;
+         bare_girder_position->get_LocatorPoint(lpTopCenter, &point);
+
+         point->Location(&dx, &dy);
+      }
 
       CComQIPtr<IXYPosition> position(*ppShape);
-      position->Offset(-dx,-dy);
+      position->Offset(-cgx-dx,-cgy-dy);
 
 #if defined _DEBUG
-      point.Release();
-      bare_girder_position->get_LocatorPoint(lpTopCenter,&point);
-      point->Location(&dx,&dy);
-      ATLASSERT(IsZero(dx));
-      ATLASSERT(IsZero(dy));
+      if (coordinateType == pgsTypes::scGirder)
+      {
+         CComQIPtr<IXYPosition> bare_girder_position(shape);
+
+         CComPtr<IPoint2d> point;
+         bare_girder_position->get_LocatorPoint(lpTopCenter, &point);
+         point->Location(&dx, &dy);
+         ATLASSERT(IsZero(dx));
+         ATLASSERT(IsZero(dy));
+      }
 #endif
    }
 
@@ -22536,7 +22684,7 @@ void CBridgeAgentImp::GetSegmentSectionShape(IntervalIndexType intervalIdx, cons
    shape->Clone(ppShape);
 
    // Right now, ppShape is in Bridge Section Coordinates
-   if (csType == pgsTypes::scGirder)
+   if (csType == pgsTypes::scGirder || csType == pgsTypes::scCentroid)
    {
       // Convert to Girder Section Coordinates....
       // Move Top Center point of the bare girder to (0,0)
@@ -22555,19 +22703,34 @@ void CBridgeAgentImp::GetSegmentSectionShape(IntervalIndexType intervalIdx, cons
       {
          shape = *ppShape;
       }
-      CComQIPtr<IXYPosition> bare_girder_position(shape);
 
-      CComPtr<IPoint2d> point;
-      bare_girder_position->get_LocatorPoint(lpTopCenter, &point);
+      Float64 cgx(0), cgy(0);
+      if (csType == pgsTypes::scCentroid)
+      {
+         CComPtr<IShapeProperties> shapeProps;
+         shape->get_ShapeProperties(&shapeProps);
+         CComPtr<IPoint2d> pntCG;
+         shapeProps->get_Centroid(&pntCG);
+         pntCG->Location(&cgx, &cgy);
+      }
 
-      Float64 dx, dy;
-      point->Location(&dx, &dy);
+      Float64 dx(0), dy(0);
+      if (csType == pgsTypes::scGirder)
+      {
+         CComQIPtr<IXYPosition> bare_girder_position(shape);
+
+         CComPtr<IPoint2d> point;
+         bare_girder_position->get_LocatorPoint(lpTopCenter, &point);
+
+         point->Location(&dx, &dy);
+      }
 
       CComQIPtr<IXYPosition> position(*ppShape);
-      position->Offset(-dx, -dy);
+      position->Offset(-cgx-dx, -cgy-dy);
 
 #if defined _DEBUG
-      point.Release();
+      CComPtr<IPoint2d> point;
+      CComQIPtr<IXYPosition> bare_girder_position(shape);
       bare_girder_position->get_LocatorPoint(lpTopCenter, &point);
       point->Location(&dx, &dy);
       ATLASSERT(IsZero(dx));
@@ -24314,9 +24477,9 @@ Float64 CBridgeAgentImp::GetTopWidth(const pgsPointOfInterest& poi,Float64* pLef
 
    if (pLeft && pRight)
    {
-      if (HasAsymmetricGirders())
+      CComQIPtr<IAsymmetricSection> asymmetricSection(girder_section);
+      if (asymmetricSection)
       {
-         CComQIPtr<IAsymmetricSection> asymmetricSection(girder_section);
          asymmetricSection->GetTopWidth(pLeft, pRight);
          ATLASSERT(IsEqual(*pLeft + *pRight, width));
       }
@@ -30420,6 +30583,8 @@ void CBridgeAgentImp::LayoutClosureJointRebar(const CClosureKey& closureKey)
       return;
    }
 
+   GET_IFACE_NOCHECK(IEAFStatusCenter, pStatusCenter);
+
    // Get the stage where the rebar is first introducted into the system.
    // Technically, the rebar is first introduced to the system when the closure joint
    // concrete is cast, however the rebar isn't doing anything structural
@@ -30530,6 +30695,18 @@ void CBridgeAgentImp::LayoutClosureJointRebar(const CClosureKey& closureKey)
          {
             yStart = -(HgStart - info.Cover - db/2);
             yEnd   = -(HgEnd   - info.Cover - db/2);
+         }
+
+         if (yStart < -HgStart || yEnd < -HgEnd)
+         {
+            std::_tostringstream os;
+            os << CLOSURE_LABEL(closureKey)
+               << _T(": bars in row ") << LABEL_INDEX(idx) << _T(" are outside of the girder section. These bars will be ignored.") << std::endl;
+
+            pgsGirderDescriptionStatusItem* pStatusItem = new pgsGirderDescriptionStatusItem(closureKey, EGD_LONG_REINF, m_StatusGroupID, m_scidGirderDescriptionWarning, os.str().c_str());
+            pStatusCenter->Add(pStatusItem);
+
+            continue;
          }
 
          CComPtr<IPoint2d> startAnchor;
@@ -33565,12 +33742,12 @@ void CBridgeAgentImp::ValidateGirderTopChordElevation(const CGirderKey& girderKe
    {
       const CPierData2* pPier2 = pPier1->GetNextSpan()->GetPier(pgsTypes::metEnd);
 
-      while (pPier2->IsInteriorPier() && pPier2->IsContinuous())
+      while (pPier2->IsInteriorPier() && (pPier2->GetSegmentConnectionType() == pgsTypes::psctContinuousSegment || pPier2->GetSegmentConnectionType() == pgsTypes::psctIntegralSegment))
       {
          pPier2 = pPier2->GetNextSpan()->GetPier(pgsTypes::metEnd);
       }
 
-      ATLASSERT(pPier2->IsBoundaryPier() || (pPier2->IsInteriorPier() && !pPier2->IsContinuous()));
+      ATLASSERT(pPier2->IsBoundaryPier() || (pPier2->IsInteriorPier() && (pPier2->GetSegmentConnectionType() != pgsTypes::psctContinuousSegment && pPier2->GetSegmentConnectionType() != pgsTypes::psctIntegralSegment)));
 
       std::map<CSegmentKey, mathLinFunc2d> functions = CreateGirderTopChordFunctions(pGirder, pPier1, pPier2, bIgnoreElevationAdjustments);
       pFunctions->insert(functions.begin(), functions.end());

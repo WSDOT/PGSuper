@@ -131,42 +131,30 @@ void TxDOTIBNSDebondWriter::WriteDebondData(rptParagraph* pPara,IBroker* pBroker
       // This table has a very special header
       p_table->SetNumberOfHeaderRows(2);
 
-      RowIndexType row = 0;
+      p_table->SetRowSpan(0,0,2);
+      (*p_table)(0,0) << _T("Dist from Bottom");
 
-      p_table->SetRowSpan(row,0,2);
-      (*p_table)(row,0) << _T("Dist from Bottom");
+      p_table->SetColumnSpan(0,1,2);
+      (*p_table)(0, 1) << _T("# of Strands");
+      (*p_table)(1, 1) << Bold(_T("Total"));
+      (*p_table)(1, 2) << Bold(_T("Debonded"));
 
-      p_table->SetColumnSpan(row,1,2);
-      (*p_table)(row,1) << _T("# of Strands");
-
-      p_table->SetColumnSpan(row,2,10);
-      (*p_table)(row,2) << _T("# of Strands Debonded At");
-
-      // null remaining cells in this row
-      ColumnIndexType ic;
-      for (ic = 3; ic < num_cols; ic++)
-      {
-         p_table->SetColumnSpan(row,ic,SKIP_CELL);
-      }
+      p_table->SetColumnSpan(0,3,10);
+      (*p_table)(0,3) << _T("# of Strands Debonded At");
 
       // next row of header
-      p_table->SetColumnSpan(++row,0,SKIP_CELL); 
-
-      (*p_table)(row,1) << Bold(_T("Total"));
-      (*p_table)(row,2) << Bold(_T("Debonded"));
-
       Int16 loc_inc=1;
-      for (ic = 3; ic < num_cols; ic++)
+      for (ColumnIndexType ic = 3; ic < num_cols; ic++)
       {
          Float64 loc = m_SectionSpacing*loc_inc;
-         (*p_table)(row,ic) <<Bold( uloc.SetValue(loc) );
+         (*p_table)(1,ic) <<Bold( uloc.SetValue(loc) );
          loc_inc++;
       }
 
+      RowIndexType row = p_table->GetNumberOfHeaderRows();
       if (m_NumDebonded == 0 && !is_optional)
       {
          // no debonded strands, just write one row
-         row++;
 
          pgsPointOfInterest poi(m_SegmentKey, m_GirderLength/2.0);
 
@@ -210,8 +198,6 @@ void TxDOTIBNSDebondWriter::WriteDebondData(rptParagraph* pPara,IBroker* pBroker
 
             if( !rowdata.m_Sections.empty() || is_optional) // Only write row if it has debonding, or we are writing optional design
             {
-               row++; // table 
-
                pgsPointOfInterest poi(m_SegmentKey, m_GirderLength/2.0);
 
                GET_IFACE2(pBroker,ISectionProperties,pSectProp);
@@ -249,6 +235,7 @@ void TxDOTIBNSDebondWriter::WriteDebondData(rptParagraph* pPara,IBroker* pBroker
                }
 
                ATLASSERT(scit==rowdata.m_Sections.end()); // we didn't find all of our sections - bug
+               row++; // table 
             }
 
 

@@ -6,8 +6,6 @@
 The Specification Check was Not Successful
 Stresses in the prestressing strands are too high.
 Tensile stress check failed for Service III Limit State in Interval 14 Open to Traffic
-Ultimate vertical shear capacity check failed for Strength I Limit State
-Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
 Bursting zone check failed.
 
 
@@ -18,8 +16,6 @@ Bursting zone check failed.
 
 The Specification Check was Not Successful
 Stresses in the prestressing strands are too high.
-Ultimate vertical shear capacity check failed for Strength I Limit State
-Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
 Bursting zone check failed.
 Lifting checks failed
 

@@ -139,47 +139,39 @@ void CStrandStressCheckTable::Build(rptChapter* pChapter,IBroker* pBroker,const 
       p_table->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
 
       // Label columns
-      ColumnIndexType col1 = 0;
-      ColumnIndexType col2 = 0;
-      p_table->SetRowSpan(0,col1,2);
-      (*p_table)(0,col1++) << _T("Loss Stage");
-      p_table->SetRowSpan(1,col2++,SKIP_CELL);
+      ColumnIndexType col = 0;
+      p_table->SetRowSpan(0,col,2);
+      (*p_table)(0,col++) << _T("Loss Stage");
 
-      p_table->SetRowSpan(0,col1,2);
-      (*p_table)(0,col1++) << COLHDR(_T("Stress") << rptNewLine << _T("Limit"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-      p_table->SetRowSpan(1,col2++,SKIP_CELL);
+      p_table->SetRowSpan(0,col,2);
+      (*p_table)(0,col++) << COLHDR(_T("Stress") << rptNewLine << _T("Limit"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
 
       std::vector<pgsTypes::StrandType>::iterator iter;
       for ( iter = strandTypes.begin(); iter != strandTypes.end(); iter++ )
       {
          pgsTypes::StrandType strandType = *iter;
-         p_table->SetColumnSpan(0,col1,2);
+         p_table->SetColumnSpan(0,col,2);
          switch(strandType)
          {
          case pgsTypes::Straight:
-            (*p_table)(0,col1++) << _T("Straight");
+            (*p_table)(0,col) << _T("Straight");
             break;
 
          case pgsTypes::Harped:
-            (*p_table)(0,col1++) << LABEL_HARP_TYPE(pStrandGeom->GetAreHarpedStrandsForcedStraight(segmentKey));
+            (*p_table)(0,col) << LABEL_HARP_TYPE(pStrandGeom->GetAreHarpedStrandsForcedStraight(segmentKey));
             break;
 
          case pgsTypes::Permanent:
-            (*p_table)(0,col1++) << _T("Permanent");
+            (*p_table)(0,col) << _T("Permanent");
             break;
 
          case pgsTypes::Temporary:
-            (*p_table)(0,col1++) << _T("Temporary");
+            (*p_table)(0,col) << _T("Temporary");
             break;
          }
 
-         (*p_table)(1,col2++) << COLHDR(_T("Strand") << rptNewLine << _T("Stress"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-         (*p_table)(1,col2++) << _T("Status") << rptNewLine << _T("(C/D)");
-      }
-
-      for ( ColumnIndexType i = col1; i < nColumns; i++ )
-      {
-         p_table->SetColumnSpan(0,i,SKIP_CELL);
+         (*p_table)(1,col++) << COLHDR(_T("Strand") << rptNewLine << _T("Stress"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+         (*p_table)(1,col++) << _T("Status") << rptNewLine << _T("(C/D)");
       }
 
       Float64 demand, capacity;

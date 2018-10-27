@@ -179,16 +179,10 @@ CShrinkageAtFinalTable* CShrinkageAtFinalTable::PrepareTable(rptChapter* pChapte
    *pParagraph << pParamTable << rptNewLine;
    pParamTable->SetNumberOfHeaderRows(2);
    pParamTable->SetRowSpan(0,0,2);
-   pParamTable->SetRowSpan(1,0,SKIP_CELL);
    (*pParamTable)(0,0) << COLHDR(Sub2(_T("E"),_T("p")), rptStressUnitTag, pDisplayUnits->GetStressUnit());
    pParamTable->SetRowSpan(0,1,2);
-   pParamTable->SetRowSpan(1,1,SKIP_CELL);
    (*pParamTable)(0,1) << COLHDR(Sub2(_T("E"),_T("ci")), rptStressUnitTag, pDisplayUnits->GetStressUnit());
    pParamTable->SetColumnSpan(0,2,5);
-   pParamTable->SetColumnSpan(0,3,SKIP_CELL);
-   pParamTable->SetColumnSpan(0,4,SKIP_CELL);
-   pParamTable->SetColumnSpan(0,5,SKIP_CELL);
-   pParamTable->SetColumnSpan(0,6,SKIP_CELL);
    (*pParamTable)(0,2) << _T("Shrinkage");
    (*pParamTable)(1,2) << Sub2(_T("K"),_T("1"));
    (*pParamTable)(1,3) << Sub2(_T("K"),_T("2"));
@@ -196,8 +190,6 @@ CShrinkageAtFinalTable* CShrinkageAtFinalTable::PrepareTable(rptChapter* pChapte
    (*pParamTable)(1,5) << Sub2(symbol(epsilon),_T("bid")) << _T("x1000");
    (*pParamTable)(1,6) << Sub2(symbol(epsilon),_T("bdf")) << _T("x1000");
    pParamTable->SetColumnSpan(0,7,3);
-   pParamTable->SetColumnSpan(0,8,SKIP_CELL);
-   pParamTable->SetColumnSpan(0,9,SKIP_CELL);
    (*pParamTable)(0,7) << _T("Creep");
    (*pParamTable)(1,7) << Sub2(_T("K"),_T("1"));
    (*pParamTable)(1,8) << Sub2(_T("K"),_T("2"));

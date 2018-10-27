@@ -691,18 +691,17 @@ rptRcTable* CTimeStepDetailsChapterBuilder::BuildFreeCreepDeformationTable(const
    RowIndexType rowIdx = 0;
    ColumnIndexType colIdx = 0;
    pTable->SetRowSpan(rowIdx,colIdx,2);
-   pTable->SetRowSpan(rowIdx+1,colIdx,SKIP_CELL);
    (*pTable)(rowIdx,colIdx++) << _T("Loading") << rptNewLine << _T("Interval");
 
    pTable->SetColumnSpan(rowIdx,colIdx,2);
-   (*pTable)(rowIdx,colIdx++) << _T("Girder");
-   pTable->SetColumnSpan(rowIdx,colIdx++,SKIP_CELL);
+   (*pTable)(rowIdx,colIdx) << _T("Girder");
+   colIdx += 2;
 
    if (bHasDeck)
    {
       pTable->SetColumnSpan(rowIdx, colIdx, 2);
-      (*pTable)(rowIdx, colIdx++) << _T("Deck");
-      pTable->SetColumnSpan(rowIdx, colIdx++, SKIP_CELL);
+      (*pTable)(rowIdx, colIdx) << _T("Deck");
+      colIdx += 2;
    }
 
    rowIdx++;
@@ -839,20 +838,19 @@ rptRcTable* CTimeStepDetailsChapterBuilder::BuildComponentRestrainingForceTable(
 
    pTable->SetNumberOfHeaderRows(2);
    pTable->SetRowSpan(rowIdx,colIdx,2);
-   pTable->SetRowSpan(rowIdx+1,colIdx,SKIP_CELL);
    (*pTable)(rowIdx,colIdx++) << _T("Component");
 
    pTable->SetColumnSpan(rowIdx,colIdx,2);
-   (*pTable)(rowIdx,colIdx++) << _T("Creep");
-   pTable->SetColumnSpan(rowIdx,colIdx++,SKIP_CELL);
+   (*pTable)(rowIdx,colIdx) << _T("Creep");
+   colIdx += 2;
 
    pTable->SetColumnSpan(rowIdx,colIdx,2);
-   (*pTable)(rowIdx,colIdx++) << _T("Shrinkage");
-   pTable->SetColumnSpan(rowIdx,colIdx++,SKIP_CELL);
+   (*pTable)(rowIdx,colIdx) << _T("Shrinkage");
+   colIdx += 2;
 
    pTable->SetColumnSpan(rowIdx,colIdx,2);
-   (*pTable)(rowIdx,colIdx++) << _T("Relaxation");
-   pTable->SetColumnSpan(rowIdx,colIdx++,SKIP_CELL);
+   (*pTable)(rowIdx,colIdx) << _T("Relaxation");
+   colIdx += 2;
    
    rowIdx++;
    colIdx = 1;
@@ -940,20 +938,19 @@ rptRcTable* CTimeStepDetailsChapterBuilder::BuildSectionRestrainingForceTable(co
 
    pTable->SetNumberOfHeaderRows(2);
    pTable->SetRowSpan(rowIdx,colIdx,2);
-   pTable->SetRowSpan(rowIdx+1,colIdx,SKIP_CELL);
    (*pTable)(rowIdx,colIdx++) << _T("Component");
 
    pTable->SetColumnSpan(rowIdx,colIdx,2);
-   (*pTable)(rowIdx,colIdx++) << _T("Creep");
-   pTable->SetColumnSpan(rowIdx,colIdx++,SKIP_CELL);
+   (*pTable)(rowIdx,colIdx) << _T("Creep");
+   colIdx += 2;
 
    pTable->SetColumnSpan(rowIdx,colIdx,2);
-   (*pTable)(rowIdx,colIdx++) << _T("Shrinkage");
-   pTable->SetColumnSpan(rowIdx,colIdx++,SKIP_CELL);
+   (*pTable)(rowIdx,colIdx) << _T("Shrinkage");
+   colIdx += 2;
 
    pTable->SetColumnSpan(rowIdx,colIdx,2);
-   (*pTable)(rowIdx,colIdx++) << _T("Relaxation");
-   pTable->SetColumnSpan(rowIdx,colIdx++,SKIP_CELL);
+   (*pTable)(rowIdx,colIdx) << _T("Relaxation");
+   colIdx += 2;
    
    rowIdx++;
    colIdx = 1;
@@ -987,20 +984,19 @@ rptRcTable* CTimeStepDetailsChapterBuilder::BuildSectionRestrainingDeformationTa
 
    pTable->SetNumberOfHeaderRows(2);
    pTable->SetRowSpan(rowIdx,colIdx,2);
-   pTable->SetRowSpan(rowIdx+1,colIdx,SKIP_CELL);
    (*pTable)(rowIdx,colIdx++) << _T("Component");
 
    pTable->SetColumnSpan(rowIdx,colIdx,2);
-   (*pTable)(rowIdx,colIdx++) << _T("Creep");
-   pTable->SetColumnSpan(rowIdx,colIdx++,SKIP_CELL);
+   (*pTable)(rowIdx,colIdx) << _T("Creep");
+   colIdx += 2;
 
    pTable->SetColumnSpan(rowIdx,colIdx,2);
-   (*pTable)(rowIdx,colIdx++) << _T("Shrinkage");
-   pTable->SetColumnSpan(rowIdx,colIdx++,SKIP_CELL);
+   (*pTable)(rowIdx,colIdx) << _T("Shrinkage");
+   colIdx += 2;
 
    pTable->SetColumnSpan(rowIdx,colIdx,2);
-   (*pTable)(rowIdx,colIdx++) << _T("Relaxation");
-   pTable->SetColumnSpan(rowIdx,colIdx++,SKIP_CELL);
+   (*pTable)(rowIdx,colIdx) << _T("Relaxation");
+   colIdx += 2;
    
    rowIdx++;
    colIdx = 1;
@@ -1035,20 +1031,19 @@ rptRcTable* CTimeStepDetailsChapterBuilder::BuildRestrainedSectionForceTable(con
 
    pTable->SetNumberOfHeaderRows(2);
    pTable->SetRowSpan(rowIdx,colIdx,2);
-   pTable->SetRowSpan(rowIdx+1,colIdx,SKIP_CELL);
    (*pTable)(rowIdx,colIdx++) << _T("Component");
 
    pTable->SetColumnSpan(rowIdx,colIdx,2);
-   (*pTable)(rowIdx,colIdx++) << _T("Creep");
-   pTable->SetColumnSpan(rowIdx,colIdx++,SKIP_CELL);
+   (*pTable)(rowIdx,colIdx) << _T("Creep");
+   colIdx += 2;
 
    pTable->SetColumnSpan(rowIdx,colIdx,2);
-   (*pTable)(rowIdx,colIdx++) << _T("Shrinkage");
-   pTable->SetColumnSpan(rowIdx,colIdx++,SKIP_CELL);
+   (*pTable)(rowIdx,colIdx) << _T("Shrinkage");
+   colIdx += 2;
 
    pTable->SetColumnSpan(rowIdx,colIdx,2);
-   (*pTable)(rowIdx,colIdx++) << _T("Relaxation");
-   pTable->SetColumnSpan(rowIdx,colIdx++,SKIP_CELL);
+   (*pTable)(rowIdx,colIdx) << _T("Relaxation");
+   colIdx += 2;
    
    rowIdx++;
    colIdx = 1;
@@ -1083,22 +1078,21 @@ rptRcTable* CTimeStepDetailsChapterBuilder::BuildRestrainedComponentForceTable(c
    ColumnIndexType colIdx = 0;
 
    pTable->SetNumberOfHeaderRows(2);
-   pTable->SetRowSpan(rowIdx,colIdx,2);
-   pTable->SetRowSpan(rowIdx+1,colIdx,SKIP_CELL);
-   (*pTable)(rowIdx,colIdx++) << _T("Component");
+   pTable->SetRowSpan(rowIdx, colIdx, 2);
+   (*pTable)(rowIdx, colIdx++) << _T("Component");
 
-   pTable->SetColumnSpan(rowIdx,colIdx,2);
-   (*pTable)(rowIdx,colIdx++) << _T("Creep");
-   pTable->SetColumnSpan(rowIdx,colIdx++,SKIP_CELL);
+   pTable->SetColumnSpan(rowIdx, colIdx, 2);
+   (*pTable)(rowIdx, colIdx) << _T("Creep");
+   colIdx += 2;
 
-   pTable->SetColumnSpan(rowIdx,colIdx,2);
-   (*pTable)(rowIdx,colIdx++) << _T("Shrinkage");
-   pTable->SetColumnSpan(rowIdx,colIdx++,SKIP_CELL);
+   pTable->SetColumnSpan(rowIdx, colIdx, 2);
+   (*pTable)(rowIdx, colIdx) << _T("Shrinkage");
+   colIdx += 2;
 
-   pTable->SetColumnSpan(rowIdx,colIdx,2);
-   (*pTable)(rowIdx,colIdx++) << _T("Relaxation");
-   pTable->SetColumnSpan(rowIdx,colIdx++,SKIP_CELL);
-   
+   pTable->SetColumnSpan(rowIdx, colIdx, 2);
+   (*pTable)(rowIdx, colIdx) << _T("Relaxation");
+   colIdx += 2;
+
    rowIdx++;
    colIdx = 1;
    (*pTable)(rowIdx,colIdx++) << COLHDR(Overline(symbol(DELTA) << _T("P")) << Sub(_T("r")),rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit());
@@ -1248,19 +1242,14 @@ rptRcTable* CTimeStepDetailsChapterBuilder::BuildIncrementalForceTable(IBroker* 
    RowIndexType rowIdx = 0;
    ColumnIndexType colIdx = 0;
    pTable->SetRowSpan(rowIdx, colIdx, 2);
-   pTable->SetRowSpan(rowIdx + 1, colIdx, SKIP_CELL);
    (*pTable)(rowIdx, colIdx++) << _T("Component");
 
    pTable->SetRowSpan(rowIdx, colIdx, 2);
-   pTable->SetRowSpan(rowIdx + 1, colIdx, SKIP_CELL);
    (*pTable)(rowIdx, colIdx++) << _T("");
 
    pTable->SetColumnSpan(rowIdx, colIdx, nLoads);
-   (*pTable)(rowIdx, colIdx++) << _T("Loading");
-   for (IndexType i = 0; i < nLoads - 1; i++)
-   {
-      pTable->SetColumnSpan(rowIdx, colIdx++, SKIP_CELL);
-   }
+   (*pTable)(rowIdx, colIdx) << _T("Loading");
+   colIdx += nLoads;
 
    colIdx = 2;
    for (IndexType i = 0; i < nLoads; i++)
@@ -1270,11 +1259,9 @@ rptRcTable* CTimeStepDetailsChapterBuilder::BuildIncrementalForceTable(IBroker* 
    }
 
    pTable->SetRowSpan(rowIdx, colIdx, 2);
-   pTable->SetRowSpan(rowIdx + 1, colIdx, SKIP_CELL);
    (*pTable)(rowIdx, colIdx++) << _T("Incremental") << rptNewLine << _T("Total");
 
    pTable->SetRowSpan(rowIdx, colIdx, 2);
-   pTable->SetRowSpan(rowIdx + 1, colIdx, SKIP_CELL);
    (*pTable)(rowIdx, colIdx++) << _T("Cumulative") << rptNewLine << _T("Total");
 
    rowIdx++;
@@ -1559,15 +1546,11 @@ rptRcTable* CTimeStepDetailsChapterBuilder::BuildIncrementalStressTable(IBroker*
    RowIndexType rowIdx = 0;
    ColumnIndexType colIdx = 0;
    pTable->SetRowSpan(rowIdx,colIdx,2);
-   pTable->SetRowSpan(rowIdx+1,colIdx,SKIP_CELL);
    (*pTable)(rowIdx,colIdx++) << _T("Component");
 
    pTable->SetColumnSpan(rowIdx,colIdx,nLoads);
-   (*pTable)(rowIdx,colIdx++) << _T("Loading");
-   for ( IndexType i = 0; i < nLoads-1; i++ )
-   {
-      pTable->SetColumnSpan(rowIdx,colIdx++,SKIP_CELL);
-   }
+   (*pTable)(rowIdx,colIdx) << _T("Loading");
+   colIdx += nLoads;
    
    rowIdx++;
    colIdx = 1;
@@ -1579,11 +1562,9 @@ rptRcTable* CTimeStepDetailsChapterBuilder::BuildIncrementalStressTable(IBroker*
 
    rowIdx = 0;
    pTable->SetRowSpan(rowIdx,colIdx,2);
-   pTable->SetRowSpan(rowIdx+1,colIdx,SKIP_CELL);
    (*pTable)(rowIdx,colIdx++) << COLHDR(_T("Incremental") << rptNewLine << _T("Total"),rptStressUnitTag,pDisplayUnits->GetStressUnit());
 
    pTable->SetRowSpan(rowIdx,colIdx,2);
-   pTable->SetRowSpan(rowIdx+1,colIdx,SKIP_CELL);
    (*pTable)(rowIdx,colIdx++) << COLHDR(_T("Cumulative") << rptNewLine << _T("Total"),rptStressUnitTag,pDisplayUnits->GetStressUnit());
 
    // Label the rows in column 0
@@ -1748,19 +1729,14 @@ rptRcTable* CTimeStepDetailsChapterBuilder::BuildConcreteStressSummaryTable(IBro
    RowIndexType rowIdx = 0;
    ColumnIndexType colIdx = 0;
    pTable->SetRowSpan(rowIdx,colIdx,2);
-   pTable->SetRowSpan(rowIdx+1,colIdx,SKIP_CELL);
    (*pTable)(rowIdx,colIdx++) << _T("Interval");
 
    pTable->SetRowSpan(rowIdx,colIdx,2);
-   pTable->SetRowSpan(rowIdx+1,colIdx,SKIP_CELL);
    (*pTable)(rowIdx,colIdx++) << _T("Stress");
 
    pTable->SetColumnSpan(rowIdx,colIdx,nLoads);
-   (*pTable)(rowIdx,colIdx++) << _T("Loading");
-   for ( IndexType i = 0; i < nLoads-1; i++ )
-   {
-      pTable->SetColumnSpan(rowIdx,colIdx++,SKIP_CELL);
-   }
+   (*pTable)(rowIdx,colIdx) << _T("Loading");
+   colIdx += nLoads;
    
    rowIdx++;
    colIdx = 2;
@@ -1774,7 +1750,6 @@ rptRcTable* CTimeStepDetailsChapterBuilder::BuildConcreteStressSummaryTable(IBro
    {
       rowIdx = 0;
       pTable->SetRowSpan(rowIdx,colIdx,2);
-      pTable->SetRowSpan(rowIdx+1,colIdx,SKIP_CELL);
       (*pTable)(rowIdx,colIdx) << _T("Total");
    }
 
@@ -1790,7 +1765,6 @@ rptRcTable* CTimeStepDetailsChapterBuilder::BuildConcreteStressSummaryTable(IBro
       colIdx = 0;
 
       pTable->SetRowSpan(rowIdx,colIdx,2);
-      pTable->SetRowSpan(rowIdx+1,colIdx,SKIP_CELL);
       (*pTable)(rowIdx,colIdx++) << LABEL_INTERVAL(intervalIdx);
 
       (*pTable)(rowIdx,colIdx) << _T("Top, ") << RPT_FTOP;
@@ -1832,7 +1806,6 @@ rptRcTable* CTimeStepDetailsChapterBuilder::BuildConcreteStressSummaryTable(IBro
       colIdx = 0;
 
       pTable->SetRowSpan(rowIdx,colIdx,2);
-      pTable->SetRowSpan(rowIdx+1,colIdx,SKIP_CELL);
       (*pTable)(rowIdx,colIdx++) << _T("Total");
 
       (*pTable)(rowIdx,colIdx) << _T("Top, ") << RPT_FTOP;
@@ -2165,9 +2138,7 @@ void CTimeStepDetailsChapterBuilder::ReportCreepDetails(rptChapter* pChapter,IBr
             }
             else
             {
-               pTable->SetRowSpan(rowIdx,colIdx++,SKIP_CELL);
-               pTable->SetRowSpan(rowIdx,colIdx++,SKIP_CELL);
-               pTable->SetRowSpan(rowIdx,colIdx++,SKIP_CELL);
+               colIdx += 3;
             }
 
             ATLASSERT(::IsEqual(startAge,pConcrete->Creep[prevIntervalIdx].pStartDetails->age));
@@ -2773,8 +2744,6 @@ void CTimeStepDetailsChapterBuilder::ReportStrandRelaxationDetails(rptChapter* p
 
       colIdx = 0;
       pTable->SetRowSpan(rowIdx,colIdx,3);
-      pTable->SetRowSpan(rowIdx+1,colIdx,SKIP_CELL);
-      pTable->SetRowSpan(rowIdx+2,colIdx,SKIP_CELL);
       (*pTable)(rowIdx,colIdx++) << LABEL_INTERVAL(intervalIdx);
       
       for ( int i = 0; i < 3; i++ )
@@ -2914,10 +2883,6 @@ void CTimeStepDetailsChapterBuilder::ReportTendonRelaxationDetails(rptChapter* p
 
       colIdx = 0;
       pTable->SetRowSpan(rowIdx,colIdx,nTendons);
-      for ( DuctIndexType tendonIdx = 1; tendonIdx < nTendons; tendonIdx++ )
-      {
-         pTable->SetRowSpan(rowIdx+tendonIdx,colIdx,SKIP_CELL);
-      }
       (*pTable)(rowIdx,colIdx++) << LABEL_INTERVAL(intervalIdx);
       
       for ( DuctIndexType tendonIdx = 0; tendonIdx < nTendons; tendonIdx++ )

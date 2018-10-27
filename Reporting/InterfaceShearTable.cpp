@@ -97,7 +97,6 @@ void CInterfaceShearTable::Build( IBroker* pBroker, rptChapter* pChapter,
 
    table->SetNumberOfHeaderRows(2);
    table->SetRowSpan(0,0,2);
-   table->SetRowSpan(1,0,SKIP_CELL);
 
    (*table)(0,0)  << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
 
@@ -107,24 +106,17 @@ void CInterfaceShearTable::Build( IBroker* pBroker, rptChapter* pChapter,
    (*table)(1,2)  << COLHDR(_T("s")<<Sub(_T("max")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
    (*table)(1,3) << _T("Status");
 
-   table->SetColumnSpan(0,2,3);
-   (*table)(0, 2) << LrfdCw8th(_T("5.8.4.4"), _T("5.7.4.2"));
+   table->SetColumnSpan(0,4,3);
+   (*table)(0, 4) << LrfdCw8th(_T("5.8.4.4"), _T("5.7.4.2"));
    (*table)(1,4)  << COLHDR(_T("a")<<Sub(_T("vf")), rptAreaPerLengthUnitTag, pDisplayUnits->GetAvOverSUnit() );
    (*table)(1,5)  << COLHDR(_T("a")<<Sub(_T("vf min")), rptAreaPerLengthUnitTag, pDisplayUnits->GetAvOverSUnit() );
    (*table)(1,6) << _T("Status");
 
-   table->SetColumnSpan(0,3,3);
-   (*table)(0,3) << LrfdCw8th(_T("5.8.4.1"),_T("5.7.4.1"));
+   table->SetColumnSpan(0,7,3);
+   (*table)(0,7) << LrfdCw8th(_T("5.8.4.1"),_T("5.7.4.1"));
    (*table)(1,7)  << COLHDR(_T("|v") << Sub(_T("ui")) << _T("|"), rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
    (*table)(1,8)  << COLHDR(symbol(phi) << _T("v") << Sub(_T("ni")), rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
    (*table)(1,9) << _T("Status") << rptNewLine << _T("(") << symbol(phi) << Sub2(_T("v"),_T("ni")) << _T("/") << _T("|") << Sub2(_T("v"),_T("ui")) << _T("|)");
-
-   table->SetColumnSpan(0,4,SKIP_CELL);
-   table->SetColumnSpan(0,5,SKIP_CELL);
-   table->SetColumnSpan(0,6,SKIP_CELL);
-   table->SetColumnSpan(0,7,SKIP_CELL);
-   table->SetColumnSpan(0,8,SKIP_CELL);
-   table->SetColumnSpan(0,9,SKIP_CELL);
 
    // Fill up the table
    Float64 bvmax = lrfdConcreteUtil::UpperLimitForBv();

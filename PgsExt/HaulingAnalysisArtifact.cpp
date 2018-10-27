@@ -74,9 +74,9 @@ pgsWsdotHaulingAnalysisArtifact& pgsWsdotHaulingAnalysisArtifact::operator= (con
 }
 
 //======================== OPERATIONS =======================================
-bool pgsWsdotHaulingAnalysisArtifact::Passed() const
+bool pgsWsdotHaulingAnalysisArtifact::Passed(bool bIgnoreConfirationLimits) const
 {
-   return m_HaulingArtifact.Passed();
+   return m_HaulingArtifact.Passed(bIgnoreConfirationLimits);
 }
 
 bool pgsWsdotHaulingAnalysisArtifact::Passed(pgsTypes::HaulingSlope slope) const
@@ -172,11 +172,6 @@ Float64 pgsWsdotHaulingAnalysisArtifact::GetMinFsForCracking(pgsTypes::HaulingSl
 Float64 pgsWsdotHaulingAnalysisArtifact::GetFsRollover(pgsTypes::HaulingSlope slope) const
 {
    return m_HaulingArtifact.GetHaulingResults().MinFsRollover[slope];
-}
-
-Float64 pgsWsdotHaulingAnalysisArtifact::GetFsFailure(pgsTypes::HaulingSlope slope) const
-{
-   return m_HaulingArtifact.GetHaulingResults().MinFsFailure[slope];
 }
 
 void pgsWsdotHaulingAnalysisArtifact::GetRequiredConcreteStrength(pgsTypes::HaulingSlope slope,Float64 *pfciComp,Float64 *pfcTensionNoRebar,Float64 *pfcTensionWithRebar) const

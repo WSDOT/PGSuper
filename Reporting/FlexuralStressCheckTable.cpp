@@ -434,25 +434,22 @@ void CFlexuralStressCheckTable::BuildTable(rptChapter* pChapter,
       p_table->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
    }
 
-   ColumnIndexType col1 = 0;
-   ColumnIndexType col2 = 0;
+   ColumnIndexType col = 0;
 
    if ( segIdx == ALL_SEGMENTS )
    {
-      p_table->SetRowSpan(0,col1,2);
-      p_table->SetRowSpan(1,col2++,SKIP_CELL);
-      (*p_table)(0,col1++) << COLHDR(RPT_LFT_SUPPORT_LOCATION,    rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+      p_table->SetRowSpan(0,col,2);
+      (*p_table)(0,col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION,    rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
    }
 
-   p_table->SetRowSpan(0,col1,2);
-   p_table->SetRowSpan(1,col2++,SKIP_CELL);
+   p_table->SetRowSpan(0,col,2);
    if ( intervalIdx == releaseIntervalIdx )
    {
-      (*p_table)(0,col1++) << COLHDR(RPT_GDR_END_LOCATION,    rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+      (*p_table)(0,col++) << COLHDR(RPT_GDR_END_LOCATION,    rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
    }
    else
    {
-      (*p_table)(0,col1++) << COLHDR(RPT_LFT_SUPPORT_LOCATION,    rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+      (*p_table)(0,col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION,    rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
    }
 
 
@@ -463,17 +460,18 @@ void CFlexuralStressCheckTable::BuildTable(rptChapter* pChapter,
    {
       if ( columnInc == 2 )
       {
-         p_table->SetColumnSpan(0,col1,2);
+         p_table->SetColumnSpan(0,col,2);
       }
-      (*p_table)(0,col1++) << _T("Pre-tension");
+      (*p_table)(0,col) << _T("Pre-tension");
+
       if ( bApplicableTensionTop || bApplicableCompressionTop )
       {
-         (*p_table)(1,col2++) << COLHDR(RPT_FTOP, rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+         (*p_table)(1,col++) << COLHDR(RPT_FTOP, rptStressUnitTag, pDisplayUnits->GetStressUnit() );
       }
 
       if ( bApplicableTensionBot || bApplicableCompressionBot )
       {
-         (*p_table)(1,col2++) << COLHDR(RPT_FBOT, rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+         (*p_table)(1,col++) << COLHDR(RPT_FBOT, rptStressUnitTag, pDisplayUnits->GetStressUnit() );
       }
    }
 
@@ -481,16 +479,16 @@ void CFlexuralStressCheckTable::BuildTable(rptChapter* pChapter,
    {
       if ( columnInc == 2 )
       {
-         p_table->SetColumnSpan(0,col1,2);
+         p_table->SetColumnSpan(0,col,2);
       }
-      (*p_table)(0,col1++) << _T("Post-tension");
+      (*p_table)(0,col) << _T("Post-tension");
       if ( bApplicableTensionTop || bApplicableCompressionTop )
       {
-         (*p_table)(1,col2++) << COLHDR(RPT_FTOP, rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+         (*p_table)(1,col++) << COLHDR(RPT_FTOP, rptStressUnitTag, pDisplayUnits->GetStressUnit() );
       }
       if ( bApplicableTensionBot || bApplicableCompressionBot )
       {
-         (*p_table)(1,col2++) << COLHDR(RPT_FBOT, rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+         (*p_table)(1,col++) << COLHDR(RPT_FBOT, rptStressUnitTag, pDisplayUnits->GetStressUnit() );
       }
    }
 
@@ -498,75 +496,75 @@ void CFlexuralStressCheckTable::BuildTable(rptChapter* pChapter,
    {
       if ( columnInc == 2 )
       {
-         p_table->SetColumnSpan(0,col1,2);
+         p_table->SetColumnSpan(0,col,2);
       }
 
       if (bFutureOverlay)
       {
-         (*p_table)(0, col1++) << strLimitState << rptNewLine << _T("Tension");
+         (*p_table)(0, col) << strLimitState << rptNewLine << _T("Tension");
       }
       else
       {
-         (*p_table)(0, col1++) << strLimitState;
+         (*p_table)(0, col) << strLimitState;
       }
       if ( bApplicableTensionTop || bApplicableCompressionTop )
       {
-         (*p_table)(1,col2++) << COLHDR(RPT_FTOP, rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+         (*p_table)(1,col++) << COLHDR(RPT_FTOP, rptStressUnitTag, pDisplayUnits->GetStressUnit() );
       }
       if ( bApplicableTensionBot || bApplicableCompressionBot )
       {
-         (*p_table)(1,col2++) << COLHDR(RPT_FBOT, rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+         (*p_table)(1,col++) << COLHDR(RPT_FBOT, rptStressUnitTag, pDisplayUnits->GetStressUnit() );
       }
 
       if ( columnInc == 2 )
       {
-         p_table->SetColumnSpan(0,col1,2);
+         p_table->SetColumnSpan(0,col,2);
       }
       if (bFutureOverlay)
       {
-         (*p_table)(0, col1++) << _T("Demand") << rptNewLine << _T("Tension");
+         (*p_table)(0, col) << _T("Demand") << rptNewLine << _T("Tension");
       }
       else
       {
-         (*p_table)(0, col1++) << _T("Demand");
+         (*p_table)(0, col) << _T("Demand");
       }
       if ( bApplicableTensionTop || bApplicableCompressionTop )
       {
-         (*p_table)(1,col2++) << COLHDR(RPT_FTOP, rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+         (*p_table)(1,col++) << COLHDR(RPT_FTOP, rptStressUnitTag, pDisplayUnits->GetStressUnit() );
       }
       if ( bApplicableTensionBot || bApplicableCompressionBot )
       {
-         (*p_table)(1,col2++) << COLHDR(RPT_FBOT, rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+         (*p_table)(1,col++) << COLHDR(RPT_FBOT, rptStressUnitTag, pDisplayUnits->GetStressUnit() );
       }
 
       if (bFutureOverlay)
       {
          if (columnInc == 2)
          {
-            p_table->SetColumnSpan(0, col1, 2);
+            p_table->SetColumnSpan(0, col, 2);
          }
-         (*p_table)(0, col1++) << strLimitState << rptNewLine << _T("Compression");
+         (*p_table)(0, col) << strLimitState << rptNewLine << _T("Compression");
          if (bApplicableTensionTop || bApplicableCompressionTop)
          {
-            (*p_table)(1, col2++) << COLHDR(RPT_FTOP, rptStressUnitTag, pDisplayUnits->GetStressUnit());
+            (*p_table)(1, col++) << COLHDR(RPT_FTOP, rptStressUnitTag, pDisplayUnits->GetStressUnit());
          }
          if (bApplicableTensionBot || bApplicableCompressionBot)
          {
-            (*p_table)(1, col2++) << COLHDR(RPT_FBOT, rptStressUnitTag, pDisplayUnits->GetStressUnit());
+            (*p_table)(1, col++) << COLHDR(RPT_FBOT, rptStressUnitTag, pDisplayUnits->GetStressUnit());
          }
 
          if (columnInc == 2)
          {
-            p_table->SetColumnSpan(0, col1, 2);
+            p_table->SetColumnSpan(0, col, 2);
          }
-         (*p_table)(0, col1++) << _T("Demand") << rptNewLine << _T("Compression");
+         (*p_table)(0, col) << _T("Demand") << rptNewLine << _T("Compression");
          if (bApplicableTensionTop || bApplicableCompressionTop)
          {
-            (*p_table)(1, col2++) << COLHDR(RPT_FTOP, rptStressUnitTag, pDisplayUnits->GetStressUnit());
+            (*p_table)(1, col++) << COLHDR(RPT_FTOP, rptStressUnitTag, pDisplayUnits->GetStressUnit());
          }
          if (bApplicableTensionBot || bApplicableCompressionBot)
          {
-            (*p_table)(1, col2++) << COLHDR(RPT_FBOT, rptStressUnitTag, pDisplayUnits->GetStressUnit());
+            (*p_table)(1, col++) << COLHDR(RPT_FBOT, rptStressUnitTag, pDisplayUnits->GetStressUnit());
          }
       }
    }
@@ -575,50 +573,43 @@ void CFlexuralStressCheckTable::BuildTable(rptChapter* pChapter,
    {
       if ( bIsWithRebarAllowableApplicableTop && bIsWithRebarAllowableApplicableBot )
       {
-         p_table->SetColumnSpan(0,col1,2);
-         (*p_table)(0,col1++) << _T("Tension Limit");
-         (*p_table)(1,col2++) << COLHDR(_T("Top"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-         (*p_table)(1,col2++) << COLHDR(_T("Bottom"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+         p_table->SetColumnSpan(0,col,2);
+         (*p_table)(0,col) << _T("Tension Limit");
+         (*p_table)(1,col++) << COLHDR(_T("Top"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+         (*p_table)(1,col++) << COLHDR(_T("Bottom"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
       }
       else
       {
-         p_table->SetRowSpan(0,col1,2);
-         p_table->SetRowSpan(1,col2++,SKIP_CELL);
+         p_table->SetRowSpan(0,col,2);
          if ( bIsWithRebarAllowableApplicableTop )
          {
-            (*p_table)(0,col1++) << COLHDR(_T("Tension") << rptNewLine << _T("Limit") << rptNewLine << _T("Top"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+            (*p_table)(0,col) << COLHDR(_T("Tension") << rptNewLine << _T("Limit") << rptNewLine << _T("Top"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
          }
          else
          {
-            (*p_table)(0,col1++) << COLHDR(_T("Tension") << rptNewLine << _T("Limit") << rptNewLine << _T("Bottom"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+            (*p_table)(0,col) << COLHDR(_T("Tension") << rptNewLine << _T("Limit") << rptNewLine << _T("Bottom"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
          }
       }
    }
 
-   p_table->SetColumnSpan(0,col1,2);
-   (*p_table)(0,col1++) << _T("Precompressed") << rptNewLine << _T("Tensile Zone");
-   (*p_table)(1,col2++) << _T("Top");
-   (*p_table)(1,col2++) << _T("Bottom");
+   p_table->SetColumnSpan(0,col,2);
+   (*p_table)(0,col) << _T("Precompressed") << rptNewLine << _T("Tensile Zone");
+   (*p_table)(1,col++) << _T("Top");
+   (*p_table)(1,col++) << _T("Bottom");
 
    if ( bApplicableTensionTop || bApplicableTensionBot )
    {
-         p_table->SetRowSpan(0,col1,2);
-         p_table->SetRowSpan(1,col2++,SKIP_CELL);
-         (*p_table)(0,col1++) <<_T("Tension") << rptNewLine << _T("Status") << rptNewLine << _T("(C/D)");
+         p_table->SetRowSpan(0,col,2);
+         (*p_table)(0,col++) <<_T("Tension") << rptNewLine << _T("Status") << rptNewLine << _T("(C/D)");
    }
 
    if ( bApplicableCompressionTop || bApplicableCompressionBot )
    {
-         p_table->SetRowSpan(0,col1,2);
-         p_table->SetRowSpan(1,col2++,SKIP_CELL);
-         (*p_table)(0,col1++) <<_T("Compression") << rptNewLine << _T("Status") << rptNewLine << _T("(C/D)");
+         p_table->SetRowSpan(0,col,2);
+         (*p_table)(0,col++) <<_T("Compression") << rptNewLine << _T("Status") << rptNewLine << _T("(C/D)");
    }
 
    p_table->SetNumberOfHeaderRows(2);
-   for ( ColumnIndexType i = col1; i < p_table->GetNumberOfColumns(); i++ )
-   {
-      p_table->SetColumnSpan(0,i,SKIP_CELL);
-   }
 
    SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
    SegmentIndexType firstSegIdx = (segIdx == ALL_SEGMENTS ? 0 : segIdx);

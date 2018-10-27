@@ -395,6 +395,13 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
       CShearCheckTable().BuildNotes(pChapter,pBroker,pGirderArtifact,pDisplayUnits,lastIntervalIdx,pgsTypes::StrengthII,bStrutAndTieRequired);
    }
 
+   // Longitudinal reinforcement for shear
+   CLongReinfShearCheck().Build(pChapter, pBroker, pGirderArtifact, lastIntervalIdx, pgsTypes::StrengthI, pDisplayUnits);
+   if (bPermit)
+   {
+      CLongReinfShearCheck().Build(pChapter, pBroker, pGirderArtifact, lastIntervalIdx, pgsTypes::StrengthII, pDisplayUnits);
+   }
+
    // Interface Shear check
    if ( pBridge->IsCompositeDeck() )
    {
@@ -416,13 +423,6 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
    {
       // confinement check
       write_confinement_check(pBroker,pDisplayUnits,pGirderArtifact,pChapter);
-   }
-
-   // Longitudinal reinforcement for shear
-   CLongReinfShearCheck().Build(pChapter,pBroker,pGirderArtifact,lastIntervalIdx,pgsTypes::StrengthI,pDisplayUnits);
-   if ( bPermit )
-   {
-      CLongReinfShearCheck().Build(pChapter,pBroker,pGirderArtifact,lastIntervalIdx,pgsTypes::StrengthII,pDisplayUnits);
    }
 
    // Optional live load deflection

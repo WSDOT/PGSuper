@@ -55,6 +55,7 @@ class CGirderMainSheet : public CPropertySheet, public CShearSteelPageParent
 public:
 	CGirderMainSheet( GirderLibraryEntry& rentry,  
       bool allowEditing,
+      int refCount,
       CWnd* pParentWnd = nullptr, UINT iSelectPage = 0);
 
    void SetBeamFactory(IBeamFactory* pBeamFactory);
@@ -82,6 +83,7 @@ public:
    bool                m_bAllowEditing;
 
    // work directly on an entry so we don't duplicate data.
+   int m_RefCount;
    GirderLibraryEntry& m_Entry;
    CString m_Name;
 

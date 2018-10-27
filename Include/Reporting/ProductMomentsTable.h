@@ -101,49 +101,43 @@ RowIndexType ConfigureProductLoadTableHeading(IBroker* pBroker,rptRcTable* p_tab
    //
    // Set up table headings
    //
-   ColumnIndexType row1col = 0;
-   ColumnIndexType row2col = 0;
+   ColumnIndexType col = 0;
 
-   p_table->SetRowSpan(0,row1col,2);
-   p_table->SetRowSpan(1,row2col++,SKIP_CELL);
+   p_table->SetRowSpan(0,col,2);
    if ( bPierTable )
    {
-      (*p_table)(0,row1col++) << _T("");
+      (*p_table)(0,col++) << _T("");
    }
    else
    {
-      (*p_table)(0,row1col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION,   rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+      (*p_table)(0,col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION,   rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
    }
 
    if ( bSegments )
    {
-      p_table->SetRowSpan(0,row1col,2);
-      p_table->SetRowSpan(1,row2col++,SKIP_CELL);
-      (*p_table)(0,row1col++) << COLHDR(_T("Erected") << rptNewLine << _T("Segments"),          M, unitT );
+      p_table->SetRowSpan(0,col,2);
+      (*p_table)(0,col++) << COLHDR(_T("Erected") << rptNewLine << _T("Segments"),          M, unitT );
    }
 
-   p_table->SetRowSpan(0,row1col,2);
-   p_table->SetRowSpan(1,row2col++,SKIP_CELL);
-   (*p_table)(0,row1col++) << COLHDR(pProductLoads->GetProductLoadName(pgsTypes::pftGirder),          M, unitT );
+   p_table->SetRowSpan(0,col,2);
+   (*p_table)(0,col++) << COLHDR(pProductLoads->GetProductLoadName(pgsTypes::pftGirder),          M, unitT );
 
-   p_table->SetRowSpan(0,row1col,2);
-   p_table->SetRowSpan(1,row2col++,SKIP_CELL);
-   (*p_table)(0,row1col++) << COLHDR(pProductLoads->GetProductLoadName(pgsTypes::pftDiaphragm),       M, unitT );
+   p_table->SetRowSpan(0,col,2);
+   (*p_table)(0,col++) << COLHDR(pProductLoads->GetProductLoadName(pgsTypes::pftDiaphragm),       M, unitT );
 
    if ( bShearKey )
    {
       if ( analysisType == pgsTypes::Envelope && bContinuousBeforeDeckCasting )
       {
-         p_table->SetColumnSpan(0,row1col,2);
-         (*p_table)(0,row1col++) << pProductLoads->GetProductLoadName(pgsTypes::pftShearKey);
-         (*p_table)(1,row2col++) << COLHDR(_T("Max"), M, unitT );
-         (*p_table)(1,row2col++) << COLHDR(_T("Min"), M, unitT );
+         p_table->SetColumnSpan(0,col,2);
+         (*p_table)(0,col) << pProductLoads->GetProductLoadName(pgsTypes::pftShearKey);
+         (*p_table)(1,col++) << COLHDR(_T("Max"), M, unitT );
+         (*p_table)(1,col++) << COLHDR(_T("Min"), M, unitT );
       }
       else
       {
-         p_table->SetRowSpan(0,row1col,2);
-         p_table->SetRowSpan(1,row2col++,SKIP_CELL);
-         (*p_table)(0,row1col++) << COLHDR(pProductLoads->GetProductLoadName(pgsTypes::pftShearKey), M, unitT );
+         p_table->SetRowSpan(0,col,2);
+         (*p_table)(0,col++) << COLHDR(pProductLoads->GetProductLoadName(pgsTypes::pftShearKey), M, unitT );
       }
    }
 
@@ -151,16 +145,15 @@ RowIndexType ConfigureProductLoadTableHeading(IBroker* pBroker,rptRcTable* p_tab
    {
       if (analysisType == pgsTypes::Envelope && bContinuousBeforeDeckCasting)
       {
-         p_table->SetColumnSpan(0, row1col, 2);
-         (*p_table)(0, row1col++) << pProductLoads->GetProductLoadName(pgsTypes::pftLongitudinalJoint);
-         (*p_table)(1, row2col++) << COLHDR(_T("Max"), M, unitT);
-         (*p_table)(1, row2col++) << COLHDR(_T("Min"), M, unitT);
+         p_table->SetColumnSpan(0, col, 2);
+         (*p_table)(0, col) << pProductLoads->GetProductLoadName(pgsTypes::pftLongitudinalJoint);
+         (*p_table)(1, col++) << COLHDR(_T("Max"), M, unitT);
+         (*p_table)(1, col++) << COLHDR(_T("Min"), M, unitT);
       }
       else
       {
-         p_table->SetRowSpan(0, row1col, 2);
-         p_table->SetRowSpan(1, row2col++, SKIP_CELL);
-         (*p_table)(0, row1col++) << COLHDR(pProductLoads->GetProductLoadName(pgsTypes::pftLongitudinalJoint), M, unitT);
+         p_table->SetRowSpan(0, col, 2);
+         (*p_table)(0, col++) << COLHDR(pProductLoads->GetProductLoadName(pgsTypes::pftLongitudinalJoint), M, unitT);
       }
    }
 
@@ -168,16 +161,15 @@ RowIndexType ConfigureProductLoadTableHeading(IBroker* pBroker,rptRcTable* p_tab
    {
       if ( analysisType == pgsTypes::Envelope && bContinuousBeforeDeckCasting )
       {
-         p_table->SetColumnSpan(0,row1col,2);
-         (*p_table)(0,row1col++) << pProductLoads->GetProductLoadName(pgsTypes::pftConstruction);
-         (*p_table)(1,row2col++) << COLHDR(_T("Max"), M, unitT );
-         (*p_table)(1,row2col++) << COLHDR(_T("Min"), M, unitT );
+         p_table->SetColumnSpan(0,col,2);
+         (*p_table)(0,col) << pProductLoads->GetProductLoadName(pgsTypes::pftConstruction);
+         (*p_table)(1,col++) << COLHDR(_T("Max"), M, unitT );
+         (*p_table)(1,col++) << COLHDR(_T("Min"), M, unitT );
       }
       else
       {
-         p_table->SetRowSpan(0,row1col,2);
-         p_table->SetRowSpan(1,row2col++,SKIP_CELL);
-         (*p_table)(0,row1col++) << COLHDR(pProductLoads->GetProductLoadName(pgsTypes::pftConstruction), M, unitT );
+         p_table->SetRowSpan(0,col,2);
+         (*p_table)(0,col++) << COLHDR(pProductLoads->GetProductLoadName(pgsTypes::pftConstruction), M, unitT );
       }
    }
 
@@ -185,32 +177,29 @@ RowIndexType ConfigureProductLoadTableHeading(IBroker* pBroker,rptRcTable* p_tab
    {
       if (analysisType == pgsTypes::Envelope && bContinuousBeforeDeckCasting)
       {
-         p_table->SetColumnSpan(0, row1col, 2);
-         (*p_table)(0, row1col++) << pProductLoads->GetProductLoadName(pgsTypes::pftSlab);
-         (*p_table)(1, row2col++) << COLHDR(_T("Max"), M, unitT);
-         (*p_table)(1, row2col++) << COLHDR(_T("Min"), M, unitT);
+         p_table->SetColumnSpan(0, col, 2);
+         (*p_table)(0, col) << pProductLoads->GetProductLoadName(pgsTypes::pftSlab);
+         (*p_table)(1, col++) << COLHDR(_T("Max"), M, unitT);
+         (*p_table)(1, col++) << COLHDR(_T("Min"), M, unitT);
 
-         p_table->SetColumnSpan(0, row1col, 2);
-         (*p_table)(0, row1col++) << pProductLoads->GetProductLoadName(pgsTypes::pftSlabPad);
-         (*p_table)(1, row2col++) << COLHDR(_T("Max"), M, unitT);
-         (*p_table)(1, row2col++) << COLHDR(_T("Min"), M, unitT);
+         p_table->SetColumnSpan(0, col, 2);
+         (*p_table)(0, col) << pProductLoads->GetProductLoadName(pgsTypes::pftSlabPad);
+         (*p_table)(1, col++) << COLHDR(_T("Max"), M, unitT);
+         (*p_table)(1, col++) << COLHDR(_T("Min"), M, unitT);
       }
       else
       {
-         p_table->SetRowSpan(0, row1col, 2);
-         p_table->SetRowSpan(1, row2col++, SKIP_CELL);
-         (*p_table)(0, row1col++) << COLHDR(pProductLoads->GetProductLoadName(pgsTypes::pftSlab), M, unitT);
+         p_table->SetRowSpan(0, col, 2);
+         (*p_table)(0, col++) << COLHDR(pProductLoads->GetProductLoadName(pgsTypes::pftSlab), M, unitT);
 
-         p_table->SetRowSpan(0, row1col, 2);
-         p_table->SetRowSpan(1, row2col++, SKIP_CELL);
-         (*p_table)(0, row1col++) << COLHDR(pProductLoads->GetProductLoadName(pgsTypes::pftSlabPad), M, unitT);
+         p_table->SetRowSpan(0, col, 2);
+         (*p_table)(0, col++) << COLHDR(pProductLoads->GetProductLoadName(pgsTypes::pftSlabPad), M, unitT);
       }
 
       if (bSlabShrinkage)
       {
-         p_table->SetRowSpan(0, row1col, 2);
-         p_table->SetRowSpan(1, row2col++, SKIP_CELL);
-         (*p_table)(0, row1col++) << COLHDR(_T("Deck") << rptNewLine << _T("Shrinkage"), M, unitT);
+         p_table->SetRowSpan(0, col, 2);
+         (*p_table)(0, col++) << COLHDR(_T("Deck") << rptNewLine << _T("Shrinkage"), M, unitT);
       }
    }
 
@@ -218,16 +207,15 @@ RowIndexType ConfigureProductLoadTableHeading(IBroker* pBroker,rptRcTable* p_tab
    {
       if ( analysisType == pgsTypes::Envelope && bContinuousBeforeDeckCasting )
       {
-         p_table->SetColumnSpan(0,row1col,2);
-         (*p_table)(0,row1col++) << pProductLoads->GetProductLoadName(pgsTypes::pftSlabPanel);
-         (*p_table)(1,row2col++) << COLHDR(_T("Max"), M, unitT );
-         (*p_table)(1,row2col++) << COLHDR(_T("Min"), M, unitT );
+         p_table->SetColumnSpan(0,col,2);
+         (*p_table)(0,col) << pProductLoads->GetProductLoadName(pgsTypes::pftSlabPanel);
+         (*p_table)(1,col++) << COLHDR(_T("Max"), M, unitT );
+         (*p_table)(1,col++) << COLHDR(_T("Min"), M, unitT );
       }
       else
       {
-         p_table->SetRowSpan(0,row1col,2);
-         p_table->SetRowSpan(1,row2col++,SKIP_CELL);
-         (*p_table)(0,row1col++) << COLHDR(pProductLoads->GetProductLoadName(pgsTypes::pftSlabPanel), M, unitT );
+         p_table->SetRowSpan(0,col,2);
+         (*p_table)(0,col++) << COLHDR(pProductLoads->GetProductLoadName(pgsTypes::pftSlabPanel), M, unitT );
       }
    }
 
@@ -235,90 +223,87 @@ RowIndexType ConfigureProductLoadTableHeading(IBroker* pBroker,rptRcTable* p_tab
    {
       if ( bSidewalk )
       {
-         p_table->SetColumnSpan(0,row1col,2);
-         (*p_table)(0,row1col++) << pProductLoads->GetProductLoadName(pgsTypes::pftSidewalk);
-         (*p_table)(1,row2col++) << COLHDR(_T("Max"), M, unitT );
-         (*p_table)(1,row2col++) << COLHDR(_T("Min"), M, unitT );
+         p_table->SetColumnSpan(0,col,2);
+         (*p_table)(0,col) << pProductLoads->GetProductLoadName(pgsTypes::pftSidewalk);
+         (*p_table)(1,col++) << COLHDR(_T("Max"), M, unitT );
+         (*p_table)(1,col++) << COLHDR(_T("Min"), M, unitT );
       }
 
-      p_table->SetColumnSpan(0,row1col,2);
-      (*p_table)(0,row1col++) << pProductLoads->GetProductLoadName(pgsTypes::pftTrafficBarrier);
-      (*p_table)(1,row2col++) << COLHDR(_T("Max"), M, unitT );
-      (*p_table)(1,row2col++) << COLHDR(_T("Min"), M, unitT );
+      p_table->SetColumnSpan(0,col,2);
+      (*p_table)(0,col) << pProductLoads->GetProductLoadName(pgsTypes::pftTrafficBarrier);
+      (*p_table)(1,col++) << COLHDR(_T("Max"), M, unitT );
+      (*p_table)(1,col++) << COLHDR(_T("Min"), M, unitT );
 
       if ( bOverlay )
       {
-         p_table->SetColumnSpan(0,row1col,2);
+         p_table->SetColumnSpan(0,col,2);
          if (bIsFutureOverlay)
          {
-            (*p_table)(0,row1col++) << _T("Future") << rptNewLine << pProductLoads->GetProductLoadName(pgsTypes::pftOverlay);
+            (*p_table)(0,col) << _T("Future") << rptNewLine << pProductLoads->GetProductLoadName(pgsTypes::pftOverlay);
          }
          else
          {
-            (*p_table)(0,row1col++) << pProductLoads->GetProductLoadName(pgsTypes::pftOverlay);
+            (*p_table)(0,col) << pProductLoads->GetProductLoadName(pgsTypes::pftOverlay);
          }
-         (*p_table)(1,row2col++) << COLHDR(_T("Max"), M, unitT );
-         (*p_table)(1,row2col++) << COLHDR(_T("Min"), M, unitT );
+         (*p_table)(1,col++) << COLHDR(_T("Max"), M, unitT );
+         (*p_table)(1,col++) << COLHDR(_T("Min"), M, unitT );
       }
    }
    else
    {
       if ( bSidewalk )
       {
-         p_table->SetRowSpan(0,row1col,2);
-         p_table->SetRowSpan(1,row2col++,SKIP_CELL);
-         (*p_table)(0,row1col++) << COLHDR(pProductLoads->GetProductLoadName(pgsTypes::pftSidewalk), M, unitT );
+         p_table->SetRowSpan(0,col,2);
+         (*p_table)(0,col++) << COLHDR(pProductLoads->GetProductLoadName(pgsTypes::pftSidewalk), M, unitT );
       }
 
-      p_table->SetRowSpan(0,row1col,2);
-      p_table->SetRowSpan(1,row2col++,SKIP_CELL);
-      (*p_table)(0,row1col++) << COLHDR(pProductLoads->GetProductLoadName(pgsTypes::pftTrafficBarrier), M, unitT );
+      p_table->SetRowSpan(0,col,2);
+      (*p_table)(0,col++) << COLHDR(pProductLoads->GetProductLoadName(pgsTypes::pftTrafficBarrier), M, unitT );
 
       if ( bOverlay )
       {
-         p_table->SetRowSpan(0,row1col,2);
-         p_table->SetRowSpan(1,row2col++,SKIP_CELL);
+         p_table->SetRowSpan(0,col,2);
          if (bIsFutureOverlay)
          {
-            (*p_table)(0,row1col++) << COLHDR(_T("Future") << rptNewLine << pProductLoads->GetProductLoadName(pgsTypes::pftOverlay), M, unitT );
+            (*p_table)(0,col++) << COLHDR(_T("Future") << rptNewLine << pProductLoads->GetProductLoadName(pgsTypes::pftOverlay), M, unitT );
          }
          else
          {
-            (*p_table)(0,row1col++) << COLHDR(pProductLoads->GetProductLoadName(pgsTypes::pftOverlay), M, unitT );
+            (*p_table)(0,col++) << COLHDR(pProductLoads->GetProductLoadName(pgsTypes::pftOverlay), M, unitT );
          }
       }
    }
 
    if ( bPedLoading )
    {
-      p_table->SetColumnSpan(0,row1col,2);
-      (*p_table)(0,row1col++) << _T("$ Pedestrian");
-      (*p_table)(1,row2col++) << COLHDR(_T("Max"), M, unitT );
-      (*p_table)(1,row2col++) << COLHDR(_T("Min"), M, unitT );
+      p_table->SetColumnSpan(0,col,2);
+      (*p_table)(0,col) << _T("$ Pedestrian");
+      (*p_table)(1,col++) << COLHDR(_T("Max"), M, unitT );
+      (*p_table)(1,col++) << COLHDR(_T("Min"), M, unitT );
    }
 
    if ( bDesign )
    {
 
-      p_table->SetColumnSpan(0,row1col,2);
-      (*p_table)(0,row1col++) << _T("* Design Live Load");
-      (*p_table)(1,row2col++) << COLHDR(_T("Max"),   M, unitT );
-      (*p_table)(1,row2col++) << COLHDR(_T("Min"),   M, unitT );
+      p_table->SetColumnSpan(0,col,2);
+      (*p_table)(0,col) << _T("* Design Live Load");
+      (*p_table)(1,col++) << COLHDR(_T("Max"),   M, unitT );
+      (*p_table)(1,col++) << COLHDR(_T("Min"),   M, unitT );
 
       if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
       {
-         p_table->SetColumnSpan(0,row1col,2);
-         (*p_table)(0,row1col++) << _T("* Fatigue Live Load");
-         (*p_table)(1,row2col++) << COLHDR(_T("Max"),   M, unitT );
-         (*p_table)(1,row2col++) << COLHDR(_T("Min"),   M, unitT );
+         p_table->SetColumnSpan(0,col,2);
+         (*p_table)(0,col) << _T("* Fatigue Live Load");
+         (*p_table)(1,col++) << COLHDR(_T("Max"),   M, unitT );
+         (*p_table)(1,col++) << COLHDR(_T("Min"),   M, unitT );
       }
 
       if ( bPermit )
       {
-         p_table->SetColumnSpan(0,row1col,2);
-         (*p_table)(0,row1col++) << _T("* Permit Live Load");
-         (*p_table)(1,row2col++) << COLHDR(_T("Max"),   M, unitT );
-         (*p_table)(1,row2col++) << COLHDR(_T("Min"),   M, unitT );
+         p_table->SetColumnSpan(0,col,2);
+         (*p_table)(0,col) << _T("* Permit Live Load");
+         (*p_table)(1,col++) << COLHDR(_T("Max"),   M, unitT );
+         (*p_table)(1,col++) << COLHDR(_T("Min"),   M, unitT );
       }
    }
 
@@ -326,57 +311,51 @@ RowIndexType ConfigureProductLoadTableHeading(IBroker* pBroker,rptRcTable* p_tab
    {
       if ( !bDesign && (pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) || pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating)) )
       {
-         p_table->SetColumnSpan(0,row1col,2);
-         (*p_table)(0,row1col++) << _T("* Design Live Load");
-         (*p_table)(1,row2col++) << COLHDR(_T("Max"),   M, unitT );
-         (*p_table)(1,row2col++) << COLHDR(_T("Min"),   M, unitT );
+         p_table->SetColumnSpan(0,col,2);
+         (*p_table)(0,col) << _T("* Design Live Load");
+         (*p_table)(1,col++) << COLHDR(_T("Max"),   M, unitT );
+         (*p_table)(1,col++) << COLHDR(_T("Min"),   M, unitT );
       }
 
       if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) )
       {
-         p_table->SetColumnSpan(0,row1col,2);
-         (*p_table)(0,row1col++) << _T("* Legal Routine");
-         (*p_table)(1,row2col++) << COLHDR(_T("Max"),   M, unitT );
-         (*p_table)(1,row2col++) << COLHDR(_T("Min"),   M, unitT );
+         p_table->SetColumnSpan(0,col,2);
+         (*p_table)(0,col) << _T("* Legal Routine");
+         (*p_table)(1,col++) << COLHDR(_T("Max"),   M, unitT );
+         (*p_table)(1,col++) << COLHDR(_T("Min"),   M, unitT );
       }
 
       if (pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special))
       {
-         p_table->SetColumnSpan(0, row1col, 2);
-         (*p_table)(0, row1col++) << _T("* Legal Special");
-         (*p_table)(1, row2col++) << COLHDR(_T("Max"), M, unitT);
-         (*p_table)(1, row2col++) << COLHDR(_T("Min"), M, unitT);
+         p_table->SetColumnSpan(0, col, 2);
+         (*p_table)(0, col) << _T("* Legal Special");
+         (*p_table)(1, col++) << COLHDR(_T("Max"), M, unitT);
+         (*p_table)(1, col++) << COLHDR(_T("Min"), M, unitT);
       }
 
       if (pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Emergency))
       {
-         p_table->SetColumnSpan(0, row1col, 2);
-         (*p_table)(0, row1col++) << _T("* Legal Emergency");
-         (*p_table)(1, row2col++) << COLHDR(_T("Max"), M, unitT);
-         (*p_table)(1, row2col++) << COLHDR(_T("Min"), M, unitT);
+         p_table->SetColumnSpan(0, col, 2);
+         (*p_table)(0, col) << _T("* Legal Emergency");
+         (*p_table)(1, col++) << COLHDR(_T("Max"), M, unitT);
+         (*p_table)(1, col++) << COLHDR(_T("Min"), M, unitT);
       }
 
       if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine) )
       {
-         p_table->SetColumnSpan(0,row1col,2);
-         (*p_table)(0,row1col++) << _T("* Permit Routine");
-         (*p_table)(1,row2col++) << COLHDR(_T("Max"),   M, unitT );
-         (*p_table)(1,row2col++) << COLHDR(_T("Min"),   M, unitT );
+         p_table->SetColumnSpan(0,col,2);
+         (*p_table)(0,col) << _T("* Permit Routine");
+         (*p_table)(1,col++) << COLHDR(_T("Max"),   M, unitT );
+         (*p_table)(1,col++) << COLHDR(_T("Min"),   M, unitT );
       }
 
       if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Special) )
       {
-         p_table->SetColumnSpan(0,row1col,2);
-         (*p_table)(0,row1col++) << _T("* Permit Special");
-         (*p_table)(1,row2col++) << COLHDR(_T("Max"),   M, unitT );
-         (*p_table)(1,row2col++) << COLHDR(_T("Min"),   M, unitT );
+         p_table->SetColumnSpan(0,col,2);
+         (*p_table)(0,col) << _T("* Permit Special");
+         (*p_table)(1,col++) << COLHDR(_T("Max"),   M, unitT );
+         (*p_table)(1,col++) << COLHDR(_T("Min"),   M, unitT );
       }
-   }
-
-   ColumnIndexType nColumns = p_table->GetNumberOfColumns();
-   for ( ColumnIndexType i = row1col; i < nColumns; i++ )
-   {
-      p_table->SetColumnSpan(0,i,SKIP_CELL);
    }
 
    return p_table->GetNumberOfHeaderRows(); // index of first row to report data

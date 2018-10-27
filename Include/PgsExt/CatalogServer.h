@@ -267,6 +267,7 @@ class CHttpCatalogServer : public CIniCatalogServer
 {
 public:
    // constructor for anonymous server
+   CHttpCatalogServer(LPCTSTR strAppName, const CString& strExt);
    CHttpCatalogServer(LPCTSTR strAppName,LPCTSTR strServerName, const CString& address,const CString& strExt):
       CIniCatalogServer(strAppName, strServerName, srtInternetHttp, address, strExt)
    {

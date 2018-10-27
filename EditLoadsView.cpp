@@ -35,6 +35,7 @@
 #include <EAF\EAFDisplayUnits.h>
 
 #include <PgsExt\InsertDeleteLoad.h>
+#include <PgsExt\MacroTxn.h>
 
 #include <IFace\Bridge.h>
 #include <IFace\EditByUI.h>
@@ -100,6 +101,10 @@ BOOL CEditLoadsView::PreTranslateMessage(MSG* pMsg)
       if (pMsg->wParam == VK_RETURN && pMsg->hwnd == m_LoadsListCtrl.GetSafeHwnd())
       {
          return CWnd::PreTranslateMessage(pMsg);
+      }
+      else if (pMsg->wParam == VK_DELETE)
+      {
+         OnDeleteLoad();
       }
    }
    return __super::PreTranslateMessage(pMsg);
@@ -266,35 +271,40 @@ void CEditLoadsView::OnAddMomentload()
 
 void CEditLoadsView::OnDeleteLoad() 
 {
+   pgsMacroTxn macro;
+   macro.Name(_T("Delete loads"));
+
    POSITION pos = m_LoadsListCtrl.GetFirstSelectedItemPosition( );
-   if (pos != nullptr)
+   while (pos != nullptr)
    {
       int nItem = m_LoadsListCtrl.GetNextSelectedItem(pos);
 
       DWORD_PTR data = m_LoadsListCtrl.GetItemData(nItem);
       WORD load_type = LOWORD(data);
-      WORD load_idx = HIWORD(data);
+      LoadIDType load_id = (LoadIDType)HIWORD(data);
 
       if (load_type == W_POINT_LOAD)
       {
-         txnDeletePointLoad* pTxn = new txnDeletePointLoad(load_idx);
-         txnTxnManager::GetInstance()->Execute(pTxn);
+         txnDeletePointLoad* pTxn = new txnDeletePointLoad(load_id);
+         macro.AddTransaction(pTxn);
       }
       else if (load_type == W_DISTRIBUTED_LOAD)
       {
-         txnDeleteDistributedLoad* pTxn = new txnDeleteDistributedLoad(load_idx);
-         txnTxnManager::GetInstance()->Execute(pTxn);
+         txnDeleteDistributedLoad* pTxn = new txnDeleteDistributedLoad(load_id);
+         macro.AddTransaction(pTxn);
       }
       else if (load_type == W_MOMENT_LOAD)
       {
-         txnDeleteMomentLoad* pTxn = new txnDeleteMomentLoad(load_idx);
-         txnTxnManager::GetInstance()->Execute(pTxn);
+         txnDeleteMomentLoad* pTxn = new txnDeleteMomentLoad(load_id);
+         macro.AddTransaction(pTxn);
       }
       else
       {
          ATLASSERT(false);
       }
    }
+
+   txnTxnManager::GetInstance()->Execute(macro);
 }
 
 void CEditLoadsView::OnEditLoad() 
@@ -333,11 +343,11 @@ void CEditLoadsView::InsertData()
    for (ipl = 0; ipl < pl_cnt; ipl++)
    {
       m_LoadsListCtrl.InsertItem(irow, _T("Point"));
+      const CPointLoadData* pLoad = pUdl->GetPointLoad(ipl);
 
       // use item data to save/retreive type information and location in vectors
-      m_LoadsListCtrl.SetItemData(irow, MAKELONG(W_POINT_LOAD, ipl) );
+      m_LoadsListCtrl.SetItemData(irow, MAKELONG(W_POINT_LOAD, pLoad->m_ID) );
 
-      const CPointLoadData* pLoad = pUdl->GetPointLoad(ipl);
 
       UpdatePointLoadItem(irow, *pLoad);
 
@@ -350,10 +360,10 @@ void CEditLoadsView::InsertData()
    {
       m_LoadsListCtrl.InsertItem(irow, _T("Moment"));
 
-      // use item data to save/retreive type information and location in vectors
-      m_LoadsListCtrl.SetItemData(irow, MAKELONG(W_MOMENT_LOAD, ipl) );
-
       const CMomentLoadData* pLoad = pUdl->GetMomentLoad(ipl);
+
+      // use item data to save/retreive type information and location in vectors
+      m_LoadsListCtrl.SetItemData(irow, MAKELONG(W_MOMENT_LOAD, pLoad->m_ID) );
 
       UpdateMomentLoadItem(irow, *pLoad);
 
@@ -366,10 +376,10 @@ void CEditLoadsView::InsertData()
    {
       m_LoadsListCtrl.InsertItem(irow, _T("Distributed"));
 
-      // use item data to save/retreive type information and location in vectors
-      m_LoadsListCtrl.SetItemData(irow, MAKELONG(W_DISTRIBUTED_LOAD, idl) );
-
       const CDistributedLoadData* pLoad = pUdl->GetDistributedLoad(idl);
+
+      // use item data to save/retreive type information and location in vectors
+      m_LoadsListCtrl.SetItemData(irow, MAKELONG(W_DISTRIBUTED_LOAD, pLoad->m_ID) );
 
       UpdateDistributedLoadItem(irow, *pLoad);
 
@@ -580,20 +590,20 @@ void CEditLoadsView::EditLoad(POSITION pos)
 
    DWORD_PTR data = m_LoadsListCtrl.GetItemData(nItem);
    WORD load_type = LOWORD(data);
-   WORD load_idx = HIWORD(data);
+   LoadIDType load_id = (LoadIDType)HIWORD(data);
 
    GET_IFACE(IEditByUI,pEditByUI);
    if (load_type == W_POINT_LOAD)
    {
-      pEditByUI->EditPointLoad(load_idx);
+      pEditByUI->EditPointLoadByID(load_id);
    }
    else if (load_type == W_MOMENT_LOAD)
    {
-      pEditByUI->EditMomentLoad(load_idx);
+      pEditByUI->EditMomentLoadByID(load_id);
    }
    else if (load_type == W_DISTRIBUTED_LOAD)
    {
-      pEditByUI->EditDistributedLoad(load_idx);
+      pEditByUI->EditDistributedLoadByID(load_id);
    }
    else
    {
@@ -604,11 +614,9 @@ void CEditLoadsView::EditLoad(POSITION pos)
 
 void CEditLoadsView::OnClickLoadsList(NMHDR* pNMHDR, LRESULT* pResult) 
 {
-   POSITION pos = m_LoadsListCtrl.GetFirstSelectedItemPosition( );
-
-   BOOL sel = (pos!=nullptr) ? TRUE:FALSE;
-   m_EditCtrl.EnableWindow(sel);
-   m_DeleteCtrl.EnableWindow(sel);
+   UINT nSelected = m_LoadsListCtrl.GetSelectedCount();
+   m_EditCtrl.EnableWindow(nSelected == 1 ? TRUE : FALSE);
+   m_DeleteCtrl.EnableWindow(0 < nSelected ? TRUE : FALSE);
 	
 	*pResult = 0;
 }
@@ -772,48 +780,31 @@ bool SortObject::m_bSortAscending = true;
 EventIndexType SortObject::GetEvent(LPARAM lParam)
 {
    WORD load_type = LOWORD(lParam);
-   WORD load_idx  = HIWORD(lParam);
+   LoadIDType load_id = (LoadIDType)HIWORD(lParam);
 
-   IDType loadID = INVALID_ID;
-   if ( load_type == W_POINT_LOAD )
-   {
-      const CPointLoadData* pLoadData = m_pUdl->GetPointLoad(load_idx);
-      loadID = pLoadData->m_ID;
-   }
-   else if ( load_type == W_DISTRIBUTED_LOAD )
-   {
-      const CDistributedLoadData* pLoadData = m_pUdl->GetDistributedLoad(load_idx);
-      loadID = pLoadData->m_ID;
-   }
-   else
-   {
-      const CMomentLoadData* pLoadData = m_pUdl->GetMomentLoad(load_idx);
-      loadID = pLoadData->m_ID;
-   }
-
-   ATLASSERT(loadID != INVALID_ID);
-   EventIndexType eventIdx = m_pTimelineMgr->FindUserLoadEventIndex(loadID);
+   ATLASSERT(load_id != INVALID_ID);
+   EventIndexType eventIdx = m_pTimelineMgr->FindUserLoadEventIndex(load_id);
    return eventIdx;
 }
 
 UserLoads::LoadCase SortObject::GetLoadCase(LPARAM lParam)
 {
    WORD load_type = LOWORD(lParam);
-   WORD load_idx  = HIWORD(lParam);
+   LoadIDType load_id = (LoadIDType)HIWORD(lParam);
 
    if ( load_type == W_POINT_LOAD )
    {
-      const CPointLoadData* pLoadData = m_pUdl->GetPointLoad(load_idx);
+      const CPointLoadData* pLoadData = m_pUdl->FindPointLoad(load_id);
       return pLoadData->m_LoadCase;
    }
    else if ( load_type == W_DISTRIBUTED_LOAD )
    {
-      const CDistributedLoadData* pLoadData = m_pUdl->GetDistributedLoad(load_idx);
+      const CDistributedLoadData* pLoadData = m_pUdl->FindDistributedLoad(load_id);
       return pLoadData->m_LoadCase;
    }
    else
    {
-      const CMomentLoadData* pLoadData = m_pUdl->GetMomentLoad(load_idx);
+      const CMomentLoadData* pLoadData = m_pUdl->FindMomentLoad(load_id);
       return pLoadData->m_LoadCase;
    }
 }
@@ -821,21 +812,21 @@ UserLoads::LoadCase SortObject::GetLoadCase(LPARAM lParam)
 SpanIndexType SortObject::GetSpan(LPARAM lParam)
 {
    WORD load_type = LOWORD(lParam);
-   WORD load_idx  = HIWORD(lParam);
+   LoadIDType load_id = (LoadIDType)HIWORD(lParam);
 
    if ( load_type == W_POINT_LOAD )
    {
-      const CPointLoadData* pLoadData = m_pUdl->GetPointLoad(load_idx);
+      const CPointLoadData* pLoadData = m_pUdl->FindPointLoad(load_id);
       return pLoadData->m_SpanKey.spanIndex;
    }
    else if ( load_type == W_DISTRIBUTED_LOAD )
    {
-      const CDistributedLoadData* pLoadData = m_pUdl->GetDistributedLoad(load_idx);
+      const CDistributedLoadData* pLoadData = m_pUdl->FindDistributedLoad(load_id);
       return pLoadData->m_SpanKey.spanIndex;
    }
    else
    {
-      const CMomentLoadData* pLoadData = m_pUdl->GetMomentLoad(load_idx);
+      const CMomentLoadData* pLoadData = m_pUdl->FindMomentLoad(load_id);
       return pLoadData->m_SpanKey.spanIndex;
    }
 }
@@ -843,21 +834,21 @@ SpanIndexType SortObject::GetSpan(LPARAM lParam)
 GirderIndexType SortObject::GetGirder(LPARAM lParam)
 {
    WORD load_type = LOWORD(lParam);
-   WORD load_idx  = HIWORD(lParam);
+   LoadIDType load_id = (LoadIDType)HIWORD(lParam);
 
    if ( load_type == W_POINT_LOAD )
    {
-      const CPointLoadData* pLoadData = m_pUdl->GetPointLoad(load_idx);
+      const CPointLoadData* pLoadData = m_pUdl->FindPointLoad(load_id);
       return pLoadData->m_SpanKey.girderIndex;
    }
    else if ( load_type == W_DISTRIBUTED_LOAD )
    {
-      const CDistributedLoadData* pLoadData = m_pUdl->GetDistributedLoad(load_idx);
+      const CDistributedLoadData* pLoadData = m_pUdl->FindDistributedLoad(load_id);
       return pLoadData->m_SpanKey.girderIndex;
    }
    else
    {
-      const CMomentLoadData* pLoadData = m_pUdl->GetMomentLoad(load_idx);
+      const CMomentLoadData* pLoadData = m_pUdl->FindMomentLoad(load_id);
       return pLoadData->m_SpanKey.girderIndex;
    }
 }
@@ -865,16 +856,16 @@ GirderIndexType SortObject::GetGirder(LPARAM lParam)
 Float64 SortObject::GetLocation(LPARAM lParam)
 {
    WORD load_type = LOWORD(lParam);
-   WORD load_idx  = HIWORD(lParam);
+   LoadIDType load_id = (LoadIDType)HIWORD(lParam);
 
    if ( load_type == W_POINT_LOAD )
    {
-      const CPointLoadData* pLoadData = m_pUdl->GetPointLoad(load_idx);
+      const CPointLoadData* pLoadData = m_pUdl->FindPointLoad(load_id);
       return (pLoadData->m_Fractional ? -1 : 1)*pLoadData->m_Location;
    }
    else if ( load_type == W_DISTRIBUTED_LOAD )
    {
-      const CDistributedLoadData* pLoadData = m_pUdl->GetDistributedLoad(load_idx);
+      const CDistributedLoadData* pLoadData = m_pUdl->FindDistributedLoad(load_id);
       if ( pLoadData->m_Type == UserLoads::Uniform )
       {
          return 0;
@@ -886,7 +877,7 @@ Float64 SortObject::GetLocation(LPARAM lParam)
    }
    else
    {
-      const CMomentLoadData* pLoadData = m_pUdl->GetMomentLoad(load_idx);
+      const CMomentLoadData* pLoadData = m_pUdl->FindMomentLoad(load_id);
       return (pLoadData->m_Fractional ? -1 : 1)*pLoadData->m_Location;
    }
 }
@@ -894,21 +885,21 @@ Float64 SortObject::GetLocation(LPARAM lParam)
 Float64 SortObject::GetMagnitude(LPARAM lParam)
 {
    WORD load_type = LOWORD(lParam);
-   WORD load_idx  = HIWORD(lParam);
+   LoadIDType load_id = (LoadIDType)HIWORD(lParam);
 
    if ( load_type == W_POINT_LOAD )
    {
-      const CPointLoadData* pLoadData = m_pUdl->GetPointLoad(load_idx);
+      const CPointLoadData* pLoadData = m_pUdl->FindPointLoad(load_id);
       return pLoadData->m_Magnitude;
    }
    else if ( load_type == W_DISTRIBUTED_LOAD )
    {
-      const CDistributedLoadData* pLoadData = m_pUdl->GetDistributedLoad(load_idx);
+      const CDistributedLoadData* pLoadData = m_pUdl->FindDistributedLoad(load_id);
       return pLoadData->m_WStart;
    }
    else
    {
-      const CMomentLoadData* pLoadData = m_pUdl->GetMomentLoad(load_idx);
+      const CMomentLoadData* pLoadData = m_pUdl->FindMomentLoad(load_id);
       return pLoadData->m_Magnitude;
    }
 }
@@ -916,21 +907,21 @@ Float64 SortObject::GetMagnitude(LPARAM lParam)
 CString SortObject::GetDescription(LPARAM lParam)
 {
    WORD load_type = LOWORD(lParam);
-   WORD load_idx  = HIWORD(lParam);
+   LoadIDType load_id = (LoadIDType)HIWORD(lParam);
 
    if ( load_type == W_POINT_LOAD )
    {
-      const CPointLoadData* pLoadData = m_pUdl->GetPointLoad(load_idx);
+      const CPointLoadData* pLoadData = m_pUdl->FindPointLoad(load_id);
       return pLoadData->m_Description.c_str();
    }
    else if ( load_type == W_DISTRIBUTED_LOAD )
    {
-      const CDistributedLoadData* pLoadData = m_pUdl->GetDistributedLoad(load_idx);
+      const CDistributedLoadData* pLoadData = m_pUdl->FindDistributedLoad(load_id);
       return pLoadData->m_Description.c_str();
    }
    else
    {
-      const CMomentLoadData* pLoadData = m_pUdl->GetMomentLoad(load_idx);
+      const CMomentLoadData* pLoadData = m_pUdl->FindMomentLoad(load_id);
       return pLoadData->m_Description.c_str();
    }
 }
@@ -938,11 +929,8 @@ CString SortObject::GetDescription(LPARAM lParam)
 int SortObject::SortFunc(LPARAM lParam1,LPARAM lParam2,LPARAM lParamSort)
 {
    WORD load_type_1 = LOWORD(lParam1);
-   WORD load_idx_1  = HIWORD(lParam1);
-
    WORD load_type_2 = LOWORD(lParam2);
-   WORD load_idx_2  = HIWORD(lParam2);
-
+   
    int result = 0;
    switch( lParamSort )
    {

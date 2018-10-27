@@ -152,99 +152,78 @@ void girder_points(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* 
 
       pTable->SetNumberOfHeaderRows(3);
 
-      ColumnIndexType row0col = 0;
-      ColumnIndexType row1col = 0;
-      ColumnIndexType row2col = 0;
+      ColumnIndexType col = 0;
 
       // header row 1 and first one (or two) columns
       if ( nGroups != nSpans )
       {
-         (*pTable)(0,row0col) << _T("Girder");
-         pTable->SetRowSpan(0,row0col++,3);  // span 3 rows
-         pTable->SetRowSpan(1,row1col++,SKIP_CELL);
-         pTable->SetRowSpan(2,row2col++,SKIP_CELL);
+         pTable->SetRowSpan(0, col, 3);  // span 3 rows
+         (*pTable)(0,col++) << _T("Girder");
       }
 
-      (*pTable)(0,row0col)  << strSegmentLabel;
-      pTable->SetRowSpan(0,row0col++,3);  // span 3 rows
-      pTable->SetRowSpan(1,row1col++,SKIP_CELL);
-      pTable->SetRowSpan(2,row2col++,SKIP_CELL);
+      pTable->SetRowSpan(0, col, 3);  // span 3 rows
+      (*pTable)(0,col++)  << strSegmentLabel;
 
 
-      (*pTable)(0,row0col)  << _T("Start of ") << strSegmentLabel;
-      pTable->SetColumnSpan(0,row0col++,9);
+      pTable->SetColumnSpan(0,col,9);
+      (*pTable)(0, col) << _T("Start of ") << strSegmentLabel;
 
-      (*pTable)(0,row0col)  << _T("End of ") << strSegmentLabel;
-      pTable->SetColumnSpan(0,row0col++,9);
-
-      ColumnIndexType i;
-      for ( i = row0col; i < pTable->GetNumberOfColumns(); i++ )
+      pTable->SetColumnSpan(1, col, 3);
+      if (grpIdx == 0)
       {
-         pTable->SetColumnSpan(0,i,SKIP_CELL);
-      }
-
-
-
-      // header row 1
-
-      if ( grpIdx == 0 )
-      {
-         (*pTable)(1,row1col) << _T("Abutment Line");
+         (*pTable)(1, col) << _T("Abutment Line");
       }
       else
       {
-         (*pTable)(1,row1col) << _T("Pier Line");
+         (*pTable)(1, col) << _T("Pier Line");
       }
-      
-      pTable->SetColumnSpan(1,row1col++,3);
 
-      (*pTable)(1,row1col) << strSegmentLabel << _T(" End");
-      pTable->SetColumnSpan(1,row1col++,3);
+      (*pTable)(2, col++) << _T("East") << rptNewLine << _T("(X)");
+      (*pTable)(2, col++) << _T("North") << rptNewLine << _T("(Y)");
+      (*pTable)(2, col++) << COLHDR(_T("Deck Elev"), rptLengthUnitTag, pDisplayUnits->GetAlignmentLengthUnit());
 
-      (*pTable)(1,row1col) << _T("CL Bearing");
-      pTable->SetColumnSpan(1,row1col++,3);
+      pTable->SetColumnSpan(1, col, 3);
+      (*pTable)(1, col) << strSegmentLabel << _T(" End");
+      (*pTable)(2, col++) << _T("East") << rptNewLine << _T("(X)");
+      (*pTable)(2, col++) << _T("North") << rptNewLine << _T("(Y)");
+      (*pTable)(2, col++) << COLHDR(_T("Deck Elev"), rptLengthUnitTag, pDisplayUnits->GetAlignmentLengthUnit());
 
-      (*pTable)(1,row1col) << _T("CL Bearing");
-      pTable->SetColumnSpan(1,row1col++,3);
+      pTable->SetColumnSpan(1, col, 3);
+      (*pTable)(1, col) << _T("CL Bearing");
+      (*pTable)(2, col++) << _T("East") << rptNewLine << _T("(X)");
+      (*pTable)(2, col++) << _T("North") << rptNewLine << _T("(Y)");
+      (*pTable)(2, col++) << COLHDR(_T("Deck Elev"), rptLengthUnitTag, pDisplayUnits->GetAlignmentLengthUnit());
 
-      (*pTable)(1,row1col) << strSegmentLabel << _T(" End");
-      pTable->SetColumnSpan(1,row1col++,3);
 
+
+      pTable->SetColumnSpan(0, col, 9);
+      (*pTable)(0,col)  << _T("End of ") << strSegmentLabel;
+
+      pTable->SetColumnSpan(1, col, 3);
+      (*pTable)(1,col) << _T("CL Bearing");
+      (*pTable)(2, col++) << _T("East") << rptNewLine << _T("(X)");
+      (*pTable)(2, col++) << _T("North") << rptNewLine << _T("(Y)");
+      (*pTable)(2, col++) << COLHDR(_T("Deck Elev"), rptLengthUnitTag, pDisplayUnits->GetAlignmentLengthUnit());
+
+      pTable->SetColumnSpan(1,col,3);
+      (*pTable)(1, col) << strSegmentLabel << _T(" End");
+      (*pTable)(2, col++) << _T("East") << rptNewLine << _T("(X)");
+      (*pTable)(2, col++) << _T("North") << rptNewLine << _T("(Y)");
+      (*pTable)(2, col++) << COLHDR(_T("Deck Elev"), rptLengthUnitTag, pDisplayUnits->GetAlignmentLengthUnit());
+
+      pTable->SetColumnSpan(1, col, 3);
       if ( grpIdx == nGroups-1 )
       {
-         (*pTable)(1,row1col) << _T("Abutment Line");
+         (*pTable)(1,col) << _T("Abutment Line");
       }
       else
       {
-         (*pTable)(1,row1col) << _T("Pier Line");
+         (*pTable)(1,col) << _T("Pier Line");
       }
+      (*pTable)(2, col++) << _T("East") << rptNewLine << _T("(X)");
+      (*pTable)(2, col++) << _T("North") << rptNewLine << _T("(Y)");
+      (*pTable)(2, col++) << COLHDR(_T("Deck Elev"), rptLengthUnitTag, pDisplayUnits->GetAlignmentLengthUnit());
 
-      pTable->SetColumnSpan(1,row1col++,3);
-
-      for ( i = row1col; i < pTable->GetNumberOfColumns(); i++ )
-      {
-         pTable->SetColumnSpan(1,i,SKIP_CELL);
-      }
-
-      // header row 2
-      (*pTable)(2,row2col++) << _T("East") << rptNewLine << _T("(X)");
-      (*pTable)(2,row2col++) << _T("North") << rptNewLine << _T("(Y)");
-      (*pTable)(2,row2col++) << COLHDR(_T("Deck Elev"), rptLengthUnitTag, pDisplayUnits->GetAlignmentLengthUnit() );
-      (*pTable)(2,row2col++) << _T("East") << rptNewLine << _T("(X)");
-      (*pTable)(2,row2col++) << _T("North") << rptNewLine << _T("(Y)");
-      (*pTable)(2,row2col++) << COLHDR(_T("Deck Elev"), rptLengthUnitTag, pDisplayUnits->GetAlignmentLengthUnit() );
-      (*pTable)(2,row2col++) << _T("East") << rptNewLine << _T("(X)");
-      (*pTable)(2,row2col++) << _T("North") << rptNewLine << _T("(Y)");
-      (*pTable)(2,row2col++) << COLHDR(_T("Deck Elev"), rptLengthUnitTag, pDisplayUnits->GetAlignmentLengthUnit() );
-      (*pTable)(2,row2col++) << _T("East") << rptNewLine << _T("(X)");
-      (*pTable)(2,row2col++) << _T("North") << rptNewLine << _T("(Y)");
-      (*pTable)(2,row2col++) << COLHDR(_T("Deck Elev"), rptLengthUnitTag, pDisplayUnits->GetAlignmentLengthUnit() );
-      (*pTable)(2,row2col++) << _T("East") << rptNewLine << _T("(X)");
-      (*pTable)(2,row2col++) << _T("North") << rptNewLine << _T("(Y)");
-      (*pTable)(2,row2col++) << COLHDR(_T("Deck Elev"), rptLengthUnitTag, pDisplayUnits->GetAlignmentLengthUnit() );
-      (*pTable)(2,row2col++) << _T("East") << rptNewLine << _T("(X)");
-      (*pTable)(2,row2col++) << _T("North") << rptNewLine << _T("(Y)");
-      (*pTable)(2,row2col++) << COLHDR(_T("Deck Elev"), rptLengthUnitTag, pDisplayUnits->GetAlignmentLengthUnit() );
 
       RowIndexType row = pTable->GetNumberOfHeaderRows();
 
@@ -263,10 +242,6 @@ void girder_points(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* 
          {
             (*pTable)(row,col) << LABEL_GIRDER(gdrIdx);
             pTable->SetRowSpan(row,col,nSegments);
-            for ( SegmentIndexType segIdx = 1; segIdx < nSegments; segIdx++ )
-            {
-               pTable->SetRowSpan(row+segIdx,col,SKIP_CELL);
-            }
             col++;
          }
 
@@ -391,95 +366,76 @@ void girder_offsets(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter*
 
       pTable->SetNumberOfHeaderRows(3);
 
-      ColumnIndexType row0col = 0;
-      ColumnIndexType row1col = 0;
-      ColumnIndexType row2col = 0;
+      ColumnIndexType col = 0;
 
       // header row 1 and first one (or two) columns
       if ( nGroups != nSpans )
       {
-         (*pTable)(0,row0col) << _T("Girder");
-         pTable->SetRowSpan(0,row0col++,3);  // span 3 rows
-         pTable->SetRowSpan(1,row1col++,SKIP_CELL);
-         pTable->SetRowSpan(2,row2col++,SKIP_CELL);
+         pTable->SetRowSpan(0, col, 3);  // span 3 rows
+         (*pTable)(0,col++) << _T("Girder");
       }
 
-      (*pTable)(0,row0col)  << strSegmentLabel;
-      pTable->SetRowSpan(0,row0col++,3);  // span 3 rows
-      pTable->SetRowSpan(1,row1col++,SKIP_CELL);
-      pTable->SetRowSpan(2,row2col++,SKIP_CELL);
+      pTable->SetRowSpan(0, col, 3);  // span 3 rows
+      (*pTable)(0,col++)  << strSegmentLabel;
 
-      (*pTable)(0,row0col)  << _T("Start of ") << strSegmentLabel;
-      pTable->SetColumnSpan(0,row0col++,9);
+      pTable->SetColumnSpan(0, col, 9);
+      (*pTable)(0,col)  << _T("Start of ") << strSegmentLabel;
 
-      (*pTable)(0,row0col)  << _T("End of ") << strSegmentLabel;
-      pTable->SetColumnSpan(0,row0col++,9);
-
-      ColumnIndexType i;
-      for ( i = row0col; i < pTable->GetNumberOfColumns(); i++ )
+      pTable->SetColumnSpan(1, col, 3);
+      if (grpIdx == 0)
       {
-         pTable->SetColumnSpan(0,i,SKIP_CELL);
-      }
-
-      // header row 1
-
-      if ( grpIdx == 0 )
-      {
-         (*pTable)(1,row1col) << _T("Abutment Line");
+         (*pTable)(1, col) << _T("Abutment Line");
       }
       else
       {
-         (*pTable)(1,row1col) << _T("Pier Line");
+         (*pTable)(1, col) << _T("Pier Line");
       }
-      
-      pTable->SetColumnSpan(1,row1col++,3);
+      (*pTable)(2, col++) << _T("Station");
+      (*pTable)(2, col++) << COLHDR(_T("Offset"), rptLengthUnitTag, pDisplayUnits->GetAlignmentLengthUnit());
+      (*pTable)(2, col++) << COLHDR(_T("Deck Elev"), rptLengthUnitTag, pDisplayUnits->GetAlignmentLengthUnit());
 
-      (*pTable)(1,row1col) << strSegmentLabel << _T(" End");
-      pTable->SetColumnSpan(1,row1col++,3);
 
-      (*pTable)(1,row1col) << _T("CL Bearing");
-      pTable->SetColumnSpan(1,row1col++,3);
+      pTable->SetColumnSpan(1,col, 3);
+      (*pTable)(1, col) << strSegmentLabel << _T(" End");
+      (*pTable)(2, col++) << _T("Station");
+      (*pTable)(2, col++) << COLHDR(_T("Offset"), rptLengthUnitTag, pDisplayUnits->GetAlignmentLengthUnit());
+      (*pTable)(2, col++) << COLHDR(_T("Deck Elev"), rptLengthUnitTag, pDisplayUnits->GetAlignmentLengthUnit());
 
-      (*pTable)(1,row1col) << _T("CL Bearing");
-      pTable->SetColumnSpan(1,row1col++,3);
+      pTable->SetColumnSpan(1, col, 3);
+      (*pTable)(1, col) << _T("CL Bearing");
+      (*pTable)(2, col++) << _T("Station");
+      (*pTable)(2, col++) << COLHDR(_T("Offset"), rptLengthUnitTag, pDisplayUnits->GetAlignmentLengthUnit());
+      (*pTable)(2, col++) << COLHDR(_T("Deck Elev"), rptLengthUnitTag, pDisplayUnits->GetAlignmentLengthUnit());
 
-      (*pTable)(1,row1col) << strSegmentLabel << _T(" End");
-      pTable->SetColumnSpan(1,row1col++,3);
 
-      if ( grpIdx == nGroups-1 )
+
+      pTable->SetColumnSpan(0, col, 9);
+      (*pTable)(0,col)  << _T("End of ") << strSegmentLabel;
+
+      pTable->SetColumnSpan(1, col, 3);
+      (*pTable)(1, col) << _T("CL Bearing");
+      (*pTable)(2, col++) << _T("Station");
+      (*pTable)(2, col++) << COLHDR(_T("Offset"), rptLengthUnitTag, pDisplayUnits->GetAlignmentLengthUnit());
+      (*pTable)(2, col++) << COLHDR(_T("Deck Elev"), rptLengthUnitTag, pDisplayUnits->GetAlignmentLengthUnit());
+
+      pTable->SetColumnSpan(1, col, 3);
+      (*pTable)(1, col) << strSegmentLabel << _T(" End");
+      (*pTable)(2, col++) << _T("Station");
+      (*pTable)(2, col++) << COLHDR(_T("Offset"), rptLengthUnitTag, pDisplayUnits->GetAlignmentLengthUnit());
+      (*pTable)(2, col++) << COLHDR(_T("Deck Elev"), rptLengthUnitTag, pDisplayUnits->GetAlignmentLengthUnit());
+
+      pTable->SetColumnSpan(1, col, 3);
+      if (grpIdx == 0)
       {
-         (*pTable)(1,row1col) << _T("Abutment Line");
+         (*pTable)(1, col) << _T("Abutment Line");
       }
       else
       {
-         (*pTable)(1,row1col) << _T("Pier Line");
+         (*pTable)(1, col) << _T("Pier Line");
       }
-      pTable->SetColumnSpan(1,row1col++,3);
-
-      for ( i = row1col; i < pTable->GetNumberOfColumns(); i++ )
-      {
-         pTable->SetColumnSpan(1,i,SKIP_CELL);
-      }
-
-      // header row 2
-      (*pTable)(2,row2col++) << _T("Station");
-      (*pTable)(2,row2col++) << COLHDR(_T("Offset"), rptLengthUnitTag, pDisplayUnits->GetAlignmentLengthUnit() );
-      (*pTable)(2,row2col++) << COLHDR(_T("Deck Elev"), rptLengthUnitTag, pDisplayUnits->GetAlignmentLengthUnit() );
-      (*pTable)(2,row2col++) << _T("Station");
-      (*pTable)(2,row2col++) << COLHDR(_T("Offset"), rptLengthUnitTag, pDisplayUnits->GetAlignmentLengthUnit() );
-      (*pTable)(2,row2col++) << COLHDR(_T("Deck Elev"), rptLengthUnitTag, pDisplayUnits->GetAlignmentLengthUnit() );
-      (*pTable)(2,row2col++) << _T("Station");
-      (*pTable)(2,row2col++) << COLHDR(_T("Offset"), rptLengthUnitTag, pDisplayUnits->GetAlignmentLengthUnit() );
-      (*pTable)(2,row2col++) << COLHDR(_T("Deck Elev"), rptLengthUnitTag, pDisplayUnits->GetAlignmentLengthUnit() );
-      (*pTable)(2,row2col++) << _T("Station");
-      (*pTable)(2,row2col++) << COLHDR(_T("Offset"), rptLengthUnitTag, pDisplayUnits->GetAlignmentLengthUnit() );
-      (*pTable)(2,row2col++) << COLHDR(_T("Deck Elev"), rptLengthUnitTag, pDisplayUnits->GetAlignmentLengthUnit() );
-      (*pTable)(2,row2col++) << _T("Station");
-      (*pTable)(2,row2col++) << COLHDR(_T("Offset"), rptLengthUnitTag, pDisplayUnits->GetAlignmentLengthUnit() );
-      (*pTable)(2,row2col++) << COLHDR(_T("Deck Elev"), rptLengthUnitTag, pDisplayUnits->GetAlignmentLengthUnit() );
-      (*pTable)(2,row2col++) << _T("Station");
-      (*pTable)(2,row2col++) << COLHDR(_T("Offset"), rptLengthUnitTag, pDisplayUnits->GetAlignmentLengthUnit() );
-      (*pTable)(2,row2col++) << COLHDR(_T("Deck Elev"), rptLengthUnitTag, pDisplayUnits->GetAlignmentLengthUnit() );
+      (*pTable)(2, col++) << _T("Station");
+      (*pTable)(2, col++) << COLHDR(_T("Offset"), rptLengthUnitTag, pDisplayUnits->GetAlignmentLengthUnit());
+      (*pTable)(2, col++) << COLHDR(_T("Deck Elev"), rptLengthUnitTag, pDisplayUnits->GetAlignmentLengthUnit());
 
       RowIndexType row = pTable->GetNumberOfHeaderRows();
 
@@ -498,12 +454,7 @@ void girder_offsets(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter*
          else
          {
             (*pTable)(row,col) << LABEL_GIRDER(gdrIdx);
-            pTable->SetRowSpan(row,col,nSegments);
-            for ( SegmentIndexType segIdx = 1; segIdx < nSegments; segIdx++ )
-            {
-               pTable->SetRowSpan(row+segIdx,col,SKIP_CELL);
-            }
-            col++;
+            pTable->SetRowSpan(row,col++,nSegments);
          }
 
          for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
@@ -661,41 +612,33 @@ void girder_lengths(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter*
 
       (*pPara) << pTable << rptNewLine;
 
-      ColumnIndexType row0col = 0;
-      ColumnIndexType row1col = 0;
+      ColumnIndexType col = 0;
 
       if ( nGroups != nSpans )
       {
-         (*pTable)(0,row0col) << _T("Girder");
-         pTable->SetRowSpan(0,row0col++,2);  // span 2 rows
-         pTable->SetRowSpan(1,row1col++,SKIP_CELL);
+         pTable->SetRowSpan(0, col, 2);  // span 2 rows
+         (*pTable)(0,col++) << _T("Girder");
       }
 
-      pTable->SetRowSpan(0,row0col,2);
-      pTable->SetRowSpan(1,row1col++,SKIP_CELL);
-      (*pTable)(0,row0col++) << strSegmentLabel;
+      pTable->SetRowSpan(0,col,2);
+      (*pTable)(0,col++) << strSegmentLabel;
 
-      pTable->SetRowSpan(0,row0col,2);
-      pTable->SetRowSpan(1,row1col++,SKIP_CELL);
-      (*pTable)(0,row0col++) << COLHDR(_T("C-C Pier"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+      pTable->SetRowSpan(0,col,2);
+      (*pTable)(0,col++) << COLHDR(_T("C-C Pier"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
 
-      pTable->SetRowSpan(0,row0col,2);
-      pTable->SetRowSpan(1,row1col++,SKIP_CELL);
-      (*pTable)(0,row0col++) << COLHDR(_T("C-C Bearing"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+      pTable->SetRowSpan(0,col,2);
+      (*pTable)(0,col++) << COLHDR(_T("C-C Bearing"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
 
-      pTable->SetColumnSpan(0,row0col,2);
-      (*pTable)(0,row0col++) << strSegmentLabel << _T(" Length");
-      pTable->SetColumnSpan(0,row0col++,SKIP_CELL);
-      (*pTable)(1,row1col++) << COLHDR(_T("Plan"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
-      (*pTable)(1,row1col++) << COLHDR(_T("Along") << rptNewLine << _T("Grade"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+      pTable->SetColumnSpan(0,col,2);
+      (*pTable)(0,col) << strSegmentLabel << _T(" Length");
+      (*pTable)(1,col++) << COLHDR(_T("Plan"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+      (*pTable)(1,col++) << COLHDR(_T("Along") << rptNewLine << _T("Grade"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
 
-      pTable->SetRowSpan(0,row0col,2);
-      pTable->SetRowSpan(1,row1col++,SKIP_CELL);
-      (*pTable)(0,row0col++) << _T("Grade") << rptNewLine << _T("(") << strSlopeTag << _T("/") << strSlopeTag << _T(")");
+      pTable->SetRowSpan(0,col,2);
+      (*pTable)(0,col++) << _T("Grade") << rptNewLine << _T("(") << strSlopeTag << _T("/") << strSlopeTag << _T(")");
 
-      pTable->SetRowSpan(0,row0col,2);
-      pTable->SetRowSpan(1,row1col++,SKIP_CELL);
-      (*pTable)(0,row0col++) << _T("Direction");
+      pTable->SetRowSpan(0,col,2);
+      (*pTable)(0,col++) << _T("Direction");
 
       RowIndexType row = pTable->GetNumberOfHeaderRows();
 
@@ -713,13 +656,8 @@ void girder_lengths(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter*
          }
          else
          {
-            (*pTable)(row,col) << LABEL_GIRDER(gdrIdx);
-            pTable->SetRowSpan(row,col,nSegments);
-            for ( SegmentIndexType segIdx = 1; segIdx < nSegments; segIdx++ )
-            {
-               pTable->SetRowSpan(row+segIdx,col,SKIP_CELL);
-            }
-            col++;
+            pTable->SetRowSpan(row, col, nSegments);
+            (*pTable)(row,col++) << LABEL_GIRDER(gdrIdx);
          }
 
          for (SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
@@ -810,55 +748,42 @@ void girder_spacing(IBroker*pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* 
 
          pTable->SetNumberOfHeaderRows(3);
 
+         pTable->SetRowSpan(0, 0, 3);  // span 3 rows
          (*pTable)(0,0)  << _T("Girder");
-         pTable->SetRowSpan(0,0,3);  // span 3 rows
-         pTable->SetRowSpan(1,0,SKIP_CELL);
-         pTable->SetRowSpan(2,0,SKIP_CELL);
 
-         (*pTable)(0,1)  << _T("Start of ") << strSegmentLabel;
          pTable->SetColumnSpan(0,1,5);
+         (*pTable)(0, 1) << _T("Start of ") << strSegmentLabel;
 
-         (*pTable)(0,2)  << _T("End of ") << strSegmentLabel;
-         pTable->SetColumnSpan(0,2,5);
+         pTable->SetColumnSpan(0,6,5);
+         (*pTable)(0, 6) << _T("End of ") << strSegmentLabel;
 
-         ColumnIndexType i;
-         for ( i = 3; i < pTable->GetNumberOfColumns(); i++ )
-            pTable->SetColumnSpan(0,i,SKIP_CELL);
-
-
-         (*pTable)(1,1) << _T("Spacing at CL Pier");
          pTable->SetColumnSpan(1,1,2);
+         (*pTable)(1, 1) << _T("Spacing at CL Pier");
 
-         (*pTable)(1,2) << _T("Spacing at CL Brg");
-         pTable->SetColumnSpan(1,2,2);
+         pTable->SetColumnSpan(1,3,2);
+         (*pTable)(1, 3) << _T("Spacing at CL Brg");
 
-         (*pTable)(1,3) << _T("Angle") << rptNewLine << _T("with") << rptNewLine << _T("CL Pier");
-         pTable->SetRowSpan(1,3,2);
+         pTable->SetRowSpan(1,5,2);
+         (*pTable)(1, 5) << _T("Angle") << rptNewLine << _T("with") << rptNewLine << _T("CL Pier");
 
-         (*pTable)(1,4) << _T("Spacing at CL Brg");
-         pTable->SetColumnSpan(1,4,2);
+         pTable->SetColumnSpan(1,6,2);
+         (*pTable)(1, 6) << _T("Spacing at CL Brg");
 
-         (*pTable)(1,5) << _T("Spacing at CL Pier");
-         pTable->SetColumnSpan(1,5,2);
+         pTable->SetColumnSpan(1,8,2);
+         (*pTable)(1, 8) << _T("Spacing at CL Pier");
 
-         (*pTable)(1,6) << _T("Angle") << rptNewLine << _T("with") << rptNewLine << _T("CL Pier");
-         pTable->SetRowSpan(1,6,2);
-
-         for ( i = 7; i < pTable->GetNumberOfColumns(); i++ )
-            pTable->SetColumnSpan(1,i,SKIP_CELL);
+         pTable->SetRowSpan(1,10,2);
+         (*pTable)(1, 10) << _T("Angle") << rptNewLine << _T("with") << rptNewLine << _T("CL Pier");
 
          (*pTable)(2,1)  << COLHDR(symbol(NORMAL) << _T(" to Alignment"),  rptLengthUnitTag,pDisplayUnits->GetXSectionDimUnit());
          (*pTable)(2,2)  << COLHDR(_T("Along CL Pier"),rptLengthUnitTag,pDisplayUnits->GetXSectionDimUnit());
          (*pTable)(2,3)  << COLHDR(symbol(NORMAL) << _T(" to Alignment"),  rptLengthUnitTag,pDisplayUnits->GetXSectionDimUnit());
          (*pTable)(2,4)  << COLHDR(_T("Along CL Brg"),rptLengthUnitTag,pDisplayUnits->GetXSectionDimUnit());
-         pTable->SetRowSpan(2,5,SKIP_CELL);
 
          (*pTable)(2,6)  << COLHDR(symbol(NORMAL) << _T(" to Alignment"),  rptLengthUnitTag,pDisplayUnits->GetXSectionDimUnit());
          (*pTable)(2,7)  << COLHDR(_T("Along CL Brg"),rptLengthUnitTag,pDisplayUnits->GetXSectionDimUnit());
          (*pTable)(2,8)  << COLHDR(symbol(NORMAL) << _T(" to Alignment"),  rptLengthUnitTag,pDisplayUnits->GetXSectionDimUnit());
          (*pTable)(2,9)  << COLHDR(_T("Along CL Pier"),rptLengthUnitTag,pDisplayUnits->GetXSectionDimUnit());
-         pTable->SetRowSpan(2,10,SKIP_CELL);
-
 
          RowIndexType row = pTable->GetNumberOfHeaderRows();
 
@@ -1002,120 +927,102 @@ void girder_ends(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pC
 
       pTable->SetNumberOfHeaderRows(3);
 
-      ColumnIndexType row0col = 0;
-      ColumnIndexType row1col = 0;
-      ColumnIndexType row2col = 0;
-
-
+      ColumnIndexType col = 0;
       // header row 1 and first one (or two) columns
       if ( nGroups != nSpans )
       {
-         (*pTable)(0,row0col) << _T("Girder");
-         pTable->SetRowSpan(0,row0col++,3);  // span 3 rows
-         pTable->SetRowSpan(1,row1col++,SKIP_CELL);
-         pTable->SetRowSpan(2,row2col++,SKIP_CELL);
+         pTable->SetRowSpan(0, col, 3);  // span 3 rows
+         (*pTable)(0,col++) << _T("Girder");
       }
 
-      (*pTable)(0,row0col)  << strSegmentLabel;
-      pTable->SetRowSpan(0,row0col++,3);  // span 3 rows
-      pTable->SetRowSpan(1,row1col++,SKIP_CELL);
-      pTable->SetRowSpan(2,row2col++,SKIP_CELL);
+      pTable->SetRowSpan(0, col, 3);  // span 3 rows
+      (*pTable)(0,col++)  << strSegmentLabel;
 
-      pTable->SetColumnSpan(0,row0col,5);
-      (*pTable)(0,row0col++) << _T("Start of ") << strSegmentLabel;
+      pTable->SetColumnSpan(0,col,5);
+      (*pTable)(0,col) << _T("Start of ") << strSegmentLabel;
+      col += 5;
 
-      pTable->SetColumnSpan(0,row0col,5);
-      (*pTable)(0,row0col++) << _T("End of ") << strSegmentLabel;
-
-      ColumnIndexType i;
-      for ( i = row0col; i < pTable->GetNumberOfColumns(); i++ )
-      {
-         pTable->SetColumnSpan(0,i,SKIP_CELL);
-      }
+      pTable->SetColumnSpan(0,col,5);
+      (*pTable)(0,col) << _T("End of ") << strSegmentLabel;
+      col += 5;
 
       // header rows 2 and 3
-      pTable->SetColumnSpan(1,row1col,2);
-      (*pTable)(1,row1col++) << _T("CL Pier to CL Brg");
-      (*pTable)(2,row2col++) << COLHDR(symbol(NORMAL) << _T(" to Pier"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+      col = 1;
+      pTable->SetColumnSpan(1,col,2);
+      (*pTable)(1,col) << _T("CL Pier to CL Brg");
+      (*pTable)(2,col++) << COLHDR(symbol(NORMAL) << _T(" to Pier"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
       if ( nSpans == nGroups )
       {
-         (*pTable)(2,row2col++) << COLHDR(_T("Along Girder"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+         (*pTable)(2,col++) << COLHDR(_T("Along Girder"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
       }
       else
       {
-         (*pTable)(2,row2col++) << COLHDR(_T("Along Segment"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+         (*pTable)(2,col++) << COLHDR(_T("Along Segment"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
       }
 
-      pTable->SetColumnSpan(1,row1col,2);
+      pTable->SetColumnSpan(1,col,2);
       if ( nSpans == nGroups )
       {
-         (*pTable)(1,row1col++) << _T("CL Pier to Girder End");
+         (*pTable)(1,col) << _T("CL Pier to Girder End");
       }
       else
       {
-         (*pTable)(1,row1col++) << _T("CL Pier to Segment End");
+         (*pTable)(1,col) << _T("CL Pier to Segment End");
       }
 
-      (*pTable)(2,row2col++) << COLHDR(symbol(NORMAL) << _T(" to Pier"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+      (*pTable)(2,col++) << COLHDR(symbol(NORMAL) << _T(" to Pier"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
       if ( nSpans == nGroups )
       {
-         (*pTable)(2,row2col++) << COLHDR(_T("Along Girder"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+         (*pTable)(2,col++) << COLHDR(_T("Along Girder"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
       }
       else
       {
-         (*pTable)(2,row2col++) << COLHDR(_T("Along Segment"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+         (*pTable)(2,col++) << COLHDR(_T("Along Segment"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
       }
 
-      pTable->SetRowSpan(1,row1col,2);
-      pTable->SetRowSpan(2,row2col++,SKIP_CELL);
+      pTable->SetRowSpan(1,col,2);
       if (nSpans == nGroups )
       {
-         (*pTable)(1,row1col++)<< COLHDR(_T("CL Brg to Girder End") << rptNewLine << _T("Along Girder"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+         (*pTable)(1,col++)<< COLHDR(_T("CL Brg to Girder End") << rptNewLine << _T("Along Girder"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
       }
       else
       {
-         (*pTable)(1,row1col++)<< COLHDR(_T("CL Brg to Segment End") << rptNewLine << _T("Along Segment"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+         (*pTable)(1,col++)<< COLHDR(_T("CL Brg to Segment End") << rptNewLine << _T("Along Segment"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
       }
 
 
-      pTable->SetColumnSpan(1,row1col,2);
-      (*pTable)(1,row1col++) << _T("CL Pier to CL Brg");
-      (*pTable)(2,row2col++) << COLHDR(symbol(NORMAL) << _T(" to Pier"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+      pTable->SetColumnSpan(1,col,2);
+      (*pTable)(1,col) << _T("CL Pier to CL Brg");
+      (*pTable)(2,col++) << COLHDR(symbol(NORMAL) << _T(" to Pier"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
       if ( nSpans == nGroups )
       {
-         (*pTable)(2,row2col++) << COLHDR(_T("Along Girder"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+         (*pTable)(2,col++) << COLHDR(_T("Along Girder"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
       }
       else
       {
-         (*pTable)(2,row2col++) << COLHDR(_T("Along Segment"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+         (*pTable)(2,col++) << COLHDR(_T("Along Segment"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
       }
 
-      pTable->SetColumnSpan(1,row1col,2);
-      (*pTable)(1,row1col++) << _T("CL Pier to ") << strSegmentLabel << _T(" End");
-      (*pTable)(2,row2col++) << COLHDR(symbol(NORMAL) << _T(" to Pier"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+      pTable->SetColumnSpan(1,col,2);
+      (*pTable)(1,col) << _T("CL Pier to ") << strSegmentLabel << _T(" End");
+      (*pTable)(2,col++) << COLHDR(symbol(NORMAL) << _T(" to Pier"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
       if ( nSpans == nGroups )
       {
-         (*pTable)(2,row2col++)<< COLHDR(_T("Along Girder"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+         (*pTable)(2,col++)<< COLHDR(_T("Along Girder"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
       }
       else
       {
-         (*pTable)(2,row2col++)<< COLHDR(_T("Along Segment"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+         (*pTable)(2,col++)<< COLHDR(_T("Along Segment"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
       }
 
-      pTable->SetRowSpan(1,row1col,2);
-      pTable->SetRowSpan(2,row2col++,SKIP_CELL);
+      pTable->SetRowSpan(1,col,2);
       if ( nSpans == nGroups )
       {
-         (*pTable)(1,row1col++)<< COLHDR(_T("CL Brg to Girder End") << rptNewLine << _T("Along Girder"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+         (*pTable)(1,col)<< COLHDR(_T("CL Brg to Girder End") << rptNewLine << _T("Along Girder"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
       }
       else
       {
-         (*pTable)(1,row1col++)<< COLHDR(_T("CL Brg to Segment End") << rptNewLine << _T("Along Segment"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
-      }
-
-      for ( i = row1col; i < pTable->GetNumberOfColumns(); i++ )
-      {
-         pTable->SetColumnSpan(1,i,SKIP_CELL);
+         (*pTable)(1,col)<< COLHDR(_T("CL Brg to Segment End") << rptNewLine << _T("Along Segment"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
       }
 
       RowIndexType row = pTable->GetNumberOfHeaderRows();
@@ -1135,12 +1042,7 @@ void girder_ends(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pC
          else
          {
             (*pTable)(row,col) << LABEL_GIRDER(gdrIdx);
-            pTable->SetRowSpan(row,col,nSegments);
-            for ( SegmentIndexType segIdx = 1; segIdx < nSegments; segIdx++ )
-            {
-               pTable->SetRowSpan(row+segIdx,col,SKIP_CELL);
-            }
-            col++;
+            pTable->SetRowSpan(row,col++,nSegments);
          }
 
          for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )

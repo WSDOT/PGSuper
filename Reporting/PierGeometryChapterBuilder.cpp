@@ -135,24 +135,18 @@ void pier_geometry(IBroker*pBroker,rptChapter* pChapter,IEAFDisplayUnits* pDispl
    pTable->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
 
    pTable->SetRowSpan(0,0,2);
-   pTable->SetRowSpan(1,0,SKIP_CELL);
    (*pTable)(0,0) << _T("");
 
    pTable->SetRowSpan(0,1,2);
-   pTable->SetRowSpan(1,1,SKIP_CELL);
    (*pTable)(0,1) << _T("Station");
 
    pTable->SetRowSpan(0,2,2);
-   pTable->SetRowSpan(1,2,SKIP_CELL);
    (*pTable)(0,2) << _T("Bearing");
 
    pTable->SetRowSpan(0,3,2);
-   pTable->SetRowSpan(1,3,SKIP_CELL);
    (*pTable)(0,3) << _T("Skew Angle");
 
    pTable->SetColumnSpan(0,4,3);
-   pTable->SetColumnSpan(0,5,SKIP_CELL);
-   pTable->SetColumnSpan(0,6,SKIP_CELL);
    (*pTable)(0,4) << _T("Alignment Intersection");
    (*pTable)(1,4) << _T("East") << rptNewLine << _T("(X)");
    (*pTable)(1,5) << _T("North") << rptNewLine << _T("(Y)");

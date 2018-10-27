@@ -2068,14 +2068,14 @@ void  CAnalysisAgentImp::GetDesignSlabStressAdjustment(const pgsPointOfInterest&
    IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval();
 
    GET_IFACE(ISectionProperties, pSectProp);
-   Float64 Cat, Cbt;
-   pSectProp->GetStressCoefficients(castDeckIntervalIdx, poi, pgsTypes::TopGirder, pConfig, &Cat, &Cbt);
+   Float64 Cat, Cbtx, Cbty;
+   pSectProp->GetStressCoefficients(castDeckIntervalIdx, poi, pgsTypes::TopGirder, pConfig, &Cat, &Cbtx, &Cbty);
 
-   Float64 Cab, Cbb;
-   pSectProp->GetStressCoefficients(castDeckIntervalIdx, poi, pgsTypes::BottomGirder, pConfig, &Cab, &Cbb);
+   Float64 Cab, Cbbx, Cbby;
+   pSectProp->GetStressCoefficients(castDeckIntervalIdx, poi, pgsTypes::BottomGirder, pConfig, &Cab, &Cbbx, &Cbby);
 
-   *pfTop = Cbt*M;
-   *pfBot = Cbb*M;
+   *pfTop = Cbtx*M;
+   *pfBot = Cbbx*M;
 }
 
 Float64 CAnalysisAgentImp::GetDesignSlabPadMomentAdjustment(const pgsPointOfInterest& poi, const GDRCONFIG* pConfig) const
@@ -2104,14 +2104,14 @@ void CAnalysisAgentImp::GetDesignSlabPadStressAdjustment(const pgsPointOfInteres
    IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval();
 
    GET_IFACE(ISectionProperties, pSectProp);
-   Float64 Cat, Cbt;
-   pSectProp->GetStressCoefficients(castDeckIntervalIdx, poi, pgsTypes::TopGirder, pConfig, &Cat, &Cbt);
+   Float64 Cat, Cbtx, Cbty;
+   pSectProp->GetStressCoefficients(castDeckIntervalIdx, poi, pgsTypes::TopGirder, pConfig, &Cat, &Cbtx, &Cbty);
 
-   Float64 Cab, Cbb;
-   pSectProp->GetStressCoefficients(castDeckIntervalIdx, poi, pgsTypes::BottomGirder, pConfig, &Cab, &Cbb);
+   Float64 Cab, Cbbx, Cbby;
+   pSectProp->GetStressCoefficients(castDeckIntervalIdx, poi, pgsTypes::BottomGirder, pConfig, &Cab, &Cbbx, &Cbby);
 
-   *pfTop = Cbt*M;
-   *pfBot = Cbb*M;
+   *pfTop = Cbtx*M;
+   *pfBot = Cbbx*M;
 }
 
 void CAnalysisAgentImp::DumpAnalysisModels(GirderIndexType gdrIdx) const
@@ -5861,29 +5861,29 @@ void CAnalysisAgentImp::GetDesignStress(IntervalIndexType intervalIdx,pgsTypes::
 
    // Top of girder
    // original stress coefficients
-   Float64 Cat_original, Cbt_original;
-   pSectProp->GetStressCoefficients(compositeIntervalIdx, poi, pgsTypes::TopGirder, nullptr, &Cat_original, &Cbt_original);
+   Float64 Cat_original, Cbtx_original, Cbty_original;
+   pSectProp->GetStressCoefficients(compositeIntervalIdx, poi, pgsTypes::TopGirder, nullptr, &Cat_original, &Cbtx_original, &Cbty_original);
 
    // new stress coefficients using design f'c
-   Float64 Cat_new, Cbt_new;
-   pSectProp->GetStressCoefficients(compositeIntervalIdx, poi, pgsTypes::TopGirder, pConfig, &Cat_new, &Cbt_new);
+   Float64 Cat_new, Cbtx_new, Cbty_new;
+   pSectProp->GetStressCoefficients(compositeIntervalIdx, poi, pgsTypes::TopGirder, pConfig, &Cat_new, &Cbtx_new, &Cbty_new);
 
    // scale factor that converts top stress computed with the original stress coefficients to top stress
    // computed with the new stress coefficients
-   Float64 k_top = Cbt_new / Cbt_original;
+   Float64 k_top = Cbtx_new / Cbtx_original;
 
    // Bottom of girder
    // original stress coefficients
-   Float64 Cab_original, Cbb_original;
-   pSectProp->GetStressCoefficients(compositeIntervalIdx, poi, pgsTypes::BottomGirder, nullptr, &Cab_original, &Cbb_original);
+   Float64 Cab_original, Cbbx_original, Cbby_original;
+   pSectProp->GetStressCoefficients(compositeIntervalIdx, poi, pgsTypes::BottomGirder, nullptr, &Cab_original, &Cbbx_original, &Cbby_original);
 
    // new stress coefficients using design f'c
-   Float64 Cab_new, Cbb_new;
-   pSectProp->GetStressCoefficients(compositeIntervalIdx, poi, pgsTypes::BottomGirder, pConfig, &Cab_new, &Cbb_new);
+   Float64 Cab_new, Cbbx_new, Cbby_new;
+   pSectProp->GetStressCoefficients(compositeIntervalIdx, poi, pgsTypes::BottomGirder, pConfig, &Cab_new, &Cbbx_new, &Cbby_new);
 
    // scale factor that converts bottom stress computed with the original stress coefficients to bottom stress
    // computed with the new stress coefficients
-   Float64 k_bot = Cbb_new / Cbb_original;
+   Float64 k_bot = Cbbx_new / Cbbx_original;
 
    Float64 ftop1, ftop2, ftop3Min, ftop3Max;
    Float64 fbot1, fbot2, fbot3Min, fbot3Max;

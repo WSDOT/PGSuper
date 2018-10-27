@@ -642,17 +642,14 @@ void CLoadingDetailsChapterBuilder::ReportSlabLoad(rptChapter* pChapter,IBridge*
 
          p_table->SetNumberOfHeaderRows(2);
          p_table->SetRowSpan(0,0,2);
-         p_table->SetRowSpan(1,0,SKIP_CELL);
          (*p_table)(0,0) << _T("Location");
 
          p_table->SetColumnSpan(0,1,2);
-         p_table->SetColumnSpan(0,2,SKIP_CELL);
          (*p_table)(0,1) << _T("Main ") << strDeckName;
          (*p_table)(1,1) << COLHDR(_T("Point Load"),rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit() );
          (*p_table)(1,2) << COLHDR(_T("Point Moment"),rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
 
          p_table->SetColumnSpan(0,3,2);
-         p_table->SetColumnSpan(0,4,SKIP_CELL);
          (*p_table)(0,3) << _T("Haunch");
          (*p_table)(1,3) << COLHDR(_T("Point Load"),rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit() );
          (*p_table)(1,4) << COLHDR(_T("Point Moment"),rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
@@ -1293,7 +1290,6 @@ void CLoadingDetailsChapterBuilder::ReportCastInPlaceDiaphragmLoad(rptChapter* p
 
       row++;
 
-      p_table->SetRowSpan(row,0,SKIP_CELL);
       (*p_table)(row,1) << _T("Right Bearing");
       (*p_table)(row,2) << force.SetValue(-Pahead);
       (*p_table)(row,3) << moment.SetValue(Mahead);

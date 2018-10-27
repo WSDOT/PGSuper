@@ -7099,6 +7099,9 @@ void CGirderModelManager::BuildLBAM(GirderIndexType gdrLineIdx,bool bContinuousM
 {
    try
    {
+      pModel->put_ForceEquilibriumTolerance(::ConvertToSysUnits(0.25, unitMeasure::Kip));
+      pModel->put_MomentEquilibriumTolerance(::ConvertToSysUnits(0.25, unitMeasure::KipFeet));
+
       // prepare load modifiers
       lrfdLoadModifier load_modifier;
       GET_IFACE(ILoadModifiers,pLoadModifiers);
@@ -7331,7 +7334,7 @@ void CGirderModelManager::CreateLBAMSpans(GirderIndexType gdr,bool bContinuousMo
          IntervalIndexType erectIntervalIdx   = pIntervals->GetTemporarySupportErectionInterval(tsIdx);
          IntervalIndexType removalIntervalIdx = pIntervals->GetTemporarySupportRemovalInterval(tsIdx);
 
-         ATLASSERT(erectIntervalIdx == 0); // LBAM doesn't support the stage when a TS is erected
+         //ATLASSERT(erectIntervalIdx == 0); // LBAM doesn't support the stage when a TS is erected
          //objTS->put_StageErected( GetLBAMStageName(erectIntervalIdx) );
          objTS->put_StageRemoved( GetLBAMStageName(removalIntervalIdx) );
 
@@ -7375,7 +7378,7 @@ void CGirderModelManager::CreateLBAMSpans(GirderIndexType gdr,bool bContinuousMo
          IntervalIndexType erectIntervalIdx   = pIntervals->GetTemporarySupportErectionInterval(tsIdx);
          IntervalIndexType removalIntervalIdx = pIntervals->GetTemporarySupportRemovalInterval(tsIdx);
 
-         ATLASSERT(erectIntervalIdx == 0); // LBAM doesn't support the stage when a TS is erected
+         //ATLASSERT(erectIntervalIdx == 0); // LBAM doesn't support the stage when a TS is erected
          //objLeftTS->put_StageErected( GetLBAMStageName(erectIntervalIdx) );
          objLeftTS->put_StageRemoved( GetLBAMStageName(removalIntervalIdx) );
 
@@ -7393,7 +7396,7 @@ void CGirderModelManager::CreateLBAMSpans(GirderIndexType gdr,bool bContinuousMo
 
          objRightTS->put_BoundaryCondition(bcRoller);
 
-         ATLASSERT(erectIntervalIdx == 0); // LBAM doesn't support the stage when a TS is erected
+         //ATLASSERT(erectIntervalIdx == 0); // LBAM doesn't support the stage when a TS is erected
          //objRightTS->put_StageErected( GetLBAMStageName(erectIntervalIdx) );
          objRightTS->put_StageRemoved( GetLBAMStageName(removalIntervalIdx) );
 
@@ -12416,14 +12419,14 @@ void CGirderModelManager::AddPoiStressPoints(const pgsPointOfInterest& poi,IStag
    {
       pgsTypes::StressLocation stressLocation = (pgsTypes::StressLocation)i;
 
-      Float64 Ca, Cb;
-      pSectProp->GetStressCoefficients(intervalIdx, poi, stressLocation, nullptr, &Ca, &Cb);
+      Float64 Ca, Cbx, Cby;
+      pSectProp->GetStressCoefficients(intervalIdx, poi, stressLocation, nullptr, &Ca, &Cbx, &Cby);
 
       CComPtr<IStressPoint> stressPoint;
       stressPoint.CoCreateInstance(CLSID_StressPoint);
 
       stressPoint->put_Sa(Ca);
-      stressPoint->put_Sm(Cb);
+      stressPoint->put_Sm(Cbx);
 
       leftStressPoints->Add(stressPoint);
       rightStressPoints->Add(stressPoint);

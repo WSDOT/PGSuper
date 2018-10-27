@@ -98,7 +98,8 @@ typedef struct pgsTypes
    typedef enum SectionCoordinateType
    {
       scBridge, // Bridge Section Coordinates
-      scGirder  // Girder Section Coordinates
+      scGirder, // Girder Section Coordinates
+      scCentroid // Centroid/Stress Point Coordinates
    } SectionCoordinateType;
 
    typedef enum PlanCoordinateType

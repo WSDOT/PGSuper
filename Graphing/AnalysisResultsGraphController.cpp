@@ -971,7 +971,8 @@ void CAnalysisResultsGraphController::UpdateAnalysisType()
       GetDlgItem(IDC_SIMPLE2)->ShowWindow(SW_HIDE); // Simple Spans made Continuous
       GetDlgItem(IDC_SIMPLE3)->ShowWindow(SW_HIDE); // Envelope
       ATLASSERT(analysisType == pgsTypes::Continuous);
-      CheckRadioButton(IDC_SIMPLE, IDC_SIMPLE3, IDC_SIMPLE3);
+      CheckRadioButton(IDC_SIMPLE, IDC_SIMPLE3, IDC_SIMPLE2);
+      ATLASSERT(GetAnalysisType() == pgsTypes::Continuous);
    }
    else
    {

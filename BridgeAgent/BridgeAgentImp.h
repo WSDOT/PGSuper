@@ -882,10 +882,10 @@ public:
 public:
    virtual pgsTypes::SectionPropertyMode GetSectionPropertiesMode() const override;
 
-   virtual pgsTypes::HaunchAnalysisSectionPropertiesType GetHaunchAnalysisSectionPropertiesType()const override;
+   virtual pgsTypes::HaunchAnalysisSectionPropertiesType GetHaunchAnalysisSectionPropertiesType() const override;
 
-   virtual void GetStressCoefficients(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, pgsTypes::StressLocation location, const GDRCONFIG* pConfig, Float64* pCa, Float64 *pCbx) const override;
-   virtual void GetStressCoefficients(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, pgsTypes::StressLocation location, const GDRCONFIG* pConfig, Float64* pCa, Float64 *pCbx, Float64* pCby) const override;
+   virtual std::vector<gpPoint2d> GetStressPoints(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, pgsTypes::StressLocation location, const GDRCONFIG* pConfig = nullptr) const override;
+   virtual void GetStressCoefficients(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, pgsTypes::StressLocation location, const GDRCONFIG* pConfig, Float64* pCa, Float64 *pCbx, Float64* pCby, IndexType* pControllingStressPointIndex = nullptr) const override;
 
    virtual Float64 GetHg(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi) const override;
    virtual Float64 GetAg(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi) const override;

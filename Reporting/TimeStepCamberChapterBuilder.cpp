@@ -127,10 +127,6 @@ rptRcTable* CTimeStepCamberChapterBuilder::CreateStorageDeflectionTable(IBroker*
       if ( 1 < nSegments )
       {
          pLayoutTable->SetColumnSpan(rowIdx,0,nCols);
-         for ( ColumnIndexType c = 1; c < nCols; c++ )
-         {
-            pLayoutTable->SetColumnSpan(rowIdx,c,SKIP_CELL);
-         }
          (*pLayoutTable)(rowIdx++,0) << _T("Segment ") << LABEL_SEGMENT(segIdx);
       }
 
@@ -193,10 +189,6 @@ rptRcTable* CTimeStepCamberChapterBuilder::CreateAfterErectionDeflectionTable(IB
             {
                // put segment name in segment label row
                pLayoutTable->SetColumnSpan(rowIdx,0,nCols);
-               for ( ColumnIndexType c = 1; c < nCols; c++ )
-               {
-                  pLayoutTable->SetColumnSpan(rowIdx,c,SKIP_CELL);
-               }
                (*pLayoutTable)(rowIdx++,layoutTableColIdx) << _T("Segment ") << LABEL_SEGMENT(segIdx);
             }
             else

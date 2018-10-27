@@ -227,9 +227,6 @@ bool CStabilityGraphBuilder::UpdateNow()
    IndexType seriesFS2 = m_Graph.CreateDataSeries();
    m_Graph.SetPenStyle(seriesFS2, CURVE_STYLE, CURVE_PEN_WEIGHT, CURVE2_COLOR);
 
-   IndexType seriesFS3 = m_Graph.CreateDataSeries();
-   m_Graph.SetPenStyle(seriesFS3, CURVE_STYLE, CURVE_PEN_WEIGHT, CURVE3_COLOR);
-
    IndexType limitFS1 = m_Graph.CreateDataSeries();
    m_Graph.SetPenStyle(limitFS1, LIMIT_STYLE, CURVE_PEN_WEIGHT, CURVE1_COLOR);
 
@@ -253,6 +250,9 @@ bool CStabilityGraphBuilder::UpdateNow()
       hp1 -= 0.005;
    }
 
+   Float64 max_overhang = 0.2113*segment_length; // = (3 - sqrt(3))*segment_length / 6;
+   hp1 = Min(hp1, max_overhang);
+
    if ( graphType == GT_LIFTING )
    {
       GET_IFACE(ISegmentLiftingSpecCriteria,pSegmentLiftingSpecCriteria);
@@ -275,8 +275,9 @@ bool CStabilityGraphBuilder::UpdateNow()
             stbLiftingCheckArtifact artifact;
             pArtifact->CreateLiftingCheckArtifact(segmentKey,loc,&artifact);
 
-            AddGraphPoint(seriesFS1,loc,artifact.GetLiftingResults().MinFScr);
-            AddGraphPoint(seriesFS2,loc,artifact.GetLiftingResults().MinAdjFsFailure);
+            const auto& results = artifact.GetLiftingResults();
+            AddGraphPoint(seriesFS1,loc,results.FScrMin);
+            AddGraphPoint(seriesFS2,loc,results.MinAdjFsFailure);
 
             AddGraphPoint(limitFS1,loc,FS1);
             AddGraphPoint(limitFS2,loc,FS2);
@@ -314,12 +315,10 @@ bool CStabilityGraphBuilder::UpdateNow()
             if ( pArtifact )
             {
                Float64 FScr = Min(pArtifact->GetMinFsForCracking(pgsTypes::CrownSlope),pArtifact->GetMinFsForCracking(pgsTypes::Superelevation));
-               Float64 FSf  = Min(pArtifact->GetFsFailure(pgsTypes::CrownSlope),pArtifact->GetFsFailure(pgsTypes::Superelevation));
-               AddGraphPoint(seriesFS1,loc,FScr);
-               AddGraphPoint(seriesFS2,loc,FSf );
+               Float64 FSro = Min(pArtifact->GetFsRollover(pgsTypes::CrownSlope), pArtifact->GetFsRollover(pgsTypes::Superelevation));
 
-               Float64 FSro = Min(pArtifact->GetFsRollover(pgsTypes::CrownSlope),pArtifact->GetFsRollover(pgsTypes::Superelevation));
-               AddGraphPoint(seriesFS3,loc,FSro);
+               AddGraphPoint(seriesFS1,loc,FScr);
+               AddGraphPoint(seriesFS2,loc,FSro);
 
                AddGraphPoint(limitFS1,loc,FS1);
                AddGraphPoint(limitFS2,loc,FS2);

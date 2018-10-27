@@ -189,34 +189,19 @@ bool prestressing(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnits* pDispl
 
    p_table->SetRowSpan(0,0,3);
    (*p_table)(0,0) << _T("Girder");
-   p_table->SetRowSpan(1,0,SKIP_CELL);
-   p_table->SetRowSpan(2,0,SKIP_CELL);
 
    p_table->SetColumnSpan(0,1,8);
-   p_table->SetColumnSpan(0,2,SKIP_CELL);
-   p_table->SetColumnSpan(0,3,SKIP_CELL);
-   p_table->SetColumnSpan(0,4,SKIP_CELL);
-   p_table->SetColumnSpan(0,5,SKIP_CELL);
-   p_table->SetColumnSpan(0,6,SKIP_CELL);
-   p_table->SetColumnSpan(0,7,SKIP_CELL);
-   p_table->SetColumnSpan(0,8,SKIP_CELL);
    (*p_table)(0,1) << _T("Permanent Strands");
 
    p_table->SetRowSpan(1,1,2);
    (*p_table)(1,1) << _T("Material");
-   p_table->SetRowSpan(2,1,SKIP_CELL);
 
    p_table->SetColumnSpan(1,2,2);
-   p_table->SetColumnSpan(1,3,SKIP_CELL);
    (*p_table)(1,2) << _T("Straight");
    (*p_table)(2,2) << _T("#");
    (*p_table)(2,3) << COLHDR(Sub2(_T("P"),_T("jack")),rptForceUnitTag,pDisplayUnits->GetGeneralForceUnit());
 
    p_table->SetColumnSpan(1,4,5);
-   p_table->SetColumnSpan(1,5,SKIP_CELL);
-   p_table->SetColumnSpan(1,6,SKIP_CELL);
-   p_table->SetColumnSpan(1,7,SKIP_CELL);
-   p_table->SetColumnSpan(1,8,SKIP_CELL);
    (*p_table)(1,4) << _T("Adjustable Strands");
    (*p_table)(2,4) << _T("Type");
    (*p_table)(2,5) << _T("#");
@@ -227,21 +212,16 @@ bool prestressing(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnits* pDispl
    if ( bTempStrands )
    {
       p_table->SetColumnSpan(0,9,3);
-      p_table->SetColumnSpan(0,10,SKIP_CELL);
-      p_table->SetColumnSpan(0,11,SKIP_CELL);
       (*p_table)(0,9) << _T("Temporary Strands");
 
       p_table->SetRowSpan(1,9,2);
       (*p_table)(1,9) << _T("Material");
-      p_table->SetRowSpan(2,9,SKIP_CELL);
 
       p_table->SetRowSpan(1,10,2);
       (*p_table)(1,10) << _T("#");
-      p_table->SetRowSpan(2,10,SKIP_CELL);
 
       p_table->SetRowSpan(1,11,2);
       (*p_table)(1,11) << COLHDR(Sub2(_T("P"),_T("jack")),rptForceUnitTag,pDisplayUnits->GetGeneralForceUnit());
-      p_table->SetRowSpan(2,11,SKIP_CELL);
    }
 
    GirderIndexType nGirders = pBridge->GetGirderCount(grpIdx);
@@ -513,32 +493,23 @@ void debonding(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnits* pDisplayU
 
    p_table->SetNumberOfHeaderRows(2);
 
-   ColumnIndexType col1 = 0;
-   ColumnIndexType col2 = 0;
-   p_table->SetRowSpan(0,col1,2);
-   (*p_table)(0,col1++) << _T("Girder");
-   p_table->SetRowSpan(1,col2++,SKIP_CELL);
+   ColumnIndexType col = 0;
+   p_table->SetRowSpan(0,col,2);
+   (*p_table)(0,col++) << _T("Girder");
+   
+   p_table->SetRowSpan(0,col,2);
+   (*p_table)(0,col++) << COLHDR(_T("Strand Elev"),rptLengthUnitTag,pDisplayUnits->GetComponentDimUnit());
 
-   p_table->SetRowSpan(0,col1,2);
-   (*p_table)(0,col1++) << COLHDR(_T("Strand Elev"),rptLengthUnitTag,pDisplayUnits->GetComponentDimUnit());
-   p_table->SetRowSpan(1,col2++,SKIP_CELL);
+   p_table->SetRowSpan(0,col,2);
+   (*p_table)(0,col++) << _T("Total #")<<rptNewLine<<_T("Strands")<<rptNewLine<<_T("Debond");
 
-   p_table->SetRowSpan(0,col1,2);
-   (*p_table)(0,col1++) << _T("Total #")<<rptNewLine<<_T("Strands")<<rptNewLine<<_T("Debond");
-   p_table->SetRowSpan(1,col2++,SKIP_CELL);
-
-   p_table->SetColumnSpan(0, col1, num_section_locations);
-   (*p_table)(0,col1) << COLHDR(_T(" # of Strands Debonded at Distance from Ends of Girder"),rptLengthUnitTag,pDisplayUnits->GetSpanLengthUnit());
-
-   for ( ColumnIndexType i = 1; i < num_section_locations; i++ )
-   {
-      p_table->SetColumnSpan(0,col1+i,SKIP_CELL);
-   }
+   p_table->SetColumnSpan(0, col, num_section_locations);
+   (*p_table)(0,col) << COLHDR(_T(" # of Strands Debonded at Distance from Ends of Girder"),rptLengthUnitTag,pDisplayUnits->GetSpanLengthUnit());
 
    // section location header columns
    for (std::set<Float64>::iterator siter=debond_comparison.m_SectionLocations.begin(); siter!=debond_comparison.m_SectionLocations.end(); siter++)
    {
-      (*p_table)(1,col1++) << loc.SetValue( *siter );
+      (*p_table)(1,col++) << loc.SetValue( *siter );
    }
 
    // Data rows in table

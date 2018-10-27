@@ -278,16 +278,11 @@ rptChapter* CLRFDTimeDependentShrinkageStrainChapterBuilder::Build(CReportSpecif
    }
 
    pTable->SetRowSpan(rowIdx,colIdx,2);
-   (*pTable)(rowIdx,colIdx) << _T("Interval");
-   pTable->SetRowSpan(rowIdx+1,colIdx++,SKIP_CELL);
+   (*pTable)(rowIdx,colIdx++) << _T("Interval");
    for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
    {
       pTable->SetColumnSpan(rowIdx,colIdx,colSpan);
       (*pTable)(rowIdx,colIdx) << _T("Segment ") << LABEL_SEGMENT(segIdx);
-      for ( ColumnIndexType i = 1; i < colSpan; i++ )
-      {
-         pTable->SetColumnSpan(rowIdx,colIdx+i,SKIP_CELL);
-      }
       (*pTable)(rowIdx+1,colIdx++) << _T("t") << rptNewLine << _T("(days)");
 
       if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::ThirdEditionWith2005Interims )
@@ -301,10 +296,6 @@ rptChapter* CLRFDTimeDependentShrinkageStrainChapterBuilder::Build(CReportSpecif
       {
          pTable->SetColumnSpan(rowIdx,colIdx,colSpan);
          (*pTable)(rowIdx,colIdx) << _T("Closure Joint ") << LABEL_SEGMENT(segIdx);
-         for ( ColumnIndexType i = 1; i < colSpan; i++ )
-         {
-            pTable->SetColumnSpan(rowIdx,colIdx+i,SKIP_CELL);
-         }
          (*pTable)(rowIdx+1,colIdx++) << _T("t") << rptNewLine << _T("(days)");
 
          if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::ThirdEditionWith2005Interims )
@@ -318,10 +309,6 @@ rptChapter* CLRFDTimeDependentShrinkageStrainChapterBuilder::Build(CReportSpecif
    }
    pTable->SetColumnSpan(rowIdx,colIdx,colSpan);
    (*pTable)(rowIdx,colIdx) << _T("Deck");
-   for ( ColumnIndexType i = 1; i < colSpan; i++ )
-   {
-      pTable->SetColumnSpan(rowIdx,colIdx+i,SKIP_CELL);
-   }
    (*pTable)(rowIdx+1,colIdx++) << _T("t") << rptNewLine << _T("(days)");
 
    if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::ThirdEditionWith2005Interims )

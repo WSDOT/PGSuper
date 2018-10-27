@@ -1193,14 +1193,29 @@ bool CPGSuperDocProxyAgent::EditPointLoad(CollectionIndexType loadIdx)
    return m_pMyDocument->EditPointLoad(loadIdx);
 }
 
+bool CPGSuperDocProxyAgent::EditPointLoadByID(LoadIDType loadID)
+{
+   return m_pMyDocument->EditPointLoadByID(loadID);
+}
+
 bool CPGSuperDocProxyAgent::EditDistributedLoad(CollectionIndexType loadIdx)
 {
    return m_pMyDocument->EditDistributedLoad(loadIdx);
 }
 
+bool CPGSuperDocProxyAgent::EditDistributedLoadByID(LoadIDType loadID)
+{
+   return m_pMyDocument->EditDistributedLoadByID(loadID);
+}
+
 bool CPGSuperDocProxyAgent::EditMomentLoad(CollectionIndexType loadIdx)
 {
    return m_pMyDocument->EditMomentLoad(loadIdx);
+}
+
+bool CPGSuperDocProxyAgent::EditMomentLoadByID(LoadIDType loadID)
+{
+   return m_pMyDocument->EditMomentLoadByID(loadID);
 }
 
 bool CPGSuperDocProxyAgent::EditTimeline()

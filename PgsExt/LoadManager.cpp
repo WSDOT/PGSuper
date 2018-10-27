@@ -271,7 +271,10 @@ CollectionIndexType CLoadManager::AddPointLoad(EventIDType eventID,const CPointL
    ATLASSERT(eventID != INVALID_ID);
 
    m_PointLoads.push_back(pld);
-   m_PointLoads.back().m_ID = UserLoads::ms_NextPointLoadID++;
+   if (m_PointLoads.back().m_ID == INVALID_ID)
+   {
+      m_PointLoads.back().m_ID = UserLoads::ms_NextPointLoadID++;
+   }
 
    CTimelineEvent* pEvent = m_pTimelineManager->GetEventByID(eventID);
    ATLASSERT(pEvent);
@@ -303,6 +306,22 @@ const CPointLoadData* CLoadManager::FindPointLoad(LoadIDType loadID) const
    return nullptr;
 }
 
+CPointLoadData* CLoadManager::FindPointLoadByID(LoadIDType loadID)
+{
+   PointLoadList::iterator iter(m_PointLoads.begin());
+   PointLoadList::iterator end(m_PointLoads.end());
+   for (; iter != end; iter++)
+   {
+      CPointLoadData& loadData = *iter;
+      if (loadData.m_ID == loadID)
+      {
+         return &loadData;
+      }
+   }
+
+   return nullptr;
+}
+
 EventIndexType CLoadManager::GetPointLoadEventIndex(LoadIDType loadID) const
 {
    EventIndexType eventIdx = m_pTimelineManager->FindUserLoadEventIndex(loadID);
@@ -318,15 +337,21 @@ EventIDType CLoadManager::GetPointLoadEventID(LoadIDType loadID) const
 bool CLoadManager::UpdatePointLoad(CollectionIndexType idx, EventIDType eventID,const CPointLoadData& pld,bool* pbMovedGirders,CSpanKey* pPrevKey)
 {
    ATLASSERT(0 <= idx && idx < GetPointLoadCount() );
+   return UpdatePointLoadByID(m_PointLoads[idx].m_ID, eventID, pld, pbMovedGirders, pPrevKey);
+}
+
+bool CLoadManager::UpdatePointLoadByID(LoadIDType loadID, EventIDType eventID, const CPointLoadData& pld, bool* pbMovedGirders, CSpanKey* pPrevKey)
+{
    ATLASSERT(eventID != INVALID_ID);
 
-   EventIDType oldEventID = m_pTimelineManager->FindUserLoadEventID(m_PointLoads[idx].m_ID);
+   EventIDType oldEventID = m_pTimelineManager->FindUserLoadEventID(loadID);
+   CPointLoadData* pPointLoad = FindPointLoadByID(loadID);
 
    *pbMovedGirders = false;
-   if ( m_PointLoads[idx] != pld || eventID != oldEventID )
+   if (*pPointLoad != pld || eventID != oldEventID)
    {
       // must fire a delete event if load is moved to another girder
-      const CSpanKey& prevKey = m_PointLoads[idx].m_SpanKey;
+      const CSpanKey& prevKey = pPointLoad->m_SpanKey;
 
       if (prevKey != pld.m_SpanKey)
       {
@@ -335,13 +360,13 @@ bool CLoadManager::UpdatePointLoad(CollectionIndexType idx, EventIDType eventID,
       }
 
       CTimelineEvent* pEvent = m_pTimelineManager->GetEventByID(oldEventID);
-      pEvent->GetApplyLoadActivity().RemoveUserLoad(m_PointLoads[idx].m_ID);
+      pEvent->GetApplyLoadActivity().RemoveUserLoad(loadID);
 
-      m_PointLoads[idx] = pld;
+      *pPointLoad = pld;
 
       pEvent = m_pTimelineManager->GetEventByID(eventID);
       ATLASSERT(pEvent);
-      pEvent->GetApplyLoadActivity().AddUserLoad(m_PointLoads[idx].m_ID);
+      pEvent->GetApplyLoadActivity().AddUserLoad(pld.m_ID);
 
       return true;
    }
@@ -364,6 +389,27 @@ void CLoadManager::DeletePointLoad(CollectionIndexType idx,CSpanKey* pKey)
    *pKey = it->m_SpanKey;
 
    m_PointLoads.erase(it);
+}
+
+void CLoadManager::DeletePointLoadByID(LoadIDType loadID, CSpanKey* pKey)
+{
+   EventIndexType eventIdx = m_pTimelineManager->FindUserLoadEventIndex(loadID);
+   ATLASSERT(eventIdx != INVALID_INDEX);
+   CTimelineEvent* pEvent = m_pTimelineManager->GetEventByIndex(eventIdx);
+   pEvent->GetApplyLoadActivity().RemoveUserLoad(loadID);
+
+   auto iter = m_PointLoads.begin();
+   auto end = m_PointLoads.end();
+   for (; iter != end; iter++)
+   {
+      const auto& load = *iter;
+      if (load.m_ID == loadID)
+      {
+         *pKey = load.m_SpanKey;
+         m_PointLoads.erase(iter);
+         break;
+      }
+   }
 }
 
 std::vector<CPointLoadData> CLoadManager::GetPointLoads(const CSpanKey& spanKey) const
@@ -390,7 +436,10 @@ CollectionIndexType CLoadManager::AddDistributedLoad(EventIDType eventID,const C
    ATLASSERT(eventID != INVALID_ID);
 
    m_DistributedLoads.push_back(pld);
-   m_DistributedLoads.back().m_ID = UserLoads::ms_NextDistributedLoadID++;
+   if (m_DistributedLoads.back().m_ID == INVALID_ID)
+   {
+      m_DistributedLoads.back().m_ID = UserLoads::ms_NextDistributedLoadID++;
+   }
 
    CTimelineEvent* pEvent = m_pTimelineManager->GetEventByID(eventID);
    ATLASSERT(pEvent);
@@ -422,6 +471,22 @@ const CDistributedLoadData* CLoadManager::FindDistributedLoad(LoadIDType loadID)
    return nullptr;
 }
 
+CDistributedLoadData* CLoadManager::FindDistributedLoadByID(LoadIDType loadID)
+{
+   DistributedLoadList::iterator iter(m_DistributedLoads.begin());
+   DistributedLoadList::iterator end(m_DistributedLoads.end());
+   for (; iter != end; iter++)
+   {
+      CDistributedLoadData& loadData = *iter;
+      if (loadData.m_ID == loadID)
+      {
+         return &loadData;
+      }
+   }
+
+   return nullptr;
+}
+
 EventIndexType CLoadManager::GetDistributedLoadEventIndex(LoadIDType loadID) const
 {
    EventIndexType eventIdx = m_pTimelineManager->FindUserLoadEventIndex(loadID);
@@ -437,15 +502,21 @@ EventIDType CLoadManager::GetDistributedLoadEventID(LoadIDType loadID) const
 bool CLoadManager::UpdateDistributedLoad(CollectionIndexType idx, EventIDType eventID,const CDistributedLoadData& pld,bool* pbMovedGirder,CSpanKey* pPrevKey)
 {
    ATLASSERT(0 <= idx && idx < GetDistributedLoadCount() );
+   return UpdateDistributedLoadByID(m_DistributedLoads[idx].m_ID, eventID, pld, pbMovedGirder, pPrevKey);
+}
+
+bool CLoadManager::UpdateDistributedLoadByID(LoadIDType loadID, EventIDType eventID, const CDistributedLoadData& pld, bool* pbMovedGirder, CSpanKey* pPrevKey)
+{
    ATLASSERT(eventID != INVALID_ID);
 
-   EventIDType oldEventID = m_pTimelineManager->FindUserLoadEventID(m_DistributedLoads[idx].m_ID);
+   CDistributedLoadData* pLoad = FindDistributedLoadByID(loadID);
+   EventIDType oldEventID = m_pTimelineManager->FindUserLoadEventID(loadID);
 
    *pbMovedGirder = false;
-   if ( m_DistributedLoads[idx] != pld || eventID != oldEventID )
+   if (*pLoad != pld || eventID != oldEventID)
    {
       // must fire a delete event if load is moved to another girder
-      const CSpanKey& prevKey = m_DistributedLoads[idx].m_SpanKey;
+      const CSpanKey& prevKey = pLoad->m_SpanKey;
 
       if (prevKey != pld.m_SpanKey)
       {
@@ -454,13 +525,13 @@ bool CLoadManager::UpdateDistributedLoad(CollectionIndexType idx, EventIDType ev
       }
 
       CTimelineEvent* pEvent = m_pTimelineManager->GetEventByID(oldEventID);
-      pEvent->GetApplyLoadActivity().RemoveUserLoad(m_DistributedLoads[idx].m_ID);
+      pEvent->GetApplyLoadActivity().RemoveUserLoad(loadID);
 
-      m_DistributedLoads[idx] = pld;
+      *pLoad = pld;
 
       pEvent = m_pTimelineManager->GetEventByID(eventID);
       ATLASSERT(pEvent);
-      pEvent->GetApplyLoadActivity().AddUserLoad(m_DistributedLoads[idx].m_ID);
+      pEvent->GetApplyLoadActivity().AddUserLoad(pld.m_ID);
       return true;
    }
 
@@ -482,6 +553,27 @@ void CLoadManager::DeleteDistributedLoad(CollectionIndexType idx,CSpanKey* pKey)
    *pKey = it->m_SpanKey;
 
    m_DistributedLoads.erase(it);
+}
+
+void CLoadManager::DeleteDistributedLoadByID(LoadIDType loadID, CSpanKey* pKey)
+{
+   EventIndexType eventIdx = m_pTimelineManager->FindUserLoadEventIndex(loadID);
+   ATLASSERT(eventIdx != INVALID_INDEX);
+   CTimelineEvent* pEvent = m_pTimelineManager->GetEventByIndex(eventIdx);
+   pEvent->GetApplyLoadActivity().RemoveUserLoad(loadID);
+
+   auto iter = m_DistributedLoads.begin();
+   auto end = m_DistributedLoads.end();
+   for (; iter != end; iter++)
+   {
+      const auto& load = *iter;
+      if (load.m_ID == loadID)
+      {
+         *pKey = load.m_SpanKey;
+         m_DistributedLoads.erase(iter);
+         break;
+      }
+   }
 }
 
 std::vector<CDistributedLoadData> CLoadManager::GetDistributedLoads(const CSpanKey& spanKey) const
@@ -508,8 +600,11 @@ CollectionIndexType CLoadManager::AddMomentLoad(EventIDType eventID,const CMomen
    ATLASSERT(eventID != INVALID_ID);
 
    m_MomentLoads.push_back(pld);
-   m_MomentLoads.back().m_ID = UserLoads::ms_NextMomentLoadID++;
-
+   if (m_MomentLoads.back().m_ID == INVALID_ID)
+   {
+      m_MomentLoads.back().m_ID = UserLoads::ms_NextMomentLoadID++;
+   }
+   
    CTimelineEvent* pEvent = m_pTimelineManager->GetEventByID(eventID);
    ATLASSERT(pEvent);
    pEvent->GetApplyLoadActivity().AddUserLoad(m_MomentLoads.back().m_ID);
@@ -552,18 +647,40 @@ const CMomentLoadData* CLoadManager::FindMomentLoad(LoadIDType loadID) const
    return nullptr;
 }
 
+CMomentLoadData* CLoadManager::FindMomentLoadByID(LoadIDType loadID)
+{
+   MomentLoadList::iterator iter(m_MomentLoads.begin());
+   MomentLoadList::iterator end(m_MomentLoads.end());
+   for (; iter != end; iter++)
+   {
+      CMomentLoadData& loadData = *iter;
+      if (loadData.m_ID == loadID)
+      {
+         return &loadData;
+      }
+   }
+
+   return nullptr;
+}
+
 bool CLoadManager::UpdateMomentLoad(CollectionIndexType idx, EventIDType eventID,const CMomentLoadData& pld,bool* pbMovedGirder,CSpanKey* pPrevKey)
 {
    ATLASSERT(0 <= idx && idx < GetMomentLoadCount() );
+   return UpdateMomentLoadByID(m_MomentLoads[idx].m_ID, eventID, pld, pbMovedGirder, pPrevKey);
+}
+
+bool CLoadManager::UpdateMomentLoadByID(LoadIDType loadID, EventIDType eventID, const CMomentLoadData& pld, bool* pbMovedGirder, CSpanKey* pPrevKey)
+{
    ATLASSERT(eventID != INVALID_ID);
 
-   EventIDType oldEventID = m_pTimelineManager->FindUserLoadEventID(m_DistributedLoads[idx].m_ID);
+   CMomentLoadData* pLoad = FindMomentLoadByID(loadID);
+   EventIDType oldEventID = m_pTimelineManager->FindUserLoadEventID(loadID);
 
    *pbMovedGirder = false;
-   if ( m_MomentLoads[idx] != pld || oldEventID != eventID )
+   if (*pLoad != pld || oldEventID != eventID)
    {
       // must fire a delete event if load is moved to another girder
-      const CSpanKey& prevKey = m_MomentLoads[idx].m_SpanKey;
+      const CSpanKey& prevKey = pLoad->m_SpanKey;
 
       if (prevKey != pld.m_SpanKey)
       {
@@ -572,9 +689,9 @@ bool CLoadManager::UpdateMomentLoad(CollectionIndexType idx, EventIDType eventID
       }
 
       CTimelineEvent* pEvent = m_pTimelineManager->GetEventByID(oldEventID);
-      pEvent->GetApplyLoadActivity().RemoveUserLoad(m_MomentLoads[idx].m_ID);
+      pEvent->GetApplyLoadActivity().RemoveUserLoad(loadID);
 
-      m_MomentLoads[idx] = pld;
+      *pLoad = pld;
 
       pEvent = m_pTimelineManager->GetEventByID(eventID);
       ATLASSERT(pEvent);
@@ -600,6 +717,27 @@ void CLoadManager::DeleteMomentLoad(CollectionIndexType idx,CSpanKey* pKey)
    *pKey = it->m_SpanKey;
 
    m_MomentLoads.erase(it);
+}
+
+void CLoadManager::DeleteMomentLoadByID(LoadIDType loadID, CSpanKey* pKey)
+{
+   EventIndexType eventIdx = m_pTimelineManager->FindUserLoadEventIndex(loadID);
+   ATLASSERT(eventIdx != INVALID_INDEX);
+   CTimelineEvent* pEvent = m_pTimelineManager->GetEventByIndex(eventIdx);
+   pEvent->GetApplyLoadActivity().RemoveUserLoad(loadID);
+
+   auto iter = m_MomentLoads.begin();
+   auto end = m_MomentLoads.end();
+   for (; iter != end; iter++)
+   {
+      const auto& load = *iter;
+      if (load.m_ID == loadID)
+      {
+         *pKey = load.m_SpanKey;
+         m_MomentLoads.erase(iter);
+         break;
+      }
+   }
 }
 
 std::vector<CMomentLoadData> CLoadManager::GetMomentLoads(const CSpanKey& spanKey) const

@@ -87,8 +87,11 @@ interface IEditByUI : IUnknown
    virtual void EditLiveLoads() = 0;
    virtual void EditLiveLoadDistributionFactors(pgsTypes::DistributionFactorMethod method,LldfRangeOfApplicabilityAction roaAction) = 0;
    virtual bool EditPointLoad(CollectionIndexType loadIdx) = 0;
+   virtual bool EditPointLoadByID(LoadIDType loadID) = 0;
    virtual bool EditDistributedLoad(CollectionIndexType loadIdx) = 0;
+   virtual bool EditDistributedLoadByID(LoadIDType loadID) = 0;
    virtual bool EditMomentLoad(CollectionIndexType loadIdx) = 0;
+   virtual bool EditMomentLoadByID(LoadIDType loadID) = 0;
    virtual bool EditTimeline() = 0;
 
    virtual UINT GetStdToolBarID() = 0;

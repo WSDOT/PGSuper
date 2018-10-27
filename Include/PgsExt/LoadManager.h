@@ -62,8 +62,10 @@ public:
    const CPointLoadData* FindPointLoad(LoadIDType loadID) const;
    EventIndexType GetPointLoadEventIndex(LoadIDType loadID) const;
    EventIDType GetPointLoadEventID(LoadIDType loadID) const;
-   bool UpdatePointLoad(CollectionIndexType idx, EventIDType eventID,const CPointLoadData& pld,bool* pbMovedGirders,CSpanKey* pPrevKey);
-   void DeletePointLoad(CollectionIndexType idx,CSpanKey* pKey);
+   bool UpdatePointLoad(CollectionIndexType idx, EventIDType eventID, const CPointLoadData& pld, bool* pbMovedGirders, CSpanKey* pPrevKey);
+   bool UpdatePointLoadByID(LoadIDType loadID, EventIDType eventID, const CPointLoadData& pld, bool* pbMovedGirders, CSpanKey* pPrevKey);
+   void DeletePointLoad(CollectionIndexType idx, CSpanKey* pKey);
+   void DeletePointLoadByID(LoadIDType loadID, CSpanKey* pKey);
    std::vector<CPointLoadData> GetPointLoads(const CSpanKey& spanKey) const;
 
    CollectionIndexType GetDistributedLoadCount() const;
@@ -72,8 +74,10 @@ public:
    const CDistributedLoadData* FindDistributedLoad(LoadIDType loadID) const;
    EventIndexType GetDistributedLoadEventIndex(LoadIDType loadID) const;
    EventIDType GetDistributedLoadEventID(LoadIDType loadID) const;
-   bool UpdateDistributedLoad(CollectionIndexType idx, EventIDType eventID,const CDistributedLoadData& pld,bool* pbMovedGirders,CSpanKey* pPrevKey);
+   bool UpdateDistributedLoad(CollectionIndexType idx, EventIDType eventID, const CDistributedLoadData& pld, bool* pbMovedGirders, CSpanKey* pPrevKey);
+   bool UpdateDistributedLoadByID(LoadIDType loadID, EventIDType eventID, const CDistributedLoadData& pld, bool* pbMovedGirders, CSpanKey* pPrevKey);
    void DeleteDistributedLoad(CollectionIndexType idx,CSpanKey* pKey);
+   void DeleteDistributedLoadByID(LoadIDType loadID, CSpanKey* pKey);
    std::vector<CDistributedLoadData> GetDistributedLoads(const CSpanKey& spanKey) const;
 
    CollectionIndexType GetMomentLoadCount() const;
@@ -82,8 +86,10 @@ public:
    const CMomentLoadData* FindMomentLoad(LoadIDType loadID) const;
    EventIndexType GetMomentLoadEventIndex(LoadIDType loadID) const;
    EventIDType GetMomentLoadEventID(LoadIDType loadID) const;
-   bool UpdateMomentLoad(CollectionIndexType idx, EventIDType eventID,const CMomentLoadData& pld,bool* pbMovedGirders,CSpanKey* pPrevKey);
+   bool UpdateMomentLoad(CollectionIndexType idx, EventIDType eventID, const CMomentLoadData& pld, bool* pbMovedGirders, CSpanKey* pPrevKey);
+   bool UpdateMomentLoadByID(LoadIDType loadID, EventIDType eventID, const CMomentLoadData& pld, bool* pbMovedGirders, CSpanKey* pPrevKey);
    void DeleteMomentLoad(CollectionIndexType idx,CSpanKey* pKey);
+   void DeleteMomentLoadByID(LoadIDType loadID, CSpanKey* pKey);
    std::vector<CMomentLoadData> GetMomentLoads(const CSpanKey& spanKey) const;
 
    // =================================================================================
@@ -105,6 +111,10 @@ protected:
 
 private:
    CTimelineManager* m_pTimelineManager;
+
+   CPointLoadData* FindPointLoadByID(LoadIDType loadID);
+   CDistributedLoadData* FindDistributedLoadByID(LoadIDType loadID);
+   CMomentLoadData* FindMomentLoadByID(LoadIDType loadID);
 
    // user defined loads
    typedef std::vector<CPointLoadData> PointLoadList;

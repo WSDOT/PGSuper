@@ -33,7 +33,7 @@ Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 28.25    5   6.00                     2     1    WF66G    *     43  0.6  270  28.55  14.87  11.50  11.50                                              11  62.0  4.0  5.400  6.900   4.365    -4.450    10404   0.543  0.671   5.207 -2.153 -0.204 -0.291 -2.649 184.24  321.93    3.00   10.50   10.50 
+ 28.25    5   6.00                     2     1    WF66G    *     43  0.6  270  28.55  14.87  11.50  11.50                                              11  62.0  4.0  5.400  6.900   4.365    -4.450    10404   0.543  0.671   5.207 -2.153 -0.204 -0.291 -2.649 184.24  321.93    3.00    5.50    5.50 
 
 
 The Specification Check was Not Successful
@@ -44,7 +44,7 @@ Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 28.25    5   6.00                     2     2    WF66G    *     40  0.6  270  28.60  15.10  11.75  11.75                                              10  62.0  4.0  5.100  6.400   4.034    -4.121     9821   0.545  0.671   5.036 -1.901 -0.175 -0.250 -2.326 168.19  297.18    3.00    8.00    8.00 
+ 28.25    5   6.00                     2     2    WF66G    *     40  0.6  270  28.60  15.10  11.75  11.75                                              10  62.0  4.0  5.100  6.400   4.034    -4.121     9821   0.545  0.671   5.036 -1.901 -0.175 -0.250 -2.326 168.19  297.18    3.00    5.50    5.50 
 
 
 The Specification Check was Not Successful
@@ -66,7 +66,7 @@ Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 28.25    5   6.00                     3     1    WF66G    *     43  0.6  270  28.55  14.87  11.50  11.50                                              11  62.0  4.0  5.400  6.900   4.364    -4.450    10404   0.543  0.671   5.208 -2.152 -0.204 -0.291 -2.648 184.24  321.96    3.00   10.50   10.50 
+ 28.25    5   6.00                     3     1    WF66G    *     43  0.6  270  28.55  14.87  11.50  11.50                                              11  62.0  4.0  5.400  6.900   4.364    -4.450    10404   0.543  0.671   5.208 -2.152 -0.204 -0.291 -2.648 184.24  321.96    3.00    5.50    5.50 
 
 
 The Specification Check was Not Successful
@@ -77,7 +77,7 @@ Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 28.25    5   6.00                     3     2    WF66G    *     40  0.6  270  28.60  15.10  11.75  11.75                                              10  62.0  4.0  5.100  6.400   4.033    -4.120     9821   0.545  0.671   5.038 -1.900 -0.175 -0.250 -2.325 168.19  297.23    3.00    8.00    8.00 
+ 28.25    5   6.00                     3     2    WF66G    *     40  0.6  270  28.60  15.10  11.75  11.75                                              10  62.0  4.0  5.100  6.400   4.033    -4.120     9821   0.545  0.671   5.038 -1.900 -0.175 -0.250 -2.325 168.19  297.23    3.00    5.50    5.50 
 
 
 The Specification Check was Not Successful

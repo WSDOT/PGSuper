@@ -55,7 +55,7 @@ public:
    {;}
 
    // GROUP: OPERATIONS
-   virtual bool Passed() const = 0;
+   virtual bool Passed(bool bIgnoreConfigurationLimits=false) const = 0;
    virtual bool Passed(pgsTypes::HaulingSlope slope) const = 0;
    virtual bool PassedStressCheck(pgsTypes::HaulingSlope slope) const = 0;
    virtual void GetRequiredConcreteStrength(pgsTypes::HaulingSlope slope,Float64 *pfcCompression,Float64 *pfcTensionNoRebar,Float64 *pfcTensionWithRebar) const = 0;
@@ -111,7 +111,7 @@ public:
 
    // GROUP: OPERATIONS
    // virtual functions
-   virtual bool Passed() const override;
+   virtual bool Passed(bool bIgnoreConfigurationLimits = false) const override;
    virtual bool Passed(pgsTypes::HaulingSlope slope) const override;
    virtual bool PassedStressCheck(pgsTypes::HaulingSlope slope) const override;
    virtual void GetRequiredConcreteStrength(pgsTypes::HaulingSlope slope,Float64 *pfcCompression,Float64 *pfcTensionNoRebar,Float64 *pfcTensionWithRebar) const override;
@@ -125,7 +125,6 @@ public:
 
    Float64 GetMinFsForCracking(pgsTypes::HaulingSlope slope) const;
    Float64 GetFsRollover(pgsTypes::HaulingSlope slope) const;
-   Float64 GetFsFailure(pgsTypes::HaulingSlope slope) const;
 
    void SetHaulingCheckArtifact(const stbHaulingCheckArtifact& haulingArtifact);
    const stbHaulingCheckArtifact& GetHaulingCheckArtifact() const;

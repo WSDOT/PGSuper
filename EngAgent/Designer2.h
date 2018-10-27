@@ -445,8 +445,7 @@ private:
    void InitSupportZones(const CSegmentKey& segmentKey) const;
    ZoneIndexType GetSupportZoneIndex(const pgsPointOfInterest& poi) const;
 
-   mutable bool m_bShippingDesignWithEqualCantilevers;
-   mutable bool m_bShippingDesignIgnoreConfigurationLimits;
+   mutable bool m_bShippingDesignIgnoreConfigurationLimits; // ignores unequal cantilevers and clear span requires
 
    // GROUP: LIFECYCLE
    // GROUP: OPERATORS
@@ -519,8 +518,8 @@ private:
    bool IsDeepSection( const pgsPointOfInterest& poi) const;
    ZoneIndexType GetCriticalSectionZone(const pgsPointOfInterest& poi,bool bIncludeCS=false) const;
    void CheckStirrupRequirement( const pgsPointOfInterest& poi, const SHEARCAPACITYDETAILS& scd, pgsVerticalShearArtifact* pArtifact ) const;
-   void CheckUltimateShearCapacity( const pgsPointOfInterest& poi, const SHEARCAPACITYDETAILS& scd, Float64 vu, const GDRCONFIG* pConfig, pgsVerticalShearArtifact* pArtifact ) const;
-   void CheckHorizontalShear( const pgsPointOfInterest& poi, Float64 vu,
+   void CheckUltimateShearCapacity(pgsTypes::LimitState limitState, IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, const SHEARCAPACITYDETAILS& scd, Float64 vu, const GDRCONFIG* pConfig, pgsVerticalShearArtifact* pArtifact ) const;
+   void CheckHorizontalShear(const pgsPointOfInterest& poi, Float64 vu,
                               Float64 fcSlab,Float64 fcGdr, Float64 fy,
                               const GDRCONFIG* pConfig,
                               pgsHorizontalShearArtifact* pArtifact ) const;

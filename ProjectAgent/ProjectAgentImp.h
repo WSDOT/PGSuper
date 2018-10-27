@@ -558,8 +558,10 @@ public:
    virtual const CPointLoadData* FindPointLoad(LoadIDType loadID) const override;
    virtual EventIndexType GetPointLoadEventIndex(LoadIDType loadID) const override;
    virtual EventIDType GetPointLoadEventID(LoadIDType loadID) const override;
-   virtual void UpdatePointLoad(CollectionIndexType idx, EventIDType eventID,const CPointLoadData& pld) override;
+   virtual void UpdatePointLoad(CollectionIndexType idx, EventIDType eventID, const CPointLoadData& pld) override;
+   virtual void UpdatePointLoadByID(LoadIDType loadID, EventIDType eventID, const CPointLoadData& pld) override;
    virtual void DeletePointLoad(CollectionIndexType idx) override;
+   virtual void DeletePointLoadByID(LoadIDType loadID) override;
    virtual std::vector<CPointLoadData> GetPointLoads(const CSpanKey& spanKey) const override;
 
    virtual CollectionIndexType GetDistributedLoadCount() const override;
@@ -568,8 +570,10 @@ public:
    virtual const CDistributedLoadData* FindDistributedLoad(LoadIDType loadID) const override;
    virtual EventIndexType GetDistributedLoadEventIndex(LoadIDType loadID) const override;
    virtual EventIDType GetDistributedLoadEventID(LoadIDType loadID) const override;
-   virtual void UpdateDistributedLoad(CollectionIndexType idx, EventIDType eventID,const CDistributedLoadData& pld) override;
+   virtual void UpdateDistributedLoad(CollectionIndexType idx, EventIDType eventID, const CDistributedLoadData& pld) override;
+   virtual void UpdateDistributedLoadByID(LoadIDType loadID, EventIDType eventID, const CDistributedLoadData& pld) override;
    virtual void DeleteDistributedLoad(CollectionIndexType idx) override;
+   virtual void DeleteDistributedLoadByID(LoadIDType loadID) override;
    virtual std::vector<CDistributedLoadData> GetDistributedLoads(const CSpanKey& spanKey) const override;
 
    virtual CollectionIndexType GetMomentLoadCount() const override;
@@ -578,8 +582,10 @@ public:
    virtual const CMomentLoadData* FindMomentLoad(LoadIDType loadID) const override;
    virtual EventIndexType GetMomentLoadEventIndex(LoadIDType loadID) const override;
    virtual EventIDType GetMomentLoadEventID(LoadIDType loadID) const override;
-   virtual void UpdateMomentLoad(CollectionIndexType idx, EventIDType eventID,const CMomentLoadData& pld) override;
+   virtual void UpdateMomentLoad(CollectionIndexType idx, EventIDType eventID, const CMomentLoadData& pld) override;
+   virtual void UpdateMomentLoadByID(LoadIDType loadID, EventIDType eventID, const CMomentLoadData& pld) override;
    virtual void DeleteMomentLoad(CollectionIndexType idx) override;
+   virtual void DeleteMomentLoadByID(LoadIDType loadID) override;
    virtual std::vector<CMomentLoadData> GetMomentLoads(const CSpanKey& spanKey) const override;
 
    virtual void SetConstructionLoad(Float64 load) override;

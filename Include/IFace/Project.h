@@ -750,7 +750,9 @@ interface IUserDefinedLoadData : IUnknown
    virtual EventIndexType GetPointLoadEventIndex(LoadIDType loadID) const = 0;
    virtual EventIDType GetPointLoadEventID(LoadIDType loadID) const = 0;
    virtual void UpdatePointLoad(CollectionIndexType idx, EventIDType eventID, const CPointLoadData& pld) = 0;
+   virtual void UpdatePointLoadByID(LoadIDType loadID, EventIDType eventID, const CPointLoadData& pld) = 0;
    virtual void DeletePointLoad(CollectionIndexType idx) = 0;
+   virtual void DeletePointLoadByID(LoadIDType loadID) = 0;
    virtual std::vector<CPointLoadData> GetPointLoads(const CSpanKey& spanKey) const = 0;
 
    // distributed loads
@@ -762,7 +764,9 @@ interface IUserDefinedLoadData : IUnknown
    virtual EventIndexType GetDistributedLoadEventIndex(LoadIDType loadID) const = 0;
    virtual EventIDType GetDistributedLoadEventID(LoadIDType loadID) const = 0;
    virtual void UpdateDistributedLoad(CollectionIndexType idx, EventIDType eventID, const CDistributedLoadData& pld) = 0;
+   virtual void UpdateDistributedLoadByID(LoadIDType loadID, EventIDType eventID, const CDistributedLoadData& pld) = 0;
    virtual void DeleteDistributedLoad(CollectionIndexType idx) = 0;
+   virtual void DeleteDistributedLoadByID(LoadIDType loadID) = 0;
    virtual std::vector<CDistributedLoadData> GetDistributedLoads(const CSpanKey& spanKey) const = 0;
 
    // moment loads
@@ -774,7 +778,9 @@ interface IUserDefinedLoadData : IUnknown
    virtual EventIndexType GetMomentLoadEventIndex(LoadIDType loadID) const = 0;
    virtual EventIDType GetMomentLoadEventID(LoadIDType loadID) const = 0;
    virtual void UpdateMomentLoad(CollectionIndexType idx, EventIDType eventID, const CMomentLoadData& pld) = 0;
+   virtual void UpdateMomentLoadByID(LoadIDType loadID, EventIDType eventID, const CMomentLoadData& pld) = 0;
    virtual void DeleteMomentLoad(CollectionIndexType idx) = 0;
+   virtual void DeleteMomentLoadByID(LoadIDType loadID) = 0;
    virtual std::vector<CMomentLoadData> GetMomentLoads(const CSpanKey& spanKey) const = 0;
 
    // construction loads

@@ -122,33 +122,25 @@ void CStrandLocations::Build(rptChapter* pChapter,IBroker* pBroker,const CSegmen
       ColumnIndexType col = 0;
 
       p_table->SetRowSpan(0, col, 2);
-      (*p_table)(0,col) << _T("Strand");
-      p_table->SetRowSpan(1, col, SKIP_CELL);
-      col++;
+      (*p_table)(0,col++) << _T("Strand");
 
       p_table->SetColumnSpan(0, col, 2);
       (*p_table)(0, col) << _T("Left End");
-      p_table->SetColumnSpan(0, col + 1, SKIP_CELL);
       (*p_table)(1,col++) << COLHDR(_T("X"),rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
       (*p_table)(1,col++) << COLHDR(_T("Y"),rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
 
       p_table->SetColumnSpan(0, col, 2);
       (*p_table)(0, col) << _T("Right End");
-      p_table->SetColumnSpan(0, col + 1, SKIP_CELL);
       (*p_table)(1, col++) << COLHDR(_T("X"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
       (*p_table)(1, col++) << COLHDR(_T("Y"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
 
       if ( 0 < nDebonded )
       {
          p_table->SetRowSpan(0, col, 2);
-         (*p_table)(0,col) << COLHDR(_T("Debonded from") << rptNewLine << _T("Left End"),rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
-         p_table->SetRowSpan(1, col, SKIP_CELL);
-         col++;
+         (*p_table)(0,col++) << COLHDR(_T("Debonded from") << rptNewLine << _T("Left End"),rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
 
          p_table->SetRowSpan(0, col, 2);
-         (*p_table)(0, col) << COLHDR(_T("Debonded from") << rptNewLine << _T("Right End"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
-         p_table->SetRowSpan(1, col, SKIP_CELL);
-         col++;
+         (*p_table)(0, col++) << COLHDR(_T("Debonded from") << rptNewLine << _T("Right End"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
       }
 
       if ( 0 < nExtendedLeft || 0 < nExtendedRight )
@@ -156,16 +148,12 @@ void CStrandLocations::Build(rptChapter* pChapter,IBroker* pBroker,const CSegmen
          p_table->SetRowSpan(0, col, 2);
          p_table->SetColumnStyle(col,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_CENTER));
          p_table->SetStripeRowColumnStyle(col,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_CENTER));
-         (*p_table)(0,col) << _T("Extended") << rptNewLine << _T("Left End");
-         p_table->SetRowSpan(1, col, SKIP_CELL);
-         col++;
+         (*p_table)(0,col++) << _T("Extended") << rptNewLine << _T("Left End");
 
          p_table->SetRowSpan(0, col, 2);
          p_table->SetColumnStyle(col, rptStyleManager::GetTableCellStyle(CB_NONE | CJ_CENTER));
          p_table->SetStripeRowColumnStyle(col, rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_CENTER));
-         (*p_table)(0, col) << _T("Extended") << rptNewLine << _T("Right End");
-         p_table->SetRowSpan(1, col, SKIP_CELL);
-         col++;
+         (*p_table)(0, col++) << _T("Extended") << rptNewLine << _T("Right End");
       }
 
       GET_IFACE2(pBroker,IPointOfInterest, pPoi);
@@ -258,33 +246,25 @@ void CStrandLocations::Build(rptChapter* pChapter,IBroker* pBroker,const CSegmen
       ColumnIndexType col = 0;
 
       p_table->SetRowSpan(0, col, 2);
-      (*p_table)(0, col) << _T("Strand");
-      p_table->SetRowSpan(1, col, SKIP_CELL);
-      col++;
+      (*p_table)(0, col++) << _T("Strand");
 
       p_table->SetColumnSpan(0, col, 2);
       (*p_table)(0, col) << _T("Left End");
-      p_table->SetColumnSpan(0, col + 1, SKIP_CELL);
       (*p_table)(1, col++) << COLHDR(_T("X"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
       (*p_table)(1, col++) << COLHDR(_T("Y"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
 
       p_table->SetColumnSpan(0, col, 2);
       (*p_table)(0, col) << _T("Right End");
-      p_table->SetColumnSpan(0, col + 1, SKIP_CELL);
       (*p_table)(1, col++) << COLHDR(_T("X"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
       (*p_table)(1, col++) << COLHDR(_T("Y"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
 
       if (0 < nDebonded)
       {
          p_table->SetRowSpan(0, col, 2);
-         (*p_table)(0, col) << COLHDR(_T("Debonded from") << rptNewLine << _T("Left End"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
-         p_table->SetRowSpan(1, col, SKIP_CELL);
-         col++;
+         (*p_table)(0, col++) << COLHDR(_T("Debonded from") << rptNewLine << _T("Left End"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
 
          p_table->SetRowSpan(0, col, 2);
-         (*p_table)(0, col) << COLHDR(_T("Debonded from") << rptNewLine << _T("Right End"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
-         p_table->SetRowSpan(1, col, SKIP_CELL);
-         col++;
+         (*p_table)(0, col++) << COLHDR(_T("Debonded from") << rptNewLine << _T("Right End"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
       }
 
       GET_IFACE2(pBroker, IPointOfInterest, pPoi);

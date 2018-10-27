@@ -2754,16 +2754,8 @@ void CEngAgentImp::ReportDistributionFactors(const CGirderKey& girderKey,rptChap
          table->SetColumnSpan(0,1,4);
          (*table)(0,1) << _T("Strength/Service");
 
-         table->SetColumnSpan(0,2,SKIP_CELL);
-         table->SetColumnSpan(0,3,SKIP_CELL);
-         table->SetColumnSpan(0,4,SKIP_CELL);
-
          table->SetColumnSpan(0,5,4);
          (*table)(0,5) << _T("Fatigue/Special Permit Rating");
-
-         table->SetColumnSpan(0,6,SKIP_CELL);
-         table->SetColumnSpan(0,7,SKIP_CELL);
-         table->SetColumnSpan(0,8,SKIP_CELL);
 
          (*table)(1,1) << _T("+M");
          (*table)(1,2) << _T("-M");
@@ -3532,7 +3524,7 @@ void CEngAgentImp::GetFabricationOptimizationDetails(const CSegmentKey& segmentK
    haulConfig.bIgnoreGirderConfig = false;
    haulConfig.GdrConfig = config;
    bool bResult;
-   std::unique_ptr<pgsHaulingAnalysisArtifact> hauling_artifact_base ( hauling_checker->DesignHauling(segmentKey,haulConfig,true,true,pSegmentHaulingPointsOfInterest,&bResult,LOGGER));
+   std::unique_ptr<pgsHaulingAnalysisArtifact> hauling_artifact_base ( hauling_checker->DesignHauling(segmentKey,haulConfig,true,pSegmentHaulingPointsOfInterest,&bResult,LOGGER));
 
    // Constructibility is wsdot-based. Cast artifact
    pgsWsdotHaulingAnalysisArtifact* hauling_artifact = dynamic_cast<pgsWsdotHaulingAnalysisArtifact*>(hauling_artifact_base.get());

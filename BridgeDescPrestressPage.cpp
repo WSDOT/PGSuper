@@ -2522,7 +2522,7 @@ void CGirderDescPrestressPage::OnStrandInputTypeChanged()
 
                strandRows.push_back(strandRow);
 
-               if (newStrandDefinitionType == CStrandData::sdtDirectStrandInput)
+               if (newStrandDefinitionType == CStrandData::sdtDirectStrandInput && strIdx1 != strIdx2)
                {
                   strandRow.m_Z = sx2;
                   strandRows.push_back(strandRow);

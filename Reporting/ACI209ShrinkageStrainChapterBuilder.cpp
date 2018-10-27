@@ -192,14 +192,11 @@ rptChapter* CACI209ShrinkageStrainChapterBuilder::Build(CReportSpecification* pR
    colIdx = 0;
 
    pTable->SetRowSpan(rowIdx,colIdx,2);
-   (*pTable)(rowIdx,colIdx) << _T("Interval");
-   pTable->SetRowSpan(rowIdx+1,colIdx++,SKIP_CELL);
+   (*pTable)(rowIdx,colIdx++) << _T("Interval");
    for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
    {
       pTable->SetColumnSpan(rowIdx,colIdx,3);
       (*pTable)(rowIdx,colIdx) << _T("Segment ") << LABEL_SEGMENT(segIdx);
-      pTable->SetColumnSpan(rowIdx,colIdx+1,SKIP_CELL);
-      pTable->SetColumnSpan(rowIdx,colIdx+2,SKIP_CELL);
       (*pTable)(rowIdx+1,colIdx++) << _T("t") << rptNewLine << _T("(days)");
       (*pTable)(rowIdx+1,colIdx++) << symbol(DELTA) << Sub2(symbol(epsilon),_T("sh")) << _T("x10") << Super(_T("6"));
       (*pTable)(rowIdx+1,colIdx++) << Sub2(symbol(epsilon),_T("sh")) << _T("x10") << Super(_T("6"));
@@ -207,8 +204,6 @@ rptChapter* CACI209ShrinkageStrainChapterBuilder::Build(CReportSpecification* pR
       {
          pTable->SetColumnSpan(rowIdx,colIdx,3);
          (*pTable)(rowIdx,colIdx) << _T("Closure Joint ") << LABEL_SEGMENT(segIdx);
-         pTable->SetColumnSpan(rowIdx,colIdx+1,SKIP_CELL);
-         pTable->SetColumnSpan(rowIdx,colIdx+2,SKIP_CELL);
          (*pTable)(rowIdx+1,colIdx++) << _T("t") << rptNewLine << _T("(days)");
          (*pTable)(rowIdx+1,colIdx++) << symbol(DELTA) << Sub2(symbol(epsilon),_T("sh")) << _T("x10") << Super(_T("6"));
          (*pTable)(rowIdx+1,colIdx++) << Sub2(symbol(epsilon),_T("sh")) << _T("x10") << Super(_T("6"));
@@ -216,8 +211,6 @@ rptChapter* CACI209ShrinkageStrainChapterBuilder::Build(CReportSpecification* pR
    }
    pTable->SetColumnSpan(rowIdx,colIdx,3);
    (*pTable)(rowIdx,colIdx) << _T("Deck");
-   pTable->SetColumnSpan(rowIdx,colIdx+1,SKIP_CELL);
-   pTable->SetColumnSpan(rowIdx,colIdx+2,SKIP_CELL);
    (*pTable)(rowIdx+1,colIdx++) << _T("t") << rptNewLine << _T("(days)");
    (*pTable)(rowIdx+1,colIdx++) << symbol(DELTA) << Sub2(symbol(epsilon),_T("sh")) << _T("x10") << Super(_T("6"));
    (*pTable)(rowIdx+1,colIdx++) << Sub2(symbol(epsilon),_T("sh")) << _T("x10") << Super(_T("6"));

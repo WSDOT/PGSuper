@@ -164,79 +164,65 @@ rptChapter* CTemporarySupportReactionChapterBuilder::Build(CReportSpecification*
    ColumnIndexType col = 0;
    p_table->SetNumberOfHeaderRows(2);
    p_table->SetRowSpan(0,col,2);
-   p_table->SetRowSpan(1,col,SKIP_CELL);
    (*p_table)(0,col++) << _T("Temporary") << rptNewLine << _T("Support");
 
    p_table->SetRowSpan(0,col,2);
-   p_table->SetRowSpan(1,col,SKIP_CELL);
    (*p_table)(0,col++) << _T("Type");
 
    p_table->SetRowSpan(0,col,2);
-   p_table->SetRowSpan(1,col,SKIP_CELL);
    (*p_table)(0,col++) << _T("Reaction");
 
    p_table->SetRowSpan(0,col,2);
-   p_table->SetRowSpan(1,col,SKIP_CELL);
    (*p_table)(0,col++) << pProductLoads->GetProductLoadName(pgsTypes::pftGirder);
 
    p_table->SetRowSpan(0,col,2);
-   p_table->SetRowSpan(1,col,SKIP_CELL);
    (*p_table)(0,col++) << pProductLoads->GetProductLoadName(pgsTypes::pftDiaphragm);
 
    if (bShearKey)
    {
       p_table->SetRowSpan(0, col, 2);
-      p_table->SetRowSpan(1, col, SKIP_CELL);
       (*p_table)(0, col++) << pProductLoads->GetProductLoadName(pgsTypes::pftShearKey);
    }
 
    if (bLongitudinalJoint)
    {
       p_table->SetRowSpan(0, col, 2);
-      p_table->SetRowSpan(1, col, SKIP_CELL);
       (*p_table)(0, col++) << pProductLoads->GetProductLoadName(pgsTypes::pftLongitudinalJoint);
    }
 
    if ( bConstruction )
    {
       p_table->SetRowSpan(0,col,2);
-      p_table->SetRowSpan(1,col,SKIP_CELL);
       (*p_table)(0,col++) << pProductLoads->GetProductLoadName(pgsTypes::pftConstruction);
    }
 
    if (bDeck)
    {
       p_table->SetRowSpan(0, col, 2);
-      p_table->SetRowSpan(1, col, SKIP_CELL);
       (*p_table)(0, col++) << pProductLoads->GetProductLoadName(pgsTypes::pftSlab);
 
       p_table->SetRowSpan(0, col, 2);
-      p_table->SetRowSpan(1, col, SKIP_CELL);
       (*p_table)(0, col++) << pProductLoads->GetProductLoadName(pgsTypes::pftSlabPad);
    }
 
    if ( bDeckPanels )
    {
       p_table->SetRowSpan(0,col,2);
-      p_table->SetRowSpan(1,col,SKIP_CELL);
       (*p_table)(0,col++) << pProductLoads->GetProductLoadName(pgsTypes::pftSlabPanel);
    }
 
    if ( bSidewalk )
    {
       p_table->SetRowSpan(0,col,2);
-      p_table->SetRowSpan(1,col,SKIP_CELL);
       (*p_table)(0,col++) << pProductLoads->GetProductLoadName(pgsTypes::pftSidewalk);
    }
 
    p_table->SetRowSpan(0,col,2);
-   p_table->SetRowSpan(1,col,SKIP_CELL);
    (*p_table)(0,col++) << pProductLoads->GetProductLoadName(pgsTypes::pftTrafficBarrier);
 
    if ( bOverlay )
    {
       p_table->SetRowSpan(0,col,2);
-      p_table->SetRowSpan(1,col,SKIP_CELL);
       if ( bFutureOverlay )
       {
          (*p_table)(0,col++) << _T("Future") << rptNewLine << pProductLoads->GetProductLoadName(pgsTypes::pftOverlay);
@@ -295,13 +281,9 @@ rptChapter* CTemporarySupportReactionChapterBuilder::Build(CReportSpecification*
    {
       ColumnIndexType col = 0;
       p_table->SetRowSpan(row,col,3);
-      p_table->SetRowSpan(row+1,col,SKIP_CELL);
-      p_table->SetRowSpan(row+2,col,SKIP_CELL);
       (*p_table)(row,col++) << LABEL_TEMPORARY_SUPPORT(vSupports[tsIdx].first);
 
       p_table->SetRowSpan(row,col,3);
-      p_table->SetRowSpan(row+1,col,SKIP_CELL);
-      p_table->SetRowSpan(row+2,col,SKIP_CELL);
       (*p_table)(row,col++) << _T("Idealized");
 
       (*p_table)(row,col) << _T("Fx (") << pDisplayUnits->GetGeneralForceUnit().UnitOfMeasure.UnitTag() << _T(")");

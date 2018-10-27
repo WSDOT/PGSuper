@@ -1255,15 +1255,14 @@ interface ISectionProperties : IUnknown
    virtual pgsTypes::SectionPropertyMode GetSectionPropertiesMode() const = 0;
 
    // returns how haunch is varried when computing section properties
-   virtual pgsTypes::HaunchAnalysisSectionPropertiesType GetHaunchAnalysisSectionPropertiesType()const = 0;
+   virtual pgsTypes::HaunchAnalysisSectionPropertiesType GetHaunchAnalysisSectionPropertiesType() const = 0;
 
-   // Get the stress coefficients at the specifed location for My = 0
-   // f = Ca*Axial + Cbx*Mx
-   virtual void GetStressCoefficients(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, pgsTypes::StressLocation location, const GDRCONFIG* pConfig, Float64* pCa, Float64 *pCbx) const = 0;
+   // Returns the stress points for a section. The controlling stress point indes returned by GetStressCoefficients can be used to access the container
+   virtual std::vector<gpPoint2d> GetStressPoints(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, pgsTypes::StressLocation location, const GDRCONFIG* pConfig = nullptr) const = 0;
 
    // Get the stress coefficients at the specifed location
    // f = Ca*Axial + Cbx*Mx + Cby*My
-   virtual void GetStressCoefficients(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, pgsTypes::StressLocation location, const GDRCONFIG* pConfig, Float64* pCa, Float64 *pCbx,Float64* pCby) const = 0;
+   virtual void GetStressCoefficients(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, pgsTypes::StressLocation location, const GDRCONFIG* pConfig, Float64* pCa, Float64 *pCbx,Float64* pCby,IndexType* pControllingStressPointIndex=nullptr) const = 0;
 
    // Returns section properties for the specified interval. Section properties
    // are based on the section properties model defined in the project criteria

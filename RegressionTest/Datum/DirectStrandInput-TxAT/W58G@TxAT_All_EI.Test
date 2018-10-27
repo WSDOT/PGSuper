@@ -33,8 +33,8 @@ Compression stress check failed for Service I Limit State in Interval 14 Install
 Compression stress check failed for Service I Limit State in Interval 15 Open to Traffic
 Tensile stress check failed for Service III Limit State in Interval 15 Open to Traffic
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
-Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 Ultimate vertical shear capacity check failed for Strength I Limit State
+Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 Stirrup detailing checks failed for the Strength I Limit State.
 Lifting checks failed
 Hauling checks failed

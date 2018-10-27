@@ -1132,7 +1132,7 @@ void CBridgeSectionView::BuildDeckDisplayObjects()
    dispObj.CoCreateInstance(CLSID_PointDisplayObject);
 
    CComPtr<IShape> shape;
-   pShapes->GetSlabShape(m_pFrame->GetCurrentCutLocation(),nullptr,true/*include haunch*/,&shape);
+   pShapes->GetSlabShape(m_pFrame->GetCurrentCutLocation(), nullptr, true/*include haunch*/, &shape);
 
    CComPtr<iShapeDrawStrategy> strategy;
    strategy.CoCreateInstance(CLSID_ShapeDrawStrategy);

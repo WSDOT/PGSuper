@@ -187,13 +187,6 @@ rptChapter* CDeckElevationChapterBuilder::BuildDeckOnGirder(CReportSpecification
          MatingSurfaceIndexType nWebs = pGirder->GetNumberOfMatingSurfaces(segmentKey);
          pTable->SetRowSpan(row, 0, Int16(row_step*nWebs));
 
-         RowIndexType r;
-         for (r = row + 1; r < row + row_step*nWebs; r++)
-         {
-            pTable->SetRowSpan(r, 0, SKIP_CELL);
-            pTable->SetRowSpan(r, 1, SKIP_CELL);
-         }
-
          (*pTable)(row, 0) << LABEL_GIRDER(gdrIdx);
 
          for (MatingSurfaceIndexType web = 0; web < nWebs; web++)
@@ -201,11 +194,6 @@ rptChapter* CDeckElevationChapterBuilder::BuildDeckOnGirder(CReportSpecification
             col = 1;
 
             pTable->SetRowSpan(row, col, row_step);
-            for (r = row + 1; r < row + row_step; r++)
-            {
-               pTable->SetRowSpan(r, col, SKIP_CELL);
-            }
-
             (*pTable)(row, col++) << MatingSurfaceIndexType(web + 1) << rptNewLine;
 
             (*pTable)(row, col) << Bold(_T("Web Offset (")) << Bold(pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure.UnitTag()) << Bold(_T(")"));
@@ -362,7 +350,6 @@ rptChapter* CDeckElevationChapterBuilder::BuildNoDeck(CReportSpecification* pRpt
       
       (*pTable)(0, col) << _T("Location");
       pTable->SetColumnSpan(0, col, 2);
-      pTable->SetColumnSpan(0, col + 1, SKIP_CELL);
       col += 2;
 
       (*pTable)(0, col++) << _T("CL Brg");
@@ -411,20 +398,10 @@ rptChapter* CDeckElevationChapterBuilder::BuildNoDeck(CReportSpecification* pRpt
          pTable->SetRowSpan(row, col, Int16(3 * row_step));
          (*pTable)(row, col) << LABEL_GIRDER(gdrIdx);
 
-         RowIndexType r;
-         for (r = row + 1; r < row + 3*row_step; r++)
-         {
-            pTable->SetRowSpan(r, col, SKIP_CELL);
-         }
-
          for (int i = 0; i < 3; i++) // left, center, right
          {
             col = 1;
             pTable->SetRowSpan(row + i*row_step, col, row_step);
-            for (r = row + i*row_step + 1; r < row + (i+1)*row_step; r++)
-            {
-               pTable->SetRowSpan(r, col, SKIP_CELL);
-            }
             (*pTable)(row + i*row_step, col) << lpszLocation[i] << rptNewLine;
 
             col = 2;

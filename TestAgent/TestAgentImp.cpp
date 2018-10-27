@@ -2104,10 +2104,11 @@ bool CTestAgentImp::RunHandlingTest(std::_tofstream& resultsFile, std::_tofstrea
    if ( pLiftArtifact != nullptr )
    {
       const stbLiftingResults& liftingResults = pLiftArtifact->GetLiftingResults();
-      if ( !liftingResults.bIsStable[stbTypes::NoImpact] || !liftingResults.bIsStable[stbTypes::ImpactUp] || !liftingResults.bIsStable[stbTypes::ImpactDown] )
+      if ( !liftingResults.bIsStable[stbTypes::NoImpact][stbTypes::Left] || !liftingResults.bIsStable[stbTypes::ImpactUp][stbTypes::Left] || !liftingResults.bIsStable[stbTypes::ImpactDown][stbTypes::Left] ||
+           !liftingResults.bIsStable[stbTypes::NoImpact][stbTypes::Right] || !liftingResults.bIsStable[stbTypes::ImpactUp][stbTypes::Right] || !liftingResults.bIsStable[stbTypes::ImpactDown][stbTypes::Right])
       {
          resultsFile<<"Girder is unstable for lifting"<<std::endl;
-         return false;
+         return true;
       }
 
       GET_IFACE(ISegmentLiftingPointsOfInterest,pSegmentLiftingPointsOfInterest);
@@ -2129,7 +2130,7 @@ bool CTestAgentImp::RunHandlingTest(std::_tofstream& resultsFile, std::_tofstrea
          const stbIAnalysisPoint* pAnalysisPoint = pStabilityProblem->GetAnalysisPoint(sectionResult.AnalysisPointIndex);
          if ( ::IsEqual(pAnalysisPoint->GetLocation(),loc) )
          {
-            Float64 maxStress, minStress;
+            Float64 maxStress(0), minStress(0);
             if ( pLiftArtifact->EvaluateStressesAtEquilibriumAngle() )
             {
                maxStress = Max(sectionResult.fMax[stbTypes::Top], sectionResult.fMax[stbTypes::Bottom]);
@@ -2143,8 +2144,7 @@ bool CTestAgentImp::RunHandlingTest(std::_tofstream& resultsFile, std::_tofstrea
             resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 100001, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(maxStress, unitMeasure::MPa)) <<_T(", 50, ")<<gdrIdx<<std::endl;
             resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 100002, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(minStress, unitMeasure::MPa)) <<_T(", 50, ")<<gdrIdx<<std::endl;
 
-            Float64 FScr = liftingResults.MinFScr; // this is the absolute minimum FScr... we should be testing this value
-            //Float64 FScr = sectionResult.FScrMin; // this is the FScr min at this section (this is what the old test did)
+            Float64 FScr = liftingResults.FScrMin; // this is the absolute minimum FScr... we should be testing this value
             Float64 FSf  = liftingResults.MinAdjFsFailure; // the old stability implementation had an FSf at each POI... this was wrong, there is only one FSf since it is a global phenomenom
             resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 100003, ")<<loc<<_T(", ")<<FScr<<_T(", 50, ")<<gdrIdx<<std::endl;
             resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 100004, ")<<loc<<_T(", ")<<FSf<<_T(", 50, ")<<gdrIdx<<std::endl;

@@ -699,56 +699,38 @@ void CCombinedStressTable::BuildLimitStateTable(IBroker* pBroker, rptChapter* pC
 
    p_table->SetNumberOfHeaderRows(3);
 
-   ColumnIndexType col1 = 0;
-   ColumnIndexType col2 = 0;
-   ColumnIndexType col3 = 0;
-   p_table->SetRowSpan(0,col1,3);
-   (*p_table)(0,col1++) << COLHDR(RPT_LFT_SUPPORT_LOCATION ,    rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
-   p_table->SetRowSpan(1,col2++,SKIP_CELL);
-   p_table->SetRowSpan(2,col3++,SKIP_CELL);
+   ColumnIndexType col = 0;
+   p_table->SetRowSpan(0,col,3);
+   (*p_table)(0,col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION ,    rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
 
    if ( bDesign )
    {
-      p_table->SetColumnSpan(0,col1,6);
-      (*p_table)(0,col1++) << _T("Design");
-      p_table->SetColumnSpan(0,col1++,SKIP_CELL);
-      p_table->SetColumnSpan(0,col1++,SKIP_CELL);
-      p_table->SetColumnSpan(0,col1++,SKIP_CELL);
-      p_table->SetColumnSpan(0,col1++,SKIP_CELL);
-      p_table->SetColumnSpan(0,col1++,SKIP_CELL);
-
-      p_table->SetColumnSpan(1,col2,2);
-      (*p_table)(1,col2++) << _T("Service I");
-      p_table->SetColumnSpan(1,col2++,SKIP_CELL);
-
-      (*p_table)(2,col3++) << COLHDR(_T("Max"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-      (*p_table)(2,col3++) << COLHDR(_T("Min"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      p_table->SetColumnSpan(0,col,6);
+      (*p_table)(0,col) << _T("Design");
+      p_table->SetColumnSpan(1,col,2);
+      (*p_table)(1,col) << _T("Service I");
+      (*p_table)(2,col++) << COLHDR(_T("Max"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      (*p_table)(2,col++) << COLHDR(_T("Min"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
       
       if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims )
       {
-         p_table->SetColumnSpan(1,col2,2);
-         (*p_table)(1,col2++) << _T("Service IA");
-         p_table->SetColumnSpan(1,col2++,SKIP_CELL);
-
-         (*p_table)(2,col3++) << COLHDR(_T("Max"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-         (*p_table)(2,col3++) << COLHDR(_T("Min"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+         p_table->SetColumnSpan(1,col,2);
+         (*p_table)(1,col) << _T("Service IA");
+         (*p_table)(2,col++) << COLHDR(_T("Max"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+         (*p_table)(2,col++) << COLHDR(_T("Min"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
       }
       
-      p_table->SetColumnSpan(1,col2,2);
-      (*p_table)(1,col2++) << _T("Service III");
-      p_table->SetColumnSpan(1,col2++,SKIP_CELL);
-
-      (*p_table)(2,col3++) << COLHDR(_T("Max"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-      (*p_table)(2,col3++) << COLHDR(_T("Min"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      p_table->SetColumnSpan(1,col,2);
+      (*p_table)(1,col) << _T("Service III");
+      (*p_table)(2,col++) << COLHDR(_T("Max"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      (*p_table)(2,col++) << COLHDR(_T("Min"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    
       if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
       {
-         p_table->SetColumnSpan(1,col2,2);
-         (*p_table)(1,col2++) << _T("Fatigue I");
-         p_table->SetColumnSpan(1,col2++,SKIP_CELL);
-
-         (*p_table)(2,col3++) << COLHDR(_T("Max"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-         (*p_table)(2,col3++) << COLHDR(_T("Min"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+         p_table->SetColumnSpan(1,col,2);
+         (*p_table)(1,col) << _T("Fatigue I");
+         (*p_table)(2,col++) << COLHDR(_T("Max"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+         (*p_table)(2,col++) << COLHDR(_T("Min"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
       }
    }
 
@@ -778,50 +760,39 @@ void CCombinedStressTable::BuildLimitStateTable(IBroker* pBroker, rptChapter* pC
 
       if ( 0 < colSpan )
       {
-         p_table->SetColumnSpan(0,col1,colSpan);
-         (*p_table)(0,col1++) << _T("Rating");
-
-         for ( ColumnIndexType i = 0; i < colSpan-1; i++ )
-            p_table->SetColumnSpan(0,col1++,SKIP_CELL);
+         p_table->SetColumnSpan(0,col,colSpan);
+         (*p_table)(0,col) << _T("Rating");
 
          if ( !bDesign && pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) )
          {
-            p_table->SetColumnSpan(1,col2,2);
-            (*p_table)(1,col2++) << _T("Service III") << rptNewLine << _T("Inventory");
-            p_table->SetColumnSpan(1,col2++,SKIP_CELL);
-
-            (*p_table)(2,col3++) << COLHDR(_T("Max"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-            (*p_table)(2,col3++) << COLHDR(_T("Min"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+            p_table->SetColumnSpan(1,col,2);
+            (*p_table)(1,col) << _T("Service III") << rptNewLine << _T("Inventory");
+            (*p_table)(2,col++) << COLHDR(_T("Max"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+            (*p_table)(2,col++) << COLHDR(_T("Min"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
          }
 
          if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) )
          {
-            p_table->SetColumnSpan(1,col2,2);
-            (*p_table)(1,col2++) << _T("Service III") << rptNewLine << _T("Legal Routine");
-            p_table->SetColumnSpan(1,col2++,SKIP_CELL);
-
-            (*p_table)(2,col3++) << COLHDR(_T("Max"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-            (*p_table)(2,col3++) << COLHDR(_T("Min"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+            p_table->SetColumnSpan(1,col,2);
+            (*p_table)(1,col) << _T("Service III") << rptNewLine << _T("Legal Routine");
+            (*p_table)(2,col++) << COLHDR(_T("Max"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+            (*p_table)(2,col++) << COLHDR(_T("Min"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
          }
 
          if (pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special))
          {
-            p_table->SetColumnSpan(1, col2, 2);
-            (*p_table)(1, col2++) << _T("Service III") << rptNewLine << _T("Legal Special");
-            p_table->SetColumnSpan(1, col2++, SKIP_CELL);
-
-            (*p_table)(2, col3++) << COLHDR(_T("Max"), rptStressUnitTag, pDisplayUnits->GetStressUnit());
-            (*p_table)(2, col3++) << COLHDR(_T("Min"), rptStressUnitTag, pDisplayUnits->GetStressUnit());
+            p_table->SetColumnSpan(1, col, 2);
+            (*p_table)(1, col) << _T("Service III") << rptNewLine << _T("Legal Special");
+            (*p_table)(2, col++) << COLHDR(_T("Max"), rptStressUnitTag, pDisplayUnits->GetStressUnit());
+            (*p_table)(2, col++) << COLHDR(_T("Min"), rptStressUnitTag, pDisplayUnits->GetStressUnit());
          }
 
          if (pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Emergency))
          {
-            p_table->SetColumnSpan(1, col2, 2);
-            (*p_table)(1, col2++) << _T("Service III") << rptNewLine << _T("Legal Emergency");
-            p_table->SetColumnSpan(1, col2++, SKIP_CELL);
-
-            (*p_table)(2, col3++) << COLHDR(_T("Max"), rptStressUnitTag, pDisplayUnits->GetStressUnit());
-            (*p_table)(2, col3++) << COLHDR(_T("Min"), rptStressUnitTag, pDisplayUnits->GetStressUnit());
+            p_table->SetColumnSpan(1, col, 2);
+            (*p_table)(1, col) << _T("Service III") << rptNewLine << _T("Legal Emergency");
+            (*p_table)(2, col++) << COLHDR(_T("Max"), rptStressUnitTag, pDisplayUnits->GetStressUnit());
+            (*p_table)(2, col++) << COLHDR(_T("Min"), rptStressUnitTag, pDisplayUnits->GetStressUnit());
          }
       }
    }

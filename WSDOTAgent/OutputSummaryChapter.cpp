@@ -1817,7 +1817,7 @@ void lifting(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& segmentKey
       row++;
 
 
-      Float64 fs_crack = liftingResults.MinFScr;
+      Float64 fs_crack = liftingResults.FScrMin;
       Float64 all_fs_crack = pSegmentLiftingSpecCriteria->GetLiftingCrackingFs();
       (*pTable)(row,0) << _T("F.S. - Cracking");
       (*pTable)(row,1) <<  scalar.SetValue(fs_crack);
@@ -1987,21 +1987,8 @@ void hauling(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& segmentKey
       }
       row++;
 
-      Float64 fs_fail = pHaulArtifact->GetFsFailure(slope);
       Float64 fs_roll = pHaulArtifact->GetFsRollover(slope);
       Float64 all_fs_fail = pSegmentHaulingSpecCriteria->GetHaulingRolloverFs();
-      (*pTable)(row,0) << _T("F.S. - Failure");
-      (*pTable)(row,1) <<  scalar.SetValue(fs_fail);
-      (*pTable)(row,2) <<  scalar.SetValue(all_fs_fail);
-      if (all_fs_fail <= fs_fail)
-      {
-         (*pTable)(row,3) << RPT_PASS;
-      }
-      else
-      {
-         (*pTable)(row,3) << RPT_FAIL;
-      }
-      row++;
       (*pTable)(row,0) << _T("F.S. - Rollover");
       (*pTable)(row,1) <<  scalar.SetValue(fs_roll);
       (*pTable)(row,2) <<  scalar.SetValue(all_fs_fail);

@@ -48,9 +48,10 @@
 #include "PsForceEng.h"
 #include "GirderHandlingChecker.h"
 #include "GirderLiftingChecker.h"
-#include "AlternativeTensileStressCalculator.h"
 #include <PgsExt\DesignConfigUtil.h>
 #include <PgsExt\StabilityAnalysisPoint.h>
+
+#include <WBFLGenericBridgeTools\AlternativeTensileStressCalculator.h>
 
 #include "StatusItems.h"
 #include <PgsExt\StatusItem.h>
@@ -205,7 +206,6 @@ pgsDesigner2::pgsDesigner2():
 m_StrandDesignTool(LOGGER),
 m_ShearDesignTool(LOGGER)
 {
-   m_bShippingDesignWithEqualCantilevers = false;
    m_bShippingDesignIgnoreConfigurationLimits = false;
 
 #if defined _WIN64
@@ -2341,31 +2341,148 @@ void pgsDesigner2::CheckSegmentStresses(const CSegmentKey& segmentKey,const PoiL
 
             // Use calculator object to deal with allowable tensile stresses if there is adequate rebar
             Float64 fsMax = (bSISpec ? ::ConvertToSysUnits(206.0,unitMeasure::MPa) : ::ConvertToSysUnits(30.0,unitMeasure::KSI) );
-            pgsAlternativeTensileStressCalculator altCalc(segmentKey, task.intervalIdx, pBridge, pGirder, pShapes, pSectProps, pRebarGeom, pMaterials, pPoi, true/*limit bar stress to 30 ksi*/, fsMax, i == 0 ? true /*girder stresses*/ : false /*deck stresses*/);
+
+            gbtAlternativeTensileStressRequirements altTensionRequirements;
+
+            CClosureKey closureKey;
+            bool bIsInClosure = pPoi->IsInClosureJoint(poi, &closureKey);
+
+            Float64 Es, fu; // rebar parameters that we aren't using but get anyway
+            if (i == 0)
+            {
+               if (bIsInClosure)
+               {
+                  altTensionRequirements.concreteType = (matConcrete::Type)pMaterials->GetClosureJointConcreteType(closureKey);
+                  altTensionRequirements.bHasFct = pMaterials->DoesClosureJointConcreteHaveAggSplittingStrength(closureKey);
+                  altTensionRequirements.Fct = altTensionRequirements.bHasFct ? pMaterials->GetClosureJointConcreteAggSplittingStrength(closureKey) : 0.0;
+                  altTensionRequirements.fc = pMaterials->GetClosureJointFc(closureKey, task.intervalIdx);
+                  altTensionRequirements.density = pMaterials->GetClosureJointStrengthDensity(closureKey);
+                  pMaterials->GetClosureJointLongitudinalRebarProperties(closureKey, &Es, &altTensionRequirements.fy, &fu);
+               }
+               else
+               {
+                  altTensionRequirements.concreteType = (matConcrete::Type)pMaterials->GetSegmentConcreteType(segmentKey);
+                  altTensionRequirements.bHasFct = pMaterials->DoesSegmentConcreteHaveAggSplittingStrength(segmentKey);
+                  altTensionRequirements.Fct = altTensionRequirements.bHasFct ? pMaterials->GetSegmentConcreteAggSplittingStrength(segmentKey) : 0.0;
+                  altTensionRequirements.fc = pMaterials->GetSegmentFc(segmentKey, task.intervalIdx);
+                  altTensionRequirements.density = pMaterials->GetSegmentStrengthDensity(segmentKey);
+                  pMaterials->GetSegmentLongitudinalRebarProperties(segmentKey, &Es, &altTensionRequirements.fy, &fu);
+               }
+            }
+            else
+            {
+               altTensionRequirements.concreteType = (matConcrete::Type)pMaterials->GetDeckConcreteType();
+               altTensionRequirements.bHasFct = pMaterials->DoesDeckConcreteHaveAggSplittingStrength();
+               altTensionRequirements.Fct = altTensionRequirements.bHasFct ? pMaterials->GetDeckConcreteAggSplittingStrength() : 0.0;
+               altTensionRequirements.fc = pMaterials->GetDeckFc(task.intervalIdx);
+               altTensionRequirements.density = pMaterials->GetDeckStrengthDensity();
+               pMaterials->GetDeckRebarProperties(&Es, &altTensionRequirements.fy, &fu);
+            }
+            altTensionRequirements.fsMax = fsMax;
+            altTensionRequirements.bLimitBarStress = true; // limit bar stress to fsMax
 
 
             CSegmentKey thisSegmentKey = segmentKey;
-            CClosureKey closureKey;
-            bool bIsInClosure = pPoi->IsInClosureJoint(poi,&closureKey);
             if ( bIsInClosure )
             {
                thisSegmentKey = closureKey;
             }
 
-            if ( pAllowable->HasAllowableTensionWithRebarOption(task.intervalIdx,bIsInPTZ[TOP],!bIsInClosure,thisSegmentKey) )
+            if (pAllowable->HasAllowableTensionWithRebarOption(task.intervalIdx, bIsInPTZ[TOP], !bIsInClosure, thisSegmentKey))
             {
-               if ( i == 0 /*girder stresses*/ && bIsInClosure && bIsInPTZ[TOP] )
+               if (i == 0 /*girder stresses*/ && bIsInClosure && bIsInPTZ[TOP])
                {
                   // the bar stress is not limited to 30 ksi [see LRFD Tables 5.9.2.3.1 a and b (pre2017: 5.9.4.1.2-1 and -2)]
                   // in the precompressed tensile zone for closure joints
-                  altCalc.LimitBarStress(false);
+                  altTensionRequirements.bLimitBarStress = false;
                }
 
-               Float64 Yna, AreaTens, T, AsProvd, AsReqd;
-               fTopAllowable = altCalc.ComputeAlternativeStressRequirements(poi, nullptr, fTop, fBot, fAllowable[TOP][WITHOUT_REBAR], fAllowable[TOP][WITH_REBAR],
-                                                                            &Yna, &AreaTens, &T, &AsProvd, &AsReqd, &IsAdequateRebar[TOP]);
+               pgsTypes::HaunchAnalysisSectionPropertiesType hatype = pSectProps->GetHaunchAnalysisSectionPropertiesType();
+               CComPtr<IShape> shape;
+               pShapes->GetSegmentShape(task.intervalIdx, poi, false, pgsTypes::scCentroid, hatype, &shape);
+               CComPtr<IRebarSection> rebarSection;
+               pRebarGeom->GetRebars(poi, &rebarSection);
 
-               artifact.SetAlternativeTensileStressParameters(topStressLocation,Yna,AreaTens,T,AsProvd,AsReqd,fAllowable[TOP][WITH_REBAR]);
+               altTensionRequirements.shape = shape;
+               altTensionRequirements.rebarSection = rebarSection;
+
+               Float64 Ca, Cbx, Cby;
+               IndexType controllingTopStressPointIdx;
+               pSectProps->GetStressCoefficients(task.intervalIdx, poi, pgsTypes::TopGirder, nullptr, &Ca, &Cbx, &Cby, &controllingTopStressPointIdx);
+               ATLASSERT(controllingTopStressPointIdx != INVALID_INDEX);
+               std::vector<gpPoint2d> vTopStressPoints = pSectProps->GetStressPoints(task.intervalIdx, poi, pgsTypes::TopGirder);
+
+               IndexType controllingBottomStressPointIdx;
+               pSectProps->GetStressCoefficients(task.intervalIdx, poi, pgsTypes::BottomGirder, nullptr, &Ca, &Cbx, &Cby, &controllingBottomStressPointIdx);
+               ATLASSERT(controllingBottomStressPointIdx != INVALID_INDEX);
+               std::vector<gpPoint2d> vBottomStressPoints = pSectProps->GetStressPoints(task.intervalIdx, poi, pgsTypes::BottomGirder);
+
+               bool bBiaxialStresses = (vTopStressPoints.size() == 1 && vBottomStressPoints.size() == 1 ? false : true);
+
+               if (vTopStressPoints.size() == 1)
+               {
+                  // one stress points means we have a symmetric section and the top center point is the stress point
+                  // make two stress points by spreading them appart in the X direction
+                  Float64 W = pGirder->GetTopWidth(poi);
+                  gpPoint2d pntTop = vTopStressPoints.front();
+                  altTensionRequirements.pntTopLeft.Move(pntTop.X() - W/2, pntTop.Y(), fTop);
+                  altTensionRequirements.pntTopRight.Move(pntTop.X() + W/2, pntTop.Y(), fTop);
+               }
+               else
+               {
+                  ATLASSERT(2 <= vTopStressPoints.size());
+                  IndexType otherIdx = (controllingTopStressPointIdx == 0 ? 1 : 0); // index of a different stress point
+                  gpPoint2d pntTop = vTopStressPoints[controllingTopStressPointIdx]; // location of controlling stress point (this is where fTop occurs)
+                  gpPoint2d pntTop2 = vTopStressPoints[otherIdx]; // location of a different stress point
+                  // stress at a point (x,y)
+                  // let D = (IxxIyy - Ixy^2)
+                  // f = [(MyIxx + MxIxy)x - (MxIyy + MyIxy)y]/D
+                  // My = 0 (we only have gravity and prestress forces), therefore
+                  // f = [(MxIxy)x - (MxIyy)y]/D
+                  // Solve for Mx
+                  // Mx = (D*f)/(Ixy*x - Iyy*y)
+                  // stress at other point (X,Y), f2 = [(MxIxy)X - (MxIyy)Y]/D
+                  // substitute for Mx
+                  // f2 = f(Ixy*X - Iyy*Y)/(Ixy*x - Iyy*y)
+                  Float64 Iyy = pSectProps->GetIyy(task.intervalIdx, poi);
+                  Float64 Ixy = pSectProps->GetIxy(task.intervalIdx, poi);
+                  Float64 fTop2 = fTop*(Ixy*pntTop2.X() - Iyy*pntTop2.Y()) / (Ixy*pntTop.X() - Iyy*pntTop.Y());
+                  altTensionRequirements.pntTopLeft.Move(pntTop.X(), pntTop.Y(), fTop);
+                  altTensionRequirements.pntTopRight.Move(pntTop2.X(), pntTop2.Y(), fTop2);
+               }
+
+               if (vBottomStressPoints.size() == 1)
+               {
+                  Float64 W = pGirder->GetBottomWidth(poi);
+                  gpPoint2d pntBottom = vBottomStressPoints.front();
+                  altTensionRequirements.pntBottomLeft.Move(pntBottom.X() - W/2, pntBottom.Y(), fBot);
+                  altTensionRequirements.pntBottomRight.Move(pntBottom.X() + W/2, pntBottom.Y(), fBot);
+               }
+               else
+               {
+                  ATLASSERT(2 <= vBottomStressPoints.size());
+                  IndexType otherIdx = (controllingTopStressPointIdx == 0 ? 1 : 0); // index of a different stress point
+                  gpPoint2d pntBot = vBottomStressPoints[controllingTopStressPointIdx]; // location of controlling stress point (this is where fTop occurs)
+                  gpPoint2d pntBot2 = vBottomStressPoints[otherIdx]; // location of a different stress point
+                  // stress at a point (x,y)
+                  // let D = (IxxIyy - Ixy^2)
+                  // f = [(MyIxx + MxIxy)x - (MxIyy + MyIxy)y]/D
+                  // My = 0 (we only have gravity and prestress forces), therefore
+                  // f = [(MxIxy)x - (MxIyy)y]/D
+                  // Solve for Mx
+                  // Mx = (D*f)/(Ixy*x - Iyy*y)
+                  // stress at other point (X,Y), f2 = [(MxIxy)X - (MxIyy)Y]/D
+                  // substitute for Mx
+                  // f2 = f(Ixy*X - Iyy*Y)/(Ixy*x - Iyy*y)
+                  Float64 Iyy = pSectProps->GetIyy(task.intervalIdx, poi);
+                  Float64 Ixy = pSectProps->GetIxy(task.intervalIdx, poi);
+                  Float64 fBot2 = fBot*(Ixy*pntBot2.X() - Iyy*pntBot2.Y()) / (Ixy*pntBot.X() - Iyy*pntBot.Y());
+                  altTensionRequirements.pntBottomLeft.Move(pntBot.X(), pntBot.Y(), fBot);
+                  altTensionRequirements.pntBottomRight.Move(pntBot2.X(), pntBot2.Y(), fBot2);
+               }
+
+               gbtComputeAlternativeStressRequirements(&altTensionRequirements);
+               artifact.SetAlternativeTensileStressRequirements(topStressLocation, altTensionRequirements, fAllowable[TOP][WITH_REBAR], bBiaxialStresses);
 
                if ( IsAdequateRebar[TOP] )
                {
@@ -2388,14 +2505,95 @@ void pgsDesigner2::CheckSegmentStresses(const CSegmentKey& segmentKey,const PoiL
                {
                   // the bar stress is not limited to 30 ksi [see LRFD Tables 5.9.2.3.1 a and b (pre2017: 5.9.4.1.2-1 and -2)]
                   // in the precompressed tensile zone for closure joints
-                  altCalc.LimitBarStress(false);
+                  altTensionRequirements.bLimitBarStress = false;
                }
 
-               Float64 Yna, AreaTens, T, AsProvd, AsReqd;
-               fBotAllowable = altCalc.ComputeAlternativeStressRequirements(poi, nullptr, fTop, fBot, fAllowable[BOT][WITHOUT_REBAR], fAllowable[BOT][WITH_REBAR],
-                                                                            &Yna, &AreaTens, &T, &AsProvd, &AsReqd, &IsAdequateRebar[BOT]);
+               pgsTypes::HaunchAnalysisSectionPropertiesType hatype = pSectProps->GetHaunchAnalysisSectionPropertiesType();
+               CComPtr<IShape> shape;
+               pShapes->GetSegmentShape(task.intervalIdx, poi, false, pgsTypes::scCentroid, hatype, &shape);
+               CComPtr<IRebarSection> rebarSection;
+               pRebarGeom->GetRebars(poi, &rebarSection);
 
-               artifact.SetAlternativeTensileStressParameters(botStressLocation,Yna,AreaTens,T,AsProvd,AsReqd,fAllowable[BOT][WITH_REBAR]);
+               altTensionRequirements.shape = shape;
+               altTensionRequirements.rebarSection = rebarSection;
+
+               Float64 Ca, Cbx, Cby;
+               IndexType controllingTopStressPointIdx;
+               pSectProps->GetStressCoefficients(task.intervalIdx, poi, pgsTypes::TopGirder, nullptr, &Ca, &Cbx, &Cby, &controllingTopStressPointIdx);
+               ATLASSERT(controllingTopStressPointIdx != INVALID_INDEX);
+               std::vector<gpPoint2d> vTopStressPoints = pSectProps->GetStressPoints(task.intervalIdx, poi, pgsTypes::TopGirder);
+
+               IndexType controllingBottomStressPointIdx;
+               pSectProps->GetStressCoefficients(task.intervalIdx, poi, pgsTypes::BottomGirder, nullptr, &Ca, &Cbx, &Cby, &controllingBottomStressPointIdx);
+               ATLASSERT(controllingBottomStressPointIdx != INVALID_INDEX);
+               std::vector<gpPoint2d> vBottomStressPoints = pSectProps->GetStressPoints(task.intervalIdx, poi, pgsTypes::BottomGirder);
+
+               bool bBiaxialStresses = (vTopStressPoints.size() == 1 && vBottomStressPoints.size() == 1 ? false : true);
+
+               if (vTopStressPoints.size() == 1)
+               {
+                  // one stress points means we have a symmetric section and the top center point is the stress point
+                  // make two stress points by spreading them appart in the X direction
+                  Float64 W = pGirder->GetTopWidth(poi);
+                  gpPoint2d pntTop = vTopStressPoints.front();
+                  altTensionRequirements.pntTopLeft.Move(pntTop.X() - W/2, pntTop.Y(), fTop);
+                  altTensionRequirements.pntTopRight.Move(pntTop.X() + W/2, pntTop.Y(), fTop);
+               }
+               else
+               {
+                  ATLASSERT(2 <= vTopStressPoints.size());
+                  IndexType otherIdx = (controllingTopStressPointIdx == 0 ? 1 : 0); // index of a different stress point
+                  gpPoint2d pntTop = vTopStressPoints[controllingTopStressPointIdx]; // location of controlling stress point (this is where fTop occurs)
+                  gpPoint2d pntTop2 = vTopStressPoints[otherIdx]; // location of a different stress point
+                                                                  // stress at a point (x,y)
+                                                                  // let D = (IxxIyy - Ixy^2)
+                                                                  // f = [(MyIxx + MxIxy)x - (MxIyy + MyIxy)y]/D
+                                                                  // My = 0 (we only have gravity and prestress forces), therefore
+                                                                  // f = [(MxIxy)x - (MxIyy)y]/D
+                                                                  // Solve for Mx
+                                                                  // Mx = (D*f)/(Ixy*x - Iyy*y)
+                                                                  // stress at other point (X,Y), f2 = [(MxIxy)X - (MxIyy)Y]/D
+                                                                  // substitute for Mx
+                                                                  // f2 = f(Ixy*X - Iyy*Y)/(Ixy*x - Iyy*y)
+                  Float64 Iyy = pSectProps->GetIyy(task.intervalIdx, poi);
+                  Float64 Ixy = pSectProps->GetIxy(task.intervalIdx, poi);
+                  Float64 fTop2 = fTop*(Ixy*pntTop2.X() - Iyy*pntTop2.Y()) / (Ixy*pntTop.X() - Iyy*pntTop.Y());
+                  altTensionRequirements.pntTopLeft.Move(pntTop.X(), pntTop.Y(), fTop);
+                  altTensionRequirements.pntTopRight.Move(pntTop2.X(), pntTop2.Y(), fTop2);
+               }
+
+               if (vBottomStressPoints.size() == 1)
+               {
+                  Float64 W = pGirder->GetBottomWidth(poi);
+                  gpPoint2d pntBottom = vBottomStressPoints.front();
+                  altTensionRequirements.pntBottomLeft.Move(pntBottom.X() - W/2, pntBottom.Y(), fBot);
+                  altTensionRequirements.pntBottomRight.Move(pntBottom.X() + W/2, pntBottom.Y(), fBot);
+               }
+               else
+               {
+                  ATLASSERT(2 <= vBottomStressPoints.size());
+                  IndexType otherIdx = (controllingTopStressPointIdx == 0 ? 1 : 0); // index of a different stress point
+                  gpPoint2d pntBot = vBottomStressPoints[controllingTopStressPointIdx]; // location of controlling stress point (this is where fTop occurs)
+                  gpPoint2d pntBot2 = vBottomStressPoints[otherIdx]; // location of a different stress point
+                                                                     // stress at a point (x,y)
+                                                                     // let D = (IxxIyy - Ixy^2)
+                                                                     // f = [(MyIxx + MxIxy)x - (MxIyy + MyIxy)y]/D
+                                                                     // My = 0 (we only have gravity and prestress forces), therefore
+                                                                     // f = [(MxIxy)x - (MxIyy)y]/D
+                                                                     // Solve for Mx
+                                                                     // Mx = (D*f)/(Ixy*x - Iyy*y)
+                                                                     // stress at other point (X,Y), f2 = [(MxIxy)X - (MxIyy)Y]/D
+                                                                     // substitute for Mx
+                                                                     // f2 = f(Ixy*X - Iyy*Y)/(Ixy*x - Iyy*y)
+                  Float64 Iyy = pSectProps->GetIyy(task.intervalIdx, poi);
+                  Float64 Ixy = pSectProps->GetIxy(task.intervalIdx, poi);
+                  Float64 fBot2 = fBot*(Ixy*pntBot2.X() - Iyy*pntBot2.Y()) / (Ixy*pntBot.X() - Iyy*pntBot.Y());
+                  altTensionRequirements.pntBottomLeft.Move(pntBot.X(), pntBot.Y(), fBot);
+                  altTensionRequirements.pntBottomRight.Move(pntBot2.X(), pntBot2.Y(), fBot2);
+               }
+
+               gbtComputeAlternativeStressRequirements(&altTensionRequirements);
+               artifact.SetAlternativeTensileStressRequirements(botStressLocation, altTensionRequirements, fAllowable[BOT][WITH_REBAR], bBiaxialStresses);
 
                if ( IsAdequateRebar[BOT] )
                {
@@ -2560,7 +2758,6 @@ void pgsDesigner2::CheckSegmentStressesAtRelease(const CSegmentKey& segmentKey, 
 {
    USES_CONVERSION;
 
-   GET_IFACE(IBridge,                  pBridge);
    GET_IFACE(IPointOfInterest,         pPoi);
    GET_IFACE(IPretensionStresses,      pPretensionStresses);
    GET_IFACE(IProductForces,           pProductForces);
@@ -2587,6 +2784,11 @@ void pgsDesigner2::CheckSegmentStressesAtRelease(const CSegmentKey& segmentKey, 
 
    bool bSISpec = lrfdVersionMgr::GetVersion() == lrfdVersionMgr::SI ? true : false;
 
+   gbtAlternativeTensileStressRequirements altTensionRequirements;
+   altTensionRequirements.concreteType = (matConcrete::Type)pMaterials->GetSegmentConcreteType(segmentKey);
+   altTensionRequirements.density = pMaterials->GetSegmentStrengthDensity(segmentKey);
+   altTensionRequirements.bHasFct = pMaterials->DoesSegmentConcreteHaveAggSplittingStrength(segmentKey);
+   altTensionRequirements.Fct = altTensionRequirements.bHasFct ? pMaterials->GetSegmentConcreteAggSplittingStrength(segmentKey) : 0.0;
    Float64 fci;
    if ( pConfig == nullptr )
    {
@@ -2596,13 +2798,19 @@ void pgsDesigner2::CheckSegmentStressesAtRelease(const CSegmentKey& segmentKey, 
    {
       fci = pConfig->Fci;
    }
+   altTensionRequirements.fc = fci;
 
    Float64 lambda = pMaterials->GetSegmentLambda(segmentKey);
 
    // Use calculator object to deal with casting yard higher allowable stress
    Float64 fsMax = (bSISpec ? ::ConvertToSysUnits(206.0,unitMeasure::MPa) : ::ConvertToSysUnits(30.0,unitMeasure::KSI) );
-   pgsAlternativeTensileStressCalculator altCalc(segmentKey, releaseIntervalIdx, pBridge, pGirder, pShapes, pSectProps, pRebarGeom, pMaterials, pPoi, true/*limit bar stress*/, fsMax, true /*girder stresses*/);
+   
+   altTensionRequirements.fsMax = fsMax;
+   altTensionRequirements.bLimitBarStress = true; // limit bar stress to fsMax
 
+   Float64 Es, fu;
+   pMaterials->GetSegmentLongitudinalRebarProperties(segmentKey, &Es, &altTensionRequirements.fy, &fu);
+   
    // Don't check closure joint POI at release
    PoiList vPoi;
    pPoi->GetPointsOfInterest(segmentKey, POI_RELEASED_SEGMENT, &vPoi);
@@ -2716,12 +2924,102 @@ void pgsDesigner2::CheckSegmentStressesAtRelease(const CSegmentKey& segmentKey, 
       }
       else // tension
       {
-         Float64 Yna, AreaTens, T, AsProvd, AsReqd;
-         bool IsAdequateRebar;
-         fAllowable = altCalc.ComputeAlternativeStressRequirements(poi, pConfig, fTop, fBot, fAllowableWithoutRebar, fAllowableWithRebar,
-                                                                   &Yna, &AreaTens, &T, &AsProvd, &AsReqd, &IsAdequateRebar);
+         pgsTypes::HaunchAnalysisSectionPropertiesType hatype = pSectProps->GetHaunchAnalysisSectionPropertiesType();
+         CComPtr<IShape> shape;
+         pShapes->GetSegmentShape(task.intervalIdx, poi, false, pgsTypes::scCentroid, hatype, &shape);
+         CComPtr<IRebarSection> rebarSection;
+         pRebarGeom->GetRebars(poi, &rebarSection);
 
-         artifact.SetAlternativeTensileStressParameters(pgsTypes::BottomGirder,Yna,AreaTens,T,AsProvd,AsReqd,fAllowableWithRebar);
+         altTensionRequirements.shape = shape;
+         altTensionRequirements.rebarSection = rebarSection;
+
+         Float64 Ca, Cbx, Cby;
+         IndexType controllingTopStressPointIdx;
+         pSectProps->GetStressCoefficients(task.intervalIdx, poi, pgsTypes::TopGirder, nullptr, &Ca, &Cbx, &Cby, &controllingTopStressPointIdx);
+         ATLASSERT(controllingTopStressPointIdx != INVALID_INDEX);
+         std::vector<gpPoint2d> vTopStressPoints = pSectProps->GetStressPoints(task.intervalIdx, poi, pgsTypes::TopGirder);
+
+         IndexType controllingBottomStressPointIdx;
+         pSectProps->GetStressCoefficients(task.intervalIdx, poi, pgsTypes::BottomGirder, nullptr, &Ca, &Cbx, &Cby, &controllingBottomStressPointIdx);
+         ATLASSERT(controllingBottomStressPointIdx != INVALID_INDEX);
+         std::vector<gpPoint2d> vBottomStressPoints = pSectProps->GetStressPoints(task.intervalIdx, poi, pgsTypes::BottomGirder);
+
+         bool bBiaxialStresses = (vTopStressPoints.size() == 1 && vBottomStressPoints.size() == 1 ? false : true);
+
+         if (vTopStressPoints.size() == 1)
+         {
+            // one stress points means we have a symmetric section and the top center point is the stress point
+            // make two stress points by spreading them appart in the X direction
+            Float64 W = pGirder->GetTopWidth(poi);
+            gpPoint2d pntTop = vTopStressPoints.front();
+            altTensionRequirements.pntTopLeft.Move(pntTop.X() - W/2, pntTop.Y(), fTop);
+            altTensionRequirements.pntTopRight.Move(pntTop.X() + W/2, pntTop.Y(), fTop);
+         }
+         else
+         {
+            ATLASSERT(2 <= vTopStressPoints.size());
+            IndexType otherIdx = (controllingTopStressPointIdx == 0 ? 1 : 0); // index of a different stress point
+            gpPoint2d pntTop = vTopStressPoints[controllingTopStressPointIdx]; // location of controlling stress point (this is where fTop occurs)
+            gpPoint2d pntTop2 = vTopStressPoints[otherIdx]; // location of a different stress point
+                                                            // stress at a point (x,y)
+                                                            // let D = (IxxIyy - Ixy^2)
+                                                            // f = [(MyIxx + MxIxy)x - (MxIyy + MyIxy)y]/D
+                                                            // My = 0 (we only have gravity and prestress forces), therefore
+                                                            // f = [(MxIxy)x - (MxIyy)y]/D
+                                                            // Solve for Mx
+                                                            // Mx = (D*f)/(Ixy*x - Iyy*y)
+                                                            // stress at other point (X,Y), f2 = [(MxIxy)X - (MxIyy)Y]/D
+                                                            // substitute for Mx
+                                                            // f2 = f(Ixy*X - Iyy*Y)/(Ixy*x - Iyy*y)
+            Float64 Iyy = pSectProps->GetIyy(task.intervalIdx, poi);
+            Float64 Ixy = pSectProps->GetIxy(task.intervalIdx, poi);
+            Float64 fTop2 = fTop*(Ixy*pntTop2.X() - Iyy*pntTop2.Y()) / (Ixy*pntTop.X() - Iyy*pntTop.Y());
+            altTensionRequirements.pntTopLeft.Move(pntTop.X(), pntTop.Y(), fTop);
+            altTensionRequirements.pntTopRight.Move(pntTop2.X(), pntTop2.Y(), fTop2);
+         }
+
+         if (vBottomStressPoints.size() == 1)
+         {
+            Float64 W = pGirder->GetBottomWidth(poi);
+            gpPoint2d pntBottom = vBottomStressPoints.front();
+            altTensionRequirements.pntBottomLeft.Move(pntBottom.X() - W/2, pntBottom.Y(), fBot);
+            altTensionRequirements.pntBottomRight.Move(pntBottom.X() + W/2, pntBottom.Y(), fBot);
+         }
+         else
+         {
+            ATLASSERT(2 <= vBottomStressPoints.size());
+            IndexType otherIdx = (controllingTopStressPointIdx == 0 ? 1 : 0); // index of a different stress point
+            gpPoint2d pntBot = vBottomStressPoints[controllingTopStressPointIdx]; // location of controlling stress point (this is where fTop occurs)
+            gpPoint2d pntBot2 = vBottomStressPoints[otherIdx]; // location of a different stress point
+                                                               // stress at a point (x,y)
+                                                               // let D = (IxxIyy - Ixy^2)
+                                                               // f = [(MyIxx + MxIxy)x - (MxIyy + MyIxy)y]/D
+                                                               // My = 0 (we only have gravity and prestress forces), therefore
+                                                               // f = [(MxIxy)x - (MxIyy)y]/D
+                                                               // Solve for Mx
+                                                               // Mx = (D*f)/(Ixy*x - Iyy*y)
+                                                               // stress at other point (X,Y), f2 = [(MxIxy)X - (MxIyy)Y]/D
+                                                               // substitute for Mx
+                                                               // f2 = f(Ixy*X - Iyy*Y)/(Ixy*x - Iyy*y)
+            Float64 Iyy = pSectProps->GetIyy(task.intervalIdx, poi);
+            Float64 Ixy = pSectProps->GetIxy(task.intervalIdx, poi);
+            Float64 fBot2 = fBot*(Ixy*pntBot2.X() - Iyy*pntBot2.Y()) / (Ixy*pntBot.X() - Iyy*pntBot.Y());
+            altTensionRequirements.pntBottomLeft.Move(pntBot.X(), pntBot.Y(), fBot);
+            altTensionRequirements.pntBottomRight.Move(pntBot2.X(), pntBot2.Y(), fBot2);
+         }
+
+         gbtComputeAlternativeStressRequirements(&altTensionRequirements);
+         artifact.SetAlternativeTensileStressRequirements(pgsTypes::BottomGirder, altTensionRequirements, fAllowableWithRebar, bBiaxialStresses);
+
+         if (altTensionRequirements.AsRequired <= altTensionRequirements.AsProvided)
+         {
+            // if AsRequired < 0 (eg, -1), the entire section is in compression
+            fAllowable = (altTensionRequirements.AsRequired < 0 ? fAllowableWithoutRebar : fAllowableWithRebar);
+         }
+         else
+         {
+            fAllowable = fAllowableWithoutRebar;
+         }
 
          // Compute required concrete strength
          // Take the controlling tension
@@ -2731,7 +3029,7 @@ void pgsDesigner2::CheckSegmentStressesAtRelease(const CSegmentKey& segmentKey, 
          if (0.0 < f)
          {
             // Is adequate rebar available to use the higher limit?
-            if ( IsAdequateRebar )
+            if (altTensionRequirements.bIsAdequateRebar )
             {
                // We have additional rebar and can go to a higher limit
                fc_reqd = pow(f/(lambda*talt),2);
@@ -2937,7 +3235,7 @@ void pgsDesigner2::CreateStirrupCheckAtPoisArtifact(const pgsPointOfInterest& po
    // vertical shear
    pgsVerticalShearArtifact v_artifact;
    CheckStirrupRequirement( poi, scd, &v_artifact );
-   CheckUltimateShearCapacity( poi, scd, vu, pConfig, &v_artifact );
+   CheckUltimateShearCapacity( limitState, intervalIdx, poi, scd, vu, pConfig, &v_artifact );
 
    // horizontal shear
    pgsHorizontalShearArtifact h_artifact;
@@ -3056,7 +3354,7 @@ void pgsDesigner2::CheckStirrupRequirement( const pgsPointOfInterest& poi, const
    pArtifact->SetAreStirrupsProvided(0.0 < scd.Av);
 }
 
-void pgsDesigner2::CheckUltimateShearCapacity( const pgsPointOfInterest& poi, const SHEARCAPACITYDETAILS& scd, Float64 vu, const GDRCONFIG* pConfig, pgsVerticalShearArtifact* pArtifact ) const
+void pgsDesigner2::CheckUltimateShearCapacity( pgsTypes::LimitState limitState,IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, const SHEARCAPACITYDETAILS& scd, Float64 vu, const GDRCONFIG* pConfig, pgsVerticalShearArtifact* pArtifact ) const
 {
    const CSegmentKey& segmentKey = poi.GetSegmentKey();
    Float64 poi_loc = poi.GetDistFromStart();
@@ -3089,41 +3387,25 @@ void pgsDesigner2::CheckUltimateShearCapacity( const pgsPointOfInterest& poi, co
 
       const pgsPointOfInterest& csPoi(m_CriticalSections[csZoneIdx].first.GetPointOfInterest());
 
-      // the shear reinforcement must be at least as much as at the critical section
+      // the shear reinforcement must be at least as much as the required reinforcement at section critical section
       // See LRFD C5.7.3.2 (pre2017: 5.8.3.2) (since the stress in the stirrups doesn't change between
       // the support and the critical section, there should be at least as much 
       // reinforcement between the end and the CS as there is at the CS)
       Float64 AvS_provided = (0.0 < scd.S ? scd.Av/scd.S : 0.0);
-      Float64 AvS_at_CS;
-      Float64 s;
-      matRebar::Size size;
-      Float64 abar, nl;
-      if ( pConfig == nullptr )
-      {
-         // Use current bridge data
-         GET_IFACE(IStirrupGeometry,pStirrupGeom);
-         AvS_at_CS = pStirrupGeom->GetVertStirrupAvs( csPoi, &size, &abar, &nl, &s);
-      }
-      else
-      {
-         // Use design config
-         GET_IFACE(IBridge, pBridge);
-         Float64 segment_length = pBridge->GetSegmentLength(segmentKey);
-         Float64 location = poi.GetDistFromStart();
-         Float64 lft_supp_loc = pBridge->GetSegmentStartBearingOffset(segmentKey);
-         Float64 rgt_sup_loc = segment_length - pBridge->GetSegmentEndBearingOffset(segmentKey);
+      Float64 AvS_required_at_CS;
 
-         AvS_at_CS = GetPrimaryStirrupAvs(pConfig->StirrupConfig, getVerticalStirrup, csPoi.GetDistFromStart(), segment_length, 
-                                          lft_supp_loc, rgt_sup_loc, &size, &abar, &nl, &s);
-      }
+      GET_IFACE(IShearCapacity, pShearCapacity);
+      SHEARCAPACITYDETAILS shearCapacityDetailsAtCS;
+      pShearCapacity->GetRawShearCapacityDetails(limitState, intervalIdx, csPoi, pConfig, &shearCapacityDetailsAtCS);
+      AvS_required_at_CS = shearCapacityDetailsAtCS.AvOverS_Reqd;
 
-      pArtifact->SetEndSpacing(AvS_provided,AvS_at_CS);
+      pArtifact->SetEndSpacing(AvS_provided,AvS_required_at_CS);
    }
 
    pArtifact->SetAvOverSReqd( scd.AvOverS_Reqd ); // leave a nugget for shear design algorithm
 }
 
-void pgsDesigner2::CheckHorizontalShear(const pgsPointOfInterest& poi, 
+void pgsDesigner2::CheckHorizontalShear(const pgsPointOfInterest& poi,
                                        Float64 vu, 
                                        Float64 fcSlab,Float64 fcGdr, Float64 fy,
                                        const GDRCONFIG* pConfig,
@@ -3154,7 +3436,7 @@ void pgsDesigner2::CheckHorizontalShear(const pgsPointOfInterest& poi,
       pgsHorizontalShearArtifact css_Artifact;
       ComputeHorizAvs(csPoi, &is_roughened, &do_all_stirrups_engage_deck, pConfig,  &css_Artifact);
 
-      Float64 avs_css = css_Artifact.GetAvOverS();
+      Float64 avs_css = css_Artifact.GetAvOverSReqd();
 
       pArtifact->SetEndSpacing(avs, avs_css);
    }
@@ -7876,7 +8158,7 @@ void pgsDesigner2::DesignForLiftingHarping(const arDesignOptions& options, bool 
 
    // Check to see if the girder is stable for lifting
    GET_IFACE(ISegmentLiftingSpecCriteria,pSegmentLiftingSpecCriteria);
-   Float64 FScr    = liftingResults.MinFScr;
+   Float64 FScr    = liftingResults.FScrMin;
    Float64 FScrMin = pSegmentLiftingSpecCriteria->GetLiftingCrackingFs();
    LOG(_T("FScr = ") << FScr);
    LOG(_T(""));
@@ -8324,7 +8606,7 @@ std::vector<DebondLevelType> pgsDesigner2::DesignForLiftingDebonding(bool bPropo
 
    // Check to see if the girder is stable for lifting
    GET_IFACE(ISegmentLiftingSpecCriteria,pSegmentLiftingSpecCriteria);
-   Float64 FScr    = liftingResults.MinFScr;
+   Float64 FScr    = liftingResults.FScrMin;
    Float64 FScrMin = pSegmentLiftingSpecCriteria->GetLiftingCrackingFs();
    LOG(_T("FScr = ") << FScr);
    LOG(_T(""));
@@ -8652,7 +8934,7 @@ void pgsDesigner2::DesignForShipping(IProgress* pProgress) const
 
       ISegmentHaulingDesignPointsOfInterest* pPoiLd = dynamic_cast<ISegmentHaulingDesignPointsOfInterest*>(&m_StrandDesignTool);
 
-      std::unique_ptr<pgsHaulingAnalysisArtifact> artifact ( hauling_checker->DesignHauling(segmentKey,haulConfig,m_bShippingDesignWithEqualCantilevers,m_bShippingDesignIgnoreConfigurationLimits,pPoiLd,&bResult,LOGGER));
+      std::unique_ptr<pgsHaulingAnalysisArtifact> artifact ( hauling_checker->DesignHauling(segmentKey,haulConfig,m_bShippingDesignIgnoreConfigurationLimits,pPoiLd,&bResult,LOGGER));
 
       // capture the results of the trial
       m_StrandDesignTool.SetTruckSupportLocations(haulConfig.LeftOverhang,haulConfig.RightOverhang);
@@ -8670,13 +8952,12 @@ void pgsDesigner2::DesignForShipping(IProgress* pProgress) const
          LOG(_T("Adding temporary strands"));
          if ( !m_StrandDesignTool.AddTempStrands() )
          {
-            if ( !m_bShippingDesignWithEqualCantilevers )
+            if ( !m_bShippingDesignIgnoreConfigurationLimits)
             {
                LOG(_T("Could not add temporary strands - go to equal cantilever method and continue"));
                // the design isn't working with unequal cantilevers
                // start again with equal cantilevesr
                m_StrandDesignTool.SetNumTempStrands(0);
-               m_bShippingDesignWithEqualCantilevers = true;
                m_bShippingDesignIgnoreConfigurationLimits = true;
                continue;
             }
@@ -8711,7 +8992,6 @@ void pgsDesigner2::DesignForShipping(IProgress* pProgress) const
                LOG(_T("Concrete strength was increased for shipping - Restart") );
                m_DesignerOutcome.SetOutcome(pgsDesignCodes::FcChanged);
                m_StrandDesignTool.SetNumTempStrands(0);
-               m_bShippingDesignWithEqualCantilevers = false;
                m_bShippingDesignIgnoreConfigurationLimits = false;
                return;
             }
@@ -9807,7 +10087,7 @@ void pgsDesigner2::DumpLiftingArtifact(const stbLiftingStabilityProblem* pStabil
       Float64 loc = pAnalysisPoint->GetLocation();
       os <<_T("At ") << ::ConvertFromSysUnits(loc,unitMeasure::Feet) << _T(" ft: ");
 
-      stbTypes::Corner corner = sectionResult.CrackedFlange[impact][wind];
+      stbTypes::Corner corner = sectionResult.MinFScrCorner[impact][wind];
       if ( corner == stbTypes::TopLeft ||
            corner == stbTypes::TopRight )
       {
@@ -9819,7 +10099,7 @@ void pgsDesigner2::DumpLiftingArtifact(const stbLiftingStabilityProblem* pStabil
       }
 
       Float64 stress = sectionResult.fDirect[impact][wind][corner];
-      Float64 fs = sectionResult.FScr[impact][wind];
+      Float64 fs = sectionResult.FScr[impact][wind][corner];
       os<<_T(" Lateral Stress = ")<<::ConvertFromSysUnits(stress,unitMeasure::KSI)<<_T("ksi, FS =")<<fs<<endl;
    }
 }

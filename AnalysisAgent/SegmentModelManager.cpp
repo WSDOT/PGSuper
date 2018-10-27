@@ -1858,16 +1858,16 @@ void CSegmentModelManager::GetSectionStress(IntervalIndexType intervalIdx,LoadCa
 
    GET_IFACE(ISectionProperties, pSectProp);
 
-   Float64 Cat, Cbt;
-   pSectProp->GetStressCoefficients(intervalIdx, poi, topLocation, nullptr, &Cat, &Cbt);
+   Float64 Cat, Cbtx, Cbty;
+   pSectProp->GetStressCoefficients(intervalIdx, poi, topLocation, nullptr, &Cat, &Cbtx, &Cbty);
 
-   Float64 Cab, Cbb;
-   pSectProp->GetStressCoefficients(intervalIdx, poi, botLocation, nullptr, &Cab, &Cbb);
+   Float64 Cab, Cbbx, Cbby;
+   pSectProp->GetStressCoefficients(intervalIdx, poi, botLocation, nullptr, &Cab, &Cbbx, &Cbby);
 
-   *pfTop = Cat*fx + Cbt*mz;
+   *pfTop = Cat*fx + Cbtx*mz;
    *pfTop = IsZero(*pfTop) ? 0 : *pfTop;
 
-   *pfBot = Cab*fx + Cbb*mz;
+   *pfBot = Cab*fx + Cbbx*mz;
    *pfBot = IsZero(*pfBot) ? 0 : *pfBot;
 }
 

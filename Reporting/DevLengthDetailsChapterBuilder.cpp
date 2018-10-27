@@ -237,40 +237,28 @@ rptChapter* CDevLengthDetailsChapterBuilder::Build(CReportSpecification* pRptSpe
             pTable->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
          }
 
+         ColumnIndexType col = 0;
          pTable->SetNumberOfHeaderRows(2);
-         pTable->SetRowSpan(0,0,2);
-         pTable->SetRowSpan(1,0,SKIP_CELL);
-         (*pTable)(0,0) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
+         pTable->SetRowSpan(0,col,2);
+         (*pTable)(0,col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
 
-         pTable->SetColumnSpan(0,1, 6);
-         pTable->SetColumnSpan(0,2,SKIP_CELL);
-         pTable->SetColumnSpan(0,3,SKIP_CELL);
-         pTable->SetColumnSpan(0,4,SKIP_CELL);
-         pTable->SetColumnSpan(0,5,SKIP_CELL);
-         pTable->SetColumnSpan(0,6,SKIP_CELL);
-         (*pTable)(0,1) << _T("Bonded Strands ")   << symbol(kappa) << _T(" = ") << bonded_details.k;
+         pTable->SetColumnSpan(0, col, 6);
+         (*pTable)(0, col) << _T("Bonded Strands ")   << symbol(kappa) << _T(" = ") << bonded_details.k;
+         (*pTable)(1, col++) << COLHDR(RPT_STRESS(_T("ps")), rptStressUnitTag, pDisplayUnits->GetStressUnit());
+         (*pTable)(1, col++) << COLHDR(RPT_STRESS(_T("pe")), rptStressUnitTag, pDisplayUnits->GetStressUnit());
+         (*pTable)(1, col++) << COLHDR(Sub2(_T("d"), _T("b")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+         (*pTable)(1, col++) << COLHDR(Sub2(_T("l"), _T("d")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+         (*pTable)(1, col++) << COLHDR(Sub2(_T("l"), _T("px")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+         (*pTable)(1, col++) << RPT_STRESS(_T("px")) << _T("/") << RPT_STRESS(_T("ps"));
 
-         pTable->SetColumnSpan(0,7, 6);
-         pTable->SetColumnSpan(0,8,SKIP_CELL);
-         pTable->SetColumnSpan(0,9,SKIP_CELL);
-         pTable->SetColumnSpan(0,10,SKIP_CELL);
-         pTable->SetColumnSpan(0,11,SKIP_CELL);
-         pTable->SetColumnSpan(0,12,SKIP_CELL);
-         (*pTable)(0,7) << _T("Debonded Strands ") << symbol(kappa) << _T(" = ") << debonded_details.k;
-
-         (*pTable)(1,1) << COLHDR(RPT_STRESS(_T("ps")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-         (*pTable)(1,2) << COLHDR(RPT_STRESS(_T("pe")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-         (*pTable)(1,3) << COLHDR(Sub2(_T("d"),_T("b")),  rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-         (*pTable)(1,4) << COLHDR(Sub2(_T("l"),_T("d")),  rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-         (*pTable)(1,5) << COLHDR(Sub2(_T("l"),_T("px")),  rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-         (*pTable)(1,6) << RPT_STRESS(_T("px")) << _T("/") << RPT_STRESS(_T("ps"));
-
-         (*pTable)(1,7) << COLHDR(RPT_STRESS(_T("ps")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-         (*pTable)(1,8) << COLHDR(RPT_STRESS(_T("pe")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-         (*pTable)(1,9) << COLHDR(Sub2(_T("d"),_T("b")),  rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-         (*pTable)(1,10)<< COLHDR(Sub2(_T("l"),_T("d")),  rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-         (*pTable)(1,11)<< COLHDR(Sub2(_T("l"),_T("px")),  rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-         (*pTable)(1,12)<< RPT_STRESS(_T("px")) << _T("/") << RPT_STRESS(_T("ps"));
+         pTable->SetColumnSpan(0, col, 6);
+         (*pTable)(0, col) << _T("Debonded Strands ") << symbol(kappa) << _T(" = ") << debonded_details.k;
+         (*pTable)(1, col++) << COLHDR(RPT_STRESS(_T("ps")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+         (*pTable)(1, col++) << COLHDR(RPT_STRESS(_T("pe")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+         (*pTable)(1, col++) << COLHDR(Sub2(_T("d"),_T("b")),  rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+         (*pTable)(1, col++) << COLHDR(Sub2(_T("l"),_T("d")),  rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+         (*pTable)(1, col++) << COLHDR(Sub2(_T("l"),_T("px")),  rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+         (*pTable)(1, col++) << RPT_STRESS(_T("px")) << _T("/") << RPT_STRESS(_T("ps"));
 
          stress.ShowUnitTag(false);
          length.ShowUnitTag(false);

@@ -8,6 +8,7 @@
 #include "ClosureJointDlg.h"
 #include <EAF\EAFDisplayUnits.h>
 #include <EAF\EAFDocument.h>
+#include <IFace\BeamFactory.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -49,6 +50,84 @@ void CClosureJointLongitudinalReinforcementPage::DoDataExchange(CDataExchange* p
       CLongitudinalRebarData& rebarData(pParent->m_ClosureJoint.GetRebar());
       DDX_RebarMaterial(pDX,IDC_MILD_STEEL_SELECTOR,rebarData.BarType,rebarData.BarGrade);
       m_Grid.GetRebarData(&rebarData);
+
+
+      CComPtr<IBroker> pBroker;
+      EAFGetBroker(&pBroker);
+
+      const CPrecastSegmentData* pLeftSegment = pParent->m_ClosureJoint.GetLeftSegment();
+      const CPrecastSegmentData* pRightSegment = pParent->m_ClosureJoint.GetRightSegment();
+
+      CString strMsg;
+      CComPtr<IPoint2d> point;
+      point.CoCreateInstance(CLSID_Point2d);
+      int rowIdx = 1;
+      for (const auto& row : rebarData.RebarRows)
+      {
+         if (row.Cover < 0)
+         {
+            strMsg.Format(_T("The cover for row %d must be greater than zero."), rowIdx);
+            AfxMessageBox(strMsg);
+            pDX->Fail();
+         }
+
+         if (row.NumberOfBars == INVALID_INDEX)
+         {
+            strMsg.Format(_T("The number of bars in row %d must be greater than zero."), rowIdx);
+            AfxMessageBox(strMsg);
+            pDX->Fail();
+         }
+
+         if (1 < row.NumberOfBars && row.BarSpacing < 0)
+         {
+            strMsg.Format(_T("The bar spacing in row %d must be greater than zero."), rowIdx);
+            AfxMessageBox(strMsg);
+            pDX->Fail();
+         }
+
+         // make sure bars are inside of girder - use shape symmetry
+         for (int i = 0; i < 2; i++)
+         {
+            const CPrecastSegmentData* pSegment = (i == 0 ? pLeftSegment : pRightSegment);
+            pgsTypes::SegmentZoneType zone = (i == 0 ? pgsTypes::sztLeftPrismatic : pgsTypes::sztRightPrismatic);
+
+            Float64 Lzone, height, tbf;
+            pSegment->GetVariationParameters(zone, false, &Lzone, &height, &tbf);
+
+            gpPoint2d testpnt;
+            testpnt.X() = row.BarSpacing * (row.NumberOfBars - 1) / 2.;
+            if (row.Face == pgsTypes::TopFace)
+            {
+               testpnt.Y() = -row.Cover;
+            }
+            else
+            {
+               testpnt.Y() = -(height - row.Cover);
+            }
+
+            point->Move(testpnt.X(), testpnt.Y());
+
+            const GirderLibraryEntry* pGdrEntry = pSegment->GetGirder()->GetGirderLibraryEntry();
+            CComPtr<IBeamFactory> factory;
+            pGdrEntry->GetBeamFactory(&factory);
+
+            CComPtr<IGirderSection> gdrSection;
+            factory->CreateGirderSection(pBroker, INVALID_ID, pGdrEntry->GetDimensions(), height, tbf, &gdrSection);
+
+            CComQIPtr<IShape> shape(gdrSection);
+
+            VARIANT_BOOL bPointInShape;
+            shape->PointInShape(point, &bPointInShape);
+            if (bPointInShape == VARIANT_FALSE)
+            {
+               strMsg.Format(_T("One or more of the bars in row %d are outside of the girder section."), rowIdx);
+               AfxMessageBox(strMsg);
+               pDX->Fail();
+            }
+         }
+
+         rowIdx++;
+      }
    }
    else
    {

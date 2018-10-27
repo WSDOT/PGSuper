@@ -3,8 +3,7 @@
  32.00    4   8.67                     1     1    4XB28          12  1/2  270  10.64  10.64   8.00   8.00                                              4.000  5.000   0.898    -1.227     1329   0.731  0.858   0.570 -0.107 -0.007 -0.008 -0.123  14.20   48.96    1.00    1.00    1.00 
 
 
-The Specification Check was Not Successful
-Ultimate vertical shear capacity check failed for Strength I Limit State
+The Specification Check was Successful
 
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
@@ -12,8 +11,7 @@ Ultimate vertical shear capacity check failed for Strength I Limit State
  32.00    4   8.67                     1     2    4XB28          12  1/2  270  10.64  10.64   8.00   8.00                                              4.000  5.000   0.903    -1.232     1323   0.710  0.858   0.570 -0.112 -0.009 -0.008 -0.128  14.20   48.74    1.00    1.00    1.00 
 
 
-The Specification Check was Not Successful
-Ultimate vertical shear capacity check failed for Strength I Limit State
+The Specification Check was Successful
 
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
@@ -21,8 +19,7 @@ Ultimate vertical shear capacity check failed for Strength I Limit State
  32.00    4   8.67                     2     1    4XB28          42  1/2  270   9.69   9.31   8.00   8.00  12    2.5   22    12    8   0   2   2   0   4.600  5.000   2.708    -3.363     3266   0.632  0.810   4.571 -1.101 -0.071 -0.084 -1.257 118.45  314.52    1.00    1.00    1.00 
 
 
-The Specification Check was Not Successful
-Ultimate vertical shear capacity check failed for Strength I Limit State
+The Specification Check was Successful
 
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
@@ -30,7 +27,6 @@ Ultimate vertical shear capacity check failed for Strength I Limit State
  32.00    4   8.67                     2     2    4XB28          42  1/2  270   9.69   9.31   8.00   8.00  12    2.5   22    12    8   0   2   2   0   4.600  5.000   2.736    -3.398     3274   0.614  0.810   4.571 -1.146 -0.088 -0.083 -1.317 118.45  312.19    1.00    1.00    1.00 
 
 
-The Specification Check was Not Successful
-Ultimate vertical shear capacity check failed for Strength I Limit State
+The Specification Check was Successful
 
 

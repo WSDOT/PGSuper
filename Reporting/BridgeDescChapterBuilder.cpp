@@ -277,10 +277,6 @@ void write_alignment_data(IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, rpt
    if (bHasEntrySpirals)
    {
       pTable->SetColumnSpan(row, 0, nColumns);
-      for (ColumnIndexType colIdx = 1; colIdx < nColumns; colIdx++)
-      {
-         pTable->SetColumnSpan(row, colIdx, SKIP_CELL);
-      }
       (*pTable)(row++, 0) << Bold(_T("Entry Spiral"));
 
       (*pTable)(row++, 0) << _T("Length");
@@ -300,10 +296,6 @@ void write_alignment_data(IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, rpt
    if (bHasEntrySpirals || bHasExitSpirals)
    {
       pTable->SetColumnSpan(row, 0, nColumns);
-      for (ColumnIndexType colIdx = 1; colIdx < nColumns; colIdx++)
-      {
-         pTable->SetColumnSpan(row, colIdx, SKIP_CELL);
-      }
       (*pTable)(row++, 0) << Bold(_T("Circular Curve"));
    }
 
@@ -322,10 +314,6 @@ void write_alignment_data(IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, rpt
    if (bHasExitSpirals)
    {
       pTable->SetColumnSpan(row, 0, nColumns);
-      for (ColumnIndexType colIdx = 1; colIdx < nColumns; colIdx++)
-      {
-         pTable->SetColumnSpan(row, colIdx, SKIP_CELL);
-      }
       (*pTable)(row++, 0) << Bold(_T("Exit Spiral"));
 
       (*pTable)(row++, 0) << _T("Length");
@@ -343,10 +331,6 @@ void write_alignment_data(IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, rpt
    }
 
    pTable->SetColumnSpan(row, 0, nColumns);
-   for (ColumnIndexType colIdx = 1; colIdx < nColumns; colIdx++)
-   {
-      pTable->SetColumnSpan(row, colIdx, SKIP_CELL);
-   }
    (*pTable)(row++, 0) << Bold(_T("Curve Points (x,y)"));
 
    if (bHasEntrySpirals)
@@ -1307,23 +1291,19 @@ void write_lrfd_concrete_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnit
       for ( ColumnIndexType i = 0; i < col; i++ )
       {
          pTable->SetRowSpan(0,i,2); 
-         pTable->SetRowSpan(1,i,SKIP_CELL);
       }
 
       pTable->SetColumnSpan(0,col,2);
-      pTable->SetColumnSpan(0,col+1,SKIP_CELL);
       (*pTable)(0,col) << Sub2(_T("E"),_T("c"));
       (*pTable)(1,col++) << Sub2(_T("K"),_T("1"));
       (*pTable)(1,col++) << Sub2(_T("K"),_T("2"));
 
       pTable->SetColumnSpan(0,col,2);
-      pTable->SetColumnSpan(0,col+1,SKIP_CELL);
       (*pTable)(0,col) << _T("Creep");
       (*pTable)(1,col++) << Sub2(_T("K"),_T("1"));
       (*pTable)(1,col++) << Sub2(_T("K"),_T("2"));
 
       pTable->SetColumnSpan(0,col,2);
-      pTable->SetColumnSpan(0,col+1,SKIP_CELL);
       (*pTable)(0,col) << _T("Shrinkage");
       (*pTable)(1,col++) << Sub2(_T("K"),_T("1"));
       (*pTable)(1,col++) << Sub2(_T("K"),_T("2"));
@@ -1334,7 +1314,6 @@ void write_lrfd_concrete_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnit
       if ( bK1 )
       {
          pTable->SetRowSpan(0,col,2);
-         pTable->SetRowSpan(1,col,SKIP_CELL);
          (*pTable)(0,col++) << symbol(lambda);
       }
       else
@@ -1544,23 +1523,19 @@ void write_aci209_concrete_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUn
       for ( ColumnIndexType i = 0; i < col; i++ )
       {
          pTable->SetRowSpan(0,i,2); 
-         pTable->SetRowSpan(1,i,SKIP_CELL);
       }
 
       pTable->SetColumnSpan(0,col,2);
-      pTable->SetColumnSpan(0,col+1,SKIP_CELL);
       (*pTable)(0,col)   << Sub2(_T("E"),_T("c"));
       (*pTable)(1,col++) << Sub2(_T("K"),_T("1"));
       (*pTable)(1,col++) << Sub2(_T("K"),_T("2"));
 
       pTable->SetColumnSpan(0,col,2);
-      pTable->SetColumnSpan(0,col+1,SKIP_CELL);
       (*pTable)(0,col)   << _T("Creep");
       (*pTable)(1,col++) << Sub2(_T("K"),_T("1"));
       (*pTable)(1,col++) << Sub2(_T("K"),_T("2"));
 
       pTable->SetColumnSpan(0,col,2);
-      pTable->SetColumnSpan(0,col+1,SKIP_CELL);
       (*pTable)(0,col)   << _T("Shrinkage");
       (*pTable)(1,col++) << Sub2(_T("K"),_T("1"));
       (*pTable)(1,col++) << Sub2(_T("K"),_T("2"));
@@ -1865,23 +1840,18 @@ void write_pier_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter
    pLayoutTable->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
 
    pLayoutTable->SetRowSpan(0,0,2);
-   pLayoutTable->SetRowSpan(1,0,SKIP_CELL);
    (*pLayoutTable)(0,0) << _T("");
 
    pLayoutTable->SetRowSpan(0,1,2);
-   pLayoutTable->SetRowSpan(1,1,SKIP_CELL);
    (*pLayoutTable)(0,1) << _T("Station");
 
    pLayoutTable->SetRowSpan(0,2,2);
-   pLayoutTable->SetRowSpan(1,2,SKIP_CELL);
    (*pLayoutTable)(0,2) << _T("Bearing");
 
    pLayoutTable->SetRowSpan(0,3,2);
-   pLayoutTable->SetRowSpan(1,3,SKIP_CELL);
    (*pLayoutTable)(0,3) << _T("Skew Angle");
 
    pLayoutTable->SetRowSpan(0,4,2);
-   pLayoutTable->SetRowSpan(1,4,SKIP_CELL);
    (*pLayoutTable)(0,4) << _T("Boundary") << rptNewLine << _T("Condition");
 
    // Table for pier diaphragms
@@ -1894,13 +1864,9 @@ void write_pier_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter
    pDiaphragmTable->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
 
    pDiaphragmTable->SetRowSpan(0,0,2);
-   pDiaphragmTable->SetRowSpan(1,0,SKIP_CELL);
    (*pDiaphragmTable)(0,0) << _T("");
 
    pDiaphragmTable->SetColumnSpan(0,1,4);
-   pDiaphragmTable->SetColumnSpan(0,2,SKIP_CELL);
-   pDiaphragmTable->SetColumnSpan(0,3,SKIP_CELL);
-   pDiaphragmTable->SetColumnSpan(0,4,SKIP_CELL);
    (*pDiaphragmTable)(0,1) << _T("Diaphragm - Back");
    (*pDiaphragmTable)(1,1) << COLHDR(_T("Height"),rptLengthUnitTag,pDisplayUnits->GetComponentDimUnit());
    (*pDiaphragmTable)(1,2) << COLHDR(_T("Width"),rptLengthUnitTag,pDisplayUnits->GetComponentDimUnit());
@@ -1908,9 +1874,6 @@ void write_pier_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter
    (*pDiaphragmTable)(1,4) << COLHDR(_T("Location(*)"),rptLengthUnitTag,pDisplayUnits->GetComponentDimUnit());
 
    pDiaphragmTable->SetColumnSpan(0,5,4);
-   pDiaphragmTable->SetColumnSpan(0,6,SKIP_CELL);
-   pDiaphragmTable->SetColumnSpan(0,7,SKIP_CELL);
-   pDiaphragmTable->SetColumnSpan(0,8,SKIP_CELL);
    (*pDiaphragmTable)(0,5) << _T("Diaphragm - Ahead");
    (*pDiaphragmTable)(1,5) << COLHDR(_T("Height"),rptLengthUnitTag,pDisplayUnits->GetComponentDimUnit());
    (*pDiaphragmTable)(1,6) << COLHDR(_T("Width"),rptLengthUnitTag,pDisplayUnits->GetComponentDimUnit());
@@ -1934,13 +1897,9 @@ void write_pier_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter
    pConnectionTable->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
 
    pConnectionTable->SetRowSpan(0,0,2);
-   pConnectionTable->SetRowSpan(1,0,SKIP_CELL);
    (*pConnectionTable)(0,0) << _T("");
 
    pConnectionTable->SetColumnSpan(0,1,4);
-   pConnectionTable->SetColumnSpan(0,2,SKIP_CELL);
-   pConnectionTable->SetColumnSpan(0,3,SKIP_CELL);
-   pConnectionTable->SetColumnSpan(0,4,SKIP_CELL);
    (*pConnectionTable)(0,1) << _T("Back");
    (*pConnectionTable)(1,1) << COLHDR(_T("Bearing") << rptNewLine << _T("Offset"),rptLengthUnitTag,pDisplayUnits->GetComponentDimUnit());
    (*pConnectionTable)(1,2) << _T("Bearing") << rptNewLine << _T("Offset") << rptNewLine << _T("Measure");
@@ -1948,9 +1907,6 @@ void write_pier_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter
    (*pConnectionTable)(1,4) << _T("End") << rptNewLine << _T("Distance") << rptNewLine << _T("Measure");
 
    pConnectionTable->SetColumnSpan(0,5,4);
-   pConnectionTable->SetColumnSpan(0,6,SKIP_CELL);
-   pConnectionTable->SetColumnSpan(0,7,SKIP_CELL);
-   pConnectionTable->SetColumnSpan(0,8,SKIP_CELL);
    (*pConnectionTable)(0,5) << _T("Ahead");
    (*pConnectionTable)(1,5) << COLHDR(_T("Bearing") << rptNewLine << _T("Offset"),rptLengthUnitTag,pDisplayUnits->GetComponentDimUnit());
    (*pConnectionTable)(1,6) << _T("Bearing") << rptNewLine << _T("Offset") << rptNewLine << _T("Measure");
@@ -2557,27 +2513,8 @@ void write_span_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter
    pTable->SetRowSpan(0,1,2);
    (*pTable)(0,1) << _T("#") << rptNewLine << _T("Girders");
 
-   pTable->SetRowSpan(1,4,SKIP_CELL);
-   pTable->SetRowSpan(1,5,SKIP_CELL);
-
    pTable->SetColumnSpan(0,2,2);
    (*pTable)(0,2) << _T("Start of Span");
-
-   if (IsGirderSpacing(pBridgeDesc->GetGirderSpacingType()) )
-   {
-      (*pTable)(1,0) << _T("Girder Spacing");
-   }
-   else
-   {
-      (*pTable)(1,0) << _T("Joint Spacing");
-   }
-
-   (*pTable)(1,1) << _T("Datum");
-
-   pTable->SetColumnSpan(0,3,2);
-   pTable->SetColumnSpan(0,4,SKIP_CELL);
-   pTable->SetColumnSpan(0,5,SKIP_CELL);
-   (*pTable)(0,3) << _T("End of Span");
 
    if (IsGirderSpacing(pBridgeDesc->GetGirderSpacingType()) )
    {
@@ -2589,6 +2526,20 @@ void write_span_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter
    }
 
    (*pTable)(1,3) << _T("Datum");
+
+   pTable->SetColumnSpan(0,4,2);
+   (*pTable)(0,4) << _T("End of Span");
+
+   if (IsGirderSpacing(pBridgeDesc->GetGirderSpacingType()) )
+   {
+      (*pTable)(1,4) << _T("Girder Spacing");
+   }
+   else
+   {
+      (*pTable)(1,4) << _T("Joint Spacing");
+   }
+
+   (*pTable)(1,5) << _T("Datum");
 
    GroupIndexType nGroups = pBridgeDesc->GetGirderGroupCount();
 
@@ -3589,7 +3540,6 @@ void write_slab_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter
          if ( iter != pDeck->DeckEdgePoints.end()-1 )
          {
             deckTable->SetColumnSpan(row,0,2);
-            deckTable->SetColumnSpan(row,1,SKIP_CELL);
             (*deckTable)(row,0) << _T("Transition");
 
             switch( dp.LeftTransitionType )

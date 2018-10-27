@@ -318,16 +318,11 @@ rptChapter* CLRFDTimeDependentCreepCoefficientChapterBuilder::Build(CReportSpeci
    }
 
    pTable->SetRowSpan(rowIdx,colIdx,2);
-   (*pTable)(rowIdx,colIdx) << _T("Interval");
-   pTable->SetRowSpan(rowIdx+1,colIdx++,SKIP_CELL);
+   (*pTable)(rowIdx,colIdx++) << _T("Interval");
    for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
    {
       pTable->SetColumnSpan(rowIdx,colIdx,colSpan);
       (*pTable)(rowIdx,colIdx) << _T("Segment ") << LABEL_SEGMENT(segIdx);
-      for ( ColumnIndexType i = 1; i < colSpan; i++ )
-      {
-         pTable->SetColumnSpan(rowIdx,colIdx+i,SKIP_CELL);
-      }
       (*pTable)(rowIdx+1,colIdx++) << Sub2(_T("t"),_T("i")) << rptNewLine << _T("(days)");
       (*pTable)(rowIdx+1,colIdx++) << _T("t") << rptNewLine << _T("(days)");
 
@@ -343,10 +338,6 @@ rptChapter* CLRFDTimeDependentCreepCoefficientChapterBuilder::Build(CReportSpeci
       {
          pTable->SetColumnSpan(rowIdx,colIdx,colSpan);
          (*pTable)(rowIdx,colIdx) << _T("Closure Joint ") << LABEL_SEGMENT(segIdx);
-         for ( ColumnIndexType i = 1; i < colSpan; i++ )
-         {
-            pTable->SetColumnSpan(rowIdx,colIdx+i,SKIP_CELL);
-         }
          (*pTable)(rowIdx+1,colIdx++) << Sub2(_T("t"),_T("i")) << rptNewLine << _T("(days)");
          (*pTable)(rowIdx+1,colIdx++) << _T("t") << rptNewLine << _T("(days)");
 
@@ -361,10 +352,6 @@ rptChapter* CLRFDTimeDependentCreepCoefficientChapterBuilder::Build(CReportSpeci
    }
    pTable->SetColumnSpan(rowIdx,colIdx,colSpan);
    (*pTable)(rowIdx,colIdx) << _T("Deck");
-   for ( ColumnIndexType i = 1; i < colSpan; i++ )
-   {
-      pTable->SetColumnSpan(rowIdx,colIdx+i,SKIP_CELL);
-   }
    (*pTable)(rowIdx+1,colIdx++) << Sub2(_T("t"),_T("i")) << rptNewLine << _T("(days)");
    (*pTable)(rowIdx+1,colIdx++) << _T("t") << rptNewLine << _T("(days)");
 

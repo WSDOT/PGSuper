@@ -18,7 +18,7 @@ Strands are defined in horizontal rows. Multiple rows can be defined at the same
 Item | Description
 -----|-----------
 Type | Use the drop down list to select the strand type.
-Z | Horizontal location of the strand.
+Z | Horizontal location of the strand in the girder cross section, measured from the vertical centerline.
 Left End, Y | Elevation of the strand row at the left end of the girder.
 Left End, Face | Use the drop down list to select the face of the girder Y is measured from.
 Left Harp Pt, Y | Elevation of the strand row at the left harp point of the girder.

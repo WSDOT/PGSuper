@@ -9458,11 +9458,34 @@ void CProjectAgentImp::UpdatePointLoad(CollectionIndexType idx, EventIDType even
    }
 }
 
+void CProjectAgentImp::UpdatePointLoadByID(LoadIDType loadID, EventIDType eventID, const CPointLoadData& pld)
+{
+   bool bMovedGirders;
+   CSpanKey prevKey;
+   if (m_LoadManager.UpdatePointLoadByID(loadID, eventID, pld, &bMovedGirders, &prevKey))
+   {
+      // must fire a delete event if load is moved to another girder
+      if (bMovedGirders)
+      {
+         FireContinuityRelatedSpanChange(prevKey, GCH_LOADING_REMOVED);
+      }
+
+      FireContinuityRelatedSpanChange(pld.m_SpanKey, GCH_LOADING_CHANGED);
+   }
+}
+
 void CProjectAgentImp::DeletePointLoad(CollectionIndexType idx)
 {
    CSpanKey key;
    m_LoadManager.DeletePointLoad(idx,&key);
    FireContinuityRelatedSpanChange(key,GCH_LOADING_REMOVED);
+}
+
+void CProjectAgentImp::DeletePointLoadByID(LoadIDType loadID)
+{
+   CSpanKey key;
+   m_LoadManager.DeletePointLoadByID(loadID, &key);
+   FireContinuityRelatedSpanChange(key, GCH_LOADING_REMOVED);
 }
 
 std::vector<CPointLoadData> CProjectAgentImp::GetPointLoads(const CSpanKey& spanKey) const
@@ -9516,11 +9539,32 @@ void CProjectAgentImp::UpdateDistributedLoad(CollectionIndexType idx, EventIDTyp
    }
 }
 
+void CProjectAgentImp::UpdateDistributedLoadByID(LoadIDType loadID, EventIDType eventID, const CDistributedLoadData& pld)
+{
+   bool bMovedGirder;
+   CSpanKey prevKey;
+   if (m_LoadManager.UpdateDistributedLoadByID(loadID, eventID, pld, &bMovedGirder, &prevKey))
+   {
+      if (bMovedGirder)
+      {
+         FireContinuityRelatedSpanChange(prevKey, GCH_LOADING_REMOVED);
+      }
+      FireContinuityRelatedSpanChange(pld.m_SpanKey, GCH_LOADING_CHANGED);
+   }
+}
+
 void CProjectAgentImp::DeleteDistributedLoad(CollectionIndexType idx)
 {
    CSpanKey key;
-   m_LoadManager.DeleteDistributedLoad(idx,&key);
-   FireContinuityRelatedSpanChange(key,GCH_LOADING_REMOVED);
+   m_LoadManager.DeleteDistributedLoad(idx, &key);
+   FireContinuityRelatedSpanChange(key, GCH_LOADING_REMOVED);
+}
+
+void CProjectAgentImp::DeleteDistributedLoadByID(LoadIDType loadID)
+{
+   CSpanKey key;
+   m_LoadManager.DeleteDistributedLoadByID(loadID, &key);
+   FireContinuityRelatedSpanChange(key, GCH_LOADING_REMOVED);
 }
 
 std::vector<CDistributedLoadData> CProjectAgentImp::GetDistributedLoads(const CSpanKey& spanKey) const
@@ -9574,11 +9618,32 @@ void CProjectAgentImp::UpdateMomentLoad(CollectionIndexType idx, EventIDType eve
    }
 }
 
+void CProjectAgentImp::UpdateMomentLoadByID(LoadIDType loadID, EventIDType eventID, const CMomentLoadData& pld)
+{
+   bool bMovedGirder;
+   CSpanKey prevKey;
+   if (m_LoadManager.UpdateMomentLoadByID(loadID, eventID, pld, &bMovedGirder, &prevKey))
+   {
+      if (bMovedGirder)
+      {
+         FireContinuityRelatedSpanChange(prevKey, GCH_LOADING_REMOVED);
+      }
+      FireContinuityRelatedSpanChange(pld.m_SpanKey, GCH_LOADING_CHANGED);
+   }
+}
+
 void CProjectAgentImp::DeleteMomentLoad(CollectionIndexType idx)
 {
    CSpanKey key;
-   m_LoadManager.DeleteMomentLoad(idx,&key);
-   FireContinuityRelatedSpanChange(key,GCH_LOADING_REMOVED);
+   m_LoadManager.DeleteMomentLoad(idx, &key);
+   FireContinuityRelatedSpanChange(key, GCH_LOADING_REMOVED);
+}
+
+void CProjectAgentImp::DeleteMomentLoadByID(LoadIDType loadID)
+{
+   CSpanKey key;
+   m_LoadManager.DeleteMomentLoadByID(loadID, &key);
+   FireContinuityRelatedSpanChange(key, GCH_LOADING_REMOVED);
 }
 
 std::vector<CMomentLoadData> CProjectAgentImp::GetMomentLoads(const CSpanKey& spanKey) const

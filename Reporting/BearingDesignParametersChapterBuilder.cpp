@@ -211,8 +211,6 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(CReportSpecification* 
 
    INIT_SCALAR_PROTOTYPE(rptRcScalar, scalar, pDisplayUnits->GetScalarFormat());
 
-   ColumnIndexType col = 0;
-
    GET_IFACE2(pBroker,IBridge,pBridge);
    PierIndexType nPiers = pBridge->GetPierCount();
    PierIndexType startPierIdx,endPierIdx;
@@ -268,32 +266,24 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(CReportSpecification* 
 
    pTable->SetNumberOfHeaderRows(2);
 
-   pTable->SetRowSpan(0,0,2);
-   pTable->SetRowSpan(1,0,SKIP_CELL);
-   (*pTable)(0,0) << _T("");
+   ColumnIndexType col = 0;
 
-   pTable->SetColumnSpan(0,1,4);
-   (*pTable)(0,1) << _T("* Reactions");
+   pTable->SetRowSpan(0,col,2);
+   (*pTable)(0, col++) << _T("");
 
-   pTable->SetColumnSpan(0,2,4);
-   (*pTable)(0,2) << _T("* Rotations");
+   pTable->SetColumnSpan(0,col,4);
+   (*pTable)(0, col) << _T("* Reactions");
+   (*pTable)(1, col++) << COLHDR(Sub2(_T("R"), _T("Max")), rptForceUnitTag, pDisplayUnits->GetShearUnit());
+   (*pTable)(1, col++) << COLHDR(symbol(theta), rptAngleUnitTag, pDisplayUnits->GetRadAngleUnit());
+   (*pTable)(1, col++) << COLHDR(Sub2(_T("R"), _T("Min")), rptForceUnitTag, pDisplayUnits->GetShearUnit());
+   (*pTable)(1, col++) << COLHDR(symbol(theta), rptAngleUnitTag, pDisplayUnits->GetRadAngleUnit());
 
-   pTable->SetColumnSpan(0,3,SKIP_CELL);
-   pTable->SetColumnSpan(0,4,SKIP_CELL);
-   pTable->SetColumnSpan(0,5,SKIP_CELL);
-   pTable->SetColumnSpan(0,6,SKIP_CELL);
-   pTable->SetColumnSpan(0,7,SKIP_CELL);
-   pTable->SetColumnSpan(0,8,SKIP_CELL);
-
-   (*pTable)(1,1) << COLHDR(Sub2(_T("R"),_T("Max")),rptForceUnitTag, pDisplayUnits->GetShearUnit());
-   (*pTable)(1,2) << COLHDR(symbol(theta),rptAngleUnitTag, pDisplayUnits->GetRadAngleUnit());
-   (*pTable)(1,3) << COLHDR(Sub2(_T("R"),_T("Min")),rptForceUnitTag, pDisplayUnits->GetShearUnit());
-   (*pTable)(1,4) << COLHDR(symbol(theta),rptAngleUnitTag, pDisplayUnits->GetRadAngleUnit());
-
-   (*pTable)(1,5) << COLHDR(Sub2(symbol(theta),_T("Max")),rptAngleUnitTag, pDisplayUnits->GetRadAngleUnit());
-   (*pTable)(1,6) << COLHDR(_T("R"),rptForceUnitTag, pDisplayUnits->GetShearUnit());
-   (*pTable)(1,7) << COLHDR(Sub2(symbol(theta),_T("Min")),rptAngleUnitTag, pDisplayUnits->GetRadAngleUnit());
-   (*pTable)(1,8) << COLHDR(_T("R"),rptForceUnitTag, pDisplayUnits->GetShearUnit());
+   pTable->SetColumnSpan(0,col,4);
+   (*pTable)(0, col) << _T("* Rotations");
+   (*pTable)(1, col++) << COLHDR(Sub2(symbol(theta),_T("Max")),rptAngleUnitTag, pDisplayUnits->GetRadAngleUnit());
+   (*pTable)(1, col++) << COLHDR(_T("R"),rptForceUnitTag, pDisplayUnits->GetShearUnit());
+   (*pTable)(1, col++) << COLHDR(Sub2(symbol(theta),_T("Min")),rptAngleUnitTag, pDisplayUnits->GetRadAngleUnit());
+   (*pTable)(1, col++) << COLHDR(_T("R"),rptForceUnitTag, pDisplayUnits->GetShearUnit());
 
 
    // First get primary reaction with corresp rotations and primary rotations with corresp reactions

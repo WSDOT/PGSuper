@@ -349,7 +349,7 @@ pgsKdotHaulingAnalysisArtifact& pgsKdotHaulingAnalysisArtifact::operator= (const
 }
 
 //======================== OPERATIONS =======================================
-bool pgsKdotHaulingAnalysisArtifact::Passed() const
+bool pgsKdotHaulingAnalysisArtifact::Passed(bool bIgnoreConfigurationLimits) const
 {
    return Passed(pgsTypes::CrownSlope);
 }
@@ -397,7 +397,7 @@ void pgsKdotHaulingAnalysisArtifact::GetRequiredConcreteStrength(pgsTypes::Hauli
       maxFciTenswithbar = CompareConcreteStrength(maxFciTenswithbar, fciTensWithRebar);
    }
 
-   *pfciComp            = maxFciComp;
+   *pfciComp          = maxFciComp;
    *pfciTensNoRebar   = maxFciTensnobar;
    *pfciTensWithRebar = maxFciTenswithbar;
 }
@@ -627,36 +627,27 @@ void pgsKdotHaulingAnalysisArtifact::BuildHaulingCheckReport(const CSegmentKey& 
    rptRcTable* p_table = rptStyleManager::CreateDefaultTable(7,_T(""));
    *p << p_table;
 
-   int col1=0;
-   int col2=0;
-   p_table->SetRowSpan(0,col1,2);
-   p_table->SetRowSpan(1,col2++,SKIP_CELL);
+   ColumnIndexType col = 0;
+   p_table->SetRowSpan(0,col,2);
+   (*p_table)(0,col++) << COLHDR(_T("Location from") << rptNewLine << _T("Left Bunk Point"),    rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
 
-   (*p_table)(0,col1++) << COLHDR(_T("Location from") << rptNewLine << _T("Left Bunk Point"),    rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+   p_table->SetColumnSpan(0,col,2);
+   (*p_table)(0,col) << _T("Demand");
+   (*p_table)(1,col++) << COLHDR(RPT_FTOP, rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*p_table)(1,col++) << COLHDR(RPT_FBOT, rptStressUnitTag, pDisplayUnits->GetStressUnit() );
 
-   p_table->SetColumnSpan(0,col1,2);
-   (*p_table)(0,col1++) << _T("Demand");
-   (*p_table)(1,col2++) << COLHDR(RPT_FTOP, rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   (*p_table)(1,col2++) << COLHDR(RPT_FBOT, rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   p_table->SetColumnSpan(0,col,2);
+   (*p_table)(0,col) << _T("Tensile") << rptNewLine << _T("Capacity");
+   (*p_table)(1,col++) << COLHDR(RPT_FTOP, rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*p_table)(1,col++) << COLHDR(RPT_FBOT, rptStressUnitTag, pDisplayUnits->GetStressUnit() );
 
-   p_table->SetColumnSpan(0,col1,2);
-   (*p_table)(0,col1++) << _T("Tensile") << rptNewLine << _T("Capacity");
-   (*p_table)(1,col2++) << COLHDR(RPT_FTOP, rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   (*p_table)(1,col2++) << COLHDR(RPT_FBOT, rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   p_table->SetRowSpan(0,col,2);
+   (*p_table)(0,col++) << _T("Tension") << rptNewLine << _T("Status") << rptNewLine << _T("(C/D)");
 
-   p_table->SetRowSpan(0,col1,2);
-   p_table->SetRowSpan(1,col2++,SKIP_CELL);
-   (*p_table)(0,col1++) << _T("Tension") << rptNewLine << _T("Status") << rptNewLine << _T("(C/D)");
-
-   p_table->SetRowSpan(0,col1,2);
-   p_table->SetRowSpan(1,col2++,SKIP_CELL);
-   (*p_table)(0,col1++) << _T("Compression") << rptNewLine << _T("Status") << rptNewLine << _T("(C/D)");
+   p_table->SetRowSpan(0,col,2);
+   (*p_table)(0,col++) << _T("Compression") << rptNewLine << _T("Status") << rptNewLine << _T("(C/D)");
 
    p_table->SetNumberOfHeaderRows(2);
-   for ( ColumnIndexType i = col1; i < p_table->GetNumberOfColumns(); i++ )
-   {
-      p_table->SetColumnSpan(0,i,SKIP_CELL);
-   }
 
    RowIndexType row=2;
    std::vector<pgsPointOfInterest>::const_iterator poiIter(m_HaulingPois.begin());
@@ -824,26 +815,19 @@ void pgsKdotHaulingAnalysisArtifact::BuildHaulingDetailsReport(const CSegmentKey
 
    p_table->SetNumberOfHeaderRows(2);
    p_table->SetRowSpan(0,0,2);
-   p_table->SetRowSpan(1,0,SKIP_CELL);
    (*p_table)(0,0) << COLHDR(_T("Location from") << rptNewLine << _T("Left Bunk Point"),    rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
 
    p_table->SetColumnSpan(0,1,3);
-   (*p_table)(0,1) << _T("Top Stress, ") << RPT_FTOP;
+   (*p_table)(0, 1) << _T("Top Stress, ") << RPT_FTOP;
+   (*p_table)(1, 1) << COLHDR(_T("Prestress"), rptStressUnitTag, pDisplayUnits->GetStressUnit());
+   (*p_table)(1, 2) << COLHDR(_T("Dynamic") << rptNewLine << _T("Force"), rptStressUnitTag, pDisplayUnits->GetStressUnit());
+   (*p_table)(1, 3) << COLHDR(_T("Total"), rptStressUnitTag, pDisplayUnits->GetStressUnit());
 
-   p_table->SetColumnSpan(0,2,3);
-   (*p_table)(0,2) << _T("Bottom Stress, ") << RPT_FBOT;
-
-   p_table->SetColumnSpan(0,3,SKIP_CELL);
-   p_table->SetColumnSpan(0,4,SKIP_CELL);
-   p_table->SetColumnSpan(0,5,SKIP_CELL);
-   p_table->SetColumnSpan(0,6,SKIP_CELL);
-
-   (*p_table)(1,1) << COLHDR(_T("Prestress"),rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   (*p_table)(1,2) << COLHDR(_T("Dynamic") << rptNewLine << _T("Force"),rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   (*p_table)(1,3) << COLHDR(_T("Total"),rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   (*p_table)(1,4) << COLHDR(_T("Prestress"),rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   (*p_table)(1,5) << COLHDR(_T("Dynamic") << rptNewLine << _T("Force"),rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   (*p_table)(1,6) << COLHDR(_T("Total"),rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   p_table->SetColumnSpan(0,4,3);
+   (*p_table)(0, 4) << _T("Bottom Stress, ") << RPT_FBOT;
+   (*p_table)(1, 4) << COLHDR(_T("Prestress"),rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*p_table)(1, 5) << COLHDR(_T("Dynamic") << rptNewLine << _T("Force"),rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*p_table)(1, 6) << COLHDR(_T("Total"),rptStressUnitTag, pDisplayUnits->GetStressUnit() );
 
    RowIndexType row1 = 2;
    poiIter = m_HaulingPois.begin();

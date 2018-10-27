@@ -250,8 +250,11 @@ public:
    virtual void EditLiveLoads() override;
    virtual void EditLiveLoadDistributionFactors(pgsTypes::DistributionFactorMethod method,LldfRangeOfApplicabilityAction roaAction) override;
    virtual bool EditPointLoad(CollectionIndexType loadIdx) override;
+   virtual bool EditPointLoadByID(LoadIDType loadID) override;
    virtual bool EditDistributedLoad(CollectionIndexType loadIdx) override;
+   virtual bool EditDistributedLoadByID(LoadIDType loadID) override;
    virtual bool EditMomentLoad(CollectionIndexType loadIdx) override;
+   virtual bool EditMomentLoadByID(LoadIDType loadID) override;
    virtual bool EditTimeline() override;
    virtual UINT GetStdToolBarID() override;
    virtual UINT GetLibToolBarID() override;

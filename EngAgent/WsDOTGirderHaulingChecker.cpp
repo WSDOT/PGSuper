@@ -191,7 +191,7 @@ void pgsWsdotGirderHaulingChecker::AnalyzeHauling(const CSegmentKey& segmentKey,
    pArtifact->SetHaulingCheckArtifact(artifact);
 }
 
-pgsHaulingAnalysisArtifact* pgsWsdotGirderHaulingChecker::DesignHauling(const CSegmentKey& segmentKey,HANDLINGCONFIG& shipping_config,bool bDesignForEqualOverhangs,bool bIgnoreConfigurationLimits,ISegmentHaulingDesignPointsOfInterest* pPOId,bool* bSuccess, SHARED_LOGFILE LOGFILE)
+pgsHaulingAnalysisArtifact* pgsWsdotGirderHaulingChecker::DesignHauling(const CSegmentKey& segmentKey,HANDLINGCONFIG& shipping_config,bool bIgnoreConfigurationLimits,ISegmentHaulingDesignPointsOfInterest* pPOId,bool* bSuccess, SHARED_LOGFILE LOGFILE)
 {
    LOG(_T("Entering pgsWsdotGirderHaulingChecker::DesignHauling"));
    std::unique_ptr<pgsWsdotHaulingAnalysisArtifact> artifact(std::make_unique<pgsWsdotHaulingAnalysisArtifact>());
@@ -279,7 +279,7 @@ pgsHaulingAnalysisArtifact* pgsWsdotGirderHaulingChecker::DesignHauling(const CS
       Float64 min_location = Max(min_overhang_start,min_overhang_end);
 
       Float64 minOverhang = (Lg - maxDistanceBetweenSupports)/2.;
-      if ( minOverhang < 0 || bDesignForEqualOverhangs)
+      if ( minOverhang < 0 || bIgnoreConfigurationLimits)
       {
          minOverhang = min_location;
       }
@@ -312,7 +312,7 @@ pgsHaulingAnalysisArtifact* pgsWsdotGirderHaulingChecker::DesignHauling(const CS
 
          pgsWsdotHaulingAnalysisArtifact curr_artifact;
 
-         if ( maxLeadingOverhang < loc && !bDesignForEqualOverhangs)
+         if ( maxLeadingOverhang < loc && !bIgnoreConfigurationLimits)
          {
             shipping_config.RightOverhang = maxLeadingOverhang;
             shipping_config.LeftOverhang = (loc - maxLeadingOverhang) + loc;
@@ -325,7 +325,7 @@ pgsHaulingAnalysisArtifact* pgsWsdotGirderHaulingChecker::DesignHauling(const CS
 
          // make sure the geometry is correct
 #if defined _DEBUG
-         if ( !bDesignForEqualOverhangs )
+         if ( !bIgnoreConfigurationLimits)
          {
             ATLASSERT( IsLE((Lg - shipping_config.LeftOverhang - shipping_config.RightOverhang),maxDistanceBetweenSupports) );
          }
@@ -346,10 +346,7 @@ pgsHaulingAnalysisArtifact* pgsWsdotGirderHaulingChecker::DesignHauling(const CS
          }
          lastFScr = FScr;
 
-         Float64 FSro = Min(curr_artifact.GetFsRollover(pgsTypes::CrownSlope),curr_artifact.GetFsRollover(pgsTypes::Superelevation));
-         Float64 FSf  = Min(curr_artifact.GetFsFailure(pgsTypes::CrownSlope),curr_artifact.GetFsFailure(pgsTypes::Superelevation));
-         Float64 FSr  = Min(FSro,FSf);
-
+         Float64 FSr = Min(curr_artifact.GetFsRollover(pgsTypes::CrownSlope),curr_artifact.GetFsRollover(pgsTypes::Superelevation));
          LOG(_T("FSr = ") << FSr);
 
          Float64 fra = (stepSize == bigStep ? 0.990 : 0.995);
@@ -394,11 +391,11 @@ pgsHaulingAnalysisArtifact* pgsWsdotGirderHaulingChecker::DesignHauling(const CS
             LOG(_T("Found a stable hauling configuration, now check stresses"));
             std::unique_ptr<pgsHaulingAnalysisArtifact> pAnalysisArtifact(AnalyzeHauling(segmentKey, shipping_config, pPOId));
 
-            *bSuccess = pAnalysisArtifact->Passed();
+            *bSuccess = pAnalysisArtifact->Passed(bIgnoreConfigurationLimits);
             *artifact = curr_artifact;
             LOG(_T("Stress check was ") << (*bSuccess ? _T("success") : _T("unsuccessful")));
 
-            if (*bSuccess || IsEqual(loc,minOverhang) )
+            if (*bSuccess || IsEqual(loc,minOverhang))
             {
                // obviously, we are done if the stress check passed
                // if the stress check failed, but we have a stable configuration and the bunks are

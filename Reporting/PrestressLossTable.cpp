@@ -125,32 +125,25 @@ rptRcTable* CPrestressLossTable::Build(IBroker* pBroker, const CSegmentKey& segm
    //////////////////////////////////////////
    // Label columns
    //////////////////////////////////////////
-   (*p_table)(0, 0) << _T("Loss Stage");
-   p_table->SetRowSpan(0, 0, 2);
-   p_table->SetRowSpan(1, 0, SKIP_CELL);
+   ColumnIndexType col = 0;
+   p_table->SetRowSpan(0, col, 2);
+   (*p_table)(0, col++) << _T("Loss Stage");
 
-   p_table->SetColumnSpan(0, 1, 4);
-   p_table->SetColumnSpan(0, 2, SKIP_CELL);
-   p_table->SetColumnSpan(0, 3, SKIP_CELL);
-   p_table->SetColumnSpan(0, 4, SKIP_CELL);
-   (*p_table)(0, 1) << _T("Permanent Strand");
-   (*p_table)(1, 1) << COLHDR(_T("Effective") << rptNewLine << _T("Force"), rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit());
-   (*p_table)(1, 2) << COLHDR(_T("Time-Dependent") << rptNewLine << _T("Effects"), rptStressUnitTag, pDisplayUnits->GetStressUnit());
-   (*p_table)(1, 3) << COLHDR(_T("Instantaneous") << rptNewLine << _T("Effects"), rptStressUnitTag, pDisplayUnits->GetStressUnit());
-   (*p_table)(1, 4) << COLHDR(RPT_FPE, rptStressUnitTag, pDisplayUnits->GetStressUnit());
+   p_table->SetColumnSpan(0, col, 4);
+   (*p_table)(0, col) << _T("Permanent Strand");
+   (*p_table)(1, col++) << COLHDR(_T("Effective") << rptNewLine << _T("Force"), rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit());
+   (*p_table)(1, col++) << COLHDR(_T("Time-Dependent") << rptNewLine << _T("Effects"), rptStressUnitTag, pDisplayUnits->GetStressUnit());
+   (*p_table)(1, col++) << COLHDR(_T("Instantaneous") << rptNewLine << _T("Effects"), rptStressUnitTag, pDisplayUnits->GetStressUnit());
+   (*p_table)(1, col++) << COLHDR(RPT_FPE, rptStressUnitTag, pDisplayUnits->GetStressUnit());
 
    if (bTempStrands)
    {
-      p_table->SetColumnSpan(0, 5, 4);
-      p_table->SetColumnSpan(0, 6, SKIP_CELL);
-      p_table->SetColumnSpan(0, 7, SKIP_CELL);
-      p_table->SetColumnSpan(0, 8, SKIP_CELL);
-
-      (*p_table)(0, 5) << _T("Temporary Strand");
-      (*p_table)(1, 5) << COLHDR(_T("Effective") << rptNewLine << _T("Force"), rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit());
-      (*p_table)(1, 6) << COLHDR(_T("Time-Dependent") << rptNewLine << _T("Effects"), rptStressUnitTag, pDisplayUnits->GetStressUnit());
-      (*p_table)(1, 7) << COLHDR(_T("Instantaneous") << rptNewLine << _T("Effects"), rptStressUnitTag, pDisplayUnits->GetStressUnit());
-      (*p_table)(1, 8) << COLHDR(RPT_FPE, rptStressUnitTag, pDisplayUnits->GetStressUnit());
+      p_table->SetColumnSpan(0, col, 4);
+      (*p_table)(0, col) << _T("Temporary Strand");
+      (*p_table)(1, col++) << COLHDR(_T("Effective") << rptNewLine << _T("Force"), rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit());
+      (*p_table)(1, col++) << COLHDR(_T("Time-Dependent") << rptNewLine << _T("Effects"), rptStressUnitTag, pDisplayUnits->GetStressUnit());
+      (*p_table)(1, col++) << COLHDR(_T("Instantaneous") << rptNewLine << _T("Effects"), rptStressUnitTag, pDisplayUnits->GetStressUnit());
+      (*p_table)(1, col++) << COLHDR(RPT_FPE, rptStressUnitTag, pDisplayUnits->GetStressUnit());
    }
 
 
@@ -203,42 +196,43 @@ rptRcTable* CPrestressLossTable::Build(IBroker* pBroker, const CSegmentKey& segm
       for (int i = 0; i < (int)(pgsTypes::lrLoadRatingTypeCount); i++)
       {
          pgsTypes::LoadRatingType ratingType = (pgsTypes::LoadRatingType)(i);
-
-         if (!pRatingSpec->IsRatingEnabled(ratingType))
+         if (pRatingSpec->IsRatingEnabled(ratingType) && pRatingSpec->RateForStress(ratingType))
          {
-            continue;
-         }
-
-         std::vector<pgsTypes::LimitState> vLimitStates = GetRatingLimitStates(ratingType);
-         for (const auto& limitState : vLimitStates)
-         {
-            if (IsStrengthLimitState(limitState))
+            std::vector<pgsTypes::LimitState> vLimitStates = GetRatingLimitStates(ratingType);
+            for (const auto& limitState : vLimitStates)
             {
-               // we only care about service limit states here
-               continue;
-            }
-
-            pgsTypes::LiveLoadType llType = LiveLoadTypeFromLimitState(limitState);
-
-            if (IsDesignRatingType(ratingType))
-            {
-               (*p_table)(row++, 0) << _T("Final with Live Load (") << GetLimitStateString(limitState) << _T(")");
-            }
-            else
-            {
-               VehicleIndexType nVehicles = pProductLoads->GetVehicleCount(llType);
-               for ( VehicleIndexType vehicleIdx = 0; vehicleIdx < nVehicles; vehicleIdx++)
+               if (IsStrengthLimitState(limitState))
                {
-                  pgsTypes::LiveLoadApplicabilityType applicability = pProductLoads->GetLiveLoadApplicability(llType, vehicleIdx);
-                  if (applicability == pgsTypes::llaNegMomentAndInteriorPierReaction)
+                  // we only care about service limit states here
+                  continue;
+               }
+
+               pgsTypes::LiveLoadType llType = LiveLoadTypeFromLimitState(limitState);
+
+               if (IsDesignRatingType(ratingType))
+               {
+                  (*p_table)(row++, 0) << _T("Final with Live Load (") << GetLimitStateString(limitState) << _T(")");
+               }
+               else
+               {
+                  VehicleIndexType nVehicles = pProductLoads->GetVehicleCount(llType);
+                  for (VehicleIndexType vehicleIdx = 0; vehicleIdx < nVehicles; vehicleIdx++)
                   {
-                     continue;
+                     pgsTypes::LiveLoadApplicabilityType applicability = pProductLoads->GetLiveLoadApplicability(llType, vehicleIdx);
+                     if (applicability == pgsTypes::llaNegMomentAndInteriorPierReaction)
+                     {
+                        continue;
+                     }
+
+                     std::_tstring name = pProductLoads->GetLiveLoadName(llType, vehicleIdx);
+                     if (name == NO_LIVE_LOAD_DEFINED)
+                     {
+                        continue;
+                     }
+
+                     // Final with Live Load (Service III, Legal Routine, Type 3S2)....
+                     (*p_table)(row++, 0) << _T("Final with Live Load (") << GetLimitStateString(limitState) << _T(", ") << name << _T(")");
                   }
-
-                  std::_tstring name = pProductLoads->GetLiveLoadName(llType, vehicleIdx);
-
-                  // Final with Live Load (Service III, Legal Routine, Type 3S2)....
-                  (*p_table)(row++, 0) << _T("Final with Live Load (") << GetLimitStateString(limitState) << _T(", ") << name << _T(")");
                }
             }
          }
@@ -281,7 +275,7 @@ rptRcTable* CPrestressLossTable::Build(IBroker* pBroker, const CSegmentKey& segm
    ///////////////////////////////////
    // Permanent Strand Force Column
    row = p_table->GetNumberOfHeaderRows();
-   ColumnIndexType col = 1;
+   col = 1;
    (*p_table)(row++, col) << force.SetValue(pPrestressForce->GetPrestressForce(poi, pgsTypes::Permanent, stressStrandsIntervalIdx, pgsTypes::Start/*pgsTypes::Jacking*/));
    (*p_table)(row++, col) << force.SetValue(pPrestressForce->GetPrestressForce(poi, pgsTypes::Permanent, releaseIntervalIdx, pgsTypes::Start/*pgsTypes::BeforeXfer*/));
    (*p_table)(row++, col) << force.SetValue(pPrestressForce->GetPrestressForce(poi, pgsTypes::Permanent, releaseIntervalIdx, pgsTypes::End/*pgsTypes::AfterXfer*/));
@@ -349,6 +343,11 @@ rptRcTable* CPrestressLossTable::Build(IBroker* pBroker, const CSegmentKey& segm
                   {
                      pgsTypes::LiveLoadApplicabilityType applicability = pProductLoads->GetLiveLoadApplicability(llType, vehicleIdx);
                      if (applicability == pgsTypes::llaNegMomentAndInteriorPierReaction)
+                     {
+                        continue;
+                     }
+                     std::_tstring name = pProductLoads->GetLiveLoadName(llType, vehicleIdx);
+                     if (name == NO_LIVE_LOAD_DEFINED)
                      {
                         continue;
                      }
@@ -446,6 +445,11 @@ rptRcTable* CPrestressLossTable::Build(IBroker* pBroker, const CSegmentKey& segm
                      {
                         continue;
                      }
+                     std::_tstring name = pProductLoads->GetLiveLoadName(llType, vehicleIdx);
+                     if (name == NO_LIVE_LOAD_DEFINED)
+                     {
+                        continue;
+                     }
                      (*p_table)(row++, col) << stress.SetValue(pLosses->GetTimeDependentLosses(poi, pgsTypes::Permanent, lastIntervalIdx, pgsTypes::End));
                   }
                }
@@ -531,6 +535,11 @@ rptRcTable* CPrestressLossTable::Build(IBroker* pBroker, const CSegmentKey& segm
                   {
                      pgsTypes::LiveLoadApplicabilityType applicability = pProductLoads->GetLiveLoadApplicability(llType, vehicleIdx);
                      if (applicability == pgsTypes::llaNegMomentAndInteriorPierReaction)
+                     {
+                        continue;
+                     }
+                     std::_tstring name = pProductLoads->GetLiveLoadName(llType, vehicleIdx);
+                     if (name == NO_LIVE_LOAD_DEFINED)
                      {
                         continue;
                      }
@@ -626,6 +635,11 @@ rptRcTable* CPrestressLossTable::Build(IBroker* pBroker, const CSegmentKey& segm
                   {
                      pgsTypes::LiveLoadApplicabilityType applicability = pProductLoads->GetLiveLoadApplicability(llType, vehicleIdx);
                      if (applicability == pgsTypes::llaNegMomentAndInteriorPierReaction)
+                     {
+                        continue;
+                     }
+                     std::_tstring name = pProductLoads->GetLiveLoadName(llType, vehicleIdx);
+                     if (name == NO_LIVE_LOAD_DEFINED)
                      {
                         continue;
                      }
@@ -738,6 +752,11 @@ rptRcTable* CPrestressLossTable::Build(IBroker* pBroker, const CSegmentKey& segm
                         {
                            continue;
                         }
+                        std::_tstring name = pProductLoads->GetLiveLoadName(llType, vehicleIdx);
+                        if (name == NO_LIVE_LOAD_DEFINED)
+                        {
+                           continue;
+                        }
                         (*p_table)(row++, col) << _T("");
                      }
                   }
@@ -836,6 +855,11 @@ rptRcTable* CPrestressLossTable::Build(IBroker* pBroker, const CSegmentKey& segm
                      {
                         pgsTypes::LiveLoadApplicabilityType applicability = pProductLoads->GetLiveLoadApplicability(llType, vehicleIdx);
                         if (applicability == pgsTypes::llaNegMomentAndInteriorPierReaction)
+                        {
+                           continue;
+                        }
+                        std::_tstring name = pProductLoads->GetLiveLoadName(llType, vehicleIdx);
+                        if (name == NO_LIVE_LOAD_DEFINED)
                         {
                            continue;
                         }
@@ -940,6 +964,11 @@ rptRcTable* CPrestressLossTable::Build(IBroker* pBroker, const CSegmentKey& segm
                         {
                            continue;
                         }
+                        std::_tstring name = pProductLoads->GetLiveLoadName(llType, vehicleIdx);
+                        if (name == NO_LIVE_LOAD_DEFINED)
+                        {
+                           continue;
+                        }
                         (*p_table)(row++, col) << _T("");
                      }
                   }
@@ -1037,6 +1066,11 @@ rptRcTable* CPrestressLossTable::Build(IBroker* pBroker, const CSegmentKey& segm
                      {
                         pgsTypes::LiveLoadApplicabilityType applicability = pProductLoads->GetLiveLoadApplicability(llType, vehicleIdx);
                         if (applicability == pgsTypes::llaNegMomentAndInteriorPierReaction)
+                        {
+                           continue;
+                        }
+                        std::_tstring name = pProductLoads->GetLiveLoadName(llType, vehicleIdx);
+                        if (name == NO_LIVE_LOAD_DEFINED)
                         {
                            continue;
                         }

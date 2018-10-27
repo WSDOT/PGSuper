@@ -80,6 +80,13 @@ rptChapter* CCastingYardRebarRequirementChapterBuilder::Build(CReportSpecificati
 
    GET_IFACE2(pBroker,IAllowableConcreteStress,pAllowStress);
 
+   bool bSimpleTable = true;
+   if (pBridge->HasAsymmetricGirders() || pBridge->HasAsymmetricPrestressing())
+   {
+      bSimpleTable = false;
+   }
+
+
    // Report for Girder Segments
    SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
    for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
@@ -96,7 +103,7 @@ rptChapter* CCastingYardRebarRequirementChapterBuilder::Build(CReportSpecificati
       IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
       pPara = new rptParagraph;
       *pChapter << pPara;
-      BuildTable(pBroker,pPara,segmentKey,releaseIntervalIdx);
+      BuildTable(pBroker,pPara,segmentKey,releaseIntervalIdx,bSimpleTable);
 
       if ( pAllowStress->CheckTemporaryStresses() )
       {
@@ -106,7 +113,7 @@ rptChapter* CCastingYardRebarRequirementChapterBuilder::Build(CReportSpecificati
             IntervalIndexType tsRemovalIntervalIdx = pIntervals->GetTemporaryStrandRemovalInterval(segmentKey);
             pPara = new rptParagraph;
             *pChapter << pPara;
-            BuildTable(pBroker,pPara,segmentKey,tsRemovalIntervalIdx);
+            BuildTable(pBroker,pPara,segmentKey,tsRemovalIntervalIdx,bSimpleTable);
          }
       }
    } // next segment
@@ -153,7 +160,7 @@ rptChapter* CCastingYardRebarRequirementChapterBuilder::Build(CReportSpecificati
                pPara = new rptParagraph;
                *pChapter << pPara;
 
-               BuildTable(pBroker,pPara,poi,intervalIdx);
+               BuildTable(pBroker,pPara,poi,intervalIdx,true/*simple table*/);
             }
          }
       }
@@ -194,7 +201,7 @@ rptChapter* CCastingYardRebarRequirementChapterBuilder::Build(CReportSpecificati
          pPara = new rptParagraph;
          *pChapter << pPara;
 
-         BuildTable(pBroker,pPara,girderKey,intervalIdx);
+         BuildTable(pBroker,pPara,girderKey,intervalIdx,true/*simple table*/);
       }
    }
 
@@ -207,128 +214,164 @@ CChapterBuilder* CCastingYardRebarRequirementChapterBuilder::Clone() const
    return new CCastingYardRebarRequirementChapterBuilder;
 }
 
-void CCastingYardRebarRequirementChapterBuilder::BuildTable(IBroker* pBroker,rptParagraph* pPara,const CSegmentKey& segmentKey,IntervalIndexType intervalIdx) const
+void CCastingYardRebarRequirementChapterBuilder::BuildTable(IBroker* pBroker,rptParagraph* pPara,const CSegmentKey& segmentKey,IntervalIndexType intervalIdx, bool bSimpleTable) const
 {
    pgsTypes::StressLocation botLocation = pgsTypes::BottomGirder;
    pgsTypes::StressLocation topLocation = pgsTypes::TopGirder;
 
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
-   rptRcTable* pTable = CreateTable(pBroker,segmentKey,topLocation,botLocation,intervalIdx,pDisplayUnits);
+   rptRcTable* pTable = CreateTable(pBroker,segmentKey,bSimpleTable,topLocation,botLocation,intervalIdx,pDisplayUnits);
    *pPara << pTable << rptNewLine;
 
    pgsPointOfInterest poi;
    poi.SetSegmentKey(segmentKey);
-   FillTable(pBroker,pTable,topLocation,botLocation,intervalIdx,poi);
+   FillTable(pBroker,pTable,bSimpleTable,topLocation,botLocation,intervalIdx,poi);
 
-   *pPara << _T("* Bar areas are adjusted for development, and bars must lie within tension portion of section before they are considered.");
-   *pPara << Sub2(_T("Y"),_T("na")) << _T(" is measured from the top of the girder") << rptNewLine;
+   if (bSimpleTable)
+   {
+      (*pPara) << Sub2(_T("Y"), _T("na")) << _T(", the location of the neutral axis, is measured from the top of the non-composite girder") << rptNewLine;
+   }
+   else
+   {
+      (*pPara) << _T("The neutral axis is defined by its location with respect to the top center of the girder (") << Sub2(_T("Y"), _T("na")) << _T(") and its slope (Slope NA)") << rptNewLine;
+   }
+   (*pPara) << Super(_T("*")) << _T(" to be considered sufficient, reinforcement must be fully developed and lie within the tension area of the section") << rptNewLine;
+   (*pPara) << _T("** minimum area of sufficiently bonded reinforcement needed to use the alternative tensile stress limit") << rptNewLine;
 }
 
-void CCastingYardRebarRequirementChapterBuilder::BuildTable(IBroker* pBroker,rptParagraph* pPara,const pgsPointOfInterest& poi,IntervalIndexType intervalIdx) const
+void CCastingYardRebarRequirementChapterBuilder::BuildTable(IBroker* pBroker,rptParagraph* pPara,const pgsPointOfInterest& poi,IntervalIndexType intervalIdx, bool bSimpleTable) const
 {
    pgsTypes::StressLocation botLocation = pgsTypes::BottomGirder;
    pgsTypes::StressLocation topLocation = pgsTypes::TopGirder;
 
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
-   rptRcTable* pTable = CreateTable(pBroker, poi.GetSegmentKey(),topLocation,botLocation,intervalIdx,pDisplayUnits);
+   rptRcTable* pTable = CreateTable(pBroker, poi.GetSegmentKey(), bSimpleTable, topLocation,botLocation,intervalIdx,pDisplayUnits);
    *pPara << pTable << rptNewLine;
 
-   FillTable(pBroker,pTable,topLocation,botLocation,intervalIdx,poi);
+   FillTable(pBroker,pTable,bSimpleTable, topLocation,botLocation,intervalIdx,poi);
 
-   *pPara << _T("* Bar areas are adjusted for development, and bars must lie within tension portion of section before they are considered.");
-   *pPara << Sub2(_T("Y"),_T("na")) << _T(" is measured from the top of the closure joint") << rptNewLine;
+   if (bSimpleTable)
+   {
+      (*pPara) << Sub2(_T("Y"), _T("na")) << _T(", the location of the neutral axis, is measured from the top of the closure joint") << rptNewLine;
+   }
+   else
+   {
+      (*pPara) << _T("The neutral axis is defined by its location with respect to the top center of the closure joint (") << Sub2(_T("Y"), _T("na")) << _T(") and its slope (Slope NA)") << rptNewLine;
+   }
+   (*pPara) << Super(_T("*")) << _T(" to be considered sufficient, reinforcement must be fully developed and lie within the tension area of the section") << rptNewLine;
+   (*pPara) << _T("** minimum area of sufficiently bonded reinforcement needed to use the alternative tensile stress limit") << rptNewLine;
 }
 
-void CCastingYardRebarRequirementChapterBuilder::BuildTable(IBroker* pBroker,rptParagraph* pPara,const CGirderKey& girderKey,IntervalIndexType intervalIdx) const
+void CCastingYardRebarRequirementChapterBuilder::BuildTable(IBroker* pBroker,rptParagraph* pPara,const CGirderKey& girderKey,IntervalIndexType intervalIdx, bool bSimpleTable) const
 {
    pgsTypes::StressLocation botLocation = pgsTypes::BottomDeck;
    pgsTypes::StressLocation topLocation = pgsTypes::TopDeck;
 
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
-   rptRcTable* pTable = CreateTable(pBroker, girderKey,topLocation,botLocation,intervalIdx,pDisplayUnits);
+   rptRcTable* pTable = CreateTable(pBroker, girderKey, bSimpleTable,topLocation,botLocation,intervalIdx,pDisplayUnits);
    *pPara << pTable << rptNewLine;
 
    CSegmentKey segmentKey(girderKey.groupIndex,girderKey.girderIndex,ALL_SEGMENTS);
    pgsPointOfInterest poi;
    poi.SetSegmentKey(segmentKey);
 
-   FillTable(pBroker,pTable,topLocation,botLocation,intervalIdx,poi);
+   FillTable(pBroker,pTable,bSimpleTable,topLocation,botLocation,intervalIdx,poi);
 
-   *pPara << _T("* Bars must be fully developed and lie within tension portion of section before they are considered.") << rptNewLine;
-   *pPara << Sub2(_T("Y"),_T("na")) << _T(" is measured from the top of the non-composite girder") << rptNewLine;
+   if (bSimpleTable)
+   {
+      (*pPara) << Sub2(_T("Y"), _T("na")) << _T(", the location of the neutral axis, is measured from the top of the non-composite girder") << rptNewLine;
+   }
+   else
+   {
+      (*pPara) << _T("The neutral axis is defined by its location with respect to the top center of the girder (") << Sub2(_T("Y"), _T("na")) << _T(") and its slope (Slope NA)") << rptNewLine;
+   }
+   (*pPara) << Super(_T("*")) << _T(" to be considered sufficient, reinforcement must be fully developed and lie within the tension area of the section") << rptNewLine;
+   (*pPara) << _T("** minimum area of sufficiently bonded reinforcement needed to use the alternative tensile stress limit") << rptNewLine;
 }
 
-rptRcTable* CCastingYardRebarRequirementChapterBuilder::CreateTable(IBroker* pBroker,const CGirderKey& girderKey,pgsTypes::StressLocation topLocation,pgsTypes::StressLocation botLocation,IntervalIndexType intervalIdx,IEAFDisplayUnits* pDisplayUnits) const
+rptRcTable* CCastingYardRebarRequirementChapterBuilder::CreateTable(IBroker* pBroker, const CGirderKey& girderKey, bool bSimpleTable, pgsTypes::StressLocation topLocation, pgsTypes::StressLocation botLocation, IntervalIndexType intervalIdx, IEAFDisplayUnits* pDisplayUnits) const
 {
    GET_IFACE2(pBroker, IIntervals, pIntervals);
    CString strTitle;
    strTitle.Format(_T("Reinforcement required for tension stress limit, Interval %d - %s, [%s]"), LABEL_INTERVAL(intervalIdx), pIntervals->GetDescription(intervalIdx), LrfdCw8th(_T("C5.9.4.1.2"), _T("C5.9.2.3.1b")));
-   rptRcTable* pTable = rptStyleManager::CreateDefaultTable(12, strTitle);
 
-   pTable->SetNumberOfHeaderRows(2);
+   ColumnIndexType nColumns = (bSimpleTable ? 8 : 19);
+   rptRcTable* pTable = rptStyleManager::CreateDefaultTable(nColumns, strTitle);
 
-   if ( girderKey.groupIndex == ALL_GROUPS )
+   pTable->SetNumberOfHeaderRows(1);
+
+   if (girderKey.groupIndex == ALL_GROUPS)
    {
-      pTable->SetColumnStyle(0,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
-      pTable->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+      pTable->SetColumnStyle(0, rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+      pTable->SetStripeRowColumnStyle(0, rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
    }
 
    ColumnIndexType col = 0;
-   // build first heading row
-   pTable->SetRowSpan(0,col,2);
-   (*pTable)(0,col++) << COLHDR(RPT_GDR_END_LOCATION,  rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+   (*pTable)(0, col++) << COLHDR(RPT_GDR_END_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
+   (*pTable)(0, col++) << COLHDR(Sub2(_T("Y"), _T("na")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
 
-   pTable->SetRowSpan(0,col,2);
-   (*pTable)(0,col++) << COLHDR(Sub2(_T("Y"),_T("na")),rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-
-   pTable->SetColumnSpan(0,col, 5);
-   if ( IsGirderStressLocation(topLocation) )
+   if (bSimpleTable)
    {
-      (*pTable)(0,col++) << _T("Top Girder");
+      (*pTable)(0, col++) << COLHDR(RPT_STRESS(_T("t")), rptStressUnitTag, pDisplayUnits->GetStressUnit());
+      (*pTable)(0, col++) << COLHDR(RPT_STRESS(_T("b")), rptStressUnitTag, pDisplayUnits->GetStressUnit());
    }
    else
    {
-      (*pTable)(0,col++) << _T("Top Deck");
+      pTable->SetNumberOfHeaderRows(2);
+
+      col = 0;
+
+      // location
+      pTable->SetRowSpan(0, col++, 2);
+
+      // Yna
+      pTable->SetRowSpan(0, col++, 2);
+
+      pTable->SetRowSpan(0, col, 2);
+      (*pTable)(0, col++) << _T("Slope NA");
+
+      pTable->SetColumnSpan(0, col, 3);
+      (*pTable)(0, col) << _T("Top Left");
+      (*pTable)(1, col++) << COLHDR(Sub2(_T("x"),_T("tl")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+      (*pTable)(1, col++) << COLHDR(Sub2(_T("y"), _T("tl")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+      (*pTable)(1, col++) << COLHDR(RPT_STRESS(_T("tl")), rptStressUnitTag, pDisplayUnits->GetStressUnit());
+
+      pTable->SetColumnSpan(0, col, 3);
+      (*pTable)(0, col) << _T("Top Right");
+      (*pTable)(1, col++) << COLHDR(Sub2(_T("x"), _T("tr")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+      (*pTable)(1, col++) << COLHDR(Sub2(_T("y"), _T("tr")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+      (*pTable)(1, col++) << COLHDR(RPT_STRESS(_T("tr")), rptStressUnitTag, pDisplayUnits->GetStressUnit());
+
+      pTable->SetColumnSpan(0, col, 3);
+      (*pTable)(0, col) << _T("Bottom Left");
+      (*pTable)(1, col++) << COLHDR(Sub2(_T("x"), _T("bl")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+      (*pTable)(1, col++) << COLHDR(Sub2(_T("y"), _T("bl")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+      (*pTable)(1, col++) << COLHDR(RPT_STRESS(_T("bl")), rptStressUnitTag, pDisplayUnits->GetStressUnit());
+
+      pTable->SetColumnSpan(0, col, 3);
+      (*pTable)(0, col) << _T("Bottom Right");
+      (*pTable)(1, col++) << COLHDR(Sub2(_T("x"), _T("br")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+      (*pTable)(1, col++) << COLHDR(Sub2(_T("y"), _T("br")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+      (*pTable)(1, col++) << COLHDR(RPT_STRESS(_T("br")), rptStressUnitTag, pDisplayUnits->GetStressUnit());
+
+      pTable->SetRowSpan(0, col, 2); // At
+      pTable->SetRowSpan(0, col+1, 2); // T
+      pTable->SetRowSpan(0, col+2, 2); // As Provided
+      pTable->SetRowSpan(0, col+3, 2); // As Required
    }
 
-   pTable->SetColumnSpan(0,col, 5);
-   if ( IsGirderStressLocation(botLocation) )
-   {
-      (*pTable)(0,col++) << _T("Bottom Girder");
-   }
-   else
-   {
-      (*pTable)(0,col++) << _T("Bottom Deck");
-   }
-
-   ColumnIndexType i;
-   for ( i = col; i < pTable->GetNumberOfColumns(); i++ )
-   {
-      pTable->SetColumnSpan(0,i,SKIP_CELL);
-   }
-
-   // build second hearing row
-   col = 0;
-   pTable->SetRowSpan(1,col++,SKIP_CELL);
-   pTable->SetRowSpan(1,col++,SKIP_CELL);
-   (*pTable)(1,col++) << COLHDR(RPT_STRESS(_T("t")),rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   (*pTable)(1,col++) << COLHDR(Sub2(_T("A"),_T("t")),rptAreaUnitTag, pDisplayUnits->GetAreaUnit() );
-   (*pTable)(1,col++) << COLHDR(_T("T"),rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit() );
-   (*pTable)(1,col++) << COLHDR(Sub2(_T("A"),_T("s"))<< rptNewLine << _T("Required"),rptAreaUnitTag, pDisplayUnits->GetAreaUnit() );
-   (*pTable)(1,col++) << COLHDR(Sub2(_T("* A"),_T("s"))<< rptNewLine << _T("Provided"),rptAreaUnitTag, pDisplayUnits->GetAreaUnit() );
-   (*pTable)(1,col++) << COLHDR(RPT_STRESS(_T("b")),rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   (*pTable)(1,col++) << COLHDR(Sub2(_T("A"),_T("t")),rptAreaUnitTag, pDisplayUnits->GetAreaUnit() );
-   (*pTable)(1,col++) << COLHDR(_T("T"),rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit() );
-   (*pTable)(1,col++) << COLHDR(Sub2(_T("A"),_T("s"))<< rptNewLine << _T("Required"),rptAreaUnitTag, pDisplayUnits->GetAreaUnit() );
-   (*pTable)(1,col++) << COLHDR(Sub2(_T("* A"),_T("s"))<< rptNewLine << _T("Provided"),rptAreaUnitTag, pDisplayUnits->GetAreaUnit() );
+   (*pTable)(0, col++) << COLHDR(Sub2(_T("A"), _T("t")), rptAreaUnitTag, pDisplayUnits->GetAreaUnit());
+   (*pTable)(0, col++) << COLHDR(_T("T"), rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit());
+   (*pTable)(0, col++) << COLHDR(Sub2(_T("A"), _T("s")) << rptNewLine << _T("Provided") << Super(_T("*")), rptAreaUnitTag, pDisplayUnits->GetAreaUnit());
+   (*pTable)(0, col++) << COLHDR(Sub2(_T("A"), _T("s")) << rptNewLine << _T("Required") << Super(_T("**")), rptAreaUnitTag, pDisplayUnits->GetAreaUnit());
 
    return pTable;
 }
 
-void CCastingYardRebarRequirementChapterBuilder::FillTable(IBroker* pBroker,rptRcTable* pTable,pgsTypes::StressLocation topLocation,pgsTypes::StressLocation botLocation,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi) const
+void CCastingYardRebarRequirementChapterBuilder::FillTable(IBroker* pBroker,rptRcTable* pTable,bool bSimpleTable,pgsTypes::StressLocation topLocation,pgsTypes::StressLocation botLocation,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi) const
 {
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
@@ -344,6 +387,7 @@ void CCastingYardRebarRequirementChapterBuilder::FillTable(IBroker* pBroker,rptR
    INIT_UV_PROTOTYPE( rptPointOfInterest, location,       pDisplayUnits->GetSpanLengthUnit(), false );
    location.IncludeSpanAndGirder(segmentKey.segmentIndex == ALL_SEGMENTS || poi.GetID() != INVALID_ID);
 
+   INIT_SCALAR_PROTOTYPE(rptRcScalar, scalar, pDisplayUnits->GetScalarFormat());
    INIT_UV_PROTOTYPE( rptForceUnitValue,  force,  pDisplayUnits->GetShearUnit(),        false );
    INIT_UV_PROTOTYPE( rptAreaUnitValue,   area,   pDisplayUnits->GetAreaUnit(),         false );
    INIT_UV_PROTOTYPE( rptLengthUnitValue, dim,    pDisplayUnits->GetComponentDimUnit(), false );
@@ -397,69 +441,51 @@ void CCastingYardRebarRequirementChapterBuilder::FillTable(IBroker* pBroker,rptR
 
          IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(thisPoi.GetSegmentKey());
 
-         (*pTable)(row,0) << location.SetValue( intervalIdx == releaseIntervalIdx ? POI_RELEASED_SEGMENT : POI_ERECTED_SEGMENT, thisPoi );
+         ColumnIndexType col = 0;
 
-         Float64 Yna,At,T,AsProvided,AsRequired;
-         pArtifact->GetAlternativeTensileStressParameters(botLocation,&Yna,&At,&T,&AsProvided,&AsRequired);
+         (*pTable)(row,col++) << location.SetValue( intervalIdx == releaseIntervalIdx ? POI_RELEASED_SEGMENT : POI_ERECTED_SEGMENT, thisPoi );
 
-         if (Yna < 0 )
+         const gbtAlternativeTensileStressRequirements& requirements = pArtifact->GetAlternativeTensileStressRequirements(botLocation);
+
+         (*pTable)(row, col++) << dim.SetValue(requirements.Yna);
+         if (bSimpleTable)
          {
-            // Entire section is in compression
-            for ( ColumnIndexType ic = 1; ic < pTable->GetNumberOfColumns(); ic++ )
-            {
-               (*pTable)(row,ic) << _T("-");
-            }
+            Float64 fTop = requirements.pntTopLeft.Z();
+            Float64 fBot = requirements.pntBottomLeft.Z();
+            (*pTable)(row, col++) << stress.SetValue(fTop);
+            (*pTable)(row, col++) << stress.SetValue(fBot);
          }
          else
          {
-            // report depth to neutral axis from top of girder... tension usually governs on the top
-            // and top rebar is usually measured from the top downwards
-            GET_IFACE2(pBroker,ISectionProperties,pSectProp);
-            Float64 Hg = pSectProp->GetHg(releaseIntervalIdx,thisPoi);
-            Float64 Y = Yna - Hg;
+            (*pTable)(row, col++) << scalar.SetValue(requirements.NAslope);
 
-            (*pTable)(row,1) << dim.SetValue(Y);
+            (*pTable)(row, col++) << dim.SetValue(requirements.pntTopLeft.X());
+            (*pTable)(row, col++) << dim.SetValue(requirements.pntTopLeft.Y());
+            (*pTable)(row, col++) << stress.SetValue(requirements.pntTopLeft.Z());
 
-            // We have a neutral axis. See which side is in tension
-            Float64 fTop = pArtifact->GetDemand(topLocation);
-            Float64 fBot = pArtifact->GetDemand(botLocation);
+            (*pTable)(row, col++) << dim.SetValue(requirements.pntTopRight.X());
+            (*pTable)(row, col++) << dim.SetValue(requirements.pntTopRight.Y());
+            (*pTable)(row, col++) << stress.SetValue(requirements.pntTopRight.Z());
 
-            // Half of the table is always n/a. Determine which half to fill
-            ColumnIndexType dataStart, dataEnd;
-            ColumnIndexType blankStart, blankEnd;
-            if (0.0 < fTop)
-            {
-               dataStart  = 3;
-               dataEnd    = 7;
-               blankStart = 8;
-               blankEnd   = 12;
-            }
-            else
-            {
-               dataStart  = 8;
-               dataEnd    = 12;
-               blankStart = 3;
-               blankEnd   = 7;
-            }
+            (*pTable)(row, col++) << dim.SetValue(requirements.pntBottomLeft.X());
+            (*pTable)(row, col++) << dim.SetValue(requirements.pntBottomLeft.Y());
+            (*pTable)(row, col++) << stress.SetValue(requirements.pntBottomLeft.Z());
 
-            // Stresses
-            (*pTable)(row,2) << stress.SetValue(fTop);
-            (*pTable)(row,7) << stress.SetValue(fBot);
+            (*pTable)(row, col++) << dim.SetValue(requirements.pntBottomRight.X());
+            (*pTable)(row, col++) << dim.SetValue(requirements.pntBottomRight.Y());
+            (*pTable)(row, col++) << stress.SetValue(requirements.pntBottomRight.Z());
+         }
 
-            // Fill in compression columns with n/a's first
-            ColumnIndexType col;
-            for (col = blankStart; col < blankEnd; col++)
-            {
-               (*pTable)(row,col) << _T("-");
-            }
-
-            // Now fill in tension side with data
-            col = dataStart;
-            (*pTable)(row,col++) << area.SetValue(At);
-            (*pTable)(row,col++) << force.SetValue(T);
-            (*pTable)(row,col++) << area.SetValue(AsRequired);
-            (*pTable)(row,col++) << area.SetValue(AsProvided);
-            ATLASSERT(col==dataEnd);
+         (*pTable)(row, col++) << area.SetValue(requirements.AreaTension);
+         (*pTable)(row, col++) << force.SetValue(requirements.T);
+         (*pTable)(row, col++) << area.SetValue(requirements.AsProvided);
+         if (requirements.AsRequired < 0)
+         {
+            (*pTable)(row, col++) << _T("-");
+         }
+         else
+         {
+            (*pTable)(row, col++) << area.SetValue(requirements.AsRequired);
          }
 
          row++;

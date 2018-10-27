@@ -3,8 +3,7 @@
  44.00    6   7.60                     1     1    4XB34          14  1/2  270  13.09  13.09   8.00   8.00                                              4.000  5.000   0.718    -0.866     1692   0.681  0.788   0.534 -0.059 -0.004 -0.004 -0.067  17.52   60.93    1.00    1.00    1.00 
 
 
-The Specification Check was Not Successful
-Ultimate vertical shear capacity check failed for Strength I Limit State
+The Specification Check was Successful
 
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
@@ -12,8 +11,7 @@ Ultimate vertical shear capacity check failed for Strength I Limit State
  44.00    6   7.60                     1     2    4XB34          14  1/2  270  13.09  13.09   8.00   8.00                                              4.000  5.000   0.713    -0.857     1666   0.662  0.788   0.534 -0.058 -0.005 -0.004 -0.066  17.52   60.93    1.00    1.00    1.00 
 
 
-The Specification Check was Not Successful
-Ultimate vertical shear capacity check failed for Strength I Limit State
+The Specification Check was Successful
 
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
@@ -21,8 +19,7 @@ Ultimate vertical shear capacity check failed for Strength I Limit State
  44.00    6   7.60                     1     4    4XB34          14  1/2  270  13.09  13.09   8.00   8.00                                              4.000  5.000   0.713    -0.857     1666   0.662  0.788   0.534 -0.058 -0.005 -0.004 -0.066  17.52   60.93    1.00    1.00    1.00 
 
 
-The Specification Check was Not Successful
-Ultimate vertical shear capacity check failed for Strength I Limit State
+The Specification Check was Successful
 
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
@@ -31,8 +28,7 @@ Ultimate vertical shear capacity check failed for Strength I Limit State
                                                                                                                  4.5   22     2    2   0   0   0   0 
 
 
-The Specification Check was Not Successful
-Ultimate vertical shear capacity check failed for Strength I Limit State
+The Specification Check was Successful
 
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
@@ -41,8 +37,7 @@ Ultimate vertical shear capacity check failed for Strength I Limit State
                                                                                                                  4.5   22     2    2   0   0   0   0 
 
 
-The Specification Check was Not Successful
-Ultimate vertical shear capacity check failed for Strength I Limit State
+The Specification Check was Successful
 
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
@@ -51,7 +46,6 @@ Ultimate vertical shear capacity check failed for Strength I Limit State
                                                                                                                  4.5   22     2    2   0   0   0   0 
 
 
-The Specification Check was Not Successful
-Ultimate vertical shear capacity check failed for Strength I Limit State
+The Specification Check was Successful
 
 

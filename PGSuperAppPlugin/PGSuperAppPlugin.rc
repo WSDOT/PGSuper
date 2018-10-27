@@ -13,7 +13,6 @@
 #include "afxres.h"
 #include <EAF\EAFResources.h>
 #include "grid\gxresrc.h"
-
 /////////////////////////////////////////////////////////////////////////////
 #undef APSTUDIO_READONLY_SYMBOLS
 
@@ -1423,11 +1422,11 @@ BEGIN
     PUSHBUTTON      "Help",ID_HELP,327,169,50,14
 END
 
-IDD_EDIT_LOADS DIALOG 0, 0, 538, 132
+IDD_EDIT_LOADS DIALOGEX 0, 0, 538, 132
 STYLE DS_SETFONT | DS_MODALFRAME | WS_CHILD
-FONT 8, "MS Sans Serif"
+FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
-    CONTROL         "List1",IDC_LOADS_LIST,"SysListView32",LVS_REPORT | LVS_SINGLESEL | LVS_SHOWSELALWAYS | WS_BORDER | WS_TABSTOP,15,18,516,75
+    CONTROL         "List1",IDC_LOADS_LIST,"SysListView32",LVS_REPORT | LVS_SHOWSELALWAYS | WS_BORDER | WS_TABSTOP,15,18,516,75
     PUSHBUTTON      "Edit Load",IDC_EDIT_LOAD,13,110,67,14
     PUSHBUTTON      "Delete Load",IDC_DELETE_LOAD,86,110,67,14
     PUSHBUTTON      "Add New Point Load...",IDC_ADD_POINTLOAD,157,110,100,14
@@ -3712,8 +3711,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 4,0,6,0
- PRODUCTVERSION 4,0,6,0
+ FILEVERSION 4,0,7,0
+ PRODUCTVERSION 4,0,7,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -3730,12 +3729,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "Washington State Department of Transportation"
             VALUE "FileDescription", "PGSuper"
-            VALUE "FileVersion", "4.0.6.0"
+            VALUE "FileVersion", "4.0.7.0"
             VALUE "InternalName", "PGSuper"
             VALUE "LegalCopyright", "Copyright © 1999-2018, Washington State Department of Transportation, All Rights Reserved"
             VALUE "OriginalFilename", "PGSuperAppPlugin.DLL"
             VALUE "ProductName", "PGSuper"
-            VALUE "ProductVersion", "4.0.6.0"
+            VALUE "ProductVersion", "4.0.7.0"
         END
     END
     BLOCK "VarFileInfo"
@@ -5034,6 +5033,11 @@ BEGIN
 END
 
 IDD_GIRDERDESC_DEBOND AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_EDIT_LOADS AFX_DIALOG_LAYOUT
 BEGIN
     0
 END

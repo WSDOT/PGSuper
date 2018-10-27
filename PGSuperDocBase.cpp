@@ -899,24 +899,33 @@ void CPGSDocBase::AddPointLoad(const CPointLoadData& loadData)
 
 bool CPGSDocBase::EditPointLoad(CollectionIndexType loadIdx)
 {
-   AFX_MANAGE_STATE(AfxGetStaticModuleState());
-
    GET_IFACE(IUserDefinedLoadData, pUserDefinedLoads);
    const CPointLoadData* pLoadData = pUserDefinedLoads->GetPointLoad(loadIdx);
 
-   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   return EditPointLoadByID(pLoadData->m_ID);
+}
+
+bool CPGSDocBase::EditPointLoadByID(LoadIDType loadID)
+{
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
+   GET_IFACE(IUserDefinedLoadData, pUserDefinedLoads);
+   const CPointLoadData* pLoadData = pUserDefinedLoads->FindPointLoad(loadID);
+   ATLASSERT(pLoadData->m_ID == loadID);
+
+   GET_IFACE(IBridgeDescription, pIBridgeDesc);
    const CTimelineManager* pTimelineMgr = pIBridgeDesc->GetTimelineManager();
 
    EventIDType eventID = pTimelineMgr->FindUserLoadEventID(pLoadData->m_ID);
 
-   CEditPointLoadDlg dlg(*pLoadData,pTimelineMgr);
+   CEditPointLoadDlg dlg(*pLoadData, pTimelineMgr);
    if (dlg.DoModal() == IDOK)
    {
       // only update if changed
       if (*pLoadData != dlg.m_Load)
       {
-         txnEditPointLoad* pTxn = new txnEditPointLoad(loadIdx,*pLoadData,eventID,dlg.m_Load,dlg.m_EventID,dlg.m_bWasNewEventCreated ? &dlg.m_TimelineMgr : nullptr);
-         GET_IFACE(IEAFTransactions,pTransactions);
+         txnEditPointLoad* pTxn = new txnEditPointLoad(loadID, *pLoadData, eventID, dlg.m_Load, dlg.m_EventID, dlg.m_bWasNewEventCreated ? &dlg.m_TimelineMgr : nullptr);
+         GET_IFACE(IEAFTransactions, pTransactions);
          pTransactions->Execute(pTxn);
          return true;
       }
@@ -927,10 +936,14 @@ bool CPGSDocBase::EditPointLoad(CollectionIndexType loadIdx)
 
 void CPGSDocBase::DeletePointLoad(CollectionIndexType loadIdx)
 {
-   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+   GET_IFACE(IUserDefinedLoadData, pUserDefinedLoads);
+   const CPointLoadData* pLoadData = pUserDefinedLoads->GetPointLoad(loadIdx);
+   DeletePointLoadByID(pLoadData->m_ID);
+}
 
-   txnDeletePointLoad* pTxn = new txnDeletePointLoad(loadIdx);
-
+void CPGSDocBase::DeletePointLoadByID(LoadIDType loadID)
+{
+   txnDeletePointLoad* pTxn = new txnDeletePointLoad(loadID);
    GET_IFACE(IEAFTransactions,pTransactions);
    pTransactions->Execute(pTxn);
 }
@@ -953,24 +966,31 @@ void CPGSDocBase::AddDistributedLoad(const CDistributedLoadData& loadData)
 
 bool CPGSDocBase::EditDistributedLoad(CollectionIndexType loadIdx)
 {
+   GET_IFACE(IUserDefinedLoadData, pUserDefinedLoads);
+   const CDistributedLoadData* pLoadData = pUserDefinedLoads->GetDistributedLoad(loadIdx);
+   return EditDistributedLoadByID(pLoadData->m_ID);
+}
+
+bool CPGSDocBase::EditDistributedLoadByID(LoadIDType loadID)
+{
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
    GET_IFACE(IUserDefinedLoadData, pUserDefinedLoads);
-   const CDistributedLoadData* pLoadData = pUserDefinedLoads->GetDistributedLoad(loadIdx);
+   const CDistributedLoadData* pLoadData = pUserDefinedLoads->FindDistributedLoad(loadID);
 
-   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   GET_IFACE(IBridgeDescription, pIBridgeDesc);
    const CTimelineManager* pTimelineMgr = pIBridgeDesc->GetTimelineManager();
 
    EventIDType eventID = pTimelineMgr->FindUserLoadEventID(pLoadData->m_ID);
 
-   CEditDistributedLoadDlg dlg(*pLoadData,pTimelineMgr);
+   CEditDistributedLoadDlg dlg(*pLoadData, pTimelineMgr);
    if (dlg.DoModal() == IDOK)
    {
       // only update if changed
       if (*pLoadData != dlg.m_Load)
       {
-         txnEditDistributedLoad* pTxn = new txnEditDistributedLoad(loadIdx,*pLoadData,eventID,dlg.m_Load,dlg.m_EventID,dlg.m_bWasNewEventCreated ? &dlg.m_TimelineMgr : nullptr);
-         GET_IFACE(IEAFTransactions,pTransactions);
+         txnEditDistributedLoad* pTxn = new txnEditDistributedLoad(loadID, *pLoadData, eventID, dlg.m_Load, dlg.m_EventID, dlg.m_bWasNewEventCreated ? &dlg.m_TimelineMgr : nullptr);
+         GET_IFACE(IEAFTransactions, pTransactions);
          pTransactions->Execute(pTxn);
          return true;
       }
@@ -981,11 +1001,16 @@ bool CPGSDocBase::EditDistributedLoad(CollectionIndexType loadIdx)
 
 void CPGSDocBase::DeleteDistributedLoad(CollectionIndexType loadIdx)
 {
-   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+   GET_IFACE(IUserDefinedLoadData, pUserDefinedLoads);
+   const CDistributedLoadData* pLoadData = pUserDefinedLoads->GetDistributedLoad(loadIdx);
+   DeleteDistributedLoadByID(pLoadData->m_ID);
+}
 
-   txnDeleteDistributedLoad* pTxn = new txnDeleteDistributedLoad(loadIdx);
+void CPGSDocBase::DeleteDistributedLoadByID(LoadIDType loadID)
+{
+   txnDeleteDistributedLoad* pTxn = new txnDeleteDistributedLoad(loadID);
 
-   GET_IFACE(IEAFTransactions,pTransactions);
+   GET_IFACE(IEAFTransactions, pTransactions);
    pTransactions->Execute(pTxn);
 }
 
@@ -1007,24 +1032,31 @@ void CPGSDocBase::AddMomentLoad(const CMomentLoadData& loadData)
 
 bool CPGSDocBase::EditMomentLoad(CollectionIndexType loadIdx)
 {
+   GET_IFACE(IUserDefinedLoadData, pUserDefinedLoads);
+   const CMomentLoadData* pLoadData = pUserDefinedLoads->GetMomentLoad(loadIdx);
+   return EditMomentLoadByID(pLoadData->m_ID);
+}
+
+bool CPGSDocBase::EditMomentLoadByID(LoadIDType loadID)
+{
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
    GET_IFACE(IUserDefinedLoadData, pUserDefinedLoads);
-   const CMomentLoadData* pLoadData = pUserDefinedLoads->GetMomentLoad(loadIdx);
+   const CMomentLoadData* pLoadData = pUserDefinedLoads->FindMomentLoad(loadID);
 
-   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   GET_IFACE(IBridgeDescription, pIBridgeDesc);
    const CTimelineManager* pTimelineMgr = pIBridgeDesc->GetTimelineManager();
 
    EventIDType eventID = pTimelineMgr->FindUserLoadEventID(pLoadData->m_ID);
 
-   CEditMomentLoadDlg dlg(*pLoadData,pTimelineMgr);
+   CEditMomentLoadDlg dlg(*pLoadData, pTimelineMgr);
    if (dlg.DoModal() == IDOK)
    {
       // only update if changed
       if (*pLoadData != dlg.m_Load)
       {
-         txnEditMomentLoad* pTxn = new txnEditMomentLoad(loadIdx,*pLoadData,eventID,dlg.m_Load,dlg.m_EventID,dlg.m_bWasNewEventCreated ? &dlg.m_TimelineMgr : nullptr);
-         GET_IFACE(IEAFTransactions,pTransactions);
+         txnEditMomentLoad* pTxn = new txnEditMomentLoad(loadID, *pLoadData, eventID, dlg.m_Load, dlg.m_EventID, dlg.m_bWasNewEventCreated ? &dlg.m_TimelineMgr : nullptr);
+         GET_IFACE(IEAFTransactions, pTransactions);
          pTransactions->Execute(pTxn);
          return true;
       }
@@ -1035,11 +1067,16 @@ bool CPGSDocBase::EditMomentLoad(CollectionIndexType loadIdx)
 
 void CPGSDocBase::DeleteMomentLoad(CollectionIndexType loadIdx)
 {
-   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+   GET_IFACE(IUserDefinedLoadData, pUserDefinedLoads);
+   const CMomentLoadData* pLoadData = pUserDefinedLoads->GetMomentLoad(loadIdx);
+   DeleteMomentLoadByID(pLoadData->m_ID);
+}
 
-   txnDeleteMomentLoad* pTxn = new txnDeleteMomentLoad(loadIdx);
+void CPGSDocBase::DeleteMomentLoadByID(LoadIDType loadID)
+{
+   txnDeleteMomentLoad* pTxn = new txnDeleteMomentLoad(loadID);
 
-   GET_IFACE(IEAFTransactions,pTransactions);
+   GET_IFACE(IEAFTransactions, pTransactions);
    pTransactions->Execute(pTxn);
 }
 

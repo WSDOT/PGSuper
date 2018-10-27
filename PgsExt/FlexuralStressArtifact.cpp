@@ -53,13 +53,17 @@ pgsFlexuralStressArtifact::pgsFlexuralStressArtifact()
       m_fAllowable[stressLocation]    = 0.0;
       m_bIsInPTZ[stressLocation]      = false;
 
-      m_Yna[i]                           = 0.0;
-      m_At[i]                            = 0.0;
-      m_T[i]                             = 0.0;
-      m_AsProvided[i]                    = 0.0;
-      m_AsRequired[i]                    = 0.0;
       m_fAltAllowableStress[i]           = 0.0;
       m_bIsAltTensileStressApplicable[i] = false;
+
+      m_AltTensileStressRequirements[i].Yna = 0.0;
+      m_AltTensileStressRequirements[i].NAslope = 0.0;
+      m_AltTensileStressRequirements[i].AreaTension = 0.0;
+      m_AltTensileStressRequirements[i].T = 0.0;
+      m_AltTensileStressRequirements[i].AsProvided = 0.0;
+      m_AltTensileStressRequirements[i].AsRequired = 0.0;
+      m_AltTensileStressRequirements[i].bIsAdequateRebar = true;
+      m_bBiaxialStresses[i] = false;
 
       m_FcReqd[i] = -99999;
    }
@@ -79,13 +83,17 @@ m_Poi(poi)
       m_fAllowable[stressLocation]    = 0.0;
       m_bIsInPTZ[stressLocation]      = false;
 
-      m_Yna[i]                           = 0.0;
-      m_At[i]                            = 0.0;
-      m_T[i]                             = 0.0;
-      m_AsProvided[i]                    = 0.0;
-      m_AsRequired[i]                    = 0.0;
       m_fAltAllowableStress[i]           = 0.0;
       m_bIsAltTensileStressApplicable[i] = false;
+
+      m_AltTensileStressRequirements[i].Yna = 0.0;
+      m_AltTensileStressRequirements[i].NAslope = 0.0;
+      m_AltTensileStressRequirements[i].AreaTension = 0.0;
+      m_AltTensileStressRequirements[i].T = 0.0;
+      m_AltTensileStressRequirements[i].AsProvided = 0.0;
+      m_AltTensileStressRequirements[i].AsRequired = 0.0;
+      m_AltTensileStressRequirements[i].bIsAdequateRebar = true;
+      m_bBiaxialStresses[i] = false;
 
       m_FcReqd[i] = -99999;
    }
@@ -237,24 +245,22 @@ Float64 pgsFlexuralStressArtifact::GetRequiredDeckConcreteStrength() const
    return Max(m_FcReqd[pgsTypes::TopDeck],m_FcReqd[pgsTypes::BottomDeck]);
 }
 
-void pgsFlexuralStressArtifact::SetAlternativeTensileStressParameters(pgsTypes::StressLocation stressLocation,Float64 Yna,Float64 At,Float64 T,Float64 AsProvided,Float64 AsRequired,Float64 fHigherAllow)
+void pgsFlexuralStressArtifact::SetAlternativeTensileStressRequirements(pgsTypes::StressLocation stressLocation, const gbtAlternativeTensileStressRequirements& requirements,Float64 fHigherAllowable,bool bBiaxialStresses)
 {
-   m_Yna[stressLocation]                 = Yna;
-   m_At[stressLocation]                  = At;
-   m_T[stressLocation]                   = T;
-   m_AsProvided[stressLocation]          = AsProvided;
-   m_AsRequired[stressLocation]          = AsRequired;
-   m_fAltAllowableStress[stressLocation] = fHigherAllow;
+   m_AltTensileStressRequirements[stressLocation] = requirements;
+   m_fAltAllowableStress[stressLocation] = fHigherAllowable;
    m_bIsAltTensileStressApplicable[stressLocation] = true;
+   m_bBiaxialStresses[stressLocation] = bBiaxialStresses;
 }
 
-void pgsFlexuralStressArtifact::GetAlternativeTensileStressParameters(pgsTypes::StressLocation stressLocation,Float64* Yna,Float64* At,Float64* T,Float64* AsProvided,Float64* AsRequired) const
+const gbtAlternativeTensileStressRequirements& pgsFlexuralStressArtifact::GetAlternativeTensileStressRequirements(pgsTypes::StressLocation stressLocation) const
 {
-   *Yna        = m_Yna[stressLocation];
-   *At         = m_At[stressLocation];
-   *T          = m_T[stressLocation];
-   *AsProvided = m_AsProvided[stressLocation];
-   *AsRequired = m_AsRequired[stressLocation];
+   return m_AltTensileStressRequirements[stressLocation];
+}
+
+bool pgsFlexuralStressArtifact::BiaxialStresses(pgsTypes::StressLocation stressLocation) const
+{
+   return m_bBiaxialStresses[stressLocation];
 }
 
 Float64 pgsFlexuralStressArtifact::GetAlternativeAllowableTensileStress(pgsTypes::StressLocation stressLocation) const
@@ -270,7 +276,7 @@ bool pgsFlexuralStressArtifact::IsWithRebarAllowableStressApplicable(pgsTypes::S
 bool pgsFlexuralStressArtifact::WasWithRebarAllowableStressUsed(pgsTypes::StressLocation stressLocation) const
 {
    // If na<0.0, then section was in compression
-   bool bWasUsed = (0.0 < m_Yna[stressLocation]) && (m_AsRequired[stressLocation] <= m_AsProvided[stressLocation]) ? true : false;
+   bool bWasUsed = (0.0 < m_AltTensileStressRequirements[stressLocation].Yna) && (m_AltTensileStressRequirements[stressLocation].AsRequired <= m_AltTensileStressRequirements[stressLocation].AsProvided) ? true : false;
 #if defined _DEBUG
    if ( bWasUsed )
    {
@@ -311,7 +317,7 @@ bool pgsFlexuralStressArtifact::StressedPassed(pgsTypes::StressLocation stressLo
    }
    else
    {
-      if (m_AsRequired[stressLocation] <= m_AsProvided[stressLocation] && !IsZero(m_AsProvided[stressLocation]) )
+      if (m_AltTensileStressRequirements[stressLocation].AsRequired <= m_AltTensileStressRequirements[stressLocation].AsProvided && !IsZero(m_AltTensileStressRequirements[stressLocation].AsProvided) )
       {
         // If we have adequate rebar, we can use higher limit
          return TensionPassedWithRebar(fStress,stressLocation); 
@@ -523,16 +529,14 @@ void pgsFlexuralStressArtifact::MakeCopy(const pgsFlexuralStressArtifact& rOther
       m_fAllowable[stressLocation]    = rOther.m_fAllowable[stressLocation];
       m_bIsInPTZ[stressLocation]      = rOther.m_bIsInPTZ[stressLocation];
 
-      m_Yna[i]                 = rOther.m_Yna[i];
-      m_At[i]                  = rOther.m_At[i];
-      m_T[i]                   = rOther.m_T[i];
-      m_AsProvided[i]          = rOther.m_AsProvided[i];
-      m_AsRequired[i]          = rOther.m_AsRequired[i];
-      m_fAltAllowableStress[i] = rOther.m_fAltAllowableStress[i];
+      m_AltTensileStressRequirements[stressLocation] = rOther.m_AltTensileStressRequirements[stressLocation];
 
-      m_bIsAltTensileStressApplicable[i] = rOther.m_bIsAltTensileStressApplicable[i];
+      m_fAltAllowableStress[stressLocation] = rOther.m_fAltAllowableStress[stressLocation];
+      m_bIsAltTensileStressApplicable[stressLocation] = rOther.m_bIsAltTensileStressApplicable[stressLocation];
 
-      m_FcReqd[i]              = rOther.m_FcReqd[i];
+      m_bBiaxialStresses[stressLocation] = rOther.m_bBiaxialStresses[stressLocation];
+
+      m_FcReqd[stressLocation]              = rOther.m_FcReqd[stressLocation];
    }
 }
 

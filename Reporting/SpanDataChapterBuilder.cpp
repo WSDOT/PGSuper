@@ -50,10 +50,6 @@ CPGSuperChapterBuilder(bSelect)
 //======================== OPERATIONS =======================================
 LPCTSTR CSpanDataChapterBuilder::GetName() const
 {
-#pragma Reminder("UPDATE: this chapter doesn't make sense")
-   // The name of this chapter doesn't make sense... neither does the data
-   // though it is important (eccentricities and component dimensions)
-   // Find a better way to report this
    return TEXT("Span Lengths");
 }
 
@@ -130,39 +126,32 @@ rptChapter* CSpanDataChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16
 
       (*pPara) << pTable << rptNewLine;
 
-      ColumnIndexType row0col = 0;
-      ColumnIndexType row1col = 0;
+      ColumnIndexType col = 0;
 
       if ( nSpans != nGroups )
       {
-         pTable->SetRowSpan(0,row0col,2);
-         pTable->SetRowSpan(1,row1col++,SKIP_CELL);
-         (*pTable)(0,row0col++) << strSegmentLabel;
+         pTable->SetRowSpan(0,col,2);
+         (*pTable)(0,col++) << strSegmentLabel;
       }
 
-      pTable->SetRowSpan(0,row0col,2);
-      pTable->SetRowSpan(1,row1col++,SKIP_CELL);
-      (*pTable)(0,row0col++) << COLHDR(_T("C-C Pier"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+      pTable->SetRowSpan(0,col,2);
+      (*pTable)(0,col++) << COLHDR(_T("C-C Pier"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
 
-      pTable->SetRowSpan(0,row0col,2);
-      pTable->SetRowSpan(1,row1col++,SKIP_CELL);
-      (*pTable)(0,row0col++) << COLHDR(_T("C-C Bearing"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+      pTable->SetRowSpan(0,col,2);
+      (*pTable)(0,col++) << COLHDR(_T("C-C Bearing"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
 
-      pTable->SetColumnSpan(0,row0col,2);
-      (*pTable)(0,row0col++) << strSegmentLabel << _T(" Length");
-      pTable->SetColumnSpan(0,row0col++,SKIP_CELL);
-      (*pTable)(1,row1col++) << COLHDR(_T("Plan"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
-      (*pTable)(1,row1col++) << COLHDR(_T("Along") << rptNewLine << _T("Grade"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+      pTable->SetColumnSpan(0,col,2);
+      (*pTable)(0,col) << strSegmentLabel << _T(" Length");
+      (*pTable)(1,col++) << COLHDR(_T("Plan"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+      (*pTable)(1,col++) << COLHDR(_T("Along") << rptNewLine << _T("Grade"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
 
-      pTable->SetRowSpan(0,row0col,2);
-      pTable->SetRowSpan(1,row1col++,SKIP_CELL);
-      (*pTable)(0,row0col++) << _T("Grade") << rptNewLine << _T("(") << strSlopeTag << _T("/") << strSlopeTag << _T(")");
+      pTable->SetRowSpan(0,col,2);
+      (*pTable)(0,col++) << _T("Grade") << rptNewLine << _T("(") << strSlopeTag << _T("/") << strSlopeTag << _T(")");
 
-      pTable->SetColumnSpan(0,row0col,2);
-      (*pTable)(0,row0col++) << _T("End Distance");
-      pTable->SetColumnSpan(0,row0col++,SKIP_CELL);
-      (*pTable)(1,row1col++) << COLHDR(_T("Start"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
-      (*pTable)(1,row1col++) << COLHDR(_T("End"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+      pTable->SetColumnSpan(0,col,2);
+      (*pTable)(0,col) << _T("End Distance");
+      (*pTable)(1,col++) << COLHDR(_T("Start"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+      (*pTable)(1,col++) << COLHDR(_T("End"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
 
       RowIndexType row = pTable->GetNumberOfHeaderRows();
 
@@ -176,7 +165,7 @@ rptChapter* CSpanDataChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16
          SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
          for (SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
          {
-            ColumnIndexType col = 0;
+            col = 0;
 
             CSegmentKey segmentKey(girderKey,segIdx);
 
@@ -219,22 +208,3 @@ CChapterBuilder* CSpanDataChapterBuilder::Clone() const
 {
    return new CSpanDataChapterBuilder;
 }
-
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PROTECTED  ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PRIVATE    ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-//======================== INQUERY    =======================================

@@ -152,8 +152,6 @@ CTimeDependentLossesAtShippingTable* CTimeDependentLossesAtShippingTable::Prepar
 
       table->SetRowSpan(0,0,2);
       table->SetRowSpan(0,1,2);
-      table->SetRowSpan(1,0,SKIP_CELL);
-      table->SetRowSpan(1,1,SKIP_CELL);
 
       int colspan = 4;
       if (bIgnoreInitialRelaxation)
@@ -161,19 +159,8 @@ CTimeDependentLossesAtShippingTable* CTimeDependentLossesAtShippingTable::Prepar
          colspan--;
       }
 
-      table->SetColumnSpan(0,2,colspan + (pStrands->GetTemporaryStrandUsage() != pgsTypes::ttsPretensioned ? 1 : 0));
-      (*table)(0,2) << _T("Permanent Strands");
-
-      table->SetColumnSpan(0,3,colspan);
-      (*table)(0,3) << _T("Temporary Strands");
-
-      for (ColumnIndexType i = 4; i < numColumns; i++)
-      {
-         table->SetColumnSpan(0, i, SKIP_CELL);
-      }
-
-      // permanent
-      col = 2;
+      table->SetColumnSpan(0,col,colspan + (pStrands->GetTemporaryStrandUsage() != pgsTypes::ttsPretensioned ? 1 : 0));
+      (*table)(0,col) << _T("Permanent Strands");
       if ( !bIgnoreInitialRelaxation )
       {
          (*table)(1,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pR0")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
@@ -190,7 +177,8 @@ CTimeDependentLossesAtShippingTable* CTimeDependentLossesAtShippingTable::Prepar
       (*table)(1,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pH")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
 
 
-      // temporary
+      table->SetColumnSpan(0, col, colspan);
+      (*table)(0, col) << _T("Temporary Strands");
       if (!bIgnoreInitialRelaxation)
       {
          (*table)(1, col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pR0")), rptStressUnitTag, pDisplayUnits->GetStressUnit());

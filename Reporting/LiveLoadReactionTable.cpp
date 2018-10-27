@@ -106,20 +106,28 @@ void CLiveLoadReactionTable::Build(IBroker* pBroker, rptChapter* pChapter,
    rptParagraph* p = new rptParagraph;
    *pChapter << p;
 
-   rptRcTable* p_table=0;
+   rptRcTable* p_table = nullptr;
 
    ColumnIndexType nCols;
 
-	if ( analysisType == pgsTypes::Envelope )
-		nCols = 9;
-	else
-		nCols = 7;
+   if (analysisType == pgsTypes::Envelope)
+   {
+      nCols = 9;
+   }
+   else
+   {
+      nCols = 7;
+   }
 
-   if ( bPermit )
+   if (bPermit)
+   {
       nCols += 4;
+   }
 
-   if ( bPedLoading )
+   if (bPedLoading)
+   {
       nCols += 2;
+   }
 
  	p_table = rptStyleManager::CreateDefaultTable(nCols, tableType==PierReactionsTable ?_T("Total Girder Line Reactions at Abutments and Piers"): _T("Girder Bearing Reactions") );
 
@@ -128,74 +136,64 @@ void CLiveLoadReactionTable::Build(IBroker* pBroker, rptChapter* pChapter,
 
    p_table->SetNumberOfHeaderRows(2);
 
-   p_table->SetRowSpan(0,0,2);
-   p_table->SetRowSpan(1,0,SKIP_CELL);
-   (*p_table)(0,0) << _T("");
+   ColumnIndexType col = 0;
+   p_table->SetRowSpan(0,col,2);
+   (*p_table)(0,col++) << _T("");
 
- 	ColumnIndexType col1 = 1;
-   ColumnIndexType col2 = 1;
 	if ( analysisType == pgsTypes::Envelope )
 	{
-      p_table->SetColumnSpan(0,col1,2);
-      (*p_table)(0,col1++) << symbol(SUM) << _T("DC");
-      (*p_table)(1,col2++) << COLHDR(_T("Max"), rptForceUnitTag, pDisplayUnits->GetShearUnit() );
-      (*p_table)(1,col2++) << COLHDR(_T("Min"), rptForceUnitTag, pDisplayUnits->GetShearUnit() );
+      p_table->SetColumnSpan(0,col,2);
+      (*p_table)(0,col) << symbol(SUM) << _T("DC");
+      (*p_table)(1,col++) << COLHDR(_T("Max"), rptForceUnitTag, pDisplayUnits->GetShearUnit() );
+      (*p_table)(1,col++) << COLHDR(_T("Min"), rptForceUnitTag, pDisplayUnits->GetShearUnit() );
 
-      p_table->SetColumnSpan(0,col1,2);
-      (*p_table)(0,col1++) << symbol(SUM) << _T("DW");
-      (*p_table)(1,col2++) << COLHDR(_T("Max"), rptForceUnitTag, pDisplayUnits->GetShearUnit() );
-      (*p_table)(1,col2++) << COLHDR(_T("Min"), rptForceUnitTag, pDisplayUnits->GetShearUnit() );
+      p_table->SetColumnSpan(0,col,2);
+      (*p_table)(0,col) << symbol(SUM) << _T("DW");
+      (*p_table)(1,col++) << COLHDR(_T("Max"), rptForceUnitTag, pDisplayUnits->GetShearUnit() );
+      (*p_table)(1,col++) << COLHDR(_T("Min"), rptForceUnitTag, pDisplayUnits->GetShearUnit() );
 	}
 	else
 	{
-      p_table->SetRowSpan(0,col1,2);
-		(*p_table)(0,col1++) << COLHDR(symbol(SUM) << _T("DC"),          rptForceUnitTag, pDisplayUnits->GetShearUnit() );
+      p_table->SetRowSpan(0,col,2);
+		(*p_table)(0,col++) << COLHDR(symbol(SUM) << _T("DC"),          rptForceUnitTag, pDisplayUnits->GetShearUnit() );
 
-      p_table->SetRowSpan(0,col1,2);
-		(*p_table)(0,col1++) << COLHDR(symbol(SUM) << _T("DW"),          rptForceUnitTag, pDisplayUnits->GetShearUnit() );
-
-      p_table->SetRowSpan(1,col2++,SKIP_CELL);
-      p_table->SetRowSpan(1,col2++,SKIP_CELL);
+      p_table->SetRowSpan(0,col,2);
+		(*p_table)(0,col++) << COLHDR(symbol(SUM) << _T("DW"),          rptForceUnitTag, pDisplayUnits->GetShearUnit() );
 	}
 
    if ( bPedLoading )
    {
-      p_table->SetColumnSpan(0,col1,2);
-      (*p_table)(0,col1++) << _T("* PL");
-		(*p_table)(1,col2++) << COLHDR(_T("Max"),       rptForceUnitTag, pDisplayUnits->GetShearUnit() );
-		(*p_table)(1,col2++) << COLHDR(_T("Min"),       rptForceUnitTag, pDisplayUnits->GetShearUnit() );
+      p_table->SetColumnSpan(0,col,2);
+      (*p_table)(0,col) << _T("* PL");
+		(*p_table)(1,col++) << COLHDR(_T("Max"),       rptForceUnitTag, pDisplayUnits->GetShearUnit() );
+		(*p_table)(1,col++) << COLHDR(_T("Min"),       rptForceUnitTag, pDisplayUnits->GetShearUnit() );
    }
 
-   p_table->SetColumnSpan(0,col1,2);
-   (*p_table)(0,col1++) << _T("* LL Design");
-	(*p_table)(1,col2++) << COLHDR(_T("Max"),       rptForceUnitTag, pDisplayUnits->GetShearUnit() );
-	(*p_table)(1,col2++) << COLHDR(_T("Min"),       rptForceUnitTag, pDisplayUnits->GetShearUnit() );
+   p_table->SetColumnSpan(0,col,2);
+   (*p_table)(0,col) << _T("* LL Design");
+	(*p_table)(1,col++) << COLHDR(_T("Max"),       rptForceUnitTag, pDisplayUnits->GetShearUnit() );
+	(*p_table)(1,col++) << COLHDR(_T("Min"),       rptForceUnitTag, pDisplayUnits->GetShearUnit() );
 
 	if ( bPermit )
 	{
-      p_table->SetColumnSpan(0,col1,2);
-      (*p_table)(0,col1++) << _T("* LL Permit");
-		(*p_table)(1,col2++) << COLHDR(_T("Max"),       rptForceUnitTag, pDisplayUnits->GetShearUnit() );
-		(*p_table)(1,col2++) << COLHDR(_T("Min"),       rptForceUnitTag, pDisplayUnits->GetShearUnit() );
+      p_table->SetColumnSpan(0,col,2);
+      (*p_table)(0,col) << _T("* LL Permit");
+		(*p_table)(1,col++) << COLHDR(_T("Max"),       rptForceUnitTag, pDisplayUnits->GetShearUnit() );
+		(*p_table)(1,col++) << COLHDR(_T("Min"),       rptForceUnitTag, pDisplayUnits->GetShearUnit() );
 	}
 
-   p_table->SetColumnSpan(0,col1,2);
-   (*p_table)(0,col1++) << _T("Strength I");
-	(*p_table)(1,col2++) << COLHDR(_T("Max"), rptForceUnitTag, pDisplayUnits->GetShearUnit() );
-	(*p_table)(1,col2++) << COLHDR(_T("Min"), rptForceUnitTag, pDisplayUnits->GetShearUnit() );
+   p_table->SetColumnSpan(0,col,2);
+   (*p_table)(0,col) << _T("Strength I");
+	(*p_table)(1,col++) << COLHDR(_T("Max"), rptForceUnitTag, pDisplayUnits->GetShearUnit() );
+	(*p_table)(1,col++) << COLHDR(_T("Min"), rptForceUnitTag, pDisplayUnits->GetShearUnit() );
 
 	if ( bPermit )
 	{
-      p_table->SetColumnSpan(0,col1,2);
-		(*p_table)(0,col1++) << _T("Strength II");
-		(*p_table)(1,col2++) << COLHDR(_T("Max"), rptForceUnitTag, pDisplayUnits->GetShearUnit() );
-		(*p_table)(1,col2++) << COLHDR(_T("Min"), rptForceUnitTag, pDisplayUnits->GetShearUnit() );
+      p_table->SetColumnSpan(0,col,2);
+		(*p_table)(0,col) << _T("Strength II");
+		(*p_table)(1,col++) << COLHDR(_T("Max"), rptForceUnitTag, pDisplayUnits->GetShearUnit() );
+		(*p_table)(1,col++) << COLHDR(_T("Min"), rptForceUnitTag, pDisplayUnits->GetShearUnit() );
 	}
-
-   for ( ColumnIndexType i = col1; i < nCols; i++ )
-   {
-      p_table->SetColumnSpan(0,i,SKIP_CELL);
-   }
 
    *p << p_table;
    *p << LIVELOAD_PER_GIRDER_NO_IMPACT << rptNewLine;

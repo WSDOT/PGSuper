@@ -155,15 +155,21 @@ public:
 
    void AddPointLoad(const CPointLoadData& loadData);
    bool EditPointLoad(CollectionIndexType loadIdx);
+   bool EditPointLoadByID(LoadIDType loadID);
    void DeletePointLoad(CollectionIndexType loadIdx);
+   void DeletePointLoadByID(LoadIDType loadID);
 
    void AddDistributedLoad(const CDistributedLoadData& loadData);
    bool EditDistributedLoad(CollectionIndexType loadIdx);
+   bool EditDistributedLoadByID(LoadIDType loadID);
    void DeleteDistributedLoad(CollectionIndexType loadIdx);
+   void DeleteDistributedLoadByID(LoadIDType loadID);
 
    void AddMomentLoad(const CMomentLoadData& loadData);
    bool EditMomentLoad(CollectionIndexType loadIdx);
+   bool EditMomentLoadByID(LoadIDType loadID);
    void DeleteMomentLoad(CollectionIndexType loadIdx);
+   void DeleteMomentLoadByID(LoadIDType loadID);
 
    bool EditTimeline();
    bool EditEffectiveFlangeWidth();

@@ -169,17 +169,15 @@ rptChapter* CTimeStepParametersChapterBuilder::Build(CReportSpecification* pRptS
 
       col = 0;
       pCreepTable->SetRowSpan(0,col,2);
-      pCreepTable->SetRowSpan(1,col,SKIP_CELL);
       (*pCreepTable)(0,col++) << _T("Interval") << rptNewLine << _T("i");
 
       for (IntervalIndexType intervalIdx = 0; intervalIdx < nIntervals-1; intervalIdx++ )
       {
+         pCreepTable->SetColumnSpan(1, col, 2);
          (*pCreepTable)(0,col)   << symbol(psi) << _T("(") << Sub2(_T("t"),_T("ie")) << _T(",") << Sub2(_T("t"),_T("jm")) << _T(")");
          (*pCreepTable)(0,col+1) << symbol(psi) << _T("(") << Sub2(_T("t"),_T("ib")) << _T(",") << Sub2(_T("t"),_T("jm")) << _T(")");
-
-         pCreepTable->SetColumnSpan(1,col,2);
-         (*pCreepTable)(1,col++) << _T("j = ") << LABEL_INTERVAL(intervalIdx);
-         pCreepTable->SetColumnSpan(1,col++,SKIP_CELL);
+         (*pCreepTable)(1,col) << _T("j = ") << LABEL_INTERVAL(intervalIdx);
+         col += 2;
       }
 
       row = pCreepTable->GetNumberOfHeaderRows();
@@ -246,17 +244,16 @@ rptChapter* CTimeStepParametersChapterBuilder::Build(CReportSpecification* pRptS
 
          col = 0;
          pCreepTable->SetRowSpan(0,col,2);
-         pCreepTable->SetRowSpan(1,col,SKIP_CELL);
          (*pCreepTable)(0,col++) << _T("Interval") << rptNewLine << _T("i");
 
          for (IntervalIndexType intervalIdx = 0; intervalIdx < nIntervals-1; intervalIdx++ )
          {
+            pCreepTable->SetColumnSpan(1, col, 2);
             (*pCreepTable)(0,col)   << symbol(psi) << _T("(") << Sub2(_T("t"),_T("ie")) << _T(",") << Sub2(_T("t"),_T("jm")) << _T(")");
             (*pCreepTable)(0,col+1) << symbol(psi) << _T("(") << Sub2(_T("t"),_T("ib")) << _T(",") << Sub2(_T("t"),_T("jm")) << _T(")");
 
-            pCreepTable->SetColumnSpan(1,col,2);
-            (*pCreepTable)(1,col++) << _T("j = ") << LABEL_INTERVAL(intervalIdx);
-            pCreepTable->SetColumnSpan(1,col++,SKIP_CELL);
+            (*pCreepTable)(1,col) << _T("j = ") << LABEL_INTERVAL(intervalIdx);
+            col += 2;
          }
 
          row = pCreepTable->GetNumberOfHeaderRows();
@@ -321,17 +318,15 @@ rptChapter* CTimeStepParametersChapterBuilder::Build(CReportSpecification* pRptS
 
    col = 0;
    pCreepTable->SetRowSpan(0,col,2);
-   pCreepTable->SetRowSpan(1,col,SKIP_CELL);
    (*pCreepTable)(0,col++) << _T("Interval") << rptNewLine << _T("i");
 
    for (IntervalIndexType intervalIdx = 0; intervalIdx < nIntervals-1; intervalIdx++ )
    {
+      pCreepTable->SetColumnSpan(1, col, 2);
       (*pCreepTable)(0,col)   << symbol(psi) << _T("(") << Sub2(_T("t"),_T("ie")) << _T(",") << Sub2(_T("t"),_T("jm")) << _T(")");
       (*pCreepTable)(0,col+1) << symbol(psi) << _T("(") << Sub2(_T("t"),_T("ib")) << _T(",") << Sub2(_T("t"),_T("jm")) << _T(")");
-
-      pCreepTable->SetColumnSpan(1,col,2);
-      (*pCreepTable)(1,col++) << _T("j = ") << LABEL_INTERVAL(intervalIdx);
-      pCreepTable->SetColumnSpan(1,col++,SKIP_CELL);
+      (*pCreepTable)(1,col) << _T("j = ") << LABEL_INTERVAL(intervalIdx);
+      col += 2;
    }
 
    row = pCreepTable->GetNumberOfHeaderRows();
@@ -1181,17 +1176,11 @@ rptChapter* CTimeStepParametersChapterBuilder::Build(CReportSpecification* pRptS
    pTable3->SetNumberOfHeaderRows(2);
    ColumnIndexType col3 = 0;
    pTable3->SetRowSpan(0,col3,2);
-   pTable3->SetRowSpan(1,col3,SKIP_CELL);
    (*pTable3)(0,col3++) << _T("POI");
    for ( IntervalIndexType intervalIdx = 0; intervalIdx < nIntervals; intervalIdx++ )
    {
       pTable3->SetColumnSpan(0,col3,6);
       (*pTable3)(0,col3) << _T("Interval ") << LABEL_INTERVAL(intervalIdx);
-      pTable3->SetColumnSpan(0,col3+1,SKIP_CELL);
-      pTable3->SetColumnSpan(0,col3+2,SKIP_CELL);
-      pTable3->SetColumnSpan(0,col3+3,SKIP_CELL);
-      pTable3->SetColumnSpan(0,col3+4,SKIP_CELL);
-      pTable3->SetColumnSpan(0,col3+5,SKIP_CELL);
       (*pTable3)(1,col3++) << COLHDR(Sub2(_T("P"),_T("r")), rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit());
       (*pTable3)(1,col3++) << COLHDR(Sub2(_T("M"),_T("r")), rptMomentUnitTag, pDisplayUnits->GetMomentUnit());
       (*pTable3)(1,col3++) << Sub2(symbol(epsilon),_T("i"));
@@ -1222,134 +1211,6 @@ rptChapter* CTimeStepParametersChapterBuilder::Build(CReportSpecification* pRptS
 
       row3++;
    }
-
-
-
-   /////////////////////////////////////////////////////////////////////////////////////
-   //// Stress
-   /////////////////////////////////////////////////////////////////////////////////////
-   //GET_IFACE2(pBroker,IProductLoads,pProdLoads);
-
-   //iter = vPOI.begin();
-   //for ( ; iter != end; iter++ )
-   //{
-   //   pgsPointOfInterest& poi = *iter;
-   //   *pPara << location.SetValue(POI_ERECTED_SEGMENT,poi,0.0) << _T(" (ID = " ) << poi.GetID() << _T(")") << rptNewLine;
-
-   //   const LOSSDETAILS* pDetails = pLosses->GetLossDetails(poi,INVALID_INDEX);
-   //   int N = sizeof(pDetails->TimeStepDetails[0].D)/sizeof(pDetails->TimeStepDetails[0].D[0]);
-
-   //   ColumnIndexType nColumns = 1 + N*2;
-   //   rptRcTable* pStressTable = rptStyleManager::CreateDefaultTable(nColumns,_T("Girder Stress"));
-   //   *pPara << pStressTable << rptNewLine << rptNewLine;
-
-   //   pStressTable->SetNumberOfHeaderRows(2);
-
-   //   ColumnIndexType col = 0;
-   //   (*pStressTable)(0,col++) << _T("Interval");
-   //   pStressTable->SetRowSpan(0,0,2);
-   //   pStressTable->SetRowSpan(1,0,SKIP_CELL);
-
-   //   for ( int i = 0; i < N; i++ )
-   //   {
-   //      pgsTypes::ProductForceType pfType = (pgsTypes::ProductForceType)i;
-   //      LPCTSTR strName = pProdLoads->GetProductLoadName(pfType);
-
-   //      pStressTable->SetColumnSpan(0,col,2);
-   //      (*pStressTable)(0,col) << strName;
-   //      pStressTable->SetColumnSpan(0,col+1,SKIP_CELL);
-   //      (*pStressTable)(1,col++) << COLHDR(symbol(DELTA) << _T("f"),rptStressUnitTag,pDisplayUnits->GetStressUnit());
-   //      (*pStressTable)(1,col++) << COLHDR(_T("f"),rptStressUnitTag,pDisplayUnits->GetStressUnit());
-   //   }
-
-   //   RowIndexType row = pStressTable->GetNumberOfHeaderRows();
-
-   //   for ( IntervalIndexType intervalIdx = 0; intervalIdx < nIntervals; intervalIdx++, row++ )
-   //   {
-   //      const TIME_STEP_DETAILS& tsDetails(pDetails->TimeStepDetails[intervalIdx]);
-   //      col = 0;
-   //      (*pStressTable)(row,col++) << LABEL_INTERVAL(intervalIdx);
-
-   //      for ( int i = 0; i < N; i++ )
-   //      {
-   //         pgsTypes::ProductForceType pfType = (pgsTypes::ProductForceType)i;
-
-   //         Float64 dfTop = tsDetails.Girder.f[pgsTypes::TopGirder][pfType][rtIncremental];
-   //         Float64 fTop  = tsDetails.Girder.f[pgsTypes::TopGirder][pfType][rtCumulative];
-   //         Float64 dfBot = tsDetails.Girder.f[pgsTypes::BottomGirder][pfType][rtIncremental];
-   //         Float64 fBot  = tsDetails.Girder.f[pgsTypes::BottomGirder][pfType][rtCumulative];
-   //         (*pStressTable)(row,col  ) << stress.SetValue(dfTop) << rptNewLine;
-   //         (*pStressTable)(row,col++) << stress.SetValue(dfBot);
-   //         (*pStressTable)(row,col  ) << stress.SetValue(fTop) << rptNewLine;
-   //         (*pStressTable)(row,col++) << stress.SetValue(fBot);
-   //      }
-   //   } // next interval
-   //} // next poi
-
-   /////////////////////////////////////////////////////////////////////////////////////
-   //// Deflections
-   /////////////////////////////////////////////////////////////////////////////////////
-
-   //iter = vPOI.begin();
-   //for ( ; iter != end; iter++ )
-   //{
-   //   pgsPointOfInterest& poi = *iter;
-   //   *pPara << location.SetValue(POI_ERECTED_SEGMENT,poi,0.0) << _T(" (ID = " ) << poi.GetID() << _T(")") << rptNewLine;
-
-   //   const LOSSDETAILS* pDetails = pLosses->GetLossDetails(poi,INVALID_INDEX);
-   //   int N = sizeof(pDetails->TimeStepDetails[0].D)/sizeof(pDetails->TimeStepDetails[0].D[0]);
-
-   //   ColumnIndexType nColumns = 1 + N*2 + 2;
-   //   rptRcTable* pDeflectionTable = rptStyleManager::CreateDefaultTable(nColumns,_T("Deflections"));
-   //   *pPara << pDeflectionTable << rptNewLine << rptNewLine;
-
-   //   pDeflectionTable->SetNumberOfHeaderRows(2);
-
-   //   ColumnIndexType col = 0;
-   //   (*pDeflectionTable)(0,col++) << _T("Interval");
-   //   pDeflectionTable->SetRowSpan(0,0,2);
-   //   pDeflectionTable->SetRowSpan(1,0,SKIP_CELL);
-
-   //   for ( int i = 0; i < N; i++ )
-   //   {
-   //      pgsTypes::ProductForceType pfType = (pgsTypes::ProductForceType)i;
-   //      LPCTSTR strName = pProdLoads->GetProductLoadName(pfType);
-
-   //      pDeflectionTable->SetColumnSpan(0,col,2);
-   //      (*pDeflectionTable)(0,col) << strName;
-   //      pDeflectionTable->SetColumnSpan(0,col+1,SKIP_CELL);
-   //      (*pDeflectionTable)(1,col++) << COLHDR(symbol(delta),rptLengthUnitTag,pDisplayUnits->GetDeflectionUnit());
-   //      (*pDeflectionTable)(1,col++) << COLHDR(symbol(DELTA),rptLengthUnitTag,pDisplayUnits->GetDeflectionUnit());
-   //   }
-   //   pDeflectionTable->SetColumnSpan(0,col,2);
-   //   (*pDeflectionTable)(0,col) << _T("Total");
-   //   pDeflectionTable->SetColumnSpan(0,col+1,SKIP_CELL);
-   //   (*pDeflectionTable)(1,col++) << COLHDR(symbol(delta),rptLengthUnitTag,pDisplayUnits->GetDeflectionUnit());
-   //   (*pDeflectionTable)(1,col++) << COLHDR(symbol(DELTA),rptLengthUnitTag,pDisplayUnits->GetDeflectionUnit());
-
-   //   RowIndexType row = pDeflectionTable->GetNumberOfHeaderRows();
-
-   //   for ( IntervalIndexType intervalIdx = 0; intervalIdx < nIntervals; intervalIdx++, row++ )
-   //   {
-   //      const TIME_STEP_DETAILS& tsDetails(pDetails->TimeStepDetails[intervalIdx]);
-   //      col = 0;
-   //      (*pDeflectionTable)(row,col++) << LABEL_INTERVAL(intervalIdx);
-
-   //      for ( int i = 0; i < N; i++ )
-   //      {
-   //         pgsTypes::ProductForceType pfType = (pgsTypes::ProductForceType)i;
-   //         Float64 dD = tsDetails.dD[pfType];
-   //         Float64 D  = tsDetails.D[pfType];
-   //         (*pDeflectionTable)(row,col++) << deflection.SetValue(dD);
-   //         (*pDeflectionTable)(row,col++) << deflection.SetValue(D);
-   //      }
-
-   //      Float64 dY = tsDetails.dY;
-   //      Float64 Y  = tsDetails.Y;
-   //      (*pDeflectionTable)(row,col++) << deflection.SetValue(dY);
-   //      (*pDeflectionTable)(row,col++) << deflection.SetValue(Y);
-   //   } // next interval
-   //} // next poi
 
    return pChapter;
 }

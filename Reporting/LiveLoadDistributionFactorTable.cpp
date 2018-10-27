@@ -108,39 +108,32 @@ void CLiveLoadDistributionFactorTable::Build(rptChapter* pChapter,
       pTable->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
    }
 
-
+   ColumnIndexType col = 0;
    if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims )
    {
       pTable->SetNumberOfHeaderRows(1);
-      (*pTable)(0,0) << COLHDR(RPT_LFT_SUPPORT_LOCATION,   rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
-      (*pTable)(0,1) << _T("+M");
-      (*pTable)(0,2) << _T("-M");
-      (*pTable)(0,3) << _T("V");
+      (*pTable)(0, col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION,   rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+      (*pTable)(0, col++) << _T("+M");
+      (*pTable)(0, col++) << _T("-M");
+      (*pTable)(0, col++) << _T("V");
    }
    else
    {
       pTable->SetNumberOfHeaderRows(2);
-      pTable->SetRowSpan(0,0,2);
-      (*pTable)(0,0) << COLHDR(RPT_LFT_SUPPORT_LOCATION,   rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
-      pTable->SetRowSpan(1,0,SKIP_CELL);
+      pTable->SetRowSpan(0, col, 2);
+      (*pTable)(0, col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION,   rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
 
-      pTable->SetColumnSpan(0,1,3);
-      (*pTable)(0,1) << _T("Strength/Service");
+      pTable->SetColumnSpan(0, col, 3);
+      (*pTable)(0, col) << _T("Strength/Service");
+      (*pTable)(1, col++) << _T("+M");
+      (*pTable)(1, col++) << _T("-M");
+      (*pTable)(1, col++) << _T("V");
 
-      pTable->SetColumnSpan(0,2,3);
-      (*pTable)(0,2) << _T("Fatigue/Special Permit Rating");
-
-      pTable->SetColumnSpan(0,3,SKIP_CELL);
-      pTable->SetColumnSpan(0,4,SKIP_CELL);
-      pTable->SetColumnSpan(0,5,SKIP_CELL);
-      pTable->SetColumnSpan(0,6,SKIP_CELL);
-
-      (*pTable)(1,1) << _T("+M");
-      (*pTable)(1,2) << _T("-M");
-      (*pTable)(1,3) << _T("V");
-      (*pTable)(1,4) << _T("+M");
-      (*pTable)(1,5) << _T("-M");
-      (*pTable)(1,6) << _T("V");
+      pTable->SetColumnSpan(0, col, 3);
+      (*pTable)(0, col) << _T("Fatigue/Special Permit Rating");
+      (*pTable)(1, col++) << _T("+M");
+      (*pTable)(1, col++) << _T("-M");
+      (*pTable)(1, col++) << _T("V");
    }
 
    GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
@@ -155,37 +148,38 @@ void CLiveLoadDistributionFactorTable::Build(rptChapter* pChapter,
 
    for (const pgsPointOfInterest& poi : vPoi)
    {
-      (*pTable)(row,0) << location.SetValue( POI_SPAN, poi );
+      col = 0;
+      (*pTable)(row, col++) << location.SetValue( POI_SPAN, poi );
 
       Float64 pM, nM, V;
       pDistFact->GetDistributionFactors(poi,pgsTypes::StrengthI,&pM,&nM,&V);
-      (*pTable)(row,1) << df.SetValue(pM);
+      (*pTable)(row, col++) << df.SetValue(pM);
 
       if ( bNegMoments )
       {
-         (*pTable)(row,2) << df.SetValue(nM);
+         (*pTable)(row, col++) << df.SetValue(nM);
       }
       else
       {
-         (*pTable)(row,2) << _T("---");
+         (*pTable)(row, col++) << _T("---");
       }
-      (*pTable)(row,3) << df.SetValue(V);
+      (*pTable)(row, col++) << df.SetValue(V);
 
       if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
       {
          pDistFact->GetDistributionFactors(poi,pgsTypes::FatigueI,&pM,&nM,&V);
-         (*pTable)(row,4) << df.SetValue(pM);
+         (*pTable)(row, col++) << df.SetValue(pM);
 
          if ( bNegMoments )
          {
-            (*pTable)(row,5) << df.SetValue(nM);
+            (*pTable)(row, col++) << df.SetValue(nM);
          }
          else
          {
-            (*pTable)(row,5) << _T("---");
+            (*pTable)(row, col++) << _T("---");
          }
 
-         (*pTable)(row,6) << df.SetValue(V);
+         (*pTable)(row, col++) << df.SetValue(V);
       }
 
       row++;
@@ -199,23 +193,26 @@ void CLiveLoadDistributionFactorTable::Build(rptChapter* pChapter,
 
    rptRcTable* pTable2 = rptStyleManager::CreateDefaultTable(nCols,_T("Reaction"));
    (*pMasterTable)(0,1) << pTable2;
-   (*pTable2)(0,0) << _T("Pier");
-   (*pTable2)(0,1) << _T("Strength/Service");
+
+   col = 0;
+   (*pTable2)(0, col++) << _T("Pier");
+   (*pTable2)(0, col++) << _T("Strength/Service");
 
    if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
    {
-      (*pTable2)(0,2) << _T("Fatigue/Special Permit Rating");
+      (*pTable2)(0, col++) << _T("Fatigue/Special Permit Rating");
    }
 
    row = pTable2->GetNumberOfHeaderRows();
    PierIndexType nPiers = pBridge->GetPierCount();
    for ( PierIndexType pierIdx = 0; pierIdx < nPiers; pierIdx++, row++ )
    {
-      (*pTable2)(row,0) << LABEL_PIER(pierIdx);
-      (*pTable2)(row,1) << df.SetValue(pDistFact->GetReactionDistFactor(pierIdx,girderKey.girderIndex,pgsTypes::StrengthI));
+      col = 0;
+      (*pTable2)(row, col++) << LABEL_PIER(pierIdx);
+      (*pTable2)(row, col++) << df.SetValue(pDistFact->GetReactionDistFactor(pierIdx,girderKey.girderIndex,pgsTypes::StrengthI));
       if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
       {
-         (*pTable2)(row,2) << df.SetValue(pDistFact->GetReactionDistFactor(pierIdx,girderKey.girderIndex,pgsTypes::FatigueI));
+         (*pTable2)(row, col++) << df.SetValue(pDistFact->GetReactionDistFactor(pierIdx,girderKey.girderIndex,pgsTypes::FatigueI));
       }
    }
 
