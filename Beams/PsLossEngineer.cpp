@@ -622,7 +622,7 @@ void CPsLossEngineer::LossesByRefinedEstimate2005(BeamType beamType,const pgsPoi
                                 td,
                                 tf,
                                 pSpecEntry->GetCuringMethod() == CURING_ACCELERATED ? lrfdCreepCoefficient2005::Accelerated : lrfdCreepCoefficient2005::Normal,
-                                pSpecEntry->GetCuringMethodTimeAdjustmentFactor(),
+                                ::ConvertToSysUnits(pSpecEntry->GetCuringMethodTimeAdjustmentFactor(), unitMeasure::Day),
                                 lossAgency!=laWSDOT, // ignore initial relaxation if not WSDOT
                                 false,
                                 relaxationMethod));
@@ -2808,9 +2808,9 @@ void CPsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi,const GDRC
        *pAd = 0.0;
    }
 
-   // eccentricity of deck
-   *ped  = pSectProp->GetY( compositeDeckIntervalIdx, poi, pgsTypes::TopGirder, config.Fc ) 
-         + pBridge->GetStructuralSlabDepth(poi)/2;
+   // eccentricity of deck... use gross slab depth because sacrifical wearing surface hasn't worn off while early age shrinkage is occuring
+   *ped  = pSectProp->GetY( compositeDeckIntervalIdx, poi, pgsTypes::TopGirder, config.Fc )
+         + pBridge->GetGrossSlabDepth(poi)/2;
    *ped *= -1;
 
    *pApsPerm = Aps[pgsTypes::Straight]*(*pNs) + Aps[pgsTypes::Harped]*(*pNh);
@@ -2955,7 +2955,7 @@ void CPsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi,const GDRC
    *ptd = pSpecEntry->GetCreepDuration2Max();
    *ptf = pSpecEntry->GetTotalCreepDuration();
 
-   *pAslab = pSectProp->GetTributaryDeckArea(poi);
+   *pAslab = pSectProp->GetGrossDeckArea(poi);
 
    Float64 wTop = 0;
    FlangeIndexType nFlanges = pGirder->GetNumberOfTopFlanges(segmentKey);

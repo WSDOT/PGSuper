@@ -2086,26 +2086,6 @@ CSegmentModelData CSegmentModelManager::BuildSegmentModel(const CSegmentKey& seg
 
    bool bModelLeftCantilever  = true;
    bool bModelRightCantilever = true;
-   if ( refAttribute == POI_STORAGE_SEGMENT )
-   {
-      // Overhangs are modeled as cantilevers if they are longer than the height of the segment at the CL Bearing
-      GET_IFACE(IPointOfInterest,pPoi);
-      pgsPointOfInterest poiStartBrg = pPoi->GetPointOfInterest(segmentKey,leftSupportDistance);
-      pgsPointOfInterest poiEndBrg   = pPoi->GetPointOfInterest(segmentKey,Ls-rightSupportDistance);
-
-      ATLASSERT(poiStartBrg.GetID() != INVALID_ID);
-      ATLASSERT(poiEndBrg.GetID()   != INVALID_ID);
-
-      GET_IFACE(IGirder,pGdr);
-      Float64 segment_height_start = pGdr->GetHeight(poiStartBrg);
-      Float64 segment_height_end   = pGdr->GetHeight(poiEndBrg);
-
-      // the cantilevers at the ends of the segment are modeled as flexural members
-      // if the cantilever length exceeds 110% of the height of the girder
-      bModelLeftCantilever  = (::IsLT(1.1*segment_height_start,leftSupportDistance)  ? true : false);
-      bModelRightCantilever = (::IsLT(1.1*segment_height_end,  rightSupportDistance) ? true : false);
-   }
-
    pgsGirderModelFactory().CreateGirderModel(m_pBroker,intervalIdx,segmentKey,leftSupportDistance,Ls-rightSupportDistance,Ec,lcid,bModelLeftCantilever,bModelRightCantilever,vPOI,&model_data.Model,&model_data.PoiMap);
 
    // create loadings for all product load types

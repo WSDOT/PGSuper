@@ -1273,7 +1273,7 @@ void CGirderModelManager::GetDeckShrinkageStresses(const pgsPointOfInterest& poi
    GET_IFACE(ISectionProperties,pProps);
    GET_IFACE(IBridge,pBridge);
    Float64 ed  = pProps->GetY( compositeIntervalIdx, poi, pgsTypes::TopGirder, fcGdr ) 
-               + pBridge->GetStructuralSlabDepth(poi)/2;
+               + pBridge->GetGrossSlabDepth(poi)/2; // use gross depth because shrinkage occurs at early age before sacrafical wearing surface is worn off
    ed *= -1;
 
    M = P * ed;
@@ -1988,11 +1988,11 @@ std::vector<Float64> CGirderModelManager::GetRotation(IntervalIndexType interval
                pgsPointOfInterest spPoi = vMyPoi.front();
                ATLASSERT(spPoi.IsMidSpan(POI_ERECTED_SEGMENT));
 
-               Float64 I = pSectProps->GetIx(releaseIntervalIdx,spPoi);
-               Float64 IEci = I*Eci;
+               Float64 Ir = pSectProps->GetIx(releaseIntervalIdx,spPoi);
+               Float64 IEci = Ir*Eci;
 
-               I = pSectProps->GetIx(intervalIdx,spPoi);
-               Float64 IEc = I*Ec;
+               Float64 Ie = pSectProps->GetIx(erectionIntervalIdx,spPoi);
+               Float64 IEc = Ie*Ec;
                Rz *= tsrAdjustment*(IEc/IEci);
             }
             else

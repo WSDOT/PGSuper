@@ -383,7 +383,7 @@ void CCombinedStressTable::BuildCombinedLiveTable(IBroker* pBroker, rptChapter* 
       strBasicTitle = (bDesign ? _T("Deck Stresses - Design Vehicles") : _T("Deck Stresses - Rating Vehicles"));
    }
 
-   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetIntervalCount()-1; // Spec checks that include live load happen in the last interval. Since this information is used to verify spec checks, use the last interval
+   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
    IntervalIndexType ratingIntervalIdx = pIntervals->GetLoadRatingInterval();
    CString strTitle;
    strTitle.Format(_T("%s - Interval %d %s"),strBasicTitle.c_str(),LABEL_INTERVAL(bDesign ? liveLoadIntervalIdx : ratingIntervalIdx),pIntervals->GetDescription(bDesign ? liveLoadIntervalIdx : ratingIntervalIdx));

@@ -18,7 +18,7 @@ Compression stress check failed for Service I Limit State in Interval 8 Remove t
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 44.00    6   8.00                     1     4    Tx62-          70  1/2  270  21.32  12.18   8.00   8.00                                              16  56.5 16.5  5.500  6.500   3.926    -4.076     9843   0.630  0.814   3.972 -2.433  0.000 -0.169 -2.602 206.94  545.51    1.00    1.00    1.00 
+ 44.00    6   8.00                     1     4    Tx62-          70  1/2  270  21.32  12.18   8.00   8.00                                              16  56.5 16.5  5.500  6.500   3.926    -4.076     9843   0.630  0.814   3.973 -2.433  0.000 -0.169 -2.602 206.94  545.51    1.00    1.00    1.00 
 
 
 The Specification Check was Successful

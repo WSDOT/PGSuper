@@ -1,33 +1,27 @@
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 34.25    6   6.00                     1     1    WF95G    *     45  0.6  270  42.29  25.50  11.50  11.50                                               9  90.5  3.0  5.700 14.600   4.342    -3.809    16862   0.521  0.521   3.694 -1.048 -0.111 -0.130 -1.289 166.20  355.98    5.75   17.50   17.50 
+ 34.25    6   6.00                     1     1    WF95G    *     42  0.6  270  42.41  26.31  10.75  10.75                                               8  90.5  3.0  5.300  6.700   3.991    -3.678    14969   0.521  0.521   3.619 -1.466 -0.148 -0.174 -1.789 146.62  306.34    2.50   15.00   23.00 
 
 
-Girder design was Not Successful
 The Specification Check was Not Successful
 Confinement zone check failed.
-Hauling checks failed
 
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 34.25    6   6.00                     1     2    WF95G    *     47  0.6  270  42.17  26.09  11.50  11.50                                               9  90.5  3.0  6.000 14.900   4.556    -4.046    17447   0.667  0.667   3.875 -1.053 -0.110 -0.129 -1.293 179.02  373.25    5.75   17.50   17.50 
+ 34.25    6   6.00                     1     2    WF95G    *     46  0.6  270  42.16  27.47  11.50  11.50                                               8  90.5  3.0  5.700  7.100   4.246    -3.967    16114   0.667  0.667   4.115 -1.526 -0.145 -0.171 -1.842 174.11  345.03    2.25   15.00   23.00 
 
 
-Girder design was Not Successful
 The Specification Check was Not Successful
 Confinement zone check failed.
-Hauling checks failed
 
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 34.25    6   6.00                     1     4    WF95G    *     47  0.6  270  42.17  26.09  11.50  11.50                                               9  90.5  3.0  6.000 14.900   4.556    -4.046    17447   0.667  0.667   3.875 -1.053 -0.110 -0.129 -1.293 179.02  373.25    5.75   17.50   17.50 
+ 34.25    6   6.00                     1     4    WF95G    *     46  0.6  270  42.16  27.47  11.50  11.50                                               8  90.5  3.0  5.700  7.100   4.246    -3.967    16114   0.667  0.667   4.115 -1.526 -0.145 -0.171 -1.842 174.11  345.03    2.25   15.00   23.00 
 
 
-Girder design was Not Successful
 The Specification Check was Not Successful
 Confinement zone check failed.
-Hauling checks failed
 
 

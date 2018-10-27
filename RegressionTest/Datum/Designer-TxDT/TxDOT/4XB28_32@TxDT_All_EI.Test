@@ -18,7 +18,7 @@ Ultimate vertical shear capacity check failed for Strength I Limit State
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 32.00    4   8.67                     2     1    4XB28          42  1/2  270   9.69   9.31   8.00   8.00  12    2.5   22    12    8   0   2   2   0   4.600  5.000   2.692    -3.345     3266   0.632  0.810   4.292 -1.101 -0.071 -0.084 -1.257 118.45  314.52    1.00    1.00    1.00 
+ 32.00    4   8.67                     2     1    4XB28          42  1/2  270   9.69   9.31   8.00   8.00  12    2.5   22    12    8   0   2   2   0   4.600  5.000   2.692    -3.345     3266   0.632  0.810   4.293 -1.101 -0.071 -0.084 -1.257 118.45  314.52    1.00    1.00    1.00 
 
 
 The Specification Check was Not Successful
@@ -27,7 +27,7 @@ Ultimate vertical shear capacity check failed for Strength I Limit State
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 32.00    4   8.67                     2     2    4XB28          42  1/2  270   9.69   9.31   8.00   8.00  12    2.5   22    12    8   0   2   2   0   4.600  5.000   2.720    -3.381     3274   0.614  0.810   4.292 -1.146 -0.088 -0.083 -1.317 118.45  312.19    1.00    1.00    1.00 
+ 32.00    4   8.67                     2     2    4XB28          42  1/2  270   9.69   9.31   8.00   8.00  12    2.5   22    12    8   0   2   2   0   4.600  5.000   2.720    -3.381     3274   0.614  0.810   4.293 -1.146 -0.088 -0.083 -1.317 118.45  312.19    1.00    1.00    1.00 
 
 
 The Specification Check was Not Successful

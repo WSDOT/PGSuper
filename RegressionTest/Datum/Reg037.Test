@@ -1,11 +1,10 @@
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 70.25    6  12.00                     1     1    WF83G    *     42  0.6  270  36.74  14.68  10.75  10.75                                              14  75.6  6.0  5.500  6.300   3.852    -3.827    13324   1.268  1.204   3.360 -1.179  0.000 -0.061 -1.240 181.46  350.41    1.00    1.00    1.00 
+ 70.25    6  12.00                     1     1    WF83G    *     42  0.6  270  36.74  14.68  10.75  10.75                                              14  75.6  6.0  5.500  6.300   3.321    -3.676    13315   1.268  1.204   3.373 -1.179  0.000 -0.061 -1.240 181.46  357.97    1.00    1.00    1.00 
 
 
 The Specification Check was Not Successful
 Compression stress check failed for Service I Limit State in Interval 8 Remove temporary strands
-Tensile stress check failed for Service III Limit State in Interval 15 Open to Traffic (Bridge Site 3)
 Stirrup detailing checks failed for the Strength I Limit State.
 Confinement zone check failed.
 Slab Offset ("A" Dimension) check failed
@@ -13,7 +12,7 @@ Slab Offset ("A" Dimension) check failed
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 70.25    6  12.00                     1     2    WF83G    *     42  0.6  270  36.74  14.68  10.75  10.75                                              14  75.6  6.0  5.500  6.300   3.720    -3.517    13321   0.951  1.083   3.286 -1.200  0.000 -0.061 -1.260 181.46  348.88    1.00    1.00    1.00 
+ 70.25    6  12.00                     1     2    WF83G    *     42  0.6  270  36.74  14.68  10.75  10.75                                              14  75.6  6.0  5.500  6.300   3.190    -3.366    13260   0.951  1.083   3.296 -1.200  0.000 -0.061 -1.260 181.46  356.43    1.00    1.00    1.00 
 
 
 The Specification Check was Not Successful
