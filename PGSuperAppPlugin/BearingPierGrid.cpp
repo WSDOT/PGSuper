@@ -31,6 +31,13 @@
 #include <Units\Measure.h>
 #include <EAF\EAFDisplayUnits.h>
 
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
+
+
 /////////////////////////////////////////////////////////////////////////////
 // BearingInputData
 // Functions to copy bearing input data from dialog into the bridge

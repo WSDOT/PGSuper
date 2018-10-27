@@ -31,6 +31,13 @@
 #include <EAF\EAFDocument.h>
 #include "PGSuperDoc.h"
 
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
+
+
 // CPostTensioningPage dialog
 
 IMPLEMENT_DYNAMIC(CPostTensioningPage, CPropertyPage)

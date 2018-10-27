@@ -103,7 +103,7 @@ rptRcTable* CFlexuralCapacityCheckTable::Build(IBroker* pBroker,const pgsGirderA
    std::_tstring strDirection  = (bPositiveMoment ? _T("Positive") : _T("Negative"));
 
    std::_tostringstream os;
-   os << strDirection << _T(" Moment Capacity for ") << strLimitState << _T(" Limit State [5.7]");
+   os << strDirection << _T(" Moment Capacity for ") << strLimitState << _T(" Limit State ") << LrfdCw8th(_T("[5.7]"),_T("[5.6]"));
    p_table->TableLabel() << os.str().c_str();
 
    ColumnIndexType col = 0;

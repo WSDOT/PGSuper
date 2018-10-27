@@ -61,7 +61,7 @@ public:
    Float64 GetVehicleWeight() const;
 
    void SetVehicleName(LPCTSTR str);
-   std::_tstring GetVehicleName() const;
+   const std::_tstring& GetVehicleName() const;
 
    void SetAllowableStressRatio(Float64 K);
    Float64 GetAllowableStressRatio() const;
@@ -101,7 +101,7 @@ public:
 
    void SetSecondaryEffectsMoment(Float64 Mps);
    Float64 GetSecondaryEffectsMoment() const;
-   
+
    void SetLiveLoadDistributionFactor(Float64 gM);
    Float64 GetLiveLoadDistributionFactor() const;
 
@@ -120,14 +120,14 @@ public:
    void SetCrackDepth(Float64 c);
    Float64 GetCrackDepth() const;
 
-   void SetRebar(Float64 db,Float64 fb,Float64 fyb,Float64 Eb);
-   bool GetRebar(Float64* pdb, Float64* pfb,Float64* pfyb,Float64* pEb) const;
+   void SetRebar(Float64 db, Float64 fb, Float64 fyb, Float64 Eb);
+   bool GetRebar(Float64* pdb, Float64* pfb, Float64* pfyb, Float64* pEb) const;
 
-   void SetStrand(Float64 dps,Float64 fps,Float64 fyps,Float64 Eps);
-   bool GetStrand(Float64* pdps,Float64* pfps,Float64* pfyps,Float64* pEps) const;
+   void SetStrand(Float64 dps, Float64 fps, Float64 fyps, Float64 Eps);
+   bool GetStrand(Float64* pdps, Float64* pfps, Float64* pfyps, Float64* pEps) const;
 
-   void SetTendon(Float64 dpt,Float64 fpt,Float64 fypt,Float64 Ept);
-   bool GetTendon(Float64* pdpt,Float64* pfpt,Float64* pfypt,Float64* pEpt) const;
+   void SetTendon(Float64 dpt, Float64 fpt, Float64 fypt, Float64 Ept);
+   bool GetTendon(Float64* pdpt, Float64* pfpt, Float64* pfypt, Float64* pEpt) const;
 
    void SetEg(Float64 Eg);
    Float64 GetEg() const;
@@ -150,6 +150,7 @@ public:
    Float64 GetTendonAllowableStress() const;
 
    Float64 GetStressRatio() const;
+   Float64 GetRatingFactor() const { return GetStressRatio(); }
 
 protected:
    void MakeCopy(const pgsYieldStressRatioArtifact& rOther);

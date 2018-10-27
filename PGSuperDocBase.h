@@ -144,7 +144,8 @@ public:
    bool EditSpanDescription(SpanIndexType spanIdx, int nPage);
    bool EditPierDescription(PierIndexType pierIdx, int nPage);
    bool EditDirectSelectionPrestressing(const CSegmentKey& segmentKey);
-   bool EditDirectInputPrestressing(const CSegmentKey& segmentKey);
+   bool EditDirectRowInputPrestressing(const CSegmentKey& segmentKey);
+   bool EditDirectStrandInputPrestressing(const CSegmentKey& segmentKey);
 
    virtual bool EditGirderDescription(const CGirderKey& girderKey,int nPage) = 0;
    virtual bool EditGirderSegmentDescription(const CSegmentKey& segmentKey,int nPage) = 0;

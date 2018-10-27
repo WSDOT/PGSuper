@@ -208,11 +208,26 @@ rptChapter* CMVRChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 leve
    }
 
    // Bridge Site Results
+   if (bRating)
+   {
+      // if we are rating, want to report all groups at once
+      // to do this, we only want to go through the loop below once
+      // change the loop limits so this happens
+      firstGroupIdx = 0;
+      lastGroupIdx = 0;
+   }
+
    for (GroupIndexType grpIdx = firstGroupIdx; grpIdx <= lastGroupIdx; grpIdx++ )
    {
       GirderIndexType nGirders = pBridge->GetGirderCount(grpIdx);
       GirderIndexType gdrIdx = (nGirders <= girderKey.girderIndex ? nGirders-1 : girderKey.girderIndex);
       CGirderKey thisGirderKey(grpIdx,gdrIdx);
+
+      if (bRating)
+      {
+         thisGirderKey.groupIndex = ALL_GROUPS;
+      }
+
 
       bool bAreThereUserLoads = pUDL->DoUserLoadsExist(thisGirderKey);
 

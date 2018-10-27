@@ -293,7 +293,7 @@ HRESULT CDeckDescription2::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
       OverhangTaper = (pgsTypes::DeckOverhangTaper)(var.lVal);
 
       // Fillet was moved to bridge in version 3. Save fillet here for bridge to get later
-      if (3 > version)
+      if (version < 3)
       {
          var.Clear();
          var.vt = VT_R8;
@@ -422,11 +422,8 @@ HRESULT CDeckDescription2::Save(IStructuredSave* pStrSave,IProgress* pProgress)
    if ( 0 < DeckEdgePoints.size() )
    {
       pStrSave->BeginUnit(_T("DeckEdgePoints"),1.0);
-      std::vector<CDeckPoint>::iterator iter(DeckEdgePoints.begin());
-      std::vector<CDeckPoint>::iterator end(DeckEdgePoints.end());
-      for ( ; iter != end; iter++ )
+      for(auto& point : DeckEdgePoints)
       {
-         CDeckPoint& point = *iter;
          point.Save(pStrSave,pProgress);
       }
       pStrSave->EndUnit();

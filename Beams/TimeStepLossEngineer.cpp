@@ -3101,9 +3101,9 @@ void CTimeStepLossEngineer::BuildReport(const CGirderKey& girderKey,rptChapter* 
          (*pPSLossTable)(row,col) << rptNewLine;
          (*pPSLossTable)(row,col) << rptNewLine; //stress.SetValue( pLossDetails->TimeStepDetails.back().Strands[pgsTypes::Harped].loss );
 #endif // LLUMP_STRANDS
+
+         row++;
       } // next POI
-      
-      row++;
    } // next segment
 
   

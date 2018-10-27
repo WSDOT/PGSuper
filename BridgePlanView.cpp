@@ -2891,7 +2891,8 @@ void CBridgePlanView::BuildSpanDisplayObjects()
    EAFGetBroker(&pBroker);
 
    GET_IFACE2(pBroker,IBridge,pBridge);
-   if ( pBridge->GetDeckType() == pgsTypes::sdtNone )
+   pgsTypes::SupportedDeckType deckType = pBridge->GetDeckType();
+   if ( deckType == pgsTypes::sdtNone )
    {
       return;
    }
@@ -2927,8 +2928,8 @@ void CBridgePlanView::BuildSpanDisplayObjects()
       strategy.CoCreateInstance(CLSID_ShapeDrawStrategy);
       CComQIPtr<IShape> shape(poly_shape);
       strategy->SetShape(shape);
-      strategy->SetSolidLineColor(DECK_BORDER_COLOR);
-      strategy->SetSolidFillColor(DECK_FILL_COLOR);
+      strategy->SetSolidLineColor(IsStructuralDeck(deckType) ? DECK_BORDER_COLOR : NONSTRUCTURAL_DECK_BORDER_COLOR);
+      strategy->SetSolidFillColor(IsStructuralDeck(deckType) ? DECK_FILL_COLOR : NONSTRUCTURAL_DECK_FILL_COLOR);
       strategy->DoFill(TRUE);
       doPnt->SetDrawingStrategy(strategy);
 

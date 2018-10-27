@@ -24,6 +24,12 @@
 #include "GirderModelData.h"
 #include "PGSuperLoadCombinationResponse.h"
 
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
+
 CGirderModelData::CGirderModelData(const CGirderModelManager *pParent,GirderIndexType gdrLineIdx)
 {
    m_pParent = pParent;

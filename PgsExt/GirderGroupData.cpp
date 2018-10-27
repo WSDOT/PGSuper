@@ -1299,6 +1299,8 @@ void CGirderGroupData::CreateGirderGroup(GirderIndexType firstGdrIdx, GirderInde
             newGrp.second = gdrGroup.second;
             gdrGroups.push_back(newGrp);
          }
+         iter++;
+         break;
       }
       else
       {

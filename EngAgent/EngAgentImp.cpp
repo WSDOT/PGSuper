@@ -128,6 +128,50 @@ CollectionIndexType LimitStateToShearIndex(pgsTypes::LimitState limitState)
    return idx;
 }
 
+//-----------------------------------------------------------------------------
+// Simple exception safe class to override transformed and non-prismatic haunch properties during design 
+// if needed and reset them back afterward
+class DesignOverrider
+{
+public:
+   DesignOverrider(CComPtr<IDesignOverrides>& pDesignOverrides, bool overTransf, bool overHaunch) :
+      m_pDesignOverrides(pDesignOverrides),
+      m_bOverTransf(overTransf),
+      m_bOverHaunch(overHaunch)
+   {
+      if (m_bOverTransf)
+      {
+         m_pDesignOverrides->ApplyTransFormedSectionOverride();
+      }
+
+      if (m_bOverHaunch)
+      {
+         m_pDesignOverrides->ApplyParabolicCompositeSectionOverride();
+      }
+   }
+
+
+   ~DesignOverrider()
+   {
+      if (m_bOverTransf)
+      {
+         m_pDesignOverrides->RemoveTransFormedSectionOverride();
+      }
+
+      if (m_bOverHaunch)
+      {
+         m_pDesignOverrides->RemoveParabolicCompositeSectionOverride();
+      }
+   }
+
+private:
+   DesignOverrider();
+   CComPtr<IDesignOverrides> m_pDesignOverrides;
+   bool m_bOverTransf;
+   bool m_bOverHaunch;
+};
+
+
 /////////////////////////////////////////////////////////////////////////////
 // CEngAgentImp
 CEngAgentImp::CEngAgentImp() :
@@ -1762,7 +1806,7 @@ void CEngAgentImp::CheckCurvatureRequirements(const pgsPointOfInterest& poi) con
 
    const CSegmentKey& segmentKey = poi.GetSegmentKey();
 
-   AlignmentData2 alignment_data = pRoadway->GetAlignmentData2();
+   const AlignmentData2& alignment_data = pRoadway->GetAlignmentData2();
    IndexType nCurves = alignment_data.HorzCurves.size();
    if ( nCurves == 0 )
    {
@@ -2634,7 +2678,7 @@ void CEngAgentImp::ReportDistributionFactors(const CGirderKey& girderKey,rptChap
          table->SetColumnSpan(0,4,SKIP_CELL);
 
          table->SetColumnSpan(0,5,4);
-         (*table)(0,5) << _T("Fatigue");
+         (*table)(0,5) << _T("Fatigue/Special Permit Rating");
 
          table->SetColumnSpan(0,6,SKIP_CELL);
          table->SetColumnSpan(0,7,SKIP_CELL);
@@ -2977,11 +3021,9 @@ std::vector<Float64> CEngAgentImp::GetShearCapacity(pgsTypes::LimitState limitSt
 
 void CEngAgentImp::GetShearCapacityDetails(pgsTypes::LimitState limitState, IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,const GDRCONFIG* pConfig,SHEARCAPACITYDETAILS* pscd) const
 {
-   GET_IFACE(IBridge,pBridge);
    const CSegmentKey& segmentKey = poi.GetSegmentKey();
    const CGirderKey& girderKey(segmentKey);
    
-   GDRCONFIG curr_config = pBridge->GetSegmentConfiguration(segmentKey);
    GetRawShearCapacityDetails(limitState, intervalIdx, poi, pConfig, pscd);
 
    GET_IFACE(ISpecification, pSpec);
@@ -3049,26 +3091,26 @@ void CEngAgentImp::GetFpcDetails(const pgsPointOfInterest& poi, const GDRCONFIG*
 
 ZoneIndexType CEngAgentImp::GetCriticalSectionZoneIndex(pgsTypes::LimitState limitState,const pgsPointOfInterest& poi) const
 {
-   const std::vector<CRITSECTDETAILS>& vCSDetails(ValidateShearCritSection(limitState,poi.GetSegmentKey()));
+   const auto& vCSDetails(ValidateShearCritSection(limitState,poi.GetSegmentKey()));
    Float64 x = poi.GetDistFromStart();
  
-   std::vector<CRITSECTDETAILS>::const_iterator iter(vCSDetails.begin());
-   std::vector<CRITSECTDETAILS>::const_iterator end(vCSDetails.end());
-   for ( ; iter != end; iter++ )
+   auto& iter = std::cbegin(vCSDetails);
+   auto& end = std::cend(vCSDetails);
+   for ( ; iter != end; iter++)
    {
-      const CRITSECTDETAILS& csDetails(*iter);
+      const auto& csDetails(*iter);
       if ( csDetails.bAtFaceOfSupport )
       {
          if ( csDetails.poiFaceOfSupport.GetSegmentKey() == poi.GetSegmentKey() && ::InRange(csDetails.Start,x,csDetails.End,pgsPointOfInterest::GetTolerance()) )
          {
-            return (ZoneIndexType)(iter - vCSDetails.begin());
+            return (ZoneIndexType)std::distance(std::begin(vCSDetails), iter);
          }
       }
       else 
       {
          if ( csDetails.pCriticalSection->Poi.GetSegmentKey() == poi.GetSegmentKey() && ::InRange(csDetails.Start,x,csDetails.End,pgsPointOfInterest::GetTolerance()) )
          {
-            return (ZoneIndexType)(iter - vCSDetails.begin());
+            return (ZoneIndexType)std::distance(std::begin(vCSDetails), iter);
          }
       }
    }
@@ -3097,17 +3139,14 @@ std::vector<Float64> CEngAgentImp::GetCriticalSections(pgsTypes::LimitState limi
    return GetCriticalSectionFromDetails(csDetails);
 }
 
-std::vector<Float64> CEngAgentImp::GetCriticalSectionFromDetails(const std::vector<CRITSECTDETAILS>& csDetails) const
+std::vector<Float64> CEngAgentImp::GetCriticalSectionFromDetails(const std::vector<CRITSECTDETAILS>& vCSDetails) const
 {
    std::vector<Float64> csLoc;
 
    GET_IFACE(IPointOfInterest,pPoi);
 
-   std::vector<CRITSECTDETAILS>::const_iterator iter(csDetails.begin());
-   std::vector<CRITSECTDETAILS>::const_iterator end(csDetails.end());
-   for ( ; iter != end; iter++ )
+   for( const auto& csDetails : vCSDetails)
    {
-      const CRITSECTDETAILS& csDetails(*iter);
       const pgsPointOfInterest& csPoi = csDetails.GetPointOfInterest();
       Float64 Xg = pPoi->ConvertPoiToGirderCoordinate(csPoi);
       csLoc.push_back(Xg);
@@ -3148,7 +3187,7 @@ void CEngAgentImp::ClearDesignCriticalSections() const
 // IGirderHaunch
 Float64 CEngAgentImp::GetRequiredSlabOffset(const CSpanKey& spanKey) const
 {
-   HAUNCHDETAILS details = GetHaunchDetails(spanKey);
+   const auto& details = GetHaunchDetails(spanKey);
 
    Float64 slab_offset = details.RequiredSlabOffset;
 
@@ -3167,7 +3206,7 @@ Float64 CEngAgentImp::GetRequiredSlabOffset(const CSpanKey& spanKey) const
    return slab_offset;
 }
 
-HAUNCHDETAILS CEngAgentImp::GetHaunchDetails(const CSpanKey& spanKey) const
+const HAUNCHDETAILS& CEngAgentImp::GetHaunchDetails(const CSpanKey& spanKey) const
 {
    auto found = m_HaunchDetails.find(spanKey);
 
@@ -3179,12 +3218,10 @@ HAUNCHDETAILS CEngAgentImp::GetHaunchDetails(const CSpanKey& spanKey) const
 
       auto result = m_HaunchDetails.insert( std::make_pair(spanKey,details) );
       ATLASSERT(result.second == true);
-      return details;
+      found = result.first;
    }
-   else
-   {
-      return (*found).second;
-   }
+
+   return (*found).second;
 }
 
 Float64 CEngAgentImp::GetSectionGirderOrientationEffect(const pgsPointOfInterest& poi) const
@@ -3630,16 +3667,36 @@ const pgsGirderDesignArtifact* CEngAgentImp::CreateDesignArtifact(const CGirderK
    std::map<CGirderKey,pgsGirderDesignArtifact>::size_type cRemove = m_DesignArtifacts.erase(girderKey);
    ATLASSERT( cRemove == 0 || cRemove == 1 );
 
+   // Tricky: Set to gross sections and prismatic haunch if needed
+   // Use the class below to temporarly set transformed and prismatic haunch properties and then reset them back
+   GET_IFACE_NOCHECK(IBridge,pBridge);
+   GET_IFACE(ISectionProperties,pSectProp);
+   GET_IFACE_NOCHECK(IDesignOverrides,pDesignOverrides);
+   bool doTrans  = pSectProp->GetSectionPropertiesMode() == pgsTypes::spmTransformed;
+   bool doHaunch = pSectProp->GetHaunchAnalysisSectionPropertiesType() == pgsTypes::hspVariableParabolic && IsStructuralDeck(pBridge->GetDeckType());
+   DesignOverrider overrider(pDesignOverrides, doTrans, doHaunch);
+
    pgsGirderDesignArtifact gdrDesignArtifact = m_Designer.Design(girderKey,designOptions);
 
    // NOTE: girder artifact should have an overall outcome for the design of all segments
    // we want to know if design was cancelled... all segment artifacts will have the DesignCancelled
    // outcome so we just have to check the first artifact
    SegmentIndexType segIdx = 0;
-   const pgsSegmentDesignArtifact* pSegmentDesignArtifact = gdrDesignArtifact.GetSegmentDesignArtifact(segIdx);
+   pgsSegmentDesignArtifact* pSegmentDesignArtifact = gdrDesignArtifact.GetSegmentDesignArtifact(segIdx);
    if ( pSegmentDesignArtifact->GetOutcome() == pgsSegmentDesignArtifact::DesignCancelled )
    {
       return nullptr;
+   }
+
+   // Write notes if section properties were tweaked for design
+   if (doTrans)
+   {
+      pSegmentDesignArtifact->AddDesignNote(pgsSegmentDesignArtifact::dnTransformedSectionsSetToGross);
+   }
+
+   if (doHaunch)
+   {
+      pSegmentDesignArtifact->AddDesignNote(pgsSegmentDesignArtifact::dnParabolicHaunchSetToConstant);
    }
 
    auto retval = m_DesignArtifacts.insert(std::make_pair(girderKey,gdrDesignArtifact));

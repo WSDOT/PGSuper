@@ -325,3 +325,23 @@ void MakeRectangle(Float64 width, Float64 depth, Float64 xOffset, Float64 yOffse
 
    harp_rect->get_Shape(ppShape);
 }
+
+bool IsInEndBlock(Float64 Xs, pgsTypes::SectionBias sectionBias, Float64 leftEndBlockLength, Float64 rightEndBlockLength, Float64 Lg)
+{
+   if (
+      (0.0 < leftEndBlockLength && (sectionBias == sbLeft ? IsLE(Xs, leftEndBlockLength) : IsLT(Xs, leftEndBlockLength))) ||
+      (0.0 < rightEndBlockLength && (sectionBias == sbLeft ? IsLT(Lg - Xs, rightEndBlockLength) : IsLE(Lg - Xs, rightEndBlockLength)))
+      )
+   {
+      return true;
+   }
+   else
+   {
+      return false;
+   }
+}
+
+bool IsInEndBlock(Float64 Xs, pgsTypes::SectionBias sectionBias, Float64 endBlockLength, Float64 Lg)
+{
+   return IsInEndBlock(Xs, sectionBias, endBlockLength, endBlockLength, Lg);
+}

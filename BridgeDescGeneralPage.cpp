@@ -1190,6 +1190,8 @@ void CBridgeDescGeneralPage::OnGirderFamilyChanged()
    UpdateGirderTopWidthSpacingLimits();
 
    EnableLongitudinalJointMaterial();
+
+   UpdateSuperstructureDescription();
 }
 
 void CBridgeDescGeneralPage::UpdateMinimumGirderCount()

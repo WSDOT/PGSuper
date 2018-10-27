@@ -372,7 +372,8 @@ void CAlignmentPlanView::BuildBridgeDisplayObjects()
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker, IBridge, pBridge);
-   if (pBridge->GetDeckType() == pgsTypes::sdtNone)
+   pgsTypes::SupportedDeckType deckType = pBridge->GetDeckType();
+   if (deckType == pgsTypes::sdtNone)
    {
       GET_IFACE2(pBroker, IGirder, pGirder);
 
@@ -433,8 +434,8 @@ void CAlignmentPlanView::BuildBridgeDisplayObjects()
    CComPtr<iShapeDrawStrategy> strategy;
    strategy.CoCreateInstance(CLSID_ShapeDrawStrategy);
    strategy->SetShape(shape);
-   strategy->SetSolidLineColor(DECK_BORDER_COLOR);
-   strategy->SetSolidFillColor(DECK_FILL_COLOR);
+   strategy->SetSolidLineColor(IsStructuralDeck(deckType) ? DECK_BORDER_COLOR : NONSTRUCTURAL_DECK_BORDER_COLOR);
+   strategy->SetSolidFillColor(IsStructuralDeck(deckType) ? DECK_FILL_COLOR : NONSTRUCTURAL_DECK_FILL_COLOR);
    strategy->DoFill(TRUE);
    doBridge->SetDrawingStrategy(strategy);
 

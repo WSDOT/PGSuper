@@ -42,9 +42,11 @@ public:
 
 public:
    // IBeamFactory
-   virtual void CreateGirderProfile(IBroker* pBroker, StatusItemIDType statusID, const CSegmentKey& segmentKey, const IBeamFactory::Dimensions& dimensions, IShape** ppShape) const override;
+   virtual void CreateGirderSection(IBroker* pBroker, StatusItemIDType statusID, const IBeamFactory::Dimensions& dimensions, Float64 overallHeight, Float64 bottomFlangeHeight, IGirderSection** ppSection) const override;
    virtual void CreateSegment(IBroker* pBroker, StatusItemIDType statusID, const CSegmentKey& segmentKey, ISuperstructureMemberSegment** ppSegment) const override;
    virtual void ConfigureSegment(IBroker* pBroker, StatusItemIDType statusID, const CSegmentKey& segmentKey, ISuperstructureMemberSegment* pSSMbrSegment) const override;
+   virtual void CreateSegmentShape(IBroker* pBroker, const CPrecastSegmentData* pSegment, Float64 Xs, pgsTypes::SectionBias sectionBias, IShape** ppShape) const override;
+   virtual Float64 GetSegmentHeight(IBroker* pBroker, const CPrecastSegmentData* pSegment, Float64 Xs) const override;
    virtual void LayoutSectionChangePointsOfInterest(IBroker* pBroker, const CSegmentKey& segmentKey, pgsPoiMgr* pPoiMgr) const override;
    virtual void CreateDistFactorEngineer(IBroker* pBroker, StatusItemIDType statusID, const pgsTypes::SupportedBeamSpacing* pSpacingType, const pgsTypes::SupportedDeckType* pDeckType, const pgsTypes::AdjacentTransverseConnectivity* pConnect, IDistFactorEngineer** ppEng) const override;
    virtual void CreatePsLossEngineer(IBroker* pBroker, StatusItemIDType statusID, const CGirderKey& girderKey, IPsLossEngineer** ppEng) const override;
@@ -90,6 +92,9 @@ protected:
    std::vector<const unitLength*> m_DimUnits[2];
 
    Float64 GetDimension(const IBeamFactory::Dimensions& dimensions,const std::_tstring& name) const;
+
+   void ConfigureGirderShape(const CPrecastSegmentData* pSegment, const IBeamFactory::Dimensions& dimensions, IBoxBeam* pBeam) const;
+   virtual void DimensionBeam(const IBeamFactory::Dimensions& dimensions, IBoxBeam* pBeam) const;
 
    virtual bool ExcludeExteriorBeamShearKeys() const = 0;
    virtual bool UseOverallWidth() const = 0;

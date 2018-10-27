@@ -119,7 +119,7 @@ void pgsMomentRatingArtifact::SetVehicleName(LPCTSTR str)
    m_strVehicleName = str;
 }
 
-std::_tstring pgsMomentRatingArtifact::GetVehicleName() const
+const std::_tstring& pgsMomentRatingArtifact::GetVehicleName() const
 {
    return m_strVehicleName;
 }

@@ -35,6 +35,7 @@
 #include "CLSID.h"
 
 #include <WBFLCore_i.c>
+#include <WBFLTools_i.c>
 
 #include "SpecAgentImp.h"
 

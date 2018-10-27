@@ -113,6 +113,11 @@ CSectionViewDialog::CSectionViewDialog(const GirderLibraryEntry* pEntry,bool isE
 
    m_pShape->get_ShapeProperties(&m_ShapeProps);
 
+   Float64 Yt, Yb;
+   m_ShapeProps->get_Ytop(&Yt);
+   m_ShapeProps->get_Ybottom(&Yb);
+   m_Hg = Yt + Yb;
+
 	//{{AFX_DATA_INIT(CSectionViewDialog)
 		// NOTE: the ClassWizard will add member initialization here
 	//}}AFX_DATA_INIT
@@ -190,18 +195,17 @@ void CSectionViewDialog::OnPaint()
    DrawShape(&dc,mapper);
    DrawStrands(&dc,mapper,m_IsEnd);
 
-// strand mover - bounds drawn in read
+// strand mover - bounds drawn in red
 #ifdef _DEBUG
    CBrush shape_brush(HS_FDIAGONAL, RGB(255,0,0));
    CBrush* pOldBrush = dc.SelectObject(&shape_brush);
 
-   org.Y() -= (top-bottom);
-   mapper.SetWorldOrg(org);
+   //org.Y() -= (top-bottom);
+   //mapper.SetWorldOrg(org);
 
-   CollectionIndexType cnt = m_RegionShapes.size();
-   for (CollectionIndexType ir=0; ir<cnt; ir++)
+   for ( const auto& shape : m_RegionShapes)
    {
-      DrawShape(&dc,mapper,m_RegionShapes[ir]);
+      DrawShape(&dc,mapper,shape);
    }
 
    dc.SelectObject(pOldBrush);
@@ -335,15 +339,15 @@ void CSectionViewDialog::DrawStrands(CDC* pDC, grlibPointMapper& Mapper, bool is
    // loop over global strand fill order for permanent strands
    bool use_diff_hg = m_pGirderEntry->IsDifferentHarpedGridAtEndsUsed();
 
-   StrandIndexType total_strand_cnt=0;
+   StrandIndexType total_strand_cnt = 0;
    StrandIndexType num_global = m_pGirderEntry->GetPermanentStrandGridSize();
-   for (StrandIndexType idx=0; idx<num_global; idx++)
+   for (StrandIndexType idx = 0; idx < num_global; idx++)
    {
       StrandIndexType strand_idx;
       GirderLibraryEntry::psStrandType strand_type;
       m_pGirderEntry->GetGridPositionFromPermStrandGrid(idx, &strand_type, &strand_idx);
 
-      if (strand_type==GirderLibraryEntry::stStraight)
+      if (strand_type == GirderLibraryEntry::stStraight)
       {
          Float64 xStart,yStart,xEnd,yEnd;
          bool can_debond;
@@ -354,7 +358,7 @@ void CSectionViewDialog::DrawStrands(CDC* pDC, grlibPointMapper& Mapper, bool is
 
          total_strand_cnt = DrawStrand(pDC, Mapper, xStart, yStart, total_strand_cnt);
       }
-      else if (strand_type==GirderLibraryEntry::stAdjustable)
+      else if (strand_type == GirderLibraryEntry::stAdjustable)
       {
          Float64 start_x, start_y, hp_x, hp_y, end_x, end_y;
          m_pGirderEntry->GetHarpedStrandCoordinates(strand_idx, &start_x, &start_y, &hp_x, &hp_y, &end_x, &end_y);
@@ -379,7 +383,9 @@ void CSectionViewDialog::DrawStrands(CDC* pDC, grlibPointMapper& Mapper, bool is
          total_strand_cnt = DrawStrand(pDC, Mapper, x, y, total_strand_cnt,strandInc);
       }
       else
+      {
          ATLASSERT(false);
+      }
    }
 
    // temporary strands
@@ -402,6 +408,12 @@ void CSectionViewDialog::DrawStrands(CDC* pDC, grlibPointMapper& Mapper, bool is
 
 StrandIndexType CSectionViewDialog::DrawStrand(CDC* pDC, grlibPointMapper& Mapper, Float64 x, Float64 y, StrandIndexType index,StrandIndexType strandInc)
 {
+   // Strands are defined assuming bottom of girder is at (0,0), however
+   // the girder shape is actually defined with (0,0) at the top center
+   // For each strand elevation, let y = yStrand - Hg... this will put
+   // the strand elevation on the same basis as the girder section
+   y -= m_Hg;
+
    CRect rect;
    Mapper.WPtoDP(x-m_Radius,y-m_Radius,&rect.left,&rect.top); 
    Mapper.WPtoDP(x+m_Radius,y-m_Radius,&rect.right,&rect.top); 
@@ -450,11 +462,6 @@ void CSectionViewDialog::OnSize(UINT nType, int cx, int cy)
 
    if (pBtn)
    {
-      // section properties area
-      //CRect rProps;
-      //pBtn->GetWindowRect(&rProps);
-      //pBtn->MoveWindow(BORDER,BORDER,rClient.Width()-2*BORDER,rProps.Height());
-
 	   // ok button
       pBtn = GetDlgItem(IDOK);
 
@@ -466,51 +473,6 @@ void CSectionViewDialog::OnSize(UINT nType, int cx, int cy)
       pBtn->MoveWindow(rClient.Size().cx - rBtn.Size().cx - BORDER,
                        top_close,
                        rBtn.Size().cx, rBtn.Size().cy);
-
-    //  // check box
-    //  pBtn = GetDlgItem(IDC_SHOWS);
-    //  pBtn->GetWindowRect(&rBtn);
-
-    //  int chk_wid = rBtn.Size().cx;
-
-    //  pBtn->MoveWindow(rClient.Size().cx - rBtn.Size().cx - BORDER,
-    //                   top_close - rBtn.Size().cy - BORDER,
-    //                   rBtn.Size().cx, rBtn.Size().cy);
-
-	   //// legend text
-    //  pBtn = GetDlgItem(IDC_DB);
-    //  pBtn->GetWindowRect(&rBtn);
-
-    //  int leg_wid = (rClient.Size().cx - chk_wid);
-    //  int wid = rBtn.Size().cx;
-    //  int spacing = (leg_wid - 2*BORDER - wid)/3;
-
-    //  int xloc = BORDER;
-    //  int yloc = rClient.Size().cy - rBtn.Size().cy - BORDER;
-
-    //  pBtn->MoveWindow(xloc, yloc,
-    //                   rBtn.Size().cx, rBtn.Size().cy);
-
-    //  pBtn = GetDlgItem(IDC_SS);
-    //  pBtn->GetWindowRect(&rBtn);
-
-    //  xloc += spacing;
-    //  pBtn->MoveWindow(xloc, yloc,
-    //                   rBtn.Size().cx, rBtn.Size().cy);
-
-    //  pBtn = GetDlgItem(IDC_HS);
-    //  pBtn->GetWindowRect(&rBtn);
-
-    //  xloc += spacing;
-    //  pBtn->MoveWindow(xloc, yloc,
-    //                   rBtn.Size().cx, rBtn.Size().cy);
-
-    //  pBtn = GetDlgItem(IDC_TS);
-    //  pBtn->GetWindowRect(&rBtn);
-
-    //  xloc += spacing;
-    //  pBtn->MoveWindow(xloc, yloc,
-    //                   rBtn.Size().cx, rBtn.Size().cy);
 
       Invalidate();
    }
@@ -576,7 +538,7 @@ BOOL CSectionViewDialog::OnInitDialog()
    Float64 W = Xleft + Xright;
 
    CString strProps;
-   strProps.Format(_T("Area = %s\r\nYt = %s\r\nYb = %s\r\nIx = %s\r\nIy = %s\r\nSt = %s\r\nSb = %s\r\nH = %s\r\nW = %s\r\nKt = %s\r\nKb = %s"),
+   strProps.Format(_T("Nominal Properties\r\nArea = %s\r\nYt = %s\r\nYb = %s\r\nIx = %s\r\nIy = %s\r\nSt = %s\r\nSb = %s\r\nH = %s\r\nW = %s\r\nKt = %s\r\nKb = %s"),
       ::FormatDimension(Area,pDisplayUnits->Area),
       ::FormatDimension(Ytop,pDisplayUnits->ComponentDim),
       ::FormatDimension(Ybot,pDisplayUnits->ComponentDim),

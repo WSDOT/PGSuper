@@ -28,6 +28,13 @@
 #include "TimeStepPropertiesPage.h"
 #include <EAF\EAFDocument.h>
 
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
+
+
 
 // CTimeStepPropertiesPage dialog
 

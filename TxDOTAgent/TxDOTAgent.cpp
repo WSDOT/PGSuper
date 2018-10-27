@@ -39,6 +39,7 @@
 #include <DManip\DManip_clsid.cpp>
 #include <DManipTools\DManipTools_clsid.cpp>
 #include <WBFLCore_i.c>
+#include <WBFLTools_i.c>
 #include <WBFLGeometry_i.c>
 #include <WBFLCogo_i.c>
 #include "dllmain.h"
@@ -81,6 +82,13 @@
 #include "TxDOTOptionalDesignData.h"
 #include "TogaSupportDrawStrategy.h"
 #include "TogaSectionCutDrawStrategy.h"
+
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
+
 
 // Used to determine whether the DLL can be unloaded by OLE
 STDAPI DllCanUnloadNow(void)
@@ -140,7 +148,7 @@ HRESULT Register(bool bRegister)
 STDAPI DllRegisterServer(void)
 {
    // registers object, typelib and all interfaces in typelib
-   HRESULT hr = _AtlModule.DllRegisterServer();
+   HRESULT hr = _AtlModule.DllRegisterServer(FALSE);
    if ( FAILED(hr) )
       return hr;
 

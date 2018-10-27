@@ -21,7 +21,6 @@
 ///////////////////////////////////////////////////////////////////////
 
 #include "StdAfx.h"
-#include <PgsExt\PgsExtLib.h>
 
 #include <IFace\PointOfInterest.h>
 #include <IFace\StatusCenter.h>

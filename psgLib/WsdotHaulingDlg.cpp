@@ -31,6 +31,13 @@
 
 #include <EAF\EAFApp.h>
 
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
+
+
 // CWsdotHaulingDlg dialog
 
 IMPLEMENT_DYNAMIC(CWsdotHaulingDlg, CDialog)

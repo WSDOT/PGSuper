@@ -2,7 +2,7 @@ Prestressing {#ug_library_dialogs_project_criteria_prestressing}
 ==============================================
 Define project criteria for allowable stresses in the prestressing strands. Values for both stress relieved and low relaxation strands must be specified.
 
-Stress Limits for Prestressing (LRFD 5.9.3)
+Stress Limits for Prestressing (LRFD 5.9.2.2 (*pre-2017: 5.9.3*))
 -------------------------------------------
 
 Item | Description

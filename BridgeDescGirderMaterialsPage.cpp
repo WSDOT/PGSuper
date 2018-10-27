@@ -186,6 +186,10 @@ void CGirderDescGeneralPage::DoDataExchange(CDataExchange* pDX)
    {
       DDX_CBItemData(pDX, IDC_TOP_FLANGE_THICKENING_TYPE, pParent->m_pSegment->TopFlangeThickeningType);
       DDX_UnitValueAndTag(pDX, IDC_TOP_FLANGE_THICKENING, IDC_TOP_FLANGE_THICKENING_UNIT, pParent->m_pSegment->TopFlangeThickening, pDisplayUnits->GetComponentDimUnit());
+      if (pParent->m_pSegment->TopFlangeThickeningType != pgsTypes::tftNone)
+      {
+         DDV_UnitValueZeroOrMore(pDX, IDC_TOP_FLANGE_THICKENING, pParent->m_pSegment->TopFlangeThickening, pDisplayUnits->GetComponentDimUnit());
+      }
    }
 
    DDX_UnitValueAndTag(pDX, IDC_PRECAMBER, IDC_PRECAMBER_UNIT, pParent->m_pSegment->Precamber, pDisplayUnits->GetComponentDimUnit());
@@ -381,8 +385,14 @@ BOOL CGirderDescGeneralPage::OnInitDialog()
          GetDlgItem(IDC_TOP_WIDTH_START_LABEL)->ShowWindow(SW_HIDE);
          GetDlgItem(IDC_TOP_WIDTH_END_LABEL)->ShowWindow(SW_HIDE);
 
+         GetDlgItem(IDC_LEFT_TOP_WIDTH_START)->ShowWindow(SW_HIDE);
+         GetDlgItem(IDC_LEFT_TOP_WIDTH_START_UNIT)->ShowWindow(SW_HIDE);
+
          GetDlgItem(IDC_LEFT_TOP_WIDTH_END)->ShowWindow(SW_HIDE);
          GetDlgItem(IDC_LEFT_TOP_WIDTH_END_UNIT)->ShowWindow(SW_HIDE);
+
+         GetDlgItem(IDC_RIGHT_TOP_WIDTH_START)->ShowWindow(SW_HIDE);
+         GetDlgItem(IDC_RIGHT_TOP_WIDTH_START_UNIT)->ShowWindow(SW_HIDE);
 
          GetDlgItem(IDC_RIGHT_TOP_WIDTH_END)->ShowWindow(SW_HIDE);
          GetDlgItem(IDC_RIGHT_TOP_WIDTH_END_UNIT)->ShowWindow(SW_HIDE);
@@ -405,6 +415,8 @@ BOOL CGirderDescGeneralPage::OnInitDialog()
       GetDlgItem(IDC_LEFT_TOP_WIDTH_LABEL)->ShowWindow(SW_HIDE);
       GetDlgItem(IDC_LEFT_TOP_WIDTH_START)->ShowWindow(SW_HIDE);
       GetDlgItem(IDC_LEFT_TOP_WIDTH_START_UNIT)->ShowWindow(SW_HIDE);
+      GetDlgItem(IDC_LEFT_TOP_WIDTH_END)->ShowWindow(SW_HIDE);
+      GetDlgItem(IDC_LEFT_TOP_WIDTH_END_UNIT)->ShowWindow(SW_HIDE);
       GetDlgItem(IDC_RIGHT_TOP_WIDTH_LABEL)->ShowWindow(SW_HIDE);
       GetDlgItem(IDC_RIGHT_TOP_WIDTH_START)->ShowWindow(SW_HIDE);
       GetDlgItem(IDC_RIGHT_TOP_WIDTH_START_UNIT)->ShowWindow(SW_HIDE);

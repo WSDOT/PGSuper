@@ -121,15 +121,10 @@ void CPsLossEngineer::Init(IBroker* pBroker,StatusGroupIDType statusGroupID)
 
 LOSSDETAILS CPsLossEngineer::ComputeLosses(BeamType beamType,const pgsPointOfInterest& poi)
 {
-   const CSegmentKey& segmentKey = poi.GetSegmentKey();
-
-   GET_IFACE(IBridge,pBridge);
-   const GDRCONFIG& config = pBridge->GetSegmentConfiguration(segmentKey);
-
-   return ComputeLosses(beamType,poi,config);
+   return ComputeLosses(beamType,poi,nullptr);
 }
 
-LOSSDETAILS CPsLossEngineer::ComputeLosses(BeamType beamType,const pgsPointOfInterest& poi,const GDRCONFIG& config)
+LOSSDETAILS CPsLossEngineer::ComputeLosses(BeamType beamType,const pgsPointOfInterest& poi,const GDRCONFIG* pConfig)
 {
    LOSSDETAILS details;
 
@@ -144,31 +139,31 @@ LOSSDETAILS CPsLossEngineer::ComputeLosses(BeamType beamType,const pgsPointOfInt
    switch ( loss_method )
    {
    case pgsTypes::AASHTO_REFINED:
-      LossesByRefinedEstimate(beamType,poi,config,&details,laAASHTO);
+      LossesByRefinedEstimate(beamType,poi,pConfig,&details,laAASHTO);
       break;
 
    case pgsTypes::WSDOT_REFINED:
-      LossesByRefinedEstimate(beamType,poi,config,&details,laWSDOT);
+      LossesByRefinedEstimate(beamType,poi, pConfig,&details,laWSDOT);
       break;
 
    case pgsTypes::TXDOT_REFINED_2004:
-      LossesByRefinedEstimate(beamType,poi,config,&details,laTxDOT);
+      LossesByRefinedEstimate(beamType,poi, pConfig,&details,laTxDOT);
       break;
 
    case pgsTypes::TXDOT_REFINED_2013:
-      LossesByRefinedEstimateTxDOT2013(beamType,poi,config,&details);
+      LossesByRefinedEstimateTxDOT2013(beamType,poi, pConfig,&details);
       break;
 
    case pgsTypes::AASHTO_LUMPSUM:
-      LossesByApproxLumpSum(beamType,poi,config,&details,false);
+      LossesByApproxLumpSum(beamType,poi, pConfig,&details,false);
       break;
 
    case pgsTypes::WSDOT_LUMPSUM:
-      LossesByApproxLumpSum(beamType,poi,config,&details,true);
+      LossesByApproxLumpSum(beamType,poi, pConfig,&details,true);
       break;
 
    case pgsTypes::GENERAL_LUMPSUM:
-      LossesByGeneralLumpSum(beamType,poi,config,&details);
+      LossesByGeneralLumpSum(beamType,poi, pConfig,&details);
       break;
 
    default:
@@ -183,7 +178,7 @@ LOSSDETAILS CPsLossEngineer::ComputeLossesForDesign(BeamType beamType,const pgsP
    LOSSDETAILS details;
 
    m_bComputingLossesForDesign = true;
-   details = ComputeLosses(beamType,poi,config);
+   details = ComputeLosses(beamType,poi, &config);
    m_bComputingLossesForDesign = false;
 
    return details;
@@ -270,7 +265,7 @@ void CPsLossEngineer::ReportGeneralLumpSumMethod(BeamType beamType,const CGirder
    ReportLumpSumMethod(pChapter,beamType,girderKey,pDisplayUnits,bDesign,level);
 }
 
-void CPsLossEngineer::LossesByRefinedEstimate(BeamType beamType,const pgsPointOfInterest& poi,const GDRCONFIG& config,LOSSDETAILS* pLosses,LossAgency lossAgency)
+void CPsLossEngineer::LossesByRefinedEstimate(BeamType beamType,const pgsPointOfInterest& poi,const GDRCONFIG*pConfig,LOSSDETAILS* pLosses,LossAgency lossAgency)
 {
    PRECONDITION(pLosses != 0 );
 
@@ -282,15 +277,15 @@ void CPsLossEngineer::LossesByRefinedEstimate(BeamType beamType,const pgsPointOf
    if ( pSpecEntry->GetSpecificationType() <= lrfdVersionMgr::ThirdEdition2004 ||
         lossAgency==laTxDOT)
    {
-      LossesByRefinedEstimateBefore2005(beamType,poi,config,pLosses);
+      LossesByRefinedEstimateBefore2005(beamType,poi,pConfig,pLosses);
    }
    else
    {
-      LossesByRefinedEstimate2005(beamType,poi,config,pLosses,lossAgency);
+      LossesByRefinedEstimate2005(beamType,poi, pConfig,pLosses,lossAgency);
    }
 }
 
-void CPsLossEngineer::LossesByRefinedEstimateBefore2005(BeamType beamType,const pgsPointOfInterest& poi,const GDRCONFIG& config,LOSSDETAILS* pLosses)
+void CPsLossEngineer::LossesByRefinedEstimateBefore2005(BeamType beamType,const pgsPointOfInterest& poi,const GDRCONFIG* pConfig,LOSSDETAILS* pLosses)
 {
    pLosses->LossMethod = pgsTypes::AASHTO_REFINED;
 
@@ -348,7 +343,7 @@ void CPsLossEngineer::LossesByRefinedEstimateBefore2005(BeamType beamType,const 
 
    Float64 anchorSet,wobble,coeffFriction,angleChange;
 
-   GetLossParameters(poi,config,
+   GetLossParameters(poi, pConfig,
                      &spType,
                      &gradePerm, &typePerm, &coatingPerm, &gradeTemp, &typeTemp, &coatingTemp, &fpjPerm, &fpjTTS, &perimeter, &Ag, &Ig, &Ybg, &Ac, &Ic, &Ybc, &An, &In, &Ybn, &Acn, &Icn, &Ybcn, &Volume, &SurfaceArea, &Ad, &ed, &Ksh,
                      &epermRelease, &epermFinal, &etemp, &aps, &ApsPerm, &ApsTTS, &Mdlg, &Madlg, &Msidl, &rh, 
@@ -477,7 +472,7 @@ void CPsLossEngineer::LossesByRefinedEstimateBefore2005(BeamType beamType,const 
    }
 }
 
-void CPsLossEngineer::LossesByRefinedEstimate2005(BeamType beamType,const pgsPointOfInterest& poi,const GDRCONFIG& config,LOSSDETAILS* pLosses,LossAgency lossAgency)
+void CPsLossEngineer::LossesByRefinedEstimate2005(BeamType beamType,const pgsPointOfInterest& poi,const GDRCONFIG* pConfig,LOSSDETAILS* pLosses,LossAgency lossAgency)
 {
    assert(lossAgency!=laTxDOT); // Did TxDOT change their mind about using the 05 revisions?
 
@@ -534,7 +529,7 @@ void CPsLossEngineer::LossesByRefinedEstimate2005(BeamType beamType,const pgsPoi
 
    Float64 anchorSet,wobble,coeffFriction,angleChange;
 
-   GetLossParameters(poi,config,&spType,
+   GetLossParameters(poi, pConfig,&spType,
                      &gradePerm, &typePerm, &coatingPerm, &gradeTemp, &typeTemp, &coatingTemp, &fpjPerm, &fpjTTS, &perimeter, &Ag, &Ig, &Ybg, &Ac, &Ic, &Ybc, &An, &In, &Ybn, &Acn, &Icn, &Ybcn, &Volume, &SurfaceArea, &Ad, &ed, &Ksh,
                      &epermRelease, &epermFinal, &etemp, &aps, &ApsPerm, &ApsTTS, &Mdlg, &Madlg, &Msidl, &rh, 
                      &ti, &th, &td,& tf, &PjS, &PjH, &PjT,
@@ -686,13 +681,13 @@ void CPsLossEngineer::LossesByRefinedEstimate2005(BeamType beamType,const pgsPoi
    }
 }
 
-void CPsLossEngineer::LossesByRefinedEstimateTxDOT2013(BeamType beamType,const pgsPointOfInterest& poi,const GDRCONFIG& config,LOSSDETAILS* pLosses)
+void CPsLossEngineer::LossesByRefinedEstimateTxDOT2013(BeamType beamType,const pgsPointOfInterest& poi,const GDRCONFIG* pConfig,LOSSDETAILS* pLosses)
 {
    // Compute details - This is a bit tricky: We practically need to compute losses in order to determine which method to use
    //                   for elastic shortening. So might as well save on code and compute them - then figure out if we can cache
    //                   This may be first time through, so we'll check on the back side and; if we are using the 
    //                   simplified method, we need to recompute at mid-girder
-   lrfdElasticShortening::FcgpComputationMethod method = LossesByRefinedEstimateTxDOT2013_Compute(beamType,poi,config,pLosses);
+   lrfdElasticShortening::FcgpComputationMethod method = LossesByRefinedEstimateTxDOT2013_Compute(beamType,poi, pConfig,pLosses);
 
    if(method == lrfdElasticShortening::fcgp07Fpu)
    {
@@ -703,12 +698,12 @@ void CPsLossEngineer::LossesByRefinedEstimateTxDOT2013(BeamType beamType,const p
       ATLASSERT(vPoi.size() == 1);
       const pgsPointOfInterest& midpoi = vPoi.front();
 
-      lrfdElasticShortening::FcgpComputationMethod newmethod = LossesByRefinedEstimateTxDOT2013_Compute(beamType, midpoi, config, pLosses);
+      lrfdElasticShortening::FcgpComputationMethod newmethod = LossesByRefinedEstimateTxDOT2013_Compute(beamType, midpoi, pConfig, pLosses);
       ATLASSERT(newmethod == lrfdElasticShortening::fcgp07Fpu);
    }
 }
 
-lrfdElasticShortening::FcgpComputationMethod CPsLossEngineer::LossesByRefinedEstimateTxDOT2013_Compute(BeamType beamType,const pgsPointOfInterest& poi,const GDRCONFIG& config,LOSSDETAILS* pLosses)
+lrfdElasticShortening::FcgpComputationMethod CPsLossEngineer::LossesByRefinedEstimateTxDOT2013_Compute(BeamType beamType,const pgsPointOfInterest& poi,const GDRCONFIG* pConfig,LOSSDETAILS* pLosses)
 {
    pLosses->LossMethod = pgsTypes::TXDOT_REFINED_2013;
 
@@ -766,7 +761,7 @@ lrfdElasticShortening::FcgpComputationMethod CPsLossEngineer::LossesByRefinedEst
 
    Float64 anchorSet,wobble,coeffFriction,angleChange;
 
-   GetLossParameters(poi,config,&spType,
+   GetLossParameters(poi, pConfig,&spType,
                      &gradePerm, &typePerm, &coatingPerm, &gradeTemp, &typeTemp, &coatingTemp, &fpjPerm, &fpjTTS, &perimeter, &Ag, &Ig, &Ybg, &Ac, &Ic, &Ybc, &An, &In, &Ybn, &Acn, &Icn, &Ybcn, &Volume, &SurfaceArea, &Ad, &ed, &Ksh,
                      &epermRelease, &epermFinal, &etemp, &aps, &ApsPerm, &ApsTTS, &Mdlg, &Madlg, &Msidl, &rh, 
                      &ti, &th, &td,& tf, &PjS, &PjH, &PjT,
@@ -818,9 +813,20 @@ lrfdElasticShortening::FcgpComputationMethod CPsLossEngineer::LossesByRefinedEst
             IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
             if ( pGirder->IsPrismatic(releaseIntervalIdx,segmentKey) )
             {
-               if( config.PrestressConfig.Debond[pgsTypes::Straight].empty() && config.PrestressConfig.Debond[pgsTypes::Harped].empty() )
+               if (pConfig)
                {
-                  method = lrfdElasticShortening::fcgp07Fpu;
+                  if (pConfig->PrestressConfig.Debond[pgsTypes::Straight].empty() && pConfig->PrestressConfig.Debond[pgsTypes::Harped].empty())
+                  {
+                     method = lrfdElasticShortening::fcgp07Fpu;
+                  }
+               }
+               else
+               {
+                  GET_IFACE(IStrandGeometry, pStrandGeom);
+                  if (!pStrandGeom->HasDebonding(segmentKey))
+                  {
+                     method = lrfdElasticShortening::fcgp07Fpu;
+                  }
                }
             }
          }
@@ -941,7 +947,7 @@ lrfdElasticShortening::FcgpComputationMethod CPsLossEngineer::LossesByRefinedEst
    return method;
 }
 
-void CPsLossEngineer::LossesByApproxLumpSum(BeamType beamType,const pgsPointOfInterest& poi,const GDRCONFIG& config,LOSSDETAILS* pLosses,bool isWsdot)
+void CPsLossEngineer::LossesByApproxLumpSum(BeamType beamType,const pgsPointOfInterest& poi,const GDRCONFIG* pConfig,LOSSDETAILS* pLosses,bool isWsdot)
 {
    PRECONDITION(pLosses != 0 );
 
@@ -1014,7 +1020,7 @@ void CPsLossEngineer::LossesByApproxLumpSum(BeamType beamType,const pgsPointOfIn
       THROW_UNWIND(msg.c_str(),XREASON_LRFD_VERSION);
    }
 
-   GetLossParameters(poi,config,&spType,
+   GetLossParameters(poi, pConfig,&spType,
                      &gradePerm, &typePerm, &coatingPerm, &gradeTemp, &typeTemp, &coatingTemp, &fpjPerm, &fpjTTS, &perimeter, &Ag, &Ig, &Ybg, &Ac, &Ic, &Ybc, &An, &In, &Ybn, &Acn, &Icn, &Ybcn, &Volume, &SurfaceArea, &Ad, &ed, &Ksh,
                      &epermRelease, &epermFinal, &etemp, &aps, &ApsPerm, &ApsTTS, &Mdlg, &Madlg, &Msidl, &rh, 
                      &ti, &th, &td,& tf, &PjS, &PjH, &PjT,
@@ -1055,6 +1061,9 @@ void CPsLossEngineer::LossesByApproxLumpSum(BeamType beamType,const pgsPointOfIn
 
          Float64 shipping_loss = pSpecEntry->GetShippingLosses();
 
+         GET_IFACE(IMaterials, pMaterial);
+         pgsTypes::ConcreteType concreteType = (pConfig ? pConfig->ConcType : pMaterial->GetSegmentConcreteType(segmentKey));
+
          std::shared_ptr<lrfdApproximateLosses> pLoss(std::make_shared<lrfdApproximateLosses>(
                             (lrfdApproximateLosses::BeamType)beamType,
                             shipping_loss,
@@ -1082,7 +1091,7 @@ void CPsLossEngineer::LossesByApproxLumpSum(BeamType beamType,const pgsPointOfIn
                             coeffFriction,
                             angleChange,
 
-                            (lrfdConcreteUtil::DensityType)config.ConcType,
+                            (lrfdConcreteUtil::DensityType)concreteType,
                             fc,
                             fci,
                             fcSlab,
@@ -1253,7 +1262,7 @@ void CPsLossEngineer::LossesByApproxLumpSum(BeamType beamType,const pgsPointOfIn
    }
 }
 
-void CPsLossEngineer::LossesByGeneralLumpSum(BeamType beamType,const pgsPointOfInterest& poi,const GDRCONFIG& config,LOSSDETAILS* pLosses)
+void CPsLossEngineer::LossesByGeneralLumpSum(BeamType beamType,const pgsPointOfInterest& poi,const GDRCONFIG* pConfig,LOSSDETAILS* pLosses)
 {
    // Need the following parameters for the lump sum loss object: ApsPerm,ApsTTS,fpjPerm,fpjTTS,usage
    // It is easier to call the general GetLossParameters method and get everything this
@@ -1313,7 +1322,7 @@ void CPsLossEngineer::LossesByGeneralLumpSum(BeamType beamType,const pgsPointOfI
 
    Float64 anchorSet,wobble,coeffFriction,angleChange;
 
-   GetLossParameters(poi,config,
+   GetLossParameters(poi, pConfig,
                      &spType,
                      &gradePerm, &typePerm, &coatingPerm, &gradeTemp, &typeTemp, &coatingTemp, &fpjPerm, &fpjTTS, &perimeter, &Ag, &Ig, &Ybg, &Ac, &Ic, &Ybc, &An, &In, &Ybn, &Acn, &Icn, &Ybcn, &Volume, &SurfaceArea, &Ad, &ed, &Ksh,
                      &epermRelease, &epermFinal, &etemp, &aps, &ApsPerm, &ApsTTS, &Mdlg, &Madlg, &Msidl, &rh, 
@@ -2539,7 +2548,7 @@ void CPsLossEngineer::ReportLumpSumTimeDependentLosses(rptChapter* pChapter,cons
    }
 }
 
-void CPsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi, const GDRCONFIG& config,
+void CPsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi, const GDRCONFIG* pConfig,
    lrfdLosses::SectionPropertiesType* pSectionProperties,
    matPsStrand::Grade* pGradePerm,
    matPsStrand::Type* pTypePerm,
@@ -2633,14 +2642,28 @@ void CPsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi, const GDR
 
    const CStrandData* pStrands = pSegmentData->GetStrandData(segmentKey);
 
-   *pPjS = config.PrestressConfig.Pjack[pgsTypes::Straight];
-   *pNs = config.PrestressConfig.GetStrandCount(pgsTypes::Straight);
+   if (pConfig)
+   {
+      *pPjS = pConfig->PrestressConfig.Pjack[pgsTypes::Straight];
+      *pNs = pConfig->PrestressConfig.GetStrandCount(pgsTypes::Straight);
 
-   *pPjH = config.PrestressConfig.Pjack[pgsTypes::Harped];
-   *pNh = config.PrestressConfig.GetStrandCount(pgsTypes::Harped);
+      *pPjH = pConfig->PrestressConfig.Pjack[pgsTypes::Harped];
+      *pNh = pConfig->PrestressConfig.GetStrandCount(pgsTypes::Harped);
 
-   *pPjT = config.PrestressConfig.Pjack[pgsTypes::Temporary];
-   *pNt = config.PrestressConfig.GetStrandCount(pgsTypes::Temporary);
+      *pPjT = pConfig->PrestressConfig.Pjack[pgsTypes::Temporary];
+      *pNt = pConfig->PrestressConfig.GetStrandCount(pgsTypes::Temporary);
+   }
+   else
+   {
+      *pPjS = pStrands->GetPjack(pgsTypes::Straight);
+      *pNs = pStrands->GetStrandCount(pgsTypes::Straight);
+
+      *pPjH = pStrands->GetPjack(pgsTypes::Harped);
+      *pNh = pStrands->GetStrandCount(pgsTypes::Harped);
+
+      *pPjT = pStrands->GetPjack(pgsTypes::Temporary);
+      *pNt = pStrands->GetStrandCount(pgsTypes::Temporary);
+   }
 
    const matPsStrand* pPermStrand = pSegmentData->GetStrandMaterial(segmentKey, pgsTypes::Permanent);
    ATLASSERT(pPermStrand);
@@ -2691,25 +2714,39 @@ void CPsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi, const GDR
    *pGdrCreepK2 = pMaterial->GetSegmentCreepK2(segmentKey);
    *pGdrShrinkageK1 = pMaterial->GetSegmentShrinkageK1(segmentKey);
    *pGdrShrinkageK2 = pMaterial->GetSegmentShrinkageK2(segmentKey);
-   *pFci = config.Fci;
-   *pFc = config.Fc;
 
-   if (config.bUserEci)
+   if (pConfig)
    {
-      *pEci = config.Eci;
+      *pFci = pConfig->Fci;
+      *pFc = pConfig->Fc;
+
+      if (pConfig->bUserEci)
+      {
+         *pEci = pConfig->Eci;
+      }
+      else
+      {
+         *pEci = pMaterial->GetEconc(pConfig->Fci, pMaterial->GetSegmentStrengthDensity(segmentKey), pMaterial->GetSegmentEccK1(segmentKey), pMaterial->GetSegmentEccK2(segmentKey));
+      }
+
+      if (pConfig->bUserEc)
+      {
+         *pEc = pConfig->Ec;
+      }
+      else
+      {
+         *pEc = pMaterial->GetEconc(pConfig->Fc, pMaterial->GetSegmentStrengthDensity(segmentKey), pMaterial->GetSegmentEccK1(segmentKey), pMaterial->GetSegmentEccK2(segmentKey));
+      }
    }
    else
    {
-      *pEci = pMaterial->GetEconc(config.Fci, pMaterial->GetSegmentStrengthDensity(segmentKey), pMaterial->GetSegmentEccK1(segmentKey), pMaterial->GetSegmentEccK2(segmentKey));
-   }
+      IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
+      IntervalIndexType haulingIntervalIdx = pIntervals->GetHaulSegmentInterval(segmentKey); // steps up to f'c at hauling (see Concrete Manager)
+      *pFci = pMaterial->GetSegmentFc(segmentKey, releaseIntervalIdx);
+      *pEci = pMaterial->GetSegmentEc(segmentKey, releaseIntervalIdx);
 
-   if (config.bUserEc)
-   {
-      *pEc = config.Ec;
-   }
-   else
-   {
-      *pEc = pMaterial->GetEconc(config.Fc, pMaterial->GetSegmentStrengthDensity(segmentKey), pMaterial->GetSegmentEccK1(segmentKey), pMaterial->GetSegmentEccK2(segmentKey));
+      *pFc = pMaterial->GetSegmentFc(segmentKey, haulingIntervalIdx);
+      *pEc = pMaterial->GetSegmentEc(segmentKey, haulingIntervalIdx);
    }
 
    // Deck
@@ -2742,26 +2779,35 @@ void CPsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi, const GDR
       }
    }
 
-   
+
    // eccentricity of the permanent strands at release
-   *pepermRelease = pStrandGeom->GetEccentricity( releaseIntervalIdx,  poi, pgsTypes::Permanent, &config, &nStrandsEffective);
+   *pepermRelease = pStrandGeom->GetEccentricity(releaseIntervalIdx, poi, pgsTypes::Permanent, pConfig, &nStrandsEffective);
 
    // eccentricity of permanent strands at the last interval when the girder is noncomposite
-   *pepermFinal   = pStrandGeom->GetEccentricity( noncompositeIntervalIdx, poi, pgsTypes::Permanent, &config, &nStrandsEffective);
+   *pepermFinal = pStrandGeom->GetEccentricity(noncompositeIntervalIdx, poi, pgsTypes::Permanent, pConfig, &nStrandsEffective);
 
    // eccentricity of the temporary strands
-   *petemp = pStrandGeom->GetEccentricity( releaseIntervalIdx, poi, pgsTypes::Temporary, &config, &nStrandsEffective);
+   *petemp = pStrandGeom->GetEccentricity(releaseIntervalIdx, poi, pgsTypes::Temporary, pConfig, &nStrandsEffective);
 
    pgsTypes::SectionPropertyType spType = (pSectProp->GetSectionPropertiesMode() == pgsTypes::spmGross ? pgsTypes::sptGross : pgsTypes::sptTransformed);
    *pSectionProperties = (spType == pgsTypes::sptGross ? lrfdLosses::sptGross : lrfdLosses::sptTransformed);
 
    *pPerimeter = pSectProp->GetPerimeter(poi);
-   *pAg  = pSectProp->GetAg( spType, releaseIntervalIdx, poi );
-   *pIg  = pSectProp->GetIxx( spType, releaseIntervalIdx, poi );
-   *pYbg = pSectProp->GetY(  spType, releaseIntervalIdx, poi, pgsTypes::BottomGirder );
-   *pAc  = pSectProp->GetAg( spType, liveLoadIntervalIdx, poi, config.Fc );
-   *pIc  = pSectProp->GetIxx( spType, liveLoadIntervalIdx, poi, config.Fc );
-   *pYbc = pSectProp->GetY(  spType, liveLoadIntervalIdx, poi, pgsTypes::BottomGirder, config.Fc );
+   *pAg = pSectProp->GetAg(spType, releaseIntervalIdx, poi);
+   *pIg = pSectProp->GetIxx(spType, releaseIntervalIdx, poi);
+   *pYbg = pSectProp->GetY(spType, releaseIntervalIdx, poi, pgsTypes::BottomGirder);
+   if (pConfig)
+   {
+      *pAc = pSectProp->GetAg(spType, liveLoadIntervalIdx, poi, pConfig->Fc);
+      *pIc = pSectProp->GetIxx(spType, liveLoadIntervalIdx, poi, pConfig->Fc);
+      *pYbc = pSectProp->GetY(spType, liveLoadIntervalIdx, poi, pgsTypes::BottomGirder, pConfig->Fc);
+   }
+   else
+   {
+      *pAc = pSectProp->GetAg(spType, liveLoadIntervalIdx, poi);
+      *pIc = pSectProp->GetIxx(spType, liveLoadIntervalIdx, poi);
+      *pYbc = pSectProp->GetY(spType, liveLoadIntervalIdx, poi, pgsTypes::BottomGirder);
+   }
 
    *pVolume = pSectProp->GetSegmentVolume(segmentKey);
    *pSurfaceArea = pSectProp->GetSegmentSurfaceArea(segmentKey);
@@ -2815,8 +2861,14 @@ void CPsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi, const GDR
       }
 
       // eccentricity of deck
-      *ped = pSectProp->GetY(compositeDeckIntervalIdx, poi, pgsTypes::TopGirder, config.Fc)
-         + pBridge->GetStructuralSlabDepth(poi) / 2;
+      if (pConfig)
+      {
+         *ped = pSectProp->GetY(compositeDeckIntervalIdx, poi, pgsTypes::TopGirder, pConfig->Fc) + pBridge->GetStructuralSlabDepth(poi) / 2;
+      }
+      else
+      {
+         *ped = pSectProp->GetY(compositeDeckIntervalIdx, poi, pgsTypes::TopGirder) + pBridge->GetStructuralSlabDepth(poi) / 2;
+      }
       *ped *= -1;
    }
    else
@@ -2940,10 +2992,11 @@ void CPsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi, const GDR
    if ( m_bComputingLossesForDesign )
    {
       // get the additional moment caused by the difference in input and design "A" dimension
-      Float64 Mslab = pProdForces->GetDesignSlabMomentAdjustment(poi,&config);
+      ATLASSERT(pConfig != nullptr); // if we are designing, we must be using a config object
+      Float64 Mslab = pProdForces->GetDesignSlabMomentAdjustment(poi,pConfig);
       *pMadlg += K_slab*Mslab;
 
-      Float64 Mslabpad = pProdForces->GetDesignSlabPadMomentAdjustment(poi,&config);
+      Float64 Mslabpad = pProdForces->GetDesignSlabPadMomentAdjustment(poi,pConfig);
       *pMadlg += K_slabpad*Mslabpad;
    }
 
@@ -2999,7 +3052,7 @@ void CPsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi, const GDR
 
 
    // Update the data members of the loss calculation object.  It will take care of the rest
-   switch (config.PrestressConfig.TempStrandUsage)
+   switch (pConfig ? pConfig->PrestressConfig.TempStrandUsage : pStrands->GetTemporaryStrandUsage())
    {
    case pgsTypes::ttsPretensioned:
       *pUsage = lrfdLosses::tsPretensioned;

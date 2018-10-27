@@ -36,6 +36,13 @@
 #include <PgsExt\BridgeDescription2.h>
 #include <IFace\Project.h>
 
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
+
+
 IMPLEMENT_DYNAMIC(CEditHaunchDlg, CDialog)
 
 CEditHaunchDlg::CEditHaunchDlg(const CBridgeDescription2* pBridgeDesc, CWnd* pParent /*=nullptr*/)

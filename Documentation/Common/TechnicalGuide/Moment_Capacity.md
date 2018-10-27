@@ -17,8 +17,6 @@ The basic theory and assumptions for the non-linear analysis are:
 8. The material model of stress-strain behavior for low relaxation and stress relieved prestressing strands utilizes the "power formula" taken from the PCI Bridge Design Manual.
 9. The distance c from the fiber of maximum strain to the neutral axis is measured in a direction perpendicular to that axis.
 
-> NOTE: The maximum allowable prestressing requirements are still checked for this method per LRFD 5.7.3.3.1. Sections that do not pass this criteria will fail the moment capacity specification check.
-
 Solution Method
 ----------------
 The non-linear compressive behavior of prestressed beam sections is modelled by slicing the compression area of the section into horizontal strips. Strains are computed at the midpoint of each strip and then stresses are computed using the concrete material model. The moment contribution by each strip is then determined by multiplying the stress in the strip by the strip area to get the force and then multiplying this force by the distance from the strip's geometrical centroid to the neutral axis. First 30 strips are used. If the program cannot converge on a solution, then 50 and 100 strips are used. The strips are re-generated each time the neutral axis location is changed.
@@ -39,7 +37,7 @@ The strain <span style="font-family:Symbol">e</span><sub>2</sub> is the strain i
 
 Cross Section Geometry and Materials Used for Calculating Capacities
 ---------------------------------------------------------------------
-The cross sectional geometry used for calculating the moment capacity of a girder is the same as that used for calculating section properties. Mild steel longitudinal reinforcement in the girder and in the deck is not considered in the capacity calculation.
+The cross sectional geometry used for calculating the moment capacity of a girder is the same as that used for calculating section properties (Refer to @ref tg_section_properties ). Mild steel longitudinal reinforcement in the girder and in the deck is not considered in the capacity calculation.
 
 Strain in the Prestressing Steel
 --------------------------------

@@ -90,9 +90,9 @@ public:
    Float64 GetBasicSegmentHeight() const;
 
    // End blocks (index is pgsTypes::MemberEndType enum)
-   Float64 EndBlockLength[2];
-   Float64 EndBlockTransitionLength[2];
-   Float64 EndBlockWidth[2];
+   std::array<Float64, 2> EndBlockLength;
+   std::array<Float64, 2> EndBlockTransitionLength;
+   std::array<Float64, 2> EndBlockWidth;
 
    // Copies only segment definition data. Does not copy ID or Index
    void CopySegmentData(const CPrecastSegmentData* pSegment,bool bCopyLocation);
@@ -176,18 +176,18 @@ protected:
    CClosureJointData* m_pEndClosure; // weak reference, owned by CSplicedGirderData
 
    pgsTypes::SegmentVariationType m_VariationType;
-   Float64 m_VariationLength[4]; // index is the SegmentZoneType enum
-   Float64 m_VariationHeight[4];
-   Float64 m_VariationBottomFlangeDepth[4];
+   std::array<Float64, 4> m_VariationLength; // index is the SegmentZoneType enum
+   std::array<Float64, 4> m_VariationHeight;
+   std::array<Float64, 4> m_VariationBottomFlangeDepth;
    bool m_bVariableBottomFlangeDepthEnabled;
 
    void AdjustAdjacentSegment();
    Float64 GetSegmentHeight(bool bSegmentHeight) const;
 
    CSplicedGirderData* m_pGirder;
-   const CSpanData2* m_pSpanData[2]; // [0] is a pointer to the span where this segment starts
-                                     // [1] is a pointer to the span where this segment ends
-                                     // the pgsTypes::MemberEndType enum can be used to access this array
+   std::array<const CSpanData2*,2> m_pSpanData; // [0] is a pointer to the span where this segment starts
+                                                // [1] is a pointer to the span where this segment ends
+                                                // the pgsTypes::MemberEndType enum can be used to access this array
    
    SegmentIndexType m_SegmentIndex;
    void SetIndex(SegmentIndexType segIdx);
@@ -196,7 +196,7 @@ protected:
    void SetID(SegmentIDType segID);
    
    friend CSplicedGirderData;
-   SpanIndexType m_SpanIdx[2]; // contains the span index of the span that will be referenced by
+   std::array<SpanIndexType,2> m_SpanIdx; // contains the span index of the span that will be referenced by
                                // m_pSpanData. This value will be INVALID_INDEX with m_pSpanData is defined
 
    // cache the segment height and bottom flange thickness.

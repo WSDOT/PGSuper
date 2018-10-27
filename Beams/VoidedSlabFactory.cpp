@@ -98,42 +98,9 @@ void CVoidedSlabFactory::CreateGirderSection(IBroker* pBroker,StatusGroupIDType 
    CComPtr<IVoidedSlab> beam;
    gdrSection->get_Beam(&beam);
 
-   Float64 H,W,D,S,J;
-   WebIndexType N;
-   GetDimensions(dimensions,H,W,D,S,N,J);
-
-   beam->put_Height(H);
-   beam->put_Width(W);
-   beam->put_VoidDiameter(D);
-   beam->put_VoidSpacing(S);
-   beam->put_VoidCount(N);
+   DimensionAndPositionBeam(dimensions, beam);
 
    gdrSection.QueryInterface(ppSection);
-}
-
-void CVoidedSlabFactory::CreateGirderProfile(IBroker* pBroker,StatusGroupIDType statusGroupID,const CSegmentKey& segmentKey,const IBeamFactory::Dimensions& dimensions,IShape** ppShape) const
-{
-   GET_IFACE2(pBroker,IBridge,pBridge);
-   Float64 length = pBridge->GetSegmentLength(segmentKey);
-
-   Float64 H,W,D,S,J;
-   WebIndexType N;
-   GetDimensions(dimensions,H,W,D,S,N,J);
-
-   Float64 height = H;
-
-   CComPtr<IRectangle> rect;
-   rect.CoCreateInstance(CLSID_Rect);
-   rect->put_Height(height);
-   rect->put_Width(length);
-
-   CComQIPtr<IXYPosition> position(rect);
-   CComPtr<IPoint2d> topLeft;
-   position->get_LocatorPoint(lpTopLeft,&topLeft);
-   topLeft->Move(0,0);
-   position->put_LocatorPoint(lpTopLeft,topLeft);
-
-   rect->QueryInterface(ppShape);
 }
 
 void CVoidedSlabFactory::CreateSegment(IBroker* pBroker,StatusGroupIDType statusGroupID,const CSegmentKey& segmentKey,ISuperstructureMemberSegment** ppSegment) const
@@ -186,6 +153,29 @@ void CVoidedSlabFactory::CreateSegment(IBroker* pBroker,StatusGroupIDType status
 
    CComQIPtr<ISuperstructureMemberSegment> ssmbrSegment(segment);
    ssmbrSegment.CopyTo(ppSegment);
+}
+
+void CVoidedSlabFactory::CreateSegmentShape(IBroker* pBroker, const CPrecastSegmentData* pSegment, Float64 Xs, pgsTypes::SectionBias sectionBias, IShape** ppShape) const
+{
+   CComPtr<IVoidedSlab> beam;
+   beam.CoCreateInstance(CLSID_VoidedSlab);
+
+   const CSplicedGirderData* pGirder = pSegment->GetGirder();
+   const GirderLibraryEntry* pGirderEntry = pGirder->GetGirderLibraryEntry();
+   const auto& dimensions = pGirderEntry->GetDimensions();
+
+   DimensionAndPositionBeam(dimensions, beam);
+
+   beam.QueryInterface(ppShape);
+}
+
+Float64 CVoidedSlabFactory::GetSegmentHeight(IBroker* pBroker, const CPrecastSegmentData* pSegment, Float64 Xs) const
+{
+   const CSplicedGirderData* pGirder = pSegment->GetGirder();
+   const GirderLibraryEntry* pGirderEntry = pGirder->GetGirderLibraryEntry();
+   const auto& dimensions = pGirderEntry->GetDimensions();
+   Float64 H = GetDimension(dimensions, _T("H"));
+   return H;
 }
 
 void CVoidedSlabFactory::ConfigureSegment(IBroker* pBroker, StatusItemIDType statusID, const CSegmentKey& segmentKey, ISuperstructureMemberSegment* pSSMbrSegment) const
@@ -1042,4 +1032,26 @@ bool CVoidedSlabFactory::CanPrecamber() const
 GirderIndexType CVoidedSlabFactory::GetMinimumBeamCount() const
 {
    return 1;
+}
+
+void CVoidedSlabFactory::DimensionAndPositionBeam(const IBeamFactory::Dimensions& dimensions, IVoidedSlab* pBeam) const
+{
+   Float64 H, W, D, S, J;
+   WebIndexType N;
+   GetDimensions(dimensions, H, W, D, S, N, J);
+
+   pBeam->put_Height(H);
+   pBeam->put_Width(W);
+   pBeam->put_VoidDiameter(D);
+   pBeam->put_VoidSpacing(S);
+   pBeam->put_VoidCount(N);
+
+   // Hook point is at bottom center of bounding box.
+   // Adjust hook point so top center of bounding box is at (0,0)
+   Float64 Hg;
+   pBeam->get_Height(&Hg);
+
+   CComPtr<IPoint2d> hookPt;
+   pBeam->get_HookPoint(&hookPt);
+   hookPt->Offset(0, -Hg);
 }

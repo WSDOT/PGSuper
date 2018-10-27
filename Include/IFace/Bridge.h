@@ -56,6 +56,8 @@ class matConcreteBase;
 class rptChapter;
 class CPrecastSegmentData;
 class CSplicedGirderData;
+class CStrandData;
+class CStrandRow;
 
 interface IRCBeam2Ex;
 interface IEAFDisplayUnits;
@@ -140,8 +142,11 @@ interface IBridge : IUnknown
    // General Bridge Information
    ///////////////////////////////////////////////////
 
-   // Returns true if bridge contains asymmetric girders
+   // Returns true if bridge contains any girders with an asymmetric cross section
    virtual bool HasAsymmetricGirders() const = 0;
+
+   // Returns true if bridge contains any girders with asymmetric prestressing
+   virtual bool HasAsymmetricPrestressing() const = 0;
 
    // Returns true if the bridge has girders that are not installed plumb
    virtual bool HasTiltedGirders() const = 0;
@@ -386,6 +391,8 @@ interface IBridge : IUnknown
 
    // Returns the configuration data for a segment (material properties, strands, etc)
    virtual GDRCONFIG GetSegmentConfiguration(const CSegmentKey& segmentKey) const = 0;
+
+   virtual void ResolveSegmentVariation(const CPrecastSegmentData* pSegment, std::array<Float64, 4>& Xhp) const = 0;
 
    ///////////////////////////////////////////////////
    // Closure Joints
@@ -1042,6 +1049,7 @@ interface IStrandGeometry : IUnknown
 
    // gets a profile view of a strand
    virtual void GetStrandProfile(const CSegmentKey& segmentKey, pgsTypes::StrandType strandType, StrandIndexType strandIdx, IPoint2dCollection** ppProfilePoints) const = 0;
+   virtual void GetStrandProfile(const CPrecastSegmentData* pSegment, const CStrandData* pStrands, pgsTypes::StrandType strandType, StrandIndexType strandIdx, IPoint2dCollection** ppProfilePoints) const = 0;
    virtual void GetStrandCGProfile(const CSegmentKey& segmentKey, bool bIncTemp, IPoint2dCollection** ppProfilePoints) const = 0;
 
    // Returns the steepest slope at a point of interest for the harped strands. Slope is in the form 1:n (rise:run). This method returns n.
@@ -1091,6 +1099,8 @@ interface IStrandGeometry : IUnknown
    // Conversions from/to sequential fill index to grid fill index (as used in in PRESTRESSCONFIG). A single grid entry can have two strands
    virtual GridIndexType SequentialFillToGridFill(LPCTSTR strGirderName,pgsTypes::StrandType type,StrandIndexType StrandNo) const = 0;
    virtual void GridFillToSequentialFill(LPCTSTR strGirderName,pgsTypes::StrandType type,GridIndexType gridIdx, StrandIndexType* pStrandNo1, StrandIndexType* pStrandNo2) const = 0;
+
+   virtual void GridPositionToStrandPosition(const CSegmentKey& segmentKey, pgsTypes::StrandType strandType, GridIndexType gridIdx, StrandIndexType* pStrandNo1, StrandIndexType* pStrandNo2) const = 0;
 
    virtual StrandIndexType GetStrandCount(const CSegmentKey& segmentKey,pgsTypes::StrandType type,const GDRCONFIG* pConfig = nullptr) const = 0;
    virtual StrandIndexType GetMaxStrands(const CSegmentKey& segmentKey,pgsTypes::StrandType type) const = 0;
@@ -1152,8 +1162,8 @@ interface IStrandGeometry : IUnknown
    virtual RowIndexType GetNumRowsWithStrand(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType ) const = 0;
    virtual StrandIndexType GetNumStrandInRow(const pgsPointOfInterest& poi,RowIndexType rowIdx,pgsTypes::StrandType strandType ) const = 0;
    virtual std::vector<StrandIndexType> GetStrandsInRow(const pgsPointOfInterest& poi, RowIndexType rowIdx, pgsTypes::StrandType strandType ) const = 0;
-   virtual StrandIndexType GetNumDebondedStrandsInRow(const CSegmentKey& segmentKey,RowIndexType rowIdx,pgsTypes::StrandType strandType ) const = 0;
-   virtual bool IsExteriorStrandDebondedInRow(const CSegmentKey& segmentKey,RowIndexType rowIdx,pgsTypes::StrandType strandType ) const = 0;
+   virtual StrandIndexType GetNumDebondedStrandsInRow(const pgsPointOfInterest& poi,RowIndexType rowIdx,pgsTypes::StrandType strandType ) const = 0;
+   virtual bool IsExteriorStrandDebondedInRow(const pgsPointOfInterest& poi,RowIndexType rowIdx,pgsTypes::StrandType strandType ) const = 0;
    virtual bool HasDebonding(const CSegmentKey& segmentKey) const = 0;
    virtual bool IsDebondingSymmetric(const CSegmentKey& segmentKey) const = 0;
 
@@ -1208,6 +1218,12 @@ interface IStrandGeometry : IUnknown
    virtual Float64 ConvertHarpedOffsetHp(LPCTSTR strGirderName,pgsTypes::MemberEndType endType,pgsTypes::AdjustableStrandType adjType, Float64 HgStart,Float64 HgHp1,Float64 HgHp2,Float64 HgEnd,const ConfigStrandFillVector& rHarpedFillArray, HarpedStrandOffsetType fromMeasurementType, Float64 offset, HarpedStrandOffsetType toMeasurementType) const = 0;
 
    virtual pgsTypes::TTSUsage GetTemporaryStrandUsage(const CSegmentKey& segmentKey,const GDRCONFIG* pConfig = nullptr) const = 0;
+
+   // Resolves the harp point location provided in pSegment to harp point locations in Segment Coordinates
+   virtual void ResolveHarpPointLocations(const CPrecastSegmentData* pSegment, std::array<Float64, 4>& Xhp) const = 0;
+
+   // For row or individual strand based input, resolves the strand elevation values to Girder Section Coordinates
+   virtual void ResolveStrandRowElevations(const CPrecastSegmentData* pSegment, const CStrandRow& strandRow, std::array<Float64, 4>& Xhp, std::array<Float64, 4>& Y) const = 0;
 };
 
 /*****************************************************************************
@@ -1226,6 +1242,9 @@ interface ISectionProperties : IUnknown
 {
    // returns the current section properties mode
    virtual pgsTypes::SectionPropertyMode GetSectionPropertiesMode() const = 0;
+
+   // returns how haunch is varried when computing section properties
+   virtual pgsTypes::HaunchAnalysisSectionPropertiesType GetHaunchAnalysisSectionPropertiesType()const = 0;
 
    // Get the stress coefficients at the specifed location for My = 0
    // f = Ca*Axial + Cbx*Mx
@@ -1309,6 +1328,8 @@ interface ISectionProperties : IUnknown
    virtual Float64 GetEffectiveDeckArea(const pgsPointOfInterest& poi) const = 0; // deck area based on effective flange width
    virtual Float64 GetTributaryDeckArea(const pgsPointOfInterest& poi) const = 0; // deck area based on tributary width
    virtual Float64 GetGrossDeckArea(const pgsPointOfInterest& poi) const = 0;     // same as triburary deck area, except gross slab depth is used
+   // Depth of haunch for given haunch type. For parabolic case, assumes a parabolic variation and includes roadway effect and assumed excess camber at mid-span
+   virtual Float64 GetStructuralHaunchDepth(const pgsPointOfInterest& poi,pgsTypes::HaunchAnalysisSectionPropertiesType haunchAType) const = 0;
 
    // Reporting
    virtual void ReportEffectiveFlangeWidth(const CGirderKey& girderKey,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits) const = 0;
@@ -1336,6 +1357,9 @@ interface ISectionProperties : IUnknown
 
    virtual Float64 GetSegmentHeightAtPier(const CSegmentKey& segmentKey,PierIndexType pierIdx) const = 0;
    virtual Float64 GetSegmentHeightAtTemporarySupport(const CSegmentKey& segmentKey,SupportIndexType tsIdx) const = 0;
+
+   // Returns the height of the segment at Xs based on the specified parameters
+   virtual Float64 GetSegmentHeight(const CPrecastSegmentData* pSegment, Float64 Xs) const = 0;
 };
 
 /*****************************************************************************
@@ -1354,7 +1378,10 @@ DEFINE_GUID(IID_IShapes,
 interface IShapes : public IUnknown
 {
    // returns the raw shape of the segment
-   virtual void GetSegmentShape(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,bool bOrient,pgsTypes::SectionCoordinateType coordinateType,IShape** ppShape) const = 0;
+   virtual void GetSegmentShape(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,bool bOrient,pgsTypes::SectionCoordinateType coordinateType,pgsTypes::HaunchAnalysisSectionPropertiesType haunchAType,IShape** ppShape) const = 0;
+
+   // returns the raw segment shape based on the provided segment data. the shape will be in the girder section coordinate system
+   virtual void GetSegmentShape(const CPrecastSegmentData* pSegment, Float64 Xs, pgsTypes::SectionBias sectionBias, IShape** ppShape) const = 0;
 
    // returns the shape of the segment with any section removal (such as clipping for sacrifical depth)
    virtual void GetSegmentSectionShape(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, bool bOrient, pgsTypes::SectionCoordinateType csType, IShape** ppShape) const = 0;
@@ -1363,6 +1390,9 @@ interface IShapes : public IUnknown
    virtual void GetLeftTrafficBarrierShape(Float64 station,IDirection* pDirection,IShape** ppShape) const = 0;
    virtual void GetRightTrafficBarrierShape(Float64 station,IDirection* pDirection,IShape** ppShape) const = 0;
    virtual void GetJointShapes(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, bool bOrient, pgsTypes::SectionCoordinateType coordinateType, IShape** ppLeftJointShape,IShape** ppRightJointShape) const = 0;
+
+   // get the slab shape at the given location including haunch parts
+   virtual void GetSlabAnalysisShape(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,Float64 haunchDepth,IShape** ppShape) const = 0;
 };
 
 /*****************************************************************************
@@ -1555,6 +1585,9 @@ interface IGirder : public IUnknown
    virtual Float64 GetTopFlangeThickening(const pgsPointOfInterest& poi) const = 0;
    virtual Float64 GetTopFlangeThickening(const CSegmentKey& segmentKey,Float64 Xpoi) const = 0;
 
+   // Returns the top flange thickening for the provided segment
+   virtual Float64 GetTopFlangeThickening(const CPrecastSegmentData* pSegment, Float64 Xs) const = 0;
+
    // Returns the number of bottom flanges
    virtual FlangeIndexType GetNumberOfBottomFlanges(const CGirderKey& girderKey) const = 0;
 
@@ -1598,15 +1631,30 @@ interface IGirder : public IUnknown
    // Returns the width used for horizontal interface shear calculations (acv for horizontal shear)
    virtual Float64 GetShearInterfaceWidth(const pgsPointOfInterest& poi) const = 0;
 
+   // Returns the number of webs
    virtual WebIndexType GetWebCount(const CGirderKey& girderKey) const = 0;
+
+   // Returns the location of the CL web as an offset from the CL beam
 	virtual Float64 GetWebLocation(const pgsPointOfInterest& poi,WebIndexType webIdx) const = 0;
+
+   // Returns the spacing between CL webs
 	virtual Float64 GetWebSpacing(const pgsPointOfInterest& poi,WebIndexType spaceIdx) const = 0;
+
+   // Returns the thickness of the web (average thickeness for tapered webs... see IBeams)
    virtual Float64 GetWebThickness(const pgsPointOfInterest& poi,WebIndexType webIdx) const = 0;
-   virtual Float64 GetCL2ExteriorWebDistance(const pgsPointOfInterest& poi) const = 0; // horiz. distance from girder cl to cl of exterior web
+
+   // Returns the horizontal distance from the CL Girder to the CL of the exterior web
+   virtual Float64 GetCL2ExteriorWebDistance(const pgsPointOfInterest& poi) const = 0;
 
    // Returns the web width (bw for moment capacity calculations)
    virtual Float64 GetWebWidth(const pgsPointOfInterest& poi) const = 0;
 
+   // Gets key segment points
+   // pntPier1/2 - point where the CL segment intersects the CL Pier
+   // pntBrg1/2 - point where the CL segment intersects the CL Bearing
+   // pntEnd1/2 - location of the ends of the segments, on the CL Segment
+   // 1 = start of segment
+   // 2 = end of segment
    virtual void GetSegmentEndPoints(const CSegmentKey& segmentKey,pgsTypes::PlanCoordinateType pcType,IPoint2d** pntPier1,IPoint2d** pntEnd1,IPoint2d** pntBrg1,IPoint2d** pntBrg2,IPoint2d** pntEnd2,IPoint2d** pntPier2) const = 0;
 
    // Returns the four plan view points that define the outline of a segment
@@ -1620,8 +1668,10 @@ interface IGirder : public IUnknown
    // Top Girder Reference Chord is a straight line that intersections the top of deck at the CL Brg at start and end of girder
    virtual Float64 GetProfileChordElevation(const pgsPointOfInterest& poi) const = 0;
 
-   // Top Girder Chord is a straight line along the top of the girder
+   // Returns the elevation along the top of girder chord (straight line along the top of the girder)
    virtual Float64 GetTopGirderChordElevation(const pgsPointOfInterest& poi) const = 0;
+
+   // Returns the elevation along the top of girder chord defined by the provided "A" dimension values (straight line along the top of the girder)
    virtual Float64 GetTopGirderChordElevation(const pgsPointOfInterest& poi, Float64 Astart, Float64 Aend) const = 0;
 
    // Returns the top of girder elevation at the centerline of the specified mating surface. If pConfig is nullptr, the slab offset and excess camber from the
@@ -1633,12 +1683,17 @@ interface IGirder : public IUnknown
    // where the transverse line intersects the edges of the girder. If pDirection is nullptr, the transverse line is taken to be normal to the girder
    virtual void GetTopGirderElevation(const pgsPointOfInterest& poi, IDirection* pDirection,Float64* pLeft, Float64* pCenter, Float64* pRight) const = 0;
 
+   // Returns the height of the splitting zone 
    virtual Float64 GetSplittingZoneHeight(const pgsPointOfInterest& poi) const = 0;
+
+   // Returns the direction fo the splitting zone
    virtual pgsTypes::SplittingDirection GetSplittingDirection(const CGirderKey& girderKey) const = 0;
 
 
-   // Area of shear key. uniform portion assumes no joint, section is per joint spacing.
+   // Returns true if the girder has shear keys for the provided spacing type
    virtual bool HasShearKey(const CGirderKey& girderKey,pgsTypes::SupportedBeamSpacing spacingType) const = 0;
+
+   // Area of shear key. uniform portion assumes no joint, section is per joint spacing.
    virtual void GetShearKeyAreas(const CGirderKey& girderKey,pgsTypes::SupportedBeamSpacing spacingType,Float64* uniformArea, Float64* areaPerJoint) const = 0;
 
    // Returns true if the girders are connected with structural longitudinal joints
@@ -1661,8 +1716,6 @@ interface IGirder : public IUnknown
    // Returns the height of the segment at the specified location (Xsp is in Segment Path Coordinates)
    virtual Float64 GetSegmentHeight(const CSegmentKey& segmentKey,const CSplicedGirderData* pSplicedGirder,Float64 Xsp) const = 0;
 
-   virtual void GetProfileShape(const CSegmentKey& segmentKey,IShape** ppShape) const = 0;
-
    // Returns true if the segment can be precambered
    virtual bool CanPrecamber(const CSegmentKey& segmentKey) const = 0;
 
@@ -1671,6 +1724,9 @@ interface IGirder : public IUnknown
 
    // Returns the precamber relative to the ends of the girder at the specified location
    virtual Float64 GetPrecamber(const pgsPointOfInterest& poi) const = 0;
+
+   // Returns the precamber relative to the ends of the provided segment at the specified location
+   virtual Float64 GetPrecamber(const CPrecastSegmentData* pSegment, Float64 Xs) const = 0;
 
    // Returns the precamber relative to the support locations during the specified interval at the specified location.
    virtual Float64 GetPrecamber(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi) const = 0;

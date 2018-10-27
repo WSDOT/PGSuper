@@ -1073,13 +1073,15 @@ void write_creep(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDispl
 
 void write_haunch_dead_load(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, const SpecLibraryEntry* pSpecEntry)
 {
+   INIT_UV_PROTOTYPE( rptLengthUnitValue, dim, pDisplayUnits->GetComponentDimUnit(), true );
    rptParagraph* pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pPara;
-   *pPara<<_T("Haunch Dead Load Criteria");
+   *pPara<<_T("Haunch And Assumed Excess Camber Criteria");
 
    pPara = new rptParagraph;
    *pChapter << pPara;
 
+   // Loading first
    pgsTypes::HaunchLoadComputationType hlctype = pSpecEntry->GetHaunchLoadComputationType();
    if (pgsTypes::hlcZeroCamber==hlctype)
    {
@@ -1088,13 +1090,36 @@ void write_haunch_dead_load(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUn
    else if (pgsTypes::hlcAccountForCamber==hlctype)
    {
       *pPara<<_T("Haunch dead load is computed assuming that the top of the girder is parabolic with the parabola defined by the user-input assumed excess camber.")<<rptNewLine;
-      INIT_UV_PROTOTYPE( rptLengthUnitValue, dim, pDisplayUnits->GetComponentDimUnit(), true );
-      *pPara << _T("Allowable tolerance between assumed and computed excess camber = ") << dim.SetValue(pSpecEntry->GetHaunchLoadCamberTolerance()) << rptNewLine;
-      *pPara << _T("Use ")<< pSpecEntry->GetHaunchLoadCamberFactor()*100 << _T(" % of assumed excess camber when computing haunch dead load.") << rptNewLine;
+      *pPara << _T("- Use ")<< pSpecEntry->GetHaunchLoadCamberFactor()*100 << _T(" % of assumed excess camber when computing haunch dead load.") << rptNewLine;
    }
    else
    {
       ATLASSERT(false); // new method?
+   }
+
+   pgsTypes::HaunchAnalysisSectionPropertiesType hpctype = pSpecEntry->GetHaunchAnalysisSectionPropertiesType();
+   if (pgsTypes::hspZeroHaunch == hpctype)
+   {
+      *pPara << _T("Composite section properties and capacities are computed assuming Zero Haunch Depth)") << rptNewLine;
+   }
+   else if (pgsTypes::hspConstFilletDepth == hpctype)
+   {
+      *pPara << _T("Composite section properties and capacities are computed assuming a Constant Haunch Depth equal to the Fillet value") << rptNewLine;
+   }
+   else if (pgsTypes::hspVariableParabolic == hpctype)
+   {
+      *pPara << _T("Composite section properties and capacities are computed assuming a Parabolically varying Haunch Depth defined by the roadway geometry and assumed excess camber ") << rptNewLine;
+   }
+   else
+   {
+      ATLASSERT(false); // new method?
+   }
+
+   GET_IFACE2( pBroker, ISpecification, pSpec );
+   bool doCamber = pSpec->IsAssExcessCamberInputEnabled();
+   if (doCamber)
+   {
+      *pPara << _T("- Allowable tolerance between assumed and computed excess camber = ") << dim.SetValue(pSpecEntry->GetHaunchLoadCamberTolerance()) << rptNewLine;
    }
 }
 void write_losses(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, const SpecLibraryEntry* pSpecEntry)

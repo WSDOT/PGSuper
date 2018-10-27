@@ -34,6 +34,13 @@
 #include "TxDOTOptionalDesignDoc.h"
 #include "TogaSectionCutDlgEx.h"
 
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
+
+
 // CTxDOTOptionalDesignGirderViewPage dialog
 
 IMPLEMENT_DYNAMIC(CTxDOTOptionalDesignGirderViewPage, CPropertyPage)

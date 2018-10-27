@@ -23,11 +23,97 @@
 #include <PgsExt\PgsExtLib.h>
 #include <PgsExt\RatingArtifact.h>
 
+#if defined _USE_MULTITHREADING
+#include <future>
+#endif
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
 static char THIS_FILE[] = __FILE__;
 #endif
+
+// Gets the controlling rating factor from a collection of rating factor artifacts
+//
+// NOTE: Some artifact collections can be the same length (e.g. all of the flexure ones... shear is a different length)
+// The LoadRater makes them the same length, this object has no guarentee that will always be true
+// If there are collections that are the same length, it would be more efficient to loop over all of them at one time
+// rather than loop over each one by itself as done here
+template <class C,class T>
+Float64 GetControllingRatingFactor(const C& artifacts, const T** ppControllingArtifact)
+{
+   Float64 RF = DBL_MAX;
+   (*ppControllingArtifact) = nullptr;
+
+   for (const auto& item : artifacts)
+   {
+      const auto& artifact(item.second);
+      Float64 rf = artifact.GetRatingFactor();
+      if (rf < RF)
+      {
+         RF = rf;
+         *ppControllingArtifact = &artifact;
+      }
+   }
+
+   if (*ppControllingArtifact == nullptr && 0 < artifacts.size())
+   {
+      // a controlling rating wasn't found (all ratings are DBL_MAX)
+      // so just use the first artifact as the controlling one
+      ATLASSERT(RF == DBL_MAX);
+      (*ppControllingArtifact) = &(artifacts.front().second);
+   }
+
+   return RF;
+}
+
+template <class T>
+void ResetCache(bool* pbCacheFlag, Float64* pCachedRF, T* pCachedArtifact)
+{
+   *pbCacheFlag = false;
+   *pCachedRF = DBL_MAX;
+   *pCachedArtifact = nullptr;
+}
+
+struct PostingLoad
+{
+   Float64 Load;
+   Float64 RF;
+   Float64 VehicleWeight;
+   std::_tstring VehicleName;
+   PostingLoad() : Load(DBL_MAX), RF(1.0), VehicleWeight(0.0), VehicleName(_T("Unknown"))
+   {
+   }
+};
+
+template<class T>
+PostingLoad ComputeSafePostingLoad(const T& ratingArtifacts)
+{
+   PostingLoad postingLoad;
+
+   for (const auto& item : ratingArtifacts)
+   {
+      const auto& artifact = item.second;
+      const auto& strVehicle = artifact.GetVehicleName();
+      auto W = artifact.GetVehicleWeight();
+      auto RF = artifact.GetRatingFactor();
+      Float64 spl = W*(RF - 0.3) / 0.7; // safe posting load, MBE Equation 6A.8.3-1
+      if (spl < 0)
+      {
+         spl = 0;
+      }
+
+      if (spl < postingLoad.Load)
+      {
+         postingLoad.Load = spl;
+         postingLoad.RF = RF;
+         postingLoad.VehicleWeight = W;
+         postingLoad.VehicleName = strVehicle;
+      }
+   }
+
+   return postingLoad;
+}
 
 /****************************************************************************
 CLASS
@@ -36,6 +122,12 @@ CLASS
 pgsRatingArtifact::pgsRatingArtifact(pgsTypes::LoadRatingType ratingType) :
    m_RatingType(ratingType)
 {
+   ResetCache(&m_bPositiveMomentRatingCached,&m_RF_PositiveMoment,&m_pControllingPositiveMoment);
+   ResetCache(&m_bNegativeMomentRatingCached,&m_RF_NegativeMoment,&m_pControllingNegativeMoment);
+   ResetCache(&m_bShearRatingCached,&m_RF_Shear,&m_pControllingShear);
+   ResetCache(&m_bStressRatingCached, &m_RF_Stress, &m_pControllingStress);
+   ResetCache(&m_bPositiveYieldStressRatingCached,&m_RF_PositiveMomentYieldStress,&m_pControllingPositiveMomentYieldStress);
+   ResetCache(&m_bNegativeYieldStressRatingCached, &m_RF_NegativeMomentYieldStress, &m_pControllingNegativeMomentYieldStress);
 }
 
 pgsRatingArtifact::pgsRatingArtifact(const pgsRatingArtifact& rOther)
@@ -67,21 +159,25 @@ void pgsRatingArtifact::AddArtifact(const pgsPointOfInterest& poi,const pgsMomen
    if ( bPositiveMoment )
    {
       m_PositiveMomentRatings.emplace_back(poi,artifact);
+      ResetCache(&m_bPositiveMomentRatingCached, &m_RF_PositiveMoment, &m_pControllingPositiveMoment);
    }
    else
    {
       m_NegativeMomentRatings.emplace_back(poi,artifact);
+      ResetCache(&m_bNegativeMomentRatingCached, &m_RF_NegativeMoment, &m_pControllingNegativeMoment);
    }
 }
 
 void pgsRatingArtifact::AddArtifact(const pgsPointOfInterest& poi,const pgsShearRatingArtifact& artifact)
 {
    m_ShearRatings.emplace_back(poi,artifact);
+   ResetCache(&m_bShearRatingCached, &m_RF_Shear, &m_pControllingShear);
 }
 
 void pgsRatingArtifact::AddArtifact(const pgsPointOfInterest& poi,const pgsStressRatingArtifact& artifact)
 {
    m_StressRatings.emplace_back(poi,artifact);
+   ResetCache(&m_bStressRatingCached, &m_RF_Stress, &m_pControllingStress);
 }
 
 void pgsRatingArtifact::AddArtifact(const pgsPointOfInterest& poi,const pgsYieldStressRatioArtifact& artifact,bool bPositiveMoment)
@@ -89,10 +185,12 @@ void pgsRatingArtifact::AddArtifact(const pgsPointOfInterest& poi,const pgsYield
    if ( bPositiveMoment )
    {
       m_PositiveMomentYieldStressRatios.emplace_back(poi,artifact);
+      ResetCache(&m_bPositiveYieldStressRatingCached, &m_RF_PositiveMomentYieldStress, &m_pControllingPositiveMomentYieldStress);
    }
    else
    {
       m_NegativeMomentYieldStressRatios.emplace_back(poi,artifact);
+      ResetCache(&m_bNegativeYieldStressRatingCached, &m_RF_NegativeMomentYieldStress, &m_pControllingNegativeMomentYieldStress);
    }
 }
 
@@ -118,30 +216,28 @@ const pgsRatingArtifact::YieldStressRatios& pgsRatingArtifact::GetYieldStressRat
 
 Float64 pgsRatingArtifact::GetMomentRatingFactorEx(bool bPositiveMoment,const pgsMomentRatingArtifact** ppArtifact) const
 {
-   Float64 RF = DBL_MAX;
-   (*ppArtifact) = nullptr;
+   if ( (bPositiveMoment && m_bPositiveMomentRatingCached) ||
+        (!bPositiveMoment && m_bNegativeMomentRatingCached) )
+   {
+      *ppArtifact = (bPositiveMoment ? m_pControllingPositiveMoment : m_pControllingNegativeMoment);
+      return (bPositiveMoment ? m_RF_PositiveMoment : m_RF_NegativeMoment);
+   }
 
-   MomentRatings::const_iterator iter;
    const MomentRatings* pRatings = (bPositiveMoment ? &m_PositiveMomentRatings : &m_NegativeMomentRatings);
-
-   for ( const auto& item : *pRatings)
+   Float64 rf = GetControllingRatingFactor(*pRatings, ppArtifact);
+   if (bPositiveMoment)
    {
-      const auto& artifact(item.second);
-      Float64 rating_factor = artifact.GetRatingFactor();
-      if ( rating_factor < RF )
-      {
-         RF = rating_factor;
-         (*ppArtifact) = &artifact;
-      }
+      m_RF_PositiveMoment = rf;
+      m_pControllingPositiveMoment = *ppArtifact;
+      m_bPositiveMomentRatingCached = true;
    }
-
-   if ( *ppArtifact == nullptr && 0 < pRatings->size() )
+   else
    {
-      ATLASSERT(RF == DBL_MAX);
-      (*ppArtifact) = &(pRatings->front().second);
+      m_RF_NegativeMoment = rf;
+      m_pControllingNegativeMoment = *ppArtifact;
+      m_bNegativeMomentRatingCached = true;
    }
-
-   return RF;
+   return rf;
 }
 
 Float64 pgsRatingArtifact::GetMomentRatingFactor(bool bPositiveMoment) const
@@ -152,27 +248,17 @@ Float64 pgsRatingArtifact::GetMomentRatingFactor(bool bPositiveMoment) const
 
 Float64 pgsRatingArtifact::GetShearRatingFactorEx(const pgsShearRatingArtifact** ppArtifact) const
 {
-   Float64 RF = DBL_MAX;
-   (*ppArtifact) = nullptr;
-
-   for ( const auto& item : m_ShearRatings)
+   if (m_bShearRatingCached)
    {
-      const auto& artifact(item.second);
-      Float64 rating_factor = artifact.GetRatingFactor();
-      if ( rating_factor < RF )
-      {
-         RF = rating_factor;
-         *ppArtifact = &artifact;
-      }
+      *ppArtifact = m_pControllingShear;
+      return m_RF_Shear;
    }
 
-   if ( *ppArtifact == nullptr && 0 < m_ShearRatings.size() )
-   {
-      ATLASSERT(RF == DBL_MAX);
-      (*ppArtifact) = &(m_ShearRatings.front().second);
-   }
-
-   return RF;
+   Float64 rf = GetControllingRatingFactor(m_ShearRatings, ppArtifact);
+   m_RF_Shear = rf;
+   m_pControllingShear = *ppArtifact;
+   m_bShearRatingCached = true;
+   return rf;
 }
 
 Float64 pgsRatingArtifact::GetShearRatingFactor() const
@@ -183,27 +269,17 @@ Float64 pgsRatingArtifact::GetShearRatingFactor() const
 
 Float64 pgsRatingArtifact::GetStressRatingFactorEx(const pgsStressRatingArtifact** ppArtifact) const
 {
-   Float64 RF = DBL_MAX;
-   (*ppArtifact) = nullptr;
-
-   for ( const auto& item : m_StressRatings)
+   if (m_bStressRatingCached)
    {
-      const auto& artifact(item.second);
-      Float64 rating_factor = artifact.GetRatingFactor();
-      if ( rating_factor < RF )
-      {
-         RF = rating_factor;
-         *ppArtifact = &artifact;
-      }
+      *ppArtifact = m_pControllingStress;
+      return m_RF_Stress;
    }
 
-   if ( *ppArtifact == nullptr && 0 < m_StressRatings.size() )
-   {
-      ATLASSERT(RF == DBL_MAX);
-      (*ppArtifact) = &(m_StressRatings.front().second);
-   }
-
-   return RF;
+   Float64 rf = GetControllingRatingFactor(m_StressRatings, ppArtifact);
+   m_RF_Stress = rf;
+   m_pControllingStress = *ppArtifact;
+   m_bStressRatingCached = true;
+   return rf;
 }
 
 Float64 pgsRatingArtifact::GetStressRatingFactor() const
@@ -212,30 +288,30 @@ Float64 pgsRatingArtifact::GetStressRatingFactor() const
    return GetStressRatingFactorEx(&pArtifact);
 }
 
-Float64 pgsRatingArtifact::GetYieldStressRatioEx(bool bPositiveMoment,const pgsYieldStressRatioArtifact** ppArtifact) const
+Float64 pgsRatingArtifact::GetYieldStressRatioEx(bool bPositiveMoment, const pgsYieldStressRatioArtifact** ppArtifact) const
 {
-   Float64 RF = DBL_MAX;
-   (*ppArtifact) = nullptr;
+   if ((bPositiveMoment && m_bPositiveYieldStressRatingCached) ||
+      (!bPositiveMoment && m_bNegativeYieldStressRatingCached))
+   {
+      *ppArtifact = (bPositiveMoment ? m_pControllingPositiveMomentYieldStress : m_pControllingNegativeMomentYieldStress);
+      return (bPositiveMoment ? m_RF_PositiveMomentYieldStress : m_RF_NegativeMomentYieldStress);
+   }
 
    const YieldStressRatios* pRatios = (bPositiveMoment ? &m_PositiveMomentYieldStressRatios : &m_NegativeMomentYieldStressRatios);
-   for( const auto& item : *pRatios)
+   Float64 rf = GetControllingRatingFactor(*pRatios, ppArtifact);
+   if (bPositiveMoment)
    {
-      const auto& artifact(item.second);
-      Float64 ratio = artifact.GetStressRatio();
-      if ( ratio < RF )
-      {
-         RF = ratio;
-         *ppArtifact = &artifact;
-      }
+      m_RF_PositiveMomentYieldStress = rf;
+      m_pControllingPositiveMomentYieldStress = *ppArtifact;
+      m_bPositiveYieldStressRatingCached = true;
    }
-
-   if ( *ppArtifact == nullptr && 0 < pRatios->size() )
+   else
    {
-      ATLASSERT(RF == DBL_MAX);
-      (*ppArtifact) = &(pRatios->front().second);
+      m_RF_NegativeMomentYieldStress = rf;
+      m_pControllingNegativeMomentYieldStress = *ppArtifact;
+      m_bNegativeMomentRatingCached = true;
    }
-
-   return RF;
+   return rf;
 }
 
 Float64 pgsRatingArtifact::GetYieldStressRatio(bool bPositiveMoment) const
@@ -261,55 +337,102 @@ Float64 pgsRatingArtifact::GetRatingFactorEx(const pgsMomentRatingArtifact** ppP
                                              const pgsStressRatingArtifact** ppStress,
                                              const pgsYieldStressRatioArtifact** ppYieldStressPositiveMoment,const pgsYieldStressRatioArtifact** ppYieldStressNegativeMoment) const
 {
-   Float64 RF_pM = GetMomentRatingFactorEx(true,ppPositiveMoment);
-   Float64 RF_nM = GetMomentRatingFactorEx(false,ppNegativeMoment);
-   Float64 RF_V  = GetShearRatingFactorEx(ppShear);
-   Float64 RF_f  = GetStressRatingFactorEx(ppStress);
-   Float64 RF_ys_pM = GetYieldStressRatioEx(true,ppYieldStressPositiveMoment);
-   Float64 RF_ys_nM = GetYieldStressRatioEx(false,ppYieldStressNegativeMoment);
+   // Make sure all individual rating factor types are computed and cached
+#if defined _USE_MULTITHREADING
+   std::vector<std::future<Float64>> vFutures;
+   if (!m_bPositiveMomentRatingCached)
+   {
+      std::future<Float64> f(std::async([&,this]{return GetMomentRatingFactorEx(true, ppPositiveMoment);}));
+      vFutures.push_back(std::move(f));
+   }
+
+   if (!m_bNegativeMomentRatingCached)
+   {
+      std::future<Float64> f(std::async([&,this] {return GetMomentRatingFactorEx(false, ppNegativeMoment);}));
+      vFutures.push_back(std::move(f));
+   }
+
+   if (!m_bShearRatingCached)
+   {
+      std::future<Float64> f(std::async([&,this] {return GetShearRatingFactorEx(ppShear);}));
+      vFutures.push_back(std::move(f));
+   }
+
+   if (!m_bStressRatingCached)
+   {
+      std::future<Float64> f(std::async([&,this] {return GetStressRatingFactorEx(ppStress);}));
+      vFutures.push_back(std::move(f));
+   }
+
+   if (!m_bPositiveYieldStressRatingCached)
+   {
+      std::future<Float64> f(std::async([&,this] {return GetYieldStressRatioEx(true, ppYieldStressPositiveMoment);}));
+      vFutures.push_back(std::move(f));
+   }
+
+   if (!m_bNegativeYieldStressRatingCached)
+   {
+      std::future<Float64> f(std::async([&,this] {return GetYieldStressRatioEx(false, ppYieldStressNegativeMoment);}));
+      vFutures.push_back(std::move(f));
+   }
+
+   for (auto& f : vFutures)
+   {
+      f.wait();
+   }
+#else
+   GetMomentRatingFactorEx(true, ppPositiveMoment);
+   GetMomentRatingFactorEx(false, ppNegativeMoment);
+   GetShearRatingFactorEx(ppShear);
+   GetStressRatingFactorEx(ppStress);
+   GetYieldStressRatioEx(true, ppYieldStressPositiveMoment);
+   GetYieldStressRatioEx(false, ppYieldStressNegativeMoment);
+#endif
+
+   // Find the controlling rating factor
 
    Float64 RF = DBL_MAX;
    int i = -1; // initialize to an invalid value so that we know if a rating factor wasn't found
-   if ( RF_pM < RF )
+   if (m_RF_PositiveMoment < RF )
    {
-      RF = RF_pM;
+      RF = m_RF_PositiveMoment;
       i = 0;
    }
 
-   if ( RF_nM < RF )
+   if (m_RF_NegativeMoment < RF )
    {
-      RF = RF_nM;
+      RF = m_RF_NegativeMoment;
       i = 1;
    }
 
-   if ( RF_V < RF )
+   if (m_RF_Shear < RF )
    {
-      RF = RF_V;
+      RF = m_RF_Shear;
       i = 2;
    }
 
-   if ( RF_f < RF )
+   if (m_RF_Stress < RF )
    {
-      RF = RF_f;
+      RF = m_RF_Stress;
       i = 3;
    }
 
-   if ( RF_ys_pM < RF )
+   if (m_RF_PositiveMomentYieldStress < RF )
    {
-      RF = RF_ys_pM;
+      RF = m_RF_PositiveMomentYieldStress;
       i = 4;
    }
 
-   if ( RF_ys_nM < RF )
+   if (m_RF_NegativeMomentYieldStress < RF )
    {
-      RF = RF_ys_nM;
+      RF = m_RF_NegativeMomentYieldStress;
       i = 5;
    }
 
    // nullptr out all but the controlling rating
    if ( i == 0 )
    {
-      //(*ppPositiveMoment)            = nullptr;
+      (*ppPositiveMoment)            = m_pControllingPositiveMoment;
       (*ppNegativeMoment)            = nullptr;
       (*ppShear)                     = nullptr;
       (*ppStress)                    = nullptr;
@@ -319,7 +442,7 @@ Float64 pgsRatingArtifact::GetRatingFactorEx(const pgsMomentRatingArtifact** ppP
    else if ( i == 1 )
    {
       (*ppPositiveMoment)            = nullptr;
-      //(*ppNegativeMoment)            = nullptr;
+      (*ppNegativeMoment)            = m_pControllingNegativeMoment;
       (*ppShear)                     = nullptr;
       (*ppStress)                    = nullptr;
       (*ppYieldStressPositiveMoment) = nullptr;
@@ -329,7 +452,7 @@ Float64 pgsRatingArtifact::GetRatingFactorEx(const pgsMomentRatingArtifact** ppP
    {
       (*ppPositiveMoment)            = nullptr;
       (*ppNegativeMoment)            = nullptr;
-      //(*ppShear)                     = nullptr;
+      (*ppShear)                     = m_pControllingShear;
       (*ppStress)                    = nullptr;
       (*ppYieldStressPositiveMoment) = nullptr;
       (*ppYieldStressNegativeMoment) = nullptr;
@@ -339,7 +462,7 @@ Float64 pgsRatingArtifact::GetRatingFactorEx(const pgsMomentRatingArtifact** ppP
       (*ppPositiveMoment)            = nullptr;
       (*ppNegativeMoment)            = nullptr;
       (*ppShear)                     = nullptr;
-      //(*ppStress)                    = nullptr;
+      (*ppStress)                    = m_pControllingStress;
       (*ppYieldStressPositiveMoment) = nullptr;
       (*ppYieldStressNegativeMoment) = nullptr;
    }
@@ -349,7 +472,7 @@ Float64 pgsRatingArtifact::GetRatingFactorEx(const pgsMomentRatingArtifact** ppP
       (*ppNegativeMoment)            = nullptr;
       (*ppShear)                     = nullptr;
       (*ppStress)                    = nullptr;
-      //(*ppYieldStressPositiveMoment) = nullptr;
+      (*ppYieldStressPositiveMoment) = m_pControllingPositiveMomentYieldStress;
       (*ppYieldStressNegativeMoment) = nullptr;
    }
    else if ( i == 5 )
@@ -359,7 +482,7 @@ Float64 pgsRatingArtifact::GetRatingFactorEx(const pgsMomentRatingArtifact** ppP
       (*ppShear)                     = nullptr;
       (*ppStress)                    = nullptr;
       (*ppYieldStressPositiveMoment) = nullptr;
-      //(*ppYieldStressNegativeMoment) = nullptr;
+      (*ppYieldStressNegativeMoment) = m_pControllingNegativeMomentYieldStress;
    }
    else
    {
@@ -369,7 +492,7 @@ Float64 pgsRatingArtifact::GetRatingFactorEx(const pgsMomentRatingArtifact** ppP
       // reactions, but the reating factors are DBL_MAX...
       // since all types of ratings control equally, use positive moment as controlling factor
       ATLASSERT(i == -1);
-      //(*ppPositiveMoment)            = nullptr;
+      (*ppPositiveMoment)            = m_pControllingPositiveMoment;
       (*ppNegativeMoment)            = nullptr;
       (*ppShear)                     = nullptr;
       (*ppStress)                    = nullptr;
@@ -385,142 +508,69 @@ bool pgsRatingArtifact::IsLoadPostingRequired() const
    return (::IsLegalRatingType(m_RatingType) && !::IsEmergencyRatingType(m_RatingType) && GetRatingFactor() < 1.0 ? true : false);
 }
 
-void pgsRatingArtifact::GetSafePostingLoad(Float64* pPostingLoad,Float64* pWeight,Float64* pRF,std::_tstring* pVehicle) const
+void pgsRatingArtifact::GetSafePostingLoad(Float64* pPostingLoad, Float64* pWeight, Float64* pRF, std::_tstring* pVehicle) const
 {
-   Float64 posting_load = DBL_MAX;
-   for (const auto& item : m_PositiveMomentRatings)
+   PostingLoad postingLoad;
+#if defined _USE_MULTITHREADING
+   std::vector<std::future<PostingLoad>> vFutures;
+   vFutures.emplace_back(std::async([&, this] {return ComputeSafePostingLoad(m_PositiveMomentRatings);}));
+   vFutures.emplace_back(std::async([&, this] {return ComputeSafePostingLoad(m_NegativeMomentRatings);}));
+   vFutures.emplace_back(std::async([&, this] {return ComputeSafePostingLoad(m_ShearRatings);}));
+   vFutures.emplace_back(std::async([&, this] {return ComputeSafePostingLoad(m_StressRatings);}));
+   vFutures.emplace_back(std::async([&, this] {return ComputeSafePostingLoad(m_PositiveMomentYieldStressRatios);}));
+   vFutures.emplace_back(std::async([&, this] {return ComputeSafePostingLoad(m_NegativeMomentYieldStressRatios);}));
+
+   for (auto& f : vFutures)
    {
-      const auto& artifact(item.second);
-
-      std::_tstring strVehicle = artifact.GetVehicleName();
-      Float64 W = artifact.GetVehicleWeight();
-      Float64 RF = artifact.GetRatingFactor();
-      Float64 spl = W*(RF - 0.3)/0.7; // safe posting load MBE Eq 6A.8.3-1
-      if ( spl < 0 )
+      auto pl = f.get();
+      if (pl.Load < postingLoad.Load)
       {
-         spl = 0;
-      }
-
-      if ( spl < posting_load )
-      {
-         posting_load = spl;
-         *pWeight = W;
-         *pRF = RF;
-         *pVehicle = strVehicle;
+         postingLoad = pl;
       }
    }
+#else
+   PostingLoad pl_pM = ComputeSafePostingLoad(m_PositiveMomentRatings);
+   PostingLoad pl_nM = ComputeSafePostingLoad(m_NegativeMomentRatings);
+   PostingLoad pl_V = ComputeSafePostingLoad(m_ShearRatings);
+   PostingLoad pl_f = ComputeSafePostingLoad(m_StressRatings);
+   PostingLoad pl_YS_pM = ComputeSafePostingLoad(m_PositiveMomentYieldStressRatios);
+   PostingLoad pl_YS_nM = ComputeSafePostingLoad(m_NegativeMomentYieldStressRatios);
 
-   for (const auto& item : m_NegativeMomentRatings)
+   if (pl_pM.Load < postingLoad.Load)
    {
-      const auto& artifact(item.second);
-
-      std::_tstring strVehicle = artifact.GetVehicleName();
-      Float64 W = artifact.GetVehicleWeight();
-      Float64 RF = artifact.GetRatingFactor();
-      Float64 spl = W*(RF - 0.3)/0.7;
-      if ( spl < 0 )
-      {
-         spl = 0;
-      }
-
-      if ( spl < posting_load )
-      {
-         posting_load = spl;
-         *pWeight = W;
-         *pRF = RF;
-         *pVehicle = strVehicle;
-      }
+      postingLoad = pl_pM;
    }
 
-   for ( const auto& item : m_ShearRatings)
+   if (pl_nM.Load < postingLoad.Load)
    {
-      const auto& artifact(item.second);
-
-      std::_tstring strVehicle = artifact.GetVehicleName();
-      Float64 W = artifact.GetVehicleWeight();
-      Float64 RF = artifact.GetRatingFactor();
-      Float64 spl = W*(RF - 0.3)/0.7;
-      if ( spl < 0 )
-      {
-         spl = 0;
-      }
-
-      if ( spl < posting_load )
-      {
-         posting_load = spl;
-         *pWeight = W;
-         *pRF = RF;
-         *pVehicle = strVehicle;
-      }
+      postingLoad = pl_nM;
    }
 
-   for(const auto& item : m_StressRatings)
+   if (pl_V.Load < postingLoad.Load)
    {
-      const auto& artifact(item.second);
-
-      std::_tstring strVehicle = artifact.GetVehicleName();
-      Float64 W = artifact.GetVehicleWeight();
-      Float64 RF = artifact.GetRatingFactor();
-      Float64 spl = W*(RF - 0.3)/0.7;
-      if ( spl < 0 )
-      {
-         spl = 0;
-      }
-
-      if ( spl < posting_load )
-      {
-         posting_load = spl;
-         *pWeight = W;
-         *pRF = RF;
-         *pVehicle = strVehicle;
-      }
+      postingLoad = pl_V;
    }
 
-   for ( const auto& item : m_PositiveMomentYieldStressRatios)
+   if (pl_f.Load < postingLoad.Load)
    {
-      const auto& artifact(item.second);
-
-      std::_tstring strVehicle = artifact.GetVehicleName();
-      Float64 W = artifact.GetVehicleWeight();
-      Float64 RF = artifact.GetStressRatio();
-      Float64 spl = W*(RF - 0.3)/0.7;
-      if ( spl < 0 )
-      {
-         spl = 0;
-      }
-
-      if ( spl < posting_load )
-      {
-         posting_load = spl;
-         *pWeight = W;
-         *pRF = RF;
-         *pVehicle = strVehicle;
-      }
+      postingLoad = pl_f;
    }
 
-   for (const auto& item : m_NegativeMomentYieldStressRatios)
+   if (pl_YS_pM.Load < postingLoad.Load)
    {
-      const auto& artifact(item.second);
-
-      std::_tstring strVehicle = artifact.GetVehicleName();
-      Float64 W = artifact.GetVehicleWeight();
-      Float64 RF = artifact.GetStressRatio();
-      Float64 spl = W*(RF - 0.3)/0.7;
-      if ( spl < 0 )
-      {
-         spl = 0;
-      }
-
-      if ( spl < posting_load )
-      {
-         posting_load = spl;
-         *pWeight = W;
-         *pRF = RF;
-         *pVehicle = strVehicle;
-      }
+      postingLoad = pl_YS_pM;
    }
 
-   *pPostingLoad = posting_load;
+   if (pl_YS_nM.Load < postingLoad.Load)
+   {
+      postingLoad = pl_YS_nM;
+   }
+#endif
+
+   *pPostingLoad = postingLoad.Load;
+   *pRF = postingLoad.RF;
+   *pWeight = postingLoad.VehicleWeight;
+   *pVehicle = postingLoad.VehicleName;
 }
 
 void pgsRatingArtifact::MakeCopy(const pgsRatingArtifact& rOther)
@@ -532,6 +582,30 @@ void pgsRatingArtifact::MakeCopy(const pgsRatingArtifact& rOther)
    m_StressRatings = rOther.m_StressRatings;
    m_PositiveMomentYieldStressRatios = rOther.m_PositiveMomentYieldStressRatios;
    m_NegativeMomentYieldStressRatios = rOther.m_NegativeMomentYieldStressRatios;
+
+   m_bPositiveMomentRatingCached = rOther.m_bPositiveMomentRatingCached;
+   m_RF_PositiveMoment = rOther.m_RF_PositiveMoment;
+   m_pControllingPositiveMoment = rOther.m_pControllingPositiveMoment;
+
+   m_bNegativeMomentRatingCached = rOther.m_bNegativeMomentRatingCached;
+   m_RF_NegativeMoment = rOther.m_RF_NegativeMoment;
+   m_pControllingNegativeMoment = rOther.m_pControllingNegativeMoment;
+
+   m_bShearRatingCached = rOther.m_bShearRatingCached;
+   m_RF_Shear = rOther.m_RF_Shear;
+   m_pControllingShear = rOther.m_pControllingShear;
+
+   m_bStressRatingCached = rOther.m_bStressRatingCached;
+   m_RF_Stress = rOther.m_RF_Stress;
+   m_pControllingStress = rOther.m_pControllingStress;
+
+   m_bPositiveYieldStressRatingCached = rOther.m_bPositiveYieldStressRatingCached;
+   m_RF_PositiveMomentYieldStress = rOther.m_RF_PositiveMomentYieldStress;
+   m_pControllingPositiveMomentYieldStress = rOther.m_pControllingPositiveMomentYieldStress;
+
+   m_bNegativeYieldStressRatingCached = rOther.m_bNegativeYieldStressRatingCached;
+   m_RF_NegativeMomentYieldStress = rOther.m_RF_NegativeMomentYieldStress;
+   m_pControllingNegativeMomentYieldStress = rOther.m_pControllingNegativeMomentYieldStress;
 }
 
 void pgsRatingArtifact::MakeAssignment(const pgsRatingArtifact& rOther)

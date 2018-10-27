@@ -128,32 +128,6 @@ void CSplicedUBeamFactory::CreateGirderSection(IBroker* pBroker,StatusGroupIDTyp
    gdrSection.QueryInterface(ppSection);
 }
 
-void CSplicedUBeamFactory::CreateGirderProfile(IBroker* pBroker,StatusGroupIDType statusGroupID,const CSegmentKey& segmentKey,const IBeamFactory::Dimensions& dimensions,IShape** ppShape) const
-{
-   GET_IFACE2(pBroker,IBridge,pBridge);
-   Float64 length = pBridge->GetSegmentLength(segmentKey);
-
-   Float64 w1, w2, w3, w4, w5;
-   Float64 d1, d2, d3, d4, d5, d6, d7;
-   Float64 t;
-   GetDimensions(dimensions,d1, d2, d3, d4, d5, d6, d7, w1, w2, w3, w4, w5, t);
-
-   Float64 height = d1;
-
-   CComPtr<IRectangle> rect;
-   rect.CoCreateInstance(CLSID_Rect);
-   rect->put_Height(height);
-   rect->put_Width(length);
-
-   CComQIPtr<IXYPosition> position(rect);
-   CComPtr<IPoint2d> topLeft;
-   position->get_LocatorPoint(lpTopLeft,&topLeft);
-   topLeft->Move(0,0);
-   position->put_LocatorPoint(lpTopLeft,topLeft);
-
-   rect->QueryInterface(ppShape);
-}
-
 void CSplicedUBeamFactory::CreateSegment(IBroker* pBroker,StatusGroupIDType statusGroupID,const CSegmentKey& segmentKey,ISuperstructureMemberSegment** ppSegment) const
 {
    CComPtr<ISplicedGirderSegment> segment;
@@ -206,6 +180,33 @@ void CSplicedUBeamFactory::CreateSegment(IBroker* pBroker,StatusGroupIDType stat
 
    CComQIPtr<ISuperstructureMemberSegment> ssmbrSegment(segment);
    ssmbrSegment.CopyTo(ppSegment);
+}
+
+void CSplicedUBeamFactory::CreateSegmentShape(IBroker* pBroker, const CPrecastSegmentData* pSegment, Float64 Xs, pgsTypes::SectionBias sectionBias, IShape** ppShape) const
+{
+   const CSplicedGirderData* pGirder = pSegment->GetGirder();
+
+   const GirderLibraryEntry* pGdrEntry = pGirder->GetGirderLibraryEntry();
+   const GirderLibraryEntry::Dimensions& dimensions = pGdrEntry->GetDimensions();
+
+   CComPtr<IGirderSection> gdrSection;
+   CreateGirderSection(pBroker, INVALID_ID, dimensions, -1, -1, &gdrSection);
+
+   CComQIPtr<IUGirderSection> gdrUSection(gdrSection);
+
+   CComPtr<IUBeam> beam;
+   gdrUSection->get_Beam(&beam);
+
+   beam.QueryInterface(ppShape);
+}
+
+Float64 CSplicedUBeamFactory::GetSegmentHeight(IBroker* pBroker, const CPrecastSegmentData* pSegment, Float64 Xs) const
+{
+   const CSplicedGirderData* pGirder = pSegment->GetGirder();
+   const GirderLibraryEntry* pGirderEntry = pGirder->GetGirderLibraryEntry();
+   const auto& dimensions = pGirderEntry->GetDimensions();
+   Float64 D1 = GetDimension(dimensions, _T("D1"));
+   return D1;
 }
 
 void CSplicedUBeamFactory::ConfigureSegment(IBroker* pBroker, StatusItemIDType statusID, const CSegmentKey& segmentKey, ISuperstructureMemberSegment* pSSMbrSegment) const
@@ -908,10 +909,11 @@ void CSplicedUBeamFactory::ConfigureShape(const IBeamFactory::Dimensions& dimens
 
    Float64 overallHeight = d1+d2+d3+d4+d5+d6+d7;
 
+   // Hook point is at bottom center of bounding box.
+   // Adjust hook point so top center of bounding box is at (0,0)
    CComPtr<IPoint2d> hookPt;
    beam->get_HookPoint(&hookPt);
    hookPt->Move(0,-overallHeight);
-
 }
 
 WebIndexType CSplicedUBeamFactory::GetWebCount(const IBeamFactory::Dimensions& dimensions) const
@@ -992,11 +994,19 @@ bool CSplicedUBeamFactory::CanBottomFlangeDepthVary() const
 
 LPCTSTR CSplicedUBeamFactory::GetBottomFlangeDepthDimension() const
 {
-   ATLASSERT(false); // should never get here because U-beams don't support variable depth
-   return _T("???");
+   return _T("D2");
 }
 
 bool CSplicedUBeamFactory::SupportsEndBlocks() const
 {
    return false;
+}
+
+Float64 CSplicedUBeamFactory::GetBottomFlangeDepth(IBroker* pBroker, const CPrecastSegmentData* pSegment, Float64 Xs) const
+{
+   const CSplicedGirderData* pGirder = pSegment->GetGirder();
+   const GirderLibraryEntry* pGirderEntry = pGirder->GetGirderLibraryEntry();
+   const auto& dimensions = pGirderEntry->GetDimensions();
+   Float64 D2 = GetDimension(dimensions, _T("D2"));
+   return D2;
 }

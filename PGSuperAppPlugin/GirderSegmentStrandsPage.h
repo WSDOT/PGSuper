@@ -52,7 +52,8 @@ protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
 
    CDrawStrandControl m_DrawStrands;
-   CMetaFileStatic m_Picture;
+   CMetaFileStatic m_StrandSpacingImage;
+   CMetaFileStatic m_HarpPointLocationImage;
 
 	//{{AFX_MSG(CGirderSegmentStrandsPage)
 	virtual BOOL OnInitDialog();
@@ -76,12 +77,20 @@ protected:
    void InitPjackEdits();
    void InitPjackEdits(UINT nCalcPjack,UINT nPjackEdit,UINT nPjackUnit,pgsTypes::StrandType strandType);
 
-   CStrandGrid m_Grid;
+   void FillHarpPointUnitComboBox(UINT nIDC, const unitmgtLengthData& lengthUnit);
+   void ExchangeHarpPointLocations(CStrandData* pStrands,BOOL bSaveAndValidate = TRUE);
+   void ExchangeHarpPointLocations(CDataExchange* pDX, CStrandData* pStrands);
+   void GetHarpPointLocations(Float64* pXstart, Float64* pXlhp, Float64* pXrhp, Float64* pXe);
+
+   void UpdateSectionDepth();
+   pgsTypes::TTSUsage GetTemporaryStrandUsage();
+
+   std::unique_ptr<CStrandGrid> m_pGrid;
 	Int32 m_StrandKey;
    Int32 m_TempStrandKey;
 
-   CPrecastSegmentData* m_pSegment;
-   CStrandData m_Strands;
+   CPrecastSegmentData* m_pSegment; // holds the strand data for the calling dialog
+   CStrandData m_Strands; // holds strand data while editing is occuring (this is used to update the display)
 
 public:
    afx_msg void OnBnClickedAdd();

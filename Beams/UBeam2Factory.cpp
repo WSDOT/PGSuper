@@ -130,57 +130,9 @@ void CUBeam2Factory::CreateGirderSection(IBroker* pBroker,StatusGroupIDType stat
    CComPtr<IUBeam2> beam;
    gdrSection->get_Beam(&beam);
 
-   ConfigureShape(dimensions, beam);
+   DimensionAndPositionBeam(dimensions, beam);
 
    gdrSection.QueryInterface(ppSection);
-}
-
-void CUBeam2Factory::CreateGirderProfile(IBroker* pBroker,StatusGroupIDType statusGroupID,const CSegmentKey& segmentKey,const IBeamFactory::Dimensions& dimensions,IShape** ppShape) const
-{
-   GET_IFACE2(pBroker,IBridge,pBridge);
-   Float64 length = pBridge->GetSegmentLength(segmentKey);
-
-   Float64 w1, w2, w3, w4, w5, w6, w7;
-   Float64 d1, d2, d3, d4, d5, d6;
-   Float64 c1, EndBlockLength;
-   GetDimensions(dimensions,d1, d2, d3, d4, d5, d6, w1, w2, w3, w4, w5, w6, w7, c1, EndBlockLength);
-
-   Float64 height = d1;
-
-   CComPtr<IRectangle> rect;
-   rect.CoCreateInstance(CLSID_Rect);
-   rect->put_Height(height);
-   rect->put_Width(length);
-
-   CComQIPtr<IXYPosition> position(rect);
-   CComPtr<IPoint2d> topLeft;
-   position->get_LocatorPoint(lpTopLeft,&topLeft);
-   topLeft->Move(0,0);
-   position->put_LocatorPoint(lpTopLeft,topLeft);
-
-   rect->QueryInterface(ppShape);
-}
-
-void CUBeam2Factory::ConfigureShape(const IBeamFactory::Dimensions& dimensions, IUBeam2* beam) const
-{
-   Float64 w1, w2, w3, w4, w5, w6, w7;
-   Float64 d1, d2, d3, d4, d5, d6;
-   Float64 c1, EndBlockLength;
-   GetDimensions(dimensions,d1, d2, d3, d4, d5, d6, w1, w2, w3, w4, w5, w6, w7, c1, EndBlockLength);
-   beam->put_W1(w1);
-   beam->put_W2(w2);
-   beam->put_W3(w3);
-   beam->put_W4(w4);
-   beam->put_W5(w5);
-   beam->put_W6(w6);
-   beam->put_W7(w7);
-   beam->put_D1(d1);
-   beam->put_D2(d2);
-   beam->put_D3(d3);
-   beam->put_D4(d4);
-   beam->put_D5(d5);
-   beam->put_D6(d6);
-   beam->put_C1(c1);
 }
 
 void CUBeam2Factory::CreateSegment(IBroker* pBroker,StatusGroupIDType statusGroupID,const CSegmentKey& segmentKey,ISuperstructureMemberSegment** ppSegment) const
@@ -237,6 +189,37 @@ void CUBeam2Factory::CreateSegment(IBroker* pBroker,StatusGroupIDType statusGrou
 
    CComQIPtr<ISuperstructureMemberSegment> ssmbrSegment(segment);
    ssmbrSegment.CopyTo(ppSegment);
+}
+
+void CUBeam2Factory::CreateSegmentShape(IBroker* pBroker, const CPrecastSegmentData* pSegment, Float64 Xs, pgsTypes::SectionBias sectionBias, IShape** ppShape) const
+{
+   CComPtr<IUBeam2> beam;
+   beam.CoCreateInstance(CLSID_UBeam2);
+
+   const CSplicedGirderData* pGirder = pSegment->GetGirder();
+   const GirderLibraryEntry* pGirderEntry = pGirder->GetGirderLibraryEntry();
+   const auto& dimensions = pGirderEntry->GetDimensions();
+
+   DimensionAndPositionBeam(dimensions, beam);
+
+   GET_IFACE2(pBroker, IBridge, pBridge);
+   Float64 Lg = pBridge->GetSegmentLength(pSegment->GetSegmentKey());
+   Float64 endBlockLength = GetDimension(dimensions, _T("EndBlockLength"));
+   if (IsInEndBlock(Xs, sectionBias, endBlockLength, Lg))
+   {
+      beam->put_UseOutlineOnly(VARIANT_TRUE);
+   }
+
+   beam.QueryInterface(ppShape);
+}
+
+Float64 CUBeam2Factory::GetSegmentHeight(IBroker* pBroker, const CPrecastSegmentData* pSegment, Float64 Xs) const
+{
+   const CSplicedGirderData* pGirder = pSegment->GetGirder();
+   const GirderLibraryEntry* pGirderEntry = pGirder->GetGirderLibraryEntry();
+   const auto& dimensions = pGirderEntry->GetDimensions();
+   Float64 D1 = GetDimension(dimensions, _T("D1"));
+   return D1;
 }
 
 void CUBeam2Factory::ConfigureSegment(IBroker* pBroker, StatusItemIDType statusID, const CSegmentKey& segmentKey, ISuperstructureMemberSegment* pSSMbrSegment) const
@@ -320,7 +303,7 @@ void CUBeam2Factory::CreateStrandMover(const IBeamFactory::Dimensions& dimension
    CComPtr<IUBeam2> beam;
    beam.CoCreateInstance(CLSID_UBeam2);
 
-   ConfigureShape(dimensions, beam);
+   DimensionAndPositionBeam(dimensions, beam);
 
    // our goal is to build a parallelogram using the thin web dimension from top to bottom
    Float64 t;
@@ -532,7 +515,7 @@ bool CUBeam2Factory::ValidateDimensions(const Dimensions& dimensions,bool bSIUni
    CComPtr<IUBeam2> beam;
    beam.CoCreateInstance(CLSID_UBeam2);
 
-   ConfigureShape(dimensions, beam);
+   DimensionAndPositionBeam(dimensions, beam);
 
    // our goal is to build a parallelogram using the thin web dimension from top to bottom
    Float64 t;
@@ -1021,3 +1004,33 @@ GirderIndexType CUBeam2Factory::GetMinimumBeamCount() const
    return 1;
 }
 
+void CUBeam2Factory::DimensionAndPositionBeam(const IBeamFactory::Dimensions& dimensions, IUBeam2* pBeam) const
+{
+   Float64 w1, w2, w3, w4, w5, w6, w7;
+   Float64 d1, d2, d3, d4, d5, d6;
+   Float64 c1, EndBlockLength;
+   GetDimensions(dimensions, d1, d2, d3, d4, d5, d6, w1, w2, w3, w4, w5, w6, w7, c1, EndBlockLength);
+   pBeam->put_W1(w1);
+   pBeam->put_W2(w2);
+   pBeam->put_W3(w3);
+   pBeam->put_W4(w4);
+   pBeam->put_W5(w5);
+   pBeam->put_W6(w6);
+   pBeam->put_W7(w7);
+   pBeam->put_D1(d1);
+   pBeam->put_D2(d2);
+   pBeam->put_D3(d3);
+   pBeam->put_D4(d4);
+   pBeam->put_D5(d5);
+   pBeam->put_D6(d6);
+   pBeam->put_C1(c1);
+
+   // Hook point is at bottom center of bounding box.
+   // Adjust hook point so top center of bounding box is at (0,0)
+   Float64 Hg;
+   pBeam->get_Height(&Hg);
+
+   CComPtr<IPoint2d> hookPt;
+   pBeam->get_HookPoint(&hookPt);
+   hookPt->Offset(0, -Hg);
+}

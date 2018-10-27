@@ -97,7 +97,7 @@ protected:
 	afx_msg void OnHelp();
 	afx_msg void OnSelchangeHpComboHp();
 	afx_msg void OnSelchangeHpComboEnd();
-	afx_msg void OnSelchangeStrandInputType();
+	afx_msg void OnStrandInputTypeChanged();
 	afx_msg void OnDropdownHpComboHp();
 	afx_msg void OnDropdownHpComboEnd();
    afx_msg void OnStrandTypeChanged();
@@ -134,6 +134,8 @@ protected:
    StrandIndexType StrandSpinnerInc(IStrandGeometry* pStrands, pgsTypes::StrandType type,StrandIndexType currNum, bool bAdd );
    StrandIndexType PermStrandSpinnerInc(IStrandGeometry* pStrands, StrandIndexType currNum, bool bAdd );
 
+   void GetStrandCount(StrandIndexType* pNs, StrandIndexType* pNh, StrandIndexType* pNt, StrandIndexType* pNp);
+
    Float64 m_HgStart;
    Float64 m_HgHp1;
    Float64 m_HgHp2;
@@ -151,7 +153,8 @@ protected:
    void UpdateStrandList(UINT nIDC);
 
    void EditDirectSelect();
-   void EditDirectInput();
+   void EditDirectRowInput();
+   void EditDirectStrandInput();
 
    CString m_strTip;
 public:

@@ -169,7 +169,7 @@ void txnDesignGirder::Init()
 
             GET_IFACE2(pBroker,ISpecification,pSpec);
             if ( pSegmentDesignArtifact->GetDesignOptions().doDesignSlabOffset == sodAandAssExcessCamber &&
-                 pSpec->IsAssExcessCamberInputEnabled())
+                 pSpec->IsAssExcessCamberForLoad())
             {
                // AssExcessCamber was done too - store it
                m_DidAssExcessCamberDesign = true;

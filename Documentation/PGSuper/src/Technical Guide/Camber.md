@@ -1,5 +1,6 @@
 ﻿Camber {#tg_camber}
 ======================================
+**Computed Camber**
 Several elements make up camber computations. Each component is detailed in this section. Refer to Chapter 5 of the WSDOT Bridge Design Manual for a further discussion of camber, although most of the discussion is generic and can be used by any agency. The following schematic shows the camber history for a point in a girder with a cast in place deck and temporary strands.
 
 ![](Camber.gif)
@@ -51,7 +52,9 @@ The k’s (or camber deflection multiplier constants) in the equations above pro
 
 > TIP: Camber deflection multiplier constants are defined for each girder type on the Haunch and Camber tab in the girder library. Also, the Camber Details chapter in the Details report shows all details of the camber computations.
 
-> TIP: Camber discussed in this section of the Technical Guide can be referred to as **Computed Camber**. In fact, the term **Computed Excess Camber** is used widely throughout PGSuper and PGSplice. Another term: **Assumed Excess Camber** is a user-input value that is used to compute the haunch depth when determining haunch dead load. Refer to  the Slab Haunch loading section of @ref tg_structural_analysis_models in the Technical Guide for more information about how the haunch dead load is defined.
+Computed Camber vs Assumed Excess Camber
+----------------------------------------
+Camber discussed in this section of the Technical Guide is referred to as **Computed Camber** meaning that camber is calculated based on losses and deflections from load. In fact, the term **Computed Excess Camber** is used widely throughout PGSuper and PGSplice. Another term: **Assumed Excess Camber** is a user-input value that is optionally used in PGSuper to compute the haunch depth when determining haunch dead load, and non-prismatic composite section properties. Refer to  the Slab Haunch loading section of @ref tg_structural_analysis_models in the Technical Guide for more information about how the haunch dead load can be defined. Refer to @ref tg_section_properties in the Technical Guide for more information about how composite section properties are modelled.
 
 Camber Variability
 ----------------------

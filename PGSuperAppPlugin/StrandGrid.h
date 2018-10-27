@@ -27,6 +27,7 @@
 #include <PsgLib\GirderLibraryEntry.h>
 
 class CUserData;
+interface IEAFDisplayUnits;
 
 /////////////////////////////////////////////////////////////////////////////
 // CStrandGrid window
@@ -66,6 +67,15 @@ protected:
    virtual void OnChangedSelection(const CGXRange* pChangedRect,BOOL bIsDragging, BOOL bKey) override;
    virtual BOOL OnEndEditing(ROWCOL nRow,ROWCOL nCol) override;
 
+   // returns the number of columns used to specialize grid
+   virtual CString GetRowLabelHeading() const = 0;
+   virtual ROWCOL GetSpecializedColCount() const = 0;
+   virtual ROWCOL InitSpecializedColumns(ROWCOL col, IEAFDisplayUnits* pDisplayUnits) = 0;
+   virtual ROWCOL SetSpecializedColumnStyles(ROWCOL nRow, ROWCOL col) = 0;
+   virtual ROWCOL GetSpecializedColumnValues(ROWCOL nRow, ROWCOL col, CStrandRow& strandRow, IEAFDisplayUnits* pDisplayUnits) = 0;
+   virtual ROWCOL AppendSpecializedColumnValues(ROWCOL nRow, ROWCOL col, const CStrandRow& strandRow, IEAFDisplayUnits* pDisplayUnits) = 0;
+   virtual CStrandData::StrandDefinitionType GetStrandDefinitionType() = 0;
+
 public:
    // custom stuff for grid
    void CustomInit(const CPrecastSegmentData* pSegment);
@@ -77,7 +87,7 @@ public:
    // strand row data from the grid, however the data is not validated.
    void UpdateStrandData(CDataExchange* pDX,CStrandData* pStrands);
 
-private:
+protected:
    Float64 m_SegmentLength;
 
    void FillGrid(CStrandData* pStrands);
@@ -96,11 +106,57 @@ private:
 
    void UpdateExtendedStrandProperties(ROWCOL nRow);
 
-   UINT Validate(ROWCOL nRow,CStrandRow& strandRow);
-   void ShowValidationError(ROWCOL nRow,UINT iError);
+   virtual UINT Validate(ROWCOL nRow,CStrandRow& strandRow);
+   virtual void ShowValidationError(ROWCOL nRow,UINT iError);
+
+   ROWCOL GetStrandTypeCol();
+   ROWCOL GetHarpStrandStartCol();
+   ROWCOL GetHarpStrandEndCol();
+   ROWCOL GetLeftExtendCheckCol();
+   ROWCOL GetRightExtendCheckCol();
+   ROWCOL GetLeftDebondCheckCol();
+   ROWCOL GetLeftDebondLengthCol();
+   ROWCOL GetRightDebondCheckCol();
+   ROWCOL GetRightDebondLengthCol();
 };
 
 /////////////////////////////////////////////////////////////////////////////
+
+class CRowStrandGrid : public CStrandGrid
+{
+public:
+
+protected:
+   virtual CString GetRowLabelHeading() const override { return _T("Row"); }
+   virtual ROWCOL GetSpecializedColCount() const override { return 3; } // S1, S2, and # strands
+   virtual ROWCOL InitSpecializedColumns(ROWCOL col, IEAFDisplayUnits* pDisplayUnits) override;
+   virtual ROWCOL SetSpecializedColumnStyles(ROWCOL nRow, ROWCOL col) override;
+   virtual ROWCOL GetSpecializedColumnValues(ROWCOL nRow, ROWCOL col, CStrandRow& strandRow, IEAFDisplayUnits* pDisplayUnits) override;
+   virtual ROWCOL AppendSpecializedColumnValues(ROWCOL nRow, ROWCOL col, const CStrandRow& strandRow, IEAFDisplayUnits* pDisplayUnits) override;
+   virtual CStrandData::StrandDefinitionType GetStrandDefinitionType() override { return CStrandData::sdtDirectRowInput;  }
+
+   virtual UINT Validate(ROWCOL nRow, CStrandRow& strandRow) override;
+   virtual void ShowValidationError(ROWCOL nRow, UINT iError) override;
+};
+
+/////////////////////////////////////////////////////////////////////////////
+
+class CPointStrandGrid : public CStrandGrid
+{
+public:
+
+protected:
+   virtual CString GetRowLabelHeading() const override { return _T("Strand"); }
+   virtual ROWCOL GetSpecializedColCount() const override { return 1; } // Z
+   virtual ROWCOL InitSpecializedColumns(ROWCOL col, IEAFDisplayUnits* pDisplayUnits) override;
+   virtual ROWCOL SetSpecializedColumnStyles(ROWCOL nRow, ROWCOL col) override;
+   virtual ROWCOL GetSpecializedColumnValues(ROWCOL nRow, ROWCOL col, CStrandRow& strandRow, IEAFDisplayUnits* pDisplayUnits) override;
+   virtual ROWCOL AppendSpecializedColumnValues(ROWCOL nRow, ROWCOL col, const CStrandRow& strandRow, IEAFDisplayUnits* pDisplayUnits) override;
+   virtual CStrandData::StrandDefinitionType GetStrandDefinitionType() override { return CStrandData::sdtDirectStrandInput; }
+
+   virtual UINT Validate(ROWCOL nRow, CStrandRow& strandRow) override;
+   virtual void ShowValidationError(ROWCOL nRow, UINT iError) override;
+};
 
 //{{AFX_INSERT_LOCATION}}
 // Microsoft Developer Studio will insert additional declarations immediately before the previous line.

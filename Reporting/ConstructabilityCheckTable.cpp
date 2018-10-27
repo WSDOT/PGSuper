@@ -44,7 +44,7 @@ static char THIS_FILE[] = __FILE__;
 #endif
 
 // return true if more than a single span report so we can add columns for span/girder
-inline bool ConstrNeedSpanCols(const std::vector<CGirderKey>& girderList, IBridge* pBridge)
+bool ConstrNeedSpanCols(const std::vector<CGirderKey>& girderList, IBridge* pBridge)
 {
    bool doNeed = 1 < girderList.size();
    if (!doNeed)
@@ -254,7 +254,7 @@ void CConstructabilityCheckTable::BuildMonoSlabOffsetTable(rptChapter* pChapter,
             {
                didNote = true;
                CSpanKey spanKey(spanIdx, girderKey.girderIndex);
-               HAUNCHDETAILS haunch_details = pGdrHaunch->GetHaunchDetails(spanKey);
+               const auto& haunch_details = pGdrHaunch->GetHaunchDetails(spanKey);
                (*pTable)(row, col) << color(Red) << _T("The difference betwen the minimum and maximum CL haunch depths along the girder is ") << dim2.SetValue(haunch_details.HaunchDiff) 
                                                  << _T(". This exceeds one half of the slab depth. Check stirrup lengths to ensure they engage the deck in all locations.");
                                                  
@@ -333,7 +333,7 @@ void CConstructabilityCheckTable::BuildMultiSlabOffsetTable(rptChapter* pChapter
    (*pTable)(0,col++) << _T("Status");
    (*pTable)(0,col++) << _T("Notes");
 
-   RowIndexType row=0;
+   RowIndexType row = 0;
    for (const auto& girderKey : girderList)
    {
       const pgsGirderArtifact* pGdrArtifact = pIArtifact->GetGirderArtifact(girderKey);
@@ -404,7 +404,7 @@ void CConstructabilityCheckTable::BuildMultiSlabOffsetTable(rptChapter* pChapter
             {
                didNote = true;
                CSpanKey spanKey(spanIdx, girderKey.girderIndex);
-               HAUNCHDETAILS haunch_details = pGdrHaunch->GetHaunchDetails(spanKey);
+               const auto& haunch_details = pGdrHaunch->GetHaunchDetails(spanKey);
                (*pTable)(row, col) << color(Red) << _T("The difference betwen the minimum and maximum CL haunch depths along the girder is ") << dim2.SetValue(haunch_details.HaunchDiff) 
                                                  << _T(". This exceeds one half of the slab depth. Check stirrup lengths to ensure they engage the deck in all locations.");
                                                  
@@ -476,7 +476,7 @@ void CConstructabilityCheckTable::BuildMinimumHaunchCLCheck(rptChapter* pChapter
    (*pTable)(0,col++) << COLHDR(_T("Required") << rptNewLine << _T("Haunch Depth"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
    (*pTable)(0,col++) << _T("Status");
 
-   RowIndexType row=0;
+   RowIndexType row = 0;
    for (const auto& girderKey : girderList)
    {
       const pgsGirderArtifact* pGdrArtifact = pIArtifact->GetGirderArtifact(girderKey);
@@ -668,7 +668,7 @@ void CConstructabilityCheckTable::BuildHaunchGeometryComplianceCheck(rptChapter*
       {
          const pgsSpanConstructabilityArtifact* pArtifact = pConstrArtifact->GetSpanArtifact(spanIdx);
 
-         if (pArtifact->IsHaunchLoadGeometryCheckApplicable())
+         if (pArtifact->IsHaunchGeometryCheckApplicable())
          {
             row++;
             col = 0;
@@ -683,14 +683,14 @@ void CConstructabilityCheckTable::BuildHaunchGeometryComplianceCheck(rptChapter*
             (*pTable)(row, col++) << dim.SetValue(pArtifact->GetComputedExcessCamber());
             (*pTable)(row, col++) << dim.SetValue(pArtifact->GetAssumedExcessCamber());
             (*pTable)(row, col++) << dim.SetValue(pArtifact->GetComputedExcessCamber()-pArtifact->GetAssumedExcessCamber());
-            (*pTable)(row, col++) << symbol(PLUS_MINUS) << dim.SetValue(pArtifact->GetHaunchLoadGeometryTolerance());
+            (*pTable)(row, col++) << symbol(PLUS_MINUS) << dim.SetValue(pArtifact->GetHaunchGeometryTolerance());
 
-            pgsSpanConstructabilityArtifact::HaunchLoadGeometryStatusType status = pArtifact->HaunchLoadGeometryStatus();
-            if (pgsSpanConstructabilityArtifact::hlgNAPrintOnly == status)
+            pgsSpanConstructabilityArtifact::HaunchGeometryStatusType status = pArtifact->HaunchGeometryStatus();
+            if (pgsSpanConstructabilityArtifact::hgNAPrintOnly == status)
             {
                (*pTable)(row, col++) << RPT_NA;
             }
-            else if(pgsSpanConstructabilityArtifact::hlgPass == status)
+            else if(pgsSpanConstructabilityArtifact::hgPass == status)
             {
                (*pTable)(row, col++) << RPT_PASS;
             }
@@ -699,33 +699,33 @@ void CConstructabilityCheckTable::BuildHaunchGeometryComplianceCheck(rptChapter*
                (*pTable)(row, col++) << RPT_FAIL;
             }
 
-            if(pgsSpanConstructabilityArtifact::hlgPass == status)
+            if(pgsSpanConstructabilityArtifact::hgPass == status)
             {
                (*pTable)(row, col) << _T("Assumed Excess Camber is within tolerance");
             }
-            else if(pgsSpanConstructabilityArtifact::hlgInsufficient == status)
+            else if(pgsSpanConstructabilityArtifact::hgInsufficient == status)
             {
-               (*pTable)(row, col) << _T("Haunch load is under-predicted");
+               (*pTable)(row, col) << _T("Assumed Excess Camber is under-predicted");
             }
-            else if(pgsSpanConstructabilityArtifact::hlgExcessive == status)
+            else if(pgsSpanConstructabilityArtifact::hgExcessive == status)
             {
-               (*pTable)(row, col) << _T("Haunch load is over-predicted");
+               (*pTable)(row, col) << _T("Assumed Excess Camber is over-predicted");
             }
 
-            if (pgsSpanConstructabilityArtifact::hlgNAPrintOnly == status)
+            if (pgsSpanConstructabilityArtifact::hgNAPrintOnly == status)
             {
                Float64 asscamber = pArtifact->GetAssumedExcessCamber();
                Float64 cmpcamber = pArtifact->GetComputedExcessCamber();
-               Float64 cambertol = pArtifact->GetHaunchLoadGeometryTolerance();
+               Float64 cambertol = pArtifact->GetHaunchGeometryTolerance();
                if (!IsZero(asscamber - cmpcamber, cambertol))
                {
-                  (*pTable)(row, col) << rptNewLine <<color(Red) << _T("WARNING: Warning: Assumed Excess Camber is out of tolerance. Haunch dead loads are inaccurate.") << color(Black);
+                  (*pTable)(row, col) << rptNewLine <<color(Red) << _T("WARNING: Warning: Assumed Excess Camber is out of tolerance. Effects due the haunch are inaccurate.") << color(Black);
                }
             }
 
             if (pArtifact->GetAssumedMinimumHaunchDepth() < 0.0)
             {
-               (*pTable)(row, col) << rptNewLine <<color(Red) << _T("WARNING: The assumed excess camber is larger than the haunch depth at mid span. The girder will intrude into the bottom of the slab.") << color(Black);
+               (*pTable)(row, col) << rptNewLine <<color(Red) << _T("WARNING: The assumed excess camber is larger than the haunch depth at mid span. The girder will intrude into the bottom of the slab. For analysis purposes, the haunch depth will be set to zero.") << color(Black);
             }
          }
       }
@@ -734,14 +734,26 @@ void CConstructabilityCheckTable::BuildHaunchGeometryComplianceCheck(rptChapter*
    // Only add table if it has content
    if (0 < row)
    {
+      GET_IFACE2(pBroker,ISpecification,pSpec);
+
       rptParagraph* pTitle = new rptParagraph( rptStyleManager::GetHeadingStyle() );
       *pChapter << pTitle;
       *pTitle << _T("Excess Camber Check");
       rptParagraph* pBody = new rptParagraph;
       *pChapter << pBody;
-      *pBody << _T("Haunch dead load is determined by the haunch depth along the girder. Haunch depth is defined by the roadway geometry, slab offset (\"A\"), and the parabolic girder camber defined by the user input Assumed Excess Camber at mid-span.");
+      if (pSpec->IsAssExcessCamberForLoad())
+      {
+         *pBody << _T("Haunch dead load is affected by variable haunch depth along the girder. ");
+      }
+
+      if (pSpec->IsAssExcessCamberForSectProps())
+      {
+         *pBody << _T("Composite section properties are affected by haunch depth variation along the girder. ");
+      }
+
+      *pBody << _T("Haunch depth along a girder is defined by the roadway geometry, slab offset (\"A\"), and the parabolic girder camber defined by the user input Assumed Excess Camber at mid-span.");
+      *pBody << _T(" The table below compares the Assumed Excess Camber with the Computed Excess Camber. A failed status indicates the assumed value is not within tolerance of the computed value - meaning that results dependent on haunch dead load may be inaccurate. See the Haunch Details and Loading Details chapters in Details Report for more information.");
       *pBody << pTable << rptNewLine;
-      *pBody << _T("The table above compares the input Assumed Excess Camber with the Computed Excess Camber. A failed status indicates the assumed value is not within tolerance of the computed value, and the haunch dead load may be inaccurate. See the Haunch Details and Loading Details chapters in Details Report for more information.");
    }
    else
    {
@@ -889,6 +901,7 @@ void CConstructabilityCheckTable::BuildPrecamberCheck(rptChapter* pChapter, IBro
    (*pTable)(0, col++) << COLHDR(_T("Precamber Limit"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
    (*pTable)(0, col++) << _T("Status");
 
+   bool bReportPrecamber = false;
    RowIndexType row = 0;
    for (const auto& girderKey : girderList)
    {
@@ -918,6 +931,12 @@ void CConstructabilityCheckTable::BuildPrecamberCheck(rptChapter* pChapter, IBro
             CSegmentKey segmentKey(girderKey, 0);
             pArtifact->GetPrecamber(segmentKey,&PrecamberLimit, &Precamber);
 
+            if (!IsZero(Precamber))
+            {
+               // precamber is applicable and we have at least on case where precamber was input
+               bReportPrecamber = true;
+            }
+
             (*pTable)(row, col++) << dim.SetValue(Precamber);
             (*pTable)(row, col++) << symbol(PLUS_MINUS) << dim.SetValue(PrecamberLimit);
 
@@ -934,7 +953,7 @@ void CConstructabilityCheckTable::BuildPrecamberCheck(rptChapter* pChapter, IBro
    }
 
    // Only add table if it has content
-   if (0 < row)
+   if (bReportPrecamber)
    {
       rptParagraph* pTitle = new rptParagraph(rptStyleManager::GetHeadingStyle());
       *pChapter << pTitle;
@@ -980,7 +999,7 @@ void CConstructabilityCheckTable::BuildBottomFlangeClearanceCheck(rptChapter* pC
    (*pTable)(0,col++) << COLHDR(_T("Min. Clearance"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
    (*pTable)(0,col++) << _T("Status");
 
-   RowIndexType row=0;
+   RowIndexType row = 0;
    for (const auto& girderKey : girderList)
    {
       const pgsGirderArtifact* pGdrArtifact = pIArtifact->GetGirderArtifact(girderKey);
@@ -1041,6 +1060,117 @@ void CConstructabilityCheckTable::BuildBottomFlangeClearanceCheck(rptChapter* pC
    }
 }
 
+void CConstructabilityCheckTable::BuildFinishedElevationCheck(rptChapter* pChapter, IBroker* pBroker, const std::vector<CGirderKey>& girderList, IEAFDisplayUnits* pDisplayUnits) const
+{
+   GET_IFACE2(pBroker, IArtifact, pIArtifact);
+   GET_IFACE2_NOCHECK(pBroker, IBridge, pBridge);
+
+   // if there is only one span/girder, don't need to print span info
+   bool needSpanCols = true; // ConstrNeedSpanCols(girderList, pBridge);
+
+                             // Create table - delete it later if we don't need it
+   ColumnIndexType nCols = needSpanCols ? 8 : 6; // put span/girder in table if multi girder
+   rptRcTable* pTable = rptStyleManager::CreateDefaultTable(nCols, _T(""));
+
+   INIT_UV_PROTOTYPE(rptLengthUnitValue, dim, pDisplayUnits->GetSpanLengthUnit(), false);
+   std::_tstring strSlopeTag = pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure.UnitTag();
+
+   pTable->SetColumnStyle(nCols - 1, rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+   pTable->SetStripeRowColumnStyle(nCols - 1, rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+
+   ColumnIndexType col = 0;
+   if (needSpanCols)
+   {
+      (*pTable)(0, col++) << _T("Span");
+      (*pTable)(0, col++) << _T("Girder");
+   }
+
+   (*pTable)(0, col++) << COLHDR(_T("Station"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
+   (*pTable)(0, col++) << COLHDR(_T("Offset"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
+   (*pTable)(0, col++) << COLHDR(_T("Design Elevation"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
+   (*pTable)(0, col++) << COLHDR(_T("Finished Elevation"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
+   (*pTable)(0, col++) << COLHDR(_T("Difference"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
+   (*pTable)(0, col++) << _T("Status");
+
+   RowIndexType row = 0;
+   for (const auto& girderKey : girderList)
+   {
+      const pgsGirderArtifact* pGdrArtifact = pIArtifact->GetGirderArtifact(girderKey);
+      const pgsConstructabilityArtifact* pConstrArtifact = pGdrArtifact->GetConstructabilityArtifact();
+
+      SpanIndexType startSpanIdx, endSpanIdx;
+      pConstrArtifact->GetSpans(&startSpanIdx, &endSpanIdx);
+
+      for (SpanIndexType spanIdx = startSpanIdx; spanIdx <= endSpanIdx; spanIdx++)
+      {
+         const pgsSpanConstructabilityArtifact* pArtifact = pConstrArtifact->GetSpanArtifact(spanIdx);
+
+         if (pArtifact->GetFinishedElevationApplicability())
+         {
+            row++;
+            col = 0;
+
+            if (needSpanCols)
+            {
+               GirderIndexType girder = girderKey.girderIndex;
+               (*pTable)(row, col++) << LABEL_SPAN(spanIdx);
+               (*pTable)(row, col++) << LABEL_GIRDER(girder);
+            }
+
+            Float64 station, offset, designElev, finishedElev;
+            pgsPointOfInterest poi;
+            pArtifact->GetMaxFinishedElevation(&station, &offset, &poi, &designElev, &finishedElev);
+
+            Float64 diff = finishedElev - designElev;
+
+            (*pTable)(row, col++) << rptRcStation(station, &pDisplayUnits->GetStationFormat());
+            (*pTable)(row, col++) << RPT_OFFSET(offset,dim);
+            (*pTable)(row, col++) << dim.SetValue(designElev);
+            (*pTable)(row, col++) << dim.SetValue(finishedElev);
+            (*pTable)(row, col++) << dim.SetValue(diff);
+
+            if (pArtifact->FinishedElevationPassed())
+            {
+               (*pTable)(row, col++) << RPT_PASS;
+            }
+            else
+            {
+               (*pTable)(row, col++) << RPT_FAIL;
+            }
+         }
+      }
+   }
+
+   // Only add table if it has content
+   if (0 < row)
+   {
+      rptParagraph* pTitle = new rptParagraph(rptStyleManager::GetHeadingStyle());
+      *pChapter << pTitle;
+      *pTitle << _T("Finished Elevation");
+
+      rptParagraph* pBody = new rptParagraph;
+      *pChapter << pBody;
+
+      GET_IFACE2(pBroker,ILibrary, pLib);
+      GET_IFACE2(pBroker,ISpecification, pISpec);
+      const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pISpec->GetSpecification().c_str());
+      Float64 tolerance = pSpecEntry->GetFinishedElevationTolerance();
+
+      INIT_UV_PROTOTYPE(rptLengthSectionValue, dim1, pDisplayUnits->GetSpanLengthUnit(), true);
+      INIT_UV_PROTOTYPE(rptLengthSectionValue, dim2, pDisplayUnits->GetComponentDimUnit(), true);
+      *pBody << _T("Tolerance: ") << symbol(PLUS_MINUS) << dim1.SetValue(tolerance) << _T(" (") << symbol(PLUS_MINUS) << dim2.SetValue(tolerance) << _T(")") << rptNewLine;
+      *pBody << _T("Design Elevation = elevation defined by the alignment, profile, and superelevations") << rptNewLine;
+      *pBody << _T("Finished Elevation = top of finished girder, or overlay if applicable, including the effects of camber") << rptNewLine;
+      *pBody << _T("Difference = greated difference between Design Elevation and Finished Elevation which occurs at Station and Offset.") << rptNewLine;
+      
+      *pBody << pTable;
+   }
+   else
+   {
+      delete pTable;
+   }
+}
+
 void CConstructabilityCheckTable::BuildRegularCamberCheck(rptChapter* pChapter,IBroker* pBroker,const CGirderKey& girderKey, IEAFDisplayUnits* pDisplayUnits) const
 {
    GET_IFACE2(pBroker,ICamber,pCamber);
@@ -1089,7 +1219,7 @@ void CConstructabilityCheckTable::BuildRegularCamberCheck(rptChapter* pChapter,I
       const pgsPointOfInterest& poiMidSpan(vPoi.front());
 
       Float64 C = 0;
-      if ( deckType != pgsTypes::sdtNone )
+      if ( !IsStructuralDeck(deckType) )
       {
          C = pCamber->GetScreedCamber( poiMidSpan ) ;
          (*pTable)(row,  0) << _T("Screed Camber, C");
@@ -1253,7 +1383,7 @@ void CConstructabilityCheckTable::BuildRegularCamberCheck(rptChapter* pChapter,I
          }
       }
    
-      if ( pSpecEntry->CheckGirderSag() && deckType != pgsTypes::sdtNone )
+      if ( pSpecEntry->CheckGirderSag() && IsStructuralDeck(deckType) )
       {
          std::_tstring camberType;
          Float64 D = 0;
@@ -1365,26 +1495,23 @@ void CConstructabilityCheckTable::BuildTimeStepCamberCheck(rptChapter* pChapter,
       (*pTable)(row, 0) << LABEL_SPAN(spanIdx);
 
       Float64 C = 0;
-      if (deckType != pgsTypes::sdtNone)
+      Float64 Dmin, Dmax;
+      if (IsStructuralDeck(deckType))
       {
          GET_IFACE2(pBroker, ICamber, pCamber);
          C = pCamber->GetScreedCamber(poiMidSpan);
          (*pTable)(row, 1) << _T("Screed Camber, C");
          (*pTable)(row++, 2) << dim.SetValue(C);
-      }
 
-      Float64 Dmin, Dmax;
-      if (deckType == pgsTypes::sdtNone)
+         pLSForces->GetDeflection(castDeckIntervalIdx - 1, pgsTypes::ServiceI, poiMidSpan, bat, true/*include prestress*/, false/*no liveload*/, true /*include elevation adjustment*/, true /*include precamber*/, &Dmin, &Dmax);
+         ATLASSERT(IsEqual(Dmin, Dmax));
+         (*pTable)(row, 1) << _T("Camber at time of deck casting, at ") << deckCastingTime << _T(" days, D");
+      }
+      else
       {
          pLSForces->GetDeflection(lastIntervalIdx, pgsTypes::ServiceI, poiMidSpan, bat, true/*include prestress*/, false/*no liveload*/, true /*include elevation adjustment*/, true /*include precamber*/, &Dmin, &Dmax);
          ATLASSERT(IsEqual(Dmin, Dmax));
          (*pTable)(row, 1) << _T("Camber at ") << lastIntervalTime << _T(" days, D");
-      }
-      else
-      {
-         pLSForces->GetDeflection(castDeckIntervalIdx - 1, pgsTypes::ServiceI, poiMidSpan, bat, true/*include prestress*/, false/*no liveload*/, true /*include elevation adjustment*/, true /*include precamber*/, &Dmin, &Dmax);
-         ATLASSERT(IsEqual(Dmin, Dmax));
-         (*pTable)(row, 1) << _T("Camber at time of deck casting, at ") << deckCastingTime << _T(" days, D");
       }
 
       if ( Dmin < 0 )
@@ -1396,7 +1523,7 @@ void CConstructabilityCheckTable::BuildTimeStepCamberCheck(rptChapter* pChapter,
          (*pTable)(row++,2) << dim.SetValue(Dmin);
       }
 
-      if ( pSpecEntry->CheckGirderSag() && deckType != pgsTypes::sdtNone )
+      if ( pSpecEntry->CheckGirderSag() && IsStructuralDeck(deckType) )
       {
          std::_tstring camberType;
    

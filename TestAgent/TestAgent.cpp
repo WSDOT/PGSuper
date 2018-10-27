@@ -41,6 +41,7 @@
 #include "PGSpliceCatCom.h"
 #include <System\ComCatMgr.h>
 
+#include <IFace\Alignment.h>
 #include <IFace\StatusCenter.h>
 #include <IFace\RatingSpecification.h>
 #include <EAF\EAFUIIntegration.h>

@@ -507,6 +507,9 @@ typedef struct pgsTypes
    typedef enum HaunchLoadComputationType
    { hlcZeroCamber, hlcAccountForCamber } HaunchLoadComputationType;
 
+   typedef enum HaunchAnalysisSectionPropertiesType
+   { hspZeroHaunch, hspConstFilletDepth, hspVariableParabolic } HaunchAnalysisSectionPropertiesType;
+
    typedef enum GirderLocation
    { Interior = 0, Exterior = 1 } GirderLocation;
 
@@ -772,6 +775,12 @@ typedef struct pgsTypes
       CrownSlope, // hauling at normal crown slope
       Superelevation // hauling at maximum superelevation
    } HaulingSlope;
+
+   typedef enum SectionBias
+   {
+      sbLeft,
+      sbRight
+   } SectionBias;
 
 } pgsTypes;
 
@@ -1258,6 +1267,9 @@ struct GDRCONFIG
 
    bool operator==(const GDRCONFIG& other) const
    {
+      if (SegmentKey != other.SegmentKey)
+         return false;
+
        if(!IsFlexuralDataEqual(other))
            return false;
 
@@ -2197,5 +2209,10 @@ inline CString GetTopWidthType(pgsTypes::TopWidthType type)
       ATLASSERT(false);
       return CString(_T("Unknown"));
    }
+}
+
+inline bool IsParabolicVariation(pgsTypes::SegmentVariationType variationType)
+{
+   return (variationType == pgsTypes::svtParabolic || variationType == pgsTypes::svtDoubleParabolic ? true : false);
 }
 #endif // INCLUDED_PGSUPERTYPES_H_

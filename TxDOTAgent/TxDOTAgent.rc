@@ -42,11 +42,6 @@ BEGIN
     "\0"
 END
 
-3 TEXTINCLUDE 
-BEGIN
-    "1 TYPELIB ""TxDOTAgent.tlb""\r\n"
-    "\0"
-END
 
 #endif    // APSTUDIO_INVOKED
 
@@ -57,8 +52,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 4,0,0,0
- PRODUCTVERSION 4,0,0,0
+ FILEVERSION 4,0,1,0
+ PRODUCTVERSION 4,0,1,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -76,12 +71,12 @@ BEGIN
             VALUE "Comments", "A member of the Alternate Route Project"
             VALUE "CompanyName", "Washington State Department of Transportation"
             VALUE "FileDescription", "TxDOTAgent Module"
-            VALUE "FileVersion", "4.0.0.0"
+            VALUE "FileVersion", "4.0.1.0"
             VALUE "InternalName", "TOGA"
             VALUE "LegalCopyright", "Copyright © 1999-2018, Washington State Department of Transportation, All Rights Reserved"
             VALUE "OriginalFilename", "PGSuperTxDOTAgent.DLL"
             VALUE "ProductName", "PGSuper"
-            VALUE "ProductVersion", "4.0.0.0"
+            VALUE "ProductVersion", "4.0.1.0"
         END
     END
     BLOCK "VarFileInfo"
@@ -725,15 +720,4 @@ END
 #endif    // English (United States) resources
 /////////////////////////////////////////////////////////////////////////////
 
-
-
-#ifndef APSTUDIO_INVOKED
-/////////////////////////////////////////////////////////////////////////////
-//
-// Generated from the TEXTINCLUDE 3 resource.
-//
-1 TYPELIB "TxDOTAgent.tlb"
-
-/////////////////////////////////////////////////////////////////////////////
-#endif    // not APSTUDIO_INVOKED
 

@@ -29,6 +29,13 @@
 
 #include <PsgLib\GirderLibraryEntry.h>
 
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
+
+
 BOOL DoParseTemplateFile(const LPCTSTR lpszPathName, CString& girderEntry, 
                               CString& leftConnEntry, CString& rightConnEntry,
                               CString& projectCriteriaEntry, CString& folderName)

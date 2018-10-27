@@ -24,6 +24,11 @@
 #include "EditLoadFactors.h"
 #include <IFace\Project.h>
 
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
 txnEditLoadFactors::txnEditLoadFactors(const CLoadFactors& oldLoadFactors,const CLoadFactors& newLoadFactors)
 {
    m_LoadFactors[0] = oldLoadFactors;

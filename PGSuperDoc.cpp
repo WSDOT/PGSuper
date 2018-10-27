@@ -268,6 +268,8 @@ void CPGSuperDoc::DesignGirder(bool bPrompt,arSlabOffsetDesignType designSlabOff
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
+   GET_IFACE(IBridge, pBridge);
+   GET_IFACE(ISectionProperties, pSectProp);
    GET_IFACE( ILossParameters, pLossParams);
    if ( pLossParams->GetLossMethod() == pgsTypes::TIME_STEP )
    {
@@ -282,11 +284,31 @@ void CPGSuperDoc::DesignGirder(bool bPrompt,arSlabOffsetDesignType designSlabOff
       return;
    }
 
-   GET_IFACE(ISectionProperties, pSectProp);
+   // We cannot design directly if transformed sections or non-prismatic haunch section properties are specified. Inform user if this is the case.
+   CString noDesignMsg;
    if (pSectProp->GetSectionPropertiesMode() == pgsTypes::spmTransformed)
    {
-      AfxMessageBox(_T("Analysis is based on transformed sections. Girder design is not available for this analysis type. Change the Project Criteria to one using gross section properties to enable girder design."));
-      return;
+      noDesignMsg = (_T("The Project Criteria specifies an analysis based on Transformed Sections. "));
+   }
+
+   if (pSectProp->GetHaunchAnalysisSectionPropertiesType() == pgsTypes::hspVariableParabolic && IsStructuralDeck(pBridge->GetDeckType()))
+   {
+      if (!noDesignMsg.IsEmpty())
+      {
+         noDesignMsg += _T("Also, ");
+      }
+
+      noDesignMsg += _T("The Project Criteria specifies an analysis based on non-prismatic composite section properties accounting for Parabolic Haunch depth. ");
+   }
+
+   if (!noDesignMsg.IsEmpty())
+   {
+      CString msg;
+      msg.Format(_T("Warning: %s \n\nThese options are accurately accounted for by the automated design algorithm. Therefore, the subsequent girder designs are be performed using gross section properties and a constant haunch depth.\n\nThe resulting design may not be optimal. Be sure to verify design results using a Spec Check.\n\nWould you like to proceed?"),noDesignMsg);
+      if (AfxMessageBox(msg, MB_YESNO | MB_ICONWARNING) != IDYES)
+      {
+         return;
+      }
    }
 
    CGirderKey thisGirderKey = girderKey;
@@ -295,7 +317,6 @@ void CPGSuperDoc::DesignGirder(bool bPrompt,arSlabOffsetDesignType designSlabOff
 
    // set up default design options
    GET_IFACE(ISpecification,pSpec);
-   GET_IFACE_NOCHECK(IBridge,pBridge);
    bool can_design_Adim    = pSpec->IsSlabOffsetDesignEnabled() && pBridge->GetDeckType() != pgsTypes::sdtNone;
 
    if (!can_design_Adim)
@@ -402,10 +423,12 @@ void CPGSuperDoc::DoDesignGirder(const std::vector<CGirderKey>& girderKeys, arSl
 
    std::vector<const pgsGirderDesignArtifact*> pArtifacts;
 
+   auto myGirderKeys(girderKeys); // need to make a copy and work on it in case we have to truncate the list because of design failure
+
    // Need to scope the following block, otherwise the progress window will carry the cancel
    // and progress buttons past the design outcome and into any reports that need to be generated.
    {
-      bool multi = girderKeys.size()>1;
+      bool multi = myGirderKeys.size()>1;
 
       GET_IFACE(IProgress,pProgress);
       DWORD mask = multi ? PW_ALL : PW_ALL|PW_NOGAUGE; // Progress window has a cancel button,
@@ -414,12 +437,12 @@ void CPGSuperDoc::DoDesignGirder(const std::vector<CGirderKey>& girderKeys, arSl
 
       if (multi)
       {
-         pProgress->Init(0,(short)girderKeys.size(),1);  // and for multi-girders, a gauge.
+         pProgress->Init(0,(short)myGirderKeys.size(),1);  // and for multi-girders, a gauge.
       }
 
       // Design all girders in list
-      std::vector<CGirderKey>::const_iterator girderKeyIter(girderKeys.begin());
-      std::vector<CGirderKey>::const_iterator girderKeyIterEnd(girderKeys.end());
+      std::vector<CGirderKey>::const_iterator girderKeyIter(myGirderKeys.begin());
+      std::vector<CGirderKey>::const_iterator girderKeyIterEnd(myGirderKeys.end());
       for ( ; girderKeyIter != girderKeyIterEnd; girderKeyIter++ )
       {
          const CGirderKey& girderKey = *girderKeyIter;
@@ -464,33 +487,51 @@ void CPGSuperDoc::DoDesignGirder(const std::vector<CGirderKey>& girderKeys, arSl
             return;
          }
          
-         pArtifacts.push_back(pArtifact);
+         if (pArtifact->GetSegmentDesignArtifact(0)->GetOutcome() == pgsSegmentDesignArtifact::DesignNotSupported_Strands)
+         {
+            CString strMsg;
+            strMsg.Format(_T("The design of Span %d Girder %s failed because the strand definition type is not supported for design."), LABEL_SPAN(girderKey.groupIndex),LABEL_GIRDER(girderKey.girderIndex));
+            if (1 < myGirderKeys.size())
+            {
+               strMsg += _T("\nThe design of the remaining girders will skipped.");
+               myGirderKeys.erase(girderKeyIter, girderKeyIterEnd);
+            }
+            AfxMessageBox(strMsg, MB_OK | MB_ICONEXCLAMATION);
+            break;
+         }
+         else
+         {
+            pArtifacts.push_back(pArtifact);
+         }
       }
    }
 
-   GET_IFACE(IReportManager,pReportMgr);
-   CReportDescription rptDesc = pReportMgr->GetReportDescription(_T("Design Outcome Report"));
-   std::shared_ptr<CReportSpecificationBuilder> pRptSpecBuilder = pReportMgr->GetReportSpecificationBuilder(rptDesc);
-   std::shared_ptr<CReportSpecification> pRptSpec = pRptSpecBuilder->CreateDefaultReportSpec(rptDesc);
-
-   std::shared_ptr<CMultiGirderReportSpecification> pMGRptSpec = std::dynamic_pointer_cast<CMultiGirderReportSpecification,CReportSpecification>(pRptSpec);
-
-   pMGRptSpec->SetGirderKeys(girderKeys);
-
-   CDesignOutcomeDlg dlg(pMGRptSpec, girderKeys, designADim);
-   if ( dlg.DoModal() == IDOK )
+   if (0 < myGirderKeys.size())
    {
-      SlabOffsetDesignSelectionType slabOffsetDType;
-      SpanIndexType fromSpan;
-      GirderIndexType fromGirder;
-      bool doDesignSO = dlg.GetSlabOffsetDesign(&slabOffsetDType, &fromSpan, &fromGirder);
+      GET_IFACE(IReportManager, pReportMgr);
+      CReportDescription rptDesc = pReportMgr->GetReportDescription(_T("Design Outcome Report"));
+      std::shared_ptr<CReportSpecificationBuilder> pRptSpecBuilder = pReportMgr->GetReportSpecificationBuilder(rptDesc);
+      std::shared_ptr<CReportSpecification> pRptSpec = pRptSpecBuilder->CreateDefaultReportSpec(rptDesc);
 
-      // Create our transaction and execute
-      GET_IFACE(IEAFTransactions,pTransactions);
+      std::shared_ptr<CMultiGirderReportSpecification> pMGRptSpec = std::dynamic_pointer_cast<CMultiGirderReportSpecification, CReportSpecification>(pRptSpec);
 
-      txnDesignGirder* pTxn = new txnDesignGirder(pArtifacts,slabOffsetDType,fromSpan,fromGirder);
+      pMGRptSpec->SetGirderKeys(myGirderKeys);
 
-      pTransactions->Execute(pTxn);
+      CDesignOutcomeDlg dlg(pMGRptSpec, myGirderKeys, designADim);
+      if (dlg.DoModal() == IDOK)
+      {
+         SlabOffsetDesignSelectionType slabOffsetDType;
+         SpanIndexType fromSpan;
+         GirderIndexType fromGirder;
+         bool doDesignSO = dlg.GetSlabOffsetDesign(&slabOffsetDType, &fromSpan, &fromGirder);
+
+         // Create our transaction and execute
+         GET_IFACE(IEAFTransactions, pTransactions);
+
+         txnDesignGirder* pTxn = new txnDesignGirder(pArtifacts, slabOffsetDType, fromSpan, fromGirder);
+
+         pTransactions->Execute(pTxn);
+      }
    }
 }
 

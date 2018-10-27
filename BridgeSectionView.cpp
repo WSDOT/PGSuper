@@ -418,6 +418,7 @@ void CBridgeSectionView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
         (lHint == HINT_UNITSCHANGED)              ||
         (lHint == HINT_BRIDGEVIEWSETTINGSCHANGED) || 
         (lHint == HINT_BRIDGEVIEWSECTIONCUTCHANGED) ||
+        (lHint == HINT_SPECCHANGED) ||
         (lHint == HINT_GIRDERLABELFORMATCHANGED)
         )
    {
@@ -887,7 +888,7 @@ void CBridgeSectionView::BuildGirderDisplayObjects()
       IntervalIndexType intervalIdx = pIntervals->GetErectSegmentInterval(thisSegmentKey);
 
       CComPtr<IShape> shape;
-      pShapes->GetSegmentShape(intervalIdx,poi,true,pgsTypes::scBridge,&shape);
+      pShapes->GetSegmentShape(intervalIdx,poi,true,pgsTypes::scBridge,pgsTypes::hspVariableParabolic,&shape);
 
       CComPtr<IPoint2d> point;
       pBridge->GetPoint(poi, pgsTypes::pcGlobal, &point);
@@ -1134,8 +1135,8 @@ void CBridgeSectionView::BuildDeckDisplayObjects()
    strategy.CoCreateInstance(CLSID_ShapeDrawStrategy);
 
    strategy->SetShape(shape);
-   strategy->SetSolidLineColor(DECK_BORDER_COLOR);
-   strategy->SetSolidFillColor(DECK_FILL_COLOR);
+   strategy->SetSolidLineColor(IsStructuralDeck(deckType) ? DECK_BORDER_COLOR : NONSTRUCTURAL_DECK_BORDER_COLOR);
+   strategy->SetSolidFillColor(IsStructuralDeck(deckType) ? DECK_FILL_COLOR : NONSTRUCTURAL_DECK_FILL_COLOR);
    strategy->SetVoidLineColor(VOID_BORDER_COLOR);
    strategy->SetVoidFillColor(GetSysColor(COLOR_WINDOW));
    strategy->DoFill(true);

@@ -120,28 +120,9 @@ void CDeckedSlabBeamFactory::CreateGirderSection(IBroker* pBroker,StatusGroupIDT
    beam->put_Tt(Tt);
    beam->put_Tb(Tb);
 
+   PositionBeam(beam);
+
    gdrSection.QueryInterface(ppSection);
-}
-
-void CDeckedSlabBeamFactory::CreateGirderProfile(IBroker* pBroker,StatusGroupIDType statusGroupID,const CSegmentKey& segmentKey,const IBeamFactory::Dimensions& dimensions,IShape** ppShape) const
-{
-   GET_IFACE2(pBroker,IBridge,pBridge);
-   Float64 length = pBridge->GetSegmentLength(segmentKey);
-
-   Float64 height = GetDimension(dimensions,_T("C")) + GetDimension(dimensions,_T("Tt"));
-
-   CComPtr<IRectangle> rect;
-   rect.CoCreateInstance(CLSID_Rect);
-   rect->put_Height(height);
-   rect->put_Width(length);
-
-   CComQIPtr<IXYPosition> position(rect);
-   CComPtr<IPoint2d> topLeft;
-   position->get_LocatorPoint(lpTopLeft,&topLeft);
-   topLeft->Move(0,0);
-   position->put_LocatorPoint(lpTopLeft,topLeft);
-
-   rect->QueryInterface(ppShape);
 }
 
 void CDeckedSlabBeamFactory::CreateSegment(IBroker* pBroker,StatusGroupIDType statusGroupID,const CSegmentKey& segmentKey,ISuperstructureMemberSegment** ppSegment) const
@@ -211,6 +192,62 @@ void CDeckedSlabBeamFactory::CreateSegment(IBroker* pBroker,StatusGroupIDType st
 
    CComQIPtr<ISuperstructureMemberSegment> ssmbrSegment(segment);
    ssmbrSegment.CopyTo(ppSegment);
+}
+
+void CDeckedSlabBeamFactory::CreateSegmentShape(IBroker* pBroker, const CPrecastSegmentData* pSegment, Float64 Xs, pgsTypes::SectionBias sectionBias, IShape** ppShape) const
+{
+   CComPtr<IDeckedSlabBeam> beam;
+   beam.CoCreateInstance(CLSID_DeckedSlabBeam);
+
+   const CSplicedGirderData* pGirder = pSegment->GetGirder();
+   const GirderLibraryEntry* pGirderEntry = pGirder->GetGirderLibraryEntry();
+   const auto& dimensions = pGirderEntry->GetDimensions();
+
+   const CSegmentKey& segmentKey(pSegment->GetSegmentKey());
+
+   Float64 A, B, C, F, W, Tt, Tb, J, endBlockLength;
+   GetDimensions(dimensions, A, B, C, F, W, Tt, Tb, J, endBlockLength);
+
+   beam->put_A(A);
+   beam->put_B(B);
+   beam->put_C(C);
+   beam->put_F(F);
+   beam->put_W(W);
+   beam->put_Tt(Tt);
+   beam->put_Tb(Tb);
+
+   if (segmentKey.girderIndex == 0)
+   {
+      beam->put_LeftBlockOut(VARIANT_FALSE);
+   }
+
+   const CGirderGroupData* pGroup = pSegment->GetGirder()->GetGirderGroup();
+   if (segmentKey.girderIndex == pGroup->GetGirderCount() - 1)
+   {
+      beam->put_RightBlockOut(VARIANT_FALSE);
+   }
+
+   GET_IFACE2(pBroker, IBridge, pBridge);
+   Float64 Lg = pBridge->GetSegmentLength(segmentKey);
+   if (IsInEndBlock(Xs, sectionBias, endBlockLength, Lg))
+   {
+      // Xs is in the end block region
+      beam->put_VoidCount(0);
+   }
+
+   PositionBeam(beam);
+
+   beam.QueryInterface(ppShape);
+}
+
+Float64 CDeckedSlabBeamFactory::GetSegmentHeight(IBroker* pBroker, const CPrecastSegmentData* pSegment, Float64 Xs) const
+{
+   const CSplicedGirderData* pGirder = pSegment->GetGirder();
+   const GirderLibraryEntry* pGirderEntry = pGirder->GetGirderLibraryEntry();
+   const auto& dimensions = pGirderEntry->GetDimensions();
+   Float64 C = GetDimension(dimensions, _T("C"));
+   Float64 Tt = GetDimension(dimensions, _T("Tt"));
+   return C + Tt;
 }
 
 void CDeckedSlabBeamFactory::ConfigureSegment(IBroker* pBroker, StatusItemIDType statusID, const CSegmentKey& segmentKey, ISuperstructureMemberSegment* pSSMbrSegment) const
@@ -904,4 +941,16 @@ bool CDeckedSlabBeamFactory::CanPrecamber() const
 GirderIndexType CDeckedSlabBeamFactory::GetMinimumBeamCount() const
 {
    return 1;
+}
+
+void CDeckedSlabBeamFactory::PositionBeam(IDeckedSlabBeam* pBeam) const
+{
+   // Hook point is at bottom center of bounding box.
+   // Adjust hook point so top center of bounding box is at (0,0)
+   Float64 Hg;
+   pBeam->get_Height(&Hg);
+
+   CComPtr<IPoint2d> hookPt;
+   pBeam->get_HookPoint(&hookPt);
+   hookPt->Offset(0, -Hg);
 }

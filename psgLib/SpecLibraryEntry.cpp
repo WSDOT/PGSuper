@@ -45,7 +45,7 @@ static char THIS_FILE[] = __FILE__;
 // 2.9 and 3.0 branches. It is ok for loads to fail for 44.0 <= version <= MAX_OVERLAP_VERSION.
 #define MAX_OVERLAP_VERSION 53.0 // overlap of data blocks between PGS 2.9 and 3.0 end with this version
 
-#define CURRENT_VERSION 62.0 
+#define CURRENT_VERSION 63.0 
 
 /****************************************************************************
 CLASS
@@ -240,6 +240,7 @@ m_LimitStateConcreteStrength(pgsTypes::lscStrengthAtTimeOfLoading),
 m_HaunchLoadComputationType(pgsTypes::hlcZeroCamber),
 m_HaunchLoadCamberTolerance(::ConvertToSysUnits(0.5,unitMeasure::Inch)),
 m_HaunchLoadCamberFactor(1.0),
+m_HaunchAnalysisSectionPropertiesType(pgsTypes::hspZeroHaunch),
 m_LiftingWindType(pgsTypes::Speed),
 m_LiftingWindLoad(0),
 m_bComputeLiftingStressesAtEquilibriumAngle(false),
@@ -254,7 +255,7 @@ m_InclinedGirder_BrgPadDeduction(::ConvertToSysUnits(1.0,unitMeasure::Inch)),
 m_InclinedGirder_FSmax(1.2),
 m_LiftingCamberMultiplier(1.0),
 m_HaulingCamberMultiplier(1.0),
-m_FinishedElevationTolerance(::ConvertToSysUnits(0.25,unitMeasure::Inch))
+m_FinishedElevationTolerance(::ConvertToSysUnits(1.00,unitMeasure::Inch))
 {
    m_bCheckStrandStress[CSS_AT_JACKING]       = false;
    m_bCheckStrandStress[CSS_BEFORE_TRANSFER]  = true;
@@ -616,6 +617,7 @@ bool SpecLibraryEntry::SaveMe(sysIStructuredSave* pSave)
    pSave->Property(_T("HaunchLoadComputationType"), (Int32)m_HaunchLoadComputationType); // added in version 54
    pSave->Property(_T("HaunchLoadCamberTolerance"), m_HaunchLoadCamberTolerance);        // ""
    pSave->Property(_T("HaunchLoadCamberFactor"), m_HaunchLoadCamberFactor);  // added in version 61
+   pSave->Property(_T("HaunchAnalysisComputationType"), (Int32)m_HaunchAnalysisSectionPropertiesType); // added in version 63
    pSave->Property(_T("Bs3CompStressServ"), m_Bs3CompStressServ);
    pSave->Property(_T("Bs3CompStressService1A"), m_Bs3CompStressService1A);
    pSave->Property(_T("Bs3TensStressServNc"), m_Bs3TensStressServNc);
@@ -2132,6 +2134,17 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
             {
                THROW_LOAD(InvalidFileFormat,pLoad);
             }
+         }
+
+         if ( 62 < version )
+         {
+            Int32 hlct;
+            if(!pLoad->Property(_T("HaunchAnalysisComputationType"), &hlct))
+            {
+               THROW_LOAD(InvalidFileFormat,pLoad);
+            }
+
+            m_HaunchAnalysisSectionPropertiesType = (pgsTypes::HaunchAnalysisSectionPropertiesType)hlct;
          }
 
          if(!pLoad->Property(_T("Bs3CompStressServ"), &m_Bs3CompStressServ))
@@ -4513,6 +4526,13 @@ bool SpecLibraryEntry::Compare(const SpecLibraryEntry& rOther, std::vector<pgsLi
       vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Haunch Loads Camber Factors are different"),_T(""),_T("")));
    }
 
+   if ( m_HaunchAnalysisSectionPropertiesType != rOther.m_HaunchAnalysisSectionPropertiesType ||
+      (m_HaunchAnalysisSectionPropertiesType == pgsTypes::hspVariableParabolic && !::IsEqual(m_HaunchLoadCamberTolerance, rOther.m_HaunchLoadCamberTolerance)) )
+   {
+      RETURN_ON_DIFFERENCE;
+      vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Method using haunch geometry to compute composite section properties is different"),_T(""),_T("")));
+   }
+
    //
    // Moment Capacity Tab
    //
@@ -5893,6 +5913,16 @@ void SpecLibraryEntry::SetHaunchLoadCamberFactor(Float64 tol)
    m_HaunchLoadCamberFactor = tol;
 }
 
+pgsTypes:: HaunchAnalysisSectionPropertiesType SpecLibraryEntry::GetHaunchAnalysisSectionPropertiesType() const
+{
+   return m_HaunchAnalysisSectionPropertiesType;
+}
+
+void SpecLibraryEntry::SetHaunchAnalysisSectionPropertiesType(pgsTypes:: HaunchAnalysisSectionPropertiesType type)
+{
+   m_HaunchAnalysisSectionPropertiesType = type;
+}
+
 void SpecLibraryEntry::SetCreepMethod(int method)
 {
    PRECONDITION( 0 <= method && method <= 1 );
@@ -7177,6 +7207,7 @@ void SpecLibraryEntry::MakeCopy(const SpecLibraryEntry& rOther)
    m_HaunchLoadComputationType    = rOther.m_HaunchLoadComputationType;
    m_HaunchLoadCamberTolerance    = rOther.m_HaunchLoadCamberTolerance;
    m_HaunchLoadCamberFactor     = rOther.m_HaunchLoadCamberFactor;
+   m_HaunchAnalysisSectionPropertiesType = rOther.m_HaunchAnalysisSectionPropertiesType;
    m_Bs3CompStressServ          = rOther.m_Bs3CompStressServ;
    m_Bs3CompStressService1A     = rOther.m_Bs3CompStressService1A;
    m_Bs3TensStressServNc        = rOther.m_Bs3TensStressServNc;

@@ -483,7 +483,12 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
    // Bottom Flange Clearance Check
    CConstructabilityCheckTable().BuildBottomFlangeClearanceCheck(pChapter,pBroker,girderList,pDisplayUnits);
 
-   if (pBridge->GetDeckType() != pgsTypes::sdtNone)
+   if (pBridge->GetDeckType() == pgsTypes::sdtNone)
+   {
+      // Finished Elevation Check
+      CConstructabilityCheckTable().BuildFinishedElevationCheck(pChapter, pBroker, girderList, pDisplayUnits);
+   }
+   else
    {
       p = new rptParagraph(rptStyleManager::GetHeadingStyle());
       p->SetName(_T("Haunch Geometry"));

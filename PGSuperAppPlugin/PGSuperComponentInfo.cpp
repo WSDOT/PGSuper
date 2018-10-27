@@ -30,6 +30,13 @@
 #include "AboutDlg.h"
 #include "PGSuperDoc.h"
 
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
+
+
 HRESULT CPGSuperComponentInfo::FinalConstruct()
 {
    return S_OK;

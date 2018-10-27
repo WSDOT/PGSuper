@@ -10,10 +10,10 @@ Enter the coefficient for computing the modulus of rupture for determining the c
 
 Resistance Factors (LRFD 5.5.4.2)
 ----------------------------------
-### Conventional Construction (LRFD 5.5.4.2.1) ###
+### Conventional Construction (LRFD 5.5.4.2) ###
 Enter the normal and lightweight concrete resistance factors.
 
-### Closure Joints (LRFD 5.5.4.2.2 and 5.12.3.4.2d (*pre-2017: 5.14.1.3.2d*)) ###
+### Closure Joints (LRFD 5.5.4.2 and 5.12.3.4.2d (*pre-2017: 5.14.1.3.2d*)) ###
 Enter the normal and lightweight concrete resistance factors.
 
 Maximum Spacing of Transverse Reinforcement (LRFD 5.7.2.6 (*pre-2017: 5.8.2.7*))

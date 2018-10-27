@@ -1,0 +1,30 @@
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  AECmbr Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 54.25    6   9.25   U40, 9.25, 5      1     1     U40           68  1/2  270  12.59  12.01  15.75  15.75   2.38  18   2.17   27    18    6   6   2   2   2   5.400  6.900   4.360    -3.785     6623   0.619  0.852   4.966 -2.400 -0.109 -0.076 -2.585 196.00  526.26    1.00    1.00    1.00 
+
+
+The Specification Check was Not Successful
+Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
+Bursting zone check failed.
+
+
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  AECmbr Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 54.25    6   9.25   U40, 9.25, 5      1     2     U40           66  1/2  270  12.66  12.17  15.50  15.50   2.25  16   2.17   27    16    4   8   2   2   0   5.400  6.800   4.294    -3.731     6536   0.614  0.852   4.817 -2.304 -0.110 -0.077 -2.491 184.56  498.61    1.00    1.00    1.00 
+
+
+The Specification Check was Not Successful
+Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
+Bursting zone check failed.
+
+
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  AECmbr Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 54.25    6   9.25   U40, 9.25, 5      1     4     U40           66  1/2  270  12.66  12.17  15.50  15.50   2.25  16   2.17   27    16    4   8   2   2   0   5.400  6.800   4.294    -3.731     6536   0.614  0.852   4.817 -2.304 -0.110 -0.077 -2.491 184.56  498.61    1.00    1.00    1.00 
+
+
+The Specification Check was Not Successful
+Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
+Bursting zone check failed.
+
+

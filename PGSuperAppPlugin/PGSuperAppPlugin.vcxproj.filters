@@ -2083,6 +2083,9 @@
     <None Include="res\TempSupportContinuousSegment.emf">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="res\HarpPointLocations.emf">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Text Include="ReadMe.txt" />

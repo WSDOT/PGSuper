@@ -218,7 +218,7 @@ void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnit
    // Populate the table
    bool is_negative_camber = false;
    Uint16 row = 1;
-   (*pTable)(row, 0) << _T("Estimated Unfactored Camber at ") << max_days << _T(" days, D");;
+   (*pTable)(row, 0) << _T("Unfactored Design Camber at ") << max_days << _T(" days, D");;
    Float64 D_uorig = pCamber->GetDCamberForGirderScheduleUnfactored( poi_orig,CREEP_MAXTIME);
    if ( D_uorig < 0 )
    {
@@ -245,34 +245,6 @@ void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnit
 
    row++;
 
-   // Factored D camber
-   (*pTable)(row,0) << _T("Estimated Factored Camber at ")<< max_days<<_T(" days, D") <<Super(_T("**"));
-   Float64 D_orig = pCamber->GetDCamberForGirderSchedule( poi_orig,CREEP_MAXTIME);
-   if ( D_orig < 0 )
-   {
-      (*pTable)(row,1) << color(Red) << disp.SetValue( D_orig ) << color(Black);
-      (*pTable)(row,2) << color(Red) << dispft.SetValue( D_orig ) << color(Black);
-   }
-   else
-   {
-      (*pTable)(row,1) << disp.SetValue( D_orig );
-      (*pTable)(row,2) << dispft.SetValue( D_orig );
-   }
-
-   Float64 D_fabr = pCamber->GetDCamberForGirderSchedule( poi_fabr,CREEP_MAXTIME);
-   if ( D_fabr < 0 )
-   {
-      (*pTable)(row,3) << color(Red) << disp.SetValue( D_fabr ) << color(Black);
-      (*pTable)(row,4) << color(Red) << dispft.SetValue( D_fabr ) << color(Black);
-   }
-   else
-   {
-      (*pTable)(row,3) << disp.SetValue( D_fabr );
-      (*pTable)(row,4) << dispft.SetValue( D_fabr );
-   }
-
-   row++;
-
    (*pTable)(row,0) << _T("Deflection (Prestressing)");
    (*pTable)(row,1) << disp.SetValue( pCamber->GetPrestressDeflection(poi_orig,pgsTypes::pddRelease) );
    (*pTable)(row,2) << dispft.SetValue( pCamber->GetPrestressDeflection(poi_orig,pgsTypes::pddRelease) );
@@ -291,7 +263,7 @@ void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnit
 
    row++;
 
-   (*pTable)(row,0) << _T("Deflection (Deck and Diaphragms)")<<Super(_T("*"));;
+   (*pTable)(row, 0) << _T("Deflection (Deck and Diaphragms)"); // << Super(_T("*"));;
    (*pTable)(row,1) << disp.SetValue( delta_dl_orig );
    (*pTable)(row,2) << dispft.SetValue( delta_dl_orig );
 
@@ -317,43 +289,6 @@ void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnit
 
    row++;
 
-   (*pTable)(row,0) << _T("Screed Camber, C")<<Super(_T("**"));
-   (*pTable)(row,1) << disp.SetValue( pCamber->GetScreedCamber(poi_orig) );
-   (*pTable)(row,2) << dispft.SetValue( pCamber->GetScreedCamber(poi_orig) );
-
-   (*pTable)(row,3) << disp.SetValue( pCamber->GetScreedCamber(poi_fabr) );
-   (*pTable)(row,4) << dispft.SetValue( pCamber->GetScreedCamber(poi_fabr) );
-
-   row++;
-
-   (*pTable)(row,0) << _T("Computed Excess Camber") << rptNewLine << _T("(based on D at ") << max_days << _T(" days)")<<Super(_T("**"));
-   Float64 excess_camber = pCamber->GetExcessCamber(poi_orig,CREEP_MAXTIME);
-   if ( excess_camber < 0 )
-   {
-      (*pTable)(row,1) << color(Red) << disp.SetValue( excess_camber ) << color(Black);
-      (*pTable)(row,2) << color(Red) << dispft.SetValue( excess_camber ) << color(Black);
-   }
-   else
-   {
-      (*pTable)(row,1) << disp.SetValue( excess_camber );
-      (*pTable)(row,2) << dispft.SetValue( excess_camber );
-   }
-
-   excess_camber = pCamber->GetExcessCamber(poi_fabr,CREEP_MAXTIME);
-   if ( excess_camber < 0 )
-   {
-      (*pTable)(row,3) << color(Red) << disp.SetValue( excess_camber ) << color(Black);
-      (*pTable)(row,4) << color(Red) << dispft.SetValue( excess_camber ) << color(Black);
-      is_negative_camber = true;
-   }
-   else
-   {
-      (*pTable)(row,3) << disp.SetValue( excess_camber );
-      (*pTable)(row,4) << dispft.SetValue( excess_camber );
-   }
-
-   row++;
-
    (*pTable)(row,0) << _T("Live Load Deflection (HL93 - Per Lane)");
    (*pTable)(row,1) << disp.SetValue( delta_ll_orig );
    (*pTable)(row,2) << dispft.SetValue( delta_ll_orig );
@@ -374,9 +309,6 @@ void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnit
 
       row++;
    }
-
-   *p<<_T("* Deflection due to haunch weight is not included in this value") << rptNewLine;
-   *p<<_T("** Component values are factored using camber factors in the Girder Library") << rptNewLine;
 
    if (is_negative_camber)
    {

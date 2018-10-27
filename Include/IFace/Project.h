@@ -371,13 +371,13 @@ DEFINE_GUID(IID_IRoadwayData,
 interface IRoadwayData : IUnknown
 {
    virtual void SetAlignmentData2(const AlignmentData2& data) = 0;
-   virtual AlignmentData2 GetAlignmentData2() const = 0;
+   virtual const AlignmentData2& GetAlignmentData2() const = 0;
 
    virtual void SetProfileData2(const ProfileData2& data) = 0;
-   virtual ProfileData2 GetProfileData2() const = 0;
+   virtual const ProfileData2& GetProfileData2() const = 0;
 
    virtual void SetRoadwaySectionData(const RoadwaySectionData& data) = 0;
-   virtual RoadwaySectionData GetRoadwaySectionData() const = 0;
+   virtual const RoadwaySectionData& GetRoadwaySectionData() const = 0;
 };
 
 /*****************************************************************************
@@ -500,7 +500,11 @@ interface ISpecification : IUnknown
    virtual std::_tstring GetRatingSpecification() const = 0;
    virtual void SetRatingSpecification(const std::_tstring& spec) = 0;
 
+   // Assumed excess camber is used for parabolic variation of haunch load and composite props. These functions see if it
+   // is applicable at all or for either
    virtual bool IsAssExcessCamberInputEnabled(bool considerDeckType=true) const = 0; // Depends on library and deck type
+   virtual bool IsAssExcessCamberForLoad() const = 0; 
+   virtual bool IsAssExcessCamberForSectProps() const = 0; 
 };
 
 /*****************************************************************************

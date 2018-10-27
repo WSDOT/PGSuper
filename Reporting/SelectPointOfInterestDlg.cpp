@@ -33,6 +33,13 @@
 #include <IFace\PointOfInterest.h>
 #include <IFace\Bridge.h>
 
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
+
+
 // CSelectPointOfInterestDlg dialog
 
 IMPLEMENT_DYNAMIC(CSelectPointOfInterestDlg, CDialog)

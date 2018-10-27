@@ -1,6 +1,6 @@
 Flexural Resistance Factor {#tg_flexural_resistance_factor}
 ======================================
-A generalized version of the flexure resistance factor defined in AASHTO LRFD 5.5.4.2.1 is used in this software. The resistance factor is a linear interpolation between the resistance factors for compression controlled and tension controlled sections. A linear interpolation is also made for partial prestress ratio between reinforced concrete and prestressed sections.
+A generalized version of the flexure resistance factor defined in AASHTO LRFD 5.5.4.2 is used in this software. The resistance factor is a linear interpolation between the resistance factors for compression controlled and tension controlled sections. A linear interpolation is also made for partial prestress ratio between reinforced concrete and prestressed sections.
 
 This article illustrates the derivation of the generalized resistance factor for flexure equation.
 

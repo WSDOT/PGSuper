@@ -257,7 +257,8 @@ public:
    virtual UINT GetLibToolBarID() override;
    virtual UINT GetHelpToolBarID() override;
    virtual bool EditDirectSelectionPrestressing(const CSegmentKey& segmentKey) override;
-   virtual bool EditDirectInputPrestressing(const CSegmentKey& segmentKey) override;
+   virtual bool EditDirectRowInputPrestressing(const CSegmentKey& segmentKey) override;
+   virtual bool EditDirectStrandInputPrestressing(const CSegmentKey& segmentKey) override;
    virtual void AddPointLoad(const CPointLoadData& loadData) override;
    virtual void DeletePointLoad(CollectionIndexType loadIdx) override;
    virtual void AddDistributedLoad(const CDistributedLoadData& loadData) override;

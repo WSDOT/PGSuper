@@ -33,6 +33,13 @@
 #include <EAF\EAFBrokerDocument.h>
 #include <MFCTools\AutoRegistry.h>
 
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
+
+
 BEGIN_MESSAGE_MAP(CMyCmdTarget,CCmdTarget)
    ON_COMMAND(ID_UPDATE_TOGA_TEMPLATE,OnUpdateTemplates)
 END_MESSAGE_MAP()

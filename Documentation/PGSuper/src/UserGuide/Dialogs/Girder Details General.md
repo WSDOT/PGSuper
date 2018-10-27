@@ -50,10 +50,10 @@ Start of Girder | Enter the slab offset at the start of the girder
 End of Girder | Enter the slab offset at the end of the girder
 
 Assumed Excess Camber
----------------------------
-Enter the Assumed Excess Camber for this girder. The assumed excess camber is used to define the parabolic haunch depth used for computing haunch dead load. 
+---------------------
+Enter the excess camber that is used to define the parabolic haunch depth used for computing composite section properties and/or haunch dead load. Note that this option is only available if the parabolic option is selected for computing composite section properties or haunch loading in the current Project Criteria library entry.
 
-Note that this option is only available if the parabolic haunch load option is selected in the current Project Criteria library entry. Refer to  the Slab Haunch loading section of @ref tg_structural_analysis_models for more information about how the haunch dead load is defined.
+Refer to  the Slab Haunch loading section of @ref tg_structural_analysis_models for more information. Refer to @ref tg_section_properties in the Technical Guide for detailed information about haunch depth is used when computing composite section properties.
 
 Condition and Rating
 ---------------------

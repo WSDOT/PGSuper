@@ -27,6 +27,13 @@
 #include "KdotHaulingDlg.h"
 #include "SpecHaulingErectionPage.h"
 
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
+
+
 // CKdotHaulingDlg dialog
 
 IMPLEMENT_DYNAMIC(CKdotHaulingDlg, CDialog)

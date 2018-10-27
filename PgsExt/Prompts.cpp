@@ -27,6 +27,12 @@
 #include "SelectSegmentDlg.h"
 #include "SelectPoiDlg.h"
 
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
+
 UINT_PTR pgsSelectGirder(CGirderKey& girderKey)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());

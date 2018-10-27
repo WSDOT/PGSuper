@@ -58,8 +58,8 @@ if ( level >= lvl && m_Level < lvl ) \
 
 #if defined ENABLE_LOGGING
 
-#if !defined INCLUDED_SYSTEM_LOGDUMPCONTEXT_H_
-#include <System\LogDumpContext.h>
+#if !defined INCLUDED_WBFLTOOLS_LOGDUMPCONTEXT_H_
+#include <WBFLTools\LogDumpContext.h>
 #endif
 
 #define DECLARE_LOGFILE \

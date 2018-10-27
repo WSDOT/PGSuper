@@ -25,6 +25,13 @@
 
 #include <IFace\Project.h>
 
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
+
+
 txnEditBridgeDescription::txnEditBridgeDescription(IBroker* pBroker,const CBridgeDescription2& oldBridgeDesc,const CBridgeDescription2& newBridgeDesc) :
 m_pBroker(pBroker)
 {

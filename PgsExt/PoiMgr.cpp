@@ -553,9 +553,10 @@ const pgsPointOfInterest& pgsPoiMgr::GetPrevPointOfInterest(PoiIDType poiID,PoiA
    CSegmentKey segmentKey(currentPoi.GetSegmentKey()); // want a copy, not a reference... we change the segment key below
 
    const auto& poiContainer = GetPoiContainer(segmentKey);
+   const auto* pPoiContainer = &poiContainer;
 
-   auto begin(std::begin(poiContainer));
-   auto end(std::end(poiContainer));
+   auto begin(std::begin(*pPoiContainer));
+   auto end(std::end(*pPoiContainer));
    auto found( std::find_if(begin, end, [poiID](auto& p) {return p->GetID() == poiID; }) );
    ATLASSERT(found != end);
    if ( found == begin )
@@ -571,7 +572,8 @@ const pgsPointOfInterest& pgsPoiMgr::GetPrevPointOfInterest(PoiIDType poiID,PoiA
          CSegmentKey prevSegmentKey(segmentKey);
          prevSegmentKey.segmentIndex--;
          const auto& poiContainer = GetPoiContainer(prevSegmentKey);
-         found = std::end(poiContainer)-1; // make found point to the first candidate POI
+         pPoiContainer = &poiContainer;
+         found = std::end(*pPoiContainer)-1; // make found point to the first candidate POI
       }
    }
    else
@@ -590,7 +592,7 @@ const pgsPointOfInterest& pgsPoiMgr::GetPrevPointOfInterest(PoiIDType poiID,PoiA
    while ( true )
    {
       PoiContainer::const_reverse_iterator iter(found);
-      PoiContainer::const_reverse_iterator rend(poiContainer.rend());
+      PoiContainer::const_reverse_iterator rend(pPoiContainer->rend());
       for ( ; iter != rend; iter++ )
       {
          const auto& thisPoi(*iter);
@@ -611,7 +613,8 @@ const pgsPointOfInterest& pgsPoiMgr::GetPrevPointOfInterest(PoiIDType poiID,PoiA
          // the container was exhausted... the poi must be in a previous container
          segmentKey.segmentIndex--;
          const auto& poiContainer = GetPoiContainer(segmentKey);
-         found = std::end(poiContainer)-1; // make found point to the next candidate POI
+         pPoiContainer = &poiContainer;
+         found = std::end(*pPoiContainer)-1; // make found point to the next candidate POI
       }
    }
 
@@ -630,9 +633,10 @@ const pgsPointOfInterest& pgsPoiMgr::GetNextPointOfInterest(PoiIDType poiID,PoiA
    CSegmentKey segmentKey(currentPoi.GetSegmentKey()); // want a copy, not a ref... segmentKey gets changed below
 
    const auto& poiContainer = GetPoiContainer(segmentKey);
+   const auto* pPoiContainer = &poiContainer;
 
-   auto begin(std::begin(poiContainer));
-   auto end(std::end(poiContainer));
+   auto begin(std::begin(*pPoiContainer));
+   auto end(std::end(*pPoiContainer));
    auto found( std::find_if(begin, end, [poiID](auto& p) {return p->GetID() == poiID; }) );
    ATLASSERT(found != end);
    if ( found == end-1 )
@@ -642,14 +646,15 @@ const pgsPointOfInterest& pgsPoiMgr::GetNextPointOfInterest(PoiIDType poiID,PoiA
       CSegmentKey nextSegmentKey(segmentKey);
       nextSegmentKey.segmentIndex++;
       const auto& poiContainer = GetPoiContainer(nextSegmentKey);
-      if (poiContainer.size() == 0 )
+      pPoiContainer = &poiContainer;
+      if (pPoiContainer->size() == 0 )
       {
          // there isn't a container for the next segment so we can't go any further
          return m_DefaultPoi;
       }
       else
       {
-         found = std::end(poiContainer)-1; // make found point to the first candidate POI
+         found = std::end(*pPoiContainer)-1; // make found point to the first candidate POI
       }
    }
    else
@@ -668,7 +673,7 @@ const pgsPointOfInterest& pgsPoiMgr::GetNextPointOfInterest(PoiIDType poiID,PoiA
    while ( true )
    {
       auto iter(found);
-      auto end(std::end(poiContainer));
+      auto end(std::end(*pPoiContainer));
       for ( ; iter != end; iter++ )
       {
          const auto& thisPoi(*iter);
@@ -682,14 +687,15 @@ const pgsPointOfInterest& pgsPoiMgr::GetNextPointOfInterest(PoiIDType poiID,PoiA
       // the container was exhausted... try the container for the next segment
       segmentKey.segmentIndex++;
       const auto& poiContainer = GetPoiContainer(segmentKey);
-      if (poiContainer.size() == 0 )
+      pPoiContainer = &poiContainer;
+      if (pPoiContainer->size() == 0 )
       {
          // there isn't a next poi
          return m_DefaultPoi;
       }
       else
       {
-         found = std::begin(poiContainer); // make found point to the next candidate POI
+         found = std::begin(*pPoiContainer); // make found point to the next candidate POI
       }
    }
 

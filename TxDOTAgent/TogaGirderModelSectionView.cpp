@@ -252,6 +252,7 @@ void CTogaGirderModelSectionView::BuildSectionDisplayObjects(CTxDOTOptionalDesig
 
    GET_IFACE2(pBroker,IShapes,pShapes);
    GET_IFACE2(pBroker,IGirder,pGirder);
+   GET_IFACE2(pBroker,ISectionProperties,pSectProps);
 
    Float64 top_width = pGirder->GetTopWidth(poi);
    Float64 bottom_width = pGirder->GetBottomWidth(poi);
@@ -268,7 +269,7 @@ void CTogaGirderModelSectionView::BuildSectionDisplayObjects(CTxDOTOptionalDesig
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
 
    CComPtr<IShape> shape;
-   pShapes->GetSegmentShape(releaseIntervalIdx,poi,false,pgsTypes::scGirder,&shape);
+   pShapes->GetSegmentShape(releaseIntervalIdx,poi,false,pgsTypes::scGirder,pSectProps->GetHaunchAnalysisSectionPropertiesType(),&shape);
 
    strategy->SetShape(shape);
    strategy->SetSolidLineColor(SEGMENT_BORDER_COLOR);

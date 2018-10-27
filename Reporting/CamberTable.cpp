@@ -148,7 +148,7 @@ void CCamberTable::Build_Deck(IBroker* pBroker, const CSegmentKey& segmentKey,
    rptRcTable** pTable1, rptRcTable** pTable2, rptRcTable** pTable3) const
 {
    GET_IFACE2(pBroker, IBridge, pBridge);
-   if (pBridge->HasAsymmetricGirders() || pBridge->HasTiltedGirders())
+   if (pBridge->HasAsymmetricGirders() || pBridge->HasAsymmetricPrestressing() || pBridge->HasTiltedGirders())
    {
       Build_Deck_XY(pBroker, segmentKey, bTempStrands, bSidewalk, bShearKey, bConstruction, bOverlay, bDeckPanels, pDisplayUnits, constructionRate, cm, pTable1, pTable2, pTable3);
    }
@@ -164,7 +164,7 @@ void CCamberTable::Build_NoDeck(IBroker* pBroker, const CSegmentKey& segmentKey,
    rptRcTable** pTable1, rptRcTable** pTable2, rptRcTable** pTable3) const
 {
    GET_IFACE2(pBroker, IBridge, pBridge);
-   if (pBridge->HasAsymmetricGirders() || pBridge->HasTiltedGirders())
+   if (pBridge->HasAsymmetricGirders() || pBridge->HasAsymmetricPrestressing() || pBridge->HasTiltedGirders())
    {
       Build_NoDeck_XY(pBroker, segmentKey, bTempStrands, bSidewalk, bShearKey, bConstruction, bOverlay, pDisplayUnits, constructionRate, cm, pTable1, pTable2, pTable3);
    }
@@ -736,7 +736,8 @@ void CCamberTable::Build_Deck_XY(IBroker* pBroker, const CSegmentKey& segmentKey
    ColumnIndexType colSpan = 11 + (bHasPrecamber ? 1 : 0) + (bTempStrands ? 1 : 0) + (bSidewalk ? 1 : 0) + (bOverlay ? 1 : 0) + (bShearKey ? 1 : 0) + (bConstruction ? 1 : 0) + (bDeckPanels ? 1 : 0);
    table2->SetColumnSpan(0, col, colSpan);
    (*table2)(0, col) << _T("Y");
-   for (ColumnIndexType c = 0; c < colSpan-1; c++)
+   ColumnIndexType nSkipCells = colSpan - 1;
+   for (ColumnIndexType c = 0; c < nSkipCells; c++)
    {
       table2->SetColumnSpan(0, col + c + 1, SKIP_CELL);
    }
@@ -1646,10 +1647,11 @@ void CCamberTable::Build_NoDeck_XY(IBroker* pBroker,const CSegmentKey& segmentKe
       (*table2)(1, col++) << COLHDR(Sub2(symbol(DELTA), _T("tpsr")), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
    }
 
-   ColumnIndexType colSpan = 9 + (bHasPrecamber ? 1 : 0) + (bTempStrands ? 1 : 0) + (bShearKey ? 1 : 0) + (bConstruction ? 1 : 0) + (bSidewalk ? 1 : 0) + (bOverlay ? 1 : 0);
+   ColumnIndexType colSpan = 10 + (bHasPrecamber ? 1 : 0) + (bTempStrands ? 1 : 0) + (bShearKey ? 1 : 0) + (bConstruction ? 1 : 0) + (bSidewalk ? 1 : 0) + (bOverlay ? 1 : 0);
    table2->SetColumnSpan(0, col, colSpan);
    (*table2)(0, col) << _T("Y");
-   for (ColumnIndexType c = 0; c < colSpan-0; c++)
+   ColumnIndexType nSkipCells = colSpan - 1;
+   for (ColumnIndexType c = 0; c < nSkipCells; c++)
    {
       table2->SetColumnSpan(0, col + c + 1, SKIP_CELL);
    }

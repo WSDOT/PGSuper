@@ -1,14 +1,15 @@
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 24.00    4   7.70                     1     1     Tx28          10  1/2  270  10.48  10.48   8.00   8.00                                               0   0.0  0.0  4.000  5.000   0.543    -0.811      966   0.666  0.792   0.423 -0.033 -0.002 -0.003 -0.038  14.53   48.51    1.00    1.00    1.00 
+ 24.00    4   7.70                     1     1     Tx28          10  1/2  270  10.48  10.48   8.00   8.00                                               0   0.0  0.0  4.000  5.000   0.569    -0.848     1006   0.671  0.797   0.438 -0.037 -0.002 -0.003 -0.042  14.45   48.21    1.00    1.00    1.00 
 
 
-The Specification Check was Successful
+The Specification Check was Not Successful
+Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 24.00    4   7.70                     1     2     Tx28          10  1/2  270  10.48  10.48   8.00   8.00                                               0   0.0  0.0  4.000  5.000   0.546    -0.817      971   0.666  0.792   0.423 -0.034 -0.002 -0.003 -0.039  14.53   48.44    1.00    1.00    1.00 
+ 24.00    4   7.70                     1     2     Tx28          10  1/2  270  10.48  10.48   8.00   8.00                                               0   0.0  0.0  4.000  5.000   0.556    -0.831      986   0.669  0.796   0.428 -0.036 -0.002 -0.003 -0.041  14.50   48.33    1.00    1.00    1.00 
 
 
 The Specification Check was Successful

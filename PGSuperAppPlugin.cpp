@@ -39,6 +39,13 @@
 #include <MFCTools\AutoRegistry.h>
 
 
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
+
+
 BEGIN_MESSAGE_MAP(CMyCmdTarget,CCmdTarget)
    ON_COMMAND(ID_MANAGE_PLUGINS,OnConfigurePlugins)
    ON_COMMAND(ID_UPDATE_TEMPLATE,OnUpdateTemplates) // need to map this into an accelerator table
@@ -70,31 +77,6 @@ const CRuntimeClass* CPGSuperAppPlugin::GetDocTemplateRuntimeClass()
    return RUNTIME_CLASS(CPGSuperDocTemplate);
 }
 
-//BOOL CPGSuperAppPlugin::UpdateProgramSettings(BOOL bFirstRun)
-//{
-//   AFX_MANAGE_STATE(AfxGetStaticModuleState());
-//
-//   BOOL bHandled = CPGSAppPluginBase::UpdateProgramSettings(bFirstRun);
-//   if ( bHandled )
-//   {
-//      // Need to find if the PGSuper Project Importer app-plugin has been loaded.
-//      // If so, tell it to re-initialize with the updated program settings
-//      CEAFApp* pApp = EAFGetApp();
-//
-//      CEAFAppPluginManager* pAppPluginMgr = pApp->GetAppPluginManager();
-//
-//      CComPtr<IEAFAppPlugin> importerPlugin;
-//      pAppPluginMgr->GetPlugin(CLSID_PGSuperProjectImporterAppPlugin,&importerPlugin);
-//      if ( importerPlugin )
-//      {
-//         CPGSAppPluginBase* pBasePlugin = dynamic_cast<CPGSAppPluginBase*>(importerPlugin.p);
-//         ATLASSERT(pBasePlugin);
-//         pBasePlugin->DefaultInit(this);
-//      }
-//   }
-//   return bHandled;
-//}
-
 HRESULT CPGSuperAppPlugin::FinalConstruct()
 {
    return OnFinalConstruct(); // CPGSAppPluginBase
@@ -125,11 +107,15 @@ BOOL CPGSuperAppPlugin::Init(CEAFApp* pParent)
    // See MSKB Article ID: Q118435, "Sharing Menus Between MDI Child Windows"
    m_hMenuShared = ::LoadMenu( pMyApp->m_hInstance, MAKEINTRESOURCE(IDR_PGSUPER) );
 
-   if ( m_hMenuShared == nullptr )
+   if (m_hMenuShared == nullptr)
+   {
       return FALSE;
+   }
 
-   if ( !EAFGetApp()->GetCommandLineInfo().m_bCommandLineMode )
+   if (!EAFGetApp()->GetCommandLineInfo().m_bCommandLineMode)
+   {
       UpdateCache(); // we don't want to do this if we are running in batch/command line mode
+   }
 
    return TRUE;
 }
@@ -174,7 +160,7 @@ std::vector<CEAFDocTemplate*> CPGSuperAppPlugin::CreateDocTemplates()
 
    std::vector<CEAFDocTemplate*> vDocTemplates;
 
-   CPGSuperDocTemplate* pTemplate = new CPGSuperDocTemplate(
+   std::unique_ptr<CPGSuperDocTemplate> pTemplate = std::make_unique<CPGSuperDocTemplate>(
 		IDR_PGSUPER,
       nullptr,
 		RUNTIME_CLASS(CPGSuperDoc),
@@ -182,7 +168,7 @@ std::vector<CEAFDocTemplate*> CPGSuperAppPlugin::CreateDocTemplates()
 		RUNTIME_CLASS(CBridgePlanView),
       m_hMenuShared,1);
 
-   vDocTemplates.push_back(pTemplate);
+   vDocTemplates.push_back(pTemplate.release());
    return vDocTemplates;
 }
 

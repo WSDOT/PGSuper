@@ -50,6 +50,8 @@ extern CComModule _Module;
 #include <WBFLGenericBridge.h>
 #include <WBFLGenericBridgeTools.h>
 
+#include <GenericBridge\Helpers.h>
+
 #include <WBFLBridgeGeometry.h>
 
 #include <Material\Material.h>

@@ -33,6 +33,13 @@
 
 // CBridgeDescRatingPage dialog
 
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
+
+
 BEGIN_MESSAGE_MAP(CShearSteelPage2, CShearSteelPage)
 	//{{AFX_MSG_MAP(CShearSteelPage)
 	//}}AFX_MSG_MAP

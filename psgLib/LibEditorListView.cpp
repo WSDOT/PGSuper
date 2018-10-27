@@ -67,6 +67,7 @@ BEGIN_MESSAGE_MAP(CLibEditorListView, CListView)
 	ON_WM_DESTROY()
 	ON_NOTIFY_REFLECT(LVN_ENDLABELEDIT, OnEndEditLabel)
 	//}}AFX_MSG_MAP
+   ON_WM_SIZE()
 END_MESSAGE_MAP()
 
 
@@ -411,6 +412,14 @@ void CLibEditorListView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 {
    if (IsLibrarySelected())
       this->RedrawAllEntries();
+}
+
+void CLibEditorListView::OnSize(UINT nType, int cx, int cy)
+{
+   CListView::OnSize(nType, cx, cy);
+
+   CListCtrl& rlist = this->GetListCtrl();
+   rlist.Arrange(LVA_DEFAULT);
 }
 
 bool CLibEditorListView::IsItemSelected()const

@@ -62,6 +62,11 @@ protected:
 	virtual BOOL OnInitDialog();
 	//}}AFX_MSG
    afx_msg void OnHelp();
+   afx_msg void OnCbnSelchangeHaunchCompCb();
+   afx_msg void OnCbnSelchangeHaunchCompPropCb();
+
+   void OnChangeHaunch();
+
 	DECLARE_MESSAGE_MAP()
 
 };

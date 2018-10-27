@@ -13,6 +13,7 @@ Bursting zone check failed.
 Confinement zone check failed.
 Lifting checks failed
 Hauling checks failed
+Finished elevation check failed
 
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
@@ -30,5 +31,6 @@ Bursting zone check failed.
 Confinement zone check failed.
 Lifting checks failed
 Hauling checks failed
+Finished elevation check failed
 
 

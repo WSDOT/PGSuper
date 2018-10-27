@@ -1,0 +1,24 @@
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  AECmbr                                             Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 44.00    6   8.00                     1     1     Tx54          30  0.6  270  16.87  16.87  10.00  10.00   1.50                                               2  50.5 50.5  4.700  5.600   2.895    -2.924     6126   0.664  0.814   2.255 -1.312  0.000 -0.071 -1.384  85.55  261.62    1.00    1.00    1.00 
+
+
+The Specification Check was Successful
+
+
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  AECmbr                                             Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 44.00    6   8.00                     1     2     Tx54          30  0.6  270  19.81  12.21  10.00  10.00   1.75                                               6  44.5  6.5  4.000  5.000   3.005    -3.023     6276   0.666  0.814   2.654 -1.440  0.000 -0.051 -1.490 104.84  310.80    1.00    1.00    1.00 
+
+
+The Specification Check was Successful
+
+
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  AECmbr                                             Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 44.00    6   8.00                     1     4     Tx54          30  0.6  270  19.81  12.21  10.00  10.00   1.75                                               6  44.5  6.5  4.000  5.000   3.005    -3.023     6276   0.666  0.814   2.654 -1.440  0.000 -0.051 -1.490 104.84  310.80    1.00    1.00    1.00 
+
+
+The Specification Check was Successful
+
+

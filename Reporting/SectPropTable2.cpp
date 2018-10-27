@@ -89,6 +89,8 @@ rptRcTable* CSectionPropertiesTable2::Build(IBroker* pBroker,
 
    bool bIsCompositeDeck = pBridge->IsCompositeDeck();
    bool bAsymmetricGirders = pBridge->HasAsymmetricGirders();
+   pgsTypes::HaunchAnalysisSectionPropertiesType haunchAType = pSectProp->GetHaunchAnalysisSectionPropertiesType();
+
 
    ColumnIndexType nCol;
    if ( intervalIdx < erectionIntervalIdx)
@@ -115,6 +117,12 @@ rptRcTable* CSectionPropertiesTable2::Build(IBroker* pBroker,
          {
             nCol = 16;
          }
+      }
+
+      if (pgsTypes::hspZeroHaunch != haunchAType && (spType == pgsTypes::sptGross || spType == pgsTypes::sptTransformed))
+      {
+         // assumed haunch depth
+         nCol++;
       }
    }
    else
@@ -199,6 +207,11 @@ rptRcTable* CSectionPropertiesTable2::Build(IBroker* pBroker,
    {
       (*xs_table)(0,col++) << COLHDR(Sub2(_T("Q"),_T("deck")), rptLength3UnitTag, pDisplayUnits->GetSectModulusUnit() );
       (*xs_table)(0,col++) << COLHDR(_T("Effective") << rptNewLine << _T("Flange") << rptNewLine << _T("Width"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+
+      if (pgsTypes::hspZeroHaunch != haunchAType)
+      {
+         (*xs_table)(0,col++) << COLHDR(_T("Assumed") << rptNewLine << _T("Haunch") << rptNewLine << _T("Depth"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+      }
    }
    else if ( intervalIdx <= compositeDeckIntervalIdx )
    {
@@ -290,6 +303,12 @@ rptRcTable* CSectionPropertiesTable2::Build(IBroker* pBroker,
       {
          (*xs_table)(row,col++) << l1.SetValue(pSectProp->GetPerimeter(poi));
       }
+
+      if (compositeDeckIntervalIdx <= intervalIdx && bIsCompositeDeck && pgsTypes::hspZeroHaunch != haunchAType && (spType == pgsTypes::sptGross || spType == pgsTypes::sptTransformed))
+      {
+         (*xs_table)(row, col++) << l1.SetValue(pSectProp->GetStructuralHaunchDepth(poi, haunchAType));
+      }
+
       row++;
    }
 

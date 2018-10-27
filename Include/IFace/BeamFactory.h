@@ -52,6 +52,7 @@ interface IStrandMover;
 
 class CBridgeDescription2;
 class GirderLibraryEntry;
+class CPrecastSegmentData;
 
 // In order for PGSuper 2.x to work on the same computer as PGSuper 3.x we
 // had to change all the Class IDs of the beam factories. Files saved with
@@ -99,14 +100,18 @@ interface IBeamFactory : IUnknown
    virtual void CreateGirderSection(IBroker* pBroker,StatusGroupIDType statusGroupID,const IBeamFactory::Dimensions& dimensions,Float64 overallHeight,Float64 bottomFlangeHeight,IGirderSection** ppSection) const = 0;
 
    //---------------------------------------------------------------------------------
-   // Creates a new girder profile shape using the supplied dimensions
-   // This shape is used to draw the girder in profile (elevation)
-   virtual void CreateGirderProfile(IBroker* pBroker,StatusGroupIDType statusGroupID,const CSegmentKey& segmentKey,const IBeamFactory::Dimensions& dimensions,IShape** ppShape) const = 0;
-
-   //---------------------------------------------------------------------------------
    // Lays out the girder along the given superstructure member. This function must
    // create the segments that describe the girder line... ConfigureSegment will then be called to do the actual configuration
    virtual void CreateSegment(IBroker* pBroker, StatusGroupIDType statusGroupID, const CSegmentKey& segmentKey, ISuperstructureMemberSegment** ppSSMbrSegment) const = 0;
+
+   //---------------------------------------------------------------------------------
+   // Creates the shape of a segment at the specified location Xs, using the parameters defined in pSegment
+   // This method is useful to getting shapes for the UI associated with proposed changes to the segment data
+   virtual void CreateSegmentShape(IBroker* pBroker, const CPrecastSegmentData* pSegment, Float64 Xs, pgsTypes::SectionBias sectionBias, IShape** ppShape) const = 0;
+
+   //---------------------------------------------------------------------------------
+   // Returns the height of the segment at the specified location based on parameters defined in pSegment
+   virtual Float64 GetSegmentHeight(IBroker* pBroker, const CPrecastSegmentData* pSegment, Float64 Xs) const = 0;
 
    //---------------------------------------------------------------------------------
    // Configures the segment including cross section and material models... called after CreateSegment is called
@@ -369,6 +374,8 @@ interface ISplicedBeamFactory : IBeamFactory
 
    // returns true if the section supports end blocks
    virtual bool SupportsEndBlocks() const = 0;
+
+   virtual Float64 GetBottomFlangeDepth(IBroker* pBroker, const CPrecastSegmentData* pSegment, Float64 Xs) const = 0;
 };
 
 // From time to time, we move data out of a girder library entry, and thus out of the beam factory.

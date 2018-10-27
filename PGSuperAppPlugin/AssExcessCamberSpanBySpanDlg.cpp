@@ -26,6 +26,13 @@
 #include "PGSuperAppPlugin\resource.h"
 #include "AssExcessCamberSpanBySpanDlg.h"
 
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
+
+
 // CAssExcessCamberSpanBySpanDlg dialog
 
 IMPLEMENT_DYNAMIC(CAssExcessCamberSpanBySpanDlg, CDialog)

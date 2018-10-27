@@ -130,18 +130,15 @@ void CPGSuperDocTemplateBase::FindInFolder(LPCTSTR strPath,CEAFTemplateGroup* pG
       if (finder.IsDirectory() && !finder.IsDots())
       {
          // sub-directory found
-         CEAFTemplateGroup* pNewGroup = new CEAFTemplateGroup();
+         std::unique_ptr<CEAFTemplateGroup> pNewGroup = std::make_unique<CEAFTemplateGroup>();
          pNewGroup->SetGroupName(finder.GetFileTitle());
 
-         FindInFolder(finder.GetFilePath(),pNewGroup,folderIcon);
+         FindInFolder(finder.GetFilePath(),pNewGroup.get(),folderIcon);
          if ( pNewGroup->GetItemCount() != 0 || pNewGroup->GetGroupCount() != 0)
          {
-            pGroup->AddGroup(pNewGroup);
+            pGroup->AddGroup(pNewGroup.release());
          }
-         else
-         {
-            delete pNewGroup;
-         }
+         // else.... pNewGroup goes out of scope and releases the allocation
       }
    }
 }
@@ -164,10 +161,12 @@ void CPGSuperDocTemplateBase::FindTemplateFiles(LPCTSTR strPath,CEAFTemplateGrou
       CString strIconFile = finder.GetFilePath();
       strIconFile.Replace(strTemplateSuffix,_T("ico"));
       HICON hIcon = (HICON)::LoadImage(nullptr,strIconFile,IMAGE_ICON,0,0,LR_LOADFROMFILE);
-      if ( hIcon )
+      if (hIcon)
+      {
          fileIcon = hIcon;
+      }
 
-      CEAFTemplateItem* pItem = new CEAFTemplateItem(this,finder.GetFileTitle(),finder.GetFilePath(),fileIcon);
-      pGroup->AddItem(pItem);
+      std::unique_ptr<CEAFTemplateItem> pItem = std::make_unique<CEAFTemplateItem>(this,finder.GetFileTitle(),finder.GetFilePath(),fileIcon);
+      pGroup->AddItem(pItem.release());
    }
 }

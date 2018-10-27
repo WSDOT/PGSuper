@@ -609,7 +609,8 @@ void CUBeamDistFactorEngineer::ReportMoment(IndexType spanOrPierIdx, rptParagrap
          // if roadway width is > 20ft and TxDOT, and nb>=3, use multiple lane method
          GirderIndexType nb = pBridge->GetGirderCountBySpan(spanOrPierIdx);
          Float64 w20 = ::ConvertToSysUnits(20.0, unitMeasure::Feet);
-         if (pSpecEntry->GetLiveLoadDistributionMethod()==LLDF_TXDOT && lldf.wCurbToCurb>=w20 && nb>=3)
+         if (pSpecEntry->GetLiveLoadDistributionMethod()==LLDF_TXDOT && lldf.wCurbToCurb>=w20 && nb>=3 
+             && !(gM1.ControllingMethod == LEVER_RULE) && !(gM1.ControllingMethod & LANES_DIV_BEAMS))
          {
             // Using TxDOT spec and w >= 20.0
             (*pPara) << Bold(_T("1 Loaded Lane: TxDOT method and roadway width is >= 20.0 ft, use multiple lane method")) << rptNewLine;
@@ -859,7 +860,8 @@ void CUBeamDistFactorEngineer::ReportShear(IndexType spanOrPierIdx,rptParagraph*
          GirderIndexType nb = pBridge->GetGirderCountBySpan(spanOrPierIdx);
          Float64 roadwayWidth = pBridge->GetCurbToCurbWidth(0.00);
          Float64 w20 = ::ConvertToSysUnits(20.0, unitMeasure::Feet);
-         if (pSpecEntry->GetLiveLoadDistributionMethod()==LLDF_TXDOT && roadwayWidth>=w20 && nb>=3)
+         if (pSpecEntry->GetLiveLoadDistributionMethod()==LLDF_TXDOT && roadwayWidth>=w20 && nb>=3 
+             && !(gV1.ControllingMethod == LEVER_RULE) && !(gV1.ControllingMethod & LANES_DIV_BEAMS))
          {
             // Using TxDOT spec and w >= 20.0
             (*pPara) << Bold(_T("1 Loaded Lane: TxDOT method and roadway width is >= 20.0 ft, use multiple lane method")) << rptNewLine;

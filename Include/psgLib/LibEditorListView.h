@@ -78,7 +78,8 @@ protected:
 	afx_msg void OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags);
 	afx_msg void OnDestroy();
 	afx_msg void OnEndEditLabel(NMHDR* pNMHDR, LRESULT* pResult);
-	//}}AFX_MSG
+   afx_msg void OnSize(UINT nType, int cx, int cy);
+   //}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 
       // class extensions
@@ -123,7 +124,6 @@ private:
    bool DoesEntryExist(const CString& entryName);
    bool GetSelectedEntry(CString* entryName, libILibrary** pplib)const;
    int InsertEntryToList(const libLibraryEntry* pentry, const libILibrary* plib, int i);
-
 };
 
 /////////////////////////////////////////////////////////////////////////////

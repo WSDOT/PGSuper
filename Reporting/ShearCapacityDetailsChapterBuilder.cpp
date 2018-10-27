@@ -1150,7 +1150,6 @@ void write_Fe_table(IBroker* pBroker,
    pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pParagraph;
 
-   GET_IFACE2(pBroker,IProductLoads,pProductLoads);
    *pParagraph << Sub2(_T("F"),symbol(epsilon)) << _T(" [Eqn ") << LrfdCw8th(_T("5.8.3.4.2-3"),_T("5.7.3.4.2-3")) << _T("] - ") << GetLimitStateString(ls) << rptNewLine;
 
    *pParagraph << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("Fe.png")) << rptNewLine;
@@ -1175,12 +1174,6 @@ void write_Fe_table(IBroker* pBroker,
       ColumnIndexType nCols = (0 == nDucts ? 8 : 10);
 
       rptRcTable* table = rptStyleManager::CreateDefaultTable(nCols);
-
-      //if ( segmentKey.groupIndex == ALL_GROUPS )
-      //{
-      //   table->SetColumnStyle(0,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
-      //   table->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
-      //}
 
       *pParagraph << table << rptNewLine;
 

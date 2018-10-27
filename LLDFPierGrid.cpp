@@ -123,8 +123,8 @@ void CLLDFPierGrid::CustomInit(PierIndexType pierIdx)
    SetStyleRange(CGXRange(0,1),CGXStyle().SetMergeCell(GX_MERGE_HORIZONTAL | GX_MERGE_COMPVALUE).SetControl(GX_IDS_CTRL_HEADER).SetValue("Strength/Service"));
    SetStyleRange(CGXRange(0,2),CGXStyle().SetMergeCell(GX_MERGE_HORIZONTAL | GX_MERGE_COMPVALUE).SetControl(GX_IDS_CTRL_HEADER).SetValue("Strength/Service"));
    
-   SetStyleRange(CGXRange(0,3),CGXStyle().SetMergeCell(GX_MERGE_HORIZONTAL | GX_MERGE_COMPVALUE).SetControl(GX_IDS_CTRL_HEADER).SetValue("Fatigue"));
-   SetStyleRange(CGXRange(0,4),CGXStyle().SetMergeCell(GX_MERGE_HORIZONTAL | GX_MERGE_COMPVALUE).SetControl(GX_IDS_CTRL_HEADER).SetValue("Fatigue"));
+   SetStyleRange(CGXRange(0,3),CGXStyle().SetMergeCell(GX_MERGE_HORIZONTAL | GX_MERGE_COMPVALUE).SetControl(GX_IDS_CTRL_HEADER).SetValue("Fatigue/Special Permit Rating"));
+   SetStyleRange(CGXRange(0,4),CGXStyle().SetMergeCell(GX_MERGE_HORIZONTAL | GX_MERGE_COMPVALUE).SetControl(GX_IDS_CTRL_HEADER).SetValue("Fatigue/Special Permit Rating"));
 
    SetStyleRange(CGXRange(0,0),CGXStyle().SetMergeCell(GX_MERGE_VERTICAL | GX_MERGE_COMPVALUE).SetControl(GX_IDS_CTRL_HEADER).SetValue(" "));
    SetStyleRange(CGXRange(1,0),CGXStyle().SetMergeCell(GX_MERGE_VERTICAL | GX_MERGE_COMPVALUE).SetControl(GX_IDS_CTRL_HEADER).SetValue(" "));

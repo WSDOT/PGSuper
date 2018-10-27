@@ -227,7 +227,6 @@ void CTogaStressChecksChapterBuilder::BuildTable(rptChapter* pChapter, IBroker* 
       (*p_table)(0,col1++) << COLHDR(RPT_LFT_SUPPORT_LOCATION,    rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
    }
 
-   GET_IFACE2(pBroker, IProductLoads, pProductLoads);
    std::_tstring strLimitState = GetLimitStateString(limitState);
 
    if ( limitState == pgsTypes::ServiceIII )

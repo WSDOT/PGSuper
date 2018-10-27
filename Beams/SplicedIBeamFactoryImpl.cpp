@@ -29,6 +29,7 @@
 #include "TimeStepLossEngineer.h"
 #include "StrandMoverImpl.h"
 #include <GeomModel\PrecastBeam.h>
+#include <GenericBridge\Helpers.h>
 #include <MathEx.h>
 #include <sstream>
 #include <algorithm>
@@ -130,77 +131,9 @@ void CSplicedIBeamFactory::CreateGirderSection(IBroker* pBroker,StatusGroupIDTyp
    CComPtr<IPrecastBeam> beam;
    gdrSection->get_Beam(&beam);
 
-   Float64 c1;
-   Float64 d1,d2,d3,d4,d5,d6,d7;
-   Float64 w1,w2,w3,w4;
-   Float64 t1,t2;
-   GetDimensions(dimensions,d1,d2,d3,d4,d5,d6,d7,w1,w2,w3,w4,t1,t2,c1);
-   beam->put_W1(w1);
-   beam->put_W2(w2);
-   beam->put_W3(w3);
-   beam->put_W4(w4);
-   beam->put_D1(d1);
-   beam->put_D2(d2);
-   beam->put_D3(d3);
-   beam->put_D4(d4);
-   beam->put_D5(d5);
-   beam->put_D6(d6);
-   beam->put_D7(d7);
-   beam->put_T1(t1);
-   beam->put_T2(t2);
-   beam->put_C1(c1);
-
-   if ( 0 < bottomFlangeHeight )
-   {
-      d4 = bottomFlangeHeight;
-      beam->put_D4(d4);
-   }
-
-   if ( 0 < overallHeight )
-   {
-      d7 += overallHeight - (d1+d2+d3+d4+d5+d6+d7);
-      if ( 0 < d7 )
-      {
-         beam->put_D7(d7);
-      }
-   }
-   else
-   {
-      overallHeight = d1+d2+d3+d4+d5+d6+d7;
-   }
-
-   CComPtr<IPoint2d> hookPt;
-   beam->get_HookPoint(&hookPt);
-   hookPt->Move(0,-overallHeight);
+   DimensionAndPositionBeam(dimensions, overallHeight, bottomFlangeHeight, beam);
 
    gdrSection.QueryInterface(ppSection);
-}
-
-void CSplicedIBeamFactory::CreateGirderProfile(IBroker* pBroker,StatusGroupIDType statusGroupID,const CSegmentKey& segmentKey,const IBeamFactory::Dimensions& dimensions,IShape** ppShape) const
-{
-   GET_IFACE2(pBroker,IBridge,pBridge);
-   Float64 length = pBridge->GetSegmentLength(segmentKey);
-
-   Float64 c1;
-   Float64 d1,d2,d3,d4,d5,d6,d7;
-   Float64 w1,w2,w3,w4;
-   Float64 t1,t2;
-   GetDimensions(dimensions,d1,d2,d3,d4,d5,d6,d7,w1,w2,w3,w4,t1,t2,c1);
-
-   Float64 height = d1 + d2 + d3 + d4 + d5 + d6 + d7;
-
-   CComPtr<IRectangle> rect;
-   rect.CoCreateInstance(CLSID_Rect);
-   rect->put_Height(height);
-   rect->put_Width(length);
-
-   CComQIPtr<IXYPosition> position(rect);
-   CComPtr<IPoint2d> topLeft;
-   position->get_LocatorPoint(lpTopLeft,&topLeft);
-   topLeft->Move(0,0);
-   position->put_LocatorPoint(lpTopLeft,topLeft);
-
-   rect->QueryInterface(ppShape);
 }
 
 void CSplicedIBeamFactory::CreateSegment(IBroker* pBroker,StatusGroupIDType statusGroupID,const CSegmentKey& segmentKey,ISuperstructureMemberSegment** ppSegment) const
@@ -252,6 +185,73 @@ void CSplicedIBeamFactory::CreateSegment(IBroker* pBroker,StatusGroupIDType stat
 
    CComQIPtr<ISuperstructureMemberSegment> ssmbrSegment(segment);
    ssmbrSegment.CopyTo(ppSegment);
+}
+
+void CSplicedIBeamFactory::CreateSegmentShape(IBroker* pBroker, const CPrecastSegmentData* pSegment, Float64 Xs, pgsTypes::SectionBias sectionBias, IShape** ppShape) const
+{
+   const CSplicedGirderData*  pGirder = pSegment->GetGirder();
+   const GirderLibraryEntry* pGdrEntry = pGirder->GetGirderLibraryEntry();
+   const GirderLibraryEntry::Dimensions& dimensions = pGdrEntry->GetDimensions();
+
+   CComPtr<IPrecastBeam> beam;
+   beam.CoCreateInstance(CLSID_PrecastBeam);
+
+   Float64 Hg = GetSegmentHeight(pBroker, pSegment, Xs);
+   Float64 Hbf = GetBottomFlangeDepth(pBroker, pSegment, Xs);
+
+   DimensionAndPositionBeam(dimensions, Hg, Hbf, beam);
+
+   // Adjust width of section for end blocks
+   GET_IFACE2(pBroker, IBridge, pBridge);
+   Float64 Ls = pBridge->GetSegmentLength(pSegment->GetSegmentKey());
+
+   Float64 Wb, Wt;
+   ::GetEndBlockWidth(Xs, Ls, (SectionBias)sectionBias, beam, pSegment->EndBlockWidth,pSegment->EndBlockLength,pSegment->EndBlockTransitionLength,&Wt,&Wb);
+   ::AdjustForEndBlocks(beam, Wt, Wb);
+
+   beam.QueryInterface(ppShape);
+}
+
+Float64 CSplicedIBeamFactory::GetSegmentHeight(IBroker* pBroker, const CPrecastSegmentData* pSegment, Float64 Xs) const
+{
+   GET_IFACE2(pBroker, IBridge, pBridge);
+   Float64 Ls = pBridge->GetSegmentLength(pSegment->GetSegmentKey());
+
+   std::array<Float64, 4> X;
+   pBridge->ResolveSegmentVariation(pSegment, X);
+   std::array<Float64, 4> Y;
+   Y[pgsTypes::sztLeftPrismatic] = pSegment->GetVariationHeight(pgsTypes::sztLeftPrismatic);
+   Y[pgsTypes::sztLeftTapered] = pSegment->GetVariationHeight(pgsTypes::sztLeftTapered);
+   Y[pgsTypes::sztRightTapered] = pSegment->GetVariationHeight(pgsTypes::sztRightTapered);
+   Y[pgsTypes::sztRightPrismatic] = pSegment->GetVariationHeight(pgsTypes::sztRightPrismatic);
+
+   pgsTypes::SegmentVariationType variationType = pSegment->GetVariationType();
+   bool bParabolas = IsParabolicVariation(variationType);
+
+   Float64 Xl, Yl, Xr, Yr;
+   ZoneType zone = ::GetControlPoints(Xs, Ls, X, Y, &Xl, &Yl, &Xr, &Yr);
+   return ::GetSectionDepth(Xs, Xl, Yl, Xr, Yr, TransitionTypeFromZone(zone, bParabolas));
+}
+
+Float64 CSplicedIBeamFactory::GetBottomFlangeDepth(IBroker* pBroker, const CPrecastSegmentData* pSegment, Float64 Xs) const
+{
+   GET_IFACE2(pBroker, IBridge, pBridge);
+   Float64 Ls = pBridge->GetSegmentLength(pSegment->GetSegmentKey());
+
+   std::array<Float64, 4> X;
+   pBridge->ResolveSegmentVariation(pSegment, X);
+   std::array<Float64, 4> Y;
+   Y[pgsTypes::sztLeftPrismatic] = pSegment->GetVariationBottomFlangeDepth(pgsTypes::sztLeftPrismatic);
+   Y[pgsTypes::sztLeftTapered] = pSegment->GetVariationBottomFlangeDepth(pgsTypes::sztLeftTapered);
+   Y[pgsTypes::sztRightTapered] = pSegment->GetVariationBottomFlangeDepth(pgsTypes::sztRightTapered);
+   Y[pgsTypes::sztRightPrismatic] = pSegment->GetVariationBottomFlangeDepth(pgsTypes::sztRightPrismatic);
+
+   pgsTypes::SegmentVariationType variationType = pSegment->GetVariationType();
+   bool bParabolas = IsParabolicVariation(variationType);
+
+   Float64 Xl, Yl, Xr, Yr;
+   ZoneType zone = ::GetControlPoints(Xs, Ls, X, Y, &Xl, &Yl, &Xr, &Yr);
+   return ::GetSectionDepth(Xs, Xl, Yl, Xr, Yr, TransitionTypeFromZone(zone, bParabolas));
 }
 
 void CSplicedIBeamFactory::ConfigureSegment(IBroker* pBroker, StatusItemIDType statusID, const CSegmentKey& segmentKey, ISuperstructureMemberSegment* pSSMbrSegment) const
@@ -1136,4 +1136,38 @@ LPCTSTR CSplicedIBeamFactory::GetBottomFlangeDepthDimension() const
 bool CSplicedIBeamFactory::SupportsEndBlocks() const
 {
    return true;
+}
+
+void CSplicedIBeamFactory::DimensionAndPositionBeam(const IBeamFactory::Dimensions& dimensions, Float64 Hg, Float64 Hbf, IPrecastBeam* pBeam) const
+{
+   Float64 c1;
+   Float64 d1, d2, d3, d4, d5, d6, d7;
+   Float64 w1, w2, w3, w4;
+   Float64 t1, t2;
+   GetDimensions(dimensions, d1, d2, d3, d4, d5, d6, d7, w1, w2, w3, w4, t1, t2, c1);
+   pBeam->put_W1(w1);
+   pBeam->put_W2(w2);
+   pBeam->put_W3(w3);
+   pBeam->put_W4(w4);
+   pBeam->put_D1(d1);
+   pBeam->put_D2(d2);
+   pBeam->put_D3(d3);
+   pBeam->put_D4(d4);
+   pBeam->put_D5(d5);
+   pBeam->put_D6(d6);
+   pBeam->put_D7(d7);
+   pBeam->put_T1(t1);
+   pBeam->put_T2(t2);
+   pBeam->put_C1(c1);
+
+   ::AdjustForVariableDepth(pBeam, Hg, Hbf);
+
+   Float64 H;
+   pBeam->get_Height(&H);
+
+   // Hook point is at bottom center of bounding box.
+   // Adjust hook point so top center of bounding box is at (0,0)
+   CComPtr<IPoint2d> hookPt;
+   pBeam->get_HookPoint(&hookPt);
+   hookPt->Move(0, -H);
 }

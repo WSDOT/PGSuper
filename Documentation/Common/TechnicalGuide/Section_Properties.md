@@ -1,9 +1,20 @@
 Section Properties {#tg_section_properties}
 ======================================
-PGSuper ignores the deck haunch and fillets when calculating composite section properties.
+PGSuper provides the following options for treatment of the slab haunch when calculating composite section properties and section-based capacities.
 
 ![](CompositeProperties.gif)
 
-The reason this is done is two-fold. This provides the least-stiff section so it is conservative for computing stresses and deflections, and it makes structural modeling easy because it we have a prismatic section. Also, if camber in the field comes out too high, we may not actually have the slab pad we designed for at mid-span. 
+Option | Description
+-------|------------
+Zero haunch depth | The slab lies directly on the top of the girder. This provides the least-stiff section so it is conservative for computing stresses and deflections, and it makes structural modeling easy because we have a prismatic section.
+Constant haunch depth equal to the Fillet value | The haunch depth is constant along the girder and equal to the Fillet dimension. This method provides a mid-ground for conservatism and simplicity.
+Variable haunch depth... | Haunch depth varies along the girder, and is defined by a parabola fitting the Slab Offset, Roadway Geometry, and Assumed Excess Camber dimensions. The top of the girder is assumed to follow a parabolic curve fitting the Assumed Excess Camber value. This is the most accurate , least conservative, and least computationally efficient method; and is primarily intended for load rating and evaluation.
+
+> NOTE: Material within the angular fillet shape of the haunch is ignored for analysis purposes.
+
+> NOTE: A specification check is performed for the variable haunch depth case to insure that the assumed excess camber is within tolerance of the computed excess camber. 
+
+> NOTE: The zero haunch depth option is always used by PGSplice.
+ 
 
 

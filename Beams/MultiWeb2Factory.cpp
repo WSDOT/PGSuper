@@ -124,87 +124,9 @@ void CMultiWeb2Factory::CreateGirderSection(IBroker* pBroker,StatusGroupIDType s
    CComPtr<IMultiWeb2> beam;
    gdrSection->get_Beam(&beam);
 
-   Float64 c1,c2;
-   Float64 h1,h2,h3;
-   Float64 w2,wmin,wmax;
-   Float64 t1,t2,t3;
-   Float64 f1;
-   GetDimensions(dimensions,h1,h2,h3,t1,t2,t3,f1,c1,c2,w2,wmin,wmax);
-
-   beam->put_C1(c1);
-   beam->put_C2(c2);
-   beam->put_H1(h1);
-   beam->put_H2(h2);
-   beam->put_H3(h3);
-   beam->put_T1(t1);
-   beam->put_T2(t2);
-   beam->put_T3(t3);
-   beam->put_T4(0);
-   beam->put_T5(0);
-   beam->put_F1(f1);
-   beam->put_F2(0);
-   beam->put_W2(w2);
-   beam->put_WebCount(2);
-
-   // figure out the web spacing, w2, based on the girder spacing
-   Float64 w1;
-   if ( pBroker == nullptr )
-   {
-      // just use the max
-      w1 = wmax;
-   }
-   else
-   {
-      // NOTE: Assuming uniform spacing
-      // uniform spacing is required for this type of girder so maybe this is ok
-
-      // use raw input here because requesting it from the bridge will cause an infite loop.
-      // bridge agent calls this during validation
-      GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
-      const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
-      ATLASSERT(pBridgeDesc->GetGirderSpacingType() == pgsTypes::sbsConstantAdjacent);
-      Float64 spacing = pBridgeDesc->GetGirderSpacing();
-
-      Float64 top_flange_max = 2*(wmax + t1+t2+t3) + w2;
-      Float64 top_flange_min = 2*(wmin + t1+t2+t3) + w2;
-
-      // if this is a fixed width section, then set the spacing equal to the width
-      if ( IsEqual(top_flange_max,top_flange_min) )
-         spacing = top_flange_max;
-
-      w1 = (spacing - 2*(t1+t2+t3) - w2)/2;
-   }
-   beam->put_W1(w1);
+   DimensionAndPositionBeam(pBroker, dimensions, beam);
 
    gdrSection.QueryInterface(ppSection);
-}
-
-void CMultiWeb2Factory::CreateGirderProfile(IBroker* pBroker,StatusGroupIDType statusGroupID,const CSegmentKey& segmentKey,const IBeamFactory::Dimensions& dimensions,IShape** ppShape) const
-{
-   GET_IFACE2(pBroker,IBridge,pBridge);
-   Float64 length = pBridge->GetSegmentLength(segmentKey);
-
-   Float64 c1,c2;
-   Float64 h1,h2,h3;
-   Float64 w2,wmin,wmax;
-   Float64 t1,t2,t3;
-   Float64 f1;
-   GetDimensions(dimensions,h1,h2,h3,t1,t2,t3,f1,c1,c2,w2,wmin,wmax);
-
-   Float64 height = h1 + h2 + h3;
-
-   CComPtr<IRectangle> rect;
-   rect.CoCreateInstance(CLSID_Rect);
-   rect->put_Height(height);
-   rect->put_Width(length);
-
-   CComQIPtr<IXYPosition> position(rect);
-   CComPtr<IPoint2d> topLeft;
-   position->get_LocatorPoint(lpTopLeft,&topLeft);
-   topLeft->Move(0,0);
-   position->put_LocatorPoint(lpTopLeft,topLeft);
-
-   rect->QueryInterface(ppShape);
 }
 
 void CMultiWeb2Factory::CreateSegment(IBroker* pBroker,StatusGroupIDType statusGroupID,const CSegmentKey& segmentKey,ISuperstructureMemberSegment** ppSegment) const
@@ -257,6 +179,31 @@ void CMultiWeb2Factory::CreateSegment(IBroker* pBroker,StatusGroupIDType statusG
 
    CComQIPtr<ISuperstructureMemberSegment> ssmbrSegment(segment);
    ssmbrSegment.CopyTo(ppSegment);
+}
+
+void CMultiWeb2Factory::CreateSegmentShape(IBroker* pBroker, const CPrecastSegmentData* pSegment, Float64 Xs, pgsTypes::SectionBias sectionBias, IShape** ppShape) const
+{
+   const CSplicedGirderData* pGirder = pSegment->GetGirder();
+   const GirderLibraryEntry* pGirderEntry = pGirder->GetGirderLibraryEntry();
+   const auto& dimensions = pGirderEntry->GetDimensions();
+
+   CComPtr<IMultiWeb2> beam;
+   beam.CoCreateInstance(CLSID_MultiWeb2);
+   
+   DimensionAndPositionBeam(pBroker, dimensions, beam);
+
+   beam.QueryInterface(ppShape);
+}
+
+Float64 CMultiWeb2Factory::GetSegmentHeight(IBroker* pBroker, const CPrecastSegmentData* pSegment, Float64 Xs) const
+{
+   const CSplicedGirderData* pGirder = pSegment->GetGirder();
+   const GirderLibraryEntry* pGirderEntry = pGirder->GetGirderLibraryEntry();
+   const auto& dimensions = pGirderEntry->GetDimensions();
+   Float64 H1 = GetDimension(dimensions, _T("H1"));
+   Float64 H2 = GetDimension(dimensions, _T("H2"));
+   Float64 H3 = GetDimension(dimensions, _T("H3"));
+   return H1 + H2 + H3;
 }
 
 void CMultiWeb2Factory::ConfigureSegment(IBroker* pBroker, StatusItemIDType statusID, const CSegmentKey& segmentKey, ISuperstructureMemberSegment* pSSMbrSegment) const
@@ -1029,4 +976,71 @@ bool CMultiWeb2Factory::CanPrecamber() const
 GirderIndexType CMultiWeb2Factory::GetMinimumBeamCount() const
 {
    return 1;
+}
+
+void CMultiWeb2Factory::DimensionAndPositionBeam(IBroker* pBroker,const IBeamFactory::Dimensions& dimensions, IMultiWeb2* pBeam) const
+{
+   Float64 c1, c2;
+   Float64 h1, h2, h3;
+   Float64 w2, wmin, wmax;
+   Float64 t1, t2, t3;
+   Float64 f1;
+   GetDimensions(dimensions, h1, h2, h3, t1, t2, t3, f1, c1, c2, w2, wmin, wmax);
+
+   pBeam->put_C1(c1);
+   pBeam->put_C2(c2);
+   pBeam->put_H1(h1);
+   pBeam->put_H2(h2);
+   pBeam->put_H3(h3);
+   pBeam->put_T1(t1);
+   pBeam->put_T2(t2);
+   pBeam->put_T3(t3);
+   pBeam->put_T4(0);
+   pBeam->put_T5(0);
+   pBeam->put_F1(f1);
+   pBeam->put_F2(0);
+   pBeam->put_W2(w2);
+   pBeam->put_WebCount(2);
+
+
+   // figure out the web spacing, w2, based on the girder spacing
+   Float64 w1;
+   if (pBroker == nullptr)
+   {
+      // just use the max
+      w1 = wmax;
+   }
+   else
+   {
+      // NOTE: Assuming uniform spacing
+      // uniform spacing is required for this type of girder so maybe this is ok
+
+      // use raw input here because requesting it from the bridge will cause an infite loop.
+      // bridge agent calls this during validation
+      GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
+      const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+      ATLASSERT(pBridgeDesc->GetGirderSpacingType() == pgsTypes::sbsConstantAdjacent);
+      Float64 spacing = pBridgeDesc->GetGirderSpacing();
+
+      Float64 top_flange_max = 2 * (wmax + t1 + t2 + t3) + w2;
+      Float64 top_flange_min = 2 * (wmin + t1 + t2 + t3) + w2;
+
+      // if this is a fixed width section, then set the spacing equal to the width
+      if (IsEqual(top_flange_max, top_flange_min))
+      {
+         spacing = top_flange_max;
+      }
+
+      w1 = (spacing - 2 * (t1 + t2 + t3) - w2) / 2;
+   }
+   pBeam->put_W1(w1);
+
+   // Hook point is at bottom center of bounding box.
+   // Adjust hook point so top center of bounding box is at (0,0)
+   Float64 Hg;
+   pBeam->get_Height(&Hg);
+
+   CComPtr<IPoint2d> hookPt;
+   pBeam->get_HookPoint(&hookPt);
+   hookPt->Offset(0, -Hg);
 }

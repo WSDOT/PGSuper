@@ -28,6 +28,10 @@ When this option is selected, you input the live load distribution factors that 
 
 > TIP: If the configuration of the bridge you are designing doesn't conform to the simplified method of analysis described in the AASHTO LRFD Bridge Design Specifications, compute the live load distribution factors using another method and then input them into this dialog.
 
+In the Strength/Service columns enter the controlling distribution factor of one loaded lane and 2 or more loaded lanes. In the Fatigue column, enter the distribution factor for one loaded lane without the multiple presence factor.
+
+> NOTE: For load ratings of Special (Limited-Crossing) Permits, the one-lane distribution factor, without the multiple presence factor, is used to distribute the live load. See MBE 6A.4.5.4.2b. When using this method of defining distribution factors, enter the appropriate distribution factor in the Fatigue column.
+
 Two input grids are provided to accommodate the required input; one for inputting factors in the main span; and another for inputting factors near interior supports. Toggle between the two grids by selecting the "Span Factors" and "Abutment/Pier Factors" options.
 
 > NOTE: **You must enter distribution factors in both the Span Factors and Abutment/Pier Factors grids.**.

@@ -108,84 +108,9 @@ void CMultiWebFactory::CreateGirderSection(IBroker* pBroker,StatusGroupIDType st
    CComPtr<IMultiWeb> beam;
    gdrSection->get_Beam(&beam);
 
-   Float64 d1,d2;
-   Float64 w,wmin,wmax;
-   Float64 t1,t2;
-   WebIndexType nWebs;
-   GetDimensions(dimensions,d1,d2,w,wmin,wmax,t1,t2,nWebs);
-
-   beam->put_W2(w);
-   beam->put_D1(d1);
-   beam->put_D2(d2);
-   beam->put_T1(t1);
-   beam->put_T2(t2);
-   beam->put_WebCount(nWebs);
-
-   // figure out the overhang, w1, based on the spacing
-   Float64 w1;
-   if ( pBroker == nullptr )
-   {
-      // just use the max
-      w1 = (wmax - nWebs*t1 - (nWebs-1)*w)/2;
-   }
-   else
-   {
-      // NOTE: Assuming uniform spacing
-      // uniform spacing is required for this type of girder so maybe this is ok
-
-      // use raw input here because requesting it from the bridge will cause an infite loop.
-      // bridge agent calls this during validation
-      GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
-      const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
-      ATLASSERT(pBridgeDesc->GetGirderSpacingType() == pgsTypes::sbsConstantAdjacent);
-      Float64 spacing = pBridgeDesc->GetGirderSpacing();
-
-      // if this is a fixed width section, then set the spacing equal to the width
-      if ( IsEqual(wmax,wmin) )
-         spacing = wmax;
-
-      w1 = (spacing - nWebs*t1 - (nWebs-1)*w)/2;
-   }
-   beam->put_W1(w1);
-
-   // origin of multi-web is top center... we need to reposition it so that bottom center is at (0,0)
-   CComQIPtr<IXYPosition> position(beam);
-   CComPtr<IPoint2d> tc;
-   position->get_LocatorPoint(lpTopCenter,&tc);
-
-   CComPtr<IPoint2d> bc;
-   position->get_LocatorPoint(lpBottomCenter,&bc);
-
-   position->MoveEx(bc,tc);
+   DimensionAndPositionBeam(pBroker, dimensions, beam);
 
    gdrSection.QueryInterface(ppSection);
-}
-
-void CMultiWebFactory::CreateGirderProfile(IBroker* pBroker,StatusGroupIDType statusGroupID,const CSegmentKey& segmentKey,const IBeamFactory::Dimensions& dimensions,IShape** ppShape) const
-{
-   GET_IFACE2(pBroker,IBridge,pBridge);
-   Float64 length = pBridge->GetSegmentLength(segmentKey);
-
-   Float64 d1,d2;
-   Float64 w,wmin,wmax;
-   Float64 t1,t2;
-   WebIndexType nWebs;
-   GetDimensions(dimensions,d1,d2,w,wmin,wmax,t1,t2,nWebs);
-
-   Float64 height = d1 + d2;
-
-   CComPtr<IRectangle> rect;
-   rect.CoCreateInstance(CLSID_Rect);
-   rect->put_Height(height);
-   rect->put_Width(length);
-
-   CComQIPtr<IXYPosition> position(rect);
-   CComPtr<IPoint2d> topLeft;
-   position->get_LocatorPoint(lpTopLeft,&topLeft);
-   topLeft->Move(0,0);
-   position->put_LocatorPoint(lpTopLeft,topLeft);
-
-   rect->QueryInterface(ppShape);
 }
 
 void CMultiWebFactory::CreateSegment(IBroker* pBroker,StatusGroupIDType statusGroupID,const CSegmentKey& segmentKey,ISuperstructureMemberSegment** ppSegment) const
@@ -238,6 +163,31 @@ void CMultiWebFactory::CreateSegment(IBroker* pBroker,StatusGroupIDType statusGr
 
    CComQIPtr<ISuperstructureMemberSegment> ssmbrSegment(segment);
    ssmbrSegment.CopyTo(ppSegment);
+}
+
+void CMultiWebFactory::CreateSegmentShape(IBroker* pBroker, const CPrecastSegmentData* pSegment, Float64 Xs, pgsTypes::SectionBias sectionBias, IShape** ppShape) const
+{
+   const CSplicedGirderData* pGirder = pSegment->GetGirder();
+   const GirderLibraryEntry* pGirderEntry = pGirder->GetGirderLibraryEntry();
+   const auto& dimensions = pGirderEntry->GetDimensions();
+
+
+   CComPtr<IMultiWeb> beam;
+   beam.CoCreateInstance(CLSID_MultiWeb);
+
+   DimensionAndPositionBeam(pBroker, dimensions, beam);
+
+   beam.QueryInterface(ppShape);
+}
+
+Float64 CMultiWebFactory::GetSegmentHeight(IBroker* pBroker, const CPrecastSegmentData* pSegment, Float64 Xs) const
+{
+   const CSplicedGirderData* pGirder = pSegment->GetGirder();
+   const GirderLibraryEntry* pGirderEntry = pGirder->GetGirderLibraryEntry();
+   const auto& dimensions = pGirderEntry->GetDimensions();
+   Float64 D1 = GetDimension(dimensions, _T("D1"));
+   Float64 D2 = GetDimension(dimensions, _T("D2"));
+   return D1 + D2;
 }
 
 void CMultiWebFactory::ConfigureSegment(IBroker* pBroker, StatusItemIDType statusID, const CSegmentKey& segmentKey, ISuperstructureMemberSegment* pSSMbrSegment) const
@@ -904,4 +854,51 @@ bool CMultiWebFactory::CanPrecamber() const
 GirderIndexType CMultiWebFactory::GetMinimumBeamCount() const
 {
    return 1;
+}
+
+void CMultiWebFactory::DimensionAndPositionBeam(IBroker* pBroker, const IBeamFactory::Dimensions& dimensions, IMultiWeb* pBeam) const
+{
+   Float64 d1, d2;
+   Float64 w, wmin, wmax;
+   Float64 t1, t2;
+   WebIndexType nWebs;
+   GetDimensions(dimensions, d1, d2, w, wmin, wmax, t1, t2, nWebs);
+
+   pBeam->put_W2(w);
+   pBeam->put_D1(d1);
+   pBeam->put_D2(d2);
+   pBeam->put_T1(t1);
+   pBeam->put_T2(t2);
+   pBeam->put_WebCount(nWebs);
+
+   // figure out the overhang, w1, based on the spacing
+   Float64 w1;
+   if (pBroker == nullptr)
+   {
+      // just use the max
+      w1 = (wmax - nWebs*t1 - (nWebs - 1)*w) / 2;
+   }
+   else
+   {
+      // NOTE: Assuming uniform spacing
+      // uniform spacing is required for this type of girder so maybe this is ok
+
+      // use raw input here because requesting it from the bridge will cause an infite loop.
+      // bridge agent calls this during validation
+      GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
+      const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+      ATLASSERT(pBridgeDesc->GetGirderSpacingType() == pgsTypes::sbsConstantAdjacent);
+      Float64 spacing = pBridgeDesc->GetGirderSpacing();
+
+      // if this is a fixed width section, then set the spacing equal to the width
+      if (IsEqual(wmax, wmin))
+      {
+         spacing = wmax;
+      }
+
+      w1 = (spacing - nWebs*t1 - (nWebs - 1)*w) / 2;
+   }
+   pBeam->put_W1(w1);
+
+   // origin of multi-web is top center... this is what we want
 }

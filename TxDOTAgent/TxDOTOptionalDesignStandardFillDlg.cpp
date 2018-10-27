@@ -30,6 +30,13 @@
 #include <EAF\EAFDisplayUnits.h>
 #include "EccentricityDlg.h"
 
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
+
+
 // CTxDOTOptionalDesignStandardFillDlg dialog
 
 IMPLEMENT_DYNAMIC(CTxDOTOptionalDesignStandardFillDlg, CDialog)

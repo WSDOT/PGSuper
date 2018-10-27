@@ -31,6 +31,12 @@
 #include <IFace\Bridge.h>
 #include <IFace\GirderHandlingSpecCriteria.h>
 
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
+
 IMPLEMENT_DYNCREATE(CStabilityGraphController,CEAFGraphControlWindow)
 
 CStabilityGraphController::CStabilityGraphController() : m_SegmentKey(0,0,0), m_GraphType(GT_LIFTING)

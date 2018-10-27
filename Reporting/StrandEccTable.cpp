@@ -71,11 +71,10 @@ CStrandEccTable& CStrandEccTable::operator= (const CStrandEccTable& rOther)
 }
 
 //======================== OPERATIONS =======================================
-rptRcTable* CStrandEccTable::Build(IBroker* pBroker, const CSegmentKey& segmentKey, IntervalIndexType intervalIdx,
-   IEAFDisplayUnits* pDisplayUnits) const
+rptRcTable* CStrandEccTable::Build(IBroker* pBroker, const CSegmentKey& segmentKey, IntervalIndexType intervalIdx, IEAFDisplayUnits* pDisplayUnits) const
 {
    GET_IFACE2(pBroker, IBridge, pBridge);
-   if (pBridge->HasAsymmetricGirders())
+   if (pBridge->HasAsymmetricGirders() || pBridge->HasAsymmetricPrestressing())
    {
       return Build_XY(pBroker, segmentKey, intervalIdx, pDisplayUnits);
    }
@@ -85,8 +84,7 @@ rptRcTable* CStrandEccTable::Build(IBroker* pBroker, const CSegmentKey& segmentK
    }
 }
 
-rptRcTable* CStrandEccTable::Build_Y(IBroker* pBroker, const CSegmentKey& segmentKey, IntervalIndexType intervalIdx,
-   IEAFDisplayUnits* pDisplayUnits) const
+rptRcTable* CStrandEccTable::Build_Y(IBroker* pBroker, const CSegmentKey& segmentKey, IntervalIndexType intervalIdx, IEAFDisplayUnits* pDisplayUnits) const
 {
    GET_IFACE2(pBroker, ISectionProperties, pSectProp);
    pgsTypes::SectionPropertyType spType = (pSectProp->GetSectionPropertiesMode() == pgsTypes::spmGross ? pgsTypes::sptGrossNoncomposite : pgsTypes::sptNetGirder);

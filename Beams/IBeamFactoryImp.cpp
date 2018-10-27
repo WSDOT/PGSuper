@@ -34,6 +34,8 @@
 #include <sstream>
 #include <algorithm>
 
+#include <GenericBridge\Helpers.h>
+
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
 #include <IFace\Intervals.h>
@@ -48,15 +50,6 @@
 #undef THIS_FILE
 static char THIS_FILE[] = __FILE__;
 #endif
-
-/////////////////////////////////////////////////////////////////////////////
-// NOTE
-//
-// The current implementation is a hack. This factory works for PGSuper
-// and PGSplice. I think that I'm probably going to have to make a new
-// factory just for PGSplice and revert this back to the way it was for PGSuper
-/////////////////////////////////////////////////////////////////////////////
-
 
 /////////////////////////////////////////////////////////////////////////////
 // CIBeamFactory
@@ -80,8 +73,6 @@ HRESULT CIBeamFactory::FinalConstruct()
    m_DimNames.emplace_back(_T("EndBlockWidth"));
    m_DimNames.emplace_back(_T("EndBlockLength"));
    m_DimNames.emplace_back(_T("EndBlockTransition"));
-
-//   std::sort(m_DimNames.begin(),m_DimNames.end());
 
    // Default beam is a W74G
    m_DefaultDims.emplace_back(::ConvertToSysUnits(0.000,unitMeasure::Inch)); // C1
@@ -151,56 +142,9 @@ void CIBeamFactory::CreateGirderSection(IBroker* pBroker,StatusGroupIDType statu
    CComPtr<IPrecastBeam> beam;
    gdrSection->get_Beam(&beam);
 
-   Float64 c1;
-   Float64 d1,d2,d3,d4,d5,d6,d7;
-   Float64 w1,w2,w3,w4;
-   Float64 t1,t2;
-   Float64 ebWidth,ebLength,ebTransition;
-   GetDimensions(dimensions,d1,d2,d3,d4,d5,d6,d7,w1,w2,w3,w4,t1,t2,c1,ebWidth,ebLength,ebTransition);
-   beam->put_W1(w1);
-   beam->put_W2(w2);
-   beam->put_W3(w3);
-   beam->put_W4(w4);
-   beam->put_D1(d1);
-   beam->put_D2(d2);
-   beam->put_D3(d3);
-   beam->put_D4(d4);
-   beam->put_D5(d5);
-   beam->put_D6(d6);
-   beam->put_D7(d7);
-   beam->put_T1(t1);
-   beam->put_T2(t2);
-   beam->put_C1(c1);
+   DimensionAndPositionBeam(dimensions, beam);
 
    gdrSection.QueryInterface(ppSection);
-}
-
-void CIBeamFactory::CreateGirderProfile(IBroker* pBroker,StatusGroupIDType statusGroupID,const CSegmentKey& segmentKey,const IBeamFactory::Dimensions& dimensions,IShape** ppShape) const
-{
-   GET_IFACE2(pBroker,IBridge,pBridge);
-   Float64 length = pBridge->GetSegmentLength(segmentKey);
-
-   Float64 c1;
-   Float64 d1,d2,d3,d4,d5,d6,d7;
-   Float64 w1,w2,w3,w4;
-   Float64 t1,t2;
-   Float64 ebWidth,ebLength,ebTransition;
-   GetDimensions(dimensions,d1,d2,d3,d4,d5,d6,d7,w1,w2,w3,w4,t1,t2,c1,ebWidth,ebLength,ebTransition);
-
-   Float64 height = d1 + d2 + d3 + d4 + d5 + d6 + d7;
-
-   CComPtr<IRectangle> rect;
-   rect.CoCreateInstance(CLSID_Rect);
-   rect->put_Height(height);
-   rect->put_Width(length);
-
-   CComQIPtr<IXYPosition> position(rect);
-   CComPtr<IPoint2d> topLeft;
-   position->get_LocatorPoint(lpTopLeft,&topLeft);
-   topLeft->Move(0,0);
-   position->put_LocatorPoint(lpTopLeft,topLeft);
-
-   rect->QueryInterface(ppShape);
 }
 
 void CIBeamFactory::CreateSegment(IBroker* pBroker,StatusGroupIDType statusGroupID,const CSegmentKey& segmentKey,ISuperstructureMemberSegment** ppSegment) const
@@ -296,6 +240,50 @@ void CIBeamFactory::CreateSegment(IBroker* pBroker,StatusGroupIDType statusGroup
    }
 
    segment.CopyTo(ppSegment);
+}
+
+void CIBeamFactory::CreateSegmentShape(IBroker* pBroker, const CPrecastSegmentData* pSegment, Float64 Xs, pgsTypes::SectionBias sectionBias, IShape** ppShape) const
+{
+   const CSplicedGirderData* pGirder = pSegment->GetGirder();
+   const GirderLibraryEntry* pGirderEntry = pGirder->GetGirderLibraryEntry();
+   const auto& dimensions = pGirderEntry->GetDimensions();
+   
+   CComPtr<IPrecastBeam> beam;
+   beam.CoCreateInstance(CLSID_PrecastBeam);
+
+   DimensionAndPositionBeam(dimensions, beam);
+
+   // Adjust width of section for end blocks
+   GET_IFACE2(pBroker, IBridge, pBridge);
+   Float64 Ls = pBridge->GetSegmentLength(pSegment->GetSegmentKey());
+
+   Float64 w = GetDimension(dimensions, _T("EndBlockWidth"));
+   Float64 l = GetDimension(dimensions, _T("EndBlockLength"));
+   Float64 lt = GetDimension(dimensions, _T("EndBlockTransition"));
+
+   std::array<Float64, 2> ebWidth{ w,w };
+   std::array<Float64, 2> ebLength{ l,l };
+   std::array<Float64, 2> ebTransition{ lt,lt };
+
+   Float64 Wb, Wt;
+   ::GetEndBlockWidth(Xs, Ls, (SectionBias)sectionBias, beam, ebWidth, ebLength, ebTransition, &Wt, &Wb);
+   ::AdjustForEndBlocks(beam, Wt, Wb);
+
+   beam.QueryInterface(ppShape);
+}
+
+Float64 CIBeamFactory::GetSegmentHeight(IBroker* pBroker, const CPrecastSegmentData* pSegment, Float64 Xs) const
+{
+   const CSplicedGirderData* pGirder = pSegment->GetGirder();
+   const GirderLibraryEntry* pGirderEntry = pGirder->GetGirderLibraryEntry();
+   const auto& dimensions = pGirderEntry->GetDimensions();
+   Float64 c1;
+   Float64 d1, d2, d3, d4, d5, d6, d7;
+   Float64 w1, w2, w3, w4;
+   Float64 t1, t2;
+   Float64 ebWidth, ebLength, ebTransition;
+   GetDimensions(dimensions, d1, d2, d3, d4, d5, d6, d7, w1, w2, w3, w4, t1, t2, c1, ebWidth, ebLength, ebTransition);
+   return d1 + d2 + d3 + d4 + d5 + d6 + d7;
 }
 
 void CIBeamFactory::ConfigureSegment(IBroker* pBroker, StatusItemIDType statusID, const CSegmentKey& segmentKey, ISuperstructureMemberSegment* pSSMbrSegment) const
@@ -401,6 +389,9 @@ void CIBeamFactory::CreateStrandMover(const IBeamFactory::Dimensions& dimensions
    harp_rect->put_Width(width);
    harp_rect->put_Height(depth);
 
+   // hook point is in the middle of the rectangle
+   // we need to position the rectangle such that (0,0) is at the top center
+   // move the hook point to (0,-depth/2)
    CComPtr<IPoint2d> hook;
    hook.CoCreateInstance(CLSID_Point2d);
    hook->Move(0, -depth/2.0);
@@ -1099,4 +1090,37 @@ bool CIBeamFactory::CanPrecamber() const
 GirderIndexType CIBeamFactory::GetMinimumBeamCount() const
 {
    return 2;
+}
+
+void CIBeamFactory::DimensionAndPositionBeam(const IBeamFactory::Dimensions& dimensions, IPrecastBeam* pBeam) const
+{
+   Float64 c1;
+   Float64 d1, d2, d3, d4, d5, d6, d7;
+   Float64 w1, w2, w3, w4;
+   Float64 t1, t2;
+   Float64 ebWidth, ebLength, ebTransition;
+   GetDimensions(dimensions, d1, d2, d3, d4, d5, d6, d7, w1, w2, w3, w4, t1, t2, c1, ebWidth, ebLength, ebTransition);
+   pBeam->put_W1(w1);
+   pBeam->put_W2(w2);
+   pBeam->put_W3(w3);
+   pBeam->put_W4(w4);
+   pBeam->put_D1(d1);
+   pBeam->put_D2(d2);
+   pBeam->put_D3(d3);
+   pBeam->put_D4(d4);
+   pBeam->put_D5(d5);
+   pBeam->put_D6(d6);
+   pBeam->put_D7(d7);
+   pBeam->put_T1(t1);
+   pBeam->put_T2(t2);
+   pBeam->put_C1(c1);
+
+   // Hook point is at bottom center of bounding box.
+   // Adjust hook point so top center of bounding box is at (0,0)
+   Float64 Hg;
+   pBeam->get_Height(&Hg);
+
+   CComPtr<IPoint2d> hookPt;
+   pBeam->get_HookPoint(&hookPt);
+   hookPt->Offset(0, -Hg);
 }

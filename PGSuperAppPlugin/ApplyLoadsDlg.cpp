@@ -34,6 +34,13 @@
 #include <PgsExt\BridgeDescription2.h>
 #include <PgsExt\DeckDescription2.h>
 
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
+
+
 // CApplyLoadsDlg dialog
 
 IMPLEMENT_DYNAMIC(CApplyLoadsDlg, CDialog)

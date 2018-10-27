@@ -760,8 +760,7 @@ bool CPGSDocBase::EditDirectSelectionPrestressing(const CSegmentKey& segmentKey)
    }
 }
 
-
-bool CPGSDocBase::EditDirectInputPrestressing(const CSegmentKey& segmentKey)
+bool CPGSDocBase::EditDirectRowInputPrestressing(const CSegmentKey& segmentKey)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
@@ -782,17 +781,17 @@ bool CPGSDocBase::EditDirectInputPrestressing(const CSegmentKey& segmentKey)
    oldSegmentData.m_SegmentData = *pSegment;
    oldSegmentData.m_TimelineMgr = *pTimelineMgr;
 
-   if (pSegment->Strands.GetStrandDefinitionType() != CStrandData::sdtDirectInput )
+   if (pSegment->Strands.GetStrandDefinitionType() != CStrandData::sdtDirectRowInput )
    {
       // We can go no further
-      ::AfxMessageBox(_T("Programmer Error: EditDirectInputPrestressing - can only be called for Direct Input strand definition"),MB_OK | MB_ICONWARNING);
+      ::AfxMessageBox(_T("Programmer Error: EditDirectRowInputPrestressing - can only be called for Direct Row Input strand definition"),MB_OK | MB_ICONWARNING);
       return false;
    }
 
    // Fire up dialog
    txnEditPrecastSegmentData newSegmentData = oldSegmentData;
 
-   CPropertySheet dlg(_T("Define Strands"));
+   CPropertySheet dlg(_T("Define Strand Rows"));
    CGirderSegmentStrandsPage page;
    page.Init(pSegment);
    dlg.AddPage(&page);
@@ -821,7 +820,68 @@ bool CPGSDocBase::EditDirectInputPrestressing(const CSegmentKey& segmentKey)
      return true;
    }
 }
-   
+
+bool CPGSDocBase::EditDirectStrandInputPrestressing(const CSegmentKey& segmentKey)
+{
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
+   GET_IFACE(IBridgeDescription, pIBridgeDesc);
+
+   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+   const CTimelineManager*    pTimelineMgr = pBridgeDesc->GetTimelineManager();
+
+   SegmentIDType segmentID = pIBridgeDesc->GetSegmentID(segmentKey);
+
+
+   CSplicedGirderData girder = *pIBridgeDesc->GetGirder(segmentKey);
+   girder.SetIndex(segmentKey.girderIndex);
+   CPrecastSegmentData* pSegment = girder.GetSegment(segmentKey.segmentIndex);
+
+   txnEditPrecastSegmentData oldSegmentData;
+   oldSegmentData.m_SegmentKey = segmentKey;
+   oldSegmentData.m_SegmentData = *pSegment;
+   oldSegmentData.m_TimelineMgr = *pTimelineMgr;
+
+   if (pSegment->Strands.GetStrandDefinitionType() != CStrandData::sdtDirectStrandInput)
+   {
+      // We can go no further
+      ::AfxMessageBox(_T("Programmer Error: EditDirectStrandInputPrestressing - can only be called for Direct Strand Input strand definition"), MB_OK | MB_ICONWARNING);
+      return false;
+   }
+
+   // Fire up dialog
+   txnEditPrecastSegmentData newSegmentData = oldSegmentData;
+
+   CPropertySheet dlg(_T("Define Individual Strands"));
+   CGirderSegmentStrandsPage page;
+   page.Init(pSegment);
+   dlg.AddPage(&page);
+   if (dlg.DoModal() == IDOK)
+   {
+      newSegmentData.m_SegmentData = *pSegment;
+
+      // The dialog does not deal with Pjack. Update pjack here
+#pragma Reminder("UPDATE: dialog should deal with Pjack")
+      GET_IFACE(IPretensionForce, pPrestress);
+
+      UpdatePrestressForce(pgsTypes::Straight, segmentKey, newSegmentData.m_SegmentData, oldSegmentData.m_SegmentData, pPrestress);
+      UpdatePrestressForce(pgsTypes::Harped, segmentKey, newSegmentData.m_SegmentData, oldSegmentData.m_SegmentData, pPrestress);
+      UpdatePrestressForce(pgsTypes::Temporary, segmentKey, newSegmentData.m_SegmentData, oldSegmentData.m_SegmentData, pPrestress);
+
+      // Fire our transaction
+      txnEditPrecastSegment* pTxn = new txnEditPrecastSegment(segmentKey, newSegmentData);
+
+      GET_IFACE(IEAFTransactions, pTransactions);
+      pTransactions->Execute(pTxn);
+
+      return true;
+   }
+   else
+   {
+      return true;
+   }
+}
+
 void CPGSDocBase::AddPointLoad(const CPointLoadData& loadData)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
@@ -4077,6 +4137,9 @@ void CPGSDocBase::LoadDocumentSettings()
       m_bAutoCalcEnabled = true;
    }
 
+   // lambda express that checks the if the independent flag (indFlag) is set and sets or clears the dependent flag (depFlag) accordingly
+   auto sync_flags = [](UINT& settings, UINT indFlag, UINT depFlag) { sysFlags<UINT>::IsSet(settings, indFlag) ? sysFlags<UINT>::Set(&settings, depFlag) : sysFlags<UINT>::Clear(&settings, depFlag); };
+
    // bridge model editor settings
    // turn on all settings for default
    UINT def_bm = IDB_PV_LABEL_PIERS     |
@@ -4095,73 +4158,22 @@ void CPGSDocBase::LoadDocumentSettings()
    // the default north up setting for the alignment is whatever the user has for the bridge plan view
    UINT def_ap = IDA_AP_DRAW_BRIDGE | IDP_AP_DRAW_BRIDGE;
    m_AlignmentEditorSettings   = pApp->GetProfileInt(_T("Settings"),_T("AlignmentEditor"), def_ap | ((m_BridgeModelEditorSettings&IDB_PV_NORTH_UP)!=0 ? IDA_AP_NORTH_UP : 0));
-   if (sysFlags<UINT>::IsSet(m_AlignmentEditorSettings, IDA_AP_DRAW_BRIDGE))
-   {
-      sysFlags<UINT>::Set(&m_AlignmentEditorSettings, IDP_AP_DRAW_BRIDGE);
-   }
-   else
-   {
-      sysFlags<UINT>::Clear(&m_AlignmentEditorSettings, IDP_AP_DRAW_BRIDGE);
-   }
+   sync_flags(m_AlignmentEditorSettings, IDA_AP_DRAW_BRIDGE, IDP_AP_DRAW_BRIDGE);
 
-   UINT def_gm = IDG_SV_SHOW_STRANDS | 
+   // The Elevation and Section View settings were independent at one time. Now that the view window has view setting toggle buttons on the toolbar
+   // some settings for the elevation/section view must always be the same. The code that follows ensures they are always the same.
+
+   UINT def_gm = IDG_SV_SHOW_STRANDS |
                  IDG_SV_SHOW_PS_CG | IDG_SV_SHOW_DIMENSIONS | IDG_SV_SHOW_LONG_REINF | IDG_SV_GIRDER_CG | IDG_SV_PROPERTIES |
       IDG_EV_SHOW_STRANDS | IDG_EV_SHOW_PS_CG | IDG_EV_SHOW_DIMENSIONS | IDG_EV_SHOW_STIRRUPS | IDG_EV_SHOW_LONG_REINF | IDG_EV_SHOW_LOADS | IDG_EV_SHOW_LEGEND | IDG_EV_GIRDER_CG;
 
    m_GirderModelEditorSettings = pApp->GetProfileInt(_T("Settings"),_T("GirderEditor"),def_gm);
-   if (sysFlags<UINT>::IsSet(m_GirderModelEditorSettings, IDG_SV_SHOW_STRANDS))
-   {
-      sysFlags<UINT>::Set(&m_GirderModelEditorSettings, IDG_EV_SHOW_STRANDS);
-   }
-   else
-   {
-      sysFlags<UINT>::Clear(&m_GirderModelEditorSettings, IDG_EV_SHOW_STRANDS);
-   }
 
-   if (sysFlags<UINT>::IsSet(m_GirderModelEditorSettings, IDG_SV_SHOW_PS_CG))
-   {
-      sysFlags<UINT>::Set(&m_GirderModelEditorSettings, IDG_EV_SHOW_PS_CG);
-   }
-   else
-   {
-      sysFlags<UINT>::Clear(&m_GirderModelEditorSettings, IDG_SV_SHOW_LONG_REINF);
-   }
-
-   if (sysFlags<UINT>::IsSet(m_GirderModelEditorSettings, IDG_EV_SHOW_LONG_REINF))
-   {
-      sysFlags<UINT>::Set(&m_GirderModelEditorSettings, IDG_EV_SHOW_LONG_REINF);
-   }
-   else
-   {
-      sysFlags<UINT>::Clear(&m_GirderModelEditorSettings, IDG_EV_SHOW_PS_CG);
-   }
-
-   if (sysFlags<UINT>::IsSet(m_GirderModelEditorSettings, IDG_SV_SHOW_DIMENSIONS))
-   {
-      sysFlags<UINT>::Set(&m_GirderModelEditorSettings, IDG_EV_SHOW_DIMENSIONS);
-   }
-   else
-   {
-      sysFlags<UINT>::Clear(&m_GirderModelEditorSettings, IDG_EV_SHOW_DIMENSIONS);
-   }
-
-   if (sysFlags<UINT>::IsSet(m_GirderModelEditorSettings, IDG_SV_GIRDER_CG))
-   {
-      sysFlags<UINT>::Set(&m_GirderModelEditorSettings, IDG_EV_GIRDER_CG);
-   }
-   else
-   {
-      sysFlags<UINT>::Clear(&m_GirderModelEditorSettings, IDG_EV_GIRDER_CG);
-   }
-
-   if (sysFlags<UINT>::IsSet(m_GirderModelEditorSettings, IDG_SV_SHOW_DIMENSIONS))
-   {
-      sysFlags<UINT>::Set(&m_GirderModelEditorSettings, IDG_EV_SHOW_DIMENSIONS);
-   }
-   else
-   {
-      sysFlags<UINT>::Clear(&m_GirderModelEditorSettings, IDG_EV_SHOW_DIMENSIONS);
-   }
+   sync_flags(m_GirderModelEditorSettings, IDG_SV_SHOW_STRANDS,    IDG_EV_SHOW_STRANDS);
+   sync_flags(m_GirderModelEditorSettings, IDG_SV_SHOW_PS_CG,      IDG_EV_SHOW_PS_CG);
+   sync_flags(m_GirderModelEditorSettings, IDG_SV_SHOW_LONG_REINF, IDG_EV_SHOW_LONG_REINF);
+   sync_flags(m_GirderModelEditorSettings, IDG_SV_SHOW_DIMENSIONS, IDG_EV_SHOW_DIMENSIONS);
+   sync_flags(m_GirderModelEditorSettings, IDG_SV_GIRDER_CG,       IDG_EV_GIRDER_CG);
 
    CString strDefaultGirderLabelFormat = pApp->GetLocalMachineString(_T("Settings"),_T("GirderLabelFormat"),     _T("Alpha"));
    CString strGirderLabelFormat = pApp->GetProfileString(_T("Settings"),_T("GirderLabelFormat"),strDefaultGirderLabelFormat);

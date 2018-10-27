@@ -17,11 +17,18 @@
 #include <IFace\Bridge.h>
 #include <pgsExt\DeckDescription.h>
 
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
 
-   enum Type { A615  = 0x1000,  // ASTM A615
-               A706  = 0x2000,  // ASTM A706
-               A1035 = 0x4000   // ASTM A1035
-   };
+
+enum Type { A615  = 0x1000,  // ASTM A615
+            A706  = 0x2000,  // ASTM A706
+            A1035 = 0x4000   // ASTM A1035
+};
+
 static std::_tstring GenerateReinfTypeName(matRebar::Type rtype)
 {
    switch(rtype)

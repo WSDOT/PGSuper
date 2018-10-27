@@ -124,56 +124,9 @@ void CNUBeamFactory::CreateGirderSection(IBroker* pBroker,StatusGroupIDType stat
    CComPtr<INUBeam> beam;
    gdrSection->get_Beam(&beam);
 
-   Float64 d1,d2,d3,d4,d5;
-   Float64 r1,r2,r3,r4;
-   Float64 t;
-   Float64 w1,w2;
-   Float64 c1;
-
-   GetDimensions(dimensions,d1,d2,d3,d4,d5,r1,r2,r3,r4,t,w1,w2,c1);
-   beam->put_W1(w1);
-   beam->put_W2(w2);
-   beam->put_D1(d1);
-   beam->put_D2(d2);
-   beam->put_D3(d3);
-   beam->put_D4(d4);
-   beam->put_D5(d5);
-   beam->put_T(t);
-   beam->put_R1(r1);
-   beam->put_R2(r2);
-   beam->put_R3(r3);
-   beam->put_R4(r4);
-   beam->put_C1(c1);
+   DimensionAndPositionBeam(dimensions, beam);
 
    gdrSection.QueryInterface(ppSection);
-}
-
-void CNUBeamFactory::CreateGirderProfile(IBroker* pBroker,StatusGroupIDType statusGroupID,const CSegmentKey& segmentKey,const IBeamFactory::Dimensions& dimensions,IShape** ppShape) const
-{
-   GET_IFACE2(pBroker,IBridge,pBridge);
-   Float64 length = pBridge->GetSegmentLength(segmentKey);
-
-   Float64 d1,d2,d3,d4,d5;
-   Float64 r1,r2,r3,r4;
-   Float64 t;
-   Float64 w1,w2;
-   Float64 c1;
-   GetDimensions(dimensions,d1,d2,d3,d4,d5,r1,r2,r3,r4,t,w1,w2,c1);
-
-   Float64 height = d1 + d2 + d3 + d4 + d5;
-
-   CComPtr<IRectangle> rect;
-   rect.CoCreateInstance(CLSID_Rect);
-   rect->put_Height(height);
-   rect->put_Width(length);
-
-   CComQIPtr<IXYPosition> position(rect);
-   CComPtr<IPoint2d> topLeft;
-   position->get_LocatorPoint(lpTopLeft,&topLeft);
-   topLeft->Move(0,0);
-   position->put_LocatorPoint(lpTopLeft,topLeft);
-
-   rect->QueryInterface(ppShape);
 }
 
 void CNUBeamFactory::CreateSegment(IBroker* pBroker,StatusGroupIDType statusGroupID,const CSegmentKey& segmentKey,ISuperstructureMemberSegment** ppSegment) const
@@ -226,6 +179,37 @@ void CNUBeamFactory::CreateSegment(IBroker* pBroker,StatusGroupIDType statusGrou
 
    CComQIPtr<ISuperstructureMemberSegment> ssmbrSegment(segment);
    ssmbrSegment.CopyTo(ppSegment);
+}
+
+void CNUBeamFactory::CreateSegmentShape(IBroker* pBroker, const CPrecastSegmentData* pSegment, Float64 Xs, pgsTypes::SectionBias sectionBias, IShape** ppShape) const
+{
+   CComPtr<INUBeam> beam;
+   beam.CoCreateInstance(CLSID_NUBeam);
+
+   const CSplicedGirderData* pGirder = pSegment->GetGirder();
+   const GirderLibraryEntry* pGirderEntry = pGirder->GetGirderLibraryEntry();
+   const auto& dimensions = pGirderEntry->GetDimensions();
+
+   DimensionAndPositionBeam(dimensions, beam);
+
+   beam.QueryInterface(ppShape);
+}
+
+Float64 CNUBeamFactory::GetSegmentHeight(IBroker* pBroker, const CPrecastSegmentData* pSegment, Float64 Xs) const
+{
+   const CSplicedGirderData* pGirder = pSegment->GetGirder();
+   const GirderLibraryEntry* pGirderEntry = pGirder->GetGirderLibraryEntry();
+   const auto& dimensions = pGirderEntry->GetDimensions();
+
+   Float64 d1, d2, d3, d4, d5;
+   Float64 r1, r2, r3, r4;
+   Float64 t;
+   Float64 w1, w2;
+   Float64 c1;
+
+   GetDimensions(dimensions, d1, d2, d3, d4, d5, r1, r2, r3, r4, t, w1, w2, c1);
+
+   return d1 + d2 + d3 + d4 + d5;
 }
 
 void CNUBeamFactory::ConfigureSegment(IBroker* pBroker, StatusItemIDType statusID, const CSegmentKey& segmentKey, ISuperstructureMemberSegment* pSSMbrSegment) const
@@ -931,4 +915,38 @@ bool CNUBeamFactory::CanPrecamber() const
 GirderIndexType CNUBeamFactory::GetMinimumBeamCount() const
 {
    return 2;
+}
+
+void CNUBeamFactory::DimensionAndPositionBeam(const IBeamFactory::Dimensions& dimensions, INUBeam* pBeam) const
+{
+   Float64 d1, d2, d3, d4, d5;
+   Float64 r1, r2, r3, r4;
+   Float64 t;
+   Float64 w1, w2;
+   Float64 c1;
+
+   GetDimensions(dimensions, d1, d2, d3, d4, d5, r1, r2, r3, r4, t, w1, w2, c1);
+   pBeam->put_W1(w1);
+   pBeam->put_W2(w2);
+   pBeam->put_D1(d1);
+   pBeam->put_D2(d2);
+   pBeam->put_D3(d3);
+   pBeam->put_D4(d4);
+   pBeam->put_D5(d5);
+   pBeam->put_T(t);
+   pBeam->put_R1(r1);
+   pBeam->put_R2(r2);
+   pBeam->put_R3(r3);
+   pBeam->put_R4(r4);
+   pBeam->put_C1(c1);
+
+
+   // Hook point is at bottom center of bounding box.
+   // Adjust hook point so top center of bounding box is at (0,0)
+   Float64 Hg;
+   pBeam->get_Height(&Hg);
+
+   CComPtr<IPoint2d> hookPt;
+   pBeam->get_HookPoint(&hookPt);
+   hookPt->Offset(0, -Hg);
 }

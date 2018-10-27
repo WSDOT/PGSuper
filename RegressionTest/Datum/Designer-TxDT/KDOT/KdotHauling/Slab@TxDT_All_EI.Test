@@ -3,7 +3,8 @@
  16.25    6   0.00                     1     1    SIV-3          12  0.6  270   8.50   8.50   4    2.0   12     4    0   0   0   4   0   4.000  6.900   3.246    -2.899     1003   0.281  0.310   2.060  0.000  0.000 -0.261 -0.261  24.07   87.56    1.00    5.00    5.00 
 
 
-The Specification Check was Successful
+The Specification Check was Not Successful
+Finished elevation check failed
 
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
@@ -11,7 +12,8 @@ The Specification Check was Successful
  16.25    6   0.00                     1     2    SIV-3          12  0.6  270   8.50   8.50   4    2.0   12     4    0   0   0   4   0   4.000  6.900   3.086    -2.771      945   0.255  0.255   2.060  0.000  0.000 -0.261 -0.261  24.07   87.56    1.00    5.00    5.00 
 
 
-The Specification Check was Successful
+The Specification Check was Not Successful
+Finished elevation check failed
 
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
@@ -19,6 +21,7 @@ The Specification Check was Successful
  16.25    6   0.00                     1     4    SIV-3          12  0.6  270   8.50   8.50   4    2.0   12     4    0   0   0   4   0   4.000  6.900   3.086    -2.771      945   0.255  0.255   2.060  0.000  0.000 -0.261 -0.261  24.07   87.56    1.00    5.00    5.00 
 
 
-The Specification Check was Successful
+The Specification Check was Not Successful
+Finished elevation check failed
 
 

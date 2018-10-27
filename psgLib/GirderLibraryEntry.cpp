@@ -3311,7 +3311,7 @@ void GirderLibraryEntry::ValidateData(GirderLibraryEntry::GirderEntryDataErrorVe
          // straight strands
          const StraightStrandLocation& strandLocation = m_StraightStrands[permStrand.m_GridIdx];
 
-         point->Move(strandLocation.m_Xstart, strandLocation.m_Ystart);
+         point->Move(strandLocation.m_Xstart, strandLocation.m_Ystart - height);
 
          VARIANT_BOOL bPointInShape;
          shape->PointInShape( point,&bPointInShape );
@@ -3331,7 +3331,7 @@ void GirderLibraryEntry::ValidateData(GirderLibraryEntry::GirderEntryDataErrorVe
 
          bool cantBeHarped = this->m_AdjustableStrandType!=pgsTypes::asHarped;
 
-         point->Move(strandLocation.m_Xhp, strandLocation.m_Yhp);
+         point->Move(strandLocation.m_Xhp, strandLocation.m_Yhp - height);
 
          VARIANT_BOOL bPointInShape;
          shape->PointInShape( point,&bPointInShape );
@@ -3400,7 +3400,7 @@ void GirderLibraryEntry::ValidateData(GirderLibraryEntry::GirderEntryDataErrorVe
             }
 
             // check locations of zero X
-            point->Move(0.0, strandLocation.m_Yhp);
+            point->Move(0.0, strandLocation.m_Yhp-height);
 
             shape->PointInShape( point,&bPointInShape );
             if ( bPointInShape == VARIANT_FALSE )
@@ -3439,7 +3439,7 @@ void GirderLibraryEntry::ValidateData(GirderLibraryEntry::GirderEntryDataErrorVe
          if (m_bUseDifferentHarpedGridAtEnds && !cantBeHarped)
          {
             // start
-            point->Move(strandLocation.m_Xstart, strandLocation.m_Ystart);
+            point->Move(strandLocation.m_Xstart, strandLocation.m_Ystart-height);
 
             VARIANT_BOOL bPointInShape;
             shape->PointInShape( point,&bPointInShape );
@@ -3462,7 +3462,7 @@ void GirderLibraryEntry::ValidateData(GirderLibraryEntry::GirderEntryDataErrorVe
             // next check zero value if odd number of strands is allowed
             if (this->OddNumberOfHarpedStrands())
             {
-               point->Move(0.0, strandLocation.m_Ystart);
+               point->Move(0.0, strandLocation.m_Ystart-height);
 
                bool didMsg = false;
                shape->PointInShape( point,&bPointInShape );
@@ -3550,7 +3550,7 @@ void GirderLibraryEntry::ValidateData(GirderLibraryEntry::GirderEntryDataErrorVe
          // temporary strands
          const StraightStrandLocation& strandLocation = m_TemporaryStrands[permStrand.m_GridIdx];
 
-         point->Move(strandLocation.m_Xstart, strandLocation.m_Ystart);
+         point->Move(strandLocation.m_Xstart, strandLocation.m_Ystart-height);
 
          VARIANT_BOOL bPointInShape;
          shape->PointInShape( point,&bPointInShape );
@@ -3666,7 +3666,7 @@ void GirderLibraryEntry::ValidateData(GirderLibraryEntry::GirderEntryDataErrorVe
          testpnt.Y() = height-(*itl).Cover;
       }
 
-      point->Move(testpnt.X(),testpnt.Y());
+      point->Move(testpnt.X(),testpnt.Y()-height);
       VARIANT_BOOL bPointInShape;
       shape->PointInShape( point,&bPointInShape );
       if ( bPointInShape == VARIANT_FALSE )
@@ -3682,7 +3682,7 @@ void GirderLibraryEntry::ValidateData(GirderLibraryEntry::GirderEntryDataErrorVe
    // Design Algorithm strategies
    bool cant_straight = pgsTypes::asHarped   ==  GetAdjustableStrandType() && IsDifferentHarpedGridAtEndsUsed();
    bool cant_harp     = pgsTypes::asStraight ==  GetAdjustableStrandType();
-   bool cant_debond   = pgsTypes::asHarped   ==  GetAdjustableStrandType() || !CanDebondStraightStrands();
+   bool cant_debond   = !CanDebondStraightStrands();
 
    // NOTE: It is ok to have a harped adjustable strategy without harped strands. This would be the case of straight only with no adjustable straight strands
    // or a straight/harped girder that doesn't have any harped strands defined.

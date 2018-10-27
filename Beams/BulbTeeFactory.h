@@ -42,7 +42,6 @@ class ATL_NO_VTABLE CBulbTeeFactory :
 public:
 	CBulbTeeFactory()
 	{
-      m_bTransverseTopFlangeThickening = false;
 	}
 
    HRESULT FinalConstruct();
@@ -58,8 +57,9 @@ END_COM_MAP()
 public:
    // IBeamFactory
    virtual void CreateGirderSection(IBroker* pBroker,StatusItemIDType statusID,const IBeamFactory::Dimensions& dimensions,Float64 overallHeight,Float64 bottomFlangeHeight,IGirderSection** ppSection) const override;
-   virtual void CreateGirderProfile(IBroker* pBroker,StatusItemIDType statusID,const CSegmentKey& segmentKey,const IBeamFactory::Dimensions& dimensions,IShape** ppShape) const override;
    virtual void CreateSegment(IBroker* pBroker, StatusItemIDType statusID, const CSegmentKey& segmentKey, ISuperstructureMemberSegment** ppSegment) const override;
+   virtual void CreateSegmentShape(IBroker* pBroker, const CPrecastSegmentData* pSegment, Float64 Xs, pgsTypes::SectionBias sectionBias, IShape** ppShape) const override;
+   virtual Float64 GetSegmentHeight(IBroker* pBroker, const CPrecastSegmentData* pSegment, Float64 Xs) const override;
    virtual void ConfigureSegment(IBroker* pBroker, StatusItemIDType statusID, const CSegmentKey& segmentKey, ISuperstructureMemberSegment* pSSMbrSegment) const override;
    virtual void LayoutSectionChangePointsOfInterest(IBroker* pBroker,const CSegmentKey& segmentKey,pgsPoiMgr* pPoiMgr) const override;
    virtual void CreateDistFactorEngineer(IBroker* pBroker,StatusItemIDType statusID,const pgsTypes::SupportedBeamSpacing* pSpacingType,const pgsTypes::SupportedDeckType* pDeckType, const pgsTypes::AdjacentTransverseConnectivity* pConnect,IDistFactorEngineer** ppEng) const override;
@@ -128,8 +128,6 @@ private:
    std::vector<Float64> m_DefaultDims;
    std::vector<const unitLength*> m_DimUnits[2];
 
-   mutable bool m_bTransverseTopFlangeThickening;
-
    mutable bool m_bHaveOldTopFlangeThickening; // set to true if we have an old D8 value that hasn't been retreived yet (this is just for debugging... we don't want to override a value and lose it)
    mutable Float64 m_OldTopFlangeThickening; /// this is the obsolete D8 value we justed loaded
 
@@ -139,6 +137,14 @@ private:
                       Float64& t1,Float64& t2) const;
 
    Float64 GetDimension(const IBeamFactory::Dimensions& dimensions,const std::_tstring& name) const;
+
+   bool IsPrismatic(const CPrecastSegmentData* pSegment) const;
+
+   void ConfigureBeamShape(IBroker* pBroker, const CPrecastSegmentData* pSegment, IBulbTee2* pBeam) const;
+   void GetTopFlangeParameters(IBroker* pBroker, const CPrecastSegmentData* pSegment, Float64* pC, Float64* pN1, Float64* pN2,Float64* pLeft,Float64* pRight) const;
+   void GetTopWidth(IBroker* pBroker, const CPrecastSegmentData* pSegment, Float64 Xs, Float64* pLeft, Float64* pRight) const;
+   Float64 GetFlangeThickening(IBroker* pBroker, const CPrecastSegmentData* pSegment, Float64 Xs) const;
+   void PositionBeamShape(IBulbTee2* pBeam) const;
 };
 
 #endif //__BULBTEEFACTORY_H_

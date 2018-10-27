@@ -634,7 +634,7 @@ void write_artifact_data(IBroker* pBroker,rptChapter* pChapter,IEAFDisplayUnits*
             row++;
          }
 
-         if ( options.doDesignSlabOffset==sodAandAssExcessCamber && pSpec->IsAssExcessCamberInputEnabled() )
+         if ( options.doDesignSlabOffset==sodAandAssExcessCamber && pSpec->IsAssExcessCamberForLoad() )
          {
             (*pTable)(row,0) << _T("Assumed Excess Camber");
             (*pTable)(row,1) << length.SetValue( pArtifact->GetAssExcessCamber() );
@@ -906,6 +906,7 @@ void failed_design(IBroker* pBroker,rptChapter* pChapter,IEAFDisplayUnits* pDisp
                << color(Black)
                << rptNewLine;
 
+   bool bContinue = true;
    pParagraph = new rptParagraph( rptStyleManager::GetSubheadingStyle() );
    *pChapter << pParagraph;
    switch( pArtifact->GetOutcome() )
@@ -1023,14 +1024,27 @@ void failed_design(IBroker* pBroker,rptChapter* pChapter,IEAFDisplayUnits* pDisp
          *pParagraph << _T("The allowable range of applicability for computing live load distribution factors was exceeded during design. See the Status Center for more details.") << rptNewLine;
          break;
 
+      case pgsSegmentDesignArtifact::DesignNotSupported_Losses:
+         *pParagraph << _T("Design is not supported for time step loss analysis") << rptNewLine;
+         bContinue = false;
+         break;
+
+      case pgsSegmentDesignArtifact::DesignNotSupported_Strands:
+         *pParagraph << _T("Design is not supported for the current strand definition type. Use Number of Straight\\Harped Strands or Number of Permanent Strands") << rptNewLine;
+         bContinue = false;
+         break;
+
       default:
          ATLASSERT(false); // Should never get here
    }
 
-   pParagraph = new rptParagraph();
-   *pParagraph << Bold(_T("Results from last trial:")) << rptNewLine;
-   *pChapter << pParagraph;
-   write_artifact_data(pBroker,pChapter,pDisplayUnits,pArtifact);
+   if (bContinue)
+   {
+      pParagraph = new rptParagraph();
+      *pParagraph << Bold(_T("Results from last trial:")) << rptNewLine;
+      *pChapter << pParagraph;
+      write_artifact_data(pBroker, pChapter, pDisplayUnits, pArtifact);
+   }
 }
 
 std::_tstring GetDesignNoteString(pgsSegmentDesignArtifact::DesignNote note)
@@ -1067,6 +1081,14 @@ std::_tstring GetDesignNoteString(pgsSegmentDesignArtifact::DesignNote note)
 
    case pgsSegmentDesignArtifact::dnConcreteStrengthIncreasedForShearStress:
       return std::_tstring(_T("Final concrete strength was increased to alleviate shear stress requirements."));
+      break;
+
+   case pgsSegmentDesignArtifact::dnTransformedSectionsSetToGross:
+      return std::_tstring(_T("The Project Criteria specifies an analysis based on Transformed Sections. However, this design was based on gross section properties. Design results may not be accurate - run a Spec Check report to insure correctness."));
+      break;
+
+   case pgsSegmentDesignArtifact::dnParabolicHaunchSetToConstant:
+      return std::_tstring(_T("The Project Criteria specifies an analysis based on non-prismatic composite section properties accounting for Parabolic Haunch depth. This girder was designed using a constant depth haunch. Design results may not be accurate - run a Spec Check report to insure correctness."));
       break;
 
    default:

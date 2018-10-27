@@ -329,6 +329,8 @@
 #define IDC_HPOFFSET_HP2_UNIT           1134
 #define IDC_SPACING                     1135
 #define IDC_NUM_TEMP_SPIN               1136
+#define IDC_SPACING2                    1136
+#define IDC_HARP_POINT_LOCATION         1136
 #define IDC_SPACING_UNIT                1137
 #define IDC_TEMP_JACK                   1138
 #define IDC_TEMP_JACK_FORCE             1140
@@ -1137,9 +1139,11 @@
 #define IDC_X1_LABEL                    1820
 #define IDC_X1_UNIT                     1821
 #define IDC_X2_LABEL                    1822
-#define IDC_X2_UNIT                     1823
-#define IDC_W_UNIT                      1824
-#define IDC_X5_LABEL                    1825
+#define IDC_X3_LABEL                    1823
+#define IDC_X2_UNIT                     1824
+#define IDC_X4_LABEL                    1825
+#define IDC_W_UNIT                      1826
+#define IDC_X5_LABEL                    1827
 #define IDC_X5_UNIT                     1828
 #define IDC_W_LABEL                     1829
 #define IDC_X3                          1830
@@ -1317,9 +1321,14 @@
 #define IDC_LEFT_TOP_WIDTH_LABEL        1959
 #define IDC_RIGHT_TOP_WIDTH_LABEL       1960
 #define IDC_COMBO1                      1961
+#define IDC_X1_MEASURE                  1961
 #define IDC_RATE_FOR_STRESS             1962
+#define IDC_X2_MEASURE                  1962
 #define IDI_STRANDS                     1963
+#define IDC_X3_MEASURE                  1963
 #define IDI_STRANDS_CG                  1964
+#define IDC_X1_MEASURE4                 1964
+#define IDC_X4_MEASURE                  1964
 #define IDI_DIMENSIONS                  1965
 #define IDI_USER_LOADS                  1966
 #define IDI_SCHEMATIC                   1967
@@ -1345,6 +1354,10 @@
 #define IDC_TOP_WIDTH_START_LABEL       1996
 #define IDC_TOP_WIDTH_START_LABEL2      1997
 #define IDC_TOP_WIDTH_END_LABEL         1997
+#define IDC_HG_X1                       1997
+#define IDC_HG_X2                       1998
+#define IDC_HG_X3                       1999
+#define IDC_HG_X4                       2000
 #define IDC_APPLIST                     3333
 #define IDR_PGSUPER_STDTOOLBAR          12129
 #define IDR_LIBTOOLBAR                  12130
@@ -1496,9 +1509,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        389
+#define _APS_NEXT_RESOURCE_VALUE        391
 #define _APS_NEXT_COMMAND_VALUE         37001
-#define _APS_NEXT_CONTROL_VALUE         1997
+#define _APS_NEXT_CONTROL_VALUE         1998
 #define _APS_NEXT_SYMED_VALUE           113
 #endif
 #endif

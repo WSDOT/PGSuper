@@ -777,12 +777,12 @@ public:
    pgsTypes::OverlayLoadDistributionType GetOverlayLoadDistributionType() const;
    void SetOverlayLoadDistributionType(pgsTypes::OverlayLoadDistributionType type);
 
-   // Set/Get the how the haunch load is commputed wrt girder camber
+   // Set/Get the how the haunch load is computed wrt girder camber
    pgsTypes::HaunchLoadComputationType GetHaunchLoadComputationType() const;
    void SetHaunchLoadComputationType(pgsTypes::HaunchLoadComputationType type);
 
    // set/get solution tolerance between camber used to compute haunch load and computed excess camber.
-   // This value is only used if HaunchLoadComputationType==hlcAccountForCamber
+   // This value is only used if HaunchLoadComputationType==hspAccountForCamber or HaunchAnalysisSectionPropertiesType==hspVariableParabolic
    Float64 GetHaunchLoadCamberTolerance() const;
    void SetHaunchLoadCamberTolerance(Float64 tol);
 
@@ -791,6 +791,10 @@ public:
    // Valid values are 0.0< to <=1.0
    Float64 GetHaunchLoadCamberFactor() const;
    void SetHaunchLoadCamberFactor(Float64 tol);
+
+   // Set/Get the how the haunch is used when computing composite section properties
+   pgsTypes::HaunchAnalysisSectionPropertiesType GetHaunchAnalysisSectionPropertiesType() const;
+   void SetHaunchAnalysisSectionPropertiesType(pgsTypes::HaunchAnalysisSectionPropertiesType type);
 
    // Set/Get the magnitude of the pedestrian live load
    Float64 GetPedestrianLiveLoad() const;
@@ -1356,6 +1360,7 @@ private:
    pgsTypes::HaunchLoadComputationType m_HaunchLoadComputationType;
    Float64 m_HaunchLoadCamberTolerance;
    Float64 m_HaunchLoadCamberFactor;
+   pgsTypes:: HaunchAnalysisSectionPropertiesType m_HaunchAnalysisSectionPropertiesType;
 
    // bridge site 3
    Float64 m_Bs3CompStressServ;

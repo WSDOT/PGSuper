@@ -160,7 +160,7 @@ void pgsYieldStressRatioArtifact::SetVehicleName(LPCTSTR str)
    m_strVehicleName = str;
 }
 
-std::_tstring pgsYieldStressRatioArtifact::GetVehicleName() const
+const std::_tstring& pgsYieldStressRatioArtifact::GetVehicleName() const
 {
    return m_strVehicleName;
 }

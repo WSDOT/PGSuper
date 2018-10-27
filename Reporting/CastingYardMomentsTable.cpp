@@ -84,7 +84,7 @@ rptRcTable* CCastingYardMomentsTable::Build(IBroker* pBroker,const CSegmentKey& 
    location.IncludeSpanAndGirder(segmentKey.groupIndex == ALL_GROUPS ? true : false);
 
    GET_IFACE2(pBroker, IBridge, pBridge);
-   bool bReportXDeflection = pBridge->HasAsymmetricGirders();
+   bool bReportXDeflection = pBridge->HasAsymmetricGirders() || pBridge->HasAsymmetricPrestressing();
 
    ColumnIndexType nColumns = 4;
    if (bReportXDeflection)

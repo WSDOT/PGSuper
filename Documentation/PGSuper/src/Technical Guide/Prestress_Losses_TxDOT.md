@@ -39,7 +39,7 @@ The 0.70 f<sub>pu</sub> assumption described above is sensible for low-relaxatio
 
 1. Assume that strand stress at release is 0.70 f<sub>pu</sub> when computing f<sub>cgp</sub>. However, if the jacking stress is not equal to 0.75 f<sub>pu</sub>, or the section is non-prismatic (e.g., has end blocks), or if debonded strands are present, or if temporary strands exist: Then use the iterative approach to compute elastic shortening losses as defined in the post-2004 AASHTO specifications. When this occurs, a warning message will be posted to the Status Center.
 2. Always assume that strand stress at release is 0.70 f<sub>pu</sub> when computing f<sub>cgp</sub>. However, if the jacking stress is less than  0.70 f<sub>pu</sub> (which would result in negative losses), issue an Error message and halt further computation.
-3. Always compute f<sub>cgp</sub> using the iterative method, as defined in the post-2004 specifications (LRFD C5.9.3.2.3 (*pre-2017: C5.9.5.2.3a*)).
+3. Always compute f<sub>cgp</sub> using the iterative method, as defined in the post-2004 specifications (LRFD C5.9.3.2.3a (*pre-2017: C5.9.5.2.3a*)).
 
 Time Dependent Loss at Shipping
 ---------------------------------

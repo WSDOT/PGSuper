@@ -23,26 +23,3 @@ Double Tee |  2 |  1
 Distribution of Overlay Dead Load
 ----------------------------------
 Define the method for distributing overlay dead load to the girders. LRFD 4.6.2.2.1 states "permanent loads of and on the deck may be distributed uniformly among the beams and/or stringers". However, many agencies prefer to distribute overlay loads using tributary area. Select your preference here.
-
-Haunch Dead Load
------------
-
-> NOTE: These parameters do not apply to Time-Step analysis, where excess camber is always assumed to be zero when computing haunch dead load.
-
-Select the method for computing the haunch dead load. 
-
-Method | Description
--------|------------
-Zero excess camber | The top of the girder is assumed to be straight (zero camber) for purposes of computing the haunch dead load.
-Excess camber is defined by a parabola fitting the Slab Offset and Assumed Excess Camber dimensions | The top of the girder is assumed to follow a parabolic curve defined by the slab offsets at the ends of the girder, and the user-input Assumed Excess Camber dimension. A specification check is performed to insure that the assumed excess camber is within tolerance of the computed excess camber.
-
-#### Allowable tolerance between assumed and computed excess camber ####
-Enter a tolerance that will be used to compare the assumed excess camber as described above, to the computed excess camber. The specification check will fail if difference in the assumed and predicted excess camber is not within tolerance.
-
-A failed specification check indicates that the slab haunch dead load used in design and analysis is not consistent with the predicted shape of the actual slab haunch. The slab haunch dead load could be over or under estimated.
-
-Use a reasonable value for the tolerance (i.e., a value near zero will make it practically impossible to pass the specification check).
-
-> TIP: Refer to the Slab Haunch loading section of @ref tg_structural_analysis_models for detailed information about how the slab offset and assumed excess camber dimensions are used for computing the haunch dead load.
-
-> TIP: Refer to the @ref technical_guide for more information about how camber is computed.

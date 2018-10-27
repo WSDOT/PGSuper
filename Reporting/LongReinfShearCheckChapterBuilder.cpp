@@ -350,9 +350,15 @@ void CLongReinfShearCheckChapterBuilder::BuildForRating(rptChapter* pChapter,CRe
          pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
          *pChapter << pParagraph;
          *pParagraph << LrfdCw8th(_T("5.8.3.5"),_T("5.7.3.5")) << rptNewLine;
+
+         lrfdVersionMgr::Version vers = lrfdVersionMgr::GetVersion();
          if ( 0 < nDucts )
          {
-            if ( lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion() )
+            if ( lrfdVersionMgr::EighthEdition2017 <= vers )
+            {
+               *pParagraph <<rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("LongitudinalReinforcementForShear2017_with_PT.png"))<<rptNewLine;
+            }
+            else if ( lrfdVersionMgr::ThirdEditionWith2005Interims <= vers )
             {
                *pParagraph <<rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("LongitudinalReinforcementForShear2005_with_PT.png"))<<rptNewLine;
             }
@@ -363,7 +369,11 @@ void CLongReinfShearCheckChapterBuilder::BuildForRating(rptChapter* pChapter,CRe
          }
          else
          {
-            if ( lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion() )
+            if (lrfdVersionMgr::EighthEdition2017 <= vers )
+            {
+               *pParagraph <<rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("LongitudinalReinforcementForShear2017.png"))<<rptNewLine;
+            }
+            else if ( lrfdVersionMgr::ThirdEditionWith2005Interims <= vers )
             {
                *pParagraph <<rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("LongitudinalReinforcementForShear2005.png"))<<rptNewLine;
             }

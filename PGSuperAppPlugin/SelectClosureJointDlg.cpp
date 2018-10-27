@@ -34,6 +34,13 @@
 
 #include "CastClosureJointDlg.h" // for Encode/Decode methods
 
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
+
+
 // CSelectClosureJointDlg dialog
 
 IMPLEMENT_DYNAMIC(CSelectClosureJointDlg, CDialog)

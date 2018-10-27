@@ -296,27 +296,38 @@ Float64 pgsPsForceEng::GetXferLength(const CSegmentKey& segmentKey,pgsTypes::Str
    return details.lt;
 }
 
-Float64 pgsPsForceEng::GetXferLengthAdjustment(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType) const
+Float64 pgsPsForceEng::GetXferLengthAdjustment(const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, const GDRCONFIG* pConfig) const
 {
-   GET_IFACE(IBridge,pBridge);
-   const CSegmentKey& segmentKey = poi.GetSegmentKey();
+   const CSegmentKey& segmentKey(poi.GetSegmentKey());
 
-   const GDRCONFIG& config = pBridge->GetSegmentConfiguration(segmentKey);
+   GET_IFACE_NOCHECK(IStrandGeometry, pStrandGeom); // not used if pConfig != nullptr
 
-   return GetXferLengthAdjustment(poi, strandType, config);
-}
-
-Float64 pgsPsForceEng::GetXferLengthAdjustment(const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, const GDRCONFIG& config) const
-{
-   StrandIndexType Ns = (strandType == pgsTypes::Permanent ? config.PrestressConfig.GetStrandCount(pgsTypes::Straight) + config.PrestressConfig.GetStrandCount(pgsTypes::Harped) : config.PrestressConfig.GetStrandCount(strandType));
+   StrandIndexType Ns = INVALID_INDEX;
+   if (pConfig)
+   {
+      Ns = (strandType == pgsTypes::Permanent ? pConfig->PrestressConfig.GetStrandCount(pgsTypes::Straight) + pConfig->PrestressConfig.GetStrandCount(pgsTypes::Harped) : pConfig->PrestressConfig.GetStrandCount(strandType));
+   }
+   else
+   {
+      Ns = pStrandGeom->GetStrandCount(segmentKey, strandType);
+   }
 
    // Quick check to make sure there is even an adjustment to be made. If there are no strands, just leave
-   if ( Ns == 0 )
+   if (Ns == 0)
    {
       return 1.0;
    }
 
-   StrandIndexType nDebond = (strandType == pgsTypes::Permanent ? config.PrestressConfig.Debond[pgsTypes::Straight].size() + config.PrestressConfig.Debond[pgsTypes::Harped].size() : config.PrestressConfig.Debond[strandType].size());
+   StrandIndexType nDebond = INVALID_INDEX;
+   if (pConfig)
+   {
+      nDebond = (strandType == pgsTypes::Permanent ? pConfig->PrestressConfig.Debond[pgsTypes::Straight].size() + pConfig->PrestressConfig.Debond[pgsTypes::Harped].size() : pConfig->PrestressConfig.Debond[strandType].size());
+   }
+   else
+   {
+      nDebond = pStrandGeom->GetNumDebondedStrands(segmentKey, strandType, pgsTypes::dbetEither);
+
+   }
    ATLASSERT(nDebond <= Ns); // must be true!
 
    // set up loop counters for below. stand type assumptions are same as above
@@ -331,8 +342,6 @@ Float64 pgsPsForceEng::GetXferLengthAdjustment(const pgsPointOfInterest& poi, pg
       st1 = strandType;
       st2 = strandType;
    }
-
-   const CSegmentKey& segmentKey = poi.GetSegmentKey();
 
    // Compute a scaling factor to apply to the basic prestress force to adjust for transfer length
    // and debonded strands
@@ -360,36 +369,124 @@ Float64 pgsPsForceEng::GetXferLengthAdjustment(const pgsPointOfInterest& poi, pg
    {
       pgsTypes::StrandType st = (pgsTypes::StrandType)i;
 
-      std::vector<DEBONDCONFIG>::const_iterator iter(config.PrestressConfig.Debond[st].begin());
-      std::vector<DEBONDCONFIG>::const_iterator iterend(config.PrestressConfig.Debond[st].end());
-      for ( ; iter != iterend; iter++ )
+      if (pConfig)
       {
-         const DEBONDCONFIG& debond_info = *iter;
-
-         Float64 right_db_from_left = gdr_length - debond_info.DebondLength[pgsTypes::metEnd];
-
-         // see if bonding occurs at all here
-         if ( debond_info.DebondLength[pgsTypes::metStart]<dist_from_left_end && dist_from_left_end<right_db_from_left)
+         for(const auto& debond_info : pConfig->PrestressConfig.Debond[st])
          {
-            // compute minimum bonded length from poi
-            Float64 left_len = dist_from_left_end - debond_info.DebondLength[pgsTypes::metStart];
-            Float64 rgt_len  = right_db_from_left - dist_from_left_end;
-            Float64 min_db_len = Min(left_len, rgt_len);
+            Float64 right_db_from_left = gdr_length - debond_info.DebondLength[pgsTypes::metEnd];
 
-            if (min_db_len<xfer_length)
+            // see if bonding occurs at all here
+            if (debond_info.DebondLength[pgsTypes::metStart] < dist_from_left_end && dist_from_left_end < right_db_from_left)
             {
-               nDebondedEffective += min_db_len/xfer_length;
+               // compute minimum bonded length from poi
+               Float64 left_len = dist_from_left_end - debond_info.DebondLength[pgsTypes::metStart];
+               Float64 rgt_len = right_db_from_left - dist_from_left_end;
+               Float64 min_db_len = Min(left_len, rgt_len);
+
+               if (min_db_len < xfer_length)
+               {
+                  nDebondedEffective += min_db_len / xfer_length;
+               }
+               else
+               {
+                  nDebondedEffective += 1.0;
+               }
+
             }
             else
             {
-               nDebondedEffective += 1.0;
+               // strand is not bonded at the location of the POI
+               nDebondedEffective += 0.0;
             }
+         }
+      }
+      else
+      {
+         GET_IFACE(ISegmentData, pSegmentData);
+         const CStrandData* pStrands = pSegmentData->GetStrandData(segmentKey);
+         if (pStrands->GetStrandDefinitionType() == CStrandData::sdtDirectStrandInput)
+         {
+            const auto& strandRows = pStrands->GetStrandRows();
+            for (const auto& strandRow : strandRows)
+            {
+               if (strandRow.m_StrandType != (StrandType)st)
+               {
+                  continue;
+               }
 
+               if (strandRow.m_bIsDebonded[etStart] || strandRow.m_bIsDebonded[etEnd])
+               {
+                  Float64 Ldb = strandRow.m_bIsDebonded[etStart] ? strandRow.m_DebondLength[etStart] : 0;
+                  Float64 Rdb = strandRow.m_bIsDebonded[etEnd] ? strandRow.m_DebondLength[etEnd] : 0;
+                  Float64 right_db_from_left = gdr_length - Rdb;
+
+                  // see if bonding occurs at all here
+                  if (Ldb < dist_from_left_end && dist_from_left_end < right_db_from_left)
+                  {
+                     // compute minimum bonded length from poi
+                     Float64 left_len = dist_from_left_end - Ldb;
+                     Float64 rgt_len = right_db_from_left - dist_from_left_end;
+                     Float64 min_db_len = Min(left_len, rgt_len);
+
+                     if (min_db_len < xfer_length)
+                     {
+                        nDebondedEffective += (min_db_len / xfer_length)*strandRow.m_nStrands;
+                     }
+                     else
+                     {
+                        nDebondedEffective += strandRow.m_nStrands;
+                     }
+
+                  }
+                  else
+                  {
+                     // strand is not bonded at the location of the POI
+                     nDebondedEffective += 0.0;
+                  }
+               }
+            }
          }
          else
          {
-            // strand is not bonded at the location of the POI
-            nDebondedEffective += 0.0;
+            const auto& debonding = pStrands->GetDebonding(st);
+            for (const auto& debond_data : debonding)
+            {
+               Float64 Ldb = debond_data.Length[pgsTypes::metStart];
+               Float64 Rdb = debond_data.Length[pgsTypes::metEnd];
+               Float64 right_db_from_left = gdr_length - Rdb;
+
+               // see if bonding occurs at all here
+               if (Ldb < dist_from_left_end && dist_from_left_end < right_db_from_left)
+               {
+                  // compute minimum bonded length from poi
+                  Float64 left_len = dist_from_left_end - Ldb;
+                  Float64 rgt_len = right_db_from_left - dist_from_left_end;
+                  Float64 min_db_len = Min(left_len, rgt_len);
+
+                  StrandIndexType strandIdx1, strandIdx2;
+                  pStrandGeom->GridPositionToStrandPosition(segmentKey, st, debond_data.strandTypeGridIdx, &strandIdx1, &strandIdx2);
+                  ATLASSERT(strandIdx1 != INVALID_INDEX);
+                  StrandIndexType nStrands = 1;
+                  if (strandIdx2 != INVALID_INDEX)
+                  {
+                     nStrands++;
+                  }
+
+                  if (min_db_len < xfer_length)
+                  {
+                     nDebondedEffective += (min_db_len / xfer_length)*nStrands;
+                  }
+                  else
+                  {
+                     nDebondedEffective += nStrands;
+                  }
+               }
+               else
+               {
+                  // strand is not bonded at the location of the POI
+                  nDebondedEffective += 0.0;
+               }
+            }
          }
       }
    }
@@ -1455,7 +1552,7 @@ Float64 pgsPsForceEng::GetEffectivePrestress(const pgsPointOfInterest& poi,pgsTy
    // Reduce for transfer effect (no transfer effect if the strands aren't released
    if ( releaseIntervalIdx <= intervalIdx )
    {
-      Float64 adjust = (pConfig ? GetXferLengthAdjustment(poi,strandType,*pConfig) : GetXferLengthAdjustment(poi,strandType));
+      Float64 adjust = GetXferLengthAdjustment(poi,strandType,pConfig);
       fps *= adjust;
    }
 
@@ -1573,15 +1670,7 @@ Float64 pgsPsForceEng::GetEffectivePrestressWithLiveLoad(const pgsPointOfInteres
    ATLASSERT( 0 <= fps ); // strand stress must be greater than or equal to zero.
 
    // Reduce for transfer effect
-   Float64 adjust;
-   if ( pConfig )
-   {
-      adjust = GetXferLengthAdjustment(poi,strandType,*pConfig);
-   }
-   else
-   {
-      adjust = GetXferLengthAdjustment(poi,strandType);
-   }
+   Float64 adjust = GetXferLengthAdjustment(poi, strandType, pConfig);
 
    fps *= adjust;
 

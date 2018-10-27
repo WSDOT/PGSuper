@@ -46,20 +46,20 @@ protected:
    const CPrecastSegmentData* m_pSegment; // this is the segment for which we are drawing strands
    const CStrandData* m_pStrands; // these are the actual strand data (can be edited from UI and thus different from m_pSegment->Strands)
 
-   Float64 m_Hg; // maximum height of section
+   Float64 m_Hg; // overall height including top flange thickening and precamber
 
    Float64 m_HgStart; // height of the segment at the start (left) end
    Float64 m_HgEnd; // height of the segment at the end (right) end
    Float64 m_SegmentLength; // length of the segment
    Float64 m_SegmentXLeft; // X-value to offset strands so they end up in the correct location on the drawing
 
-   Float64 m_Radius; // radius of the strand
+   std::array<Float64,2> m_Xoffset; // horizontal offset needed for asymmetric girder sections
 
-   CComPtr<IShape> m_Shape[2]; // segment shape at start and end of segment (use pgsTypes::MemberEndType to access array)
+   std::array<CComPtr<IShape>,2> m_Shape; // segment shape at start and end of segment (use pgsTypes::MemberEndType to access array)
    CComPtr<IShape> m_Profile; // profile of segment
-   CComPtr<IPoint2dCollection> m_BottomFlange; // top of bottom flange line
+   CComPtr<IPoint2dCollection> m_BottomFlangeProfile; // top of bottom flange line
 
-   void CreateSegmentShape(IShape** ppShape,IPoint2dCollection** ppPoints);
+   void CreateSegmentProfiles(IShape** ppShape,IPoint2dCollection** ppPoints);
    void DrawShape(CDC* pDC,grlibPointMapper& mapper,IShape* pShape);
    void Draw(CDC* pDC,grlibPointMapper& mapper,IPoint2dCollection* pPolyPoints,BOOL bPolygon);
    void DrawStrands(CDC* pDC,grlibPointMapper& leftMapper,grlibPointMapper& centerMapper,grlibPointMapper& rightMapper);

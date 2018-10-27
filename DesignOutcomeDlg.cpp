@@ -314,6 +314,22 @@ BOOL CDesignOutcomeDlg::OnInitDialog()
       }
    }
 
+   // If the design outcome is "Not Supported", the design artifact doesn't really have good information in it
+   // We don't want the user to accept the design and updated the model with junk.
+   // Make "reject" the only option
+   GET_IFACE2(pBroker, IArtifact, pIArtifact);
+   for (const auto& girderKey : m_GirderKeys)
+   {
+      const pgsGirderDesignArtifact* pGdrArtifact = pIArtifact->GetDesignArtifact(girderKey);
+      const pgsSegmentDesignArtifact* pArtifact = pGdrArtifact->GetSegmentDesignArtifact(0);
+      if (pArtifact->GetOutcome() == pgsSegmentDesignArtifact::DesignNotSupported_Losses || pArtifact->GetOutcome() == pgsSegmentDesignArtifact::DesignNotSupported_Strands)
+      {
+         m_Ok.EnableWindow(FALSE);
+         break;
+      }
+   }
+
+
 	return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE
 }

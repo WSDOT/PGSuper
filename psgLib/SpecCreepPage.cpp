@@ -67,6 +67,8 @@ BEGIN_MESSAGE_MAP(CSpecCreepPage, CPropertyPage)
 	ON_BN_CLICKED(IDC_CREEP_METHOD, OnWsdotCreepMethod)
 	ON_BN_CLICKED(IDC_CREEP_METHOD2, OnWsdotCreepMethod)
 	ON_BN_CLICKED(ID_HELP,OnHelp)
+   ON_CBN_SELCHANGE(IDC_HAUNCH_COMP_CB, &CSpecCreepPage::OnCbnSelchangeHaunchCompCb)
+   ON_CBN_SELCHANGE(IDC_HAUNCH_COMP_PROPS_CB, &CSpecCreepPage::OnCbnSelchangeHaunchCompPropCb)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -100,6 +102,8 @@ BOOL CSpecCreepPage::OnInitDialog()
 	// TODO: Add extra initialization here
 //   OnWsdotCreepMethod();	
 
+   OnChangeHaunch();
+
 	return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE
 }
@@ -107,4 +111,33 @@ BOOL CSpecCreepPage::OnInitDialog()
 void CSpecCreepPage::OnHelp()
 {
    EAFHelp( EAFGetDocument()->GetDocumentationSetName(), IDH_PROJECT_CRITERIA_CREEP );
+}
+
+void CSpecCreepPage::OnCbnSelchangeHaunchCompCb()
+{
+   OnChangeHaunch();
+}
+
+void CSpecCreepPage::OnCbnSelchangeHaunchCompPropCb()
+{
+   OnChangeHaunch();
+}
+
+void CSpecCreepPage::OnChangeHaunch()
+{
+   CComboBox* pBox =(CComboBox*)GetDlgItem(IDC_HAUNCH_COMP_CB);
+   int idxl = pBox->GetCurSel();
+   BOOL enablel = idxl==(int)pgsTypes::hlcAccountForCamber;
+
+   GetDlgItem(IDC_HAUNCH_FACTOR)->EnableWindow(enablel);
+   GetDlgItem(IDC_HAUNCH_FACTOR1)->EnableWindow(enablel);
+   GetDlgItem(IDC_HAUNCH_FACTOR2)->EnableWindow(enablel);
+
+   pBox =(CComboBox*)GetDlgItem(IDC_HAUNCH_COMP_PROPS_CB);
+   int idxp = pBox->GetCurSel();
+   BOOL enablep = enablel || idxp==(int)pgsTypes::hspVariableParabolic;
+
+   GetDlgItem(IDC_HAUNCH_TOLER_STATIC)->EnableWindow(enablep);
+   GetDlgItem(IDC_HAUNCH_TOLER_UNIT)->EnableWindow(enablep);
+   GetDlgItem(IDC_HAUNCH_TOLER)->EnableWindow(enablep);
 }

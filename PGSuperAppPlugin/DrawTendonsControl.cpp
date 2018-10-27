@@ -35,6 +35,13 @@
 #include <PgsExt\SplicedGirderData.h>
 #include <PgsExt\PrecastSegmentData.h>
 
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
+
+
 // CDrawTendonsControl
 
 IMPLEMENT_DYNAMIC(CDrawTendonsControl, CWnd)

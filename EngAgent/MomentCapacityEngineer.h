@@ -159,9 +159,7 @@ private:
 
       pgsPointOfInterest m_Poi;
       pgsPointOfInterest m_PoiMidSpan;
-      GDRCONFIG m_Config;
-      GDRCONFIG m_CurrentConfig;
-      GDRCONFIG* m_pConfig;
+      const GDRCONFIG* m_pConfig;
       Float64 m_GirderLength;
       Float64 m_DistFromStart;
       bool m_bNearMidSpan;

@@ -473,8 +473,7 @@ private:
 
    void CheckLiveLoadDeflection(const CGirderKey& girderKey,pgsGirderArtifact* pGdrArtifact) const;
 
-      // Initialize the design artifact with a first guess of the design
-   // variables
+   // Initialize the design artifact with a first guess of the design variables
    void DesignMidZone(bool bUseCurrentStrands, const arDesignOptions& options,IProgress* pProgress) const;
    void DesignMidZoneInitialStrands(bool bUseCurrentStrands,IProgress* pProgress) const;
    void DesignSlabOffset(IProgress* pProgress) const;

@@ -403,6 +403,8 @@ rptChapter* CDeckElevationChapterBuilder::BuildNoDeck(CReportSpecification* pRpt
          Float64 angle;
          skewAngle->get_Value(&angle);
 
+         Float64 cos_angle = cos(angle);
+
 
          col = 0;
 
@@ -449,19 +451,19 @@ rptChapter* CDeckElevationChapterBuilder::BuildNoDeck(CReportSpecification* pRpt
 
             // compute location of left and right edge, using the direction of the "cut line"
             CComPtr<IPoint2d> point_on_left_edge;
-            pGeometry->ByDistDir(point_on_cl_girder, edge_offset[Left] / cos(angle), CComVariant(direction), 0, &point_on_left_edge);
+            pGeometry->ByDistDir(point_on_cl_girder, edge_offset[Left] / cos_angle, CComVariant(direction), 0, &point_on_left_edge);
 
             CComPtr<IPoint2d> point_on_right_edge;
-            pGeometry->ByDistDir(point_on_cl_girder, -edge_offset[Right] / cos(angle), CComVariant(direction), 0, &point_on_right_edge);
+            pGeometry->ByDistDir(point_on_cl_girder, -edge_offset[Right] / cos_angle, CComVariant(direction), 0, &point_on_right_edge);
 
             // get station and offset of left, center, and right locations
-            Float64 station[3], offset[3];
+            std::array<Float64,3> station, offset;
             pAlignment->GetStationAndOffset(pgsTypes::pcLocal, point_on_left_edge, &station[Left], &offset[Left]);
             pBridge->GetStationAndOffset(poi, &station[Center], &offset[Center]);
             pAlignment->GetStationAndOffset(pgsTypes::pcLocal, point_on_right_edge, &station[Right], &offset[Right]);
 
             // get parameters for finished elevation... for no deck, the finished elevation is the top of the girder
-            Float64 finished_elevation[3];
+            std::array<Float64,3> finished_elevation;
             pGirder->GetTopGirderElevation(poi, direction, &finished_elevation[Left], &finished_elevation[Center], &finished_elevation[Right]);
 
 

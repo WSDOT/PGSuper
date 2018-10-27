@@ -25,6 +25,12 @@
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
 
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
+
 CProductLoadMap::CProductLoadMap()
 {
    // These are the load names used in the LBAM model. Mapping the

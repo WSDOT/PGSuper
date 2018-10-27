@@ -728,12 +728,14 @@ void CLoadingDetailsChapterBuilder::ReportSlabLoad(rptChapter* pChapter,IBridge*
             row++;
          }
 
-         Float64 factor = pSpec->GetHaunchLoadCamberFactor();
+         if (report_camber)
+         {
+            Float64 factor = pSpec->GetHaunchLoadCamberFactor();
 
-         pNotePara = new rptParagraph;
-         *pChapter << pNotePara;
-         *pNotePara << _T("* Factor of ") << factor*100.0 << _T("% applied to assumed excess camber per project criteria");
-
+            pNotePara = new rptParagraph;
+            *pChapter << pNotePara;
+            *pNotePara << _T("* Factor of ") << factor*100.0 << _T("% applied to assumed excess camber per project criteria");
+         }
       }
    } // end if ( pBridge->GetDeckType() != pgsTypes::sdtNone )
 }
@@ -2099,7 +2101,7 @@ void CLoadingDetailsChapterBuilder::ReportEquivPretensionLoads(rptChapter* pChap
    GET_IFACE2(pBroker,IProductLoads,pProductLoads);
    GET_IFACE2_NOCHECK(pBroker, IBridgeDescription, pIBridgeDesc);
 
-   bool bHasAsymmetricGirders = pBridge->HasAsymmetricGirders();
+   bool bHasAsymmetricGirders = pBridge->HasAsymmetricGirders() || pBridge->HasAsymmetricPrestressing();
 
    INIT_UV_PROTOTYPE( rptLengthUnitValue,         loc,    pDisplayUnits->GetSpanLengthUnit(),     true );
    INIT_UV_PROTOTYPE( rptMomentUnitValue,         moment, pDisplayUnits->GetMomentUnit(),         true );

@@ -52,6 +52,13 @@
 
 #include <iterator>
 #include <algorithm>
+#include <numeric>
+
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
 
 
 #if defined _DEBUG
@@ -1635,7 +1642,7 @@ std::vector<Float64> CGirderModelManager::GetDeflection(IntervalIndexType interv
 
       ATLASSERT(IsEqual(Dy,Dyr));
 
-      if ( pfType == pgsTypes::pftGirder && resultsType == rtCumulative )
+      if (pfType == pgsTypes::pftPretension || (pfType == pgsTypes::pftGirder && resultsType == rtCumulative))
       {
          if (segmentKey != lastSegmentKey)
          {
@@ -1766,8 +1773,8 @@ std::vector<Float64> CGirderModelManager::GetRotation(IntervalIndexType interval
    }
 
    CSegmentKey lastSegmentKey;
-   Float64 Ec = -9999999999;
-   Float64 Eci = -99999999999;
+   Float64 IxEc = -9999999999;
+   Float64 IxEci = -99999999999;
    IndexType idx = 0;
    for ( const pgsPointOfInterest& poi : vPoi)
    {
@@ -1782,15 +1789,36 @@ std::vector<Float64> CGirderModelManager::GetRotation(IntervalIndexType interval
 
       ATLASSERT(IsEqual(Rz,Rzr));
 
-      if ( pfType == pgsTypes::pftGirder && resultsType == rtCumulative )
+      if ( pfType == pgsTypes::pftPretension || (pfType == pgsTypes::pftGirder && resultsType == rtCumulative) )
       {
          if (segmentKey != lastSegmentKey)
          {
             // only need to update this when the segment key changes
             IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
             IntervalIndexType erectionIntervalIdx = pIntervals->GetErectSegmentInterval(segmentKey);
-            Eci = pMaterials->GetSegmentEc(segmentKey, releaseIntervalIdx);
-            Ec = pMaterials->GetSegmentEc(segmentKey, erectionIntervalIdx);
+            Float64 Eci = pMaterials->GetSegmentEc(segmentKey, releaseIntervalIdx);
+            Float64 Ec = pMaterials->GetSegmentEc(segmentKey, erectionIntervalIdx);
+
+            // section properties in the LBAM are based on mid-span of the erected segment
+            PoiList vMyPoi;
+            pPoi->GetPointsOfInterest(segmentKey, POI_ERECTED_SEGMENT | POI_5L, &vMyPoi);
+            ATLASSERT(vMyPoi.size() == 1);
+            const pgsPointOfInterest& spPoi = vMyPoi.front();
+            ATLASSERT(spPoi.IsMidSpan(POI_ERECTED_SEGMENT));
+
+            // section properties at release
+            Float64 Ixxr = pSectProps->GetIxx(releaseIntervalIdx, spPoi);
+            Float64 Iyyr = pSectProps->GetIyy(releaseIntervalIdx, spPoi);
+            Float64 Ixyr = pSectProps->GetIxy(releaseIntervalIdx, spPoi);
+
+            // section properties at erection
+            Float64 Ixxe = pSectProps->GetIxx(erectionIntervalIdx, spPoi);
+            Float64 Iyye = pSectProps->GetIyy(erectionIntervalIdx, spPoi);
+            Float64 Ixye = pSectProps->GetIxy(erectionIntervalIdx, spPoi);
+
+            IxEci = Eci*(Ixxr*Iyyr - Ixyr*Ixyr) / Ixxr;
+            IxEc = Ec*(Ixxe*Iyye - Ixye*Ixye) / Ixxe;
+
             lastSegmentKey = segmentKey;
          }
 
@@ -1801,8 +1829,8 @@ std::vector<Float64> CGirderModelManager::GetRotation(IntervalIndexType interval
          inc_result->get_ZRight(&Rzrinc);
          ATLASSERT(IsEqual(Rzinc,Rzrinc));
 
-         Rz *= (Ec/Eci);
-         Rz += (1 - Ec/Eci)*Rzinc;
+         Rz *= (IxEc/IxEci);
+         Rz += (1 - IxEc/IxEci)*Rzinc;
       }
 
       results.push_back(Rz);
@@ -14971,7 +14999,6 @@ void CGirderModelManager::GetMainSpanSlabLoadEx(const CSegmentKey& segmentKey, b
    GET_IFACE(IGirder, pGirder);
    GET_IFACE(IMaterials,pMaterial);
    GET_IFACE(IPointOfInterest,pPoi);
-   GET_IFACE(ISectionProperties,pSectProp);
    GET_IFACE(ISpecification, pSpec );
    GET_IFACE(IRoadway, pAlignment);
 
@@ -15020,7 +15047,7 @@ void CGirderModelManager::GetMainSpanSlabLoadEx(const CSegmentKey& segmentKey, b
    const pgsPointOfInterest& poi_mid(vSupPoi[1]);
    const pgsPointOfInterest& poi_right(vSupPoi.back());
 
-   if (pSpec->IsAssExcessCamberInputEnabled())
+   if (pSpec->IsAssExcessCamberForLoad())
    {
 #pragma Reminder("UPDATE: assuming precast girder bridge - Note that time-dependent analyses only use the zero camber approach below")
       // Shape of girder is assumed to follow the fillet dimension. Assume parabolic shape with zero at supports and
@@ -15144,6 +15171,7 @@ void CGirderModelManager::GetMainSpanSlabLoadEx(const CSegmentKey& segmentKey, b
       }
       else
       {
+         GET_IFACE(ISectionProperties, pSectProp);
          trib_slab_width = pSectProp->GetTributaryFlangeWidth(poi);
       }
 
@@ -17511,37 +17539,55 @@ void CGirderModelManager::GetStress(IntervalIndexType intervalIdx,const pgsPoint
    pgsTypes::IntervalTimeType timeType (spMode == pgsTypes::spmGross ? pgsTypes::End : pgsTypes::Start);
 
    bool bIncTempStrands = (intervalIdx < tsRemovalIntervalIdx) ? true : false;
-   Float64 P;
+
+   // NOTE: We can't use the eccentricity of the total strands. The eccentricity given is the geometric
+   // centroid of the strands. We need the location of the resultant prestress force.
+   // This is why we are computing the eccentricty below, rather than just getting it.
+   std::array<Float64, 3> P{ 0,0,0 };
    if ( intervalIdx < liveLoadIntervalIdx )
    {
-      P = pPsForce->GetPrestressForce(poi,pgsTypes::Permanent,intervalIdx,timeType);
+      P[pgsTypes::Straight] = pPsForce->GetPrestressForce(poi, pgsTypes::Straight, intervalIdx, timeType);
+      P[pgsTypes::Harped] = pPsForce->GetPrestressForce(poi, pgsTypes::Harped, intervalIdx, timeType);
+
       if ( bIncTempStrands )
       {
-        P += pPsForce->GetPrestressForce(poi,pgsTypes::Temporary,intervalIdx,timeType);
+         P[pgsTypes::Temporary] = pPsForce->GetPrestressForce(poi, pgsTypes::Temporary, intervalIdx, timeType);
       }
    }
    else
    {
       if ( bIncludeLiveLoad )
       {
-         P = pPsForce->GetPrestressForceWithLiveLoad(poi,pgsTypes::Permanent, myLimitState, vehicleIdx);
+         P[pgsTypes::Straight] = pPsForce->GetPrestressForceWithLiveLoad(poi, pgsTypes::Straight, myLimitState, vehicleIdx);
+         P[pgsTypes::Harped]   = pPsForce->GetPrestressForceWithLiveLoad(poi, pgsTypes::Harped,   myLimitState, vehicleIdx);
       }
       else
       {
-         P = pPsForce->GetPrestressForce(poi,pgsTypes::Permanent,intervalIdx,timeType);
+         P[pgsTypes::Straight] = pPsForce->GetPrestressForce(poi, pgsTypes::Straight, intervalIdx, timeType);
+         P[pgsTypes::Harped]   = pPsForce->GetPrestressForce(poi, pgsTypes::Harped, intervalIdx, timeType);
       }
 
       if ( bIncTempStrands )
       {
-         P += pPsForce->GetPrestressForceWithLiveLoad(poi,pgsTypes::Temporary, myLimitState);
+         P[pgsTypes::Temporary] += pPsForce->GetPrestressForceWithLiveLoad(poi,pgsTypes::Temporary, myLimitState);
       }
    }
 
+   std::array<Float64, 3> ex{ 0,0,0 }, ey{ 0,0,0 };
    Float64 nSEffective;
-   Float64 ex, ey;
-   pStrandGeom->GetEccentricity( releaseIntervalIdx, poi, bIncTempStrands, &nSEffective, &ex, &ey);
-   *pfTop = GetStress(releaseIntervalIdx,poi,topLoc,P,ex,ey);
-   *pfBot = GetStress(releaseIntervalIdx,poi,botLoc,P,ex,ey);
+   pStrandGeom->GetEccentricity(releaseIntervalIdx, poi, pgsTypes::Straight, &nSEffective, &ex[pgsTypes::Straight], &ey[pgsTypes::Straight]);
+   pStrandGeom->GetEccentricity(releaseIntervalIdx, poi, pgsTypes::Harped, &nSEffective, &ex[pgsTypes::Harped], &ey[pgsTypes::Harped]);
+   pStrandGeom->GetEccentricity(releaseIntervalIdx, poi, pgsTypes::Temporary, &nSEffective, &ex[pgsTypes::Temporary], &ey[pgsTypes::Temporary]);
+
+   Float64 Pps = std::accumulate(std::cbegin(P), std::cend(P), 0.0);
+   Float64 PpsEx = std::inner_product(std::cbegin(P),std::cend(P),std::cbegin(ex),0.0);
+   Float64 PpsEy = std::inner_product(std::cbegin(P), std::cend(P), std::cbegin(ey), 0.0);
+
+   Float64 Ex = IsZero(Pps) ? 0 : PpsEx / Pps;
+   Float64 Ey = IsZero(Pps) ? 0 : PpsEy / Pps;
+
+   *pfTop = GetStress(releaseIntervalIdx,poi,topLoc,Pps,Ex,Ey);
+   *pfBot = GetStress(releaseIntervalIdx,poi,botLoc,Pps,Ex,Ey);
 }
 
 Float64 CGirderModelManager::GetStress(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::StressLocation stressLocation,Float64 P,Float64 ex,Float64 ey) const
@@ -17557,7 +17603,7 @@ Float64 CGirderModelManager::GetStress(IntervalIndexType intervalIdx,const pgsPo
    Float64 Ca, Cbx, Cby;
    pSectProp->GetStressCoefficients(intervalIdx, poi, stressLocation, nullptr, &Ca, &Cbx, &Cby);
 
-   Float64 f = -P*Ca - P*ey*Cbx - P*ex*Cby;
+   Float64 f = -P*(Ca + ey*Cbx + ex*Cby);
 
    return f;
 }

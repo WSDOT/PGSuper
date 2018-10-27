@@ -65,7 +65,7 @@ public:
    Float64 GetVehicleWeight() const;
 
    void SetVehicleName(LPCTSTR str);
-   std::_tstring GetVehicleName() const;
+   const std::_tstring& GetVehicleName() const;
 
    Float64 GetResistance() const;
 

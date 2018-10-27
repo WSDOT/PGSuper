@@ -28,14 +28,23 @@
 #include "PGSuperColors.h"
 #include "DrawStrandControl.h"
 
+#include <GenericBridge\Helpers.h>
+
 #include <PgsExt\SplicedGirderData.h>
 #include <IFace\Bridge.h>
+#include <IFace\Intervals.h>
 
 #include <IFace\BeamFactory.h>
 #include <PsgLib\GirderLibraryEntry.h>
 
 
 // CDrawStrandControl
+
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
 
 IMPLEMENT_DYNAMIC(CDrawStrandControl, CWnd)
 
@@ -63,24 +72,18 @@ void CDrawStrandControl::CustomInit(const CPrecastSegmentData* pSegment,const CS
    m_Shape[pgsTypes::metStart].Release();
    m_Shape[pgsTypes::metEnd].Release();
    m_Profile.Release();
-   m_BottomFlange.Release();
+   m_BottomFlangeProfile.Release();
 
    m_pSegment = pSegment;
    m_pStrands = pStrands;
 
-   m_Radius = ::ConvertToSysUnits(0.3,unitMeasure::Inch) * 1.5;
+   m_Xoffset[pgsTypes::metStart] = 0;
+   m_Xoffset[pgsTypes::metEnd] = 0;
 
    // Gets the segment height based on the data in the girder library entry
    const GirderLibraryEntry* pGdrEntry = m_pSegment->GetGirder()->GetGirderLibraryEntry();
    CComPtr<IBeamFactory> factory;
    pGdrEntry->GetBeamFactory(&factory);
-
-   Float64 HbfStart(-1), HbfEnd(-1);
-   if ( m_pSegment->IsVariableBottomFlangeDepthEnabled() )
-   {
-      HbfStart = m_pSegment->GetVariationBottomFlangeDepth(pgsTypes::sztLeftPrismatic);
-      HbfEnd   = m_pSegment->GetVariationBottomFlangeDepth(pgsTypes::sztRightPrismatic);
-   }
 
    switch (m_pSegment->GetVariationType() )
    {
@@ -111,34 +114,51 @@ void CDrawStrandControl::CustomInit(const CPrecastSegmentData* pSegment,const CS
       ATLASSERT(false); // is there a new variation type?
    }
 
+   if (m_pSegment->TopFlangeThickeningType != pgsTypes::tftNone)
+   {
+      // Add the top flange thickening to the overall depth of the girder
+      m_Hg += m_pSegment->TopFlangeThickening;
+   }
+
+   // add in precamber to the overall height
+   m_Hg += m_pSegment->Precamber;
+
+   // Get the end view cross section shapes of the segment
+   const CSegmentKey& segmentKey(pSegment->GetSegmentKey());
 
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
-   CComPtr<IGirderSection> startGdrSection;
-   factory->CreateGirderSection(pBroker,INVALID_ID,pGdrEntry->GetDimensions(),m_HgStart,HbfStart,&startGdrSection);
 
-   CComPtr<IGirderSection> endGdrSection;
-   factory->CreateGirderSection(pBroker,INVALID_ID,pGdrEntry->GetDimensions(),m_HgEnd,HbfEnd,&endGdrSection);
+   GET_IFACE2(pBroker, IPointOfInterest, pPoi);
+   PoiList vPoi;
+   pPoi->GetPointsOfInterest(segmentKey, POI_0L | POI_10L | POI_RELEASED_SEGMENT, &vPoi);
+   ATLASSERT(vPoi.size() == 2);
+   const pgsPointOfInterest& startPoi(vPoi.front());
+   const pgsPointOfInterest& endPoi(vPoi.back());
 
-   startGdrSection->QueryInterface(&m_Shape[pgsTypes::metStart]);
-   endGdrSection->QueryInterface(&m_Shape[pgsTypes::metEnd]);
+   GET_IFACE2(pBroker, IShapes, pShapes);
+   pShapes->GetSegmentShape(pSegment,startPoi.GetDistFromStart(), pgsTypes::sbRight, &m_Shape[pgsTypes::metStart]);
+   pShapes->GetSegmentShape(pSegment,endPoi.GetDistFromStart(), pgsTypes::sbLeft, &m_Shape[pgsTypes::metEnd]);
 
-   // Put the shapes in Girder Section Coordinates
-   CComQIPtr<IXYPosition> position(m_Shape[pgsTypes::metStart]);
-   CComPtr<IPoint2d> pntTC;
-   position->get_LocatorPoint(lpTopCenter,&pntTC);
-   pntTC->Move(0,0);
-   position->put_LocatorPoint(lpTopCenter,pntTC);
+   // If the girder is asymmetric, compute the horizontal offset for the strand positions
+   for (int i = 0; i < 2; i++)
+   {
+      pgsTypes::MemberEndType endType = (pgsTypes::MemberEndType)(i);
+      CComQIPtr<IAsymmetricSection> asymmetric(m_Shape[endType]);
+      if (asymmetric)
+      {
+         Float64 wLeft, wRight;
+         asymmetric->GetTopWidth(&wLeft, &wRight);
+         m_Xoffset[endType] = 0.5*(wRight - wLeft);
+      }
+   }
 
-   position.Release();
-   pntTC.Release();
+   // Create the profiles
+   CreateSegmentProfiles(&m_Profile,&m_BottomFlangeProfile);
 
-   m_Shape[pgsTypes::metEnd].QueryInterface(&position);
-   position->get_LocatorPoint(lpTopCenter,&pntTC);
-   pntTC->Move(0,0);
-   position->put_LocatorPoint(lpTopCenter,pntTC);
-
-   CreateSegmentShape(&m_Profile,&m_BottomFlange);
+   // capture segment length for use later
+   GET_IFACE2(pBroker, IBridge, pBridge);
+   m_SegmentLength = pBridge->GetSegmentLength(segmentKey);
 }
 
 BOOL CDrawStrandControl::OnEraseBkgnd(CDC* pDC)
@@ -175,7 +195,7 @@ void CDrawStrandControl::OnPaint()
    //
    // Set up coordinate mapping
    //
-   gpRect2d box[2];
+   std::array<gpRect2d,2> box;
    for ( int i = 0; i < 2; i++ )
    {
       pgsTypes::MemberEndType end = pgsTypes::MemberEndType(i);
@@ -188,8 +208,18 @@ void CDrawStrandControl::OnPaint()
       bounding_box->get_Bottom(&bottom);
 
       box[end].Set(left,bottom,right,top);
-      box[end].Bottom() = box[end].Top() - m_Hg;
    }
+
+   CComPtr<IRect2d> bounding_box;
+   m_Profile->get_BoundingBox(&bounding_box);
+   Float64 left, right, top, bottom;
+   bounding_box->get_Left(&left);
+   bounding_box->get_Right(&right);
+   bounding_box->get_Top(&top);
+   bounding_box->get_Bottom(&bottom);
+
+   gpRect2d profileBox;
+   profileBox.Set(left, bottom, right, top);
 
    CRect rClient;
    GetClientRect(&rClient);
@@ -200,40 +230,87 @@ void CDrawStrandControl::OnPaint()
    CRect rRight(rClient.right - (LONG)((Float64)(rClient.Height())*aspect_ratio), rClient.top, rClient.right, rClient.bottom);
    CRect rCenter(rLeft.right,rClient.top,rRight.left,rClient.bottom);
 
+
+   // determine of the profile shape has an upward or downward curve
+   // due to precamber or top flange thickening
+   Float64 precamber = m_pSegment->Precamber;
+   Float64 thickening = 0;
+   switch (m_pSegment->TopFlangeThickeningType)
+   {
+   case pgsTypes::tftNone:
+      break;
+   case pgsTypes::tftEnds:
+      thickening = -m_pSegment->TopFlangeThickening;
+      break;
+   case pgsTypes::tftMiddle:
+      thickening = m_pSegment->TopFlangeThickening;
+      break;
+   default:
+      ATLASSERT(false);
+   }
+
+   bool bDoesProfileCurveUpwards = (0 < (precamber + thickening) ? true : false);
+
+   Float64 wy = Max(box[etStart].Height(), box[etEnd].Height(), profileBox.Height());
+   Float64 woy;
+   if (bDoesProfileCurveUpwards)
+   {
+      woy = Max(box[etStart].Bottom(), box[etEnd].Bottom(), profileBox.Bottom());
+   }
+   else
+   {
+      woy = Min(box[etStart].Top(), box[etEnd].Top(), profileBox.Top());
+   }
+
    grlibPointMapper leftMapper;
    leftMapper.SetMappingMode(grlibPointMapper::Isotropic);
-   leftMapper.SetWorldExt(box[pgsTypes::metStart].Size());
-   leftMapper.SetWorldOrg(box[pgsTypes::metStart].TopLeft());
-   leftMapper.SetDeviceExt(rLeft.Size().cx,rLeft.Size().cy);
-   leftMapper.SetDeviceOrg(rLeft.left,rLeft.top);
+   leftMapper.SetWorldExt(box[pgsTypes::metStart].Width(),wy);
+   leftMapper.SetDeviceExt(rLeft.Size().cx, rLeft.Size().cy);
+   leftMapper.SetWorldOrg(box[pgsTypes::metStart].Left(), woy);
+   if (bDoesProfileCurveUpwards)
+   {
+      leftMapper.SetDeviceOrg(rLeft.left, rLeft.bottom);
+   }
+   else
+   {
+      leftMapper.SetDeviceOrg(rLeft.left, rLeft.top);
+   }
 
+   // we want an end face view at the right end
+   // since all the section cuts are looking ahead on the girder
+   // we need to mirror the shape... we can do this through
+   // the point mapper
    grlibPointMapper rightMapper;
    rightMapper.SetMappingMode(grlibPointMapper::Isotropic);
-   rightMapper.SetWorldExt(box[pgsTypes::metEnd].Size());
+   rightMapper.SetWorldExt(box[pgsTypes::metEnd].Width(),wy);
    rightMapper.SetWorldOrg(box[pgsTypes::metEnd].TopRight());
-   rightMapper.SetDeviceExt(rRight.Size().cx,rRight.Size().cy);
-   rightMapper.SetDeviceOrg(rRight.right,rRight.top);
-
-   CComPtr<IRect2d> bounding_box;
-   m_Profile->get_BoundingBox(&bounding_box);
-   Float64 left,right,top,bottom;
-   bounding_box->get_Left(&left);
-   bounding_box->get_Right(&right);
-   bounding_box->get_Top(&top);
-   bounding_box->get_Bottom(&bottom);
+   rightMapper.SetDeviceExt(-rRight.Size().cx, rRight.Size().cy); // use -cx to mirror the shape (mirrors about the right edge)
+   rightMapper.SetWorldOrg(box[pgsTypes::metEnd].Right(), woy);
+   if (bDoesProfileCurveUpwards)
+   {
+      rightMapper.SetDeviceOrg(rRight.left, rRight.bottom); // maps the right world point to the left device point (translates the shape back into position)
+   }
+   else
+   {
+      rightMapper.SetDeviceOrg(rRight.left, rRight.top); // maps the right world point to the left device point (translates the shape back into position)
+   }
 
    m_SegmentXLeft = left;
-
-   gpRect2d profileBox;
-   profileBox.Set(left,bottom,right,top);
 
    UINT buffer = 10;
    grlibPointMapper centerMapper;
    centerMapper.SetMappingMode(grlibPointMapper::Anisotropic);
-   centerMapper.SetWorldExt(profileBox.Size());
-   centerMapper.SetWorldOrg(profileBox.TopLeft());
-   centerMapper.SetDeviceExt(rCenter.Size().cx-buffer,rCenter.Size().cy);
-   centerMapper.SetDeviceOrg(rCenter.left+buffer/2,rCenter.top);
+   centerMapper.SetWorldExt(profileBox.Width(),wy);
+   centerMapper.SetDeviceExt(rCenter.Size().cx - buffer, rCenter.Size().cy);
+   centerMapper.SetWorldOrg(profileBox.Left(), woy);
+   if (bDoesProfileCurveUpwards)
+   {
+      centerMapper.SetDeviceOrg(rCenter.left + buffer / 2, rCenter.bottom);
+   }
+   else
+   {
+      centerMapper.SetDeviceOrg(rCenter.left + buffer / 2, rCenter.top);
+   }
 
    CPen pen(PS_SOLID,1,SEGMENT_BORDER_COLOR);
    CBrush brush(SEGMENT_FILL_COLOR);
@@ -243,17 +320,17 @@ void CDrawStrandControl::OnPaint()
 
    DrawShape(&dc,leftMapper, m_Shape[pgsTypes::metStart]);
    DrawShape(&dc,centerMapper,m_Profile);
-   Draw(&dc,centerMapper,m_BottomFlange,FALSE);
+   Draw(&dc,centerMapper,m_BottomFlangeProfile,FALSE);
    DrawShape(&dc,rightMapper,m_Shape[pgsTypes::metEnd]);
 
-   DrawStrands(&dc,leftMapper,centerMapper,rightMapper);
+   DrawStrands(&dc, leftMapper,centerMapper,rightMapper);
 
    // Clean up
    dc.SelectObject(pOldPen);
    dc.SelectObject(pOldBrush);
 }
 
-void CDrawStrandControl::CreateSegmentShape(IShape** ppShape,IPoint2dCollection** ppPoints)
+void CDrawStrandControl::CreateSegmentProfiles(IShape** ppShape,IPoint2dCollection** ppPoints)
 {
    const CSplicedGirderData* pSplicedGirder = m_pSegment->GetGirder();
    CSegmentKey segmentKey(m_pSegment->GetSegmentKey());
@@ -263,9 +340,6 @@ void CDrawStrandControl::CreateSegmentShape(IShape** ppShape,IPoint2dCollection*
    GET_IFACE2(pBroker,IGirder,pGirder);
    pGirder->GetSegmentProfile(segmentKey,pSplicedGirder,false/*don't include closure joint*/,ppShape);
    pGirder->GetSegmentBottomFlangeProfile(segmentKey,pSplicedGirder,false/*don't include closure joint*/,ppPoints);
-
-   GET_IFACE2(pBroker,IBridge,pBridge);
-   m_SegmentLength = pBridge->GetSegmentLength(segmentKey);
 }
 
 void CDrawStrandControl::DrawShape(CDC* pDC,grlibPointMapper& mapper,IShape* pShape)
@@ -313,12 +387,13 @@ void CDrawStrandControl::Draw(CDC* pDC,grlibPointMapper& mapper,IPoint2dCollecti
    delete[] dev_points;
 }
 
-void CDrawStrandControl::DrawStrands(CDC* pDC,grlibPointMapper& leftMapper,grlibPointMapper& centerMapper,grlibPointMapper& rightMapper)
+void CDrawStrandControl::DrawStrands(CDC* pDC, grlibPointMapper& leftMapper,grlibPointMapper& centerMapper,grlibPointMapper& rightMapper)
 {
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
    GET_IFACE2_NOCHECK(pBroker,IGirder,pGirder);
    GET_IFACE2_NOCHECK(pBroker,IPointOfInterest,pPoi);
+   GET_IFACE2_NOCHECK(pBroker, IStrandGeometry, pStrandGeom);
 
    CPen strandPen(PS_SOLID,1,STRAND_BORDER_COLOR);
    CBrush strandBrush(STRAND_FILL_COLOR);
@@ -332,189 +407,232 @@ void CDrawStrandControl::DrawStrands(CDC* pDC,grlibPointMapper& leftMapper,grlib
    CPen debondedPen(PS_SOLID,1,DEBOND_FILL_COLOR);
    CBrush debondedBrush(DEBOND_FILL_COLOR);
 
+   CPen errorPen(PS_SOLID, 1, RED);
+   CBrush errorBrush(RED);
 
-   const CStrandRowCollection& strandRows = m_pStrands->GetStrandRows();
-   CStrandRowCollection::const_iterator iter(strandRows.begin());
-   CStrandRowCollection::const_iterator iterEnd(strandRows.end());
-   for ( ; iter != iterEnd; iter++ )
+   std::array<Float64, 4> Xs; // harp point locations in segment coordinates
+   std::array<Float64, 4> Xgp; // harp point locations in girder path coordinates
+   m_pStrands->GetHarpPoints(&Xs[ZoneBreakType::Start], &Xs[ZoneBreakType::LeftBreak], &Xs[ZoneBreakType::RightBreak], &Xs[ZoneBreakType::End]);
+   for (auto i = 0; i < 4; i++)
    {
-      const CStrandRow& strandRow(*iter);
-      GridIndexType nGridPoints = strandRow.m_nStrands/2; // strand grid is only half the full grid (just the grid on the positive X side)
+      if (Xs[i] < 0)
+      {
+         // fractional measure
+         if (Xs[i] < -1)
+         {
+            // fractional length can't be more than 100%
+            // this is probably a case where the user changed the unit of measure to % and hasn't updated the input value yet
+            // just turn this into a direct value input and proceed. The grid validation will balk at the bad input
+            Xs[i] *= -1;
+         }
+         else
+         {
+            Xs[i] *= -1.0*m_SegmentLength;
+         }
+      }
+
+      Xgp[i] = pPoi->ConvertSegmentCoordinateToSegmentPathCoordinate(m_pSegment->GetSegmentKey(), Xs[i]);
+      Xgp[i] = pPoi->ConvertSegmentPathCoordinateToGirderPathCoordinate(m_pSegment->GetSegmentKey(), Xgp[i]);
+   }
+
+   CStrandData::StrandDefinitionType strandDefinitionType = m_pStrands->GetStrandDefinitionType();
+
+   std::array<StrandIndexType, 3> strandIdx{ 0,0,0 };
+   const auto& strandRows = m_pStrands->GetStrandRows();
+   for( const auto& strandRow : strandRows)
+   {
+      GridIndexType nGridPoints = strandRow.m_nStrands/2; // strand grid is only half the full grid (just compute points for the grid on the positive X side)
       if ( ::IsOdd(strandRow.m_nStrands) )
       {
          nGridPoints++;
       }
 
-      Float64 Xi = strandRow.m_InnerSpacing/2; // distance from CL Girder to first strand
-
-      // grid points are in Girder Section Coordinates (0,0 is at the top center of the girder)
-      // Y is measured positive up and negative down
-      Float64 Z[4], Y[4];
-      for ( int i = 0; i < 4; i++ )
+      if (strandDefinitionType == CStrandData::sdtDirectStrandInput)
       {
-         Z[i] = strandRow.m_X[i];
-         if ( Z[i] < 0 )
-         {
-            // fractional measure
-            if ( Z[i] < -1 )
-            {
-               // fractional length can't be more than 100%
-               // this is probably a case where the user changed the unit of measure to % and hasn't updated the input value yet
-               // just turn this into a direct value input and proceed. The grid validation will balk at the bad input
-               Z[i] *= -1;
-            }
-            else
-            {
-               Z[i] *= -1.0*m_SegmentLength;
-            }
-         }
-
-         Y[i] = strandRow.m_Y[i];
-         if ( strandRow.m_Face[i] == pgsTypes::TopFace )
-         {
-            // measured down from top of girder... this is negatve in Girder Section Coordinates
-            Y[i] *= -1;
-         }
-         else
-         {
-            // adjust to be measured from to of girder
-            Float64 Xsp = pPoi->ConvertSegmentCoordinateToSegmentPathCoordinate(m_pSegment->GetSegmentKey(),Z[i]);
-            Float64 Hg = pGirder->GetSegmentHeight(m_pSegment->GetSegmentKey(),m_pSegment->GetGirder(),Xsp);
-            Y[i] -= Hg;
-         }
-
-         Z[i] = pPoi->ConvertSegmentCoordinateToSegmentPathCoordinate(m_pSegment->GetSegmentKey(),Z[i]);
-         Z[i] = pPoi->ConvertSegmentPathCoordinateToGirderPathCoordinate(m_pSegment->GetSegmentKey(),Z[i]);
+         // direct strand input is for individual strands so there is only one point to draw
+         nGridPoints = 1;
       }
 
+      Float64 Xi = strandRow.m_Z; // distance from CL Girder to strand 
+      if (m_pStrands->GetStrandDefinitionType() == CStrandData::sdtDirectRowInput)
+      {
+         // strands are in rows so Z (aka Xi) is the inner row spacing
+         // divide it by 2 to get distance from CL to strand
+         ATLASSERT(0 <= strandRow.m_Z);
+         Xi /= 2;
+      }
+
+      // grid points are in Girder Section Coordinates (Y = 0 is at the top of the girder)
+      // Y is measured positive up and negative down
+      std::array<Float64, 4> Xhp, Y;
+      pStrandGeom->ResolveStrandRowElevations(m_pSegment, strandRow, Xhp, Y);
+
+      LONG diameter = 2;
+      LONG radius = diameter / 2;
       CSize minStrandSize(2,2);
-      for ( GridIndexType gridPointIdx = 0; gridPointIdx < nGridPoints; gridPointIdx++ )
+      for (GridIndexType gridPointIdx = 0; gridPointIdx < nGridPoints; gridPointIdx++)
       {
          Float64 X = Xi + gridPointIdx*strandRow.m_Spacing;
 
-         LONG dx,dy;
+         StrandIndexType nStrandsPerGridPoint = 1;
+         if (strandDefinitionType == CStrandData::sdtDirectRowInput && !IsZero(strandRow.m_Z))
+         {
+            nStrandsPerGridPoint = 2;
+         }
+
+
+         LONG dx, dy;
 
          // Draw in left end
-         CRect rect;
-         leftMapper.WPtoDP(X-m_Radius,Y[LOCATION_START]-m_Radius,&rect.left,&rect.top); 
-         leftMapper.WPtoDP(X+m_Radius,Y[LOCATION_START]-m_Radius,&rect.right,&rect.top); 
-         leftMapper.WPtoDP(X-m_Radius,Y[LOCATION_START]+m_Radius,&rect.left,&rect.bottom); 
-         leftMapper.WPtoDP(X+m_Radius,Y[LOCATION_START]+m_Radius,&rect.right,&rect.bottom); 
-         
+         CPoint point;
+         leftMapper.WPtoDP(X - m_Xoffset[pgsTypes::metStart], Y[ZoneBreakType::Start], &point.x, &point.y);
+         point.Offset(-radius, -radius);
+         CRect rect(point,CSize(diameter,diameter));
+
          rect.NormalizeRect();
-         if ( rect.Width() < minStrandSize.cx || rect.Height() < minStrandSize.cy )
+         if (rect.Width() < minStrandSize.cx || rect.Height() < minStrandSize.cy)
          {
-            rect.InflateRect(minStrandSize.cx-rect.Width(),minStrandSize.cy-rect.Height());
+            rect.InflateRect(minStrandSize.cx - rect.Width(), minStrandSize.cy - rect.Height());
          }
 
-         if ( strandRow.m_bIsExtendedStrand[pgsTypes::metStart] )
+         if (strandDefinitionType == CStrandData::sdtDirectRowInput && IsOdd(strandRow.m_nStrands) && !IsZero(strandRow.m_Z))
          {
-            pDC->SelectObject(&extendedPen);
-            pDC->SelectObject(&extendedBrush);
-         }
-         else if ( strandRow.m_bIsDebonded[pgsTypes::metStart] )
-         {
-            pDC->SelectObject(&debondedPen);
-            pDC->SelectObject(&debondedBrush);
+            // m_Z must be zero if nStrands is odd
+            pDC->SelectObject(&errorPen);
+            pDC->SelectObject(&errorBrush);
          }
          else
          {
-            pDC->SelectObject(strandRow.m_StrandType == pgsTypes::Temporary ? &tempStrandPen : &strandPen);
-            pDC->SelectObject(strandRow.m_StrandType == pgsTypes::Temporary ? &tempStrandBrush : &strandBrush);
+            if (strandRow.m_bIsExtendedStrand[pgsTypes::metStart])
+            {
+               pDC->SelectObject(&extendedPen);
+               pDC->SelectObject(&extendedBrush);
+            }
+            else if (strandRow.m_bIsDebonded[pgsTypes::metStart])
+            {
+               pDC->SelectObject(&debondedPen);
+               pDC->SelectObject(&debondedBrush);
+            }
+            else
+            {
+               pDC->SelectObject(strandRow.m_StrandType == pgsTypes::Temporary ? &tempStrandPen : &strandPen);
+               pDC->SelectObject(strandRow.m_StrandType == pgsTypes::Temporary ? &tempStrandBrush : &strandBrush);
+            }
          }
 
          pDC->Ellipse(&rect);
 
-         leftMapper.WPtoDP(-X-m_Radius,Y[LOCATION_START]-m_Radius,&rect.left,&rect.top); 
-         leftMapper.WPtoDP(-X+m_Radius,Y[LOCATION_START]-m_Radius,&rect.right,&rect.top); 
-         leftMapper.WPtoDP(-X-m_Radius,Y[LOCATION_START]+m_Radius,&rect.left,&rect.bottom); 
-         leftMapper.WPtoDP(-X+m_Radius,Y[LOCATION_START]+m_Radius,&rect.right,&rect.bottom); 
-         
-         rect.NormalizeRect();
-         if ( rect.Width() < minStrandSize.cx || rect.Height() < minStrandSize.cy )
+         if (strandDefinitionType == CStrandData::sdtDirectRowInput)
          {
-            rect.InflateRect(minStrandSize.cx-rect.Width(),minStrandSize.cy-rect.Height());
-         }
+            // strands are in rows, so draw the mirrored strand
+            leftMapper.WPtoDP(-X - m_Xoffset[pgsTypes::metStart], Y[ZoneBreakType::Start], &point.x, &point.y);
+            point.Offset(-radius, -radius);
+            rect = CRect(point, CSize(diameter, diameter));
 
-         pDC->Ellipse(&rect);
+            rect.NormalizeRect();
+            if (rect.Width() < minStrandSize.cx || rect.Height() < minStrandSize.cy)
+            {
+               rect.InflateRect(minStrandSize.cx - rect.Width(), minStrandSize.cy - rect.Height());
+            }
+
+            pDC->Ellipse(&rect);
+         }
 
 
          // Draw in right end
-         rightMapper.WPtoDP(X-m_Radius,Y[LOCATION_END]-m_Radius,&rect.left,&rect.top); 
-         rightMapper.WPtoDP(X+m_Radius,Y[LOCATION_END]-m_Radius,&rect.right,&rect.top); 
-         rightMapper.WPtoDP(X-m_Radius,Y[LOCATION_END]+m_Radius,&rect.left,&rect.bottom); 
-         rightMapper.WPtoDP(X+m_Radius,Y[LOCATION_END]+m_Radius,&rect.right,&rect.bottom); 
-         
+         rightMapper.WPtoDP(X - m_Xoffset[pgsTypes::metEnd], Y[ZoneBreakType::End], &point.x, &point.y);
+         point.Offset(-radius, -radius);
+         rect = CRect(point, CSize(diameter, diameter));
+
          rect.NormalizeRect();
-         if ( rect.Width() < minStrandSize.cx || rect.Height() < minStrandSize.cy )
+         if (rect.Width() < minStrandSize.cx || rect.Height() < minStrandSize.cy)
          {
-            rect.InflateRect(minStrandSize.cx-rect.Width(),minStrandSize.cy-rect.Height());
+            rect.InflateRect(minStrandSize.cx - rect.Width(), minStrandSize.cy - rect.Height());
          }
 
 
-         if ( strandRow.m_bIsExtendedStrand[pgsTypes::metEnd] )
+         if (strandDefinitionType == CStrandData::sdtDirectRowInput && IsOdd(strandRow.m_nStrands) && !IsZero(strandRow.m_Z))
          {
-            pDC->SelectObject(&extendedPen);
-            pDC->SelectObject(&extendedBrush);
-         }
-         else if ( strandRow.m_bIsDebonded[pgsTypes::metEnd] )
-         {
-            pDC->SelectObject(&debondedPen);
-            pDC->SelectObject(&debondedBrush);
+            // m_Z must be zero if nStrands is odd
+            pDC->SelectObject(&errorPen);
+            pDC->SelectObject(&errorBrush);
          }
          else
          {
-            pDC->SelectObject(strandRow.m_StrandType == pgsTypes::Temporary ? &tempStrandPen : &strandPen);
-            pDC->SelectObject(strandRow.m_StrandType == pgsTypes::Temporary ? &tempStrandBrush : &strandBrush);
+            if (strandRow.m_bIsExtendedStrand[pgsTypes::metEnd])
+            {
+               pDC->SelectObject(&extendedPen);
+               pDC->SelectObject(&extendedBrush);
+            }
+            else if (strandRow.m_bIsDebonded[pgsTypes::metEnd])
+            {
+               pDC->SelectObject(&debondedPen);
+               pDC->SelectObject(&debondedBrush);
+            }
+            else
+            {
+               pDC->SelectObject(strandRow.m_StrandType == pgsTypes::Temporary ? &tempStrandPen : &strandPen);
+               pDC->SelectObject(strandRow.m_StrandType == pgsTypes::Temporary ? &tempStrandBrush : &strandBrush);
+            }
          }
 
          pDC->Ellipse(&rect);
 
-         rightMapper.WPtoDP(-X-m_Radius,Y[LOCATION_END]-m_Radius,&rect.left,&rect.top); 
-         rightMapper.WPtoDP(-X+m_Radius,Y[LOCATION_END]-m_Radius,&rect.right,&rect.top); 
-         rightMapper.WPtoDP(-X-m_Radius,Y[LOCATION_END]+m_Radius,&rect.left,&rect.bottom); 
-         rightMapper.WPtoDP(-X+m_Radius,Y[LOCATION_END]+m_Radius,&rect.right,&rect.bottom); 
-         
-         rect.NormalizeRect();
-         if ( rect.Width() < minStrandSize.cx || rect.Height() < minStrandSize.cy )
+         if (strandDefinitionType == CStrandData::sdtDirectRowInput)
          {
-            rect.InflateRect(minStrandSize.cx-rect.Width(),minStrandSize.cy-rect.Height());
+            // strands are in rows, so draw the mirrored strand
+            rightMapper.WPtoDP(-X - m_Xoffset[pgsTypes::metEnd], Y[ZoneBreakType::End], &point.x, &point.y);
+            point.Offset(-radius, -radius);
+            rect = CRect(point, CSize(diameter, diameter));
+
+            rect.NormalizeRect();
+            if (rect.Width() < minStrandSize.cx || rect.Height() < minStrandSize.cy)
+            {
+               rect.InflateRect(minStrandSize.cx - rect.Width(), minStrandSize.cy - rect.Height());
+            }
+
+            pDC->Ellipse(&rect);
          }
 
-         pDC->Ellipse(&rect);
 
          // Draw in segment profile
-         Float64 z = 0.0;
-         z = pPoi->ConvertSegmentCoordinateToSegmentPathCoordinate(m_pSegment->GetSegmentKey(),z);
-         z = pPoi->ConvertSegmentPathCoordinateToGirderPathCoordinate(m_pSegment->GetSegmentKey(),z);
-
-         centerMapper.WPtoDP(z,Y[LOCATION_START],&dx,&dy);
-         pDC->MoveTo(dx,dy);
-
-         pDC->SelectObject(&strandPen);
-         pDC->SelectObject(&strandBrush);
-
-         if ( strandRow.m_StrandType == pgsTypes::Harped )
+         if (strandDefinitionType == CStrandData::sdtDirectRowInput && IsOdd(strandRow.m_nStrands) && !IsZero(strandRow.m_Z))
          {
-            centerMapper.WPtoDP(Z[LOCATION_START],Y[LOCATION_START],&dx,&dy);
-            pDC->LineTo(dx,dy);
-
-            centerMapper.WPtoDP(Z[LOCATION_LEFT_HP],Y[LOCATION_LEFT_HP],&dx,&dy);
-            pDC->LineTo(dx,dy);
-
-            centerMapper.WPtoDP(Z[LOCATION_RIGHT_HP],Y[LOCATION_RIGHT_HP],&dx,&dy);
-            pDC->LineTo(dx,dy);
-
-            centerMapper.WPtoDP(Z[LOCATION_END],Y[LOCATION_END],&dx,&dy);
-            pDC->LineTo(dx,dy);
+            // m_Z must be zero if nStrands is odd
+            pDC->SelectObject(&errorPen);
+            pDC->SelectObject(&errorBrush);
+         }
+         else
+         {
+            pDC->SelectObject(&strandPen);
+            pDC->SelectObject(&strandBrush);
          }
 
-         z = m_SegmentLength;
-         z = pPoi->ConvertSegmentCoordinateToSegmentPathCoordinate(m_pSegment->GetSegmentKey(),z);
-         z = pPoi->ConvertSegmentPathCoordinateToGirderPathCoordinate(m_pSegment->GetSegmentKey(),z);
-         centerMapper.WPtoDP(z,Y[LOCATION_END],&dx,&dy);
-         pDC->LineTo(dx,dy);
+         CComPtr<IPoint2dCollection> profile; // profile points in Girder Path Coordinates
+         pStrandGeom->GetStrandProfile(m_pSegment, m_pStrands, strandRow.m_StrandType, strandIdx[strandRow.m_StrandType], &profile);
+         strandIdx[strandRow.m_StrandType] += nStrandsPerGridPoint;
+
+         CComPtr<IPoint2d> pnt;
+         IndexType nPoints;
+         profile->get_Count(&nPoints);
+         for (IndexType idx = 0; idx < nPoints; idx++)
+         {
+            pnt.Release();
+            profile->get_Item(idx, &pnt);
+            Float64 z, y;
+            pnt->Location(&z, &y);
+
+            centerMapper.WPtoDP(z, y, &dx, &dy);
+            if (idx == 0)
+            {
+               pDC->MoveTo(dx, dy);
+            }
+            else
+            {
+               pDC->LineTo(dx, dy);
+            }
+         }
       }
    }
-
 }
+

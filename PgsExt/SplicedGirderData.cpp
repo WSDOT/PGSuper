@@ -984,8 +984,28 @@ void CSplicedGirderData::GetTopWidth(pgsTypes::TopWidthType* pType,Float64* pLef
       *pType = m_TopWidthType;
       *pLeftStart = m_LeftTopWidth[pgsTypes::metStart];
       *pRightStart = m_RightTopWidth[pgsTypes::metStart];
-      *pLeftEnd = m_LeftTopWidth[pgsTypes::metEnd];
-      *pRightEnd = m_RightTopWidth[pgsTypes::metEnd];
+
+      if (m_pGirderLibraryEntry)
+      {
+         CComPtr<IBeamFactory> beamFactory;
+         m_pGirderLibraryEntry->GetBeamFactory(&beamFactory);
+
+         if (beamFactory->CanTopWidthVary())
+         {
+            *pLeftEnd = m_LeftTopWidth[pgsTypes::metEnd];
+            *pRightEnd = m_RightTopWidth[pgsTypes::metEnd];
+         }
+         else
+         {
+            *pLeftEnd = *pLeftStart;
+            *pRightEnd = *pRightStart;
+         }
+      }
+      else
+      {
+         *pLeftEnd = *pLeftStart;
+         *pRightEnd = *pRightStart;
+      }
    }
 }
 

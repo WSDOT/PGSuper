@@ -105,7 +105,6 @@ public:
    {
       pEvents->HoldEvents();
       m_OldRoa = pLiveLoads->GetLldfRangeOfApplicabilityAction();
-      m_OldRoa = pLiveLoads->GetLldfRangeOfApplicabilityAction();
       if (m_OldRoa == roaEnforce)
       {
          pLiveLoads->SetLldfRangeOfApplicabilityAction(roaIgnore);
@@ -119,10 +118,19 @@ public:
    }
 
 private:
-   IEvents* m_pEvents;
-   ILiveLoads* m_pLiveLoads;
+   IEvents* m_pEvents; // weak reference to interface
+   ILiveLoads* m_pLiveLoads; // weak reference
    LldfRangeOfApplicabilityAction m_OldRoa;
 };
+
+bool CanDesign(CStrandData::StrandDefinitionType type)
+{
+   // we can only design for these strand definition types
+   // Techincally, we should not design for sdtDirectionSelection, however the designer does work. The "gotcha" is that the
+   // strand defintion type gets changed to sdtStraightHarped when it should not... design should not change the strand definition type
+   // but since sdtDirectSelection has been a valid choice for a long time and it does work, we'll let it go
+   return (type == CStrandData::sdtTotal || type == CStrandData::sdtStraightHarped || type == CStrandData::sdtDirectSelection) ? true : false;
+}
 
 /****************************************************************************
 CLASS
@@ -148,14 +156,7 @@ const std::_tstring g_Type[] =
 
 inline std::_tstring StrTopBot(pgsTypes::StressLocation sl)
 {
-   if (sl==pgsTypes::BottomGirder)
-   {
-      return _T(" Bottom of Girder");
-   }
-   else
-   {
-      return _T(" Top of Girder");
-   }
+   return (sl==pgsTypes::BottomGirder ? _T(" Bottom of Girder") : _T(" Top of Girder"));
 }
 #endif
 
@@ -178,51 +179,7 @@ inline Float64 compute_required_eccentricity(Float64 P,Float64 A,Float64 S,Float
    return -(fHP - fDL + P/A)*(S/P);
 }
 
-//// function to give envelope of two integer vectors (for debond levels)
-//inline std::vector<DebondLevelType> EnvelopeDebondLevels(const std::vector<DebondLevelType>& rvec1, const std::vector<DebondLevelType>& rvec2)
-//{
-//   std::vector<DebondLevelType> result;
-//   std::vector<DebondLevelType>::const_iterator r1it( rvec1.begin() );
-//   std::vector<DebondLevelType>::const_iterator r2it( rvec2.begin() );
-//
-//   while (r1it!=rvec1.end() || r2it!=rvec2.end())
-//   {
-//      if (r1it!=rvec1.end() && r2it!=rvec2.end())
-//      {
-//         // both values at location
-//         DebondLevelType v1 = *r1it;
-//         DebondLevelType v2 = *r2it;
-//         DebondLevelType imax = Max(v1, v2);
-//
-//         result.push_back(imax);
-//
-//         r1it++;
-//         r2it++;
-//      }
-//      else if (r1it!=rvec1.end())
-//      {
-//         // only r1
-//         Int16 v1 = *r1it;
-//         result.push_back(v1);
-//
-//         r1it++;
-//      }
-//      else if (r2it!=rvec2.end())
-//      {
-//         // only r2
-//         Int16 v2 = *r2it;
-//         result.push_back(v2);
-//
-//         r2it++;
-//      }
-//      else
-//         ATLASSERT(false);
-//   }
-//
-//   return result;
-//}
-
-static void GetConfinementZoneLengths(const CSegmentKey& segmentKey, IGirder* pGdr, Float64 gdrLength, 
+void GetConfinementZoneLengths(const CSegmentKey& segmentKey, IGirder* pGdr, Float64 gdrLength, 
                                       Float64* pZoneFactor, Float64* pStartd, Float64* pEndd,
                                       Float64* pStartLength, Float64* pEndLength)
 {
@@ -238,20 +195,6 @@ static void GetConfinementZoneLengths(const CSegmentKey& segmentKey, IGirder* pG
    *pEndLength = 1.5 * (*pEndd);
 }
 
-class FindMidSpanHaunch
-{
-public:
-   FindMidSpanHaunch(){}
-   bool operator()(const SECTIONHAUNCH& rsh) const
-   {
-      if ( rsh.PointOfInterest.IsMidSpan(POI_SPAN) )
-      {
-         return true;
-      }
-
-      return false;
-   }
-};
 ////////////////////////// PUBLIC     ///////////////////////////////////////
 
 
@@ -390,10 +333,23 @@ void pgsDesigner2::GetHaunchDetails(const CSpanKey& spanKey,const GDRCONFIG* pCo
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( spec_name.c_str() );
 
    pHaunchDetails->Haunch.clear();
+   pHaunchDetails->Haunch.reserve(11);
 
    PoiList vPoi;
    pPoi->GetPointsOfInterest(spanKey, POI_SPAN | POI_TENTH_POINTS, &vPoi);
    ATLASSERT(11 == vPoi.size());
+
+   // temporary supports are control points for the slab haunch... include them too
+   // use POI_CLOSURE because we want the temp supports at the ends of segments, not temporary supports
+   // that are in the middle of segments (we dont want POI_INTERMEDIATE_TEMPSUPPORT)
+   PoiList vTSPoi;
+   pPoi->GetPointsOfInterest(spanKey, POI_CLOSURE, &vTSPoi);
+   if (0 < vTSPoi.size())
+   {
+      vPoi.insert(std::end(vPoi), std::begin(vTSPoi), std::end(vTSPoi));
+      std::sort(std::begin(vPoi), std::end(vPoi), [](const auto& a, const auto& b) {return a.get() < b.get(); });
+      vPoi.erase(std::unique(std::begin(vPoi), std::end(vPoi), [](const auto& a, const auto& b) {return a.get() == b.get(); }), std::end(vPoi));
+   }
 
    //
    // Profile Effects and Girder Orientation Effects
@@ -1063,6 +1019,10 @@ pgsGirderDesignArtifact pgsDesigner2::Design(const CGirderKey& girderKey,const s
    GET_IFACE(IBridge,pBridge);
    SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
 
+   // There are a few cases were we don't design
+   // 1) Time Step analysis
+   // 2) Strands are defined using the individual strand model
+#pragma Reminder("WORKING HERE - strand point model - how does design work for row based input")
    GET_IFACE(ILossParameters,pLossParams);
    if ( pLossParams->GetLossMethod() == pgsTypes::TIME_STEP )
    {
@@ -1070,7 +1030,7 @@ pgsGirderDesignArtifact pgsDesigner2::Design(const CGirderKey& girderKey,const s
       for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
       {
          pgsSegmentDesignArtifact segArtifact(CSegmentKey(girderKey,segIdx));
-         segArtifact.SetOutcome(pgsSegmentDesignArtifact::DesignNotSupported);
+         segArtifact.SetOutcome(pgsSegmentDesignArtifact::DesignNotSupported_Losses);
          artifact.AddSegmentDesignArtifact(segIdx,segArtifact);
       }
       return artifact;
@@ -1082,20 +1042,23 @@ pgsGirderDesignArtifact pgsDesigner2::Design(const CGirderKey& girderKey,const s
    // to get around this, set the LLDF ROA action to ignore the ROA.. then reset it to the
    // current value when design is done.
 
-   // But first, test the ROA and don't even try to design if there is a problem. A CXUnwind will get thrown through here if a problem
+   // But first, test the ROA and don't even try to design if there is a problem. A CXUnwind will get thrown from pLLDF->TestRangeOfApplicability if there is a problem
    GroupIndexType nGroups = pBridge->GetGirderGroupCount();
    GET_IFACE(ILiveLoadDistributionFactors,pLLDF);
    for ( GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )
    {
-#pragma Reminder("Assuming precast girder here")
-      SpanIndexType spanIdx = (SpanIndexType)grpIdx; // there is a one-to-one relationship between spans and groups for PGSuper projects
       GirderIndexType nGirdersThisGroup = pBridge->GetGirderCount(grpIdx);
-      GirderIndexType gdrIdx = Min(girderKey.girderIndex,nGirdersThisGroup-1);
-      CSpanKey spanKey(spanIdx,gdrIdx);
-      pLLDF->TestRangeOfApplicability(spanKey);
+      GirderIndexType gdrIdx = Min(girderKey.girderIndex, nGirdersThisGroup - 1);
+
+      SpanIndexType startSpanIdx, endSpanIdx;
+      pBridge->GetGirderGroupSpans(grpIdx, &startSpanIdx, &endSpanIdx);
+      for (SpanIndexType spanIdx = startSpanIdx; spanIdx <= endSpanIdx; spanIdx++)
+      {
+         CSpanKey spanKey(spanIdx, gdrIdx);
+         pLLDF->TestRangeOfApplicability(spanKey);
+      }
    }
 
-   // 
    // we don't want events to fire so we'll hold events and then cancel any pending events
    // when design is done. Use auto class so we do it exeption safely.
    GET_IFACE(IEvents,pEvents);
@@ -1183,7 +1146,7 @@ void pgsDesigner2::DoDesign(const CGirderKey& girderKey,const arDesignOptions& o
    ATLASSERT(nSegments == 1);
    for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
    {
-      CSegmentKey segmentKey(girderKey,segIdx);
+      CSegmentKey segmentKey(girderKey, segIdx);
       pgsSegmentDesignArtifact artifact(segmentKey);
       artifact.SetDesignOptions(options);
 
@@ -1192,6 +1155,18 @@ void pgsDesigner2::DoDesign(const CGirderKey& girderKey,const arDesignOptions& o
 
       LOG(_T("************************************************************"));
       LOG(_T("Beginning design for span ") << LABEL_SPAN(spanIdx) << _T(" girder ") << LABEL_GIRDER(gdrIdx));
+
+      const CPrecastSegmentData* pSegment = pGirder->GetSegment(segIdx);
+      if ( !CanDesign(pSegment->Strands.GetStrandDefinitionType()) )
+      {
+         LOG(_T("-----------------"));
+         LOG(_T("Cannot design with the current strand definition type"));
+
+         artifact.SetOutcome(pgsSegmentDesignArtifact::DesignNotSupported_Strands);
+         girderDesignArtifact.AddSegmentDesignArtifact(segIdx, artifact);
+         continue; // process next segment
+      }
+
 #if defined ENABLE_LOGGING
       sysTime startTime;
 #endif
@@ -1223,7 +1198,6 @@ void pgsDesigner2::DoDesign(const CGirderKey& girderKey,const arDesignOptions& o
       // Copy current longitudinal rebar data to the artifact. 
       // This algorithm will only add more rebar to existing, and only
       // for the longitudinal reinf for shear condition
-      const CPrecastSegmentData* pSegment    = pGirder->GetSegment(segmentKey.segmentIndex);
       artifact.SetLongitudinalRebarData( pSegment->LongitudinalRebarData );
 
 
@@ -4976,6 +4950,43 @@ void pgsDesigner2::CheckConstructability(const CGirderKey& girderKey,pgsConstruc
       if (pBridge->GetDeckType() == pgsTypes::sdtNone)
       {
          artifact.SetSlabOffsetApplicability(false);
+
+         artifact.SetFinishedElevationApplicability(true);
+
+         Float64 tolerance = pSpecEntry->GetFinishedElevationTolerance();
+         artifact.SetFinishedElevationTolerance(tolerance);
+
+
+         const int Left = 0;
+         const int Center = 1;
+         const int Right = 2;
+
+         GET_IFACE(IPointOfInterest, pPoi);
+         GET_IFACE(IRoadway, pAlignment);
+         GET_IFACE(IGirder, pIGirder);
+
+         PoiList vPoi;
+         pPoi->GetPointsOfInterest(spanKey, POI_SPAN | POI_TENTH_POINTS, &vPoi);
+         ATLASSERT(vPoi.size() == 11);
+
+         Float64 maxDiff = 0;
+         for (const pgsPointOfInterest& poi : vPoi)
+         {
+            Float64 station, offset;
+            pBridge->GetStationAndOffset(poi, &station, &offset);
+            Float64 elev = pAlignment->GetElevation(station, offset);
+
+            std::array<Float64, 3> finished_elevation;
+            pIGirder->GetTopGirderElevation(poi, nullptr, &finished_elevation[Left], &finished_elevation[Center], &finished_elevation[Right]);
+
+            Float64 diff = fabs(finished_elevation[Center] - elev);
+
+            if (maxDiff < diff)
+            {
+               artifact.SetMaxFinishedElevation(station, offset, poi, elev, finished_elevation[Center]);
+               maxDiff = diff;
+            }
+         }
       }
       else
       {
@@ -4999,7 +5010,7 @@ void pgsDesigner2::CheckConstructability(const CGirderKey& girderKey,pgsConstruc
          Float64 requiredSlabOffset = pGdrHaunch->GetRequiredSlabOffset(spanKey);
          artifact.SetRequiredSlabOffset( requiredSlabOffset );
 
-         HAUNCHDETAILS haunch_details = pGdrHaunch->GetHaunchDetails(spanKey);
+         const auto& haunch_details = pGdrHaunch->GetHaunchDetails(spanKey);
 
          // Get least haunch depth and its location along girder
          Float64 minval(Float64_Max);
@@ -5076,30 +5087,47 @@ void pgsDesigner2::CheckConstructability(const CGirderKey& girderKey,pgsConstruc
 
       ///////////////////////////////////////////////////////////////
       //
-      // Camber Tolerance for Haunch Load
+      // Camber Tolerance for Haunch 
       //
       ///////////////////////////////////////////////////////////////
-      if (pSpecEntry->GetHaunchLoadComputationType() != pgsTypes::hlcAccountForCamber || pBridge->GetDeckType() == pgsTypes::sdtNone)
+      if (!pSpec->IsAssExcessCamberInputEnabled())
       {
-         artifact.SetHaunchLoadGeometryCheckApplicability(false);
+         artifact.SetHaunchGeometryCheckApplicability(false);
       }
       else
       {
-         artifact.SetHaunchLoadGeometryCheckApplicability(true);
+         artifact.SetHaunchGeometryCheckApplicability(true);
 
          Float64 tolerance = pSpecEntry->GetHaunchLoadCamberTolerance();
-         artifact.SetHaunchLoadGeometryTolerance(tolerance);
+         artifact.SetHaunchGeometryTolerance(tolerance);
 
          Float64 assumedExcessCamber = pBridge->GetAssExcessCamber(girderKey.groupIndex, girderKey.girderIndex);
          artifact.SetAssumedExcessCamber(assumedExcessCamber);
 
          GET_IFACE(IGirderHaunch,pGdrHaunch);
-         HAUNCHDETAILS haunch_details = pGdrHaunch->GetHaunchDetails(spanKey);
+         const auto& haunch_details = pGdrHaunch->GetHaunchDetails(spanKey);
 
          // Need excess camber at mid-span - get details there
-         std::vector<SECTIONHAUNCH>::const_iterator hit( std::find_if(haunch_details.Haunch.begin(),haunch_details.Haunch.end(),FindMidSpanHaunch()) );
+         ATLASSERT(std::is_sorted(std::begin(haunch_details.Haunch), std::end(haunch_details.Haunch), [](const auto& a, const auto& b) {return a.PointOfInterest < b.PointOfInterest;}));
+         // search only the middle of the container
+         auto nItems = haunch_details.Haunch.size();
+         auto begin_search = std::begin(haunch_details.Haunch);
+         std::advance(begin_search, nItems / 2 - 1);
+         auto end_search = begin_search;
+         std::advance(end_search, 2);
 
-         if (hit != haunch_details.Haunch.end())
+         auto find_midspan_poi = [](const auto& a) {return a.PointOfInterest.IsMidSpan(POI_SPAN);}; // named lamda express for searching
+         
+         auto hit(std::find_if(begin_search,end_search, find_midspan_poi));
+         if (hit == end_search)
+         {
+            // not found, search the entire container
+            ATLASSERT(false); // it is ok that we get here... the assert is to let us know that the above quicker search
+            // didn't work... if we get here a lot, there is probably something wrong with the strategy above
+            hit = std::find_if(std::begin(haunch_details.Haunch), std::end(haunch_details.Haunch), find_midspan_poi);
+         }
+
+         if (hit != std::end(haunch_details.Haunch))
          {
             Float64 haunch_depth = hit->CamberEffect;
             artifact.SetComputedExcessCamber(haunch_depth);
@@ -5108,7 +5136,7 @@ void pgsDesigner2::CheckConstructability(const CGirderKey& girderKey,pgsConstruc
          {
             ATLASSERT(false); // THIS IS A BIG DEAL!! Can't find mid-span details. Cannot perform check. 
            // Should never happen, but kill check to avoid later crash
-            artifact.SetHaunchLoadGeometryCheckApplicability(false);
+            artifact.SetHaunchGeometryCheckApplicability(false);
          }
          // minimum assumed haunch depth
          std::vector<SlabLoad> slab_loads;
@@ -5233,9 +5261,9 @@ void pgsDesigner2::CheckDebonding(const CSegmentKey& segmentKey,pgsTypes::Strand
    for ( RowIndexType row = 0; row < nRows; row++ )
    {
       StrandIndexType nStrandsInRow = pStrandGeometry->GetNumStrandInRow(poi,row,strandType);
-      StrandIndexType nDebondStrandsInRow = pStrandGeometry->GetNumDebondedStrandsInRow(segmentKey,row,strandType);
+      StrandIndexType nDebondStrandsInRow = pStrandGeometry->GetNumDebondedStrandsInRow(poi,row,strandType);
       fra = (nStrandsInRow == 0 ? 0 : (Float64)nDebondStrandsInRow/(Float64)nStrandsInRow);
-      bool bExteriorStrandDebonded = pStrandGeometry->IsExteriorStrandDebondedInRow(segmentKey,row,strandType);
+      bool bExteriorStrandDebonded = pStrandGeometry->IsExteriorStrandDebondedInRow(poi,row,strandType);
       pArtifact->AddNumStrandsInRow(nStrandsInRow);
       pArtifact->AddNumDebondedStrandsInRow(nDebondStrandsInRow);
       pArtifact->AddFraDebondedStrandsInRow(fra);

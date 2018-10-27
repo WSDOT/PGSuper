@@ -254,7 +254,7 @@ void CGirderDescDebondPage::OnPaint()
    IntervalIndexType intervalIdx = pIntervals->GetPrestressReleaseInterval(pParent->m_SegmentKey);
 
    CComPtr<IShape> shape;
-   pShapes->GetSegmentShape(intervalIdx, poi, false, pgsTypes::scGirder, &shape);
+   pShapes->GetSegmentShape(intervalIdx, poi, false, pgsTypes::scGirder, pgsTypes::hspZeroHaunch, &shape);
 
    CComQIPtr<IXYPosition> position(shape);
    CComPtr<IPoint2d> lp;

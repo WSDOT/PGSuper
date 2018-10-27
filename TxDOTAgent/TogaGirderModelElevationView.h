@@ -114,8 +114,8 @@ private:
    void BuildStirrupDisplayObjects(CTxDOTOptionalDesignDoc* pDoc, IBroker* pBroker,const CSegmentKey& segmentKey,iDisplayMgr* dispMgr);
    
    iDimensionLine* BuildDimensionLine(iDisplayList* pDL, IPoint2d* fromPoint,IPoint2d* toPoint,Float64 dimension);
-   void BuildLine(iDisplayList* pDL, IPoint2d* fromPoint,IPoint2d* toPoint, COLORREF color);
-   void BuildDebondTick(iDisplayList* pDL, IPoint2d* tickPoint,COLORREF color);
+   void BuildLine(iDisplayList* pDL, Float64 offset,IPoint2d* fromPoint,IPoint2d* toPoint, COLORREF color);
+   void BuildDebondTick(iDisplayList* pDL, Float64 offset, IPoint2d* tickPoint,COLORREF color);
    void UpdateDisplayObjects();
 
    bool m_bUpdateError;

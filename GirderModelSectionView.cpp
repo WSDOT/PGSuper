@@ -413,6 +413,7 @@ void CGirderModelSectionView::BuildSectionDisplayObjects(CPGSDocBase* pDoc,IBrok
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    GET_IFACE2(pBroker,IShapes,pShapes);
    GET_IFACE2(pBroker,IIntervals,pIntervals);
+   GET_IFACE2(pBroker,ISectionProperties,pSectProps);
 
    EventIndexType eventIdx = m_pFrame->GetEvent();
    EventIndexType castDeckEventIdx = pIBridgeDesc->GetCastDeckEventIndex();
@@ -431,7 +432,7 @@ void CGirderModelSectionView::BuildSectionDisplayObjects(CPGSDocBase* pDoc,IBrok
    // Get the shape in Girder Section Coordinates so that it is in the same coordinate system
    // as the items internal to the section (strand, rebar, etc.) (0,0 is at top center of girder)
    CComPtr<IShape> shape;
-   pShapes->GetSegmentShape(intervalIdx,poi,false/*don't orient... shape is always plumb*/,pgsTypes::scGirder,&shape);
+   pShapes->GetSegmentShape(intervalIdx,poi,false/*don't orient... shape is always plumb*/,pgsTypes::scGirder,pSectProps->GetHaunchAnalysisSectionPropertiesType(),&shape);
    strategy->SetShape(shape);
    strategy->SetSolidLineColor(SEGMENT_BORDER_COLOR);
    strategy->SetSolidFillColor(segmentKey.girderIndex == m_pFrame->GetSelection().girderIndex ? SEGMENT_FILL_COLOR : SEGMENT_FILL_GHOST_COLOR);
@@ -452,8 +453,7 @@ void CGirderModelSectionView::BuildSectionDisplayObjects(CPGSDocBase* pDoc,IBrok
    }
    else
    {
-      GET_IFACE2(pBroker,ISectionProperties,pSectProp);
-      Float64 top_width = pSectProp->GetTributaryFlangeWidth(poi);
+      Float64 top_width = pSectProps->GetTributaryFlangeWidth(poi);
       wLeft = top_width / 2;
       wRight = wLeft;
 
@@ -507,40 +507,36 @@ void CGirderModelSectionView::BuildSectionDisplayObjects(CPGSDocBase* pDoc,IBrok
 
    if (0 < nBottomFlanges)
    {
-      Float64 dx, wx;
-      section->get_BottomFlangeLocation(0, &dx);
+      Float64 wx;
       section->get_BottomFlangeWidth(0, &wx);
       CComPtr<IPoint2d> pntBL;
       pntBL.CoCreateInstance(CLSID_Point2d);
       pntBL->MoveEx(pntBC);
-      pntBL->Offset(dx - wx / 2, 0);
+      pntBL->Offset(-wx / 2, 0);
       connectable->AddSocket(SOCKET_BL, pntBL, &socketBL);
 
-      section->get_BottomFlangeLocation(nBottomFlanges - 1, &dx);
       section->get_BottomFlangeWidth(nBottomFlanges - 1, &wx);
       CComPtr<IPoint2d> pntBR;
       pntBR.CoCreateInstance(CLSID_Point2d);
       pntBR->MoveEx(pntBC);
-      pntBR->Offset(dx + wx / 2, 0);
+      pntBR->Offset(wx / 2, 0);
       connectable->AddSocket(SOCKET_BR, pntBR, &socketBR);
    }
    else if (0 < nWebs)
    {
-      Float64 dx, wx;
-      section->get_WebLocation(0, &dx);
+      Float64 wx;
       section->get_WebThickness(0, &wx);
       CComPtr<IPoint2d> pntBL;
       pntBL.CoCreateInstance(CLSID_Point2d);
       pntBL->MoveEx(pntBC);
-      pntBL->Offset(dx - wx / 2, 0);
+      pntBL->Offset(-wx / 2, 0);
       connectable->AddSocket(SOCKET_BL, pntBL, &socketBL);
 
-      section->get_WebLocation(nWebs - 1, &dx);
       section->get_WebThickness(nWebs - 1, &wx);
       CComPtr<IPoint2d> pntBR;
       pntBR.CoCreateInstance(CLSID_Point2d);
       pntBR->MoveEx(pntBC);
-      pntBR->Offset(dx + wx / 2, 0);
+      pntBR->Offset(wx / 2, 0);
       connectable->AddSocket(SOCKET_BR, pntBR, &socketBR);
    }
    else
@@ -1057,7 +1053,8 @@ void CGirderModelSectionView::BuildDimensionDisplayObjects(CPGSDocBase* pDoc, IB
    GET_IFACE2(pBroker, ISectionProperties, pSectProp);
    GET_IFACE2(pBroker, IIntervals, pIntervals);
 
-   IntervalIndexType intervalIdx = Max(pIntervals->GetInterval(eventIdx), pIntervals->GetPrestressReleaseInterval(segmentKey));
+   IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
+   IntervalIndexType intervalIdx = Max(pIntervals->GetInterval(eventIdx), releaseIntervalIdx);
    IntervalIndexType compositeIntervalIdx = pIntervals->GetLastCompositeInterval();
 
    // need to layout dimension line witness lines in twips
@@ -1073,8 +1070,6 @@ void CGirderModelSectionView::BuildDimensionDisplayObjects(CPGSDocBase* pDoc, IB
    CComPtr<iDimensionLine> doDimLineHeight;
    CComPtr<iDimensionLine> doDimLineTopCGPS;
    CComPtr<iDimensionLine> doDimLineBottomCGPS;
-   CComPtr<iDimensionLine> doDimLineLeftOverhang;
-   CComPtr<iDimensionLine> doDimLineRightOverhang;
    CComPtr<iDimensionLine> doDimLineTopCG;
    CComPtr<iDimensionLine> doDimLineBottomCG;
 
@@ -1094,12 +1089,6 @@ void CGirderModelSectionView::BuildDimensionDisplayObjects(CPGSDocBase* pDoc, IB
    doDimLineBottomCGPS->SetID(id++);
    doDimLineTopCG->SetID(id++);
    doDimLineBottomCG->SetID(id++);
-
-   ::CoCreateInstance(CLSID_DimensionLineDisplayObject, nullptr, CLSCTX_ALL, IID_iDimensionLine, (void**)&doDimLineLeftOverhang);
-   ::CoCreateInstance(CLSID_DimensionLineDisplayObject, nullptr, CLSCTX_ALL, IID_iDimensionLine, (void**)&doDimLineRightOverhang);
-
-   doDimLineLeftOverhang->SetID(id++);
-   doDimLineRightOverhang->SetID(id++);
 
    // Connect the dimension lines to the sockets in the section display object
    CComPtr<iDisplayList> pSectionDL;
@@ -1179,8 +1168,6 @@ void CGirderModelSectionView::BuildDimensionDisplayObjects(CPGSDocBase* pDoc, IB
    CComQIPtr<iConnector> connectorHeight(doDimLineHeight);
    CComQIPtr<iConnector> connectorTopCGPS(doDimLineTopCGPS);
    CComQIPtr<iConnector> connectorBottomCGPS(doDimLineBottomCGPS);
-   CComQIPtr<iConnector> connectorLeftOverhang(doDimLineLeftOverhang);
-   CComQIPtr<iConnector> connectorRightOverhang(doDimLineRightOverhang);
    CComQIPtr<iConnector> connectorTopCG(doDimLineTopCG);
    CComQIPtr<iConnector> connectorBottomCG(doDimLineBottomCG);
 
@@ -1207,21 +1194,6 @@ void CGirderModelSectionView::BuildDimensionDisplayObjects(CPGSDocBase* pDoc, IB
    {
       socketTRJ->Connect(endPlug, &dwCookie);
    }
-
-   // connect the overhang dimension lines
-   startPlug.Release();
-   endPlug.Release();
-   connectorLeftOverhang->GetStartPlug(&startPlug);
-   connectorLeftOverhang->GetEndPlug(&endPlug);
-   socketTL->Connect(startPlug, &dwCookie);
-   socketTC->Connect(endPlug, &dwCookie);
-
-   startPlug.Release();
-   endPlug.Release();
-   connectorRightOverhang->GetStartPlug(&startPlug);
-   connectorRightOverhang->GetEndPlug(&endPlug);
-   socketTC->Connect(startPlug, &dwCookie);
-   socketTR->Connect(endPlug, &dwCookie);
 
    // connect the bottom flange width dimension line (across the bottom)
    startPlug.Release();
@@ -1372,20 +1344,6 @@ void CGirderModelSectionView::BuildDimensionDisplayObjects(CPGSDocBase* pDoc, IB
    textBlock->SetText(strDim);
    doDimLineTopFlangeWidth->SetTextBlock(textBlock);
 
-   textBlock.Release();
-   textBlock.CoCreateInstance(CLSID_TextBlock);
-   textBlock->SetPointSize(FONT_POINT_SIZE);
-   strDim = FormatDimension(twLeft, length_unit);
-   textBlock->SetText(strDim);
-   doDimLineLeftOverhang->SetTextBlock(textBlock);
-
-   textBlock.Release();
-   textBlock.CoCreateInstance(CLSID_TextBlock);
-   textBlock->SetPointSize(FONT_POINT_SIZE);
-   strDim = FormatDimension(twRight, length_unit);
-   textBlock->SetText(strDim);
-   doDimLineRightOverhang->SetTextBlock(textBlock);
-
    // move the top flange width line up
    doDimLineTopFlangeWidth->SetWitnessLength(3 * twip_offset / 2);
 
@@ -1447,8 +1405,8 @@ void CGirderModelSectionView::BuildDimensionDisplayObjects(CPGSDocBase* pDoc, IB
       GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
 
       Float64 nEff;
-      Float64 ecc = pStrandGeometry->GetEccentricity(intervalIdx, poi,true,&nEff);
-      Float64 yps = pSectProp->GetY(intervalIdx,poi,pgsTypes::BottomGirder) - ecc;
+      Float64 ecc = pStrandGeometry->GetEccentricity(releaseIntervalIdx, poi,true,&nEff);
+      Float64 yps = pSectProp->GetY(releaseIntervalIdx,poi,pgsTypes::BottomGirder) - ecc;
 
       textBlock.Release();
       textBlock.CoCreateInstance(CLSID_TextBlock);
@@ -1457,7 +1415,7 @@ void CGirderModelSectionView::BuildDimensionDisplayObjects(CPGSDocBase* pDoc, IB
       textBlock->SetText(strDim);
       doDimLineBottomCGPS->SetTextBlock(textBlock);
 
-      yps = pSectProp->GetY(intervalIdx, poi, intervalIdx < compositeIntervalIdx ? pgsTypes::TopGirder : pgsTypes::TopDeck) + ecc;
+      yps = height - yps;
 
       textBlock.Release();
       textBlock.CoCreateInstance(CLSID_TextBlock);
@@ -1493,9 +1451,6 @@ void CGirderModelSectionView::BuildDimensionDisplayObjects(CPGSDocBase* pDoc, IB
       pDL->AddDisplayObject(doDimLineBottomCG);
    }
 
-   pDL->AddDisplayObject(doDimLineLeftOverhang);
-   pDL->AddDisplayObject(doDimLineRightOverhang);
-
    if ( (settings & IDG_SV_SHOW_PS_CG) && socketCGPS )
    {
       pDL->AddDisplayObject(doDimLineTopCGPS);
@@ -1520,6 +1475,7 @@ void CGirderModelSectionView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pH
         lHint == HINT_BRIDGECHANGED ||
         lHint == HINT_GIRDERFAMILYCHANGED ||
         lHint == HINT_GIRDERCHANGED ||
+        lHint == HINT_SPECCHANGED   ||
         lHint == HINT_SELECTIONCHANGED )
    {
 

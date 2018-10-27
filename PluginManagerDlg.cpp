@@ -29,6 +29,13 @@
 
 // CPluginManagerDlg
 
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
+
+
 IMPLEMENT_DYNAMIC(CPluginManagerDlg, CPropertySheet)
 
 CPluginManagerDlg::CPluginManagerDlg(UINT nIDCaption, CWnd* pParentWnd, UINT iSelectPage,const CATID& catidDataImporter,const CATID& catidDataExporter,const CATID& catidExtensionAgent,LPCTSTR lpszAppName)

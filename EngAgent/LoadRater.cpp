@@ -36,11 +36,21 @@
 #include <IFace\Allowables.h>
 #include <EAF\EAFDisplayUnits.h>
 
+#if defined _USE_MULTITHREADING
+#include <future>
+#endif
+
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
+
 void special_transform(IBridge* pBridge,IPointOfInterest* pPoi,IIntervals* pIntervals,
                        PoiList::const_iterator poiBeginIter,
                        PoiList::const_iterator poiEndIter,
-                       std::vector<Float64>::iterator forceBeginIter,
-                       std::vector<Float64>::iterator resultBeginIter,
+                       std::vector<Float64>::const_iterator forceBeginIter,
+                       std::vector<Float64>::const_iterator resultBeginIter,
                        std::vector<Float64>::iterator outputBeginIter);
 
 inline bool AxleHasWeight(AxlePlacement& placement)
@@ -101,13 +111,22 @@ pgsRatingArtifact pgsLoadRater::Rate(const CGirderKey& girderKey,pgsTypes::LoadR
 
    pgsRatingArtifact ratingArtifact(ratingType);
 
+   bool bNegativeMoments = pBridge->ProcessNegativeMoments(ALL_SPANS);
+
+   Moments positive_moments, negative_moments;
+   GetMoments(girderKey, true, ratingType, vehicleIdx, vPoi, &positive_moments);
+   if (bNegativeMoments)
+   {
+      GetMoments(girderKey, false, ratingType, vehicleIdx, vPoi, &negative_moments);
+   }
+
    // Rate for positive moment - flexure
-   MomentRating(girderKey,vPoi,true,ratingType,vehicleIdx,ratingArtifact);
+   MomentRating(girderKey,vPoi,true,ratingType,vehicleIdx,positive_moments,ratingArtifact);
 
    // Rate for negative moment - flexure, if applicable
-   if ( pBridge->ProcessNegativeMoments(ALL_SPANS) )
+   if ( bNegativeMoments )
    {
-      MomentRating(girderKey,vPoi,false,ratingType,vehicleIdx,ratingArtifact);
+      MomentRating(girderKey,vPoi,false,ratingType,vehicleIdx,negative_moments,ratingArtifact);
    }
 
    // Rate for shear if applicable
@@ -124,35 +143,23 @@ pgsRatingArtifact pgsLoadRater::Rate(const CGirderKey& girderKey,pgsTypes::LoadR
 
    if ( pRatingSpec->CheckYieldStress(ratingType) )
    {
-      CheckReinforcementYielding(girderKey,vPoi,ratingType,vehicleIdx,true,ratingArtifact);
+      CheckReinforcementYielding(girderKey,vPoi,true,ratingType,vehicleIdx,positive_moments,ratingArtifact);
 
-      if ( pBridge->ProcessNegativeMoments(ALL_SPANS) )
+      if ( bNegativeMoments)
       {
-         CheckReinforcementYielding(girderKey,vPoi,ratingType,vehicleIdx,false,ratingArtifact);
+         CheckReinforcementYielding(girderKey,vPoi,false,ratingType,vehicleIdx,negative_moments,ratingArtifact);
       }
    }
 
    return ratingArtifact;
 }
 
-void pgsLoadRater::MomentRating(const CGirderKey& girderKey,const PoiList& vPoi,bool bPositiveMoment,pgsTypes::LoadRatingType ratingType,VehicleIndexType vehicleIdx,pgsRatingArtifact& ratingArtifact) const
+void pgsLoadRater::MomentRating(const CGirderKey& girderKey,const PoiList& vPoi,bool bPositiveMoment,pgsTypes::LoadRatingType ratingType,VehicleIndexType vehicleIdx, const Moments& moments,pgsRatingArtifact& ratingArtifact) const
 {
-   std::vector<Float64> vDCmin, vDCmax;
-   std::vector<Float64> vDWmin, vDWmax;
-   std::vector<Float64> vCRmin, vCRmax;
-   std::vector<Float64> vSHmin, vSHmax;
-   std::vector<Float64> vREmin, vREmax;
-   std::vector<Float64> vPSmin, vPSmax;
-   std::vector<Float64> vLLIMmin,vLLIMmax;
-   std::vector<Float64> vPLmin,vPLmax;
-   std::vector<VehicleIndexType> vMinTruckIndex, vMaxTruckIndex;
-
    GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
    GET_IFACE(IProgress, pProgress);
    CEAFAutoProgress ap(pProgress);
    pProgress->UpdateMessage(_T("Load rating for moment"));
-
-   GetMoments(girderKey,bPositiveMoment,ratingType, vehicleIdx, vPoi, vDCmin, vDCmax, vDWmin, vDWmax, vCRmin, vCRmax, vSHmin, vSHmax, vREmin, vREmax, vPSmin, vPSmax, vLLIMmin, vMinTruckIndex, vLLIMmax, vMaxTruckIndex, vPLmin, vPLmax);
 
    CGirderKey thisGirderKey(girderKey);
    if ( thisGirderKey.groupIndex == ALL_GROUPS )
@@ -170,17 +177,17 @@ void pgsLoadRater::MomentRating(const CGirderKey& girderKey,const PoiList& vPoi,
    std::vector<const MOMENTCAPACITYDETAILS*> vM = pMomentCapacity->GetMomentCapacityDetails(loadRatingIntervalIdx,vPoi,bPositiveMoment);
    std::vector<MINMOMENTCAPDETAILS> vMmin = pMomentCapacity->GetMinMomentCapacityDetails(loadRatingIntervalIdx,vPoi,bPositiveMoment);
 
-   ATLASSERT(vPoi.size()     == vDCmax.size());
-   ATLASSERT(vPoi.size()     == vDWmax.size());
-   ATLASSERT(vPoi.size()     == vLLIMmax.size());
+   ATLASSERT(vPoi.size()     == moments.vDCmax.size());
+   ATLASSERT(vPoi.size()     == moments.vDWmax.size());
+   ATLASSERT(vPoi.size()     == moments.vLLIMmax.size());
    ATLASSERT(vPoi.size()     == vM.size());
-   ATLASSERT(vDCmin.size()   == vDCmax.size());
-   ATLASSERT(vDWmin.size()   == vDWmax.size());
-   ATLASSERT(vCRmin.size()   == vCRmax.size());
-   ATLASSERT(vSHmin.size()   == vSHmax.size());
-   ATLASSERT(vREmin.size()   == vREmax.size());
-   ATLASSERT(vPSmin.size()   == vPSmax.size());
-   ATLASSERT(vLLIMmin.size() == vLLIMmax.size());
+   ATLASSERT(moments.vDCmin.size()   == moments.vDCmax.size());
+   ATLASSERT(moments.vDWmin.size()   == moments.vDWmax.size());
+   ATLASSERT(moments.vCRmin.size()   == moments.vCRmax.size());
+   ATLASSERT(moments.vSHmin.size()   == moments.vSHmax.size());
+   ATLASSERT(moments.vREmin.size()   == moments.vREmax.size());
+   ATLASSERT(moments.vPSmin.size()   == moments.vPSmax.size());
+   ATLASSERT(moments.vLLIMmin.size() == moments.vLLIMmax.size());
 
    GET_IFACE(IRatingSpecification,pRatingSpec);
    Float64 system_factor    = pRatingSpec->GetSystemFactorFlexure();
@@ -225,15 +232,15 @@ void pgsLoadRater::MomentRating(const CGirderKey& girderKey,const PoiList& vPoi,
       }
 
       Float64 DC, DW, CR, SH, RE, PS, LLIM, PL;
-      DC   = (bPositiveMoment ? vDCmax[i]   : vDCmin[i]);
-      DW   = (bPositiveMoment ? vDWmax[i]   : vDWmin[i]);
+      DC   = (bPositiveMoment ? moments.vDCmax[i]   : moments.vDCmin[i]);
+      DW   = (bPositiveMoment ? moments.vDWmax[i]   : moments.vDWmin[i]);
 
       if ( bTimeStep )
       {
-         CR   = (bPositiveMoment ? vCRmax[i]   : vCRmin[i]);
-         SH   = (bPositiveMoment ? vSHmax[i]   : vSHmin[i]);
-         RE   = (bPositiveMoment ? vREmax[i]   : vREmin[i]);
-         PS   = (bPositiveMoment ? vPSmax[i]   : vPSmin[i]);
+         CR   = (bPositiveMoment ? moments.vCRmax[i]   : moments.vCRmin[i]);
+         SH   = (bPositiveMoment ? moments.vSHmax[i]   : moments.vSHmin[i]);
+         RE   = (bPositiveMoment ? moments.vREmax[i]   : moments.vREmin[i]);
+         PS   = (bPositiveMoment ? moments.vPSmax[i]   : moments.vPSmin[i]);
       }
       else
       {
@@ -243,13 +250,13 @@ void pgsLoadRater::MomentRating(const CGirderKey& girderKey,const PoiList& vPoi,
          PS = 0;
       }
 
-      LLIM = (bPositiveMoment ? vLLIMmax[i] : vLLIMmin[i]);
-      PL   = (bIncludePL ? (bPositiveMoment ? vPLmax[i]   : vPLmin[i]) : 0.0);
+      LLIM = (bPositiveMoment ? moments.vLLIMmax[i] : moments.vLLIMmin[i]);
+      PL   = (bIncludePL ? (bPositiveMoment ? moments.vPLmax[i]   : moments.vPLmin[i]) : 0.0);
 
       VehicleIndexType truck_index = vehicleIdx;
       if ( vehicleIdx == INVALID_INDEX )
       {
-         truck_index = (bPositiveMoment ? vMaxTruckIndex[i] : vMinTruckIndex[i]);
+         truck_index = (bPositiveMoment ? moments.vMaxTruckIndex[i] : moments.vMinTruckIndex[i]);
       }
 
       std::_tstring strVehicleName = strLLNames[truck_index];
@@ -439,10 +446,6 @@ void pgsLoadRater::ShearRating(const CGirderKey& girderKey,const PoiList& vPoi,p
    {
       thisGirderKey.groupIndex = 0;
    }
-
-   GET_IFACE(ILibrary,pLib);
-   GET_IFACE(ISpecification,pSpec);
-   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
 
    pgsTypes::LimitState limitState = ::GetStrengthLimitStateType(ratingType);
    InitCriticalSectionZones(girderKey, limitState);
@@ -731,10 +734,6 @@ void pgsLoadRater::StressRating(const CGirderKey& girderKey,const PoiList& vPoi,
    CEAFAutoProgress ap(pProgress);
    pProgress->UpdateMessage(_T("Load rating for flexural stresses"));
 
-   GET_IFACE(ILibrary,pLib);
-   GET_IFACE(ISpecification,pSpec);
-   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
-
    CGirderKey thisGirderKey(girderKey);
    if ( thisGirderKey.groupIndex == ALL_GROUPS )
    {
@@ -879,7 +878,6 @@ void pgsLoadRater::StressRating(const CGirderKey& girderKey,const PoiList& vPoi,
          }
          pProgress->UpdateMessage(strProgress);
 
-
          Float64 gLL = pRatingSpec->GetLiveLoadFactor(limitState,true);
          if ( gLL < 0 )
          {
@@ -918,7 +916,7 @@ void pgsLoadRater::StressRating(const CGirderKey& girderKey,const PoiList& vPoi,
    } // next poi
 }
 
-void pgsLoadRater::CheckReinforcementYielding(const CGirderKey& girderKey,const PoiList& vPoi,pgsTypes::LoadRatingType ratingType,VehicleIndexType vehicleIdx,bool bPositiveMoment,pgsRatingArtifact& ratingArtifact) const
+void pgsLoadRater::CheckReinforcementYielding(const CGirderKey& girderKey,const PoiList& vPoi,bool bPositiveMoment,pgsTypes::LoadRatingType ratingType,VehicleIndexType vehicleIdx,const Moments& moments,pgsRatingArtifact& ratingArtifact) const
 {
    GET_IFACE(IProgress, pProgress);
    CEAFAutoProgress ap(pProgress);
@@ -957,17 +955,6 @@ void pgsLoadRater::CheckReinforcementYielding(const CGirderKey& girderKey,const 
 
    ATLASSERT(ratingType == pgsTypes::lrPermit_Routine || ratingType == pgsTypes::lrPermit_Special);
 
-   std::vector<Float64> vDCmin, vDCmax;
-   std::vector<Float64> vDWmin, vDWmax;
-   std::vector<Float64> vCRmin, vCRmax;
-   std::vector<Float64> vSHmin, vSHmax;
-   std::vector<Float64> vREmin, vREmax;
-   std::vector<Float64> vPSmin, vPSmax;
-   std::vector<Float64> vLLIMmin,vLLIMmax;
-   std::vector<VehicleIndexType> vMinTruckIndex, vMaxTruckIndex;
-   std::vector<Float64> vPLmin,vPLmax;
-   GetMoments(girderKey,bPositiveMoment,ratingType, vehicleIdx, vPoi, vDCmin, vDCmax, vDWmin, vDWmax, vCRmin, vCRmax, vSHmin, vSHmax, vREmin, vREmax, vPSmin, vPSmax, vLLIMmin, vMinTruckIndex, vLLIMmax, vMaxTruckIndex, vPLmin, vPLmax);
-
    pgsTypes::LimitState ls = (ratingType == pgsTypes::lrPermit_Routine ? pgsTypes::ServiceI_PermitRoutine : pgsTypes::ServiceI_PermitSpecial);
 
    GET_IFACE(IRatingSpecification,pRatingSpec);
@@ -979,23 +966,23 @@ void pgsLoadRater::CheckReinforcementYielding(const CGirderKey& girderKey,const 
    GET_IFACE(ICrackedSection,pCrackedSection);
    std::vector<CRACKEDSECTIONDETAILS> vCrackedSection = pCrackedSection->GetCrackedSectionDetails(vPoi,bPositiveMoment);
    
-   ATLASSERT(vPoi.size()     == vDCmax.size());
-   ATLASSERT(vPoi.size()     == vDWmax.size());
-   ATLASSERT(bTimeStep ? vPoi.size() == vCRmax.size() : true);
-   ATLASSERT(bTimeStep ? vPoi.size() == vSHmax.size() : true);
-   ATLASSERT(bTimeStep ? vPoi.size() == vREmax.size() : true);
-   ATLASSERT(bTimeStep ? vPoi.size() == vPSmax.size() : true);
-   ATLASSERT(vPoi.size()     == vLLIMmax.size());
+   ATLASSERT(vPoi.size()     == moments.vDCmax.size());
+   ATLASSERT(vPoi.size()     == moments.vDWmax.size());
+   ATLASSERT(bTimeStep ? vPoi.size() == moments.vCRmax.size() : true);
+   ATLASSERT(bTimeStep ? vPoi.size() == moments.vSHmax.size() : true);
+   ATLASSERT(bTimeStep ? vPoi.size() == moments.vREmax.size() : true);
+   ATLASSERT(bTimeStep ? vPoi.size() == moments.vPSmax.size() : true);
+   ATLASSERT(vPoi.size()     == moments.vLLIMmax.size());
    ATLASSERT(vPoi.size()     == vMcr.size());
    ATLASSERT(vPoi.size()     == vCrackedSection.size());
-   ATLASSERT(vDCmin.size()   == vDCmax.size());
-   ATLASSERT(vDWmin.size()   == vDWmax.size());
-   ATLASSERT(vCRmin.size()   == vCRmax.size());
-   ATLASSERT(vSHmin.size()   == vSHmax.size());
-   ATLASSERT(vREmin.size()   == vREmax.size());
-   ATLASSERT(vPSmin.size()   == vPSmax.size());
-   ATLASSERT(vLLIMmin.size() == vLLIMmax.size());
-   ATLASSERT(vPLmin.size()   == vPLmax.size());
+   ATLASSERT(moments.vDCmin.size()   == moments.vDCmax.size());
+   ATLASSERT(moments.vDWmin.size()   == moments.vDWmax.size());
+   ATLASSERT(moments.vCRmin.size()   == moments.vCRmax.size());
+   ATLASSERT(moments.vSHmin.size()   == moments.vSHmax.size());
+   ATLASSERT(moments.vREmin.size()   == moments.vREmax.size());
+   ATLASSERT(moments.vPSmin.size()   == moments.vPSmax.size());
+   ATLASSERT(moments.vLLIMmin.size() == moments.vLLIMmax.size());
+   ATLASSERT(moments.vPLmin.size()   == moments.vPLmax.size());
 
 
    // Get load factors
@@ -1239,31 +1226,35 @@ void pgsLoadRater::CheckReinforcementYielding(const CGirderKey& girderKey,const 
       Float64 K = pRatingSpec->GetYieldStressLimitCoefficient();
 
       Float64 gM;
+      Float64 vLLIMmax = moments.vLLIMmax[i];
+      Float64 vLLIMmin = moments.vLLIMmin[i];
       if ( ratingType == pgsTypes::lrPermit_Special ) // if it is any of the special permit types
       {
          // The live load distribution factor used for special permits is one loaded lane without multiple presense factor.
+         // This is the Fatigue LLDF. See MBE 6A.4.5.4.2b and C6A.5.4.2.2b.
          // However, when evaluating the reinforcement yielding in the Service I limit state (the thing this function does)
          // the controlling of one loaded lane and two or more loaded lanes live load distribution factors is to be used.
-         // (See MBE 6A.4.5.4.2b and C6A.5.4.2.2b).
+         // See 6A.5.4.2.2b
          //
-         // vLLIMmin and vLLIMmax includes the one lane LLDF... divide out this LLDF and multiply by the correct LLDF
+         // vLLIMmin and vLLIMmax includes the one lane LLDF (Fatigue)... divide out this LLDF and multiply by the correct LLDF (Service I)
 
          Float64 gpM_Service, gnM_Service, gV;
          Float64 gpM_Fatigue, gnM_Fatigue;
-      
+
+
          GET_IFACE(ILiveLoadDistributionFactors,pLLDF);
          pLLDF->GetDistributionFactors(poi,pgsTypes::FatigueI,              &gpM_Fatigue,&gnM_Fatigue,&gV);
          pLLDF->GetDistributionFactors(poi,pgsTypes::ServiceI_PermitSpecial,&gpM_Service,&gnM_Service,&gV);
 
          if ( bPositiveMoment )
          {
-            gM = gpM_Fatigue;
-            vLLIMmax[i] *= gpM_Fatigue/gpM_Service;
+            gM = gpM_Service;
+            vLLIMmax *= gpM_Service / gpM_Fatigue;
          }
          else
          {
-            gM = gnM_Fatigue;
-            vLLIMmin[i] *= gnM_Fatigue/gnM_Service;
+            gM = gnM_Service;
+            vLLIMmin *= gnM_Service / gnM_Fatigue;
          }
       }
       else
@@ -1275,16 +1266,16 @@ void pgsLoadRater::CheckReinforcementYielding(const CGirderKey& girderKey,const 
          gM = (bPositiveMoment ? gpM : gnM);
       }
 
-      Float64 DC   = (bPositiveMoment ? vDCmax[i]   : vDCmin[i]);
-      Float64 DW   = (bPositiveMoment ? vDWmax[i]   : vDWmin[i]);
+      Float64 DC   = (bPositiveMoment ? moments.vDCmax[i] : moments.vDCmin[i]);
+      Float64 DW   = (bPositiveMoment ? moments.vDWmax[i] : moments.vDWmin[i]);
 
       Float64 CR, SH, RE, PS;
       if ( bTimeStep )
       {
-         CR = (bPositiveMoment ? vCRmax[i]   : vCRmin[i]);
-         SH = (bPositiveMoment ? vSHmax[i]   : vSHmin[i]);
-         RE = (bPositiveMoment ? vREmax[i]   : vREmin[i]);
-         PS = (bPositiveMoment ? vPSmax[i]   : vPSmin[i]);
+         CR = (bPositiveMoment ? moments.vCRmax[i] : moments.vCRmin[i]);
+         SH = (bPositiveMoment ? moments.vSHmax[i] : moments.vSHmin[i]);
+         RE = (bPositiveMoment ? moments.vREmax[i] : moments.vREmin[i]);
+         PS = (bPositiveMoment ? moments.vPSmax[i] : moments.vPSmin[i]);
       }
       else
       {
@@ -1294,12 +1285,12 @@ void pgsLoadRater::CheckReinforcementYielding(const CGirderKey& girderKey,const 
          PS = 0;
       }
 
-      Float64 LLIM = (bPositiveMoment ? vLLIMmax[i] : vLLIMmin[i]);
-      Float64 PL   = (bIncludePL ? (bPositiveMoment ? vPLmax[i]   : vPLmin[i]) : 0.0);
+      Float64 LLIM = (bPositiveMoment ? vLLIMmax : vLLIMmin);
+      Float64 PL   = (bIncludePL ? (bPositiveMoment ? moments.vPLmax[i]   : moments.vPLmin[i]) : 0.0);
       VehicleIndexType truck_index = vehicleIdx;
       if ( vehicleIdx == INVALID_INDEX )
       {
-         truck_index = (bPositiveMoment ? vMaxTruckIndex[i] : vMinTruckIndex[i]);
+         truck_index = (bPositiveMoment ? moments.vMaxTruckIndex[i] : moments.vMinTruckIndex[i]);
       }
 
       std::_tstring strVehicleName = strLLNames[truck_index];
@@ -1440,7 +1431,7 @@ void pgsLoadRater::CheckReinforcementYielding(const CGirderKey& girderKey,const 
    }
 }
 
-void pgsLoadRater::GetMoments(const CGirderKey& girderKey,bool bPositiveMoment,pgsTypes::LoadRatingType ratingType,VehicleIndexType vehicleIdx, const PoiList& vPoi, std::vector<Float64>& vDCmin, std::vector<Float64>& vDCmax,std::vector<Float64>& vDWmin, std::vector<Float64>& vDWmax,std::vector<Float64>& vCRmin, std::vector<Float64>& vCRmax,std::vector<Float64>& vSHmin, std::vector<Float64>& vSHmax,std::vector<Float64>& vREmin, std::vector<Float64>& vREmax,std::vector<Float64>& vPSmin, std::vector<Float64>& vPSmax, std::vector<Float64>& vLLIMmin, std::vector<VehicleIndexType>& vMinTruckIndex,std::vector<Float64>& vLLIMmax,std::vector<VehicleIndexType>& vMaxTruckIndex,std::vector<Float64>& vPLmin,std::vector<Float64>& vPLmax) const
+void pgsLoadRater::GetMoments(const CGirderKey& girderKey, bool bPositiveMoment, pgsTypes::LoadRatingType ratingType, VehicleIndexType vehicleIdx, const PoiList& vPoi, Moments* pMoments) const
 {
    GET_IFACE(ILibrary,pLib);
    GET_IFACE(ISpecification,pSpec);
@@ -1481,40 +1472,40 @@ void pgsLoadRater::GetMoments(const CGirderKey& girderKey,bool bPositiveMoment,p
    GET_IFACE(IProductForces2,pProductForces);
    if ( bPositiveMoment || (!bPositiveMoment && bIncludeNoncompositeMoments) )
    {
-      vDCmin = pCombinedForces->GetMoment(loadRatingIntervalIdx,lcDC,vPoi,batMin,rtCumulative);
-      vDCmax = pCombinedForces->GetMoment(loadRatingIntervalIdx,lcDC,vPoi,batMax,rtCumulative);
+      pMoments->vDCmin = pCombinedForces->GetMoment(loadRatingIntervalIdx,lcDC,vPoi,batMin,rtCumulative);
+      pMoments->vDCmax = pCombinedForces->GetMoment(loadRatingIntervalIdx,lcDC,vPoi,batMax,rtCumulative);
 
-      vDWmin = pCombinedForces->GetMoment(loadRatingIntervalIdx,lcDWRating,vPoi,batMin,rtCumulative);
-      vDWmax = pCombinedForces->GetMoment(loadRatingIntervalIdx,lcDWRating,vPoi,batMax,rtCumulative);
+      pMoments->vDWmin = pCombinedForces->GetMoment(loadRatingIntervalIdx,lcDWRating,vPoi,batMin,rtCumulative);
+      pMoments->vDWmax = pCombinedForces->GetMoment(loadRatingIntervalIdx,lcDWRating,vPoi,batMax,rtCumulative);
 
       if ( bTimeStep )
       {
-         vCRmin = pCombinedForces->GetMoment(loadRatingIntervalIdx,lcCR,vPoi,batMin,rtCumulative);
-         vCRmax = pCombinedForces->GetMoment(loadRatingIntervalIdx,lcCR,vPoi,batMax,rtCumulative);
+         pMoments->vCRmin = pCombinedForces->GetMoment(loadRatingIntervalIdx,lcCR,vPoi,batMin,rtCumulative);
+         pMoments->vCRmax = pCombinedForces->GetMoment(loadRatingIntervalIdx,lcCR,vPoi,batMax,rtCumulative);
 
-         vSHmin = pCombinedForces->GetMoment(loadRatingIntervalIdx,lcSH,vPoi,batMin,rtCumulative);
-         vSHmax = pCombinedForces->GetMoment(loadRatingIntervalIdx,lcSH,vPoi,batMax,rtCumulative);
+         pMoments->vSHmin = pCombinedForces->GetMoment(loadRatingIntervalIdx,lcSH,vPoi,batMin,rtCumulative);
+         pMoments->vSHmax = pCombinedForces->GetMoment(loadRatingIntervalIdx,lcSH,vPoi,batMax,rtCumulative);
 
-         vREmin = pCombinedForces->GetMoment(loadRatingIntervalIdx,lcRE,vPoi,batMin,rtCumulative);
-         vREmax = pCombinedForces->GetMoment(loadRatingIntervalIdx,lcRE,vPoi,batMax,rtCumulative);
+         pMoments->vREmin = pCombinedForces->GetMoment(loadRatingIntervalIdx,lcRE,vPoi,batMin,rtCumulative);
+         pMoments->vREmax = pCombinedForces->GetMoment(loadRatingIntervalIdx,lcRE,vPoi,batMax,rtCumulative);
 
-         vPSmin = pCombinedForces->GetMoment(loadRatingIntervalIdx,lcPS,vPoi,batMin,rtCumulative);
-         vPSmax = pCombinedForces->GetMoment(loadRatingIntervalIdx,lcPS,vPoi,batMax,rtCumulative);
+         pMoments->vPSmin = pCombinedForces->GetMoment(loadRatingIntervalIdx,lcPS,vPoi,batMin,rtCumulative);
+         pMoments->vPSmax = pCombinedForces->GetMoment(loadRatingIntervalIdx,lcPS,vPoi,batMax,rtCumulative);
       }
 
       if ( vehicleIdx == INVALID_INDEX )
       {
-         pProductForces->GetLiveLoadMoment(loadRatingIntervalIdx,llType,vPoi,batMin,true,true,&vLLIMmin,&vUnused,&vMinTruckIndex,&vUnusedIndex);
-         pProductForces->GetLiveLoadMoment(loadRatingIntervalIdx,llType,vPoi,batMax,true,true,&vUnused,&vLLIMmax,&vUnusedIndex,&vMaxTruckIndex);
+         pProductForces->GetLiveLoadMoment(loadRatingIntervalIdx,llType,vPoi,batMin,true,true,&pMoments->vLLIMmin,&vUnused,&pMoments->vMinTruckIndex,&vUnusedIndex);
+         pProductForces->GetLiveLoadMoment(loadRatingIntervalIdx,llType,vPoi,batMax,true,true,&vUnused,&pMoments->vLLIMmax,&vUnusedIndex,&pMoments->vMaxTruckIndex);
       }
       else
       {
-         pProductForces->GetVehicularLiveLoadMoment(loadRatingIntervalIdx,llType,vehicleIdx,vPoi,batMin,true,true,&vLLIMmin,&vUnused,nullptr,nullptr);
-         pProductForces->GetVehicularLiveLoadMoment(loadRatingIntervalIdx,llType,vehicleIdx,vPoi,batMax,true,true,&vUnused,&vLLIMmax,nullptr,nullptr);
+         pProductForces->GetVehicularLiveLoadMoment(loadRatingIntervalIdx,llType,vehicleIdx,vPoi,batMin,true,true,&pMoments->vLLIMmin,&vUnused,nullptr,nullptr);
+         pProductForces->GetVehicularLiveLoadMoment(loadRatingIntervalIdx,llType,vehicleIdx,vPoi,batMax,true,true,&vUnused,&pMoments->vLLIMmax,nullptr,nullptr);
       }
 
-      pCombinedForces->GetCombinedLiveLoadMoment( loadRatingIntervalIdx, pgsTypes::lltPedestrian, vPoi, batMin, &vPLmin, &vUnused );
-      pCombinedForces->GetCombinedLiveLoadMoment( loadRatingIntervalIdx, pgsTypes::lltPedestrian, vPoi, batMax, &vUnused, &vPLmax );
+      pCombinedForces->GetCombinedLiveLoadMoment( loadRatingIntervalIdx, pgsTypes::lltPedestrian, vPoi, batMin, &pMoments->vPLmin, &vUnused );
+      pCombinedForces->GetCombinedLiveLoadMoment( loadRatingIntervalIdx, pgsTypes::lltPedestrian, vPoi, batMax, &vUnused, &pMoments->vPLmax );
    }
    else
    {
@@ -1608,91 +1599,139 @@ void pgsLoadRater::GetMoments(const CGirderKey& girderKey,bool bPositiveMoment,p
 
       if ( vehicleIdx == INVALID_INDEX )
       {
-         pProductForces->GetLiveLoadMoment( loadRatingIntervalIdx, llType, vPoi, batMin, true, true, &vLLIMmin, &vUnused, &vMinTruckIndex, &vUnusedIndex );
-         pProductForces->GetLiveLoadMoment( loadRatingIntervalIdx, llType, vPoi, batMax, true, true, &vUnused, &vLLIMmax, &vUnusedIndex, &vMaxTruckIndex );
+         pProductForces->GetLiveLoadMoment( loadRatingIntervalIdx, llType, vPoi, batMin, true, true, &pMoments->vLLIMmin, &vUnused, &pMoments->vMinTruckIndex, &vUnusedIndex );
+         pProductForces->GetLiveLoadMoment( loadRatingIntervalIdx, llType, vPoi, batMax, true, true, &vUnused, &pMoments->vLLIMmax, &vUnusedIndex, &pMoments->vMaxTruckIndex );
       }
       else
       {
-         pProductForces->GetVehicularLiveLoadMoment(loadRatingIntervalIdx,llType,vehicleIdx,vPoi,batMin,true,true,&vLLIMmin,&vUnused,nullptr,nullptr);
-         pProductForces->GetVehicularLiveLoadMoment(loadRatingIntervalIdx,llType,vehicleIdx,vPoi,batMax,true,true,&vUnused,&vLLIMmax,nullptr,nullptr);
+         pProductForces->GetVehicularLiveLoadMoment(loadRatingIntervalIdx,llType,vehicleIdx,vPoi,batMin,true,true,&pMoments->vLLIMmin,&vUnused,nullptr,nullptr);
+         pProductForces->GetVehicularLiveLoadMoment(loadRatingIntervalIdx,llType,vehicleIdx,vPoi,batMax,true,true,&vUnused,&pMoments->vLLIMmax,nullptr,nullptr);
       }
 
       // sum DC and DW
 
       // initialize
-      vDCmin.resize(vPoi.size(),0);
-      vDCmax.resize(vPoi.size(),0);
-      vDWmin.resize(vPoi.size(),0);
-      vDWmax.resize(vPoi.size(),0);
+      pMoments->vDCmin.resize(vPoi.size(),0);
+      pMoments->vDCmax.resize(vPoi.size(),0);
+      pMoments->vDWmin.resize(vPoi.size(),0);
+      pMoments->vDWmax.resize(vPoi.size(),0);
 
       if ( bTimeStep )
       {
-         vCRmin.resize(vPoi.size(),0);
-         vCRmax.resize(vPoi.size(),0);
-         vSHmin.resize(vPoi.size(),0);
-         vSHmax.resize(vPoi.size(),0);
-         vREmin.resize(vPoi.size(),0);
-         vREmax.resize(vPoi.size(),0);
+         pMoments->vCRmin.resize(vPoi.size(),0);
+         pMoments->vCRmax.resize(vPoi.size(),0);
+         pMoments->vSHmin.resize(vPoi.size(),0);
+         pMoments->vSHmax.resize(vPoi.size(),0);
+         pMoments->vREmin.resize(vPoi.size(),0);
+         pMoments->vREmax.resize(vPoi.size(),0);
       }
 
-      vPSmin.resize(vPoi.size(),0);
-      vPSmax.resize(vPoi.size(),0);
+      pMoments->vPSmin.resize(vPoi.size(),0);
+      pMoments->vPSmax.resize(vPoi.size(),0);
 
       GET_IFACE(IPointOfInterest,pPoi);
-      special_transform(pBridge,pPoi,pIntervals,vPoi.begin(),vPoi.end(),vConstructionMin.begin(),vDCmin.begin(),vDCmin.begin());
-      special_transform(pBridge,pPoi,pIntervals,vPoi.begin(),vPoi.end(),vConstructionMax.begin(),vDCmax.begin(),vDCmax.begin());
-      special_transform(pBridge,pPoi,pIntervals,vPoi.begin(),vPoi.end(),vSlabMin.begin(),vDCmin.begin(),vDCmin.begin());
-      special_transform(pBridge,pPoi,pIntervals,vPoi.begin(),vPoi.end(),vSlabMax.begin(),vDCmax.begin(),vDCmax.begin());
-      special_transform(pBridge,pPoi,pIntervals,vPoi.begin(),vPoi.end(),vSlabPanelMin.begin(),vDCmin.begin(),vDCmin.begin());
-      special_transform(pBridge,pPoi,pIntervals,vPoi.begin(),vPoi.end(),vSlabPanelMax.begin(),vDCmax.begin(),vDCmax.begin());
-      special_transform(pBridge,pPoi,pIntervals,vPoi.begin(),vPoi.end(),vDiaphragmMin.begin(),vDCmin.begin(),vDCmin.begin());
-      special_transform(pBridge,pPoi,pIntervals,vPoi.begin(),vPoi.end(),vDiaphragmMax.begin(),vDCmax.begin(),vDCmax.begin());
-      special_transform(pBridge,pPoi,pIntervals,vPoi.begin(),vPoi.end(),vShearKeyMin.begin(),vDCmin.begin(),vDCmin.begin());
-      special_transform(pBridge,pPoi,pIntervals,vPoi.begin(),vPoi.end(),vShearKeyMax.begin(),vDCmax.begin(),vDCmax.begin());
+      special_transform(pBridge,pPoi,pIntervals,vPoi.cbegin(),vPoi.cend(),vConstructionMin.cbegin(), pMoments->vDCmin.begin(), pMoments->vDCmin.begin());
+      special_transform(pBridge,pPoi,pIntervals,vPoi.cbegin(),vPoi.cend(),vConstructionMax.cbegin(), pMoments->vDCmax.begin(), pMoments->vDCmax.begin());
+      special_transform(pBridge,pPoi,pIntervals,vPoi.cbegin(),vPoi.cend(),vSlabMin.cbegin(), pMoments->vDCmin.begin(), pMoments->vDCmin.begin());
+      special_transform(pBridge,pPoi,pIntervals,vPoi.cbegin(),vPoi.cend(),vSlabMax.cbegin(), pMoments->vDCmax.begin(), pMoments->vDCmax.begin());
+      special_transform(pBridge,pPoi,pIntervals,vPoi.cbegin(),vPoi.cend(),vSlabPanelMin.cbegin(), pMoments->vDCmin.begin(), pMoments->vDCmin.begin());
+      special_transform(pBridge,pPoi,pIntervals,vPoi.cbegin(),vPoi.cend(),vSlabPanelMax.cbegin(), pMoments->vDCmax.begin(), pMoments->vDCmax.begin());
+      special_transform(pBridge,pPoi,pIntervals,vPoi.cbegin(),vPoi.cend(),vDiaphragmMin.cbegin(), pMoments->vDCmin.begin(), pMoments->vDCmin.begin());
+      special_transform(pBridge,pPoi,pIntervals,vPoi.cbegin(),vPoi.cend(),vDiaphragmMax.cbegin(), pMoments->vDCmax.begin(), pMoments->vDCmax.begin());
+      special_transform(pBridge,pPoi,pIntervals,vPoi.cbegin(),vPoi.cend(),vShearKeyMin.cbegin(), pMoments->vDCmin.begin(), pMoments->vDCmin.begin());
+      special_transform(pBridge,pPoi,pIntervals,vPoi.cbegin(),vPoi.cend(),vShearKeyMax.cbegin(), pMoments->vDCmax.begin(), pMoments->vDCmax.begin());
 
-      std::transform(vUserDC1Min.cbegin(),vUserDC1Min.cend(),vDCmin.cbegin(),vDCmin.begin(),[](const auto& a, const auto& b) {return a + b;});
-      std::transform(vUserDC1Max.cbegin(),vUserDC1Max.cend(),vDCmax.cbegin(),vDCmax.begin(),[](const auto& a, const auto& b) {return a + b;});
+#if defined _USE_MULTITHREADING
+      // we are doing a bunch of summing on independent data structures... why not do it in parallel?
+      // spawn a bunch of async method calls and wait for them to complete
+      std::vector<std::future<void>> vFutures;
 
-      std::transform(vUserDW1Min.cbegin(),vUserDW1Min.cend(),vDWmin.cbegin(),vDWmin.begin(),[](const auto& a, const auto& b) {return a + b;});
-      std::transform(vUserDW1Max.cbegin(),vUserDW1Max.cend(),vDWmax.cbegin(),vDWmax.begin(),[](const auto& a, const auto& b) {return a + b;});
+      vFutures.emplace_back(std::async([&] {std::transform(vUserDC1Min.cbegin(), vUserDC1Min.cend(), pMoments->vDCmin.cbegin(), pMoments->vDCmin.begin(), [](const auto& a, const auto& b) {return a + b;});}));
+      vFutures.emplace_back(std::async([&] {std::transform(vUserDC1Max.cbegin(), vUserDC1Max.cend(), pMoments->vDCmax.cbegin(), pMoments->vDCmax.begin(), [](const auto& a, const auto& b) {return a + b;});}));
 
-      std::transform(vUserDC2Min.cbegin(),vUserDC2Min.cend(),vDCmin.cbegin(),vDCmin.begin(),[](const auto& a, const auto& b) {return a + b;});
-      std::transform(vUserDC2Max.cbegin(),vUserDC2Max.cend(),vDCmax.cbegin(),vDCmax.begin(),[](const auto& a, const auto& b) {return a + b;});
+      vFutures.emplace_back(std::async([&] {std::transform(vUserDW1Min.cbegin(), vUserDW1Min.cend(), pMoments->vDWmin.cbegin(), pMoments->vDWmin.begin(), [](const auto& a, const auto& b) {return a + b;});}));
+      vFutures.emplace_back(std::async([&] {std::transform(vUserDW1Max.cbegin(), vUserDW1Max.cend(), pMoments->vDWmax.cbegin(), pMoments->vDWmax.begin(), [](const auto& a, const auto& b) {return a + b;});}));
 
-      std::transform(vUserDW2Min.cbegin(),vUserDW2Min.cend(),vDWmin.cbegin(),vDWmin.begin(),[](const auto& a, const auto& b) {return a + b;});
-      std::transform(vUserDW2Max.cbegin(),vUserDW2Max.cend(),vDWmax.cbegin(),vDWmax.begin(),[](const auto& a, const auto& b) {return a + b;});
+      vFutures.emplace_back(std::async([&] {std::transform(vUserDC2Min.cbegin(), vUserDC2Min.cend(), pMoments->vDCmin.cbegin(), pMoments->vDCmin.begin(), [](const auto& a, const auto& b) {return a + b;});}));
+      vFutures.emplace_back(std::async([&] {std::transform(vUserDC2Max.cbegin(), vUserDC2Max.cend(), pMoments->vDCmax.cbegin(), pMoments->vDCmax.begin(), [](const auto& a, const auto& b) {return a + b;});}));
 
-      std::transform(vTrafficBarrierMin.cbegin(),vTrafficBarrierMin.cend(),vDCmin.cbegin(),vDCmin.begin(),[](const auto& a, const auto& b) {return a + b;});
-      std::transform(vTrafficBarrierMax.cbegin(),vTrafficBarrierMax.cend(),vDCmax.cbegin(),vDCmax.begin(),[](const auto& a, const auto& b) {return a + b;});
+      vFutures.emplace_back(std::async([&] {std::transform(vUserDW2Min.cbegin(), vUserDW2Min.cend(), pMoments->vDWmin.cbegin(), pMoments->vDWmin.begin(), [](const auto& a, const auto& b) {return a + b;});}));
+      vFutures.emplace_back(std::async([&] {std::transform(vUserDW2Max.cbegin(), vUserDW2Max.cend(), pMoments->vDWmax.cbegin(), pMoments->vDWmax.begin(), [](const auto& a, const auto& b) {return a + b;});}));
 
-      std::transform(vSidewalkMin.cbegin(),vSidewalkMin.cend(),vDCmin.cbegin(),vDCmin.begin(),[](const auto& a, const auto& b) {return a + b;});
-      std::transform(vSidewalkMax.cbegin(),vSidewalkMax.cend(),vDCmax.cbegin(),vDCmax.begin(),[](const auto& a, const auto& b) {return a + b;});
+      vFutures.emplace_back(std::async([&] {std::transform(vTrafficBarrierMin.cbegin(), vTrafficBarrierMin.cend(), pMoments->vDCmin.cbegin(), pMoments->vDCmin.begin(), [](const auto& a, const auto& b) {return a + b;});}));
+      vFutures.emplace_back(std::async([&] {std::transform(vTrafficBarrierMax.cbegin(), vTrafficBarrierMax.cend(), pMoments->vDCmax.cbegin(), pMoments->vDCmax.begin(), [](const auto& a, const auto& b) {return a + b;});}));
 
-      std::transform(vOverlayMin.cbegin(),vOverlayMin.cend(),vDWmin.cbegin(),vDWmin.begin(),[](const auto& a, const auto& b) {return a + b;});
-      std::transform(vOverlayMax.cbegin(),vOverlayMax.cend(),vDWmax.cbegin(),vDWmax.begin(),[](const auto& a, const auto& b) {return a + b;});
+      vFutures.emplace_back(std::async([&] {std::transform(vSidewalkMin.cbegin(), vSidewalkMin.cend(), pMoments->vDCmin.cbegin(), pMoments->vDCmin.begin(), [](const auto& a, const auto& b) {return a + b;});}));
+      vFutures.emplace_back(std::async([&] {std::transform(vSidewalkMax.cbegin(), vSidewalkMax.cend(), pMoments->vDCmax.cbegin(), pMoments->vDCmax.begin(), [](const auto& a, const auto& b) {return a + b;});}));
+
+      vFutures.emplace_back(std::async([&] {std::transform(vOverlayMin.cbegin(), vOverlayMin.cend(), pMoments->vDWmin.cbegin(), pMoments->vDWmin.begin(), [](const auto& a, const auto& b) {return a + b;});}));
+      vFutures.emplace_back(std::async([&] {std::transform(vOverlayMax.cbegin(), vOverlayMax.cend(), pMoments->vDWmax.cbegin(), pMoments->vDWmax.begin(), [](const auto& a, const auto& b) {return a + b;});}));
+
+      if (bTimeStep)
+      {
+         vFutures.emplace_back(std::async([&] {std::transform(vCreepMin.cbegin(), vCreepMin.cend(), pMoments->vCRmin.cbegin(), pMoments->vCRmin.begin(), [](const auto& a, const auto& b) {return a + b;});}));
+         vFutures.emplace_back(std::async([&] {std::transform(vCreepMax.cbegin(), vCreepMax.cend(), pMoments->vCRmax.cbegin(), pMoments->vCRmax.begin(), [](const auto& a, const auto& b) {return a + b;});}));
+
+         vFutures.emplace_back(std::async([&] {std::transform(vShrinkageMin.cbegin(), vShrinkageMin.cend(), pMoments->vSHmin.cbegin(), pMoments->vSHmin.begin(), [](const auto& a, const auto& b) {return a + b;});}));
+         vFutures.emplace_back(std::async([&] {std::transform(vShrinkageMax.cbegin(), vShrinkageMax.cend(), pMoments->vSHmax.cbegin(), pMoments->vSHmax.begin(), [](const auto& a, const auto& b) {return a + b;});}));
+
+         vFutures.emplace_back(std::async([&] {std::transform(vRelaxationMin.cbegin(), vRelaxationMin.cend(), pMoments->vREmin.cbegin(), pMoments->vREmin.begin(), [](const auto& a, const auto& b) {return a + b;});}));
+         vFutures.emplace_back(std::async([&] {std::transform(vRelaxationMax.cbegin(), vRelaxationMax.cend(), pMoments->vREmax.cbegin(), pMoments->vREmax.begin(), [](const auto& a, const auto& b) {return a + b;});}));
+
+         vFutures.emplace_back(std::async([&] {std::transform(vSecondaryMin.cbegin(), vSecondaryMin.cend(), pMoments->vPSmin.cbegin(), pMoments->vPSmin.begin(), [](const auto& a, const auto& b) {return a + b;});}));
+         vFutures.emplace_back(std::async([&] {std::transform(vSecondaryMax.cbegin(), vSecondaryMax.cend(), pMoments->vPSmax.cbegin(), pMoments->vPSmax.begin(), [](const auto& a, const auto& b) {return a + b;});}));
+      }
+
+      // wait for async calls to complete
+      for (auto& f : vFutures)
+      {
+         f.wait();
+      }
+#else
+      std::transform(vUserDC1Min.cbegin(),vUserDC1Min.cend(), pMoments->vDCmin.cbegin(), pMoments->vDCmin.begin(),[](const auto& a, const auto& b) {return a + b;});
+      std::transform(vUserDC1Max.cbegin(),vUserDC1Max.cend(), pMoments->vDCmax.cbegin(), pMoments->vDCmax.begin(),[](const auto& a, const auto& b) {return a + b;});
+
+      std::transform(vUserDW1Min.cbegin(),vUserDW1Min.cend(), pMoments->vDWmin.cbegin(), pMoments->vDWmin.begin(),[](const auto& a, const auto& b) {return a + b;});
+      std::transform(vUserDW1Max.cbegin(),vUserDW1Max.cend(), pMoments->vDWmax.cbegin(), pMoments->vDWmax.begin(),[](const auto& a, const auto& b) {return a + b;});
+
+      std::transform(vUserDC2Min.cbegin(),vUserDC2Min.cend(), pMoments->vDCmin.cbegin(), pMoments->vDCmin.begin(),[](const auto& a, const auto& b) {return a + b;});
+      std::transform(vUserDC2Max.cbegin(),vUserDC2Max.cend(), pMoments->vDCmax.cbegin(), pMoments->vDCmax.begin(),[](const auto& a, const auto& b) {return a + b;});
+
+      std::transform(vUserDW2Min.cbegin(),vUserDW2Min.cend(), pMoments->vDWmin.cbegin(), pMoments->vDWmin.begin(),[](const auto& a, const auto& b) {return a + b;});
+      std::transform(vUserDW2Max.cbegin(),vUserDW2Max.cend(), pMoments->vDWmax.cbegin(), pMoments->vDWmax.begin(),[](const auto& a, const auto& b) {return a + b;});
+
+      std::transform(vTrafficBarrierMin.cbegin(),vTrafficBarrierMin.cend(), pMoments->vDCmin.cbegin(), pMoments->vDCmin.begin(),[](const auto& a, const auto& b) {return a + b;});
+      std::transform(vTrafficBarrierMax.cbegin(),vTrafficBarrierMax.cend(), pMoments->vDCmax.cbegin(), pMoments->vDCmax.begin(),[](const auto& a, const auto& b) {return a + b;});
+
+      std::transform(vSidewalkMin.cbegin(),vSidewalkMin.cend(), pMoments->vDCmin.cbegin(), pMoments->vDCmin.begin(),[](const auto& a, const auto& b) {return a + b;});
+      std::transform(vSidewalkMax.cbegin(),vSidewalkMax.cend(), pMoments->vDCmax.cbegin(), pMoments->vDCmax.begin(),[](const auto& a, const auto& b) {return a + b;});
+
+      std::transform(vOverlayMin.cbegin(),vOverlayMin.cend(), pMoments->vDWmin.cbegin(), pMoments->vDWmin.begin(),[](const auto& a, const auto& b) {return a + b;});
+      std::transform(vOverlayMax.cbegin(),vOverlayMax.cend(), pMoments->vDWmax.cbegin(), pMoments->vDWmax.begin(),[](const auto& a, const auto& b) {return a + b;});
 
       if ( bTimeStep )
       {
-         std::transform(vCreepMin.cbegin(),vCreepMin.cend(),vCRmin.cbegin(),vCRmin.begin(),[](const auto& a, const auto& b) {return a + b;});
-         std::transform(vCreepMax.cbegin(),vCreepMax.cend(),vCRmax.cbegin(),vCRmax.begin(),[](const auto& a, const auto& b) {return a + b;});
+         std::transform(vCreepMin.cbegin(),vCreepMin.cend(), pMoments->vCRmin.cbegin(), pMoments->vCRmin.begin(),[](const auto& a, const auto& b) {return a + b;});
+         std::transform(vCreepMax.cbegin(),vCreepMax.cend(), pMoments->vCRmax.cbegin(), pMoments->vCRmax.begin(),[](const auto& a, const auto& b) {return a + b;});
 
-         std::transform(vShrinkageMin.cbegin(),vShrinkageMin.cend(),vSHmin.cbegin(),vSHmin.begin(),[](const auto& a, const auto& b) {return a + b;});
-         std::transform(vShrinkageMax.cbegin(),vShrinkageMax.cend(),vSHmax.cbegin(),vSHmax.begin(),[](const auto& a, const auto& b) {return a + b;});
+         std::transform(vShrinkageMin.cbegin(),vShrinkageMin.cend(), pMoments->vSHmin.cbegin(), pMoments->vSHmin.begin(),[](const auto& a, const auto& b) {return a + b;});
+         std::transform(vShrinkageMax.cbegin(),vShrinkageMax.cend(), pMoments->vSHmax.cbegin(), pMoments->vSHmax.begin(),[](const auto& a, const auto& b) {return a + b;});
 
-         std::transform(vRelaxationMin.cbegin(),vRelaxationMin.cend(),vREmin.cbegin(),vREmin.begin(),[](const auto& a, const auto& b) {return a + b;});
-         std::transform(vRelaxationMax.cbegin(),vRelaxationMax.cend(),vREmax.cbegin(),vREmax.begin(),[](const auto& a, const auto& b) {return a + b;});
+         std::transform(vRelaxationMin.cbegin(),vRelaxationMin.cend(), pMoments->vREmin.cbegin(), pMoments->vREmin.begin(),[](const auto& a, const auto& b) {return a + b;});
+         std::transform(vRelaxationMax.cbegin(),vRelaxationMax.cend(), pMoments->vREmax.cbegin(), pMoments->vREmax.begin(),[](const auto& a, const auto& b) {return a + b;});
 
-         std::transform(vSecondaryMin.cbegin(),vSecondaryMin.cend(),vPSmin.cbegin(),vPSmin.begin(),[](const auto& a, const auto& b) {return a + b;});
-         std::transform(vSecondaryMax.cbegin(),vSecondaryMax.cend(),vPSmax.cbegin(),vPSmax.begin(),[](const auto& a, const auto& b) {return a + b;});
+         std::transform(vSecondaryMin.cbegin(),vSecondaryMin.cend(), pMoments->vPSmin.cbegin(), pMoments->vPSmin.begin(),[](const auto& a, const auto& b) {return a + b;});
+         std::transform(vSecondaryMax.cbegin(),vSecondaryMax.cend(), pMoments->vPSmax.cbegin(), pMoments->vPSmax.begin(),[](const auto& a, const auto& b) {return a + b;});
       }
+#endif
    }
 }
 
 void special_transform(IBridge* pBridge,IPointOfInterest* pPoi,IIntervals* pIntervals,
                        PoiList::const_iterator poiBeginIter,
                        PoiList::const_iterator poiEndIter,
-                       std::vector<Float64>::iterator forceBeginIter,
-                       std::vector<Float64>::iterator resultBeginIter,
+                       std::vector<Float64>::const_iterator forceBeginIter,
+                       std::vector<Float64>::const_iterator resultBeginIter,
                        std::vector<Float64>::iterator outputBeginIter)
 {
    auto poiIter( poiBeginIter );

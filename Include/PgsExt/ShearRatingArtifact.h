@@ -63,7 +63,7 @@ public:
    Float64 GetVehicleWeight() const;
 
    void SetVehicleName(LPCTSTR str);
-   std::_tstring GetVehicleName() const;
+   const std::_tstring& GetVehicleName() const;
 
    void SetSystemFactor(Float64 systemFactor);
    Float64 GetSystemFactor() const;

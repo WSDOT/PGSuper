@@ -21,9 +21,15 @@
 ///////////////////////////////////////////////////////////////////////
 
 #include "StdAfx.h"
-#include <PgsExt\PgsExtLib.h>
 #include "AlternativeTensileStressCalculator.h"
 #include <IFace\Bridge.h>
+#include <IFace\Project.h>
+
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
 
 /****************************************************************************
 CLASS
@@ -173,9 +179,11 @@ Float64 pgsAlternativeTensileStressCalculator::ComputeAlternativeStressRequireme
    {
       if (m_bGirderStresses )
       {
+         pgsTypes::HaunchAnalysisSectionPropertiesType hatype = m_pSectProps->GetHaunchAnalysisSectionPropertiesType();
+
          // Clip shape to determine concrete tension area
          CComPtr<IShape> shape;
-         m_pShapes->GetSegmentShape(m_IntervalIdx,poi,false,pgsTypes::scGirder,&shape);
+         m_pShapes->GetSegmentShape(m_IntervalIdx,poi,false,pgsTypes::scGirder,hatype,&shape);
 
          CComQIPtr<IXYPosition> position(shape);
          CComPtr<IPoint2d> bc;

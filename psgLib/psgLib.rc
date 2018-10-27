@@ -66,8 +66,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 4,0,0,0
- PRODUCTVERSION 4,0,0,0
+ FILEVERSION 4,0,1,0
+ PRODUCTVERSION 4,0,1,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -85,11 +85,11 @@ BEGIN
             VALUE "Comments", "A member of the Alternate Route Project"
             VALUE "CompanyName", "Washington State Department of Transportation"
             VALUE "FileDescription", "psgLib DLL"
-            VALUE "FileVersion", "4.0.0.0"
+            VALUE "FileVersion", "4.0.1.0"
             VALUE "InternalName", "psgLib"
             VALUE "OriginalFilename", "psgLib.DLL"
             VALUE "ProductName", "PGSuper"
-            VALUE "ProductVersion", "4.0.0.0"
+            VALUE "ProductVersion", "4.0.1.0"
         END
     END
     BLOCK "VarFileInfo"
@@ -391,7 +391,7 @@ BEGIN
     LTEXT           "You must correct all errors before the girder data is accepted.",IDC_STATIC,7,20,192,8
 END
 
-IDD_SPEC_DESCR DIALOGEX 0, 0, 355, 270
+IDD_SPEC_DESCR DIALOGEX 0, 0, 355, 322
 STYLE DS_SETFONT | DS_MODALFRAME | WS_CHILD | WS_CAPTION | WS_SYSMENU
 CAPTION "General"
 FONT 8, "MS Sans Serif", 0, 0, 0x0
@@ -407,11 +407,12 @@ BEGIN
     CONTROL         "SI Units Version (Note: SI not available after 2006)",IDC_SPEC_UNITS_SI,
                     "Button",BS_AUTORADIOBUTTON | WS_GROUP,14,180,174,10
     CONTROL         "US Units Version",IDC_SPEC_UNITS_US,"Button",BS_AUTORADIOBUTTON,14,192,69,10
-    GROUPBOX        "Section Properties",IDC_STATIC,7,215,341,47
+    GROUPBOX        "Section Properties",IDC_STATIC,7,215,341,76
     CONTROL         "Gross",IDC_GROSS,"Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,15,231,34,10
     CONTROL         "Transformed",IDC_TRANSFORMED,"Button",BS_AUTORADIOBUTTON,15,247,55,10
     LTEXT           "Compute effective flange width",IDC_STATIC,94,232,98,8
     COMBOBOX        IDC_EFF_FLANGE_WIDTH,197,231,142,72,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    CTEXT           "NOTE: Note: The slab haunch can be included in composite section properties. See settings on the Creep and Camber tab",IDC_STATIC,21,265,318,20,WS_BORDER
 END
 
 IDD_WSDOT_HAULING DIALOGEX 0, 0, 480, 393
@@ -591,12 +592,12 @@ BEGIN
     LTEXT           "times the least gross concrete thickness at the duct",IDC_STATIC,179,400,162,8
 END
 
-IDD_SPEC_CREEP DIALOGEX 0, 0, 275, 244
+IDD_SPEC_CREEP DIALOGEX 0, 0, 411, 434
 STYLE DS_SETFONT | DS_MODALFRAME | WS_CHILD | WS_CAPTION | WS_SYSMENU
 CAPTION "Creep and Camber"
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
-    GROUPBOX        "General Creep and Camber Parameters",IDC_STATIC,8,6,260,231
+    GROUPBOX        "General Creep and Camber Parameters",IDC_STATIC,8,6,396,231
     CTEXT           "NOTE: These parameters do not apply to Time-Step analysis",IDC_STATIC,20,20,239,10,WS_BORDER
     LTEXT           "Time from stressing to prestress transfer",IDC_STATIC,17,38,158,17
     EDITTEXT        IDC_XFER_TIME,209,38,24,14,ES_RIGHT | ES_AUTOHSCROLL
@@ -625,6 +626,20 @@ BEGIN
     LTEXT           "1 day of accelerated curing is equal to ",IDC_STATIC,27,213,123,8
     EDITTEXT        IDC_CURING_TIME_FACTOR,152,211,18,14,ES_AUTOHSCROLL | ES_NUMBER
     LTEXT           "days of normal curing",IDC_STATIC,174,213,68,8
+    GROUPBOX        "Haunch Dead Load",IDC_STATIC,21,303,365,68
+    CTEXT           "NOTE: These parameters do not apply to PGSplice",IDC_STATIC,21,265,242,11,WS_BORDER
+    LTEXT           "Compute haunch dead load accounting for roadway elevation changes and assuming:",IDC_STATIC,29,316,288,8
+    COMBOBOX        IDC_HAUNCH_COMP_CB,30,331,347,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Maximum Allowed difference between assumed and computed excess camber",IDC_HAUNCH_TOLER_STATIC,23,286,249,8
+    EDITTEXT        IDC_HAUNCH_TOLER,273,282,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_HAUNCH_TOLER_UNIT,317,286,19,8
+    LTEXT           "Use",IDC_HAUNCH_FACTOR1,31,353,13,8
+    EDITTEXT        IDC_HAUNCH_FACTOR,47,349,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "% of assumed excess camber when computing haunch dead load",IDC_HAUNCH_FACTOR2,93,354,239,8
+    GROUPBOX        "Assumed Excess Camber and Haunch",IDC_STATIC,8,247,396,187
+    GROUPBOX        "Composite Sections",IDC_STATIC,21,377,365,52
+    LTEXT           "Compute stiffness, stresses, and ultimate capacities using haunch depth assuming:",IDC_STATIC,29,391,288,8
+    COMBOBOX        IDC_HAUNCH_COMP_PROPS_CB,29,406,347,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
 END
 
 IDD_SPEC_LOSSES DIALOGEX 0, 0, 494, 224
@@ -873,7 +888,7 @@ CAPTION "Edit Strand Location"
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
     COMBOBOX        IDC_STRAND_TYPE,63,33,80,60,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    EDITTEXT        IDC_HPX,58,94,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    EDITTEXT        IDC_HPX,58,95,40,14,ES_RIGHT | ES_AUTOHSCROLL
     EDITTEXT        IDC_HPY,57,114,40,14,ES_RIGHT | ES_AUTOHSCROLL
     EDITTEXT        IDC_GEX,203,95,40,14,ES_RIGHT | ES_AUTOHSCROLL
     EDITTEXT        IDC_GEY,203,114,40,14,ES_RIGHT | ES_AUTOHSCROLL
@@ -884,16 +899,16 @@ BEGIN
     RTEXT           "Strand Type",IDC_STATIC,11,37,47,8
     GROUPBOX        "Location at Harping Points",IDC_HP_BOX,20,63,127,78
     LTEXT           "Measured from Bottom C.L. of Girder",IDC_STATIC,24,77,119,8
-    LTEXT           "Xb",IDC_STATIC,41,100,10,8
-    LTEXT           "Static",IDC_HPX_T,103,100,19,8
-    LTEXT           "Yb",IDC_STATIC,41,120,10,8
-    LTEXT           "Static",IDC_HPY_T,103,120,19,8
+    LTEXT           "Xb",IDC_STATIC,41,97,10,8
+    LTEXT           "Static",IDC_HPX_T,103,97,19,8
+    LTEXT           "Yb",IDC_STATIC,41,117,10,8
+    LTEXT           "Static",IDC_HPY_T,103,117,19,8
     GROUPBOX        "Harped Strand Locaton at Girder Ends",IDC_HS_BOX,165,63,138,78
-    LTEXT           "Measured from Top C.L. of Girder",IDC_HS_TXT,169,78,119,8
-    LTEXT           "Xt",IDC_HS_XT,187,101,8,8
-    LTEXT           "Static",IDC_GEX_T,249,101,19,8
-    LTEXT           "Yt",IDC_HS_YT,187,121,8,8
-    LTEXT           "Static",IDC_GEY_T,249,121,19,8
+    LTEXT           "Measured from Top C.L. of Girder",IDC_HS_TXT,169,77,119,8
+    LTEXT           "Xt",IDC_HS_XT,187,97,8,8
+    LTEXT           "Static",IDC_GEX_T,249,97,19,8
+    LTEXT           "Yt",IDC_HS_YT,187,117,8,8
+    LTEXT           "Static",IDC_GEY_T,249,117,19,8
     LTEXT           "NOTE: Input of a positive X coordinate will create a pair of strand locations at (X,Y) and (-X,Y).",IDC_STATIC,7,145,296,10
     CONTROL         "Allow straight strand(s) to be debonded",IDC_ALLOW_DEBONDING,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,153,34,150,10
@@ -1143,18 +1158,18 @@ BEGIN
     LTEXT           "sqrt(f'c)",IDC_ALWC_FR_UNIT,143,101,154,8
     LTEXT           "MPa",IDC_FR_LABEL_ALWC,172,101,31,8,NOT WS_VISIBLE
     GROUPBOX        "Resistance Factor (LRFD 5.5.4.2)",IDC_PHI_GROUP,7,122,427,71
-    GROUPBOX        "Conventional Construction (LRFD 5.5.4.2.1)",IDC_STATIC,12,137,172,50
+    GROUPBOX        "Conventional Construction (LRFD 5.5.4.2)",IDC_STATIC,12,137,172,50
     LTEXT           "Normal weight concrete",IDC_STATIC,19,152,76,8
     EDITTEXT        IDC_NWC_PHI,32,163,23,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "Lightweight concrete",IDC_STATIC,105,152,67,8
     EDITTEXT        IDC_LWC_PHI,126,163,23,14,ES_RIGHT | ES_AUTOHSCROLL
-    GROUPBOX        "Closure Joint (LRFD 5.5.4.2.2, 5.14.1.3.2d)",IDC_SCLOSURE,187,137,243,50
+    GROUPBOX        "Closure Joint (LRFD 5.5.4.2, 5.14.1.3.2d)",IDC_SCLOSURE,187,137,243,50
     LTEXT           "Fully Bonded Tendons",IDC_STATIC,197,164,72,8
     LTEXT           "Normal weight concrete",IDC_PHI_NWC_HEADER2,279,152,76,8
     EDITTEXT        IDC_NWC_JOINT_PHI,291,163,23,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "Lightweight concrete",IDC_PHI_LWC_HEADER2,359,152,67,8
     EDITTEXT        IDC_LWC_JOINT_PHI,379,163,23,14,ES_RIGHT | ES_AUTOHSCROLL
-    GROUPBOX        "Maximum Spacing of Transverse Reinforcement (LRFD 5.8.2.7)",IDC_STATIC,7,196,376,61
+    GROUPBOX        "Maximum Spacing of Transverse Reinforcement (LRFD 5.7.2.6)",IDC_STATIC,7,196,376,61
     LTEXT           "vu < 0.125f'c  Smax = ",IDC_SPACING_LABEL_1,19,218,115,8
     EDITTEXT        IDC_SPACING_COEFFICIENT_1,138,216,21,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "dv <=",IDC_STATIC,161,219,19,8
@@ -1222,7 +1237,7 @@ BEGIN
     EDITTEXT        IDC_LWC_PHI_TENSION_SPLICED,296,197,23,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "Compression-controlled",IDC_LWC_PHI_COMPRESSION_LABEL,192,216,74,8
     EDITTEXT        IDC_LWC_PHI_COMPRESSION,296,212,23,14,ES_RIGHT | ES_AUTOHSCROLL
-    GROUPBOX        "Closure Joint (LRFD 5.14.1.3.2d, 5.5.4.2.2)",IDC_SCLOSURE,12,239,327,40
+    GROUPBOX        "Closure Joint (LRFD 5.14.1.3.2d, 5.5.4.2)",IDC_SCLOSURE,12,239,327,40
     LTEXT           "Fully Bonded Tendons",IDC_STATIC,21,262,72,8
     LTEXT           "Normal weight concrete",IDC_PHI_NWC_HEADER2,120,250,76,8
     EDITTEXT        IDC_NWC_JOINT_PHI,133,260,23,14,ES_RIGHT | ES_AUTOHSCROLL
@@ -1659,7 +1674,7 @@ BEGIN
     LTEXT           "MPa",IDC_AFTER_DECK_TENSION_MAX_UNIT,355,400,25,8
 END
 
-IDD_SPEC_DEAD_LOADS DIALOGEX 0, 0, 379, 227
+IDD_SPEC_DEAD_LOADS DIALOGEX 0, 0, 379, 154
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Dead Loads"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
@@ -1672,16 +1687,8 @@ BEGIN
     GROUPBOX        "Distribution of Overlay Dead Load",IDC_STATIC,7,60,365,40
     LTEXT           "Distribute overlay dead load",IDC_STATIC,15,78,94,10
     COMBOBOX        IDC_OVERLAY_DISTR,109,75,158,72,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    GROUPBOX        "Haunch Dead Load",IDC_STATIC,7,106,365,118
-    LTEXT           "NOTE: These parameters do not apply to Time-Step analysis, where excess camber is always assumed to be zero when computing haunch load.",IDC_STATIC,25,120,302,20,WS_BORDER
-    LTEXT           "Compute haunch dead load assuming:",IDC_STATIC,15,151,167,8
-    COMBOBOX        IDC_HAUNCH_COMP_CB,16,166,347,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Allowable tolerance between assumed and computed excess camber",IDC_HAUNCH_TOLER_STATIC,17,189,224,8
-    EDITTEXT        IDC_HAUNCH_TOLER,243,185,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Static",IDC_HAUNCH_TOLER_UNIT,287,189,19,8
-    LTEXT           "Use",IDC_HAUNCH_FACTOR1,16,208,13,8
-    EDITTEXT        IDC_HAUNCH_FACTOR,32,204,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "% of assumed excess camber when computing haunch dead load",IDC_HAUNCH_FACTOR2,77,208,239,8
+    GROUPBOX        "Haunch Dead Load",IDC_STATIC,7,109,365,42
+    LTEXT           "NOTE: The method used to distribute haunch loading is defined on the Creep and Camber tab",IDC_STATIC,25,123,319,13,WS_BORDER
 END
 
 IDD_SPEC_LIVE_LOADS DIALOGEX 0, 0, 351, 259
@@ -1956,7 +1963,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 348
         TOPMARGIN, 7
-        BOTTOMMARGIN, 263
+        BOTTOMMARGIN, 315
     END
 
     IDD_WSDOT_HAULING, DIALOG
@@ -1978,10 +1985,10 @@ BEGIN
     IDD_SPEC_CREEP, DIALOG
     BEGIN
         LEFTMARGIN, 7
-        RIGHTMARGIN, 268
+        RIGHTMARGIN, 404
         VERTGUIDE, 15
         TOPMARGIN, 6
-        BOTTOMMARGIN, 237
+        BOTTOMMARGIN, 427
     END
 
     IDD_SPEC_LOSSES, DIALOG
@@ -2198,7 +2205,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 372
         TOPMARGIN, 7
-        BOTTOMMARGIN, 224
+        BOTTOMMARGIN, 151
     END
 
     IDD_SPEC_LIVE_LOADS, DIALOG
@@ -2356,9 +2363,9 @@ END
 
 IDD_SPEC_STRANDS DLGINIT
 BEGIN
-    IDC_COMBO_TRANSFER, 0x403, 34, 0
+    IDC_COMBO_TRANSFER, 0x403, 35, 0
 0x6550, 0x2072, 0x524c, 0x4446, 0x5320, 0x6570, 0x6963, 0x6966, 0x6163, 
-0x6974, 0x6e6f, 0x2820, 0x2e35, 0x3131, 0x342e, 0x312e, 0x0029, 
+0x6974, 0x6e6f, 0x2820, 0x2e35, 0x2e39, 0x2e34, 0x2e33, 0x2931, "\000" 
     IDC_COMBO_TRANSFER, 0x403, 60, 0
 0x5a22, 0x7265, 0x226f, 0x7420, 0x6172, 0x736e, 0x6566, 0x2072, 0x656c, 
 0x676e, 0x6874, 0x202e, 0x4128, 0x7070, 0x6f72, 0x6978, 0x616d, 0x6574, 
@@ -2367,18 +2374,33 @@ BEGIN
     0
 END
 
-IDD_SPEC_DEAD_LOADS DLGINIT
+IDD_SPEC_CREEP DLGINIT
 BEGIN
     IDC_HAUNCH_COMP_CB, 0x403, 30, 0
-0x616e, 0x7574, 0x6172, 0x206c, 0x7865, 0x6563, 0x7373, 0x6320, 0x6d61, 
+0x614e, 0x7574, 0x6172, 0x206c, 0x7865, 0x6563, 0x7373, 0x6320, 0x6d61, 
 0x6562, 0x2072, 0x7369, 0x7a20, 0x7265, 0x006f, 
     IDC_HAUNCH_COMP_CB, 0x403, 100, 0
-0x7865, 0x6563, 0x7373, 0x6320, 0x6d61, 0x6562, 0x2072, 0x7369, 0x6420, 
+0x7845, 0x6563, 0x7373, 0x6320, 0x6d61, 0x6562, 0x2072, 0x7369, 0x6420, 
 0x6665, 0x6e69, 0x6465, 0x6220, 0x2079, 0x2061, 0x6170, 0x6172, 0x6f62, 
 0x616c, 0x6620, 0x7469, 0x6974, 0x676e, 0x7420, 0x6568, 0x5320, 0x616c, 
 0x2062, 0x664f, 0x7366, 0x7465, 0x6120, 0x646e, 0x6120, 0x7373, 0x6d75, 
 0x6465, 0x6520, 0x6378, 0x7365, 0x2073, 0x6163, 0x626d, 0x7265, 0x6420, 
 0x6d69, 0x6e65, 0x6973, 0x6e6f, 0x0073, 
+    IDC_HAUNCH_COMP_PROPS_CB, 0x403, 31, 0
+0x655a, 0x6f72, 0x6820, 0x7561, 0x636e, 0x2068, 0x6564, 0x7470, 0x2068, 
+0x6c61, 0x6e6f, 0x2067, 0x6967, 0x6472, 0x7265, "\000" 
+    IDC_HAUNCH_COMP_PROPS_CB, 0x403, 57, 0
+0x6f43, 0x736e, 0x6174, 0x746e, 0x6820, 0x7561, 0x636e, 0x2068, 0x6564, 
+0x7470, 0x2068, 0x6c61, 0x6e6f, 0x2067, 0x6967, 0x6472, 0x7265, 0x6520, 
+0x7571, 0x6c61, 0x7420, 0x206f, 0x6966, 0x6c6c, 0x7465, 0x7620, 0x6c61, 
+0x6575, "\000" 
+    IDC_HAUNCH_COMP_PROPS_CB, 0x403, 91, 0
+0x6156, 0x6972, 0x6261, 0x656c, 0x6820, 0x7561, 0x636e, 0x2068, 0x6564, 
+0x7470, 0x2068, 0x6361, 0x6f63, 0x6e75, 0x6974, 0x676e, 0x6620, 0x726f, 
+0x7220, 0x616f, 0x7764, 0x7961, 0x6520, 0x656c, 0x6176, 0x6974, 0x6e6f, 
+0x6120, 0x646e, 0x7020, 0x7261, 0x6261, 0x6c6f, 0x6369, 0x6120, 0x7373, 
+0x6d75, 0x6465, 0x6520, 0x6378, 0x7365, 0x2073, 0x6163, 0x626d, 0x7265, 
+"\000" 
     0
 END
 
@@ -2637,6 +2659,16 @@ BEGIN
 END
 
 IDD_SPEC_CLOSURE AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_SPEC_CREEP AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_SPEC_DESCR AFX_DIALOG_LAYOUT
 BEGIN
     0
 END

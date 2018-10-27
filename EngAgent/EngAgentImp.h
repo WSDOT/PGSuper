@@ -330,7 +330,7 @@ public:
 // IGirderHaunch
 public:
    virtual Float64 GetRequiredSlabOffset(const CSpanKey& spanKey) const override;
-   virtual HAUNCHDETAILS GetHaunchDetails(const CSpanKey& spanKey) const override;
+   virtual const HAUNCHDETAILS& GetHaunchDetails(const CSpanKey& spanKey) const override;
    virtual Float64 GetSectionGirderOrientationEffect(const pgsPointOfInterest& poi) const override;
 
 // IFabricationOptimization

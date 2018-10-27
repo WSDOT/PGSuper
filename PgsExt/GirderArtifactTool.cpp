@@ -30,6 +30,12 @@
 #include <IFace\AnalysisResults.h>
 #include <IFace\DocumentType.h>
 
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
+
 bool FlexureStressFailures(IBroker* pBroker,const CSegmentKey& segmentKey,IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::StressType stressType,const pgsSegmentArtifact* pArtifact,bool bBeamStresses)
 {
    CollectionIndexType nArtifacts = pArtifact->GetFlexuralStressArtifactCount(intervalIdx,ls,stressType);
@@ -753,6 +759,12 @@ void ListVariousFailures(IBroker* pBroker,FailureList& rFailures,const pgsGirder
       rFailures.push_back(strMsg.GetBuffer());
    }
 
+   if (!pConstruct->FinishedElevationPassed())
+   {
+      CString strMsg(_T("Finished elevation check failed"));
+      rFailures.push_back(strMsg.GetBuffer());
+   }
+
    if ( pConstruct->IsHaunchAtBearingCLsApplicable() && !pConstruct->HaunchAtBearingCLsPassed() )
    {
       CString strMsg(_T("Minimum haunch depth at bearing centerlines check failed"));
@@ -775,7 +787,7 @@ void ListVariousFailures(IBroker* pBroker,FailureList& rFailures,const pgsGirder
       rFailures.push_back(_T("Bottom flange clearance check failed"));
    }
 
-   if ( !pConstruct->HaunchLoadGeometryPassed() )
+   if ( !pConstruct->HaunchGeometryPassed() )
    {
       rFailures.push_back(_T("Excess camber geometry check failed"));
    }

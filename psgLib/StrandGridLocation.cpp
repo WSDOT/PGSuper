@@ -238,7 +238,7 @@ void CStrandGridLocation::OnSelchangeStrandType()
       pHPBox->SetWindowText(_T("Location along Girder"));
       ShowDebondCtrl(TRUE);
 
-      if (m_UseHarpedGrid)
+      if (m_StrandType == 0 || m_UseHarpedGrid)
       {
          HideEndBox();
       }

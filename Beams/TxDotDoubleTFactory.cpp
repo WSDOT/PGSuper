@@ -123,58 +123,9 @@ void CTxDotDoubleTFactory::CreateGirderSection(IBroker* pBroker,StatusGroupIDTyp
    CComPtr<IMultiWeb2> beam;
    gdrSection->get_Beam(&beam);
 
-   Float64 c1,c2;
-   Float64 h1,h2,h3;
-   Float64 w1,w2,j;
-   Float64 t1,t2,t3;
-   Float64 f1;
-   GetDimensions(dimensions,h1,h2,h3,t1,t2,t3,f1,c1,c2,w1,w2,j);
-
-   beam->put_C1(c1);
-   beam->put_C2(c2);
-   beam->put_H1(h1);
-   beam->put_H2(h2);
-   beam->put_H3(h3);
-   beam->put_T1(t1);
-   beam->put_T2(t2);
-   beam->put_T3(t3);
-   beam->put_T4(0);
-   beam->put_T5(0);
-   beam->put_F1(f1);
-   beam->put_F2(0);
-   beam->put_W1(w1);
-   beam->put_W2(w2);
-   beam->put_WebCount(2);
+   DimensionAndPositionBeam(nullptr, dimensions, beam);
 
    gdrSection.QueryInterface(ppSection);
-}
-
-void CTxDotDoubleTFactory::CreateGirderProfile(IBroker* pBroker,StatusGroupIDType statusGroupID,const CSegmentKey& segmentKey,const IBeamFactory::Dimensions& dimensions,IShape** ppShape) const
-{
-   GET_IFACE2(pBroker,IBridge,pBridge);
-   Float64 length = pBridge->GetSegmentLength(segmentKey);
-
-   Float64 c1,c2;
-   Float64 h1,h2,h3;
-   Float64 w1,w2,j;
-   Float64 t1,t2,t3;
-   Float64 f1;
-   GetDimensions(dimensions,h1,h2,h3,t1,t2,t3,f1,c1,c2,w1,w2,j);
-
-   Float64 height = h1 + h2 + h3;
-
-   CComPtr<IRectangle> rect;
-   rect.CoCreateInstance(CLSID_Rect);
-   rect->put_Height(height);
-   rect->put_Width(length);
-
-   CComQIPtr<IXYPosition> position(rect);
-   CComPtr<IPoint2d> topLeft;
-   position->get_LocatorPoint(lpTopLeft,&topLeft);
-   topLeft->Move(0,0);
-   position->put_LocatorPoint(lpTopLeft,topLeft);
-
-   rect->QueryInterface(ppShape);
 }
 
 void CTxDotDoubleTFactory::CreateSegment(IBroker* pBroker,StatusGroupIDType statusGroupID,const CSegmentKey& segmentKey,ISuperstructureMemberSegment** ppSegment) const
@@ -194,20 +145,12 @@ void CTxDotDoubleTFactory::CreateSegment(IBroker* pBroker,StatusGroupIDType stat
 
    CComPtr<IGirderSection> gdrSection;
    CreateGirderSection(pBroker,statusGroupID,dimensions,-1,-1,&gdrSection);
+
    CComQIPtr<IMultiWebSection2> section(gdrSection);
+   CComPtr<IMultiWeb2> beam;
+   section->get_Beam(&beam);
 
-   // if this is an exterior girder, remove the shear key block outs
-   CComPtr<IMultiWeb2> multiWeb2Shape;
-   section->get_Beam(&multiWeb2Shape);
-   if ( segmentKey.girderIndex == 0 )
-   {
-      multiWeb2Shape->put_LeftBlockOut(VARIANT_FALSE);
-   }
-
-   if ( segmentKey.girderIndex == pGroup->GetGirderCount()-1 )
-   {
-      multiWeb2Shape->put_RightBlockOut(VARIANT_FALSE);
-   }
+   DimensionAndPositionBeam(pSegment, dimensions, beam);
 
    // Beam materials
    GET_IFACE2(pBroker,ILossParameters,pLossParams);
@@ -241,6 +184,31 @@ void CTxDotDoubleTFactory::CreateSegment(IBroker* pBroker,StatusGroupIDType stat
 
    CComQIPtr<ISuperstructureMemberSegment> ssmbrSegment(segment);
    ssmbrSegment.CopyTo(ppSegment);
+}
+
+void CTxDotDoubleTFactory::CreateSegmentShape(IBroker* pBroker, const CPrecastSegmentData* pSegment, Float64 Xs, pgsTypes::SectionBias sectionBias, IShape** ppShape) const
+{
+   const CSplicedGirderData* pGirder = pSegment->GetGirder();
+   const GirderLibraryEntry* pGirderEntry = pGirder->GetGirderLibraryEntry();
+   const auto& dimensions = pGirderEntry->GetDimensions();
+
+   CComPtr<IMultiWeb2> beam;
+   beam.CoCreateInstance(CLSID_MultiWeb2);
+
+   DimensionAndPositionBeam(pSegment, dimensions, beam);
+
+   beam.QueryInterface(ppShape);
+}
+
+Float64 CTxDotDoubleTFactory::GetSegmentHeight(IBroker* pBroker, const CPrecastSegmentData* pSegment, Float64 Xs) const
+{
+   const CSplicedGirderData* pGirder = pSegment->GetGirder();
+   const GirderLibraryEntry* pGirderEntry = pGirder->GetGirderLibraryEntry();
+   const auto& dimensions = pGirderEntry->GetDimensions();
+   Float64 H1 = GetDimension(dimensions, _T("H1"));
+   Float64 H2 = GetDimension(dimensions, _T("H2"));
+   Float64 H3 = GetDimension(dimensions, _T("H3"));
+   return H1 + H2 + H3;
 }
 
 void CTxDotDoubleTFactory::ConfigureSegment(IBroker* pBroker, StatusItemIDType statusID, const CSegmentKey& segmentKey, ISuperstructureMemberSegment* pSSMbrSegment) const
@@ -998,4 +966,56 @@ bool CTxDotDoubleTFactory::CanPrecamber() const
 GirderIndexType CTxDotDoubleTFactory::GetMinimumBeamCount() const
 {
    return 1;
+}
+
+void CTxDotDoubleTFactory::DimensionAndPositionBeam(const CPrecastSegmentData* pSegment,const IBeamFactory::Dimensions& dimensions, IMultiWeb2* pBeam) const
+{
+   Float64 c1, c2;
+   Float64 h1, h2, h3;
+   Float64 w1, w2, j;
+   Float64 t1, t2, t3;
+   Float64 f1;
+   GetDimensions(dimensions, h1, h2, h3, t1, t2, t3, f1, c1, c2, w1, w2, j);
+
+   pBeam->put_C1(c1);
+   pBeam->put_C2(c2);
+   pBeam->put_H1(h1);
+   pBeam->put_H2(h2);
+   pBeam->put_H3(h3);
+   pBeam->put_T1(t1);
+   pBeam->put_T2(t2);
+   pBeam->put_T3(t3);
+   pBeam->put_T4(0);
+   pBeam->put_T5(0);
+   pBeam->put_F1(f1);
+   pBeam->put_F2(0);
+   pBeam->put_W1(w1);
+   pBeam->put_W2(w2);
+   pBeam->put_WebCount(2);
+
+   if (pSegment)
+   {
+      // if this is an exterior girder, remove the shear key block outs
+      const CSegmentKey& segmentKey(pSegment->GetSegmentKey());
+      if (segmentKey.girderIndex == 0)
+      {
+         pBeam->put_LeftBlockOut(VARIANT_FALSE);
+      }
+
+      const CGirderGroupData* pGroup = pSegment->GetGirder()->GetGirderGroup();
+      if (segmentKey.girderIndex == pGroup->GetGirderCount() - 1)
+      {
+         pBeam->put_RightBlockOut(VARIANT_FALSE);
+      }
+   }
+
+
+   // Hook point is at bottom center of bounding box.
+   // Adjust hook point so top center of bounding box is at (0,0)
+   Float64 Hg;
+   pBeam->get_Height(&Hg);
+
+   CComPtr<IPoint2d> hookPt;
+   pBeam->get_HookPoint(&hookPt);
+   hookPt->Offset(0, -Hg);
 }

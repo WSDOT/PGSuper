@@ -91,7 +91,8 @@ public:
       DesignCancelled,
       NoDesignRequested,
       LldfRangeOfApplicabilityError,
-      DesignNotSupported // design could not be performed because design is not supported for the current application settings (e.g. time-step losses)
+      DesignNotSupported_Losses, // design could not be performed because design is not supported for the current application settings (e.g. time-step losses)
+      DesignNotSupported_Strands // design could not be performed because design is not supported for the current application settings (e.g. strand definition type)
    };
 
    // Design outcome data that isn't neccessarily a failure
@@ -104,7 +105,9 @@ public:
       dnLongitudinalBarsNeeded4FlexuralTensionCy,
       dnLongitudinalBarsNeeded4FlexuralTensionLifting,
       dnLongitudinalBarsNeeded4FlexuralTensionHauling,
-      dnConcreteStrengthIncreasedForShearStress
+      dnConcreteStrengthIncreasedForShearStress,
+      dnTransformedSectionsSetToGross,
+      dnParabolicHaunchSetToConstant
    };
 
 

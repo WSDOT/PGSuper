@@ -7,7 +7,7 @@ Bearing information can be described uniformly or uniquely for different locatio
 
 Bearing Data
 ------------
-> ![](BearingDescription.png)
+![](BearingDescription.png)
 
 
 Item | Description

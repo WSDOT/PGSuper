@@ -64,8 +64,16 @@ m_bIsSlabOffsetApplicable(false)
    m_ComputedExcessCamber = 0;
    m_AssumedExcessCamber = 0;
    m_AssumedMinimumHaunchDepth = Float64_Max;
-   m_HaunchLoadGeometryTolerance = 0;
-   m_bIsHaunchLoadGeometryCheckApplicable = false;
+   m_HaunchGeometryTolerance = 0;
+   m_bIsHaunchGeometryCheckApplicable = false;
+
+
+   m_bIsFinishedElevationApplicable = false;
+   m_FinishedElevationTolerance = 0;
+   m_Station = 0;
+   m_Offset = 0;
+   m_DesignElevation = 0;
+   m_FinishedElevation = 0;
 }
 
 pgsSpanConstructabilityArtifact::pgsSpanConstructabilityArtifact(const pgsSpanConstructabilityArtifact& rOther)
@@ -393,66 +401,66 @@ Float64 pgsSpanConstructabilityArtifact::GetAssumedMinimumHaunchDepth() const
    return m_AssumedMinimumHaunchDepth;
 }
 
-void pgsSpanConstructabilityArtifact::SetHaunchLoadGeometryCheckApplicability(bool bSet)
+void pgsSpanConstructabilityArtifact::SetHaunchGeometryCheckApplicability(bool bSet)
 {
-   m_bIsHaunchLoadGeometryCheckApplicable = bSet;
+   m_bIsHaunchGeometryCheckApplicable = bSet;
 }
 
-bool pgsSpanConstructabilityArtifact::IsHaunchLoadGeometryCheckApplicable() const
+bool pgsSpanConstructabilityArtifact::IsHaunchGeometryCheckApplicable() const
 {
-   return m_bIsHaunchLoadGeometryCheckApplicable;
+   return m_bIsHaunchGeometryCheckApplicable;
 }
 
-void pgsSpanConstructabilityArtifact::SetHaunchLoadGeometryTolerance(Float64 value)
+void pgsSpanConstructabilityArtifact::SetHaunchGeometryTolerance(Float64 value)
 {
-   m_HaunchLoadGeometryTolerance = value;
+   m_HaunchGeometryTolerance = value;
 }
 
-Float64 pgsSpanConstructabilityArtifact::GetHaunchLoadGeometryTolerance() const
+Float64 pgsSpanConstructabilityArtifact::GetHaunchGeometryTolerance() const
 {
-   return m_HaunchLoadGeometryTolerance;
+   return m_HaunchGeometryTolerance;
 }
 
-pgsSpanConstructabilityArtifact::HaunchLoadGeometryStatusType pgsSpanConstructabilityArtifact::HaunchLoadGeometryStatus() const
+pgsSpanConstructabilityArtifact::HaunchGeometryStatusType pgsSpanConstructabilityArtifact::HaunchGeometryStatus() const
 {
-   if (IsHaunchLoadGeometryCheckApplicable())
+   if (IsHaunchGeometryCheckApplicable())
    {
       // uses same applicability as slab offset check
       if (!m_bIsSlabOffsetApplicable)
       {
-         return hlgNAPrintOnly;
+         return hgNAPrintOnly;
       }
       else
       {
-         if (m_AssumedExcessCamber > m_ComputedExcessCamber + m_HaunchLoadGeometryTolerance)
+         if (m_AssumedExcessCamber > m_ComputedExcessCamber + m_HaunchGeometryTolerance)
          {
-            return hlgInsufficient;
+            return hgExcessive;
          }
-         else if (m_AssumedExcessCamber < m_ComputedExcessCamber - m_HaunchLoadGeometryTolerance)
+         else if (m_AssumedExcessCamber < m_ComputedExcessCamber - m_HaunchGeometryTolerance)
          {
-            return hlgExcessive;
+            return hgInsufficient ;
          }
          else
          {
-            return hlgPass;
+            return hgPass;
          }
       }
    }
    else
    {
-      return hlgNA;
+      return hgNA;
    }
 }
 
-bool pgsSpanConstructabilityArtifact::HaunchLoadGeometryPassed() const
+bool pgsSpanConstructabilityArtifact::HaunchGeometryPassed() const
 {
-   if (!IsHaunchLoadGeometryCheckApplicable())
+   if (!IsHaunchGeometryCheckApplicable())
    {
       return true;
    }
    else
    {
-      return HaunchLoadGeometryStatus() == hlgPass ||  HaunchLoadGeometryStatus() == hlgNAPrintOnly;
+      return HaunchGeometryStatus() == hgPass ||  HaunchGeometryStatus() == hgNAPrintOnly;
    }
 }
 
@@ -483,7 +491,12 @@ bool pgsSpanConstructabilityArtifact::Passed() const
       return false;
    }
 
-   if (!HaunchLoadGeometryPassed())
+   if (!HaunchGeometryPassed())
+   {
+      return false;
+   }
+
+   if (!FinishedElevationPassed())
    {
       return false;
    }
@@ -492,6 +505,49 @@ bool pgsSpanConstructabilityArtifact::Passed() const
 }
 
  //======================== ACCESS     =======================================
+
+void pgsSpanConstructabilityArtifact::SetFinishedElevationApplicability(bool bSet)
+{
+   m_bIsFinishedElevationApplicable = bSet;
+}
+
+bool pgsSpanConstructabilityArtifact::GetFinishedElevationApplicability() const
+{
+   return m_bIsFinishedElevationApplicable;
+}
+
+void pgsSpanConstructabilityArtifact::SetFinishedElevationTolerance(Float64 tol)
+{
+   m_FinishedElevationTolerance = tol;
+}
+
+Float64 pgsSpanConstructabilityArtifact::GetFinishedElevationTolerance() const
+{
+   return m_FinishedElevationTolerance;
+}
+
+void pgsSpanConstructabilityArtifact::SetMaxFinishedElevation(Float64 station, Float64 offset, const pgsPointOfInterest& poi, Float64 designElevation, Float64 finishedElevation)
+{
+   m_Station = station;
+   m_Offset = offset;
+   m_Poi = poi;
+   m_DesignElevation = designElevation;
+   m_FinishedElevation = finishedElevation;
+}
+
+void pgsSpanConstructabilityArtifact::GetMaxFinishedElevation(Float64* pStation, Float64* pOffset, pgsPointOfInterest* pPoi, Float64* pDesignElevation, Float64* pFinishedElevation) const
+{
+   *pStation = m_Station;
+   *pOffset = m_Offset;
+   *pPoi = m_Poi;
+   *pDesignElevation = m_DesignElevation;
+   *pFinishedElevation = m_FinishedElevation;
+}
+
+bool pgsSpanConstructabilityArtifact::FinishedElevationPassed() const
+{
+   return IsEqual(m_DesignElevation, m_FinishedElevation, m_FinishedElevationTolerance) ? true : false;
+}
 
 ////////////////////////// PROTECTED  ///////////////////////////////////////
 
@@ -527,9 +583,17 @@ void pgsSpanConstructabilityArtifact::MakeCopy(const pgsSpanConstructabilityArti
 
    m_ComputedExcessCamber = rOther.m_ComputedExcessCamber;
    m_AssumedExcessCamber = rOther.m_AssumedExcessCamber;
-   m_HaunchLoadGeometryTolerance = rOther.m_HaunchLoadGeometryTolerance;
-   m_bIsHaunchLoadGeometryCheckApplicable = rOther.m_bIsHaunchLoadGeometryCheckApplicable;
+   m_HaunchGeometryTolerance = rOther.m_HaunchGeometryTolerance;
+   m_bIsHaunchGeometryCheckApplicable = rOther.m_bIsHaunchGeometryCheckApplicable;
    m_AssumedMinimumHaunchDepth = rOther.m_AssumedMinimumHaunchDepth;
+
+   m_bIsFinishedElevationApplicable = rOther.m_bIsFinishedElevationApplicable;
+   m_FinishedElevationTolerance = rOther.m_FinishedElevationTolerance;
+   m_Station = rOther.m_Station;
+   m_Offset = rOther.m_Offset;
+   m_Poi = rOther.m_Poi;
+   m_DesignElevation = rOther.m_DesignElevation;
+   m_FinishedElevation = rOther.m_FinishedElevation;
 }
 
 void pgsSpanConstructabilityArtifact::MakeAssignment(const pgsSpanConstructabilityArtifact& rOther)
@@ -754,12 +818,36 @@ bool pgsConstructabilityArtifact::MinimumFilletPassed() const
    return true;
 }
 
-bool pgsConstructabilityArtifact::HaunchLoadGeometryPassed() const
+bool pgsConstructabilityArtifact::HaunchGeometryPassed() const
 {
    ATLASSERT(!m_SpanArtifacts.empty());
    for (const auto& artf : m_SpanArtifacts)
    {
-      if (!artf.HaunchLoadGeometryPassed())
+      if (!artf.HaunchGeometryPassed())
+         return false;
+   }
+
+   return true;
+}
+
+bool pgsConstructabilityArtifact::IsFinishedElevationApplicable() const
+{
+   ATLASSERT(!m_SpanArtifacts.empty());
+   for (const auto& artf : m_SpanArtifacts)
+   {
+      if (!artf.GetFinishedElevationApplicability())
+         return false;
+   }
+
+   return true;
+}
+
+bool pgsConstructabilityArtifact::FinishedElevationPassed() const
+{
+   ATLASSERT(!m_SpanArtifacts.empty());
+   for (const auto& artf : m_SpanArtifacts)
+   {
+      if (!artf.FinishedElevationPassed())
          return false;
    }
 

@@ -304,7 +304,7 @@ void haunch_summary(rptChapter* pChapter,IBroker* pBroker, const std::vector<CGi
       CSpanKey spanKey(girderKey.groupIndex, girderKey.girderIndex);  // precast girder bridge assumption here
 
       // haunch all along the girder
-      HAUNCHDETAILS haunch_details = pGdrHaunch->GetHaunchDetails(spanKey);
+      const auto& haunch_details = pGdrHaunch->GetHaunchDetails(spanKey);
 
       // find Z value at mid-span
       Float64 Z(0);

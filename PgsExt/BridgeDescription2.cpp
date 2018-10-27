@@ -2904,7 +2904,25 @@ pgsTypes::GirderOrientationType CBridgeDescription2::GetGirderOrientation() cons
 
 void CBridgeDescription2::SetGirderSpacingType(pgsTypes::SupportedBeamSpacing sbs)
 {
+   bool bExpandGroups = IsBridgeSpacing(m_GirderSpacingType) && !IsBridgeSpacing(sbs) ? true : false;
    m_GirderSpacingType = sbs;
+   if (bExpandGroups)
+   {
+      for (auto& group : m_GirderGroups)
+      {
+         if (group->GetGirderTypeGroupCount() <= 1)
+         {
+            group->ExpandAll();
+            group->JoinAll(0);
+         }
+
+         if (group->GetGirderTopWidthGroupCount() <= 1)
+         {
+            group->ExpandAllGirderTopWidthGroups();
+            group->JoinAllGirderTopWidthGroups(0);
+         }
+      }
+   }
 }
 
 pgsTypes::SupportedBeamSpacing CBridgeDescription2::GetGirderSpacingType() const

@@ -1228,9 +1228,14 @@ bool CPGSuperDocProxyAgent::EditDirectSelectionPrestressing(const CSegmentKey& s
    return m_pMyDocument->EditDirectSelectionPrestressing(segmentKey);
 }
 
-bool CPGSuperDocProxyAgent::EditDirectInputPrestressing(const CSegmentKey& segmentKey)
+bool CPGSuperDocProxyAgent::EditDirectRowInputPrestressing(const CSegmentKey& segmentKey)
 {
-   return m_pMyDocument->EditDirectInputPrestressing(segmentKey);
+   return m_pMyDocument->EditDirectRowInputPrestressing(segmentKey);
+}
+
+bool CPGSuperDocProxyAgent::EditDirectStrandInputPrestressing(const CSegmentKey& segmentKey)
+{
+   return m_pMyDocument->EditDirectStrandInputPrestressing(segmentKey);
 }
 
 void CPGSuperDocProxyAgent::AddPointLoad(const CPointLoadData& loadData)

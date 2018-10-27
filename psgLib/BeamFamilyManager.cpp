@@ -28,6 +28,13 @@
 
 #include <EAF\EAFUtilities.h>
 
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
+
+
 CBeamFamilyManager::FamilyContainer CBeamFamilyManager::m_Families;
 
 HRESULT CBeamFamilyManager::Init(CATID catid)

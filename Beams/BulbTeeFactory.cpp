@@ -137,6 +137,9 @@ HRESULT CBulbTeeFactory::FinalConstruct()
 
 void CBulbTeeFactory::CreateGirderSection(IBroker* pBroker,StatusItemIDType statusID,const IBeamFactory::Dimensions& dimensions,Float64 overallHeight,Float64 bottomFlangeHeight,IGirderSection** ppSection) const
 {
+   ATLASSERT(overallHeight < 0); // not a variable depth section
+   ATLASSERT(bottomFlangeHeight < 0); // not a variable bottom flange section
+
    CComPtr<IBulbTeeSection> gdrSection;
    gdrSection.CoCreateInstance(CLSID_BulbTeeSection);
    CComPtr<IBulbTee2> beam;
@@ -185,95 +188,89 @@ void CBulbTeeFactory::CreateGirderSection(IBroker* pBroker,StatusItemIDType stat
    beam->put_n1(0);
    beam->put_n2(0);
 
+   PositionBeamShape(beam);
+
    gdrSection.QueryInterface(ppSection);
-}
-
-void CBulbTeeFactory::CreateGirderProfile(IBroker* pBroker,StatusItemIDType statusID,const CSegmentKey& segmentKey,const IBeamFactory::Dimensions& dimensions,IShape** ppShape) const
-{
-   GET_IFACE2(pBroker,IBridge,pBridge);
-   Float64 length = pBridge->GetSegmentLength(segmentKey);
-
-   Float64 c1;
-   Float64 d1,d2,d3,d4,d5,d6,d7;
-   Float64 w1,w2,w3,w4,wmin,wmax;
-   Float64 t1,t2;
-   GetDimensions(dimensions,c1,d1,d2,d3,d4,d5,d6,d7,w1,w2,w3,w4,wmin,wmax,t1,t2);
-
-   Float64 height = d1 + d2 + d3 + d4 + d5 + d6 + d7;
-   
-   CComPtr<IPolyShape> polyShape;
-   polyShape.CoCreateInstance(CLSID_PolyShape);
-   
-   polyShape->AddPoint(0,0);
-   polyShape->AddPoint(length,0);
-
-   GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
-   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
-   const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(segmentKey.groupIndex);
-   const CSplicedGirderData*  pGirder = pGroup->GetGirder(segmentKey.girderIndex);
-   const CPrecastSegmentData* pSegment = pGirder->GetSegment(segmentKey.segmentIndex);
-
-   if ( pSegment->TopFlangeThickeningType == pgsTypes::tftEnds )
-   { 
-      Float64 tft = pSegment->TopFlangeThickeningType;
-      polyShape->AddPoint(length, height + tft);
-      polyShape->AddPoint(7 * length / 8, height + 0.5625*tft);
-      polyShape->AddPoint(6 * length / 8, height + 0.2500*tft);
-      polyShape->AddPoint(5 * length / 8, height + 0.0625*tft);
-      polyShape->AddPoint(4 * length / 8, height + 0.0000*tft);
-      polyShape->AddPoint(3 * length / 8, height + 0.0625*tft);
-      polyShape->AddPoint(2 * length / 8, height + 0.2500*tft);
-      polyShape->AddPoint(1 * length / 8, height + 0.5625*tft);
-      polyShape->AddPoint(0, height + tft);
-   }
-   else if(pSegment->TopFlangeThickeningType == pgsTypes::tftMiddle)
-   { 
-      Float64 tft = pSegment->TopFlangeThickeningType;
-      polyShape->AddPoint(length, height + 0.0000*tft);
-      polyShape->AddPoint(7 * length / 8, height + 0.0625*tft);
-      polyShape->AddPoint(6 * length / 8, height + 0.2500*tft);
-      polyShape->AddPoint(5 * length / 8, height + 0.5625*tft);
-      polyShape->AddPoint(4 * length / 8, height + 1.0000*tft);
-      polyShape->AddPoint(3 * length / 8, height + 0.5625*tft);
-      polyShape->AddPoint(2 * length / 8, height + 0.2500*tft);
-      polyShape->AddPoint(1 * length / 8, height + 0.0625*tft);
-      polyShape->AddPoint(0, height + 0.0000*tft);
-   }
-
-   CComQIPtr<IXYPosition> position(polyShape);
-   CComPtr<IPoint2d> topLeft;
-   position->get_LocatorPoint(lpTopLeft,&topLeft);
-   topLeft->Move(0,0);
-   position->put_LocatorPoint(lpTopLeft,topLeft);
-
-   polyShape->QueryInterface(ppShape);
 }
 
 void CBulbTeeFactory::CreateSegment(IBroker* pBroker,StatusItemIDType statusID,const CSegmentKey& segmentKey,ISuperstructureMemberSegment** ppSegment) const
 {
-
-   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
-   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
-   const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(segmentKey.groupIndex);
-   const CSplicedGirderData*  pGirder     = pGroup->GetGirder(segmentKey.girderIndex);
-   const CPrecastSegmentData* pSegment    = pGirder->GetSegment(segmentKey.segmentIndex);
-
-   const GirderLibraryEntry* pGdrEntry = pGirder->GetGirderLibraryEntry();
-   const GirderLibraryEntry::Dimensions& dimensions = pGdrEntry->GetDimensions();
-
-   m_bTransverseTopFlangeThickening = false;
-   pgsTypes::SupportedDeckType deckType = pBridgeDesc->GetDeckDescription()->GetDeckType();
-   if ((deckType == pgsTypes::sdtNone || deckType == pgsTypes::sdtCompositeOverlay || deckType == pgsTypes::sdtNonstructuralOverlay) && pBridgeDesc->GetGirderOrientation() == pgsTypes::Plumb)
-   {
-      m_bTransverseTopFlangeThickening = true;
-   }
-   
    CComPtr<ISuperstructureMemberSegment> segment;
    segment.CoCreateInstance(CLSID_ThickenedFlangeBulbTeeSegment);
 
    ATLASSERT(segment != nullptr);
 
    segment.CopyTo(ppSegment);
+}
+
+void CBulbTeeFactory::CreateSegmentShape(IBroker* pBroker, const CPrecastSegmentData* pSegment, Float64 Xs, pgsTypes::SectionBias sectionBias, IShape** ppShape) const
+{
+   // Create basic beam shape from dimensions in girder library
+   const CSplicedGirderData* pGirder = pSegment->GetGirder();
+   const GirderLibraryEntry* pGirderEntry = pGirder->GetGirderLibraryEntry();
+   const auto& dimensions = pGirderEntry->GetDimensions();
+
+   Float64 c1;
+   Float64 d1, d2, d3, d4, d5, d6, d7;
+   Float64 w1, w2, w3, w4, wmin, wmax;
+   Float64 t1, t2;
+   GetDimensions(dimensions, c1, d1, d2, d3, d4, d5, d6, d7, w1, w2, w3, w4, wmin, wmax, t1, t2);
+
+   CComPtr<IBulbTee2> beam;
+   beam.CoCreateInstance(CLSID_BulbTee2);
+
+   beam->put_D1(d1);
+   beam->put_D2(d2);
+   beam->put_D3(d3);
+   beam->put_D4(d4);
+   beam->put_D5(d5);
+   beam->put_D6(d6);
+   beam->put_D7(d7);
+   beam->put_W1(w1);
+   beam->put_W2(w2);
+   beam->put_W3(w3);
+   beam->put_W4(w4);
+   beam->put_W5(wmax / 2); // dummy value... will get fixed in ConfigureBeamShape
+   beam->put_W6(wmax / 2); // dummy value... will get fixed in ConfigureBeamShape
+   beam->put_T1(t1);
+   beam->put_T2(t2);
+   beam->put_C1(c1);
+   beam->put_C2(0);
+   beam->put_n1(0);
+   beam->put_n2(0);
+
+   // now configure the beam based on the girder modifiers and applicable roadway effects
+   ConfigureBeamShape(pBroker, pSegment, beam);
+
+   // lastly, since we are creating a shape at a specific location, we need to apply the top flange thickening if any
+   Float64 tft = GetFlangeThickening(pBroker, pSegment, Xs);
+   beam->put_D1(d1 + tft);
+
+   PositionBeamShape(beam);
+
+   beam.QueryInterface(ppShape);
+}
+
+Float64 CBulbTeeFactory::GetSegmentHeight(IBroker* pBroker, const CPrecastSegmentData* pSegment, Float64 Xs) const
+{
+   const CSplicedGirderData* pGirder = pSegment->GetGirder();
+   const GirderLibraryEntry* pGirderEntry = pGirder->GetGirderLibraryEntry();
+   const auto& dimensions = pGirderEntry->GetDimensions();
+
+   Float64 H = GetBeamHeight(dimensions, pgsTypes::metStart); // this is the basic beam height
+
+   // Compute the increase in height due to cross slope in the top flange
+   // compute measuring from each flange tip to get max value
+   Float64 c, n1, n2, left, right;
+   GetTopFlangeParameters(pBroker, pSegment, &c, &n1, &n2, &left, &right);
+   Float64 t_slope = Max(c*n1, (left + right - c)*n2);
+
+   // Longitudinal top flanging thickening
+   Float64 tft = GetFlangeThickening(pBroker, pSegment, Xs);
+
+   H += tft + t_slope;
+
+   return H;
 }
 
 void CBulbTeeFactory::ConfigureSegment(IBroker* pBroker, StatusItemIDType statusID, const CSegmentKey& segmentKey, ISuperstructureMemberSegment* pSSMbrSegment) const
@@ -284,7 +281,7 @@ void CBulbTeeFactory::ConfigureSegment(IBroker* pBroker, StatusItemIDType status
    const CSplicedGirderData*  pGirder = pGroup->GetGirder(segmentKey.girderIndex);
    const CPrecastSegmentData* pSegment = pGirder->GetSegment(segmentKey.segmentIndex);
 
-   bool bPrismatic = IsPrismatic(segmentKey);
+   bool bPrismatic = IsPrismatic(pSegment);
 
    // Build up the beam shape
    // Beam materials
@@ -334,10 +331,8 @@ void CBulbTeeFactory::ConfigureSegment(IBroker* pBroker, StatusItemIDType status
    CComPtr<IBulbTee2> beam;
    bulbTeeSection->get_Beam(&beam);
 
-   Float64 he; // minimum top flange thickness at girder ends
-   Float64 hm; // minimum top flange thickness at middle (L/2)
-   beam->get_D1(&he);
-   hm = he;
+   ConfigureBeamShape(pBroker, pSegment, beam);
+
    CComQIPtr<IThickenedFlangeSegment> thickenedFlangeSegment(pSSMbrSegment);
    if (pSegment->TopFlangeThickeningType == pgsTypes::tftNone)
    {
@@ -347,125 +342,6 @@ void CBulbTeeFactory::ConfigureSegment(IBroker* pBroker, StatusItemIDType status
    {
       thickenedFlangeSegment->put_FlangeThickeningType(pSegment->TopFlangeThickeningType == pgsTypes::tftEnds ? ttEnds : ttCenter);
       thickenedFlangeSegment->put_FlangeThickening(pSegment->TopFlangeThickening);
-
-      if (pSegment->TopFlangeThickeningType == pgsTypes::tftEnds)
-      {
-         he += pSegment->TopFlangeThickening;
-      }
-      else
-      {
-         hm += pSegment->TopFlangeThickening;
-      }
-   }
-
-   // CreateGirderSection above creates sort of a dummy section. Since the exact girder is unknown
-   // we don't know the input top width... here, we know the input top width so set it.
-   pgsTypes::TopWidthType topWidthType;
-   Float64 leftStart, rightStart, leftEnd, rightEnd;
-   pGirder->GetTopWidth(&topWidthType, &leftStart, &rightStart, &leftEnd, &rightEnd);
-   ATLASSERT(IsEqual(leftStart, leftEnd) && IsEqual(rightStart, rightEnd));
-   switch (topWidthType)
-   {
-   case pgsTypes::twtSymmetric:
-   case pgsTypes::twtCenteredCG: // if top flange is not thickened transversly, the top flange will be symmetric (deal with transverse thickening below)
-      beam->put_W5(leftStart / 2);
-      beam->put_W6(leftStart / 2);
-      break;
-
-   case pgsTypes::twtAsymmetric:
-      beam->put_W5(leftStart);
-      beam->put_W6(rightStart);
-      break;
-
-   default:
-      ATLASSERT(false); // should never get here... assume full
-      beam->put_W5(leftStart / 2);
-      beam->put_W6(leftStart / 2);
-   }
-
-   if (m_bTransverseTopFlangeThickening)
-   {
-      // need to get cross slope shape parameters
-      // c2, n1, n2
-      GET_IFACE2(pBroker, IBridge, pBridge);
-      Float64 station, offset;
-      pBridge->GetStationAndOffset(segmentKey, 0.0, &station, &offset);
-
-      GET_IFACE2(pBroker, IRoadway, pAlignment);
-      Float64 CPO = pAlignment->GetCrownPointOffset(station);
-
-      Float64 alignment_offset = pBridge->GetAlignmentOffset();
-
-
-      Float64 Wtf;
-      beam->get_TopFlangeWidth(&Wtf);
-#if defined _DEBUG
-      if (topWidthType == pgsTypes::twtAsymmetric)
-      {
-         ATLASSERT(IsEqual(Wtf, leftStart + rightStart));
-      }
-      else
-      {
-         ATLASSERT(IsEqual(Wtf, leftStart));
-      }
-#endif
-
-      Float64 left_edge_offset = offset - Wtf / 2;
-      Float64 right_edge_offset = offset + Wtf / 2;
-
-      Float64 n1, n2, c2; // c2 is the distance from the left flange tip to where the top flange slope changes from n1 to n2
-      if (IsLT(left_edge_offset,CPO) && IsLT(CPO,right_edge_offset))
-      {
-         // the crown point occurs somewhere in the top flange
-         n1 = pAlignment->GetSlope(station,left_edge_offset);
-         n2 = pAlignment->GetSlope(station,right_edge_offset);
-         c2 = fabs(CPO - left_edge_offset);
-      }
-      else
-      {
-         // the entire top flange is sloped at n2
-         n1 = 0;
-         n2 = pAlignment->GetSlope(station, offset);
-         c2 = 0; // no part of the top flange is sloped at n1
-      }
-
-      beam->put_n1(n1);
-      beam->put_n2(n2);
-      beam->put_C2(c2);
-
-      if (topWidthType == pgsTypes::twtCenteredCG)
-      {
-         Float64 k;
-         Float64 A = fabs(c2*n1);
-         Float64 B = fabs((Wtf - c2)*n2);
-         if ((IsZero(A) && n2 < 0) || (B < A && 0 <= n1 && n2 <= 0) || (n1 <= 0 && n2 <= 0))
-         {
-            // case 1b and 3
-            Float64 n = 0.5*Wtf*Wtf*(he + 2 * hm) + 0.5*(n2 - n1)*c2*c2*c2 - 0.5*n2*Wtf*Wtf*Wtf;
-            Float64 d = 2 * Wtf*(he + 2 * hm) + 3 * (n2 - n1)*c2*c2 - 3 * n2*Wtf*Wtf;
-            k = (2 * n) / (Wtf*d);
-         }
-         else if ((A <= B && 0 <= n1 && n2 <= 0) || (0 <= n1 && 0 <= n2))
-         {
-            // case 1a and 2
-            Float64 n = 0.5*Wtf*Wtf*(he + 2 * hm) + 0.5*(n2 - n1)*c2*c2*c2 - 1.5*(n2 - n1)*Wtf*Wtf*c2 + n2*Wtf*Wtf*Wtf;
-            Float64 d = 2 * Wtf*(he + 2 * hm) + 3 * (n2 - n1)*c2*c2 - 6 * (n2 - n1)*Wtf*c2 + 3 * n2*Wtf*Wtf;
-            k = (2 * n) / (Wtf*d);
-         }
-         else
-         {
-            // case 4
-            ATLASSERT(n1 <= 0 && 0 <= n2);
-            Float64 n = 0.5*Wtf*Wtf*(he + 2 * hm) + 0.5*(n2 - n1)*c2*c2*c2 - 1.5*n2*Wtf*Wtf*c2 + n2*Wtf*Wtf*Wtf;
-            Float64 d = 2 * Wtf*(he + 2 * hm) - 6 * n2*Wtf*c2 + 3 * (n2 - n1)*c2*c2 + 3 * n2*Wtf*Wtf;
-            k = (2 * n) / (Wtf*d);
-         }
-         
-         ATLASSERT(0.0 <= k && k <= 1.0);
-
-         beam->put_W5(k*leftStart);
-         beam->put_W6((1-k)*leftStart);
-      }
    }
 
    CComQIPtr<IShape> shape(gdrSection);
@@ -918,13 +794,7 @@ bool CBulbTeeFactory::IsPrismatic(const CSegmentKey& segmentKey) const
    const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(segmentKey.groupIndex);
    const CSplicedGirderData*  pGirder = pGroup->GetGirder(segmentKey.girderIndex);
    const CPrecastSegmentData* pSegment = pGirder->GetSegment(segmentKey.segmentIndex);
-
-   if (pSegment->TopFlangeThickeningType == pgsTypes::tftNone || IsZero(pSegment->TopFlangeThickening))
-   {
-      return true;
-   }
-
-   return false;
+   return IsPrismatic(pSegment);
 }
 
 bool CBulbTeeFactory::IsSymmetric(const CSegmentKey& segmentKey) const
@@ -1390,4 +1260,227 @@ void CBulbTeeFactory::UpdateBridgeModel(CBridgeDescription2* pBridgeDesc, const 
          }
       }
    }
+}
+
+bool CBulbTeeFactory::IsPrismatic(const CPrecastSegmentData* pSegment) const
+{
+   if (pSegment->TopFlangeThickeningType == pgsTypes::tftNone || IsZero(pSegment->TopFlangeThickening))
+   {
+      return true;
+   }
+
+   return false;
+}
+void CBulbTeeFactory::ConfigureBeamShape(IBroker* pBroker, const CPrecastSegmentData* pSegment, IBulbTee2* pBeam) const
+{
+   // pBeam is the basic section... figure out actual top width parameters
+   Float64 c2, n1, n2, left, right;
+   GetTopFlangeParameters(pBroker, pSegment, &c2, &n1, &n2, &left, &right);
+   pBeam->put_C2(c2);
+   pBeam->put_n1(n1);
+   pBeam->put_n2(n2);
+   pBeam->put_W5(left);
+   pBeam->put_W6(right);
+}
+
+void CBulbTeeFactory::GetTopWidth(IBroker* pBroker, const CPrecastSegmentData* pSegment, Float64 Xs,Float64* pLeft, Float64* pRight) const
+{
+   const CSplicedGirderData* pGirder = pSegment->GetGirder();
+
+   pgsTypes::TopWidthType topWidthType;
+   Float64 leftStart, rightStart, leftEnd, rightEnd;
+   pGirder->GetTopWidth(&topWidthType, &leftStart, &rightStart, &leftEnd, &rightEnd);
+
+   switch (topWidthType)
+   {
+   case pgsTypes::twtSymmetric:
+   case pgsTypes::twtCenteredCG:
+      leftStart /= 2;
+      rightStart = leftStart;
+
+      leftEnd /= 2;
+      rightEnd = leftEnd;
+      break;
+
+   case pgsTypes::twtAsymmetric:
+      // we already have left/right values
+      break;
+
+   default:
+      ATLASSERT(false);
+   }
+
+   GET_IFACE2(pBroker, IBridge, pBridge);
+   const auto& segmentKey(pSegment->GetSegmentKey());
+   Float64 Ls = pBridge->GetSegmentLength(segmentKey);
+
+   *pLeft  = ::LinInterp(Xs, leftStart,  leftEnd,  Ls);
+   *pRight = ::LinInterp(Xs, rightStart, rightEnd, Ls);
+}
+
+void CBulbTeeFactory::GetTopFlangeParameters(IBroker* pBroker, const CPrecastSegmentData* pSegment, Float64* pC, Float64* pN1, Float64* pN2,Float64* pLeft,Float64* pRight) const
+{
+   const CSplicedGirderData* pGirder = pSegment->GetGirder();
+
+   pgsTypes::TopWidthType topWidthType;
+   Float64 leftStart, rightStart, leftEnd, rightEnd;
+   pGirder->GetTopWidth(&topWidthType, &leftStart, &rightStart, &leftEnd, &rightEnd);
+
+   switch (topWidthType)
+   {
+   case pgsTypes::twtSymmetric:
+   case pgsTypes::twtCenteredCG: // we'll update the values below for this case
+      leftStart /= 2;
+      rightStart = leftStart;
+      break;
+
+   case pgsTypes::twtAsymmetric:
+      // we already have left/right values
+      break;
+
+   default:
+      ATLASSERT(false);
+   }
+
+   Float64 n1(0), n2(0), c2(0); // c2 is the distance from the left flange tip to where the top flange slope changes from n1 to n2
+   Float64 left(leftStart), right(rightStart);
+
+   GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
+   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+   pgsTypes::SupportedDeckType deckType = pBridgeDesc->GetDeckDescription()->GetDeckType();
+   if ((deckType == pgsTypes::sdtNone || deckType == pgsTypes::sdtCompositeOverlay || deckType == pgsTypes::sdtNonstructuralOverlay) && pBridgeDesc->GetGirderOrientation() == pgsTypes::Plumb)
+   {
+      // need to get cross slope shape parameters
+      // c2, n1, n2
+
+      const auto& segmentKey(pSegment->GetSegmentKey());
+
+      GET_IFACE2(pBroker, IBridge, pBridge);
+      Float64 station, offset;
+      pBridge->GetStationAndOffset(segmentKey, 0.0, &station, &offset);
+
+      GET_IFACE2(pBroker, IRoadway, pAlignment);
+      Float64 CPO = pAlignment->GetCrownPointOffset(station);
+
+      Float64 alignment_offset = pBridge->GetAlignmentOffset();
+
+      Float64 left_edge_offset = offset - leftStart;
+      Float64 right_edge_offset = offset + rightStart;
+
+      if (IsLT(left_edge_offset, CPO) && IsLT(CPO, right_edge_offset))
+      {
+         // the crown point occurs somewhere in the top flange
+         n1 = pAlignment->GetSlope(station, left_edge_offset);
+         n2 = pAlignment->GetSlope(station, right_edge_offset);
+         c2 = fabs(CPO - left_edge_offset);
+      }
+      else
+      {
+         // the entire top flange is sloped at n2
+         n1 = 0;
+         n2 = pAlignment->GetSlope(station, offset);
+         c2 = 0; // no part of the top flange is sloped at n1
+      }
+
+      if (topWidthType == pgsTypes::twtCenteredCG)
+      {
+         // forget about input top width for left and right... compute it so the CG is centered on the CL Web
+         
+         // the equations below are for contant width girder
+         Float64 Wtf = leftStart + rightStart;
+
+         const GirderLibraryEntry* pGirderEntry = pGirder->GetGirderLibraryEntry();
+         const auto& dimensions = pGirderEntry->GetDimensions();
+
+         Float64 he; // minimum top flange thickness at girder ends
+         Float64 hm; // minimum top flange thickness at middle (L/2)
+         he = GetDimension(dimensions, _T("D1"));
+         hm = he;
+         if (pSegment->TopFlangeThickeningType == pgsTypes::tftEnds)
+         {
+            he += pSegment->TopFlangeThickening;
+         }
+         else
+         {
+            hm += pSegment->TopFlangeThickening;
+         }
+
+
+         Float64 k;
+         Float64 A = fabs(c2*n1);
+         Float64 B = fabs((Wtf - c2)*n2);
+         if ((IsZero(A) && n2 < 0) || (B < A && 0 <= n1 && n2 <= 0) || (n1 <= 0 && n2 <= 0))
+         {
+            // case 1b and 3
+            Float64 n = 0.5*Wtf*Wtf*(he + 2 * hm) + 0.5*(n2 - n1)*c2*c2*c2 - 0.5*n2*Wtf*Wtf*Wtf;
+            Float64 d = 2 * Wtf*(he + 2 * hm) + 3 * (n2 - n1)*c2*c2 - 3 * n2*Wtf*Wtf;
+            k = (2 * n) / (Wtf*d);
+         }
+         else if ((A <= B && 0 <= n1 && n2 <= 0) || (0 <= n1 && 0 <= n2))
+         {
+            // case 1a and 2
+            Float64 n = 0.5*Wtf*Wtf*(he + 2 * hm) + 0.5*(n2 - n1)*c2*c2*c2 - 1.5*(n2 - n1)*Wtf*Wtf*c2 + n2*Wtf*Wtf*Wtf;
+            Float64 d = 2 * Wtf*(he + 2 * hm) + 3 * (n2 - n1)*c2*c2 - 6 * (n2 - n1)*Wtf*c2 + 3 * n2*Wtf*Wtf;
+            k = (2 * n) / (Wtf*d);
+         }
+         else
+         {
+            // case 4
+            ATLASSERT(n1 <= 0 && 0 <= n2);
+            Float64 n = 0.5*Wtf*Wtf*(he + 2 * hm) + 0.5*(n2 - n1)*c2*c2*c2 - 1.5*n2*Wtf*Wtf*c2 + n2*Wtf*Wtf*Wtf;
+            Float64 d = 2 * Wtf*(he + 2 * hm) - 6 * n2*Wtf*c2 + 3 * (n2 - n1)*c2*c2 + 3 * n2*Wtf*Wtf;
+            k = (2 * n) / (Wtf*d);
+         }
+
+         ATLASSERT(0.0 <= k && k <= 1.0);
+
+         left = k*Wtf;
+         right = (1 - k)*Wtf;
+      }
+   }
+
+
+   *pC = c2;
+   *pN1 = n1;
+   *pN2 = n2;
+   *pLeft = left;
+   *pRight = right;
+}
+
+Float64 CBulbTeeFactory::GetFlangeThickening(IBroker* pBroker, const CPrecastSegmentData* pSegment, Float64 Xs) const
+{
+   Float64 tft = 0;
+   if (pSegment->TopFlangeThickeningType != pgsTypes::tftNone)
+   {
+      // parabolic interpolation of the depth of the top flange thickening
+      const CSegmentKey& segmentKey(pSegment->GetSegmentKey());
+      
+      GET_IFACE2(pBroker, IBridge, pBridge);
+      Float64 Ls = pBridge->GetSegmentLength(segmentKey);
+
+      Float64 thickening = pSegment->TopFlangeThickening;
+
+      if (pSegment->TopFlangeThickeningType == pgsTypes::tftEnds )
+      {
+         tft = 4 * thickening*Xs*Xs / (Ls*Ls) - 4 * thickening*Xs / Ls + thickening;
+      }
+      else
+      {
+         tft = -4 * thickening*Xs*Xs / (Ls*Ls) + 4 * thickening*Xs / Ls;
+      }
+   }
+   return tft;
+}
+
+void CBulbTeeFactory::PositionBeamShape(IBulbTee2* pBeam) const
+{
+
+   // Hook point is at bottom center of bounding box.
+   // Adjust hook point so top center of bounding box is at (0,0)
+   Float64 Hg;
+   pBeam->get_CLHeight(&Hg);
+
+   CComPtr<IPoint2d> hookPt;
+   pBeam->get_HookPoint(&hookPt);
+   hookPt->Offset(0, -Hg);
 }

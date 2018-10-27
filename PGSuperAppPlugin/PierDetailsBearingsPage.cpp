@@ -31,6 +31,13 @@
 #include <EAF\EAFDocument.h>
 #include "PGSuperUnits.h"
 
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
+
+
 // PierDetailsBearingsPage.cpp : implementation file
 //
    static const int hdrctls[] ={IDC_STATIC_B1, IDC_STATIC_B2,  IDC_BRG_SPACING_STATIC, IDC_BRG_SPACING_UNIT, 

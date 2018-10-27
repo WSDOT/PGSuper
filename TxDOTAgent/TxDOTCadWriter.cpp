@@ -46,6 +46,13 @@
 #include <PgsExt\GirderArtifactTool.h>
 #include <PgsExt\GirderLabel.h>
 
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
+
+
 static void write_spec_check_results(FILE *fp, IBroker* pBroker, const CGirderKey& girderKey, bool designSucceeded);
 static std::_tstring MakeNonStandardStrandString(IBroker* pBroker, const pgsPointOfInterest& midPoi);
 

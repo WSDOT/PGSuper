@@ -1865,28 +1865,31 @@ HRESULT CProjectAgentImp::AlignmentProc(IStructuredSave* pSave,IStructuredLoad* 
             }
          }
 
-         if ( bConvert )
+         if (bConvert)
          {
             // Need to do a coordinate transformation for the directions
             // Before 1.1... 0.0 was due north and increased clockwise
             // 1.1 and later... 0.0 is due east and increases counter-clockwise
 
-            Direction  = PI_OVER_2 - Direction;
-            if ( Direction < 0 )
+            Direction = PI_OVER_2 - Direction;
+            Direction = IsZero(Direction) ? 0 : Direction;
+            if (Direction < 0)
             {
-               Direction += 2*M_PI;
+               Direction += TWO_PI;
             }
 
             FwdTangent = PI_OVER_2 - FwdTangent;
+            FwdTangent = IsZero(FwdTangent) ? 0 : FwdTangent;
             if (FwdTangent < 0)
             {
-               FwdTangent += 2*M_PI;
+               FwdTangent += TWO_PI;
             }
 
-            BkTangent  = PI_OVER_2 - BkTangent;
-            if ( BkTangent < 0 )
+            BkTangent = PI_OVER_2 - BkTangent;
+            BkTangent = IsZero(BkTangent) ? 0 : BkTangent;
+            if (BkTangent < 0)
             {
-               BkTangent += 2*M_PI;
+               BkTangent += TWO_PI;
             }
          }
 
@@ -1946,6 +1949,7 @@ HRESULT CProjectAgentImp::AlignmentProc(IStructuredSave* pSave,IStructuredLoad* 
             return hr;
          }
          pObj->m_AlignmentData2.Direction = var.dblVal;
+         pObj->m_AlignmentData2.Direction = IsZero(pObj->m_AlignmentData2.Direction) ? 0 : pObj->m_AlignmentData2.Direction;
 
          var.vt = VT_I4;
          hr = pLoad->get_Property(_T("HorzCurveCount"),&var);
@@ -5793,7 +5797,7 @@ STDMETHODIMP CProjectAgentImp::Save(IStructuredSave* pStrSave)
 
 void CProjectAgentImp::ValidateStrands(const CSegmentKey& segmentKey,CPrecastSegmentData* pSegment,bool fromLibrary)
 {
-   if ( pSegment->Strands.GetStrandDefinitionType() == CStrandData::sdtDirectInput )
+   if ( pSegment->Strands.GetStrandDefinitionType() == CStrandData::sdtDirectRowInput || pSegment->Strands.GetStrandDefinitionType() == CStrandData::sdtDirectStrandInput )
    {
       // user defined strands don't use strand information from the library
       return;
@@ -6166,7 +6170,7 @@ void CProjectAgentImp::SetAlignmentData2(const AlignmentData2& data)
    }
 }
 
-AlignmentData2 CProjectAgentImp::GetAlignmentData2() const
+const AlignmentData2& CProjectAgentImp::GetAlignmentData2() const
 {
    return m_AlignmentData2;
 }
@@ -6180,7 +6184,7 @@ void CProjectAgentImp::SetProfileData2(const ProfileData2& data)
    }
 }
 
-ProfileData2 CProjectAgentImp::GetProfileData2() const
+const ProfileData2& CProjectAgentImp::GetProfileData2() const
 {
    return m_ProfileData2;
 }
@@ -6194,7 +6198,7 @@ void CProjectAgentImp::SetRoadwaySectionData(const RoadwaySectionData& data)
    }
 }
 
-RoadwaySectionData CProjectAgentImp::GetRoadwaySectionData() const
+const RoadwaySectionData& CProjectAgentImp::GetRoadwaySectionData() const
 {
    return m_RoadwaySectionData;
 }
@@ -6352,14 +6356,44 @@ void CProjectAgentImp::SetGirder(const CGirderKey& girderKey,const CSplicedGirde
    CSplicedGirderData* pGirder = pGroup->GetGirder(girderKey.girderIndex);
    if ( *pGirder != girder )
    {
-      ReleaseGirderLibraryEntries();
-
       ATLASSERT(pGirder->GetSegmentCount() == girder.GetSegmentCount() );
 
+      // for girder spacing defined by there top width, there is a scenario where the top width of a single girder can
+      // be changed by editing the girder alone (as opposed to editing all of the girders in a group at once).
+      // if the top width of one girder is made different than the others, the top width grouping has to be adjusted
+      //
+      // determine if the top width changed
+      pgsTypes::TopWidthType currentTopWidthType;
+      Float64 currentLeft[2], currentRight[2];
+      pGirder->GetTopWidth(&currentTopWidthType, &currentLeft[pgsTypes::metStart], &currentRight[pgsTypes::metStart], &currentLeft[pgsTypes::metEnd], &currentRight[pgsTypes::metEnd]);
+
+      pgsTypes::TopWidthType topWidthType;
+      Float64 Left[2], Right[2];
+      girder.GetTopWidth(&topWidthType, &Left[pgsTypes::metStart], &Right[pgsTypes::metStart], &Left[pgsTypes::metEnd], &Right[pgsTypes::metEnd]);
+
+      bool bTopWidthChanged = false;
+      if (currentTopWidthType != topWidthType ||
+         !IsEqual(currentLeft[pgsTypes::metStart], Left[pgsTypes::metStart]) ||
+         !IsEqual(currentRight[pgsTypes::metStart], Right[pgsTypes::metStart]) ||
+         !IsEqual(currentLeft[pgsTypes::metEnd], Left[pgsTypes::metEnd]) ||
+         !IsEqual(currentRight[pgsTypes::metEnd], Right[pgsTypes::metEnd]))
+      {
+         bTopWidthChanged = true;
+      }
+
+      ReleaseGirderLibraryEntries();
+
+      // do the copy
       // copy data only. Don't alter ID or Index
       pGirder->CopySplicedGirderData(&girder);
 
       UseGirderLibraryEntries();
+
+      if (bTopWidthChanged && pGroup->GetGirderTopWidthGroupCount() <= 1)
+      {
+         // the top width of this girder changed and there isn't already groups.. make groups now
+         pGroup->ExpandAllGirderTopWidthGroups();
+      }
 
       Fire_GirderChanged(girderKey,0/*no hint*/);
    }
@@ -8748,7 +8782,7 @@ Float64 CProjectAgentImp::GetHaunchLoadCamberFactor() const
 
 bool CProjectAgentImp::IsAssExcessCamberInputEnabled(bool considerDeckType) const
 {
-   if (m_pSpecEntry->GetHaunchLoadComputationType() == pgsTypes::hlcAccountForCamber)
+   if (IsAssExcessCamberForLoad() || IsAssExcessCamberForSectProps())
    {
       if (!considerDeckType || m_BridgeDescription.GetDeckDescription()->GetDeckType() != pgsTypes::sdtNone)
       {
@@ -8763,6 +8797,16 @@ bool CProjectAgentImp::IsAssExcessCamberInputEnabled(bool considerDeckType) cons
    {
       return false;
    }
+}
+
+bool CProjectAgentImp::IsAssExcessCamberForLoad() const
+{
+   return m_pSpecEntry->GetHaunchLoadComputationType() == pgsTypes::hlcAccountForCamber;
+}
+
+bool CProjectAgentImp::IsAssExcessCamberForSectProps() const
+{
+   return m_pSpecEntry->GetHaunchAnalysisSectionPropertiesType() == pgsTypes::hspVariableParabolic;
 }
 
 Uint16 CProjectAgentImp::GetMomentCapacityMethod() const

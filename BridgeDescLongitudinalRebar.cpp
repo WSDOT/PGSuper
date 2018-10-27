@@ -90,7 +90,7 @@ void CGirderDescLongitudinalRebar::DoDataExchange(CDataExchange* pDX)
       Float64 height = pSectProp->GetHg(releaseIntervalIdx,poi);
       GET_IFACE2(pBroker,IShapes,pShapes);
       CComPtr<IShape> shape;
-      pShapes->GetSegmentShape(releaseIntervalIdx,poi,false,pgsTypes::scGirder,&shape);
+      pShapes->GetSegmentShape(releaseIntervalIdx,poi,false,pgsTypes::scGirder,pgsTypes::hspZeroHaunch,&shape);
 
       CString strMsg;
       CComPtr<IPoint2d> point;

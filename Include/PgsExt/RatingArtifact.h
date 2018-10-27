@@ -102,4 +102,28 @@ protected:
    StressRatings m_StressRatings;
    YieldStressRatios m_PositiveMomentYieldStressRatios;
    YieldStressRatios m_NegativeMomentYieldStressRatios;
+
+   mutable bool m_bPositiveMomentRatingCached;
+   mutable Float64 m_RF_PositiveMoment;
+   mutable const pgsMomentRatingArtifact* m_pControllingPositiveMoment;
+
+   mutable bool m_bNegativeMomentRatingCached;
+   mutable Float64 m_RF_NegativeMoment;
+   mutable const pgsMomentRatingArtifact* m_pControllingNegativeMoment;
+
+   mutable bool m_bShearRatingCached;
+   mutable Float64 m_RF_Shear;
+   mutable const pgsShearRatingArtifact* m_pControllingShear;
+
+   mutable bool m_bStressRatingCached;
+   mutable Float64 m_RF_Stress;
+   mutable const pgsStressRatingArtifact* m_pControllingStress;
+
+   mutable bool m_bPositiveYieldStressRatingCached;
+   mutable Float64 m_RF_PositiveMomentYieldStress;
+   mutable const pgsYieldStressRatioArtifact* m_pControllingPositiveMomentYieldStress;
+
+   mutable bool m_bNegativeYieldStressRatingCached;
+   mutable Float64 m_RF_NegativeMomentYieldStress;
+   mutable const pgsYieldStressRatioArtifact* m_pControllingNegativeMomentYieldStress;
 };

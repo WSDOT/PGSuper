@@ -38,6 +38,7 @@
 
 // interfaces used in this DLL.... resolves symbols for the linker
 #include <WBFLCore_i.c>
+#include <WBFLTools_i.c>
 #include <WBFLUnitServer_i.c>
 #include <IReportManager.h>
 #include <IFace\StatusCenter.h>
@@ -56,6 +57,12 @@
 #include <IFace\Allowables.h>
 
 #include <Plugins\BeamFamilyCLSID.h>
+
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
 
 // Used to determine whether the DLL can be unloaded by OLE
 STDAPI DllCanUnloadNow(void)
@@ -106,7 +113,7 @@ HRESULT RegisterAgent(bool bRegister)
 STDAPI DllRegisterServer(void)
 {
     // registers object, typelib and all interfaces in typelib
-    HRESULT hr = _AtlModule.DllRegisterServer();
+    HRESULT hr = _AtlModule.DllRegisterServer(FALSE);
     if ( FAILED(hr) )
     {
        return hr;

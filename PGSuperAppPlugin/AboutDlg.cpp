@@ -29,6 +29,13 @@
 #include "PGSuperDoc.h"
 #include "PGSpliceDoc.h"
 
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
+
+
 IMPLEMENT_DYNAMIC(CAboutDlg, CDialog)
 
 CAboutDlg::CAboutDlg(UINT nResourceID,UINT nIDTemplate,CWnd* pParent /*=nullptr*/)

@@ -123,35 +123,9 @@ void CUBeamFactory::CreateGirderSection(IBroker* pBroker,StatusGroupIDType statu
    CComPtr<IUBeam> beam;
    gdrSection->get_Beam(&beam);
 
-   ConfigureShape(dimensions, beam);
+   DimensionAndPositionBeam(dimensions, beam);
 
    gdrSection.QueryInterface(ppSection);
-}
-
-void CUBeamFactory::CreateGirderProfile(IBroker* pBroker,StatusGroupIDType statusGroupID,const CSegmentKey& segmentKey,const IBeamFactory::Dimensions& dimensions,IShape** ppShape) const
-{
-   GET_IFACE2(pBroker,IBridge,pBridge);
-   Float64 length = pBridge->GetSegmentLength(segmentKey);
-
-   Float64 w1, w2, w3, w4, w5;
-   Float64 d1, d2, d3, d4, d5, d6, d7;
-   Float64 t;
-   GetDimensions(dimensions,d1, d2, d3, d4, d5, d6, d7, w1, w2, w3, w4, w5, t);
-
-   Float64 height = d1;
-
-   CComPtr<IRectangle> rect;
-   rect.CoCreateInstance(CLSID_Rect);
-   rect->put_Height(height);
-   rect->put_Width(length);
-
-   CComQIPtr<IXYPosition> position(rect);
-   CComPtr<IPoint2d> topLeft;
-   position->get_LocatorPoint(lpTopLeft,&topLeft);
-   topLeft->Move(0,0);
-   position->put_LocatorPoint(lpTopLeft,topLeft);
-
-   rect->QueryInterface(ppShape);
 }
 
 void CUBeamFactory::CreateSegment(IBroker* pBroker,StatusGroupIDType statusGroupID,const CSegmentKey& segmentKey,ISuperstructureMemberSegment** ppSegment) const
@@ -204,6 +178,29 @@ void CUBeamFactory::CreateSegment(IBroker* pBroker,StatusGroupIDType statusGroup
 
    CComQIPtr<ISuperstructureMemberSegment> ssmbrSegment(segment);
    ssmbrSegment.CopyTo(ppSegment);
+}
+
+void CUBeamFactory::CreateSegmentShape(IBroker* pBroker, const CPrecastSegmentData* pSegment, Float64 Xs, pgsTypes::SectionBias sectionBias, IShape** ppShape) const
+{
+   CComPtr<IUBeam> beam;
+   beam.CoCreateInstance(CLSID_UBeam);
+
+   const CSplicedGirderData* pGirder = pSegment->GetGirder();
+   const GirderLibraryEntry* pGirderEntry = pGirder->GetGirderLibraryEntry();
+   const auto& dimensions = pGirderEntry->GetDimensions();
+
+   DimensionAndPositionBeam(dimensions, beam);
+
+   beam.QueryInterface(ppShape);
+}
+
+Float64 CUBeamFactory::GetSegmentHeight(IBroker* pBroker, const CPrecastSegmentData* pSegment, Float64 Xs) const
+{
+   const CSplicedGirderData* pGirder = pSegment->GetGirder();
+   const GirderLibraryEntry* pGirderEntry = pGirder->GetGirderLibraryEntry();
+   const auto& dimensions = pGirderEntry->GetDimensions();
+   Float64 D1 = GetDimension(dimensions, _T("D1"));
+   return D1;
 }
 
 void CUBeamFactory::ConfigureSegment(IBroker* pBroker, StatusItemIDType statusID, const CSegmentKey& segmentKey, ISuperstructureMemberSegment* pSSMbrSegment) const
@@ -264,7 +261,7 @@ void CUBeamFactory::CreateStrandMover(const IBeamFactory::Dimensions& dimensions
    CComPtr<IUBeam> beam;
    beam.CoCreateInstance(CLSID_UBeam);
 
-   ConfigureShape(dimensions, beam);
+   DimensionAndPositionBeam(dimensions, beam);
 
    // our goal is to build a parallelogram using the thin web dimension from top to bottom
    Float64 t;
@@ -896,27 +893,6 @@ void CUBeamFactory::GetAllowableSpacingRange(const IBeamFactory::Dimensions& dim
    }
 }
 
-void CUBeamFactory::ConfigureShape(const IBeamFactory::Dimensions& dimensions, IUBeam* beam) const
-{
-   Float64 w1, w2, w3, w4, w5;
-   Float64 d1, d2, d3, d4, d5, d6, d7;
-   Float64 t;
-   GetDimensions(dimensions,d1, d2, d3, d4, d5, d6, d7, w1, w2, w3, w4, w5, t);
-   beam->put_W1(w1);
-   beam->put_W2(w2);
-   beam->put_W3(w3);
-   beam->put_W4(w4);
-   beam->put_W5(w5);
-   beam->put_D1(d1);
-   beam->put_D2(d2);
-   beam->put_D3(d3);
-   beam->put_D4(d4);
-   beam->put_D5(d5);
-   beam->put_D6(d6);
-   beam->put_D7(d7);
-   beam->put_T(t);
-}
-
 WebIndexType CUBeamFactory::GetWebCount(const IBeamFactory::Dimensions& dimensions) const
 {
    return 2;
@@ -966,4 +942,34 @@ bool CUBeamFactory::CanPrecamber() const
 GirderIndexType CUBeamFactory::GetMinimumBeamCount() const
 {
    return 1;
+}
+
+void CUBeamFactory::DimensionAndPositionBeam(const IBeamFactory::Dimensions& dimensions, IUBeam* pBeam) const
+{
+   Float64 w1, w2, w3, w4, w5;
+   Float64 d1, d2, d3, d4, d5, d6, d7;
+   Float64 t;
+   GetDimensions(dimensions, d1, d2, d3, d4, d5, d6, d7, w1, w2, w3, w4, w5, t);
+   pBeam->put_W1(w1);
+   pBeam->put_W2(w2);
+   pBeam->put_W3(w3);
+   pBeam->put_W4(w4);
+   pBeam->put_W5(w5);
+   pBeam->put_D1(d1);
+   pBeam->put_D2(d2);
+   pBeam->put_D3(d3);
+   pBeam->put_D4(d4);
+   pBeam->put_D5(d5);
+   pBeam->put_D6(d6);
+   pBeam->put_D7(d7);
+   pBeam->put_T(t);
+
+   // Hook point is at bottom center of bounding box.
+   // Adjust hook point so top center of bounding box is at (0,0)
+   Float64 Hg;
+   pBeam->get_Height(&Hg);
+
+   CComPtr<IPoint2d> hookPt;
+   pBeam->get_HookPoint(&hookPt);
+   hookPt->Offset(0, -Hg);
 }

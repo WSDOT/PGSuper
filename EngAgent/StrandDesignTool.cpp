@@ -229,10 +229,10 @@ void pgsStrandDesignTool::Initialize(IBroker* pBroker, StatusGroupIDType statusG
       m_pArtifact->SetSlabOffset( pgsTypes::metEnd,   defaultA);
    }
 
-   // Set initial design for AssExcessCamber here
+   // Set initial design for AssExcessCamber here. Design is only for haunch load determination
    GET_IFACE_NOCHECK(ISpecification,pSpec);
    m_bIsDesignExcessCamber = sodAandAssExcessCamber == m_DesignOptions.doDesignSlabOffset &&
-                                                       pSpec->IsAssExcessCamberInputEnabled();
+                                                       pSpec->IsAssExcessCamberForLoad();
    // don't let tolerance be impossible
    if (m_bIsDesignExcessCamber)
    {

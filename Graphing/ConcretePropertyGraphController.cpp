@@ -42,6 +42,12 @@
 
 #include <PGSuperUnits.h>
 
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
+
 bool IsTSIndex(IndexType key) { return MAX_INDEX/2 <= key ? true : false; }
 SupportIndexType EncodeTSIndex(SupportIndexType tsIdx) { return MAX_INDEX-tsIdx; }
 SupportIndexType DecodeTSIndex(SupportIndexType tsIdx) { return MAX_INDEX-tsIdx; }

@@ -78,19 +78,9 @@ void CStrandLocations::Build(rptChapter* pChapter,IBroker* pBroker,const CSegmen
    *pChapter << pHead;
    *pHead <<_T("Prestressing Strand Locations")<<rptNewLine;
 
-   GET_IFACE2(pBroker,ISegmentData,pSegmentData);
-
-   const CStrandData* pStrands = pSegmentData->GetStrandData(segmentKey);
-   if (pStrands->GetStrandDefinitionType() == CStrandData::sdtDirectSelection)
-   {
-      rptParagraph* p = new rptParagraph;
-      *pChapter << p;
-      *p << _T("Note: Strands were defined using Non-Sequential, Direct Fill.") << rptNewLine;
-   }
-
    rptParagraph* pPara = new rptParagraph;
    *pChapter << pPara;
-   (*pPara) << _T("Strand locations measured from top-center of girder") << rptNewLine;
+   (*pPara) << _T("X = 0 is at CL Girder, Y = 0 is at Top of Girder") << rptNewLine;
 
    pPara = new rptParagraph;
    *pChapter << pPara;
@@ -191,7 +181,7 @@ void CStrandLocations::Build(rptChapter* pChapter,IBroker* pBroker,const CSegmen
       for (StrandIndexType is = 0; is < Ns; is++, row++)
       {
          col = 0;
-         (*p_table)(row,col++) << row;
+         (*p_table)(row,col++) << is+1;
 
          CComPtr<IPoint2d> leftPoint;
          leftPoints->get_Item(is, &leftPoint);
@@ -311,7 +301,7 @@ void CStrandLocations::Build(rptChapter* pChapter,IBroker* pBroker,const CSegmen
       for (StrandIndexType is = 0; is < Nt; is++, row++)
       {
          col = 0;
-         (*p_table)(row,col++) << row;
+         (*p_table)(row,col++) << is+1;
 
          CComPtr<IPoint2d> leftPoint;
          leftPoints->get_Item(is, &leftPoint);
@@ -488,7 +478,7 @@ void CStrandLocations::Build(rptChapter* pChapter,IBroker* pBroker,const CSegmen
          StrandIndexType is;
          for (is = 0; is < Nh; is++,row++)
          {
-            (*p_table)(row,0) << (Uint16)row;
+            (*p_table)(row, 0) << is + 1;
             CComPtr<IPoint2d> spt;
             spts->get_Item(is, &spt);
             Float64 x,y;
@@ -512,38 +502,6 @@ void CStrandLocations::Build(rptChapter* pChapter,IBroker* pBroker,const CSegmen
             }
          }
       }
-/*
-      if ( !areHarpedStraight )
-      {
-         // harped strands at harping point
-         Float64 mid = pBridge->GetSegmentLength(segmentKey)/2.;
-         pgsPointOfInterest harp_poi(segmentKey,mid);
-
-         pPara = &(*pHarpedLayoutTable)(0,1);
-
-         p_table = rptStyleManager::CreateDefaultTable(3,_T("Harped Strand Locations at Harping Points"));
-         *pPara << p_table;
-
-         (*p_table)(0,0) << _T("Strand");
-         (*p_table)(0,1) << COLHDR(_T("X"),rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-         (*p_table)(0,2) << COLHDR(_T("Y"),rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-
-         CComPtr<IPoint2dCollection> hspts;
-         pStrandGeometry->GetStrandPositions(harp_poi, pgsTypes::Harped, &hspts);
-
-         row = p_table->GetNumberOfHeaderRows();
-         for (is = 0; is < Nh; is++, row++)
-         {
-            (*p_table)(row,0) << row;
-            CComPtr<IPoint2d> spt;
-            hspts->get_Item(is, &spt);
-            Float64 x,y;
-            spt->Location(&x,&y);
-            (*p_table)(row,1) << dim.SetValue(x);
-            (*p_table)(row,2) << dim.SetValue(y);
-         }
-      }
-*/
    }
    else
    {

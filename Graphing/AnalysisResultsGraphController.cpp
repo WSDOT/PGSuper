@@ -33,6 +33,12 @@
 
 #include <Hints.h>
 
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
+
 IMPLEMENT_DYNCREATE(CAnalysisResultsGraphController,CGirderGraphControllerBase)
 
 CAnalysisResultsGraphController::CAnalysisResultsGraphController():
@@ -521,7 +527,7 @@ std::vector<ActionType> CAnalysisResultsGraphController::GetActionTypes() const
    vActions.push_back(actionMoment);
 
    GET_IFACE2(pBroker, IBridge, pBridge);
-   if (pBridge->HasAsymmetricGirders() || pBridge->HasTiltedGirders())
+   if (pBridge->HasAsymmetricGirders() || pBridge->HasAsymmetricPrestressing() || pBridge->HasTiltedGirders())
    {
       vActions.push_back(actionXDeflection);
       vActions.push_back(actionDeflection);
@@ -545,7 +551,7 @@ LPCTSTR CAnalysisResultsGraphController::GetActionName(ActionType action) const
       CComPtr<IBroker> pBroker;
       EAFGetBroker(&pBroker);
       GET_IFACE2(pBroker, IBridge, pBridge);
-      if (pBridge->HasAsymmetricGirders() || pBridge->HasTiltedGirders())
+      if (pBridge->HasAsymmetricGirders() || pBridge->HasAsymmetricPrestressing() || pBridge->HasTiltedGirders())
       {
          return _T("Deflection Y");
       }

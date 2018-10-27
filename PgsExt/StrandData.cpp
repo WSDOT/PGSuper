@@ -24,6 +24,7 @@
 #include <PgsExt\StrandData.h>
 #include <Lrfd\StrandPool.h>
 #include <PsgLib\GirderLibraryEntry.h>
+#include <GenericBridge\Helpers.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -129,13 +130,13 @@ StrandIndexType CDirectStrandFillCollection::GetFillCountAtIndex(GridIndexType i
    return 0;
 }
 
-void CDirectStrandFillCollection::RemoveFill(StrandIndexType index) 
+void CDirectStrandFillCollection::RemoveFill(GridIndexType idxGrid) 
 {
    std::vector<CDirectStrandFillInfo>::iterator it = m_StrandFill.begin();
    std::vector<CDirectStrandFillInfo>::iterator itend = m_StrandFill.end();
    while(it!=itend)
    {
-      if (it->permStrandGridIdx == index)
+      if (it->permStrandGridIdx == idxGrid)
       {
          m_StrandFill.erase(it);
          return;
@@ -176,17 +177,17 @@ const CDirectStrandFillInfo& CDirectStrandFillCollection::GetFill(CollectionInde
 }
 
 /////////////////////////////////////////////////////////////////////////////////////
+std::array<std::vector<Float64>, 4> CStrandRow::ms_oldHarpPoints;
+
 CStrandRow::CStrandRow()
 {
-   m_InnerSpacing = ::ConvertToSysUnits(2.0,unitMeasure::Inch);
-   m_Spacing = m_InnerSpacing;
+   m_Z = ::ConvertToSysUnits(2.0,unitMeasure::Inch);
+   m_Spacing = m_Z;
    m_StrandType = pgsTypes::Straight;
    m_nStrands = 0;
 
-   Float64 x[] = {0,-0.4,-0.6,-1.0};
    for ( int i = 0; i < 4; i++ )
    {
-      m_X[i]    = x[i];
       m_Y[i]    = ::ConvertToSysUnits(2.0,unitMeasure::Inch);
       m_Face[i] = pgsTypes::BottomFace;
    }
@@ -202,7 +203,7 @@ CStrandRow::CStrandRow()
 
 bool CStrandRow::operator==(const CStrandRow& other) const
 {
-   if ( !IsEqual(m_InnerSpacing,other.m_InnerSpacing) )
+   if ( !IsEqual(m_Z,other.m_Z) )
    {
       return false;
    }
@@ -224,11 +225,6 @@ bool CStrandRow::operator==(const CStrandRow& other) const
 
    for ( int i = 0; i < 4; i++ )
    {
-      if ( !IsEqual(m_X[i],other.m_X[i]) )
-      {
-         return false;
-      }
-
       if ( !IsEqual(m_Y[i],other.m_Y[i]) )
       {
          return false;
@@ -281,9 +277,9 @@ bool CStrandRow::operator<(const CStrandRow& other) const
 
 HRESULT CStrandRow::Save(IStructuredSave* pStrSave,IProgress* pProgress)
 {
-   pStrSave->BeginUnit(_T("StrandRow"),3.0);
+   pStrSave->BeginUnit(_T("StrandRow"),4.0);
 
-   pStrSave->put_Property(_T("InnerSpacing"),CComVariant(m_InnerSpacing));
+   pStrSave->put_Property(_T("InnerSpacing"),CComVariant(m_Z));
    pStrSave->put_Property(_T("Spacing"),CComVariant(m_Spacing));
    
    // added in version 2
@@ -292,23 +288,23 @@ HRESULT CStrandRow::Save(IStructuredSave* pStrSave,IProgress* pProgress)
 
    pStrSave->put_Property(_T("NStrands"),CComVariant(m_nStrands));
 
-   pStrSave->put_Property(_T("XStart"),CComVariant(m_X[LOCATION_START])); // added in version 3
-   pStrSave->put_Property(_T("YStart"),CComVariant(m_Y[LOCATION_START]));
-   pStrSave->put_Property(_T("FaceStart"),CComVariant(m_Face[LOCATION_START] == pgsTypes::TopFace ? _T("Top") : _T("Bottom")));
+   //pStrSave->put_Property(_T("XStart"),CComVariant(m_X[ZoneBreakType::Start])); // added in version 3 (removed in version 4)
+   pStrSave->put_Property(_T("YStart"),CComVariant(m_Y[ZoneBreakType::Start]));
+   pStrSave->put_Property(_T("FaceStart"),CComVariant(m_Face[ZoneBreakType::Start] == pgsTypes::TopFace ? _T("Top") : _T("Bottom")));
 
    // added in version 2
-   pStrSave->put_Property(_T("XLHP"),CComVariant(m_X[LOCATION_LEFT_HP]));
-   pStrSave->put_Property(_T("YLHP"),CComVariant(m_Y[LOCATION_LEFT_HP]));
-   pStrSave->put_Property(_T("FaceLHP"),CComVariant(m_Face[LOCATION_LEFT_HP] == pgsTypes::TopFace ? _T("Top") : _T("Bottom")));
+   //pStrSave->put_Property(_T("XLHP"),CComVariant(m_X[ZoneBreakType::LeftBreak])); (removed in version 4)
+   pStrSave->put_Property(_T("YLHP"),CComVariant(m_Y[ZoneBreakType::LeftBreak]));
+   pStrSave->put_Property(_T("FaceLHP"),CComVariant(m_Face[ZoneBreakType::LeftBreak] == pgsTypes::TopFace ? _T("Top") : _T("Bottom")));
 
    // added in version 2
-   pStrSave->put_Property(_T("XRHP"),CComVariant(m_X[LOCATION_RIGHT_HP]));
-   pStrSave->put_Property(_T("YRHP"),CComVariant(m_Y[LOCATION_RIGHT_HP]));
-   pStrSave->put_Property(_T("FaceRHP"),CComVariant(m_Face[LOCATION_RIGHT_HP] == pgsTypes::TopFace ? _T("Top") : _T("Bottom")));
+   // pStrSave->put_Property(_T("XRHP"),CComVariant(m_X[ZoneBreakType::RightBreak])); (removed in version 4)
+   pStrSave->put_Property(_T("YRHP"),CComVariant(m_Y[ZoneBreakType::RightBreak]));
+   pStrSave->put_Property(_T("FaceRHP"),CComVariant(m_Face[ZoneBreakType::RightBreak] == pgsTypes::TopFace ? _T("Top") : _T("Bottom")));
 
-   pStrSave->put_Property(_T("XEnd"),CComVariant(m_X[LOCATION_END])); // added in version 3
-   pStrSave->put_Property(_T("YEnd"),CComVariant(m_Y[LOCATION_END]));
-   pStrSave->put_Property(_T("FaceEnd"),CComVariant(m_Face[LOCATION_END] == pgsTypes::TopFace ? _T("Top") : _T("Bottom")));
+   // pStrSave->put_Property(_T("XEnd"),CComVariant(m_X[ZoneBreakType::End])); // added in version 3 (removed in vesrion 4)
+   pStrSave->put_Property(_T("YEnd"),CComVariant(m_Y[ZoneBreakType::End]));
+   pStrSave->put_Property(_T("FaceEnd"),CComVariant(m_Face[ZoneBreakType::End] == pgsTypes::TopFace ? _T("Top") : _T("Bottom")));
 
    //pStrSave->put_Property(_T("IsTemporaryStrand"),CComVariant(m_bIsTemporaryStrand)); // removed in version 2
 
@@ -337,7 +333,7 @@ HRESULT CStrandRow::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
 
       var.vt = VT_R8;
       hr = pStrLoad->get_Property(_T("InnerSpacing"),&var);
-      m_InnerSpacing = var.dblVal;
+      m_Z = var.dblVal;
 
       hr = pStrLoad->get_Property(_T("Spacing"),&var);
       m_Spacing = var.dblVal;
@@ -365,64 +361,76 @@ HRESULT CStrandRow::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
       hr = pStrLoad->get_Property(_T("NStrands"),&var);
       m_nStrands = VARIANT2INDEX(var);
 
-      if ( 2 < version )
+      if ( 2 < version && version < 4 )
       {
          // added in version 3
+         // removed in version 4
          var.vt = VT_R8;
          hr = pStrLoad->get_Property(_T("XStart"),&var);
-         m_X[LOCATION_START] = var.dblVal;
+         CStrandRow::ms_oldHarpPoints[ZoneBreakType::Start].push_back(var.dblVal); // retain old value for processing later
       }
 
       var.vt = VT_R8;
       hr = pStrLoad->get_Property(_T("YStart"),&var);
-      m_Y[LOCATION_START] = var.dblVal;
+      m_Y[ZoneBreakType::Start] = var.dblVal;
 
       var.vt = VT_BSTR;
       hr = pStrLoad->get_Property(_T("FaceStart"),&var);
-      m_Face[LOCATION_START] = (CComBSTR(var.bstrVal) == CComBSTR(_T("Top")) ? pgsTypes::TopFace : pgsTypes::BottomFace);
+      m_Face[ZoneBreakType::Start] = (CComBSTR(var.bstrVal) == CComBSTR(_T("Top")) ? pgsTypes::TopFace : pgsTypes::BottomFace);
 
       // added in version 2
-      if ( 1 < version )
+      if (1 < version)
       {
          var.vt = VT_R8;
-         pStrLoad->get_Property(_T("XLHP"),&var);
-         m_X[LOCATION_LEFT_HP] = var.dblVal;
 
-         pStrLoad->get_Property(_T("YLHP"),&var);
-         m_Y[LOCATION_LEFT_HP] = var.dblVal;
+         if (version < 4)
+         {
+            // removed in version 4
+            pStrLoad->get_Property(_T("XLHP"), &var);
+            CStrandRow::ms_oldHarpPoints[ZoneBreakType::LeftBreak].push_back(var.dblVal); // retain old value for processing later
+         }
+
+         pStrLoad->get_Property(_T("YLHP"), &var);
+         m_Y[ZoneBreakType::LeftBreak] = var.dblVal;
 
          var.vt = VT_BSTR;
-         pStrLoad->get_Property(_T("FaceLHP"),&var);
-         m_Face[LOCATION_LEFT_HP] = (CComBSTR(var.bstrVal) == CComBSTR(_T("Top")) ? pgsTypes::TopFace : pgsTypes::BottomFace);
+         pStrLoad->get_Property(_T("FaceLHP"), &var);
+         m_Face[ZoneBreakType::LeftBreak] = (CComBSTR(var.bstrVal) == CComBSTR(_T("Top")) ? pgsTypes::TopFace : pgsTypes::BottomFace);
 
          var.vt = VT_R8;
-         pStrLoad->get_Property(_T("XRHP"),&var);
-         m_X[LOCATION_RIGHT_HP] = var.dblVal;
+
+         if (version < 4)
+         {
+            // removed in version 4
+            pStrLoad->get_Property(_T("XRHP"), &var);
+            CStrandRow::ms_oldHarpPoints[ZoneBreakType::RightBreak].push_back(var.dblVal); // retain old value for processing later
+         }
 
          pStrLoad->get_Property(_T("YRHP"),&var);
-         m_Y[LOCATION_RIGHT_HP] = var.dblVal;
+         m_Y[ZoneBreakType::RightBreak] = var.dblVal;
 
          var.vt = VT_BSTR;
          pStrLoad->get_Property(_T("FaceRHP"),&var);
-         m_Face[LOCATION_RIGHT_HP] = (CComBSTR(var.bstrVal) == CComBSTR(_T("Top")) ? pgsTypes::TopFace : pgsTypes::BottomFace);
+         m_Face[ZoneBreakType::RightBreak] = (CComBSTR(var.bstrVal) == CComBSTR(_T("Top")) ? pgsTypes::TopFace : pgsTypes::BottomFace);
       }
 
 
-      if ( 2 < version )
+      if ( 2 < version && version < 4)
       {
          // added in version 3
+         // removed in version 4
          var.vt = VT_R8;
          hr = pStrLoad->get_Property(_T("XEnd"),&var);
-         m_X[LOCATION_END] = var.dblVal;
+         CStrandRow::ms_oldHarpPoints[ZoneBreakType::End].push_back(var.dblVal); // retain old value for processing later
       }
 
       var.vt = VT_R8;
       hr = pStrLoad->get_Property(_T("YEnd"),&var);
-      m_Y[LOCATION_END] = var.dblVal;
+      m_Y[ZoneBreakType::End] = var.dblVal;
 
       var.vt = VT_BSTR;
       hr = pStrLoad->get_Property(_T("FaceEnd"),&var);
-      m_Face[LOCATION_END] = (CComBSTR(var.bstrVal) == CComBSTR(_T("Top")) ? pgsTypes::TopFace : pgsTypes::BottomFace);
+      m_Face[ZoneBreakType::End] = (CComBSTR(var.bstrVal) == CComBSTR(_T("Top")) ? pgsTypes::TopFace : pgsTypes::BottomFace);
 
       // removed in version 2
       if ( version < 2 )
@@ -470,6 +478,11 @@ CStrandData::CStrandData()
       m_StrandMaterial[i] = lrfdStrandPool::GetInstance()->GetStrand(matPsStrand::Gr1860,matPsStrand::LowRelaxation,matPsStrand::None,matPsStrand::D1524);
    }
 
+   m_HarpPoint[ZoneBreakType::Start]    =  0.0; // 0% length = left end
+   m_HarpPoint[ZoneBreakType::LeftBreak]  = -0.4; // 40% length
+   m_HarpPoint[ZoneBreakType::RightBreak] = -0.6; // 60% length
+   m_HarpPoint[ZoneBreakType::End]      = -1.0; // 100% length = right end
+
    ResetPrestressData();
 
    m_NumPermStrandsType = CStrandData::sdtStraightHarped;
@@ -511,8 +524,16 @@ bool CStrandData::operator==(const CStrandData& rOther) const
       return false;
    }
 
-   if ( m_NumPermStrandsType == sdtDirectInput )
+   if ( m_NumPermStrandsType == sdtDirectRowInput || m_NumPermStrandsType == sdtDirectStrandInput )
    {
+      for (Uint16 i = 0; i < 4; i++)
+      {
+         if (!IsEqual(m_HarpPoint[i], rOther.m_HarpPoint[i]))
+         {
+            return false;
+         }
+      }
+
       if ( m_StrandRows.size() != rOther.m_StrandRows.size() )
       {
          return false;
@@ -721,11 +742,34 @@ HRESULT CStrandData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress,Float64
          m_NumPermStrandsType = (StrandDefinitionType)var.lVal;
       }
 
-      if ( m_NumPermStrandsType == sdtDirectInput )
+      if (m_NumPermStrandsType == sdtDirectRowInput || m_NumPermStrandsType == sdtDirectStrandInput)
       {
-         // added in version 13
+         // added in version 13 for sdtDirectRowInput and version 17 for sdtDirectStrandInput
          hr = pStrLoad->BeginUnit(_T("StrandRows"));
          var.Clear();
+
+         Float64 strand_row_version;
+         pStrLoad->get_Version(&strand_row_version);
+         if (1 < strand_row_version)
+         {
+            // added in version 2.0 of StrandRows
+            var.vt = VT_R8;
+            hr = pStrLoad->BeginUnit(_T("HarpPoints"));
+            hr = pStrLoad->get_Property(_T("Start"), &var);
+            m_HarpPoint[ZoneBreakType::Start] = var.dblVal;
+
+            hr = pStrLoad->get_Property(_T("LeftHP"), &var);
+            m_HarpPoint[ZoneBreakType::LeftBreak] = var.dblVal;
+
+            hr = pStrLoad->get_Property(_T("RightHP"), &var);
+            m_HarpPoint[ZoneBreakType::RightBreak] = var.dblVal;
+
+            hr = pStrLoad->get_Property(_T("End"), &var);
+            m_HarpPoint[ZoneBreakType::End] = var.dblVal;
+
+            hr = pStrLoad->EndUnit(); // HarpPoints
+         }
+
          var.vt = VT_INDEX;
          hr = pStrLoad->get_Property(_T("Count"),&var);
          IndexType nRows = VARIANT2INDEX(var);
@@ -735,12 +779,27 @@ HRESULT CStrandData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress,Float64
             hr = strandRow.Load(pStrLoad,pProgress);
             m_StrandRows.push_back(strandRow);
          }
+         hr = pStrLoad->EndUnit(); // StrandRows
          std::sort(m_StrandRows.begin(),m_StrandRows.end());
-         hr = pStrLoad->EndUnit();
+
+         // Before version 4 of CStrandRow data we each individual strand row could
+         // define its own harp point locations. This gave us the possibility of many, many
+         // harp points. In version 4, we moved a single harp point definition to CStrandData.
+         // To deal with older files, we capture the old harp point definition from each strand
+         // row in a static data member of CStrandRow. Use the old data, if present, to
+         // define the harp point locations
+         for (int i = 0; i < 4; i++)
+         {
+            if (0 < CStrandRow::ms_oldHarpPoints[i].size())
+            {
+               // for lack of anything better/easier, just use the first value
+               m_HarpPoint[i] = CStrandRow::ms_oldHarpPoints[i].front();
+            }
+         }
       }
       else
       {
-         // stopped write this out in version 13 if NumPerStrandType is sdtDirectInput
+         // stopped write this out in version 13 if NumPerStrandType is sdtDirectRowInput
          var.Clear();
          var.vt = VT_INDEX;
          hr = pStrLoad->get_Property(_T("NumHarpedStrands"), &var );
@@ -1041,9 +1100,10 @@ HRESULT CStrandData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress,Float64
          m_AdjustableStrandType = pgsTypes::asHarped;
       }
 
-      if ( 5.0 <= version && m_NumPermStrandsType != sdtDirectInput )
+      if ( 5.0 <= version && (m_NumPermStrandsType != sdtDirectRowInput && m_NumPermStrandsType != sdtDirectStrandInput) )
       {
-         // not writing this data if NumPermStrandsType is sdtDirectInput... this was added in version 13 of the data block
+         // not writing this data if NumPermStrandsType is sdtDirectRowInput... this was added in version 13 of the data block
+         // not writing this data if NumPermStrandsType is sdtDirectStrandInput... this was added in version 17 of the data block
 
          var.Clear();
          var.vt = VT_I4;
@@ -1170,7 +1230,7 @@ HRESULT CStrandData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress,Float64
       THROW_LOAD(InvalidFileFormat,pStrLoad);
    }
 
-   if ( m_NumPermStrandsType == sdtDirectInput )
+   if ( m_NumPermStrandsType == sdtDirectRowInput || m_NumPermStrandsType == sdtDirectStrandInput)
    {
       ProcessStrandRowData();
    }
@@ -1182,7 +1242,7 @@ HRESULT CStrandData::Save(IStructuredSave* pStrSave,IProgress* pProgress)
 {
    HRESULT hr = S_OK;
 
-   pStrSave->BeginUnit(_T("PrestressData"),16.0);
+   pStrSave->BeginUnit(_T("PrestressData"),17.0);
 
    pStrSave->put_Property(_T("HsoEndMeasurement"), CComVariant(m_HsoEndMeasurement));
    pStrSave->put_Property(_T("HpOffsetAtStart"), CComVariant(m_HpOffsetAtEnd[pgsTypes::metStart])); // added in version 16
@@ -1193,10 +1253,18 @@ HRESULT CStrandData::Save(IStructuredSave* pStrSave,IProgress* pProgress)
 
    pStrSave->put_Property(_T("NumPermStrandsType"), CComVariant(m_NumPermStrandsType));
 
-   if ( m_NumPermStrandsType == sdtDirectInput )
+   if ( m_NumPermStrandsType == sdtDirectRowInput || m_NumPermStrandsType == sdtDirectStrandInput )
    {
-      // added in version 13
-      pStrSave->BeginUnit(_T("StrandRows"),1.0);
+      // added in version 13 for sdtDirectRowInput and version 17 for sdtDirectStrandInput
+      pStrSave->BeginUnit(_T("StrandRows"),2.0);
+      
+      pStrSave->BeginUnit(_T("HarpPoints"), 1.0); // added in version 2 of StrandRows
+      pStrSave->put_Property(_T("Start"), CComVariant(m_HarpPoint[ZoneBreakType::Start]));
+      pStrSave->put_Property(_T("LeftHP"), CComVariant(m_HarpPoint[ZoneBreakType::LeftBreak]));
+      pStrSave->put_Property(_T("RightHP"), CComVariant(m_HarpPoint[ZoneBreakType::RightBreak]));
+      pStrSave->put_Property(_T("End"), CComVariant(m_HarpPoint[ZoneBreakType::End]));
+      pStrSave->EndUnit(); // HarpPoints
+
       pStrSave->put_Property(_T("Count"),CComVariant(m_StrandRows.size()));
       CStrandRowCollection::iterator iter(m_StrandRows.begin());
       CStrandRowCollection::iterator iterEnd(m_StrandRows.end());
@@ -1205,11 +1273,11 @@ HRESULT CStrandData::Save(IStructuredSave* pStrSave,IProgress* pProgress)
          CStrandRow& strandRow(*iter);
          strandRow.Save(pStrSave,pProgress);
       }
-      pStrSave->EndUnit();
+      pStrSave->EndUnit(); // StrandRows
    }
    else
    {
-      // stopped write this out in version 13 if NumPerStrandType is sdtDirectInput
+      // stopped writing this out in version 13 if NumPerStrandType is sdtDirectRowInput
       pStrSave->put_Property(_T("NumHarpedStrands"), CComVariant(m_Nstrands[pgsTypes::Harped]));
       pStrSave->put_Property(_T("NumStraightStrands"), CComVariant(m_Nstrands[pgsTypes::Straight]));
       pStrSave->put_Property(_T("NumTempStrands"), CComVariant(m_Nstrands[pgsTypes::Temporary]));
@@ -1331,9 +1399,9 @@ HRESULT CStrandData::Save(IStructuredSave* pStrSave,IProgress* pProgress)
    pStrSave->put_Property(_T("TempStrandUsage"),CComVariant(m_TempStrandUsage));
    pStrSave->put_Property(_T("AdjustableStrandType"),CComVariant(m_AdjustableStrandType)); // added version 14.
 
-   if ( m_NumPermStrandsType != sdtDirectInput )
+   if ( m_NumPermStrandsType != sdtDirectRowInput && m_NumPermStrandsType != sdtDirectStrandInput )
    {
-      // not writing this data if NumPermStrandsType is sdtDirectInput... this was added in version 13 of the data block
+      // not writing this data if NumPermStrandsType is sdtDirectRowInput... this was added in version 13 of the data block
       pStrSave->put_Property(_T("SymmetricDebond"),CComVariant(m_bSymmetricDebond));
 
       pStrSave->BeginUnit(_T("StraightStrandDebonding"),1.0);
@@ -1388,6 +1456,19 @@ HRESULT CStrandData::Save(IStructuredSave* pStrSave,IProgress* pProgress)
    return hr;
 }
 
+void CStrandData::ClearExtendedStrands()
+{
+   for (int i = 0; i < 3; i++)
+   {
+      pgsTypes::StrandType strandType = (pgsTypes::StrandType)i;
+      for (int j = 0; j < 2; j++)
+      {
+         pgsTypes::MemberEndType endType = (pgsTypes::MemberEndType)j;
+         m_NextendedStrands[strandType][endType].clear();
+      }
+   }
+}
+
 void CStrandData::ClearExtendedStrands(pgsTypes::StrandType strandType,pgsTypes::MemberEndType endType)
 {
    m_NextendedStrands[strandType][endType].clear();
@@ -1395,9 +1476,10 @@ void CStrandData::ClearExtendedStrands(pgsTypes::StrandType strandType,pgsTypes:
 
 void CStrandData::ClearDebondData()
 {
-   for (long i=0; i<3; i++)
+   for (int i = 0; i < 3; i++)
    {
-      m_Debond[i].clear();
+      pgsTypes::StrandType strandType = (pgsTypes::StrandType)i;
+      m_Debond[strandType].clear();
    }
 }
 
@@ -1523,6 +1605,22 @@ const CDirectStrandFillCollection* CStrandData::GetDirectStrandFillTemporary() c
    }
 }
 
+void CStrandData::SetHarpPoints(Float64 X0, Float64 X1, Float64 X2, Float64 X3)
+{
+   m_HarpPoint[ZoneBreakType::Start]    = X0;
+   m_HarpPoint[ZoneBreakType::LeftBreak]  = X1;
+   m_HarpPoint[ZoneBreakType::RightBreak] = X2;
+   m_HarpPoint[ZoneBreakType::End]      = X3;
+}
+
+void CStrandData::GetHarpPoints(Float64* pX0, Float64* pX1, Float64* pX2, Float64* pX3) const
+{
+   *pX0 = m_HarpPoint[ZoneBreakType::Start];
+   *pX1 = m_HarpPoint[ZoneBreakType::LeftBreak];
+   *pX2 = m_HarpPoint[ZoneBreakType::RightBreak];
+   *pX3 = m_HarpPoint[ZoneBreakType::End];
+}
+
 void CStrandData::AddStrandRow(const CStrandRow& strandRow)
 {
    m_StrandRows.push_back(strandRow);
@@ -1546,9 +1644,35 @@ const CStrandRowCollection& CStrandData::GetStrandRows() const
    return m_StrandRows;
 }
 
+const CStrandRow& CStrandData::GetStrandRow(RowIndexType rowIdx) const
+{
+   return m_StrandRows[rowIdx];
+}
+
+bool CStrandData::GetStrandRow(pgsTypes::StrandType strandType, StrandIndexType strandIdx,const CStrandRow** ppStrandRow) const
+{
+   IndexType typeCount = 0;
+   for (const auto& strandRow : m_StrandRows)
+   {
+      if (strandRow.m_StrandType == strandType)
+      {
+         if (typeCount <= strandIdx && strandIdx < (typeCount + strandRow.m_nStrands))
+         {
+            *ppStrandRow = &strandRow;
+            return true;
+         }
+         typeCount += strandRow.m_nStrands;
+      }
+   }
+
+   ATLASSERT(false); // should never get here or rowIdx is invalid for the strand type given
+   *ppStrandRow = nullptr;
+   return false;
+}
+
 void CStrandData::SetStrandCount(pgsTypes::StrandType strandType,StrandIndexType nStrands)
 {
-   ATLASSERT( m_NumPermStrandsType != sdtDirectInput);
+   ATLASSERT( m_NumPermStrandsType != sdtDirectRowInput && m_NumPermStrandsType != sdtDirectStrandInput);
    m_Nstrands[strandType] = nStrands;
 }
 
@@ -1606,7 +1730,7 @@ StrandIndexType CStrandData::GetExtendedStrandCount(pgsTypes::StrandType strandT
    }
 
    StrandIndexType nExtendedStrands = 0;
-   if (m_NumPermStrandsType == sdtDirectInput)
+   if (m_NumPermStrandsType == sdtDirectRowInput)
    {
       CStrandRowCollection::const_iterator rowIter(m_StrandRows.begin());
       CStrandRowCollection::const_iterator rowIterEnd(m_StrandRows.end());
@@ -1679,7 +1803,7 @@ StrandIndexType CStrandData::GetDebondCount(pgsTypes::StrandType strandType,pgsT
    }
 
    StrandIndexType nDebondedStrands = 0;
-   if ( m_NumPermStrandsType == sdtDirectInput )
+   if ( m_NumPermStrandsType == sdtDirectRowInput)
    {
       CStrandRowCollection::const_iterator rowIter(m_StrandRows.begin());
       CStrandRowCollection::const_iterator rowIterEnd(m_StrandRows.end());
@@ -1692,15 +1816,25 @@ StrandIndexType CStrandData::GetDebondCount(pgsTypes::StrandType strandType,pgsT
          }
       }
    }
+   else if (m_NumPermStrandsType == sdtDirectStrandInput)
+   {
+      CStrandRowCollection::const_iterator rowIter(m_StrandRows.begin());
+      CStrandRowCollection::const_iterator rowIterEnd(m_StrandRows.end());
+      for (; rowIter != rowIterEnd; rowIter++)
+      {
+         const CStrandRow& row = *rowIter;
+         if (row.m_StrandType == strandType && row.m_bIsDebonded[endType])
+         {
+            nDebondedStrands++;
+         }
+      }
+   }
    else
    {
       ATLASSERT( m_NumPermStrandsType == sdtTotal || m_NumPermStrandsType == sdtStraightHarped || m_NumPermStrandsType == sdtDirectSelection );
 
-      std::vector<CDebondData>::const_iterator iter(m_Debond[strandType].begin());
-      std::vector<CDebondData>::const_iterator end(m_Debond[strandType].end());
-      for ( ; iter != end; iter++ )
+      for ( const auto& debond_info : m_Debond[strandType])
       {
-         const CDebondData& debond_info = *iter;
          if (debond_info.strandTypeGridIdx != INVALID_INDEX )
          {
             if ( strandType == pgsTypes::Straight )
@@ -1760,13 +1894,13 @@ void CStrandData::IsSymmetricDebond(bool bIsSymmetric)
 bool CStrandData::IsDebonded(pgsTypes::StrandType strandType,GridIndexType gridIdx,pgsTypes::MemberEndType endType,Float64* pLdebond) const
 {
    *pLdebond = 0;
-   std::vector<CDebondData>::const_iterator found = std::find_if(m_Debond[strandType].begin(),m_Debond[strandType].end(),FindDebondByGridIndex(gridIdx));
+   auto found = std::find_if(m_Debond[strandType].begin(),m_Debond[strandType].end(),FindDebondByGridIndex(gridIdx));
    if ( found == m_Debond[strandType].end() )
    {
       return false;
    }
 
-   const CDebondData& debondData = *found;
+   const auto& debondData = *found;
    *pLdebond = debondData.Length[endType];
    return true;
 }
@@ -1898,12 +2032,14 @@ void CStrandData::MakeCopy(const CStrandData& rOther)
 
    for ( Uint16 i = 0; i < 4; i++ )
    {
+      m_HarpPoint[i] = rOther.m_HarpPoint[i];
+
       m_Nstrands[i]         = rOther.m_Nstrands[i];
       m_Pjack[i]            = rOther.m_Pjack[i];
       m_bPjackCalculated[i] = rOther.m_bPjackCalculated[i];
       m_LastUserPjack[i]    = rOther.m_LastUserPjack[i];
 
-      if (i<3)
+      if (i < 3)
       {
          m_Debond[i]           = rOther.m_Debond[i];
          m_NextendedStrands[i][pgsTypes::metStart]  = rOther.m_NextendedStrands[i][pgsTypes::metStart];
@@ -1933,16 +2069,14 @@ StrandIndexType CStrandData::ProcessDirectFillData(const CDirectStrandFillCollec
    rLocalCollection.reserve(rInCollection.size());
 
    StrandIndexType ns(0);
-   CDirectStrandFillCollection::const_iterator iter(rInCollection.begin());
-   CDirectStrandFillCollection::const_iterator iterEnd(rInCollection.end());
-   for ( ; iter != iterEnd; iter++ )
+   for(const auto& fillInfo : rInCollection)
    {
-      ATLASSERT(iter->permStrandGridIdx!=INVALID_INDEX);
+      ATLASSERT(fillInfo.permStrandGridIdx != INVALID_INDEX);
 
-      StrandIndexType n = iter->numFilled;
+      StrandIndexType n = fillInfo.numFilled;
       if (n==1 || n==2)
       {
-         rLocalCollection.AddFill(*iter);
+         rLocalCollection.AddFill(fillInfo);
 
          ns += n;
       }
@@ -1957,7 +2091,7 @@ StrandIndexType CStrandData::ProcessDirectFillData(const CDirectStrandFillCollec
 
 void CStrandData::ProcessStrandRowData()
 {
-   StrandIndexType nStrands[3] = {0,0,0};
+   std::array<StrandIndexType,3> nStrands = {0,0,0};
 
    GridIndexType rowStartGridIdx = 0; // strand strand grid index for the first grid point in the current strand row
 
@@ -1966,40 +2100,38 @@ void CStrandData::ProcessStrandRowData()
    {
       pgsTypes::StrandType strandType = (pgsTypes::StrandType)i;
       m_Debond[strandType].clear();
-
-      for ( int j = 0; j < 2; j++ )
-      {
-         pgsTypes::MemberEndType endType = (pgsTypes::MemberEndType)j;
-         m_NextendedStrands[strandType][endType].clear();
-      }
+      m_NextendedStrands[strandType][pgsTypes::metStart].clear();
+      m_NextendedStrands[strandType][pgsTypes::metEnd].clear();
    }
 
    std::sort(m_StrandRows.begin(),m_StrandRows.end()); // must be in sorted order so we work with each strand type one at a time
-   CStrandRowCollection::iterator iter(m_StrandRows.begin());
-   CStrandRowCollection::iterator iterEnd(m_StrandRows.end());
+
    pgsTypes::StrandType lastStrandType = pgsTypes::Permanent; // not valid for this case so it is a good one to start with
-   for ( ; iter != iterEnd; iter++ )
+   for ( auto& strandRow : m_StrandRows)
    {
-      CStrandRow& strandRow(*iter);
-   
-      if ( lastStrandType != strandRow.m_StrandType )
+      if (lastStrandType != strandRow.m_StrandType)
       {
          // strand type changed so we are on to a new grid... reset rowStartGridIdx
          rowStartGridIdx = 0;
          lastStrandType = strandRow.m_StrandType;
       }
 
-      GridIndexType nRowGridPoints = strandRow.m_nStrands/2; // # grid points in this row
+      GridIndexType nRowGridPoints = strandRow.m_nStrands / 2; // # grid points in this row
 
-      for ( GridIndexType rowGridIdx = 0; rowGridIdx < nRowGridPoints; rowGridIdx++ )
+      if (m_NumPermStrandsType == CStrandData::sdtDirectStrandInput)
+      {
+         nRowGridPoints = 1;
+      }
+
+      for (GridIndexType rowGridIdx = 0; rowGridIdx < nRowGridPoints; rowGridIdx++)
       {
          GridIndexType gridIdx = rowStartGridIdx + rowGridIdx; // global grid point index
 
          // extended strands
-         for ( int i = 0; i < 2; i++ )
+         for (int i = 0; i < 2; i++)
          {
             pgsTypes::MemberEndType end = (pgsTypes::MemberEndType)(i);
-            if ( strandRow.m_bIsExtendedStrand[end] )
+            if (strandRow.m_bIsExtendedStrand[end])
             {
                ATLASSERT(strandRow.m_StrandType != pgsTypes::Temporary); // extended strands can't be temporary
                ATLASSERT(!strandRow.m_bIsDebonded[end]); // extended strands can't be debonded
@@ -2009,20 +2141,18 @@ void CStrandData::ProcessStrandRowData()
          }
 
          // debonded strands
-         if ( strandRow.m_bIsDebonded[pgsTypes::metStart] || strandRow.m_bIsDebonded[pgsTypes::metEnd] )
+         if (strandRow.m_bIsDebonded[pgsTypes::metStart] || strandRow.m_bIsDebonded[pgsTypes::metEnd])
          {
-            ATLASSERT(strandRow.m_StrandType != pgsTypes::Temporary); // temporary strands are not debonded
-
             CDebondData debondData;
             debondData.needsConversion = false;
             debondData.strandTypeGridIdx = gridIdx;
 
-            for ( int i = 0; i < 2; i++ )
+            for (int i = 0; i < 2; i++)
             {
                pgsTypes::MemberEndType end = (pgsTypes::MemberEndType)(i);
-               if ( strandRow.m_bIsDebonded[end] )
+               if (strandRow.m_bIsDebonded[end])
                {
-                  ATLASSERT(!strandRow.m_bIsExtendedStrand[end] ); // debonded strands can't be extended
+                  ATLASSERT(!strandRow.m_bIsExtendedStrand[end]); // debonded strands can't be extended
                   debondData.Length[end] = strandRow.m_DebondLength[end];
                }
                else
@@ -2035,16 +2165,14 @@ void CStrandData::ProcessStrandRowData()
          } // end if debond
       } // next grid point
 
-
       rowStartGridIdx += nRowGridPoints;
       nStrands[strandRow.m_StrandType] += strandRow.m_nStrands;
-
    } // next strand row
 
    m_Nstrands[pgsTypes::Straight]  = nStrands[pgsTypes::Straight];
    m_Nstrands[pgsTypes::Harped]    = nStrands[pgsTypes::Harped];
    m_Nstrands[pgsTypes::Temporary] = nStrands[pgsTypes::Temporary];
-   m_Nstrands[pgsTypes::Permanent] = 0;
+   m_Nstrands[pgsTypes::Permanent] = nStrands[pgsTypes::Straight] + nStrands[pgsTypes::Harped];
 }
 
 #if defined _DEBUG

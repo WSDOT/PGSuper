@@ -200,9 +200,13 @@ void pgsLibraryEntryObserver::Update(LiveLoadLibraryEntry* pSubject, Int32 hint)
    m_pAgent->HoldEvents();
    if ( hint & LibraryHints::EntryRenamed )
    {
+      bool bWasEntryUsed = false;
+      std::_tstring strOldName;
+
       for ( int i = 0; i < (int)pgsTypes::lltLiveLoadTypeCount; i++ )
       {
          pgsTypes::LiveLoadType llType = (pgsTypes::LiveLoadType)i;
+
          CProjectAgentImp::LiveLoadSelectionIterator begin = m_pAgent->m_SelectedLiveLoads[llType].begin();
          CProjectAgentImp::LiveLoadSelectionIterator end   = m_pAgent->m_SelectedLiveLoads[llType].end();
 
@@ -214,6 +218,7 @@ void pgsLibraryEntryObserver::Update(LiveLoadLibraryEntry* pSubject, Int32 hint)
          {
             CProjectAgentImp::LiveLoadSelection ll = *found;
 
+            bWasEntryUsed = true;
             std::_tstring strOldName = ll.EntryName;
             
             ll.EntryName = pSubject->GetName(); // this changes the value of the key that the collection is sorted on... we have to remove and re-insert to ensure proper sorting
@@ -222,10 +227,13 @@ void pgsLibraryEntryObserver::Update(LiveLoadLibraryEntry* pSubject, Int32 hint)
             m_pAgent->m_SelectedLiveLoads[llType].erase(found);
             m_pAgent->m_SelectedLiveLoads[llType].insert(ll);
 
-            m_pAgent->Fire_LiveLoadNameChanged(strOldName.c_str(),ll.EntryName.c_str());
          }
       }
 
+      if (bWasEntryUsed)
+      {
+         m_pAgent->Fire_LiveLoadNameChanged(strOldName.c_str(), pSubject->GetName().c_str());
+      }
    }
 
    if ( hint & LibraryHints::EntryEdited )
@@ -282,25 +290,57 @@ void pgsLibraryEntryObserver::Update(HaulTruckLibraryEntry* pSubject,Int32 hint)
    m_pAgent->HoldEvents();
    if ( hint & LibraryHints::EntryRenamed )
    {
+#if defined _USE_MULTITHREADING
+      std::vector<std::future<void>> vFutures;
+#endif
+
       GroupIndexType nGroups = m_pAgent->m_BridgeDescription.GetGirderGroupCount();
       for ( GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )
       {
          CGirderGroupData* pGroup = m_pAgent->m_BridgeDescription.GetGirderGroup(grpIdx);
+#if defined _USE_MULTITHREADING
+         // do the renaming for each group/span in its own asyncronous operation
+         std::future<void> f(std::async([=] {
+            GirderIndexType nGirders = pGroup->GetGirderCount();
+            for (GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++)
+            {
+               CSplicedGirderData* pGirder = pGroup->GetGirder(gdrIdx);
+               SegmentIndexType nSegments = pGirder->GetSegmentCount();
+               for (SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++)
+               {
+                  CPrecastSegmentData* pSegment = pGirder->GetSegment(segIdx);
+                  if (pSegment->HandlingData.pHaulTruckLibraryEntry == pSubject)
+                  {
+                     pSegment->HandlingData.HaulTruckName = pSubject->GetName();
+                  }
+               }
+            }
+         }));
+         vFutures.push_back(std::move(f));
+#else
          GirderIndexType nGirders = pGroup->GetGirderCount();
-         for ( GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++ )
+         for (GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++)
          {
             CSplicedGirderData* pGirder = pGroup->GetGirder(gdrIdx);
             SegmentIndexType nSegments = pGirder->GetSegmentCount();
-            for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
+            for (SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++)
             {
                CPrecastSegmentData* pSegment = pGirder->GetSegment(segIdx);
-               if ( pSegment->HandlingData.pHaulTruckLibraryEntry == pSubject )
+               if (pSegment->HandlingData.pHaulTruckLibraryEntry == pSubject)
                {
                   pSegment->HandlingData.HaulTruckName = pSubject->GetName();
                }
             }
          }
+#endif
       }
+
+#if defined _USE_MULTITHREADING
+      for (auto& f : vFutures)
+      {
+         f.wait(); // wait until the threads are done running (use f.get() if there is a return value)
+      }
+#endif
    }
 
    if ( hint & LibraryHints::EntryEdited )

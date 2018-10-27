@@ -10,6 +10,13 @@
 
 #include <EAF\EAFDocument.h>
 
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
+
+
 void DDX_DuctGeometry(CDataExchange* pDX,CLinearDuctGrid& grid,CLinearDuctGeometry& ductGeometry)
 {
    CLinearDuctGeometry::MeasurementType measurementType = ductGeometry.GetMeasurementType();

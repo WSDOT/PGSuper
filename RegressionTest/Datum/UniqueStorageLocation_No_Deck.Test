@@ -1,6 +1,6 @@
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 28.17    7   0.00                     1     1     Slab          34  0.6  270  10.67  10.16   7    2.0   21     7    0   0   0   0   0   4.000  7.200   4.210    -3.868     3289   0.320  0.562   0.731  0.000 -0.161 -0.395 -0.556  67.39  215.38    3.00    2.50    2.50 
+ 28.17    7   0.00                     1     1     Slab          34  0.6  270  10.67  10.16   7    2.0   21     7    0   0   0   0   0   4.000  7.200   3.381    -3.056     2828   0.320  0.562   3.016  0.000 -0.161 -0.395 -0.556  92.13  271.19    3.00    2.50    2.50 
 
 
 The Specification Check was Not Successful
@@ -8,16 +8,20 @@ Tensile stress check failed for Service I Limit State in Interval 2 Prestress Re
 Tensile stress check failed for Service III Limit State in Interval 15 Open to Traffic
 Lifting checks failed
 Hauling checks failed
+Finished elevation check failed
 
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 28.17    7   0.00                     1     2     Slab          34  0.6  270  10.50  10.05   7    2.0   21     7    0   0   0   0   0   4.000  7.500   4.310    -3.876     3260   0.316  0.507   0.433  0.000 -0.162 -0.398 -0.560  66.14  219.15    3.00    2.50    2.50 
+ 28.17    7   0.00                     1     2     Slab          34  0.6  270  10.50  10.05   7    2.0   21     7    0   0   0   0   0   4.000  7.500   3.454    -3.055     2813   0.316  0.507   2.729  0.000 -0.162 -0.398 -0.560  91.33  276.24    3.00    2.50    2.50 
 
 
 The Specification Check was Not Successful
+Tensile stress check failed for Service I Limit State in Interval 2 Prestress Release
+Tensile stress check failed for Service I Limit State in Interval 8 Remove temporary strands
 Tensile stress check failed for Service III Limit State in Interval 15 Open to Traffic
 Lifting checks failed
 Hauling checks failed
+Finished elevation check failed
 
 

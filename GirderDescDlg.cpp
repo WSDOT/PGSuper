@@ -115,7 +115,7 @@ void CGirderDescDlg::Init(const CBridgeDescription2* pBridgeDesc,const CSegmentK
 
    m_TimelineMgr = *(pBridgeDesc->GetTimelineManager());
 
-   if( m_pSegment->Strands.GetStrandDefinitionType() == CStrandData::sdtDirectInput )
+   if( m_pSegment->Strands.GetStrandDefinitionType() == CStrandData::sdtDirectRowInput || m_pSegment->Strands.GetStrandDefinitionType() == CStrandData::sdtDirectStrandInput)
    {
       AddAdditionalPropertyPages( false, false );
    }
@@ -420,12 +420,14 @@ ConfigStrandFillVector CGirderDescDlg::ComputeStrandFillVector(pgsTypes::StrandT
          while(it != itend)
          {
             StrandIndexType idx = it->permStrandGridIdx;
-            if (idx<gridsize)
+            if (idx < gridsize)
             {
                vec[idx] = it->numFilled;
             }
             else
-               ATLASSERT(false); 
+            {
+               ATLASSERT(false);
+            }
 
             it++;
          }

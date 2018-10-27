@@ -68,6 +68,13 @@
 
 #include "TxDOTCadWriter.h"
 
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
+
+
 // CTxDOTAgentImp
 
 /////////////////////////////////////////////////////////////////////////////
@@ -654,7 +661,7 @@ void CTxDOTAgentImp::SaveFlexureDesign(const CSegmentKey& segmentKey,const pgsSe
          pIBridgeDesc->SetSlabOffset( segmentKey.groupIndex, endPierIdx,   segmentKey.girderIndex, endOffset  );
       }
 
-      if (pSpec->IsAssExcessCamberInputEnabled())
+      if (pSpec->IsAssExcessCamberForLoad())
       {
          pgsTypes::AssExcessCamberType camberType = pIBridgeDesc->GetAssExcessCamberType();
          if (camberType == pgsTypes::aecBridge)

@@ -14,16 +14,17 @@ Temporary | Use the drop down list to select the material and size of temporary 
 Strand Details
 ---------------
 
-Item | Description
------|-------------
-Adjustable Strands | Select the adjustable strand type
-Specify Filling of Strands Using | Select the method for filling the strands grid defined in the girder library entry associated with this girder.
-[Select Strands...] | Open the Select Strands window
-[Define Strands...] | Open the Define Strands window
-Number of Straight Strands | Enter the number of straight strands. Check the Pjack box and enter a value, otherwise the maximum jacking force will assumed.
-Number of Harped Strands | Enter the number of straight strands. Check the Pjack box and enter a value, otherwise the maximum jacking force will assumed.
-Number of Temporary Strands | Enter the number of temporary strands. Check the Pjack box and enter a value, otherwise the maximum jacking force will assumed.
-Temporary Installation | Use the drop down list to select when the temporary strands are installed.
+Item                         | Description                                                                                                                     
+-----------------------------|---------------------------------------------------------------------------------------------------------------------------------
+ Adjustable Strands          | Select the adjustable strand type                                                                                               
+ Strand definition type      | Select the method for defining strands. (See Strand Definition Types below)                                                
+ [Select Strands...]         | Open the Select Strands window                                                                                                  
+ [Define Strand Rows...]     | Open the Define Strand Rows window                                                                                              
+ [Define Individual Rows...] | Open the Define Individual Strands window                                                                                       
+ Number of Straight Strands  | Enter the number of straight strands. Check the Pjack box and enter a value, otherwise the maximum jacking force will assumed.  
+ Number of Harped Strands    | Enter the number of straight strands. Check the Pjack box and enter a value, otherwise the maximum jacking force will assumed.  
+ Number of Temporary Strands | Enter the number of temporary strands. Check the Pjack box and enter a value, otherwise the maximum jacking force will assumed. 
+ Temporary Installation      | Use the drop down list to select when the temporary strands are installed.                                                      
 
 Vertical Location of Harped Strands
 -----------------------------------
@@ -35,16 +36,15 @@ Enter the location.
 
 > NOTE: If you hold the CTRL key while selecting a measurement type, the strand location will be converted to the selected measurement type.
 
-Strand Filling Options
+Strand Definition Types
 ----------------------
-Four options are available for defining the location of the prestressing strands.
+There are several options for defining prestressing strands.
 
 Option | Description
 -------|-------------
-Total Number of Permanent Strands | When this option is used, both straight and adjustable strands (harped or straight-web) are filled sequentially using the global strand fill order (Fill #) defined by the Girder Library entry strand grid.
-Number of Straight and Number Of Harped (or Number of Straight and Adjustable) | The number of straight and adjustable strands are defined independently. Straight and adjustable strand locations are filled sequentially using their relative orders defined in the Girder Library strand grid.
-Direct Selection of Strand Locations | This option allows you to fill the strand locations defined in the Girder Library strand grid in any order you like. Press [Select Strands...] to open the @subpage ug_dialogs_girder_select_strands window.
-Direct Input of Strand Locations | This option allows you to ignore the strand locations defined in the Girder Library strand grid and to define strands at any location in the cross section. Press [Define Strands...] to open the @subpage ug_dialogs_girder_define_strands window.
-
-Temporary strands are filled either sequentially or using direct selection depending on the option selected above.
+Number of Permanent Strands | When this option is used, both straight and adjustable strands (harped or straight-web) are filled sequentially using the global strand fill order (Fill #) defined by the Girder Library permanent strand grid.
+Number of Straight and Harped Strands (or Number of Straight and Adjustable Strands) | The number of straight and harped/adjustable strands are defined independently. Straight and harped/adjustable strand locations are filled sequentially using their relative orders defined in the Girder Library permanent strand grid.
+Strand Locations | This option allows you to fill the strand locations defined in the Girder Library permanent strand grid in any order you like. Press [Select Strands...] to open the @subpage ug_dialogs_girder_select_strands window.
+Strand Rows | This option allows you define prestressing strands in horizontal rows. The strand positions defined in the Girder Library are ignored. Press [Define Strand Rows...] to open the @subpage ug_dialogs_girder_define_strand_rows window.
+Individual Strands | This option allows you define each prestressing strand individually. Asymmetric strand layouts can be modeled with this option. The strand positions defined in the Girder Library are ignored. Press [Define Individual Strands...] to open the @subpage ug_dialogs_girder_define_individual_strands window.
 

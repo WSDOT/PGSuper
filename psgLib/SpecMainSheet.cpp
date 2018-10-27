@@ -124,20 +124,6 @@ void CSpecMainSheet::ExchangeDescriptionData(CDataExchange* pDX)
 
    if (pDX->m_bSaveAndValidate)
    {
-      if (m_Entry.m_SectionPropertyMode == pgsTypes::spmGross && m_Entry.m_LossMethod == LOSSES_TIME_STEP )
-      {
-         int result = AfxMessageBox(_T("Gross section properties cannot be used with the time-step method for losses.\n\nWould you like to change the section properties to transformed?"),MB_YESNO);
-         if (result == IDYES )
-         {
-            m_Entry.m_SectionPropertyMode = pgsTypes::spmTransformed;
-         }
-         else
-         {
-            pDX->PrepareCtrl(IDC_GROSS);
-            pDX->Fail();
-         }
-      }
-
       DDX_Text(pDX, IDC_NAME, m_Name);
       if (m_Name.IsEmpty())
       {
@@ -199,42 +185,6 @@ void CSpecMainSheet::ExchangeDeadLoadsData(CDataExchange* pDX)
    // overlay load distribution
    DDX_CBEnum(pDX, IDC_OVERLAY_DISTR,m_Entry.m_OverlayLoadDistribution);
 
-   // computation of haunch load
-   DDX_CBEnum(pDX, IDC_HAUNCH_COMP_CB,m_Entry.m_HaunchLoadComputationType);
-   DDX_UnitValueAndTag(pDX, IDC_HAUNCH_TOLER, IDC_HAUNCH_TOLER_UNIT, m_Entry.m_HaunchLoadCamberTolerance, pDisplayUnits->ComponentDim);
-   DDV_UnitValueGreaterThanZero(pDX, IDC_HAUNCH_TOLER,m_Entry.m_HaunchLoadCamberTolerance, pDisplayUnits->ComponentDim );
-
-   if (pDX->m_bSaveAndValidate)
-   {
-      if (m_Entry.GetLossMethod()==LOSSES_TIME_STEP && pgsTypes::hlcZeroCamber!=m_Entry.GetHaunchLoadComputationType())
-      {
-         int result = AfxMessageBox(_T("Haunch load computation must be set to assume \"Zero Camber\" when the Time-Step method is used for losses.\n\nWould you like to set the Haunch load computation to \"Zero Camber\"?"),MB_YESNO);
-         if (result == IDYES )
-         {
-            m_Entry.SetHaunchLoadComputationType(pgsTypes::hlcZeroCamber);
-         }
-         else
-         {
-            pDX->PrepareCtrl(IDC_HAUNCH_COMP_CB);
-            pDX->Fail();
-         }
-      }
-   }
-   
-   DDX_Percentage(pDX, IDC_HAUNCH_FACTOR, m_Entry.m_HaunchLoadCamberFactor);
-   if (pDX->m_bSaveAndValidate)
-   {
-      if (0.0 >= m_Entry.m_HaunchLoadCamberFactor)
-      {
-         ::AfxMessageBox(_T("Haunch load camber factor must be greater than zero. If you want zero camber, select the flat girder (zero camber) option"));
-         pDX->Fail();
-      }
-      else if (1.0 < m_Entry.m_HaunchLoadCamberFactor)
-      {
-         ::AfxMessageBox(_T("Haunch load camber factor must be less than or equal to 100%"));
-         pDX->Fail();
-      }
-   }   
 }
 
 void CSpecMainSheet::ExchangeLiveLoadsData(CDataExchange* pDX)
@@ -933,6 +883,29 @@ void CSpecMainSheet::ExchangeCreepData(CDataExchange* pDX)
       Float64 val = m_Entry.m_CamberVariability * 100.0;
       DDV_Range( pDX, mfcDDV::LE,mfcDDV::GE,val,0.0,100.0);
    }
+
+   // computation of haunch load
+   DDX_CBEnum(pDX, IDC_HAUNCH_COMP_CB,m_Entry.m_HaunchLoadComputationType);
+   DDX_UnitValueAndTag(pDX, IDC_HAUNCH_TOLER, IDC_HAUNCH_TOLER_UNIT, m_Entry.m_HaunchLoadCamberTolerance, pDisplayUnits->ComponentDim);
+   DDV_UnitValueGreaterThanZero(pDX, IDC_HAUNCH_TOLER,m_Entry.m_HaunchLoadCamberTolerance, pDisplayUnits->ComponentDim );
+
+   DDX_Percentage(pDX, IDC_HAUNCH_FACTOR, m_Entry.m_HaunchLoadCamberFactor);
+   if (pDX->m_bSaveAndValidate)
+   {
+      if (0.0 >= m_Entry.m_HaunchLoadCamberFactor)
+      {
+         ::AfxMessageBox(_T("Haunch load camber factor must be greater than zero. If you want zero camber, select the flat girder (zero camber) option"));
+         pDX->Fail();
+      }
+      else if (1.0 < m_Entry.m_HaunchLoadCamberFactor)
+      {
+         ::AfxMessageBox(_T("Haunch load camber factor must be less than or equal to 100%"));
+         pDX->Fail();
+      }
+   }   
+
+   // computation of haunch composite section properties
+   DDX_CBEnum(pDX, IDC_HAUNCH_COMP_PROPS_CB,m_Entry.m_HaunchAnalysisSectionPropertiesType);
 }
 
 void CSpecMainSheet::ExchangeLossData(CDataExchange* pDX)
@@ -998,20 +971,6 @@ void CSpecMainSheet::ExchangeLossData(CDataExchange* pDX)
          if (result == IDYES )
          {
             m_Entry.m_SectionPropertyMode = pgsTypes::spmTransformed;
-         }
-         else
-         {
-            pDX->PrepareCtrl(IDC_LOSS_METHOD);
-            pDX->Fail();
-         }
-      }
-
-      if (m_Entry.GetLossMethod()==LOSSES_TIME_STEP && pgsTypes::hlcZeroCamber!=m_Entry.GetHaunchLoadComputationType())
-      {
-         int result = AfxMessageBox(_T("Haunch load computation must be set to assume \"Zero Camber\" when the Time-Step method is used for losses.\n\nWould you like to set the Haunch load computation to \"Zero Camber\"?"),MB_YESNO);
-         if (result == IDYES )
-         {
-            m_Entry.SetHaunchLoadComputationType(pgsTypes::hlcZeroCamber);
          }
          else
          {

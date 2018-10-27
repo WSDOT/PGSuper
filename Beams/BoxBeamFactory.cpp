@@ -133,34 +133,6 @@ HRESULT CBoxBeamFactory::FinalConstruct()
    return S_OK;
 }
 
-void CBoxBeamFactory::CreateGirderSection(IBroker* pBroker,StatusGroupIDType statusGroupID,const IBeamFactory::Dimensions& dimensions,Float64 overallHeight,Float64 bottomFlangeHeight,IGirderSection** ppSection) const
-{
-   CComPtr<IBoxBeamSection> gdrSection;
-   gdrSection.CoCreateInstance(CLSID_BoxBeamSection);
-   CComPtr<IBoxBeam> beam;
-   gdrSection->get_Beam(&beam);
-
-   Float64 H1, H2, H3, H4, H5, H6, H7, W1, W2, W3, W4, F1, F2, C1, J, shearKeyDepth, endBlockLength;
-   GetDimensions(dimensions,H1, H2, H3, H4, H5, H6, H7, W1, W2, W3, W4, F1, F2, C1, J, shearKeyDepth, endBlockLength);
-
-   beam->put_H1(H1);
-   beam->put_H2(H2);
-   beam->put_H3(H3);
-   beam->put_H4(H4);
-   beam->put_H5(H5);
-   beam->put_H6(H6);
-   beam->put_H7(H7);
-   beam->put_W1(W1);
-   beam->put_W2(W2);
-   beam->put_W3(W3);
-   beam->put_W4(W4);
-   beam->put_F1(F1);
-   beam->put_F2(F2);
-   beam->put_C1(C1);
-
-   gdrSection.QueryInterface(ppSection);
-}
-
 bool CBoxBeamFactory::ValidateDimensions(const IBeamFactory::Dimensions& dimensions,bool bSI,std::_tstring* strErrMsg) const
 {
    Float64 H1, H2, H3, H4, H5, H6, H7, W1, W2, W3, W4, F1, F2, C1, J, shearKeyDepth, endBlockLength;
@@ -974,4 +946,27 @@ Float64 CBoxBeamFactory::GetBeamWidth(const IBeamFactory::Dimensions& dimensions
    Float64 bot = 2*(W4+W2) + W3;
 
    return Max(top,bot);
+}
+
+void CBoxBeamFactory::DimensionBeam(const IBeamFactory::Dimensions& dimensions, IBoxBeam* pBeam) const
+{
+   Float64 H1, H2, H3, H4, H5, H6, H7, W1, W2, W3, W4, F1, F2, C1, J, shearKeyDepth, endBlockLength;
+   GetDimensions(dimensions, H1, H2, H3, H4, H5, H6, H7, W1, W2, W3, W4, F1, F2, C1, J, shearKeyDepth, endBlockLength);
+
+   pBeam->put_H1(H1);
+   pBeam->put_H2(H2);
+   pBeam->put_H3(H3);
+   pBeam->put_H4(H4);
+   pBeam->put_H5(H5);
+   pBeam->put_H6(H6);
+   pBeam->put_H7(H7);
+   pBeam->put_W1(W1);
+   pBeam->put_W2(W2);
+   pBeam->put_W3(W3);
+   pBeam->put_W4(W4);
+   pBeam->put_F1(F1);
+   pBeam->put_F2(F2);
+   pBeam->put_C1(C1);
+
+   __super::DimensionBeam(dimensions, pBeam);
 }

@@ -32,6 +32,8 @@
 
 #include <system\tokenizer.h>
 
+#include <GenericBridge\Helpers.h>
+
 #include <IFace\Bridge.h>
 #include <EAF\EAFDisplayUnits.h>
 
@@ -42,18 +44,16 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-
 #define ERROR_SUCCESS                                 0
-#define ERROR_STRAND_COUNT                            1
-#define ERROR_S1_MUST_BE_ZERO                         2
-#define ERROR_S1_MUST_BE_POSITIVE                     3
-#define ERROR_S2_MUST_BE_POSITIVE                     4
-#define ERROR_Y_MUST_BE_POSITIVE                      5
-#define ERROR_DEBOND_LENGTH_MORE_THAN_SEGMENT         6
-#define ERROR_LEFT_DEBOND_LENGTH_MUST_BE_POSITIVE     7
-#define ERROR_RIGHT_DEBOND_LENGTH_MUST_BE_POSITIVE    8
-#define ERROR_LEFT_HARP_POINT_FRACTION                9
-#define ERROR_RIGHT_HARP_POINT_FRACTION               10
+#define ERROR_Y_MUST_BE_POSITIVE                      1
+#define ERROR_DEBOND_LENGTH_MORE_THAN_SEGMENT         2
+#define ERROR_LEFT_DEBOND_LENGTH_MUST_BE_POSITIVE     3
+#define ERROR_RIGHT_DEBOND_LENGTH_MUST_BE_POSITIVE    4
+
+#define ERROR_STRAND_COUNT                            5
+#define ERROR_S1_MUST_BE_ZERO                         6
+#define ERROR_S1_MUST_BE_POSITIVE                     7
+#define ERROR_S2_MUST_BE_POSITIVE                     8
 
 /////////////////////////////////////////////////////////////////////////////
 // CStrandGrid
@@ -79,7 +79,7 @@ END_MESSAGE_MAP()
 //
 int CStrandGrid::GetColWidth(ROWCOL nCol)
 {
-   if ( nCol == 23 || nCol == 25 )
+   if ( nCol == GetLeftDebondCheckCol() || nCol == GetRightDebondCheckCol() )
    {
       return 15; // debond left/right check boxes
    }
@@ -105,7 +105,7 @@ void CStrandGrid::CustomInit(const CPrecastSegmentData* pSegment)
    SetMergeCellsMode(gxnMergeEvalOnDisplay);
 
    const int num_rows = 1;
-   const int num_cols = 26;
+   const int num_cols = GetSpecializedColCount() + 15;
 
    SetRowCount(num_rows);
 	SetColCount(num_cols);
@@ -114,9 +114,6 @@ void CStrandGrid::CustomInit(const CPrecastSegmentData* pSegment)
 
 	// Turn off selecting whole columns when clicking on a column header (also turns on whole row selection)
 	GetParam()->EnableSelection((WORD) (GX_SELFULL & ~GX_SELCOL & ~GX_SELTABLE));
-
-   // no row moving
-	GetParam()->EnableMoveRows(FALSE);
 
    SetFrozenRows(1/*# frozen rows*/,1/*# extra header rows*/);
 
@@ -128,33 +125,8 @@ void CStrandGrid::CustomInit(const CPrecastSegmentData* pSegment)
          .SetVerticalAlignment(DT_TOP)
 			.SetEnabled(FALSE)          // disables usage as current cell
          .SetMergeCell(GX_MERGE_VERTICAL | GX_MERGE_COMPVALUE)
-			.SetValue(_T("Row"))
+			.SetValue(GetRowLabelHeading())
 		);
-
-	SetStyleRange(CGXRange(0,col,0,col+1), CGXStyle()
-         .SetHorizontalAlignment(DT_CENTER)
-         .SetVerticalAlignment(DT_TOP)
-			.SetEnabled(FALSE)          // disables usage as current cell
-         .SetMergeCell(GX_MERGE_HORIZONTAL | GX_MERGE_COMPVALUE)
-			.SetValue(_T("Spacing"))
-		);
-
-   CString strLabel;
-   strLabel.Format(_T("S1 (%s)"),pDisplayUnits->GetComponentDimUnit().UnitOfMeasure.UnitTag().c_str());
-   SetStyleRange(CGXRange(1,col++), CGXStyle()
-      .SetHorizontalAlignment(DT_CENTER)
-      .SetVerticalAlignment(DT_TOP)
-      .SetEnabled(FALSE)
-      .SetValue(strLabel)
-      );
-
-   strLabel.Format(_T("S2 (%s)"),pDisplayUnits->GetComponentDimUnit().UnitOfMeasure.UnitTag().c_str());
-   SetStyleRange(CGXRange(1,col++), CGXStyle()
-      .SetHorizontalAlignment(DT_CENTER)
-      .SetVerticalAlignment(DT_TOP)
-      .SetEnabled(FALSE)
-      .SetValue(strLabel)
-      );
 
 	SetStyleRange(CGXRange(0,col,1,col++), CGXStyle()
          .SetHorizontalAlignment(DT_CENTER)
@@ -165,14 +137,7 @@ void CStrandGrid::CustomInit(const CPrecastSegmentData* pSegment)
          .SetValue(_T("Type"))
 		);
 
-	SetStyleRange(CGXRange(0,col,1,col++), CGXStyle()
-         .SetHorizontalAlignment(DT_CENTER)
-         .SetVerticalAlignment(DT_TOP)
-			.SetEnabled(FALSE)          // disables usage as current cell
-         .SetMergeCell(GX_MERGE_VERTICAL | GX_MERGE_COMPVALUE)
-         .SetWrapText(TRUE)
-         .SetValue(_T("#\nStrands"))
-		);
+   col = InitSpecializedColumns(col,pDisplayUnits);
 
    SetStyleRange(CGXRange(0,col,0,col+1), CGXStyle()
       .SetHorizontalAlignment(DT_CENTER)
@@ -182,6 +147,7 @@ void CStrandGrid::CustomInit(const CPrecastSegmentData* pSegment)
       .SetMergeCell(GX_MERGE_HORIZONTAL | GX_MERGE_COMPVALUE)
       );
 
+   CString strLabel;
    strLabel.Format(_T("Y (%s)"),pDisplayUnits->GetComponentDimUnit().UnitOfMeasure.UnitTag().c_str());
 	SetStyleRange(CGXRange(1,col++), CGXStyle()
       .SetHorizontalAlignment(DT_CENTER)
@@ -197,7 +163,7 @@ void CStrandGrid::CustomInit(const CPrecastSegmentData* pSegment)
    	.SetValue(_T("Face"))
 		);
 
-   SetStyleRange(CGXRange(0,col,0,col+5), CGXStyle()
+   SetStyleRange(CGXRange(0,col,0,col+1), CGXStyle()
       .SetHorizontalAlignment(DT_CENTER)
       .SetVerticalAlignment(DT_TOP)
       .SetEnabled(FALSE)
@@ -205,22 +171,6 @@ void CStrandGrid::CustomInit(const CPrecastSegmentData* pSegment)
       .SetMergeCell(GX_MERGE_HORIZONTAL | GX_MERGE_COMPVALUE)
       );
 
-   SetStyleRange(CGXRange(1,col++,1,col++),CGXStyle()
-      .SetHorizontalAlignment(DT_CENTER)
-      .SetVerticalAlignment(DT_TOP)
-      .SetEnabled(FALSE)
-      .SetMergeCell(GX_MERGE_HORIZONTAL | GX_MERGE_COMPVALUE)
-      .SetValue(_T("Dist"))
-      );
-
-   SetStyleRange(CGXRange(1,col++,1,col++),CGXStyle()
-      .SetHorizontalAlignment(DT_CENTER)
-      .SetVerticalAlignment(DT_TOP)
-      .SetEnabled(FALSE)
-      .SetMergeCell(GX_MERGE_HORIZONTAL | GX_MERGE_COMPVALUE)
-      .SetValue(_T("X"))
-      );
-
    strLabel.Format(_T("Y (%s)"),pDisplayUnits->GetComponentDimUnit().UnitOfMeasure.UnitTag().c_str());
 	SetStyleRange(CGXRange(1,col++), CGXStyle()
       .SetHorizontalAlignment(DT_CENTER)
@@ -236,28 +186,12 @@ void CStrandGrid::CustomInit(const CPrecastSegmentData* pSegment)
    	.SetValue(_T("Face"))
 		);
 
-   SetStyleRange(CGXRange(0,col,0,col+5), CGXStyle()
+   SetStyleRange(CGXRange(0,col,0,col+1), CGXStyle()
       .SetHorizontalAlignment(DT_CENTER)
       .SetVerticalAlignment(DT_TOP)
       .SetEnabled(FALSE)
       .SetValue(_T("Right Harp Pt"))
       .SetMergeCell(GX_MERGE_HORIZONTAL | GX_MERGE_COMPVALUE)
-      );
-
-   SetStyleRange(CGXRange(1,col++,1,col++),CGXStyle()
-      .SetHorizontalAlignment(DT_CENTER)
-      .SetVerticalAlignment(DT_TOP)
-      .SetEnabled(FALSE)
-      .SetMergeCell(GX_MERGE_HORIZONTAL | GX_MERGE_COMPVALUE)
-      .SetValue(_T("X"))
-      );
-
-   SetStyleRange(CGXRange(1,col++,1,col++),CGXStyle()
-      .SetHorizontalAlignment(DT_CENTER)
-      .SetVerticalAlignment(DT_TOP)
-      .SetEnabled(FALSE)
-      .SetMergeCell(GX_MERGE_HORIZONTAL | GX_MERGE_COMPVALUE)
-      .SetValue(_T("Dist"))
       );
 
    strLabel.Format(_T("Y (%s)"),pDisplayUnits->GetComponentDimUnit().UnitOfMeasure.UnitTag().c_str());
@@ -365,7 +299,6 @@ void CStrandGrid::SetRowStyle(ROWCOL nRow)
 {
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    ROWCOL col = 0;
 
@@ -375,9 +308,6 @@ void CStrandGrid::SetRowStyle(ROWCOL nRow)
       .SetValue(nRow-1)
       );
 
-   // Spacing
-   SetStyleRange(CGXRange(nRow,col++,nRow,col++),CGXStyle().SetHorizontalAlignment(DT_RIGHT));
-
    SetStyleRange(CGXRange(nRow,col++),CGXStyle()
       .SetHorizontalAlignment(DT_RIGHT)
       .SetControl(GX_IDS_CTRL_ZEROBASED_EX)
@@ -385,13 +315,7 @@ void CStrandGrid::SetRowStyle(ROWCOL nRow)
       .SetValue(0L)
       );
 
-   // # Strands
-   SetStyleRange(CGXRange(nRow,col,nRow,col++),CGXStyle()
-      .SetControl(GX_IDS_CTRL_SPINEDIT)
-      .SetHorizontalAlignment(DT_RIGHT)
-      .SetUserAttribute(GX_IDS_UA_VALID_MIN,0L)
-      .SetUserAttribute(GX_IDS_UA_SPINBOUND_MIN,0L)
-      );
+   col = SetSpecializedColumnStyles(nRow, col);
 
    // Left End
    SetStyleRange(CGXRange(nRow,col++),CGXStyle()
@@ -406,27 +330,6 @@ void CStrandGrid::SetRowStyle(ROWCOL nRow)
       );
 
    // Left Harp Point
-   CString strChoices;
-   strChoices.Format(_T("%s\n%s"),pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure.UnitTag().c_str(),_T("%"));
-
-   // Dist
-   SetStyleRange(CGXRange(nRow,col++),CGXStyle().SetHorizontalAlignment(DT_RIGHT));
-   SetStyleRange(CGXRange(nRow,col++),CGXStyle()
-      .SetHorizontalAlignment(DT_RIGHT)
-      .SetControl(GX_IDS_CTRL_ZEROBASED_EX)
-      .SetChoiceList(strChoices)
-      .SetValue(0L)
-      );
-
-   // X
-   SetStyleRange(CGXRange(nRow,col++),CGXStyle().SetHorizontalAlignment(DT_RIGHT));
-   SetStyleRange(CGXRange(nRow,col++),CGXStyle()
-      .SetHorizontalAlignment(DT_RIGHT)
-      .SetControl(GX_IDS_CTRL_ZEROBASED_EX)
-      .SetChoiceList(strChoices)
-      .SetValue(0L)
-      );
-
    SetStyleRange(CGXRange(nRow,col++),CGXStyle().SetHorizontalAlignment(DT_RIGHT));
 
    SetStyleRange(CGXRange(nRow,col++),CGXStyle()
@@ -437,25 +340,6 @@ void CStrandGrid::SetRowStyle(ROWCOL nRow)
       );
 
    // Right Harp Point
-
-   // X
-   SetStyleRange(CGXRange(nRow,col++),CGXStyle().SetHorizontalAlignment(DT_RIGHT));
-   SetStyleRange(CGXRange(nRow,col++),CGXStyle()
-      .SetHorizontalAlignment(DT_RIGHT)
-      .SetControl(GX_IDS_CTRL_ZEROBASED_EX)
-      .SetChoiceList(strChoices)
-      .SetValue(0L)
-      );
-
-   // Dist
-   SetStyleRange(CGXRange(nRow,col++),CGXStyle().SetHorizontalAlignment(DT_RIGHT));
-   SetStyleRange(CGXRange(nRow,col++),CGXStyle()
-      .SetHorizontalAlignment(DT_RIGHT)
-      .SetControl(GX_IDS_CTRL_ZEROBASED_EX)
-      .SetChoiceList(strChoices)
-      .SetValue(0L)
-      );
-
    SetStyleRange(CGXRange(nRow,col++),CGXStyle().SetHorizontalAlignment(DT_RIGHT));
    
    SetStyleRange(CGXRange(nRow,col++),CGXStyle()
@@ -527,73 +411,29 @@ CStrandRow CStrandGrid::GetStrandRow(ROWCOL nRow)
 
    ROWCOL col = 1;
 
-   Float64 value = _tstof(GetCellValue(nRow,col++));
-   strandRow.m_InnerSpacing = ::ConvertToSysUnits(value,pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
-
-   value = _tstof(GetCellValue(nRow,col++));
-   strandRow.m_Spacing = ::ConvertToSysUnits(value,pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
-
    strandRow.m_StrandType = (pgsTypes::StrandType)(_tstoi(GetCellValue(nRow,col++)));
 
-   strandRow.m_nStrands = _tstoi(GetCellValue(nRow,col++));
+   col = GetSpecializedColumnValues(nRow, col, strandRow, pDisplayUnits);
 
    // Left End
-   value = _tstof(GetCellValue(nRow,col++));
-   strandRow.m_Y[LOCATION_START] = ::ConvertToSysUnits(value,pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
-   strandRow.m_Face[LOCATION_START] = (pgsTypes::FaceType)(_tstoi(GetCellValue(nRow,col++)));
+   Float64 value = _tstof(GetCellValue(nRow,col++));
+   strandRow.m_Y[ZoneBreakType::Start] = ::ConvertToSysUnits(value,pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
+   strandRow.m_Face[ZoneBreakType::Start] = (pgsTypes::FaceType)(_tstoi(GetCellValue(nRow,col++)));
 
    // Left Harp Point
    value = _tstof(GetCellValue(nRow,col++));
-   if ( GetCellValue(nRow,col++) == _T("1") )
-   {
-      strandRow.m_X[LOCATION_START] = -0.01*value;
-   }
-   else
-   {
-      strandRow.m_X[LOCATION_START] = ::ConvertToSysUnits(value,pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure);
-   }
-   value = _tstof(GetCellValue(nRow,col++));
-   if ( GetCellValue(nRow,col++) == _T("1") )
-   {
-      strandRow.m_X[LOCATION_LEFT_HP] = -0.01*value;
-   }
-   else
-   {
-      strandRow.m_X[LOCATION_LEFT_HP] = ::ConvertToSysUnits(value,pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure);
-   }
-   value = _tstof(GetCellValue(nRow,col++));
-   strandRow.m_Y[LOCATION_LEFT_HP] = ::ConvertToSysUnits(value,pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
-   strandRow.m_Face[LOCATION_LEFT_HP] = (pgsTypes::FaceType)(_tstoi(GetCellValue(nRow,col++)));
+   strandRow.m_Y[ZoneBreakType::LeftBreak] = ::ConvertToSysUnits(value,pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
+   strandRow.m_Face[ZoneBreakType::LeftBreak] = (pgsTypes::FaceType)(_tstoi(GetCellValue(nRow,col++)));
 
    // Right Harp Point
    value = _tstof(GetCellValue(nRow,col++));
-   if ( GetCellValue(nRow,col++) == _T("1") )
-   {
-      strandRow.m_X[LOCATION_RIGHT_HP] = -0.01*value;
-   }
-   else
-   {
-      strandRow.m_X[LOCATION_RIGHT_HP] = ::ConvertToSysUnits(value,pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure);
-   }
-
-   value = _tstof(GetCellValue(nRow,col++));
-   if ( GetCellValue(nRow,col++) == _T("1") )
-   {
-      strandRow.m_X[LOCATION_END] = -0.01*value;
-   }
-   else
-   {
-      strandRow.m_X[LOCATION_END] = ::ConvertToSysUnits(value,pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure);
-   }
-
-   value = _tstof(GetCellValue(nRow,col++));
-   strandRow.m_Y[LOCATION_RIGHT_HP] = ::ConvertToSysUnits(value,pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
-   strandRow.m_Face[LOCATION_RIGHT_HP] = (pgsTypes::FaceType)(_tstoi(GetCellValue(nRow,col++)));
+   strandRow.m_Y[ZoneBreakType::RightBreak] = ::ConvertToSysUnits(value,pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
+   strandRow.m_Face[ZoneBreakType::RightBreak] = (pgsTypes::FaceType)(_tstoi(GetCellValue(nRow,col++)));
 
    // Right End
    value = _tstof(GetCellValue(nRow,col++));
-   strandRow.m_Y[LOCATION_END] = ::ConvertToSysUnits(value,pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
-   strandRow.m_Face[LOCATION_END] = (pgsTypes::FaceType)(_tstoi(GetCellValue(nRow,col++)));
+   strandRow.m_Y[ZoneBreakType::End] = ::ConvertToSysUnits(value,pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
+   strandRow.m_Face[ZoneBreakType::End] = (pgsTypes::FaceType)(_tstoi(GetCellValue(nRow,col++)));
 
    strandRow.m_bIsExtendedStrand[pgsTypes::metStart] = GetCellValue(nRow,col++) == _T("1") ? true : false;
    strandRow.m_bIsExtendedStrand[pgsTypes::metEnd]   = GetCellValue(nRow,col++) == _T("1") ? true : false;
@@ -621,84 +461,30 @@ void CStrandGrid::AppendRow(const CStrandRow& strandRow)
 
    ROWCOL col = 1;
 
-   CString strValue;
-   strValue.Format(_T("%s"),::FormatDimension(strandRow.m_InnerSpacing,pDisplayUnits->GetComponentDimUnit(),false));
-   SetStyleRange(CGXRange(nRow,col++),CGXStyle().SetValue(strValue));
-
-   strValue.Format(_T("%s"),::FormatDimension(strandRow.m_Spacing,pDisplayUnits->GetComponentDimUnit(),false));
-   SetStyleRange(CGXRange(nRow,col++),CGXStyle().SetValue(strValue));
-
    SetStyleRange(CGXRange(nRow,col++),CGXStyle().SetValue((LONG)strandRow.m_StrandType));
 
-   SetStyleRange(CGXRange(nRow,col++),CGXStyle().SetValue((LONG)strandRow.m_nStrands));
+   col = AppendSpecializedColumnValues(nRow, col, strandRow, pDisplayUnits);
 
    // Left End
-   strValue.Format(_T("%s"),::FormatDimension(strandRow.m_Y[LOCATION_START],pDisplayUnits->GetComponentDimUnit(),false));
+   CString strValue;
+   strValue.Format(_T("%s"),::FormatDimension(strandRow.m_Y[ZoneBreakType::Start],pDisplayUnits->GetComponentDimUnit(),false));
    SetStyleRange(CGXRange(nRow,col++),CGXStyle().SetValue(strValue));
-   SetStyleRange(CGXRange(nRow,col++),CGXStyle().SetValue((LONG)(strandRow.m_Face[LOCATION_START])));
+   SetStyleRange(CGXRange(nRow,col++),CGXStyle().SetValue((LONG)(strandRow.m_Face[ZoneBreakType::Start])));
 
    // Left Harp Point
-   if ( strandRow.m_X[LOCATION_START] < 0 )
-   {
-      // fractional measure
-      SetStyleRange(CGXRange(nRow,col++),CGXStyle().SetValue(100*fabs(strandRow.m_X[LOCATION_START])));
-      SetStyleRange(CGXRange(nRow,col++),CGXStyle().SetValue(1L)); // %
-   }
-   else
-   {
-      strValue.Format(_T("%s"),::FormatDimension(strandRow.m_X[LOCATION_START],pDisplayUnits->GetSpanLengthUnit(),false));
-      SetStyleRange(CGXRange(nRow,col++),CGXStyle().SetValue(strValue));
-      SetStyleRange(CGXRange(nRow,col++),CGXStyle().SetValue(0L)); // unit
-   }
-   if ( strandRow.m_X[LOCATION_LEFT_HP] < 0 )
-   {
-      // fractional measure
-      SetStyleRange(CGXRange(nRow,col++),CGXStyle().SetValue(100*fabs(strandRow.m_X[LOCATION_LEFT_HP])));
-      SetStyleRange(CGXRange(nRow,col++),CGXStyle().SetValue(1L)); // %
-   }
-   else
-   {
-      strValue.Format(_T("%s"),::FormatDimension(strandRow.m_X[LOCATION_LEFT_HP],pDisplayUnits->GetSpanLengthUnit(),false));
-      SetStyleRange(CGXRange(nRow,col++),CGXStyle().SetValue(strValue));
-      SetStyleRange(CGXRange(nRow,col++),CGXStyle().SetValue(0L)); // unit
-   }
-   strValue.Format(_T("%s"),::FormatDimension(strandRow.m_Y[LOCATION_LEFT_HP],pDisplayUnits->GetComponentDimUnit(),false));
+   strValue.Format(_T("%s"),::FormatDimension(strandRow.m_Y[ZoneBreakType::LeftBreak],pDisplayUnits->GetComponentDimUnit(),false));
    SetStyleRange(CGXRange(nRow,col++),CGXStyle().SetValue(strValue));
-   SetStyleRange(CGXRange(nRow,col++),CGXStyle().SetValue((LONG)(strandRow.m_Face[LOCATION_LEFT_HP])));
+   SetStyleRange(CGXRange(nRow,col++),CGXStyle().SetValue((LONG)(strandRow.m_Face[ZoneBreakType::LeftBreak])));
 
    // Right Harp Point
-   if ( strandRow.m_X[LOCATION_RIGHT_HP] < 0 )
-   {
-      // fractional measure
-      SetStyleRange(CGXRange(nRow,col++),CGXStyle().SetValue(100*fabs(strandRow.m_X[LOCATION_RIGHT_HP])));
-      SetStyleRange(CGXRange(nRow,col++),CGXStyle().SetValue(1L)); // %
-   }
-   else
-   {
-      strValue.Format(_T("%s"),::FormatDimension(strandRow.m_X[LOCATION_RIGHT_HP],pDisplayUnits->GetSpanLengthUnit(),false));
-      SetStyleRange(CGXRange(nRow,col++),CGXStyle().SetValue(strValue));
-      SetStyleRange(CGXRange(nRow,col++),CGXStyle().SetValue(0L)); // unit
-   }
-   if ( strandRow.m_X[LOCATION_END] < 0 )
-   {
-      // fractional measure
-      SetStyleRange(CGXRange(nRow,col++),CGXStyle().SetValue(100*fabs(strandRow.m_X[LOCATION_END])));
-      SetStyleRange(CGXRange(nRow,col++),CGXStyle().SetValue(1L)); // %
-   }
-   else
-   {
-      strValue.Format(_T("%s"),::FormatDimension(strandRow.m_X[LOCATION_END],pDisplayUnits->GetSpanLengthUnit(),false));
-      SetStyleRange(CGXRange(nRow,col++),CGXStyle().SetValue(strValue));
-      SetStyleRange(CGXRange(nRow,col++),CGXStyle().SetValue(0L)); // unit
-   }
-   strValue.Format(_T("%s"),::FormatDimension(strandRow.m_Y[LOCATION_RIGHT_HP],pDisplayUnits->GetComponentDimUnit(),false));
+   strValue.Format(_T("%s"),::FormatDimension(strandRow.m_Y[ZoneBreakType::RightBreak],pDisplayUnits->GetComponentDimUnit(),false));
    SetStyleRange(CGXRange(nRow,col++),CGXStyle().SetValue(strValue));
-   SetStyleRange(CGXRange(nRow,col++),CGXStyle().SetValue((LONG)(strandRow.m_Face[LOCATION_RIGHT_HP])));
+   SetStyleRange(CGXRange(nRow,col++),CGXStyle().SetValue((LONG)(strandRow.m_Face[ZoneBreakType::RightBreak])));
 
    // Right End
-   strValue.Format(_T("%s"),::FormatDimension(strandRow.m_Y[LOCATION_END],pDisplayUnits->GetComponentDimUnit(),false));
+   strValue.Format(_T("%s"),::FormatDimension(strandRow.m_Y[ZoneBreakType::End],pDisplayUnits->GetComponentDimUnit(),false));
    SetStyleRange(CGXRange(nRow,col++),CGXStyle().SetValue(strValue));
-   SetStyleRange(CGXRange(nRow,col++),CGXStyle().SetValue((LONG)(strandRow.m_Face[LOCATION_END])));
+   SetStyleRange(CGXRange(nRow,col++),CGXStyle().SetValue((LONG)(strandRow.m_Face[ZoneBreakType::End])));
 
    SetStyleRange(CGXRange(nRow,col++),CGXStyle().SetValue(strandRow.m_bIsExtendedStrand[pgsTypes::metStart] ? 1L : 0L));
    SetStyleRange(CGXRange(nRow,col++),CGXStyle().SetValue(strandRow.m_bIsExtendedStrand[pgsTypes::metEnd] ? 1L : 0L));
@@ -751,6 +537,15 @@ void CStrandGrid::OnRemoveSelectedRows()
       }
    }
 
+   // for some reason the row headers wont redraw
+   // I think it has to do with cell merging
+   // reset the values manually
+   ROWCOL nRows = GetRowCount();
+   for (ROWCOL row = 2; row <= nRows; row++)
+   {
+      SetValueRange(CGXRange(row, 0), row - 1);
+   }
+
    OnChangedSelection(nullptr,FALSE,FALSE);
 
    CGirderSegmentStrandsPage* pParent = (CGirderSegmentStrandsPage*)GetParent();
@@ -792,7 +587,7 @@ void CStrandGrid::UpdateStrandData(CDataExchange* pDX,CStrandData* pStrands)
          strandRows.push_back(strandRow);
       }
 
-      pStrands->SetStrandDefinitionType(CStrandData::sdtDirectInput);
+      pStrands->SetStrandDefinitionType(GetStrandDefinitionType());
       pStrands->SetStrandRows(strandRows);
    }
    else
@@ -812,14 +607,9 @@ void CStrandGrid::FillGrid(CStrandData* pStrands)
       CGXGridWnd::RemoveRows(2,nRows);
    }
 
-   ATLASSERT(pStrands->GetStrandDefinitionType() == CStrandData::sdtDirectInput);
-
    const CStrandRowCollection& strandRows = pStrands->GetStrandRows();
-   CStrandRowCollection::const_iterator iter(strandRows.begin());
-   CStrandRowCollection::const_iterator iterEnd(strandRows.end());
-   for ( ; iter != iterEnd; iter++ )
+   for( const auto& strandRow : strandRows)
    {
-      const CStrandRow& strandRow(*iter);
       AppendRow(strandRow);
    }
    ResizeColWidthsToFit(CGXRange(0,0,GetRowCount(),GetColCount()));
@@ -834,7 +624,7 @@ void CStrandGrid::FillGrid(CStrandData* pStrands)
 
 void CStrandGrid::OnModifyCell(ROWCOL nRow,ROWCOL nCol)
 {
-   if (nCol != 24 && nCol != 26)
+   if (nCol != GetLeftDebondLengthCol() && nCol != GetRightDebondLengthCol())
    {
       UpdateExtendedStrandProperties(nRow);
 
@@ -846,7 +636,7 @@ void CStrandGrid::OnModifyCell(ROWCOL nRow,ROWCOL nCol)
 
 void CStrandGrid::OnClickedButtonRowCol(ROWCOL nRow, ROWCOL nCol)
 {
-   if ( nCol == 21 || nCol == 22 || nCol == 23 || nCol == 25 ) 
+   if ( nCol == GetLeftExtendCheckCol() || nCol == GetRightExtendCheckCol() || nCol == GetLeftDebondCheckCol() || nCol == GetRightDebondCheckCol())
    {
       // left extension, right extension, left debond, or right debond check box was clicked
       UpdateExtendedStrandProperties(nRow);
@@ -866,17 +656,62 @@ BOOL CStrandGrid::OnEndEditing(ROWCOL nRow,ROWCOL nCol)
    return TRUE;
 }
 
+ROWCOL CStrandGrid::GetStrandTypeCol()
+{
+   return 1;
+}
+
+ROWCOL CStrandGrid::GetHarpStrandStartCol()
+{
+   return GetSpecializedColCount() + 4;
+}
+
+ROWCOL CStrandGrid::GetHarpStrandEndCol()
+{
+   return GetHarpStrandStartCol() + 3;
+}
+
+ROWCOL CStrandGrid::GetLeftExtendCheckCol()
+{
+   return GetHarpStrandEndCol() + 3;
+}
+
+ROWCOL CStrandGrid::GetRightExtendCheckCol()
+{
+   return GetLeftExtendCheckCol() + 1;
+}
+
+ROWCOL CStrandGrid::GetLeftDebondCheckCol()
+{
+   return GetRightExtendCheckCol() + 1;
+}
+
+ROWCOL CStrandGrid::GetLeftDebondLengthCol()
+{
+   return GetLeftDebondCheckCol() + 1;
+}
+
+ROWCOL CStrandGrid::GetRightDebondCheckCol()
+{
+   return GetLeftDebondLengthCol() + 1;
+}
+
+ROWCOL CStrandGrid::GetRightDebondLengthCol()
+{
+   return GetRightDebondCheckCol() + 1;
+}
+
 void CStrandGrid::UpdateExtendedStrandProperties(ROWCOL nRow)
 {
    GetParam()->EnableUndo(FALSE);
    GetParam()->SetLockReadOnly(FALSE);
 
-   bool bHarpStrands = GetCellValue(nRow,3) == _T("1") ? true : false;
-   bool bTempStrands = GetCellValue(nRow,3) == _T("2") ? true : false;
-   bool bIsExtended[2] = {GetCellValue(nRow,21) == _T("1") ? true : false,
-                          GetCellValue(nRow,22) == _T("1") ? true : false};
-   bool bIsDebonded[2] = {GetCellValue(nRow,23) == _T("1") ? true : false,
-                          GetCellValue(nRow,25) == _T("1") ? true : false};
+   bool bHarpStrands = GetCellValue(nRow, GetStrandTypeCol()) == _T("1") ? true : false;
+   bool bTempStrands = GetCellValue(nRow, GetStrandTypeCol()) == _T("2") ? true : false;
+   bool bIsExtended[2] = {GetCellValue(nRow, GetLeftExtendCheckCol())  == _T("1") ? true : false,
+                          GetCellValue(nRow, GetRightExtendCheckCol()) == _T("1") ? true : false};
+   bool bIsDebonded[2] = {GetCellValue(nRow, GetLeftDebondCheckCol())  == _T("1") ? true : false,
+                          GetCellValue(nRow, GetRightDebondCheckCol()) == _T("1") ? true : false};
 
    CGXStyle enabled_style;
    CGXStyle disabled_style;
@@ -890,81 +725,83 @@ void CStrandGrid::UpdateExtendedStrandProperties(ROWCOL nRow)
         .SetInterior(::GetSysColor(COLOR_BTNFACE))
         .SetTextColor(::GetSysColor(COLOR_BTNFACE)); // using the same color for text as the interior of the cell effectively hides the text
 
-   SetStyleRange(CGXRange(nRow,7,nRow,18),enabled_style);
+   SetStyleRange(CGXRange(nRow, GetHarpStrandStartCol(),nRow, GetHarpStrandEndCol()),enabled_style); // harped strands
 
-   SetStyleRange(CGXRange(nRow,21,nRow,22),enabled_style);
-   SetStyleRange(CGXRange(nRow,23),enabled_style);
+   SetStyleRange(CGXRange(nRow, GetLeftExtendCheckCol(),nRow, GetRightExtendCheckCol()),enabled_style); // extended strands
+
+   // debonded strands
+   SetStyleRange(CGXRange(nRow, GetLeftDebondCheckCol()),enabled_style);
    if ( bIsDebonded[pgsTypes::metStart] )
    {
-      SetStyleRange(CGXRange(nRow,24),enabled_style);
+      SetStyleRange(CGXRange(nRow, GetLeftDebondLengthCol()),enabled_style);
    }
    else
    {
-      SetStyleRange(CGXRange(nRow,24),disabled_style);
+      SetStyleRange(CGXRange(nRow, GetLeftDebondLengthCol()),disabled_style);
    }
-   SetStyleRange(CGXRange(nRow,25),enabled_style);
+   SetStyleRange(CGXRange(nRow, GetRightDebondCheckCol()),enabled_style);
    if ( bIsDebonded[pgsTypes::metEnd] )
    {
-      SetStyleRange(CGXRange(nRow,26),enabled_style);
+      SetStyleRange(CGXRange(nRow, GetRightDebondLengthCol()),enabled_style);
    }
    else
    {
-      SetStyleRange(CGXRange(nRow,26),disabled_style);
+      SetStyleRange(CGXRange(nRow, GetRightDebondLengthCol()),disabled_style);
    }
 
    if ( bHarpStrands )
    {
       // can't be extended strands
-      SetStyleRange(CGXRange(nRow,21,nRow,22),CGXStyle(disabled_style).SetValue(0L));
+      SetStyleRange(CGXRange(nRow, GetLeftExtendCheckCol(),nRow, GetRightExtendCheckCol()),CGXStyle(disabled_style).SetValue(0L));
 
       // can't be debonded
-      SetStyleRange(CGXRange(nRow,23),CGXStyle(disabled_style).SetValue(0L));
-      SetStyleRange(CGXRange(nRow,24),CGXStyle(disabled_style));
-      SetStyleRange(CGXRange(nRow,25),CGXStyle(disabled_style).SetValue(0L));
-      SetStyleRange(CGXRange(nRow,26),CGXStyle(disabled_style));
+      SetStyleRange(CGXRange(nRow, GetLeftDebondCheckCol()),CGXStyle(disabled_style).SetValue(0L));
+      SetStyleRange(CGXRange(nRow, GetLeftDebondLengthCol()),CGXStyle(disabled_style));
+      SetStyleRange(CGXRange(nRow, GetRightDebondCheckCol()),CGXStyle(disabled_style).SetValue(0L));
+      SetStyleRange(CGXRange(nRow, GetRightDebondLengthCol()),CGXStyle(disabled_style));
    }
    else
    {
       // Harp point int parameters
-      SetStyleRange(CGXRange(nRow,7,nRow,18),disabled_style);
+      SetStyleRange(CGXRange(nRow, GetHarpStrandStartCol(),nRow, GetHarpStrandEndCol()),disabled_style);
    }
 
    if ( bTempStrands )
    {
       // can't be extended strands
-      SetStyleRange(CGXRange(nRow,21,nRow,22),CGXStyle(disabled_style).SetValue(0L));
+      SetStyleRange(CGXRange(nRow, GetLeftExtendCheckCol(),nRow, GetRightExtendCheckCol()),CGXStyle(disabled_style).SetValue(0L));
 
       // can't be debonded
-      SetStyleRange(CGXRange(nRow,23),CGXStyle(disabled_style).SetValue(0L));
-      SetStyleRange(CGXRange(nRow,24),CGXStyle(disabled_style));
-      SetStyleRange(CGXRange(nRow,25),CGXStyle(disabled_style).SetValue(0L));
-      SetStyleRange(CGXRange(nRow,26),CGXStyle(disabled_style));
+      SetStyleRange(CGXRange(nRow, GetLeftDebondCheckCol()),CGXStyle(disabled_style).SetValue(0L));
+      SetStyleRange(CGXRange(nRow, GetLeftDebondLengthCol()),CGXStyle(disabled_style));
+      SetStyleRange(CGXRange(nRow, GetRightDebondCheckCol()),CGXStyle(disabled_style).SetValue(0L));
+      SetStyleRange(CGXRange(nRow, GetRightDebondLengthCol()),CGXStyle(disabled_style));
    }
    
    if ( bIsExtended[pgsTypes::metStart] )
    {
       // can't be debonded
-      SetStyleRange(CGXRange(nRow,23),CGXStyle(disabled_style).SetValue(0L));
-      SetStyleRange(CGXRange(nRow,24),CGXStyle(disabled_style));
+      SetStyleRange(CGXRange(nRow, GetLeftDebondCheckCol()),CGXStyle(disabled_style).SetValue(0L));
+      SetStyleRange(CGXRange(nRow, GetLeftDebondLengthCol()),CGXStyle(disabled_style));
    }
    
    if ( bIsExtended[pgsTypes::metEnd] )
    {
       // can't be debonded
-      SetStyleRange(CGXRange(nRow,25),CGXStyle(disabled_style).SetValue(0L));
-      SetStyleRange(CGXRange(nRow,26),CGXStyle(disabled_style));
+      SetStyleRange(CGXRange(nRow, GetRightDebondCheckCol()),CGXStyle(disabled_style).SetValue(0L));
+      SetStyleRange(CGXRange(nRow, GetRightDebondLengthCol()),CGXStyle(disabled_style));
    }
 
    if ( bIsDebonded[pgsTypes::metStart] )
    {
       // can't be extended
-      SetStyleRange(CGXRange(nRow,21),CGXStyle(disabled_style).SetValue(0L));
+      SetStyleRange(CGXRange(nRow, GetLeftExtendCheckCol()),CGXStyle(disabled_style).SetValue(0L));
    }
 
    if ( bIsDebonded[pgsTypes::metEnd] )
    {
       // can't be extended
-      SetStyleRange(CGXRange(nRow,22),CGXStyle(disabled_style).SetValue(0L));
+      SetStyleRange(CGXRange(nRow, GetRightExtendCheckCol()),CGXStyle(disabled_style).SetValue(0L));
    }
 
    GetParam()->SetLockReadOnly(TRUE);
@@ -973,26 +810,6 @@ void CStrandGrid::UpdateExtendedStrandProperties(ROWCOL nRow)
 
 UINT CStrandGrid::Validate(ROWCOL nRow,CStrandRow& strandRow)
 {
-   if ( strandRow.m_nStrands == 0 )
-   {
-      return ERROR_STRAND_COUNT;
-   }
-
-   // Check inner spacing requirements
-   if ( IsOdd(strandRow.m_nStrands) && !IsZero(strandRow.m_InnerSpacing) )
-   {
-      return ERROR_S1_MUST_BE_ZERO;
-   }
-   else if ( IsEven(strandRow.m_nStrands) && IsLE(strandRow.m_InnerSpacing,0.0,0.0) )
-   {
-      return ERROR_S1_MUST_BE_POSITIVE;
-   }
-
-   // Check main spacing requirement
-   if ( 3 < strandRow.m_nStrands && IsLE(strandRow.m_Spacing,0.0,0.0) )
-   {
-      return ERROR_S2_MUST_BE_POSITIVE;
-   }
 
    // Check position
    if ( IsLE(strandRow.m_Y[pgsTypes::metStart],0.0,0.0) || IsLE(strandRow.m_Y[pgsTypes::metStart],0.0,0.0) )
@@ -1021,17 +838,6 @@ UINT CStrandGrid::Validate(ROWCOL nRow,CStrandRow& strandRow)
       }
    }
 
-   // Check harp point locations
-   if ( strandRow.m_X[1] < -1 )
-   {
-      return ERROR_LEFT_HARP_POINT_FRACTION;
-   }
-
-   if ( strandRow.m_X[2] < -1 )
-   {
-      return ERROR_RIGHT_HARP_POINT_FRACTION;
-   }
-
    return ERROR_SUCCESS;
 }
 
@@ -1040,22 +846,6 @@ void CStrandGrid::ShowValidationError(ROWCOL nRow,UINT iError)
    CString strMsg;
    switch(iError)
    {
-   case ERROR_STRAND_COUNT:
-      strMsg.Format(_T("Row %d: Number of strands must be greater than zero"),nRow-1);
-      break;
-
-   case ERROR_S1_MUST_BE_ZERO:
-      strMsg.Format(_T("Row %d: S1 must be zero when the number of strands is odd"),nRow-1);
-      break;
-
-   case ERROR_S1_MUST_BE_POSITIVE:
-      strMsg.Format(_T("Row %d: S1 must be greater than zero when the number of strands is even"),nRow-1);
-      break;
-
-   case ERROR_S2_MUST_BE_POSITIVE:
-      strMsg.Format(_T("Row %d: S2 must be greater than zero"),nRow-1);
-      break;
-
    case ERROR_Y_MUST_BE_POSITIVE:
       strMsg.Format(_T("Row %d: Location of strand, Y, must greater than zero"),nRow-1);
       break;
@@ -1071,14 +861,6 @@ void CStrandGrid::ShowValidationError(ROWCOL nRow,UINT iError)
    case ERROR_RIGHT_DEBOND_LENGTH_MUST_BE_POSITIVE:
       strMsg.Format(_T("Row %d: Right end debond length must be greater than 0.0"),nRow-1);
       break;
-
-   case ERROR_LEFT_HARP_POINT_FRACTION:
-      strMsg.Format(_T("Row %d: Left harp point fractional location must be less than 100%s"),nRow-1,_T("%"));
-      break;
-
-   case ERROR_RIGHT_HARP_POINT_FRACTION:
-      strMsg.Format(_T("Row %d: Right harp point fractional location must be less than 100%s"),nRow-1,_T("%"));
-      break;
    
    default:
       ATLASSERT(false); // should never get here
@@ -1086,4 +868,201 @@ void CStrandGrid::ShowValidationError(ROWCOL nRow,UINT iError)
    }
 
    AfxMessageBox(strMsg);
+}
+
+/////////////////////////////////////////////////////////////////////////////
+// CRowStrandGrid
+ROWCOL CRowStrandGrid::InitSpecializedColumns(ROWCOL col,IEAFDisplayUnits* pDisplayUnits)
+{
+   SetStyleRange(CGXRange(0, col, 0, col + 1), CGXStyle()
+      .SetHorizontalAlignment(DT_CENTER)
+      .SetVerticalAlignment(DT_TOP)
+      .SetEnabled(FALSE)          // disables usage as current cell
+      .SetMergeCell(GX_MERGE_HORIZONTAL | GX_MERGE_COMPVALUE)
+      .SetValue(_T("Spacing"))
+   );
+
+   CString strLabel;
+   strLabel.Format(_T("S1 (%s)"), pDisplayUnits->GetComponentDimUnit().UnitOfMeasure.UnitTag().c_str());
+   SetStyleRange(CGXRange(1, col++), CGXStyle()
+      .SetHorizontalAlignment(DT_CENTER)
+      .SetVerticalAlignment(DT_TOP)
+      .SetEnabled(FALSE)
+      .SetValue(strLabel)
+   );
+
+   strLabel.Format(_T("S2 (%s)"), pDisplayUnits->GetComponentDimUnit().UnitOfMeasure.UnitTag().c_str());
+   SetStyleRange(CGXRange(1, col++), CGXStyle()
+      .SetHorizontalAlignment(DT_CENTER)
+      .SetVerticalAlignment(DT_TOP)
+      .SetEnabled(FALSE)
+      .SetValue(strLabel)
+   );
+
+   SetStyleRange(CGXRange(0, col, 1, col++), CGXStyle()
+      .SetHorizontalAlignment(DT_CENTER)
+      .SetVerticalAlignment(DT_TOP)
+      .SetEnabled(FALSE)          // disables usage as current cell
+      .SetMergeCell(GX_MERGE_VERTICAL | GX_MERGE_COMPVALUE)
+      .SetWrapText(TRUE)
+      .SetValue(_T("#\nStrands"))
+   );
+
+   return col;
+}
+
+ROWCOL CRowStrandGrid::SetSpecializedColumnStyles(ROWCOL nRow, ROWCOL col)
+{
+   // Spacing
+   SetStyleRange(CGXRange(nRow, col, nRow, col + 1), CGXStyle().SetHorizontalAlignment(DT_RIGHT));
+   col += 2;
+
+   // # Strands
+   SetStyleRange(CGXRange(nRow, col, nRow, col++), CGXStyle()
+      .SetControl(GX_IDS_CTRL_SPINEDIT)
+      .SetHorizontalAlignment(DT_RIGHT)
+      .SetUserAttribute(GX_IDS_UA_VALID_MIN, 0L)
+      .SetUserAttribute(GX_IDS_UA_SPINBOUND_MIN, 0L)
+   );
+   return col;
+}
+
+ROWCOL CRowStrandGrid::GetSpecializedColumnValues(ROWCOL nRow, ROWCOL col, CStrandRow& strandRow, IEAFDisplayUnits* pDisplayUnits)
+{
+   Float64 value = _tstof(GetCellValue(nRow, col++));
+   strandRow.m_Z = ::ConvertToSysUnits(value, pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
+
+   value = _tstof(GetCellValue(nRow, col++));
+   strandRow.m_Spacing = ::ConvertToSysUnits(value, pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
+
+   strandRow.m_nStrands = _tstoi(GetCellValue(nRow, col++));
+
+   return col;
+}
+
+ROWCOL CRowStrandGrid::AppendSpecializedColumnValues(ROWCOL nRow, ROWCOL col, const CStrandRow& strandRow, IEAFDisplayUnits* pDisplayUnits)
+{
+   CString strValue;
+   strValue.Format(_T("%s"), ::FormatDimension(strandRow.m_Z, pDisplayUnits->GetComponentDimUnit(), false));
+   SetStyleRange(CGXRange(nRow, col++), CGXStyle().SetValue(strValue));
+
+   strValue.Format(_T("%s"), ::FormatDimension(strandRow.m_Spacing, pDisplayUnits->GetComponentDimUnit(), false));
+   SetStyleRange(CGXRange(nRow, col++), CGXStyle().SetValue(strValue));
+
+   SetStyleRange(CGXRange(nRow, col++), CGXStyle().SetValue((LONG)strandRow.m_nStrands));
+
+   return col;
+}
+
+UINT CRowStrandGrid::Validate(ROWCOL nRow, CStrandRow& strandRow)
+{
+   if (strandRow.m_nStrands == 0)
+   {
+      return ERROR_STRAND_COUNT;
+   }
+
+   // Check inner spacing requirements
+   if (IsOdd(strandRow.m_nStrands) && !IsZero(strandRow.m_Z))
+   {
+      return ERROR_S1_MUST_BE_ZERO;
+   }
+   else if (IsEven(strandRow.m_nStrands) && IsLE(strandRow.m_Z, 0.0, 0.0))
+   {
+      return ERROR_S1_MUST_BE_POSITIVE;
+   }
+
+   // Check main spacing requirement
+   if (3 < strandRow.m_nStrands && IsLE(strandRow.m_Spacing, 0.0, 0.0))
+   {
+      return ERROR_S2_MUST_BE_POSITIVE;
+   }
+
+   return CStrandGrid::Validate(nRow, strandRow);
+}
+
+void CRowStrandGrid::ShowValidationError(ROWCOL nRow, UINT iError)
+{
+   CString strMsg;
+   switch (iError)
+   {
+   case ERROR_STRAND_COUNT:
+      strMsg.Format(_T("Row %d: Number of strands must be greater than zero"), nRow - 1);
+      break;
+
+   case ERROR_S1_MUST_BE_ZERO:
+      strMsg.Format(_T("Row %d: S1 must be zero when the number of strands is odd"), nRow - 1);
+      break;
+
+   case ERROR_S1_MUST_BE_POSITIVE:
+      strMsg.Format(_T("Row %d: S1 must be greater than zero when the number of strands is even"), nRow - 1);
+      break;
+
+   case ERROR_S2_MUST_BE_POSITIVE:
+      strMsg.Format(_T("Row %d: S2 must be greater than zero"), nRow - 1);
+      break;
+   }
+
+   if (strMsg.IsEmpty())
+   {
+      // not our error... try the base class
+      CStrandGrid::ShowValidationError(nRow, iError);
+   }
+   else
+   {
+      AfxMessageBox(strMsg);
+   }
+}
+
+/////////////////////////////////////////////////////////////////////////////
+// CPointStrandGrid
+ROWCOL CPointStrandGrid::InitSpecializedColumns(ROWCOL col, IEAFDisplayUnits* pDisplayUnits)
+{
+   CString strLabel;
+   strLabel.Format(_T("Z (%s)"), pDisplayUnits->GetComponentDimUnit().UnitOfMeasure.UnitTag().c_str());
+   SetStyleRange(CGXRange(0, col, 1, col), CGXStyle()
+      .SetHorizontalAlignment(DT_CENTER)
+      .SetVerticalAlignment(DT_TOP)
+      .SetEnabled(FALSE)          // disables usage as current cell
+      .SetMergeCell(GX_MERGE_VERTICAL | GX_MERGE_COMPVALUE)
+      .SetValue(strLabel)
+   );
+
+   col++;
+
+   return col;
+}
+
+ROWCOL CPointStrandGrid::SetSpecializedColumnStyles(ROWCOL nRow, ROWCOL col)
+{
+   SetStyleRange(CGXRange(nRow, col++), CGXStyle().SetHorizontalAlignment(DT_RIGHT));
+   return col;
+}
+
+ROWCOL CPointStrandGrid::GetSpecializedColumnValues(ROWCOL nRow, ROWCOL col, CStrandRow& strandRow, IEAFDisplayUnits* pDisplayUnits)
+{
+   Float64 value = _tstof(GetCellValue(nRow, col++));
+   strandRow.m_Z = ::ConvertToSysUnits(value, pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
+
+   strandRow.m_nStrands = 1;
+
+   return col;
+}
+
+ROWCOL CPointStrandGrid::AppendSpecializedColumnValues(ROWCOL nRow, ROWCOL col, const CStrandRow& strandRow, IEAFDisplayUnits* pDisplayUnits)
+{
+   CString strValue;
+   strValue.Format(_T("%s"), ::FormatDimension(strandRow.m_Z, pDisplayUnits->GetComponentDimUnit(), false));
+   SetStyleRange(CGXRange(nRow, col++), CGXStyle().SetValue(strValue));
+
+   return col;
+}
+
+UINT CPointStrandGrid::Validate(ROWCOL nRow, CStrandRow& strandRow)
+{
+   return CStrandGrid::Validate(nRow, strandRow);
+}
+
+void CPointStrandGrid::ShowValidationError(ROWCOL nRow, UINT iError)
+{
+   CStrandGrid::ShowValidationError(nRow, iError);
 }

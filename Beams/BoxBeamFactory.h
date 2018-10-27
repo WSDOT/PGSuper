@@ -54,7 +54,6 @@ END_COM_MAP()
 
 public:
    // IBeamFactory
-   virtual void CreateGirderSection(IBroker* pBroker,StatusGroupIDType statusGroupID,const IBeamFactory::Dimensions& dimensions,Float64 overallHeight,Float64 bottomFlangeHeight,IGirderSection** ppSection) const override;
    virtual bool ValidateDimensions(const IBeamFactory::Dimensions& dimensions,bool bSIUnits,std::_tstring* strErrMsg) const override;
    virtual void SaveSectionDimensions(sysIStructuredSave* pSave,const IBeamFactory::Dimensions& dimensions) const override;
    virtual IBeamFactory::Dimensions LoadSectionDimensions(sysIStructuredLoad* pLoad) const override;
@@ -77,6 +76,9 @@ public:
 protected:
    virtual bool ExcludeExteriorBeamShearKeys() const override { return false; }
    virtual bool UseOverallWidth() const override { return false; }
+
+   virtual void DimensionBeam(const IBeamFactory::Dimensions& dimensions, IBoxBeam* pBeam) const override;
+
 
 private:
    void GetDimensions(const IBeamFactory::Dimensions& dimensions,

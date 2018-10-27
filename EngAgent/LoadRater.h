@@ -39,12 +39,25 @@ protected:
    IBroker* m_pBroker; // weak reference
    mutable std::vector<CRITSECTDETAILS> m_CriticalSections;
 
-   void MomentRating(const CGirderKey& girderKey,const PoiList& vPoi,bool bPositiveMoment,pgsTypes::LoadRatingType ratingType,VehicleIndexType vehicleIdx,pgsRatingArtifact& ratingArtifact) const;
+   struct Moments
+   {
+      std::vector<Float64> vDCmin, vDCmax;
+      std::vector<Float64> vDWmin, vDWmax;
+      std::vector<Float64> vCRmin, vCRmax;
+      std::vector<Float64> vSHmin, vSHmax;
+      std::vector<Float64> vREmin, vREmax;
+      std::vector<Float64> vPSmin, vPSmax;
+      std::vector<Float64> vLLIMmin, vLLIMmax;
+      std::vector<Float64> vPLmin, vPLmax;
+      std::vector<VehicleIndexType> vMinTruckIndex, vMaxTruckIndex;
+   };
+
+   void MomentRating(const CGirderKey& girderKey,const PoiList& vPoi,bool bPositiveMoment,pgsTypes::LoadRatingType ratingType,VehicleIndexType vehicleIdx,const Moments& moments,pgsRatingArtifact& ratingArtifact) const;
    void ShearRating(const CGirderKey& girderKey,const PoiList& vPoi,pgsTypes::LoadRatingType ratingType,VehicleIndexType vehicleIdx,pgsRatingArtifact& ratingArtifact) const;
    void StressRating(const CGirderKey& girderKey,const PoiList& vPoi,pgsTypes::LoadRatingType ratingType,VehicleIndexType vehicleIdx,pgsRatingArtifact& ratingArtifact) const;
-   void CheckReinforcementYielding(const CGirderKey& girderKey,const PoiList& vPoi,pgsTypes::LoadRatingType ratingType,VehicleIndexType vehicleIdx,bool bPositiveMoment,pgsRatingArtifact& ratingArtifact) const;
+   void CheckReinforcementYielding(const CGirderKey& girderKey,const PoiList& vPoi, bool bPositiveMoment, pgsTypes::LoadRatingType ratingType,VehicleIndexType vehicleIdx,const Moments& moments,pgsRatingArtifact& ratingArtifact) const;
 
-   void GetMoments(const CGirderKey& girderKey,bool bPositiveMoment,pgsTypes::LoadRatingType ratingType,VehicleIndexType vehicleIdx, const PoiList& vPOI, std::vector<Float64>& vDCmin, std::vector<Float64>& vDCmax,std::vector<Float64>& vDWmin, std::vector<Float64>& vDWmax,std::vector<Float64>& vCRmin, std::vector<Float64>& vCRmax,std::vector<Float64>& vSHmin, std::vector<Float64>& vSHmax,std::vector<Float64>& vREmin, std::vector<Float64>& vREmax,std::vector<Float64>& vPSmin, std::vector<Float64>& vPSmax, std::vector<Float64>& vLLIMmin, std::vector<VehicleIndexType>& vMinTruckIndex,std::vector<Float64>& vLLIMmax,std::vector<VehicleIndexType>& vMaxTruckIndex,std::vector<Float64>& vPLmin,std::vector<Float64>& vPLmax) const;
+   void GetMoments(const CGirderKey& girderKey,bool bPositiveMoment,pgsTypes::LoadRatingType ratingType,VehicleIndexType vehicleIdx, const PoiList& vPoi, Moments* pMoments) const;
 
    void InitCriticalSectionZones(const CGirderKey& girderKey, pgsTypes::LimitState limitState) const;
    ZoneIndexType GetCriticalSectionZone(const pgsPointOfInterest& poi, bool bIncludeCS = false) const;

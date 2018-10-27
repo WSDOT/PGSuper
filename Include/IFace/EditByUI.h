@@ -98,8 +98,11 @@ interface IEditByUI : IUnknown
    // NOTE: Strand fill type must be CStrandData::sdtDirectSelection before entering this dialog
    virtual bool EditDirectSelectionPrestressing(const CSegmentKey& segmentKey) = 0;
 
-   // NOTE: Strand fill type must be CStrandData::sdtDirectInput before entering this dialog
-   virtual bool EditDirectInputPrestressing(const CSegmentKey& segmentKey) = 0;
+   // NOTE: Strand fill type must be CStrandData::sdtDirectRowInput before entering this dialog
+   virtual bool EditDirectRowInputPrestressing(const CSegmentKey& segmentKey) = 0;
+
+   // NOTE: Strand fill type must be CStrandData::sdtDirectStrandInput before entering this dialog
+   virtual bool EditDirectStrandInputPrestressing(const CSegmentKey& segmentKey) = 0;
 
    virtual void AddPointLoad(const CPointLoadData& loadData) = 0;
    virtual void DeletePointLoad(CollectionIndexType loadIdx) = 0;

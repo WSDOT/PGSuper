@@ -32,6 +32,8 @@
 #include <PgsExt\PgsExtExp.h>
 #endif
 
+#include <PgsExt\PointOfInterest.h>
+
 // LOCAL INCLUDES
 //
 
@@ -69,8 +71,8 @@ public:
    // Status for A dimension check along the girder. Not for check at bearing CL's
    enum SlabOffsetStatusType { Pass, Fail, Excessive, NA };
 
-   // Status for Haunch Load geometry check 
-   enum HaunchLoadGeometryStatusType { hlgNA, hlgNAPrintOnly, hlgPass, hlgInsufficient, hlgExcessive };
+   // Status for Haunch geometry check 
+   enum HaunchGeometryStatusType { hgNA, hgNAPrintOnly, hgPass, hgInsufficient, hgExcessive };
 
    // Applicability for A dimension check at CL bearing
    enum SlabOffsetBearingCLApplicabilityType { sobappYes, sobappNA, sobappNAPrintOnly };
@@ -158,18 +160,28 @@ public:
    bool BottomFlangeClearancePassed() const;
 
    // haunch geometry check
-   void SetHaunchLoadGeometryCheckApplicability(bool bSet);
-   bool IsHaunchLoadGeometryCheckApplicable() const;
+   void SetHaunchGeometryCheckApplicability(bool bSet);
+   bool IsHaunchGeometryCheckApplicable() const;
    void SetAssumedExcessCamber(Float64 value);
    Float64 GetAssumedExcessCamber() const;
    void SetAssumedMinimumHaunchDepth(Float64 value); // minimum haunch along girder used to compute parabolic load
    Float64 GetAssumedMinimumHaunchDepth() const;
    void SetComputedExcessCamber(Float64 value);
    Float64 GetComputedExcessCamber() const;
-   void SetHaunchLoadGeometryTolerance(Float64 value);
-   Float64 GetHaunchLoadGeometryTolerance() const;
-   HaunchLoadGeometryStatusType HaunchLoadGeometryStatus() const;
-   bool HaunchLoadGeometryPassed() const;
+   void SetHaunchGeometryTolerance(Float64 value);
+   Float64 GetHaunchGeometryTolerance() const;
+   HaunchGeometryStatusType HaunchGeometryStatus() const;
+   bool HaunchGeometryPassed() const;
+
+   // Finished Elevation Check
+   // (used only for no-deck bridges)
+   void SetFinishedElevationApplicability(bool bSet);
+   bool GetFinishedElevationApplicability() const;
+   void SetFinishedElevationTolerance(Float64 tol);
+   Float64 GetFinishedElevationTolerance() const;
+   void SetMaxFinishedElevation(Float64 station, Float64 offset, const pgsPointOfInterest& poi, Float64 designElevation, Float64 finishedElevation);
+   void GetMaxFinishedElevation(Float64* pStation, Float64* pOffset, pgsPointOfInterest* pPoi, Float64* pDesignElevation, Float64* pFinishedElevation) const;
+   bool FinishedElevationPassed() const;
 
    bool Passed() const;
 
@@ -218,8 +230,17 @@ private:
    Float64 m_ComputedExcessCamber;
    Float64 m_AssumedExcessCamber;
    Float64 m_AssumedMinimumHaunchDepth;
-   Float64 m_HaunchLoadGeometryTolerance;
-   bool m_bIsHaunchLoadGeometryCheckApplicable;
+   Float64 m_HaunchGeometryTolerance;
+   bool m_bIsHaunchGeometryCheckApplicable;
+
+   // Finished elevation check data
+   bool m_bIsFinishedElevationApplicable;
+   Float64 m_FinishedElevationTolerance;
+   Float64 m_Station;
+   Float64 m_Offset;
+   pgsPointOfInterest m_Poi;
+   Float64 m_DesignElevation; // this is the elevation determined by the profile
+   Float64 m_FinishedElevation; // this is the top of girder elevation 
 
    // GROUP: LIFECYCLE
    // GROUP: OPERATORS
@@ -276,9 +297,13 @@ public:
    bool BottomFlangeClearancePassed() const;
 
    bool MinimumFilletPassed() const;
-   bool HaunchLoadGeometryPassed() const;
+   bool HaunchGeometryPassed() const;
 
    bool CheckStirrupLength() const;
+
+   bool IsFinishedElevationApplicable() const;
+   bool FinishedElevationPassed() const;
+
 
    bool Passed() const;
 

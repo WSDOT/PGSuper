@@ -28,6 +28,8 @@
 #include "GirderSegmentStrandsPage.h"
 #include "GirderSegmentDlg.h"
 
+#include <GenericBridge\Helpers.h>
+
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
 #include <IFace\PrestressForce.h>
@@ -45,9 +47,57 @@
 
 #include "GirderDescDlg.h" // for ReconcileDebonding
 
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
+
+
 // CGirderSegmentStrandsPage dialog
 
 IMPLEMENT_DYNAMIC(CGirderSegmentStrandsPage, CPropertyPage)
+
+void DDX_UnitValueChoice(CDataExchange* pDX, UINT nIDC, UINT nIDCUnit, Float64& value, const unitmgtLengthData& lengthUnit)
+{
+   CComboBox* pCB = (CComboBox*)pDX->m_pDlgWnd->GetDlgItem(nIDCUnit);
+   if (pDX->m_bSaveAndValidate)
+   {
+      // value is coming out of the control
+      int curSel = pCB->GetCurSel();
+      if (curSel == 0)
+      {
+         // value is a percentage
+         Float64 v;
+         DDX_Text(pDX, nIDC, v); // this is a number like 50.0 for 50%
+         value = -1 * v / 100.; // we want -0.50 to be 50% (less than zero means fractional)
+      }
+      else
+      {
+         ASSERT(curSel == 1);
+         DDX_UnitValueAndTag(pDX, nIDC, nIDCUnit, value, lengthUnit);
+      }
+   }
+   else
+   {
+      // value is going into the control
+      if (value < 0)
+      {
+         // value is fractional
+         Float64 v = value;
+         v *= -100; // want -0.50 to be 50.0 %
+         DDX_Text(pDX, nIDC, v);
+         pCB->SetCurSel(0);
+      }
+      else
+      {
+         // this is a unit value
+         Float64 v = ::ConvertFromSysUnits(value, lengthUnit.UnitOfMeasure);
+         DDX_Text(pDX, nIDC, v);
+         pCB->SetCurSel(1);
+      }
+   }
+}
 
 CGirderSegmentStrandsPage::CGirderSegmentStrandsPage()
 	: CPropertyPage(CGirderSegmentStrandsPage::IDD)
@@ -63,13 +113,28 @@ void CGirderSegmentStrandsPage::Init(CPrecastSegmentData* pSegment)
 {
    m_pSegment = pSegment;
    m_Strands = m_pSegment->Strands;
+
+   if (m_Strands.GetStrandDefinitionType() == CStrandData::sdtDirectStrandInput)
+   {
+      m_pGrid = std::make_unique<CPointStrandGrid>();
+   }
+   else
+   {
+      m_pGrid = std::make_unique<CRowStrandGrid>();
+   }
 }
 
 void CGirderSegmentStrandsPage::DoDataExchange(CDataExchange* pDX)
 {
 	CPropertyPage::DoDataExchange(pDX);
 
-   m_Grid.UpdateStrandData(pDX,&(m_pSegment->Strands));
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+   GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
+
+
+   m_pGrid->UpdateStrandData(pDX,&(m_pSegment->Strands));
+   ExchangeHarpPointLocations(pDX, &(m_pSegment->Strands));
 
 	//{{AFX_DATA_MAP(CGirderDescPrestressPage)
 	//}}AFX_DATA_MAP
@@ -82,7 +147,8 @@ void CGirderSegmentStrandsPage::DoDataExchange(CDataExchange* pDX)
       bPjackUserInput[pgsTypes::Temporary] = !m_pSegment->Strands.IsPjackCalculated(pgsTypes::Temporary);
    }
 
-   DDX_Control(pDX,IDC_SPACING, m_Picture);
+   DDX_Control(pDX,IDC_SPACING, m_StrandSpacingImage);
+   DDX_Control(pDX, IDC_HARP_POINT_LOCATION, m_HarpPointLocationImage);
 
    DDX_Check_Bool(pDX, IDC_SS_JACK, bPjackUserInput[pgsTypes::Straight]);
    DDX_Check_Bool(pDX, IDC_HS_JACK, bPjackUserInput[pgsTypes::Harped]);
@@ -94,10 +160,6 @@ void CGirderSegmentStrandsPage::DoDataExchange(CDataExchange* pDX)
       m_pSegment->Strands.IsPjackCalculated(pgsTypes::Harped,    !bPjackUserInput[pgsTypes::Harped]);
       m_pSegment->Strands.IsPjackCalculated(pgsTypes::Temporary, !bPjackUserInput[pgsTypes::Temporary]);
    }
-
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    if (pDX->m_bSaveAndValidate && m_pSegment->Strands.IsPjackCalculated(pgsTypes::Harped))
    {
@@ -172,6 +234,11 @@ void CGirderSegmentStrandsPage::DoDataExchange(CDataExchange* pDX)
       // Update controls and UI elements
       UpdateStrandControls();
    }
+
+#pragma Reminder("WORKING HERE - strand point model - need to verify strands are in the girder")
+   // this may not be the best place since we use UpdateData from several locations
+   // before this dialog is closed with [OK] need to validate
+   // one "gotcha" is harped strands that are not over the web...
 }
 
 
@@ -183,7 +250,16 @@ BEGIN_MESSAGE_MAP(CGirderSegmentStrandsPage, CPropertyPage)
 	ON_COMMAND(ID_HELP, OnHelp)
 	ON_CBN_SELCHANGE(IDC_STRAND_SIZE, OnStrandTypeChanged)
 	ON_CBN_SELCHANGE(IDC_TEMP_STRAND_SIZE, OnTempStrandTypeChanged)
-	//}}AFX_MSG_MAP
+   ON_CBN_SELCHANGE(IDC_X1_MEASURE, OnChange)
+   ON_CBN_SELCHANGE(IDC_X2_MEASURE, OnChange)
+   ON_CBN_SELCHANGE(IDC_X3_MEASURE, OnChange)
+   ON_CBN_SELCHANGE(IDC_X4_MEASURE, OnChange)
+   ON_EN_CHANGE(IDC_X1, OnChange)
+   ON_EN_CHANGE(IDC_X2, OnChange)
+   ON_EN_CHANGE(IDC_X3, OnChange)
+   ON_EN_CHANGE(IDC_X4, OnChange)
+   ON_CBN_SELCHANGE(IDC_TTS_USE, &CGirderSegmentStrandsPage::OnChange)
+   //}}AFX_MSG_MAP
    ON_BN_CLICKED(IDC_ADD, &CGirderSegmentStrandsPage::OnBnClickedAdd)
    ON_BN_CLICKED(IDC_REMOVE, &CGirderSegmentStrandsPage::OnBnClickedRemove)
    ON_BN_CLICKED(IDC_EPOXY, &CGirderSegmentStrandsPage::OnEpoxyChanged)
@@ -195,11 +271,11 @@ END_MESSAGE_MAP()
 
 BOOL CGirderSegmentStrandsPage::OnInitDialog() 
 {
-   m_Grid.SubclassDlgItem(IDC_GRID, this);
-   m_Grid.CustomInit(m_pSegment);
+   m_pGrid->SubclassDlgItem(IDC_GRID, this);
+   m_pGrid->CustomInit(m_pSegment);
 
    m_DrawStrands.SubclassDlgItem(IDC_DRAW_STRANDS,this);
-   m_DrawStrands.CustomInit(m_pSegment,&m_Strands);
+   //m_DrawStrands.CustomInit(m_pSegment,&m_Strands); // we will do this in OnSetActive
 
    // Select the strand size
    lrfdStrandPool* pPool = lrfdStrandPool::GetInstance();
@@ -237,6 +313,12 @@ BOOL CGirderSegmentStrandsPage::OnInitDialog()
    idx = pCB->AddString(_T("Post-tensioned immedately before shipping"));
    pCB->SetItemData(idx, (DWORD)pgsTypes::ttsPTBeforeShipping);
 
+   FillHarpPointUnitComboBox(IDC_X1_MEASURE, pDisplayUnits->GetSpanLengthUnit());
+   FillHarpPointUnitComboBox(IDC_X2_MEASURE, pDisplayUnits->GetSpanLengthUnit());
+   FillHarpPointUnitComboBox(IDC_X3_MEASURE, pDisplayUnits->GetSpanLengthUnit());
+   FillHarpPointUnitComboBox(IDC_X4_MEASURE, pDisplayUnits->GetSpanLengthUnit());
+
+
    // All this work has to be done before CPropertyPage::OnInitDialog().
    // This code sets up the "current" selections which must be done prior to
    // calling DoDataExchange.  OnInitDialog() calls DoDataExchange().
@@ -246,15 +328,50 @@ BOOL CGirderSegmentStrandsPage::OnInitDialog()
 
    CPropertyPage::OnInitDialog();
 
-   m_Picture.SetImage(_T("StrandSpacing"),_T("Metafile"));
+   m_StrandSpacingImage.SetImage(_T("StrandSpacing"),_T("Metafile"));
+   m_HarpPointLocationImage.SetImage(_T("HarpPointLocation"), _T("Metafile"));
 
    EnableToolTips(TRUE);
    EnableRemoveButton(FALSE); // start off with the button disabled... it will get enabled when a row in the grid is selected
 
-   OnChange();
+   if (m_pSegment->Strands.GetStrandDefinitionType() == CStrandData::sdtDirectStrandInput)
+   {
+      m_StrandSpacingImage.ShowWindow(SW_HIDE);
+      GetDlgItem(IDC_SPACING_LABEL)->ShowWindow(SW_HIDE);
+   }
 
+
+   
    return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE
+}
+
+void CGirderSegmentStrandsPage::UpdateSectionDepth()
+{
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+   GET_IFACE2(pBroker, IBridge, pBridge);
+   GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
+   Float64 L = pBridge->GetSegmentLength(m_pSegment->GetSegmentKey());
+
+   GET_IFACE2(pBroker, IShapes, pShapes);
+   std::array<Float64, 4> Xhp;
+   GetHarpPointLocations(&Xhp[ZoneBreakType::Start], &Xhp[ZoneBreakType::LeftBreak], &Xhp[ZoneBreakType::RightBreak], &Xhp[ZoneBreakType::End]);
+   std::array<CComPtr<IShape>, 4> shape;
+   std::array<CComPtr<IRect2d>, 4> bounding_box;
+   std::array<UINT, 4> nIDC{ IDC_HG_X1,IDC_HG_X2,IDC_HG_X3,IDC_HG_X4 };
+   for (int i = 0; i < 4; i++)
+   {
+      if (Xhp[i] < 0)
+      {
+         Xhp[i] *= -L;
+      }
+      pShapes->GetSegmentShape(m_pSegment, Xhp[i], (i == 0 ? pgsTypes::sbRight : pgsTypes::sbLeft), &shape[i]);
+      shape[i]->get_BoundingBox(&bounding_box[i]);
+      Float64 Hg;
+      bounding_box[i]->get_Height(&Hg);
+      GetDlgItem(nIDC[i])->SetWindowText(::FormatDimension(Hg, pDisplayUnits->GetComponentDimUnit()));
+   }
 }
 
 Float64 CGirderSegmentStrandsPage::GetMaxPjack(StrandIndexType nStrands)
@@ -323,7 +440,7 @@ void CGirderSegmentStrandsPage::OnUpdateStraightStrandPjEdit()
 
 void CGirderSegmentStrandsPage::OnUpdateStrandPjEdit(UINT nCheck,UINT nForceEdit,UINT nUnit,pgsTypes::StrandType strandType)
 {
-   m_Grid.UpdateStrandData(nullptr,&m_Strands);
+   m_pGrid->UpdateStrandData(nullptr,&m_Strands);
 
    StrandIndexType nStrands = m_Strands.GetStrandCount(strandType);
 
@@ -375,7 +492,7 @@ void CGirderSegmentStrandsPage::UpdateStrandControls()
 
 void CGirderSegmentStrandsPage::OnHelp() 
 {
-   EAFHelp( EAFGetDocument()->GetDocumentationSetName(), IDH_GIRDER_DIRECT_STRAND_INPUT );
+   EAFHelp( EAFGetDocument()->GetDocumentationSetName(), m_pSegment->Strands.GetStrandDefinitionType() == CStrandData::sdtDirectRowInput ? IDH_GIRDER_STRAND_ROW_INPUT : IDH_GIRDER_INDIVIDUAL_STRAND_INPUT );
 }
 
 void CGirderSegmentStrandsPage::OnEpoxyChanged()
@@ -484,7 +601,7 @@ void CGirderSegmentStrandsPage::OnTempStrandTypeChanged()
 
 void CGirderSegmentStrandsPage::InitPjackEdits()
 {
-   m_Grid.UpdateStrandData(nullptr, &m_Strands); // do this here so we don't have to do it 3 times and get the exact same results
+   m_pGrid->UpdateStrandData(nullptr, &m_Strands); // do this here so we don't have to do it 3 times and get the exact same results
    InitPjackEdits(IDC_SS_JACK,IDC_SS_JACK_FORCE,IDC_SS_JACK_FORCE_UNIT,pgsTypes::Straight);
    InitPjackEdits(IDC_HS_JACK,IDC_HS_JACK_FORCE,IDC_HS_JACK_FORCE_UNIT,pgsTypes::Harped);
    InitPjackEdits(IDC_TS_JACK,IDC_TS_JACK_FORCE,IDC_TS_JACK_FORCE_UNIT,pgsTypes::Temporary);
@@ -492,7 +609,7 @@ void CGirderSegmentStrandsPage::InitPjackEdits()
 
 void CGirderSegmentStrandsPage::InitPjackEdits(UINT nCalcPjack,UINT nPjackEdit,UINT nPjackUnit,pgsTypes::StrandType strandType)
 {
-   // call m_Grid.UpdateStrandData(nullptr,&m_Strands) before calling this method
+   // call m_pGrid->UpdateStrandData(nullptr,&m_Strands) before calling this method
 
    StrandIndexType nStrands = m_Strands.GetStrandCount(strandType);
 
@@ -543,12 +660,12 @@ BOOL CGirderSegmentStrandsPage::OnKillActive()
 
 void CGirderSegmentStrandsPage::OnBnClickedAdd()
 {
-   m_Grid.OnAddRow();
+   m_pGrid->OnAddRow();
 }
 
 void CGirderSegmentStrandsPage::OnBnClickedRemove()
 {
-   m_Grid.OnRemoveSelectedRows();
+   m_pGrid->OnRemoveSelectedRows();
 }
 
 void CGirderSegmentStrandsPage::EnableRemoveButton(BOOL bEnable)
@@ -558,7 +675,9 @@ void CGirderSegmentStrandsPage::EnableRemoveButton(BOOL bEnable)
 
 void CGirderSegmentStrandsPage::OnChange()
 {
-   m_Grid.UpdateStrandData(nullptr,&m_Strands);
+   m_pGrid->UpdateStrandData(nullptr,&m_Strands);
+   ExchangeHarpPointLocations(&m_Strands);
+   m_Strands.SetTemporaryStrandUsage(GetTemporaryStrandUsage());
 
    CString strLabel;
    strLabel.Format(_T("Straight Strands (%d)"), m_Strands.GetStrandCount(pgsTypes::Straight));
@@ -594,6 +713,7 @@ void CGirderSegmentStrandsPage::OnChange()
    GetDlgItem(IDC_DEBONDED_STRANDS_LABEL)->SetWindowText(strLabel);
 
    UpdateStrandControls();
+   UpdateSectionDepth();
 }
 
 HBRUSH CGirderSegmentStrandsPage::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
@@ -614,4 +734,59 @@ HBRUSH CGirderSegmentStrandsPage::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColo
 
 
    return hbr;
+}
+
+void CGirderSegmentStrandsPage::FillHarpPointUnitComboBox(UINT nIDC, const unitmgtLengthData& lengthUnit)
+{
+   CComboBox* pCB = (CComboBox*)GetDlgItem(nIDC);
+   pCB->AddString(_T("%"));
+   pCB->AddString(lengthUnit.UnitOfMeasure.UnitTag().c_str());
+}
+
+void CGirderSegmentStrandsPage::ExchangeHarpPointLocations(CStrandData* pStrands,BOOL bSaveAndValidate)
+{
+   CDataExchange dx(this,bSaveAndValidate);
+   dx.m_bSaveAndValidate = bSaveAndValidate;
+   ExchangeHarpPointLocations(&dx,pStrands);
+}
+
+void CGirderSegmentStrandsPage::ExchangeHarpPointLocations(CDataExchange* pDX,CStrandData* pStrands)
+{
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+   GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
+
+   Float64 Xstart, Xlhp, Xrhp, Xend;
+   if (!pDX->m_bSaveAndValidate)
+   {
+      pStrands->GetHarpPoints(&Xstart, &Xlhp, &Xrhp, &Xend);
+   }
+   DDX_UnitValueChoice(pDX, IDC_X1, IDC_X1_MEASURE, Xstart, pDisplayUnits->GetSpanLengthUnit());
+   DDX_UnitValueChoice(pDX, IDC_X2, IDC_X2_MEASURE, Xlhp, pDisplayUnits->GetSpanLengthUnit());
+   DDX_UnitValueChoice(pDX, IDC_X3, IDC_X3_MEASURE, Xrhp, pDisplayUnits->GetSpanLengthUnit());
+   DDX_UnitValueChoice(pDX, IDC_X4, IDC_X4_MEASURE, Xend, pDisplayUnits->GetSpanLengthUnit());
+   if (pDX->m_bSaveAndValidate)
+   {
+      pStrands->SetHarpPoints(Xstart, Xlhp, Xrhp, Xend);
+   }
+}
+
+void CGirderSegmentStrandsPage::GetHarpPointLocations(Float64* pXstart, Float64* pXlhp, Float64* pXrhp, Float64* pXend)
+{
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+   GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
+
+   CDataExchange dx(this, TRUE);
+   DDX_UnitValueChoice(&dx, IDC_X1, IDC_X1_MEASURE, *pXstart, pDisplayUnits->GetSpanLengthUnit());
+   DDX_UnitValueChoice(&dx, IDC_X2, IDC_X2_MEASURE, *pXlhp, pDisplayUnits->GetSpanLengthUnit());
+   DDX_UnitValueChoice(&dx, IDC_X3, IDC_X3_MEASURE, *pXrhp, pDisplayUnits->GetSpanLengthUnit());
+   DDX_UnitValueChoice(&dx, IDC_X4, IDC_X4_MEASURE, *pXend, pDisplayUnits->GetSpanLengthUnit());
+}
+
+pgsTypes::TTSUsage CGirderSegmentStrandsPage::GetTemporaryStrandUsage()
+{
+   CComboBox* pCB = (CComboBox*)GetDlgItem(IDC_TTS_USE);
+   int curSel = pCB->GetCurSel();
+   return (pgsTypes::TTSUsage)(pCB->GetItemData(curSel));
 }

@@ -119,41 +119,6 @@ HRESULT CBoxBeamFactory2::FinalConstruct()
    return S_OK;
 }
 
-void CBoxBeamFactory2::CreateGirderSection(IBroker* pBroker,StatusItemIDType statusID,const IBeamFactory::Dimensions& dimensions,Float64 overallHeight,Float64 bottomFlangeHeight,IGirderSection** ppSection) const
-{
-   CComPtr<IBoxBeamSection> gdrSection;
-   gdrSection.CoCreateInstance(CLSID_BoxBeamSection);
-   CComPtr<IBoxBeam> beam;
-   gdrSection->get_Beam(&beam);
-
-   Float64 H1, H2, H3, H4, H5, W1, W2, W3, W4, F1, F2, C1, J, endBlockLength;
-   GetDimensions(dimensions,H1, H2, H3, H4, H5, W1, W2, W3, W4, F1, F2, C1, J, endBlockLength);
-
-   Float64 ht = H1+H2+H3;
-
-   beam->put_H1(H1);
-   beam->put_H2(H2);
-   beam->put_H3(H3);
-   beam->put_H4(H4);
-
-   if (H4>0.0)
-      beam->put_H5(W4-W3); // 45 deg chamfer
-   else
-      beam->put_H5(0.0); // 45 deg chamfer
-
-   beam->put_H6(W4);
-   beam->put_H7(ht-H5-H4);
-   beam->put_W1(W4-W3);
-   beam->put_W2(W1-W4);
-   beam->put_W3(W2);
-   beam->put_W4(W4);
-   beam->put_F1(F1);
-   beam->put_F2(F2);
-   beam->put_C1(C1);
-
-   gdrSection.QueryInterface(ppSection);
-}
-
 bool CBoxBeamFactory2::ValidateDimensions(const IBeamFactory::Dimensions& dimensions,bool bSI,std::_tstring* strErrMsg) const
 {
    Float64 H1, H2, H3, H4, H5, W1, W2, W3, W4, F1, F2, C1, J, endBlockLength;
@@ -627,4 +592,38 @@ Float64 CBoxBeamFactory2::GetBeamWidth(const IBeamFactory::Dimensions& dimension
    Float64 W2 = GetDimension(dimensions,_T("W2"));
 
    return W2 + 2*W1; 
+}
+
+void CBoxBeamFactory2::DimensionBeam(const IBeamFactory::Dimensions& dimensions, IBoxBeam* pBeam) const
+{
+   Float64 H1, H2, H3, H4, H5, W1, W2, W3, W4, F1, F2, C1, J, endBlockLength;
+   GetDimensions(dimensions, H1, H2, H3, H4, H5, W1, W2, W3, W4, F1, F2, C1, J, endBlockLength);
+
+   Float64 ht = H1 + H2 + H3;
+
+   pBeam->put_H1(H1);
+   pBeam->put_H2(H2);
+   pBeam->put_H3(H3);
+   pBeam->put_H4(H4);
+
+   if (0.0 < H4)
+   {
+      pBeam->put_H5(W4 - W3); // 45 deg chamfer
+   }
+   else
+   {
+      pBeam->put_H5(0.0); // 45 deg chamfer
+   }
+
+   pBeam->put_H6(W4);
+   pBeam->put_H7(ht - H5 - H4);
+   pBeam->put_W1(W4 - W3);
+   pBeam->put_W2(W1 - W4);
+   pBeam->put_W3(W2);
+   pBeam->put_W4(W4);
+   pBeam->put_F1(F1);
+   pBeam->put_F2(F2);
+   pBeam->put_C1(C1);
+
+   __super::DimensionBeam(dimensions, pBeam);
 }

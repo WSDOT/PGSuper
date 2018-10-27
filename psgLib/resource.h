@@ -855,6 +855,8 @@
 #define IDC_WIND_TYPE                   1441
 #define IDC_DIST_TRAFFIC_BARRIER_BASIS  1442
 #define IDC_CF_TYPE                     1442
+#define IDC_HAUNCH_COMP_CB2             1442
+#define IDC_HAUNCH_COMP_PROPS_CB        1442
 #define IDC_NWC_NOTE                    1443
 #define IDC_HAUNCH_FACTOR               1443
 #define IDC_CHECK1                      1444
@@ -1271,7 +1273,7 @@
 #define IDC_HAULING_TENSION_SUPER_UNIT  1677
 #define IDC_SAG_OPTIONS_LABEL           1677
 #define IDC_CHECK_HAULING_TENSION_MAX_SUPER 1678
-#define IDC_GPRES                       1678 
+#define IDC_GPRES                       1678
 #define IDC_HAULING_TENSION_MAX_SUPER   1679
 #define IDC_INCLINDED_GIRDER_BRGPADDEDUCT_LABEL 1679
 #define IDC_HAULING_TENSION_MAX_UNIT_SUPER 1680
@@ -1330,7 +1332,7 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
-#define _APS_NEXT_RESOURCE_VALUE        320
+#define _APS_NEXT_RESOURCE_VALUE        323
 #define _APS_NEXT_COMMAND_VALUE         36881
 #define _APS_NEXT_CONTROL_VALUE         1702
 #define _APS_NEXT_SYMED_VALUE           101

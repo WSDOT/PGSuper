@@ -1556,27 +1556,26 @@ void CGirderModelElevationView::BuildSegmentCGDisplayObjects(CPGSDocBase* pDoc, 
          const pgsPointOfInterest& poi = *iter;
          iter++;
          Float64 X = pPoi->ConvertPoiToGirderPathCoordinate(poi);
-         Float64 Hg = pSectProp->GetHg(intervalIdx, poi);
-         Float64 Yg = pSectProp->GetY(intervalIdx, poi, pgsTypes::BottomGirder);
+         Float64 Yt = pSectProp->GetY(intervalIdx, poi, pgsTypes::TopGirder);
 
          Float64 precamber = pCamber->GetPrecamber(poi, pgsTypes::pddErected);
 
          CComPtr<IPoint2d> prevPoint;
          prevPoint.CoCreateInstance(CLSID_Point2d);
-         prevPoint->Move(group_offset + X, Yg - Hg + precamber);
+         prevPoint->Move(group_offset + X, -Yt + precamber);
 
          for ( ; iter != end; iter++)
          {
             const pgsPointOfInterest& poi(*iter);
 
             X = pPoi->ConvertPoiToGirderPathCoordinate(poi);
-            Yg = pSectProp->GetY(intervalIdx, poi, pgsTypes::BottomGirder);
+            Yt = pSectProp->GetY(intervalIdx, poi, pgsTypes::TopGirder);
 
             precamber = pCamber->GetPrecamber(poi, pgsTypes::pddErected);
 
             CComPtr<IPoint2d> thisPoint;
             thisPoint.CoCreateInstance(CLSID_Point2d);
-            thisPoint->Move(group_offset + X, Yg - Hg + precamber);
+            thisPoint->Move(group_offset + X, -Yt + precamber);
 
             BuildDashLine(pDL, prevPoint, thisPoint, SECTION_CG_COLOR_1, SECTION_CG_COLOR_2);
 

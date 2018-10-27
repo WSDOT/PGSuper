@@ -48,3 +48,6 @@ void BEAMSFUNC BuildAgeAdjustedGirderMaterialModel(IBroker* pBroker,const CPreca
 void BEAMSFUNC BuildAgeAdjustedJointMaterialModel(IBroker* pBroker, const CPrecastSegmentData* pSegment, ISuperstructureMemberSegment* segment, IAgeAdjustedMaterial** ppMaterial);
 
 void BEAMSFUNC MakeRectangle(Float64 width, Float64 depth, Float64 xOffset, Float64 yOffset,IShape** ppShape);
+
+bool BEAMSFUNC IsInEndBlock(Float64 Xs, pgsTypes::SectionBias sectionBias, Float64 leftEndBlockLength, Float64 rightEndBlockLength, Float64 Lg);
+bool BEAMSFUNC IsInEndBlock(Float64 Xs, pgsTypes::SectionBias sectionBias, Float64 endBlockLength, Float64 Lg);

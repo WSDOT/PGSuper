@@ -146,17 +146,17 @@ void CStrandFiller::ValidatePermanent() const
 }
 
 // place strands using continuous fill order
-HRESULT CStrandFiller::SetStraightContinuousFill(IPrecastGirder* girder, StrandIndexType nStrands)
+HRESULT CStrandFiller::SetStraightContinuousFill(IStrandGridModel* pStrandGridModel, StrandIndexType nStrands)
 {
    CComPtr<IIndexArray> array;
-   HRESULT hr = ComputeStraightStrandFill(girder,nStrands, &array);
+   HRESULT hr = ComputeStraightStrandFill(pStrandGridModel,nStrands, &array);
    if (FAILED(hr))
    {
       ATLASSERT(false);
       return hr;
    }
 
-   hr = girder->putref_StraightStrandFill(array);
+   hr = pStrandGridModel->putref_StrandFill(Straight,array);
    if (FAILED(hr))
    {
       ATLASSERT(false);
@@ -166,17 +166,17 @@ HRESULT CStrandFiller::SetStraightContinuousFill(IPrecastGirder* girder, StrandI
    return S_OK;
 }
 
-HRESULT CStrandFiller::SetHarpedContinuousFill(IPrecastGirder* girder,  StrandIndexType nStrands)
+HRESULT CStrandFiller::SetHarpedContinuousFill(IStrandGridModel* pStrandGridModel,  StrandIndexType nStrands)
 {
    CComPtr<IIndexArray> array;
-   HRESULT hr = ComputeHarpedStrandFill(girder,nStrands, &array);
+   HRESULT hr = ComputeHarpedStrandFill(pStrandGridModel,nStrands, &array);
    if (FAILED(hr))
    {
       ATLASSERT(false);
       return hr;
    }
 
-   hr = girder->putref_HarpedStrandFill(array);
+   hr = pStrandGridModel->putref_StrandFill(Harped,array);
    if (FAILED(hr))
    {
       ATLASSERT(false);
@@ -186,17 +186,17 @@ HRESULT CStrandFiller::SetHarpedContinuousFill(IPrecastGirder* girder,  StrandIn
    return S_OK;
 }
 
-HRESULT CStrandFiller::SetTemporaryContinuousFill(IPrecastGirder* girder, StrandIndexType nStrands)
+HRESULT CStrandFiller::SetTemporaryContinuousFill(IStrandGridModel* pStrandGridModel, StrandIndexType nStrands)
 {
    CComPtr<IIndexArray> array;
-   HRESULT hr = ComputeTemporaryStrandFill(girder,nStrands, &array);
+   HRESULT hr = ComputeTemporaryStrandFill(pStrandGridModel,nStrands, &array);
    if (FAILED(hr))
    {
       ATLASSERT(false);
       return hr;
    }
 
-   hr = girder->putref_TemporaryStrandFill(array);
+   hr = pStrandGridModel->putref_StrandFill(Temporary,array);
    if (FAILED(hr))
    {
       ATLASSERT(false);
@@ -206,26 +206,26 @@ HRESULT CStrandFiller::SetTemporaryContinuousFill(IPrecastGirder* girder, Strand
    return S_OK;
 }
 
-HRESULT CStrandFiller::IsValidNumStraightStrands(IPrecastGirder* girder, StrandIndexType nStrands,VARIANT_BOOL* bIsValid) const
+HRESULT CStrandFiller::IsValidNumStraightStrands(IStrandGridModel* pStrandGridModel, StrandIndexType nStrands,VARIANT_BOOL* bIsValid) const
 {
    CComPtr<IIndexArray> array;
-   HRESULT hr = ComputeStraightStrandFill(girder,nStrands,&array);
+   HRESULT hr = ComputeStraightStrandFill(pStrandGridModel,nStrands,&array);
    *bIsValid = SUCCEEDED(hr) ? VARIANT_TRUE : VARIANT_FALSE;
    return S_OK;
 }
 
-HRESULT CStrandFiller::IsValidNumHarpedStrands(IPrecastGirder* girder, StrandIndexType nStrands,VARIANT_BOOL* bIsValid) const
+HRESULT CStrandFiller::IsValidNumHarpedStrands(IStrandGridModel* pStrandGridModel, StrandIndexType nStrands,VARIANT_BOOL* bIsValid) const
 {
    CComPtr<IIndexArray> array;
-   HRESULT hr = ComputeHarpedStrandFill(girder,nStrands,&array);
+   HRESULT hr = ComputeHarpedStrandFill(pStrandGridModel,nStrands,&array);
    *bIsValid = SUCCEEDED(hr) ? VARIANT_TRUE : VARIANT_FALSE;
    return S_OK;
 }
 
-HRESULT CStrandFiller::IsValidNumTemporaryStrands(IPrecastGirder* girder, StrandIndexType nStrands,VARIANT_BOOL* bIsValid) const
+HRESULT CStrandFiller::IsValidNumTemporaryStrands(IStrandGridModel* pStrandGridModel, StrandIndexType nStrands,VARIANT_BOOL* bIsValid) const
 {
    CComPtr<IIndexArray> array;
-   HRESULT hr = ComputeTemporaryStrandFill(girder,nStrands,&array);
+   HRESULT hr = ComputeTemporaryStrandFill(pStrandGridModel,nStrands,&array);
    *bIsValid = SUCCEEDED(hr) ? VARIANT_TRUE : VARIANT_FALSE;
    return S_OK;
 }
@@ -254,10 +254,10 @@ HRESULT CStrandFiller::IsValidNumTemporaryStrands(IStrandGridFiller* pGridFiller
    return S_OK;
 }
 
-HRESULT CStrandFiller::ComputeStraightStrandFill(IPrecastGirder* girder, StrandIndexType nStrands, IIndexArray** strandFill) const
+HRESULT CStrandFiller::ComputeStraightStrandFill(IStrandGridModel* pStrandGridModel, StrandIndexType nStrands, IIndexArray** strandFill) const
 {
    CComPtr<IStrandGrid> grid;
-   girder->get_StraightStrandGrid(etStart,&grid);
+   pStrandGridModel->get_StraightStrandGrid(etStart,&grid);
 
    CComQIPtr<IStrandGridFiller> gridFiller(grid);
    return ComputeStraightStrandFill(gridFiller,nStrands,strandFill);
@@ -318,14 +318,14 @@ HRESULT CStrandFiller::ComputeStraightStrandFill(IStrandGridFiller* pGridFiller,
    }
 }
 
-HRESULT CStrandFiller::ComputeHarpedStrandFill(IPrecastGirder* girder, StrandIndexType nStrands, IIndexArray** strandFill) const
+HRESULT CStrandFiller::ComputeHarpedStrandFill(IStrandGridModel* pStrandGridModel, StrandIndexType nStrands, IIndexArray** strandFill) const
 {
    CComPtr<IStrandGrid> startGrid, hpGrid;
-   girder->get_HarpedStrandGridEnd(etStart,&startGrid);
-   girder->get_HarpedStrandGridHP(etStart,&hpGrid);
+   pStrandGridModel->get_HarpedStrandGridEnd(etStart,&startGrid);
+   pStrandGridModel->get_HarpedStrandGridHP(etStart,&hpGrid);
 
    VARIANT_BOOL vb;
-   girder->get_AllowOddNumberOfHarpedStrands(&vb);
+   pStrandGridModel->get_AllowOddNumberOfHarpedStrands(&vb);
 
    CComQIPtr<IStrandGridFiller> startGridFiller(startGrid);
    CComQIPtr<IStrandGridFiller> hpGridFiller(hpGrid);
@@ -396,10 +396,10 @@ HRESULT CStrandFiller::ComputeHarpedStrandFill(bool bAllowOddNumberOfHarpedStran
 }
 
 
-HRESULT CStrandFiller::ComputeTemporaryStrandFill(IPrecastGirder* girder, StrandIndexType nStrands, IIndexArray** strandFill) const
+HRESULT CStrandFiller::ComputeTemporaryStrandFill(IStrandGridModel* pStrandGridModel, StrandIndexType nStrands, IIndexArray** strandFill) const
 {
    CComPtr<IStrandGrid> grid;
-   girder->get_TemporaryStrandGrid(etStart,&grid);
+   pStrandGridModel->get_TemporaryStrandGrid(etStart,&grid);
 
    CComQIPtr<IStrandGridFiller> gridFiller(grid);
    return ComputeTemporaryStrandFill(gridFiller,nStrands,strandFill);
@@ -626,10 +626,10 @@ HRESULT CStrandFiller::GetPrevNumberOfTemporaryStrands(IStrandGridFiller* pGridF
 
 
 
-HRESULT CStrandFiller::GetNextNumberOfStraightStrands(IPrecastGirder* girder, StrandIndexType currNum,  StrandIndexType* nextStrands) const
+HRESULT CStrandFiller::GetNextNumberOfStraightStrands(IStrandGridModel* pStrandGridModel, StrandIndexType currNum,  StrandIndexType* nextStrands) const
 {
    CComPtr<IIndexArray> array;
-   HRESULT hr = girder->get_StraightMaxStrandFill(&array);
+   HRESULT hr = pStrandGridModel->GetMaxStrandFill(Straight,&array);
    if (FAILED(hr))
    {
       ATLASSERT(false);
@@ -639,10 +639,10 @@ HRESULT CStrandFiller::GetNextNumberOfStraightStrands(IPrecastGirder* girder, St
    return GetNextNumStrands(currNum, array, nextStrands);
 }
 
-HRESULT CStrandFiller::GetNextNumberOfHarpedStrands(IPrecastGirder* girder, StrandIndexType currNum,  StrandIndexType* nextStrands) const
+HRESULT CStrandFiller::GetNextNumberOfHarpedStrands(IStrandGridModel* pStrandGridModel, StrandIndexType currNum,  StrandIndexType* nextStrands) const
 {
    CComPtr<IIndexArray> array;
-   HRESULT hr = girder->get_HarpedMaxStrandFill(&array);
+   HRESULT hr = pStrandGridModel->GetMaxStrandFill(Harped,&array);
    if (FAILED(hr))
    {
       ATLASSERT(false);
@@ -658,7 +658,7 @@ HRESULT CStrandFiller::GetNextNumberOfHarpedStrands(IPrecastGirder* girder, Stra
    }
 
    VARIANT_BOOL allow;
-   girder->get_AllowOddNumberOfHarpedStrands(&allow);
+   pStrandGridModel->get_AllowOddNumberOfHarpedStrands(&allow);
    if (allow == VARIANT_TRUE)
    {
       IndexType val;
@@ -667,7 +667,7 @@ HRESULT CStrandFiller::GetNextNumberOfHarpedStrands(IPrecastGirder* girder, Stra
       {
          // we can reduce by one, so any number less than max is possible
          StrandIndexType max_harped;
-         HRESULT hr = girder->get_MaxHarpedStrands(&max_harped);
+         HRESULT hr = pStrandGridModel->GetMaxStrands(Harped,&max_harped);
          if (FAILED(hr))
          {
             ATLASSERT(false);
@@ -693,10 +693,10 @@ HRESULT CStrandFiller::GetNextNumberOfHarpedStrands(IPrecastGirder* girder, Stra
    return GetNextNumStrands(currNum, array, nextStrands);
 }
 
-HRESULT CStrandFiller::GetNextNumberOfTemporaryStrands(IPrecastGirder* girder, StrandIndexType currNum,  StrandIndexType* nextStrands) const
+HRESULT CStrandFiller::GetNextNumberOfTemporaryStrands(IStrandGridModel* pStrandGridModel, StrandIndexType currNum,  StrandIndexType* nextStrands) const
 {
    CComPtr<IIndexArray> array;
-   HRESULT hr = girder->get_TemporaryMaxStrandFill(&array);
+   HRESULT hr = pStrandGridModel->GetMaxStrandFill(Temporary,&array);
    if (FAILED(hr))
    {
       ATLASSERT(false);
@@ -706,10 +706,10 @@ HRESULT CStrandFiller::GetNextNumberOfTemporaryStrands(IPrecastGirder* girder, S
    return GetNextNumStrands(currNum, array, nextStrands);
 }
 
-HRESULT CStrandFiller::GetPreviousNumberOfStraightStrands(IPrecastGirder* girder, StrandIndexType currNum,  StrandIndexType* prevStrands) const
+HRESULT CStrandFiller::GetPreviousNumberOfStraightStrands(IStrandGridModel* pStrandGridModel, StrandIndexType currNum,  StrandIndexType* prevStrands) const
 {
    CComPtr<IIndexArray> array;
-   HRESULT hr = girder->get_StraightMaxStrandFill(&array);
+   HRESULT hr = pStrandGridModel->GetMaxStrandFill(Straight,&array);
    if (FAILED(hr))
    {
       ATLASSERT(false);
@@ -719,7 +719,7 @@ HRESULT CStrandFiller::GetPreviousNumberOfStraightStrands(IPrecastGirder* girder
    return GetPrevNumStrands(currNum, array, prevStrands);
 }
 
-HRESULT CStrandFiller::GetPreviousNumberOfHarpedStrands(IPrecastGirder* girder, StrandIndexType currNum,  StrandIndexType* prevStrands) const
+HRESULT CStrandFiller::GetPreviousNumberOfHarpedStrands(IStrandGridModel* pStrandGridModel, StrandIndexType currNum,  StrandIndexType* prevStrands) const
 {
    // get the no-brainers out of the way
    if (currNum <= 0)
@@ -734,7 +734,7 @@ HRESULT CStrandFiller::GetPreviousNumberOfHarpedStrands(IPrecastGirder* girder, 
    }
 
    CComPtr<IIndexArray> array;
-   HRESULT hr = girder->get_HarpedMaxStrandFill(&array);
+   HRESULT hr = pStrandGridModel->GetMaxStrandFill(Harped,&array);
    if (FAILED(hr))
    {
       ATLASSERT(false);
@@ -743,7 +743,7 @@ HRESULT CStrandFiller::GetPreviousNumberOfHarpedStrands(IPrecastGirder* girder, 
 
    // possible that odd strands will help us out
    VARIANT_BOOL allow;
-   girder->get_AllowOddNumberOfHarpedStrands(&allow);
+   pStrandGridModel->get_AllowOddNumberOfHarpedStrands(&allow);
    if (allow == VARIANT_TRUE)
    {
       IndexType val;
@@ -752,7 +752,7 @@ HRESULT CStrandFiller::GetPreviousNumberOfHarpedStrands(IPrecastGirder* girder, 
       {
          // we can reduce by one, so any number less than max is possible
          StrandIndexType max_harped;
-         HRESULT hr = girder->get_MaxHarpedStrands(&max_harped);
+         HRESULT hr = pStrandGridModel->GetMaxStrands(Harped,&max_harped);
          if (FAILED(hr))
          {
             ATLASSERT(false);
@@ -776,10 +776,10 @@ HRESULT CStrandFiller::GetPreviousNumberOfHarpedStrands(IPrecastGirder* girder, 
    return GetPrevNumStrands(currNum, array, prevStrands);
 }
 
-HRESULT CStrandFiller::GetPreviousNumberOfTemporaryStrands(IPrecastGirder* girder, StrandIndexType currNum,  StrandIndexType* prevStrands) const
+HRESULT CStrandFiller::GetPreviousNumberOfTemporaryStrands(IStrandGridModel* pStrandGridModel, StrandIndexType currNum,  StrandIndexType* prevStrands) const
 {
    CComPtr<IIndexArray> array;
-   HRESULT hr = girder->get_TemporaryMaxStrandFill(&array);
+   HRESULT hr = pStrandGridModel->GetMaxStrandFill(Temporary,&array);
    if (FAILED(hr))
    {
       ATLASSERT(false);
@@ -789,7 +789,7 @@ HRESULT CStrandFiller::GetPreviousNumberOfTemporaryStrands(IPrecastGirder* girde
    return GetPrevNumStrands(currNum, array, prevStrands);
 }
 
-HRESULT CStrandFiller::GetMaxNumPermanentStrands(IPrecastGirder* girder, StrandIndexType* numStrands) const
+HRESULT CStrandFiller::GetMaxNumPermanentStrands(IStrandGridModel* pStrandGridModel, StrandIndexType* numStrands) const
 {
    ValidatePermanent();
 
@@ -798,12 +798,12 @@ HRESULT CStrandFiller::GetMaxNumPermanentStrands(IPrecastGirder* girder, StrandI
    return S_OK;
 }
 
-HRESULT CStrandFiller::ComputeNumPermanentStrands(IPrecastGirder* girder, StrandIndexType totalPermanent, StrandIndexType* numStraight, StrandIndexType* numHarped) const
+HRESULT CStrandFiller::ComputeNumPermanentStrands(IStrandGridModel* pStrandGridModel, StrandIndexType totalPermanent, StrandIndexType* numStraight, StrandIndexType* numHarped) const
 {
    return m_pGdrEntry->GetPermStrandDistribution(totalPermanent, numStraight, numHarped) ? S_OK : S_FALSE;
 }
 
-HRESULT CStrandFiller::GetNextNumberOfPermanentStrands(IPrecastGirder* girder, StrandIndexType currNum,  StrandIndexType* nextNum) const
+HRESULT CStrandFiller::GetNextNumberOfPermanentStrands(IStrandGridModel* pStrandGridModel, StrandIndexType currNum,  StrandIndexType* nextNum) const
 {
    ValidatePermanent();
 
@@ -849,7 +849,7 @@ HRESULT CStrandFiller::GetNextNumberOfPermanentStrands(IPrecastGirder* girder, S
    }
 }
 
-HRESULT CStrandFiller::GetPreviousNumberOfPermanentStrands(IPrecastGirder* girder, StrandIndexType currNum,  StrandIndexType* nextNum) const
+HRESULT CStrandFiller::GetPreviousNumberOfPermanentStrands(IStrandGridModel* pStrandGridModel, StrandIndexType currNum,  StrandIndexType* nextNum) const
 {
    ValidatePermanent();
 
@@ -907,10 +907,10 @@ HRESULT CStrandFiller::GetPreviousNumberOfPermanentStrands(IPrecastGirder* girde
    }
 }
 
-HRESULT CStrandFiller::ComputeStraightStrandFill(IPrecastGirder* girder, const CDirectStrandFillCollection* pCollection, IIndexArray** strandFill) const
+HRESULT CStrandFiller::ComputeStraightStrandFill(IStrandGridModel* pStrandGridModel, const CDirectStrandFillCollection* pCollection, IIndexArray** strandFill) const
 {
    CComPtr<IIndexArray> maxarray;
-   HRESULT hr = girder->get_StraightMaxStrandFill(&maxarray);
+   HRESULT hr = pStrandGridModel->GetMaxStrandFill(Straight,&maxarray);
    if (FAILED(hr))
    {
       ATLASSERT(false);
@@ -959,10 +959,10 @@ HRESULT CStrandFiller::ComputeStraightStrandFill(IPrecastGirder* girder, const C
    return m_TempArray.CopyTo(strandFill);
 }
 
-HRESULT CStrandFiller::ComputeHarpedStrandFill(IPrecastGirder* girder, const CDirectStrandFillCollection* pCollection, IIndexArray** strandFill) const
+HRESULT CStrandFiller::ComputeHarpedStrandFill(IStrandGridModel* pStrandGridModel, const CDirectStrandFillCollection* pCollection, IIndexArray** strandFill) const
 {
    CComPtr<IIndexArray> maxarray;
-   HRESULT hr = girder->get_HarpedMaxStrandFill(&maxarray);
+   HRESULT hr = pStrandGridModel->GetMaxStrandFill(Harped,&maxarray);
    if (FAILED(hr))
    {
       ATLASSERT(false);
@@ -1011,10 +1011,10 @@ HRESULT CStrandFiller::ComputeHarpedStrandFill(IPrecastGirder* girder, const CDi
    return m_TempArray.CopyTo(strandFill);
 }
 
-HRESULT CStrandFiller::ComputeTemporaryStrandFill(IPrecastGirder* girder, const CDirectStrandFillCollection* pCollection, IIndexArray** strandFill) const
+HRESULT CStrandFiller::ComputeTemporaryStrandFill(IStrandGridModel* pStrandGridModel, const CDirectStrandFillCollection* pCollection, IIndexArray** strandFill) const
 {
    CComPtr<IIndexArray> maxarray;
-   HRESULT hr = girder->get_TemporaryMaxStrandFill(&maxarray);
+   HRESULT hr = pStrandGridModel->GetMaxStrandFill(Temporary,&maxarray);
    if (FAILED(hr))
    {
       ATLASSERT(false);
@@ -1063,27 +1063,27 @@ HRESULT CStrandFiller::ComputeTemporaryStrandFill(IPrecastGirder* girder, const 
    return m_TempArray.CopyTo(strandFill);
 }
 
-HRESULT CStrandFiller::SetStraightDirectStrandFill(IPrecastGirder* girder,  const CDirectStrandFillCollection* pCollection)
+HRESULT CStrandFiller::SetStraightDirectStrandFill(IStrandGridModel* pStrandGridModel,  const CDirectStrandFillCollection* pCollection)
 {
    CComPtr<IIndexArray> fillArray;
-   this->ComputeStraightStrandFill(girder, pCollection, &fillArray);
+   this->ComputeStraightStrandFill(pStrandGridModel, pCollection, &fillArray);
 
-   return girder->putref_StraightStrandFill(fillArray);
+   return pStrandGridModel->putref_StrandFill(Straight,fillArray);
 }
 
-HRESULT CStrandFiller::SetHarpedDirectStrandFill(IPrecastGirder* girder,  const CDirectStrandFillCollection* pCollection)
+HRESULT CStrandFiller::SetHarpedDirectStrandFill(IStrandGridModel* pStrandGridModel,  const CDirectStrandFillCollection* pCollection)
 {
    CComPtr<IIndexArray> fillArray;
-   this->ComputeHarpedStrandFill(girder, pCollection, &fillArray);
+   this->ComputeHarpedStrandFill(pStrandGridModel, pCollection, &fillArray);
 
-   return girder->putref_HarpedStrandFill(fillArray);
+   return pStrandGridModel->putref_StrandFill(Harped,fillArray);
 }
 
-HRESULT CStrandFiller::SetTemporaryDirectStrandFill(IPrecastGirder* girder,  const CDirectStrandFillCollection* pCollection)
+HRESULT CStrandFiller::SetTemporaryDirectStrandFill(IStrandGridModel* pStrandGridModel,  const CDirectStrandFillCollection* pCollection)
 {
    CComPtr<IIndexArray> fillArray;
-   this->ComputeTemporaryStrandFill(girder, pCollection, &fillArray);
+   this->ComputeTemporaryStrandFill(pStrandGridModel, pCollection, &fillArray);
 
-   return girder->putref_TemporaryStrandFill(fillArray);
+   return pStrandGridModel->putref_StrandFill(Temporary,fillArray);
 }
 

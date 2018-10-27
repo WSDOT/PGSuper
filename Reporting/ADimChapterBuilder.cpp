@@ -109,7 +109,7 @@ rptChapter* CADimChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 lev
    {
       CSpanKey spanKey(spanIdx, girderKey.girderIndex);
 
-      HAUNCHDETAILS haunch_details = pGdrHaunch->GetHaunchDetails(spanKey);
+      const auto& haunch_details = pGdrHaunch->GetHaunchDetails(spanKey);
 
       rptParagraph* pPara = new rptParagraph;
       *pChapter << pPara;
@@ -161,15 +161,11 @@ rptChapter* CADimChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 lev
 
       RowIndexType row1 = pTable1->GetNumberOfHeaderRows();
       RowIndexType row2 = pTable2->GetNumberOfHeaderRows();
-      std::vector<SECTIONHAUNCH>::iterator haunchIter(haunch_details.Haunch.begin());
-      std::vector<SECTIONHAUNCH>::iterator haunchIterEnd(haunch_details.Haunch.end());
-      for ( ; haunchIter != haunchIterEnd; haunchIter++ )
+      for ( const auto& haunch : haunch_details.Haunch)
       {
-         SECTIONHAUNCH& haunch = *haunchIter;
-
          col = 0;
 
-         (*pTable1)(row1,col++) << location.SetValue( POI_ERECTED_SEGMENT, haunch.PointOfInterest );
+         (*pTable1)(row1,col++) << location.SetValue( POI_SPAN, haunch.PointOfInterest );
          (*pTable1)(row1,col++) << rptRcStation(haunch.Station, &pDisplayUnits->GetStationFormat() );
          (*pTable1)(row2,col++) << RPT_OFFSET(haunch.Offset,dim);
 
@@ -185,7 +181,7 @@ rptChapter* CADimChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 lev
          row1++;
 
          col = 0;
-         (*pTable2)(row2,col++) << location.SetValue( POI_ERECTED_SEGMENT, haunch.PointOfInterest );
+         (*pTable2)(row2,col++) << location.SetValue(POI_SPAN, haunch.PointOfInterest );
          (*pTable2)(row2,col++) << haunch.CrownSlope;
          (*pTable2)(row2,col++) << haunch.GirderOrientation;
          (*pTable2)(row2,col++) << comp.SetValue( haunch.Wtop );

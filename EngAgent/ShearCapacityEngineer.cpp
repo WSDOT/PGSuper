@@ -664,6 +664,7 @@ bool pgsShearCapacityEngineer::GetInformation(IntervalIndexType intervalIdx,pgsT
    GET_IFACE(ITendonGeometry,pTendonGeometry);
    GET_IFACE(IBridge,pBridge);
    GET_IFACE(IGirder,pGdr);
+   GET_IFACE(ISectionProperties,pSectProps);
 
    // vertical component of prestress force
    pscd->Vps = pPsForce->GetVertHarpedStrandForce(poi, intervalIdx, pgsTypes::End, pConfig);
@@ -693,7 +694,10 @@ bool pgsShearCapacityEngineer::GetInformation(IntervalIndexType intervalIdx,pgsT
 
    Float64 struct_slab_h = pBridge->GetStructuralSlabDepth(poi);
 
-   pscd->h = pGdr->GetHeight(poi) + struct_slab_h;
+   pgsTypes::HaunchAnalysisSectionPropertiesType hatype = pSpecEntry->GetHaunchAnalysisSectionPropertiesType();
+   Float64 haunch_depth = pSectProps->GetStructuralHaunchDepth(poi, hatype);
+
+   pscd->h = pGdr->GetHeight(poi) + struct_slab_h + haunch_depth;
 
    // lrfd 5.7.2.6 (pre2017: 5.8.2.7)
    pscd->dv = Max( pscd->MomentArm, 0.9*pscd->de, 0.72*pscd->h );

@@ -45,6 +45,8 @@
 #include <IFace\StatusCenter.h>
 #include <PgsExt\StatusItem.h>
 
+#include <Beams\Helper.h>
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
@@ -54,29 +56,17 @@ static char THIS_FILE[] = __FILE__;
 
 /////////////////////////////////////////////////////////////////////////////
 // CBoxBeamFactoryImpl
-void CBoxBeamFactoryImpl::CreateGirderProfile(IBroker* pBroker,StatusItemIDType statusID,const CSegmentKey& segmentKey,const IBeamFactory::Dimensions& dimensions,IShape** ppShape) const
+
+void CBoxBeamFactoryImpl::CreateGirderSection(IBroker* pBroker, StatusItemIDType statusID, const IBeamFactory::Dimensions& dimensions, Float64 overallHeight, Float64 bottomFlangeHeight, IGirderSection** ppSection) const
 {
-   GET_IFACE2(pBroker,IBridge,pBridge);
-   Float64 length = pBridge->GetSegmentLength(segmentKey);
+   CComPtr<IBoxBeamSection> gdrSection;
+   gdrSection.CoCreateInstance(CLSID_BoxBeamSection);
+   CComPtr<IBoxBeam> beam;
+   gdrSection->get_Beam(&beam);
 
-   Float64 H1 = GetDimension(dimensions,_T("H1"));
-   Float64 H2 = GetDimension(dimensions,_T("H2"));
-   Float64 H3 = GetDimension(dimensions,_T("H3"));
+   DimensionBeam(dimensions, beam);
 
-   Float64 height = H1 + H2 + H3;
-
-   CComPtr<IRectangle> rect;
-   rect.CoCreateInstance(CLSID_Rect);
-   rect->put_Height(height);
-   rect->put_Width(length);
-
-   CComQIPtr<IXYPosition> position(rect);
-   CComPtr<IPoint2d> topLeft;
-   position->get_LocatorPoint(lpTopLeft,&topLeft);
-   topLeft->Move(0,0);
-   position->put_LocatorPoint(lpTopLeft,topLeft);
-
-   rect->QueryInterface(ppShape);
+   gdrSection.QueryInterface(ppSection);
 }
 
 void CBoxBeamFactoryImpl::CreateSegment(IBroker* pBroker,StatusItemIDType statusID,const CSegmentKey& segmentKey,ISuperstructureMemberSegment** ppSegment) const
@@ -102,20 +92,10 @@ void CBoxBeamFactoryImpl::CreateSegment(IBroker* pBroker,StatusItemIDType status
    CreateGirderSection(pBroker,statusID,dimensions,-1,-1,&gdrSection);
 
    CComQIPtr<IBoxBeamSection> section(gdrSection);
+   CComPtr<IBoxBeam> beam;
+   section->get_Beam(&beam);
 
-   CComPtr<IBoxBeam> boxBeamShape;
-   section->get_Beam(&boxBeamShape);
-   if ( segmentKey.girderIndex == 0 && ExcludeExteriorBeamShearKeys() )
-   {
-      boxBeamShape->put_LeftBlockOut(VARIANT_FALSE);
-   }
-
-   if ( segmentKey.girderIndex == pGroup->GetGirderCount()-1 && ExcludeExteriorBeamShearKeys()  )
-   {
-      boxBeamShape->put_RightBlockOut(VARIANT_FALSE);
-   }
-
-   boxBeamShape->put_UseOverallWidth(UseOverallWidth() ? VARIANT_TRUE : VARIANT_FALSE);
+   ConfigureGirderShape(pGirder->GetSegment(segmentKey.segmentIndex), dimensions, beam);
 
    // Beam materials
    GET_IFACE2(pBroker,IIntervals,pIntervals);
@@ -134,6 +114,7 @@ void CBoxBeamFactoryImpl::CreateSegment(IBroker* pBroker,StatusItemIDType status
    }
 
    CComQIPtr<IShape> shape(section);
+
    segment->AddShape(shape,material,nullptr);
 
    CComQIPtr<ISuperstructureMemberSegment> ssmbrSegment(segment);
@@ -143,6 +124,41 @@ void CBoxBeamFactoryImpl::CreateSegment(IBroker* pBroker,StatusItemIDType status
 void CBoxBeamFactoryImpl::ConfigureSegment(IBroker* pBroker, StatusItemIDType statusID, const CSegmentKey& segmentKey, ISuperstructureMemberSegment* pSSMbrSegment) const
 {
    // do nothing... all the configuration was done in CreateSegment
+}
+
+void CBoxBeamFactoryImpl::CreateSegmentShape(IBroker* pBroker, const CPrecastSegmentData* pSegment, Float64 Xs, pgsTypes::SectionBias sectionBias,IShape** ppShape) const
+{
+   // also, no need to create girder section, can just create the shape
+   const CSplicedGirderData* pGirder = pSegment->GetGirder();
+   const GirderLibraryEntry* pGirderEntry = pGirder->GetGirderLibraryEntry();
+   const auto& dimensions = pGirderEntry->GetDimensions();
+
+   CComPtr<IBoxBeam> beam;
+   beam.CoCreateInstance(CLSID_BoxBeam);
+   ConfigureGirderShape(pSegment, dimensions, beam);
+
+   Float64 endBlockLength = GetDimension(dimensions, _T("EndBlockLength"));
+   GET_IFACE2(pBroker,IBridge, pBridge);
+   Float64 Lg = pBridge->GetSegmentLength(pSegment->GetSegmentKey());
+   if (IsInEndBlock(Xs,sectionBias,endBlockLength,Lg))
+   {
+      // Xs is in the end block region
+      beam->put_VoidCount(0);
+   }
+
+
+   beam.QueryInterface(ppShape);
+}
+
+Float64 CBoxBeamFactoryImpl::GetSegmentHeight(IBroker* pBroker, const CPrecastSegmentData* pSegment, Float64 Xs) const
+{
+   const CSplicedGirderData* pGirder = pSegment->GetGirder();
+   const GirderLibraryEntry* pGirderEntry = pGirder->GetGirderLibraryEntry();
+   const auto& dimensions = pGirderEntry->GetDimensions();
+   Float64 H1 = GetDimension(dimensions, _T("H1"));
+   Float64 H2 = GetDimension(dimensions, _T("H2"));
+   Float64 H3 = GetDimension(dimensions, _T("H3"));
+   return H1 + H2 + H3;
 }
 
 void CBoxBeamFactoryImpl::LayoutSectionChangePointsOfInterest(IBroker* pBroker,const CSegmentKey& segmentKey,pgsPoiMgr* pPoiMgr) const
@@ -650,4 +666,35 @@ bool CBoxBeamFactoryImpl::CanPrecamber() const
 GirderIndexType CBoxBeamFactoryImpl::GetMinimumBeamCount() const
 {
    return 1;
+}
+
+void CBoxBeamFactoryImpl::DimensionBeam(const IBeamFactory::Dimensions& dimensions, IBoxBeam* pBeam) const
+{
+   // Hook point is at bottom center of bounding box.
+   // Adjust hook point so top center of bounding box is at (0,0)
+   Float64 Hg;
+   pBeam->get_Height(&Hg);
+
+   CComPtr<IPoint2d> hookPt;
+   pBeam->get_HookPoint(&hookPt);
+   hookPt->Offset(0, -Hg);
+}
+
+void CBoxBeamFactoryImpl::ConfigureGirderShape(const CPrecastSegmentData* pSegment,const IBeamFactory::Dimensions& dimensions, IBoxBeam* pBeam) const
+{
+   DimensionBeam(dimensions, pBeam);
+
+   const CSegmentKey& segmentKey(pSegment->GetSegmentKey());
+   if (segmentKey.girderIndex == 0 && ExcludeExteriorBeamShearKeys())
+   {
+      pBeam->put_LeftBlockOut(VARIANT_FALSE);
+   }
+
+   const CGirderGroupData* pGroup = pSegment->GetGirder()->GetGirderGroup();
+   if (segmentKey.girderIndex == pGroup->GetGirderCount() - 1 && ExcludeExteriorBeamShearKeys())
+   {
+      pBeam->put_RightBlockOut(VARIANT_FALSE);
+   }
+
+   pBeam->put_UseOverallWidth(UseOverallWidth() ? VARIANT_TRUE : VARIANT_FALSE);
 }

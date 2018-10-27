@@ -342,7 +342,7 @@ void CGirderPropertiesGraphBuilder::UpdateGraphData(const CGirderKey& girderKey,
    GET_IFACE_NOCHECK(IStrandGeometry, pStrandGeom);
    GET_IFACE_NOCHECK(IIntervals, pIntervals);
 
-   bool bIsAsymmetric = pBridge->HasAsymmetricGirders();
+   bool bIsAsymmetric = pBridge->HasAsymmetricGirders() || pBridge->HasAsymmetricPrestressing();
 
    auto& iter(vPoi.cbegin());
    auto& end(vPoi.cend());
@@ -655,7 +655,7 @@ void CGirderPropertiesGraphBuilder::InitializeGraph(PropertyType propertyType,co
    pgsTypes::SupportedDeckType deckType = pBridgeDesc->GetDeckDescription()->GetDeckType();
 
    GET_IFACE(IBridge, pBridge);
-   bool bIsAsymmetric = pBridge->HasAsymmetricGirders();
+   bool bIsAsymmetric = pBridge->HasAsymmetricGirders() || pBridge->HasAsymmetricPrestressing();
 
    std::_tstring strPropertyLabel1( GetPropertyLabel(propertyType) );
    std::_tstring strPropertyLabel2(strPropertyLabel1);

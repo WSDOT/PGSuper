@@ -155,40 +155,29 @@ void CTaperedIBeamFactory::CreateGirderSection(IBroker* pBroker,StatusGroupIDTyp
    beam->put_D5(d5);
    beam->put_D6(d6);
 
-   if ( end == pgsTypes::metStart )
+   if (end == pgsTypes::metStart)
+   {
       beam->put_D7(d7s);
+   }
    else
+   {
       beam->put_D7(d7e);
+   }
 
    beam->put_T1(t1);
    beam->put_T2(t2);
    beam->put_C1(c1);
 
+   // Hook point is at bottom center of bounding box.
+   // Adjust hook point so top center of bounding box is at (0,0)
+   Float64 Hg;
+   beam->get_Height(&Hg);
+
+   CComPtr<IPoint2d> hookPt;
+   beam->get_HookPoint(&hookPt);
+   hookPt->Offset(0, -Hg);
+
    gdrSection.QueryInterface(ppSection);
-}
-
-void CTaperedIBeamFactory::CreateGirderProfile(IBroker* pBroker,StatusGroupIDType statusGroupID,const CSegmentKey& segmentKey,const IBeamFactory::Dimensions& dimensions,IShape** ppShape) const
-{
-   GET_IFACE2(pBroker,IBridge,pBridge);
-   Float64 length = pBridge->GetSegmentLength(segmentKey);
-
-   Float64 c1;
-   Float64 d1,d2,d3,d4,d5,d6,d7s,d7e;
-   Float64 w1,w2,w3,w4;
-   Float64 t1,t2;
-   GetDimensions(dimensions,d1,d2,d3,d4,d5,d6,d7s,d7e,w1,w2,w3,w4,t1,t2,c1);
-
-   Float64 height_start = d1 + d2 + d3 + d4 + d5 + d6 + d7s;
-   Float64 height_end   = d1 + d2 + d3 + d4 + d5 + d6 + d7e;
-
-   CComPtr<IPolyShape> shape;
-   shape.CoCreateInstance(CLSID_PolyShape);
-   shape->AddPoint(0,0); // top left corner of shape
-   shape->AddPoint(length,0);
-   shape->AddPoint(length,-height_end);
-   shape->AddPoint(0,-height_start);
-
-   shape->QueryInterface(ppShape);
 }
 
 void CTaperedIBeamFactory::CreateSegment(IBroker* pBroker,StatusGroupIDType statusGroupID,const CSegmentKey& segmentKey,ISuperstructureMemberSegment** ppSegment) const
@@ -278,6 +267,74 @@ void CTaperedIBeamFactory::CreateSegment(IBroker* pBroker,StatusGroupIDType stat
    }
 
    segment.CopyTo(ppSegment);
+}
+
+void CTaperedIBeamFactory::CreateSegmentShape(IBroker* pBroker, const CPrecastSegmentData* pSegment, Float64 Xs, pgsTypes::SectionBias sectionBias, IShape** ppShape) const
+{
+   const CSplicedGirderData* pGirder = pSegment->GetGirder();
+   const GirderLibraryEntry* pGirderEntry = pGirder->GetGirderLibraryEntry();
+   const auto& dimensions = pGirderEntry->GetDimensions();
+
+   CComPtr<IPrecastBeam> beam;
+   beam.CoCreateInstance(CLSID_PrecastBeam);
+
+   Float64 c1;
+   Float64 d1, d2, d3, d4, d5, d6, d7s, d7e;
+   Float64 w1, w2, w3, w4;
+   Float64 t1, t2;
+   GetDimensions(dimensions, d1, d2, d3, d4, d5, d6, d7s, d7e, w1, w2, w3, w4, t1, t2, c1);
+   beam->put_W1(w1);
+   beam->put_W2(w2);
+   beam->put_W3(w3);
+   beam->put_W4(w4);
+   beam->put_D1(d1);
+   beam->put_D2(d2);
+   beam->put_D3(d3);
+   beam->put_D4(d4);
+   beam->put_D5(d5);
+   beam->put_D6(d6);
+
+   const CSegmentKey& segmentKey(pSegment->GetSegmentKey());
+   GET_IFACE2(pBroker, IBridge, pBridge);
+   Float64 Ls = pBridge->GetSegmentLength(segmentKey);
+
+   Float64 d7 = ::LinInterp(Xs, d7s, d7e, Ls);
+   beam->put_D7(d7);
+
+   beam->put_T1(t1);
+   beam->put_T2(t2);
+   beam->put_C1(c1);
+
+   // Hook point is at bottom center of bounding box.
+   // Adjust hook point so top center of bounding box is at (0,0)
+   Float64 Hg;
+   beam->get_Height(&Hg);
+
+   CComPtr<IPoint2d> hookPt;
+   beam->get_HookPoint(&hookPt);
+   hookPt->Offset(0, -Hg);
+
+   beam.QueryInterface(ppShape);
+}
+
+Float64 CTaperedIBeamFactory::GetSegmentHeight(IBroker* pBroker, const CPrecastSegmentData* pSegment, Float64 Xs) const
+{
+   const CSplicedGirderData* pGirder = pSegment->GetGirder();
+   const GirderLibraryEntry* pGirderEntry = pGirder->GetGirderLibraryEntry();
+   const auto& dimensions = pGirderEntry->GetDimensions();
+
+   Float64 c1;
+   Float64 d1, d2, d3, d4, d5, d6, d7s, d7e;
+   Float64 w1, w2, w3, w4;
+   Float64 t1, t2;
+   GetDimensions(dimensions, d1, d2, d3, d4, d5, d6, d7s, d7e, w1, w2, w3, w4, t1, t2, c1);
+
+   const CSegmentKey& segmentKey(pSegment->GetSegmentKey());
+   GET_IFACE2(pBroker, IBridge, pBridge);
+   Float64 Ls = pBridge->GetSegmentLength(segmentKey);
+
+   Float64 d7 = ::LinInterp(Xs, d7s, d7e, Ls);
+   return d7;
 }
 
 void CTaperedIBeamFactory::ConfigureSegment(IBroker* pBroker, StatusItemIDType statusID, const CSegmentKey& segmentKey, ISuperstructureMemberSegment* pSSMbrSegment) const

@@ -577,19 +577,54 @@ lrfdLiveLoadDistributionFactorBase* CMultiWebDistFactorEngineer::GetLLDFParamete
    plldf->Ig = pSectProp->GetIxx(pgsTypes::sptGross,releaseIntervalIdx,poi);
 
    // Assume slab thickness includes top flange
-   if ( pBridge->GetDeckType() == pgsTypes::sdtNone )
+   if ( !IsStructuralDeck(pBridge->GetDeckType()) )
    {
       plldf->ts = pGirder->GetMinTopFlangeThickness(poi);
       plldf->eg = plldf->Yt - plldf->ts/2;
    }
    else
    {
+
       Float64 ts = pBridge->GetStructuralSlabDepth(poi);
+
+      // Fillet adds to ts, if applicable, since beams are adjacent so the slab width is the same as the top flange width
+      if (!pSectProp->GetHaunchAnalysisSectionPropertiesType() == pgsTypes::hspZeroHaunch)
+      {
+         Float64 fillet = pBridge->GetFillet();
+         ts += fillet;
+      }
+
       Float64 tf =  pGirder->GetMinTopFlangeThickness(poi);
       plldf->ts = ts + tf;
 
       // location of cg of combined slab wrt top of girder
+      //
+      // +===========================================+ ---
+      // |                                           |  ^
+      // |                                           |  |   
+      // |                     # ---                 |  | ts (includes fillet if defined)
+      // |                        |                  |  |
+      // |    ---------------  *  |  ts/2            |  |
+      // |      ^      tscg|      |                  |  v
+      // +======|====================================+ ------------ First moment of area taken about this axis
+      // |      |                 | -tf/2            |  ^      ^
+      // |      | eg           # ---                 |  | tf   |
+      // |      |                                    |  v      |
+      // +------|---------+ . . .+-------------------+ ---     |
+      //        |         |      |                             | Yt
+      //        |         |      |                             |
+      //        |         |      |                             |
+      //        v         |      |                             v
+      //     ------------ |  **  | -----------------------------
+      //                  |      |
+      //                  |      |
+      //                 ---/\/\-----
+
       Float64 tscg = (ts*ts/2.0 - tf*tf/2.0)/(ts+tf);
+
+      // Note that the below an approximation because Yt is based on the entire bare beam and perhaps we should ony
+      // be using Yt of the web portion (which is hard to obtain). No use getting ridiculous with accuracy here though since it's all
+      // taken to the 0.1th, and many permutations of beam types and shapes come through this code.
       plldf->eg    = plldf->Yt + tscg;
    }
 

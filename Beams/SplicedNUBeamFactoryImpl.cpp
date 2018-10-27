@@ -29,6 +29,7 @@
 #include "TimeStepLossEngineer.h"
 #include "StrandMoverImpl.h"
 #include <GeomModel\PrecastBeam.h>
+#include <GenericBridge\Helpers.h>
 #include <MathEx.h>
 #include <sstream>
 #include <algorithm>
@@ -125,79 +126,9 @@ void CSplicedNUBeamFactory::CreateGirderSection(IBroker* pBroker,StatusGroupIDTy
    CComPtr<INUBeam> beam;
    gdrSection->get_Beam(&beam);
 
-   Float64 d1,d2,d3,d4,d5;
-   Float64 r1,r2,r3,r4;
-   Float64 t;
-   Float64 w1,w2;
-   Float64 c1;
-
-   GetDimensions(dimensions,d1,d2,d3,d4,d5,r1,r2,r3,r4,t,w1,w2,c1);
-   beam->put_W1(w1);
-   beam->put_W2(w2);
-   beam->put_D1(d1);
-   beam->put_D2(d2);
-   beam->put_D3(d3);
-   beam->put_D4(d4);
-   beam->put_D5(d5);
-   beam->put_T(t);
-   beam->put_R1(r1);
-   beam->put_R2(r2);
-   beam->put_R3(r3);
-   beam->put_R4(r4);
-   beam->put_C1(c1);
-
-   if ( 0 < bottomFlangeHeight )
-   {
-      d5 = bottomFlangeHeight;
-      beam->put_D5(d5);
-   }
-
-   if ( 0 < overallHeight )
-   {
-      d3 += overallHeight - (d1+d2+d3+d4+d5);
-      if ( 0 < d3 )
-      {
-         beam->put_D3(d3);
-      }
-   }
-   else
-   {
-      overallHeight = d1+d2+d3+d4+d5;
-   }
-
-   CComPtr<IPoint2d> hookPt;
-   beam->get_HookPoint(&hookPt);
-   hookPt->Move(0,-overallHeight);
+   DimensionAndPositionBeam(dimensions, overallHeight, bottomFlangeHeight, beam);
 
    gdrSection.QueryInterface(ppSection);
-}
-
-void CSplicedNUBeamFactory::CreateGirderProfile(IBroker* pBroker,StatusGroupIDType statusGroupID,const CSegmentKey& segmentKey,const IBeamFactory::Dimensions& dimensions,IShape** ppShape) const
-{
-   GET_IFACE2(pBroker,IBridge,pBridge);
-   Float64 length = pBridge->GetSegmentLength(segmentKey);
-
-   Float64 d1,d2,d3,d4,d5;
-   Float64 r1,r2,r3,r4;
-   Float64 t;
-   Float64 w1,w2;
-   Float64 c1;
-   GetDimensions(dimensions,d1,d2,d3,d4,d5,r1,r2,r3,r4,t,w1,w2,c1);
-
-   Float64 height = d1 + d2 + d3 + d4 + d5;
-
-   CComPtr<IRectangle> rect;
-   rect.CoCreateInstance(CLSID_Rect);
-   rect->put_Height(height);
-   rect->put_Width(length);
-
-   CComQIPtr<IXYPosition> position(rect);
-   CComPtr<IPoint2d> topLeft;
-   position->get_LocatorPoint(lpTopLeft,&topLeft);
-   topLeft->Move(0,0);
-   position->put_LocatorPoint(lpTopLeft,topLeft);
-
-   rect->QueryInterface(ppShape);
 }
 
 void CSplicedNUBeamFactory::CreateSegment(IBroker* pBroker,StatusGroupIDType statusGroupID,const CSegmentKey& segmentKey,ISuperstructureMemberSegment** ppSegment) const
@@ -249,6 +180,73 @@ void CSplicedNUBeamFactory::CreateSegment(IBroker* pBroker,StatusGroupIDType sta
 
    CComQIPtr<ISuperstructureMemberSegment> ssmbrSegment(segment);
    ssmbrSegment.CopyTo(ppSegment);
+}
+
+void CSplicedNUBeamFactory::CreateSegmentShape(IBroker* pBroker, const CPrecastSegmentData* pSegment, Float64 Xs, pgsTypes::SectionBias sectionBias, IShape** ppShape) const
+{
+   const CSplicedGirderData*  pGirder = pSegment->GetGirder();
+   const GirderLibraryEntry* pGdrEntry = pGirder->GetGirderLibraryEntry();
+   const GirderLibraryEntry::Dimensions& dimensions = pGdrEntry->GetDimensions();
+
+   CComPtr<INUBeam> beam;
+   beam.CoCreateInstance(CLSID_NUBeam);
+
+   Float64 Hg = GetSegmentHeight(pBroker, pSegment, Xs);
+   Float64 Hbf = GetBottomFlangeDepth(pBroker, pSegment, Xs);
+
+   DimensionAndPositionBeam(dimensions, Hg, Hbf, beam);
+
+   // Adjust width of section for end blocks
+   GET_IFACE2(pBroker, IBridge, pBridge);
+   Float64 Ls = pBridge->GetSegmentLength(pSegment->GetSegmentKey());
+
+   Float64 Web;
+   ::GetEndBlockWidth(Xs, Ls, (SectionBias)sectionBias, beam, pSegment->EndBlockWidth, pSegment->EndBlockLength, pSegment->EndBlockTransitionLength, &Web);
+   ::AdjustForEndBlocks(beam, Web);
+
+   beam.QueryInterface(ppShape);
+}
+
+Float64 CSplicedNUBeamFactory::GetSegmentHeight(IBroker* pBroker, const CPrecastSegmentData* pSegment, Float64 Xs) const
+{
+   GET_IFACE2(pBroker, IBridge, pBridge);
+   Float64 Ls = pBridge->GetSegmentLength(pSegment->GetSegmentKey());
+
+   std::array<Float64, 4> X;
+   pBridge->ResolveSegmentVariation(pSegment, X);
+   std::array<Float64, 4> Y;
+   Y[pgsTypes::sztLeftPrismatic] = pSegment->GetVariationHeight(pgsTypes::sztLeftPrismatic);
+   Y[pgsTypes::sztLeftTapered] = pSegment->GetVariationHeight(pgsTypes::sztLeftTapered);
+   Y[pgsTypes::sztRightTapered] = pSegment->GetVariationHeight(pgsTypes::sztRightTapered);
+   Y[pgsTypes::sztRightPrismatic] = pSegment->GetVariationHeight(pgsTypes::sztRightPrismatic);
+
+   pgsTypes::SegmentVariationType variationType = pSegment->GetVariationType();
+   bool bParabolas = IsParabolicVariation(variationType);
+
+   Float64 Xl, Yl, Xr, Yr;
+   ZoneType zone = ::GetControlPoints(Xs, Ls, X, Y, &Xl, &Yl, &Xr, &Yr);
+   return ::GetSectionDepth(Xs, Xl, Yl, Xr, Yr, TransitionTypeFromZone(zone, bParabolas));
+}
+
+Float64 CSplicedNUBeamFactory::GetBottomFlangeDepth(IBroker* pBroker, const CPrecastSegmentData* pSegment, Float64 Xs) const
+{
+   GET_IFACE2(pBroker, IBridge, pBridge);
+   Float64 Ls = pBridge->GetSegmentLength(pSegment->GetSegmentKey());
+
+   std::array<Float64, 4> X;
+   pBridge->ResolveSegmentVariation(pSegment, X);
+   std::array<Float64, 4> Y;
+   Y[pgsTypes::sztLeftPrismatic] = pSegment->GetVariationBottomFlangeDepth(pgsTypes::sztLeftPrismatic);
+   Y[pgsTypes::sztLeftTapered] = pSegment->GetVariationBottomFlangeDepth(pgsTypes::sztLeftTapered);
+   Y[pgsTypes::sztRightTapered] = pSegment->GetVariationBottomFlangeDepth(pgsTypes::sztRightTapered);
+   Y[pgsTypes::sztRightPrismatic] = pSegment->GetVariationBottomFlangeDepth(pgsTypes::sztRightPrismatic);
+
+   pgsTypes::SegmentVariationType variationType = pSegment->GetVariationType();
+   bool bParabolas = IsParabolicVariation(variationType);
+
+   Float64 Xl, Yl, Xr, Yr;
+   ZoneType zone = ::GetControlPoints(Xs, Ls, X, Y, &Xl, &Yl, &Xr, &Yr);
+   return ::GetSectionDepth(Xs, Xl, Yl, Xr, Yr, TransitionTypeFromZone(zone, bParabolas));
 }
 
 void CSplicedNUBeamFactory::ConfigureSegment(IBroker* pBroker, StatusItemIDType statusID, const CSegmentKey& segmentKey, ISuperstructureMemberSegment* pSSMbrSegment) const
@@ -1103,4 +1101,39 @@ LPCTSTR CSplicedNUBeamFactory::GetBottomFlangeDepthDimension() const
 bool CSplicedNUBeamFactory::SupportsEndBlocks() const
 {
    return true;
+}
+
+void CSplicedNUBeamFactory::DimensionAndPositionBeam(const IBeamFactory::Dimensions& dimensions, Float64 Hg, Float64 Hbf, INUBeam* pBeam) const
+{
+   Float64 d1, d2, d3, d4, d5;
+   Float64 r1, r2, r3, r4;
+   Float64 t;
+   Float64 w1, w2;
+   Float64 c1;
+
+   GetDimensions(dimensions, d1, d2, d3, d4, d5, r1, r2, r3, r4, t, w1, w2, c1);
+   pBeam->put_W1(w1);
+   pBeam->put_W2(w2);
+   pBeam->put_D1(d1);
+   pBeam->put_D2(d2);
+   pBeam->put_D3(d3);
+   pBeam->put_D4(d4);
+   pBeam->put_D5(d5);
+   pBeam->put_T(t);
+   pBeam->put_R1(r1);
+   pBeam->put_R2(r2);
+   pBeam->put_R3(r3);
+   pBeam->put_R4(r4);
+   pBeam->put_C1(c1);
+
+   ::AdjustForVariableDepth(pBeam, Hg, Hbf);
+
+   Float64 H;
+   pBeam->get_Height(&H);
+
+   // Hook point is at bottom center of bounding box.
+   // Adjust hook point so top center of bounding box is at (0,0)
+   CComPtr<IPoint2d> hookPt;
+   pBeam->get_HookPoint(&hookPt);
+   hookPt->Move(0, -H);
 }

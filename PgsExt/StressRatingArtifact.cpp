@@ -139,7 +139,7 @@ void pgsStressRatingArtifact::SetVehicleName(LPCTSTR str)
    m_strVehicleName = str;
 }
 
-std::_tstring pgsStressRatingArtifact::GetVehicleName() const
+const std::_tstring& pgsStressRatingArtifact::GetVehicleName() const
 {
    return m_strVehicleName;
 }

@@ -61,6 +61,7 @@ protected:
    CComPtr<IShape>     m_pShape;
    CComPtr<IShapeProperties> m_ShapeProps;
    const GirderLibraryEntry* m_pGirderEntry;
+   Float64 m_Hg;
    bool                m_IsEnd;
    bool                m_DrawNumbers;
    Float64             m_Radius;

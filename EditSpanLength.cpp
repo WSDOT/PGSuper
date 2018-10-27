@@ -25,6 +25,12 @@
 #include "PGSuperDoc.h"
 #include <IFace\Project.h>
 
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
+
 txnEditSpanLength::txnEditSpanLength(SpanIndexType spanIdx,Float64 oldSpanLength,Float64 newSpanLength)
 {
    m_SpanIdx = spanIdx;

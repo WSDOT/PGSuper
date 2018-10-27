@@ -66,7 +66,7 @@ DEFINE_GUID(IID_IGirderHaunch,
 interface IGirderHaunch : IUnknown
 {
    virtual Float64 GetRequiredSlabOffset(const CSpanKey& spanKey) const = 0;
-   virtual HAUNCHDETAILS GetHaunchDetails(const CSpanKey& spanKey) const = 0;
+   virtual const HAUNCHDETAILS& GetHaunchDetails(const CSpanKey& spanKey) const = 0;
    virtual Float64 GetSectionGirderOrientationEffect(const pgsPointOfInterest& poi) const = 0;
 };
 

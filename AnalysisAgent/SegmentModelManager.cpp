@@ -46,6 +46,12 @@
 #include <iterator>
 #include <algorithm>
 
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
+
 CSegmentModelManager::CSegmentModelManager(SHARED_LOGFILE lf,IBroker* pBroker) :
 LOGFILE(lf),m_pBroker(pBroker)
 {

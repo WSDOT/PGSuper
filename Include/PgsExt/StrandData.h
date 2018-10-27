@@ -27,6 +27,8 @@
 
 #include <PgsExt\DebondData.h>
 
+#include <array>
+
 class matPsStrand;
 class GirderLibraryEntry;
 
@@ -97,11 +99,6 @@ private:
    std::vector<CDirectStrandFillInfo> m_StrandFill;
 };
 
-#define LOCATION_START 0
-#define LOCATION_LEFT_HP 1
-#define LOCATION_RIGHT_HP 2
-#define LOCATION_END 3
-
 class PGSEXTCLASS CStrandRow
 {
 public:
@@ -111,32 +108,34 @@ public:
    bool operator!=(const CStrandRow& other) const;
    bool operator<(const CStrandRow& other) const;
 
-   Float64 m_InnerSpacing; // spacing between strands that are on either side of the CL Beam
-   Float64 m_Spacing; // spacing between all other strands
    pgsTypes::StrandType m_StrandType;
-   StrandIndexType m_nStrands; // total number of strands in the row. If an odd number, the center strand is on the CL of the beam and m_InnerSpacing is ignored
+
+   Float64 m_Z; // location of individual strand in the cross section (sdtDirectStrandInput) or the spacing between strands that are on either side of the CL Beam (sdtDirectRowInput)
+   Float64 m_Spacing; // spacing between all other strands (sdtDirectRowInput only)
+   StrandIndexType m_nStrands; // total number of strands in the row. If an odd number, the center strand is on the CL of the beam and m_Z is ignored (sdtDirectRowInput only)
 
    // use one of the LOCATION_xxx constanst to access these arrays
-
-   // Location of the strand measured from the left end of the girder
-   Float64 m_X[4]; // values that are less than zero are fractional distances of the segment length
-   // if m_StrandType is pgsTypes::Harped and this segment is cantilevered over the start/end abutment
-   // of the bridge, m_X[LOCATION_START] and m_X[LOCATION_END] is the distance from the start/end
-   // of the girder to the point where the strands transition to the harp points at m_X[LOCATION_LEFT_HP]
-   // and m_X[LOCATION_RIGHT_HP]. This effectively creates four harp points
-
    // Location of the strand measured from the top or bottom of the girder
-   Float64 m_Y[4];
-   pgsTypes::FaceType m_Face[4];
+   std::array<Float64,4> m_Y;
+   std::array<pgsTypes::FaceType,4> m_Face;
 
    // Extended strand data
    // use the pgsTypes::MemberEndType constant to access the arrays in this class
-   bool m_bIsExtendedStrand[2];
-   bool m_bIsDebonded[2];
-   Float64 m_DebondLength[2];
+   std::array<bool,2> m_bIsExtendedStrand;
+   std::array<bool,2> m_bIsDebonded;
+   std::array<Float64,2> m_DebondLength;
 
 	HRESULT Save(IStructuredSave* pStrSave,IProgress* pProgress);
    HRESULT Load(IStructuredLoad* pStrLoad,IProgress* pProgress);
+
+private:
+   friend CStrandData;
+   // In version 4 of the StrandRow data block, we removed the harp strand location information
+   // in favor of using a single harp point definition in CStrandData. This eliminates the possiblity
+   // of having many, many harping points. To deal with harp point locations in older files, we
+   // save the definition in this static data member. The old definition is then converted to 
+   // the new definition in CStrandData::Load. Do not use this data member for other purposes
+   static std::array<std::vector<Float64>, 4> ms_oldHarpPoints;
 };
 
 typedef std::vector<CStrandRow> CStrandRowCollection;
@@ -161,7 +160,8 @@ public:
       sdtTotal, // input is total number of permanent strands
       sdtStraightHarped, // input is number of harped and number of straight strands
       sdtDirectSelection, // input is a fill array of strand positions in the girder strand grid
-      sdtDirectInput // input is direct input by user. the strand grid in the girder library is ignored
+      sdtDirectRowInput, // input is direct row input by user. horizontal rows of strands are defined. the strand grid in the girder library is ignored
+      sdtDirectStrandInput // input is direct input of individual strands by the user. the strand grid in the girder library is ignored
    } StrandDefinitionType;
 
 public:
@@ -195,20 +195,30 @@ public:
    void SetDirectStrandFillTemporary(const CDirectStrandFillCollection& rCollection);
    const CDirectStrandFillCollection* GetDirectStrandFillTemporary() const;
 
+   // When strand rows or individual strands are used, we have to define the harp points here
+   void SetHarpPoints(Float64 X0, Float64 X1, Float64 X2, Float64 X3);
+   void GetHarpPoints(Float64* pX0, Float64* pX1, Float64* pX2, Float64* pX3) const;
+
+   // Set/Get strand row data for row or individual strand input
    void AddStrandRow(const CStrandRow& strandRow);
    void AddStrandRows(const CStrandRowCollection& strandRows); // adds this collection to the current collection
    void SetStrandRows(const CStrandRowCollection& strandRows); // replaces the current collection this collection
    const CStrandRowCollection& GetStrandRows() const;
+   const CStrandRow& GetStrandRow(RowIndexType rowIdx) const;
+   // gets the strand row containing the specified strand
+   bool GetStrandRow(pgsTypes::StrandType strandType,StrandIndexType strandIdx, const CStrandRow** ppRow) const;
 
-   // Get number of strands for any fill except CStrandData::sdtDirectInput
+   // Set number of strands for any fill except CStrandData::sdtDirectRowInput or CStrandData::sdtDirectStrandInput
    void SetStrandCount(pgsTypes::StrandType strandType,StrandIndexType nStrands);
+
+   // Returns the number of strands
    StrandIndexType GetStrandCount(pgsTypes::StrandType strandType) const;
 
    // Adjustable strands can be straight or harped depending on girder library and project settings
    pgsTypes::AdjustableStrandType GetAdjustableStrandType() const;
    void SetAdjustableStrandType(pgsTypes::AdjustableStrandType type);
 
-   // Strand extension paramaters (not used if using CStrandData::sdtDirectInput)
+   // Strand extension paramaters (not used if using CStrandData::sdtDirectRowInput)
    void AddExtendedStrand(pgsTypes::StrandType strandType,pgsTypes::MemberEndType endType,GridIndexType gridIdx);
    const std::vector<GridIndexType>& GetExtendedStrands(pgsTypes::StrandType strandType,pgsTypes::MemberEndType endType) const;
    void SetExtendedStrands(pgsTypes::StrandType strandType,pgsTypes::MemberEndType endType,const std::vector<GridIndexType>& extStrands);
@@ -219,6 +229,7 @@ public:
    // Resets all the prestressing input to default values.
    void ResetPrestressData();
    void ClearDirectFillData();
+   void ClearExtendedStrands();
    void ClearExtendedStrands(pgsTypes::StrandType strandType,pgsTypes::MemberEndType endType);
 
    void ClearDebondData();
@@ -278,22 +289,22 @@ protected:
    // When this is the case, values must be divided proportionally to straight and harped strands into 
    // the pgsTypes::Harped and pgsTypes::Straight strand locations because these are the values
    // used internally by the analysis and engineering agents
-   StrandIndexType m_Nstrands[4];
-   Float64 m_Pjack[4];
+   std::array<StrandIndexType,4> m_Nstrands;
+   std::array<Float64,4> m_Pjack;
    HarpedStrandOffsetType m_HsoEndMeasurement; // one of HarpedStrandOffsetType enums
-   Float64 m_HpOffsetAtEnd[2]; // access array with pgsTypes::MemberEndType
+   std::array<Float64,2> m_HpOffsetAtEnd; // access array with pgsTypes::MemberEndType
    HarpedStrandOffsetType m_HsoHpMeasurement;  // one of HarpedStrandOffsetType enums
-   Float64 m_HpOffsetAtHp[2]; // access array with pgsTypes::MemberEndType
+   std::array<Float64,2> m_HpOffsetAtHp; // access array with pgsTypes::MemberEndType
 
    std::vector<CDebondData> m_Debond[3];
    bool m_bSymmetricDebond; // if true, left and right debond are the same (Only use Length1 of CDebondData struct)
 
-   bool m_bPjackCalculated[4]; // true if Pjack was calculated
-   Float64 m_LastUserPjack[4]; // Last Pjack entered by user
+   std::array<bool,4> m_bPjackCalculated; // true if Pjack was calculated
+   std::array<Float64,4> m_LastUserPjack; // Last Pjack entered by user
 
    pgsTypes::TTSUsage m_TempStrandUsage; // One of the tts constants above.
 
-   const matPsStrand* m_StrandMaterial[3]; // pgsTypes::StrandType enum, except not using pgsTypes::Permanent
+   std::array<const matPsStrand*,3> m_StrandMaterial; // pgsTypes::StrandType enum, except not using pgsTypes::Permanent
 
    // Grid index for extended strands. First array index is pgsTypes::StrandType (except don't use permanent)
    // second index is pgsTypes::MemberEndType
@@ -301,13 +312,27 @@ protected:
    bool m_bConvertExtendedStrands;
    friend CProjectAgentImp;
 
+   pgsTypes::AdjustableStrandType m_AdjustableStrandType;
+
    // Strand fill when direct selection (sdtDirectSelection) is used
    CDirectStrandFillCollection m_StraightStrandFill;
    CDirectStrandFillCollection m_HarpedStrandFill;
    CDirectStrandFillCollection m_TemporaryStrandFill;
 
-   pgsTypes::AdjustableStrandType m_AdjustableStrandType;
+   // Strand information when user defined strands (sdtDirectRowInput or sdtDirectStrandInput) is used
 
-   // Strand information when user defined strands (sdtDirectInput) is used
+   // Location of the harp strand deflection point measured from the left end of the girder
+   // if this segment is cantilevered over the start/end abutment of the bridge, 
+   // m_HarpPoint[ZoneBreakType::Start] and m_HarpPoint[ZoneBreakType::End] is the distance from the start/end
+   // of the girder to the point where the strands transition to the harp points at m_HarpPoint[ZoneBreakType::LeftBreak]
+   // and m_HarpPoint[ZoneBreakType::RightBreak]. This effectively creates four harp points
+   //
+   //  ____________                         _____________
+   //              \                       /
+   //               \                     /
+   //                \___________________/
+   //
+   //            X0  X1                 X2  X3
+   std::array<Float64, 4> m_HarpPoint; // use one of the LOCATION_xxx constants for the array index
    CStrandRowCollection m_StrandRows;
 };

@@ -457,7 +457,7 @@ bool CBridgeGeometryModelBuilder::LayoutUniformGirderLines(const CBridgeDescript
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IRoadwayData, pIAlignment);
    bool bAnglePointInAlignment = false;
-   AlignmentData2 alignment_data = pIAlignment->GetAlignmentData2();
+   const AlignmentData2& alignment_data = pIAlignment->GetAlignmentData2();
    for (const auto& hc : alignment_data.HorzCurves)
    {
       if (IsZero(hc.Radius))
@@ -1057,7 +1057,7 @@ Float64 CBridgeGeometryModelBuilder::GetLeftGirderOffset(IAlignment* pAlignment,
    // if the ref girder is measured from the bridge, convert it to being measured from the alignment
    if ( refGirderOffsetType == pgsTypes::omtBridge )
    {
-      refGirderOffset += alignmentOffset;
+      refGirderOffset -= alignmentOffset;
    }
 
    return refGirderOffset;
@@ -1137,20 +1137,12 @@ void CBridgeGeometryModelBuilder::ResolveSegmentSpacing(IBridgeGeometry* pBridge
    CComPtr<IPoint2d> pntOnStartMeasurementLine;
    locate->ByDistDir(startAlignmentPnt,-startRefGirderOffset,CComVariant(pStartMeasureDirection),0.0,&pntOnStartMeasurementLine);
 
-   //CComPtr<IDirection> normalToStartMeasurementLine;
-   //pStartMeasureDirection->Clone(&normalToStartMeasurementLine);
-   //normalToStartMeasurementLine->IncrementBy(CComVariant(-PI_OVER_2));
-
 
    CComPtr<IPoint2d> endAlignmentPnt;
    alignment->LocatePoint(CComVariant(endMeasureStation),omtNormal,0.0,CComVariant(0),&endAlignmentPnt);
 
    CComPtr<IPoint2d> pntOnEndMeasurementLine;
    locate->ByDistDir(endAlignmentPnt,-endRefGirderOffset,CComVariant(pEndMeasureDirection),0.0,&pntOnEndMeasurementLine);
-
-   //CComPtr<IDirection> normalToEndMeasurementLine;
-   //pEndMeasureDirection->Clone(&normalToEndMeasurementLine);
-   //normalToEndMeasurementLine->IncrementBy(CComVariant(-PI_OVER_2));
 
    CComPtr<IMeasure2> measure;
    cogoEngine->get_Measure(&measure);
@@ -1193,8 +1185,8 @@ void CBridgeGeometryModelBuilder::ResolveSegmentSpacing(IBridgeGeometry* pBridge
       if ( ::IsJointSpacing(spacingType) )
       {
          // spacing is a joint spacing
-         // need to add half of the left girder right width and the right girder left width on each side of the joint
-         // can't assume layout is based on width/2 because of asymmetric girders)
+         // need to add the left girder right width and the right girder left width on each side of the joint
+         // (can't assume layout is based on width/2 because of asymmetric girders)
          GirderIndexType leftGdrIdx  = spaceIdx;
          GirderIndexType rightGdrIdx = leftGdrIdx + 1;
 

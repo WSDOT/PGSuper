@@ -36,7 +36,7 @@
 #include "LibraryEntryConflict.h"
 
 #include <WBFLGeometry_i.c>
-#include <WBFLCore_i.c>
+#include <WBFLTools_i.c>
 #include <Plugins\Beams.h>
 
 #include <IFace\BeamFamily.h>

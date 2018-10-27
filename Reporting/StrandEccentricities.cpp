@@ -125,7 +125,7 @@ void CStrandEccentricities::Build(rptChapter* pChapter,IBroker* pBroker,const CS
             }
             *p << _T("Eccentricities measured from neutral axis of non-composite section based on material properties at time of prestress release") << rptNewLine;
 
-            if (pBridge->HasAsymmetricGirders())
+            if (pBridge->HasAsymmetricGirders() || pBridge->HasAsymmetricPrestressing())
             {
                *p << _T("Positive ") << Sub2(_T("e"), _T("x")) << _T(" values indicate strands are to the left of the centroid") << rptNewLine;
             }

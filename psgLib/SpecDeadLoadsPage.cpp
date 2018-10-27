@@ -29,6 +29,13 @@
 #include "SpecMainSheet.h"
 #include <EAF\EAFDocument.h>
 
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
+
+
 // CSpecDeadLoadsPage dialog
 
 IMPLEMENT_DYNAMIC(CSpecDeadLoadsPage, CPropertyPage)
@@ -57,7 +64,6 @@ void CSpecDeadLoadsPage::DoDataExchange(CDataExchange* pDX)
 
 BEGIN_MESSAGE_MAP(CSpecDeadLoadsPage, CPropertyPage)
    ON_BN_CLICKED(ID_HELP,OnHelp)
-   ON_CBN_SELCHANGE(IDC_HAUNCH_COMP_CB, &CSpecDeadLoadsPage::OnCbnSelchangeHaunchCompCb)
 END_MESSAGE_MAP()
 
 
@@ -81,8 +87,6 @@ BOOL CSpecDeadLoadsPage::OnInitDialog()
 
    m_TrafficSpin.SetRange(0,100);
 
-   OnCbnSelchangeHaunchCompCb();
-
    return TRUE;  // return TRUE unless you set the focus to a control
    // EXCEPTION: OCX Property Pages should return FALSE
 }
@@ -92,17 +96,3 @@ void CSpecDeadLoadsPage::OnHelp()
    EAFHelp( EAFGetDocument()->GetDocumentationSetName(), IDH_PROJECT_CRITERIA_DEAD_LOADS );
 }
 
-void CSpecDeadLoadsPage::OnCbnSelchangeHaunchCompCb()
-{
-   CComboBox* pBox =(CComboBox*)GetDlgItem(IDC_HAUNCH_COMP_CB);
-   int idx = pBox->GetCurSel();
-   BOOL enable = idx==(int)pgsTypes::hlcAccountForCamber;
-
-   GetDlgItem(IDC_HAUNCH_TOLER_STATIC)->EnableWindow(enable);
-   GetDlgItem(IDC_HAUNCH_TOLER_UNIT)->EnableWindow(enable);
-   GetDlgItem(IDC_HAUNCH_TOLER)->EnableWindow(enable);
-
-   GetDlgItem(IDC_HAUNCH_FACTOR)->EnableWindow(enable);
-   GetDlgItem(IDC_HAUNCH_FACTOR1)->EnableWindow(enable);
-   GetDlgItem(IDC_HAUNCH_FACTOR2)->EnableWindow(enable);
-}

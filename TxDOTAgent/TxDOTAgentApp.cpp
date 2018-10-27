@@ -30,6 +30,13 @@
 
 #include <MFCTools\VersionInfo.h>
 
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
+
+
 
 BEGIN_MESSAGE_MAP(CTxDOTAgentApp, CWinApp)
    ON_BN_CLICKED(ID_HELP,OnHelp)
