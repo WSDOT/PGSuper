@@ -96,11 +96,11 @@ rptChapter* CBasicCamberChapterBuilder::Build(CReportSpecification* pRptSpec,Uin
       case pgsTypes::sdtCompositeCIP:
       case pgsTypes::sdtCompositeOverlay:
       case pgsTypes::sdtCompositeSIP:
-      case pgsTypes::sdtNonstructuralOverlay:
          Build_Deck(pChapter,pRptSpec,pBroker,segmentKey,bTempStrands,pDisplayUnits,level);
          break;
 
       case pgsTypes::sdtNone:
+      case pgsTypes::sdtNonstructuralOverlay:
          Build_NoDeck(pChapter,pRptSpec,pBroker,segmentKey,bTempStrands,pDisplayUnits,level);
          break;
 
@@ -377,7 +377,7 @@ void CBasicCamberChapterBuilder::Build_NoDeck(rptChapter* pChapter,CReportSpecif
    
    Float64 precamber = pCamber->GetPrecamber(segmentKey);
 
-   for ( Int16 i = CREEP_MINTIME; i <= CREEP_MAXTIME; i++ )
+   for (Int16 i = CREEP_MINTIME; i <= CREEP_MAXTIME; i++)
    {
       pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
       *pChapter << pPara;
@@ -388,16 +388,16 @@ void CBasicCamberChapterBuilder::Build_NoDeck(rptChapter* pChapter,CReportSpecif
       *pChapter << pPara;
 
       CREEPCOEFFICIENTDETAILS details[6];
-      details[0] = pCamber->GetCreepCoefficientDetails(segmentKey,ICamber::cpReleaseToDiaphragm,i);
-      details[1] = pCamber->GetCreepCoefficientDetails(segmentKey,ICamber::cpReleaseToDeck,     i);
-      details[2] = pCamber->GetCreepCoefficientDetails(segmentKey,ICamber::cpReleaseToFinal,    i);
-      details[3] = pCamber->GetCreepCoefficientDetails(segmentKey,ICamber::cpDiaphragmToDeck,   i);
-      details[4] = pCamber->GetCreepCoefficientDetails(segmentKey,ICamber::cpDiaphragmToFinal,  i);
-      details[5] = pCamber->GetCreepCoefficientDetails(segmentKey,ICamber::cpDeckToFinal,       i);
+      details[0] = pCamber->GetCreepCoefficientDetails(segmentKey, ICamber::cpReleaseToDiaphragm, i);
+      details[1] = pCamber->GetCreepCoefficientDetails(segmentKey, ICamber::cpReleaseToDeck, i);
+      details[2] = pCamber->GetCreepCoefficientDetails(segmentKey, ICamber::cpReleaseToFinal, i);
+      details[3] = pCamber->GetCreepCoefficientDetails(segmentKey, ICamber::cpDiaphragmToDeck, i);
+      details[4] = pCamber->GetCreepCoefficientDetails(segmentKey, ICamber::cpDiaphragmToFinal, i);
+      details[5] = pCamber->GetCreepCoefficientDetails(segmentKey, ICamber::cpDeckToFinal, i);
 
       CCamberTable tbl;
       rptRcTable* pTable1, *pTable2, *pTable3;
-      tbl.Build_NoDeck(pBroker,segmentKey,bTempStrands,bSidewalk,bShearKey,bConstruction,bOverlay,pDisplayUnits,i,cm,&pTable1,&pTable2,&pTable3);
+      tbl.Build_NoDeck(pBroker, segmentKey, bTempStrands, bSidewalk, bShearKey, bConstruction, bOverlay, pDisplayUnits, i, cm, &pTable1, &pTable2, &pTable3);
       *pPara << pTable1 << rptNewLine;
 
       // footnotes to release and storage tables
@@ -429,8 +429,8 @@ void CBasicCamberChapterBuilder::Build_NoDeck(rptChapter* pChapter,CReportSpecif
       *pPara << DEFL(_T("creep1")) << _T(" = ") << YCR(details[0]) << _T("[(") << DEFL(_T("girder Storage")) << _T(" + ") << DEFL(_T("ps Storage")) << _T(") - (") << DEFL(_T("girder Storage")) << _T(" + ") << DEFL(_T("ps Storage")) << _T(" at location of erected segment supports)]") << rptNewLine;
 
       *pPara << DEFL(_T("creep2")) << _T(" = ") << _T("[") << YCR(details[1]);
-      *pPara << _T(" - ") << YCR(details[0]) << _T("]") << _T("[(") << DEFL(_T("girder Storage")) << _T(" + ") << DEFL(_T("ps Storage"))  << _T(") - (") << DEFL(_T("girder Storage")) << _T(" + ") << DEFL(_T("ps Storage")) << _T(" at location of erected segment supports)]");
-      *pPara << _T(" + ") << YCR(details[3]) << _T("(") << Sub2(symbol(delta),_T("girder")) << _T(" + ") << DEFL(_T("diaphragm"))  << _T(" + ") << DEFL(_T("user1"));
+      *pPara << _T(" - ") << YCR(details[0]) << _T("]") << _T("[(") << DEFL(_T("girder Storage")) << _T(" + ") << DEFL(_T("ps Storage")) << _T(") - (") << DEFL(_T("girder Storage")) << _T(" + ") << DEFL(_T("ps Storage")) << _T(" at location of erected segment supports)]");
+      *pPara << _T(" + ") << YCR(details[3]) << _T("(") << Sub2(symbol(delta), _T("girder")) << _T(" + ") << DEFL(_T("diaphragm")) << _T(" + ") << DEFL(_T("user1"));
       if (bConstruction)
       {
          *pPara << _T(" + ") << DEFL(_T("construction"));
@@ -451,7 +451,7 @@ void CBasicCamberChapterBuilder::Build_NoDeck(rptChapter* pChapter,CReportSpecif
       *pPara << DEFL(_T("creep3")) << _T(" = ") << _T("[") << YCR(details[2]);
       *pPara << _T(" - ") << YCR(details[1]) << _T("]") << _T("[(") << DEFL(_T("girder Storage")) << _T(" + ") << DEFL(_T("ps Storage")) << _T(") - (") << DEFL(_T("girder Storage")) << _T(" + ") << DEFL(_T("ps Storage")) << _T(" at location of erected segment supports)]");
       *pPara << _T(" + [") << YCR(details[4]);
-      *pPara << _T(" - ") << YCR(details[3]) << _T("](") << Sub2(symbol(delta),_T("girder")) << _T(" + ") << DEFL(_T("diaphragm"))  << _T(" + ") << DEFL(_T("user1"));
+      *pPara << _T(" - ") << YCR(details[3]) << _T("](") << Sub2(symbol(delta), _T("girder")) << _T(" + ") << DEFL(_T("diaphragm")) << _T(" + ") << DEFL(_T("user1"));
       if (bConstruction)
       {
          *pPara << _T(" + ") << DEFL(_T("construction"));
@@ -466,8 +466,22 @@ void CBasicCamberChapterBuilder::Build_NoDeck(rptChapter* pChapter,CReportSpecif
       {
          *pPara << _T(" + ") << DEFL(_T("shear key"));
       }
-      *pPara << _T(") + ") << YCR(details[5]) << _T("(") << DEFL(_T("barrier")) << _T(" + ") << DEFL(_T("sidewalk")) << _T(" + ") << DEFL(_T("overlay"))<< _T(" + ") << DEFL(_T("user2")) << _T(")") << rptNewLine;
-      *pPara << Sub2(symbol(delta),_T("girder")) << _T(" = girder deflection associated with change in dead load moment due to support location change between storage and erection") << rptNewLine;
+      *pPara << _T(") + ") << YCR(details[5]) << _T("(") << DEFL(_T("barrier"));
+      if (deckType == pgsTypes::sdtNonstructuralOverlay)
+      {
+         *pPara << _T(" + ") << DEFL(_T("slab")) << _T(" + ") << DEFL(_T("haunch"));
+      }
+      if (bSidewalk)
+      {
+         *pPara << _T(" + ") << DEFL(_T("sidewalk"));
+      }
+      if (bOverlay)
+      {
+         *pPara << _T(" + ") << DEFL(_T("overlay"));
+      }
+      *pPara << _T(" + ") << DEFL(_T("user2")) << _T(")") << rptNewLine;
+
+      *pPara << Sub2(symbol(delta), _T("girder")) << _T(" = girder deflection associated with change in dead load moment due to support location change between storage and erection") << rptNewLine;
 
       pPara = new rptParagraph;
       *pChapter << pPara;
@@ -486,22 +500,22 @@ void CBasicCamberChapterBuilder::Build_NoDeck(rptChapter* pChapter,CReportSpecif
       *pPara << DEFL(_T("2")) << _T(" = ") << DEFL(_T("1")) << _T(" + ") << SCL(cm.CreepFactor) << _T(" * ") << DEFL(_T("creep1")) << rptNewLine;
 
       *pPara << DEFL(_T("3")) << _T(" = ") << DEFL(_T("2")) << _T(" + ") << SCL(cm.DiaphragmFactor) << _T(" * (") << DEFL(_T("diaphragm"));
-       if (bConstruction)
-       {
-          *pPara << _T(" + ") << DEFL(_T("construction"));
-       }
+      if (bConstruction)
+      {
+         *pPara << _T(" + ") << DEFL(_T("construction"));
+      }
 
-       if (bShearKey)
-       {
-          *pPara << _T(" + ") << DEFL(_T("shear key"));
-       }
+      if (bShearKey)
+      {
+         *pPara << _T(" + ") << DEFL(_T("shear key"));
+      }
 
       *pPara << _T(")") << _T(" + ") << SCL(cm.SlabUser1Factor) << _T(" * ") << DEFL(_T("user1"));
 
-       if (bTempStrands)
-       {
-          *pPara << _T(" + ") << SCL(cm.ErectionFactor) << _T(" * ") << DEFL(_T("tpsr"));
-       }      
+      if (bTempStrands)
+      {
+         *pPara << _T(" + ") << SCL(cm.ErectionFactor) << _T(" * ") << DEFL(_T("tpsr"));
+      }
 
       *pPara << rptNewLine;
 
@@ -509,6 +523,11 @@ void CBasicCamberChapterBuilder::Build_NoDeck(rptChapter* pChapter,CReportSpecif
 
       *pPara << DEFL(_T("5")) << _T(" = ") << DEFL(_T("4"));
       *pPara << _T(" + ") << SCL(cm.BarrierSwOverlayUser2Factor) << _T(" * (") << DEFL(_T("barrier"));
+
+      if (deckType == pgsTypes::sdtNonstructuralOverlay)
+      {
+         *pPara << _T(" + ") << DEFL(_T("slab")) << _T(" + ") << DEFL(_T("haunch"));
+      }
 
       if ( bSidewalk )
       {

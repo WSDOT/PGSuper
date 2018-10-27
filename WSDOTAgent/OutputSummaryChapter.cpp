@@ -424,6 +424,7 @@ void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker,const CSegmentK
 
    Float64 min_days = ::ConvertFromSysUnits(pSpecEntry->GetCreepDuration2Min(), unitMeasure::Day);
    Float64 max_days = ::ConvertFromSysUnits(pSpecEntry->GetCreepDuration2Max(), unitMeasure::Day);
+   Float64 tFinal_days = ::ConvertFromSysUnits(pSpecEntry->GetTotalCreepDuration(), unitMeasure::Day);
 
    GET_IFACE2(pBroker,IBridge,pBridge);
    pgsTypes::SupportedDeckType deckType = pBridge->GetDeckType();
@@ -515,31 +516,44 @@ void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker,const CSegmentK
    if ( IsNonstructuralDeck(deckType) )
    {
       (*pTable)(row,0) << _T("Initial Camber, ") << Sub2(_T("C"),_T("i"));
-      (*pTable)(row,1) << camber.SetValue( pCamber->GetCreepDeflection(poi,ICamber::cpReleaseToDiaphragm,CREEP_MAXTIME,pgsTypes::pddErected) );
+      (*pTable)(row,1) << camber.SetValue( pCamber->GetInitialCamber(poi) );
       row++;
 
-      (*pTable)(row,0) << _T("Concrete Topping, Barrier, and Overlay ") << Sub2(_T("C"),_T("topping"));
-      (*pTable)(row,1) << camber.SetValue( pCamber->GetSlabBarrierOverlayDeflection(poi) );
+      (*pTable)(row, 0) << _T("Deflection due to Concrete Topping, Barrier, and Overlay, ") << Sub2(_T("C"), _T("SIDL"));
+      (*pTable)(row, 1) << camber.SetValue(pCamber->GetSlabBarrierOverlayDeflection(poi));
+      row++;
+
+      Float64 C = pCamber->GetExcessCamber(poi, CREEP_MAXTIME);
+      (*pTable)(row, 0) << _T("Camber at ") << tFinal_days << _T(" days, ") << Sub2(_T("C"), _T("F"));
+      if (C < 0)
+      {
+         (*pTable)(row, 1) << color(Red) << camber.SetValue(C) << color(Black);
+      }
+      else
+      {
+         (*pTable)(row, 1) << camber.SetValue(C);
+      }
       row++;
    }
    else
    {
       (*pTable)(row,0) << _T("Screed Camber, C");
-      (*pTable)(row,1) << camber.SetValue( pCamber->GetScreedCamber(poi) );
+      (*pTable)(row,1) << camber.SetValue( pCamber->GetScreedCamber(poi,CREEP_MAXTIME) );
+      row++;
+
+      (*pTable)(row, 0) << _T("Excess Camber") << rptNewLine << _T("(based on D at ") << max_days << _T(" days)");
+      Float64 excess_camber = pCamber->GetExcessCamber(poi, CREEP_MAXTIME);
+      if (excess_camber < 0)
+      {
+         (*pTable)(row, 1) << color(Red) << camber.SetValue(excess_camber) << color(Black);
+      }
+      else
+      {
+         (*pTable)(row, 1) << camber.SetValue(excess_camber);
+      }
       row++;
    }
 
-   (*pTable)(row,0) << _T("Excess Camber") << rptNewLine << _T("(based on D at ") << max_days << _T(" days)");
-   Float64 excess_camber = pCamber->GetExcessCamber(poi,CREEP_MAXTIME);
-   if ( excess_camber < 0 )
-   {
-      (*pTable)(row,1) << color(Red) << camber.SetValue( excess_camber ) << color(Black);
-   }
-   else
-   {
-      (*pTable)(row,1) << camber.SetValue( excess_camber );
-   }
-   row++;
 
    (*pTable)(row,0) << _T("Live Load Deflection (HL93 - Per Lane)");
    (*pTable)(row,1) << camber.SetValue( delta_ll );

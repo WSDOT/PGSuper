@@ -52,6 +52,7 @@ bool DoesFileExist(const CString& filename)
    }
 }
 
+void raised_strand_research(IBroker* pBroker,const std::vector<CGirderKey>& girderKeys);
 
 // CTxDOTCadExporter
 
@@ -213,6 +214,10 @@ STDMETHODIMP CTxDOTCadExporter::Export(IBroker* pBroker)
 		   /* Close the open text file */
 		   fclose (fp);
 
+         pProgress->UpdateMessage(_T("Writing Top Strand Research Data"));
+         raised_strand_research(pBroker, girderKeys);
+
+
       } // autoprogress scope
       catch(...)
       {
@@ -228,4 +233,133 @@ STDMETHODIMP CTxDOTCadExporter::Export(IBroker* pBroker)
 
 	}
    return S_OK;
+}
+
+#include <IFace\Project.h>
+#include <PgsExt\BridgeDescription2.h>
+#include <IFace\Artifact.h>
+#include <PgsExt\GirderArtifact.h>
+
+void raised_strand_research(IBroker* pBroker, const std::vector<CGirderKey>& girderKeys)
+{
+   GET_IFACE2(pBroker, IStrandGeometry, pStrandGeometry);
+   GET_IFACE2(pBroker, IPointOfInterest, pIPOI);
+   GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
+
+   dbgLogDumpContext m_Log;
+   ILogFile* __pLogFile__;
+   DWORD __dwCookie__;
+   HRESULT _xxHRxx_ = ::CoCreateInstance(CLSID_SysAgent, 0, CLSCTX_INPROC_SERVER, IID_ILogFile, (void**)&__pLogFile__);
+   ATLASSERT(SUCCEEDED(_xxHRxx_));
+   __pLogFile__->Open(_T("RaisedStrandResearch.log"), &__dwCookie__);
+   m_Log.SetLog(__pLogFile__, __dwCookie__);
+   __pLogFile__->Release();
+   __pLogFile__ = 0;
+
+   m_Log << _T("Span,Gdr,GdrType,Lspan,GdrDepth,DesignType,NS,NH,NDB,f'ci,f'c,Spec") << endl;
+
+
+   // Since girder types, design info, etc can be different for each girder, process information for all
+   // artifacts to get control data
+
+   // Titles are now printed. Print results information
+   ColumnIndexType idx = 0;
+   ColumnIndexType col = 1;
+   for (const auto& girderKey : girderKeys)
+   {
+      SegmentIndexType segIdx = 0;
+
+      m_Log << LABEL_GROUP(girderKey.groupIndex) << _T(",") << girderKey.girderIndex+1;
+
+      CSegmentKey segmentKey(girderKey, 0);
+
+      const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+      const CGirderGroupData*    pGroup = pBridgeDesc->GetGirderGroup(segmentKey.groupIndex);
+      const GirderLibraryEntry*  pGirderEntry = pGroup->GetGirder(segmentKey.girderIndex)->GetGirderLibraryEntry();
+      const CSplicedGirderData*  pGdr = pGroup->GetGirder(girderKey.girderIndex);
+      const CPrecastSegmentData* pSegment = pGdr->GetSegment(0);
+      const CStrandData& strands = pSegment->Strands;
+
+      m_Log << _T(",") << pGirderEntry->GetName();
+
+      GET_IFACE2(pBroker, IBridge, pBridge);
+      Float64 span_length = pBridge->GetSpanLength(segmentKey.groupIndex);
+
+      span_length = ConvertFromSysUnits(span_length, unitMeasure::Feet);
+      m_Log << _T(",") << span_length;
+
+      Float64 gdr_hght = pGirderEntry->GetBeamHeight(pgsTypes::metEnd);
+      gdr_hght = ConvertFromSysUnits(gdr_hght, unitMeasure::Inch);
+      m_Log << _T(",") << gdr_hght;
+
+      GET_IFACE2(pBroker, IArtifact, pIArtifact);
+      const pgsGirderArtifact* pGirderArtifact = pIArtifact->GetGirderArtifact(girderKey);
+
+      bool passed = pGirderArtifact->Passed();
+
+      // Design type
+      pgsTypes::AdjustableStrandType adjType = strands.GetAdjustableStrandType();
+      StrandIndexType ns = strands.GetStrandCount(pgsTypes::Straight);
+      StrandIndexType nh = strands.GetStrandCount(pgsTypes::Harped);
+      StrandIndexType ndb = strands.GetDebondCount(pgsTypes::Straight, pgsTypes::metEnd, pGirderEntry);
+      CStrandData::StrandDefinitionType sdt = strands.GetStrandDefinitionType();
+      if (!passed || ns + nh == 0)
+      {
+         m_Log << _T(",") << 0;// _T("noStrands");
+      }
+      else if (CStrandData::sdtTotal == sdt || CStrandData::sdtStraightHarped == sdt)
+      {
+         if (nh > 0 && pgsTypes::asHarped == adjType)
+         {
+            m_Log << _T(",") << 1;// _T("harped");
+         }
+         else if (ndb > 0)
+         {
+            m_Log << _T(",") << 2;// _T("debond");
+         }
+         else
+         {
+            m_Log << _T(",") << 3;// _T("straight");
+         }
+      }
+      else
+      {
+         // direct filled patterns use raised straight strands
+         if (nh > 0 && pgsTypes::asHarped == adjType)
+         {
+            m_Log << _T(",") << 4;// _T("harpedRaised");
+         }
+         else if (ndb > 0)
+         {
+            m_Log << _T(",") << 5;// _T("debondRaised");
+         }
+         else
+         {
+            m_Log << _T(",") << 6;// _T("straightRaised");
+         }
+      }
+
+      m_Log << _T(",") << ns;
+      m_Log << _T(",") << nh;
+      m_Log << _T(",") << ndb;
+
+      Float64 fci = pSegment->Material.Concrete.Fci;
+      fci = ::ConvertFromSysUnits(fci, unitMeasure::KSI);
+      m_Log << _T(",") << fci;
+
+      Float64 fc = pSegment->Material.Concrete.Fc;
+      fc = ::ConvertFromSysUnits(fc, unitMeasure::KSI);
+      m_Log << _T(",") << fc;
+
+      if (passed)
+      {
+         m_Log << _T(", Passed");
+      }
+      else
+      {
+         m_Log << _T(", Failed");
+      }
+
+      m_Log << endl;
+   }
 }

@@ -2232,7 +2232,9 @@ void CLoadingDetailsChapterBuilder::ReportEquivPretensionLoads(rptChapter* pChap
 
                   if (bHasAsymmetricGirders)
                   {
-                     *pPara << Sub2(_T("M"),_T("y")) << _T(" = (") << force.SetValue(equivLoad.P) << _T(")(") << ecc.SetValue(equivLoad.ex) << _T(") = ") << moment.SetValue(equivLoad.My) << _T(" at ") << loc.SetValue(equivLoad.Xs) << rptNewLine;
+                     *pPara << Sub2(_T("M"), _T("y")) << _T(" = (") << force.SetValue(equivLoad.P) << _T(")[") << ecc.SetValue(equivLoad.ex) << _T(" + (2/3)(");
+                     *pPara << ecc.SetValue(equivLoad.Xlm) << _T(" - ");
+                     *pPara << ecc.SetValue(equivLoad.Xle) << _T(")] = ") << moment.SetValue(equivLoad.My) << _T(" at ") << loc.SetValue(equivLoad.Xs) << rptNewLine;
                   }
 
                   if (!IsZero(equivLoad.wy))
@@ -2341,7 +2343,9 @@ void CLoadingDetailsChapterBuilder::ReportEquivPretensionLoads(rptChapter* pChap
 
                      if (bHasAsymmetricGirders)
                      {
-                        *pPara << Sub2(_T("M"), _T("y")) << _T(" = (") << force.SetValue(equivLoad.P) << _T(")(") << ecc.SetValue(equivLoad.ex) << _T(") = ") << moment.SetValue(equivLoad.My) << _T(" at ") << loc.SetValue(equivLoad.Xs) << rptNewLine;
+                        *pPara << Sub2(_T("M"), _T("y")) << _T(" = (") << force.SetValue(equivLoad.P) << _T(")[") << ecc.SetValue(equivLoad.ex) << _T(" + (2/3)(");
+                        *pPara << ecc.SetValue(equivLoad.Xlm) << _T(" - ");
+                        *pPara << ecc.SetValue(equivLoad.Xle) << _T(")] = ") << moment.SetValue(equivLoad.My) << _T(" at ") << loc.SetValue(equivLoad.Xs) << rptNewLine;
                      }
                   }
                }
@@ -2401,7 +2405,9 @@ void CLoadingDetailsChapterBuilder::ReportEquivPretensionLoads(rptChapter* pChap
 
                      if (bHasAsymmetricGirders)
                      {
-                        *pPara << Sub2(_T("M"), _T("y")) << _T(" = (") << force.SetValue(equivLoad.P) << _T(")(") << ecc.SetValue(equivLoad.ex) << _T(") = ") << moment.SetValue(equivLoad.My) << _T(" at ") << loc.SetValue(equivLoad.Xs) << rptNewLine;
+                        *pPara << Sub2(_T("M"), _T("y")) << _T(" = (") << force.SetValue(equivLoad.P) << _T(")[") << ecc.SetValue(equivLoad.ex) << _T(" + (2/3)(");
+                        *pPara << ecc.SetValue(equivLoad.Xlm) << _T(" - ");
+                        *pPara << ecc.SetValue(equivLoad.Xle) << _T(")] = ") << moment.SetValue(equivLoad.My) << _T(" at ") << loc.SetValue(equivLoad.Xs) << rptNewLine;
                      }
 
                      if (!IsZero(equivLoad.wy))

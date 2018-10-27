@@ -633,8 +633,11 @@ void CBridgeSectionView::UpdateGirderTooltips()
       if (pBridge->GetDeckType() != pgsTypes::sdtNone)
       {
          // Slab Offset
-         Float64 startOffset, endOffset;
-         pBridge->GetSlabOffset(segmentKey, &startOffset, &endOffset);
+         PierIndexType startPierIdx, endPierIdx;
+         pBridge->GetGirderGroupPiers(segmentKey.groupIndex, &startPierIdx, &endPierIdx);
+
+         Float64 startOffset = pBridge->GetSlabOffset(segmentKey.groupIndex, startPierIdx, segmentKey.girderIndex);
+         Float64 endOffset = pBridge->GetSlabOffset(segmentKey.groupIndex, endPierIdx, segmentKey.girderIndex);
 
          CSpanKey spanKey;
          Float64 Xspan;

@@ -499,6 +499,12 @@
     <ClCompile Include="PrestressRotationTable.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="TemporarySupportElevationsChapterBuilder.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TemporarySupportElevationDetailsChapterBuilder.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Include\Reporting\ACI209CreepCoefficientChapterBuilder.h">
@@ -1009,6 +1015,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\Include\Reporting\PrestressRotationTable.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Reporting\TemporarySupportElevationsChapterBuilder.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Reporting\TemporarySupportElevationDetailsChapterBuilder.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

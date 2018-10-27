@@ -104,10 +104,12 @@ public:
 
    Float64 GetFlexureModRupture(Float64 fc,pgsTypes::ConcreteType type) const;
    Float64 GetFlexureFrCoefficient(pgsTypes::ConcreteType type) const;
-   Float64 GetFlexureFrCoefficient(const CSegmentKey& segmentKey) const;
+   Float64 GetSegmentFlexureFrCoefficient(const CSegmentKey& segmentKey) const;
+   Float64 GetClosureJointFlexureFrCoefficient(const CClosureKey& closureKey) const;
    Float64 GetShearModRupture(Float64 fc,pgsTypes::ConcreteType type) const;
    Float64 GetShearFrCoefficient(pgsTypes::ConcreteType type) const;
-   Float64 GetShearFrCoefficient(const CSegmentKey& segmentKey) const;
+   Float64 GetSegmentShearFrCoefficient(const CSegmentKey& segmentKey) const;
+   Float64 GetClosureJointShearFrCoefficient(const CClosureKey& closureKey) const;
    Float64 GetEconc(Float64 fc,Float64 density,Float64 K1,Float64 K2) const;
 
    // Time-dependent concrete properties

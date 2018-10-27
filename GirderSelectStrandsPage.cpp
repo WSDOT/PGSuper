@@ -438,7 +438,7 @@ void CGirderSelectStrandsPage::OnPaint()
    gdrSection->get_TopWidth(&top_width);
 
    Float64 height;
-   gdrSection->get_GirderHeight(&height);
+   gdrSection->get_OverallHeight(&height);
 
    CComPtr<IRect2d> shape_box;
    shape->get_BoundingBox(&shape_box);

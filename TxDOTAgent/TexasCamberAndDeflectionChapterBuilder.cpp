@@ -465,9 +465,9 @@ void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker, const std::vec
          (*pTable)(row, 0) << _T("Screed Camber, C") << Super(_T("**"));
 
       if (isSingleGirder)
-         (*pTable)(row,1) << disp.SetValue( pCamber->GetScreedCamber(poi) );
+         (*pTable)(row,1) << disp.SetValue( pCamber->GetScreedCamber(poi,CREEP_MAXTIME) );
 
-      (*pTable)(row,col) << dispft.SetValue( pCamber->GetScreedCamber(poi) );
+      (*pTable)(row,col) << dispft.SetValue( pCamber->GetScreedCamber(poi,CREEP_MAXTIME) );
       row++;
 
       if (bFirst)

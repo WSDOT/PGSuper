@@ -24,7 +24,6 @@ Bottom Flange Depth | If checked, the bottom flange depth is also variable. Ente
 End Block Length | Length of the full end block excluding the transition
 End Block Transition Length | Length of the transition from the end of the full end block to the normal cross section
 End Block Width | Width of the end block
-Precamber | Precamber built into the segment during fabrication
 
 See @ref ug_girder_modeling_defining_a_girder in the @ref user_guide for more details about defining variations in the segment depth.
 

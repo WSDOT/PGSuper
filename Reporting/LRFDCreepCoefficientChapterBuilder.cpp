@@ -84,7 +84,6 @@ rptChapter* CLRFDCreepCoefficientChapterBuilder::Build(CReportSpecification* pRp
       {
       case pgsTypes::sdtCompositeCIP:
       case pgsTypes::sdtCompositeOverlay:
-      case pgsTypes::sdtNonstructuralOverlay:
          pPara = (bTempStrands ? Build_CIP_TempStrands(pRptSpec, pBroker, segmentKey, pDisplayUnits,level) : Build_CIP(pRptSpec, pBroker, segmentKey, pDisplayUnits,level));
          break;
 
@@ -93,6 +92,7 @@ rptChapter* CLRFDCreepCoefficientChapterBuilder::Build(CReportSpecification* pRp
          break;
 
       case pgsTypes::sdtNone:
+      case pgsTypes::sdtNonstructuralOverlay:
          pPara = (bTempStrands ? Build_NoDeck_TempStrands(pRptSpec, pBroker, segmentKey, pDisplayUnits,level) : Build_NoDeck(pRptSpec, pBroker, segmentKey, pDisplayUnits,level));
          break;
 

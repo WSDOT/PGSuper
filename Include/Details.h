@@ -1032,4 +1032,38 @@ struct CRACKEDSECTIONDETAILS
    CComPtr<ICrackedSectionSolution> CrackedSectionSolution;
 };
 
+struct TEMPORARYSUPPORTELEVATIONDETAILS
+{
+   GirderIndexType girderIdx;
+   SegmentIndexType segmentIdx;
+   pgsTypes::MemberEndType endType;
+
+   bool bContinuous; // if true, segments are continuous over this temporary support and endType is not applicable
+
+   Float64 Station;
+   Float64 Offset;
+   Float64 FinishedGradeElevation;
+   Float64 OverlayDepth;
+   Float64 ProfileGrade;
+   Float64 GirderGrade;
+   Float64 GirderOrientation;
+   Float64 HaunchDepth;
+   Float64 Hg;
+   Float64 Elevation; // elevation at bottom of girder
+
+   bool operator<(const TEMPORARYSUPPORTELEVATIONDETAILS& other) const
+   {
+      if (girderIdx < other.girderIdx) return true;
+      if (other.girderIdx < girderIdx) return false;
+
+      if (segmentIdx < other.segmentIdx) return true;
+      if (other.segmentIdx < segmentIdx) return false;
+
+      if (endType < other.endType) return true;
+      if (other.endType < endType) return false;
+
+      return false;
+   }
+};
+
 #endif // INCLUDE_DETAILS_H_

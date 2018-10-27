@@ -856,6 +856,21 @@ std::vector<pgsTypes::SegmentVariationType> CSplicedGirderData::GetSupportedSegm
    return variations;
 }
 
+std::vector<const CPrecastSegmentData*> CSplicedGirderData::GetSegmentsForSpan(SpanIndexType spanIdx) const
+{
+   std::vector<const CPrecastSegmentData*> vSegments;
+   for (const auto pSegment : m_Segments)
+   {
+      SpanIndexType startSpanIdx = pSegment->GetSpanIndex(pgsTypes::metStart);
+      SpanIndexType endSpanIdx   = pSegment->GetSpanIndex(pgsTypes::metEnd);
+      if (startSpanIdx == spanIdx || endSpanIdx == spanIdx)
+      {
+         vSegments.push_back(pSegment);
+      }
+   }
+   return vSegments;
+}
+
 CollectionIndexType CSplicedGirderData::GetClosureJointCount() const
 {
    return m_Closures.size();

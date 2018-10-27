@@ -343,6 +343,7 @@ public:
    virtual void GetInitialTempPrestressDeflection(const pgsPointOfInterest& poi, pgsTypes::PrestressDeflectionDatum datum, const GDRCONFIG* pConfig, Float64* pDx, Float64* pDy) const override;
    virtual Float64 GetReleaseTempPrestressDeflection(const pgsPointOfInterest& poi, const GDRCONFIG* pConfig = nullptr) const override;
    virtual void GetReleaseTempPrestressDeflection(const pgsPointOfInterest& poi, const GDRCONFIG* pConfig, Float64* pDx, Float64* pDy) const override;
+   virtual Float64 GetInitialCamber(const pgsPointOfInterest& poi, const GDRCONFIG* pConfig = nullptr) const override;
    virtual Float64 GetCreepDeflection(const pgsPointOfInterest& poi, CreepPeriod creepPeriod, Int16 constructionRate,pgsTypes::PrestressDeflectionDatum datum, const GDRCONFIG* pConfig = nullptr) const override;
    virtual void GetCreepDeflection(const pgsPointOfInterest& poi, CreepPeriod creepPeriod, Int16 constructionRate, pgsTypes::PrestressDeflectionDatum datum, const GDRCONFIG* pConfig, Float64* pDy, Float64* pRz) const override;
    virtual Float64 GetXCreepDeflection(const pgsPointOfInterest& poi, CreepPeriod creepPeriod, Int16 constructionRate, pgsTypes::PrestressDeflectionDatum datum, const GDRCONFIG* pConfig = nullptr) const override;
@@ -354,8 +355,8 @@ public:
    virtual Float64 GetUserLoadDeflection(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, const GDRCONFIG* pConfig=nullptr) const override;
    virtual Float64 GetSlabBarrierOverlayDeflection(const pgsPointOfInterest& poi,const GDRCONFIG* pConfig=nullptr) const override;
    virtual Float64 GetSidlDeflection(const pgsPointOfInterest& poi,const GDRCONFIG* pConfig=nullptr) const override;
-   virtual Float64 GetScreedCamber(const pgsPointOfInterest& poi, const GDRCONFIG* pConfig=nullptr) const override;
-   virtual Float64 GetScreedCamberUnfactored(const pgsPointOfInterest& poi, const GDRCONFIG* pConfig=nullptr) const override;
+   virtual Float64 GetScreedCamber(const pgsPointOfInterest& poi, Int16 time, const GDRCONFIG* pConfig=nullptr) const override;
+   virtual Float64 GetScreedCamberUnfactored(const pgsPointOfInterest& poi, Int16 time, const GDRCONFIG* pConfig=nullptr) const override;
    virtual Float64 GetExcessCamber(const pgsPointOfInterest& poi,Int16 time,const GDRCONFIG* pConfig=nullptr) const override;
    virtual Float64 GetExcessCamberUnfactored(const pgsPointOfInterest& poi,Int16 time,const GDRCONFIG* pConfig=nullptr) const override;
    virtual Float64 GetExcessCamberRotation(const pgsPointOfInterest& poi,Int16 time,const GDRCONFIG* pConfig=nullptr) const override;
@@ -551,7 +552,7 @@ private:
    void GetInitialTempPrestressDeflection(const pgsPointOfInterest& poi,CamberModelData& modelData,pgsTypes::PrestressDeflectionDatum datum, Float64* pDx, Float64* pDy,Float64* pRz) const;
    void GetReleaseTempPrestressDeflection(const pgsPointOfInterest& poi,CamberModelData& modelData, Float64* pDx, Float64* pDy,Float64* pRz) const;
 
-   void GetScreedCamberEx(const pgsPointOfInterest& poi, const GDRCONFIG* pConfig,bool applyFactors,Float64* pDy,Float64* pRz) const;
+   void GetScreedCamberEx(const pgsPointOfInterest& poi, Int16 time, const GDRCONFIG* pConfig,bool applyFactors,Float64* pDy,Float64* pRz) const;
 
    Float64 GetExcessCamberEx(const pgsPointOfInterest& poi,Int16 time,const GDRCONFIG* pConfig,bool applyFactors) const;
    void GetExcessCamberEx2(const pgsPointOfInterest& poi,const GDRCONFIG* pConfig,CamberModelData& initModelData,CamberModelData& pInitTempModelData,CamberModelData& releaseTempModelData,Int16 time,bool applyFactors,Float64* pDy,Float64* pRz) const;

@@ -59,4 +59,7 @@
 // Segment variations lengths are invalid
 #define XREASON_INVALID_SEGMENT_VARIATION   0x0400
 
+// Bearing information is not available
+#define XREASON_BAD_BEARING_DATA            0x0800
+
 #endif // INCLUDED_PGSUPEREXCEPTION_H_

@@ -259,16 +259,11 @@ void CSpecCheckSummaryChapterBuilder::CreateContent(rptChapter* pChapter, IBroke
          ATLASSERT(vPoi.size()==1);
          const pgsPointOfInterest& poiMidSpan(vPoi.front());
    
-         Float64 C = 0;
-         if ( deckType != pgsTypes::sdtNone )
-         {
-            C = pCamber->GetScreedCamber( poiMidSpan ) ;
-         }
+         Float64 C = pCamber->GetScreedCamber( poiMidSpan, CREEP_MINTIME );
    
-         Float64 D = 999;
          std::_tstring camberType;
          Float64 Cfactor = pCamber->GetLowerBoundCamberVariabilityFactor();
-         D = pCamber->GetDCamberForGirderSchedule( poiMidSpan, CREEP_MINTIME); // upper bound camber
+         Float64 D = pCamber->GetDCamberForGirderSchedule( poiMidSpan, CREEP_MINTIME); // upper bound camber
          Float64 Dlower = D*Cfactor;
 
          switch(pSpecEntry->GetSagCamberType())

@@ -30,6 +30,8 @@
 #include <IFace\Intervals.h>
 #include <IFace\Project.h>
 
+#include <PgsExt\PrecastSegmentData.h>
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
@@ -73,8 +75,6 @@ rptRcTable* CPrestressRotationTable::Build(IBroker* pBroker,const CGirderKey& gi
    GET_IFACE2(pBroker, IProductLoads, pProductLoads);
    GET_IFACE2(pBroker, IPointOfInterest, pPOI);
    GET_IFACE2(pBroker, IProductForces, pProdForces);
-   GET_IFACE2(pBroker, IBearingDesign, pBearingDesign);
-   GET_IFACE2(pBroker, IIntervals, pIntervals);
 
    GET_IFACE2_NOCHECK(pBroker, ICamber, pCamber);
 
@@ -100,6 +100,10 @@ rptRcTable* CPrestressRotationTable::Build(IBroker* pBroker,const CGirderKey& gi
 
 
    rptRcTable* pTable = rptStyleManager::CreateDefaultTable(nCols, _T("Prestress and Time-Dependent Rotations"));
+
+   pTable->SetColumnStyle(0, rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+   pTable->SetStripeRowColumnStyle(0, rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+
    ColumnIndexType col = 0;
    (*pTable)(0, col++) << _T("");
    (*pTable)(0, col++) << COLHDR(pProductLoads->GetProductLoadName(pgsTypes::pftPretension), rptAngleUnitTag, pDisplayUnits->GetRadAngleUnit());
@@ -149,70 +153,47 @@ rptRcTable* CPrestressRotationTable::Build(IBroker* pBroker,const CGirderKey& gi
       vPoi.insert(vPoi.end(), vSegPoi.begin(), vSegPoi.end());
    }
 
-   // TRICKY: use adapter class to get correct reaction interfaces
-   std::unique_ptr<IProductReactionAdapter> pForcesAdapt(std::make_unique<BearingDesignProductReactionAdapter>(pBearingDesign, intervalIdx, girderKey) );
-
-   // User iterator to walk locations
-   ReactionLocationIter iter = pForcesAdapt->GetReactionLocations(pBridge);
+   GET_IFACE2(pBroker,IBridgeDescription, pIBridgeDesc);
+   PierIndexType nPiers = pBridge->GetPierCount();
 
    RowIndexType row = pTable->GetNumberOfHeaderRows();
-   for (iter.First(); !iter.IsDone(); iter.Next())
+   for(const pgsPointOfInterest& poi : vPoi)
    {
       ColumnIndexType col = 0;
 
-      const ReactionLocation& reactionLocation( iter.CurrentItem() );
+      const CSegmentKey& segmentKey(poi.GetSegmentKey());
+      const CPrecastSegmentData* pSegment = pIBridgeDesc->GetPrecastSegmentData(segmentKey);
 
-      (*pTable)(row,col++) << reactionLocation.PierLabel;
+      const CPierData2* pPier;
+      const CTemporarySupportData* pTS;
+      pgsTypes::MemberEndType endType = (poi.IsTenthPoint(POI_ERECTED_SEGMENT) == 1 ? pgsTypes::metStart : pgsTypes::metEnd);
+      pSegment->GetSupport(endType, &pPier, &pTS);
+      ATLASSERT(pTS == nullptr);
 
-      const CGirderKey& thisGirderKey(reactionLocation.GirderKey);
+      std::_tstring strName(pPier->GetIndex() == 0 || pPier->GetIndex() == nPiers - 1 ? _T("Abutment") : _T("Pier"));
+      std::_tstring strFace(endType == pgsTypes::metStart ? _T("Ahead") : _T("Back"));
+      (*pTable)(row, col++) << strName << _T(" ") << LABEL_PIER(pPier->GetIndex()) << _T(" - ") << strFace;
 
-      const pgsPointOfInterest& poi = vPoi[reactionLocation.PierIdx-startPierIdx];
-
-      // Use reaction decider tool to determine when to report stages
-      ReactionDecider reactionDecider(BearingReactionsTable, reactionLocation, thisGirderKey, pBridge, pIntervals);
-
-      if (reactionDecider.DoReport(intervalIdx))
+      (*pTable)(row, col++) << rotation.SetValue(pProdForces->GetRotation(intervalIdx, pgsTypes::pftPretension, poi, maxBAT, rtCumulative, false));
+      if (0 < nDucts)
       {
-         (*pTable)(row, col++) << rotation.SetValue(pProdForces->GetRotation(intervalIdx, pgsTypes::pftPretension, poi, maxBAT, rtCumulative, false));
-         if (0 < nDucts)
-         {
-            (*pTable)(row, col++) << rotation.SetValue(pProdForces->GetRotation(intervalIdx, pgsTypes::pftPostTensioning, poi, maxBAT, rtCumulative, false));
-         }
+         (*pTable)(row, col++) << rotation.SetValue(pProdForces->GetRotation(intervalIdx, pgsTypes::pftPostTensioning, poi, maxBAT, rtCumulative, false));
+      }
 
-         if (bTimeStep)
-         {
-            (*pTable)(row, col++) << rotation.SetValue(pProdForces->GetRotation(intervalIdx, pgsTypes::pftCreep, poi, maxBAT, rtCumulative, false));
-            (*pTable)(row, col++) << rotation.SetValue(pProdForces->GetRotation(intervalIdx, pgsTypes::pftShrinkage, poi, maxBAT, rtCumulative, false));
-            (*pTable)(row, col++) << rotation.SetValue(pProdForces->GetRotation(intervalIdx, pgsTypes::pftRelaxation, poi, maxBAT, rtCumulative, false));
-         }
-         else
-         {
-            Float64 Dcreep1, Rcreep1;
-            pCamber->GetCreepDeflection(poi, ICamber::cpReleaseToDeck, CREEP_MAXTIME, pgsTypes::pddErected, nullptr, &Dcreep1, &Rcreep1);
-
-            //Float64 Dcreep2, Rcreep2;
-            //pCamber->GetCreepDeflection(poi, ICamber::cpDiaphragmToDeck, CREEP_MAXTIME, pgsTypes::pddErected, nullptr, &Dcreep2, &Rcreep2);
-            (*pTable)(row, col++) << rotation.SetValue(Rcreep1 /*+ Rcreep2*/);
-         }
+      if (bTimeStep)
+      {
+         (*pTable)(row, col++) << rotation.SetValue(pProdForces->GetRotation(intervalIdx, pgsTypes::pftCreep, poi, maxBAT, rtCumulative, false));
+         (*pTable)(row, col++) << rotation.SetValue(pProdForces->GetRotation(intervalIdx, pgsTypes::pftShrinkage, poi, maxBAT, rtCumulative, false));
+         (*pTable)(row, col++) << rotation.SetValue(pProdForces->GetRotation(intervalIdx, pgsTypes::pftRelaxation, poi, maxBAT, rtCumulative, false));
       }
       else
       {
-         (*pTable)(row, col++) << RPT_NA;
-         if (0 < nDucts)
-         {
-            (*pTable)(row, col++) << RPT_NA;
-         }
+         Float64 Dcreep1, Rcreep1;
+         pCamber->GetCreepDeflection(poi, ICamber::cpReleaseToDeck, CREEP_MAXTIME, pgsTypes::pddErected, nullptr, &Dcreep1, &Rcreep1);
 
-         if (bTimeStep)
-         {
-            (*pTable)(row, col++) << RPT_NA;
-            (*pTable)(row, col++) << RPT_NA;
-            (*pTable)(row, col++) << RPT_NA;
-         }
-         else
-         {
-            (*pTable)(row, col++) << RPT_NA;
-         }
+         //Float64 Dcreep2, Rcreep2;
+         //pCamber->GetCreepDeflection(poi, ICamber::cpDiaphragmToDeck, CREEP_MAXTIME, pgsTypes::pddErected, nullptr, &Dcreep2, &Rcreep2);
+         (*pTable)(row, col++) << rotation.SetValue(Rcreep1 /*+ Rcreep2*/);
       }
 
       row++;

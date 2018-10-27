@@ -294,7 +294,6 @@ interface IBridge : IUnknown
    virtual Float64 GetSlabOffset(GroupIndexType grpIdx,PierIndexType pierIdx,GirderIndexType gdrIdx) const = 0;
    virtual Float64 GetSlabOffset(const pgsPointOfInterest& poi,const GDRCONFIG* pConfig=nullptr) const = 0;
    virtual Float64 GetSlabOffset(const pgsPointOfInterest& poi, Float64 Astart, Float64 Aend) const = 0;
-   virtual void GetSlabOffset(const CSegmentKey& segmentKey,Float64* pStart,Float64* pEnd) const = 0;
    virtual Float64 GetElevationAdjustment(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi) const = 0;
    virtual Float64 GetRotationAdjustment(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi) const = 0;
 
@@ -858,8 +857,10 @@ interface IMaterials : IUnknown
    virtual Float64 GetFlexureModRupture(Float64 fc,pgsTypes::ConcreteType type) const = 0;
    virtual Float64 GetShearModRupture(Float64 fc,pgsTypes::ConcreteType type) const = 0;
 
-   virtual Float64 GetFlexureFrCoefficient(const CSegmentKey& segmentKey) const = 0;
-   virtual Float64 GetShearFrCoefficient(const CSegmentKey& segmentKey) const = 0;
+   virtual Float64 GetSegmentFlexureFrCoefficient(const CSegmentKey& segmentKey) const = 0;
+   virtual Float64 GetSegmentShearFrCoefficient(const CSegmentKey& segmentKey) const = 0;
+   virtual Float64 GetClosureJointFlexureFrCoefficient(const CClosureKey& closureKey) const = 0;
+   virtual Float64 GetClosureJointShearFrCoefficient(const CClosureKey& closureKey) const = 0;
 
    virtual Float64 GetEconc(Float64 fc,Float64 density,Float64 K1,Float64 K2) const = 0;
 };
@@ -1521,6 +1522,8 @@ interface ITempSupport : public IUnknown
    virtual void GetControlPoints(SupportIndexType tsIdx,pgsTypes::PlanCoordinateType pcType,IPoint2d** ppLeft,IPoint2d** ppAlignment_pt,IPoint2d** ppBridge_pt,IPoint2d** ppRight) const = 0;
    virtual void GetDirection(SupportIndexType tsIdx,IDirection** ppDirection) const = 0;
    virtual void GetSkew(SupportIndexType tsIdx,IAngle** ppAngle) const = 0;
+   virtual std::vector<SupportIndexType> GetTemporarySupports(GroupIndexType grpIdx) const = 0;
+   virtual std::vector<TEMPORARYSUPPORTELEVATIONDETAILS> GetElevationDetails(SupportIndexType tsIdx) const = 0;
 };
 
 /*****************************************************************************

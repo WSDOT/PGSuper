@@ -38,6 +38,9 @@
 
 #include <Reporting\TemporarySupportReactionChapterBuilder.h>
 
+#include <Reporting\TemporarySupportElevationsChapterBuilder.h>
+#include <Reporting\TemporarySupportElevationDetailsChapterBuilder.h>
+
 // Interfaces
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
@@ -77,6 +80,12 @@ HRESULT CPGSpliceReporterImp::InitReportBuilders()
    std::shared_ptr<CReportBuilder> pRptBuilder = pRptMgr->GetReportBuilder(_T("Details Report"));
    VERIFY(pRptBuilder->InsertChapterBuilder(std::shared_ptr<CChapterBuilder>(new CTendonGeometryChapterBuilder),TEXT("Section Properties")));
    VERIFY(pRptBuilder->InsertChapterBuilder(std::shared_ptr<CChapterBuilder>(new CShrinkageStrainChapterBuilder),TEXT("Creep Coefficient Details")));
+   VERIFY(pRptBuilder->InsertChapterBuilder(std::shared_ptr<CChapterBuilder>(new CTemporarySupportElevationsChapterBuilder), TEXT("Bearing Seat Elevations")));
+   VERIFY(pRptBuilder->InsertChapterBuilder(std::shared_ptr<CChapterBuilder>(new CTemporarySupportElevationDetailsChapterBuilder), TEXT("Bearing Seat Elevation Details")));
+
+   pRptBuilder = pRptMgr->GetReportBuilder(_T("Bridge Geometry Report"));
+   pRptBuilder->AddChapterBuilder(std::shared_ptr<CChapterBuilder>(new CTemporarySupportElevationsChapterBuilder));
+   pRptBuilder->AddChapterBuilder(std::shared_ptr<CChapterBuilder>(new CTemporarySupportElevationDetailsChapterBuilder));
 
 
 #if defined _DEBUG || defined _BETA_VERSION

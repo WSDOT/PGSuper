@@ -1088,7 +1088,7 @@ void CCamberTable::Build_Deck_XY(IBroker* pBroker, const CSegmentKey& segmentKey
       Float64 Ec = pCamber->GetExcessCamber(erectedPoi, constructionRate);
       ATLASSERT(IsEqual(Ec, D6,0.001));
 
-      Float64 Sc = pCamber->GetScreedCamber(erectedPoi);
+      Float64 Sc = pCamber->GetScreedCamber(erectedPoi, constructionRate);
       ATLASSERT(IsEqual(Sc, D4 - D6));
 #endif
 
@@ -1135,6 +1135,8 @@ void CCamberTable::Build_NoDeck_Y(IBroker* pBroker, const CSegmentKey& segmentKe
 
    pgsTypes::AnalysisType analysisType = pSpec->GetAnalysisType();
 
+   pgsTypes::SupportedDeckType deckType = pBridge->GetDeckType();
+
    bool bHasPrecamber = IsZero(pCamber->GetPrecamber(segmentKey)) ? false : true;
 
    // create the tables
@@ -1160,6 +1162,12 @@ void CCamberTable::Build_NoDeck_Y(IBroker* pBroker, const CSegmentKey& segmentKe
    {
       ncols++;
    }
+
+   if (deckType == pgsTypes::sdtNonstructuralOverlay)
+   {
+      ncols += 2;
+   }
+
    table2 = rptStyleManager::CreateDefaultTable(ncols, _T("Deflections after Erection"));
    table3 = rptStyleManager::CreateDefaultTable(8, _T("Deflection Summary"));
 
@@ -1229,6 +1237,12 @@ void CCamberTable::Build_NoDeck_Y(IBroker* pBroker, const CSegmentKey& segmentKe
    }
 
    (*table2)(0, col++) << COLHDR(Sub2(symbol(DELTA), _T("creep2")), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
+
+   if (deckType == pgsTypes::sdtNonstructuralOverlay)
+   {
+      (*table2)(0, col++) << COLHDR(Sub2(symbol(DELTA), _T("slab")), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
+      (*table2)(0, col++) << COLHDR(Sub2(symbol(DELTA), _T("haunch")), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
+   }
 
    (*table2)(0, col++) << COLHDR(Sub2(symbol(DELTA), _T("User1")) << _T(" = ") << rptNewLine << Sub2(symbol(DELTA), _T("UserDC")) << _T(" + ") << rptNewLine << Sub2(symbol(DELTA), _T("UserDW")), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
 
@@ -1310,6 +1324,14 @@ void CCamberTable::Build_NoDeck_Y(IBroker* pBroker, const CSegmentKey& segmentKe
       Float64 Dbarrier = pProduct->GetDeflection(railingSystemIntervalIdx, pgsTypes::pftTrafficBarrier, erectedPoi, bat, rtCumulative, false);
       Float64 Dsidewalk = pProduct->GetDeflection(railingSystemIntervalIdx, pgsTypes::pftSidewalk, erectedPoi, bat, rtCumulative, false);
       Float64 Doverlay = (pBridge->HasOverlay() ? (pBridge->IsFutureOverlay() ? 0.0 : pProduct->GetDeflection(overlayIntervalIdx, pgsTypes::pftOverlay, erectedPoi, bat, rtCumulative, false)) : 0.0);
+
+      Float64 Dslab(0), Dhaunch(0);
+      if (deckType == pgsTypes::sdtNonstructuralOverlay)
+      {
+         Dslab = pProduct->GetDeflection(castDeckIntervalIdx, pgsTypes::pftSlab, erectedPoi, bat, rtCumulative, false);
+         Dhaunch = pProduct->GetDeflection(castDeckIntervalIdx, pgsTypes::pftSlabPad, erectedPoi, bat, rtCumulative, false);
+      }
+
       Float64 Dcreep3 = pCamber->GetCreepDeflection(erectedPoi, ICamber::cpDeckToFinal, constructionRate, pgsTypes::pddErected);
 
       Float64 Di = DpsRelease + DgdrRelease + DprecamberRelease; // initial camber immedately after release
@@ -1396,6 +1418,13 @@ void CCamberTable::Build_NoDeck_Y(IBroker* pBroker, const CSegmentKey& segmentKe
       }
 
       (*table2)(row2, col++) << deflection.SetValue(Duser2);
+
+      if (deckType == pgsTypes::sdtNonstructuralOverlay)
+      {
+         (*table2)(row2, col++) << deflection.SetValue(Dslab);
+         (*table2)(row2, col++) << deflection.SetValue(Dhaunch);
+      }
+
       (*table2)(row2, col++) << deflection.SetValue(Dcreep3);
 
       row2++;
@@ -1407,7 +1436,7 @@ void CCamberTable::Build_NoDeck_Y(IBroker* pBroker, const CSegmentKey& segmentKe
       Float64 D2 = D1 + cm.CreepFactor * Dcreep1b;
       Float64 D3 = D2 + cm.DiaphragmFactor * (Ddiaphragm + DshearKey + Dconstruction) + cm.ErectionFactor * Dtpsr + cm.SlabUser1Factor * Duser1;
       Float64 D4 = D3 + cm.CreepFactor * Dcreep2;
-      Float64 D5 = D4 + cm.BarrierSwOverlayUser2Factor * (Dbarrier + Duser2);
+      Float64 D5 = D4 + cm.BarrierSwOverlayUser2Factor * (Dbarrier + Duser2) + cm.SlabUser1Factor*Dslab + cm.SlabPadLoadFactor*Dhaunch;
       if (bSidewalk)
       {
          D5 += cm.BarrierSwOverlayUser2Factor * Dsidewalk;
@@ -1500,6 +1529,8 @@ void CCamberTable::Build_NoDeck_XY(IBroker* pBroker,const CSegmentKey& segmentKe
 
    pgsTypes::AnalysisType analysisType = pSpec->GetAnalysisType();
 
+   pgsTypes::SupportedDeckType deckType = pBridge->GetDeckType();
+
    bool bHasPrecamber = IsZero(pCamber->GetPrecamber(segmentKey)) ? false : true;
 
    // create the tables
@@ -1529,6 +1560,12 @@ void CCamberTable::Build_NoDeck_XY(IBroker* pBroker,const CSegmentKey& segmentKe
    (*pLayoutTable)(0, 1) << table1b;
 
    nColumns = 15 + (bHasPrecamber ? 1 : 0) + (bTempStrands ? 2 : 0) + (bSidewalk ? 1 : 0) + (bOverlay ? 1 : 0) + (bShearKey ? 1 : 0) + (bConstruction ? 1 : 0);
+
+   if (deckType == pgsTypes::sdtNonstructuralOverlay)
+   {
+      nColumns += 2;
+   }
+
    table2 = rptStyleManager::CreateDefaultTable(nColumns,_T("Deflections after Erection"));
    table3 = rptStyleManager::CreateDefaultTable(10,_T("Deflection Summary"));
 
@@ -1648,6 +1685,11 @@ void CCamberTable::Build_NoDeck_XY(IBroker* pBroker,const CSegmentKey& segmentKe
    }
 
    ColumnIndexType colSpan = 10 + (bHasPrecamber ? 1 : 0) + (bTempStrands ? 1 : 0) + (bShearKey ? 1 : 0) + (bConstruction ? 1 : 0) + (bSidewalk ? 1 : 0) + (bOverlay ? 1 : 0);
+   if (deckType == pgsTypes::sdtNonstructuralOverlay)
+   {
+      colSpan += 2;
+   }
+
    table2->SetColumnSpan(0, col, colSpan);
    (*table2)(0, col) << _T("Y");
    ColumnIndexType nSkipCells = colSpan - 1;
@@ -1683,6 +1725,12 @@ void CCamberTable::Build_NoDeck_XY(IBroker* pBroker,const CSegmentKey& segmentKe
    }
 
    (*table2)(1,col++) << COLHDR(Sub2(symbol(DELTA),_T("creep2")),  rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit() );
+
+   if (deckType == pgsTypes::sdtNonstructuralOverlay)
+   {
+      (*table2)(1, col++) << COLHDR(Sub2(symbol(DELTA), _T("slab")), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
+      (*table2)(1, col++) << COLHDR(Sub2(symbol(DELTA), _T("haunch")), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
+   }
 
    (*table2)(1,col++) << COLHDR(Sub2(symbol(DELTA),_T("User1")) << _T(" = ") << rptNewLine << Sub2(symbol(DELTA),_T("UserDC")) << _T(" + ") << rptNewLine << Sub2(symbol(DELTA),_T("UserDW")) , rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit() );
 
@@ -1804,6 +1852,14 @@ void CCamberTable::Build_NoDeck_XY(IBroker* pBroker,const CSegmentKey& segmentKe
       Float64 Dbarrier   = pProduct->GetDeflection(railingSystemIntervalIdx,pgsTypes::pftTrafficBarrier,erectedPoi,bat, rtCumulative, false);
       Float64 Dsidewalk  = pProduct->GetDeflection(railingSystemIntervalIdx,pgsTypes::pftSidewalk,      erectedPoi,bat, rtCumulative, false);
       Float64 Doverlay   = (pBridge->HasOverlay() ? (pBridge->IsFutureOverlay() ? 0.0 : pProduct->GetDeflection(overlayIntervalIdx,pgsTypes::pftOverlay,erectedPoi,bat, rtCumulative, false)) : 0.0);
+
+      Float64 Dslab(0), Dhaunch(0);
+      if (deckType == pgsTypes::sdtNonstructuralOverlay)
+      {
+         Dslab = pProduct->GetDeflection(railingSystemIntervalIdx, pgsTypes::pftSlab, erectedPoi, bat, rtCumulative, false);
+         Dhaunch = pProduct->GetDeflection(railingSystemIntervalIdx, pgsTypes::pftSlabPad, erectedPoi, bat, rtCumulative, false);
+      }
+
       Float64 Dcreep3    = pCamber->GetCreepDeflection( erectedPoi, ICamber::cpDeckToFinal, constructionRate, pgsTypes::pddErected );
 
       Float64 Di = DpsRelease + DgdrRelease + DprecamberRelease; // initial camber immedately after release
@@ -1902,6 +1958,12 @@ void CCamberTable::Build_NoDeck_XY(IBroker* pBroker,const CSegmentKey& segmentKe
 
       (*table2)(row2,col++) << deflection.SetValue( Dcreep2 );
 
+      if (deckType == pgsTypes::sdtNonstructuralOverlay)
+      {
+         (*table2)(row2, col++) << deflection.SetValue(Dslab);
+         (*table2)(row2, col++) << deflection.SetValue(Dhaunch);
+      }
+
       (*table2)(row2,col++) << deflection.SetValue( Duser1 );
 
       if ( bSidewalk )
@@ -1931,7 +1993,7 @@ void CCamberTable::Build_NoDeck_XY(IBroker* pBroker,const CSegmentKey& segmentKe
       Float64 D2 = D1 + cm.CreepFactor * Dcreep1b;
       Float64 D3 = D2 + cm.DiaphragmFactor * (Ddiaphragm + DshearKey + Dconstruction) + cm.ErectionFactor * Dtpsr + cm.SlabUser1Factor * Duser1;
       Float64 D4 = D3 + cm.CreepFactor * Dcreep2;
-      Float64 D5 = D4 + cm.BarrierSwOverlayUser2Factor * (Dbarrier + Duser2);
+      Float64 D5 = D4 + cm.BarrierSwOverlayUser2Factor * (Dbarrier + Duser2) + cm.SlabUser1Factor*Dslab + cm.SlabPadLoadFactor*Dhaunch;
       if ( bSidewalk )
       {
          D5 += cm.BarrierSwOverlayUser2Factor * Dsidewalk;
@@ -1984,8 +2046,8 @@ void CCamberTable::Build_NoDeck_XY(IBroker* pBroker,const CSegmentKey& segmentKe
       Float64 Ec = pCamber->GetExcessCamber(erectedPoi, constructionRate);
       ATLASSERT(IsEqual(Ec, D6));
 
-      Float64 Sc = pCamber->GetScreedCamber(erectedPoi);
-      ATLASSERT(IsEqual(Sc, D4 - D6 + cm.CreepFactor * Dcreep3));
+      Float64 Sc = pCamber->GetScreedCamber(erectedPoi, constructionRate);
+      ATLASSERT(IsEqual(Sc, D4 - D6));
 #endif
 
       row3++;

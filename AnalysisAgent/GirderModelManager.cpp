@@ -14316,8 +14316,13 @@ void CGirderModelManager::CheckGirderEndGeometry(IBridge* pBridge,const CGirderK
       if (pBridge->GetDeckType() != pgsTypes::sdtNone)
       {
          Float64 fillet = pBridge->GetFillet();
-         Float64 startA, endA;
-         pBridge->GetSlabOffset(segmentKey,&startA, &endA);
+
+         PierIndexType startPierIdx, endPierIdx;
+         pBridge->GetGirderGroupPiers(segmentKey.groupIndex, &startPierIdx, &endPierIdx);
+
+         Float64 startA = pBridge->GetSlabOffset(segmentKey.groupIndex, startPierIdx, segmentKey.girderIndex);
+         Float64 endA = pBridge->GetSlabOffset(segmentKey.groupIndex, endPierIdx, segmentKey.girderIndex);
+
          Float64 dSlab = pBridge->GetGrossSlabDepth(pgsPointOfInterest(segmentKey,0.0));
          if ( startA-dSlab-fillet < -TOLERANCE || endA-dSlab-fillet < -TOLERANCE )
          {
@@ -15168,6 +15173,7 @@ void CGirderModelManager::GetMainSpanSlabLoadEx(const CSegmentKey& segmentKey, b
 
    // Increased/Reduced pad depth due to Sag/Crest vertical curves is accounted for
    bool bKeepLast = false;
+   Float64 Ls = pBridge->GetSegmentLength(segmentKey);
    for( const pgsPointOfInterest& poi : vPoi)
    {
       Float64 wslab;
@@ -15194,10 +15200,6 @@ void CGirderModelManager::GetMainSpanSlabLoadEx(const CSegmentKey& segmentKey, b
          top_girder_to_top_slab = pBridge->GetTopSlabToTopGirderChordDistance(poi);
          slab_offset            = pBridge->GetSlabOffset(poi);
          girder_chord_elevation = pGirder->GetTopGirderChordElevation(poi);
-
-         CSpanKey spanKey;
-         Float64 Xspan;
-         pPoi->ConvertPoiToSpanPoint(poi,&spanKey,&Xspan);
       }
 
       Float64 cast_depth             = pBridge->GetCastSlabDepth(poi);

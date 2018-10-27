@@ -148,6 +148,8 @@ typedef struct EquivPretensionLoad
    Float64 eye; // vertical eccentricty at end of girder
    Float64 eyh; // vertical eccentricity at harp point
    Float64 eprime;
+   Float64 Xle; // Xleft at end of girder
+   Float64 Xlm; // Xleft at middle of girder
    Float64 Ybe; // Ybottom at end of girder
    Float64 Ybh; // Ybottom at harp point
    Float64 Ybm; // Ybottom at middle of girder
@@ -751,6 +753,8 @@ interface ICamber : IUnknown
    // Returns X and Y deflection
    virtual void GetReleaseTempPrestressDeflection(const pgsPointOfInterest& poi, const GDRCONFIG* pConfig,Float64* pDx,Float64* pDy) const = 0;
 
+   virtual Float64 GetInitialCamber(const pgsPointOfInterest& poi, const GDRCONFIG* pConfig = nullptr) const = 0;
+
    // Returns the deflection due to creep at the end of a creep period
    virtual Float64 GetCreepDeflection(const pgsPointOfInterest& poi, CreepPeriod creepPeriod, Int16 constructionRate,pgsTypes::PrestressDeflectionDatum datum, const GDRCONFIG* pConfig=nullptr) const = 0;
    virtual void GetCreepDeflection(const pgsPointOfInterest& poi, CreepPeriod creepPeriod, Int16 constructionRate, pgsTypes::PrestressDeflectionDatum datum, const GDRCONFIG* pConfig,Float64* pDcreep,Float64* pRcreep) const = 0;
@@ -786,10 +790,9 @@ interface ICamber : IUnknown
    // Camber is Cumulative through stages.
    virtual Float64 GetSlabBarrierOverlayDeflection(const pgsPointOfInterest& poi,const GDRCONFIG* pConfig=nullptr) const = 0;
 
-   // Deflection due to slab, diaphragms and user-defined loads.
-   // This is the amount the girder will deflect downwards as the slab is placed.
-   virtual Float64 GetScreedCamber(const pgsPointOfInterest& poi,const GDRCONFIG* pConfig=nullptr) const = 0;
-   virtual Float64 GetScreedCamberUnfactored(const pgsPointOfInterest& poi,const GDRCONFIG* pConfig=nullptr) const = 0;
+   // This is the negative value of the amount the girder will deflect after the slab is placed (if there is no slab, after the diaphragms are cast)
+   virtual Float64 GetScreedCamber(const pgsPointOfInterest& poi, Int16 time, const GDRCONFIG* pConfig=nullptr) const = 0;
+   virtual Float64 GetScreedCamberUnfactored(const pgsPointOfInterest& poi, Int16 time, const GDRCONFIG* pConfig=nullptr) const = 0;
 
    // Deflection due to superimposed dead loads (dead loads applied after the deck is composite)
    virtual Float64 GetSidlDeflection(const pgsPointOfInterest& poi,const GDRCONFIG* pConfig=nullptr) const = 0;

@@ -269,8 +269,6 @@ public:
    virtual Float64 GetSlabOffset(GroupIndexType grpIdx,PierIndexType pierIdx,GirderIndexType gdrIdx) const override;
    virtual Float64 GetSlabOffset(const pgsPointOfInterest& poi,const GDRCONFIG* pConfig = nullptr) const override;
    virtual Float64 GetSlabOffset(const pgsPointOfInterest& poi, Float64 Astart, Float64 Aend) const override;
-
-   virtual void GetSlabOffset(const CSegmentKey& segmentKey,Float64* pStart,Float64* pEnd) const override;
    virtual Float64 GetElevationAdjustment(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi) const override;
    virtual Float64 GetRotationAdjustment(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi) const override;
    virtual Float64 GetSpanLength(SpanIndexType spanIdx,GirderIndexType gdrIdx) const override;
@@ -588,8 +586,10 @@ public:
    virtual Float64 GetLWCDensityLimit() const override;
    virtual Float64 GetFlexureModRupture(Float64 fc,pgsTypes::ConcreteType type) const override;
    virtual Float64 GetShearModRupture(Float64 fc,pgsTypes::ConcreteType type) const override;
-   virtual Float64 GetFlexureFrCoefficient(const CSegmentKey& segmentKey) const override;
-   virtual Float64 GetShearFrCoefficient(const CSegmentKey& segmentKey) const override;
+   virtual Float64 GetSegmentFlexureFrCoefficient(const CSegmentKey& segmentKey) const override;
+   virtual Float64 GetSegmentShearFrCoefficient(const CSegmentKey& segmentKey) const override;
+   virtual Float64 GetClosureJointFlexureFrCoefficient(const CClosureKey& closureKey) const override;
+   virtual Float64 GetClosureJointShearFrCoefficient(const CClosureKey& closureKey) const override;
    virtual Float64 GetEconc(Float64 fc,Float64 density,Float64 K1,Float64 K2) const override;
 
 // ILongRebarGeometry
@@ -1048,6 +1048,8 @@ public:
    virtual void GetControlPoints(SupportIndexType tsIdx,pgsTypes::PlanCoordinateType pcType,IPoint2d** ppLeft,IPoint2d** ppAlignment_pt,IPoint2d** ppBridge_pt,IPoint2d** ppRight) const override;
    virtual void GetDirection(SupportIndexType tsIdx,IDirection** ppDirection) const override;
    virtual void GetSkew(SupportIndexType tsIdx,IAngle** ppAngle) const override;
+   virtual std::vector<SupportIndexType> GetTemporarySupports(GroupIndexType grpIdx) const override;
+   virtual std::vector<TEMPORARYSUPPORTELEVATIONDETAILS> GetElevationDetails(SupportIndexType tsIdx) const override;
 
 // IGirder
 public:
@@ -1249,11 +1251,6 @@ private:
    CConcreteManager m_ConcreteManager;
    CIntervalManager m_IntervalManager;
 
-   // equations used to compute elevation adjustments in a segment due
-   // to temporary support elevation adjustments and pier "A" dimensions
-   std::map<CSegmentKey,mathLinFunc2d> m_ElevationAdjustmentEquations;
-
-
    struct PoiLocation
    {
       PoiIDType ID;
@@ -1351,7 +1348,7 @@ private:
    const SectProp& GetSectionProperties(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::SectionPropertyType sectPropType) const;
    HRESULT GetSection(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::SectionPropertyType sectPropType,IndexType* pGdrIdx,IndexType* pSlabIdx,ISection** ppSection) const;
    Float64 ComputeY(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::StressLocation location,IShapeProperties* sprops) const;
-   Float64 ComputeYtopGirder(IShapeProperties* compositeProps,IShapeProperties* beamProps) const;
+   Float64 ComputeYtopGirder(IShapeProperties* compositeProps,IShape* pShape) const;
 
    mutable std::map<PoiIntervalKey,CComPtr<IShape>> m_Shapes; // shape cache
 
@@ -1427,7 +1424,6 @@ private:
    bool BuildBridgeModel();
    bool BuildGirder();
    void ValidateGirder();
-   void ValidateElevationAdjustments(const CSegmentKey& segmentKey);
 
    // helper functions for building the bridge model
    bool LayoutPiers(const CBridgeDescription2* pBridgeDesc);
@@ -1646,6 +1642,21 @@ private:
 
    void ResolveStrandRowElevations(const CSegmentKey& segmentKey, const CStrandRow& strandRow, const std::array<Float64, 4>& Xhp, std::array<Float64, 4>& Y) const;
    void CreateStrandModel(IPrecastGirder* girder,ISuperstructureMemberSegment* segment, const CPrecastSegmentData* pSegment, const GirderLibraryEntry* pGirderEntry) const;
+
+   Float64 GetOverallHeight(const pgsPointOfInterest& poi) const;
+
+   const mathLinFunc2d& GetGirderTopChordElevationFunction(const CSegmentKey& segmentKey) const;
+   const mathLinFunc2d& GetGirderBaselineElevationFunction(const CSegmentKey& segmentKey) const;
+   void ValidateGirderTopChordElevation(const CGirderKey& girderKey) const;
+   void ValidateElevationAdjustments(const CGirderKey& girderKey) const;
+   void ValidateGirderTopChordElevation(const CGirderKey& girderKey,bool bIgnoreElevationAdjustments, std::map<CSegmentKey, mathLinFunc2d>* pFunctions) const;
+   std::map<CSegmentKey, mathLinFunc2d> CreateGirderTopChordFunctions(const CSplicedGirderData* pGirder, const CPierData2* pStartPier, const CPierData2* pEndPier, bool bIgnoreElevationAdjustments) const;
+   std::map<CSegmentKey, mathLinFunc2d> CreateGirderTopChordFunctions_Case1(const CSplicedGirderData* pGirder, const CPierData2* pStartPier, const CPierData2* pEndPier, bool bIgnoreElevationAdjustments) const;
+   std::map<CSegmentKey, mathLinFunc2d> CreateGirderTopChordFunctions_Case2(const CSplicedGirderData* pGirder, const CPierData2* pStartPier, const CPierData2* pEndPier, bool bIgnoreElevationAdjustments) const;
+   mathLinFunc2d GetTopGirderChordFunction(const CPrecastSegmentData* pThisSegment, IPoint2d* pControlPnt, const mathLinFunc2d& controlFn, bool bIgnoreElevationAdjustments) const;
+   mutable std::map<CSegmentKey, mathLinFunc2d> m_GirderTopChordElevationFunctions; // top girder chord elevations with temporary support elevation adjustments
+   mutable std::map<CSegmentKey, mathLinFunc2d> m_GirderBaselineElevationFunctions; // top girder chord elevations without temporary support elevation adjustments
+   // elevation adjustment at any poi is the difference between m_GirderTopChordElevationFunctions and m_GirderBaselineElevationFunctions
 };
 
 #endif //__BRIDGEAGENT_H_

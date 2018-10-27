@@ -938,6 +938,15 @@ void CAnalysisResultsGraphController::UpdateElevAdjustment()
 void CAnalysisResultsGraphController::UpdatePrecamberAdjustment()
 {
    CWnd* pWnd = GetDlgItem(IDC_PRECAMBER);
+
+   GET_IFACE(IDocumentType, pDocType);
+   if (pDocType->IsPGSpliceDocument())
+   {
+      // precamber doesn't apply to PGSplice
+      pWnd->ShowWindow(SW_HIDE);
+      return;
+   }
+
    ActionType actionType = GetActionType();
    if (actionType == actionDeflection || actionType == actionRotation)
    {

@@ -493,8 +493,11 @@ HRESULT CPGSuperDataExporter::Export(IBroker* pBroker,CString& strFileName, cons
          gd.TrailingHaulingLocation(dval);
 
          // A dimensions
-         Float64 adstart, adend;
-         pBridge->GetSlabOffset(segmentKey, &adstart, &adend);
+         PierIndexType startPierIdx, endPierIdx;
+         pBridge->GetGirderGroupPiers(segmentKey.groupIndex, &startPierIdx, &endPierIdx);
+
+         Float64 adstart = pBridge->GetSlabOffset(segmentKey.groupIndex, startPierIdx, segmentKey.girderIndex);
+         Float64 adend = pBridge->GetSlabOffset(segmentKey.groupIndex, endPierIdx, segmentKey.girderIndex);
 
          gd.StartADimension(adstart);
          gd.EndADimension(adend);

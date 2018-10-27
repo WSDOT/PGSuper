@@ -1011,6 +1011,7 @@ void CBridgeDescGeneralPage::FillTopWidthComboBox()
       int idx = pCB->AddString(GetTopWidthType(type));
       pCB->SetItemData(idx, (DWORD_PTR)type);
    }
+   pCB->SetCurSel(0);
 }
 
 bool CBridgeDescGeneralPage::AreAnyBearingsMeasuredAlongGirder()
@@ -2153,7 +2154,7 @@ void CBridgeDescGeneralPage::OnMoreProperties()
 
 void CBridgeDescGeneralPage::OnChangeSpacing()
 {
-   if (IsJointSpacing(m_GirderSpacingType))
+   if (IsJointSpacing(m_GirderSpacingType) && IsBridgeSpacing(m_GirderSpacingType))
    {
       CComPtr<IBroker> pBroker;
       EAFGetBroker(&pBroker);

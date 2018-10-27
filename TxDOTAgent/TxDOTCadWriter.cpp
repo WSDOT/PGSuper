@@ -391,8 +391,12 @@ int TxDOT_WriteCADDataToFile (FILE *fp, IBroker* pBroker, const CGirderKey& gird
    Int16 extraSpacesForSlabOffset = 0; // Pad in debond additional lines for output of A
    if (isExtendedVersion && pBridge->GetDeckType()!=pgsTypes::sdtNone)
    {
-      Float64 astart, aend;
-      pBridge->GetSlabOffset(segmentKey, &astart, &aend);
+      PierIndexType startPierIdx, endPierIdx;
+      pBridge->GetGirderGroupPiers(segmentKey.groupIndex, &startPierIdx, &endPierIdx);
+
+      Float64 astart = pBridge->GetSlabOffset(segmentKey.groupIndex, startPierIdx, segmentKey.girderIndex);
+      Float64 aend = pBridge->GetSlabOffset(segmentKey.groupIndex, endPierIdx, segmentKey.girderIndex);
+
 
       astart = ::ConvertFromSysUnits( astart, unitMeasure::Inch );
       aend = ::ConvertFromSysUnits( aend, unitMeasure::Inch );

@@ -698,7 +698,7 @@ void write_crack_moment_data_table(IBroker* pBroker,
    for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
    {
       CSegmentKey segmentKey(girderKey,segIdx);
-      *pParagraph << _T("Segment ") << LABEL_SEGMENT(segIdx) << _T(" ") << RPT_STRESS(_T("r")) << _T(" = ") << fr_coefficient.SetValue(pMaterial->GetFlexureFrCoefficient(segmentKey));
+      *pParagraph << _T("Segment ") << LABEL_SEGMENT(segIdx) << _T(" ") << RPT_STRESS(_T("r")) << _T(" = ") << fr_coefficient.SetValue(pMaterial->GetSegmentFlexureFrCoefficient(segmentKey));
       if ( bLambda )
       {
          *pParagraph << symbol(lambda);
@@ -707,9 +707,8 @@ void write_crack_moment_data_table(IBroker* pBroker,
 
       if ( segIdx != nSegments-1 )
       {
-#pragma Reminder("UPDATE: is fr coefficient different for closure joint?")
          CClosureKey closureKey(segmentKey);
-         *pParagraph << _T("Closure Joint ") << LABEL_SEGMENT(segIdx) << _T(" ") << RPT_STRESS(_T("r")) << _T(" = ") << fr_coefficient.SetValue(pMaterial->GetFlexureFrCoefficient(closureKey));
+         *pParagraph << _T("Closure Joint ") << LABEL_SEGMENT(segIdx) << _T(" ") << RPT_STRESS(_T("r")) << _T(" = ") << fr_coefficient.SetValue(pMaterial->GetClosureJointFlexureFrCoefficient(closureKey));
          if ( bLambda )
          {
             *pParagraph << symbol(lambda);

@@ -288,6 +288,8 @@ std::vector<EquivPretensionLoad> CAnalysisAgentImp::GetEquivPretensionLoads(cons
    Float64 hp1; // Location of left harping point
    Float64 hp2; // Location of right harping point
    Float64 Ls;  // Length of segment
+   Float64 Xle; // Xleft at end of girder
+   Float64 Xlm; // Xleft at middle of girder
    Float64 Ybl; // Ybottom at left end of girder
    Float64 Ybm; // Ybottom at middle of girder
    Float64 Ybr; // Ybottom at right end of girder
@@ -322,6 +324,8 @@ std::vector<EquivPretensionLoad> CAnalysisAgentImp::GetEquivPretensionLoads(cons
    const pgsPointOfInterest& poiEnd(vPoi[2]);
 
    GET_IFACE(ISectionProperties, pSectProps);
+   Xle = pSectProps->GetXleft(releaseIntervalIdx, poiStart);
+   Xlm = pSectProps->GetXleft(releaseIntervalIdx, poiMiddle);
    Ybl = pSectProps->GetY(releaseIntervalIdx, poiStart,  pgsTypes::BottomGirder);
    Ybm = pSectProps->GetY(releaseIntervalIdx, poiMiddle, pgsTypes::BottomGirder);
    Ybr = pSectProps->GetY(releaseIntervalIdx, poiEnd,    pgsTypes::BottomGirder);
@@ -402,14 +406,19 @@ std::vector<EquivPretensionLoad> CAnalysisAgentImp::GetEquivPretensionLoads(cons
       {
          Mhlx = Ph*(ecc_y_harped_start + 2 * precamber / 3);
          Mhrx = Ph*(ecc_y_harped_end + 2 * precamber / 3);
+
+         Mhly = Ph*ecc_x_harped_start;
+         Mhry = Ph*ecc_x_harped_end;
       }
       else
       {
          Mhlx = Ph*(ecc_y_harped_start + 2 * (Ybm - Ybl + precamber) / 3);
          Mhrx = Ph*(ecc_y_harped_end + 2 * (Ybm - Ybr + precamber) / 3);
+
+         Mhly = Ph*(ecc_x_harped_start + 2 * (Xlm - Xle) / 3);
+         Mhry = Ph*(ecc_x_harped_end + 2 * (Xlm - Xle) / 3);
       }
-      Mhly = Ph*ecc_x_harped_start;
-      Mhry = Ph*ecc_x_harped_end;
+
 
       // upward force
       Float64 e_prime_start, e_prime_end;
@@ -435,6 +444,8 @@ std::vector<EquivPretensionLoad> CAnalysisAgentImp::GetEquivPretensionLoads(cons
       EquivPretensionLoad startMoment;
       startMoment.Xs = 0;
       startMoment.P  = Ph;
+      startMoment.Xle = Xle;
+      startMoment.Xlm = Xlm;
       startMoment.Ybe = Ybl;
       startMoment.Ybm = Ybm;
       startMoment.ex = ecc_x_harped_start;
@@ -472,6 +483,8 @@ std::vector<EquivPretensionLoad> CAnalysisAgentImp::GetEquivPretensionLoads(cons
       EquivPretensionLoad endMoment;
       endMoment.Xs = Ls;
       endMoment.P  = -Ph;
+      endMoment.Xle = Xle;
+      endMoment.Xlm = Xlm;
       endMoment.Ybe = Ybr;
       endMoment.Ybm = Ybm;
       endMoment.ex = ecc_x_harped_end;
@@ -503,14 +516,18 @@ std::vector<EquivPretensionLoad> CAnalysisAgentImp::GetEquivPretensionLoads(cons
       {
          Mslx = PsStart*(ecc_y_straight_start + 2 * precamber / 3);
          Msrx = PsEnd*(ecc_y_straight_end + 2 * precamber / 3);
+
+         Msly = PsStart*ecc_x_straight_start;
+         Msry = PsEnd*ecc_x_straight_end;
       }
       else
       {
          Mslx = PsStart*(ecc_y_straight_start + 2 * (Ybm - Ybl + precamber) / 3);
          Msrx = PsEnd*(ecc_y_straight_end + 2 * (Ybm - Ybr + precamber) / 3);
+
+         Msly = PsStart*(ecc_x_straight_start + 2*(Xlm - Xle) / 3);
+         Msry = PsEnd*(ecc_x_straight_end + 2*(Xlm - Xle) / 3);
       }
-      Msly = PsStart*ecc_x_straight_start;
-      Msry = PsEnd*ecc_x_straight_end;
 
       wy = -8 * PsStart*precamber / (Ls*Ls);
 
@@ -518,6 +535,8 @@ std::vector<EquivPretensionLoad> CAnalysisAgentImp::GetEquivPretensionLoads(cons
       startMoment.Xs = 0;
       startMoment.Xe = Ls;
       startMoment.P = PsStart;
+      startMoment.Xle = Xle;
+      startMoment.Xlm = Xlm;
       startMoment.Ybe = Ybl;
       startMoment.Ybm = Ybm;
       startMoment.ex = ecc_x_straight_start;
@@ -535,6 +554,8 @@ std::vector<EquivPretensionLoad> CAnalysisAgentImp::GetEquivPretensionLoads(cons
       EquivPretensionLoad endMoment;
       endMoment.Xs = Ls;
       endMoment.P = -PsEnd;
+      endMoment.Xle = Xle;
+      endMoment.Xlm = Xlm;
       endMoment.Ybe = Ybr;
       endMoment.Ybm = Ybm;
       endMoment.ex = ecc_x_straight_end;
@@ -590,25 +611,33 @@ std::vector<EquivPretensionLoad> CAnalysisAgentImp::GetEquivPretensionLoads(cons
             ecc_x_end = IsZero(ecc_x_end) ? 0.0 : ecc_x_end; // usually is zero - let's just make it that way
             Float64 ecc_y_end = -CgY - ytop_end;
 
-            Float64 Msx, Mex;
+            Float64 Msx, Mex, Msy, Mey;
             if (pSegment->TopFlangeThickeningType == pgsTypes::tftNone)
             {
                Msx = PsDebond*(ecc_y_start + 2 * precamber / 3 - delta_pc_start);
                Mex = PsDebond*(ecc_y_end + 2 * precamber / 3 - delta_pc_end);
+
+               Msy = PsDebond*ecc_x_start;
+               Mey = PsDebond*ecc_x_end;
             }
             else
             {
                Msx = PsDebond*(ecc_y_start + 2 * (Ybm - Ybl + precamber) / 3 - delta_pc_start);
                Mex = PsDebond*(ecc_y_end + 2 * (Ybm - Ybr + precamber) / 3 - delta_pc_end);
+
+               Msy = PsDebond*(ecc_x_start + 2 * (Xlm - Xle)/3);
+               Mey = PsDebond*(ecc_x_end + 2 * (Xlm - Xle)/3);
             }
-            Float64 Msy = PsDebond*ecc_x_start;
-            Float64 Mey = PsDebond*ecc_x_end;
 
             wy = -8 * PsDebond*precamber / (Ls*Ls);
 
             EquivPretensionLoad startLoad;
             startLoad.Xs = Xstart;
             startLoad.Xe = Xend;
+            startLoad.Xle = Xle;
+            startLoad.Xlm = Xlm;
+            startLoad.Ybe = Ybl;
+            startLoad.Ybm = Ybm;
             startLoad.P = PsDebond;
             startLoad.ex = ecc_x_start;
             startLoad.eye = ecc_y_start;
@@ -624,6 +653,10 @@ std::vector<EquivPretensionLoad> CAnalysisAgentImp::GetEquivPretensionLoads(cons
 
             EquivPretensionLoad endLoad;
             endLoad.Xs = Xend;
+            endLoad.Xle = Xle;
+            endLoad.Xlm = Xlm;
+            endLoad.Ybe = Ybl;
+            endLoad.Ybm = Ybm;
             endLoad.P = -PsDebond;
             endLoad.ex = ecc_x_end;
             endLoad.eye = ecc_y_end;
@@ -668,15 +701,18 @@ std::vector<EquivPretensionLoad> CAnalysisAgentImp::GetEquivPretensionLoads(cons
       {
          Mtlx = Pt*(ecc_y_temporary_start + 2 * precamber / 3);
          Mtrx = Pt*(ecc_y_temporary_end + 2 * precamber / 3);
+
+         Mtly = Pt*ecc_x_temporary_start;
+         Mtry = Pt*ecc_x_temporary_end;
       }
       else
       {
          Mtlx = Pt*(ecc_y_temporary_start + 2 * (Ybm - Ybl + precamber) / 3);
          Mtrx = Pt*(ecc_y_temporary_end + 2 * (Ybm - Ybr + precamber) / 3);
-      }
 
-      Mtly = Pt*ecc_x_temporary_start;
-      Mtry = Pt*ecc_x_temporary_end;
+         Mtly = Pt*(ecc_x_temporary_start + 2 * (Xlm - Xle) / 3);
+         Mtry = Pt*(ecc_x_temporary_end + 2 * (Xlm - Xle) / 3);
+      }
 
       wy = 0;
       if (tempStrandUsage != pgsTypes::ttsPretensioned)
@@ -690,6 +726,8 @@ std::vector<EquivPretensionLoad> CAnalysisAgentImp::GetEquivPretensionLoads(cons
       startMoment.Xe = Ls;
       startMoment.P  = Pt;
       startMoment.N  = 0;
+      startMoment.Xle = Xle;
+      startMoment.Xlm = Xlm;
       startMoment.Ybe = Ybl;
       startMoment.Ybm = Ybm;
       startMoment.ex = ecc_x_temporary_start;
@@ -705,6 +743,9 @@ std::vector<EquivPretensionLoad> CAnalysisAgentImp::GetEquivPretensionLoads(cons
       EquivPretensionLoad endMoment;
       endMoment.Xs = Ls;
       endMoment.P  = -Pt;
+      endMoment.Xle = Xle;
+      endMoment.Xlm = Xlm;
+      endMoment.Ybe = Ybl;
       endMoment.Ybm = Ybm;
       endMoment.ex = ecc_x_temporary_end;
       endMoment.eye = ecc_y_temporary_end;
@@ -6279,6 +6320,25 @@ void CAnalysisAgentImp::GetReleaseTempPrestressDeflection(const pgsPointOfIntere
    GetReleaseTempPrestressDeflection(poi, pConfig, pDx, pDy, &rz);
 }
 
+Float64 CAnalysisAgentImp::GetInitialCamber(const pgsPointOfInterest& poi, const GDRCONFIG* pConfig) const
+{
+   Float64 Dps, Dtpsi, DgRelease;
+   Float64 Rps, Rtpsi;
+
+   Float64 Dx, DXtpsi;
+   GetPermanentPrestressDeflection(poi, pgsTypes::pddRelease, pConfig, &Dx, &Dps, &Rps);
+   GetInitialTempPrestressDeflection(poi, pgsTypes::pddRelease, pConfig, &DXtpsi, &Dtpsi, &Rtpsi);
+
+   const CSegmentKey& segmentKey(poi.GetSegmentKey());
+   GET_IFACE(IIntervals, pIntervals);
+   IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
+   pgsTypes::BridgeAnalysisType bat = GetBridgeAnalysisType(pgsTypes::Minimize);
+   DgRelease = GetDeflection(releaseIntervalIdx, pgsTypes::pftGirder, poi, bat, rtCumulative);
+
+   Float64 Ci = DgRelease + Dps + Dtpsi;
+   return Ci;
+}
+
 Float64 CAnalysisAgentImp::GetCreepDeflection(const pgsPointOfInterest& poi, CreepPeriod creepPeriod, Int16 constructionRate,pgsTypes::PrestressDeflectionDatum datum, const GDRCONFIG* pConfig) const
 {
    Float64 dy,rz;
@@ -6408,17 +6468,17 @@ Float64 CAnalysisAgentImp::GetSlabBarrierOverlayDeflection(const pgsPointOfInter
    return dy;
 }
 
-Float64 CAnalysisAgentImp::GetScreedCamber(const pgsPointOfInterest& poi, const GDRCONFIG* pConfig) const
+Float64 CAnalysisAgentImp::GetScreedCamber(const pgsPointOfInterest& poi, Int16 time, const GDRCONFIG* pConfig) const
 {
    Float64 dy,rz;
-   GetScreedCamberEx(poi,pConfig,true,&dy,&rz);
+   GetScreedCamberEx(poi,time,pConfig,true,&dy,&rz);
    return dy;
 }
 
-Float64 CAnalysisAgentImp::GetScreedCamberUnfactored(const pgsPointOfInterest& poi, const GDRCONFIG* pConfig) const
+Float64 CAnalysisAgentImp::GetScreedCamberUnfactored(const pgsPointOfInterest& poi, Int16 time, const GDRCONFIG* pConfig) const
 {
    Float64 dy,rz;
-   GetScreedCamberEx(poi,pConfig,false,&dy,&rz);
+   GetScreedCamberEx(poi,time,pConfig,false,&dy,&rz);
    return dy;
 }
 
@@ -6441,7 +6501,7 @@ Float64 CAnalysisAgentImp::GetExcessCamberEx(const pgsPointOfInterest& poi,Int16
 #if defined _DEBUG
       // this is slower, but use it as a check on the more direct method used below
       Float64 D = GetDCamberForGirderSchedule(poi, time);
-      Float64 C = GetScreedCamber(poi);
+      Float64 C = GetScreedCamber(poi, time);
       Float64 excess = D - C;
 #endif
 
@@ -6642,7 +6702,7 @@ Float64 CAnalysisAgentImp::GetDCamberForGirderScheduleEx(const pgsPointOfInteres
    }
 }
 
-void CAnalysisAgentImp::GetScreedCamberEx(const pgsPointOfInterest& poi, const GDRCONFIG* pConfig, bool applyFactors, Float64* pDy, Float64* pRz) const
+void CAnalysisAgentImp::GetScreedCamberEx(const pgsPointOfInterest& poi, Int16 time, const GDRCONFIG* pConfig, bool applyFactors, Float64* pDy, Float64* pRz) const
 {
    if (pConfig == nullptr)
    {
@@ -6778,7 +6838,7 @@ void CAnalysisAgentImp::GetScreedCamberEx(const pgsPointOfInterest& poi, const G
             ucnt++;
          }
 
-         // This is an old convention in PGSuper: If there is no deck, user1 is included in the D camber
+         // This is an old convention in PGSuper: If there is no deck, user1 is not included in the D camber
          if (deckType == pgsTypes::sdtNone)
          {
             Duser1 = 0.0;
@@ -6799,6 +6859,18 @@ void CAnalysisAgentImp::GetScreedCamberEx(const pgsPointOfInterest& poi, const G
 
          *pRz = cm.SlabUser1Factor*(Rslab + Ruser1) + cm.SlabPadLoadFactor*RslabPad + cm.DeckPanelFactor*Rpanel
             + cm.BarrierSwOverlayUser2Factor*(Rtrafficbarrier + Rsidewalk + Roverlay + Ruser2);
+
+
+         if (IsNonstructuralDeck(deckType))
+         {
+            // apply camber multipliers
+            CamberMultipliers cm = GetCamberMultipliersEx(poi.GetSegmentKey(), applyFactors);
+
+            Float64 Dcreep3, Rcreep3;
+            GetCreepDeflection(poi, ICamber::cpDeckToFinal, time, pgsTypes::pddErected, pConfig, &Dcreep3, &Rcreep3);
+            *pDy += cm.CreepFactor * Dcreep3;
+            *pRz += cm.CreepFactor * Rcreep3;
+         }
       }
 
       // Switch the sign. Negative deflection creates positive screed camber
@@ -6903,7 +6975,7 @@ void CAnalysisAgentImp::GetScreedCamberEx(const pgsPointOfInterest& poi, const G
          }
       }
 
-      // This is an old convention in PGSuper: If there is no deck, user1 is included in the D camber
+      // This is an old convention in PGSuper: If there is no deck, user1 is not included in the D camber
       if (deckType == pgsTypes::sdtNone)
       {
          Duser1 = 0.0;
@@ -7937,7 +8009,6 @@ void CAnalysisAgentImp::GetCreepDeflection(const pgsPointOfInterest& poi,const G
    {
       case pgsTypes::sdtCompositeCIP:
       case pgsTypes::sdtCompositeOverlay:
-      case pgsTypes::sdtNonstructuralOverlay:
          (bTempStrands ? GetCreepDeflection_CIP_TempStrands(poi,pConfig,initModelData,initTempModelData,releaseTempModelData,creepPeriod,constructionRate,datum,pDy,pRz)
                        : GetCreepDeflection_CIP(poi,pConfig,initModelData,initTempModelData,releaseTempModelData,creepPeriod,constructionRate,datum,pDy,pRz));
          break;
@@ -7948,7 +8019,8 @@ void CAnalysisAgentImp::GetCreepDeflection(const pgsPointOfInterest& poi,const G
          break;
 
       case pgsTypes::sdtNone:
-         (bTempStrands ? GetCreepDeflection_NoDeck_TempStrands(poi,pConfig,initModelData,initTempModelData,releaseTempModelData,creepPeriod,constructionRate,datum,pDy,pRz) 
+      case pgsTypes::sdtNonstructuralOverlay:
+         (bTempStrands ? GetCreepDeflection_NoDeck_TempStrands(poi,pConfig,initModelData,initTempModelData,releaseTempModelData,creepPeriod,constructionRate,datum,pDy,pRz)
                        : GetCreepDeflection_NoDeck(poi,pConfig,initModelData,initTempModelData,releaseTempModelData,creepPeriod,constructionRate,datum,pDy,pRz));
          break;
 
@@ -8592,23 +8664,10 @@ void CAnalysisAgentImp::GetExcessCamberEx2(const pgsPointOfInterest& poi,const G
    GetDCamberForGirderScheduleEx2( poi, pConfig, initModelData, initTempModelData, releaseTempModelData, time, applyFactors, &Dy, &Dz );
 
    Float64 Cy, Cz;
-   GetScreedCamberEx(poi,pConfig,applyFactors,&Cy,&Cz);
+   GetScreedCamberEx(poi,time,pConfig,applyFactors,&Cy,&Cz);
 
    *pDy = Dy - Cy;  // excess camber = D - C
    *pRz = Dz - Cz;
-
-   GET_IFACE(IBridge,pBridge);
-   pgsTypes::SupportedDeckType deckType = pBridge->GetDeckType();
-   if ( deckType == pgsTypes::sdtNone )
-   {
-      // apply camber multipliers
-      CamberMultipliers cm = GetCamberMultipliersEx(poi.GetSegmentKey(), applyFactors);
-
-      Float64 Dcreep3, Rcreep3;
-      GetCreepDeflection(poi,ICamber::cpDeckToFinal,time,pgsTypes::pddErected,pConfig,&Dcreep3,&Rcreep3 );
-      *pDy += cm.CreepFactor * Dcreep3;
-      *pRz += cm.CreepFactor * Rcreep3;
-   }
 }
 
 void CAnalysisAgentImp::GetDCamberForGirderScheduleEx2(const pgsPointOfInterest& poi,const GDRCONFIG* pConfig,CamberModelData& initModelData,CamberModelData& initTempModelData,CamberModelData& releaseTempModelData,Int16 time,bool applyFactors,Float64* pDy,Float64* pRz) const
@@ -8628,11 +8687,11 @@ void CAnalysisAgentImp::GetDCamberForGirderScheduleEx2(const pgsPointOfInterest&
    case pgsTypes::sdtCompositeCIP:
    case pgsTypes::sdtCompositeOverlay:
    case pgsTypes::sdtCompositeSIP:
-   case pgsTypes::sdtNonstructuralOverlay:
       (bTempStrands ? GetD_Deck_TempStrands(poi,pConfig, initModelData,initTempModelData,releaseTempModelData,time,applyFactors,&D,&R) :
                       GetD_Deck(poi, pConfig, initModelData,initTempModelData,releaseTempModelData,time,applyFactors,&D,&R));
       break;
 
+   case pgsTypes::sdtNonstructuralOverlay:
    case pgsTypes::sdtNone:
       (bTempStrands ? GetD_NoDeck_TempStrands(poi, pConfig, initModelData,initTempModelData,releaseTempModelData,time,applyFactors,&D,&R) :
                       GetD_NoDeck(poi, pConfig, initModelData,initTempModelData,releaseTempModelData,time,applyFactors,&D,&R));

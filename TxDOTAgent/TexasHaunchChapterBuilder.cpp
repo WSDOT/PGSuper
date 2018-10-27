@@ -81,12 +81,9 @@ LPCTSTR CTexasHaunchChapterBuilder::GetName() const
 
 rptChapter* CTexasHaunchChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
 {
-   rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
-
    // This can be called for multi or single girders
-   std::vector<CGirderKey> girder_list;
-
    CComPtr<IBroker> pBroker;
+   std::vector<CGirderKey> girder_list;
 
    CGirderReportSpecification* pGirderRptSpec = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
    if (pGirderRptSpec!=nullptr)
@@ -102,6 +99,15 @@ rptChapter* CTexasHaunchChapterBuilder::Build(CReportSpecification* pRptSpec,Uin
       girder_list = pReportSpec->GetGirderKeys();
    }
    ATLASSERT(!girder_list.empty());
+
+   // don't report if no slab
+   GET_IFACE2(pBroker,IBridge,pBridge);
+   if (pBridge->GetDeckType() == pgsTypes::sdtNone)
+   {
+      return nullptr;
+   }
+
+   rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 

@@ -238,6 +238,14 @@ rptChapter* CGirderScheduleChapterBuilder::Build(CReportSpecification* pRptSpec,
       (*pTable)(row,  1) << pGirder->GetGirderName();
    }
 
+   if (familyCLSID == CLSID_DeckBulbTeeBeamFamily)
+   {
+      GET_IFACE2(pBroker, IGirder, pIGirder);
+      Float64 W = pIGirder->GetTopWidth(poiMidSpan);
+      (*pTable)(++row, 0) << _T("W");
+      (*pTable)(row, 1) << glength.SetValue(W);
+   }
+
    (*pTable)(++row,0) << _T("Plan Length (Along Girder Grade)");
    (*pTable)(row  ,1) << glength.SetValue(pBridge->GetSegmentPlanLength(segmentKey));
 
@@ -502,36 +510,31 @@ rptChapter* CGirderScheduleChapterBuilder::Build(CReportSpecification* pRptSpec,
       }
    }
 
-   if ( familyCLSID == CLSID_DeckBulbTeeBeamFamily )
+   pgsTypes::SupportedDeckType deckType = pBridgeDesc->GetDeckDescription()->GetDeckType();
+   Float64 C;
+   if (IsNonstructuralDeck(deckType))
    {
-      GET_IFACE2(pBroker,IGirder,pIGirder);
-      Float64 B = pIGirder->GetTopWidth(poiMidSpan);
-      (*pTable)(++row,0) << _T("B");
-      (*pTable)(row,1) << glength.SetValue(B);
+      C = pCamber->GetExcessCamber(poiMidSpan, CREEP_MAXTIME);
    }
    else
    {
-      if ( pBridgeDesc->GetSlabOffsetType() == pgsTypes::sotBridge )
+      if (pBridgeDesc->GetSlabOffsetType() == pgsTypes::sotBridge)
       {
-         (*pTable)(++row,0) << _T("\"A\" Dimension at CL Bearings");
-         (*pTable)(row,  1) << gdim.SetValue(pBridgeDesc->GetSlabOffset());
+         (*pTable)(++row, 0) << _T("\"A\" Dimension at CL Bearings");
+         (*pTable)(row, 1) << gdim.SetValue(pBridgeDesc->GetSlabOffset());
       }
       else
       {
-         (*pTable)(++row,0) << _T("\"A\" Dimension at CL Bearing End 1");
-         (*pTable)(row,  1) << gdim.SetValue(pGroup->GetSlabOffset(pGroup->GetPierIndex(pgsTypes::metStart),segmentKey.girderIndex));
+         (*pTable)(++row, 0) << _T("\"A\" Dimension at CL Bearing End 1");
+         (*pTable)(row, 1) << gdim.SetValue(pGroup->GetSlabOffset(pGroup->GetPierIndex(pgsTypes::metStart), segmentKey.girderIndex));
 
-         (*pTable)(++row,0) << _T("\"A\" Dimension at CL Bearing End 2");
-         (*pTable)(row,  1) << gdim.SetValue(pGroup->GetSlabOffset(pGroup->GetPierIndex(pgsTypes::metEnd),segmentKey.girderIndex));
+         (*pTable)(++row, 0) << _T("\"A\" Dimension at CL Bearing End 2");
+         (*pTable)(row, 1) << gdim.SetValue(pGroup->GetSlabOffset(pGroup->GetPierIndex(pgsTypes::metEnd), segmentKey.girderIndex));
       }
-   }
 
-   Float64 C = 0;
-   if ( pBridgeDesc->GetDeckDescription()->GetDeckType() != pgsTypes::sdtNone )
-   {
-      C = pCamber->GetScreedCamber( poiMidSpan ) ;
-      (*pTable)(++row,0) << _T("Screed Camber, C");
-      (*pTable)(row  ,1) << gdim.SetValue(C);
+      C = pCamber->GetScreedCamber(poiMidSpan, CREEP_MAXTIME);
+      (*pTable)(++row, 0) << _T("Screed Camber, C");
+      (*pTable)(row, 1) << gdim.SetValue(C);
    }
 
    // get # of days for creep
@@ -700,48 +703,60 @@ rptChapter* CGirderScheduleChapterBuilder::Build(CReportSpecification* pRptSpec,
    }
 
 
-   if ( pSpecEntry->CheckGirderSag() && pBridgeDesc->GetDeckDescription()->GetDeckType() != pgsTypes::sdtNone )
+   if ( pSpecEntry->CheckGirderSag() )
    {
-      std::_tstring camberType;
-      Float64 D = 0;
-
-      switch(pSpecEntry->GetSagCamberType())
+      if (IsNonstructuralDeck(deckType))
       {
-      case pgsTypes::LowerBoundCamber:
-         D = Dmin_LowerBound;
-         camberType = _T("lower bound");
-         break;
-      case pgsTypes::AverageCamber:
-         D = Dmin_Average;
-         camberType = _T("average");
-         break;
-      case pgsTypes::UpperBoundCamber:
-         D = Dmin_UpperBound;
-         camberType = _T("upper bound");
-         break;
+         if (C < 0)
+         {
+            rptParagraph* p = new rptParagraph;
+            *pChapter << p;
+            *p << color(Red) << _T("WARNING: Final camber (") << Sub2(_T("C"), _T("F")) << _T(") is downward. The girder may end up with a sag.") << color(Black) << rptNewLine;
+         }
       }
-
-      if ( D < C )
+      else
       {
-         rptParagraph* p = new rptParagraph;
-         *pChapter << p;
+         std::_tstring camberType;
+         Float64 D = 0;
 
-         *p << color(Red) << _T("WARNING: Screed Camber, C, is greater than the ") << camberType.c_str() << _T(" camber at time of deck casting, D. The girder may end up with a sag.") << color(Black) << rptNewLine;
-      }
-      else if ( IsEqual(C,D,::ConvertToSysUnits(0.25,unitMeasure::Inch)) )
-      {
-         rptParagraph* p = new rptParagraph;
-         *pChapter << p;
+         switch (pSpecEntry->GetSagCamberType())
+         {
+         case pgsTypes::LowerBoundCamber:
+            D = Dmin_LowerBound;
+            camberType = _T("lower bound");
+            break;
+         case pgsTypes::AverageCamber:
+            D = Dmin_Average;
+            camberType = _T("average");
+            break;
+         case pgsTypes::UpperBoundCamber:
+            D = Dmin_UpperBound;
+            camberType = _T("upper bound");
+            break;
+         }
 
-         *p << color(Red) << _T("WARNING: Screed Camber, C, is nearly equal to the ") << camberType.c_str() << _T(" camber at time of deck casting, D. The girder may end up with a sag.") << color(Black) << rptNewLine;
-      }
+         if (D < C)
+         {
+            rptParagraph* p = new rptParagraph;
+            *pChapter << p;
 
-      if ( Dmin_LowerBound < C && pSpecEntry->GetSagCamberType() != pgsTypes::LowerBoundCamber )
-      {
-         rptParagraph* p = new rptParagraph;
-         *pChapter << p;
+            *p << color(Red) << _T("WARNING: Screed camber (C) is greater than the ") << camberType.c_str() << _T(" camber at time of deck casting, D. The girder may end up with a sag.") << color(Black) << rptNewLine;
+         }
+         else if (IsEqual(C, D, ::ConvertToSysUnits(0.25, unitMeasure::Inch)))
+         {
+            rptParagraph* p = new rptParagraph;
+            *pChapter << p;
 
-         *p << _T("Screed Camber (C) is greater than the lower bound camber at time of deck casting (") << Cfactor*100 << _T("% of D") << Sub(min_days) << _T("). The girder may end up with a sag if the deck is placed at day ") << min_days << _T(" and the actual camber is a lower bound value.") << rptNewLine;
+            *p << color(Red) << _T("WARNING: Screed camber (C) is nearly equal to the ") << camberType.c_str() << _T(" camber at time of deck casting, D. The girder may end up with a sag.") << color(Black) << rptNewLine;
+         }
+
+         if (Dmin_LowerBound < C && pSpecEntry->GetSagCamberType() != pgsTypes::LowerBoundCamber)
+         {
+            rptParagraph* p = new rptParagraph;
+            *pChapter << p;
+
+            *p << _T("Screed camber (C) is greater than the lower bound camber at time of deck casting (") << Cfactor * 100 << _T("% of D") << Sub(min_days) << _T("). The girder may end up with a sag if the deck is placed at day ") << min_days << _T(" and the actual camber is a lower bound value.") << rptNewLine;
+         }
       }
    }
 

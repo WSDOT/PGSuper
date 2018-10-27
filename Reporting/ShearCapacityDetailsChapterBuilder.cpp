@@ -882,7 +882,7 @@ void write_fpce_table(IBroker* pBroker,
       CSegmentKey segmentKey(*iter);
       if ( segmentKeys.size() < 2 )
       {
-         *pParagraph << RPT_STRESS(_T("r")) << _T(" = ") << fr_coefficient.SetValue(pMaterial->GetShearFrCoefficient(segmentKey));
+         *pParagraph << RPT_STRESS(_T("r")) << _T(" = ") << fr_coefficient.SetValue(pMaterial->GetSegmentShearFrCoefficient(segmentKey));
          if ( bLambda )
          {
             *pParagraph << symbol(lambda);
@@ -891,8 +891,15 @@ void write_fpce_table(IBroker* pBroker,
       }
       else
       {
-         *pParagraph << _T("Segment ") << LABEL_SEGMENT(segmentKey.segmentIndex) << _T(": ") << RPT_STRESS(_T("r")) << _T(" = ") << fr_coefficient.SetValue(pMaterial->GetShearFrCoefficient(segmentKey));
+         *pParagraph << _T("Segment ") << LABEL_SEGMENT(segmentKey.segmentIndex) << _T(": ") << RPT_STRESS(_T("r")) << _T(" = ") << fr_coefficient.SetValue(pMaterial->GetSegmentShearFrCoefficient(segmentKey));
          if ( bLambda )
+         {
+            *pParagraph << symbol(lambda);
+         }
+         *pParagraph << symbol(ROOT) << RPT_FC << rptNewLine;
+
+         *pParagraph << _T("Closure Joint ") << LABEL_SEGMENT(segmentKey.segmentIndex) << _T(": ") << RPT_STRESS(_T("r")) << _T(" = ") << fr_coefficient.SetValue(pMaterial->GetClosureJointShearFrCoefficient(segmentKey));
+         if (bLambda)
          {
             *pParagraph << symbol(lambda);
          }

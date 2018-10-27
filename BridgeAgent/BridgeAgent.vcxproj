@@ -229,6 +229,7 @@
     </Bscmake>
     <Manifest>
       <AdditionalManifestFiles>\ARP\WBFL\RegFreeCOM\WBFL.$(PlatformName).$(ConfigurationName).manifest</AdditionalManifestFiles>
+      <EnableDpiAwareness>PerMonitorHighDPIAware</EnableDpiAwareness>
     </Manifest>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -282,6 +283,7 @@
     </Bscmake>
     <Manifest>
       <AdditionalManifestFiles>\ARP\WBFL\RegFreeCOM\WBFL.$(PlatformName).$(ConfigurationName).manifest</AdditionalManifestFiles>
+      <EnableDpiAwareness>PerMonitorHighDPIAware</EnableDpiAwareness>
     </Manifest>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -337,6 +339,7 @@
     <Manifest>
       <AdditionalManifestFiles>\ARP\WBFL\RegFreeCOM\WBFL.$(PlatformName).$(ConfigurationName).manifest</AdditionalManifestFiles>
       <OutputManifestFile />
+      <EnableDpiAwareness>PerMonitorHighDPIAware</EnableDpiAwareness>
     </Manifest>
     <ManifestResourceCompile>
       <ResourceOutputFileName />
@@ -395,6 +398,7 @@
     <Manifest>
       <AdditionalManifestFiles>\ARP\WBFL\RegFreeCOM\WBFL.$(PlatformName).$(ConfigurationName).manifest</AdditionalManifestFiles>
       <OutputManifestFile />
+      <EnableDpiAwareness>PerMonitorHighDPIAware</EnableDpiAwareness>
     </Manifest>
     <ManifestResourceCompile>
       <ResourceOutputFileName />

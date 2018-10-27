@@ -1,6 +1,6 @@
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 44.33    7   0.75                     1     1    WF69D          68  0.6  270  37.14  20.62  10.25  10.25                                              4.000 14.600   4.447    -5.907    14817   0.652  0.652   9.875 -1.485 -0.361 -0.374 -2.220 423.70  816.68   13.00   25.87   25.87 
+ 44.33    7   0.75                     1     1    WF69D          68  0.6  270  37.14  20.62  10.25  10.25                                              4.000 14.600   4.391    -5.907    14817   0.652  0.652   9.968 -1.485 -0.361 -0.374 -2.220 423.70  816.68   13.00   25.87   25.87 
 
 
 The Specification Check was Not Successful
@@ -8,11 +8,12 @@ Compression stress check failed for Service I Limit State in Interval 2 Prestres
 Splitting zone check failed.
 Lifting checks failed
 Hauling checks failed
+Slab Offset ("A" Dimension) check failed
 
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 44.33    7   0.75                     1     2    WF69D          68  0.6  270  37.14  20.62  10.25  10.25                                              4.000 14.600   4.282    -5.822    14363   0.567  0.725   9.840 -1.531 -0.354 -0.368 -2.253 423.70  806.61   13.00   25.87   25.87 
+ 44.33    7   0.75                     1     2    WF69D          68  0.6  270  37.14  20.62  10.25  10.25                                              4.000 14.600   4.227    -5.819    14354   0.566  0.725   9.933 -1.531 -0.354 -0.368 -2.253 423.70  806.61   13.00   25.87   25.87 
 
 
 The Specification Check was Not Successful
@@ -20,11 +21,12 @@ Compression stress check failed for Service I Limit State in Interval 2 Prestres
 Splitting zone check failed.
 Lifting checks failed
 Hauling checks failed
+Slab Offset ("A" Dimension) check failed
 
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 44.33    7   0.75                     1     4    WF69D          68  0.6  270  36.53  20.24  10.25  10.25                                              4.000 14.600   3.627    -5.101    13168   0.545  0.689  10.024 -1.454 -0.364  0.000 -1.817 424.80  850.62   13.00   25.87   25.87 
+ 44.33    7   0.75                     1     4    WF69D          68  0.6  270  36.53  20.24  10.25  10.25                                              4.000 14.600   3.627    -5.101    13168   0.545  0.689  10.118 -1.454 -0.364  0.000 -1.817 424.80  850.62   13.00   25.87   25.87 
 
 
 The Specification Check was Not Successful

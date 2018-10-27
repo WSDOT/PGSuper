@@ -3257,7 +3257,7 @@ void GirderLibraryEntry::ValidateData(GirderLibraryEntry::GirderEntryDataErrorVe
 
 
    Float64 height;
-   gdrSection->get_GirderHeight(&height);
+   gdrSection->get_OverallHeight(&height);
 
    if (IsZero(height))
    {

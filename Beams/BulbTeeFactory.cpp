@@ -354,6 +354,7 @@ void CBulbTeeFactory::ConfigureSegment(IBroker* pBroker, StatusItemIDType status
 
    lj->put_CrossSection(jstFromAdjacentBeams);
 
+   // the code below shows what to do for constant depth longitudinal joint
    //Float64 tj;
    //beam->get_D1(&tj);
    //lj->put_CrossSection(jstConstantDepth);

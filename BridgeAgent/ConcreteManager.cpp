@@ -1719,9 +1719,15 @@ Float64 CConcreteManager::GetFlexureFrCoefficient(pgsTypes::ConcreteType type) c
    return pSpecEntry->GetFlexureModulusOfRuptureCoefficient(type);
 }
 
-Float64 CConcreteManager::GetFlexureFrCoefficient(const CSegmentKey& segmentKey) const
+Float64 CConcreteManager::GetSegmentFlexureFrCoefficient(const CSegmentKey& segmentKey) const
 {
    pgsTypes::ConcreteType type = GetSegmentConcreteType(segmentKey);
+   return GetFlexureFrCoefficient(type);
+}
+
+Float64 CConcreteManager::GetClosureJointFlexureFrCoefficient(const CClosureKey& closureKey) const
+{
+   pgsTypes::ConcreteType type = GetClosureJointConcreteType(closureKey);
    return GetFlexureFrCoefficient(type);
 }
 
@@ -1744,9 +1750,15 @@ Float64 CConcreteManager::GetShearFrCoefficient(pgsTypes::ConcreteType type) con
    return pSpecEntry->GetShearModulusOfRuptureCoefficient(type);
 }
 
-Float64 CConcreteManager::GetShearFrCoefficient(const CSegmentKey& segmentKey) const
+Float64 CConcreteManager::GetSegmentShearFrCoefficient(const CSegmentKey& segmentKey) const
 {
    pgsTypes::ConcreteType type = GetSegmentConcreteType(segmentKey);
+   return GetShearFrCoefficient(type);
+}
+
+Float64 CConcreteManager::GetClosureJointShearFrCoefficient(const CClosureKey& closureKey) const
+{
+   pgsTypes::ConcreteType type = GetClosureJointConcreteType(closureKey);
    return GetShearFrCoefficient(type);
 }
 

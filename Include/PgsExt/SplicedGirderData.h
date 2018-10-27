@@ -116,6 +116,7 @@ public:
    void SetSegment(SegmentIndexType idx,const CPrecastSegmentData& segment);
    std::vector<pgsTypes::SegmentVariationType> GetSupportedSegmentVariations() const;
    std::vector<pgsTypes::SegmentVariationType> GetSupportedSegmentVariations(const GirderLibraryEntry* pGirderLibEntry) const;
+   std::vector<const CPrecastSegmentData*> GetSegmentsForSpan(SpanIndexType spanIdx) const;
 
 
    // =================================================================================

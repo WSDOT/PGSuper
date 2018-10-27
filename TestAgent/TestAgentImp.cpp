@@ -2293,7 +2293,7 @@ bool CTestAgentImp::RunWsdotGirderScheduleTest(std::_tofstream& resultsFile, std
       resultsFile<<bridgeId<<", "<<pid<<", 123019, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(ytg+hss, unitMeasure::Millimeter)) <<   ", 101, "<<gdrIdx<<std::endl;
    }
 
-   resultsFile<<bridgeId<<", "<<pid<<", 123020, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(pCamber->GetScreedCamber( pmid ), unitMeasure::Millimeter)) <<   ", 101, "<<gdrIdx<<std::endl;
+   resultsFile<<bridgeId<<", "<<pid<<", 123020, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(pCamber->GetScreedCamber( pmid, CREEP_MAXTIME ), unitMeasure::Millimeter)) <<   ", 101, "<<gdrIdx<<std::endl;
 
    // get # of days for creep
    GET_IFACE(ISpecification, pSpec );

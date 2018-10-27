@@ -128,7 +128,9 @@ void CGirderSegmentGeneralPage::DoDataExchange(CDataExchange* pDX)
       }
    }
 
-   DDX_UnitValueAndTag(pDX, IDC_PRECAMBER, IDC_PRECAMBER_UNIT, pSegment->Precamber, pDisplayUnits->GetComponentDimUnit());
+   // no precamber in spliced girder segments
+   //DDX_UnitValueAndTag(pDX, IDC_PRECAMBER, IDC_PRECAMBER_UNIT, pSegment->Precamber, pDisplayUnits->GetComponentDimUnit());
+   pSegment->Precamber = 0.0;
 
    // concrete material
    ExchangeConcreteData(pDX);

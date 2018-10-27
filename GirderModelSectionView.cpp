@@ -470,7 +470,7 @@ void CGirderModelSectionView::BuildSectionDisplayObjects(CPGSDocBase* pDoc,IBrok
       GET_IFACE2(pBroker, IGirder, pGirder);
       pGirder->GetTopWidth(poi,&wLeft,&wRight);
       shape->get_BoundingBox(&boxGirder);
-      shape->get_BoundingBox(&boxSlab);
+      boxSlab = boxGirder;
    }
    else
    {
@@ -507,12 +507,16 @@ void CGirderModelSectionView::BuildSectionDisplayObjects(CPGSDocBase* pDoc,IBrok
    pntTC->Offset(wLeft+wRight,0); // move pntTC to right edge and create a socket
    connectable->AddSocket(SOCKET_TR,pntTC,&socketTR);
 
-   Float64 yTop;
-   pntTC->get_Y(&yTop);
+   // recycle pntTC for top center of girder shape bounding box
    pntTC.Release();
    boxGirder->get_TopCenter(&pntTC);
    pntTC->Offset(0.5*(wLeft - wRight), 0); // now pntTC is at the centerline girder
 
+   boxGirder->get_BottomCenter(&pntBC);
+   Float64 yBot;
+   pntBC->get_Y(&yBot); // elevation of bottom of girder
+   Float64 Hg = pSectProps->GetHg(intervalIdx, poi); // CL height of girder
+   Float64 yTop = yBot + Hg; // elevation of top of girder
    pntTC->put_Y(yTop);
    connectable->AddSocket(SOCKET_TC,pntTC,&socketTC);
 
@@ -522,7 +526,6 @@ void CGirderModelSectionView::BuildSectionDisplayObjects(CPGSDocBase* pDoc,IBrok
    section->get_BottomFlangeCount(&nBottomFlanges);
    section->get_WebCount(&nWebs);
 
-   boxGirder->get_BottomCenter(&pntBC);
    pntBC->Offset(0.5*(wLeft - wRight), 0);
    connectable->AddSocket(SOCKET_BC,pntBC,&socketBC);
 

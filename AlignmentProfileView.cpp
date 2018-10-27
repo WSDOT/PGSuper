@@ -346,6 +346,7 @@ void CAlignmentProfileView::BuildBridgeDisplayObjects()
    GET_IFACE2(pBroker,IRoadway,pAlignment);
    GET_IFACE2(pBroker,IBridge,pBridge);
    GET_IFACE2(pBroker,IGirder,pIGirder);
+   GET_IFACE2(pBroker, IPointOfInterest, pPoi);
 
    CComPtr<iCompositeDisplayObject> doBridge;
    doBridge.CoCreateInstance(CLSID_CompositeDisplayObject);
@@ -378,6 +379,13 @@ void CAlignmentProfileView::BuildBridgeDisplayObjects()
          CComPtr<IShape> segmentShape;
          pIGirder->GetSegmentProfile( segmentKey, true/*include closures*/, &segmentShape);
 
+         PoiList vPoi;
+         pPoi->GetPointsOfInterest(segmentKey, POI_0L | POI_RELEASED_SEGMENT,&vPoi);
+         ATLASSERT(vPoi.size() == 1);
+         const pgsPointOfInterest& startPoi = vPoi.front();
+
+         Float64 elev = pIGirder->GetTopGirderChordElevation(startPoi);
+
          CComPtr<IPoint2d> pntPier1, pntEnd1, pntBrg1, pntBrg2, pntEnd2, pntPier2;
          pIGirder->GetSegmentEndPoints(segmentKey,pgsTypes::pcGlobal,&pntPier1,&pntEnd1,&pntBrg1,&pntBrg2,&pntEnd2,&pntPier2);
 
@@ -386,8 +394,6 @@ void CAlignmentProfileView::BuildBridgeDisplayObjects()
 
          Float64 station,offset;
          pAlignment->GetStationAndOffset(pgsTypes::pcGlobal,pntEnd1,&station,&offset);
-
-         Float64 elev = pAlignment->GetElevation(station,offset);
 
          CComQIPtr<IXYPosition> position(segmentShape);
          CComPtr<IPoint2d> pntTopLeft;

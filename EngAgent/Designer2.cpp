@@ -321,6 +321,9 @@ static Float64 GetSectionGirderOrientationEffect(const pgsPointOfInterest& poi, 
 
 void pgsDesigner2::GetHaunchDetails(const CSegmentKey& segmentKey,const GDRCONFIG* pConfig,HAUNCHDETAILS* pHaunchDetails) const
 {
+   // NOTE: Haunch is a span-by-span calculation. "A" dimensions are defined at permanent support locations, not at temporary supports.
+   // However, since everything is setup to do the analysis by segment, we will keep it this way. Profile effects take into account
+   // we are doing the analysis for the entire span, but the range is limited to the segment in question.
    GET_IFACE(ICamber,pCamber);
    GET_IFACE(IPointOfInterest,pPoi);
    GET_IFACE(IBridge,pBridge);
@@ -410,7 +413,7 @@ void pgsDesigner2::GetHaunchDetails(const CSegmentKey& segmentKey,const GDRCONFI
       Float64 fillet = pIBridgeDesc->GetFillet();
 
       Float64 camber_effect = pCamber->GetExcessCamber(poi, CREEP_MAXTIME, pConfig );
-      Float64 C = pCamber->GetScreedCamber(poi, pConfig);
+      Float64 C = pCamber->GetScreedCamber(poi, CREEP_MAXTIME, pConfig);
       Float64 D = pCamber->GetDCamberForGirderSchedule(poi,CREEP_MAXTIME, pConfig);
 
       ATLASSERT(IsEqual(camber_effect,D-C));
@@ -1052,7 +1055,6 @@ pgsGirderDesignArtifact pgsDesigner2::Design(const CGirderKey& girderKey,const s
    // There are a few cases were we don't design
    // 1) Time Step analysis
    // 2) Strands are defined using the individual strand model
-#pragma Reminder("WORKING HERE - strand point model - how does design work for row based input")
    GET_IFACE(ILossParameters,pLossParams);
    if ( pLossParams->GetLossMethod() == pgsTypes::TIME_STEP )
    {
@@ -5030,8 +5032,11 @@ void pgsDesigner2::CheckConstructability(const CGirderKey& girderKey,pgsConstruc
          artifact.SetSlabOffsetApplicability(pSpecEntry->IsSlabOffsetCheckEnabled());
 
          //  provided slab offsets
-         Float64 startSlabOffset, endSlabOffset;
-         pBridge->GetSlabOffset(segmentKey, &startSlabOffset, &endSlabOffset);
+         PierIndexType startPierIdx, endPierIdx;
+         pBridge->GetGirderGroupPiers(segmentKey.groupIndex, &startPierIdx, &endPierIdx);
+
+         Float64 startSlabOffset = pBridge->GetSlabOffset(segmentKey.groupIndex, startPierIdx, segmentKey.girderIndex);
+         Float64 endSlabOffset = pBridge->GetSlabOffset(segmentKey.groupIndex, endPierIdx, segmentKey.girderIndex);
 
          artifact.SetProvidedSlabOffset( startSlabOffset, endSlabOffset );
 

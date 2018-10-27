@@ -1204,7 +1204,7 @@ Float64 CPrecastSegmentData::GetSegmentHeight(bool bSegmentHeight) const
    if ( bSegmentHeight )
    {
       m_bHeightComputed = true;
-      gdrSection->get_GirderHeight(&m_Height);
+      gdrSection->get_OverallHeight(&m_Height);
       height = m_Height;
    }
    else

@@ -414,8 +414,19 @@ std::vector<Float64> CSegmentModelManager::GetDeflection(IntervalIndexType inter
 
             Float64 D = -Ixy / Iyy;
 
-            // multiply vDxThisSegment by D and add to vDyThisSegment to get total y-deflection
-            std::transform(vDxThisSegment.cbegin(), vDxThisSegment.cend(), vDyThisSegment.cbegin(), vDyThisSegment.begin(), [&D](const auto& dx, const auto& dy) {return D*dx + dy;});
+            // multiply vDxThisSegment by D to get the indirect deflection in the y-direction
+            std::vector<Float64> Dy2;
+            Dy2.reserve(vDxThisSegment.size());
+            std::transform(vDxThisSegment.cbegin(), vDxThisSegment.cend(), std::back_inserter(Dy2), [&D](const auto& dx) {return D*dx;});
+
+            // multiply vDyThisSegment by D to get the indirect deflection in the x-direction
+            std::vector<Float64> Dx2;
+            Dx2.reserve(vDyThisSegment.size());
+            std::transform(vDyThisSegment.cbegin(), vDyThisSegment.cend(), std::back_inserter(Dx2), [&D](const auto& dx) {return D*dx;});
+
+            // Add the direct and indirect deflections to get the total deflection
+            std::transform(vDxThisSegment.cbegin(), vDxThisSegment.cend(), Dx2.cbegin(), vDxThisSegment.begin(), [](const auto& dx1, const auto& dx2) {return dx1 + dx2;});
+            std::transform(vDyThisSegment.cbegin(), vDyThisSegment.cend(), Dy2.cbegin(), vDyThisSegment.begin(), [](const auto& dy1, const auto& dy2) {return dy1 + dy2;});
 
 #if defined _DEBUG
             ATLASSERT(std::equal(vdy.cbegin(), vdy.cend(), vDyThisSegment.cbegin(), [](const auto& a, const auto& b) {return IsEqual(a, b);}));
