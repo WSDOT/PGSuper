@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2017  Washington State Department of Transportation
+// Copyright © 1999-2018  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -125,17 +125,22 @@ public:
    // returns the least slab offset defined for the bridge
    Float64 GetMinSlabOffset() const;
 
-   // set/get the Fillet type. This parameter indicates where the Fillet is measured
-   void SetFilletType(pgsTypes::FilletType FilletType);
-   pgsTypes::FilletType GetFilletType() const;
+   // set/get the Assumed Excess Camber type. This parameter indicates where the AssExcessCamber is measured
+   void SetAssExcessCamberType(pgsTypes::AssExcessCamberType assExcessCamberType);
+   pgsTypes::AssExcessCamberType GetAssExcessCamberType() const;
 
-   // Set/get the fillet. Has no net effect if fillet type is not sotBridge
-   // Get method returns invalid data if fillet type is not sotBridge
+   // Set/get the Assumed Excess Camber. Has no net effect if AssExcessCamber type is not sotBridge
+   // Get method returns invalid data if AssExcessCamber type is not sotBridge
+   void SetAssExcessCamber(Float64 assExcessCamber);
+   Float64 GetAssExcessCamber(bool bGetRawValue = false) const;
+
+   // Set/get the fillet. 
    void SetFillet(Float64 Fillet);
    Float64 GetFillet(bool bGetRawValue = false) const;
 
-   // returns the greatest fillet value defined for the bridge
-   Float64 GetMaxFillet() const;
+   // Data for multiple fillets was read and dealt with (version 3.1 of PGSuper had this)
+   bool WasVersion3_1FilletRead() const;
+
 
    // =================================================================================
    // Spans and Girder Groups
@@ -342,7 +347,7 @@ public:
    CClosureJointData* FindClosureJoint(ClosureIDType closureID);
    const CClosureJointData* FindClosureJoint(ClosureIDType closureID) const;
 
-   void CopyDown(bool bGirderCount,bool bGirderType,bool bSpacing,bool bSlabOffset,bool bFillet); 
+   void CopyDown(bool bGirderCount,bool bGirderType,bool bSpacing,bool bSlabOffset,bool bAssExCamber); 
                     // takes all the data defined at the bridge level and copies
                     // it down to the spans and girders (only for this parameters set to true)
 
@@ -422,8 +427,12 @@ private:
    Float64 m_SlabOffset;
    pgsTypes::SlabOffsetType m_SlabOffsetType;
 
-   Float64 m_Fillet;
-   pgsTypes::FilletType m_FilletType;
+   Float64 m_Fillet; // The fillet for entire bridge
+   bool m_bWasVersion3_1FilletRead; // If this is true, we need to post a status center item stating that 
+                                   // data for multiple fillets was read and dealt with (version 3.1 of PGSuper had this)
+
+   Float64 m_AssExcessCamber; // assummed excess camber for entire bridge
+   pgsTypes::AssExcessCamberType m_AssExcessCamberType;
 
    CTimelineManager m_TimelineManager;
 
@@ -464,4 +473,5 @@ private:
    friend CGirderGroupData;
    friend CSplicedGirderData;
    friend CPrecastSegmentData;
+   friend CSpanData2;
 };

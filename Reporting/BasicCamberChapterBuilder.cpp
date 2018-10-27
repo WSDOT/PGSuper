@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2017  Washington State Department of Transportation
+// Copyright © 1999-2018  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -301,9 +301,10 @@ void CBasicCamberChapterBuilder::Build_Deck(rptChapter* pChapter,CReportSpecific
          *pPara << _T(" + ") << DEFL(_T("overlay"));
       }
 
-      *pPara << _T(" + ") << DEFL(_T("user2")) << _T(")") << rptNewLine;
+      *pPara << _T(" + ") << DEFL(_T("user2")) << _T(")");
+      *pPara << _T(" = ") << Sub2(symbol(DELTA),_T("excess")) << _T(" = Computed Excess Camber");
 
-      *pPara << rptNewLine;
+      *pPara << rptNewLine << rptNewLine;
    }
 }
 
@@ -475,7 +476,8 @@ void CBasicCamberChapterBuilder::Build_NoDeck(rptChapter* pChapter,CReportSpecif
 
       *pPara << _T(" + ") << DEFL(_T("user2")) << _T(")") << rptNewLine;
 
-      *pPara << DEFL(_T("6")) << _T(" = ") << DEFL(_T("5")) << _T(" + ") << SCL(cm.CreepFactor) << _T(" * ") << DEFL(_T("creep3")) << rptNewLine;
+      *pPara << DEFL(_T("6")) << _T(" = ") << DEFL(_T("5")) << _T(" + ") << SCL(cm.CreepFactor) << _T(" * ") << DEFL(_T("creep3"));
+      *pPara << _T(" = ") << Sub2(symbol(DELTA),_T("excess")) << _T(" = Computed Excess Camber") << rptNewLine;
 
       *pPara << rptNewLine;
    }

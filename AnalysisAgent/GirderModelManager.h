@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2017  Washington State Department of Transportation
+// Copyright © 1999-2018  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -88,7 +88,7 @@ public:
    void GetConstructionLoad(const CSegmentKey& segmentKey,std::vector<ConstructionLoad>* pConstructionLoads);
    void GetMainSpanSlabLoad(const CSegmentKey& segmentKey, std::vector<SlabLoad>* pSlabLoads);
 
-   void GetDesignMainSpanSlabLoadAdjustment(const CSegmentKey& segmentKey, Float64 Astart, Float64 Aend, Float64 Fillet, std::vector<SlabLoad>* pSlabLoads);
+   void GetDesignMainSpanSlabLoadAdjustment(const CSegmentKey& segmentKey, Float64 Astart, Float64 Aend, Float64 AssExcessCamber, std::vector<SlabLoad>* pSlabLoads);
 
    void GetCantileverSlabLoad(const CSegmentKey& segmentKey, Float64* pP1, Float64* pM1, Float64* pP2, Float64* pM2);
    void GetCantileverSlabPadLoad(const CSegmentKey& segmentKey, Float64* pP1, Float64* pM1, Float64* pP2, Float64* pM2);
@@ -345,16 +345,21 @@ private:
    void ApplyDiaphragmLoadsAtPiers(ILBAMModel* pModel, pgsTypes::AnalysisType analysisType,GirderIndexType gdrLineIdx);
    void ApplyIntermediateDiaphragmLoads(ILBAMModel* pModel, pgsTypes::AnalysisType analysisType,GirderIndexType gdrLineIdx);
 
-   void GetMainSpanSlabLoadEx(const CSegmentKey& segmentKey, bool doCondense, bool useDesignValues , Float64 Astart, Float64 Aend, Float64 Fillet,  std::vector<SlabLoad>* pSlabLoads);
+   void GetMainSpanSlabLoadEx(const CSegmentKey& segmentKey, bool doCondense, bool useDesignValues , Float64 Astart, Float64 Aend, Float64 AssExcessCamber,  std::vector<SlabLoad>* pSlabLoads);
 
    typedef struct PostTensionStrainLoad
    {
+      PostTensionStrainLoad(SpanIndexType startSpanIdx,SpanIndexType endSpanIdx,Float64 Xstart,Float64 Xend,Float64 eStart,Float64 eEnd,Float64 rStart,Float64 rEnd) :
+         startSpanIdx(startSpanIdx),endSpanIdx(endSpanIdx),Xstart(Xstart),Xend(Xend),eStart(eStart),eEnd(eEnd),rStart(rStart),rEnd(rEnd)
+      {
+          ATLASSERT(startSpanIdx < endSpanIdx || (startSpanIdx == endSpanIdx && Xstart < Xend));
+      }
       SpanIndexType startSpanIdx, endSpanIdx;
       Float64 Xstart, Xend;
       Float64 eStart, eEnd;
       Float64 rStart, rEnd;
    } PostTensionStrainLoad;
-   void GetPostTensionDeformationLoads(const CGirderKey& girderKey,DuctIndexType ductIdx,std::vector<PostTensionStrainLoad>& strainLoads);
+   void GetPostTensionDeformationLoads(const CGirderKey& girderKey,DuctIndexType ductIdx,std::vector<PostTensionStrainLoad>& strainLoads) const;
 
 
    Float64 GetPedestrianLiveLoad(const CSpanKey& spanKey);

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2017  Washington State Department of Transportation
+// Copyright © 1999-2018  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -274,12 +274,14 @@ public:
    virtual void SetSlabOffset(GroupIndexType grpIdx, PierIndexType pierIdx, GirderIndexType gdrIdx, Float64 offset) override;
    virtual Float64 GetSlabOffset(GroupIndexType grpidx, PierIndexType pierIdx, GirderIndexType gdrIdx) override;
    virtual pgsTypes::SlabOffsetType GetSlabOffsetType() override;
-   virtual void SetFilletType(pgsTypes::FilletType offsetType) override;
-   virtual pgsTypes::FilletType GetFilletType() override;
-   virtual void SetFillet( Float64 Fillet) override;
-   virtual void SetFillet(SpanIndexType spanIdx, Float64 offset) override;
-   virtual void SetFillet( SpanIndexType spanIdx, GirderIndexType gdrIdx, Float64 offset) override;
-   virtual Float64 GetFillet( SpanIndexType spanIdx, GirderIndexType gdrIdx) override;
+   virtual void SetFillet( Float64 Fillet);
+   virtual Float64 GetFillet();
+   virtual void SetAssExcessCamberType(pgsTypes::AssExcessCamberType cType);
+   virtual pgsTypes::AssExcessCamberType GetAssExcessCamberType();
+   virtual void SetAssExcessCamber( Float64 assExcessCamber);
+   virtual void SetAssExcessCamber(SpanIndexType spanIdx, Float64 offset);
+   virtual void SetAssExcessCamber( SpanIndexType spanIdx, GirderIndexType gdrIdx, Float64 camber);
+   virtual Float64 GetAssExcessCamber( SpanIndexType spanIdx, GirderIndexType gdrIdx);
    virtual std::vector<pgsTypes::BoundaryConditionType> GetBoundaryConditionTypes(PierIndexType pierIdx) override;
    virtual std::vector<pgsTypes::PierSegmentConnectionType> GetPierSegmentConnectionTypes(PierIndexType pierIdx) override;
    virtual const CTimelineManager* GetTimelineManager() override;
@@ -397,6 +399,8 @@ public:
    virtual pgsTypes::OverlayLoadDistributionType GetOverlayLoadDistributionType() override;
    virtual pgsTypes::HaunchLoadComputationType GetHaunchLoadComputationType() override;
    virtual Float64 GetCamberTolerance() override;
+   virtual Float64 GetHaunchLoadCamberFactor() override;
+   virtual bool IsAssExcessCamberInputEnabled(bool considerDeckType=true) override;
 
 // IRatingSpecification
 public:
@@ -537,22 +541,31 @@ public:
    virtual CollectionIndexType AddPointLoad(EventIDType eventID,const CPointLoadData& pld) override;
    virtual const CPointLoadData* GetPointLoad(CollectionIndexType idx) const override;
    virtual const CPointLoadData* FindPointLoad(LoadIDType loadID) const override;
+   virtual EventIndexType GetPointLoadEventIndex(LoadIDType loadID) const override;
+   virtual EventIDType GetPointLoadEventID(LoadIDType loadID) const override;
    virtual void UpdatePointLoad(CollectionIndexType idx, EventIDType eventID,const CPointLoadData& pld) override;
    virtual void DeletePointLoad(CollectionIndexType idx) override;
+   virtual std::vector<CPointLoadData> GetPointLoads(const CSpanKey& spanKey) const override;
 
    virtual CollectionIndexType GetDistributedLoadCount() const override;
    virtual CollectionIndexType AddDistributedLoad(EventIDType eventID,const CDistributedLoadData& pld) override;
    virtual const CDistributedLoadData* GetDistributedLoad(CollectionIndexType idx) const override;
    virtual const CDistributedLoadData* FindDistributedLoad(LoadIDType loadID) const override;
+   virtual EventIndexType GetDistributedLoadEventIndex(LoadIDType loadID) const override;
+   virtual EventIDType GetDistributedLoadEventID(LoadIDType loadID) const override;
    virtual void UpdateDistributedLoad(CollectionIndexType idx, EventIDType eventID,const CDistributedLoadData& pld) override;
    virtual void DeleteDistributedLoad(CollectionIndexType idx) override;
+   virtual std::vector<CDistributedLoadData> GetDistributedLoads(const CSpanKey& spanKey) const override;
 
    virtual CollectionIndexType GetMomentLoadCount() const override;
    virtual CollectionIndexType AddMomentLoad(EventIDType eventID,const CMomentLoadData& pld) override;
    virtual const CMomentLoadData* GetMomentLoad(CollectionIndexType idx) const override;
    virtual const CMomentLoadData* FindMomentLoad(LoadIDType loadID) const override;
+   virtual EventIndexType GetMomentLoadEventIndex(LoadIDType loadID) const override;
+   virtual EventIDType GetMomentLoadEventID(LoadIDType loadID) const override;
    virtual void UpdateMomentLoad(CollectionIndexType idx, EventIDType eventID,const CMomentLoadData& pld) override;
    virtual void DeleteMomentLoad(CollectionIndexType idx) override;
+   virtual std::vector<CMomentLoadData> GetMomentLoads(const CSpanKey& spanKey) const override;
 
    virtual void SetConstructionLoad(Float64 load) override;
    virtual Float64 GetConstructionLoad() const override;

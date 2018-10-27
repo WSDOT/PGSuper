@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2017  Washington State Department of Transportation
+// Copyright © 1999-2018  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -141,7 +141,7 @@ rptChapter* CADimChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 lev
       (*pTable1)(0,6) << COLHDR(_T("Fillet"),rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
       (*pTable1)(0,7) << COLHDR(_T("D"),rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
       (*pTable1)(0,8) << COLHDR(_T("C"),rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
-      (*pTable1)(0,9) << COLHDR(_T("Excess") << rptNewLine << _T("Camber"),rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+      (*pTable1)(0,9) << COLHDR(_T("Computed") << rptNewLine << _T("Excess") << rptNewLine << _T("Camber"),rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
 
       (*pTable2)(0,0) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
       (*pTable2)(0,1) << _T("Deck") << rptNewLine << _T("Slope") << rptNewLine << _T("(") << Sub2(_T("m"),_T("d")) << _T(")") << rptNewLine << _T("(") << strSlopeTag << _T("/") << strSlopeTag << _T(")");

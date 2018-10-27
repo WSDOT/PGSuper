@@ -536,6 +536,7 @@
     <ClCompile Include="TogaSupportDrawStrategyImpl.cpp" />
     <ClCompile Include="TOGATitlePageBuilder.cpp" />
     <ClCompile Include="TxDOTAgent.cpp" />
+    <ClCompile Include="TxDOTAgentApp.cpp" />
     <ClCompile Include="TxDOTAgentImp.cpp" />
     <ClCompile Include="TxDOTAgent_i.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -558,6 +559,7 @@
       <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</CompileAsManaged>
     </ClCompile>
     <ClCompile Include="TxDOTAppPlugin.cpp" />
+    <ClCompile Include="TxDOTAppPluginComponentInfo.cpp" />
     <ClCompile Include="TxDOTCadExporter.cpp" />
     <ClCompile Include="TxDOTCadWriter.cpp" />
     <ClCompile Include="TxDOTCommandLineInfo.cpp" />
@@ -584,6 +586,7 @@
     <None Include="TxDOTAgent.rgs" />
     <None Include="TxDOTAgentImp.rgs" />
     <None Include="TxDOTAppPlugin.rgs" />
+    <None Include="TxDOTAppPluginComponentInfo.rgs" />
     <None Include="TxDOTCadExporter.rgs" />
     <None Include="TxDOTComponentInfo.rgs" />
   </ItemGroup>
@@ -631,9 +634,11 @@
     <ClInclude Include="TogaSupportDrawStrategy.h" />
     <ClInclude Include="TogaSupportDrawStrategyImpl.h" />
     <ClInclude Include="TOGATitlePageBuilder.h" />
+    <ClInclude Include="TxDOTAgentApp.h" />
     <ClInclude Include="TxDOTAgentImp.h" />
     <ClInclude Include="TxDOTAgent_i.h" />
     <ClInclude Include="TxDOTAppPlugin.h" />
+    <ClInclude Include="TxDOTAppPluginComponentInfo.h" />
     <ClInclude Include="TxDOTCadExporter.h" />
     <ClInclude Include="TxDOTCadWriter.h" />
     <ClInclude Include="TxDOTCommandLineInfo.h" />

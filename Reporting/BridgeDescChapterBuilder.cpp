@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2017  Washington State Department of Transportation
+// Copyright © 1999-2018  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -153,14 +153,14 @@ void CBridgeDescChapterBuilder::WriteCrownData(IBroker* pBroker, IEAFDisplayUnit
 /////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////
 
-void write_alignment_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,Uint16 level)
+void write_alignment_data(IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, rptChapter* pChapter, Uint16 level)
 {
    USES_CONVERSION;
 
-   GET_IFACE2(pBroker, IRoadwayData, pAlignment ); 
+   GET_IFACE2(pBroker, IRoadwayData, pAlignment);
    rptParagraph* pPara;
 
-   INIT_UV_PROTOTYPE( rptLengthUnitValue, length, pDisplayUnits->GetAlignmentLengthUnit(), false );
+   INIT_UV_PROTOTYPE(rptLengthUnitValue, length, pDisplayUnits->GetAlignmentLengthUnit(), false);
 
    CComPtr<IDirectionDisplayUnitFormatter> direction_formatter;
    direction_formatter.CoCreateInstance(CLSID_DirectionDisplayUnitFormatter);
@@ -169,7 +169,7 @@ void write_alignment_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptCh
    CComPtr<IAngleDisplayUnitFormatter> angle_formatter;
    angle_formatter.CoCreateInstance(CLSID_AngleDisplayUnitFormatter);
 
-   pPara = new rptParagraph( rptStyleManager::GetHeadingStyle() );
+   pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pPara;
    *pPara << _T("Alignment Details") << rptNewLine;
 
@@ -179,266 +179,760 @@ void write_alignment_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptCh
    AlignmentData2 alignment = pAlignment->GetAlignmentData2();
 
    CComBSTR bstrBearing;
-   direction_formatter->Format(alignment.Direction,CComBSTR("°,\',\""),&bstrBearing);
+   direction_formatter->Format(alignment.Direction, CComBSTR("°,\',\""), &bstrBearing);
    *pPara << _T("Direction: ") << RPT_BEARING(OLE2T(bstrBearing)) << rptNewLine;
 
    *pPara << _T("Ref. Point: ") << rptRcStation(alignment.RefStation, &pDisplayUnits->GetStationFormat())
-          << _T(" ")
-          << _T("(E (X) ") << length.SetValue(alignment.xRefPoint);
-   *pPara << _T(", ") 
-          << _T("N (Y) ") << length.SetValue(alignment.yRefPoint) << _T(")") << rptNewLine;
+      << _T(" ")
+      << _T("(E (X) ") << length.SetValue(alignment.xRefPoint);
+   *pPara << _T(", ")
+      << _T("N (Y) ") << length.SetValue(alignment.yRefPoint) << _T(")") << rptNewLine;
 
-   if ( alignment.HorzCurves.size() == 0 )
+   if (alignment.HorzCurves.size() == 0)
    {
       return;
    }
 
-   GET_IFACE2(pBroker, IRoadway, pRoadway );
+   bool bHasEntrySpirals = false;
+   bool bHasExitSpirals = false;
+   bool bHasCircularCurves = false;
+   for (const auto& hc : alignment.HorzCurves)
+   {
+      if (!IsZero(hc.EntrySpiral))
+      {
+         bHasEntrySpirals = true;
+      }
+
+      if (!IsZero(hc.ExitSpiral))
+      {
+         bHasExitSpirals = true;
+      }
+
+      if (!IsZero(hc.Radius))
+      {
+         bHasCircularCurves = true;
+      }
+   }
+
+   GET_IFACE2(pBroker, IRoadway, pRoadway);
 
    pPara = new rptParagraph;
    *pChapter << pPara;
 
-   rptRcTable* pTable = rptStyleManager::CreateDefaultTable(alignment.HorzCurves.size()+1,_T("Horizontal Curve Data"));
+   ColumnIndexType nColumns = alignment.HorzCurves.size() + 1;
+   rptRcTable* pTable = rptStyleManager::CreateDefaultTable(nColumns, _T("Horizontal Curve Data"));
    *pPara << pTable << rptNewLine;
 
-   pTable->SetColumnStyle(0,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
-   pTable->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+   pTable->SetColumnStyle(0, rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+   pTable->SetStripeRowColumnStyle(0, rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
 
    RowIndexType row = 0;
 
-   (*pTable)(row++,0) << _T("Curve Parameters");
-   (*pTable)(row++,0) << _T("Back Tangent Bearing");
-   (*pTable)(row++,0) << _T("Forward Tangent Bearing");
-   (*pTable)(row++,0) << _T("TS Station");
-   (*pTable)(row++,0) << _T("SC Station");
-   (*pTable)(row++,0) << _T("PC Station");
-   (*pTable)(row++,0) << _T("PI Station");
-   (*pTable)(row++,0) << _T("PT Station");
-   (*pTable)(row++,0) << _T("CS Station");
-   (*pTable)(row++,0) << _T("ST Station");
-   (*pTable)(row++,0) << _T("Total Delta (") << Sub2(symbol(DELTA),_T("c")) << _T(")");
-   (*pTable)(row++,0) << _T("Entry Spiral Length");
-   (*pTable)(row++,0) << _T("Exit Spiral Length");
-   (*pTable)(row++,0) << _T("Delta (") << Sub2(symbol(DELTA),_T("cc")) << _T(")");
-   (*pTable)(row++,0) << _T("Degree Curvature (DC)");
-   (*pTable)(row++,0) << _T("Radius (R)");
-   (*pTable)(row++,0) << _T("Tangent (T)");
-   (*pTable)(row++,0) << _T("Length (L)");
-   (*pTable)(row++,0) << _T("Chord (C)");
-   (*pTable)(row++,0) << _T("External (E)");
-   (*pTable)(row++,0) << _T("Mid Ordinate (MO)");
+   (*pTable)(row++, 0) << _T("Curve Parameters");
+   (*pTable)(row++, 0) << _T("Back Tangent Bearing");
+   if (bHasEntrySpirals || bHasExitSpirals)
+   {
+      (*pTable)(row++, 0) << _T("Back Tangent Length");
+   }
+   (*pTable)(row++, 0) << _T("Forward Tangent Bearing");
+   if (bHasEntrySpirals || bHasExitSpirals)
+   {
+      (*pTable)(row++, 0) << _T("Forward Tangent Length");
+   }
 
-   (*pTable)(row++,0) << _T("TS");
-   (*pTable)(row++,0) << _T("SC");
-   (*pTable)(row++,0) << _T("PI");
-   (*pTable)(row++,0) << _T("CS");
-   (*pTable)(row++,0) << _T("ST");
-   (*pTable)(row++,0) << _T("CC");
+   if (bHasEntrySpirals)
+   {
+      (*pTable)(row++, 0) << _T("TS Station");
+      (*pTable)(row++, 0) << _T("SPI Station");
+      (*pTable)(row++, 0) << _T("SC Station");
+   }
+
+   if (bHasCircularCurves)
+   {
+      (*pTable)(row++, 0) << _T("PC Station");
+   }
+   
+   (*pTable)(row++, 0) << _T("PI Station");
+
+   if (bHasCircularCurves)
+   {
+      (*pTable)(row++, 0) << _T("PT Station");
+   }
+
+   if (bHasExitSpirals)
+   {
+      (*pTable)(row++, 0) << _T("CS Station");
+      (*pTable)(row++, 0) << _T("SPI Station");
+      (*pTable)(row++, 0) << _T("ST Station");
+   }
+
+   if (bHasEntrySpirals || bHasExitSpirals)
+   {
+      (*pTable)(row++, 0) << _T("Total Delta (") << Sub2(symbol(DELTA), _T("c")) << _T(")");
+   }
+
+   if (bHasEntrySpirals)
+   {
+      pTable->SetColumnSpan(row, 0, nColumns);
+      for (ColumnIndexType colIdx = 1; colIdx < nColumns; colIdx++)
+      {
+         pTable->SetColumnSpan(row, colIdx, SKIP_CELL);
+      }
+      (*pTable)(row++, 0) << Bold(_T("Entry Spiral"));
+
+      (*pTable)(row++, 0) << _T("Length");
+      (*pTable)(row++, 0) << _T("Delta (") << Sub2(symbol(DELTA), _T("s")) << _T(")");
+      (*pTable)(row++, 0) << _T("Deviation Angle (DE)");
+      (*pTable)(row++, 0) << _T("Deflection Angle (DF)");
+      (*pTable)(row++, 0) << _T("Deflection Angle (DH = DE - DF)");
+      (*pTable)(row++, 0) << _T("Long Tangent (u)");
+      (*pTable)(row++, 0) << _T("Short Tangent (v)");
+      (*pTable)(row++, 0) << _T("Long Chord (") << Sub2(_T("C"), _T("s")) << _T(")");
+      (*pTable)(row++, 0) << Sub2(_T("X"), _T("s"));
+      (*pTable)(row++, 0) << Sub2(_T("Y"), _T("s"));
+      (*pTable)(row++, 0) << _T("Throw (Q)");
+      (*pTable)(row++, 0) << _T("t");
+   }
+
+   if (bHasEntrySpirals || bHasExitSpirals)
+   {
+      pTable->SetColumnSpan(row, 0, nColumns);
+      for (ColumnIndexType colIdx = 1; colIdx < nColumns; colIdx++)
+      {
+         pTable->SetColumnSpan(row, colIdx, SKIP_CELL);
+      }
+      (*pTable)(row++, 0) << Bold(_T("Circular Curve"));
+   }
+
+   if (bHasCircularCurves)
+   {
+      (*pTable)(row++, 0) << _T("Delta (") << Sub2(symbol(DELTA), _T("cc")) << _T(")");
+      (*pTable)(row++, 0) << _T("Degree Curvature (DC)");
+      (*pTable)(row++, 0) << _T("Radius (R)");
+      (*pTable)(row++, 0) << _T("Tangent (T)");
+      (*pTable)(row++, 0) << _T("Length (L)");
+      (*pTable)(row++, 0) << _T("Chord (C)");
+      (*pTable)(row++, 0) << _T("External (E)");
+      (*pTable)(row++, 0) << _T("Mid Ordinate (MO)");
+   }
+
+   if (bHasExitSpirals)
+   {
+      pTable->SetColumnSpan(row, 0, nColumns);
+      for (ColumnIndexType colIdx = 1; colIdx < nColumns; colIdx++)
+      {
+         pTable->SetColumnSpan(row, colIdx, SKIP_CELL);
+      }
+      (*pTable)(row++, 0) << Bold(_T("Exit Spiral"));
+
+      (*pTable)(row++, 0) << _T("Length");
+      (*pTable)(row++, 0) << _T("Delta (") << Sub2(symbol(DELTA), _T("s")) << _T(")");
+      (*pTable)(row++, 0) << _T("Deviation Angle (DE)");
+      (*pTable)(row++, 0) << _T("Deflection Angle (DF)");
+      (*pTable)(row++, 0) << _T("Deflection Angle (DH = DE - DF)");
+      (*pTable)(row++, 0) << _T("Long Tangent (u)");
+      (*pTable)(row++, 0) << _T("Short Tangent (v)");
+      (*pTable)(row++, 0) << _T("Long Chord (") << Sub2(_T("C"), _T("s")) << _T(")");
+      (*pTable)(row++, 0) << Sub2(_T("X"), _T("s"));
+      (*pTable)(row++, 0) << Sub2(_T("Y"), _T("s"));
+      (*pTable)(row++, 0) << _T("Throw (Q)");
+      (*pTable)(row++, 0) << _T("t");
+   }
+
+   pTable->SetColumnSpan(row, 0, nColumns);
+   for (ColumnIndexType colIdx = 1; colIdx < nColumns; colIdx++)
+   {
+      pTable->SetColumnSpan(row, colIdx, SKIP_CELL);
+   }
+   (*pTable)(row++, 0) << Bold(_T("Curve Points (x,y)"));
+
+   if (bHasEntrySpirals)
+   {
+      (*pTable)(row++, 0) << _T("TS");
+      (*pTable)(row++, 0) << _T("SPI");
+      (*pTable)(row++, 0) << _T("SC");
+   }
+
+   if (bHasCircularCurves)
+   {
+      (*pTable)(row++, 0) << _T("PC");
+   }
+
+   (*pTable)(row++, 0) << _T("PI");
+
+   if (bHasCircularCurves)
+   {
+      (*pTable)(row++, 0) << _T("PT");
+   }
+
+   if (bHasExitSpirals)
+   {
+      (*pTable)(row++, 0) << _T("CS");
+      (*pTable)(row++, 0) << _T("SPI");
+      (*pTable)(row++, 0) << _T("ST");
+   }
+
+   if (bHasCircularCurves)
+   {
+      (*pTable)(row++, 0) << _T("Center of Circular Curve (CCC)");
+   }
+
+   if (bHasEntrySpirals || bHasExitSpirals)
+   {
+      (*pTable)(row++, 0) << _T("Center of Curve (CC)");
+   }
 
    length.ShowUnitTag(true);
 
    ColumnIndexType col = 1;
    IndexType curveIdx = 0;
    std::vector<HorzCurveData>::iterator iter;
-   for ( iter = alignment.HorzCurves.begin(); iter != alignment.HorzCurves.end(); iter++, col++ )
+   for (iter = alignment.HorzCurves.begin(); iter != alignment.HorzCurves.end(); iter++, col++)
    {
       HorzCurveData& hc_data = *iter;
       row = 0;
 
-      (*pTable)(row++,col) << _T("Curve ") << col;
+      (*pTable)(row++, col) << _T("Curve ") << col;
 
-      if ( IsZero(hc_data.Radius) )
+      CComPtr<IHorzCurve> hc;
+      IndexType hcIdx = curveIdx++;
+
+      CComPtr<IDirection> bkTangent;
+      CComPtr<IDirection> fwdTangent;
+      if (IsZero(hc_data.Radius))
       {
-         CComPtr<IDirection> bkTangent;
-         pRoadway->GetBearing(hc_data.PIStation - ::ConvertToSysUnits(1.0,unitMeasure::Feet),&bkTangent);
-
-         CComPtr<IDirection> fwdTangent;
-         pRoadway->GetBearing(hc_data.PIStation + ::ConvertToSysUnits(1.0,unitMeasure::Feet),&fwdTangent);
-
-         Float64 bk_tangent_value;
-         bkTangent->get_Value(&bk_tangent_value);
-
-         Float64 fwd_tangent_value;
-         fwdTangent->get_Value(&fwd_tangent_value);
-
-         CComBSTR bstrBkTangent;
-         direction_formatter->Format(bk_tangent_value,CComBSTR("°,\',\""),&bstrBkTangent);
-
-         CComBSTR bstrFwdTangent;
-         direction_formatter->Format(fwd_tangent_value,CComBSTR("°,\',\""),&bstrFwdTangent);
-         (*pTable)(row++,col) << RPT_BEARING(OLE2T(bstrBkTangent));
-         (*pTable)(row++,col) << RPT_BEARING(OLE2T(bstrFwdTangent));
-
-         (*pTable)(row++,col) << _T(""); // TS Station
-         (*pTable)(row++,col) << _T(""); // SC Station
-         (*pTable)(row++,col) << _T(""); // PC Station
-
-         (*pTable)(row++,col) << rptRcStation(hc_data.PIStation, &pDisplayUnits->GetStationFormat());
-
-         (*pTable)(row++,col) << _T(""); // PT Station
-         (*pTable)(row++,col) << _T(""); // CS Station
-         (*pTable)(row++,col) << _T(""); // ST Station
-         (*pTable)(row++,col) << _T(""); // Total Delta
-         (*pTable)(row++,col) << _T(""); // Entry Spiral Length
-         (*pTable)(row++,col) << _T(""); // Exit Spiral Length
-         (*pTable)(row++,col) << _T(""); // Delta 
-         (*pTable)(row++,col) << _T(""); // Degree curvature
-         (*pTable)(row++,col) << _T(""); // Radius
-         (*pTable)(row++,col) << _T(""); // Tangent
-         (*pTable)(row++,col) << _T(""); // Length
-         (*pTable)(row++,col) << _T(""); // Chord
-         (*pTable)(row++,col) << _T(""); // External
-         (*pTable)(row++,col) << _T(""); // Mid Ordinate
-
-         (*pTable)(row++, col) << _T(""); // TS
-         (*pTable)(row++, col) << _T(""); // SC
-         (*pTable)(row++, col) << _T(""); // PI
-         (*pTable)(row++, col) << _T(""); // CS
-         (*pTable)(row++, col) << _T(""); // ST
-         (*pTable)(row++, col) << _T(""); // CC
+         pRoadway->GetBearing(hc_data.PIStation - ::ConvertToSysUnits(1.0, unitMeasure::Feet), &bkTangent);
+         pRoadway->GetBearing(hc_data.PIStation + ::ConvertToSysUnits(1.0, unitMeasure::Feet), &fwdTangent);
       }
       else
       {
-         CComPtr<IHorzCurve> hc;
-         IndexType hcIdx = curveIdx++;
-         pRoadway->GetCurve(hcIdx,&hc);
-
-         CComPtr<IDirection> bkTangent;
-         CComPtr<IDirection> fwdTangent;
+         pRoadway->GetCurve(hcIdx, &hc);
          hc->get_BkTangentBrg(&bkTangent);
          hc->get_FwdTangentBrg(&fwdTangent);
+      }
 
-         Float64 bk_tangent_value;
-         bkTangent->get_Value(&bk_tangent_value);
+      Float64 bk_tangent_value;
+      bkTangent->get_Value(&bk_tangent_value);
 
-         Float64 fwd_tangent_value;
-         fwdTangent->get_Value(&fwd_tangent_value);
+      CComBSTR bstrBkTangent;
+      direction_formatter->Format(bk_tangent_value, CComBSTR("°,\',\""), &bstrBkTangent);
+      (*pTable)(row++, col) << RPT_BEARING(OLE2T(bstrBkTangent));
 
-         CComBSTR bstrBkTangent;
-         direction_formatter->Format(bk_tangent_value,CComBSTR("°,\',\""),&bstrBkTangent);
+      if (bHasEntrySpirals || bHasExitSpirals)
+      {
+         Float64 back_tangent_length;
+         hc->get_BkTangentLength(&back_tangent_length);
+         (*pTable)(row++, col) << length.SetValue(back_tangent_length);
+      }
 
-         CComBSTR bstrFwdTangent;
-         direction_formatter->Format(fwd_tangent_value,CComBSTR("°,\',\""),&bstrFwdTangent);
+      Float64 fwd_tangent_value;
+      fwdTangent->get_Value(&fwd_tangent_value);
 
-         HCURVESTATIONS stations = pRoadway->GetCurveStations(hcIdx);
+      CComBSTR bstrFwdTangent;
+      direction_formatter->Format(fwd_tangent_value, CComBSTR("°,\',\""), &bstrFwdTangent);
+      (*pTable)(row++, col) << RPT_BEARING(OLE2T(bstrFwdTangent));
 
-         (*pTable)(row++,col) << RPT_BEARING(OLE2T(bstrBkTangent));
-         (*pTable)(row++,col) << RPT_BEARING(OLE2T(bstrFwdTangent));
-         if ( IsEqual(stations.TSStation,stations.SCStation) )
+      if (bHasEntrySpirals || bHasExitSpirals)
+      {
+         Float64 fwd_tangent_length;
+         hc->get_FwdTangentLength(&fwd_tangent_length);
+         (*pTable)(row++, col) << length.SetValue(fwd_tangent_length);
+      }
+
+      // Curve stations
+      HCURVESTATIONS stations;
+
+      if (!IsZero(hc_data.Radius))
+      {
+         stations = pRoadway->GetCurveStations(hcIdx);
+      }
+
+      if (IsZero(hc_data.Radius))
+      {
+         if (bHasEntrySpirals)
          {
-            (*pTable)(row++,col) << _T("-");
-            (*pTable)(row++,col) << _T("-");
-            (*pTable)(row++,col) << rptRcStation(stations.TSStation, &pDisplayUnits->GetStationFormat());
+            (*pTable)(row++, col) << _T("-");
+            (*pTable)(row++, col) << _T("-");
+            (*pTable)(row++, col) << _T("-");
+         }
+
+         if (bHasCircularCurves)
+         {
+            (*pTable)(row++, col) << _T("-");
+         }
+      }
+      else
+      {
+         if (IsEqual(stations.TSStation, stations.SCStation))
+         {
+            if (bHasEntrySpirals)
+            {
+               (*pTable)(row++, col) << _T("-");
+               (*pTable)(row++, col) << _T("-");
+               (*pTable)(row++, col) << _T("-");
+            }
+
+            if (bHasCircularCurves)
+            {
+               (*pTable)(row++, col) << rptRcStation(stations.TSStation, &pDisplayUnits->GetStationFormat());
+            }
          }
          else
          {
-            (*pTable)(row++,col) << rptRcStation(stations.TSStation, &pDisplayUnits->GetStationFormat());
-            (*pTable)(row++,col) << rptRcStation(stations.SCStation, &pDisplayUnits->GetStationFormat());
-            (*pTable)(row++,col) << _T("-");
-         }
-         (*pTable)(row++,col) << rptRcStation(stations.PIStation, &pDisplayUnits->GetStationFormat());
+            if (bHasEntrySpirals)
+            {
+               (*pTable)(row++, col) << rptRcStation(stations.TSStation, &pDisplayUnits->GetStationFormat());
+               (*pTable)(row++, col) << rptRcStation(stations.SPI1Station, &pDisplayUnits->GetStationFormat());
+               (*pTable)(row++, col) << rptRcStation(stations.SCStation, &pDisplayUnits->GetStationFormat());
+            }
 
-         if ( IsEqual(stations.CSStation,stations.STStation) )
+            if (bHasCircularCurves)
+            {
+               (*pTable)(row++, col) << _T("-");
+            }
+         }
+      }
+
+      (*pTable)(row++, col) << rptRcStation(hc_data.PIStation, &pDisplayUnits->GetStationFormat());
+
+      if (IsZero(hc_data.Radius))
+      {
+         if (bHasCircularCurves)
          {
-            (*pTable)(row++,col) << rptRcStation(stations.CSStation, &pDisplayUnits->GetStationFormat());
-            (*pTable)(row++,col) << _T("-");
-            (*pTable)(row++,col) << _T("-");
+            (*pTable)(row++, col) << _T("-");
+         }
+
+         if (bHasExitSpirals)
+         {
+            (*pTable)(row++, col) << _T("-");
+            (*pTable)(row++, col) << _T("-");
+            (*pTable)(row++, col) << _T("-");
+         }
+      }
+      else
+      {
+         if (IsEqual(stations.CSStation, stations.STStation))
+         {
+            if (bHasCircularCurves)
+            {
+               (*pTable)(row++, col) << rptRcStation(stations.CSStation, &pDisplayUnits->GetStationFormat());
+            }
+
+            if (bHasExitSpirals)
+            {
+               (*pTable)(row++, col) << _T("-");
+               (*pTable)(row++, col) << _T("-");
+               (*pTable)(row++, col) << _T("-");
+            }
          }
          else
          {
-            (*pTable)(row++,col) << _T("-");
-            (*pTable)(row++,col) << rptRcStation(stations.CSStation, &pDisplayUnits->GetStationFormat());
-            (*pTable)(row++,col) << rptRcStation(stations.STStation, &pDisplayUnits->GetStationFormat());
+            if (bHasCircularCurves)
+            {
+               (*pTable)(row++, col) << _T("-");
+            }
+
+            if (bHasExitSpirals)
+            {
+               (*pTable)(row++, col) << rptRcStation(stations.CSStation, &pDisplayUnits->GetStationFormat());
+               (*pTable)(row++, col) << rptRcStation(stations.SPI2Station, &pDisplayUnits->GetStationFormat());
+               (*pTable)(row++, col) << rptRcStation(stations.STStation, &pDisplayUnits->GetStationFormat());
+            }
          }
+      }
+
+      CComPtr<IAngle> delta;
+      Float64 delta_value;
+      CComBSTR bstrDelta;
+
+
+      if (bHasEntrySpirals || bHasExitSpirals)
+      {
+         delta.Release();
+         hc->get_CurveAngle(&delta);
+         delta->get_Value(&delta_value);
 
          CurveDirectionType direction;
          hc->get_Direction(&direction);
-
-         CComPtr<IAngle> delta;
-         hc->get_CurveAngle(&delta);
-         Float64 delta_value;
-         delta->get_Value(&delta_value);
          delta_value *= (direction == cdRight ? -1 : 1);
-         CComBSTR bstrDelta;
-         angle_formatter->put_Signed(VARIANT_FALSE);
-         angle_formatter->Format(delta_value,CComBSTR("°,\',\""),&bstrDelta);
-         (*pTable)(row++,col) << RPT_ANGLE(OLE2T(bstrDelta));
 
+         angle_formatter->put_Signed(VARIANT_FALSE);
+         angle_formatter->Format(delta_value, CComBSTR("°,\',\""), &bstrDelta);
+         (*pTable)(row++, col) << RPT_ANGLE(OLE2T(bstrDelta));
+      }
+
+      if (bHasEntrySpirals)
+      {
          // Entry Spiral Data
-         (*pTable)(row++,col) << length.SetValue(hc_data.EntrySpiral);
-         (*pTable)(row++,col) << length.SetValue(hc_data.ExitSpiral);
+         row++; // entry spiral heading row
+         if (IsZero(hc_data.EntrySpiral))
+         {
+            (*pTable)(row++, col) << _T("-"); // Length
+            (*pTable)(row++, col) << _T("-"); // Delta
+            (*pTable)(row++, col) << _T("-"); // DE
+            (*pTable)(row++, col) << _T("-"); // DF
+            (*pTable)(row++, col) << _T("-"); // DH
+            (*pTable)(row++, col) << _T("-"); // Long tangent
+            (*pTable)(row++, col) << _T("-"); // Short tangent
+            (*pTable)(row++, col) << _T("-"); // Long Chord
+            (*pTable)(row++, col) << _T("-"); // Xs
+            (*pTable)(row++, col) << _T("-"); // Ys
+            (*pTable)(row++, col) << _T("-"); // o
+            (*pTable)(row++, col) << _T("-"); // Xo
+         }
+         else
+         {
+            (*pTable)(row++, col) << length.SetValue(hc_data.EntrySpiral);
+            delta.Release();
+            SpiralType spiralType = spEntry;
+            hc->get_SpiralAngle(spiralType, &delta);
+            delta->get_Value(&delta_value);
+            angle_formatter->put_Signed(VARIANT_FALSE);
+            angle_formatter->Format(delta_value, CComBSTR("°,\',\""), &bstrDelta);
+            (*pTable)(row++, col) << RPT_ANGLE(OLE2T(bstrDelta));
 
-         // Circular curve data
-         delta.Release();
-         hc->get_CircularCurveAngle(&delta);
-         delta->get_Value(&delta_value);
-         delta_value *= (direction == cdRight ? -1 : 1);
-         bstrDelta.Empty();
-         angle_formatter->put_Signed(VARIANT_FALSE);
-         angle_formatter->Format(delta_value,CComBSTR("°,\',\""),&bstrDelta);
+            delta.Release();
+            hc->get_DE(spiralType, &delta);
+            delta->get_Value(&delta_value);
+            angle_formatter->put_Signed(VARIANT_TRUE);
+            angle_formatter->Format(delta_value, CComBSTR("°,\',\""), &bstrDelta);
+            (*pTable)(row++, col) << RPT_ANGLE(OLE2T(bstrDelta));
 
-         CComBSTR bstrDC;
-         delta.Release();
-         hc->get_DegreeCurvature(::ConvertToSysUnits(100.0,unitMeasure::Feet),dcHighway,&delta);
-         delta->get_Value(&delta_value);
-         angle_formatter->put_Signed(VARIANT_TRUE);
-         angle_formatter->Format(delta_value,CComBSTR("°,\',\""),&bstrDC);
+            delta.Release();
+            hc->get_DF(spiralType, &delta);
+            delta->get_Value(&delta_value);
+            angle_formatter->put_Signed(VARIANT_TRUE);
+            angle_formatter->Format(delta_value, CComBSTR("°,\',\""), &bstrDelta);
+            (*pTable)(row++, col) << RPT_ANGLE(OLE2T(bstrDelta));
+
+            delta.Release();
+            hc->get_DH(spiralType, &delta);
+            delta->get_Value(&delta_value);
+            angle_formatter->put_Signed(VARIANT_TRUE);
+            angle_formatter->Format(delta_value, CComBSTR("°,\',\""), &bstrDelta);
+            (*pTable)(row++, col) << RPT_ANGLE(OLE2T(bstrDelta));
+
+            Float64 longTangent, shortTangent;
+            hc->get_LongTangent(spiralType, &longTangent);
+            hc->get_ShortTangent(spiralType, &shortTangent);
+            (*pTable)(row++, col) << length.SetValue(longTangent);
+            (*pTable)(row++, col) << length.SetValue(shortTangent);
+            Float64 long_chord;
+            hc->get_SpiralChord(spiralType, &long_chord);
+            (*pTable)(row++, col) << length.SetValue(long_chord);
+            Float64 X, Y;
+            hc->get_X(spiralType, &X);
+            hc->get_Y(spiralType, &Y);
+            (*pTable)(row++, col) << length.SetValue(X);
+            (*pTable)(row++, col) << length.SetValue(Y);
+            Float64 Q, T;
+            hc->get_Q(spiralType, &Q);
+            hc->get_T(spiralType, &T);
+            (*pTable)(row++, col) << length.SetValue(Q);
+            (*pTable)(row++, col) << length.SetValue(T);
+         }
+      }
 
 
-         Float64 tangent;
-         hc->get_Tangent(&tangent);
+      // Circular curve data
+      if (bHasEntrySpirals || bHasExitSpirals)
+      {
+         row++; // circular curve heading row
+      }
 
-         Float64 curve_length;
-         hc->get_CurveLength(&curve_length);
+      if (bHasCircularCurves)
+      {
+         if (IsZero(hc_data.Radius))
+         {
+            (*pTable)(row++, col) << _T("-"); // Delta
+            (*pTable)(row++, col) << _T("-"); // Degree curvature
+            (*pTable)(row++, col) << _T("-"); // Radius
+            (*pTable)(row++, col) << _T("-"); // Tangent
+            (*pTable)(row++, col) << _T("-"); // Length
+            (*pTable)(row++, col) << _T("-"); // Chord
+            (*pTable)(row++, col) << _T("-"); // External
+            (*pTable)(row++, col) << _T("-"); // Mid Ordinate
+         }
+         else
+         {
+            delta.Release();
+            hc->get_CircularCurveAngle(&delta);
+            delta->get_Value(&delta_value);
 
-         Float64 external;
-         hc->get_External(&external);
+            CurveDirectionType direction;
+            hc->get_Direction(&direction);
 
-         Float64 chord;
-         hc->get_Chord(&chord);
-         
-         Float64 mid_ordinate;
-         hc->get_MidOrdinate(&mid_ordinate);
+            delta_value *= (direction == cdRight ? -1 : 1);
+            bstrDelta.Empty();
+            angle_formatter->put_Signed(VARIANT_FALSE);
+            angle_formatter->Format(delta_value, CComBSTR("°,\',\""), &bstrDelta);
 
-         (*pTable)(row++,col) << RPT_ANGLE(OLE2T(bstrDelta));
-         (*pTable)(row++,col) << RPT_ANGLE(OLE2T(bstrDC));
-         (*pTable)(row++,col) << length.SetValue(hc_data.Radius);
-         (*pTable)(row++,col) << length.SetValue(tangent);
-         (*pTable)(row++,col) << length.SetValue(curve_length);
-         (*pTable)(row++,col) << length.SetValue(chord);
-         (*pTable)(row++,col) << length.SetValue(external);
-         (*pTable)(row++,col) << length.SetValue(mid_ordinate);
+            CComBSTR bstrDC;
+            delta.Release();
+            hc->get_DegreeCurvature(::ConvertToSysUnits(100.0, unitMeasure::Feet), dcHighway, &delta);
+            delta->get_Value(&delta_value);
+            angle_formatter->put_Signed(VARIANT_TRUE);
+            angle_formatter->Format(delta_value, CComBSTR("°,\',\""), &bstrDC);
 
-         CComPtr<IPoint2d> pnt;
-         Float64 x,y;
-         pRoadway->GetCurvePoint(hcIdx,cptTS,pgsTypes::pcGlobal,&pnt);
-         pnt->Location(&x,&y);
-         (*pTable)(row,col) << length.SetValue(y) << _T(", "); (*pTable)(row++,col) << length.SetValue(x);
+            Float64 tangent;
+            hc->get_Tangent(&tangent);
 
-         pnt.Release();
-         pRoadway->GetCurvePoint(hcIdx,cptSC,pgsTypes::pcGlobal,&pnt);
-         pnt->Location(&x,&y);
-         (*pTable)(row,col) << length.SetValue(y) << _T(", "); (*pTable)(row++,col) << length.SetValue(x);
+            Float64 curve_length;
+            hc->get_CurveLength(&curve_length);
 
-         pnt.Release();
-         pRoadway->GetCurvePoint(hcIdx,cptPI,pgsTypes::pcGlobal,&pnt);
-         pnt->Location(&x,&y);
-         (*pTable)(row,col) << length.SetValue(y) << _T(", "); (*pTable)(row++,col) << length.SetValue(x);
+            Float64 external;
+            hc->get_External(&external);
 
-         pnt.Release();
-         pRoadway->GetCurvePoint(hcIdx,cptCS,pgsTypes::pcGlobal,&pnt);
-         pnt->Location(&x,&y);
-         (*pTable)(row,col) << length.SetValue(y) << _T(", "); (*pTable)(row++,col) << length.SetValue(x);
+            Float64 chord;
+            hc->get_Chord(&chord);
 
-         pnt.Release();
-         pRoadway->GetCurvePoint(hcIdx,cptST,pgsTypes::pcGlobal,&pnt);
-         pnt->Location(&x,&y);
-         (*pTable)(row,col) << length.SetValue(y) << _T(", "); (*pTable)(row++,col) << length.SetValue(x);
+            Float64 mid_ordinate;
+            hc->get_MidOrdinate(&mid_ordinate);
 
-         pnt.Release();
-         pRoadway->GetCurvePoint(hcIdx,cptCC,pgsTypes::pcGlobal,&pnt);
-         pnt->Location(&x,&y);
-         (*pTable)(row,col) << length.SetValue(y) << _T(", "); (*pTable)(row++,col) << length.SetValue(x);
+            (*pTable)(row++, col) << RPT_ANGLE(OLE2T(bstrDelta));
+            (*pTable)(row++, col) << RPT_ANGLE(OLE2T(bstrDC));
+            (*pTable)(row++, col) << length.SetValue(hc_data.Radius);
+            (*pTable)(row++, col) << length.SetValue(tangent);
+            (*pTable)(row++, col) << length.SetValue(curve_length);
+            (*pTable)(row++, col) << length.SetValue(chord);
+            (*pTable)(row++, col) << length.SetValue(external);
+            (*pTable)(row++, col) << length.SetValue(mid_ordinate);
+         }
+      }
+
+
+      if (bHasExitSpirals)
+      {
+         // Exit Spiral Data
+         row++; // exit spiral heading row
+         if (IsZero(hc_data.ExitSpiral))
+         {
+            (*pTable)(row++, col) << _T("-"); // Length
+            (*pTable)(row++, col) << _T("-"); // Delta
+            (*pTable)(row++, col) << _T("-"); // DE
+            (*pTable)(row++, col) << _T("-"); // DF
+            (*pTable)(row++, col) << _T("-"); // DH
+            (*pTable)(row++, col) << _T("-"); // Long tangent
+            (*pTable)(row++, col) << _T("-"); // Short tangent
+            (*pTable)(row++, col) << _T("-"); // Long Chord
+            (*pTable)(row++, col) << _T("-"); // Xs
+            (*pTable)(row++, col) << _T("-"); // Ys
+            (*pTable)(row++, col) << _T("-"); // o
+            (*pTable)(row++, col) << _T("-"); // Xo
+         }
+         else
+         {
+            (*pTable)(row++, col) << length.SetValue(hc_data.ExitSpiral);
+            delta.Release();
+            SpiralType spiralType = spExit;
+            hc->get_SpiralAngle(spiralType, &delta);
+            delta->get_Value(&delta_value);
+            angle_formatter->put_Signed(VARIANT_FALSE);
+            angle_formatter->Format(delta_value, CComBSTR("°,\',\""), &bstrDelta);
+            (*pTable)(row++, col) << RPT_ANGLE(OLE2T(bstrDelta));
+
+            delta.Release();
+            hc->get_DE(spiralType, &delta);
+            delta->get_Value(&delta_value);
+            angle_formatter->put_Signed(VARIANT_TRUE);
+            angle_formatter->Format(delta_value, CComBSTR("°,\',\""), &bstrDelta);
+            (*pTable)(row++, col) << RPT_ANGLE(OLE2T(bstrDelta));
+
+            delta.Release();
+            hc->get_DF(spiralType, &delta);
+            delta->get_Value(&delta_value);
+            angle_formatter->put_Signed(VARIANT_TRUE);
+            angle_formatter->Format(delta_value, CComBSTR("°,\',\""), &bstrDelta);
+            (*pTable)(row++, col) << RPT_ANGLE(OLE2T(bstrDelta));
+
+            delta.Release();
+            hc->get_DH(spiralType, &delta);
+            delta->get_Value(&delta_value);
+            angle_formatter->put_Signed(VARIANT_TRUE);
+            angle_formatter->Format(delta_value, CComBSTR("°,\',\""), &bstrDelta);
+            (*pTable)(row++, col) << RPT_ANGLE(OLE2T(bstrDelta));
+
+            Float64 longTangent, shortTangent;
+            hc->get_LongTangent(spiralType, &longTangent);
+            hc->get_ShortTangent(spiralType, &shortTangent);
+            (*pTable)(row++, col) << length.SetValue(longTangent);
+            (*pTable)(row++, col) << length.SetValue(shortTangent);
+
+            Float64 long_chord;
+            hc->get_SpiralChord(spiralType, &long_chord);
+            (*pTable)(row++, col) << length.SetValue(long_chord);
+
+            Float64 X, Y;
+            hc->get_X(spiralType, &X);
+            hc->get_Y(spiralType, &Y);
+            (*pTable)(row++, col) << length.SetValue(X);
+            (*pTable)(row++, col) << length.SetValue(Y);
+
+            Float64 Q, T;
+            hc->get_Q(spiralType, &Q);
+            hc->get_T(spiralType, &T);
+            (*pTable)(row++, col) << length.SetValue(Q);
+            (*pTable)(row++, col) << length.SetValue(T);
+         }
+      }
+
+      // Key Points
+      row++; // heading row
+      CComPtr<IPoint2d> pnt;
+      Float64 x, y;
+
+      if (IsZero(hc_data.Radius))
+      {
+         if (bHasEntrySpirals)
+         {
+            (*pTable)(row++, col) << _T("-");
+            (*pTable)(row++, col) << _T("-");
+         }
+
+         if (bHasCircularCurves)
+         {
+            (*pTable)(row++, col) << _T("-");
+         }
+      }
+      else
+      {
+         if (IsEqual(stations.TSStation, stations.SCStation))
+         {
+            if (bHasEntrySpirals)
+            {
+               (*pTable)(row++, col) << _T("-");
+               (*pTable)(row++, col) << _T("-");
+               (*pTable)(row++, col) << _T("-");
+            }
+
+            if (bHasCircularCurves)
+            {
+               pRoadway->GetCurvePoint(hcIdx, cptTS, pgsTypes::pcGlobal, &pnt);
+               pnt->Location(&x, &y);
+               (*pTable)(row, col) << length.SetValue(y) << _T(", "); (*pTable)(row++, col) << length.SetValue(x);
+            }
+         }
+         else
+         {
+            if (bHasEntrySpirals)
+            {
+               pnt.Release();
+               pRoadway->GetCurvePoint(hcIdx, cptTS, pgsTypes::pcGlobal, &pnt);
+               pnt->Location(&x, &y);
+               (*pTable)(row, col) << length.SetValue(y) << _T(", "); (*pTable)(row++, col) << length.SetValue(x);
+
+               pnt.Release();
+               pRoadway->GetCurvePoint(hcIdx, cptSPI1, pgsTypes::pcGlobal, &pnt);
+               pnt->Location(&x, &y);
+               (*pTable)(row, col) << length.SetValue(y) << _T(", "); (*pTable)(row++, col) << length.SetValue(x);
+
+               pnt.Release();
+               pRoadway->GetCurvePoint(hcIdx, cptSC, pgsTypes::pcGlobal, &pnt);
+               pnt->Location(&x, &y);
+               (*pTable)(row, col) << length.SetValue(y) << _T(", "); (*pTable)(row++, col) << length.SetValue(x);
+            }
+
+            if (bHasCircularCurves)
+            {
+               (*pTable)(row++, col) << _T("-");
+            }
+         }
+      }
+
+      pnt.Release();
+      pRoadway->GetCurvePoint(hcIdx, cptPI, pgsTypes::pcGlobal, &pnt);
+      pnt->Location(&x, &y);
+      (*pTable)(row, col) << length.SetValue(y) << _T(", "); (*pTable)(row++, col) << length.SetValue(x);
+
+      if (IsZero(hc_data.Radius))
+      {
+         if (bHasCircularCurves)
+         {
+            (*pTable)(row++, col) << _T("-");
+         }
+
+         if (bHasExitSpirals)
+         {
+            (*pTable)(row++, col) << _T("-");
+            (*pTable)(row++, col) << _T("-");
+            (*pTable)(row++, col) << _T("-");
+         }
+
+      }
+      else
+      {
+         if (IsEqual(stations.CSStation, stations.STStation))
+         {
+            if (bHasCircularCurves)
+            {
+               pnt.Release();
+               pRoadway->GetCurvePoint(hcIdx, cptST, pgsTypes::pcGlobal, &pnt);
+               pnt->Location(&x, &y);
+               (*pTable)(row, col) << length.SetValue(y) << _T(", "); (*pTable)(row++, col) << length.SetValue(x);
+            }
+
+            if (bHasExitSpirals)
+            {
+               (*pTable)(row++, col) << _T("-");
+               (*pTable)(row++, col) << _T("-");
+               (*pTable)(row++, col) << _T("-");
+            }
+         }
+         else
+         {
+            if (bHasCircularCurves)
+            {
+               (*pTable)(row++, col) << _T("-");
+            }
+
+            if (bHasExitSpirals)
+            {
+               pnt.Release();
+               pRoadway->GetCurvePoint(hcIdx, cptCS, pgsTypes::pcGlobal, &pnt);
+               pnt->Location(&x, &y);
+               (*pTable)(row, col) << length.SetValue(y) << _T(", "); (*pTable)(row++, col) << length.SetValue(x);
+
+               pnt.Release();
+               pRoadway->GetCurvePoint(hcIdx, cptSPI2, pgsTypes::pcGlobal, &pnt);
+               pnt->Location(&x, &y);
+               (*pTable)(row, col) << length.SetValue(y) << _T(", "); (*pTable)(row++, col) << length.SetValue(x);
+
+               pnt.Release();
+               pRoadway->GetCurvePoint(hcIdx, cptST, pgsTypes::pcGlobal, &pnt);
+               pnt->Location(&x, &y);
+               (*pTable)(row, col) << length.SetValue(y) << _T(", "); (*pTable)(row++, col) << length.SetValue(x);
+            }
+         }
+      }
+
+      if (bHasCircularCurves)
+      {
+         if (IsZero(hc_data.Radius))
+         {
+            (*pTable)(row++, col) << _T("-");
+         }
+         else
+         {
+            pnt.Release();
+            pRoadway->GetCurvePoint(hcIdx, cptCCC, pgsTypes::pcGlobal, &pnt);
+            pnt->Location(&x, &y);
+            (*pTable)(row, col) << length.SetValue(y) << _T(", "); (*pTable)(row++, col) << length.SetValue(x);
+         }
+      }
+
+      if (bHasEntrySpirals || bHasExitSpirals)
+      {
+         if (IsZero(hc_data.EntrySpiral) && IsZero(hc_data.ExitSpiral))
+         {
+            (*pTable)(row++, col) << _T("-");
+         }
+         else
+         {
+            pnt.Release();
+            pRoadway->GetCurvePoint(hcIdx, cptCC, pgsTypes::pcGlobal, &pnt);
+            pnt->Location(&x, &y);
+            (*pTable)(row, col) << length.SetValue(y) << _T(", "); (*pTable)(row++, col) << length.SetValue(x);
+         }
       }
    }
 }
@@ -2105,6 +2599,7 @@ void write_ps_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* 
    GET_IFACE2(pBroker, IBridge,           pBridge ); 
    GET_IFACE2(pBroker, IStrandGeometry,   pStrand);
    GET_IFACE2(pBroker, IBridgeDescription,pIBridgeDesc);
+   GET_IFACE2(pBroker, ISpecification,    pSpec );
 
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
@@ -2160,6 +2655,13 @@ void write_ps_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* 
                   (*pTable)(row, 1) << cmpdim.SetValue(pBridge->GetSlabOffset(thisSegmentKey.groupIndex, pierIdx, thisSegmentKey.girderIndex));
                   row++;
                }
+            }
+
+            if (pSpec->IsAssExcessCamberInputEnabled())
+            {
+               (*pTable)(row, 0) << _T("Assumed Excess Camber");
+               (*pTable)(row, 1) << cmpdim.SetValue(pBridge->GetAssExcessCamber(thisSegmentKey.groupIndex, thisSegmentKey.girderIndex));
+               row++;
             }
 
             CString strFillType;

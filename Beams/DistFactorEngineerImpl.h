@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2017  Washington State Department of Transportation
+// Copyright © 1999-2018  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -138,7 +138,7 @@ protected:
    void GetSpanDF(const CSpanKey& spanKey,pgsTypes::LimitState ls,Float64 fcgdr,SPANDETAILS* plldf);
 
    Float64 GetEffectiveSpanLength(IndexType spanOrPierIdx,GirderIndexType gdrIdx,DFParam dfType);
-   void GetGirderSpacingAndOverhang(const CSpanKey& spanKey,DFParam dfType,BASE_LLDFDETAILS* pDetails);
+   void GetGirderSpacingAndOverhang(const CSpanKey& spanKey,DFParam dfType,BASE_LLDFDETAILS* pDetails,pgsPointOfInterest* pControllingPoi);
 
    virtual lrfdLiveLoadDistributionFactorBase* GetLLDFParameters(IndexType spanOrPierIdx,GirderIndexType gdrIdx,DFParam dfType,Float64 fcgdr,T* plldf) = 0;
 
@@ -706,7 +706,7 @@ void CDistFactorEngineerImpl<T>::GetIndicies(IndexType spanOrPierIdx,DFParam dfT
 }
 
 template <class T>
-void CDistFactorEngineerImpl<T>::GetGirderSpacingAndOverhang(const CSpanKey& spanKey,DFParam dfType,BASE_LLDFDETAILS* pDetails)
+void CDistFactorEngineerImpl<T>::GetGirderSpacingAndOverhang(const CSpanKey& spanKey,DFParam dfType,BASE_LLDFDETAILS* pDetails, pgsPointOfInterest* pControllingPoi)
 {
    GET_IFACE(IBridge,                      pBridge);
    GET_IFACE(ILibrary,                     pLib);
@@ -757,6 +757,23 @@ void CDistFactorEngineerImpl<T>::GetGirderSpacingAndOverhang(const CSpanKey& spa
    pDetails->ControllingLocation = ctrl_loc_from_gdr;
 
    pgsPointOfInterest ctrl_poi = pPoi->GetPointOfInterest(segmentKey,Xs);
+
+   if (!pPoi->IsOnSegment(ctrl_poi))
+   {
+#if defined _DEBUG
+      CClosureKey closureKey;
+      bool bIsInClosureJoint = pPoi->IsInClosureJoint(ctrl_poi, &closureKey);
+      bool bIsInIntermediateDiaphragm = pPoi->IsInIntermediateDiaphragm(ctrl_poi);
+      ATLASSERT(bIsInClosureJoint || bIsInIntermediateDiaphragm);
+#endif
+
+      Float64 Ls = pBridge->GetSegmentLength(segmentKey);
+      ctrl_poi = pPoi->GetPointOfInterest(segmentKey, Ls);
+
+      ATLASSERT(segmentKey == ctrl_poi.GetSegmentKey());
+   }
+
+   *pControllingPoi = ctrl_poi;
 
    // station of controlling loc
    Float64 ctrl_station, ctrl_offset;

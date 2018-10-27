@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2017  Washington State Department of Transportation
+// Copyright © 1999-2018  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -471,19 +471,17 @@ lrfdLiveLoadDistributionFactorBase* CVoidedSlabDistFactorEngineer::GetLLDFParame
    }
 
    CSpanKey spanKey(span,gdrIdx);
-   CSegmentKey segmentKey(pGroup->GetIndex(),gdrIdx,0);
 
    const GirderLibraryEntry* pGirderEntry = pGroup->GetGirder(gdrIdx)->GetGirderLibraryEntry();
 
    // determine girder spacing
    pgsTypes::SupportedBeamSpacing spacingType = pBridgeDesc->GetGirderSpacingType();
 
-   ///////////////////////////////////////////////////////////////////////////
-   // Determine overhang and spacing information
-   GetGirderSpacingAndOverhang(spanKey,dfType, plldf);
+   // determine overhang, spacing base data, and controlling poi
+   pgsPointOfInterest poi;
+   GetGirderSpacingAndOverhang(spanKey, dfType, plldf, &poi);
 
-   // put a poi at controlling location from spacing comp
-   pgsPointOfInterest poi(segmentKey,plldf->ControllingLocation);
+   const CSegmentKey& segmentKey(poi.GetSegmentKey());
 
    // Throws exception if fails requirement (no need to catch it)
    GET_IFACE(ILiveLoadDistributionFactors, pDistFactors);

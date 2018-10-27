@@ -21,3 +21,6 @@ Type | Click on the combo box to select if the slab offset is for the entire bri
 Start | Slab offset at the start of the span
 End | Slab offset at the end of the span
 
+Assumed Excess Camber
+---------------------------
+This input is disabled and not pertinent to PGSplice.

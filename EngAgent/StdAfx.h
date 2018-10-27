@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2017  Washington State Department of Transportation
+// Copyright © 1999-2018  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -31,7 +31,12 @@
 #pragma once
 #endif // _MSC_VER >= 1000
 
+
 #include <PGSuperAll.h>
+
+#if defined _DEBUG
+#define ENABLE_LOGGING
+#endif
 
 
 #include <atlbase.h>
@@ -55,9 +60,6 @@ extern CComModule _Module;
 #include <System\System.h>
 #include <Lrfd\Lrfd.h>
 #include <Math\Math.h>
-
-
-//#define MATCH_OLD_ANALYSIS // set to true to match the old stability analysis with the new stability code
 
 //{{AFX_INSERT_LOCATION}}
 // Microsoft Developer Studio will insert additional declarations immediately before the previous line.

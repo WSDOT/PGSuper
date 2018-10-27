@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2017  Washington State Department of Transportation
+// Copyright © 1999-2018  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -26,51 +26,11 @@
 #include "resource.h"
 #include "TxDOTAgent_i.h"
 #include "dllmain.h"
-#include "EAF\EAFUtilities.h"
-#include "EAF\EAFApp.h"
-#include <EAF\EAFDocument.h>
 
+
+#include "TxDOTAgentApp.h"
 
 CTxDOTAgentModule _AtlModule;
 
-class CTxDOTAgentApp : public CWinApp
-{
-public:
-
-// Overrides
-	virtual BOOL InitInstance() override;
-	virtual int ExitInstance() override;
-
-   afx_msg void OnHelp();
-
-	DECLARE_MESSAGE_MAP()
-};
-
-BEGIN_MESSAGE_MAP(CTxDOTAgentApp, CWinApp)
-   ON_BN_CLICKED(ID_HELP,OnHelp)
-END_MESSAGE_MAP()
-
 CTxDOTAgentApp theApp;
 
-void CTxDOTAgentApp::OnHelp()
-{
-   EAFHelp(EAFGetDocument()->GetDocumentationSetName(),IDH_WELCOME);
-}
-
-BOOL CTxDOTAgentApp::InitInstance()
-{
-   GXInit();
-
-   // Set up the root of the registry keys
-   SetRegistryKey( _T("Washington State Department of Transportation") );
-   free((void*)m_pszProfileName);
-   m_pszProfileName = _tcsdup(_T("PGSuper"));
-
-	return CWinApp::InitInstance();
-}
-
-int CTxDOTAgentApp::ExitInstance()
-{
-   GXForceTerminate();
-	return CWinApp::ExitInstance();
-}

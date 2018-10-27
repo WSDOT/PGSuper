@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2017  Washington State Department of Transportation
+// Copyright © 1999-2018  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -64,14 +64,14 @@ void CPGSBaseCommandLineInfo::ParseParam(LPCTSTR lpszParam, BOOL bFlag, BOOL bLa
    if ( bFlag )
    {
       // Parameter is a flag (-flag or /flag)
-      if ( strParam.Left(3).CompareNoCase(_T("App")) == 0 )
+      if ( strParam.Left(3).CompareNoCase(_T("App")) == 0 && strParam.Right(strParam.GetLength() - 4).CompareNoCase(GetAppName()) == 0)
       {
          ATLASSERT(strParam.Right(strParam.GetLength() - 4).CompareNoCase(GetAppName()) == 0); 
 
          // the /App=<appname> option was used on the command line directing command line
          // options to us.
-         // We don't have to do anything, just acknowledge it is our parameter and we are in command line mode
-         m_bCommandLineMode = true;
+         // We don't have to do anything, just acknowledge it is our parameter
+         m_bCommandLineMode = false; // unless other options are given, we don't want to run the command line and exit
          bMyParameter = true;
          m_Count--; // pretend the option was never used
       }

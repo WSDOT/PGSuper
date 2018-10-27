@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2017  Washington State Department of Transportation
+// Copyright © 1999-2018  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -234,6 +234,21 @@ void CSpecMainSheet::ExchangeLoadsData(CDataExchange* pDX)
             pDX->PrepareCtrl(IDC_HAUNCH_COMP_CB);
             pDX->Fail();
          }
+      }
+   }
+
+   DDX_Percentage(pDX, IDC_HAUNCH_FACTOR, m_Entry.m_HaunchLoadCamberFactor);
+   if (pDX->m_bSaveAndValidate)
+   {
+      if (0.0 >= m_Entry.m_HaunchLoadCamberFactor)
+      {
+         ::AfxMessageBox(_T("Haunch load camber factor must be greater than zero. If you want zero camber, select the flat girder (zero camber) option"));
+         pDX->Fail();
+      }
+      else if (1.0 < m_Entry.m_HaunchLoadCamberFactor)
+      {
+         ::AfxMessageBox(_T("Haunch load camber factor must be less than or equal to 100%"));
+         pDX->Fail();
       }
    }
 }

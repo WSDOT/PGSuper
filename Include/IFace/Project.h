@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2017  Washington State Department of Transportation
+// Copyright © 1999-2018  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -494,9 +494,12 @@ interface ISpecification : IUnknown
    // Tolerance value is only used if HaunchLoadComputationType==hlcAccountForCamber
    virtual pgsTypes::HaunchLoadComputationType GetHaunchLoadComputationType() = 0;
    virtual Float64 GetCamberTolerance() = 0;
+   virtual Float64 GetHaunchLoadCamberFactor() = 0;
 
    virtual std::_tstring GetRatingSpecification() = 0;
    virtual void SetRatingSpecification(const std::_tstring& spec) = 0;
+
+   virtual bool IsAssExcessCamberInputEnabled(bool considerDeckType=true) = 0; // Depends on library and deck type
 };
 
 /*****************************************************************************
@@ -738,8 +741,11 @@ interface IUserDefinedLoadData : IUnknown
    virtual CollectionIndexType AddPointLoad(EventIDType eventID,const CPointLoadData& pld) = 0;
    virtual const CPointLoadData* GetPointLoad(CollectionIndexType idx) const = 0;
    virtual const CPointLoadData* FindPointLoad(LoadIDType loadID) const = 0;
+   virtual EventIndexType GetPointLoadEventIndex(LoadIDType loadID) const = 0;
+   virtual EventIDType GetPointLoadEventID(LoadIDType loadID) const = 0;
    virtual void UpdatePointLoad(CollectionIndexType idx, EventIDType eventID, const CPointLoadData& pld) = 0;
    virtual void DeletePointLoad(CollectionIndexType idx) = 0;
+   virtual std::vector<CPointLoadData> GetPointLoads(const CSpanKey& spanKey) const = 0;
 
    // distributed loads
    virtual CollectionIndexType GetDistributedLoadCount() const = 0;
@@ -747,8 +753,11 @@ interface IUserDefinedLoadData : IUnknown
    virtual CollectionIndexType AddDistributedLoad(EventIDType eventID,const CDistributedLoadData& pld) = 0;
    virtual const CDistributedLoadData* GetDistributedLoad(CollectionIndexType idx) const = 0;
    virtual const CDistributedLoadData* FindDistributedLoad(LoadIDType loadID) const = 0;
+   virtual EventIndexType GetDistributedLoadEventIndex(LoadIDType loadID) const = 0;
+   virtual EventIDType GetDistributedLoadEventID(LoadIDType loadID) const = 0;
    virtual void UpdateDistributedLoad(CollectionIndexType idx, EventIDType eventID, const CDistributedLoadData& pld) = 0;
    virtual void DeleteDistributedLoad(CollectionIndexType idx) = 0;
+   virtual std::vector<CDistributedLoadData> GetDistributedLoads(const CSpanKey& spanKey) const = 0;
 
    // moment loads
    virtual CollectionIndexType GetMomentLoadCount() const = 0;
@@ -756,8 +765,11 @@ interface IUserDefinedLoadData : IUnknown
    virtual CollectionIndexType AddMomentLoad(EventIDType eventID,const CMomentLoadData& pld) = 0;
    virtual const CMomentLoadData* GetMomentLoad(CollectionIndexType idx) const = 0;
    virtual const CMomentLoadData* FindMomentLoad(LoadIDType loadID) const = 0;
+   virtual EventIndexType GetMomentLoadEventIndex(LoadIDType loadID) const = 0;
+   virtual EventIDType GetMomentLoadEventID(LoadIDType loadID) const = 0;
    virtual void UpdateMomentLoad(CollectionIndexType idx, EventIDType eventID, const CMomentLoadData& pld) = 0;
    virtual void DeleteMomentLoad(CollectionIndexType idx) = 0;
+   virtual std::vector<CMomentLoadData> GetMomentLoads(const CSpanKey& spanKey) const = 0;
 
    // construction loads
    virtual void SetConstructionLoad(Float64 load) = 0;
@@ -991,15 +1003,19 @@ interface IBridgeDescription : IUnknown
    virtual pgsTypes::SlabOffsetType GetSlabOffsetType() = 0;
 
    // fillet
-   virtual void SetFilletType(pgsTypes::FilletType offsetType) = 0;
-   virtual pgsTypes::FilletType GetFilletType() = 0;
-   // changes fillet type to be fttBridge
    virtual void SetFillet( Float64 Fillet) = 0;
-   // changes fillet type to fttPier
-   virtual void SetFillet(SpanIndexType spanIdx, Float64 offset) = 0;
-   // sets fillet per girder ... sets the fillet type to fttGirder
-   virtual void SetFillet( SpanIndexType spanIdx, GirderIndexType gdrIdx, Float64 offset) = 0;
-   virtual Float64 GetFillet( SpanIndexType spanIdx, GirderIndexType gdrIdx) = 0;
+   virtual Float64 GetFillet( ) = 0;
+
+   // Assumed Excess Camber
+   virtual void SetAssExcessCamberType(pgsTypes::AssExcessCamberType cType) = 0;
+   virtual pgsTypes::AssExcessCamberType GetAssExcessCamberType() = 0;
+   // changes AssExcessCamber type to be aecBridge
+   virtual void SetAssExcessCamber( Float64 assExcessCamber) = 0;
+   // changes AssExcessCamber type to fttPier
+   virtual void SetAssExcessCamber(SpanIndexType spanIdx, Float64 offset) = 0;
+   // sets AssExcessCamber per girder ... sets the AssExcessCamber type to aecGirder
+   virtual void SetAssExcessCamber( SpanIndexType spanIdx, GirderIndexType gdrIdx, Float64 camber) = 0;
+   virtual Float64 GetAssExcessCamber( SpanIndexType spanIdx, GirderIndexType gdrIdx) = 0;
 
    // Returns a vector of valid connection types
    virtual std::vector<pgsTypes::BoundaryConditionType> GetBoundaryConditionTypes(PierIndexType pierIdx) = 0;

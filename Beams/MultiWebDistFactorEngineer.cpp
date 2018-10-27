@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2017  Washington State Department of Transportation
+// Copyright © 1999-2018  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -452,7 +452,6 @@ lrfdLiveLoadDistributionFactorBase* CMultiWebDistFactorEngineer::GetLLDFParamete
    GET_IFACE(IBridge,            pBridge);
    GET_IFACE(IBarriers,          pBarriers);
    GET_IFACE(IBridgeDescription, pIBridgeDesc);
-   GET_IFACE(IPointOfInterest,   pPoi);
 
    // Determine span/pier index... This is the index of a pier and the next span.
    // If this is the last pier, span index is for the last span
@@ -478,16 +477,13 @@ lrfdLiveLoadDistributionFactorBase* CMultiWebDistFactorEngineer::GetLLDFParamete
       gdrIdx = nGirders-1;
    }
 
-   CSpanKey spanKey(span,gdrIdx);
+   CSpanKey spanKey(span, gdrIdx);
 
-   // determine overhang and spacing base data
-   GetGirderSpacingAndOverhang(spanKey,dfType, plldf);
+   // determine overhang, spacing base data, and controlling poi
+   pgsPointOfInterest poi;
+   GetGirderSpacingAndOverhang(spanKey, dfType, plldf, &poi);
 
-   // put a poi at controlling location from spacing comp
-   CSegmentKey segmentKey;
-   Float64 Xs;
-   pPoi->ConvertSpanPointToSegmentCoordiante(spanKey,plldf->ControllingLocation,&segmentKey,&Xs);
-   pgsPointOfInterest poi(segmentKey,Xs);
+   const CSegmentKey& segmentKey(poi.GetSegmentKey());
 
    // Throws exception if fails requirement (no need to catch it)
    GET_IFACE(ILiveLoadDistributionFactors, pDistFactors);

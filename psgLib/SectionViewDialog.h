@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2017  Washington State Department of Transportation
+// Copyright © 1999-2018  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -73,7 +73,7 @@ protected:
    void DrawShape(CDC* pDC,grlibPointMapper& Mapper,IShape* pShape);
    void DrawShape(CDC* pDC,grlibPointMapper& mapper,ICompositeShape* pCompositeShape,CBrush& solidBrush,CBrush& voidBrush);
    void DrawStrands(CDC* pDC, grlibPointMapper& Mapper, bool isEnd);
-   StrandIndexType DrawStrand(CDC* pDC, grlibPointMapper& Mapper, Float64 x, Float64 y, StrandIndexType index);
+   StrandIndexType DrawStrand(CDC* pDC, grlibPointMapper& Mapper, Float64 x, Float64 y, StrandIndexType index,StrandIndexType strandInc=1);
 
 
 	// Generated message map functions

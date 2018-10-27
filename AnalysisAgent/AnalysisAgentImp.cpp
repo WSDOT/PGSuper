@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2017  Washington State Department of Transportation
+// Copyright © 1999-2018  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -813,7 +813,7 @@ void CAnalysisAgentImp::BuildSlabOffsetDesignModel(const CSegmentKey& segmentKey
 
    // Differential slab load between design and original models
    std::vector<SlabLoad> slabLoads;
-   pProductLoads->GetDesignMainSpanSlabLoadAdjustment(segmentKey, pConfig->SlabOffset[pgsTypes::metStart], pConfig->SlabOffset[pgsTypes::metEnd], pConfig->Fillet, &slabLoads);
+   pProductLoads->GetDesignMainSpanSlabLoadAdjustment(segmentKey, pConfig->SlabOffset[pgsTypes::metStart], pConfig->SlabOffset[pgsTypes::metEnd], pConfig->AssExcessCamber, &slabLoads);
 
    // model autogenerates loadings for delta (design) slab and haunch
    bool bModelLeftCantilever,bModelRightCantilever;
@@ -1364,9 +1364,9 @@ void CAnalysisAgentImp::GetMainSpanSlabLoad(const CSegmentKey& segmentKey, std::
    m_pGirderModelManager->GetMainSpanSlabLoad(segmentKey,pSlabLoads);
 }
 
-void CAnalysisAgentImp::GetDesignMainSpanSlabLoadAdjustment(const CSegmentKey& segmentKey, Float64 Astart, Float64 Aend, Float64 Fillet, std::vector<SlabLoad>* pSlabLoads)
+void CAnalysisAgentImp::GetDesignMainSpanSlabLoadAdjustment(const CSegmentKey& segmentKey, Float64 Astart, Float64 Aend, Float64 AssExcessCamber, std::vector<SlabLoad>* pSlabLoads)
 {
-   m_pGirderModelManager->GetDesignMainSpanSlabLoadAdjustment(segmentKey,Astart,Aend,Fillet,pSlabLoads);
+   m_pGirderModelManager->GetDesignMainSpanSlabLoadAdjustment(segmentKey,Astart,Aend,AssExcessCamber,pSlabLoads);
 }
 
 bool CAnalysisAgentImp::HasShearKeyLoad(const CGirderKey& girderKey)
@@ -1428,51 +1428,6 @@ void CAnalysisAgentImp::GetPierDiaphragmLoads( PierIndexType pierIdx, GirderInde
 {
    m_pGirderModelManager->GetPierDiaphragmLoads(pierIdx,gdrIdx,pPback,pMback,pPahead,pMahead);
 }
-/*
-void CAnalysisAgentImp::GetGirderDeflectionForCamber(const pgsPointOfInterest& poi,Float64* pDyStorage,Float64* pRzStorage,Float64* pDyErected,Float64* pRzErected,Float64* pDyInc,Float64* pRzInc)
-{
-   // NOTE: This function assumes that deflection due to girder self-weight is the only loading
-   // that goes into the camber calculations
-   const CSegmentKey& segmentKey = poi.GetSegmentKey();
-
-   // we want the largest downward deflection. With (+) being up and (-) being down
-   // we want the minimum (most negative) deflection
-   pgsTypes::BridgeAnalysisType bat = GetBridgeAnalysisType(pgsTypes::Minimize);
-
-   // The initial camber occurs while the girder is sitting in storage
-   // get the deflection while in storage
-   GET_IFACE(IIntervals,pIntervals);
-   IntervalIndexType storageIntervalIdx = pIntervals->GetStorageInterval(segmentKey);
-   *pDyStorage = GetDeflection(storageIntervalIdx,pgsTypes::pftGirder,poi,bat,rtCumulative,false);
-   *pRzStorage = GetRotation(storageIntervalIdx,pgsTypes::pftGirder,poi,bat,rtCumulative,false);
-
-   // This is the girder deflection after it has been erected
-   IntervalIndexType erectionIntervalIdx = pIntervals->GetErectSegmentInterval(segmentKey);
-   *pDyErected = GetDeflection(erectionIntervalIdx,pgsTypes::pftGirder,poi,bat,rtCumulative,false);
-   *pRzErected = GetRotation(erectionIntervalIdx,pgsTypes::pftGirder,poi,bat,rtCumulative,false);
-
-   // If the storage support locations and the support locations after the girder is erected aren't at the same
-   // location there is an incremental change in moment which causes an additional deflection increment
-   //
-   // We must use the actual loading, "Girder_Incremental", to get the incremental deformation due to the
-   // change in support location. Using the product load type pftGirder gives use both the incremental deformation
-   // and a deflection adjustment because of the change in the deformation measurement datum. During storage
-   // deformations are measured relative to the storage supports and after erection, deformations are measured
-   // relative to the final bearing locations. This translation between measurement datums is not subject to
-   // creep and camber.
-   *pDyInc = GetDeflection(erectionIntervalIdx,_T("Girder_Incremental"),poi,bat,rtCumulative,false);
-   *pRzInc = GetRotation(erectionIntervalIdx,_T("Girder_Incremental"),poi,bat,rtCumulative,false);
-}
-
-Float64 CAnalysisAgentImp::GetGirderDeflectionForCamber(const pgsPointOfInterest& poi)
-{
-   Float64 dyStorage,rzStorage;
-   Float64 dyErected,rzErected;
-   Float64 dy_inc,rz_inc;
-   GetGirderDeflectionForCamber(poi,&dyStorage,&rzStorage,&dyErected,&rzErected,&dy_inc,&rz_inc);
-   return dyStorage; // by definition we want deflection during storage
-}
-*/
 
 Float64 CAnalysisAgentImp::GetGirderDeflectionForCamber(const pgsPointOfInterest& poi,const GDRCONFIG* pConfig)
 {
@@ -5417,27 +5372,6 @@ Float64 CAnalysisAgentImp::GetCreepCoefficient(const CSegmentKey& segmentKey, Cr
    return details.Ct;
 }
 
-/*
-CREEPCOEFFICIENTDETAILS CAnalysisAgentImp::GetCreepCoefficientDetails(const CSegmentKey& segmentKey, CreepPeriod creepPeriod, Int16 constructionRate)
-{
-   std::map<CSegmentKey, CREEPCOEFFICIENTDETAILS>::iterator found = m_CreepCoefficientDetails[constructionRate][creepPeriod].find(segmentKey);
-   if (found != m_CreepCoefficientDetails[constructionRate][creepPeriod].end())
-   {
-      return (*found).second;
-   }
-
-   GET_IFACE(IPointOfInterest, IPoi);
-   std::vector<pgsPointOfInterest> pois(IPoi->GetPointsOfInterest(segmentKey, POI_ERECTED_SEGMENT | POI_5L, POIFIND_AND));
-   ATLASSERT(pois.size() == 1);
-   pgsPointOfInterest poi = pois[0];
-
-   GET_IFACE(IBridge, pBridge);
-   GDRCONFIG config = pBridge->GetSegmentConfiguration(segmentKey);
-   CREEPCOEFFICIENTDETAILS ccd = GetCreepCoefficientDetails(segmentKey, config, creepPeriod, constructionRate);
-   m_CreepCoefficientDetails[constructionRate][creepPeriod].insert(std::make_pair(segmentKey, ccd));
-   return ccd;
-}
-*/
 CREEPCOEFFICIENTDETAILS CAnalysisAgentImp::GetCreepCoefficientDetails(const CSegmentKey& segmentKey,CreepPeriod creepPeriod, Int16 constructionRate,const GDRCONFIG* pConfig)
 {
    if (pConfig == nullptr)
@@ -5693,13 +5627,6 @@ Float64 CAnalysisAgentImp::GetReleaseTempPrestressDeflection(const pgsPointOfInt
    return dy;
 }
 
-//Float64 CAnalysisAgentImp::GetCreepDeflection(const pgsPointOfInterest& poi, CreepPeriod creepPeriod, Int16 constructionRate,pgsTypes::PrestressDeflectionDatum datum)
-//{
-//   Float64 dy,rz;
-//   GetCreepDeflection(poi,creepPeriod,constructionRate,datum,&dy,&rz);
-//   return dy;
-//}
-
 Float64 CAnalysisAgentImp::GetCreepDeflection(const pgsPointOfInterest& poi, CreepPeriod creepPeriod, Int16 constructionRate,pgsTypes::PrestressDeflectionDatum datum, const GDRCONFIG* pConfig)
 {
    Float64 dy,rz;
@@ -5763,47 +5690,6 @@ Float64 CAnalysisAgentImp::GetScreedCamber(const pgsPointOfInterest& poi, const 
    return dy;
 }
 
-//Float64 CAnalysisAgentImp::GetExcessCamber(const pgsPointOfInterest& poi,Int16 time)
-//{
-//   GET_IFACE( ILossParameters, pLossParams);
-//   if ( pLossParams->GetLossMethod() == pgsTypes::TIME_STEP )
-//   {
-//#if defined _DEBUG
-//      // this is slower, but use it as a check on the more direct method used below
-//      Float64 D = GetDCamberForGirderSchedule(poi,time);
-//      Float64 C = GetScreedCamber(poi);
-//      Float64 excess = D - C;
-//#endif
-//
-//      // excess camber is the camber that remains in the girder when the bridge is open
-//      // to traffic. we simply need to get the deflection when the bridge goes into
-//      // service.
-//      pgsTypes::BridgeAnalysisType bat = GetBridgeAnalysisType(pgsTypes::Minimize);
-//
-//      GET_IFACE(IIntervals,pIntervals);
-//      IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
-//      Float64 Dmin, Dmax;
-//      GetDeflection(liveLoadIntervalIdx,pgsTypes::ServiceI,poi,bat,true,false/*exclude live load deflection*/,true,&Dmin,&Dmax);
-//      ATLASSERT(IsEqual(Dmin,Dmax)); // no live load so these should be the same
-//
-//      ATLASSERT(IsEqual(Dmin,excess));
-//
-//      return Dmin;
-//   }
-//   else
-//   {
-//      const CSegmentKey& segmentKey = poi.GetSegmentKey();
-//
-//      CamberModelData model         = GetPrestressDeflectionModel(segmentKey,m_PrestressDeflectionModels);
-//      CamberModelData initTempModel = GetPrestressDeflectionModel(segmentKey,m_InitialTempPrestressDeflectionModels);
-//      CamberModelData relsTempModel = GetPrestressDeflectionModel(segmentKey,m_ReleaseTempPrestressDeflectionModels);
-//
-//      Float64 Dy, Rz;
-//      GetExcessCamber(poi,model,initTempModel,relsTempModel,time,&Dy,&Rz);
-//      return Dy;
-//   }
-//}
-
 Float64 CAnalysisAgentImp::GetExcessCamber(const pgsPointOfInterest& poi,Int16 time,const GDRCONFIG* pConfig)
 {
    GET_IFACE(ILossParameters, pLossParams);
@@ -5855,19 +5741,6 @@ Float64 CAnalysisAgentImp::GetExcessCamber(const pgsPointOfInterest& poi,Int16 t
       }
    }
 }
-
-//Float64 CAnalysisAgentImp::GetExcessCamberRotation(const pgsPointOfInterest& poi,Int16 time)
-//{
-//   const CSegmentKey& segmentKey = poi.GetSegmentKey();
-//
-//   CamberModelData model         = GetPrestressDeflectionModel(segmentKey,m_PrestressDeflectionModels);
-//   CamberModelData initTempModel = GetPrestressDeflectionModel(segmentKey,m_InitialTempPrestressDeflectionModels);
-//   CamberModelData relsTempModel = GetPrestressDeflectionModel(segmentKey,m_ReleaseTempPrestressDeflectionModels);
-//
-//   Float64 dy,rz;
-//   GetExcessCamber(poi,model,initTempModel,relsTempModel,time,&dy,&rz);
-//   return rz;
-//}
 
 Float64 CAnalysisAgentImp::GetExcessCamberRotation(const pgsPointOfInterest& poi,Int16 time,const GDRCONFIG* pConfig)
 {
@@ -5954,35 +5827,6 @@ Float64 CAnalysisAgentImp::GetSidlDeflection(const pgsPointOfInterest& poi,const
 
    return dSIDL;
 }
-//
-//Float64 CAnalysisAgentImp::GetDCamberForGirderSchedule(const pgsPointOfInterest& poi,Int16 time)
-//{
-//   GET_IFACE( ILossParameters, pLossParams);
-//   if ( pLossParams->GetLossMethod() == pgsTypes::TIME_STEP )
-//   {
-//      pgsTypes::BridgeAnalysisType bat = GetBridgeAnalysisType(pgsTypes::Minimize);
-//
-//      GET_IFACE(IIntervals,pIntervals);
-//      IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval();
-//      Float64 Dmin, Dmax;
-//      GetDeflection(castDeckIntervalIdx-1,pgsTypes::ServiceI,poi,bat,true,false,true,&Dmin,&Dmax);
-//      ATLASSERT(IsEqual(Dmin,Dmax)); // no live load so these should be the same
-//
-//      return Dmin;
-//   }
-//   else
-//   {
-//      const CSegmentKey& segmentKey = poi.GetSegmentKey();
-//
-//      CamberModelData model            = GetPrestressDeflectionModel(segmentKey,m_PrestressDeflectionModels);
-//      CamberModelData initTempModel    = GetPrestressDeflectionModel(segmentKey,m_InitialTempPrestressDeflectionModels);
-//      CamberModelData releaseTempModel = GetPrestressDeflectionModel(segmentKey,m_ReleaseTempPrestressDeflectionModels);
-//
-//      Float64 Dy, Rz;
-//      GetDCamberForGirderSchedule(poi,model,initTempModel,releaseTempModel,time,&Dy,&Rz);
-//      return Dy;
-//   }
-//}
 
 Float64 CAnalysisAgentImp::GetDCamberForGirderSchedule(const pgsPointOfInterest& poi,Int16 time,const GDRCONFIG* pConfig)
 {
@@ -6024,16 +5868,6 @@ Float64 CAnalysisAgentImp::GetDCamberForGirderSchedule(const pgsPointOfInterest&
    }
 }
 
-//void CAnalysisAgentImp::GetCreepDeflection(const pgsPointOfInterest& poi, CreepPeriod creepPeriod, Int16 constructionRate,pgsTypes::PrestressDeflectionDatum datum,Float64* pDy,Float64* pRz)
-//{
-//   const CSegmentKey& segmentKey = poi.GetSegmentKey();
-//
-//   CamberModelData model  = GetPrestressDeflectionModel(segmentKey,m_PrestressDeflectionModels);
-//   CamberModelData model1 = GetPrestressDeflectionModel(segmentKey,m_InitialTempPrestressDeflectionModels);
-//   CamberModelData model2 = GetPrestressDeflectionModel(segmentKey,m_ReleaseTempPrestressDeflectionModels);
-//   GetCreepDeflection(poi,nullptr,model,model1,model2, creepPeriod, constructionRate, datum, pDy, pRz);
-//}
-
 void CAnalysisAgentImp::GetCreepDeflection(const pgsPointOfInterest& poi, CreepPeriod creepPeriod, Int16 constructionRate,pgsTypes::PrestressDeflectionDatum datum, const GDRCONFIG* pConfig,Float64* pDy,Float64* pRz)
 {
    if (pConfig == nullptr)
@@ -6051,144 +5885,6 @@ void CAnalysisAgentImp::GetCreepDeflection(const pgsPointOfInterest& poi, CreepP
       GetCreepDeflection(poi, pConfig, m_CacheConfig_PrestressDeflectionModel, m_CacheConfig_InitialTempPrestressDeflectionModels, m_CacheConfig_ReleaseTempPrestressDeflectionModels, creepPeriod, constructionRate, datum, pDy, pRz);
    }
 }
-//
-//void CAnalysisAgentImp::GetScreedCamber(const pgsPointOfInterest& poi,Float64* pDy,Float64* pRz)
-//{
-//   pgsTypes::BridgeAnalysisType bat = GetBridgeAnalysisType(pgsTypes::Minimize);
-//
-//   GET_IFACE( ILossParameters, pLossParams);
-//   if ( pLossParams->GetLossMethod() == pgsTypes::TIME_STEP )
-//   {
-//      // time step method includes all effects including creep and shrinkage
-//      // Screed camber is the camber from deck placement until the bridge is open to traffic
-//      // Get both cumulative deflections and return the difference
-//      GET_IFACE(IIntervals,pIntervals);
-//      IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval();
-//      IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
-//      Float64 Dmin, Dmax;
-//      GetDeflection(castDeckIntervalIdx-1,pgsTypes::ServiceI,poi,bat,true/*include prestress*/,false/*no liveload*/,true /*include elevation adjustment*/,&Dmin,&Dmax);
-//      ATLASSERT(IsEqual(Dmin,Dmax)); // no live load so these should be the same
-//
-//      Float64 DRmin, DRmax;
-//      GetRotation(castDeckIntervalIdx-1,pgsTypes::ServiceI,poi,bat,true/*include prestress*/,false/*no liveload*/,true /*include elevation adjustment*/,&DRmin,&DRmax);
-//      ATLASSERT(IsEqual(DRmin,DRmax)); // no live load so these should be the same
-//
-//      Float64 Fmin, Fmax;
-//      GetDeflection(liveLoadIntervalIdx,pgsTypes::ServiceI,poi,bat,true/*include prestress*/,false/*no liveload*/,true /*include elevation adjustment*/,&Fmin,&Fmax);
-//      ATLASSERT(IsEqual(Fmin,Fmax)); // no live load so these should be the same
-//
-//      Float64 FRmin, FRmax;
-//      GetRotation(liveLoadIntervalIdx,pgsTypes::ServiceI,poi,bat,true/*include prestress*/,false/*no liveload*/,true /*include elevation adjustment*/,&FRmin,&FRmax);
-//      ATLASSERT(IsEqual(FRmin,FRmax)); // no live load so these should be the same
-//
-//      *pDy = Fmin - Dmin;
-//      *pRz = FRmin - DRmin;
-//   }
-//   else
-//   {
-//      // For regular analysis, we assume that creep and shrinkage related deflections are done
-//      // when the deck becomes composite. Here we just add up the deflections
-//      GET_IFACE(IBridge,pBridge);
-//      pgsTypes::SupportedDeckType deckType = pBridge->GetDeckType();
-//
-//      const CSegmentKey& segmentKey(poi.GetSegmentKey());
-//
-//      GET_IFACE(IIntervals,pIntervals);
-//      IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval();
-//      IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
-//      IntervalIndexType overlayIntervalIdx       = pIntervals->GetOverlayInterval();
-//      IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval();
-//
-//      // NOTE: No need to validate camber models
-//      Float64 Dslab            = 0;
-//      Float64 Dpanel           = 0;
-//      Float64 DslabPad         = 0;
-//      Float64 Dtrafficbarrier  = 0;
-//      Float64 Dsidewalk        = 0;
-//      Float64 Doverlay         = 0;
-//      Float64 Duser1           = 0;
-//      Float64 Duser2           = 0;
-//
-//      Float64 Rslab            = 0;
-//      Float64 Rpanel           = 0;
-//      Float64 RslabPad         = 0;
-//      Float64 Rtrafficbarrier  = 0;
-//      Float64 Rsidewalk        = 0;
-//      Float64 Roverlay         = 0;
-//      Float64 Ruser1           = 0;
-//      Float64 Ruser2           = 0;
-//
-//      GetDeckDeflection(poi,&Dslab,&Rslab,&DslabPad,&RslabPad);
-//      Dtrafficbarrier = GetDeflection(railingSystemIntervalIdx, pgsTypes::pftTrafficBarrier, poi, bat, rtIncremental, false);
-//      Rtrafficbarrier = GetRotation(  railingSystemIntervalIdx, pgsTypes::pftTrafficBarrier, poi, bat, rtIncremental, false);
-//      Dsidewalk = GetDeflection(railingSystemIntervalIdx, pgsTypes::pftSidewalk, poi, bat, rtIncremental, false);
-//      Rsidewalk = GetRotation(  railingSystemIntervalIdx, pgsTypes::pftSidewalk, poi, bat, rtIncremental, false);
-//
-//      if ( deckType == pgsTypes::sdtCompositeSIP )
-//      {
-//         GetDeckPanelDeflection( poi,&Dpanel,&Rpanel );
-//      }
-//
-//      // Only get deflections for user defined loads that occur during deck placement and later
-//      GET_IFACE(IPointOfInterest,pPoi);
-//      CSpanKey spanKey;
-//      Float64 Xspan;
-//      pPoi->ConvertPoiToSpanPoint(poi,&spanKey,&Xspan);
-//      std::vector<IntervalIndexType> vUserLoadIntervals(pIntervals->GetUserDefinedLoadIntervals(spanKey));
-//      vUserLoadIntervals.erase(std::remove_if(vUserLoadIntervals.begin(), vUserLoadIntervals.end(), [&castDeckIntervalIdx](const auto& intervalIdx) {return intervalIdx < castDeckIntervalIdx;}), vUserLoadIntervals.end());
-//      std::vector<IntervalIndexType>::iterator userLoadIter(vUserLoadIntervals.begin());
-//      std::vector<IntervalIndexType>::iterator userLoadIterEnd(vUserLoadIntervals.end());
-//      Uint32 ucnt=0;
-//      for ( ; userLoadIter != userLoadIterEnd; userLoadIter++ )
-//      {
-//         IntervalIndexType intervalIdx = *userLoadIter;
-//         Float64 D,R;
-//
-//         GetUserLoadDeflection(intervalIdx,poi,&D,&R);
-//
-//         // For PGSuper there are two user load stages and they are factored differently. User1 occurs when slab is cast. For splice,
-//         // the user load stages are always factored by 1.0, so this does not matter (now)
-//         if (intervalIdx==castDeckIntervalIdx)
-//         {
-//            Duser1 += D;
-//            Ruser1 += R;
-//         }
-//         else
-//         {
-//            Duser2 += D;
-//            Ruser2 += R;
-//         }
-//
-//         ucnt++;
-//      }
-//
-//      // This is an old convention in PGSuper: If there is no deck, user1 is included in the D camber
-//      if ( deckType == pgsTypes::sdtNone )
-//      {
-//         Duser1 = 0.0;
-//         Ruser1 = 0.0;
-//      }
-//
-//      if ( !pBridge->IsFutureOverlay() && overlayIntervalIdx != INVALID_INDEX )
-//      {
-//         Doverlay = GetDeflection(overlayIntervalIdx,pgsTypes::pftOverlay,poi,bat, rtIncremental, false);
-//         Roverlay = GetRotation(  overlayIntervalIdx,pgsTypes::pftOverlay,poi,bat, rtIncremental, false);
-//      }
-//
-//      // apply camber multipliers
-//      CamberMultipliers cm = GetCamberMultipliers(poi.GetSegmentKey());
-//
-//      *pDy = cm.SlabUser1Factor*(Dslab + Duser1) + cm.SlabPadLoadFactor*DslabPad + cm.DeckPanelFactor*Dpanel
-//           + cm.BarrierSwOverlayUser2Factor*(Dtrafficbarrier + Dsidewalk + Doverlay + Duser2);
-//
-//      *pRz = cm.SlabUser1Factor*(Rslab + Ruser1) + cm.SlabPadLoadFactor*RslabPad + cm.DeckPanelFactor*Rpanel
-//           + cm.BarrierSwOverlayUser2Factor*(Rtrafficbarrier + Rsidewalk + Roverlay + Ruser2);
-//   }
-//
-//   // Switch the sign. Negative deflection creates positive screed camber
-//   (*pDy) *= -1;
-//   (*pRz) *= -1;
-//}
 
 void CAnalysisAgentImp::GetScreedCamber(const pgsPointOfInterest& poi, const GDRCONFIG* pConfig, Float64* pDy, Float64* pRz)
 {
@@ -6452,27 +6148,6 @@ void CAnalysisAgentImp::GetScreedCamber(const pgsPointOfInterest& poi, const GDR
       (*pRz) *= -1;
    }
 }
-//
-//void CAnalysisAgentImp::GetDeckDeflection(const pgsPointOfInterest& poi,Float64* pSlabDy,Float64* pSlabRz,Float64* pSlabPadDy,Float64* pSlabPadRz)
-//{
-//   pgsTypes::BridgeAnalysisType bat = GetBridgeAnalysisType(pgsTypes::Minimize);
-//
-//   const CSegmentKey& segmentKey(poi.GetSegmentKey());
-//
-//   GET_IFACE(IIntervals,pIntervals);
-//   IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval();
-//
-//   Float64 dy_slab = GetDeflection(castDeckIntervalIdx,pgsTypes::pftSlab,poi,bat, rtIncremental, false);
-//   Float64 rz_slab = GetRotation(  castDeckIntervalIdx,pgsTypes::pftSlab,poi,bat, rtIncremental, false);
-//
-//   Float64 dy_slab_pad = GetDeflection(castDeckIntervalIdx,pgsTypes::pftSlabPad,poi,bat, rtIncremental, false);
-//   Float64 rz_slab_pad = GetRotation(  castDeckIntervalIdx,pgsTypes::pftSlabPad,poi,bat, rtIncremental, false);
-//
-//   *pSlabDy    = dy_slab;
-//   *pSlabRz    = rz_slab;
-//   *pSlabPadDy = dy_slab_pad;
-//   *pSlabPadRz = rz_slab_pad;
-//}
 
 void CAnalysisAgentImp::GetDeckDeflection(const pgsPointOfInterest& poi,const GDRCONFIG* pConfig,Float64* pSlabDy,Float64* pSlabRz,Float64* pSlabPadDy,Float64* pSlabPadRz)
 {
@@ -6504,21 +6179,6 @@ void CAnalysisAgentImp::GetDeckDeflection(const pgsPointOfInterest& poi,const GD
    }
 }
 
-//void CAnalysisAgentImp::GetDeckPanelDeflection(const pgsPointOfInterest& poi,Float64* pDy,Float64* pRz)
-//{
-//   pgsTypes::BridgeAnalysisType bat = GetBridgeAnalysisType(pgsTypes::Minimize);
-//
-//   const CSegmentKey& segmentKey(poi.GetSegmentKey());
-//
-//   // NOTE: it is assumed that deck panels are placed at the same time the
-//   // cast-in-place topping is installed.
-//   GET_IFACE(IIntervals,pIntervals);
-//   IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval();
-//
-//   *pDy = GetDeflection(castDeckIntervalIdx,pgsTypes::pftSlabPanel,poi,bat, rtIncremental, false);
-//   *pRz = GetRotation(  castDeckIntervalIdx,pgsTypes::pftSlabPanel,poi,bat, rtIncremental, false);
-//}
-
 void CAnalysisAgentImp::GetDeckPanelDeflection(const pgsPointOfInterest& poi,const GDRCONFIG* pConfig,Float64* pDy,Float64* pRz)
 {
    pgsTypes::BridgeAnalysisType bat = GetBridgeAnalysisType(pgsTypes::Minimize);
@@ -6541,27 +6201,6 @@ void CAnalysisAgentImp::GetDeckPanelDeflection(const pgsPointOfInterest& poi,con
       (*pRz) *= k;
    }
 }
-//
-//void CAnalysisAgentImp::GetShearKeyDeflection(const pgsPointOfInterest& poi,Float64* pDy,Float64* pRz)
-//{
-//   pgsTypes::BridgeAnalysisType bat = GetBridgeAnalysisType(pgsTypes::Minimize);
-//
-//   const CSegmentKey& segmentKey(poi.GetSegmentKey());
-//
-//   if (HasShearKeyLoad(poi.GetSegmentKey()))
-//   {
-//      GET_IFACE(IIntervals,pIntervals);
-//      IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval();
-//
-//      *pDy = GetDeflection(castDeckIntervalIdx,pgsTypes::pftShearKey,poi,bat, rtIncremental, false);
-//      *pRz = GetRotation(  castDeckIntervalIdx,pgsTypes::pftShearKey,poi,bat, rtIncremental, false);
-//   }
-//   else
-//   {
-//      *pDy = 0.0;
-//      *pRz = 0.0;
-//   }
-//}
 
 void CAnalysisAgentImp::GetShearKeyDeflection(const pgsPointOfInterest& poi,const GDRCONFIG* pConfig,Float64* pDy,Float64* pRz)
 {
@@ -6919,6 +6558,44 @@ HRESULT CAnalysisAgentImp::OnLossParametersChanged()
 /////////////////////////////////////////////////////////////////////////////
 // Helper functions
 
+/////////////////////////////////////////////////////////////////////////////
+// Helper functions
+#if defined _DEBUG
+IntervalIndexType GetInterval(const CSegmentKey& segmentKey, pgsTypes::PrestressDeflectionDatum datum)
+{
+   IntervalIndexType intervalIdx = INVALID_INDEX;
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+   GET_IFACE2(pBroker, IIntervals, pIntervals);
+   switch (datum)
+   {
+   case pgsTypes::pddRelease:
+      intervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
+      break;
+
+   case pgsTypes::pddLifting:
+      intervalIdx = pIntervals->GetLiftSegmentInterval(segmentKey);
+      break;
+
+   case pgsTypes::pddStorage:
+      intervalIdx = pIntervals->GetStorageInterval(segmentKey);
+      break;
+
+   case pgsTypes::pddHauling:
+      intervalIdx = pIntervals->GetHaulSegmentInterval(segmentKey);
+      break;
+
+   case pgsTypes::pddErected:
+      intervalIdx = pIntervals->GetErectSegmentInterval(segmentKey);
+      break;
+
+   default:
+      ATLASSERT(false);
+   }
+   return intervalIdx;
+}
+#endif
+
 void CAnalysisAgentImp::GetPrestressDeflection(const pgsPointOfInterest& poi, pgsTypes::PrestressDeflectionDatum datum, const GDRCONFIG* pConfig, Float64* pDy, Float64* pRz)
 {
    if (pConfig == nullptr)
@@ -6933,6 +6610,36 @@ void CAnalysisAgentImp::GetPrestressDeflection(const pgsPointOfInterest& poi, pg
 
       *pDy = Dstraight + Dharped;
       *pRz = Rstraight + Rharped;
+
+#if defined _DEBUG
+      // above deflections don't included temporary strands
+      IntervalIndexType intervalIdx = GetInterval(poi.GetSegmentKey(), datum);
+
+      GET_IFACE(IIntervals, pIntervals);
+      IntervalIndexType tsInstallationIntervalIdx = pIntervals->GetTemporaryStrandInstallationInterval(poi.GetSegmentKey());
+      IntervalIndexType tsRemovalIntervalIdx = pIntervals->GetTemporaryStrandRemovalInterval(poi.GetSegmentKey());
+
+      Float64 Dtsi(0), Rtsi(0);
+      if (tsInstallationIntervalIdx <= intervalIdx)
+      {
+         CamberModelData temp_strand_model_data = GetPrestressDeflectionModel(poi.GetSegmentKey(), m_InitialTempPrestressDeflectionModels);
+         GetPrestressDeflectionFromModel(poi, temp_strand_model_data, g_lcidTemporaryStrand, datum, &Dtsi, &Rtsi);
+      }
+
+      Float64 Dtsr(0), Rtsr(0);
+      if (tsRemovalIntervalIdx <= intervalIdx)
+      {
+         CamberModelData temp_strand_model_data = GetPrestressDeflectionModel(poi.GetSegmentKey(), m_ReleaseTempPrestressDeflectionModels);
+         GetPrestressDeflectionFromModel(poi, temp_strand_model_data, g_lcidTemporaryStrand, datum, &Dtsi, &Rtsr);
+      }
+
+      // these deflections include temporary strands
+      pgsTypes::BridgeAnalysisType bat = GetBridgeAnalysisType(pgsTypes::Minimize);
+      Float64 dy = GetDeflection(intervalIdx, pgsTypes::pftPretension, poi, bat, rtCumulative, false);
+
+      Float64 _dy_ = *pDy + Dtsi + Dtsr;
+      ATLASSERT(IsEqual(_dy_, dy));
+#endif
    }
    else
    {
@@ -6948,15 +6655,6 @@ void CAnalysisAgentImp::GetPrestressDeflection(const pgsPointOfInterest& poi, pg
       *pRz = Rstraight + Rharped;
    }
 }
-
-//void CAnalysisAgentImp::GetInitialTempPrestressDeflection(const pgsPointOfInterest& poi,pgsTypes::PrestressDeflectionDatum datum,Float64* pDy,Float64* pRz)
-//{
-//   const CSegmentKey& segmentKey = poi.GetSegmentKey();
-//
-//   CamberModelData model_data = GetPrestressDeflectionModel(segmentKey,m_InitialTempPrestressDeflectionModels);
-//   
-//   GetInitialTempPrestressDeflection(poi,model_data,datum,pDy,pRz);
-//}
 
 void CAnalysisAgentImp::GetInitialTempPrestressDeflection(const pgsPointOfInterest& poi,pgsTypes::PrestressDeflectionDatum datum,const GDRCONFIG* pConfig,Float64* pDy,Float64* pRz)
 {
@@ -6978,15 +6676,6 @@ void CAnalysisAgentImp::GetInitialTempPrestressDeflection(const pgsPointOfIntere
       GetInitialTempPrestressDeflection(poi, model1, datum, pDy, pRz);
    }
 }
-
-//void CAnalysisAgentImp::GetReleaseTempPrestressDeflection(const pgsPointOfInterest& poi,Float64* pDy,Float64* pRz)
-//{
-//   const CSegmentKey& segmentKey = poi.GetSegmentKey();
-//
-//   CamberModelData model = GetPrestressDeflectionModel(segmentKey,m_ReleaseTempPrestressDeflectionModels);
-//
-//   GetReleaseTempPrestressDeflection(poi,model,pDy,pRz);
-//}
 
 void CAnalysisAgentImp::GetReleaseTempPrestressDeflection(const pgsPointOfInterest& poi,const GDRCONFIG* pConfig,Float64* pDy,Float64* pRz)
 {
@@ -7143,6 +6832,13 @@ void CAnalysisAgentImp::GetReleaseTempPrestressDeflection(const pgsPointOfIntere
    CComQIPtr<IFem2dModelResults> results(modelData.Model);
    Float64 Dx, Dy, Rz;
    PoiIDPairType femPoiID = modelData.PoiMap.GetModelPoi(poi);
+   if (femPoiID.first == INVALID_ID)
+   {
+      PoiIDPairType result = pgsGirderModelFactory::AddPointOfInterest(modelData.Model, poi);
+      modelData.PoiMap.AddMap(poi, result);
+      femPoiID = modelData.PoiMap.GetModelPoi(poi);
+      ATLASSERT(femPoiID.first != INVALID_ID);
+   }
    results->ComputePOIDeflections(g_lcidTemporaryStrand, femPoiID.first, lotGlobal, &Dx, &Dy, pRz);
    Float64 delta_poi = Dy;
 
@@ -7155,11 +6851,25 @@ void CAnalysisAgentImp::GetReleaseTempPrestressDeflection(const pgsPointOfIntere
 
    // Get deflection at start bearing
    femPoiID = modelData.PoiMap.GetModelPoi(poiStart);
+   if (femPoiID.first == INVALID_ID)
+   {
+      PoiIDPairType result = pgsGirderModelFactory::AddPointOfInterest(modelData.Model, poiStart);
+      modelData.PoiMap.AddMap(poiStart, result);
+      femPoiID = modelData.PoiMap.GetModelPoi(poiStart);
+      ATLASSERT(femPoiID.first != INVALID_ID);
+   }
    results->ComputePOIDeflections(g_lcidTemporaryStrand, femPoiID.first, lotGlobal, &Dx, &Dy, &Rz);
    Float64 start_delta_end_size = Dy;
 
    // Get deflection at end bearing
    femPoiID = modelData.PoiMap.GetModelPoi(poiEnd);
+   if (femPoiID.first == INVALID_ID)
+   {
+      PoiIDPairType result = pgsGirderModelFactory::AddPointOfInterest(modelData.Model, poiEnd);
+      modelData.PoiMap.AddMap(poiEnd, result);
+      femPoiID = modelData.PoiMap.GetModelPoi(poiEnd);
+      ATLASSERT(femPoiID.first != INVALID_ID);
+   }
    results->ComputePOIDeflections(g_lcidTemporaryStrand, femPoiID.first, lotGlobal, &Dx, &Dy, &Rz);
    Float64 end_delta_end_size = Dy;
 
@@ -7180,24 +6890,6 @@ void CAnalysisAgentImp::GetCreepDeflection(const pgsPointOfInterest& poi,const G
    const CSegmentKey& segmentKey = poi.GetSegmentKey();
    GET_IFACE(IStrandGeometry, pStrandGeom);
    bool bTempStrands = (0 < pStrandGeom->GetStrandCount(segmentKey, pgsTypes::Temporary, pConfig) && pStrandGeom->GetTemporaryStrandUsage(segmentKey, pConfig) != pgsTypes::ttsPTBeforeShipping);
-
-   //bool bTempStrands = false;
-   //if ( bUseConfig )
-   //{
-   //   bTempStrands = (0 < config.PrestressConfig.GetStrandCount(pgsTypes::Temporary) && 
-   //                    config.PrestressConfig.TempStrandUsage != pgsTypes::ttsPTBeforeShipping) ? true : false;
-   //}
-   //else
-   //{
-   //   const CSegmentKey& segmentKey = poi.GetSegmentKey();
-
-   //   GET_IFACE(IStrandGeometry,pStrandGeom);
-   //   GET_IFACE(ISegmentData,pSegmentData);
-   //   const CStrandData* pStrands = pSegmentData->GetStrandData(segmentKey);
-
-   //   bTempStrands = (0 < pStrandGeom->GetStrandCount(segmentKey,pgsTypes::Temporary) && 
-   //                   pStrands->GetTemporaryStrandUsage() != pgsTypes::ttsPTBeforeShipping) ? true : false;
-   //}
 
    Float64 Dcreep = 0;
    switch( deckType )
@@ -7253,21 +6945,6 @@ void CAnalysisAgentImp::GetCreepDeflection_CIP_TempStrands(const pgsPointOfInter
    Ct1 = GetCreepCoefficient(segmentKey, cpReleaseToDiaphragm, constructionRate, pConfig);
    Ct2 = GetCreepCoefficient(segmentKey, cpDiaphragmToDeck, constructionRate, pConfig);
    Ct3 = GetCreepCoefficient(segmentKey, cpReleaseToDeck, constructionRate, pConfig);
-   //if ( bUseConfig )
-   //{
-   //   GetGirderDeflectionForCamber(poi,&config,&DgStorage,&RgStorage,&DgErected,&RgErected,&DgInc,&RgInc);
-   //   Ct1 = GetCreepCoefficient(segmentKey,cpReleaseToDiaphragm,constructionRate,&config);
-   //   Ct2 = GetCreepCoefficient(segmentKey,cpDiaphragmToDeck,constructionRate, &config);
-   //   Ct3 = GetCreepCoefficient(segmentKey,cpReleaseToDeck,constructionRate, &config);
-   //}
-   //else
-   //{
-   //   GetGirderDeflectionForCamber(poi,&DgStorage,&RgStorage,&DgErected,&RgErected,&DgInc,&RgInc);
-   //   Ct1 = GetCreepCoefficient(segmentKey,cpReleaseToDiaphragm,constructionRate);
-   //   Ct2 = GetCreepCoefficient(segmentKey,cpDiaphragmToDeck,constructionRate);
-   //   Ct3 = GetCreepCoefficient(segmentKey,cpReleaseToDeck,constructionRate);
-   //}
-
 
    // To account for the fact that deflections are measured from different datums during storage
    // and after erection, we have to compute offsets that account for the translated coordinate systems.
@@ -7307,16 +6984,7 @@ void CAnalysisAgentImp::GetCreepDeflection_CIP_TempStrands(const pgsPointOfInter
       Float64 DI1, DI2, RI1, RI2;
       GetGirderDeflectionForCamber(poiLeft, pConfig, &D1, &R1, &D1E, &R1E, &DI1, &RI1);
       GetGirderDeflectionForCamber(poiRight, pConfig, &D2, &R2, &D2E, &R2E, &DI2, &RI2);
-      //if ( bUseConfig )
-      //{
-      //   GetGirderDeflectionForCamber(poiLeft,&config,&D1,&R1,&D1E,&R1E,&DI1,&RI1);
-      //   GetGirderDeflectionForCamber(poiRight,&config,&D2,&R2,&D2E,&R2E,&DI2,&RI2);
-      //}
-      //else
-      //{
-      //   GetGirderDeflectionForCamber(poiLeft,&D1,&R1,&D1E,&R1E,&DI1,&RI1);
-      //   GetGirderDeflectionForCamber(poiRight,&D2,&R2,&D2E,&R2E,&DI2,&RI2);
-      //}
+
       // compute adjustment for the current poi
       DgirderSupport = ::LinInterp(poi.GetDistFromStart(),D1,D2,poiRight.GetDistFromStart() - poiLeft.GetDistFromStart());
       RgirderSupport = ::LinInterp(poi.GetDistFromStart(),R1,R2,poiRight.GetDistFromStart() - poiLeft.GetDistFromStart());
@@ -7437,20 +7105,6 @@ void CAnalysisAgentImp::GetCreepDeflection_CIP(const pgsPointOfInterest& poi,con
    Ct1 = GetCreepCoefficient(segmentKey, cpReleaseToDiaphragm, constructionRate, pConfig);
    Ct2 = GetCreepCoefficient(segmentKey, cpDiaphragmToDeck, constructionRate, pConfig);
    Ct3 = GetCreepCoefficient(segmentKey, cpReleaseToDeck, constructionRate, pConfig);
-   //if ( bUseConfig )
-   //{
-   //   GetGirderDeflectionForCamber(poi,&config,&DgStorage,&RgStorage,&DgErected,&RgErected,&DgInc,&RgInc);
-   //   Ct1 = GetCreepCoefficient(segmentKey,cpReleaseToDiaphragm,constructionRate, &config);
-   //   Ct2 = GetCreepCoefficient(segmentKey,cpDiaphragmToDeck,constructionRate, &config);
-   //   Ct3 = GetCreepCoefficient(segmentKey,cpReleaseToDeck,constructionRate, &config);
-   //}
-   //else
-   //{
-   //   GetGirderDeflectionForCamber(poi,&DgStorage,&RgStorage,&DgErected,&RgErected,&DgInc,&RgInc);
-   //   Ct1 = GetCreepCoefficient(segmentKey,cpReleaseToDiaphragm,constructionRate);
-   //   Ct2 = GetCreepCoefficient(segmentKey,cpDiaphragmToDeck,constructionRate);
-   //   Ct3 = GetCreepCoefficient(segmentKey,cpReleaseToDeck,constructionRate);
-   //}
 
    // To account for the fact that deflections are measured from different datums during storage
    // and after erection, we have to compute offsets that account for the translated coordinate systems.
@@ -7490,16 +7144,7 @@ void CAnalysisAgentImp::GetCreepDeflection_CIP(const pgsPointOfInterest& poi,con
       Float64 DI1, DI2, RI1, RI2;
       GetGirderDeflectionForCamber(poiLeft, pConfig, &D1, &R1, &D1E, &R1E, &DI1, &RI1);
       GetGirderDeflectionForCamber(poiRight, pConfig, &D2, &R2, &D2E, &R2E, &DI2, &RI2);
-      //if ( bUseConfig )
-      //{
-      //   GetGirderDeflectionForCamber(poiLeft,&config,&D1,&R1,&D1E,&R1E,&DI1,&RI1);
-      //   GetGirderDeflectionForCamber(poiRight,&config,&D2,&R2,&D2E,&R2E,&DI2,&RI2);
-      //}
-      //else
-      //{
-      //   GetGirderDeflectionForCamber(poiLeft,&D1,&R1,&D1E,&R1E,&DI1,&RI1);
-      //   GetGirderDeflectionForCamber(poiRight,&D2,&R2,&D2E,&R2E,&DI2,&RI2);
-      //}
+
       // compute adjustment for the current poi
       DgirderSupport = ::LinInterp(poi.GetDistFromStart(),D1,D2,poiRight.GetDistFromStart() - poiLeft.GetDistFromStart());
       RgirderSupport = ::LinInterp(poi.GetDistFromStart(),R1,R2,poiRight.GetDistFromStart() - poiLeft.GetDistFromStart());
@@ -7646,26 +7291,7 @@ void CAnalysisAgentImp::GetCreepDeflection_NoDeck_TempStrands(const pgsPointOfIn
    GetUserLoadDeflection(castDeckIntervalIdx, poi, pConfig, &Duser1, &Ruser1);
    GetUserLoadDeflection(compositeDeckIntervalIdx, poi, pConfig, &Duser2, &Ruser2);
    GetSlabBarrierOverlayDeflection(poi, pConfig, &Dbarrier, &Rbarrier);
-   //if ( bUseConfig )
-   //{
-   //   GetGirderDeflectionForCamber(poi,&config,&DgStorage,&RgStorage,&DgErected,&RgErected,&DgInc,&RgInc);
-   //   GetDiaphragmDeflection(poi,&config,&Ddiaphragm,&Rdiaphragm);
-   //   GetShearKeyDeflection(poi,&config,&Dshearkey,&Rshearkey);
-   //   GetConstructionLoadDeflection(poi,&config,&Dconstr,&Rconstr);
-   //   GetUserLoadDeflection(castDeckIntervalIdx,poi,&config,&Duser1,&Ruser1);
-   //   GetUserLoadDeflection(compositeDeckIntervalIdx,poi,&config,&Duser2,&Ruser2);
-   //   GetSlabBarrierOverlayDeflection(poi,&config,&Dbarrier,&Rbarrier);
-   //}
-   //else
-   //{
-   //   GetGirderDeflectionForCamber(poi,&DgStorage,&RgStorage,&DgErected,&RgErected,&DgInc,&RgInc);
-   //   GetDiaphragmDeflection(poi,&Ddiaphragm,&Rdiaphragm);
-   //   GetShearKeyDeflection(poi,&Dshearkey,&Rshearkey);
-   //   GetConstructionLoadDeflection(poi,&Dconstr,&Rconstr);
-   //   GetUserLoadDeflection(castDeckIntervalIdx,poi,&Duser1,&Ruser1);
-   //   GetUserLoadDeflection(compositeDeckIntervalIdx,poi,&Duser2,&Ruser2);
-   //   GetSlabBarrierOverlayDeflection(poi,&Dbarrier,&Rbarrier); // includes sidewalk and overlays
-   //}
+
    // To account for the fact that deflections are measured from different datums during storage
    // and after erection, we have to compute offsets that account for the translated coordinate systems.
    // These values adjust deformations that are measured relative to the storage supports so that
@@ -7704,16 +7330,7 @@ void CAnalysisAgentImp::GetCreepDeflection_NoDeck_TempStrands(const pgsPointOfIn
       Float64 DI1, DI2, RI1, RI2;
       GetGirderDeflectionForCamber(poiLeft, pConfig, &D1, &R1, &D1E, &R1E, &DI1, &RI1);
       GetGirderDeflectionForCamber(poiRight, pConfig, &D2, &R2, &D2E, &R2E, &DI2, &RI2);
-      //if ( bUseConfig )
-      //{
-      //   GetGirderDeflectionForCamber(poiLeft,&config,&D1,&R1,&D1E,&R1E,&DI1,&RI1);
-      //   GetGirderDeflectionForCamber(poiRight,&config,&D2,&R2,&D2E,&R2E,&DI2,&RI2);
-      //}
-      //else
-      //{
-      //   GetGirderDeflectionForCamber(poiLeft,&D1,&R1,&D1E,&R1E,&DI1,&RI1);
-      //   GetGirderDeflectionForCamber(poiRight,&D2,&R2,&D2E,&R2E,&DI2,&RI2);
-      //}
+
       // compute adjustment for the current poi
       DgirderSupport = ::LinInterp(poi.GetDistFromStart(),D1,D2,poiRight.GetDistFromStart() - poiLeft.GetDistFromStart());
       RgirderSupport = ::LinInterp(poi.GetDistFromStart(),R1,R2,poiRight.GetDistFromStart() - poiLeft.GetDistFromStart());
@@ -7775,18 +7392,6 @@ void CAnalysisAgentImp::GetCreepDeflection_NoDeck_TempStrands(const pgsPointOfIn
       Ct1 = GetCreepCoefficient(segmentKey, cpReleaseToDiaphragm, constructionRate, pConfig);
       Ct2 = GetCreepCoefficient(segmentKey, cpDiaphragmToDeck, constructionRate, pConfig);
       Ct3 = GetCreepCoefficient(segmentKey, cpReleaseToDeck, constructionRate, pConfig);
-      //if ( bUseConfig )
-      //{
-      //   Ct1 = GetCreepCoefficient(segmentKey,cpReleaseToDiaphragm,constructionRate, &config);
-      //   Ct2 = GetCreepCoefficient(segmentKey,cpDiaphragmToDeck,   constructionRate, &config);
-      //   Ct3 = GetCreepCoefficient(segmentKey,cpReleaseToDeck,     constructionRate, &config);
-      //}
-      //else
-      //{
-      //   Ct1 = GetCreepCoefficient(segmentKey,cpReleaseToDiaphragm,constructionRate);
-      //   Ct2 = GetCreepCoefficient(segmentKey,cpDiaphragmToDeck,   constructionRate);
-      //   Ct3 = GetCreepCoefficient(segmentKey,cpReleaseToDeck,     constructionRate);
-      //}
 
       ATLASSERT(datum == pgsTypes::pddErected);
       *pDy = (Ct3 - Ct1)*(DgStorage + Dps) - (Ct3 - Ct1)*(DgirderSupport + DpsSupport) + Ct2*(DgInc + Ddiaphragm + Duser1 + Dtpsr + Dconstr + Dshearkey);
@@ -7803,22 +7408,6 @@ void CAnalysisAgentImp::GetCreepDeflection_NoDeck_TempStrands(const pgsPointOfIn
       Ct3 = GetCreepCoefficient(segmentKey, cpDiaphragmToDeck, constructionRate, pConfig);
       Ct4 = GetCreepCoefficient(segmentKey, cpDiaphragmToFinal, constructionRate, pConfig);
       Ct5 = GetCreepCoefficient(segmentKey, cpDeckToFinal, constructionRate, pConfig);
-      //if ( bUseConfig )
-      //{
-      //   Ct1 = GetCreepCoefficient(segmentKey,cpReleaseToDeck,      constructionRate, &config);
-      //   Ct2 = GetCreepCoefficient(segmentKey,cpReleaseToFinal,     constructionRate, &config);
-      //   Ct3 = GetCreepCoefficient(segmentKey,cpDiaphragmToDeck,    constructionRate, &config);
-      //   Ct4 = GetCreepCoefficient(segmentKey,cpDiaphragmToFinal,   constructionRate, &config);
-      //   Ct5 = GetCreepCoefficient(segmentKey,cpDeckToFinal,        constructionRate, &config);
-      //}
-      //else
-      //{
-      //   Ct1 = GetCreepCoefficient(segmentKey,cpReleaseToDeck,      constructionRate);
-      //   Ct2 = GetCreepCoefficient(segmentKey,cpReleaseToFinal,     constructionRate);
-      //   Ct3 = GetCreepCoefficient(segmentKey,cpDiaphragmToDeck,    constructionRate);
-      //   Ct4 = GetCreepCoefficient(segmentKey,cpDiaphragmToFinal,   constructionRate);
-      //   Ct5 = GetCreepCoefficient(segmentKey,cpDeckToFinal,        constructionRate);
-      //}
 
       ATLASSERT(datum == pgsTypes::pddErected);
       *pDy = (Ct2 - Ct1)*(DgStorage + Dps) - (Ct2 - Ct1)*(DgirderSupport + DpsSupport) + (Ct4 - Ct3)*(DgInc + Ddiaphragm + Dtpsr + Duser1 + Dconstr + Dshearkey) + Ct5*(Dbarrier + Duser2);
@@ -7883,26 +7472,6 @@ void CAnalysisAgentImp::GetCreepDeflection_NoDeck(const pgsPointOfInterest& poi,
    GetUserLoadDeflection(castDeckIntervalIdx, poi, pConfig, &Duser1, &Ruser1);
    GetUserLoadDeflection(compositeDeckIntervalIdx, poi, pConfig, &Duser2, &Ruser2);
    GetSlabBarrierOverlayDeflection(poi, pConfig, &Dbarrier, &Rbarrier);
-   //if ( bUseConfig )
-   //{
-   //   GetGirderDeflectionForCamber(poi,&config,&DgStorage,&RgStorage,&DgErected,&RgErected,&DgInc,&RgInc);
-   //   GetDiaphragmDeflection(poi,&config,&Ddiaphragm,&Rdiaphragm);
-   //   GetShearKeyDeflection(poi,&config,&Dshearkey,&Rshearkey);
-   //   GetConstructionLoadDeflection(poi,&config,&Dconstr,&Rconstr);
-   //   GetUserLoadDeflection(castDeckIntervalIdx,poi,&config,&Duser1,&Ruser1);
-   //   GetUserLoadDeflection(compositeDeckIntervalIdx,poi,&config,&Duser2,&Ruser2);
-   //   GetSlabBarrierOverlayDeflection(poi,&config,&Dbarrier,&Rbarrier);
-   //}
-   //else
-   //{
-   //   GetGirderDeflectionForCamber(poi,&DgStorage,&RgStorage,&DgErected,&RgErected,&DgInc,&RgInc);
-   //   GetDiaphragmDeflection(poi,&Ddiaphragm,&Rdiaphragm);
-   //   GetShearKeyDeflection(poi,&Dshearkey,&Rshearkey);
-   //   GetConstructionLoadDeflection(poi,&Dconstr,&Rconstr);
-   //   GetUserLoadDeflection(castDeckIntervalIdx,poi,&Duser1,&Ruser1);
-   //   GetUserLoadDeflection(compositeDeckIntervalIdx,poi,&Duser2,&Ruser2);
-   //   GetSlabBarrierOverlayDeflection(poi,&Dbarrier,&Rbarrier);
-   //}
 
    // To account for the fact that deflections are measured from different datums during storage
    // and after erection, we have to compute offsets that account for the translated coordinate systems.
@@ -7942,17 +7511,7 @@ void CAnalysisAgentImp::GetCreepDeflection_NoDeck(const pgsPointOfInterest& poi,
       Float64 DI1, DI2, RI1, RI2;
       GetGirderDeflectionForCamber(poiLeft, pConfig, &D1, &R1, &D1E, &R1E, &DI1, &RI1);
       GetGirderDeflectionForCamber(poiRight, pConfig, &D2, &R2, &D2E, &R2E, &DI2, &RI2);
-      //if ( bUseConfig )
-      //{
-      //   GetGirderDeflectionForCamber(poiLeft,&config,&D1,&R1,&D1E,&R1E,&DI1,&RI1);
-      //   GetGirderDeflectionForCamber(poiRight,&config,&D2,&R2,&D2E,&R2E,&DI2,&RI2);
-      //}
-      //else
-      //{
-      //   GetGirderDeflectionForCamber(poiLeft,&D1,&R1,&D1E,&R1E,&DI1,&RI1);
-      //   GetGirderDeflectionForCamber(poiRight,&D2,&R2,&D2E,&R2E,&DI2,&RI2);
-      //}
-      // compute adjustment for the current poi
+
       DgirderSupport = ::LinInterp(poi.GetDistFromStart(),D1,D2,poiRight.GetDistFromStart() - poiLeft.GetDistFromStart());
       RgirderSupport = ::LinInterp(poi.GetDistFromStart(),R1,R2,poiRight.GetDistFromStart() - poiLeft.GetDistFromStart());
    
@@ -8013,18 +7572,6 @@ void CAnalysisAgentImp::GetCreepDeflection_NoDeck(const pgsPointOfInterest& poi,
       Ct1 = GetCreepCoefficient(segmentKey, cpReleaseToDiaphragm, constructionRate, pConfig);
       Ct2 = GetCreepCoefficient(segmentKey, cpDiaphragmToDeck, constructionRate, pConfig);
       Ct3 = GetCreepCoefficient(segmentKey, cpReleaseToDeck, constructionRate, pConfig);
-      //if ( bUseConfig )
-      //{
-      //   Ct1 = GetCreepCoefficient(segmentKey,cpReleaseToDiaphragm,constructionRate, &config);
-      //   Ct2 = GetCreepCoefficient(segmentKey,cpDiaphragmToDeck,   constructionRate, &config);
-      //   Ct3 = GetCreepCoefficient(segmentKey,cpReleaseToDeck,     constructionRate, &config);
-      //}
-      //else
-      //{
-      //   Ct1 = GetCreepCoefficient(segmentKey,cpReleaseToDiaphragm,constructionRate);
-      //   Ct2 = GetCreepCoefficient(segmentKey,cpDiaphragmToDeck,   constructionRate);
-      //   Ct3 = GetCreepCoefficient(segmentKey,cpReleaseToDeck,     constructionRate);
-      //}
 
       ATLASSERT(datum == pgsTypes::pddErected);
       *pDy = (Ct3 - Ct1)*(DgStorage + Dps) - (Ct3 - Ct1)*(DgirderSupport + DpsSupport) + Ct2*(DgInc + Ddiaphragm + Duser1 + Dconstr + Dshearkey);
@@ -8040,52 +7587,11 @@ void CAnalysisAgentImp::GetCreepDeflection_NoDeck(const pgsPointOfInterest& poi,
       Ct3 = GetCreepCoefficient(segmentKey, cpDiaphragmToDeck, constructionRate, pConfig);
       Ct4 = GetCreepCoefficient(segmentKey, cpDiaphragmToFinal, constructionRate, pConfig);
       Ct5 = GetCreepCoefficient(segmentKey, cpDeckToFinal, constructionRate, pConfig);
-      //if ( bUseConfig )
-      //{
-      //   Ct1 = GetCreepCoefficient(segmentKey,cpReleaseToDeck,      constructionRate, &config);
-      //   Ct2 = GetCreepCoefficient(segmentKey,cpReleaseToFinal,     constructionRate, &config);
-      //   Ct3 = GetCreepCoefficient(segmentKey,cpDiaphragmToDeck,    constructionRate, &config);
-      //   Ct4 = GetCreepCoefficient(segmentKey,cpDiaphragmToFinal,   constructionRate, &config);
-      //   Ct5 = GetCreepCoefficient(segmentKey,cpDeckToFinal,        constructionRate, &config);
-      //}
-      //else
-      //{
-      //   Ct1 = GetCreepCoefficient(segmentKey,cpReleaseToDeck,      constructionRate);
-      //   Ct2 = GetCreepCoefficient(segmentKey,cpReleaseToFinal,     constructionRate);
-      //   Ct3 = GetCreepCoefficient(segmentKey,cpDiaphragmToDeck,    constructionRate);
-      //   Ct4 = GetCreepCoefficient(segmentKey,cpDiaphragmToFinal,   constructionRate);
-      //   Ct5 = GetCreepCoefficient(segmentKey,cpDeckToFinal,        constructionRate);
-      //}
 
       *pDy = (Ct2 - Ct1)*(DgStorage + Dps) - (Ct2 - Ct1)*(DgirderSupport + DpsSupport) + (Ct4 - Ct3)*(DgInc + Ddiaphragm + Duser1 + Dconstr + Dshearkey) + Ct5*(Dbarrier + Duser2);
       *pRz = (Ct2 - Ct1)*(RgStorage + Rps) - (Ct2 - Ct1)*(RgirderSupport + RpsSupport) + (Ct4 - Ct3)*(RgInc + Rdiaphragm + Ruser1 + Rconstr + Rshearkey) + Ct5*(Rbarrier + Ruser2);
    }
 }
-//
-//void CAnalysisAgentImp::GetExcessCamber(const pgsPointOfInterest& poi,CamberModelData& initModelData,CamberModelData& initTempModelData,CamberModelData& releaseTempModelData,Int16 time,Float64* pDy,Float64* pRz)
-//{
-//   Float64 Dy, Dz;
-//   GetDCamberForGirderSchedule( poi, nullptr, initModelData, initTempModelData, releaseTempModelData, time, &Dy, &Dz );
-//
-//   Float64 Cy, Cz;
-//   GetScreedCamber(poi,&Cy,&Cz);
-//
-//   *pDy = Dy - Cy;  // excess camber = D - C
-//   *pRz = Dz - Cz;
-//
-//   GET_IFACE(IBridge,pBridge);
-//   pgsTypes::SupportedDeckType deckType = pBridge->GetDeckType();
-//   if ( deckType == pgsTypes::sdtNone )
-//   {
-//      // apply camber multipliers
-//      CamberMultipliers cm = GetCamberMultipliers(poi.GetSegmentKey());
-//
-//      Float64 Dcreep3, Rcreep3;
-//      GetCreepDeflection(poi,ICamber::cpDeckToFinal,time,pgsTypes::pddErected,nullptr,&Dcreep3,&Rcreep3 );
-//      *pDy += cm.CreepFactor * Dcreep3;
-//      *pRz += cm.CreepFactor * Rcreep3;
-//   }
-//}
 
 void CAnalysisAgentImp::GetExcessCamber(const pgsPointOfInterest& poi,const GDRCONFIG* pConfig,CamberModelData& initModelData,CamberModelData& initTempModelData,CamberModelData& releaseTempModelData,Int16 time,Float64* pDy,Float64* pRz)
 {
@@ -8111,12 +7617,6 @@ void CAnalysisAgentImp::GetExcessCamber(const pgsPointOfInterest& poi,const GDRC
       *pRz += cm.CreepFactor * Rcreep3;
    }
 }
-
-//void CAnalysisAgentImp::GetDCamberForGirderSchedule(const pgsPointOfInterest& poi,CamberModelData& initModelData,CamberModelData& initTempModelData,CamberModelData& releaseTempModelData,Int16 time,Float64* pDy,Float64* pRz)
-//{
-//   GDRCONFIG dummy_config;
-//   GetDCamberForGirderSchedule(poi,false,dummy_config,initModelData,initTempModelData,releaseTempModelData,time,pDy,pRz);
-//}
 
 void CAnalysisAgentImp::GetDCamberForGirderSchedule(const pgsPointOfInterest& poi,const GDRCONFIG* pConfig,CamberModelData& initModelData,CamberModelData& initTempModelData,CamberModelData& releaseTempModelData,Int16 time,Float64* pDy,Float64* pRz)
 {
@@ -8178,31 +7678,6 @@ void CAnalysisAgentImp::GetD_Deck_TempStrands(const pgsPointOfInterest& poi,cons
       GetCreepDeflection(poi, ICamber::cpDiaphragmToDeck, constructionRate, pgsTypes::pddErected, pConfig, &Dcreep2, &Rcreep2);
    }
 
-   //if ( pConfig != nullptr )
-   //{
-   //   GetPrestressDeflection( poi, pgsTypes::pddErected, pConfig, &Dps, &Rps );
-   //   GetInitialTempPrestressDeflection( poi, *pConfig, pgsTypes::pddErected, &Dtpsi, &Rtpsi );
-   //   GetReleaseTempPrestressDeflection( poi, *pConfig, &Dtpsr, &Rtpsr );
-   //   GetGirderDeflectionForCamber( poi, pConfig, &DgStorage, &RgStorage, &DgErected, &RgErected, &DgInc, &RgInc );
-   //   GetCreepDeflection( poi, pConfig, initModelData, initTempModelData, releaseTempModelData, ICamber::cpReleaseToDiaphragm, constructionRate, pgsTypes::pddErected, &Dcreep1, &Rcreep1);
-   //   GetDiaphragmDeflection( poi, pConfig, &Ddiaphragm, &Rdiaphragm );
-   //   GetShearKeyDeflection(poi,pConfig,&Dshearkey,&Rshearkey);
-   //   GetConstructionLoadDeflection(poi,pConfig,&Dconstr,&Rconstr);
-   //   GetCreepDeflection( poi, pConfig, initModelData, initTempModelData, releaseTempModelData, ICamber::cpDiaphragmToDeck, constructionRate, pgsTypes::pddErected, &Dcreep2, &Rcreep2);
-   //}
-   //else
-   //{
-   //   GetPrestressDeflection( poi, pgsTypes::pddErected, nullptr, &Dps, &Rps );
-   //   GetInitialTempPrestressDeflection( poi, pgsTypes::pddErected, &Dtpsi, &Rtpsi );
-   //   GetReleaseTempPrestressDeflection( poi, &Dtpsr, &Rtpsr );
-   //   GetGirderDeflectionForCamber( poi, &DgStorage, &RgStorage, &DgErected, &RgErected, &DgInc, &RgInc );
-   //   GetCreepDeflection( poi, ICamber::cpReleaseToDiaphragm, constructionRate, pgsTypes::pddErected, &Dcreep1, &Rcreep1 );
-   //   GetDiaphragmDeflection( poi, &Ddiaphragm, &Rdiaphragm );
-   //   GetShearKeyDeflection(poi,&Dshearkey,&Rshearkey);
-   //   GetConstructionLoadDeflection(poi,&Dconstr,&Rconstr);
-   //   GetCreepDeflection( poi, ICamber::cpDiaphragmToDeck, constructionRate, pgsTypes::pddErected, &Dcreep2, &Rcreep2 );
-   //}
-
    // apply camber multipliers
    CamberMultipliers cm = GetCamberMultipliers(poi.GetSegmentKey());
 
@@ -8238,25 +7713,6 @@ void CAnalysisAgentImp::GetD_Deck(const pgsPointOfInterest& poi,const GDRCONFIG*
    {
       GetCreepDeflection(poi, ICamber::cpReleaseToDeck, constructionRate, pgsTypes::pddErected, pConfig, &Dcreep, &Rcreep);
    }
-
-   //if ( pConfig != nullptr )
-   //{
-   //   GetPrestressDeflection( poi,  pgsTypes::pddErected, pConfig, &Dps, &Rps );
-   //   GetGirderDeflectionForCamber( poi, pConfig, &DgStorage, &RgStorage, &DgErected, &RgErected, &DgInc, &RgInc );
-   //   GetDiaphragmDeflection( poi, pConfig, &Ddiaphragm, &Rdiaphragm );
-   //   GetShearKeyDeflection(poi,pConfig,&Dshearkey,&Rshearkey);
-   //   GetConstructionLoadDeflection(poi,pConfig,&Dconstr,&Rconstr);
-   //   GetCreepDeflection( poi, pConfig, initModelData, initTempModelData, releaseTempModelData, ICamber::cpReleaseToDeck, constructionRate, pgsTypes::pddErected, &Dcreep, &Rcreep);
-   //}
-   //else
-   //{
-   //   GetPrestressDeflection( poi, pgsTypes::pddErected, nullptr, &Dps, &Rps );
-   //   GetGirderDeflectionForCamber( poi, &DgStorage, &RgStorage, &DgErected, &RgErected, &DgInc, &RgInc );
-   //   GetDiaphragmDeflection( poi, &Ddiaphragm, &Rdiaphragm );
-   //   GetShearKeyDeflection(poi,&Dshearkey,&Rshearkey);
-   //   GetConstructionLoadDeflection(poi,&Dconstr,&Rconstr);
-   //   GetCreepDeflection( poi, ICamber::cpReleaseToDeck, constructionRate, pgsTypes::pddErected, &Dcreep, &Rcreep );
-   //}
 
    // apply camber multipliers
    CamberMultipliers cm = GetCamberMultipliers(poi.GetSegmentKey());
@@ -8306,32 +7762,6 @@ void CAnalysisAgentImp::GetD_NoDeck_TempStrands(const pgsPointOfInterest& poi,co
    GetConstructionLoadDeflection(poi, pConfig, &Dconstr, &Rconstr);
    GetUserLoadDeflection(castDeckIntervalIdx, poi, pConfig, &Duser1, &Ruser1);
    GetCreepDeflection(poi, ICamber::cpDiaphragmToDeck, constructionRate, pgsTypes::pddErected, pConfig, &Dcreep2, &Rcreep2);
-   //if ( pConfig != nullptr )
-   //{
-   //   GetPrestressDeflection( poi, pgsTypes::pddErected, pConfig, &Dps, &Rps );
-   //   GetInitialTempPrestressDeflection( poi,*pConfig,pgsTypes::pddErected,&Dtpsi,&Rtpsi );
-   //   GetReleaseTempPrestressDeflection( poi,*pConfig,&Dtpsr,&Rtpsr );
-   //   GetGirderDeflectionForCamber( poi,pConfig,&DgStorage,&RgStorage,&DgErected,&RgErected,&DgInc,&RgInc );
-   //   GetCreepDeflection( poi, pConfig, ICamber::cpReleaseToDiaphragm, constructionRate,pgsTypes::pddErected,&Dcreep1,&Rcreep1 );
-   //   GetDiaphragmDeflection( poi,pConfig,&Ddiaphragm,&Rdiaphragm );
-   //   GetShearKeyDeflection(poi,pConfig,&Dshearkey,&Rshearkey);
-   //   GetConstructionLoadDeflection(poi,pConfig,&Dconstr,&Rconstr);
-   //   GetUserLoadDeflection(castDeckIntervalIdx,poi,pConfig,&Duser1,&Ruser1);
-   //   GetCreepDeflection( poi, pConfig, ICamber::cpDiaphragmToDeck, constructionRate,pgsTypes::pddErected,&Dcreep2,&Rcreep2 );
-   //}
-   //else
-   //{
-   //   GetPrestressDeflection( poi, pgsTypes::pddErected, nullptr, &Dps, &Rps );
-   //   GetInitialTempPrestressDeflection( poi,pgsTypes::pddErected,&Dtpsi,&Rtpsi );
-   //   GetReleaseTempPrestressDeflection( poi,&Dtpsr,&Rtpsr );
-   //   GetGirderDeflectionForCamber( poi,&DgStorage,&RgStorage,&DgErected,&RgErected,&DgInc,&RgInc );
-   //   GetCreepDeflection( poi, ICamber::cpReleaseToDiaphragm, constructionRate,pgsTypes::pddErected,&Dcreep1,&Rcreep1 );
-   //   GetDiaphragmDeflection( poi, &Ddiaphragm, &Rdiaphragm );
-   //   GetShearKeyDeflection(poi,&Dshearkey,&Rshearkey);
-   //   GetConstructionLoadDeflection(poi,&Dconstr,&Rconstr);
-   //   GetUserLoadDeflection(castDeckIntervalIdx,poi,&Duser1,&Ruser1);
-   //   GetCreepDeflection( poi, ICamber::cpDiaphragmToDeck, constructionRate, pgsTypes::pddErected,&Dcreep2, &Rcreep2 );
-   //}
 
    // apply camber multipliers
    CamberMultipliers cm = GetCamberMultipliers(poi.GetSegmentKey());
@@ -9863,22 +9293,58 @@ void CAnalysisAgentImp::GetTimeStepStress(IntervalIndexType intervalIdx,pgsTypes
    pMin->clear();
    pMax->clear();
 
-   GET_IFACE(ILoadFactors,pILoadFactors);
-   const CLoadFactors* pLoadFactors = pILoadFactors->GetLoadFactors();
-   Float64 gLLMin = pLoadFactors->LLIMmin[limitState];
-   Float64 gLLMax = pLoadFactors->LLIMmax[limitState];
-   Float64 gDCMin = pLoadFactors->DCmin[limitState];
-   Float64 gDCMax = pLoadFactors->DCmax[limitState];
-   Float64 gDWMin = pLoadFactors->DWmin[limitState];
-   Float64 gDWMax = pLoadFactors->DWmax[limitState];
-   Float64 gCRMax = pLoadFactors->CRmax[limitState];
-   Float64 gCRMin = pLoadFactors->CRmin[limitState];
-   Float64 gSHMax = pLoadFactors->SHmax[limitState];
-   Float64 gSHMin = pLoadFactors->SHmin[limitState];
-   Float64 gREMax = pLoadFactors->REmax[limitState];
-   Float64 gREMin = pLoadFactors->REmin[limitState];
-   Float64 gPSMax = pLoadFactors->PSmax[limitState]; // this is for secondary effects due to PT
-   Float64 gPSMin = pLoadFactors->PSmin[limitState]; // this is for secondary effects due to PT
+   Float64 gDCMin, gDCMax;
+   Float64 gDWMin, gDWMax;
+   Float64 gCRMin, gCRMax;
+   Float64 gSHMin, gSHMax;
+   Float64 gREMin, gREMax;
+   Float64 gPSMin, gPSMax;
+   Float64 gLLMin, gLLMax;
+
+   if (IsDesignLimitState(limitState))
+   {
+      GET_IFACE(ILoadFactors,pILoadFactors);
+      const CLoadFactors* pLoadFactors = pILoadFactors->GetLoadFactors();
+      gLLMin = pLoadFactors->LLIMmin[limitState];
+      gLLMax = pLoadFactors->LLIMmax[limitState];
+      gDCMin = pLoadFactors->DCmin[limitState];
+      gDCMax = pLoadFactors->DCmax[limitState];
+      gDWMin = pLoadFactors->DWmin[limitState];
+      gDWMax = pLoadFactors->DWmax[limitState];
+      gCRMax = pLoadFactors->CRmax[limitState];
+      gCRMin = pLoadFactors->CRmin[limitState];
+      gSHMax = pLoadFactors->SHmax[limitState];
+      gSHMin = pLoadFactors->SHmin[limitState];
+      gREMax = pLoadFactors->REmax[limitState];
+      gREMin = pLoadFactors->REmin[limitState];
+      gPSMax = pLoadFactors->PSmax[limitState]; // this is for secondary effects due to PT
+      gPSMin = pLoadFactors->PSmin[limitState]; // this is for secondary effects due to PT
+   }
+   else
+   {
+      GET_IFACE(IRatingSpecification, pRatingSpec);
+      gDCMin = pRatingSpec->GetDeadLoadFactor(limitState);
+      gDCMax = gDCMin;
+
+      gDWMin = pRatingSpec->GetWearingSurfaceFactor(limitState);
+      gDWMax = gDWMin;
+
+      gCRMin = pRatingSpec->GetCreepFactor(limitState);
+      gCRMax = gCRMin;
+
+      gSHMin = pRatingSpec->GetShrinkageFactor(limitState);
+      gSHMax = gSHMin;
+
+      gREMin = pRatingSpec->GetRelaxationFactor(limitState);
+      gREMax = gREMin;
+
+      gPSMin = pRatingSpec->GetSecondaryEffectsFactor(limitState);
+      gPSMax = gPSMin;
+
+      gLLMin = pRatingSpec->GetLiveLoadFactor(limitState,true);
+      gLLMax = gLLMin;
+   }
+
 
    // Use half prestress if Service IA or Fatigue I (See LRFD Table 5.9.4.2.1-1)
    Float64 k = (limitState == pgsTypes::ServiceIA || limitState == pgsTypes::FatigueI) ? 0.5 : 1.0;

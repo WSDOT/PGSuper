@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2017  Washington State Department of Transportation
+// Copyright © 1999-2018  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -54,13 +54,10 @@ public:
 // Overrides
 	// ClassWizard generate virtual function overrides
 	//{{AFX_VIRTUAL(CBridgeDescFramingPage)
-	protected:
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
-	afx_msg void OnAddPier();
-	afx_msg void OnRemovePier();
-   afx_msg void OnLayoutBySpanLengths();
-   afx_msg void OnAddTemporarySupport();
-   afx_msg void OnRemoveTemporarySupport();
+protected:
+   virtual BOOL OnInitDialog();
+   virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
+   virtual BOOL OnSetActive();
 	//}}AFX_VIRTUAL
 
 // Implementation
@@ -71,8 +68,12 @@ public:
 protected:
    // Generated message map functions
 	//{{AFX_MSG(CBridgeDescFramingPage)
-	virtual BOOL OnInitDialog();
-	afx_msg void OnHelp();
+   afx_msg void OnAddPier();
+   afx_msg void OnRemovePier();
+   afx_msg void OnLayoutBySpanLengths();
+   afx_msg void OnAddTemporarySupport();
+   afx_msg void OnRemoveTemporarySupport();
+   afx_msg void OnHelp();
    afx_msg BOOL OnNcActivate(BOOL bActive);
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()

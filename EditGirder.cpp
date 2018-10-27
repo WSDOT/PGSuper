@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2017  Washington State Department of Transportation
+// Copyright © 1999-2018  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -50,8 +50,8 @@ txnEditGirderData::txnEditGirderData(const txnEditGirderData& rOther)
    m_SlabOffset[pgsTypes::metStart] = rOther.m_SlabOffset[pgsTypes::metStart];
    m_SlabOffset[pgsTypes::metEnd] = rOther.m_SlabOffset[pgsTypes::metEnd];
 
-   m_FilletType = rOther.m_FilletType;
-   m_Fillet = rOther.m_Fillet;
+   m_AssExcessCamberType = rOther.m_AssExcessCamberType;
+   m_AssExcessCamber = rOther.m_AssExcessCamber;
 }
 
 /////////////////////////////////////////////////////////////
@@ -100,9 +100,9 @@ bool txnEditGirder::Execute()
       oldGirderData.m_SlabOffset[pgsTypes::metStart] = pIBridgeDesc->GetSlabOffset(m_GirderKey.groupIndex,pGroup->GetPierIndex(pgsTypes::metStart),gdrIdx);
       oldGirderData.m_SlabOffset[pgsTypes::metEnd]   = pIBridgeDesc->GetSlabOffset(m_GirderKey.groupIndex,pGroup->GetPierIndex(pgsTypes::metEnd),  gdrIdx);
 
-      oldGirderData.m_FilletType = pBridgeDesc->GetFilletType();
+      oldGirderData.m_AssExcessCamberType = pBridgeDesc->GetAssExcessCamberType();
       // this is a precast girder (only one segment per girder)
-      oldGirderData.m_Fillet = pIBridgeDesc->GetFillet(m_GirderKey.groupIndex, gdrIdx);
+      oldGirderData.m_AssExcessCamber = pIBridgeDesc->GetAssExcessCamber(m_GirderKey.groupIndex, gdrIdx);
 
       oldGirderData.m_Girder = *pGroup->GetGirder(gdrIdx);
       oldGirderData.m_TimelineMgr = (*pIBridgeDesc->GetTimelineManager());
@@ -233,22 +233,22 @@ void txnEditGirder::SetGirderData(const CGirderKey& girderKey,const txnEditGirde
       pIBridgeDesc->SetSlabOffset(segmentKey.groupIndex, endPierIdx,   segmentKey.girderIndex, gdrData.m_SlabOffset[pgsTypes::metEnd]  );
    }
 
-   // set the fillet
-   pIBridgeDesc->SetFilletType( gdrData.m_FilletType );
-   if ( gdrData.m_FilletType == pgsTypes::fttBridge )
+   // set the Assumed Excess Camber
+   pIBridgeDesc->SetAssExcessCamberType( gdrData.m_AssExcessCamberType );
+   if ( gdrData.m_AssExcessCamberType == pgsTypes::aecBridge )
    {
       // for the entire bridge
-      pIBridgeDesc->SetFillet( gdrData.m_Fillet );
+      pIBridgeDesc->SetAssExcessCamber( gdrData.m_AssExcessCamber );
    }
-   else if ( gdrData.m_FilletType == pgsTypes::fttSpan )
+   else if ( gdrData.m_AssExcessCamberType == pgsTypes::aecSpan )
    {
       // for this span
-      pIBridgeDesc->SetFillet(girderKey.groupIndex, gdrData.m_Fillet );
+      pIBridgeDesc->SetAssExcessCamber(girderKey.groupIndex, gdrData.m_AssExcessCamber );
    }
    else
    {
       // change the girder that was edited
-      pIBridgeDesc->SetFillet(segmentKey.groupIndex, segmentKey.girderIndex, gdrData.m_Fillet);
+      pIBridgeDesc->SetAssExcessCamber(segmentKey.groupIndex, segmentKey.girderIndex, gdrData.m_AssExcessCamber);
    }
 
    if ( !gdrData.m_bUseSameGirder )

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2017  Washington State Department of Transportation
+// Copyright © 1999-2018  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -1315,7 +1315,6 @@ void CBridgeDescGeneralPage::OnDeckTypeChanged()
    if (newDeckType == pgsTypes::sdtCompositeCIP || newDeckType == pgsTypes::sdtCompositeOverlay )
    {
       Float64 minSlabOffset = pParent->m_BridgeDesc.GetMinSlabOffset();
-      Float64 fillet = pParent->m_BridgeDesc.GetMaxFillet();
       if ( minSlabOffset < pParent->m_BridgeDesc.GetDeckDescription()->GrossDepth )
       {
          pParent->m_BridgeDesc.GetDeckDescription()->GrossDepth = minSlabOffset;
@@ -1324,6 +1323,7 @@ void CBridgeDescGeneralPage::OnDeckTypeChanged()
          // insure that we have a reasonable slab depth
          if (pParent->m_BridgeDesc.GetDeckDescription()->GrossDepth <= 0.0)
          {
+            Float64 fillet = pParent->m_BridgeDesc.GetFillet();
             pParent->m_BridgeDesc.GetDeckDescription()->GrossDepth = Max(::ConvertToSysUnits(7.0, unitMeasure::Inch),fillet);
          }
       }
@@ -1331,7 +1331,6 @@ void CBridgeDescGeneralPage::OnDeckTypeChanged()
    else if (newDeckType == pgsTypes::sdtCompositeSIP )
    {
       Float64 minSlabOffset = pParent->m_BridgeDesc.GetMinSlabOffset();
-      Float64 fillet = pParent->m_BridgeDesc.GetMaxFillet();
       if ( minSlabOffset < pParent->m_BridgeDesc.GetDeckDescription()->GrossDepth + pParent->m_BridgeDesc.GetDeckDescription()->PanelDepth )
       {
          pParent->m_BridgeDesc.GetDeckDescription()->GrossDepth = minSlabOffset - pParent->m_BridgeDesc.GetDeckDescription()->PanelDepth; // decrease the cast depth
@@ -1340,6 +1339,7 @@ void CBridgeDescGeneralPage::OnDeckTypeChanged()
          // insure that we have a reasonable slab depth
          if (pParent->m_BridgeDesc.GetDeckDescription()->GrossDepth <= 0.0)
          {
+            Float64 fillet = pParent->m_BridgeDesc.GetFillet();
             pParent->m_BridgeDesc.GetDeckDescription()->GrossDepth = Max(::ConvertToSysUnits(7.0, unitMeasure::Inch) - pParent->m_BridgeDesc.GetDeckDescription()->PanelDepth, fillet);
          }
       }

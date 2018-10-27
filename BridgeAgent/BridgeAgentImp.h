@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2017  Washington State Department of Transportation
+// Copyright © 1999-2018  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -321,7 +321,8 @@ public:
    virtual Float64 GetOverlayWeight() override;
    virtual Float64 GetOverlayDepth() override;
    virtual Float64 GetSacrificalDepth() override;
-   virtual Float64 GetFillet(SpanIndexType spanIdx, GirderIndexType gdrIdx) override;
+   virtual Float64 GetFillet() override;
+   virtual Float64 GetAssExcessCamber(SpanIndexType spanIdx,GirderIndexType gdr) override;
    virtual Float64 GetGrossSlabDepth(const pgsPointOfInterest& poi) override;
    virtual Float64 GetStructuralSlabDepth(const pgsPointOfInterest& poi) override;
    virtual Float64 GetCastSlabDepth(const pgsPointOfInterest& poi) override;
@@ -1136,6 +1137,22 @@ private:
    // to temporary support elevation adjustments and pier "A" dimensions
    std::map<CSegmentKey,mathLinFunc2d> m_ElevationAdjustmentEquations;
 
+   struct PoiLocation
+   {
+      PoiIDType ID;
+      Float64 Station;
+      Float64 Offset;
+      CComPtr<IPoint2d> pntLocal;
+      CComPtr<IPoint2d> pntGlobal;
+
+      bool operator<(const PoiLocation& other) const { return ID < other.ID; }
+   };
+   typedef std::set<PoiLocation> PoiLocationCache;
+   mutable std::unique_ptr<PoiLocationCache> m_pPoiLocationCache;
+   void GetPoiLocation(const pgsPointOfInterest& poi, Float64* pStation, Float64* pOffset, IPoint2d** ppLocal, IPoint2d** ppGlobal) const;
+   void InvalidatePoiLocationCache();
+   static UINT DeletePoiLocationCache(LPVOID pParam);
+
    // containers to cache shapes cut at various stations
    struct SectionCutKey
    {
@@ -1297,7 +1314,8 @@ private:
    // helper functions for building the bridge model
    bool LayoutPiers(const CBridgeDescription2* pBridgeDesc);
    bool LayoutGirders(const CBridgeDescription2* pBridgeDesc);
-   void GetHaunchDepth(const CPrecastSegmentData* pSegment,Float64* pStartHaunch,Float64* pMidHaunch,Float64* pEndHaunch,Float64* pFillet);
+   bool LayoutGirdersPass2();
+   void GetHaunchDepth(const CPrecastSegmentData* pSegment,Float64* pStartHaunch,Float64* pMidHaunch,Float64* pEndHaunch);
    bool LayoutDeck(const CBridgeDescription2* pBridgeDesc);
    bool LayoutNoDeck(const CBridgeDescription2* pBridgeDesc,IBridgeDeck** ppDeck);
    bool LayoutSimpleDeck(const CBridgeDescription2* pBridgeDesc,IBridgeDeck** ppDeck);

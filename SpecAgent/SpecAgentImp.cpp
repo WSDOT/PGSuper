@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2017  Washington State Department of Transportation
+// Copyright © 1999-2018  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -51,8 +51,6 @@ static char THIS_FILE[] = __FILE__;
 #endif
 
 DECLARE_LOGFILE;
-
-//#define MATCH_OLD_ANALYSIS // set to true to match the old stability analysis with the new stability code
 
 /////////////////////////////////////////////////////////////////////////////
 // CSpecAgentImp
@@ -890,14 +888,8 @@ Float64 CSpecAgentImp::GetHaulingWithMildRebarAllowableStressNormalCrown(const C
 
 Float64 CSpecAgentImp::GetHaulingWithMildRebarAllowableStressFactorMaxSuper(const CSegmentKey& segmentKey)
 {
-#if defined MATCH_OLD_ANALYSIS
-   GET_IFACE(IMaterials,pMaterial);
-   pgsTypes::ConcreteType concType = pMaterial->GetSegmentConcreteType(segmentKey);
-   Float64 x = GetHaulingModulusOfRuptureFactor(concType);
-#else
    const SpecLibraryEntry* pSpec = GetSpec();
    Float64 x = pSpec->GetHaulingTensionStressFactorWithRebarMaxSuper();
-#endif
    return x;
 }
 
@@ -2447,11 +2439,6 @@ stbHaulingCriteria CSpecAgentImp::GetHaulingStabilityCriteria(const CSegmentKey&
 
    GetHaulingAllowableTensileConcreteStressParametersNormalCrown(&criteria.TensionCoefficient[stbTypes::CrownSlope],&criteria.bMaxTension[stbTypes::CrownSlope],&criteria.MaxTension[stbTypes::CrownSlope]);
    criteria.TensionCoefficientWithRebar[stbTypes::CrownSlope] = GetHaulingWithMildRebarAllowableStressFactorNormalCrown();
-#if defined MATCH_OLD_ANALYSIS
-   // this is a bug in the older version... it doesn't take into account the concrete strength in the configuration
-   criteria.AllowableTension[stbTypes::CrownSlope]               = GetHaulingAllowableTensileConcreteStressNormalCrown(segmentKey);
-   criteria.AllowableTensionWithRebar[stbTypes::CrownSlope]      = GetHaulingWithMildRebarAllowableStressNormalCrown(segmentKey);
-#else
    if (haulConfig.bIgnoreGirderConfig)
    {
       criteria.AllowableTension[stbTypes::CrownSlope]               = GetHaulingAllowableTensileConcreteStressNormalCrown(segmentKey);
@@ -2462,14 +2449,10 @@ stbHaulingCriteria CSpecAgentImp::GetHaulingStabilityCriteria(const CSegmentKey&
       criteria.AllowableTension[stbTypes::CrownSlope] = GetHaulingAllowableTensileConcreteStressExNormalCrown(segmentKey,haulConfig.GdrConfig.Fc,false);
       criteria.AllowableTensionWithRebar[stbTypes::CrownSlope] = GetHaulingAllowableTensileConcreteStressExNormalCrown(segmentKey,haulConfig.GdrConfig.Fc,true);
    }
-#endif
 
    GetHaulingAllowableTensileConcreteStressParametersMaxSuper(&criteria.TensionCoefficient[stbTypes::MaxSuper],&criteria.bMaxTension[stbTypes::MaxSuper],&criteria.MaxTension[stbTypes::MaxSuper]);
    criteria.TensionCoefficientWithRebar[stbTypes::MaxSuper]    = GetHaulingWithMildRebarAllowableStressFactorMaxSuper(segmentKey);
-#if defined MATCH_OLD_ANALYSIS
-   criteria.AllowableTension[stbTypes::MaxSuper]          = GetHaulingModulusOfRupture(segmentKey,haulConfig.GdrConfig.Fc,haulConfig.GdrConfig.ConcType);
-   criteria.AllowableTensionWithRebar[stbTypes::MaxSuper] = GetHaulingModulusOfRupture(segmentKey,haulConfig.GdrConfig.Fc,haulConfig.GdrConfig.ConcType);
-#else
+
    if (haulConfig.bIgnoreGirderConfig)
    {
       criteria.AllowableTension[stbTypes::MaxSuper]               = GetHaulingAllowableTensileConcreteStressMaxSuper(segmentKey);
@@ -2480,7 +2463,6 @@ stbHaulingCriteria CSpecAgentImp::GetHaulingStabilityCriteria(const CSegmentKey&
       criteria.AllowableTension[stbTypes::MaxSuper]          = GetHaulingAllowableTensileConcreteStressExMaxSuper(segmentKey,haulConfig.GdrConfig.Fc,false);
       criteria.AllowableTensionWithRebar[stbTypes::MaxSuper] = GetHaulingAllowableTensileConcreteStressExMaxSuper(segmentKey,haulConfig.GdrConfig.Fc,true);
    }
-#endif
 
    criteria.MinFScr = GetHaulingCrackingFs();
    criteria.MinFSf  = GetHaulingRolloverFs();

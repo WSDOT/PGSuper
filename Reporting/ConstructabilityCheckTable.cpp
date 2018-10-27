@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2017  Washington State Department of Transportation
+// Copyright © 1999-2018  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -640,8 +640,8 @@ void CConstructabilityCheckTable::BuildHaunchGeometryComplianceCheck(rptChapter*
       (*pTable)(0,col++) << _T("Girder");
    }
 
-   (*pTable)(0,col++) << COLHDR(_T("Computed")<<rptNewLine<<_T("Fillet") << Super(_T("*")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-   (*pTable)(0,col++) << COLHDR(_T("Fillet"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+   (*pTable)(0,col++) << COLHDR(_T("Computed")<<rptNewLine<<_T("Excess")<<rptNewLine<<_T("Camber"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+   (*pTable)(0,col++) << COLHDR(_T("Assumed") <<rptNewLine<<_T("Excess")<<rptNewLine<<_T("Camber"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
    (*pTable)(0,col++) << COLHDR(_T("Difference"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
    (*pTable)(0,col++) << COLHDR(_T("Allowable")<<rptNewLine<<_T("Difference"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
    (*pTable)(0,col++) << _T("Status");
@@ -660,7 +660,7 @@ void CConstructabilityCheckTable::BuildHaunchGeometryComplianceCheck(rptChapter*
       {
          const pgsSpanConstructabilityArtifact* pArtifact = pConstrArtifact->GetSpanArtifact(spanIdx);
 
-         if (pArtifact->IsHaunchGeometryCheckApplicable())
+         if (pArtifact->IsHaunchLoadGeometryCheckApplicable())
          {
             row++;
             col = 0;
@@ -672,13 +672,13 @@ void CConstructabilityCheckTable::BuildHaunchGeometryComplianceCheck(rptChapter*
                (*pTable)(row, col++) << LABEL_GIRDER(girder);
             }
 
-            (*pTable)(row, col++) << dim.SetValue(pArtifact->GetComputedFillet());
-            (*pTable)(row, col++) << dim.SetValue(pArtifact->GetProvidedFillet());
-            (*pTable)(row, col++) << dim.SetValue(pArtifact->GetComputedFillet()-pArtifact->GetProvidedFillet());
-            (*pTable)(row, col++) << dim.SetValue(pArtifact->GetHaunchGeometryTolerance());
+            (*pTable)(row, col++) << dim.SetValue(pArtifact->GetComputedExcessCamber());
+            (*pTable)(row, col++) << dim.SetValue(pArtifact->GetAssumedExcessCamber());
+            (*pTable)(row, col++) << dim.SetValue(pArtifact->GetComputedExcessCamber()-pArtifact->GetAssumedExcessCamber());
+            (*pTable)(row, col++) << symbol(PLUS_MINUS) << dim.SetValue(pArtifact->GetHaunchLoadGeometryTolerance());
 
-            pgsSpanConstructabilityArtifact::HaunchGeometryStatusType status = pArtifact->HaunchGeometryStatus();
-            if(pgsSpanConstructabilityArtifact::hgPass == status)
+            pgsSpanConstructabilityArtifact::HaunchLoadGeometryStatusType status = pArtifact->HaunchLoadGeometryStatus();
+            if(pgsSpanConstructabilityArtifact::hlgPass == status)
             {
                (*pTable)(row, col++) << RPT_PASS;
             }
@@ -687,17 +687,22 @@ void CConstructabilityCheckTable::BuildHaunchGeometryComplianceCheck(rptChapter*
                (*pTable)(row, col++) << RPT_FAIL;
             }
 
-            if(pgsSpanConstructabilityArtifact::hgPass == status)
+            if(pgsSpanConstructabilityArtifact::hlgPass == status)
             {
-               (*pTable)(row, col++) << _T("Haunch load is within tolerance");
+               (*pTable)(row, col) << _T("Haunch load is within tolerance");
             }
-            else if(pgsSpanConstructabilityArtifact::hgInsufficient == status)
+            else if(pgsSpanConstructabilityArtifact::hlgInsufficient == status)
             {
-               (*pTable)(row, col++) << _T("Haunch load is under-predicted");
+               (*pTable)(row, col) << _T("Haunch load is under-predicted");
             }
-            else if(pgsSpanConstructabilityArtifact::hgExcessive == status)
+            else if(pgsSpanConstructabilityArtifact::hlgExcessive == status)
             {
-               (*pTable)(row, col++) << _T("Haunch load is over-predicted");
+               (*pTable)(row, col) << _T("Haunch load is over-predicted");
+            }
+
+            if (pArtifact->GetAssumedMinimumHaunchDepth() < 0.0)
+            {
+               (*pTable)(row, col) << rptNewLine <<color(Red) << _T("WARNING: The assumed excess camber is larger than the haunch depth at mid span. The girder will intrude into the bottom of the slab.") << color(Black) << rptNewLine;
             }
          }
       }
@@ -708,12 +713,12 @@ void CConstructabilityCheckTable::BuildHaunchGeometryComplianceCheck(rptChapter*
    {
       rptParagraph* pTitle = new rptParagraph( rptStyleManager::GetHeadingStyle() );
       *pChapter << pTitle;
-      *pTitle << _T("Haunch Geometry Compliance at Mid-Span");
+      *pTitle << _T("Haunch Geometry");
       rptParagraph* pBody = new rptParagraph;
       *pChapter << pBody;
-      *pBody << _T("This table compares the assumed geometry of the slab haunch, as defined by Fillet and Slab Offset, with the computed haunch geometry based on the calculated excess camber and roadway geometry. A failed status indicates that the haunch dead load is estimated inaccurately.");
+      *pBody << _T("Haunch dead load is determined by the haunch depth along the girder. Haunch depth is defined by the roadway geometry, slab offset (\"A\"), and the parabolic girder camber defined by the user input Assumed Excess Camber at mid-span.");
       *pBody << pTable << rptNewLine;
-      *pBody << Super(_T("*")) << _T("Computed Fillet is mid-span haunch depth at the tip of top flange accounting for the computed excess camber. See the Haunch Details chapter in Details Report for more information.");
+      *pBody << _T("The table above compares the user input Assumed Excess Camber with the Computed Excess Camber at mid-span. A failed status indicates that the haunch dead load is estimated inaccurately. See the Haunch Details and Loading Details chapters in Details Report for more information.");
    }
    else
    {

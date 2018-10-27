@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2017  Washington State Department of Transportation
+// Copyright © 1999-2018  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -161,7 +161,7 @@ rptRcTable* CFlexuralCapacityCheckTable::Build(IBroker* pBroker,const pgsGirderA
    RowIndexType row = p_table->GetNumberOfHeaderRows();
 
    // report all the artifacts there were created.
-   CollectionIndexType nArtifacts = pGirderArtifact->GetFlexuralCapacityArtifactCount(intervalIdx,ls);
+   CollectionIndexType nArtifacts = (bPositiveMoment ? pGirderArtifact->GetPositiveMomentFlexuralCapacityArtifactCount(intervalIdx,ls) : pGirderArtifact->GetNegativeMomentFlexuralCapacityArtifactCount(intervalIdx, ls));
    ATLASSERT(0 < nArtifacts); // why aren't there any capacity artifacts?
    for (CollectionIndexType artifactIdx = 0; artifactIdx < nArtifacts; artifactIdx++ )
    {

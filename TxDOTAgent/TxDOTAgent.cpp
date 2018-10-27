@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2017  Washington State Department of Transportation
+// Copyright © 1999-2018  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -45,6 +45,7 @@
 #include "dllmain.h"
 
 #include <EAF\EAFAppPlugin.h>
+#include <EAF\EAFComponentInfo.h>
 
 #include "BridgeLinkCATID.h"
 #include "PGSuperCatCom.h"
@@ -103,6 +104,10 @@ HRESULT Register(bool bRegister)
    // The TxDOTAppPlugin plugs into the BridgeLink application executable and brings the
    // TxDOT Optional Design Document functionality
    hr = sysComCatMgr::RegWithCategory(CLSID_TxDOTAppPlugin,CATID_BridgeLinkAppPlugin,bRegister);
+   if ( FAILED(hr) )
+      return hr;
+
+   hr = sysComCatMgr::RegWithCategory(CLSID_TxDOTAppPluginComponentInfo,CATID_BridgeLinkComponentInfo,bRegister);
    if ( FAILED(hr) )
       return hr;
 

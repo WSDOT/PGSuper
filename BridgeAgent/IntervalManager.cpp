@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2017  Washington State Department of Transportation
+// Copyright © 1999-2018  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -1316,7 +1316,7 @@ void CIntervalManager::ProcessStep4(EventIndexType eventIdx,const CTimelineEvent
    // For each activity in this event, get phrase to use in the description of the interval
    // as well as record the interval index if needed. Since the interval object hasn't
    // been added to the m_Intervals collection yet, the interval index is the size of the collection
-   IntervalIndexType intervalIdx;
+   IntervalIndexType intervalIdx = INVALID_INDEX;
    bool bNeedNewInterval = true;
    if ( pTimelineEvent->GetCastDeckActivity().IsEnabled() )
    {
@@ -1361,15 +1361,15 @@ void CIntervalManager::ProcessStep4(EventIndexType eventIdx,const CTimelineEvent
       bool bLoadRating = applyLoadActivity.IsRatingLiveLoadApplied();
       bool bUserLoad   = applyLoadActivity.IsUserLoadApplied();
 
-      bool bHasDiaphragmBeenApplied = false;
+      bool bHasDiaphragmBeenApplied  = false;
       bool bHasRailingBeenApplied    = false;
       bool bHasOverlayBeenApplied    = false;
       bool bHasLiveLoadBeenApplied   = false;
       bool bHasLoadRatingBeenApplied = false;
 
-      if ( bUserLoad && !bDiaphragms && !bRailing && !bOverlay && !bLiveLoad && !bLoadRating )
+      if ( bUserLoad )
       {
-         strDescriptions.push_back(CString(_T("User Defined Loading Applied")));
+         strDescriptions.push_back(CString(_T("Apply User Defined Loads")));
       }
 
       if (bDiaphragms && !bHasDiaphragmBeenApplied)
@@ -1564,12 +1564,12 @@ void CIntervalManager::ProcessStep4(EventIndexType eventIdx,const CTimelineEvent
    }
    else
    {
-      if (m_Intervals.back().Description.length() != 0)
+      if (m_Intervals[intervalIdx].Description.length() != 0)
       {
-         m_Intervals.back().Description += _T(", ");
+         m_Intervals[intervalIdx].Description += _T(", ");
       }
 
-      m_Intervals.back().Description += strDescription;
+      m_Intervals[intervalIdx].Description += strDescription;
    }
 }
 

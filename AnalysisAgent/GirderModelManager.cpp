@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2017  Washington State Department of Transportation
+// Copyright © 1999-2018  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -8162,6 +8162,17 @@ void CGirderModelManager::CreateLBAMSuperstructureMembers(GirderIndexType gdr,bo
                {
                   left_pier_diaphragm_ssm->SetEndReleaseRemovalStage(ssRight,GetLBAMStageName(leftContinuityIntervalIdx));
                   left_pier_diaphragm_ssm->SetEndRelease(ssRight,mrtMz);
+
+                  // release the axial force if the span is fully restrained axially
+                  if ((startSpanBoundaryCondition == bcFixed || startSpanBoundaryCondition == bcPinned) &&
+                     (endSpanBoundaryCondition == bcFixed || endSpanBoundaryCondition == bcPinned) && grpIdx == 0 && pPier->GetPrevSpan()->GetPrevPier()->GetBoundaryConditionType() != pgsTypes::bctRoller )
+                  {
+                     // NOTE: it looks like we are setting the relese removal stage twice... above and here
+                     // in some cases that is true and there isn't any harm in doing it twice. In other cases,
+                     // the release remove stage is not set above so it needs to be set here
+                     left_pier_diaphragm_ssm->SetEndReleaseRemovalStage(ssRight, GetLBAMStageName(leftContinuityIntervalIdx));
+                     left_pier_diaphragm_ssm->SetEndRelease(ssRight, mrtFx);
+                  }
                }
                else
                {
@@ -8181,7 +8192,7 @@ void CGirderModelManager::CreateLBAMSuperstructureMembers(GirderIndexType gdr,bo
                {
                   if ( startSpanBoundaryCondition == bcFixed )
                   {
-                     // we are at a fixed pier, so release the mmoment so it doesn't go into the support
+                     // we are at a fixed pier, so release the moment so it doesn't go into the support
                      // before continuity is acheived
                      right_pier_diaphragm_ssm->SetEndReleaseRemovalStage(ssLeft,GetLBAMStageName(rightContinuityIntervalIdx));
                      right_pier_diaphragm_ssm->SetEndRelease(ssLeft,mrtMz);
@@ -10658,12 +10669,8 @@ void CGirderModelManager::ApplyPostTensionDeformation(ILBAMModel* pModel,GirderI
          std::vector<PostTensionStrainLoad> strLoads;
          GetPostTensionDeformationLoads(girderKey,ductIdx,strLoads);
 
-         std::vector<PostTensionStrainLoad>::iterator curvatureLoadIter(strLoads.begin());
-         std::vector<PostTensionStrainLoad>::iterator curvatureLoadIterEnd(strLoads.end());
-         for ( ; curvatureLoadIter != curvatureLoadIterEnd; curvatureLoadIter++ )
+         for ( const auto& load : strLoads )
          {
-            PostTensionStrainLoad& load = *curvatureLoadIter;
-
             MemberIDType startSSMbrID, endSSMbrID;
             Float64 startSSMbrLoc, endSSMbrLoc;
             pModel->ConvertSpanToSuperstructureLocation(load.startSpanIdx,load.Xstart,&startSSMbrID,&startSSMbrLoc);
@@ -10672,28 +10679,31 @@ void CGirderModelManager::ApplyPostTensionDeformation(ILBAMModel* pModel,GirderI
             if ( startSSMbrID == endSSMbrID )
             {
                // the load is contained within one LBAM SSMBR
-               CComPtr<ISuperstructureMember> ssmbr;
-               ssmbrs->get_Item(startSSMbrID,&ssmbr);
-               Float64 ssmbrLength;
-               ssmbr->get_Length(&ssmbrLength);
+               if (!IsEqual(startSSMbrLoc, endSSMbrLoc)) // don't apply the load if it doesn't cover any distance
+               {
+                  CComPtr<ISuperstructureMember> ssmbr;
+                  ssmbrs->get_Item(startSSMbrID, &ssmbr);
+                  Float64 ssmbrLength;
+                  ssmbr->get_Length(&ssmbrLength);
 
-               CComPtr<IStrainLoad> strainLoad;
-               strainLoad.CoCreateInstance(CLSID_StrainLoad);
-               strainLoad->put_MemberType(mtSuperstructureMember);
-               strainLoad->put_MemberID(startSSMbrID);
-               strainLoad->put_StartLocation(startSSMbrLoc);
-               strainLoad->put_EndLocation(endSSMbrLoc);
+                  CComPtr<IStrainLoad> strainLoad;
+                  strainLoad.CoCreateInstance(CLSID_StrainLoad);
+                  strainLoad->put_MemberType(mtSuperstructureMember);
+                  strainLoad->put_MemberID(startSSMbrID);
+                  strainLoad->put_StartLocation(startSSMbrLoc);
+                  strainLoad->put_EndLocation(endSSMbrLoc);
 
-               // right now, the LBAM model only supports a constant strain... just use the average value
-               // the POI are closely spaced so this is a good approximate. The same thing is done
-               // in the Time-Step stress analysis when analyzing initial strains
-               Float64 e = 0.5*(load.eStart + load.eEnd);
-               strainLoad->put_AxialStrain(e);
-               Float64 r = 0.5*(load.rStart + load.rEnd);
-               strainLoad->put_CurvatureStrain(r);
-               
-               CComPtr<IStrainLoadItem> strainLoadItem;
-               strainLoads->Add(bstrStage,bstrLoadGroup,strainLoad,&strainLoadItem);
+                  // right now, the LBAM model only supports a constant strain... just use the average value
+                  // the POI are closely spaced so this is a good approximate. The same thing is done
+                  // in the Time-Step stress analysis when analyzing initial strains
+                  Float64 e = 0.5*(load.eStart + load.eEnd);
+                  strainLoad->put_AxialStrain(e);
+                  Float64 r = 0.5*(load.rStart + load.rEnd);
+                  strainLoad->put_CurvatureStrain(r);
+
+                  CComPtr<IStrainLoadItem> strainLoadItem;
+                  strainLoads->Add(bstrStage, bstrLoadGroup, strainLoad, &strainLoadItem);
+               }
             }
             else
             {
@@ -12209,7 +12219,7 @@ void CGirderModelManager::ApplyIntermediateDiaphragmLoads( ILBAMModel* pLBAMMode
    } // next group
 }
 
-void CGirderModelManager::GetPostTensionDeformationLoads(const CGirderKey& girderKey,DuctIndexType ductIdx,std::vector<PostTensionStrainLoad>& strainLoads)
+void CGirderModelManager::GetPostTensionDeformationLoads(const CGirderKey& girderKey,DuctIndexType ductIdx,std::vector<PostTensionStrainLoad>& strainLoads) const
 {
    GET_IFACE(IIntervals,pIntervals);
    GET_IFACE(ITendonGeometry,pTendonGeometry);
@@ -12337,6 +12347,13 @@ void CGirderModelManager::GetPostTensionDeformationLoads(const CGirderKey& girde
       pgsPointOfInterest& poi1 = *iter1;
       pgsPointOfInterest& poi2 = *iter2;
 
+      if (poi1.AtSamePlace(poi2))
+      {
+         // don't continue if the POIs are at the same location... the loading will be applied over a distance
+         // of zero so the effect is zero
+         continue;
+      }
+
 #if !defined USE_AVERAGE_TENDON_FORCE
       Float64 dfpF1 = pLosses->GetFrictionLoss(poi1,ductIdx);
       Float64 dfpA1 = pLosses->GetAnchorSetLoss(poi1,ductIdx);
@@ -12358,11 +12375,14 @@ void CGirderModelManager::GetPostTensionDeformationLoads(const CGirderKey& girde
       Float64 Xspan2;
       pPoi->ConvertPoiToSpanPoint(poi2,&spanKey2,&Xspan2);
 
-      Float64 e1 = pTendonGeometry->GetEccentricity(stressTendonIntervalIdx,poi1,ductIdx);
-      Float64 M1 = -P1*e1;
+      // make sure span location 1 comes before location 2
+      ATLASSERT((spanKey1.spanIndex == spanKey2.spanIndex && Xspan1 <= Xspan2) || spanKey1.spanIndex < spanKey2.spanIndex);
 
-      Float64 e2 = pTendonGeometry->GetEccentricity(stressTendonIntervalIdx,poi2,ductIdx);
-      Float64 M2 = -P2*e2;
+      Float64 ecc1 = pTendonGeometry->GetEccentricity(stressTendonIntervalIdx,poi1,ductIdx);
+      Float64 M1 = -P1*ecc1;
+
+      Float64 ecc2 = pTendonGeometry->GetEccentricity(stressTendonIntervalIdx,poi2,ductIdx);
+      Float64 M2 = -P2*ecc2;
 
       CClosureKey closureKey1;
       bool bIsInClosure1 = pPoi->IsInClosureJoint(poi1,&closureKey1);
@@ -12376,8 +12396,8 @@ void CGirderModelManager::GetPostTensionDeformationLoads(const CGirderKey& girde
       Float64 A1 = pSectProps->GetAg(stressTendonIntervalIdx,poi1);
       Float64 A2 = pSectProps->GetAg(stressTendonIntervalIdx,poi2);
 
-      Float64 ecc1 = -P1/(E1*A1);
-      Float64 ecc2 = -P2/(E2*A2);
+      Float64 e1 = -P1/(E1*A1);
+      Float64 e2 = -P2/(E2*A2);
 
       Float64 I1 = pSectProps->GetIx(stressTendonIntervalIdx,poi1);
       Float64 I2 = pSectProps->GetIx(stressTendonIntervalIdx,poi2);
@@ -12385,17 +12405,7 @@ void CGirderModelManager::GetPostTensionDeformationLoads(const CGirderKey& girde
       Float64 r1 = M1/(E1*I1);
       Float64 r2 = M2/(E2*I2);
 
-      PostTensionStrainLoad strainLoad;
-      strainLoad.startSpanIdx = spanKey1.spanIndex;
-      strainLoad.endSpanIdx   = spanKey2.spanIndex;
-      strainLoad.Xstart = Xspan1;
-      strainLoad.Xend   = Xspan2;
-      strainLoad.eStart = ecc1;
-      strainLoad.eEnd   = ecc2;
-      strainLoad.rStart = r1;
-      strainLoad.rEnd   = r2;
-
-      strainLoads.push_back(strainLoad);
+      strainLoads.emplace_back(spanKey1.spanIndex, spanKey2.spanIndex, Xspan1, Xspan2, e1, e2, r1, r2);
    }
 
 }
@@ -14501,7 +14511,7 @@ void CGirderModelManager::CheckGirderEndGeometry(IBridge* pBridge,const CGirderK
    {
       if (pBridge->GetDeckType() != pgsTypes::sdtNone)
       {
-         Float64 fillet = pBridge->GetFillet(girderKey.groupIndex, girderKey.girderIndex);
+         Float64 fillet = pBridge->GetFillet();
          Float64 startA, endA;
          pBridge->GetSlabOffset(segmentKey,&startA, &endA);
          Float64 dSlab = pBridge->GetGrossSlabDepth(pgsPointOfInterest(segmentKey,0.0));
@@ -15211,7 +15221,7 @@ void CGirderModelManager::GetMainSpanSlabLoad(const CSegmentKey& segmentKey, std
    GetMainSpanSlabLoadEx(segmentKey, true, false, dummyAs, dummyAe, dummyF, pSlabLoads);
 }
 
-void CGirderModelManager::GetMainSpanSlabLoadEx(const CSegmentKey& segmentKey, bool doCondense, bool useDesignValues , Float64 dsnAstart, Float64 dsnAend, Float64 dsnFillet,  std::vector<SlabLoad>* pSlabLoads)
+void CGirderModelManager::GetMainSpanSlabLoadEx(const CSegmentKey& segmentKey, bool doCondense, bool useDesignValues , Float64 dsnAstart, Float64 dsnAend, Float64 dsnAssExcessCamber,  std::vector<SlabLoad>* pSlabLoads)
 {
    ASSERT_SEGMENT_KEY(segmentKey);
 
@@ -15224,6 +15234,7 @@ void CGirderModelManager::GetMainSpanSlabLoadEx(const CSegmentKey& segmentKey, b
    GET_IFACE(IPointOfInterest,pPoi);
    GET_IFACE(ISectionProperties,pSectProp);
    GET_IFACE(ISpecification, pSpec );
+   GET_IFACE(IRoadway, pAlignment);
 
    GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval();
@@ -15262,58 +15273,43 @@ void CGirderModelManager::GetMainSpanSlabLoadEx(const CSegmentKey& segmentKey, b
    // Account for girder camber
    std::unique_ptr<mathFunction2d> camberShape;
 
-   if (pgsTypes::hlcAccountForCamber == pSpec->GetHaunchLoadComputationType())
+   if (pSpec->IsAssExcessCamberInputEnabled())
    {
-#pragma Reminder("UPDATE: assuming precast girder bridge - Note that time-dependent analyses only use the zero camber approach below")
-      // Shape of girder is assumed to follow the fillet dimension. Assume parabolic shape with zero at supports and
-      // average end haunch - fillet at mid-girder
       std::vector<pgsPointOfInterest> vSupPoi( pPoi->GetPointsOfInterest(segmentKey,POI_ERECTED_SEGMENT | POI_0L | POI_5L | POI_10L) );
       ATLASSERT(vSupPoi.size()==3); // this haunch shape only for pgsuper-type models
       const pgsPointOfInterest& poi_left(vSupPoi.front());
       const pgsPointOfInterest& poi_mid(vSupPoi[1]);
       const pgsPointOfInterest& poi_right(vSupPoi.back());
 
-      Float64 fillet;
-      Float64 Havg;
+      // apply optional factor to camber
+      Float64 camberFactor = pSpec->GetHaunchLoadCamberFactor();
+
+      // Shape of girder is parabola assumed to follow the input assummed excess camber
+      Float64 assumed_excess_camber;
       if (useDesignValues)
       {
-         fillet = dsnFillet;
-
-         Float64 cast_depth             = pBridge->GetCastSlabDepth(poi_left);
-         Float64 Hlft = dsnAstart - cast_depth;
-         cast_depth             = pBridge->GetCastSlabDepth(poi_right);
-         Float64 Hrgt = dsnAend - cast_depth;
-
-         Havg = (Hlft + Hrgt)/2.0; // average haunch at ends
+         assumed_excess_camber = dsnAssExcessCamber * camberFactor;
       }
       else
       {
-         // Get fillet at mid-span. Big time assumption of PGSuper-type bridge here
+         // Get excess camber at mid-span. Big time assumption of PGSuper-type bridge here
          CSpanKey spanKey;
          Float64 Xspan;
          pPoi->ConvertPoiToSpanPoint(poi_mid,&spanKey,&Xspan);
-         fillet = pBridge->GetFillet(spanKey.spanIndex, segmentKey.girderIndex);
 
-         Float64 cast_depth             = pBridge->GetCastSlabDepth(poi_left);
-         Float64 top_girder_to_top_slab = pSectProp->GetDistTopSlabToTopGirder(poi_left);
-         Float64 Hlft  = top_girder_to_top_slab - cast_depth;
-
-         cast_depth             = pBridge->GetCastSlabDepth(poi_right);
-         top_girder_to_top_slab = pSectProp->GetDistTopSlabToTopGirder(poi_right);
-         Float64 Hrgt = top_girder_to_top_slab - cast_depth;
-
-         Havg = (Hlft + Hrgt)/2.0;
+         assumed_excess_camber = pBridge->GetAssExcessCamber(spanKey.spanIndex, spanKey.girderIndex);
+         assumed_excess_camber *= camberFactor;
       }
 
-      // For this case, the depth of the load is measured at girder CL, while the fillet is at the flange tips.
-      // We must add in the girder_orientation_effect to bring the load depth to the girder CL
-      GET_IFACE(IGirderHaunch, pHaunch );
-      Float64 girder_orientation_effect = pHaunch->GetSectionGirderOrientationEffect(poi_mid);
-
-      Float64 assummed_excess_camber = Havg - girder_orientation_effect - fillet;
-
-      // Create function with parabolic shape
-      camberShape = std::make_unique<mathPolynomial2d>(GenerateParabola(poi_left.GetDistFromStart(),poi_right.GetDistFromStart(),assummed_excess_camber));
+      if (!IsZero(assumed_excess_camber))
+      {
+         // Create function with parabolic shape
+         camberShape = std::make_unique<mathPolynomial2d>(GenerateParabola(poi_left.GetDistFromStart(), poi_right.GetDistFromStart(), assumed_excess_camber));
+      }
+      else
+      {
+         camberShape = std::make_unique<ZeroFunction>();
+      }
    }
    else
    {
@@ -15334,17 +15330,27 @@ void CGirderModelManager::GetMainSpanSlabLoadEx(const CSegmentKey& segmentKey, b
 
       const pgsPointOfInterest& poi = *poiIter;
 
+      Float64 station,offset;
+      pBridge->GetStationAndOffset(poi,&station,&offset);
+      offset = IsZero(offset) ? 0 : offset;
+
+      // top of alignment elevation above girder
+      Float64 rdwy_elevation = pAlignment->GetElevation(station,offset);
+
       Float64 top_girder_to_top_slab;
       Float64 slab_offset;
+      Float64 girder_chord_elevation;
       if (useDesignValues)
       {
          top_girder_to_top_slab = pSectProp->GetDistTopSlabToTopGirder(poi,dsnAstart,dsnAend);
          slab_offset            = pBridge->GetSlabOffset(poi,dsnAstart,dsnAend);
+         girder_chord_elevation = pGdr->GetTopGirderChordElevation(poi,dsnAstart,dsnAend);
       }
       else
       {
          top_girder_to_top_slab = pSectProp->GetDistTopSlabToTopGirder(poi);
          slab_offset            = pBridge->GetSlabOffset(poi);
+         girder_chord_elevation = pGdr->GetTopGirderChordElevation(poi);
 
          CSpanKey spanKey;
          Float64 Xspan;
@@ -15476,7 +15482,7 @@ void CGirderModelManager::GetMainSpanSlabLoadEx(const CSegmentKey& segmentKey, b
       ASSERT( 0 <= wslab );
       ASSERT( 0 <= wslab_panel );
 
-      // Excess camber of girder
+      // Assume excess camber of girder
       Float64 camber = camberShape->Evaluate(poi.GetDistFromStart());
 
       // height of pad for slab pad load
@@ -15515,7 +15521,13 @@ void CGirderModelManager::GetMainSpanSlabLoadEx(const CSegmentKey& segmentKey, b
       sload.MainSlabLoad = -wslab;  // + is upward
       sload.PanelLoad    = -wslab_panel;
       sload.PadLoad      = -wpad;
+      sload.AssExcessCamber = camber;
       sload.HaunchDepth  = real_pad_hgt;
+      sload.SlabDepth = cast_depth;
+      sload.GirderChordElevation = girder_chord_elevation;
+      sload.TopSlabElevation = rdwy_elevation;
+      sload.TopGirderElevation = girder_chord_elevation + camber;
+
 
       if ( !doCondense || pSlabLoads->size() < 2 )
       {
@@ -15543,13 +15555,13 @@ void CGirderModelManager::GetMainSpanSlabLoadEx(const CSegmentKey& segmentKey, b
    }
 }
 
-void  CGirderModelManager::GetDesignMainSpanSlabLoadAdjustment(const CSegmentKey& segmentKey, Float64 Astart, Float64 Aend, Float64 Fillet, std::vector<SlabLoad>* pSlabLoads)
+void  CGirderModelManager::GetDesignMainSpanSlabLoadAdjustment(const CSegmentKey& segmentKey, Float64 Astart, Float64 Aend, Float64 AssExcessCamber, std::vector<SlabLoad>* pSlabLoads)
 {
    // Subtract slab pad load due to design values from that due to original model.
    Float64 fdummy(0);
    std::vector<SlabLoad> originalSlabLoads;
    GetMainSpanSlabLoadEx(segmentKey, false, false, fdummy, fdummy, fdummy, &originalSlabLoads);
-   GetMainSpanSlabLoadEx(segmentKey, false, true, Astart, Aend, Fillet, pSlabLoads);
+   GetMainSpanSlabLoadEx(segmentKey, false, true, Astart, Aend, AssExcessCamber, pSlabLoads);
 
    ATLASSERT(originalSlabLoads.size() == pSlabLoads->size());
 
@@ -17375,8 +17387,8 @@ void CGirderModelManager::ConfigureLBAMPoisForReactions(const CGirderKey& girder
          // The support element of the pier is what we want
          vIDs.push_back(GetPierID(pierIdx));
       }
-      
-      if ( !pBridge->IsAbutment(pierIdx) && // This is a boundary pier and not and abutnment (don't use IsBoundaryPier because and abutment is also a boundary pier)
+
+      if ( !pBridge->IsAbutment(pierIdx) && // This is a boundary pier and not and abutnment (don't use IsBoundaryPier because an abutment is also a boundary pier)
           ( 
             (resultsType == rtCumulative || intervalIdx < backContinuityIntervalIdx || intervalIdx < aheadContinuityIntervalIdx) // We want cumulative results and we are before continunity is achieved
             || // OR

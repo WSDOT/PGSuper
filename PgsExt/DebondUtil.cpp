@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2017  Washington State Department of Transportation
+// Copyright © 1999-2018  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -140,6 +140,10 @@ void CDebondSectionCalculator::GetRightSectionInfo(SectionIndexType idx, Float64
 StrandRowUtil::StrandRowSet StrandRowUtil::GetStrandRowSet(IBroker* pBroker, const pgsPointOfInterest& midPoi)
 {
    GET_IFACE2(pBroker, IStrandGeometry, pStrandGeometry );
+   GET_IFACE2(pBroker,IGirder,pGirder);
+
+   // Need girder height - strands are measured from top downward
+   Float64 hg = pGirder->GetHeight(midPoi);
 
    // Want number of strands in each row location. Count number of straight and harped per row
    StrandRowSet strandrows;
@@ -162,7 +166,7 @@ StrandRowUtil::StrandRowSet StrandRowUtil::GetStrandRowSet(IBroker* pBroker, con
          Float64 Y;
          point->get_Y(&Y);
 
-         StrandRow srow(Y);
+         StrandRow srow(Y + hg); // from bottom of girder
          StrandRowIter srit = strandrows.find(srow);
          if (srit != strandrows.end())
          {
@@ -192,7 +196,7 @@ StrandRowUtil::StrandRowSet StrandRowUtil::GetStrandRowSet(IBroker* pBroker, con
          Float64 Y;
          point->get_Y(&Y);
 
-         StrandRow srow(Y);
+         StrandRow srow(Y + hg); // from bottom of girder
          StrandRowIter srit = strandrows.find(srow);
          if (srit != strandrows.end())
          {

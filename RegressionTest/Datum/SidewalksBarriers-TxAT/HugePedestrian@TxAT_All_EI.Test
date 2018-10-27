@@ -7,7 +7,7 @@ The Specification Check was Not Successful
 Stresses in the prestressing strands are too high.
 Compression stress check failed for Service I Limit State in Interval 2 Prestress Release (Casting Yard)
 Tensile stress check failed for Service I Limit State in Interval 2 Prestress Release (Casting Yard)
-Compression stress check failed for Service I Limit State in Interval 12 Composite Deck, User Defined Loading Applied, Install Railing System and Overlay (Bridge Site 2)
+Compression stress check failed for Service I Limit State in Interval 12 Composite Deck, Install Railing System and Overlay (Bridge Site 2)
 Compression stress check failed for Service I Limit State in Interval 14 Open to Traffic (Bridge Site 3)
 Tensile stress check failed for Service III Limit State in Interval 14 Open to Traffic (Bridge Site 3)
 Compression stress check failed for Fatigue I Limit State in Interval 14 Open to Traffic (Bridge Site 3)
@@ -32,8 +32,8 @@ Minimum fillet value exceeded for bridge check failed
 
 
 The Specification Check was Not Successful
-Tensile stress check failed for Service I Limit State in Interval 10 Cast Deck (Bridge Site 1)
-Compression stress check failed for Service I Limit State in Interval 12 Composite Deck, User Defined Loading Applied, Install Railing System and Overlay (Bridge Site 2)
+Tensile stress check failed for Service I Limit State in Interval 10 Cast Deck, Apply User Defined Loads (Bridge Site 1)
+Compression stress check failed for Service I Limit State in Interval 12 Composite Deck, Install Railing System and Overlay (Bridge Site 2)
 Compression stress check failed for Service I Limit State in Interval 14 Open to Traffic (Bridge Site 3)
 Tensile stress check failed for Service III Limit State in Interval 14 Open to Traffic (Bridge Site 3)
 Compression stress check failed for Fatigue I Limit State in Interval 14 Open to Traffic (Bridge Site 3)
@@ -58,8 +58,8 @@ Minimum fillet value exceeded for bridge check failed
 
 
 The Specification Check was Not Successful
-Tensile stress check failed for Service I Limit State in Interval 10 Cast Deck (Bridge Site 1)
-Compression stress check failed for Service I Limit State in Interval 12 Composite Deck, User Defined Loading Applied, Install Railing System and Overlay (Bridge Site 2)
+Tensile stress check failed for Service I Limit State in Interval 10 Cast Deck, Apply User Defined Loads (Bridge Site 1)
+Compression stress check failed for Service I Limit State in Interval 12 Composite Deck, Install Railing System and Overlay (Bridge Site 2)
 Compression stress check failed for Service I Limit State in Interval 14 Open to Traffic (Bridge Site 3)
 Tensile stress check failed for Service III Limit State in Interval 14 Open to Traffic (Bridge Site 3)
 Compression stress check failed for Fatigue I Limit State in Interval 14 Open to Traffic (Bridge Site 3)
@@ -84,8 +84,8 @@ Minimum fillet value exceeded for bridge check failed
 
 
 The Specification Check was Not Successful
-Tensile stress check failed for Service I Limit State in Interval 10 Cast Deck (Bridge Site 1)
-Compression stress check failed for Service I Limit State in Interval 12 Composite Deck, User Defined Loading Applied, Install Railing System and Overlay (Bridge Site 2)
+Tensile stress check failed for Service I Limit State in Interval 10 Cast Deck, Apply User Defined Loads (Bridge Site 1)
+Compression stress check failed for Service I Limit State in Interval 12 Composite Deck, Install Railing System and Overlay (Bridge Site 2)
 Compression stress check failed for Service I Limit State in Interval 14 Open to Traffic (Bridge Site 3)
 Tensile stress check failed for Service III Limit State in Interval 14 Open to Traffic (Bridge Site 3)
 Compression stress check failed for Fatigue I Limit State in Interval 14 Open to Traffic (Bridge Site 3)
@@ -110,8 +110,8 @@ Minimum fillet value exceeded for bridge check failed
 
 
 The Specification Check was Not Successful
-Tensile stress check failed for Service I Limit State in Interval 10 Cast Deck (Bridge Site 1)
-Compression stress check failed for Service I Limit State in Interval 12 Composite Deck, User Defined Loading Applied, Install Railing System and Overlay (Bridge Site 2)
+Tensile stress check failed for Service I Limit State in Interval 10 Cast Deck, Apply User Defined Loads (Bridge Site 1)
+Compression stress check failed for Service I Limit State in Interval 12 Composite Deck, Install Railing System and Overlay (Bridge Site 2)
 Compression stress check failed for Service I Limit State in Interval 14 Open to Traffic (Bridge Site 3)
 Tensile stress check failed for Service III Limit State in Interval 14 Open to Traffic (Bridge Site 3)
 Compression stress check failed for Fatigue I Limit State in Interval 14 Open to Traffic (Bridge Site 3)
@@ -136,8 +136,8 @@ Minimum fillet value exceeded for bridge check failed
 
 
 The Specification Check was Not Successful
-Tensile stress check failed for Service I Limit State in Interval 10 Cast Deck (Bridge Site 1)
-Compression stress check failed for Service I Limit State in Interval 12 Composite Deck, User Defined Loading Applied, Install Railing System and Overlay (Bridge Site 2)
+Tensile stress check failed for Service I Limit State in Interval 10 Cast Deck, Apply User Defined Loads (Bridge Site 1)
+Compression stress check failed for Service I Limit State in Interval 12 Composite Deck, Install Railing System and Overlay (Bridge Site 2)
 Compression stress check failed for Service I Limit State in Interval 14 Open to Traffic (Bridge Site 3)
 Tensile stress check failed for Service III Limit State in Interval 14 Open to Traffic (Bridge Site 3)
 Compression stress check failed for Fatigue I Limit State in Interval 14 Open to Traffic (Bridge Site 3)
@@ -162,8 +162,8 @@ Minimum fillet value exceeded for bridge check failed
 
 
 The Specification Check was Not Successful
-Tensile stress check failed for Service I Limit State in Interval 10 Cast Deck (Bridge Site 1)
-Compression stress check failed for Service I Limit State in Interval 12 Composite Deck, User Defined Loading Applied, Install Railing System and Overlay (Bridge Site 2)
+Tensile stress check failed for Service I Limit State in Interval 10 Cast Deck, Apply User Defined Loads (Bridge Site 1)
+Compression stress check failed for Service I Limit State in Interval 12 Composite Deck, Install Railing System and Overlay (Bridge Site 2)
 Compression stress check failed for Service I Limit State in Interval 14 Open to Traffic (Bridge Site 3)
 Tensile stress check failed for Service III Limit State in Interval 14 Open to Traffic (Bridge Site 3)
 Compression stress check failed for Fatigue I Limit State in Interval 14 Open to Traffic (Bridge Site 3)
@@ -188,8 +188,8 @@ Minimum fillet value exceeded for bridge check failed
 
 
 The Specification Check was Not Successful
-Tensile stress check failed for Service I Limit State in Interval 10 Cast Deck (Bridge Site 1)
-Compression stress check failed for Service I Limit State in Interval 12 Composite Deck, User Defined Loading Applied, Install Railing System and Overlay (Bridge Site 2)
+Tensile stress check failed for Service I Limit State in Interval 10 Cast Deck, Apply User Defined Loads (Bridge Site 1)
+Compression stress check failed for Service I Limit State in Interval 12 Composite Deck, Install Railing System and Overlay (Bridge Site 2)
 Compression stress check failed for Service I Limit State in Interval 14 Open to Traffic (Bridge Site 3)
 Tensile stress check failed for Service III Limit State in Interval 14 Open to Traffic (Bridge Site 3)
 Compression stress check failed for Fatigue I Limit State in Interval 14 Open to Traffic (Bridge Site 3)
@@ -214,8 +214,8 @@ Minimum fillet value exceeded for bridge check failed
 
 
 The Specification Check was Not Successful
-Tensile stress check failed for Service I Limit State in Interval 10 Cast Deck (Bridge Site 1)
-Compression stress check failed for Service I Limit State in Interval 12 Composite Deck, User Defined Loading Applied, Install Railing System and Overlay (Bridge Site 2)
+Tensile stress check failed for Service I Limit State in Interval 10 Cast Deck, Apply User Defined Loads (Bridge Site 1)
+Compression stress check failed for Service I Limit State in Interval 12 Composite Deck, Install Railing System and Overlay (Bridge Site 2)
 Compression stress check failed for Service I Limit State in Interval 14 Open to Traffic (Bridge Site 3)
 Tensile stress check failed for Service III Limit State in Interval 14 Open to Traffic (Bridge Site 3)
 Compression stress check failed for Fatigue I Limit State in Interval 14 Open to Traffic (Bridge Site 3)
@@ -240,8 +240,8 @@ Minimum fillet value exceeded for bridge check failed
 
 
 The Specification Check was Not Successful
-Tensile stress check failed for Service I Limit State in Interval 10 Cast Deck (Bridge Site 1)
-Compression stress check failed for Service I Limit State in Interval 12 Composite Deck, User Defined Loading Applied, Install Railing System and Overlay (Bridge Site 2)
+Tensile stress check failed for Service I Limit State in Interval 10 Cast Deck, Apply User Defined Loads (Bridge Site 1)
+Compression stress check failed for Service I Limit State in Interval 12 Composite Deck, Install Railing System and Overlay (Bridge Site 2)
 Compression stress check failed for Service I Limit State in Interval 14 Open to Traffic (Bridge Site 3)
 Tensile stress check failed for Service III Limit State in Interval 14 Open to Traffic (Bridge Site 3)
 Compression stress check failed for Fatigue I Limit State in Interval 14 Open to Traffic (Bridge Site 3)
@@ -266,8 +266,8 @@ Minimum fillet value exceeded for bridge check failed
 
 
 The Specification Check was Not Successful
-Tensile stress check failed for Service I Limit State in Interval 10 Cast Deck (Bridge Site 1)
-Compression stress check failed for Service I Limit State in Interval 12 Composite Deck, User Defined Loading Applied, Install Railing System and Overlay (Bridge Site 2)
+Tensile stress check failed for Service I Limit State in Interval 10 Cast Deck, Apply User Defined Loads (Bridge Site 1)
+Compression stress check failed for Service I Limit State in Interval 12 Composite Deck, Install Railing System and Overlay (Bridge Site 2)
 Compression stress check failed for Service I Limit State in Interval 14 Open to Traffic (Bridge Site 3)
 Tensile stress check failed for Service III Limit State in Interval 14 Open to Traffic (Bridge Site 3)
 Compression stress check failed for Fatigue I Limit State in Interval 14 Open to Traffic (Bridge Site 3)
@@ -292,8 +292,8 @@ Minimum fillet value exceeded for bridge check failed
 
 
 The Specification Check was Not Successful
-Tensile stress check failed for Service I Limit State in Interval 10 Cast Deck (Bridge Site 1)
-Compression stress check failed for Service I Limit State in Interval 12 Composite Deck, User Defined Loading Applied, Install Railing System and Overlay (Bridge Site 2)
+Tensile stress check failed for Service I Limit State in Interval 10 Cast Deck, Apply User Defined Loads (Bridge Site 1)
+Compression stress check failed for Service I Limit State in Interval 12 Composite Deck, Install Railing System and Overlay (Bridge Site 2)
 Compression stress check failed for Service I Limit State in Interval 14 Open to Traffic (Bridge Site 3)
 Tensile stress check failed for Service III Limit State in Interval 14 Open to Traffic (Bridge Site 3)
 Compression stress check failed for Fatigue I Limit State in Interval 14 Open to Traffic (Bridge Site 3)

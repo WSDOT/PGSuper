@@ -4,6 +4,8 @@ Technical Guide {#technical_guide}
 The purpose of this Technical Guide is to detail the algorithms and computational methods used by this software.
 
 Topics
+* @subpage tg_anchor_set
+* @subpage tg_elongation
 * @subpage tg_capacity_demand_ratios
 * @subpage tg_computing_pier_diaphragm_dimensions
 * @subpage tg_concrete_properties

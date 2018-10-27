@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2017  Washington State Department of Transportation
+// Copyright © 1999-2018  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -376,14 +376,14 @@ Float64 pgsSegmentDesignArtifact::GetSlabOffset(pgsTypes::MemberEndType end) con
    return m_SlabOffset[end];
 }
 
-void pgsSegmentDesignArtifact::SetFillet(Float64 f)
+void pgsSegmentDesignArtifact::SetAssExcessCamber(Float64 f)
 {
-   m_Fillet = f;
+   m_AssExcessCamber = f;
 }
 
-Float64 pgsSegmentDesignArtifact::GetFillet() const
+Float64 pgsSegmentDesignArtifact::GetAssExcessCamber() const
 {
-   return m_Fillet;
+   return m_AssExcessCamber;
 }
 
 void pgsSegmentDesignArtifact::SetLiftingLocations(Float64 left,Float64 right)
@@ -503,7 +503,7 @@ GDRCONFIG pgsSegmentDesignArtifact::GetSegmentConfiguration() const
    config.SlabOffset[pgsTypes::metStart] = GetSlabOffset(pgsTypes::metStart);
    config.SlabOffset[pgsTypes::metEnd]   = GetSlabOffset(pgsTypes::metEnd);
 
-   config.Fillet = GetFillet();
+   config.AssExcessCamber = GetAssExcessCamber();
 
    WriteShearDataToStirrupConfig(&m_ShearData, config.StirrupConfig);
 
@@ -791,7 +791,7 @@ void pgsSegmentDesignArtifact::MakeCopy(const pgsSegmentDesignArtifact& rOther)
    m_SsDebondInfo        = rOther.m_SsDebondInfo;
    m_SlabOffset[pgsTypes::metStart] = rOther.m_SlabOffset[pgsTypes::metStart];
    m_SlabOffset[pgsTypes::metEnd]   = rOther.m_SlabOffset[pgsTypes::metEnd];
-   m_Fillet                         = rOther.m_Fillet;
+   m_AssExcessCamber                = rOther.m_AssExcessCamber;
 
    m_NumShearZones       = rOther.m_NumShearZones;
    m_ShearData           = rOther.m_ShearData;
@@ -853,7 +853,7 @@ void pgsSegmentDesignArtifact::Init()
    m_Fci                 = 0;
    m_SlabOffset[pgsTypes::metStart] = 0;
    m_SlabOffset[pgsTypes::metEnd] = 0;
-   m_Fillet = 0;
+   m_AssExcessCamber = 0;
    m_NumShearZones       = 0;
    m_bWasLongitudinalRebarForShearDesigned = false;
    m_LiftLocLeft         = 0.0;

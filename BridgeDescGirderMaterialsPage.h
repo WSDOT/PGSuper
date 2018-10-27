@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2017  Washington State Department of Transportation
+// Copyright © 1999-2018  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -64,11 +64,12 @@ public:
    Float64 m_SlabOffset[2];
    CString m_strSlabOffsetCache[2];
 
-   pgsTypes::FilletType m_FilletType;
-   pgsTypes::FilletType m_FilletTypeCache;
+   pgsTypes::AssExcessCamberType m_AssExcessCamberType;
+   pgsTypes::AssExcessCamberType m_AssExcessCamberTypeCache;
 
-   Float64 m_Fillet;
-   CString m_strFilletCache;
+   Float64 m_AssExcessCamber;
+   CString m_strAssExcessCamberCache;
+   bool m_bCanAssExcessCamberInputBeEnabled;
 
 // Overrides
 	// ClassWizard generate virtual function overrides
@@ -103,7 +104,7 @@ protected:
    //}}AFX_MSG
    afx_msg void OnChangeSameGirderType();
    afx_msg void OnChangeSlabOffsetType();
-   afx_msg void OnChangeFilletType();
+   afx_msg void OnChangeAssExcessCamberType();
 	DECLARE_MESSAGE_MAP()
 
    void FillEventList();

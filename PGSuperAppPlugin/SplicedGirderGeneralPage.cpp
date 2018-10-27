@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2017  Washington State Department of Transportation
+// Copyright © 1999-2018  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -105,19 +105,6 @@ void DDX_SlabOffsetGrid(CDataExchange* pDX,INT nIDC)
    }
 }
 
-void DDX_FilletGrid(CDataExchange* pDX,INT nIDC)
-{
-   CFilletGrid* pGrid = (CFilletGrid*)pDX->m_pDlgWnd->GetDlgItem(nIDC);
-   if ( pDX->m_bSaveAndValidate )
-   {
-      pGrid->UpdateFilletData();
-   }
-   else
-   {
-      pGrid->FillGrid();
-   }
-}
-
 IMPLEMENT_DYNAMIC(CSplicedGirderGeneralPage, CPropertyPage)
 
 CSplicedGirderGeneralPage::CSplicedGirderGeneralPage()
@@ -157,8 +144,6 @@ void CSplicedGirderGeneralPage::DoDataExchange(CDataExchange* pDX)
    DDX_Strand(pDX,IDC_STRAND,&pParent->m_pGirder->GetPostTensioning()->pStrand);
 
    DDX_SlabOffsetGrid(pDX,IDC_SLABOFFSET_GRID);
-
-   DDX_FilletGrid(pDX,IDC_FILLET_GRID);
 
    Float64 conditionFactor = pParent->m_pGirder->GetConditionFactor();
    pgsTypes::ConditionFactorType conditionFactorType = pParent->m_pGirder->GetConditionFactorType();
@@ -211,7 +196,6 @@ BEGIN_MESSAGE_MAP(CSplicedGirderGeneralPage, CPropertyPage)
    ON_CBN_SELCHANGE(IDC_CONDITION_FACTOR_TYPE, &CSplicedGirderGeneralPage::OnConditionFactorTypeChanged)
    ON_COMMAND(ID_HELP, &CSplicedGirderGeneralPage::OnHelp)
    ON_CBN_SELCHANGE(IDC_CB_SLABOFFSET,OnChangeSlabOffsetType)
-   ON_CBN_SELCHANGE(IDC_CB_FILLETTYPE, OnChangeFilletType)
    ON_CBN_SELCHANGE(IDC_CB_SAMEGIRDER,OnChangeGirderType)
    ON_CBN_SELCHANGE(IDC_GIRDER_NAME, &CSplicedGirderGeneralPage::OnChangedGirderName)
 END_MESSAGE_MAP()
@@ -236,10 +220,6 @@ BOOL CSplicedGirderGeneralPage::OnInitDialog()
    // initialize slab offset grid
    m_SlabOffsetGrid.SubclassDlgItem(IDC_SLABOFFSET_GRID,this);
    m_SlabOffsetGrid.CustomInit(pParent->m_pGirder);
-
-   // initialize Fillet grid
-   m_FilletGrid.SubclassDlgItem(IDC_FILLET_GRID,this);
-   m_FilletGrid.CustomInit(pParent->m_pGirder);
 
    // subclass the schematic drawing of the tendons
    m_DrawTendons.SubclassDlgItem(IDC_TENDONS,this);
@@ -293,22 +273,6 @@ BOOL CSplicedGirderGeneralPage::OnInitDialog()
    pcbSlabOffsetType->SetCurSel(m_SlabOffsetTypeOriginal==pgsTypes::sotGirder ? 1:0);
 
    UpdateSlabOffsetControls();
-
-   m_FilletTypeOriginal = pBridge->GetFilletType();
-
-   CComboBox* pcbFilletType = (CComboBox*)GetDlgItem(IDC_CB_FILLETTYPE);
-   if ( m_FilletTypeOriginal == pgsTypes::fttSpan )
-   {
-      pcbFilletType->AddString(_T("A unique Fillet is used at each Span"));
-   }
-   else
-   {
-      pcbFilletType->AddString(_T("A single Fillet is used for the entire bridge"));
-   }
-   pcbFilletType->AddString(_T("Fillets are defined girder by girder"));
-   pcbFilletType->SetCurSel(m_FilletTypeOriginal==pgsTypes::fttGirder ? 1:0);
-
-   UpdateFilletControls();
 
    UpdateGirderTypeControls();
 
@@ -634,64 +598,6 @@ void CSplicedGirderGeneralPage::UpdateSlabOffsetControls()
    m_SlabOffsetGrid.EnableWindow(bEnable);
 }
 
-void CSplicedGirderGeneralPage::OnChangeFilletType()
-{
-   AFX_MANAGE_STATE(AfxGetStaticModuleState());
-
-   CSplicedGirderDescDlg* pParent = (CSplicedGirderDescDlg*)GetParent();
-   CBridgeDescription2* pBridge = pParent->m_pGirder->GetGirderGroup()->GetBridgeDescription();
-
-
-   pgsTypes::FilletType newType;
-   if ( pBridge->GetFilletType() == m_FilletTypeOriginal )
-   {
-      if (m_FilletTypeOriginal != pgsTypes::fttGirder)
-      {
-         newType = pgsTypes::fttGirder;
-      }
-      else
-      {
-         newType = pgsTypes::fttBridge;
-      }
-   }
-   else
-   {
-      newType = m_FilletTypeOriginal;
-   }
-
-   if (pgsTypes::fttBridge == newType)
-   {
-      // ask user to select value
-      Float64 slaboff;
-      if (m_FilletGrid.SelectSingleValue(&slaboff))
-      {
-         pBridge->SetFilletType(pgsTypes::fttBridge);
-         pBridge->SetFillet(slaboff);
-      }
-      else
-      {
-         // selection was cancelled. reset combo back to original (bridge is always zero)
-         CComboBox* pcbFilletType = (CComboBox*)GetDlgItem(IDC_CB_FILLET);
-         pcbFilletType->SetCurSel(1);
-      }
-   }
-   else
-   {
-      pBridge->SetFilletType(newType);
-   }
-
-   UpdateFilletControls();
-}
-
-void CSplicedGirderGeneralPage::UpdateFilletControls()
-{
-   CSplicedGirderDescDlg* pParent = (CSplicedGirderDescDlg*)GetParent();
-   CBridgeDescription2* pBridge = pParent->m_pGirder->GetGirderGroup()->GetBridgeDescription();
-
-   BOOL bEnable = ( pBridge->GetFilletType() == pgsTypes::fttGirder ? TRUE : FALSE );
-   m_FilletGrid.EnableWindow(bEnable);
-}
-
 void CSplicedGirderGeneralPage::OnChangeGirderType()
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
@@ -713,7 +619,6 @@ void CSplicedGirderGeneralPage::UpdateGirderTypeControls()
    pWnd->EnableWindow(bEnable);
 
    pWnd->SetWindowText(pParent->m_pGirder->GetGirderName());
-
 }
 
 void CSplicedGirderGeneralPage::OnChangedGirderName()

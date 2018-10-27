@@ -12,7 +12,7 @@ Confinement zone check failed.
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 39.41    8   5.02 SMF - SB & NB Fr    1     2     VI            34  0.6  270  32.50  21.20  11.00  11.00                                               6  70.0  6.0  4.800  6.900   3.754    -3.767     9779   0.481  0.610   3.109 -1.274  0.000 -0.181 -1.454  83.19  194.71    3.75    6.00    6.00 
+ 39.41    8   5.02 SMF - SB & NB Fr    1     2     VI            34  0.6  270  32.50  21.20  11.25  11.25                                               6  70.0  6.0  4.800 14.600   4.048    -3.896    10839   0.497  0.608   3.109 -0.891  0.000 -0.137 -1.028  83.19  218.19    3.75    5.00    5.00 
 
 
 Girder design was Not Successful
@@ -26,14 +26,12 @@ Hauling checks failed
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 39.41    8   5.02 SMF - SB & NB Fr    1     5     VI            32  0.6  270  32.63  20.63  10.75  10.75                                               6  70.0  6.0  4.500  6.300   3.616    -3.570     9222   0.479  0.610   2.761 -1.310  0.000  0.000 -1.310  73.17  186.08    4.00    6.00    6.00 
+ 39.41    8   5.02 SMF - SB & NB Fr    1     5     VI            32  0.6  270  32.63  20.63  10.75  10.75                                               6  70.0  6.0  4.500  7.900   3.693    -3.601     9487   0.484  0.609   2.761 -1.170  0.000  0.000 -1.170  73.17  193.22    4.00    5.00    5.00 
 
 
-Girder design was Not Successful
 The Specification Check was Not Successful
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
 Confinement zone check failed.
-Hauling checks failed
 
 

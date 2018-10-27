@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2017  Washington State Department of Transportation
+// Copyright © 1999-2018  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -49,8 +49,8 @@ struct txnEditGirderData
    Float64 m_SlabOffset[2]; // index is pgsTypes::MemberEndType
    // if slab offset is whole bridge then m_SlabOffset[pgsTypes::metStart] contains the value
 
-   pgsTypes::FilletType m_FilletType;
-   Float64 m_Fillet;
+   pgsTypes::AssExcessCamberType m_AssExcessCamberType;
+   Float64 m_AssExcessCamber;
 };
 
 class txnEditGirder : public txnTransaction

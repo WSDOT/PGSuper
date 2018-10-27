@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2017  Washington State Department of Transportation
+// Copyright © 1999-2018  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -86,9 +86,9 @@ private:
    bool    m_DidSlabOffsetDesign; // true only if slab offset was designed
    Float64 m_DesignSlabOffset[2]; // ahead:back
 
-   pgsTypes::FilletType m_NewFilletType;
-   bool    m_DidFilletDesign; // true only if fillet was designed
-   Float64 m_DesignFillet;
+   pgsTypes::AssExcessCamberType m_NewAssExcessCamberType;
+   bool    m_DidAssExcessCamberDesign; // true only if Assumed Excess Camber was designed
+   Float64 m_DesignAssExcessCamber;
 
    // Old data
    pgsTypes::SlabOffsetType m_OldSlabOffsetType;
@@ -108,21 +108,21 @@ private:
    } OldSlabOffsetData;
    std::vector<OldSlabOffsetData> m_OldSlabOffsetData;
 
-   pgsTypes::FilletType m_OldFilletType;
-   Float64 m_OldBridgeFillet; // Only if old type was fttBridge
-   typedef struct OldFilletData // Data for each girder or span/pier depending on FilletType
+   pgsTypes::AssExcessCamberType m_OldAssExcessCamberType;
+   Float64 m_OldBridgeAssExcessCamber; // Only if old type was aecBridge
+   typedef struct OldAssExcessCamberData // Data for each girder or span/pier depending on AssExcessCamberType
    {
       GroupIndexType  GroupIdx;
       GirderIndexType GirderIdx; // only used for fttGirder
-      Float64 Fillet;
+      Float64 AssExcessCamber;
 
       // constructor
-      OldFilletData(GroupIndexType groupIdx, GirderIndexType girderIdx, Float64 Fillet):
-         GroupIdx(groupIdx),GirderIdx(girderIdx),Fillet(Fillet)
+      OldAssExcessCamberData(GroupIndexType groupIdx, GirderIndexType girderIdx, Float64 assExcessCamber):
+         GroupIdx(groupIdx),GirderIdx(girderIdx),AssExcessCamber(assExcessCamber)
          {;}
 
-   } OldFilletData;
-   std::vector<OldFilletData> m_OldFilletData;
+   } OldAssExcessCamberData;
+   std::vector<OldAssExcessCamberData> m_OldAssExcessCamberData;
 
 };
 

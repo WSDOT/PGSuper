@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2017  Washington State Department of Transportation
+// Copyright © 1999-2018  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -105,7 +105,12 @@ typedef struct SlabLoad
    Float64 MainSlabLoad; // if used with SIP, only the cast portion of the slab
    Float64 PanelLoad;    // Weight of SIP deck panels
    Float64 PadLoad;      // Haunch load. Zero if negative depth
-   Float64 HaunchDepth;  // Assumed haunch depth. Will be negative if geometry makes is so
+   Float64 HaunchDepth;  // Assumed haunch depth. Will be negative if geometry makes it so
+   Float64 SlabDepth;
+   Float64 GirderChordElevation;
+   Float64 TopSlabElevation;
+   Float64 TopGirderElevation; // includes factored camber
+   Float64 AssExcessCamber;    // factored by % factor in project criteria
 } SlabLoad;
 
 typedef struct ShearKeyLoad

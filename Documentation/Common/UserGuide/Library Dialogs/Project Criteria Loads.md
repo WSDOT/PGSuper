@@ -17,6 +17,9 @@ U-Beam |  2 | 2
 Box Beam |  2  | 1
 Voided Slab |  0 |  1
 Double Tee |  2 |  1
+
+> NOTE: If the number of girders, webs, or mating surfaces in your bridge is less than or equal to twice the number of girders, webs, or mating surfaces specified, the railing systems loads are distributed equally to all girders, webs, or mating surfaces.
+
  
 Pedestrian Live Load (LRFD 3.6.1.6)
 ------------------------------------
@@ -38,7 +41,7 @@ Live Load Distribution Factors
 This option allows you to select the default method for computing live load distribution factors and related parameters.
 
 Item | Description
------|----------------
+-----|------------
 Method | Select the method for computing live load distribution factors. Options are AASHTO LRFD Specifications,  WSDOT Bridge Design Manual, or TxDOT Bridge Design Manual.
 Use (Number of Lanes)/(Number of Beams) as the Lower Limit for All Distribution Factors | When checked the live load distribution factor will be not be taken less than (Number of Lanes)/(Number of Beams).of Beams).
 Maximum Angular Deviation Between Girders | The equations in LRFD 4.6.2.2 may be used to compute distribution factors as long as "Beams are parallel and have approximately the same stiffness". However, no guidance is given as to when girders are not parallel. Enter the maximum allowable angular deviation between girder where you consider girders to be "parallel". 
@@ -59,16 +62,19 @@ Haunch Dead Load
 > NOTE: These parameters do not apply to Time-Step analysis, where excess camber is always assumed to be zero when computing haunch dead load.
 
 Select the method for computing the haunch dead load. 
+
 Method | Description
------|----------------
+-------|------------
 Zero excess camber | The top of the girder is assumed to be straight (zero camber) for purposes of computing the haunch dead load.
-Excess camber is defined by a parabola fitting the Slab Offset and Fillet dimensions | The top of the girder is assumed to follow a parabolic curve defined by the slab offsets at the ends of the girder, and the Fillet dimension. A specification check is performed to insure that the assumed excess camber is within tolerance of the computed excess camber.
+Excess camber is defined by a parabola fitting the Slab Offset and Assumed Excess Camber dimensions | The top of the girder is assumed to follow a parabolic curve defined by the slab offsets at the ends of the girder, and the user-input Assumed Excess Camber dimension. A specification check is performed to insure that the assumed excess camber is within tolerance of the computed excess camber.
 
 #### Allowable tolerance between assumed and computed excess camber ####
-Enter a tolerance that will be used to compare the assumed excess camber, defined by the Fillet dimension, to the predicted excess camber. The specification check will fail if difference in the assumed and prediced excess camber is not within tolerance.
+Enter a tolerance that will be used to compare the assumed excess camber as described above, to the computed excess camber. The specification check will fail if difference in the assumed and predicted excess camber is not within tolerance.
 
 A failed specification check indicates that the slab haunch dead load used in design and analysis is not consistent with the predicted shape of the actual slab haunch. The slab haunch dead load could be over or under estimated.
 
 Use a reasonable value for the tolerance (i.e., a value near zero will make it practically impossible to pass the specification check).
 
-> TIP: Refer to the Slab Haunch loading section of @ref tg_structural_analysis_models for detailed information about how the slab offset and fillet dimensions are used for computing the haunch dead load.
+> TIP: Refer to the Slab Haunch loading section of @ref tg_structural_analysis_models for detailed information about how the slab offset and assumed excess camber dimensions are used for computing the haunch dead load.
+
+> TIP: Refer to the @ref technical_guide for more information about how camber is computed.

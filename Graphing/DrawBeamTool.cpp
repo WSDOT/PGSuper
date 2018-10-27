@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2017  Washington State Department of Transportation
+// Copyright © 1999-2018  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -770,22 +770,7 @@ void CDrawBeamTool::DrawPier(IntervalIndexType intervalIdx,const CPierData2* pPi
 
          if ( segmentConnectionType == pgsTypes::psctContinousClosureJoint )
          {
-            if ( castClosureJointIntervalIdx < intervalIdx )
-            {
-               if ( pPier->GetBoundaryConditionType() == pgsTypes::bctHinge )
-               {
-                  DrawHinge(p,pDC);
-               }
-               else
-               {
-                  ATLASSERT(pPier->GetBoundaryConditionType() == pgsTypes::bctRoller);
-                  DrawRoller(p,pDC);
-               }
-            }
-            else
-            {
-               DrawRoller(p,pDC);
-            }
+            DrawRoller(p, pDC);
          }
          else if ( segmentConnectionType == pgsTypes::psctIntegralClosureJoint )
          {

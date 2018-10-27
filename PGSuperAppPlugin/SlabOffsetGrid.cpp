@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2017  Washington State Department of Transportation
+// Copyright © 1999-2018  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -201,7 +201,7 @@ void CSlabOffsetGrid::UpdateSlabOffsetData()
    GirderIndexType gdrIdx = m_pGirder->GetIndex();
    PierIndexType pierIdx = m_pGroup->GetPierIndex(pgsTypes::metStart);
 
-   pgsTypes::FilletType ft = m_pGroup->GetBridgeDescription()->GetFilletType();
+   pgsTypes::SlabOffsetType ft = m_pGroup->GetBridgeDescription()->GetSlabOffsetType();
 
    for ( ROWCOL col = 1; col <= nCol; col++, pierIdx++ )
    {

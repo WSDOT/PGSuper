@@ -40,7 +40,7 @@ A rigorous analysis of the slab haunch should consider the following effects:
 * Deflection due to placement of deck slab (cast or full-depth SIP)
 * Deflection due to the haunch concrete itself. In PGSuper, there are two ways to model the haunch load as selected in the Project Criteria library:
   + Model the haunch load by assuming zero excess girder camber
-  + Model the haunch load assuming that the excess camber is defined by a parabola defined by the slab offset at CL bearing locations, and defined by the user-input Fillet dimension at mid-span.
+  + Model the haunch load assuming that the girder camber shape is a parabola with its vertex at mid-span defined by the user-input assumed excess camber.
 * Deflection due to removal of forms and falsework (generally ignored)
 * Deflection due to placement of superimposed dead loads on composite section
 * Loss of camber due to long-term prestressed losses (ignored currently in PGSuper)

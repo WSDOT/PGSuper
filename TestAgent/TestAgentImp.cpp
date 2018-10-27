@@ -1587,6 +1587,7 @@ bool CTestAgentImp::RunPrestressedISectionTest(std::_tofstream& resultsFile, std
    GET_IFACE( IArtifact,pIArtifact);
    GET_IFACE( IProductForces, pProdForce);
    GET_IFACE( IIntervals, pIntervals);
+   GET_IFACE( ISpecification, pSpec);
 
    IntervalIndexType stressStrandsIntervalIdx = pIntervals->GetStressStrandInterval(segmentKey);
    IntervalIndexType releaseIntervalIdx       = pIntervals->GetPrestressReleaseInterval(segmentKey);
@@ -1646,6 +1647,13 @@ bool CTestAgentImp::RunPrestressedISectionTest(std::_tofstream& resultsFile, std
          pConstruct->GetLeastHaunchDepth(&location, &leastH);
          resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 122015, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(leastH, unitMeasure::Millimeter)) <<_T(", 2, ")<<gdrIdx<<std::endl;
       }
+   }
+
+   if (pConstruct->IsHaunchLoadGeometryCheckApplicable())
+   {
+      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 122040, ")<<loc<<_T(", ")<< (int)pConstruct->HaunchLoadGeometryStatus() <<_T(", 2, ")<<gdrIdx<<std::endl;
+      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 122041, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pConstruct->GetAssumedExcessCamber(), unitMeasure::Millimeter)) <<_T(", 2, ")<<gdrIdx<<std::endl;
+      resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 122042, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pConstruct->GetComputedExcessCamber(), unitMeasure::Millimeter)) <<_T(", 2, ")<<gdrIdx<<std::endl;
    }
 
 #pragma Reminder("UPDATE: assuming precast girder bridge") // there could be more than one deflection check artifact per girder (one for each span)
@@ -1826,14 +1834,11 @@ bool CTestAgentImp::RunPrestressedISectionTest(std::_tofstream& resultsFile, std
       resultsFile<<bridgeId<<", "<<pid<<", 50040, "<<loc<<", "<< QUITE(IsZero(mmcd.Mcr, 0.001) ? 99999 : mmcd.Mr/mmcd.Mcr)<<", 15, "<<gdrIdx<<std::endl;
       resultsFile<<bridgeId<<", "<<pid<<", 50041, "<<loc<<", "<< QUITE(IsZero(mmcd.Mu, 0.001) ? 99999 : mmcd.Mr/mmcd.Mu)<< ", 15, "<<gdrIdx<<std::endl;
 
-#pragma Reminder("BUG: added if block to make it through the regression tests... there is probably a bug")
       const pgsFlexuralCapacityArtifact* pCompositeCap;
       pCompositeCap = pGdrArtifact->FindPositiveMomentFlexuralCapacityArtifact(liveLoadIntervalIdx,pgsTypes::StrengthI,poi);
       if ( pCompositeCap )
       {
          ATLASSERT(pCompositeCap->GetPointOfInterest() == poi);
-#pragma Reminder("BUG: added if block to make it through the regression tests... there is probably a bug")
-         // the bug is probably with the POIs
          resultsFile<<bridgeId<<", "<<pid<<", 122016, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(pCompositeCap->GetDemand() , unitMeasure::NewtonMillimeter)) <<", 15, "<<gdrIdx<<std::endl;
          resultsFile<<bridgeId<<", "<<pid<<", 122017, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(pCompositeCap->GetCapacity() , unitMeasure::NewtonMillimeter)) <<", 15, "<<gdrIdx<<std::endl;
          resultsFile<<bridgeId<<", "<<pid<<", 122018, "<<loc<<", "<<(int)(pCompositeCap->Passed()?1:0)<<", 15, "<<gdrIdx<<std::endl;
@@ -1854,12 +1859,10 @@ bool CTestAgentImp::RunPrestressedISectionTest(std::_tofstream& resultsFile, std
       resultsFile<<bridgeId<<", "<<pid<<", 50140, "<<loc<<", "<< QUITE(IsZero(mmcd.Mcr, 0.001) ? 99999 : mmcd.Mr/mmcd.Mcr)<<", 15, "<<gdrIdx<<std::endl;
       resultsFile<<bridgeId<<", "<<pid<<", 50141, "<<loc<<", "<< QUITE(IsZero(mmcd.Mu, 0.001) ? 99999 : mmcd.Mr/mmcd.Mu)<< ", 15, "<<gdrIdx<<std::endl;
 
-#pragma Reminder("BUG: added if block to make it through the regression tests... there is probably a bug")
       pCompositeCap = pGdrArtifact->FindNegativeMomentFlexuralCapacityArtifact(liveLoadIntervalIdx,pgsTypes::StrengthI,poi);
       if ( pCompositeCap )
       {
          ATLASSERT(pCompositeCap->GetPointOfInterest() == poi);
-#pragma Reminder("BUG: added if block to make it through the regression tests... there is probably a bug")
          // the bug is probably with the POIs
          resultsFile<<bridgeId<<", "<<pid<<", 122116, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(pCompositeCap->GetDemand() , unitMeasure::NewtonMillimeter)) <<", 15, "<<gdrIdx<<std::endl;
          resultsFile<<bridgeId<<", "<<pid<<", 122117, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(pCompositeCap->GetCapacity() , unitMeasure::NewtonMillimeter)) <<", 15, "<<gdrIdx<<std::endl;
@@ -1873,15 +1876,12 @@ bool CTestAgentImp::RunPrestressedISectionTest(std::_tofstream& resultsFile, std
       resultsFile<<bridgeId<<", "<<pid<<", 50031, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(scd.Aps , unitMeasure::Millimeter2)) <<", 15, "<<gdrIdx<<std::endl;
       resultsFile<<bridgeId<<", "<<pid<<", 50032, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(scd.As , unitMeasure::Millimeter2)) <<", 15, "<<gdrIdx<<std::endl;
       resultsFile<<bridgeId<<", "<<pid<<", 50033, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(pPrestressForce->GetEffectivePrestress(poi,pgsTypes::Permanent,erectSegmentIntervalIdx,pgsTypes::End), unitMeasure::MPa)) <<", 15, "<<gdrIdx<<std::endl;
-      resultsFile<<bridgeId<<", "<<pid<<", 50038, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(scd.As,unitMeasure::Millimeter2)) <<", 15, "<<gdrIdx<<std::endl;
       resultsFile<<bridgeId<<", "<<pid<<", 50042, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(scd.pVn , unitMeasure::Newton)) <<    ", 15, "<<gdrIdx<<std::endl;
       resultsFile<<bridgeId<<", "<<pid<<", 50043, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(scd.Vn , unitMeasure::Newton)) <<     ", 15, "<<gdrIdx<<std::endl;
       resultsFile<<bridgeId<<", "<<pid<<", 50044, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(scd.Vc , unitMeasure::Newton)) <<     ", 15, "<<gdrIdx<<std::endl;
       resultsFile<<bridgeId<<", "<<pid<<", 50045, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(scd.Vs , unitMeasure::Newton)) <<     ", 15, "<<gdrIdx<<std::endl;
       resultsFile<<bridgeId<<", "<<pid<<", 50046, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(scd.Vp , unitMeasure::Newton)) <<     ", 15, "<<gdrIdx<<std::endl;
       resultsFile<<bridgeId<<", "<<pid<<", 50047, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(scd.bv, unitMeasure::Millimeter)) <<  ", 15, "<<gdrIdx<<std::endl;
-      resultsFile<<bridgeId<<", "<<pid<<", 50048, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(scd.Aps, unitMeasure::Millimeter2)) <<", 15, "<<gdrIdx<<std::endl;
-      resultsFile<<bridgeId<<", "<<pid<<", 50049, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(scd.As, unitMeasure::Millimeter2)) << ", 15, "<<gdrIdx<<std::endl;
       resultsFile<<bridgeId<<", "<<pid<<", 50050, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(scd.Ac, unitMeasure::Millimeter2)) << ", 15, "<<gdrIdx<<std::endl;
       resultsFile<<bridgeId<<", "<<pid<<", 50051, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(scd.dv, unitMeasure::Millimeter)) <<  ", 15, "<<gdrIdx<<std::endl;
       resultsFile<<bridgeId<<", "<<pid<<", 50053, "<<loc<<", "<< QUITE(scd.Beta) <<", 15, "<<gdrIdx<<std::endl;
@@ -1890,22 +1890,18 @@ bool CTestAgentImp::RunPrestressedISectionTest(std::_tofstream& resultsFile, std
       resultsFile<<bridgeId<<", "<<pid<<", 50056, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(scd.Theta, unitMeasure::Degree)) <<", 15, "<<gdrIdx<<std::endl;
       resultsFile<<bridgeId<<", "<<pid<<", 50057, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(scd.fpops, unitMeasure::MPa)) <<", 15, "<<gdrIdx<<std::endl;
       resultsFile<<bridgeId<<", "<<pid<<", 50058, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(scd.fpeps, unitMeasure::MPa)) <<", 15, "<<gdrIdx<<std::endl;
-#pragma Reminder("UPDATE: add these tests after matching with old results")
-      //resultsFile<<bridgeId<<", "<<pid<<", 50059, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(scd.fpopt, unitMeasure::MPa)) <<", 15, "<<gdrIdx<<std::endl;
-      //resultsFile<<bridgeId<<", "<<pid<<", 50060, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(scd.fpept, unitMeasure::MPa)) <<", 15, "<<gdrIdx<<std::endl;
+      resultsFile<<bridgeId<<", "<<pid<<", 50059, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(scd.fpopt, unitMeasure::MPa)) <<", 15, "<<gdrIdx<<std::endl;
+      resultsFile<<bridgeId<<", "<<pid<<", 50060, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(scd.fpept, unitMeasure::MPa)) <<", 15, "<<gdrIdx<<std::endl;
 
       IndexType idx = it - vPoi.begin();
 
       psArtifact = pstirrup_artifact->GetStirrupCheckAtPoisArtifactAtPOI( liveLoadIntervalIdx, pgsTypes::StrengthI, poi.GetID() );
-//         ATLASSERT(psArtifact != nullptr);
       if ( psArtifact )
       {
          ATLASSERT(poi == psArtifact->GetPointOfInterest());
-#pragma Reminder("BUG: added if block to make it through the regression tests... there is probably a bug")
          pArtifact = psArtifact->GetLongReinfShearArtifact();
          if ( pArtifact )
          {
-#pragma Reminder("BUG: added if block to make it through the regression tests... there is probably a bug")
             ATLASSERT(IsEqual(::ConvertFromSysUnits(psArtifact->GetPointOfInterest().GetDistFromStart(), unitMeasure::Millimeter),loc));
             resultsFile<<bridgeId<<", "<<pid<<", 50061, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(pArtifact->GetDemandForce(), unitMeasure::Newton)) <<  ", 15, "<<gdrIdx<<std::endl;
             resultsFile<<bridgeId<<", "<<pid<<", 50062, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(pArtifact->GetCapacityForce(), unitMeasure::Newton)) <<", 15, "<<gdrIdx<<std::endl;
@@ -1936,13 +1932,7 @@ bool CTestAgentImp::RunPrestressedISectionTest(std::_tofstream& resultsFile, std
             resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 100209, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pAHsrtifact->GetAvOverSReqd(), unitMeasure::Millimeter)) <<   _T(", 15, ")<<gdrIdx<<std::endl;
 
             const pgsVerticalShearArtifact* pVertical = psArtifact->GetVerticalShearArtifact();
-#pragma Reminder("UPDATE: update regression test...") // remove 100211
-            // In previons versions of PGSuper (2.x) IsStrutAndTieRequired() was evaluated at each end of span. 100210 was at
-            // the start of the span and 100211 was at the end of the span. In this version, IsStrutAndTieRequired() is evaluated
-            // for the segment as a whole so there is only one results. Test 100211 can be removed.
-            // I've left 100211 in place for now so the initial regression test versus the HEAD branch wont change
             resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 100210, ")<<loc<<_T(", ")<<(int)(pVertical->IsStrutAndTieRequired()?1:0)<<_T(", 15, ")<<gdrIdx<<std::endl;
-            resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 100211, ")<<loc<<_T(", ")<<(int)(pVertical->IsStrutAndTieRequired()?1:0)<<_T(", 15, ")<<gdrIdx<<std::endl;
             resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 100212, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pVertical->GetAvOverSReqd(), unitMeasure::Millimeter)) <<   _T(", 15, ")<<gdrIdx<<std::endl;
             resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 100213, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pVertical->GetDemand(), unitMeasure::Newton)) <<  _T(", 15, ")<<gdrIdx<<std::endl;
             resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 100214, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pVertical->GetCapacity(), unitMeasure::Newton)) <<  _T(", 15, ")<<gdrIdx<<std::endl;
@@ -1959,68 +1949,60 @@ bool CTestAgentImp::RunPrestressedISectionTest(std::_tofstream& resultsFile, std
       if (pAHsrtifact)
          resultsFile<<bridgeId<<", "<<pid<<", 100204, "<<loc<<", "<<(int)(pAHsrtifact->Passed()?1:0)<<", 15, "<<gdrIdx<<std::endl;
 
-#pragma Reminder("UPDATE: this is a hack")
-      // at one time, the number of stress check artifacts matched the number of POIs that were retreived above...
-      // that isn't true anymore and that messes up the code below. The if (idx < nArtifacts) is just to get initial
-      // regression tests for PGSplice working
-      //CollectionIndexType nArtifacts = pSegmentArtifact->GetFlexuralStressArtifactCount(castDeckIntervalIdx,pgsTypes::ServiceI,pgsTypes::Tension);
-      //if ( idx < nArtifacts )
-      //{
-         const pgsFlexuralStressArtifact* pStressArtifact;
-         pStressArtifact = pSegmentArtifact->GetFlexuralStressArtifactAtPoi(castDeckIntervalIdx,pgsTypes::ServiceI,pgsTypes::Tension,poi.GetID());
+      const pgsFlexuralStressArtifact* pStressArtifact;
+      pStressArtifact = pSegmentArtifact->GetFlexuralStressArtifactAtPoi(castDeckIntervalIdx,pgsTypes::ServiceI,pgsTypes::Tension,poi.GetID());
+      if ( pStressArtifact )
+      {
+         ATLASSERT(IsEqual(loc,::ConvertFromSysUnits(poi.GetDistFromStart(), unitMeasure::Millimeter)));
+         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 122019, ")<<loc<<_T(", ")<<(int)(pStressArtifact->BeamPassed()?1:0)<<_T(", 15, ")<<gdrIdx<<std::endl;
+      }
+
+      pStressArtifact = pSegmentArtifact->GetFlexuralStressArtifactAtPoi(liveLoadIntervalIdx,pgsTypes::ServiceIII,pgsTypes::Tension,poi.GetID());
+      if ( pStressArtifact )
+      {
+         ATLASSERT(IsEqual(loc,::ConvertFromSysUnits(poi.GetDistFromStart(), unitMeasure::Millimeter)));
+         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 122023, ")<<loc<<_T(", ")<<(int)(pStressArtifact->Passed(pgsTypes::TopGirder)?1:0)<<_T(", 15, ")<<gdrIdx<<std::endl;
+      }
+
+      pStressArtifact = pSegmentArtifact->GetFlexuralStressArtifactAtPoi(castDeckIntervalIdx,pgsTypes::ServiceI,pgsTypes::Compression,poi.GetID());
+      if ( pStressArtifact )
+      {
+         ATLASSERT(IsEqual(loc,::ConvertFromSysUnits(poi.GetDistFromStart(), unitMeasure::Millimeter)));
+         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 122024, ")<<loc<<_T(", ")<<(int)(pStressArtifact->BeamPassed()?1:0)<<_T(", 15, ")<<gdrIdx<<std::endl;
+      }
+
+      pStressArtifact = pSegmentArtifact->GetFlexuralStressArtifactAtPoi(compositeDeckIntervalIdx,pgsTypes::ServiceI,pgsTypes::Compression,poi.GetID());
+      if ( pStressArtifact )
+      {
+         ATLASSERT(IsEqual(loc,::ConvertFromSysUnits(poi.GetDistFromStart(), unitMeasure::Millimeter)));
+         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 122025, ")<<loc<<_T(", ")<<(int)(pStressArtifact->BeamPassed()?1:0)<<_T(", 15, ")<<gdrIdx<<std::endl;
+      }
+
+      pStressArtifact = pSegmentArtifact->GetFlexuralStressArtifactAtPoi(liveLoadIntervalIdx,pgsTypes::ServiceI,pgsTypes::Compression,poi.GetID());
+      if ( pStressArtifact )
+      {
+         ATLASSERT(IsEqual(loc,::ConvertFromSysUnits(poi.GetDistFromStart(), unitMeasure::Millimeter)));
+         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 122026, ")<<loc<<_T(", ")<<(int)(pStressArtifact->BeamPassed()?1:0)<<_T(", 15, ")<<gdrIdx<<std::endl;
+      }
+
+      if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims )
+      {
+         pStressArtifact = pSegmentArtifact->GetFlexuralStressArtifactAtPoi(liveLoadIntervalIdx,pgsTypes::ServiceIA,pgsTypes::Compression,poi.GetID());
          if ( pStressArtifact )
          {
             ATLASSERT(IsEqual(loc,::ConvertFromSysUnits(poi.GetDistFromStart(), unitMeasure::Millimeter)));
-            resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 122019, ")<<loc<<_T(", ")<<(int)(pStressArtifact->BeamPassed()?1:0)<<_T(", 15, ")<<gdrIdx<<std::endl;
+            resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 122027, ")<<loc<<_T(", ")<<(int)(pStressArtifact->BeamPassed()?1:0)<<_T(", 15, ")<<gdrIdx<<std::endl;
          }
-
-         pStressArtifact = pSegmentArtifact->GetFlexuralStressArtifactAtPoi(liveLoadIntervalIdx,pgsTypes::ServiceIII,pgsTypes::Tension,poi.GetID());
+      }
+      else
+      {
+         pStressArtifact = pSegmentArtifact->GetFlexuralStressArtifactAtPoi(liveLoadIntervalIdx,pgsTypes::FatigueI,pgsTypes::Compression,poi.GetID());
          if ( pStressArtifact )
          {
             ATLASSERT(IsEqual(loc,::ConvertFromSysUnits(poi.GetDistFromStart(), unitMeasure::Millimeter)));
-            resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 122023, ")<<loc<<_T(", ")<<(int)(pStressArtifact->Passed(pgsTypes::TopGirder)?1:0)<<_T(", 15, ")<<gdrIdx<<std::endl;
+            resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 122027, ")<<loc<<_T(", ")<<(int)(pStressArtifact->BeamPassed()?1:0)<<_T(", 15, ")<<gdrIdx<<std::endl;
          }
-
-         pStressArtifact = pSegmentArtifact->GetFlexuralStressArtifactAtPoi(castDeckIntervalIdx,pgsTypes::ServiceI,pgsTypes::Compression,poi.GetID());
-         if ( pStressArtifact )
-         {
-            ATLASSERT(IsEqual(loc,::ConvertFromSysUnits(poi.GetDistFromStart(), unitMeasure::Millimeter)));
-            resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 122024, ")<<loc<<_T(", ")<<(int)(pStressArtifact->BeamPassed()?1:0)<<_T(", 15, ")<<gdrIdx<<std::endl;
-         }
-
-         pStressArtifact = pSegmentArtifact->GetFlexuralStressArtifactAtPoi(compositeDeckIntervalIdx,pgsTypes::ServiceI,pgsTypes::Compression,poi.GetID());
-         if ( pStressArtifact )
-         {
-            ATLASSERT(IsEqual(loc,::ConvertFromSysUnits(poi.GetDistFromStart(), unitMeasure::Millimeter)));
-            resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 122025, ")<<loc<<_T(", ")<<(int)(pStressArtifact->BeamPassed()?1:0)<<_T(", 15, ")<<gdrIdx<<std::endl;
-         }
-
-         pStressArtifact = pSegmentArtifact->GetFlexuralStressArtifactAtPoi(liveLoadIntervalIdx,pgsTypes::ServiceI,pgsTypes::Compression,poi.GetID());
-         if ( pStressArtifact )
-         {
-            ATLASSERT(IsEqual(loc,::ConvertFromSysUnits(poi.GetDistFromStart(), unitMeasure::Millimeter)));
-            resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 122026, ")<<loc<<_T(", ")<<(int)(pStressArtifact->BeamPassed()?1:0)<<_T(", 15, ")<<gdrIdx<<std::endl;
-         }
-
-         if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims )
-         {
-            pStressArtifact = pSegmentArtifact->GetFlexuralStressArtifactAtPoi(liveLoadIntervalIdx,pgsTypes::ServiceIA,pgsTypes::Compression,poi.GetID());
-            if ( pStressArtifact )
-            {
-               ATLASSERT(IsEqual(loc,::ConvertFromSysUnits(poi.GetDistFromStart(), unitMeasure::Millimeter)));
-               resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 122027, ")<<loc<<_T(", ")<<(int)(pStressArtifact->BeamPassed()?1:0)<<_T(", 15, ")<<gdrIdx<<std::endl;
-            }
-         }
-         else
-         {
-            pStressArtifact = pSegmentArtifact->GetFlexuralStressArtifactAtPoi(liveLoadIntervalIdx,pgsTypes::FatigueI,pgsTypes::Compression,poi.GetID());
-            if ( pStressArtifact )
-            {
-               ATLASSERT(IsEqual(loc,::ConvertFromSysUnits(poi.GetDistFromStart(), unitMeasure::Millimeter)));
-               resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 122027, ")<<loc<<_T(", ")<<(int)(pStressArtifact->BeamPassed()?1:0)<<_T(", 15, ")<<gdrIdx<<std::endl;
-            }
-         }
-      //}
+      }
    } // next POI
 
    // confinement

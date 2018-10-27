@@ -1,6 +1,16 @@
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 28.25    5   6.00                     1     1    WF50G    *     42  0.6  270  21.12  11.83  12.00  12.00                                              10  46.0  3.0  6.500  7.600   4.845    -4.788     7747   0.543  0.671   5.405 -2.091 -0.176 -0.251 -2.518 182.67  288.55    1.75    5.00    5.00 
+ 28.25    5   6.00                     1     1    WF50G    *     42  0.6  270  20.98  13.36  11.50  11.50                                               8  46.0  3.0  6.600  7.900   4.813    -4.745     7690   0.544  0.671   4.741 -1.981 -0.174 -0.247 -2.402 176.88  303.07    1.75    5.00    5.00 
+
+
+The Specification Check was Not Successful
+Tensile stress check failed for Service III Limit State in Interval 16 Open to Traffic (Bridge Site 3)
+Splitting zone check failed.
+
+
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 28.25    5   6.00                     1     2    WF50G    *     42  0.6  270  20.98  13.36  11.50  11.50                                               8  46.0  3.0  6.600  7.900   4.803    -4.733     7690   0.542  0.671   4.684 -1.972 -0.174 -0.247 -2.393 176.88  303.52    1.75    5.00    5.00 
 
 
 The Specification Check was Not Successful
@@ -9,16 +19,7 @@ Splitting zone check failed.
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 28.25    5   6.00                     1     2    WF50G    *     42  0.6  270  21.12  11.83  12.00  12.00                                              10  46.0  3.0  6.500  7.600   4.829    -4.771     7748   0.541  0.671   5.362 -2.074 -0.176 -0.251 -2.501 182.67  289.33    1.75    5.00    5.00 
-
-
-The Specification Check was Not Successful
-Splitting zone check failed.
-
-
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 28.25    5   6.00                     1     3    WF50G    *     42  0.6  270  21.12  11.83  12.00  12.00                                              10  46.0  3.0  6.500  7.600   4.829    -4.771     7748   0.541  0.671   5.362 -2.074 -0.176 -0.251 -2.501 182.67  289.33    1.75    5.00    5.00 
+ 28.25    5   6.00                     1     3    WF50G    *     42  0.6  270  20.98  13.36  11.50  11.50                                               8  46.0  3.0  6.600  7.900   4.803    -4.733     7690   0.542  0.671   4.684 -1.972 -0.174 -0.247 -2.393 176.88  303.52    1.75    5.00    5.00 
 
 
 The Specification Check was Not Successful

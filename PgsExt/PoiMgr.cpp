@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2017  Washington State Department of Transportation
+// Copyright © 1999-2018  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -299,36 +299,56 @@ PoiIDType pgsPoiMgr::AddPointOfInterest(const pgsPointOfInterest& poi)
    ATLASSERT(vpvPoi.size() == 1);
    std::vector<pgsPointOfInterest>* pvPoi(vpvPoi.front());
 
-   if ( poi.CanMerge() )
+   std::vector<pgsPointOfInterest>::iterator iter(pvPoi->begin());
+   std::vector<pgsPointOfInterest>::iterator end(pvPoi->end());
+   for (; iter != end; iter++)
    {
-      std::vector<pgsPointOfInterest>::iterator iter(pvPoi->begin());
-      std::vector<pgsPointOfInterest>::iterator end(pvPoi->end());
-      for ( ; iter != end; iter++ )
-      {
-         pgsPointOfInterest& curpoi = *iter;
-         ATLASSERT(curpoi.GetSegmentKey().IsEqual(segmentKey));
-         if ( curpoi.AtSamePlace(poi) )
-         {
-            if ( curpoi.CanMerge() && curpoi.MergeAttributes(poi) )
-            {
-               return curpoi.m_ID; // no need to re-sort vector
-            }
-            else
-            {
-               // sometimes there are multiple POI at the same location... make sure
-               // the next poi is not at the same location... if it is, continue, otherwise bail out
-               if ( iter+1 != end && !poi.AtSamePlace(*(iter+1)) )
-               {
-                  break; // poi's can't be merged... just break out of here and continue
-               }
-            }
-         }
+      pgsPointOfInterest& curpoi = *iter;
+      ATLASSERT(curpoi.GetSegmentKey().IsEqual(segmentKey));
 
-         if ( poi.GetDistFromStart() < curpoi.GetDistFromStart() )
+      // first try strict merging of poi's... if two POIs are at exactly the same location
+      // they can always be merged
+      if (curpoi.AtExactSamePlace(poi) )
+      {
+         if (curpoi.MergeAttributes(poi))
          {
-            // the containers are sorted... once we go past the new poi there wont be a match
-            break;
+            if (poi.CanMerge() == false)
+            {
+               curpoi.CanMerge(false);
+            }
+            return curpoi.m_ID; // no need to re-sort vector
          }
+         else
+         {
+            // sometimes there are multiple POI at the same location... make sure
+            // the next poi is not at the same location... if it is, continue, otherwise bail out
+            if (iter + 1 != end && !poi.AtExactSamePlace(*(iter + 1)))
+            {
+               break; // poi's can't be merged... just break out of here and continue
+            }
+         }
+      }
+      else if (curpoi.AtSamePlace(poi)) // are POI's close enough?
+      {
+         if (poi.CanMerge() && curpoi.CanMerge() && curpoi.MergeAttributes(poi))
+         {
+            return curpoi.m_ID; // no need to re-sort vector
+         }
+         else
+         {
+            // sometimes there are multiple POI at the same location... make sure
+            // the next poi is not at the same location... if it is, continue, otherwise bail out
+            if (iter + 1 != end && !poi.AtSamePlace(*(iter + 1)))
+            {
+               break; // poi's can't be merged... just break out of here and continue
+            }
+         }
+      }
+
+      if (poi.GetDistFromStart() < curpoi.GetDistFromStart())
+      {
+         // the containers are sorted... once we go past the new poi there wont be a match
+         break;
       }
    }
 
@@ -344,6 +364,25 @@ PoiIDType pgsPoiMgr::AddPointOfInterest(const pgsPointOfInterest& poi)
       // if in new POI has already been assigned an ID
       // make sure the next POI ID won't conflict with it
       ms_NextID = Max(ms_NextID,id+1);
+
+      std::vector<pgsPointOfInterest>::iterator found(std::find_if(pvPoi->begin(), pvPoi->end(), FindByID(id)));
+      if (found != pvPoi->end())
+      {
+         // this POI is already in the container... merge it with itself
+         // This is very rare, but happens when we are creating critical section for shear POI and the critical
+         // section is at the face of support. The face of support POI will already be in the collection
+         pgsPointOfInterest& curPoi(*found);
+         ATLASSERT(curPoi.AtSamePlace(poi));
+
+         // these next two POI are not absolute error checks... FOS and critical section are the most common
+         // reason this case will occur. The asserts will fire if a different case occurs. The different case
+         // would be one that we haven't thought of yet and should investigate
+         ATLASSERT(curPoi.HasAttribute(POI_FACEOFSUPPORT));
+         ATLASSERT(poi.HasAttribute(POI_CRITSECTSHEAR1) || poi.HasAttribute(POI_CRITSECTSHEAR2));
+
+         curPoi.MergeAttributes(poi);
+         return curPoi.m_ID;
+      }
    }
 
    // Don't copy poi and put it in because this is a very highly utilized function and copies don't come cheap

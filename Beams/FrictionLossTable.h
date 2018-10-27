@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2017  Washington State Department of Transportation
+// Copyright © 1999-2018  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -54,6 +54,7 @@ private:
    DECLARE_UV_PROTOTYPE( rptMomentUnitValue,  moment );
    DECLARE_UV_PROTOTYPE( rptStressUnitValue,  stress );
    DECLARE_UV_PROTOTYPE( rptPerLengthUnitValue, wobble);
+   DECLARE_UV_PROTOTYPE( rptAngleUnitValue, angle);
 };
 
 #endif //__FRICTIONLOSSTABLE_H_

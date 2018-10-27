@@ -10,7 +10,6 @@
 #include "afxres.h"
 #include "EAF\EAFResources.h"
 #include "grid\gxresrc.h"
-
 /////////////////////////////////////////////////////////////////////////////
 #undef APSTUDIO_READONLY_SYMBOLS
 
@@ -67,8 +66,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 3,1,3,1
- PRODUCTVERSION 3,1,3,1
+ FILEVERSION 3,1,4,0
+ PRODUCTVERSION 3,1,4,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -86,11 +85,11 @@ BEGIN
             VALUE "Comments", "A member of the Alternate Route Project"
             VALUE "CompanyName", "Washington State Department of Transportation"
             VALUE "FileDescription", "psgLib DLL"
-            VALUE "FileVersion", "3.1.3.1"
+            VALUE "FileVersion", "3.1.4.0"
             VALUE "InternalName", "psgLib"
             VALUE "OriginalFilename", "psgLib.DLL"
             VALUE "ProductName", "PGSuper"
-            VALUE "ProductVersion", "3.1.3.1"
+            VALUE "ProductVersion", "3.1.4.0"
         END
     END
     BLOCK "VarFileInfo"
@@ -951,11 +950,11 @@ FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
     LTEXT           "Description",IDC_STATIC,7,7,36,8
     EDITTEXT        IDC_DESCRIPTION,7,18,271,14,ES_AUTOHSCROLL
-    LTEXT           "Create a diaphragm when the (span/element) length is between",IDC_RANGE_LABEL,7,74,140,8
-    EDITTEXT        IDC_SPAN1,151,72,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "and",IDC_STATIC,193,74,13,8
-    EDITTEXT        IDC_SPAN2,208,72,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Static",IDC_SPAN_UNIT,252,74,19,8
+    LTEXT           "Create a diaphragm when the (span/element) length is between",IDC_RANGE_LABEL,7,72,263,8
+    EDITTEXT        IDC_SPAN1,7,81,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "and",IDC_STATIC,49,83,13,8
+    EDITTEXT        IDC_SPAN2,64,81,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_SPAN_UNIT,108,83,19,8
     LTEXT           "Location",IDC_STATIC,143,39,28,8
     COMBOBOX        IDC_TYPE,143,49,129,65,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     LTEXT           "Construction",IDC_STATIC,7,39,40,8
@@ -1657,21 +1656,29 @@ BEGIN
     LTEXT           "MPa",IDC_AFTER_DECK_TENSION_MAX_UNIT,355,400,25,8
 END
 
-IDD_SPEC_LOADS DIALOGEX 0, 0, 351, 422
+IDD_SPEC_LOADS DIALOGEX 0, 0, 351, 437
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Loads"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
+    GROUPBOX        "Distribution of Railing System (Barriers, Sidewalk, and Pedestrian Live) Loads",IDC_STATIC,7,7,336,48
     LTEXT           "Distribute barrier, sidewalk, and pedestrian live loads to",IDC_STATIC,15,28,173,8
     EDITTEXT        IDC_DIST_TRAFFIC_BARRIER,192,26,25,14,ES_RIGHT | ES_AUTOHSCROLL
     CONTROL         "",IDC_DIST_TRAFFIC_BARRIER_SPIN,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,216,26,11,14
-    COMBOBOX        IDC_DIST_TRAFFIC_BARRIER_BASIS,220,26,114,81,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    GROUPBOX        "Pedestrian Live Load (LRFD 3.6.1.6)",IDC_STATIC,7,59,336,54
+    LTEXT           "Magnitude of Pedestrian Live Load",IDC_STATIC,17,75,111,8
+    EDITTEXT        IDC_PED_LIVE_LOAD,135,74,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_PED_LIVE_LOAD_UNIT,177,75,32,8
+    LTEXT           "Minimum Width of Sidewalk to Apply Pedestrian Live Load",IDC_STATIC,17,96,184,8
+    EDITTEXT        IDC_MIN_SIDEWALK_WIDTH,207,94,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_MIN_SIDEWALK_WIDTH_UNIT,249,96,32,8
+    GROUPBOX        "Distribution of Overlay Dead Load",IDC_STATIC,8,120,336,40
     LTEXT           "Distribute overlay dead load",IDC_STATIC,15,138,94,10
     COMBOBOX        IDC_OVERLAY_DISTR,109,135,158,72,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    GROUPBOX        "Distribution of Railing System (Barriers, Sidewalk, and Pedestrian Live) Loads",IDC_STATIC,7,7,336,48
-    GROUPBOX        "Distribution of Overlay Dead Load",IDC_STATIC,8,120,336,40
     GROUPBOX        "Live Load Distribution Factors",IDC_STATIC,7,166,336,138
     COMBOBOX        IDC_LLDF,16,179,210,59,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "Use (Number of Lanes)/(Number of Beams) as the Lower Limit for All Distribution Factors",IDC_LANESBEAMS,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,199,318,10
     LTEXT           "Maximum angular deviation between girders",IDC_STATIC,16,216,138,8
     EDITTEXT        IDC_MAXGIRDERANGLE,171,214,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "Static",IDC_MAXGIRDERANGLE_UNIT,214,216,19,8
@@ -1680,22 +1687,17 @@ BEGIN
     LTEXT           "Location to measure Girder Spacing\n(Fraction of girder's span length)",IDC_STATIC,16,248,144,18
     EDITTEXT        IDC_GIRDER_SPACING_LOCATION,171,249,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "Girder spacing normal to the alignment will be measured at this fractional distance from both ends of the span. The location with maximum deck width (measured normal to the alignment) will be used for computing distribution factors.",IDC_STATIC,16,268,320,30
-    CONTROL         "Use (Number of Lanes)/(Number of Beams) as the Lower Limit for All Distribution Factors",IDC_LANESBEAMS,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,199,318,10
-    LTEXT           "Magnitude of Pedestrian Live Load",IDC_STATIC,17,75,111,8
-    EDITTEXT        IDC_PED_LIVE_LOAD,135,74,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Static",IDC_PED_LIVE_LOAD_UNIT,177,75,32,8
-    LTEXT           "Minimum Width of Sidewalk to Apply Pedestrian Live Load",IDC_STATIC,17,96,184,8
-    EDITTEXT        IDC_MIN_SIDEWALK_WIDTH,207,94,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Static",IDC_MIN_SIDEWALK_WIDTH_UNIT,249,96,32,8
-    GROUPBOX        "Pedestrian Live Load (LRFD 3.6.1.6)",IDC_STATIC,7,59,336,54
-    COMBOBOX        IDC_HAUNCH_COMP_CB,29,370,301,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Allowable tolerance between assumed and computed excess camber",IDC_HAUNCH_TOLER_STATIC,15,392,224,8
-    EDITTEXT        IDC_HAUNCH_TOLER,242,389,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Static",IDC_HAUNCH_TOLER_UNIT,286,392,19,8
-    LTEXT           "Compute haunch dead load assuming:",IDC_STATIC,14,355,167,8
-    GROUPBOX        "Haunch Dead Load",IDC_STATIC,6,310,338,105
+    GROUPBOX        "Haunch Dead Load",IDC_STATIC,6,310,338,120
     LTEXT           "NOTE: These parameters do not apply to Time-Step analysis, where excess camber is always assumed to be zero when computing haunch load.",IDC_STATIC,23,324,302,20,WS_BORDER
+    LTEXT           "Compute haunch dead load assuming:",IDC_STATIC,14,355,167,8
+    COMBOBOX        IDC_HAUNCH_COMP_CB,14,370,289,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Allowable tolerance between assumed and computed excess camber",IDC_HAUNCH_TOLER_STATIC,15,392,239,8
+    EDITTEXT        IDC_HAUNCH_TOLER,246,389,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_HAUNCH_TOLER_UNIT,290,392,19,8
+    LTEXT           "Use",IDC_HAUNCH_FACTOR1,16,408,13,8
+    EDITTEXT        IDC_HAUNCH_FACTOR,32,404,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "% of assumed excess camber when computing haunch dead load",IDC_HAUNCH_FACTOR2,77,408,239,8
+    COMBOBOX        IDC_DIST_TRAFFIC_BARRIER_BASIS,220,26,114,81,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
 END
 
 IDD_SPEC_CLOSURE DIALOGEX 0, 0, 428, 361
@@ -2179,7 +2181,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 344
         TOPMARGIN, 7
-        BOTTOMMARGIN, 415
+        BOTTOMMARGIN, 430
     END
 
     IDD_SPEC_CLOSURE, DIALOG
@@ -2342,15 +2344,16 @@ END
 
 IDD_SPEC_LOADS DLGINIT
 BEGIN
-    IDC_HAUNCH_COMP_CB, 0x403, 19, 0
-0x655a, 0x6f72, 0x6520, 0x6378, 0x7365, 0x2073, 0x6163, 0x626d, 0x7265, 
-"\000" 
-    IDC_HAUNCH_COMP_CB, 0x403, 85, 0
-0x7845, 0x6563, 0x7373, 0x6320, 0x6d61, 0x6562, 0x2072, 0x7369, 0x6420, 
-0x6665, 0x6e69, 0x6465, 0x6220, 0x2079, 0x2061, 0x6170, 0x6172, 0x6f62, 
-0x616c, 0x6620, 0x7469, 0x6974, 0x676e, 0x7420, 0x6568, 0x5320, 0x616c, 
-0x2062, 0x664f, 0x7366, 0x7465, 0x6120, 0x646e, 0x4620, 0x6c69, 0x656c, 
-0x2074, 0x6964, 0x656d, 0x736e, 0x6f69, 0x736e, "\000" 
+    IDC_HAUNCH_COMP_CB, 0x403, 54, 0
+0x6f54, 0x2070, 0x666f, 0x6720, 0x7269, 0x6564, 0x2072, 0x7369, 0x6620, 
+0x616c, 0x2074, 0x6128, 0x7373, 0x6d75, 0x6465, 0x6520, 0x6378, 0x7365, 
+0x2073, 0x6163, 0x626d, 0x7265, 0x6920, 0x2073, 0x657a, 0x6f72, 0x0029, 
+
+    IDC_HAUNCH_COMP_CB, 0x403, 66, 0
+0x6f54, 0x2070, 0x666f, 0x6720, 0x7269, 0x6564, 0x2072, 0x7369, 0x7020, 
+0x7261, 0x6261, 0x6c6f, 0x6369, 0x202c, 0x6564, 0x6966, 0x656e, 0x2064, 
+0x7962, 0x7420, 0x6568, 0x6120, 0x7373, 0x6d75, 0x6465, 0x6520, 0x6378, 
+0x7365, 0x2073, 0x6163, 0x626d, 0x7265, 0x002e, 
     0
 END
 
@@ -2558,6 +2561,16 @@ BEGIN
     0
 END
 
+IDD_INTERMEDATE_DIAPHRAGM AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_SPEC_LOADS AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -2688,7 +2701,6 @@ LANGUAGE 9, 1
 #include "afxres.rc"         // Standard components
 #endif
 #include "grid\gxres.rc"               // Objective Grid resources
-
 /////////////////////////////////////////////////////////////////////////////
 #endif    // not APSTUDIO_INVOKED
 

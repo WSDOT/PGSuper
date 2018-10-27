@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2017  Washington State Department of Transportation
+// Copyright © 1999-2018  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -259,13 +259,10 @@ void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker, const std::vec
       }
 
       delta_tb = pProductForces->GetDeflection(railingSystemIntervalIdx, pgsTypes::pftTrafficBarrier, poi, bat, rtCumulative, false );
-      delta_sw = pProductForces->GetDeflection(railingSystemIntervalIdx, pgsTypes::pftTrafficBarrier, poi, bat, rtCumulative, false );
+      delta_sw = pProductForces->GetDeflection(railingSystemIntervalIdx, pgsTypes::pftSidewalk, poi, bat, rtCumulative, false );
 
-      Float64 delta_dcu = pProductForces->GetDeflection(castDeckIntervalIdx,pgsTypes::pftUserDC, poi, bat, rtCumulative, false);
-      delta_dcu        += pProductForces->GetDeflection(railingSystemIntervalIdx,pgsTypes::pftUserDC, poi, bat, rtCumulative, false);
-
-      Float64 delta_dwu = pProductForces->GetDeflection(castDeckIntervalIdx,pgsTypes::pftUserDW, poi, bat, rtCumulative, false);
-      delta_dwu        += pProductForces->GetDeflection(railingSystemIntervalIdx,pgsTypes::pftUserDW, poi, bat, rtCumulative, false);
+      Float64 delta_dcu = pProductForces->GetDeflection(railingSystemIntervalIdx,pgsTypes::pftUserDC, poi, bat, rtCumulative, false);
+      Float64 delta_dwu = pProductForces->GetDeflection(railingSystemIntervalIdx,pgsTypes::pftUserDW, poi, bat, rtCumulative, false);
 
       pProductForces->GetLiveLoadDeflection(liveLoadIntervalIdx, pgsTypes::lltDesign, poi, bat, true, false, &delta_ll, &temp );
 

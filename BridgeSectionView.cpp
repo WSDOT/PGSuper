@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2017  Washington State Department of Transportation
+// Copyright © 1999-2018  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -882,12 +882,13 @@ void CBridgeSectionView::BuildGirderDisplayObjects()
 
          Float64 skew = dirSegment - dirAlignmentAtCut;
 
-         Float64 cutOffset = offset - (offset / cos(skew));
+         Float64 correctedOffset = offset / cos(skew); // this is where the section is located in the coordinate system for our cut
+         Float64 shapeOffset = correctedOffset - offset; // this is the amount we need to change offset so that the shape is located at corrected offset
 
-         if (!IsZero(cutOffset))
+         if (!IsZero(shapeOffset))
          {
             CComQIPtr<IXYPosition> position(shape);
-            position->Offset(cutOffset, 0);
+            position->Offset(shapeOffset, 0);
          }
 
          Float64 shear = 0;

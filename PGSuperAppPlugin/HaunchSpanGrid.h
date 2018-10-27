@@ -41,18 +41,19 @@ typedef std::vector<SlabOffsetBearingData> SlabOffsetBearingDataVec;
 typedef SlabOffsetBearingDataVec::iterator SlabOffsetBearingDataIter;
 typedef SlabOffsetBearingDataVec::const_iterator SlabOffsetBearingDataConstIter;
 
-// Local data structures for Fillet at spans
-typedef struct FilletSpanData
+// Local data structures for Assumed Excess Camber at spans
+typedef struct AssExcessCamberSpanData
 {
-   std::vector< Float64 > m_FilletsForGirders; // fillet for each girder at in span if FilletType is fttGirder,
-                                          // If fttSpan value for all girders is in slot[0]
+   std::vector< Float64 > m_AssExcessCambersForGirders; // Assumed Excess Camber for each girder at in span if 
+                                          // AssExcessCamberType is aecGirder,
+                                          // If aecSpan value for all girders is in slot[0]
 
    SpanIndexType  m_SpanIndex;
-} FilletSpanData;
+} AssExcessCamberSpanData;
 
-typedef std::vector<FilletSpanData> FilletSpanDataVec;
-typedef FilletSpanDataVec::iterator FilletSpanDataIter;
-typedef FilletSpanDataVec::const_iterator FilletSpanDataConstIter;
+typedef std::vector<AssExcessCamberSpanData> AssExcessCamberSpanDataVec;
+typedef AssExcessCamberSpanDataVec::iterator AssExcessCamberSpanDataIter;
+typedef AssExcessCamberSpanDataVec::const_iterator AssExcessCamberSpanDataConstIter;
 
 
 class HaunchInputData
@@ -65,12 +66,12 @@ public:
    Float64 m_SingleSlabOffset;
    SlabOffsetBearingDataVec m_BearingsSlabOffset; // for both sotPier and sotGirder. if sotPier, A is in m_AsForGirders[0]
 
-   // Fillets
-   pgsTypes::FilletType m_FilletType;
+   // Assumed Excess Cambers
+   pgsTypes::AssExcessCamberType m_AssExcessCamberType;
 
    // Different Data for each layout type
-   Float64 m_SingleFillet;
-   FilletSpanDataVec m_FilletSpans; // for both fttSpan and fttGirder. if span, val is in m_AsForGirders[0]
+   Float64 m_SingleAssExcessCamber;
+   AssExcessCamberSpanDataVec m_AssExcessCamberSpans; // for both aecSpan and aecGirder. if span, val is in m_AsForGirders[0]
 
    // General
    GirderIndexType m_MaxGirdersPerSpan;

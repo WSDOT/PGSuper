@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2017  Washington State Department of Transportation
+// Copyright © 1999-2018  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -299,7 +299,7 @@ END_MESSAGE_MAP()
 // CPGSDocBase construction/destruction
 
 CPGSDocBase::CPGSDocBase():
-m_DesignSlabOffset(sodAandFillet),
+m_DesignSlabOffset(sodAandAssExcessCamber),
 m_bAutoCalcEnabled(true)
 {
 	EnableAutomation();

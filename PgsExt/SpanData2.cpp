@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2017  Washington State Department of Transportation
+// Copyright © 1999-2018  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -152,9 +152,9 @@ bool CSpanData2::operator==(const CSpanData2& rOther) const
       }
    }
 
-   if ( m_pBridgeDesc->GetFilletType() != pgsTypes::fttBridge )
+   if ( m_pBridgeDesc->GetAssExcessCamberType() != pgsTypes::aecBridge )
    {
-      if (m_Fillets != rOther.m_Fillets)
+      if (m_AssExcessCambers != rOther.m_AssExcessCambers)
       {
          return false;
       }
@@ -335,25 +335,53 @@ HRESULT CSpanData2::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
 
       if (2 < version)
       {
-         if (m_pBridgeDesc->GetFilletType() != pgsTypes::fttBridge)
+         if (3 < version)
          {
-            pStrLoad->BeginUnit(_T("Fillets"));
-            Float64 fillet_version;
-            pStrLoad->get_Version(&fillet_version);
-
-            var.vt = VT_INDEX;
-            hr = pStrLoad->get_Property(_T("nFGirders"),&var);
-            IndexType ng = VARIANT2INDEX(var);
-
-            var.vt = VT_R8;
-            m_Fillets.clear();
-            for (IndexType ig=0; ig<ng; ig++)
+            if (m_pBridgeDesc->GetAssExcessCamberType() != pgsTypes::aecBridge)
             {
-               hr = pStrLoad->get_Property(_T("Fillet"),&var);
-               m_Fillets.push_back(var.dblVal);
-            }
+               pStrLoad->BeginUnit(_T("AssExcessCambers"));
+               Float64 AssExcessCamber_version;
+               pStrLoad->get_Version(&AssExcessCamber_version);
 
-            pStrLoad->EndUnit(); // Fillets
+               var.vt = VT_INDEX;
+               hr = pStrLoad->get_Property(_T("nFGirders"), &var);
+               IndexType ng = VARIANT2INDEX(var);
+
+               var.vt = VT_R8;
+               m_AssExcessCambers.clear();
+               for (IndexType ig = 0; ig < ng; ig++)
+               {
+                  hr = pStrLoad->get_Property(_T("AssExcessCamber"), &var);
+                  m_AssExcessCambers.push_back(var.dblVal);
+               }
+
+               pStrLoad->EndUnit(); // AssExcessCambers
+            }
+         }
+         else
+         {
+            // version == 3
+            // Ugly stuff here: in version 3.1 of pgsuper, fillets could be per-girder. This was revoked in 3.1.4
+            // We have be able to read this, and get the max value to set to the whole bridge here.
+            if (m_pBridgeDesc->m_bWasVersion3_1FilletRead)
+            {
+               pStrLoad->BeginUnit(_T("Fillets"));
+
+               var.vt = VT_INDEX;
+               hr = pStrLoad->get_Property(_T("nFGirders"), &var);
+               IndexType ng = VARIANT2INDEX(var);
+
+               var.vt = VT_R8;
+               Float64 max_fillet = 0.0;
+               for (IndexType ig = 0; ig < ng; ig++)
+               {
+                  hr = pStrLoad->get_Property(_T("Fillet"), &var);
+                  max_fillet = max(max_fillet, var.dblVal);
+               }
+               pStrLoad->EndUnit(); // Fillets
+
+               m_pBridgeDesc->m_Fillet = max(m_pBridgeDesc->m_Fillet, max_fillet);
+            }
          }
       }
 
@@ -372,7 +400,7 @@ HRESULT CSpanData2::Save(IStructuredSave* pStrSave,IProgress* pProgress)
 {
    HRESULT hr = S_OK;
 
-   pStrSave->BeginUnit(_T("SpanDataDetails"),3.0);
+   pStrSave->BeginUnit(_T("SpanDataDetails"),4.0);
 
    if ( m_pBridgeDesc->GetDistributionFactorMethod() == pgsTypes::DirectlyInput )
    {
@@ -397,19 +425,27 @@ HRESULT CSpanData2::Save(IStructuredSave* pStrSave,IProgress* pProgress)
       pStrSave->EndUnit(); // LLDF
    }
 
-   if ( m_pBridgeDesc->GetFilletType() != pgsTypes::fttBridge )
+   // Assummed excess camber was added in version 4
+   if ( m_pBridgeDesc->GetAssExcessCamberType() != pgsTypes::aecBridge )
    {
-      pStrSave->BeginUnit(_T("Fillets"),1.0);
-      GirderIndexType ngs = GetGirderCount();
+      pStrSave->BeginUnit(_T("AssExcessCambers"),1.0);
+
+      // don't save camber data for no deck bridges
+      GirderIndexType ngs = 0;
+      if (m_pBridgeDesc->GetDeckDescription()->GetDeckType() != pgsTypes::sdtNone)
+      {
+         ngs = GetGirderCount();
+      }
+
       pStrSave->put_Property(_T("nFGirders"),CComVariant(ngs));
 
       for (GirderIndexType igs=0; igs<ngs; igs++)
       {
-         Float64 filval = this->GetFillet(igs);
-         pStrSave->put_Property(_T("Fillet"),CComVariant(filval));
+         Float64 filval = this->GetAssExcessCamber(igs);
+         pStrSave->put_Property(_T("AssExcessCamber"),CComVariant(filval));
       }
 
-      pStrSave->EndUnit(); // Fillets
+      pStrSave->EndUnit(); // AssExcessCambers
    }
 
 
@@ -427,7 +463,7 @@ void CSpanData2::MakeCopy(const CSpanData2& rOther,bool bCopyDataOnly)
 
    m_LLDFs   = rOther.m_LLDFs;
 
-   m_Fillets = rOther.m_Fillets;
+   m_AssExcessCambers = rOther.m_AssExcessCambers;
 
    PGS_ASSERT_VALID;
 }
@@ -437,89 +473,89 @@ void CSpanData2::MakeAssignment(const CSpanData2& rOther)
    MakeCopy( rOther, false /*copy everything*/ );
 }
 
-void CSpanData2::SetFillet(Float64 fillet)
+void CSpanData2::SetAssExcessCamber(Float64 AssExcessCamber)
 {
    GirderIndexType nGirders = GetGirderCount();
-   m_Fillets.assign(nGirders, fillet);
+   m_AssExcessCambers.assign(nGirders, AssExcessCamber);
 }
 
-void CSpanData2::SetFillet(GirderIndexType gdrIdx,Float64 fillet)
+void CSpanData2::SetAssExcessCamber(GirderIndexType gdrIdx,Float64 AssExcessCamber)
 {
-   ProtectFillet();
-   ATLASSERT(gdrIdx < m_Fillets.size());
+   ProtectAssExcessCamber();
+   ATLASSERT(gdrIdx < m_AssExcessCambers.size());
 
-   m_Fillets[gdrIdx] = fillet;
+   m_AssExcessCambers[gdrIdx] = AssExcessCamber;
 }
 
-Float64 CSpanData2::GetFillet(GirderIndexType gdrIdx,bool bGetRawValue) const
+Float64 CSpanData2::GetAssExcessCamber(GirderIndexType gdrIdx,bool bGetRawValue) const
 {
    if (bGetRawValue)
    {
-      ProtectFillet();
-      ATLASSERT(gdrIdx < m_Fillets.size());
-      return m_Fillets[gdrIdx];
+      ProtectAssExcessCamber();
+      ATLASSERT(gdrIdx < m_AssExcessCambers.size());
+      return m_AssExcessCambers[gdrIdx];
    }
    else
    {
-      pgsTypes::FilletType ftype = m_pBridgeDesc->GetFilletType();
-      if (ftype == pgsTypes::fttBridge)
+      pgsTypes::AssExcessCamberType ftype = m_pBridgeDesc->GetAssExcessCamberType();
+      if (ftype == pgsTypes::aecBridge)
       {
-         return m_pBridgeDesc->GetFillet();
+         return m_pBridgeDesc->GetAssExcessCamber();
       }
       else
       {
-         ProtectFillet();
-         ATLASSERT(gdrIdx < m_Fillets.size());
-         if (ftype == pgsTypes::fttSpan)
+         ProtectAssExcessCamber();
+         ATLASSERT(gdrIdx < m_AssExcessCambers.size());
+         if (ftype == pgsTypes::aecSpan)
          {
             // use front value for span values
-            return m_Fillets.front();
+            return m_AssExcessCambers.front();
          }
          else
          {
-            return m_Fillets[gdrIdx];
+            return m_AssExcessCambers[gdrIdx];
          }
       }
    }
 }
 
-void CSpanData2::CopyFillet(GirderIndexType sourceGdrIdx, GirderIndexType targetGdrIdx)
+void CSpanData2::CopyAssExcessCamber(GirderIndexType sourceGdrIdx, GirderIndexType targetGdrIdx)
 {
-   ProtectFillet();
-   ATLASSERT(sourceGdrIdx < m_Fillets.size() && targetGdrIdx < m_Fillets.size());
+   ProtectAssExcessCamber();
+   ATLASSERT(sourceGdrIdx < m_AssExcessCambers.size() && targetGdrIdx < m_AssExcessCambers.size());
 
-   m_Fillets[targetGdrIdx] = m_Fillets[sourceGdrIdx];
+   m_AssExcessCambers[targetGdrIdx] = m_AssExcessCambers[sourceGdrIdx];
 }
 
-void CSpanData2::ProtectFillet() const
+void CSpanData2::ProtectAssExcessCamber() const
 {
    // First: Compare size of our collection with current number of girders and resize if they don't match
    GirderIndexType nGirders = GetGirderCount();
-   IndexType nFlts = m_Fillets.size();
+   IndexType nFlts = m_AssExcessCambers.size();
 
    if (nFlts == 0)
    {
-      // probably switched from fttBridge. Get fillet value from bridge and assign as a default
-      Float64 defVal = m_pBridgeDesc->GetFillet();
+      // probably switched from aecBridge. Get AssExcessCamber value from bridge and assign as a default
+      Float64 defVal = m_pBridgeDesc->GetAssExcessCamber();
       defVal = Max(0.0, defVal);
 
-      m_Fillets.assign(nGirders,defVal);
+      m_AssExcessCambers.assign(nGirders,defVal);
    }
    else if (nFlts < nGirders)
    {
       // More girders than data - use back value for remaining girders
-      Float64 back = m_Fillets.back();
+      Float64 back = m_AssExcessCambers.back();
 
-      m_Fillets.resize(nGirders); // performance
+      m_AssExcessCambers.resize(nGirders); // performance
       for (IndexType i = nFlts; i < nGirders; i++)
       {
-         m_Fillets.push_back(back);
+         m_AssExcessCambers.push_back(back);
       }
     }
    else if (nGirders < nFlts)
    {
-      // more fillets than girders - truncate
-      m_Fillets.resize(nGirders);
+      // more AssExcessCambers than girders - truncate
+      m_AssExcessCambers.resize(nGirders);
    }
 }
 

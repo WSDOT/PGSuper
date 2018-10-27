@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2017  Washington State Department of Transportation
+// Copyright © 1999-2018  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -165,7 +165,7 @@ private:
    CSegmentModelData BuildSegmentModel(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx,Float64 leftSupportDistance,Float64 rightSupportDistance,PoiAttributeType refAttribute);
    PoiIDType AddPointOfInterest(SegmentModels& models,const pgsPointOfInterest& poi);
 
-   void ApplyPretensionLoad(CSegmentModelData* pModelData,const CSegmentKey& segmentKey);
+   void ApplyPretensionLoad(CSegmentModelData* pModelData,const CSegmentKey& segmentKey,IntervalIndexType intervalIdx);
 
    CSegmentModelData* GetModelData(SegmentModels& models,const CSegmentKey& segmentKey);
 

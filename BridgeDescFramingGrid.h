@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2017  Washington State Department of Transportation
+// Copyright © 1999-2018  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -56,6 +56,7 @@ public:
 
 // Implementation
 public:
+   SpanIndexType GetSelectedSpan();
    PierIndexType GetSelectedPier();
    PierIndexType GetPierCount();
 
@@ -116,6 +117,8 @@ private:
 
    ROWCOL GetPierRow(PierIndexType pierIdx);
    PierIndexType GetPierIndex(ROWCOL nRow);
+
+   SpanIndexType GetSpanIndex(ROWCOL nRow);
 
    ROWCOL GetTemporarySupportRow(SupportIndexType tsIdx);
    SupportIndexType GetTemporarySupportIndex(ROWCOL nRow);

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2017  Washington State Department of Transportation
+// Copyright © 1999-2018  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -816,7 +816,7 @@ void CGirderModelChildFrame::OnUpdateDesignGirderDirectHoldSlabOffset(CCmdUI* pC
 void CGirderModelChildFrame::OnDesignGirderDirect()
 {
    CPGSuperDoc* pDoc = (CPGSuperDoc*)EAFGetDocument();
-   pDoc->DesignGirder(false,sodAOnly,m_GirderKey);
+   pDoc->DesignGirder(false,sodAandAssExcessCamber,m_GirderKey);
 }
 
 void CGirderModelChildFrame::OnDesignGirderDirectHoldSlabOffset()

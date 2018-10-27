@@ -1,4 +1,4 @@
-General {#ug_dialogs_girder_details_general}
+General {#ug_dialogs_spliced_girder_general}
 ==============================================
 Define the details of a spliced girder.
 

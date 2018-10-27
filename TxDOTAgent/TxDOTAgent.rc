@@ -17,13 +17,11 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// English (U.S.) resources
+// English (United States) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
-#ifdef _WIN32
 LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 #pragma code_page(1252)
-#endif //_WIN32
 
 #ifdef APSTUDIO_INVOKED
 /////////////////////////////////////////////////////////////////////////////
@@ -60,8 +58,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 3,1,3,1
- PRODUCTVERSION 3,1,3,1
+ FILEVERSION 3,1,4,0
+ PRODUCTVERSION 3,1,4,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -79,12 +77,12 @@ BEGIN
             VALUE "Comments", "A member of the Alternate Route Project"
             VALUE "CompanyName", "Washington State Department of Transportation"
             VALUE "FileDescription", "TxDOTAgent Module"
-            VALUE "FileVersion", "3.1.3.1"
+            VALUE "FileVersion", "3.1.4.0"
             VALUE "InternalName", "TOGA"
-            VALUE "LegalCopyright", "Copyright © 1999-2017, Washington State Department of Transportation, All Rights Reserved"
+            VALUE "LegalCopyright", "Copyright © 1999-2018, Washington State Department of Transportation, All Rights Reserved"
             VALUE "OriginalFilename", "PGSuperTxDOTAgent.DLL"
             VALUE "ProductName", "PGSuper"
-            VALUE "ProductVersion", "3.1.3.1"
+            VALUE "ProductVersion", "3.1.4.0"
         END
     END
     BLOCK "VarFileInfo"
@@ -100,10 +98,17 @@ END
 //
 
 IDR_TXDOTAGENT          REGISTRY                "TxDOTAgent.rgs"
+
 IDR_TXDOTAGENTIMP       REGISTRY                "TxDOTAgentImp.rgs"
+
 IDR_TXDOTCADEXPORTER    REGISTRY                "TxDOTCadExporter.rgs"
+
 IDR_TXDOTAPPPLUGIN      REGISTRY                "TxDOTAppPlugin.rgs"
+
 IDR_TXDOTCOMPONENTINFO  REGISTRY                "TxDOTComponentInfo.rgs"
+
+IDR_TXDOTAPPPLUGINCOMPONENTINFO REGISTRY                "TxDOTAppPluginComponentInfo.rgs"
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -293,7 +298,7 @@ BEGIN
     LTEXT           "No. Strands = ??",IDC_END_NO_STRANDS,141,148,85,16
 END
 
-IDD_SECTION_CUT_DIALOG_EX DIALOG  0, 0, 194, 152
+IDD_SECTION_CUT_DIALOG_EX DIALOG 0, 0, 194, 152
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION
 CAPTION "Section Cut Location"
 FONT 8, "MS Sans Serif"
@@ -313,7 +318,7 @@ BEGIN
     PUSHBUTTON      "Help",ID_HELP,124,131,50,14
 END
 
-IDD_GIRDER_EDITOR_SECTION_PAGE DIALOG  0, 0, 143, 85
+IDD_GIRDER_EDITOR_SECTION_PAGE DIALOG 0, 0, 143, 85
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION
 CAPTION "Section View"
 FONT 8, "MS Sans Serif"
@@ -389,12 +394,13 @@ END
 // remains consistent on all systems.
 IDR_TXDOTOPTIONALDESIGN ICON                    "res\\txdot.ico"
 
+
 /////////////////////////////////////////////////////////////////////////////
 //
 // Menu
 //
 
-IDR_TXDOTOPTIONALDESIGN MENU 
+IDR_TXDOTOPTIONALDESIGN MENU
 BEGIN
     POPUP "&File"
     BEGIN
@@ -430,7 +436,7 @@ BEGIN
     END
 END
 
-IDR_GIRDER_VIEW_CTX MENU 
+IDR_GIRDER_VIEW_CTX MENU
 BEGIN
     POPUP "Girder Section"
     BEGIN
@@ -453,7 +459,7 @@ END
 //
 
 #ifdef APSTUDIO_INVOKED
-GUIDELINES DESIGNINFO 
+GUIDELINES DESIGNINFO
 BEGIN
     IDD_EXPORT_TXDOTCADDATA, DIALOG
     BEGIN
@@ -577,7 +583,7 @@ END
 // Toolbar
 //
 
-IDR_TXDOTOPTIONALDESIGNTOOLBAR TOOLBAR  16, 15
+IDR_TXDOTOPTIONALDESIGNTOOLBAR TOOLBAR 16, 15
 BEGIN
     BUTTON      ID_FILE_NEW
     BUTTON      ID_FILE_OPEN
@@ -593,6 +599,7 @@ END
 //
 
 IDR_TXDOTOPTIONALDESIGNTOOLBAR BITMAP                  "res\\toolbar1.bmp"
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -634,7 +641,7 @@ END
 // String Table
 //
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDS_PROJNAME            "TOGA"
     IDS_TEMPLATE_SUFFIX     "togt"
@@ -642,18 +649,18 @@ BEGIN
     IDR_TXDOTOPTIONALDESIGN "\n\nTxDOT Optional Girder Analysis\nTxDOT Optional Girder Analysis File (*.toga)\n.toga\nTxDOTOptionalDesign.Document\nTxDOT Optional Girder Analysis File"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDS_E_BADINSTALL        "There is an error with the %1 installation.  Please re-install the program."
     IDS_E_PROBPERSISTS      "Contact your technical support representitive if this problem persists.\n Please include your project file and the %1 file found in the program directory."
     IDS_PROJCRIT_ERROR      "\nThe Project Criteria library entry with the name ""%s"" that was originally selected and saved in this TOGA project file does not exist in the current PGSuper Master Library.\n\nPlease select a valid Project Criteria entry from the list below, or close this project and configure PGSuper to use another Master Library (i.e., TxDOT's)."
-    IDS_E_INVALIDFORMAT     "%1 is not a valid PGSuper project file."
+    IDS_E_INVALIDFORMAT     "%1 is not a valid TOGA project file."
     IDS_E_FILENOTFOUND      "File %1 was not found"
     IDS_E_READ              "An error has occured while reading %1"
     IDS_E_FORMAT            "%1\n\n %2"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDS_E_INVALIDVERSION    "The file %1 came from a newer version of PGSuper. You must upgrade in order to read it."
     IDS_E_USERDEFINED       "An unknown error occured while reading %1"
@@ -662,12 +669,12 @@ BEGIN
     IDS_GDR_ERROR3          "The girder: ""%s"" has Adjustable Straight strands in the web. TOGA only allows Harped strands.\nAnalyis cannot continue."
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     ID_FILE_PRINT           "Print current page"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     ID_FILE_MRU_FILE1       "Open this project"
     ID_FILE_MRU_FILE2       "Open this document"
@@ -687,7 +694,7 @@ BEGIN
     ID_FILE_MRU_FILE16      "Open this document"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     ID_FILE_SAVEAS          "Save current document to a new file"
     ID_FILE_EXPORTPGSUPERMODEL 
@@ -696,27 +703,27 @@ BEGIN
     ID_VIEW_SECTIONCUTLOCATION "Move section cut location in Girder View"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     ID_VIEW_GIRDERVIEWSETTINGS "Change display settings in Girder View"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     ID_VIEW_TOOLBAR         "Show or hide toolbars"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     ID_HELP_FINDER          "Open help"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDS_E_NOGIRDERS         "Please select at least one girder for the report."
 END
 
-#endif    // English (U.S.) resources
+#endif    // English (United States) resources
 /////////////////////////////////////////////////////////////////////////////
 
 

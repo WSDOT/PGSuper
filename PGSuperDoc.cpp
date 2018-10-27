@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2017  Washington State Department of Transportation
+// Copyright © 1999-2018  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -217,8 +217,8 @@ bool CPGSuperDoc::EditGirderSegmentDescription(const CSegmentKey& segmentKey,int
       newGirderData.m_SlabOffset[pgsTypes::metStart] = dlg.m_General.m_SlabOffset[pgsTypes::metStart];
       newGirderData.m_SlabOffset[pgsTypes::metEnd]   = dlg.m_General.m_SlabOffset[pgsTypes::metEnd];
 
-      newGirderData.m_FilletType = dlg.m_General.m_FilletType;
-      newGirderData.m_Fillet = dlg.m_General.m_Fillet;
+      newGirderData.m_AssExcessCamberType = dlg.m_General.m_AssExcessCamberType;
+      newGirderData.m_AssExcessCamber = dlg.m_General.m_AssExcessCamber;
 
       newGirderData.m_strGirderName = dlg.m_strGirderName;
 
@@ -376,7 +376,7 @@ void CPGSuperDoc::OnProjectAnalysis()
 
 void CPGSuperDoc::OnProjectDesignGirderDirect()
 {
-   DesignGirder(false,sodAandFillet,CGirderKey(m_Selection.GroupIdx,m_Selection.GirderIdx));
+   DesignGirder(false,sodAandAssExcessCamber,CGirderKey(m_Selection.GroupIdx,m_Selection.GirderIdx));
 }
 
 void CPGSuperDoc::OnProjectDesignGirderDirectHoldSlabOffset()

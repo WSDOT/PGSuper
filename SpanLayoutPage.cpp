@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2017  Washington State Department of Transportation
+// Copyright © 1999-2018  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -33,6 +33,7 @@
 
 #include <EAF\EAFDisplayUnits.h>
 #include <MFCTools\CustomDDX.h>
+#include <IFace\Project.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -59,6 +60,10 @@ CSpanLayoutPage::~CSpanLayoutPage()
 
 void CSpanLayoutPage::DoDataExchange(CDataExchange* pDX)
 {
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+
 	CPropertyPage::DoDataExchange(pDX);
 	//{{AFX_DATA_MAP(CSpanLayoutPage)
 		// NOTE: the ClassWizard will add DDX and DDV calls here
@@ -68,11 +73,12 @@ void CSpanLayoutPage::DoDataExchange(CDataExchange* pDX)
 
    DDX_Control(pDX, IDC_START_SLAB_OFFSET, m_ctrlStartSlabOffset);
    DDX_Control(pDX, IDC_END_SLAB_OFFSET,   m_ctrlEndSlabOffset);
-   DDX_Control(pDX, IDC_FILLET, m_ctrlFillet);
+   DDX_Control(pDX, IDC_ASSEXCESSCAMBER, m_ctrlAssExcessCamber);
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   // display units no matter what
+   DDX_Tag( pDX, IDC_ASSEXCESSCAMBER_UNIT,pDisplayUnits->GetComponentDimUnit() );
+
+
    INIT_UV_PROTOTYPE( rptLengthUnitValue,  cmpdim,  pDisplayUnits->GetComponentDimUnit(), true );
 
    DDX_UnitValueAndTag(pDX,IDC_SPAN_LENGTH,IDC_SPAN_LENGTH_UNIT,m_SpanLength,pDisplayUnits->GetSpanLengthUnit());
@@ -85,12 +91,15 @@ void CSpanLayoutPage::DoDataExchange(CDataExchange* pDX)
    Float64 slabOffset[2] = {pStartGroup->GetSlabOffset(startPierIdx,0,m_InitialSlabOffsetType == pgsTypes::sotGirder ? true : false),
                             pEndGroup->GetSlabOffset(endPierIdx,0,m_InitialSlabOffsetType == pgsTypes::sotGirder ? true : false)};
 
-   Float64 fillet = pParent->m_pSpanData->GetFillet(0);
-
    DDX_UnitValueAndTag(pDX,IDC_START_SLAB_OFFSET,IDC_START_SLAB_OFFSET_UNIT,slabOffset[pgsTypes::metStart],pDisplayUnits->GetComponentDimUnit());
    DDX_UnitValueAndTag(pDX,IDC_END_SLAB_OFFSET,  IDC_END_SLAB_OFFSET_UNIT,  slabOffset[pgsTypes::metEnd],  pDisplayUnits->GetComponentDimUnit());
 
-   DDX_UnitValueAndTag(pDX,IDC_FILLET,  IDC_FILLET_UNIT,  fillet,  pDisplayUnits->GetComponentDimUnit());
+   Float64 AssExcessCamber = 0;
+   if (m_bCanAssExcessCamberInputBeEnabled)
+   {
+      AssExcessCamber = pParent->m_pSpanData->GetAssExcessCamber(0);
+      DDX_UnitValueAndTag(pDX, IDC_ASSEXCESSCAMBER, IDC_ASSEXCESSCAMBER_UNIT, AssExcessCamber, pDisplayUnits->GetComponentDimUnit());
+   }
 
    bool bHasCantilever[2] = { false,false };
    Float64 cantileverLength[2] = { 0.0,0.0 };
@@ -122,9 +131,9 @@ void CSpanLayoutPage::DoDataExchange(CDataExchange* pDX)
    {
       pParent->m_BridgeDesc.SetSpanLength(pParent->m_pSpanData->GetIndex(),m_SpanLength);
 
-      if (pParent->m_BridgeDesc.GetDeckDescription()->GetDeckType() != pgsTypes::sdtNone )
+      if (pParent->m_BridgeDesc.GetDeckDescription()->GetDeckType() != pgsTypes::sdtNone)
       {
-         Float64 minA  = pParent->m_BridgeDesc.GetDeckDescription()->GrossDepth;
+         Float64 minA = pParent->m_BridgeDesc.GetDeckDescription()->GrossDepth;
          if (pParent->m_BridgeDesc.GetDeckDescription()->GetDeckType() == pgsTypes::sdtCompositeSIP)
          {
             minA += pParent->m_BridgeDesc.GetDeckDescription()->PanelDepth;
@@ -132,7 +141,7 @@ void CSpanLayoutPage::DoDataExchange(CDataExchange* pDX)
 
          cmpdim.SetValue(minA);
          CString strMinValError;
-         strMinValError.Format(_T("Slab Offset value must be greater or equal to gross slab depth (%.4f %s)"), cmpdim.GetValue(true), cmpdim.GetUnitTag().c_str() );
+         strMinValError.Format(_T("Slab Offset value must be greater or equal to gross slab depth (%.4f %s)"), cmpdim.GetValue(true), cmpdim.GetUnitTag().c_str());
 
          if (slabOffset[pgsTypes::metStart] < minA)
          {
@@ -141,7 +150,7 @@ void CSpanLayoutPage::DoDataExchange(CDataExchange* pDX)
             pDX->Fail();
          }
 
-         if ( pParent->m_BridgeDesc.GetSlabOffsetType() == pgsTypes::sotPier && slabOffset[pgsTypes::metEnd] < minA)
+         if (pParent->m_BridgeDesc.GetSlabOffsetType() == pgsTypes::sotPier && slabOffset[pgsTypes::metEnd] < minA)
          {
             pDX->PrepareCtrl(IDC_END_SLAB_OFFSET);
             AfxMessageBox(strMinValError);
@@ -149,50 +158,53 @@ void CSpanLayoutPage::DoDataExchange(CDataExchange* pDX)
          }
 
          // Slab offset
-         if ( pParent->m_BridgeDesc.GetSlabOffsetType()== pgsTypes::sotBridge )
+         if (pParent->m_BridgeDesc.GetSlabOffsetType() == pgsTypes::sotBridge)
          {
             pParent->m_BridgeDesc.SetSlabOffset(slabOffset[pgsTypes::metStart]);
          }
-         else if ( pParent->m_BridgeDesc.GetSlabOffsetType() == pgsTypes::sotPier )
+         else if (pParent->m_BridgeDesc.GetSlabOffsetType() == pgsTypes::sotPier)
          {
-            pStartGroup->SetSlabOffset(startPierIdx,slabOffset[pgsTypes::metStart]);
-            pEndGroup->SetSlabOffset(  endPierIdx,  slabOffset[pgsTypes::metEnd]);
+            pStartGroup->SetSlabOffset(startPierIdx, slabOffset[pgsTypes::metStart]);
+            pEndGroup->SetSlabOffset(endPierIdx, slabOffset[pgsTypes::metEnd]);
          }
          else
          {
-            if ( m_InitialSlabOffsetType != pgsTypes::sotGirder )
+            if (m_InitialSlabOffsetType != pgsTypes::sotGirder)
             {
                // Slab offset started off as Bridge or Pier and now it is Girder... this means the
                // slab offset applies to all girders in the Span
                CGirderGroupData* pGroup = pParent->m_BridgeDesc.GetGirderGroup(pParent->m_pSpanData);
                GirderIndexType nGirders = pGroup->GetGirderCount();
-               for ( PierIndexType pierIdx = m_PrevPierIdx; pierIdx <= m_NextPierIdx; pierIdx++ )
+               for (PierIndexType pierIdx = m_PrevPierIdx; pierIdx <= m_NextPierIdx; pierIdx++)
                {
-                  for ( GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++ )
+                  for (GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++)
                   {
-                     pGroup->SetSlabOffset(pierIdx,gdrIdx,slabOffset[pgsTypes::metStart]);
+                     pGroup->SetSlabOffset(pierIdx, gdrIdx, slabOffset[pgsTypes::metStart]);
                   }
                }
             }
          }
 
-         // Slab offset
-         if ( pParent->m_BridgeDesc.GetFilletType()== pgsTypes::fttBridge )
+         // excess camber
+         if (m_bCanAssExcessCamberInputBeEnabled)
          {
-            pParent->m_BridgeDesc.SetFillet(fillet);
-         }
-         else if ( pParent->m_BridgeDesc.GetFilletType() == pgsTypes::fttSpan )
-         {
-            pParent->m_pSpanData->SetFillet(fillet);
-         }
-         else
-         {
-            if ( m_InitialFilletType != pgsTypes::fttGirder )
+            if (pParent->m_BridgeDesc.GetAssExcessCamberType() == pgsTypes::aecBridge)
             {
-               GirderIndexType nGirders = pParent->m_pSpanData->GetGirderCount();
-               for ( GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++ )
+               pParent->m_BridgeDesc.SetAssExcessCamber(AssExcessCamber);
+            }
+            else if (pParent->m_BridgeDesc.GetAssExcessCamberType() == pgsTypes::aecSpan)
+            {
+               pParent->m_pSpanData->SetAssExcessCamber(AssExcessCamber);
+            }
+            else
+            {
+               if (m_InitialAssExcessCamberType != pgsTypes::aecGirder)
                {
-                  pParent->m_pSpanData->SetFillet(gdrIdx,fillet);
+                  GirderIndexType nGirders = pParent->m_pSpanData->GetGirderCount();
+                  for (GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++)
+                  {
+                     pParent->m_pSpanData->SetAssExcessCamber(gdrIdx, AssExcessCamber);
+                  }
                }
             }
          }
@@ -218,7 +230,7 @@ BEGIN_MESSAGE_MAP(CSpanLayoutPage, CPropertyPage)
 	//}}AFX_MSG_MAP
    ON_BN_CLICKED(IDC_START_CANTILEVER, &CSpanLayoutPage::OnBnClickedStartCantilever)
    ON_BN_CLICKED(IDC_END_CANTILEVER, &CSpanLayoutPage::OnBnClickedEndCantilever)
-   ON_CBN_SELCHANGE(IDC_FILLET_COMBO, &CSpanLayoutPage::OnCbnSelchangeFilletCombo)
+   ON_CBN_SELCHANGE(IDC_ASSEXCESSCAMBER_COMBO, &CSpanLayoutPage::OnCbnSelchangeAssExcessCamberCombo)
    ON_CBN_SELCHANGE(IDC_SLABOFFSET_COMBO, &CSpanLayoutPage::OnChangeSlabOffset)
 END_MESSAGE_MAP()
 
@@ -228,7 +240,7 @@ void CSpanLayoutPage::Init(CSpanDetailsDlg* pParent)
 {
    m_SpanLength = pParent->m_pSpanData->GetSpanLength();
    m_InitialSlabOffsetType = pParent->m_BridgeDesc.GetSlabOffsetType();
-   m_InitialFilletType = pParent->m_BridgeDesc.GetFilletType();
+   m_InitialAssExcessCamberType = pParent->m_BridgeDesc.GetAssExcessCamberType();
 }
 
 BOOL CSpanLayoutPage::OnInitDialog() 
@@ -249,15 +261,6 @@ BOOL CSpanLayoutPage::OnInitDialog()
       m_ctrlEndSlabOffset.ShowDefaultWhenDisabled(TRUE);
    }
 
-   if ( m_InitialFilletType == pgsTypes::fttGirder )
-   {
-      m_ctrlFillet.ShowDefaultWhenDisabled(FALSE);
-   }
-   else
-   {
-      m_ctrlFillet.ShowDefaultWhenDisabled(TRUE);
-   }
-
    CEAFDocument* pDoc = EAFGetDocument();
    if ( pDoc->IsKindOf(RUNTIME_CLASS(CPGSuperDoc)) )
    {
@@ -268,34 +271,59 @@ BOOL CSpanLayoutPage::OnInitDialog()
    {
       ShowCantilevers(FALSE,FALSE);
    }
+
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+   GET_IFACE2(pBroker,ISpecification, pSpec );
+
+   m_bCanAssExcessCamberInputBeEnabled = pSpec->IsAssExcessCamberInputEnabled();
    
    CPropertyPage::OnInitDialog();
 
-   pgsTypes::SupportedDeckType deckType = pParent->m_BridgeDesc.GetDeckDescription()->GetDeckType();
+   CComboBox* pAssExcessCamberCB = (CComboBox*)this->GetDlgItem(IDC_ASSEXCESSCAMBER_COMBO);
 
-   CComboBox* pFilletCB = (CComboBox*)this->GetDlgItem(IDC_FILLET_COMBO);
-   CComboBox* pSlabOffsetCB = (CComboBox*)this->GetDlgItem(IDC_SLABOFFSET_COMBO);
-   if (deckType != pgsTypes::sdtNone)
+   if (m_bCanAssExcessCamberInputBeEnabled)
    {
-      pgsTypes::FilletType FilletType = pParent->m_BridgeDesc.GetFilletType();
-      ATLASSERT(m_InitialFilletType==FilletType); // if this is not true, then 
-
-      if ( FilletType == pgsTypes::fttBridge ||  FilletType == pgsTypes::fttSpan )
+      if (m_InitialAssExcessCamberType == pgsTypes::aecGirder)
       {
-         pFilletCB->AddString(_T("The same fillet is used for the entire bridge"));
-         pFilletCB->AddString(_T("Fillet is defined span by span"));
-         pFilletCB->SetCurSel( FilletType == pgsTypes::fttBridge ? 0:1);
+         m_ctrlAssExcessCamber.ShowDefaultWhenDisabled(FALSE);
       }
-      else if ( FilletType == pgsTypes::fttGirder )
+      else
       {
-         pFilletCB->AddString(_T("A unique fillet is used for every girder"));
-         pFilletCB->AddString(_T("Fillet is defined span by span"));
-         pFilletCB->SetCurSel(0);
+         m_ctrlAssExcessCamber.ShowDefaultWhenDisabled(TRUE);
+      }
+
+      pgsTypes::AssExcessCamberType AssExcessCamberType = pParent->m_BridgeDesc.GetAssExcessCamberType();
+      ATLASSERT(m_InitialAssExcessCamberType == AssExcessCamberType); // if this is not true, then 
+
+      if (AssExcessCamberType == pgsTypes::aecBridge || AssExcessCamberType == pgsTypes::aecSpan)
+      {
+         pAssExcessCamberCB->AddString(_T("The same Assumed Excess Camber is used for the entire bridge"));
+         pAssExcessCamberCB->AddString(_T("Assumed Excess Camber is defined span by span"));
+         pAssExcessCamberCB->SetCurSel(AssExcessCamberType == pgsTypes::aecBridge ? 0 : 1);
+      }
+      else if (AssExcessCamberType == pgsTypes::aecGirder)
+      {
+         pAssExcessCamberCB->AddString(_T("A unique assumed excess camber is used for every girder"));
+         pAssExcessCamberCB->AddString(_T("Assumed Excess Camber is defined span by span"));
+         pAssExcessCamberCB->SetCurSel(0);
       }
       else
       {
          ATLASSERT(0);
       }
+   }
+   else
+   {
+      m_ctrlAssExcessCamber.EnableWindow(FALSE);
+      pAssExcessCamberCB->EnableWindow(FALSE);
+   }
+
+   CComboBox* pSlabOffsetCB = (CComboBox*)this->GetDlgItem(IDC_SLABOFFSET_COMBO);
+
+   pgsTypes::SupportedDeckType deckType = pParent->m_BridgeDesc.GetDeckDescription()->GetDeckType();
+   if (deckType != pgsTypes::sdtNone)
+   {
 
       pgsTypes::SlabOffsetType slabOffsetType = pParent->m_BridgeDesc.GetSlabOffsetType();
 
@@ -319,11 +347,9 @@ BOOL CSpanLayoutPage::OnInitDialog()
    else
    {
       pSlabOffsetCB->EnableWindow(FALSE);
-      m_ctrlFillet.EnableWindow(FALSE);
-
-      pFilletCB->EnableWindow(FALSE);
       m_ctrlStartSlabOffset.EnableWindow(FALSE);
       m_ctrlEndSlabOffset.EnableWindow(FALSE);
+      this->GetDlgItem(IDC_SLABOFFSET_LABEL)->EnableWindow(FALSE);
    }
 
    const CSpanData2* pPrevSpan = pParent->m_pSpanData->GetPrevPier()->GetPrevSpan();
@@ -346,7 +372,7 @@ BOOL CSpanLayoutPage::OnInitDialog()
 
    UpdateSlabOffsetWindowState();
 
-   UpdateFilletWindowState();
+   UpdateAssExcessCamberWindowState();
 
    OnBnClickedStartCantilever();
    OnBnClickedEndCantilever();
@@ -478,58 +504,70 @@ void CSpanLayoutPage::UpdateSlabOffsetWindowState()
    GetDlgItem(IDC_END)->EnableWindow(bEnable);
 }
 
-void CSpanLayoutPage::OnCbnSelchangeFilletCombo()
+void CSpanLayoutPage::OnCbnSelchangeAssExcessCamberCombo()
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
    CSpanDetailsDlg* pParent = (CSpanDetailsDlg*)GetParent();
-   pgsTypes::FilletType FilletType = pParent->m_BridgeDesc.GetFilletType();
+   pgsTypes::AssExcessCamberType AssExcessCamberType = pParent->m_BridgeDesc.GetAssExcessCamberType();
 
-   if ( m_InitialFilletType == pgsTypes::fttBridge || m_InitialFilletType == pgsTypes::fttSpan )
+   if ( m_InitialAssExcessCamberType == pgsTypes::aecBridge || m_InitialAssExcessCamberType == pgsTypes::aecSpan )
    {
-      // if slab offset was bridge or pier when the dialog was created, toggle between
-      // bridge and pier mode
-      if ( FilletType == pgsTypes::fttSpan )
+      // if camber was bridge or span when the dialog was created, toggle between
+      // bridge and span mode
+      if ( AssExcessCamberType == pgsTypes::aecSpan )
       {
-         pParent->m_BridgeDesc.SetFilletType(pgsTypes::fttBridge);
+         pParent->m_BridgeDesc.SetAssExcessCamberType(pgsTypes::aecBridge);
       }
       else
       {
-         pParent->m_BridgeDesc.SetFilletType(pgsTypes::fttSpan);
+         pParent->m_BridgeDesc.SetAssExcessCamberType(pgsTypes::aecSpan);
       }
    }
    else
    {
-      // if slab offset was girder when the dialog was created, toggle between
-      // girder and pier
-      if ( FilletType == pgsTypes::fttSpan )
+      // if camber was girder when the dialog was created, toggle between
+      // girder and span
+      if ( AssExcessCamberType == pgsTypes::aecSpan )
       {
          // going from pier to girder so both ends of girder are the same. default values can be shown
-         pParent->m_BridgeDesc.SetFilletType(pgsTypes::fttGirder);
-         m_ctrlFillet.ShowDefaultWhenDisabled(TRUE);
+         pParent->m_BridgeDesc.SetAssExcessCamberType(pgsTypes::aecGirder);
+         m_ctrlAssExcessCamber.ShowDefaultWhenDisabled(TRUE);
       }
       else
       {
-         pParent->m_BridgeDesc.SetFilletType(pgsTypes::fttSpan);
+         pParent->m_BridgeDesc.SetAssExcessCamberType(pgsTypes::aecSpan);
       }
    }
 
-   UpdateFilletWindowState();
+   UpdateAssExcessCamberWindowState();
 }
 
-void CSpanLayoutPage::UpdateFilletWindowState()
+void CSpanLayoutPage::UpdateAssExcessCamberWindowState()
 {
-   CSpanDetailsDlg* pParent = (CSpanDetailsDlg*)GetParent();
-   pgsTypes::FilletType FilletType = pParent->m_BridgeDesc.GetFilletType();
-
-   BOOL bEnable = TRUE;
-   if ( FilletType == pgsTypes::fttBridge || FilletType == pgsTypes::fttGirder )
+   if (m_bCanAssExcessCamberInputBeEnabled)
    {
-      bEnable = FALSE;
-   }
+      CSpanDetailsDlg* pParent = (CSpanDetailsDlg*)GetParent();
+      pgsTypes::AssExcessCamberType AssExcessCamberType = pParent->m_BridgeDesc.GetAssExcessCamberType();
 
-   m_ctrlFillet.EnableWindow(bEnable);
-   GetDlgItem(IDC_FILLET_UNIT)->EnableWindow(bEnable);
+      BOOL bEnable = TRUE;
+      if (AssExcessCamberType == pgsTypes::aecBridge || AssExcessCamberType == pgsTypes::aecGirder)
+      {
+         bEnable = FALSE;
+      }
+
+      m_ctrlAssExcessCamber.EnableWindow(bEnable);
+      GetDlgItem(IDC_ASSEXCESSCAMBER_UNIT)->EnableWindow(bEnable);
+      GetDlgItem(IDC_ASSEXCESSCAMBER_LABEL)->EnableWindow(bEnable);
+   }
+   else
+   {
+      GetDlgItem(IDC_ASSEXCESSCAMBER_COMBO)->EnableWindow(FALSE);
+      m_ctrlAssExcessCamber.EnableWindow(FALSE);
+      GetDlgItem(IDC_ASSEXCESSCAMBER_UNIT)->EnableWindow(FALSE);
+      GetDlgItem(IDC_ASSEXCESSCAMBER_LABEL2)->EnableWindow(FALSE);
+      GetDlgItem(IDC_ASSEXCESSCAMBER_LABEL)->EnableWindow(FALSE);
+   }
 }
 
 void CSpanLayoutPage::ShowCantilevers(BOOL bShowStart,BOOL bShowEnd)

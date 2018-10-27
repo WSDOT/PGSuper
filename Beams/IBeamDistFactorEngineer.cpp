@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2017  Washington State Department of Transportation
+// Copyright © 1999-2018  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -424,7 +424,6 @@ lrfdLiveLoadDistributionFactorBase* CIBeamDistFactorEngineer::GetLLDFParameters(
    GET_IFACE(IBridge,           pBridge);
    GET_IFACE(ILiveLoads,        pLiveLoads);
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
-   GET_IFACE(IPointOfInterest,  pPoi);
 
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    ATLASSERT( pBridgeDesc->GetDistributionFactorMethod() != pgsTypes::DirectlyInput );
@@ -451,11 +450,10 @@ lrfdLiveLoadDistributionFactorBase* CIBeamDistFactorEngineer::GetLLDFParameters(
 
    CSpanKey spanKey(span,gdrIdx);
 
-   // determine overhang and spacing base data
-   GetGirderSpacingAndOverhang(spanKey,dfType, plldf);
+   // determine overhang, spacing base data, and controlling poi
+   pgsPointOfInterest poi;
+   GetGirderSpacingAndOverhang(spanKey,dfType, plldf, &poi);
 
-   // get poi at controlling location
-   pgsPointOfInterest poi = pPoi->ConvertSpanPointToPoi(spanKey,plldf->ControllingLocation);
    const CSegmentKey& segmentKey(poi.GetSegmentKey());
 
    // Throws exception if fails requirement (no need to catch it)
@@ -645,7 +643,7 @@ void CIBeamDistFactorEngineer::ReportMoment(rptParagraph* pPara,IBEAM_LLDFDETAIL
 
          (*pPara) << Bold(_T("1 Loaded Lane: Spec Equations")) << rptNewLine;
          if ( df_method == LLDF_WSDOT )
-            (*pPara) << _T("Note: Using distribution factor for interior girder per BDM 3.9.4A.") << rptNewLine;
+            (*pPara) << _T("Note: Using distribution factor for interior girder per WSDOT BDM 3.9.3A.") << rptNewLine;
          else if ( df_method == LLDF_TXDOT )
             (*pPara) << _T("Note: Using distribution factor for interior girder per TxDOT Bridge Design Manual - LRFD") << rptNewLine;
 
@@ -659,7 +657,7 @@ void CIBeamDistFactorEngineer::ReportMoment(rptParagraph* pPara,IBEAM_LLDFDETAIL
          if (gM1.ControllingMethod & INTERIOR_OVERRIDE)
          {
             if ( df_method == LLDF_WSDOT )
-               (*pPara) << _T("Note: Using distribution factor for interior girder per BDM 3.9.4A.") << rptNewLine;
+               (*pPara) << _T("Note: Using distribution factor for interior girder per WSDOT BDM 3.9.3A.") << rptNewLine;
             else if ( df_method == LLDF_TXDOT )
                (*pPara) << _T("Note: Using distribution factor for interior girder per TxDOT Bridge Design Manual - LRFD") << rptNewLine;
          }
@@ -690,7 +688,7 @@ void CIBeamDistFactorEngineer::ReportMoment(rptParagraph* pPara,IBEAM_LLDFDETAIL
             {
                (*pPara) << Bold(_T("2+ Loaded Lanes: Spec Equations")) << rptNewLine;
                if ( df_method == LLDF_WSDOT )
-                  (*pPara) << _T("Note: Using distribution factor for interior girder per BDM 3.9.4A.") << rptNewLine;
+                  (*pPara) << _T("Note: Using distribution factor for interior girder per WSDOT BDM 3.9.3A.") << rptNewLine;
                else if ( df_method == LLDF_TXDOT )
                   (*pPara) << _T("Note: Using distribution factor for interior girder per TxDOT Bridge Design Manual - LRFD") << rptNewLine;
 
@@ -701,7 +699,7 @@ void CIBeamDistFactorEngineer::ReportMoment(rptParagraph* pPara,IBEAM_LLDFDETAIL
             {
                (*pPara) << Bold(_T("2+ Loaded Lanes: Spec Equations")) << rptNewLine;
                if ( df_method == LLDF_WSDOT )
-                  (*pPara) << _T("Note: Using distribution factor for interior girder per BDM 3.9.4A.") << rptNewLine;
+                  (*pPara) << _T("Note: Using distribution factor for interior girder per WSDOT BDM 3.9.3A.") << rptNewLine;
                else if ( df_method == LLDF_TXDOT )
                   (*pPara) << _T("Note: Using distribution factor for interior girder per TxDOT Bridge Design Manual - LRFD") << rptNewLine;
 
@@ -722,7 +720,7 @@ void CIBeamDistFactorEngineer::ReportMoment(rptParagraph* pPara,IBEAM_LLDFDETAIL
             if (gM2.ControllingMethod & INTERIOR_OVERRIDE)
             {
                if ( df_method == LLDF_WSDOT )
-                  (*pPara) << _T("Note: Using distribution factor for interior girder per BDM 3.9.4A.") << rptNewLine;
+                  (*pPara) << _T("Note: Using distribution factor for interior girder per WSDOT BDM 3.9.3A.") << rptNewLine;
                else if ( df_method == LLDF_TXDOT )
                   (*pPara) << _T("Note: Using distribution factor for interior girder per TxDOT Bridge Design Manual - LRFD") << rptNewLine;
             }
@@ -870,7 +868,7 @@ void CIBeamDistFactorEngineer::ReportShear(rptParagraph* pPara,IBEAM_LLDFDETAILS
          if (gV1.ControllingMethod & INTERIOR_OVERRIDE)
          {
             if ( df_method == LLDF_WSDOT )
-               (*pPara) << _T("Note: Using distribution factor for interior girder per BDM 3.9.4A.") << rptNewLine;
+               (*pPara) << _T("Note: Using distribution factor for interior girder per WSDOT BDM 3.9.3A.") << rptNewLine;
             else if ( df_method == LLDF_TXDOT )
                (*pPara) << _T("Note: Using distribution factor for interior girder per TxDOT Bridge Design Manual - LRFD") << rptNewLine;
          }
@@ -900,7 +898,7 @@ void CIBeamDistFactorEngineer::ReportShear(rptParagraph* pPara,IBEAM_LLDFDETAILS
             ATLASSERT( gV2.ControllingMethod & SPEC_EQN );
             (*pPara) << Bold(_T("2+ Loaded Lanes: Spec Equation")) << rptNewLine;
             if ( df_method == LLDF_WSDOT )
-               (*pPara) << _T("Note: Using distribution factor for interior girder per BDM 3.9.4A.") << rptNewLine;
+               (*pPara) << _T("Note: Using distribution factor for interior girder per WSDOT BDM 3.9.3A.") << rptNewLine;
                   else if ( df_method == LLDF_TXDOT )
                (*pPara) << _T("Note: Using distribution factor for interior girder per TxDOT Bridge Design Manual - LRFD") << rptNewLine;
 
@@ -919,7 +917,7 @@ void CIBeamDistFactorEngineer::ReportShear(rptParagraph* pPara,IBEAM_LLDFDETAILS
                ATLASSERT( gV2.ControllingMethod & INTERIOR_OVERRIDE);
                (*pPara) << Bold(_T("2+ Loaded Lanes: Spec Equation")) << rptNewLine;
                if ( df_method == LLDF_WSDOT )
-                  (*pPara) << _T("Note: Using distribution factor for interior girder per BDM 3.9.4A.") << rptNewLine;
+                  (*pPara) << _T("Note: Using distribution factor for interior girder per WSDOT BDM 3.9.3A.") << rptNewLine;
                   else if ( df_method == LLDF_TXDOT )
                   (*pPara) << _T("Note: Using distribution factor for interior girder per TxDOT Bridge Design Manual - LRFD") << rptNewLine;
 
@@ -937,7 +935,7 @@ void CIBeamDistFactorEngineer::ReportShear(rptParagraph* pPara,IBEAM_LLDFDETAILS
                if (gV2.ControllingMethod & INTERIOR_OVERRIDE)
                {
                   if ( df_method == LLDF_WSDOT )
-                     (*pPara) << _T("Note: Using distribution factor for interior girder per BDM 3.9.4A.") << rptNewLine;
+                     (*pPara) << _T("Note: Using distribution factor for interior girder per WSDOT BDM 3.9.3A.") << rptNewLine;
                   else if ( df_method == LLDF_TXDOT )
                      (*pPara) << _T("Note: Using distribution factor for interior girder per TxDOT Bridge Design Manual - LRFD") << rptNewLine;
                }
@@ -1057,7 +1055,7 @@ std::_tstring CIBeamDistFactorEngineer::GetComputationDescription(const CGirderK
 
    if ( lldfMethod == LLDF_WSDOT )
    {
-      descr += std::_tstring(_T("WSDOT Method per Bridge Design Manual Section 3.9.4A."));
+      descr += std::_tstring(_T("WSDOT Method per Bridge Design Manual Section 3.9.3A."));
    }
    else if ( lldfMethod == LLDF_TXDOT )
    {

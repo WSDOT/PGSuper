@@ -855,6 +855,7 @@
 #define IDC_DIST_TRAFFIC_BARRIER_BASIS  1442
 #define IDC_CF_TYPE                     1442
 #define IDC_NWC_NOTE                    1443
+#define IDC_HAUNCH_FACTOR               1443
 #define IDC_CHECK1                      1444
 #define IDC_ALWAYS_RATE                 1444
 #define IDC_IS_VARIABLE_AXLE_TRUCK      1444
@@ -871,6 +872,8 @@
 #define IDC_EXTEND_DECK_BARS            1445
 #define IDC_DESIGN_SPLITTING            1445
 #define IDC_DEBOND_DESIGN_CHECK         1445
+#define IDC_HAUNCH_TOLER_UNIT2          1445
+#define IDC_HAUNCH_FACTOR1              1445
 #define IDC_BRIDGE_LENGTH_UNITS         1446
 #define IDC_USER_OVERRIDE               1446
 #define IDC_ROUGHENED                   1446
@@ -1213,6 +1216,7 @@
 #define IDC_HAUNCH_TOLER_STATIC         1632
 #define IDC_STATIC_MULT7                1633
 #define IDC_DEBOND_CRITERIA_NOTE        1633
+#define IDC_HAUNCH_FACTOR2              1633
 #define IDC_MAX_LENGTH_FRACTION_UNIT    1634
 #define IDC_MIN_DISTANCE_LABEL          1635
 #define IDS_E_BADINSTALL                1636
@@ -1302,7 +1306,7 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
-#define _APS_NEXT_RESOURCE_VALUE        319
+#define _APS_NEXT_RESOURCE_VALUE        320
 #define _APS_NEXT_COMMAND_VALUE         36881
 #define _APS_NEXT_CONTROL_VALUE         1684
 #define _APS_NEXT_SYMED_VALUE           101

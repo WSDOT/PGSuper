@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2017  Washington State Department of Transportation
+// Copyright © 1999-2018  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -629,6 +629,7 @@ void CTxDOTAgentImp::SaveFlexureDesign(const CSegmentKey& segmentKey,const pgsSe
    // Artifact does hard work of converting to girder data
    CPrecastSegmentData segmentData = pArtifact->GetSegmentData();
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   GET_IFACE(ISpecification,pSpec);
    pIBridgeDesc->SetPrecastSegmentData(segmentKey,segmentData);
 
    const arDesignOptions& design_options = pArtifact->GetDesignOptions();
@@ -651,6 +652,19 @@ void CTxDOTAgentImp::SaveFlexureDesign(const CSegmentKey& segmentKey,const pgsSe
 
          pIBridgeDesc->SetSlabOffset( segmentKey.groupIndex, startPierIdx, segmentKey.girderIndex, startOffset);
          pIBridgeDesc->SetSlabOffset( segmentKey.groupIndex, endPierIdx,   segmentKey.girderIndex, endOffset  );
+      }
+
+      if (pSpec->IsAssExcessCamberInputEnabled())
+      {
+         pgsTypes::AssExcessCamberType camberType = pIBridgeDesc->GetAssExcessCamberType();
+         if (camberType == pgsTypes::aecBridge)
+         {
+            pIBridgeDesc->SetAssExcessCamber(pArtifact->GetAssExcessCamber());
+         }
+         else
+         {
+            pIBridgeDesc->SetAssExcessCamber(segmentKey.groupIndex, segmentKey.girderIndex, pArtifact->GetAssExcessCamber());
+         }
       }
    }
 }

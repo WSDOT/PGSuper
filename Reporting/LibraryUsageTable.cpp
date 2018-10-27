@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2017  Washington State Department of Transportation
+// Copyright © 1999-2018  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -71,6 +71,17 @@ rptRcTable* CLibraryUsageTable::Build(IBroker* pBroker) const
       libEntryUsageRecord record = *iter;
       (*table)(row,0) << record.LibName;
       (*table)(row,1) << record.EntryName;
+
+      if (record.LibName == _T("Project Criteria"))
+      {
+         const SpecLibraryEntry* pEntry = pLibrary->GetSpecEntry(record.EntryName.c_str());
+         (*table)(row, 1) << _T(" based on") << rptNewLine << lrfdVersionMgr::GetCodeString() << _T(", ") << lrfdVersionMgr::GetVersionString(pEntry->GetSpecificationType());
+      }
+      else if (record.LibName == _T("Load Rating Criteria"))
+      {
+         const RatingLibraryEntry* pEntry = pLibrary->GetRatingEntry(record.EntryName.c_str());
+         (*table)(row, 1) << _T(" based on") << rptNewLine << lrfrVersionMgr::GetCodeString() << _T(", ") << lrfrVersionMgr::GetVersionString(pEntry->GetSpecificationVersion());
+      }
       
       if ( record.bEditable )
       {

@@ -1,6 +1,6 @@
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 40.00    8   0.00  Chain Up Creek     1     1    Chain          24  0.6  270   3.33   3.33   6.50   6.50                                              5.100 11.100   2.994    -2.990      938   0.451  0.668   1.749 -0.179 -0.022 -0.032 -0.233  72.54  186.51    1.75    5.00    5.00 
+ 40.00    8   0.00  Chain Up Creek     1     1    Chain          24  0.6  270   3.33   3.33   6.50   6.50                                              5.000 11.100   2.994    -2.990      938   0.451  0.668   1.637 -0.179 -0.022 -0.032 -0.233  73.68  188.74    1.75    5.00    5.00 
 
 
 Girder design was Not Successful
@@ -8,12 +8,11 @@ The Specification Check was Not Successful
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
 Splitting zone check failed.
 Lifting checks failed
-Hauling checks failed
 
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 40.00    8   0.00  Chain Up Creek     1     2    Chain          24  0.6  270   3.33   3.33   6.75   6.75                                              5.100 11.100   2.942    -2.915      885   0.407  0.736   1.749 -0.186 -0.022 -0.032 -0.240  72.54  186.14    1.75    5.00    5.00 
+ 40.00    8   0.00  Chain Up Creek     1     2    Chain          24  0.6  270   3.33   3.33   6.50   6.50                                              5.000 11.100   2.924    -2.896      881   0.407  0.736   1.637 -0.179 -0.022 -0.032 -0.233  73.68  188.74    1.75    5.00    5.00 
 
 
 Girder design was Not Successful
@@ -21,12 +20,11 @@ The Specification Check was Not Successful
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
 Splitting zone check failed.
 Lifting checks failed
-Hauling checks failed
 
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 40.00    8   0.00  Chain Up Creek     1     5    Chain          22  0.6  270   3.45   3.45   6.50   6.50                                              4.800 11.100   2.860    -2.790      844   0.407  0.736   1.683 -0.179 -0.022  0.000 -0.201  63.91  172.56    1.75    5.00    5.00 
+ 40.00    8   0.00  Chain Up Creek     1     5    Chain          22  0.6  270   3.45   3.45   6.50   6.50                                              4.700 11.100   2.860    -2.790      844   0.407  0.736   1.560 -0.179 -0.022  0.000 -0.201  64.88  174.82    1.75    5.00    5.00 
 
 
 Girder design was Not Successful
@@ -34,6 +32,5 @@ The Specification Check was Not Successful
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
 Splitting zone check failed.
 Lifting checks failed
-Hauling checks failed
 
 

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2017  Washington State Department of Transportation
+// Copyright © 1999-2018  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -32,6 +32,7 @@
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
 #include <IFace\RatingSpecification.h>
+#include <IFace\Intervals.h>
 
 #include <algorithm>
 
@@ -319,11 +320,11 @@ rptChapter* CLoadingDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,
             pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
             *pChapter << pPara;
             *pPara<< _T("User Defined Loads")<<rptNewLine;
-            pPara = CUserDefinedLoadsChapterBuilder::CreatePointLoadTable(pBroker, spanKey, pDisplayUnits, level, m_bSimplifiedVersion);
+            pPara = CreatePointLoadTable(pBroker, spanKey, pDisplayUnits, level);
             *pChapter << pPara;
-            pPara = CUserDefinedLoadsChapterBuilder::CreateDistributedLoadTable(pBroker, spanKey, pDisplayUnits, level, m_bSimplifiedVersion);
+            pPara = CreateDistributedLoadTable(pBroker, spanKey, pDisplayUnits, level);
             *pChapter << pPara;
-            pPara = CUserDefinedLoadsChapterBuilder::CreateMomentLoadTable(pBroker, spanKey, pDisplayUnits, level, m_bSimplifiedVersion);
+            pPara = CreateMomentLoadTable(pBroker, spanKey, pDisplayUnits, level);
             *pChapter << pPara;
          }
       }
@@ -615,7 +616,7 @@ void CLoadingDetailsChapterBuilder::ReportSlabLoad(rptChapter* pChapter,IBridge*
          GET_IFACE2( pBroker, ISpecification, pSpec );
          if (pgsTypes::hlcAccountForCamber == pSpec->GetHaunchLoadComputationType())
          {
-            *pNotePara <<rptNewLine<< _T("Haunch weight includes effects of roadway geometry. Haunch depth used when computing haunch load is reduced for camber assuming that excess camber is a linear-piecewise parabola defined by the user-input Fillet dimension at mid-span.");
+            *pNotePara <<rptNewLine<< _T("Haunch weight includes effects of roadway geometry. Haunch depth used when computing haunch load is reduced for camber assuming that excess camber is a linear-piecewise parabola defined by the user-input assumed excess camber at mid-span.");
          }
          else
          {
@@ -674,6 +675,63 @@ void CLoadingDetailsChapterBuilder::ReportSlabLoad(rptChapter* pChapter,IBridge*
 
          p_table->SetColumnStyle(0,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
          p_table->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+      }
+
+      if (do_report_haunch && !is_uniform)
+      {
+         CComPtr<IBroker> pBroker;
+         EAFGetBroker(&pBroker);
+         GET_IFACE2(pBroker,ISpecification,pSpec);
+
+         bool report_camber = pSpec->GetHaunchLoadComputationType() == pgsTypes::hlcAccountForCamber;
+
+         pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
+         *pChapter << pPara;
+         *pPara << _T("Slab Haunch Pad Load Details") << rptNewLine;
+
+         rptRcTable* p_table = rptStyleManager::CreateDefaultTable(report_camber ? 8:7,_T(""));
+         *pPara << p_table;
+
+         ColumnIndexType col = 0;
+         (*p_table)(0,col++) << COLHDR(_T("Location")<<rptNewLine<<_T("From Left Bearing"),rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+         (*p_table)(0,col++) << COLHDR(_T("Top") << rptNewLine << _T("Slab") << rptNewLine << _T("Elevation"),rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
+         (*p_table)(0,col++) << COLHDR(_T("Girder") << rptNewLine << _T("Chord") << rptNewLine << _T("Elevation"),rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
+         (*p_table)(0,col++) << COLHDR(_T("Top") << rptNewLine << _T("Girder") << rptNewLine << _T("Elevation"),rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
+         (*p_table)(0,col++) << COLHDR(_T("Slab")<<rptNewLine<<_T("Thickness"),rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+         if (report_camber)
+         {
+            (*p_table)(0, col++) << COLHDR(_T("*Assumed") << rptNewLine << _T("Excess") << rptNewLine << _T("Camber"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+         }
+         (*p_table)(0,col++) << COLHDR(_T("Haunch")<<rptNewLine<<_T("Depth"),rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+         (*p_table)(0,col++) << COLHDR(_T("Haunch")<<rptNewLine<<_T("Load"),rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
+
+         RowIndexType row = p_table->GetNumberOfHeaderRows();
+         for (std::vector<SlabLoad>::iterator i = slab_loads.begin(); i != slab_loads.end(); i++)
+         {
+            SlabLoad& slab_load = *i;
+
+            Float64 location = slab_load.Loc - end_size;
+            col = 0;
+            (*p_table)(row, col++) << loc.SetValue(location);
+            (*p_table)(row, col++) << loc.SetValue(slab_load.TopSlabElevation);
+            (*p_table)(row, col++) << loc.SetValue(slab_load.GirderChordElevation);
+            (*p_table)(row, col++) << loc.SetValue(slab_load.TopGirderElevation);
+            (*p_table)(row, col++) << comp.SetValue(slab_load.SlabDepth);
+            if (report_camber)
+            {
+               (*p_table)(row, col++) << comp.SetValue(slab_load.AssExcessCamber);
+            }
+            (*p_table)(row, col++) << comp.SetValue(slab_load.HaunchDepth);
+            (*p_table)(row, col++) << fpl.SetValue(-slab_load.PadLoad);
+            row++;
+         }
+
+         Float64 factor = pSpec->GetHaunchLoadCamberFactor();
+
+         pNotePara = new rptParagraph;
+         *pChapter << pNotePara;
+         *pNotePara << _T("* Factor of ") << factor*100.0 << _T("% applied to assumed excess camber per project criteria");
+
       }
    } // end if ( pBridge->GetDeckType() != pgsTypes::sdtNone )
 }
@@ -2116,6 +2174,261 @@ void CLoadingDetailsChapterBuilder::ReportEquivPretensionLoads(rptChapter* pChap
          } // segmentIdx
       } // gdrIdx
    } // groupIdx
+}
+
+rptParagraph* CLoadingDetailsChapterBuilder::CreatePointLoadTable(IBroker* pBroker, const CSpanKey& spanKey, IEAFDisplayUnits* pDisplayUnits, Uint16 level) const
+{
+   USES_CONVERSION;
+   rptParagraph* pParagraph = new rptParagraph();
+
+   INIT_UV_PROTOTYPE(rptLengthUnitValue, dim, pDisplayUnits->GetSpanLengthUnit(), false);
+   INIT_UV_PROTOTYPE(rptForceUnitValue, shear, pDisplayUnits->GetShearUnit(), false);
+
+   ASSERT_SPAN_KEY(spanKey);
+   GET_IFACE2(pBroker, IBridge, pBridge);
+   GroupIndexType grpIdx = pBridge->GetGirderGroupIndex(spanKey.spanIndex);
+   CGirderKey girderKey(grpIdx, spanKey.girderIndex);
+   ASSERT_GIRDER_KEY(girderKey);
+
+   GET_IFACE2(pBroker, IIntervals, pIntervals);
+
+   rptRcTable* table = rptStyleManager::CreateDefaultTable(5, _T("Point Loads"));
+
+   table->SetColumnStyle(0, rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+   table->SetStripeRowColumnStyle(0, rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+
+   table->SetColumnStyle(4, rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+   table->SetStripeRowColumnStyle(4, rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+
+   ColumnIndexType col = 0;
+
+   (*table)(0, col++) << _T("Interval");
+   (*table)(0, col++) << _T("Load") << rptNewLine << _T("Case");
+   (*table)(0, col++) << COLHDR(_T("Location"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
+   (*table)(0, col++) << COLHDR(_T("Magnitude"), rptForceUnitTag, pDisplayUnits->GetShearUnit());
+   (*table)(0, col++) << _T("Description");
+
+   GET_IFACE2(pBroker, IUserDefinedLoads, pUdl);
+
+   bool loads_exist = false;
+   RowIndexType row = table->GetNumberOfHeaderRows();
+
+   IntervalIndexType nIntervals = pIntervals->GetIntervalCount();
+   for (IntervalIndexType intervalIdx = 0; intervalIdx < nIntervals; intervalIdx++)
+   {
+      CString strInterval;
+      strInterval.Format(_T("Interval %d: %s"), LABEL_INTERVAL(intervalIdx), pIntervals->GetDescription(intervalIdx));
+
+      const std::vector<IUserDefinedLoads::UserPointLoad>* ppl = pUdl->GetPointLoads(intervalIdx, spanKey);
+      if (ppl != nullptr)
+      {
+         for ( const auto& upl : *ppl )
+         {
+            loads_exist = true;
+
+            std::_tstring strLoadCaseName(UserLoads::GetLoadCaseName(upl.m_LoadCase));
+
+            col = 0;
+
+            (*table)(row, col++) << strInterval;
+            (*table)(row, col++) << strLoadCaseName;
+            (*table)(row, col++) << dim.SetValue(upl.m_Location);
+            (*table)(row, col++) << shear.SetValue(upl.m_Magnitude);
+            (*table)(row, col++) << upl.m_Description;
+
+            row++;
+         }
+      }
+   }
+
+   if (loads_exist)
+   {
+      *pParagraph << table;
+   }
+   else
+   {
+      delete table;
+
+      if (!m_bSimplifiedVersion)
+      {
+         *pParagraph << _T("Point loads were not defined for this girder") << rptNewLine;
+      }
+   }
+
+   return pParagraph;
+}
+
+rptParagraph* CLoadingDetailsChapterBuilder::CreateDistributedLoadTable(IBroker* pBroker, const CSpanKey& spanKey, IEAFDisplayUnits* pDisplayUnits, Uint16 level) const
+{
+   rptParagraph* pParagraph = new rptParagraph();
+
+   INIT_UV_PROTOTYPE(rptLengthUnitValue, dim, pDisplayUnits->GetSpanLengthUnit(), false);
+   INIT_UV_PROTOTYPE(rptForcePerLengthUnitValue, fplu, pDisplayUnits->GetForcePerLengthUnit(), false);
+
+   ASSERT_SPAN_KEY(spanKey);
+   GET_IFACE2(pBroker, IBridge, pBridge);
+   GroupIndexType grpIdx = pBridge->GetGirderGroupIndex(spanKey.spanIndex);
+   CGirderKey girderKey(grpIdx, spanKey.girderIndex);
+   ASSERT_GIRDER_KEY(girderKey);
+
+   GET_IFACE2(pBroker, IIntervals, pIntervals);
+
+   rptRcTable* table = rptStyleManager::CreateDefaultTable(7, _T("Distributed Loads"));
+
+   table->SetColumnStyle(0, rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+   table->SetStripeRowColumnStyle(0, rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+
+   table->SetColumnStyle(6, rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+   table->SetStripeRowColumnStyle(6, rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+
+   ColumnIndexType col = 0;
+
+   (*table)(0, col++) << _T("Interval");
+   (*table)(0, col++) << _T("Load") << rptNewLine << _T("Case");
+   (*table)(0, col++) << COLHDR(_T("Start") << rptNewLine << _T("Location"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
+   (*table)(0, col++) << COLHDR(_T("End") << rptNewLine << _T("Location"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
+   (*table)(0, col++) << COLHDR(_T("Start") << rptNewLine << _T("Magnitude"), rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit());
+   (*table)(0, col++) << COLHDR(_T("End") << rptNewLine << _T("Magnitude"), rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit());
+   (*table)(0, col++) << _T("Description");
+
+   GET_IFACE2(pBroker, IUserDefinedLoads, pUdl);
+
+   bool loads_exist = false;
+   RowIndexType row = table->GetNumberOfHeaderRows();
+   IntervalIndexType nIntervals = pIntervals->GetIntervalCount();
+   for (IntervalIndexType intervalIdx = 0; intervalIdx < nIntervals; intervalIdx++)
+   {
+      CString strInterval;
+      strInterval.Format(_T("Interval %d: %s"), LABEL_INTERVAL(intervalIdx), pIntervals->GetDescription(intervalIdx));
+
+      const std::vector<IUserDefinedLoads::UserDistributedLoad>* ppl = pUdl->GetDistributedLoads(intervalIdx, spanKey);
+      if (ppl != nullptr)
+      {
+         for( const auto& upl : *ppl)
+         {
+            loads_exist = true;
+
+            std::_tstring strLoadCaseName(UserLoads::GetLoadCaseName(upl.m_LoadCase));
+
+            col = 0;
+
+            (*table)(row, col++) << strInterval;
+            (*table)(row, col++) << strLoadCaseName;
+            (*table)(row, col++) << dim.SetValue(upl.m_StartLocation);
+            (*table)(row, col++) << dim.SetValue(upl.m_EndLocation);
+            (*table)(row, col++) << fplu.SetValue(upl.m_WStart);
+            (*table)(row, col++) << fplu.SetValue(upl.m_WEnd);
+            (*table)(row, col++) << upl.m_Description;
+
+            row++;
+         }
+      }
+   }
+
+   if (loads_exist)
+   {
+      *pParagraph << table;
+   }
+   else
+   {
+      delete table;
+
+      if (!m_bSimplifiedVersion)
+      {
+         *pParagraph << _T("Distributed loads were not defined for this girder") << rptNewLine;
+      }
+   }
+
+   return pParagraph;
+}
+
+rptParagraph* CLoadingDetailsChapterBuilder::CreateMomentLoadTable(IBroker* pBroker, const CSpanKey& spanKey, IEAFDisplayUnits* pDisplayUnits, Uint16 level) const
+{
+   rptParagraph* pParagraph = new rptParagraph();
+
+   INIT_UV_PROTOTYPE(rptLengthUnitValue, dim, pDisplayUnits->GetSpanLengthUnit(), false);
+   INIT_UV_PROTOTYPE(rptMomentUnitValue, moment, pDisplayUnits->GetMomentUnit(), false);
+
+   ASSERT_SPAN_KEY(spanKey);
+   GET_IFACE2(pBroker, IBridge, pBridge);
+   GroupIndexType grpIdx = pBridge->GetGirderGroupIndex(spanKey.spanIndex);
+   CGirderKey girderKey(grpIdx, spanKey.girderIndex);
+   ASSERT_GIRDER_KEY(girderKey);
+
+   GET_IFACE2(pBroker, IIntervals, pIntervals);
+
+   rptRcTable* table = rptStyleManager::CreateDefaultTable(5, _T("End Moments"));
+
+   table->SetColumnStyle(0, rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+   table->SetStripeRowColumnStyle(0, rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+
+   table->SetColumnStyle(4, rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+   table->SetStripeRowColumnStyle(4, rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+
+   ColumnIndexType col = 0;
+
+   (*table)(0, col++) << _T("Event");
+   (*table)(0, col++) << _T("Load") << rptNewLine << _T("Case");
+   (*table)(0, col++) << _T("Location");
+   (*table)(0, col++) << COLHDR(_T("Magnitude"), rptMomentUnitTag, pDisplayUnits->GetMomentUnit());
+   (*table)(0, col++) << _T("Description");
+
+   GET_IFACE2(pBroker, IUserDefinedLoads, pUdl);
+
+   bool loads_exist = false;
+   RowIndexType row = table->GetNumberOfHeaderRows();
+   IntervalIndexType nIntervals = pIntervals->GetIntervalCount();
+   for (IntervalIndexType intervalIdx = 0; intervalIdx < nIntervals; intervalIdx++)
+   {
+      CString strInterval;
+      strInterval.Format(_T("Interval %d: %s"), LABEL_INTERVAL(intervalIdx), pIntervals->GetDescription(intervalIdx));
+
+      const std::vector<IUserDefinedLoads::UserMomentLoad>* ppl = pUdl->GetMomentLoads(intervalIdx, spanKey);
+      if (ppl != nullptr)
+      {
+         for ( const auto& upl : *ppl)
+         {
+            loads_exist = true;
+
+            std::_tstring strLoadCaseName(UserLoads::GetLoadCaseName(upl.m_LoadCase));
+
+            col = 0;
+
+            (*table)(row, col++) << strInterval;
+            (*table)(row, col++) << strLoadCaseName;
+
+            if (IsZero(upl.m_Location))
+            {
+               (*table)(row, col++) << _T("Start of span");
+            }
+            else
+            {
+               (*table)(row, col++) << _T("End of span");
+            }
+
+            (*table)(row, col++) << moment.SetValue(upl.m_Magnitude);
+            (*table)(row, col++) << upl.m_Description;
+
+            row++;
+         }
+      }
+   }
+
+   if (loads_exist)
+   {
+      *pParagraph << table;
+   }
+   else
+   {
+      delete table;
+
+      if (!m_bSimplifiedVersion)
+      {
+         *pParagraph << _T("Moment loads were not defined for this girder") << rptNewLine;
+      }
+   }
+
+   return pParagraph;
 }
 
 //======================== ACCESS     =======================================

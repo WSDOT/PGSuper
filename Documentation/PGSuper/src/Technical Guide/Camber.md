@@ -1,6 +1,6 @@
 ﻿Camber {#tg_camber}
 ======================================
-Several elements make up the camber calculations. Each one is detailed in this section. Refer to Chapter 5 of the WSDOT Bridge Design Manual for a further discussion of camber. The following schematic shows the camber history for a point in a girder with a cast in place deck and temporary strands.
+Several elements make up camber computations. Each component is detailed in this section. Refer to Chapter 5 of the WSDOT Bridge Design Manual for a further discussion of camber, although most of the discussion is generic and can be used by any agency. The following schematic shows the camber history for a point in a girder with a cast in place deck and temporary strands.
 
 ![](Camber.gif)
 
@@ -15,7 +15,7 @@ The camber in the bare precast girder at erection after it is placed on the bear
 
 Camber at Time of Deck Casting
 ------------------------------
-The camber at time of deck casting is typically refered to as the "D" Camber on WSDOT plans.
+The camber at time of deck casting is referred to as the "D" Camber on WSDOT plans.
 
 Screed Camber 
 ---------------
@@ -39,7 +39,7 @@ However, as we mentioned previously, many agencies including TxDOT, use empirica
 
   ![](TxdotCamberEqn.gif)
 
-Clearly, a more flexible method is needed to define excess camber, and cambers in general. A more general form is:
+Clearly, a more flexible method is useful to define excess camber, and cambers in general. A more general form is:
 
   ![](GeneralCamberEqn.gif)
 
@@ -51,11 +51,13 @@ The k’s (or camber deflection multiplier constants) in the equations above pro
 
 > TIP: Camber deflection multiplier constants are defined for each girder type on the Haunch and Camber tab in the girder library. Also, the Camber Details chapter in the Details report shows all details of the camber computations.
 
+> TIP: Camber discussed in this section of the Technical Guide can be referred to as **Computed Camber**. In fact, the term **Computed Excess Camber** is used widely throughout PGSuper and PGSplice. Another term: **Assumed Excess Camber** is a user-input value that is used to compute the haunch depth when determining haunch dead load. Refer to  the Slab Haunch loading section of @ref tg_structural_analysis_models in the Technical Guide for more information about how the haunch dead load is defined.
+
 Camber Variability
 ----------------------
-Camber is notoriously difficult to predict, so a practical approach is to use a statistical range to bound upper and lower values as recommended in Reference 1 (cited below). In PGSuper, we make two camber predictions: one for a normal (maximum timing) construction scenario, and another for a fast (minimum timing) construction scenario. However, for each case there is variability in camber due to a number of concerns, including curing time (girders cured over a weekend camber less then those with a 24 hour turn around). This natural variation in camber is accomodated by predicting a lower bound value. In most cases the actual camber will be somewhere between the predicted upper and lower bounds. 
+Camber is notoriously difficult to predict, so a practical approach is to use a statistical range to bound upper and lower values as recommended in Reference 1 (cited below). In PGSuper, we make two camber predictions: one for a normal (maximum timing) construction scenario, and another for a fast (minimum timing) construction scenario. However, for each case there is variability in camber due to a number of concerns, including curing time (girders cured over a weekend camber less then those with a 24 hour turn around). This natural variation in camber is accommodated by predicting a lower bound value. In most cases the actual camber will be somewhere between the predicted upper and lower bounds. 
 
-To compute the lower bound camber, a Camber Variability (C<sub>v</sub>) factor is applied to the upper bound camber. C<sub>v</sub> is entered as a percentage reduction of the upper bound camber.
+To determine the lower bound camber, a Camber Variability (C<sub>v</sub>) factor is applied to the upper bound camber. C<sub>v</sub> is entered as a percentage reduction of the upper bound camber.
 
 > NOTE: A warning will be issued if the computed excess camber is less than, or within 0.25" if greater than, the screed camber to alert you that the girder has the potential to sag if actual excess camber is less than the computed value. Note that this is not an absolute predication that sag will occur: It's just a warning that a worst case scenario may end up with sag, and engineers should take steps to mitigate problems. The slab haunch loading does not account for sag in the girder.
 

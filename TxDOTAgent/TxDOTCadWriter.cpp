@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2017  Washington State Department of Transportation
+// Copyright © 1999-2018  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -378,6 +378,15 @@ int TxDOT_WriteCADDataToFile (FILE *fp, IBroker* pBroker, const CGirderKey& gird
       workerB.WriteFloat64(aend,_T("Aend"),7,5,_T("%5.2f"));
 
       extraSpacesForSlabOffset = 14; // width of two data fields above = 7+7
+
+      GET_IFACE2(pBroker,ISpecification,pSpec);
+      if (pSpec->IsAssExcessCamberInputEnabled())
+      {
+         value = pIBridgeDesc->GetAssExcessCamber(segmentKey.groupIndex, segmentKey.girderIndex);
+      	Float64 aecamber = ::ConvertFromSysUnits( value, unitMeasure::Inch );
+         workerB.WriteFloat64(aecamber,_T("AECmbr"),7,5,_T("%5.2f"));
+         extraSpacesForSlabOffset += 7;
+      }
     }
 
    Float64 girder_length = pBridge->GetSegmentLength(segmentKey);
@@ -508,7 +517,7 @@ int TxDOT_WriteCADDataToFile (FILE *fp, IBroker* pBroker, const CGirderKey& gird
    if (do_write_ns_data && !isExtendedVersion)
    {
       std::_tstring::size_type cnt = max(ns_strand_str.size(), 7);
-      workerB.WriteString(ns_strand_str.c_str(),_T("NS Data"),10,(Int16)cnt,_T("%s"));
+      workerB.WriteString(ns_strand_str.c_str(),_T("NS Data"),32,(Int16)cnt,_T("%s"));
    }
 
 

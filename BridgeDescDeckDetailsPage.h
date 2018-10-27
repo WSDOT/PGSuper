@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2017  Washington State Department of Transportation
+// Copyright © 1999-2018  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -99,7 +99,8 @@ protected:
    void UpdateConcreteParametersToolTip();
    
    void UpdateSlabOffsetControls();
-   void UpdateFilletControls();
+   void UpdateDeckRelatedControls();
+   void UpdateAssExcessCamberControls();
 
    CString m_strTip;
    CBridgeDescDeckPointGrid m_Grid;
@@ -108,8 +109,11 @@ protected:
    pgsTypes::SlabOffsetType m_SlabOffsetType;
    CString m_strSlabOffsetCache;
 
+   Float64 m_AssExcessCamber;
+   pgsTypes::AssExcessCamberType m_AssExcessCamberType;
+   CString m_strAssExcessCamberCache;
+
    Float64 m_Fillet;
-   pgsTypes::FilletType m_FilletType;
    CString m_strFilletCache;
 
    int m_PrevDeckEventIdx;
@@ -122,6 +126,8 @@ protected:
 
    CHaunchShapeComboBox m_cbHaunchShape;
 
+   bool m_bCanAssExcessCamberInputBeEnabled;
+
 public:
    afx_msg void OnStnClickedOlayDensityUnit();
    afx_msg void OnBnClickedOlayWeightLabel();
@@ -129,7 +135,7 @@ public:
    afx_msg void OnBnClickedEditHaunchButton();
    afx_msg void OnCbnSelchangeSameslaboffset();
    afx_msg void OnCbnSelchangeHaunchShape2();
-   afx_msg void OnCbnSelchangeFilletType();
+   afx_msg void OnCbnSelchangeAssExcessCamberType();
 };
 
 //{{AFX_INSERT_LOCATION}}

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2017  Washington State Department of Transportation
+// Copyright © 1999-2018  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -60,23 +60,31 @@ public:
    CollectionIndexType AddPointLoad(EventIDType eventID,const CPointLoadData& pld);
    const CPointLoadData* GetPointLoad(CollectionIndexType idx) const;
    const CPointLoadData* FindPointLoad(LoadIDType loadID) const;
+   EventIndexType GetPointLoadEventIndex(LoadIDType loadID) const;
+   EventIDType GetPointLoadEventID(LoadIDType loadID) const;
    bool UpdatePointLoad(CollectionIndexType idx, EventIDType eventID,const CPointLoadData& pld,bool* pbMovedGirders,CSpanKey* pPrevKey);
    void DeletePointLoad(CollectionIndexType idx,CSpanKey* pKey);
-
+   std::vector<CPointLoadData> GetPointLoads(const CSpanKey& spanKey) const;
 
    CollectionIndexType GetDistributedLoadCount() const;
    CollectionIndexType AddDistributedLoad(EventIDType eventID,const CDistributedLoadData& pld);
    const CDistributedLoadData* GetDistributedLoad(CollectionIndexType idx) const;
    const CDistributedLoadData* FindDistributedLoad(LoadIDType loadID) const;
+   EventIndexType GetDistributedLoadEventIndex(LoadIDType loadID) const;
+   EventIDType GetDistributedLoadEventID(LoadIDType loadID) const;
    bool UpdateDistributedLoad(CollectionIndexType idx, EventIDType eventID,const CDistributedLoadData& pld,bool* pbMovedGirders,CSpanKey* pPrevKey);
    void DeleteDistributedLoad(CollectionIndexType idx,CSpanKey* pKey);
+   std::vector<CDistributedLoadData> GetDistributedLoads(const CSpanKey& spanKey) const;
 
    CollectionIndexType GetMomentLoadCount() const;
    CollectionIndexType AddMomentLoad(EventIDType eventID,const CMomentLoadData& pld);
    const CMomentLoadData* GetMomentLoad(CollectionIndexType idx) const;
    const CMomentLoadData* FindMomentLoad(LoadIDType loadID) const;
+   EventIndexType GetMomentLoadEventIndex(LoadIDType loadID) const;
+   EventIDType GetMomentLoadEventID(LoadIDType loadID) const;
    bool UpdateMomentLoad(CollectionIndexType idx, EventIDType eventID,const CMomentLoadData& pld,bool* pbMovedGirders,CSpanKey* pPrevKey);
    void DeleteMomentLoad(CollectionIndexType idx,CSpanKey* pKey);
+   std::vector<CMomentLoadData> GetMomentLoads(const CSpanKey& spanKey) const;
 
    // =================================================================================
    // Miscellaneous

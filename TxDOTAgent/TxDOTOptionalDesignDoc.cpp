@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2017  Washington State Department of Transportation
+// Copyright © 1999-2018  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -29,6 +29,9 @@
 
 #include "TxDOTOptionalDesignUtilities.h"
 #include "TxDOTOptionalDesignDoc.h"
+#include "TxDOTAgentApp.h"
+#include "dllmain.h"
+
 #include "TOGAStatusBar.h"
 
 #include "TxDOTOptionalDesignView.h"
@@ -531,20 +534,35 @@ BOOL CTxDOTOptionalDesignDoc::ParseTemplateFile(LPCTSTR lpszPathName, bool isNew
 
 CString CTxDOTOptionalDesignDoc::GetRootNodeName()
 {
-   //if ( m_InExportMode )
-   //   return _T("PGSuper");
-   //else
-   //   return __super::GetRootNodeName();
-
-   return _T("PGSuper");
+   return _T("PGSuper"); // probably should have been "TOGA", but this has been it since day one.
 }
 
 Float64 CTxDOTOptionalDesignDoc::GetRootNodeVersion()
 {
-   if ( m_InExportMode )
+   if (!m_InExportMode)
       return 2.0;
    else
-      return __super::GetRootNodeVersion();
+   {
+      // Big assumption here that TOGA uses the same dll versioning as PGSuper
+      AFX_MANAGE_STATE(AfxGetStaticModuleState());
+      CTxDOTAgentApp* pApp = (CTxDOTAgentApp*)AfxGetApp();
+      CString strVersion = pApp->GetVersion();
+
+      // Get left-most number
+      Float64 vers = -1.0;
+      int loc = strVersion.Find(_T("."));
+      if (loc != -1)
+      {
+         CString strV = strVersion.Left(loc);
+         long verl;
+         if (sysTokenizer::ParseLong(strV, &verl))
+         {
+            vers = verl;
+         }
+      }
+
+      return vers;
+   }
 }
 
 HRESULT CTxDOTOptionalDesignDoc::OpenDocumentRootNode(IStructuredSave* pStrSave)
@@ -555,7 +573,12 @@ HRESULT CTxDOTOptionalDesignDoc::OpenDocumentRootNode(IStructuredSave* pStrSave)
      if ( FAILED(hr) )
         return hr;
 
-     hr = pStrSave->put_Property(_T("Version"),CComVariant(_T("Toga")));
+     // Big assumption here that TOGA uses the same dll versioning as PGSuper
+     AFX_MANAGE_STATE(AfxGetStaticModuleState());
+     CTxDOTAgentApp* pApp = (CTxDOTAgentApp*)AfxGetApp();
+     CString strVersion = pApp->GetVersion();
+
+     hr = pStrSave->put_Property(_T("Version"),CComVariant(strVersion));
      if ( FAILED(hr) )
         return hr;
    }
@@ -589,6 +612,18 @@ HRESULT CTxDOTOptionalDesignDoc::WriteTheDocument(IStructuredSave* pStrSave)
 {
    if (!m_InExportMode)
    {
+      // before the standard document persistence, write out the version
+      // number of the application that created this document
+      AFX_MANAGE_STATE(AfxGetStaticModuleState());
+      CTxDOTAgentApp* pApp = (CTxDOTAgentApp*)AfxGetApp();
+      CString strVersion = pApp->GetVersion();
+
+      HRESULT hr = pStrSave->put_Property(_T("TxDOTAgentVersion"),CComVariant(strVersion));
+      if ( FAILED(hr) )
+      {
+         return hr;
+      }
+
       // save our own data
       HRESULT res = m_ProjectData.Save(pStrSave,nullptr);
       return res;
@@ -602,6 +637,24 @@ HRESULT CTxDOTOptionalDesignDoc::WriteTheDocument(IStructuredSave* pStrSave)
 
 HRESULT CTxDOTOptionalDesignDoc::LoadTheDocument(IStructuredLoad* pStrLoad)
 {
+   Float64 version;
+   HRESULT hr = pStrLoad->get_Version(&version);
+   if ( FAILED(hr) )
+   {
+      return hr;
+   }
+
+   if (1.0 < version)
+   {
+      CComVariant var;
+      var.vt = VT_BSTR;
+      hr = pStrLoad->get_Property(_T("TxDOTAgentVersion"), &var);
+      if (FAILED(hr))
+      {
+         return hr;
+      }
+   }
+
    HRESULT res = m_ProjectData.Load(pStrLoad,nullptr);
    return res;
 

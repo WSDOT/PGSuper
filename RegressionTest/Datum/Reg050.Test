@@ -10,8 +10,8 @@ Compression stress check failed for Service I Limit State in Interval 8 Remove t
 Tensile stress check failed for Service I Limit State in Interval 8 Remove temporary strands
 Compression stress check failed for Service I Limit State in Interval 11 Cast Deck (Bridge Site 1)
 Compression stress check failed for Service I Limit State in Interval 13 Composite Deck, Install Railing System and Overlay (Bridge Site 2)
-Compression stress check failed for Service I Limit State in Interval 15 Open to Traffic (Bridge Site 3)
-Compression stress check failed for Service IA Limit State in Interval 15 Open to Traffic (Bridge Site 3)
+Compression stress check failed for Service I Limit State in Interval 15 Apply User Defined Loads, Open to Traffic (Bridge Site 3)
+Compression stress check failed for Service IA Limit State in Interval 15 Apply User Defined Loads, Open to Traffic (Bridge Site 3)
 Ultimate moment capacity (negative moment) check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 Ultimate vertical shear capacity check failed for Strength I Limit State
@@ -37,9 +37,9 @@ Compression stress check failed for Service I Limit State in Interval 8 Remove t
 Tensile stress check failed for Service I Limit State in Interval 8 Remove temporary strands
 Compression stress check failed for Service I Limit State in Interval 11 Cast Deck (Bridge Site 1)
 Compression stress check failed for Service I Limit State in Interval 13 Composite Deck, Install Railing System and Overlay (Bridge Site 2)
-Compression stress check failed for Service I Limit State in Interval 15 Open to Traffic (Bridge Site 3)
-Compression stress check failed for Service IA Limit State in Interval 15 Open to Traffic (Bridge Site 3)
-Tensile stress check failed for Service III Limit State in Interval 15 Open to Traffic (Bridge Site 3)
+Compression stress check failed for Service I Limit State in Interval 15 Apply User Defined Loads, Open to Traffic (Bridge Site 3)
+Compression stress check failed for Service IA Limit State in Interval 15 Apply User Defined Loads, Open to Traffic (Bridge Site 3)
+Tensile stress check failed for Service III Limit State in Interval 15 Apply User Defined Loads, Open to Traffic (Bridge Site 3)
 Ultimate moment capacity (negative moment) check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 Ultimate vertical shear capacity check failed for Strength I Limit State

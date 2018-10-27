@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2017  Washington State Department of Transportation
+// Copyright © 1999-2018  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -368,7 +368,13 @@ void CSectionViewDialog::DrawStrands(CDC* pDC, grlibPointMapper& Mapper, bool is
          pDC->SelectObject(&harped_strand_brush);
          pDC->SelectObject(&harped_strand_pen);
 
-         total_strand_cnt = DrawStrand(pDC, Mapper, x, y, total_strand_cnt);
+         StrandIndexType strandInc = 1;
+         if (IsZero(x) && (!IsZero(start_x) || !IsZero(hp_x) || !IsZero(end_x)))
+         {
+            strandInc = 2;
+         }
+
+         total_strand_cnt = DrawStrand(pDC, Mapper, x, y, total_strand_cnt,strandInc);
       }
       else
          ATLASSERT(false);
@@ -392,7 +398,7 @@ void CSectionViewDialog::DrawStrands(CDC* pDC, grlibPointMapper& Mapper, bool is
    pDC->SelectObject(pOldPen);
 }
 
-StrandIndexType CSectionViewDialog::DrawStrand(CDC* pDC, grlibPointMapper& Mapper, Float64 x, Float64 y, StrandIndexType index)
+StrandIndexType CSectionViewDialog::DrawStrand(CDC* pDC, grlibPointMapper& Mapper, Float64 x, Float64 y, StrandIndexType index,StrandIndexType strandInc)
 {
    CRect rect;
    Mapper.WPtoDP(x-m_Radius,y-m_Radius,&rect.left,&rect.top); 
@@ -402,10 +408,12 @@ StrandIndexType CSectionViewDialog::DrawStrand(CDC* pDC, grlibPointMapper& Mappe
 
    pDC->Ellipse(&rect);
 
-   index++;
+   index += strandInc;
 
-   if ( m_DrawNumbers )
-      PrintNumber(pDC, Mapper, gpPoint2d(x,y), index);
+   if (m_DrawNumbers)
+   {
+      PrintNumber(pDC, Mapper, gpPoint2d(x, y), index);
+   }
 
    if (0.0 < x)
    {
@@ -416,11 +424,14 @@ StrandIndexType CSectionViewDialog::DrawStrand(CDC* pDC, grlibPointMapper& Mappe
 
       pDC->Ellipse(&rect);
 
-      index++;
+      ATLASSERT(strandInc == 1);
+      index += strandInc;
 
       gpPoint2d np(-x,y);
-      if ( m_DrawNumbers )
+      if (m_DrawNumbers)
+      {
          PrintNumber(pDC, Mapper, np, index);
+      }
    }
 
    return index;

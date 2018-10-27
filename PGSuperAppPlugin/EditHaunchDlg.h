@@ -26,9 +26,9 @@
 #include "HaunchSame4BridgeDlg.h"
 #include "HaunchSpanBySpanDlg.h"
 #include "HaunchByGirderDlg.h"
-#include "FilletSame4BridgeDlg.h"
-#include "FilletSpanBySpanDlg.h"
-#include "FilletByGirderDlg.h"
+#include "AssExcessCamberSame4BridgeDlg.h"
+#include "AssExcessCamberSpanBySpanDlg.h"
+#include "AssExcessCamberByGirderDlg.h"
 #include <PgsExt\HaunchShapeComboBox.h>
 
 class CBridgeDescription2;
@@ -54,24 +54,24 @@ inline CString SlabOffsetTypeAsString(pgsTypes::SlabOffsetType type)
    }
 }
 
-inline CString FilletTypeAsString(pgsTypes::FilletType type)
+inline CString AssExcessCamberTypeAsString(pgsTypes::AssExcessCamberType type)
 {
-   if (type == pgsTypes::fttBridge)
+   if (type == pgsTypes::aecBridge)
    {
-      return _T("Define single Fillet for entire Bridge");
+      return _T("Define single Assumed Excess Camber for entire Bridge");
    }
-   else if (type == pgsTypes::fttSpan)
+   else if (type == pgsTypes::aecSpan)
    {
-      return _T("Define unique Fillets for each Span");
+      return _T("Define unique Assumed Excess Cambers for each Span");
    }
-   else if (type == pgsTypes::fttGirder)
+   else if (type == pgsTypes::aecGirder)
    {
-      return _T("Define unique Fillets for each Girder");
+      return _T("Define unique Assumed Excess Cambers for each Girder");
    }
    else
    {
       ATLASSERT(0);
-      return _T("Error, bad fillet type");
+      return _T("Error, bad camber type");
    }
 }
 
@@ -94,10 +94,10 @@ public:
    CHaunchSpanBySpanDlg  m_HaunchSpanBySpanDlg;
    CHaunchByGirderDlg    m_HaunchByGirderDlg;
 
-// embedded dialogs for different Fillet layouts
-   CFilletSame4BridgeDlg m_FilletSame4BridgeDlg;
-   CFilletSpanBySpanDlg  m_FilletSpanBySpanDlg;
-   CFilletByGirderDlg    m_FilletByGirderDlg;
+// embedded dialogs for different AssExcessCamber layouts
+   CAssExcessCamberSame4BridgeDlg m_AssExcessCamberSame4BridgeDlg;
+   CAssExcessCamberSpanBySpanDlg  m_AssExcessCamberSpanBySpanDlg;
+   CAssExcessCamberByGirderDlg    m_AssExcessCamberByGirderDlg;
 
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
@@ -106,11 +106,11 @@ protected:
 public:
    virtual BOOL OnInitDialog();
    afx_msg void OnCbnSelchangeAType();
-   afx_msg void OnCbnSelchangeFilletType();
+   afx_msg void OnCbnSelchangeAssExcessCamberType();
 
    // Force to another type than that in bridge descripton. Must be called before DoModal
    void ForceToSlabOffsetType(pgsTypes::SlabOffsetType slabOffsetType);
-   void ForceToFilletType(pgsTypes::FilletType filletType);
+   void ForceToAssExcessCamberType(pgsTypes::AssExcessCamberType AssExcessCamberType);
 
    // Change bridge description to our haunch data
    void ModifyBridgeDescr(CBridgeDescription2* pBridgeDesc);
@@ -121,14 +121,17 @@ private:
    // Data for haunch input
    HaunchInputData m_HaunchInputData;
 
+   Float64 m_Fillet;
+
    pgsTypes::HaunchShapeType m_HaunchShape;
    CHaunchShapeComboBox m_cbHaunchShape;
 
    bool m_WasSlabOffsetTypeForced;
    pgsTypes::SlabOffsetType m_ForcedSlabOffsetType;
-   bool m_WasFilletTypeForced;
-   pgsTypes::FilletType m_ForcedFilletType;
+   bool m_WasAssExcessCamberTypeForced;
+   pgsTypes::AssExcessCamberType m_ForcedAssExcessCamberType;
    bool m_WasDataIntialized;
+   bool m_bCanAssExcessCamberInputBeEnabled;
 
    void InitializeData();
 public:

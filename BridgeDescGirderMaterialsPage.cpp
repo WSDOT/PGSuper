@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2017  Washington State Department of Transportation
+// Copyright © 1999-2018  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -96,7 +96,7 @@ void CGirderDescGeneralPage::DoDataExchange(CDataExchange* pDX)
    // Slab Offset
    DDX_Tag(pDX, IDC_ADIM_START_UNIT, pDisplayUnits->GetComponentDimUnit() );
    DDX_Tag(pDX, IDC_ADIM_END_UNIT,   pDisplayUnits->GetComponentDimUnit() );
-   DDX_Tag(pDX, IDC_FILLET_UNIT,   pDisplayUnits->GetComponentDimUnit() );
+   DDX_Tag(pDX, IDC_ASSEXCESSCAMBER_UNIT,   pDisplayUnits->GetComponentDimUnit() );
 
    GET_IFACE2(pBroker,IBridgeDescription,pIBridge);
    const CBridgeDescription2* pBridgeDesc = pIBridge->GetBridgeDescription();
@@ -105,7 +105,6 @@ void CGirderDescGeneralPage::DoDataExchange(CDataExchange* pDX)
    {
       DDX_UnitValueAndTag( pDX, IDC_ADIM_START, IDC_ADIM_START_UNIT, m_SlabOffset[pgsTypes::metStart], pDisplayUnits->GetComponentDimUnit() );
       DDX_UnitValueAndTag( pDX, IDC_ADIM_END,   IDC_ADIM_END_UNIT,   m_SlabOffset[pgsTypes::metEnd],   pDisplayUnits->GetComponentDimUnit() );
-      DDX_UnitValueAndTag( pDX, IDC_FILLET,     IDC_FILLET_UNIT,     m_Fillet,   pDisplayUnits->GetComponentDimUnit() );
 
       // validate slab offset... (must be greater or equal gross deck thickess)
       if ( pDX->m_bSaveAndValidate )
@@ -138,6 +137,11 @@ void CGirderDescGeneralPage::DoDataExchange(CDataExchange* pDX)
             pDX->Fail();
          }
       }
+   }
+
+   if (m_bCanAssExcessCamberInputBeEnabled)
+   {
+      DDX_UnitValueAndTag(pDX, IDC_ASSEXCESSCAMBER, IDC_ASSEXCESSCAMBER_UNIT, m_AssExcessCamber, pDisplayUnits->GetComponentDimUnit());
    }
 
    DDX_CBEnum(pDX, IDC_CONDITION_FACTOR_TYPE, pParent->m_ConditionFactorType);
@@ -216,7 +220,7 @@ BEGIN_MESSAGE_MAP(CGirderDescGeneralPage, CPropertyPage)
    ON_NOTIFY_EX(TTN_NEEDTEXT,0,OnToolTipNotify)
    ON_CBN_SELCHANGE(IDC_GIRDER_NAMEUSE,OnChangeSameGirderType)
    ON_CBN_SELCHANGE(IDC_CB_SLABOFFSET,OnChangeSlabOffsetType)
-   ON_CBN_SELCHANGE(IDC_CB_FILLET,OnChangeFilletType)
+   ON_CBN_SELCHANGE(IDC_CB_ASSEXCESSCAMBER,OnChangeAssExcessCamberType)
    ON_CBN_SELCHANGE(IDC_GIRDER_NAME,OnChangeGirderName)
    ON_CBN_DROPDOWN(IDC_GIRDER_NAME,OnBeforeChangeGirderName)
    ON_BN_CLICKED(IDC_FC1,OnConcreteStrength)
@@ -259,6 +263,18 @@ BOOL CGirderDescGeneralPage::OnInitDialog()
    pcbConditionFactor->AddString(_T("Other"));
    pcbConditionFactor->SetCurSel(0);
 
+   GET_IFACE2(pBroker,ISpecification, pSpec );
+   m_bCanAssExcessCamberInputBeEnabled = pSpec->IsAssExcessCamberInputEnabled();
+
+   if ( m_AssExcessCamberType == pgsTypes::aecBridge || m_AssExcessCamberType == pgsTypes::aecSpan )
+   {
+      m_AssExcessCamberTypeCache = pgsTypes::aecGirder;
+   }
+   else
+   {
+      m_AssExcessCamberTypeCache = pgsTypes::aecBridge;
+   }
+
    CPropertyPage::OnInitDialog();
 
    // initialize the event combo boxes
@@ -298,30 +314,21 @@ BOOL CGirderDescGeneralPage::OnInitDialog()
    pcbSameGirderType->SetCurSel(m_bUseSameGirderType ? 0:1);
    UpdateGirderTypeControls();
 
-   if ( m_FilletType == pgsTypes::fttBridge || m_FilletType == pgsTypes::fttSpan )
+   m_strAssExcessCamberCache.Format(_T("%s"),FormatDimension(m_AssExcessCamber, pDisplayUnits->GetComponentDimUnit(),false));
+
+   CComboBox* pcbAssExcessCamberType = (CComboBox*)GetDlgItem(IDC_CB_ASSEXCESSCAMBER);
+
+   if ( m_AssExcessCamberType==pgsTypes::aecBridge || m_AssExcessCamberType==pgsTypes::aecGirder )
    {
-      m_FilletTypeCache = pgsTypes::fttGirder;
+      pcbAssExcessCamberType->AddString(_T("A single Assumed Excess Camber is used for the entire bridge"));
    }
    else
    {
-      m_FilletTypeCache = pgsTypes::fttBridge;
+      pcbAssExcessCamberType->AddString(_T("A unique Assumed Excess Camber is used in each span"));
    }
+   pcbAssExcessCamberType->AddString(_T("Assumed Excess Cambers are defined girder by girder"));
 
-   m_strFilletCache.Format(_T("%s"),FormatDimension(m_Fillet, pDisplayUnits->GetComponentDimUnit(),false));
-
-   CComboBox* pcbFilletType = (CComboBox*)GetDlgItem(IDC_CB_FILLET);
-
-   if ( m_FilletType==pgsTypes::fttBridge || m_FilletType==pgsTypes::fttGirder )
-   {
-      pcbFilletType->AddString(_T("A single Fillet is used for the entire bridge"));
-   }
-   else
-   {
-      pcbFilletType->AddString(_T("A unique Fillet is used in each span"));
-   }
-   pcbFilletType->AddString(_T("Fillets are defined girder by girder"));
-
-   pcbFilletType->SetCurSel(m_FilletType==pgsTypes::fttGirder ? 1:0);
+   pcbAssExcessCamberType->SetCurSel(m_AssExcessCamberType==pgsTypes::aecGirder ? 1:0);
 
 
    if ( m_SlabOffsetType == pgsTypes::sotBridge || m_SlabOffsetType == pgsTypes::sotPier )
@@ -382,11 +389,12 @@ BOOL CGirderDescGeneralPage::OnInitDialog()
    EnableToolTips(TRUE);
 
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
-   if ( pIBridgeDesc->GetDeckDescription()->GetDeckType() == pgsTypes::sdtNone )
+   if (pIBridgeDesc->GetDeckDescription()->GetDeckType() == pgsTypes::sdtNone)
    {
       // disable slab offset input if there isn't a deck
       GetDlgItem(IDC_CB_SLABOFFSET)->EnableWindow(FALSE);
 
+      GetDlgItem(IDC_ADIM_START_LABEL3)->EnableWindow(FALSE);
       GetDlgItem(IDC_ADIM_START_LABEL)->EnableWindow(FALSE);
       GetDlgItem(IDC_ADIM_START)->EnableWindow(FALSE);
       GetDlgItem(IDC_ADIM_START_UNIT)->EnableWindow(FALSE);
@@ -397,12 +405,16 @@ BOOL CGirderDescGeneralPage::OnInitDialog()
 
       GetDlgItem(IDC_ADIM_START)->SetWindowText(_T(""));
       GetDlgItem(IDC_ADIM_END)->SetWindowText(_T(""));
+   }
 
-      // fillet
-      GetDlgItem(IDC_CB_FILLET)->EnableWindow(FALSE);
-      GetDlgItem(IDC_FILLET)->EnableWindow(FALSE);
-      GetDlgItem(IDC_FILLET_UNIT)->EnableWindow(FALSE);
-      GetDlgItem(IDC_FILLET)->SetWindowText(_T(""));
+   if (!m_bCanAssExcessCamberInputBeEnabled)
+   {
+      // AssExcessCamber
+      GetDlgItem(IDC_ASSEXCESSCAMBER_LABEL)->EnableWindow(FALSE);
+      GetDlgItem(IDC_CB_ASSEXCESSCAMBER)->EnableWindow(FALSE);
+      GetDlgItem(IDC_ASSEXCESSCAMBER)->EnableWindow(FALSE);
+      GetDlgItem(IDC_ASSEXCESSCAMBER_UNIT)->EnableWindow(FALSE);
+      GetDlgItem(IDC_ASSEXCESSCAMBER)->SetWindowText(_T(""));
    }
 
 	return TRUE;  // return TRUE unless you set the focus to a control
@@ -1141,28 +1153,28 @@ void CGirderDescGeneralPage::OnChangeSlabOffsetType()
    }
 }
 
-void CGirderDescGeneralPage::OnChangeFilletType()
+void CGirderDescGeneralPage::OnChangeAssExcessCamberType()
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
-   pgsTypes::FilletType temp = m_FilletType;
-   m_FilletType = m_FilletTypeCache;
-   m_FilletTypeCache = temp;
+   pgsTypes::AssExcessCamberType temp = m_AssExcessCamberType;
+   m_AssExcessCamberType = m_AssExcessCamberTypeCache;
+   m_AssExcessCamberTypeCache = temp;
 
    UpdateSlabOffsetControls();
 
-   CWnd* pwndFillet = GetDlgItem(IDC_FILLET);
-   if ( m_FilletType == pgsTypes::fttGirder )
+   CWnd* pwndAssExcessCamber = GetDlgItem(IDC_ASSEXCESSCAMBER);
+   if ( m_AssExcessCamberType == pgsTypes::aecGirder )
    {
       // going into girder by girder slab offset mode
-      CString strTemp = m_strFilletCache;
+      CString strTemp = m_strAssExcessCamberCache;
 
-      pwndFillet->GetWindowText(m_strFilletCache);
-      pwndFillet->SetWindowText(strTemp);
+      pwndAssExcessCamber->GetWindowText(m_strAssExcessCamberCache);
+      pwndAssExcessCamber->SetWindowText(strTemp);
    }
-   else if ( m_FilletType == pgsTypes::fttSpan )
+   else if ( m_AssExcessCamberType == pgsTypes::aecSpan )
    {
-      //pwndFillet->SetWindowText(m_strFilletCache);
+      //pwndAssExcessCamber->SetWindowText(m_strAssExcessCamberCache);
    }
    else
    {
@@ -1170,12 +1182,12 @@ void CGirderDescGeneralPage::OnChangeFilletType()
       EAFGetBroker(&pBroker);
       GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
-      Float64 fillet;
+      Float64 assExcessCamber;
       CDataExchange dx(this,TRUE);
-      DDX_UnitValueAndTag(&dx, IDC_FILLET,IDC_FILLET_UNIT, fillet, pDisplayUnits->GetComponentDimUnit());
+      DDX_UnitValueAndTag(&dx, IDC_ASSEXCESSCAMBER,IDC_ASSEXCESSCAMBER_UNIT, assExcessCamber, pDisplayUnits->GetComponentDimUnit());
 
-      GetDlgItem(IDC_FILLET)->GetWindowText(m_strFilletCache);
-      GetDlgItem(IDC_FILLET)->SetWindowText( ::FormatDimension(fillet,pDisplayUnits->GetComponentDimUnit(),false) );
+      GetDlgItem(IDC_ASSEXCESSCAMBER)->GetWindowText(m_strAssExcessCamberCache);
+      GetDlgItem(IDC_ASSEXCESSCAMBER)->SetWindowText( ::FormatDimension(assExcessCamber,pDisplayUnits->GetComponentDimUnit(),false) );
    }
 }
 
@@ -1192,9 +1204,9 @@ void CGirderDescGeneralPage::UpdateSlabOffsetControls()
    GetDlgItem(IDC_ADIM_END)->EnableWindow(bEnable);
    GetDlgItem(IDC_ADIM_END_UNIT)->EnableWindow(bEnable);
 
-   bEnable = (m_FilletType == pgsTypes::fttGirder ? TRUE : FALSE);
-   GetDlgItem(IDC_FILLET)->EnableWindow(bEnable);
-   GetDlgItem(IDC_FILLET_UNIT)->EnableWindow(bEnable);
+   bEnable = (m_bCanAssExcessCamberInputBeEnabled && m_AssExcessCamberType == pgsTypes::aecGirder ? TRUE : FALSE);
+   GetDlgItem(IDC_ASSEXCESSCAMBER)->EnableWindow(bEnable);
+   GetDlgItem(IDC_ASSEXCESSCAMBER_UNIT)->EnableWindow(bEnable);
 }
 
 void CGirderDescGeneralPage::OnBeforeChangeGirderName()

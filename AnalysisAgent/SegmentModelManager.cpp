@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2017  Washington State Department of Transportation
+// Copyright © 1999-2018  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -434,10 +434,13 @@ std::vector<Float64> CSegmentModelManager::GetDeflection(IntervalIndexType inter
             for (; poiIter != poiIterEnd; poiIter++, DyIter++ )
             {
                const pgsPointOfInterest& poi(*poiIter);
-               Float64 d = ::LinInterp( poi.GetDistFromStart(), Y1, Y2, X2-X1);
-
                Float64 Dy = *DyIter;
-               Dy -= d;
+
+               if (pPoi->IsOnSegment(poi))
+               {
+                  Float64 d = ::LinInterp(poi.GetDistFromStart(), Y1, Y2, X2 - X1);
+                  Dy -= d;
+               }
                
                vDy.push_back(Dy);
             }
@@ -1513,7 +1516,7 @@ void CSegmentModelManager::GetSectionResults(IntervalIndexType intervalIdx,LoadC
               lcid == GetLoadCaseID(pgsTypes::Temporary) ) 
            )
          {
-            ApplyPretensionLoad(pModelData,segmentKey);
+            ApplyPretensionLoad(pModelData,segmentKey,intervalIdx);
          }
       }
 
@@ -1655,7 +1658,7 @@ void CSegmentModelManager::GetSectionStress(IntervalIndexType intervalIdx,LoadCa
    const CSegmentKey& segmentKey(poi.GetSegmentKey());
    CSegmentModelData* pModelData = GetSegmentModel(segmentKey,intervalIdx);
 
-   ApplyPretensionLoad(pModelData,segmentKey);
+   ApplyPretensionLoad(pModelData,segmentKey,intervalIdx);
 
    PoiIDPairType poi_id = pModelData->PoiMap.GetModelPoi( poi );
    if ( poi_id.first == INVALID_ID )
@@ -2120,14 +2123,17 @@ CSegmentModelData CSegmentModelManager::BuildSegmentModel(const CSegmentKey& seg
    return model_data;
 }
 
-void CSegmentModelManager::ApplyPretensionLoad(CSegmentModelData* pModelData,const CSegmentKey& segmentKey)
+void CSegmentModelManager::ApplyPretensionLoad(CSegmentModelData* pModelData,const CSegmentKey& segmentKey,IntervalIndexType intervalIdx)
 {
    CComPtr<IFem2dLoadingCollection> loadings;
    pModelData->Model->get_Loadings(&loadings);
 
    GET_IFACE_NOCHECK(IProductLoads,pProductLoads);
 
-   for ( int i = 0; i < 3; i++ )
+   GET_IFACE(IIntervals, pIntervals);
+   IntervalIndexType tsInstallationIntervalIdx = pIntervals->GetTemporaryStrandInstallationInterval(segmentKey);
+
+   for (int i = 0; i < 3; i++)
    {
       pgsTypes::StrandType strandType = pgsTypes::StrandType(i);
 
@@ -2136,6 +2142,16 @@ void CSegmentModelManager::ApplyPretensionLoad(CSegmentModelData* pModelData,con
       if ( pModelData->Loads.find(lcid) != pModelData->Loads.end() )
       {
          // this load has been previously applied
+         continue;
+      }
+
+      pModelData->Loads.insert(lcid);
+
+      if (strandType == pgsTypes::Temporary && intervalIdx < tsInstallationIntervalIdx)
+      {
+         // temporary strands are not yet installed so don't go any further
+         // however, the code above is required because we have to create the loading in the FEM model
+         // so that we can get results
          continue;
       }
 
@@ -2148,7 +2164,6 @@ void CSegmentModelManager::ApplyPretensionLoad(CSegmentModelData* pModelData,con
       loading->get_PointLoads(&pointLoads);
       LoadIDType ptLoadID;
       pointLoads->get_Count((CollectionIndexType*)&ptLoadID);
-      pModelData->Loads.insert(lcid);
 
       std::vector<EquivPretensionLoad>::iterator iter(vLoads.begin());
       std::vector<EquivPretensionLoad>::iterator iterEnd(vLoads.end());

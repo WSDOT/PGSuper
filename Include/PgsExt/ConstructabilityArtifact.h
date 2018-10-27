@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2017  Washington State Department of Transportation
+// Copyright © 1999-2018  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -68,8 +68,9 @@ public:
    // GROUP: ENUM
    // Status for A dimension check along the girder. Not for check at bearing CL's
    enum SlabOffsetStatusType { Pass, Fail, Excessive, NA };
-   // Status for Fillet geometry check 
-   enum HaunchGeometryStatusType { hgNA, hgPass, hgInsufficient, hgExcessive };
+
+   // Status for Haunch Load geometry check 
+   enum HaunchLoadGeometryStatusType { hlgNA, hlgPass, hlgInsufficient, hlgExcessive };
 
    // GROUP: LIFECYCLE
 
@@ -145,15 +146,19 @@ public:
    void GetBottomFlangeClearanceParameters(Float64* pC,Float64* pCmin) const;
    bool BottomFlangeClearancePassed() const;
 
-   // Fillet dimension (haunch) geometry check
-   void SetHaunchGeometryCheckApplicability(bool bSet);
-   bool IsHaunchGeometryCheckApplicable() const;
-   void SetComputedFillet(Float64 value);
-   Float64 GetComputedFillet() const;
-   void SetHaunchGeometryTolerance(Float64 value);
-   Float64 GetHaunchGeometryTolerance() const;
-   HaunchGeometryStatusType HaunchGeometryStatus() const;
-   bool HaunchGeometryPassed() const;
+   // haunch geometry check
+   void SetHaunchLoadGeometryCheckApplicability(bool bSet);
+   bool IsHaunchLoadGeometryCheckApplicable() const;
+   void SetAssumedExcessCamber(Float64 value);
+   Float64 GetAssumedExcessCamber() const;
+   void SetAssumedMinimumHaunchDepth(Float64 value); // minimum haunch along girder used to compute parabolic load
+   Float64 GetAssumedMinimumHaunchDepth() const;
+   void SetComputedExcessCamber(Float64 value);
+   Float64 GetComputedExcessCamber() const;
+   void SetHaunchLoadGeometryTolerance(Float64 value);
+   Float64 GetHaunchLoadGeometryTolerance() const;
+   HaunchLoadGeometryStatusType HaunchLoadGeometryStatus() const;
+   bool HaunchLoadGeometryPassed() const;
 
    bool Passed() const;
 
@@ -196,9 +201,11 @@ private:
    Float64 m_C;
    Float64 m_Cmin;
 
-   Float64 m_ComputedFillet;
-   Float64 m_HaunchGeometryTolerance;
-   bool m_bIsHaunchGeometryCheckApplicable;
+   Float64 m_ComputedExcessCamber;
+   Float64 m_AssumedExcessCamber;
+   Float64 m_AssumedMinimumHaunchDepth;
+   Float64 m_HaunchLoadGeometryTolerance;
+   bool m_bIsHaunchLoadGeometryCheckApplicable;
 
    // GROUP: LIFECYCLE
    // GROUP: OPERATORS
@@ -252,7 +259,7 @@ public:
    bool BottomFlangeClearancePassed() const;
 
    bool MinimumFilletPassed() const;
-   bool HaunchGeometryPassed() const;
+   bool HaunchLoadGeometryPassed() const;
 
    bool CheckStirrupLength() const;
 

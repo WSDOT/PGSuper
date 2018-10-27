@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2017  Washington State Department of Transportation
+// Copyright © 1999-2018  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -240,8 +240,12 @@ void CGirderDescDlg::DoUpdate()
    m_General.m_SlabOffset[pgsTypes::metStart] = pGroup->GetSlabOffset(pGroup->GetPierIndex(pgsTypes::metStart),m_SegmentKey.girderIndex);
    m_General.m_SlabOffset[pgsTypes::metEnd]   = pGroup->GetSlabOffset(pGroup->GetPierIndex(pgsTypes::metEnd),  m_SegmentKey.girderIndex);
 
-   m_General.m_FilletType = pIBridgeDesc->GetFilletType();
-   m_General.m_Fillet     =  pIBridgeDesc->GetFillet(m_SegmentKey.groupIndex,m_SegmentKey.girderIndex);
+   // assumed excess camber
+   GET_IFACE2(pBroker,ISpecification, pSpec );
+   m_bCanAssExcessCamberInputBeEnabled = pSpec->IsAssExcessCamberInputEnabled();
+
+   m_General.m_AssExcessCamberType = m_bCanAssExcessCamberInputBeEnabled ? pIBridgeDesc->GetAssExcessCamberType() : pgsTypes::aecBridge;
+   m_General.m_AssExcessCamber     =  m_bCanAssExcessCamberInputBeEnabled ? pIBridgeDesc->GetAssExcessCamber(m_SegmentKey.groupIndex,m_SegmentKey.girderIndex) : 0.0;
 
    // shear page
    m_Shear.m_CurGrdName = pGirder->GetGirderName();
@@ -249,6 +253,7 @@ void CGirderDescDlg::DoUpdate()
 
    // longitudinal rebar page
    m_LongRebar.m_CurGrdName = m_Shear.m_CurGrdName;
+
 }
 
 BOOL CGirderDescDlg::OnOK()

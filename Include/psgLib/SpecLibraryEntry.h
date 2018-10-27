@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2017  Washington State Department of Transportation
+// Copyright © 1999-2018  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -786,6 +786,12 @@ public:
    Float64 GetHaunchLoadCamberTolerance() const;
    void SetHaunchLoadCamberTolerance(Float64 tol);
 
+   // Set/get factor applied to assumed excess camber when computing haunch loads
+   // This value is only used if HaunchLoadComputationType==hlcAccountForCamber
+   // Valid values are 0.0< to <=1.0
+   Float64 GetHaunchLoadCamberFactor() const;
+   void SetHaunchLoadCamberFactor(Float64 tol);
+
    // Set/Get the magnitude of the pedestrian live load
    Float64 GetPedestrianLiveLoad() const;
    void SetPedestrianLiveLoad(Float64 w);
@@ -1341,6 +1347,7 @@ private:
    pgsTypes::OverlayLoadDistributionType m_OverlayLoadDistribution;
    pgsTypes::HaunchLoadComputationType m_HaunchLoadComputationType;
    Float64 m_HaunchLoadCamberTolerance;
+   Float64 m_HaunchLoadCamberFactor;
 
    // bridge site 3
    Float64 m_Bs3CompStressServ;

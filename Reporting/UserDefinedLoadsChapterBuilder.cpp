@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2017  Washington State Department of Transportation
+// Copyright © 1999-2018  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -26,9 +26,10 @@
 
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
-#include <IFace\Intervals.h>
 
-#include <PgsExt\TimelineManager.h>
+#include <PgsExt\PointLoadData.h>
+#include <PgsExt\DistributedLoadData.h>
+#include <PgsExt\MomentLoadData.h>
 
 
 #ifdef _DEBUG
@@ -170,96 +171,72 @@ rptParagraph* CUserDefinedLoadsChapterBuilder::CreatePointLoadTable(IBroker* pBr
    USES_CONVERSION;
    rptParagraph* pParagraph = new rptParagraph();
 
-   INIT_UV_PROTOTYPE( rptLengthUnitValue,    dim,   pDisplayUnits->GetSpanLengthUnit(),  false );
-   INIT_UV_PROTOTYPE( rptForceUnitValue,   shear,   pDisplayUnits->GetShearUnit(), false );
-
-   GET_IFACE2(pBroker,IBridge,pBridge);
-   Float64 span_length = pBridge->GetSpanLength(spanKey.spanIndex,spanKey.girderIndex);
+   INIT_UV_PROTOTYPE( rptLengthUnitValue,    location,   pDisplayUnits->GetSpanLengthUnit(),  true );
+   INIT_UV_PROTOTYPE( rptForceUnitValue,   force,   pDisplayUnits->GetGeneralForceUnit(), false );
+   INIT_SCALAR_PROTOTYPE(rptRcPercentage, percentage, pDisplayUnits->GetPercentageFormat());
 
    ASSERT_SPAN_KEY(spanKey);
+   GET_IFACE2(pBroker, IBridge, pBridge);
    GroupIndexType grpIdx = pBridge->GetGirderGroupIndex(spanKey.spanIndex);
    CGirderKey girderKey(grpIdx,spanKey.girderIndex);
    ASSERT_GIRDER_KEY(girderKey);
 
-
-   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
-   const CTimelineManager* pTimelineMgr = pIBridgeDesc->GetTimelineManager();
-
-   GET_IFACE2(pBroker,IEventMap,pEventMap);
-   GET_IFACE2(pBroker,IIntervals,pIntervals);
-
-   std::_tostringstream os;
-   rptRcTable* table = rptStyleManager::CreateDefaultTable(5,_T("Point Loads"));
-
-   (*table)(0,0)  << _T("Event");
-   (*table)(0,1)  << _T("Load") << rptNewLine << _T("Case");
-   (*table)(0,2)  << COLHDR(_T("Location"),rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
-   (*table)(0,3)  << COLHDR(_T("Magnitude"),rptForceUnitTag, pDisplayUnits->GetShearUnit() );
-   (*table)(0,4)  << _T("Description");
-
-   GET_IFACE2(pBroker, IUserDefinedLoads, pUdl );
-
-   bool loads_exist = false;
-   RowIndexType row = table->GetNumberOfHeaderRows();
-
-   IntervalIndexType nIntervals = pIntervals->GetIntervalCount();
-   for ( IntervalIndexType intervalIdx = 0; intervalIdx < nIntervals; intervalIdx++ )
+   GET_IFACE2(pBroker, IUserDefinedLoadData, pUdl);
+   std::vector<CPointLoadData> vLoads = pUdl->GetPointLoads(spanKey);
+   if (0 < vLoads.size())
    {
-      EventIndexType eventIdx = pIntervals->GetStartEvent(intervalIdx);
-      const CTimelineEvent* pTimelineEvent = pTimelineMgr->GetEventByIndex(eventIdx);
-      std::_tstring strEventName(pEventMap->GetEventName(eventIdx));
+      GET_IFACE2(pBroker, IEventMap, pEventMap);
 
-      const std::vector<IUserDefinedLoads::UserPointLoad>* ppl = pUdl->GetPointLoads(intervalIdx, spanKey);
-      if ( ppl != nullptr )
-      {
-         IndexType npl = ppl->size();
+      rptRcTable* table = rptStyleManager::CreateDefaultTable(5, _T("Point Loads"));
 
-         for (IndexType ipl = 0; ipl < npl; ipl++)
-         {
-            loads_exist = true;
+      table->SetColumnStyle(0, rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+      table->SetStripeRowColumnStyle(0, rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
 
-            const IUserDefinedLoads::UserPointLoad& upl = ppl->at(ipl);
+      table->SetColumnStyle(4, rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+      table->SetStripeRowColumnStyle(4, rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
 
-             std::_tstring strLoadCaseName;
-             if (upl.m_LoadCase==IUserDefinedLoads::userDC)
-             {
-                strLoadCaseName = _T("DC");
-             }
-             else if (upl.m_LoadCase==IUserDefinedLoads::userDW)
-             {
-                strLoadCaseName = _T("DW");
-             }
-             else if (upl.m_LoadCase==IUserDefinedLoads::userLL_IM)
-             {
-                strLoadCaseName = _T("LL+IM");
-             }
-             else
-             {
-                ATLASSERT(false);
-             }
-
-            (*table)(row,0) << strEventName;
-            (*table)(row,1) << strLoadCaseName;
-            (*table)(row,2) << dim.SetValue( upl.m_Location );
-            (*table)(row,3) << shear.SetValue( upl.m_Magnitude );
-            (*table)(row,4) << upl.m_Description;
-
-            row++;
-         }
-      }
-   }
-
-   if (loads_exist)
-   {
       *pParagraph << table;
+
+      ColumnIndexType col = 0;
+      (*table)(0, col++) << _T("Event");
+      (*table)(0, col++) << _T("Load") << rptNewLine << _T("Case");
+      (*table)(0, col++) << _T("Location");
+      (*table)(0, col++) << COLHDR(_T("Magnitude"), rptForceUnitTag, pDisplayUnits->GetShearUnit());
+      (*table)(0, col++) << _T("Description");
+
+      RowIndexType row = table->GetNumberOfHeaderRows();
+
+      for ( const auto& load : vLoads)
+      {
+         col = 0;
+         EventIndexType eventIdx = pUdl->GetPointLoadEventIndex(load.m_ID);
+
+         std::_tstring strEventName(pEventMap->GetEventName(eventIdx));
+         std::_tstring strLoadCaseName(UserLoads::GetLoadCaseName(load.m_LoadCase));
+
+         (*table)(row, col++) << strEventName;
+         (*table)(row, col++) << strLoadCaseName;
+
+         if (load.m_Fractional)
+         {
+            (*table)(row, col++) << percentage.SetValue(load.m_Location);
+         }
+         else
+         {
+            (*table)(row, col++) << location.SetValue(load.m_Location);
+         }
+
+         (*table)(row, col++) << force.SetValue(load.m_Magnitude);
+         (*table)(row, col++) << load.m_Description;
+
+         row++;
+      }
    }
    else
    {
-      delete table;
-
       if (!bSimplifiedVersion)
       {
-         *pParagraph << _T("Point loads were not defined for this girder")<<rptNewLine;
+         *pParagraph << _T("Point loads were not defined for this girder") << rptNewLine;
       }
    }
 
@@ -273,96 +250,104 @@ rptParagraph* CUserDefinedLoadsChapterBuilder::CreateDistributedLoadTable(IBroke
 {
    rptParagraph* pParagraph = new rptParagraph();
 
-   INIT_UV_PROTOTYPE( rptLengthUnitValue,    dim,   pDisplayUnits->GetSpanLengthUnit(),  false );
-   INIT_UV_PROTOTYPE( rptForcePerLengthUnitValue,   fplu,   pDisplayUnits->GetForcePerLengthUnit(), false );
+   INIT_UV_PROTOTYPE(rptLengthUnitValue, location, pDisplayUnits->GetSpanLengthUnit(), true);
+   INIT_UV_PROTOTYPE(rptForcePerLengthUnitValue, force, pDisplayUnits->GetForcePerLengthUnit(), false);
+   INIT_SCALAR_PROTOTYPE(rptRcPercentage, percentage, pDisplayUnits->GetPercentageFormat());
 
-   GET_IFACE2(pBroker,IBridge,pBridge);
-   Float64 span_length = pBridge->GetSpanLength(spanKey.spanIndex,spanKey.girderIndex);
+   GET_IFACE2(pBroker, IBridge, pBridge);
+   Float64 span_length = pBridge->GetSpanLength(spanKey.spanIndex, spanKey.girderIndex);
 
    ASSERT_SPAN_KEY(spanKey);
    GroupIndexType grpIdx = pBridge->GetGirderGroupIndex(spanKey.spanIndex);
    CGirderKey girderKey(grpIdx,spanKey.girderIndex);
    ASSERT_GIRDER_KEY(girderKey);
 
-   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
-   const CTimelineManager* pTimelineMgr = pIBridgeDesc->GetTimelineManager();
-
-   GET_IFACE2(pBroker,IEventMap,pEventMap);
-   GET_IFACE2(pBroker,IIntervals,pIntervals);
-
-   rptRcTable* table = rptStyleManager::CreateDefaultTable(7,_T("Distributed Loads"));
-
-   (*table)(0,0)  << _T("Event");
-   (*table)(0,1)  << _T("Load") << rptNewLine << _T("Case");
-   (*table)(0,2)  << COLHDR(_T("Start") << rptNewLine << _T("Location"),rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
-   (*table)(0,3)  << COLHDR(_T("End") << rptNewLine << _T("Location"),rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
-   (*table)(0,4)  << COLHDR(_T("Start") << rptNewLine << _T("Magnitude"),rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
-   (*table)(0,5)  << COLHDR(_T("End") << rptNewLine << _T("Magnitude"),rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
-   (*table)(0,6)  << _T("Description");
-
-   GET_IFACE2(pBroker, IUserDefinedLoads, pUdl );
-
-   bool loads_exist = false;
-   RowIndexType row = table->GetNumberOfHeaderRows();
-   IntervalIndexType nIntervals = pIntervals->GetIntervalCount();
-   for ( IntervalIndexType intervalIdx = 0; intervalIdx < nIntervals; intervalIdx++ )
+   GET_IFACE2(pBroker, IUserDefinedLoadData, pUdl);
+   std::vector<CDistributedLoadData> vLoads = pUdl->GetDistributedLoads(spanKey);
+   if (0 < vLoads.size() )
    {
-      EventIndexType eventIdx = pIntervals->GetStartEvent(intervalIdx);
-      const CTimelineEvent* pTimelineEvent = pTimelineMgr->GetEventByIndex(eventIdx);
-      std::_tstring strEventName(pEventMap->GetEventName(eventIdx));
+      GET_IFACE2(pBroker, IEventMap, pEventMap);
 
-      const std::vector<IUserDefinedLoads::UserDistributedLoad>* ppl = pUdl->GetDistributedLoads(intervalIdx, spanKey);
-      if (ppl != nullptr)
-      {
-         IndexType npl = ppl->size();
-         for (IndexType ipl = 0; ipl < npl; ipl++)
-         {
-            loads_exist = true;
+      rptRcTable* table = rptStyleManager::CreateDefaultTable(7, _T("Distributed Loads"));
 
-            const IUserDefinedLoads::UserDistributedLoad& upl = ppl->at(ipl);
+      table->SetColumnStyle(0, rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+      table->SetStripeRowColumnStyle(0, rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
 
-             std::_tstring strLoadCaseName;
-             if (upl.m_LoadCase==IUserDefinedLoads::userDC)
-             {
-                strLoadCaseName = _T("DC");
-             }
-             else if (upl.m_LoadCase==IUserDefinedLoads::userDW)
-             {
-                strLoadCaseName = _T("DW");
-             }
-             else if (upl.m_LoadCase==IUserDefinedLoads::userLL_IM)
-             {
-                strLoadCaseName = _T("LL+IM");
-             }
-             else
-             {
-                ATLASSERT(false);
-             }
+      table->SetColumnStyle(6, rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+      table->SetStripeRowColumnStyle(6, rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
 
-            (*table)(row,0) << strEventName;
-            (*table)(row,1) << strLoadCaseName;
-            (*table)(row,2) << dim.SetValue( upl.m_StartLocation );
-            (*table)(row,3) << dim.SetValue( upl.m_EndLocation );
-            (*table)(row,4) << fplu.SetValue( upl.m_WStart );
-            (*table)(row,5) << fplu.SetValue( upl.m_WEnd );
-            (*table)(row,6) << upl.m_Description;
-
-            row++;
-         }
-      }
-   }
-
-   if (loads_exist)
-   {
       *pParagraph << table;
+
+      ColumnIndexType col = 0;
+      (*table)(0, col++) << _T("Event");
+      (*table)(0, col++) << _T("Load") << rptNewLine << _T("Case");
+      (*table)(0, col++) << _T("Start") << rptNewLine << _T("Location");
+      (*table)(0, col++) << _T("End") << rptNewLine << _T("Location");
+      (*table)(0, col++) << COLHDR(_T("Start") << rptNewLine << _T("Magnitude"), rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit());
+      (*table)(0, col++) << COLHDR(_T("End") << rptNewLine << _T("Magnitude"), rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit());
+      (*table)(0, col++) << _T("Description");
+
+      RowIndexType row = table->GetNumberOfHeaderRows();
+
+      for ( const auto& load : vLoads)
+      {
+         col = 0;
+
+         EventIndexType eventIdx = pUdl->GetDistributedLoadEventIndex(load.m_ID);
+
+         std::_tstring strEventName(pEventMap->GetEventName(eventIdx));
+         std::_tstring strLoadCaseName(UserLoads::GetLoadCaseName(load.m_LoadCase));
+
+         (*table)(row, col++) << strEventName;
+         (*table)(row, col++) << strLoadCaseName;
+
+         if (load.m_Fractional)
+         {
+            if (load.m_Type == UserLoads::Uniform)
+            {
+               (*table)(row, col++) << percentage.SetValue(0.0);
+               (*table)(row, col++) << percentage.SetValue(1.0);
+            }
+            else
+            {
+               (*table)(row, col++) << percentage.SetValue(load.m_StartLocation);
+               (*table)(row, col++) << percentage.SetValue(load.m_EndLocation);
+            }
+         }
+         else
+         {
+            if (load.m_Type == UserLoads::Uniform)
+            {
+               (*table)(row, col++) << location.SetValue(0.0);
+               (*table)(row, col++) << location.SetValue(span_length);
+            }
+            else
+            {
+               (*table)(row, col++) << location.SetValue(load.m_StartLocation);
+               (*table)(row, col++) << location.SetValue(load.m_EndLocation);
+            }
+         }
+
+         if (load.m_Type == UserLoads::Uniform)
+         {
+            (*table)(row, col++) << force.SetValue(load.m_WStart);
+            (*table)(row, col++) << force.SetValue(load.m_WStart);
+         }
+         else
+         {
+            (*table)(row, col++) << force.SetValue(load.m_WStart);
+            (*table)(row, col++) << force.SetValue(load.m_WEnd);
+         }
+         (*table)(row, col++) << load.m_Description;
+
+         row++;
+      }
    }
    else
    {
-      delete table;
-
-      if (! bSimplifiedVersion)
+      if (!bSimplifiedVersion)
       {
-         *pParagraph << _T("Distributed loads were not defined for this girder")<<rptNewLine;
+         *pParagraph << _T("Distributed loads were not defined for this girder") << rptNewLine;
       }
    }
 
@@ -377,102 +362,72 @@ rptParagraph* CUserDefinedLoadsChapterBuilder::CreateMomentLoadTable(IBroker* pB
 {
    rptParagraph* pParagraph = new rptParagraph();
 
-   INIT_UV_PROTOTYPE( rptLengthUnitValue,    dim,   pDisplayUnits->GetSpanLengthUnit(),  false );
+   INIT_UV_PROTOTYPE(rptLengthUnitValue, location, pDisplayUnits->GetSpanLengthUnit(), true);
    INIT_UV_PROTOTYPE( rptMomentUnitValue,   moment,   pDisplayUnits->GetMomentUnit(), false );
-
-   GET_IFACE2(pBroker,IBridge,pBridge);
-   Float64 span_length = pBridge->GetSpanLength(spanKey.spanIndex,spanKey.girderIndex);
+   INIT_SCALAR_PROTOTYPE(rptRcPercentage, percentage, pDisplayUnits->GetPercentageFormat());
 
    ASSERT_SPAN_KEY(spanKey);
+   GET_IFACE2(pBroker, IBridge, pBridge);
    GroupIndexType grpIdx = pBridge->GetGirderGroupIndex(spanKey.spanIndex);
    CGirderKey girderKey(grpIdx,spanKey.girderIndex);
    ASSERT_GIRDER_KEY(girderKey);
 
-   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
-   const CTimelineManager* pTimelineMgr = pIBridgeDesc->GetTimelineManager();
-
-   GET_IFACE2(pBroker,IEventMap,pEventMap);
-   GET_IFACE2(pBroker,IIntervals,pIntervals);
-
-   rptRcTable* table = rptStyleManager::CreateDefaultTable(5,_T("End Moments"));
-
-   (*table)(0,0)  << _T("Event");
-   (*table)(0,1)  << _T("Load") << rptNewLine << _T("Case");
-   (*table)(0,2)  << _T("Location");
-   (*table)(0,3)  << COLHDR(_T("Magnitude"),rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
-   (*table)(0,4)  << _T("Description");
-
-   GET_IFACE2(pBroker, IUserDefinedLoads, pUdl );
-
-   bool loads_exist = false;
-   RowIndexType row = table->GetNumberOfHeaderRows();
-   IntervalIndexType nIntervals = pIntervals->GetIntervalCount();
-   for ( IntervalIndexType intervalIdx = 0; intervalIdx < nIntervals; intervalIdx++ )
+   GET_IFACE2(pBroker, IUserDefinedLoadData, pUdl);
+   std::vector<CMomentLoadData> vLoads = pUdl->GetMomentLoads(spanKey);
+   if (0 < vLoads.size())
    {
-      EventIndexType eventIdx = pIntervals->GetStartEvent(intervalIdx);
-      const CTimelineEvent* pTimelineEvent = pTimelineMgr->GetEventByIndex(eventIdx);
-      std::_tstring strEventName(pEventMap->GetEventName(eventIdx));
+      GET_IFACE2(pBroker, IEventMap, pEventMap);
 
-      const std::vector<IUserDefinedLoads::UserMomentLoad>* ppl = pUdl->GetMomentLoads(intervalIdx, spanKey);
-      if (ppl != nullptr)
-      {
-         IndexType npl = ppl->size();
+      rptRcTable* table = rptStyleManager::CreateDefaultTable(5, _T("End Moments"));
 
-         for (IndexType ipl = 0; ipl < npl; ipl++)
-         {
-            loads_exist = true;
-
-            IUserDefinedLoads::UserMomentLoad upl = ppl->at(ipl);
-
-             std::_tstring strLoadCaseName;
-             if (upl.m_LoadCase==IUserDefinedLoads::userDC)
-             {
-                strLoadCaseName = _T("DC");
-             }
-             else if (upl.m_LoadCase==IUserDefinedLoads::userDW)
-             {
-                strLoadCaseName = _T("DW");
-             }
-             else if (upl.m_LoadCase==IUserDefinedLoads::userLL_IM)
-             {
-                strLoadCaseName = _T("LL+IM");
-             }
-             else
-             {
-                ATLASSERT(false);
-             }
-
-            (*table)(row,0) << strEventName;
-            (*table)(row,1) << strLoadCaseName;
-
-            if ( IsZero(upl.m_Location) )
-            {
-               (*table)(row,2) << _T("Start of span");
-            }
-            else
-            {
-               (*table)(row,2) << _T("End of span");
-            }
-
-            (*table)(row,3) << moment.SetValue( upl.m_Magnitude );
-            (*table)(row,4) << upl.m_Description;
-
-            row++;
-         }
-      }
-   }
-
-   if (loads_exist)
-   {
       *pParagraph << table;
+
+      table->SetColumnStyle(0, rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+      table->SetStripeRowColumnStyle(0, rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+
+      table->SetColumnStyle(4, rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+      table->SetStripeRowColumnStyle(4, rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+
+      ColumnIndexType col = 0;
+      (*table)(0, col++) << _T("Event");
+      (*table)(0, col++) << _T("Load") << rptNewLine << _T("Case");
+      (*table)(0, col++) << _T("Location");
+      (*table)(0, col++) << COLHDR(_T("Magnitude"), rptMomentUnitTag, pDisplayUnits->GetMomentUnit());
+      (*table)(0, col++) << _T("Description");
+
+      RowIndexType row = table->GetNumberOfHeaderRows();
+
+      for ( const auto& load : vLoads)
+      {
+         col = 0;
+         EventIndexType eventIdx = pUdl->GetMomentLoadEventIndex(load.m_ID);
+
+         std::_tstring strEventName(pEventMap->GetEventName(eventIdx));
+         std::_tstring strLoadCaseName(UserLoads::GetLoadCaseName(load.m_LoadCase));
+
+         (*table)(row, col++) << strEventName;
+         (*table)(row, col++) << strLoadCaseName;
+
+         if (IsZero(load.m_Location))
+         {
+            (*table)(row, col++) << _T("Start of span");
+         }
+         else
+         {
+            (*table)(row, col++) << _T("End of span");
+         }
+
+         (*table)(row, col++) << moment.SetValue(load.m_Magnitude);
+         (*table)(row, col++) << load.m_Description;
+
+         row++;
+      }
    }
    else
    {
-      delete table;
-
       if (!bSimplifiedVersion)
       {
-         *pParagraph << _T("Moment loads were not defined for this girder")<<rptNewLine;
+         *pParagraph << _T("Moment loads were not defined for this girder") << rptNewLine;
       }
    }
 

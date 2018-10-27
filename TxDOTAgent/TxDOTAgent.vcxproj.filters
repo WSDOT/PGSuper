@@ -179,6 +179,12 @@
     <ClCompile Include="TxDOTOptionalDesignView.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="TxDOTAppPluginComponentInfo.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TxDOTAgentApp.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="TxDOTAgent_i.h" />
@@ -371,6 +377,12 @@
     <ClInclude Include="TxDOTOptionalDesignView.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="TxDOTAppPluginComponentInfo.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TxDOTAgentApp.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Image Include="res\toolbar1.bmp">
@@ -398,6 +410,9 @@
       <Filter>Resource Files</Filter>
     </None>
     <None Include="TxDOTComponentInfo.rgs">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="TxDOTAppPluginComponentInfo.rgs">
       <Filter>Resource Files</Filter>
     </None>
   </ItemGroup>

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2017  Washington State Department of Transportation
+// Copyright © 1999-2018  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -85,17 +85,18 @@ protected:
    void UpdateSlabOffsetWindowState();
 
 
-   CCacheEdit m_ctrlFillet;
+   CCacheEdit m_ctrlAssExcessCamber;
+   bool m_bCanAssExcessCamberInputBeEnabled;
 
-   pgsTypes::FilletType m_InitialFilletType;
-   void UpdateFilletWindowState();
+   pgsTypes::AssExcessCamberType m_InitialAssExcessCamberType;
+   void UpdateAssExcessCamberWindowState();
 
    void ShowCantilevers(BOOL bShowStart,BOOL bShowEnd);
 
 public:
    afx_msg void OnBnClickedStartCantilever();
    afx_msg void OnBnClickedEndCantilever();
-   afx_msg void OnCbnSelchangeFilletCombo();
+   afx_msg void OnCbnSelchangeAssExcessCamberCombo();
 };
 
 //{{AFX_INSERT_LOCATION}}

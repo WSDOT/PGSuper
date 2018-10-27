@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2017  Washington State Department of Transportation
+// Copyright © 1999-2018  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -303,6 +303,18 @@ const CPointLoadData* CLoadManager::FindPointLoad(LoadIDType loadID) const
    return nullptr;
 }
 
+EventIndexType CLoadManager::GetPointLoadEventIndex(LoadIDType loadID) const
+{
+   EventIndexType eventIdx = m_pTimelineManager->FindUserLoadEventIndex(loadID);
+   return eventIdx;
+}
+
+EventIDType CLoadManager::GetPointLoadEventID(LoadIDType loadID) const
+{
+   EventIDType eventID = m_pTimelineManager->FindUserLoadEventID(loadID);
+   return eventID;
+}
+
 bool CLoadManager::UpdatePointLoad(CollectionIndexType idx, EventIDType eventID,const CPointLoadData& pld,bool* pbMovedGirders,CSpanKey* pPrevKey)
 {
    ATLASSERT(0 <= idx && idx < GetPointLoadCount() );
@@ -354,6 +366,19 @@ void CLoadManager::DeletePointLoad(CollectionIndexType idx,CSpanKey* pKey)
    m_PointLoads.erase(it);
 }
 
+std::vector<CPointLoadData> CLoadManager::GetPointLoads(const CSpanKey& spanKey) const
+{
+   std::vector<CPointLoadData> vLoads;
+   for (const auto& load : m_PointLoads)
+   {
+      if (load.m_SpanKey == spanKey)
+      {
+         vLoads.push_back(load);
+      }
+   }
+
+   return vLoads;
+}
 
 CollectionIndexType CLoadManager::GetDistributedLoadCount() const
 {
@@ -395,6 +420,18 @@ const CDistributedLoadData* CLoadManager::FindDistributedLoad(LoadIDType loadID)
    }
 
    return nullptr;
+}
+
+EventIndexType CLoadManager::GetDistributedLoadEventIndex(LoadIDType loadID) const
+{
+   EventIndexType eventIdx = m_pTimelineManager->FindUserLoadEventIndex(loadID);
+   return eventIdx;
+}
+
+EventIDType CLoadManager::GetDistributedLoadEventID(LoadIDType loadID) const
+{
+   EventIDType eventID = m_pTimelineManager->FindUserLoadEventID(loadID);
+   return eventID;
 }
 
 bool CLoadManager::UpdateDistributedLoad(CollectionIndexType idx, EventIDType eventID,const CDistributedLoadData& pld,bool* pbMovedGirder,CSpanKey* pPrevKey)
@@ -447,6 +484,19 @@ void CLoadManager::DeleteDistributedLoad(CollectionIndexType idx,CSpanKey* pKey)
    m_DistributedLoads.erase(it);
 }
 
+std::vector<CDistributedLoadData> CLoadManager::GetDistributedLoads(const CSpanKey& spanKey) const
+{
+   std::vector<CDistributedLoadData> vLoads;
+   for (const auto& load : m_DistributedLoads)
+   {
+      if (load.m_SpanKey == spanKey)
+      {
+         vLoads.push_back(load);
+      }
+   }
+
+   return vLoads;
+}
 
 CollectionIndexType CLoadManager::GetMomentLoadCount() const
 {
@@ -472,6 +522,18 @@ const CMomentLoadData* CLoadManager::GetMomentLoad(CollectionIndexType idx) cons
    ATLASSERT(0 <= idx && idx < GetMomentLoadCount() );
 
    return &m_MomentLoads[idx];
+}
+
+EventIndexType CLoadManager::GetMomentLoadEventIndex(LoadIDType loadID) const
+{
+   EventIndexType eventIdx = m_pTimelineManager->FindUserLoadEventIndex(loadID);
+   return eventIdx;
+}
+
+EventIDType CLoadManager::GetMomentLoadEventID(LoadIDType loadID) const
+{
+   EventIDType eventID = m_pTimelineManager->FindUserLoadEventID(loadID);
+   return eventID;
 }
 
 const CMomentLoadData* CLoadManager::FindMomentLoad(LoadIDType loadID) const
@@ -540,30 +602,48 @@ void CLoadManager::DeleteMomentLoad(CollectionIndexType idx,CSpanKey* pKey)
    m_MomentLoads.erase(it);
 }
 
+std::vector<CMomentLoadData> CLoadManager::GetMomentLoads(const CSpanKey& spanKey) const
+{
+   std::vector<CMomentLoadData> vLoads;
+   for (const auto& load : m_MomentLoads)
+   {
+      if (load.m_SpanKey == spanKey)
+      {
+         vLoads.push_back(load);
+      }
+   }
+
+   return vLoads;
+}
+
+template <class T>
+bool HasUserLoadT(const T& loads,UserLoads::LoadCase lcType)
+{
+   for (const auto& load : loads)
+   {
+      if (load.m_LoadCase == lcType)
+      {
+         return true;
+      }
+   }
+   return false;
+}
+
 bool CLoadManager::HasUserLoad(const CGirderKey& girderKey,UserLoads::LoadCase lcType) const
 {
-   for (const auto& pntLd : m_PointLoads)
+   if (HasUserLoadT(m_PointLoads, lcType))
    {
-      if ( pntLd.m_LoadCase == lcType )
-      {
-         return true;
-      }
+      return true;
    }
 
-   for (const auto& distLd : m_DistributedLoads)
+   if (HasUserLoadT(m_DistributedLoads, lcType))
    {
-      if ( distLd.m_LoadCase == lcType )
-      {
-         return true;
-      }
+      return true;
    }
 
-   for (const auto& momLd : m_MomentLoads)
+   if (HasUserLoadT(m_MomentLoads, lcType))
    {
-      if ( momLd.m_LoadCase == lcType )
-      {
-         return true;
-      }
+      return true;
    }
 
    return false;

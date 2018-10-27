@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2017  Washington State Department of Transportation
+// Copyright © 1999-2018  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -56,7 +56,7 @@ void failed_design(IBroker* pBroker,rptChapter* pChapter,IEAFDisplayUnits* pDisp
 void successful_design(IBroker* pBroker,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits,const pgsSegmentDesignArtifact* pArtifact);
 void multiple_girder_table(ColumnIndexType startIdx, ColumnIndexType endIdx,IBroker* pBroker,const std::vector<CGirderKey>& girderKeys,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits,IArtifact* pIArtifact);
 void process_artifacts(ColumnIndexType startIdx, ColumnIndexType endIdx, const std::vector<CGirderKey>& girderKeys, IArtifact* pIArtifact,
-                       const pgsGirderDesignArtifact** pArtifacts, bool& didFlexure, bool& didShear, bool& didLifting, bool& didHauling, bool& didSlabOffset, bool& didFillet, bool& isHarped, bool& isTemporary);
+                       const pgsGirderDesignArtifact** pArtifacts, bool& didFlexure, bool& didShear, bool& didLifting, bool& didHauling, bool& didSlabOffset, bool& didAssExcessCamber, bool& isHarped, bool& isTemporary);
 void write_primary_shear_data(rptParagraph* pParagraph, IEAFDisplayUnits* pDisplayUnits,Float64 girderLength, ZoneIndexType nz,const CShearData2* pShearData);
 void write_horiz_shear_data(rptParagraph* pParagraph, IEAFDisplayUnits* pDisplayUnits, Float64 girderLength, const CShearData2* pShearData);
 void write_additional_shear_data(rptParagraph* pParagraph, IEAFDisplayUnits* pDisplayUnits, Float64 girderLength, const CShearData2* pShearData);
@@ -606,6 +606,7 @@ void write_artifact_data(IBroker* pBroker,rptChapter* pChapter,IEAFDisplayUnits*
       if ( (pBridge->GetDeckType()!=pgsTypes::sdtNone) && (options.doDesignSlabOffset != sodNoADesign) )
       {
          GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+         GET_IFACE2(pBroker,ISpecification,pSpec);
          const CGirderGroupData* pGroup = pIBridgeDesc->GetBridgeDescription()->GetGirderGroup(segmentKey.groupIndex);
          const CSplicedGirderData* pGirder = pGroup->GetGirder(segmentKey.girderIndex);
          const CPrecastSegmentData* pSegment = pGirder->GetSegment(segmentKey.segmentIndex);
@@ -632,11 +633,11 @@ void write_artifact_data(IBroker* pBroker,rptChapter* pChapter,IEAFDisplayUnits*
             row++;
          }
 
-         if ( options.doDesignSlabOffset == sodAandFillet )
+         if ( options.doDesignSlabOffset==sodAandAssExcessCamber && pSpec->IsAssExcessCamberInputEnabled() )
          {
-            (*pTable)(row,0) << _T("Fillet");
-            (*pTable)(row,1) << length.SetValue( pArtifact->GetFillet() );
-            (*pTable)(row,2) << length.SetValue( pIBridgeDesc->GetFillet(segmentKey.groupIndex,segmentKey.girderIndex));
+            (*pTable)(row,0) << _T("Assumed Excess Camber");
+            (*pTable)(row,1) << length.SetValue( pArtifact->GetAssExcessCamber() );
+            (*pTable)(row,2) << length.SetValue( pIBridgeDesc->GetAssExcessCamber(segmentKey.groupIndex,segmentKey.girderIndex));
             row++;
          }
       }
@@ -1117,12 +1118,12 @@ void multiple_girder_table(ColumnIndexType startIdx, ColumnIndexType endIdx,
    bool did_lifting;
    bool did_hauling;
    bool did_slaboffset;
-   bool did_fillet;
+   bool did_assexcesscamber;
    bool is_harped;
    bool is_temporary;
 
    process_artifacts(startIdx, endIdx, girderKeys, pIArtifact,
-                     pArtifacts, did_flexure, did_shear, did_lifting, did_hauling, did_slaboffset, did_fillet, is_harped, is_temporary);
+                     pArtifacts, did_flexure, did_shear, did_lifting, did_hauling, did_slaboffset, did_assexcesscamber, is_harped, is_temporary);
 
    if (!did_flexure && !did_shear)
    {
@@ -1197,9 +1198,9 @@ void multiple_girder_table(ColumnIndexType startIdx, ColumnIndexType endIdx,
       (*pTable)(row++,0) << _T("Slab Offset (A Dimension)");
    }
 
-   if (did_fillet)
+   if (did_assexcesscamber)
    {
-      (*pTable)(row++,0) << _T("Fillet");
+      (*pTable)(row++,0) << _T("Assumed Excess Camber");
    }
 
    // Titles are now printed. Print results information
@@ -1332,9 +1333,9 @@ void multiple_girder_table(ColumnIndexType startIdx, ColumnIndexType endIdx,
          (*pTable)(row++,col) << length.SetValue( pArtifact->GetSlabOffset(pgsTypes::metStart) );
       }
 
-      if (did_fillet)
+      if (did_assexcesscamber)
       {
-         (*pTable)(row++,col) << length.SetValue( pArtifact->GetFillet() );
+         (*pTable)(row++,col) << length.SetValue( pArtifact->GetAssExcessCamber() );
       }
 
       col++;
@@ -1343,7 +1344,7 @@ void multiple_girder_table(ColumnIndexType startIdx, ColumnIndexType endIdx,
 
 void process_artifacts(ColumnIndexType startIdx, ColumnIndexType endIdx, const std::vector<CGirderKey>& girderKeys, IArtifact* pIArtifact,
                        const pgsGirderDesignArtifact** pArtifacts, bool& didFlexure, bool& didShear, bool& didLifting, bool& didHauling, 
-                       bool& didSlabOffset, bool& didFillet, bool& isHarped, bool& isTemporary)
+                       bool& didSlabOffset, bool& didAssExcessCamber, bool& isHarped, bool& isTemporary)
 {
    // Set all outcomes to false
    didFlexure = false;
@@ -1351,7 +1352,7 @@ void process_artifacts(ColumnIndexType startIdx, ColumnIndexType endIdx, const s
    didLifting = false;
    didHauling = false;
    didSlabOffset = false;
-   didFillet = false;
+   didAssExcessCamber = false;
    isHarped = false;
    isTemporary = false;
 
@@ -1392,9 +1393,9 @@ void process_artifacts(ColumnIndexType startIdx, ColumnIndexType endIdx, const s
       {
          didSlabOffset = true;
 
-         if (options.doDesignSlabOffset == sodAandFillet)
+         if (options.doDesignSlabOffset == sodAandAssExcessCamber)
          {
-            didFillet = true;
+            didAssExcessCamber = true;
          }
       }
 

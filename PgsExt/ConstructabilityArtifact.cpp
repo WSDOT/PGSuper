@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2017  Washington State Department of Transportation
+// Copyright © 1999-2018  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -59,9 +59,11 @@ m_bIsSlabOffsetApplicable(false)
    m_C = 0;
    m_Cmin = 0;
 
-   m_ComputedFillet = 0;
-   m_HaunchGeometryTolerance = 0;
-   m_bIsHaunchGeometryCheckApplicable = false;
+   m_ComputedExcessCamber = 0;
+   m_AssumedExcessCamber = 0;
+   m_AssumedMinimumHaunchDepth = Float64_Max;
+   m_HaunchLoadGeometryTolerance = 0;
+   m_bIsHaunchLoadGeometryCheckApplicable = false;
 }
 
 pgsSpanConstructabilityArtifact::pgsSpanConstructabilityArtifact(const pgsSpanConstructabilityArtifact& rOther)
@@ -299,68 +301,88 @@ bool pgsSpanConstructabilityArtifact::BottomFlangeClearancePassed() const
    return ::IsGE(m_Cmin,m_C) ? true : false;
 }
 
-void pgsSpanConstructabilityArtifact::SetComputedFillet(Float64 value)
+void pgsSpanConstructabilityArtifact::SetComputedExcessCamber(Float64 value)
 {
-   m_ComputedFillet = value;
+   m_ComputedExcessCamber = value;
 }
 
-Float64 pgsSpanConstructabilityArtifact::GetComputedFillet() const
+Float64 pgsSpanConstructabilityArtifact::GetComputedExcessCamber() const
 {
-   return m_ComputedFillet;
+   return m_ComputedExcessCamber;
 }
 
-void pgsSpanConstructabilityArtifact::SetHaunchGeometryCheckApplicability(bool bSet)
+void pgsSpanConstructabilityArtifact::SetAssumedExcessCamber(Float64 value)
 {
-   m_bIsHaunchGeometryCheckApplicable = bSet;
+   m_AssumedExcessCamber = value;
 }
 
-bool pgsSpanConstructabilityArtifact::IsHaunchGeometryCheckApplicable() const
+Float64 pgsSpanConstructabilityArtifact::GetAssumedExcessCamber() const
 {
-   return m_bIsHaunchGeometryCheckApplicable;
+   return m_AssumedExcessCamber;
 }
 
-void pgsSpanConstructabilityArtifact::SetHaunchGeometryTolerance(Float64 value)
+void pgsSpanConstructabilityArtifact::SetAssumedMinimumHaunchDepth(Float64 value)
 {
-   m_HaunchGeometryTolerance = value;
+   m_AssumedMinimumHaunchDepth = value;
 }
 
-Float64 pgsSpanConstructabilityArtifact::GetHaunchGeometryTolerance() const
+Float64 pgsSpanConstructabilityArtifact::GetAssumedMinimumHaunchDepth() const
 {
-   return m_HaunchGeometryTolerance;
+   return m_AssumedMinimumHaunchDepth;
 }
 
-pgsSpanConstructabilityArtifact::HaunchGeometryStatusType pgsSpanConstructabilityArtifact::HaunchGeometryStatus() const
+void pgsSpanConstructabilityArtifact::SetHaunchLoadGeometryCheckApplicability(bool bSet)
 {
-   if (IsHaunchGeometryCheckApplicable())
+   m_bIsHaunchLoadGeometryCheckApplicable = bSet;
+}
+
+bool pgsSpanConstructabilityArtifact::IsHaunchLoadGeometryCheckApplicable() const
+{
+   return m_bIsHaunchLoadGeometryCheckApplicable;
+}
+
+void pgsSpanConstructabilityArtifact::SetHaunchLoadGeometryTolerance(Float64 value)
+{
+   m_HaunchLoadGeometryTolerance = value;
+}
+
+Float64 pgsSpanConstructabilityArtifact::GetHaunchLoadGeometryTolerance() const
+{
+   return m_HaunchLoadGeometryTolerance;
+}
+
+pgsSpanConstructabilityArtifact::HaunchLoadGeometryStatusType pgsSpanConstructabilityArtifact::HaunchLoadGeometryStatus() const
+{
+   if (IsHaunchLoadGeometryCheckApplicable())
    {
-      if (m_ProvidedFillet > m_ComputedFillet + m_HaunchGeometryTolerance)
+      if (m_AssumedExcessCamber > m_ComputedExcessCamber + m_HaunchLoadGeometryTolerance)
       {
-         return hgExcessive;
+         return hlgInsufficient;
       }
-      if (m_ProvidedFillet < m_ComputedFillet - m_HaunchGeometryTolerance)
+      if (m_AssumedExcessCamber < m_ComputedExcessCamber - m_HaunchLoadGeometryTolerance)
       {
-         return hgInsufficient;
+         return hlgExcessive ;
       }
       else
       {
-         return hgPass;
+         return hlgPass;
       }
    }
    else
    {
-      return hgNA;
+      return hlgNA;
    }
 }
 
-bool pgsSpanConstructabilityArtifact::HaunchGeometryPassed() const
+bool pgsSpanConstructabilityArtifact::HaunchLoadGeometryPassed() const
 {
-   if (!IsHaunchGeometryCheckApplicable())
+   if (!IsHaunchLoadGeometryCheckApplicable())
    {
       return true;
    }
    else
    {
-      return HaunchGeometryStatus() == hgPass;
+      return HaunchLoadGeometryStatus() == hlgPass;
    }
 }
 
@@ -386,7 +408,7 @@ bool pgsSpanConstructabilityArtifact::Passed() const
       return false;
    }
 
-   if (!HaunchGeometryPassed())
+   if (!HaunchLoadGeometryPassed())
    {
       return false;
    }
@@ -425,9 +447,10 @@ void pgsSpanConstructabilityArtifact::MakeCopy(const pgsSpanConstructabilityArti
    m_C = rOther.m_C;
    m_Cmin = rOther.m_Cmin;
 
-   m_ComputedFillet = rOther.m_ComputedFillet;
-   m_HaunchGeometryTolerance = rOther.m_HaunchGeometryTolerance;
-   m_bIsHaunchGeometryCheckApplicable = rOther.m_bIsHaunchGeometryCheckApplicable;
+   m_ComputedExcessCamber = rOther.m_ComputedExcessCamber;
+   m_AssumedExcessCamber = rOther.m_AssumedExcessCamber;
+   m_HaunchLoadGeometryTolerance = rOther.m_HaunchLoadGeometryTolerance;
+   m_bIsHaunchLoadGeometryCheckApplicable = rOther.m_bIsHaunchLoadGeometryCheckApplicable;
 }
 
 void pgsSpanConstructabilityArtifact::MakeAssignment(const pgsSpanConstructabilityArtifact& rOther)
@@ -626,12 +649,12 @@ bool pgsConstructabilityArtifact::MinimumFilletPassed() const
    return true;
 }
 
-bool pgsConstructabilityArtifact::HaunchGeometryPassed() const
+bool pgsConstructabilityArtifact::HaunchLoadGeometryPassed() const
 {
    ATLASSERT(!m_SpanArtifacts.empty());
    for (const auto& artf : m_SpanArtifacts)
    {
-      if (!artf.HaunchGeometryPassed())
+      if (!artf.HaunchLoadGeometryPassed())
          return false;
    }
 

@@ -254,8 +254,8 @@ public:
    void SetSlabOffset(pgsTypes::MemberEndType end,Float64 offset);
    Float64 GetSlabOffset(pgsTypes::MemberEndType end) const; // "A" dimension
 
-   void SetFillet(Float64 f);
-   Float64 GetFillet() const;
+   void SetAssExcessCamber(Float64 f);
+   Float64 GetAssExcessCamber() const;
 
    void SetLiftingLocations(Float64 left,Float64 right);
    Float64 GetLeftLiftingLocation() const;
@@ -335,7 +335,7 @@ private:
 
    Float64 m_Fci;
    Float64 m_SlabOffset[2]; // "A" dimension at start and end of girder
-   Float64 m_Fillet;
+   Float64 m_AssExcessCamber;
    Float64 m_LiftLocLeft;
    Float64 m_LiftLocRight;
    Float64 m_ShipLocLeft;

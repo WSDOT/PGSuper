@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2017  Washington State Department of Transportation
+// Copyright © 1999-2018  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -448,13 +448,13 @@ typedef struct pgsTypes
       sotGirder,  // the slab offset is defined at each permanent pier supporting the girder
    } SlabOffsetType;
 
-
-   typedef enum FilletType
+   // Assummed excess camber input
+   typedef enum AssExcessCamberType 
    {
-      fttBridge,  // a single fillet is used for the entire bridge
-      fttSpan,    // the fillet is at each span
-      fttGirder,  // the fillet is defined at each girder
-   } FilletType;
+      aecBridge,  // a single camber is used for the entire bridge
+      aecSpan,    // the camber is defined at each span
+      aecGirder,  // the camber is defined at each girder
+   } AssExcessCamberType;
 
    // Define connectivity (per AASHTO jargon) of adjacent beams.
    // This is only used if SupportedBeamSpacing==sbsUniformAdjacent or sbsGeneralAdjacent
@@ -1188,7 +1188,7 @@ struct GDRCONFIG
    Float64 Ec;
 
    Float64 SlabOffset[2]; // slab offset at start and end of the girder (use pgsTypes::MemberEndType for array index)
-   Float64 Fillet;
+   Float64 AssExcessCamber;
 
    STIRRUPCONFIG StirrupConfig; // All of our transverse rebar information
 
@@ -1225,7 +1225,7 @@ struct GDRCONFIG
       if ( !IsEqual(SlabOffset[pgsTypes::metStart],other.SlabOffset[pgsTypes::metStart]) ) return false;
       if ( !IsEqual(SlabOffset[pgsTypes::metEnd],  other.SlabOffset[pgsTypes::metEnd])   ) return false;
 
-      if (!IsEqual(Fillet, other.Fillet)) return false;
+      if (!IsEqual(AssExcessCamber, other.AssExcessCamber)) return false;
 
       return true;
    }
@@ -1268,7 +1268,7 @@ void MakeCopy( const GDRCONFIG& rOther )
    SlabOffset[0] = rOther.SlabOffset[0];
    SlabOffset[1] = rOther.SlabOffset[1];
 
-   Fillet = rOther.Fillet;
+   AssExcessCamber = rOther.AssExcessCamber;
 
    StirrupConfig = rOther.StirrupConfig;
 }
@@ -1297,7 +1297,7 @@ struct HANDLINGCONFIG
 enum arFlexuralDesignType { dtNoDesign, dtDesignForHarping, dtDesignForDebonding, dtDesignFullyBonded,
                             dtDesignFullyBondedRaised, dtDesignForDebondingRaised }; // raised straight strands
 enum arDesignStrandFillType { ftGridOrder, ftMinimizeHarping, ftDirectFill }; // direct fill used for raised straight
-enum arSlabOffsetDesignType { sodNoADesign, sodAOnly, sodAandFillet }; 
+enum arSlabOffsetDesignType { sodNoADesign, sodAandAssExcessCamber }; 
 enum arDesignStirrupLayoutType { slLayoutStirrups, slRetainExistingLayout };
 
 struct arDesignOptions

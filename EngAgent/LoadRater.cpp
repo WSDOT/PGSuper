@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2017  Washington State Department of Transportation
+// Copyright © 1999-2018  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -338,6 +338,18 @@ void pgsLoadRater::InitCriticalSectionZones(const CGirderKey& girderKey,pgsTypes
 
       std::vector<pgsPointOfInterest> vCSPoi = pPoi->GetCriticalSections(limitState, thisGirderKey);
       std::vector<CRITSECTDETAILS> vCS = pShearCapacity->GetCriticalSectionDetails(limitState, thisGirderKey);
+      if (lrfdVersionMgr::GetVersion() < lrfdVersionMgr::ThirdEdition2004)
+      {
+         // if the LRFD is before 2004, critical section for shear was a function of loading.... we end up with many critical section POIs but
+         // only a few (usually 2) critical section details. Match the details to the POIs and throw out the other POIs. LRFD 2004 and later only depend on Mu
+         // so the number of CS POIs and CS details should always match.
+         vCSPoi.erase(
+            std::remove_if(vCSPoi.begin(), vCSPoi.end(), [&vCS](auto& poi) 
+               {
+                  return std::find_if(vCS.begin(), vCS.end(), [&poi](const auto& csDetails) {return csDetails.pCriticalSection->Poi.AtExactSamePlace(poi);}) == vCS.cend();
+               }),
+            vCSPoi.end());
+      }
       ATLASSERT(vCSPoi.size() == vCS.size());
       std::vector<CRITSECTDETAILS>::iterator iter(vCS.begin());
       std::vector<CRITSECTDETAILS>::iterator end(vCS.end());

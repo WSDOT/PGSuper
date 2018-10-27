@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2017  Washington State Department of Transportation
+// Copyright © 1999-2018  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -498,6 +498,7 @@ void write_intermedate_diaphragm_details(IBroker* pBroker,IEAFDisplayUnits* pDis
 {
    INIT_UV_PROTOTYPE( rptLengthUnitValue,  cmpdim,  pDisplayUnits->GetComponentDimUnit(), true );
    INIT_UV_PROTOTYPE( rptLengthUnitValue,  locdim,  pDisplayUnits->GetSpanLengthUnit(), true );
+   INIT_UV_PROTOTYPE(rptForcePerLengthUnitValue, fpl, pDisplayUnits->GetForcePerLengthUnit(), true);
 
    rptParagraph* pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pParagraph;
@@ -509,7 +510,7 @@ void write_intermedate_diaphragm_details(IBroker* pBroker,IEAFDisplayUnits* pDis
    const CSplicedGirderData* pGirder = pGroup->GetGirder(segmentKey.girderIndex);
    const GirderLibraryEntry* pGdrEntry = pGirder->GetGirderLibraryEntry();
 
-   const GirderLibraryEntry::DiaphragmLayoutRules& rules = pGdrEntry->GetDiaphragmLayoutRules();
+   const auto& rules = pGdrEntry->GetDiaphragmLayoutRules();
 
    if ( rules.size() == 0 )
    {
@@ -519,11 +520,8 @@ void write_intermedate_diaphragm_details(IBroker* pBroker,IEAFDisplayUnits* pDis
       return;
    }
 
-   GirderLibraryEntry::DiaphragmLayoutRules::const_iterator iter;
-   for ( iter = rules.begin(); iter != rules.end(); iter++ )
+   for( const auto& rule : rules)
    {
-      const GirderLibraryEntry::DiaphragmLayoutRule& rule = *iter;
-
       pParagraph = new rptParagraph();
       *pChapter << pParagraph;
 
@@ -532,8 +530,15 @@ void write_intermedate_diaphragm_details(IBroker* pBroker,IEAFDisplayUnits* pDis
       *pParagraph << _T("Use when span length is between ") << locdim.SetValue(rule.MinSpan);
       *pParagraph << _T(" and ") << locdim.SetValue(rule.MaxSpan) << rptNewLine;
 
-      *pParagraph << _T("Height: ") << cmpdim.SetValue(rule.Height) << rptNewLine;
-      *pParagraph << _T("Thickness: ") << cmpdim.SetValue(rule.Thickness) << rptNewLine;
+      if (rule.Method == GirderLibraryEntry::dwmCompute)
+      {
+         *pParagraph << _T("Height: ") << cmpdim.SetValue(rule.Height) << rptNewLine;
+         *pParagraph << _T("Thickness: ") << cmpdim.SetValue(rule.Thickness) << rptNewLine;
+      }
+      else
+      {
+         *pParagraph << _T("Weight: ") << fpl.SetValue(rule.Weight) << rptNewLine;
+      }
 
       *pParagraph << _T("Diaphragm Type: ") << (rule.Type == GirderLibraryEntry::dtExternal ? _T("External") : _T("Internal")) << rptNewLine;
       *pParagraph << _T("Construction Stage: ") << (rule.Construction == GirderLibraryEntry::ctCastingYard ? _T("Casting Yard") : _T("Bridge Site")) << rptNewLine;

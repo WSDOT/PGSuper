@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2017  Washington State Department of Transportation
+// Copyright © 1999-2018  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -195,17 +195,11 @@ void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnit
    delta_tb_orig = pProductForces->GetDeflection(railingSystemIntervalIdx, pgsTypes::pftTrafficBarrier, poi_orig, bat, rtCumulative, false );
    delta_tb_fabr = pProductForces->GetDeflection(railingSystemIntervalIdx, pgsTypes::pftTrafficBarrier, poi_fabr, bat, rtCumulative, false );
 
-   Float64 delta_dcu_orig = pProductForces->GetDeflection(castDeckIntervalIdx,pgsTypes::pftUserDC, poi_orig, bat, rtCumulative, false);
-   delta_dcu_orig        += pProductForces->GetDeflection(compositeDeckIntervalIdx,pgsTypes::pftUserDC, poi_orig, bat, rtCumulative, false);
+   Float64 delta_dcu_orig = pProductForces->GetDeflection(railingSystemIntervalIdx,pgsTypes::pftUserDC, poi_orig, bat, rtCumulative, false);
+   Float64 delta_dcu_fabr = pProductForces->GetDeflection(railingSystemIntervalIdx,pgsTypes::pftUserDC, poi_fabr, bat, rtCumulative, false);
 
-   Float64 delta_dcu_fabr = pProductForces->GetDeflection(castDeckIntervalIdx,pgsTypes::pftUserDC, poi_fabr, bat, rtCumulative, false);
-   delta_dcu_fabr        += pProductForces->GetDeflection(compositeDeckIntervalIdx,pgsTypes::pftUserDC, poi_fabr, bat, rtCumulative, false);
-
-   Float64 delta_dwu_orig = pProductForces->GetDeflection(castDeckIntervalIdx,pgsTypes::pftUserDW, poi_orig, bat, rtCumulative, false);
-   delta_dwu_orig        += pProductForces->GetDeflection(compositeDeckIntervalIdx,pgsTypes::pftUserDW, poi_orig, bat, rtCumulative, false);
-
-   Float64 delta_dwu_fabr = pProductForces->GetDeflection(castDeckIntervalIdx,pgsTypes::pftUserDW, poi_fabr, bat, rtCumulative, false);
-   delta_dwu_fabr        += pProductForces->GetDeflection(compositeDeckIntervalIdx,pgsTypes::pftUserDW, poi_fabr, bat, rtCumulative, false);
+   Float64 delta_dwu_orig = pProductForces->GetDeflection(railingSystemIntervalIdx,pgsTypes::pftUserDW, poi_orig, bat, rtCumulative, false);
+   Float64 delta_dwu_fabr = pProductForces->GetDeflection(railingSystemIntervalIdx,pgsTypes::pftUserDW, poi_fabr, bat, rtCumulative, false);
 
    pProductForces->GetLiveLoadDeflection(liveLoadIntervalIdx, pgsTypes::lltDesign, poi_orig, bat, true, false, &delta_ll_orig, &temp );
    pProductForces->GetLiveLoadDeflection(liveLoadIntervalIdx, pgsTypes::lltDesign, poi_fabr, bat, true, false, &delta_ll_fabr, &temp );

@@ -31,10 +31,6 @@ f'c | Enter the design concrete strength
 Ec  | When checked, enter the design modulus of elasticity. Otherwise, the modulus of elasticity will be computed by the AASHTO equation.
 [More Properties...] | Press to define detailed concrete properties or select a pre-defined concrete from the library
 
-Fillet
-------
-Use the combo box to control how fillets are defined for the bridge. Enter the fillet value for this girder if unique fillets are defined per girder.
-
 Slab Offset ("A" Dimension)
 ----------------------------
 Use the combo box to control how slab offsets are defined for the bridge.
@@ -43,6 +39,12 @@ Item | Description
 -----|-----------
 Start of Girder | Enter the slab offset at the start of the girder
 End of Girder | Enter the slab offset at the end of the girder
+
+Assumed Excess Camber
+---------------------------
+Enter the Assumed Excess Camber for this girder. The assumed excess camber is used to define the parabolic haunch depth used for computing haunch dead load. 
+
+Note that this option is only available if the parabolic haunch load option is selected in the current Project Criteria library entry. Refer to  the Slab Haunch loading section of @ref tg_structural_analysis_models for more information about how the haunch dead load is defined.
 
 Condition and Rating
 ---------------------

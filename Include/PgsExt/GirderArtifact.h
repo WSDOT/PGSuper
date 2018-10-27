@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2017  Washington State Department of Transportation
+// Copyright © 1999-2018  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -49,12 +49,12 @@ public:
    ////////////////////////
 
    // add positive and negative moment capacity artifacts
-   void AddFlexuralCapacityArtifact(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,
-                                    const pgsFlexuralCapacityArtifact& pmArtifact,
-                                    const pgsFlexuralCapacityArtifact& nmArtifact);
+   void AddPositiveMomentFlexuralCapacityArtifact(IntervalIndexType intervalIdx, pgsTypes::LimitState ls, const pgsFlexuralCapacityArtifact& artifact);
+   void AddNegativeMomentFlexuralCapacityArtifact(IntervalIndexType intervalIdx, pgsTypes::LimitState ls, const pgsFlexuralCapacityArtifact& artifact);
 
    // get the number of artifacts
-   CollectionIndexType GetFlexuralCapacityArtifactCount(IntervalIndexType intervalIdx,pgsTypes::LimitState ls) const;
+   CollectionIndexType GetPositiveMomentFlexuralCapacityArtifactCount(IntervalIndexType intervalIdx, pgsTypes::LimitState ls) const;
+   CollectionIndexType GetNegativeMomentFlexuralCapacityArtifactCount(IntervalIndexType intervalIdx, pgsTypes::LimitState ls) const;
 
    // get an artifact
    const pgsFlexuralCapacityArtifact* GetPositiveMomentFlexuralCapacityArtifact(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,CollectionIndexType artifactIdx) const;
@@ -130,7 +130,12 @@ private:
    std::map<DuctIndexType,pgsTendonStressArtifact> m_TendonStressArtifacts;
    std::map<DuctIndexType,pgsDuctSizeArtifact> m_DuctSizeArtifacts;
 
-   std::map<IntervalIndexType,std::vector<std::pair<pgsFlexuralCapacityArtifact,pgsFlexuralCapacityArtifact>>> m_FlexuralCapacityArtifacts[pgsTypes::LimitStateCount];
+   typedef std::map<IntervalIndexType, std::vector<pgsFlexuralCapacityArtifact>> FlexuralCapacityContainer;
+   FlexuralCapacityContainer m_FlexuralCapacityArtifacts[2][pgsTypes::LimitStateCount]; // pos=0,neg=1
+   void AddFlexuralCapacityArtifact(FlexuralCapacityContainer* pArtifacts, IntervalIndexType intervalIdx, const pgsFlexuralCapacityArtifact& artifact);
+   CollectionIndexType GetFlexuralCapacityArtifactCount(const FlexuralCapacityContainer* pArtifacts, IntervalIndexType intervalIdx) const;
+   const pgsFlexuralCapacityArtifact* GetFlexuralCapacityArtifact(const FlexuralCapacityContainer* pArtifacts, IntervalIndexType intervalIdx, CollectionIndexType artifactIdx) const;
+   const pgsFlexuralCapacityArtifact* FindFlexuralCapacityArtifact(const FlexuralCapacityContainer* pArtifacts, IntervalIndexType intervalIdx, const pgsPointOfInterest& poi) const;
 
    std::map<CSegmentKey,pgsSegmentArtifact> m_SegmentArtifacts;
 

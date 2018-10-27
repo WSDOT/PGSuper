@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2017  Washington State Department of Transportation
+// Copyright © 1999-2018  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -227,18 +227,24 @@ bool pgsPointOfInterest::operator<=(const pgsPointOfInterest& rOther) const
 
 bool pgsPointOfInterest::operator<(const pgsPointOfInterest& rOther) const
 {
+   if (m_ID == rOther.m_ID && m_ID != INVALID_ID)
+   {
+      // these are exactly the same POI
+      return false;
+   }
+
    if ( m_SegmentKey.IsEqual(rOther.m_SegmentKey) && IsEqual(m_Xpoi, rOther.m_Xpoi)) // AtSamePlace(rOther))
    {
       // POIs are at exactly the same location and...
       // In span model
       Uint16 thisSpanTenth = IsTenthPoint(POI_SPAN);
-      Uint16 othrSpanTenth = rOther.IsTenthPoint(POI_SPAN);
+      Uint16 otherSpanTenth = rOther.IsTenthPoint(POI_SPAN);
       bool thisSpanCantilever = HasAttribute(POI_SPAN | POI_CANTILEVER);
       bool otherSpanCantilever = rOther.HasAttribute(POI_SPAN | POI_CANTILEVER);
 
-      if (thisSpanTenth == 11 && othrSpanTenth == 1 || // this poi is at the end of a span and the other is at the start of the span. This poi is less (Span i, 1.0L < Span i+1, 0.0L)
-          thisSpanCantilever  && othrSpanTenth == 1 ||
-          thisSpanTenth == 11 && otherSpanCantilever)
+      if ( (thisSpanTenth == 11 && otherSpanTenth == 1) || // this poi is at the end of a span and the other is at the start of the span. This poi is less (Span i, 1.0L < Span i+1, 0.0L)
+           (thisSpanCantilever  && otherSpanTenth == 1) ||
+           (thisSpanTenth == 11 && otherSpanCantilever) )
       {
          return true;
       }
@@ -250,8 +256,8 @@ bool pgsPointOfInterest::operator<(const pgsPointOfInterest& rOther) const
          bool thisErectedCantilever = HasAttribute(POI_ERECTED_SEGMENT | POI_CANTILEVER);
          bool otherErectedCantilever = rOther.HasAttribute(POI_ERECTED_SEGMENT | POI_CANTILEVER);
 
-         if (thisErectedCantilever  && otherErectedTenth == 1 ||
-             thisErectedTenth == 11 && otherErectedCantilever)
+         if ( (thisErectedCantilever  && otherErectedTenth == 1) ||
+              (thisErectedTenth == 11 && otherErectedCantilever) )
          {
             return true;
          }
@@ -263,37 +269,35 @@ bool pgsPointOfInterest::operator<(const pgsPointOfInterest& rOther) const
             bool thisStorageCantilever = HasAttribute(POI_STORAGE_SEGMENT | POI_CANTILEVER);
             bool otherStorageCantilever = rOther.HasAttribute(POI_STORAGE_SEGMENT | POI_CANTILEVER);
 
-            if (thisStorageCantilever && otherStorageTenth == 1 ||
-                thisSpanTenth == 11   && otherStorageCantilever)
+            if ( (thisStorageCantilever && otherStorageTenth == 1) ||
+                 (thisSpanTenth == 11   && otherStorageCantilever) )
             {
                return true;
-            }
-            else
-            {
-               return false;
             }
          }
       }
    }
-
-   if ( m_SegmentKey < rOther.m_SegmentKey )
+   else
    {
-      return true;
-   }
+      if (m_SegmentKey < rOther.m_SegmentKey)
+      {
+         return true;
+      }
 
-   if ( rOther.m_SegmentKey < m_SegmentKey )
-   {
-      return false;
-   }
+      if (rOther.m_SegmentKey < m_SegmentKey)
+      {
+         return false;
+      }
 
-   if ( m_Xpoi < rOther.m_Xpoi )
-   {
-      return true;
-   }
+      if (m_Xpoi < rOther.m_Xpoi)
+      {
+         return true;
+      }
 
-   if ( rOther.m_Xpoi < m_Xpoi )
-   {
-      return false;
+      if (rOther.m_Xpoi < m_Xpoi)
+      {
+         return false;
+      }
    }
 
    return false;
@@ -301,6 +305,12 @@ bool pgsPointOfInterest::operator<(const pgsPointOfInterest& rOther) const
 
 bool pgsPointOfInterest::operator==(const pgsPointOfInterest& rOther) const
 {
+   if (m_ID == rOther.m_ID && m_ID != INVALID_ID)
+   {
+      // these are exactly the same POI
+      return true;
+   }
+
    if ( AtSamePlace(rOther) )
    {
       if ( m_Attributes != rOther.m_Attributes )
@@ -597,6 +607,14 @@ bool pgsPointOfInterest::MergeAttributes(const pgsPointOfInterest& rOther)
       return false;
    }
 
+   if ( (HasAttribute(POI_FACEOFSUPPORT) && rOther.HasAttribute(POI_ERECTED_SEGMENT | POI_CANTILEVER)) ||
+        (HasAttribute(POI_ERECTED_SEGMENT | POI_CANTILEVER) && rOther.HasAttribute(POI_FACEOFSUPPORT))
+      )
+   {
+      // cantilever points and face of support can't be merged (face of support is never on the cantilever)
+      return false;
+   }
+
    m_Attributes |= rOther.m_Attributes;
    for ( int i = 0; i < 6; i++ )
    {
@@ -666,8 +684,7 @@ bool pgsPointOfInterest::AtSamePlace(const pgsPointOfInterest& other) const
 
 bool pgsPointOfInterest::AtExactSamePlace(const pgsPointOfInterest& other) const
 {
-   if ( m_SegmentKey.IsEqual(other.m_SegmentKey) &&
-        IsZero( m_Xpoi - other.m_Xpoi ) )
+   if ( m_SegmentKey.IsEqual(other.m_SegmentKey) && IsEqual(m_Xpoi,other.m_Xpoi,1e-14) && !std::less<>()(*this, other) && !std::less<>()(other, *this) )
    {
       return true;
    }

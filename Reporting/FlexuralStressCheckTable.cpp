@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2017  Washington State Department of Transportation
+// Copyright © 1999-2018  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -1104,7 +1104,7 @@ void CFlexuralStressCheckTable::BuildAllowGirderStressInformation(rptChapter* pC
          IntervalIndexType compositeClosureIntervalIdx = pIntervals->GetCompositeClosureJointInterval(segmentKey);
 
          Float64 fc = pMaterials->GetClosureJointDesignFc(segmentKey,intervalIdx);
-         if ( intervalIdx == compositeClosureIntervalIdx )
+         if ( intervalIdx < compositeClosureIntervalIdx )
          {
             *p << RPT_FCI << _T(" = ") << stress_u.SetValue(fc) << rptNewLine;
          }
@@ -1459,7 +1459,7 @@ void CFlexuralStressCheckTable::BuildAllowClosureJointStressInformation(rptParag
       // when the closure joint becomes composite (initial loading of closure joint)
       // otherwise use f'c
       IntervalIndexType compositeClosureIntervalIdx = pIntervals->GetCompositeClosureJointInterval(segmentKey);
-      bool bFci = (intervalIdx <= compositeClosureIntervalIdx ? true : false);
+      bool bFci = (intervalIdx < compositeClosureIntervalIdx ? true : false);
 
       Float64 c = pAllowable->GetClosureJointAllowableCompressionStressCoefficient(poi,intervalIdx,limitState);
       Float64 fAllowable = pAllowable->GetClosureJointAllowableCompressionStress(poi,intervalIdx,limitState);

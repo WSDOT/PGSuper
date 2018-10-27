@@ -23,5 +23,6 @@ Define the resistance factors for cast-in-place closure joints for normal weight
 
 Negative Moment Capacity
 ------------------------
-Deck longitudinal reinforcement provides all tensile section forces in the negative moment region of the structure. This option specifies whether non-composite loads are included when computing the negative moment capacity.
+Deck longitudinal reinforcement provides all tensile section forces in the negative moment region of the structure. This option specifies whether negative moments due to non-composite loads (such as girder and deck dead load) are included in Mu. Some bridge owners have a policy to consider only moments due to superimposed dead loads when evaluating negative moments. You will see the effect of this setting in the Strenght I Deck Moment in the Moments, Shears, and Reactions chapter of the Details Report as well as the ultimate moment, Mu, in the negative moment specification checks.
+
 

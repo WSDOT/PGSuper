@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2017  Washington State Department of Transportation
+// Copyright © 1999-2018  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -215,6 +215,7 @@ pgsHaulingAnalysisArtifact* pgsWsdotGirderHaulingChecker::DesignHauling(const CS
       strMsg += _T("\nSee Status Center for details");
       THROW_UNWIND(strMsg, -1);
    }
+
    std::vector<const HaulTruckLibraryEntry*> vHaulTrucks;
    GET_IFACE(ILibrary,pLib);
    const HaulTruckLibraryEntry* pMaxCapacityTruck = pLib->GetHaulTruckEntry(names.front().c_str()); // keep track of the truck with the max capacity
@@ -254,8 +255,12 @@ pgsHaulingAnalysisArtifact* pgsWsdotGirderHaulingChecker::DesignHauling(const CS
 
 
    Float64 location_accuracy = pCriteria->GetHaulingSupportLocationAccuracy();
-   const Float64 bigInc = 8*location_accuracy;
+   const Float64 bigInc = Max(10*location_accuracy,ConvertToSysUnits(5.0,unitMeasure::Feet));
+   const Float64 mediumInc = bigInc / 2;
    const Float64 smallInc = location_accuracy;
+   const int bigStep = 1;
+   const int mediumStep = 2;
+   const int smallStep = 3;
 
    Float64 min_overhang_start = pCriteria->GetMinimumHaulingSupportLocation(segmentKey,pgsTypes::metStart);
    Float64 min_overhang_end   = pCriteria->GetMinimumHaulingSupportLocation(segmentKey,pgsTypes::metEnd);
@@ -297,7 +302,7 @@ pgsHaulingAnalysisArtifact* pgsWsdotGirderHaulingChecker::DesignHauling(const CS
       }
 
       Float64 inc = bigInc;
-      bool bLargeStepSize = true;
+      int stepSize = bigStep;
 
       Float64 loc = minOverhang;
 
@@ -332,11 +337,7 @@ pgsHaulingAnalysisArtifact* pgsWsdotGirderHaulingChecker::DesignHauling(const CS
 
          LOG_EXECUTION_TIME(AnalyzeHauling(segmentKey,true,shipping_config,pPOId,&curr_artifact));
 
-#if defined MATCH_OLD_ANALYSIS
-         FScr = curr_artifact.GetMinFsForCracking(pgsTypes::Superelevation);
-#else
          Float64 FScr = Min(curr_artifact.GetMinFsForCracking(pgsTypes::CrownSlope),curr_artifact.GetMinFsForCracking(pgsTypes::Superelevation));
-#endif
 
          LOG(_T("FScr = ") << FScr);
          if ( FScr < FScrMin && ((FScr < lastFScr && lastFScr < FScrMin) || maxOverhang/4 < loc) )
@@ -347,25 +348,35 @@ pgsHaulingAnalysisArtifact* pgsWsdotGirderHaulingChecker::DesignHauling(const CS
          }
          lastFScr = FScr;
 
-#if defined MATCH_OLD_ANALYSIS
-         FSr  = curr_artifact.GetFsRollover(pgsTypes::Superelevation);
-#else
          Float64 FSro = Min(curr_artifact.GetFsRollover(pgsTypes::CrownSlope),curr_artifact.GetFsRollover(pgsTypes::Superelevation));
          Float64 FSf  = Min(curr_artifact.GetFsFailure(pgsTypes::CrownSlope),curr_artifact.GetFsFailure(pgsTypes::Superelevation));
          Float64 FSr  = Min(FSro,FSf);
-#endif
 
          LOG(_T("FSr = ") << FSr);
 
-         if ( 0.95*FScrMin < FScr && 0.95*FSrMin < FSr && bLargeStepSize)
+         Float64 fra = (stepSize == bigStep ? 0.990 : 0.995);
+         if ((stepSize == bigStep || stepSize == mediumStep) && fra*FScrMin < FScr && fra*FSrMin < FSr)
          {
             // we are getting close... Use a smaller step size
             Float64 oldInc = inc;
-            inc = smallInc;
-            bLargeStepSize = false;
-            if ( 1.05*FSrMin <= FSr )
+            if (stepSize == bigStep)
             {
-               // We went past the solution... back up
+               LOG(_T("Swithcing to medium step size"));
+               inc = mediumInc;
+               stepSize = mediumStep;
+            }
+            else
+            {
+               ATLASSERT(stepSize == mediumStep);
+               LOG(_T("Swithcing to small step size"));
+               inc = smallInc;
+               stepSize = smallStep;
+            }
+
+            if ( 1.05*FSrMin <= FSr && !IsEqual(loc,minOverhang) )
+            {
+               // We went past the solution and we aren't at the first location... 
+               // back up
                LOG(_T("Went past the solution... backup"));
                loc -= oldInc;
 
@@ -382,14 +393,32 @@ pgsHaulingAnalysisArtifact* pgsWsdotGirderHaulingChecker::DesignHauling(const CS
 
          if ( FScrMin <= FScr && FSrMin <= FSr )
          {
-            LOG(_T("Exiting pgsWsdotGirderHaulingChecker::DesignHauling - success"));
-            *bSuccess = true;
+            LOG(_T("Found a stable hauling configuration, now check stresses"));
+            std::unique_ptr<pgsHaulingAnalysisArtifact> pAnalysisArtifact(AnalyzeHauling(segmentKey, shipping_config, pPOId));
+
+            *bSuccess = pAnalysisArtifact->Passed();
             *artifact = curr_artifact;
-            return artifact.release();
+            LOG(_T("Stress check was ") << (*bSuccess ? _T("success") : _T("unsuccessful")));
+
+            if (*bSuccess || IsEqual(loc,minOverhang) )
+            {
+               // obviously, we are done if the stress check passed
+               // if the stress check failed, but we have a stable configuration and the bunks are
+               // at the minimum location, going to a stiffer truck won't help so just exit
+               // and let the designer take corrective actions.
+               LOG(_T("Exiting pgsWsdotGirderHaulingChecker::DesignHauling - ") << (*bSuccess ? _T("with successful design") : _T("stability satisfied with minimum overhangs - stiffer haul truck wont help stresses")));
+               return artifact.release();
+            }
+            else
+            {
+               break; // go to next truck
+            }
          }
 
          loc += inc;
       } // next bunk point location
+
+      LOG(_T("")); // blank line before starting next truc
    } // next haul truck
 
    LOG(_T("A successful design could not be found with any of the haul trucks. Add temporary strands and try again"));

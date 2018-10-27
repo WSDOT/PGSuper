@@ -11,12 +11,6 @@ Span Length | Enter the span length measured along the alignment between the abu
 
 The length of the span is changed by moving all the up-station piers.
 
-Fillet
----------------------------
-Define the Fillet for this span.
-
-If the Fillet is defined by span and you use the combo box to change the fillet to be a single value for the entire bridge, the fillet defined for this span will be applied to the entire bridge.
-
 Slab Offset ("A" Dimension)
 ---------------------------
 Define the slab offset for the span.
@@ -28,6 +22,12 @@ Start | Slab offset at the start of the span
 End | Slab offset at the end of the span
 
 If the slab offset is defined by span and you click the combo box to change the slab offset to be a single value for the entire bridge: the slab offset defined for this span will be applied to the entire bridge. If the start and end slab offsets are different, you will be prompted to select one value.
+
+Assumed Excess Camber
+---------------------------
+Enter the Assumed Excess Camber for this span. The assumed excess camber is used to define the parabolic haunch depth used for computing haunch dead load. 
+
+Note that this option is only available if the parabolic haunch load option is selected in the current Project Criteria library entry. Refer to  the Slab Haunch loading section of @ref tg_structural_analysis_models for more information about how the haunch dead load is defined.
 
 Cantilevers
 ------------

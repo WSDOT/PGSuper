@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2017  Washington State Department of Transportation
+// Copyright © 1999-2018  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -2696,7 +2696,6 @@ HRESULT CProjectAgentImp::XSectionDataProc2(IStructuredSave* pSave,IStructuredLo
       pObj->m_BridgeDescription.SetMeasurementLocation(pgsTypes::AtPierLine);
       pObj->m_BridgeDescription.SetGirderOrientation((pgsTypes::GirderOrientationType)xSectionData.GirderOrientation);
 
-      pObj->m_BridgeDescription.SetFillet(pgsTypes::fttBridge);
       pObj->m_BridgeDescription.SetFillet(xSectionData.Fillet);
 
       // update the deck data
@@ -5613,6 +5612,17 @@ STDMETHODIMP CProjectAgentImp::Load(IStructuredLoad* pStrLoad)
       }
    }
 
+   // Check if version 3.1 fillet data was read and corrected
+   if (m_BridgeDescription.WasVersion3_1FilletRead() && m_BridgeDescription.GetDeckDescription()->GetDeckType() != pgsTypes::sdtNone)
+   {
+      Float64 fillval = ::ConvertFromSysUnits(m_BridgeDescription.GetFillet(), unitMeasure::Inch);
+      CString strMsg;
+      strMsg.Format(_T("Multiple fillet values were input in this file and are no longer supported in this version of PGSuper. The max value will be used. A single fillet value of %.3fin will be set for the entire bridge.\r\n\r\nSee Status Center for Details"), fillval);
+//      AfxMessageBox(strMsg, MB_OK | MB_ICONEXCLAMATION);
+      GET_IFACE(IEAFStatusCenter, pStatusCenter);
+      pgsInformationalStatusItem* pStatusItem = new pgsInformationalStatusItem(m_StatusGroupID, m_scidBridgeDescriptionInfo, strMsg);
+      pStatusCenter->Add(pStatusItem);
+   }
 
    ValidateBridgeModel();
 
@@ -6420,58 +6430,74 @@ pgsTypes::SlabOffsetType CProjectAgentImp::GetSlabOffsetType()
    return m_BridgeDescription.GetSlabOffsetType();
 }
 
-void CProjectAgentImp::SetFilletType(pgsTypes::FilletType offsetType)
-{
-   if ( m_BridgeDescription.GetFilletType() != offsetType )
-   {
-      m_BridgeDescription.SetFilletType(offsetType);
-      Fire_BridgeChanged();
-   }
-}
-
-pgsTypes::FilletType CProjectAgentImp::GetFilletType()
-{
-   return m_BridgeDescription.GetFilletType();
-}
-
 void CProjectAgentImp::SetFillet( Float64 Fillet)
 {
-   if ( m_BridgeDescription.GetFilletType() != pgsTypes::fttBridge ||
-        !IsEqual(Fillet,m_BridgeDescription.GetFillet()) )
+   if ( !IsEqual(Fillet,m_BridgeDescription.GetFillet()) )
    {
-      // fillet type and/or value is chaning
-      m_BridgeDescription.SetFilletType(pgsTypes::fttBridge);
       m_BridgeDescription.SetFillet(Fillet);
       Fire_BridgeChanged();
    }
 }
 
-void CProjectAgentImp::SetFillet(SpanIndexType spanIdx, Float64 offset)
+Float64 CProjectAgentImp::GetFillet()
 {
-   CSpanData2* pSpan = m_BridgeDescription.GetSpan(spanIdx);
-   if ( !IsEqual(pSpan->GetFillet(0),offset) )
+   return m_BridgeDescription.GetFillet();
+}
+
+void CProjectAgentImp::SetAssExcessCamberType(pgsTypes::AssExcessCamberType type)
+{
+   if ( m_BridgeDescription.GetAssExcessCamberType() != type )
    {
-      m_BridgeDescription.SetFilletType(pgsTypes::fttSpan);
-      pSpan->SetFillet(offset);
+      m_BridgeDescription.SetAssExcessCamberType(type);
       Fire_BridgeChanged();
    }
 }
 
-void CProjectAgentImp::SetFillet( SpanIndexType spanIdx, GirderIndexType gdrIdx, Float64 offset)
+pgsTypes::AssExcessCamberType CProjectAgentImp::GetAssExcessCamberType()
 {
-   CSpanData2* pSpan = m_BridgeDescription.GetSpan(spanIdx);
-   if ( !IsEqual(pSpan->GetFillet(gdrIdx),offset) )
+   return m_BridgeDescription.GetAssExcessCamberType();
+}
+
+void CProjectAgentImp::SetAssExcessCamber( Float64 camber)
+{
+   if ( m_BridgeDescription.GetAssExcessCamberType() != pgsTypes::aecBridge ||
+        !IsEqual(camber,m_BridgeDescription.GetAssExcessCamber()) )
    {
-      m_BridgeDescription.SetFilletType(pgsTypes::fttGirder);
-      pSpan->SetFillet(gdrIdx,offset);
+      // AssExcessCamber type and/or value is changing
+      m_BridgeDescription.SetAssExcessCamberType(pgsTypes::aecBridge);
+      m_BridgeDescription.SetAssExcessCamber(camber);
       Fire_BridgeChanged();
    }
 }
 
-Float64 CProjectAgentImp::GetFillet( SpanIndexType spanIdx, GirderIndexType gdrIdx)
+void CProjectAgentImp::SetAssExcessCamber(SpanIndexType spanIdx, Float64 camber)
 {
    CSpanData2* pSpan = m_BridgeDescription.GetSpan(spanIdx);
-   return pSpan->GetFillet(gdrIdx);
+   if ( m_BridgeDescription.GetAssExcessCamberType() != pgsTypes::aecSpan || 
+        !IsEqual(pSpan->GetAssExcessCamber(0),camber) )
+   {
+      m_BridgeDescription.SetAssExcessCamberType(pgsTypes::aecSpan);
+      pSpan->SetAssExcessCamber(camber);
+      Fire_BridgeChanged();
+   }
+}
+
+void CProjectAgentImp::SetAssExcessCamber( SpanIndexType spanIdx, GirderIndexType gdrIdx, Float64 camber)
+{
+   CSpanData2* pSpan = m_BridgeDescription.GetSpan(spanIdx);
+   if ( m_BridgeDescription.GetAssExcessCamberType() != pgsTypes::aecGirder ||
+       !IsEqual(pSpan->GetAssExcessCamber(gdrIdx),camber) )
+   {
+      m_BridgeDescription.SetAssExcessCamberType(pgsTypes::aecGirder);
+      pSpan->SetAssExcessCamber(gdrIdx,camber);
+      Fire_BridgeChanged();
+   }
+}
+
+Float64 CProjectAgentImp::GetAssExcessCamber( SpanIndexType spanIdx, GirderIndexType gdrIdx)
+{
+   CSpanData2* pSpan = m_BridgeDescription.GetSpan(spanIdx);
+   return pSpan->GetAssExcessCamber(gdrIdx);
 }
 
 std::vector<pgsTypes::BoundaryConditionType> CProjectAgentImp::GetBoundaryConditionTypes(PierIndexType pierIdx)
@@ -8489,6 +8515,32 @@ Float64 CProjectAgentImp::GetCamberTolerance()
    return m_pSpecEntry->GetHaunchLoadCamberTolerance();
 }
 
+Float64 CProjectAgentImp::GetHaunchLoadCamberFactor()
+{
+   ATLASSERT(m_pSpecEntry->GetLossMethod() != LOSSES_TIME_STEP);
+   ATLASSERT( m_pSpecEntry->GetHaunchLoadComputationType()==pgsTypes::hlcAccountForCamber);
+   return m_pSpecEntry->GetHaunchLoadCamberFactor();
+}
+
+bool CProjectAgentImp::IsAssExcessCamberInputEnabled(bool considerDeckType)
+{
+   if (m_pSpecEntry->GetHaunchLoadComputationType() == pgsTypes::hlcAccountForCamber)
+   {
+      if (!considerDeckType || m_BridgeDescription.GetDeckDescription()->GetDeckType() != pgsTypes::sdtNone)
+      {
+         return true;
+      }
+      else
+      {
+         return false;
+      }
+   }
+   else
+   {
+      return false;
+   }
+}
+
 Uint16 CProjectAgentImp::GetMomentCapacityMethod()
 {
    return m_pSpecEntry->GetLRFDOverreinforcedMomentCapacity() == true ? LRFD_METHOD : WSDOT_METHOD;
@@ -8540,7 +8592,7 @@ std::vector<arDesignOptions> CProjectAgentImp::GetDesignOptions(const CGirderKey
       option.maxFci = fci_max;
       option.maxFc  = fc_max;
 
-      option.doDesignSlabOffset = pSpecEntry->IsSlabOffsetDesignEnabled() ? sodAOnly : sodNoADesign; // option same as in 2.9x versions
+      option.doDesignSlabOffset = pSpecEntry->IsSlabOffsetDesignEnabled() ? sodAandAssExcessCamber : sodNoADesign; // option same as in 2.9x versions
       option.doDesignHauling = pSpecEntry->IsHaulingDesignEnabled();
       option.doDesignLifting = pSpecEntry->IsLiftingDesignEnabled();
 
@@ -9107,6 +9159,16 @@ const CPointLoadData* CProjectAgentImp::FindPointLoad(LoadIDType loadID) const
    return m_LoadManager.FindPointLoad(loadID);
 }
 
+EventIndexType CProjectAgentImp::GetPointLoadEventIndex(LoadIDType loadID) const
+{
+   return m_LoadManager.GetPointLoadEventIndex(loadID);
+}
+
+EventIDType CProjectAgentImp::GetPointLoadEventID(LoadIDType loadID) const
+{
+   return m_LoadManager.GetPointLoadEventID(loadID);
+}
+
 void CProjectAgentImp::UpdatePointLoad(CollectionIndexType idx, EventIDType eventID,const CPointLoadData& pld)
 {
    bool bMovedGirders;
@@ -9128,6 +9190,11 @@ void CProjectAgentImp::DeletePointLoad(CollectionIndexType idx)
    CSpanKey key;
    m_LoadManager.DeletePointLoad(idx,&key);
    FireContinuityRelatedSpanChange(key,GCH_LOADING_REMOVED);
+}
+
+std::vector<CPointLoadData> CProjectAgentImp::GetPointLoads(const CSpanKey& spanKey) const
+{
+   return m_LoadManager.GetPointLoads(spanKey);
 }
 
 CollectionIndexType CProjectAgentImp::GetDistributedLoadCount() const
@@ -9152,6 +9219,16 @@ const CDistributedLoadData* CProjectAgentImp::FindDistributedLoad(LoadIDType loa
    return m_LoadManager.FindDistributedLoad(loadID);
 }
 
+EventIndexType CProjectAgentImp::GetDistributedLoadEventIndex(LoadIDType loadID) const
+{
+   return m_LoadManager.GetDistributedLoadEventIndex(loadID);
+}
+
+EventIDType CProjectAgentImp::GetDistributedLoadEventID(LoadIDType loadID) const
+{
+   return m_LoadManager.GetDistributedLoadEventID(loadID);
+}
+
 void CProjectAgentImp::UpdateDistributedLoad(CollectionIndexType idx, EventIDType eventID,const CDistributedLoadData& pld)
 {
    bool bMovedGirder;
@@ -9171,6 +9248,11 @@ void CProjectAgentImp::DeleteDistributedLoad(CollectionIndexType idx)
    CSpanKey key;
    m_LoadManager.DeleteDistributedLoad(idx,&key);
    FireContinuityRelatedSpanChange(key,GCH_LOADING_REMOVED);
+}
+
+std::vector<CDistributedLoadData> CProjectAgentImp::GetDistributedLoads(const CSpanKey& spanKey) const
+{
+   return m_LoadManager.GetDistributedLoads(spanKey);
 }
 
 CollectionIndexType CProjectAgentImp::GetMomentLoadCount() const
@@ -9195,6 +9277,16 @@ const CMomentLoadData* CProjectAgentImp::FindMomentLoad(LoadIDType loadID) const
    return m_LoadManager.FindMomentLoad(loadID);
 }
 
+EventIndexType CProjectAgentImp::GetMomentLoadEventIndex(LoadIDType loadID) const
+{
+   return m_LoadManager.GetMomentLoadEventIndex(loadID);
+}
+
+EventIDType CProjectAgentImp::GetMomentLoadEventID(LoadIDType loadID) const
+{
+   return m_LoadManager.GetMomentLoadEventID(loadID);
+}
+
 void CProjectAgentImp::UpdateMomentLoad(CollectionIndexType idx, EventIDType eventID,const CMomentLoadData& pld)
 {
    bool bMovedGirder;
@@ -9214,6 +9306,11 @@ void CProjectAgentImp::DeleteMomentLoad(CollectionIndexType idx)
    CSpanKey key;
    m_LoadManager.DeleteMomentLoad(idx,&key);
    FireContinuityRelatedSpanChange(key,GCH_LOADING_REMOVED);
+}
+
+std::vector<CMomentLoadData> CProjectAgentImp::GetMomentLoads(const CSpanKey& spanKey) const
+{
+   return m_LoadManager.GetMomentLoads(spanKey);
 }
 
 void CProjectAgentImp::SetConstructionLoad(Float64 load)

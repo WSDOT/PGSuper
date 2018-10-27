@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2017  Washington State Department of Transportation
+// Copyright © 1999-2018  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -474,7 +474,7 @@ void CTimeStepLossEngineer::ComputeLosses(GirderIndexType girderLineIdx,Interval
 void CTimeStepLossEngineer::ComputeFrictionLosses(const CGirderKey& girderKey,LOSSES* pLosses)
 {
    CString strMsg;
-   strMsg.Format(_T("Computing friction losses for tendons in Group %d"),LABEL_GROUP(girderKey.groupIndex));
+   strMsg.Format(_T("Computing friction losses for tendons in Group %d Girderline %s"),LABEL_GROUP(girderKey.groupIndex),LABEL_GIRDER(girderKey.girderIndex));
    m_pProgress->UpdateMessage(strMsg);
 
    Float64 Dset, wobble, friction;

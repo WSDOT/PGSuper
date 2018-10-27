@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2017  Washington State Department of Transportation
+// Copyright © 1999-2018  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -39,6 +39,10 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
+#define FILE_VERSION 10
+// Version 10 - added assumed excess camber data. Had to skip over versions to match with head branch
+// No new data was added in version 9.0. The version number was changed so we can tell the difference between files
+// that have an explicity construction event (9.0 <= version) for diaphragms and those that do not (version <= 8.0)
 bool CompareTempSupportLocation(const CTemporarySupportData* a,const CTemporarySupportData* b)
 {
    return *a < *b;
@@ -61,7 +65,9 @@ CBridgeDescription2::CBridgeDescription2()
    m_SlabOffsetType = pgsTypes::sotBridge;
 
    m_Fillet     = ::ConvertToSysUnits( 0.75, unitMeasure::Inch );
-   m_FilletType = pgsTypes::fttBridge;
+
+   m_AssExcessCamber = 0.0;
+   m_AssExcessCamberType = pgsTypes::aecBridge;
 
    m_pGirderLibraryEntry = nullptr;
 
@@ -84,6 +90,8 @@ CBridgeDescription2::CBridgeDescription2()
    m_RefGirderIdx = INVALID_INDEX;
    m_RefGirderOffset = 0;
    m_RefGirderOffsetType = pgsTypes::omtBridge;
+
+   m_bWasVersion3_1FilletRead = false;
 }
 
 CBridgeDescription2::CBridgeDescription2(const CBridgeDescription2& rOther)
@@ -99,7 +107,6 @@ CBridgeDescription2::CBridgeDescription2(const CBridgeDescription2& rOther)
    m_SlabOffsetType = pgsTypes::sotBridge;
 
    m_Fillet     = ::ConvertToSysUnits( 0.75, unitMeasure::Inch );
-   m_FilletType = pgsTypes::fttBridge;
 
    m_pGirderLibraryEntry = nullptr;
 
@@ -196,14 +203,19 @@ bool CBridgeDescription2::operator==(const CBridgeDescription2& rOther) const
       }
    }
 
-   if ( m_FilletType != rOther.m_FilletType )
+   if ( !IsEqual(m_Fillet,rOther.m_Fillet) )
    {
       return false;
    }
 
-   if ( m_FilletType == pgsTypes::fttBridge )
+   if ( m_AssExcessCamberType != rOther.m_AssExcessCamberType )
    {
-      if ( !IsEqual(m_Fillet,rOther.m_Fillet) )
+      return false;
+   }
+
+   if ( m_AssExcessCamberType == pgsTypes::aecBridge )
+   {
+      if ( !IsEqual(m_AssExcessCamber,rOther.m_AssExcessCamber) )
       {
          return false;
       }
@@ -434,16 +446,51 @@ HRESULT CBridgeDescription2::Load(IStructuredLoad* pStrLoad,IProgress* pProgress
          m_SlabOffset = var.dblVal;
       }
 
-      if ( version > 7 )
+      m_bWasVersion3_1FilletRead = false;
+
+      if (version > 7)
       {
-         var.vt = VT_UI4;
-         hr = pStrLoad->get_Property(_T("FilletType"),&var);
-         m_FilletType = (pgsTypes::FilletType)(var.lVal);
-         if ( m_FilletType == pgsTypes::sotBridge )
+         if (version == 8 || version == 9)
+         {
+            // In version 8, we made a mistake and allowed fillets to be all over the bridge. This was fixed
+            // in vers 10, when we went back to a single fillet for the entire bridge. See mantis 209 and 752
+            var.vt = VT_UI4;
+            hr = pStrLoad->get_Property(_T("FilletType"), &var);
+            LONG ft = (var.lVal); // if value was for entire bridge, we can just store
+            if (ft == 0 /* pgsTypes::sotBridge */)
+            {
+               var.vt = VT_R8;
+               hr = pStrLoad->get_Property(_T("Fillet"), &var);
+               m_Fillet = var.dblVal;
+            }
+            else
+            {
+               // Fillet was defined for multiple spans or girders. We will need get max value of all defined
+               // fillets and assign it to our bridge after we are finished loading
+               m_bWasVersion3_1FilletRead = true;
+               m_Fillet = 0.0;
+            }
+         }
+         else
          {
             var.vt = VT_R8;
-            hr = pStrLoad->get_Property(_T("Fillet"),&var);
+            hr = pStrLoad->get_Property(_T("Fillet"), &var);
             m_Fillet = var.dblVal;
+         }
+      }
+
+      if (version > 9)
+      {
+         var.vt = VT_UI4;
+         hr = pStrLoad->get_Property(_T("AssExcessCamberType"), &var);
+         pgsTypes::AssExcessCamberType ct = (pgsTypes::AssExcessCamberType )(var.lVal);
+         m_AssExcessCamberType = ct;
+
+         if (ct == pgsTypes::aecBridge)
+         {
+            var.vt = VT_R8;
+            hr = pStrLoad->get_Property(_T("AssExcessCamber"), &var);
+            m_AssExcessCamber = var.dblVal;
          }
       }
 
@@ -512,7 +559,6 @@ HRESULT CBridgeDescription2::Load(IStructuredLoad* pStrLoad,IProgress* pProgress
       if (version < 8)
       {
          // In version 8 we moved fillet from deck into bridge
-         ATLASSERT(m_FilletType==pgsTypes::fttBridge);
          m_Fillet = m_Deck.m_LegacyFillet;
       }
 
@@ -603,7 +649,7 @@ HRESULT CBridgeDescription2::Load(IStructuredLoad* pStrLoad,IProgress* pProgress
       CopyDown(m_bSameNumberOfGirders, 
                m_bSameGirderName, 
                IsBridgeSpacing(m_GirderSpacingType),
-               m_SlabOffsetType == pgsTypes::sotBridge, m_Fillet==pgsTypes::fttBridge);
+               m_SlabOffsetType == pgsTypes::sotBridge, m_AssExcessCamberType==pgsTypes::aecBridge);
    }
    catch (HRESULT)
    {
@@ -618,7 +664,7 @@ HRESULT CBridgeDescription2::Load(IStructuredLoad* pStrLoad,IProgress* pProgress
 HRESULT CBridgeDescription2::Save(IStructuredSave* pStrSave,IProgress* pProgress)
 {
    HRESULT hr = S_OK;
-   pStrSave->BeginUnit(_T("BridgeDescription"),9.0);
+   pStrSave->BeginUnit(_T("BridgeDescription"),FILE_VERSION);
    // No new data was added in version 9.0. The version number was changed so we can tell the difference between files
    // that have an explicity construction event (9.0 <= version) for diaphragms and those that do not (version <= 8.0)
 
@@ -657,10 +703,12 @@ HRESULT CBridgeDescription2::Save(IStructuredSave* pStrSave,IProgress* pProgress
       hr = pStrSave->put_Property(_T("SlabOffset"),CComVariant(m_SlabOffset));
    }
 
-   hr = pStrSave->put_Property(_T("FilletType"),CComVariant(m_FilletType)); // Added in version 8
-   if ( m_FilletType == pgsTypes::fttBridge )
+   hr = pStrSave->put_Property(_T("Fillet"),CComVariant(m_Fillet));
+
+   hr = pStrSave->put_Property(_T("AssExcessCamberType"),CComVariant(m_AssExcessCamberType)); // Added in version 8
+   if ( m_AssExcessCamberType == pgsTypes::aecBridge )
    {
-      hr = pStrSave->put_Property(_T("Fillet"),CComVariant(m_Fillet));
+      hr = pStrSave->put_Property(_T("AssExcessCamber"),CComVariant(m_AssExcessCamber));
    }
    
    m_TimelineManager.Save(pStrSave,pProgress);
@@ -853,14 +901,34 @@ Float64 CBridgeDescription2::GetMinSlabOffset() const
    return minSlabOffset;
 }
 
-void CBridgeDescription2::SetFilletType(pgsTypes::FilletType FilletType)
+void CBridgeDescription2::SetAssExcessCamberType(pgsTypes::AssExcessCamberType camberType)
 {
-   m_FilletType = FilletType;
+   m_AssExcessCamberType = camberType;
 }
 
-pgsTypes::FilletType CBridgeDescription2::GetFilletType() const
+pgsTypes::AssExcessCamberType CBridgeDescription2::GetAssExcessCamberType() const
 {
-   return m_FilletType;
+   return m_AssExcessCamberType;
+}
+
+void CBridgeDescription2::SetAssExcessCamber(Float64 AssExcessCamber)
+{
+   m_AssExcessCamber = AssExcessCamber;
+}
+
+Float64 CBridgeDescription2::GetAssExcessCamber(bool bGetRawValue) const
+{
+   if ( bGetRawValue )
+   {
+      return m_AssExcessCamber;
+   }
+
+   if ( m_Deck.DeckType == pgsTypes::sdtNone )
+   {
+      return 0;
+   }
+
+   return m_AssExcessCamber;
 }
 
 void CBridgeDescription2::SetFillet(Float64 Fillet)
@@ -883,34 +951,9 @@ Float64 CBridgeDescription2::GetFillet(bool bGetRawValue) const
    return m_Fillet;
 }
 
-Float64 CBridgeDescription2::GetMaxFillet() const
+bool CBridgeDescription2::WasVersion3_1FilletRead() const
 {
-   if ( m_FilletType == pgsTypes::fttBridge )
-   {
-      return GetFillet();
-   }
-
-   Float64 maxFillet = -DBL_MAX;
-   std::vector<CGirderGroupData*>::const_iterator grpIter(m_GirderGroups.begin());
-   std::vector<CGirderGroupData*>::const_iterator grpIterEnd(m_GirderGroups.end());
-   for ( ; grpIter != grpIterEnd; grpIter++ )
-   {
-      CGirderGroupData* pGroup = *grpIter;
-      SpanIndexType startSpanIdx = (SpanIndexType)pGroup->GetPierIndex(pgsTypes::metStart);
-      SpanIndexType endSpanIdx   = (SpanIndexType)pGroup->GetPierIndex(pgsTypes::metEnd)-1;
-      GirderIndexType nGirders = pGroup->GetGirderCount();
-      for ( GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++ )
-      {
-         for ( SpanIndexType spanIdx = startSpanIdx; spanIdx <= endSpanIdx; spanIdx++ )
-         {
-            const CSpanData2* pSpan = GetSpan(spanIdx);
-            Float64 fillet = pSpan->GetFillet(gdrIdx);
-            maxFillet = Max(maxFillet,fillet);
-         }
-      }
-   }
-
-   return maxFillet;
+   return m_bWasVersion3_1FilletRead;
 }
 
 void CBridgeDescription2::CreateFirstSpan(const CPierData2* pFirstPier,const CSpanData2* pFirstSpan,const CPierData2* pNextPier,EventIndexType pierErectionEventIdx)
@@ -2833,8 +2876,10 @@ void CBridgeDescription2::MakeCopy(const CBridgeDescription2& rOther)
    m_SlabOffset               = rOther.m_SlabOffset;
    m_SlabOffsetType           = rOther.m_SlabOffsetType;
 
-   m_Fillet               = rOther.m_Fillet;
-   m_FilletType           = rOther.m_FilletType;
+   m_Fillet                   = rOther.m_Fillet;
+
+   m_AssExcessCamber          = rOther.m_AssExcessCamber;
+   m_AssExcessCamberType      = rOther.m_AssExcessCamberType;
 
    m_bSameGirderName          = rOther.m_bSameGirderName;
    m_strGirderName            = rOther.m_strGirderName;
@@ -2922,7 +2967,8 @@ void CBridgeDescription2::MakeCopy(const CBridgeDescription2& rOther)
       m_GirderGroups.push_back(pNewGroup);
    }
 
-   CopyDown(m_bSameNumberOfGirders,m_bSameGirderName,::IsBridgeSpacing(m_GirderSpacingType),m_SlabOffsetType==pgsTypes::sotBridge,m_Fillet==pgsTypes::fttBridge); 
+   CopyDown(m_bSameNumberOfGirders,m_bSameGirderName,::IsBridgeSpacing(m_GirderSpacingType),
+            m_SlabOffsetType==pgsTypes::sotBridge,m_AssExcessCamberType==pgsTypes::aecBridge); 
 
    PGS_ASSERT_VALID;
 }
@@ -3134,7 +3180,7 @@ const CClosureJointData* CBridgeDescription2::FindClosureJoint(ClosureIDType clo
    return nullptr;
 }
 
-void CBridgeDescription2::CopyDown(bool bGirderCount,bool bGirderType,bool bSpacing,bool bSlabOffset,bool bFillet)
+void CBridgeDescription2::CopyDown(bool bGirderCount,bool bGirderType,bool bSpacing,bool bSlabOffset,bool bAssExcessCamber)
 {
    std::vector<CGirderGroupData*>::iterator grpIter(m_GirderGroups.begin());
    std::vector<CGirderGroupData*>::iterator grpIterEnd(m_GirderGroups.end());
@@ -3168,7 +3214,7 @@ void CBridgeDescription2::CopyDown(bool bGirderCount,bool bGirderType,bool bSpac
       }
    }// group loop
 
-   if(bFillet)
+   if(bAssExcessCamber)
    {
       std::vector<CSpanData2*> m_Spans;
       std::vector<CSpanData2*>::iterator spnIter(m_Spans.begin());
@@ -3180,7 +3226,7 @@ void CBridgeDescription2::CopyDown(bool bGirderCount,bool bGirderType,bool bSpac
          GirderIndexType nGirders = pSpan->GetGirderCount();
          for ( GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++ )
          {
-            pSpan->SetFillet(gdrIdx,m_Fillet);
+            pSpan->SetAssExcessCamber(gdrIdx,m_AssExcessCamber);
          }
       }
    }

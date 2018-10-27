@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2017  Washington State Department of Transportation
+// Copyright © 1999-2018  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -102,19 +102,19 @@ public:
    std::vector<CTemporarySupportData*> GetTemporarySupports();
 
    // =================================================================================
-   // Fillet Used only when the parent bridge's FilletType is fttSpan or fttGirder
+   // Assumed Excess Camber Used only when the parent bridge's AssExcessCamberType is aecSpan or aecGirder
    // =================================================================================
-   // Set the Fillet at a span (same for all girders)
-   // Use when Fillet type is pgsTypes::fttSpan
-   void SetFillet(Float64 fillet);
+   // Set the Assumed Excess Camber at a span (same for all girders)
+   // Use when AssExcessCamber type is pgsTypes::aecSpan
+   void SetAssExcessCamber(Float64 assExcessCamber);
 
-   // Set/Get the Fillet at a span for a specific girder
-   // Use when Fillet type is pgsTypes::fttGirder
-   void SetFillet(GirderIndexType gdrIdx,Float64 fillet);
-   Float64 GetFillet(GirderIndexType gdrIdx,bool bGetRawValue = false) const;
+   // Set/Get the Assumed Excess Camber at a span for a specific girder
+   // Use when Assumed Excess Camber type is pgsTypes::aecGirder
+   void SetAssExcessCamber(GirderIndexType gdrIdx,Float64 assExcessCamber);
+   Float64 GetAssExcessCamber(GirderIndexType gdrIdx,bool bGetRawValue = false) const;
 
-   // Copies girder-by-girder Fillet data from one girder to another
-   void CopyFillet(GirderIndexType sourceGdrIdx,GirderIndexType targetGdrIdx);
+   // Copies girder-by-girder Assumed ExcessCamber data from one girder to another
+   void CopyAssExcessCamber(GirderIndexType sourceGdrIdx,GirderIndexType targetGdrIdx);
 
    // =================================================================================
    // Live Load Distribution Factors (for Directly Input)
@@ -173,10 +173,10 @@ private:
    // safe internal function for getting lldfs in lieue of girder count changes
    LLDF& GetLLDF(GirderIndexType igs) const;
 
-   mutable std::vector<Float64> m_Fillets; // fillet for each girder in span. First value is used for ftt:Span
+   mutable std::vector<Float64> m_AssExcessCambers; // Assummed Excess Camber for each girder in span. First value is used for aec:Span
 
-   // make sure fillet data stays intact from girder count changes
-   void ProtectFillet() const;
+   // make sure AssExcessCamber data stays intact from girder count changes
+   void ProtectAssExcessCamber() const;
 
    friend CBridgeDescription2;
 };

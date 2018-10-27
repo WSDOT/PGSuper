@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2017  Washington State Department of Transportation
+// Copyright © 1999-2018  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -407,7 +407,8 @@ interface IBridge : IUnknown
    virtual Float64 GetOverlayWeight() = 0;
    virtual Float64 GetOverlayDepth() = 0;
    virtual Float64 GetSacrificalDepth() = 0;
-   virtual Float64 GetFillet(SpanIndexType spanIdx, GirderIndexType gdrIdx) = 0;
+   virtual Float64 GetFillet() = 0;
+   virtual Float64 GetAssExcessCamber(SpanIndexType spanIdx,GirderIndexType gdr) = 0;
    virtual Float64 GetGrossSlabDepth(const pgsPointOfInterest& poi) = 0;
    virtual Float64 GetStructuralSlabDepth(const pgsPointOfInterest& poi) = 0;
    virtual Float64 GetCastSlabDepth(const pgsPointOfInterest& poi) = 0;

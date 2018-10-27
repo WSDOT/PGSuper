@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2017  Washington State Department of Transportation
+// Copyright © 1999-2018  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -47,6 +47,7 @@ rptRcTable(NumColumns,0)
    DEFINE_UV_PROTOTYPE( moment,      pDisplayUnits->GetMomentUnit(),          false );
    DEFINE_UV_PROTOTYPE( stress,      pDisplayUnits->GetStressUnit(),          false );
    DEFINE_UV_PROTOTYPE( wobble,      pDisplayUnits->GetPerLengthUnit(),       true  );
+   DEFINE_UV_PROTOTYPE(angle, pDisplayUnits->GetRadAngleUnit(), false);
 }
 
 CFrictionLossTable* CFrictionLossTable::PrepareTable(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& segmentKey,const LOSSDETAILS* pDetails,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
@@ -70,9 +71,13 @@ CFrictionLossTable* CFrictionLossTable::PrepareTable(rptChapter* pChapter,IBroke
 
    *pParagraph << _T("Wobble Friction: K = ") << table->wobble.SetValue(pDetails->pLosses->GetWobbleFrictionCoefficient()) << rptNewLine;
 
+   *pParagraph << _T("Coefficient of Friction: ") << symbol(mu) << _T(" = ") << pDetails->pLosses->GetCoefficientOfFriction() << rptNewLine;
+
    table->ecc.ShowUnitTag(true);
    *pParagraph << _T("Anchor Set: ") << symbol(DELTA) << _T("L = ") << table->ecc.SetValue(pDetails->pLosses->GetAnchorSet()) << rptNewLine;
    table->ecc.ShowUnitTag(false);
+
+   *pParagraph << _T("Angular Change: ") << symbol(alpha) << _T(" = ") << table->angle.SetValue(pDetails->pLosses->GetTendonAngleChange()) << rptNewLine;
 
    table->offset.ShowUnitTag(true);
    *pParagraph << Sub2(_T("L"),_T("set")) << _T(" = ") << table->offset.SetValue(pDetails->pLosses->AnchorSetZone()) << rptNewLine;

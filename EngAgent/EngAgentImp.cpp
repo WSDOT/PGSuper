@@ -3650,13 +3650,9 @@ void CEngAgentImp::GetFabricationOptimizationDetails(const CSegmentKey& segmentK
       fc = Max(fc_tens, fc_comp, fc_tens_wrebar);
 
       // check factors of safety
-#if defined MATCH_OLD_ANALYSIS
-      Float64 FScr = hauling_artifact2->GetMinFsForCracking(pgsTypes::Superelevation);
-      Float64 FSr  = hauling_artifact2->GetFsRollover(pgsTypes::Superelevation);
-#else
       Float64 FScr = Min(hauling_artifact2->GetMinFsForCracking(pgsTypes::CrownSlope),hauling_artifact2->GetMinFsForCracking(pgsTypes::Superelevation));
       Float64 FSr  = Min(hauling_artifact2->GetFsRollover(pgsTypes::CrownSlope),hauling_artifact2->GetFsRollover(pgsTypes::Superelevation));
-#endif
+
       bool bFS = ( FSrMin <= FSr && FScrMin <= FScr );
 
       // check concrete stress

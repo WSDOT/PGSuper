@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2017  Washington State Department of Transportation
+// Copyright © 1999-2018  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -26,7 +26,6 @@
 #include "GirderGrid.h"
 #include "DuctGrid.h"
 #include "SlabOffsetGrid.h"
-#include "FilletGrid.h"
 #include <PgsExt\BridgeDescription2.h>
 #include <Material\PsStrand.h>
 
@@ -66,17 +65,13 @@ protected:
 
    void UpdateSlabOffsetControls();
 
-   void UpdateFilletControls();
-
    void UpdateGirderTypeControls();
 
    CGirderGrid m_GirderGrid;
    CDuctGrid   m_DuctGrid;
    CSlabOffsetGrid m_SlabOffsetGrid;
-   CFilletGrid m_FilletGrid;
    CDrawTendonsControl m_DrawTendons;
 
-   pgsTypes::FilletType m_FilletTypeOriginal;
    pgsTypes::SlabOffsetType m_SlabOffsetTypeOriginal;
 
 	DECLARE_MESSAGE_MAP()
@@ -88,7 +83,6 @@ public:
    afx_msg void OnInstallationTypeChanged();
    afx_msg void OnConditionFactorTypeChanged();
    afx_msg void OnChangeSlabOffsetType();
-   afx_msg void OnChangeFilletType();
    afx_msg void OnChangeGirderType();
 
    void OnDuctChanged();

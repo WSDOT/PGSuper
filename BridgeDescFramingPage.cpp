@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2017  Washington State Department of Transportation
+// Copyright © 1999-2018  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -106,24 +106,35 @@ void CBridgeDescFramingPage::EnableRemovePierBtn(BOOL bEnable)
    GetDlgItem(IDC_REMOVE_PIER)->EnableWindow(bEnable);
    if ( bEnable )
    {
+      SpanIndexType spanIdx = m_Grid.GetSelectedSpan();
       PierIndexType pierIdx = m_Grid.GetSelectedPier();
       PierIndexType nPiers  = m_Grid.GetPierCount();
+      SpanIndexType nSpans = nPiers - 1;
 
-      if ( pierIdx == INVALID_INDEX )
+      if ( spanIdx == INVALID_INDEX && pierIdx == INVALID_INDEX )
       {
-         GetDlgItem(IDC_REMOVE_PIER)->SetWindowText(_T("Remove Span"));
+         GetDlgItem(IDC_REMOVE_PIER)->SetWindowText(_T("Remove Span/Pier"));
       }
       else
       {
          CString strLabel;
-         if ( pierIdx == nPiers-1 )
+         if ( pierIdx != INVALID_INDEX && pierIdx == nPiers-1 ) // a pier is selected and it is the last pier
          {
-            // last pier is selected
             strLabel.Format(_T("Remove Span %d/Pier %d"),LABEL_SPAN(pierIdx-1),LABEL_PIER(pierIdx));
          }
          else
          {
-            strLabel.Format(_T("Remove Pier %d/Span %d"),LABEL_PIER(pierIdx),LABEL_SPAN(pierIdx));
+            if (spanIdx != INVALID_INDEX)
+            {
+               // a span is selected
+               strLabel.Format(_T("Remove Span %d/Pier %d"), LABEL_SPAN(spanIdx), LABEL_PIER(spanIdx+1));
+            }
+            else
+            {
+               // a pier is selected
+               ATLASSERT(pierIdx != INVALID_INDEX);
+               strLabel.Format(_T("Remove Span %d/Pier %d"), LABEL_SPAN(pierIdx), LABEL_PIER(pierIdx));
+            }
          }
 
          GetDlgItem(IDC_REMOVE_PIER)->SetWindowText(strLabel);
@@ -132,7 +143,7 @@ void CBridgeDescFramingPage::EnableRemovePierBtn(BOOL bEnable)
    }
    else
    {
-      GetDlgItem(IDC_REMOVE_PIER)->SetWindowText(_T("Remove Span"));
+      GetDlgItem(IDC_REMOVE_PIER)->SetWindowText(_T("Remove Span/Pier"));
    }
 }
 
@@ -173,7 +184,26 @@ BOOL CBridgeDescFramingPage::OnInitDialog()
    GET_IFACE2(pBroker,IDocumentType,pDocType);
    if ( pDocType->IsPGSuperDocument() )
    {
-      GetDlgItem(IDC_ADD_TEMP_SUPPORT)->EnableWindow(FALSE);
+      CWnd* pwndAddTempSupport = GetDlgItem(IDC_ADD_TEMP_SUPPORT);
+      pwndAddTempSupport->EnableWindow(FALSE);
+
+      // Hide the temporary support buttons and move the [Layout Span Lengths] and [Orient Piers] button up
+      CWnd* pwndRemoveTempSupport = GetDlgItem(IDC_REMOVE_TEMP_SUPPORT);
+      CWnd* pwndLayoutSpanLengths = GetDlgItem(IDC_LAYOUT);
+      CWnd* pwndOrientPiers = GetDlgItem(IDC_ORIENT_PIERS);
+
+      CRect rAddTempSupport, rRemoveTempSupport;
+      pwndAddTempSupport->GetWindowRect(&rAddTempSupport);
+      pwndRemoveTempSupport->GetWindowRect(&rRemoveTempSupport);
+
+      ScreenToClient(rAddTempSupport);
+      ScreenToClient(rRemoveTempSupport);
+
+      pwndLayoutSpanLengths->MoveWindow(rAddTempSupport);
+      pwndOrientPiers->MoveWindow(rRemoveTempSupport);
+
+      pwndAddTempSupport->ShowWindow(SW_HIDE);
+      pwndRemoveTempSupport->ShowWindow(SW_HIDE);
    }
 
 	
@@ -263,4 +293,12 @@ void CBridgeDescFramingPage::OnOrientPiers()
       }
    }
    while ( !bDone ); // keep looping until we get a valid response
+}
+
+BOOL CBridgeDescFramingPage::OnSetActive()
+{
+   EnableRemovePierBtn(m_Grid.EnableRemovePierBtn());
+   EnableRemoveTemporarySupportBtn(m_Grid.EnableRemoveTemporarySupportBtn());
+
+   return CPropertyPage::OnSetActive();
 }

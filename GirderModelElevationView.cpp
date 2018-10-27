@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2017  Washington State Department of Transportation
+// Copyright © 1999-2018  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -1040,7 +1040,7 @@ void CGirderModelElevationView::BuildDropTargetDisplayObjects(CPGSDocBase* pDoc,
 
    COLORREF color = HOTPINK1;
 
-   SpanIndexType spanIdx;
+   PierIndexType startPierIdx, endPierIdx;
    CComPtr<IPoint2d> p1, p2;
    CollectionIndexType nItems = pSupportDisplayList->GetDisplayObjectCount();
    for ( CollectionIndexType idx = 0; idx < nItems; idx++ )
@@ -1063,22 +1063,27 @@ void CGirderModelElevationView::BuildDropTargetDisplayObjects(CPGSDocBase* pDoc,
             p->Clone(&p1);
             p1->put_Y(0.0);
 
-            spanIdx = pDO->GetID();
+            startPierIdx = pDO->GetID();
          }
          else
          {
             CComPtr<IPoint2d> p;
             doPoint->GetPosition(&p);
+            p2.Release();
             p->Clone(&p2);
             p2->put_Y(0.0);
+
+            endPierIdx = pDO->GetID();
          }
 
-         if ( p1 != nullptr && p2 != nullptr )
+         if ( p1 != nullptr && p2 != nullptr && (startPierIdx < endPierIdx) )
          {
             CComPtr<iDisplayObject> line;
             BuildLine(pDL,p1,p2,color,1,&line);
 
             line->Visible(FALSE);
+
+            SpanIndexType spanIdx = (SpanIndexType)startPierIdx;
 
             // create a drop site for drag and drop loads
             CGirderDropSite* pDropSite = new CGirderDropSite(pDoc, CSpanKey(spanIdx,girderKey.girderIndex), m_pFrame);
@@ -1089,7 +1094,8 @@ void CGirderModelElevationView::BuildDropTargetDisplayObjects(CPGSDocBase* pDoc,
             p1.Release();
             p1 = p2;
             p2.Release();
-            spanIdx++;
+
+            startPierIdx = endPierIdx;
          }
       }
    }
@@ -1585,9 +1591,9 @@ void CGirderModelElevationView::BuildStrandCGDisplayObjects(CPGSDocBase* pDoc, I
          EventIndexType erectSegmentEventIdx = pTimelineMgr->GetSegmentErectionEventIndex(segID);
          if ( erectSegmentEventIdx <= eventIdx )
          {
-            StrandIndexType nStrands = pStrandGeometry->GetStrandCount(segmentKey, pgsTypes::Straight);
-            nStrands += pStrandGeometry->GetStrandCount(segmentKey, pgsTypes::Harped);
-            nStrands += pStrandGeometry->GetStrandCount(segmentKey, pgsTypes::Temporary);
+            StrandIndexType nPermanent = pStrandGeometry->GetStrandCount(segmentKey, pgsTypes::Permanent);
+            StrandIndexType nTemporary = pStrandGeometry->GetStrandCount(segmentKey, pgsTypes::Temporary);
+            StrandIndexType nStrands = nPermanent + nTemporary;
             if (0 < nStrands)
             {
                CComPtr<IPoint2d> from_point, to_point;
@@ -1625,9 +1631,14 @@ void CGirderModelElevationView::BuildStrandCGDisplayObjects(CPGSDocBase* pDoc, I
 
                Float64 Ybg = pSectProp->GetY(intervalIdx,prev_poi,pgsTypes::BottomGirder);
                Float64 Hg  = pSectProp->GetHg(intervalIdx,prev_poi);
-               Float64 nEff;
-               Float64 ecc = pStrandGeometry->GetEccentricity(intervalIdx, prev_poi, pgsTypes::Permanent, &nEff);
-               from_y = Ybg - (Hg+ecc);
+               Float64 nEffPerm;
+               Float64 eccPerm = pStrandGeometry->GetEccentricity(intervalIdx, prev_poi, pgsTypes::Permanent, &nEffPerm);
+               Float64 nEffTemp;
+               Float64 eccTemp = pStrandGeometry->GetEccentricity(intervalIdx, prev_poi, pgsTypes::Temporary, &nEffTemp);
+               //Float64 ecc = (nEffPerm*eccPerm + nEffTemp*eccTemp) / (nEffPerm + nEffTemp);
+               Float64 ecc = (nPermanent*eccPerm + nTemporary*eccTemp) / (nPermanent + nTemporary);
+               from_y = Ybg - (Hg + ecc);
+
 
 /*
 //////////////////////////////////////////////////////////////////
@@ -1647,8 +1658,12 @@ void CGirderModelElevationView::BuildStrandCGDisplayObjects(CPGSDocBase* pDoc, I
                
                   Ybg = pSectProp->GetY(intervalIdx,poi,pgsTypes::BottomGirder);
                   Hg  = pSectProp->GetHg(intervalIdx,poi);
-                  ecc = pStrandGeometry->GetEccentricity(intervalIdx, poi, pgsTypes::Permanent, &nEff);
+                  eccPerm = pStrandGeometry->GetEccentricity(intervalIdx, poi, pgsTypes::Permanent, &nEffPerm);
+                  eccTemp = pStrandGeometry->GetEccentricity(intervalIdx, poi, pgsTypes::Temporary, &nEffTemp);
+                  //ecc = (nEffPerm*eccPerm + nEffTemp*eccTemp) / (nEffPerm + nEffTemp);
+                  ecc = (nPermanent*eccPerm + nTemporary*eccTemp) / (nPermanent + nTemporary);
                   to_y = Ybg - (Hg+ecc);
+
 
                   Float64 X = pPoi->ConvertPoiToGirderPathCoordinate(prev_poi);
                   from_point->put_X(group_offset + X);
@@ -2030,14 +2045,14 @@ void CGirderModelElevationView::BuildPointLoadDisplayObjects(CPGSDocBase* pDoc, 
 
             CComQIPtr<iPointLoadDrawStrategy,&IID_iPointLoadDrawStrategy> pls(pStrategy);
             pls->Init(point_disp, pBroker, *pLoad, loadIdx, span_length, max, color);
-/*
+
             CSegmentKey segmentKey;
             Float64 Xsp;
-            pPoi->ConvertSpanPointToSegmentPathCoordiante(spanKey,Xspan,&segmentKey,&Xsp);
-            Float64 x_position = pPoi->ConvertSegmentPathCoordinateToGirderPathCoordinate(segmentKey,Xsp);
-*/
+            pPoi->ConvertSpanPointToSegmentPathCoordiante(spanKey, Xspan, &segmentKey, &Xsp);
+            Float64 x_position = pPoi->ConvertSegmentPathCoordinateToGirderPathCoordinate(segmentKey, Xsp);
+
             Float64 start_of_span_location = GetSpanStartLocation(spanKey);
-            Float64 x_position = Xspan + start_of_span_location - span_offset;
+            x_position += start_of_span_location - span_offset;
 
             CComPtr<IPoint2d> point;
             point.CoCreateInstance(__uuidof(Point2d));
@@ -2081,6 +2096,7 @@ void CGirderModelElevationView::BuildDistributedLoadDisplayObjects(CPGSDocBase* 
 
    GET_IFACE2(pBroker,IBridge,pBridge);
    GET_IFACE2(pBroker,IUserDefinedLoadData,pUserDefinedLoadData);
+   GET_IFACE2_NOCHECK(pBroker, IPointOfInterest, pPoi);
 
    CollectionIndexType nLoads =  pUserDefinedLoadData->GetDistributedLoadCount();
    SpanIndexType nSpans = pBridge->GetSpanCount();
@@ -2134,31 +2150,29 @@ void CGirderModelElevationView::BuildDistributedLoadDisplayObjects(CPGSDocBase* 
 
             Float64 span_length = pBridge->GetSpanLength(spanKey.spanIndex,spanKey.girderIndex);
 
-            Float64 wstart_loc, wend_loc;
+            Float64 Xspan_start, Xspan_end;
             if (pLoad->m_Type == UserLoads::Uniform)
             {
-               wstart_loc = 0.0;
-               wend_loc   = span_length;
+               Xspan_start = 0.0;
+               Xspan_end   = span_length;
             }
             else
             {
-               wstart_loc = pLoad->m_StartLocation;
-               wend_loc   = pLoad->m_EndLocation;
+               Xspan_start = pLoad->m_StartLocation;
+               Xspan_end   = pLoad->m_EndLocation;
                if (pLoad->m_Fractional)
                {
-                  wstart_loc *= span_length;
-                  wend_loc   *= span_length;;
+                  Xspan_start *= span_length;
+                  Xspan_end   *= span_length;;
                }
             }
 
-            Float64 load_length = wend_loc - wstart_loc;
+            Float64 load_length = Xspan_end - Xspan_start;
             if(load_length <= 0.0)
             {
                ATLASSERT(false); // interface should be blocking this
                break;
             }
-
-            Float64 x_position = GetSpanStartLocation(spanKey);
 
             CComPtr<iDisplayObject> disp_obj;
             factory->Create(CDistributedLoadDrawStrategyImpl::ms_Format,nullptr,&disp_obj);
@@ -2171,9 +2185,18 @@ void CGirderModelElevationView::BuildDistributedLoadDisplayObjects(CPGSDocBase* 
             CComQIPtr<iDistributedLoadDrawStrategy,&IID_iDistributedLoadDrawStrategy> pls(pStrategy);
             pls->Init(point_disp, pBroker, *pLoad, loadIdx, load_length, span_length, max, color);
 
+
+            CSegmentKey segmentKey;
+            Float64 Xsp;
+            pPoi->ConvertSpanPointToSegmentPathCoordiante(spanKey, Xspan_start, &segmentKey, &Xsp);
+            Float64 x_position = pPoi->ConvertSegmentPathCoordinateToGirderPathCoordinate(segmentKey, Xsp);
+
+            Float64 start_of_span_location = GetSpanStartLocation(spanKey);
+            x_position += start_of_span_location - span_offset;
+
             CComPtr<IPoint2d> point;
             point.CoCreateInstance(__uuidof(Point2d));
-            point->put_X(x_position + wstart_loc - span_offset);
+            point->put_X(x_position);
             point->put_Y(0.0);
 
             point_disp->SetPosition(point, FALSE, FALSE);
@@ -2184,8 +2207,8 @@ void CGirderModelElevationView::BuildDistributedLoadDisplayObjects(CPGSDocBase* 
             GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
             CString strStartMagnitude = FormatDimension(pLoad->m_WStart,pDisplayUnits->GetForcePerLengthUnit(),true);
             CString strEndMagnitude   = FormatDimension(pLoad->m_WEnd,pDisplayUnits->GetForcePerLengthUnit(),true);
-            CString strStartLocation  = FormatDimension(wstart_loc,pDisplayUnits->GetSpanLengthUnit(),true);
-            CString strEndLocation    = FormatDimension(wend_loc,pDisplayUnits->GetSpanLengthUnit(),true);
+            CString strStartLocation  = FormatDimension(Xspan_start,pDisplayUnits->GetSpanLengthUnit(),true);
+            CString strEndLocation    = FormatDimension(Xspan_end,pDisplayUnits->GetSpanLengthUnit(),true);
 
 
             CString strToolTip;
@@ -3566,7 +3589,7 @@ Float64 CGirderModelElevationView::GetSpanStartLocation(const CSpanKey& spanKey)
          span_offset += iter->second;
       }
 
-      if ( pGroup->GetPier(pgsTypes::metStart)->GetSpan(pgsTypes::Ahead) == pSpan )
+      if ( spanIdx == 0 )
       {
          CSegmentKey segmentKey(pGroup->GetIndex(),gdrIdx,0);
          Float64 brgOffset = pBridge->GetSegmentStartBearingOffset(segmentKey);

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2017  Washington State Department of Transportation
+// Copyright © 1999-2018  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -140,10 +140,10 @@ void TxDOTIBNSDebondWriter::WriteDebondData(rptParagraph* pPara,IBroker* pBroker
       (*p_table)(row,0) << _T("Dist from Bottom");
 
       p_table->SetColumnSpan(row,1,2);
-      (*p_table)(row,1) << _T("No. Strands");
+      (*p_table)(row,1) << _T("# of Strands");
 
       p_table->SetColumnSpan(row,2,10);
-      (*p_table)(row,2) << _T("Number of Strands Debonded To");
+      (*p_table)(row,2) << _T("# of Strands Debonded At");
 
       // null remaining cells in this row
       ColumnIndexType ic;
@@ -465,7 +465,7 @@ rptParagraph* CTexasIBNSParagraphBuilder::Build(IBroker*	pBroker, const std::vec
             *p << rptNewLine << p_table;
 
             RowIndexType row = 0;
-            (*p_table)(row,0) << _T("Row")<<rptNewLine<<_T("(in)"); // TxDOT dosn't do metric and we need special formatting below
+            (*p_table)(row,0) << _T("Row")<<rptNewLine<< _T("From Bottom")<<rptNewLine<<_T("(in)"); // TxDOT dosn't do metric and we need special formatting below
             (*p_table)(row++,1) << _T("Strands");
 
             for (OptionalDesignHarpedFillUtil::StrandRowIter srit=strandrows.begin(); srit!=strandrows.end(); srit++)

@@ -233,7 +233,7 @@
     <ClCompile>
       <AdditionalOptions>/Zm400  %(AdditionalOptions)</AdditionalOptions>
       <AdditionalIncludeDirectories>.\;..\Include;\ARP\WBFL\Include;\ARP\WBFL\Include\$(Platform);\ARP\PGSuper\Documentation;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>NDEBUG;WIN32;_WINDOWS;_AFXDLL;_ATL_NO_UUIDOF;xENABLE_LOGGING;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;WIN32;_WINDOWS;_AFXDLL;_ATL_NO_UUIDOF;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
       <PrecompiledHeader>Use</PrecompiledHeader>
@@ -338,7 +338,7 @@
       <AdditionalOptions>/Zm400  %(AdditionalOptions)</AdditionalOptions>
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>.\;..\Include;\ARP\WBFL\Include;\ARP\WBFL\Include\$(Platform);\ARP\PGSuper\Documentation;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>_AFXDLL;_ATL_NO_UUIDOF;ENABLE_LOGGING;_DEBUG;WIN32;_WINDOWS;x_DEBUG_SECTION_DUMP;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_AFXDLL;_ATL_NO_UUIDOF;_DEBUG;WIN32;_WINDOWS;x_DEBUG_SECTION_DUMP;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>

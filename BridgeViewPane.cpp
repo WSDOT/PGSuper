@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2017  Washington State Department of Transportation
+// Copyright © 1999-2018  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -90,24 +90,13 @@ void CBridgeViewPane::OnInitialUpdate()
 {
    BuildDisplayLists();
    CDisplayView::OnInitialUpdate();
+   UpdateDrawingArea();
 }
 
 void CBridgeViewPane::OnSize(UINT nType, int cx, int cy) 
 {
 	CDisplayView::OnSize(nType, cx, cy);
-
-   CRect rect;
-   GetClientRect(&rect);
-   rect.DeflateRect(15,15,15,15);
-
-   CSize size = rect.Size();
-   size.cx = Max(0L,size.cx);
-   size.cy = Max(0L,size.cy);
-
-   SetLogicalViewRect(MM_TEXT,rect);
-
-   SetScrollSizes(MM_TEXT,size,CScrollView::sizeDefault,CScrollView::sizeDefault);
-
+   UpdateDrawingArea();
    UpdateDrawingScale();
 }
 
@@ -164,4 +153,19 @@ void CBridgeViewPane::DrawFocusRect()
    CRect rClient;
    GetClientRect(&rClient);
    dc.DrawFocusRect(rClient);
+}
+
+void CBridgeViewPane::UpdateDrawingArea()
+{
+   CRect rect;
+   GetClientRect(&rect);
+   rect.DeflateRect(15, 15, 15, 15);
+
+   CSize size = rect.Size();
+   size.cx = Max(0L, size.cx);
+   size.cy = Max(0L, size.cy);
+
+   SetLogicalViewRect(MM_TEXT, rect);
+
+   SetScrollSizes(MM_TEXT, size, CScrollView::sizeDefault, CScrollView::sizeDefault);
 }

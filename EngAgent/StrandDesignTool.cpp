@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2017  Washington State Department of Transportation
+// Copyright © 1999-2018  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -229,29 +229,22 @@ void pgsStrandDesignTool::Initialize(IBroker* pBroker, StatusGroupIDType statusG
       m_pArtifact->SetSlabOffset( pgsTypes::metEnd,   defaultA);
    }
 
-   // Set initial design fillet here
-   Float64 fillet = pBridge->GetFillet(m_SegmentKey.groupIndex,m_SegmentKey.girderIndex);
-   if ( m_DesignOptions.doDesignSlabOffset == sodAandFillet )
+   // Set initial design for AssExcessCamber here
+   GET_IFACE(ISpecification,pSpec);
+   m_bIsDesignExcessCamber = sodAandAssExcessCamber == m_DesignOptions.doDesignSlabOffset &&
+                                                       pSpec->IsAssExcessCamberInputEnabled();
+   // don't let tolerance be impossible
+   if (m_bIsDesignExcessCamber)
    {
-      pgsTypes::SupportedBeamSpacing spacingType = pBridgeDesc->GetGirderSpacingType();
-      if (IsAdjacentSpacing(spacingType))
-      {
-         // set fillet to zero for adjacently spaced systems
-         LOG(_T("Setting fillet value to zero from = ") << ::ConvertFromSysUnits(fillet,unitMeasure::Inch)<<_T("in") );
-         fillet = 0.0;
-      }
-      else
-      {
-         Float64 min_fillet = m_pGirderEntry->GetMinFilletValue();
-         if (fillet < min_fillet)
-         {
-            LOG(_T("Setting fillet value from = ") << ::ConvertFromSysUnits(fillet,unitMeasure::Inch) << _T("in to minimum required value of ")<< ::ConvertFromSysUnits(min_fillet,unitMeasure::Inch) << _T("in") );
-            fillet = min_fillet;
-         }
-      }
+      m_AssExcessCamberTolerance = min(::ConvertToSysUnits(0.5, unitMeasure::Inch), pSpec->GetCamberTolerance());
+   }
+   else
+   {
+      m_AssExcessCamberTolerance = ::ConvertToSysUnits(0.5, unitMeasure::Inch); // doesn't matter
    }
 
-   m_pArtifact->SetFillet(fillet);
+   Float64 AssExcessCamber = pBridge->GetAssExcessCamber(m_SegmentKey.groupIndex, m_SegmentKey.girderIndex);
+   m_pArtifact->SetAssExcessCamber(AssExcessCamber);
 
    // Initialize Prestressing
    m_pArtifact->SetNumStraightStrands( 0 );
@@ -1656,7 +1649,7 @@ public:
 
 void pgsStrandDesignTool::DumpDesignParameters()
 {
-#if ENABLE_LOGGING
+#if defined ENABLE_LOGGING
 
    GET_IFACE(IStrandGeometry,pStrandGeom);
 
@@ -1774,7 +1767,7 @@ void pgsStrandDesignTool::FillArtifactWithFlexureValues()
    m_pArtifact->SetSlabOffset(pgsTypes::metStart,pBridge->GetSlabOffset(m_SegmentKey.groupIndex,startPierIdx,m_SegmentKey.girderIndex));
    m_pArtifact->SetSlabOffset(pgsTypes::metEnd,  pBridge->GetSlabOffset(m_SegmentKey.groupIndex,endPierIdx,  m_SegmentKey.girderIndex)  );
 
-   m_pArtifact->SetFillet(pBridge->GetFillet(m_SegmentKey.groupIndex,m_SegmentKey.girderIndex));
+   m_pArtifact->SetAssExcessCamber(pBridge->GetAssExcessCamber(m_SegmentKey.groupIndex,m_SegmentKey.girderIndex));
 
    GDRCONFIG config = pBridge->GetSegmentConfiguration(m_SegmentKey);
    m_pArtifact->SetStraightStrandDebondInfo( config.PrestressConfig.Debond[pgsTypes::Straight] );
@@ -2112,9 +2105,26 @@ Float64 pgsStrandDesignTool::GetAbsoluteMinimumSlabOffset() const
    return m_AbsoluteMinimumSlabOffset;
 }
 
-Float64 pgsStrandDesignTool::GetFillet() const
+bool pgsStrandDesignTool::IsDesignExcessCamber() const
 {
-   return m_pArtifact->GetFillet();
+   return m_bIsDesignExcessCamber;
+}
+
+Float64 pgsStrandDesignTool::GetAssExcessCamberTolerance() const
+{
+   return m_AssExcessCamberTolerance;
+}
+
+void pgsStrandDesignTool::SetAssExcessCamber(Float64 camber)
+{
+   LOG(_T("** Set assumed excess camber to ") <<::ConvertFromSysUnits(camber,unitMeasure::Inch));
+   m_pArtifact->SetAssExcessCamber(camber);
+   m_bConfigDirty = true; // cache is dirty
+}
+
+Float64 pgsStrandDesignTool::GetAssExcessCamber() const
+{
+   return m_pArtifact->GetAssExcessCamber();
 }
 
 void pgsStrandDesignTool::SetLiftingLocations(Float64 left,Float64 right)
@@ -3264,31 +3274,16 @@ std::vector<pgsPointOfInterest> pgsStrandDesignTool::GetHandlingDesignPointsOfIn
       }
       else
       {
-         // We need to remove or unset support point at existing location
-         if ( poi.GetID() != INVALID_ID )
+         // We need to unset support point at existing location
+         PoiAttributeType attributes = poi.GetReferencedAttributes(poiReference);
+         if ( attributes != supportAttribute || poi.GetNonReferencedAttributes() != 0 )
          {
-            // this is the faster method... use it if we can
-            m_PoiMgr.RemovePointOfInterest(poi.GetID());
+            // if the only flag that is set is support point attribute, remove it
+            // otherwise, clear the support point attribute bit and add the poi back
+            sysFlags<PoiAttributeType>::Clear(&attributes,supportAttribute);
+            poi.SetReferencedAttributes(attributes);
+            m_PoiMgr.AddPointOfInterest(poi);
          }
-         else
-         {
-            m_PoiMgr.RemovePointOfInterest(poi);
-         }
-
-         ATLASSERT(poi.CanMerge() == false);
-         ATLASSERT(poi.GetNonReferencedAttributes() == 0);
-         ATLASSERT(poi.GetReferencedAttributes(poiReference) == supportAttribute);
-         // support poi cannot be merged so this code block is no longer needed.
-         // the two asserts above make sure this is true.
-         //PoiAttributeType attributes = poi.GetReferencedAttributes(poiReference);
-         //if ( attributes != supportAttribute || poi.GetNonReferencedAttributes() != 0 )
-         //{
-         //   // if the only flag that is set is support point attribute, remove it
-         //   // otherwise, clear the support point attribute bit and add the poi back
-         //   sysFlags<PoiAttributeType>::Clear(&attributes,supportAttribute);
-         //   poi.SetReferencedAttributes(attributes);
-         //   m_PoiMgr.AddPointOfInterest(poi);
-         //}
       }
    }
 

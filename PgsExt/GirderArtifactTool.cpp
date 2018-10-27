@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2017  Washington State Department of Transportation
+// Copyright © 1999-2018  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -410,10 +410,9 @@ void ListStressFailures(IBroker* pBroker, FailureList& rFailures,
    } // next segment
 }
 
-
 bool MomentCapacityFailures(IBroker* pBroker,const pgsGirderArtifact* pGirderArtifact,IntervalIndexType intervalIdx,pgsTypes::LimitState ls,bool bPositiveMoment)
 {
-   CollectionIndexType nArtifacts = pGirderArtifact->GetFlexuralCapacityArtifactCount(intervalIdx,ls);
+   CollectionIndexType nArtifacts = (bPositiveMoment ? pGirderArtifact->GetPositiveMomentFlexuralCapacityArtifactCount(intervalIdx,ls) : pGirderArtifact->GetNegativeMomentFlexuralCapacityArtifactCount(intervalIdx, ls));
    for ( CollectionIndexType artifactIdx = 0; artifactIdx < nArtifacts; artifactIdx++ )
    {
       const pgsFlexuralCapacityArtifact* pFlexure = (bPositiveMoment ? 
@@ -767,9 +766,9 @@ void ListVariousFailures(IBroker* pBroker,FailureList& rFailures,const pgsGirder
       rFailures.push_back(_T("Bottom flange clearance check failed"));
    }
 
-   if ( !pConstruct->HaunchGeometryPassed() )
+   if ( !pConstruct->HaunchLoadGeometryPassed() )
    {
-      rFailures.push_back(_T("Haunch geometry compliance check failed"));
+      rFailures.push_back(_T("Haunch load geometry compliance check failed"));
    }
 
    // Live Load Deflection

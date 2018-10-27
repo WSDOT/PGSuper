@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2017  Washington State Department of Transportation
+// Copyright © 1999-2018  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -47,18 +47,22 @@ interface IPoint2d;
 typedef struct HCURVESTATIONS
 {
    Float64 TSStation;
+   Float64 SPI1Station; // Entry Spiral PI
    Float64 SCStation;
    Float64 PIStation;
    Float64 CSStation;
+   Float64 SPI2Station; // Exit Spiral PI
    Float64 STStation;
 } HCURVESTATIONS;
 
 typedef enum CurvePointTypes
 {
    cptTS,
+   cptSPI1,
    cptSC,
    cptPI,
    cptCS,
+   cptSPI2,
    cptST,
    cptCC,
    cptCCC

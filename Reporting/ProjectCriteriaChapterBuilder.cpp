@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2017  Washington State Department of Transportation
+// Copyright © 1999-2018  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -65,6 +65,7 @@ void write_bridge_site3(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits*
 void write_moment_capacity(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, const SpecLibraryEntry* pSpecEntry,const CSegmentKey& segmentKey);
 void write_shear_capacity(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, const SpecLibraryEntry* pSpecEntry,const CSegmentKey& segmentKey);
 void write_creep(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, const SpecLibraryEntry* pSpecEntry);
+void write_haunch_dead_load(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, const SpecLibraryEntry* pSpecEntry);
 void write_losses(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, const SpecLibraryEntry* pSpecEntry);
 void write_strand_stress(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, const SpecLibraryEntry* pSpecEntry);
 void write_deflections(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, const SpecLibraryEntry* pSpecEntry);
@@ -259,6 +260,7 @@ rptChapter* CProjectCriteriaChapterBuilder::Build(CReportSpecification* pRptSpec
          write_shear_capacity(pChapter, pBroker, pDisplayUnits, pSpecEntry, segmentKey);
       } // next segment
 
+      write_haunch_dead_load(pChapter, pBroker, pDisplayUnits, pSpecEntry);
       write_creep(pChapter, pBroker, pDisplayUnits, pSpecEntry);
       write_losses(pChapter, pBroker, pDisplayUnits, pSpecEntry);
       write_strand_stress(pChapter, pBroker, pDisplayUnits, pSpecEntry);
@@ -1070,6 +1072,32 @@ void write_creep(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDispl
    *pPara << _T("Variability between upper and lower bound camber : ") << 100*Cfactor << rptNewLine;
 }
 
+void write_haunch_dead_load(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, const SpecLibraryEntry* pSpecEntry)
+{
+   rptParagraph* pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
+   *pChapter << pPara;
+   *pPara<<_T("Haunch Dead Load Criteria");
+
+   pPara = new rptParagraph;
+   *pChapter << pPara;
+
+   pgsTypes::HaunchLoadComputationType hlctype = pSpecEntry->GetHaunchLoadComputationType();
+   if (pgsTypes::hlcZeroCamber==hlctype)
+   {
+      *pPara<<_T("Haunch dead load is computed assuming that the top of the girder is flat (Zero assumed excess camber)")<<rptNewLine;
+   }
+   else if (pgsTypes::hlcAccountForCamber==hlctype)
+   {
+      *pPara<<_T("Haunch dead load is computed assuming that the top of the girder is parabolic with the parabola defined by the user-input assumed excess camber.")<<rptNewLine;
+      INIT_UV_PROTOTYPE( rptLengthUnitValue, dim, pDisplayUnits->GetComponentDimUnit(), true );
+      *pPara << _T("Allowable tolerance between assumed and computed excess camber = ") << dim.SetValue(pSpecEntry->GetHaunchLoadCamberTolerance()) << rptNewLine;
+      *pPara << _T("Use ")<< pSpecEntry->GetHaunchLoadCamberFactor()*100 << _T(" % of assumed excess camber when computing haunch dead load.") << rptNewLine;
+   }
+   else
+   {
+      ATLASSERT(false); // new method?
+   }
+}
 void write_losses(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, const SpecLibraryEntry* pSpecEntry)
 {
    rptParagraph* pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());

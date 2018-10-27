@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2017  Washington State Department of Transportation
+// Copyright © 1999-2018  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -427,7 +427,7 @@ void pgsDesigner2::GetHaunchDetails(const CSpanKey& spanKey,bool bUseConfig,cons
       CSpanKey spanKey;
       Float64 Xspan;
       pPoi->ConvertPoiToSpanPoint(poi,&spanKey,&Xspan);
-      Float64 fillet = bUseConfig ? config.Fillet : pIBridgeDesc->GetFillet(spanKey.spanIndex, spanKey.girderIndex);
+      Float64 fillet = pIBridgeDesc->GetFillet();
 
       Float64 camber_effect = -99999;
       Float64 D,C;
@@ -3992,7 +3992,8 @@ void pgsDesigner2::CheckMomentCapacity(IntervalIndexType intervalIdx,pgsTypes::L
    IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
 
    // Get points of interest for evaluation
-   std::vector<pgsPointOfInterest> vPoi;
+   std::vector<pgsPointOfInterest> vPoi; // POIs for both positive and negative moment
+   std::vector<pgsPointOfInterest> vNMPoi; // additional POIs for negative moment only
 
    GET_IFACE(IBridge,pBridge);
    SpanIndexType startSpanIdx, endSpanIdx;
@@ -4008,31 +4009,43 @@ void pgsDesigner2::CheckMomentCapacity(IntervalIndexType intervalIdx,pgsTypes::L
       GET_IFACE(IPointOfInterest, pPoi);
       std::vector<pgsPointOfInterest> vPoiThisSpan( pPoi->GetPointsOfInterest(CSpanKey(spanIdx,girderKey.girderIndex),POI_SPAN | POI_TENTH_POINTS));
       vPoi.insert(vPoi.end(),vPoiThisSpan.begin(),vPoiThisSpan.end());
+
+      std::vector<pgsPointOfInterest> vNMPoiThisSpan(pPoi->GetPointsOfInterest(CSpanKey(spanIdx, girderKey.girderIndex), POI_FACEOFSUPPORT | POI_DECKBARCUTOFF, POIFIND_OR));
+      vNMPoi.insert(vNMPoi.end(), vNMPoiThisSpan.begin(), vNMPoiThisSpan.end());
    }
    std::sort(vPoi.begin(),vPoi.end());
    vPoi.erase(std::unique(vPoi.begin(),vPoi.end()),vPoi.end());
 
-   std::vector<pgsPointOfInterest>::iterator poiIter(vPoi.begin());
-   std::vector<pgsPointOfInterest>::iterator poiIterEnd(vPoi.end());
-   for ( ; poiIter != poiIterEnd; poiIter++)
-   {
-      const pgsPointOfInterest& poi = *poiIter;
+   std::sort(vNMPoi.begin(), vNMPoi.end());
+   vNMPoi.erase(std::unique(vNMPoi.begin(), vNMPoi.end()), vNMPoi.end());
 
+   for ( const auto& poi : vPoi)
+   {
       // we always do positive moment
       pgsFlexuralCapacityArtifact pmArtifact(true);
       CreateFlexuralCapacityArtifact(poi,intervalIdx,limitState,true,&pmArtifact);
+      pGirderArtifact->AddPositiveMomentFlexuralCapacityArtifact(intervalIdx, limitState, pmArtifact);
 
       // negative moment is a different story. there must be a negative moment connection
       // at one end of the span
-      pgsFlexuralCapacityArtifact nmArtifact(false);
-      nmArtifact.SetPointOfInterest(poi);
-
       if ( liveLoadIntervalIdx <= intervalIdx && bComputeNegativeMomentCapacity )
       {
+         pgsFlexuralCapacityArtifact nmArtifact(false);
+         nmArtifact.SetPointOfInterest(poi);
          CreateFlexuralCapacityArtifact(poi,intervalIdx,limitState,false,&nmArtifact);
+         pGirderArtifact->AddNegativeMomentFlexuralCapacityArtifact(intervalIdx, limitState, nmArtifact);
       }
+   }
 
-      pGirderArtifact->AddFlexuralCapacityArtifact(intervalIdx,limitState,pmArtifact,nmArtifact);
+   if (liveLoadIntervalIdx <= intervalIdx && bComputeNegativeMomentCapacity)
+   {
+      for (const auto& poi : vNMPoi)
+      {
+         pgsFlexuralCapacityArtifact nmArtifact(false);
+         nmArtifact.SetPointOfInterest(poi);
+         CreateFlexuralCapacityArtifact(poi, intervalIdx, limitState, false, &nmArtifact);
+         pGirderArtifact->AddNegativeMomentFlexuralCapacityArtifact(intervalIdx, limitState, nmArtifact);
+      }
    }
 }
 
@@ -4152,6 +4165,20 @@ void pgsDesigner2::InitShearCheck(const CSegmentKey& segmentKey,IntervalIndexTyp
       GET_IFACE(IPointOfInterest,pPoi);
       vCSPoi = pPoi->GetCriticalSections(limitState,segmentKey);
       std::vector<CRITSECTDETAILS> vCS = pShearCapacity->GetCriticalSectionDetails(limitState,segmentKey);
+
+      if (lrfdVersionMgr::GetVersion() < lrfdVersionMgr::ThirdEdition2004)
+      {
+         // if the LRFD is before 2004, critical section for shear was a function of loading.... we end up with many critical section POIs but
+         // only a few (usually 2) critical section details. Match the details to the POIs and throw out the other POIs. LRFD 2004 and later only depend on Mu
+         // so the number of CS POIs and CS details should always match.
+         vCSPoi.erase(
+            std::remove_if(vCSPoi.begin(), vCSPoi.end(), [&vCS](auto& poi)
+         {
+            return std::find_if(vCS.begin(), vCS.end(), [&poi](const auto& csDetails) {return csDetails.pCriticalSection->Poi.AtExactSamePlace(poi);}) == vCS.cend();
+         }),
+            vCSPoi.end());
+      }
+
       ATLASSERT(vCSPoi.size() == vCS.size());
       std::vector<CRITSECTDETAILS>::iterator iter(vCS.begin());
       std::vector<CRITSECTDETAILS>::iterator end(vCS.end());
@@ -4182,6 +4209,20 @@ void pgsDesigner2::InitShearCheck(const CSegmentKey& segmentKey,IntervalIndexTyp
       vCSPoi = m_ShearDesignTool.GetCriticalSections(); // these POIs have IDs assigned. They are temporary POIs held in the shear design tool. We want to use the ones with IDs so results at critical sections are cached (namely Mn)
 
       std::vector<CRITSECTDETAILS> vCS = pShearCapacity->GetCriticalSectionDetails(limitState,segmentKey,*pConfig);
+
+      if (lrfdVersionMgr::GetVersion() < lrfdVersionMgr::ThirdEdition2004)
+      {
+         // if the LRFD is before 2004, critical section for shear was a function of loading.... we end up with many critical section POIs but
+         // only a few (usually 2) critical section details. Match the details to the POIs and throw out the other POIs. LRFD 2004 and later only depend on Mu
+         // so the number of CS POIs and CS details should always match.
+         vCSPoi.erase(
+            std::remove_if(vCSPoi.begin(), vCSPoi.end(), [&vCS](auto& poi)
+         {
+            return std::find_if(vCS.begin(), vCS.end(), [&poi](const auto& csDetails) {return csDetails.pCriticalSection->Poi.AtExactSamePlace(poi);}) == vCS.cend();
+         }),
+            vCSPoi.end());
+      }
+
       ATLASSERT(vCSPoi.size() == vCS.size());
 
       // Assigned the POIs with IDs to the details because we don't want to work with POIs without valid IDs
@@ -4914,6 +4955,8 @@ void pgsDesigner2::CheckConstructability(const CGirderKey& girderKey,pgsConstruc
    GET_IFACE(ILibrary, pLib );
    GET_IFACE(ISpecification, pSpec );
    GET_IFACE(IBridge,pBridge);
+   GET_IFACE(IProductLoads, pProdLoads);
+
    std::_tstring spec_name = pSpec->GetSpecification();
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( spec_name.c_str() );
 
@@ -5002,7 +5045,7 @@ void pgsDesigner2::CheckConstructability(const CGirderKey& girderKey,pgsConstruc
             artifact.SetRequiredMinimumFillet(min_fillet);
          }
 
-         Float64 fillet = pBridge->GetFillet(spanIdx, girderKey.girderIndex);
+         Float64 fillet = pBridge->GetFillet();
          artifact.SetProvidedFillet(fillet);
 
          // warning tolerance for excessive haunch
@@ -5053,32 +5096,49 @@ void pgsDesigner2::CheckConstructability(const CGirderKey& girderKey,pgsConstruc
       ///////////////////////////////////////////////////////////////
       if (pSpecEntry->GetHaunchLoadComputationType() != pgsTypes::hlcAccountForCamber || pBridge->GetDeckType() == pgsTypes::sdtNone)
       {
-         artifact.SetHaunchGeometryCheckApplicability(false);
+         artifact.SetHaunchLoadGeometryCheckApplicability(false);
       }
       else
       {
-         artifact.SetHaunchGeometryCheckApplicability(true);
+         artifact.SetHaunchLoadGeometryCheckApplicability(true);
 
          Float64 tolerance = pSpecEntry->GetHaunchLoadCamberTolerance();
-         artifact.SetHaunchGeometryTolerance(tolerance);
+         artifact.SetHaunchLoadGeometryTolerance(tolerance);
+
+         Float64 assumedExcessCamber = pBridge->GetAssExcessCamber(girderKey.groupIndex, girderKey.girderIndex);
+         artifact.SetAssumedExcessCamber(assumedExcessCamber);
 
          GET_IFACE(IGirderHaunch,pGdrHaunch);
          HAUNCHDETAILS haunch_details = pGdrHaunch->GetHaunchDetails(spanKey);
 
-         // Need fillet depth at mid-span - get details there
+         // Need excess camber at mid-span - get details there
          std::vector<SECTIONHAUNCH>::const_iterator hit( std::find_if(haunch_details.Haunch.begin(),haunch_details.Haunch.end(),FindMidSpanHaunch()) );
 
          if (hit != haunch_details.Haunch.end())
          {
-            Float64 haunch_depth = hit->TopSlabToTopGirder - hit->tSlab - hit->GirderOrientationEffect;
-            artifact.SetComputedFillet(haunch_depth);
+            Float64 haunch_depth = hit->CamberEffect;
+            artifact.SetComputedExcessCamber(haunch_depth);
          }
          else
          {
             ATLASSERT(0); // THIS IS A BIG DEAL!! Can't find mid-span details. Cannot perform check. 
            // Should never happen, but kill check to avoid later crash
-            artifact.SetHaunchGeometryCheckApplicability(false);
+            artifact.SetHaunchLoadGeometryCheckApplicability(false);
          }
+
+         // minimum assumed haunch depth
+         std::vector<SlabLoad> slab_loads;
+         CSegmentKey segKey(girderKey.groupIndex, girderKey.girderIndex, 0);
+         pProdLoads->GetMainSpanSlabLoad(segKey, &slab_loads);
+         Float64 minDepth = Float64_Max;
+         std::vector<SlabLoad>::const_iterator iter(slab_loads.begin());
+         std::vector<SlabLoad>::const_iterator end(slab_loads.end());
+         for (; iter != end; iter++)
+         {
+            minDepth = min(minDepth, iter->HaunchDepth);
+         }
+
+         artifact.SetAssumedMinimumHaunchDepth(minDepth);
       }
       
       ///////////////////////////////////////////////////////////////
@@ -6322,6 +6382,8 @@ void pgsDesigner2::DesignSlabOffset(IProgress* pProgress)
    Float64 AorigStart = m_StrandDesignTool.GetSlabOffset(pgsTypes::metStart);
    Float64 AorigEnd   = m_StrandDesignTool.GetSlabOffset(pgsTypes::metEnd);
 
+   Float64 assExcessCamberOrig = m_StrandDesignTool.GetAssExcessCamber();
+
    // Iterate on _T("A") dimension and initial number of prestressing strands
    // Use a relaxed tolerance on _T("A") dimension.
    Int16 cIter = 0;
@@ -6334,7 +6396,10 @@ void pgsDesigner2::DesignSlabOffset(IProgress* pProgress)
    LOG(_T("Computing A-dimension requirement"));
    LOG(_T("A-dim Current (Start)   = ") << ::ConvertFromSysUnits(AorigStart, unitMeasure::Inch) << _T(" in") );
    LOG(_T("A-dim Current (End)     = ") << ::ConvertFromSysUnits(AorigEnd,   unitMeasure::Inch) << _T(" in") );
-
+   if (m_StrandDesignTool.IsDesignExcessCamber())
+   {
+      LOG(_T("AssExcessCamber Current    = ") << ::ConvertFromSysUnits(assExcessCamberOrig,   unitMeasure::Inch) << _T(" in") );
+   }
    
    // to prevent the design from bouncing back and forth over two "A" dimensions that are 1/4" apart, we are going to use the
    // raw computed "A" requirement and round it after design is complete.
@@ -6352,16 +6417,18 @@ void pgsDesigner2::DesignSlabOffset(IProgress* pProgress)
       Float64 AoldStart = m_StrandDesignTool.GetSlabOffset(pgsTypes::metStart);
       Float64 AoldEnd   = m_StrandDesignTool.GetSlabOffset(pgsTypes::metEnd);
 
+      Float64 AssExcessCamberOld = m_StrandDesignTool.GetAssExcessCamber();
+
       // Make a guess at the "A" dimension using this initial strand configuration
       HAUNCHDETAILS haunch_details;
       GDRCONFIG config = m_StrandDesignTool.GetSegmentConfiguration();
       config.SlabOffset[pgsTypes::metStart] = AoldStart;
       config.SlabOffset[pgsTypes::metEnd]   = AoldEnd;
+      config.AssExcessCamber = AssExcessCamberOld;
       GetHaunchDetails(CSpanKey(segmentKey.groupIndex,segmentKey.girderIndex),config,&haunch_details); // design is by segment/span and only for PGSuper so it is ok to use the segmentKey here instead of a girderKey
 
       IndexType idx = haunch_details.Haunch.size()/2;
       LOG(_T("A-dim Calculated         = ") << ::ConvertFromSysUnits(haunch_details.RequiredSlabOffset, unitMeasure::Inch) << _T(" in"));
-      LOG(_T("Excess Camber Calculated = ") << ::ConvertFromSysUnits(haunch_details.Haunch.at(idx).CamberEffect, unitMeasure::Inch) << _T(" in"));
 
       Float64 Anew = haunch_details.RequiredSlabOffset;
 
@@ -6378,6 +6445,7 @@ void pgsDesigner2::DesignSlabOffset(IProgress* pProgress)
          a = CeilOff(Max(AoldStart,AoldEnd,Anew),tolerance );
          m_StrandDesignTool.SetSlabOffset( pgsTypes::metStart, a );
          m_StrandDesignTool.SetSlabOffset( pgsTypes::metEnd,   a );
+         LOG(_T("A-dim camber converged."));
 
          bDone = true;
       }
@@ -6386,11 +6454,34 @@ void pgsDesigner2::DesignSlabOffset(IProgress* pProgress)
          m_StrandDesignTool.SetSlabOffset( pgsTypes::metStart, Anew );
          m_StrandDesignTool.SetSlabOffset( pgsTypes::metEnd,   Anew );
       }
+
+      if (m_StrandDesignTool.IsDesignExcessCamber())
+      {
+         Float64 ctoler = m_StrandDesignTool.GetAssExcessCamberTolerance();
+         Float64 computed_camber = haunch_details.Haunch.at(idx).CamberEffect;
+         LOG(_T("Excess Camber Computed = ") << ::ConvertFromSysUnits(computed_camber, unitMeasure::Inch) << _T(" in"));
+         if (IsZero(AssExcessCamberOld - computed_camber, ctoler))
+         {
+            Float64 c;
+            c = RoundOff(computed_camber, tolerance);
+            LOG(_T("Excess camber converged."));
+            m_StrandDesignTool.SetAssExcessCamber(c);
+
+            bDone &= true;
+         }
+         else
+         {
+            m_StrandDesignTool.SetAssExcessCamber(computed_camber);
+            LOG(_T("Excess camber does not match within tolerance."));
+            bDone = false;
+         }
+      }
+
    } while ( !bDone && cIter++ < nIterMax);
 
    if ( nIterMax < cIter )
    {
-      LOG(_T("Maximum number of iteratations was exceeded - aborting design ") << cIter);
+      LOG(_T("Maximum number of iteratations was exceeded - aborting Slab offset design ") << cIter);
       m_StrandDesignTool.SetOutcome(pgsSegmentDesignArtifact::MaxIterExceeded);
       m_DesignerOutcome.AbortDesign();
    }
@@ -7737,17 +7828,10 @@ void pgsDesigner2::DesignForLiftingHarping(const arDesignOptions& options, bool 
          std::vector<stbLiftingSectionResult>::const_iterator found = std::find_if(liftingResults.vSectionResults.begin(),liftingResults.vSectionResults.end(),SectionFinder::Find);
          ATLASSERT(found != liftingResults.vSectionResults.end());
          const stbLiftingSectionResult& sectionResult = *found;
-#if defined MATCH_OLD_ANALYSIS
-         fHpTopMin.push_back(sectionResult.fMinDirect[stbTypes::Top]);
-         fHpTopMax.push_back(sectionResult.fMaxDirect[stbTypes::Top]);
-         fHpBotMin.push_back(sectionResult.fMinDirect[stbTypes::Bottom]);
-         fHpBotMax.push_back(sectionResult.fMaxDirect[stbTypes::Bottom]);
-#else
          fHpTopMin.push_back(sectionResult.fMin[stbTypes::Top]);
          fHpTopMax.push_back(sectionResult.fMax[stbTypes::Top]);
          fHpBotMin.push_back(sectionResult.fMin[stbTypes::Bottom]);
          fHpBotMax.push_back(sectionResult.fMax[stbTypes::Bottom]);
-#endif
       }
 
       Float64 fTopHpMin = *std::min_element(fHpTopMin.begin(),fHpTopMin.end());
@@ -7989,19 +8073,11 @@ void pgsDesigner2::GetEndZoneMinMaxRawStresses(const CSegmentKey& segmentKey,con
    const stbLiftingSectionResult& leftSection  = *foundLeft;
    const stbLiftingSectionResult& rightSection = *foundRight;
 
-#if defined MATCH_OLD_ANALYSIS
-   Float64 fMaxTopLeftEnd = leftSection.fMaxDirect[stbTypes::Top] - leftSection.fps[stbTypes::Top];
-   Float64 fMaxTopRightEnd = rightSection.fMaxDirect[stbTypes::Top] - rightSection.fps[stbTypes::Top];
-
-   Float64 fMinBottomLeftEnd = leftSection.fMinDirect[stbTypes::Bottom] - leftSection.fps[stbTypes::Bottom];
-   Float64 fMinBottomRightEnd = rightSection.fMinDirect[stbTypes::Bottom] - rightSection.fps[stbTypes::Bottom];
-#else
    Float64 fMaxTopLeftEnd = leftSection.fMax[stbTypes::Top] - leftSection.fps[stbTypes::Top];
    Float64 fMaxTopRightEnd = rightSection.fMax[stbTypes::Top] - rightSection.fps[stbTypes::Top];
 
    Float64 fMinBottomLeftEnd = leftSection.fMin[stbTypes::Bottom] - leftSection.fps[stbTypes::Bottom];
    Float64 fMinBottomRightEnd = rightSection.fMin[stbTypes::Bottom] - rightSection.fps[stbTypes::Bottom];
-#endif
 
    *pftop = Max(fMaxTopLeftEnd,fMaxTopRightEnd);
    *ptop_loc = (MaxIndex(fMaxTopLeftEnd,fMaxTopRightEnd) == 0 ? left_loc : right_loc);
@@ -8330,13 +8406,8 @@ std::vector<DebondLevelType> pgsDesigner2::DesignDebondingForLifting(HANDLINGCON
                LOG(_T("Sample prestress force per strand taken at ")<< ::ConvertFromSysUnits(poi_loc,unitMeasure::Feet)<<_T(" ft, force = ") << ::ConvertFromSysUnits(force_per_strand, unitMeasure::Kip) << _T(" kip"));
             }
 
-#if defined MATCH_OLD_ANALYSIS
-            Float64 fTop = sectionResult.fMaxDirect[stbTypes::Top];
-            Float64 fBot = sectionResult.fMinDirect[stbTypes::Bottom];
-#else
             Float64 fTop = sectionResult.fMax[stbTypes::Top];
             Float64 fBot = sectionResult.fMin[stbTypes::Bottom];
-#endif
 
             LOG(_T("At ")<< ::ConvertFromSysUnits(poi_loc,unitMeasure::Feet)<<_T(" ft, Ftop = ")<< ::ConvertFromSysUnits(fTop,unitMeasure::KSI) << _T(" ksi Fbot = ")<< ::ConvertFromSysUnits(fBot,unitMeasure::KSI) << _T(" ksi") );
             LOG(_T("Average force per strand = ") << ::ConvertFromSysUnits(Fpe/nss,unitMeasure::Kip) << _T(" kip"));
@@ -8438,7 +8509,7 @@ void pgsDesigner2::DesignForShipping(IProgress* pProgress)
             if ( IsEqual(maxLeadingOverhang,haulConfig.RightOverhang) &&
                  IsEqual(maxDistanceBetweenSupports,distBetweenSupportPoints) )
             {
-               LOG(_T("Failed to satisfy shipping requirements - shipping configuration prevents a suitable solution from being found"));
+               LOG(_T("Failed to satisfy shipping requirements - shipping configuration limitations prevents a suitable solution from being found"));
                m_StrandDesignTool.SetOutcome(pgsSegmentDesignArtifact::GirderShippingConfiguration);
                m_DesignerOutcome.AbortDesign();
                return;
@@ -8506,14 +8577,8 @@ void pgsDesigner2::DesignForShipping(IProgress* pProgress)
    final_artifact->GetRequiredConcreteStrength(pgsTypes::CrownSlope,&fc_comp1,&fc_tens,&fc_tens_wrebar1);
    final_artifact->GetRequiredConcreteStrength(pgsTypes::Superelevation,&fc_comp2,&fc_tens,&fc_tens_wrebar2);
 
-#if defined MATCH_OLD_ANALYSIS
-   Float64 fc_comp = Max(fc_comp1,fc_comp2);
-   fc_tens = fc_tens_wrebar1; // Hauling design always uses higher allowable limit (lower f'c)
-#else
    Float64 fc_comp = Max(fc_comp1,fc_comp2);
    fc_tens = Max(fc_tens_wrebar1,fc_tens_wrebar2); // Hauling design always uses higher allowable limit (lower f'c)
-#endif
-
 
    LOG(_T("f'c (unrounded) required for shipping; tension = ") << ::ConvertFromSysUnits(fc_tens,unitMeasure::KSI) << _T(" KSI, compression = ") << ::ConvertFromSysUnits(fc_comp,unitMeasure::KSI) << _T(" KSI"));
 
@@ -9541,13 +9606,8 @@ void pgsDesigner2::DumpLiftingArtifact(const stbLiftingStabilityProblem* pStabil
       os <<_T("At ") << ::ConvertFromSysUnits(loc,unitMeasure::Feet) << _T(" ft: ");
 
       // NOTE: min_stress and max_stress are backwards to match the original log file dump code from pgsLiftingAnalysisArtifact
-#if defined MATCH_OLD_ANALYSIS
-      Float64 min_stress = Max(sectionResult.fMaxDirect[stbTypes::Top],sectionResult.fMaxDirect[stbTypes::Bottom]);
-      Float64 max_stress = Min(sectionResult.fMinDirect[stbTypes::Top],sectionResult.fMinDirect[stbTypes::Bottom]);
-#else
       Float64 min_stress = Max(sectionResult.fMax[stbTypes::Top],sectionResult.fMax[stbTypes::Bottom]);
       Float64 max_stress = Min(sectionResult.fMin[stbTypes::Top],sectionResult.fMin[stbTypes::Bottom]);
-#endif
       os<<_T("Total Stress: Min =")<<::ConvertFromSysUnits(min_stress,unitMeasure::KSI)<<_T("ksi, Max=")<<::ConvertFromSysUnits(max_stress,unitMeasure::KSI)<<_T("ksi")<<endl;
    }
 

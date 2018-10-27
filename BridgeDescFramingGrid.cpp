@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2017  Washington State Department of Transportation
+// Copyright © 1999-2018  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -344,21 +344,35 @@ void CBridgeDescFramingGrid::OnRemovePier()
 
    CRowColArray sel_rows;
    ROWCOL nSelRows = GetSelectedRows(sel_rows);
+   ATLASSERT(nSelRows == 1);
    for ( int r = nSelRows-1; r >= 0; r-- )
    {
       ROWCOL selRow = sel_rows[r];
       PierIndexType pierIdx = GetPierIndex(selRow);
-      if ( pierIdx != INVALID_INDEX )
+      SpanIndexType spanIdx = GetSpanIndex(selRow);
+      pgsTypes::RemovePierType removePier = pgsTypes::NextPier; // generally, we always remove the span and the right (next) pier
+      if (pierIdx != INVALID_INDEX)
       {
-         SpanIndexType spanIdx = (SpanIndexType)pierIdx;
-         pgsTypes::RemovePierType removePier = (spanIdx == 0) ? pgsTypes::PrevPier : pgsTypes::NextPier;
-         if (pierIdx == nPiers-1 )
+         ATLASSERT(spanIdx == INVALID_INDEX);
+         spanIdx = (SpanIndexType)pierIdx; // remove the next span
+         if (spanIdx == 0)
          {
-            spanIdx--;
+            // pier 0 is selected so we want to remove span 0 and pier 0 which is span 0 and it's left (prev) pier
+            removePier = pgsTypes::PrevPier;
          }
 
-         pDlg->m_BridgeDesc.RemoveSpan(spanIdx,removePier);
+         if (pierIdx == nPiers-1)
+         {
+            // the last pier is selected,
+            // spanIdx is one too much... back up by one
+            spanIdx--;
+
+            // still want to remove the last pier, so that is the pier to the right (next) of the last span
+            removePier = pgsTypes::NextPier;
+         }
       }
+
+      pDlg->m_BridgeDesc.RemoveSpan(spanIdx, removePier);
    }
 
    FillGrid(pDlg->m_BridgeDesc);
@@ -374,6 +388,7 @@ void CBridgeDescFramingGrid::OnRemoveTemporarySupport()
 
    CRowColArray sel_rows;
    ROWCOL nSelRows = GetSelectedRows(sel_rows);
+   ATLASSERT(nSelRows == 1);
    for ( int r = nSelRows-1; r >= 0; r-- )
    {
       ROWCOL selRow = sel_rows[r];
@@ -407,9 +422,17 @@ bool CBridgeDescFramingGrid::EnableRemovePierBtn()
    }
 
    ROWCOL selRow = selRows.GetAt(0);
+   SupportIndexType tsIdx = GetTemporarySupportIndex(selRow);
+   if (tsIdx != INVALID_INDEX)
+   {
+      // a temporary support row is selected
+      return false;
+   }
+
+   SpanIndexType spanIdx = GetSpanIndex(selRow);
    PierIndexType pierIdx = GetPierIndex(selRow);
 
-   if ( pierIdx == INVALID_INDEX )
+   if ( spanIdx == INVALID_INDEX && pierIdx == INVALID_INDEX )
    {
       return false;
    }
@@ -763,7 +786,8 @@ void CBridgeDescFramingGrid::FillPierRow(ROWCOL row,const CPierData2* pPierData)
    CString strPierLabel;
    strPierLabel.Format(_T("%s %d"),pPierData->IsAbutment() ? _T("Abut") : _T("Pier"),LABEL_PIER(pPierData->GetIndex()));
 
-   int col = 0;
+   ROWCOL col = 0;
+
    // left column header
    SetStyleRange(CGXRange(row,col++), CGXStyle()
       .SetHorizontalAlignment(DT_LEFT)
@@ -816,7 +840,7 @@ void CBridgeDescFramingGrid::FillTemporarySupportRow(ROWCOL row,const CTemporary
    CBridgeDescDlg* pDlg = (CBridgeDescDlg*)(pParent->GetParent());
    ASSERT( pDlg->IsKindOf(RUNTIME_CLASS(CBridgeDescDlg) ) );
 
-   int col = 0;
+   ROWCOL col = 0;
 
    // label
    CString strLabel;
@@ -858,7 +882,6 @@ void CBridgeDescFramingGrid::FillTemporarySupportRow(ROWCOL row,const CTemporary
 			.SetChoiceList(_T("Edit"))
          .SetHorizontalAlignment(DT_LEFT)
          .SetEnabled(TRUE)
-         .SetUserAttribute( 0, CRowType(CRowType::TempSupport,pTSData->GetIndex()) )
          );
 
    GetParam()->SetLockReadOnly(TRUE);
@@ -893,9 +916,9 @@ void CBridgeDescFramingGrid::FillSegmentRow(ROWCOL row)
 
 void CBridgeDescFramingGrid::FillSegmentColumn()
 {
-   int col = 3;
+   ROWCOL col = 3;
 
-   // This column not see for PGSuper
+   // This column not seen for PGSuper
    CEAFDocument* pDoc = EAFGetDocument();
    if ( pDoc->IsKindOf(RUNTIME_CLASS(CPGSuperDoc)) )
    {
@@ -1013,7 +1036,7 @@ void CBridgeDescFramingGrid::FillSegmentColumn()
 
 void CBridgeDescFramingGrid::FillSpanColumn()
 {
-   int col = 4;
+   ROWCOL col = 4;
 
 	GetParam()->EnableUndo(FALSE);
    GetParam()->SetLockReadOnly(FALSE);
@@ -1061,7 +1084,6 @@ void CBridgeDescFramingGrid::FillSpanColumn()
 			.SetChoiceList(_T("Edit"))
          .SetHorizontalAlignment(DT_LEFT)
          .SetEnabled(TRUE)
-         .SetUserAttribute(0,CRowType(CRowType::Pier,pPrevPier->GetIndex()))
       );
       
       // label next pier
@@ -1079,36 +1101,35 @@ void CBridgeDescFramingGrid::FillSpanColumn()
 			.SetChoiceList(_T("Edit"))
          .SetHorizontalAlignment(DT_LEFT)
          .SetEnabled(TRUE)
-         .SetUserAttribute(0,CRowType(CRowType::Pier,pNextPier->GetIndex()))
       );
 
       // fill in all rows between prev and next pier with span length
       Float64 spanLength = pNextPier->GetStation() - pPrevPier->GetStation();
       CString strSpanLength;
       strSpanLength.Format(_T("%s"),FormatDimension(spanLength,pDisplayUnits->GetSpanLengthUnit()));
-      for ( ROWCOL row = prevPierRow+1; row < nextPierRow; row++ )
+      for (ROWCOL row = prevPierRow + 1; row < nextPierRow; row++)
       {
-         SetStyleRange(CGXRange(row,col), CGXStyle()
+         SetStyleRange(CGXRange(row, col), CGXStyle()
             .SetHorizontalAlignment(DT_CENTER)
             .SetVerticalAlignment(DT_VCENTER)
             .SetMergeCell(GX_MERGE_VERTICAL | GX_MERGE_COMPVALUE)
-            .SetInterior( ::GetSysColor(COLOR_BTNFACE) )
+            .SetInterior(::GetSysColor(COLOR_BTNFACE))
             .SetTextColor(spanLength <= 0 ? RED : ::GetSysColor(COLOR_WINDOWTEXT))
             .SetReadOnly(TRUE)
             .SetEnabled(FALSE)
             .SetValue(strSpanLength)
-            );
-
-         SetStyleRange(CGXRange(row,col+1), CGXStyle()
-            .SetMergeCell(GX_MERGE_VERTICAL | GX_MERGE_COMPVALUE)
-            .SetControl(GX_IDS_CTRL_PUSHBTN)
-			   .SetChoiceList(_T("Edit"))
-            .SetHorizontalAlignment(DT_LEFT)
-            .SetEnabled(TRUE)
-            .SetValue(0L)
-            .SetUserAttribute(0,CRowType(CRowType::Span,pPrevPier->GetNextSpan()->GetIndex()))
-            );
+         );
       }
+
+      SetStyleRange(CGXRange(prevPierRow+1,col+1,nextPierRow-1,col+1), CGXStyle()
+         .SetMergeCell(GX_MERGE_VERTICAL | GX_MERGE_COMPVALUE)
+         .SetControl(GX_IDS_CTRL_PUSHBTN)
+			.SetChoiceList(_T("Edit"))
+         .SetHorizontalAlignment(DT_LEFT)
+         .SetEnabled(TRUE)
+         .SetValue(0L)
+         .SetUserAttribute(0, CRowType(CRowType::Span, pPrevPier->GetNextSpan()->GetIndex()))
+      );
    }
 
    GetParam()->SetLockReadOnly(TRUE);
@@ -1129,23 +1150,33 @@ void CBridgeDescFramingGrid::OnClickedButtonRowCol(ROWCOL nRow,ROWCOL nCol)
       return;
    }
 
-   CGXStyle style;
-   GetStyleRowCol(nRow,nCol,style);
-   if ( style.GetIncludeUserAttribute(0) )
+   CGXStyle style1, style2;
+   GetStyleRowCol(nRow, 0, style1); // piers and temp support info is in column 0
+   GetStyleRowCol(nRow, 5, style2); // span info is in column 5 (if we put span in col 0, it would override temp support info)
+   if ( style1.GetIncludeUserAttribute(0) && !style2.GetIncludeUserAttribute(0) )
    {
-      const CRowType& rowType = dynamic_cast<const CRowType&>(style.GetUserAttribute(0));
+      const CRowType& rowType = dynamic_cast<const CRowType&>(style1.GetUserAttribute(0));
 
       if ( rowType.m_Type == CRowType::Pier )
       {
          EditPier(rowType.m_Index);
       }
-      else if ( rowType.m_Type == CRowType::Span )
-      {
-         EditSpan(rowType.m_Index);
-      }
       else if ( rowType.m_Type == CRowType::TempSupport )
       {
          EditTemporarySupport(rowType.m_Index);
+      }
+      else
+      {
+         ATLASSERT(false); // is there a new row type?
+      }
+   }
+   else if (style2.GetIncludeUserAttribute(0))
+   {
+      const CRowType& rowType = dynamic_cast<const CRowType&>(style2.GetUserAttribute(0));
+
+      if (rowType.m_Type == CRowType::Span)
+      {
+         EditSpan(rowType.m_Index);
       }
       else
       {
@@ -1240,6 +1271,20 @@ BOOL CBridgeDescFramingGrid::OnEndEditing(ROWCOL nRow,ROWCOL nCol)
       ResizeColWidthsToFit(CGXRange(0, 0, GetRowCount(), 4));
    }
    return CGXGridWnd::OnEndEditing(nRow,nCol);
+}
+
+SpanIndexType CBridgeDescFramingGrid::GetSelectedSpan()
+{
+   CRowColArray selRows;
+   ROWCOL nSelRows = GetSelectedRows(selRows);
+   if (nSelRows != 1)
+   {
+      return INVALID_INDEX; // only one selection at a time
+   }
+
+   ROWCOL selRow = selRows.GetAt(0);
+   SpanIndexType spanIdx = GetSpanIndex(selRow);
+   return spanIdx;
 }
 
 PierIndexType CBridgeDescFramingGrid::GetSelectedPier()
@@ -1395,6 +1440,30 @@ PierIndexType CBridgeDescFramingGrid::GetPierIndex(ROWCOL nRow)
    {
       const CRowType& rowType = dynamic_cast<const CRowType&>(style.GetUserAttribute(0));
       if ( rowType.m_Type == CRowType::Pier )
+      {
+         return rowType.m_Index;
+      }
+      else
+      {
+         return INVALID_INDEX;
+      }
+   }
+   else
+   {
+      return INVALID_INDEX;
+   }
+}
+
+SpanIndexType CBridgeDescFramingGrid::GetSpanIndex(ROWCOL nRow)
+{
+   CGXStyle style;
+   ROWCOL col = 5;
+   GetStyleRowCol(nRow, col, style);
+
+   if (style.GetIncludeUserAttribute(0))
+   {
+      const CRowType& rowType = dynamic_cast<const CRowType&>(style.GetUserAttribute(0));
+      if (rowType.m_Type == CRowType::Span)
       {
          return rowType.m_Index;
       }

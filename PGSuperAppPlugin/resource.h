@@ -93,6 +93,7 @@
 #define IDD_BRIDGEDESC_DECKREINFORCEMENT 238
 #define IDI_TXDOT                       239
 #define IDC_FILLET_UNITS                240
+#define IDC_ASSEXCESSCAMBER_UNITS       240
 #define IDD_GIRDERDESC_LONGITUDINAL_REBAR 241
 #define IDD_BRIDGEDESC_DECKDETAILS      245
 #define IDI_MOMENT_LOAD                 246
@@ -183,11 +184,14 @@
 #define IDD_PIER_LAYOUT                 1000
 #define IDC_ALIGNMENT                   1001
 #define IDD_FILLETSAME4_BRIDGE          1001
+#define IDD_ASSEXCESSCAMBERSAME4_BRIDGE 1001
 #define IDC_VERSION                     1002
 #define IDC_BRIDGEID                    1002
 #define IDD_FILLET_SPAN_BY_SPAN         1002
+#define IDD_ASSEXCESSCAMBER_SPAN_BY_SPAN 1002
 #define IDC_COPYRIGHT                   1003
 #define IDD_FILLET_BY_GIRDER            1003
+#define IDD_ASSEXCESSCAMBER_BY_GIRDER   1003
 #define IDC_JOBNUMBER                   1004
 #define IDC_APPICON                     1005
 #define IDC_END_DISTANCE                1005
@@ -513,12 +517,14 @@
 #define IDC_SUPPORT_WIDTH               1394
 #define IDC_SUPPORT_WIDTH_T             1395
 #define IDC_RIGHT_SUPPORT_WIDTH         1396
-#define IDC_FILLET_LABEL                1397
 #define IDC_RIGHT_SUPPORT_WIDTH_T       1397
+#define IDC_ASSEXCESSCAMBER_LABEL       1397
 #define IDC_PANEL_DEPTH_LABEL           1398
 #define IDC_PANEL_SUPPORT_LABEL         1399
 #define IDC_ADIM_LABEL                  1400
 #define IDC_SLAB_FC_LABEL               1401
+#define IDC_SLAB_FC_LABEL2              1402
+#define IDC_FILLET_LABEL                1403
 #define IDC_SACDEPTH_LABEL              1405
 #define IDC_RATING_CRITERIA             1407
 #define IDC_PERMIT_TYPE                 1407
@@ -541,6 +547,7 @@
 #define IDC_FILLET_COMBO                1407
 #define IDC_NGDRS_COMBO                 1407
 #define IDC_HAUL_TRUCKS                 1407
+#define IDC_ASSEXCESSCAMBER_COMBO       1407
 #define IDC_GIRDER_ORIENTATION          1408
 #define IDC_GIRDER_GIRDER               1408
 #define IDC_AHEAD_DIAPHRAGM_LOAD        1408
@@ -554,6 +561,7 @@
 #define IDC_FATIGUE_PEDES_COMBO         1409
 #define IDC_FILLET_TYPE                 1409
 #define IDC_GDR_SPC_TYPE_COMBO          1409
+#define IDC_ASSEXCESSCAMBER_TYPE        1409
 #define IDC_HP_COMBO_END                1410
 #define IDC_PIER_GIRDER                 1410
 #define IDC_PERMIT_PEDES_COMBO          1410
@@ -565,6 +573,7 @@
 #define IDC_GIRDER_NAMEUSE              1417
 #define IDC_MOVE_PIER                   1418
 #define IDC_CB_FILLET                   1418
+#define IDC_CB_ASSEXCESSCAMBER          1418
 #define IDC_CB_SLABOFFSET               1419
 #define IDC_PREV_SPAN_SPACING_MEASUREMENT 1420
 #define IDC_ROA_CB                      1421
@@ -615,6 +624,7 @@
 #define IDC_SAMESLABOFFSET              1466
 #define IDC_SPACING_LABEL               1467
 #define IDC_FILLETTYPE                  1467
+#define IDC_ASSEXCESSCAMBERTYPE         1467
 #define IDC_ALIGNMENTOFFSET_UNIT        1468
 #define IDC_ALIGNMENTOFFSET_FMT         1469
 #define IDC_HCURVE_GRID                 1470
@@ -987,8 +997,10 @@
 #define IDS_PGSUPER_TEMPLATE_FILE_SUFFIX 1712
 #define IDS_PGSPLICE_TEMPLATE_FILE_SUFFIX 1713
 #define IDC_ADIM_START_LABEL            1714
+#define IDC_ADIM_START_LABEL2           1715
 #define IDC_ADIM_START_UNIT             1716
 #define IDS_DEFAULT_MASTER_LIB          1717
+#define IDC_ADIM_START_LABEL3           1717
 #define IDC_ADIM_END_LABEL              1718
 #define IDS_CANT_FIND_LIBRARY_FILE      1719
 #define IDC_ADIM_END_UNIT               1720
@@ -1169,7 +1181,9 @@
 #define IDC_A_BOX                       1877
 #define IDC_HAUNCH_GRID                 1878
 #define IDC_FILLET_BOX                  1878
+#define IDC_ASSEXCESSCAMBER_BOX         1878
 #define IDC_HAUNCH_SHAPE_LABEL          1880
+#define IDC_HAUNCH_SHAPE_LABEL2         1881
 #define IDC_ALLOWABLE_TENSION_LABEL     1882
 #define IDC_MATERIAL_GROUP              1883
 #define IDC_CAP_GROUP                   1884
@@ -1178,6 +1192,7 @@
 #define IDC_TARGET_LABEL                1887
 #define IDC_FILLET_GRID                 1888
 #define IDC_DESIGNA_STATIC              1888
+#define IDC_ASSEXCESSCAMBER_GRID        1888
 #define IDC_EXTENDED_STRANDS_LABEL      1889
 #define IDC_DEBONDED_STRANDS_LABEL      1890
 #define IDC_START                       1891
@@ -1196,6 +1211,11 @@
 #define IDC_BUTTON1                     1904
 #define IDC_BUTTON2                     1905
 #define IDC_LOAD_LOCATION_NOTE          1906
+#define IDC_ASSEXCESSCAMBER             1907
+#define IDC_ASSEXCESSCAMBER_UNIT        1908
+#define IDC_ASSEXCESSCAMBER_LABEL2      1909
+#define IDC_SLABOFFSET_LABEL            1910
+#define IDC_ASSEXCESSCAMBER_GROUP       1911
 #define IDC_INTERMEDIATE_DIAPHRAGMS     1923
 #define IDC_RATE_FOR_STRESS             1962
 #define IDC_APPLIST                     3333
@@ -1275,10 +1295,10 @@
 #define ID_CENTER                       36918
 #define ID_RIGHT_HP                     36919
 #define ID_USER_CUT                     36920
-#define ID_UNUSED_1                     36921 // UNUSED
-#define ID_UNUSED_2                     36922 // UNUSED
-#define ID_UNUSED_3                     36923 // UNUSED
-#define ID_UNUSED_4                     36924 // UNUSED
+#define ID_UNUSED_1                     36921
+#define ID_UNUSED_2                     36922
+#define ID_UNUSED_3                     36923
+#define ID_UNUSED_4                     36924
 #define ID_VIEWSETTINGS                 36925
 #define ID_EDIT_PRESTRESSING            36926
 #define ID_EDIT_STIRRUPS                36927
@@ -1347,9 +1367,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        375
+#define _APS_NEXT_RESOURCE_VALUE        383
 #define _APS_NEXT_COMMAND_VALUE         37001
-#define _APS_NEXT_CONTROL_VALUE         1907
+#define _APS_NEXT_CONTROL_VALUE         1912
 #define _APS_NEXT_SYMED_VALUE           113
 #endif
 #endif

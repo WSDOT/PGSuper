@@ -1,23 +1,21 @@
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 46.25    4  12.00                     1     1    U54G5          80  0.6  270  16.71   4.11  11.50  11.50                                              7.400 12.100   9.010    -5.745    14727   0.724  1.056   5.840 -3.442 -0.220 -0.192 -3.854 378.54  551.56    1.75    5.00    5.00 
+ 46.25    4  12.00                     1     1    U54G5          82  0.6  270  16.63   3.85  11.88  11.88                                              7.600 14.600   9.216    -5.812    15150   0.724  1.056   5.910 -3.162 -0.209 -0.182 -3.552 393.23  588.87    1.75    5.00    5.00 
 
 
 Girder design was Not Successful
 The Specification Check was Not Successful
-Compression stress check failed for Service I Limit State in Interval 12 Install Overlay (Bridge Site 2)
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
 Hauling checks failed
 
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 46.25    4  12.00                     1     2    U54G5          80  0.6  270  16.71   4.11  11.75  11.75                                              7.400 12.100   8.947    -5.708    14752   0.724  1.056   5.840 -3.383 -0.220 -0.192 -3.795 378.54  554.65    1.75    5.00    5.00 
+ 46.25    4  12.00                     1     2    U54G5          82  0.6  270  16.63   3.85  12.00  12.00                                              7.600 14.900   9.149    -5.767    15197   0.724  1.056   5.910 -3.057 -0.207 -0.181 -3.445 393.23  594.99    1.75    5.00    5.00 
 
 
 Girder design was Not Successful
 The Specification Check was Not Successful
-Compression stress check failed for Service I Limit State in Interval 12 Install Overlay (Bridge Site 2)
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
 Hauling checks failed
 

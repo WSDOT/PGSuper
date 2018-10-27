@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2017  Washington State Department of Transportation
+// Copyright © 1999-2018  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -45,7 +45,7 @@ static char THIS_FILE[] = __FILE__;
 // 2.9 and 3.0 branches. It is ok for loads to fail for 44.0 <= version <= MAX_OVERLAP_VERSION.
 #define MAX_OVERLAP_VERSION 53.0 // overlap of data blocks between PGS 2.9 and 3.0 end with this version
 
-#define CURRENT_VERSION 59.0 
+#define CURRENT_VERSION 60.0 
 
 /****************************************************************************
 CLASS
@@ -238,6 +238,7 @@ m_DuctDiameterRatio(0.4),
 m_LimitStateConcreteStrength(pgsTypes::lscStrengthAtTimeOfLoading),
 m_HaunchLoadComputationType(pgsTypes::hlcZeroCamber),
 m_HaunchLoadCamberTolerance(::ConvertToSysUnits(0.5,unitMeasure::Inch)),
+m_HaunchLoadCamberFactor(1.0),
 m_LiftingWindType(pgsTypes::Speed),
 m_LiftingWindLoad(0),
 m_bComputeLiftingStressesAtEquilibriumAngle(false),
@@ -612,6 +613,7 @@ bool SpecLibraryEntry::SaveMe(sysIStructuredSave* pSave)
    pSave->Property(_T("OverlayLoadDistribution"), (Int32)m_OverlayLoadDistribution); // added in version 34
    pSave->Property(_T("HaunchLoadComputationType"), (Int32)m_HaunchLoadComputationType); // added in version 54
    pSave->Property(_T("HaunchLoadCamberTolerance"), m_HaunchLoadCamberTolerance);        // ""
+   pSave->Property(_T("HaunchLoadCamberFactor"), m_HaunchLoadCamberFactor);  // added in version 60
    pSave->Property(_T("Bs3CompStressServ"), m_Bs3CompStressServ);
    pSave->Property(_T("Bs3CompStressService1A"), m_Bs3CompStressService1A);
    pSave->Property(_T("Bs3TensStressServNc"), m_Bs3TensStressServNc);
@@ -2117,6 +2119,13 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
             }
          }
 
+         if ( 59 < version )
+         {
+            if(!pLoad->Property(_T("HaunchLoadCamberFactor"), &m_HaunchLoadCamberFactor))
+            {
+               THROW_LOAD(InvalidFileFormat,pLoad);
+            }
+         }
 
          if(!pLoad->Property(_T("Bs3CompStressServ"), &m_Bs3CompStressServ))
          {
@@ -4456,6 +4465,12 @@ bool SpecLibraryEntry::Compare(const SpecLibraryEntry& rOther, std::vector<pgsLi
       vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Haunch Loads are different"),_T(""),_T("")));
    }
 
+   if ( m_HaunchLoadComputationType == pgsTypes::hlcAccountForCamber && !::IsEqual(m_HaunchLoadCamberFactor, rOther.m_HaunchLoadCamberFactor) )
+   {
+      RETURN_ON_DIFFERENCE;
+      vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Haunch Loads Camber Factors are different"),_T(""),_T("")));
+   }
+
    //
    // Moment Capacity Tab
    //
@@ -5820,6 +5835,16 @@ void SpecLibraryEntry::SetHaunchLoadCamberTolerance(Float64 tol)
    m_HaunchLoadCamberTolerance = tol;
 }
 
+Float64 SpecLibraryEntry::GetHaunchLoadCamberFactor() const
+{
+   return m_HaunchLoadCamberFactor;
+}
+
+void SpecLibraryEntry::SetHaunchLoadCamberFactor(Float64 tol)
+{
+   m_HaunchLoadCamberFactor = tol;
+}
+
 void SpecLibraryEntry::SetCreepMethod(int method)
 {
    PRECONDITION( 0 <= method && method <= 1 );
@@ -7083,6 +7108,7 @@ void SpecLibraryEntry::MakeCopy(const SpecLibraryEntry& rOther)
    m_OverlayLoadDistribution    = rOther.m_OverlayLoadDistribution;
    m_HaunchLoadComputationType    = rOther.m_HaunchLoadComputationType;
    m_HaunchLoadCamberTolerance    = rOther.m_HaunchLoadCamberTolerance;
+   m_HaunchLoadCamberFactor     = rOther.m_HaunchLoadCamberFactor;
    m_Bs3CompStressServ          = rOther.m_Bs3CompStressServ;
    m_Bs3CompStressService1A     = rOther.m_Bs3CompStressService1A;
    m_Bs3TensStressServNc        = rOther.m_Bs3TensStressServNc;
