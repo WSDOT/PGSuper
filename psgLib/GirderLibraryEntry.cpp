@@ -2916,16 +2916,26 @@ void GirderLibraryEntry::LoadIBeamDimensions(sysIStructuredLoad* pLoad)
 bool GirderLibraryEntry::IsEqual(const GirderLibraryEntry& rOther,bool bConsiderName) const
 {
    std::vector<pgsLibraryEntryDifferenceItem*> vDifferences;
-   return Compare(rOther,vDifferences,true,bConsiderName);
+   bool bMustRename;
+   return Compare(rOther,vDifferences,bMustRename,true,bConsiderName);
 }
 
-bool GirderLibraryEntry::Compare(const GirderLibraryEntry& rOther, std::vector<pgsLibraryEntryDifferenceItem*>& vDifferences, bool bReturnOnFirstDifference, bool considerName,bool bCompareSeedValues) const
+bool GirderLibraryEntry::Compare(const GirderLibraryEntry& rOther, std::vector<pgsLibraryEntryDifferenceItem*>& vDifferences, bool& bMustRename, bool bReturnOnFirstDifference, bool considerName,bool bCompareSeedValues) const
 {
    CEAFApp* pApp = EAFGetApp();
    const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
    CComQIPtr<ISplicedBeamFactory,&IID_ISplicedBeamFactory> splicedBeamFactory(m_pBeamFactory);
    bool bSplicedGirder = (splicedBeamFactory == nullptr ? false : true);
+
+   bMustRename = false;
+
+   if (!const_cast<CComPtr<IBeamFactory>*>(&m_pBeamFactory)->IsEqualObject(rOther.m_pBeamFactory))
+   {
+      RETURN_ON_DIFFERENCE;
+      vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Girder are different type."), _T(""), _T("")));
+      bMustRename = true;
+   }
 
 
    //
@@ -2937,7 +2947,7 @@ bool GirderLibraryEntry::Compare(const GirderLibraryEntry& rOther, std::vector<p
        )
    {
       RETURN_ON_DIFFERENCE;
-      vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Girder Dimensions are different"),_T(""),_T("")));
+      vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Girder dimensions are different"),_T(""),_T("")));
    }
 
    //

@@ -67,6 +67,8 @@ public:
    bool HasUserLoad(LoadIDType loadID) const;
    IndexType GetUserLoadCount() const;
    LoadIDType GetUserLoadID(IndexType idx) const;
+   const std::set<LoadIDType>& GetUserLoads() const;
+   void SetUserLoads(const std::set<LoadIDType>& loads);
    bool IsUserLoadApplied() const;
 
 	HRESULT Load(IStructuredLoad* pStrLoad,IProgress* pProgress);

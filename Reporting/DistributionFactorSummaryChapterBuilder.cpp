@@ -159,7 +159,7 @@ void WriteSpanTable(rptChapter* pChapter,IBroker* pBroker,SpanIndexType spanIdx,
       (*pTable)(0,1) << _T("Strength/Service");
 
       pTable->SetColumnSpan(0,2,3);
-      (*pTable)(0,2) << _T("Fatigue/Single");
+      (*pTable)(0,2) << _T("Fatigue/Special Permit Rating");
 
       pTable->SetColumnSpan(0,3,SKIP_CELL);
       pTable->SetColumnSpan(0,4,SKIP_CELL);
@@ -307,7 +307,7 @@ void WritePierTable(rptChapter* pChapter,IBroker* pBroker,PierIndexType pierIdx,
       (*pTable)(0,1) << _T("Strength/Service");
 
       pTable->SetColumnSpan(0,2,2);
-      (*pTable)(0,2) << _T("Fatigue/Single");
+      (*pTable)(0,2) << _T("Fatigue/Special Permit Rating");
 
       pTable->SetColumnSpan(0,3,SKIP_CELL);
       pTable->SetColumnSpan(0,4,SKIP_CELL);

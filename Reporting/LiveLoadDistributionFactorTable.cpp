@@ -128,7 +128,7 @@ void CLiveLoadDistributionFactorTable::Build(rptChapter* pChapter,
       (*pTable)(0,1) << _T("Strength/Service");
 
       pTable->SetColumnSpan(0,2,3);
-      (*pTable)(0,2) << _T("Fatigue/One Lane");
+      (*pTable)(0,2) << _T("Fatigue/Special Permit Rating");
 
       pTable->SetColumnSpan(0,3,SKIP_CELL);
       pTable->SetColumnSpan(0,4,SKIP_CELL);
@@ -207,7 +207,7 @@ void CLiveLoadDistributionFactorTable::Build(rptChapter* pChapter,
 
    if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
    {
-      (*pTable2)(0,2) << _T("Fatigue/One Lane");
+      (*pTable2)(0,2) << _T("Fatigue/Special Permit Rating");
    }
 
    row = pTable2->GetNumberOfHeaderRows();

@@ -206,7 +206,7 @@ public:
 
    // Compares this library entry with rOther. Returns true if the entries are the same.
    // vDifferences contains a listing of the differences. The caller is responsible for deleting the difference items
-   bool Compare(const ConnectionLibraryEntry& rOther, std::vector<pgsLibraryEntryDifferenceItem*>& vDifferences,bool bReturnOnFirstDifference=false, bool considerName=false) const;
+   bool Compare(const ConnectionLibraryEntry& rOther, std::vector<pgsLibraryEntryDifferenceItem*>& vDifferences, bool& bMustRename, bool bReturnOnFirstDifference=false, bool considerName=false) const;
 
    bool IsEqual(const ConnectionLibraryEntry& rOther,bool bConsiderName=false) const;
 

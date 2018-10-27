@@ -726,12 +726,14 @@ void CLoadingDetailsChapterBuilder::ReportSlabLoad(rptChapter* pChapter,IBridge*
             row++;
          }
 
-         Float64 factor = pSpec->GetHaunchLoadCamberFactor();
+         if (report_camber)
+         {
+            Float64 factor = pSpec->GetHaunchLoadCamberFactor();
 
-         pNotePara = new rptParagraph;
-         *pChapter << pNotePara;
-         *pNotePara << _T("* Factor of ") << factor*100.0 << _T("% applied to assumed excess camber per project criteria");
-
+            pNotePara = new rptParagraph;
+            *pChapter << pNotePara;
+            *pNotePara << _T("* Factor of ") << factor*100.0 << _T("% applied to assumed excess camber per project criteria");
+         }
       }
    } // end if ( pBridge->GetDeckType() != pgsTypes::sdtNone )
 }

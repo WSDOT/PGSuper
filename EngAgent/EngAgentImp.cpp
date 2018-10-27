@@ -2695,7 +2695,7 @@ void CEngAgentImp::ReportDistributionFactors(const CGirderKey& girderKey,rptChap
          table->SetColumnSpan(0,4,SKIP_CELL);
 
          table->SetColumnSpan(0,5,4);
-         (*table)(0,5) << _T("Fatigue");
+         (*table)(0,5) << _T("Fatigue/Special Permit Rating");
 
          table->SetColumnSpan(0,6,SKIP_CELL);
          table->SetColumnSpan(0,7,SKIP_CELL);

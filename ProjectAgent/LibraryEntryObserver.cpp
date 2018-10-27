@@ -73,17 +73,17 @@ void pgsLibraryEntryObserver::Update(GirderLibraryEntry* pSubject, Int32 hint)
       GroupIndexType nGroups = m_pAgent->m_BridgeDescription.GetGirderGroupCount();
       for ( GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )
       {
-         CGirderGroupData* pGroup = m_pAgent->m_BridgeDescription.GetGirderGroup(grpIdx);
-         GroupIndexType nGirderTypeGroups = pGroup->GetGirderTypeGroupCount();
+         CGirderGroupData* pGirderGroup = m_pAgent->m_BridgeDescription.GetGirderGroup(grpIdx);
+         GroupIndexType nGirderTypeGroups = pGirderGroup->GetGirderTypeGroupCount();
          for ( GroupIndexType gdrGroupIdx = 0; gdrGroupIdx < nGirderTypeGroups; gdrGroupIdx++ )
          {
             GirderIndexType firstGdrIdx,lastGdrIdx;
             std::_tstring strGirderName;
-            pGroup->GetGirderTypeGroup(grpIdx,&firstGdrIdx,&lastGdrIdx,&strGirderName);
+            pGirderGroup->GetGirderTypeGroup(gdrGroupIdx,&firstGdrIdx,&lastGdrIdx,&strGirderName);
 
-            if ( pGroup->GetGirderLibraryEntry(firstGdrIdx) == pSubject )
+            if (pGirderGroup->GetGirderLibraryEntry(firstGdrIdx) == pSubject )
             {
-               pGroup->RenameGirder( grpIdx, pSubject->GetName().c_str() );
+               pGirderGroup->RenameGirder(gdrGroupIdx, pSubject->GetName().c_str() );
             }
          }
       }

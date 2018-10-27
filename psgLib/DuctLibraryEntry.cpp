@@ -128,13 +128,16 @@ bool DuctLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
 bool DuctLibraryEntry::IsEqual(const DuctLibraryEntry& rOther,bool bConsiderName) const
 {
    std::vector<pgsLibraryEntryDifferenceItem*> vDifferences;
-   return Compare(rOther,vDifferences,true,bConsiderName);
+   bool bMustRename;
+   return Compare(rOther,vDifferences,bMustRename,true,bConsiderName);
 }
 
-bool DuctLibraryEntry::Compare(const DuctLibraryEntry& rOther, std::vector<pgsLibraryEntryDifferenceItem*>& vDifferences, bool bReturnOnFirstDifference, bool considerName) const
+bool DuctLibraryEntry::Compare(const DuctLibraryEntry& rOther, std::vector<pgsLibraryEntryDifferenceItem*>& vDifferences, bool& bMustRename, bool bReturnOnFirstDifference, bool considerName) const
 {
    CEAFApp* pApp = EAFGetApp();
    const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
+
+   bMustRename = false;
 
    if ( !::IsEqual(m_OD,rOther.m_OD) )
    {

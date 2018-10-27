@@ -5085,18 +5085,18 @@ std::vector<Float64> CGirderModelManager::GetSlabDesignMoment(pgsTypes::LimitSta
          if ( startPierContinuityIntervalIdx == compositeDeckIntervalIdx && 
               endPierContinuityIntervalIdx   == compositeDeckIntervalIdx )
          {
-            Float64 Mconstruction = GetMoment(castDeckIntervalIdx, pgsTypes::pftConstruction, poi, bat, rtCumulative);
-            Float64 Mslab         = GetMoment(castDeckIntervalIdx, pgsTypes::pftSlab,         poi, bat, rtCumulative);
-            Float64 Mslab_pad     = GetMoment(castDeckIntervalIdx, pgsTypes::pftSlabPad,      poi, bat, rtCumulative);
-            Float64 Mslab_panel   = GetMoment(castDeckIntervalIdx, pgsTypes::pftSlabPanel,    poi, bat, rtCumulative);
-            Float64 Mdiaphragm    = GetMoment(castDiaphragmIntervalIdx, pgsTypes::pftDiaphragm,    poi, bat, rtCumulative);
-            Float64 Mshear_key    = GetMoment(castDeckIntervalIdx, pgsTypes::pftShearKey,     poi, bat, rtCumulative);
+            Float64 Mconstruction = castDeckIntervalIdx == INVALID_INDEX ? 0 : GetMoment(castDeckIntervalIdx, pgsTypes::pftConstruction, poi, bat, rtCumulative);
+            Float64 Mslab         = castDeckIntervalIdx == INVALID_INDEX ? 0 : GetMoment(castDeckIntervalIdx, pgsTypes::pftSlab,         poi, bat, rtCumulative);
+            Float64 Mslab_pad     = castDeckIntervalIdx == INVALID_INDEX ? 0 : GetMoment(castDeckIntervalIdx, pgsTypes::pftSlabPad,      poi, bat, rtCumulative);
+            Float64 Mslab_panel   = castDeckIntervalIdx == INVALID_INDEX ? 0 : GetMoment(castDeckIntervalIdx, pgsTypes::pftSlabPanel,    poi, bat, rtCumulative);
+            Float64 Mdiaphragm    = castDeckIntervalIdx == INVALID_INDEX ? 0 : GetMoment(castDeckIntervalIdx, pgsTypes::pftDiaphragm,    poi, bat, rtCumulative);
+            Float64 Mshear_key    = castDeckIntervalIdx == INVALID_INDEX ? 0 : GetMoment(castDeckIntervalIdx, pgsTypes::pftShearKey,     poi, bat, rtCumulative);
 
             MzMin -= gDC*(Mconstruction + Mslab + Mslab_pad + Mslab_panel + Mdiaphragm + Mshear_key);
          }
 
          // remove user dc moments
-         Float64 Muser_dc = GetMoment(castDeckIntervalIdx, pgsTypes::pftUserDC, poi, bat, rtCumulative);
+         Float64 Muser_dc = castDeckIntervalIdx == INVALID_INDEX ? 0 : GetMoment(castDeckIntervalIdx, pgsTypes::pftUserDC, poi, bat, rtCumulative);
          MzMin -= gDC*Muser_dc;
       }
 

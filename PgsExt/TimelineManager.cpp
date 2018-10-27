@@ -2441,6 +2441,9 @@ HRESULT CTimelineManager::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
 
       hr = pStrLoad->BeginUnit(_T("TimelineEvents"));
 
+      Float64 version;
+      hr = pStrLoad->get_Version(&version);
+
       std::vector<CTendonKey> vStressedTendons; // keeps track of the tendons that are stressed (see bug issue below)
 
       CComVariant var;
@@ -2487,6 +2490,31 @@ HRESULT CTimelineManager::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
       }
 
       pStrLoad->EndUnit();
+
+      if (version < 2.0)
+      {
+         // there could be buggy data
+         CTimelineEvent* pLastEvent = m_TimelineEvents.back();
+         if (pLastEvent->GetDescription() == std::_tstring(_T("Final without Live Load (Bridge Site 2)")))
+         {
+            IndexType nEvents = m_TimelineEvents.size();
+            CTimelineEvent* pPrevEvent = m_TimelineEvents[nEvents - 2];
+            if (pPrevEvent->GetDescription() == std::_tstring(_T("Final with Live Load (Bridge Site 3)")))
+            {
+               // these events need to be swapped and the user loads need to stay where they are
+               auto prevEventUserLoads = pPrevEvent->GetApplyLoadActivity().GetUserLoads();
+               auto lastEventUserLoads = pLastEvent->GetApplyLoadActivity().GetUserLoads();
+
+               pLastEvent->GetApplyLoadActivity().SetUserLoads(prevEventUserLoads);
+               pPrevEvent->GetApplyLoadActivity().SetUserLoads(lastEventUserLoads);
+
+               std::swap(pPrevEvent->m_Day, pLastEvent->m_Day);
+
+               m_TimelineEvents[nEvents - 2] = pLastEvent;
+               m_TimelineEvents[nEvents - 1] = pPrevEvent;
+            }
+         }
+      }
    }
    catch (HRESULT)
    {
@@ -2503,7 +2531,14 @@ HRESULT CTimelineManager::Save(IStructuredSave* pStrSave,IProgress* pProgress)
 {
    PGS_ASSERT_VALID;
 
-   pStrSave->BeginUnit(_T("TimelineEvents"),1.0);
+   // there was a bug in the ProjectAgent for building PGSuper timeline events
+   // the bug happened because we assumed the railing system was installed 28 days
+   // after the deck was composite. However, if the total curing duration of the deck
+   // wasn't 28 days or greater after the railing system installation, the order of
+   // the "With Liveload" and "Without Liveload" events got reversed.
+   // This happed with data block unit 1.0. We change the data block unit to 2.0
+   // to identify when the bad data my be in the storage stream
+   pStrSave->BeginUnit(_T("TimelineEvents"),2.0);
    pStrSave->put_Property(_T("Count"),CComVariant(m_TimelineEvents.size()));
 
    for( auto* pTimelineEvent : m_TimelineEvents)

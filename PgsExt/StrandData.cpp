@@ -1709,7 +1709,7 @@ StrandIndexType CStrandData::GetDebondCount(pgsTypes::StrandType strandType,pgsT
                bool bCanDebond;
                pGirderLibEntry->GetStraightStrandCoordinates(debond_info.strandTypeGridIdx,&Xstart,&Ystart,&Xend,&Yend,&bCanDebond);
                ATLASSERT(bCanDebond == true);
-               if ( IsZero(Xstart) )
+               if ( !IsZero(Xstart) )
                {
                   nDebondedStrands += 2;
                }

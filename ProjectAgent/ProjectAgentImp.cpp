@@ -4682,7 +4682,7 @@ void CProjectAgentImp::UseGirderLibraryEntries()
                      pSegment->Strands.SetStrandMaterial(pgsTypes::Harped,lrfdStrandPool::GetInstance()->GetStrand(matPsStrand::Gr1725,matPsStrand::StressRelieved,matPsStrand::None,matPsStrand::D635));
                   }
 
-                  if ( pSegment->Strands.GetStrandMaterial(pgsTypes::Temporary)== nullptr )
+                  if ( pSegment->Strands.GetStrandMaterial(pgsTypes::Temporary) == nullptr )
                   {
                      pSegment->Strands.SetStrandMaterial(pgsTypes::Temporary,lrfdStrandPool::GetInstance()->GetStrand(matPsStrand::Gr1725,matPsStrand::StressRelieved,matPsStrand::None,matPsStrand::D635));
                   }
@@ -10888,6 +10888,8 @@ void CProjectAgentImp::CreatePrecastGirderBridgeTimelineEvents()
    pTimelineEvent->GetErectSegmentsActivity().AddSegments(segmentIDs);
    pTimelineManager->AddTimelineEvent(pTimelineEvent,true,&eventIdx);
 
+   Float64 deck_diaphragm_curing_duration = Min(::ConvertFromSysUnits(pSpecEntry->GetTotalCreepDuration() - pSpecEntry->GetCreepDuration2Max(), unitMeasure::Day), 28.0);
+
    // Cast diaphragms
    pTimelineEvent = new CTimelineEvent;
    day = ::ConvertFromSysUnits(pSpecEntry->GetXferTime() + pSpecEntry->GetCreepDuration2Max(), unitMeasure::Day);
@@ -10906,14 +10908,14 @@ void CProjectAgentImp::CreatePrecastGirderBridgeTimelineEvents()
    pTimelineEvent->SetDay( day );
    pTimelineEvent->SetDescription(_T("Cast Deck (Bridge Site 1)"));
    pTimelineEvent->GetCastDeckActivity().Enable();
-   pTimelineEvent->GetCastDeckActivity().SetConcreteAgeAtContinuity(28.0); // day
-   pTimelineEvent->GetCastDeckActivity().SetCuringDuration(28.0); // day
+   pTimelineEvent->GetCastDeckActivity().SetConcreteAgeAtContinuity(deck_diaphragm_curing_duration); // day
+   pTimelineEvent->GetCastDeckActivity().SetCuringDuration(deck_diaphragm_curing_duration); // day
    pTimelineManager->AddTimelineEvent(pTimelineEvent,true,&eventIdx);
    oldBridgeSite1EventIndex = eventIdx;
 
    // traffic barrier/superimposed dead loads
    pTimelineEvent = new CTimelineEvent;
-   day = ::ConvertFromSysUnits(pSpecEntry->GetXferTime()+pSpecEntry->GetCreepDuration2Max(),unitMeasure::Day) + 28.0;
+   day = ::ConvertFromSysUnits(pSpecEntry->GetXferTime()+pSpecEntry->GetCreepDuration2Max(),unitMeasure::Day) + deck_diaphragm_curing_duration;
    day = Max(day,maxDay);
    maxDay += 1.0;
    pTimelineEvent->SetDay( day ); // deck is continuous
@@ -10939,7 +10941,7 @@ void CProjectAgentImp::CreatePrecastGirderBridgeTimelineEvents()
    if ( wearingSurface == pgsTypes::wstFutureOverlay )
    {
       pTimelineEvent = new CTimelineEvent;
-      day = ::ConvertFromSysUnits(pSpecEntry->GetXferTime()+pSpecEntry->GetTotalCreepDuration(),unitMeasure::Day);
+      day = ::ConvertFromSysUnits(pSpecEntry->GetXferTime()+pSpecEntry->GetTotalCreepDuration(),unitMeasure::Day) + 1.0;
       day = Max(day, maxDay);
       maxDay += 1.0;
       pTimelineEvent->SetDay( day );
@@ -10950,7 +10952,7 @@ void CProjectAgentImp::CreatePrecastGirderBridgeTimelineEvents()
 
    // live load
    pTimelineEvent = new CTimelineEvent;
-   day = ::ConvertFromSysUnits(pSpecEntry->GetXferTime()+pSpecEntry->GetTotalCreepDuration(),unitMeasure::Day);
+   day = ::ConvertFromSysUnits(pSpecEntry->GetXferTime()+pSpecEntry->GetTotalCreepDuration(),unitMeasure::Day) + 1.0;
    day = Max(day, maxDay);
    maxDay += 1.0;
    pTimelineEvent->SetDay( day );

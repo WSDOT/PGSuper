@@ -36,7 +36,7 @@ class CLibraryEntryConflict : public CDialog
 {
 // Construction
 public:
-   CLibraryEntryConflict(const std::_tstring& entryName, const std::_tstring& libName, const std::vector<std::_tstring>& keylists, bool isImported, const std::vector<pgsLibraryEntryDifferenceItem*>& vDifferences,CWnd* pParent = NULL);
+   CLibraryEntryConflict(const std::_tstring& entryName, const std::_tstring& libName, const std::vector<std::_tstring>& keylists, bool isImported, const std::vector<pgsLibraryEntryDifferenceItem*>& vDifferences,bool bMustRename,CWnd* pParent = NULL);
 
 // Dialog Data
 	//{{AFX_DATA(CLibraryEntryConflict)
@@ -69,6 +69,7 @@ protected:
 	DECLARE_MESSAGE_MAP()
 public:
    enum OutCome {Rename, OverWrite};
+   bool m_bMustRename;
    OutCome m_OutCome;
    CString m_EntryName;
    CString m_LibName;

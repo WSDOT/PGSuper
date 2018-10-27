@@ -22,12 +22,12 @@ Spacing, S2 | Spacing between strands in a row.
 Type | Use the drop down list to select the strand type.
 Left End, Y | Elevation of the strand row at the left end of the girder.
 Left End, Face | Use the drop down list to select the face of the girder Y is measured from.
-Left Harp Pt, X | Enter the location of the left harp point from the left end of the girder.
-Left Harp Pt, Unit | Select the measurement unit for X.
+Left Harp Pt, Dist | Enter the distance from the left end of the girder to the first strand deviation point. Use the drop down list to select the measurement unit.
+Left Harp Pt, X | Enter the location of the left harp point from the left end of the girder. Use the drop down list to select the measurement unit.
 Left Harp Pt, Y | Elevation of the strand row at the left harp point of the girder.
 Left Harp Pt, Face | Use the drop down list to select the face of the girder Y is measured from.
-Right Harp Pt, X | Enter the location of the right harp point from the left end of the girder.
-Right Harp Pt, Unit | Select the measurement unit for X.
+Right Harp Pt, X | Enter the location of the right harp point from the left end of the girder. Use the drop down list to select the measurement unit.
+Right Harp Pt, Dist | Enter the distance from the left end of the girder to the last strand deviation point. Use the drop down list to select the measurement unit.
 Right Harp Pt, Y | Elevation of the strand row at the right harp point of the girder.
 Right Harp Pt, Face | Use the drop down list to select the face of the girder Y is measured from.
 Right End, Y | Elevation of the strand row at the right end of the girder.
@@ -36,3 +36,10 @@ Ext. Strands, Left | Check if the strands are extended at the left end of the gi
 Ext. Strands, Right | Check if the strands are extended at the right end of the girder.
 Debond, Left | Check if the strands are debonded at the left end of the girder. Enter the debond length.
 Debond, Right | Check if the strands are debonded at the right end of the girder. Enter the debond length.
+
+A girder can have up to four harp points. The images below illustate the two typical harp point layouts.
+
+![](TwoPointHarpedStrands.png)(Typical two point harped strand. Left Harp Pt Dist = 0%, Right Harp Pt Dist = 100%)
+<br>
+<br>
+![](FourPointHarpedStrands.png)(Typical three point harped strand. This strand arrangement could be used if the left end of the girder were a cantilever. Another strand deviation could be added at the right end of the girder by changing the Right Harp Pt Dist value)

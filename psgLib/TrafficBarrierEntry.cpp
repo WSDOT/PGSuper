@@ -402,13 +402,16 @@ CString TrafficBarrierEntry::GetWeightMethodType(TrafficBarrierEntry::WeightMeth
 bool TrafficBarrierEntry::IsEqual(const TrafficBarrierEntry& rOther,bool bConsiderName) const
 {
    std::vector<pgsLibraryEntryDifferenceItem*> vDifferences;
-   return Compare(rOther,vDifferences,true,bConsiderName);
+   bool bMustRename;
+   return Compare(rOther,vDifferences,bMustRename,true,bConsiderName);
 }
 
-bool TrafficBarrierEntry::Compare(const TrafficBarrierEntry& rOther, std::vector<pgsLibraryEntryDifferenceItem*>& vDifferences, bool bReturnOnFirstDifference, bool considerName) const
+bool TrafficBarrierEntry::Compare(const TrafficBarrierEntry& rOther, std::vector<pgsLibraryEntryDifferenceItem*>& vDifferences,bool &bMustRename, bool bReturnOnFirstDifference, bool considerName) const
 {
    CEAFApp* pApp = EAFGetApp();
    const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
+
+   bMustRename = false;
    
    if ( m_WeightMethod != rOther.m_WeightMethod )
    {

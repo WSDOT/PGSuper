@@ -209,7 +209,8 @@ bool do_deal_with_library_conflicts(ConflictList* pList, LibType* pMasterLib, co
          ATLASSERT(pproject!=0);
 
          std::vector<pgsLibraryEntryDifferenceItem*> vDifferences;
-         bool bSame = (bForceUpdate ? pmaster->IsEqual(*pproject) : pmaster->Compare(*pproject,vDifferences));
+         bool bMustRename = false;
+         bool bSame = (bForceUpdate ? pmaster->IsEqual(*pproject) : pmaster->Compare(*pproject,vDifferences,bMustRename));
          if (!bSame)
          {
             // we have a conflict - ask user what he wants to do about it.
@@ -229,7 +230,7 @@ bool do_deal_with_library_conflicts(ConflictList* pList, LibType* pMasterLib, co
             }
             else
             {
-               res = psglibResolveLibraryEntryConflict(name,libName,master_keys,isImported,vDifferences,&new_name);
+               res = psglibResolveLibraryEntryConflict(name,libName,master_keys,isImported,vDifferences,bMustRename,&new_name);
             }
 
             std::for_each(vDifferences.begin(),vDifferences.end(),pgsDeleteLibraryEntryConflictItem);
@@ -437,11 +438,11 @@ void pgsDeleteLibraryEntryConflictItem(pgsLibraryEntryDifferenceItem* pItem)
    delete pItem;
 }
 
-LibConflictOutcome PSGLIBFUNC WINAPI psglibResolveLibraryEntryConflict(const std::_tstring& entryName, const std::_tstring& libName, const std::vector<std::_tstring>& keylists, bool isImported,const std::vector<pgsLibraryEntryDifferenceItem*>& vDifferences,std::_tstring* pNewName)
+LibConflictOutcome PSGLIBFUNC WINAPI psglibResolveLibraryEntryConflict(const std::_tstring& entryName, const std::_tstring& libName, const std::vector<std::_tstring>& keylists, bool isImported,const std::vector<pgsLibraryEntryDifferenceItem*>& vDifferences,bool bMustRename,std::_tstring* pNewName)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
-   CLibraryEntryConflict dlg(entryName,libName, keylists, isImported, vDifferences);
+   CLibraryEntryConflict dlg(entryName,libName, keylists, isImported, vDifferences, bMustRename);
    dlg.DoModal();
 
    CLibraryEntryConflict::OutCome outcom = dlg.m_OutCome;

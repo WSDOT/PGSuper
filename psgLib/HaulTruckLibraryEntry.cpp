@@ -154,11 +154,14 @@ bool HaulTruckLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
 bool HaulTruckLibraryEntry::IsEqual(const HaulTruckLibraryEntry& rOther,bool bConsiderName) const
 {
    std::vector<pgsLibraryEntryDifferenceItem*> vDifferences;
-   return Compare(rOther,vDifferences,true,bConsiderName);
+   bool bMustRename;
+   return Compare(rOther,vDifferences,bMustRename,true,bConsiderName);
 }
 
-bool HaulTruckLibraryEntry::Compare(const HaulTruckLibraryEntry& rOther, std::vector<pgsLibraryEntryDifferenceItem*>& vDifferences, bool bReturnOnFirstDifference, bool considerName) const
+bool HaulTruckLibraryEntry::Compare(const HaulTruckLibraryEntry& rOther, std::vector<pgsLibraryEntryDifferenceItem*>& vDifferences, bool& bMustRename, bool bReturnOnFirstDifference, bool considerName) const
 {
+   bMustRename = false;
+
    if ( !::IsEqual(m_Hbg,rOther.m_Hbg) )
    {
       RETURN_ON_DIFFERENCE;

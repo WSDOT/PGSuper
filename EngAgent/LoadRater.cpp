@@ -1221,11 +1221,12 @@ void pgsLoadRater::CheckReinforcementYielding(const CGirderKey& girderKey,const 
       if ( ratingType == pgsTypes::lrPermit_Special ) // if it is any of the special permit types
       {
          // The live load distribution factor used for special permits is one loaded lane without multiple presense factor.
+         // This is the Fatigue LLDF. See MBE 6A.4.5.4.2b and C6A.5.4.2.2b.
          // However, when evaluating the reinforcement yielding in the Service I limit state (the thing this function does)
          // the controlling of one loaded lane and two or more loaded lanes live load distribution factors is to be used.
-         // (See MBE 6A.4.5.4.2b and C6A.5.4.2.2b).
+         // See 6A.5.4.2.2b
          //
-         // vLLIMmin and vLLIMmax includes the one lane LLDF... divide out this LLDF and multiply by the correct LLDF
+         // vLLIMmin and vLLIMmax includes the one lane LLDF (Fatigue)... divide out this LLDF and multiply by the correct LLDF (Service I)
 
          Float64 gpM_Service, gnM_Service, gV;
          Float64 gpM_Fatigue, gnM_Fatigue;
@@ -1236,13 +1237,13 @@ void pgsLoadRater::CheckReinforcementYielding(const CGirderKey& girderKey,const 
 
          if ( bPositiveMoment )
          {
-            gM = gpM_Fatigue;
-            vLLIMmax[i] *= gpM_Fatigue/gpM_Service;
+            gM = gpM_Service;
+            vLLIMmax[i] *= gpM_Service / gpM_Fatigue;
          }
          else
          {
-            gM = gnM_Fatigue;
-            vLLIMmin[i] *= gnM_Fatigue/gnM_Service;
+            gM = gnM_Service;
+            vLLIMmin[i] *= gnM_Service / gnM_Fatigue;
          }
       }
       else
@@ -1254,16 +1255,16 @@ void pgsLoadRater::CheckReinforcementYielding(const CGirderKey& girderKey,const 
          gM = (bPositiveMoment ? gpM : gnM);
       }
 
-      Float64 DC   = (bPositiveMoment ? vDCmax[i]   : vDCmin[i]);
-      Float64 DW   = (bPositiveMoment ? vDWmax[i]   : vDWmin[i]);
+      Float64 DC   = (bPositiveMoment ? vDCmax[i] : vDCmin[i]);
+      Float64 DW   = (bPositiveMoment ? vDWmax[i] : vDWmin[i]);
 
       Float64 CR, SH, RE, PS;
       if ( bTimeStep )
       {
-         CR = (bPositiveMoment ? vCRmax[i]   : vCRmin[i]);
-         SH = (bPositiveMoment ? vSHmax[i]   : vSHmin[i]);
-         RE = (bPositiveMoment ? vREmax[i]   : vREmin[i]);
-         PS = (bPositiveMoment ? vPSmax[i]   : vPSmin[i]);
+         CR = (bPositiveMoment ? vCRmax[i] : vCRmin[i]);
+         SH = (bPositiveMoment ? vSHmax[i] : vSHmin[i]);
+         RE = (bPositiveMoment ? vREmax[i] : vREmin[i]);
+         PS = (bPositiveMoment ? vPSmax[i] : vPSmin[i]);
       }
       else
       {

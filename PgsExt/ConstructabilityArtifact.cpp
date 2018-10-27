@@ -395,7 +395,7 @@ bool pgsSpanConstructabilityArtifact::HaunchLoadGeometryPassed() const
    }
    else
    {
-      return HaunchLoadGeometryStatus() == hlgPass;
+      return HaunchLoadGeometryStatus() == hlgPass ||  HaunchLoadGeometryStatus() == hlgNAPrintOnly;
    }
 }
 

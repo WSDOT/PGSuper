@@ -41,13 +41,14 @@ static char THIS_FILE[] = __FILE__;
 
 
 CLibraryEntryConflict::CLibraryEntryConflict(const std::_tstring& entryName, const std::_tstring& libName, 
-                                             const std::vector<std::_tstring>& keylists, bool isImported,const std::vector<pgsLibraryEntryDifferenceItem*>& vDifferences,CWnd* pParent)
+                                             const std::vector<std::_tstring>& keylists, bool isImported,const std::vector<pgsLibraryEntryDifferenceItem*>& vDifferences,bool bMustRename,CWnd* pParent)
 	: CDialog(CLibraryEntryConflict::IDD, pParent),
    m_KeyList(keylists),
    m_EntryName(entryName.c_str()),
    m_LibName(libName.c_str()),
    m_IsImported(isImported),
-   m_vDifferences(vDifferences)
+   m_vDifferences(vDifferences),
+   m_bMustRename(bMustRename)
 {
 	//{{AFX_DATA_INIT(CLibraryEntryConflict)
 		// NOTE: the ClassWizard will add member initialization here
@@ -186,6 +187,16 @@ BOOL CLibraryEntryConflict::OnInitDialog()
       VERIFY(s.LoadString(IDS_CONFLICT_TOP_MASTER));
       m_ConflictTop.SetWindowText(s);
       m_Overwrite.SetWindowText(_T("Overwrite"));
+   }
+
+   if (m_bMustRename)
+   {
+      GetDlgItem(IDC_OVERWRITE)->EnableWindow(FALSE);
+
+      CString strTxt;
+      m_ConflictBottom.GetWindowText(strTxt);
+      strTxt += _T(" - THIS PROJECT ENTRY MUST BE RENAMED.");
+      m_ConflictBottom.SetWindowText(strTxt);
    }
 	
 	return TRUE;  // return TRUE unless you set the focus to a control

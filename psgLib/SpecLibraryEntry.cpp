@@ -3968,13 +3968,16 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
 bool SpecLibraryEntry::IsEqual(const SpecLibraryEntry& rOther,bool bConsiderName) const
 {
    std::vector<pgsLibraryEntryDifferenceItem*> vDifferences;
-   return Compare(rOther,vDifferences,true,bConsiderName);
+   bool bMustRename;
+   return Compare(rOther,vDifferences,bMustRename,true,bConsiderName);
 }
 
-bool SpecLibraryEntry::Compare(const SpecLibraryEntry& rOther, std::vector<pgsLibraryEntryDifferenceItem*>& vDifferences, bool bReturnOnFirstDifference, bool considerName) const
+bool SpecLibraryEntry::Compare(const SpecLibraryEntry& rOther, std::vector<pgsLibraryEntryDifferenceItem*>& vDifferences, bool& bMustRename, bool bReturnOnFirstDifference, bool considerName) const
 {
    CEAFApp* pApp = EAFGetApp();
    const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
+
+   bMustRename = false;
 
    //
    // General Tab

@@ -218,6 +218,17 @@ LoadIDType CApplyLoadActivity::GetUserLoadID(IndexType idx) const
    return id;
 }
 
+const std::set<LoadIDType>& CApplyLoadActivity::GetUserLoads() const
+{
+   return m_UserLoads;
+}
+
+void CApplyLoadActivity::SetUserLoads(const std::set<LoadIDType>& loads)
+{
+   m_UserLoads = loads;
+   Update();
+}
+
 bool CApplyLoadActivity::IsUserLoadApplied() const
 {
    return (0 < GetUserLoadCount() ? true : false);

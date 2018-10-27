@@ -129,7 +129,9 @@ bool DiaphragmLayoutEntry::LoadMe(sysIStructuredLoad* pLoad)
          THROW_LOAD(InvalidFileFormat,pLoad);
    }
    else
+   {
       return false; // not a dl entry
+   }
    
    return true;
 }
@@ -137,11 +139,15 @@ bool DiaphragmLayoutEntry::LoadMe(sysIStructuredLoad* pLoad)
 bool DiaphragmLayoutEntry::IsEqual(const DiaphragmLayoutEntry& rOther,bool bConsiderName) const
 {
    std::vector<pgsLibraryEntryDifferenceItem*> vDifferences;
-   return Compare(rOther,vDifferences,true,bConsiderName);
+   bool bMustRename;
+   return Compare(rOther,vDifferences,bMustRename,true,bConsiderName);
 }
 
-bool DiaphragmLayoutEntry::Compare(const DiaphragmLayoutEntry& rOther, std::vector<pgsLibraryEntryDifferenceItem*>& vDifferences, bool bReturnOnFirstDifference, bool considerName) const
+bool DiaphragmLayoutEntry::Compare(const DiaphragmLayoutEntry& rOther, std::vector<pgsLibraryEntryDifferenceItem*>& vDifferences, bool& bMustRename, bool bReturnOnFirstDifference, bool considerName) const
 {
+
+   bMustRename = false;
+
    bool test =   m_DiaphragmLayoutVec == rOther.m_DiaphragmLayoutVec;
 
    if (considerName)

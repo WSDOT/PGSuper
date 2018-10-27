@@ -179,7 +179,7 @@ void GetAdjacentGirderKeys(const CSegmentKey& segmentKey,CSegmentKey* pLeftKey,C
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IBridgeDescription,pBridgeDesc);
 
-   GirderIndexType nGirders = pBridgeDesc->GetBridgeDescription()->GetGirderCount();
+   GirderIndexType nGirders = pBridgeDesc->GetBridgeDescription()->GetGirderGroup(grpIdx)->GetGirderCount();
    if ( gdrIdx == nGirders-1 )
    {
       pRightKey->groupIndex = INVALID_INDEX;

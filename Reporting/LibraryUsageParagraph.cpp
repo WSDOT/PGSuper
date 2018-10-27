@@ -57,8 +57,8 @@ rptParagraph* CLibraryUsageParagraph::Build(IBroker* pBroker, bool doPrintTable)
    std::_tstring strMasterLibFile;
    pLibrary->GetMasterLibraryInfo(strPublisher,strMasterLibFile,time);
 
-   *pParagraph << _T("Configuration Publisher: ") << strPublisher << rptNewLine;
-   *pParagraph << _T("Configuration Package: ") << strMasterLibFile << rptNewLine;
+   *pParagraph << _T("Configuration Name: ") << strPublisher << rptNewLine;
+   *pParagraph << _T("Configuration Source: ") << strMasterLibFile << rptNewLine;
    *pParagraph << _T("Configuration Date Stamp: ") << time.AsString() << rptNewLine;
 
    if (doPrintTable)
