@@ -123,9 +123,14 @@ CString CPGSuperAppPluginApp::GetVersion(bool bIncludeBuildNumber) const
 
    if (!bIncludeBuildNumber)
    {
-      // remove the build number
-      int pos = strVersion.ReverseFind(_T('.')); // find the last '.'
-      strVersion = strVersion.Left(pos);
+      std::_tstring v(strVersion);
+      auto count = std::count(std::begin(v), std::end(v), _T('.'));
+
+      for (auto i = 0; i < count - 1; i++)
+      {
+         int pos = strVersion.ReverseFind(_T('.')); // find the last '.'
+         strVersion = strVersion.Left(pos);
+      }
    }
 
    return strVersion;

@@ -55,7 +55,7 @@ public:
    void GetCatalogSettings(LPCTSTR publisher,CString& strPgzFile);
 
    // App version for catalogs
-   static CString GetAppVersion(bool bIncludeBuildNumber);
+   static CString GetAppVersion();
 
 
 private:

@@ -128,7 +128,7 @@ void CCatalogServerAppMixin::LoadRegistryOptions()
    m_Publisher = pApp->GetProfileString(_T("Options"),GetPublisherKey(),strDefaultPublisher);
 
    // defaults
-   CString strVersion = CCatalog::GetAppVersion(true);
+   CString strVersion = CCatalog::GetAppVersion();
 
    CString strFTPServer(_T("ftp://ftp.wsdot.wa.gov/public/Bridge/Software"));
    //CString strFTPServer(_T("http://www.wsdot.wa.gov/eesc/bridge/software"));
@@ -382,17 +382,6 @@ void CCatalogServerAppMixin::UpdateCache()
 
    try
    {
-//      BOOL bFirstRun = pApp->IsFirstRun();
-//      if (bFirstRun)
-//      {
-////         LOG(_T("Update Cache -> First Run"));
-//
-//         // if this is the first time PGSuper is run after installation
-//         // go right to the program settings. OnProgramSettings will
-//         // force an update
-//         UpdateProgramSettings(TRUE); 
-//      }
-//      else 
       if ( IsTimeToUpdateCache() )
       {
          if ( AreUpdatesPending() )
