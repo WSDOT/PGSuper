@@ -128,11 +128,6 @@ void CGirderSegmentStrandsPage::DoDataExchange(CDataExchange* pDX)
 {
 	CPropertyPage::DoDataExchange(pDX);
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
-
-
    m_pGrid->UpdateStrandData(pDX,&(m_pSegment->Strands));
    ExchangeHarpPointLocations(pDX, &(m_pSegment->Strands));
 
@@ -160,6 +155,11 @@ void CGirderSegmentStrandsPage::DoDataExchange(CDataExchange* pDX)
       m_pSegment->Strands.IsPjackCalculated(pgsTypes::Harped,    !bPjackUserInput[pgsTypes::Harped]);
       m_pSegment->Strands.IsPjackCalculated(pgsTypes::Temporary, !bPjackUserInput[pgsTypes::Temporary]);
    }
+
+
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+   GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
 
    if (pDX->m_bSaveAndValidate && m_pSegment->Strands.IsPjackCalculated(pgsTypes::Harped))
    {
@@ -676,7 +676,7 @@ void CGirderSegmentStrandsPage::EnableRemoveButton(BOOL bEnable)
 void CGirderSegmentStrandsPage::OnChange()
 {
    m_pGrid->UpdateStrandData(nullptr,&m_Strands);
-   ExchangeHarpPointLocations(&m_Strands);
+   GetHarpPointLocations(&m_Strands);
    m_Strands.SetTemporaryStrandUsage(GetTemporaryStrandUsage());
 
    CString strLabel;
@@ -743,13 +743,6 @@ void CGirderSegmentStrandsPage::FillHarpPointUnitComboBox(UINT nIDC, const unitm
    pCB->AddString(lengthUnit.UnitOfMeasure.UnitTag().c_str());
 }
 
-void CGirderSegmentStrandsPage::ExchangeHarpPointLocations(CStrandData* pStrands,BOOL bSaveAndValidate)
-{
-   CDataExchange dx(this,bSaveAndValidate);
-   dx.m_bSaveAndValidate = bSaveAndValidate;
-   ExchangeHarpPointLocations(&dx,pStrands);
-}
-
 void CGirderSegmentStrandsPage::ExchangeHarpPointLocations(CDataExchange* pDX,CStrandData* pStrands)
 {
    CComPtr<IBroker> pBroker;
@@ -767,8 +760,37 @@ void CGirderSegmentStrandsPage::ExchangeHarpPointLocations(CDataExchange* pDX,CS
    DDX_UnitValueChoice(pDX, IDC_X4, IDC_X4_MEASURE, Xend, pDisplayUnits->GetSpanLengthUnit());
    if (pDX->m_bSaveAndValidate)
    {
+      GET_IFACE2(pBroker, IBridge, pBridge);
+      Float64 L = pBridge->GetSegmentLength(m_pSegment->GetSegmentKey());
+      if (0 < Xstart)
+      {
+         DDV_UnitValueLimitOrLess(pDX, IDC_X1, Xstart, L, pDisplayUnits->GetSpanLengthUnit());
+      }
+
+      if (0 < Xlhp)
+      {
+         DDV_UnitValueLimitOrLess(pDX, IDC_X2, Xlhp, L, pDisplayUnits->GetSpanLengthUnit());
+      }
+
+      if (0 < Xrhp)
+      {
+         DDV_UnitValueLimitOrLess(pDX, IDC_X3, Xrhp, L, pDisplayUnits->GetSpanLengthUnit());
+      }
+
+      if (0 < Xend)
+      {
+         DDV_UnitValueLimitOrLess(pDX, IDC_X4, Xend, L, pDisplayUnits->GetSpanLengthUnit());
+      }
+
       pStrands->SetHarpPoints(Xstart, Xlhp, Xrhp, Xend);
    }
+}
+
+void CGirderSegmentStrandsPage::GetHarpPointLocations(CStrandData* pStrands)
+{
+   Float64 Xstart, Xlhp, Xrhp, Xend;
+   GetHarpPointLocations(&Xstart, &Xlhp, &Xrhp, &Xend);
+   pStrands->SetHarpPoints(Xstart, Xlhp, Xrhp, Xend);
 }
 
 void CGirderSegmentStrandsPage::GetHarpPointLocations(Float64* pXstart, Float64* pXlhp, Float64* pXrhp, Float64* pXend)
