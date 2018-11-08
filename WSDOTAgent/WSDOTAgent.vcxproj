@@ -530,7 +530,7 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\BridgeLinkBEToolbox\BEToolboxXML\BEToolboxXML.vcxproj">
+    <ProjectReference Include="..\..\BEToolbox\BEToolboxXML\BEToolboxXML.vcxproj">
       <Project>{3004a4e6-3542-40b1-9b15-331862819988}</Project>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>
