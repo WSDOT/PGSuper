@@ -1528,7 +1528,7 @@ private:
    Float64 GetGrossSlabDepth() const;
    Float64 GetCastDepth() const;
    Float64 GetPanelDepth() const;
-   Float64 GetSlabOverhangDepth() const;
+   Float64 GetSlabOverhangDepth(pgsTypes::SideType side) const;
 
 
    // Methods that return simple properties without data validation

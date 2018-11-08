@@ -2721,8 +2721,10 @@ HRESULT CProjectAgentImp::XSectionDataProc2(IStructuredSave* pSave,IStructuredLo
       pDeck->DeckRebarData          = xSectionData.DeckRebarData;
       pDeck->SetDeckType( xSectionData.DeckType );
       pDeck->GrossDepth             = xSectionData.GrossDepth;
-      pDeck->OverhangEdgeDepth      = xSectionData.OverhangEdgeDepth;
-      pDeck->OverhangTaper          = xSectionData.OverhangTaper;
+      pDeck->OverhangEdgeDepth[pgsTypes::stLeft] = xSectionData.OverhangEdgeDepth;
+      pDeck->OverhangEdgeDepth[pgsTypes::stRight] = xSectionData.OverhangEdgeDepth;
+      pDeck->OverhangTaper[pgsTypes::stLeft] = xSectionData.OverhangTaper;
+      pDeck->OverhangTaper[pgsTypes::stRight] = xSectionData.OverhangTaper;
       pDeck->OverlayWeight          = xSectionData.OverlayWeight;
       pDeck->OverlayDensity         = xSectionData.OverlayDensity;
       pDeck->OverlayDepth           = xSectionData.OverlayDepth;

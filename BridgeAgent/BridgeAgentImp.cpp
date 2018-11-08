@@ -3689,8 +3689,7 @@ bool CBridgeAgentImp::LayoutCompositeCIPDeck(const CBridgeDescription2* pBridgeD
    slab.CoCreateInstance(CLSID_CastSlab);
 
    slab->put_GrossDepth(pDeck->GrossDepth);
-   slab->put_OverhangDepth(pDeck->OverhangEdgeDepth);
-   slab->put_OverhangTaper((DeckOverhangTaper)pDeck->OverhangTaper);
+   slab->SetOverhang(pDeck->OverhangEdgeDepth[pgsTypes::stLeft], (DeckOverhangTaper)pDeck->OverhangTaper[pgsTypes::stLeft], pDeck->OverhangEdgeDepth[pgsTypes::stRight], (DeckOverhangTaper)pDeck->OverhangTaper[pgsTypes::stRight]);
 
    slab.QueryInterface(ppDeck);
 
@@ -3709,8 +3708,7 @@ bool CBridgeAgentImp::LayoutCompositeSIPDeck(const CBridgeDescription2* pBridgeD
 
    slab->put_PanelDepth(pDeck->PanelDepth);
    slab->put_CastDepth(pDeck->GrossDepth); // interpreted as cast depth
-   slab->put_OverhangDepth(pDeck->OverhangEdgeDepth);
-   slab->put_OverhangTaper((DeckOverhangTaper)pDeck->OverhangTaper);
+   slab->SetOverhang(pDeck->OverhangEdgeDepth[pgsTypes::stLeft], (DeckOverhangTaper)pDeck->OverhangTaper[pgsTypes::stLeft], pDeck->OverhangEdgeDepth[pgsTypes::stRight], (DeckOverhangTaper)pDeck->OverhangTaper[pgsTypes::stRight]);
 
    slab.QueryInterface(ppDeck);
 
@@ -30050,7 +30048,7 @@ Float64 CBridgeAgentImp::GetPanelDepth() const
 }
 
 
-Float64 CBridgeAgentImp::GetSlabOverhangDepth() const
+Float64 CBridgeAgentImp::GetSlabOverhangDepth(pgsTypes::SideType side) const
 {
    CComPtr<IBridgeDeck> deck;
    m_Bridge->get_Deck(&deck);
@@ -30062,11 +30060,11 @@ Float64 CBridgeAgentImp::GetSlabOverhangDepth() const
    Float64 overhang_depth;
    if ( cip != nullptr )
    {
-      cip->get_OverhangDepth(&overhang_depth);
+      cip->get_OverhangDepth((DirectionType)side, &overhang_depth);
    }
    else if ( sip != nullptr )
    {
-      sip->get_CastDepth(&overhang_depth);
+      sip->get_OverhangDepth((DirectionType)side, &overhang_depth);
    }
    else if ( overlay != nullptr )
    {
