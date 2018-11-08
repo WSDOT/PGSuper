@@ -1,0 +1,25 @@
+HKCR
+{
+	ExtensionAgentExample.ExampleExtensionAgent.1 = s 'Extension Agent Example'
+	{
+		CLSID = s '{C75182FE-7DAC-47A1-B87C-8BFA0F3C5D35}'
+	}
+	ExtensionAgentExample.ExampleExtensionAgent = s 'Extension Agent Example'
+	{
+		CLSID = s '{C75182FE-7DAC-47A1-B87C-8BFA0F3C5D35}'
+		CurVer = s 'ExtensionAgentExample.ExampleExtensionAgent.1'
+	}
+	NoRemove CLSID
+	{
+		ForceRemove {C75182FE-7DAC-47A1-B87C-8BFA0F3C5D35} = s 'Extension Agent Example'
+		{
+			ProgID = s 'ExtensionAgentExample.ExampleExtensionAgent.1'
+			VersionIndependentProgID = s 'ExtensionAgentExample.ExampleExtensionAgent'
+			InprocServer32 = s '%MODULE%'
+			{
+				val ThreadingModel = s 'Apartment'
+			}
+			'TypeLib' = s '{DE0B8F6F-AB24-4463-919B-B470CBF05FAD}'
+		}
+	}
+}
