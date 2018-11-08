@@ -23,7 +23,7 @@
 // LinearDuctGrid.cpp : implementation file
 //
 
-#include "PGSuperAppPlugin\stdafx.h"
+#include "stdafx.h"
 #include "LinearDuctGrid.h"
 #include "LinearDuctDlg.h"
 #include <EAF\EAFDisplayUnits.h>

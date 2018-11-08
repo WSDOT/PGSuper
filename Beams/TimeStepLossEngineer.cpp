@@ -36,7 +36,7 @@
 
 #include <EAF\EAFStatusCenter.h>
 #include <PgsExt\StatusItem.h>
-#include "..\PGSuperException.h"
+#include <PGSuperException.h>
 
 #include <WBFLGenericBridgeTools.h>
 

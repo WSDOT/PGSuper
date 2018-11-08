@@ -1,8 +1,8 @@
 // RemoveTempSupportsDlg.cpp : implementation file
 //
 
-#include "PGSuperAppPlugin\stdafx.h"
-#include "PGSuperAppPlugin\resource.h"
+#include "stdafx.h"
+#include "resource.h"
 #include "RemoveTempSupportsDlg.h"
 
 #include <IFace\Project.h>

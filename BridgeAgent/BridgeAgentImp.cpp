@@ -26,7 +26,7 @@
 #include "BridgeAgentImp.h"
 #include "BridgeHelpers.h"
 #include "BridgeGeometryModelBuilder.h"
-#include "..\PGSuperException.h"
+#include <PGSuperException.h>
 #include "DeckEdgeBuilder.h"
 
 #include <PsgLib\LibraryManager.h>

@@ -23,9 +23,9 @@
 // DebondGrid.cpp : implementation file
 //
 
-#include "PGSuperAppPlugin\stdafx.h"
+#include "stdafx.h"
 #include "PGSuperDoc.h"
-#include "PGSuperAppPlugin\resource.h"
+#include "resource.h"
 #include "StrandGrid.h"
 #include "GirderSegmentStrandsPage.h"
 #include "PGSuperUnits.h"

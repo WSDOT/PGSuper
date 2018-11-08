@@ -31,7 +31,7 @@
 #include <IFace\BeamFactory.h>
 #include <IFace\RatingSpecification.h>
 
-#include "..\PGSuperException.h"
+#include <PGSuperException.h>
 
 #include <PsgLib\SpecLibraryEntry.h>
 #include <PsgLib\GirderLibraryEntry.h>

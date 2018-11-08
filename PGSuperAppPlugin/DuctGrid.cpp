@@ -23,7 +23,7 @@
 // DuctGrid.cpp : implementation file
 //
 
-#include "PGSuperAppPlugin\stdafx.h"
+#include "stdafx.h"
 #include "DuctGrid.h"
 #include "SplicedGirderDescDlg.h"
 #include "GirderDescDlg.h"

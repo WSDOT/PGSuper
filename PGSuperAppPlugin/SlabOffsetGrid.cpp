@@ -23,7 +23,7 @@
 // SlabOffsetGrid.cpp : implementation file
 //
 
-#include "PGSuperAppPlugin\stdafx.h"
+#include "stdafx.h"
 #include "SlabOffsetGrid.h"
 #include "SelectItemDlg.h"
 

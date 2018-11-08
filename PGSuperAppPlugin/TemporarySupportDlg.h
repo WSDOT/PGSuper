@@ -1,8 +1,8 @@
 #pragma once
 
-#include "PGSuperAppPlugin\TemporarySupportLayoutPage.h"
-#include "PGSuperAppPlugin\ClosureJointGeometryPage.h"
-#include "PGSuperAppPlugin\GirderSegmentSpacingPage.h"
+#include "TemporarySupportLayoutPage.h"
+#include "ClosureJointGeometryPage.h"
+#include "GirderSegmentSpacingPage.h"
 
 #include <PgsExt\TemporarySupportData.h>
 #include <IFace\ExtendUI.h>

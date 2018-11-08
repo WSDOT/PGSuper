@@ -20,7 +20,7 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-#include "PGSuperAppPlugin\stdafx.h"
+#include "stdafx.h"
 #include "EditClosureJoint.h"
 #include "PGSpliceDoc.h"
 

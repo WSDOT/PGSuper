@@ -23,7 +23,6 @@
 // ServerDefinitionDlg.cpp : implementation file
 //
 #include <PgsExt\PgsExtLib.h>
-//#include "PGSuperAppPlugin\PGSuperApp.h"
 #include "ServerDefinitionDlg.h"
 
 

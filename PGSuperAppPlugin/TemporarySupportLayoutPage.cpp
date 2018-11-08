@@ -23,10 +23,10 @@
 // TemporarySupportLayoutPage.cpp : implementation file
 //
 
-#include "PGSuperAppPlugin\stdafx.h"
+#include "stdafx.h"
 #include "PGSuperAppPlugin.h"
-#include "PGSuperAppPlugin\Resource.h"
-#include "PGSuperAppPlugin\TemporarySupportDlg.h"
+#include "resource.h"
+#include "TemporarySupportDlg.h"
 #include "TemporarySupportLayoutPage.h"
 #include "TimelineEventDlg.h"
 #include "SelectItemDlg.h"

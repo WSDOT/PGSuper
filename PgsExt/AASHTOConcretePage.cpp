@@ -25,7 +25,7 @@
 
 #include <PgsExt\PgsExtLib.h>
 #include "resource.h"
-#include "PGSuperDoc.h"
+#include <PGSuperAppPlugin\PGSuperDoc.h>
 #include "PGSuperUnits.h"
 #include <PgsExt\ConcreteDetailsDlg.h>
 #include <PgsExt\AASHTOConcretePage.h>

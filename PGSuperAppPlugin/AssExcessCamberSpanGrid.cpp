@@ -23,7 +23,7 @@
 // AssExcessCamberSpanGrid.cpp : implementation file
 //
 
-#include "PGSuperAppPlugin\stdafx.h"
+#include "stdafx.h"
 #include "AssExcessCamberSpanGrid.h"
 
 #include <System\Tokenizer.h>

@@ -23,7 +23,7 @@
 // LossParametersDlg.cpp : implementation file
 //
 
-#include "PGSuperAppPlugin\stdafx.h"
+#include "stdafx.h"
 #include "PGSuperAppPlugin.h"
 #include "LossParametersDlg.h"
 #include <EAF\EAFUtilities.h>

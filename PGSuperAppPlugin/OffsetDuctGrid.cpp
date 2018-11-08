@@ -23,7 +23,7 @@
 // OffsetDuctGrid.cpp : implementation file
 //
 
-#include "PGSuperAppPlugin\stdafx.h"
+#include "stdafx.h"
 #include "OffsetDuctGrid.h"
 #include "OffsetDuctDlg.h"
 #include <EAF\EAFDisplayUnits.h>

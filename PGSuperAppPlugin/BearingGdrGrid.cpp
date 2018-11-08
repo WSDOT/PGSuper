@@ -23,7 +23,7 @@
 // BearingGdrGrid.cpp : implementation file
 //
 
-#include "PGSuperAppPlugin\stdafx.h"
+#include "stdafx.h"
 #include "BearingGdrGrid.h"
 
 #include <System\Tokenizer.h>

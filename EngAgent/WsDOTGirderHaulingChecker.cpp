@@ -36,7 +36,7 @@
 #include <IFace\DocumentType.h>
 #include <EAF\EAFDisplayUnits.h>
 
-#include "..\PGSuperException.h"
+#include <PGSuperException.h>
 
 #include <limits>
 #include <algorithm>

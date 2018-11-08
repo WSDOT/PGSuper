@@ -23,7 +23,7 @@
 // IBeamDistFactorEngineer.cpp : Implementation of CIBeamDistFactorEngineer
 #include "stdafx.h"
 #include "IBeamDistFactorEngineer.h"
-#include "..\PGSuperException.h"
+#include <PGSuperException.h>
 #include <Units\SysUnits.h>
 #include <PsgLib\TrafficBarrierEntry.h>
 #include <PsgLib\SpecLibraryEntry.h>

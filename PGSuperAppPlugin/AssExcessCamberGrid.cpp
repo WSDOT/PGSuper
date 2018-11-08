@@ -23,7 +23,7 @@
 // AssExcessCamberGrid.cpp : implementation file
 //
 
-#include "PGSuperAppPlugin\stdafx.h"
+#include "stdafx.h"
 #include "AssExcessCamberGrid.h"
 #include "SelectItemDlg.h"
 

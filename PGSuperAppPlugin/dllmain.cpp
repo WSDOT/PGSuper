@@ -22,7 +22,7 @@
 
 // dllmain.cpp : Implementation of DllMain.
 
-#include "PGSuperAppPlugin\stdafx.h"
+#include "stdafx.h"
 #include "resource.h"
 #include "PGSuperAppPlugin_i.h"
 #include "dllmain.h"

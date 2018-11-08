@@ -20,8 +20,8 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-#include "PGSuperAppPlugin\stdafx.h"
-#include "PGSuperAppPlugin\EditTimeline.h"
+#include "stdafx.h"
+#include "EditTimeline.h"
 #include "PGSuperDoc.h"
 
 #ifdef _DEBUG

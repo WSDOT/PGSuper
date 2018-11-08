@@ -21,9 +21,9 @@
 ///////////////////////////////////////////////////////////////////////
 
 //#include "stdafx.h"
-#include "PGSuperAppPlugin\stdafx.h"
+#include "stdafx.h"
 #include "resource.h"
-#include "PGSuperAppPlugin\resource.h"
+#include "resource.h"
 #include "AboutDlg.h"
 
 #include "PGSuperDoc.h"

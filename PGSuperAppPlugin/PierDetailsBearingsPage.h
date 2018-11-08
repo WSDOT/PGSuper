@@ -20,7 +20,7 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-#include "PGSuperAppPlugin\resource.h"
+#include "resource.h"
 #include "EditBearingDlg.h"
 
 #pragma once

@@ -20,10 +20,10 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-#include "PGSuperAppPlugin\stdafx.h"
-#include "PGSuperAppPlugin\PGSuperApp.h"
+#include "stdafx.h"
+#include "PGSuperApp.h"
 #include "PGSuperColors.h"
-#include "PGSuperAppPlugin\TemporarySupportDrawStrategyImpl.h"
+#include "TemporarySupportDrawStrategyImpl.h"
 #include "mfcdual.h"
 
 #ifdef _DEBUG

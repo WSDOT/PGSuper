@@ -23,7 +23,7 @@
 // ParabolicDuctGrid.cpp : implementation file
 //
 
-#include "PGSuperAppPlugin\stdafx.h"
+#include "stdafx.h"
 #include "ParabolicDuctGrid.h"
 #include "ParabolicDuctDlg.h"
 #include <EAF\EAFDisplayUnits.h>

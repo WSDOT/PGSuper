@@ -40,7 +40,7 @@
 #include <PgsExt\GirderLabel.h>
 
 #include <MfcTools\Exceptions.h>
-#include "..\PGSuperException.h"
+#include <PGSuperException.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -528,7 +528,7 @@ HRESULT CEffectiveFlangeWidthTool::EffectiveFlangeWidthBySegmentDetails(IGeneric
             // check maximum skew angle... AASHTO defines the skew angle as...
             // The largest skew angle (theta) in the BRIDGE SYSTEM where (theta)
             // is the angle of a bearing line measured relative to a normal to
-            // the cneterline of a longitudial component
+            // the centerline of a longitudial component
             if ( !m_bMaxSkewAngleComputed )
             {
                // the max skew angle for the BRIDGE SYSTEM only needs to be
