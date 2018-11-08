@@ -1,0 +1,49 @@
+///////////////////////////////////////////////////////////////////////
+// LibraryMgrPluginExample
+// Copyright © 1999-2018  Washington State Department of Transportation
+//                        Bridge and Structures Office
+//
+// This program is free software; you can redistribute it and/or modify
+// it under the terms of the Alternate Route Open Source License as 
+// published by the Washington State Department of Transportation, 
+// Bridge and Structures Office.
+//
+// This program is distributed in the hope that it will be useful, but 
+// distribution is AS IS, WITHOUT ANY WARRANTY; without even the implied 
+// warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See 
+// the Alternate Route Open Source License for more details.
+//
+// You should have received a copy of the Alternate Route Open Source 
+// License along with this program; if not, write to the Washington 
+// State Department of Transportation, Bridge and Structures Office, 
+// P.O. Box  47340, Olympia, WA 98503, USA or e-mail 
+// Bridge_Support@wsdot.wa.gov
+///////////////////////////////////////////////////////////////////////
+
+// LibraryMgrPluginExample.idl : IDL source for LibraryMgrPluginExample
+//
+
+// This file will be processed by the MIDL tool to
+// produce the type library (LibraryMgrPluginExample.tlb) and marshalling code.
+
+import "oaidl.idl";
+import "ocidl.idl";
+
+
+[
+	uuid(A395C172-DAFC-426D-AB37-DC15D4908C3C),
+	version(1.0),
+	helpstring("LibraryMgrPluginExample 1.0 Type Library")
+]
+library LibraryMgrPluginExampleLib
+{
+	importlib("stdole2.tlb");
+	[
+		uuid(894AE5FD-E157-4935-A1C6-2E032CF014A6),
+		helpstring("LibMgrDocPlugin Class")
+	]
+	coclass LibMgrDocPlugin
+	{
+		[default] interface IUnknown;
+	};
+};
