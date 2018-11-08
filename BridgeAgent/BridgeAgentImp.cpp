@@ -19650,10 +19650,10 @@ void CBridgeAgentImp::ResolveHarpPointLocations(const CPrecastSegmentData* pSegm
       Xend = IsZero(Xend) ? 0.0 : Xend;
    }
 
-   Xhp[ZoneBreakType::Start] = Xstart;
-   Xhp[ZoneBreakType::LeftBreak] = Xlhp;
-   Xhp[ZoneBreakType::RightBreak] = Xrhp;
-   Xhp[ZoneBreakType::End] = Xend;
+   Xhp[ZoneBreakType::Start] = ::ForceIntoRange(0.0, Xstart,Lg);
+   Xhp[ZoneBreakType::LeftBreak] = ::ForceIntoRange(0.0, Xlhp, Lg);
+   Xhp[ZoneBreakType::RightBreak] = ::ForceIntoRange(0.0, Xrhp, Lg);
+   Xhp[ZoneBreakType::End] = ::ForceIntoRange(0.0, Xend, Lg);
 }
 
 void CBridgeAgentImp::ResolveStrandRowElevations(const CPrecastSegmentData* pSegment, const CStrandData* pStrands, const CStrandRow& strandRow, std::array<Float64, 4>& Xhp, std::array<Float64, 4>& Y) const
