@@ -586,7 +586,7 @@ void CFtpCatalogServer::FetchCatalog(IProgressMonitor* pProgress, bool toTempfol
       }
 
       // We have the catalog, initialize the catalog parser
-      CString strVersion = CCatalog::GetAppVersion(true);
+      CString strVersion = CCatalog::GetAppVersion();
 
       if (! m_Catalog.Init(m_strLocalCatalog,strVersion) )
       {
@@ -1290,7 +1290,7 @@ void CIniCatalogServer::FetchCatalog(IProgressMonitor* pProgress) const
       if ( gwres==gwOk )
       {
          // we have the catalog, initialize the catalog parser
-         CString strVersion =  CCatalog::GetAppVersion(true);
+         CString strVersion =  CCatalog::GetAppVersion();
 
          if (! m_Catalog.Init(m_strLocalCatalog,strVersion) )
          {

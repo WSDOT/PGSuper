@@ -367,7 +367,7 @@ bool CCatalog::DoParse()
    return true;
 }
 
-CString CCatalog::GetAppVersion(bool bIncludeBuildNumber)
+CString CCatalog::GetAppVersion()
 {
    CWinApp* pApp = AfxGetApp();
    CString strExe( pApp->m_pszExeName );
@@ -378,14 +378,11 @@ CString CCatalog::GetAppVersion(bool bIncludeBuildNumber)
    
    CString strVersion = verInfo.GetProductVersionAsString();
 
-#if defined _DEBUG || defined _BETA_VERSION
-   // always include the build number in debug and beta versions
-   bIncludeBuildNumber = true;
-#endif
-
-   if (!bIncludeBuildNumber)
+   std::_tstring v(strVersion);
+   auto count = std::count(std::begin(v), std::end(v), _T('.'));
+   count -= 2; // always want version number in the form x.y.z so remove all dots from the back end of the string except 2
+   for (auto i = 0; i < count; i++)
    {
-      // remove the build number
       int pos = strVersion.ReverseFind(_T('.')); // find the last '.'
       strVersion = strVersion.Left(pos);
    }

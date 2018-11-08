@@ -304,6 +304,7 @@ void CGirderPropertiesGraphBuilder::UpdateGraphData(const CGirderKey& girderKey,
    GET_IFACE(IPointOfInterest,pPoi);
    PoiList vPoi;
    GET_IFACE(IBridge,pBridge);
+   GET_IFACE(IIntervals, pIntervals);
    GroupIndexType nGroups = pBridge->GetGirderGroupCount();
    GroupIndexType firstGroupIdx = (girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex);
    GroupIndexType lastGroupIdx = (girderKey.groupIndex== ALL_GROUPS ? nGroups-1 : firstGroupIdx);
@@ -314,6 +315,15 @@ void CGirderPropertiesGraphBuilder::UpdateGraphData(const CGirderKey& girderKey,
       CSegmentKey segmentKey(grpIdx,gdrIdx,ALL_SEGMENTS);
       PoiList vSegmentPoi;
       pPoi->GetPointsOfInterest(segmentKey, &vSegmentPoi);
+
+      IntervalIndexType firstSegmentErectionintervalIdx = pIntervals->GetFirstSegmentErectionInterval(segmentKey);
+      if (intervalIdx < firstSegmentErectionintervalIdx)
+      {
+         // these POI are between segments so they don't apply
+         pPoi->RemovePointsOfInterest(vSegmentPoi, POI_CLOSURE);
+         pPoi->RemovePointsOfInterest(vSegmentPoi, POI_BOUNDARY_PIER);
+      }
+
       vPoi.insert(vPoi.end(),vSegmentPoi.begin(),vSegmentPoi.end());
    }
 
@@ -340,7 +350,6 @@ void CGirderPropertiesGraphBuilder::UpdateGraphData(const CGirderKey& girderKey,
 
    GET_IFACE_NOCHECK(ISectionProperties, pSectProps);
    GET_IFACE_NOCHECK(IStrandGeometry, pStrandGeom);
-   GET_IFACE_NOCHECK(IIntervals, pIntervals);
 
    bool bIsAsymmetric = pBridge->HasAsymmetricGirders() || pBridge->HasAsymmetricPrestressing();
 
