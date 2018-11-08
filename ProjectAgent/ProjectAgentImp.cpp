@@ -8835,8 +8835,9 @@ std::vector<arDesignOptions> CProjectAgentImp::GetDesignOptions(const CGirderKey
       if (option.doDesignForFlexure == dtDesignForHarping)
       {
          bool check, design;
-         Float64 d1, d2, d3;
-         pSpecEntry->GetHoldDownForce(&check, &design, &d1);
+         int holdDownForceType;
+         Float64 d1, d2, d3, friction;
+         pSpecEntry->GetHoldDownForce(&check, &design, &holdDownForceType, &d1, &friction);
          option.doDesignHoldDown = design;
 
          pSpecEntry->GetMaxStrandSlope(&check, &design, &d1, &d2, &d3);

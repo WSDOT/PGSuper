@@ -45,7 +45,7 @@ static char THIS_FILE[] = __FILE__;
 // 2.9 and 3.0 branches. It is ok for loads to fail for 44.0 <= version <= MAX_OVERLAP_VERSION.
 #define MAX_OVERLAP_VERSION 53.0 // overlap of data blocks between PGS 2.9 and 3.0 end with this version
 
-#define CURRENT_VERSION 64.0 
+#define CURRENT_VERSION 65.0 
 
 /****************************************************************************
 CLASS
@@ -67,7 +67,11 @@ m_MaxSlope06(8),
 m_MaxSlope07(10),
 m_DoCheckHoldDown(false),
 m_DoDesignHoldDown(false),
+m_HoldDownForceType(HOLD_DOWN_TOTAL),
 m_HoldDownForce(ConvertToSysUnits(45,unitMeasure::Kip)),
+m_HoldDownFriction(0.0),
+m_bCheckHandlingWeightLimit(false),
+m_HandlingWeightLimit(ConvertToSysUnits(130,unitMeasure::Kip)),
 m_DoCheckSplitting(true),
 m_DoCheckConfinement(true),
 m_DoDesignSplitting(true),
@@ -481,11 +485,17 @@ bool SpecLibraryEntry::SaveMe(sysIStructuredSave* pSave)
    pSave->Property(_T("MaxSlope07"), m_MaxSlope07); // added in version 35
    pSave->Property(_T("DoCheckHoldDown"), m_DoCheckHoldDown);
    pSave->Property(_T("DoDesignHoldDown"), m_DoDesignHoldDown);
+   pSave->Property(_T("HoldDownForceType"), m_HoldDownForceType); // added in version 65
    pSave->Property(_T("HoldDownForce"), m_HoldDownForce);
+   pSave->Property(_T("HoldDownFriction"), m_HoldDownFriction); // added in version 65
    pSave->Property(_T("DoCheckSplitting"), m_DoCheckSplitting);
    pSave->Property(_T("DoDesignSplitting"), m_DoDesignSplitting);
    pSave->Property(_T("DoCheckConfinement"), m_DoCheckConfinement);
    pSave->Property(_T("DoDesignConfinement"), m_DoDesignConfinement);
+
+   pSave->Property(_T("DoCheckHandlingWeightLimit"), m_bCheckHandlingWeightLimit); // added version 65
+   pSave->Property(_T("HandlingWeightLimit"), m_HandlingWeightLimit); // added version 65
+
    //pSave->Property(_T("MaxStirrupSpacing"), m_MaxStirrupSpacing); // removed in version 46
    pSave->Property(_T("StirrupSpacingCoefficient1"),m_StirrupSpacingCoefficient[0]); // added in version 46
    pSave->Property(_T("MaxStirrupSpacing1"),m_MaxStirrupSpacing[0]); // added in version 46
@@ -1099,9 +1109,27 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
          }
       }
 
+      if (64 < version)
+      {
+         // added in version 65
+         if (!pLoad->Property(_T("HoldDownForceType"), &m_HoldDownForceType))
+         {
+            THROW_LOAD(InvalidFileFormat, pLoad);
+         }
+      }
+
       if(!pLoad->Property(_T("HoldDownForce"), &m_HoldDownForce))
       {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
+
+      if (64 < version)
+      {
+         // added in version 65
+         if (!pLoad->Property(_T("HoldDownFriction"), &m_HoldDownFriction))
+         {
+            THROW_LOAD(InvalidFileFormat, pLoad);
+         }
       }
 
       if (32 < version && version < 39)
@@ -1138,6 +1166,20 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
          if(!pLoad->Property(_T("DoDesignConfinement"), &m_DoDesignConfinement))
          {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
+      }
+
+      if (64 < version)
+      {
+         // added in version 65
+         if (!pLoad->Property(_T("DoCheckHandlingWeightLimit"), &m_bCheckHandlingWeightLimit))
+         {
+            THROW_LOAD(InvalidFileFormat, pLoad);
+         }
+         
+         if (!pLoad->Property(_T("HandlingWeightLimit"), &m_HandlingWeightLimit))
+         {
+            THROW_LOAD(InvalidFileFormat, pLoad);
          }
       }
 
@@ -4096,7 +4138,8 @@ bool SpecLibraryEntry::Compare(const SpecLibraryEntry& rOther, std::vector<pgsLi
    //
    if ( m_DoCheckHoldDown != rOther.m_DoCheckHoldDown || 
         m_DoDesignHoldDown != rOther.m_DoDesignHoldDown ||
-        !::IsEqual(m_HoldDownForce,rOther.m_HoldDownForce) )
+        m_HoldDownForceType != rOther.m_HoldDownForceType ||
+        !::IsEqual(m_HoldDownForce,rOther.m_HoldDownForce) || !::IsEqual(m_HoldDownFriction,rOther.m_HoldDownFriction))
    {
       RETURN_ON_DIFFERENCE;
       vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Hold Down Force requirements are different"),_T(""),_T("")));
@@ -4110,6 +4153,12 @@ bool SpecLibraryEntry::Compare(const SpecLibraryEntry& rOther, std::vector<pgsLi
    {
       RETURN_ON_DIFFERENCE;
       vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Strand Slope requirements are different"),_T(""),_T("")));
+   }
+
+   if (m_bCheckHandlingWeightLimit != rOther.m_bCheckHandlingWeightLimit || !::IsEqual(m_HandlingWeightLimit, rOther.m_HandlingWeightLimit))
+   {
+      RETURN_ON_DIFFERENCE;
+      vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Handling Weight Limit requirements are different"), _T(""), _T("")));
    }
 
    if ( m_DoCheckSplitting != rOther.m_DoCheckSplitting ||
@@ -4980,22 +5029,38 @@ void SpecLibraryEntry::SetMaxStrandSlope(bool doCheck, bool doDesign, Float64 sl
    }
 }
 
-void SpecLibraryEntry::GetHoldDownForce(bool* doCheck, bool*doDesign, Float64* force) const
+void SpecLibraryEntry::GetHoldDownForce(bool* doCheck, bool*doDesign, int* holdDownForceType,Float64* force,Float64* friction) const
 {
    *doCheck  = m_DoCheckHoldDown;
    *doDesign = m_DoDesignHoldDown;
+   *holdDownForceType = m_HoldDownForceType;
    *force    = m_HoldDownForce;
+   *friction = m_HoldDownFriction;
 }
 
-void SpecLibraryEntry::SetHoldDownForce(bool doCheck, bool doDesign, Float64 force)
+void SpecLibraryEntry::SetHoldDownForce(bool doCheck, bool doDesign, int holdDownForceType,Float64 force,Float64 friction)
 {
    m_DoCheckHoldDown = doCheck;
    m_DoDesignHoldDown = doCheck ? doDesign : false; // don't allow design without checking
 
    if (m_DoCheckHoldDown)
    {
+      m_HoldDownForceType = holdDownForceType;
       m_HoldDownForce   = force;
+      m_HoldDownFriction = friction;
    }
+}
+
+void SpecLibraryEntry::GetPlantHandlingWeightLimit(bool* pbDoCheck, Float64* pLimit) const
+{
+   *pbDoCheck = m_bCheckHandlingWeightLimit;
+   *pLimit = m_HandlingWeightLimit;
+}
+
+void SpecLibraryEntry::SetPlantHandlingWeightLimit(bool bDoCheck, Float64 limit)
+{
+   m_bCheckHandlingWeightLimit = bDoCheck;
+   m_HandlingWeightLimit = limit;
 }
 
 void SpecLibraryEntry::EnableSplittingCheck(bool enable)
@@ -7163,7 +7228,11 @@ void SpecLibraryEntry::MakeCopy(const SpecLibraryEntry& rOther)
    m_MaxSlope07                 = rOther.m_MaxSlope07;
    m_DoCheckHoldDown            = rOther.m_DoCheckHoldDown;
    m_DoDesignHoldDown           = rOther.m_DoDesignHoldDown;
+   m_HoldDownForceType = rOther.m_HoldDownForceType;
    m_HoldDownForce              = rOther.m_HoldDownForce;
+   m_HoldDownFriction = rOther.m_HoldDownFriction;
+   m_bCheckHandlingWeightLimit = rOther.m_bCheckHandlingWeightLimit;
+   m_HandlingWeightLimit = rOther.m_HandlingWeightLimit;
    m_StirrupSpacingCoefficient[0] = rOther.m_StirrupSpacingCoefficient[0];
    m_MaxStirrupSpacing[0]         = rOther.m_MaxStirrupSpacing[0];
    m_StirrupSpacingCoefficient[1] = rOther.m_StirrupSpacingCoefficient[1];

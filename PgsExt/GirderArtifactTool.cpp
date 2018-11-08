@@ -149,6 +149,21 @@ void ListStressFailures(IBroker* pBroker, FailureList& rFailures,
          }
       }
 
+      const auto* pPlantHandling = pArtifact->GetPlantHandlingWeightArtifact();
+      if (!pPlantHandling->Passed())
+      {
+         if (1 < nSegments)
+         {
+            CString strMsg;
+            strMsg.Format(_T("Plant handling weight exceeds maximum for Segment %d"), LABEL_SEGMENT(segIdx));
+            rFailures.push_back(std::_tstring(strMsg.GetBuffer()));
+         }
+         else
+         {
+            rFailures.push_back(_T("Plant handling weight exceeds maximum"));
+         }
+      }
+
       bool bFutureOverlay = pBridge->IsFutureOverlay();
       IntervalIndexType overlayIntervalIdx = !bFutureOverlay ? INVALID_INDEX : pIntervals->GetOverlayInterval();
 

@@ -358,6 +358,7 @@ void write_casting_yard(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits*
    INIT_UV_PROTOTYPE( rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(),       true );
    INIT_UV_PROTOTYPE( rptForceUnitValue,  force,  pDisplayUnits->GetGeneralForceUnit(), true );
    INIT_UV_PROTOTYPE( rptLengthUnitValue, dim, pDisplayUnits->GetComponentDimUnit(), true );
+   INIT_SCALAR_PROTOTYPE(rptRcPercentage, percentage, pDisplayUnits->GetPercentageFormat());
 
    bool do_check, do_design;
    Float64 slope05, slope06, slope07;
@@ -373,15 +374,35 @@ void write_casting_yard(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits*
       *pPara << _T("Max. Strand slope is not checked") << rptNewLine;
    }
 
-   Float64 f;
-   pSpecEntry->GetHoldDownForce(&do_check, &do_design, &f);
+   Float64 f,fr;
+   int type;
+   pSpecEntry->GetHoldDownForce(&do_check, &do_design, &type, &f, &fr);
    if (do_check)
    {
-      *pPara << _T("Max. hold down force in casting yard = ") << force.SetValue(f) << rptNewLine;
+      if (type == HOLD_DOWN_TOTAL)
+      {
+         *pPara << _T("Total permissible hold down force = ");
+      }
+      else
+      {
+         *pPara << _T("Permissible hold down force per strand = ");
+      }
+      *pPara << force.SetValue(f) << rptNewLine;
+      *pPara << _T("The hold down force includes ") << percentage.SetValue(fr) << _T(" friction") << rptNewLine;
    }
    else
    {
-      *pPara << _T("Max. hold down force in casting yard  is not checked") << rptNewLine;
+      *pPara << _T("Max. hold down force in casting yard is not checked") << rptNewLine;
+   }
+
+   pSpecEntry->GetPlantHandlingWeightLimit(&do_check, &f);
+   if (do_check)
+   {
+      *pPara << _T("Max. girder weight in casting yard = ") << force.SetValue(f) << rptNewLine;
+   }
+   else
+   {
+      *pPara << _T("Max. girder weight in casting yard is not checked") << rptNewLine;
    }
 
    int method = pSpecEntry->GetCuringMethod();

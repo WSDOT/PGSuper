@@ -85,7 +85,7 @@ void SortDebondLevels(std::vector<DebondLevelType>& rDebondLevelsAtSections)
 // starting default to use about 2/3 straight and 1/3 harped, and if not possible; use whatever fits
 static const Float64 DefaultHarpedRatio = 1.0/3.0;
 
-pgsStrandDesignTool::pgsStrandDesignTool(SHARED_LOGFILE lf):
+pgsStrandDesignTool::pgsStrandDesignTool(SHARED_LOGFILE lf) :
 LOGFILE(lf),
 m_pArtifact(nullptr),
 m_pBroker(nullptr),
@@ -94,6 +94,8 @@ m_DoDesignForStrandSlope(false),
 m_AllowableStrandSlope(0.0),
 m_DoDesignForHoldDownForce(false),
 m_AllowableHoldDownForce(0.0),
+m_HoldDownFriction(0.0),
+m_bTotalHoldDownForce(true),
 m_MinimumFinalMzEccentricity(Float64_Max),
 m_HarpedRatio(DefaultHarpedRatio),
 m_MinPermanentStrands(0),
@@ -1343,49 +1345,17 @@ bool pgsStrandDesignTool::AdjustForHoldDownForce()
       return true;
    }
 
+   GET_IFACE(IBridge, pBridge);
+   Float64 Ls = pBridge->GetSegmentLength(m_SegmentKey);
+
    // could use interface to get hdf directly, but need raw values to adjust
    const GDRCONFIG& config = GetSegmentConfiguration();
 
-   GET_IFACE(IPointOfInterest,pPOI);
-   PoiList vPOI;
-   pPOI->GetPointsOfInterest(m_SegmentKey, POI_HARPINGPOINT, &vPOI);
-
-   // no hold down force if there aren't any harped strands
-   if ( vPOI.size() == 0 )
-   {
-      ATLASSERT(false); // we have harped strands and no harping points?
-      return false;
-   }
-
-   Float64 maxHFT = 0;
    Float64 slope; // slope associated with max hold down force
-   Float64 strand_force; // strand force associated with max hold down force
-   pgsPointOfInterest poi; 
-   GET_IFACE(IStrandGeometry,pStrandGeom);
    GET_IFACE(IPretensionForce,pPrestressForce);
-   GET_IFACE(IIntervals,pIntervals);
-   IntervalIndexType stressStrandsIntervalIdx = pIntervals->GetStressStrandInterval(m_SegmentKey);
-
-   for ( const pgsPointOfInterest& thisPOI : vPOI)
-   {
-      Float64 s = pStrandGeom->GetAvgStrandSlope( thisPOI, &config);
-      s = fabs(s); // slope could be + or -
-      LOG(_T("Average Strand Slope = 1 : ") << s);
-
-      // NOTE: May want to add friction for hold down force...
-      Float64 f = pPrestressForce->GetPrestressForce(thisPOI,pgsTypes::Harped,stressStrandsIntervalIdx,pgsTypes::Start/*pgsTypes::Jacking*/,&config);
-      LOG(_T("PS Force in harped strands ") << ::ConvertFromSysUnits(f,unitMeasure::Kip) << _T(" kip"));
-
-      // finally, the hold down force
-      Float64 hft = f / sqrt( 1*1 + s*s);
-      if ( maxHFT < hft )
-      {
-         maxHFT = hft;
-         slope = s;
-         strand_force = f;
-         poi = thisPOI;
-      }
-   }
+   pgsPointOfInterest poi;
+   Float64 maxHFT = pPrestressForce->GetHoldDownForce(m_SegmentKey, m_bTotalHoldDownForce, &slope, &poi, &config);
+   Float64 strand_force = maxHFT/(1+m_HoldDownFriction); // strand force associated with max hold down force
 
    LOG(_T("Maximum HD ") << ::ConvertFromSysUnits(m_AllowableHoldDownForce,unitMeasure::Kip) << _T(" kip"));
    LOG(_T("Actual  HD ") << ::ConvertFromSysUnits(maxHFT,unitMeasure::Kip) << _T(" kip"));
@@ -1405,8 +1375,9 @@ bool pgsStrandDesignTool::AdjustForHoldDownForce()
       LOG(_T("Current HP2 offset = ")<< ::ConvertFromSysUnits(config.PrestressConfig.HpOffset[pgsTypes::metEnd],unitMeasure::Inch) << _T(" in"));
       LOG(_T("Current End offset = ")<< ::ConvertFromSysUnits(config.PrestressConfig.EndOffset[pgsTypes::metEnd],unitMeasure::Inch) << _T(" in"));
 
-      pgsTypes::MemberEndType endType = (poi == vPOI.front() ? pgsTypes::metStart : pgsTypes::metEnd);
+      pgsTypes::MemberEndType endType = (poi.GetDistFromStart() < Ls/2 ? pgsTypes::metStart : pgsTypes::metEnd);
 
+      GET_IFACE(IStrandGeometry, pStrandGeom);
       if ( !AdjustStrandsForSlope(sl_reqd, slope, endType, nh, pStrandGeom) )
       {
          LOG(_T("** DESIGN FAILED ** We cannot adjust Strands to design for allowable hold down"));
@@ -3691,7 +3662,9 @@ void pgsStrandDesignTool::InitHarpedPhysicalBounds(const matPsStrand* pstrand)
    }
 
    // hold down
-   pSpecEntry->GetHoldDownForce(&bCheck,&bDesign,&m_AllowableHoldDownForce);
+   int holdDownForceType;
+   pSpecEntry->GetHoldDownForce(&bCheck,&bDesign,&holdDownForceType,&m_AllowableHoldDownForce,&m_HoldDownFriction);
+   m_bTotalHoldDownForce = (holdDownForceType == HOLD_DOWN_TOTAL);
 
    m_DoDesignForHoldDownForce = bDesign && nh_max>0;
 

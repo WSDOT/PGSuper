@@ -529,6 +529,7 @@
     <ClCompile Include="PGSuperTitlePageBuilder.cpp" />
     <ClCompile Include="PierGeometryChapterBuilder.cpp" />
     <ClCompile Include="PierReactionChapterBuilder.cpp" />
+    <ClCompile Include="PlantHandlingCheck.cpp" />
     <ClCompile Include="PointOfInterestChapterBuilder.cpp" />
     <ClCompile Include="PosttensionStressTable.cpp" />
     <ClCompile Include="PrestressForceChapterBuilder.cpp" />
@@ -708,6 +709,7 @@
     <ClInclude Include="..\Include\Reporting\PGSuperTitlePageBuilder.h" />
     <ClInclude Include="..\Include\Reporting\PierGeometryChapterBuilder.h" />
     <ClInclude Include="..\Include\Reporting\PierReactionChapterBuilder.h" />
+    <ClInclude Include="..\Include\Reporting\PlantHandlingCheck.h" />
     <ClInclude Include="..\Include\Reporting\PointOfInterestChapterBuilder.h" />
     <ClInclude Include="..\Include\Reporting\PosttensionStressTable.h" />
     <ClInclude Include="..\Include\Reporting\PrestressForceChapterBuilder.h" />

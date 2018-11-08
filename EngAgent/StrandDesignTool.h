@@ -702,6 +702,8 @@ private:
    Float64 m_AllowableStrandSlope;
    bool m_DoDesignForHoldDownForce;
    Float64 m_AllowableHoldDownForce;
+   Float64 m_HoldDownFriction;
+   bool m_bTotalHoldDownForce;
 
    bool AdjustForStrandSlope();
    bool AdjustForHoldDownForce();

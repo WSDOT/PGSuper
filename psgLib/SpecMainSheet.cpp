@@ -1221,27 +1221,44 @@ void CSpecMainSheet::ExchangeDesignData(CDataExchange* pDX)
 	DDX_Check_Bool(pDX, IDC_CHECK_HD,  m_Entry.m_DoCheckHoldDown);
 	DDX_Check_Bool(pDX, IDC_DESIGN_HD, m_Entry.m_DoDesignHoldDown);
 
+   DDX_CBIndex(pDX, IDC_HOLD_DOWN_FORCE_TYPE, m_Entry.m_HoldDownForceType);
+
    DDX_UnitValueAndTag(pDX, IDC_HOLD_DOWN_FORCE, IDC_HOLD_DOWN_FORCE_UNITS, m_Entry.m_HoldDownForce, pDisplayUnits->GeneralForce );
    if (m_Entry.m_DoCheckHoldDown)
    {
       DDV_UnitValueGreaterThanZero(pDX, IDC_HOLD_DOWN_FORCE,m_Entry.m_HoldDownForce, pDisplayUnits->GeneralForce );
    }
+   DDX_Percentage(pDX, IDC_FRICTION, m_Entry.m_HoldDownFriction);
 
    // Harped Strand Slope
 	DDX_Check_Bool(pDX, IDC_CHECK_SLOPE,  m_Entry.m_DoCheckStrandSlope);
 	DDX_Check_Bool(pDX, IDC_DESIGN_SLOPE, m_Entry.m_DoDesignStrandSlope);
 
 	DDX_Text(pDX, IDC_STRAND_SLOPE_05, m_Entry.m_MaxSlope05);
-   if (m_Entry.m_DoCheckStrandSlope) 
+   if (m_Entry.m_DoCheckStrandSlope)
+   {
       DDV_NonNegativeDouble(pDX, IDC_STRAND_SLOPE_05, m_Entry.m_MaxSlope05);
+   }
 
 	DDX_Text(pDX, IDC_STRAND_SLOPE_06, m_Entry.m_MaxSlope06);
-   if (m_Entry.m_DoCheckStrandSlope) 
+   if (m_Entry.m_DoCheckStrandSlope)
+   {
       DDV_NonNegativeDouble(pDX, IDC_STRAND_SLOPE_06, m_Entry.m_MaxSlope06);
+   }
 
 	DDX_Text(pDX, IDC_STRAND_SLOPE_07, m_Entry.m_MaxSlope07);
-   if (m_Entry.m_DoCheckStrandSlope) 
+   if (m_Entry.m_DoCheckStrandSlope)
+   {
       DDV_NonNegativeDouble(pDX, IDC_STRAND_SLOPE_07, m_Entry.m_MaxSlope07);
+   }
+   
+   // Handling Weight
+   DDX_Check_Bool(pDX, IDC_CHECK_HANDLING_WEIGHT, m_Entry.m_bCheckHandlingWeightLimit);
+   DDX_UnitValueAndTag(pDX, IDC_HANDLING_WEIGHT, IDC_HANDLING_WEIGHT_UNIT, m_Entry.m_HandlingWeightLimit, pDisplayUnits->GeneralForce);
+   if (m_Entry.m_bCheckHandlingWeightLimit)
+   {
+      DDV_UnitValueGreaterThanZero(pDX, IDC_HANDLING_WEIGHT, m_Entry.m_HandlingWeightLimit, pDisplayUnits->GeneralForce);
+   }
 
    // Splitting Resistance
 	DDX_Check_Bool(pDX, IDC_CHECK_SPLITTING,  m_Entry.m_DoCheckSplitting);

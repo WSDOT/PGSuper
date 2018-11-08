@@ -80,6 +80,7 @@ BEGIN_MESSAGE_MAP(CSpecDesignPage, CPropertyPage)
    ON_BN_CLICKED(IDC_CHECK_BOTTOM_FLANGE_CLEARANCE, &CSpecDesignPage::OnBnClickedCheckBottomFlangeClearance)
    ON_BN_CLICKED(IDC_CHECK_INCLINDED_GIRDER, &CSpecDesignPage::OnBnClickedCheckInclindedGirder)
    ON_BN_CLICKED(IDC_LL_DEFLECTION, &CSpecDesignPage::OnBnClickedLlDeflection)
+   ON_BN_CLICKED(IDC_CHECK_HANDLING_WEIGHT, &CSpecDesignPage::OnBnClickedCheckHandlingWeight)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -104,6 +105,10 @@ BOOL CSpecDesignPage::OnInitDialog()
       VERIFY(sl07.LoadString(IDS_SLOPE_O7_US));
    }
 
+   CComboBox* pcbHDFT = (CComboBox*)GetDlgItem(IDC_HOLD_DOWN_FORCE_TYPE);
+   pcbHDFT->AddString(_T("Total Hold Down Force"));
+   pcbHDFT->AddString(_T("Hold Down Force per Strand"));
+
    CPropertyPage::OnInitDialog();
 
    OnCheckA();
@@ -117,6 +122,10 @@ BOOL CSpecDesignPage::OnInitDialog()
    OnBnClickedIsSupportLessThan();
 
    OnBnClickedCheckBottomFlangeClearance();
+
+   OnBnClickedLlDeflection();
+
+   OnBnClickedCheckHandlingWeight();
 
 	return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE
@@ -166,7 +175,7 @@ void CSpecDesignPage::OnCheckHauling()
 
 void CSpecDesignPage::OnCheckHd() 
 {
-   int list[]={IDC_STATIC_HD,IDC_HOLD_DOWN_FORCE,IDC_HOLD_DOWN_FORCE_UNITS,-1};
+   int list[]={ IDC_HOLD_DOWN_FORCE_TYPE,IDC_HOLD_DOWN_FORCE,IDC_HOLD_DOWN_FORCE_UNITS,IDC_FRICTION_LABEL,IDC_FRICTION,IDC_FRICTION_UNIT,-1};
 
    CheckDesignCtrl(IDC_CHECK_HD, IDC_DESIGN_HD, list, this);
 }
@@ -263,4 +272,11 @@ void CSpecDesignPage::OnBnClickedLlDeflection()
    BOOL bEnable = IsDlgButtonChecked(IDC_LL_DEFLECTION);
    GetDlgItem(IDC_LL_DEF_STATIC)->EnableWindow(bEnable);
    GetDlgItem(IDC_DEFLECTION_LIMIT)->EnableWindow(bEnable);
+}
+
+void CSpecDesignPage::OnBnClickedCheckHandlingWeight()
+{
+   BOOL bEnable = IsDlgButtonChecked(IDC_CHECK_HANDLING_WEIGHT);
+   GetDlgItem(IDC_HANDLING_WEIGHT)->EnableWindow(bEnable);
+   GetDlgItem(IDC_HANDLING_WEIGHT_UNIT)->EnableWindow(bEnable);
 }

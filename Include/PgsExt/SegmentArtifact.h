@@ -30,6 +30,7 @@
 #include <PgsExt\PoiArtifactKey.h>
 #include <PgsExt\StrandSlopeArtifact.h>
 #include <PgsExt\HoldDownForceArtifact.h>
+#include <PgsExt\PlantHandlingWeightArtifact.h>
 #include <PgsExt\ConstructabilityArtifact.h>
 #include <PgsExt\SegmentStabilityArtifact.h>
 #include <PgsExt\PrecastIGirderDetailingArtifact.h>
@@ -90,6 +91,10 @@ public:
    void SetHoldDownForceArtifact(const pgsHoldDownForceArtifact& artifact);
    const pgsHoldDownForceArtifact* GetHoldDownForceArtifact() const;
    pgsHoldDownForceArtifact* GetHoldDownForceArtifact();
+
+   void SetPlantHandlingWeightArtifact(const pgsPlantHandlingWeightArtifact& artifact);
+   const pgsPlantHandlingWeightArtifact* GetPlantHandlingWeightArtifact() const;
+   pgsPlantHandlingWeightArtifact* GetPlantHandlingWeightArtifact();
 
    void AddFlexuralStressArtifact(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::StressType stress,
                                   const pgsFlexuralStressArtifact& artifact);
@@ -184,6 +189,7 @@ private:
    pgsStrandStressArtifact     m_StrandStressArtifact;
    pgsStrandSlopeArtifact      m_StrandSlopeArtifact;
    pgsHoldDownForceArtifact    m_HoldDownForceArtifact;
+   pgsPlantHandlingWeightArtifact m_PlantHandlingWeightArtifact;
    pgsSegmentStabilityArtifact m_StabilityArtifact;
 
    struct StressKey

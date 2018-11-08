@@ -1339,9 +1339,9 @@ Float64 CEngAgentImp::GetStrandBondFactor(const pgsPointOfInterest& poi,StrandIn
 }
 
 //-----------------------------------------------------------------------------
-Float64 CEngAgentImp::GetHoldDownForce(const CSegmentKey& segmentKey,const GDRCONFIG* pConfig) const
+Float64 CEngAgentImp::GetHoldDownForce(const CSegmentKey& segmentKey,bool bTotal,Float64* pSlope,pgsPointOfInterest* pPoi,const GDRCONFIG* pConfig) const
 {
-   return m_PsForceEngineer.GetHoldDownForce(segmentKey,pConfig);
+   return m_PsForceEngineer.GetHoldDownForce(segmentKey,bTotal,pSlope,pPoi,pConfig);
 }
 
 Float64 CEngAgentImp::GetHorizHarpedStrandForce(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime,const GDRCONFIG* pConfig) const
