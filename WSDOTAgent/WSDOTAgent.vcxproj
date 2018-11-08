@@ -85,37 +85,37 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="..\..\BridgeLink\BridgeLink.props" />
     <Import Project="..\..\WBFL\WBFL.props" />
-    <Import Project="..\..\BridgeLink\XSD.props" />
+    <Import Project="..\..\WBFL\XSD.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="..\..\BridgeLink\BridgeLink.props" />
     <Import Project="..\..\WBFL\WBFL.props" />
-    <Import Project="..\..\BridgeLink\XSD.props" />
+    <Import Project="..\..\WBFL\XSD.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="..\..\BridgeLink\BridgeLink.props" />
     <Import Project="..\..\WBFL\WBFL.props" />
-    <Import Project="..\..\BridgeLink\XSD.props" />
+    <Import Project="..\..\WBFL\XSD.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Profile|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="..\..\BridgeLink\BridgeLink.props" />
     <Import Project="..\..\WBFL\WBFL.props" />
-    <Import Project="..\..\BridgeLink\XSD.props" />
+    <Import Project="..\..\WBFL\XSD.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="..\..\BridgeLink\BridgeLink.props" />
     <Import Project="..\..\WBFL\WBFL.props" />
-    <Import Project="..\..\BridgeLink\XSD.props" />
+    <Import Project="..\..\WBFL\XSD.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="..\..\BridgeLink\BridgeLink.props" />
     <Import Project="..\..\WBFL\WBFL.props" />
-    <Import Project="..\..\BridgeLink\XSD.props" />
+    <Import Project="..\..\WBFL\XSD.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
@@ -129,7 +129,6 @@
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
     <CodeAnalysisRules />
     <CodeAnalysisRuleAssemblies />
-    <IncludePath>F:\boost_1_63_0;c:\Program Files\Rogue Wave\Stingray Studio 10.4\Include;c:\Program Files\Rogue Wave\Stingray Studio 10.4\Regex\Include;c:\Program Files\Rogue Wave\Stingray Studio 10.4\RWUXTheme\Include;C:\Program Files\AASHTOWare\VirtisOpis63\include;F:\Apache\xalan-builds\XALANCPKG-11-31-X86-VC90\include;F:\CodeSynthesis XSD 3.3\include;F:\Coin3d\include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <OutDir>\ARP\BridgeLink\RegFreeCOM\$(Platform)\$(Configuration)\</OutDir>
@@ -148,7 +147,6 @@
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
     <CodeAnalysisRules />
     <CodeAnalysisRuleAssemblies />
-    <IncludePath>F:\boost_1_63_0;c:\Program Files\Rogue Wave\Stingray Studio 10.4\Include;c:\Program Files\Rogue Wave\Stingray Studio 10.4\Regex\Include;c:\Program Files\Rogue Wave\Stingray Studio 10.4\RWUXTheme\Include;C:\Program Files\AASHTOWare\VirtisOpis63\include;F:\Apache\xalan-builds\XALANCPKG-11-31-X86-VC90\include;F:\CodeSynthesis XSD 3.3\include;F:\Coin3d\include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <OutDir>\ARP\BridgeLink\RegFreeCOM\$(Platform)\$(Configuration)\</OutDir>
@@ -194,7 +192,7 @@
     <ClCompile>
       <AdditionalOptions>-Zm120 %(AdditionalOptions)</AdditionalOptions>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>.\;..\Include;\ARP\WBFL\Include;\ARP\WBFL\Include\$(Platform);\ARP\BridgeLink\Include;\ARP\PGSuper\Include\Plugins;\ARP\BridgeLinkBEToolbox\BEToolboxXML;\ARP\OpenBridgeML\Include;\ARP\OpenBridgeML\Schema;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\;..\Include;\ARP\WBFL\Include;\ARP\WBFL\Include\$(Platform);\ARP\WBFL\UnitServer\Schema;\ARP\BridgeLink\Include;\ARP\PGSuper\Include\Plugins;\ARP\BEToolbox\BEToolboxXML;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_WINDOWS;_DEBUG;_USRDLL;ENABLE_LOGGING;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
@@ -240,7 +238,7 @@
     <ClCompile>
       <AdditionalOptions>-Zm120 %(AdditionalOptions)</AdditionalOptions>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>.\;..\Include;\ARP\WBFL\Include;\ARP\WBFL\Include\$(Platform);\ARP\BridgeLink\Include;\ARP\PGSuper\Include\Plugins;\ARP\BridgeLinkBEToolbox\BEToolboxXML;\ARP\OpenBridgeML\Include;\ARP\OpenBridgeML\Schema;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\;..\Include;\ARP\WBFL\Include;\ARP\WBFL\Include\$(Platform);\ARP\WBFL\UnitServer\Schema;\ARP\BridgeLink\Include;\ARP\PGSuper\Include\Plugins;\ARP\BEToolbox\BEToolboxXML;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_WINDOWS;_DEBUG;_USRDLL;ENABLE_LOGGING;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
@@ -286,7 +284,7 @@
     </Midl>
     <ClCompile>
       <AdditionalOptions>-Zm120 %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalIncludeDirectories>.\;..\Include;\ARP\WBFL\Include;\ARP\WBFL\Include\$(Platform);\ARP\BridgeLink\Include;\ARP\PGSuper\Include\Plugins;\ARP\BridgeLinkBEToolbox\BEToolboxXML;\ARP\OpenBridgeML\Include;\ARP\OpenBridgeML\Schema;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\;..\Include;\ARP\WBFL\Include;\ARP\WBFL\Include\$(Platform);\ARP\WBFL\UnitServer\Schema;\ARP\BridgeLink\Include;\ARP\PGSuper\Include\Plugins;\ARP\BEToolbox\BEToolboxXML;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <PrecompiledHeader>Use</PrecompiledHeader>
@@ -332,7 +330,7 @@
     </Midl>
     <ClCompile>
       <AdditionalOptions>-Zm120 %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalIncludeDirectories>.\;..\Include;\ARP\WBFL\Include;\ARP\WBFL\Include\$(Platform);\ARP\BridgeLink\Include;\ARP\PGSuper\Include\Plugins;\ARP\BridgeLinkBEToolbox\BEToolboxXML;\ARP\OpenBridgeML\Include;\ARP\OpenBridgeML\Schema;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\;..\Include;\ARP\WBFL\Include;\ARP\WBFL\Include\$(Platform);\ARP\WBFL\UnitServer\Schema;\ARP\BridgeLink\Include;\ARP\PGSuper\Include\Plugins;\ARP\BEToolbox\BEToolboxXML;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <PrecompiledHeader>Use</PrecompiledHeader>
@@ -385,7 +383,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <WholeProgramOptimization>true</WholeProgramOptimization>
-      <AdditionalIncludeDirectories>.\;..\Include;\ARP\WBFL\Include;\ARP\WBFL\Include\$(Platform);\ARP\BridgeLink\Include;\ARP\PGSuper\Include\Plugins;\ARP\BridgeLinkBEToolbox\BEToolboxXML;\ARP\OpenBridgeML\Include;\ARP\OpenBridgeML\Schema;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\;..\Include;\ARP\WBFL\Include;\ARP\WBFL\Include\$(Platform);\ARP\WBFL\UnitServer\Schema;\ARP\BridgeLink\Include;\ARP\PGSuper\Include\Plugins;\ARP\BEToolbox\BEToolboxXML;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <PrecompiledHeader>Use</PrecompiledHeader>
@@ -432,7 +430,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <WholeProgramOptimization>true</WholeProgramOptimization>
-      <AdditionalIncludeDirectories>.\;..\Include;\ARP\WBFL\Include;\ARP\WBFL\Include\$(Platform);\ARP\BridgeLink\Include;\ARP\PGSuper\Include\Plugins;\ARP\BridgeLinkBEToolbox\BEToolboxXML;\ARP\OpenBridgeML\Include;\ARP\OpenBridgeML\Schema;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\;..\Include;\ARP\WBFL\Include;\ARP\WBFL\Include\$(Platform);\ARP\WBFL\UnitServer\Schema;\ARP\BridgeLink\Include;\ARP\PGSuper\Include\Plugins;\ARP\BEToolbox\BEToolboxXML;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <PrecompiledHeader>Use</PrecompiledHeader>

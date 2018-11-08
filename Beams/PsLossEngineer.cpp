@@ -31,7 +31,7 @@
 #include <IFace\GirderHandlingSpecCriteria.h>
 #include <IFace\Intervals.h>
 
-#include "..\PGSuperException.h"
+#include <PGSuperException.h>
 
 #include <PsgLib\SpecLibraryEntry.h>
 #include <PsgLib\GirderLibraryEntry.h>

@@ -23,7 +23,7 @@
 
 #include "StdAfx.h"
 #include "MomentCapacityEngineer.h"
-#include "..\PGSuperException.h"
+#include <PGSuperException.h>
 
 #include <EAF\EAFAutoProgress.h>
 

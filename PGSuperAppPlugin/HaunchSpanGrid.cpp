@@ -23,7 +23,7 @@
 // HaunchSpanGrid.cpp : implementation file
 //
 
-#include "PGSuperAppPlugin\stdafx.h"
+#include "stdafx.h"
 #include "HaunchSpanGrid.h"
 
 #include <System\Tokenizer.h>

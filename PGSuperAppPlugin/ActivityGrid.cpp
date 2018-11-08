@@ -23,8 +23,8 @@
 // ActivityGrid.cpp : implementation file
 //
 
-#include "PGSuperAppPlugin\stdafx.h"
-#include "PGSuperAppPlugin\resource.h"
+#include "stdafx.h"
+#include "resource.h"
 #include "ActivityGrid.h"
 
 #include <IFace\DocumentType.h>

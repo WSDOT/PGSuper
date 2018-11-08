@@ -23,10 +23,10 @@
 // SplicedGirderGeneralPage.cpp : implementation file
 //
 
-#include "PGSuperAppPlugin\stdafx.h"
+#include "stdafx.h"
 #include "PGSuperAppPlugin.h"
 #include "SplicedGirderGeneralPage.h"
-#include "..\SplicedGirderDescDlg.h"
+#include "SplicedGirderDescDlg.h"
 #include <LRFD\StrandPool.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <EAF\EAFDocument.h>

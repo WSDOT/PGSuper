@@ -23,14 +23,14 @@
 // ClosureJointGeometryPage.cpp : implementation file
 //
 
-#include "PGSuperAppPlugin\stdafx.h"
+#include "stdafx.h"
 #include "PGSuperAppPlugin.h"
-#include "PGSuperAppPlugin\Resource.h"
+#include "resource.h"
 #include "ClosureJointGeometryPage.h"
 
 #include "TemporarySupportDlg.h"
 #include "PierDetailsDlg.h"
-#include "PGSuperAppPlugin\TimelineEventDlg.h"
+#include "TimelineEventDlg.h"
 
 #include <EAF\EAFDisplayUnits.h>
 #include <EAF\EAFDocument.h>

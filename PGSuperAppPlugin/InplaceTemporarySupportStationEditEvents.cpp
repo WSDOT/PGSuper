@@ -20,8 +20,8 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-#include "PGSuperAppPlugin\stdafx.h"
-#include "PGSuperAppPlugin\PGSuperApp.h"
+#include "stdafx.h"
+#include "PGSuperApp.h"
 #include "InplaceTemporarySupportStationEditEvents.h"
 #include "EditTemporarySupportStation.h"
 

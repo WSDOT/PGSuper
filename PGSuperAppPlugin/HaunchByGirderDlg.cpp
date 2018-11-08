@@ -23,8 +23,8 @@
 // HaunchSame4Bridge.cpp : implementation file
 //
 
-#include "PGSuperAppPlugin\stdafx.h"
-#include "PGSuperAppPlugin\resource.h"
+#include "stdafx.h"
+#include "resource.h"
 #include "HaunchByGirderDlg.h"
 
 #ifdef _DEBUG

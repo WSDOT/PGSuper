@@ -23,7 +23,7 @@
 // UBeamDistFactorEngineer.cpp : Implementation of CUBeamDistFactorEngineer
 #include "stdafx.h"
 #include "UBeamDistFactorEngineer.h"
-#include "..\PGSuperException.h"
+#include <PGSuperException.h>
 #include <Units\SysUnits.h>
 #include <PsgLib\TrafficBarrierEntry.h>
 #include <PsgLib\SpecLibraryEntry.h>

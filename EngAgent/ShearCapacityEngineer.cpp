@@ -24,7 +24,7 @@
 #include "ShearCapacityEngineer.h"
 #include <ReinforcedConcrete\ReinforcedConcrete.h>
 #include <Units\SysUnits.h>
-#include "..\PGSuperException.h"
+#include <PGSuperException.h>
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
 #include <IFace\AnalysisResults.h>

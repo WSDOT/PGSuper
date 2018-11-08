@@ -32,7 +32,7 @@
 
 #include <EAF\EAFDisplayUnits.h>
 
-#include "..\PGSuperException.h"
+#include <PGSuperException.h>
 
 #include <PgsExt\StatusItem.h>
 #include <PgsExt\GirderModelFactory.H>

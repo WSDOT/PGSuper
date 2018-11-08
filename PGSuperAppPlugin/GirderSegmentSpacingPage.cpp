@@ -23,7 +23,7 @@
 // GirderSegmentSpacingPage.cpp : implementation file
 //
 
-#include "PGSuperAppPlugin\stdafx.h"
+#include "stdafx.h"
 #include "resource.h"
 #include "GirderSegmentSpacingPage.h"
 #include "TemporarySupportDlg.h"

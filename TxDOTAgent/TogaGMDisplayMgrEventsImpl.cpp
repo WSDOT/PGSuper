@@ -25,7 +25,6 @@
 
 #include "stdafx.h"
 #include "resource.h"
-//#include "PGSuperAppPlugin\PGSuperApp.h"
 #include "TogaGMDisplayMgrEventsImpl.h"
 #include "mfcdual.h"
 

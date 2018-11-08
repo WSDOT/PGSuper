@@ -25,7 +25,7 @@
 // InsertSpanDlg.h : header file
 //
 
-#include "PGSuperAppPlugin\resource.h"
+#include "resource.h"
 #include <PgsExt\BridgeDescription2.h>
 
 /////////////////////////////////////////////////////////////////////////////

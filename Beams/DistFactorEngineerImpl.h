@@ -27,7 +27,7 @@
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
 #include <IFace\StatusCenter.h>
-#include "..\PGSuperException.h"
+#include <PGSuperException.h>
 #include <PgsExt\StatusItem.h>
 #include <PgsExt\BridgeDescription2.h>
 #include <Beams\Interfaces.h>

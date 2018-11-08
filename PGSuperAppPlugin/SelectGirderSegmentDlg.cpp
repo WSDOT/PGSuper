@@ -23,10 +23,10 @@
 // SelectGirderSegmentDlg.cpp : implementation file
 //
 
-#include "PGSuperAppPlugin\stdafx.h"
-#include "PGSuperAppPlugin\PGSuperApp.h"
-#include "PGSuperAppPlugin\Resource.h"
-#include "PGSuperAppPlugin\SelectGirderSegmentDlg.h"
+#include "stdafx.h"
+#include "PGSuperApp.h"
+#include "resource.h"
+#include "SelectGirderSegmentDlg.h"
 
 
 #include <IFace\Project.h>

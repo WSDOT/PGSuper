@@ -23,8 +23,8 @@
 // InsertSpanDlg.cpp : implementation file
 //
 
-#include "PGSuperAppPlugin\stdafx.h"
-#include "PGSuperAppPlugin\PGSuperApp.h"
+#include "stdafx.h"
+#include "PGSuperApp.h"
 #include "InsertSpanDlg.h"
 #include "TimelineEventDlg.h"
 #include <EAF\EAFDisplayUnits.h>

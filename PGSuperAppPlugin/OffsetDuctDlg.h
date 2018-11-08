@@ -1,7 +1,7 @@
 #pragma once
 
 #include "OffsetDuctGrid.h"
-#include "PGSuperAppPlugin\SplicedGirderGeneralPage.h"
+#include "SplicedGirderGeneralPage.h"
 
 // COffsetDuctDlg dialog
 

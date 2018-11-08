@@ -26,7 +26,7 @@
 #include "GirderSegmentStrandsPage.h"
 #include "GirderSegmentLongitudinalRebarPage.h"
 #include "GirderSegmentStirrupsPage.h"
-#include "..\BridgeDescLiftingPage.h"
+#include "BridgeDescLiftingPage.h"
 
 #include <IFace\ExtendUI.h>
 #include <PgsExt\SplicedGirderData.h>

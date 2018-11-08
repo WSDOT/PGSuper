@@ -27,7 +27,7 @@
 #include <PgsExt\GirderLabel.h>
 #include <PgsExt\StatusItem.h>
 
-#include "..\PGSuperException.h"
+#include <PGSuperException.h>
 
 #include "BarrierSidewalkLoadDistributionTool.h"
 

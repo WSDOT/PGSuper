@@ -25,7 +25,7 @@
 #include "AnalysisAgent.h"
 #include "AnalysisAgentImp.h"
 #include "StatusItems.h"
-#include "..\PGSuperException.h"
+#include <PGSuperException.h>
 
 #include <IFace\Intervals.h>
 #include <IFace\GirderHandling.h>

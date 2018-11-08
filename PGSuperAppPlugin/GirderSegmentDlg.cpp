@@ -23,7 +23,7 @@
 // GirderSegmentDlg.cpp : implementation file
 //
 
-#include "PGSuperAppPlugin\stdafx.h"
+#include "stdafx.h"
 #include "PGSuperAppPlugin.h"
 #include "GirderSegmentDlg.h"
 

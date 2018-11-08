@@ -1,7 +1,7 @@
 // GirderSegmentStirrupsPage.cpp : implementation file
 //
 
-#include "PGSuperAppPlugin\stdafx.h"
+#include "stdafx.h"
 #include "PGSuperAppPlugin.h"
 #include "GirderSegmentStirrupsPage.h"
 #include "GirderSegmentDlg.h"

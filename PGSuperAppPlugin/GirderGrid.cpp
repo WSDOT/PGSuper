@@ -23,7 +23,7 @@
 // GirderGrid.cpp : implementation file
 //
 
-#include "PGSuperAppPlugin\stdafx.h"
+#include "stdafx.h"
 #include "GirderGrid.h"
 #include "SplicedGirderDescDlg.h"
 #include "GirderDescDlg.h"

@@ -57,7 +57,7 @@
 #include <PgsExt\StatusItem.h>
 
 
-#include "..\PGSuperException.h"
+#include <PGSuperException.h>
 
 #include <Units\SysUnits.h>
 

@@ -1,0 +1,10 @@
+; LibraryMgrPluginExample.def : Declares the module parameters.
+
+LIBRARY      "LibraryMgrPluginExample.DLL"
+
+EXPORTS
+	DllCanUnloadNow		PRIVATE
+	DllGetClassObject	PRIVATE
+	DllRegisterServer	PRIVATE
+	DllUnregisterServer	PRIVATE
+;	DllInstall		PRIVATE

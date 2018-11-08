@@ -22,7 +22,7 @@
 
 #pragma once
 
-#include "PGSuperAppPlugin\resource.h"
+#include "resource.h"
 #include "GirderGrid.h"
 #include "DuctGrid.h"
 #include "SlabOffsetGrid.h"

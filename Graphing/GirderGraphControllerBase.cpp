@@ -25,7 +25,7 @@
 #include "GirderGraphControllerBase.h"
 #include <Graphing\GirderGraphBuilderBase.h>
 
-#include "Hints.h"
+#include <Hints.h>
 
 #include <EAF\EAFUtilities.h>
 #include <IFace\DocumentType.h>

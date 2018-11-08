@@ -23,7 +23,7 @@
 // AssExcessCamberGirderGrid.cpp : implementation file
 //
 
-#include "PGSuperAppPlugin\stdafx.h"
+#include "stdafx.h"
 #include "AssExcessCamberGirderGrid.h"
 
 #include <System\Tokenizer.h>

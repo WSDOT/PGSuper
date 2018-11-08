@@ -26,7 +26,7 @@
 #include "resource.h"
 
 #include <BridgeLink.h>
-#include "..\PGSuperDocBase.h" // for PGSUPER_DOCUMENT_ROOT_NODE_VERSION
+#include "..\PGSuperAppPlugin\PGSuperDocBase.h" // for PGSUPER_DOCUMENT_ROOT_NODE_VERSION
 
 #include "TxDOTOptionalDesignUtilities.h"
 #include "TxDOTOptionalDesignDoc.h"

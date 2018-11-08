@@ -25,7 +25,7 @@
 #include "stdafx.h"
 #include "EngAgent.h"
 #include "EngAgentImp.h"
-#include "..\PGSuperException.h"
+#include <PGSuperException.h>
 
 #include "GirderHandlingChecker.h"
 #include "GirderLiftingChecker.h"

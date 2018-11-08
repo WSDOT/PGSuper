@@ -98,7 +98,7 @@ IDR_PGSPLICEPROJECTIMPORTERAPPPLUGIN REGISTRY                "res\\PGSpliceProje
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
-IDR_PGSUPER             ICON                    "..\\res\\PGSuperDoc.ico"
+IDR_PGSUPER             ICON                    "res\\PGSuperDoc.ico"
 
 IDI_BSS                 ICON                    "res\\bss.ico"
 
@@ -108,83 +108,83 @@ IDI_TXDOT               ICON                    "res\\txdot.ico"
 
 IDI_KDOT                ICON                    "res\\KDOT.ico"
 
-IDR_PGSPLICE            ICON                    "..\\res\\PGSpliceDoc.ico"
+IDR_PGSPLICE            ICON                    "res\\PGSpliceDoc.ico"
 
-IDR_PGSUPER_TEMPLATE_ICON ICON                    "..\\res\\PGSuperTemplate.ico"
+IDR_PGSUPER_TEMPLATE_ICON ICON                    "res\\PGSuperTemplate.ico"
 
-IDR_PGSPLICE_TEMPLATE_ICON ICON                    "..\\res\\PGSpliceTemplate.ico"
+IDR_PGSPLICE_TEMPLATE_ICON ICON                    "res\\PGSpliceTemplate.ico"
 
-IDR_BRIDGEMODELEDITOR   ICON                    "..\\res\\ViewBridge.ico"
+IDR_BRIDGEMODELEDITOR   ICON                    "res\\ViewBridge.ico"
 
-IDR_GIRDERMODELEDITOR   ICON                    "..\\res\\GirderView.ico"
+IDR_GIRDERMODELEDITOR   ICON                    "res\\GirderView.ico"
 
-IDR_ANALYSISRESULTS     ICON                    "..\\res\\AnalysisResultsView.ico"
+IDR_ANALYSISRESULTS     ICON                    "res\\AnalysisResultsView.ico"
 
-IDR_GRAPHING            ICON                    "..\\res\\AnalysisResultsView.ico"
+IDR_GRAPHING            ICON                    "res\\AnalysisResultsView.ico"
 
-IDR_REPORT              ICON                    "..\\res\\ReportView.ico"
+IDR_REPORT              ICON                    "res\\ReportView.ico"
 
-IDR_FACTOROFSAFETY      ICON                    "..\\res\\Stable.ico"
+IDR_FACTOROFSAFETY      ICON                    "res\\Stable.ico"
 
-IDR_EDITLOADS           ICON                    "..\\res\\edit_loa.ico"
+IDR_EDITLOADS           ICON                    "res\\edit_loa.ico"
 
-IDI_DEFAULT_ENTRY       ICON                    "..\\res\\DefaultEntry.ico"
+IDI_DEFAULT_ENTRY       ICON                    "res\\DefaultEntry.ico"
 
-IDI_FOLDER              ICON                    "..\\res\\folder_closed.ico"
+IDI_FOLDER              ICON                    "res\\folder_closed.ico"
 
-IDI_OPEN_FOLDER         ICON                    "..\\res\\folder_open.ico"
+IDI_OPEN_FOLDER         ICON                    "res\\folder_open.ico"
 
-IDI_LIBRARY_MANAGER     ICON                    "..\\res\\library_manager.ico"
+IDI_LIBRARY_MANAGER     ICON                    "res\\library_manager.ico"
 
-IDI_WARNING2            ICON                    "..\\res\\warning2.ico"
+IDI_WARNING2            ICON                    "res\\warning2.ico"
 
-IDI_EDIT_LOADS          ICON                    "..\\res\\edit_loa.ico"
+IDI_EDIT_LOADS          ICON                    "res\\edit_loa.ico"
 
-IDI_POINT_LOAD          ICON                    "..\\res\\point_load.ico"
+IDI_POINT_LOAD          ICON                    "res\\point_load.ico"
 
-IDI_DISTRIBUTED_LOAD    ICON                    "..\\res\\distributed_load.ico"
+IDI_DISTRIBUTED_LOAD    ICON                    "res\\distributed_load.ico"
 
-IDI_MOMENT_LOAD         ICON                    "..\\res\\moment.ico"
+IDI_MOMENT_LOAD         ICON                    "res\\moment.ico"
 
-IDR_PGSUPERPROJECTIMPORTER ICON                    "..\\res\\Bridge2.ico"
+IDR_PGSUPERPROJECTIMPORTER ICON                    "res\\Bridge2.ico"
 
-IDR_PGSPLICEPROJECTIMPORTER ICON                    "..\\res\\Bridge2.ico"
+IDR_PGSPLICEPROJECTIMPORTER ICON                    "res\\Bridge2.ico"
 
-IDI_EDIT_BRIDGE         ICON                    "..\\res\\EditBridge.ico"
+IDI_EDIT_BRIDGE         ICON                    "res\\EditBridge.ico"
 
-IDI_EDIT_GIRDER         ICON                    "..\\res\\EditGirder.ico"
+IDI_EDIT_GIRDER         ICON                    "res\\EditGirder.ico"
 
-IDI_LIVELOAD            ICON                    "..\\res\\LiveLoad.ico"
+IDI_LIVELOAD            ICON                    "res\\LiveLoad.ico"
 
-IDI_RF                  ICON                    "..\\res\\RatingFactor.ico"
+IDI_RF                  ICON                    "res\\RatingFactor.ico"
 
-IDI_COPY_PROPERTIES     ICON                    "..\\res\\CopyProperties.ico"
+IDI_COPY_PROPERTIES     ICON                    "res\\CopyProperties.ico"
 
-IDI_STRANDS             ICON                    "..\\res\\Strands.ico"
+IDI_STRANDS             ICON                    "res\\Strands.ico"
 
-IDI_STRANDS_CG          ICON                    "..\\res\\StrandsCG.ico"
+IDI_STRANDS_CG          ICON                    "res\\StrandsCG.ico"
 
-IDI_DIMENSIONS          ICON                    "..\\res\\Dimensions.ico"
+IDI_DIMENSIONS          ICON                    "res\\Dimensions.ico"
 
-IDI_PROPERTIES          ICON                    "..\\res\\Properties.ico"
+IDI_PROPERTIES          ICON                    "res\\Properties.ico"
 
-IDI_LONGITUDINAL_REINFORCEMENT ICON                    "..\\res\\LongitudinalReinforcement.ico"
+IDI_LONGITUDINAL_REINFORCEMENT ICON                    "res\\LongitudinalReinforcement.ico"
 
-IDI_STIRRUPS            ICON                    "..\\res\\Stirrups.ico"
+IDI_STIRRUPS            ICON                    "res\\Stirrups.ico"
 
-IDI_USER_LOADS          ICON                    "..\\res\\UserLoads.ico"
+IDI_USER_LOADS          ICON                    "res\\UserLoads.ico"
 
-IDI_SCHEMATIC           ICON                    "..\\res\\Schematic.ico"
+IDI_SCHEMATIC           ICON                    "res\\Schematic.ico"
 
-IDI_SECTION_CG          ICON                    "..\\res\\SectionCG.ico"
+IDI_SECTION_CG          ICON                    "res\\SectionCG.ico"
 
-IDI_NORTH               ICON                    "..\\res\\North.ico"
+IDI_NORTH               ICON                    "res\\North.ico"
 
-IDI_LABELS              ICON                    "..\\res\\Labels.ico"
+IDI_LABELS              ICON                    "res\\Labels.ico"
 
-IDI_BRIDGE              ICON                    "..\\res\\Bridge.ico"
+IDI_BRIDGE              ICON                    "res\\Bridge.ico"
 
-IDI_SCHEMATIC_PROFILE   ICON                    "..\\res\\SchematicProfile.ico"
+IDI_SCHEMATIC_PROFILE   ICON                    "res\\SchematicProfile.ico"
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -192,21 +192,21 @@ IDI_SCHEMATIC_PROFILE   ICON                    "..\\res\\SchematicProfile.ico"
 // Bitmap
 //
 
-IDR_PGSUPER_STDTOOLBAR  BITMAP                  "..\\res\\PGSuperToolbar.bmp"
+IDR_PGSUPER_STDTOOLBAR  BITMAP                  "res\\PGSuperToolbar.bmp"
 
-IDR_PGSPLICE_STDTOOLBAR BITMAP                  "..\\res\\PGSpliceToolbar.bmp"
+IDR_PGSPLICE_STDTOOLBAR BITMAP                  "res\\PGSpliceToolbar.bmp"
 
-IDR_LIBTOOLBAR          BITMAP                  "..\\res\\LibraryToolbar.bmp"
+IDR_LIBTOOLBAR          BITMAP                  "res\\LibraryToolbar.bmp"
 
-IDR_HELPTOOLBAR         BITMAP                  "..\\res\\HelpToolbar.bmp"
+IDR_HELPTOOLBAR         BITMAP                  "res\\HelpToolbar.bmp"
 
-IDB_IN_USE              BITMAP                  "..\\res\\LibEntryInUse.bmp"
+IDB_IN_USE              BITMAP                  "res\\LibEntryInUse.bmp"
 
-IDB_IN_USE_AND_READ_ONLY BITMAP                  "..\\res\\LibEntryInUseAndReadOnly.bmp"
+IDB_IN_USE_AND_READ_ONLY BITMAP                  "res\\LibEntryInUseAndReadOnly.bmp"
 
-IDB_READ_ONLY           BITMAP                  "..\\res\\LibEntryReadOnly.bmp"
+IDB_READ_ONLY           BITMAP                  "res\\LibEntryReadOnly.bmp"
 
-IDB_GIRDERDESIGNER      BITMAP                  "..\\res\\GirderDesigner.bmp"
+IDB_GIRDERDESIGNER      BITMAP                  "res\\GirderDesigner.bmp"
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -1682,10 +1682,13 @@ BEGIN
     COMBOBOX        IDC_DECK_EVENT,274,7,152,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     GROUPBOX        "Cross Section",IDC_STATIC,7,25,171,131
     RTEXT           "Gross Depth",IDC_GROSS_DEPTH_LABEL,55,40,47,8
-    EDITTEXT        IDC_GROSS_DEPTH,108,40,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Static",IDC_GROSS_DEPTH_UNIT,154,44,19,8
-    RTEXT           "Overhang Edge Depth",IDC_OVERHANG_DEPTH_LABEL,30,61,72,8
-    EDITTEXT        IDC_OVERHANG_DEPTH,108,60,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    EDITTEXT        IDC_GROSS_DEPTH,108,38,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_GROSS_DEPTH_UNIT,153,41,19,8
+    RTEXT           "Overhang Edge Depth",IDC_OVERHANG_DEPTH_LABEL,14,57,42,19
+    LTEXT           "Left",IDC_LEFT_OVERHANG_DEPTH_LABEL,73,53,13,8
+    LTEXT           "Right",IDC_RIGHT_OVERHANG_DEPTH_LABEL,117,53,18,8
+    EDITTEXT        IDC_LEFT_OVERHANG_DEPTH,64,61,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    EDITTEXT        IDC_RIGHT_OVERHANG_DEPTH,109,61,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "Static",IDC_OVERHANG_DEPTH_UNIT,154,64,19,8
     COMBOBOX        IDC_OVERHANG_TAPER,36,78,129,57,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     CTEXT           "Stay in Place Deck Panel Dimensions",IDC_SIP_LABEL,18,100,151,9,SS_SUNKEN
@@ -3712,8 +3715,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 4,0,10,0
- PRODUCTVERSION 4,0,10,0
+ FILEVERSION 4,0,1,0
+ PRODUCTVERSION 4,0,1,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -3730,12 +3733,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "Washington State Department of Transportation"
             VALUE "FileDescription", "PGSuper"
-            VALUE "FileVersion", "4.0.10.0"
+            VALUE "FileVersion", "4.0.1.0"
             VALUE "InternalName", "PGSuper"
             VALUE "LegalCopyright", "Copyright © 1999-2018, Washington State Department of Transportation, All Rights Reserved"
             VALUE "OriginalFilename", "PGSuperAppPlugin.DLL"
             VALUE "ProductName", "PGSuper"
-            VALUE "ProductVersion", "4.0.10.0"
+            VALUE "ProductVersion", "4.0.1.0"
         END
     END
     BLOCK "VarFileInfo"
@@ -4606,7 +4609,7 @@ END
 // METAFILE
 //
 
-HAULINGOVERHANGS        METAFILE                "..\\res\\HaulingOverhangs.emf"
+HAULINGOVERHANGS        METAFILE                "res\\HaulingOverhangs.emf"
 
 CLOSURE_BRGALONGGDR_ENDALONGGDRFROMBRG METAFILE                "res\\Closure_BrgAlongGdr_EndAlongGdrFromBrg.emf"
 
@@ -5432,6 +5435,14 @@ BEGIN
     IDS_E_FILENOTFOUND      "File %1 was not found"
     IDS_E_READ              "An error has occured while reading %1"
     IDS_E_FORMAT            "%1\n\n %2"
+END
+
+STRINGTABLE
+BEGIN
+    IDS_E_WRITE             "An error has occured while writing to %1"
+    IDS_E_UNSAFESAVE        "PGSuper could not make a backup copy of your last successful save. If an error occurs while saving  your bridge model, your PGSuper file may become corrupt and unrecoverable.\n\n Would  you like to proceed?"
+    IDS_E_SAVERECOVER1      "An error occured while restoring your last sucessful save.  It is highly likely that the file %1 is corrupt.  Try saving your project to another locaion.  If this fails, see %2  for manual recovery instructions."
+    IDS_E_SAVERECOVER2      "An error occured while restoring your last sucessful save. The file %1 no longer exists.  Try saving your project again, preferable  to another locaion.  If this fails, see %2 for manual recovery instructions."
 END
 
 STRINGTABLE

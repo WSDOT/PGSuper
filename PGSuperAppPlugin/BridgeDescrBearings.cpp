@@ -20,9 +20,9 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-#include "PGSuperAppPlugin\stdafx.h"
-#include "PGSuperAppPlugin\resource.h"
-#include "PGSuperAppPlugin\PGSuperApp.h"
+#include "stdafx.h"
+#include "resource.h"
+#include "PGSuperApp.h"
 #include "BridgeDescrBearings.h"
 #include "BridgeDescDlg.h"
 #include "EditBearingDlg.h"

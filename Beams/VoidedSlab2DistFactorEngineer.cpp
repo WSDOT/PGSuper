@@ -23,7 +23,7 @@
 // VoidedSlab2DistFactorEngineer.cpp : Implementation of CVoidedSlab2DistFactorEngineer
 #include "stdafx.h"
 #include "VoidedSlab2DistFactorEngineer.h"
-#include "..\PGSuperException.h"
+#include <PGSuperException.h>
 #include <Units\SysUnits.h>
 #include <PsgLib\TrafficBarrierEntry.h>
 #include <PsgLib\SpecLibraryEntry.h>

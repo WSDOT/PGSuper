@@ -23,8 +23,8 @@
 // GirderSegmentLongitudinalRebarPage.cpp : implementation file
 //
 
-#include "PGSuperAppPlugin\stdafx.h"
-#include "PGSuperAppPlugin\resource.h"
+#include "stdafx.h"
+#include "resource.h"
 #include "GirderSegmentLongitudinalRebarPage.h"
 #include "GirderSegmentDlg.h"
 #include <IFace\Project.h>

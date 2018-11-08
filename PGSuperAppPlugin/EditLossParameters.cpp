@@ -20,8 +20,8 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-#include "PGSuperAppPlugin\stdafx.h"
-#include "PGSuperAppPlugin\EditLossParameters.h"
+#include "stdafx.h"
+#include "EditLossParameters.h"
 #include <IFace\Project.h>
 
 #ifdef _DEBUG
