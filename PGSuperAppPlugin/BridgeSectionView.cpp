@@ -34,7 +34,6 @@
 #include "PGSuperUnits.h"
 #include "PGSuperColors.h"
 
-#include <PgsExt\PierData.h>
 #include <PgsExt\BridgeDescription2.h>
 #include <PgsExt\Helpers.h>
 

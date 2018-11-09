@@ -27,6 +27,7 @@
 #include "CatalogServerDlg.h"
 #include <EAF\EAFDocument.h>
 #include <BridgeLinkConfiguration.h>
+#include "..\Documentation\PGSuper.hh"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

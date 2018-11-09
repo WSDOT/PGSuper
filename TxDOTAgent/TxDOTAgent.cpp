@@ -55,7 +55,7 @@
 #include <EAF\EAFUIIntegration.h>
 
 #include "PGSComponentInfo.h"
-#include <PGSuperIEPlugin.h>
+#include <Plugins\PGSuperIEPlugin.h>
 #include <WBFLReportManagerAgent_i.c>
 #include "TxDOTOptionalDesignDocProxyAgent.h"
 

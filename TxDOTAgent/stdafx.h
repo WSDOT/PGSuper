@@ -57,7 +57,7 @@
 #include <EAF\EAFUtilities.h>
 #include <EAF\EAFHelp.h>
 
-#include <Toga.hh>
+#include "Documentation\Toga.hh"
 
 #include <PgsExt\GirderLabel.h>
 #include <afxdlgs.h>

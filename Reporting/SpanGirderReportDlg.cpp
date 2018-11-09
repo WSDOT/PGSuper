@@ -33,6 +33,7 @@
 
 #include <PgsExt\GirderLabel.h>
 #include <EAF\EAFDocument.h>
+#include "..\Documentation\PGSuper.hh"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

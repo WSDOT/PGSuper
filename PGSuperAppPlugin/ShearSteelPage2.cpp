@@ -29,7 +29,7 @@
 #include <IFace\Tools.h>
 #include <IFace\Project.h>
 
-#include <PsgLib\resource.h>
+#include "..\PsgLib\resource.h"
 
 // CBridgeDescRatingPage dialog
 

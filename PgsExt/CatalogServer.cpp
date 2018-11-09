@@ -22,7 +22,7 @@
 #include <PgsExt\PgsExtLib.h>
 #include <PgsExt\CatalogServer.h>
 #include "TemplateManager.h"
-#include "MakePgz\UnzipPgz.h" 
+#include "..\MakePgz\UnzipPgz.h" 
 #include <EAF\EAFApp.h>
 
 #ifdef _DEBUG

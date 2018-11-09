@@ -25,7 +25,7 @@
 
 #include <PgsExt\PgsExtLib.h>
 #include "resource.h"
-#include <PgsExt\ACIParametersDlg.h>
+#include "ACIParametersDlg.h"
 
 #include <EAF\EAFDisplayUnits.h>
 #include <Material\ACI209Concrete.h>

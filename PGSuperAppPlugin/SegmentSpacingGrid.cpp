@@ -36,7 +36,6 @@
 #include <IFace\BeamFactory.h>
 
 #include <PgsExt\BridgeDescription2.h>
-#include <PgsExt\PierData.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

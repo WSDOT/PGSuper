@@ -22,7 +22,7 @@
 
 #include <PgsExt\PgsExtLib.h>
 #include <PgsExt\DeckDescription.h>
-#include <PgsExt\BridgeDescription.h>
+#include "BridgeDescription.h"
 #include <Units\SysUnits.h>
 #include <StdIo.h>
 

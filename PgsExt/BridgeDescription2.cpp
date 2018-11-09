@@ -31,7 +31,7 @@
 #include <IFace\BeamFactory.h>
 #include <WBFLGenericBridge.h>
 
-#include <PgsExt\BridgeDescription.h>
+#include "BridgeDescription.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

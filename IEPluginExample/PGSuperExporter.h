@@ -25,7 +25,7 @@
 #ifndef __PGSUPEREXPORTER_H_
 #define __PGSUPEREXPORTER_H_
 
-#include <PGSuperIEPlugin.h>
+#include <Plugins\PGSuperIEPlugin.h>
 #include "resource.h"       // main symbols
 
 /////////////////////////////////////////////////////////////////////////////

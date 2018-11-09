@@ -28,6 +28,7 @@
 #include <PgsExt\CEBFIPConcretePage.h>
 #include <PgsExt\ConcreteDetailsDlg.h>
 #include "CEBFIPParametersDlg.h"
+#include "..\Documentation\PGSuper.hh"
 
 #include <Material\CEBFIPConcrete.h>
 #include <EAF\EAFApp.h>

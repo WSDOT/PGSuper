@@ -25,6 +25,7 @@
 #include <Graphing\ConcretePropertyGraphBuilder.h>
 #include "ConcretePropertyGraphController.h"
 #include "ConcretePropertiesGraphViewControllerImp.h"
+#include "..\Documentation\PGSuper.hh"
 
 #include <EAF\EAFUtilities.h>
 #include <EAF\EAFDisplayUnits.h>

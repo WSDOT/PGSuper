@@ -25,7 +25,7 @@
 
 #include <PgsExt\PgsExtLib.h>
 #include "resource.h"
-#include <PgsExt\CEBFIPParametersDlg.h>
+#include "CEBFIPParametersDlg.h"
 
 #include <EAF\EAFDisplayUnits.h>
 #include <Material\CEBFIPConcrete.h>

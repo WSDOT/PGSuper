@@ -31,7 +31,6 @@
 #include "PGSpliceDoc.h"
 #include <IFace\Project.h>
 #include <PgsExt\BridgeDescription2.h>
-#include <PgsExt\SpanData.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

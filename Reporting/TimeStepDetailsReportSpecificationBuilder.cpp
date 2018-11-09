@@ -23,7 +23,7 @@
 #include "stdafx.h"
 #include <Reporting\TimeStepDetailsReportSpecificationBuilder.h>
 #include <Reporting\TimeStepDetailsReportSpecification.h>
-#include <Reporting\TimeStepDetailsDlg.h>
+#include "TimeStepDetailsDlg.h"
 
 #include <IFace\Selection.h>
 #include <IFace\PointOfInterest.h>

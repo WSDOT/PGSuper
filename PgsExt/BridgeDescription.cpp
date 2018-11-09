@@ -22,7 +22,7 @@
 
 #include <PgsExt\PgsExtLib.h>
 #include <PgsExt\GirderData.h>
-#include <BridgeDescription.h>
+#include "BridgeDescription.h"
 #include <WbflAtlExt.h>
 #include <PGSuperException.h>
 

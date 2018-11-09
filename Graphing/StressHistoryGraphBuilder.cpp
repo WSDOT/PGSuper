@@ -25,6 +25,7 @@
 #include <Graphing\StressHistoryGraphBuilder.h>
 #include "StressHistoryGraphController.h"
 #include "StressHistoryGraphViewControllerImp.h"
+#include "..\Documentation\PGSuper.hh"
 
 #include "GraphColor.h"
 

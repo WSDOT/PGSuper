@@ -24,7 +24,6 @@
 
 // BridgeDescFramingPage.h : header file
 //
-#include <PgsExt\PierData.h>
 #include "BridgeDescFramingGrid.h"
 #include "resource.h"
 

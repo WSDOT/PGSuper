@@ -35,7 +35,7 @@
 
 #include <map>
 
-#include <ReporterBase.h>
+#include "ReporterBase.h"
 
 class rptReport;
 

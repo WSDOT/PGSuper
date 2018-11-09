@@ -60,5 +60,4 @@ using namespace ATL;
 #include <PGSuperTypes.h>
 #include <PGSuperDebug.h>
 #include <PGSuperUnits.h>
-#include <\ARP\PGSuper\Documentation\PGSuper.hh>
 

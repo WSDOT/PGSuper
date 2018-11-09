@@ -22,8 +22,7 @@
 
 #include <PgsExt\PgsExtLib.h>
 #include "GirderSpacing.h"
-#include <PgsExt\BridgeDescription.h>
-#include <PgsExt\SpanData.h>
+#include "BridgeDescription.h"
 #include <WbflAtlExt.h>
 #include <numeric>
 

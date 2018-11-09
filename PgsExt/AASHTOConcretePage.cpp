@@ -25,7 +25,6 @@
 
 #include <PgsExt\PgsExtLib.h>
 #include "resource.h"
-#include <PGSuperAppPlugin\PGSuperDoc.h>
 #include "PGSuperUnits.h"
 #include <PgsExt\ConcreteDetailsDlg.h>
 #include <PgsExt\AASHTOConcretePage.h>
@@ -37,6 +36,7 @@
 #include <IFace\Bridge.h>
 
 #include <PGSuperColors.h>
+#include "..\Documentation\PGSuper.hh"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

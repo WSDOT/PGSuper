@@ -23,7 +23,7 @@
 #pragma once
 
 #include <Graphing\GirderPropertiesGraphBuilder.h>
-#include <Graphing\GirderGraphControllerBase.h>
+#include "GirderGraphControllerBase.h"
 
 class CGirderPropertiesGraphController : public CIntervalGirderGraphControllerBase
 {

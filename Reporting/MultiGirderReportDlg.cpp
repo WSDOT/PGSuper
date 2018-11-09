@@ -25,6 +25,7 @@
 
 #include "stdafx.h"
 #include <Reporting\MultiGirderReportDlg.h>
+#include "..\Documentation\PGSuper.hh"
 
 #include <initguid.h>
 #include <IFace\Tools.h>

@@ -27,6 +27,7 @@
 #include <Reporting\BridgeAnalysisReportDlg.h>
 #include <Reporting\BridgeAnalysisReportSpecification.h>
 #include <MFCTools\CustomDDX.h>
+#include "..\Documentation\PGSuper.hh"
 
 #include <IFace\Project.h>
 #include <EAF\EAFUtilities.h>

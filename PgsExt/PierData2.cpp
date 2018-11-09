@@ -27,7 +27,7 @@
 #include <PgsExt\GirderSpacing2.h>
 #include <PgsExt\ClosureJointData.h>
 
-#include <PierData.h>
+#include "PierData.h"
 
 #include <Units\SysUnits.h>
 #include <StdIo.h>

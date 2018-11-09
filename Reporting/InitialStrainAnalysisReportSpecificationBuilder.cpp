@@ -23,7 +23,7 @@
 #include "stdafx.h"
 #include <Reporting\InitialStrainAnalysisReportSpecificationBuilder.h>
 #include <Reporting\InitialStrainAnalysisReportSpecification.h>
-#include <Reporting\InitialStrainAnalysisDlg.h>
+#include "InitialStrainAnalysisDlg.h"
 
 #include <IFace\Selection.h>
 #include <IFace\PointOfInterest.h>
