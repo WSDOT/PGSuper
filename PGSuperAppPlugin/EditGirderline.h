@@ -22,7 +22,7 @@
 
 #pragma once
 
-#include <PGSuperAppPlugin\EditBridge.h>
+#include "EditBridge.h"
 
 class txnEditGirderline : public txnEditBridgeDescription
 {

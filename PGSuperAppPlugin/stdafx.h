@@ -61,8 +61,10 @@
 
 #include <afxdlgs.h>
 
-#include "MakePgz\zip.h"
-#include "MakePgz\unzip.h"
+#include "..\MakePgz\zip.h"
+#include "..\MakePgz\unzip.h"
+
+#include "..\Documentation\PGSuper.hh"
 
 #include <MFCTools\MFCTools.h>
 

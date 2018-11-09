@@ -87,43 +87,49 @@
     <Import Project="..\..\BridgeLink\ObjectiveGrid.props" />
     <Import Project="..\..\BridgeLink\BridgeLink.props" />
     <Import Project="..\..\WBFL\WBFL.props" />
+    <Import Project="..\PGSuper.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="..\..\BridgeLink\ObjectiveGrid.props" />
     <Import Project="..\..\BridgeLink\BridgeLink.props" />
     <Import Project="..\..\WBFL\WBFL.props" />
+    <Import Project="..\PGSuper.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="..\..\BridgeLink\ObjectiveGrid.props" />
     <Import Project="..\..\BridgeLink\BridgeLink.props" />
     <Import Project="..\..\WBFL\WBFL.props" />
+    <Import Project="..\PGSuper.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Profile|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="..\..\BridgeLink\ObjectiveGrid.props" />
     <Import Project="..\..\BridgeLink\BridgeLink.props" />
     <Import Project="..\..\WBFL\WBFL.props" />
+    <Import Project="..\PGSuper.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="..\..\BridgeLink\ObjectiveGrid.props" />
     <Import Project="..\..\BridgeLink\BridgeLink.props" />
     <Import Project="..\..\WBFL\WBFL.props" />
+    <Import Project="..\PGSuper.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="..\..\BridgeLink\ObjectiveGrid.props" />
     <Import Project="..\..\BridgeLink\BridgeLink.props" />
     <Import Project="..\..\WBFL\WBFL.props" />
+    <Import Project="..\PGSuper.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
     <_ProjectFileVersion>14.0.25431.1</_ProjectFileVersion>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <OutDir>\ARP\BridgeLink\RegFreeCOM\$(Platform)\$(Configuration)\</OutDir>
+    <OutDir>$(BRIDGELINKDIR)\RegFreeCOM\$(Platform)\$(Configuration)\</OutDir>
     <IntDir>$(Platform)\$(Configuration)\</IntDir>
     <IgnoreImportLibrary>true</IgnoreImportLibrary>
     <LinkIncremental>true</LinkIncremental>
@@ -132,7 +138,7 @@
     <CodeAnalysisRuleAssemblies />
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <OutDir>\ARP\BridgeLink\RegFreeCOM\$(Platform)\$(Configuration)\</OutDir>
+    <OutDir>$(BRIDGELINKDIR)\RegFreeCOM\$(Platform)\$(Configuration)\</OutDir>
     <IntDir>$(Platform)\$(Configuration)\</IntDir>
     <IgnoreImportLibrary>true</IgnoreImportLibrary>
     <LinkIncremental>true</LinkIncremental>
@@ -141,7 +147,7 @@
     <CodeAnalysisRuleAssemblies />
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <OutDir>\ARP\BridgeLink\RegFreeCOM\$(Platform)\$(Configuration)\</OutDir>
+    <OutDir>$(BRIDGELINKDIR)\RegFreeCOM\$(Platform)\$(Configuration)\</OutDir>
     <IntDir>$(Platform)\$(Configuration)\</IntDir>
     <IgnoreImportLibrary>true</IgnoreImportLibrary>
     <LinkIncremental>false</LinkIncremental>
@@ -150,7 +156,7 @@
     <CodeAnalysisRuleAssemblies />
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <OutDir>\ARP\BridgeLink\RegFreeCOM\$(Platform)\$(Configuration)\</OutDir>
+    <OutDir>$(BRIDGELINKDIR)\RegFreeCOM\$(Platform)\$(Configuration)\</OutDir>
     <IntDir>$(Platform)\$(Configuration)\</IntDir>
     <IgnoreImportLibrary>true</IgnoreImportLibrary>
     <LinkIncremental>false</LinkIncremental>
@@ -159,7 +165,7 @@
     <CodeAnalysisRuleAssemblies />
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'">
-    <OutDir>\ARP\BridgeLink\RegFreeCOM\$(Platform)\$(Configuration)\</OutDir>
+    <OutDir>$(BRIDGELINKDIR)\RegFreeCOM\$(Platform)\$(Configuration)\</OutDir>
     <IntDir>$(Platform)\$(Configuration)\</IntDir>
     <IgnoreImportLibrary>true</IgnoreImportLibrary>
     <LinkIncremental>false</LinkIncremental>
@@ -168,7 +174,7 @@
     <CodeAnalysisRuleAssemblies />
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">
-    <OutDir>\ARP\BridgeLink\RegFreeCOM\$(Platform)\$(Configuration)\</OutDir>
+    <OutDir>$(BRIDGELINKDIR)\RegFreeCOM\$(Platform)\$(Configuration)\</OutDir>
     <IntDir>$(Platform)\$(Configuration)\</IntDir>
     <IgnoreImportLibrary>true</IgnoreImportLibrary>
     <LinkIncremental>false</LinkIncremental>
@@ -199,7 +205,7 @@
     <ClCompile>
       <AdditionalOptions>-Zm111 %(AdditionalOptions)</AdditionalOptions>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\;..\Include;\ARP\WBFL\Include;\ARP\WBFL\Include\$(Platform);\ARP\BridgeLink\Include;\ARP\BridgeLink;..\Documentation;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\Include</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_WINDOWS;_DEBUG;_USRDLL;_ATL_NO_UUIDOF;_GXDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
@@ -212,12 +218,11 @@
     <ResourceCompile>
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <Culture>0x0409</Culture>
-      <AdditionalIncludeDirectories>$(IntDir);\ARP\PGSuper\Include;\ARP\WBFL\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(IntDir);$(PGSUPERDIR)\Include;$(WBFLDIR)\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Link>
-      <RegisterOutput>true</RegisterOutput>
       <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>\ARP\WBFL\RegFreeCOM\$(Platform)\$(Configuration);\ARP\BridgeLink\RegFreeCOM\$(Platform)\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(WBFLDIR)\RegFreeCOM\$(Platform)\$(Configuration);$(BRIDGELINKDIR)\RegFreeCOM\$(Platform)\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <ModuleDefinitionFile>.\PGSuperAppPlugin.def</ModuleDefinitionFile>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
@@ -225,10 +230,10 @@
     </Link>
     <PostBuildEvent>
       <Message>Copying files to BridgeLink</Message>
-      <Command>xcopy /y/d \ARP\PGSuper\PGSuper.tip \ARP\BridgeLink\
-xcopy /y/d \ARP\PGSuper\PGSplice.tip \ARP\BridgeLink\
-xcopy /y/d \ARP\PGSuper\md5deep.exe \ARP\BridgeLink\RegFreeCOM\$(Platform)\$(Configuration)
-xcopy /y/d/s \ARP\PGSuper\Configurations \ARP\BridgeLink\Configurations\
+      <Command>xcopy /y/d $(PGSUPERDIR)\PGSuper.tip $(BRIDGELINKDIR)\
+xcopy /y/d $(PGSUPERDIR)\PGSplice.tip $(BRIDGELINKDIR)\
+xcopy /y/d $(PGSUPERDIR)\md5deep.exe $(BRIDGELINKDIR)\RegFreeCOM\$(Platform)\$(Configuration)
+xcopy /y/d/s $(PGSUPERDIR)\Configurations $(BRIDGELINKDIR)\Configurations\
 </Command>
     </PostBuildEvent>
     <Manifest>
@@ -257,7 +262,7 @@ xcopy /y/d/s \ARP\PGSuper\Configurations \ARP\BridgeLink\Configurations\
     <ClCompile>
       <AdditionalOptions>-Zm111 %(AdditionalOptions)</AdditionalOptions>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\;..\Include;\ARP\WBFL\Include;\ARP\WBFL\Include\$(Platform);\ARP\BridgeLink\Include;\ARP\BridgeLink;..\Documentation;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\Include</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_WINDOWS;_DEBUG;_USRDLL;_ATL_NO_UUIDOF;_GXDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
@@ -270,12 +275,11 @@ xcopy /y/d/s \ARP\PGSuper\Configurations \ARP\BridgeLink\Configurations\
     <ResourceCompile>
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <Culture>0x0409</Culture>
-      <AdditionalIncludeDirectories>$(IntDir);\ARP\PGSuper\Include;\ARP\WBFL\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(IntDir);$(PGSUPERDIR)\Include;$(WBFLDIR)\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Link>
-      <RegisterOutput>true</RegisterOutput>
       <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>\ARP\WBFL\RegFreeCOM\$(Platform)\$(Configuration);\ARP\BridgeLink\RegFreeCOM\$(Platform)\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(WBFLDIR)\RegFreeCOM\$(Platform)\$(Configuration);$(BRIDGELINKDIR)\RegFreeCOM\$(Platform)\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <ModuleDefinitionFile>.\PGSuperAppPlugin.def</ModuleDefinitionFile>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
@@ -283,10 +287,10 @@ xcopy /y/d/s \ARP\PGSuper\Configurations \ARP\BridgeLink\Configurations\
     </Link>
     <PostBuildEvent>
       <Message>Copying files to BridgeLink</Message>
-      <Command>xcopy /y/d \ARP\PGSuper\PGSuper.tip \ARP\BridgeLink\
-xcopy /y/d \ARP\PGSuper\PGSplice.tip \ARP\BridgeLink\
-xcopy /y/d \ARP\PGSuper\md5deep.exe \ARP\BridgeLink\RegFreeCOM\$(Platform)\$(Configuration)
-xcopy /y/d/s \ARP\PGSuper\Configurations \ARP\BridgeLink\Configurations\
+      <Command>xcopy /y/d $(PGSUPERDIR)\PGSuper.tip $(BRIDGELINKDIR)\
+xcopy /y/d $(PGSUPERDIR)\PGSplice.tip $(BRIDGELINKDIR)\
+xcopy /y/d $(PGSUPERDIR)\md5deep.exe $(BRIDGELINKDIR)\RegFreeCOM\$(Platform)\$(Configuration)
+xcopy /y/d/s $(PGSUPERDIR)\Configurations $(BRIDGELINKDIR)\Configurations\
 </Command>
     </PostBuildEvent>
     <Manifest>
@@ -314,7 +318,7 @@ xcopy /y/d/s \ARP\PGSuper\Configurations \ARP\BridgeLink\Configurations\
       <ValidateAllParameters>true</ValidateAllParameters>
     </Midl>
     <ClCompile>
-      <AdditionalIncludeDirectories>..\;..\Include;\ARP\WBFL\Include;\ARP\WBFL\Include\$(Platform);\ARP\BridgeLink\Include;\ARP\BridgeLink;..\Documentation;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\Include</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;_USRDLL;_ATL_NO_UUIDOF;_GXDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <PrecompiledHeader>Use</PrecompiledHeader>
@@ -325,12 +329,11 @@ xcopy /y/d/s \ARP\PGSuper\Configurations \ARP\BridgeLink\Configurations\
     <ResourceCompile>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <Culture>0x0409</Culture>
-      <AdditionalIncludeDirectories>$(IntDir);\ARP\PGSuper\Include;\ARP\WBFL\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(IntDir);$(PGSUPERDIR)\Include;$(WBFLDIR)\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Link>
-      <RegisterOutput>true</RegisterOutput>
       <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>\ARP\WBFL\RegFreeCOM\$(Platform)\$(Configuration);\ARP\BridgeLink\RegFreeCOM\$(Platform)\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(WBFLDIR)\RegFreeCOM\$(Platform)\$(Configuration);$(BRIDGELINKDIR)\RegFreeCOM\$(Platform)\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <ModuleDefinitionFile>.\PGSuperAppPlugin.def</ModuleDefinitionFile>
       <GenerateDebugInformation>false</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
@@ -341,10 +344,10 @@ xcopy /y/d/s \ARP\PGSuper\Configurations \ARP\BridgeLink\Configurations\
     </Link>
     <PostBuildEvent>
       <Message>Copying files to BridgeLink</Message>
-      <Command>xcopy /y/d \ARP\PGSuper\PGSuper.tip \ARP\BridgeLink\
-xcopy /y/d \ARP\PGSuper\PGSplice.tip \ARP\BridgeLink\
-xcopy /y/d \ARP\PGSuper\md5deep.exe \ARP\BridgeLink\RegFreeCOM\$(Platform)\$(Configuration)
-xcopy /y/d/s \ARP\PGSuper\Configurations \ARP\BridgeLink\Configurations\
+      <Command>xcopy /y/d $(PGSUPERDIR)\PGSuper.tip $(BRIDGELINKDIR)\
+xcopy /y/d $(PGSUPERDIR)\PGSplice.tip $(BRIDGELINKDIR)\
+xcopy /y/d $(PGSUPERDIR)\md5deep.exe $(BRIDGELINKDIR)\RegFreeCOM\$(Platform)\$(Configuration)
+xcopy /y/d/s $(PGSUPERDIR)\Configurations $(BRIDGELINKDIR)\Configurations\
 </Command>
     </PostBuildEvent>
     <Manifest>
@@ -371,7 +374,7 @@ xcopy /y/d/s \ARP\PGSuper\Configurations \ARP\BridgeLink\Configurations\
       <ProxyFileName>PGSuperAppPlugin_p.c</ProxyFileName>
     </Midl>
     <ClCompile>
-      <AdditionalIncludeDirectories>..\;..\Include;\ARP\WBFL\Include;\ARP\WBFL\Include\$(Platform);\ARP\BridgeLink\Include;\ARP\BridgeLink;..\Documentation;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\Include</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;_USRDLL;_ATL_NO_UUIDOF;_GXDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <PrecompiledHeader>Use</PrecompiledHeader>
@@ -381,12 +384,11 @@ xcopy /y/d/s \ARP\PGSuper\Configurations \ARP\BridgeLink\Configurations\
     <ResourceCompile>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <Culture>0x0409</Culture>
-      <AdditionalIncludeDirectories>$(IntDir);\ARP\PGSuper\Include;\ARP\WBFL\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(IntDir);$(PGSUPERDIR)\Include;$(WBFLDIR)\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Link>
-      <RegisterOutput>true</RegisterOutput>
       <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>\ARP\WBFL\RegFreeCOM\$(Platform)\$(Configuration);\ARP\BridgeLink\RegFreeCOM\$(Platform)\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(WBFLDIR)\RegFreeCOM\$(Platform)\$(Configuration);$(BRIDGELINKDIR)\RegFreeCOM\$(Platform)\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <ModuleDefinitionFile>.\PGSuperAppPlugin.def</ModuleDefinitionFile>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
@@ -397,10 +399,10 @@ xcopy /y/d/s \ARP\PGSuper\Configurations \ARP\BridgeLink\Configurations\
     </Link>
     <PostBuildEvent>
       <Message>Copying files to BridgeLink</Message>
-      <Command>xcopy /y/d \ARP\PGSuper\PGSuper.tip \ARP\BridgeLink\
-xcopy /y/d \ARP\PGSuper\PGSplice.tip \ARP\BridgeLink\
-xcopy /y/d \ARP\PGSuper\md5deep.exe \ARP\BridgeLink\RegFreeCOM\$(Platform)\$(Configuration)
-xcopy /y/d/s \ARP\PGSuper\Configurations \ARP\BridgeLink\Configurations\
+      <Command>xcopy /y/d $(PGSUPERDIR)\PGSuper.tip $(BRIDGELINKDIR)\
+xcopy /y/d $(PGSUPERDIR)\PGSplice.tip $(BRIDGELINKDIR)\
+xcopy /y/d $(PGSUPERDIR)\md5deep.exe $(BRIDGELINKDIR)\RegFreeCOM\$(Platform)\$(Configuration)
+xcopy /y/d/s $(PGSUPERDIR)\Configurations $(BRIDGELINKDIR)\Configurations\
 </Command>
     </PostBuildEvent>
     <Manifest>
@@ -433,7 +435,7 @@ xcopy /y/d/s \ARP\PGSuper\Configurations \ARP\BridgeLink\Configurations\
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <WholeProgramOptimization>true</WholeProgramOptimization>
-      <AdditionalIncludeDirectories>..\;..\Include;\ARP\WBFL\Include;\ARP\WBFL\Include\$(Platform);\ARP\BridgeLink\Include;\ARP\BridgeLink;..\Documentation;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\Include</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;_USRDLL;_ATL_NO_UUIDOF;_GXDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <PrecompiledHeader>Use</PrecompiledHeader>
@@ -443,12 +445,12 @@ xcopy /y/d/s \ARP\PGSuper\Configurations \ARP\BridgeLink\Configurations\
     <ResourceCompile>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <Culture>0x0409</Culture>
-      <AdditionalIncludeDirectories>$(IntDir);\ARP\PGSuper\Include;\ARP\WBFL\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(IntDir);$(PGSUPERDIR)\Include;$(WBFLDIR)\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Link>
       <RegisterOutput>true</RegisterOutput>
       <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>\ARP\WBFL\RegFreeCOM\$(Platform)\$(Configuration);\ARP\BridgeLink\RegFreeCOM\$(Platform)\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(WBFLDIR)\RegFreeCOM\$(Platform)\$(Configuration);$(BRIDGELINKDIR)\RegFreeCOM\$(Platform)\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <ModuleDefinitionFile>.\PGSuperAppPlugin.def</ModuleDefinitionFile>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
@@ -459,10 +461,10 @@ xcopy /y/d/s \ARP\PGSuper\Configurations \ARP\BridgeLink\Configurations\
     </Link>
     <PostBuildEvent>
       <Message>Copying files to BridgeLink</Message>
-      <Command>xcopy /y/d \ARP\PGSuper\PGSuper.tip \ARP\BridgeLink\
-xcopy /y/d \ARP\PGSuper\PGSplice.tip \ARP\BridgeLink\
-xcopy /y/d \ARP\PGSuper\md5deep.exe \ARP\BridgeLink\RegFreeCOM\$(Platform)\$(Configuration)
-xcopy /y/d/s \ARP\PGSuper\Configurations \ARP\BridgeLink\Configurations\
+      <Command>xcopy /y/d $(PGSUPERDIR)\PGSuper.tip $(BRIDGELINKDIR)\
+xcopy /y/d $(PGSUPERDIR)\PGSplice.tip $(BRIDGELINKDIR)\
+xcopy /y/d $(PGSUPERDIR)\md5deep.exe $(BRIDGELINKDIR)\RegFreeCOM\$(Platform)\$(Configuration)
+xcopy /y/d/s $(PGSUPERDIR)\Configurations $(BRIDGELINKDIR)\Configurations\
 </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
@@ -491,7 +493,7 @@ xcopy /y/d/s \ARP\PGSuper\Configurations \ARP\BridgeLink\Configurations\
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <WholeProgramOptimization>true</WholeProgramOptimization>
-      <AdditionalIncludeDirectories>..\;..\Include;\ARP\WBFL\Include;\ARP\WBFL\Include\$(Platform);\ARP\BridgeLink\Include;\ARP\BridgeLink;..\Documentation;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\Include</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;_USRDLL;_ATL_NO_UUIDOF;_GXDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <PrecompiledHeader>Use</PrecompiledHeader>
@@ -501,12 +503,12 @@ xcopy /y/d/s \ARP\PGSuper\Configurations \ARP\BridgeLink\Configurations\
     <ResourceCompile>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <Culture>0x0409</Culture>
-      <AdditionalIncludeDirectories>$(IntDir);\ARP\PGSuper\Include;\ARP\WBFL\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(IntDir);$(PGSUPERDIR)\Include;$(WBFLDIR)\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Link>
       <RegisterOutput>true</RegisterOutput>
       <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>\ARP\WBFL\RegFreeCOM\$(Platform)\$(Configuration);\ARP\BridgeLink\RegFreeCOM\$(Platform)\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(WBFLDIR)\RegFreeCOM\$(Platform)\$(Configuration);$(BRIDGELINKDIR)\RegFreeCOM\$(Platform)\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <ModuleDefinitionFile>.\PGSuperAppPlugin.def</ModuleDefinitionFile>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
@@ -518,10 +520,10 @@ xcopy /y/d/s \ARP\PGSuper\Configurations \ARP\BridgeLink\Configurations\
     </Link>
     <PostBuildEvent>
       <Message>Copying files to BridgeLink</Message>
-      <Command>xcopy /y/d \ARP\PGSuper\PGSuper.tip \ARP\BridgeLink\
-xcopy /y/d \ARP\PGSuper\PGSplice.tip \ARP\BridgeLink\
-xcopy /y/d \ARP\PGSuper\md5deep.exe \ARP\BridgeLink\RegFreeCOM\$(Platform)\$(Configuration)
-xcopy /y/d/s \ARP\PGSuper\Configurations \ARP\BridgeLink\Configurations\
+      <Command>xcopy /y/d $(PGSUPERDIR)\PGSuper.tip $(BRIDGELINKDIR)\
+xcopy /y/d $(PGSUPERDIR)\PGSplice.tip $(BRIDGELINKDIR)\
+xcopy /y/d $(PGSUPERDIR)\md5deep.exe $(BRIDGELINKDIR)\RegFreeCOM\$(Platform)\$(Configuration)
+xcopy /y/d/s $(PGSUPERDIR)\Configurations $(BRIDGELINKDIR)\Configurations\
 </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>

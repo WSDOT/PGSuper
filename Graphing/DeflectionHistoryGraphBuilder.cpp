@@ -25,6 +25,7 @@
 #include <Graphing\DeflectionHistoryGraphBuilder.h>
 #include "DeflectionHistoryGraphController.h"
 #include "DeflectionHistoryGraphViewControllerImp.h"
+#include "..\Documentation\PGSuper.hh"
 
 #include "GraphColor.h"
 #include <PgsExt\IntervalTool.h>

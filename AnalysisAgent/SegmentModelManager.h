@@ -23,8 +23,8 @@
 #pragma once
 
 #include "SegmentModelData.h"
+#include "ProductLoadMap.h"
 #include <IFace\AnalysisResults.h>
-#include <ProductLoadMap.h>
 
 // CSegmentModelManager
 //

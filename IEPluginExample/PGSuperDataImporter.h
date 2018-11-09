@@ -24,7 +24,7 @@
 
 #pragma once
 
-#include <PGSuperIEPlugin.h>
+#include <Plugins\PGSuperIEPlugin.h>
 #include "resource.h"       // main symbols
 
 

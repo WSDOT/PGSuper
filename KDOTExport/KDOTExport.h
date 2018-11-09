@@ -1,6 +1,6 @@
 #pragma once
 
-#include <PGSuperIEPlugin.h>
+#include <Plugins\PGSuperIEPlugin.h>
 
 
 // {A923A888 - A08B - 4255 - 867E - BDF4D1200D7B}

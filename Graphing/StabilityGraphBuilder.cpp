@@ -25,6 +25,7 @@
 #include <Graphing\StabilityGraphBuilder.h>
 #include "StabilityGraphController.h"
 #include "StabilityGraphViewControllerImp.h"
+#include "..\Documentation\PGSuper.hh"
 
 #include "GraphColor.h"
 

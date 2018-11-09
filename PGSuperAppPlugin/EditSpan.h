@@ -20,7 +20,7 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-#include <PGSuperAppPlugin\EditBridge.h>
+#include "EditBridge.h"
 
 #pragma once
 

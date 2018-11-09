@@ -21,9 +21,7 @@
 ///////////////////////////////////////////////////////////////////////
 
 #include <PgsExt\PgsExtLib.h>
-#include <PgsExt\PierData.h>
-#include <PgsExt\SpanData.h>
-#include <PgsExt\BridgeDescription.h>
+#include "BridgeDescription.h"
 
 #include <PgsExt\PierData2.h>
 

@@ -26,6 +26,7 @@
 #include <Graphing\DrawBeamTool.h>
 #include "EffectivePrestressGraphController.h"
 #include "EffectivePrestressGraphViewControllerImp.h"
+#include "..\Documentation\PGSuper.hh"
 
 #include <EAF\EAFUtilities.h>
 #include <EAF\EAFDisplayUnits.h>

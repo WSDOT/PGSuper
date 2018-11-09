@@ -32,7 +32,6 @@
 #include <IFace\Project.h>
 #include <IFace\DocumentType.h>
 #include <EAF\EAFDisplayUnits.h>
-#include <PgsExt\PierData.h>
 #include <algorithm>
 
 #ifdef _DEBUG
@@ -40,9 +39,6 @@
 #undef THIS_FILE
 static char THIS_FILE[] = __FILE__;
 #endif
-
-void DDX_Orientation(CDataExchange* pDX,int nIDC,CPierData& pd);
-void DDV_Orientation(CDataExchange* pDX,CPierData& pd,UINT id);
 
 /////////////////////////////////////////////////////////////////////////////
 // CBridgeDescFramingPage property page

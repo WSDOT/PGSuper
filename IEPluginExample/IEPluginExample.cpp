@@ -30,7 +30,7 @@
 #include "stdafx.h"
 #include "resource.h"
 #include <initguid.h>
-#include <PGSuperIEPlugin.h>
+#include <Plugins\PGSuperIEPlugin.h>
 #include "IEPluginExample.h"
 #include "PGSuperCatCom.h"
 #include <WBFLCore_i.c>

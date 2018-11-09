@@ -28,6 +28,7 @@
 #include <PgsExt\ACIConcretePage.h>
 #include <PgsExt\ConcreteDetailsDlg.h>
 #include "ACIParametersDlg.h"
+#include "..\Documentation\PGSuper.hh"
 
 #include <Material\ACI209Concrete.h>
 #include <EAF\EAFApp.h>

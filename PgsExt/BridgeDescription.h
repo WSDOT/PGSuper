@@ -23,13 +23,14 @@
 #pragma once
 #include <PgsExt\DeckDescription.h>
 #include <PgsExt\RailingSystem.h>
-#include <PgsExt\PierData.h>
-#include <PgsExt\SpanData.h>
 #include <PgsExt\SplicedGirderData.h>
 #include <PgsExt\TimelineManager.h>
 
 #include <PsgLib\GirderLibraryEntry.h>
 #include <WBFLCore.h>
+
+#include "PierData.h"
+#include "SpanData.h"
 
 class CBridgeDescription2;
 

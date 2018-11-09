@@ -68,6 +68,8 @@
 #include <EAF\EAFUtilities.h>
 #include <EAF\EAFHelp.h>
 
+#include "..\Documentation\PGSuper.hh"
+
 //{{AFX_INSERT_LOCATION}}
 // Microsoft Developer Studio will insert additional declarations immediately before the previous line.
 

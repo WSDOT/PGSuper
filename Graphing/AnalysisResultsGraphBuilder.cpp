@@ -26,6 +26,7 @@
 #include "AnalysisResultsGraphController.h"
 #include "AnalysisResultsGraphDefinition.h"
 #include "AnalysisResultsGraphViewControllerImp.h"
+#include "..\Documentation\PGSuper.hh"
 
 #include "GraphColor.h"
 

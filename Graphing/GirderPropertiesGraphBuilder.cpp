@@ -26,6 +26,7 @@
 #include <Graphing\DrawBeamTool.h>
 #include "GirderPropertiesGraphController.h"
 #include "GirderPropertiesGraphViewControllerImp.h"
+#include "..\Documentation\PGSuper.hh"
 
 #include <EAF\EAFUtilities.h>
 #include <EAF\EAFDisplayUnits.h>

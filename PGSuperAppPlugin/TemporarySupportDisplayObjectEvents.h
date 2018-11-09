@@ -28,7 +28,6 @@
 #include <DManip\DManip.h>
 #include "BridgeModelViewChildFrame.h"
 #include <PgsExt\TemporarySupportData.h>
-#include <PgsExt\PierData.h>
 
 /////////////////////////////////////////////////////////////////////////////
 // CTemporarySupportDisplayObjectEvents command target

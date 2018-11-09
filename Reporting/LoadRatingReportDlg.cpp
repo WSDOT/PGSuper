@@ -26,6 +26,7 @@
 #include "stdafx.h"
 #include <Reporting\LoadRatingReportDlg.h>
 #include <Reporting\LoadRatingReportSpecificationBuilder.h>
+#include "..\Documentation\PGSuper.hh"
 
 #include <initguid.h>
 #include <IFace\Tools.h>

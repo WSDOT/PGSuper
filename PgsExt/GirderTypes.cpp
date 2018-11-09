@@ -24,8 +24,7 @@
 
 #include "GirderTypes.h"
 #include "GirderSpacing.h"
-#include <PgsExt\BridgeDescription.h>
-#include <PgsExt\SpanData.h>
+#include "BridgeDescription.h"
 #include <WbflAtlExt.h>
 #include <PGSuperException.h>
 

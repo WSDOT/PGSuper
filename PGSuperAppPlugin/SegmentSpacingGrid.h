@@ -29,7 +29,6 @@
 // SegmentSpacingGrid.h : header file
 //
 
-#include <PgsExt\GirderSpacing.h>
 #include <PgsExt\TemporarySupportData.h>
 
 class CSegmentSpacingGrid;

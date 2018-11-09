@@ -23,7 +23,7 @@
 #pragma once
 
 #include <Graphing\EffectivePrestressGraphBuilder.h>
-#include <Graphing\GirderGraphControllerBase.h>
+#include "GirderGraphControllerBase.h"
 
 class CEffectivePrestressGraphController : public CMultiIntervalGirderGraphControllerBase
 {

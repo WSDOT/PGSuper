@@ -33,6 +33,7 @@
 #include <EAF\EAFDocument.h>
 
 #include <PGSuperColors.h>
+#include "..\Documentation\PGSuper.hh"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

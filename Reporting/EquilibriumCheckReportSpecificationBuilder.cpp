@@ -23,7 +23,7 @@
 #include "stdafx.h"
 #include <Reporting\EquilibriumCheckReportSpecificationBuilder.h>
 #include <Reporting\EquilibriumCheckReportSpecification.h>
-#include <Reporting\EquilibriumCheckDlg.h>
+#include "EquilibriumCheckDlg.h"
 
 #include <IFace\Selection.h>
 #include <IFace\PointOfInterest.h>

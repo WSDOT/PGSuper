@@ -27,6 +27,7 @@
 #include "resource.h"
 
 #include "CopyConcreteEntry.h"
+#include "..\Documentation\PGSuper.hh"
 
 #include <PsgLib\ConcreteLibraryEntry.h>
 
