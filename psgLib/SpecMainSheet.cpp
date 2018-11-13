@@ -211,6 +211,8 @@ void CSpecMainSheet::ExchangeLiveLoadsData(CDataExchange* pDX)
    DDV_MinMaxDouble(pDX, m_Entry.m_LLDFGirderSpacingLocation, 0.0, 1.0);
 
    DDX_Check_Bool(pDX, IDC_LANESBEAMS, m_Entry.m_LimitDistributionFactorsToLanesBeams);
+
+   DDX_Check_Bool(pDX, IDC_RIGID_METHOD, m_Entry.m_bUseRigidMethod);
 }
 
 void CSpecMainSheet::ExchangeGirderData(CDataExchange* pDX)

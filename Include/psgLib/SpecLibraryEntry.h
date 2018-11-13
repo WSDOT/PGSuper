@@ -841,6 +841,10 @@ public:
    void SetLLDFGirderSpacingLocation(Float64 fra);
    Float64 GetLLDFGirderSpacingLocation() const;
 
+   // Set/Get rigid method option
+   void UseRigidMethod(bool bUseRigidMethod);
+   bool UseRigidMethod() const;
+
    // Set/Get inclusion of HL93 low boy, tandem vehicle
    void IncludeDualTandem(bool bInclude);
    bool IncludeDualTandem() const;
@@ -1211,15 +1215,6 @@ public:
    // live load distribution factors is to be ignored.
    bool IgnoreRangeOfApplicabilityRequirements() const;
 
-
-   
-   //------------------------------------------------------------------------
-   // OBSOLETE: NEED TO BE REMOVED
-   Float64 GetErectionCrackFs() const;
-   void SetErectionCrackFs(Float64 fs);
-   Float64 GetErectionFailFs() const;
-   void SetErectionFailFs(Float64 fs);
-
    // set version of these methods are obsolete and should be removed
    void IgnoreRangeOfApplicabilityRequirements(bool bIgnore);
 
@@ -1524,6 +1519,8 @@ private:
    bool m_bIncludeDualTandem; // if true, the dual tandem loading from LRFD C3.6.1.3.1 is included in the HL93 model
 
    bool m_LimitDistributionFactorsToLanesBeams; 
+
+   bool m_bUseRigidMethod; // if true, the rigid method is always used with Type a, e, and k cross section for exterior beam LLDF
 
    pgsTypes::PrestressTransferComputationType m_PrestressTransferComputationType;
 

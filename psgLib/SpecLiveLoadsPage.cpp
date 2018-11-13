@@ -62,6 +62,7 @@ void CSpecLiveLoadsPage::DoDataExchange(CDataExchange* pDX)
 
 BEGIN_MESSAGE_MAP(CSpecLiveLoadsPage, CPropertyPage)
    ON_BN_CLICKED(ID_HELP,OnHelp)
+   ON_CBN_SELCHANGE(IDC_LLDF, &CSpecLiveLoadsPage::OnCbnSelchangeLldf)
 END_MESSAGE_MAP()
 
 
@@ -76,6 +77,8 @@ BOOL CSpecLiveLoadsPage::OnInitDialog()
 
    CPropertyPage::OnInitDialog();
 
+   OnCbnSelchangeLldf();
+
    return TRUE;  // return TRUE unless you set the focus to a control
    // EXCEPTION: OCX Property Pages should return FALSE
 }
@@ -83,4 +86,15 @@ BOOL CSpecLiveLoadsPage::OnInitDialog()
 void CSpecLiveLoadsPage::OnHelp()
 {
    EAFHelp( EAFGetDocument()->GetDocumentationSetName(), IDH_PROJECT_CRITERIA_LIVE_LOADS );
+}
+
+
+void CSpecLiveLoadsPage::OnCbnSelchangeLldf()
+{
+   // TODO: Add your control notification handler code here
+   CWnd* pOption = GetDlgItem(IDC_RIGID_METHOD);
+   CComboBox* pCB = (CComboBox*)GetDlgItem(IDC_LLDF);
+   auto curSel = pCB->GetCurSel();
+   pOption->ShowWindow(curSel == 0 ? SW_SHOW : SW_HIDE);
+   // this option is never used by WSDOT or TxDOT methods
 }

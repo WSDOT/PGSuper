@@ -45,7 +45,7 @@ static char THIS_FILE[] = __FILE__;
 // 2.9 and 3.0 branches. It is ok for loads to fail for 44.0 <= version <= MAX_OVERLAP_VERSION.
 #define MAX_OVERLAP_VERSION 53.0 // overlap of data blocks between PGS 2.9 and 3.0 end with this version
 
-#define CURRENT_VERSION 65.0 
+#define CURRENT_VERSION 66.0 
 
 /****************************************************************************
 CLASS
@@ -170,6 +170,7 @@ m_ShippingLosses(::ConvertToSysUnits(20,unitMeasure::KSI)),
 m_FinalLosses(0),
 m_ShippingTime(::ConvertToSysUnits(10,unitMeasure::Day)),
 m_LldfMethod(LLDF_LRFD),
+m_bUseRigidMethod(false),
 m_BeforeTempStrandRemovalLosses(0),
 m_AfterTempStrandRemovalLosses(0),
 m_AfterDeckPlacementLosses(0),
@@ -719,6 +720,7 @@ bool SpecLibraryEntry::SaveMe(sysIStructuredSave* pSave)
    pSave->Property(_T("MaxAngularDeviationBetweenGirders"),m_MaxAngularDeviationBetweenGirders);
    pSave->Property(_T("MinGirderStiffnessRatio"),m_MinGirderStiffnessRatio);
    pSave->Property(_T("LLDFGirderSpacingLocation"),m_LLDFGirderSpacingLocation);
+   pSave->Property(_T("UseRigidMethod"), m_bUseRigidMethod); // added in version 66
 
    pSave->Property(_T("IncludeDualTandem"), m_bIncludeDualTandem); // added in version 61
 
@@ -2686,6 +2688,15 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
          }
       }
 
+      if (65 < version)
+      {
+         // added in version 66
+         if (!pLoad->Property(_T("UseRigidMethod"), &m_bUseRigidMethod))
+         {
+            THROW_LOAD(InvalidFileFormat, pLoad);
+         }
+      }
+
       if (60 < version)
       {
          // added in version 61
@@ -4589,7 +4600,8 @@ bool SpecLibraryEntry::Compare(const SpecLibraryEntry& rOther, std::vector<pgsLi
         m_LimitDistributionFactorsToLanesBeams != rOther.m_LimitDistributionFactorsToLanesBeams ||
         !::IsEqual(m_MaxAngularDeviationBetweenGirders, rOther.m_MaxAngularDeviationBetweenGirders) ||
         !::IsEqual(m_MinGirderStiffnessRatio,           rOther.m_MinGirderStiffnessRatio) ||
-        !::IsEqual(m_LLDFGirderSpacingLocation,         rOther.m_LLDFGirderSpacingLocation) )
+        !::IsEqual(m_LLDFGirderSpacingLocation,         rOther.m_LLDFGirderSpacingLocation) ||
+        m_bUseRigidMethod != rOther.m_bUseRigidMethod)
    {
       RETURN_ON_DIFFERENCE;
       vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Live Load Distribution Factors are different"),_T(""),_T("")));
@@ -6904,6 +6916,16 @@ bool SpecLibraryEntry::IncludeDualTandem() const
    return m_bIncludeDualTandem;
 }
 
+void SpecLibraryEntry::UseRigidMethod(bool bUseRigidMethod)
+{
+   m_bUseRigidMethod = bUseRigidMethod;
+}
+
+bool SpecLibraryEntry::UseRigidMethod() const
+{
+   return m_bUseRigidMethod;
+}
+
 void SpecLibraryEntry::LimitDistributionFactorsToLanesBeams(bool bLimit)
 {
    m_LimitDistributionFactorsToLanesBeams = bLimit;
@@ -7395,6 +7417,7 @@ void SpecLibraryEntry::MakeCopy(const SpecLibraryEntry& rOther)
    m_LiveLoadElasticGain      = rOther.m_LiveLoadElasticGain;
 
    m_LldfMethod                 = rOther.m_LldfMethod;
+   m_bUseRigidMethod = rOther.m_bUseRigidMethod;
    m_LongReinfShearMethod       = rOther.m_LongReinfShearMethod;
 
    m_bCheckStrandStress[CSS_AT_JACKING]       = rOther.m_bCheckStrandStress[CSS_AT_JACKING];
