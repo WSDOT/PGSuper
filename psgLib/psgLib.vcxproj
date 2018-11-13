@@ -744,6 +744,11 @@
     <ClInclude Include="WsdotHaulingDlg.h" />
   </ItemGroup>
   <ItemGroup>
+    <Image Include="..\PGSuperAppPlugin\res\folder_closed.ico" />
+    <Image Include="..\PGSuperAppPlugin\res\folder_open.ico" />
+    <Image Include="..\PGSuperAppPlugin\res\LibEntryInUse.bmp" />
+    <Image Include="..\PGSuperAppPlugin\res\LibEntryInUseAndReadOnly.bmp" />
+    <Image Include="..\PGSuperAppPlugin\res\LibEntryReadOnly.bmp" />
     <Image Include="..\res\folder_closed.ico" />
     <Image Include="..\res\folder_open.ico" />
     <Image Include="..\res\LibEntryInUse.bmp" />

@@ -181,8 +181,8 @@ public:
 
    void GetDocUnitSystem(IDocUnitSystem** ppDocUnitSystem);
 
-   void DeletePier(SpanIndexType pierIdx);
-   void DeletePier(SpanIndexType pierIdx,pgsTypes::PierFaceType face);
+   void DeletePier(PierIndexType pierIdx);
+   void DeletePier(PierIndexType pierIdx,pgsTypes::PierFaceType face);
    void DeleteSpan(SpanIndexType spanIdx);
    void DeleteSpan(SpanIndexType spanIdx,pgsTypes::RemovePierType pierRemoveType);
    void InsertSpan(PierIndexType refPierIdx,pgsTypes::PierFaceType pierFace,Float64 spanLength,bool bCreateNewGroup,IndexType eventIdx);

@@ -1070,6 +1070,7 @@
 #define IDC_CHECK_SERVICE_I_TENSION     1557
 #define IDC_CHECK_BOTTOM_FLANGE_CLEARANCE 1557
 #define IDC_STRAIGHT_RAISE_CHECK        1557
+#define IDC_RIGID_METHOD                1557
 #define IDC_FCGP_COMBO                  1558
 #define IDC_FCPG_COMBO                  1558
 #define IDC_DEBOND_RAISE_CHECK          1558
