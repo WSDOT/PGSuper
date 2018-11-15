@@ -671,9 +671,7 @@
 #define IDC_STATIC_LLE3                 1498
 #define IDC_DECK_TYPE                   1509
 #define IDC_OVERHANG_DEPTH              1510
-#define IDC_RIGHT_OVERHANG_DEPTH        1510
 #define IDC_OVERHANG_DEPTH_UNIT         1511
-#define IDC_LEFT_OVERHANG_DEPTH         1512
 #define IDC_OVERHANG_DEPTH_LABEL        1513
 #define IDC_ADD_MOMENTLOAD              1514
 #define IDC_ALLOWABLE_SPACING           1515
@@ -1360,9 +1358,7 @@
 #define IDC_HG_X2                       1998
 #define IDC_BEARING                     1998
 #define IDC_HG_X3                       1999
-#define IDC_LEFT_OVERHANG_DEPTH_LABEL   1999
 #define IDC_HG_X4                       2000
-#define IDC_RIGHT_OVERHANG_DEPTH_LABEL  2000
 #define IDS_E_WRITE                     2500
 #define IDS_E_UNSAFESAVE                2501
 #define IDS_E_SAVERECOVER1              2502
