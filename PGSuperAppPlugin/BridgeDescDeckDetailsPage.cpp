@@ -1466,10 +1466,6 @@ EventIndexType CBridgeDescDeckDetailsPage::CreateEvent()
 
 void CBridgeDescDeckDetailsPage::OnBnClickedEditHaunchButton()
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2_NOCHECK(pBroker,IEAFDisplayUnits,pDisplayUnits);
-
    CBridgeDescDlg* pParent = (CBridgeDescDlg*)GetParent();
 
    CEditHaunchDlg dlg(&(pParent->m_BridgeDesc));
@@ -1477,8 +1473,17 @@ void CBridgeDescDeckDetailsPage::OnBnClickedEditHaunchButton()
    dlg.ForceToAssExcessCamberType(m_AssExcessCamberType);
    if ( dlg.DoModal() == IDOK )
    {
+      CComPtr<IBroker> pBroker;
+      EAFGetBroker(&pBroker);
+      GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
+
       // Dialog modifies bridge descr
       dlg.ModifyBridgeDescr(&(pParent->m_BridgeDesc));
+
+      // Update fillet and put in UI
+      m_Fillet = pParent->m_BridgeDesc.GetFillet();
+      CDataExchange dx(this, FALSE);
+      DDX_UnitValue(&dx, IDC_FILLET, m_Fillet, pDisplayUnits->GetComponentDimUnit());
 
       // Upload pertinent changed data back into this dialog
       bool st = SetCBItemData(this, IDC_HAUNCH_SHAPE2, pParent->m_BridgeDesc.GetDeckDescription()->HaunchShape);

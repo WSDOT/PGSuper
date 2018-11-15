@@ -99,8 +99,8 @@ void CHaunchGirderGrid::CustomInit(const HaunchInputData& haunchData)
 	SetRowCount(num_rows+1);
 	SetColCount(num_cols);
 
-   // Turn off selecting 
-	GetParam()->EnableSelection((WORD) (~GX_SELROW & ~GX_SELFULL & ~GX_SELCOL & ~GX_SELTABLE));
+   // Turn off row, column, and whole table selection
+   GetParam()->EnableSelection((WORD)(GX_SELFULL & ~GX_SELCOL & ~GX_SELROW & ~GX_SELTABLE));
 
    // no row moving
 	GetParam()->EnableMoveRows(FALSE);
