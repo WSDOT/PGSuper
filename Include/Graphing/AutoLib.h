@@ -27,6 +27,8 @@
 #define GRAPHING_AUTOLIBNAME "PGSuperGraphing.lib"
 
 #pragma comment(lib,GRAPHING_AUTOLIBNAME)
-//#pragma message("Automatically linking with " GRAPHING_AUTOLIBNAME )
+#if defined AUTOLIB
+#pragma message("Linking with " GRAPHING_AUTOLIBNAME )
+#endif
 
 #endif // (BUILDREGRAPHINGLIB)
