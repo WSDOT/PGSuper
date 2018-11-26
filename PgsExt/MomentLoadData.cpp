@@ -37,6 +37,7 @@ static char THIS_FILE[] = __FILE__;
 //////////////////////////////////////////////////////////////////////
 
 CMomentLoadData::CMomentLoadData():
+m_ID(INVALID_ID),
 m_LoadCase(UserLoads::DC),
 m_StageIndex(INVALID_INDEX),
 m_Magnitude(0.0),
