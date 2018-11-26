@@ -17375,7 +17375,7 @@ void CGirderModelManager::ConfigureLBAMPoisForReactions(const CGirderKey& girder
 
       if ( !pBridge->IsAbutment(pierIdx) && // This is a boundary pier and not and abutnment (don't use IsBoundaryPier because an abutment is also a boundary pier)
           ( 
-            (resultsType == rtCumulative || intervalIdx < backContinuityIntervalIdx || intervalIdx < aheadContinuityIntervalIdx) // We want cumulative results and we are before continunity is achieved
+            (resultsType == rtCumulative && (intervalIdx < backContinuityIntervalIdx || intervalIdx < aheadContinuityIntervalIdx)) // We want cumulative results and we are before continunity is achieved
             || // OR
             (!bContinuousBack && !bContinuousAhead && !bIntegralBack && !bIntegralAhead && bBearingReactions) // there is no continuity at the pier and bearing reactions are requested
           )
