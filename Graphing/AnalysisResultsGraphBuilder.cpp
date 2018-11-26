@@ -1427,12 +1427,13 @@ void CAnalysisResultsGraphBuilder::UpdateGraphData()
 
    IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
 
-   m_GroupOffset = 0;
    for ( GroupIndexType groupIdx = startGroupIdx; groupIdx <= endGroupIdx; groupIdx++ )
    {
       GirderIndexType nGirders = pBridge->GetGirderCount(groupIdx);
       GirderIndexType girderIdx = Min(gdrIdx,nGirders-1);
       CGirderKey thisGirderKey(groupIdx,girderIdx);
+
+      m_GroupOffset = -ComputeShift(thisGirderKey); // shift is negative, we want positive value... change sign
 
       SegmentIndexType nSegments = pBridge->GetSegmentCount(thisGirderKey);
 
@@ -1589,9 +1590,6 @@ void CAnalysisResultsGraphBuilder::UpdateGraphData()
             } // end switch-case
          } // next graph
       } // next segment
-
-      Float64 Lg = pBridge->GetGirderLayoutLength(thisGirderKey);
-      m_GroupOffset += Lg;
    } // next group
 }
 
