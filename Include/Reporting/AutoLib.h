@@ -27,6 +27,8 @@
 #define REPORTING_AUTOLIBNAME "PGSuperReporting.lib"
 
 #pragma comment(lib,REPORTING_AUTOLIBNAME)
-//#pragma message("Automatically linking with " REPORTING_AUTOLIBNAME )
+#if defined AUTOLIB
+#pragma message("Linking with " REPORTING_AUTOLIBNAME )
+#endif
 
 #endif // BUILDREPORTINGLIB

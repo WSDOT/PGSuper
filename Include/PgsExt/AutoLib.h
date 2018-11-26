@@ -28,7 +28,9 @@
 #define PGSEXT_AUTOLIBNAME "PGSuperExt.lib"
 
 #pragma comment(lib,PGSEXT_AUTOLIBNAME)
-//#pragma message("PGSuper::PGSEXT will automatically link with " PGSEXT_AUTOLIBNAME )
+#if defined AUTOLIB
+#pragma message("Linking with " PGSEXT_AUTOLIBNAME )
+#endif
 
 #endif // BUILDPGSEXTLIB
 

@@ -28,7 +28,9 @@
 #define PSGLIB_AUTOLIBNAME "PGSuperLibrary.lib"
 
 #pragma comment(lib,PSGLIB_AUTOLIBNAME)
-//#pragma message("PGSuper::PSGLIB will automatically link with " PSGLIB_AUTOLIBNAME )
+#if defined AUTOLIB
+#pragma message("Linking with " PSGLIB_AUTOLIBNAME )
+#endif
 
 #endif // BUILDPSGLIBLIB
 
