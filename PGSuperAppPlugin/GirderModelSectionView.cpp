@@ -418,6 +418,17 @@ void CGirderModelSectionView::BuildPropertiesDisplayObjects(CPGSDocBase* pDoc, I
          }
       }
 
+
+      IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
+      if (compositeDeckIntervalIdx <= intervalIdx)
+      {
+         Float64 Wtrib = pSectProps->GetTributaryFlangeWidth(poi);
+         Float64 Weff = pSectProps->GetEffectiveFlangeWidth(poi);
+         CString strFlange;
+         strFlange.Format(_T("\nTributary Flange Width = %s\nEffective Flange Width = %s"), FormatDimension(Wtrib, pDisplayUnits->GetComponentDimUnit()), FormatDimension(Weff, pDisplayUnits->GetComponentDimUnit()));
+         strProps += strFlange;
+      }
+
       CComPtr<iAnchoredTextBlock> textBlock;
       textBlock.CoCreateInstance(CLSID_AnchoredTextBlock);
       textBlock->SetLocation(CPoint(5,5)); // location of text block relative to top left corner
