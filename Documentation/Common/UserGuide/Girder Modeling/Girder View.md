@@ -63,3 +63,9 @@ Customizing the Girder View
 The Girder View can be customized by enabling and disabling the various options. 
 
 To customize the view select *View > View Settings > Girder View*. This will open the View Settings window. Customize the elevation and section views by enabling and disabling the various options on their respective tabs.
+
+Notes
+--------------------------------
+The dimension line for the width of a composite deck slab shows the tributary flange width. In most cases, the tributary flange width is equal to the effective flange width. However, if the slab overhang exceeds S/2 the effective flange width may be limited. When this occurs, the dimension lines for the tributary flange width will appear wider than the deck slab (see figure below). The tributary and effective flange widths are listed on the left side of the view.
+
+![](EffectiveFlangeWidth.png)
