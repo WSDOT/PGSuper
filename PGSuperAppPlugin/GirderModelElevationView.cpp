@@ -1993,10 +1993,14 @@ void CGirderModelElevationView::BuildPointLoadDisplayObjects(CPGSDocBase* pDoc, 
             pls->Init(point_disp, pBroker, *pLoad, loadIdx, span_length, max, color);
 
             CSegmentKey segmentKey;
-            Float64 Xs;
-            pPoi->ConvertSpanPointToSegmentCoordiante(spanKey, Xspan, &segmentKey, &Xs);
-            Float64 x_position = pPoi->ConvertSegmentCoordinateToGirderlineCoordinate(segmentKey, Xs);
-            x_position -= span_offset;
+            Float64 Xsp;
+            pPoi->ConvertSpanPointToSegmentPathCoordiante(spanKey, Xspan, &segmentKey, &Xsp); // get start of load location (we can get it in segment path coordinates)
+            Float64 Xgp = pPoi->ConvertSegmentPathCoordinateToGirderPathCoordinate(segmentKey, Xsp); // convert to girder path coordinates
+
+            Float64 groupOffset = GetSpanStartLocation(spanKey); // get the offset to the start of the span
+
+            Float64 x_position = Xgp + groupOffset - span_offset; // load position
+
 
             CComPtr<IPoint2d> point;
             point.CoCreateInstance(__uuidof(Point2d));
@@ -2058,8 +2062,7 @@ void CGirderModelElevationView::BuildDistributedLoadDisplayObjects(CPGSDocBase* 
 
       if (IsLoadApplicable(pBroker,pLoad,eventIdx,girderKey))
       {
-         max = Max(fabs(pLoad->m_WStart), max);
-         max = Max(fabs(pLoad->m_WEnd), max);
+         max = Max(fabs(pLoad->m_WStart), fabs(pLoad->m_WEnd), max);
       }
    }
 
@@ -2129,14 +2132,15 @@ void CGirderModelElevationView::BuildDistributedLoadDisplayObjects(CPGSDocBase* 
             CComQIPtr<iDistributedLoadDrawStrategy,&IID_iDistributedLoadDrawStrategy> pls(pStrategy);
             pls->Init(point_disp, pBroker, *pLoad, loadIdx, load_length, span_length, max, color);
 
-
-
+            // get the point for the load display object
             CSegmentKey segmentKey;
-            Float64 Xs;
-            pPoi->ConvertSpanPointToSegmentCoordiante(spanKey, Xspan_start, &segmentKey, &Xs);
-            Float64 x_position = pPoi->ConvertSegmentCoordinateToGirderlineCoordinate(segmentKey, Xs);
-            x_position -= span_offset;
+            Float64 Xsp;
+            pPoi->ConvertSpanPointToSegmentPathCoordiante(spanKey, Xspan_start, &segmentKey, &Xsp); // get start of load location (we can get it in segment path coordinates)
+            Float64 Xgp = pPoi->ConvertSegmentPathCoordinateToGirderPathCoordinate(segmentKey, Xsp); // convert to girder path coordinates
 
+            Float64 groupOffset = GetSpanStartLocation(spanKey); // get the offset to the start of the span
+
+            Float64 x_position = Xgp + groupOffset - span_offset; // load position
 
             CComPtr<IPoint2d> point;
             point.CoCreateInstance(__uuidof(Point2d));
@@ -2278,10 +2282,13 @@ void CGirderModelElevationView::BuildMomentLoadDisplayObjects(CPGSDocBase* pDoc,
 
 
             CSegmentKey segmentKey;
-            Float64 Xs;
-            pPoi->ConvertSpanPointToSegmentCoordiante(spanKey, Xspan, &segmentKey, &Xs);
-            Float64 x_position = pPoi->ConvertSegmentCoordinateToGirderlineCoordinate(segmentKey, Xs);
-            x_position -= span_offset;
+            Float64 Xsp;
+            pPoi->ConvertSpanPointToSegmentPathCoordiante(spanKey, Xspan, &segmentKey, &Xsp); // get start of load location (we can get it in segment path coordinates)
+            Float64 Xgp = pPoi->ConvertSegmentPathCoordinateToGirderPathCoordinate(segmentKey, Xsp); // convert to girder path coordinates
+
+            Float64 groupOffset = GetSpanStartLocation(spanKey); // get the offset to the start of the span
+
+            Float64 x_position = Xgp + groupOffset - span_offset; // load position
 
             CComPtr<IPoint2d> point;
             point.CoCreateInstance(__uuidof(Point2d));
