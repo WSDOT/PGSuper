@@ -583,8 +583,15 @@ lrfdLiveLoadDistributionFactorBase* CIBeamDistFactorEngineer::GetLLDFParameters(
    int lldf_method = pSpecEntry->GetLiveLoadDistributionMethod();
    if ( lldf_method == LLDF_LRFD )
    {
-      // rigid method only used for steel bridges starting with LRFD 7th Edition, 2014, however, we can override
-      bool bRigidMethod = (0 < nDiaphragms && pSpecEntry->UseRigidMethod() ? true : false);
+      bool bRigidMethod = (0 < nDiaphragms ? true : false); // must have diaphragms for rigid method
+      if (lrfdVersionMgr::SeventhEdition2014 <= lrfdVersionMgr::GetVersion())
+      {
+         // rigid method only used for steel bridges starting with LRFD 7th Edition, 2014
+         // but we can override
+         bRigidMethod &= pSpecEntry->UseRigidMethod();
+      }
+
+
       pLLDF = new lrfdLldfTypeAEK(plldf->gdrNum,
                                   plldf->Savg,
                                   plldf->gdrSpacings,

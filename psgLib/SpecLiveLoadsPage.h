@@ -42,7 +42,8 @@ protected:
    // Generated message map functions
 	//{{AFX_MSG(CSpecLiveLoadsPage)
 	virtual BOOL OnInitDialog();
-	//}}AFX_MSG
+   virtual BOOL OnSetActive();
+   //}}AFX_MSG
    afx_msg void OnHelp();
 
 	DECLARE_MESSAGE_MAP()

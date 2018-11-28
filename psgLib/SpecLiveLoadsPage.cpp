@@ -83,11 +83,18 @@ BOOL CSpecLiveLoadsPage::OnInitDialog()
    // EXCEPTION: OCX Property Pages should return FALSE
 }
 
+BOOL CSpecLiveLoadsPage::OnSetActive()
+{
+   CSpecMainSheet* pDad = (CSpecMainSheet*)GetParent();
+   int nCmdShow = (lrfdVersionMgr::SeventhEdition2014 <= pDad->m_Entry.GetSpecificationType()) ? SW_SHOW : SW_HIDE;
+   GetDlgItem(IDC_RIGID_METHOD)->ShowWindow(nCmdShow);
+   return CPropertyPage::OnSetActive();
+}
+
 void CSpecLiveLoadsPage::OnHelp()
 {
    EAFHelp( EAFGetDocument()->GetDocumentationSetName(), IDH_PROJECT_CRITERIA_LIVE_LOADS );
 }
-
 
 void CSpecLiveLoadsPage::OnCbnSelchangeLldf()
 {
