@@ -441,16 +441,19 @@ void CDrawStrandControl::DrawStrands(CDC* pDC, grlibPointMapper& leftMapper,grli
    const auto& strandRows = m_pStrands->GetStrandRows();
    for( const auto& strandRow : strandRows)
    {
-      GridIndexType nGridPoints = strandRow.m_nStrands/2; // strand grid is only half the full grid (just compute points for the grid on the positive X side)
-      if ( ::IsOdd(strandRow.m_nStrands) )
-      {
-         nGridPoints++;
-      }
-
+      GridIndexType nGridPoints = 0;
       if (strandDefinitionType == CStrandData::sdtDirectStrandInput)
       {
          // direct strand input is for individual strands so there is only one point to draw
          nGridPoints = 1;
+      }
+      else
+      {
+         nGridPoints = strandRow.m_nStrands / 2; // strand grid is only half the full grid (just compute points for the grid on the positive X side)
+         if (::IsOdd(strandRow.m_nStrands))
+         {
+            nGridPoints++;
+         }
       }
 
       Float64 Xi = strandRow.m_Z; // distance from CL Girder to strand 
@@ -483,51 +486,19 @@ void CDrawStrandControl::DrawStrands(CDC* pDC, grlibPointMapper& leftMapper,grli
 
          LONG dx, dy;
 
-         // Draw in left end
-         CPoint point;
-         leftMapper.WPtoDP(X - m_Xoffset[pgsTypes::metStart], Y[ZoneBreakType::Start], &point.x, &point.y);
-         point.Offset(-radius, -radius);
-         CRect rect(point,CSize(diameter,diameter));
-
-         rect.NormalizeRect();
-         if (rect.Width() < minStrandSize.cx || rect.Height() < minStrandSize.cy)
+         //
+         // Draw strands in end cross sections
+         //
+         for (int i = 0; i < 2; i++)
          {
-            rect.InflateRect(minStrandSize.cx - rect.Width(), minStrandSize.cy - rect.Height());
-         }
+            pgsTypes::MemberEndType end = (pgsTypes::MemberEndType)i;
+            ZoneBreakType zoneBreak = (end == pgsTypes::metStart ? ZoneBreakType::Start : ZoneBreakType::End);
+            grlibPointMapper* pPointMapper = (end == pgsTypes::metStart ? &leftMapper : &rightMapper);
 
-         if (strandDefinitionType == CStrandData::sdtDirectRowInput && IsOdd(strandRow.m_nStrands) && !IsZero(strandRow.m_Z))
-         {
-            // m_Z must be zero if nStrands is odd
-            pDC->SelectObject(&errorPen);
-            pDC->SelectObject(&errorBrush);
-         }
-         else
-         {
-            if (strandRow.m_bIsExtendedStrand[pgsTypes::metStart])
-            {
-               pDC->SelectObject(&extendedPen);
-               pDC->SelectObject(&extendedBrush);
-            }
-            else if (strandRow.m_bIsDebonded[pgsTypes::metStart])
-            {
-               pDC->SelectObject(&debondedPen);
-               pDC->SelectObject(&debondedBrush);
-            }
-            else
-            {
-               pDC->SelectObject(strandRow.m_StrandType == pgsTypes::Temporary ? &tempStrandPen : &strandPen);
-               pDC->SelectObject(strandRow.m_StrandType == pgsTypes::Temporary ? &tempStrandBrush : &strandBrush);
-            }
-         }
-
-         pDC->Ellipse(&rect);
-
-         if (strandDefinitionType == CStrandData::sdtDirectRowInput)
-         {
-            // strands are in rows, so draw the mirrored strand
-            leftMapper.WPtoDP(-X - m_Xoffset[pgsTypes::metStart], Y[ZoneBreakType::Start], &point.x, &point.y);
+            CPoint point;
+            pPointMapper->WPtoDP(X - m_Xoffset[end], Y[zoneBreak], &point.x, &point.y);
             point.Offset(-radius, -radius);
-            rect = CRect(point, CSize(diameter, diameter));
+            CRect rect(point, CSize(diameter, diameter));
 
             rect.NormalizeRect();
             if (rect.Width() < minStrandSize.cx || rect.Height() < minStrandSize.cy)
@@ -535,67 +506,53 @@ void CDrawStrandControl::DrawStrands(CDC* pDC, grlibPointMapper& leftMapper,grli
                rect.InflateRect(minStrandSize.cx - rect.Width(), minStrandSize.cy - rect.Height());
             }
 
-            pDC->Ellipse(&rect);
-         }
-
-
-         // Draw in right end
-         rightMapper.WPtoDP(X - m_Xoffset[pgsTypes::metEnd], Y[ZoneBreakType::End], &point.x, &point.y);
-         point.Offset(-radius, -radius);
-         rect = CRect(point, CSize(diameter, diameter));
-
-         rect.NormalizeRect();
-         if (rect.Width() < minStrandSize.cx || rect.Height() < minStrandSize.cy)
-         {
-            rect.InflateRect(minStrandSize.cx - rect.Width(), minStrandSize.cy - rect.Height());
-         }
-
-
-         if (strandDefinitionType == CStrandData::sdtDirectRowInput && IsOdd(strandRow.m_nStrands) && !IsZero(strandRow.m_Z))
-         {
-            // m_Z must be zero if nStrands is odd
-            pDC->SelectObject(&errorPen);
-            pDC->SelectObject(&errorBrush);
-         }
-         else
-         {
-            if (strandRow.m_bIsExtendedStrand[pgsTypes::metEnd])
+            if (strandDefinitionType == CStrandData::sdtDirectRowInput && IsOdd(strandRow.m_nStrands) && !IsZero(strandRow.m_Z))
             {
-               pDC->SelectObject(&extendedPen);
-               pDC->SelectObject(&extendedBrush);
-            }
-            else if (strandRow.m_bIsDebonded[pgsTypes::metEnd])
-            {
-               pDC->SelectObject(&debondedPen);
-               pDC->SelectObject(&debondedBrush);
+               // Z must be zero if nStrands is odd... it's not, so use the error color
+               pDC->SelectObject(&errorPen);
+               pDC->SelectObject(&errorBrush);
             }
             else
             {
-               pDC->SelectObject(strandRow.m_StrandType == pgsTypes::Temporary ? &tempStrandPen : &strandPen);
-               pDC->SelectObject(strandRow.m_StrandType == pgsTypes::Temporary ? &tempStrandBrush : &strandBrush);
-            }
-         }
-
-         pDC->Ellipse(&rect);
-
-         if (strandDefinitionType == CStrandData::sdtDirectRowInput)
-         {
-            // strands are in rows, so draw the mirrored strand
-            rightMapper.WPtoDP(-X - m_Xoffset[pgsTypes::metEnd], Y[ZoneBreakType::End], &point.x, &point.y);
-            point.Offset(-radius, -radius);
-            rect = CRect(point, CSize(diameter, diameter));
-
-            rect.NormalizeRect();
-            if (rect.Width() < minStrandSize.cx || rect.Height() < minStrandSize.cy)
-            {
-               rect.InflateRect(minStrandSize.cx - rect.Width(), minStrandSize.cy - rect.Height());
+               if (strandRow.m_bIsExtendedStrand[end])
+               {
+                  pDC->SelectObject(&extendedPen);
+                  pDC->SelectObject(&extendedBrush);
+               }
+               else if (strandRow.m_bIsDebonded[end])
+               {
+                  pDC->SelectObject(&debondedPen);
+                  pDC->SelectObject(&debondedBrush);
+               }
+               else
+               {
+                  pDC->SelectObject(strandRow.m_StrandType == pgsTypes::Temporary ? &tempStrandPen : &strandPen);
+                  pDC->SelectObject(strandRow.m_StrandType == pgsTypes::Temporary ? &tempStrandBrush : &strandBrush);
+               }
             }
 
             pDC->Ellipse(&rect);
+
+            if (strandDefinitionType == CStrandData::sdtDirectRowInput)
+            {
+               // strands are in rows, so draw the mirrored strand
+               pPointMapper->WPtoDP(-X - m_Xoffset[end], Y[zoneBreak], &point.x, &point.y);
+               point.Offset(-radius, -radius);
+               rect = CRect(point, CSize(diameter, diameter));
+
+               rect.NormalizeRect();
+               if (rect.Width() < minStrandSize.cx || rect.Height() < minStrandSize.cy)
+               {
+                  rect.InflateRect(minStrandSize.cx - rect.Width(), minStrandSize.cy - rect.Height());
+               }
+
+               pDC->Ellipse(&rect);
+            }
          }
 
-
-         // Draw in segment profile
+         //
+         // Draw in strands segment profile
+         //
          if (strandDefinitionType == CStrandData::sdtDirectRowInput && IsOdd(strandRow.m_nStrands) && !IsZero(strandRow.m_Z))
          {
             // m_Z must be zero if nStrands is odd
