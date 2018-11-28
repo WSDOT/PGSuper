@@ -23959,6 +23959,7 @@ std::vector<TEMPORARYSUPPORTELEVATIONDETAILS> CBridgeAgentImp::GetElevationDetai
                CSegmentKey segmentKey(grpIdx, gdrIdx, segIdx);
                if (ts->GetConnectionType() == pgsTypes::tsctContinuousSegment)
                {
+                  pnt.Release();
                   bool bIntersection = GetSegmentTempSupportIntersection(segmentKey, tsIdx, pgsTypes::pcLocal, &pnt);
                   ATLASSERT(bIntersection == true);
                   bContinuous = true;
