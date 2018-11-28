@@ -907,7 +907,7 @@ void CSplicedUBeamFactory::ConfigureShape(const IBeamFactory::Dimensions& dimens
    beam->put_D7(d7);
    beam->put_T(t);
 
-   Float64 overallHeight = d1+d2+d3+d4+d5+d6+d7;
+   Float64 overallHeight = d1;
 
    // Hook point is at bottom center of bounding box.
    // Adjust hook point so top center of bounding box is at (0,0)
