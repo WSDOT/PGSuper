@@ -347,3 +347,8 @@ RegressionTest/Current/**/*.dbp
 RegressionTest/Current/**/*.err
 RegressionTest/Current/**/*.Test
 RegressionTest/SimpleTestResults.txt
+RegressionTest/*.bat
+!RegressionTest/RunRegression_Debug.bat
+!RegressionTest/RunRegression_Release.bat
+!RegressionTest/RunRegression_Profile.bat
+!RegressionTest/RunRegression_PGSplice.bat
