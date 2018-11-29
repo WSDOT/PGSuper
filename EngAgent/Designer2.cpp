@@ -5199,7 +5199,7 @@ void pgsDesigner2::CheckSegmentStability(const CSegmentKey& segmentKey,pgsSegmen
       GET_IFACE(IBridge, pBridge);
       HANDLINGCONFIG config;
       config.GdrConfig = pBridge->GetSegmentConfiguration(segmentKey);
-      config.bIgnoreGirderConfig = false;
+      config.bIgnoreGirderConfig = true; // ignore the girder configuration... we want the functions we call to use the handling configuration
       config.LeftOverhang = 0;
       config.RightOverhang = 0;
 
