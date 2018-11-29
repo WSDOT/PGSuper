@@ -347,3 +347,5 @@ RegressionTest/Current/**/*.dbp
 RegressionTest/Current/**/*.err
 RegressionTest/Current/**/*.Test
 RegressionTest/SimpleTestResults.txt
+*.bat
+!Run*.bat
