@@ -482,7 +482,9 @@ private:
 
    void DesignEndZoneHarping(arDesignOptions options, pgsSegmentDesignArtifact& artifact,IProgress* pProgress) const;
    void DesignForLiftingHarping(const arDesignOptions& options, bool bAdjustingAfterShipping,IProgress* pProgress) const;
-   void DesignEndZoneReleaseHarping(const arDesignOptions& options, IProgress* pProgress) const;
+   void DesignEndZoneHarpingAdjustment(const arDesignOptions& options, IProgress* pProgress) const;
+   void GetControllingHarpedEccentricity(IntervalIndexType interval, const GDRCONFIG& config, pgsPointOfInterest* pTopPoi, pgsPointOfInterest* pBotPoi,
+                                         Float64* pEccTens, Float64* pEccComp, Float64* pFeTop, Float64* pFeBot, IProgress* pProgress) const;
    bool CheckLiftingStressDesign(const CSegmentKey& segmentKey,const GDRCONFIG& config) const;
 
    void DesignEndZoneDebonding(bool firstPass, arDesignOptions options, pgsSegmentDesignArtifact& artifact, IProgress* pProgress) const;

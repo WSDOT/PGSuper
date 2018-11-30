@@ -1809,8 +1809,8 @@ bool pgsStrandDesignTool::UpdateConcreteStrength(Float64 fcRequired,IntervalInde
    Float64 fci = m_pArtifact->GetReleaseStrength();
    if ( fcRequired < fci )
    {
-      LOG(_T("f'c required less than f'ci. Release controls - no need to update f'c"));
-      return false;
+      LOG(_T("f'c required less than f'ci. Release controls - Set f'c to f'ci"));
+      fcRequired = CeilOff(fci, m_ConcreteAccuracy );;
    }
 
    Float64 newfc;
