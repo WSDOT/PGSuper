@@ -778,6 +778,7 @@ void CSpecMainSheet::ExchangeShearCapacityData(CDataExchange* pDX)
 
    DDX_CBIndex(pDX, IDC_LRSH, m_Entry.m_LongReinfShearMethod); 
    DDX_Check_Bool(pDX, IDC_INCLUDE_REBAR_SHEAR, m_Entry.m_bIncludeRebar_Shear );
+   DDX_Check_Bool(pDX, IDC_USE_DECK_FOR_PC, m_Entry.m_bUseDeckWeightForPc);
 
    DDX_CBEnum(pDX,IDC_SHEAR_FLOW_METHOD,m_Entry.m_ShearFlowMethod);
 

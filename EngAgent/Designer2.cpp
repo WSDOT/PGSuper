@@ -3680,6 +3680,14 @@ Float64 pgsDesigner2::GetNormalFrictionForce(const pgsPointOfInterest& poi) cons
 
    Float64 wslab = 0; // weight of slab on shear interface
 
+   GET_IFACE(ILibrary, pLib);
+   GET_IFACE(ISpecification, pSpec);
+   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
+   if (!pSpecEntry->UseDeckWeightForPermanentNetCompressiveForce())
+   {
+      return wslab;
+   }
+
    // slab load
    Float64 slab_unit_weight = pMaterial->GetDeckWeightDensity(castDeckIntervalIdx) * unitSysUnitsMgr::GetGravitationalAcceleration();
 

@@ -202,6 +202,7 @@ m_DesignStrandFillType(ftMinimizeHarping),
 m_EffFlangeWidthMethod(pgsTypes::efwmLRFD),
 m_ShearFlowMethod(sfmClassical),
 m_MaxInterfaceShearConnectorSpacing(::ConvertToSysUnits(48.0,unitMeasure::Inch)),
+m_bUseDeckWeightForPc(true),
 m_ShearCapacityMethod(scmBTEquations),
 m_CuringMethodTimeAdjustmentFactor(7),
 m_MinLiftPoint(-1), // H
@@ -893,7 +894,7 @@ bool SpecLibraryEntry::SaveMe(sysIStructuredSave* pSave)
 //   pSave->Property(_T("SlabOffsetMethod"),(long)m_SlabOffsetMethod);
 
    // reconfigured in version 37 and added Phi
-   pSave->BeginUnit(_T("Shear"),2.0);
+   pSave->BeginUnit(_T("Shear"),3.0);
       // moved here in version 37
       pSave->Property(_T("LongReinfShearMethod"),(Int16)m_LongReinfShearMethod); // added for version 1.2
 
@@ -903,6 +904,7 @@ bool SpecLibraryEntry::SaveMe(sysIStructuredSave* pSave)
       // added in version 18 (moved into datablock in version 37)
       pSave->Property(_T("ShearFlowMethod"),(long)m_ShearFlowMethod);
       pSave->Property(_T("MaxInterfaceShearConnectorSpacing"),m_MaxInterfaceShearConnectorSpacing);
+      pSave->Property(_T("UseDeckWeightForPc"), m_bUseDeckWeightForPc); // added in version 3 of Shear data block
       pSave->Property(_T("ShearCapacityMethod"),(long)m_ShearCapacityMethod);
 
       // added in version 37
@@ -3734,6 +3736,14 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
             }
          }
 
+         if (2 < shear_version)
+         {
+            if (!pLoad->Property(_T("UseDeckWeightForPc"), &m_bUseDeckWeightForPc)) // added in version 3 of Shear data block
+            {
+               THROW_LOAD(InvalidFileFormat);
+            }
+         }
+
          if ( !pLoad->Property(_T("ShearCapacityMethod"),&value) )
          {
             THROW_LOAD(InvalidFileFormat,pLoad);
@@ -4736,7 +4746,8 @@ bool SpecLibraryEntry::Compare(const SpecLibraryEntry& rOther, std::vector<pgsLi
    }
    
    if ( m_ShearFlowMethod != rOther.m_ShearFlowMethod ||
-        !::IsEqual(m_MaxInterfaceShearConnectorSpacing, rOther.m_MaxInterfaceShearConnectorSpacing) )
+        !::IsEqual(m_MaxInterfaceShearConnectorSpacing, rOther.m_MaxInterfaceShearConnectorSpacing) || 
+        m_bUseDeckWeightForPc != rOther.m_bUseDeckWeightForPc)
    {
       RETURN_ON_DIFFERENCE;
       vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Horizontal Interface Shear requirements are different"),_T(""),_T("")));
@@ -6746,6 +6757,16 @@ void SpecLibraryEntry::SetMaxInterfaceShearConnectionSpacing(Float64 sMax)
    m_MaxInterfaceShearConnectorSpacing = sMax;
 }
 
+void SpecLibraryEntry::UseDeckWeightForPermanentNetCompressiveForce(bool bUse)
+{
+   m_bUseDeckWeightForPc = bUse;
+}
+
+bool SpecLibraryEntry::UseDeckWeightForPermanentNetCompressiveForce() const
+{
+   return m_bUseDeckWeightForPc;
+}
+
 void SpecLibraryEntry::SetShearCapacityMethod(ShearCapacityMethod method)
 {
    m_ShearCapacityMethod = method;
@@ -7487,6 +7508,7 @@ void SpecLibraryEntry::MakeCopy(const SpecLibraryEntry& rOther)
 
    m_ShearFlowMethod = rOther.m_ShearFlowMethod;
    m_MaxInterfaceShearConnectorSpacing = rOther.m_MaxInterfaceShearConnectorSpacing;
+   m_bUseDeckWeightForPc = rOther.m_bUseDeckWeightForPc;
 
    m_ShearCapacityMethod = rOther.m_ShearCapacityMethod;
 

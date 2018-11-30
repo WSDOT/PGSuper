@@ -938,6 +938,13 @@ public:
    void SetMaxInterfaceShearConnectionSpacing(Float64 sMax);
    Float64 GetMaxInterfaceShearConnectorSpacing() const;
 
+   // Set/Get parameter that indicates if the weight of cast in place
+   // deck is used for the permanent net compressive force normal to 
+   // the shear plane.
+   // if true, Pc for LRFD5.7.4.3 is computed otherwise it is taken as 0.0.
+   void UseDeckWeightForPermanentNetCompressiveForce(bool bUse);
+   bool UseDeckWeightForPermanentNetCompressiveForce() const;
+
    //////////////////////////////////////
    //
    // Creep and Camber Parameters
@@ -1499,6 +1506,7 @@ private:
 
    ShearFlowMethod m_ShearFlowMethod;
    Float64 m_MaxInterfaceShearConnectorSpacing;
+   bool m_bUseDeckWeightForPc;
 
    Float64 m_StirrupSpacingCoefficient[2];
    Float64 m_MaxStirrupSpacing[2];

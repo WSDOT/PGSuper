@@ -1145,7 +1145,7 @@ BEGIN
     CONTROL         "Use specified f'ci and f'c",IDC_FC2,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,23,478,93,10
 END
 
-IDD_SPEC_SHEAR DIALOGEX 0, 0, 441, 410
+IDD_SPEC_SHEAR DIALOGEX 0, 0, 441, 423
 STYLE DS_SETFONT | DS_MODALFRAME | WS_CHILD | WS_CAPTION | WS_SYSMENU
 CAPTION "Shear Capacity"
 FONT 8, "MS Sans Serif", 0, 0, 0x0
@@ -1194,7 +1194,7 @@ BEGIN
     COMBOBOX        IDC_LRSH,15,304,297,55,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     CONTROL         "Include girder longitudinal mild reinforcement in capacity calculations",IDC_INCLUDE_REBAR_SHEAR,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,17,323,230,10
-    GROUPBOX        "Horizontal Interface Shear",IDC_STATIC,7,342,427,61
+    GROUPBOX        "Horizontal Interface Shear",IDC_STATIC,7,345,427,71
     LTEXT           "Compute shear stress at slab/girder interface",IDC_STATIC,17,357,141,8
     COMBOBOX        IDC_SHEAR_FLOW_METHOD,165,355,212,80,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     LTEXT           "LRFD 5.8.4.2 Spacing of interface shear connectors shall not exceed",IDC_SHIS,17,376,219,8
@@ -1205,6 +1205,8 @@ BEGIN
     EDITTEXT        IDC_NWC_PHI_DEBOND,111,193,23,14,ES_RIGHT | ES_AUTOHSCROLL
     EDITTEXT        IDC_LWC_PHI_DEBOND,164,193,23,14,ES_RIGHT | ES_AUTOHSCROLL
     RTEXT           "Debonded Strands",IDC_STATIC_PHI_DEBOND,27,195,76,8
+    CONTROL         "Use the deck weight for the permanent net compressive force normal to the shear plane, (Pc LRFD 5.7.4.3)",IDC_USE_DECK_FOR_PC,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,17,399,375,10
 END
 
 IDD_SPEC_MOMENT DIALOGEX 0, 0, 456, 350
@@ -2108,7 +2110,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 434
         TOPMARGIN, 7
-        BOTTOMMARGIN, 403
+        BOTTOMMARGIN, 416
     END
 
     IDD_SPEC_MOMENT, DIALOG
@@ -2820,3 +2822,4 @@ LANGUAGE 9, 1
 
 /////////////////////////////////////////////////////////////////////////////
 #endif    // not APSTUDIO_INVOKED
+
