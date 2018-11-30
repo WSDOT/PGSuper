@@ -374,7 +374,7 @@ void pgsLoadRater::InitCriticalSectionZones(const CGirderKey& girderKey,pgsTypes
          vCSPoi.erase(
             std::remove_if(vCSPoi.begin(), vCSPoi.end(), [&vCS](const pgsPointOfInterest& poi) 
                {
-                  return std::find_if(vCS.begin(), vCS.end(), [&poi](const auto& csDetails) {return csDetails.pCriticalSection->Poi.AtExactSamePlace(poi);}) == vCS.cend();
+                  return std::find_if(vCS.begin(), vCS.end(), [&poi](const auto& csDetails) {return csDetails.GetPointOfInterest().AtExactSamePlace(poi);}) == vCS.cend();
                }),
             vCSPoi.end());
       }
