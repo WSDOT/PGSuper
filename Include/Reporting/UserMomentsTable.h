@@ -133,43 +133,45 @@ rptRcTable* CreateUserLoadHeading(LPCTSTR strTitle,bool bPierTable,pgsTypes::Ana
 
    rptRcTable* pTable = rptStyleManager::CreateDefaultTable(nCols,strTitle);
 
+   ColumnIndexType col = 0;
+   
    // Set up table headings
    if ( bPierTable )
    {
-      (*pTable)(0,0) << _T("");
+      (*pTable)(0,col) << _T("");
    }
    else
    {
-      (*pTable)(0,0) << COLHDR(RPT_LFT_SUPPORT_LOCATION ,    rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+      (*pTable)(0, col) << COLHDR(RPT_LFT_SUPPORT_LOCATION ,    rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
    }
 
    if ( analysisType == pgsTypes::Envelope )
    {
       pTable->SetNumberOfHeaderRows(2);
-      pTable->SetRowSpan(0,0,2);
+      pTable->SetRowSpan(0, col++,2);
 
-      pTable->SetColumnSpan(0,1,2);
-      (*pTable)(0,1) << _T("User DC");
+      pTable->SetColumnSpan(0,col,2);
+      (*pTable)(0, col) << _T("User DC");
+      (*pTable)(1, col++) << COLHDR(_T("Max"), M, unitT);
+      (*pTable)(1, col++) << COLHDR(_T("Min"), M, unitT);
 
-      pTable->SetColumnSpan(0,2,2);
-      (*pTable)(0,2) << _T("User DW");
+      pTable->SetColumnSpan(0,col,2);
+      (*pTable)(0,col) << _T("User DW");
+      (*pTable)(1, col++) << COLHDR(_T("Max"), M, unitT);
+      (*pTable)(1, col++) << COLHDR(_T("Min"), M, unitT);
 
-      pTable->SetColumnSpan(0,3,2);
-      (*pTable)(0,3) << _T("User LL+IM");
-
-      (*pTable)(1,1) << COLHDR(_T("Max"), M, unitT );
-      (*pTable)(1,2) << COLHDR(_T("Min"), M, unitT );
-      (*pTable)(1,3) << COLHDR(_T("Max"), M, unitT );
-      (*pTable)(1,4) << COLHDR(_T("Min"), M, unitT );
-      (*pTable)(1,5) << COLHDR(_T("Max"), M, unitT );
-      (*pTable)(1,6) << COLHDR(_T("Min"), M, unitT );
+      pTable->SetColumnSpan(0,col,2);
+      (*pTable)(0,col) << _T("User LL+IM");
+      (*pTable)(1, col++) << COLHDR(_T("Max"), M, unitT);
+      (*pTable)(1, col++) << COLHDR(_T("Min"), M, unitT);
    }
    else
    {
+      col++;
       pTable->SetNumberOfHeaderRows(1);
-      (*pTable)(0,1) << COLHDR(_T("User DC"),          M, unitT );
-      (*pTable)(0,2) << COLHDR(_T("User DW"),          M, unitT );
-      (*pTable)(0,3) << COLHDR(_T("User LL+IM"),       M, unitT );
+      (*pTable)(0, col++) << COLHDR(_T("User DC"),          M, unitT );
+      (*pTable)(0, col++) << COLHDR(_T("User DW"),          M, unitT );
+      (*pTable)(0, col++) << COLHDR(_T("User LL+IM"),       M, unitT );
    }
 
    return pTable;
