@@ -694,7 +694,8 @@ rptRcTable* CProductRotationTable::Build(IBroker* pBroker,const CGirderKey& gird
             }
             else
             {
-               (*p_table)(row,col++) << RPT_NA;
+               (*p_table)(row, col++) << RPT_NA;
+               (*p_table)(row, col++) << RPT_NA;
             }
          }
 
