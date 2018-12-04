@@ -34,7 +34,7 @@ Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 93.29   12   8.00 SR 5/205 NE 139t    2     1    WF74G    *     63  0.6  270  31.44  15.82   9.75   9.75                                              17  70.0  6.0  7.700  9.000   6.108    -6.090    16659   0.719  0.814   6.573 -3.308  0.000 -0.239 -3.548 314.55  430.40    2.00   15.00   22.33 
+ 93.29   12   8.00 SR 5/205 NE 139t    2     1    WF74G    *     63  0.6  270  31.44  15.82   9.75   9.75                                              17  70.0  6.0  7.600  8.900   6.101    -6.088    16624   0.719  0.814   6.633 -3.327  0.000 -0.240 -3.567 316.18  433.89    2.25   15.00   22.33 
 
 
 The Specification Check was Not Successful

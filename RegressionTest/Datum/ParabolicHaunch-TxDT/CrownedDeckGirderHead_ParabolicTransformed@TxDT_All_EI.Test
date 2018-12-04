@@ -1,15 +1,13 @@
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  AECmbr                                             Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 44.33    7   0.75                     1     1    WF69D          37  0.6  270  37.93  26.81   8.00   8.00   2.50                                              5.100  5.100   2.530    -3.555    10510   0.652  0.652   3.348 -0.621 -0.192 -0.199 -1.012 123.88  251.93    3.00   14.00   14.00 
+ 44.33    7   0.75                     1     1    WF69D          37  0.6  270  37.96  29.88   8.00   8.00   2.50                                              5.400  6.300   2.568    -3.583    10510   0.652  0.652   3.342 -0.583 -0.182 -0.189 -0.954 122.08  248.24    3.00   14.00   14.00 
 
 
 Girder design was Not Successful
 The Specification Check was Not Successful
 Tensile stress check failed for Service I Limit State in Interval 2 Prestress Release
 Compression stress check failed for Service I Limit State in Interval 11 Cast Longitudinal Joints
-Compression stress check failed for Service I Limit State in Interval 18 Install Overlay
 Tensile stress check failed for Service III Limit State in Interval 19 Open to Traffic
-Stirrup detailing checks failed for the Strength I Limit State.
 Lifting checks failed
 Hauling checks failed
 
