@@ -139,14 +139,7 @@ void pgsShearCapacityEngineer::ComputeShearCapacityDetails(IntervalIndexType int
       if (0 < pscd->Aps)
       {
          Float64 fpu = pStrand->GetUltimateStrength();
-
-         // use 0.75 for low relax strands, otherwise 0.7 (see PCI BDM 8.4.1.1.4)
          Float64 K = 0.70;
-         if ( pStrand->GetType() == matPsStrand::LowRelaxation )
-         {
-            K = 0.75;
-         }
-
          pscd->fpops = xfer*K*fpu;
       }
       else
@@ -168,14 +161,7 @@ void pgsShearCapacityEngineer::ComputeShearCapacityDetails(IntervalIndexType int
       if (0 < pscd->Apt)
       {
          Float64 fpu = pTendon ->GetUltimateStrength();
-
-         // use 0.75 for low relax strands, otherwise 0.7 (see PCI BDM 8.4.1.1.4)
          Float64 K = 0.70;
-         if ( pTendon->GetType() == matPsStrand::LowRelaxation )
-         {
-            K = 0.75;
-         }
-
          pscd->fpopt = K*fpu;
       }
       else
