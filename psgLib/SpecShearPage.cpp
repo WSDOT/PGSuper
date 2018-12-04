@@ -130,6 +130,7 @@ BOOL CSpecShearPage::OnSetActive()
    GetDlgItem(IDC_SLTSPACING)->SetWindowText(CString(_T("LRFD Eq ")) +  pDad->LrfdCw8th(_T("5.8.2.7-1"),_T("5.7.2.6-1")));
    GetDlgItem(IDC_SGTSPACING)->SetWindowText(CString(_T("LRFD Eq ")) +  pDad->LrfdCw8th(_T("5.8.2.7-2"),_T("5.7.2.6-2")));
    GetDlgItem(IDC_SHIS)->SetWindowText(CString(_T("LRFD ")) + pDad->LrfdCw8th(_T("5.8.4.2"),_T("5.7.4.5")) + _T(" Spacing of interface shear connectors shall not exceed"));
+   GetDlgItem(IDC_USE_DECK_FOR_PC)->SetWindowText(CString(_T("Use the deck weight for the permanent net compressive force normal to the shear plane, (Pc, LRFD Eq ")) + pDad->LrfdCw8th(_T("5.8.4.1-3"), _T("5.7.4.3-3")) + _T(")"));
 
    return CPropertyPage::OnSetActive();
 }

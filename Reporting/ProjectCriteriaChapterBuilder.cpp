@@ -963,22 +963,22 @@ void write_moment_capacity(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUni
    *pPara << _T("Modulus of rupture = ") << stress.SetValue(fr) << rptNewLine;
 }
 
-void write_shear_capacity(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, const SpecLibraryEntry* pSpecEntry,const CSegmentKey& segmentKey)
+void write_shear_capacity(rptChapter* pChapter, IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, const SpecLibraryEntry* pSpecEntry, const CSegmentKey& segmentKey)
 {
-   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   GET_IFACE2(pBroker, IIntervals, pIntervals);
    IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
 
    rptParagraph* pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pPara;
-   *pPara<<_T("Shear Capacity Criteria")<<rptNewLine;
+   *pPara << _T("Shear Capacity Criteria") << rptNewLine;
 
    pPara = new rptParagraph;
    *pChapter << pPara;
 
-   switch( pSpecEntry->GetShearCapacityMethod() )
+   switch (pSpecEntry->GetShearCapacityMethod())
    {
    case scmBTEquations:
-      *pPara << _T("Shear capacity computed in accordance with LRFD ") << LrfdCw8th(_T("5.8.3.4.2"),_T("5.7.3.4.2")) << _T(" (General method)") << rptNewLine;
+      *pPara << _T("Shear capacity computed in accordance with LRFD ") << LrfdCw8th(_T("5.8.3.4.2"), _T("5.7.3.4.2")) << _T(" (General method)") << rptNewLine;
       break;
 
    case scmVciVcw:
@@ -1001,57 +1001,67 @@ void write_shear_capacity(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnit
       ATLASSERT(false); // should never get here
    }
 
-   INIT_UV_PROTOTYPE( rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(),    true );
-   INIT_UV_PROTOTYPE( rptLengthUnitValue, dim, pDisplayUnits->GetComponentDimUnit(),    true );
+   INIT_UV_PROTOTYPE(rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(), true);
+   INIT_UV_PROTOTYPE(rptLengthUnitValue, dim, pDisplayUnits->GetComponentDimUnit(), true);
 
-   GET_IFACE2(pBroker,IMaterials,pMaterials);
-   Float64 fr = pMaterials->GetSegmentShearFr(segmentKey,liveLoadIntervalIdx);
+   GET_IFACE2(pBroker, IMaterials, pMaterials);
+   Float64 fr = pMaterials->GetSegmentShearFr(segmentKey, liveLoadIntervalIdx);
    *pPara << _T("Modulus of rupture = ") << stress.SetValue(fr) << rptNewLine;
 
 
    bool bAfter1999 = lrfdVersionMgr::SecondEditionWith2000Interims <= pSpecEntry->GetSpecificationType() ? true : false;
    std::_tstring strFcCoefficient(bAfter1999 ? _T("0.125") : _T("0.1"));
-   Float64 k1,k2,s1,s2;
-   pSpecEntry->GetMaxStirrupSpacing(&k1,&s1,&k2,&s2);
-   *pPara << _T("Maximum Spacing of Transverse Reinforcement (LRFD ") << LrfdCw8th(_T("5.8.2.7"),_T("5.7.2.6")) << _T(")") << rptNewLine;
-   if ( bAfter1999 )
+   Float64 k1, k2, s1, s2;
+   pSpecEntry->GetMaxStirrupSpacing(&k1, &s1, &k2, &s2);
+   *pPara << _T("Maximum Spacing of Transverse Reinforcement (LRFD ") << LrfdCw8th(_T("5.8.2.7"), _T("5.7.2.6")) << _T(")") << rptNewLine;
+   if (bAfter1999)
    {
-      *pPara << _T("Eqn ") << LrfdCw8th(_T("5.8.2.7"),_T("5.7.2.6")) << _T("-1: If ") << italic(ON) << Sub2(_T("v"),_T("u")) << italic(OFF) << _T(" < ") << strFcCoefficient << RPT_FC << _T(" then ") << Sub2(_T("S"),_T("max")) << _T(" = ") << k1 << Sub2(_T("d"),_T("v")) << symbol(LTE) << dim.SetValue(s1) << rptNewLine;
-      *pPara << _T("Eqn ") << LrfdCw8th(_T("5.8.2.7"),_T("5.7.2.6")) << _T("-2: If ") << italic(ON) << Sub2(_T("v"),_T("u")) << italic(OFF) << _T(" ") << symbol(GTE) << _T(" ") << strFcCoefficient << RPT_FC << _T(" then ") << Sub2(_T("S"),_T("max")) << _T(" = ") << k2 << Sub2(_T("d"),_T("v")) << symbol(LTE) <<  dim.SetValue(s2) << rptNewLine;
+      *pPara << _T("Eqn ") << LrfdCw8th(_T("5.8.2.7"), _T("5.7.2.6")) << _T("-1: If ") << italic(ON) << Sub2(_T("v"), _T("u")) << italic(OFF) << _T(" < ") << strFcCoefficient << RPT_FC << _T(" then ") << Sub2(_T("S"), _T("max")) << _T(" = ") << k1 << Sub2(_T("d"), _T("v")) << symbol(LTE) << dim.SetValue(s1) << rptNewLine;
+      *pPara << _T("Eqn ") << LrfdCw8th(_T("5.8.2.7"), _T("5.7.2.6")) << _T("-2: If ") << italic(ON) << Sub2(_T("v"), _T("u")) << italic(OFF) << _T(" ") << symbol(GTE) << _T(" ") << strFcCoefficient << RPT_FC << _T(" then ") << Sub2(_T("S"), _T("max")) << _T(" = ") << k2 << Sub2(_T("d"), _T("v")) << symbol(LTE) << dim.SetValue(s2) << rptNewLine;
    }
    else
    {
-      *pPara << _T("Eqn ") << LrfdCw8th(_T("5.8.2.7"),_T("5.7.2.6")) << _T("-1: If ") << italic(ON) << Sub2(_T("V"),_T("u")) << italic(OFF) << _T(" < ") << strFcCoefficient << RPT_FC << Sub2(_T("b"),_T("v")) << Sub2(_T("d"),_T("v")) << _T(" then ") << Sub2(_T("S"),_T("max")) << _T(" = ") << k1 << Sub2(_T("d"),_T("v")) << symbol(LTE) << dim.SetValue(s1) << rptNewLine;
-      *pPara << _T("Eqn ") << LrfdCw8th(_T("5.8.2.7"),_T("5.7.2.6")) << _T("-2: If ") << italic(ON) << Sub2(_T("V"),_T("u")) << italic(OFF) << _T(" ") << symbol(GTE) << _T(" ") << strFcCoefficient << RPT_FC << Sub2(_T("b"),_T("v")) << Sub2(_T("d"),_T("v")) << _T(" then ") << Sub2(_T("S"),_T("max")) << _T(" = ") << k2 << Sub2(_T("d"),_T("v")) << symbol(LTE) <<  dim.SetValue(s2) << rptNewLine;
+      *pPara << _T("Eqn ") << LrfdCw8th(_T("5.8.2.7"), _T("5.7.2.6")) << _T("-1: If ") << italic(ON) << Sub2(_T("V"), _T("u")) << italic(OFF) << _T(" < ") << strFcCoefficient << RPT_FC << Sub2(_T("b"), _T("v")) << Sub2(_T("d"), _T("v")) << _T(" then ") << Sub2(_T("S"), _T("max")) << _T(" = ") << k1 << Sub2(_T("d"), _T("v")) << symbol(LTE) << dim.SetValue(s1) << rptNewLine;
+      *pPara << _T("Eqn ") << LrfdCw8th(_T("5.8.2.7"), _T("5.7.2.6")) << _T("-2: If ") << italic(ON) << Sub2(_T("V"), _T("u")) << italic(OFF) << _T(" ") << symbol(GTE) << _T(" ") << strFcCoefficient << RPT_FC << Sub2(_T("b"), _T("v")) << Sub2(_T("d"), _T("v")) << _T(" then ") << Sub2(_T("S"), _T("max")) << _T(" = ") << k2 << Sub2(_T("d"), _T("v")) << symbol(LTE) << dim.SetValue(s2) << rptNewLine;
    }
 
    Int16 method = pSpecEntry->GetLongReinfShearMethod();
-   if ( method != WSDOT_METHOD )
+   if (method != WSDOT_METHOD)
    {
-      *pPara << _T("Longitudinal reinforcement requirements computed in accordance with LRFD ") << LrfdCw8th(_T("5.8.3.5"),_T("5.7.3.5")) << rptNewLine;
+      *pPara << _T("Longitudinal reinforcement requirements computed in accordance with LRFD ") << LrfdCw8th(_T("5.8.3.5"), _T("5.7.3.5")) << rptNewLine;
    }
    else
    {
       *pPara << _T("Longitudinal reinforcement requirements computed in accordance with WSDOT Bridge Design Manual") << rptNewLine;
    }
 
-   switch ( pSpecEntry->GetShearFlowMethod() )
+   switch (pSpecEntry->GetShearFlowMethod())
    {
    case sfmLRFD:
-      *pPara << _T("Shear stress at girder/deck interface computed using the LRFD simplified method: ") << Sub2(_T("V"),_T("ui")) << _T(" = ") << _T("V/bd") << rptNewLine;
+      *pPara << _T("Shear stress at girder/deck interface computed using the LRFD simplified method: ") << Sub2(_T("V"), _T("ui")) << _T(" = ") << _T("V/bd") << rptNewLine;
       break;
 
    case sfmClassical:
-      *pPara << _T("Shear stress at girder/deck interface computed using the classical shear flow formula: ") << Sub2(_T("V"),_T("ui")) << _T(" = (") << Sub2(_T("V"),_T("u")) << _T("Q)") << _T("/") << _T("(Ib)") << rptNewLine;
+      *pPara << _T("Shear stress at girder/deck interface computed using the classical shear flow formula: ") << Sub2(_T("V"), _T("ui")) << _T(" = (") << Sub2(_T("V"), _T("u")) << _T("Q)") << _T("/") << _T("(Ib)") << rptNewLine;
       break;
    }
 
-   *pPara << _T("Maximum spacing of interface shear connectors (LRFD ") << LrfdCw8th(_T("5.8.4.2"),_T("5.7.4.5")) << _T("): ") << dim.SetValue(pSpecEntry->GetMaxInterfaceShearConnectorSpacing());
-   if ( lrfdVersionMgr::SeventhEdition2014 <= lrfdVersionMgr::GetVersion() )
+   *pPara << _T("Maximum spacing of interface shear connectors (LRFD ") << LrfdCw8th(_T("5.8.4.2"), _T("5.7.4.5")) << _T("): ") << dim.SetValue(pSpecEntry->GetMaxInterfaceShearConnectorSpacing());
+   if (lrfdVersionMgr::SeventhEdition2014 <= lrfdVersionMgr::GetVersion())
    {
       *pPara << _T(", or the depth of the member.");
    }
    *pPara << rptNewLine;
+
+   *pPara << _T("Interface shear compressive force normal to shear plane, Pc, for use in LRFD Eq ") << LrfdCw8th(_T("5.8.4.1-3"), _T("5.7.4.3-3")) << _T(" is ");
+   if (pSpecEntry->UseDeckWeightForPermanentNetCompressiveForce())
+   {
+      *pPara << _T("computed from the deck weight.") << rptNewLine;
+   }
+   else
+   {
+      *pPara << _T("conservatively taken to be zero.") << rptNewLine;
+   }
 }
 
 void write_creep(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, const SpecLibraryEntry* pSpecEntry)

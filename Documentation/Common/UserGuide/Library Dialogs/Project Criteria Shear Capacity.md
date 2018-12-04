@@ -30,3 +30,5 @@ Horizontal Interface Shear
 Select a method for computing horizontal interface shear.
 
 Define the maximum spacing of interface shear connectors for LRFD 5.7.4.5 (*pre-2017: 5.8.4.2*).
+
+Use the deck weight for the permanent net compressive force normal to the shear plane. Check this box to use the weight of the deck as the normal force, Pc, for use in LRFD Eq'n 5.7.4.3-3 (*pre-2017: Eq'n 5.8.4.1-3*). LRFD C5.7.4.3 (*pre-2017: C5.8.4.1*) states that it is conservative to neglect Pc if it is compressive.

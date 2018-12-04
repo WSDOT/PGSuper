@@ -874,6 +874,7 @@
 #define IDC_CHECK_TEMPORARY_STRESSES    1444
 #define IDC_STRAIGHT_DESIGN_CHECK       1444
 #define IDC_DUAL_TANDEM                 1444
+#define IDC_USE_DECK_FOR_PC             1444
 #define IDC_BRIDGE_LENGTH               1445
 #define IDC_EXTEND_DECK_BARS            1445
 #define IDC_DESIGN_SPLITTING            1445
