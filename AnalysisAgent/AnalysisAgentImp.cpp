@@ -6032,6 +6032,10 @@ void CAnalysisAgentImp::GetDesignStress(IntervalIndexType intervalIdx,pgsTypes::
       pLLDF->GetDistributionFactors(poi,limitState,&gpM2,&gnM2,&gV2);
       Float64 lldf_adj = gpM1/gpM2; // multiply by design LLDF and divide out the original LLDF
 
+      // Deal with different options for application of pedestrian loads
+      GET_IFACE(ILiveLoads,pLiveLoads);
+      ILiveLoads::PedestrianLoadApplicationType pedLoadAppType = pLiveLoads->GetPedestrianLoadApplication(limitState==pgsTypes::FatigueI ? pgsTypes::lltFatigue : pgsTypes::lltDesign);
+
       Float64 ftMin,ftMax,fbMin,fbMax;
       if ( limitState == pgsTypes::FatigueI )
       {
@@ -6042,19 +6046,78 @@ void CAnalysisAgentImp::GetDesignStress(IntervalIndexType intervalIdx,pgsTypes::
          GetLiveLoadStress(liveLoadIntervalIdx,pgsTypes::lltDesign,  poi,bat,true,true,pgsTypes::TopGirder,pgsTypes::BottomGirder,&ftMin,&ftMax,&fbMin,&fbMax);
       }
 
+      Float64 ftMinPed,ftMaxPed,fbMinPed,fbMaxPed;
+      GetLiveLoadStress(liveLoadIntervalIdx,pgsTypes::lltPedestrian,  poi,bat,true,true,pgsTypes::TopGirder,pgsTypes::BottomGirder,&ftMinPed,&ftMaxPed,&fbMinPed,&fbMaxPed);
+
+      if (ILiveLoads::PedDontApply == pedLoadAppType)
+      {
+         // live load only
       ftop3Min += ll*lldf_adj*k_top*ftMin;   
       fbot3Min += ll*lldf_adj*k_bot*fbMin;
 
       ftop3Max += ll*lldf_adj*k_top*ftMax;   
       fbot3Max += ll*lldf_adj*k_bot*fbMax;
+      }
+      else if (ILiveLoads::PedConcurrentWithVehicular == pedLoadAppType)
+      {
+         // sum live + ped
+         ftop3Min += ll*lldf_adj*k_top*ftMin;   
+         fbot3Min += ll*lldf_adj*k_bot*fbMin;
 
-      GetLiveLoadStress(liveLoadIntervalIdx,pgsTypes::lltPedestrian,  poi,bat,true,true,pgsTypes::TopGirder,pgsTypes::BottomGirder,&ftMin,&ftMax,&fbMin,&fbMax);
+         ftop3Max += ll*lldf_adj*k_top*ftMax;   
+         fbot3Max += ll*lldf_adj*k_bot*fbMax;
 
-      ftop3Min += ll*k_top*ftMin;   
-      fbot3Min += ll*k_bot*fbMin;
+         ftop3Min += ll*k_top*ftMinPed;   
+         fbot3Min += ll*k_bot*fbMinPed;
 
-      ftop3Max += ll*k_top*ftMax;   
-      fbot3Max += ll*k_bot*fbMax;
+         ftop3Max += ll*k_top*ftMaxPed;   
+         fbot3Max += ll*k_bot*fbMaxPed;
+      }
+      else if (ILiveLoads::PedEnvelopeWithVehicular == pedLoadAppType)
+      {
+         // envelope live . ped
+         if (lldf_adj*ftMin < ftMinPed)
+         {
+            ftop3Min += ll*lldf_adj*k_top*ftMin;
+         }
+         else
+         {
+            ftop3Min += ll*k_top*ftMinPed;
+         }
+
+         if (lldf_adj*fbMin < fbMinPed)
+         {
+            fbot3Min += ll*lldf_adj*k_bot*fbMin;
+         }
+         else
+         {
+            fbot3Min += ll*k_bot*fbMinPed;
+         }
+
+         if (lldf_adj*ftMax > ftMaxPed)
+         {
+            ftop3Max += ll*lldf_adj*k_top*ftMax;
+         }
+         else
+         {
+            ftop3Max += ll*k_top*ftMaxPed;
+         }
+
+         if (lldf_adj*fbMax > fbMaxPed)
+         {
+            fbot3Max += ll*lldf_adj*k_bot*fbMax;
+         }
+         else
+         {
+            fbot3Max += ll*k_bot*fbMaxPed;
+         }
+      }
+      else
+      {
+         ATLASSERT(0);
+      }
+
+
 
       GetStress(liveLoadIntervalIdx,pgsTypes::pftUserLLIM,poi,bat,rtCumulative,pgsTypes::TopGirder,pgsTypes::BottomGirder,&ft,&fb);
       ftop3Min += ll*k_top*ft;   

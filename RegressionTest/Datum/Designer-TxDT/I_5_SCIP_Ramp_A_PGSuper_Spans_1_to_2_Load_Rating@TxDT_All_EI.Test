@@ -52,13 +52,10 @@ Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 39.97    5   8.25 I-5 & I-205 SCIP    2     3    WF74G    *     48  0.6  270  32.16  16.91  10.75  10.75                                              12  70.0  4.0  5.800  6.900   4.691    -4.828    13359   0.676  0.832   5.398 -2.773  0.000 -0.286 -3.058 214.36  347.25    3.00   11.17   11.17 
+ 39.97    5   8.25 I-5 & I-205 SCIP    2     3    WF74G    *     48  0.6  270  32.07  19.16  10.50  10.50                                              10  70.0  4.0  6.100  7.400   4.700    -4.819    13333   0.678  0.832   5.355 -2.645  0.000 -0.279 -2.924 209.63  340.08    3.00   15.00   17.33 
 
 
-Girder design was Not Successful
 The Specification Check was Not Successful
-Compression stress check failed for Service I Limit State in Interval 11 Cast Deck
-Tensile stress check failed for Service III Limit State in Interval 16 Open to Traffic
 Ultimate moment capacity (negative moment) check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 
