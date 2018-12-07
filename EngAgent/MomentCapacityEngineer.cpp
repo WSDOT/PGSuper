@@ -98,14 +98,15 @@ pgsMomentCapacityEngineer::pgsMomentCapacityEngineer(IBroker* pBroker,StatusGrou
    m_StatusGroupID = statusGroupID;
    CREATE_LOGFILE("MomentCapacity");
 
+   HRESULT hr = S_OK;
+
    // create solvers
-   HRESULT hr = m_MomentCapacitySolver.CoCreateInstance(CLSID_MomentCapacitySolver);
+   hr = m_MomentCapacitySolver.CoCreateInstance(CLSID_MomentCapacitySolver);
 
    if ( FAILED(hr) )
    {
       THROW_SHUTDOWN(_T("Installation Problem - Unable to create Moment Capacity Solver"),XREASON_COMCREATE_ERROR,true);
    }
-
 
    hr = m_CrackedSectionSolver.CoCreateInstance(CLSID_CrackedSectionSolver);
 
@@ -148,9 +149,11 @@ std::vector<Float64> pgsMomentCapacityEngineer::GetMomentCapacity(IntervalIndexT
 {
    std::vector<Float64> Mr;
    Mr.reserve(vPoi.size());
-   for ( const pgsPointOfInterest& poi : vPoi)
+
+   const auto vDetails = GetMomentCapacityDetails(intervalIdx, vPoi, bPositiveMoment, pConfig);
+   for (const auto& details : vDetails)
    {
-      Mr.push_back(GetMomentCapacity(intervalIdx, poi, bPositiveMoment,pConfig));
+      Mr.push_back(details->Mr);
    }
 
    return Mr;
@@ -216,9 +219,9 @@ std::vector<const MOMENTCAPACITYDETAILS*> pgsMomentCapacityEngineer::GetMomentCa
 {
    std::vector<const MOMENTCAPACITYDETAILS*> details;
    details.reserve(vPoi.size());
-   for ( const pgsPointOfInterest& poi : vPoi)
+   for (const pgsPointOfInterest& poi : vPoi)
    {
-      const MOMENTCAPACITYDETAILS* pmcd = GetMomentCapacityDetails(intervalIdx, poi, bPositiveMoment,pConfig);
+      const MOMENTCAPACITYDETAILS* pmcd = GetMomentCapacityDetails(intervalIdx, poi, bPositiveMoment, pConfig);
       details.push_back(pmcd);
    }
 
