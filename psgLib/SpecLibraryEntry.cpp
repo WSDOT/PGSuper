@@ -3740,7 +3740,7 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
          {
             if (!pLoad->Property(_T("UseDeckWeightForPc"), &m_bUseDeckWeightForPc)) // added in version 3 of Shear data block
             {
-               THROW_LOAD(InvalidFileFormat);
+               THROW_LOAD(InvalidFileFormat,pLoad);
             }
          }
 
