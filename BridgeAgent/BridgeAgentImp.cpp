@@ -194,29 +194,34 @@ private:
 
 //function to translate project loads to bridge loads
 
-IUserDefinedLoads::UserDefinedLoadCase Project2BridgeLoads(UserLoads::LoadCase plc)
+inline IUserDefinedLoads::UserDefinedLoadCase Project2BridgeLoads(UserLoads::LoadCase plc)
 {
+#if defined _DEBUG
+   IUserDefinedLoads::UserDefinedLoadCase ulc;
    if (plc==UserLoads::DC)
    {
-      return IUserDefinedLoads::userDC;
+      ulc = IUserDefinedLoads::userDC;
    }
    else if (plc==UserLoads::DW)
    {
-      return IUserDefinedLoads::userDW;
+      ulc = IUserDefinedLoads::userDW;
    }
    else if (plc==UserLoads::LL_IM)
    {
-      return IUserDefinedLoads::userLL_IM;
+      ulc = IUserDefinedLoads::userLL_IM;
    }
    else
    {
       ATLASSERT(false);
-      return  IUserDefinedLoads::userDC;
+      ulc = IUserDefinedLoads::userDC;
    }
+   ATLASSERT(ulc == (IUserDefinedLoads::UserDefinedLoadCase)plc);
+#endif
+   return (IUserDefinedLoads::UserDefinedLoadCase)plc;
 }
 
 // function for computing debond factor from development length
-inline Float64 GetDevLengthAdjustment(Float64 bonded_length, Float64 dev_length, Float64 xfer_length, Float64 fps, Float64 fpe)
+Float64 GetDevLengthAdjustment(Float64 bonded_length, Float64 dev_length, Float64 xfer_length, Float64 fps, Float64 fpe)
 {
    if (bonded_length <= 0.0)
    {
