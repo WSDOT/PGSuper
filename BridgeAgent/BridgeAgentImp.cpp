@@ -12648,7 +12648,7 @@ Float64 CBridgeAgentImp::GetSegmentShearFr(const CSegmentKey& segmentKey,Interva
    return m_ConcreteManager.GetSegmentShearFr(segmentKey,time);
 }
 
-Float64 CBridgeAgentImp::GetClosureJointFlexureFr(const CSegmentKey& closureKey,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType) const
+Float64 CBridgeAgentImp::GetClosureJointFlexureFr(const CClosureKey& closureKey,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType) const
 {
    Float64 time = m_IntervalManager.GetTime(intervalIdx,timeType);
    return m_ConcreteManager.GetClosureJointFlexureFr(closureKey,time);
@@ -12731,7 +12731,7 @@ Float64 CBridgeAgentImp::GetSegmentAgeAdjustedEc(const CSegmentKey& segmentKey,I
    return Ea;
 }
 
-Float64 CBridgeAgentImp::GetClosureJointAgeAdjustedEc(const CSegmentKey& closureKey,IntervalIndexType intervalIdx) const
+Float64 CBridgeAgentImp::GetClosureJointAgeAdjustedEc(const CClosureKey& closureKey,IntervalIndexType intervalIdx) const
 {
    Float64 Ec = GetClosureJointEc(closureKey,intervalIdx);
 
@@ -12837,7 +12837,7 @@ std::shared_ptr<matConcreteBaseShrinkageDetails> CBridgeAgentImp::GetTotalSegmen
    return m_ConcreteManager.GetSegmentFreeShrinkageStrainDetails(segmentKey,time);
 }
 
-std::shared_ptr<matConcreteBaseShrinkageDetails> CBridgeAgentImp::GetTotalClosureJointFreeShrinkageStrainDetails(const CSegmentKey& closureKey,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType) const
+std::shared_ptr<matConcreteBaseShrinkageDetails> CBridgeAgentImp::GetTotalClosureJointFreeShrinkageStrainDetails(const CClosureKey& closureKey,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType) const
 {
    Float64 time = m_IntervalManager.GetTime(intervalIdx,timeType);
    return m_ConcreteManager.GetClosureJointFreeShrinkageStrainDetails(closureKey,time);
@@ -12866,7 +12866,7 @@ Float64 CBridgeAgentImp::GetIncrementalSegmentFreeShrinkageStrain(const CSegment
    return GetTotalSegmentFreeShrinkageStrain(segmentKey,intervalIdx,pgsTypes::End) - GetTotalSegmentFreeShrinkageStrain(segmentKey,intervalIdx,pgsTypes::Start);
 }
 
-Float64 CBridgeAgentImp::GetIncrementalClosureJointFreeShrinkageStrain(const CSegmentKey& closureKey,IntervalIndexType intervalIdx) const
+Float64 CBridgeAgentImp::GetIncrementalClosureJointFreeShrinkageStrain(const CClosureKey& closureKey,IntervalIndexType intervalIdx) const
 {
    return GetTotalClosureJointFreeShrinkageStrain(closureKey,intervalIdx,pgsTypes::End) - GetTotalClosureJointFreeShrinkageStrain(closureKey,intervalIdx,pgsTypes::Start);
 }
@@ -12894,7 +12894,7 @@ INCREMENTALSHRINKAGEDETAILS CBridgeAgentImp::GetIncrementalSegmentFreeShrinkageS
    return details;
 }
 
-INCREMENTALSHRINKAGEDETAILS CBridgeAgentImp::GetIncrementalClosureJointFreeShrinkageStrainDetails(const CSegmentKey& closureKey,IntervalIndexType intervalIdx) const
+INCREMENTALSHRINKAGEDETAILS CBridgeAgentImp::GetIncrementalClosureJointFreeShrinkageStrainDetails(const CClosureKey& closureKey,IntervalIndexType intervalIdx) const
 {
    INCREMENTALSHRINKAGEDETAILS details;
    details.pStartDetails = GetTotalClosureJointFreeShrinkageStrainDetails(closureKey,intervalIdx,pgsTypes::Start);
@@ -12958,7 +12958,7 @@ std::shared_ptr<matConcreteBaseCreepDetails> CBridgeAgentImp::GetSegmentCreepCoe
    return m_ConcreteManager.GetSegmentCreepCoefficientDetails(segmentKey,time,loading_time);
 }
 
-std::shared_ptr<matConcreteBaseCreepDetails> CBridgeAgentImp::GetClosureJointCreepCoefficientDetails(const CSegmentKey& closureKey,IntervalIndexType loadingIntervalIdx,pgsTypes::IntervalTimeType loadingTimeType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType) const
+std::shared_ptr<matConcreteBaseCreepDetails> CBridgeAgentImp::GetClosureJointCreepCoefficientDetails(const CClosureKey& closureKey,IntervalIndexType loadingIntervalIdx,pgsTypes::IntervalTimeType loadingTimeType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType) const
 {
    Float64 loading_time = m_IntervalManager.GetTime(loadingIntervalIdx,loadingTimeType);
    Float64 time = m_IntervalManager.GetTime(intervalIdx,timeType);
