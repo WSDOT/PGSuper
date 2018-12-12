@@ -308,7 +308,6 @@ public:
    virtual bool IsRightExteriorGirder(const CGirderKey& girderKey) const override;
    virtual bool IsObtuseCorner(const CSpanKey& spanKey,pgsTypes::MemberEndType endType) const override;
    virtual bool AreGirderTopFlangesRoughened(const CSegmentKey& segmentKey) const override;
-   virtual void GetClosureJointProfile(const CClosureKey& closureKey,IShape** ppShape) const override;
    virtual Float64 GetClosureJointLength(const CClosureKey& closureKey) const override;
    virtual void GetClosureJointSize(const CClosureKey& closureKey,Float64* pLeft,Float64* pRight) const override;
    virtual void GetAngleBetweenSegments(const CClosureKey& closureKey,IAngle** ppAngle) const override;
@@ -1117,6 +1116,7 @@ public:
    virtual void GetStructuralLongitudinalJointWidth(const pgsPointOfInterest& poi, Float64* pLeft, Float64* pRight) const override;
    virtual void GetSegmentProfile(const CSegmentKey& segmentKey,bool bIncludeClosure,IShape** ppShape) const override;
    virtual void GetSegmentProfile(const CSegmentKey& segmentKey,const CSplicedGirderData* pGirder,bool bIncludeClosure,IShape** ppShape) const override;
+   virtual void GetClosureJointProfile(const CClosureKey& closureKey, IShape** ppShape) const override;
    virtual Float64 GetSegmentHeight(const CSegmentKey& segmentKey,const CSplicedGirderData* pSplicedGirder,Float64 Xsp) const override;
    virtual void GetSegmentBottomFlangeProfile(const CSegmentKey& segmentKey,bool bIncludeClosure,IPoint2dCollection** points) const override;
    virtual void GetSegmentBottomFlangeProfile(const CSegmentKey& segmentKey,const CSplicedGirderData* pGirder,bool bIncludeClosure,IPoint2dCollection** points) const override;

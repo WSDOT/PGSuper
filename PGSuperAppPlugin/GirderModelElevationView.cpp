@@ -1237,7 +1237,8 @@ void CGirderModelElevationView::BuildClosureJointDisplayObjects(CPGSDocBase* pDo
    GroupIndexType startGroupIdx = (girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex);
    GroupIndexType endGroupIdx   = (girderKey.groupIndex == ALL_GROUPS ? pBridgeDesc->GetGirderGroupCount()-1 : startGroupIdx);
 
-   GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker, IBridge, pBridge);
+   GET_IFACE2(pBroker, IGirder, pIGirder);
 
    Float64 group_offset = 0;
 
@@ -1273,7 +1274,7 @@ void CGirderModelElevationView::BuildClosureJointDisplayObjects(CPGSDocBase* pDo
             // get the profile shape of the closure joint
             // shape is located with x = 0 at start of girder
             CComPtr<IShape> shape;
-            pBridge->GetClosureJointProfile(closureKey,&shape);
+            pIGirder->GetClosureJointProfile(closureKey,&shape);
 
             // offset the shape by the length of all the girder groups that
             // came before the current group

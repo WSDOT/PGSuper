@@ -54,12 +54,9 @@ void CDrawBeamTool::DrawBeam(IBroker* pBroker,CDC* pDC,grlibPointMapper mapper,a
    m_pUnitConverter = pUnitConverter;
 
    GET_IFACE(IIntervals,pIntervals);
-
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
    GET_IFACE(IGirder,pIGirder);
    GET_IFACE(IPointOfInterest,pPoi);
-
-   GET_IFACE_NOCHECK(IBridge,pBridge); // only gets used if there are more than one segment per girder
 
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
@@ -204,7 +201,7 @@ void CDrawBeamTool::DrawBeam(IBroker* pBroker,CDC* pDC,grlibPointMapper mapper,a
             CClosureKey closureKey(segmentKey);
 
             CComPtr<IShape> shape;
-            pBridge->GetClosureJointProfile(closureKey,&shape);
+            pIGirder->GetClosureJointProfile(closureKey,&shape);
 
             CComPtr<IPoint2dCollection> points;
             shape->get_PolyPoints(&points); // these points are in girder path coordinates

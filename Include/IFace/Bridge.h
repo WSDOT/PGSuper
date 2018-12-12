@@ -406,10 +406,6 @@ interface IBridge : IUnknown
    // Closure Joints
    ///////////////////////////////////////////////////
 
-   // X values are in girder path coordinates.
-   // Y = 0 is at the top of the closure joint
-   virtual void GetClosureJointProfile(const CClosureKey& closureKey,IShape** ppShape) const = 0;
-
    // Returns the length of the specified closure joint
    virtual Float64 GetClosureJointLength(const CClosureKey& closureKey) const = 0;
 
@@ -1741,6 +1737,11 @@ interface IGirder : public IUnknown
    // true, the segment shape includes its projection into the closure joint. Y=0 is at the top of the segment
    // X values are in Girder Path Coordinates.
    virtual void GetSegmentProfile(const CSegmentKey& segmentKey,const CSplicedGirderData* pSplicedGirder,bool bIncludeClosure,IShape** ppShape) const = 0;
+
+   // Returns the shape of the closure joint profile
+   // X values are in Girder Path Coordinates.
+   // Y = 0 is at the top of the closure joint
+   virtual void GetClosureJointProfile(const CClosureKey& closureKey, IShape** ppShape) const = 0;
 
    // Returns the height of the segment at the specified location (Xsp is in Segment Path Coordinates)
    virtual Float64 GetSegmentHeight(const CSegmentKey& segmentKey,const CSplicedGirderData* pSplicedGirder,Float64 Xsp) const = 0;
