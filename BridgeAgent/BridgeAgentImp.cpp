@@ -4775,82 +4775,6 @@ bool CBridgeAgentImp::AreGirderTopFlangesRoughened(const CSegmentKey& segmentKey
    return pShearData->bIsRoughenedSurface;
 }
 
-void CBridgeAgentImp::GetClosureJointProfile(const CClosureKey& closureKey,IShape** ppShape) const
-{
-   GroupIndexType      grpIdx     = closureKey.groupIndex;
-   GirderIndexType     gdrIdx     = closureKey.girderIndex;
-   CollectionIndexType closureIdx = closureKey.segmentIndex;
-
-   GET_IFACE(IBridgeDescription,pIBridgeDesc);
-   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
-   const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(grpIdx);
-   const CSplicedGirderData* pGirder = pGroup->GetGirder(gdrIdx);
-   const CClosureJointData* pClosureJoint = pGirder->GetClosureJoint(closureIdx);
-   
-   const CPrecastSegmentData* pLeftSegment = pClosureJoint->GetLeftSegment();
-   SegmentIndexType leftSegIdx = pLeftSegment->GetIndex();
-   
-   const CPrecastSegmentData* pRightSegment = pClosureJoint->GetRightSegment();
-   SegmentIndexType rightSegIdx = pRightSegment->GetIndex();
-
-   CSegmentKey leftSegmentKey(grpIdx,gdrIdx,leftSegIdx);
-   CSegmentKey rightSegmentKey(grpIdx,gdrIdx,rightSegIdx);
-
-   Float64 leftSegStartOffset, leftSegEndOffset;
-   GetSegmentEndDistance(leftSegmentKey,&leftSegStartOffset,&leftSegEndOffset);
-
-   Float64 rightSegStartOffset, rightSegEndOffset;
-   GetSegmentEndDistance(rightSegmentKey,pGirder,&rightSegStartOffset,&rightSegEndOffset);
-
-   Float64 leftSegStartBrgOffset, leftSegEndBrgOffset;
-   GetSegmentBearingOffset(leftSegmentKey,&leftSegStartBrgOffset,&leftSegEndBrgOffset);
-
-   Float64 rightSegStartBrgOffset, rightSegEndBrgOffset;
-   GetSegmentBearingOffset(rightSegmentKey,&rightSegStartBrgOffset,&rightSegEndBrgOffset);
-
-   Float64 xLeftStart,xLeftEnd;
-   GetSegmentRange(leftSegmentKey,&xLeftStart,&xLeftEnd);
-
-   Float64 xRightStart,xRightEnd;
-   GetSegmentRange(rightSegmentKey,&xRightStart,&xRightEnd);
-
-   Float64 xStart = xLeftEnd;
-   Float64 xEnd = xRightStart;
-
-   xStart -= (leftSegEndBrgOffset - leftSegEndOffset);
-   xEnd   += (rightSegStartBrgOffset - rightSegStartOffset);
-
-   std::shared_ptr<mathFunction2d> f = CreateGirderProfile(pGirder);
-   CComPtr<IPolyShape> polyShape;
-   polyShape.CoCreateInstance(CLSID_PolyShape);
-
-   std::vector<Float64> xValues;
-
-   // fill up with other points
-   for ( int i = 0; i < 5; i++ )
-   {
-      Float64 x = i*(xEnd - xStart)/4 + xStart;
-      xValues.push_back(x);
-   }
-
-   std::sort(xValues.begin(),xValues.end());
-
-   std::vector<Float64>::iterator iter(xValues.begin());
-   std::vector<Float64>::iterator end(xValues.end());
-   for ( ; iter != end; iter++ )
-   {
-      Float64 x = *iter;
-      Float64 y = f->Evaluate(x);
-      polyShape->AddPoint(x,-y);
-   }
-
-   // points across the top of the segment
-   polyShape->AddPoint(xEnd,0);
-   polyShape->AddPoint(xStart,0);
-
-   polyShape->get_Shape(ppShape);
-}
-
 void CBridgeAgentImp::GetClosureJointSize(const CClosureKey& closureKey,Float64* pLeft,Float64* pRight) const
 {
    GroupIndexType      grpIdx     = closureKey.groupIndex;
@@ -25860,6 +25784,82 @@ void CBridgeAgentImp::GetSegmentProfile(const CSegmentKey& segmentKey,const CSpl
       polyShape->AddPoint(xEnd, 0);
       polyShape->AddPoint(xStart, 0);
    }
+
+   polyShape->get_Shape(ppShape);
+}
+
+void CBridgeAgentImp::GetClosureJointProfile(const CClosureKey& closureKey, IShape** ppShape) const
+{
+   GroupIndexType      grpIdx = closureKey.groupIndex;
+   GirderIndexType     gdrIdx = closureKey.girderIndex;
+   CollectionIndexType closureIdx = closureKey.segmentIndex;
+
+   GET_IFACE(IBridgeDescription, pIBridgeDesc);
+   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+   const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(grpIdx);
+   const CSplicedGirderData* pGirder = pGroup->GetGirder(gdrIdx);
+   const CClosureJointData* pClosureJoint = pGirder->GetClosureJoint(closureIdx);
+
+   const CPrecastSegmentData* pLeftSegment = pClosureJoint->GetLeftSegment();
+   SegmentIndexType leftSegIdx = pLeftSegment->GetIndex();
+
+   const CPrecastSegmentData* pRightSegment = pClosureJoint->GetRightSegment();
+   SegmentIndexType rightSegIdx = pRightSegment->GetIndex();
+
+   CSegmentKey leftSegmentKey(grpIdx, gdrIdx, leftSegIdx);
+   CSegmentKey rightSegmentKey(grpIdx, gdrIdx, rightSegIdx);
+
+   Float64 leftSegStartOffset, leftSegEndOffset;
+   GetSegmentEndDistance(leftSegmentKey, &leftSegStartOffset, &leftSegEndOffset);
+
+   Float64 rightSegStartOffset, rightSegEndOffset;
+   GetSegmentEndDistance(rightSegmentKey, pGirder, &rightSegStartOffset, &rightSegEndOffset);
+
+   Float64 leftSegStartBrgOffset, leftSegEndBrgOffset;
+   GetSegmentBearingOffset(leftSegmentKey, &leftSegStartBrgOffset, &leftSegEndBrgOffset);
+
+   Float64 rightSegStartBrgOffset, rightSegEndBrgOffset;
+   GetSegmentBearingOffset(rightSegmentKey, &rightSegStartBrgOffset, &rightSegEndBrgOffset);
+
+   Float64 xLeftStart, xLeftEnd;
+   GetSegmentRange(leftSegmentKey, &xLeftStart, &xLeftEnd);
+
+   Float64 xRightStart, xRightEnd;
+   GetSegmentRange(rightSegmentKey, &xRightStart, &xRightEnd);
+
+   Float64 xStart = xLeftEnd;
+   Float64 xEnd = xRightStart;
+
+   xStart -= (leftSegEndBrgOffset - leftSegEndOffset);
+   xEnd += (rightSegStartBrgOffset - rightSegStartOffset);
+
+   std::shared_ptr<mathFunction2d> f = CreateGirderProfile(pGirder);
+   CComPtr<IPolyShape> polyShape;
+   polyShape.CoCreateInstance(CLSID_PolyShape);
+
+   std::vector<Float64> xValues;
+
+   // fill up with other points
+   for (int i = 0; i < 5; i++)
+   {
+      Float64 x = i*(xEnd - xStart) / 4 + xStart;
+      xValues.push_back(x);
+   }
+
+   std::sort(xValues.begin(), xValues.end());
+
+   std::vector<Float64>::iterator iter(xValues.begin());
+   std::vector<Float64>::iterator end(xValues.end());
+   for (; iter != end; iter++)
+   {
+      Float64 x = *iter;
+      Float64 y = f->Evaluate(x);
+      polyShape->AddPoint(x, -y);
+   }
+
+   // points across the top of the segment
+   polyShape->AddPoint(xEnd, 0);
+   polyShape->AddPoint(xStart, 0);
 
    polyShape->get_Shape(ppShape);
 }
