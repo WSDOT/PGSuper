@@ -2493,13 +2493,6 @@ int CTimelineManager::Validate() const
             {
                EventIndexType erectTempSupportEventIdx, removeTempSupportEventIdx;
                GetTempSupportEvents(pTS->GetID(), &erectTempSupportEventIdx, &removeTempSupportEventIdx);
-
-               // can't erect segment before temporary support
-               if (erectSegmentEventIdx < erectTempSupportEventIdx)
-               {
-                  return TLM_SEGMENT_ERECTION_ERROR;
-               }
-
                // can't remove temporary support before segment is erected
                if (removeTempSupportEventIdx <= erectSegmentEventIdx)
                {
