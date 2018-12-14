@@ -90,6 +90,9 @@ public:
    // returns the index of the interval when the segment is transported to the bridge site
    IntervalIndexType GetHaulingInterval(const CSegmentKey& segmentKey) const;
 
+   // returns true if hauling occurs during this interval
+   bool IsHaulingInterval(IntervalIndexType intervalIdx) const;
+
    // returns the index of the interval for the first segment
    // to be erected
    IntervalIndexType GetFirstSegmentErectionInterval(const CGirderKey& girderKey) const;

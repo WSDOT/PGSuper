@@ -103,6 +103,9 @@ interface IIntervals : IUnknown
    // returns the index of the interval when a segment is hauled to the bridge site
    virtual IntervalIndexType GetHaulSegmentInterval(const CSegmentKey& segmentKey) const = 0;
 
+   // returns true if a segment is hauled during this interval
+   virtual bool IsHaulSegmentInterval(IntervalIndexType intervalIdx) const = 0;
+
    // returns the index of the interval when the first precast segment for a specified girder is erected
    virtual IntervalIndexType GetFirstSegmentErectionInterval(const CGirderKey& girderKey) const = 0;
 

@@ -500,8 +500,8 @@ IntervalIndexType CIntervalManager::GetHaulingInterval(const CSegmentKey& segmen
    auto found(m_SegmentHaulingIntervals.find(segmentKey));
    if( found != m_SegmentHaulingIntervals.end())
    {
-   return found->second;
-}
+      return found->second;
+   }
    else
    {
       // probably an unequal number of girders per group, and this one has less.
@@ -510,6 +510,18 @@ IntervalIndexType CIntervalManager::GetHaulingInterval(const CSegmentKey& segmen
       found = m_SegmentHaulingIntervals.find(newKey);
       return found->second; // this will crash if not found, so no bother with assert
    }
+}
+
+bool CIntervalManager::IsHaulingInterval(IntervalIndexType intervalIdx) const
+{
+   for (const auto& segHaulInterval : m_SegmentHaulingIntervals)
+   {
+      if (segHaulInterval.second == intervalIdx)
+      {
+         return true;
+      }
+   }
+   return false;
 }
 
 IntervalIndexType CIntervalManager::GetErectSegmentInterval(const CSegmentKey& segmentKey) const

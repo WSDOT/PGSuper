@@ -75,5 +75,5 @@ protected:
    void InitializeGraph(PropertyType propertyType,const CGirderKey& girderKey,IntervalIndexType intervalIdx,IndexType* pGraph1,IndexType* pGraph2, IndexType* pGraph3, IndexType* pGraph4);
    void UpdateTendonGraph(PropertyType propertyType,const CGirderKey& girderKey,IntervalIndexType intervalIdx,const PoiList& vPoi,const std::vector<Float64>& xVals);
 
-   virtual IntervalIndexType GetBeamDrawInterval() override;
+   virtual void GetBeamDrawIntervals(IntervalIndexType* pFirstIntervalIdx, IntervalIndexType* pLastIntervalIdx) override;
 };

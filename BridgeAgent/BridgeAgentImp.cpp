@@ -9370,6 +9370,8 @@ CSegmentKey CBridgeAgentImp::GetSegmentAtPier(PierIndexType pierIdx,const CGirde
 {
    ATLASSERT(girderKey.girderIndex != ALL_GIRDERS);
 
+   CSegmentKey segmentKey;
+
    // Gets the girder segment that touches the pier 
    // When two segments touch a pier, the segment will be in the girder group defined by the girderKey
    // If both girders are in the same group, the left segment is returned
@@ -9395,14 +9397,16 @@ CSegmentKey CBridgeAgentImp::GetSegmentAtPier(PierIndexType pierIdx,const CGirde
 
          if ( ::InRange(startStation,pierStation,endStation) )
          {
-            CSegmentKey segmentKey(girderKey,segIdx);
+            segmentKey.groupIndex = grpIdx;
+            segmentKey.girderIndex = girderKey.girderIndex;
+            segmentKey.segmentIndex = segIdx;
             return segmentKey;
          }
       } // next segment
    } // next group
 
    ATLASSERT(false); // should never get here
-   return CSegmentKey();
+   return segmentKey;
 }
 
 void CBridgeAgentImp::GetSegmentsAtPier(PierIndexType pierIdx, GirderIndexType gdrIdx, CSegmentKey* pBackSegmentKey, CSegmentKey* pAheadSegmentKey) const
@@ -23829,7 +23833,7 @@ std::vector<SupportIndexType> CBridgeAgentImp::GetTemporarySupports(GroupIndexTy
    for (SupportIndexType tsIdx = 0; tsIdx < nTS; tsIdx++)
    {
       const CTemporarySupportData* pTS = pBridgeDesc->GetTemporarySupport(tsIdx);
-      if (pBridgeDesc->GetGirderGroup(pTS->GetSpan())->GetIndex() == grpIdx)
+      if (grpIdx == ALL_GROUPS || pBridgeDesc->GetGirderGroup(pTS->GetSpan())->GetIndex() == grpIdx)
       {
          vTS.push_back(tsIdx);
       }
@@ -28464,6 +28468,12 @@ IntervalIndexType CBridgeAgentImp::GetHaulSegmentInterval(const CSegmentKey& seg
 {
    VALIDATE(BRIDGE);
    return m_IntervalManager.GetHaulingInterval(segmentKey);
+}
+
+bool CBridgeAgentImp::IsHaulSegmentInterval(IntervalIndexType intervalIdx) const
+{
+   VALIDATE(BRIDGE);
+   return m_IntervalManager.IsHaulingInterval(intervalIdx);
 }
 
 IntervalIndexType CBridgeAgentImp::GetFirstSegmentErectionInterval(const CGirderKey& girderKey) const

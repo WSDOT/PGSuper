@@ -1184,6 +1184,7 @@ public:
    virtual IntervalIndexType GetFirstStorageInterval(const CGirderKey& girderKey) const override;
    virtual IntervalIndexType GetLastStorageInterval(const CGirderKey& girderKey) const override;
    virtual IntervalIndexType GetHaulSegmentInterval(const CSegmentKey& segmentKey) const override;
+   virtual bool IsHaulSegmentInterval(IntervalIndexType intervalIdx) const override;
    virtual IntervalIndexType GetFirstSegmentErectionInterval(const CGirderKey& girderKey) const override;
    virtual IntervalIndexType GetLastSegmentErectionInterval(const CGirderKey& girderKey) const override;
    virtual IntervalIndexType GetErectSegmentInterval(const CSegmentKey& segmentKey) const override;
