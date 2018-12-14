@@ -10731,9 +10731,9 @@ void CAnalysisAgentImp::GetTiltedGirderLateralStresses(const PoiList& vPoi, pgsT
    pfTop->resize(vPoi.size(), 0.0);
    pfBot->resize(vPoi.size(), 0.0);
 
-   GET_IFACE(IIntervals, pIntervals);
-   GET_IFACE(ISectionProperties, pSectProps);
-   GET_IFACE(IGirder, pGirder);
+   GET_IFACE_NOCHECK(IIntervals, pIntervals);
+   GET_IFACE_NOCHECK(ISectionProperties, pSectProps);
+   GET_IFACE_NOCHECK(IGirder, pGirder);
    GET_IFACE(IPointOfInterest, pPoi);
    IntervalIndexType thisSegmentErectionIntervalIdx;
    CSegmentKey lastSegmentKey;
