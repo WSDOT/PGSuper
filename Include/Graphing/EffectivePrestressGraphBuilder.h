@@ -53,5 +53,5 @@ protected:
    void UpdatePosttensionGraphData(GroupIndexType grpIdx,GirderIndexType gdrIdx,DuctIndexType ductIdx);
    void UpdatePretensionGraphData(GroupIndexType grpIdx,GirderIndexType gdrIdx);
 
-   virtual IntervalIndexType GetBeamDrawInterval() override;
+   virtual void GetBeamDrawIntervals(IntervalIndexType* pFirstIntervalIdx, IntervalIndexType* pLastIntervalIdx) override;
 };

@@ -23,6 +23,7 @@
 #include "stdafx.h"
 #include "resource.h"
 #include <Graphing\AnalysisResultsGraphBuilder.h>
+#include <Graphing\DrawBeamTool.h>
 #include "AnalysisResultsGraphController.h"
 #include "AnalysisResultsGraphDefinition.h"
 #include "AnalysisResultsGraphViewControllerImp.h"
@@ -867,149 +868,29 @@ void CAnalysisResultsGraphBuilder::UpdateGraphDefinitions()
       m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("Fatigue I Limit"), pgsTypes::FatigueI, graphAllowable, vLiveLoadIntervals) );
    }
 
-   //if (pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating))
-   //{
-   //   m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("Operating Strength I Moment"), pgsTypes::StrengthI_Operating, graphLoadRating, actionMoment, INVALID_INDEX, vLoadRatingIntervals));
-
-   //   if (pRatingSpec->RateForShear(pgsTypes::lrDesign_Operating))
-   //   {
-   //      m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("Operating Strength I Shear"), pgsTypes::StrengthI_Operating, graphLoadRating, actionShear, INVALID_INDEX, vLoadRatingIntervals));
-   //   }
-
-   //   // NOTE: There isn't a Service III Operating rating
-   //   //m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("Operating Service III Stress"), pgsTypes::ServiceIII_Operating, graphLoadRating, actionStress, INVALID_INDEX, vLoadRatingIntervals));
-   //}
-
    if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) )
    {
       m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("Service III Demand (Design Rating, Inventory)"),   pgsTypes::ServiceIII_Inventory,graphDemand,    vLoadRatingIntervals) );
       m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("Service III Limit (Design Rating, Inventory)"),pgsTypes::ServiceIII_Inventory,graphAllowable, vLoadRatingIntervals) );
-      
-      //m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("Inventory Strength I Moment"), pgsTypes::StrengthI_Inventory, graphLoadRating, actionMoment, INVALID_INDEX, vLoadRatingIntervals));
-      //if (pRatingSpec->RateForShear(pgsTypes::lrDesign_Inventory))
-      //{
-      //   m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("Inventory Strength I Shear"), pgsTypes::StrengthI_Inventory, graphLoadRating, actionShear, INVALID_INDEX, vLoadRatingIntervals));
-      //}
-      //m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("Inventory Service III Stress"), pgsTypes::ServiceIII_Inventory, graphLoadRating, actionStress, INVALID_INDEX, vLoadRatingIntervals));
    }
 
    if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) )
    {
       m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("Service III Demand (Legal Rating, Routine)"),   pgsTypes::ServiceIII_LegalRoutine,graphDemand,    vLoadRatingIntervals) );
       m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("Service III Limit (Legal Rating, Routine)"),pgsTypes::ServiceIII_LegalRoutine,graphAllowable, vLoadRatingIntervals) );
-      
-      //std::vector<std::_tstring> strLLNames(pProductLoads->GetVehicleNames(pgsTypes::lltLegalRating_Routine, girderKey));
-      //VehicleIndexType vehicleIdx = 0;
-      //m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("Routine Legal Strength I Moment"), pgsTypes::StrengthI_LegalRoutine, graphLoadRating, actionMoment, INVALID_INDEX, vLoadRatingIntervals));
-      //for (const auto& strName : strLLNames)
-      //{
-      //   std::_tstringstream str;
-      //   str << _T("Routine Legal Strength I Moment (") << strName << _T(")") << std::ends;
-      //   m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, str.str(), pgsTypes::StrengthI_LegalRoutine, graphLoadRating, actionMoment, vehicleIdx++, vLoadRatingIntervals));
-      //}
-      //if (pRatingSpec->RateForShear(pgsTypes::lrLegal_Routine))
-      //{
-      //   m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("Routine Legal Strength I Shear"), pgsTypes::StrengthI_LegalRoutine, graphLoadRating, actionShear, INVALID_INDEX, vLoadRatingIntervals));
-      //   vehicleIdx = 0;
-      //   for (const auto& strName : strLLNames)
-      //   {
-      //      std::_tstringstream str;
-      //      str << _T("Routine Legal Strength I Shear (") << strName << _T(")") << std::ends;
-      //      m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, str.str(), pgsTypes::StrengthI_LegalRoutine, graphLoadRating, actionShear, vehicleIdx++, vLoadRatingIntervals));
-      //   }
-      //}
-      //if (pRatingSpec->RateForStress(pgsTypes::lrLegal_Routine))
-      //{
-      //   m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("Routine Legal Service III Stress"), pgsTypes::ServiceIII_LegalRoutine, graphLoadRating, actionStress, INVALID_INDEX, vLoadRatingIntervals));
-      //   vehicleIdx = 0;
-      //   for (const auto& strName : strLLNames)
-      //   {
-      //      std::_tstringstream str;
-      //      str << _T("Routine Legal Service III Stress (") << strName << _T(")") << std::ends;
-      //      m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, str.str(), pgsTypes::ServiceIII_LegalRoutine, graphLoadRating, actionStress, vehicleIdx++, vLoadRatingIntervals));
-      //   }
-      //}
    }
 
    if (pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special))
    {
       m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("Service III Demand (Legal Rating, Special)"), pgsTypes::ServiceIII_LegalSpecial, graphDemand, vLoadRatingIntervals));
       m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("Service III Limit (Legal Rating, Special)"), pgsTypes::ServiceIII_LegalSpecial, graphAllowable, vLoadRatingIntervals));
-
-      //std::vector<std::_tstring> strLLNames(pProductLoads->GetVehicleNames(pgsTypes::lltLegalRating_Special, girderKey));
-      //VehicleIndexType vehicleIdx = 0;
-      //m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("Special Legal Strength I Moment"), pgsTypes::StrengthI_LegalSpecial, graphLoadRating, actionMoment, INVALID_INDEX, vLoadRatingIntervals));
-      //for (const auto& strName : strLLNames)
-      //{
-      //   std::_tstringstream str;
-      //   str << strName << _T(" Strength I Moment") << std::ends;
-      //   m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, str.str(), pgsTypes::StrengthI_LegalSpecial, graphLoadRating, actionMoment, vehicleIdx++, vLoadRatingIntervals));
-      //}
-      //if (pRatingSpec->RateForShear(pgsTypes::lrLegal_Special))
-      //{
-      //   m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("Special Legal Strength I Shear"), pgsTypes::StrengthI_LegalSpecial, graphLoadRating, actionShear, INVALID_INDEX, vLoadRatingIntervals));
-      //   vehicleIdx = 0;
-      //   for (const auto& strName : strLLNames)
-      //   {
-      //      std::_tstringstream str;
-      //      str << strName << _T(" Strength I Shear") << std::ends;
-      //      m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, str.str(), pgsTypes::StrengthI_LegalSpecial, graphLoadRating, actionShear, vehicleIdx++, vLoadRatingIntervals));
-      //   }
-      //}
-      //if (pRatingSpec->RateForStress(pgsTypes::lrLegal_Special))
-      //{
-      //   m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("Special Legal Service III Stress"), pgsTypes::ServiceIII_LegalSpecial, graphLoadRating, actionStress, INVALID_INDEX, vLoadRatingIntervals));
-      //   vehicleIdx = 0;
-      //   for (const auto& strName : strLLNames)
-      //   {
-      //      std::_tstringstream str;
-      //      str << strName << _T(" Service III Stress") << std::ends;
-      //      m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, str.str(), pgsTypes::ServiceIII_LegalSpecial, graphLoadRating, actionStress, vehicleIdx++, vLoadRatingIntervals));
-      //   }
-      //}
    }
 
    if (pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Emergency))
    {
       m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("Service III Demand (Legal Rating, Emergency)"), pgsTypes::ServiceIII_LegalEmergency, graphDemand, vLoadRatingIntervals));
       m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("Service III Limit (Legal Rating, Emergency)"), pgsTypes::ServiceIII_LegalEmergency, graphAllowable, vLoadRatingIntervals));
-
-      //m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("Emergency Legal Strength I Moment"), pgsTypes::StrengthI_LegalEmergency, graphLoadRating, actionMoment, INVALID_INDEX, vLoadRatingIntervals));
-      //if (pRatingSpec->RateForShear(pgsTypes::lrLegal_Emergency))
-      //{
-      //   m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("Emergency Legal Strength I Shear"), pgsTypes::StrengthI_LegalEmergency, graphLoadRating, actionShear, INVALID_INDEX, vLoadRatingIntervals));
-      //}
-      //if (pRatingSpec->RateForStress(pgsTypes::lrLegal_Emergency))
-      //{
-      //   m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("Emergency Legal Service III Stress"), pgsTypes::ServiceIII_LegalEmergency, graphLoadRating, actionStress, INVALID_INDEX, vLoadRatingIntervals));
-      //}
    }
-
-   //if (pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine))
-   //{
-   //   m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("Routine Permit Strength II Moment"), pgsTypes::StrengthII_PermitRoutine, graphLoadRating, actionMoment, INVALID_INDEX, vLoadRatingIntervals));
-   //   if (pRatingSpec->RateForShear(pgsTypes::lrPermit_Routine))
-   //   {
-   //      m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("Routine Permit Strength II Shear"), pgsTypes::StrengthII_PermitRoutine, graphLoadRating, actionShear, INVALID_INDEX, vLoadRatingIntervals));
-   //   }
-   //   if (pRatingSpec->RateForStress(pgsTypes::lrPermit_Routine))
-   //   {
-   //      m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("Routine Permit Service III Stress"), pgsTypes::ServiceIII_PermitRoutine, graphLoadRating, actionStress, INVALID_INDEX, vLoadRatingIntervals));
-   //   }
-   //}
-
-   //if (pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Special))
-   //{
-   //   m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("Special Permit Strength II Moment"), pgsTypes::StrengthII_PermitSpecial, graphLoadRating, actionMoment, INVALID_INDEX, vLoadRatingIntervals));
-   //   if (pRatingSpec->RateForShear(pgsTypes::lrPermit_Special))
-   //   {
-   //      m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("Special Permit Strength II Shear"), pgsTypes::StrengthII_PermitSpecial, graphLoadRating, actionShear, INVALID_INDEX, vLoadRatingIntervals));
-   //   }
-   //   if (pRatingSpec->RateForStress(pgsTypes::lrPermit_Special))
-   //   {
-   //      m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("Special Permit Service III Stress"), pgsTypes::ServiceIII_PermitSpecial, graphLoadRating, actionStress, INVALID_INDEX, vLoadRatingIntervals));
-   //   }
-   //}
 }
 
 std::vector<std::pair<std::_tstring,IDType>> CAnalysisResultsGraphBuilder::GetLoadings(IntervalIndexType intervalIdx,ActionType actionType)
@@ -1342,47 +1223,47 @@ void CAnalysisResultsGraphBuilder::UpdateGraphData()
    GroupIndexType  grpIdx = m_pGraphController->GetGirderGroup();
    GirderIndexType gdrIdx = m_pGraphController->GetGirder();
 
-   CGirderKey girderKey(grpIdx == ALL_GROUPS ? 0 : grpIdx,gdrIdx);
+   CGirderKey girderKey(grpIdx == ALL_GROUPS ? 0 : grpIdx, gdrIdx);
 
-   ActionType actionType  = ((CAnalysisResultsGraphController*)m_pGraphController)->GetActionType();
+   ActionType actionType = ((CAnalysisResultsGraphController*)m_pGraphController)->GetActionType();
 
    std::vector<IntervalIndexType> vIntervals = ((CAnalysisResultsGraphController*)m_pGraphController)->GetSelectedIntervals();
-   if ( 0 == vIntervals.size() )
+   if (0 == vIntervals.size())
    {
       // if there aren't any intervals to plot, there is nothing to plot
       return;
    }
 
    // Get the X locations for the graph
-   GET_IFACE(IPointOfInterest,pIPoi);
+   GET_IFACE(IPointOfInterest, pIPoi);
 
    // If the segments are simple span elements, we want to draw a graph for each segment individually.
    // Determine if the segments are simple spans during the intervals being graphed
-   GET_IFACE(IIntervals,pIntervals);
+   GET_IFACE(IIntervals, pIntervals);
    bool bSimpleSpanSegments = true;
-   GET_IFACE(IBridge,pBridge);
+   GET_IFACE(IBridge, pBridge);
    GroupIndexType nGroups = pBridge->GetGirderGroupCount();
    GroupIndexType startGroupIdx = (grpIdx == ALL_GROUPS ? 0 : grpIdx);
-   GroupIndexType endGroupIdx   = (grpIdx == ALL_GROUPS ? nGroups-1 : Min(nGroups-1,startGroupIdx));
+   GroupIndexType endGroupIdx = (grpIdx == ALL_GROUPS ? nGroups - 1 : Min(nGroups - 1, startGroupIdx));
 
    std::vector<IntervalIndexType>::iterator intervalIter(vIntervals.begin());
    std::vector<IntervalIndexType>::iterator intervalIterEnd(vIntervals.end());
-   for ( ; intervalIter != intervalIterEnd; intervalIter++ )
+   for (; intervalIter != intervalIterEnd; intervalIter++)
    {
       IntervalIndexType intervalIdx = *intervalIter;
 
-      for ( GroupIndexType groupIdx = startGroupIdx; groupIdx <= endGroupIdx; groupIdx++ )
+      for (GroupIndexType groupIdx = startGroupIdx; groupIdx <= endGroupIdx; groupIdx++)
       {
          GirderIndexType nGirders = pBridge->GetGirderCount(groupIdx);
-         GirderIndexType girderIdx = Min(gdrIdx,nGirders-1);
-         CGirderKey thisGirderKey(groupIdx,girderIdx);
+         GirderIndexType girderIdx = Min(gdrIdx, nGirders - 1);
+         CGirderKey thisGirderKey(groupIdx, girderIdx);
          SegmentIndexType nSegments = pBridge->GetSegmentCount(thisGirderKey);
-         if ( 1 < nSegments )
+         if (1 < nSegments)
          {
-            for ( SegmentIndexType segIdx = 0; segIdx < nSegments-1; segIdx++ )
+            for (SegmentIndexType segIdx = 0; segIdx < nSegments - 1; segIdx++)
             {
-               CClosureKey closureKey(thisGirderKey,segIdx);
-               if ( pIntervals->GetCompositeClosureJointInterval(closureKey) <= intervalIdx )
+               CClosureKey closureKey(thisGirderKey, segIdx);
+               if (pIntervals->GetCompositeClosureJointInterval(closureKey) <= intervalIdx)
                {
                   bSimpleSpanSegments = false;
                   break;
@@ -1395,9 +1276,9 @@ void CAnalysisResultsGraphBuilder::UpdateGraphData()
       // or the girder groups have one segment each which means this is a precast girder
       // bridge.... if this is a conventional precast girder bridge, check to see if the
       // deck is composite with the girders (in which case we can assume continuity has occured)
-      if ( bSimpleSpanSegments )
+      if (bSimpleSpanSegments)
       {
-         if ( pIntervals->GetCompositeDeckInterval() <= intervalIdx && grpIdx == ALL_GROUPS )
+         if (pIntervals->GetCompositeDeckInterval() <= intervalIdx && grpIdx == ALL_GROUPS)
          {
             bSimpleSpanSegments = false;
          }
@@ -1407,16 +1288,16 @@ void CAnalysisResultsGraphBuilder::UpdateGraphData()
    // Determine the interval when the first segment is erected for the girder groups
    // that are being plotted
    IntervalIndexType firstSegmentErectionIntervalIdx = INVALID_INDEX;
-   for ( GroupIndexType groupIdx = startGroupIdx; groupIdx <= endGroupIdx; groupIdx++ )
+   for (GroupIndexType groupIdx = startGroupIdx; groupIdx <= endGroupIdx; groupIdx++)
    {
       GirderIndexType nGirders = pBridge->GetGirderCount(groupIdx);
-      GirderIndexType girderIdx = Min(gdrIdx,nGirders-1);
-      CGirderKey thisGirderKey(groupIdx,girderIdx);
-      firstSegmentErectionIntervalIdx = Min(firstSegmentErectionIntervalIdx,pIntervals->GetFirstSegmentErectionInterval(thisGirderKey));
+      GirderIndexType girderIdx = Min(gdrIdx, nGirders - 1);
+      CGirderKey thisGirderKey(groupIdx, girderIdx);
+      firstSegmentErectionIntervalIdx = Min(firstSegmentErectionIntervalIdx, pIntervals->GetFirstSegmentErectionInterval(thisGirderKey));
    }
 
    IntervalIndexType firstPlottingIntervalIdx = vIntervals.front();
-   IntervalIndexType lastPlottingIntervalIdx  = vIntervals.back();
+   IntervalIndexType lastPlottingIntervalIdx = vIntervals.back();
 
    IndexType nGraphs = ((CAnalysisResultsGraphController*)m_pGraphController)->GetGraphCount();
    m_pGraphColor->SetGraphCount(nGraphs);
@@ -1438,18 +1319,21 @@ void CAnalysisResultsGraphBuilder::UpdateGraphData()
       SegmentIndexType nSegments = pBridge->GetSegmentCount(thisGirderKey);
 
       SegmentIndexType endSegmentIdx = (bSimpleSpanSegments ? nSegments-1 : 0);
-      for ( SegmentIndexType segIdx = 0; segIdx <= endSegmentIdx; segIdx++ )
+      for (SegmentIndexType segIdx = 0; segIdx <= endSegmentIdx; segIdx++)
       {
-         CSegmentKey segmentKey(groupIdx,girderIdx,segIdx);
+         CSegmentKey segmentKey(groupIdx, girderIdx, segIdx);
          IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
          IntervalIndexType segmentErectionIntervalIdx = pIntervals->GetErectSegmentInterval(segmentKey);
+         IntervalIndexType haulSegmentIntervalIdx = pIntervals->GetHaulSegmentInterval(segmentKey);
 
-         if ( firstSegmentErectionIntervalIdx <= firstPlottingIntervalIdx && // results are for erected segments
-              lastPlottingIntervalIdx < segmentErectionIntervalIdx ) // current segment is not yet erected
-         {
-            continue;
-         }
-         
+         //if ((lastPlottingIntervalIdx < releaseIntervalIdx) // this is before release for this segment, so this segment doesn't exist yet
+         //   ||
+         //   ((firstPlottingIntervalIdx <= firstSegmentErectionIntervalIdx && firstSegmentErectionIntervalIdx <= lastPlottingIntervalIdx) && (lastPlottingIntervalIdx < segmentErectionIntervalIdx)) // results are for erected segments AND current segment is not yet erected
+         //   )
+         //{
+         //   continue;
+         //}
+         //
          PoiList vPoi;
          pIPoi->GetPointsOfInterest(CSegmentKey(groupIdx, girderIdx, bSimpleSpanSegments ? segIdx : ALL_SEGMENTS), &vPoi);
 
@@ -1477,6 +1361,20 @@ void CAnalysisResultsGraphBuilder::UpdateGraphData()
             {
                // if plotting by interval, the graph index is the index into the selected intervals
                intervalIdx = vIntervals[graphIdx];
+            }
+
+            bool bIsHauilngInterval = pIntervals->IsHaulSegmentInterval(intervalIdx);
+            if( (intervalIdx < releaseIntervalIdx) ||
+                (!bIsHauilngInterval && firstSegmentErectionIntervalIdx <= intervalIdx && intervalIdx < segmentErectionIntervalIdx) ||
+                (bIsHauilngInterval && intervalIdx != haulSegmentIntervalIdx)
+              )
+            {
+               // this interval is 
+               // 1) before the segment exists (no prestress release yet) -OR-
+               // 2) when hauling is not occuring and some segments have been erected but is before this segment is erected -OR-
+               // 3) when hauling is occuring, but this segment is not being hauled
+               // skip it
+               continue;
             }
 
             IDType graphID = ((CAnalysisResultsGraphController*)m_pGraphController)->SelectedGraphIndexToGraphID(graphIdx);
@@ -3752,19 +3650,28 @@ pgsTypes::AnalysisType CAnalysisResultsGraphBuilder::GetAnalysisType()
    return ((CAnalysisResultsGraphController*)m_pGraphController)->GetAnalysisType();
 }
 
-IntervalIndexType CAnalysisResultsGraphBuilder::GetBeamDrawInterval()
+void CAnalysisResultsGraphBuilder::GetBeamDrawIntervals(IntervalIndexType* pFirstIntervalIdx, IntervalIndexType* pLastIntervalIdx)
 {
    CAnalysisResultsGraphController* pMyGraphController = (CAnalysisResultsGraphController*)m_pGraphController;
    std::vector<IntervalIndexType> vIntervals(pMyGraphController->GetSelectedIntervals());
-   if ( 0 < vIntervals.size() )
+   if (0 < vIntervals.size())
    {
-      return vIntervals.back();
+      *pFirstIntervalIdx = vIntervals.front();
+      *pLastIntervalIdx = vIntervals.back();
    }
+   else
+   {
+      CGirderKey girderKey = pMyGraphController->GetGirderKey();
+      GET_IFACE(IIntervals, pIntervals);
+      IntervalIndexType intervalIdx = pIntervals->GetFirstPrestressReleaseInterval(girderKey);
+      *pFirstIntervalIdx = intervalIdx;
+      *pLastIntervalIdx = *pFirstIntervalIdx;
+   }
+}
 
-   CGirderKey girderKey = pMyGraphController->GetGirderKey();
-   GET_IFACE(IIntervals,pIntervals);
-   IntervalIndexType intervalIdx = pIntervals->GetFirstPrestressReleaseInterval(girderKey);
-   return intervalIdx;
+DWORD CAnalysisResultsGraphBuilder::GetDrawBeamStyle() const
+{
+   return DBS_ERECTED_SEGMENTS_ONLY | DBS_HAULED_SEGMENTS_ONLY;
 }
 
 void CAnalysisResultsGraphBuilder::GetSecondaryXValues(const PoiList& vPoi,const std::vector<Float64>& xVals,PoiList* pvPoi,std::vector<Float64>* pXvalues)

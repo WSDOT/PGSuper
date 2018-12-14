@@ -23,7 +23,6 @@
 #include "stdafx.h"
 #include "resource.h"
 #include <Graphing\GirderPropertiesGraphBuilder.h>
-#include <Graphing\DrawBeamTool.h>
 #include "GirderPropertiesGraphController.h"
 #include "GirderPropertiesGraphViewControllerImp.h"
 #include "..\Documentation\PGSuper.hh"
@@ -752,7 +751,8 @@ void CGirderPropertiesGraphBuilder::InitializeGraph(PropertyType propertyType,co
    }
 }
 
-IntervalIndexType CGirderPropertiesGraphBuilder::GetBeamDrawInterval()
+void CGirderPropertiesGraphBuilder::GetBeamDrawIntervals(IntervalIndexType* pFirstIntervalIdx, IntervalIndexType* pLastIntervalIdx)
 {
-   return ((CIntervalGirderGraphControllerBase*)m_pGraphController)->GetInterval();
+   *pFirstIntervalIdx = ((CIntervalGirderGraphControllerBase*)m_pGraphController)->GetInterval();
+   *pLastIntervalIdx = *pFirstIntervalIdx;
 }
