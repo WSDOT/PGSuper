@@ -7290,6 +7290,8 @@ void CGirderModelManager::CreateLBAMSpans(GirderIndexType gdr,bool bContinuousMo
    // only used if there are temporary supports
    GET_IFACE_NOCHECK(IIntervals,pIntervals);
 
+   IntervalIndexType startIntervalIdx = pIntervals->GetFirstSegmentErectionInterval(CGirderKey(ALL_GROUPS,gdr)); // this is the interval that the LBAM starts with
+
    SupportIndexType nTS = pBridge->GetTemporarySupportCount();
    for ( SupportIndexType tsIdx = 0; tsIdx < nTS; tsIdx++ )
    {
@@ -7331,11 +7333,17 @@ void CGirderModelManager::CreateLBAMSpans(GirderIndexType gdr,bool bContinuousMo
 
          objTS->put_BoundaryCondition(bcRoller);
 
-         IntervalIndexType erectIntervalIdx   = pIntervals->GetTemporarySupportErectionInterval(tsIdx);
+         IntervalIndexType erectionIntervalIdx = pIntervals->GetTemporarySupportErectionInterval(tsIdx);
          IntervalIndexType removalIntervalIdx = pIntervals->GetTemporarySupportRemovalInterval(tsIdx);
 
-         //ATLASSERT(erectIntervalIdx == 0); // LBAM doesn't support the stage when a TS is erected
-         //objTS->put_StageErected( GetLBAMStageName(erectIntervalIdx) );
+         ATLASSERT(erectionIntervalIdx < removalIntervalIdx);
+
+         // temporary supports are often erected in an interval that occurs before the LBAM models
+         // e.g. if erected in intervalIdx = 0, and the LBAM starts at startIntervalIdx, then the TS is erected before the LBAM
+         // Make sure the erection interval isn't before the start of the LBAM
+         erectionIntervalIdx = Max(erectionIntervalIdx, startIntervalIdx);
+
+         objTS->put_StageErected( GetLBAMStageName(erectionIntervalIdx) );
          objTS->put_StageRemoved( GetLBAMStageName(removalIntervalIdx) );
 
          objTemporarySupports->Add(objTS);
@@ -8088,6 +8096,7 @@ void CGirderModelManager::CreateLBAMSuperstructureMembers(GirderIndexType gdr,bo
 
                   // If there is a continuous connection at the pier, remove the temporary support when the 
                   // connection becomes continuous, otherwise keep it to preserve the stability of the LBAM
+                  objLeftTS->put_StageErected(CComBSTR(""));
                   if (bContinuousConnection)
                   {
                      objLeftTS->put_StageRemoved(GetLBAMStageName(leftContinuityIntervalIdx));
@@ -8147,6 +8156,7 @@ void CGirderModelManager::CreateLBAMSuperstructureMembers(GirderIndexType gdr,bo
 
                   // If there is a continuous connection at the pier, remove the temporary support when the 
                   // connection becomes continuous, otherwise keep it to preserve the stability of the LBAM
+                  objRightTS->put_StageErected(CComBSTR(""));
                   if (bContinuousConnection)
                   {
                      objRightTS->put_StageRemoved(GetLBAMStageName(rightContinuityIntervalIdx));
