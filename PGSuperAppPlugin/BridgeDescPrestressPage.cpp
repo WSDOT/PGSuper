@@ -2104,10 +2104,6 @@ void CGirderDescPrestressPage::OnStrandInputTypeChanged()
    StrandIndexType num_straight(0), num_harped(0), num_perm(0), num_temp(0);
    GetStrandCount(&num_straight, &num_harped, &num_temp, &num_perm);
 
-   // show hidden controls
-   ShowEndOffsetControls(TRUE);
-   ShowHpOffsetControls(TRUE);
-
    // Next: "To" new fill  type
    if (newStrandDefinitionType == CStrandData::sdtDirectSelection)
    {
@@ -2584,8 +2580,6 @@ void CGirderDescPrestressPage::OnStrandInputTypeChanged()
 
          HideControls(0, newStrandDefinitionType);
          HideControls(1, newStrandDefinitionType); 
-         ShowEndOffsetControls(FALSE);
-         ShowHpOffsetControls(FALSE);
       }
       else
       {
@@ -2652,7 +2646,19 @@ void CGirderDescPrestressPage::OnStrandInputTypeChanged()
 
       pParent->OnGirderTypeChanged(bCanExtendStrands,bCanDebond);
    }
+
+   if (m_CurrStrandDefinitionType == CStrandData::sdtDirectRowInput || m_CurrStrandDefinitionType == CStrandData::sdtDirectStrandInput)
+   {
+      ShowEndOffsetControls(FALSE);
+      ShowHpOffsetControls(FALSE);
+   }
+   else
+   {
+      ShowEndOffsetControls(TRUE);
+      ShowHpOffsetControls(TRUE);
+   }
 }
+
 
 void CGirderDescPrestressPage::ConvertPJackFromNumPerm(StrandIndexType numStraight, StrandIndexType numHarped, IEAFDisplayUnits* pDisplayUnits) 
 {
