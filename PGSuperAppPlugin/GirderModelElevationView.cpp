@@ -1238,7 +1238,7 @@ void CGirderModelElevationView::BuildClosureJointDisplayObjects(CPGSDocBase* pDo
    GroupIndexType endGroupIdx   = (girderKey.groupIndex == ALL_GROUPS ? pBridgeDesc->GetGirderGroupCount()-1 : startGroupIdx);
 
    GET_IFACE2(pBroker, IBridge, pBridge);
-   GET_IFACE2(pBroker, IGirder, pIGirder);
+   GET_IFACE2_NOCHECK(pBroker, IGirder, pIGirder);
 
    Float64 group_offset = 0;
 
