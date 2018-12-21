@@ -2400,6 +2400,7 @@ int CTimelineManager::Validate() const
 
    // Make sure all temporary supports are erected and removed and that they
    // are removed after they are erected
+   std::vector<const CTemporarySupportData*> vStrongBacks;
    SupportIndexType nTS = m_pBridgeDesc->GetTemporarySupportCount();
    for ( SupportIndexType tsIdx = 0; tsIdx < nTS; tsIdx++ )
    {
@@ -2420,6 +2421,12 @@ int CTimelineManager::Validate() const
       if ( removeIdx < erectIdx )
       {
          return TLM_TEMPORARY_SUPPORT_REMOVAL_ERROR;
+      }
+
+      // save the strongbacks, there is additional validation to be done later
+      if (pTS->GetSupportType() == pgsTypes::StrongBack)
+      {
+         vStrongBacks.push_back(pTS);
       }
    }
 
@@ -2447,6 +2454,43 @@ int CTimelineManager::Validate() const
             }
 
             firstPTEventIdx = Min(firstPTEventIdx,GetStressTendonEventIndex(girderID,ductIdx));
+         }
+
+
+         for(const auto& pTS : vStrongBacks)
+         {
+            // make sure strong backs are erected
+            // 1) at the same time or after one of the segments it supports
+            // 2) before both segments it supports are erected
+            ATLASSERT(pTS->GetSupportType() == pgsTypes::StrongBack);
+            const CClosureJointData* pCJ = pTS->GetClosureJoint(gdrIdx);
+            const CPrecastSegmentData* pLeftSegment = pCJ->GetLeftSegment();
+            const CPrecastSegmentData* pRightSegment = pCJ->GetRightSegment();
+
+            SegmentIDType leftSegmentID = pLeftSegment->GetID();
+            SegmentIDType rightSegmentID = pRightSegment->GetID();
+            EventIndexType erectLeftSegmentEventIdx = GetSegmentErectionEventIndex(leftSegmentID);
+            EventIndexType erectRightSegmentEventIdx = GetSegmentErectionEventIndex(rightSegmentID);
+
+            EventIndexType erectTempSupportEventIdx, removeTempSupportEventIdx;
+            GetTempSupportEvents(pTS->GetID(), &erectTempSupportEventIdx, &removeTempSupportEventIdx);
+
+            if ((erectLeftSegmentEventIdx <= erectTempSupportEventIdx) && (erectTempSupportEventIdx <= erectRightSegmentEventIdx)
+               ||
+               (erectRightSegmentEventIdx <= erectTempSupportEventIdx) && (erectTempSupportEventIdx <= erectLeftSegmentEventIdx)
+               )
+            {
+               // 1) temporary support is erected at or after the left segment is erected and at or before the right segment is erected
+               // OR
+               // 2) temporary support is erected at or after the right segment is erected and at or before the left segment is erected 
+               //
+               // These are the valid cases
+            }
+            else
+            {
+               // everything else is invalid
+               return TLM_STRONGBACK_ERECTION_ERROR;
+            }
          }
 
          SegmentIndexType nSegments = pGirder->GetSegmentCount();
@@ -2493,6 +2537,7 @@ int CTimelineManager::Validate() const
             {
                EventIndexType erectTempSupportEventIdx, removeTempSupportEventIdx;
                GetTempSupportEvents(pTS->GetID(), &erectTempSupportEventIdx, &removeTempSupportEventIdx);
+
                // can't remove temporary support before segment is erected
                if (removeTempSupportEventIdx <= erectSegmentEventIdx)
                {
@@ -2892,6 +2937,10 @@ CString CTimelineManager::GetErrorMessage(int errorCode) const
 
    case TLM_STRESS_TENDONS_ACTIVITY_REQUIRED:
       strMsg = _T("The timeline does not include activites for stressing one or more tendons.");
+      break;
+
+   case TLM_STRONGBACK_ERECTION_ERROR:
+      strMsg = _T("A strong back is erected before the segments that support it.");
       break;
 
    case TLM_TEMPORARY_SUPPORT_REMOVAL_ERROR:
