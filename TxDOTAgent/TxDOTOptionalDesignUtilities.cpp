@@ -26,7 +26,7 @@
 #include "TxDOTOptionalDesignUtilities.h"
 
 #include <PgsExt\BridgeDescription2.h>
-
+#include <PgsExt\DebondUtil.h>
 #include <PsgLib\GirderLibraryEntry.h>
 
 #ifdef _DEBUG
@@ -34,6 +34,9 @@
 #undef THIS_FILE
 static char THIS_FILE[] = __FILE__;
 #endif
+
+// local function
+static StrandRowUtil::StrandRowSet GetFullyPopulatedStrandRowSet(IBroker* pBroker, const pgsPointOfInterest& midPoi);
 
 
 BOOL DoParseTemplateFile(const LPCTSTR lpszPathName, CString& girderEntry, 
@@ -367,3 +370,194 @@ std::list<ColumnIndexType> ComputeTableCols(const std::vector<CGirderKey>& girde
    return final_blocks;
 }
 
+bool IsTxDOTStandardStrands(bool isHarpedDesign, CStrandData::StrandDefinitionType sdtType, const CSegmentKey& segmentKey, IBroker* pBroker)
+{
+   GET_IFACE2(pBroker, IStrandGeometry, pStrandGeometry );
+
+   StrandIndexType ns = pStrandGeometry->GetStrandCount(segmentKey,pgsTypes::Straight);
+   StrandIndexType nh = pStrandGeometry->GetStrandCount(segmentKey,pgsTypes::Harped);
+   StrandIndexType nperm = ns + nh;
+
+   if (nperm == 0)
+   {
+      return false; // no strands, not standard
+   }
+   else if (sdtType == CStrandData::sdtTotal)
+   {
+      // strands filled using library order. always standard
+      return true;
+   }
+   else if (sdtType == CStrandData::sdtStraightHarped)
+   {
+      // check if strands entered straight/harped match library order. then standard
+      StrandIndexType tns, tnh;
+      if (pStrandGeometry->ComputeNumPermanentStrands(nperm, segmentKey, &tns, &tnh))
+      {
+         if (tns == ns && tnh == nh)
+         {
+            return true;
+         }
+      }
+   }
+
+   if (isHarpedDesign)
+   {
+      // standard harped designs must be filled using library order
+      return false;
+   }
+   else if (sdtType == CStrandData::sdtDirectSelection)
+   {
+      // This is the hard one. We have a straight design, possibly with raised strands. In order to be standard;
+      // the bottom half of the girder must be filled filling each row completely from the bottom up.
+   	GET_IFACE2(pBroker, IPointOfInterest, pPointOfInterest );
+      PoiList vPoi;
+      pPointOfInterest->GetPointsOfInterest(segmentKey, POI_5L | POI_SPAN, &vPoi);
+	   ATLASSERT(vPoi.size() == 1);
+      const pgsPointOfInterest& pmid(vPoi.back());
+
+      // Get list of strand rows filled by current project
+      StrandRowUtil::StrandRowSet strandrows = StrandRowUtil::GetStrandRowSet(pBroker, pmid);
+
+      // Get list of strand rows for case with all possible permanent strands filled
+      StrandRowUtil::StrandRowSet popstrandrows = GetFullyPopulatedStrandRowSet(pBroker, pmid);
+
+      // Only consider strands in the bottom half of the girder (raised strands are standard)
+      GET_IFACE2(pBroker,IGirder,pGirder);
+      Float64 hg2 = pGirder->GetHeight(pmid) / 2.0;
+
+      bool isStandard(true);
+      bool oneBelow(false); // at least one row must be below mid-height
+      RowIndexType numPartiallyFilledRows = 0; // we can have one partially filled row only
+      StrandRowUtil::StrandRowIter itstr = strandrows.begin();
+      StrandRowUtil::StrandRowIter itpopstr = popstrandrows.begin();
+      while (itstr != strandrows.end())
+      {
+         if (itstr->Elevation >= hg2)
+         {
+            // row is above half height. we are done and stardard if at least one row is below mid-height
+            isStandard = oneBelow;
+            break;
+         }
+         else if (!IsEqual(itstr->Elevation, itpopstr->Elevation))
+         {
+            // can't skip possible rows when we are below half height - rows must be continuously filled from bottom
+            isStandard = false;
+            break;
+         }
+         else if (itstr->Count != itpopstr->Count)
+         {
+            // a partially filled row
+            if (++numPartiallyFilledRows > 1)
+            {
+               // can only have one partially filled row below half height
+               isStandard = false;
+               break;
+            }
+         }
+         else // (itstr->Count == itpopstr->Count) // by default
+         {
+            // a fully filled row
+            if (numPartiallyFilledRows > 0)
+            {
+               // cannot have a fully filled row above a partially filled row
+               isStandard = false;
+               break;
+            }
+         }
+
+         oneBelow = true;
+         itstr++;
+         itpopstr++;
+      }
+
+      return isStandard;
+   }
+   else
+   {
+      return false; // myriad of other cases fall through the cracks
+   }
+}
+
+StrandRowUtil::StrandRowSet GetFullyPopulatedStrandRowSet(IBroker* pBroker, const pgsPointOfInterest& midPoi)
+{
+   GET_IFACE2(pBroker, IStrandGeometry, pStrandGeometry );
+   GET_IFACE2(pBroker,IGirder,pGirder);
+   GET_IFACE2(pBroker,IBridge,pBridge);
+   // Need girder height - strands are measured from top downward
+   Float64 hg = pGirder->GetHeight(midPoi);
+
+   const CSegmentKey&  rsegmentKey = midPoi.GetSegmentKey();
+
+   // Set up a strand fill configuration that fills all possible straight and harped strands
+   GDRCONFIG gdrconfig = pBridge->GetSegmentConfiguration(rsegmentKey);
+   PRESTRESSCONFIG&  rpsconfig = gdrconfig.PrestressConfig;
+
+   StrandIndexType maxss = pStrandGeometry->GetMaxStrands(rsegmentKey, pgsTypes::Straight);
+   ConfigStrandFillVector ssfillvec = pStrandGeometry->ComputeStrandFill(rsegmentKey, pgsTypes::Straight, maxss);
+
+   rpsconfig.SetStrandFill(pgsTypes::Straight, ssfillvec);
+
+   StrandIndexType maxhs = pStrandGeometry->GetMaxStrands(rsegmentKey, pgsTypes::Harped);
+   ConfigStrandFillVector hsfillvec = pStrandGeometry->ComputeStrandFill(rsegmentKey, pgsTypes::Harped, maxhs);
+
+   rpsconfig.SetStrandFill(pgsTypes::Harped, hsfillvec);
+
+   // Want number of strands in each row location. Count number of straight and harped per row
+   StrandRowUtil::StrandRowSet strandrows;
+
+   // Straight
+   CComPtr<IPoint2dCollection> ss_points;
+   pStrandGeometry->GetStrandPositionsEx(midPoi, rpsconfig, pgsTypes::Straight, &ss_points);
+
+   StrandIndexType nss;
+   ss_points->get_Count(&nss);
+
+   for (StrandIndexType iss=0; iss<nss; iss++)
+   {
+      CComPtr<IPoint2d> point;
+      ss_points->get_Item(iss,&point);
+      Float64 Y;
+      point->get_Y(&Y);
+
+      StrandRowUtil::StrandRow srow(Y + hg); // from bottom of girder
+      StrandRowUtil::StrandRowIter srit = strandrows.find(srow);
+      if (srit != strandrows.end())
+      {
+         StrandRowUtil::StrandRow& strandRow(const_cast<StrandRowUtil::StrandRow&>(*srit));
+         strandRow.Count++;
+      }
+      else
+      {
+         strandrows.insert(srow);
+      }
+   }
+
+   // Harped
+   CComPtr<IPoint2dCollection> hs_points;
+   pStrandGeometry->GetStrandPositionsEx(midPoi, rpsconfig, pgsTypes::Harped, &hs_points);
+
+   StrandIndexType nhs;
+   hs_points->get_Count(&nhs);
+
+   for (StrandIndexType ihs=0; ihs<nhs; ihs++)
+   {
+      CComPtr<IPoint2d> point;
+      hs_points->get_Item(ihs,&point);
+      Float64 Y;
+      point->get_Y(&Y);
+
+      StrandRowUtil::StrandRow srow(Y + hg); // from bottom of girder
+      StrandRowUtil::StrandRowIter srit = strandrows.find(srow);
+      if (srit != strandrows.end())
+      {
+         StrandRowUtil::StrandRow& strandRow(const_cast<StrandRowUtil::StrandRow&>(*srit));
+         strandRow.Count++;
+      }
+      else
+      {
+         strandrows.insert(srow);
+      }
+   }
+
+   return strandrows;
+}
