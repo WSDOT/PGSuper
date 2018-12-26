@@ -357,15 +357,12 @@ rptParagraph* CTexasIBNSParagraphBuilder::Build(IBroker*	pBroker, const std::vec
       {
          const CSegmentKey& segmentKey(*itsg);
 
-         StrandIndexType ns = pStrandGeometry->GetStrandCount(segmentKey,pgsTypes::Straight);
-         StrandIndexType nh = pStrandGeometry->GetStrandCount(segmentKey,pgsTypes::Harped);
-
          bool isHarpedDesign = !pStrandGeometry->GetAreHarpedStrandsForcedStraight(segmentKey) &&
                               0 < pStrandGeometry->GetMaxStrands(segmentKey, pgsTypes::Harped);
 
          const CStrandData* pStrands = pSegmentData->GetStrandData(segmentKey);
 
-         if ( IsNonStandardStrands( ns+nh, isHarpedDesign, pStrands->GetStrandDefinitionType()) )
+         if ( !IsTxDOTStandardStrands( isHarpedDesign, pStrands->GetStrandDefinitionType(), segmentKey, pBroker ))
          {
             SpanIndexType spanIdx = segmentKey.groupIndex;
             GirderIndexType gdrIdx = segmentKey.girderIndex;
@@ -436,15 +433,12 @@ rptParagraph* CTexasIBNSParagraphBuilder::Build(IBroker*	pBroker, const std::vec
       {
          const CSegmentKey& segmentKey(*itsg);
 
-         StrandIndexType ns = pStrandGeometry->GetStrandCount(segmentKey,pgsTypes::Straight);
-         StrandIndexType nh = pStrandGeometry->GetStrandCount(segmentKey,pgsTypes::Harped);
-
          bool isHarpedDesign = !pStrandGeometry->GetAreHarpedStrandsForcedStraight(segmentKey) &&
                               0 < pStrandGeometry->GetMaxStrands(segmentKey, pgsTypes::Harped);
 
          const CStrandData* pStrands = pSegmentData->GetStrandData(segmentKey);
 
-         if ( IsNonStandardStrands( ns+nh, isHarpedDesign, pStrands->GetStrandDefinitionType() ) )
+         if ( !IsTxDOTStandardStrands( isHarpedDesign, pStrands->GetStrandDefinitionType(), segmentKey, pBroker) )
          {
             rbEjectPage = false;
             // Nonstandard strands table

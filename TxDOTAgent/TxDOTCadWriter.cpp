@@ -271,7 +271,7 @@ int TxDOT_WriteCADDataToFile (FILE *fp, IBroker* pBroker, const CGirderKey& gird
    const CStrandData* pStrands = pSegmentData->GetStrandData(segmentKey);
 
    TCHAR  strandPat[5+1]; 
-   bool do_write_ns_data = IsNonStandardStrands( harpedCount + straightCount, isHarpedDesign, pStrands->GetStrandDefinitionType() );
+   bool do_write_ns_data = !IsTxDOTStandardStrands( isHarpedDesign, pStrands->GetStrandDefinitionType(), segmentKey, pBroker );
    if (do_write_ns_data)
    {
 	   _tcscpy_s(strandPat, sizeof(strandPat)/sizeof(TCHAR), _T("*"));
