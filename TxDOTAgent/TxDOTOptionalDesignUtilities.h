@@ -130,11 +130,8 @@ inline CString get_strand_size( matPsStrand::Size size )
    return sz;
 }
 
-// Criteria for NonStandard design
-inline bool IsNonStandardStrands(StrandIndexType nperm, bool isHarpedDesign, CStrandData::StrandDefinitionType sdtType)
-{
-   return isHarpedDesign && sdtType != CStrandData::sdtTotal && nperm > 0;
-}
+// Criteria for TxDOT Non/Standard design
+bool IsTxDOTStandardStrands(bool isHarpedDesign, CStrandData::StrandDefinitionType sdtType, const CSegmentKey& segmentKey, IBroker* pBroker);
 
 
 BOOL DoParseTemplateFile(const LPCTSTR lpszPathName, CString& girderEntry, 

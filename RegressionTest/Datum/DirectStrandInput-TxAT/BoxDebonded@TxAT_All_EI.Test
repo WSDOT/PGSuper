@@ -19,7 +19,7 @@ Stirrup detailing checks failed for the Strength I Limit State.
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 44.00    6   7.60                     1     4    4XB20           0  1/2  270   0.00   0.00   8.00   8.00                                              4.000  5.000   2.967    -3.770     2208   0.557  0.716  -2.807 -1.329 -0.084 -0.060 -1.474   0.00    0.00    1.00    1.00    1.00 
+ 44.00    6   7.60                     1     4    4XB20    *      0  1/2  270   0.00   0.00   8.00   8.00                                              4.000  5.000   2.967    -3.770     2208   0.557  0.716  -2.807 -1.329 -0.084 -0.060 -1.474   0.00    0.00    1.00    1.00    1.00 
 
 
 The Specification Check was Not Successful
