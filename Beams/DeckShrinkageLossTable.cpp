@@ -89,7 +89,7 @@ CElasticGainDueToDeckShrinkageTable* CElasticGainDueToDeckShrinkageTable::Prepar
    
    rptParagraph* pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pParagraph;
-
+   pParagraph->SetName(_T("Shrinkage of deck concrete"));
    *pParagraph << _T("[") << LrfdCw8th(_T("5.9.5.4.3d"), _T("5.9.3.4.3d")) << _T("] Shrinkage of Deck Concrete : ") << symbol(DELTA) << RPT_STRESS(_T("pSS")) << rptNewLine;
 
    pParagraph = new rptParagraph;
