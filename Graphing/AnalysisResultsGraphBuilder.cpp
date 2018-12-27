@@ -3535,7 +3535,7 @@ void CAnalysisResultsGraphBuilder::DeckShrinkageStressGraph(IndexType graphIdx,c
       Float64 x = *xIter;
 
       Float64 fTop(0.0), fBot(0.0);
-      if(dsIntervalIdx <= intervalIdx)
+      if(dsIntervalIdx == intervalIdx || (dsIntervalIdx < intervalIdx && resultsType == rtCumulative))
       {
          pProductForces->GetDeckShrinkageStresses(poi, &fTop, &fBot);
       }
