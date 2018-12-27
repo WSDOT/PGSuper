@@ -2638,33 +2638,45 @@ std::vector<Float64> CAnalysisAgentImp::GetMoment(IntervalIndexType intervalIdx,
             // we'll get the moments for the equivalent loads. If there is precamber, then
             // the is a uniform load and it doesn't give us the correct results... consider
             // a precambered girder with only straight strands. The moment we want is P*e but
-            // the moment we'll get from the model is P*e + wL^2/8
-            GET_IFACE(IPretensionForce, pPSForce);
-            GET_IFACE(IStrandGeometry, pStrandGeom);
-            for (const auto& poi : vPoi)
+            // the moment we'll get from the model is P*e + wL^2/8 (w is the downward pressure
+            // of the pretensioning due to precamber)
+            if (resultsType == rtIncremental && intervalIdx != 0)
             {
-               Float64 fpes = pPSForce->GetEffectivePrestress(poi, pgsTypes::Straight, intervalIdx, pgsTypes::End);
-               Float64 Ns;
-               Float64 es = pStrandGeom->GetEccentricity(intervalIdx, poi, pgsTypes::Straight, &Ns);
-               Float64 As = pStrandGeom->GetStrandArea(poi, intervalIdx, pgsTypes::Straight);
+               std::vector<Float64> prevResults;
+               prevResults.reserve(vPoi.size());
+               prevResults = GetMoment(intervalIdx - 1, pfType, vPoi, bat, rtCumulative);
+               results = GetMoment(intervalIdx, pfType, vPoi, bat, rtCumulative);
+               std::transform(results.cbegin(), results.cend(), prevResults.cbegin(), results.begin(), [](const auto& a, const auto& b) {return a - b;});
+            }
+            else
+            {
+               GET_IFACE(IPretensionForce, pPSForce);
+               GET_IFACE(IStrandGeometry, pStrandGeom);
+               for (const auto& poi : vPoi)
+               {
+                  Float64 fpes = pPSForce->GetEffectivePrestress(poi, pgsTypes::Straight, intervalIdx, pgsTypes::End);
+                  Float64 Ns;
+                  Float64 es = pStrandGeom->GetEccentricity(intervalIdx, poi, pgsTypes::Straight, &Ns);
+                  Float64 As = pStrandGeom->GetStrandArea(poi, intervalIdx, pgsTypes::Straight);
 
-               Float64 fpeh = pPSForce->GetEffectivePrestress(poi, pgsTypes::Harped, intervalIdx, pgsTypes::End);
-               Float64 Nh;
-               Float64 eh = pStrandGeom->GetEccentricity(intervalIdx, poi, pgsTypes::Harped, &Nh);
-               Float64 Ah = pStrandGeom->GetStrandArea(poi, intervalIdx, pgsTypes::Harped);
+                  Float64 fpeh = pPSForce->GetEffectivePrestress(poi, pgsTypes::Harped, intervalIdx, pgsTypes::End);
+                  Float64 Nh;
+                  Float64 eh = pStrandGeom->GetEccentricity(intervalIdx, poi, pgsTypes::Harped, &Nh);
+                  Float64 Ah = pStrandGeom->GetStrandArea(poi, intervalIdx, pgsTypes::Harped);
 
-               Float64 fpet = pPSForce->GetEffectivePrestress(poi, pgsTypes::Temporary, intervalIdx, pgsTypes::End);
-               Float64 Nt;
-               Float64 et = pStrandGeom->GetEccentricity(intervalIdx, poi, pgsTypes::Temporary, &Nt);
-               Float64 At = pStrandGeom->GetStrandArea(poi, intervalIdx, pgsTypes::Temporary);
+                  Float64 fpet = pPSForce->GetEffectivePrestress(poi, pgsTypes::Temporary, intervalIdx, pgsTypes::End);
+                  Float64 Nt;
+                  Float64 et = pStrandGeom->GetEccentricity(intervalIdx, poi, pgsTypes::Temporary, &Nt);
+                  Float64 At = pStrandGeom->GetStrandArea(poi, intervalIdx, pgsTypes::Temporary);
 
-               Float64 Ps = -fpes*As;
-               Float64 Ph = -fpeh*Ah;
-               Float64 Pt = -fpet*At;
+                  Float64 Ps = -fpes*As;
+                  Float64 Ph = -fpeh*Ah;
+                  Float64 Pt = -fpet*At;
 
-               Float64 M = Ps*es + Ph*eh + Pt*et;
+                  Float64 M = Ps*es + Ph*eh + Pt*et;
 
-               results.push_back(M);
+                  results.push_back(M);
+               }
             }
             return results;
          }
@@ -10370,14 +10382,25 @@ void CAnalysisAgentImp::GetElasticStress(IntervalIndexType intervalIdx,pgsTypes:
 
    if ( pfType == pgsTypes::pftPretension )
    {
-      GetStress(intervalIdx, vPoi, pgsTypes::TopGirder, pgsTypes::BottomGirder,false /*don't include live load effects*/, pgsTypes::ServiceI,INVALID_INDEX,pfTop,pfBot);
+      if (resultsType == rtIncremental && 0 < intervalIdx)
+      {
+         std::vector<Float64> prevfTop, prevfBot;
+         GetStress(intervalIdx-1, vPoi, topLocation, botLocation, false /*don't include live load effects*/, pgsTypes::ServiceI, INVALID_INDEX, &prevfTop, &prevfBot);
+         GetStress(intervalIdx, vPoi, topLocation, botLocation, false /*don't include live load effects*/, pgsTypes::ServiceI, INVALID_INDEX, pfTop, pfBot);
+         std::transform(pfTop->cbegin(), pfTop->cend(), prevfTop.cbegin(), pfTop->begin(), [](const auto& a, const auto& b) {return a - b; });
+         std::transform(pfBot->cbegin(), pfBot->cend(), prevfBot.cbegin(), pfBot->begin(), [](const auto& a, const auto& b) {return a - b; });
+      }
+      else
+      {
+         GetStress(intervalIdx, vPoi, topLocation, botLocation, false /*don't include live load effects*/, pgsTypes::ServiceI, INVALID_INDEX, pfTop, pfBot);
+      }
       return;
    }
 
    try
    {
       IntervalIndexType erectionIntervalIdx = GetErectionInterval(vPoi);
-      if ( intervalIdx < erectionIntervalIdx )
+      if ( intervalIdx < erectionIntervalIdx || pfType == pgsTypes::pftPretension)
       {
          m_pSegmentModelManager->GetStress(intervalIdx,pfType,vPoi,resultsType,topLocation,botLocation,pfTop,pfBot);
       }

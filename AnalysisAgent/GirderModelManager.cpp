@@ -17593,18 +17593,20 @@ void CGirderModelManager::GetStress(IntervalIndexType intervalIdx,const pgsPoint
    // Stress in the girder due to prestressing
    ATLASSERT(!IsStrengthLimitState(limitState));
 
-   if ( ::IsDeckStressLocation(topLoc) && ::IsDeckStressLocation(botLoc) )
+   const CSegmentKey& segmentKey = poi.GetSegmentKey();
+
+   GET_IFACE(IIntervals, pIntervals);
+   IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
+
+   if ( ::IsDeckStressLocation(topLoc) && ::IsDeckStressLocation(botLoc) || intervalIdx < releaseIntervalIdx)
    {
       // pretensioning does not cause stress in the deck
+      // or the interval is before release, so no stress in girder either
       *pfTop = 0;
       *pfBot = 0;
       return; 
    }
 
-   const CSegmentKey& segmentKey = poi.GetSegmentKey();
-
-   GET_IFACE(IIntervals,pIntervals);
-   IntervalIndexType releaseIntervalIdx   = pIntervals->GetPrestressReleaseInterval(segmentKey);
    IntervalIndexType tsRemovalIntervalIdx = pIntervals->GetTemporaryStrandRemovalInterval(segmentKey);
    IntervalIndexType liveLoadIntervalIdx  = pIntervals->GetLiveLoadInterval();
 
