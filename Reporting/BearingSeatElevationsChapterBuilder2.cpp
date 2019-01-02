@@ -198,7 +198,7 @@ rptRcTable* CBearingSeatElevationsChapterBuilderBase::BuildTable(const CString& 
       }
       else
       {
-         WRITE_NEWLINE_BEFORE(writeNewLineBefore, row, 2, elevDetails.TopBrgElevation)
+         WRITE_NEWLINE_BEFORE(writeNewLineBefore, row, 2, dist.SetValue(elevDetails.TopBrgElevation))
       }
 
       WRITE_NEWLINE_BEFORE(writeNewLineBefore, row, 3, dist.SetValue(elevDetails.BrgSeatElevation))
