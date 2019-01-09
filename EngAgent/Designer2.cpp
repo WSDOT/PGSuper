@@ -6851,7 +6851,7 @@ void pgsDesigner2::DesignSlabOffset(IProgress* pProgress) const
          if (IsZero(AssExcessCamberOld - computed_camber, ctoler))
          {
             Float64 c;
-            c = FloorOff(computed_camber, ctoler);
+            c = RoundOff(computed_camber, ctoler);
             LOG(_T("Excess camber converged."));
             m_StrandDesignTool.SetAssExcessCamber(c);
 

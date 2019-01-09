@@ -48,7 +48,7 @@
 
 #include <Math\MathUtils.h>
 
-#include "AnalysisResult.h"
+#include <pgsExt\AnalysisResult.h>
 
 #include <iterator>
 #include <algorithm>
