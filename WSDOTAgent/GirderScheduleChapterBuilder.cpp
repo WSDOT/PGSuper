@@ -539,12 +539,14 @@ rptChapter* CGirderScheduleChapterBuilder::Build(CReportSpecification* pRptSpec,
    Float64 Cfactor = pCamber->GetLowerBoundCamberVariabilityFactor();
    Dmin_UpperBound = pCamber->GetDCamberForGirderSchedule( poiMidSpan, CREEP_MINTIME);
    Dmax_UpperBound = pCamber->GetDCamberForGirderSchedule( poiMidSpan, CREEP_MAXTIME);
+
+   Float64 precamber = pCamber->GetPrecamber(segmentKey);
    
-   Dmin_LowerBound = Cfactor*Dmin_UpperBound;
-   Dmin_Average    = (1+Cfactor)/2*Dmin_UpperBound;
+   Dmin_LowerBound = Cfactor*(Dmin_UpperBound - precamber) + precamber;
+   Dmin_Average    = (1+Cfactor)/2*(Dmin_UpperBound - precamber) + precamber;
    
-   Dmax_LowerBound = Cfactor*Dmax_UpperBound;
-   Dmax_Average    = (1+Cfactor)/2*Dmax_UpperBound;
+   Dmax_LowerBound = Cfactor*(Dmax_UpperBound - precamber) + precamber;
+   Dmax_Average    = (1+Cfactor)/2*(Dmax_UpperBound - precamber) + precamber;
 
 
    (*pTable)(++row,0) << _T("Lower bound @ ")<< min_days<<_T(" days");
