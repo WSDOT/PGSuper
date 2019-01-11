@@ -41,7 +41,7 @@ private:
       {
          ATLASSERT(false); // attention grabber
          CString strMsg;
-         strMsg.Format(_T("An error occured during the structural analysis (%d)\n%s, Line %d"),m_Result,m_File,m_Line);
+         strMsg.Format(_T("An error occured during the girder structural analysis (%d)\n%s, Line %d"),m_Result,m_File,m_Line);
          THROW_UNWIND(strMsg,-1);
       }
       return m_Result;

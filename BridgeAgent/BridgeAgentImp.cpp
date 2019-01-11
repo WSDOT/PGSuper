@@ -44,6 +44,7 @@
 #include <PgsExt\GirderModelFactory.h>
 #include <PgsExt\PoiMap.h>
 #include <PgsExt\StabilityAnalysisPoint.h>
+#include <pgsExt\AnalysisResult.h>
 
 #include <PgsExt\ReportPointOfInterest.h>
 #include <PsgLib\ShearData.h>
@@ -26520,13 +26521,13 @@ void CBridgeAgentImp::ConfigureSegmentLiftingStabilityProblem(const CSegmentKey&
 
       Float64 dx, dy, rz;
       PoiIDPairType femPoiID = poiMap.GetModelPoi(poiMS);
-      HRESULT hr = results->ComputePOIDeflections(lcid, femPoiID.first, lotMember, &dx, &dy, &rz);
-      ATLASSERT(SUCCEEDED(hr));
+      CAnalysisResult ar(_T(__FILE__),__LINE__);
+      ar = results->ComputePOIDeflections(lcid, femPoiID.first, lotMember, &dx, &dy, &rz);
       DgdrMS = dy;
 
       femPoiID = poiMap.GetModelPoi(poiEnd);
-      hr = results->ComputePOIDeflections(lcid, femPoiID.first, lotMember, &dx, &dy, &rz);
-      ATLASSERT(SUCCEEDED(hr));
+      CAnalysisResult ar2(_T(__FILE__),__LINE__);
+      ar2 = results->ComputePOIDeflections(lcid, femPoiID.first, lotMember, &dx, &dy, &rz);
       DgdrEnd = dy;
 
       GET_IFACE(ISectionProperties, pSectProps);
@@ -26821,13 +26822,13 @@ void CBridgeAgentImp::ConfigureSegmentHaulingStabilityProblem(const CSegmentKey&
 
       Float64 dx, dy, rz;
       PoiIDPairType femPoiID = poiMap.GetModelPoi(poiMS);
-      HRESULT hr = results->ComputePOIDeflections(lcid, femPoiID.first, lotMember, &dx, &dy, &rz);
-      ATLASSERT(SUCCEEDED(hr));
+      CAnalysisResult ar(_T(__FILE__),__LINE__);
+      ar = results->ComputePOIDeflections(lcid, femPoiID.first, lotMember, &dx, &dy, &rz);
       DgdrMS = dy;
 
       femPoiID = poiMap.GetModelPoi(poiEnd);
-      hr = results->ComputePOIDeflections(lcid, femPoiID.first, lotMember, &dx, &dy, &rz);
-      ATLASSERT(SUCCEEDED(hr));
+      CAnalysisResult ar2(_T(__FILE__),__LINE__);
+      ar2 = results->ComputePOIDeflections(lcid, femPoiID.first, lotMember, &dx, &dy, &rz);
       DgdrEnd = dy;
 
       GET_IFACE(ISectionProperties, pSectProps);

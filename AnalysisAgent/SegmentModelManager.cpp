@@ -22,7 +22,7 @@
 
 #include "stdafx.h"
 #include "SegmentModelManager.h"
-#include "AnalysisResult.h"
+#include <pgsExt\AnalysisResult.h>
 
 #include <EAF\EAFAutoProgress.h>
 #include <PgsExt\GirderModelFactory.h>

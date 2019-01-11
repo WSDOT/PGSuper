@@ -1,12 +1,10 @@
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  AECmbr                                             Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 44.33    7   0.75                     1     1    WF69D    *     37  0.6  270  37.96  29.88   8.00   8.00   2.50                                              5.400  6.300   2.568    -3.583    10510   0.652  0.652   3.342 -0.583 -0.182 -0.189 -0.954 122.08  248.24    3.00   14.00   14.00 
+ 44.33    7   0.75                     1     1    WF69D    *     38  0.6  270  37.85  22.77   8.25   8.25   3.00                                              4.800  6.900   2.578    -3.570    10476   0.652  0.652   3.485 -0.552 -0.180 -0.187 -0.919 133.73  285.78    3.00   14.00   14.00 
 
 
 Girder design was Not Successful
 The Specification Check was Not Successful
-Tensile stress check failed for Service I Limit State in Interval 2 Prestress Release
-Compression stress check failed for Service I Limit State in Interval 11 Cast Longitudinal Joints
 Tensile stress check failed for Service III Limit State in Interval 19 Open to Traffic
 Lifting checks failed
 Hauling checks failed
@@ -14,18 +12,19 @@ Hauling checks failed
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  AECmbr                                             Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 44.33    7   0.75                     1     2    WF69D    *     36  0.6  270  38.23  19.29   6.50   6.50   1.50                                              9.400 13.300   2.593    -3.565    10519   0.546  0.725   1.991 -0.441 -0.152 -0.158 -0.752  99.50  178.30    3.00   14.00   14.00 
+ 44.33    7   0.75                     1     2    WF69D    *     35  0.6  270  38.24  36.48   6.75   6.75   1.50                                             11.600 13.800   2.617    -3.607    10514   0.547  0.725   2.037 -0.456 -0.150 -0.155 -0.761  88.11  148.33    3.00   14.00   14.00 
 
 
 Girder design was Not Successful
 The Specification Check was Not Successful
+Tensile stress check failed for Service I Limit State in Interval 2 Prestress Release
 Lifting checks failed
 Hauling checks failed
 
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  AECmbr                                             Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 44.33    7   0.75                     1     4    WF69D    *     34  0.6  270  37.08  20.53   8.00   8.00   2.50                                              4.000  5.000   2.401    -3.208     9204   0.531  0.725   3.158 -0.686 -0.198  0.000 -0.884 109.91  254.16    3.00   14.00   14.00 
+ 44.33    7   0.75                     1     4    WF69D    *     34  0.6  270  37.08  20.53   8.00   8.00   3.00                                              4.000  5.000   2.378    -3.172     9113   0.531  0.725   3.158 -0.643 -0.202  0.000 -0.846 109.91  257.18    3.00   14.00   14.00 
 
 
 The Specification Check was Not Successful

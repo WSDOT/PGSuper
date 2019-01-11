@@ -1651,6 +1651,7 @@ void pgsStrandDesignTool::DumpDesignParameters() const
    LOG(_T("HP Offset at End = ") << ::ConvertFromSysUnits(m_pArtifact->GetHarpStrandOffsetEnd(pgsTypes::metEnd),unitMeasure::Inch) << _T(" in") << _T(" (From top = ") << ::ConvertFromSysUnits(end_offset,unitMeasure::Inch) << _T(" in)"));
    LOG(_T("Slab Offset at Start = ") << ::ConvertFromSysUnits(m_pArtifact->GetSlabOffset(pgsTypes::metStart),unitMeasure::Inch) << _T(" in"));
    LOG(_T("Slab Offset at End   = ") << ::ConvertFromSysUnits(m_pArtifact->GetSlabOffset(pgsTypes::metEnd),unitMeasure::Inch) << _T(" in"));
+   LOG(_T("Assumed excess Camber   = ") << ::ConvertFromSysUnits(m_pArtifact->GetAssExcessCamber(),unitMeasure::Inch) << _T(" in"));
    LOG(_T("Pick Point = ") << ::ConvertFromSysUnits(m_pArtifact->GetLeftLiftingLocation(), unitMeasure::Feet) << _T(" ft"));
    LOG(_T("Leading Overhang  = ") << ::ConvertFromSysUnits(m_pArtifact->GetLeadingOverhang(), unitMeasure::Feet) << _T(" ft"));
    LOG(_T("Trailing Overhang = ") << ::ConvertFromSysUnits(m_pArtifact->GetTrailingOverhang(), unitMeasure::Feet) << _T(" ft"));

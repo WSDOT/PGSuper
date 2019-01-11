@@ -25,6 +25,7 @@
 #include "AnalysisAgent.h"
 #include "AnalysisAgentImp.h"
 #include "StatusItems.h"
+#include <pgsExt\AnalysisResult.h>
 #include <PGSuperException.h>
 
 #include <IFace\Intervals.h>
@@ -1984,8 +1985,8 @@ Float64 CAnalysisAgentImp::GetDesignMomentAdjustment(LoadCaseIDType lcid, const 
    CComQIPtr<IFem2dModelResults> results(m_CacheConfig_SlabOffsetDesignModel.Model);
 
    Float64 fxRight, fyRight, mzRight;
-   HRESULT hr = results->ComputePOIForces(lcid,femPoiID.first,mftRight,lotMember,&fxRight,&fyRight,&mzRight);
-   ATLASSERT( SUCCEEDED(hr) );
+   CAnalysisResult ar(_T(__FILE__),__LINE__);
+   ar = results->ComputePOIForces(lcid,femPoiID.first,mftRight,lotMember,&fxRight,&fyRight,&mzRight);
 
    return mzRight;
 }
@@ -2044,8 +2045,8 @@ void CAnalysisAgentImp::GetDesignDeflectionAdjustment(LoadCaseIDType lcid, const
       CComQIPtr<IFem2dModelResults> results(m_CacheConfig_SlabOffsetDesignModel.Model);
 
       Float64 Dx;
-      HRESULT hr = results->ComputePOIDeflections(lcid,femPoiID.first,lotGlobal,&Dx,pDy,pRz);
-      ATLASSERT( SUCCEEDED(hr) );
+      CAnalysisResult ar(_T(__FILE__),__LINE__);
+      ar = results->ComputePOIDeflections(lcid,femPoiID.first,lotGlobal,&Dx,pDy,pRz);
    }
 }
 
@@ -7870,16 +7871,16 @@ void CAnalysisAgentImp::GetPrestressDeflectionFromModel(const pgsPointOfInterest
    GetPrestressLoadCaseIDs(strandType, &lcidX, &lcidY);
 
    // get deflection due to prestressing associated with moments about the x-axis
-   HRESULT hr = results->ComputePOIDeflections(lcidX,femPoiID.first,lotGlobal,&Dx,&Dy,&Rz);
-   ATLASSERT( SUCCEEDED(hr) );
+   CAnalysisResult ar(_T(__FILE__),__LINE__);
+   ar = results->ComputePOIDeflections(lcidX,femPoiID.first,lotGlobal,&Dx,&Dy,&Rz);
    Float64 delta_y1 = Dy;
 
    *pRz = Rz;
 
    // get deflection due to prestressing associated with moments about the y-axis
    // remember that we have a plane frame model so we've applied the loads in the same direction as those causing y-deflections
-   hr = results->ComputePOIDeflections(lcidY, femPoiID.first, lotGlobal, &Dx, &Dy, &Rz);
-   ATLASSERT(SUCCEEDED(hr));
+   CAnalysisResult ar2(_T(__FILE__),__LINE__);
+   ar2 = results->ComputePOIDeflections(lcidY, femPoiID.first, lotGlobal, &Dx, &Dy, &Rz);
    Float64 delta_x1 = Dy; // remember that this is using the vertical deflection stiffness. we have to adjust for the lateral stiffness
 
    // get the section properties used to build the model
@@ -7952,10 +7953,12 @@ void CAnalysisAgentImp::GetPrestressDeflectionFromModel(const pgsPointOfInterest
    ATLASSERT( 0 <= poiAtStart.GetID() );
    
    femPoiID = modelData.PoiMap.GetModelPoi(poiAtStart);
-   results->ComputePOIDeflections(lcidX, femPoiID.first, lotGlobal, &Dx, &Dy, &Rz);
+   CAnalysisResult ar3(_T(__FILE__),__LINE__);
+   ar3 = results->ComputePOIDeflections(lcidX, femPoiID.first, lotGlobal, &Dx, &Dy, &Rz);
    Float64 start_delta_brg_y1 = Dy;
 
-   results->ComputePOIDeflections(lcidY, femPoiID.first, lotGlobal, &Dx, &Dy, &Rz);
+   CAnalysisResult ar4(_T(__FILE__),__LINE__);
+   ar4 = results->ComputePOIDeflections(lcidY, femPoiID.first, lotGlobal, &Dx, &Dy, &Rz);
    Float64 start_delta_brg_x1 = Dy; // based on vertical stiffness
    start_delta_brg_x1 *= (Ixx / Iyy); // adjust for lateral stiffness
 
@@ -7971,10 +7974,12 @@ void CAnalysisAgentImp::GetPrestressDeflectionFromModel(const pgsPointOfInterest
    ATLASSERT( 0 <= poiAtEnd.GetID() );
    femPoiID = modelData.PoiMap.GetModelPoi(poiAtEnd);
 
-   results->ComputePOIDeflections(lcidX, femPoiID.first, lotGlobal, &Dx, &Dy, &Rz);
+   CAnalysisResult ar5(_T(__FILE__),__LINE__);
+   ar5 = results->ComputePOIDeflections(lcidX, femPoiID.first, lotGlobal, &Dx, &Dy, &Rz);
    Float64 end_delta_brg_y1 = Dy;
 
-   results->ComputePOIDeflections(lcidY, femPoiID.first, lotGlobal, &Dx, &Dy, &Rz);
+   CAnalysisResult ar6(_T(__FILE__),__LINE__);
+   ar6 = results->ComputePOIDeflections(lcidY, femPoiID.first, lotGlobal, &Dx, &Dy, &Rz);
    Float64 end_delta_brg_x1 = Dy; // based on vertical stiffness
    end_delta_brg_x1 *= (Ixx / Iyy); // adjust for lateral stiffness
 
