@@ -6787,6 +6787,34 @@ Float64 CAnalysisAgentImp::GetDCamberForGirderScheduleUnfactored(const pgsPointO
    return GetDCamberForGirderScheduleEx(poi, time, pConfig, false);
 }
 
+void GetCamberVariation(Float64 Dupper, Float64 CF, Float64 precamber, Float64* pLowerBound, Float64* pAvg)
+{
+   // Average and lower bound cambers are a function of a scaling the natural camber.
+   // precamber is build in and fixed, it doesn't get scaled
+   Float64 Dlower = (Dupper - precamber)*CF + precamber;
+   Float64 Davg = 0.5*(Dupper + Dlower);
+   *pAvg = Davg;
+   *pLowerBound = Dlower;
+}
+
+void CAnalysisAgentImp::GetDCamberForGirderScheduleEx(const pgsPointOfInterest& poi, Int16 time, Float64* pUpperBound, Float64* pAvg, Float64* pLowerBound, const GDRCONFIG* pConfig) const
+{
+   Float64 Dupper = GetDCamberForGirderSchedule(poi, time, pConfig);
+   *pUpperBound = Dupper;
+   Float64 CF = GetLowerBoundCamberVariabilityFactor();
+   Float64 precamber = GetPrecamber(poi, pgsTypes::pddErected);
+   GetCamberVariation(Dupper, CF, precamber, pLowerBound, pAvg);
+}
+
+void CAnalysisAgentImp::GetDCamberForGirderScheduleUnfactoredEx(const pgsPointOfInterest& poi, Int16 time, Float64* pUpperBound, Float64* pAvg, Float64* pLowerBound, const GDRCONFIG* pConfig) const
+{
+   Float64 Dupper = GetDCamberForGirderScheduleUnfactored(poi, time, pConfig);
+   *pUpperBound = Dupper;
+   Float64 CF = GetLowerBoundCamberVariabilityFactor();
+   Float64 precamber = GetPrecamber(poi, pgsTypes::pddErected);
+   GetCamberVariation(Dupper, CF, precamber, pLowerBound, pAvg);
+}
+
 Float64 CAnalysisAgentImp::GetDCamberForGirderScheduleEx(const pgsPointOfInterest& poi,Int16 time,const GDRCONFIG* pConfig, bool applyFactors) const
 {
    if (pConfig == nullptr)

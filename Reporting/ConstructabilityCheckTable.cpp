@@ -1253,23 +1253,12 @@ void CConstructabilityCheckTable::BuildRegularCamberCheck(rptChapter* pChapter,I
          (*pTable)(row++, 1) << dim.SetValue(C);
       }
 
-      Float64 precamber = pCamber->GetPrecamber(poiMidSpan, pgsTypes::pddErected);
-   
       Float64 Dmax_UpperBound, Dmax_Average, Dmax_LowerBound;
       Float64 Dmin_UpperBound, Dmin_Average, Dmin_LowerBound;
-      Float64 Cfactor = pCamber->GetLowerBoundCamberVariabilityFactor();
-      Dmin_UpperBound = pCamber->GetDCamberForGirderSchedule( poiMidSpan, CREEP_MINTIME);
-      Dmax_UpperBound = pCamber->GetDCamberForGirderSchedule( poiMidSpan, CREEP_MAXTIME);
-
-      // don't apply lower, average, upper bound scaling to precamber
-      // precamber is a fixed, built in camber and isn't subject to natural variability
-      
-      Dmin_LowerBound = Cfactor*(Dmin_UpperBound-precamber)+precamber;
-      Dmin_Average = (1 + Cfactor) / 2 * (Dmin_UpperBound - precamber) + precamber;
-      
-      Dmax_LowerBound = Cfactor*(Dmax_UpperBound-precamber)+precamber;
-      Dmax_Average = (1 + Cfactor) / 2 * (Dmax_UpperBound - precamber) + precamber;
+      pCamber->GetDCamberForGirderScheduleEx(poiMidSpan, CREEP_MAXTIME, &Dmax_UpperBound, &Dmax_Average, &Dmax_LowerBound);
+      pCamber->GetDCamberForGirderScheduleEx(poiMidSpan, CREEP_MINTIME, &Dmin_UpperBound, &Dmin_Average, &Dmin_LowerBound);
    
+      Float64 Cfactor = pCamber->GetLowerBoundCamberVariabilityFactor();
    
       if ( IsEqual(min_days,max_days) )
       {
