@@ -25,8 +25,45 @@
 
 #include <vector>
 
+// Exception class for catalog parsing errors
+class CCatalogParsingException
+{
+public:
+   enum ErrorType
+   {
+      cteVersionStringNotValid,
+      cteUnknownError
+   };
+
+   CCatalogParsingException(ErrorType error, const CString& lineBeingParsed = CString()):
+   m_ErrorType(error),
+   m_LineBeingParsed(lineBeingParsed)
+   {
+   }
+
+   ErrorType GetErrorType()
+   {
+      return m_ErrorType;
+   }
+
+   CString GetLineBeingParsed()
+   {
+      return m_LineBeingParsed;
+   }
+
+   void SetLineBeingParsed(const CString& error)
+   {
+      m_LineBeingParsed = error;
+   }
+
+private:
+   ErrorType m_ErrorType;
+   CString m_LineBeingParsed;
+
+   CCatalogParsingException();
+};
 /////////////////////////////////////////////////////////////////////////////
-// CCatalog dialog
+// CCatalog 
 
 class CCatalog
 {
@@ -39,6 +76,7 @@ public:
 
    CCatalog();
 
+   // this function can throw a CCatalogParsingException
    bool Init(LPCTSTR strIniFileName, const CString& strPGSuperVersion);
 
    std::vector<CString> GetPublishers();

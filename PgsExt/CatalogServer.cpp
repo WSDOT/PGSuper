@@ -1292,17 +1292,43 @@ void CIniCatalogServer::FetchCatalog(IProgressMonitor* pProgress) const
          // we have the catalog, initialize the catalog parser
          CString strVersion =  CCatalog::GetAppVersion();
 
-         if (! m_Catalog.Init(m_strLocalCatalog,strVersion) )
+         try
+         {
+            if (!m_Catalog.Init(m_strLocalCatalog, strVersion))
+            {
+               CString msg;
+               msg.Format(_T("An Error occurred while reading the catalog file at: %s"), catalogURL);
+               throw CCatalogServerException(CCatalogServerException::ceGettingCatalogFile, msg);
+            }
+         }
+         catch (CCatalogParsingException& ex)
+         {
+            ATLASSERT(!ex.GetLineBeingParsed().IsEmpty()); // this should always be filled by caller
+            CString erdsc;
+            if (ex.GetErrorType() == CCatalogParsingException::cteVersionStringNotValid)
+            {
+               erdsc = _T("version string parsing");
+            }
+            else
+            {
+               erdsc = _T("undefined");
+            }
+
+            CString msg;
+            msg.Format(_T("A %s Error occurred while reading the catalog file at:\n %s.\n\n Contents of the last line parsed was:\n%s"), erdsc, catalogURL, ex.GetLineBeingParsed());
+            throw CCatalogServerException(CCatalogServerException::ceGettingCatalogFile, msg);
+         }
+         catch(...)
          {
             CString msg;
-            msg.Format(_T("Error occurred while reading the catalog file at: %s"),catalogURL);
-            throw CCatalogServerException(CCatalogServerException::ceGettingCatalogFile,msg);
+            msg.Format(_T("An Uknown Error occurred while reading the catalog file at:\n %s"), catalogURL);
+            throw CCatalogServerException(CCatalogServerException::ceGettingCatalogFile, msg);
          }
       }
       else
       {
          CString msg;
-         msg.Format(_T("Error parsing catalog URL: %s"), catalogURL);
+         msg.Format(_T("Error parsing catalog URL:\n %s"), catalogURL);
          throw CCatalogServerException(CCatalogServerException::ceGettingCatalogFile, msg);
       }
 
