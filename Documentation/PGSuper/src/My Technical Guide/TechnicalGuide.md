@@ -23,6 +23,7 @@ Topics
 * @subpage tg_lightweight_concrete
 * @subpage tg_lldf
 * @subpage tg_live_load
+* @subpage tg_live_load_deflection
 * @subpage tg_longitudinal_reinforcement
 * @subpage tg_moment_capacity
 * @subpage tg_prestress_losses
