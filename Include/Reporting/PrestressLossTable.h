@@ -48,7 +48,7 @@ public:
 
    //------------------------------------------------------------------------
    // Default constructor
-   CPrestressLossTable();
+   CPrestressLossTable(bool bIsSplicedGirder=false);
 
    //------------------------------------------------------------------------
    // Copy constructor
@@ -88,6 +88,7 @@ protected:
 
 private:
    // GROUP: DATA MEMBERS
+   bool m_bSplicedGirder;
    // GROUP: LIFECYCLE
    // GROUP: OPERATORS
    // GROUP: OPERATIONS
