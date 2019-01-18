@@ -49,7 +49,8 @@ CLASS
 ////////////////////////// PUBLIC     ///////////////////////////////////////
 
 //======================== LIFECYCLE  =======================================
-CPrestressLossTable::CPrestressLossTable()
+CPrestressLossTable::CPrestressLossTable(bool bSplicedGirder) :
+   m_bSplicedGirder(bSplicedGirder)
 {
 }
 
@@ -116,7 +117,8 @@ rptRcTable* CPrestressLossTable::Build(IBroker* pBroker, const CSegmentKey& segm
    }
 
 
-   rptRcTable* p_table = rptStyleManager::CreateDefaultTable(nCol, _T("Effective Prestress at Mid-Span"));
+   std::_tstring strTitle(m_bSplicedGirder ? _T("Effective Prestress at Mid-Segment") : _T("Effective Prestress at Mid-Span"));
+   rptRcTable* p_table = rptStyleManager::CreateDefaultTable(nCol, strTitle);
    p_table->SetNumberOfHeaderRows(2);
 
    p_table->SetColumnStyle(0, rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
