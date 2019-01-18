@@ -218,7 +218,7 @@ void CBridgeDescGeneralPage::DoDataExchange(CDataExchange* pDX)
    ////////////////////////////////////////////////
    if (!pDX->m_bSaveAndValidate || (pDX->m_bSaveAndValidate && IsBridgeSpacing(m_GirderSpacingType) && IsTopWidthSpacing(m_GirderSpacingType)))
    {
-      DDX_CBEnum(pDX, IDC_TOP_WIDTH_TYPE, m_TopWidthType);
+      DDX_CBItemData(pDX, IDC_TOP_WIDTH_TYPE, m_TopWidthType);
       DDX_UnitValueAndTag(pDX, IDC_LEFT_TOP_WIDTH, IDC_LEFT_TOP_WIDTH_UNIT, m_LeftTopWidth, pDisplayUnits->GetXSectionDimUnit());
       DDX_UnitValueAndTag(pDX, IDC_RIGHT_TOP_WIDTH, IDC_RIGHT_TOP_WIDTH_UNIT, m_RightTopWidth, pDisplayUnits->GetXSectionDimUnit());
    }
