@@ -11666,7 +11666,7 @@ void CProjectAgentImp::UpgradeBearingData()
          {
             pgsTypes::PierFaceType face = (pgsTypes::PierFaceType)i;
 
-            const CSpanData2* pSpan = GetSpan(face); // only 
+            const CSpanData2* pSpan = pPier->GetSpan(face); // only 
             if (pSpan)
             {
                const CBearingData2* pbd = pPier->GetBearingData(0, face);

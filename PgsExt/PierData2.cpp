@@ -494,6 +494,9 @@ HRESULT CPierData2::Save(IStructuredSave* pStrSave,IProgress* pProgress)
 {
    HRESULT hr = S_OK;
 
+   // Make sure outside changes to the bridge haven't made our data out of sync
+   ProtectBearingData();
+
    pStrSave->BeginUnit(_T("PierDataDetails"),18.0);
    
    pStrSave->put_Property(_T("ID"),CComVariant(m_PierID));
@@ -569,7 +572,8 @@ HRESULT CPierData2::Save(IStructuredSave* pStrSave,IProgress* pProgress)
       if (m_pBridgeDesc->GetBearingType() == pgsTypes::brtPier)
       {
          std::size_t cnt = m_BearingData[pgsTypes::Back].size();
-         pStrSave->put_Property(_T("Count"), CComVariant(std::size_t(1)));
+         cnt = cnt > 0 ? 1 : 0;
+         pStrSave->put_Property(_T("Count"), CComVariant(cnt));
          if (cnt > 0)
          {
             m_BearingData[pgsTypes::Back][0].Save(pStrSave, pProgress);
@@ -632,7 +636,8 @@ HRESULT CPierData2::Save(IStructuredSave* pStrSave,IProgress* pProgress)
       if (m_pBridgeDesc->GetBearingType() == pgsTypes::brtPier)
       {
          std::size_t cnt = m_BearingData[pgsTypes::Ahead].size();
-         pStrSave->put_Property(_T("Count"), CComVariant(std::size_t(1)));
+         cnt = cnt > 0 ? 1 : 0;
+         pStrSave->put_Property(_T("Count"), CComVariant(cnt));
          if (cnt > 0)
          {
             m_BearingData[pgsTypes::Ahead][0].Save(pStrSave, pProgress);
@@ -967,14 +972,24 @@ HRESULT CPierData2::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
             var.vt = VT_I4;
             hr = pStrLoad->get_Property(_T("Count"),&var);
             Uint32 cnt = var.lVal;
-            for (Uint32 ib = 0; ib < cnt; ib++)
-            {
-               CBearingData2 bd;
-               hr = bd.Load(pStrLoad, pProgress);
-               m_BearingData[pgsTypes::Back].push_back(bd);
-            }
 
-            hr = pStrLoad->EndUnit();
+            try 
+            {
+               for (Uint32 ib = 0; ib < cnt; ib++)
+               {
+                  CBearingData2 bd;
+                  hr = bd.Load(pStrLoad, pProgress);
+                  m_BearingData[pgsTypes::Back].push_back(bd);
+               }
+
+               hr = pStrLoad->EndUnit();
+            }
+            catch (...)
+            {
+               // This was a bug in pgsuper version 4.0.10. The program could write out a value of cnt==1, but then have no data to read.
+               ATLASSERT(cnt == 1);
+               hr = pStrLoad->EndUnit();
+            }
          }
       }
 
@@ -1081,14 +1096,24 @@ HRESULT CPierData2::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
             var.vt = VT_I4;
             hr = pStrLoad->get_Property(_T("Count"),&var);
             Uint32 cnt = var.lVal;
-            for (Uint32 ib = 0; ib < cnt; ib++)
-            {
-               CBearingData2 bd;
-               hr = bd.Load(pStrLoad, pProgress);
-               m_BearingData[pgsTypes::Ahead].push_back(bd);
-            }
 
-            hr = pStrLoad->EndUnit();
+            try
+            {
+               for (Uint32 ib = 0; ib < cnt; ib++)
+               {
+                  CBearingData2 bd;
+                  hr = bd.Load(pStrLoad, pProgress);
+                  m_BearingData[pgsTypes::Ahead].push_back(bd);
+               }
+
+               hr = pStrLoad->EndUnit();
+            }
+            catch (...)
+            {
+               // This was a bug in pgsuper version 4.0.10. The program could write out a value of cnt==1, but then have no data to read.
+               ATLASSERT(cnt == 1);
+               hr = pStrLoad->EndUnit();
+            }
          }
       }
 
