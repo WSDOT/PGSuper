@@ -194,7 +194,7 @@ rptRcTable* CBearingSeatElevationsChapterBuilderBase::BuildTable(const CString& 
 
       if (m_TableType == ttBearingDeduct)
       {
-         WRITE_NEWLINE_BEFORE(writeNewLineBefore, row, 2, elevDetails.BearingDeduct)
+         WRITE_NEWLINE_BEFORE(writeNewLineBefore, row, 2, dim.SetValue(elevDetails.BearingDeduct))
       }
       else
       {
