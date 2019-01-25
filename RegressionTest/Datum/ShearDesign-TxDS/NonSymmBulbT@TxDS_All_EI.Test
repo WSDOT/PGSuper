@@ -12,8 +12,7 @@ Finished elevation check failed
  28.25    5   0.00                     1     2    W41DG    *     10  0.6  270  23.78  17.58                                              4.000  5.000   0.999    -1.690     1669   0.550  0.667   0.940 -0.008 -0.036 -0.035 -0.079  23.82   76.88    3.00    3.42    3.42 
 
 
-The Specification Check was Not Successful
-Finished elevation check failed
+The Specification Check was Successful
 
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
@@ -21,7 +20,6 @@ Finished elevation check failed
  28.25    5   0.00                     1     3    W41DG    *     10  0.6  270  23.78  17.58                                              4.000  5.000   0.986    -1.685     1669   0.550  0.667   0.940 -0.008 -0.036 -0.035 -0.079  23.82   76.88    3.00    3.42    3.42 
 
 
-The Specification Check was Not Successful
-Finished elevation check failed
+The Specification Check was Successful
 
 

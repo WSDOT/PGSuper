@@ -1708,6 +1708,13 @@ interface IGirder : public IUnknown
    // where the transverse line intersects the edges of the girder. If pDirection is nullptr, the transverse line is taken to be normal to the girder
    virtual void GetTopGirderElevation(const pgsPointOfInterest& poi, IDirection* pDirection,Float64* pLeft, Float64* pCenter, Float64* pRight) const = 0;
 
+   // Returns the finished top of girder elevation for the left, center, and right edges of the girder at the specified poi. The elevation takes into
+   // account slab offsets and excess camber. Direction defines a tranverse line passing through poi. Left and Right elevations are computed
+   // where the transverse line intersects the edges of the girder. If pDirection is nullptr, the transverse line is taken to be normal to the girder.
+   // if bIncludeOverlay is true, the depth of the overlay is included (future overlays are not included), otherwise this method is the same
+   // as GetTopGirderElevation
+   virtual void GetFinishedElevation(const pgsPointOfInterest& poi, IDirection* pDirection, bool bIncludeOverlay, Float64* pLeft, Float64* pCenter, Float64* pRight) const = 0;
+
    // Returns the height of the splitting zone 
    virtual Float64 GetSplittingZoneHeight(const pgsPointOfInterest& poi) const = 0;
 
