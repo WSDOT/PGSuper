@@ -25293,6 +25293,18 @@ void CBridgeAgentImp::GetTopGirderElevation(const pgsPointOfInterest& poi, IDire
    }
 }
 
+void CBridgeAgentImp::GetFinishedElevation(const pgsPointOfInterest& poi, IDirection* pDirection, bool bIncludeOverlay, Float64* pLeft, Float64* pCenter, Float64* pRight) const
+{
+   GetTopGirderElevation(poi, pDirection, pLeft, pCenter, pRight);
+   if (bIncludeOverlay && GetWearingSurfaceType() == pgsTypes::wstOverlay)
+   {
+      Float64 overlay = GetOverlayDepth();
+      *pLeft += overlay;
+      *pCenter += overlay;
+      *pRight += overlay;
+   }
+}
+
 bool CBridgeAgentImp::CanPrecamber(const CSegmentKey& segmentKey) const
 {
    const GirderLibraryEntry* pGirderEntry = GetGirderLibraryEntry(segmentKey);
