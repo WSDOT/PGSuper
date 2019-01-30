@@ -399,6 +399,7 @@ public:
    virtual void GetSegmentsAtTemporarySupport(GirderIndexType gdrIdx,SupportIndexType tsIdx,CSegmentKey* pLeftSegmentKey,CSegmentKey* pRightSegmentKey) const override;
    virtual void GetTemporarySupportDirection(SupportIndexType tsIdx,IDirection** ppDirection) const override;
    virtual std::vector<BearingElevationDetails> GetBearingElevationDetails(PierIndexType pierIdx,pgsTypes::PierFaceType face) const override;
+   virtual std::vector<BearingElevationDetails> GetBearingElevationDetailsAtGirderEdges(PierIndexType pierIdx,pgsTypes::PierFaceType face) const override;
 
 // IMaterials
 public:
@@ -1659,6 +1660,10 @@ private:
    mutable std::map<CSegmentKey, mathLinFunc2d> m_GirderTopChordElevationFunctions; // top girder chord elevations with temporary support elevation adjustments
    mutable std::map<CSegmentKey, mathLinFunc2d> m_GirderBaselineElevationFunctions; // top girder chord elevations without temporary support elevation adjustments
    // elevation adjustment at any poi is the difference between m_GirderTopChordElevationFunctions and m_GirderBaselineElevationFunctions
+
+   // Common function to return bearing elevation details at bearings or at girder edges
+   enum BearingElevLocType { batBearings, batGirderEdges };
+   std::vector<BearingElevationDetails> GetBearingElevationDetails_Generic(PierIndexType pierIdx,pgsTypes::PierFaceType face, BearingElevLocType locType) const;
 };
 
 #endif //__BRIDGEAGENT_H_

@@ -11807,6 +11807,16 @@ void CBridgeAgentImp::GetTemporarySupportDirection(SupportIndexType tsIdx,IDirec
 
 std::vector<BearingElevationDetails> CBridgeAgentImp::GetBearingElevationDetails(PierIndexType pierIdx, pgsTypes::PierFaceType face) const
 {
+   return GetBearingElevationDetails_Generic(pierIdx, face, CBridgeAgentImp::batBearings);
+}
+
+std::vector<BearingElevationDetails> CBridgeAgentImp::GetBearingElevationDetailsAtGirderEdges(PierIndexType pierIdx, pgsTypes::PierFaceType face) const
+{
+   return GetBearingElevationDetails_Generic(pierIdx, face, CBridgeAgentImp::batGirderEdges);
+}
+
+std::vector<BearingElevationDetails> CBridgeAgentImp::GetBearingElevationDetails_Generic(PierIndexType pierIdx, pgsTypes::PierFaceType face, CBridgeAgentImp::BearingElevLocType locType) const
+{
    PierIndexType nPiers = GetPierCount();
    // these are invalid locations so return an empty vector
    if ( pierIdx == 0 && face == pgsTypes::Back || pierIdx == nPiers-1 && face == pgsTypes::Ahead )
@@ -11858,7 +11868,6 @@ std::vector<BearingElevationDetails> CBridgeAgentImp::GetBearingElevationDetails
          THROW_UNWIND(_T("Bearing data is incomplete. Cannot compute bearing seat elevations"), XREASON_BAD_BEARING_DATA);
       }
 
-
       pgsPointOfInterest poi;
       if (isBoundaryPier)
       {
@@ -11897,15 +11906,35 @@ std::vector<BearingElevationDetails> CBridgeAgentImp::GetBearingElevationDetails
       // total adjustment due to slope and tilt angle of girder
       Float64 gdrTotalAngleAdjust = gdrSlopeAdjust / gdrOrtnAdjust;
 
-
       Float64 Hg = GetHg(intervalIdx, poi);
       Float64 Hg_adj = Hg * gdrTotalAngleAdjust;
 
       Float64 SlabOffset = GetSlabOffset(grpIdx, pierIdx, gdrIdx);
 
-      // Girders can have multiple bearings
-      IndexType numBrgs = pBearingData->BearingCount;
-      Float64 BrgLoc = (numBrgs==0) ? 0.0 : ((numBrgs-1) * pBearingData->Spacing)/2.0; // location of first bearing from cl girder
+      // Bearing Dependent data. Girders can have multiple bearings or two edges 
+      Float64 BrgRecess = pBearingData->RecessHeight;
+      Float64 BrgHeight = pBearingData->Height;
+      Float64 SolePlateHeight  = pBearingData->SolePlateHeight;
+
+      IndexType numBrgs;
+      Float64 BrgLoc;
+      Float64 Spacing;
+
+      if (locType == batBearings)
+      {
+         // Need data for each bearing at girder
+         numBrgs = pBearingData->BearingCount;
+         Spacing = pBearingData->Spacing;
+         BrgLoc = (numBrgs==0) ? 0.0 : ((numBrgs-1) * Spacing)/2.0; // location of first bearing from cl girder
+      }
+      else
+      {
+         // Need data at bottom girder edges
+         ATLASSERT(locType == batGirderEdges);
+         numBrgs = 2;
+         Spacing = GetBottomWidth(poi);
+         BrgLoc = (numBrgs==0) ? 0.0 : ((numBrgs-1) * Spacing)/2.0; // location of first bearing from cl girder
+      }
 
       for (IndexType brgIdx = 0; brgIdx < numBrgs; brgIdx++)
       {
@@ -11928,9 +11957,9 @@ std::vector<BearingElevationDetails> CBridgeAgentImp::GetBearingElevationDetails
          elevDetails.Hg = Hg_adj;
 
          // Do not adjust bearing and soleplate heights for angle
-         elevDetails.BrgRecess = pBearingData->RecessHeight;
-         elevDetails.BrgHeight = pBearingData->Height;
-         elevDetails.SolePlateHeight = pBearingData->SolePlateHeight;
+         elevDetails.BrgRecess = BrgRecess;
+         elevDetails.BrgHeight = BrgHeight;
+         elevDetails.SolePlateHeight = SolePlateHeight;
 
          Float64 crossSlope = GetSlope(station, offset);
          crossSlope = IsZero(crossSlope) ? 0 : crossSlope;
@@ -11961,7 +11990,7 @@ std::vector<BearingElevationDetails> CBridgeAgentImp::GetBearingElevationDetails
 
          vElevDetails.push_back(elevDetails);
 
-         BrgLoc -= pBearingData->Spacing; // walk across bearing line
+         BrgLoc -= Spacing; // walk across bearing line
       }
    }
    

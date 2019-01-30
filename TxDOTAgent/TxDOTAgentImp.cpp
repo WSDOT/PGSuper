@@ -150,7 +150,7 @@ STDMETHODIMP CTxDOTAgentImp::Init2()
    pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CUserDefinedLoadsChapterBuilder) );
    pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CTexasCamberAndDeflectionChapterBuilder) );
    pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CTexasHaunchChapterBuilder) );
-//   pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CBearingDeductChapterBuilder) );
+   pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CBearingDeductChapterBuilder) );
    pRptMgr->AddReportBuilder( pRptBuilder.release() );
 
    // Texas Summary report - long form
@@ -167,7 +167,7 @@ STDMETHODIMP CTxDOTAgentImp::Init2()
    pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CUserDefinedLoadsChapterBuilder) );
    pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CTexasCamberAndDeflectionChapterBuilder) );
    pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CTexasHaunchChapterBuilder) );
-//   pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CBearingDeductChapterBuilder) );
+   pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CBearingDeductChapterBuilder) );
    pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CTexasPrestressSummaryChapterBuilder) );
    pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CTexasStressChecksChapterBuilder) );
    pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CTexasMomentCapacityChapterBuilder) );

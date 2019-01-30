@@ -619,8 +619,11 @@ interface IBridge : IUnknown
 
    virtual void GetTemporarySupportDirection(SupportIndexType tsIdx,IDirection** ppDirection) const = 0;
 
-   // Compute bearing elevation data for each girder along bearing line
+   // Compute bearing elevation data for each girder along bearing line for each defined bearing
    virtual std::vector<BearingElevationDetails> GetBearingElevationDetails(PierIndexType pierIdx,pgsTypes::PierFaceType face) const = 0;
+
+   // Compute bearing elevation data for each girder along bearing line at edges of girder bottom. Will return two values 0=Left, 1=Right
+   virtual std::vector<BearingElevationDetails> GetBearingElevationDetailsAtGirderEdges(PierIndexType pierIdx,pgsTypes::PierFaceType face) const = 0;
 };
 
 /*****************************************************************************
