@@ -1120,7 +1120,10 @@ bool CPGSDocBase::EditTimeline()
 bool CPGSDocBase::EditEffectiveFlangeWidth()
 {
    GET_IFACE(IEffectiveFlangeWidth, pEFW);
-   CString strQuestion(_T("The LRFD General Effective Flange Width provisions (4.6.2.6.1) are considered applicable for skew angles less than 75 degress, L/S greater than or equal to 2.0 and overhang widths less than or equal to 0.5S. In unusual cases where these limits are violated, a refined analysis should be used."));
+   CString strQuestion(_T("The LRFD General Effective Flange Width provisions (4.6.2.6.1) are considered applicable for skew angles less than 75 degress, L/S greater than or equal to 2.0 and overhang widths less than or equal to 0.5S."));
+   strQuestion += _T("\r\nIn unusual cases where these limits are violated, a refined analysis should be used.");
+   strQuestion += _T("\r\n\r\nWhen the overhang width exceeds 0.5S, it will be taken equal to 0.5S and contribution of structrually continuous barriers will be ignored for purposes of computing the effective flange width.");
+   strQuestion += _T("\r\n\r\nSelect a method for addressing cases when the other limits are exeeded.");
    CString strResponses(_T("Stop analysis if structure violates these limits\nIgnore these limits"));
 
    CEAFHelpHandler helpHandler(GetDocumentationSetName(), IDH_EFFECTIVE_FLANGE_WIDTH);
