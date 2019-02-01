@@ -377,10 +377,10 @@ void CAlignmentProfileView::BuildBridgeDisplayObjects()
          CSegmentKey segmentKey(girderKey,segIdx);
 
          CComPtr<IShape> segmentShape;
-         pIGirder->GetSegmentProfile( segmentKey, true/*include closures*/, &segmentShape);
+         pIGirder->GetSegmentProfile( segmentKey, false/*dont include closures*/, &segmentShape);
 
          PoiList vPoi;
-         pPoi->GetPointsOfInterest(segmentKey, POI_0L | POI_RELEASED_SEGMENT,&vPoi);
+         pPoi->GetPointsOfInterest(segmentKey, POI_START_FACE, &vPoi); // don't use 0L at release... the support points may not be at the ends of the segment
          ATLASSERT(vPoi.size() == 1);
          const pgsPointOfInterest& startPoi = vPoi.front();
 
@@ -393,7 +393,13 @@ void CAlignmentProfileView::BuildBridgeDisplayObjects()
          Float64 angle = atan(slope);
 
          Float64 station,offset;
-         pAlignment->GetStationAndOffset(pgsTypes::pcGlobal,pntEnd1,&station,&offset);
+         pAlignment->GetStationAndOffset(pgsTypes::pcGlobal, pntEnd1, &station, &offset);
+
+#if defined _DEBUG
+         Float64 _station, _offset;
+         pBridge->GetStationAndOffset(startPoi, &_station, &_offset);
+         ATLASSERT(IsEqual(station, _station) && IsEqual(offset, _offset));
+#endif
 
          CComQIPtr<IXYPosition> position(segmentShape);
          CComPtr<IPoint2d> pntTopLeft;
