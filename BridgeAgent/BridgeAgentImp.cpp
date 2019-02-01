@@ -33922,8 +33922,6 @@ std::map<CSegmentKey, mathLinFunc2d> CBridgeAgentImp::CreateGirderTopChordFuncti
    {
       // there is only one segment in this span
       ATLASSERT(startSegmentKey.IsEqual(endSegmentKey));
-      // there shouldn't be any temporary supports
-      ATLASSERT(pStartPier->GetNextSpan()->GetTemporarySupports().size() == 0);
       functions.insert(std::make_pair(startSegmentKey, fnBasic));
    }
    else
