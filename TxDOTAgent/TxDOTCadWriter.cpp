@@ -157,7 +157,7 @@ int TxDOT_WriteCADDataToFile (FILE *fp, IBroker* pBroker, const CGirderKey& gird
 
 	/* Create pois at the start of girder and mid-span */
    PoiList vPoi;
-   pPointOfInterest->GetPointsOfInterest(segmentKey, POI_0L | POI_RELEASED_SEGMENT, &vPoi);
+   pPointOfInterest->GetPointsOfInterest(segmentKey, POI_START_FACE, &vPoi);
    ATLASSERT(vPoi.size() == 1);
    const pgsPointOfInterest& pois(vPoi.front());
 	
