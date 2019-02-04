@@ -441,15 +441,11 @@ rptChapter* CDeckElevationChapterBuilder::BuildNoDeck(CReportSpecification* pRpt
 
             // get parameters for finished elevation... for no deck, the finished elevation is the top of the girder
             std::array<Float64,3> finished_elevation;
-            pGirder->GetTopGirderElevation(poi, direction, &finished_elevation[Left], &finished_elevation[Center], &finished_elevation[Right]);
+            pGirder->GetFinishedElevation(poi, direction, true /*include overlay depth*/, &finished_elevation[Left], &finished_elevation[Center], &finished_elevation[Right]);
 
 
             for (int i = 0; i < 3; i++) // left, center, right
             {
-               // so far, finished elevation is just the top of the girder.... need to add the overlay
-               // overlay will be zero if (1) doesn't exist or (2) is a future overlay
-               finished_elevation[i] += overlay;
-
                Float64 design_elevation = pAlignment->GetElevation(station[i], offset[i]);
 
                (*pTable)(row + i*row_step + 0, col) << rptRcStation(station[i], &pDisplayUnits->GetStationFormat());

@@ -399,7 +399,7 @@ void pgsDesigner2::GetHaunchDetails(const CSegmentKey& segmentKey,const GDRCONFI
    const pgsPointOfInterest& clBrgPoi = vPoi.front();
 
    PoiList vEndPoi;
-   pPoi->GetPointsOfInterest(segmentKey, POI_RELEASED_SEGMENT | POI_0L | POI_10L, &vEndPoi);
+   pPoi->GetPointsOfInterest(segmentKey, POI_START_FACE | POI_END_FACE, &vEndPoi);
    ATLASSERT(vEndPoi.size() == 2);
    const pgsPointOfInterest& poi_left(vEndPoi.front());
    const pgsPointOfInterest& poi_right(vEndPoi.back());
@@ -5272,7 +5272,6 @@ void pgsDesigner2::CheckConstructability(const CGirderKey& girderKey,pgsConstruc
    //
    ///////////////////////////////////////////////////////////////
 
-
    // Constructability check is for all segments in a girder
    for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++)
    {
@@ -5311,7 +5310,7 @@ void pgsDesigner2::CheckConstructability(const CGirderKey& girderKey,pgsConstruc
             Float64 elev = pAlignment->GetElevation(station, offset);
 
             std::array<Float64, 3> finished_elevation;
-            pIGirder->GetTopGirderElevation(poi, nullptr, &finished_elevation[Left], &finished_elevation[Center], &finished_elevation[Right]);
+            pIGirder->GetFinishedElevation(poi, nullptr, true /*include overlay depth*/, &finished_elevation[Left], &finished_elevation[Center], &finished_elevation[Right]);
 
             Float64 diff = fabs(finished_elevation[Center] - elev);
 

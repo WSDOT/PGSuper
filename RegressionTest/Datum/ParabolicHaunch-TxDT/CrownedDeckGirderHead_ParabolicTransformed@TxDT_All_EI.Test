@@ -5,14 +5,13 @@
 
 Girder design was Not Successful
 The Specification Check was Not Successful
-Tensile stress check failed for Service III Limit State in Interval 19 Open to Traffic
 Lifting checks failed
 Hauling checks failed
 
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  AECmbr                                             Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 44.33    7   0.75                     1     2    WF69D    *     35  0.6  270  38.24  36.48   6.75   6.75   1.50                                             11.600 13.800   2.617    -3.607    10514   0.547  0.725   2.037 -0.456 -0.150 -0.155 -0.761  88.11  148.33    3.00   14.00   14.00 
+ 44.33    7   0.75                     1     2    WF69D    *     35  0.6  270  38.24  36.48   6.75   6.75   1.50                                             11.600 13.800   2.617    -3.607    10698   0.547  0.725   2.037 -0.456 -0.150 -0.155 -0.761  88.11  148.33    3.00   14.00   14.00 
 
 
 Girder design was Not Successful

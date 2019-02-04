@@ -318,11 +318,14 @@ std::vector<EquivPretensionLoad> CAnalysisAgentImp::GetEquivPretensionLoads(cons
 
    GET_IFACE(IPointOfInterest, pPoi);
    PoiList vPoi;
-   pPoi->GetPointsOfInterest(segmentKey, POI_0L | POI_5L | POI_10L | POI_RELEASED_SEGMENT, &vPoi);
-   ATLASSERT( vPoi.size() == 3 );
-   const pgsPointOfInterest& poiStart(vPoi[0]);
-   const pgsPointOfInterest& poiMiddle(vPoi[1]);
-   const pgsPointOfInterest& poiEnd(vPoi[2]);
+   pPoi->GetPointsOfInterest(segmentKey, POI_5L | POI_RELEASED_SEGMENT, &vPoi);
+   ATLASSERT(vPoi.size() == 1);
+   const pgsPointOfInterest& poiMiddle(vPoi.front());
+   vPoi.clear();
+   pPoi->GetPointsOfInterest(segmentKey, POI_START_FACE | POI_END_FACE, &vPoi);
+   ATLASSERT( vPoi.size() == 2 );
+   const pgsPointOfInterest& poiStart(vPoi.front());
+   const pgsPointOfInterest& poiEnd(vPoi.back());
 
    GET_IFACE(ISectionProperties, pSectProps);
    Xle = pSectProps->GetXleft(releaseIntervalIdx, poiStart);
@@ -6787,6 +6790,34 @@ Float64 CAnalysisAgentImp::GetDCamberForGirderScheduleUnfactored(const pgsPointO
    return GetDCamberForGirderScheduleEx(poi, time, pConfig, false);
 }
 
+void GetCamberVariation(Float64 Dupper, Float64 CF, Float64 precamber, Float64* pLowerBound, Float64* pAvg)
+{
+   // Average and lower bound cambers are a function of a scaling the natural camber.
+   // precamber is build in and fixed, it doesn't get scaled
+   Float64 Dlower = (Dupper - precamber)*CF + precamber;
+   Float64 Davg = 0.5*(Dupper + Dlower);
+   *pAvg = Davg;
+   *pLowerBound = Dlower;
+}
+
+void CAnalysisAgentImp::GetDCamberForGirderScheduleEx(const pgsPointOfInterest& poi, Int16 time, Float64* pUpperBound, Float64* pAvg, Float64* pLowerBound, const GDRCONFIG* pConfig) const
+{
+   Float64 Dupper = GetDCamberForGirderSchedule(poi, time, pConfig);
+   *pUpperBound = Dupper;
+   Float64 CF = GetLowerBoundCamberVariabilityFactor();
+   Float64 precamber = GetPrecamber(poi, pgsTypes::pddErected);
+   GetCamberVariation(Dupper, CF, precamber, pLowerBound, pAvg);
+}
+
+void CAnalysisAgentImp::GetDCamberForGirderScheduleUnfactoredEx(const pgsPointOfInterest& poi, Int16 time, Float64* pUpperBound, Float64* pAvg, Float64* pLowerBound, const GDRCONFIG* pConfig) const
+{
+   Float64 Dupper = GetDCamberForGirderScheduleUnfactored(poi, time, pConfig);
+   *pUpperBound = Dupper;
+   Float64 CF = GetLowerBoundCamberVariabilityFactor();
+   Float64 precamber = GetPrecamber(poi, pgsTypes::pddErected);
+   GetCamberVariation(Dupper, CF, precamber, pLowerBound, pAvg);
+}
+
 Float64 CAnalysisAgentImp::GetDCamberForGirderScheduleEx(const pgsPointOfInterest& poi,Int16 time,const GDRCONFIG* pConfig, bool applyFactors) const
 {
    if (pConfig == nullptr)
@@ -7422,7 +7453,7 @@ void CAnalysisAgentImp::GetPrecamber(const pgsPointOfInterest& poi, pgsTypes::Pr
    switch (datum)
    {
    case pgsTypes::pddRelease:
-      pPoi->GetPointsOfInterest(segmentKey, POI_RELEASED_SEGMENT | POI_0L | POI_10L ,&vPoi);
+      pPoi->GetPointsOfInterest(segmentKey, POI_START_FACE | POI_END_FACE,&vPoi);
       break;
 
    case pgsTypes::pddLifting:
@@ -10137,7 +10168,7 @@ void CAnalysisAgentImp::IsGirderInPrecompressedTensileZone(const pgsPointOfInter
       bool bModelStartCantilever,bModelEndCantilever;
       pBridge->ModelCantilevers(segmentKey,&bModelStartCantilever,&bModelEndCantilever);
 
-      if ( poi.IsTenthPoint(POI_RELEASED_SEGMENT) == 1 || // start of segment at release
+      if ( poi.HasAttribute(POI_START_FACE) || // start of segment at release 
           (poi.IsTenthPoint(POI_ERECTED_SEGMENT)  == 1 && !bModelStartCantilever) ) // CL Brg at start of erected segment
       {
          PierIndexType pierIdx = pBridge->GetGirderGroupStartPier(segmentKey.groupIndex);
@@ -10158,7 +10189,7 @@ void CAnalysisAgentImp::IsGirderInPrecompressedTensileZone(const pgsPointOfInter
       bool bModelStartCantilever,bModelEndCantilever;
       pBridge->ModelCantilevers(segmentKey,&bModelStartCantilever,&bModelEndCantilever);
 
-      if ( poi.IsTenthPoint(POI_RELEASED_SEGMENT) == 11 ||
+      if ( poi.HasAttribute(POI_END_FACE) ||
           (poi.IsTenthPoint(POI_ERECTED_SEGMENT)  == 11 && !bModelEndCantilever) )
       {
          PierIndexType pierIdx = pBridge->GetGirderGroupEndPier(segmentKey.groupIndex);
@@ -10176,7 +10207,7 @@ void CAnalysisAgentImp::IsGirderInPrecompressedTensileZone(const pgsPointOfInter
    // Even though there is prestress, at the end faces of the girder there isn't
    // any prestress force because it hasn't been transfered to the girder yet. The
    // prestress force transfers over the transfer length.
-   if ( poi.IsTenthPoint(POI_RELEASED_SEGMENT) == 1 || poi.IsTenthPoint(POI_RELEASED_SEGMENT) == 11 )
+   if ( poi.HasAttribute(POI_START_FACE) || poi.HasAttribute(POI_END_FACE))
    {
       *pbTopPTZ = false;
       *pbBotPTZ = true;

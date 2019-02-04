@@ -2919,7 +2919,7 @@ void CGirderModelElevationView::BuildStirrupDisplayObjects(CPGSDocBase* pDoc, IB
          CSegmentKey segmentKey(thisGirderKey,segIdx);
 
          PoiList vPoi;
-         pPoi->GetPointsOfInterest(segmentKey, POI_0L | POI_RELEASED_SEGMENT, &vPoi);
+         pPoi->GetPointsOfInterest(segmentKey, POI_START_FACE, &vPoi);
          const pgsPointOfInterest& start_poi(vPoi.front());
          Float64 top_flange_thickening_at_start = pIGirder->GetTopFlangeThickening(start_poi);
 

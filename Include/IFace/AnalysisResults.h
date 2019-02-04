@@ -811,6 +811,9 @@ interface ICamber : IUnknown
    virtual Float64 GetDCamberForGirderSchedule(const pgsPointOfInterest& poi,Int16 time, const GDRCONFIG* pConfig=nullptr) const = 0;
    virtual Float64 GetDCamberForGirderScheduleUnfactored(const pgsPointOfInterest& poi,Int16 time, const GDRCONFIG* pConfig=nullptr) const = 0;
 
+   virtual void GetDCamberForGirderScheduleEx(const pgsPointOfInterest& poi, Int16 time, Float64* pUpperBound,Float64* pAvg,Float64* pLowerBound,const GDRCONFIG* pConfig = nullptr) const = 0;
+   virtual void GetDCamberForGirderScheduleUnfactoredEx(const pgsPointOfInterest& poi, Int16 time, Float64* pUpperBound, Float64* pAvg, Float64* pLowerBound, const GDRCONFIG* pConfig = nullptr) const = 0;
+
    // This is the factor that the min timing camber is multiplied by the compute the lower bound camber
    virtual Float64 GetLowerBoundCamberVariabilityFactor()const = 0;
 

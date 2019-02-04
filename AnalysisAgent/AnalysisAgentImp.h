@@ -363,7 +363,8 @@ public:
    virtual Float64 GetExcessCamberRotationUnfactored(const pgsPointOfInterest& poi,Int16 time,const GDRCONFIG* pConfig=nullptr) const override;
    virtual Float64 GetDCamberForGirderSchedule(const pgsPointOfInterest& poi,Int16 time,const GDRCONFIG* pConfig=nullptr) const override;
    virtual Float64 GetDCamberForGirderScheduleUnfactored(const pgsPointOfInterest& poi,Int16 time,const GDRCONFIG* pConfig=nullptr) const override;
-
+   virtual void GetDCamberForGirderScheduleEx(const pgsPointOfInterest& poi, Int16 time, Float64* pUpperBound, Float64* pAvg, Float64* pLowerBound, const GDRCONFIG* pConfig = nullptr) const override;
+   virtual void GetDCamberForGirderScheduleUnfactoredEx(const pgsPointOfInterest& poi, Int16 time, Float64* pUpperBound, Float64* pAvg, Float64* pLowerBound, const GDRCONFIG* pConfig = nullptr) const override;
    virtual Float64 GetLowerBoundCamberVariabilityFactor()const override;
    virtual CamberMultipliers GetCamberMultipliers(const CSegmentKey& segmentKey) const override;
    virtual Float64 GetPrecamber(const CSegmentKey& segmentKey) const override;

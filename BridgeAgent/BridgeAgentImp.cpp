@@ -25293,6 +25293,18 @@ void CBridgeAgentImp::GetTopGirderElevation(const pgsPointOfInterest& poi, IDire
    }
 }
 
+void CBridgeAgentImp::GetFinishedElevation(const pgsPointOfInterest& poi, IDirection* pDirection, bool bIncludeOverlay, Float64* pLeft, Float64* pCenter, Float64* pRight) const
+{
+   GetTopGirderElevation(poi, pDirection, pLeft, pCenter, pRight);
+   if (bIncludeOverlay && GetWearingSurfaceType() == pgsTypes::wstOverlay)
+   {
+      Float64 overlay = GetOverlayDepth();
+      *pLeft += overlay;
+      *pCenter += overlay;
+      *pRight += overlay;
+   }
+}
+
 bool CBridgeAgentImp::CanPrecamber(const CSegmentKey& segmentKey) const
 {
    const GirderLibraryEntry* pGirderEntry = GetGirderLibraryEntry(segmentKey);
@@ -25485,7 +25497,7 @@ void CBridgeAgentImp::GetSegmentPlanPoints(const CSegmentKey& segmentKey, pgsTyp
    GetSupports(segmentKey, &startLine, &endLine);
 
    PoiList vPoi;
-   GetPointsOfInterest(segmentKey, POI_0L | POI_10L | POI_RELEASED_SEGMENT,&vPoi);
+   GetPointsOfInterest(segmentKey, POI_START_FACE | POI_END_FACE,&vPoi);
    ATLASSERT(vPoi.size() == 2);
    const pgsPointOfInterest& startPoi(vPoi.front());
    const pgsPointOfInterest& endPoi(vPoi.back());
@@ -26473,9 +26485,11 @@ void CBridgeAgentImp::ConfigureSegmentLiftingStabilityProblem(const CSegmentKey&
 
    // get camber... measured from end of segment as if it was supported at it's ends
    PoiList vPoi;
-   GetPointsOfInterest(segmentKey, POI_0L | POI_5L | POI_RELEASED_SEGMENT, &vPoi);
-   ATLASSERT(vPoi.size() == 2);
+   GetPointsOfInterest(segmentKey, POI_START_FACE, &vPoi);
    const pgsPointOfInterest& poiEnd(vPoi.front());
+   ATLASSERT(vPoi.size() == 1);
+   GetPointsOfInterest(segmentKey,  POI_5L | POI_RELEASED_SEGMENT, &vPoi);
+   ATLASSERT(vPoi.size() == 2);
    const pgsPointOfInterest& poiMS(vPoi.back());
 
    // prestress related camber
@@ -26720,10 +26734,13 @@ void CBridgeAgentImp::ConfigureSegmentHaulingStabilityProblem(const CSegmentKey&
    pProblem->EvaluateStressesAtEquilibriumAngle(stbTypes::Superelevation, true);
 
    PoiList vPoi;
-   GetPointsOfInterest(segmentKey, POI_0L | POI_5L | POI_RELEASED_SEGMENT,&vPoi);
-   ATLASSERT(vPoi.size() == 2);
+   GetPointsOfInterest(segmentKey, POI_START_FACE, &vPoi);
    const pgsPointOfInterest& poiEnd(vPoi.front());
+   ATLASSERT(vPoi.size() == 1);
+   GetPointsOfInterest(segmentKey, POI_5L | POI_RELEASED_SEGMENT, &vPoi);
+   ATLASSERT(vPoi.size() == 2);
    const pgsPointOfInterest& poiMS(vPoi.back());
+
 
    Float64 Hg  = GetHg(intervalIdx,poiEnd);
    Float64 Hrc, Hbg, Wcc, Ktheta;
@@ -28030,7 +28047,7 @@ Float64 CBridgeAgentImp::GetAngularChange(const pgsPointOfInterest& poi,DuctInde
       // angular changes are measured from the start of the girder (i.e. jacking at the left end)
       segmentKey.segmentIndex = 0; // always occurs in segment 0
       PoiList vPoi;
-      GetPointsOfInterest(segmentKey, POI_0L | POI_RELEASED_SEGMENT,&vPoi);
+      GetPointsOfInterest(segmentKey, POI_START_FACE,&vPoi);
       ATLASSERT(vPoi.size() == 1);
       poiStart = &(vPoi.front().get());
    }
@@ -28040,7 +28057,7 @@ Float64 CBridgeAgentImp::GetAngularChange(const pgsPointOfInterest& poi,DuctInde
       SegmentIndexType nSegments = GetSegmentCount(segmentKey);
       segmentKey.segmentIndex = nSegments-1;
       PoiList vPoi;
-      GetPointsOfInterest(segmentKey, POI_10L | POI_RELEASED_SEGMENT,&vPoi);
+      GetPointsOfInterest(segmentKey, POI_END_FACE,&vPoi);
       ATLASSERT(vPoi.size() == 1);
       poiStart = &(vPoi.front().get());
    }
@@ -33910,8 +33927,6 @@ std::map<CSegmentKey, mathLinFunc2d> CBridgeAgentImp::CreateGirderTopChordFuncti
    {
       // there is only one segment in this span
       ATLASSERT(startSegmentKey.IsEqual(endSegmentKey));
-      // there shouldn't be any temporary supports
-      ATLASSERT(pStartPier->GetNextSpan()->GetTemporarySupports().size() == 0);
       functions.insert(std::make_pair(startSegmentKey, fnBasic));
    }
    else

@@ -131,7 +131,7 @@ void CDrawStrandControl::CustomInit(const CPrecastSegmentData* pSegment,const CS
 
    GET_IFACE2(pBroker, IPointOfInterest, pPoi);
    PoiList vPoi;
-   pPoi->GetPointsOfInterest(segmentKey, POI_0L | POI_10L | POI_RELEASED_SEGMENT, &vPoi);
+   pPoi->GetPointsOfInterest(segmentKey, POI_START_FACE | POI_END_FACE, &vPoi);
    ATLASSERT(vPoi.size() == 2);
    const pgsPointOfInterest& startPoi(vPoi.front());
    const pgsPointOfInterest& endPoi(vPoi.back());

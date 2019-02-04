@@ -5386,6 +5386,40 @@ STDMETHODIMP CProjectAgentImp::Load(IStructuredLoad* pStrLoad)
    }
 
 
+   // There was a bug in Version 4.0, in CBridgeDescGeneralPage::DoDataExchange(), that could cause
+   // the top width type to be set to an invalid value. The invalid value was saved to file
+   // and the following corrects the invalid value. The top width type was only set to
+   // an invalid value for top width defined for the entire bridge, not girder by girder
+   if (IsTopWidthSpacing(spacingType) && IsBridgeSpacing(spacingType))
+   {
+      // girder spacing is by top width and is defined at the bridge level.... this is the case
+      // where the invalid data can come from
+
+      // get the valid top width types
+      std::vector<pgsTypes::TopWidthType> vSupportedTopWidthTypes = beamFactory->GetSupportedTopWidthTypes();
+
+      // get the current value of the input
+      pgsTypes::TopWidthType topWidthType;
+      Float64 left, right;
+      m_BridgeDescription.GetGirderTopWidth(&topWidthType, &left, &right);
+
+      // see if the current value is valid
+      auto found = std::find(vSupportedTopWidthTypes.cbegin(), vSupportedTopWidthTypes.cend(), topWidthType);
+      if (found == vSupportedTopWidthTypes.end())
+      {
+         // the current top width is not a valid type
+         // due to the nature of the bug and the top width type enum only being 3 elements
+         // the only possible bad value is CenteredCG
+         ATLASSERT(topWidthType == pgsTypes::twtCenteredCG);
+
+         // the correct value should have been asymmetric so we make that change here
+         topWidthType = pgsTypes::twtAsymmetric;
+
+         // finally, fix the bridge
+         m_BridgeDescription.SetGirderTopWidth(topWidthType, left, right);
+      }
+   }
+
    if (!beamFactory->IsSupportedGirderOrientation(m_BridgeDescription.GetGirderOrientation()))
    {
       m_BridgeDescription.SetGirderOrientation(beamFactory->ConvertGirderOrientation(m_BridgeDescription.GetGirderOrientation()));
@@ -11632,7 +11666,7 @@ void CProjectAgentImp::UpgradeBearingData()
          {
             pgsTypes::PierFaceType face = (pgsTypes::PierFaceType)i;
 
-            const CSpanData2* pSpan = GetSpan(face); // only 
+            const CSpanData2* pSpan = pPier->GetSpan(face); // only 
             if (pSpan)
             {
                const CBearingData2* pbd = pPier->GetBearingData(0, face);

@@ -76,6 +76,7 @@ typedef Uint32 PoiAttributeType; // NOTE: if more bits are needed use a 64-bit t
 
 
 // The lower 12 bits are reserved for 10th point attributes
+// L, for 10th Points, is measured between points of support
 #define POI_10L                    0x00000400 //1.0L
 #define POI_9L                     0x00000200 //0.9L
 #define POI_8L                     0x00000100 //0.8L
@@ -106,8 +107,8 @@ typedef Uint32 PoiAttributeType; // NOTE: if more bits are needed use a 64-bit t
 //#define POI_NONREF3                0x02000000
 
 // Special Points
-#define POI_END_FACE                 0x01000000 // End face of a segment (right end)
-#define POI_START_FACE               0x00800000 // Start face of a segment (left end)
+#define POI_START_FACE               0x01000000 // Start face of a segment (left end)
+#define POI_END_FACE                 0x00800000 // End face of a segment (right end)
 #define POI_STIRRUP_ZONE             0x00400000 // Stirrup Zone Boundary
 #define POI_CRITSECTSHEAR1           0x00200000 // critical section for shear, for strength I limit state
 #define POI_CRITSECTSHEAR2           0x00100000 // critical section for shear, for strength II limit state

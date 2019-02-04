@@ -536,17 +536,8 @@ rptChapter* CGirderScheduleChapterBuilder::Build(CReportSpecification* pRptSpec,
    // get # of days for creep
    Float64 Dmax_UpperBound, Dmax_Average, Dmax_LowerBound;
    Float64 Dmin_UpperBound, Dmin_Average, Dmin_LowerBound;
-   Float64 Cfactor = pCamber->GetLowerBoundCamberVariabilityFactor();
-   Dmin_UpperBound = pCamber->GetDCamberForGirderSchedule( poiMidSpan, CREEP_MINTIME);
-   Dmax_UpperBound = pCamber->GetDCamberForGirderSchedule( poiMidSpan, CREEP_MAXTIME);
-
-   Float64 precamber = pCamber->GetPrecamber(segmentKey);
-   
-   Dmin_LowerBound = Cfactor*(Dmin_UpperBound - precamber) + precamber;
-   Dmin_Average    = (1+Cfactor)/2*(Dmin_UpperBound - precamber) + precamber;
-   
-   Dmax_LowerBound = Cfactor*(Dmax_UpperBound - precamber) + precamber;
-   Dmax_Average    = (1+Cfactor)/2*(Dmax_UpperBound - precamber) + precamber;
+   pCamber->GetDCamberForGirderScheduleEx(poiMidSpan, CREEP_MAXTIME, &Dmax_UpperBound, &Dmax_Average, &Dmax_LowerBound);
+   pCamber->GetDCamberForGirderScheduleEx(poiMidSpan, CREEP_MINTIME, &Dmin_UpperBound, &Dmin_Average, &Dmin_LowerBound);
 
 
    (*pTable)(++row,0) << _T("Lower bound @ ")<< min_days<<_T(" days");
@@ -753,6 +744,7 @@ rptChapter* CGirderScheduleChapterBuilder::Build(CReportSpecification* pRptSpec,
             rptParagraph* p = new rptParagraph;
             *pChapter << p;
 
+            Float64 Cfactor = pCamber->GetLowerBoundCamberVariabilityFactor();
             *p << _T("Screed camber (C) is greater than the lower bound camber at time of deck casting (") << Cfactor * 100 << _T("% of D") << Sub(min_days) << _T("). The girder may end up with a sag if the deck is placed at day ") << min_days << _T(" and the actual camber is a lower bound value.") << rptNewLine;
          }
       }

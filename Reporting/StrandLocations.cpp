@@ -158,7 +158,7 @@ void CStrandLocations::Build(rptChapter* pChapter,IBroker* pBroker,const CSegmen
 
       GET_IFACE2(pBroker,IPointOfInterest, pPoi);
       PoiList vPoi;
-      pPoi->GetPointsOfInterest(segmentKey, POI_0L | POI_10L | POI_RELEASED_SEGMENT, &vPoi);
+      pPoi->GetPointsOfInterest(segmentKey, POI_START_FACE | POI_END_FACE, &vPoi);
       ATLASSERT(vPoi.size() == 2);
       const pgsPointOfInterest& leftPoi(vPoi.front());
       const pgsPointOfInterest& rightPoi(vPoi.back());
@@ -269,7 +269,7 @@ void CStrandLocations::Build(rptChapter* pChapter,IBroker* pBroker,const CSegmen
 
       GET_IFACE2(pBroker, IPointOfInterest, pPoi);
       PoiList vPoi;
-      pPoi->GetPointsOfInterest(segmentKey, POI_0L | POI_10L | POI_RELEASED_SEGMENT, &vPoi);
+      pPoi->GetPointsOfInterest(segmentKey, POI_START_FACE | POI_END_FACE, &vPoi);
       ATLASSERT(vPoi.size() == 2);
       const pgsPointOfInterest& leftPoi(vPoi.front());
       const pgsPointOfInterest& rightPoi(vPoi.back());
