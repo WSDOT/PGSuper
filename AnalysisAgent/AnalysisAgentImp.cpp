@@ -318,11 +318,14 @@ std::vector<EquivPretensionLoad> CAnalysisAgentImp::GetEquivPretensionLoads(cons
 
    GET_IFACE(IPointOfInterest, pPoi);
    PoiList vPoi;
-   pPoi->GetPointsOfInterest(segmentKey, POI_0L | POI_5L | POI_10L | POI_RELEASED_SEGMENT, &vPoi);
-   ATLASSERT( vPoi.size() == 3 );
-   const pgsPointOfInterest& poiStart(vPoi[0]);
-   const pgsPointOfInterest& poiMiddle(vPoi[1]);
-   const pgsPointOfInterest& poiEnd(vPoi[2]);
+   pPoi->GetPointsOfInterest(segmentKey, POI_5L | POI_RELEASED_SEGMENT, &vPoi);
+   ATLASSERT(vPoi.size() == 1);
+   const pgsPointOfInterest& poiMiddle(vPoi.front());
+   vPoi.clear();
+   pPoi->GetPointsOfInterest(segmentKey, POI_START_FACE | POI_END_FACE, &vPoi);
+   ATLASSERT( vPoi.size() == 2 );
+   const pgsPointOfInterest& poiStart(vPoi.front());
+   const pgsPointOfInterest& poiEnd(vPoi.back());
 
    GET_IFACE(ISectionProperties, pSectProps);
    Xle = pSectProps->GetXleft(releaseIntervalIdx, poiStart);
@@ -7450,7 +7453,7 @@ void CAnalysisAgentImp::GetPrecamber(const pgsPointOfInterest& poi, pgsTypes::Pr
    switch (datum)
    {
    case pgsTypes::pddRelease:
-      pPoi->GetPointsOfInterest(segmentKey, POI_RELEASED_SEGMENT | POI_0L | POI_10L ,&vPoi);
+      pPoi->GetPointsOfInterest(segmentKey, POI_START_FACE | POI_END_FACE,&vPoi);
       break;
 
    case pgsTypes::pddLifting:
@@ -10165,7 +10168,7 @@ void CAnalysisAgentImp::IsGirderInPrecompressedTensileZone(const pgsPointOfInter
       bool bModelStartCantilever,bModelEndCantilever;
       pBridge->ModelCantilevers(segmentKey,&bModelStartCantilever,&bModelEndCantilever);
 
-      if ( poi.IsTenthPoint(POI_RELEASED_SEGMENT) == 1 || // start of segment at release
+      if ( poi.HasAttribute(POI_START_FACE) || // start of segment at release 
           (poi.IsTenthPoint(POI_ERECTED_SEGMENT)  == 1 && !bModelStartCantilever) ) // CL Brg at start of erected segment
       {
          PierIndexType pierIdx = pBridge->GetGirderGroupStartPier(segmentKey.groupIndex);
@@ -10186,7 +10189,7 @@ void CAnalysisAgentImp::IsGirderInPrecompressedTensileZone(const pgsPointOfInter
       bool bModelStartCantilever,bModelEndCantilever;
       pBridge->ModelCantilevers(segmentKey,&bModelStartCantilever,&bModelEndCantilever);
 
-      if ( poi.IsTenthPoint(POI_RELEASED_SEGMENT) == 11 ||
+      if ( poi.HasAttribute(POI_END_FACE) ||
           (poi.IsTenthPoint(POI_ERECTED_SEGMENT)  == 11 && !bModelEndCantilever) )
       {
          PierIndexType pierIdx = pBridge->GetGirderGroupEndPier(segmentKey.groupIndex);
@@ -10204,7 +10207,7 @@ void CAnalysisAgentImp::IsGirderInPrecompressedTensileZone(const pgsPointOfInter
    // Even though there is prestress, at the end faces of the girder there isn't
    // any prestress force because it hasn't been transfered to the girder yet. The
    // prestress force transfers over the transfer length.
-   if ( poi.IsTenthPoint(POI_RELEASED_SEGMENT) == 1 || poi.IsTenthPoint(POI_RELEASED_SEGMENT) == 11 )
+   if ( poi.HasAttribute(POI_START_FACE) || poi.HasAttribute(POI_END_FACE))
    {
       *pbTopPTZ = false;
       *pbBotPTZ = true;

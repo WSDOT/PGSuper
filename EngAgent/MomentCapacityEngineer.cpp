@@ -2109,18 +2109,18 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalI
          if (poi.HasAttribute(POI_SPAN | POI_0L))
          {
             PoiList vPoi;
-            pPoi->GetPointsOfInterest(poi.GetSegmentKey(), POI_0L | POI_RELEASED_SEGMENT, &vPoi);
+            pPoi->GetPointsOfInterest(poi.GetSegmentKey(), POI_START_FACE, &vPoi);
             ATLASSERT(vPoi.size() == 1);
             barCutPoi = vPoi.front();
-            ATLASSERT(barCutPoi.HasAttribute(POI_0L | POI_RELEASED_SEGMENT));
+            ATLASSERT(barCutPoi.HasAttribute(POI_START_FACE));
          }
-         else if (poi.HasAttribute(POI_10L | POI_SPAN))
+         else if (poi.HasAttribute(POI_SPAN | POI_10L))
          {
             PoiList vPoi;
-            pPoi->GetPointsOfInterest(poi.GetSegmentKey(), POI_10L | POI_RELEASED_SEGMENT, &vPoi);
+            pPoi->GetPointsOfInterest(poi.GetSegmentKey(), POI_END_FACE, &vPoi);
             ATLASSERT(vPoi.size() == 1);
             barCutPoi = vPoi.front();
-            ATLASSERT(barCutPoi.HasAttribute(POI_10L | POI_RELEASED_SEGMENT));
+            ATLASSERT(barCutPoi.HasAttribute(POI_END_FACE));
          }
       }
 

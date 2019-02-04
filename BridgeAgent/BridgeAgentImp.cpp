@@ -25495,7 +25495,7 @@ void CBridgeAgentImp::GetSegmentPlanPoints(const CSegmentKey& segmentKey, pgsTyp
    GetSupports(segmentKey, &startLine, &endLine);
 
    PoiList vPoi;
-   GetPointsOfInterest(segmentKey, POI_0L | POI_10L | POI_RELEASED_SEGMENT,&vPoi);
+   GetPointsOfInterest(segmentKey, POI_START_FACE | POI_END_FACE,&vPoi);
    ATLASSERT(vPoi.size() == 2);
    const pgsPointOfInterest& startPoi(vPoi.front());
    const pgsPointOfInterest& endPoi(vPoi.back());
@@ -26483,9 +26483,11 @@ void CBridgeAgentImp::ConfigureSegmentLiftingStabilityProblem(const CSegmentKey&
 
    // get camber... measured from end of segment as if it was supported at it's ends
    PoiList vPoi;
-   GetPointsOfInterest(segmentKey, POI_0L | POI_5L | POI_RELEASED_SEGMENT, &vPoi);
-   ATLASSERT(vPoi.size() == 2);
+   GetPointsOfInterest(segmentKey, POI_START_FACE, &vPoi);
    const pgsPointOfInterest& poiEnd(vPoi.front());
+   ATLASSERT(vPoi.size() == 1);
+   GetPointsOfInterest(segmentKey,  POI_5L | POI_RELEASED_SEGMENT, &vPoi);
+   ATLASSERT(vPoi.size() == 2);
    const pgsPointOfInterest& poiMS(vPoi.back());
 
    // prestress related camber
@@ -26730,10 +26732,13 @@ void CBridgeAgentImp::ConfigureSegmentHaulingStabilityProblem(const CSegmentKey&
    pProblem->EvaluateStressesAtEquilibriumAngle(stbTypes::Superelevation, true);
 
    PoiList vPoi;
-   GetPointsOfInterest(segmentKey, POI_0L | POI_5L | POI_RELEASED_SEGMENT,&vPoi);
-   ATLASSERT(vPoi.size() == 2);
+   GetPointsOfInterest(segmentKey, POI_START_FACE, &vPoi);
    const pgsPointOfInterest& poiEnd(vPoi.front());
+   ATLASSERT(vPoi.size() == 1);
+   GetPointsOfInterest(segmentKey, POI_5L | POI_RELEASED_SEGMENT, &vPoi);
+   ATLASSERT(vPoi.size() == 2);
    const pgsPointOfInterest& poiMS(vPoi.back());
+
 
    Float64 Hg  = GetHg(intervalIdx,poiEnd);
    Float64 Hrc, Hbg, Wcc, Ktheta;
@@ -28040,7 +28045,7 @@ Float64 CBridgeAgentImp::GetAngularChange(const pgsPointOfInterest& poi,DuctInde
       // angular changes are measured from the start of the girder (i.e. jacking at the left end)
       segmentKey.segmentIndex = 0; // always occurs in segment 0
       PoiList vPoi;
-      GetPointsOfInterest(segmentKey, POI_0L | POI_RELEASED_SEGMENT,&vPoi);
+      GetPointsOfInterest(segmentKey, POI_START_FACE,&vPoi);
       ATLASSERT(vPoi.size() == 1);
       poiStart = &(vPoi.front().get());
    }
@@ -28050,7 +28055,7 @@ Float64 CBridgeAgentImp::GetAngularChange(const pgsPointOfInterest& poi,DuctInde
       SegmentIndexType nSegments = GetSegmentCount(segmentKey);
       segmentKey.segmentIndex = nSegments-1;
       PoiList vPoi;
-      GetPointsOfInterest(segmentKey, POI_10L | POI_RELEASED_SEGMENT,&vPoi);
+      GetPointsOfInterest(segmentKey, POI_END_FACE,&vPoi);
       ATLASSERT(vPoi.size() == 1);
       poiStart = &(vPoi.front().get());
    }
