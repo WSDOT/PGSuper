@@ -634,7 +634,7 @@ HRESULT CPGSuperDocProxyAgent::OnBridgeChanged(CBridgeChangedHint* pHint)
    AFX_MANAGE_STATE(AfxGetAppModuleState());
    //
    // Check to see if the bridge has changed in such a way that the
-   // selected girder is invalid
+   // selected element is no longer valid
    //
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
@@ -675,6 +675,12 @@ HRESULT CPGSuperDocProxyAgent::OnBridgeChanged(CBridgeChangedHint* pHint)
       PierIndexType pierIdx = selection.PierIdx;
       const CPierData2* pPier = pBridgeDesc->GetPier(pierIdx);
       if ( pPier == nullptr )
+         bClearSelection = true;
+   }
+   else if (selection.Type == CSelection::TemporarySupport)
+   {
+      const CTemporarySupportData* pTS = pBridgeDesc->FindTemporarySupport(selection.tsID);
+      if (pTS == nullptr)
          bClearSelection = true;
    }
 
