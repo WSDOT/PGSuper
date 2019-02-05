@@ -113,6 +113,8 @@ m_bHasGirderCoordinate(false),
 m_Xg(-1),
 m_bHasGirderPathCoordinate(false),
 m_Xgp(-1),
+m_bHasGirderlineCoordinate(false),
+m_Xgl(-1),
 m_SpanIdx(INVALID_INDEX),
 m_Xspan(-1),
 m_bHasSpanPoint(false),
@@ -133,6 +135,8 @@ m_bHasGirderCoordinate(false),
 m_Xg(-1),
 m_bHasGirderPathCoordinate(false),
 m_Xgp(-1),
+m_bHasGirderlineCoordinate(false),
+m_Xgl(-1),
 m_SpanIdx(INVALID_INDEX),
 m_Xspan(-1),
 m_bHasSpanPoint(false),
@@ -165,6 +169,8 @@ m_bHasGirderCoordinate(true),
 m_Xg(Xg),
 m_bHasGirderPathCoordinate(true),
 m_Xgp(Xgp),
+m_bHasGirderlineCoordinate(false),
+m_Xgl(-1),
 m_SpanIdx(INVALID_INDEX),
 m_Xspan(-1),
 m_bHasSpanPoint(false),
@@ -196,6 +202,8 @@ m_bHasGirderCoordinate(false),
 m_Xg(-1),
 m_bHasGirderPathCoordinate(false),
 m_Xgp(-1),
+m_bHasGirderlineCoordinate(false),
+m_Xgl(-1),
 m_SpanIdx(INVALID_INDEX),
 m_Xspan(-1),
 m_bHasSpanPoint(false),
@@ -362,6 +370,13 @@ void pgsPointOfInterest::SetLocation(const CSegmentKey& segmentKey,Float64 Xpoi,
 
    m_bHasGirderPathCoordinate = true;
    m_Xgp = Xgp;
+
+   m_bHasGirderlineCoordinate = false;
+   m_Xgl = -1;
+
+   m_bHasSpanPoint = false;
+   m_SpanIdx = INVALID_INDEX;
+   m_Xspan = -1;
 }
 
 void pgsPointOfInterest::SetLocation(const CSegmentKey& segmentKey,Float64 Xpoi)
@@ -377,6 +392,13 @@ void pgsPointOfInterest::SetLocation(const CSegmentKey& segmentKey,Float64 Xpoi)
 
    m_bHasGirderPathCoordinate = false;
    m_Xgp = -1;
+
+   m_bHasGirderlineCoordinate = false;
+   m_Xgl = -1;
+
+   m_bHasSpanPoint = false;
+   m_SpanIdx = INVALID_INDEX;
+   m_Xspan = -1;
 }
 
 void pgsPointOfInterest::Offset(Float64 delta)
@@ -397,6 +419,16 @@ void pgsPointOfInterest::Offset(Float64 delta)
    {
       m_Xgp += delta;
    }
+
+   if (m_bHasGirderlineCoordinate)
+   {
+      m_Xgl += delta;
+   }
+
+   m_bHasSpanPoint = false;
+   m_SpanIdx = INVALID_INDEX;
+   m_Xspan = -1;
+
 }
 
 void pgsPointOfInterest::SetDistFromStart(Float64 Xpoi,bool bRetainAttributes)
@@ -413,6 +445,13 @@ void pgsPointOfInterest::SetDistFromStart(Float64 Xpoi,bool bRetainAttributes)
       
    m_bHasGirderPathCoordinate = false;
    m_Xgp = -1;
+
+   m_bHasGirderlineCoordinate = false;
+   m_Xgl = -1;
+
+   m_bHasSpanPoint = false;
+   m_SpanIdx = INVALID_INDEX;
+   m_Xspan = -1;
 
    if (!bRetainAttributes)
    {
@@ -479,6 +518,24 @@ Float64 pgsPointOfInterest::GetGirderPathCoordinate() const
 bool pgsPointOfInterest::HasGirderPathCoordinate() const
 {
    return m_bHasGirderPathCoordinate;
+}
+
+
+void pgsPointOfInterest::SetGirderlineCoordinate(Float64 Xgl)
+{
+   m_bHasGirderlineCoordinate = true;
+   m_Xgl = Xgl;
+}
+
+Float64 pgsPointOfInterest::GetGirderlineCoordinate() const
+{
+   ATLASSERT(m_bHasGirderlineCoordinate); // if this fires, girder line coordinate was never set
+   return m_Xgl;
+}
+
+bool pgsPointOfInterest::HasGirderlineCoordinate() const
+{
+   return m_bHasGirderlineCoordinate;
 }
 
 void pgsPointOfInterest::SetSpanPoint(SpanIndexType spanIdx,Float64 Xspan)
@@ -802,8 +859,10 @@ void pgsPointOfInterest::MakeCopy(const pgsPointOfInterest& rOther)
    m_Xsp                       = rOther.m_Xsp;
    m_bHasGirderCoordinate      = rOther.m_bHasGirderCoordinate;
    m_Xg                        = rOther.m_Xg;
-   m_bHasGirderPathCoordinate  = rOther.m_bHasGirderPathCoordinate;
-   m_Xgp                       = rOther.m_Xgp;
+   m_bHasGirderPathCoordinate = rOther.m_bHasGirderPathCoordinate;
+   m_Xgp = rOther.m_Xgp;
+   m_bHasGirderlineCoordinate = rOther.m_bHasGirderlineCoordinate;
+   m_Xgl = rOther.m_Xgl;
    m_bHasSpanPoint             = rOther.m_bHasSpanPoint;
    m_SpanIdx                   = rOther.m_SpanIdx;
    m_Xspan                     = rOther.m_Xspan;

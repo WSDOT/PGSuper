@@ -20723,31 +20723,51 @@ Float64 CBridgeAgentImp::ConvertGirderPathCoordinateToGirderlineCoordinate(const
 
 Float64 CBridgeAgentImp::ConvertPoiToGirderlineCoordinate(const pgsPointOfInterest& poi) const
 {
+   if (poi.HasGirderlineCoordinate())
+   {
+#if defined CHECK_POI_CONVERSIONS
+      // force manual computation to verify the dimension in the poi is correct
+      pgsPointOfInterest testPoi(poi.GetSegmentKey(), poi.GetDistFromStart());
+      Float64 XglTest = ConvertPoiToGirderlineCoordinate(testPoi);
+      ATLASSERT(IsEqual(XglTest, poi.GetGirderlineCoordinate(), gs_PoiTolerance));
+#endif
+      return poi.GetGirderlineCoordinate();
+   }
+
+   Float64 Xgl = 0;
    const CSegmentKey& segmentKey(poi.GetSegmentKey());
    if ( segmentKey.groupIndex == 0 )
    {
-      return ConvertPoiToGirderCoordinate(poi);
+      Xgl = ConvertPoiToGirderCoordinate(poi);
    }
-
-   Float64 Xgp = ConvertPoiToGirderPathCoordinate(poi);
-   Float64 sum_girder_layout_length = 0; // sum of girder length from start of bridge up to but not including the group
-   // this poi is in
-   for ( GroupIndexType grpIdx = 0; grpIdx < segmentKey.groupIndex; grpIdx++ )
+   else
    {
-      CGirderKey girderKey(grpIdx,segmentKey.girderIndex);
-      girderKey.girderIndex = Min(girderKey.girderIndex,GetGirderCount(grpIdx)-1);
-      Float64 girder_layout_length = GetGirderLayoutLength(girderKey);
-      sum_girder_layout_length += girder_layout_length;
+      Float64 Xgp = ConvertPoiToGirderPathCoordinate(poi);
+      Float64 sum_girder_layout_length = 0; // sum of girder length from start of bridge up to but not including the group
+      // this poi is in
+      for (GroupIndexType grpIdx = 0; grpIdx < segmentKey.groupIndex; grpIdx++)
+      {
+         CGirderKey girderKey(grpIdx, segmentKey.girderIndex);
+         girderKey.girderIndex = Min(girderKey.girderIndex, GetGirderCount(grpIdx) - 1);
+         Float64 girder_layout_length = GetGirderLayoutLength(girderKey);
+         sum_girder_layout_length += girder_layout_length;
+      }
+
+      // sum_girder_layout_length is measured from CL Pier 0, we want it measured from the start face of the girder
+      CSegmentKey segKey(0, Min(segmentKey.girderIndex, GetGirderCount(0) - 1), 0);
+      Float64 brg_offset = GetSegmentStartBearingOffset(segKey);
+      Float64 end_dist = GetSegmentStartEndDistance(segKey);
+      Float64 start_offset = brg_offset - end_dist; // distance from CL Pier 0 to start face of girder
+      sum_girder_layout_length -= start_offset;
+
+      Xgl = Xgp + sum_girder_layout_length;
    }
 
-   // sum_girder_layout_length is measured from CL Pier 0, we want it measured from the start face of the girder
-   CSegmentKey segKey(0,Min(segmentKey.girderIndex,GetGirderCount(0)-1),0);
-   Float64 brg_offset = GetSegmentStartBearingOffset(segKey);
-   Float64 end_dist   = GetSegmentStartEndDistance(segKey);
-   Float64 start_offset = brg_offset - end_dist; // distance from CL Pier 0 to start face of girder
-   sum_girder_layout_length -= start_offset;
-
-   Float64 Xgl = Xgp + sum_girder_layout_length;
+   if (poi.GetID() != INVALID_ID)
+   {
+      pgsPointOfInterest* pPoi = const_cast<pgsPointOfInterest*>(&poi);
+      pPoi->SetGirderlineCoordinate(Xgl);
+   }
    return Xgl;
 }
 
