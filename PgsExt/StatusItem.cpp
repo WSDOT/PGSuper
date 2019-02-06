@@ -233,12 +233,7 @@ bool pgsInformationalStatusItem::IsEqual(CEAFStatusItem* pOther)
       return false;
    }
 
-   if ( CString(GetDescription()) != CString(other->GetDescription()) )
-   {
-      return false;
-   }
-
-   return true;
+   return 0 == CompareDescriptions(pOther);
 }
 
 //////////////////////////////////////////////////////////
