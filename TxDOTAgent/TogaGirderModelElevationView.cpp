@@ -1110,7 +1110,7 @@ void CTogaGirderModelElevationView::BuildStirrupDisplayObjects(CTxDOTOptionalDes
    Float64 bot_cover = ::ConvertToSysUnits(2.0,unitMeasure::Inch);
 
    PierIndexType startPierIdx = pBridge->GetGirderGroupStartPier(segmentKey.groupIndex);
-   Float64 slab_offset = pBridge->GetSlabOffset(segmentKey.groupIndex,startPierIdx,segmentKey.girderIndex); // use for dummy top of stirrup if they are extended into deck
+   Float64 slab_offset = pBridge->GetSlabOffset(segmentKey,pgsTypes::metStart); // use for dummy top of stirrup if they are extended into deck
 
    pgsTypes::SupportedDeckType deckType = pBridge->GetDeckType();
    bool bDoStirrupsEngageDeck = pStirrupGeom->DoStirrupsEngageDeck(segmentKey);

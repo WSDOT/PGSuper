@@ -23,9 +23,9 @@ public:
 	CEdit  	m_ctrlFci;
    CDrawPrecastSegmentControl m_ctrlDrawSegment;
 
-   CCacheEdit m_ctrlSectionLength[4];
-   CCacheEdit m_ctrlSectionHeight[4];
-   CCacheEdit m_ctrlBottomFlangeDepth[4];
+   std::array<CCacheEdit, 4> m_ctrlSectionLength;
+   std::array<CCacheEdit, 4> m_ctrlSectionHeight;
+   std::array<CCacheEdit, 4> m_ctrlBottomFlangeDepth;
 
    Float64 GetBottomFlangeDepth(pgsTypes::SegmentZoneType segZone);
    Float64 GetHeight(pgsTypes::SegmentZoneType segZone);
@@ -39,6 +39,12 @@ public:
    virtual SegmentIDType GetSegmentID() const;
 
    bool m_bWasEventCreated;
+
+   Float64 m_MinSlabOffset;
+   pgsTypes::SlabOffsetType m_SlabOffsetType;
+   pgsTypes::SlabOffsetType m_PrevSlabOffsetType;
+   std::array<Float64, 2> m_SlabOffset;
+   std::array<CString, 2> m_strSlabOffsetCache;
 
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
@@ -56,6 +62,8 @@ protected:
    afx_msg void OnConstructionEventChanging();
    afx_msg void OnErectionEventChanged();
    afx_msg void OnErectionEventChanging();
+   afx_msg void OnChangingSlabOffsetType();
+   afx_msg void OnChangeSlabOffsetType();
 
    void UpdateConcreteControls(bool bSkipEcCheckBoxes = false);
    void UpdateConcreteParametersToolTip();
@@ -68,10 +76,15 @@ protected:
    void GetSectionVariationControlState(pgsTypes::SegmentVariationType variationType,BOOL* pbEnable);
    void UpdateSegmentVariationParameters(pgsTypes::SegmentVariationType variationType);
 
+   void FillSlabOffsetComboBox();
+
    void UpdateFc();
    void UpdateFci();
    void UpdateEci();
    void UpdateEc();
+
+   pgsTypes::SlabOffsetType GetCurrentSlabOffsetType();
+   void UpdateSlabOffsetControls();
 
    CString m_strUserEc;
    CString m_strUserEci;

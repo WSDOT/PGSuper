@@ -32,8 +32,13 @@
 #include <EAF\EAFDocument.h>
 
 #include "PGSuperUnits.h"
+#include "PGSuperDoc.h"
+#include "Utilities.h"
 
 #include <PgsExt\BridgeDescription2.h>
+#include <PgsExt\TemporarySupportData.h>
+#include <PgsExt\ClosureJointData.h>
+
 #include <IFace\Project.h>
 
 #ifdef _DEBUG
@@ -47,14 +52,9 @@ IMPLEMENT_DYNAMIC(CEditHaunchDlg, CDialog)
 
 CEditHaunchDlg::CEditHaunchDlg(const CBridgeDescription2* pBridgeDesc, CWnd* pParent /*=nullptr*/)
 	: CDialog(CEditHaunchDlg::IDD, pParent),
-   m_pBridgeDesc(pBridgeDesc),
-   m_HaunchShape(pgsTypes::hsSquare),
-   m_WasSlabOffsetTypeForced(false),
-   m_WasAssExcessCamberTypeForced(false),
-   m_WasDataIntialized(false)
+   m_HaunchShape(pgsTypes::hsSquare)
 {
-   m_HaunchInputData.m_SlabOffsetType = pgsTypes::sotBridge;
-   m_HaunchInputData.m_AssExcessCamberType = pgsTypes::aecBridge;
+   m_BridgeDesc = *pBridgeDesc;
 }
 
 CEditHaunchDlg::~CEditHaunchDlg()
@@ -68,7 +68,6 @@ void CEditHaunchDlg::DoDataExchange(CDataExchange* pDX)
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
-   INIT_UV_PROTOTYPE( rptLengthUnitValue,  cmpdim,  pDisplayUnits->GetComponentDimUnit(), true );
 
    // fillet
    DDX_UnitValueAndTag( pDX, IDC_FILLET, IDC_FILLET_UNIT, m_Fillet, pDisplayUnits->GetComponentDimUnit() );
@@ -77,88 +76,45 @@ void CEditHaunchDlg::DoDataExchange(CDataExchange* pDX)
    DDX_Control(pDX,IDC_HAUNCH_SHAPE,m_cbHaunchShape);
    DDX_CBItemData(pDX, IDC_HAUNCH_SHAPE, m_HaunchShape);
 
-   DDX_CBItemData(pDX, IDC_A_TYPE, m_HaunchInputData.m_SlabOffsetType);
-   DDX_CBItemData(pDX, IDC_ASSEXCESSCAMBER_TYPE, m_HaunchInputData.m_AssExcessCamberType);
+   DDX_CBItemData(pDX, IDC_SLAB_OFFSET_TYPE, m_SlabOffsetType);
+
+   DDX_CBItemData(pDX, IDC_ASSUMED_EXCESS_CAMBER_TYPE, m_AssumedExcessCamberType);
+
+   // Slab offsets
+   m_HaunchByBridgeDlg.UpdateData(pDX->m_bSaveAndValidate);
+   m_HaunchByBearingDlg.UpdateData(pDX->m_bSaveAndValidate);
+   m_HaunchBySegmentDlg.UpdateData(pDX->m_bSaveAndValidate);
+
+   // Assumed excess camber
+   if (m_bCanAssumedExcessCamberInputBeEnabled)
+   {
+      m_AssumedExcessCamberByBridgeDlg.UpdateData(pDX->m_bSaveAndValidate);
+      m_AssumedExcessCamberBySpanDlg.UpdateData(pDX->m_bSaveAndValidate);
+      m_AssumedExcessCamberByGirderDlg.UpdateData(pDX->m_bSaveAndValidate);
+   }
 
    if (pDX->m_bSaveAndValidate)
    {
-      // Get min A value and build error message for too small of A
-      Float64 minA = m_pBridgeDesc->GetDeckDescription()->GrossDepth;
-      if (pgsTypes::sdtCompositeSIP == m_pBridgeDesc->GetDeckDescription()->GetDeckType())
+      // Haunch shape
+      m_BridgeDesc.GetDeckDescription()->HaunchShape = m_HaunchShape;
+
+      m_BridgeDesc.SetFillet(m_Fillet);
+
+      // Slab offset
+      m_BridgeDesc.SetSlabOffsetType(m_SlabOffsetType);
+
+      // Assumed ExcessCamber
+      if (m_bCanAssumedExcessCamberInputBeEnabled)
       {
-         minA += m_pBridgeDesc->GetDeckDescription()->PanelDepth;
+         m_BridgeDesc.SetAssumedExcessCamberType(m_AssumedExcessCamberType);
       }
-
-      cmpdim.SetValue(minA);
-      CString strMinValError;
-      strMinValError.Format(_T("Slab Offset value must be greater or equal to slab depth (%.4f %s)"), cmpdim.GetValue(true), cmpdim.GetUnitTag().c_str() );
-
-      // Slab offsets
-      switch(m_HaunchInputData.m_SlabOffsetType)
-      {
-      case pgsTypes::sotBridge:
-         m_HaunchSame4BridgeDlg.DownloadData(minA,strMinValError,&m_HaunchInputData,pDX);
-         break;
-      case pgsTypes::sotPier:
-         m_HaunchSpanBySpanDlg.DownloadData(minA,strMinValError,&m_HaunchInputData,pDX);
-         break;
-      case pgsTypes::sotGirder:
-         m_HaunchByGirderDlg.DownloadData(minA,strMinValError,&m_HaunchInputData,pDX);
-         break;
-      default:
-         ATLASSERT(0);
-         break;
-      };
-
-      // AssExcessCambers
-      if (m_bCanAssExcessCamberInputBeEnabled)
-      {
-         switch (m_HaunchInputData.m_AssExcessCamberType)
-         {
-         case pgsTypes::aecBridge:
-            m_AssExcessCamberSame4BridgeDlg.DownloadData(&m_HaunchInputData, pDX);
-         break;
-         case pgsTypes::aecSpan:
-            m_AssExcessCamberSpanBySpanDlg.DownloadData(&m_HaunchInputData, pDX);
-         break;
-         case pgsTypes::aecGirder:
-            m_AssExcessCamberByGirderDlg.DownloadData(&m_HaunchInputData, pDX);
-         break;
-      default:
-         ATLASSERT(0);
-         break;
-      };
-      }
-   }
-   else
-   {
-      // Set data values in embedded dialogs
-      m_HaunchSame4BridgeDlg.m_ADim = m_HaunchInputData.m_SingleSlabOffset;
-      m_HaunchSame4BridgeDlg.UpdateData(FALSE);
-      m_HaunchSpanBySpanDlg.UploadData(this->m_HaunchInputData);
-      m_HaunchByGirderDlg.UploadData(this->m_HaunchInputData);
-
-      if (m_bCanAssExcessCamberInputBeEnabled)
-      {
-         m_AssExcessCamberSame4BridgeDlg.m_AssExcessCamber = m_HaunchInputData.m_SingleAssExcessCamber;
-      }
-      else
-      {
-         // disable controls in dialog
-         m_AssExcessCamberSame4BridgeDlg.m_bDoEnable = false;
-      }
-
-      m_AssExcessCamberSame4BridgeDlg.UpdateData(FALSE);
-
-      m_AssExcessCamberSpanBySpanDlg.UploadData(this->m_HaunchInputData);
-      m_AssExcessCamberByGirderDlg.UploadData(this->m_HaunchInputData);
    }
 }
 
 
 BEGIN_MESSAGE_MAP(CEditHaunchDlg, CDialog)
-   ON_CBN_SELCHANGE(IDC_A_TYPE, &CEditHaunchDlg::OnCbnSelchangeAType)
-   ON_CBN_SELCHANGE(IDC_ASSEXCESSCAMBER_TYPE, &CEditHaunchDlg::OnCbnSelchangeAssExcessCamberType)
+   ON_CBN_SELCHANGE(IDC_SLAB_OFFSET_TYPE, &CEditHaunchDlg::OnSlabOffsetTypeChanged)
+   ON_CBN_SELCHANGE(IDC_ASSUMED_EXCESS_CAMBER_TYPE, &CEditHaunchDlg::OnAssumedExcessCamberTypeChanged)
    ON_BN_CLICKED(ID_HELP, &CEditHaunchDlg::OnBnClickedHelp)
 END_MESSAGE_MAP()
 
@@ -170,7 +126,7 @@ BOOL CEditHaunchDlg::OnInitDialog()
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,ISpecification, pSpec );
-   m_bCanAssExcessCamberInputBeEnabled = pSpec->IsAssExcessCamberInputEnabled();
+   m_bCanAssumedExcessCamberInputBeEnabled = pSpec->IsAssumedExcessCamberInputEnabled();
 
    // Initialize our data structure for current data
    InitializeData();
@@ -180,74 +136,75 @@ BOOL CEditHaunchDlg::OnInitDialog()
 
    // Set up embedded dialogs
    {
-      CWnd* pBox = GetDlgItem(IDC_A_BOX);
+      CWnd* pBox = GetDlgItem(IDC_SLAB_OFFSET_BOX);
       pBox->ShowWindow(SW_HIDE);
 
       CRect boxRect;
       pBox->GetWindowRect(&boxRect);
       ScreenToClient(boxRect);
 
-      VERIFY(m_HaunchSame4BridgeDlg.Create(CHaunchSame4BridgeDlg::IDD, this));
-      VERIFY(m_HaunchSame4BridgeDlg.SetWindowPos(GetDlgItem(IDC_A_BOX), boxRect.left, boxRect.top, 0, 0, SWP_SHOWWINDOW | SWP_NOSIZE));//|SWP_NOMOVE));
+      VERIFY(m_HaunchByBridgeDlg.Create(CHaunchByBridgeDlg::IDD, this));
+      VERIFY(m_HaunchByBridgeDlg.SetWindowPos(GetDlgItem(IDC_SLAB_OFFSET_BOX), boxRect.left, boxRect.top, 0, 0, SWP_SHOWWINDOW | SWP_NOSIZE));//|SWP_NOMOVE));
 
-      VERIFY(m_HaunchSpanBySpanDlg.Create(CHaunchSpanBySpanDlg::IDD, this));
-      VERIFY(m_HaunchSpanBySpanDlg.SetWindowPos(GetDlgItem(IDC_A_BOX), boxRect.left, boxRect.top, 0, 0, SWP_SHOWWINDOW | SWP_NOSIZE));//|SWP_NOMOVE));
+      VERIFY(m_HaunchByBearingDlg.Create(CHaunchByBearingDlg::IDD, this));
+      VERIFY(m_HaunchByBearingDlg.SetWindowPos(GetDlgItem(IDC_SLAB_OFFSET_BOX), boxRect.left, boxRect.top, 0, 0, SWP_SHOWWINDOW | SWP_NOSIZE));//|SWP_NOMOVE));
 
-      m_HaunchByGirderDlg.InitSize(m_HaunchInputData);
-      VERIFY(m_HaunchByGirderDlg.Create(CHaunchByGirderDlg::IDD, this));
-      VERIFY(m_HaunchByGirderDlg.SetWindowPos(GetDlgItem(IDC_A_BOX), boxRect.left, boxRect.top, 0, 0, SWP_SHOWWINDOW | SWP_NOSIZE));//|SWP_NOMOVE));
+      VERIFY(m_HaunchBySegmentDlg.Create(CHaunchBySegmentDlg::IDD, this));
+      VERIFY(m_HaunchBySegmentDlg.SetWindowPos(GetDlgItem(IDC_SLAB_OFFSET_BOX), boxRect.left, boxRect.top, 0, 0, SWP_SHOWWINDOW | SWP_NOSIZE));//|SWP_NOMOVE));
 
-      pBox = GetDlgItem(IDC_ASSEXCESSCAMBER_BOX);
+      pBox = GetDlgItem(IDC_ASSUMED_EXCESS_CAMBER_BOX);
       pBox->ShowWindow(SW_HIDE);
 
       pBox->GetWindowRect(&boxRect);
       ScreenToClient(boxRect);
 
-      VERIFY(m_AssExcessCamberSame4BridgeDlg.Create(CAssExcessCamberSame4BridgeDlg::IDD, this));
-      VERIFY(m_AssExcessCamberSame4BridgeDlg.SetWindowPos(GetDlgItem(IDC_ASSEXCESSCAMBER_BOX), boxRect.left, boxRect.top, 0, 0, SWP_SHOWWINDOW | SWP_NOSIZE));//|SWP_NOMOVE));
+      VERIFY(m_AssumedExcessCamberByBridgeDlg.Create(CAssumedExcessCamberByBridgeDlg::IDD, this));
+      VERIFY(m_AssumedExcessCamberByBridgeDlg.SetWindowPos(GetDlgItem(IDC_ASSUMED_EXCESS_CAMBER_BOX), boxRect.left, boxRect.top, 0, 0, SWP_SHOWWINDOW | SWP_NOSIZE));//|SWP_NOMOVE));
 
-      VERIFY(m_AssExcessCamberSpanBySpanDlg.Create(CAssExcessCamberSpanBySpanDlg::IDD, this));
-      VERIFY(m_AssExcessCamberSpanBySpanDlg.SetWindowPos(GetDlgItem(IDC_ASSEXCESSCAMBER_BOX), boxRect.left, boxRect.top, 0, 0, SWP_SHOWWINDOW | SWP_NOSIZE));//|SWP_NOMOVE));
+      VERIFY(m_AssumedExcessCamberBySpanDlg.Create(CAssumedExcessCamberBySpanDlg::IDD, this));
+      VERIFY(m_AssumedExcessCamberBySpanDlg.SetWindowPos(GetDlgItem(IDC_ASSUMED_EXCESS_CAMBER_BOX), boxRect.left, boxRect.top, 0, 0, SWP_SHOWWINDOW | SWP_NOSIZE));//|SWP_NOMOVE));
 
-      m_AssExcessCamberByGirderDlg.InitSize(m_HaunchInputData);
-      VERIFY(m_AssExcessCamberByGirderDlg.Create(CAssExcessCamberByGirderDlg::IDD, this));
-      VERIFY(m_AssExcessCamberByGirderDlg.SetWindowPos(GetDlgItem(IDC_ASSEXCESSCAMBER_BOX), boxRect.left, boxRect.top, 0, 0, SWP_SHOWWINDOW | SWP_NOSIZE));//|SWP_NOMOVE));
+      VERIFY(m_AssumedExcessCamberByGirderDlg.Create(CAssumedExcessCamberByGirderDlg::IDD, this));
+      VERIFY(m_AssumedExcessCamberByGirderDlg.SetWindowPos(GetDlgItem(IDC_ASSUMED_EXCESS_CAMBER_BOX), boxRect.left, boxRect.top, 0, 0, SWP_SHOWWINDOW | SWP_NOSIZE));//|SWP_NOMOVE));
    }
 
-   // Slab offset type combo
-   CComboBox* pBox =(CComboBox*)GetDlgItem(IDC_A_TYPE);
-   int sqidx = pBox->AddString( SlabOffsetTypeAsString(pgsTypes::sotBridge));
-   pBox->SetItemData(sqidx,(DWORD)pgsTypes::sotBridge);
-   sqidx = pBox->AddString( SlabOffsetTypeAsString(pgsTypes::sotPier));
-   pBox->SetItemData(sqidx,(DWORD)pgsTypes::sotPier);
-   sqidx = pBox->AddString( SlabOffsetTypeAsString(pgsTypes::sotGirder));
-   pBox->SetItemData(sqidx,(DWORD)pgsTypes::sotGirder);
+   CEAFDocument* pDoc = EAFGetDocument();
+   BOOL bIsPGSuper = pDoc->IsKindOf(RUNTIME_CLASS(CPGSuperDoc));
 
-   // AssExcessCamber type combo
-   pBox =(CComboBox*)GetDlgItem(IDC_ASSEXCESSCAMBER_TYPE);
-   sqidx = pBox->AddString( AssExcessCamberTypeAsString(pgsTypes::aecBridge));
+   // Slab offset type combo
+   CComboBox* pBox =(CComboBox*)GetDlgItem(IDC_SLAB_OFFSET_TYPE);
+   int sqidx = pBox->AddString( GetSlabOffsetTypeAsString(pgsTypes::sotBridge, bIsPGSuper));
+   pBox->SetItemData(sqidx,(DWORD)pgsTypes::sotBridge);
+   sqidx = pBox->AddString( GetSlabOffsetTypeAsString(pgsTypes::sotBearingLine, bIsPGSuper));
+   pBox->SetItemData(sqidx,(DWORD)pgsTypes::sotBearingLine);
+   sqidx = pBox->AddString( GetSlabOffsetTypeAsString(pgsTypes::sotSegment, bIsPGSuper));
+   pBox->SetItemData(sqidx,(DWORD)pgsTypes::sotSegment);
+
+   // Assumed excess camber type combo
+   pBox =(CComboBox*)GetDlgItem(IDC_ASSUMED_EXCESS_CAMBER_TYPE);
+   sqidx = pBox->AddString( GetAssumedExcessCamberTypeAsString(pgsTypes::aecBridge));
    pBox->SetItemData(sqidx,(DWORD)pgsTypes::aecBridge);
-   sqidx = pBox->AddString( AssExcessCamberTypeAsString(pgsTypes::aecSpan));
+   sqidx = pBox->AddString( GetAssumedExcessCamberTypeAsString(pgsTypes::aecSpan));
    pBox->SetItemData(sqidx,(DWORD)pgsTypes::aecSpan);
-   sqidx = pBox->AddString( AssExcessCamberTypeAsString(pgsTypes::aecGirder));
+   sqidx = pBox->AddString( GetAssumedExcessCamberTypeAsString(pgsTypes::aecGirder));
    pBox->SetItemData(sqidx,(DWORD)pgsTypes::aecGirder);
 
-   if (!m_bCanAssExcessCamberInputBeEnabled)
+   if (!m_bCanAssumedExcessCamberInputBeEnabled)
    {
       pBox->EnableWindow(FALSE);
-      GetDlgItem(IDC_ASSEXCESSCAMBER_GROUP)->EnableWindow(FALSE);
+      GetDlgItem(IDC_ASSUMED_EXCESS_CAMBER_GROUP)->EnableWindow(FALSE);
    }
 
    CDialog::OnInitDialog();
 
-   OnCbnSelchangeAType();
-   OnCbnSelchangeAssExcessCamberType();
+   OnSlabOffsetTypeChanged();
+   OnAssumedExcessCamberTypeChanged();
 
    m_cbHaunchShape.Initialize(m_HaunchShape);
    CDataExchange dx(this,FALSE);
    DDX_CBItemData(&dx,IDC_HAUNCH_SHAPE,m_HaunchShape);
 
-   if ( IsAdjacentSpacing(m_pBridgeDesc->GetGirderSpacingType()) )
+   if ( IsAdjacentSpacing(m_BridgeDesc.GetGirderSpacingType()) )
    {
       m_cbHaunchShape.EnableWindow(FALSE); // cannot change haunch shape for adjacent spacing
    }
@@ -258,175 +215,53 @@ BOOL CEditHaunchDlg::OnInitDialog()
 
 void CEditHaunchDlg::InitializeData()
 {
-   m_WasDataIntialized = true;
-
-   const CDeckDescription2* pDeck = m_pBridgeDesc->GetDeckDescription();
+   const CDeckDescription2* pDeck = m_BridgeDesc.GetDeckDescription();
    ATLASSERT(pDeck->GetDeckType()!= pgsTypes::sdtNone); // should not be able to edit haunch if no deck
 
-   // Take data from project and fill our local data structures
-   // Fill all slab offset types with values depending on initial type
-   m_HaunchInputData.m_BearingsSlabOffset.clear();
-   m_HaunchInputData.m_MaxGirdersPerSpan = 0;
-
-   // Bridge-wide data
-   ///////////////////////////////////
-   m_Fillet = m_pBridgeDesc->GetFillet();
-
    // If girder spacing is adjacent, force haunch shape to square
-   if ( IsAdjacentSpacing(m_pBridgeDesc->GetGirderSpacingType()) )
-   {
-      m_HaunchShape = pgsTypes::hsSquare;
-   }
-   else
-   {
-      m_HaunchShape = pDeck->HaunchShape;
-   }
+   m_HaunchShape = IsAdjacentSpacing(m_BridgeDesc.GetGirderSpacingType()) ? pgsTypes::hsSquare : pDeck->HaunchShape;
 
-   m_HaunchInputData.m_SlabOffsetType = m_pBridgeDesc->GetSlabOffsetType();
+   m_Fillet = m_BridgeDesc.GetFillet();
 
-   // Pier and girder based A data are treated the same for all types
-   PierIndexType npiers = m_pBridgeDesc->GetPierCount();
+   m_SlabOffsetType = m_BridgeDesc.GetSlabOffsetType();
 
-   bool bFirst(true);
-   for (PierIndexType ipier=0; ipier<npiers; ipier++)
-   {
-      const CPierData2* pPier = m_pBridgeDesc->GetPier(ipier);
-
-      // We want to iterate over bearing lines. Determine how many
-      pgsTypes::PierFaceType pierFaces[2];
-      PierIndexType nbrglines = 1; 
-      if (ipier==0)
-      {
-         ATLASSERT(pPier->IsAbutment());
-         nbrglines = 1;
-         pierFaces[0] = pgsTypes::Ahead;
-      }
-      else if (ipier==npiers-1)
-      {
-         ATLASSERT(pPier->IsAbutment());
-         nbrglines = 1;
-         pierFaces[0] = pgsTypes::Back;
-      }
-      else if (pPier->IsBoundaryPier())
-      {
-         nbrglines = 2;
-         pierFaces[0] = pgsTypes::Back;
-         pierFaces[1] = pgsTypes::Ahead;
-      }
-      else
-      {
-         ATLASSERT(pPier->IsInteriorPier());
-         nbrglines = 1;
-         pierFaces[0] = pgsTypes::Back;
-      }
-
-      for (PierIndexType ibrg=0; ibrg<nbrglines; ibrg++)
-      {
-         const CGirderGroupData* pGroup = pPier->GetGirderGroup(pierFaces[ibrg]);
-
-         SlabOffsetBearingData brgData;
-
-         // Save pier and group data to make updating bridge description easier
-         brgData.m_PierIndex   = ipier;
-         brgData.m_pGroupIndex = pGroup->GetIndex();
-
-         if (!pPier->IsAbutment() && nbrglines==1)
-         {
-            // continuous interior pier
-            brgData.m_PDType = SlabOffsetBearingData::pdCL;
-         }
-         else
-         {
-            brgData.m_PDType = pgsTypes::Back==pierFaces[ibrg] ? SlabOffsetBearingData::pdBack :  SlabOffsetBearingData::pdAhead;
-         }
-
-         GirderIndexType ng = pGroup->GetGirderCount();
-         m_HaunchInputData.m_MaxGirdersPerSpan = max(m_HaunchInputData.m_MaxGirdersPerSpan, ng);
-
-         for (GirderIndexType ig=0; ig<ng; ig++)
-         {
-            Float64 A = pGroup->GetSlabOffset(ipier, ig);
-            brgData.m_AsForGirders.push_back(A);
-
-            // Fill data for case when single A is used for entire bridge. Use bearingline 1, girder 1
-            if (ipier==0 && ig==0)
-            {
-               m_HaunchInputData.m_SingleSlabOffset  = A;
-            }
-         }
-
-         m_HaunchInputData.m_BearingsSlabOffset.push_back( brgData );
-      }
-   }
-
-   // See if haunch fill type was forced. If so, set it
-   if (m_WasSlabOffsetTypeForced)
-   {
-      m_HaunchInputData.m_SlabOffsetType = m_ForcedSlabOffsetType;
-   }
-
-   // Now AssExcessCambers
-   /////////////////////////////////////////////
-
-   m_HaunchInputData.m_AssExcessCamberSpans.clear();
-   m_HaunchInputData.m_AssExcessCamberType = m_bCanAssExcessCamberInputBeEnabled ? m_pBridgeDesc->GetAssExcessCamberType() : pgsTypes::aecBridge;
-
-   // Pier and girder based A data are treated the same for all types
-   SpanIndexType nspans = m_pBridgeDesc->GetSpanCount();
-
-   bFirst = true;
-   for (SpanIndexType ispan = 0; ispan < nspans; ispan++)
-   {
-      const CSpanData2* pSpan = m_pBridgeDesc->GetSpan(ispan);
-
-      AssExcessCamberSpanData fsData;
-      fsData.m_SpanIndex = ispan;
-
-      GirderIndexType ng = pSpan->GetGirderCount();
-      for (GirderIndexType ig = 0; ig < ng; ig++)
-      {
-         Float64 AssExcessCamber = pSpan->GetAssExcessCamber(ig);
-         fsData.m_AssExcessCambersForGirders.push_back(AssExcessCamber);
-
-         // Fill data for case when single A is used for entire bridge. Use bearingline 1, girder 1
-         if (ispan == 0 && ig == 0)
-         {
-            m_HaunchInputData.m_SingleAssExcessCamber = AssExcessCamber;
-         }
-      }
-
-      m_HaunchInputData.m_AssExcessCamberSpans.push_back(fsData);
-   }
-
-   // See if haunch fill type was forced. If so, set it
-   if (m_WasAssExcessCamberTypeForced)
-   {
-      m_HaunchInputData.m_AssExcessCamberType = m_ForcedAssExcessCamberType;
-   }
+   m_AssumedExcessCamberType = m_bCanAssumedExcessCamberInputBeEnabled ? m_BridgeDesc.GetAssumedExcessCamberType() : pgsTypes::aecBridge;
 }
 
-void CEditHaunchDlg::OnCbnSelchangeAType()
+pgsTypes::SlabOffsetType CEditHaunchDlg::GetSlabOffsetType()
 {
-   CComboBox* pBox =(CComboBox*)GetDlgItem(IDC_A_TYPE);
-   
-   m_HaunchInputData.m_SlabOffsetType = (pgsTypes::SlabOffsetType)pBox->GetCurSel();
+   CComboBox* pBox = (CComboBox*)GetDlgItem(IDC_SLAB_OFFSET_TYPE);
+   int curSel = pBox->GetCurSel();
+   pgsTypes::SlabOffsetType slabOffsetType = (pgsTypes::SlabOffsetType)pBox->GetItemData(curSel);
+   return slabOffsetType;
+}
 
-   switch(m_HaunchInputData.m_SlabOffsetType)
+pgsTypes::AssumedExcessCamberType CEditHaunchDlg::GetAssumedExcessCamberType()
+{
+   CComboBox* pBox = (CComboBox*)GetDlgItem(IDC_ASSUMED_EXCESS_CAMBER_TYPE);
+   int curSel = pBox->GetCurSel();
+   pgsTypes::AssumedExcessCamberType assumedExcessCamberType = (pgsTypes::AssumedExcessCamberType)pBox->GetItemData(curSel);
+   return assumedExcessCamberType;
+}
+
+void CEditHaunchDlg::OnSlabOffsetTypeChanged()
+{
+   switch(GetSlabOffsetType())
    {
    case pgsTypes::sotBridge:
-      m_HaunchSame4BridgeDlg.ShowWindow(SW_SHOW);
-      m_HaunchSpanBySpanDlg.ShowWindow(SW_HIDE);
-      m_HaunchByGirderDlg.ShowWindow(SW_HIDE);
+      m_HaunchByBridgeDlg.ShowWindow(SW_SHOW);
+      m_HaunchByBearingDlg.ShowWindow(SW_HIDE);
+      m_HaunchBySegmentDlg.ShowWindow(SW_HIDE);
       break;
-   case  pgsTypes::sotPier:
-      m_HaunchSame4BridgeDlg.ShowWindow(SW_HIDE);
-      m_HaunchSpanBySpanDlg.ShowWindow(SW_SHOW);
-      m_HaunchByGirderDlg.ShowWindow(SW_HIDE);
+   case  pgsTypes::sotBearingLine:
+      m_HaunchByBridgeDlg.ShowWindow(SW_HIDE);
+      m_HaunchByBearingDlg.ShowWindow(SW_SHOW);
+      m_HaunchBySegmentDlg.ShowWindow(SW_HIDE);
       break;
-   case  pgsTypes::sotGirder:
-      m_HaunchSame4BridgeDlg.ShowWindow(SW_HIDE);
-      m_HaunchSpanBySpanDlg.ShowWindow(SW_HIDE);
-      m_HaunchByGirderDlg.ShowWindow(SW_SHOW);
+   case  pgsTypes::sotSegment:
+      m_HaunchByBridgeDlg.ShowWindow(SW_HIDE);
+      m_HaunchByBearingDlg.ShowWindow(SW_HIDE);
+      m_HaunchBySegmentDlg.ShowWindow(SW_SHOW);
       break;
    default:
       ATLASSERT(0);
@@ -434,147 +269,34 @@ void CEditHaunchDlg::OnCbnSelchangeAType()
    };
 }
 
-void CEditHaunchDlg::OnCbnSelchangeAssExcessCamberType()
+void CEditHaunchDlg::OnAssumedExcessCamberTypeChanged()
 {
-   CComboBox* pBox =(CComboBox*)GetDlgItem(IDC_ASSEXCESSCAMBER_TYPE);
+   CComboBox* pBox =(CComboBox*)GetDlgItem(IDC_ASSUMED_EXCESS_CAMBER_TYPE);
    
-   m_HaunchInputData.m_AssExcessCamberType = (pgsTypes::AssExcessCamberType)pBox->GetCurSel();
+   int curSel = pBox->GetCurSel();
+   m_AssumedExcessCamberType = (pgsTypes::AssumedExcessCamberType)pBox->GetItemData(curSel);
 
-   switch(m_HaunchInputData.m_AssExcessCamberType)
+   switch(m_AssumedExcessCamberType)
    {
    case pgsTypes::aecBridge:
-      m_AssExcessCamberSame4BridgeDlg.ShowWindow(SW_SHOW);
-      m_AssExcessCamberSpanBySpanDlg.ShowWindow(SW_HIDE);
-      m_AssExcessCamberByGirderDlg.ShowWindow(SW_HIDE);
+      m_AssumedExcessCamberByBridgeDlg.ShowWindow(SW_SHOW);
+      m_AssumedExcessCamberBySpanDlg.ShowWindow(SW_HIDE);
+      m_AssumedExcessCamberByGirderDlg.ShowWindow(SW_HIDE);
       break;
    case  pgsTypes::aecSpan:
-      m_AssExcessCamberSame4BridgeDlg.ShowWindow(SW_HIDE);
-      m_AssExcessCamberSpanBySpanDlg.ShowWindow(SW_SHOW);
-      m_AssExcessCamberByGirderDlg.ShowWindow(SW_HIDE);
+      m_AssumedExcessCamberByBridgeDlg.ShowWindow(SW_HIDE);
+      m_AssumedExcessCamberBySpanDlg.ShowWindow(SW_SHOW);
+      m_AssumedExcessCamberByGirderDlg.ShowWindow(SW_HIDE);
       break;
    case  pgsTypes::aecGirder:
-      m_AssExcessCamberSame4BridgeDlg.ShowWindow(SW_HIDE);
-      m_AssExcessCamberSpanBySpanDlg.ShowWindow(SW_HIDE);
-      m_AssExcessCamberByGirderDlg.ShowWindow(SW_SHOW);
+      m_AssumedExcessCamberByBridgeDlg.ShowWindow(SW_HIDE);
+      m_AssumedExcessCamberBySpanDlg.ShowWindow(SW_HIDE);
+      m_AssumedExcessCamberByGirderDlg.ShowWindow(SW_SHOW);
       break;
    default:
       ATLASSERT(0);
       break;
    };
-}
-
-void CEditHaunchDlg::ForceToSlabOffsetType(pgsTypes::SlabOffsetType slabOffsetType)
-{
-   m_WasSlabOffsetTypeForced = true;
-   m_ForcedSlabOffsetType = slabOffsetType;
-   m_WasDataIntialized = false;
-}
-
-void CEditHaunchDlg::ForceToAssExcessCamberType(pgsTypes::AssExcessCamberType AssExcessCamberType)
-{
-   m_WasAssExcessCamberTypeForced = true;
-   m_ForcedAssExcessCamberType = AssExcessCamberType;
-   m_WasDataIntialized = false;
-}
-
-void CEditHaunchDlg::ModifyBridgeDescr(CBridgeDescription2* pBridgeDesc)
-{
-   if (!m_WasDataIntialized)
-   {
-      InitializeData();
-   }
-
-   // Haunch shape
-   pBridgeDesc->GetDeckDescription()->HaunchShape = m_HaunchShape;
-
-   pBridgeDesc->SetFillet(m_Fillet);
-
-   // Slab offset
-   if (m_HaunchInputData.m_SlabOffsetType == pgsTypes::sotBridge)
-   {
-      pBridgeDesc->SetSlabOffsetType(pgsTypes::sotBridge);
-      pBridgeDesc->SetSlabOffset(m_HaunchInputData.m_SingleSlabOffset);
-   }
-   else if (m_HaunchInputData.m_SlabOffsetType == pgsTypes::sotPier)
-   {
-      pBridgeDesc->SetSlabOffsetType(pgsTypes::sotPier);
-
-      // loop over each bearing line and set A
-      for(SlabOffsetBearingDataConstIter hdit=m_HaunchInputData.m_BearingsSlabOffset.begin(); hdit!=m_HaunchInputData.m_BearingsSlabOffset.end(); hdit++)
-      {
-         const SlabOffsetBearingData& hbd = *hdit;
-         
-         CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(hbd.m_pGroupIndex);
-
-         // use A from slot[0] for all girders
-         Float64 A = hbd.m_AsForGirders[0];
-
-         pGroup->SetSlabOffset(hbd.m_PierIndex, A);
-      }
-   }
-   else if (m_HaunchInputData.m_SlabOffsetType == pgsTypes::sotGirder)
-   {
-      pBridgeDesc->SetSlabOffsetType(pgsTypes::sotGirder);
-
-      // loop over each bearing line / girder and set A
-      for(SlabOffsetBearingDataConstIter hdit=m_HaunchInputData.m_BearingsSlabOffset.begin(); hdit!=m_HaunchInputData.m_BearingsSlabOffset.end(); hdit++)
-      {
-         const SlabOffsetBearingData& hbd = *hdit;
-         
-         CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(hbd.m_pGroupIndex);
-
-         GirderIndexType ng = hbd.m_AsForGirders.size();
-         for (GirderIndexType ig=0; ig<ng; ig++)
-         {
-            pGroup->SetSlabOffset(hbd.m_PierIndex, ig, hbd.m_AsForGirders[ig]);
-         }
-      }
-   }
-
-   // AssExcessCamber
-   if (m_bCanAssExcessCamberInputBeEnabled)
-   {
-      if (m_HaunchInputData.m_AssExcessCamberType == pgsTypes::aecBridge)
-   {
-         pBridgeDesc->SetAssExcessCamberType(pgsTypes::aecBridge);
-         pBridgeDesc->SetAssExcessCamber(m_HaunchInputData.m_SingleAssExcessCamber);
-   }
-      else if (m_HaunchInputData.m_AssExcessCamberType == pgsTypes::aecSpan)
-   {
-         pBridgeDesc->SetAssExcessCamberType(pgsTypes::aecSpan);
-
-      // loop over each bearing line and set A
-         for (AssExcessCamberSpanDataConstIter hdit = m_HaunchInputData.m_AssExcessCamberSpans.begin(); hdit != m_HaunchInputData.m_AssExcessCamberSpans.end(); hdit++)
-      {
-            const AssExcessCamberSpanData& hbd = *hdit;
-         
-         CSpanData2* pSpan = pBridgeDesc->GetSpan(hbd.m_SpanIndex);
-
-            // use AssExcessCamber from slot[0] for all girders
-            Float64 AssExcessCamber = hbd.m_AssExcessCambersForGirders[0];
-
-            pSpan->SetAssExcessCamber(AssExcessCamber);
-      }
-   }
-      else if (m_HaunchInputData.m_AssExcessCamberType == pgsTypes::aecGirder)
-   {
-         pBridgeDesc->SetAssExcessCamberType(pgsTypes::aecGirder);
-
-      // loop over each bearing line / girder and set A
-         for (AssExcessCamberSpanDataConstIter hdit = m_HaunchInputData.m_AssExcessCamberSpans.begin(); hdit != m_HaunchInputData.m_AssExcessCamberSpans.end(); hdit++)
-      {
-            const AssExcessCamberSpanData& hbd = *hdit;
-         
-         CSpanData2* pSpan = pBridgeDesc->GetSpan(hbd.m_SpanIndex);
-
-            GirderIndexType ng = hbd.m_AssExcessCambersForGirders.size();
-            for (GirderIndexType ig = 0; ig < ng; ig++)
-         {
-               pSpan->SetAssExcessCamber(ig, hbd.m_AssExcessCambersForGirders[ig]);
-            }
-         }
-      }
-   }
 }
 
 void CEditHaunchDlg::OnBnClickedHelp()

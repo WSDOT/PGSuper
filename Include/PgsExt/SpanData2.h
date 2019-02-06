@@ -102,19 +102,19 @@ public:
    std::vector<CTemporarySupportData*> GetTemporarySupports();
 
    // =================================================================================
-   // Assumed Excess Camber Used only when the parent bridge's AssExcessCamberType is aecSpan or aecGirder
+   // Assumed Excess Camber Used only when the parent bridge's AssumedExcessCamberType is aecSpan or aecGirder
    // =================================================================================
    // Set the Assumed Excess Camber at a span (same for all girders)
-   // Use when AssExcessCamber type is pgsTypes::aecSpan
-   void SetAssExcessCamber(Float64 assExcessCamber);
+   // Use when AssumedExcessCamber type is pgsTypes::aecSpan
+   void SetAssumedExcessCamber(Float64 assumedExcessCamber);
 
    // Set/Get the Assumed Excess Camber at a span for a specific girder
    // Use when Assumed Excess Camber type is pgsTypes::aecGirder
-   void SetAssExcessCamber(GirderIndexType gdrIdx,Float64 assExcessCamber);
-   Float64 GetAssExcessCamber(GirderIndexType gdrIdx,bool bGetRawValue = false) const;
+   void SetAssumedExcessCamber(GirderIndexType gdrIdx,Float64 assumedExcessCamber);
+   Float64 GetAssumedExcessCamber(GirderIndexType gdrIdx,bool bGetRawValue = false) const;
 
    // Copies girder-by-girder Assumed ExcessCamber data from one girder to another
-   void CopyAssExcessCamber(GirderIndexType sourceGdrIdx,GirderIndexType targetGdrIdx);
+   void CopyAssumedExcessCamber(GirderIndexType sourceGdrIdx,GirderIndexType targetGdrIdx);
 
    // =================================================================================
    // Live Load Distribution Factors (for Directly Input)
@@ -173,10 +173,10 @@ private:
    // safe internal function for getting lldfs in lieue of girder count changes
    LLDF& GetLLDF(GirderIndexType igs) const;
 
-   mutable std::vector<Float64> m_AssExcessCambers; // Assummed Excess Camber for each girder in span. First value is used for aec:Span
+   mutable std::vector<Float64> m_vAssumedExcessCambers; // Assummed Excess Camber for each girder in span. First value is used for aec:Span
 
-   // make sure AssExcessCamber data stays intact from girder count changes
-   void ProtectAssExcessCamber() const;
+   // make sure AssumedExcessCamber data stays intact from girder count changes
+   void ProtectAssumedExcessCamber() const;
 
    friend CBridgeDescription2;
 };

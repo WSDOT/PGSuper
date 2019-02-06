@@ -26,11 +26,17 @@
 #include <PgsExt\BridgeDescription2.h>
 #include <IFace\GirderHandling.h>
 
+#if defined _DEBUG
+#include <IFace\DocumentType.h>
+#endif
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
 static char THIS_FILE[] = __FILE__;
 #endif
+
+// NOTE: This transaction is for use with PGSuper only
 
 txnEditGirderData::txnEditGirderData()
 {
@@ -50,8 +56,8 @@ txnEditGirderData::txnEditGirderData(const txnEditGirderData& rOther)
    m_SlabOffset[pgsTypes::metStart] = rOther.m_SlabOffset[pgsTypes::metStart];
    m_SlabOffset[pgsTypes::metEnd] = rOther.m_SlabOffset[pgsTypes::metEnd];
 
-   m_AssExcessCamberType = rOther.m_AssExcessCamberType;
-   m_AssExcessCamber = rOther.m_AssExcessCamber;
+   m_AssumedExcessCamberType = rOther.m_AssumedExcessCamberType;
+   m_AssumedExcessCamber = rOther.m_AssumedExcessCamber;
 }
 
 /////////////////////////////////////////////////////////////
@@ -60,6 +66,13 @@ txnEditGirder::txnEditGirder(const CGirderKey& girderKey,const txnEditGirderData
    m_GirderKey = girderKey;
    ATLASSERT(m_GirderKey.groupIndex != INVALID_INDEX);
    m_NewGirderData = newGirderData;
+
+#if defined _DEBUG
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+   GET_IFACE2(pBroker, IDocumentType, pDocType);
+   ATLASSERT(pDocType->IsPGSuperDocument());
+#endif
 }
 
 txnEditGirder::~txnEditGirder()
@@ -101,12 +114,15 @@ bool txnEditGirder::Execute()
       PierIndexType startPierIdx = pGroup->GetPierIndex(pgsTypes::metStart);
       PierIndexType endPierIdx = pGroup->GetPierIndex(pgsTypes::metEnd);
 
-      oldGirderData.m_SlabOffset[pgsTypes::metStart] = pIBridgeDesc->GetSlabOffset(m_GirderKey.groupIndex,startPierIdx,gdrIdx);
-      oldGirderData.m_SlabOffset[pgsTypes::metEnd]   = pIBridgeDesc->GetSlabOffset(m_GirderKey.groupIndex,endPierIdx,  gdrIdx);
+      ATLASSERT(pGroup->GetGirder(gdrIdx)->GetSegmentCount() == 1); // this is for PGSuper only
+      CSegmentKey segmentKey(m_GirderKey, 0);
 
-      oldGirderData.m_AssExcessCamberType = pBridgeDesc->GetAssExcessCamberType();
+      oldGirderData.m_SlabOffset[pgsTypes::metStart] = pIBridgeDesc->GetSlabOffset(segmentKey,pgsTypes::metStart);
+      oldGirderData.m_SlabOffset[pgsTypes::metEnd] = pIBridgeDesc->GetSlabOffset(segmentKey,pgsTypes::metEnd);
+
+      oldGirderData.m_AssumedExcessCamberType = pBridgeDesc->GetAssumedExcessCamberType();
       // this is a precast girder (only one segment per girder)
-      oldGirderData.m_AssExcessCamber = pIBridgeDesc->GetAssExcessCamber(m_GirderKey.groupIndex, gdrIdx);
+      oldGirderData.m_AssumedExcessCamber = pIBridgeDesc->GetAssumedExcessCamber(m_GirderKey.groupIndex, gdrIdx);
 
       oldGirderData.m_Girder = *pGroup->GetGirder(gdrIdx);
       oldGirderData.m_TimelineMgr = (*pIBridgeDesc->GetTimelineManager());
@@ -190,21 +206,21 @@ void txnEditGirder::SetGirderData(const CGirderKey& girderKey,const txnEditGirde
    pIBridgeDesc->SetTimelineManager(gdrData.m_TimelineMgr);
 
    // set the slab offset
-   pIBridgeDesc->SetSlabOffsetType( gdrData.m_SlabOffsetType );
    if ( gdrData.m_SlabOffsetType == pgsTypes::sotBridge )
    {
       // for the entire bridge
       pIBridgeDesc->SetSlabOffset( gdrData.m_SlabOffset[pgsTypes::metStart] );
    }
-   else if ( gdrData.m_SlabOffsetType == pgsTypes::sotPier )
+   else if ( gdrData.m_SlabOffsetType == pgsTypes::sotBearingLine )
    {
-      // for this span
+      // for this bearing line
       const CGirderGroupData* pGroup = pIBridgeDesc->GetGirderGroup(girderKey.groupIndex);
       PierIndexType startPierIdx = pGroup->GetPier(pgsTypes::metStart)->GetIndex();
       PierIndexType endPierIdx   = pGroup->GetPier(pgsTypes::metEnd)->GetIndex();
+      ATLASSERT(startPierIdx == endPierIdx - 1);
 
-      pIBridgeDesc->SetSlabOffset(girderKey.groupIndex, startPierIdx, gdrData.m_SlabOffset[pgsTypes::metStart]);
-      pIBridgeDesc->SetSlabOffset(girderKey.groupIndex, endPierIdx,   gdrData.m_SlabOffset[pgsTypes::metEnd]);
+      pIBridgeDesc->SetSlabOffset(pgsTypes::stPier, startPierIdx, pgsTypes::Ahead, gdrData.m_SlabOffset[pgsTypes::metStart]);
+      pIBridgeDesc->SetSlabOffset(pgsTypes::stPier, endPierIdx,   pgsTypes::Back,  gdrData.m_SlabOffset[pgsTypes::metEnd]);
    }
    else
    {
@@ -217,43 +233,41 @@ void txnEditGirder::SetGirderData(const CGirderKey& girderKey,const txnEditGirde
       {
          // we are changing the slab offset type from something to "by girder"
 
-         // need to make sure the "by girder" values are match the current slab offset for the girder
+         // need to make sure the "by girder" values are matching the current slab offset for the girder
          // the current value is the value for this girder
 
          // get the current value of the slab offset
-         Float64 start = pGroup->GetSlabOffset(startPierIdx,segmentKey.girderIndex);
-         Float64 end   = pGroup->GetSlabOffset(endPierIdx,  segmentKey.girderIndex);
+         Float64 start = pGroup->GetGirder(segmentKey.girderIndex)->GetSegment(segmentKey.segmentIndex)->GetSlabOffset(pgsTypes::metStart);
+         Float64 end   = pGroup->GetGirder(segmentKey.girderIndex)->GetSegment(segmentKey.segmentIndex)->GetSlabOffset(pgsTypes::metEnd);
 
          // set the value for each girder to this current value
          GirderIndexType nGirders = pIBridgeDesc->GetBridgeDescription()->GetGirderGroup(girderKey.groupIndex)->GetGirderCount();
          for ( GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++ )
          {
-            pIBridgeDesc->SetSlabOffset(girderKey.groupIndex,startPierIdx,gdrIdx,start);
-            pIBridgeDesc->SetSlabOffset(girderKey.groupIndex,endPierIdx,  gdrIdx,end);
+            CSegmentKey thisSegmentKey(segmentKey.groupIndex, gdrIdx, 0);
+            pIBridgeDesc->SetSlabOffset(thisSegmentKey,start,end);
          }
       }
       
       // change the girder that was edited
-      pIBridgeDesc->SetSlabOffset(segmentKey.groupIndex, startPierIdx, segmentKey.girderIndex, gdrData.m_SlabOffset[pgsTypes::metStart]);
-      pIBridgeDesc->SetSlabOffset(segmentKey.groupIndex, endPierIdx,   segmentKey.girderIndex, gdrData.m_SlabOffset[pgsTypes::metEnd]  );
+      pIBridgeDesc->SetSlabOffset(segmentKey, gdrData.m_SlabOffset[pgsTypes::metStart], gdrData.m_SlabOffset[pgsTypes::metEnd]  );
    }
 
    // set the Assumed Excess Camber
-   pIBridgeDesc->SetAssExcessCamberType( gdrData.m_AssExcessCamberType );
-   if ( gdrData.m_AssExcessCamberType == pgsTypes::aecBridge )
+   if ( gdrData.m_AssumedExcessCamberType == pgsTypes::aecBridge )
    {
       // for the entire bridge
-      pIBridgeDesc->SetAssExcessCamber( gdrData.m_AssExcessCamber );
+      pIBridgeDesc->SetAssumedExcessCamber( gdrData.m_AssumedExcessCamber);
    }
-   else if ( gdrData.m_AssExcessCamberType == pgsTypes::aecSpan )
+   else if ( gdrData.m_AssumedExcessCamberType == pgsTypes::aecSpan )
    {
       // for this span
-      pIBridgeDesc->SetAssExcessCamber(girderKey.groupIndex, gdrData.m_AssExcessCamber );
+      pIBridgeDesc->SetAssumedExcessCamber(girderKey.groupIndex, gdrData.m_AssumedExcessCamber);
    }
    else
    {
       // change the girder that was edited
-      pIBridgeDesc->SetAssExcessCamber(segmentKey.groupIndex, segmentKey.girderIndex, gdrData.m_AssExcessCamber);
+      pIBridgeDesc->SetAssumedExcessCamber(segmentKey.groupIndex, segmentKey.girderIndex, gdrData.m_AssumedExcessCamber);
    }
 
    // set the bearing data

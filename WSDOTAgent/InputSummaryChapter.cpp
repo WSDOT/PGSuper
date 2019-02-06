@@ -421,10 +421,10 @@ void girder_line_geometry(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
    (*pTable)(row++,1) << component.SetValue(pBridge->GetGrossSlabDepth( poi ));
 
    (*pTable)(row,0) << _T("\"A\" Dimension at Start");
-   (*pTable)(row++,1) << component.SetValue(pGroup->GetSlabOffset(pGroup->GetPierIndex(pgsTypes::metStart),segmentKey.girderIndex));
+   (*pTable)(row++,1) << component.SetValue(pSegment->GetSlabOffset(pgsTypes::metStart));
 
    (*pTable)(row,0) << _T("\"A\" Dimension at End");
-   (*pTable)(row++,1) << component.SetValue(pGroup->GetSlabOffset(pGroup->GetPierIndex(pgsTypes::metEnd),segmentKey.girderIndex));
+   (*pTable)(row++,1) << component.SetValue(pSegment->GetSlabOffset(pgsTypes::metEnd));
 
    if ( pDeck->WearingSurface == pgsTypes::wstOverlay )
    {

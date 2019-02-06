@@ -864,8 +864,8 @@ void CBridgePlanView::UpdateSegmentTooltips()
                PierIndexType startPierIdx, endPierIdx;
                pBridge->GetGirderGroupPiers(segmentKey.groupIndex, &startPierIdx, &endPierIdx);
 
-               Float64 startOffset = pBridge->GetSlabOffset(segmentKey.groupIndex, startPierIdx, segmentKey.girderIndex);
-               Float64 endOffset = pBridge->GetSlabOffset(segmentKey.groupIndex, endPierIdx, segmentKey.girderIndex);
+               Float64 startOffset = pBridge->GetSlabOffset(segmentKey,pgsTypes::metStart);
+               Float64 endOffset   = pBridge->GetSlabOffset(segmentKey,pgsTypes::metEnd);
 
                strMsg5.Format(_T("\n\nSlab Offset\nStart: %s\nEnd: %s"),
                   FormatDimension(startOffset, pDisplayUnits->GetComponentDimUnit()),

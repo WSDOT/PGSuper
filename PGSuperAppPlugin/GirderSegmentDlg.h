@@ -64,6 +64,8 @@ public:
    // for all the extension pages. The caller is responsble for deleting this object
    txnTransaction* GetExtensionPageTransaction();
 
+   CGirderSegmentGeneralPage m_GeneralPage;
+
 protected:
 	DECLARE_MESSAGE_MAP()
 
@@ -84,7 +86,6 @@ protected:
 
    ConfigStrandFillVector ComputeStrandFillVector(pgsTypes::StrandType type);
 
-   CGirderSegmentGeneralPage m_GeneralPage;
    CGirderSegmentStrandsPage m_StrandsPage;
    CGirderSegmentLongitudinalRebarPage m_RebarPage;
    CGirderDescLiftingPage m_LiftingPage;

@@ -641,7 +641,7 @@ void CTxDOTAgentImp::SaveFlexureDesign(const CSegmentKey& segmentKey,const pgsSe
 
    const arDesignOptions& design_options = pArtifact->GetDesignOptions();
 
-   if (design_options.doDesignForFlexure != dtNoDesign && design_options.doDesignSlabOffset != sodNoADesign)
+   if (design_options.doDesignForFlexure != dtNoDesign && design_options.doDesignSlabOffset != sodNoSlabOffsetDesign)
    {
       pgsTypes::SlabOffsetType slabOffsetType = pIBridgeDesc->GetSlabOffsetType();
 
@@ -657,20 +657,19 @@ void CTxDOTAgentImp::SaveFlexureDesign(const CSegmentKey& segmentKey,const pgsSe
          Float64 startOffset = pArtifact->GetSlabOffset(pgsTypes::metStart);
          Float64 endOffset   = pArtifact->GetSlabOffset(pgsTypes::metEnd);
 
-         pIBridgeDesc->SetSlabOffset( segmentKey.groupIndex, startPierIdx, segmentKey.girderIndex, startOffset);
-         pIBridgeDesc->SetSlabOffset( segmentKey.groupIndex, endPierIdx,   segmentKey.girderIndex, endOffset  );
+         pIBridgeDesc->SetSlabOffset( segmentKey, startOffset, endOffset  );
       }
 
-      if (pSpec->IsAssExcessCamberForLoad())
+      if (pSpec->IsAssumedExcessCamberForLoad())
       {
-         pgsTypes::AssExcessCamberType camberType = pIBridgeDesc->GetAssExcessCamberType();
+         pgsTypes::AssumedExcessCamberType camberType = pIBridgeDesc->GetAssumedExcessCamberType();
          if (camberType == pgsTypes::aecBridge)
          {
-            pIBridgeDesc->SetAssExcessCamber(pArtifact->GetAssExcessCamber());
+            pIBridgeDesc->SetAssumedExcessCamber(pArtifact->GetAssumedExcessCamber());
          }
          else
          {
-            pIBridgeDesc->SetAssExcessCamber(segmentKey.groupIndex, segmentKey.girderIndex, pArtifact->GetAssExcessCamber());
+            pIBridgeDesc->SetAssumedExcessCamber(segmentKey.groupIndex, segmentKey.girderIndex, pArtifact->GetAssumedExcessCamber());
          }
       }
    }

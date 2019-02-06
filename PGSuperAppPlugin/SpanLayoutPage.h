@@ -52,8 +52,6 @@ public:
 		//    DO NOT EDIT what you see in these blocks of generated code !
 	//}}AFX_DATA
 
-   void Init(CSpanDetailsDlg* pParent);
-
 // Overrides
 	// ClassWizard generate virtual function overrides
 	//{{AFX_VIRTUAL(CSpanLayoutPage)
@@ -61,6 +59,7 @@ public:
 	virtual void DoDataExchange(CDataExchange* pDX) override;    // DDX/DDV support
    afx_msg void OnHelp();
 	//}}AFX_VIRTUAL
+   afx_msg void OnChangingSlabOffset();
    afx_msg void OnChangeSlabOffset();
 
 // Implementation
@@ -81,22 +80,26 @@ protected:
    CCacheEdit m_ctrlStartSlabOffset;
    CCacheEdit m_ctrlEndSlabOffset;
 
-   pgsTypes::SlabOffsetType m_InitialSlabOffsetType;
+   bool m_bHasSlabOffset; // keeps track if we are showing slab offset input
+   pgsTypes::SlabOffsetType m_SlabOffsetType; // used for DDX
+   pgsTypes::SlabOffsetType m_PrevSlabOffsetType; // slab offset type just before the combobox changed so we can roll it back if needed
+   std::array<Float64, 2> m_SlabOffset;
+   pgsTypes::SlabOffsetType GetCurrentSlabOffsetType();
    void UpdateSlabOffsetWindowState();
 
 
-   CCacheEdit m_ctrlAssExcessCamber;
-   bool m_bCanAssExcessCamberInputBeEnabled;
+   CCacheEdit m_ctrlAssumedExcessCamber;
+   bool m_bCanAssumedExcessCamberInputBeEnabled;
 
-   pgsTypes::AssExcessCamberType m_InitialAssExcessCamberType;
-   void UpdateAssExcessCamberWindowState();
+   pgsTypes::AssumedExcessCamberType m_InitialAssumedExcessCamberType;
+   void UpdateAssumedExcessCamberWindowState();
 
    void ShowCantilevers(BOOL bShowStart,BOOL bShowEnd);
 
 public:
    afx_msg void OnBnClickedStartCantilever();
    afx_msg void OnBnClickedEndCantilever();
-   afx_msg void OnCbnSelchangeAssExcessCamberCombo();
+   afx_msg void OnCbnSelchangeAssumedExcessCamberCombo();
 };
 
 //{{AFX_INSERT_LOCATION}}

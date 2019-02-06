@@ -25,6 +25,7 @@
 #include <PgsExt\PgsExtExp.h>
 #include <PgsExt\GirderSpacing2.h>
 #include <PsgLib\ConnectionLibraryEntry.h>
+#include <array>
 
 class CSpanData2;
 class CClosureJointData;
@@ -86,12 +87,22 @@ public:
    CClosureJointData* GetClosureJoint(GirderIndexType gdrIdx);
    const CClosureJointData* GetClosureJoint(GirderIndexType gdrIdx) const;
 
+   CBridgeDescription2* GetBridgeDescription();
+   const CBridgeDescription2* GetBridgeDescription() const;
+
    void SetGirderEndDistance(Float64 endDist,ConnectionLibraryEntry::EndDistanceMeasurementType measure);
    void GetGirderEndDistance(Float64* pEndDist,ConnectionLibraryEntry::EndDistanceMeasurementType* pMeasure) const;
 
    void SetBearingOffset(Float64 offset,ConnectionLibraryEntry::BearingOffsetMeasurementType measure);
    void GetBearingOffset(Float64* pOffset,ConnectionLibraryEntry::BearingOffsetMeasurementType* pMeasure) const;
 
+   bool HasSlabOffset() const;
+   void SetSlabOffset(pgsTypes::PierFaceType face,Float64 slabOffset);
+   void SetSlabOffset(Float64 backSlabOffset, Float64 aheadSlabOffset);
+   Float64 GetSlabOffset(pgsTypes::PierFaceType face, bool bRawData=false) const;
+   void GetSlabOffset(Float64* pBackSlabOffset, Float64* pAheadSlabOffset, bool bRawData=false) const;
+
+   bool HasElevationAdjustment() const;
    void SetElevationAdjustment(Float64 elevAdj);
    Float64 GetElevationAdjustment() const;
 
@@ -134,6 +145,8 @@ private:
    ConnectionLibraryEntry::EndDistanceMeasurementType m_EndDistanceMeasurementType;
    Float64 m_GirderBearingOffset;
    ConnectionLibraryEntry::BearingOffsetMeasurementType m_BearingOffsetMeasurementType;
+
+   std::array<Float64, 2> m_SlabOffset;
    Float64 m_ElevationAdjustment;
 
    // Spacing at the centerline of this temporary support

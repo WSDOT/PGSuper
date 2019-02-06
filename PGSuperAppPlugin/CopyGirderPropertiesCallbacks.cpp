@@ -604,52 +604,54 @@ bool txnCopyGirderSlabOffset::Execute()
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
 
    const CGirderGroupData* pGroup = pIBridgeDesc->GetGirderGroup(m_FromGirderKey.groupIndex);
-   PierIndexType startPierIdx = pGroup->GetPier(pgsTypes::metStart)->GetIndex();
-   PierIndexType endPierIdx   = pGroup->GetPier(pgsTypes::metEnd)->GetIndex();
-
-   // get the slab offsets for the source group at each pier in the group
-   std::vector<Float64> newSlabOffsets;
-   for ( PierIndexType pierIdx = startPierIdx; pierIdx <= endPierIdx; pierIdx++ )
+   const CSplicedGirderData* pGirder = pGroup->GetGirder(m_FromGirderKey.girderIndex);
+   // get the slab offsets from the source
+   std::vector<std::pair<Float64, Float64>> newSegmentSlabOffsets;
+   SegmentIndexType nSegments = pGirder->GetSegmentCount();
+   for (SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++)
    {
-      Float64 slabOffset = pGroup->GetSlabOffset(pierIdx,m_FromGirderKey.girderIndex);
-      newSlabOffsets.push_back(slabOffset);
+      const CPrecastSegmentData* pSegment = pGirder->GetSegment(segIdx);
+      Float64 start, end;
+      pSegment->GetSlabOffset(&start, &end);
+      newSegmentSlabOffsets.push_back(std::make_pair(start, end));
    }
 
-   // clear the old cache
-   m_OldSlabOffsetData.clear();
+   // clear the old cache... this cache is used for undo
+   m_OldSegmentSlabOffsetData.clear();
 
-   // apply slab offset to all other girders and groups
-   std::vector<CGirderKey>::iterator iter(m_ToGirderKeys.begin());
-   std::vector<CGirderKey>::iterator end(m_ToGirderKeys.end());
-   for ( ; iter != end; iter++ )
+   // apply slab offset to all segments in the list of to girder keys
+   for(const auto& toGirderKey : m_ToGirderKeys)
    {
-      CGirderKey toGirderKey(*iter);
-
       const CGirderGroupData* pGroup = pIBridgeDesc->GetGirderGroup(toGirderKey.groupIndex);
-      PierIndexType startPierIdxThisGroup = pGroup->GetPier(pgsTypes::metStart)->GetIndex();
-      PierIndexType endPierIdxThisGroup   = pGroup->GetPier(pgsTypes::metEnd)->GetIndex();
+      const CSplicedGirderData* pGirder = pGroup->GetGirder(toGirderKey.girderIndex);
 
-      std::vector<Float64> oldSlabOffsets;
-      for ( PierIndexType pierIdx = startPierIdxThisGroup; pierIdx <= endPierIdxThisGroup; pierIdx++ )
+      std::vector<std::pair<Float64,Float64>> oldSegmentSlabOffsets; // this is for undo
+      SegmentIndexType nSegments = pGirder->GetSegmentCount();
+      for (SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++)
       {
-         // cache current slab offset values for undo
-         Float64 slabOffset = pIBridgeDesc->GetSlabOffset(toGirderKey.groupIndex,pierIdx,toGirderKey.girderIndex);
-         oldSlabOffsets.push_back(slabOffset);
+         const CPrecastSegmentData* pSegment = pGirder->GetSegment(segIdx);
+         const CSegmentKey& segmentKey(pSegment->GetSegmentKey());
 
-         // get the pier index from the source values of slab offset. If the current group has more piers
-         // than the source group, use the slab offset for the last pier in the source group for all remaining
-         // piers in this group
-         PierIndexType relativePierIdx = pierIdx - startPierIdxThisGroup; // pier index relative to the start of this group
-         if (newSlabOffsets.size() <= relativePierIdx)
+         Float64 start, end;
+         pSegment->GetSlabOffset(&start, &end);
+
+         oldSegmentSlabOffsets.push_back(std::make_pair(start, end));
+
+         if (newSegmentSlabOffsets.size() < segIdx)
          {
-            relativePierIdx = newSlabOffsets.size() - 1;
+            pIBridgeDesc->SetSlabOffset(segmentKey, pgsTypes::metStart, newSegmentSlabOffsets[segIdx].first);
+            pIBridgeDesc->SetSlabOffset(segmentKey, pgsTypes::metEnd, newSegmentSlabOffsets[segIdx].second);
          }
-         pIBridgeDesc->SetSlabOffset(toGirderKey.groupIndex,pierIdx,toGirderKey.girderIndex,newSlabOffsets[relativePierIdx]);
+         else
+         {
+            pIBridgeDesc->SetSlabOffset(segmentKey, pgsTypes::metStart, newSegmentSlabOffsets.back().first);
+            pIBridgeDesc->SetSlabOffset(segmentKey, pgsTypes::metEnd, newSegmentSlabOffsets.back().second);
+         }
       }
-      m_OldSlabOffsetData.push_back(oldSlabOffsets);
+      m_OldSegmentSlabOffsetData.push_back(oldSegmentSlabOffsets);
    }
 
-   ATLASSERT(m_OldSlabOffsetData.size() == m_ToGirderKeys.size());
+   ATLASSERT(m_OldSegmentSlabOffsetData.size() == m_ToGirderKeys.size());
 
    return true;
 }
@@ -662,19 +664,21 @@ void txnCopyGirderSlabOffset::Undo()
 
    std::vector<CGirderKey>::iterator iter(m_ToGirderKeys.begin());
    std::vector<CGirderKey>::iterator end(m_ToGirderKeys.end());
-   std::vector<std::vector<Float64>>::iterator slabOffsetIter(m_OldSlabOffsetData.begin());
-   for ( ; iter != end; iter++, slabOffsetIter++)
+   std::vector<std::vector<std::pair<Float64,Float64>>>::iterator segmentSlabOffsetIter(m_OldSegmentSlabOffsetData.begin());
+   for ( ; iter != end; iter++, segmentSlabOffsetIter++)
    {
       CGirderKey toGirderKey(*iter);
-      std::vector<Float64> slabOffsets = *slabOffsetIter;
+      std::vector<std::pair<Float64,Float64>> segmentSlabOffsets = *segmentSlabOffsetIter;
 
       const CGirderGroupData* pGroup = pIBridgeDesc->GetGirderGroup(toGirderKey.groupIndex);
-      PierIndexType startPierIdx = pGroup->GetPier(pgsTypes::metStart)->GetIndex();
-      PierIndexType endPierIdx   = pGroup->GetPier(pgsTypes::metEnd)->GetIndex();
-      for ( PierIndexType pierIdx = startPierIdx; pierIdx <= endPierIdx; pierIdx++ )
+      const CSplicedGirderData* pGirder = pGroup->GetGirder(toGirderKey.girderIndex);
+      SegmentIndexType nSegments = pGirder->GetSegmentCount();
+      ATLASSERT(nSegments == segmentSlabOffsets.size());
+      for (SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++)
       {
-         Float64 slabOffset = slabOffsets[pierIdx-startPierIdx];
-         pIBridgeDesc->SetSlabOffset(toGirderKey.groupIndex,pierIdx,toGirderKey.girderIndex,slabOffset);
+         CSegmentKey segmentKey(toGirderKey, segIdx);
+         pIBridgeDesc->SetSlabOffset(segmentKey, pgsTypes::metStart, segmentSlabOffsets[segIdx].first);
+         pIBridgeDesc->SetSlabOffset(segmentKey, pgsTypes::metEnd, segmentSlabOffsets[segIdx].second);
       }
    }
 }
@@ -902,7 +906,7 @@ BOOL CCopyGirderSlabOffset::CanCopy(const CGirderKey& fromGirderKey,const std::v
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
-   return pBridgeDesc->GetSlabOffsetType() == pgsTypes::sotGirder ? TRUE : FALSE;
+   return pBridgeDesc->GetSlabOffsetType() == pgsTypes::sotSegment ? TRUE : FALSE;
 }
 
 txnTransaction* CCopyGirderSlabOffset::CreateCopyTransaction(const CGirderKey& fromGirderKey,const std::vector<CGirderKey>& toGirderKeys)

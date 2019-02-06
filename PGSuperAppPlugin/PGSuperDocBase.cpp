@@ -190,6 +190,9 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
+#pragma Reminder("WORKING HERE - Mantis 889 - Update documentation for all places where slab offset can be input")
+#pragma Reminder("WORKING HERE - Mantis 889 - Update technical guide for PGSplice")
+
 // cause the resource control values to be defined
 #define APSTUDIO_INVOKED
 #undef APSTUDIO_READONLY_SYMBOLS
@@ -301,7 +304,7 @@ END_MESSAGE_MAP()
 // CPGSDocBase construction/destruction
 
 CPGSDocBase::CPGSDocBase():
-m_DesignSlabOffset(sodAandAssExcessCamber),
+m_DesignSlabOffset(sodSlabOffsetandAssumedExcessCamberDesign),
 m_bAutoCalcEnabled(true)
 {
 	EnableAutomation();
@@ -568,12 +571,8 @@ void CPGSDocBase::OnEditHaunch()
       GET_IFACE(IEnvironment, pEnvironment );
       enumExposureCondition oldExposureCondition = pEnvironment->GetExposureCondition();
       Float64 oldRelHumidity = pEnvironment->GetRelHumidity();
-      CBridgeDescription2 newBridgeDesc = *pOldBridgeDesc;
 
-      // dialog modifies descr
-      dlg.ModifyBridgeDescr(&newBridgeDesc);
-
-      txnTransaction* pTxn = new txnEditBridge(*pOldBridgeDesc,     newBridgeDesc,
+      txnTransaction* pTxn = new txnEditBridge(*pOldBridgeDesc,     dlg.m_BridgeDesc,
                                               oldExposureCondition, oldExposureCondition, 
                                               oldRelHumidity,       oldRelHumidity);
 

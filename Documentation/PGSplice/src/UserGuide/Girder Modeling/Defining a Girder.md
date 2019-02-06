@@ -56,6 +56,9 @@ The general concrete material model is defined in the Project Criteria. The mode
 
 See @ref tg_time_dependent_material_models in the @ref technical_guide for more information about the time-dependent concrete material models.
 
+### Defining Slab Offset ###
+The erection elevation of segments are defined by the profile grade, slab offset, and elevation adjustments at temporary supports. Slab offset can be a single value for the entire bridge, a unique value for each bearing line, or a unique value at the end of each segment. When the unique value for each segment option is selected, enter the slab offset at the start and end of this segment.
+
 
 Defining Closure Joints
 -------------------------

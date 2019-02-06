@@ -104,7 +104,7 @@ protected:
    
    void UpdateSlabOffsetControls();
    void UpdateDeckRelatedControls();
-   void UpdateAssExcessCamberControls();
+   void UpdateAssumedExcessCamberControls();
 
    CString m_strTip;
    CBridgeDescDeckPointGrid m_Grid;
@@ -113,9 +113,9 @@ protected:
    pgsTypes::SlabOffsetType m_SlabOffsetType;
    CString m_strSlabOffsetCache;
 
-   Float64 m_AssExcessCamber;
-   pgsTypes::AssExcessCamberType m_AssExcessCamberType;
-   CString m_strAssExcessCamberCache;
+   Float64 m_AssumedExcessCamber;
+   pgsTypes::AssumedExcessCamberType m_AssumedExcessCamberType;
+   CString m_strAssumedExcessCamberCache;
 
    Float64 m_Fillet;
    CString m_strFilletCache;
@@ -130,16 +130,16 @@ protected:
 
    CHaunchShapeComboBox m_cbHaunchShape;
 
-   bool m_bCanAssExcessCamberInputBeEnabled;
+   bool m_bCanAssumedExcessCamberInputBeEnabled;
 
 public:
    afx_msg void OnStnClickedOlayDensityUnit();
    afx_msg void OnBnClickedOlayWeightLabel();
    afx_msg void OnBnClickedOlayDepthLabel();
    afx_msg void OnBnClickedEditHaunchButton();
-   afx_msg void OnCbnSelchangeSameslaboffset();
+   afx_msg void OnSlabOffsetTypeChanged();
    afx_msg void OnCbnSelchangeHaunchShape2();
-   afx_msg void OnCbnSelchangeAssExcessCamberType();
+   afx_msg void OnAssumedExcessCamberTypeChanged();
 };
 
 //{{AFX_INSERT_LOCATION}}

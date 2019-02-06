@@ -1587,7 +1587,7 @@ void CBridgeDescGeneralPage::OnDeckTypeChanged()
 
    if (newDeckType == pgsTypes::sdtCompositeCIP || IsOverlayDeck(newDeckType))
    {
-      Float64 minSlabOffset = pParent->m_BridgeDesc.GetMinSlabOffset();
+      Float64 minSlabOffset = pParent->m_BridgeDesc.GetLeastSlabOffset();
       if ( minSlabOffset < pParent->m_BridgeDesc.GetDeckDescription()->GrossDepth )
       {
          pParent->m_BridgeDesc.GetDeckDescription()->GrossDepth = minSlabOffset;
@@ -1603,7 +1603,7 @@ void CBridgeDescGeneralPage::OnDeckTypeChanged()
    }
    else if (newDeckType == pgsTypes::sdtCompositeSIP )
    {
-      Float64 minSlabOffset = pParent->m_BridgeDesc.GetMinSlabOffset();
+      Float64 minSlabOffset = pParent->m_BridgeDesc.GetLeastSlabOffset();
       if ( minSlabOffset < pParent->m_BridgeDesc.GetDeckDescription()->GrossDepth + pParent->m_BridgeDesc.GetDeckDescription()->PanelDepth )
       {
          pParent->m_BridgeDesc.GetDeckDescription()->GrossDepth = minSlabOffset - pParent->m_BridgeDesc.GetDeckDescription()->PanelDepth; // decrease the cast depth

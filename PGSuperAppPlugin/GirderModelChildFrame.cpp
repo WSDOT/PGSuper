@@ -1116,13 +1116,13 @@ void CGirderModelChildFrame::OnUpdateDesignGirderDirectHoldSlabOffset(CCmdUI* pC
 void CGirderModelChildFrame::OnDesignGirderDirect()
 {
    CPGSuperDoc* pDoc = (CPGSuperDoc*)EAFGetDocument();
-   pDoc->DesignGirder(false,sodAandAssExcessCamber,m_GirderKey);
+   pDoc->DesignGirder(false,sodSlabOffsetandAssumedExcessCamberDesign,m_GirderKey);
 }
 
 void CGirderModelChildFrame::OnDesignGirderDirectHoldSlabOffset()
 {
    CPGSuperDoc* pDoc = (CPGSuperDoc*)EAFGetDocument();
-   pDoc->DesignGirder(false,sodNoADesign,m_GirderKey);
+   pDoc->DesignGirder(false,sodNoSlabOffsetDesign,m_GirderKey);
 }
 
 

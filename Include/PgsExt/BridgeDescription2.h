@@ -34,9 +34,16 @@
 #include <PgsExt\MomentLoadData.h>
 #include <PgsExt\ConcreteMaterial.h>
 
+#include <functional>
+
+inline void UpdateSlabOffset(CPrecastSegmentData* pSegment, void* pData)
+{
+   std::array < Float64, 2>* pOffsets = (std::array<Float64, 2>*)(pData);
+   pSegment->SetSlabOffset((*pOffsets)[pgsTypes::metStart], (*pOffsets)[pgsTypes::metEnd]);
+}
+
 
 #define LOADED_OLD_BRIDGE_TYPE MAKE_HRESULT(SEVERITY_SUCCESS,FACILITY_ITF,512)
-
 
 /*****************************************************************************
 CLASS 
@@ -124,16 +131,19 @@ public:
    Float64 GetSlabOffset(bool bGetRawValue = false) const;
 
    // returns the least slab offset defined for the bridge
+   Float64 GetLeastSlabOffset() const;
+
+   // returns the minimum permissible value for slab offset
    Float64 GetMinSlabOffset() const;
 
    // set/get the Assumed Excess Camber type. This parameter indicates where the AssExcessCamber is measured
-   void SetAssExcessCamberType(pgsTypes::AssExcessCamberType assExcessCamberType);
-   pgsTypes::AssExcessCamberType GetAssExcessCamberType() const;
+   void SetAssumedExcessCamberType(pgsTypes::AssumedExcessCamberType AssumedExcessCamberType);
+   pgsTypes::AssumedExcessCamberType GetAssumedExcessCamberType() const;
 
    // Set/get the Assumed Excess Camber. Has no net effect if AssExcessCamber type is not sotBridge
    // Get method returns invalid data if AssExcessCamber type is not sotBridge
-   void SetAssExcessCamber(Float64 assExcessCamber);
-   Float64 GetAssExcessCamber(bool bGetRawValue = false) const;
+   void SetAssumedExcessCamber(Float64 assumedExcessCamber);
+   Float64 GetAssumedExcessCamber(bool bGetRawValue = false) const;
 
    // Set/get the fillet. 
    void SetFillet(Float64 Fillet);
@@ -393,10 +403,6 @@ public:
    // Returns true of the overall bridge model is stable
    bool IsStable() const;
 
-   // Returns true if a segment is over constrained. Over constrained segments are supported
-   // at three or more locations and the elevations of the location are not in a straight line
-   bool IsSegmentOverconstrained(const CSegmentKey& segmentKey) const;
-
    // Returns the approximate maximum width of the bridge. The width is computed as:
    // for bridges with decks - the maximum sum of the left right deck overhangs
    // for bridges without decks - the maximum spacing width (this width is based on the raw input and is not adjusted for skews)
@@ -418,6 +424,8 @@ public:
    bool HasStructuralLongitudinalJoints() const; // the joint is also structural
    const CConcreteMaterial& GetLongitudinalJointMaterial() const;
    void SetLongitudinalJointMaterial(const CConcreteMaterial& material);
+
+   void ForEachSegment(std::function<void(CPrecastSegmentData*,void*)>& fn,void* pData);
 
 protected:
    void MakeCopy(const CBridgeDescription2& rOther);
@@ -474,8 +482,8 @@ private:
    bool m_bWasVersion3_1FilletRead; // If this is true, we need to post a status center item stating that 
                                    // data for multiple fillets was read and dealt with (version 3.1 of PGSuper had this)
 
-   Float64 m_AssExcessCamber; // assummed excess camber for entire bridge
-   pgsTypes::AssExcessCamberType m_AssExcessCamberType;
+   Float64 m_AssumedExcessCamber; // assummed excess camber for entire bridge
+   pgsTypes::AssumedExcessCamberType m_AssumedExcessCamberType;
 
    CBearingData2 m_BearingData;
    pgsTypes::BearingType m_BearingType;
@@ -505,10 +513,6 @@ private:
    void RenumberGroups();
    void RenumberSpans();
    void UpdateTemporarySupports();
-
-   void RemoveSplicedGirder(GirderIndexType gdrIdx);
-   void RemoveSplicedGirders(GirderIndexType nGirders);
-   void AddSplicedGirders(GirderIndexType nGirders);
 
    void ClearGirderGroups();
 

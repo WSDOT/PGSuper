@@ -653,6 +653,62 @@ CSegmentKey CPrecastSegmentData::GetSegmentKey() const
    return segmentKey;
 }
 
+void CPrecastSegmentData::SetSlabOffset(pgsTypes::MemberEndType end, Float64 slabOffset)
+{
+   m_SlabOffset[end] = slabOffset;
+}
+
+void CPrecastSegmentData::SetSlabOffset(Float64 start, Float64 end)
+{
+   m_SlabOffset[pgsTypes::metStart] = start;
+   m_SlabOffset[pgsTypes::metEnd] = end;
+}
+
+Float64 CPrecastSegmentData::GetSlabOffset(pgsTypes::MemberEndType end,bool bRawData) const
+{
+   if (bRawData || m_pGirder == nullptr || m_pGirder->GetGirderGroup() == nullptr || m_pGirder->GetGirderGroup()->GetBridgeDescription() == nullptr)
+   {
+      return m_SlabOffset[end];
+   }
+   else
+   {
+      const CBridgeDescription2* pBridge = m_pGirder->GetGirderGroup()->GetBridgeDescription();
+      switch (pBridge->GetSlabOffsetType())
+      {
+         case pgsTypes::sotBridge:
+            return pBridge->GetSlabOffset();
+
+         case pgsTypes::sotBearingLine:
+         {
+            const CPierData2* pPier;
+            const CTemporarySupportData* pTS;
+            this->GetSupport(end, &pPier, &pTS);
+            pgsTypes::PierFaceType face = (end == pgsTypes::metStart ? pgsTypes::Ahead : pgsTypes::Back);
+            if (pPier)
+            {
+               return pPier->GetSlabOffset(face);
+            }
+            else
+            {
+               return pTS->GetSlabOffset(face);
+            }
+         }
+         case pgsTypes::sotSegment:
+            return m_SlabOffset[end];
+
+         default:
+            ATLASSERT(false); // should never get here
+            return m_SlabOffset[end];
+      }
+   }
+}
+
+void CPrecastSegmentData::GetSlabOffset(Float64* pStart, Float64* pEnd,bool bRawData) const
+{
+   *pStart = GetSlabOffset(pgsTypes::metStart, bRawData);
+   *pEnd = GetSlabOffset(pgsTypes::metEnd, bRawData);
+}
+
 CPrecastSegmentData& CPrecastSegmentData::operator = (const CPrecastSegmentData& rOther)
 {
    if( this != &rOther )
@@ -766,6 +822,14 @@ bool CPrecastSegmentData::operator==(const CPrecastSegmentData& rOther) const
       }
    }
 
+   if (m_pGirder && m_pGirder->GetGirderGroup()->GetBridgeDescription()->GetSlabOffsetType() == pgsTypes::sotSegment)
+   {
+      if (!IsEqual(GetSlabOffset(pgsTypes::metStart), rOther.GetSlabOffset(pgsTypes::metStart)) || !IsEqual(GetSlabOffset(pgsTypes::metEnd), rOther.GetSlabOffset(pgsTypes::metEnd)))
+      {
+         return false;
+      }
+   }
+
    if ( Strands != rOther.Strands )
    {
       return false;
@@ -828,17 +892,28 @@ HRESULT CPrecastSegmentData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress
       pStrLoad->get_Version(&parent_version);
 
       var.vt = VT_ID;
-      hr = pStrLoad->get_Property(_T("ID"),&var);
+      hr = pStrLoad->get_Property(_T("ID"), &var);
       m_SegmentID = VARIANT2ID(var);
       ATLASSERT(m_SegmentID != INVALID_ID);
       m_pGirder->GetGirderGroup()->GetBridgeDescription()->UpdateNextSegmentID(m_SegmentID);
 
       var.vt = VT_INDEX;
-      hr = pStrLoad->get_Property(_T("StartSpan"),&var);
+      hr = pStrLoad->get_Property(_T("StartSpan"), &var);
       SpanIndexType startSpanIdx = VARIANT2INDEX(var);
 
-      hr = pStrLoad->get_Property(_T("EndSpan"),&var);
+      hr = pStrLoad->get_Property(_T("EndSpan"), &var);
       SpanIndexType endSpanIdx = VARIANT2INDEX(var);
+
+      if (2 < parent_version)
+      {
+         // added in version 3
+         var.vt = VT_R8;
+         hr = pStrLoad->get_Property(_T("StartSlabOffset"), &var);
+         m_SlabOffset[pgsTypes::metStart] = var.dblVal;
+
+         hr = pStrLoad->get_Property(_T("EndSlabOffset"), &var);
+         m_SlabOffset[pgsTypes::metEnd] = var.dblVal;
+      }
 
       if ( m_pGirder && m_pGirder->GetGirderGroup() && m_pGirder->GetGirderGroup()->GetBridgeDescription() )
       {
@@ -1009,14 +1084,18 @@ HRESULT CPrecastSegmentData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress
       
 }
 
-HRESULT CPrecastSegmentData::Save(IStructuredSave* pStrSave,IProgress* pProgress)
+HRESULT CPrecastSegmentData::Save(IStructuredSave* pStrSave, IProgress* pProgress)
 {
-   pStrSave->BeginUnit(_T("PrecastSegment"),2.0);
+   pStrSave->BeginUnit(_T("PrecastSegment"), 3.0);
 
-   pStrSave->put_Property(_T("ID"),CComVariant(m_SegmentID));
+   pStrSave->put_Property(_T("ID"), CComVariant(m_SegmentID));
 
-   pStrSave->put_Property(_T("StartSpan"),CComVariant(m_pSpanData[pgsTypes::metStart]->GetIndex()));
-   pStrSave->put_Property(_T("EndSpan"),  CComVariant(m_pSpanData[pgsTypes::metEnd]->GetIndex()));
+   pStrSave->put_Property(_T("StartSpan"), CComVariant(m_pSpanData[pgsTypes::metStart]->GetIndex()));
+   pStrSave->put_Property(_T("EndSpan"), CComVariant(m_pSpanData[pgsTypes::metEnd]->GetIndex()));
+
+   // added in version 3
+   pStrSave->put_Property(_T("StartSlabOffset"), CComVariant(m_SlabOffset[pgsTypes::metStart]));
+   pStrSave->put_Property(_T("EndSlabOffset"), CComVariant(m_SlabOffset[pgsTypes::metEnd]));
 
    switch(m_VariationType)
    {
@@ -1167,6 +1246,8 @@ void CPrecastSegmentData::MakeCopy(const CPrecastSegmentData& rOther,bool bCopyI
       TopFlangeThickening = rOther.TopFlangeThickening;
 
       Precamber = rOther.Precamber;
+
+      m_SlabOffset = rOther.m_SlabOffset;
    }
 
    ResolveReferences();

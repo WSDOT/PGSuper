@@ -79,11 +79,6 @@ public:
    ROWCOL m_BearingSolePlateCol;
 };
 
-#define _AHEADSTR _T("Ahead")
-#define _BACKSTR  _T("Back")
-#define _CLSTR    _T("C.L.")
-
-#pragma once
 // BearingPierGrid.h : header file
 //
 

@@ -230,7 +230,7 @@ LRESULT CGirderDescDlg::OnKickIdle(WPARAM wp, LPARAM lp)
 // CGirderDescDlg message handlers
 
 
-void CGirderDescDlg::DoUpdate()
+void CGirderDescDlg::InitialzePages()
 {
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
@@ -250,15 +250,15 @@ void CGirderDescDlg::DoUpdate()
    // Setup girder data for our pages
    m_General.m_bUseSameGirderType = pBridgeDesc->UseSameGirderForEntireBridge();
    m_General.m_SlabOffsetType = pBridgeDesc->GetSlabOffsetType();
-   m_General.m_SlabOffset[pgsTypes::metStart] = pGroup->GetSlabOffset(pGroup->GetPierIndex(pgsTypes::metStart),m_SegmentKey.girderIndex);
-   m_General.m_SlabOffset[pgsTypes::metEnd]   = pGroup->GetSlabOffset(pGroup->GetPierIndex(pgsTypes::metEnd),  m_SegmentKey.girderIndex);
+   m_General.m_SlabOffset[pgsTypes::metStart] = m_pSegment->GetSlabOffset(pgsTypes::metStart);
+   m_General.m_SlabOffset[pgsTypes::metEnd] = m_pSegment->GetSlabOffset(pgsTypes::metEnd);
 
    // assumed excess camber
    GET_IFACE2(pBroker,ISpecification, pSpec );
-   m_bCanAssExcessCamberInputBeEnabled = pSpec->IsAssExcessCamberInputEnabled();
+   m_bCanAssumedExcessCamberInputBeEnabled = pSpec->IsAssumedExcessCamberInputEnabled();
 
-   m_General.m_AssExcessCamberType = m_bCanAssExcessCamberInputBeEnabled ? pIBridgeDesc->GetAssExcessCamberType() : pgsTypes::aecBridge;
-   m_General.m_AssExcessCamber     =  m_bCanAssExcessCamberInputBeEnabled ? pIBridgeDesc->GetAssExcessCamber(m_SegmentKey.groupIndex,m_SegmentKey.girderIndex) : 0.0;
+   m_General.m_AssumedExcessCamberType = m_bCanAssumedExcessCamberInputBeEnabled ? pIBridgeDesc->GetAssumedExcessCamberType() : pgsTypes::aecBridge;
+   m_General.m_AssumedExcessCamber     =  m_bCanAssumedExcessCamberInputBeEnabled ? pIBridgeDesc->GetAssumedExcessCamber(m_SegmentKey.groupIndex,m_SegmentKey.girderIndex) : 0.0;
 
    // shear page
    m_Shear.m_CurGrdName = pGirder->GetGirderName();
@@ -287,7 +287,7 @@ void CGirderDescDlg::DoDataExchange(CDataExchange* pDX)
 
 BOOL CGirderDescDlg::OnInitDialog() 
 {
-	DoUpdate();
+	InitialzePages();
 
 	BOOL bResult = CPropertySheet::OnInitDialog();
 

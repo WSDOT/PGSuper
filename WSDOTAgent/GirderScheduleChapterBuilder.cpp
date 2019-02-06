@@ -522,10 +522,10 @@ rptChapter* CGirderScheduleChapterBuilder::Build(CReportSpecification* pRptSpec,
       else
       {
          (*pTable)(++row, 0) << _T("\"A\" Dimension at CL Bearing End 1");
-         (*pTable)(row, 1) << gdim.SetValue(pGroup->GetSlabOffset(pGroup->GetPierIndex(pgsTypes::metStart), segmentKey.girderIndex));
+         (*pTable)(row, 1) << gdim.SetValue(pSegment->GetSlabOffset(pgsTypes::metStart));
 
          (*pTable)(++row, 0) << _T("\"A\" Dimension at CL Bearing End 2");
-         (*pTable)(row, 1) << gdim.SetValue(pGroup->GetSlabOffset(pGroup->GetPierIndex(pgsTypes::metEnd), segmentKey.girderIndex));
+         (*pTable)(row, 1) << gdim.SetValue(pSegment->GetSlabOffset(pgsTypes::metEnd));
       }
 
       C = pCamber->GetScreedCamber(poiMidSpan, CREEP_MAXTIME);
@@ -612,14 +612,14 @@ rptChapter* CGirderScheduleChapterBuilder::Build(CReportSpecification* pRptSpec,
       {
          (*pTable)(++row,0) << _T("H1 at End 1 (##)");
          Float64 Hg = pSectProp->GetHg(releaseIntervalIdx,poiStart);
-         Float64 H1 = pGroup->GetSlabOffset(pGroup->GetPierIndex(pgsTypes::metStart),segmentKey.girderIndex) + Hg + ::ConvertToSysUnits(3.0,unitMeasure::Inch);
+         Float64 H1 = pSegment->GetSlabOffset(pgsTypes::metStart) + Hg + ::ConvertToSysUnits(3.0,unitMeasure::Inch);
          (*pTable)(row,  1) << gdim.SetValue(H1);
 
          (*pTable)(++row,0) << _T("H1 at End 2 (##)");
          pgsPointOfInterest poiEnd(poiStart);
          poiEnd.SetDistFromStart(pBridge->GetSegmentLength(segmentKey));
          Hg = pSectProp->GetHg(releaseIntervalIdx,poiEnd);
-         H1 = pGroup->GetSlabOffset(pGroup->GetPierIndex(pgsTypes::metEnd),segmentKey.girderIndex) + Hg + ::ConvertToSysUnits(3.0,unitMeasure::Inch);
+         H1 = pSegment->GetSlabOffset(pgsTypes::metEnd) + Hg + ::ConvertToSysUnits(3.0,unitMeasure::Inch);
          (*pTable)(row,  1) << gdim.SetValue(H1);
       }
    }

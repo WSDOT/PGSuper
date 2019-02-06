@@ -61,7 +61,7 @@ public:
 
 // Operations
    // Returns true if A design exists, and returns method for setting A for design. 
-   // for sotGirder, use the individual A's per girder designed.
+   // for sotSegment, use the individual A's per girder designed.
    bool GetSlabOffsetDesign(SlabOffsetDesignSelectionType* pSoSelectionType, SpanIndexType* pFromSpan, GirderIndexType* pFromGirder);
 
 // Overrides
