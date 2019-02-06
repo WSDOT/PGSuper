@@ -24,8 +24,8 @@
 #include <Reporting\LiveLoadDistributionFactorTable.h>
 #include <Reporting\ReportNotes.h>
 
+#include <IFace\DocumentType.h>
 #include <IFace\DistributionFactors.h>
-
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
 
@@ -142,7 +142,9 @@ void CLiveLoadDistributionFactorTable::Build(rptChapter* pChapter,
    pIPoi->GetPointsOfInterest(CSegmentKey(girderKey, ALL_SEGMENTS), POI_SPAN, &vPoi);
 
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
-   location.IncludeSpanAndGirder(girderKey.groupIndex == ALL_GROUPS);
+
+   GET_IFACE2(pBroker, IDocumentType, pDocType);
+   location.IncludeSpanAndGirder(pDocType->IsPGSpliceDocument() || girderKey.groupIndex == ALL_GROUPS);
 
    RowIndexType row = pTable->GetNumberOfHeaderRows();
 

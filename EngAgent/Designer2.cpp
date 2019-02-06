@@ -399,7 +399,7 @@ void pgsDesigner2::GetHaunchDetails(const CSegmentKey& segmentKey,const GDRCONFI
    const pgsPointOfInterest& clBrgPoi = vPoi.front();
 
    PoiList vEndPoi;
-   pPoi->GetPointsOfInterest(segmentKey, POI_RELEASED_SEGMENT | POI_0L | POI_10L, &vEndPoi);
+   pPoi->GetPointsOfInterest(segmentKey, POI_START_FACE | POI_END_FACE, &vEndPoi);
    ATLASSERT(vEndPoi.size() == 2);
    const pgsPointOfInterest& poi_left(vEndPoi.front());
    const pgsPointOfInterest& poi_right(vEndPoi.back());

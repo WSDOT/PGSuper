@@ -80,9 +80,11 @@ protected:
    void MakeAssignment(const rptPointOfInterest& rOther);
 
 private:
+   CComPtr<IBroker> m_pBroker;
    pgsPointOfInterest m_POI;
    CSpanKey m_SpanKey;
    Float64 m_Xspan;
+   Float64 m_Xgl;
    PoiAttributeType m_Reference;
    bool m_bPrefixAttributes;
    bool m_bIncludeSpanAndGirder;

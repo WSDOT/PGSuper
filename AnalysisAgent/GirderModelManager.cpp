@@ -5188,7 +5188,7 @@ std::vector<Float64> CGirderModelManager::GetAxial(IntervalIndexType intervalIdx
       result->get_XRight(&PxRight);
 
       Float64 Px;
-      if ( poi.IsTenthPoint(POI_RELEASED_SEGMENT) == 1 )
+      if ( poi.HasAttribute(POI_START_FACE) )
       {
          Px = -PxRight;
       }
@@ -5293,7 +5293,7 @@ std::vector<Float64> CGirderModelManager::GetMoment(IntervalIndexType intervalId
       result->get_ZRight(&MzRight);
 
       Float64 Mz;
-      if ( poi.IsTenthPoint(POI_RELEASED_SEGMENT) == 1 )
+      if ( poi.HasAttribute(POI_START_FACE) )
       {
          Mz = -MzRight;
       }
@@ -15101,7 +15101,7 @@ void CGirderModelManager::GetMainSpanSlabLoadEx(const CSegmentKey& segmentKey, b
    std::unique_ptr<mathFunction2d> imposedShape;
    // precamber and top flange thickening is measured using the ends of the girder as the datum
    PoiList vPoi2;
-   pPoi->GetPointsOfInterest(segmentKey, POI_0L | POI_10L | POI_RELEASED_SEGMENT, &vPoi2);
+   pPoi->GetPointsOfInterest(segmentKey, POI_START_FACE | POI_END_FACE, &vPoi2);
    ATLASSERT(vPoi2.size() == 2);
    const pgsPointOfInterest& poi_left(vPoi2.front());
    const pgsPointOfInterest& poi_right(vPoi2.back());

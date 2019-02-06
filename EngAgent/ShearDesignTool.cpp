@@ -628,7 +628,7 @@ void pgsShearDesignTool::ValidatePointsOfInterest(const PoiList& vPois) const
    GET_IFACE(IGirder,pGdr);
    Float64 hgLeft, hgRight; // height of girder at left and right ends
    PoiList vEndPois;
-   pPoi->GetPointsOfInterest(m_SegmentKey, POI_0L | POI_10L | POI_RELEASED_SEGMENT, &vEndPois);
+   pPoi->GetPointsOfInterest(m_SegmentKey, POI_START_FACE | POI_END_FACE, &vEndPois);
    ATLASSERT(vEndPois.size() == 2);
    const pgsPointOfInterest& poiLeftEnd(vEndPois.front());
    const pgsPointOfInterest& poiRightEnd(vEndPois.back());

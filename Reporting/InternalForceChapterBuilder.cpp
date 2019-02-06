@@ -82,7 +82,7 @@ rptChapter* CInternalForceChapterBuilder::Build(CReportSpecification* pRptSpec,U
    INIT_UV_PROTOTYPE( rptForceUnitValue, force, pDisplayUnits->GetGeneralForceUnit(), false);
    INIT_UV_PROTOTYPE( rptMomentUnitValue, moment, pDisplayUnits->GetMomentUnit(), false);
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
-   location.IncludeSpanAndGirder(girderKey.groupIndex == ALL_GROUPS);
+   location.IncludeSpanAndGirder(true);
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
    rptParagraph* pPara = new rptParagraph;

@@ -318,7 +318,7 @@ void write_girder_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptCh
          
          GET_IFACE2(pBroker, IPointOfInterest, pPoi);
          PoiList vPoi;
-         pPoi->GetPointsOfInterest(segmentKey, POI_0L | POI_RELEASED_SEGMENT,&vPoi);
+         pPoi->GetPointsOfInterest(segmentKey, POI_START_FACE,&vPoi);
          ATLASSERT(vPoi.size() == 1);
          pgsPointOfInterest poi(vPoi.front());
 

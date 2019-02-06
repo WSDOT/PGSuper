@@ -28,6 +28,7 @@
 
 #include <PgsExt\PointOfInterest.h>
 
+#include <IFace\DocumentType.h>
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
 #include <EAF\EAFDisplayUnits.h>
@@ -122,7 +123,8 @@ void CCombinedShearTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter* p
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
    INIT_UV_PROTOTYPE( rptForceSectionValue, shear, pDisplayUnits->GetShearUnit(), false );
 
-   location.IncludeSpanAndGirder(girderKey.groupIndex == ALL_GROUPS);
+   GET_IFACE2(pBroker, IDocumentType, pDocType);
+   location.IncludeSpanAndGirder(pDocType->IsPGSpliceDocument() || girderKey.groupIndex == ALL_GROUPS);
 
    rptParagraph* p = new rptParagraph;
    *pChapter << p;

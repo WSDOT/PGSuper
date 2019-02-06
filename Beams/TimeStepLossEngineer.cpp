@@ -3923,8 +3923,7 @@ void CTimeStepLossEngineer::GetAnalysisLocations(const CGirderKey& girderKey,Poi
     //explicitly analyzed. This interpolation isn't done yet.
    pPoiList->reserve(pPoiList->size() + 40);
    m_pPoi->GetPointsOfInterest(CSegmentKey(girderKey, ALL_SEGMENTS), POI_SPAN, pPoiLlist);
-   m_pPoi->GetPointsOfInterest(CSegmentKey(girderKey,ALL_SEGMENTS),POI_0L | POI_RELEASED_SEGMENT, pPoiLlist);
-   m_pPoi->GetPointsOfInterest(CSegmentKey(girderKey,ALL_SEGMENTS),POI_10L | POI_RELEASED_SEGMENT, pPoiLlist);
+   m_pPoi->GetPointsOfInterest(CSegmentKey(girderKey,ALL_SEGMENTS),POI_0L | POI_10L | POI_RELEASED_SEGMENT, pPoiLlist);
    m_pPoi->GetPointsOfInterest(CSegmentKey(girderKey,ALL_SEGMENTS),POI_CLOSURE | POI_START_FACE | POI_END_FACE, pPoiLlist;
    *pPoiLlist = m_pPoi->SetPoiList(pPoiLlist);
 #endif

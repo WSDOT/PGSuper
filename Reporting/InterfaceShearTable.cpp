@@ -28,6 +28,7 @@
 #include <PgsExt\GirderArtifact.h>
 #include <PgsExt\CapacityToDemand.h>
 
+#include <IFace\DocumentType.h>
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
 #include <IFace\Artifact.h>
@@ -73,7 +74,8 @@ void CInterfaceShearTable::Build( IBroker* pBroker, rptChapter* pChapter,
    INIT_UV_PROTOTYPE( rptAreaUnitValue,           area,     pDisplayUnits->GetAreaUnit(),            false );
    INIT_UV_PROTOTYPE( rptLengthUnitValue,         dimu,      pDisplayUnits->GetComponentDimUnit(),  true);
 
-   location.IncludeSpanAndGirder(girderKey.groupIndex == ALL_GROUPS);
+   GET_IFACE2(pBroker, IDocumentType, pDocType);
+   location.IncludeSpanAndGirder(pDocType->IsPGSpliceDocument() || girderKey.groupIndex == ALL_GROUPS);
 
    rptCapacityToDemand cap_demand;
 

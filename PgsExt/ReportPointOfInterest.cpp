@@ -40,6 +40,7 @@ rptPointOfInterest::rptPointOfInterest(const unitLength* pUnitOfMeasure,
                                        bool bShowUnitTag) :
 rptLengthUnitValue(pUnitOfMeasure,zeroTolerance,bShowUnitTag),m_bPrefixAttributes(true),m_bIncludeSpanAndGirder(false)
 {
+   EAFGetBroker(&m_pBroker);
 }
 
 rptPointOfInterest::rptPointOfInterest(const rptPointOfInterest& rOther) :
@@ -73,60 +74,72 @@ bool rptPointOfInterest::IncludeSpanAndGirder() const
    return m_bIncludeSpanAndGirder;
 }
 
-rptReportContent& rptPointOfInterest::SetValue(PoiAttributeType reference,const pgsPointOfInterest& poi)
+rptReportContent& rptPointOfInterest::SetValue(PoiAttributeType reference, const pgsPointOfInterest& poi)
 {
-   ATLASSERT(sysFlags<PoiAttributeType>::IsSet(reference,POI_RELEASED_SEGMENT) || 
-             sysFlags<PoiAttributeType>::IsSet(reference,POI_STORAGE_SEGMENT)  || 
-             sysFlags<PoiAttributeType>::IsSet(reference,POI_LIFT_SEGMENT)     || 
-             sysFlags<PoiAttributeType>::IsSet(reference,POI_HAUL_SEGMENT)     || 
-             sysFlags<PoiAttributeType>::IsSet(reference,POI_ERECTED_SEGMENT)  || 
-             sysFlags<PoiAttributeType>::IsSet(reference,POI_SPAN));
+   ATLASSERT(sysFlags<PoiAttributeType>::IsSet(reference, POI_RELEASED_SEGMENT) ||
+      sysFlags<PoiAttributeType>::IsSet(reference, POI_STORAGE_SEGMENT) ||
+      sysFlags<PoiAttributeType>::IsSet(reference, POI_LIFT_SEGMENT) ||
+      sysFlags<PoiAttributeType>::IsSet(reference, POI_HAUL_SEGMENT) ||
+      sysFlags<PoiAttributeType>::IsSet(reference, POI_ERECTED_SEGMENT) ||
+      sysFlags<PoiAttributeType>::IsSet(reference, POI_SPAN));
 
    m_POI = poi;
    m_Reference = reference;
 
-   // Get the location in span coordiates
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IPointOfInterest,pPoi);
-   pPoi->ConvertPoiToSpanPoint(m_POI,&m_SpanKey,&m_Xspan);
 
    // Get the location adjustment... want to always measure from the left bearing/support point
    Float64 locationAdjustment;
-   if ( m_Reference == POI_RELEASED_SEGMENT )
+   if (m_Reference == POI_RELEASED_SEGMENT)
    {
       locationAdjustment = 0;
    }
-   else if ( m_Reference == POI_STORAGE_SEGMENT )
+   else if (m_Reference == POI_STORAGE_SEGMENT)
    {
-      GET_IFACE2(pBroker,IGirder,pGirder);
-      Float64 XsLeft,XsRight;
-      pGirder->GetSegmentStorageSupportLocations(m_POI.GetSegmentKey(),&XsLeft,&XsRight);
+      GET_IFACE(IGirder, pGirder);
+      Float64 XsLeft, XsRight;
+      pGirder->GetSegmentStorageSupportLocations(m_POI.GetSegmentKey(), &XsLeft, &XsRight);
       locationAdjustment = XsLeft;
    }
-   else if ( m_Reference == POI_LIFT_SEGMENT )
+   else if (m_Reference == POI_LIFT_SEGMENT)
    {
-      GET_IFACE2(pBroker,ISegmentLifting, pSegmentLifting);
+      GET_IFACE(ISegmentLifting, pSegmentLifting);
       locationAdjustment = pSegmentLifting->GetLeftLiftingLoopLocation(m_POI.GetSegmentKey());
    }
-   else if ( m_Reference == POI_HAUL_SEGMENT )
+   else if (m_Reference == POI_HAUL_SEGMENT)
    {
-      GET_IFACE2(pBroker,ISegmentHauling, pSegmentHauling);
+      GET_IFACE(ISegmentHauling, pSegmentHauling);
       locationAdjustment = pSegmentHauling->GetTrailingOverhang(m_POI.GetSegmentKey());
    }
-   else if ( m_Reference == POI_ERECTED_SEGMENT )
+   else if (m_Reference == POI_ERECTED_SEGMENT)
    {
-      GET_IFACE2(pBroker,IBridge,pBridge);
+      GET_IFACE(IBridge, pBridge);
       locationAdjustment = pBridge->GetSegmentStartEndDistance(m_POI.GetSegmentKey());
    }
 
-   if ( m_Reference == POI_SPAN )
+   if (m_Reference == POI_SPAN)
    {
+      GET_IFACE(IPointOfInterest, pPoi);
+      pPoi->ConvertPoiToSpanPoint(m_POI, &m_SpanKey, &m_Xspan);
+
       return rptLengthUnitValue::SetValue(m_Xspan);
    }
    else
    {
-      return rptLengthUnitValue::SetValue( poi.GetDistFromStart() - locationAdjustment );
+      if (m_bIncludeSpanAndGirder)
+      {
+         GET_IFACE(IBridge, pBridge);
+         CSegmentKey segmentKey(m_POI.GetSegmentKey());
+         segmentKey.segmentIndex = 0;
+         locationAdjustment = pBridge->GetSegmentStartEndDistance(segmentKey);
+
+         GET_IFACE(IPointOfInterest, pPoi);
+         m_Xgl = pPoi->ConvertPoiToGirderlineCoordinate(poi);
+         return rptLengthUnitValue::SetValue(m_Xgl - locationAdjustment);
+      }
+      else
+      {
+         return rptLengthUnitValue::SetValue(poi.GetDistFromStart() - locationAdjustment);
+      }
    }
 }
 
@@ -185,9 +198,11 @@ std::_tstring rptPointOfInterest::AsString() const
 
 void rptPointOfInterest::MakeCopy(const rptPointOfInterest& rOther)
 {
+   m_pBroker = rOther.m_pBroker;
    m_POI                   = rOther.m_POI;
    m_SpanKey               = rOther.m_SpanKey;
    m_Xspan                 = rOther.m_Xspan;
+   m_Xgl                   = rOther.m_Xgl;
    m_Reference             = rOther.m_Reference;
    m_bPrefixAttributes     = rOther.m_bPrefixAttributes;
    m_bIncludeSpanAndGirder = rOther.m_bIncludeSpanAndGirder;
