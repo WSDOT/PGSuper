@@ -4171,9 +4171,8 @@ void CBridgeAgentImp::ValidateGirder()
                if ((start_slope != Float64_Max && 0.0 < start_slope) || (end_slope != Float64_Max && end_slope < 0.0))
                {
                   GET_IFACE(IEAFStatusCenter, pStatusCenter);
-                  CString strMsg;
-                  strMsg.Format(_T("Group %d, Girder %s, Segment %d: Strand drape is upside down"), LABEL_GROUP(segmentKey.groupIndex), LABEL_GIRDER(segmentKey.girderIndex), LABEL_SEGMENT(segmentKey.segmentIndex));
-                  pgsGirderDescriptionStatusItem* pStatusItem = new pgsGirderDescriptionStatusItem(segmentKey, 0, m_StatusGroupID, m_scidGirderDescriptionWarning, strMsg);
+                  std::_tstring msg = std::_tstring(SEGMENT_LABEL(segmentKey)) + _T(": Strand drape is upside down");
+                  pgsGirderDescriptionStatusItem* pStatusItem = new pgsGirderDescriptionStatusItem(segmentKey, 0, m_StatusGroupID, m_scidGirderDescriptionWarning, msg.c_str());
                   pStatusCenter->Add(pStatusItem);
                }
             }
@@ -4183,9 +4182,8 @@ void CBridgeAgentImp::ValidateGirder()
             if ( !pSegment->AreSegmentVariationsValid(framing_length) )
             {
                GET_IFACE(IEAFStatusCenter,pStatusCenter);
-               CString strMsg;
-               strMsg.Format(_T("Group %d, Girder %s, Segment %d: Segment variation dimensions are invalid."),LABEL_GROUP(segmentKey.groupIndex),LABEL_GIRDER(segmentKey.girderIndex),LABEL_SEGMENT(segmentKey.segmentIndex));
-               pgsGirderDescriptionStatusItem* pStatusItem = new pgsGirderDescriptionStatusItem(segmentKey,0,m_StatusGroupID,m_scidGirderDescriptionError,strMsg);
+               std::_tstring msg = std::_tstring(SEGMENT_LABEL(segmentKey)) + _T(": Segment variation dimensions are invalid.");
+               pgsGirderDescriptionStatusItem* pStatusItem = new pgsGirderDescriptionStatusItem(segmentKey,0,m_StatusGroupID,m_scidGirderDescriptionError,msg.c_str());
                pStatusCenter->Add(pStatusItem);
 
                //strMsg += _T("See Status Center for Details");
@@ -4198,9 +4196,8 @@ void CBridgeAgentImp::ValidateGirder()
                GetNumDebondedStrands(segmentKey, pgsTypes::Straight, pgsTypes::dbetEither) > 0)
             {
                GET_IFACE(IEAFStatusCenter,pStatusCenter);
-               CString strMsg;
-               strMsg.Format(_T("Group %d, Girder %s, Segment %d: Has a mix of Harped and Debonded strands. Specification checks for debond constructability may be innacurate"),LABEL_GROUP(segmentKey.groupIndex),LABEL_GIRDER(segmentKey.girderIndex),LABEL_SEGMENT(segmentKey.segmentIndex));
-               pgsGirderDescriptionStatusItem* pStatusItem = new pgsGirderDescriptionStatusItem(segmentKey,1,m_StatusGroupID,m_scidGirderDescriptionWarning,strMsg);
+               std::_tstring msg = std::_tstring(SEGMENT_LABEL(segmentKey)) + _T(": Has a mix of Harped and Debonded strands. Specification checks for debond constructability may be innacurate.");
+               pgsGirderDescriptionStatusItem* pStatusItem = new pgsGirderDescriptionStatusItem(segmentKey,1,m_StatusGroupID,m_scidGirderDescriptionWarning,msg.c_str());
                pStatusCenter->Add(pStatusItem);
             }
 
@@ -31022,7 +31019,7 @@ void CBridgeAgentImp::CheckBridge()
                if ( Y < -h_start/2 || Y < -h_end/2 )
                {
                   CString strMsg;
-                  strMsg.Format(_T("%s, Temporary strands are not in the top half of the girder"),SEGMENT_LABEL(CSegmentKey(grpIdx,gdrIdx,segIdx)));
+                  strMsg.Format(_T("%s: Temporary strands are not in the top half of the girder"),SEGMENT_LABEL(CSegmentKey(grpIdx,gdrIdx,segIdx)));
                   pgsInformationalStatusItem* pStatusItem = new pgsInformationalStatusItem(m_StatusGroupID,m_scidInformationalWarning,strMsg);
                   pStatusCenter->Add(pStatusItem);
                   break;

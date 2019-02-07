@@ -5848,7 +5848,7 @@ void CProjectAgentImp::ValidateStrands(const CSegmentKey& segmentKey,CPrecastSeg
 
       if ( !(vst&&vhp&&vtp) )
       {
-         std::_tstring msg(_T("Direct filled strands no longer fit in girder because library entry changed. All strands were removed."));
+         std::_tstring msg(std::_tstring(SEGMENT_LABEL(segmentKey)) + _T("Direct filled strands no longer fit in girder because library entry changed. All strands were removed."));
          AddSegmentStatusItem(segmentKey, msg);
 
          clean = false;
