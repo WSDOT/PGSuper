@@ -68,8 +68,8 @@ CBridgeDescription2::CBridgeDescription2()
 
    m_Fillet     = ::ConvertToSysUnits( 0.75, unitMeasure::Inch );
 
-   m_AssExcessCamber = 0.0;
-   m_AssExcessCamberType = pgsTypes::aecBridge;
+   m_AssumedExcessCamber = 0.0;
+   m_AssumedExcessCamberType = pgsTypes::aecBridge;
 
    m_BearingType = pgsTypes::brtPier;
 
@@ -219,14 +219,14 @@ bool CBridgeDescription2::operator==(const CBridgeDescription2& rOther) const
       return false;
    }
    
-   if ( m_AssExcessCamberType != rOther.m_AssExcessCamberType )
+   if ( m_AssumedExcessCamberType != rOther.m_AssumedExcessCamberType )
    {
       return false;
    }
 
-   if ( m_AssExcessCamberType == pgsTypes::aecBridge )
+   if ( m_AssumedExcessCamberType == pgsTypes::aecBridge )
    {
-      if ( !IsEqual(m_AssExcessCamber,rOther.m_AssExcessCamber) )
+      if ( !IsEqual(m_AssumedExcessCamber,rOther.m_AssumedExcessCamber) )
       {
          return false;
       }
@@ -549,22 +549,22 @@ HRESULT CBridgeDescription2::Load(IStructuredLoad* pStrLoad,IProgress* pProgress
          }
       }
       
-      if (version > 9)
+      if (9 < version)
       {
          var.vt = VT_UI4;
          hr = pStrLoad->get_Property(_T("AssExcessCamberType"), &var);
-         pgsTypes::AssExcessCamberType ct = (pgsTypes::AssExcessCamberType )(var.lVal);
-         m_AssExcessCamberType = ct;
+         pgsTypes::AssumedExcessCamberType ct = (pgsTypes::AssumedExcessCamberType )(var.lVal);
+         m_AssumedExcessCamberType = ct;
 
          if (ct == pgsTypes::aecBridge)
          {
             var.vt = VT_R8;
             hr = pStrLoad->get_Property(_T("AssExcessCamber"), &var);
-            m_AssExcessCamber = var.dblVal;
+            m_AssumedExcessCamber = var.dblVal;
          }
       }
 
-      if ( version > 10 )
+      if ( 10 < version )
       {
          var.vt = VT_UI4;
          hr = pStrLoad->get_Property(_T("BearingType"),&var);
@@ -763,7 +763,7 @@ HRESULT CBridgeDescription2::Load(IStructuredLoad* pStrLoad,IProgress* pProgress
                m_bSameGirderName, 
                IsBridgeSpacing(m_GirderSpacingType),
                m_SlabOffsetType == pgsTypes::sotBridge, 
-               m_AssExcessCamberType==pgsTypes::aecBridge,
+               m_AssumedExcessCamberType==pgsTypes::aecBridge,
                m_BearingType==pgsTypes::brtBridge);
    }
    catch (HRESULT)
@@ -827,10 +827,10 @@ HRESULT CBridgeDescription2::Save(IStructuredSave* pStrSave,IProgress* pProgress
 
    hr = pStrSave->put_Property(_T("Fillet"),CComVariant(m_Fillet));
    
-   hr = pStrSave->put_Property(_T("AssExcessCamberType"),CComVariant(m_AssExcessCamberType)); // Added in version 8
-   if ( m_AssExcessCamberType == pgsTypes::aecBridge )
+   hr = pStrSave->put_Property(_T("AssExcessCamberType"),CComVariant(m_AssumedExcessCamberType)); // Added in version 8
+   if ( m_AssumedExcessCamberType == pgsTypes::aecBridge )
    {
-      hr = pStrSave->put_Property(_T("AssExcessCamber"),CComVariant(m_AssExcessCamber));
+      hr = pStrSave->put_Property(_T("AssExcessCamber"),CComVariant(m_AssumedExcessCamber));
    }
 
    hr = pStrSave->put_Property(_T("BearingType"),CComVariant(m_BearingType)); // Added in version 9
@@ -1007,28 +1007,35 @@ Float64 CBridgeDescription2::GetSlabOffset(bool bGetRawValue) const
    return m_SlabOffset;
 }
 
-Float64 CBridgeDescription2::GetMinSlabOffset() const
+Float64 CBridgeDescription2::GetLeastSlabOffset() const
 {
    if ( m_SlabOffsetType == pgsTypes::sotBridge )
    {
       return GetSlabOffset();
    }
 
+   // this will cover the case of by pier and by segment
    Float64 minSlabOffset = DBL_MAX;
    std::vector<CGirderGroupData*>::const_iterator grpIter(m_GirderGroups.begin());
    std::vector<CGirderGroupData*>::const_iterator grpIterEnd(m_GirderGroups.end());
    for ( ; grpIter != grpIterEnd; grpIter++ )
    {
-      CGirderGroupData* pGroup = *grpIter;
-      PierIndexType startPierIdx = pGroup->GetPierIndex(pgsTypes::metStart);
-      PierIndexType endPierIdx   = pGroup->GetPierIndex(pgsTypes::metEnd);
-      GirderIndexType nGirders = pGroup->GetGirderCount();
-      for ( GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++ )
+      const CGirderGroupData* pGroup = *grpIter;
+
+      // getting slab offset by segment will cover piers and temporary supports
+      // if slab offset is defined by pier, then we just need to use one girder
+      // because all of the other girders will be the same
+      GirderIndexType nGirders = (m_SlabOffsetType == pgsTypes::sotBearingLine ? 1 : pGroup->GetGirderCount());
+      for (GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++)
       {
-         for ( PierIndexType pierIdx = startPierIdx; pierIdx <= endPierIdx; pierIdx++ )
+         const CSplicedGirderData* pGirder = pGroup->GetGirder(gdrIdx);
+         SegmentIndexType nSegments = pGirder->GetSegmentCount();
+         for (SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++)
          {
-            Float64 slabOffset = pGroup->GetSlabOffset(pierIdx,gdrIdx);
-            minSlabOffset = Min(minSlabOffset,slabOffset);
+            const CPrecastSegmentData* pSegment = pGirder->GetSegment(segIdx);
+            Float64 start, end;
+            pSegment->GetSlabOffset(&start, &end);
+            minSlabOffset = Min(minSlabOffset, start, end);
          }
       }
    }
@@ -1036,26 +1043,41 @@ Float64 CBridgeDescription2::GetMinSlabOffset() const
    return minSlabOffset;
 }
 
-void CBridgeDescription2::SetAssExcessCamberType(pgsTypes::AssExcessCamberType camberType)
+Float64 CBridgeDescription2::GetMinSlabOffset() const
 {
-   m_AssExcessCamberType = camberType;
+   Float64 minSlabOffset = m_Deck.GrossDepth;
+   if (m_Deck.GetDeckType() == pgsTypes::sdtCompositeCIP || IsOverlayDeck(m_Deck.GetDeckType())) // CIP deck or overlay
+   {
+      minSlabOffset += m_Fillet;
+   }
+   else if (m_Deck.GetDeckType() == pgsTypes::sdtCompositeSIP) // SIP
+   {
+      minSlabOffset += m_Deck.PanelDepth + m_Fillet;
+   }
+
+   return minSlabOffset;
 }
 
-pgsTypes::AssExcessCamberType CBridgeDescription2::GetAssExcessCamberType() const
+void CBridgeDescription2::SetAssumedExcessCamberType(pgsTypes::AssumedExcessCamberType camberType)
 {
-   return m_AssExcessCamberType;
+   m_AssumedExcessCamberType = camberType;
 }
 
-void CBridgeDescription2::SetAssExcessCamber(Float64 AssExcessCamber)
+pgsTypes::AssumedExcessCamberType CBridgeDescription2::GetAssumedExcessCamberType() const
 {
-   m_AssExcessCamber = AssExcessCamber;
+   return m_AssumedExcessCamberType;
 }
 
-Float64 CBridgeDescription2::GetAssExcessCamber(bool bGetRawValue) const
+void CBridgeDescription2::SetAssumedExcessCamber(Float64 assumedExcessCamber)
+{
+   m_AssumedExcessCamber = assumedExcessCamber;
+}
+
+Float64 CBridgeDescription2::GetAssumedExcessCamber(bool bGetRawValue) const
 {
    if ( bGetRawValue )
    {
-      return m_AssExcessCamber;
+      return m_AssumedExcessCamber;
    }
 
    if ( m_Deck.DeckType == pgsTypes::sdtNone )
@@ -1063,7 +1085,7 @@ Float64 CBridgeDescription2::GetAssExcessCamber(bool bGetRawValue) const
       return 0;
    }
 
-   return m_AssExcessCamber;
+   return m_AssumedExcessCamber;
 }
 
 void CBridgeDescription2::SetFillet(Float64 Fillet)
@@ -3069,8 +3091,8 @@ void CBridgeDescription2::MakeCopy(const CBridgeDescription2& rOther)
 
    m_Fillet               = rOther.m_Fillet;
 
-   m_AssExcessCamber          = rOther.m_AssExcessCamber;
-   m_AssExcessCamberType      = rOther.m_AssExcessCamberType;
+   m_AssumedExcessCamber = rOther.m_AssumedExcessCamber;
+   m_AssumedExcessCamberType      = rOther.m_AssumedExcessCamberType;
 
    m_BearingData          = rOther.m_BearingData;
    m_BearingType          = rOther.m_BearingType;
@@ -3167,7 +3189,7 @@ void CBridgeDescription2::MakeCopy(const CBridgeDescription2& rOther)
    }
 
    CopyDown(m_bSameNumberOfGirders,m_bSameGirderName,::IsBridgeSpacing(m_GirderSpacingType),
-            m_SlabOffsetType==pgsTypes::sotBridge,m_AssExcessCamberType==pgsTypes::aecBridge,
+            m_SlabOffsetType==pgsTypes::sotBridge,m_AssumedExcessCamberType==pgsTypes::aecBridge,
             m_BearingType==pgsTypes::brtBridge); 
 
    PGS_ASSERT_VALID;
@@ -3404,11 +3426,45 @@ void CBridgeDescription2::CopyDown(bool bGirderCount,bool bGirderType,bool bSpac
          PierIndexType startPierIdx = pGroup->GetPierIndex(pgsTypes::metStart);
          PierIndexType endPierIdx   = pGroup->GetPierIndex(pgsTypes::metEnd);
          GirderIndexType nGirders = pGroup->GetGirderCount();
-         for ( GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++ )
+         for (GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++)
          {
-            for ( PierIndexType pierIdx = startPierIdx; pierIdx <= endPierIdx; pierIdx++ )
+            CSplicedGirderData* pGirder = pGroup->GetGirder(gdrIdx);
+            SegmentIndexType nSegments = pGirder->GetSegmentCount();
+            for (SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++)
             {
-               pGroup->SetSlabOffset(pierIdx,gdrIdx,m_SlabOffset);
+               CPrecastSegmentData* pSegment = pGirder->GetSegment(segIdx);
+               pSegment->SetSlabOffset(m_SlabOffset, m_SlabOffset);
+            }
+
+            if (gdrIdx == 0)
+            {
+               for ( PierIndexType pierIdx = startPierIdx; pierIdx <= endPierIdx; pierIdx++ )
+               {
+                  CPierData2* pPier = GetPier(pierIdx);
+                  if (pierIdx == startPierIdx)
+                  {
+                     pPier->SetSlabOffset(pgsTypes::Ahead, m_SlabOffset);
+                  }
+                  else if (pierIdx == endPierIdx)
+                  {
+                     pPier->SetSlabOffset(pgsTypes::Back, m_SlabOffset);
+                  }
+                  else
+                  {
+                     pPier->SetSlabOffset(m_SlabOffset, m_SlabOffset);
+                  }
+
+                  if (pierIdx != endPierIdx)
+                  {
+                     SpanIndexType spanIdx = (SpanIndexType)pierIdx;
+                     CSpanData2* pSpan = GetSpan(spanIdx);
+                     std::vector<CTemporarySupportData*> vTS = pSpan->GetTemporarySupports();
+                     for (auto* pTS : vTS)
+                     {
+                        pTS->SetSlabOffset(m_SlabOffset, m_SlabOffset);
+                     }
+                  }
+               }
             }
          }
       }
@@ -3438,7 +3494,7 @@ void CBridgeDescription2::CopyDown(bool bGirderCount,bool bGirderType,bool bSpac
          GirderIndexType nGirders = pSpan->GetGirderCount();
          for ( GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++ )
          {
-            pSpan->SetAssExcessCamber(gdrIdx,m_AssExcessCamber);
+            pSpan->SetAssumedExcessCamber(gdrIdx, m_AssumedExcessCamber);
          }
       }
    }
@@ -3806,89 +3862,6 @@ bool CBridgeDescription2::IsStable() const
    } // next group
 
    return true;
-}
-
-bool CBridgeDescription2::IsSegmentOverconstrained(const CSegmentKey& segmentKey) const
-{
-   const CPrecastSegmentData* pSegment = GetSegment(segmentKey);
-
-   std::vector<const CPierData2*> vPiers = pSegment->GetPiers();
-   std::vector<const CTemporarySupportData*> vTS = pSegment->GetTemporarySupports();
-
-   IndexType nSupports = vPiers.size() + vTS.size();
-
-   if ( 2 < nSupports )
-   {
-      // need to make sure support elevation adjustments are on a straight line
-      bool bStraightLine = true;
-
-      std::map<Float64,Float64> offsets; // key = station, value is offset
-
-      const CGirderGroupData* pGroup = GetGirderGroup(segmentKey.groupIndex);
-      std::vector<const CPierData2*>::const_iterator pierIter(vPiers.begin());
-      std::vector<const CPierData2*>::const_iterator pierIterEnd(vPiers.end());
-      for ( ; pierIter != pierIterEnd; pierIter++ )
-      {
-         Float64 slab_offset_first_pier = pGroup->GetSlabOffset(vPiers.front()->GetIndex(),segmentKey.girderIndex);
-
-         const CPierData2* pPier = *pierIter;
-         Float64 slab_offset_this_pier = pGroup->GetSlabOffset(pPier->GetIndex(),segmentKey.girderIndex);
-
-         Float64 elev_adjustment = slab_offset_this_pier - slab_offset_first_pier;
-         Float64 station = pPier->GetStation();
-
-         offsets.insert(std::make_pair(station,elev_adjustment));
-      }
-
-      std::vector<const CTemporarySupportData*>::const_iterator tsIter(vTS.begin());
-      std::vector<const CTemporarySupportData*>::const_iterator tsIterEnd(vTS.end());
-      for ( ; tsIter != tsIterEnd; tsIter++ )
-      {
-         const CTemporarySupportData* pTS = *tsIter;
-         if ( pTS->GetSupportType() == pgsTypes::ErectionTower )
-         {
-            Float64 station = pTS->GetStation();
-            Float64 elev_adjustment = pTS->GetElevationAdjustment();
-            offsets.insert(std::make_pair(station,elev_adjustment));
-         }
-      }
-
-      if ( 2 < offsets.size() )
-      {
-         std::map<Float64,Float64>::iterator offsetIter(offsets.begin());
-         std::map<Float64,Float64>::iterator offsetIterEnd(offsets.end());
-         Float64 station1 = offsetIter->first;
-         Float64 elevAdj1 = offsetIter->second;
-         offsetIter++;
-         Float64 station2 = offsetIter->first;
-         Float64 elevAdj2 = offsetIter->second;
-         offsetIter++;
-         Float64 dx = station2 - station1;
-         Float64 dy = elevAdj2 - elevAdj1;
-         Float64 slope1 = dy/dx;
-         for ( ; offsetIter != offsetIterEnd; offsetIter++ )
-         {
-            station2 = offsetIter->first;
-            elevAdj2 = offsetIter->second;
-
-            dx = station2 - station1;
-            dy = elevAdj2 - elevAdj1;
-            Float64 slope2 = dy/dx;
-
-            if ( !IsEqual(slope1,slope2) )
-            {
-               bStraightLine = false;
-               break;
-            }
-
-            station1 = station2;
-            elevAdj1 = elevAdj2;
-         }
-         return ( bStraightLine ? false : true );
-      }
-   }
-
-   return false;
 }
 
 Float64 CBridgeDescription2::GetBridgeWidth() const
@@ -4587,6 +4560,20 @@ const CConcreteMaterial& CBridgeDescription2::GetLongitudinalJointMaterial() con
 void CBridgeDescription2::SetLongitudinalJointMaterial(const CConcreteMaterial& material)
 {
    m_LongitudinalJointConcrete = material;
+}
+
+void CBridgeDescription2::ForEachSegment(std::function<void(CPrecastSegmentData*,void*)>& fn,void* pData)
+{
+   for(auto* pGroup : m_GirderGroups)
+   { 
+      for (auto* pGirder : pGroup->m_Girders)
+      {
+         for (auto* pSegment : pGirder->m_Segments)
+         {
+            fn(pSegment,pData);
+         }
+      }
+   }
 }
 
 #if defined _DEBUG

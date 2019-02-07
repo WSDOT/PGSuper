@@ -209,7 +209,7 @@ void CConstructabilityCheckTable::BuildMonoSlabOffsetTable(rptChapter* pChapter,
       {
          CSegmentKey segmentKey(girderKey, segIdx);
          const auto& artifact = pConstrArtifact->GetSegmentArtifact(segIdx);
-         const auto& haunch_details = pGdrHaunch->GetHaunchDetails(segmentKey);
+         const auto& haunch_details = pGdrHaunch->GetSlabOffsetDetails(segmentKey);
 
          Float64 endA, startA;
          artifact.GetProvidedSlabOffset(&startA, &endA); // both values are same because of what function we are in
@@ -427,7 +427,7 @@ void CConstructabilityCheckTable::BuildMultiSlabOffsetTable(rptChapter* pChapter
             if (artifact.CheckStirrupLength() )
             {
                didNote = true;
-               const auto& haunch_details = pGdrHaunch->GetHaunchDetails(segmentKey);
+               const auto& haunch_details = pGdrHaunch->GetSlabOffsetDetails(segmentKey);
                (*pTable)(row, col) << color(Red) << _T("The difference betwen the minimum and maximum CL haunch depths along the girder is ") << dim2.SetValue(haunch_details.HaunchDiff) 
                                                  << _T(". This exceeds one half of the slab depth. Check stirrup lengths to ensure they engage the deck in all locations.");
                                                  
@@ -765,12 +765,12 @@ void CConstructabilityCheckTable::BuildHaunchGeometryComplianceCheck(rptChapter*
       *pTitle << _T("Excess Camber Check");
       rptParagraph* pBody = new rptParagraph;
       *pChapter << pBody;
-      if (pSpec->IsAssExcessCamberForLoad())
+      if (pSpec->IsAssumedExcessCamberForLoad())
       {
          *pBody << _T("Haunch dead load is affected by variable haunch depth along the girder. ");
       }
 
-      if (pSpec->IsAssExcessCamberForSectProps())
+      if (pSpec->IsAssumedExcessCamberForSectProps())
       {
          *pBody << _T("Composite section properties are affected by haunch depth variation along the girder. ");
       }

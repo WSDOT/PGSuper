@@ -109,7 +109,7 @@ void CDesignGirderDlg::DoDataExchange(CDataExchange* pDX)
       if (m_DesignForFlexure==FALSE)
       {
          // No A design if no flexure design
-         m_DesignSlabOffset = sodNoADesign;
+         m_DesignSlabOffset = sodNoSlabOffsetDesign;
       }
    }
 }

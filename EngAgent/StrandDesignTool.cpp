@@ -204,15 +204,15 @@ void pgsStrandDesignTool::Initialize(IBroker* pBroker, StatusGroupIDType statusG
    Float64 tSlab = pBridge->GetGrossSlabDepth( pgsPointOfInterest(m_SegmentKey,0.00) );
    m_AbsoluteMinimumSlabOffset = tSlab;
 
-   if ( pBridge->GetDeckType() == pgsTypes::sdtNone || m_DesignOptions.doDesignSlabOffset == sodNoADesign )
+   if ( pBridge->GetDeckType() == pgsTypes::sdtNone || m_DesignOptions.doDesignSlabOffset == sodNoSlabOffsetDesign )
    {
       // if there is no deck, set the artifact value to the current value
       PierIndexType startPierIdx, endPierIdx;
       pBridge->GetGirderGroupPiers(m_SegmentKey.groupIndex,&startPierIdx,&endPierIdx);
       ATLASSERT(endPierIdx == startPierIdx+1);
 
-      m_pArtifact->SetSlabOffset( pgsTypes::metStart, pBridge->GetSlabOffset(m_SegmentKey.groupIndex,startPierIdx,m_SegmentKey.girderIndex) );
-      m_pArtifact->SetSlabOffset( pgsTypes::metEnd,   pBridge->GetSlabOffset(m_SegmentKey.groupIndex,endPierIdx,  m_SegmentKey.girderIndex) );
+      m_pArtifact->SetSlabOffset( pgsTypes::metStart, pBridge->GetSlabOffset(m_SegmentKey,pgsTypes::metStart) );
+      m_pArtifact->SetSlabOffset( pgsTypes::metEnd,   pBridge->GetSlabOffset(m_SegmentKey,pgsTypes::metEnd) );
    }
    else
    {
@@ -233,20 +233,20 @@ void pgsStrandDesignTool::Initialize(IBroker* pBroker, StatusGroupIDType statusG
 
    // Set initial design for AssExcessCamber here. Design is only for haunch load determination
    GET_IFACE_NOCHECK(ISpecification,pSpec);
-   m_bIsDesignExcessCamber = sodAandAssExcessCamber == m_DesignOptions.doDesignSlabOffset &&
-                                                       pSpec->IsAssExcessCamberForLoad();
+   m_bIsDesignExcessCamber = sodSlabOffsetandAssumedExcessCamberDesign == m_DesignOptions.doDesignSlabOffset &&
+                                                       pSpec->IsAssumedExcessCamberForLoad();
    // don't let tolerance be impossible
    if (m_bIsDesignExcessCamber)
    {
-      m_AssExcessCamberTolerance = min(::ConvertToSysUnits(0.5, unitMeasure::Inch), pSpec->GetCamberTolerance());
+      m_AssumedExcessCamberTolerance = min(::ConvertToSysUnits(0.5, unitMeasure::Inch), pSpec->GetCamberTolerance());
    }
    else
    {
-      m_AssExcessCamberTolerance = ::ConvertToSysUnits(0.5, unitMeasure::Inch); // doesn't matter
+      m_AssumedExcessCamberTolerance = ::ConvertToSysUnits(0.5, unitMeasure::Inch); // doesn't matter
    }
 
-   Float64 AssExcessCamber = pBridge->GetAssExcessCamber(m_SegmentKey.groupIndex, m_SegmentKey.girderIndex);
-   m_pArtifact->SetAssExcessCamber(AssExcessCamber);
+   Float64 assumedExcessCamber = pBridge->GetAssumedExcessCamber(m_SegmentKey.groupIndex, m_SegmentKey.girderIndex);
+   m_pArtifact->SetAssumedExcessCamber(assumedExcessCamber);
 
    // Initialize Prestressing
    m_pArtifact->SetNumStraightStrands( 0 );
@@ -1651,7 +1651,7 @@ void pgsStrandDesignTool::DumpDesignParameters() const
    LOG(_T("HP Offset at End = ") << ::ConvertFromSysUnits(m_pArtifact->GetHarpStrandOffsetEnd(pgsTypes::metEnd),unitMeasure::Inch) << _T(" in") << _T(" (From top = ") << ::ConvertFromSysUnits(end_offset,unitMeasure::Inch) << _T(" in)"));
    LOG(_T("Slab Offset at Start = ") << ::ConvertFromSysUnits(m_pArtifact->GetSlabOffset(pgsTypes::metStart),unitMeasure::Inch) << _T(" in"));
    LOG(_T("Slab Offset at End   = ") << ::ConvertFromSysUnits(m_pArtifact->GetSlabOffset(pgsTypes::metEnd),unitMeasure::Inch) << _T(" in"));
-   LOG(_T("Assumed excess Camber   = ") << ::ConvertFromSysUnits(m_pArtifact->GetAssExcessCamber(),unitMeasure::Inch) << _T(" in"));
+   LOG(_T("Assumed excess Camber   = ") << ::ConvertFromSysUnits(m_pArtifact->GetAssumedExcessCamber(),unitMeasure::Inch) << _T(" in"));
    LOG(_T("Pick Point = ") << ::ConvertFromSysUnits(m_pArtifact->GetLeftLiftingLocation(), unitMeasure::Feet) << _T(" ft"));
    LOG(_T("Leading Overhang  = ") << ::ConvertFromSysUnits(m_pArtifact->GetLeadingOverhang(), unitMeasure::Feet) << _T(" ft"));
    LOG(_T("Trailing Overhang = ") << ::ConvertFromSysUnits(m_pArtifact->GetTrailingOverhang(), unitMeasure::Feet) << _T(" ft"));
@@ -1739,10 +1739,10 @@ void pgsStrandDesignTool::FillArtifactWithFlexureValues()
    pBridge->GetGirderGroupPiers(m_SegmentKey.groupIndex,&startPierIdx,&endPierIdx);
    ATLASSERT(endPierIdx == startPierIdx+1);
 
-   m_pArtifact->SetSlabOffset(pgsTypes::metStart,pBridge->GetSlabOffset(m_SegmentKey.groupIndex,startPierIdx,m_SegmentKey.girderIndex));
-   m_pArtifact->SetSlabOffset(pgsTypes::metEnd,  pBridge->GetSlabOffset(m_SegmentKey.groupIndex,endPierIdx,  m_SegmentKey.girderIndex)  );
+   m_pArtifact->SetSlabOffset(pgsTypes::metStart,pBridge->GetSlabOffset(m_SegmentKey,pgsTypes::metStart));
+   m_pArtifact->SetSlabOffset(pgsTypes::metEnd,  pBridge->GetSlabOffset(m_SegmentKey,pgsTypes::metEnd));
 
-   m_pArtifact->SetAssExcessCamber(pBridge->GetAssExcessCamber(m_SegmentKey.groupIndex,m_SegmentKey.girderIndex));
+   m_pArtifact->SetAssumedExcessCamber(pBridge->GetAssumedExcessCamber(m_SegmentKey.groupIndex,m_SegmentKey.girderIndex));
 
    GDRCONFIG config = pBridge->GetSegmentConfiguration(m_SegmentKey);
    m_pArtifact->SetStraightStrandDebondInfo( config.PrestressConfig.Debond[pgsTypes::Straight] );
@@ -2085,21 +2085,21 @@ bool pgsStrandDesignTool::IsDesignExcessCamber() const
    return m_bIsDesignExcessCamber;
 }
 
-Float64 pgsStrandDesignTool::GetAssExcessCamberTolerance() const
+Float64 pgsStrandDesignTool::GetAssumedExcessCamberTolerance() const
 {
-   return m_AssExcessCamberTolerance;
+   return m_AssumedExcessCamberTolerance;
 }
 
-void pgsStrandDesignTool::SetAssExcessCamber(Float64 camber)
+void pgsStrandDesignTool::SetAssumedExcessCamber(Float64 camber)
 {
    LOG(_T("** Set assumed excess camber to ") <<::ConvertFromSysUnits(camber,unitMeasure::Inch));
-   m_pArtifact->SetAssExcessCamber(camber);
+   m_pArtifact->SetAssumedExcessCamber(camber);
    m_bConfigDirty = true; // cache is dirty
 }
 
-Float64 pgsStrandDesignTool::GetAssExcessCamber() const
+Float64 pgsStrandDesignTool::GetAssumedExcessCamber() const
 {
-   return m_pArtifact->GetAssExcessCamber();
+   return m_pArtifact->GetAssumedExcessCamber();
 }
 
 void pgsStrandDesignTool::SetLiftingLocations(Float64 left,Float64 right)

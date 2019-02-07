@@ -21,59 +21,17 @@
 ///////////////////////////////////////////////////////////////////////
 
 #pragma once
-
-#include "HaunchSpanGrid.h"
-#include "HaunchSame4BridgeDlg.h"
-#include "HaunchSpanBySpanDlg.h"
-#include "HaunchByGirderDlg.h"
-#include "AssExcessCamberSame4BridgeDlg.h"
-#include "AssExcessCamberSpanBySpanDlg.h"
-#include "AssExcessCamberByGirderDlg.h"
+#include "resource.h"
+#include "HaunchBearingGrid.h"
+#include "HaunchByBridgeDlg.h"
+#include "HaunchByBearingDlg.h"
+#include "HaunchBySegmentDlg.h"
+#include "AssumedExcessCamberByBridgeDlg.h"
+#include "AssumedExcessCamberBySpanDlg.h"
+#include "AssumedExcessCamberByGirderDlg.h"
 #include <PgsExt\HaunchShapeComboBox.h>
 
 class CBridgeDescription2;
-
-inline CString SlabOffsetTypeAsString(pgsTypes::SlabOffsetType type)
-{
-   if (type == pgsTypes::sotBridge)
-   {
-      return _T("Define single slab offset for entire Bridge");
-   }
-   else if (type == pgsTypes::sotPier)
-   {
-      return _T("Define unique slab offsets for each Pier");
-   }
-   else if (type == pgsTypes::sotGirder)
-   {
-      return _T("Define unique slab offsets for each Girder");
-   }
-   else
-   {
-      ATLASSERT(0);
-      return _T("Error, bad haunch type");
-   }
-}
-
-inline CString AssExcessCamberTypeAsString(pgsTypes::AssExcessCamberType type)
-{
-   if (type == pgsTypes::aecBridge)
-   {
-      return _T("Define single Assumed Excess Camber for entire Bridge");
-   }
-   else if (type == pgsTypes::aecSpan)
-   {
-      return _T("Define unique Assumed Excess Cambers for each Span");
-   }
-   else if (type == pgsTypes::aecGirder)
-   {
-      return _T("Define unique Assumed Excess Cambers for each Girder");
-   }
-   else
-   {
-      ATLASSERT(0);
-      return _T("Error, bad camber type");
-   }
-}
 
 // CEditHaunchDlg dialog
 
@@ -90,14 +48,24 @@ public:
 	enum { IDD = IDD_EDIT_HAUNCH };
 
 // embedded dialogs for different haunch layouts
-   CHaunchSame4BridgeDlg m_HaunchSame4BridgeDlg;
-   CHaunchSpanBySpanDlg  m_HaunchSpanBySpanDlg;
-   CHaunchByGirderDlg    m_HaunchByGirderDlg;
+   CHaunchByBridgeDlg m_HaunchByBridgeDlg;
+   CHaunchByBearingDlg m_HaunchByBearingDlg;
+   CHaunchBySegmentDlg m_HaunchBySegmentDlg;
 
 // embedded dialogs for different AssExcessCamber layouts
-   CAssExcessCamberSame4BridgeDlg m_AssExcessCamberSame4BridgeDlg;
-   CAssExcessCamberSpanBySpanDlg  m_AssExcessCamberSpanBySpanDlg;
-   CAssExcessCamberByGirderDlg    m_AssExcessCamberByGirderDlg;
+   CAssumedExcessCamberByBridgeDlg m_AssumedExcessCamberByBridgeDlg;
+   CAssumedExcessCamberBySpanDlg  m_AssumedExcessCamberBySpanDlg;
+   CAssumedExcessCamberByGirderDlg m_AssumedExcessCamberByGirderDlg;
+
+   // returns the current selection for slab offset type
+   pgsTypes::SlabOffsetType GetSlabOffsetType();
+
+   // returns the current selection for assumed excess camber type
+   pgsTypes::AssumedExcessCamberType GetAssumedExcessCamberType();
+
+   BOOL IsAssumedExcessCamberEnabled() { return m_bCanAssumedExcessCamberInputBeEnabled; }
+
+   CBridgeDescription2 m_BridgeDesc;
 
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
@@ -105,35 +73,19 @@ protected:
 	DECLARE_MESSAGE_MAP()
 public:
    virtual BOOL OnInitDialog();
-   afx_msg void OnCbnSelchangeAType();
-   afx_msg void OnCbnSelchangeAssExcessCamberType();
-
-   // Force to another type than that in bridge descripton. Must be called before DoModal
-   void ForceToSlabOffsetType(pgsTypes::SlabOffsetType slabOffsetType);
-   void ForceToAssExcessCamberType(pgsTypes::AssExcessCamberType AssExcessCamberType);
-
-   // Change bridge description to our haunch data
-   void ModifyBridgeDescr(CBridgeDescription2* pBridgeDesc);
+   afx_msg void OnSlabOffsetTypeChanged();
+   afx_msg void OnAssumedExcessCamberTypeChanged();
+   afx_msg void OnBnClickedHelp();
 
 private:
-   const CBridgeDescription2* m_pBridgeDesc;
-
-   // Data for haunch input
-   HaunchInputData m_HaunchInputData;
-
    Float64 m_Fillet;
+   pgsTypes::SlabOffsetType m_SlabOffsetType;
+   pgsTypes::AssumedExcessCamberType m_AssumedExcessCamberType;
 
    pgsTypes::HaunchShapeType m_HaunchShape;
    CHaunchShapeComboBox m_cbHaunchShape;
 
-   bool m_WasSlabOffsetTypeForced;
-   pgsTypes::SlabOffsetType m_ForcedSlabOffsetType;
-   bool m_WasAssExcessCamberTypeForced;
-   pgsTypes::AssExcessCamberType m_ForcedAssExcessCamberType;
-   bool m_WasDataIntialized;
-   bool m_bCanAssExcessCamberInputBeEnabled;
+   bool m_bCanAssumedExcessCamberInputBeEnabled;
 
    void InitializeData();
-public:
-   afx_msg void OnBnClickedHelp();
 };

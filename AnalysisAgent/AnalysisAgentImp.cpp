@@ -1088,7 +1088,7 @@ void CAnalysisAgentImp::BuildSlabOffsetDesignModel(const CSegmentKey& segmentKey
 
    // Differential slab load between design and original models
    std::vector<SlabLoad> slabLoads;
-   GetDesignMainSpanSlabLoadAdjustment(segmentKey, pConfig->SlabOffset[pgsTypes::metStart], pConfig->SlabOffset[pgsTypes::metEnd], pConfig->AssExcessCamber, &slabLoads);
+   GetDesignMainSpanSlabLoadAdjustment(segmentKey, pConfig->SlabOffset[pgsTypes::metStart], pConfig->SlabOffset[pgsTypes::metEnd], pConfig->AssumedExcessCamber, &slabLoads);
 
    // model autogenerates loadings for delta (design) slab and haunch
    bool bModelLeftCantilever,bModelRightCantilever;
@@ -6625,15 +6625,16 @@ Float64 CAnalysisAgentImp::GetScreedCamberUnfactored(const pgsPointOfInterest& p
 
 Float64 CAnalysisAgentImp::GetExcessCamber(const pgsPointOfInterest& poi, Int16 time, const GDRCONFIG* pConfig) const
 {
-   return GetExcessCamberEx(poi, time, pConfig, true);
+   Float64 Dy, Cy;
+   return GetExcessCamberEx(poi, time, pConfig, true, &Dy, &Cy);
 }
 
-Float64 CAnalysisAgentImp::GetExcessCamberUnfactored(const pgsPointOfInterest& poi, Int16 time, const GDRCONFIG* pConfig) const
+Float64 CAnalysisAgentImp::GetExcessCamberEx(const pgsPointOfInterest& poi, Int16 time, Float64* pDy, Float64* pCy, const GDRCONFIG* pConfig) const
 {
-   return GetExcessCamberEx(poi, time, pConfig, false);
+   return GetExcessCamberEx(poi, time, pConfig, true, pDy, pCy);
 }
 
-Float64 CAnalysisAgentImp::GetExcessCamberEx(const pgsPointOfInterest& poi,Int16 time,const GDRCONFIG* pConfig, bool applyFactors) const
+Float64 CAnalysisAgentImp::GetExcessCamberEx(const pgsPointOfInterest& poi,Int16 time,const GDRCONFIG* pConfig, bool applyFactors,Float64* pDy,Float64* pCy) const
 {
    GET_IFACE(ILossParameters, pLossParams);
    if (pLossParams->GetLossMethod() == pgsTypes::TIME_STEP)
@@ -6653,13 +6654,22 @@ Float64 CAnalysisAgentImp::GetExcessCamberEx(const pgsPointOfInterest& poi,Int16
 
       GET_IFACE(IIntervals, pIntervals);
       IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
+      Float64 Emin, Emax;
+      GetDeflection(liveLoadIntervalIdx, pgsTypes::ServiceI, poi, bat, true, false/*exclude live load deflection*/, true/*include elevation adjustments*/, true /*include precamber*/, &Emin, &Emax);
+      ATLASSERT(IsEqual(Emin, Emax)); // no live load so these should be the same
+      ATLASSERT(IsEqual(Emin, excess));
+
       Float64 Dmin, Dmax;
-      GetDeflection(liveLoadIntervalIdx, pgsTypes::ServiceI, poi, bat, true, false/*exclude live load deflection*/, true, true, &Dmin, &Dmax);
+      IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval();
+      ATLASSERT(castDeckIntervalIdx != INVALID_INDEX);
+      // use -1 on interval because we want the deflection immedately before deck casting
+      GetDeflection(castDeckIntervalIdx-1, pgsTypes::ServiceI, poi, bat, true, false/*exclude live load deflection*/, true/*include elevation adjustments*/, true /*include precamber*/, &Dmin, &Dmax);
       ATLASSERT(IsEqual(Dmin, Dmax)); // no live load so these should be the same
 
-      ATLASSERT(IsEqual(Dmin, excess));
+      *pDy = Dmax;
+      *pCy = Dmax - Emax; // Excess = D - C -> C = D - Excess
 
-      return Dmin;
+      return Emax;
    }
    else
    {
@@ -6671,16 +6681,22 @@ Float64 CAnalysisAgentImp::GetExcessCamberEx(const pgsPointOfInterest& poi,Int16
          CamberModelData initTempModel = GetPrestressDeflectionModel(segmentKey, m_InitialTempPrestressDeflectionModels);
          CamberModelData relsTempModel = GetPrestressDeflectionModel(segmentKey, m_ReleaseTempPrestressDeflectionModels);
 
-         Float64 Dy, Rz;
-         GetExcessCamberEx2(poi, nullptr, model, initTempModel, relsTempModel, time, applyFactors, &Dy, &Rz);
-         return Dy;
+         Float64 Dd, Dr, Cd, Cr, Ed, Er;
+         GetExcessCamberEx2(poi, nullptr, model, initTempModel, relsTempModel, time, applyFactors, &Dd, &Dr, &Cd, &Cr, &Ed, &Er);
+         *pDy = Dd;
+         *pCy = Cd;
+         ATLASSERT(IsEqual(Ed, Dd - Cd));
+         return Ed;
       }
       else
       {
          ValidateCamberModels(pConfig);
-         Float64 Dy, Rz;
-         GetExcessCamberEx2(poi, pConfig, m_CacheConfig_PrestressDeflectionModel, m_CacheConfig_InitialTempPrestressDeflectionModels, m_CacheConfig_ReleaseTempPrestressDeflectionModels, time, applyFactors, &Dy, &Rz);
-         return Dy;
+         Float64 Dd, Dr, Cd, Cr, Ed, Er;
+         GetExcessCamberEx2(poi, pConfig, m_CacheConfig_PrestressDeflectionModel, m_CacheConfig_InitialTempPrestressDeflectionModels, m_CacheConfig_ReleaseTempPrestressDeflectionModels, time, applyFactors, &Dd, &Dr, &Cd, &Cr, &Ed, &Er);
+         *pDy = Dd;
+         *pCy = Cd;
+         ATLASSERT(IsEqual(Ed, Dd - Cd));
+         return Ed;
       }
    }
 }
@@ -6688,11 +6704,6 @@ Float64 CAnalysisAgentImp::GetExcessCamberEx(const pgsPointOfInterest& poi,Int16
 Float64 CAnalysisAgentImp::GetExcessCamberRotation(const pgsPointOfInterest& poi, Int16 time, const GDRCONFIG* pConfig) const
 {
    return GetExcessCamberRotationEx(poi, time, pConfig, true);
-}
-
-Float64 CAnalysisAgentImp::GetExcessCamberRotationUnfactored(const pgsPointOfInterest& poi, Int16 time, const GDRCONFIG* pConfig) const
-{
-   return GetExcessCamberRotationEx(poi, time, pConfig, false);
 }
 
 Float64 CAnalysisAgentImp::GetExcessCamberRotationEx(const pgsPointOfInterest& poi,Int16 time,const GDRCONFIG* pConfig, bool applyFactors) const
@@ -6705,17 +6716,17 @@ Float64 CAnalysisAgentImp::GetExcessCamberRotationEx(const pgsPointOfInterest& p
       CamberModelData initTempModel = GetPrestressDeflectionModel(segmentKey, m_InitialTempPrestressDeflectionModels);
       CamberModelData relsTempModel = GetPrestressDeflectionModel(segmentKey, m_ReleaseTempPrestressDeflectionModels);
 
-      Float64 dy, rz;
-      GetExcessCamberEx2(poi, nullptr, model, initTempModel, relsTempModel, time, applyFactors, &dy, &rz);
-      return rz;
+      Float64 Dd, Dr, Cd, Cr, Ed, Er;
+      GetExcessCamberEx2(poi, nullptr, model, initTempModel, relsTempModel, time, applyFactors, &Dd, &Dr, &Cd, &Cr, &Ed, &Er);
+      return Er;
    }
    else
    {
       ValidateCamberModels(pConfig);
 
-      Float64 dy, rz;
-      GetExcessCamberEx2(poi, pConfig, m_CacheConfig_PrestressDeflectionModel, m_CacheConfig_InitialTempPrestressDeflectionModels, m_CacheConfig_ReleaseTempPrestressDeflectionModels, time, applyFactors, &dy, &rz);
-      return rz;
+      Float64 Dd, Dr, Cd, Cr, Ed, Er;
+      GetExcessCamberEx2(poi, pConfig, m_CacheConfig_PrestressDeflectionModel, m_CacheConfig_InitialTempPrestressDeflectionModels, m_CacheConfig_ReleaseTempPrestressDeflectionModels, time, applyFactors, &Dd, &Dr, &Cd, &Cr, &Ed, &Er);
+      return Er;
    }
 }
 
@@ -6873,189 +6884,54 @@ Float64 CAnalysisAgentImp::GetDCamberForGirderScheduleEx(const pgsPointOfInteres
 
 void CAnalysisAgentImp::GetScreedCamberEx(const pgsPointOfInterest& poi, Int16 time, const GDRCONFIG* pConfig, bool applyFactors, Float64* pDy, Float64* pRz) const
 {
-   if (pConfig == nullptr)
+   pgsTypes::BridgeAnalysisType bat = GetBridgeAnalysisType(pgsTypes::Minimize);
+
+   GET_IFACE(ILossParameters, pLossParams);
+   if (pLossParams->GetLossMethod() == pgsTypes::TIME_STEP)
    {
-      pgsTypes::BridgeAnalysisType bat = GetBridgeAnalysisType(pgsTypes::Minimize);
+      ATLASSERT(pConfig == nullptr);
 
-      GET_IFACE(ILossParameters, pLossParams);
-      if (pLossParams->GetLossMethod() == pgsTypes::TIME_STEP)
+      // time step method includes all effects including creep and shrinkage
+      // Screed camber is the camber from deck placement until the bridge is open to traffic
+      // Get both cumulative deflections and return the difference
+      GET_IFACE(IIntervals, pIntervals);
+      IntervalIndexType intervalIdx;
+
+      GET_IFACE(IBridge, pBridge);
+      if (pBridge->GetDeckType() == pgsTypes::sdtNone)
       {
-         // time step method includes all effects including creep and shrinkage
-         // Screed camber is the camber from deck placement until the bridge is open to traffic
-         // Get both cumulative deflections and return the difference
-         GET_IFACE(IIntervals, pIntervals);
-         IntervalIndexType intervalIdx;
-
-         GET_IFACE(IBridge, pBridge);
-         if (pBridge->GetDeckType() == pgsTypes::sdtNone)
-         {
-            intervalIdx = pIntervals->GetIntervalCount() - 1;
-         }
-         else
-         {
-            IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval();
-            intervalIdx = castDeckIntervalIdx - 1;
-         }
-
-         IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
-         Float64 Dmin, Dmax;
-         GetDeflection(intervalIdx, pgsTypes::ServiceI, poi, bat, true/*include prestress*/, false/*no liveload*/, true /*include elevation adjustment*/, true /*include precamber*/, &Dmin, &Dmax);
-         ATLASSERT(IsEqual(Dmin, Dmax)); // no live load so these should be the same
-
-         Float64 DRmin, DRmax;
-         GetRotation(intervalIdx, pgsTypes::ServiceI, poi, bat, true/*include prestress*/, false/*no liveload*/, true /*include elevation adjustment*/, true /*include precamber*/, &DRmin, &DRmax);
-         ATLASSERT(IsEqual(DRmin, DRmax)); // no live load so these should be the same
-
-         Float64 Fmin, Fmax;
-         GetDeflection(liveLoadIntervalIdx, pgsTypes::ServiceI, poi, bat, true/*include prestress*/, false/*no liveload*/, true /*include elevation adjustment*/, true /*include precamber*/, &Fmin, &Fmax);
-         ATLASSERT(IsEqual(Fmin, Fmax)); // no live load so these should be the same
-
-         Float64 FRmin, FRmax;
-         GetRotation(liveLoadIntervalIdx, pgsTypes::ServiceI, poi, bat, true/*include prestress*/, false/*no liveload*/, true /*include elevation adjustment*/, true /*include precamber*/, &FRmin, &FRmax);
-         ATLASSERT(IsEqual(FRmin, FRmax)); // no live load so these should be the same
-
-         *pDy = Fmin - Dmin;
-         *pRz = FRmin - DRmin;
+         intervalIdx = pIntervals->GetIntervalCount() - 1;
       }
       else
       {
-         // For regular analysis, we assume that creep and shrinkage related deflections are done
-         // when the deck becomes composite. Here we just add up the deflections
-         GET_IFACE(IBridge, pBridge);
-         pgsTypes::SupportedDeckType deckType = pBridge->GetDeckType();
-
-         const CSegmentKey& segmentKey(poi.GetSegmentKey());
-
-         GET_IFACE(IIntervals, pIntervals);
-         IntervalIndexType noncompositeUserLoadIntervalIdx = pIntervals->GetNoncompositeUserLoadInterval();
-         IntervalIndexType overlayIntervalIdx = pIntervals->GetOverlayInterval();
-         IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval();
-
-         // NOTE: No need to validate camber models
-         Float64 Dslab = 0;
-         Float64 Dslab_adj = 0;
-         Float64 Dpanel = 0;
-         Float64 DslabPad = 0;
-         Float64 Dslab_pad_adj = 0;
-         Float64 Dtrafficbarrier = 0;
-         Float64 Dsidewalk = 0;
-         Float64 Doverlay = 0;
-         Float64 Duser1 = 0;
-         Float64 Duser2 = 0;
-
-         Float64 Rslab = 0;
-         Float64 Rslab_adj = 0;
-         Float64 Rpanel = 0;
-         Float64 RslabPad = 0;
-         Float64 Rslab_pad_adj = 0;
-         Float64 Rtrafficbarrier = 0;
-         Float64 Rsidewalk = 0;
-         Float64 Roverlay = 0;
-         Float64 Ruser1 = 0;
-         Float64 Ruser2 = 0;
-
-         GetDeckDeflection(poi, pConfig, &Dslab, &Rslab, &DslabPad, &RslabPad); // compensates for change in EI from original deflection and the value in the config
-         GetDesignSlabDeflectionAdjustment(poi, pConfig, &Dslab_adj, &Rslab_adj); // compensates for change in slab load due to change in slab overhangs associated with "A" dimension
-         GetDesignSlabPadDeflectionAdjustment(poi, pConfig, &Dslab_pad_adj, &Rslab_pad_adj); // compensates for change in slab haunch load due to change in "A" dimension
-
-         Dslab -= Dslab_adj;
-         DslabPad -= Dslab_pad_adj;
-
-         Rslab -= Rslab_adj;
-         RslabPad -= Rslab_pad_adj;
-
-         if (deckType == pgsTypes::sdtCompositeSIP)
-         {
-            GetDeckPanelDeflection(poi, pConfig, &Dpanel, &Rpanel);
-         }
-
-         Dtrafficbarrier = GetDeflection(railingSystemIntervalIdx, pgsTypes::pftTrafficBarrier, poi, bat, rtIncremental);
-         Rtrafficbarrier = GetRotation(railingSystemIntervalIdx, pgsTypes::pftTrafficBarrier, poi, bat, rtIncremental);
-         Dsidewalk = GetDeflection(railingSystemIntervalIdx, pgsTypes::pftSidewalk, poi, bat, rtIncremental);
-         Rsidewalk = GetRotation(railingSystemIntervalIdx, pgsTypes::pftSidewalk, poi, bat, rtIncremental);
-
-         // Only get deflections for user defined loads that occur during deck placement and later
-         GET_IFACE(IPointOfInterest, pPoi);
-         CSpanKey spanKey;
-         Float64 Xspan;
-         pPoi->ConvertPoiToSpanPoint(poi, &spanKey, &Xspan);
-         std::vector<IntervalIndexType> vUserLoadIntervals(pIntervals->GetUserDefinedLoadIntervals(spanKey));
-         vUserLoadIntervals.erase(std::remove_if(vUserLoadIntervals.begin(), vUserLoadIntervals.end(), [&noncompositeUserLoadIntervalIdx](const auto& intervalIdx) {return intervalIdx < noncompositeUserLoadIntervalIdx;}), vUserLoadIntervals.end());
-         std::vector<IntervalIndexType>::iterator userLoadIter(vUserLoadIntervals.begin());
-         std::vector<IntervalIndexType>::iterator userLoadIterEnd(vUserLoadIntervals.end());
-         Uint32 ucnt = 0;
-         for (; userLoadIter != userLoadIterEnd; userLoadIter++)
-         {
-            IntervalIndexType intervalIdx = *userLoadIter;
-            Float64 D, R;
-
-            GetUserLoadDeflection(intervalIdx, poi, pConfig, &D, &R);
-
-            // For PGSuper there are two user load stages and they are factored differently. User1 occurs when slab is cast. For splice,
-            // the user load stages are always factored by 1.0, so this does not matter (now)
-            if (intervalIdx == noncompositeUserLoadIntervalIdx)
-            {
-               Duser1 += D;
-               Ruser1 += R;
-            }
-            else
-            {
-               Duser2 += D;
-               Ruser2 += R;
-            }
-
-            ucnt++;
-         }
-
-         // This is an old convention in PGSuper: If there is no deck, user1 is not included in the D camber
-         if (deckType == pgsTypes::sdtNone)
-         {
-            Duser1 = 0.0;
-            Ruser1 = 0.0;
-         }
-
-         if (!pBridge->IsFutureOverlay() && overlayIntervalIdx != INVALID_INDEX)
-         {
-            Doverlay = GetDeflection(overlayIntervalIdx, pgsTypes::pftOverlay, poi, bat, rtIncremental);
-            Roverlay = GetRotation(overlayIntervalIdx, pgsTypes::pftOverlay, poi, bat, rtIncremental);
-         }
-
-         // apply camber multipliers
-         CamberMultipliers cm = GetCamberMultipliersEx(poi.GetSegmentKey(), applyFactors);
-
-         *pDy = cm.SlabUser1Factor*(Dslab + Duser1) + cm.SlabPadLoadFactor*DslabPad + cm.DeckPanelFactor*Dpanel
-            + cm.BarrierSwOverlayUser2Factor*(Dtrafficbarrier + Dsidewalk + Doverlay + Duser2);
-
-         *pRz = cm.SlabUser1Factor*(Rslab + Ruser1) + cm.SlabPadLoadFactor*RslabPad + cm.DeckPanelFactor*Rpanel
-            + cm.BarrierSwOverlayUser2Factor*(Rtrafficbarrier + Rsidewalk + Roverlay + Ruser2);
-
-
-         if (IsNonstructuralDeck(deckType))
-         {
-            // apply camber multipliers
-            CamberMultipliers cm = GetCamberMultipliersEx(poi.GetSegmentKey(), applyFactors);
-
-            Float64 Dcreep3, Rcreep3;
-            GetCreepDeflection(poi, ICamber::cpDeckToFinal, time, pgsTypes::pddErected, pConfig, &Dcreep3, &Rcreep3);
-            *pDy += cm.CreepFactor * Dcreep3;
-            *pRz += cm.CreepFactor * Rcreep3;
-         }
+         IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval();
+         intervalIdx = castDeckIntervalIdx - 1;
       }
 
-      // Switch the sign. Negative deflection creates positive screed camber
-      (*pDy) *= -1;
-      (*pRz) *= -1;
+      IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
+      Float64 Dmin, Dmax;
+      GetDeflection(intervalIdx, pgsTypes::ServiceI, poi, bat, true/*include prestress*/, false/*no liveload*/, true /*include elevation adjustment*/, true /*include precamber*/, &Dmin, &Dmax);
+      ATLASSERT(IsEqual(Dmin, Dmax)); // no live load so these should be the same
+
+      Float64 DRmin, DRmax;
+      GetRotation(intervalIdx, pgsTypes::ServiceI, poi, bat, true/*include prestress*/, false/*no liveload*/, true /*include elevation adjustment*/, true /*include precamber*/, &DRmin, &DRmax);
+      ATLASSERT(IsEqual(DRmin, DRmax)); // no live load so these should be the same
+
+      Float64 Fmin, Fmax;
+      GetDeflection(liveLoadIntervalIdx, pgsTypes::ServiceI, poi, bat, true/*include prestress*/, false/*no liveload*/, true /*include elevation adjustment*/, true /*include precamber*/, &Fmin, &Fmax);
+      ATLASSERT(IsEqual(Fmin, Fmax)); // no live load so these should be the same
+
+      Float64 FRmin, FRmax;
+      GetRotation(liveLoadIntervalIdx, pgsTypes::ServiceI, poi, bat, true/*include prestress*/, false/*no liveload*/, true /*include elevation adjustment*/, true /*include precamber*/, &FRmin, &FRmax);
+      ATLASSERT(IsEqual(FRmin, FRmax)); // no live load so these should be the same
+
+      *pDy = Dmin - Fmin;
+      *pRz = DRmin - FRmin;
    }
    else
    {
-      // this version is only for PGSuper design mode
-#if defined _DEBUG
-      GET_IFACE(ILossParameters, pLossParams);
-      ATLASSERT(pLossParams->GetLossMethod() != pgsTypes::TIME_STEP);
-#endif
-
-      pgsTypes::BridgeAnalysisType bat = GetBridgeAnalysisType(pgsTypes::Minimize);
-
+      // For regular analysis, we assume that creep and shrinkage related deflections are done
+      // when the deck becomes composite. Here we just add up the deflections
       GET_IFACE(IBridge, pBridge);
       pgsTypes::SupportedDeckType deckType = pBridge->GetDeckType();
 
@@ -7068,9 +6944,9 @@ void CAnalysisAgentImp::GetScreedCamberEx(const pgsPointOfInterest& poi, Int16 t
 
       // NOTE: No need to validate camber models
       Float64 Dslab = 0;
+      Float64 Dslab_adj = 0;
       Float64 Dpanel = 0;
       Float64 DslabPad = 0;
-      Float64 Dslab_adj = 0;
       Float64 Dslab_pad_adj = 0;
       Float64 Dtrafficbarrier = 0;
       Float64 Dsidewalk = 0;
@@ -7123,7 +6999,7 @@ void CAnalysisAgentImp::GetScreedCamberEx(const pgsPointOfInterest& poi, Int16 t
       std::vector<IntervalIndexType> vUserLoadIntervals(pIntervals->GetUserDefinedLoadIntervals(spanKey));
       vUserLoadIntervals.erase(std::remove_if(vUserLoadIntervals.begin(), vUserLoadIntervals.end(), [&noncompositeUserLoadIntervalIdx](const auto& intervalIdx) {return intervalIdx < noncompositeUserLoadIntervalIdx;}), vUserLoadIntervals.end());
       Uint32 ucnt = 0;
-      for ( const auto& intervalIdx : vUserLoadIntervals )
+      for (const auto& intervalIdx : vUserLoadIntervals)
       {
          Float64 D, R;
 
@@ -7166,6 +7042,14 @@ void CAnalysisAgentImp::GetScreedCamberEx(const pgsPointOfInterest& poi, Int16 t
 
       *pRz = cm.SlabUser1Factor*(Rslab + Ruser1) + cm.SlabPadLoadFactor*RslabPad + cm.DeckPanelFactor*Rpanel
          + cm.BarrierSwOverlayUser2Factor*(Rtrafficbarrier + Rsidewalk + Roverlay + Ruser2);
+
+      if (IsNonstructuralDeck(deckType))
+      {
+         Float64 Dcreep3, Rcreep3;
+         GetCreepDeflection(poi, ICamber::cpDeckToFinal, time, pgsTypes::pddErected, pConfig, &Dcreep3, &Rcreep3);
+         *pDy += cm.CreepFactor * Dcreep3;
+         *pRz += cm.CreepFactor * Rcreep3;
+      }
 
       // Switch the sign. Negative deflection creates positive screed camber
       (*pDy) *= -1;
@@ -7420,6 +7304,24 @@ CamberMultipliers CAnalysisAgentImp::GetCamberMultipliersEx(const CSegmentKey& s
       // factors all 1.0
       return CamberMultipliers();
    }
+}
+
+bool CAnalysisAgentImp::HasPrecamber(const CGirderKey& girderKey) const
+{
+   ASSERT_GIRDER_KEY(girderKey);
+   GET_IFACE(IBridgeDescription, pIBridgeDesc);
+   const CSplicedGirderData* pGirder = pIBridgeDesc->GetGirder(girderKey);
+   SegmentIndexType nSegments = pGirder->GetSegmentCount();
+   for (SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++)
+   {
+      const CPrecastSegmentData* pSegment = pGirder->GetSegment(segIdx);
+      if (!IsZero(pSegment->Precamber))
+      {
+         // all it takes is one segment with precamber to return true
+         return true;
+      }
+   }
+   return false;
 }
 
 Float64 CAnalysisAgentImp::GetPrecamber(const CSegmentKey& segmentKey) const
@@ -8831,7 +8733,7 @@ void CAnalysisAgentImp::GetCreepDeflection_NoDeck(const pgsPointOfInterest& poi,
    }
 }
 
-void CAnalysisAgentImp::GetExcessCamberEx2(const pgsPointOfInterest& poi,const GDRCONFIG* pConfig,CamberModelData& initModelData,CamberModelData& initTempModelData,CamberModelData& releaseTempModelData,Int16 time,bool applyFactors,Float64* pDy,Float64* pRz) const
+void CAnalysisAgentImp::GetExcessCamberEx2(const pgsPointOfInterest& poi,const GDRCONFIG* pConfig,CamberModelData& initModelData,CamberModelData& initTempModelData,CamberModelData& releaseTempModelData,Int16 time,bool applyFactors, Float64* pDd, Float64* pDr, Float64* pCd, Float64* pCr, Float64* pEd, Float64* pEr) const
 {
    Float64 Dy, Dz;
    GetDCamberForGirderScheduleEx2( poi, pConfig, initModelData, initTempModelData, releaseTempModelData, time, applyFactors, &Dy, &Dz );
@@ -8839,8 +8741,14 @@ void CAnalysisAgentImp::GetExcessCamberEx2(const pgsPointOfInterest& poi,const G
    Float64 Cy, Cz;
    GetScreedCamberEx(poi,time,pConfig,applyFactors,&Cy,&Cz);
 
-   *pDy = Dy - Cy;  // excess camber = D - C
-   *pRz = Dz - Cz;
+   *pDd = Dy;
+   *pDr = Dz;
+
+   *pCd = Cy;
+   *pCr = Cz;
+
+   *pEd = Dy - Cy;
+   *pEr = Dz - Cz;
 }
 
 void CAnalysisAgentImp::GetDCamberForGirderScheduleEx2(const pgsPointOfInterest& poi,const GDRCONFIG* pConfig,CamberModelData& initModelData,CamberModelData& initTempModelData,CamberModelData& releaseTempModelData,Int16 time,bool applyFactors,Float64* pDy,Float64* pRz) const

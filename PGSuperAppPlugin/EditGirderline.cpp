@@ -93,8 +93,6 @@ bool txnEditGirderline::Execute()
          CSplicedGirderData* pOtherGirder = pGroup->GetGirder(gdrIdx);
          pOtherGirder->CopySplicedGirderData(pGirder);
 
-         pGroup->CopySlabOffset(m_GirderKey.groupIndex,gdrIdx);
-
          ATLASSERT(nSegments == pOtherGirder->GetSegmentCount());
          for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
          {

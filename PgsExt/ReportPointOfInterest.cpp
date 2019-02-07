@@ -133,7 +133,7 @@ rptReportContent& rptPointOfInterest::SetValue(PoiAttributeType reference, const
          locationAdjustment = pBridge->GetSegmentStartEndDistance(segmentKey);
 
          GET_IFACE(IPointOfInterest, pPoi);
-         m_Xgl = pPoi->ConvertPoiToGirderlineCoordinate(poi);
+         m_Xgl = pPoi->ConvertPoiToGirderlineCoordinate(m_POI);
          return rptLengthUnitValue::SetValue(m_Xgl - locationAdjustment);
       }
       else

@@ -36,3 +36,8 @@ Item | Description
 f'ci/f'c | Enter the concrete strength
 Eci/Ec | When checked, enter the modulus of elasticity, otherwise it is computed
 [More Properties...] | Press to define additional details.
+
+Slab Offset
+-------------
+Using the drop down list, select the method for defining the slab offset. If a unique slab offset is used for every precast segment, enter the slab offsets at the start and end of this segment.
+

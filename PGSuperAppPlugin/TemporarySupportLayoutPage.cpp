@@ -30,6 +30,7 @@
 #include "TemporarySupportLayoutPage.h"
 #include "TimelineEventDlg.h"
 #include "SelectItemDlg.h"
+#include "Utilities.h"
 
 #include <EAF\EAFDisplayUnits.h>
 
@@ -38,6 +39,8 @@
 #include <IFace\Project.h>
 
 #include <EAF\EAFDocument.h>
+
+#include <PgsExt\ClosureJointData.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -86,7 +89,12 @@ void CTemporarySupportLayoutPage::DoDataExchange(CDataExchange* pDX)
 
    DDX_CBEnum(pDX,IDC_TS_TYPE,m_Type);
 
-   DDX_UnitValueAndTag(pDX,IDC_ADJUSTMENT,IDC_ADJUSTMENT_UNIT,m_ElevAdjustment,pDisplayUnits->GetComponentDimUnit());
+   DDX_UnitValueAndTag(pDX, IDC_ADJUSTMENT, IDC_ADJUSTMENT_UNIT, m_ElevAdjustment, pDisplayUnits->GetComponentDimUnit());
+
+   DDX_CBItemData(pDX, IDC_SLAB_OFFSET_TYPE, m_SlabOffsetType);
+
+   DDX_UnitValueAndTag(pDX, IDC_BACK_SLAB_OFFSET, IDC_BACK_SLAB_OFFSET_UNIT, m_SlabOffset[pgsTypes::Back], pDisplayUnits->GetComponentDimUnit());
+   DDX_UnitValueAndTag(pDX, IDC_AHEAD_SLAB_OFFSET, IDC_AHEAD_SLAB_OFFSET_UNIT, m_SlabOffset[pgsTypes::Ahead], pDisplayUnits->GetComponentDimUnit());
 
    if ( pDX->m_bSaveAndValidate )
    {
@@ -134,6 +142,30 @@ void CTemporarySupportLayoutPage::DoDataExchange(CDataExchange* pDX)
          pDX->Fail();
       }
 
+      pgsTypes::SupportedDeckType deckType = pParent->m_BridgeDesc.GetDeckDescription()->GetDeckType();
+      CClosureJointData* pCJ = pParent->m_pTS->GetClosureJoint(0);
+      if (deckType != pgsTypes::sdtNone && pCJ != nullptr)
+      {
+         Float64 minSlabOffset = pParent->m_BridgeDesc.GetMinSlabOffset();
+         CString strMinValError;
+         strMinValError.Format(_T("Slab Offset value must be greater or equal to gross slab depth (%s)"), FormatDimension(minSlabOffset,pDisplayUnits->GetComponentDimUnit()));
+
+         if (::IsLT(m_SlabOffset[pgsTypes::Back], minSlabOffset))
+         {
+            pDX->PrepareCtrl(IDC_BACK_SLAB_OFFSET);
+            AfxMessageBox(strMinValError);
+            pDX->Fail();
+         }
+
+         if (::IsLT(m_SlabOffset[pgsTypes::Ahead], minSlabOffset))
+         {
+            pDX->PrepareCtrl(IDC_AHEAD_SLAB_OFFSET);
+            AfxMessageBox(strMinValError);
+            pDX->Fail();
+         }
+      }
+
+
       // copy the local page data in the bridge model owned by the parent property sheet
       pParent->m_pTS->SetOrientation(m_strOrientation.c_str());
       pParent->m_pTS->SetSupportType(m_Type);
@@ -141,14 +173,43 @@ void CTemporarySupportLayoutPage::DoDataExchange(CDataExchange* pDX)
       pParent->m_pTS->SetElevationAdjustment(m_ElevAdjustment);
 
       // don't use pParent->m_pTS->SetStation().... we have to move the TS within the bridge model
-      if ( !IsEqual(pParent->m_pTS->GetStation(),m_Station) )
+      if (!IsEqual(pParent->m_pTS->GetStation(), m_Station))
       {
          // this deletes the temporary support so pParent->m_pTS becomes invalid
          // the index of the "new" temporary support is returned
-         SupportIndexType tsIdx = pBridgeDesc->MoveTemporarySupport(pParent->m_pTS->GetIndex(),m_Station);
+         SupportIndexType tsIdx = pBridgeDesc->MoveTemporarySupport(pParent->m_pTS->GetIndex(), m_Station);
 
          pParent->m_pTS = pBridgeDesc->GetTemporarySupport(tsIdx);
          ATLASSERT(pParent->m_pTS != nullptr);
+      }
+
+      if (pParent->m_pTS->HasSlabOffset())
+      {
+         // only set the data into the bridge model if there is a closure joint at this temporary support
+         // if there isn't a closure joint, the segments are continuous over this temporary support and
+         // there isn't any slab offset parameters
+         pParent->m_BridgeDesc.SetSlabOffsetType(m_SlabOffsetType);
+         if (m_SlabOffsetType == pgsTypes::sotBridge)
+         {
+            ATLASSERT(IsEqual(m_SlabOffset[pgsTypes::Back], m_SlabOffset[pgsTypes::Ahead]));
+            pParent->m_BridgeDesc.SetSlabOffset(m_SlabOffset[pgsTypes::Back]);
+         }
+         else if (m_SlabOffsetType == pgsTypes::sotSegment)
+         {
+            if (m_InitialSlabOffsetType != pgsTypes::sotSegment)
+            {
+               // slab offset started off as Bridge or Pier and it is now Girder... this means the
+               // slab offset at this temporary support applies to all segments
+               ATLASSERT(IsEqual(m_SlabOffset[pgsTypes::Back], m_SlabOffset[pgsTypes::Ahead]));
+               std::function<void(CPrecastSegmentData*, void*)> fn = UpdateSlabOffset;
+               pParent->m_BridgeDesc.ForEachSegment(fn, (void*)&m_SlabOffset);
+            }
+         }
+         else
+         {
+            ATLASSERT(m_SlabOffsetType == pgsTypes::sotBearingLine);
+            pParent->m_pTS->SetSlabOffset(m_SlabOffset[pgsTypes::Back], m_SlabOffset[pgsTypes::Ahead]);
+         }
       }
 
       CTimelineManager* pTimelineMgr = pBridgeDesc->GetTimelineManager();
@@ -183,6 +244,7 @@ BEGIN_MESSAGE_MAP(CTemporarySupportLayoutPage, CPropertyPage)
    ON_CBN_DROPDOWN(IDC_ERECTION_EVENT, &CTemporarySupportLayoutPage::OnErectionEventChanging)
    ON_CBN_SELCHANGE(IDC_REMOVAL_EVENT, &CTemporarySupportLayoutPage::OnRemovalEventChanged)
    ON_CBN_DROPDOWN(IDC_REMOVAL_EVENT, &CTemporarySupportLayoutPage::OnRemovalEventChanging)
+   ON_CBN_SELCHANGE(IDC_SLAB_OFFSET_TYPE,&CTemporarySupportLayoutPage::OnSlabOffsetTypeChanged)
 	ON_COMMAND(ID_HELP, OnHelp)
 END_MESSAGE_MAP()
 
@@ -191,15 +253,41 @@ END_MESSAGE_MAP()
 
 BOOL CTemporarySupportLayoutPage::OnInitDialog()
 {
+   CTemporarySupportDlg* pParent = (CTemporarySupportDlg*)GetParent();
+   m_SlabOffsetType = pParent->m_BridgeDesc.GetSlabOffsetType();
+   m_InitialSlabOffsetType = m_SlabOffsetType;
+
+   pParent->m_pTS->GetSlabOffset(&m_SlabOffset[pgsTypes::Back], &m_SlabOffset[pgsTypes::Ahead]);
+
    CComboBox* pCB = (CComboBox*)GetDlgItem(IDC_TS_TYPE);
    pCB->SetItemData(pCB->AddString(_T("Erection Tower")), (DWORD_PTR)pgsTypes::ErectionTower);
    pCB->SetItemData(pCB->AddString(_T("Strong Back")),    (DWORD_PTR)pgsTypes::StrongBack);
 
    FillEventList();
 
+   pCB = (CComboBox*)GetDlgItem(IDC_SLAB_OFFSET_TYPE);
+
+   if (m_InitialSlabOffsetType == pgsTypes::sotBridge || m_InitialSlabOffsetType == pgsTypes::sotBearingLine)
+   {
+      int idx = pCB->AddString(GetSlabOffsetTypeAsString(pgsTypes::sotBridge,false));
+      pCB->SetItemData(idx, (DWORD_PTR)pgsTypes::sotBridge);
+
+      idx = pCB->AddString(GetSlabOffsetTypeAsString(pgsTypes::sotBearingLine,false));
+      pCB->SetItemData(idx, (DWORD_PTR)pgsTypes::sotBearingLine);
+   }
+   else
+   {
+      ATLASSERT(m_InitialSlabOffsetType == pgsTypes::sotSegment);
+      int idx = pCB->AddString(GetSlabOffsetTypeAsString(pgsTypes::sotSegment, false));
+      pCB->SetItemData(idx, (DWORD_PTR)pgsTypes::sotSegment);
+
+      pCB->AddString(GetSlabOffsetTypeAsString(pgsTypes::sotBearingLine, false));
+      pCB->SetItemData(idx, (DWORD_PTR)pgsTypes::sotBearingLine);
+   }
+   pCB->SetCurSel(m_InitialSlabOffsetType == pgsTypes::sotSegment ? 0 : 1);
+
    CPropertyPage::OnInitDialog();
 
-   CTemporarySupportDlg* pParent = (CTemporarySupportDlg*)GetParent();
    EventIndexType erectionEventIdx, removalEventIdx;
    pParent->m_BridgeDesc.GetTimelineManager()->GetTempSupportEvents(pParent->m_pTS->GetID(),&erectionEventIdx,&removalEventIdx);
    CDataExchange dx(this,FALSE);
@@ -218,23 +306,12 @@ BOOL CTemporarySupportLayoutPage::OnInitDialog()
 
 void CTemporarySupportLayoutPage::OnSupportTypeChanged()
 {
-   // TODO: Add your control notification handler code here
    CComboBox* pCB = (CComboBox*)GetDlgItem(IDC_TS_TYPE);
    int cursel = pCB->GetCurSel();
    if ( cursel == CB_ERR )
       return;
 
    pgsTypes::TemporarySupportType type = (pgsTypes::TemporarySupportType)pCB->GetItemData(cursel);
-
-   // Hide the support elevation adjustment input if this is a strongback
-   UINT showWnd = SW_SHOW;
-   if ( type == pgsTypes::StrongBack )
-   {
-      showWnd = SW_HIDE;
-   }
-   GetDlgItem(IDC_ADJUSTMENT_LABEL)->ShowWindow(showWnd);
-   GetDlgItem(IDC_ADJUSTMENT)->ShowWindow(showWnd);
-   GetDlgItem(IDC_ADJUSTMENT_UNIT)->ShowWindow(showWnd);
 
    CTemporarySupportDlg* pParent = (CTemporarySupportDlg*)GetParent();
    pParent->m_pTS->SetSupportType(type);
@@ -288,6 +365,8 @@ void CTemporarySupportLayoutPage::OnSupportTypeChanged()
 
       pParent->m_pTS->SetConnectionType(pgsTypes::tsctClosureJoint,castClosureEventIndex);
    }
+
+   UpdateSlabOffsetControls();
 }
 
 void CTemporarySupportLayoutPage::FillEventList()
@@ -425,11 +504,116 @@ EventIndexType CTemporarySupportLayoutPage::CreateEvent()
 BOOL CTemporarySupportLayoutPage::OnSetActive()
 {
    FillEventList();
+   UpdateSlabOffsetControls();
 
    return CPropertyPage::OnSetActive();
+}
+
+void CTemporarySupportLayoutPage::OnSlabOffsetTypeChanged()
+{
+   CComboBox* pCB = (CComboBox*)GetDlgItem(IDC_SLAB_OFFSET_TYPE);
+   int curSel = pCB->GetCurSel();
+   if (curSel == CB_ERR)
+   {
+      return;
+   }
+
+   pgsTypes::SlabOffsetType slabOffsetType = (pgsTypes::SlabOffsetType)pCB->GetItemData(curSel);
+
+   if (slabOffsetType != pgsTypes::sotBearingLine)
+   {
+      // the slab offset type was just changed from pier to something else. We don't know which
+      // slab offset is to be applied.
+      CComPtr<IBroker> pBroker;
+      EAFGetBroker(&pBroker);
+      GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
+
+      // get current values out of the controls
+      std::array<Float64, 2> slabOffset;
+      CDataExchange dx(this, TRUE);
+      DDX_UnitValueAndTag(&dx, IDC_BACK_SLAB_OFFSET, IDC_BACK_SLAB_OFFSET_UNIT, slabOffset[pgsTypes::Back], pDisplayUnits->GetComponentDimUnit());
+      DDX_UnitValueAndTag(&dx, IDC_AHEAD_SLAB_OFFSET, IDC_AHEAD_SLAB_OFFSET_UNIT, slabOffset[pgsTypes::Ahead], pDisplayUnits->GetComponentDimUnit());
+
+      // take back value as default
+      Float64 slab_offset = slabOffset[pgsTypes::Back];
+
+      // check if back/ahead values are equal
+      if (!IsEqual(slabOffset[pgsTypes::Back], slabOffset[pgsTypes::Ahead]))
+      {
+         // nope... make the user select which slab offset to use
+         CSelectItemDlg dlg;
+         dlg.m_ItemIdx = 0;
+         dlg.m_strTitle = _T("Select Slab Offset");
+         dlg.m_strLabel = _T("A single slab offset will be used for the entire bridge. Select a value.");
+
+         CString strItems;
+         strItems.Format(_T("Back side of temporary support (%s)\nAhead side of temporary support (%s)"),
+            ::FormatDimension(slabOffset[pgsTypes::Back], pDisplayUnits->GetComponentDimUnit()),
+            ::FormatDimension(slabOffset[pgsTypes::Ahead], pDisplayUnits->GetComponentDimUnit()));
+
+         dlg.m_strItems = strItems;
+         if (dlg.DoModal() == IDOK)
+         {
+            if (dlg.m_ItemIdx == 0)
+            {
+               slab_offset = slabOffset[pgsTypes::Back];
+            }
+            else
+            {
+               slab_offset = slabOffset[pgsTypes::Ahead];
+            }
+         }
+         else
+         {
+            // user cancelled... get the heck outta here
+            return;
+         }
+      }
+
+      // put the data back in the controls
+      dx.m_bSaveAndValidate = FALSE;
+      DDX_UnitValueAndTag(&dx, IDC_BACK_SLAB_OFFSET, IDC_BACK_SLAB_OFFSET_UNIT, slab_offset, pDisplayUnits->GetComponentDimUnit());
+      DDX_UnitValueAndTag(&dx, IDC_AHEAD_SLAB_OFFSET, IDC_AHEAD_SLAB_OFFSET_UNIT, slab_offset, pDisplayUnits->GetComponentDimUnit());
+   }
+   UpdateSlabOffsetControls();
 }
 
 void CTemporarySupportLayoutPage::OnHelp()
 {
    EAFHelp( EAFGetDocument()->GetDocumentationSetName(), IDH_TSDETAILS_GENERAL );
+}
+
+void CTemporarySupportLayoutPage::UpdateSlabOffsetControls()
+{
+   CTemporarySupportDlg* pParent = (CTemporarySupportDlg*)GetParent();
+   pgsTypes::TemporarySupportType type = pParent->m_pTS->GetSupportType();
+   int nShowCmd = pParent->m_pTS->HasElevationAdjustment() ? SW_SHOW : SW_HIDE;
+
+   GetDlgItem(IDC_SLAB_OFFSET_GROUP)->ShowWindow(nShowCmd);
+   GetDlgItem(IDC_SLAB_OFFSET_TYPE)->ShowWindow(nShowCmd);
+   GetDlgItem(IDC_BACK_SLAB_OFFSET_LABEL)->ShowWindow(nShowCmd);
+   GetDlgItem(IDC_BACK_SLAB_OFFSET)->ShowWindow(nShowCmd);
+   GetDlgItem(IDC_BACK_SLAB_OFFSET_UNIT)->ShowWindow(nShowCmd);
+   GetDlgItem(IDC_AHEAD_SLAB_OFFSET_LABEL)->ShowWindow(nShowCmd);
+   GetDlgItem(IDC_AHEAD_SLAB_OFFSET)->ShowWindow(nShowCmd);
+   GetDlgItem(IDC_AHEAD_SLAB_OFFSET_UNIT)->ShowWindow(nShowCmd);
+
+   CComboBox* pCB = (CComboBox*)GetDlgItem(IDC_SLAB_OFFSET_TYPE);
+   int curSel = pCB->GetCurSel();
+   if (curSel == CB_ERR)
+   {
+      return;
+   }
+
+   pgsTypes::SlabOffsetType slabOffsetType = (pgsTypes::SlabOffsetType)pCB->GetItemData(curSel);
+
+   BOOL bEnable = (slabOffsetType == pgsTypes::sotBearingLine ? TRUE : FALSE);
+   GetDlgItem(IDC_BACK_SLAB_OFFSET)->EnableWindow(bEnable);
+   GetDlgItem(IDC_AHEAD_SLAB_OFFSET)->EnableWindow(bEnable);
+
+   // Elevation adjustment controls follow the same rule as slab offset controls
+   GetDlgItem(IDC_ADJUSTMENT_GROUP)->ShowWindow(nShowCmd);
+   GetDlgItem(IDC_ADJUSTMENT_LABEL)->ShowWindow(nShowCmd);
+   GetDlgItem(IDC_ADJUSTMENT)->ShowWindow(nShowCmd);
+   GetDlgItem(IDC_ADJUSTMENT_UNIT)->ShowWindow(nShowCmd);
 }

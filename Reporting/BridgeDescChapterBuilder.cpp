@@ -2699,21 +2699,44 @@ void write_ps_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* 
 
             if (pBridgeDesc->GetDeckDescription()->GetDeckType() != pgsTypes::sdtNone)
             {
-               PierIndexType startPierIdx, endPierIdx;
-               pBridge->GetGirderGroupPiers(grpIdx, &startPierIdx, &endPierIdx);
-               for (PierIndexType pierIdx = startPierIdx; pierIdx <= endPierIdx; pierIdx++)
+               const CPrecastSegmentData* pSegment = pGirder->GetSegment(segIdx);
+               for (int i = 0; i < 2; i++)
                {
-                  if (pBridge->IsAbutment(pierIdx))
+                  pgsTypes::MemberEndType end = (pgsTypes::MemberEndType)i;
+
+                  Float64 slabOffset = pSegment->GetSlabOffset(end);
+
+                  const CPierData2* pPier;
+                  const CTemporarySupportData* pTS;
+                  pSegment->GetSupport(end, &pPier, &pTS);
+                  if (pPier)
                   {
-                     (*pTable)(row, 0) << _T("Slab Offset (\"A\" Dimension) at Abutment ") << LABEL_PIER(pierIdx);
+                     PierIndexType pierIdx = pPier->GetIndex();
+                     if (pPier->IsAbutment())
+                     {
+                        (*pTable)(row, 0) << _T("Slab Offset (\"A\" Dimension) at Abutment ") << LABEL_PIER(pierIdx);
+                     }
+                     else
+                     {
+                        (*pTable)(row, 0) << _T("Slab Offset (\"A\" Dimension) at Pier ") << LABEL_PIER(pierIdx);
+                     }
                   }
                   else
                   {
-                     (*pTable)(row, 0) << _T("Slab Offset (\"A\" Dimension) at Pier ") << LABEL_PIER(pierIdx);
+                     SupportIndexType tsIdx = pTS->GetIndex();
+                     (*pTable)(row, 0) << _T("Slab Offset (\"A\" Dimension) at Temporary Support ") << LABEL_TEMPORARY_SUPPORT(tsIdx);
+                     if (pTS->GetSupportType() == pgsTypes::ErectionTower)
+                     {
+                        (*pTable)(row, 0) << _T(" (ET)");
+                     }
+                     else
+                     {
+                        (*pTable)(row, 0) << _T(" (SB)");
+                     }
                   }
-                  (*pTable)(row, 1) << cmpdim.SetValue(pBridge->GetSlabOffset(thisSegmentKey.groupIndex, pierIdx, thisSegmentKey.girderIndex));
+                  (*pTable)(row, 1) << cmpdim.SetValue(slabOffset);
                   row++;
-               }
+               } // next segment
             }
 
             if (IsTopWidthSpacing(pBridgeDesc->GetGirderSpacingType()))
@@ -2734,10 +2757,10 @@ void write_ps_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* 
                row++;
             }
             
-            if (pSpec->IsAssExcessCamberInputEnabled())
+            if (pSpec->IsAssumedExcessCamberInputEnabled())
             {
                (*pTable)(row, 0) << _T("Assumed Excess Camber");
-               (*pTable)(row, 1) << cmpdim.SetValue(pBridge->GetAssExcessCamber(thisSegmentKey.groupIndex, thisSegmentKey.girderIndex));
+               (*pTable)(row, 1) << cmpdim.SetValue(pBridge->GetAssumedExcessCamber(thisSegmentKey.groupIndex, thisSegmentKey.girderIndex));
                row++;
             }
 

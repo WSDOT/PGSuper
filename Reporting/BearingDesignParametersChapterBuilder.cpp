@@ -223,35 +223,7 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(CReportSpecification* 
 
    // TRICKY: use adapter class to get correct reaction interfaces
    std::unique_ptr<IProductReactionAdapter> pForces(std::make_unique<BearingDesignProductReactionAdapter>(pBearingDesign, intervalIdx, girderKey) );
-
-   //PierIndexType pierIdx = 0;
-   //for ( pierIdx = startPierIdx; pierIdx <= endPierIdx; pierIdx++ )
-   //{
-   //   col = 0;
-   //   if (!pForces->DoReportAtPier(pierIdx, girderKey))
-   //   {
-   //      // Don't report pier if information is not available
-   //      continue;
-   //   }      
-
-   //   if ( pBridge->IsAbutment(pierIdx) )
-   //   {
-   //      (*pTable)(row,col++) << _T("Abutment ") << LABEL_PIER(pierIdx);
-   //   }
-   //   else
-   //   {
-   //      (*pTable)(row,col++) << _T("Pier ") << LABEL_PIER(pierIdx);
-   //   }
-
-   //   pgsPointOfInterest poi = pPoi->GetPierPointOfInterest(girderKey,pierIdx);
-
-   //   Float64 rotation = pCamber->GetExcessCamberRotation(poi,CREEP_MAXTIME);
-   //   (*pTable)(row,col++) << scalar.SetValue(rotation);
-
-   //   row++;
-   //}
-
-
+   
    pgsTypes::AnalysisType analysisType = pSpec->GetAnalysisType();
 
    INIT_UV_PROTOTYPE( rptForceSectionValue, reaction, pDisplayUnits->GetShearUnit(),    false );

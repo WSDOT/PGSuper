@@ -1147,7 +1147,7 @@ void write_haunch_dead_load(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUn
    }
 
    GET_IFACE2( pBroker, ISpecification, pSpec );
-   bool doCamber = pSpec->IsAssExcessCamberInputEnabled();
+   bool doCamber = pSpec->IsAssumedExcessCamberInputEnabled();
    if (doCamber)
    {
       *pPara << _T("- Allowable tolerance between assumed and computed excess camber = ") << dim.SetValue(pSpecEntry->GetHaunchLoadCamberTolerance()) << rptNewLine;

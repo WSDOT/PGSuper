@@ -29,6 +29,7 @@
 #include <EAF\EAFTypes.h>
 #include <MathEx.h>
 #include <vector>
+#include <array>
 
 #include <PgsExt\Keys.h> // goes with GDRCONFIG
 static long g_Ncopies = 0; // keeps track of the number of times GDRCONFIG is copied
@@ -462,8 +463,8 @@ typedef struct pgsTypes
    typedef enum SlabOffsetType
    {
       sotBridge,  // a single slab offset is used for the entire bridge
-      sotPier,    // the slab offset is at each abutment, pier, and temporary support and applies to all segments supported by that element
-      sotGirder,  // the slab offset is defined at each permanent pier supporting the girder
+      sotBearingLine, // the slab offset is defined at each bearing line at the ends of segments (single value for entire bearing line)
+      sotSegment,  // the slab offset is defined at the end of each segment individually
    } SlabOffsetType;
 
 
@@ -475,12 +476,12 @@ typedef struct pgsTypes
    } BearingType;
 
    // Assummed excess camber input
-   typedef enum AssExcessCamberType 
+   typedef enum AssumedExcessCamberType 
    {
       aecBridge,  // a single camber is used for the entire bridge
       aecSpan,    // the camber is defined at each span
       aecGirder,  // the camber is defined at each girder
-   } AssExcessCamberType;
+   } AssumedExcessCamberType;
 
    // Define connectivity (per AASHTO jargon) of adjacent beams.
    // This is only used if SupportedBeamSpacing==sbsUniformAdjacent or sbsGeneralAdjacent
@@ -974,7 +975,7 @@ public:
 struct DEBONDCONFIG
 {
    StrandIndexType strandIdx; // index of strand that is debonded (indexed by total # of filled strand locations)
-   Float64 DebondLength[2];   // length of debond at left end of the girder
+   std::array<Float64,2> DebondLength;   // length of debond at left end of the girder
 
    bool operator<(const DEBONDCONFIG& other) const
    {
@@ -1018,12 +1019,12 @@ struct PRESTRESSCONFIG
    void SetExtendedStrands(pgsTypes::StrandType strandType,pgsTypes::MemberEndType endType,const std::vector<StrandIndexType>& extStrands);
 
    // use one of the pgsTypes::StrandType constants to for array index
-   std::vector<DEBONDCONFIG> Debond[3]; // Information about debonded strands (key is strand index into total number of filled strands)
-   Float64 Pjack[3];  // Jacking force
+   std::array<std::vector<DEBONDCONFIG>,3> Debond; // Information about debonded strands (key is strand index into total number of filled strands)
+   std::array<Float64,3> Pjack;  // Jacking force
 
    // array index is pgsTypes::MemberEndType
-   Float64 EndOffset[2]; // Offset of harped strands at end of girder
-   Float64 HpOffset[2];  // Offset of harped strands at the harping point
+   std::array<Float64,2> EndOffset; // Offset of harped strands at end of girder
+   std::array<Float64,2> HpOffset;  // Offset of harped strands at the harping point
    pgsTypes::TTSUsage TempStrandUsage;
 
    pgsTypes::AdjustableStrandType AdjustableStrandType; // can be asHarped or asStraight only
@@ -1062,8 +1063,8 @@ struct PRESTRESSCONFIG
    }
 
 private:
-   StrandIndexType NstrandsCached[3];  // Number of strands
-   ConfigStrandFillVector StrandFill[3];
+   std::array<StrandIndexType,3> NstrandsCached;  // Number of strands
+   std::array<ConfigStrandFillVector,3> StrandFill;
    std::vector<StrandIndexType> NextendedStrands[3][2]; // Holds index of extended strands (array index [pgsTypes::StrandType][pgsTypes::MemberEndType])
 
    void MakeAssignment( const PRESTRESSCONFIG& rOther )
@@ -1223,8 +1224,8 @@ struct GDRCONFIG
    Float64 Eci;
    Float64 Ec;
 
-   Float64 SlabOffset[2]; // slab offset at start and end of the girder (use pgsTypes::MemberEndType for array index)
-   Float64 AssExcessCamber;
+   std::array<Float64,2> SlabOffset; // slab offset at start and end of the girder (use pgsTypes::MemberEndType for array index)
+   Float64 AssumedExcessCamber;
 
    STIRRUPCONFIG StirrupConfig; // All of our transverse rebar information
 
@@ -1261,7 +1262,7 @@ struct GDRCONFIG
       if ( !IsEqual(SlabOffset[pgsTypes::metStart],other.SlabOffset[pgsTypes::metStart]) ) return false;
       if ( !IsEqual(SlabOffset[pgsTypes::metEnd],  other.SlabOffset[pgsTypes::metEnd])   ) return false;
 
-      if (!IsEqual(AssExcessCamber, other.AssExcessCamber)) return false;
+      if (!IsEqual(AssumedExcessCamber, other.AssumedExcessCamber)) return false;
 
       return true;
    }
@@ -1304,10 +1305,9 @@ void MakeCopy( const GDRCONFIG& rOther )
    Eci = rOther.Eci;
    Ec = rOther.Ec;
 
-   SlabOffset[0] = rOther.SlabOffset[0];
-   SlabOffset[1] = rOther.SlabOffset[1];
+   SlabOffset = rOther.SlabOffset;
 
-   AssExcessCamber = rOther.AssExcessCamber;
+   AssumedExcessCamber = rOther.AssumedExcessCamber;
 
    StirrupConfig = rOther.StirrupConfig;
 }
@@ -1336,7 +1336,7 @@ struct HANDLINGCONFIG
 enum arFlexuralDesignType { dtNoDesign, dtDesignForHarping, dtDesignForDebonding, dtDesignFullyBonded,
                             dtDesignFullyBondedRaised, dtDesignForDebondingRaised }; // raised straight strands
 enum arDesignStrandFillType { ftGridOrder, ftMinimizeHarping, ftDirectFill }; // direct fill used for raised straight
-enum arSlabOffsetDesignType { sodNoADesign, sodAandAssExcessCamber }; 
+enum arSlabOffsetDesignType { sodNoSlabOffsetDesign, sodSlabOffsetandAssumedExcessCamberDesign }; 
 enum arDesignStirrupLayoutType { slLayoutStirrups, slRetainExistingLayout };
 
 struct arDesignOptions
@@ -1358,7 +1358,7 @@ struct arDesignOptions
 
    arDesignStirrupLayoutType doDesignStirrupLayout;
 
-   arDesignOptions(): doDesignForFlexure(dtNoDesign), doDesignSlabOffset(sodNoADesign), doDesignLifting(false), doDesignHauling(false),
+   arDesignOptions(): doDesignForFlexure(dtNoDesign), doDesignSlabOffset(sodNoSlabOffsetDesign), doDesignLifting(false), doDesignHauling(false),
                       doDesignSlope(false), doDesignHoldDown(false), doDesignForShear(false), 
                       doStrandFillType(ftMinimizeHarping), doDesignStirrupLayout(slLayoutStirrups),
                       doForceHarpedStrandsStraight(false),
@@ -1476,6 +1476,11 @@ inline bool IsConstantWidthDeck(pgsTypes::SupportedDeckType deckType)
 inline bool IsAdjustableWidthDeck(pgsTypes::SupportedDeckType deckType)
 {
    return !IsConstantWidthDeck(deckType);
+}
+
+inline bool IsCastDeck(pgsTypes::SupportedDeckType deckType)
+{
+   return (deckType == pgsTypes::sdtCompositeCIP || deckType == pgsTypes::sdtCompositeSIP);
 }
 
 inline bool IsSpanSpacing(pgsTypes::SupportedBeamSpacing sbs)
@@ -2049,4 +2054,11 @@ inline bool IsParabolicVariation(pgsTypes::SegmentVariationType variationType)
 {
    return (variationType == pgsTypes::svtParabolic || variationType == pgsTypes::svtDoubleParabolic ? true : false);
 }
+
+
+inline bool IsSegmentContinuousOverPier(pgsTypes::PierSegmentConnectionType connectionType)
+{
+   return (connectionType == pgsTypes::psctContinuousSegment || connectionType == pgsTypes::psctIntegralSegment) ? true : false;
+}
+
 #endif // INCLUDED_PGSUPERTYPES_H_

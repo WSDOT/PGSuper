@@ -92,7 +92,8 @@ rptChapter* CTimeStepCamberChapterBuilder::Build(CReportSpecification* pRptSpec,
    *pPara << CreateFinalDeflectionTable(pBroker,girderKey)             << rptNewLine;
    pPara = new rptParagraph(rptStyleManager::GetFootnoteStyle());
    *pChapter << pPara;
-   *pPara << symbol(DELTA) << _T(" = sum of the individual deflections given in this table") << rptNewLine;
+   *pPara << Sub2(symbol(DELTA), _T("service")) << _T(" = deflection at service (open to traffic)") << rptNewLine;
+   *pPara << Sub2(symbol(DELTA), _T("final")) << _T(" = final deflection = sum of the individual deflections given in this table") << rptNewLine;
 
    return pChapter;
 }
@@ -126,8 +127,10 @@ rptRcTable* CTimeStepCamberChapterBuilder::CreateStorageDeflectionTable(IBroker*
 
       if ( 1 < nSegments )
       {
-         pLayoutTable->SetColumnSpan(rowIdx,0,nCols);
-         (*pLayoutTable)(rowIdx++,0) << _T("Segment ") << LABEL_SEGMENT(segIdx);
+         (*pLayoutTable)(rowIdx, 0) << bold(ON) << _T("Segment ") << LABEL_SEGMENT(segIdx) << bold(OFF);
+         (*pLayoutTable)(rowIdx, 1) << bold(ON) << _T("Segment ") << LABEL_SEGMENT(segIdx) << bold(OFF);
+         (*pLayoutTable)(rowIdx, 2) << bold(ON) << _T("Segment ") << LABEL_SEGMENT(segIdx) << bold(OFF);
+         rowIdx++;
       }
 
       ColumnIndexType colIdx = 0;
@@ -185,17 +188,7 @@ rptRcTable* CTimeStepCamberChapterBuilder::CreateAfterErectionDeflectionTable(IB
 
          if ( 1 < nSegments )
          {
-            if ( layoutTableColIdx == 0 )
-            {
-               // put segment name in segment label row
-               pLayoutTable->SetColumnSpan(rowIdx,0,nCols);
-               (*pLayoutTable)(rowIdx++,layoutTableColIdx) << _T("Segment ") << LABEL_SEGMENT(segIdx);
-            }
-            else
-            {
-               // skip over the segment label row
-               rowIdx++;
-            }
+            (*pLayoutTable)(rowIdx++, layoutTableColIdx) << bold(ON) << _T("Segment ") << LABEL_SEGMENT(segIdx) << bold(OFF);
          }
 
          IntervalIndexType erectionIntervalIdx = pIntervals->GetErectSegmentInterval(segmentKey);
@@ -225,6 +218,10 @@ rptRcTable* CTimeStepCamberChapterBuilder::CreateTable(IBroker* pBroker, const C
    GET_IFACE2(pBroker, IProductForces, pProduct);
    pgsTypes::BridgeAnalysisType bat = pProduct->GetBridgeAnalysisType(pgsTypes::Minimize);
 
+   GET_IFACE2(pBroker, ICamber, pCamber);
+   bool bHasPrecamber = pCamber->HasPrecamber(segmentKey);
+   pgsTypes::PrestressDeflectionDatum datum;
+
    GET_IFACE2(pBroker, IIntervals, pIntervals);
    IntervalIndexType storageIntervalIdx = pIntervals->GetStorageInterval(segmentKey);
    IntervalIndexType erectionIntervalIdx = pIntervals->GetErectSegmentInterval(segmentKey);
@@ -232,14 +229,17 @@ rptRcTable* CTimeStepCamberChapterBuilder::CreateTable(IBroker* pBroker, const C
    if (intervalIdx < storageIntervalIdx)
    {
       poiReference = POI_RELEASED_SEGMENT;
+      datum = pgsTypes::pddRelease;
    }
    else if (intervalIdx < erectionIntervalIdx)
    {
       poiReference = POI_STORAGE_SEGMENT;
+      datum = pgsTypes::pddStorage;
    }
    else
    {
       poiReference = POI_ERECTED_SEGMENT;
+      datum = pgsTypes::pddErected;
    }
 
 
@@ -291,7 +291,12 @@ rptRcTable* CTimeStepCamberChapterBuilder::CreateTable(IBroker* pBroker, const C
    INIT_UV_PROTOTYPE(rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false);
    INIT_UV_PROTOTYPE(rptLengthUnitValue, deflection, pDisplayUnits->GetDeflectionUnit(), false);
 
-   ColumnIndexType nCols = vProductForces.size() + 1;
+   ColumnIndexType nCols = vProductForces.size() + 2;
+   if (bHasPrecamber)
+   {
+      nCols++;
+   }
+
    if (erectionIntervalIdx <= intervalIdx)
    {
       nCols++;
@@ -315,7 +320,12 @@ rptRcTable* CTimeStepCamberChapterBuilder::CreateTable(IBroker* pBroker, const C
 
       (*pTable)(0,col++) << COLHDR(Sub2(symbol(DELTA),strName),  rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit() );
 
-      pResults[i] = pForces->GetDeflection(intervalIdx,pfType,vPoi,bat,rtCumulative,false);
+      pResults[i] = pForces->GetDeflection(intervalIdx,pfType,vPoi,bat,rtCumulative,false,false);
+   }
+
+   if(bHasPrecamber)
+   {
+      (*pTable)(0, col++) << COLHDR(_T("Precamber"), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
    }
 
    if (erectionIntervalIdx <= intervalIdx)
@@ -323,6 +333,7 @@ rptRcTable* CTimeStepCamberChapterBuilder::CreateTable(IBroker* pBroker, const C
       (*pTable)(0, col++) << COLHDR(_T("Elevation") << rptNewLine << _T("Adjustment"), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
    }
 
+   (*pTable)(0, col++) << COLHDR(symbol(DELTA), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
 
    RowIndexType row = pTable->GetNumberOfHeaderRows();
 
@@ -335,17 +346,29 @@ rptRcTable* CTimeStepCamberChapterBuilder::CreateTable(IBroker* pBroker, const C
       std::vector<pgsTypes::ProductForceType>::iterator pfIter(vProductForces.begin());
       std::vector<pgsTypes::ProductForceType>::iterator pfIterEnd(vProductForces.end());
       int k = 0;
+      Float64 total = 0;
       for ( ; pfIter != pfIterEnd; pfIter++, k++ )
       {
          (*pTable)(row,col++) << deflection.SetValue( pResults[k].at(i) );
+         total += pResults[k].at(i);
       }
       i++;
+
+      if (bHasPrecamber)
+      {
+         Float64 precamber = pCamber->GetPrecamber(poi, datum);
+         total += precamber;
+         (*pTable)(row, col++) << deflection.SetValue(precamber);
+      }
 
       if (erectionIntervalIdx <= intervalIdx)
       {
          Float64 elev_adj = pBridge->GetElevationAdjustment(intervalIdx, poi);
+         total += elev_adj;
          (*pTable)(row, col++) << deflection.SetValue(elev_adj);
       }
+
+      (*pTable)(row, col++) << deflection.SetValue(total);
 
       row++;
    }
@@ -367,6 +390,11 @@ rptRcTable* CTimeStepCamberChapterBuilder::CreateBeforeSlabCastingDeflectionTabl
    GET_IFACE2(pBroker,IBridge,pBridge);
    Float64 end_size = pBridge->GetSegmentStartEndDistance(CSegmentKey(girderKey,0));
 
+
+   GET_IFACE2(pBroker, ICamber, pCamber);
+   bool bHasPrecamber = pCamber->HasPrecamber(girderKey);
+   pgsTypes::PrestressDeflectionDatum datum = pgsTypes::pddErected;
+
    GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval();
    IntervalIndexType firstTendonStressingIntervalIdx = pIntervals->GetFirstTendonStressingInterval(girderKey);
@@ -385,14 +413,24 @@ rptRcTable* CTimeStepCamberChapterBuilder::CreateBeforeSlabCastingDeflectionTabl
 
    std::vector<pgsTypes::ProductForceType> vProductForces;
    vProductForces.push_back(pgsTypes::pftGirder);
-   if ( !IsZero(pUserLoadData->GetConstructionLoad()) )
+
+   vProductForces.push_back(pgsTypes::pftPretension);
+
+   vProductForces.push_back(pgsTypes::pftDiaphragm);
+
+   if (pProductLoads->HasShearKeyLoad(girderKey))
+   {
+      vProductForces.push_back(pgsTypes::pftShearKey);
+   }
+
+   if (!IsZero(pUserLoadData->GetConstructionLoad()))
    {
       vProductForces.push_back(pgsTypes::pftConstruction);
    }
+
    //vProductForces.push_back(pgsTypes::pftSlab);
    //vProductForces.push_back(pgsTypes::pftSlabPad);
    //vProductForces.push_back(pgsTypes::pftSlabPanel);
-   vProductForces.push_back(pgsTypes::pftDiaphragm); 
    //vProductForces.push_back(pgsTypes::pftOverlay);
    //vProductForces.push_back(pgsTypes::pftSidewalk);
    //vProductForces.push_back(pgsTypes::pftTrafficBarrier);
@@ -406,25 +444,28 @@ rptRcTable* CTimeStepCamberChapterBuilder::CreateBeforeSlabCastingDeflectionTabl
       vProductForces.push_back(pgsTypes::pftUserDW);
    }
 
-   if ( pUserLoads->DoUserLoadsExist(girderKey,0,castDeckIntervalIdx-1,IUserDefinedLoads::userLL_IM) )
-   {
-      vProductForces.push_back(pgsTypes::pftUserLLIM);
-   }
-   //vProductForces.push_back(pgsTypes::pftShearKey);
-
-   vProductForces.push_back(pgsTypes::pftPretension);
+   //if ( pUserLoads->DoUserLoadsExist(girderKey,0,castDeckIntervalIdx-1,IUserDefinedLoads::userLL_IM) )
+   //{
+   //   vProductForces.push_back(pgsTypes::pftUserLLIM);
+   //}
 
    if ( firstTendonStressingIntervalIdx < castDeckIntervalIdx )
    {
-      vProductForces.push_back(pgsTypes::pftSecondaryEffects);
       vProductForces.push_back(pgsTypes::pftPostTensioning);
+      vProductForces.push_back(pgsTypes::pftSecondaryEffects);
    }
 
    vProductForces.push_back(pgsTypes::pftCreep);
    vProductForces.push_back(pgsTypes::pftShrinkage);
    vProductForces.push_back(pgsTypes::pftRelaxation);
 
-   rptRcTable* pTable = rptStyleManager::CreateDefaultTable(vProductForces.size()+3,_T("Deflections immediately prior to deck casting"));
+   ColumnIndexType nCols = vProductForces.size() + 3;
+   if (bHasPrecamber)
+   {
+      nCols++;
+   }
+
+   rptRcTable* pTable = rptStyleManager::CreateDefaultTable(nCols,_T("Deflections immediately prior to deck casting"));
 
    std::vector<Float64>* pResults = new std::vector<Float64>[vProductForces.size()];
 
@@ -443,6 +484,10 @@ rptRcTable* CTimeStepCamberChapterBuilder::CreateBeforeSlabCastingDeflectionTabl
       // NOTE: Minus one because we want the interval immediately prior to deck placement
       // This is what the "D" dimension is.
       pResults[i] = pForces->GetDeflection(castDeckIntervalIdx-1,pfType,vPoi,bat,rtCumulative,false);
+   }
+   if (bHasPrecamber)
+   {
+      (*pTable)(0, col++) << COLHDR(_T("Precamber"), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
    }
    (*pTable)(0, col++) << COLHDR(_T("Elevation") << rptNewLine << _T("Adjustment"), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
    (*pTable)(0,col++) << COLHDR(Sub2(symbol(DELTA),_T("D")), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit() );
@@ -471,6 +516,13 @@ rptRcTable* CTimeStepCamberChapterBuilder::CreateBeforeSlabCastingDeflectionTabl
          Float64 d = pResults[k].at(i);
          (*pTable)(row,col++) << deflection.SetValue( d );
          D += d;
+      }
+
+      if (bHasPrecamber)
+      {
+         Float64 precamber = pCamber->GetPrecamber(poi, datum);
+         D += precamber;
+         (*pTable)(row, col++) << deflection.SetValue(precamber);
       }
 
       Float64 elev_adj = pBridge->GetElevationAdjustment(castDeckIntervalIdx - 1, poi);
@@ -505,16 +557,26 @@ rptRcTable* CTimeStepCamberChapterBuilder::CreateScreedCamberDeflectionTable(IBr
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType intervalIdx;
+   auto castDeckIntervalIdx = pIntervals->GetCastDeckInterval();
    if (pBridge->GetDeckType() == pgsTypes::sdtNone)
    {
-      intervalIdx = pIntervals->GetIntervalCount() - 1;
+      intervalIdx = pIntervals->GetLiveLoadInterval();
    }
    else
    {
-      IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval();
-      intervalIdx = castDeckIntervalIdx - 1;
+      intervalIdx = castDeckIntervalIdx;
    }
    IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
+
+   auto firstPTIntervalIdx = pIntervals->GetFirstTendonStressingInterval(girderKey);
+   auto lastPTIntervalIdx = pIntervals->GetLastTendonStressingInterval(girderKey);
+   const int CAST_DECK_BEFORE_PT = 1;
+   const int CAST_DECK_AFTER_PT = 2;
+   const int TWO_STAGE_PT = 3;
+   int pt_to_deck = (castDeckIntervalIdx < firstPTIntervalIdx) ? CAST_DECK_BEFORE_PT : (lastPTIntervalIdx < castDeckIntervalIdx) ? CAST_DECK_AFTER_PT : TWO_STAGE_PT;
+
+   GET_IFACE2(pBroker, ITendonGeometry, pTendonGeom);
+   DuctIndexType nDucts = pTendonGeom->GetDuctCount(girderKey);
 
    GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
    PoiList vPoi;
@@ -527,16 +589,30 @@ rptRcTable* CTimeStepCamberChapterBuilder::CreateScreedCamberDeflectionTable(IBr
 
    GET_IFACE2(pBroker,IUserDefinedLoads,pUserLoads);
    GET_IFACE2(pBroker,IUserDefinedLoadData,pUserLoadData);
-   GET_IFACE2(pBroker,ITendonGeometry,pTendonGeom);
 
    std::vector<pgsTypes::ProductForceType> vProductForces;
    vProductForces.push_back(pgsTypes::pftGirder);
    vProductForces.push_back(pgsTypes::pftPretension);
 
+   vProductForces.push_back(pgsTypes::pftDiaphragm);
+
+   if (pProductLoads->HasShearKeyLoad(girderKey))
+   {
+      vProductForces.push_back(pgsTypes::pftShearKey);
+   }
+
    if ( !IsZero(pUserLoadData->GetConstructionLoad()) )
    {
       vProductForces.push_back(pgsTypes::pftConstruction);
    }
+
+   // don't report this here... this is only deflections after deck casting
+   // pt is before deck casting (e.g deck casting is after pt)
+   //if ((pt_to_deck == CAST_DECK_AFTER_PT || pt_to_deck == TWO_STAGE_PT) && 0 < nDucts)
+   //{
+   //   vProductForces.push_back(pgsTypes::pftPostTensioning);
+   //   vProductForces.push_back(pgsTypes::pftSecondaryEffects);
+   //}
 
    if ( pBridge->GetDeckType() != pgsTypes::sdtNone )
    {
@@ -549,11 +625,10 @@ rptRcTable* CTimeStepCamberChapterBuilder::CreateScreedCamberDeflectionTable(IBr
       vProductForces.push_back(pgsTypes::pftSlabPanel);
    }
 
-   vProductForces.push_back(pgsTypes::pftDiaphragm); 
-
-   if ( pIntervals->GetOverlayInterval() <= liveLoadIntervalIdx )
+   if ((pt_to_deck == CAST_DECK_BEFORE_PT || pt_to_deck == TWO_STAGE_PT) && 0 < nDucts)
    {
-      vProductForces.push_back(pgsTypes::pftOverlay);
+      vProductForces.push_back(pgsTypes::pftPostTensioning);
+      vProductForces.push_back(pgsTypes::pftSecondaryEffects);
    }
 
    if ( pProductLoads->HasSidewalkLoad(girderKey) )
@@ -562,6 +637,11 @@ rptRcTable* CTimeStepCamberChapterBuilder::CreateScreedCamberDeflectionTable(IBr
    }
 
    vProductForces.push_back(pgsTypes::pftTrafficBarrier);
+
+   if (pIntervals->GetOverlayInterval() <= liveLoadIntervalIdx)
+   {
+      vProductForces.push_back(pgsTypes::pftOverlay);
+   }
 
    if ( pUserLoads->DoUserLoadsExist(girderKey,0,liveLoadIntervalIdx,IUserDefinedLoads::userDC) )
    {
@@ -573,21 +653,10 @@ rptRcTable* CTimeStepCamberChapterBuilder::CreateScreedCamberDeflectionTable(IBr
       vProductForces.push_back(pgsTypes::pftUserDW);
    }
 
-   if ( pUserLoads->DoUserLoadsExist(girderKey,0,liveLoadIntervalIdx,IUserDefinedLoads::userLL_IM) )
-   {
-      vProductForces.push_back(pgsTypes::pftUserLLIM);
-   }
-
-   if ( pProductLoads->HasShearKeyLoad(girderKey) )
-   {
-      vProductForces.push_back(pgsTypes::pftShearKey);
-   }
-
-   if ( 0 < pTendonGeom->GetDuctCount(girderKey) )
-   {
-      vProductForces.push_back(pgsTypes::pftPostTensioning);
-      vProductForces.push_back(pgsTypes::pftSecondaryEffects);
-   }
+   //if ( pUserLoads->DoUserLoadsExist(girderKey,0,liveLoadIntervalIdx,IUserDefinedLoads::userLL_IM) )
+   //{
+   //   vProductForces.push_back(pgsTypes::pftUserLLIM);
+   //}
 
    vProductForces.push_back(pgsTypes::pftCreep);
    vProductForces.push_back(pgsTypes::pftShrinkage);
@@ -744,12 +813,9 @@ rptRcTable* CTimeStepCamberChapterBuilder::CreateFinalDeflectionTable(IBroker* p
    GET_IFACE2(pBroker,IBridge,pBridge);
    Float64 end_size = pBridge->GetSegmentStartEndDistance(CSegmentKey(girderKey,0));
 
-   GET_IFACE2(pBroker,IIntervals,pIntervals);
-   IntervalIndexType lastIntervalIdx = pIntervals->GetIntervalCount()-1;
-
    GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
    PoiList vPoi;
-   pIPoi->GetPointsOfInterest(CSegmentKey(girderKey, ALL_SEGMENTS), POI_SPAN, &vPoi);
+   pIPoi->GetPointsOfInterest(CSegmentKey(girderKey, ALL_SEGMENTS), POI_ERECTED_SEGMENT, &vPoi);
 
    INIT_UV_PROTOTYPE( rptPointOfInterest, location,     pDisplayUnits->GetSpanLengthUnit(), false );
    INIT_UV_PROTOTYPE( rptLengthUnitValue, deflection,   pDisplayUnits->GetDeflectionUnit(), false );
@@ -761,12 +827,46 @@ rptRcTable* CTimeStepCamberChapterBuilder::CreateFinalDeflectionTable(IBroker* p
    GET_IFACE2(pBroker,IUserDefinedLoadData,pUserLoadData);
    GET_IFACE2(pBroker,ITendonGeometry,pTendonGeom);
 
+   GET_IFACE2(pBroker, IIntervals, pIntervals);
+   auto castDeckIntervalIdx = pIntervals->GetCastDeckInterval();
+   auto firstPTIntervalIdx = pIntervals->GetFirstTendonStressingInterval(girderKey);
+   auto lastPTIntervalIdx = pIntervals->GetLastTendonStressingInterval(girderKey);
+   const int CAST_DECK_BEFORE_PT = 1;
+   const int CAST_DECK_AFTER_PT = 2;
+   const int TWO_STAGE_PT = 3;
+   int pt_to_deck = (castDeckIntervalIdx < firstPTIntervalIdx) ? CAST_DECK_BEFORE_PT : (lastPTIntervalIdx < castDeckIntervalIdx) ? CAST_DECK_AFTER_PT : TWO_STAGE_PT;
+
+   auto overlayIntervalIdx = pIntervals->GetOverlayInterval();
+   auto liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
+   IntervalIndexType lastIntervalIdx = pIntervals->GetIntervalCount() - 1;
+
+   DuctIndexType nDucts = pTendonGeom->GetDuctCount(girderKey);
+
+   GET_IFACE2(pBroker, ICamber, pCamber);
+   bool bHasPrecamber = pCamber->HasPrecamber(girderKey);
+   pgsTypes::PrestressDeflectionDatum datum = pgsTypes::pddErected;
+
    std::vector<pgsTypes::ProductForceType> vProductForces;
    vProductForces.push_back(pgsTypes::pftGirder);
+
+   vProductForces.push_back(pgsTypes::pftPretension);
+
+   vProductForces.push_back(pgsTypes::pftDiaphragm);
+
+   if (pProductLoads->HasShearKeyLoad(girderKey))
+   {
+      vProductForces.push_back(pgsTypes::pftShearKey);
+   }
 
    if ( !IsZero(pUserLoadData->GetConstructionLoad()) )
    {
       vProductForces.push_back(pgsTypes::pftConstruction);
+   }
+
+   if ((pt_to_deck == CAST_DECK_AFTER_PT || pt_to_deck == TWO_STAGE_PT) && 0 < nDucts)
+   {
+      vProductForces.push_back(pgsTypes::pftPostTensioning);
+      vProductForces.push_back(pgsTypes::pftSecondaryEffects);
    }
 
    if ( pBridge->GetDeckType() != pgsTypes::sdtNone )
@@ -780,11 +880,10 @@ rptRcTable* CTimeStepCamberChapterBuilder::CreateFinalDeflectionTable(IBroker* p
       vProductForces.push_back(pgsTypes::pftSlabPanel);
    }
 
-   vProductForces.push_back(pgsTypes::pftDiaphragm); 
-
-   if ( pIntervals->GetOverlayInterval() != INVALID_INDEX )
+   if (pt_to_deck == CAST_DECK_BEFORE_PT && 0 < nDucts)
    {
-      vProductForces.push_back(pgsTypes::pftOverlay);
+      vProductForces.push_back(pgsTypes::pftPostTensioning);
+      vProductForces.push_back(pgsTypes::pftSecondaryEffects);
    }
 
    if ( pProductLoads->HasSidewalkLoad(girderKey) )
@@ -804,29 +903,27 @@ rptRcTable* CTimeStepCamberChapterBuilder::CreateFinalDeflectionTable(IBroker* p
       vProductForces.push_back(pgsTypes::pftUserDW);
    }
 
-   if ( pUserLoads->DoUserLoadsExist(girderKey,IUserDefinedLoads::userLL_IM) )
-   {
-      vProductForces.push_back(pgsTypes::pftUserLLIM);
-   }
+   //if ( pUserLoads->DoUserLoadsExist(girderKey,IUserDefinedLoads::userLL_IM) )
+   //{
+   //   vProductForces.push_back(pgsTypes::pftUserLLIM);
+   //}
 
-   if ( pProductLoads->HasShearKeyLoad(girderKey) )
+   if (overlayIntervalIdx != INVALID_INDEX)
    {
-      vProductForces.push_back(pgsTypes::pftShearKey);
-   }
-
-   vProductForces.push_back(pgsTypes::pftPretension);
-
-   if ( 0 < pTendonGeom->GetDuctCount(girderKey) )
-   {
-      vProductForces.push_back(pgsTypes::pftPostTensioning);
-      vProductForces.push_back(pgsTypes::pftSecondaryEffects);
+      vProductForces.push_back(pgsTypes::pftOverlay);
    }
 
    vProductForces.push_back(pgsTypes::pftCreep);
    vProductForces.push_back(pgsTypes::pftShrinkage);
    vProductForces.push_back(pgsTypes::pftRelaxation);
 
-   rptRcTable* pTable = rptStyleManager::CreateDefaultTable(vProductForces.size()+3,_T("Final Deflections"));
+   ColumnIndexType nCols = vProductForces.size() + 4;
+   if (bHasPrecamber)
+   {
+      nCols++;
+   }
+
+   rptRcTable* pTable = rptStyleManager::CreateDefaultTable(nCols,_T("Final Deflections"));
 
    std::vector<Float64>* pResults = new std::vector<Float64>[vProductForces.size()];
 
@@ -841,23 +938,32 @@ rptRcTable* CTimeStepCamberChapterBuilder::CreateFinalDeflectionTable(IBroker* p
       LPCTSTR strName = pProductLoads->GetProductLoadName(pfType);
 
       (*pTable)(0,col++) << COLHDR(Sub2(symbol(DELTA),strName),  rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit() );
-      pResults[i] = pForces->GetDeflection(lastIntervalIdx,pfType,vPoi,bat,rtCumulative,false);
+      pResults[i] = pForces->GetDeflection(lastIntervalIdx,pfType,vPoi,bat,rtCumulative,false,false);
+   }
+   if (bHasPrecamber)
+   {
+      (*pTable)(0, col++) << COLHDR(_T("Precamber"), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
    }
    (*pTable)(0, col++) << COLHDR(_T("Elevation") << rptNewLine << _T("Adjustment"), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
-   (*pTable)(0, col++) << COLHDR(symbol(DELTA), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
+
+   (*pTable)(0, col++) << COLHDR(Sub2(symbol(DELTA),_T("service")), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
+   (*pTable)(0, col++) << COLHDR(Sub2(symbol(DELTA),_T("final")), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
 
    RowIndexType row = pTable->GetNumberOfHeaderRows();
 
    GET_IFACE2(pBroker,ILimitStateForces2,pLimitStateForces);
-   std::vector<Float64> vDmin,vDmax;
-   pLimitStateForces->GetDeflection(lastIntervalIdx,pgsTypes::ServiceI,vPoi,bat,true,false,true,true,&vDmin,&vDmax);
+   std::vector<Float64> vDmin, vDmax; // deflection at time bridge is open to traffic
+   pLimitStateForces->GetDeflection(liveLoadIntervalIdx, pgsTypes::ServiceI, vPoi, bat, true, false, true, true, &vDmin, &vDmax);
+
+   std::vector<Float64> vFmin, vFmax; // final deflection
+   pLimitStateForces->GetDeflection(lastIntervalIdx, pgsTypes::ServiceI, vPoi, bat, true, false, true, true, &vFmin, &vFmax);
 
    i = 0;
    for (const pgsPointOfInterest& poi : vPoi)
    {
       col = 0;
 
-      (*pTable)(row,col++) << location.SetValue( POI_SPAN, poi );
+      (*pTable)(row,col++) << location.SetValue(POI_ERECTED_SEGMENT, poi );
 
       std::vector<pgsTypes::ProductForceType>::iterator pfIter(vProductForces.begin());
       std::vector<pgsTypes::ProductForceType>::iterator pfIterEnd(vProductForces.end());
@@ -868,11 +974,17 @@ rptRcTable* CTimeStepCamberChapterBuilder::CreateFinalDeflectionTable(IBroker* p
          (*pTable)(row,col++) << deflection.SetValue( d );
       }
 
+      if (bHasPrecamber)
+      {
+         Float64 precamber = pCamber->GetPrecamber(poi, datum);
+         (*pTable)(row, col++) << deflection.SetValue(precamber);
+      }
+
       Float64 elev_adj = pBridge->GetElevationAdjustment(lastIntervalIdx, poi);
       (*pTable)(row, col++) << deflection.SetValue(elev_adj);
-
       
-      (*pTable)(row,col++) << deflection.SetValue(vDmin[i]);
+      (*pTable)(row, col++) << deflection.SetValue(vDmin[i]);
+      (*pTable)(row, col++) << deflection.SetValue(vFmin[i]);
 
       i++;
       row++;

@@ -14343,8 +14343,8 @@ void CGirderModelManager::CheckGirderEndGeometry(IBridge* pBridge,const CGirderK
          PierIndexType startPierIdx, endPierIdx;
          pBridge->GetGirderGroupPiers(segmentKey.groupIndex, &startPierIdx, &endPierIdx);
 
-         Float64 startA = pBridge->GetSlabOffset(segmentKey.groupIndex, startPierIdx, segmentKey.girderIndex);
-         Float64 endA = pBridge->GetSlabOffset(segmentKey.groupIndex, endPierIdx, segmentKey.girderIndex);
+         Float64 startA = pBridge->GetSlabOffset(segmentKey,pgsTypes::metStart);
+         Float64 endA   = pBridge->GetSlabOffset(segmentKey,pgsTypes::metEnd);
 
          Float64 dSlab = pBridge->GetGrossSlabDepth(pgsPointOfInterest(segmentKey,0.0));
          if ( startA-dSlab-fillet < -TOLERANCE || endA-dSlab-fillet < -TOLERANCE )
@@ -15107,7 +15107,7 @@ void CGirderModelManager::GetMainSpanSlabLoadEx(const CSegmentKey& segmentKey, b
    const pgsPointOfInterest& poi_left(vPoi2.front());
    const pgsPointOfInterest& poi_right(vPoi2.back());
 
-   if (pSpec->IsAssExcessCamberForLoad())
+   if (pSpec->IsAssumedExcessCamberForLoad())
    {
 #pragma Reminder("UPDATE: assuming precast girder bridge - Note that time-dependent analyses only use the zero camber approach below")
       // Shape of girder is assumed to follow the fillet dimension. Assume parabolic shape with zero at supports and
@@ -15130,7 +15130,7 @@ void CGirderModelManager::GetMainSpanSlabLoadEx(const CSegmentKey& segmentKey, b
          Float64 Xspan;
          pPoi->ConvertPoiToSpanPoint(poi_mid,&spanKey,&Xspan);
 
-         assumed_excess_camber = pBridge->GetAssExcessCamber(spanKey.spanIndex, spanKey.girderIndex);
+         assumed_excess_camber = pBridge->GetAssumedExcessCamber(spanKey.spanIndex, spanKey.girderIndex);
          assumed_excess_camber *= camberFactor;
       }
 

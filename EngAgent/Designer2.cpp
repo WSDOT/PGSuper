@@ -370,11 +370,8 @@ static Float64 GetSectionGirderOrientationEffect(const pgsPointOfInterest& poi, 
    return section_girder_orientation_effect;
 }
 
-void pgsDesigner2::GetHaunchDetails(const CSegmentKey& segmentKey,const GDRCONFIG* pConfig,HAUNCHDETAILS* pHaunchDetails) const
+void pgsDesigner2::GetSlabOffsetDetails(const CSegmentKey& segmentKey,const GDRCONFIG* pConfig,SLABOFFSETDETAILS* pSlabOffsetDetails) const
 {
-   // NOTE: Haunch is a span-by-span calculation. "A" dimensions are defined at permanent support locations, not at temporary supports.
-   // However, since everything is setup to do the analysis by segment, we will keep it this way. Profile effects take into account
-   // we are doing the analysis for the entire span, but the range is limited to the segment in question.
    GET_IFACE(ICamber,pCamber);
    GET_IFACE(IPointOfInterest,pPoi);
    GET_IFACE(IBridge,pBridge);
@@ -387,11 +384,10 @@ void pgsDesigner2::GetHaunchDetails(const CSegmentKey& segmentKey,const GDRCONFI
    std::_tstring spec_name = pSpec->GetSpecification();
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( spec_name.c_str() );
 
-   pHaunchDetails->Haunch.clear();
-   pHaunchDetails->Haunch.reserve(11);
+   pSlabOffsetDetails->SlabOffset.clear();
+   pSlabOffsetDetails->SlabOffset.reserve(11);
 
-   // "A" dimension is measured at the CL Bearing at end abutments and simple span intermediate piers
-   // and at the CL Bearing is at the oak block for continuous intermediate piers
+   // Slab offset is measured at the CL Bearing of segments in the erected state
    PoiList vPoi;
    pPoi->GetPointsOfInterest(segmentKey, POI_ERECTED_SEGMENT | POI_TENTH_POINTS, &vPoi);
    ATLASSERT(11 == vPoi.size());
@@ -424,112 +420,120 @@ void pgsDesigner2::GetHaunchDetails(const CSegmentKey& segmentKey,const GDRCONFI
 
    Float64 max_tslab_and_fillet = 0;
 
-   std::unique_ptr<mathFunction2d> topFlangeShape;
+   std::unique_ptr<mathFunction2d> topFlangeShape; // function that models the longitudinal top flange shape
    pgsTypes::TopFlangeThickeningType tftType = pGdr->GetTopFlangeThickeningType(segmentKey);
    Float64 tft = pGdr->GetTopFlangeThickening(segmentKey);
    if (tftType != pgsTypes::tftNone && !IsZero(tft))
    {
-      // top flange thickening is imposed on the girder
-      Float64 sign = (tftType == pgsTypes::tftEnds ? -1 : 1);
+      // this is non-zero thickening of the top flange. assume its longitudinal shape to be a parabola
+
+      Float64 sign = (tftType == pgsTypes::tftEnds ? -1 : 1); // thickening at the ends, it is a concave parabola, otherwise a convex parabola
 
       // there is an imposed camber and/or top flange thickening. use its shape, excluding natural camber, for the top of the girder
+      // create the parabola
       topFlangeShape = std::make_unique<mathPolynomial2d>(GenerateParabola(poi_left.GetDistFromStart(), poi_right.GetDistFromStart(), sign*tft));
    }
    else
    {
+      // top flange is straight
       topFlangeShape = std::make_unique<ZeroFunction>();
    }
 
+   // the amount of top flange thickening at the start CL Bearing
    Float64 tftCLBrg = topFlangeShape->Evaluate(clBrgPoi.GetDistFromStart());
+
+   GET_IFACE(IIntervals, pIntervals);
+   IntervalIndexType erectionIntervalIdx = pIntervals->GetErectSegmentInterval(segmentKey);
 
 
    // determine the minumum and maximum difference in elevation between the
-   // roadway surface and the top of the girder.... measured directly above 
-   // the top of the girder
+   // roadway surface and the top of the segment.... measured directly above 
+   // the top of the segment
    Float64 diff_min =  DBL_MAX;
    Float64 diff_max = -DBL_MAX;
    Float64 min_haunch =  DBL_MAX;
    Float64 max_haunch = -DBL_MAX;
-   Float64 max_reqd_haunch_depth = -DBL_MAX;
-   Float64 min_reqd_haunch_depth =  DBL_MAX;
+   Float64 max_reqd_slab_offset = -DBL_MAX;
+   Float64 min_reqd_slab_offset =  DBL_MAX;
    for( const pgsPointOfInterest& poi : vPoi)
    {
       Float64 tSlab = pBridge->GetGrossSlabDepth( poi );
 
-      CSpanKey spanKey;
-      Float64 Xspan;
-      pPoi->ConvertPoiToSpanPoint(poi,&spanKey,&Xspan);
       Float64 fillet = pIBridgeDesc->GetFillet();
 
-      Float64 camber_effect = pCamber->GetExcessCamber(poi, CREEP_MAXTIME, pConfig );
-      Float64 C = pCamber->GetScreedCamber(poi, CREEP_MAXTIME, pConfig);
-      Float64 D = pCamber->GetDCamberForGirderSchedule(poi,CREEP_MAXTIME, pConfig);
-
+      Float64 D, C;
+      Float64 camber_effect = pCamber->GetExcessCamberEx(poi, CREEP_MAXTIME, &D, &C, pConfig );
       ATLASSERT(IsEqual(camber_effect,D-C));
 
       Float64 top_flange_shape_effect = topFlangeShape->Evaluate(poi.GetDistFromStart()) - tftCLBrg;
 
-
       Float64 top_width = pGdr->GetTopWidth(poi);
 
       // top of girder elevation, including camber effects
-      Float64 elev_top_girder = pGdr->GetTopGirderElevation(poi,INVALID_INDEX,pConfig);
+      Float64 elev_top_girder = pGdr->GetTopGirderElevation(poi,INVALID_INDEX/*CL Segment rather than a particular mating surface*/,pConfig);
 
       // get station and normal offset for this poi
-      Float64 x,z;
-      pBridge->GetStationAndOffset(poi,&x,&z);
-      z = IsZero(z) ? 0 : z;
+      Float64 station, offset;
+      pBridge->GetStationAndOffset(poi,&station,&offset);
+      offset = IsZero(offset) ? 0 : offset;
 
       // top of girder elevation (ignoring camber effects)
       Float64 yc = pGdr->GetProfileChordElevation(poi);
 
       // top of alignment elevation above girder
-      Float64 ya = pAlignment->GetElevation(x,z);
+      Float64 ya = pAlignment->GetElevation(station,offset);
 
       // profile effect
-      Float64 section_profile_effect = ya - yc;
-      diff_min = Min(diff_min,section_profile_effect);
-      diff_max = Max(diff_max,section_profile_effect);
+      Float64 section_profile_effect = yc - ya;
+      diff_min = Min(diff_min,-section_profile_effect);
+      diff_max = Max(diff_max,-section_profile_effect);
 
       // girder orientation effect
       Float64 crown_slope;
-      Float64 section_girder_orientation_effect = ::GetSectionGirderOrientationEffect(poi, x, z, nMatingSurfaces, top_width, girder_top_slope,
+      Float64 section_girder_orientation_effect = ::GetSectionGirderOrientationEffect(poi, station, offset, nMatingSurfaces, top_width, girder_top_slope,
                                                                                       pAlignment, pBridge, pGdr, 
                                                                                       &crown_slope);
 
-      SECTIONHAUNCH haunch;
-      haunch.PointOfInterest = poi;
-      haunch.C = C;
-      haunch.D = D;
-      haunch.CamberEffect = camber_effect;
-      haunch.CrownSlope = crown_slope;
-      haunch.GirderTopSlope = girder_top_slope;
-      haunch.ElevAlignment = ya;
-      haunch.ElevGirder = yc;
-      haunch.Fillet = fillet;
-      haunch.GirderOrientationEffect = section_girder_orientation_effect;
-      haunch.Offset = z;
-      haunch.ProfileEffect = -section_profile_effect;
-      haunch.TopFlangeShapeEffect = top_flange_shape_effect;
-      haunch.Station = x;
-      haunch.tSlab = tSlab;
-      haunch.Wtop = top_width;
-      haunch.ElevTopGirder = elev_top_girder;
-      haunch.TopSlabToTopGirder = haunch.ElevAlignment - haunch.ElevTopGirder;
+      Float64 elev_adj = pBridge->GetElevationAdjustment(erectionIntervalIdx, poi);
 
-      haunch.RequiredHaunchDepth = -(ya - yc - tSlab - fillet - section_girder_orientation_effect - camber_effect - top_flange_shape_effect);
+      SLAB_OFFSET_AT_SECTION slab_offset;
+      slab_offset.PointOfInterest = poi;
+      slab_offset.Station = station;
+      slab_offset.Offset = offset;
+      slab_offset.ElevGirderChord = yc;
+      slab_offset.ElevAlignment = ya;
+      slab_offset.ProfileEffect = section_profile_effect;
+      slab_offset.D = D;
+      slab_offset.C = C;
+      slab_offset.CamberEffect = camber_effect;
+      slab_offset.CrownSlope = crown_slope;
+      slab_offset.GirderTopSlope = girder_top_slope;
+      slab_offset.Fillet = fillet;
+      slab_offset.GirderOrientationEffect = section_girder_orientation_effect;
+      slab_offset.TopFlangeShapeEffect = top_flange_shape_effect;
+      slab_offset.tSlab = tSlab;
+      slab_offset.Wtop = top_width;
+      slab_offset.ElevTopGirder = elev_top_girder;
+      slab_offset.TopSlabToTopGirder = slab_offset.ElevAlignment - slab_offset.ElevTopGirder;
+      slab_offset.ElevAdjustment = elev_adj;
 
-      max_reqd_haunch_depth = Max(max_reqd_haunch_depth,haunch.RequiredHaunchDepth);
-      min_reqd_haunch_depth = Min(min_reqd_haunch_depth,haunch.RequiredHaunchDepth);
+      slab_offset.RequiredSlabOffset = tSlab + fillet + section_profile_effect + section_girder_orientation_effect + camber_effect + top_flange_shape_effect;
+      // the required slab offset at this section is measured relative to a horizontal line at the start of the segment
+      // it should be measured relative to a line that is basically parallel to the girder
+      // for this reason, we subtrack off the elevation adjustment
+      slab_offset.RequiredSlabOffset -= elev_adj;
 
-      pHaunchDetails->Haunch.push_back(haunch);
+      max_reqd_slab_offset = Max(max_reqd_slab_offset, slab_offset.RequiredSlabOffset);
+      min_reqd_slab_offset = Min(min_reqd_slab_offset, slab_offset.RequiredSlabOffset);
+
+      pSlabOffsetDetails->SlabOffset.push_back(slab_offset);
 
       max_tslab_and_fillet = Max(max_tslab_and_fillet,tSlab + fillet);
 
       // store min and max haunch depths
-      min_haunch = Min(min_haunch, haunch.TopSlabToTopGirder-tSlab);
-      max_haunch = Max(max_haunch, haunch.TopSlabToTopGirder-tSlab);
-
+      Float64 haunch_depth = slab_offset.TopSlabToTopGirder - tSlab;
+      min_haunch = Min(min_haunch, haunch_depth);
+      max_haunch = Max(max_haunch, haunch_depth);
    } // next POI
 
    // profile effect
@@ -543,19 +547,19 @@ void pgsDesigner2::GetHaunchDetails(const CSegmentKey& segmentKey,const GDRCONFI
       profile_effect = -diff_max; // there is a crown in the profile.... lower the haunch
    }
 
-   // Check against minimum haunch
+   // Check against minimum slab offset
    // This could happen if there was little camber, little cross slope, and a large crown
-   if ( max_reqd_haunch_depth < max_tslab_and_fillet )
+   if ( max_reqd_slab_offset < max_tslab_and_fillet )
    {
-      max_reqd_haunch_depth = max_tslab_and_fillet;
+      max_reqd_slab_offset = max_tslab_and_fillet;
    }
 
    // record controlling values
-   pHaunchDetails->RequiredSlabOffset = max_reqd_haunch_depth;
+   pSlabOffsetDetails->RequiredSlabOffset = max_reqd_slab_offset;
 
    // this is the maximum difference in the haunch depth along the girder...
    // if this too big, stirrups may need to be adjusted
-   pHaunchDetails->HaunchDiff = max_haunch - min_haunch;
+   pSlabOffsetDetails->HaunchDiff = max_haunch - min_haunch;
 }
 
 Float64 pgsDesigner2::GetSectionGirderOrientationEffect(const pgsPointOfInterest& poi) const
@@ -1472,7 +1476,7 @@ void pgsDesigner2::DoDesign(const CGirderKey& girderKey,const arDesignOptions& o
                }
             }
 
-            if (options.doDesignSlabOffset != sodNoADesign)
+            if (options.doDesignSlabOffset != sodNoSlabOffsetDesign)
             {
                pProgress->UpdateMessage(_T("Designing Slab Offset Outer Loop"));
 
@@ -1566,7 +1570,7 @@ void pgsDesigner2::DoDesign(const CGirderKey& girderKey,const arDesignOptions& o
          return;
       }
 
-      if (artifact.GetDesignOptions().doDesignSlabOffset != sodNoADesign)
+      if (artifact.GetDesignOptions().doDesignSlabOffset != sodNoSlabOffsetDesign)
       {
          LOG(_T("Final Slab Offset before rounding (Start) ") << ::ConvertFromSysUnits( artifact.GetSlabOffset(pgsTypes::metStart),unitMeasure::Inch) << _T(" in and (End) ") << ::ConvertFromSysUnits( artifact.GetSlabOffset(pgsTypes::metEnd),unitMeasure::Inch) << _T(" in"));
          Float64 start_offset = RoundSlabOffset(artifact.GetSlabOffset(pgsTypes::metStart));
@@ -5300,7 +5304,7 @@ void pgsDesigner2::CheckConstructability(const CGirderKey& girderKey,pgsConstruc
 
    ///////////////////////////////////////////////////////////////
    //
-   // Check "A" Dimension
+   // Check Slab Offset ("A" Dimension)
    //
    ///////////////////////////////////////////////////////////////
 
@@ -5362,30 +5366,27 @@ void pgsDesigner2::CheckConstructability(const CGirderKey& girderKey,pgsConstruc
          artifact.SetSlabOffsetApplicability(pSpecEntry->IsSlabOffsetCheckEnabled());
 
          //  provided slab offsets
-         PierIndexType startPierIdx, endPierIdx;
-         pBridge->GetGirderGroupPiers(segmentKey.groupIndex, &startPierIdx, &endPierIdx);
+         std::array<Float64, 2> slabOffset;
+         pBridge->GetSlabOffset(segmentKey, &slabOffset[pgsTypes::metStart], &slabOffset[pgsTypes::metEnd]);
 
-         Float64 startSlabOffset = pBridge->GetSlabOffset(segmentKey.groupIndex, startPierIdx, segmentKey.girderIndex);
-         Float64 endSlabOffset = pBridge->GetSlabOffset(segmentKey.groupIndex, endPierIdx, segmentKey.girderIndex);
-
-         artifact.SetProvidedSlabOffset( startSlabOffset, endSlabOffset );
+         artifact.SetProvidedSlabOffset(slabOffset[pgsTypes::metStart], slabOffset[pgsTypes::metEnd]);
 
          // get required slab offset
          Float64 requiredSlabOffset = pGdrHaunch->GetRequiredSlabOffset(segmentKey);
          artifact.SetRequiredSlabOffset( requiredSlabOffset );
 
-         const auto& haunch_details = pGdrHaunch->GetHaunchDetails(segmentKey);
+         const auto& slab_offset_details = pGdrHaunch->GetSlabOffsetDetails(segmentKey);
 
          // Get least haunch depth and its location along girder
          Float64 minval(Float64_Max);
          Float64 minloc;
-         for(const auto& haunch : haunch_details.Haunch)
+         for(const auto& slab_offset : slab_offset_details.SlabOffset)
          {
-            Float64 val = haunch.TopSlabToTopGirder - haunch.tSlab - haunch.GirderOrientationEffect;
+            Float64 val = slab_offset.TopSlabToTopGirder - slab_offset.tSlab - slab_offset.GirderOrientationEffect;
             if (val < minval)
             {
                minval = val;
-               minloc = haunch.PointOfInterest.GetDistFromStart();
+               minloc = slab_offset.PointOfInterest.GetDistFromStart();
             }
          }
 
@@ -5420,7 +5421,7 @@ void pgsDesigner2::CheckConstructability(const CGirderKey& girderKey,pgsConstruc
          ATLASSERT(vPoi.size() == 1);
          pgsPointOfInterest msPOI = vPoi.front();
          Float64 tSlab = pBridge->GetGrossSlabDepth(msPOI);
-         artifact.CheckStirrupLength( bDoStirrupsEngageDeck && tSlab/2 < fabs(haunch_details.HaunchDiff) );
+         artifact.CheckStirrupLength( bDoStirrupsEngageDeck && tSlab/2 < fabs(slab_offset_details.HaunchDiff) );
 
          // Check A requirements at bearing centerlines if appropriate
          Float64 min_haunch;
@@ -5436,8 +5437,8 @@ void pgsDesigner2::CheckConstructability(const CGirderKey& girderKey,pgsConstruc
 
             artifact.SetRequiredHaunchAtBearingCLs(min_haunch);
 
-            Float64 haunchstrt = startSlabOffset - tSlab;
-            Float64 haunchend  = endSlabOffset   - tSlab;
+            Float64 haunchstrt = slabOffset[pgsTypes::metStart] - tSlab;
+            Float64 haunchend  = slabOffset[pgsTypes::metEnd] - tSlab;
             artifact.SetProvidedHaunchAtBearingCLs( Min(haunchstrt,haunchend) );
          }
       }
@@ -5447,7 +5448,7 @@ void pgsDesigner2::CheckConstructability(const CGirderKey& girderKey,pgsConstruc
       // Camber Tolerance for Haunch 
       //
       ///////////////////////////////////////////////////////////////
-      if (!pSpec->IsAssExcessCamberInputEnabled())
+      if (!pSpec->IsAssumedExcessCamberInputEnabled())
       {
          artifact.SetHaunchGeometryCheckApplicability(false);
       }
@@ -5458,17 +5459,17 @@ void pgsDesigner2::CheckConstructability(const CGirderKey& girderKey,pgsConstruc
          Float64 tolerance = pSpecEntry->GetHaunchLoadCamberTolerance();
          artifact.SetHaunchGeometryTolerance(tolerance);
 
-         Float64 assumedExcessCamber = pBridge->GetAssExcessCamber(segmentKey.groupIndex,segmentKey.girderIndex);
+         Float64 assumedExcessCamber = pBridge->GetAssumedExcessCamber(segmentKey.groupIndex,segmentKey.girderIndex);
          artifact.SetAssumedExcessCamber(assumedExcessCamber);
 
          GET_IFACE(IGirderHaunch,pGdrHaunch);
-         const auto& haunch_details = pGdrHaunch->GetHaunchDetails(segmentKey);
+         const auto& slab_offset_details = pGdrHaunch->GetSlabOffsetDetails(segmentKey);
 
          // Need excess camber at mid-span - get details there
-         ATLASSERT(std::is_sorted(std::begin(haunch_details.Haunch), std::end(haunch_details.Haunch), [](const auto& a, const auto& b) {return a.PointOfInterest < b.PointOfInterest;}));
+         ATLASSERT(std::is_sorted(std::begin(slab_offset_details.SlabOffset), std::end(slab_offset_details.SlabOffset), [](const auto& a, const auto& b) {return a.PointOfInterest < b.PointOfInterest;}));
          // search only the middle of the container
-         auto nItems = haunch_details.Haunch.size();
-         auto begin_search = std::begin(haunch_details.Haunch);
+         auto nItems = slab_offset_details.SlabOffset.size();
+         auto begin_search = std::begin(slab_offset_details.SlabOffset);
          std::advance(begin_search, nItems / 2 - 1);
          auto end_search = begin_search;
          std::advance(end_search, 2);
@@ -5481,10 +5482,10 @@ void pgsDesigner2::CheckConstructability(const CGirderKey& girderKey,pgsConstruc
             // not found, search the entire container
             ATLASSERT(false); // it is ok that we get here... the assert is to let us know that the above quicker search
             // didn't work... if we get here a lot, there is probably something wrong with the strategy above
-            hit = std::find_if(std::begin(haunch_details.Haunch), std::end(haunch_details.Haunch), find_midspan_poi);
+            hit = std::find_if(std::begin(slab_offset_details.SlabOffset), std::end(slab_offset_details.SlabOffset), find_midspan_poi);
          }
 
-         if (hit != std::end(haunch_details.Haunch))
+         if (hit != std::end(slab_offset_details.SlabOffset))
          {
             Float64 haunch_depth = hit->CamberEffect;
             artifact.SetComputedExcessCamber(haunch_depth);
@@ -6082,7 +6083,7 @@ void pgsDesigner2::DesignMidZone(bool bUseCurrentStrands, const arDesignOptions&
    Int16 cIter = 0;
    Int16 nFutileAttempts=0;
    Int16 nIterMax = 40;
-   Int16 nIterEarlyStage = (options.doDesignSlabOffset != sodNoADesign) ? 10 : 5; // Early design stage - NOTE: DO NOT change this value unless you run all design tests VERY SENSITIVE!!!
+   Int16 nIterEarlyStage = (options.doDesignSlabOffset != sodNoSlabOffsetDesign) ? 10 : 5; // Early design stage - NOTE: DO NOT change this value unless you run all design tests VERY SENSITIVE!!!
    StrandIndexType Ns, Nh, Nt;
    Float64 fc, fci, start_slab_offset, end_slab_offset;
 
@@ -6244,7 +6245,7 @@ void pgsDesigner2::DesignMidZone(bool bUseCurrentStrands, const arDesignOptions&
          }
       }
 
-      if (options.doDesignSlabOffset != sodNoADesign)
+      if (options.doDesignSlabOffset != sodNoSlabOffsetDesign)
       {
          pProgress->UpdateMessage(_T("Designing Slab Offset - inner loop"));
          DesignSlabOffset( pProgress );
@@ -6795,7 +6796,7 @@ void pgsDesigner2::DesignSlabOffset(IProgress* pProgress) const
    Float64 AorigStart = m_StrandDesignTool.GetSlabOffset(pgsTypes::metStart);
    Float64 AorigEnd   = m_StrandDesignTool.GetSlabOffset(pgsTypes::metEnd);
 
-   Float64 assExcessCamberOrig = m_StrandDesignTool.GetAssExcessCamber();
+   Float64 assumedExcessCamberOrig = m_StrandDesignTool.GetAssumedExcessCamber();
 
    // Iterate on _T("A") dimension and initial number of prestressing strands
    // Use a relaxed tolerance on _T("A") dimension.
@@ -6811,7 +6812,7 @@ void pgsDesigner2::DesignSlabOffset(IProgress* pProgress) const
    LOG(_T("A-dim Current (End)     = ") << ::ConvertFromSysUnits(AorigEnd,   unitMeasure::Inch) << _T(" in") );
    if (m_StrandDesignTool.IsDesignExcessCamber())
    {
-      LOG(_T("AssExcessCamber Current    = ") << ::ConvertFromSysUnits(assExcessCamberOrig,   unitMeasure::Inch) << _T(" in") );
+      LOG(_T("AssExcessCamber Current    = ") << ::ConvertFromSysUnits(assumedExcessCamberOrig,   unitMeasure::Inch) << _T(" in") );
    }
    
    // to prevent the design from bouncing back and forth over two "A" dimensions that are 1/4" apart, we are going to use the
@@ -6830,26 +6831,26 @@ void pgsDesigner2::DesignSlabOffset(IProgress* pProgress) const
       Float64 AoldStart = m_StrandDesignTool.GetSlabOffset(pgsTypes::metStart);
       Float64 AoldEnd   = m_StrandDesignTool.GetSlabOffset(pgsTypes::metEnd);
 
-      Float64 AssExcessCamberOld = m_StrandDesignTool.GetAssExcessCamber();
+      Float64 assumedExcessCamberOld = m_StrandDesignTool.GetAssumedExcessCamber();
 
       // Make a guess at the "A" dimension using this initial strand configuration
-      HAUNCHDETAILS haunch_details;
+      SLABOFFSETDETAILS slab_offset_details;
       GDRCONFIG config = m_StrandDesignTool.GetSegmentConfiguration();
       config.SlabOffset[pgsTypes::metStart] = AoldStart;
       config.SlabOffset[pgsTypes::metEnd]   = AoldEnd;
-      config.AssExcessCamber = AssExcessCamberOld;
-      GetHaunchDetails(segmentKey,&config,&haunch_details);
+      config.AssumedExcessCamber = assumedExcessCamberOld;
+      GetSlabOffsetDetails(segmentKey,&config,&slab_offset_details);
 
-      IndexType idx = haunch_details.Haunch.size()/2;
-      ATLASSERT(haunch_details.Haunch[idx].PointOfInterest.IsMidSpan(POI_ERECTED_SEGMENT));
-      LOG(_T("Girder Orientation Effect = ") << ::ConvertFromSysUnits(haunch_details.Haunch[idx].GirderOrientationEffect, unitMeasure::Inch) << _T(" in"));
-      LOG(_T("Profile Effect = ") << ::ConvertFromSysUnits(haunch_details.Haunch[idx].ProfileEffect, unitMeasure::Inch) << _T(" in"));
-      LOG(_T("D = ") << ::ConvertFromSysUnits(haunch_details.Haunch[idx].D, unitMeasure::Inch) << _T(" in"));
-      LOG(_T("C = ") << ::ConvertFromSysUnits(haunch_details.Haunch[idx].C, unitMeasure::Inch) << _T(" in"));
-      LOG(_T("Camber Effect = ") << ::ConvertFromSysUnits(haunch_details.Haunch[idx].CamberEffect, unitMeasure::Inch) << _T(" in"));
-      LOG(_T("A-dim Calculated         = ") << ::ConvertFromSysUnits(haunch_details.RequiredSlabOffset, unitMeasure::Inch) << _T(" in"));
+      IndexType idx = slab_offset_details.SlabOffset.size()/2;
+      ATLASSERT(slab_offset_details.SlabOffset[idx].PointOfInterest.IsMidSpan(POI_ERECTED_SEGMENT));
+      LOG(_T("Girder Orientation Effect = ") << ::ConvertFromSysUnits(slab_offset_details.SlabOffset[idx].GirderOrientationEffect, unitMeasure::Inch) << _T(" in"));
+      LOG(_T("Profile Effect = ") << ::ConvertFromSysUnits(slab_offset_details.SlabOffset[idx].ProfileEffect, unitMeasure::Inch) << _T(" in"));
+      LOG(_T("D = ") << ::ConvertFromSysUnits(slab_offset_details.SlabOffset[idx].D, unitMeasure::Inch) << _T(" in"));
+      LOG(_T("C = ") << ::ConvertFromSysUnits(slab_offset_details.SlabOffset[idx].C, unitMeasure::Inch) << _T(" in"));
+      LOG(_T("Camber Effect = ") << ::ConvertFromSysUnits(slab_offset_details.SlabOffset[idx].CamberEffect, unitMeasure::Inch) << _T(" in"));
+      LOG(_T("A-dim Calculated         = ") << ::ConvertFromSysUnits(slab_offset_details.RequiredSlabOffset, unitMeasure::Inch) << _T(" in"));
 
-      Float64 Anew = haunch_details.RequiredSlabOffset;
+      Float64 Anew = slab_offset_details.RequiredSlabOffset;
 
       Float64 Amin = m_StrandDesignTool.GetMinimumSlabOffset();
       if (Anew < Amin)
@@ -6876,21 +6877,21 @@ void pgsDesigner2::DesignSlabOffset(IProgress* pProgress) const
 
       if (m_StrandDesignTool.IsDesignExcessCamber())
       {
-         Float64 ctoler = m_StrandDesignTool.GetAssExcessCamberTolerance();
-         Float64 computed_camber = haunch_details.Haunch.at(idx).CamberEffect;
+         Float64 ctoler = m_StrandDesignTool.GetAssumedExcessCamberTolerance();
+         Float64 computed_camber = slab_offset_details.SlabOffset.at(idx).CamberEffect;
          LOG(_T("Excess Camber Computed = ") << ::ConvertFromSysUnits(computed_camber, unitMeasure::Inch) << _T(" in"));
-         if (IsZero(AssExcessCamberOld - computed_camber, ctoler))
+         if (IsZero(assumedExcessCamberOld - computed_camber, ctoler))
          {
             Float64 c;
             c = RoundOff(computed_camber, ctoler);
             LOG(_T("Excess camber converged."));
-            m_StrandDesignTool.SetAssExcessCamber(c);
+            m_StrandDesignTool.SetAssumedExcessCamber(c);
 
             bDone &= true;
          }
          else
          {
-            m_StrandDesignTool.SetAssExcessCamber(computed_camber);
+            m_StrandDesignTool.SetAssumedExcessCamber(computed_camber);
             LOG(_T("Excess camber does not match within tolerance."));
             bDone = false;
          }
@@ -6983,8 +6984,8 @@ void pgsDesigner2::DesignMidZoneInitialStrands(bool bUseCurrentStrands, IProgres
    ATLASSERT(endPierIdx == startPierIdx + 1);
 
    LOG(_T(""));
-   LOG(_T("Bridge A dimension  (Start) = ") << ::ConvertFromSysUnits(pBridge->GetSlabOffset(segmentKey.groupIndex, startPierIdx, segmentKey.girderIndex), unitMeasure::Inch) << _T(" in"));
-   LOG(_T("Bridge A dimension  (End)   = ") << ::ConvertFromSysUnits(pBridge->GetSlabOffset(segmentKey.groupIndex, endPierIdx, segmentKey.girderIndex), unitMeasure::Inch) << _T(" in"));
+   LOG(_T("Bridge A dimension  (Start) = ") << ::ConvertFromSysUnits(pBridge->GetSlabOffset(segmentKey,pgsTypes::metStart), unitMeasure::Inch) << _T(" in"));
+   LOG(_T("Bridge A dimension  (End)   = ") << ::ConvertFromSysUnits(pBridge->GetSlabOffset(segmentKey,pgsTypes::metEnd), unitMeasure::Inch) << _T(" in"));
    LOG(_T("Current A dimension (Start) = ") << ::ConvertFromSysUnits(m_StrandDesignTool.GetSlabOffset(pgsTypes::metStart), unitMeasure::Inch) << _T(" in"));
    LOG(_T("Current A dimension (End)   = ") << ::ConvertFromSysUnits(m_StrandDesignTool.GetSlabOffset(pgsTypes::metEnd), unitMeasure::Inch) << _T(" in"));
    LOG(_T(""));
@@ -10100,11 +10101,11 @@ Float64 pgsDesigner2::RoundSlabOffset(Float64 offset) const
    GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
    if ( IS_SI_UNITS(pDisplayUnits) )
    {
-      newoff = RoundOff(offset, HAUNCH_TOLERANCE_SI);
+      newoff = RoundOff(offset, SLAB_OFFSET_TOLERANCE_SI);
    }
    else
    {
-      newoff = RoundOff(offset, HAUNCH_TOLERANCE_US);
+      newoff = RoundOff(offset, SLAB_OFFSET_TOLERANCE_US);
    }
 
    return newoff;

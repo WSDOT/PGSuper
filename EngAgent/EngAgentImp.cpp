@@ -248,7 +248,7 @@ UINT CEngAgentImp::DeleteMomentCapacityEngineer(LPVOID pParam)
 //-----------------------------------------------------------------------------
 void CEngAgentImp::InvalidateHaunch()
 {
-   m_HaunchDetails.clear();
+   m_SLABOFFSETDETAILS.clear();
 }
 
 //-----------------------------------------------------------------------------
@@ -3260,7 +3260,7 @@ void CEngAgentImp::ClearDesignCriticalSections() const
 // IGirderHaunch
 Float64 CEngAgentImp::GetRequiredSlabOffset(const CSegmentKey& segmentKey) const
 {
-   const auto& details = GetHaunchDetails(segmentKey);
+   const auto& details = GetSlabOffsetDetails(segmentKey);
 
    Float64 slab_offset = details.RequiredSlabOffset;
 
@@ -3279,17 +3279,17 @@ Float64 CEngAgentImp::GetRequiredSlabOffset(const CSegmentKey& segmentKey) const
    return slab_offset;
 }
 
-const HAUNCHDETAILS& CEngAgentImp::GetHaunchDetails(const CSegmentKey& segmentKey) const
+const SLABOFFSETDETAILS& CEngAgentImp::GetSlabOffsetDetails(const CSegmentKey& segmentKey) const
 {
-   auto found = m_HaunchDetails.find(segmentKey);
+   auto found = m_SLABOFFSETDETAILS.find(segmentKey);
 
-   if ( found == m_HaunchDetails.end() )
+   if ( found == m_SLABOFFSETDETAILS.end() )
    {
       // not found
-      HAUNCHDETAILS details;
-      m_Designer.GetHaunchDetails(segmentKey,nullptr,&details);
+      SLABOFFSETDETAILS details;
+      m_Designer.GetSlabOffsetDetails(segmentKey,nullptr,&details);
 
-      auto result = m_HaunchDetails.insert( std::make_pair(segmentKey,details) );
+      auto result = m_SLABOFFSETDETAILS.insert( std::make_pair(segmentKey,details) );
       ATLASSERT(result.second == true);
       found = result.first;
    }

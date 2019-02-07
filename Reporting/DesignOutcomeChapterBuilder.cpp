@@ -604,7 +604,7 @@ void write_artifact_data(IBroker* pBroker,rptChapter* pChapter,IEAFDisplayUnits*
       row++;
 
       GET_IFACE2(pBroker,IBridge,pBridge);
-      if ( (pBridge->GetDeckType()!=pgsTypes::sdtNone) && (options.doDesignSlabOffset != sodNoADesign) )
+      if ( (pBridge->GetDeckType()!=pgsTypes::sdtNone) && (options.doDesignSlabOffset != sodNoSlabOffsetDesign) )
       {
          GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
          GET_IFACE2(pBroker,ISpecification,pSpec);
@@ -618,27 +618,27 @@ void write_artifact_data(IBroker* pBroker,rptChapter* pChapter,IEAFDisplayUnits*
             // slab offset is for the entire bridge... the start value contains this parameter
             (*pTable)(row,0) << _T("Slab Offset (\"A\" Dimension)");
             (*pTable)(row,1) << length.SetValue( pArtifact->GetSlabOffset(pgsTypes::metStart) );
-            (*pTable)(row,2) << length.SetValue( pGroup->GetSlabOffset(pGroup->GetPierIndex(pgsTypes::metStart),segmentKey.girderIndex));
+            (*pTable)(row,2) << length.SetValue( pSegment->GetSlabOffset(pgsTypes::metStart));
             row++;
          }
          else
          {
             (*pTable)(row,0) << _T("Slab Offset at Start (\"A\" Dimension)");
             (*pTable)(row,1) << length.SetValue( pArtifact->GetSlabOffset(pgsTypes::metStart) );
-            (*pTable)(row,2) << length.SetValue( pGroup->GetSlabOffset(pGroup->GetPierIndex(pgsTypes::metStart),segmentKey.girderIndex));
+            (*pTable)(row,2) << length.SetValue( pSegment->GetSlabOffset(pgsTypes::metStart));
             row++;
 
             (*pTable)(row,0) << _T("Slab Offset at End (\"A\" Dimension)");
             (*pTable)(row,1) << length.SetValue( pArtifact->GetSlabOffset(pgsTypes::metEnd) );
-            (*pTable)(row,2) << length.SetValue( pGroup->GetSlabOffset(pGroup->GetPierIndex(pgsTypes::metEnd),segmentKey.girderIndex));
+            (*pTable)(row,2) << length.SetValue( pSegment->GetSlabOffset(pgsTypes::metEnd) );
             row++;
          }
 
-         if ( options.doDesignSlabOffset==sodAandAssExcessCamber && pSpec->IsAssExcessCamberForLoad() )
+         if ( options.doDesignSlabOffset==sodSlabOffsetandAssumedExcessCamberDesign && pSpec->IsAssumedExcessCamberForLoad() )
          {
             (*pTable)(row,0) << _T("Assumed Excess Camber");
-            (*pTable)(row,1) << length.SetValue( pArtifact->GetAssExcessCamber() );
-            (*pTable)(row,2) << length.SetValue( pIBridgeDesc->GetAssExcessCamber(segmentKey.groupIndex,segmentKey.girderIndex));
+            (*pTable)(row,1) << length.SetValue( pArtifact->GetAssumedExcessCamber() );
+            (*pTable)(row,2) << length.SetValue( pIBridgeDesc->GetAssumedExcessCamber(segmentKey.groupIndex,segmentKey.girderIndex));
             row++;
          }
       }
@@ -1365,7 +1365,7 @@ void multiple_girder_table(ColumnIndexType startIdx, ColumnIndexType endIdx,
 
       if (did_assexcesscamber)
       {
-         (*pTable)(row++,col) << length.SetValue( pArtifact->GetAssExcessCamber() );
+         (*pTable)(row++,col) << length.SetValue( pArtifact->GetAssumedExcessCamber() );
       }
 
       col++;
@@ -1419,13 +1419,13 @@ void process_artifacts(IBroker* pBroker,ColumnIndexType startIdx, ColumnIndexTyp
          didHauling = true;
       }
 
-      if (options.doDesignSlabOffset != sodNoADesign)
+      if (options.doDesignSlabOffset != sodNoSlabOffsetDesign)
       {
          didSlabOffset = true;
 
          GET_IFACE2(pBroker,ISpecification,pSpec);
 
-         if (options.doDesignSlabOffset == sodAandAssExcessCamber && pSpec->IsAssExcessCamberInputEnabled())
+         if (options.doDesignSlabOffset == sodSlabOffsetandAssumedExcessCamberDesign && pSpec->IsAssumedExcessCamberInputEnabled())
          {
             didAssExcessCamber = true;
          }

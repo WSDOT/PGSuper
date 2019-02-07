@@ -376,14 +376,14 @@ Float64 pgsSegmentDesignArtifact::GetSlabOffset(pgsTypes::MemberEndType end) con
    return m_SlabOffset[end];
 }
 
-void pgsSegmentDesignArtifact::SetAssExcessCamber(Float64 f)
+void pgsSegmentDesignArtifact::SetAssumedExcessCamber(Float64 f)
 {
-   m_AssExcessCamber = f;
+   m_AssumedExcessCamber = f;
 }
 
-Float64 pgsSegmentDesignArtifact::GetAssExcessCamber() const
+Float64 pgsSegmentDesignArtifact::GetAssumedExcessCamber() const
 {
-   return m_AssExcessCamber;
+   return m_AssumedExcessCamber;
 }
 
 void pgsSegmentDesignArtifact::SetLiftingLocations(Float64 left,Float64 right)
@@ -508,7 +508,7 @@ GDRCONFIG pgsSegmentDesignArtifact::GetSegmentConfiguration() const
    config.SlabOffset[pgsTypes::metStart] = GetSlabOffset(pgsTypes::metStart);
    config.SlabOffset[pgsTypes::metEnd]   = GetSlabOffset(pgsTypes::metEnd);
 
-   config.AssExcessCamber = GetAssExcessCamber();
+   config.AssumedExcessCamber = GetAssumedExcessCamber();
 
    WriteShearDataToStirrupConfig(&m_ShearData, config.StirrupConfig);
 
@@ -797,7 +797,7 @@ void pgsSegmentDesignArtifact::MakeCopy(const pgsSegmentDesignArtifact& rOther)
    m_SsDebondInfo        = rOther.m_SsDebondInfo;
    m_SlabOffset[pgsTypes::metStart] = rOther.m_SlabOffset[pgsTypes::metStart];
    m_SlabOffset[pgsTypes::metEnd]   = rOther.m_SlabOffset[pgsTypes::metEnd];
-   m_AssExcessCamber                = rOther.m_AssExcessCamber;
+   m_AssumedExcessCamber                = rOther.m_AssumedExcessCamber;
 
    m_NumShearZones       = rOther.m_NumShearZones;
    m_ShearData           = rOther.m_ShearData;
@@ -861,7 +861,7 @@ void pgsSegmentDesignArtifact::Init()
    m_Fci                 = 0;
    m_SlabOffset[pgsTypes::metStart] = 0;
    m_SlabOffset[pgsTypes::metEnd] = 0;
-   m_AssExcessCamber = 0;
+   m_AssumedExcessCamber = 0;
    m_NumShearZones       = 0;
    m_bWasLongitudinalRebarForShearDesigned = false;
    m_LiftLocLeft         = 0.0;

@@ -25,3 +25,7 @@
 // Toggles the girder spacing type between "same spacing for entire bridge" and
 // "span-by-span" spacing
 pgsTypes::SupportedBeamSpacing ToggleGirderSpacingType(pgsTypes::SupportedBeamSpacing spacing);
+
+
+CString GetSlabOffsetTypeAsString(pgsTypes::SlabOffsetType type, BOOL bIsPGSuper);
+CString GetAssumedExcessCamberTypeAsString(pgsTypes::AssumedExcessCamberType type);

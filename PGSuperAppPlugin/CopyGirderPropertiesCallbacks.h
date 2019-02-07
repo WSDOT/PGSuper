@@ -159,7 +159,7 @@ public:
 private:
    CGirderKey m_FromGirderKey;
    std::vector<CGirderKey> m_ToGirderKeys;
-   std::vector<std::vector<Float64>> m_OldSlabOffsetData;
+   std::vector<std::vector<std::pair<Float64,Float64>>> m_OldSegmentSlabOffsetData;
 };
 
 ////////////////////////////////////////////////////////////////////////////

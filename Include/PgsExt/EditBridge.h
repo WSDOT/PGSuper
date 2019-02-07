@@ -50,7 +50,7 @@ private:
 
    bool m_bBridgeDescOnly;
 
-	CBridgeDescription2* m_pBridgeDesc[2];
+	CBridgeDescription2 m_BridgeDesc[2];
    enumExposureCondition m_ExposureCondition[2];
    Float64 m_RelHumidity[2];
 };

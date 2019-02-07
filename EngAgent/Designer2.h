@@ -371,7 +371,7 @@ public:
 
    pgsGirderDesignArtifact Design(const CGirderKey& girderKey,const std::vector<arDesignOptions>& DesOptionsColl) const;
 
-   void GetHaunchDetails(const CSegmentKey& segmentKey,const GDRCONFIG* pConfig,HAUNCHDETAILS* pHaunchDetails) const;
+   void GetSlabOffsetDetails(const CSegmentKey& segmentKey,const GDRCONFIG* pConfig,SLABOFFSETDETAILS* pSLABOFFSETDETAILS) const;
    Float64 GetSectionGirderOrientationEffect(const pgsPointOfInterest& poi) const;
 
    pgsEccEnvelope GetEccentricityEnvelope(const pgsPointOfInterest& rpoi,const GDRCONFIG& config) const;

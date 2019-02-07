@@ -455,7 +455,7 @@ std::vector<Float64> CSegmentModelManager::GetDeflection(IntervalIndexType inter
          IntervalIndexType haulingIntervalIdx = pIntervals->GetHaulSegmentInterval(segmentKey);
          IntervalIndexType erectionIntervalIdx = pIntervals->GetErectSegmentInterval(segmentKey);
          static bool bGettingSupportAdjustment = false; // this method is recursive... we don't want to apply the support datum adjustment when getting the deflections to make the support datum adjustment
-         if( (intervalIdx == liftingIntervalIdx || intervalIdx == storageIntervalIdx || intervalIdx == haulingIntervalIdx || intervalIdx == haulingIntervalIdx || intervalIdx == erectionIntervalIdx)
+         if( (intervalIdx == liftingIntervalIdx || intervalIdx == storageIntervalIdx || intervalIdx == haulingIntervalIdx || intervalIdx == haulingIntervalIdx || erectionIntervalIdx <= intervalIdx)
             && !bGettingSupportAdjustment)
          {
             PoiAttributeType poiAttribute;

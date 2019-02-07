@@ -130,6 +130,11 @@ public:
    SegmentIDType GetID() const;
    CSegmentKey GetSegmentKey() const;
 
+   void SetSlabOffset(pgsTypes::MemberEndType end, Float64 slabOffset);
+   void SetSlabOffset(Float64 start, Float64 end);
+   Float64 GetSlabOffset(pgsTypes::MemberEndType end,bool bRawData=false) const;
+   void GetSlabOffset(Float64* pStart, Float64* pEnd,bool bRawData=false) const;
+
    // Returns a vector of all the piers that support this segment
    std::vector<const CPierData2*> GetPiers() const;
 
@@ -198,6 +203,8 @@ protected:
    friend CSplicedGirderData;
    std::array<SpanIndexType,2> m_SpanIdx; // contains the span index of the span that will be referenced by
                                // m_pSpanData. This value will be INVALID_INDEX with m_pSpanData is defined
+
+   std::array<Float64, 2> m_SlabOffset{ 0.0,0.0 };
 
    // cache the segment height and bottom flange thickness.
    // they are computed many times and don't ever change.

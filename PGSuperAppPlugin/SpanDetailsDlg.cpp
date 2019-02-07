@@ -138,8 +138,6 @@ void CSpanDetailsDlg::Init(const CBridgeDescription2* pBridgeDesc,SpanIndexType 
 
    m_pGirderGroup = m_BridgeDesc.GetGirderGroup(m_pSpanData);
 
-   m_SpanLayoutPage.Init(this);
-
    CEAFDocument* pDoc = EAFGetDocument();
    if ( pDoc->IsKindOf(RUNTIME_CLASS(CPGSuperDoc)) )
    {
